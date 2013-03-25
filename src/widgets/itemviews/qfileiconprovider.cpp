@@ -220,6 +220,22 @@ QIcon QFileIconProvider::icon(IconType type) const
     return QIcon();
 }
 
+static bool isCacheable(const QFileInfo &fi)
+{
+    if (!fi.isFile())
+        return false;
+
+#ifdef Q_OS_WIN
+    // On windows it's faster to just look at the file extensions. QTBUG-13182
+    const QString fileExtension = fi.suffix();
+    return fileExtension.compare(QLatin1String("exe"), Qt::CaseInsensitive) &&
+           fileExtension.compare(QLatin1String("lnk"), Qt::CaseInsensitive) &&
+           fileExtension.compare(QLatin1String("ico"), Qt::CaseInsensitive);
+#else
+    return !fi.isExecutable() && !fi.isSymLink();
+#endif
+}
+
 QIcon QFileIconProviderPrivate::getIcon(const QFileInfo &fi) const
 {
     QIcon retIcon;
@@ -234,7 +250,7 @@ QIcon QFileIconProviderPrivate::getIcon(const QFileInfo &fi) const
     const QString fileExtension = fi.suffix().toUpper();
     const QString keyBase = QLatin1String("qt_.") + fi.suffix().toUpper();
 
-    bool cacheable = fi.isFile() && !fi.isExecutable() && !fi.isSymLink() && fileExtension != QLatin1String("ICO");
+    bool cacheable = isCacheable(fi);
     if (cacheable) {
         QPixmap pixmap;
         QPixmapCache::find(keyBase + QString::number(sizes.at(0)), pixmap);
