@@ -417,10 +417,7 @@ QString QWindowsContext::registerWindowClass(const QWindow *w, bool isGL)
     if (icon)
         cname += QStringLiteral("Icon");
 
-    HBRUSH brush = 0;
-    if (!isGL)
-        brush = GetSysColorBrush(COLOR_WINDOW);
-    return registerWindowClass(cname, qWindowsWndProc, style, brush, icon);
+    return registerWindowClass(cname, qWindowsWndProc, style, GetSysColorBrush(COLOR_WINDOW), icon);
 }
 
 QString QWindowsContext::registerWindowClass(QString cname,
