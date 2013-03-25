@@ -23,4 +23,3 @@ x11 {
 !wince*:win32: LIBS += -luser32 -lgdi32
 
 mac:CONFIG+=insignificant_test # QTBUG-25300, QTBUG-23695
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

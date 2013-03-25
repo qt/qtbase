@@ -13,4 +13,3 @@ mac {
 }
 
 !mac:!win32:CONFIG+=insignificant_test # QTBUG-25298
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

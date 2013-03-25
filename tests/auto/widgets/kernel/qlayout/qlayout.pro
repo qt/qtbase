@@ -11,4 +11,3 @@ wince* {
 } else {
    TESTDATA += baseline/*
 }
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

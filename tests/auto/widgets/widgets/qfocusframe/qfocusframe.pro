@@ -9,4 +9,3 @@ QT += widgets testlib
 SOURCES += tst_qfocusframe.cpp
 
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

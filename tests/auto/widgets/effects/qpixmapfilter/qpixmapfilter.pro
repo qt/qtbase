@@ -13,4 +13,3 @@ wince*: {
     DEPLOYMENT += addFiles
 }
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
