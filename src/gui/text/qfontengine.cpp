@@ -264,8 +264,8 @@ void *QFontEngine::harfbuzzFont() const
     HB_FontRec *hbFont = (HB_FontRec *)font_;
     if (!hbFont->x_ppem) {
         QFixed emSquare = emSquareSize();
-        hbFont->x_ppem = fontDef.pixelSize;
-        hbFont->y_ppem = fontDef.pixelSize * fontDef.stretch / 100;
+        hbFont->y_ppem = fontDef.pixelSize;
+        hbFont->x_ppem = fontDef.pixelSize * fontDef.stretch / 100;
         hbFont->x_scale = (QFixed(hbFont->x_ppem * (1 << 16)) / emSquare).value();
         hbFont->y_scale = (QFixed(hbFont->y_ppem * (1 << 16)) / emSquare).value();
     }
