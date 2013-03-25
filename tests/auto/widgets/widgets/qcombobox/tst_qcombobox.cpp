@@ -2059,7 +2059,7 @@ void tst_QComboBox::task190351_layout()
     listCombo.setCurrentIndex(70);
     listCombo.showPopup();
     QTRY_VERIFY(listCombo.view());
-    QTest::qWaitForWindowShown(listCombo.view());
+    QTest::qWaitForWindowExposed(listCombo.view());
     QTRY_VERIFY(listCombo.view()->isVisible());
     QApplication::processEvents();
 
@@ -2197,7 +2197,7 @@ void tst_QComboBox::task248169_popupWithMinimalSize()
     QTRY_VERIFY(comboBox.isVisible());
     comboBox.showPopup();
     QTRY_VERIFY(comboBox.view());
-    QTest::qWaitForWindowShown(comboBox.view());
+    QTest::qWaitForWindowExposed(comboBox.view());
     QTRY_VERIFY(comboBox.view()->isVisible());
 
 #ifdef QT_BUILD_INTERNAL

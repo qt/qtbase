@@ -659,7 +659,7 @@ void tst_QPushButton::taskQTBUG_20191_shortcutWithKeypadModifer()
     QDialog dialog;
     dialog.setLayout(layout);
     dialog.show();
-    QTest::qWaitForWindowShown(&dialog);
+    QTest::qWaitForWindowExposed(&dialog);
     QApplication::setActiveWindow(&dialog);
 
     // add shortcut '5' to button1 and test with keyboard and keypad '5' keys

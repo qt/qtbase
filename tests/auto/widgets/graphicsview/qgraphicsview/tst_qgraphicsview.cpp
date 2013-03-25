@@ -3025,7 +3025,7 @@ void tst_QGraphicsView::task187791_setSceneCausesUpdate()
     QGraphicsView view(&scene);
     view.show();
     qApp->setActiveWindow(&view);
-    QVERIFY(QTest::qWaitForWindowShown(&view));
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     EventSpy updateSpy(view.viewport(), QEvent::Paint);
     QCOMPARE(updateSpy.count(), 0);

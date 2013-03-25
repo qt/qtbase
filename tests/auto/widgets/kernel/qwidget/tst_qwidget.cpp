@@ -7019,7 +7019,7 @@ void tst_QWidget::moveWindowInShowEvent()
 
     // show it
     widget.show();
-    QVERIFY(QTest::qWaitForWindowShown(&widget));
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
     QTest::qWait(100);
     // it should have moved
     QCOMPARE(widget.pos(), position);

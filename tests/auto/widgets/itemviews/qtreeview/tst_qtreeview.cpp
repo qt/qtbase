@@ -4255,7 +4255,7 @@ void tst_QTreeView::quickExpandCollapse()
     QVERIFY(rootIndex.isValid());
 
     tree.show();
-    QTest::qWaitForWindowShown(&tree);
+    QTest::qWaitForWindowExposed(&tree);
 
     int initialState = tree.state();
 
