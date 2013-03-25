@@ -1032,7 +1032,7 @@ void tst_QTreeView::indexWidget()
     QCOMPARE(view.indexWidget(index), static_cast<QWidget *>(widget));
 
     QCOMPARE(widget->parentWidget(), view.viewport());
-    QCOMPARE(widget->geometry(), view.visualRect(index).intersect(widget->geometry()));
+    QCOMPARE(widget->geometry(), view.visualRect(index).intersected(widget->geometry()));
     QCOMPARE(widget->toPlainText(), text);
 }
 
