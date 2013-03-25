@@ -1068,7 +1068,6 @@ void tst_QFiledialog::focus()
 
     // make sure the tests work with focus follows mouse
     QCursor::setPos(fd.geometry().center());
-    QApplication::syncX();
 
     QList<QWidget*> treeView = qFindChildren<QWidget*>(&fd, "fileNameEdit");
     QCOMPARE(treeView.count(), 1);

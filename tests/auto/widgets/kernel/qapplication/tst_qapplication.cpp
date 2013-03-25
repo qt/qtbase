@@ -316,7 +316,6 @@ void tst_QApplication::alert()
     widget.activateWindow();
     QApplication::setActiveWindow(&widget);
     app.alert(&widget, 200);
-    app.syncX();
 }
 
 void tst_QApplication::multiple_data()

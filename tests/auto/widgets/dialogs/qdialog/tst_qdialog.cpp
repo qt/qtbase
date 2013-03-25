@@ -328,7 +328,6 @@ void tst_QDialog::showFullScreen()
     QVERIFY(sizeGrip);
 #endif
 
-    qApp->syncX();
     dialog.showFullScreen();
     QVERIFY(dialog.isFullScreen());
     QVERIFY(dialog.isVisible());
@@ -336,7 +335,6 @@ void tst_QDialog::showFullScreen()
     QVERIFY(!sizeGrip->isVisible());
 #endif
 
-    qApp->syncX();
     dialog.showNormal();
     QVERIFY(!dialog.isFullScreen());
     QVERIFY(dialog.isVisible());
@@ -344,32 +342,26 @@ void tst_QDialog::showFullScreen()
     QVERIFY(sizeGrip->isVisible());
 #endif
 
-    qApp->syncX();
     dialog.showFullScreen();
     QVERIFY(dialog.isFullScreen());
     QVERIFY(dialog.isVisible());
 
-    qApp->syncX();
     dialog.hide();
     QVERIFY(dialog.isFullScreen());
     QVERIFY(!dialog.isVisible());
 
-    qApp->syncX();
     dialog.show();
     QVERIFY(dialog.isFullScreen());
     QVERIFY(dialog.isVisible());
 
-    qApp->syncX();
     dialog.hide();
     QVERIFY(dialog.isFullScreen());
     QVERIFY(!dialog.isVisible());
 
-    qApp->syncX();
     dialog.showFullScreen();
     QVERIFY(dialog.isFullScreen());
     QVERIFY(dialog.isVisible());
 
-    qApp->syncX();
     dialog.hide();
     QVERIFY(dialog.isFullScreen());
     QVERIFY(!dialog.isVisible());

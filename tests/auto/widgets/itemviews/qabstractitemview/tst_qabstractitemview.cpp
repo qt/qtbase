@@ -1048,7 +1048,6 @@ void tst_QAbstractItemView::setItemDelegate()
     v.show();
 #ifdef Q_WS_X11
     QCursor::setPos(v.geometry().center());
-    QApplication::syncX();
 #endif
     QApplication::setActiveWindow(&v);
     QVERIFY(QTest::qWaitForWindowActive(&v));
