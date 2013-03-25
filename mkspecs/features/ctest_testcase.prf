@@ -18,6 +18,8 @@ isEmpty(CMAKE_VERSION) {
         CMAKE_VERSION_MAJOR = $$section(CMAKE_VERSION, ., 0, 0)
         CMAKE_VERSION_MINOR = $$section(CMAKE_VERSION, ., 1, 1)
         CMAKE_VERSION_PATCH = $$section(CMAKE_VERSION, ., 2, 2)
+        # CMake can report versions like 2.8.11-rc1, so strip off the rc part.
+        CMAKE_VERSION_PATCH ~= s,-.*,,
 
         VERSION_OK =
         greaterThan(CMAKE_VERSION_MAJOR, 2) {
