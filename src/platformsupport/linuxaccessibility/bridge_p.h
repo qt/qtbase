@@ -76,7 +76,6 @@ private:
     DeviceEventControllerAdaptor *dec;
     AtSpiAdaptor *dbusAdaptor;
     DBusConnection* dbusConnection;
-    bool m_enabled;
 };
 
 QT_END_NAMESPACE
