@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2012, BogDan Vatra <bogdan@kde.org>
+    Copyright (c) 2011-2013, BogDan Vatra <bogdan@kde.org>
     Contact: http://www.qt-project.org/legal
 
     Redistribution and use in source and binary forms, with or without
@@ -45,8 +45,10 @@ oneway interface IMinistroCallback {
 *  - 1 incompatible Ministro version. Ministro needs to be upgraded.
 *  - 2 not all modules could be satisfy.
 *  - 3 invalid parameters
+*  - 4 invalid qt version
+*  - 5 download canceled
 *
-* This parameter will contain additional fields which are used by the loader to start your application, so it must be passed to loader.
+* The parameter contains additional fields which are used by the loader to start your application, so it must be passed to the loader.
 */
 
     void loaderReady(in Bundle loaderParams);
