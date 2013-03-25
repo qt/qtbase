@@ -51,8 +51,11 @@ isEmpty(CMAKE_VERSION) {
             dependentmodules -= $$CMAKE_QT_MODULES_UNDER_TEST
             dependentmodules = $$cmakeModuleList($$dependentmodules)
 
+            SET = set
+            equals(QMAKE_DIR_SEP, "/"):SET = export
+
             check.commands = \
-                $(MKDIR) $$BUILD_DIR && cd $$BUILD_DIR && \
+                $(MKDIR) $$BUILD_DIR && cd $$BUILD_DIR && $$SET VERBOSE=1 && \
                 cmake $$_PRO_FILE_PWD_ $$CMAKE_GENERATOR $$CMAKE_MODULE_DEFINES -DCMAKE_BUILD_TYPE=$${CMAKE_BUILD_TYPE} -DCMAKE_PREFIX_PATH=$$CMAKE_PREFIX_PATH -DQt5_MODULE_TEST_DEPENDS=\"$${dependentmodules}\" && \
                 $(TESTRUNNER) ctest --output-on-failure
 
