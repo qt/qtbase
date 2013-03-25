@@ -40,7 +40,9 @@
 ****************************************************************************/
 
 #include "qqnxintegration.h"
+#if defined(QQNXSCREENEVENTTHREAD)
 #include "qqnxscreeneventthread.h"
+#endif
 #include "qqnxnativeinterface.h"
 #include "qqnxrasterbackingstore.h"
 #include "qqnxscreen.h"
@@ -120,7 +122,9 @@ static inline QQnxIntegration::Options parseOptions(const QStringList &paramList
 
 QQnxIntegration::QQnxIntegration(const QStringList &paramList)
     : QPlatformIntegration()
+#if defined(QQNX_SCREENEVENTTHREAD)
     , m_screenEventThread(0)
+#endif
     , m_navigatorEventHandler(new QQnxNavigatorEventHandler())
     , m_virtualKeyboard(0)
 #if defined(QQNX_PPS)
@@ -198,8 +202,13 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
 
 #if defined(Q_OS_BLACKBERRY)
     QQnxVirtualKeyboardBps* virtualKeyboardBps = new QQnxVirtualKeyboardBps;
-    m_bpsEventFilter = new QQnxBpsEventFilter(m_navigatorEventHandler,
-            (m_screenEventThread ? 0 : m_screenEventHandler), virtualKeyboardBps);
+
+#if defined(QQNX_SCREENEVENTTHREAD)
+    m_bpsEventFilter = new QQnxBpsEventFilter(m_navigatorEventHandler, 0, virtualKeyboardBps);
+#else
+    m_bpsEventFilter = new QQnxBpsEventFilter(m_navigatorEventHandler, m_screenEventHandler, virtualKeyboardBps);
+#endif
+
     m_bpsEventFilter->installOnEventDispatcher(m_eventDispatcher);
 
     m_virtualKeyboard = virtualKeyboardBps;

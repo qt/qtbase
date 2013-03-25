@@ -11,11 +11,11 @@ QT += platformsupport platformsupport-private
 CONFIG(blackberry) {
     CONFIG += qqnx_pps
 
-    # Unomment this to enable screen event handling
-    # through a dedicated thread.
-    # DEFINES += QQNX_SCREENEVENTTHREAD
+    # Uncomment following line to enable screen event
+    # handling through a dedicated thread.
+    # CONFIG += qqnx_screeneventthread
 } else {
-    DEFINES += QQNX_SCREENEVENTTHREAD
+    CONFIG += qqnx_screeneventthread
 }
 
 # Uncomment these to enable debugging output for various aspects of the plugin
@@ -45,7 +45,6 @@ CONFIG(blackberry) {
 
 SOURCES =   main.cpp \
             qqnxbuffer.cpp \
-            qqnxscreeneventthread.cpp \
             qqnxintegration.cpp \
             qqnxscreen.cpp \
             qqnxwindow.cpp \
@@ -61,7 +60,6 @@ SOURCES =   main.cpp \
 
 HEADERS =   main.h \
             qqnxbuffer.h \
-            qqnxscreeneventthread.h \
             qqnxkeytranslator.h \
             qqnxintegration.h \
             qqnxscreen.h \
@@ -75,6 +73,12 @@ HEADERS =   main.h \
             qqnxabstractvirtualkeyboard.h \
             qqnxservices.h \
             qqnxcursor.h
+
+CONFIG(qqnx_screeneventthread) {
+    DEFINES += QQNX_SCREENEVENTTHREAD
+    SOURCES += qqnxscreeneventthread.cpp
+    HEADERS += qqnxscreeneventthread.h
+}
 
 LIBS += -lscreen
 
