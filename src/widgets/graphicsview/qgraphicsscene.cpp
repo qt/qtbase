@@ -5821,7 +5821,7 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
     }
 
     if (itemsNeedingEvents.isEmpty()) {
-        sceneTouchEvent->accept();
+        sceneTouchEvent->ignore();
         return;
     }
 
