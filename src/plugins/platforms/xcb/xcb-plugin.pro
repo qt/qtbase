@@ -20,8 +20,7 @@ SOURCES = \
         main.cpp \
         qxcbnativeinterface.cpp \
         qxcbcursor.cpp \
-        qxcbimage.cpp \
-        qxlibconvenience.cpp
+        qxcbimage.cpp
 
 HEADERS = \
         qxcbclipboard.h \
@@ -37,12 +36,11 @@ HEADERS = \
         qxcbwmsupport.h \
         qxcbnativeinterface.h \
         qxcbcursor.h \
-        qxcbimage.h \
-        qxlibconvenience.h
+        qxcbimage.h
 
 LIBS += -ldl
 
-# needed by GLX, Xcursor, XLookupString, ...
+# needed by GLX, Xcursor ...
 contains(QT_CONFIG, xcb-xlib) {
     DEFINES += XCB_USE_XLIB
     LIBS += -lX11 -lX11-xcb
@@ -111,7 +109,7 @@ contains(QT_CONFIG, xcb-qt) {
     INCLUDEPATH += $$XCB_DIR/include $$XCB_DIR/sysinclude
     LIBS += -lxcb -L$$OUT_PWD/xcb-static -lxcb-static
 } else {
-    LIBS += -lxcb -lxcb-image -lxcb-keysyms -lxcb-icccm -lxcb-sync -lxcb-xfixes -lxcb-shm -lxcb-randr
+    LIBS += -lxcb -lxcb-image -lxcb-icccm -lxcb-sync -lxcb-xfixes -lxcb-shm -lxcb-randr
     !contains(DEFINES, QT_NO_SHAPE):LIBS += -lxcb-shape
     !contains(DEFINES, QT_NO_XKB):LIBS += -lxcb-xkb
 }
@@ -122,5 +120,4 @@ contains(QT_CONFIG, xkbcommon-qt): {
 } else {
     LIBS += $$QMAKE_LIBS_XKBCOMMON
     QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_XKBCOMMON
-    LIBS += -lxkbcommon
 }

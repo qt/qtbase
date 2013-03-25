@@ -53,6 +53,14 @@
 #include <QVarLengthArray>
 #include <qpa/qwindowsysteminterface.h>
 
+// This is needed to make Qt compile together with XKB. xkb.h is using a variable
+// which is called 'explicit', this is a reserved keyword in c++ */
+#ifndef QT_NO_XKB
+#define explicit dont_use_cxx_explicit
+#include <xcb/xkb.h>
+#undef explicit
+#endif
+
 #ifndef QT_NO_TABLETEVENT
 #include <QTabletEvent>
 #endif
@@ -355,7 +363,7 @@ public:
 #endif
 
     QXcbWMSupport *wmSupport() const { return m_wmSupport.data(); }
-
+    xcb_window_t rootWindow();
 #ifdef XCB_USE_XLIB
     void *xlib_display() const { return m_xlib_display; }
 #endif
@@ -402,6 +410,7 @@ public:
     bool hasXRandr() const { return has_randr_extension; }
     bool hasInputShape() const { return has_input_shape; }
     bool hasTouchWithoutMouseEmulation() const { return has_touch_without_mouse_emulation; }
+    bool hasXKB() const { return has_xkb; }
 
     bool supportsThreadedRendering() const { return m_reader->isRunning(); }
 
@@ -430,6 +439,7 @@ private:
     void initializeXRender();
     void initializeXRandr();
     void initializeXShape();
+    void initializeXKB();
 #ifdef XCB_USE_XINPUT2_MAEMO
     void initializeXInput2Maemo();
     void finalizeXInput2Maemo();
@@ -539,12 +549,14 @@ private:
 
     uint32_t xfixes_first_event;
     uint32_t xrandr_first_event;
+    uint32_t xkb_first_event;
 
     bool has_glx_extension;
     bool has_shape_extension;
     bool has_randr_extension;
     bool has_input_shape;
     bool has_touch_without_mouse_emulation;
+    bool has_xkb;
 
     Qt::MouseButtons m_buttons;
 

@@ -44,7 +44,7 @@
 
 #include "qxcbobject.h"
 
-#include "xcb/xcb_keysyms.h"
+#include <xkbcommon/xkbcommon.h>
 
 #include <QEvent>
 
@@ -56,37 +56,51 @@ class QXcbKeyboard : public QXcbObject
 {
 public:
     QXcbKeyboard(QXcbConnection *connection);
+
     ~QXcbKeyboard();
 
     void handleKeyPressEvent(QXcbWindowEventListener *eventListener, const xcb_key_press_event_t *event);
     void handleKeyReleaseEvent(QXcbWindowEventListener *eventListener, const xcb_key_release_event_t *event);
 
-    void handleMappingNotifyEvent(const xcb_mapping_notify_event_t *event);
+    void handleMappingNotifyEvent(const xcb_xkb_map_notify_event_t *event);
 
-    Qt::KeyboardModifiers translateModifiers(int s);
+    Qt::KeyboardModifiers translateModifiers(int s) const;
 
-private:
+    void updateKeymap();
+    void updateXKBState(xcb_xkb_state_notify_event_t *state);
+    int coreDeviceId() { return core_device_id; }
+
+protected:
     void handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycode_t code, quint16 state, xcb_timestamp_t time);
 
-    int translateKeySym(uint key) const;
-    QString translateKeySym(xcb_keysym_t keysym, uint xmodifiers,
-                            int &code, Qt::KeyboardModifiers &modifiers,
-                            QByteArray &chars, int &count);
-    void setupModifiers();
-    void setMask(uint sym, uint mask);
-    xcb_keysym_t lookupString(QWindow *window, uint state, xcb_keycode_t code,
-                              QEvent::Type type, QByteArray *chars);
+    QString keysymToUnicode(xcb_keysym_t sym) const;
 
-    uint m_alt_mask;
-    uint m_super_mask;
-    uint m_hyper_mask;
-    uint m_meta_mask;
-    uint m_mode_switch_mask;
-    uint m_num_lock_mask;
-    uint m_caps_lock_mask;
+    int keysymToQtKey(xcb_keysym_t keysym) const;
+    int keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers &modifiers, QString text) const;
 
-    xcb_key_symbols_t *m_key_symbols;
+    void readXKBConfig(struct xkb_rule_names *names);
+    void updateVModMapping();
+    void updateVModToRModMapping();
+
+private:
     xcb_keycode_t m_autorepeat_code;
+
+    struct xkb_context *xkb_context;
+    struct xkb_keymap *xkb_keymap;
+    struct xkb_state *xkb_state;
+
+    struct _mod_masks {
+        uint alt;
+        uint altgr;
+        uint meta;
+    };
+
+    _mod_masks vmod_masks;
+    _mod_masks rmod_masks;
+
+    int core_device_id;
+
+    bool m_config;
 };
 
 QT_END_NAMESPACE

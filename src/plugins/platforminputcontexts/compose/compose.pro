@@ -23,7 +23,6 @@ contains(QT_CONFIG, xkbcommon-qt): {
 } else {
     LIBS += $$QMAKE_LIBS_XKBCOMMON
     QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_XKBCOMMON
-    LIBS += -lxkbcommon
 }
 
 OTHER_FILES += $$PWD/compose.json
