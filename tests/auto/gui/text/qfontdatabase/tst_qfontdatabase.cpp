@@ -44,9 +44,6 @@
 #include <qfontdatabase.h>
 #include <qfontinfo.h>
 #include <qfontmetrics.h>
-#ifndef Q_OS_MAC
-#include <QtPlatformSupport/private/qbasicfontdatabase_p.h>
-#endif
 
 class tst_QFontDatabase : public QObject
 {
@@ -76,10 +73,6 @@ private slots:
 
     void addAppFont_data();
     void addAppFont();
-
-#ifndef Q_OS_MAC
-    void fontName();
-#endif
 };
 
 tst_QFontDatabase::tst_QFontDatabase()
@@ -274,14 +267,6 @@ void tst_QFontDatabase::addAppFont()
 #endif
     QCOMPARE(db.families(), oldFamilies);
 }
-
-#ifndef Q_OS_MAC
-void tst_QFontDatabase::fontName()
-{
-    QString fontName = QBasicFontDatabase::fontNameFromTTFile(QStringLiteral("FreeMono.ttf"));
-    QCOMPARE(fontName, QStringLiteral("FreeMono"));
-}
-#endif
 
 QTEST_MAIN(tst_QFontDatabase)
 #include "tst_qfontdatabase.moc"
