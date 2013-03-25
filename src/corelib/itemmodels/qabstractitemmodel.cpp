@@ -1679,6 +1679,9 @@ bool QAbstractItemModel::hasIndex(int row, int column, const QModelIndex &parent
 
     Use rowCount() on the parent to find out the number of children.
 
+    Note that it is undefined behavior to report that a particular index hasChildren
+    with this method if the same index has the flag Qt::ItemNeverHasChildren set.
+
     \sa parent(), index()
 */
 bool QAbstractItemModel::hasChildren(const QModelIndex &parent) const
