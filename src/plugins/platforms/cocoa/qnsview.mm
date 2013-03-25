@@ -837,6 +837,7 @@ static QTouchDevice *touchDevice = 0;
     ulong nativeModifiers = [nsevent modifierFlags];
     Qt::KeyboardModifiers modifiers = [self convertKeyModifiers: nativeModifiers];
     NSString *charactersIgnoringModifiers = [nsevent charactersIgnoringModifiers];
+    NSString *characters = [nsevent characters];
 
     // [from Qt 4 impl] There is no way to get the scan code from carbon. But we cannot
     // use the value 0, since it indicates that the event originates from somewhere
@@ -849,9 +850,12 @@ static QTouchDevice *touchDevice = 0;
 
     QChar ch;
     int keyCode;
-    if ([charactersIgnoringModifiers length] > 0) {
-        // convert the first character into a key code
-        ch = QChar([charactersIgnoringModifiers characterAtIndex:0]);
+    if ([charactersIgnoringModifiers length] > 0) { // convert the first character into a key code
+        if ((modifiers & Qt::ControlModifier) && ([characters length] != 0)) {
+            ch = QChar([characters characterAtIndex:0]);
+        } else {
+            ch = QChar([charactersIgnoringModifiers characterAtIndex:0]);
+        }
         keyCode = [self convertKeyCode:ch];
     } else {
         // might be a dead key
@@ -867,7 +871,7 @@ static QTouchDevice *touchDevice = 0;
         // ignore text for the U+F700-U+F8FF range. This is used by Cocoa when
         // delivering function keys (e.g. arrow keys, backspace, F1-F35, etc.)
         if ([charactersIgnoringModifiers length] == 1 && (ch.unicode() < 0xf700 || ch.unicode() > 0xf8ff))
-            text = QCFString::toQString([nsevent characters]);
+            text = QCFString::toQString(characters);
 
         if (m_composingText.isEmpty())
             m_sendKeyEvent = !QWindowSystemInterface::tryHandleShortcutEvent(m_window, timestamp, keyCode, modifiers, text);
