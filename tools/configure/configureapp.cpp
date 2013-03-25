@@ -3142,10 +3142,13 @@ void Configure::generateQConfigPri()
         configStream << " qpa";
 
         configStream << endl;
-        configStream << "QT_ARCH = " << dictionary["QT_ARCH"] << endl;
-        configStream << "QT_HOST_ARCH = " << dictionary["QT_HOST_ARCH"] << endl;
-        configStream << "QT_CPU_FEATURES = " << dictionary["QT_CPU_FEATURES"] << endl;
-        configStream << "QT_HOST_CPU_FEATURES = " << dictionary["QT_HOST_CPU_FEATURES"] << endl;
+        configStream << "host_build {" << endl;
+        configStream << "    QT_ARCH = " << dictionary["QT_HOST_ARCH"] << endl;
+        configStream << "    QT_CPU_FEATURES = " << dictionary["QT_HOST_CPU_FEATURES"] << endl;
+        configStream << "} else {" << endl;
+        configStream << "    QT_ARCH = " << dictionary["QT_ARCH"] << endl;
+        configStream << "    QT_CPU_FEATURES = " << dictionary["QT_CPU_FEATURES"] << endl;
+        configStream << "}" << endl;
         if (dictionary.contains("XQMAKESPEC") && !dictionary["XQMAKESPEC"].startsWith("wince")) {
             // FIXME: add detection
             configStream << "QMAKE_DEFAULT_LIBDIRS = /lib /usr/lib" << endl;
