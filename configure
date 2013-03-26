@@ -5278,7 +5278,7 @@ elif [ "$CFG_OPENGL" = "desktop" ]; then
 fi
 
 if [ "$CFG_EGLFS" != "no" ]; then
-    if [ "$CFG_OPENGL" = "es2" ] && [ "$CFG_EVDEV" = "yes" ]; then
+    if [ "$CFG_OPENGL" = "es2" ] && [ "$XPLATFORM_QNX" = "no" ]; then
         CFG_EGLFS="$CFG_EGL"
     else
         CFG_EGLFS="no"
