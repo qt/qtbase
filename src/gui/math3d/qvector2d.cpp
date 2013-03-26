@@ -68,7 +68,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn QVector2D::QVector2D()
 
-    Constructs a null vector, i.e. with coordinates (0, 0, 0).
+    Constructs a null vector, i.e. with coordinates (0, 0).
 */
 
 /*!
