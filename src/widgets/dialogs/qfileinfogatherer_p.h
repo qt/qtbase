@@ -108,7 +108,13 @@ public:
         return QExtendedInformation::System;
     }
 
-    bool isSymLink() const {
+    bool isSymLink(bool ignoreNtfsSymLinks = false) const
+    {
+        if (ignoreNtfsSymLinks) {
+#ifdef Q_OS_WIN
+            return !mFileInfo.suffix().compare(QLatin1String("lnk"), Qt::CaseInsensitive);
+#endif
+        }
         return mFileInfo.isSymLink();
     }
 
