@@ -228,7 +228,7 @@ static const uint qCompilerCpuFeatures = 0
 extern Q_CORE_EXPORT QBasicAtomicInt qt_cpu_features;
 Q_CORE_EXPORT void qDetectCpuFeatures();
 
-inline uint qCpuFeatures()
+static inline uint qCpuFeatures()
 {
     int features = qt_cpu_features.load();
     if (Q_UNLIKELY(features == 0)) {
@@ -239,7 +239,7 @@ inline uint qCpuFeatures()
     return uint(features);
 }
 
-inline uint qCpuHasFeature(CPUFeatures feature)
+static inline uint qCpuHasFeature(CPUFeatures feature)
 {
     return qCompilerCpuFeatures & feature || qCpuFeatures() & feature;
 }
