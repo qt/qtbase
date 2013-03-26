@@ -1522,9 +1522,9 @@ QDir::Filters QFileSystemModel::filter() const
     \property QFileSystemModel::resolveSymlinks
     \brief Whether the directory model should resolve symbolic links
 
-    This is only relevant on operating systems that support symbolic links.
+    This is only relevant on Windows.
 
-    By default, this property is false.
+    By default, this property is true.
 */
 void QFileSystemModel::setResolveSymlinks(bool enable)
 {
