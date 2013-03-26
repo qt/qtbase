@@ -47,9 +47,9 @@ set_property(TARGET Qt5::Core APPEND PROPERTY
 )
 
 !!IF isEmpty(CMAKE_ARCHDATA_DIR_IS_ABSOLUTE)
-list(APPEND Qt5Core_INCLUDE_DIRS \"${_qt5Core_install_prefix}/$$CMAKE_INCLUDE_DIR\" \"${_qt5Core_install_prefix}/$${CMAKE_ARCHDATA_DIR}/mkspecs/$${CMAKE_MKSPEC}\")
+list(APPEND Qt5Core_INCLUDE_DIRS \"${_qt5Core_install_prefix}/$${CMAKE_ARCHDATA_DIR}/mkspecs/$${CMAKE_MKSPEC}\")
 !!ELSE
-list(APPEND Qt5Core_INCLUDE_DIRS \"$$CMAKE_INCLUDE_DIR\" \"$${CMAKE_ARCHDATA_DIR}mkspecs/$${CMAKE_MKSPEC}\")
+list(APPEND Qt5Core_INCLUDE_DIRS \"$${CMAKE_ARCHDATA_DIR}mkspecs/$${CMAKE_MKSPEC}\")
 !!ENDIF
 
 !!IF !isEmpty(CMAKE_ADD_FPIE_FLAGS)
