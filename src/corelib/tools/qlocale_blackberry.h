@@ -73,7 +73,7 @@ public Q_SLOTS:
     void readHourFormat();
 
 private:
-    QByteArray readPpsValue(const char* ppsPath, const char* ppsObject, int* ppsFd);
+    QByteArray readPpsValue(const char* ppsObject, int ppsFd);
     QString getCorrectFormat(const QString &baseFormat, QLocale::FormatType typeFormat);
 
     QByteArray lc_langage;
