@@ -90,6 +90,9 @@
        <property name="accessibleDescription">
         <string>Go back</string>
        </property>
+       <property name="shortcut">
+        <string>Alt+Left</string>
+       </property>
       </widget>
      </item>
      <item>
@@ -103,6 +106,9 @@
        <property name="accessibleDescription">
         <string>Go forward</string>
        </property>
+       <property name="shortcut">
+        <string>Alt+Right</string>
+       </property>
       </widget>
      </item>
      <item>
@@ -115,6 +121,9 @@
        </property>
        <property name="accessibleDescription">
         <string>Go to the parent directory</string>
+       </property>
+       <property name="shortcut">
+        <string>Alt+Up</string>
        </property>
       </widget>
      </item>
