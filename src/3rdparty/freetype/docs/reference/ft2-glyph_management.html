@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>FreeType-2.3.9 API Reference</title>
+<title>FreeType-2.3.12 API Reference</title>
 <style type="text/css">
   body { font-family: Verdana, Geneva, Arial, Helvetica, serif;
          color: #000000;
@@ -35,7 +35,7 @@
 <table align=center><tr><td><font size=-1>[<a href="ft2-index.html">Index</a>]</font></td>
 <td width="100%"></td>
 <td><font size=-1>[<a href="ft2-toc.html">TOC</a>]</font></td></tr></table>
-<center><h1>FreeType-2.3.9 API Reference</h1></center>
+<center><h1>FreeType-2.3.12 API Reference</h1></center>
 
 <center><h1>
 Glyph Management
@@ -54,6 +54,14 @@ Glyph Management
 </td></tr></table><br>
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Glyph">FT_Glyph</a></h4>
+<table align=center width="87%"><tr><td>
+Defined in FT_GLYPH_H (freetype/ftglyph.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_GlyphRec_*  <b>FT_Glyph</b>;
+
+</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>Handle to an object used to model generic glyph images. It is a pointer to the <a href="ft2-glyph_management.html#FT_GlyphRec">FT_GlyphRec</a> structure and can contain a glyph bitmap or pointer.</p>
 </td></tr></table><br>
@@ -112,6 +120,14 @@ Defined in FT_GLYPH_H (freetype/ftglyph.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_BitmapGlyph">FT_BitmapGlyph</a></h4>
 <table align=center width="87%"><tr><td>
+Defined in FT_GLYPH_H (freetype/ftglyph.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_BitmapGlyphRec_*  <b>FT_BitmapGlyph</b>;
+
+</pre></table><br>
+<table align=center width="87%"><tr><td>
 <p>A handle to an object used to model a bitmap glyph image. This is a sub-class of <a href="ft2-glyph_management.html#FT_Glyph">FT_Glyph</a>, and a pointer to <a href="ft2-glyph_management.html#FT_BitmapGlyphRec">FT_BitmapGlyphRec</a>.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -169,6 +185,14 @@ Defined in FT_GLYPH_H (freetype/ftglyph.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_OutlineGlyph">FT_OutlineGlyph</a></h4>
+<table align=center width="87%"><tr><td>
+Defined in FT_GLYPH_H (freetype/ftglyph.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_OutlineGlyphRec_*  <b>FT_OutlineGlyph</b>;
+
+</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>A handle to an object used to model an outline glyph image. This is a sub-class of <a href="ft2-glyph_management.html#FT_Glyph">FT_Glyph</a>, and a pointer to <a href="ft2-glyph_management.html#FT_OutlineGlyphRec">FT_OutlineGlyphRec</a>.</p>
 </td></tr></table><br>
@@ -558,7 +582,7 @@ Defined in FT_GLYPH_H (freetype/ftglyph.h).
   // convert to a bitmap (default render mode + destroying old)  
   if ( glyph-&gt;format != FT_GLYPH_FORMAT_BITMAP )                 
   {                                                              
-    error = FT_Glyph_To_Bitmap( &amp;glyph, FT_RENDER_MODE_DEFAULT,  
+    error = FT_Glyph_To_Bitmap( &amp;glyph, FT_RENDER_MODE_NORMAL,   
                                 0, 1 );                          
     if ( error ) // `glyph' unchanged                            
       ...                                                        

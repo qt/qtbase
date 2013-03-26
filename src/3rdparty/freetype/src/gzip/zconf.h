@@ -3,12 +3,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-/* @(#) $Id: zconf.h,v 1.4 2007/06/01 06:56:17 wl Exp $ */
-
-#if defined(__ARMCC__) || defined(__CC_ARM)
-/* Ultra ugly hack that convinces RVCT to use the systems zlib */
-#include <stdapis/zconf.h>
-#else /* defined(__ARMCC__) || defined(__CC_ARM) */
+/* @(#) $Id$ */
 
 #ifndef _ZCONF_H
 #define _ZCONF_H
@@ -64,6 +59,12 @@
 #if defined(__MSDOS__) && !defined(MSDOS)
 #  define MSDOS
 #endif
+
+/* WinCE doesn't have errno.h */
+#ifdef _WIN32_WCE
+#  define NO_ERRNO_H
+#endif
+
 
 /*
  * Compile with -DMAXSEG_64K if the alloc function cannot allocate more
@@ -281,5 +282,3 @@ typedef uLong FAR uLongf;
 #endif
 
 #endif /* _ZCONF_H */
-
-#endif /* defined(__ARMCC__) || defined(__CC_ARM) */

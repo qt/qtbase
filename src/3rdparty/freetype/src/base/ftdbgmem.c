@@ -421,7 +421,7 @@
           "FreeType: %ld bytes of memory leaked in %ld blocks\n",
           leaks, leak_count );
 
-      printf( "FreeType: No memory leaks detected!\n" );
+      printf( "FreeType: no memory leaks detected\n" );
     }
   }
 
@@ -989,7 +989,7 @@
 #else  /* !FT_DEBUG_MEMORY */
 
   /* ANSI C doesn't like empty source files */
-  static const FT_Byte  _debug_mem_dummy = 0;
+  typedef int  _debug_mem_dummy;
 
 #endif /* !FT_DEBUG_MEMORY */
 

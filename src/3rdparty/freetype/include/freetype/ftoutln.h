@@ -5,7 +5,7 @@
 /*    Support for the FT_Outline type used to store glyph shapes of        */
 /*    most scalable font formats (specification).                          */
 /*                                                                         */
-/*  Copyright 1996-2001, 2002, 2003, 2005, 2006, 2007, 2008, 2009 by       */
+/*  Copyright 1996-2001, 2002, 2003, 2005, 2006, 2007, 2008, 2009, 2010 by */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -85,9 +85,8 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Description>                                                         */
   /*    Walk over an outline's structure to decompose it into individual   */
-  /*    segments and Bezier arcs.  This function is also able to emit      */
-  /*    `move to' and `close to' operations to indicate the start and end  */
-  /*    of new contours in the outline.                                    */
+  /*    segments and Bézier arcs.  This function also emits `move to'      */
+  /*    operations to indicate the start of new contours in the outline.   */
   /*                                                                       */
   /* <Input>                                                               */
   /*    outline        :: A pointer to the source target.                  */
@@ -212,10 +211,10 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Description>                                                         */
   /*    Return an outline's `control box'.  The control box encloses all   */
-  /*    the outline's points, including Bezier control points.  Though it  */
+  /*    the outline's points, including Bézier control points.  Though it  */
   /*    coincides with the exact bounding box for most glyphs, it can be   */
   /*    slightly larger in some situations (like when rotating an outline  */
-  /*    which contains Bezier outside arcs).                               */
+  /*    which contains Bézier outside arcs).                               */
   /*                                                                       */
   /*    Computing the control box is very fast, while getting the bounding */
   /*    box can take much more time as it needs to walk over all segments  */
