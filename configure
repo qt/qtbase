@@ -885,6 +885,7 @@ CFG_KMS=auto
 CFG_LIBUDEV=auto
 CFG_OBSOLETE_WAYLAND=no
 CFG_EVDEV=auto
+CFG_TSLIB=no
 CFG_NIS=auto
 CFG_CUPS=auto
 CFG_ICONV=auto
@@ -1863,6 +1864,13 @@ while [ "$#" -gt 0 ]; do
     evdev)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_EVDEV="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    tslib)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_TSLIB="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -5069,6 +5077,18 @@ if [ "$CFG_EVDEV" != "no" ]; then
 fi
 if [ "$CFG_EVDEV" = "no" ]; then
     QMakeVar add DEFINES QT_NO_EVDEV
+fi
+
+if [ "$CFG_TSLIB" != "no" ]; then
+    if compileTest unix/tslib "tslib"; then
+        CFG_TSLIB=yes
+        QT_CONFIG="$QT_CONFIG tslib"
+    elif [ "$CFG_TSLIB" = "yes" ]; then
+        echo "The tslib functionality test failed!"
+        exit 1
+    else
+        CFG_TSLIB=no
+    fi
 fi
 
 # Check we actually have X11 :-)
