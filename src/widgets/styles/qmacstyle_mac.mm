@@ -6531,6 +6531,10 @@ QMacCGContext::QMacCGContext(QPainter *p)
         context = CGBitmapContextCreate((void *) image->bits(), image->width(), image->height(),
                                         8, image->bytesPerLine(), colorspace, flags);
 
+        // Invert y axis.
+        CGContextTranslateCTM(context, 0, image->height());
+        CGContextScaleCTM(context, 1, -1);
+
         const qreal devicePixelRatio = image->devicePixelRatio();
 
         if (devType == QInternal::Widget) {
@@ -6555,10 +6559,6 @@ QMacCGContext::QMacCGContext(QPainter *p)
             CGContextScaleCTM(context, devicePixelRatio, devicePixelRatio);
             CGContextTranslateCTM(context, native.dx() / devicePixelRatio, native.dy() / devicePixelRatio);
         } else {
-            // Invert y axis.
-            CGContextTranslateCTM(context, 0, image->height());
-            CGContextScaleCTM(context, 1, -1);
-
             // Scale to paint in device-independent pixels.
             CGContextScaleCTM(context, devicePixelRatio, devicePixelRatio);
         }
