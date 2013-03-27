@@ -26,6 +26,14 @@ if (NO_DBUS)
   list(APPEND BUILD_OPTIONS_LIST "-DNO_DBUS=True")
 endif()
 
+foreach(module ${CMAKE_MODULES_UNDER_TEST})
+    list(APPEND BUILD_OPTIONS_LIST
+        "-DCMAKE_${module}_MODULE_MAJOR_VERSION=${CMAKE_${module}_MODULE_MAJOR_VERSION}"
+        "-DCMAKE_${module}_MODULE_MINOR_VERSION=${CMAKE_${module}_MODULE_MINOR_VERSION}"
+        "-DCMAKE_${module}_MODULE_PATCH_VERSION=${CMAKE_${module}_MODULE_PATCH_VERSION}"
+    )
+endforeach()
+
 macro(expect_pass _dir)
   string(REPLACE "(" "_" testname "${_dir}")
   string(REPLACE ")" "_" testname "${testname}")
@@ -95,11 +103,30 @@ function(test_module_includes)
   while(all_args)
     list(GET all_args 0 qtmodule)
     list(REMOVE_AT all_args 0 1)
+
+    set(CMAKE_MODULE_VERSION ${CMAKE_${qtmodule}_MODULE_MAJOR_VERSION}.${CMAKE_${qtmodule}_MODULE_MINOR_VERSION}.${CMAKE_${qtmodule}_MODULE_PATCH_VERSION} )
+
     set(packages_string
       "${packages_string}
       find_package(Qt5${qtmodule} 5.0.0 REQUIRED)
       include_directories(\${Qt5${qtmodule}_INCLUDE_DIRS})
-      add_definitions(\${Qt5${qtmodule}_DEFINITIONS})\n"
+      add_definitions(\${Qt5${qtmodule}_DEFINITIONS})
+
+      if(NOT \"\${Qt5${qtmodule}_VERSION}\" VERSION_EQUAL ${CMAKE_MODULE_VERSION})
+        message(SEND_ERROR \"Qt5${qtmodule}_VERSION variable was not ${CMAKE_MODULE_VERSION}. Got \${Qt5${qtmodule}_VERSION} instead.\")
+      endif()
+      if(NOT \"\${Qt5${qtmodule}_VERSION_MAJOR}\" VERSION_EQUAL ${CMAKE_${qtmodule}_MODULE_MAJOR_VERSION})
+        message(SEND_ERROR \"Qt5${qtmodule}_VERSION_MAJOR variable was not ${CMAKE_${qtmodule}_MODULE_MAJOR_VERSION}. Got \${Qt5${qtmodule}_VERSION_MAJOR} instead.\")
+      endif()
+      if(NOT \"\${Qt5${qtmodule}_VERSION_MINOR}\" VERSION_EQUAL ${CMAKE_${qtmodule}_MODULE_MINOR_VERSION})
+        message(SEND_ERROR \"Qt5${qtmodule}_VERSION_MINOR variable was not ${CMAKE_${qtmodule}_MODULE_MINOR_VERSION}. Got \${Qt5${qtmodule}_VERSION_MINOR} instead.\")
+      endif()
+      if(NOT \"\${Qt5${qtmodule}_VERSION_PATCH}\" VERSION_EQUAL ${CMAKE_${qtmodule}_MODULE_PATCH_VERSION})
+        message(SEND_ERROR \"Qt5${qtmodule}_VERSION_PATCH variable was not ${CMAKE_${qtmodule}_MODULE_PATCH_VERSION}. Got \${Qt5${qtmodule}_VERSION_PATCH} instead.\")
+      endif()
+      if(NOT \"\${Qt5${qtmodule}_VERSION_STRING}\" VERSION_EQUAL ${CMAKE_MODULE_VERSION})
+        message(SEND_ERROR \"Qt5${qtmodule}_VERSION_STRING variable was not ${CMAKE_MODULE_VERSION}. Got \${Qt5${qtmodule}_VERSION_STRING} instead.\")
+      endif()\n"
     )
     set(libraries_string "${libraries_string} Qt5::${qtmodule}")
   endwhile()

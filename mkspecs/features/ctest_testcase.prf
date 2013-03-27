@@ -56,9 +56,27 @@ isEmpty(CMAKE_VERSION) {
             SET = set
             equals(QMAKE_DIR_SEP, "/"):SET = export
 
+            CMAKE_MODULE_VERSIONS =
+            CMAKE_MODULES_UNDER_TEST =
+            for (MODULE_UNDER_TEST, CMAKE_QT_MODULES_UNDER_TEST) {
+                CMAKE_NAME = $$cmakeModuleName($$MODULE_UNDER_TEST)
+                CMAKE_MODULE_VERSIONS += \
+                    -DCMAKE_$${CMAKE_NAME}_MODULE_MAJOR_VERSION=$$eval(QT.$${MODULE_UNDER_TEST}.MAJOR_VERSION) \
+                    -DCMAKE_$${CMAKE_NAME}_MODULE_MINOR_VERSION=$$eval(QT.$${MODULE_UNDER_TEST}.MINOR_VERSION) \
+                    -DCMAKE_$${CMAKE_NAME}_MODULE_PATCH_VERSION=$$eval(QT.$${MODULE_UNDER_TEST}.PATCH_VERSION)
+                CMAKE_MODULES_UNDER_TEST += $$CMAKE_NAME
+            }
+            CMAKE_MODULES_UNDER_TEST = $$join(CMAKE_MODULES_UNDER_TEST, ;)
+
             check.commands = \
                 $(MKDIR) $$BUILD_DIR && cd $$BUILD_DIR && $$SET VERBOSE=1 && \
-                cmake $$_PRO_FILE_PWD_ $$CMAKE_GENERATOR $$CMAKE_MODULE_DEFINES -DCMAKE_BUILD_TYPE=$${CMAKE_BUILD_TYPE} -DCMAKE_PREFIX_PATH=$$CMAKE_PREFIX_PATH -DQt5_MODULE_TEST_DEPENDS=\"$${dependentmodules}\" && \
+                cmake $$_PRO_FILE_PWD_ $$CMAKE_GENERATOR \
+                    $$CMAKE_MODULE_DEFINES \
+                    -DCMAKE_BUILD_TYPE=$${CMAKE_BUILD_TYPE} \
+                    -DCMAKE_PREFIX_PATH=$$CMAKE_PREFIX_PATH \
+                    -DQt5_MODULE_TEST_DEPENDS=\"$${dependentmodules}\" \
+                    $${CMAKE_MODULE_VERSIONS} \
+                    -DCMAKE_MODULES_UNDER_TEST=\"$$CMAKE_MODULES_UNDER_TEST\" && \
                 $(TESTRUNNER) ctest --output-on-failure
 
         }
