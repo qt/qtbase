@@ -365,7 +365,7 @@ void tst_QItemDelegate::editorKeyPress()
     view.setCurrentIndex(index); // the editor will only selectAll on the current index
     view.edit(index);
 
-    QList<QLineEdit*> lineEditors = qFindChildren<QLineEdit *>(view.viewport());
+    QList<QLineEdit*> lineEditors = view.viewport()->findChildren<QLineEdit *>();
     QCOMPARE(lineEditors.count(), 1);
 
     QLineEdit *editor = lineEditors.at(0);
@@ -394,7 +394,7 @@ void tst_QItemDelegate::doubleEditorNegativeInput()
     view.setCurrentIndex(index); // the editor will only selectAll on the current index
     view.edit(index);
 
-    QList<QDoubleSpinBox*> editors = qFindChildren<QDoubleSpinBox *>(view.viewport());
+    QList<QDoubleSpinBox*> editors = view.viewport()->findChildren<QDoubleSpinBox *>();
     QCOMPARE(editors.count(), 1);
 
     QDoubleSpinBox *editor = editors.at(0);
@@ -776,7 +776,7 @@ void tst_QItemDelegate::dateTimeEditor()
 
     QTestEventLoop::instance().enterLoop(1);
 
-    QTimeEdit *timeEditor = qFindChild<QTimeEdit *>(widget.viewport());
+    QTimeEdit *timeEditor = widget.viewport()->findChild<QTimeEdit *>();
     QVERIFY(timeEditor);
     QCOMPARE(timeEditor->time(), time);
     // The data must actually be different in order for the model
@@ -790,7 +790,7 @@ void tst_QItemDelegate::dateTimeEditor()
 
     QTestEventLoop::instance().enterLoop(1);
 
-    QDateEdit *dateEditor = qFindChild<QDateEdit *>(widget.viewport());
+    QDateEdit *dateEditor = widget.viewport()->findChild<QDateEdit *>();
     QVERIFY(dateEditor);
     QCOMPARE(dateEditor->date(), date);
     dateEditor->setDate(date.addDays(60));
@@ -1312,7 +1312,7 @@ void tst_QItemDelegate::enterKey()
     view.edit(index);
     QTest::qWait(30);
 
-    QList<QWidget*> lineEditors = qFindChildren<QWidget *>(view.viewport(), QString::fromLatin1("TheEditor"));
+    QList<QWidget*> lineEditors = view.viewport()->findChildren<QWidget *>(QString::fromLatin1("TheEditor"));
     QCOMPARE(lineEditors.count(), 1);
 
     QPointer<QWidget> editor = lineEditors.at(0);
@@ -1344,7 +1344,7 @@ void tst_QItemDelegate::task257859_finalizeEdit()
     view.edit(index);
     QTest::qWait(30);
 
-    QList<QLineEdit *> lineEditors = qFindChildren<QLineEdit *>(view.viewport());
+    QList<QLineEdit *> lineEditors = view.viewport()->findChildren<QLineEdit *>();
     QCOMPARE(lineEditors.count(), 1);
 
     QPointer<QWidget> editor = lineEditors.at(0);
@@ -1397,7 +1397,7 @@ void tst_QItemDelegate::comboBox()
 
     QTestEventLoop::instance().enterLoop(1);
 
-    QComboBox *boolEditor = qFindChild<QComboBox*>(widget.viewport());
+    QComboBox *boolEditor = widget.viewport()->findChild<QComboBox*>();
     QVERIFY(boolEditor);
     QCOMPARE(boolEditor->currentIndex(), 1); // True is selected initially.
     // The data must actually be different in order for the model

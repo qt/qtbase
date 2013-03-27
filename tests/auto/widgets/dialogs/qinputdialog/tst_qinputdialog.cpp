@@ -153,13 +153,13 @@ void testInvalidateAndRestore(
 template <typename SpinBoxType, typename ValueType>
 void testGetNumeric(QInputDialog *dialog, SpinBoxType * = 0, ValueType * = 0)
 {
-    SpinBoxType *sbox = qFindChild<SpinBoxType *>(dialog);
+    SpinBoxType *sbox = dialog->findChild<SpinBoxType *>();
     QVERIFY(sbox != 0);
 
-    QLineEdit *ledit = qFindChild<QLineEdit *>(static_cast<QObject *>(sbox));
+    QLineEdit *ledit = static_cast<QObject *>(sbox)->findChild<QLineEdit *>();
     QVERIFY(ledit != 0);
 
-    QDialogButtonBox *bbox = qFindChild<QDialogButtonBox *>(dialog);
+    QDialogButtonBox *bbox = dialog->findChild<QDialogButtonBox *>();
     QVERIFY(bbox != 0);
     QPushButton *okButton = bbox->button(QDialogButtonBox::Ok);
     QVERIFY(okButton != 0);
@@ -189,10 +189,10 @@ void testGetNumeric(QInputDialog *dialog, SpinBoxType * = 0, ValueType * = 0)
 
 void testGetText(QInputDialog *dialog)
 {
-    QLineEdit *ledit = qFindChild<QLineEdit *>(dialog);
+    QLineEdit *ledit = dialog->findChild<QLineEdit *>();
     QVERIFY(ledit);
 
-    QDialogButtonBox *bbox = qFindChild<QDialogButtonBox *>(dialog);
+    QDialogButtonBox *bbox = dialog->findChild<QDialogButtonBox *>();
     QVERIFY(bbox);
     QPushButton *okButton = bbox->button(QDialogButtonBox::Ok);
     QVERIFY(okButton);
@@ -207,10 +207,10 @@ void testGetText(QInputDialog *dialog)
 
 void testGetItem(QInputDialog *dialog)
 {
-    QComboBox *cbox = qFindChild<QComboBox *>(dialog);
+    QComboBox *cbox = dialog->findChild<QComboBox *>();
     QVERIFY(cbox);
 
-    QDialogButtonBox *bbox = qFindChild<QDialogButtonBox *>(dialog);
+    QDialogButtonBox *bbox = dialog->findChild<QDialogButtonBox *>();
     QVERIFY(bbox);
     QPushButton *okButton = bbox->button(QDialogButtonBox::Ok);
     QVERIFY(okButton);
@@ -245,7 +245,7 @@ void tst_QInputDialog::testFuncGetItem(QInputDialog *dialog)
 void tst_QInputDialog::timerEvent(QTimerEvent *event)
 {
     killTimer(event->timerId());
-    QInputDialog *dialog = qFindChild<QInputDialog *>(parent);
+    QInputDialog *dialog = parent->findChild<QInputDialog *>();
     QVERIFY(dialog);
     if (testFunc)
         testFunc(dialog);

@@ -6130,7 +6130,7 @@ static void workaroundPaletteIssue(QWidget *widget)
     if (!widget)
         return;
 
-    QWidget *navigationBar = qFindChild<QWidget *>(widget, QLatin1String("qt_calendar_navigationbar"));
+    QWidget *navigationBar = widget->findChild<QWidget *>(QLatin1String("qt_calendar_navigationbar"));
     QVERIFY(navigationBar);
 
     QPalette palette = navigationBar->palette();
@@ -6229,7 +6229,7 @@ void tst_QWidget::renderInvisible()
     }
 
     // Get navigation bar and explicitly hide it.
-    QWidget *navigationBar = qFindChild<QWidget *>(calendar.data(), QLatin1String("qt_calendar_navigationbar"));
+    QWidget *navigationBar = calendar.data()->findChild<QWidget *>(QLatin1String("qt_calendar_navigationbar"));
     QVERIFY(navigationBar);
     navigationBar->hide();
 
@@ -6252,7 +6252,7 @@ void tst_QWidget::renderInvisible()
     }
 
     // Get next month button.
-    QWidget *nextMonthButton = qFindChild<QWidget *>(navigationBar, QLatin1String("qt_calendar_nextmonth"));
+    QWidget *nextMonthButton = navigationBar->findChild<QWidget *>(QLatin1String("qt_calendar_nextmonth"));
     QVERIFY(nextMonthButton);
 
     { // Render next month button.

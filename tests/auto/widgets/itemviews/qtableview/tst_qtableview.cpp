@@ -3727,7 +3727,7 @@ void tst_QTableView::addColumnWhileEditing()
     //let's see if the editor is moved to the right location
     //after adding a column
     model.setColumnCount(model.columnCount() + 1);
-    QPointer<QLineEdit> editor = qFindChild<QLineEdit*>(&view);
+    QPointer<QLineEdit> editor = view.findChild<QLineEdit*>();
     QVERIFY(editor);
     QCOMPARE(editor->geometry(), view.visualRect(last));
 

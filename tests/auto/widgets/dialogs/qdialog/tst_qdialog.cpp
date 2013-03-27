@@ -247,7 +247,7 @@ void tst_QDialog::showMaximized()
     QDialog dialog(0);
     dialog.setSizeGripEnabled(true);
 #ifndef QT_NO_SIZEGRIP
-    QSizeGrip *sizeGrip = qFindChild<QSizeGrip *>(&dialog);
+    QSizeGrip *sizeGrip = dialog.findChild<QSizeGrip *>();
     QVERIFY(sizeGrip);
 #endif
 
@@ -324,7 +324,7 @@ void tst_QDialog::showFullScreen()
     QDialog dialog(0, Qt::X11BypassWindowManagerHint);
     dialog.setSizeGripEnabled(true);
 #ifndef QT_NO_SIZEGRIP
-    QSizeGrip *sizeGrip = qFindChild<QSizeGrip *>(&dialog);
+    QSizeGrip *sizeGrip = dialog.findChild<QSizeGrip *>();
     QVERIFY(sizeGrip);
 #endif
 
@@ -438,7 +438,7 @@ void tst_QDialog::showSizeGrip()
     QVERIFY(!dialog.isSizeGripEnabled());
 
     dialog.setSizeGripEnabled(true);
-    QPointer<QSizeGrip> sizeGrip = qFindChild<QSizeGrip *>(&dialog);
+    QPointer<QSizeGrip> sizeGrip = dialog.findChild<QSizeGrip *>();
     QVERIFY(sizeGrip);
     QVERIFY(sizeGrip->isVisible());
     QVERIFY(dialog.isSizeGripEnabled());
@@ -456,7 +456,7 @@ void tst_QDialog::showSizeGrip()
     dialog.showExtension(false);
     QVERIFY(dialog.extension() && !dialog.extension()->isVisible());
     QVERIFY(dialog.isSizeGripEnabled());
-    sizeGrip = qFindChild<QSizeGrip *>(&dialog);
+    sizeGrip = dialog.findChild<QSizeGrip *>();
     QVERIFY(sizeGrip);
     QVERIFY(sizeGrip->isVisible());
 
@@ -474,7 +474,7 @@ void tst_QDialog::showSizeGrip()
     QVERIFY(!dialog.isSizeGripEnabled());
 
     dialog.setSizeGripEnabled(true);
-    sizeGrip = qFindChild<QSizeGrip *>(&dialog);
+    sizeGrip = dialog.findChild<QSizeGrip *>();
     QVERIFY(sizeGrip);
     QVERIFY(sizeGrip->isVisible());
     sizeGrip->hide();

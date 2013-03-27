@@ -2064,10 +2064,10 @@ void tst_QComboBox::task190351_layout()
     QApplication::processEvents();
 
 #ifdef QT_BUILD_INTERNAL
-    QFrame *container = qFindChild<QComboBoxPrivateContainer *>(&listCombo);
+    QFrame *container = listCombo.findChild<QComboBoxPrivateContainer *>();
     QVERIFY(container);
-    QCOMPARE(static_cast<QAbstractItemView *>(list), qFindChild<QAbstractItemView *>(container));
-    QWidget *top = qFindChild<QComboBoxPrivateScroller *>(container);
+    QCOMPARE(static_cast<QAbstractItemView *>(list), container->findChild<QAbstractItemView *>());
+    QWidget *top = container->findChild<QComboBoxPrivateScroller *>();
     QVERIFY(top);
     QVERIFY(top->isVisible());
     QCOMPARE(top->mapToGlobal(QPoint(0, top->height())).y(), list->mapToGlobal(QPoint()).y());
@@ -2138,10 +2138,10 @@ void tst_QComboBox::task191329_size()
     QTRY_VERIFY(tableCombo.view()->isVisible());
 
 #ifdef QT_BUILD_INTERNAL
-    QFrame *container = qFindChild<QComboBoxPrivateContainer *>(&tableCombo);
+    QFrame *container = tableCombo.findChild<QComboBoxPrivateContainer *>();
     QVERIFY(container);
-    QCOMPARE(static_cast<QAbstractItemView *>(table), qFindChild<QAbstractItemView *>(container));
-    foreach (QWidget *button, qFindChildren<QComboBoxPrivateScroller *>(container)) {
+    QCOMPARE(static_cast<QAbstractItemView *>(table), container->findChild<QAbstractItemView *>());
+    foreach (QWidget *button, container->findChildren<QComboBoxPrivateScroller *>()) {
         //the popup should be large enough to contains everithing so the top and left button are hidden
         QVERIFY(!button->isVisible());
     }
@@ -2201,7 +2201,7 @@ void tst_QComboBox::task248169_popupWithMinimalSize()
     QTRY_VERIFY(comboBox.view()->isVisible());
 
 #ifdef QT_BUILD_INTERNAL
-    QFrame *container = qFindChild<QComboBoxPrivateContainer *>(&comboBox);
+    QFrame *container = comboBox.findChild<QComboBoxPrivateContainer *>();
     QVERIFY(container);
     QTRY_VERIFY(desktop.screenGeometry(container).contains(container->geometry()));
 #endif

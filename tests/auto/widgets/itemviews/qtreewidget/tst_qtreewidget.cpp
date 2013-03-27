@@ -467,7 +467,7 @@ void tst_QTreeWidget::editItem()
             tree.editItem(item, col);
             QApplication::instance()->processEvents();
             QApplication::instance()->processEvents();
-            QLineEdit *editor = qFindChild<QLineEdit*>(&tree);
+            QLineEdit *editor = tree.findChild<QLineEdit*>();
             if (editor) {
                 QVERIFY(item->flags() & Qt::ItemIsEditable);
                 QCOMPARE(editor->selectedText(), editor->text());
@@ -2079,7 +2079,7 @@ void tst_QTreeWidget::itemWidget()
                     // ### should you really be able to open a persistent
                     //     editor for an item that isn't editable??
                     tree.openPersistentEditor(item, col);
-                    QWidget *editor = qFindChild<QLineEdit*>(&tree);
+                    QWidget *editor = tree.findChild<QLineEdit*>();
                     QVERIFY(editor != 0);
                     tree.closePersistentEditor(item, col);
                 }

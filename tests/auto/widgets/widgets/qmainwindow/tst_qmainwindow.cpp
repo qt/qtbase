@@ -731,7 +731,7 @@ void tst_QMainWindow::statusBar()
         // deleting the status bar should remove it from the main window
         QMainWindow mw;
         QStatusBar *sb = mw.statusBar();
-        QMainWindowLayout *l = qFindChild<QMainWindowLayout *>(&mw);
+        QMainWindowLayout *l = mw.findChild<QMainWindowLayout *>();
         QVERIFY(l);
         int indexOfSb = l->indexOf(sb);
         QVERIFY(indexOfSb != -1);
@@ -1425,7 +1425,7 @@ void AddDockWidget::apply(QMainWindow *mw) const
 
     QDockWidget *other = 0;
     if (mode == SplitMode || mode == TabMode) {
-        other = qFindChild<QDockWidget*>(mw, this->other);
+        other = mw->findChild<QDockWidget*>(this->other);
         QVERIFY(other != 0);
     }
 
@@ -1463,14 +1463,14 @@ Q_DECLARE_METATYPE(MoveList)
 
 void MoveSeparator::apply(QMainWindow *mw) const
 {
-    QMainWindowLayout *l = qFindChild<QMainWindowLayout *>(mw);
+    QMainWindowLayout *l = mw->findChild<QMainWindowLayout *>();
     QVERIFY(l);
 
     QList<int> path;
     if (name.isEmpty()) {
         path << area;
     } else {
-        QDockWidget *dw = qFindChild<QDockWidget*>(mw, name);
+        QDockWidget *dw = mw->findChild<QDockWidget*>(name);
         QVERIFY(dw != 0);
         path = l->layoutState.dockAreaLayout.indexOf(dw);
     }
@@ -1488,7 +1488,7 @@ void MoveSeparator::apply(QMainWindow *mw) const
 QMap<QString, QRect> dockWidgetGeometries(QMainWindow *mw)
 {
     QMap<QString, QRect> result;
-    QList<QDockWidget*> dockWidgets = qFindChildren<QDockWidget*>(mw);
+    QList<QDockWidget*> dockWidgets = mw->findChildren<QDockWidget*>();
     foreach (QDockWidget *dw, dockWidgets)
         result.insert(dw->objectName(), dw->geometry());
     return result;

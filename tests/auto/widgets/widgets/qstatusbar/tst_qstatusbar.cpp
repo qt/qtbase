@@ -175,7 +175,7 @@ void tst_QStatusBar::setSizeGripEnabled()
     QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
 
     QTRY_VERIFY(statusBar->isVisible());
-    QPointer<QSizeGrip> sizeGrip = qFindChild<QSizeGrip *>(statusBar);
+    QPointer<QSizeGrip> sizeGrip = statusBar->findChild<QSizeGrip *>();
     QVERIFY(sizeGrip);
     QVERIFY(sizeGrip->isVisible());
 
@@ -211,7 +211,7 @@ void tst_QStatusBar::setSizeGripEnabled()
     statusBar = mainWindow.statusBar();
     QVERIFY(statusBar);
 
-    sizeGrip = qFindChild<QSizeGrip *>(statusBar);
+    sizeGrip = statusBar->findChild<QSizeGrip *>();
     QVERIFY(sizeGrip);
     QVERIFY(!sizeGrip->isVisible());
 

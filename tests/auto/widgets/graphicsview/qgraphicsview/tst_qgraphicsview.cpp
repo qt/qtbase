@@ -845,7 +845,7 @@ void tst_QGraphicsView::dragMode_rubberBand()
         QCOMPARE(view.verticalScrollBar()->value(), verticalScrollBarValue);
 
         // We don't use QRubberBand as of 4.3; the band is drawn internally.
-        QVERIFY(!qFindChild<QRubberBand *>(&view));
+        QVERIFY(!view.findChild<QRubberBand *>());
 
         QTest::qWait(25);
 

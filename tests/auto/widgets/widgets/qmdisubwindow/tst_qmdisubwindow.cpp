@@ -598,7 +598,7 @@ void tst_QMdiSubWindow::showShaded()
     QWidget *mouseReceiver = 0;
 #ifdef Q_OS_MAC
     if (window->style()->inherits("QMacStyle"))
-        mouseReceiver = qFindChild<QSizeGrip *>(window);
+        mouseReceiver = window->findChild<QSizeGrip *>();
     else
 #endif
         mouseReceiver = window;
@@ -707,7 +707,7 @@ void tst_QMdiSubWindow::setOpaqueResizeAndMove()
 
     QWidget *mouseReceiver = 0;
     if (window->style()->inherits("QMacStyle"))
-        mouseReceiver = qFindChild<QSizeGrip *>(window);
+        mouseReceiver = window->findChild<QSizeGrip *>();
     else
         mouseReceiver = window;
     QVERIFY(mouseReceiver);
@@ -1447,12 +1447,12 @@ void tst_QMdiSubWindow::defaultSizeGrip()
     // QSizeGrip on windows with decoration.
     QMdiSubWindow *windowWithDecoration = mdiArea.addSubWindow(new QWidget);
     windowWithDecoration->show();
-    QVERIFY(qFindChild<QSizeGrip *>(windowWithDecoration));
+    QVERIFY(windowWithDecoration->findChild<QSizeGrip *>());
 
     // ...but not on windows without decoration (Qt::FramelessWindowHint).
     QMdiSubWindow *windowWithoutDecoration = mdiArea.addSubWindow(new QWidget, Qt::FramelessWindowHint);
     windowWithoutDecoration->show();
-    QVERIFY(!qFindChild<QSizeGrip *>(windowWithoutDecoration));
+    QVERIFY(!windowWithoutDecoration->findChild<QSizeGrip *>());
 }
 #endif
 
