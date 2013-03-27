@@ -70,7 +70,8 @@ enum Platforms {
     WINDOWS,
     WINDOWS_CE,
     QNX,
-    BLACKBERRY
+    BLACKBERRY,
+    ANDROID
 };
 
 std::ostream &operator<<(std::ostream &s, const QString &val) {
@@ -1250,6 +1251,41 @@ void Configure::parseCmdLine()
             dictionary["QT_INSTALL_SETTINGS"] = configCmdLine.at(i);
         }
 
+        else if (configCmdLine.at(i) == "-android-ndk") {
+            ++i;
+            if (i == argCount)
+                break;
+            dictionary[ "ANDROID_NDK_ROOT" ] = configCmdLine.at(i);
+        }
+
+        else if (configCmdLine.at(i) == "-android-sdk") {
+            ++i;
+            if (i == argCount)
+                break;
+            dictionary[ "ANDROID_SDK_ROOT" ] = configCmdLine.at(i);
+        }
+
+        else if (configCmdLine.at(i) == "-android-ndk-platform") {
+            ++i;
+            if (i == argCount)
+                break;
+            dictionary[ "ANDROID_PLATFORM" ] = configCmdLine.at(i);
+        }
+
+        else if (configCmdLine.at(i) == "-android-arch") {
+            ++i;
+            if (i == argCount)
+                break;
+            dictionary[ "ANDROID_TARGET_ARCH" ] = configCmdLine.at(i);
+        }
+
+        else if (configCmdLine.at(i) == "-android-toolchain-version") {
+            ++i;
+            if (i == argCount)
+                break;
+            dictionary[ "ANDROID_NDK_TOOLCHAIN_VERSION" ] = configCmdLine.at(i);
+        }
+
         else {
             dictionary[ "HELP" ] = "yes";
             cout << "Unknown option " << configCmdLine.at(i) << endl;
@@ -1603,6 +1639,14 @@ void Configure::applySpecSpecifics()
     } else if ((platform() == QNX) || (platform() == BLACKBERRY)) {
         dictionary["STACK_PROTECTOR_STRONG"] = "auto";
         dictionary["SLOG2"]                 = "auto";
+    } else if (platform() == ANDROID) {
+        dictionary[ "REDUCE_EXPORTS" ]      = "yes";
+        dictionary[ "BUILD" ]               = "release";
+        dictionary[ "BUILDALL" ]            = "no";
+        dictionary[ "LARGE_FILE" ]          = "no";
+        dictionary[ "ANGLE" ]               = "no";
+        dictionary[ "REDUCE_RELOCATIONS" ]  = "yes";
+        dictionary[ "QT_GETIFADDRS" ]       = "no";
     }
 }
 
@@ -2940,7 +2984,13 @@ void Configure::detectArch()
         Environment::execute(command);
 
         // find the executable that was generated
-        QFile exe("arch.exe");
+        QString arch_exe;
+        if (qmakespec.startsWith("android")) {
+            arch_exe = "libarch.so";
+        } else {
+            arch_exe = "arch.exe";
+        }
+        QFile exe(arch_exe);
         if (!exe.open(QFile::ReadOnly)) { // no Text, this is binary
             exe.setFileName("arch");
             if (!exe.open(QFile::ReadOnly)) {
@@ -3348,6 +3398,33 @@ void Configure::generateConfigfiles()
         if (dictionary["EDITION"] == "Evaluation" || qmakeDefines.contains("QT_EVAL"))
             tmpFile3.copy(outName);
         tmpFile3.close();
+    }
+
+    QFile qdeviceFile(dictionary["QT_BUILD_TREE"] + "/mkspecs/qdevice.pri");
+    if (qdeviceFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        tmpStream.setDevice(&qdeviceFile);
+        QString android_platform(dictionary.contains("ANDROID_PLATFORM")
+                  ? dictionary["ANDROID_PLATFORM"]
+                  : QString("android-9"));
+        tmpStream << "android_install {" << endl;
+        tmpStream << "    DEFAULT_ANDROID_SDK_ROOT = " << formatPath(dictionary["ANDROID_SDK_ROOT"]) << endl;
+        tmpStream << "    DEFAULT_ANDROID_NDK_ROOT = " << formatPath(dictionary["ANDROID_NDK_ROOT"]) << endl;
+        tmpStream << "    DEFAULT_ANDROID_PLATFORM = " << android_platform << endl;
+        if (QSysInfo::WordSize == 64)
+            tmpStream << "    DEFAULT_ANDROID_NDK_HOST = windows-x86_64" << endl;
+        else
+            tmpStream << "    DEFAULT_ANDROID_NDK_HOST = windows" << endl;
+        QString android_arch(dictionary.contains("ANDROID_TARGET_ARCH")
+                  ? dictionary["ANDROID_TARGET_ARCH"]
+                  : QString("armeabi-v7a"));
+        QString android_tc_vers(dictionary.contains("ANDROID_NDK_TOOLCHAIN_VERSION")
+                  ? dictionary["ANDROID_NDK_TOOLCHAIN_VERSION"]
+                  : QString("4.7"));
+        tmpStream << "    DEFAULT_ANDROID_TARGET_ARCH = " << android_arch << endl;
+        tmpStream << "    DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION = " << android_tc_vers << endl;
+        tmpStream << "}" << endl;
+        tmpStream.flush();
+        qdeviceFile.close();
     }
 }
 #endif
@@ -4153,6 +4230,8 @@ QString Configure::platformName() const
         return QStringLiteral("Qt for QNX");
     case BLACKBERRY:
         return QStringLiteral("Qt for Blackberry");
+    case ANDROID:
+        return QStringLiteral("Qt for Android");
     }
 }
 
@@ -4167,6 +4246,8 @@ QString Configure::qpaPlatformName() const
         return QStringLiteral("qnx");
     case BLACKBERRY:
         return QStringLiteral("blackberry");
+    case ANDROID:
+        return QStringLiteral("android");
     }
 }
 
@@ -4183,6 +4264,9 @@ int Configure::platform() const
 
     if (xQMakeSpec.contains("blackberry"))
         return BLACKBERRY;
+
+    if (xQMakeSpec.contains("android"))
+        return ANDROID;
 
     return WINDOWS;
 }
