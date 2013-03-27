@@ -6502,7 +6502,7 @@ void qt_mac_scale_region(QRegion *region, qreal scaleFactor)
     scaledRects.reserve(region->rects().count());
 
     foreach (const QRect &rect, region->rects()) {
-        scaledRects.append(QRect(rect.topLeft(), rect.size() * scaleFactor));
+        scaledRects.append(QRect(rect.topLeft() * scaleFactor, rect.size() * scaleFactor));
     }
     region->setRects(&scaledRects[0], scaledRects.count());
 }
