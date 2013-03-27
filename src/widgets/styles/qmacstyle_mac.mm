@@ -3983,7 +3983,6 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 HIRect cr;
                 bool needAlpha = mi->palette.color(QPalette::Button) == Qt::transparent;
                 if (needAlpha) {
-                    needAlpha = true;
                     CGContextSaveGState(cg);
                     CGContextSetAlpha(cg, 0.0);
                 }
