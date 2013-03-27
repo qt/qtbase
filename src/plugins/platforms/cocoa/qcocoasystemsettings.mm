@@ -95,6 +95,7 @@ QColor qt_mac_colorForThemeTextColor(ThemeTextColor themeColor)
     case kThemeTextColorPushButtonInactive:
     case kThemeTextColorTabFrontInactive:
     case kThemeTextColorBevelButtonInactive:
+    case kThemeTextColorMenuItemDisabled:
         return QColor(127, 127, 127, 255);
     case kThemeTextColorMenuItemSelected:
         return Qt::white;
@@ -164,7 +165,7 @@ static QMacPaletteMap mac_widget_colors[] = {
     QMacPaletteMap(QPlatformTheme::TabBarPalette, kThemeTextColorTabFrontActive, kThemeTextColorTabFrontInactive),
     QMacPaletteMap(QPlatformTheme::LabelPalette, kThemeTextColorPlacardActive, kThemeTextColorPlacardInactive),
     QMacPaletteMap(QPlatformTheme::GroupBoxPalette, kThemeTextColorPlacardActive, kThemeTextColorPlacardInactive),
-    QMacPaletteMap(QPlatformTheme::MenuPalette, kThemeTextColorPopupLabelActive, kThemeTextColorPopupLabelInactive),
+    QMacPaletteMap(QPlatformTheme::MenuPalette, kThemeTextColorMenuItemActive, kThemeTextColorMenuItemDisabled),
     //### TODO: The zeros below gives white-on-black text.
     QMacPaletteMap(QPlatformTheme::TextEditPalette, 0, 0),
     QMacPaletteMap(QPlatformTheme::TextLineEditPalette, 0, 0),
