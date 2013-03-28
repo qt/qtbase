@@ -51,8 +51,6 @@
 #include <xkbcommon/xkbcommon.h>
 #include <xkbcommon_workaround.h>
 
-#include <X11/keysym.h>
-
 //#define DEBUG_GENERATOR
 
 TableGenerator::TableGenerator() : m_state(NoErrors),
