@@ -50,7 +50,11 @@ QMAKE_EXTENSION_SHLIB = jar
 # Override linker with dex (for Android) or jar (for other java builds)
 android {
     QMAKE_LINK_O_FLAG = --output=
-    QMAKE_LINK = $$SDK_ROOT/platform-tools/dx --dex
+    contains(QMAKE_HOST.os, Windows) {
+        QMAKE_LINK = $$PWD/data/android/dx $$SDK_ROOT --dex
+    } else {
+        QMAKE_LINK = $$SDK_ROOT/platform-tools/dx --dex
+    }
 } else {
     QMAKE_LINK_O_FLAG = "cf "
     QMAKE_LINK = jar
