@@ -19,6 +19,13 @@ if (CMAKE_TOOLCHAIN_FILE)
   list(APPEND BUILD_OPTIONS_LIST "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}")
 endif()
 
+if (NO_WIDGETS)
+  list(APPEND BUILD_OPTIONS_LIST "-DNO_WIDGETS=True")
+endif()
+if (NO_DBUS)
+  list(APPEND BUILD_OPTIONS_LIST "-DNO_DBUS=True")
+endif()
+
 macro(expect_pass _dir)
   string(REPLACE "(" "_" testname "${_dir}")
   string(REPLACE ")" "_" testname "${testname}")
@@ -80,7 +87,7 @@ function(test_module_includes)
     set(packages_string
       "
       ${packages_string}
-      find_package(Qt5${_package} REQUIRED)
+      find_package(Qt5${_package} 5.0.0 REQUIRED)
       "
     )
   endforeach()
@@ -90,22 +97,10 @@ function(test_module_includes)
     list(REMOVE_AT all_args 0 1)
     set(packages_string
       "${packages_string}
-      find_package(Qt5${qtmodule} REQUIRED)
+      find_package(Qt5${qtmodule} 5.0.0 REQUIRED)
       include_directories(\${Qt5${qtmodule}_INCLUDE_DIRS})
       add_definitions(\${Qt5${qtmodule}_DEFINITIONS})\n"
     )
-
-    # Because the CI system tests built packages before installation,
-    # the include dir allowing module-includes for the new module is not
-    # the same as the dir for QtCore (because that is at the installation
-    # location). The CI system is untypical here in that it attempts to use
-    # packages while they are in an intermediate state, so we work around
-    # that in the test system.
-    set(packages_string
-      "${packages_string}
-      include_directories(\"\${Qt5${qtmodule}_DIR}/../../../include\")\n"
-    )
-
     set(libraries_string "${libraries_string} Qt5::${qtmodule}")
   endwhile()
 
@@ -127,18 +122,23 @@ function(test_module_includes)
   set(instances_string "")
   while(all_args)
     list(GET all_args 0 qtmodule)
-    list(GET all_args 1 qtinclude)
+    list(GET all_args 1 qtclass)
+    if (${qtclass}_NAMESPACE)
+      set(qtinstancetype ${${qtclass}_NAMESPACE}::${qtclass})
+    else()
+      set(qtinstancetype ${qtclass})
+    endif()
     list(REMOVE_AT all_args 0 1)
     set(includes_string
       "${includes_string}
-      #include <${qtinclude}>
-      #include <Qt${qtmodule}/${qtinclude}>
+      #include <${qtclass}>
+      #include <Qt${qtmodule}/${qtclass}>
       #include <Qt${qtmodule}>
       #include <Qt${qtmodule}/Qt${qtmodule}>"
     )
     set(instances_string
     "${instances_string}
-    ${qtinclude} local${qtinclude};
+    ${qtinstancetype} local${qtclass};
     ")
   endwhile()
 

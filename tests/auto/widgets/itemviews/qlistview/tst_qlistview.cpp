@@ -2207,7 +2207,7 @@ void tst_QListView::taskQTBUG_21804_hiddenItemsAndScrollingWithKeys()
     lv.setSpacing(spacing);
     lv.setModel(&model);
     lv.show();
-    QTest::qWaitForWindowShown(&lv);
+    QTest::qWaitForWindowExposed(&lv);
 
     // hide every odd number row
     for (int i = 1; i < model.rowCount(); i+=2)
@@ -2283,7 +2283,7 @@ void tst_QListView::spacing()
     lv.setModel(&model);
     lv.setSpacing(spacing);
     lv.show();
-    QTest::qWaitForWindowShown(&lv);
+    QTest::qWaitForWindowExposed(&lv);
 
     // check size and position of first two items
     QRect item1 = lv.visualRect(lv.model()->index(0, 0));

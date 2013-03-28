@@ -79,7 +79,7 @@ public:
 
     virtual bool init();
     virtual int type() const { return BUILDSMETATYPE; }
-    virtual bool write(const QString &);
+    virtual bool write();
 };
 
 void
@@ -149,7 +149,7 @@ BuildsMetaMakefileGenerator::init()
 }
 
 bool
-BuildsMetaMakefileGenerator::write(const QString &oldpwd)
+BuildsMetaMakefileGenerator::write()
 {
     Build *glue = 0;
     if(!makefiles.isEmpty() && !makefiles.first()->build.isNull()) {
@@ -181,7 +181,6 @@ BuildsMetaMakefileGenerator::write(const QString &oldpwd)
                     if(Option::output.fileName().isEmpty() &&
                        Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE)
                         Option::output.setFileName(project->first("QMAKE_MAKEFILE").toQString());
-                    Option::output_dir = oldpwd;
                     QString build_name = build->name;
                     if(!build->build.isEmpty()) {
                         if(!build_name.isEmpty())
@@ -268,7 +267,7 @@ public:
 
     virtual bool init();
     virtual int type() const { return SUBDIRSMETATYPE; }
-    virtual bool write(const QString &);
+    virtual bool write();
 };
 
 bool
@@ -349,7 +348,7 @@ SubdirsMetaMakefileGenerator::init()
             } else {
                 const QString output_name = Option::output.fileName();
                 Option::output.setFileName(sub->output_file);
-                hasError |= !sub->makefile->write(sub->output_dir);
+                hasError |= !sub->makefile->write();
                 delete sub;
                 qmakeClearCaches();
                 sub = 0;
@@ -378,7 +377,7 @@ SubdirsMetaMakefileGenerator::init()
 }
 
 bool
-SubdirsMetaMakefileGenerator::write(const QString &oldpwd)
+SubdirsMetaMakefileGenerator::write()
 {
     bool ret = true;
     const QString &pwd = qmake_getpwd();
@@ -386,21 +385,16 @@ SubdirsMetaMakefileGenerator::write(const QString &oldpwd)
     const QString &output_name = Option::output.fileName();
     for(int i = 0; ret && i < subs.count(); i++) {
         const Subdir *sub = subs.at(i);
-        qmake_setpwd(subs.at(i)->input_dir);
-        Option::output_dir = QFileInfo(subs.at(i)->output_dir).absoluteFilePath();
-        if(Option::output_dir.at(Option::output_dir.length()-1) != QLatin1Char('/'))
-            Option::output_dir += QLatin1Char('/');
-        Option::output.setFileName(subs.at(i)->output_file);
+        qmake_setpwd(sub->input_dir);
+        Option::output_dir = QFileInfo(sub->output_dir).absoluteFilePath();
+        Option::output.setFileName(sub->output_file);
         if(i != subs.count()-1) {
             for (int ind = 0; ind < sub->indent; ++ind)
                 printf(" ");
             printf("Writing %s\n", QDir::cleanPath(Option::output_dir+"/"+
                                                    Option::output.fileName()).toLatin1().constData());
         }
-        QString writepwd = Option::fixPathToLocalOS(qmake_getpwd());
-        if(!writepwd.startsWith(Option::fixPathToLocalOS(oldpwd)))
-            writepwd = oldpwd;
-        if(!(ret = subs.at(i)->makefile->write(writepwd)))
+        if (!(ret = sub->makefile->write()))
             break;
         //restore because I'm paranoid
         qmake_setpwd(pwd);

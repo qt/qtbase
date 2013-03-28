@@ -154,6 +154,7 @@ Q_DECLARE_METATYPE(Qt::WindowState);
 Q_DECLARE_METATYPE(Qt::WindowStates);
 Q_DECLARE_METATYPE(Qt::WindowType);
 Q_DECLARE_METATYPE(Qt::WindowFlags);
+Q_DECLARE_METATYPE(QMdiSubWindow*);
 
 class tst_QMdiSubWindow : public QObject
 {
@@ -204,6 +205,7 @@ private slots:
     void task_182852();
     void task_233197();
     void task_226929();
+    void styleChange();
 };
 
 void tst_QMdiSubWindow::initTestCase()
@@ -596,7 +598,7 @@ void tst_QMdiSubWindow::showShaded()
     QWidget *mouseReceiver = 0;
 #ifdef Q_OS_MAC
     if (window->style()->inherits("QMacStyle"))
-        mouseReceiver = qFindChild<QSizeGrip *>(window);
+        mouseReceiver = window->findChild<QSizeGrip *>();
     else
 #endif
         mouseReceiver = window;
@@ -705,7 +707,7 @@ void tst_QMdiSubWindow::setOpaqueResizeAndMove()
 
     QWidget *mouseReceiver = 0;
     if (window->style()->inherits("QMacStyle"))
-        mouseReceiver = qFindChild<QSizeGrip *>(window);
+        mouseReceiver = window->findChild<QSizeGrip *>();
     else
         mouseReceiver = window;
     QVERIFY(mouseReceiver);
@@ -1445,12 +1447,12 @@ void tst_QMdiSubWindow::defaultSizeGrip()
     // QSizeGrip on windows with decoration.
     QMdiSubWindow *windowWithDecoration = mdiArea.addSubWindow(new QWidget);
     windowWithDecoration->show();
-    QVERIFY(qFindChild<QSizeGrip *>(windowWithDecoration));
+    QVERIFY(windowWithDecoration->findChild<QSizeGrip *>());
 
     // ...but not on windows without decoration (Qt::FramelessWindowHint).
     QMdiSubWindow *windowWithoutDecoration = mdiArea.addSubWindow(new QWidget, Qt::FramelessWindowHint);
     windowWithoutDecoration->show();
-    QVERIFY(!qFindChild<QSizeGrip *>(windowWithoutDecoration));
+    QVERIFY(!windowWithoutDecoration->findChild<QSizeGrip *>());
 }
 #endif
 
@@ -2016,6 +2018,35 @@ void tst_QMdiSubWindow::task_226929()
     // (if not QMdiArea::DontMaximizeSubWindowOnActionvation is set).
     sub1->showNormal();
     QVERIFY(sub1->isMaximized());
+}
+
+void tst_QMdiSubWindow::styleChange()
+{
+    QMdiArea mdiArea;
+    mdiArea.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
+
+    QMdiSubWindow *sub1 = mdiArea.addSubWindow(new QTextEdit);
+    sub1->showMaximized();
+
+    QMdiSubWindow *sub2 = mdiArea.addSubWindow(new QTextEdit);
+    sub2->showMinimized();
+
+    mdiArea.setActiveSubWindow(sub1);
+
+    QTest::qWait(100);
+
+    qRegisterMetaType<QMdiSubWindow *>();
+    QSignalSpy spy(&mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow*)));
+    QVERIFY(spy.isValid());
+
+    QEvent event(QEvent::StyleChange);
+    QApplication::sendEvent(sub1, &event);
+    QApplication::sendEvent(sub2, &event);
+
+    // subWindowActivated should NOT be activated by a style change,
+    // even if internally QMdiSubWindow un-minimizes subwindows temporarily.
+    QCOMPARE(spy.count(), 0);
 }
 
 QTEST_MAIN(tst_QMdiSubWindow)

@@ -377,8 +377,9 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
 
                     // The end state of the transition is simply the result we would have painted
                     // if the style was not animated.
+                    styleOption->styleObject = 0;
                     styleOption->state = option->state;
-                    drawPrimitive(element, styleOption, &endPainter, widget);
+                    proxy()->drawPrimitive(element, styleOption, &endPainter, widget);
 
 
                     t->setEndImage(endImage);
@@ -521,7 +522,8 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
         break;
     case PE_Frame: {
 #ifndef QT_NO_ACCESSIBILITY
-        if (QStyleHelper::isInstanceOf(option->styleObject, QAccessible::EditableText)) {
+        if (QStyleHelper::isInstanceOf(option->styleObject, QAccessible::EditableText)
+                || QStyleHelper::isInstanceOf(option->styleObject, QAccessible::StaticText)) {
 #else
         if (false) {
 #endif
@@ -536,16 +538,13 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
             XPThemeData theme(widget, painter,
                               QWindowsXPStylePrivate::EditTheme,
                               EP_EDITBORDER_HVSCROLL, stateId, option->rect);
-            uint resolve_mask = option->palette.resolve();
-            if (resolve_mask & (1 << QPalette::Base)) {
-                // Since EP_EDITBORDER_HVSCROLL does not us borderfill, theme.noContent cannot be used for clipping
-                int borderSize = 1;
-                pGetThemeInt(theme.handle(), theme.partId, theme.stateId, TMT_BORDERSIZE, &borderSize);
-                QRegion clipRegion = option->rect;
-                QRegion content = option->rect.adjusted(borderSize, borderSize, -borderSize, -borderSize);
-                clipRegion ^= content;
-                painter->setClipRegion(clipRegion);
-            }
+            // Since EP_EDITBORDER_HVSCROLL does not us borderfill, theme.noContent cannot be used for clipping
+            int borderSize = 1;
+            pGetThemeInt(theme.handle(), theme.partId, theme.stateId, TMT_BORDERSIZE, &borderSize);
+            QRegion clipRegion = option->rect;
+            QRegion content = option->rect.adjusted(borderSize, borderSize, -borderSize, -borderSize);
+            clipRegion ^= content;
+            painter->setClipRegion(clipRegion);
             d->drawBackground(theme);
             painter->restore();
         } else {

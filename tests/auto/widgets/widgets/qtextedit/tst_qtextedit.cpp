@@ -1483,7 +1483,7 @@ void tst_QTextEdit::mimeDataReimplementations()
     QCOMPARE(ed.insertCallCount, 0);
 
 #ifdef QT_BUILD_INTERNAL
-    QWidgetTextControl *control = qFindChild<QWidgetTextControl *>(&ed);
+    QWidgetTextControl *control = ed.findChild<QWidgetTextControl *>();
     QVERIFY(control);
 
     control->canInsertFromMimeData(QApplication::clipboard()->mimeData());
@@ -2104,7 +2104,7 @@ void tst_QTextEdit::cursorRect()
 #ifdef QT_BUILD_INTERNAL
 void tst_QTextEdit::setDocumentPreservesPalette()
 {
-    QWidgetTextControl *control = qFindChild<QWidgetTextControl *>(ed);
+    QWidgetTextControl *control = ed->findChild<QWidgetTextControl *>();
     QVERIFY(control);
 
     QPalette defaultPal = ed->palette();

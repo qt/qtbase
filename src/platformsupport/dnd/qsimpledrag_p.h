@@ -97,7 +97,6 @@ private:
     bool m_can_drop;
     QDrag *m_drag;
     QShapedPixmapWindow *m_drag_icon_window;
-    Qt::DropAction m_cursor_drop_action;
 };
 
 class QSimpleDrag : public QBasicDrag

@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QGraphicsView>
-#include <QtWidgets/QGraphicsScene>
-#include <QtWidgets/QGraphicsItem>
-#include <QtWidgets/QMessageBox>
+#include <QApplication>
+#include <QGraphicsView>
+#include <QGraphicsScene>
+#include <QGraphicsItem>
+#include <QMessageBox>
 
 class MyObject : public QObject
 {

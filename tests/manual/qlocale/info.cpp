@@ -40,6 +40,12 @@
 
 #include "info.h"
 
+#include <QLineEdit>
+#include <QScrollArea>
+#include <QGridLayout>
+#include <QLabel>
+#include <QLocale>
+
 InfoWidget::InfoWidget()
 {
     scrollArea = new QScrollArea;

@@ -742,7 +742,7 @@ void tst_QAbstractItemView::persistentEditorFocus()
     view.openPersistentEditor(model.index(0, 2));
 
     //these are spinboxes because we put numbers inside
-    QList<QSpinBox*> list = qFindChildren<QSpinBox*>(view.viewport());
+    QList<QSpinBox*> list = view.viewport()->findChildren<QSpinBox*>();
     QCOMPARE(list.count(), 2); //these should be the 2 editors
 
     view.setCurrentIndex(model.index(0, 0));
@@ -1048,7 +1048,6 @@ void tst_QAbstractItemView::setItemDelegate()
     v.show();
 #ifdef Q_WS_X11
     QCursor::setPos(v.geometry().center());
-    QApplication::syncX();
 #endif
     QApplication::setActiveWindow(&v);
     QVERIFY(QTest::qWaitForWindowActive(&v));
@@ -1271,21 +1270,21 @@ void tst_QAbstractItemView::task257481_emptyEditor()
     treeView.show();
 
     treeView.edit(model.index(0,0));
-    QList<QLineEdit *> lineEditors = qFindChildren<QLineEdit *>(treeView.viewport());
+    QList<QLineEdit *> lineEditors = treeView.viewport()->findChildren<QLineEdit *>();
     QCOMPARE(lineEditors.count(), 1);
     QVERIFY(!lineEditors.first()->size().isEmpty());
 
     QTest::qWait(30);
 
     treeView.edit(model.index(1,0));
-    lineEditors = qFindChildren<QLineEdit *>(treeView.viewport());
+    lineEditors = treeView.viewport()->findChildren<QLineEdit *>();
     QCOMPARE(lineEditors.count(), 1);
     QVERIFY(!lineEditors.first()->size().isEmpty());
 
     QTest::qWait(30);
 
     treeView.edit(model.index(2,0));
-    lineEditors = qFindChildren<QLineEdit *>(treeView.viewport());
+    lineEditors = treeView.viewport()->findChildren<QLineEdit *>();
     QCOMPARE(lineEditors.count(), 1);
     QVERIFY(!lineEditors.first()->size().isEmpty());
 }

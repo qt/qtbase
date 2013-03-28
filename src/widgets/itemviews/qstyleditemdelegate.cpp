@@ -355,7 +355,10 @@ void QStyledItemDelegate::initStyleOption(QStyleOptionViewItem *option,
             else
                 mode = QIcon::Normal;
             QIcon::State state = option->state & QStyle::State_Open ? QIcon::On : QIcon::Off;
-            option->decorationSize = option->icon.actualSize(option->decorationSize, mode, state);
+            QSize actualSize = option->icon.actualSize(option->decorationSize, mode, state);
+            // For highdpi icons actualSize might be larger than decorationSize, which we don't want. Clamp it to decorationSize.
+            option->decorationSize = QSize(qMin(option->decorationSize.width(), actualSize.width()),
+                                           qMin(option->decorationSize.height(), actualSize.height()));
             break;
         }
         case QVariant::Color: {
@@ -367,13 +370,13 @@ void QStyledItemDelegate::initStyleOption(QStyleOptionViewItem *option,
         case QVariant::Image: {
             QImage image = qvariant_cast<QImage>(value);
             option->icon = QIcon(QPixmap::fromImage(image));
-            option->decorationSize = image.size();
+            option->decorationSize = image.size() / image.devicePixelRatio();
             break;
         }
         case QVariant::Pixmap: {
             QPixmap pixmap = qvariant_cast<QPixmap>(value);
             option->icon = QIcon(pixmap);
-            option->decorationSize = pixmap.size();
+            option->decorationSize = pixmap.size() / pixmap.devicePixelRatio();
             break;
         }
         default:
@@ -388,6 +391,9 @@ void QStyledItemDelegate::initStyleOption(QStyleOptionViewItem *option,
     }
 
     option->backgroundBrush = qvariant_cast<QBrush>(index.data(Qt::BackgroundRole));
+
+    // disable style animations for checkboxes etc. within itemviews (QTBUG-30146)
+    option->styleObject = 0;
 }
 
 /*!

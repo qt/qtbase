@@ -1083,7 +1083,8 @@ void QWidgetPrivate::adjustFlags(Qt::WindowFlags &flags, QWidget *w)
     else
         flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinimizeButtonHint |
                 Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint | Qt::WindowFullscreenButtonHint;
-
+    if (w->testAttribute(Qt::WA_TransparentForMouseEvents))
+        flags |= Qt::WindowTransparentForInput;
 }
 
 void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)

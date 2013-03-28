@@ -164,6 +164,7 @@
 #include <private/qmacstyle_mac_p.h>
 #endif
 #include <QMdiArea>
+#include <QScopedValueRollback>
 
 QT_BEGIN_NAMESPACE
 
@@ -2789,6 +2790,10 @@ bool QMdiSubWindow::event(QEvent *event)
         bool wasShaded = isShaded();
         bool wasMinimized = isMinimized();
         bool wasMaximized = isMaximized();
+        // Don't emit subWindowActivated, the app doesn't have to know about our hacks
+        const QScopedValueRollback<bool> activationEnabledSaver(d->activationEnabled);
+        d->activationEnabled = false;
+
         ensurePolished();
         setContentsMargins(0, 0, 0, 0);
         if (wasMinimized || wasMaximized || wasShaded)
@@ -3008,7 +3013,8 @@ void QMdiSubWindow::changeEvent(QEvent *changeEvent)
 
     if (d->isActive)
         d->ensureWindowState(Qt::WindowActive);
-    emit windowStateChanged(oldState, windowState());
+    if (d->activationEnabled)
+        emit windowStateChanged(oldState, windowState());
 }
 
 /*!

@@ -511,7 +511,8 @@ void **QListData::erase(void **xi)
 
     Construct a list from the std::initializer_list specified by \a args.
 
-    This constructor is only enabled if the compiler supports C++0x
+    This constructor is only enabled if the compiler supports C++11 initializer
+    lists.
 */
 
 /*! \fn QList::~QList()

@@ -69,7 +69,7 @@ public:
 
     virtual bool init() = 0;
     virtual int type() const { return -1; }
-    virtual bool write(const QString &oldpwd) = 0;
+    virtual bool write() = 0;
 };
 
 QT_END_NAMESPACE

@@ -299,16 +299,16 @@ void MingwMakefileGenerator::init()
 
 	project->values("QMAKE_RUN_CC").clear();
 	project->values("QMAKE_RUN_CC").append("$(CC) -c -include " + preCompHeader +
-                                                    " $(CFLAGS) $(INCPATH) -o $obj $src");
+                                                    " $(CFLAGS) $(INCPATH) " + var("QMAKE_CC_O_FLAG") + "$obj $src");
         project->values("QMAKE_RUN_CC_IMP").clear();
 	project->values("QMAKE_RUN_CC_IMP").append("$(CC)  -c -include " + preCompHeader +
-                                                        " $(CFLAGS) $(INCPATH) -o $@ $<");
+                                                        " $(CFLAGS) $(INCPATH) " + var("QMAKE_CC_O_FLAG") + "$@ $<");
         project->values("QMAKE_RUN_CXX").clear();
 	project->values("QMAKE_RUN_CXX").append("$(CXX) -c -include " + preCompHeader +
-                                                     " $(CXXFLAGS) $(INCPATH) -o $obj $src");
+                                                     " $(CXXFLAGS) $(INCPATH) " + var("QMAKE_CC_O_FLAG") + "$obj $src");
         project->values("QMAKE_RUN_CXX_IMP").clear();
 	project->values("QMAKE_RUN_CXX_IMP").append("$(CXX) -c -include " + preCompHeader +
-                                                         " $(CXXFLAGS) $(INCPATH) -o $@ $<");
+                                                         " $(CXXFLAGS) $(INCPATH) " + var("QMAKE_CC_O_FLAG") + "$@ $<");
     }
 
     if(project->isActiveConfig("dll")) {

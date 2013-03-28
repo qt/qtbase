@@ -4240,9 +4240,13 @@ void tst_QWidget::isOpaque()
 */
 void tst_QWidget::scroll()
 {
+    const int w = qMin(500, qApp->desktop()->availableGeometry().width() / 2);
+    const int h = qMin(500, qApp->desktop()->availableGeometry().height() / 2);
+
     UpdateWidget updateWidget;
-    updateWidget.resize(500, 500);
+    updateWidget.resize(w, h);
     updateWidget.reset();
+    updateWidget.move(QGuiApplication::primaryScreen()->geometry().center() - QPoint(250, 250));
     updateWidget.show();
     qApp->setActiveWindow(&updateWidget);
     QVERIFY(QTest::qWaitForWindowActive(&updateWidget));
@@ -4252,9 +4256,9 @@ void tst_QWidget::scroll()
         updateWidget.reset();
         updateWidget.scroll(10, 10);
         qApp->processEvents();
-        QRegion dirty(QRect(0, 0, 500, 10));
-        dirty += QRegion(QRect(0, 10, 10, 490));
-        QCOMPARE(updateWidget.paintedRegion, dirty);
+        QRegion dirty(QRect(0, 0, w, 10));
+        dirty += QRegion(QRect(0, 10, 10, h - 10));
+        QTRY_COMPARE(updateWidget.paintedRegion, dirty);
     }
 
     {
@@ -4262,10 +4266,13 @@ void tst_QWidget::scroll()
         updateWidget.update(0, 0, 10, 10);
         updateWidget.scroll(0, 10);
         qApp->processEvents();
-        QRegion dirty(QRect(0, 0, 500, 10));
+        QRegion dirty(QRect(0, 0, w, 10));
         dirty += QRegion(QRect(0, 10, 10, 10));
-        QCOMPARE(updateWidget.paintedRegion, dirty);
+        QTRY_COMPARE(updateWidget.paintedRegion, dirty);
     }
+
+    if (updateWidget.width() < 200 || updateWidget.height() < 200)
+         QSKIP("Skip this test due to too small screen geometry.");
 
     {
         updateWidget.reset();
@@ -4277,7 +4284,7 @@ void tst_QWidget::scroll()
         dirty += QRegion(QRect(0, 60, 110, 40));
         dirty += QRegion(QRect(50, 100, 60, 10));
         dirty += QRegion(QRect(50, 110, 10, 40));
-        QCOMPARE(updateWidget.paintedRegion, dirty);
+        QTRY_COMPARE(updateWidget.paintedRegion, dirty);
     }
 
     {
@@ -4288,7 +4295,7 @@ void tst_QWidget::scroll()
         QRegion dirty(QRect(0, 0, 100, 100));
         dirty += QRegion(QRect(100, 100, 100, 10));
         dirty += QRegion(QRect(100, 110, 10, 90));
-        QCOMPARE(updateWidget.paintedRegion, dirty);
+        QTRY_COMPARE(updateWidget.paintedRegion, dirty);
     }
 }
 #endif
@@ -6123,7 +6130,7 @@ static void workaroundPaletteIssue(QWidget *widget)
     if (!widget)
         return;
 
-    QWidget *navigationBar = qFindChild<QWidget *>(widget, QLatin1String("qt_calendar_navigationbar"));
+    QWidget *navigationBar = widget->findChild<QWidget *>(QLatin1String("qt_calendar_navigationbar"));
     QVERIFY(navigationBar);
 
     QPalette palette = navigationBar->palette();
@@ -6222,7 +6229,7 @@ void tst_QWidget::renderInvisible()
     }
 
     // Get navigation bar and explicitly hide it.
-    QWidget *navigationBar = qFindChild<QWidget *>(calendar.data(), QLatin1String("qt_calendar_navigationbar"));
+    QWidget *navigationBar = calendar.data()->findChild<QWidget *>(QLatin1String("qt_calendar_navigationbar"));
     QVERIFY(navigationBar);
     navigationBar->hide();
 
@@ -6245,7 +6252,7 @@ void tst_QWidget::renderInvisible()
     }
 
     // Get next month button.
-    QWidget *nextMonthButton = qFindChild<QWidget *>(navigationBar, QLatin1String("qt_calendar_nextmonth"));
+    QWidget *nextMonthButton = navigationBar->findChild<QWidget *>(QLatin1String("qt_calendar_nextmonth"));
     QVERIFY(nextMonthButton);
 
     { // Render next month button.
@@ -7012,7 +7019,7 @@ void tst_QWidget::moveWindowInShowEvent()
 
     // show it
     widget.show();
-    QVERIFY(QTest::qWaitForWindowShown(&widget));
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
     QTest::qWait(100);
     // it should have moved
     QCOMPARE(widget.pos(), position);

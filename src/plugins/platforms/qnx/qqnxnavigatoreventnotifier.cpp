@@ -55,7 +55,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#ifdef QQNXNAVIGATOREVENTNOTIFIER_DEBUG
+#if defined(QQNXNAVIGATOREVENTNOTIFIER_DEBUG)
 #define qNavigatorEventNotifierDebug qDebug
 #else
 #define qNavigatorEventNotifierDebug QT_NO_QDEBUG_MACRO

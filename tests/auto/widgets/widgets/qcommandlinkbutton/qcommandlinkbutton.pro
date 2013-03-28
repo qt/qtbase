@@ -5,4 +5,3 @@ SOURCES  += tst_qcommandlinkbutton.cpp
 
 
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

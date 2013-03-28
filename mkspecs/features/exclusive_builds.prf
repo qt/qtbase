@@ -33,15 +33,15 @@ defineTest(addExclusiveBuilds) {
 
     contains(TEMPLATE, subdirs) {
         eval(sub_$${firstBuildName}.target = $$firstBuild)
-	export(sub_$${firstBuildName}.target)
+        export(sub_$${firstBuildName}.target)
         eval(sub_$${firstBuildName}.CONFIG = recursive)
-	export(sub_$${firstBuildName}.CONFIG)
+        export(sub_$${firstBuildName}.CONFIG)
         eval(sub_$${secondBuildName}.target = $$secondBuild)
-	export(sub_$${secondBuildName}.target)
+        export(sub_$${secondBuildName}.target)
         eval(sub_$${secondBuildName}.CONFIG = recursive)
-	export(sub_$${secondBuildName}.CONFIG)
-	QMAKE_EXTRA_TARGETS += sub_$${firstBuildName} sub_$${secondBuildName}
-	export(QMAKE_EXTRA_TARGETS)
+        export(sub_$${secondBuildName}.CONFIG)
+        QMAKE_EXTRA_TARGETS += sub_$${firstBuildName} sub_$${secondBuildName}
+        export(QMAKE_EXTRA_TARGETS)
     } else:!build_pass {
         first_BUILDS  =
         second_BUILDS =
@@ -56,32 +56,32 @@ defineTest(addExclusiveBuilds) {
             else: permutationName = -$$permutation
             # Makefile target rule
             eval($${firstBuildName}$${permutation}.target  = $${firstBuild}$$lower($${permutationName}))
-	    export($${firstBuildName}$${permutation}.target)
+            export($${firstBuildName}$${permutation}.target)
             # IDE name
             eval($${firstBuildName}$${permutation}.name    = $${firstBuildName}$${permutationName})
-	    export($${firstBuildName}$${permutation}.name)
-	    # prl import CONFIG option
+            export($${firstBuildName}$${permutation}.name)
+            # prl import CONFIG option
             eval($${firstBuildName}$${permutation}.PRL_CONFIG  = $${firstBuild}$${permutation})
             export($${firstBuildName}$${permutation}.PRL_CONFIG)
             # Individual CONFIG option
             eval($${firstBuildName}$${permutation}.CONFIG  = $${firstBuild} $${firstBuildName}Build $$eval($${permutation}.CONFIG))
-	    export($${firstBuildName}$${permutation}.CONFIG)
+            export($${firstBuildName}$${permutation}.CONFIG)
 
             eval($${secondBuildName}$${permutation}.target = $${secondBuild}$$lower($${permutationName}))
-	    export($${secondBuildName}$${permutation}.target)
+            export($${secondBuildName}$${permutation}.target)
             eval($${secondBuildName}$${permutation}.name   = $${secondBuildName}$${permutationName})
-	    export($${secondBuildName}$${permutation}.name)
-	    eval($${secondBuildName}$${permutation}.PRL_CONFIG  = $${secondBuild}$${permutation})
-	    export($${secondBuildName}$${permutation}.PRL_CONFIG)
+            export($${secondBuildName}$${permutation}.name)
+            eval($${secondBuildName}$${permutation}.PRL_CONFIG  = $${secondBuild}$${permutation})
+            export($${secondBuildName}$${permutation}.PRL_CONFIG)
             eval($${secondBuildName}$${permutation}.CONFIG = $${secondBuild} $${secondBuildName}Build $$eval($${permutation}.CONFIG))
-	    export($${secondBuildName}$${permutation}.CONFIG)
- 
+            export($${secondBuildName}$${permutation}.CONFIG)
+
             first_BUILDS += $${firstBuildName}$${permutation}
             second_BUILDS += $${secondBuildName}$${permutation}
         }
- 
+
         # A mutual exclusive block.
-        CONFIG($${firstBuild}, $${firstBuild}|$${secondBuild}): BUILDS = $$first_BUILDS  $$second_BUILDS 
+        CONFIG($${firstBuild}, $${firstBuild}|$${secondBuild}): BUILDS = $$first_BUILDS  $$second_BUILDS
         else: BUILDS = $$second_BUILDS $$first_BUILDS
         export(BUILDS)
     } else {

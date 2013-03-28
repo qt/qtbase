@@ -371,7 +371,9 @@ static void processQdocconfFile(const QString &fileName)
     excludedDirsList = config.getCanonicalRelativePathList(CONFIG_EXCLUDEDIRS);
     foreach (const QString &excludeDir, excludedDirsList) {
         QString p = QDir::fromNativeSeparators(excludeDir);
-        excludedDirs.insert(p);
+        QDir tmp(p);
+        if (tmp.exists())
+            excludedDirs.insert(p);
     }
 
     Generator::debugSegfault("Reading excludefiles");

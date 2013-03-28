@@ -9,7 +9,7 @@ isEmpty(QMAKE_EXT_CPP_MOC):QMAKE_EXT_CPP_MOC = .moc
 # has too many includes. We do this to overcome a command-line limit on Win < XP
 INCLUDETEMP=
 WIN_INCLUDETEMP=
-win32:count($$list($$INCLUDEPATH), 40, >) {
+win32:count(INCLUDEPATH, 40, >) {
     INCLUDETEMP = $$MOC_DIR/mocinclude.tmp
 
     WIN_INCLUDETEMP=$$INCLUDETEMP
@@ -23,7 +23,7 @@ win32:count($$list($$INCLUDEPATH), 40, >) {
 
     unset(INCFILELIST)
     RET =
-    for(incfile, $$list($$INCLUDEPATH)) {
+    for(incfile, INCLUDEPATH) {
         INCFILELIST = -I$$incfile
         isEmpty(RET): RET += @echo $$INCFILELIST> $$WIN_INCLUDETEMP $$EOC
         else:         RET += @echo $$INCFILELIST>> $$WIN_INCLUDETEMP $$EOC
@@ -38,15 +38,17 @@ win32:count($$list($$INCLUDEPATH), 40, >) {
 }
 
 defineReplace(mocCmdBase) {
+    RET =
     !isEmpty(WIN_INCLUDETEMP) {
-        RET =
         contains(TEMPLATE, "vc.*") {
             RET += $$mocinclude.commands
         }
-        RET += $$QMAKE_MOC $(DEFINES) @$$WIN_INCLUDETEMP $$join(QMAKE_COMPILER_DEFINES, " -D", -D) $$QMAKE_MOC_OPTIONS
-        return($$RET)
+        incvar = @$$WIN_INCLUDETEMP
+    } else {
+        incvar = $(INCPATH)
     }
-    return($$QMAKE_MOC $(DEFINES) $(INCPATH) $$join(QMAKE_COMPILER_DEFINES, " -D", -D) $$QMAKE_MOC_OPTIONS)
+    RET += $$QMAKE_MOC $(DEFINES) $$join(QMAKE_COMPILER_DEFINES, " -D", -D) $$incvar $$join(QMAKE_DEFAULT_INCDIRS, " -I", -I) $$QMAKE_MOC_OPTIONS
+    return($$RET)
 }
 
 #moc headers
@@ -58,7 +60,7 @@ moc_header.input = HEADERS
 moc_header.variable_out = SOURCES
 moc_header.name = MOC ${QMAKE_FILE_IN}
 !contains(TEMPLATE, "vc.*") {
-	!isEmpty(INCLUDETEMP):moc_header.depends += $$INCLUDETEMP
+    !isEmpty(INCLUDETEMP):moc_header.depends += $$INCLUDETEMP
 }
 silent:moc_header.commands = @echo moc ${QMAKE_FILE_IN} && $$moc_header.commands
 QMAKE_EXTRA_COMPILERS += moc_header
@@ -72,7 +74,7 @@ moc_source.output = $$MOC_DIR/$${QMAKE_CPP_MOD_MOC}${QMAKE_FILE_BASE}$${QMAKE_EX
 moc_source.input = SOURCES OBJECTIVE_SOURCES
 moc_source.name = MOC ${QMAKE_FILE_IN}
 !contains(TEMPLATE, "vc.*") {
-	!isEmpty(INCLUDETEMP):moc_source.depends += $$INCLUDETEMP
+    !isEmpty(INCLUDETEMP):moc_source.depends += $$INCLUDETEMP
 }
 silent:moc_source.commands = @echo moc ${QMAKE_FILE_IN} && $$moc_source.commands
 QMAKE_EXTRA_COMPILERS += moc_source

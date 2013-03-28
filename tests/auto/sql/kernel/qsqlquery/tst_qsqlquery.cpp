@@ -221,6 +221,9 @@ private slots:
     void QTBUG_16967(); //clean close
     void QTBUG_23895_data() { generic_data("QSQLITE"); }
     void QTBUG_23895(); //sqlite boolean type
+    void QTBUG_14904_data() { generic_data("QSQLITE"); }
+    void QTBUG_14904();
+
     void QTBUG_2192_data() { generic_data(); }
     void QTBUG_2192();
 
@@ -1021,6 +1024,10 @@ void tst_QSqlQuery::isActive()
     QVERIFY( q.isActive() );
 
     QVERIFY_SQL( q, exec( "update " + qtest + " set id = 42 where id = 41" ) );
+
+    QVERIFY( q.isActive() );
+
+    QVERIFY_SQL( q, exec( "delete from " + qtest + " where id = 42" ) );
 
     QVERIFY( q.isActive() );
 
@@ -3407,6 +3414,42 @@ void tst_QSqlQuery::QTBUG_23895()
     QVERIFY(!q.next());
 }
 
+/**
+  * Test for aliases with dots
+  */
+void tst_QSqlQuery::QTBUG_14904()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlQuery q(db);
+
+    QString tableName(qTableName("bug14904", __FILE__ ));
+    tst_Databases::safeDropTable( db, tableName );
+
+    q.prepare("create table " + tableName + "(val1 bool)");
+    QVERIFY_SQL(q, exec());
+    q.prepare("insert into " + tableName + "(val1) values(?);");
+    q.addBindValue(true);
+    QVERIFY_SQL(q, exec());
+
+    QString sql="select val1 AS value1 from " + tableName;
+    QVERIFY_SQL(q, exec(sql));
+    QVERIFY_SQL(q, next());
+
+    QCOMPARE(q.record().indexOf("value1"), 0);
+    QCOMPARE(q.record().field(0).type(), QVariant::Bool);
+    QCOMPARE(q.value(0).toBool(), true);
+
+    sql="select val1 AS 'value.one' from " + tableName;
+    QVERIFY_SQL(q, exec(sql));
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.record().indexOf("value.one"), 0);  // was -1 before bug fix
+    QCOMPARE(q.record().field(0).type(), QVariant::Bool);
+    QCOMPARE(q.value(0).toBool(), true);
+}
+
 void tst_QSqlQuery::QTBUG_2192()
 {
     QFETCH( QString, dbName );
@@ -3419,14 +3462,19 @@ void tst_QSqlQuery::QTBUG_2192()
         QSqlQuery q(db);
         QVERIFY_SQL(q, exec(QString("CREATE TABLE " + tableName + " (dt %1)").arg(tst_Databases::dateTimeTypeName(db))));
 
+        QDateTime dt = QDateTime(QDate(2012, 7, 4), QTime(23, 59, 59, 999));
         QVERIFY_SQL(q, prepare("INSERT INTO " + tableName + " (dt) VALUES (?)"));
-        q.bindValue(0, QVariant(QDateTime(QDate(2012, 7, 4), QTime(23, 59, 59, 999))));
+        q.bindValue(0, dt);
         QVERIFY_SQL(q, exec());
 
-        // Check if value was stored with at least second precision.
         QVERIFY_SQL(q, exec("SELECT dt FROM " + tableName));
         QVERIFY_SQL(q, next());
-        QVERIFY(q.value(0).toDateTime().msecsTo(QDateTime(QDate(2012, 7, 4), QTime(23, 59, 59, 999))) < 1000 );
+
+        // Check if retrieved value preserves reported precision
+        int precision = qMax(0, q.record().field("dt").precision());
+        int diff = qAbs(q.value(0).toDateTime().msecsTo(dt));
+        int keep = qMin(1000, (int)qPow(10.0, precision));
+        QVERIFY(diff <= 1000 - keep);
     }
 }
 

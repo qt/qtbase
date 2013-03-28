@@ -312,11 +312,13 @@ void QProcessPrivate::destroyChannel(Channel *channel)
         }
     } else if (channel == &stdoutChannel) {
         if (stdoutReader) {
+            stdoutReader->stop();
             stdoutReader->deleteLater();
             stdoutReader = 0;
         }
     } else if (channel == &stderrChannel) {
         if (stderrReader) {
+            stderrReader->stop();
             stderrReader->deleteLater();
             stderrReader = 0;
         }
@@ -526,7 +528,7 @@ void QProcessPrivate::startProcess()
     if (!pid)
         return;
 
-    if (threadData->eventDispatcher) {
+    if (threadData->hasEventDispatcher()) {
         processFinishedNotifier = new QWinEventNotifier(pid->hProcess, q);
         QObject::connect(processFinishedNotifier, SIGNAL(activated(HANDLE)), q, SLOT(_q_processDied()));
         processFinishedNotifier->setEnabled(true);
@@ -795,8 +797,8 @@ void QProcessPrivate::findExitCode()
     DWORD theExitCode;
     if (GetExitCodeProcess(pid->hProcess, &theExitCode)) {
         exitCode = theExitCode;
-        //### for now we assume a crash if exit code is less than -1 or the magic number
-        crashed = (exitCode == 0xf291 || (int)exitCode < 0);
+        crashed = (exitCode == 0xf291   // our magic number, see killProcess
+                   || (theExitCode >= 0x80000000 && theExitCode < 0xD0000000));
     }
 }
 

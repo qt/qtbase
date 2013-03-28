@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef VIRTUALKEYBOARDPPS_H_
-#define VIRTUALKEYBOARDPPS_H_
+#ifndef VIRTUALKEYBOARDPPS_H
+#define VIRTUALKEYBOARDPPS_H
 
 #include "qqnxabstractvirtualkeyboard.h"
 
@@ -97,4 +97,4 @@ private:
     static const size_t ms_bufferSize;
 };
 
-#endif /* VIRTUALKEYBOARDPPS_H_ */
+#endif // VIRTUALKEYBOARDPPS_H

@@ -186,6 +186,7 @@ QXcbWindow::QXcbWindow(QWindow *window)
     , m_gravity(XCB_GRAVITY_STATIC)
     , m_mapped(false)
     , m_transparent(false)
+    , m_usingSyncProtocol(false)
     , m_deferredActivation(false)
     , m_embedded(false)
     , m_netWmUserTimeWindow(XCB_NONE)
@@ -354,7 +355,9 @@ void QXcbWindow::create()
     properties[propertyCount++] = atom(QXcbAtom::WM_TAKE_FOCUS);
     properties[propertyCount++] = atom(QXcbAtom::_NET_WM_PING);
 
-    if (m_screen->syncRequestSupported())
+    m_usingSyncProtocol = m_screen->syncRequestSupported() && window()->surfaceType() != QSurface::OpenGLSurface;
+
+    if (m_usingSyncProtocol)
         properties[propertyCount++] = atom(QXcbAtom::_NET_WM_SYNC_REQUEST);
 
     if (window()->flags() & Qt::WindowContextHelpButtonHint)
@@ -371,7 +374,7 @@ void QXcbWindow::create()
     m_syncValue.hi = 0;
     m_syncValue.lo = 0;
 
-    if (m_screen->syncRequestSupported()) {
+    if (m_usingSyncProtocol) {
         m_syncCounter = xcb_generate_id(xcb_connection());
         Q_XCB_CALL(xcb_sync_create_counter(xcb_connection(), m_syncCounter, m_syncValue));
 
@@ -463,7 +466,7 @@ void QXcbWindow::destroy()
     if (connection()->focusWindow() == this)
         connection()->setFocusWindow(0);
 
-    if (m_syncCounter && m_screen->syncRequestSupported())
+    if (m_syncCounter && m_usingSyncProtocol)
         Q_XCB_CALL(xcb_sync_destroy_counter(xcb_connection(), m_syncCounter));
     if (m_window) {
         if (m_netWmUserTimeWindow) {
@@ -1824,7 +1827,7 @@ void QXcbWindow::handleFocusOutEvent(const xcb_focus_out_event_t *)
 
 void QXcbWindow::updateSyncRequestCounter()
 {
-    if (m_screen->syncRequestSupported() && (m_syncValue.lo != 0 || m_syncValue.hi != 0)) {
+    if (m_usingSyncProtocol && (m_syncValue.lo != 0 || m_syncValue.hi != 0)) {
         Q_XCB_CALL(xcb_sync_set_counter(xcb_connection(), m_syncCounter, m_syncValue));
         xcb_flush(xcb_connection());
         connection()->sync();

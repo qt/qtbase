@@ -2518,7 +2518,7 @@ void tst_QWizard::task161658_alignments()
     wizard.show();
     QVERIFY(QTest::qWaitForWindowExposed(&wizard));
 
-    foreach (QLabel *subtitleLabel, qFindChildren<QLabel *>(&wizard)) {
+    foreach (QLabel *subtitleLabel, wizard.findChildren<QLabel *>()) {
         if (subtitleLabel->text().startsWith("SUBTITLE#")) {
             QCOMPARE(lineEdit1.mapToGlobal(lineEdit1.contentsRect().bottomRight()).x(),
                      subtitleLabel->mapToGlobal(subtitleLabel->contentsRect().bottomRight()).x());

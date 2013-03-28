@@ -8,6 +8,3 @@ INCLUDEPATH  += ../
 QT += widgets testlib
 HEADERS      += 
 SOURCES      += tst_qshortcut.cpp
-
-
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

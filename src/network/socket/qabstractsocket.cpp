@@ -643,7 +643,7 @@ bool QAbstractSocketPrivate::initSocketLayer(QAbstractSocket::NetworkLayerProtoc
         return false;
     }
 
-    if (threadData->eventDispatcher)
+    if (threadData->hasEventDispatcher())
         socketEngine->setReceiver(this);
 
 #if defined (QABSTRACTSOCKET_DEBUG)
@@ -1134,7 +1134,7 @@ void QAbstractSocketPrivate::_q_connectToNextAddress()
         }
 
         // Start the connect timer.
-        if (threadData->eventDispatcher) {
+        if (threadData->hasEventDispatcher()) {
             if (!connectTimer) {
                 connectTimer = new QTimer(q);
                 QObject::connect(connectTimer, SIGNAL(timeout()),
@@ -1159,7 +1159,7 @@ void QAbstractSocketPrivate::_q_connectToNextAddress()
 void QAbstractSocketPrivate::_q_testConnection()
 {
     if (socketEngine) {
-        if (threadData->eventDispatcher) {
+        if (threadData->hasEventDispatcher()) {
             if (connectTimer)
                 connectTimer->stop();
         }
@@ -1180,7 +1180,7 @@ void QAbstractSocketPrivate::_q_testConnection()
             addresses.clear();
     }
 
-    if (threadData->eventDispatcher) {
+    if (threadData->hasEventDispatcher()) {
         if (connectTimer)
             connectTimer->stop();
     }
@@ -1640,7 +1640,7 @@ void QAbstractSocket::connectToHost(const QString &hostName, quint16 port,
         return;
 #endif
     } else {
-        if (d->threadData->eventDispatcher) {
+        if (d->threadData->hasEventDispatcher()) {
             // this internal API for QHostInfo either immediately gives us the desired
             // QHostInfo from cache or later calls the _q_startConnecting slot.
             bool immediateResultValid = false;
@@ -1846,7 +1846,7 @@ bool QAbstractSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState 
         return false;
     }
 
-    if (d->threadData->eventDispatcher)
+    if (d->threadData->hasEventDispatcher())
         d->socketEngine->setReceiver(d);
 
     QIODevice::open(openMode);

@@ -42,9 +42,9 @@
 #ifndef QLOCALE_BLACKBERRY_H
 #define QLOCALE_BLACKBERRY_H
 
-#include "qsocketnotifier.h"
-#include "qreadwritelock.h"
-#include "qlocale.h"
+#include <QtCore/qsocketnotifier.h>
+#include <QtCore/qreadwritelock.h>
+#include <QtCore/qlocale.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -73,7 +73,7 @@ public Q_SLOTS:
     void readHourFormat();
 
 private:
-    QByteArray readPpsValue(const char* ppsPath, const char* ppsObject, int* ppsFd);
+    QByteArray readPpsValue(const char* ppsObject, int ppsFd);
     QString getCorrectFormat(const QString &baseFormat, QLocale::FormatType typeFormat);
 
     QByteArray lc_langage;

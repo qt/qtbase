@@ -183,24 +183,24 @@ void tst_QCalendarWidget::buttonClickCheck()
     QDate selectedDate(2005, 1, 1);
     //click on the month buttons
     int month = object.monthShown();
-    QToolButton *button = qFindChild<QToolButton *>(&object, "qt_calendar_prevmonth");
+    QToolButton *button = object.findChild<QToolButton *>("qt_calendar_prevmonth");
     QTest::mouseClick(button, Qt::LeftButton);
 	QCOMPARE(month > 1 ? month-1 : 12, object.monthShown());
-    button = qFindChild<QToolButton *>(&object, "qt_calendar_nextmonth");
+    button = object.findChild<QToolButton *>("qt_calendar_nextmonth");
     QTest::mouseClick(button, Qt::LeftButton);
     QCOMPARE(month, object.monthShown());
 
-    button = qFindChild<QToolButton *>(&object, "qt_calendar_yearbutton");
+    button = object.findChild<QToolButton *>("qt_calendar_yearbutton");
     QTest::mouseClick(button, Qt::LeftButton, Qt::NoModifier, button->rect().center(), 2);
     QVERIFY(!button->isVisible());
-    QSpinBox *spinbox = qFindChild<QSpinBox *>(&object, "qt_calendar_yearedit");
+    QSpinBox *spinbox = object.findChild<QSpinBox *>("qt_calendar_yearedit");
     QTest::qWait(500);
     QTest::keyClick(spinbox, '2');
     QTest::keyClick(spinbox, '0');
     QTest::keyClick(spinbox, '0');
     QTest::keyClick(spinbox, '6');
     QTest::qWait(500);
-    QWidget *widget = qFindChild<QWidget *>(&object, "qt_calendar_calendarview");
+    QWidget *widget = object.findChild<QWidget *>("qt_calendar_calendarview");
     QTest::mouseMove(widget);
     QTest::mouseClick(widget, Qt::LeftButton);
     QCOMPARE(2006, object.yearShown());
@@ -212,11 +212,11 @@ void tst_QCalendarWidget::buttonClickCheck()
     object.setDateRange(QDate(2006,1,1), QDate(2006,2,28));
     object.setSelectedDate(QDate(2006,1,1));
     object.showSelectedDate();
-    button = qFindChild<QToolButton *>(&object, "qt_calendar_prevmonth");
+    button = object.findChild<QToolButton *>("qt_calendar_prevmonth");
     QTest::mouseClick(button, Qt::LeftButton);
     QCOMPARE(1, object.monthShown());
 
-    button = qFindChild<QToolButton *>(&object, "qt_calendar_nextmonth");
+    button = object.findChild<QToolButton *>("qt_calendar_nextmonth");
     QTest::mouseClick(button, Qt::LeftButton);
     QCOMPARE(2, object.monthShown());
     QTest::mouseClick(button, Qt::LeftButton);
@@ -351,7 +351,7 @@ void tst_QCalendarWidget::showPrevNext()
 
     // QTBUG-4058
     QTest::qWait(20);
-    QToolButton *button = qFindChild<QToolButton *>(&calWidget, "qt_calendar_prevmonth");
+    QToolButton *button = calWidget.findChild<QToolButton *>("qt_calendar_prevmonth");
     QTest::mouseClick(button, Qt::LeftButton);
     expectedDate = expectedDate.addMonths(-1);
     QCOMPARE(calWidget.yearShown(), expectedDate.year());

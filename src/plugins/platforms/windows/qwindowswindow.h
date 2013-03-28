@@ -131,7 +131,8 @@ public:
         FrameStrutEventsEnabled = 0x200,
         SynchronousGeometryChangeEvent = 0x400,
         WithinSetStyle = 0x800,
-        WithinDestroy = 0x1000
+        WithinDestroy = 0x1000,
+        TouchRegistered = 0x2000
     };
 
     struct WindowData

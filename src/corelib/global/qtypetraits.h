@@ -245,6 +245,10 @@ template<> struct is_integral<unsigned long long> : true_type { };
 template <class T> struct is_integral<const T> : is_integral<T> { };
 template <class T> struct is_integral<volatile T> : is_integral<T> { };
 template <class T> struct is_integral<const volatile T> : is_integral<T> { };
+#if defined (Q_COMPILER_UNICODE_STRINGS)
+template<> struct is_integral<char16_t> : true_type { };
+template<> struct is_integral<char32_t> : true_type { };
+#endif
 
 // is_floating_point is false except for the built-in floating-point types.
 // A cv-qualified type is integral if and only if the underlying type is.

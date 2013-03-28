@@ -3081,7 +3081,7 @@ protected:
 private slots:
     void checkMenu()
     {
-        if (qFindChild<QMenu *>(this))
+        if (this->findChild<QMenu *>())
             embeddedPopup = true;
         hide();
     }

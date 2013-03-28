@@ -306,8 +306,9 @@ void qt_set_thread_name(HANDLE threadId, LPCSTR threadName)
 
 void QThreadPrivate::createEventDispatcher(QThreadData *data)
 {
-    data->eventDispatcher = new QEventDispatcherWin32;
-    data->eventDispatcher->startingUp();
+    QEventDispatcherWin32 *theEventDispatcher = new QEventDispatcherWin32;
+    data->eventDispatcher.storeRelease(theEventDispatcher);
+    theEventDispatcher->startingUp();
 }
 
 #ifndef QT_NO_THREAD
@@ -328,8 +329,8 @@ unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(voi
         data->quitNow = thr->d_func()->exited;
     }
 
-    if (data->eventDispatcher) // custom event dispatcher set?
-        data->eventDispatcher->startingUp();
+    if (data->eventDispatcher.load()) // custom event dispatcher set?
+        data->eventDispatcher.load()->startingUp();
     else
         createEventDispatcher(data);
 
@@ -364,7 +365,7 @@ void QThreadPrivate::finish(void *arg, bool lockAnyway)
     QThreadStorageData::finish(tls_data);
     locker.relock();
 
-    QAbstractEventDispatcher *eventDispatcher = d->data->eventDispatcher;
+    QAbstractEventDispatcher *eventDispatcher = d->data->eventDispatcher.load();
     if (eventDispatcher) {
         d->data->eventDispatcher = 0;
         locker.unlock();
@@ -587,55 +588,49 @@ void QThread::setTerminationEnabled(bool enabled)
     }
 }
 
-void QThread::setPriority(Priority priority)
+// Caller must hold the mutex
+void QThreadPrivate::setPriority(QThread::Priority threadPriority)
 {
-    Q_D(QThread);
-    QMutexLocker locker(&d->mutex);
-    if (!d->running) {
-        qWarning("QThread::setPriority: Cannot set priority, thread is not running");
-        return;
-    }
-
     // copied from start() with a few modifications:
 
     int prio;
-    d->priority = priority;
-    switch (d->priority) {
-    case IdlePriority:
+    priority = threadPriority;
+    switch (priority) {
+    case QThread::IdlePriority:
         prio = THREAD_PRIORITY_IDLE;
         break;
 
-    case LowestPriority:
+    case QThread::LowestPriority:
         prio = THREAD_PRIORITY_LOWEST;
         break;
 
-    case LowPriority:
+    case QThread::LowPriority:
         prio = THREAD_PRIORITY_BELOW_NORMAL;
         break;
 
-    case NormalPriority:
+    case QThread::NormalPriority:
         prio = THREAD_PRIORITY_NORMAL;
         break;
 
-    case HighPriority:
+    case QThread::HighPriority:
         prio = THREAD_PRIORITY_ABOVE_NORMAL;
         break;
 
-    case HighestPriority:
+    case QThread::HighestPriority:
         prio = THREAD_PRIORITY_HIGHEST;
         break;
 
-    case TimeCriticalPriority:
+    case QThread::TimeCriticalPriority:
         prio = THREAD_PRIORITY_TIME_CRITICAL;
         break;
 
-    case InheritPriority:
+    case QThread::InheritPriority:
     default:
         qWarning("QThread::setPriority: Argument cannot be InheritPriority");
         return;
     }
 
-    if (!SetThreadPriority(d->handle, prio)) {
+    if (!SetThreadPriority(handle, prio)) {
         qErrnoWarning("QThread::setPriority: Failed to set thread priority");
     }
 }

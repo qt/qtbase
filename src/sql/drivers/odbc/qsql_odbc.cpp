@@ -960,11 +960,6 @@ bool QODBCResult::reset (const QString& query)
         return false;
     }
 
-    if(r == SQL_NO_DATA) {
-        setSelect(false);
-        return true;
-    }
-
     SQLINTEGER bufferLength;
     SQLULEN isScrollable;
     r = SQLGetStmtAttr(d->hStmt, SQL_ATTR_CURSOR_SCROLLABLE, &isScrollable, SQL_IS_INTEGER, &bufferLength);
@@ -1407,7 +1402,7 @@ bool QODBCResult::exec()
 
                     // (How many leading digits do we want to keep?  With SQL Server 2005, this should be 3: 123000000)
                     int keep = (int)qPow(10.0, 9 - qMin(9, precision));
-                    dt->fraction /= keep * keep;
+                    dt->fraction = (dt->fraction / keep) * keep;
                 }
 
                 r = SQLBindParameter(d->hStmt,
@@ -1592,7 +1587,7 @@ bool QODBCResult::exec()
         }
     }
     r = SQLExecute(d->hStmt);
-    if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO) {
+    if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO && r != SQL_NO_DATA) {
         qWarning() << "QODBCResult::exec: Unable to execute statement:" << qODBCWarn(d);
         setLastError(qMakeError(QCoreApplication::translate("QODBCResult",
                      "Unable to execute statement"), QSqlError::StatementError, d));

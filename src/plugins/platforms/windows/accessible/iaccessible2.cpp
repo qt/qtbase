@@ -645,7 +645,8 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_locationInParent(long *x, l
 
     QPoint topLeft = accessible->rect().topLeft();
 
-    if (QAccessibleInterface *parentIface = accessible->parent())
+    QAccessibleInterface *parentIface = accessible->parent();
+    if (parentIface && parentIface->isValid())
         topLeft -= parentIface->rect().topLeft();
 
     *x = topLeft.x();
@@ -1596,7 +1597,7 @@ uint QWindowsIA2Accessible::uniqueID() const
     if (!uid) {
         QAccessibleInterface *acc = accessible;
         QVector<int> indexOfNodes;
-        while (acc && !acc->object()) {
+        while (acc && acc->isValid() && !acc->object()) {
             QAccessibleInterface *par = acc->parent();
             indexOfNodes.append(par->indexOfChild(acc));
             if (acc != accessible)

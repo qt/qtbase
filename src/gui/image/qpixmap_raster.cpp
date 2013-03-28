@@ -239,8 +239,9 @@ QImage QRasterPlatformPixmap::toImage(const QRect &rect) const
         return image;
 
     QRect clipped = rect.intersected(QRect(0, 0, w, h));
-    if (d % 8 == 0)
-        return QImage(image.scanLine(clipped.y()) + clipped.x() * (d / 8),
+    const uint du = uint(d);
+    if ((du % 8 == 0) && (((uint(clipped.x()) * du)) % 32 == 0))
+        return QImage(image.scanLine(clipped.y()) + clipped.x() * (du / 8),
                       clipped.width(), clipped.height(),
                       image.bytesPerLine(), image.format());
     else

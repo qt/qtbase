@@ -6,4 +6,3 @@ CONFIG -= debug_and_release_target
 
 
 TARGET = alive
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

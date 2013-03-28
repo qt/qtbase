@@ -6,4 +6,3 @@ QT += testlib
 SOURCES += tst_qimageiohandler.cpp
 
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

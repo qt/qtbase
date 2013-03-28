@@ -142,8 +142,8 @@ QString CppCodeMarker::markedUpSynopsis(const Node *node,
         name = linkTag(node, name);
     name = "<@name>" + name + "</@name>";
 
-    if (style == Detailed && !node->parent()->name().isEmpty() &&
-            node->type() != Node::Property)
+    if ((style == Detailed) && !node->parent()->name().isEmpty() &&
+        (node->type() != Node::Property) && !node->isQmlNode())
         name.prepend(taggedNode(node->parent()) + "::");
 
     switch (node->type()) {
@@ -1258,9 +1258,24 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
             append(sections,qmlattachedmethods);
         }
         else {
+            /*
+              This is where the list of all members including inherited
+              members is prepared.
+             */
+            ClassMap* classMap = 0;
             FastSection all(qmlClassNode,QString(),QString(),"member","members");
             const QmlClassNode* current = qmlClassNode;
             while (current != 0) {
+                /*
+                  If the QML type is abstract, do not create
+                  a new entry in the list for it. Instead,
+                  add its members to the current entry.
+                 */
+                if (!current->isAbstract()) {
+                    classMap = new ClassMap;
+                    classMap->first = current;
+                    all.classMapList_.append(classMap);
+                }
                 NodeList::ConstIterator c = current->childNodes().constBegin();
                 while (c != current->childNodes().constEnd()) {
                     if ((*c)->subType() == Node::QmlPropertyGroup) {
@@ -1268,21 +1283,19 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
                         NodeList::ConstIterator p = qpgn->childNodes().constBegin();
                         while (p != qpgn->childNodes().constEnd()) {
                             if ((*p)->type() == Node::QmlProperty) {
-                                QString key = current->name() + "::" + (*p)->name();
+                                QString key = (*p)->name();
                                 key = sortName(*p, &key);
-                                if (!all.memberMap.contains(key)) {
-                                    all.memberMap.insert(key,*p);
-                                }
+                                all.memberMap.insert(key,*p);
+                                classMap->second.insert(key,*p);
                             }
                             ++p;
                         }
                     }
                     else {
-                        QString key = current->name() + "::" + (*c)->name();
+                        QString key = (*c)->name();
                         key = sortName(*c, &key);
-                        if (!all.memberMap.contains(key)) {
-                            all.memberMap.insert(key,*c);
-                        }
+                        all.memberMap.insert(key,*c);
+                        classMap->second.insert(key,*c);
                     }
                     ++c;
                 }

@@ -40,6 +40,12 @@
 
 #include "numberformats.h"
 
+#include <QGridLayout>
+#include <QLabel>
+#include <QLineEdit>
+#include <QLocale>
+#include <QVBoxLayout>
+
 NumberFormatsWidget::NumberFormatsWidget()
 {
     QGridLayout *l = new QGridLayout;

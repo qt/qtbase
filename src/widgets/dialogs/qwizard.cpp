@@ -507,16 +507,18 @@ void QWizardPagePrivate::_q_updateCachedCompleteState()
 
 class QWizardAntiFlickerWidget : public QWidget
 {
-    QWizard *wizard;
-    QWizardPrivate *wizardPrivate;
 public:
+#if !defined(QT_NO_STYLE_WINDOWSVISTA)
+    QWizardPrivate *wizardPrivate;
     QWizardAntiFlickerWidget(QWizard *wizard, QWizardPrivate *wizardPrivate)
         : QWidget(wizard)
-        , wizard(wizard)
         , wizardPrivate(wizardPrivate) {}
-#if !defined(QT_NO_STYLE_WINDOWSVISTA)
 protected:
     void paintEvent(QPaintEvent *);
+#else
+    QWizardAntiFlickerWidget(QWizard *wizard, QWizardPrivate *)
+        : QWidget(wizard)
+    {}
 #endif
 };
 

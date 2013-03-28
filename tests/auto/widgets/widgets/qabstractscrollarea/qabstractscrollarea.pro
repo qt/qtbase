@@ -9,4 +9,3 @@ QT += widgets testlib
 SOURCES += tst_qabstractscrollarea.cpp
 
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

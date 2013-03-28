@@ -612,7 +612,7 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::accNavigate(long navDir, VARIA
     case NAVDIR_PREVIOUS:
         if (!varStart.lVal){
             QAccessibleInterface *parent = accessible->parent();
-            if (parent) {
+            if (parent && parent->isValid()) {
                 int index = parent->indexOfChild(accessible);
                 index += (navDir == NAVDIR_NEXT) ? 1 : -1;
                 if (index >= 0 && index < parent->childCount())
@@ -631,8 +631,9 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::accNavigate(long navDir, VARIA
     case NAVDIR_UP:
     case NAVDIR_DOWN:
     case NAVDIR_LEFT:
-    case NAVDIR_RIGHT:
-        if (QAccessibleInterface *pIface = accessible->parent()) {
+    case NAVDIR_RIGHT: {
+        QAccessibleInterface *pIface = accessible->parent();
+        if (pIface && pIface->isValid()) {
             const int indexOfOurself = pIface->indexOfChild(accessible);
             QRect startg = accessible->rect();
             QPoint startc = startg.center();
@@ -709,6 +710,7 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::accNavigate(long navDir, VARIA
             delete pIface;
             acc = candidate;
         }
+    }
         break;
     default:
         break;

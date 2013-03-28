@@ -236,6 +236,7 @@ private slots:
     void eventTest();
     void customWidget();
     void deletedWidget();
+    void subclassedWidget();
 
     void statesStructTest();
     void navigateHierarchy();
@@ -294,38 +295,6 @@ QAccessible::State state(QWidget * const widget)
     return iface->state();
 }
 
-class QtTestAccessibleWidget: public QWidget
-{
-    Q_OBJECT
-public:
-    QtTestAccessibleWidget(QWidget *parent, const char *name): QWidget(parent)
-    {
-        setObjectName(name);
-        QPalette pal;
-        pal.setColor(backgroundRole(), Qt::black);//black is beautiful
-        setPalette(pal);
-        setFixedSize(5, 5);
-    }
-};
-
-class QtTestAccessibleWidgetIface: public QAccessibleWidget
-{
-public:
-    QtTestAccessibleWidgetIface(QtTestAccessibleWidget *w): QAccessibleWidget(w) {}
-    QString text(QAccessible::Text t) const
-    {
-        if (t == QAccessible::Help)
-            return QString::fromLatin1("Help yourself");
-        return QAccessibleWidget::text(t);
-    }
-    static QAccessibleInterface *ifaceFactory(const QString &key, QObject *o)
-    {
-        if (key == "QtTestAccessibleWidget")
-            return new QtTestAccessibleWidgetIface(static_cast<QtTestAccessibleWidget*>(o));
-        return 0;
-    }
-};
-
 tst_QAccessibility::tst_QAccessibility()
 {
     click_count = 0;
@@ -343,7 +312,6 @@ void tst_QAccessibility::onClicked()
 void tst_QAccessibility::initTestCase()
 {
     QTestAccessibility::initialize();
-    QAccessible::installFactory(QtTestAccessibleWidgetIface::ifaceFactory);
 }
 
 void tst_QAccessibility::cleanupTestCase()
@@ -396,26 +364,115 @@ void tst_QAccessibility::eventTest()
     QVERIFY(QTestAccessibility::containsEvent(&hideEvent));
 
     delete button;
+
+    // Make sure that invalid events don't bring down the system
+    // these events can be in user code.
+    QWidget *widget = new QWidget();
+    QAccessibleEvent ev1(widget, QAccessible::Focus);
+    QAccessible::updateAccessibility(&ev1);
+
+    QAccessibleEvent ev2(widget, QAccessible::Focus);
+    ev2.setChild(7);
+    QAccessible::updateAccessibility(&ev2);
+    delete widget;
+
+    QObject *object = new QObject();
+    QAccessibleEvent ev3(object, QAccessible::Focus);
+    QAccessible::updateAccessibility(&ev3);
+    delete object;
+
+    QTestAccessibility::clearEvents();
 }
+
+
+class QtTestAccessibleWidget: public QWidget
+{
+    Q_OBJECT
+public:
+    QtTestAccessibleWidget(QWidget *parent, const char *name): QWidget(parent)
+    {
+        setObjectName(name);
+    }
+};
+
+class QtTestAccessibleWidgetIface: public QAccessibleWidget
+{
+public:
+    QtTestAccessibleWidgetIface(QtTestAccessibleWidget *w): QAccessibleWidget(w) {}
+    QString text(QAccessible::Text t) const
+    {
+        if (t == QAccessible::Help)
+            return QString::fromLatin1("Help yourself");
+        return QAccessibleWidget::text(t);
+    }
+    static QAccessibleInterface *ifaceFactory(const QString &key, QObject *o)
+    {
+        if (key == "QtTestAccessibleWidget")
+            return new QtTestAccessibleWidgetIface(static_cast<QtTestAccessibleWidget*>(o));
+        return 0;
+    }
+};
+
+class QtTestAccessibleWidgetSubclass: public QtTestAccessibleWidget
+{
+    Q_OBJECT
+public:
+    QtTestAccessibleWidgetSubclass(QWidget *parent, const char *name): QtTestAccessibleWidget(parent, name)
+    {}
+};
 
 void tst_QAccessibility::customWidget()
 {
+    {
     QtTestAccessibleWidget* widget = new QtTestAccessibleWidget(0, "Heinz");
-
+    widget->show();
+    QTest::qWaitForWindowExposed(widget);
+    // By default we create QAccessibleWidget
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(widget);
     QVERIFY(iface != 0);
     QVERIFY(iface->isValid());
     QCOMPARE(iface->object(), (QObject*)widget);
     QCOMPARE(iface->object()->objectName(), QString("Heinz"));
-    QCOMPARE(iface->text(QAccessible::Help), QString("Help yourself"));
-
+    QCOMPARE(iface->rect().height(), widget->height());
+    QCOMPARE(iface->text(QAccessible::Help), QString());
+    QCOMPARE(iface->rect().height(), widget->height());
     delete iface;
     delete widget;
+    }
+    {
+    QAccessible::installFactory(QtTestAccessibleWidgetIface::ifaceFactory);
+    QtTestAccessibleWidget* widget = new QtTestAccessibleWidget(0, "Heinz");
+    widget->show();
+    QTest::qWaitForWindowExposed(widget);
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(widget);
+    QVERIFY(iface != 0);
+    QVERIFY(iface->isValid());
+    QCOMPARE(iface->object(), (QObject*)widget);
+    QCOMPARE(iface->object()->objectName(), QString("Heinz"));
+    QCOMPARE(iface->rect().height(), widget->height());
+    // The help text is only set if our factory works
+    QCOMPARE(iface->text(QAccessible::Help), QString("Help yourself"));
+    delete iface;
+    delete widget;
+    }
+    {
+    // A subclass of any class should still get the right QAccessibleInterface
+    QtTestAccessibleWidgetSubclass* subclassedWidget = new QtTestAccessibleWidgetSubclass(0, "Hans");
+    QAccessibleInterface *subIface = QAccessible::queryAccessibleInterface(subclassedWidget);
+    QVERIFY(subIface != 0);
+    QVERIFY(subIface->isValid());
+    QCOMPARE(subIface->object(), (QObject*)subclassedWidget);
+    QCOMPARE(subIface->text(QAccessible::Help), QString("Help yourself"));
+    delete subIface;
+    delete subclassedWidget;
+    }
+    QTestAccessibility::clearEvents();
 }
 
 void tst_QAccessibility::deletedWidget()
 {
     QtTestAccessibleWidget *widget = new QtTestAccessibleWidget(0, "Ralf");
+    QAccessible::installFactory(QtTestAccessibleWidgetIface::ifaceFactory);
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(widget);
     QVERIFY(iface != 0);
     QVERIFY(iface->isValid());
@@ -425,6 +482,25 @@ void tst_QAccessibility::deletedWidget()
     widget = 0;
     QVERIFY(!iface->isValid());
     delete iface;
+}
+
+class KFooButton: public QPushButton
+{
+    Q_OBJECT
+public:
+    KFooButton(const QString &text, QWidget* parent = 0) : QPushButton(text, parent)
+    {}
+};
+
+void tst_QAccessibility::subclassedWidget()
+{
+    KFooButton button("Ploink", 0);
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&button);
+    QVERIFY(iface);
+    QCOMPARE(iface->object(), (QObject*)&button);
+    QCOMPARE(iface->text(QAccessible::Name), button.text());
+    delete iface;
+    QTestAccessibility::clearEvents();
 }
 
 void tst_QAccessibility::statesStructTest()
@@ -598,10 +674,8 @@ void tst_QAccessibility::accessibleName()
 {
     QWidget *toplevel = createWidgets();
     toplevel->show();
-#if defined(Q_OS_UNIX)
-    QCoreApplication::processEvents();
-    QTest::qWait(100);
-#endif
+    QVERIFY(QTest::qWaitForWindowExposed(toplevel));
+
     QLayout *lout = toplevel->layout();
     for (int i = 0; i < lout->count(); i++) {
         QLayoutItem *item = lout->itemAt(i);
@@ -610,12 +684,12 @@ void tst_QAccessibility::accessibleName()
         QString name = tr("Widget Name %1").arg(i);
         child->setAccessibleName(name);
         QAccessibleInterface *acc = QAccessible::queryAccessibleInterface(child);
+        QVERIFY(acc);
         QCOMPARE(acc->text(QAccessible::Name), name);
 
         QString desc = tr("Widget Description %1").arg(i);
         child->setAccessibleDescription(desc);
         QCOMPARE(acc->text(QAccessible::Description), desc);
-
     }
 
     delete toplevel;

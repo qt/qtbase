@@ -160,7 +160,14 @@ static bool createFileFromTemplate(NativeFileHandle &file,
             return true;
 
         DWORD err = GetLastError();
-        if (err != ERROR_FILE_EXISTS) {
+        if (err == ERROR_ACCESS_DENIED) {
+            DWORD attributes = GetFileAttributes((const wchar_t *)path.constData());
+            if (attributes == INVALID_FILE_ATTRIBUTES) {
+                // Potential write error (read-only parent directory, etc.).
+                error = QSystemError(err, QSystemError::NativeError);
+                return false;
+            } // else file already exists as a directory.
+        } else if (err != ERROR_FILE_EXISTS) {
             error = QSystemError(err, QSystemError::NativeError);
             return false;
         }

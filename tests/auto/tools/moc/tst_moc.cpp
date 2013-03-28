@@ -2902,7 +2902,6 @@ void tst_Moc::parseDefines()
     index = mo->indexOfSlot("combined6()");
     QVERIFY(index != -1);
 
-#if defined(Q_COMPILER_VARIADIC_MACROS)
     index = mo->indexOfSlot("vararg1()");
     QVERIFY(index != -1);
     index = mo->indexOfSlot("vararg2(int)");
@@ -2915,7 +2914,6 @@ void tst_Moc::parseDefines()
     QVERIFY(index != -1);
     index = mo->indexOfSlot("vararg6(int,int)");
     QVERIFY(index != -1);
-#endif
 
     index = mo->indexOfSlot("INNERFUNCTION(int)");
     QVERIFY(index != -1);

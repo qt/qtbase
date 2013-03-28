@@ -316,7 +316,6 @@ void tst_QApplication::alert()
     widget.activateWindow();
     QApplication::setActiveWindow(&widget);
     app.alert(&widget, 200);
-    app.syncX();
 }
 
 void tst_QApplication::multiple_data()
@@ -1242,7 +1241,7 @@ public slots:
 
 void DeleteLaterWidget::runTest()
 {
-    QObject *stillAlive = qFindChild<QObject*>(this, "deleteLater");
+    QObject *stillAlive = this->findChild<QObject*>("deleteLater");
 
     QWidget *w = new QWidget(this);
     connect(w, SIGNAL(destroyed()), this, SLOT(childDeleted()));
@@ -1288,7 +1287,7 @@ void tst_QApplication::testDeleteLater()
     object->setObjectName("deleteLater");
     object->deleteLater();
 
-    QObject *stillAlive = qFindChild<QObject*>(wgt, "deleteLater");
+    QObject *stillAlive = wgt->findChild<QObject*>("deleteLater");
     QVERIFY(stillAlive);
 
     app.exec();

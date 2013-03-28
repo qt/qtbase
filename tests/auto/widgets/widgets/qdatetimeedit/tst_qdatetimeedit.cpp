@@ -2818,7 +2818,7 @@ void tst_QDateTimeEdit::calendarPopup()
     opt.subControls = QStyle::SC_ComboBoxArrow;
     QRect rect = style->subControlRect(QStyle::CC_ComboBox, &opt, QStyle::SC_ComboBoxArrow, testWidget);
     QTest::mouseClick(testWidget, Qt::LeftButton, 0, QPoint(rect.left()+rect.width()/2, rect.top()+rect.height()/2));
-    QWidget *wid = qFindChild<QWidget *>(testWidget, "qt_datetimedit_calendar");
+    QWidget *wid = testWidget->findChild<QWidget *>("qt_datetimedit_calendar");
     QVERIFY(wid != 0);
     testWidget->hide();
 
@@ -2830,7 +2830,7 @@ void tst_QDateTimeEdit::calendarPopup()
     opt.subControls = QStyle::SC_ComboBoxArrow;
     rect = style->subControlRect(QStyle::CC_ComboBox, &opt, QStyle::SC_ComboBoxArrow, &timeEdit);
     QTest::mouseClick(&timeEdit, Qt::LeftButton, 0, QPoint(rect.left()+rect.width()/2, rect.top()+rect.height()/2));
-    QWidget *wid2 = qFindChild<QWidget *>(&timeEdit, "qt_datetimedit_calendar");
+    QWidget *wid2 = timeEdit.findChild<QWidget *>("qt_datetimedit_calendar");
     QVERIFY(wid2 == 0);
     timeEdit.hide();
 
@@ -2844,7 +2844,7 @@ void tst_QDateTimeEdit::calendarPopup()
     opt.subControls = QStyle::SC_ComboBoxArrow;
     rect = style->subControlRect(QStyle::CC_ComboBox, &opt, QStyle::SC_ComboBoxArrow, &dateEdit);
     QTest::mouseClick(&dateEdit, Qt::LeftButton, 0, QPoint(rect.left()+rect.width()/2, rect.top()+rect.height()/2));
-    QWidget *wid3 = qFindChild<QWidget *>(&dateEdit, "qt_datetimedit_calendar");
+    QWidget *wid3 = dateEdit.findChild<QWidget *>("qt_datetimedit_calendar");
     QVERIFY(wid3 == 0);
     dateEdit.hide();
 }

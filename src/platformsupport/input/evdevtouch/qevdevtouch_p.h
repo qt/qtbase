@@ -61,7 +61,7 @@ class QEvdevTouchScreenHandler : public QObject
     Q_OBJECT
 
 public:
-    explicit QEvdevTouchScreenHandler(const QString &spec = QString(), QObject *parent = 0);
+    explicit QEvdevTouchScreenHandler(const QString &specification = QString(), QObject *parent = 0);
     ~QEvdevTouchScreenHandler();
 
 private slots:

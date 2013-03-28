@@ -39,8 +39,10 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
 #include "../shared/shared.h"
+
+#include <QApplication>
+#include <QPushButton>
 
 class Child : public StaticWidget
 {

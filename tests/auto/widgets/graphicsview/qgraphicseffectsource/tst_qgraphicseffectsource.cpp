@@ -260,7 +260,7 @@ void tst_QGraphicsEffectSource::boundingRect()
     QCOMPARE(effect->source()->boundingRect(Qt::DeviceCoordinates), QRectF());
 
     QRectF itemBoundingRect = item->boundingRect();
-    if (!item->children().isEmpty())
+    if (!item->childItems().isEmpty())
         itemBoundingRect |= item->childrenBoundingRect();
 
     // We can at least check that the device bounding rect was correct in QGraphicsEffect::draw.

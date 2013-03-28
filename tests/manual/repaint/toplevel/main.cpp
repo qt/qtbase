@@ -39,8 +39,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
 #include "../shared/shared.h"
+
+#include <QApplication>
 
 int main(int argc, char **argv)
 {

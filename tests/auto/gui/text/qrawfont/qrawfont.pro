@@ -8,4 +8,3 @@ SOURCES += \
     tst_qrawfont.cpp
 
 TESTDATA += testfont_bold_italic.ttf  testfont.ttf
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

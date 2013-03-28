@@ -76,10 +76,11 @@ QPlatformDialogHelper *QQnxTheme::createPlatformDialogHelper(DialogType type) co
     switch (type) {
     case QPlatformTheme::FileDialog:
         return new QQnxFileDialogHelper(m_integration);
-#ifndef QT_NO_COLORDIALOG
+#endif
+#if !defined(QT_NO_COLORDIALOG)
     case QPlatformTheme::ColorDialog:
 #endif
-#ifndef QT_NO_FONTDIALOG
+#if !defined(QT_NO_FONTDIALOG)
     case QPlatformTheme::FontDialog:
 #endif
     default:

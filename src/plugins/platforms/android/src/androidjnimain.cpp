@@ -126,8 +126,6 @@ static int m_desktopHeightPixels = 0;
 
 static volatile bool m_pauseApplication;
 
-static jmethodID m_setFullScreenMethodID = 0;
-
 static AndroidAssetsFileEngineHandler *m_androidAssetsFileEngineHandler = 0;
 
 
@@ -270,24 +268,6 @@ namespace QtAndroid
     {
         QMutexLocker locker(&m_surfaceMutex);
         return m_androidPlatformIntegration;
-    }
-
-    void setFullScreen(QWidget *widget)
-    {
-        AttachedJNIEnv env;
-        if (!env.jniEnv)
-            return;
-
-        bool fullScreen = widget->isFullScreen();
-        if (!fullScreen) {
-            foreach (QWidget *w, qApp->topLevelWidgets()) {
-                fullScreen |= w->isFullScreen();
-                if (fullScreen)
-                    break;
-            }
-        }
-
-        env.jniEnv->CallStaticVoidMethod(m_applicationClass, m_setFullScreenMethodID, fullScreen);
     }
 
     QWindow *topLevelWindowAt(const QPoint &globalPos)
@@ -674,9 +654,9 @@ static void updateWindow(JNIEnv */*env*/, jobject /*thiz*/)
     if (!m_androidPlatformIntegration)
         return;
 
-    if (qApp != 0) {
-        foreach (QWidget *w, qApp->topLevelWidgets())
-            w->update();
+    if (QGuiApplication::instance() != 0) {
+        foreach (QWindow *w, QGuiApplication::topLevelWindows())
+            QWindowSystemInterface::handleExposeEvent(w, QRegion(w->geometry()));
     }
 
 #ifndef ANDROID_PLUGIN_OPENGL
@@ -763,7 +743,6 @@ static int registerNatives(JNIEnv *env)
     }
 
     GET_AND_CHECK_STATIC_METHOD(m_redrawSurfaceMethodID, m_applicationClass, "redrawSurface", "(IIII)V");
-    GET_AND_CHECK_STATIC_METHOD(m_setFullScreenMethodID, m_applicationClass, "setFullScreen", "(Z)V");
 
 #ifdef ANDROID_PLUGIN_OPENGL
     FIND_AND_CHECK_CLASS("android/view/Surface");

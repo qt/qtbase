@@ -588,6 +588,8 @@ extern void qRegisterWidgetsVariant();
 */
 void QApplicationPrivate::initialize()
 {
+    is_app_running = false; // Starting up.
+
     QWidgetPrivate::mapper = new QWidgetMapper;
     QWidgetPrivate::allWidgets = new QWidgetSet;
 
@@ -600,8 +602,6 @@ void QApplicationPrivate::initialize()
     // trigger registering of QStateMachine's GUI types
     qRegisterGuiStateMachine();
 #endif
-
-    is_app_running = true; // no longer starting up
 
     if (qgetenv("QT_USE_NATIVE_WINDOWS").toInt() > 0)
         QCoreApplication::setAttribute(Qt::AA_NativeWindows);
@@ -627,6 +627,8 @@ void QApplicationPrivate::initialize()
     if (QApplication::desktopSettingsAware())
         if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
             QApplicationPrivate::enabledAnimations = theme->themeHint(QPlatformTheme::UiEffects).toInt();
+
+    is_app_running = true; // no longer starting up
 }
 
 /*****************************************************************************
@@ -3365,6 +3367,34 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         break;
     }
 #endif // QT_NO_GESTURES
+#ifdef Q_OS_MAC
+    // Enable touch events on enter, disable on leave.
+    typedef void (*RegisterTouchWindowFn)(QWindow *,  bool);
+    case QEvent::Enter:
+        if (receiver->isWidgetType()) {
+            QWidget *w = static_cast<QWidget *>(receiver);
+            if (w->testAttribute(Qt::WA_AcceptTouchEvents)) {
+                RegisterTouchWindowFn registerTouchWindow = reinterpret_cast<RegisterTouchWindowFn>
+                        (platformNativeInterface()->nativeResourceFunctionForIntegration("registertouchwindow"));
+                if (registerTouchWindow)
+                    registerTouchWindow(w->window()->windowHandle(), true);
+            }
+        }
+        res = d->notify_helper(receiver, e);
+    break;
+    case QEvent::Leave:
+        if (receiver->isWidgetType()) {
+            QWidget *w = static_cast<QWidget *>(receiver);
+            if (w->testAttribute(Qt::WA_AcceptTouchEvents)) {
+                RegisterTouchWindowFn registerTouchWindow = reinterpret_cast<RegisterTouchWindowFn>
+                        (platformNativeInterface()->nativeResourceFunctionForIntegration("registertouchwindow"));
+                if (registerTouchWindow)
+                    registerTouchWindow(w->window()->windowHandle(), false);
+            }
+        }
+        res = d->notify_helper(receiver, e);
+    break;
+#endif
     default:
         res = d->notify_helper(receiver, e);
         break;
@@ -3786,7 +3816,7 @@ bool QApplicationPrivate::translateTouchToMouse(QWidget *widget, QTouchEvent *ev
 
         const QPoint pos = widget->mapFromGlobal(p.screenPos().toPoint());
 
-        QMouseEvent mouseEvent(eventType, pos,
+        QMouseEvent mouseEvent(eventType, pos, p.screenPos().toPoint(),
                                Qt::LeftButton, Qt::LeftButton,
                                event->modifiers());
         mouseEvent.setAccepted(true);

@@ -63,6 +63,7 @@ class QAccessibleTable :public QAccessibleTableInterface, public QAccessibleObje
 {
 public:
     explicit QAccessibleTable(QWidget *w);
+    bool isValid() const;
 
     virtual ~QAccessibleTable();
 

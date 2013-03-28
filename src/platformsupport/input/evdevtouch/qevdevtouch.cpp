@@ -159,7 +159,7 @@ static inline bool testBit(long bit, const long *array)
     return (array[bit / LONG_BITS] >> bit % LONG_BITS) & 1;
 }
 
-QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &spec, QObject *parent)
+QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &specification, QObject *parent)
     : QObject(parent), m_notify(0), m_fd(-1), d(0)
 #ifdef USE_MTDEV
       , m_mtdev(0)
@@ -170,7 +170,13 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &spec, QObject 
     QString dev;
 
     // only the first device argument is used for now
+    QString spec = QString::fromLocal8Bit(qgetenv("QT_QPA_EVDEV_TOUCHSCREEN_PARAMETERS"));
+
+    if (spec.isEmpty())
+        spec = specification;
+
     QStringList args = spec.split(QLatin1Char(':'));
+
     for (int i = 0; i < args.count(); ++i) {
         if (args.at(i).startsWith(QLatin1String("/dev/"))) {
             dev = args.at(i);

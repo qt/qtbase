@@ -278,6 +278,9 @@ private slots:
     void QTBUG26013_squareCapStroke();
     void QTBUG25153_drawLine();
 
+    void cosmeticStrokerClipping_data();
+    void cosmeticStrokerClipping();
+
 private:
     void fillData();
     void setPenColor(QPainter& p);
@@ -4456,6 +4459,77 @@ void tst_QPainter::QTBUG25153_drawLine()
         QCOMPARE(image.pixel(0, 1), 0xffffffff);
         QCOMPARE(image.pixel(1, 0), 0xffffffff);
     }
+}
+
+enum CosmeticStrokerPaint
+{
+    Antialiasing,
+    Dashing
+};
+
+static void paint_func(QPainter *p, CosmeticStrokerPaint type)
+{
+    p->save();
+    switch (type) {
+    case Antialiasing:
+        p->setPen(Qt::black);
+        p->setRenderHint(QPainter::Antialiasing);
+        p->drawLine(4, 8, 42, 42);
+        break;
+    case Dashing:
+        p->setPen(QPen(Qt::black, 1, Qt::DashLine, Qt::RoundCap, Qt::MiterJoin));
+        p->drawLine(8, 8, 42, 8);
+        p->drawLine(42, 8, 42, 42);
+        p->drawLine(42, 42, 8, 42);
+        p->drawLine(8, 42, 8, 8);
+        break;
+    default:
+        Q_ASSERT(false);
+        break;
+    }
+    p->restore();
+}
+
+Q_DECLARE_METATYPE(CosmeticStrokerPaint)
+
+void tst_QPainter::cosmeticStrokerClipping_data()
+{
+    QTest::addColumn<CosmeticStrokerPaint>("paint");
+
+    QTest::newRow("antialiasing_paint") << Antialiasing;
+    QTest::newRow("dashing_paint") << Dashing;
+}
+
+void tst_QPainter::cosmeticStrokerClipping()
+{
+    QFETCH(CosmeticStrokerPaint, paint);
+
+    QImage image(50, 50, QImage::Format_RGB32);
+    image.fill(Qt::white);
+
+    QPainter p(&image);
+    paint_func(&p, paint);
+    p.end();
+
+    QImage old = image.copy();
+
+    image.paintEngine()->setSystemClip(QRect(10, 0, image.width() - 10, image.height()));
+
+    p.begin(&image);
+    p.fillRect(image.rect(), Qt::white);
+    paint_func(&p, paint);
+
+    // doing same paint operation again with different system clip should not change the image
+    QCOMPARE(old, image);
+
+    old = image;
+
+    p.setClipRect(QRect(20, 20, 30, 30));
+    p.fillRect(image.rect(), Qt::white);
+    paint_func(&p, paint);
+
+    // ditto for regular clips
+    QCOMPARE(old, image);
 }
 
 QTEST_MAIN(tst_QPainter)

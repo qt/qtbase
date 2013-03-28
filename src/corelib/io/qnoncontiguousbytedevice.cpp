@@ -388,9 +388,16 @@ bool QNonContiguousByteDeviceIoDeviceImpl::reset()
 {
     if (resetDisabled)
         return false;
-
-    if (device->seek(initialPosition)) {
+    bool reset = (initialPosition == 0) ? device->reset() : device->seek(initialPosition);
+    if (reset) {
         eof = false; // assume eof is false, it will be true after a read has been attempted
+        totalAdvancements = 0; //reset the progress counter
+        if (currentReadBuffer) {
+            delete currentReadBuffer;
+            currentReadBuffer = 0;
+        }
+        currentReadBufferAmount = 0;
+        currentReadBufferPosition = 0;
         return true;
     }
 

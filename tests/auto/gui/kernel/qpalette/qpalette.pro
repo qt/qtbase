@@ -6,4 +6,3 @@ SOURCES  += tst_qpalette.cpp
 
 
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

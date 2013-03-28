@@ -232,7 +232,9 @@ void QXunitTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
         QTest::AI_Metric,
         QTest::benchmarkMetricName(QBenchmarkTestMethodData::current->result.metric));
     benchmarkElement->addAttribute(QTest::AI_Tag, result.context.tag.toUtf8().data());
-    benchmarkElement->addAttribute(QTest::AI_Value, QByteArray::number(result.value).constData());
+
+    const qreal valuePerIteration = qreal(result.value) / qreal(result.iterations);
+    benchmarkElement->addAttribute(QTest::AI_Value, QByteArray::number(valuePerIteration).constData());
 
     char buf[100];
     qsnprintf(buf, sizeof(buf), "%i", result.iterations);

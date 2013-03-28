@@ -198,6 +198,7 @@ QStringMatcher::QStringMatcher(const QStringMatcher &other)
 */
 QStringMatcher::~QStringMatcher()
 {
+    Q_UNUSED(d_ptr);
 }
 
 /*!

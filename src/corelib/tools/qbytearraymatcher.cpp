@@ -164,6 +164,7 @@ QByteArrayMatcher::QByteArrayMatcher(const QByteArrayMatcher &other)
 */
 QByteArrayMatcher::~QByteArrayMatcher()
 {
+    Q_UNUSED(d);
 }
 
 /*!

@@ -265,7 +265,7 @@ void tst_QDialogButtonBox::addButton1()
     QPushButton *button = new QPushButton();
     buttonBox.addButton(button, role);
     QTEST(buttonBox.buttons().count(), "totalCount");
-    QList<QAbstractButton *> children = qFindChildren<QAbstractButton *>(&buttonBox);
+    QList<QAbstractButton *> children = buttonBox.findChildren<QAbstractButton *>();
     QTEST(children.count(), "totalCount");
     delete button;
 }
@@ -292,7 +292,7 @@ void tst_QDialogButtonBox::addButton2()
     QCOMPARE(buttonBox.buttons().count(), 0);
     buttonBox.addButton(text, role);
     QTEST(buttonBox.buttons().count(), "totalCount");
-    QList<QAbstractButton *> children = qFindChildren<QAbstractButton *>(&buttonBox);
+    QList<QAbstractButton *> children = buttonBox.findChildren<QAbstractButton *>();
     QTEST(children.count(), "totalCount");
 }
 
@@ -319,7 +319,7 @@ void tst_QDialogButtonBox::addButton3()
     QCOMPARE(buttonBox.buttons().count(), 0);
     buttonBox.addButton(button);
     QTEST(buttonBox.buttons().count(), "totalCount");
-    QList<QAbstractButton *> children = qFindChildren<QAbstractButton *>(&buttonBox);
+    QList<QAbstractButton *> children = buttonBox.findChildren<QAbstractButton *>();
     QTEST(children.count(), "totalCount");
 }
 
@@ -341,7 +341,7 @@ void tst_QDialogButtonBox::clear()
         buttonBox.addButton("Happy", QDialogButtonBox::ButtonRole(i));
     buttonBox.clear();
     QCOMPARE(buttonBox.buttons().count(), 0);
-    QList<QAbstractButton *> children = qFindChildren<QAbstractButton *>(&buttonBox);
+    QList<QAbstractButton *> children = buttonBox.findChildren<QAbstractButton *>();
     QCOMPARE(children.count(), 0);
 }
 
@@ -376,11 +376,11 @@ void tst_QDialogButtonBox::testDelete()
     QPushButton *deleteMe = new QPushButton("Happy");
     buttonBox.addButton(deleteMe, QDialogButtonBox::HelpRole);
     QCOMPARE(buttonBox.buttons().count(), 1);
-    QList<QAbstractButton *> children = qFindChildren<QAbstractButton *>(&buttonBox);
+    QList<QAbstractButton *> children = buttonBox.findChildren<QAbstractButton *>();
     QCOMPARE(children.count(), 1);
 
     delete deleteMe;
-    children = qFindChildren<QAbstractButton *>(&buttonBox);
+    children = buttonBox.findChildren<QAbstractButton *>();
     QCOMPARE(children.count(), 0);
     QCOMPARE(buttonBox.buttons().count(), 0);
 }

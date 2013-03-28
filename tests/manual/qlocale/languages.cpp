@@ -40,6 +40,10 @@
 
 #include "languages.h"
 
+#include <QLabel>
+#include <QListWidget>
+#include <QHBoxLayout>
+
 LanguagesWidget::LanguagesWidget()
 {
     QVBoxLayout *l = new QVBoxLayout(this);

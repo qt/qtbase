@@ -99,6 +99,7 @@ bool OpenGLWindow::event(QEvent *event)
 {
     switch (event->type()) {
     case QEvent::UpdateRequest:
+        m_update_pending = false;
         renderNow();
         return true;
     default:
@@ -113,14 +114,6 @@ void OpenGLWindow::exposeEvent(QExposeEvent *event)
     if (isExposed())
         renderNow();
 }
-
-void OpenGLWindow::resizeEvent(QResizeEvent *event)
-{
-    Q_UNUSED(event);
-
-    if (isExposed())
-        renderNow();
-}
 //! [3]
 
 //! [4]
@@ -128,8 +121,6 @@ void OpenGLWindow::renderNow()
 {
     if (!isExposed())
         return;
-
-    m_update_pending = false;
 
     bool needsInitialize = false;
 

@@ -392,8 +392,11 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
 #else
         fd = open(sourceFile.local().toLatin1().constData(), O_RDONLY);
 #endif
-        if(fd == -1 || fstat(fd, &fst) || S_ISDIR(fst.st_mode))
+        if (fd == -1 || fstat(fd, &fst) || S_ISDIR(fst.st_mode)) {
+            if (fd != -1)
+                QT_CLOSE(fd);
             return false;
+        }
         buffer = getBuffer(fst.st_size);
         for(int have_read = 0;
             (have_read = QT_READ(fd, buffer + buffer_len, fst.st_size - buffer_len));
@@ -702,8 +705,11 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
 #else
         fd = open(fixPathForFile(file->file, true).local().toLocal8Bit().constData(), O_RDONLY);
 #endif
-        if(fd == -1 || fstat(fd, &fst) || S_ISDIR(fst.st_mode))
+        if (fd == -1 || fstat(fd, &fst) || S_ISDIR(fst.st_mode)) {
+            if (fd != -1)
+                QT_CLOSE(fd);
             return false; //shouldn't happen
+        }
         buffer = getBuffer(fst.st_size);
         for(int have_read = buffer_len = 0;
             (have_read = QT_READ(fd, buffer + buffer_len, fst.st_size - buffer_len));

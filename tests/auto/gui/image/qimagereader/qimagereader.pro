@@ -11,4 +11,3 @@ win32-msvc.net:QMAKE_CXXFLAGS -= -Zm300
 win32-msvc.net:QMAKE_CXXFLAGS += -Zm1100
 
 TESTDATA += images/* baseline/*
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

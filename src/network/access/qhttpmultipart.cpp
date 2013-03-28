@@ -488,6 +488,7 @@ bool QHttpMultiPartIODevice::reset()
     for (int a = 0; a < multiPart->parts.count(); a++)
         if (!multiPart->parts[a].d->reset())
             return false;
+    readPointer = 0;
     return true;
 }
 qint64 QHttpMultiPartIODevice::readData(char *data, qint64 maxSize)

@@ -2504,6 +2504,9 @@
     to be explicitly set for instances of QListWidgetItem, QTableWidgetItem,
     and QTreeWidgetItem.
 
+    Note that it is undefined behavior to reimplement QAbstractItemModel::hasChildren
+    to return true for an index if that index has the Qt::ItemNeverHasChildren flag set.
+
     \sa QAbstractItemModel
 */
 

@@ -10,4 +10,3 @@ qtHaveModule(widgets): QT += widgets
 SOURCES += tst_qtextobject.cpp
 
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

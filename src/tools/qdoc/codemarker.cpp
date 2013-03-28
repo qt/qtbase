@@ -381,8 +381,9 @@ QString CodeMarker::sortName(const Node *node, const QString* name)
     if ((node->type() == Node::QmlMethod) ||
         (node->type() == Node::QmlSignal) ||
         (node->type() == Node::QmlSignalHandler)) {
-        const FunctionNode* func = static_cast<const FunctionNode *>(node);
-        return QLatin1Char('E') + func->signature();
+        //const FunctionNode* func = static_cast<const FunctionNode *>(node);
+        //return QLatin1Char('E') + func->name();
+        return QLatin1Char('E') + nodeName;
     }
 
     return QLatin1Char('B') + nodeName;
@@ -397,7 +398,8 @@ void CodeMarker::insert(FastSection &fastSection,
     bool inheritedMember = false;
     if (!node->relates()) {
         if (node->parent() != fastSection.parent_) { // && !node->parent()->isAbstract()) {
-            if (node->type() != Node::QmlProperty) {
+            if ((node->parent()->subType() != Node::QmlClass) || !node->parent()->isAbstract()) {
+                //if (node->type() != Node::QmlProperty) {
                 inheritedMember = true;
             }
         }
@@ -438,8 +440,7 @@ void CodeMarker::insert(FastSection &fastSection,
     if (!irrelevant) {
         if (!inheritedMember || style == Subpage) {
             QString key = sortName(node);
-            if (!fastSection.memberMap.contains(key))
-                fastSection.memberMap.insert(key, node);
+            fastSection.memberMap.insertMulti(key, node);
         }
         else {
             if (node->parent()->type() == Node::Class) {
@@ -519,14 +520,59 @@ bool CodeMarker::insertReimpFunc(FastSection& fs, Node* node, Status status)
 void CodeMarker::append(QList<Section>& sectionList, const FastSection& fs, bool includeKeys)
 {
     if (!fs.isEmpty()) {
-        Section section(fs.name,fs.divClass,fs.singularMember,fs.pluralMember);
-        if (includeKeys) {
-            section.keys = fs.memberMap.keys();
+        if (fs.classMapList_.isEmpty()) {
+            Section section(fs.name,fs.divClass,fs.singularMember,fs.pluralMember);
+            if (includeKeys) {
+                section.keys = fs.memberMap.keys();
+            }
+            section.members = fs.memberMap.values();
+            section.reimpMembers = fs.reimpMemberMap.values();
+            section.inherited = fs.inherited;
+            sectionList.append(section);
         }
-        section.members = fs.memberMap.values();
-        section.reimpMembers = fs.reimpMemberMap.values();
-        section.inherited = fs.inherited;
-        sectionList.append(section);
+        else {
+            Section section(fs.name,fs.divClass,fs.singularMember,fs.pluralMember);
+            sectionList.append(section);
+            Section* s = &sectionList[sectionList.size()-1];
+            for (int i=0; i<fs.classMapList_.size(); i++) {
+                ClassMap* classMap = fs.classMapList_[i];
+                ClassKeysNodes* ckn = new ClassKeysNodes;
+                ckn->first = classMap->first;
+                ckn->second.second = classMap->second.values();
+                ckn->second.first = classMap->second.keys();
+                s->classKeysNodesList_.append(ckn);
+             }
+        }
+    }
+}
+
+/*!
+  The destructor must delete each member of the
+  list of QML class lists, if it is not empty;
+ */
+Section::~Section()
+{
+    if (!classKeysNodesList_.isEmpty()) {
+        for (int i=0; i<classKeysNodesList_.size(); i++) {
+            ClassKeysNodes* classKeysNodes = classKeysNodesList_[i];
+            classKeysNodesList_[i] = 0;
+            delete classKeysNodes;
+        }
+    }
+}
+
+/*!
+  The destructor must delete the QML class maps in the class
+  map list, if the class map list is not empty.
+ */
+FastSection::~FastSection()
+{
+    if (!classMapList_.isEmpty()) {
+        for (int i=0; i<classMapList_.size(); i++) {
+            ClassMap* classMap = classMapList_[i];
+            classMapList_[i] = 0;
+            delete classMap;
+        }
     }
 }
 

@@ -41,7 +41,11 @@
 #ifndef NUMBERFORMATS_H
 #define NUMBERFORMATS_H
 
-#include <QtWidgets>
+#include <QWidget>
+#include <QLocale>
+
+class QLineEdit;
+class QLabel;
 
 class NumberFormatsWidget : public QWidget
 {

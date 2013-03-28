@@ -35,3 +35,4 @@ include(itemmodels/itemmodels.pri)
 
 QMAKE_LIBS += $$QMAKE_LIBS_GUI
 
+QMAKE_DYNAMIC_LIST_FILE = $$PWD/QtGui.dynlist

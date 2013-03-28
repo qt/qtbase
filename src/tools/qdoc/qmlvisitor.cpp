@@ -88,6 +88,7 @@ QmlDocVisitor::QmlDocVisitor(const QString &filePath,
                              QSet<QString> &topics)
     : nestingLevel(0)
 {
+    lastEndOffset = 0;
     this->filePath = filePath;
     this->name = QFileInfo(filePath).baseName();
     document = code;
@@ -117,21 +118,21 @@ QQmlJS::AST::SourceLocation QmlDocVisitor::precedingComment(quint32 offset) cons
 
         QQmlJS::AST::SourceLocation loc = it.previous();
 
-        if (loc.begin() <= lastEndOffset)
+        if (loc.begin() <= lastEndOffset) {
             // Return if we reach the end of the preceding structure.
             break;
-
-        else if (usedComments.contains(loc.begin()))
+        }
+        else if (usedComments.contains(loc.begin())) {
             // Return if we encounter a previously used comment.
             break;
-
+        }
         else if (loc.begin() > lastEndOffset && loc.end() < offset) {
-
             // Only examine multiline comments in order to avoid snippet markers.
             if (document.at(loc.offset - 1) == QLatin1Char('*')) {
                 QString comment = document.mid(loc.offset, loc.length);
-                if (comment.startsWith(QLatin1Char('!')) || comment.startsWith(QLatin1Char('*')))
+                if (comment.startsWith(QLatin1Char('!')) || comment.startsWith(QLatin1Char('*'))) {
                     return loc;
+                }
             }
         }
     }
@@ -165,8 +166,9 @@ bool QmlDocVisitor::applyDocumentation(QQmlJS::AST::SourceLocation location, Nod
         node->setDoc(doc);
         applyMetacommands(loc, node, doc);
         usedComments.insert(loc.offset);
-        if (doc.isEmpty())
+        if (doc.isEmpty()) {
             return false;
+        }
         return true;
     }
     Location codeLoc(filePath);
@@ -601,9 +603,15 @@ void QmlDocVisitor::endVisit(QQmlJS::AST::FunctionDeclaration* fd)
 /*!
   Begin the visit of the signal handler declaration \a sb, but only
   if the nesting level is 1.
+
+  This visit is now deprecated. It has been decided to document
+  public signals. If a signal handler must be discussed in the
+  documentation, that discussion must take place in the comment
+  for the signal.
  */
-bool QmlDocVisitor::visit(QQmlJS::AST::UiScriptBinding* sb)
+bool QmlDocVisitor::visit(QQmlJS::AST::UiScriptBinding* )
 {
+#if 0
     if (nestingLevel > 1) {
         return true;
     }
@@ -617,6 +625,7 @@ bool QmlDocVisitor::visit(QQmlJS::AST::UiScriptBinding* sb)
             }
         }
     }
+#endif
     return true;
 }
 

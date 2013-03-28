@@ -64,6 +64,7 @@ QDocIndexFiles* QDocIndexFiles::qdocIndexFiles_ = NULL;
   Constructs the singleton QDocIndexFiles.
  */
 QDocIndexFiles::QDocIndexFiles()
+    : gen_( 0 )
 {
     qdb_ = QDocDatabase::qdocDB();
 }

@@ -3071,6 +3071,35 @@ QShortcutEvent::~QShortcutEvent()
 #endif // QT_NO_SHORTCUT
 
 #ifndef QT_NO_DEBUG_STREAM
+
+static inline void formatTouchEvent(QDebug d, const char *name, const QTouchEvent &t)
+{
+    d << "QTouchEvent(" << name << " states: " <<  t.touchPointStates();
+    const QList<QTouchEvent::TouchPoint> points = t.touchPoints();
+    const int size = points.size();
+    d << ", " << size << " points: ";
+    for (int i = 0; i < size; ++i) {
+        if (i)
+            d << ", ";
+        d << points.at(i).pos() << ' ' << points.at(i).rect();
+        switch (points.at(i).state()) {
+        case Qt::TouchPointPressed:
+            d << " pressed";
+            break;
+        case Qt::TouchPointReleased:
+            d << " released";
+            break;
+        case Qt::TouchPointMoved:
+            d << " moved";
+            break;
+        case Qt::TouchPointStationary:
+            d << " stationary";
+            break;
+        }
+    }
+    d << ')';
+}
+
 QDebug operator<<(QDebug dbg, const QEvent *e) {
     // More useful event output could be added here
     if (!e)
@@ -3337,6 +3366,14 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
     case QEvent::UngrabKeyboard:
         n = "UngrabKeyboard";
         break;
+    case QEvent::TouchBegin:
+        n = "TouchBegin";
+    case QEvent::TouchUpdate:
+        n = n ? n : "TouchUpdate";
+    case QEvent::TouchEnd:
+        n = n ? n : "TouchEnd";
+        formatTouchEvent(dbg.nospace(), n, *static_cast<const QTouchEvent*>(e));
+        return dbg.nospace();
     case QEvent::ChildAdded: n = n ? n : "ChildAdded";
     case QEvent::ChildPolished: n = n ? n : "ChildPolished";
     case QEvent::ChildRemoved: n = n ? n : "ChildRemoved";

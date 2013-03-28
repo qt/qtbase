@@ -337,7 +337,10 @@ void QAndroidInputContext::reset()
 void QAndroidInputContext::commit()
 {
     finishComposingText();
+}
 
+void QAndroidInputContext::updateCursorPosition()
+{
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
     if (!query.isNull()) {
         const int cursorPos = query->value(Qt::ImCursorPosition).toInt();
@@ -378,6 +381,12 @@ void QAndroidInputContext::showInputPanel()
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
     if (query.isNull())
         return;
+
+    disconnect(m_updateCursorPosConnection);
+    if (qGuiApp->focusObject()->metaObject()->indexOfSignal("cursorPositionChanged(int,int)") >= 0) // QLineEdit breaks the pattern
+        m_updateCursorPosConnection = connect(qGuiApp->focusObject(), SIGNAL(cursorPositionChanged(int,int)), this, SLOT(updateCursorPosition()));
+    else
+        m_updateCursorPosConnection = connect(qGuiApp->focusObject(), SIGNAL(cursorPositionChanged()), this, SLOT(updateCursorPosition()));
     QRectF itemRect = qGuiApp->inputMethod()->inputItemRectangle();
     QRect rect = qGuiApp->inputMethod()->inputItemTransform().mapRect(itemRect).toRect();
     QWindow *window = qGuiApp->focusWindow();

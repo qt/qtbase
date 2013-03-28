@@ -141,7 +141,7 @@ void tst_QProgressDialog::task198202()
     QProgressDialog dlg(QLatin1String("test"),QLatin1String("test"),1,10);
     dlg.show();
     QVERIFY(QTest::qWaitForWindowExposed(&dlg));
-    int futureHeight = dlg.sizeHint().height() - qFindChild<QLabel*>(&dlg)->sizeHint().height();
+    int futureHeight = dlg.sizeHint().height() - dlg.findChild<QLabel*>()->sizeHint().height();
     dlg.setLabel(0);
     QTest::ignoreMessage(QtWarningMsg, "QProgressDialog::setBar: Cannot set a null progress bar");
     dlg.setBar(0);

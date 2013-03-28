@@ -819,7 +819,7 @@ void tst_QTreeView::editTriggers()
     view.setCurrentIndex(view.model()->index(0, 0));
 
     // Verify that we don't have any editor initially
-    QVERIFY(!qFindChild<QLineEdit *>(&view, QString()));
+    QVERIFY(!view.findChild<QLineEdit *>(QString()));
 
     // Set the triggers
     view.setEditTriggers(editTriggers);
@@ -865,7 +865,7 @@ void tst_QTreeView::editTriggers()
 #ifdef Q_OS_MAC
     QEXPECT_FAIL("EditKeyPressed 4", "QTBUG-23696", Continue);
 #endif
-    QTRY_COMPARE(qFindChild<QLineEdit *>(&view, QString()) != 0, editorOpened);
+    QTRY_COMPARE(view.findChild<QLineEdit *>(QString()) != 0, editorOpened);
 }
 
 void tst_QTreeView::hasAutoScroll()
@@ -1032,7 +1032,7 @@ void tst_QTreeView::indexWidget()
     QCOMPARE(view.indexWidget(index), static_cast<QWidget *>(widget));
 
     QCOMPARE(widget->parentWidget(), view.viewport());
-    QCOMPARE(widget->geometry(), view.visualRect(index).intersect(widget->geometry()));
+    QCOMPARE(widget->geometry(), view.visualRect(index).intersected(widget->geometry()));
     QCOMPARE(widget->toPlainText(), text);
 }
 
@@ -1228,15 +1228,15 @@ void tst_QTreeView::openPersistentEditor()
     view.setModel(&treeModel);
     view.show();
 
-    QVERIFY(!qFindChild<QLineEdit *>(view.viewport()));
+    QVERIFY(!view.viewport()->findChild<QLineEdit *>());
     view.openPersistentEditor(view.model()->index(0, 0));
-    QVERIFY(qFindChild<QLineEdit *>(view.viewport()));
+    QVERIFY(view.viewport()->findChild<QLineEdit *>());
 
     view.closePersistentEditor(view.model()->index(0, 0));
-    QVERIFY(!qFindChild<QLineEdit *>(view.viewport())->isVisible());
+    QVERIFY(!view.viewport()->findChild<QLineEdit *>()->isVisible());
 
     qApp->sendPostedEvents(0, QEvent::DeferredDelete);
-    QVERIFY(!qFindChild<QLineEdit *>(view.viewport()));
+    QVERIFY(!view.viewport()->findChild<QLineEdit *>());
 }
 
 void tst_QTreeView::rootIndex()
@@ -4255,7 +4255,7 @@ void tst_QTreeView::quickExpandCollapse()
     QVERIFY(rootIndex.isValid());
 
     tree.show();
-    QTest::qWaitForWindowShown(&tree);
+    QTest::qWaitForWindowExposed(&tree);
 
     int initialState = tree.state();
 

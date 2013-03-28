@@ -67,11 +67,19 @@ QBBSystemLocaleData::QBBSystemLocaleData()
     , regionNotifier(0)
     , measurementNotifier(0)
     , hourNotifier(0)
-    , languageFd(-1)
-    , regionFd(-1)
-    , measurementFd(-1)
-    , hourFd(-1)
 {
+    if ((measurementFd = qt_safe_open(ppsUomPath, O_RDONLY)) == -1)
+        qWarning("Failed to open uom pps, errno=%d", errno);
+
+    if ((regionFd = qt_safe_open(ppsRegionLocalePath, O_RDONLY)) == -1)
+        qWarning("Failed to open region pps, errno=%d", errno);
+
+    if ((languageFd = qt_safe_open(ppsLanguageLocalePath, O_RDONLY)) == -1)
+        qWarning("Failed to open language pps, errno=%d", errno);
+
+    if ((hourFd = qt_safe_open(ppsHourFormatPath, O_RDONLY)) == -1)
+        qWarning("Failed to open hour format pps, errno=%d", errno);
+
     // we cannot call this directly, because by the time this constructor is
     // called, the event dispatcher has not yet been created, causing the
     // subsequent call to QSocketNotifier constructor to fail.
@@ -149,41 +157,35 @@ void QBBSystemLocaleData::installSocketNotifiers()
 
 void QBBSystemLocaleData::readLangageLocale()
 {
-    lc_langage = readPpsValue(ppsLanguageLocalePath, "_CS_LOCALE", &languageFd);
+    lc_langage = readPpsValue("_CS_LOCALE", languageFd);
 }
 
 void QBBSystemLocaleData::readRegionLocale()
 {
-    lc_region = readPpsValue(ppsRegionLocalePath, "region", &regionFd);
+    lc_region = readPpsValue("region", regionFd);
 }
 
 void QBBSystemLocaleData::readMeasurementSystem()
 {
-    QByteArray measurement = readPpsValue(ppsUomPath, "uom", &measurementFd);
+    QByteArray measurement = readPpsValue("uom", measurementFd);
     m_measurementSystem = (qstrcmp(measurement, "imperial") == 0) ? QLocale::ImperialSystem : QLocale::MetricSystem;
 }
 
 void QBBSystemLocaleData::readHourFormat()
 {
-    QByteArray hourFormat = readPpsValue(ppsHourFormatPath, "hourFormat", &hourFd);
+    QByteArray hourFormat = readPpsValue("hourFormat", hourFd);
     is24HourFormat = (qstrcmp(hourFormat, "24") == 0);
 }
 
-QByteArray QBBSystemLocaleData::readPpsValue(const char *ppsPath, const char *ppsObject, int *ppsFd)
+QByteArray QBBSystemLocaleData::readPpsValue(const char *ppsObject, int ppsFd)
 {
     QByteArray result;
-    if (!ppsPath || !ppsObject)
+    if (!ppsObject || ppsFd == -1)
         return result;
-
-    *ppsFd = qt_safe_open(ppsPath, O_RDONLY);
-    if (*ppsFd == -1) {
-        qWarning("Failed to open Locale pps, errno=%d", errno);
-        return result;
-    }
 
     char buffer[ppsBufferSize];
 
-    int bytes = qt_safe_read(*ppsFd, buffer, ppsBufferSize - 1);
+    int bytes = qt_safe_read(ppsFd, buffer, ppsBufferSize - 1);
     if (bytes == -1) {
         qWarning("Failed to read Locale pps, errno=%d", errno);
         return result;

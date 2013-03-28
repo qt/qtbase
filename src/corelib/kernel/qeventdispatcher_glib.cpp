@@ -259,10 +259,11 @@ static gboolean postEventSourcePrepare(GSource *s, gint *timeout)
     gint dummy;
     if (!timeout)
         timeout = &dummy;
-    *timeout = data->canWait ? -1 : 0;
+    const bool canWait = data->canWaitLocked();
+    *timeout = canWait ? -1 : 0;
 
     GPostEventSource *source = reinterpret_cast<GPostEventSource *>(s);
-    return (!data->canWait
+    return (!canWait
             || (source->serialNumber.load() != source->lastSerialNumber));
 }
 

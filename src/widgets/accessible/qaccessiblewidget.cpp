@@ -55,6 +55,7 @@
 #include <QRubberBand>
 #include <QFocusFrame>
 #include <QMenu>
+#include <QtWidgets/private/qwidget_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -152,6 +153,7 @@ QString Q_WIDGETS_EXPORT qt_accHotKey(const QString &text)
     return QString();
 }
 
+// ### inherit QAccessibleObjectPrivate
 class QAccessibleWidgetPrivate
 {
 public:
@@ -202,9 +204,17 @@ QAccessibleWidget::QAccessibleWidget(QWidget *w, QAccessible::Role role, const Q
     d->name = name;
 }
 
+bool QAccessibleWidget::isValid() const
+{
+    if (!object() || static_cast<QWidget *>(object())->d_func()->data.in_destructor)
+        return false;
+    return QAccessibleObject::isValid();
+}
+
 /*! \reimp */
 QWindow *QAccessibleWidget::window() const
 {
+    Q_ASSERT(widget());
     return widget()->windowHandle();
 }
 
@@ -343,6 +353,7 @@ QAccessibleWidget::relations(QAccessible::Relation match /*= QAccessible::AllRel
 /*! \reimp */
 QAccessibleInterface *QAccessibleWidget::parent() const
 {
+    Q_ASSERT(widget());
     QObject *parentWidget= widget()->parentWidget();
     if (!parentWidget)
         parentWidget = qApp;
@@ -352,6 +363,7 @@ QAccessibleInterface *QAccessibleWidget::parent() const
 /*! \reimp */
 QAccessibleInterface *QAccessibleWidget::child(int index) const
 {
+    Q_ASSERT(widget());
     QWidgetList childList = childWidgets(widget());
     if (index >= 0 && index < childList.size())
         return QAccessible::queryAccessibleInterface(childList.at(index));

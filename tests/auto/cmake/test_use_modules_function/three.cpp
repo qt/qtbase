@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <QtTest>
-#include <QWidget>
+#include <QWindow>
 
 class Three : public QObject
 {
@@ -48,7 +48,7 @@ class Three : public QObject
 public:
     Three(QObject *parent = 0)
     {
-        QWidget *w = new QWidget;
+        QWindow *w = new QWindow;
         w->show();
     }
 };

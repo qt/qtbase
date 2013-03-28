@@ -38,9 +38,16 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "calendar.h"
+
+#include <QComboBox>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QCalendarWidget>
+#include <QLabel>
+#include <QDateEdit>
+#include <QCheckBox>
+#include <QTextCharFormat>
 
 CalendarWidget::CalendarWidget()
 {

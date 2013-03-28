@@ -47,7 +47,7 @@
 #include <qtreeview.h>
 #include <private/qtreewidget_p.h>
 #include <QtGui/private/qaccessible2_p.h>
-#include <QDebug>
+#include <QtWidgets/private/qwidget_p.h>
 
 #ifndef QT_NO_ACCESSIBILITY
 
@@ -134,6 +134,11 @@ QAccessibleTable::QAccessibleTable(QWidget *w)
         // is this our best guess?
         m_role = QAccessible::Table;
     }
+}
+
+bool QAccessibleTable::isValid() const
+{
+    return (view() && !qobject_cast<QWidget*>(view())->d_func()->data.in_destructor);
 }
 
 QAccessibleTable::~QAccessibleTable()

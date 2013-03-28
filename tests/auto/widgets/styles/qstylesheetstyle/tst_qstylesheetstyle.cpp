@@ -656,7 +656,7 @@ void tst_QStyleSheetStyle::fontPropagation()
     QTabWidget tw;
     tw.setStyleSheet("QTabWidget { font-size: 20pt; }");
     QVERIFY(FONTSIZE(tw) == 20);
-    QWidget *child = qFindChild<QWidget *>(&tw, "qt_tabwidget_tabbar");
+    QWidget *child = tw.findChild<QWidget *>("qt_tabwidget_tabbar");
     QVERIFY2(child, "QTabWidget did not contain a widget named \"qt_tabwidget_tabbar\"");
     QVERIFY(FONTSIZE(*child) == 20);
 }
@@ -957,7 +957,7 @@ void tst_QStyleSheetStyle::tabAlignement()
     tabWidget.resize(QSize(400,400));
     topLevel.show();
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
-    QTabBar *bar = qFindChild<QTabBar*>(&tabWidget);
+    QTabBar *bar = tabWidget.findChild<QTabBar*>();
     QVERIFY(bar);
     //check the tab is on the right
     tabWidget.setStyleSheet("QTabWidget::tab-bar { alignment: right ; }");
@@ -1030,7 +1030,7 @@ void tst_QStyleSheetStyle::minmaxSizes()
     QVERIFY(qAbs(page3->maximumSize().height() - 500 - 2) <= 2);
     QVERIFY(qAbs(page3->minimumSize().height() - 250 - 2) <= 2);
     QVERIFY(qAbs(page3->minimumSize().height() - 250 - 2) <= 2);
-    QTabBar *bar = qFindChild<QTabBar*>(&tabWidget);
+    QTabBar *bar = tabWidget.findChild<QTabBar*>();
     QVERIFY(bar);
 #ifdef Q_OS_MAC
     QEXPECT_FAIL("", "QTBUG-23686", Continue);

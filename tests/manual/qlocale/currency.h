@@ -41,7 +41,11 @@
 #ifndef CURRENCY_H
 #define CURRENCY_H
 
-#include <QtWidgets>
+#include <QWidget>
+#include <QLocale>
+
+class QLabel;
+class QLineEdit;
 
 class CurrencyWidget : public QWidget
 {

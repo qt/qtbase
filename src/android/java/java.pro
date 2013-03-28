@@ -1,3 +1,5 @@
+CONFIG -= qt
+
 javaresources.files = \
     $$PWD/AndroidManifest.xml \
     $$PWD/res \

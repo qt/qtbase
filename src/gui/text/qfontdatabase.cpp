@@ -503,14 +503,6 @@ static const int scriptForWritingSystem[] = {
     QChar::Script_Han, // Japanese
     QChar::Script_Hangul, // Korean
     QChar::Script_Latin, // Vietnamese
-    QChar::Script_Yi, // Yi
-    QChar::Script_Tagalog, // Tagalog
-    QChar::Script_Hanunoo, // Hanunoo
-    QChar::Script_Buhid, // Buhid
-    QChar::Script_Tagbanwa, // Tagbanwa
-    QChar::Script_Limbu, // Limbu
-    QChar::Script_TaiLe, // TaiLe
-    QChar::Script_Braille, // Braille
     QChar::Script_Common, // Symbol
     QChar::Script_Ogham,  // Ogham
     QChar::Script_Runic, // Runic

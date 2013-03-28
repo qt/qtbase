@@ -294,7 +294,6 @@ void tst_QMenuBar::initSimpleMenubar()
     connect(pm2, SIGNAL(triggered(QAction*)), this, SLOT(onActivated(QAction*)));
 
     mb->show();
-    qApp->syncX();
     qApp->processEvents();
 }
 

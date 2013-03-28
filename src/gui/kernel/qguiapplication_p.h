@@ -107,7 +107,7 @@ public:
     static QAbstractEventDispatcher *qt_qpa_core_dispatcher()
     {
         if (QCoreApplication::instance())
-            return QCoreApplication::instance()->d_func()->threadData->eventDispatcher;
+            return QCoreApplication::instance()->d_func()->threadData->eventDispatcher.load();
         else
             return 0;
     }

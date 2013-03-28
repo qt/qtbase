@@ -1435,7 +1435,12 @@ void QWindow::resize(const QSize &newSize)
     if (d->platformWindow) {
         d->platformWindow->setGeometry(QRect(position(), newSize));
     } else {
+        const QSize oldSize = d->geometry.size();
         d->geometry.setSize(newSize);
+        if (newSize.width() != oldSize.width())
+            emit widthChanged(newSize.width());
+        if (newSize.height() != oldSize.height())
+            emit heightChanged(newSize.height());
     }
 }
 

@@ -736,13 +736,13 @@ QLocale::QLocale(QLocalePrivate &dd)
     The separator can be either underscore or a minus sign.
 
     If the string violates the locale format, or language is not
-    a valid ISO 369 code, the "C" locale is used instead. If country
+    a valid ISO 639 code, the "C" locale is used instead. If country
     is not present, or is not a valid ISO 3166 code, the most
     appropriate country is chosen for the specified language.
 
     The language, script and country codes are converted to their respective
     \c Language, \c Script and \c Country enums. After this conversion is
-    performed the constructor behaves exactly like QLocale(Country, Script,
+    performed, the constructor behaves exactly like QLocale(Country, Script,
     Language).
 
     This constructor is much slower than QLocale(Country, Script, Language).

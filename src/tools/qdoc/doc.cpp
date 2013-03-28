@@ -2678,7 +2678,7 @@ QString DocParser::untabifyEtc(const QString& str)
         if (c == QLatin1Char('\r'))
             continue;
         if (c == QLatin1Char('\t')) {
-            result += "        " + (column % tabSize);
+            result += &"        "[column % tabSize];
             column = ((column / tabSize) + 1) * tabSize;
             continue;
         }

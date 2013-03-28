@@ -64,14 +64,14 @@ void tst_QErrorMessage::dontShowAgain()
     // show an error with plain string
     errorMessageDialog.showMessage(plainString);
     QVERIFY(errorMessageDialog.isVisible());
-    checkBox = qFindChild<QCheckBox*>(&errorMessageDialog);
+    checkBox = errorMessageDialog.findChild<QCheckBox*>();
     QVERIFY(checkBox);
     QVERIFY(checkBox->isChecked());
     errorMessageDialog.close();
 
     errorMessageDialog.showMessage(plainString);
     QVERIFY(errorMessageDialog.isVisible());
-    checkBox = qFindChild<QCheckBox*>(&errorMessageDialog);
+    checkBox = errorMessageDialog.findChild<QCheckBox*>();
     QVERIFY(checkBox);
     QVERIFY(checkBox->isChecked());
     checkBox->setChecked(false);
@@ -83,7 +83,7 @@ void tst_QErrorMessage::dontShowAgain()
     // show an error with an html string
     errorMessageDialog.showMessage(htmlString);
     QVERIFY(errorMessageDialog.isVisible());
-    checkBox = qFindChild<QCheckBox*>(&errorMessageDialog);
+    checkBox = errorMessageDialog.findChild<QCheckBox*>();
     QVERIFY(checkBox);
     QVERIFY(!checkBox->isChecked());
     checkBox->setChecked(true);
@@ -91,7 +91,7 @@ void tst_QErrorMessage::dontShowAgain()
 
     errorMessageDialog.showMessage(htmlString);
     QVERIFY(errorMessageDialog.isVisible());
-    checkBox = qFindChild<QCheckBox*>(&errorMessageDialog);
+    checkBox = errorMessageDialog.findChild<QCheckBox*>();
     QVERIFY(checkBox);
     QVERIFY(checkBox->isChecked());
     checkBox->setChecked(false);
@@ -111,7 +111,7 @@ void tst_QErrorMessage::dontShowCategoryAgain()
 
     errorMessageDialog.showMessage(htmlString,"Cat 1");
     QVERIFY(errorMessageDialog.isVisible());
-    checkBox = qFindChild<QCheckBox*>(&errorMessageDialog);
+    checkBox = errorMessageDialog.findChild<QCheckBox*>();
     QVERIFY(checkBox);
     QVERIFY(checkBox->isChecked());
     checkBox->setChecked(true);
@@ -119,7 +119,7 @@ void tst_QErrorMessage::dontShowCategoryAgain()
 
     errorMessageDialog.showMessage(htmlString,"Cat 1");
     QVERIFY(errorMessageDialog.isVisible());
-    checkBox = qFindChild<QCheckBox*>(&errorMessageDialog);
+    checkBox = errorMessageDialog.findChild<QCheckBox*>();
     QVERIFY(checkBox);
     QVERIFY(checkBox->isChecked());
     checkBox->setChecked(true);
@@ -127,7 +127,7 @@ void tst_QErrorMessage::dontShowCategoryAgain()
 
     errorMessageDialog.showMessage(htmlString2,"Cat 1");
     QVERIFY(errorMessageDialog.isVisible());
-    checkBox = qFindChild<QCheckBox*>(&errorMessageDialog);
+    checkBox = errorMessageDialog.findChild<QCheckBox*>();
     QVERIFY(checkBox);
     QVERIFY(checkBox->isChecked());
     checkBox->setChecked(true);
@@ -135,7 +135,7 @@ void tst_QErrorMessage::dontShowCategoryAgain()
 
     errorMessageDialog.showMessage(htmlString,"Cat 1");
     QVERIFY(errorMessageDialog.isVisible());
-    checkBox = qFindChild<QCheckBox*>(&errorMessageDialog);
+    checkBox = errorMessageDialog.findChild<QCheckBox*>();
     QVERIFY(checkBox);
     QVERIFY(checkBox->isChecked());
     checkBox->setChecked(false);

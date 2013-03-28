@@ -6,4 +6,3 @@ TARGET = tst_qerrormessage
 QT += widgets testlib
 
 SOURCES += tst_qerrormessage.cpp
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

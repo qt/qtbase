@@ -885,6 +885,7 @@ CFG_KMS=auto
 CFG_LIBUDEV=auto
 CFG_OBSOLETE_WAYLAND=no
 CFG_EVDEV=auto
+CFG_TSLIB=no
 CFG_NIS=auto
 CFG_CUPS=auto
 CFG_ICONV=auto
@@ -1196,18 +1197,10 @@ while [ "$#" -gt 0 ]; do
             VAL=`echo $1 | sed 's,-R,,'`
         fi
         ;;
-    -largefile)
-        VAR="largefile"
-        VAL="yes"
-        ;;
-    -l?*|-l)
+    -l)  # -lfoo is handled differently
         VAR="add_link"
-        if [ "$1" = "-l" ]; then
-            shift
-            VAL="$1"
-        else
-            VAL=`echo $1 | sed 's,-l,,'`
-        fi
+        shift
+        VAL="$1"
         ;;
     -F?*|-F)
         VAR="add_fpath"
@@ -1218,14 +1211,10 @@ while [ "$#" -gt 0 ]; do
             VAL=`echo $1 | sed 's,-F,,'`
         fi
         ;;
-    -fw?*|-fw)
+    -fw)  # -fwfoo is handled differently
         VAR="add_framework"
-        if [ "$1" = "-fw" ]; then
-            shift
-            VAL="$1"
-        else
-            VAL=`echo $1 | sed 's,-fw,,'`
-        fi
+        shift
+        VAL="$1"
         ;;
     -W*)
         VAR="add_warn"
@@ -1504,7 +1493,7 @@ while [ "$#" -gt 0 ]; do
     device-option)
         DEV_VAR=`echo $VAL | sed "s,^\(.*\)=.*,\1,"`
         DEV_VAL=`echo $VAL | sed "s,^.*=\(.*\),\1,"`
-        DeviceVar set $DEV_VAR $DEV_VAL
+        DeviceVar set $DEV_VAR "$DEV_VAL"
         ;;
     qpa)
         QT_QPA_DEFAULT_PLATFORM="$VAL"
@@ -1879,6 +1868,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    tslib)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_TSLIB="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     cups)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_CUPS="$VAL"
@@ -2240,6 +2236,16 @@ while [ "$#" -gt 0 ]; do
     android-toolchain-version)
         CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION="$VAL"
         ;;
+    l*)  # -lfoo
+        L_FLAGS="$L_FLAGS -l\"${VAR#l}\""
+        ;;
+    fw*)  # -fwfoo
+        if [ "$BUILD_ON_MAC" = "yes" ]; then
+            L_FLAGS="$L_FLAGS -framework \"${VAR#fw}\""
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     *)
         UNKNOWN_OPT=yes
         ;;
@@ -2351,7 +2357,7 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     if [ -x "$relpath/bin/syncqt" ]; then
         mkdir -p "$outpath/bin"
         echo "#!/bin/sh" >"$outpath/bin/syncqt"
-        echo "perl \"$relpath/bin/syncqt\" -mkspecsdir \"$outpath/mkspecs\" \"\$@\"" >>"$outpath/bin/syncqt"
+        echo "perl \"$relpath/bin/syncqt\" \"\$@\"" >>"$outpath/bin/syncqt"
         chmod 755 "$outpath/bin/syncqt"
     fi
 
@@ -3855,7 +3861,7 @@ setBootstrapVariable()
 
 # build qmake
 if true; then ###[ '!' -f "$outpath/bin/qmake" ];
-    echo "Creating qmake. Please wait..."
+    echo "Creating qmake..."
 
     mkdir -p "$outpath/qmake" || exit
     # fix makefiles
@@ -3999,6 +4005,8 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
 
     (cd "$outpath/qmake"; "$MAKE") || exit 2
 fi # Build qmake
+
+echo "Running configuration tests..."
 
 #-------------------------------------------------------------------------------
 # create a qt.conf for the Qt build tree itself
@@ -4162,7 +4170,12 @@ fi
 
 # Detect C++11 support
 if [ "$CFG_CXX11" != "no" ]; then
-    if compileTest common/c++11 "C++11"; then
+    # Configure detects compiler features based on cross compiler, so we need
+    # to explicitly disable C++11 on Mac to avoid breaking builds where the
+    # host compiler does not support it.
+    if [ "$PLATFORM_MAC" = "yes" ] && [ "$XPLATFORM_ANDROID" = "yes" ]; then
+        CFG_CXX11="no"
+    elif compileTest common/c++11 "C++11"; then
         CFG_CXX11="yes"
     elif [ "$CFG_CXX11" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
         echo "C++11 support cannot be enabled due to functionality tests!"
@@ -4626,7 +4639,7 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
             if [ "$CFG_SQL_sqlite" != "no" ]; then
                 SQLITE_AUTODETECT_FAILED="no"
                 if [ "$CFG_SQLITE" = "system" ]; then
-                    if [ -n "$PKG_CONFIG" ]; then
+                    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists sqlite3 2>/dev/null; then
                         QT_CFLAGS_SQLITE=`$PKG_CONFIG --cflags sqlite3 2>/dev/null`
                         QT_LFLAGS_SQLITE=`$PKG_CONFIG --libs sqlite3 2>/dev/null`
                     else
@@ -5066,6 +5079,18 @@ if [ "$CFG_EVDEV" = "no" ]; then
     QMakeVar add DEFINES QT_NO_EVDEV
 fi
 
+if [ "$CFG_TSLIB" != "no" ]; then
+    if compileTest unix/tslib "tslib"; then
+        CFG_TSLIB=yes
+        QT_CONFIG="$QT_CONFIG tslib"
+    elif [ "$CFG_TSLIB" = "yes" ]; then
+        echo "The tslib functionality test failed!"
+        exit 1
+    else
+        CFG_TSLIB=no
+    fi
+fi
+
 # Check we actually have X11 :-)
 if compileTest x11/xlib "XLib"; then
     QT_CONFIG="$QT_CONFIG xlib"
@@ -5212,8 +5237,8 @@ if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xkbcommon >= 0.2.0" 2>/dev/null
     QMAKE_CFLAGS_XKBCOMMON="`$PKG_CONFIG --cflags xkbcommon 2>/dev/null`"
     QMAKE_LIBS_XKBCOMMON="`$PKG_CONFIG --libs xkbcommon 2>/dev/null`"
     QT_CONFIG="$QT_CONFIG xkbcommon"
-else
-    echo "WARNING: Qt requires the libxkbcommon version 0.2.0 (or higher)."
+elif [ "$CFG_XCB" != "no" ]; then
+    echo "WARNING: XCB support enabled but libxkbcommon 0.2.0 (or higher) not found."
     echo "Not satisfying this requirement will disable the compose key functionality,"
     echo "which includes text input with dead keys."
     QMakeVar add DEFINES QT_NO_XKBCOMMON
@@ -5253,7 +5278,7 @@ elif [ "$CFG_OPENGL" = "desktop" ]; then
 fi
 
 if [ "$CFG_EGLFS" != "no" ]; then
-    if [ "$CFG_OPENGL" = "es2" ] && [ "$CFG_EVDEV" = "yes" ]; then
+    if [ "$CFG_OPENGL" = "es2" ] && [ "$XPLATFORM_QNX" = "no" ]; then
         CFG_EGLFS="$CFG_EGL"
     else
         CFG_EGLFS="no"
@@ -6054,11 +6079,11 @@ if [ "$CFG_QML_DEBUG" = "no" ]; then
 fi
 
 case "$QMAKE_CONF_COMPILER" in
-*clang++*)
+*clang*)
     # Clang
-    COMPILER_VERSION=`${QMAKE_CONF_COMPILER} -v 2>&1 | sed -n '
-/^Apple clang version /{s///; s/^\([0-9]*\)\.\([0-9]*\).*$/QT_APPLE_CLANG_MAJOR_VERSION=\1; QT_APPLE_CLANG_MINOR_VERSION=\2/;p;q;}
-/^clang version /{s///; s/^\([0-9]*\)\.\([0-9]*\).*$/QT_CLANG_MAJOR_VERSION=\1; QT_CLANG_MINOR_VERSION=\2/;p;q;}'`
+    COMPILER_VERSION=`${QMAKE_CONF_COMPILER} -v 2>&1 | sed -n -E '
+/^Apple (clang|LLVM) version /{s///; s/^([0-9]*)\.([0-9]*).*$/QT_APPLE_CLANG_MAJOR_VERSION=\1; QT_APPLE_CLANG_MINOR_VERSION=\2/;p;q;}
+/^clang version /{s///; s/^([0-9]*)\.([0-9]*).*$/QT_CLANG_MAJOR_VERSION=\1; QT_CLANG_MINOR_VERSION=\2/;p;q;}'`
     eval "$COMPILER_VERSION"
     ;;
 *icpc)

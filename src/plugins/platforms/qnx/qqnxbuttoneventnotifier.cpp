@@ -49,7 +49,7 @@
 #include <QtCore/QSocketNotifier>
 #include <QtCore/private/qcore_unix_p.h>
 
-#ifdef QQNXBUTTON_DEBUG
+#if defined(QQNXBUTTON_DEBUG)
 #define qButtonDebug qDebug
 #else
 #define qButtonDebug QT_NO_QDEBUG_MACRO

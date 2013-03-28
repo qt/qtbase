@@ -18,6 +18,8 @@ isEmpty(CMAKE_VERSION) {
         CMAKE_VERSION_MAJOR = $$section(CMAKE_VERSION, ., 0, 0)
         CMAKE_VERSION_MINOR = $$section(CMAKE_VERSION, ., 1, 1)
         CMAKE_VERSION_PATCH = $$section(CMAKE_VERSION, ., 2, 2)
+        # CMake can report versions like 2.8.11-rc1, so strip off the rc part.
+        CMAKE_VERSION_PATCH ~= s,-.*,,
 
         VERSION_OK =
         greaterThan(CMAKE_VERSION_MAJOR, 2) {
@@ -42,14 +44,21 @@ isEmpty(CMAKE_VERSION) {
             for(d, $$list($$split($$list($$[QMAKE_MKSPECS]), $$DIRLIST_SEPARATOR))) {
                 CMAKE_PREFIX_PATH *= $$dirname(d)
             }
+            CMAKE_PREFIX_PATH=\"$$join(CMAKE_PREFIX_PATH, ;)\"
+
+            !qtHaveModule(widgets): CMAKE_MODULE_DEFINES += -DNO_WIDGETS=True
+            !qtHaveModule(dbus): CMAKE_MODULE_DEFINES += -DNO_DBUS=True
 
             dependentmodules = $$resolve_depends(CMAKE_QT_MODULES_UNDER_TEST, "QT.")
             dependentmodules -= $$CMAKE_QT_MODULES_UNDER_TEST
             dependentmodules = $$cmakeModuleList($$dependentmodules)
 
+            SET = set
+            equals(QMAKE_DIR_SEP, "/"):SET = export
+
             check.commands = \
-                $(MKDIR) $$BUILD_DIR && cd $$BUILD_DIR && \
-                cmake $$_PRO_FILE_PWD_ $$CMAKE_GENERATOR -DCMAKE_BUILD_TYPE=$${CMAKE_BUILD_TYPE} -DCMAKE_PREFIX_PATH=\"$$join(CMAKE_PREFIX_PATH, ;)\" -DQt5_MODULE_TEST_DEPENDS=\"$${dependentmodules}\" && \
+                $(MKDIR) $$BUILD_DIR && cd $$BUILD_DIR && $$SET VERBOSE=1 && \
+                cmake $$_PRO_FILE_PWD_ $$CMAKE_GENERATOR $$CMAKE_MODULE_DEFINES -DCMAKE_BUILD_TYPE=$${CMAKE_BUILD_TYPE} -DCMAKE_PREFIX_PATH=$$CMAKE_PREFIX_PATH -DQt5_MODULE_TEST_DEPENDS=\"$${dependentmodules}\" && \
                 $(TESTRUNNER) ctest --output-on-failure
 
         }
@@ -59,7 +68,5 @@ isEmpty(CMAKE_VERSION) {
 insignificant_test:!isEmpty(check.commands) {
     check.commands = -$${check.commands}
 }
-
-!qtHaveModule(widgets): CONFIG += insignificant_test # QTBUG-28540
 
 QMAKE_EXTRA_TARGETS *= check

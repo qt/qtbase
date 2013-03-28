@@ -187,10 +187,10 @@ QSocketNotifier::QSocketNotifier(qintptr socket, Type type, QObject *parent)
     d->sntype = type;
     d->snenabled = true;
 
-    if (!d->threadData->eventDispatcher) {
+    if (!d->threadData->eventDispatcher.load()) {
         qWarning("QSocketNotifier: Can only be used with threads started with QThread");
     } else {
-        d->threadData->eventDispatcher->registerSocketNotifier(this);
+        d->threadData->eventDispatcher.load()->registerSocketNotifier(this);
     }
 }
 
@@ -273,12 +273,12 @@ void QSocketNotifier::setEnabled(bool enable)
         return;
     d->snenabled = enable;
 
-    if (!d->threadData->eventDispatcher) // perhaps application/thread is shutting down
+    if (!d->threadData->eventDispatcher.load()) // perhaps application/thread is shutting down
         return;
     if (d->snenabled)
-        d->threadData->eventDispatcher->registerSocketNotifier(this);
+        d->threadData->eventDispatcher.load()->registerSocketNotifier(this);
     else
-        d->threadData->eventDispatcher->unregisterSocketNotifier(this);
+        d->threadData->eventDispatcher.load()->unregisterSocketNotifier(this);
 }
 
 

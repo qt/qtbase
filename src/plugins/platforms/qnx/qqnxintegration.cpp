@@ -96,7 +96,7 @@
 
 #include <errno.h>
 
-#ifdef QQNXINTEGRATION_DEBUG
+#if defined(QQNXINTEGRATION_DEBUG)
 #define qIntegrationDebug qDebug
 #else
 #define qIntegrationDebug QT_NO_QDEBUG_MACRO

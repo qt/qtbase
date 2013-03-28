@@ -11,4 +11,3 @@ SOURCES  += tst_qpixmap.cpp
 
 RESOURCES += qpixmap.qrc
 TESTDATA += convertFromImage/* convertFromToHICON/* loadFromData/* images/*
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

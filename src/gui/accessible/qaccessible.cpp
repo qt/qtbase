@@ -1349,7 +1349,7 @@ QColor QAccessibleInterface::backgroundColor() const
 QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
 {
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(m_object);
-    if (!iface) {
+    if (!iface || !iface->isValid()) {
         static bool hasWarned = false;
         if (!hasWarned) {
             qWarning() << "Problem creating accessible interface for: " << m_object << endl

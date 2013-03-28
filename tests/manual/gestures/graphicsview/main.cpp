@@ -39,7 +39,16 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QApplication>
+#include <QMainWindow>
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QScrollBar>
+#include <QImageReader>
+#include <QVBoxLayout>
+#include <QGestureEvent>
+#include <QDir>
+#include <QFileDialog>
 
 #include "imageitem.h"
 #include "gestures.h"

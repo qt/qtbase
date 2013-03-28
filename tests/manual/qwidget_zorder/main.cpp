@@ -39,7 +39,11 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QApplication>
+#include <QPushButton>
+#include <QPlainTextEdit>
+#include <QCalendarWidget>
+#include <QVBoxLayout>
 
 class Widget : public QWidget
 {

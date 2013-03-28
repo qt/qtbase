@@ -41,7 +41,7 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include <QtWidgets>
+#include <QMainWindow>
 
 #include "calendar.h"
 #include "currency.h"
@@ -50,6 +50,9 @@
 #include "numberformats.h"
 #include "miscellaneous.h"
 #include "info.h"
+
+class QLabel;
+class QComboBox;
 
 class Window : public QMainWindow
 {

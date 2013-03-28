@@ -6,4 +6,3 @@ SOURCES += tst_qxml.cpp
 QT = core xml testlib
 
 TESTDATA += 0x010D.xml
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

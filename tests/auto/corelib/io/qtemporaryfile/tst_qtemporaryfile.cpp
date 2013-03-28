@@ -92,6 +92,7 @@ private slots:
     void createNativeFile();
     void QTBUG_4796_data();
     void QTBUG_4796();
+    void guaranteeUnique();
 };
 
 void tst_QTemporaryFile::initTestCase()
@@ -780,6 +781,40 @@ void tst_QTemporaryFile::QTBUG_4796()
         QVERIFY( !QFile::exists(tempName) );
 
     cleaner.reset();
+}
+
+void tst_QTemporaryFile::guaranteeUnique()
+{
+    QDir dir(QDir::tempPath());
+    QString takenFileName;
+
+    // First pass. See which filename QTemporaryFile will try first.
+    {
+        // Fix the random seed.
+        qsrand(1135);
+        QTemporaryFile tmpFile("testFile1.XXXXXX");
+        tmpFile.open();
+        takenFileName = tmpFile.fileName();
+        QVERIFY(QFile::exists(takenFileName));
+    }
+
+    QVERIFY(!QFile::exists(takenFileName));
+
+    // Create a directory with same name.
+    QVERIFY(dir.mkdir(takenFileName));
+
+    // Second pass, now we have blocked its first attempt with a directory.
+    {
+        // Fix the random seed.
+        qsrand(1135);
+        QTemporaryFile tmpFile("testFile1.XXXXXX");
+        QVERIFY(tmpFile.open());
+        QString uniqueFileName = tmpFile.fileName();
+        QVERIFY(QFileInfo(uniqueFileName).isFile());
+        QVERIFY(uniqueFileName != takenFileName);
+    }
+
+    QVERIFY(dir.rmdir(takenFileName));
 }
 
 QTEST_MAIN(tst_QTemporaryFile)

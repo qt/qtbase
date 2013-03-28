@@ -689,7 +689,7 @@ void tst_QStyle::lineUpLayoutTest(QStyle *style)
     widget.setLayout(&layout);
         widget.setStyle(style);
         // propagate the style.
-        foreach (QWidget *w, qFindChildren<QWidget *>(&widget))
+        foreach (QWidget *w, widget.findChildren<QWidget *>())
             w->setStyle(style);
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));

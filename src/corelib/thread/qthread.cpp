@@ -593,6 +593,16 @@ void QThread::run()
 
     \sa Priority, priority(), start()
 */
+void QThread::setPriority(Priority priority)
+{
+    Q_D(QThread);
+    QMutexLocker locker(&d->mutex);
+    if (!d->running) {
+        qWarning("QThread::setPriority: Cannot set priority, thread is not running");
+        return;
+    }
+    d->setPriority(priority);
+}
 
 /*!
     \since 4.1
@@ -752,7 +762,7 @@ QThread::QThread(QThreadPrivate &dd, QObject *parent)
 QAbstractEventDispatcher *QThread::eventDispatcher() const
 {
     Q_D(const QThread);
-    return d->data->eventDispatcher;
+    return d->data->eventDispatcher.load();
 }
 
 /*!
@@ -767,7 +777,7 @@ QAbstractEventDispatcher *QThread::eventDispatcher() const
 void QThread::setEventDispatcher(QAbstractEventDispatcher *eventDispatcher)
 {
     Q_D(QThread);
-    if (d->data->eventDispatcher != 0) {
+    if (d->data->hasEventDispatcher()) {
         qWarning("QThread::setEventDispatcher: An event dispatcher has already been created for this thread");
     } else {
         eventDispatcher->moveToThread(this);

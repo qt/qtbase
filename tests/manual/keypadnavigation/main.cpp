@@ -39,7 +39,14 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QMainWindow>
+#include <QApplication>
+#include <QColorDialog>
+#include <QFileDialog>
+#include <QFontDialog>
+#include <QInputDialog>
+#include <QMessageBox>
+#include <QSignalMapper>
 #include "ui_keypadnavigation.h"
 
 class KeypadNavigation : public QMainWindow

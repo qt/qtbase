@@ -230,7 +230,8 @@
 
     Construct a vector from the std::initilizer_list given by \a args.
 
-    This constructor is only enabled if the compiler supports C++0x
+    This constructor is only enabled if the compiler supports C++11 initializer
+    lists.
 */
 
 

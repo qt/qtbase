@@ -99,7 +99,6 @@ private:
         const UCKeyboardLayout *unicode;
         void *other;
     } keyboard_layout_format;
-    KeyboardLayoutRef currentKeyboardLayout;
     KeyboardLayoutKind keyboard_kind;
     UInt32 keyboard_dead;
     KeyboardLayoutItem *keyLayout[256];

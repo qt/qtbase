@@ -522,7 +522,7 @@ bool QFSFileEngine::renameOverwrite(const QString &newName)
     Q_D(QFSFileEngine);
     bool ret = ::MoveFileEx((wchar_t*)d->fileEntry.nativeFilePath().utf16(),
                             (wchar_t*)QFileSystemEntry(newName).nativeFilePath().utf16(),
-                            MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED) != 0;
+                            MOVEFILE_REPLACE_EXISTING) != 0;
     if (!ret)
         setError(QFile::RenameError, QSystemError(::GetLastError(), QSystemError::NativeError).toString());
     return ret;

@@ -189,6 +189,7 @@ private:
 
     bool m_mapped;
     bool m_transparent;
+    bool m_usingSyncProtocol;
     bool m_deferredActivation;
     bool m_deferredExpose;
     bool m_configureNotifyPending;

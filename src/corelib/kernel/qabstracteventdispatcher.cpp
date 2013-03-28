@@ -172,7 +172,7 @@ QAbstractEventDispatcher::~QAbstractEventDispatcher()
 QAbstractEventDispatcher *QAbstractEventDispatcher::instance(QThread *thread)
 {
     QThreadData *data = thread ? QThreadData::get2(thread) : QThreadData::current();
-    return data->eventDispatcher;
+    return data->eventDispatcher.load();
 }
 
 /*!

@@ -1679,6 +1679,9 @@ bool QAbstractItemModel::hasIndex(int row, int column, const QModelIndex &parent
 
     Use rowCount() on the parent to find out the number of children.
 
+    Note that it is undefined behavior to report that a particular index hasChildren
+    with this method if the same index has the flag Qt::ItemNeverHasChildren set.
+
     \sa parent(), index()
 */
 bool QAbstractItemModel::hasChildren(const QModelIndex &parent) const
@@ -2109,9 +2112,8 @@ void QAbstractItemModel::fetchMore(const QModelIndex &)
 
     The default implementation always returns false.
 
-    If canFetchMore() returns true, QAbstractItemView will call fetchMore().
-    However, the fetchMore() function is only called when the model is being
-    populated incrementally.
+    If canFetchMore() returns true, the fetchMore() function should
+    be called. This is the behavior of QAbstractItemView, for example.
 
     \sa fetchMore()
 */

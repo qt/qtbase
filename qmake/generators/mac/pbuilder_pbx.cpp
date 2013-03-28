@@ -137,6 +137,7 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
     QList<ProjectBuilderSubDirs*> pb_subdirs;
     pb_subdirs.append(new ProjectBuilderSubDirs(project, QString(), false));
     QString oldpwd = qmake_getpwd();
+    QString oldoutpwd = Option::output_dir;
     QMap<QString, ProStringList> groups;
     for(int pb_subdir = 0; pb_subdir < pb_subdirs.size(); ++pb_subdir) {
         ProjectBuilderSubDirs *pb = pb_subdirs[pb_subdir];
@@ -173,6 +174,7 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
                     if(!qmake_setpwd(dir))
                         fprintf(stderr, "Cannot find directory: %s\n", dir.toLatin1().constData());
                 }
+                Option::output_dir = Option::globals->shadowedPath(QDir::cleanPath(fi.absoluteFilePath()));
                 if(tmp_proj.read(fn)) {
                     if(tmp_proj.first("TEMPLATE") == "subdirs") {
                         QMakeProject *pp = new QMakeProject(&tmp_proj);
@@ -190,13 +192,13 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
                             bool in_root = true;
                             QString name = qmake_getpwd();
                             if(project->isActiveConfig("flat")) {
-                                QString flat_file = fileFixify(name, oldpwd, Option::output_dir, FileFixifyRelative);
+                                QString flat_file = fileFixify(name, oldpwd, oldoutpwd, FileFixifyRelative);
                                 if(flat_file.indexOf(Option::dir_sep) != -1) {
                                     QStringList dirs = flat_file.split(Option::dir_sep);
                                     name = dirs.back();
                                 }
                             } else {
-                                QString flat_file = fileFixify(name, oldpwd, Option::output_dir, FileFixifyRelative);
+                                QString flat_file = fileFixify(name, oldpwd, oldoutpwd, FileFixifyRelative);
                                 if(QDir::isRelativePath(flat_file) && flat_file.indexOf(Option::dir_sep) != -1) {
                                     QString last_grp("QMAKE_SUBDIR_PBX_HEIR_GROUP");
                                     QStringList dirs = flat_file.split(Option::dir_sep);
@@ -278,6 +280,7 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
                 }
             nextfile:
                 qmake_setpwd(oldpwd);
+                Option::output_dir = oldoutpwd;
             }
         }
     }

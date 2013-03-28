@@ -800,7 +800,7 @@ QString QFileSystemModelPrivate::name(const QModelIndex &index) const
     if (!index.isValid())
         return QString();
     QFileSystemNode *dirNode = node(index);
-    if (fileInfoGatherer.resolveSymlinks() && dirNode->isSymLink(/* ignoreNtfsSymLinks = */ true)) {
+    if (fileInfoGatherer.resolveSymlinks() && !resolvedSymLinks.isEmpty() && dirNode->isSymLink(/* ignoreNtfsSymLinks = */ true)) {
         QString fullPath = QDir::fromNativeSeparators(filePath(index));
         if (resolvedSymLinks.contains(fullPath))
             return resolvedSymLinks[fullPath];
@@ -1522,9 +1522,9 @@ QDir::Filters QFileSystemModel::filter() const
     \property QFileSystemModel::resolveSymlinks
     \brief Whether the directory model should resolve symbolic links
 
-    This is only relevant on operating systems that support symbolic links.
+    This is only relevant on Windows.
 
-    By default, this property is false.
+    By default, this property is true.
 */
 void QFileSystemModel::setResolveSymlinks(bool enable)
 {

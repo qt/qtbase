@@ -109,7 +109,8 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
 
     m_current_fontengine = fontEngine;
     const int margin = m_current_fontengine->glyphMargin(m_type);
-    const int paddingDoubled = glyphPadding() * 2;
+    const int padding = glyphPadding();
+    const int paddingDoubled = padding * 2;
 
     bool supportsSubPixelPositions = fontEngine->supportsSubPixelPositions();
     if (fontEngine->m_subPixelPositionCount == 0) {
@@ -120,6 +121,11 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
             while (fontEngine->m_subPixelPositionCount == 0 && i < numGlyphs)
                 fontEngine->m_subPixelPositionCount = calculateSubPixelPositionCount(glyphs[i++]);
         }
+    }
+
+    if (m_cx == 0 && m_cy == 0) {
+        m_cx = padding;
+        m_cy = padding;
     }
 
     QHash<GlyphAndSubPixelPosition, Coord> listItemCoordinates;
@@ -203,21 +209,21 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
 
         m_currentRowHeight = qMax(m_currentRowHeight, c.h + margin * 2);
 
-        if (m_cx + c.w > requiredWidth) {
+        if (m_cx + c.w + padding > requiredWidth) {
             int new_width = requiredWidth*2;
-            while (new_width < m_cx + c.w)
+            while (new_width < m_cx + c.w + padding)
                 new_width *= 2;
             if (new_width <= maxTextureWidth()) {
                 requiredWidth = new_width;
             } else {
                 // no room on the current line, start new glyph strip
-                m_cx = 0;
+                m_cx = padding;
                 m_cy += m_currentRowHeight + paddingDoubled;
                 m_currentRowHeight = c.h + margin * 2; // New row
             }
         }
 
-        if (maxTextureHeight() > 0 && m_cy + c.h > maxTextureHeight()) {
+        if (maxTextureHeight() > 0 && m_cy + c.h + padding > maxTextureHeight()) {
             // We can't make a cache of the required size, so we bail out
             return false;
         }

@@ -13,4 +13,4 @@ add_executable(three three.cpp)
 find_package(Qt5Core)
 
 qt5_use_modules(two Test)
-qt5_use_modules(three Widgets Test)
+qt5_use_modules(three Gui Test)

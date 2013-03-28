@@ -39,8 +39,11 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
 #include "../shared/shared.h"
+
+#include <QApplication>
+#include <QMainWindow>
+#include <QSplitter>
 
 int main(int argc, char **argv)
 {

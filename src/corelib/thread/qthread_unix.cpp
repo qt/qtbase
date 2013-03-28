@@ -258,19 +258,19 @@ typedef void*(*QtThreadCallback)(void*);
 void QThreadPrivate::createEventDispatcher(QThreadData *data)
 {
 #if defined(Q_OS_BLACKBERRY)
-    data->eventDispatcher = new QEventDispatcherBlackberry;
+    data->eventDispatcher.storeRelease(new QEventDispatcherBlackberry);
 #else
 #if !defined(QT_NO_GLIB)
     if (qEnvironmentVariableIsEmpty("QT_NO_GLIB")
         && qEnvironmentVariableIsEmpty("QT_NO_THREADED_GLIB")
         && QEventDispatcherGlib::versionSupported())
-        data->eventDispatcher = new QEventDispatcherGlib;
+        data->eventDispatcher.storeRelease(new QEventDispatcherGlib);
     else
 #endif
-    data->eventDispatcher = new QEventDispatcherUNIX;
+    data->eventDispatcher.storeRelease(new QEventDispatcherUNIX);
 #endif
 
-    data->eventDispatcher->startingUp();
+    data->eventDispatcher.load()->startingUp();
 }
 
 #ifndef QT_NO_THREAD
@@ -300,22 +300,23 @@ void *QThreadPrivate::start(void *arg)
     QThread *thr = reinterpret_cast<QThread *>(arg);
     QThreadData *data = QThreadData::get2(thr);
 
-    // do we need to reset the thread priority?
-    if (int(thr->d_func()->priority) & ThreadPriorityResetFlag) {
-        thr->setPriority(QThread::Priority(thr->d_func()->priority & ~ThreadPriorityResetFlag));
-    }
-
-    data->threadId = (Qt::HANDLE)pthread_self();
-    set_thread_data(data);
-
-    data->ref();
     {
         QMutexLocker locker(&thr->d_func()->mutex);
+
+        // do we need to reset the thread priority?
+        if (int(thr->d_func()->priority) & ThreadPriorityResetFlag) {
+            thr->d_func()->setPriority(QThread::Priority(thr->d_func()->priority & ~ThreadPriorityResetFlag));
+        }
+
+        data->threadId = (Qt::HANDLE)pthread_self();
+        set_thread_data(data);
+
+        data->ref();
         data->quitNow = thr->d_func()->exited;
     }
 
-    if (data->eventDispatcher) // custom event dispatcher set?
-        data->eventDispatcher->startingUp();
+    if (data->eventDispatcher.load()) // custom event dispatcher set?
+        data->eventDispatcher.load()->startingUp();
     else
         createEventDispatcher(data);
 
@@ -358,7 +359,7 @@ void QThreadPrivate::finish(void *arg)
     QThreadStorageData::finish((void **)data);
     locker.relock();
 
-    QAbstractEventDispatcher *eventDispatcher = d->data->eventDispatcher;
+    QAbstractEventDispatcher *eventDispatcher = d->data->eventDispatcher.load();
     if (eventDispatcher) {
         d->data->eventDispatcher = 0;
         locker.unlock();
@@ -687,16 +688,10 @@ void QThread::setTerminationEnabled(bool enabled)
 #endif
 }
 
-void QThread::setPriority(Priority priority)
+// Caller must lock the mutex
+void QThreadPrivate::setPriority(QThread::Priority threadPriority)
 {
-    Q_D(QThread);
-    QMutexLocker locker(&d->mutex);
-    if (!d->running) {
-        qWarning("QThread::setPriority: Cannot set priority, thread is not running");
-        return;
-    }
-
-    d->priority = priority;
+    priority = threadPriority;
 
     // copied from start() with a few modifications:
 
@@ -704,7 +699,7 @@ void QThread::setPriority(Priority priority)
     int sched_policy;
     sched_param param;
 
-    if (pthread_getschedparam(d->thread_id, &sched_policy, &param) != 0) {
+    if (pthread_getschedparam(thread_id, &sched_policy, &param) != 0) {
         // failed to get the scheduling policy, don't bother setting
         // the priority
         qWarning("QThread::setPriority: Cannot get scheduler parameters");
@@ -720,15 +715,15 @@ void QThread::setPriority(Priority priority)
     }
 
     param.sched_priority = prio;
-    int status = pthread_setschedparam(d->thread_id, sched_policy, &param);
+    int status = pthread_setschedparam(thread_id, sched_policy, &param);
 
 # ifdef SCHED_IDLE
     // were we trying to set to idle priority and failed?
     if (status == -1 && sched_policy == SCHED_IDLE && errno == EINVAL) {
         // reset to lowest priority possible
-        pthread_getschedparam(d->thread_id, &sched_policy, &param);
+        pthread_getschedparam(thread_id, &sched_policy, &param);
         param.sched_priority = sched_get_priority_min(sched_policy);
-        pthread_setschedparam(d->thread_id, sched_policy, &param);
+        pthread_setschedparam(thread_id, sched_policy, &param);
     }
 # else
     Q_UNUSED(status);

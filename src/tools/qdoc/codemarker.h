@@ -56,6 +56,14 @@ QT_BEGIN_NAMESPACE
 class Config;
 class Tree;
 
+typedef QMultiMap<QString, Node*> MemberMap; // the string is the member signature
+typedef QPair<const QmlClassNode*, MemberMap> ClassMap;    // the node is the QML type
+typedef QList<ClassMap*> ClassMapList;
+
+typedef QPair<QStringList, NodeList> KeysAndNodes;
+typedef QPair<const QmlClassNode*, KeysAndNodes> ClassKeysNodes;
+typedef QList<ClassKeysNodes*> ClassKeysNodesList;
+
 struct Section
 {
     QString name;
@@ -66,6 +74,7 @@ struct Section
     NodeList members;
     NodeList reimpMembers;
     QList<QPair<InnerNode *, int> > inherited;
+    ClassKeysNodesList classKeysNodesList_;
 
     Section() { }
     Section(const QString& name0,
@@ -76,6 +85,7 @@ struct Section
           divClass(divClass0),
           singularMember(singularMember0),
           pluralMember(pluralMember0) { }
+    ~Section();
     void appendMember(Node* node) { members.append(node); }
     void appendReimpMember(Node* node) { reimpMembers.append(node); }
 };
@@ -87,8 +97,9 @@ struct FastSection
     QString divClass;
     QString singularMember;
     QString pluralMember;
-    QMap<QString, Node *> memberMap;
-    QMap<QString, Node *> reimpMemberMap;
+    QMultiMap<QString, Node *> memberMap;
+    QMultiMap<QString, Node *> reimpMemberMap;
+    ClassMapList classMapList_;
     QList<QPair<InnerNode *, int> > inherited;
 
     FastSection(const InnerNode *parent,
@@ -101,10 +112,12 @@ struct FastSection
           divClass(divClass0),
           singularMember(singularMember0),
           pluralMember(pluralMember0) { }
+    ~FastSection();
     bool isEmpty() const {
         return (memberMap.isEmpty() &&
                 inherited.isEmpty() &&
-                reimpMemberMap.isEmpty());
+                reimpMemberMap.isEmpty() &&
+                classMapList_.isEmpty());
     }
 
 };

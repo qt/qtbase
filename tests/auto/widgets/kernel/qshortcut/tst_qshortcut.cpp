@@ -610,7 +610,6 @@ void tst_QShortcut::disabledItems()
 {
     clearAllShortcuts();
     mainW->activateWindow();
-    qApp->syncX();
     QTest::qWait(100);
 
     /* Testing Disabled Shortcuts
@@ -1072,7 +1071,6 @@ void tst_QShortcut::context()
     // Changing focus to 'other2' should make the Focus context there work
     other2->activateWindow();
     other2->setFocus(); // ###
-    qApp->syncX();
     QTRY_COMPARE(qApp->activeWindow(), other2->window());
     QCOMPARE(qApp->focusWidget(), (QWidget *)other2);
 

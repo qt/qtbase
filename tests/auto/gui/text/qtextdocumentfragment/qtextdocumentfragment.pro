@@ -7,4 +7,3 @@ SOURCES  += tst_qtextdocumentfragment.cpp
 
 
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

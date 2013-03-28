@@ -132,7 +132,6 @@ void tst_QStackedLayout::init()
     // make sure the tests work with focus follows mouse
     QCursor::setPos(testWidget->geometry().center());
     testWidget->activateWindow();
-    QApplication::syncX();
     QTest::qWait(250);
 }
 

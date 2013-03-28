@@ -90,11 +90,28 @@ void QCocoaScreen::updateGeometry()
 {
     NSScreen *nsScreen = osScreen();
     NSRect frameRect = [nsScreen frame];
-    m_geometry = QRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width, frameRect.size.height);
-    NSRect visibleRect = [nsScreen visibleFrame];
-    m_availableGeometry = QRect(visibleRect.origin.x,
-                                frameRect.size.height - (visibleRect.origin.y + visibleRect.size.height), // invert y
-                                visibleRect.size.width, visibleRect.size.height);
+
+    if (m_screenIndex == 0) {
+        m_geometry = QRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width, frameRect.size.height);
+        // This is the primary screen, the one that contains the menubar. Its origin should be
+        // (0, 0), and it's the only one whose available geometry differs from its full geometry.
+        NSRect visibleRect = [nsScreen visibleFrame];
+        m_availableGeometry = QRect(visibleRect.origin.x,
+                                    frameRect.size.height - (visibleRect.origin.y + visibleRect.size.height), // invert y
+                                    visibleRect.size.width, visibleRect.size.height);
+    } else {
+        // NSScreen origin is at the bottom-left corner, QScreen is at the top-left corner.
+        // When we get the NSScreen frame rect, we need to re-align its origin y coordinate
+        // w.r.t. the primary screen, whose origin is (0, 0).
+        NSRect r = [[[NSScreen screens] objectAtIndex:0] frame];
+        QRect referenceScreenGeometry = QRect(r.origin.x, r.origin.y, r.size.width, r.size.height);
+        m_geometry = QRect(frameRect.origin.x,
+                           referenceScreenGeometry.height() - (frameRect.origin.y + frameRect.size.height),
+                           frameRect.size.width, frameRect.size.height);
+
+        // Not primary screen. See above.
+        m_availableGeometry = m_geometry;
+    }
 
     m_format = QImage::Format_RGB32;
     m_depth = NSBitsPerPixelFromDepth([nsScreen depth]);

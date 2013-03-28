@@ -3810,7 +3810,7 @@ void QGLWidget::setFormat(const QGLFormat &format)
     attributes that were requested.
 */
 
-/*
+/*!
   \fn void QGLWidget::setContext(QGLContext *context,
                                  const QGLContext* shareContext,
                                  bool deleteOldContext)
@@ -3835,6 +3835,12 @@ void QGLWidget::setFormat(const QGLFormat &format)
   will be deleted. You may use false here if you have kept a pointer
   to the old context (as returned by context()), and want to restore
   that context later.
+
+  \note This function is obsolete and should no longer be used. If you were
+  using it to recreate the context for a QGLWidget, you should instead create a
+  new QGLWidget or use the QOpenGLContext API in conjunction with QWindow.
+  There is currently no officially supported way to substitute QGLWidget's
+  context with your own implementation of QGLContext.
 
   \sa context(), isSharing()
 */

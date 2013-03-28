@@ -43,7 +43,21 @@
 #define WINDOW_H
 
 
-#include <QtWidgets>
+#include <QGraphicsScene>
+#include <QGraphicsWidget>
+#include <QGraphicsLinearLayout>
+#include <QGraphicsView>
+#include <QSpinBox>
+#include <QCheckBox>
+#include <QPushButton>
+#include <QLabel>
+#include <QHBoxLayout>
+#include <QPainter>
+#include <QApplication>
+#include <QThread>
+#include <QMap>
+#include <QTime>
+#include <QDebug>
 
 struct Statistics {
     Statistics() : setGeometryCount(0), sleepMsecs(0), output(0),
@@ -57,7 +71,11 @@ struct Statistics {
     QLabel *output;
     void sleep()
     {
+#if QT_VERSION >= 0x050000
         QThread::msleep(sleepMsecs);
+#else
+        qWarning("%s unimplemented", Q_FUNC_INFO);
+#endif
     }
     int currentBenchmarkIteration;
     bool relayoutClicked;

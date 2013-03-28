@@ -380,7 +380,7 @@ bool QProcessPrivate::createChannel(Channel &channel)
             return false;
 
         // create the socket notifiers
-        if (threadData->eventDispatcher) {
+        if (threadData->hasEventDispatcher()) {
             if (&channel == &stdinChannel) {
                 channel.notifier = new QSocketNotifier(channel.pipe[1],
                                                        QSocketNotifier::Write, q);
@@ -562,7 +562,7 @@ void QProcessPrivate::startProcess()
         return;
     }
 
-    if (threadData->eventDispatcher) {
+    if (threadData->hasEventDispatcher()) {
         startupSocketNotifier = new QSocketNotifier(childStartedPipe[0],
                                                     QSocketNotifier::Read, q);
         QObject::connect(startupSocketNotifier, SIGNAL(activated(int)),
