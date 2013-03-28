@@ -1302,14 +1302,19 @@ Q_DECLARE_METATYPE(MyObjectPtr)
 
 void tst_QMetaType::automaticTemplateRegistration()
 {
-  {
-    QList<int> intList;
-    intList << 42;
-    QVERIFY(QVariant::fromValue(intList).value<QList<int> >().first() == 42);
-    QVector<QList<int> > vectorList;
-    vectorList << intList;
-    QVERIFY(QVariant::fromValue(vectorList).value<QVector<QList<int> > >().first().first() == 42);
+#define TEST_SEQUENTIAL_CONTAINER(CONTAINER, VALUE_TYPE) \
+  { \
+    CONTAINER<VALUE_TYPE> innerContainer; \
+    innerContainer.push_back(42); \
+    QVERIFY(*QVariant::fromValue(innerContainer).value<CONTAINER<VALUE_TYPE> >().begin() == 42); \
+    QVector<CONTAINER<VALUE_TYPE> > outerContainer; \
+    outerContainer << innerContainer; \
+    QVERIFY(*QVariant::fromValue(outerContainer).value<QVector<CONTAINER<VALUE_TYPE> > >().first().begin() == 42); \
   }
+
+  TEST_SEQUENTIAL_CONTAINER(QList, int)
+  TEST_SEQUENTIAL_CONTAINER(std::vector, int)
+  TEST_SEQUENTIAL_CONTAINER(std::list, int)
 
   {
     QList<QByteArray> bytearrayList;
@@ -1323,14 +1328,9 @@ void tst_QMetaType::automaticTemplateRegistration()
   QCOMPARE(::qMetaTypeId<QVariantList>(), (int)QMetaType::QVariantList);
   QCOMPARE(::qMetaTypeId<QList<QVariant> >(), (int)QMetaType::QVariantList);
 
-  {
-    QList<QVariant> variantList;
-    variantList << 42;
-    QVERIFY(QVariant::fromValue(variantList).value<QList<QVariant> >().first() == 42);
-    QVector<QList<QVariant> > vectorList;
-    vectorList << variantList;
-    QVERIFY(QVariant::fromValue(vectorList).value<QVector<QList<QVariant> > >().first().first() == 42);
-  }
+  TEST_SEQUENTIAL_CONTAINER(QList, QVariant)
+  TEST_SEQUENTIAL_CONTAINER(std::vector, QVariant)
+  TEST_SEQUENTIAL_CONTAINER(std::list, QVariant)
 
   {
     QList<QSharedPointer<QObject> > sharedPointerList;
@@ -1395,6 +1395,31 @@ void tst_QMetaType::automaticTemplateRegistration()
     QCOMPARE(QVariant::fromValue(variantMap).value<QVariantMap>().value(QStringLiteral("4")), QVariant(2));
   }
   {
+    typedef std::map<int, int> IntIntMap;
+    IntIntMap intIntMap;
+    intIntMap[4] = 2;
+    QCOMPARE(QVariant::fromValue(intIntMap).value<IntIntMap>()[4], 2);
+  }
+  {
+    typedef std::map<int, uint> StdIntUIntMap;
+    StdIntUIntMap intUIntMap;
+    intUIntMap[4] = 2;
+    QCOMPARE(QVariant::fromValue(intUIntMap).value<StdIntUIntMap>()[4], (uint)2);
+  }
+  {
+    typedef std::map<int, CustomObject*> StdMapIntCustomObject ;
+    StdMapIntCustomObject intComparableMap;
+    CustomObject *o = 0;
+    intComparableMap[4] = o;
+    QCOMPARE(QVariant::fromValue(intComparableMap).value<StdMapIntCustomObject >()[4], o);
+  }
+  {
+    typedef std::map<QString, QVariant> StdMapStringVariant;
+    StdMapStringVariant variantMap;
+    variantMap[QStringLiteral("4")] = 2;
+    QCOMPARE(QVariant::fromValue(variantMap).value<StdMapStringVariant>()[QStringLiteral("4")], QVariant(2));
+  }
+  {
     typedef QPair<int, int> IntIntPair;
     IntIntPair intIntPair = qMakePair(4, 2);
     QCOMPARE(QVariant::fromValue(intIntPair).value<IntIntPair>().first, 4);
@@ -1410,6 +1435,25 @@ void tst_QMetaType::automaticTemplateRegistration()
     IntComparablePair intComparablePair = qMakePair(4, m);
     QCOMPARE(QVariant::fromValue(intComparablePair).value<IntComparablePair>().first, 4);
     QCOMPARE(QVariant::fromValue(intComparablePair).value<IntComparablePair>().second, m);
+  }
+  {
+    typedef std::pair<int, int> IntIntPair;
+    IntIntPair intIntPair = std::make_pair(4, 2);
+    QCOMPARE(QVariant::fromValue(intIntPair).value<IntIntPair>().first, 4);
+    QCOMPARE(QVariant::fromValue(intIntPair).value<IntIntPair>().second, 2);
+  }
+  {
+    typedef std::pair<int, uint> StdIntUIntPair;
+    StdIntUIntPair intUIntPair = std::make_pair<int, uint>(4, 2);
+    QCOMPARE(QVariant::fromValue(intUIntPair).value<StdIntUIntPair>().first, 4);
+    QCOMPARE(QVariant::fromValue(intUIntPair).value<StdIntUIntPair>().second, (uint)2);
+  }
+  {
+    typedef std::pair<int, CustomQObject*> StdIntComparablePair;
+    CustomQObject* o = 0;
+    StdIntComparablePair intComparablePair = std::make_pair(4, o);
+    QCOMPARE(QVariant::fromValue(intComparablePair).value<StdIntComparablePair>().first, 4);
+    QCOMPARE(QVariant::fromValue(intComparablePair).value<StdIntComparablePair>().second, o);
   }
   {
     typedef QHash<int, UnregisteredType> IntUnregisteredTypeHash;
