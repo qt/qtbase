@@ -22,9 +22,6 @@ information about a particular change.
 General Improvements
 --------------------
 
- - [QTBUG-26697] The -skip option was added to configure, which enables not
-   building particular modules. Typical use case: -skip webkit.
-
 Third party components
 ----------------------
 
@@ -116,12 +113,46 @@ Qt for Windows CE
 *                          Tools                                           *
 ****************************************************************************
 
+Build System & configure
+------------------------
+
+ - [QTBUG-26697] The -skip option was added to configure, which enables not
+   building particular modules. Typical use case: -skip webkit.
+ - [QTBUG-28769, ...] Assorted build fixes
+ - [QTBUG-28902] Fixed contents of installed .prl files
+ - [QTBUG-29110, QTBUG-29186, ...] Assorted fixes to CMake config files
+ - [QTBUG-29174] Fixed numerous configure options which start with -l
+ - [QTBUG-29400] Fixed configure -fully-process not creating .vcproj files
+ - [QTBUG-29453, ...] Fixed generation of pkg-config .pc files
+ - [QTBUG-29478] Fixed static builds with ICU
+ - [QTBUG-29661] Fixed QtWebProcess.exe not finding Qt DLLs. -libexec
+   now defaults to bin/ on Windows.
+ - [QTBUG-29838] Fixed module versioning when mixing releases
+ - [QTBUG-30102] Fixed passing of values with spaces to -device-option
+ - Production builds do not build examples any more. 'make install' will
+   copy only the example sources.
+ - pkg-config: qt_config is now contained only in Qt5Core.pc, and it reflects
+   QT_CONFIG, not the module build's CONFIG.
+
 qmake
 -----
 
+ - [QTBUG-28132] Fixed parallelized 'jom install'
+ - [QTBUG-29143] MSVC: Fixed parsing of /openmp
+ - [QTBUG-29286] MSVC: Fixed use of VERSION breaking MSVC2010 projects
+ - [QTBUG-29329] MSVC: Fixed misparsing of /Gs as /GS
+ - [QTBUG-29329] MSVC: Stopped disabling buffer security check by default
+ - [QTBUG-29371] Fixed generation of XCode projects for XCode 4.6
+ - [QTBUG-29698] MSVC: Fixed incremental linking with non-standard shells
+ - [QTBUG-29700] Fixed pkg-config file generation when cross-compiling
+ - Qt modules are now enumerated in QT_MODULES, not QT_CONFIG. For portability,
+   use qtHaveModule() (since 5.0.1) or !isEmpty(QT.<module>.name) instead.
  - $$(VAR) style environment variable expansions will not split on
    whitespace any more. Use $$split() if necessary.
-
+ - Fixed qmake -tp vc (and configure without -no-vcproj)
+ - MSVC: Fixed an empty VERSION causing a garbled version in .rc files
+ - Windows: Added support for specifying application icon (via RC_ICONS)
+ - Added spec for BlackBerry Playbook
 
 ****************************************************************************
 *                          Plugins                                         *
