@@ -27,7 +27,7 @@
 
 /*!
     \module QtConcurrent
-    \title Qt Concurrent C++ classes
+    \title Qt Concurrent C++ Classes
     \brief The Qt Concurrent module contains functionality to support concurrent execution of program code
 
     \ingroup modules

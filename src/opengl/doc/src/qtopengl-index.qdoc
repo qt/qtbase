@@ -67,6 +67,6 @@
     OpenGL module can take advantage of the whole Qt API for
     non-OpenGL-specific GUI functionality.
 
-    The \l{Qt OpenGL C++ classes} page gives an overview over the available classes
+    The \l{Qt OpenGL C++ Classes} page gives an overview over the available classes
     int this module.
 */
