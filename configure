@@ -2961,7 +2961,7 @@ else
 fi
 
 # auto-detect default include and library search paths
-gccout=`$TEST_COMPILER $SYSROOT_FLAG $TEST_COMPILER_CXXFLAGS -xc++ -E -v - < /dev/null 2>&1 > /dev/null`
+gccout=`LC_ALL=C $TEST_COMPILER $SYSROOT_FLAG $TEST_COMPILER_CXXFLAGS -xc++ -E -v - < /dev/null 2>&1 > /dev/null`
 # extract from one line like 'LIBRARY_PATH=/one/path:/another/path:...'
 libdirs=`echo "$gccout" | sed -n -e 's/^LIBRARY_PATH=\(.*\)/\1/p'`
 DEFAULT_LIBDIRS=`IFS=${HOST_DIRLIST_SEP}; for i in $libdirs; do test -d "$i" && cd "$i" && pwd; done`
