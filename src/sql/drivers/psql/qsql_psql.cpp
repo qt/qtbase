@@ -54,6 +54,7 @@
 #include <qstringlist.h>
 #include <qmutex.h>
 #include <QtSql/private/qsqlresult_p.h>
+#include <QtSql/private/qsqldriver_p.h>
 
 #include <libpq-fe.h>
 #include <pg_config.h>
@@ -121,18 +122,18 @@ inline void qPQfreemem(void *buffer)
     PQfreemem(buffer);
 }
 
-class QPSQLDriverPrivate
+class QPSQLDriverPrivate : public QSqlDriverPrivate
 {
 public:
-    QPSQLDriverPrivate(QPSQLDriver *qq)
-      : q(qq),
+    QPSQLDriverPrivate(QPSQLDriver *qq) : QSqlDriverPrivate(),
+        q(qq),
         connection(0),
         isUtf8(false),
         pro(QPSQLDriver::Version6),
         sn(0),
         pendingNotifyCheck(false),
         hasBackslashEscape(false)
-    { }
+    { dbmsType = PostgreSQL; }
 
     QPSQLDriver *q;
     PGconn *connection;
@@ -793,7 +794,6 @@ QPSQLDriver::~QPSQLDriver()
 {
     if (d->connection)
         PQfinish(d->connection);
-    delete d;
 }
 
 QVariant QPSQLDriver::handle() const

@@ -39,72 +39,53 @@
 **
 ****************************************************************************/
 
-#ifndef QSQL_OCI_H
-#define QSQL_OCI_H
+#ifndef QSQLDRIVER_P_H
+#define QSQLDRIVER_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
+// This file is not part of the Qt API. It exists for the convenience
+// of the QtSQL module. This header file may change from version to version
+// without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include <QtSql/qsqlresult.h>
-#include <QtSql/qsqldriver.h>
-
-#ifdef QT_PLUGIN
-#define Q_EXPORT_SQLDRIVER_OCI
-#else
-#define Q_EXPORT_SQLDRIVER_OCI Q_SQL_EXPORT
-#endif
-
-typedef struct OCIEnv OCIEnv;
-typedef struct OCISvcCtx OCISvcCtx;
+#include "private/qobject_p.h"
+#include "qsqldriver.h"
+#include "qsqlerror.h"
 
 QT_BEGIN_NAMESPACE
 
-class QOCIDriver;
-class QOCICols;
-class QOCIDriverPrivate;
-
-class Q_EXPORT_SQLDRIVER_OCI QOCIDriver : public QSqlDriver
+class QSqlDriverPrivate : public QObjectPrivate
 {
-    Q_OBJECT
-    friend struct QOCIResultPrivate;
-    friend class QOCIPrivate;
 public:
-    explicit QOCIDriver(QObject* parent = 0);
-    QOCIDriver(OCIEnv* env, OCISvcCtx* ctx, QObject* parent = 0);
-    ~QOCIDriver();
-    bool hasFeature(DriverFeature f) const;
-    bool open(const QString & db,
-              const QString & user,
-              const QString & password,
-              const QString & host,
-              int port,
-              const QString& connOpts);
-    void close();
-    QSqlResult *createResult() const;
-    QStringList tables(QSql::TableType) const;
-    QSqlRecord record(const QString& tablename) const;
-    QSqlIndex primaryIndex(const QString& tablename) const;
-    QString formatValue(const QSqlField &field,
-                        bool trimStrings) const;
-    QVariant handle() const;
-    QString escapeIdentifier(const QString &identifier, IdentifierType) const;
+    enum DBMSType {UnknownDB, MSSqlServer, MySqlServer, PostgreSQL, Oracle, Sybase, SQLite, Interbase, DB2};
+    QSqlDriverPrivate();
+    virtual ~QSqlDriverPrivate();
 
-protected:
-    bool                beginTransaction();
-    bool                commitTransaction();
-    bool                rollbackTransaction();
-private:
-    QOCIDriverPrivate *d;
+public:
+    // @CHECK: this member is never used. It was named q, which expanded to q_func().
+    QSqlDriver *q_func();
+    uint isOpen : 1;
+    uint isOpenError : 1;
+    QSqlError error;
+    QSql::NumericalPrecisionPolicy precisionPolicy;
+    DBMSType dbmsType;
 };
+
+inline QSqlDriverPrivate::QSqlDriverPrivate()
+    : QObjectPrivate(), isOpen(false), isOpenError(false), precisionPolicy(QSql::LowPrecisionDouble),
+      dbmsType(UnknownDB)
+{
+}
+
+QSqlDriverPrivate::~QSqlDriverPrivate()
+{
+}
 
 QT_END_NAMESPACE
 
-#endif // QSQL_OCI_H
+#endif // QSQLDRIVER_P_H

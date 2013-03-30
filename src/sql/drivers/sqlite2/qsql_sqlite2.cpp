@@ -51,6 +51,7 @@
 #include <qsqlindex.h>
 #include <qsqlquery.h>
 #include <QtSql/private/qsqlcachedresult_p.h>
+#include <QtSql/private/qsqldriver_p.h>
 #include <qstringlist.h>
 #include <qvector.h>
 
@@ -82,7 +83,7 @@ static QVariant::Type nameToType(const QString& typeName)
     return QVariant::String;
 }
 
-class QSQLite2DriverPrivate
+class QSQLite2DriverPrivate : public QSqlDriverPrivate
 {
 public:
     QSQLite2DriverPrivate();
@@ -90,9 +91,10 @@ public:
     bool utf8;
 };
 
-QSQLite2DriverPrivate::QSQLite2DriverPrivate() : access(0)
+QSQLite2DriverPrivate::QSQLite2DriverPrivate() : QSqlDriverPrivate(), access(0)
 {
     utf8 = (qstrcmp(sqlite_encoding, "UTF-8") == 0);
+    dbmsType = SQLite;
 }
 
 class QSQLite2ResultPrivate;
@@ -392,7 +394,6 @@ QSQLite2Driver::QSQLite2Driver(sqlite *connection, QObject *parent)
 
 QSQLite2Driver::~QSQLite2Driver()
 {
-    delete d;
 }
 
 bool QSQLite2Driver::hasFeature(DriverFeature f) const

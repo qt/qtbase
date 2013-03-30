@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qsql_db2_p.h"
+#include <QtSql/private/qsqldriver_p.h>
 #include <qcoreapplication.h>
 #include <qdatetime.h>
 #include <qsqlfield.h>
@@ -70,10 +71,10 @@ QT_BEGIN_NAMESPACE
 static const int COLNAMESIZE = 255;
 static const SQLSMALLINT qParamType[4] = { SQL_PARAM_INPUT, SQL_PARAM_INPUT, SQL_PARAM_OUTPUT, SQL_PARAM_INPUT_OUTPUT };
 
-class QDB2DriverPrivate
+class QDB2DriverPrivate : public QSqlDriverPrivate
 {
 public:
-    QDB2DriverPrivate(): hEnv(0), hDbc(0) {}
+    QDB2DriverPrivate() : QSqlDriverPrivate(), hEnv(0), hDbc(0) { dbmsType = DB2; }
     SQLHANDLE hEnv;
     SQLHANDLE hDbc;
     QString user;
@@ -1151,7 +1152,6 @@ QDB2Driver::QDB2Driver(Qt::HANDLE env, Qt::HANDLE con, QObject* parent)
 QDB2Driver::~QDB2Driver()
 {
     close();
-    delete d;
 }
 
 bool QDB2Driver::open(const QString& db, const QString& user, const QString& password, const QString& host, int port,

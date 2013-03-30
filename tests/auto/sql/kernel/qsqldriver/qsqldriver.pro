@@ -3,7 +3,7 @@ CONFIG += parallel_test
 TARGET = tst_qsqldriver
 SOURCES  += tst_qsqldriver.cpp
 
-QT = core sql testlib
+QT = core sql testlib core-private sql-private
 
 wince*: {
    plugFiles.files = ../../../plugins/sqldrivers

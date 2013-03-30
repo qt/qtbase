@@ -59,6 +59,7 @@
 #include <qsqlindex.h>
 #include <qsqlquery.h>
 #include <QtSql/private/qsqlcachedresult_p.h>
+#include <QtSql/private/qsqldriver_p.h>
 #include <qstringlist.h>
 #include <qvector.h>
 
@@ -136,10 +137,10 @@ QSqlError qMakeError(const QString& err, QSqlError::ErrorType type, int errNo = 
     return QSqlError(QLatin1String("QTDS: ") + err, QString(), type, errNo);
 }
 
-class QTDSDriverPrivate
+class QTDSDriverPrivate : public QSqlDriverPrivate
 {
 public:
-    QTDSDriverPrivate(): login(0), initialized(false) {}
+    QTDSDriverPrivate() : QSqlDriverPrivate(), login(0), initialized(false) { dbmsType = Sybase; }
     LOGINREC* login;  // login information
     QString hostName;
     QString db;
@@ -579,7 +580,6 @@ QTDSDriver::~QTDSDriver()
     dbmsghandle(0);
     // dbexit also calls dbclose if necessary
     dbexit();
-    delete d;
 }
 
 bool QTDSDriver::hasFeature(DriverFeature f) const

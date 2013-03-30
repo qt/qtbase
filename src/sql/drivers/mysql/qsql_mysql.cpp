@@ -41,6 +41,7 @@
 
 #include "qsql_mysql_p.h"
 
+#include <QtSql/private/qsqldriver_p.h>
 #include <qcoreapplication.h>
 #include <qvariant.h>
 #include <qdatetime.h>
@@ -76,16 +77,16 @@ Q_DECLARE_METATYPE(MYSQL_STMT*)
 
 QT_BEGIN_NAMESPACE
 
-class QMYSQLDriverPrivate
+class QMYSQLDriverPrivate : public QSqlDriverPrivate
 {
 public:
-    QMYSQLDriverPrivate() : mysql(0),
+    QMYSQLDriverPrivate() : QSqlDriverPrivate(), mysql(0),
 #ifndef QT_NO_TEXTCODEC
         tc(QTextCodec::codecForLocale()),
 #else
         tc(0),
 #endif
-        preparedQuerysEnabled(false) {}
+        preparedQuerysEnabled(false) { dbmsType = MySqlServer; }
     MYSQL *mysql;
     QTextCodec *tc;
 
@@ -1155,7 +1156,6 @@ QMYSQLDriver::~QMYSQLDriver()
     qMySqlConnectionCount--;
     if (qMySqlConnectionCount == 0 && !qMySqlInitHandledByUser)
         qLibraryEnd();
-    delete d;
 }
 
 bool QMYSQLDriver::hasFeature(DriverFeature f) const

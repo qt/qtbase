@@ -1,4 +1,4 @@
-QT  = core sql-private
+QT  = core core-private sql-private
 
 PLUGIN_TYPE = sqldrivers
 load(qt_plugin)

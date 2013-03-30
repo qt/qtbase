@@ -48,6 +48,7 @@
 #include <qsqlindex.h>
 #include <qsqlquery.h>
 #include <QtSql/private/qsqlcachedresult_p.h>
+#include <QtSql/private/qsqldriver_p.h>
 #include <qstringlist.h>
 #include <qvector.h>
 #include <qdebug.h>
@@ -134,10 +135,10 @@ private:
     QSQLiteResultPrivate* d;
 };
 
-class QSQLiteDriverPrivate
+class QSQLiteDriverPrivate : public QSqlDriverPrivate
 {
 public:
-    inline QSQLiteDriverPrivate() : access(0) {}
+    inline QSQLiteDriverPrivate() : QSqlDriverPrivate(), access(0) { dbmsType = SQLite; }
     sqlite3 *access;
     QList <QSQLiteResult *> results;
 };
@@ -546,7 +547,6 @@ QSQLiteDriver::QSQLiteDriver(sqlite3 *connection, QObject *parent)
 
 QSQLiteDriver::~QSQLiteDriver()
 {
-    delete d;
 }
 
 bool QSQLiteDriver::hasFeature(DriverFeature f) const

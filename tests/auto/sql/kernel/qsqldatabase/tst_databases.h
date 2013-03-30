@@ -52,7 +52,7 @@
 #include <QVariant>
 #include <QDebug>
 #include <QSqlTableModel>
-
+#include <QtSql/private/qsqldriver_p.h>
 #include <QtTest/QtTest>
 
 #if defined (Q_OS_WIN) || defined (Q_OS_WIN32)
@@ -510,11 +510,8 @@ public:
 
     static bool isSqlServer( QSqlDatabase db )
     {
-        return db.databaseName().contains( "sql server", Qt::CaseInsensitive )
-               || db.databaseName().contains( "sqlserver", Qt::CaseInsensitive )
-               || db.databaseName().contains( "sql native client", Qt::CaseInsensitive )
-               || db.databaseName().contains( "bq-winserv", Qt::CaseInsensitive )
-               || db.hostName().contains( "bq-winserv", Qt::CaseInsensitive );
+        QSqlDriverPrivate *d = static_cast<QSqlDriverPrivate *>(QObjectPrivate::get(db.driver()));
+        return d->dbmsType == QSqlDriverPrivate::MSSqlServer;
     }
 
     static bool isMSAccess( QSqlDatabase db )
@@ -524,16 +521,19 @@ public:
 
     static bool isPostgreSQL( QSqlDatabase db )
     {
-        return db.driverName().startsWith("QPSQL") || (db.driverName().startsWith("QODBC") && ( db.databaseName().contains("PostgreSQL", Qt::CaseInsensitive) || db.databaseName().contains("pgsql", Qt::CaseInsensitive) ) );
+        QSqlDriverPrivate *d = static_cast<QSqlDriverPrivate *>(QObjectPrivate::get(db.driver()));
+        return d->dbmsType == QSqlDriverPrivate::PostgreSQL;
     }
 
     static bool isMySQL( QSqlDatabase db )
     {
-        return db.driverName().startsWith("QMYSQL") || (db.driverName().startsWith("QODBC") && db.databaseName().contains("MySQL", Qt::CaseInsensitive) );
+        QSqlDriverPrivate *d = static_cast<QSqlDriverPrivate *>(QObjectPrivate::get(db.driver()));
+        return d->dbmsType == QSqlDriverPrivate::MySqlServer;
     }
     static bool isDB2( QSqlDatabase db )
     {
-        return db.driverName().startsWith("QDB2") || (db.driverName().startsWith("QODBC") && db.databaseName().contains("db2", Qt::CaseInsensitive) );
+        QSqlDriverPrivate *d = static_cast<QSqlDriverPrivate *>(QObjectPrivate::get(db.driver()));
+        return d->dbmsType == QSqlDriverPrivate::DB2;
     }
 
     // -1 on fail, else Oracle version
