@@ -2980,21 +2980,44 @@ else
 fi
 
 # auto-detect default include and library search paths
-gccout=`LC_ALL=C $TEST_COMPILER $SYSROOT_FLAG $TEST_COMPILER_CXXFLAGS -xc++ -E -v - < /dev/null 2>&1 > /dev/null`
-# extract from one line like 'LIBRARY_PATH=/one/path:/another/path:...'
-libdirs=`echo "$gccout" | sed -n -e 's/^LIBRARY_PATH=\(.*\)/\1/p'`
-DEFAULT_LIBDIRS=`IFS=${HOST_DIRLIST_SEP}; for i in $libdirs; do test -d "$i" && cd "$i" && pwd; done`
-# extract from indented lines between '#include <...> search starts here:' and 'End of search list.'
-DEFAULT_INCDIRS=`echo "$gccout" | awk '
-/^End of search/ { yup=0 }
+unset tty
+[ "$OPT_VERBOSE" = "yes" ] && tty=/dev/stderr
+
+eval `LC_ALL=C $TEST_COMPILER $SYSROOT_FLAG $TEST_COMPILER_CXXFLAGS -xc++ -E -v - < /dev/null 2>&1 > /dev/null | $AWK '
+BEGIN { ORS = ""; FS = "="; incs = 0; libs = 0; }
+function quote(s)
+{
+    # We only handle spaces
+    if (match(s, " ") != 0)
+        return "\\\\\"" s "\\\\\"";
+    return s;
+}
+
+# extract include paths from indented lines between
+#   #include <...> search starts here:
+# and
+#   End of search list.
+/^\#include </ { yup=1; print "DEFAULT_INCDIRS=\""; next }
+/^End of search/ { yup=0; print "\"\n" }
 / \(framework directory\)$/ { next }
-yup { print substr($0, 2) }
-/^\#include </ { yup=1 }
-'`
-test -z "$DEFAULT_LIBDIRS" && DEFAULT_LIBDIRS="/lib
-/usr/lib"
-test -z "$DEFAULT_INCDIRS" && DEFAULT_INCDIRS="/usr/include
-/usr/local/include"
+yup { print quote(substr($0, 2)) " "; ++incs }
+
+# extract from one line like LIBRARY_PATH=/one/path:/another/path:...
+$1 == "LIBRARY_PATH" {
+    libs = split($2, library_paths, ":");
+    print "DEFAULT_LIBDIRS=\"";
+    for (lib in library_paths)
+        print quote(library_paths[lib]) " ";
+    print "\"\n"
+}
+
+END {
+    if (incs == 0)
+        print "DEFAULT_INCDIRS=\"/usr/include /usr/local/include\"\n";
+    if (libs == 0)
+        print "DEFAULT_LIBDIRS=\"/lib /usr/lib\"\n";
+}' | tee $tty`
+unset tty
 
 #setup the build parts
 if [ -z "$CFG_BUILD_PARTS" ]; then
@@ -6464,8 +6487,8 @@ host_build {
     QT_ARCH = $CFG_HOST_ARCH
 } else {
     QT_ARCH = $CFG_ARCH
-    QMAKE_DEFAULT_LIBDIRS = `echo "$DEFAULT_LIBDIRS" | sed 's,^,",;s,$,",' | tr '\n' ' '`
-    QMAKE_DEFAULT_INCDIRS = `echo "$DEFAULT_INCDIRS" | sed 's,^,",;s,$,",' | tr '\n' ' '`
+    QMAKE_DEFAULT_LIBDIRS = $DEFAULT_LIBDIRS
+    QMAKE_DEFAULT_INCDIRS = $DEFAULT_INCDIRS
 }
 QT_EDITION = $Edition
 QT_CONFIG += $QT_CONFIG
