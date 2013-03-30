@@ -1854,7 +1854,10 @@ const char *QMetaMethod::typeName() const
     way in the function declaration:
 
     \code
-        #define THISISTESTTAG // tag text
+        #ifndef Q_MOC_RUN
+        // define the tag text
+        #  define THISISTESTTAG
+        #endif
         ...
         private slots:
             THISISTESTTAG void testFunc();
@@ -1871,8 +1874,13 @@ const char *QMetaMethod::typeName() const
         qDebug() << mm.tag(); // prints THISISTESTTAG
     \endcode
 
-    For the moment,
-    \c moc doesn't support any special tags.
+    For the moment, \c moc will extract and record all tags, but it will not
+    handle any of them specially.
+
+    \note Since Qt 5.0, \c moc expands preprocessor macros, so it is necessary
+    to surround the definition with \c #ifndef \c Q_MOC_RUN, as shown in the
+    example above. This was not required in Qt 4. The code as shown above works
+    with Qt 4 too.
 */
 const char *QMetaMethod::tag() const
 {
