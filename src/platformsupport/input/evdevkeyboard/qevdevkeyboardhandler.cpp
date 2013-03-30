@@ -104,6 +104,7 @@ QEvdevKeyboardHandler *QEvdevKeyboardHandler::create(const QString &device, cons
     int repeatRate = 80;
     bool disableZap = false;
     bool enableCompose = false;
+    int grab = 0;
 
     QStringList args = specification.split(QLatin1Char(':'));
     foreach (const QString &arg, args) {
@@ -117,6 +118,8 @@ QEvdevKeyboardHandler *QEvdevKeyboardHandler::create(const QString &device, cons
             repeatDelay = arg.mid(13).toInt();
         else if (arg.startsWith(QLatin1String("repeat-rate=")))
             repeatRate = arg.mid(12).toInt();
+        else if (arg.startsWith(QLatin1String("grab=")))
+            grab = arg.mid(5).toInt();
     }
 
 #ifdef QT_QPA_KEYMAP_DEBUG
@@ -126,6 +129,7 @@ QEvdevKeyboardHandler *QEvdevKeyboardHandler::create(const QString &device, cons
     int fd;
     fd = qt_safe_open(device.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
     if (fd >= 0) {
+        ::ioctl(fd, EVIOCGRAB, grab);
         if (repeatDelay > 0 && repeatRate > 0) {
             int kbdrep[2] = { repeatDelay, repeatRate };
             ::ioctl(fd, EVIOCSREP, kbdrep);

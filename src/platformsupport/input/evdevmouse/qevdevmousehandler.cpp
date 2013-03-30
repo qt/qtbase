@@ -70,6 +70,7 @@ QEvdevMouseHandler *QEvdevMouseHandler::create(const QString &device, const QStr
 
     bool compression = true;
     int jitterLimit = 0;
+    int grab = 0;
 
     QStringList args = specification.split(QLatin1Char(':'));
     foreach (const QString &arg, args) {
@@ -77,11 +78,14 @@ QEvdevMouseHandler *QEvdevMouseHandler::create(const QString &device, const QStr
             compression = false;
         else if (arg.startsWith(QLatin1String("dejitter=")))
             jitterLimit = arg.mid(9).toInt();
+        else if (arg.startsWith(QLatin1String("grab=")))
+            grab = arg.mid(5).toInt();
     }
 
     int fd;
     fd = qt_safe_open(device.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0);
     if (fd >= 0) {
+        ::ioctl(fd, EVIOCGRAB, grab);
         return new QEvdevMouseHandler(device, fd, compression, jitterLimit);
     } else {
         qWarning("Cannot open mouse input device '%s': %s", qPrintable(device), strerror(errno));
