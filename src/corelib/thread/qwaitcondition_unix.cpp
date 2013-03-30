@@ -59,6 +59,14 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifdef Q_OS_ANDROID
+// Android lacks pthread_condattr_setclock, but it does have a nice function
+// for relative waits. Use weakref so we can determine at runtime whether it is
+// present.
+static int local_cond_timedwait_relative(pthread_cond_t*, pthread_mutex_t *, const timespec *)
+__attribute__((weakref("__pthread_cond_timedwait_relative")));
+#endif
+
 static void report_error(int code, const char *where, const char *what)
 {
     if (code != 0)
@@ -107,6 +115,13 @@ public:
     int wait_relative(unsigned long time)
     {
         timespec ti;
+#ifdef Q_OS_ANDROID
+        if (Q_LIKELY(local_cond_timedwait_relative)) {
+            ti.tv_sec = time / 1000;
+            ti.tv_nsec = time % 1000 * Q_UINT64_C(1000) * 1000;
+            return local_cond_timedwait_relative(&cond, &mutex, &ti);
+        }
+#endif
         qt_abstime_for_timeout(&ti, time);
         return pthread_cond_timedwait(&cond, &mutex, &ti);
     }
