@@ -104,14 +104,19 @@ public:
     int waiters;
     int wakeups;
 
+    int wait_relative(unsigned long time)
+    {
+        timespec ti;
+        qt_abstime_for_timeout(&ti, time);
+        return pthread_cond_timedwait(&cond, &mutex, &ti);
+    }
+
     bool wait(unsigned long time)
     {
         int code;
         forever {
             if (time != ULONG_MAX) {
-                timespec ti;
-                qt_abstime_for_timeout(&ti, time);
-                code = pthread_cond_timedwait(&cond, &mutex, &ti);
+                code = wait_relative(time);
             } else {
                 code = pthread_cond_wait(&cond, &mutex);
             }
