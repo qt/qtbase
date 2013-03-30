@@ -3271,10 +3271,10 @@ MakefileGenerator::writePkgConfigFile()
     t << "Cflags: "
         // << var("QMAKE_CXXFLAGS") << " "
       << varGlue("PRL_EXPORT_DEFINES","-D"," -D"," ")
-      << project->values("PRL_EXPORT_CXXFLAGS").join(' ')
-      << project->values("QMAKE_PKGCONFIG_CFLAGS").join(' ')
+      << varGlue("PRL_EXPORT_CXXFLAGS", "", " ", " ")
+      << varGlue("QMAKE_PKGCONFIG_CFLAGS", "", " ", " ")
         //      << varGlue("DEFINES","-D"," -D"," ")
-      << " -I${includedir}" << endl;
+      << "-I${includedir}" << endl;
 
     // requires
     const QString requires = project->values("QMAKE_PKGCONFIG_REQUIRES").join(' ');
