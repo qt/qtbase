@@ -6157,7 +6157,7 @@ void qInitDrawhelperAsm()
     }
 #endif // IWMMXT
 
-#if defined(QT_COMPILER_SUPPORTS_NEON)
+#if defined(QT_COMPILER_SUPPORTS_NEON) && !defined(Q_OS_IOS)
     if (features & NEON) {
         qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;
         qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;

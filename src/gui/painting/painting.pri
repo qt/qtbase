@@ -91,9 +91,12 @@ SSE2_SOURCES += painting/qdrawhelper_sse2.cpp
 SSSE3_SOURCES += painting/qdrawhelper_ssse3.cpp
 IWMMXT_SOURCES += painting/qdrawhelper_iwmmxt.cpp
 AVX_SOURCES += painting/qdrawhelper_avx.cpp
-NEON_SOURCES += painting/qdrawhelper_neon.cpp
-NEON_HEADERS += painting/qdrawhelper_neon_p.h
-NEON_ASM += ../3rdparty/pixman/pixman-arm-neon-asm.S painting/qdrawhelper_neon_asm.S
+
+!ios {
+    NEON_SOURCES += painting/qdrawhelper_neon.cpp
+    NEON_HEADERS += painting/qdrawhelper_neon_p.h
+    NEON_ASM += ../3rdparty/pixman/pixman-arm-neon-asm.S painting/qdrawhelper_neon_asm.S
+}
 
 MIPS_DSP_SOURCES += painting/qdrawhelper_mips_dsp.cpp
 MIPS_DSP_HEADERS += painting/qdrawhelper_mips_dsp_p.h painting/qt_mips_asm_dsp_p.h
