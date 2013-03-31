@@ -432,7 +432,7 @@ static const char **tryFonts = 0;
 
 QStringList QWindowsFontDatabaseFT::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
 {
-    if (script == QChar::Script_Common) {
+    if (script == QChar::Script_Common || script == QChar::Script_Han) {
 //            && !(request.styleStrategy & QFont::NoFontMerging)) {
         QFontDatabase db;
         if (!db.writingSystems(family).contains(QFontDatabase::Symbol)) {

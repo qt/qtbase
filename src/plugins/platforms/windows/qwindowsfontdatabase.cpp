@@ -1790,7 +1790,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(int script, const QFontDef &requ
         directWriteFont->Release();
 #endif
 
-    if (script == QChar::Script_Common
+    if ((script == QChar::Script_Common || script == QChar::Script_Han)
             && !(request.styleStrategy & QFont::NoFontMerging)) {
         QStringList extraFonts = extraTryFontsForFamily(request.family);
         if (extraFonts.size()) {
