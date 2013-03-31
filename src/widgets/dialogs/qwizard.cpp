@@ -1936,7 +1936,7 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
 
     Here, we call QWizardPage::field() to access the contents of the
     \c className field (which was defined in the \c ClassInfoPage)
-    and use it to initialize the \c OuputFilePage. The field's
+    and use it to initialize the \c OutputFilePage. The field's
     contents is returned as a QVariant.
 
     When we create a field using QWizardPage::registerField(), we
