@@ -6394,9 +6394,9 @@ host_build {
 } else {
     QT_ARCH = $CFG_ARCH
     QT_CPU_FEATURES = $CFG_CPUFEATURES
+    QMAKE_DEFAULT_LIBDIRS = `echo "$DEFAULT_LIBDIRS" | sed 's,^,",;s,$,",' | tr '\n' ' '`
+    QMAKE_DEFAULT_INCDIRS = `echo "$DEFAULT_INCDIRS" | sed 's,^,",;s,$,",' | tr '\n' ' '`
 }
-QMAKE_DEFAULT_LIBDIRS = `echo "$DEFAULT_LIBDIRS" | sed 's,^,",;s,$,",' | tr '\n' ' '`
-QMAKE_DEFAULT_INCDIRS = `echo "$DEFAULT_INCDIRS" | sed 's,^,",;s,$,",' | tr '\n' ' '`
 QT_EDITION = $Edition
 QT_CONFIG += $QT_CONFIG
 
