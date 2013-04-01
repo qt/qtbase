@@ -76,7 +76,6 @@ QPlatformDialogHelper *QQnxTheme::createPlatformDialogHelper(DialogType type) co
     switch (type) {
     case QPlatformTheme::FileDialog:
         return new QQnxFileDialogHelper(m_integration);
-#endif
 #if !defined(QT_NO_COLORDIALOG)
     case QPlatformTheme::ColorDialog:
 #endif
