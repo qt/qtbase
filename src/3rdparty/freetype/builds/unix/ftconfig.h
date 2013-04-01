@@ -140,6 +140,13 @@ FT_BEGIN_HEADER
 #endif /* FT_SIZEOF_LONG == 8 */
 
 
+#ifdef FT_CONFIG_OPTION_INLINE_MULFIX
+#ifdef FT_MULFIX_ASSEMBLER
+#define FT_MULFIX_INLINED  FT_MULFIX_ASSEMBLER
+#endif
+#endif
+
+
 #ifdef FT_MAKE_OPTION_SINGLE_OBJECT
 
 #define FT_LOCAL( x )      static  x

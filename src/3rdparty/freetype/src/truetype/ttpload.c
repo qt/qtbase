@@ -532,10 +532,10 @@
   tt_face_free_hdmx( TT_Face  face )
   {
     FT_Stream  stream = face->root.stream;
-    FT_Memory  memory = stream->memory;
+    FT_Memory  memory = stream ? stream->memory : NULL;
 
-
-    FT_FREE( face->hdmx_record_sizes );
+    if ( face->hdmx_record_sizes )
+        FT_FREE( face->hdmx_record_sizes );
     FT_FRAME_RELEASE( face->hdmx_table );
   }
 

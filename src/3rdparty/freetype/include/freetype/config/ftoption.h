@@ -317,7 +317,7 @@ FT_BEGIN_HEADER
   /* supply font data incrementally as the document is parsed, such        */
   /* as the Ghostscript interpreter for the PostScript language.           */
   /*                                                                       */
-#define FT_CONFIG_OPTION_INCREMENTAL
+/* #define FT_CONFIG_OPTION_INCREMENTAL */
 
 
   /*************************************************************************/
@@ -687,7 +687,7 @@ FT_BEGIN_HEADER
    * is recommended to disable the macro since it reduces the library's code
    * size and activates a few memory-saving optimizations as well.
    */
-#define FT_CONFIG_OPTION_OLD_INTERNALS
+/* #define FT_CONFIG_OPTION_OLD_INTERNALS */
 
 
   /*

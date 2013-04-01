@@ -1135,7 +1135,7 @@
     if ( error )
     {
       destroy_charmaps( face, memory );
-      if ( clazz->done_face )
+      if ( clazz->done_face && face )
         clazz->done_face( face );
       FT_FREE( internal );
       FT_FREE( face );

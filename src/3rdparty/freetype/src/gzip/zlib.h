@@ -28,6 +28,11 @@
   (zlib format), rfc1951.txt (deflate format) and rfc1952.txt (gzip format).
 */
 
+#if defined(__ARMCC__) || defined(__CC_ARM)
+/* Ultra ugly hack that convinces RVCT to use the systems zlib */
+#include <stdapis/zlib.h>
+#else /* defined(__ARMCC__) || defined(__CC_ARM) */
+
 #ifndef _ZLIB_H
 #define _ZLIB_H
 
@@ -828,3 +833,5 @@ ZEXTERN(int)  inflateInit2_ OF((z_streamp strm, int  windowBits,
 #endif
 
 #endif /* _ZLIB_H */
+
+#endif /* defined(__ARMCC__) || defined(__CC_ARM) */
