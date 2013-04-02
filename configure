@@ -5170,6 +5170,16 @@ if [ "$CFG_XCB" != "no" ]; then
                 XCB_PACKAGES="xcb xcb-shm xcb-sync xcb-xfixes xcb-randr xcb-image xcb-keysyms xcb-icccm"
                 QMAKE_CFLAGS_XCB="`$PKG_CONFIG --cflags $XCB_PACKAGES 2>/dev/null`"
                 QMAKE_LIBS_XCB="`$PKG_CONFIG --libs $XCB_PACKAGES 2>/dev/null`"
+                # for xcb-xkb tests
+                QMAKE_CFLAGS_XKB="`$PKG_CONFIG --cflags xcb xcb-xkb 2>/dev/null`"
+                QMAKE_LIBS_XKB="`$PKG_CONFIG --libs xcb xcb-xkb 2>/dev/null`"
+            fi
+
+            if compileTest qpa/xcb-xkb "xcb-xkb" $QMAKE_CFLAGS_XKB $QMAKE_LIBS_XKB; then
+                CFG_XKB=yes
+            else
+                CFG_XKB=no
+                QMakeVar add DEFINES QT_NO_XKB
             fi
 
             if compileTest qpa/xcb-syslibs "xcb-syslibs" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
