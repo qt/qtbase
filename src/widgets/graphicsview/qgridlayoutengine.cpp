@@ -432,6 +432,8 @@ QGridLayoutBox QGridLayoutRowData::totalBox(int start, int end) const
         result.q_maximumSize = 0.0;
         qreal nextSpacing = 0.0;
         for (int i = start; i < end; ++i) {
+            if (ignore.testBit(i))
+                continue;
             result.add(boxes.at(i), stretches.at(i), nextSpacing);
             nextSpacing = spacings.at(i);
         }
