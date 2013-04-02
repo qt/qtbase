@@ -74,6 +74,8 @@ QCocoaTheme::QCocoaTheme()
 QCocoaTheme::~QCocoaTheme()
 {
     delete m_systemPalette;
+    qDeleteAll(m_palettes);
+    qDeleteAll(m_fonts);
 }
 
 bool QCocoaTheme::usePlatformNativeDialog(DialogType dialogType) const
