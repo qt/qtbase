@@ -88,7 +88,7 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
                 ${Qt5$${CMAKE_MODULE_NAME}_VERSION_STRING} ${_Qt5$${CMAKE_MODULE_NAME}_FIND_VERSION_EXACT}
                 ${_Qt5$${CMAKE_MODULE_NAME}_DEPENDENCIES_FIND_QUIET}
                 ${_Qt5$${CMAKE_MODULE_NAME}_FIND_DEPENDENCIES_REQUIRED}
-                PATHS \"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}\" NO_DEFAULT_PATH
+                PATHS \"${CMAKE_CURRENT_LIST_DIR}/..\" NO_DEFAULT_PATH
             )
         endif()
 
