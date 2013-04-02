@@ -181,17 +181,16 @@ QSocketNotifier::QSocketNotifier(qintptr socket, Type type, QObject *parent)
     : QObject(*new QSocketNotifierPrivate, parent)
 {
     Q_D(QSocketNotifier);
-    if (socket < 0)
-        qWarning("QSocketNotifier: Invalid socket specified");
     d->sockfd = socket;
     d->sntype = type;
     d->snenabled = true;
 
-    if (!d->threadData->eventDispatcher.load()) {
+    if (socket < 0)
+        qWarning("QSocketNotifier: Invalid socket specified");
+    else if (!d->threadData->eventDispatcher.load())
         qWarning("QSocketNotifier: Can only be used with threads started with QThread");
-    } else {
+    else
         d->threadData->eventDispatcher.load()->registerSocketNotifier(this);
-    }
 }
 
 /*!
