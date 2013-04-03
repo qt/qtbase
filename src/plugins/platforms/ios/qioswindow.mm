@@ -501,7 +501,7 @@ void QIOSWindow::handleContentOrientationChange(Qt::ScreenOrientation orientatio
 {
     // Keep the status bar in sync with content orientation. This will ensure
     // that the task bar (and associated gestures) are aligned correctly:
-    UIDeviceOrientation uiOrientation = fromQtScreenOrientation(orientation);
+    UIInterfaceOrientation uiOrientation = UIInterfaceOrientation(fromQtScreenOrientation(orientation));
     [[UIApplication sharedApplication] setStatusBarOrientation:uiOrientation animated:NO];
 }
 
