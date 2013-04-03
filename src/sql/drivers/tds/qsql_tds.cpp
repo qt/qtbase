@@ -355,7 +355,7 @@ void QTDSResult::cleanup()
     d->clearErrorMsgs();
     d->rec.clear();
     for (int i = 0; i < d->buffer.size(); ++i)
-        free(d->buffer.at(i * 2).data);
+        free(d->buffer.at(i).data);
     d->buffer.clear();
     // "can" stands for "cancel"... very clever.
     dbcanquery(d->dbproc);
