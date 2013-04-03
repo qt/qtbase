@@ -2814,9 +2814,9 @@ if [ "$CFG_FORCEDEBUGINFO" = "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG force_debug_info"
 fi
 
-# iOS builds should be static to be able to submit to the App Store
 if [ "$XPLATFORM_IOS" = "yes" ]; then
-    CFG_SHARED="no"
+    CFG_SHARED="no" # iOS builds should be static to be able to submit to the App Store
+    CFG_CXX11="no" # C++11 support disabled for now
 fi
 
 # disable GTK style support auto-detection on Mac

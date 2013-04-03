@@ -40,6 +40,9 @@ isEmpty(QMAKE_MAC_PLATFORM_NAME): error("Could not resolve platform name for SDK
     # FIXME: Get the version_min_flag out of the platform's 'Native Build System.xcspec'
     version_identifier = $$replace(QMAKE_MAC_PLATFORM_NAME, iphonesimulator, ios-simulator)
 
+    # C++11 support may affect the deployment target
+    c++11: load(c++11)
+
     ios:!host_build: \
         deployment_target = $$QMAKE_IOS_DEPLOYMENT_TARGET
     else: \
