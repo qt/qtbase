@@ -27,7 +27,7 @@
 
 /*!
     \module QtPrintSupport
-    \title Qt Print Support Module
+    \title Qt Print Support C++ Classes
     \brief The Qt PrintSupport module provides classes to make printing easier and portable.
 
     \ingroup modules
@@ -43,4 +43,3 @@
 
     \snippet code/doc_src_qtprintsupport.pro 0
 */
-
