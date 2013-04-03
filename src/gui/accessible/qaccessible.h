@@ -45,6 +45,7 @@
 #ifndef QACCESSIBLE_H
 #define QACCESSIBLE_H
 
+#include <QtCore/qdebug.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qrect.h>
@@ -57,7 +58,6 @@
 #include <stdlib.h>
 
 QT_BEGIN_NAMESPACE
-
 
 class QAccessibleInterface;
 class QAccessibleEvent;
@@ -335,12 +335,20 @@ public:
     typedef void(*UpdateHandler)(QAccessibleEvent *event);
     typedef void(*RootObjectHandler)(QObject*);
 
+    typedef unsigned Id;
+
     static void installFactory(InterfaceFactory);
     static void removeFactory(InterfaceFactory);
     static UpdateHandler installUpdateHandler(UpdateHandler);
     static RootObjectHandler installRootObjectHandler(RootObjectHandler);
 
     static QAccessibleInterface *queryAccessibleInterface(QObject *);
+    static Id uniqueId(QAccessibleInterface *iface);
+    static QAccessibleInterface *accessibleInterface(Id uniqueId);
+    static Id registerAccessibleInterface(QAccessibleInterface *iface);
+    static void deleteAccessibleInterface(Id uniqueId);
+
+
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED static inline void updateAccessibility(QObject *object, int child, Event reason);
 #endif
@@ -360,6 +368,8 @@ private:
       it is not supposed to be instantiated.
     */
     QAccessible() {}
+
+    friend class QAccessibleCache;
 };
 
 Q_GUI_EXPORT bool operator==(const QAccessible::State &first, const QAccessible::State &second);
@@ -377,8 +387,10 @@ class QAccessibleTableCellInterface;
 
 class Q_GUI_EXPORT QAccessibleInterface
 {
+protected:
+    virtual ~QAccessibleInterface();
+
 public:
-    virtual ~QAccessibleInterface() {}
     // check for valid pointers
     virtual bool isValid() const = 0;
     virtual QObject *object() const = 0;
@@ -431,7 +443,9 @@ public:
 
     virtual void *interface_cast(QAccessible::InterfaceType)
     { return 0; }
-private:
+
+protected:
+    friend class QAccessibleCache;
 };
 
 class Q_GUI_EXPORT QAccessibleEvent

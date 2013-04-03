@@ -51,13 +51,17 @@ class QEventLoopPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QEventLoop)
 public:
     inline QEventLoopPrivate()
-        : exit(true), inExec(false), returnCode(-1)
-    { }
+        : inExec(false)
+    {
+        returnCode.store(-1);
+        exit.store(true);
+    }
 
     QAtomicInt quitLockRef;
 
-    bool exit, inExec;
-    int returnCode;
+    QBasicAtomicInt exit; // bool
+    QBasicAtomicInt returnCode;
+    bool inExec;
 
     void ref()
     {

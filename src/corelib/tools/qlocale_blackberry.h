@@ -67,16 +67,16 @@ public:
 
 public Q_SLOTS:
     void installSocketNotifiers();
-    void readLangageLocale();
+    void readLanguageLocale();
     void readRegionLocale();
     void readMeasurementSystem();
     void readHourFormat();
 
 private:
-    QByteArray readPpsValue(const char* ppsObject, int ppsFd);
+    QByteArray readPpsValue(const char *ppsObject, int ppsFd);
     QString getCorrectFormat(const QString &baseFormat, QLocale::FormatType typeFormat);
 
-    QByteArray lc_langage;
+    QByteArray lc_language;
     QByteArray lc_region;
     uint m_measurementSystem;
     bool is24HourFormat;

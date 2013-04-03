@@ -81,6 +81,27 @@ while (*str1 != '\0' || *str2 != '\0')
 return 0;
 }
 
+#ifdef COMPILE_PCRE32
+
+int
+PRIV(strcmp_uc_uc_utf)(const pcre_uchar *str1, const pcre_uchar *str2)
+{
+pcre_uchar c1;
+pcre_uchar c2;
+
+while (*str1 != '\0' || *str2 != '\0')
+  {
+  c1 = RAWUCHARINC(str1);
+  c2 = RAWUCHARINC(str2);
+  if (c1 != c2)
+    return ((c1 > c2) << 1) - 1;
+  }
+/* Both length and characters must be equal. */
+return 0;
+}
+
+#endif /* COMPILE_PCRE32 */
+
 int
 PRIV(strcmp_uc_c8)(const pcre_uchar *str1, const char *str2)
 {
@@ -98,6 +119,28 @@ while (*str1 != '\0' || *ustr2 != '\0')
 /* Both length and characters must be equal. */
 return 0;
 }
+
+#ifdef COMPILE_PCRE32
+
+int
+PRIV(strcmp_uc_c8_utf)(const pcre_uchar *str1, const char *str2)
+{
+const pcre_uint8 *ustr2 = (pcre_uint8 *)str2;
+pcre_uchar c1;
+pcre_uchar c2;
+
+while (*str1 != '\0' || *ustr2 != '\0')
+  {
+  c1 = RAWUCHARINC(str1);
+  c2 = (pcre_uchar)*ustr2++;
+  if (c1 != c2)
+    return ((c1 > c2) << 1) - 1;
+  }
+/* Both length and characters must be equal. */
+return 0;
+}
+
+#endif /* COMPILE_PCRE32 */
 
 /* The following two functions compares two, fixed length
 strings. Basically an strncmp for non 8 bit characters.
@@ -163,6 +206,6 @@ while (*str++ != 0)
 return len;
 }
 
-#endif /* COMPILE_PCRE8 */
+#endif /* !COMPILE_PCRE8 */
 
 /* End of pcre_string_utils.c */

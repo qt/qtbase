@@ -4400,4 +4400,21 @@ Qt::ScreenOrientation QScreenOrientationChangeEvent::orientation() const
     return m_orientation;
 }
 
+/*!
+    Creates a new QApplicationStateChangeEvent.
+    \a applicationState is the new state.
+*/
+QApplicationStateChangeEvent::QApplicationStateChangeEvent(Qt::ApplicationState applicationState)
+    : QEvent(QEvent::ApplicationStateChange), m_applicationState(applicationState)
+{
+}
+
+/*!
+    Returns the state of the application.
+*/
+Qt::ApplicationState QApplicationStateChangeEvent::applicationState() const
+{
+    return m_applicationState;
+}
+
 QT_END_NAMESPACE

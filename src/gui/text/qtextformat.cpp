@@ -1898,6 +1898,7 @@ void QTextCharFormat::setFont(const QFont &font)
     setFontStretch(font.stretch());
     setFontStyleHint(font.styleHint());
     setFontStyleStrategy(font.styleStrategy());
+    setFontHintingPreference(font.hintingPreference());
     setFontKerning(font.kerning());
 }
 

@@ -76,8 +76,6 @@ void accessibleDebugClientCalls_helper(const char* funcName, const QAccessibleIn
 # define accessibleDebugClientCalls(iface)
 #endif
 
-typedef QSharedPointer<QAccessibleInterface> QAIPointer;
-
 QWindow *window_helper(const QAccessibleInterface *iface);
 
 /**************************************************************\
@@ -93,14 +91,13 @@ class QWindowsMsaaAccessible : public
 {
 public:
     QWindowsMsaaAccessible(QAccessibleInterface *a)
-        : accessible(a)
-        , ref(0)
+        : ref(0)
     {
+        id = QAccessible::uniqueId(a);
     }
 
     virtual ~QWindowsMsaaAccessible()
     {
-        delete accessible;
     }
 
     /* IUnknown */
@@ -146,11 +143,23 @@ public:
 protected:
     virtual QByteArray IIDToString(REFIID id);
 
-    QAccessibleInterface *accessible;
+    QAccessible::Id id;
 
-    QAIPointer childPointer(VARIANT varID)
+    QAccessibleInterface *accessibleInterface() const
     {
-        return QAIPointer(accessible->child(varID.lVal - 1));
+         QAccessibleInterface *iface = QAccessible::accessibleInterface(id);
+         if (iface && iface->isValid())
+             return iface;
+         return 0;
+    }
+
+    QAccessibleInterface *childPointer(VARIANT varID)
+    {
+        // -1 since windows API always uses 1 for the first child
+        QAccessibleInterface *iface = accessibleInterface();
+        if (iface)
+            return accessibleInterface()->child(varID.lVal - 1);
+        return 0;
     }
 
 private:

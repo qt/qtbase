@@ -134,8 +134,8 @@ static const char *specialLanguages[] = {
     "mn", // Mongolian
     "ja", // Hiragana
     "ja", // Katakana
-    "zh", // Bopomofo
-    "zh", // Han
+    "zh-TW", // Bopomofo
+    "", // Han
     "ii", // Yi
     "ett", // OldItalic
     "got", // Gothic
@@ -697,11 +697,11 @@ QStringList QFontconfigDatabase::fallbacksForFamily(const QString &family, QFont
         FcPatternAddLangSet(pattern, FC_LANG, ls);
         FcLangSetDestroy(ls);
     } else if (!family.isEmpty()) {
-        // If script is common then it may include languages like CJK,
+        // If script is Common or Han, then it may include languages like CJK,
         // we should attach system default language set to the pattern
         // to obtain correct font fallback list (i.e. if LANG=zh_CN
         // then we normally want to use a Chinese font for CJK text;
-        // while a Japanese font should be use for that if LANG=ja)
+        // while a Japanese font should be used for that if LANG=ja)
         FcPattern *dummy = FcPatternCreate();
         FcDefaultSubstitute(dummy);
         FcChar8 *lang = 0;

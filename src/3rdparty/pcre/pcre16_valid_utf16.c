@@ -69,7 +69,7 @@ PCRE_UTF16_ERR0  No error
 PCRE_UTF16_ERR1  Missing low surrogate at the end of the string
 PCRE_UTF16_ERR2  Invalid low surrogate
 PCRE_UTF16_ERR3  Isolated low surrogate
-PCRE_UTF16_ERR4  Not allowed character
+PCRE_UTF16_ERR4  Non-character
 
 Arguments:
   string       points to the string
@@ -85,7 +85,7 @@ PRIV(valid_utf)(PCRE_PUCHAR string, int length, int *erroroffset)
 {
 #ifdef SUPPORT_UTF
 register PCRE_PUCHAR p;
-register pcre_uchar c;
+register pcre_uint32 c;
 
 if (length < 0)
   {
@@ -101,9 +101,8 @@ for (p = string; length-- > 0; p++)
     {
     /* Normal UTF-16 code point. Neither high nor low surrogate. */
 
-    /* This is probably a BOM from a different byte-order.
-    Regardless, the string is rejected. */
-    if (c == 0xfffe)
+    /* Check for non-characters */
+    if ((c & 0xfffeu) == 0xfffeu || (c >= 0xfdd0u && c <= 0xfdefu))
       {
       *erroroffset = p - string;
       return PCRE_UTF16_ERR4;
@@ -126,6 +125,16 @@ for (p = string; length-- > 0; p++)
       *erroroffset = p - string;
       return PCRE_UTF16_ERR2;
       }
+    else
+      {
+      /* Valid surrogate, but check for non-characters */
+      c = (((c & 0x3ffu) << 10) | (*p & 0x3ffu)) + 0x10000u;
+      if ((c & 0xfffeu) == 0xfffeu)
+        {
+        *erroroffset = p - string;
+        return PCRE_UTF16_ERR4;
+        }
+      }
     }
   else
     {
@@ -138,6 +147,7 @@ for (p = string; length-- > 0; p++)
 #else  /* SUPPORT_UTF */
 (void)(string);  /* Keep picky compilers happy */
 (void)(length);
+(void)(erroroffset);
 #endif /* SUPPORT_UTF */
 
 return PCRE_UTF16_ERR0;   /* This indicates success */

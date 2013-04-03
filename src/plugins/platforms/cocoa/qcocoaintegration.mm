@@ -216,7 +216,7 @@ QCocoaIntegration::QCocoaIntegration()
     : mFontDb(new QCoreTextFontDatabase())
     , mEventDispatcher(new QCocoaEventDispatcher())
     , mInputContext(new QCocoaInputContext)
-#ifndef QT_NO_COCOA_ACCESSIBILITY
+#ifndef QT_NO_ACCESSIBILITY
     , mAccessibility(new QCococaAccessibility)
 #endif
     , mCocoaClipboard(new QCocoaClipboard)
@@ -395,7 +395,7 @@ QPlatformInputContext *QCocoaIntegration::inputContext() const
 
 QPlatformAccessibility *QCocoaIntegration::accessibility() const
 {
-#ifndef QT_NO_COCOA_ACCESSIBILITY
+#ifndef QT_NO_ACCESSIBILITY
     return mAccessibility.data();
 #else
     return 0;

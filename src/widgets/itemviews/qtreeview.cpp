@@ -3739,6 +3739,8 @@ QPair<int,int> QTreeViewPrivate::startAndEndColumns(const QRect &rect) const
 bool QTreeViewPrivate::hasVisibleChildren(const QModelIndex& parent) const
 {
     Q_Q(const QTreeView);
+    if (parent.flags() & Qt::ItemNeverHasChildren)
+        return false;
     if (model->hasChildren(parent)) {
         if (hiddenIndexes.isEmpty())
             return true;

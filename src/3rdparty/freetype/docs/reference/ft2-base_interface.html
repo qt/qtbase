@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>FreeType-2.3.9 API Reference</title>
+<title>FreeType-2.3.12 API Reference</title>
 <style type="text/css">
   body { font-family: Verdana, Geneva, Arial, Helvetica, serif;
          color: #000000;
@@ -35,7 +35,7 @@
 <table align=center><tr><td><font size=-1>[<a href="ft2-index.html">Index</a>]</font></td>
 <td width="100%"></td>
 <td><font size=-1>[<a href="ft2-toc.html">TOC</a>]</font></td></tr></table>
-<center><h1>FreeType-2.3.9 API Reference</h1></center>
+<center><h1>FreeType-2.3.12 API Reference</h1></center>
 
 <center><h1>
 Base Interface
@@ -78,6 +78,14 @@ Base Interface
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Library">FT_Library</a></h4>
 <table align=center width="87%"><tr><td>
+Defined in FT_FREETYPE_H (freetype/freetype.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_LibraryRec_  *<b>FT_Library</b>;
+
+</pre></table><br>
+<table align=center width="87%"><tr><td>
 <p>A handle to a FreeType library instance. Each &lsquo;library&rsquo; is completely independent from the others; it is the &lsquo;root&rsquo; of a set of objects like fonts, faces, sizes, etc.</p>
 <p>It also embeds a memory manager (see <a href="ft2-system_interface.html#FT_Memory">FT_Memory</a>), as well as a scan-line converter object (see <a href="ft2-raster.html#FT_Raster">FT_Raster</a>).</p>
 <p>For multi-threading applications each thread should have its own FT_Library object.</p>
@@ -93,6 +101,14 @@ Base Interface
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Face">FT_Face</a></h4>
+<table align=center width="87%"><tr><td>
+Defined in FT_FREETYPE_H (freetype/freetype.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_FaceRec_*  <b>FT_Face</b>;
+
+</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>A handle to a given typographic face object. A face object models a given typeface, in a given style.</p>
 </td></tr></table><br>
@@ -113,6 +129,14 @@ Base Interface
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Size">FT_Size</a></h4>
 <table align=center width="87%"><tr><td>
+Defined in FT_FREETYPE_H (freetype/freetype.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_SizeRec_*  <b>FT_Size</b>;
+
+</pre></table><br>
+<table align=center width="87%"><tr><td>
 <p>A handle to an object used to model a face scaled to a given character size.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
@@ -132,6 +156,14 @@ Base Interface
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_GlyphSlot">FT_GlyphSlot</a></h4>
 <table align=center width="87%"><tr><td>
+Defined in FT_FREETYPE_H (freetype/freetype.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_GlyphSlotRec_*  <b>FT_GlyphSlot</b>;
+
+</pre></table><br>
+<table align=center width="87%"><tr><td>
 <p>A handle to a given &lsquo;glyph slot&rsquo;. A slot is a container where it is possible to load any of the glyphs contained in its parent face.</p>
 <p>In other words, each time you call <a href="ft2-base_interface.html#FT_Load_Glyph">FT_Load_Glyph</a> or <a href="ft2-base_interface.html#FT_Load_Char">FT_Load_Char</a>, the slot's content is erased by the new glyph data, i.e., the glyph's metrics, its image (bitmap or outline), and other control information.</p>
 </td></tr></table><br>
@@ -146,6 +178,14 @@ Base Interface
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_CharMap">FT_CharMap</a></h4>
+<table align=center width="87%"><tr><td>
+Defined in FT_FREETYPE_H (freetype/freetype.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_CharMapRec_*  <b>FT_CharMap</b>;
+
+</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>A handle to a given character map. A charmap is used to translate character codes in a given encoding into glyph indexes for its parent's face. Some font formats may provide several charmaps per font.</p>
 <p>Each face object owns zero or more charmaps, but only one of them can be &lsquo;active&rsquo; and used by <a href="ft2-base_interface.html#FT_Get_Char_Index">FT_Get_Char_Index</a> or <a href="ft2-base_interface.html#FT_Load_Char">FT_Load_Char</a>.</p>
@@ -207,8 +247,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p>An enumeration used to specify character sets supported by charmaps. Used in the <a href="ft2-base_interface.html#FT_Select_Charmap">FT_Select_Charmap</a> API function.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
-<p>Despite the name, this enumeration lists specific character repertories (i.e., charsets), and not text encoding methods (e.g., UTF-8, UTF-16, GB2312_EUC, etc.).</p>
-<p>Because of 32-bit charcodes defined in Unicode (i.e., surrogates), all character codes must be expressed as FT_Longs.</p>
+<p>Despite the name, this enumeration lists specific character repertories (i.e., charsets), and not text encoding methods (e.g., UTF-8, UTF-16, etc.).</p>
 <p>Other encodings might be defined in the future.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>values</b></em></td></tr><tr><td>
@@ -219,6 +258,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </td></tr>
 <tr valign=top><td><b>FT_ENCODING_UNICODE</b></td><td>
 <p>Corresponds to the Unicode character set. This value covers all versions of the Unicode repertoire, including ASCII and Latin-1. Most fonts include a Unicode charmap, but not all of them.</p>
+<p>For example, if you want to access Unicode value U+1F028 (and the font contains it), use value 0x1F028 as the input value for <a href="ft2-base_interface.html#FT_Get_Char_Index">FT_Get_Char_Index</a>.</p>
 </td></tr>
 <tr valign=top><td><b>FT_ENCODING_MS_SYMBOL</b></td><td>
 <p>Corresponds to the Microsoft Symbol encoding, used to encode mathematical symbols in the 32..255 character code range. For more information, see &lsquo;http://www.ceviz.net/symbol.htm&rsquo;.</p>
@@ -349,6 +389,9 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </td></tr>
 </table>
 </td></tr></table>
+<table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
+<p>If not disabled with <a href="ft2-base_interface.html#FT_LOAD_XXX">FT_LOAD_NO_HINTING</a>, the values represent dimensions of the hinted glyph (in case hinting is applicable).</p>
+</td></tr></table>
 </td></tr></table>
 <hr width="75%">
 <table align=center width="75%"><tr><td><font size=-2>[<a href="ft2-index.html">Index</a>]</font></td>
@@ -411,6 +454,14 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Module">FT_Module</a></h4>
 <table align=center width="87%"><tr><td>
+Defined in FT_FREETYPE_H (freetype/freetype.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_ModuleRec_*  <b>FT_Module</b>;
+
+</pre></table><br>
+<table align=center width="87%"><tr><td>
 <p>A handle to a given FreeType module object. Each module can be a font driver, a renderer, or anything else that provides services to the formers.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -422,6 +473,14 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Driver">FT_Driver</a></h4>
 <table align=center width="87%"><tr><td>
+Defined in FT_FREETYPE_H (freetype/freetype.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_DriverRec_*  <b>FT_Driver</b>;
+
+</pre></table><br>
+<table align=center width="87%"><tr><td>
 <p>A handle to a given FreeType font driver object. Each font driver is a special module capable of creating faces from font files.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -432,6 +491,14 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Renderer">FT_Renderer</a></h4>
+<table align=center width="87%"><tr><td>
+Defined in FT_FREETYPE_H (freetype/freetype.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_RendererRec_*  <b>FT_Renderer</b>;
+
+</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>A handle to a given FreeType renderer. A renderer is a special module in charge of converting a glyph image to a bitmap, when necessary. Each renderer supports a given glyph image format, and one or more target surface depths.</p>
 </td></tr></table><br>
@@ -552,6 +619,14 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Face_Internal">FT_Face_Internal</a></h4>
+<table align=center width="87%"><tr><td>
+Defined in FT_FREETYPE_H (freetype/freetype.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_Face_InternalRec_*  <b>FT_Face_Internal</b>;
+
+</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>An opaque handle to an &lsquo;FT_Face_InternalRec&rsquo; structure, used to model private data of a given <a href="ft2-base_interface.html#FT_Face">FT_Face</a> object.</p>
 <p>This structure might change between releases of FreeType&nbsp;2 and is not generally available to client applications.</p>
@@ -955,6 +1030,14 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_HAS_FAST_GLYPHS">FT_HAS_FAST_GLYPHS</a></h4>
 <table align=center width="87%"><tr><td>
+Defined in FT_FREETYPE_H (freetype/freetype.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+#define <b>FT_HAS_FAST_GLYPHS</b>( face )  0
+
+</pre></table><br>
+<table align=center width="87%"><tr><td>
 <p>Deprecated.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -1081,6 +1164,14 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Size_Internal">FT_Size_Internal</a></h4>
 <table align=center width="87%"><tr><td>
+Defined in FT_FREETYPE_H (freetype/freetype.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_Size_InternalRec_*  <b>FT_Size_Internal</b>;
+
+</pre></table><br>
+<table align=center width="87%"><tr><td>
 <p>An opaque handle to an &lsquo;FT_Size_InternalRec&rsquo; structure, used to model private data of a given <a href="ft2-base_interface.html#FT_Size">FT_Size</a> object.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -1199,6 +1290,14 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_SubGlyph">FT_SubGlyph</a></h4>
 <table align=center width="87%"><tr><td>
+Defined in FT_FREETYPE_H (freetype/freetype.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_SubGlyphRec_*  <b>FT_SubGlyph</b>;
+
+</pre></table><br>
+<table align=center width="87%"><tr><td>
 <p>The subglyph structure is an internal object used to describe subglyphs (for example, in the case of composites).</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
@@ -1213,6 +1312,14 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Slot_Internal">FT_Slot_Internal</a></h4>
+<table align=center width="87%"><tr><td>
+Defined in FT_FREETYPE_H (freetype/freetype.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_Slot_InternalRec_*  <b>FT_Slot_Internal</b>;
+
+</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>An opaque handle to an &lsquo;FT_Slot_InternalRec&rsquo; structure, used to model private data of a given <a href="ft2-base_interface.html#FT_GlyphSlot">FT_GlyphSlot</a> object.</p>
 </td></tr></table><br>
@@ -1295,7 +1402,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p>The advance height of the unhinted glyph. Its value is expressed in 16.16 fractional pixels, unless <a href="ft2-base_interface.html#FT_LOAD_XXX">FT_LOAD_LINEAR_DESIGN</a> is set when loading the glyph. This field can be important to perform correct WYSIWYG layout. Only relevant for outline glyphs.</p>
 </td></tr>
 <tr valign=top><td><b>advance</b></td><td>
-<p>This is the transformed advance width for the glyph (in 26.6 fractional pixel format).</p>
+<p>This shorthand is, depending on <a href="ft2-base_interface.html#FT_LOAD_XXX">FT_LOAD_IGNORE_TRANSFORM</a>, the transformed advance width for the glyph (in 26.6 fractional pixel format). As specified with <a href="ft2-base_interface.html#FT_LOAD_XXX">FT_LOAD_VERTICAL_LAYOUT</a>, it uses either the &lsquo;horiAdvance&rsquo; or the &lsquo;vertAdvance&rsquo; value of &lsquo;metrics&rsquo; field.</p>
 </td></tr>
 <tr valign=top><td><b>format</b></td><td>
 <p>This field indicates the format of the image contained in the glyph slot. Typically <a href="ft2-basic_types.html#FT_Glyph_Format">FT_GLYPH_FORMAT_BITMAP</a>, <a href="ft2-basic_types.html#FT_Glyph_Format">FT_GLYPH_FORMAT_OUTLINE</a>, or <a href="ft2-basic_types.html#FT_Glyph_Format">FT_GLYPH_FORMAT_COMPOSITE</a>, but others are possible.</p>
@@ -1397,6 +1504,9 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
 <p>FreeType error code. 0&nbsp;means success.</p>
+</td></tr></table>
+<table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
+<p>In case you want to provide your own memory allocating routines, use <a href="ft2-module_management.html#FT_New_Library">FT_New_Library</a> instead, followed by a call to <a href="ft2-module_management.html#FT_Add_Default_Modules">FT_Add_Default_Modules</a> (or a series of calls to <a href="ft2-module_management.html#FT_Add_Module">FT_Add_Module</a>).</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -1532,7 +1642,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
-<p>The ID and function of parameters are driver-specific.</p>
+<p>The ID and function of parameters are driver-specific. See the various FT_PARAM_TAG_XXX flags for more information.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -2045,6 +2155,14 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Size_Request">FT_Size_Request</a></h4>
 <table align=center width="87%"><tr><td>
+Defined in FT_FREETYPE_H (freetype/freetype.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_Size_RequestRec_  *<b>FT_Size_Request</b>;
+
+</pre></table><br>
+<table align=center width="87%"><tr><td>
 <p>A handle to a size request structure.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -2457,6 +2575,14 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_LOAD_TARGET_MODE">FT_LOAD_TARGET_MODE</a></h4>
 <table align=center width="87%"><tr><td>
+Defined in FT_FREETYPE_H (freetype/freetype.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+#define <b>FT_LOAD_TARGET_MODE</b>( x )  ( (<a href="ft2-base_interface.html#FT_Render_Mode">FT_Render_Mode</a>)( ( (x) &gt;&gt; 16 ) &amp; 15 ) )
+
+</pre></table><br>
+<table align=center width="87%"><tr><td>
 <p>Return the <a href="ft2-base_interface.html#FT_Render_Mode">FT_Render_Mode</a> corresponding to a given <a href="ft2-base_interface.html#FT_LOAD_TARGET_XXX">FT_LOAD_TARGET_XXX</a> value.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -2678,6 +2804,14 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="ft_kerning_default">ft_kerning_default</a></h4>
 <table align=center width="87%"><tr><td>
+Defined in FT_FREETYPE_H (freetype/freetype.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+#define <b>ft_kerning_default</b>   <a href="ft2-base_interface.html#FT_Kerning_Mode">FT_KERNING_DEFAULT</a>
+
+</pre></table><br>
+<table align=center width="87%"><tr><td>
 <p>This constant is deprecated. Please use <a href="ft2-base_interface.html#FT_Kerning_Mode">FT_KERNING_DEFAULT</a> instead.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -2689,6 +2823,14 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="ft_kerning_unfitted">ft_kerning_unfitted</a></h4>
 <table align=center width="87%"><tr><td>
+Defined in FT_FREETYPE_H (freetype/freetype.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+#define <b>ft_kerning_unfitted</b>  <a href="ft2-base_interface.html#FT_Kerning_Mode">FT_KERNING_UNFITTED</a>
+
+</pre></table><br>
+<table align=center width="87%"><tr><td>
 <p>This constant is deprecated. Please use <a href="ft2-base_interface.html#FT_Kerning_Mode">FT_KERNING_UNFITTED</a> instead.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -2699,6 +2841,14 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="ft_kerning_unscaled">ft_kerning_unscaled</a></h4>
+<table align=center width="87%"><tr><td>
+Defined in FT_FREETYPE_H (freetype/freetype.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+#define <b>ft_kerning_unscaled</b>  <a href="ft2-base_interface.html#FT_Kerning_Mode">FT_KERNING_UNSCALED</a>
+
+</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>This constant is deprecated. Please use <a href="ft2-base_interface.html#FT_Kerning_Mode">FT_KERNING_UNSCALED</a> instead.</p>
 </td></tr></table><br>

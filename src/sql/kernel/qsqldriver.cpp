@@ -46,6 +46,7 @@
 #include "qsqlfield.h"
 #include "qsqlindex.h"
 #include "private/qobject_p.h"
+#include "private/qsqldriver_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -58,30 +59,6 @@ static QString prepareIdentifier(const QString &identifier,
         ret = driver->escapeIdentifier(identifier, type);
     }
     return ret;
-}
-
-class QSqlDriverPrivate : public QObjectPrivate
-{
-public:
-    QSqlDriverPrivate();
-    virtual ~QSqlDriverPrivate();
-
-public:
-    // @CHECK: this member is never used. It was named q, which expanded to q_func().
-    QSqlDriver *q_func();
-    uint isOpen : 1;
-    uint isOpenError : 1;
-    QSqlError error;
-    QSql::NumericalPrecisionPolicy precisionPolicy;
-};
-
-inline QSqlDriverPrivate::QSqlDriverPrivate()
-    : QObjectPrivate(), isOpen(false), isOpenError(false), precisionPolicy(QSql::LowPrecisionDouble)
-{
-}
-
-QSqlDriverPrivate::~QSqlDriverPrivate()
-{
 }
 
 /*!

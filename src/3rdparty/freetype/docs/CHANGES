@@ -1,3 +1,82 @@
+CHANGES BETWEEN 2.3.11 and 2.3.12
+
+  I. IMPORTANT CHANGES
+
+    - For  `FT_Open_Face',  new  parameters  are  available  to ignore
+      preferred family names: FT_PARAM_TAG_IGNORE_PREFERRED_FAMILY and
+      FT_PARAM_TAG_IGNORE_PREFERRED_SUBFAMILY.
+
+  II. MISCELLANEOUS
+
+    - Support  for  incremental  font  loading  (controlled  with  the
+      FT_CONFIG_OPTION_INCREMENTAL macro) is now active by default.
+
+    - Better support for vertical metrics.
+
+    - Various minor bug fixes.
+
+
+======================================================================
+
+CHANGES BETWEEN 2.3.10 and 2.3.11
+
+  I. IMPORTANT BUG FIXES
+
+    - Version 2.3.10 broke PCF support.
+
+
+======================================================================
+
+CHANGES BETWEEN 2.3.10 and 2.3.9
+
+  I. IMPORTANT BUG FIXES
+
+    - If all  ASCII digits in a  font have the  same (unscaled) width,
+      the autohinter respects this and won't change it.
+
+    - TrueType fonts  are now  rasterized correctly  if the horizontal
+      and vertical resolution differ.
+
+    - Type 1 fonts are now handled with increased precision internally
+      to avoid serious rounding issues if non-integral coordinates are
+      encountered.
+
+    - Horizontally  condensed CFF  fonts (using the font  matrix) were
+      rendered  incorrectly.   This  bug  has  been  introduced  after
+      release 2.3.5.
+
+
+  II. IMPORTANT CHANGES
+
+    - Support for the SFNT cmap 13 table format (as defined by the new
+      OpenType 1.6 specification) has been added.
+
+    - B/W rasterization  of well-hinted TrueType  fonts at small sizes
+      has been greatly improved.
+
+    - Calculation  of  vertical  metrics in  OpenType  fonts has  been
+      improved.
+
+
+  III. MISCELLANEOUS
+
+    - It  is now  possible to  change  the emboldening  factor in  the
+      `ftview' demo program with keys `e' and `E'.
+
+    - It is  now possible  to change the  slant value in  the `ftview'
+      demo program with keys `s' and `S'.
+
+    - The  5-levels  grayscale  mode of  the `ftraster'  module (which
+      FreeType doesn't use by default) was broken since version 2.3.0.
+
+    - Compilation of the  `ftgrays' and `ftraster' modules  was broken
+      in stand-alone mode.
+
+    - Various fixes for compilation on 64bit and 16bit architectures.
+
+
+======================================================================
+
 CHANGES BETWEEN 2.3.9 and 2.3.8
 
   I. IMPORTANT BUG FIXES

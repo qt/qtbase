@@ -96,7 +96,6 @@ public:
     QAccessible::State state() const {
         QAccessibleInterface *parentInterface = parent();
         QAccessible::State state = parentInterface->state();
-        delete parentInterface;
         return state;
     }
     QRect rect() const {
@@ -153,6 +152,12 @@ QAccessibleTabBar::QAccessibleTabBar(QWidget *w)
     Q_ASSERT(tabBar());
 }
 
+QAccessibleTabBar::~QAccessibleTabBar()
+{
+    foreach (QAccessible::Id id, m_childInterfaces.values())
+        QAccessible::deleteAccessibleInterface(id);
+}
+
 /*! Returns the QTabBar. */
 QTabBar *QAccessibleTabBar::tabBar() const
 {
@@ -161,9 +166,14 @@ QTabBar *QAccessibleTabBar::tabBar() const
 
 QAccessibleInterface* QAccessibleTabBar::child(int index) const
 {
+    if (QAccessible::Id id = m_childInterfaces.value(index))
+        return QAccessible::accessibleInterface(id);
+
     // first the tabs, then 2 buttons
     if (index < tabBar()->count()) {
         QAccessibleTabButton *button = new QAccessibleTabButton(tabBar(), index);
+        QAccessible::registerAccessibleInterface(button);
+        m_childInterfaces.insert(index, QAccessible::uniqueId(button));
         return button;
     } else if (index >= tabBar()->count()) {
         // left button

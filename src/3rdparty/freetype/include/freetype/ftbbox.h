@@ -61,7 +61,7 @@ FT_BEGIN_HEADER
   /*    Compute the exact bounding box of an outline.  This is slower      */
   /*    than computing the control box.  However, it uses an advanced      */
   /*    algorithm which returns _very_ quickly when the two boxes          */
-  /*    coincide.  Otherwise, the outline Bezier arcs are traversed to     */
+  /*    coincide.  Otherwise, the outline Bézier arcs are traversed to     */
   /*    extract their extrema.                                             */
   /*                                                                       */
   /* <Input>                                                               */

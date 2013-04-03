@@ -722,7 +722,9 @@ script_list = {
     99  : [ "Tai Le",                 "Tale" ],
     100 : [ "Tai Viet",               "Tavt" ],
     101 : [ "Takri",                  "Takr" ],
-    102 : [ "Ugaritic",               "Ugar" ]
+    102 : [ "Ugaritic",               "Ugar" ],
+    103 : [ "Braille",                "Brai" ],
+    104 : [ "Hiragana",               "Hira" ]
 
 #    ### : [ "Blissymbols",            "Blis" ],
 #    ### : [ "Linear A",               "Lina" ],

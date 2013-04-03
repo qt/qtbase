@@ -25,6 +25,7 @@ MODULE_DEFINES = \
 
 DEFINES += \
     $$MODULE_DEFINES \
+    QT_CRYPTOGRAPHICHASH_ONLY_SHA1 \
     QT_NO_CAST_FROM_ASCII
 
 MODULE_PRIVATE_INCLUDES = \
@@ -84,6 +85,7 @@ SOURCES += \
            ../../corelib/tools/qbytearray.cpp \
            ../../corelib/tools/qarraydata.cpp \
            ../../corelib/tools/qbytearraymatcher.cpp \
+           ../../corelib/tools/qcryptographichash.cpp \
            ../../corelib/tools/qdatetime.cpp \
            ../../corelib/tools/qhash.cpp \
            ../../corelib/tools/qlist.cpp \

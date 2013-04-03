@@ -48,6 +48,7 @@
 #include <QScopedArrayPointer>
 #include <qtextcodec.h>
 #include <qdatetime.h>
+#include <qprocess.h>
 #include <float.h>
 
 #include <qlocale.h>
@@ -144,6 +145,9 @@ private slots:
 
     void measurementSystems();
     void QTBUG_26035_positivesign();
+
+    void textDirection_data();
+    void textDirection();
 
 private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
@@ -1633,10 +1637,10 @@ void tst_QLocale::defaultNumeringSystem()
     QCOMPARE(pa.toString(123), QLatin1String("123"));
 
     QLocale ne("ne_IN");
-    QCOMPARE(ne.toString(123), QLatin1String("123"));
+    QCOMPARE(ne.toString(123), QString::fromUtf8("१२३"));
 
     QLocale mr("mr_IN");
-    QCOMPARE(mr.toString(123), QLatin1String("123"));
+    QCOMPARE(mr.toString(123), QString::fromUtf8("१२३"));
 
     QLocale ml("ml_IN");
     QCOMPARE(ml.toString(123), QLatin1String("123"));
@@ -1957,6 +1961,45 @@ void tst_QLocale::QTBUG_26035_positivesign()
     ok = false;
     QCOMPARE(locale.toLongLong(QString("+100,000,000"), &ok), (qlonglong)100000000);
     QVERIFY(ok);
+}
+
+void tst_QLocale::textDirection_data()
+{
+    QTest::addColumn<int>("language");
+    QTest::addColumn<int>("script");
+    QTest::addColumn<bool>("rightToLeft");
+
+    for (int language = QLocale::C; language <= QLocale::LastLanguage; ++language) {
+        bool rightToLeft = false;
+        switch (language) {
+        case QLocale::Arabic:
+        case QLocale::Hebrew:
+        case QLocale::Kashmiri:
+        case QLocale::Persian:
+        case QLocale::Pashto:
+        case QLocale::Urdu:
+        case QLocale::Syriac:
+        case QLocale::Divehi:
+            rightToLeft = QLocale(QLocale::Language(language)).language() == QLocale::Language(language); // false if there is no locale data for language
+            break;
+        default:
+            break;
+        }
+        QString testName = QLocalePrivate::languageToCode(QLocale::Language(language));
+        QTest::newRow(testName.toLatin1().constData()) << language << int(QLocale::AnyScript) << rightToLeft;
+    }
+    QTest::newRow("pa_Arab") << int(QLocale::Punjabi) << int(QLocale::ArabicScript) << true;
+    QTest::newRow("uz_Arab") << int(QLocale::Uzbek) << int(QLocale::ArabicScript) << true;
+}
+
+void tst_QLocale::textDirection()
+{
+    QFETCH(int, language);
+    QFETCH(int, script);
+    QFETCH(bool, rightToLeft);
+
+    QLocale locale(QLocale::Language(language), QLocale::Script(script), QLocale::AnyCountry);
+    QCOMPARE(locale.textDirection() == Qt::RightToLeft, rightToLeft);
 }
 
 QTEST_MAIN(tst_QLocale)

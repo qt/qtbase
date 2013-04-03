@@ -85,7 +85,7 @@ QBBSystemLocaleData::QBBSystemLocaleData()
     // subsequent call to QSocketNotifier constructor to fail.
     QMetaObject::invokeMethod(this, "installSocketNotifiers", Qt::QueuedConnection);
 
-    readLangageLocale();
+    readLanguageLocale();
     readRegionLocale();
     readMeasurementSystem();
     readHourFormat();
@@ -123,8 +123,8 @@ QVariant QBBSystemLocaleData::dateTimeFormat(QLocale::FormatType formatType)
 
 QLocale QBBSystemLocaleData::languageLocale()
 {
-    if (!lc_langage.isEmpty())
-        return QLocale(QLatin1String(lc_langage));
+    if (!lc_language.isEmpty())
+        return QLocale(QLatin1String(lc_language));
 
     return QLocale::c();
 }
@@ -143,7 +143,7 @@ void QBBSystemLocaleData::installSocketNotifiers()
     Q_ASSERT(QCoreApplication::instance());
 
     languageNotifier = new QSocketNotifier(languageFd, QSocketNotifier::Read, this);
-    QObject::connect(languageNotifier, SIGNAL(activated(int)), this, SLOT(readLangageLocale()));
+    QObject::connect(languageNotifier, SIGNAL(activated(int)), this, SLOT(readLanguageLocale()));
 
     regionNotifier = new QSocketNotifier(regionFd, QSocketNotifier::Read, this);
     QObject::connect(regionNotifier, SIGNAL(activated(int)), this, SLOT(readRegionLocale()));
@@ -155,9 +155,9 @@ void QBBSystemLocaleData::installSocketNotifiers()
     QObject::connect(hourNotifier, SIGNAL(activated(int)), this, SLOT(readHourFormat()));
 }
 
-void QBBSystemLocaleData::readLangageLocale()
+void QBBSystemLocaleData::readLanguageLocale()
 {
-    lc_langage = readPpsValue("_CS_LOCALE", languageFd);
+    lc_language = readPpsValue("_CS_LOCALE", languageFd);
 }
 
 void QBBSystemLocaleData::readRegionLocale()

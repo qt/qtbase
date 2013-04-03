@@ -108,13 +108,8 @@ public:
         clearIndex();;
     }
 
-    // positionalToNamedBinding uses fieldSerial() by default, which converts to Oracle-style names,
-    // because this style is used in the API. A driver can reuse positionalToNamedBinding()
-    // internally for its own naming style by supplying its own fieldSerialFunc. We cannot make
-    // fieldSerial() virtual because it would allow a driver to impose its naming style on
-    // executedQuery when set by QSqlResult::savePrepare().
-    static QString fieldSerial(int);
-    static QString positionalToNamedBinding(const QString &query, QString (fieldSerialFunc)(int idx) = fieldSerial);
+    virtual QString fieldSerial(int) const;
+    QString positionalToNamedBinding(const QString &query) const;
     QString namedToPositionalBinding(const QString &query);
     QString holderAt(int index) const;
 

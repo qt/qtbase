@@ -90,7 +90,7 @@ public class QtActivity extends Activity {
             String qtLibs[] = getResources().getStringArray(R.array.qt_libs);
             ArrayList<String> libraryList = new ArrayList<String>();
             for (int i = 0; i < qtLibs.length; i++)
-                libraryList.add("/data/local/qt/lib/lib" + qtLibs[i] + ".so");
+                libraryList.add("/data/local/tmp/qt/lib/lib" + qtLibs[i] + ".so");
 
             String mainLib = null;
             String nativeLibDir = null;
@@ -124,8 +124,9 @@ public class QtActivity extends Activity {
             }
             String[] libs = new String[libraryList.size()];
             libs = libraryList.toArray(libs);
-            loadQtLibs(libs, "QML_IMPORT_PATH=/data/local/qt/imports\tQT_PLUGIN_PATH=/data/local/qt/plugins",
-                       "-xml\t-silent\t-o\toutput.xml", mainLib, nativeLibDir);
+            loadQtLibs(libs
+                        ,"QT_QPA_EGLFS_HIDECURSOR=1\tQML2_IMPORT_PATH=/data/local/tmp/qt/qml\tQML_IMPORT_PATH=/data/local/tmp/qt/imports\tQT_PLUGIN_PATH=/data/local/tmp/qt/plugins"
+                        , "-xml\t-silent\t-o\toutput.xml", mainLib, nativeLibDir);
         } catch (Exception e) {
             Log.e(QtNative.QtTAG, "Can't create main activity", e);
         }

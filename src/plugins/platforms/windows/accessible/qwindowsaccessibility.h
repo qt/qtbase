@@ -63,8 +63,6 @@ public:
     */
     static IAccessible *wrap(QAccessibleInterface *acc);
     static QWindow *windowHelper(const QAccessibleInterface *iface);
-
-    static QPair<QObject*, int> getCachedObject(int entryId);
 };
 
 QT_END_NAMESPACE

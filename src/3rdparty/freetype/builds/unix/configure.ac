@@ -2,7 +2,7 @@
 #
 # Process this file with autoconf to produce a configure script.
 #
-# Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 by
+# Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 by
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
 # This file is part of the FreeType project, and may only be used, modified,
@@ -11,13 +11,13 @@
 # indicate that you have read the license and understand and accept it
 # fully.
 
-AC_INIT([FreeType], [2.3.9], [freetype@nongnu.org], [freetype])
+AC_INIT([FreeType], [2.3.12], [freetype@nongnu.org], [freetype])
 AC_CONFIG_SRCDIR([ftconfig.in])
 
 
 # Don't forget to update docs/VERSION.DLL!
 
-version_info='9:20:3'
+version_info='10:0:4'
 AC_SUBST([version_info])
 ft_version=`echo $version_info | tr : .`
 AC_SUBST([ft_version])
@@ -53,18 +53,15 @@ if test ${cross_compiling} = yes; then
   elif test -x a_out.exe -o -x conftest.exe; then
     EXEEXT_BUILD=".exe"
   elif test -x conftest.* ; then
-    EXEEXT_BUILD=`echo conftest.* | sed -n '1s/^.*\.//g'`
+    EXEEXT_BUILD=`echo conftest.* | sed -n '1s/^.*\././'`
   fi
+  rm -f a.* b.* a_out.exe conftest.*
   AC_MSG_RESULT($EXEEXT_BUILD)
 else
   CC_BUILD=${CC}
   EXEEXT_BUILD=${EXEEXT}
 fi
 
-
-if test ! -z ${EXEEXT_BUILD}; then
-  EXEEXT_BUILD=."${EXEEXT_BUILD}"
-fi
 AC_SUBST(CC_BUILD)
 AC_SUBST(EXEEXT_BUILD)
 
@@ -72,7 +69,7 @@ AC_SUBST(EXEEXT_BUILD)
 
 # get compiler flags right
 
-if test "x$CC" = xgcc; then
+if test "x$GCC" = xyes; then
   XX_CFLAGS="-Wall"
   XX_ANSIFLAGS="-pedantic -ansi"
 else
@@ -233,30 +230,48 @@ if test x$with_zlib != xno && test -n "$LIBZ"; then
 fi
 
 
-# check Apple's `-isysroot' option and duplicate it to LDFLAGS if required --
-# Apple TechNote 2137 recommends to include it in CFLAGS but not in LDFLAGS
+# Some options handling SDKs/archs in CFLAGS should be copied
+# to LDFLAGS. Apple TechNote 2137 recommends to include these
+# options in CFLAGS but not in LDFLAGS.
 
-AC_MSG_CHECKING([whether CFLAGS includes -isysroot option])
-case "$CFLAGS" in
-*sysroot* )
-  AC_MSG_RESULT([yes])
-  AC_MSG_CHECKING([whether LDFLAGS includes -isysroot option])
-  case "$LDFLAGS" in
-  *sysroot* )
-    AC_MSG_RESULT([yes])
+save_config_args=$*
+set dummy ${CFLAGS}
+i=1
+while test $i -lt $#
+do
+  c=$1
+
+  case "${c}" in
+  -isysroot|-arch) # options taking 1 argument
+    a=$2
+    AC_MSG_CHECKING([whether CFLAGS and LDFLAGS share ${c} ${a}])
+    if expr " ${LDFLAGS} " : ".* ${c} *${a}.*" > /dev/null
+    then
+      AC_MSG_RESULT([yes])
+    else
+      AC_MSG_RESULT([no, copy to LDFLAGS])
+      LDFLAGS="${LDFLAGS} ${c} ${a}"
+    fi
+    shift 1
     ;;
-  *)
-    AC_MSG_RESULT([no])
-    isysroot_dir=`echo ${CFLAGS} | tr '\t' ' ' | sed 's/^.*-isysroot *//;s/ .*//'`
-    AC_MSG_WARN(-isysroot ${isysroot_dir} is added to LDFLAGS)
-    LDFLAGS="-isysroot ${isysroot_dir} ${LDFLAGS}"
+  -m32|-m64) # options taking no argument
+    AC_MSG_RESULT([whether CFLAGS and LDFLAGS share ${c}])
+    if expr " ${LDFLAGS} " : ".* ${c} *${a}.*" > /dev/null
+    then
+      AC_MSG_RESULT([yes])
+    else
+      AC_MSG_RESULT([no, copy to LDFLAGS])
+      LDFLAGS="${LDFLAGS} ${c}"
+    fi
     ;;
+  # *)
+  #   AC_MSG_RESULT([${c} is not copied to LDFLAGS])
+  #   ;;
   esac
-  ;;
-*)
-  AC_MSG_RESULT([no])
-  ;;
-esac
+
+  shift 1
+done
+set ${save_config_args}
 
 
 # Whether to use Mac OS resource-based fonts.

@@ -47,48 +47,43 @@
 
 #import <AppKit/NSAccessibility.h>
 
-#ifndef QT_NO_COCOA_ACCESSIBILITY
-
-static QAccessibleInterface *acast(void *ptr)
-{
-    return reinterpret_cast<QAccessibleInterface *>(ptr);
-}
-
 @implementation QCocoaAccessibleElement
 
-- (id)initWithInterface:(void *)anQAccessibleInterface parent:(id)aParent
+- (id)initWithId:(QAccessible::Id)anId parent:(id)aParent
 {
+    Q_ASSERT((int)anId < 0);
     self = [super init];
     if (self) {
-        accessibleInterface = anQAccessibleInterface;
-        role = QCocoaAccessible::macRole(acast(accessibleInterface));
+        axid = anId;
+        QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+        Q_ASSERT(iface);
+        role = QCocoaAccessible::macRole(iface);
         parent = aParent;
     }
 
     return self;
 }
 
-+ (QCocoaAccessibleElement *)createElementWithInterface:(void *)anQAccessibleInterface parent:(id)aParent
++ (QCocoaAccessibleElement *)createElementWithId:(QAccessible::Id)anId parent:(id)aParent
 {
-    return [[self alloc] initWithInterface:anQAccessibleInterface parent:aParent];
+    return [[self alloc] initWithId:anId parent:aParent];
 }
 
 - (void)dealloc {
     [super dealloc];
-    delete acast(accessibleInterface);
 }
 
 - (BOOL)isEqual:(id)object {
     if ([object isKindOfClass:[QCocoaAccessibleElement class]]) {
         QCocoaAccessibleElement *other = object;
-        return acast(other->accessibleInterface)->object() == acast(accessibleInterface)->object();
+        return other->axid == axid;
     } else {
         return NO;
     }
 }
 
 - (NSUInteger)hash {
-    return qHash(acast(accessibleInterface)->object());
+    return axid;
 }
 
 //
@@ -99,6 +94,11 @@ static QAccessibleInterface *acast(void *ptr)
 
 - (NSArray *)accessibilityAttributeNames {
     static NSArray *defaultAttributes = nil;
+
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface)
+        return defaultAttributes;
+
     if (defaultAttributes == nil) {
         defaultAttributes = [[NSArray alloc] initWithObjects:
         NSAccessibilityRoleAttribute,
@@ -118,7 +118,7 @@ static QAccessibleInterface *acast(void *ptr)
     NSMutableArray *attributes = [[NSMutableArray alloc] initWithCapacity : [defaultAttributes count]];
     [attributes addObjectsFromArray : defaultAttributes];
 
-    if (QCocoaAccessible::hasValueAttribute(acast(accessibleInterface))) {
+    if (QCocoaAccessible::hasValueAttribute(iface)) {
         [attributes addObject : NSAccessibilityValueAttribute];
     }
 
@@ -126,22 +126,33 @@ static QAccessibleInterface *acast(void *ptr)
 }
 
 - (id)accessibilityAttributeValue:(NSString *)attribute {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface) {
+        qWarning() << "Called attribute on invalid object: " << axid;
+        return nil;
+    }
+
     if ([attribute isEqualToString:NSAccessibilityRoleAttribute]) {
         return role;
     } else if ([attribute isEqualToString:NSAccessibilityRoleDescriptionAttribute]) {
         return NSAccessibilityRoleDescription(role, nil);
     } else if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
-        int numKids = acast(accessibleInterface)->childCount();
+
+        int numKids = iface->childCount();
+        // qDebug() << "Children for: " << axid << iface << " are: " << numKids;
 
         NSMutableArray *kids = [NSMutableArray arrayWithCapacity:numKids];
         for (int i = 0; i < numKids; ++i) {
-            QAccessibleInterface *childInterface = acast(accessibleInterface)->child(i);
-            QCocoaAccessibleElement *element = [QCocoaAccessibleElement createElementWithInterface:(void*)childInterface parent:self];
+            QAccessibleInterface *child = iface->child(i);
+            Q_ASSERT(child);
+            QAccessible::Id childId = QAccessible::uniqueId(child);
+            //qDebug() << "    kid: " << childId << child;
+            QCocoaAccessibleElement *element = [QCocoaAccessibleElement createElementWithId:childId parent:self];
             [kids addObject: element];
             [element release];
         }
-
         return kids;
+
     } else if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
         // Just check if the app thinks we're focused.
         id focusedElement = [NSApp accessibilityAttributeValue:NSAccessibilityFocusedUIElementAttribute];
@@ -155,23 +166,23 @@ static QAccessibleInterface *acast(void *ptr)
         // We're in the same top level element as our parent.
         return [parent accessibilityAttributeValue:NSAccessibilityTopLevelUIElementAttribute];
     } else if ([attribute isEqualToString:NSAccessibilityPositionAttribute]) {
-        QPoint qtPosition = acast(accessibleInterface)->rect().topLeft();
-        QSize qtSize = acast(accessibleInterface)->rect().size();
+        QPoint qtPosition = iface->rect().topLeft();
+        QSize qtSize = iface->rect().size();
         return [NSValue valueWithPoint: NSMakePoint(qtPosition.x(), qt_mac_flipYCoordinate(qtPosition.y() + qtSize.height()))];
     } else if ([attribute isEqualToString:NSAccessibilitySizeAttribute]) {
-        QSize qtSize = acast(accessibleInterface)->rect().size();
+        QSize qtSize = iface->rect().size();
         return [NSValue valueWithSize: NSMakeSize(qtSize.width(), qtSize.height())];
     } else if ([attribute isEqualToString:NSAccessibilityDescriptionAttribute]) {
-        return QCFString::toNSString(acast(accessibleInterface)->text(QAccessible::Name));
+        return QCFString::toNSString(iface->text(QAccessible::Name));
     } else if ([attribute isEqualToString:NSAccessibilityEnabledAttribute]) {
-        return [NSNumber numberWithBool:!acast(accessibleInterface)->state().disabled];
+        return [NSNumber numberWithBool:!iface->state().disabled];
     } else if ([attribute isEqualToString:NSAccessibilityValueAttribute]) {
         // VoiceOver asks for the value attribute for all elements. Return nil
         // if we don't want the element to have a value attribute.
-        if (!QCocoaAccessible::hasValueAttribute(acast(accessibleInterface)))
+        if (!QCocoaAccessible::hasValueAttribute(iface))
             return nil;
 
-        return QCocoaAccessible::getValueAttribute(acast(accessibleInterface));
+        return QCocoaAccessible::getValueAttribute(iface);
     }
 
     return nil;
@@ -196,8 +207,11 @@ static QAccessibleInterface *acast(void *ptr)
 
 - (NSArray *)accessibilityActionNames {
     NSMutableArray * nsActions = [NSMutableArray new];
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface)
+        return nsActions;
 
-    QAccessibleActionInterface *actionInterface = acast(accessibleInterface)->actionInterface();
+    QAccessibleActionInterface *actionInterface = iface->actionInterface();
     if (actionInterface) {
         QStringList supportedActionNames = actionInterface->actionNames();
 
@@ -212,48 +226,58 @@ static QAccessibleInterface *acast(void *ptr)
 }
 
 - (NSString *)accessibilityActionDescription:(NSString *)action {
-    QAccessibleActionInterface *actionInterface = acast(accessibleInterface)->actionInterface();
-    QString qtAction = QCocoaAccessible::translateAction(action);
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface)
+        return nil; // FIXME is that the right return type??
+    QAccessibleActionInterface *actionInterface = iface->actionInterface();
+    if (actionInterface) {
+        QString qtAction = QCocoaAccessible::translateAction(action);
 
-    // Return a description from the action interface if this action is not known to the OS.
-    if (qtAction.isEmpty()) {
-        QString description = actionInterface->localizedActionDescription(qtAction);
-        return QCFString::toNSString(description);
+        // Return a description from the action interface if this action is not known to the OS.
+        if (qtAction.isEmpty()) {
+            QString description = actionInterface->localizedActionDescription(qtAction);
+            return QCFString::toNSString(description);
+        }
     }
 
     return NSAccessibilityActionDescription(action);
 }
 
 - (void)accessibilityPerformAction:(NSString *)action {
-    QAccessibleActionInterface *actionInterface = acast(accessibleInterface)->actionInterface();
-    if (actionInterface) {
-        actionInterface->doAction(QCocoaAccessible::translateAction(action));
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (iface) {
+        QAccessibleActionInterface *actionInterface = iface->actionInterface();
+        if (actionInterface) {
+            actionInterface->doAction(QCocoaAccessible::translateAction(action));
+        }
     }
 }
 
 // misc
 
 - (BOOL)accessibilityIsIgnored {
-    return QCocoaAccessible::shouldBeIgnrored(acast(accessibleInterface));
+    return false; //QCocoaAccessible::shouldBeIgnored(QAccessible::accessibleInterface(id));
 }
 
 - (id)accessibilityHitTest:(NSPoint)point {
-
-    if (!accessibleInterface)
-        return NSAccessibilityUnignoredAncestor(self);
-
-    if (!acast(accessibleInterface)->isValid())
-        return NSAccessibilityUnignoredAncestor(self);
-
-    QAccessibleInterface *childInterface = acast(accessibleInterface)->childAt(point.x, qt_mac_flipYCoordinate(point.y));
-
-    // No child found, meaning we hit this element.
-    if (!childInterface) {
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface || !iface->isValid()) {
+//        qDebug() << "Hit test: INVALID";
         return NSAccessibilityUnignoredAncestor(self);
     }
 
+    QAccessibleInterface *childInterface = iface->childAt(point.x, qt_mac_flipYCoordinate(point.y));
+
+    // No child found, meaning we hit this element.
+    if (!childInterface) {
+//        qDebug() << "Hit test returns: " << id << iface;
+        return self;
+        //return NSAccessibilityUnignoredAncestor(self);
+    }
+
+    QAccessible::Id childId = QAccessible::uniqueId(childInterface);
     // hit a child, forward to child accessible interface.
-    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement createElementWithInterface:childInterface parent:self];
+    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement createElementWithId:childId parent:self];
     [accessibleElement autorelease];
 
     return [accessibleElement accessibilityHitTest:point];
@@ -264,6 +288,3 @@ static QAccessibleInterface *acast(void *ptr)
 }
 
 @end
-
-#endif // QT_NO_COCOA_ACCESSIBILITY
-

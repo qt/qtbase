@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
 #############################################################################
 ##
+## Copyright (C) 2012-2013 BogDan Vatra <bogdan@kde.org>
 ## Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
-## Copyright (C) 2012 BogDan Vatra <bogdan@kde.org>
 ## Contact: http://www.qt-project.org/legal
 ##
 ## This file is part of the test suite of the Qt Toolkit.
@@ -61,7 +61,8 @@ my $help = 0;
 my $make_clean = 0;
 my $deploy_qt = 0;
 my $time_out=400;
-my $android_sdk_dir = "$ENV{'HOME'}/NecessitasQtSDK/android-sdk";
+my $android_sdk_dir = "$ENV{'ANDROID_SDK_ROOT'}";
+my $android_ndk_dir = "$ENV{'ANDROID_NDK_ROOT'}";
 my $ant_tool = `which ant`;
 chomp $ant_tool;
 my $strip_tool="";
@@ -74,6 +75,7 @@ GetOptions('h|help' => \$help
             , 'd|deploy' => \$deploy_qt
             , 'j|jobs=i' => \$jobs
             , 'sdk=s' => \$android_sdk_dir
+            , 'ndk=s' => \$android_ndk_dir
             , 'ant=s' => \$ant_tool
             , 'strip=s' => \$strip_tool
             , 'readelf=s' => \$readelf_tool
@@ -87,8 +89,8 @@ system("$adb_tool devices") == 0 or die "No device found, please plug/start at l
 $device_serial = "-s $device_serial" if ($device_serial);
 $testsubset="/$testsubset" if ($testsubset);
 
-$strip_tool="$ENV{'HOME'}/NecessitasQtSDK/android-ndk/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/bin/arm-linux-androideabi-strip" unless($strip_tool);
-$readelf_tool="$ENV{'HOME'}/NecessitasQtSDK/android-ndk/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/bin/arm-linux-androideabi-readelf"  unless($readelf_tool);
+$strip_tool="$android_ndk_dir/toolchains/arm-linux-androideabi-4.7/prebuilt/linux-x86/bin/arm-linux-androideabi-strip" unless($strip_tool);
+$readelf_tool="$android_ndk_dir/toolchains/arm-linux-androideabi-4.7/prebuilt/linux-x86/bin/arm-linux-androideabi-readelf"  unless($readelf_tool);
 $readelf_tool="$readelf_tool -d -w ";
 
 sub dir
@@ -141,7 +143,7 @@ sub waitForProcess
     return 0;
 }
 
-my $src_dir_qt=abs_path(dirname($0)."/..");
+my $src_dir_qt=abs_path(dirname($0)."/../../..");
 my $quadruplor_dir="$src_dir_qt/tests/auto/android";
 my $qmake_path="$src_dir_qt/bin/qmake";
 my $tests_dir="$src_dir_qt/tests$testsubset";
@@ -232,11 +234,12 @@ if ($deploy_qt)
     }
     system("cp -a plugins $temp_dir");
     system("cp -a imports $temp_dir");
+    system("cp -a qml $temp_dir");
     pushd($temp_dir);
     system("find -name *.so | xargs $strip_tool --strip-unneeded");
     popd;
-    system("$adb_tool $device_serial shell rm -r /data/local/qt"); # remove old qt libs
-    system("$adb_tool $device_serial push $temp_dir /data/local/qt"); # copy newer qt libs
+    system("$adb_tool $device_serial shell rm -r /data/local/tmp/qt"); # remove old qt libs
+    system("$adb_tool $device_serial push $temp_dir /data/local/tmp/qt"); # copy newer qt libs
     popd;
 }
 
@@ -245,6 +248,7 @@ reinstallQuadruplor;
 
 ########### build qt tests and benchmarks ###########
 pushd($tests_dir);
+print "Building $tests_dir \n";
 system("make distclean") if ($make_clean);
 system("$qmake_path CONFIG-=QTDIR_build -r") == 0 or die "Can't run qmake\n"; #exec qmake
 system("make -j$jobs") == 0 or warn "Can't build all tests\n"; #exec make
@@ -273,12 +277,12 @@ foreach (split("\n",$testsFiles))
     {
         if (needsOpenGl("$temp_dir/libtst_$application.so"))
         {
-             startTest("/data/local/qt/plugins/platforms/android/libandroidGL-$sdk_api.so", "/data/data/$packageName/app_files/libtst_$application.so", 1
+             startTest("/data/local/tmp/qt/plugins/platforms/android/libqtforandroidGL.so", "/data/data/$packageName/app_files/libtst_$application.so", 1
                         , "$output_name.xml") or warn "Can't run $application ...\n";
         }
         else
         {
-             startTest("/data/local/qt/plugins/platforms/android/libandroid-$sdk_api.so", "/data/data/$packageName/app_files/libtst_$application.so", 0
+             startTest("/data/local/tmp/qt/plugins/platforms/android/libqtforandroid.so", "/data/data/$packageName/app_files/libtst_$application.so", 0
                         , "$output_name.xml") or warn "Can't run $application stopping tests ...\n";
         }
     }
@@ -328,6 +332,10 @@ Make jobs when building tests.
 =item B<--sdk = sdk_path>
 
 Android SDK path.
+
+=item B<--ndk = ndk_path>
+
+Android NDK path.
 
 =item B<--ant = ant_tool_path>
 

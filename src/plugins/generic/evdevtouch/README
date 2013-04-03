@@ -6,7 +6,7 @@ by this plugin. Use tslib or evdevmouse instead.
 
 The protocol type will be detected automatically.
 To enable libmtdev support uncomment the USE_MTDEV define in
-evdevtouch.pro.
+src/platformsupport/input/evdevtouch/evdevtouch.pri.
 
 Tested with the following kernel drivers:
   bcm5974 (type A)

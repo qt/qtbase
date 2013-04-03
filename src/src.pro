@@ -18,7 +18,8 @@ else: src_tools_uic.depends = src_corelib
 
 src_tools_qdoc.subdir = tools/qdoc
 src_tools_qdoc.target = sub-qdoc
-src_tools_qdoc.depends = src_tools_bootstrap
+force_bootstrap: src_tools_qdoc.depends = src_tools_bootstrap
+else: src_tools_qdoc.depends = src_corelib src_xml
 
 src_tools_bootstrap_dbus.subdir = tools/bootstrap-dbus
 src_tools_bootstrap_dbus.target = sub-bootstrap_dbus

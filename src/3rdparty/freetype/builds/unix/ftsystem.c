@@ -69,9 +69,6 @@
 #include <string.h>
 #include <errno.h>
 
-#ifdef VXWORKS
-#include <ioLib.h>
-#endif
 
   /*************************************************************************/
   /*                                                                       */
@@ -241,7 +238,7 @@
       return FT_Err_Invalid_Stream_Handle;
 
     /* open the file */
-    file = open( filepathname, O_RDONLY, 0);
+    file = open( filepathname, O_RDONLY );
     if ( file < 0 )
     {
       FT_ERROR(( "FT_Stream_Open:" ));
@@ -325,11 +322,7 @@
 
 
         read_count = read( file,
-#ifndef VXWORKS
                            stream->base + total_read_count,
-#else
-                           (char *) stream->base + total_read_count,
-#endif
                            stream->size - total_read_count );
 
         if ( read_count <= 0 )

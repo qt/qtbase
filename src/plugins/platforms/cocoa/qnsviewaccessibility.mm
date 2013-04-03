@@ -51,8 +51,6 @@
 
 #import <AppKit/NSAccessibility.h>
 
-#ifndef QT_NO_COCOA_ACCESSIBILITY
-
 @implementation QNSView (QNSViewAccessibility)
 
 // The QNSView is a container that the user does not interact directly with:
@@ -77,7 +75,10 @@
         int numKids = m_accessibleRoot->childCount();
         NSMutableArray *kids = [NSMutableArray arrayWithCapacity:numKids];
         for (int i = 0; i < numKids; ++i) {
-            QCocoaAccessibleElement *element = [QCocoaAccessibleElement createElementWithInterface: m_accessibleRoot->child(i) parent:self ];
+            QAccessibleInterface *child = m_accessibleRoot->child(i);
+            Q_ASSERT(child);
+            QAccessible::Id childAxid = QAccessible::uniqueId(child);
+            QCocoaAccessibleElement *element = [QCocoaAccessibleElement createElementWithId:childAxid parent:self];
             [kids addObject: element];
             [element release];
         }
@@ -99,12 +100,10 @@
     }
 
     // Hit a child, forward to child accessible interface.
-
-    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement createElementWithInterface: childInterface parent:self ];
+    QAccessible::Id childAxid = QAccessible::uniqueId(childInterface);
+    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement createElementWithId:childAxid parent:self ];
     [accessibleElement autorelease];
     return [accessibleElement accessibilityHitTest:point];
 }
 
 @end
-
-#endif // QT_NO_COCOA_ACCESSIBILITY

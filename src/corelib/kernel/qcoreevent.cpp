@@ -98,12 +98,13 @@ QT_BEGIN_NAMESPACE
     \value ActionChanged                    An action has been changed (QActionEvent).
     \value ActionRemoved                    An action has been removed (QActionEvent).
     \value ActivationChange                 A widget's top-level window activation state has changed.
-    \value ApplicationActivate              The application has been made available to the user.
-    \value ApplicationActivated             This enum has been deprecated. Use ApplicationActivate instead.
-    \value ApplicationDeactivate            The application has been suspended, and is unavailable to the user.
+    \value ApplicationActivate              This enum has been deprecated. Use ApplicationStateChange instead.
+    \value ApplicationActivated             This enum has been deprecated. Use ApplicationStateChange instead.
+    \value ApplicationDeactivate            This enum has been deprecated. Use ApplicationStateChange instead.
     \value ApplicationFontChange            The default application font has changed.
     \value ApplicationLayoutDirectionChange The default application layout direction has changed.
     \value ApplicationPaletteChange         The default application palette has changed.
+    \value ApplicationStateChange           The state of the application has changed.
     \value ApplicationWindowIconChange      The application's icon has changed.
     \value ChildAdded                       An object gets a child (QChildEvent).
     \value ChildPolished                    A widget child gets polished (QChildEvent).
@@ -264,7 +265,9 @@ QT_BEGIN_NAMESPACE
     \omitvalue Style
     \omitvalue StyleAnimationUpdate
     \omitvalue ZeroTimerEvent
+    \omitvalue ApplicationActivate
     \omitvalue ApplicationActivated
+    \omitvalue ApplicationDeactivate
     \omitvalue ApplicationDeactivated
     \omitvalue MacGLWindowChange
     \omitvalue MacGLClearDrawable

@@ -177,14 +177,6 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
     } else if (classname == QLatin1String("QTableView") || classname == QLatin1String("QListView")) {
         iface = new QAccessibleTable(widget);
     // ### This should be cleaned up. We return the parent for the scrollarea to hide it.
-    } else if (classname == QLatin1String("QWidget")
-               && widget->objectName() == QLatin1String("qt_scrollarea_viewport")
-               && qobject_cast<QAbstractItemView*>(widget->parentWidget())) {
-        if (qobject_cast<const QTreeView*>(widget->parentWidget())) {
-            iface = new QAccessibleTree(widget->parentWidget());
-        } else {
-            iface = new QAccessibleTable(widget->parentWidget());
-        }
 #endif // QT_NO_ITEMVIEWS
 #ifndef QT_NO_TABBAR
     } else if (classname == QLatin1String("QTabBar")) {
