@@ -3040,7 +3040,7 @@ fi
 QT_INSTALL_BINS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_BINS"`
 
 if [ "$XPLATFORM_MINGW" = "yes" ]; then
-    QT_INSTALL_LIBEXECS_DIRNAME="lib"
+    QT_INSTALL_LIBEXECS_DIRNAME="bin"
 else
     QT_INSTALL_LIBEXECS_DIRNAME="libexec"
 fi

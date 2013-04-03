@@ -1673,7 +1673,7 @@ bool Configure::displayHelp()
         desc(       "-libdir <dir>",                    "Libraries will be installed to <dir>\n(default PREFIX/lib)");
         desc(       "-headerdir <dir>",                 "Headers will be installed to <dir>\n(default PREFIX/include)");
         desc(       "-archdatadir <dir>",               "Architecture-dependent data used by Qt will be installed to <dir>\n(default PREFIX)");
-        desc(       "-libexecdir <dir>",                "Program executables will be installed to <dir>\n(default ARCHDATADIR/lib)");
+        desc(       "-libexecdir <dir>",                "Program executables will be installed to <dir>\n(default ARCHDATADIR/bin)");
         desc(       "-plugindir <dir>",                 "Plugins will be installed to <dir>\n(default ARCHDATADIR/plugins)");
         desc(       "-importdir <dir>",                 "Imports for QML1 will be installed to <dir>\n(default ARCHDATADIR/imports)");
         desc(       "-qmldir <dir>",                    "Imports for QML2 will be installed to <dir>\n(default ARCHDATADIR/qml)");
@@ -3685,7 +3685,7 @@ void Configure::generateQConfigCpp()
         dictionary["QT_INSTALL_ARCHDATA"] = qipempty ? "" : dictionary["QT_INSTALL_PREFIX"];
     if (!dictionary["QT_INSTALL_LIBEXECS"].size()) {
         if (dictionary["QT_INSTALL_ARCHDATA"] == dictionary["QT_INSTALL_PREFIX"])
-            dictionary["QT_INSTALL_LIBEXECS"] = qipempty ? "" : dictionary["QT_INSTALL_ARCHDATA"] + "/lib";
+            dictionary["QT_INSTALL_LIBEXECS"] = qipempty ? "" : dictionary["QT_INSTALL_ARCHDATA"] + "/bin";
         else
             dictionary["QT_INSTALL_LIBEXECS"] = qipempty ? "" : dictionary["QT_INSTALL_ARCHDATA"] + "/libexec";
     }

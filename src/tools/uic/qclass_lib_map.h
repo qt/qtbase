@@ -313,7 +313,7 @@ QT_CLASS_LIB(QDeclarativePropertyValueInterceptor, QtDeclarative, qdeclarativepr
 QT_CLASS_LIB(QDeclarativePropertyValueSource, QtDeclarative, qdeclarativepropertyvaluesource.h)
 QT_CLASS_LIB(QDeclarativeScriptString, QtDeclarative, qdeclarativescriptstring.h)
 QT_CLASS_LIB(QDeclarativePropertyMap, QtDeclarative, qdeclarativepropertymap.h)
-QT_CLASS_LIB(QDeclarativeView, QtQuick1, qdeclarativeview.h)
+QT_CLASS_LIB(QDeclarativeView, QtDeclarative, qdeclarativeview.h)
 QT_CLASS_LIB(QMacGLCompatTypes, QtOpenGL, qgl.h)
 QT_CLASS_LIB(QMacGLCompatTypes, QtOpenGL, qgl.h)
 QT_CLASS_LIB(QMacCompatGLint, QtOpenGL, qgl.h)
