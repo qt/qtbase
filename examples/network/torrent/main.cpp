@@ -45,7 +45,6 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    qWarning("The usage of QHttp is not recommended anymore, please use QNetworkAccessManager.");
     qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
 
     Q_INIT_RESOURCE(icons);
