@@ -63,28 +63,23 @@ class QSqlDriverPrivate : public QObjectPrivate
 {
 public:
     enum DBMSType {UnknownDB, MSSqlServer, MySqlServer, PostgreSQL, Oracle, Sybase, SQLite, Interbase, DB2};
-    QSqlDriverPrivate();
-    virtual ~QSqlDriverPrivate();
 
-public:
+    QSqlDriverPrivate()
+      : QObjectPrivate(),
+        isOpen(false),
+        isOpenError(false),
+        precisionPolicy(QSql::LowPrecisionDouble),
+        dbmsType(UnknownDB)
+    { }
+
     // @CHECK: this member is never used. It was named q, which expanded to q_func().
     QSqlDriver *q_func();
-    uint isOpen : 1;
-    uint isOpenError : 1;
+    uint isOpen;
+    uint isOpenError;
     QSqlError error;
     QSql::NumericalPrecisionPolicy precisionPolicy;
     DBMSType dbmsType;
 };
-
-inline QSqlDriverPrivate::QSqlDriverPrivate()
-    : QObjectPrivate(), isOpen(false), isOpenError(false), precisionPolicy(QSql::LowPrecisionDouble),
-      dbmsType(UnknownDB)
-{
-}
-
-QSqlDriverPrivate::~QSqlDriverPrivate()
-{
-}
 
 QT_END_NAMESPACE
 
