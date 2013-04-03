@@ -1,7 +1,8 @@
-From 85e9ba49580e307e1213c87cdbfdc301848f497f Mon Sep 17 00:00:00 2001
+From 0b8f4889511d7aa8f9f07b16dbf204f378e127a6 Mon Sep 17 00:00:00 2001
 From: Miikka Heikkinen <miikka.heikkinen@digia.com>
-Date: Tue, 20 Nov 2012 13:23:27 +0200
-Subject: [PATCH] Fix black screen after minimizing OpenGL window with ANGLE
+Date: Mon, 18 Mar 2013 16:27:07 +0200
+Subject: [PATCH 3/6] Fix black screen after minimizing OpenGL window with
+ ANGLE
 
 CreateTexture will fail on zero dimensions, so just release old target
 and reset dimensions when resetSwapChain is called with zero size area.
@@ -10,14 +11,14 @@ Task-number: QTBUG-27994
 Change-Id: I1e500c4fd4b92f7d9ea2a49a44f3fb930b575cd1
 Reviewed-by: Friedemann Kleint <Friedemann.Kleint@digia.com>
 ---
- src/3rdparty/angle/src/libEGL/Surface.cpp |   16 ++++++++++++++++
- 1 files changed, 16 insertions(+), 0 deletions(-)
+ src/3rdparty/angle/src/libGLESv2/renderer/SwapChain9.cpp | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/src/3rdparty/angle/src/libEGL/Surface.cpp b/src/3rdparty/angle/src/libEGL/Surface.cpp
-index 8e920ab..174b403 100644
---- a/src/3rdparty/angle/src/libEGL/Surface.cpp
-+++ b/src/3rdparty/angle/src/libEGL/Surface.cpp
-@@ -224,6 +224,22 @@ bool Surface::resetSwapChain(int backbufferWidth, int backbufferHeight)
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain9.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain9.cpp
+index 0324d01..f57a874 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain9.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain9.cpp
+@@ -137,6 +137,21 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
          pShareHandle = &mShareHandle;
      }
  
@@ -32,14 +33,13 @@ index 8e920ab..174b403 100644
 +
 +        mWidth = backbufferWidth;
 +        mHeight = backbufferHeight;
-+        mPresentIntervalDirty = false;
 +
-+        return true;
++        return EGL_SUCCESS;
 +    }
 +
      result = device->CreateTexture(backbufferWidth, backbufferHeight, 1, D3DUSAGE_RENDERTARGET,
-                                    mConfig->mRenderTargetFormat, D3DPOOL_DEFAULT, &mOffscreenTexture, pShareHandle);
-     if (FAILED(result))
+                                    gl_d3d9::ConvertRenderbufferFormat(mBackBufferFormat), D3DPOOL_DEFAULT,
+                                    &mOffscreenTexture, pShareHandle);
 -- 
-1.7.4.msysgit.0
+1.8.1.msysgit.1
 

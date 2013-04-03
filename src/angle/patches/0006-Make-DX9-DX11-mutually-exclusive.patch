@@ -1,0 +1,140 @@
+From a5c113dda327ad3015312c2836b794929d4771ff Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@digia.com>
+Date: Thu, 21 Mar 2013 17:12:02 +0200
+Subject: [PATCH 5/6] Make DX9/DX11 mutually exclusive
+
+ANGLE dx11proto supports DX9 fallback when DX11 is unavailable. This
+patch removes the fallback mechanism and requires that the library be
+chosen at build time (by defining ANGLE_ENABLE_D3D11). This is required
+for WinRT, because d3d9 is not a support library on that platform.
+---
+ src/3rdparty/angle/src/common/RefCountObject.cpp       |  1 -
+ src/3rdparty/angle/src/common/debug.cpp                |  4 ++++
+ src/3rdparty/angle/src/libGLESv2/Texture.cpp           |  6 +++++-
+ src/3rdparty/angle/src/libGLESv2/precompiled.h         |  9 ++++++---
+ src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp | 37 +++++++++++--------------------------
+ 5 files changed, 26 insertions(+), 31 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/common/RefCountObject.cpp b/src/3rdparty/angle/src/common/RefCountObject.cpp
+index 0364adf..c1ef90c 100644
+--- a/src/3rdparty/angle/src/common/RefCountObject.cpp
++++ b/src/3rdparty/angle/src/common/RefCountObject.cpp
+@@ -1,4 +1,3 @@
+-#include "precompiled.h"
+ //
+ // Copyright (c) 2002-2010 The ANGLE Project Authors. All rights reserved.
+ // Use of this source code is governed by a BSD-style license that can be
+diff --git a/src/3rdparty/angle/src/common/debug.cpp b/src/3rdparty/angle/src/common/debug.cpp
+index 2333740..438d397 100644
+--- a/src/3rdparty/angle/src/common/debug.cpp
++++ b/src/3rdparty/angle/src/common/debug.cpp
+@@ -8,7 +8,11 @@
+ 
+ #include "common/debug.h"
+ #include "common/system.h"
++#ifdef ANGLE_ENABLE_D3D11
++typedef DWORD D3DCOLOR;
++#else
+ #include <d3d9.h>
++#endif
+ 
+ namespace gl
+ {
+diff --git a/src/3rdparty/angle/src/libGLESv2/Texture.cpp b/src/3rdparty/angle/src/libGLESv2/Texture.cpp
+index ae83037..461357a 100644
+--- a/src/3rdparty/angle/src/libGLESv2/Texture.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/Texture.cpp
+@@ -14,7 +14,11 @@
+ #include "libGLESv2/main.h"
+ #include "libGLESv2/mathutil.h"
+ #include "libGLESv2/utilities.h"
+-#include "libGLESv2/renderer/Blit.h"
++#if defined(ANGLE_ENABLE_D3D11)
++# define D3DFMT_UNKNOWN DXGI_FORMAT_UNKNOWN
++#else
++# include "libGLESv2/renderer/Blit.h"
++#endif
+ #include "libGLESv2/Renderbuffer.h"
+ #include "libGLESv2/renderer/Image.h"
+ #include "libGLESv2/renderer/Renderer.h"
+diff --git a/src/3rdparty/angle/src/libGLESv2/precompiled.h b/src/3rdparty/angle/src/libGLESv2/precompiled.h
+index a850d57..b8b043c 100644
+--- a/src/3rdparty/angle/src/libGLESv2/precompiled.h
++++ b/src/3rdparty/angle/src/libGLESv2/precompiled.h
+@@ -32,9 +32,12 @@
+ #include <unordered_map>
+ #include <vector>
+ 
+-#include <d3d9.h>
+-#include <D3D11.h>
+-#include <dxgi.h>
++#if defined(ANGLE_ENABLE_D3D11)
++# include <D3D11.h>
++# include <dxgi.h>
++#else
++# include <d3d9.h>
++#endif
+ #include <D3Dcompiler.h>
+ 
+ #ifdef _MSC_VER
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
+index 8fd3425..64e52c1 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
+@@ -10,14 +10,13 @@
+ #include "libGLESv2/main.h"
+ #include "libGLESv2/Program.h"
+ #include "libGLESv2/renderer/Renderer.h"
+-#include "libGLESv2/renderer/Renderer9.h"
+-#include "libGLESv2/renderer/Renderer11.h"
+-#include "libGLESv2/utilities.h"
+-
+-#if !defined(ANGLE_ENABLE_D3D11)
+-// Enables use of the Direct3D 11 API, when available
+-#define ANGLE_ENABLE_D3D11 0
++#if defined(ANGLE_ENABLE_D3D11)
++# include "libGLESv2/renderer/Renderer11.h"
++# define D3DERR_OUTOFVIDEOMEMORY MAKE_HRESULT( 1, 0x876, 380 )
++#else
++# include "libGLESv2/renderer/Renderer9.h"
+ #endif
++#include "libGLESv2/utilities.h"
+ 
+ #if !defined(ANGLE_COMPILE_OPTIMIZATION_LEVEL)
+ #define ANGLE_COMPILE_OPTIMIZATION_LEVEL D3DCOMPILE_OPTIMIZATION_LEVEL3
+@@ -174,27 +173,13 @@ rx::Renderer *glCreateRenderer(egl::Display *display, HDC hDc, bool softwareDevi
+ {
+     rx::Renderer *renderer = NULL;
+     EGLint status = EGL_BAD_ALLOC;
+-    
+-    if (ANGLE_ENABLE_D3D11)
+-    {
+-        renderer = new rx::Renderer11(display, hDc);
+-    
+-        if (renderer)
+-        {
+-            status = renderer->initialize();
+-        }
+-
+-        if (status == EGL_SUCCESS)
+-        {
+-            return renderer;
+-        }
+-
+-        // Failed to create a D3D11 renderer, try creating a D3D9 renderer
+-        delete renderer;
+-    }
+ 
++#if defined(ANGLE_ENABLE_D3D11)
++    renderer = new rx::Renderer11(display, hDc);
++#else
+     renderer = new rx::Renderer9(display, hDc, softwareDevice);
+-    
++#endif
++
+     if (renderer)
+     {
+         status = renderer->initialize();
+-- 
+1.8.1.msysgit.1
+

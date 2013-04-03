@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2002-2012 The ANGLE Project Authors. All rights reserved.
+// Copyright (c) 2002-2013 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -95,9 +95,9 @@ bool UnfoldShortCircuit::visitBinary(Visit visit, TIntermBinary *node)
             mTemporaryIndex = i + 1;
         }
         return false;
+      default:
+        return true;
     }
-
-    return true;
 }
 
 bool UnfoldShortCircuit::visitSelection(Visit visit, TIntermSelection *node)
@@ -110,6 +110,8 @@ bool UnfoldShortCircuit::visitSelection(Visit visit, TIntermSelection *node)
         int i = mTemporaryIndex;
 
         out << mOutputHLSL->typeString(node->getType()) << " s" << i << ";\n";
+
+        out << "{\n";
 
         mTemporaryIndex = i + 1;
         node->getCondition()->traverse(this);
@@ -134,6 +136,8 @@ bool UnfoldShortCircuit::visitSelection(Visit visit, TIntermSelection *node)
         node->getFalseBlock()->traverse(mOutputHLSL);
         out << ";\n"
                "}\n";
+
+        out << "}\n";
 
         mTemporaryIndex = i + 1;
     }

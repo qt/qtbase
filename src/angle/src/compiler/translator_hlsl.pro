@@ -14,7 +14,8 @@ HEADERS += \
     $$ANGLE_DIR/src/compiler/OutputHLSL.h \
     $$ANGLE_DIR/src/compiler/SearchSymbol.h \
     $$ANGLE_DIR/src/compiler/TranslatorHLSL.h \
-    $$ANGLE_DIR/src/compiler/UnfoldShortCircuit.h
+    $$ANGLE_DIR/src/compiler/UnfoldShortCircuit.h \
+    $$ANGLE_DIR/src/compiler/Uniform.h
 
 SOURCES += \
     $$ANGLE_DIR/src/compiler/CodeGenHLSL.cpp \
@@ -22,4 +23,5 @@ SOURCES += \
     $$ANGLE_DIR/src/compiler/OutputHLSL.cpp \
     $$ANGLE_DIR/src/compiler/SearchSymbol.cpp \
     $$ANGLE_DIR/src/compiler/TranslatorHLSL.cpp \
-    $$ANGLE_DIR/src/compiler/UnfoldShortCircuit.cpp
+    $$ANGLE_DIR/src/compiler/UnfoldShortCircuit.cpp \
+    $$ANGLE_DIR/src/compiler/Uniform.cpp
