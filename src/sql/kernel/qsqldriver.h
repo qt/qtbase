@@ -126,6 +126,7 @@ Q_SIGNALS:
     void notification(const QString &name, QSqlDriver::NotificationSource source, const QVariant &payload);
 
 protected:
+    QSqlDriver(QSqlDriverPrivate &dd, QObject *parent = 0);
     virtual void setOpen(bool o);
     virtual void setOpenError(bool e);
     virtual void setLastError(const QSqlError& e);

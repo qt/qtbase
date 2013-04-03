@@ -110,8 +110,9 @@ private:
 
 class Q_EXPORT_SQLDRIVER_MYSQL QMYSQLDriver : public QSqlDriver
 {
-    Q_OBJECT
     friend class QMYSQLResult;
+    Q_DECLARE_PRIVATE(QMYSQLDriver)
+    Q_OBJECT
 public:
     explicit QMYSQLDriver(QObject *parent=0);
     explicit QMYSQLDriver(MYSQL *con, QObject * parent=0);
@@ -141,7 +142,6 @@ protected:
     bool rollbackTransaction();
 private:
     void init();
-    QMYSQLDriverPrivate* d;
 };
 
 QT_END_NAMESPACE

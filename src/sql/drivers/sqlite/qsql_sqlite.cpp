@@ -346,15 +346,15 @@ QSQLiteResult::QSQLiteResult(const QSQLiteDriver* db)
     : QSqlCachedResult(db)
 {
     d = new QSQLiteResultPrivate(this);
-    d->access = db->d->access;
-    db->d->results.append(this);
+    d->access = db->d_func()->access;
+    const_cast<QSQLiteDriverPrivate*>(db->d_func())->results.append(this);
 }
 
 QSQLiteResult::~QSQLiteResult()
 {
     const QSqlDriver *sqlDriver = driver();
     if (sqlDriver)
-        qobject_cast<const QSQLiteDriver *>(sqlDriver)->d->results.removeOne(this);
+        const_cast<QSQLiteDriverPrivate*>(qobject_cast<const QSQLiteDriver *>(sqlDriver)->d_func())->results.removeOne(this);
     d->cleanup();
     delete d;
 }
@@ -530,15 +530,14 @@ QVariant QSQLiteResult::handle() const
 /////////////////////////////////////////////////////////
 
 QSQLiteDriver::QSQLiteDriver(QObject * parent)
-    : QSqlDriver(parent)
+    : QSqlDriver(*new QSQLiteDriverPrivate, parent)
 {
-    d = new QSQLiteDriverPrivate();
 }
 
 QSQLiteDriver::QSQLiteDriver(sqlite3 *connection, QObject *parent)
-    : QSqlDriver(parent)
+    : QSqlDriver(*new QSQLiteDriverPrivate, parent)
 {
-    d = new QSQLiteDriverPrivate();
+    Q_D(QSQLiteDriver);
     d->access = connection;
     setOpen(true);
     setOpenError(false);
@@ -579,6 +578,7 @@ bool QSQLiteDriver::hasFeature(DriverFeature f) const
 */
 bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, const QString &, int, const QString &conOpts)
 {
+    Q_D(QSQLiteDriver);
     if (isOpen())
         close();
 
@@ -622,6 +622,7 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
 
 void QSQLiteDriver::close()
 {
+    Q_D(QSQLiteDriver);
     if (isOpen()) {
         foreach (QSQLiteResult *result, d->results) {
             result->d->finalize();
@@ -778,6 +779,7 @@ QSqlRecord QSQLiteDriver::record(const QString &tbl) const
 
 QVariant QSQLiteDriver::handle() const
 {
+    Q_D(const QSQLiteDriver);
     return QVariant::fromValue(d->access);
 }
 

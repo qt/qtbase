@@ -327,12 +327,12 @@ QTDSResult::QTDSResult(const QTDSDriver* db)
     : QSqlCachedResult(db)
 {
     d = new QTDSResultPrivate();
-    d->login = db->d->login;
+    d->login = db->d_func()->login;
 
-    d->dbproc = dbopen(d->login, const_cast<char*>(db->d->hostName.toLatin1().constData()));
+    d->dbproc = dbopen(d->login, const_cast<char*>(db->d_func()->hostName.toLatin1().constData()));
     if (!d->dbproc)
         return;
-    if (dbuse(d->dbproc, const_cast<char*>(db->d->db.toLatin1().constData())) == FAIL)
+    if (dbuse(d->dbproc, const_cast<char*>(db->d_func()->db.toLatin1().constData())) == FAIL)
         return;
 
     // insert d in error handler dict
@@ -541,14 +541,15 @@ QSqlRecord QTDSResult::record() const
 ///////////////////////////////////////////////////////////////////
 
 QTDSDriver::QTDSDriver(QObject* parent)
-    : QSqlDriver(parent)
+    : QSqlDriver(*new QTDSDriverPrivate, parent)
 {
     init();
 }
 
 QTDSDriver::QTDSDriver(LOGINREC* rec, const QString& host, const QString &db, QObject* parent)
-    : QSqlDriver(parent)
+    : QSqlDriver(*new QTDSDriverPrivate, parent)
 {
+    Q_D(QTDSDriver);
     init();
     d->login = rec;
     d->hostName = host;
@@ -561,12 +562,13 @@ QTDSDriver::QTDSDriver(LOGINREC* rec, const QString& host, const QString &db, QO
 
 QVariant QTDSDriver::handle() const
 {
+    Q_D(const QTDSDriver);
     return QVariant(qRegisterMetaType<LOGINREC *>("LOGINREC*"), &d->login);
 }
 
 void QTDSDriver::init()
 {
-    d = new QTDSDriverPrivate();
+    Q_D(QTDSDriver);
     d->initialized = (dbinit() == SUCCEED);
     // the following two code-lines will fail compilation on some FreeTDS versions
     // just comment them out if you have FreeTDS (you won't get any errors and warnings then)
@@ -606,6 +608,7 @@ bool QTDSDriver::open(const QString & db,
                        int /*port*/,
                        const QString& /*connOpts*/)
 {
+    Q_D(QTDSDriver);
     if (isOpen())
         close();
     if (!d->initialized) {
@@ -645,6 +648,7 @@ bool QTDSDriver::open(const QString & db,
 
 void QTDSDriver::close()
 {
+    Q_D(QTDSDriver);
     if (isOpen()) {
 #ifdef Q_USE_SYBASE
         dbloginfree(d->login);
