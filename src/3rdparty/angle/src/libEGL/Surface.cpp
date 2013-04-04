@@ -172,8 +172,15 @@ bool Surface::resetSwapChain()
 
 bool Surface::resizeSwapChain(int backbufferWidth, int backbufferHeight)
 {
-    ASSERT(backbufferWidth >= 0 && backbufferHeight >= 0);
     ASSERT(mSwapChain);
+
+    // Prevent bad swap chain resize by calling reset if size is invalid
+    if (backbufferWidth < 1 || backbufferHeight < 1)
+    {
+        mWidth = backbufferWidth;
+        mHeight = backbufferHeight;
+        return mSwapChain->reset(0, 0, mSwapInterval) == EGL_SUCCESS;
+    }
 
     EGLint status = mSwapChain->resize(backbufferWidth, backbufferHeight);
 

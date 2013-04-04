@@ -368,6 +368,9 @@ EGLint SwapChain11::resize(EGLint backbufferWidth, EGLint backbufferHeight)
         return EGL_BAD_ACCESS;
     }
 
+    if (!mSwapChain)
+        reset(backbufferWidth, backbufferHeight, mSwapInterval);
+
     // Can only call resize if we have already created our swap buffer and resources
     ASSERT(mSwapChain && mBackBufferTexture && mBackBufferRTView);
 
