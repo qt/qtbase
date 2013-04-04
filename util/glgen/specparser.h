@@ -192,6 +192,7 @@ protected:
     bool parseTypeMap();
     void parseEnums();
     void parseFunctions(QTextStream &stream);
+    bool inDeprecationException(const QString &functionName) const;
 
 private:
     QString m_specFileName;
