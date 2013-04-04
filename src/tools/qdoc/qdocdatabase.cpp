@@ -448,18 +448,16 @@ void QDocDatabase::findAllClasses(const InnerNode* node)
                         !(*c)->parent()->name().isEmpty())
                     className = (*c)->parent()->name()+"::"+className;
 
-                if (!(static_cast<const ClassNode *>(*c))->hideFromMainList()) {
-                    if ((*c)->status() == Node::Compat) {
-                        compatClasses_.insert(className, *c);
-                    }
-                    else if ((*c)->status() == Node::Obsolete) {
-                        obsoleteClasses_.insert(className, *c);
-                    }
-                    else {
-                        nonCompatClasses_.insert(className, *c);
-                        if ((*c)->status() == Node::Main)
-                            mainClasses_.insert(className, *c);
-                    }
+                if ((*c)->status() == Node::Compat) {
+                    compatClasses_.insert(className, *c);
+                }
+                else if ((*c)->status() == Node::Obsolete) {
+                    obsoleteClasses_.insert(className, *c);
+                }
+                else {
+                    nonCompatClasses_.insert(className, *c);
+                    if ((*c)->status() == Node::Main)
+                        mainClasses_.insert(className, *c);
                 }
 
                 QString serviceName = (static_cast<const ClassNode *>(*c))->serviceName();
