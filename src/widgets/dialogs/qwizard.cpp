@@ -3131,6 +3131,16 @@ bool QWizard::event(QEvent *event)
         d->handleAeroStyleChange();
     }
     else if (d->isVistaThemeEnabled()) {
+        if (event->type() == QEvent::Resize
+                || event->type() == QEvent::LayoutDirectionChange) {
+            const int buttonLeft = (layoutDirection() == Qt::RightToLeft
+                                    ? width() - d->vistaHelper->backButton()->sizeHint().width()
+                                    : 0);
+
+            d->vistaHelper->backButton()->move(buttonLeft,
+                                               d->vistaHelper->backButton()->y());
+        }
+
         d->vistaHelper->mouseEvent(event);
     }
 #endif
