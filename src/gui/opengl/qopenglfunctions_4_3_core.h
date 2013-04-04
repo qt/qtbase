@@ -139,6 +139,7 @@ public:
     // OpenGL 1.2 core functions
     void glCopyTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height);
     void glTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels);
+    void glTexImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
     void glDrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices);
     void glBlendEquation(GLenum mode);
     void glBlendColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
@@ -956,6 +957,11 @@ inline void QOpenGLFunctions_4_3_Core::glCopyTexSubImage3D(GLenum target, GLint 
 inline void QOpenGLFunctions_4_3_Core::glTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels)
 {
     d_1_2_Core->TexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels);
+}
+
+inline void QOpenGLFunctions_4_3_Core::glTexImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
+{
+    d_1_2_Core->TexImage3D(target, level, internalformat, width, height, depth, border, format, type, pixels);
 }
 
 inline void QOpenGLFunctions_4_3_Core::glDrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices)

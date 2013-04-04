@@ -139,6 +139,7 @@ public:
     // OpenGL 1.2 core functions
     void glCopyTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height);
     void glTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels);
+    void glTexImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
     void glDrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices);
     void glBlendEquation(GLenum mode);
     void glBlendColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
@@ -859,7 +860,6 @@ public:
     void glColorTableParameteriv(GLenum target, GLenum pname, const GLint *params);
     void glColorTableParameterfv(GLenum target, GLenum pname, const GLfloat *params);
     void glColorTable(GLenum target, GLenum internalformat, GLsizei width, GLenum format, GLenum type, const GLvoid *table);
-    void glTexImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
 
     // OpenGL 1.3 deprecated functions
     void glMultTransposeMatrixd(const GLdouble *m);
@@ -1376,6 +1376,11 @@ inline void QOpenGLFunctions_4_1_Compatibility::glCopyTexSubImage3D(GLenum targe
 inline void QOpenGLFunctions_4_1_Compatibility::glTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels)
 {
     d_1_2_Core->TexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels);
+}
+
+inline void QOpenGLFunctions_4_1_Compatibility::glTexImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
+{
+    d_1_2_Core->TexImage3D(target, level, internalformat, width, height, depth, border, format, type, pixels);
 }
 
 inline void QOpenGLFunctions_4_1_Compatibility::glDrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices)
@@ -4864,11 +4869,6 @@ inline void QOpenGLFunctions_4_1_Compatibility::glColorTableParameterfv(GLenum t
 inline void QOpenGLFunctions_4_1_Compatibility::glColorTable(GLenum target, GLenum internalformat, GLsizei width, GLenum format, GLenum type, const GLvoid *table)
 {
     d_1_2_Deprecated->ColorTable(target, internalformat, width, format, type, table);
-}
-
-inline void QOpenGLFunctions_4_1_Compatibility::glTexImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels)
-{
-    d_1_2_Deprecated->TexImage3D(target, level, internalformat, width, height, depth, border, format, type, pixels);
 }
 
 
