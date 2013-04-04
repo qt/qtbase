@@ -96,6 +96,7 @@ QStringList Generator::styleDirs;
 QStringList Generator::styleFiles;
 bool Generator::debugging_ = false;
 bool Generator::noLinkErrors_ = false;
+bool Generator::redirectDocumentationToDevNull_ = false;
 Generator::Passes Generator::qdocPass_ = Both;
 
 void Generator::setDebugSegfaultFlag(bool b)
@@ -267,7 +268,8 @@ void Generator::beginSubPage(const InnerNode* node, const QString& fileName)
     path += fileName;
     Generator::debugSegfault("Writing: " + path);
     outFileNames.insert(fileName,fileName);
-    QFile* outFile = new QFile(path);
+
+    QFile* outFile = new QFile(redirectDocumentationToDevNull_ ? QStringLiteral("/dev/null") : path);
     if (!outFile->open(QFile::WriteOnly))
         node->location().fatal(tr("Cannot open output file '%1'").arg(outFile->fileName()));
     QTextStream* out = new QTextStream(outFile);
@@ -1472,6 +1474,7 @@ QString Generator::indent(int level, const QString& markedCode)
 void Generator::initialize(const Config &config)
 {
     outputFormats = config.getOutputFormats();
+    redirectDocumentationToDevNull_ = config.getBool(CONFIG_REDIRECTDOCUMENTATIONTODEVNULL);
     if (!outputFormats.isEmpty()) {
         outDir_ = config.getOutputDir();
 

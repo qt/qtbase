@@ -95,6 +95,7 @@ bool creationTimeBefore(const QFileInfo &fi1, const QFileInfo &fi2)
 
 static bool highlighting = false;
 static bool showInternal = false;
+static bool redirectDocumentationToDevNull = false;
 static bool noLinkErrors = false;
 static bool obsoleteLinks = false;
 static QStringList defines;
@@ -139,6 +140,8 @@ static void printHelp()
                              "Run qdoc to read the index files and generate the docs\n"
                              "    -showinternal  "
                              "Include content marked internal\n"
+                             "    -redirect-documentation-to-dev-null "
+                             "Save all documentation content to /dev/null. Useful if someone is interested in qdoc errors only.\n"
                              "    -version       "
                              "Display version of qdoc and exit\n") );
 }
@@ -257,6 +260,7 @@ static void processQdocconfFile(const QString &fileName)
     }
     config.setStringList(CONFIG_SYNTAXHIGHLIGHTING, QStringList(highlighting ? "true" : "false"));
     config.setStringList(CONFIG_SHOWINTERNAL, QStringList(showInternal ? "true" : "false"));
+    config.setStringList(CONFIG_REDIRECTDOCUMENTATIONTODEVNULL, QStringList(redirectDocumentationToDevNull ? "true" : "false"));
     config.setStringList(CONFIG_NOLINKERRORS, QStringList(noLinkErrors ? "true" : "false"));
     config.setStringList(CONFIG_OBSOLETELINKS, QStringList(obsoleteLinks ? "true" : "false"));
 
@@ -572,6 +576,9 @@ int main(int argc, char **argv)
         }
         else if (opt == "-showinternal") {
             showInternal = true;
+        }
+        else if (opt == "-redirect-documentation-to-dev-null") {
+            redirectDocumentationToDevNull = true;
         }
         else if (opt == "-no-examples") {
             Config::generateExamples = false;

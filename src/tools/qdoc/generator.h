@@ -200,6 +200,7 @@ private:
     static QStringList styleFiles;
     static bool debugging_;
     static bool noLinkErrors_;
+    static bool redirectDocumentationToDevNull_;
     static Passes qdocPass_;
 
     void appendFullName(Text& text,
