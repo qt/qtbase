@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType path stroker (body).                                        */
 /*                                                                         */
-/*  Copyright 2002, 2003, 2004, 2005, 2006, 2008, 2009 by                  */
+/*  Copyright 2002, 2003, 2004, 2005, 2006, 2008, 2009, 2010 by            */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -706,7 +706,7 @@
 
     FT_Bool              valid;
     FT_StrokeBorderRec   borders[2];
-    FT_Memory            memory;
+    FT_Library           library;
 
   } FT_StrokerRec;
 
@@ -729,7 +729,7 @@
 
     if ( !FT_NEW( stroker ) )
     {
-      stroker->memory = memory;
+      stroker->library = library;
 
       ft_stroke_border_init( &stroker->borders[0], memory );
       ft_stroke_border_init( &stroker->borders[1], memory );
@@ -777,13 +777,13 @@
   {
     if ( stroker )
     {
-      FT_Memory  memory = stroker->memory;
+      FT_Memory  memory = stroker->library->memory;
 
 
       ft_stroke_border_done( &stroker->borders[0] );
       ft_stroke_border_done( &stroker->borders[1] );
 
-      stroker->memory = NULL;
+      stroker->library = NULL;
       FT_FREE( stroker );
     }
   }
@@ -858,6 +858,31 @@
       delta.y += delta2.y + stroker->center.y;
 
       error = ft_stroke_border_lineto( border, &delta, FALSE );
+    }
+    else if ( stroker->line_cap == FT_STROKER_LINECAP_BUTT )
+    {
+      /* add a butt ending */
+      FT_Vector        delta;
+      FT_Angle         rotate = FT_SIDE_TO_ROTATE( side );
+      FT_Fixed         radius = stroker->radius;
+      FT_StrokeBorder  border = stroker->borders + side;
+
+
+      FT_Vector_From_Polar( &delta, radius, angle + rotate );
+
+      delta.x += stroker->center.x;
+      delta.y += stroker->center.y;
+
+      error = ft_stroke_border_lineto( border, &delta, FALSE );
+      if ( error )
+        goto Exit;
+
+      FT_Vector_From_Polar( &delta, radius, angle - rotate );
+
+      delta.x += stroker->center.x;
+      delta.y += stroker->center.y;
+
+      error = ft_stroke_border_lineto( border, &delta, FALSE );   
     }
 
   Exit:
@@ -954,7 +979,8 @@
       thcos = FT_Cos( theta );
       sigma = FT_MulFix( stroker->miter_limit, thcos );
 
-      if ( sigma >= 0x10000L )
+      /* FT_Sin(x) = 0 for x <= 57 */
+      if ( sigma >= 0x10000L || ft_pos_abs( theta ) <= 57 )
         miter = FALSE;
 
       if ( miter )  /* this is a miter (broken angle) */
@@ -1335,7 +1361,7 @@
         phi1    = (angle_mid + angle_in ) / 2;
         phi2    = (angle_mid + angle_out ) / 2;
         length1 = FT_DivFix( stroker->radius, FT_Cos( theta1 ) );
-        length2 = FT_DivFix( stroker->radius, FT_Cos(theta2) );
+        length2 = FT_DivFix( stroker->radius, FT_Cos( theta2 ) );
 
         for ( side = 0; side <= 1; side++ )
         {
@@ -1710,13 +1736,10 @@
         }
         else
         {
-          /* if both first and last points are conic,         */
-          /* start at their middle and record its position    */
-          /* for closure                                      */
+          /* if both first and last points are conic, */
+          /* start at their middle                    */
           v_start.x = ( v_start.x + v_last.x ) / 2;
           v_start.y = ( v_start.y + v_last.y ) / 2;
-
-          v_last = v_start;
         }
         point--;
         tags--;
@@ -1844,8 +1867,13 @@
     return FT_Err_Invalid_Outline;
   }
 
-
+/* declare an extern to access ft_outline_glyph_class global allocated 
+   in ftglyph.c, and use the FT_OUTLINE_GLYPH_CLASS_GET macro to access 
+   it when FT_CONFIG_OPTION_PIC is defined */
+#ifndef FT_CONFIG_OPTION_PIC
   extern const FT_Glyph_Class  ft_outline_glyph_class;
+#endif
+#include "basepic.h"
 
 
   /* documentation is in ftstroke.h */
@@ -1857,13 +1885,14 @@
   {
     FT_Error  error = FT_Err_Invalid_Argument;
     FT_Glyph  glyph = NULL;
-
+    FT_Library library = stroker->library;
+    FT_UNUSED(library);
 
     if ( pglyph == NULL )
       goto Exit;
 
     glyph = *pglyph;
-    if ( glyph == NULL || glyph->clazz != &ft_outline_glyph_class )
+    if ( glyph == NULL || glyph->clazz != FT_OUTLINE_GLYPH_CLASS_GET )
       goto Exit;
 
     {
@@ -1930,13 +1959,14 @@
   {
     FT_Error  error = FT_Err_Invalid_Argument;
     FT_Glyph  glyph = NULL;
-
+    FT_Library library = stroker->library;
+    FT_UNUSED(library);
 
     if ( pglyph == NULL )
       goto Exit;
 
     glyph = *pglyph;
-    if ( glyph == NULL || glyph->clazz != &ft_outline_glyph_class )
+    if ( glyph == NULL || glyph->clazz != FT_OUTLINE_GLYPH_CLASS_GET )
       goto Exit;
 
     {

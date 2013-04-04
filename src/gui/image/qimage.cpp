@@ -1126,6 +1126,7 @@ QImage QImage::copy(const QRect& r) const
         image.d->colortable = d->colortable;
         image.d->dpmx = d->dpmx;
         image.d->dpmy = d->dpmy;
+        image.d->devicePixelRatio = d->devicePixelRatio;
         image.d->offset = d->offset;
         image.d->has_alpha_clut = d->has_alpha_clut;
         image.d->text = d->text;

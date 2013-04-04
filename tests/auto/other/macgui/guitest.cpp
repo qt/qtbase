@@ -84,7 +84,6 @@ public:
 void WidgetNavigator::printAll(QWidget *widget)
 {
     QAccessibleInterface * const iface = QAccessible::queryAccessibleInterface(widget);
-    deleteInDestructor(iface);
     printAll(iface);
 }
 
@@ -97,7 +96,6 @@ void WidgetNavigator::printAll(QAccessibleInterface *interface)
 QAccessibleInterface *WidgetNavigator::find(QAccessible::Text textType, const QString &text, QWidget *start)
 {
     QAccessibleInterface *const iface = QAccessible::queryAccessibleInterface(start);
-    deleteInDestructor(iface);
     return find(textType, text, iface);
 }
 
@@ -127,16 +125,10 @@ QAccessibleInterface *WidgetNavigator::recursiveSearch(TestBase *test, QAccessib
             QAccessibleInterface *childInterface = testInterface->child(i);
             if (childInterface) {
                 todoInterfaces.push(childInterface);
-                deleteInDestructor(childInterface);
             }
         }
     }
     return 0;
-}
-
-void WidgetNavigator::deleteInDestructor(QAccessibleInterface *interface)
-{
-    interfaces.insert(interface);
 }
 
 QWidget *WidgetNavigator::getWidget(QAccessibleInterface *interface)
@@ -146,9 +138,6 @@ QWidget *WidgetNavigator::getWidget(QAccessibleInterface *interface)
 
 WidgetNavigator::~WidgetNavigator()
 {
-    foreach(QAccessibleInterface *interface, interfaces) {
-        delete interface;
-    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

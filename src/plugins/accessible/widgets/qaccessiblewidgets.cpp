@@ -718,7 +718,6 @@ QAccessibleInterface *QAccessibleTitleBar::childAt(int x, int y) const
         if (childIface->rect().contains(x,y)) {
             return childIface;
         }
-        delete childIface;
     }
     return 0;
 }

@@ -620,36 +620,43 @@ static inline QFont::Weight weightFromInteger(long weight)
     return QFont::Black;
 }
 
-static inline QFontDatabase::WritingSystem writingSystemFromScript(const QString &scriptName)
+static inline QFontDatabase::WritingSystem writingSystemFromCharSet(uchar charSet)
 {
-    if (scriptName == QStringLiteral("Western")
-            || scriptName == QStringLiteral("Baltic")
-            || scriptName == QStringLiteral("Central European")
-            || scriptName == QStringLiteral("Turkish")
-            || scriptName == QStringLiteral("Vietnamese")
-            || scriptName == QStringLiteral("OEM/Dos"))
+    switch (charSet) {
+    case ANSI_CHARSET:
+    case EASTEUROPE_CHARSET:
+    case BALTIC_CHARSET:
+    case TURKISH_CHARSET:
+    case OEM_CHARSET:
         return QFontDatabase::Latin;
-    if (scriptName == QStringLiteral("Thai"))
-        return QFontDatabase::Thai;
-    if (scriptName == QStringLiteral("Symbol")
-        || scriptName == QStringLiteral("Other"))
-        return QFontDatabase::Symbol;
-    if (scriptName == QStringLiteral("CHINESE_GB2312"))
-        return QFontDatabase::SimplifiedChinese;
-    if (scriptName == QStringLiteral("CHINESE_BIG5"))
-        return QFontDatabase::TraditionalChinese;
-    if (scriptName == QStringLiteral("Cyrillic"))
-        return QFontDatabase::Cyrillic;
-    if (scriptName == QStringLiteral("Hangul"))
-        return QFontDatabase::Korean;
-    if (scriptName == QStringLiteral("Hebrew"))
-        return QFontDatabase::Hebrew;
-    if (scriptName == QStringLiteral("Greek"))
+    case GREEK_CHARSET:
         return QFontDatabase::Greek;
-    if (scriptName == QStringLiteral("Japanese"))
-        return QFontDatabase::Japanese;
-    if (scriptName == QStringLiteral("Arabic"))
+    case RUSSIAN_CHARSET:
+        return QFontDatabase::Cyrillic;
+    case HEBREW_CHARSET:
+        return QFontDatabase::Hebrew;
+    case ARABIC_CHARSET:
         return QFontDatabase::Arabic;
+    case THAI_CHARSET:
+        return QFontDatabase::Thai;
+    case GB2312_CHARSET:
+        return QFontDatabase::SimplifiedChinese;
+    case CHINESEBIG5_CHARSET:
+        return QFontDatabase::TraditionalChinese;
+    case SHIFTJIS_CHARSET:
+        return QFontDatabase::Japanese;
+    case HANGUL_CHARSET:
+    case JOHAB_CHARSET:
+        return QFontDatabase::Korean;
+    case VIETNAMESE_CHARSET:
+        return QFontDatabase::Vietnamese;
+    case SYMBOL_CHARSET:
+        return QFontDatabase::Symbol;
+    // ### case MAC_CHARSET:
+    // ### case DEFAULT_CHARSET:
+    default:
+        break;
+    }
     return QFontDatabase::Any;
 }
 
@@ -833,7 +840,7 @@ error:
 
 Q_GUI_EXPORT void qt_registerAliasToFontFamily(const QString &familyName, const QString &alias);
 
-static bool addFontToDatabase(QString familyName, const QString &scriptName,
+static bool addFontToDatabase(const QString &familyName, uchar charSet,
                               const TEXTMETRIC *textmetric,
                               const FONTSIGNATURE *signature,
                               int type)
@@ -857,7 +864,7 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
 #ifndef QT_NO_DEBUG_OUTPUT
     if (QWindowsContext::verboseFonts > 2) {
         QDebug nospace = qDebug().nospace();
-        nospace << __FUNCTION__ << familyName << scriptName
+        nospace << __FUNCTION__ << familyName << charSet
                  << "TTF=" << ttf;
         if (type & DEVICE_FONTTYPE)
             nospace << " DEVICE";
@@ -877,6 +884,7 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
 
     QSupportedWritingSystems writingSystems;
     if (type & TRUETYPE_FONTTYPE) {
+        Q_ASSERT(signature);
         quint32 unicodeRange[4] = {
             signature->fsUsb[0], signature->fsUsb[1],
             signature->fsUsb[2], signature->fsUsb[3]
@@ -905,7 +913,7 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
                 familyName == QStringLiteral("Segoe UI"))
             writingSystems.setSupported(QFontDatabase::Thai, false);
     } else {
-        const QFontDatabase::WritingSystem ws = writingSystemFromScript(scriptName);
+        const QFontDatabase::WritingSystem ws = writingSystemFromCharSet(charSet);
         if (ws != QFontDatabase::Any)
             writingSystems.setSupported(ws);
     }
@@ -934,14 +942,14 @@ static int CALLBACK storeFont(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetric,
 {
     typedef QSet<QString> StringSet;
     const QString familyName = QString::fromWCharArray(f->elfLogFont.lfFaceName);
-    const QString script = QString::fromWCharArray(f->elfScript);
+    const uchar charSet = f->elfLogFont.lfCharSet;
 
     const FONTSIGNATURE signature = textmetric->ntmFontSig;
 
     // NEWTEXTMETRICEX is a NEWTEXTMETRIC, which according to the documentation is
     // identical to a TEXTMETRIC except for the last four members, which we don't use
     // anyway
-    if (addFontToDatabase(familyName, script, (TEXTMETRIC *)textmetric, &signature, type))
+    if (addFontToDatabase(familyName, charSet, (TEXTMETRIC *)textmetric, &signature, type))
         reinterpret_cast<StringSet *>(namesSetIn)->insert(familyName);
 
     // keep on enumerating
@@ -1313,7 +1321,7 @@ QStringList QWindowsFontDatabase::addApplicationFont(const QByteArray &fontData,
             TEXTMETRIC textMetrics;
             GetTextMetrics(hdc, &textMetrics);
 
-            addFontToDatabase(familyName, QString(), &textMetrics, &signatures.at(j),
+            addFontToDatabase(familyName, lf.lfCharSet, &textMetrics, &signatures.at(j),
                               TRUETYPE_FONTTYPE);
 
             SelectObject(hdc, oldobj);
@@ -1790,7 +1798,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(int script, const QFontDef &requ
         directWriteFont->Release();
 #endif
 
-    if (script == QChar::Script_Common
+    if ((script == QChar::Script_Common || script == QChar::Script_Han)
             && !(request.styleStrategy & QFont::NoFontMerging)) {
         QStringList extraFonts = extraTryFontsForFamily(request.family);
         if (extraFonts.size()) {

@@ -195,29 +195,6 @@ bool QSqlTableModelPrivate::exec(const QString &stmt, bool prepStatement,
     return true;
 }
 
-QSqlRecord QSqlTableModelPrivate::primaryValues(const QSqlRecord &rec, const QSqlRecord &pIndex)
-{
-    QSqlRecord pValues(pIndex);
-
-    for (int i = pValues.count() - 1; i >= 0; --i)
-        pValues.setValue(i, rec.value(pValues.fieldName(i)));
-
-    return pValues;
-}
-
-QSqlRecord QSqlTableModelPrivate::primaryValues(int row) const
-{
-    Q_Q(const QSqlTableModel);
-
-    const QSqlRecord &pIndex = primaryIndex.isEmpty() ? rec : primaryIndex;
-
-    ModifiedRow mr = cache.value(row);
-    if (mr.op() != None)
-        return mr.primaryValues(pIndex);
-    else
-        return primaryValues(q->QSqlQueryModel::record(row), pIndex);
-}
-
 /*!
     \class QSqlTableModel
     \brief The QSqlTableModel class provides an editable data model
@@ -432,7 +409,7 @@ bool QSqlTableModel::selectRow(int row)
     const QString table_filter = d->filter;
     d->filter = d->db.driver()->sqlStatement(QSqlDriver::WhereStatement,
                                               d->tableName,
-                                              d->primaryValues(row),
+                                              primaryValues(row),
                                               false);
     static const QString wh = Sql::where() + Sql::sp();
     if (d->filter.startsWith(wh, Qt::CaseInsensitive))
@@ -652,7 +629,7 @@ bool QSqlTableModel::updateRowInTable(int row, const QSqlRecord &values)
     QSqlRecord rec(values);
     emit beforeUpdate(row, rec);
 
-    const QSqlRecord whereValues = d->primaryValues(row);
+    const QSqlRecord whereValues = primaryValues(row);
     const bool prepStatement = d->db.driver()->hasFeature(QSqlDriver::PreparedQueries);
     const QString stmt = d->db.driver()->sqlStatement(QSqlDriver::UpdateStatement, d->tableName,
                                                      rec, prepStatement);
@@ -718,7 +695,7 @@ bool QSqlTableModel::deleteRowFromTable(int row)
     Q_D(QSqlTableModel);
     emit beforeDelete(row);
 
-    const QSqlRecord whereValues = d->primaryValues(row);
+    const QSqlRecord whereValues = primaryValues(row);
     const bool prepStatement = d->db.driver()->hasFeature(QSqlDriver::PreparedQueries);
     const QString stmt = d->db.driver()->sqlStatement(QSqlDriver::DeleteStatement,
                                                       d->tableName,
@@ -1437,6 +1414,26 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &values)
         return submit();
 
     return true;
+}
+
+/*!
+    \since 5.1
+    Returns a record containing the fields represented in the primary key set to the values
+    at \a row. If no primary key is defined, the returned record will contain all fields.
+
+    \sa primaryKey()
+*/
+QSqlRecord QSqlTableModel::primaryValues(int row) const
+{
+    Q_D(const QSqlTableModel);
+
+    const QSqlRecord &pIndex = d->primaryIndex.isEmpty() ? d->rec : d->primaryIndex;
+
+    QSqlTableModelPrivate::ModifiedRow mr = d->cache.value(row);
+    if (mr.op() != QSqlTableModelPrivate::None)
+        return mr.primaryValues(pIndex);
+    else
+        return QSqlQueryModel::record(row).keyValues(pIndex);
 }
 
 QT_END_NAMESPACE

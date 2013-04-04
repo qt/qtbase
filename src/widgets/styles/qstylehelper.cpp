@@ -92,7 +92,6 @@ bool isInstanceOf(QObject *obj, QAccessible::Role role)
     bool match = false;
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(obj);
     match = iface && iface->role() == role;
-    delete iface;
     return match;
 }
 

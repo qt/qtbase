@@ -48,6 +48,7 @@
 #include <qsqlindex.h>
 #include <qsqlquery.h>
 #include <QtSql/private/qsqlcachedresult_p.h>
+#include <QtSql/private/qsqldriver_p.h>
 #include <qlist.h>
 #include <qvector.h>
 #include <qtextcodec.h>
@@ -309,10 +310,10 @@ struct QIBaseEventBuffer {
     QIBaseSubscriptionState subscriptionState;
 };
 
-class QIBaseDriverPrivate
+class QIBaseDriverPrivate : public QSqlDriverPrivate
 {
 public:
-    QIBaseDriverPrivate(QIBaseDriver *d) : q(d), ibase(0), trans(0), tc(0) {}
+    QIBaseDriverPrivate(QIBaseDriver *d) : QSqlDriverPrivate(), q(d), ibase(0), trans(0), tc(0) { dbmsType = Interbase; }
 
     bool isError(const char *msg, QSqlError::ErrorType typ = QSqlError::UnknownError)
     {
@@ -1411,7 +1412,6 @@ QIBaseDriver::QIBaseDriver(isc_db_handle connection, QObject *parent)
 
 QIBaseDriver::~QIBaseDriver()
 {
-    delete d;
 }
 
 bool QIBaseDriver::hasFeature(DriverFeature f) const

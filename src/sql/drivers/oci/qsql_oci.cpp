@@ -52,6 +52,7 @@
 #include <qsqlindex.h>
 #include <qsqlquery.h>
 #include <QtSql/private/qsqlcachedresult_p.h>
+#include <QtSql/private/qsqldriver_p.h>
 #include <qstringlist.h>
 #include <qvarlengtharray.h>
 #include <qvector.h>
@@ -492,8 +493,9 @@ void QOCIResultPrivate::outValues(QVector<QVariant> &values, IndicatorArray &ind
 }
 
 
-struct QOCIDriverPrivate
+class QOCIDriverPrivate : public QSqlDriverPrivate
 {
+public:
     QOCIDriverPrivate();
 
     OCIEnv *env;
@@ -511,9 +513,10 @@ struct QOCIDriverPrivate
 };
 
 QOCIDriverPrivate::QOCIDriverPrivate()
-    : env(0), svc(0), srvhp(0), authp(0), err(0), transaction(false), serverVersion(-1),
-      prefetchRows(-1), prefetchMem(QOCI_PREFETCH_MEM)
+    : QSqlDriverPrivate(), env(0), svc(0), srvhp(0), authp(0), err(0), transaction(false),
+      serverVersion(-1), prefetchRows(-1), prefetchMem(QOCI_PREFETCH_MEM)
 {
+    dbmsType = Oracle;
 }
 
 void QOCIDriverPrivate::allocErrorHandle()
@@ -2137,8 +2140,6 @@ QOCIDriver::~QOCIDriver()
     r = OCIHandleFree(d->env, OCI_HTYPE_ENV);
     if (r != OCI_SUCCESS)
         qWarning("Unable to free Environment handle: %d", r);
-
-    delete d;
 }
 
 bool QOCIDriver::hasFeature(DriverFeature f) const

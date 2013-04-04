@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Type 1 objects manager (body).                                       */
 /*                                                                         */
-/*  Copyright 1996-2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 by       */
+/*  Copyright 1996-2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 by */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -17,6 +17,7 @@
 
 
 #include <ft2build.h>
+#include FT_INTERNAL_CALC_H
 #include FT_INTERNAL_DEBUG_H
 #include FT_INTERNAL_STREAM_H
 #include FT_TRUETYPE_IDS_H
@@ -440,10 +441,11 @@
       root->num_fixed_sizes = 0;
       root->available_sizes = 0;
 
-      root->bbox.xMin =   type1->font_bbox.xMin             >> 16;
-      root->bbox.yMin =   type1->font_bbox.yMin             >> 16;
-      root->bbox.xMax = ( type1->font_bbox.xMax + 0xFFFFU ) >> 16;
-      root->bbox.yMax = ( type1->font_bbox.yMax + 0xFFFFU ) >> 16;
+      root->bbox.xMin =   type1->font_bbox.xMin            >> 16;
+      root->bbox.yMin =   type1->font_bbox.yMin            >> 16;
+      /* no `U' suffix here to 0xFFFF! */
+      root->bbox.xMax = ( type1->font_bbox.xMax + 0xFFFF ) >> 16;
+      root->bbox.yMax = ( type1->font_bbox.yMax + 0xFFFF ) >> 16;
 
       /* Set units_per_EM if we didn't set it in parse_font_matrix. */
       if ( !root->units_per_EM )
@@ -467,7 +469,7 @@
 
         /* in case of error, keep the standard width */
         if ( !error )
-          root->max_advance_width = (FT_Short)max_advance;
+          root->max_advance_width = (FT_Short)FIXED_TO_INT( max_advance );
         else
           error = T1_Err_Ok;   /* clear error */
       }

@@ -44,8 +44,6 @@
 #include <QtGui/private/qaccessible2_p.h>
 #include <private/qcore_mac_p.h>
 
-#ifndef QT_NO_COCOA_ACCESSIBILITY
-
 QCococaAccessibility::QCococaAccessibility()
 {
 
@@ -62,7 +60,7 @@ void QCococaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
     if (!object)
         return;
 
-    QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(object);
+    QAccessibleInterface *interface = event->accessibleInterface();
     if (!interface)
         return;
 
@@ -71,13 +69,11 @@ void QCococaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
         case QAccessible::TextInserted :
         case QAccessible::TextRemoved :
         case QAccessible::TextUpdated : {
-            QCocoaAccessibleElement *element = [QCocoaAccessibleElement createElementWithInterface : interface parent : nil];
+            QCocoaAccessibleElement *element = [QCocoaAccessibleElement createElementWithId : QAccessible::uniqueId(interface) parent : nil];
             [element autorelease];
             NSAccessibilityPostNotification(element, NSAccessibilityValueChangedNotification);
         break; }
-
-        default:
-            delete interface;
+    default:
         break;
     }
 }
@@ -178,7 +174,7 @@ NSString *macRole(QAccessibleInterface *interface)
     the elements are still present in the accessibility tree but is
     not used by the screen reader.
 */
-bool shouldBeIgnrored(QAccessibleInterface *interface)
+bool shouldBeIgnored(QAccessibleInterface *interface)
 {
     // Mac accessibility does not have an attribute that corresponds to the Invisible/Offscreen
     // state. Ignore interfaces with those flags set.
@@ -280,6 +276,7 @@ QString translateAction(NSString *nsAction)
 
 bool hasValueAttribute(QAccessibleInterface *interface)
 {
+    Q_ASSERT(interface);
     const QAccessible::Role qtrole = interface->role();
     if (qtrole == QAccessible::EditableText
             || interface->valueInterface()) {
@@ -318,5 +315,3 @@ id getValueAttribute(QAccessibleInterface *interface)
 }
 
 } // namespace QCocoaAccessible
-
-#endif // QT_NO_COCOA_ACCESSIBILITY

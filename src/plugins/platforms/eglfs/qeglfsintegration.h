@@ -79,11 +79,14 @@ public:
 
     EGLDisplay display() const { return mDisplay; }
 
+    QPlatformInputContext *inputContext() const { return mInputContext; }
+
 private:
     EGLDisplay mDisplay;
     QAbstractEventDispatcher *mEventDispatcher;
     QPlatformFontDatabase *mFontDb;
     QPlatformScreen *mScreen;
+    QPlatformInputContext *mInputContext;
 };
 
 QT_END_NAMESPACE

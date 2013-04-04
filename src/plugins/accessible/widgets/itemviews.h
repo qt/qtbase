@@ -65,8 +65,6 @@ public:
     explicit QAccessibleTable(QWidget *w);
     bool isValid() const;
 
-    virtual ~QAccessibleTable();
-
     QAccessible::Role role() const;
     QAccessible::State state() const;
     QString text(QAccessible::Text t) const;
@@ -106,9 +104,9 @@ public:
 
     QAbstractItemView *view() const;
 
-protected:
-    inline QAccessibleTableCell *cell(const QModelIndex &index) const;
+    void modelChange(QAccessibleTableModelChangeEvent *event);
 
+protected:
     inline QAccessible::Role cellRole() const {
         switch (m_role) {
         case QAccessible::List:
@@ -125,11 +123,16 @@ protected:
 
     QHeaderView *horizontalHeader() const;
     QHeaderView *verticalHeader() const;
+
+    // maybe vector
+    typedef QHash<int, QAccessible::Id> ChildCache;
+    mutable ChildCache childToId;
+
+    virtual ~QAccessibleTable();
+
 private:
     // the child index for a model index
     inline int logicalIndex(const QModelIndex &index) const;
-    // the model index from the child index
-    QAccessibleInterface *childFromLogical(int logicalIndex) const;
     QAccessible::Role m_role;
 };
 
@@ -140,7 +143,6 @@ public:
         : QAccessibleTable(w)
     {}
 
-    virtual ~QAccessibleTree() {}
 
     QAccessibleInterface *childAt(int x, int y) const;
     int childCount() const;
@@ -158,6 +160,8 @@ public:
 
 private:
     QModelIndex indexFromLogical(int row, int column = 0) const;
+
+    inline int logicalIndex(const QModelIndex &index) const;
 };
 
 class QAccessibleTableCell: public QAccessibleInterface, public QAccessibleTableCellInterface, public QAccessibleActionInterface
@@ -236,7 +240,7 @@ public:
     QAccessibleInterface *child(int index) const;
 
 private:
-    QAbstractItemView *view;
+    QPointer<QAbstractItemView> view;
     int index;
     Qt::Orientation orientation;
 
@@ -273,8 +277,9 @@ public:
     QAccessibleInterface *child(int) const {
         return 0;
     }
+
 private:
-    QAbstractItemView *view;
+    QPointer<QAbstractItemView> view;
 };
 
 

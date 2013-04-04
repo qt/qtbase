@@ -57,6 +57,7 @@
 #include <qmath.h>
 #include <QDebug>
 #include <QSqlQuery>
+#include <QtSql/private/qsqldriver_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -111,15 +112,13 @@ inline static QVarLengthArray<SQLTCHAR> toSQLTCHAR(const QString &input)
     return result;
 }
 
-class QODBCDriverPrivate
+class QODBCDriverPrivate : public QSqlDriverPrivate
 {
 public:
     enum DefaultCase{Lower, Mixed, Upper, Sensitive};
-    enum DBMSType {UnknownDB, MSSqlServer, MySqlServer, PostgreSQL, Oracle, Sybase};
     QODBCDriverPrivate()
-    : hEnv(0), hDbc(0), unicode(false), useSchema(false), disconnectCount(0), datetime_precision(19),
-            dbmsType(UnknownDB), isFreeTDSDriver(false), hasSQLFetchScroll(true),
-           hasMultiResultSets(false), isQuoteInitialized(false), quote(QLatin1Char('"'))
+    : QSqlDriverPrivate(), hEnv(0), hDbc(0), unicode(false), useSchema(false), disconnectCount(0), datetime_precision(19),
+      isFreeTDSDriver(false), hasSQLFetchScroll(true), hasMultiResultSets(false), isQuoteInitialized(false), quote(QLatin1Char('"'))
     {
     }
 
@@ -130,7 +129,6 @@ public:
     bool useSchema;
     int disconnectCount;
     int datetime_precision;
-    DBMSType dbmsType;
     bool isFreeTDSDriver;
     bool hasSQLFetchScroll;
     bool hasMultiResultSets;
@@ -1794,7 +1792,6 @@ void QODBCDriver::init()
 QODBCDriver::~QODBCDriver()
 {
     cleanup();
-    delete d;
 }
 
 bool QODBCDriver::hasFeature(DriverFeature f) const

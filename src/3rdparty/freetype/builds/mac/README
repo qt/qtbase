@@ -99,7 +99,7 @@ environment by Metrowerks. GCC for MPW and Symantec
       System 7, MacOS 8, MacOS 9. So-called "Toolbox"
       API is used.
 
-    - FreeType.ppc_classic.make.txt
+    - FreeType.ppc_carbon.make.txt
       CFM binary executable format for ppc MacOS:
       MacOS 9. Carbon API is used.
 
@@ -392,7 +392,7 @@ ATSFontGetFileSpecification()         |    x    |    x    |    x    |    x    | 
     ATS font manager is not published in these versions.
 
 ------------------------------------------------------------
-Last update: 2007-Feb-01, by Alexei Podtelezhnikov.
+Last update: 2009-Jul-25.
 
 Currently maintained by
 	suzuki toshiya, <mpsuzuki@hiroshima-u.ac.jp>

@@ -145,8 +145,9 @@ static void cleanupCocoaApplicationDelegate()
     dockMenu = newMenu;
 }
 
-- (NSMenu *)applicationDockMenu
+- (NSMenu *)applicationDockMenu:(NSApplication *)sender
 {
+    Q_UNUSED(sender);
     return [[dockMenu retain] autorelease];
 }
 

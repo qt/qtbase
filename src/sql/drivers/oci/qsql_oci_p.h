@@ -69,7 +69,7 @@ QT_BEGIN_NAMESPACE
 
 class QOCIDriver;
 class QOCICols;
-struct QOCIDriverPrivate;
+class QOCIDriverPrivate;
 
 class Q_EXPORT_SQLDRIVER_OCI QOCIDriver : public QSqlDriver
 {

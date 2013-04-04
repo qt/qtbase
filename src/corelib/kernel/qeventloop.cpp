@@ -180,7 +180,7 @@ int QEventLoop::exec(ProcessEventsFlags flags)
         LoopReference(QEventLoopPrivate *d, QMutexLocker &locker) : d(d), locker(locker), exceptionCaught(true)
         {
             d->inExec = true;
-            d->exit = false;
+            d->exit.storeRelease(false);
             ++d->threadData->loopLevel;
             d->threadData->eventLoops.push(d->q_func());
             locker.unlock();
@@ -208,11 +208,11 @@ int QEventLoop::exec(ProcessEventsFlags flags)
     if (app && app->thread() == thread())
         QCoreApplication::removePostedEvents(app, QEvent::Quit);
 
-    while (!d->exit)
+    while (!d->exit.loadAcquire())
         processEvents(flags | WaitForMoreEvents | EventLoopExec);
 
     ref.exceptionCaught = false;
-    return d->returnCode;
+    return d->returnCode.load();
 }
 
 /*!
@@ -266,8 +266,8 @@ void QEventLoop::exit(int returnCode)
     if (!d->threadData->eventDispatcher.load())
         return;
 
-    d->returnCode = returnCode;
-    d->exit = true;
+    d->returnCode.store(returnCode);
+    d->exit.storeRelease(true);
     d->threadData->eventDispatcher.load()->interrupt();
 }
 
@@ -281,7 +281,7 @@ void QEventLoop::exit(int returnCode)
 bool QEventLoop::isRunning() const
 {
     Q_D(const QEventLoop);
-    return !d->exit;
+    return !d->exit.loadAcquire();
 }
 
 /*!

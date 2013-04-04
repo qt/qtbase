@@ -66,6 +66,8 @@
 #include <QtGui/QOffscreenSurface>
 #include <qpa/qplatformcursor.h>
 
+#include <qpa/qplatforminputcontextfactory_p.h>
+
 #include "qeglfscontext.h"
 
 #include <EGL/egl.h>
@@ -115,6 +117,8 @@ QEglFSIntegration::QEglFSIntegration()
 
     mScreen = new QEglFSScreen(mDisplay);
     screenAdded(mScreen);
+
+    mInputContext = QPlatformInputContextFactory::create();
 }
 
 QEglFSIntegration::~QEglFSIntegration()

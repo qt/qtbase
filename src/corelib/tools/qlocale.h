@@ -511,9 +511,11 @@ public:
         TaiVietScript = 100,
         TakriScript = 101,
         UgariticScript = 102,
+        BrailleScript = 103,
+        HiraganaScript = 104,
         SimplifiedChineseScript = SimplifiedHanScript,
         TraditionalChineseScript = TraditionalHanScript,
-        LastScript = UgariticScript
+        LastScript = HiraganaScript
     };
     enum Country {
         AnyCountry = 0,

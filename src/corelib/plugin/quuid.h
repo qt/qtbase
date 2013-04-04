@@ -82,11 +82,11 @@ public:
         Sha1                 = 5 // 0 1 0 1
     };
 
-#ifdef Q_COMPILER_INITIALIZER_LISTS // UNIFORM_INITIALIZATION
-    Q_DECL_CONSTEXPR QUuid()
-        : data1(0), data2(0), data3(0), data4{0,0,0,0,0,0,0,0} {}
+#if defined(Q_COMPILER_INITIALIZER_LISTS) && !defined(Q_QDOC)
+    Q_DECL_CONSTEXPR QUuid() : data1(0), data2(0), data3(0), data4{0,0,0,0,0,0,0,0} {}
 
-    Q_DECL_CONSTEXPR QUuid(uint l, ushort w1, ushort w2, uchar b1, uchar b2, uchar b3, uchar b4, uchar b5, uchar b6, uchar b7, uchar b8)
+    Q_DECL_CONSTEXPR QUuid(uint l, ushort w1, ushort w2, uchar b1, uchar b2, uchar b3,
+                           uchar b4, uchar b5, uchar b6, uchar b7, uchar b8)
         : data1(l), data2(w1), data3(w2), data4{b1, b2, b3, b4, b5, b6, b7, b8} {}
 #else
     QUuid()
@@ -147,7 +147,7 @@ public:
 #if defined(Q_OS_WIN)
     // On Windows we have a type GUID that is used by the platform API, so we
     // provide convenience operators to cast from and to this type.
-#ifdef Q_COMPILER_INITIALIZER_LISTS // UNIFORM_INITIALIZATION
+#if defined(Q_COMPILER_INITIALIZER_LISTS) && !defined(Q_QDOC)
     Q_DECL_CONSTEXPR QUuid(const GUID &guid)
         : data1(guid.Data1), data2(guid.Data2), data3(guid.Data3),
           data4{guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],

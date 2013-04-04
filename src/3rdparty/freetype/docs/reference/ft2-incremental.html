@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>FreeType-2.3.9 API Reference</title>
+<title>FreeType-2.3.12 API Reference</title>
 <style type="text/css">
   body { font-family: Verdana, Geneva, Arial, Helvetica, serif;
          color: #000000;
@@ -35,7 +35,7 @@
 <table align=center><tr><td><font size=-1>[<a href="ft2-index.html">Index</a>]</font></td>
 <td width="100%"></td>
 <td><font size=-1>[<a href="ft2-toc.html">TOC</a>]</font></td></tr></table>
-<center><h1>FreeType-2.3.9 API Reference</h1></center>
+<center><h1>FreeType-2.3.12 API Reference</h1></center>
 
 <center><h1>
 Incremental Loading
@@ -56,6 +56,14 @@ Incremental Loading
 </td></tr></table><br>
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Incremental">FT_Incremental</a></h4>
+<table align=center width="87%"><tr><td>
+Defined in FT_INCREMENTAL_H (freetype/ftincrem.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_IncrementalRec_*  <b>FT_Incremental</b>;
+
+</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>An opaque type describing a user-provided object used to implement &lsquo;incremental&rsquo; glyph loading within FreeType. This is used to support embedded fonts in certain environments (e.g., PostScript interpreters), where the glyph data isn't in the font file, or must be overridden by different values.</p>
 </td></tr></table><br>
@@ -81,6 +89,7 @@ Defined in FT_INCREMENTAL_H (freetype/ftincrem.h).
     <a href="ft2-basic_types.html#FT_Long">FT_Long</a>  bearing_x;
     <a href="ft2-basic_types.html#FT_Long">FT_Long</a>  bearing_y;
     <a href="ft2-basic_types.html#FT_Long">FT_Long</a>  advance;
+    <a href="ft2-basic_types.html#FT_Long">FT_Long</a>  advance_v;     /* since 2.3.12 */
 
   } <b>FT_Incremental_MetricsRec</b>;
 
@@ -98,7 +107,10 @@ Defined in FT_INCREMENTAL_H (freetype/ftincrem.h).
 <p>Top bearing, in font units.</p>
 </td></tr>
 <tr valign=top><td><b>advance</b></td><td>
-<p>Glyph advance, in font units.</p>
+<p>Horizontal component of glyph advance, in font units.</p>
+</td></tr>
+<tr valign=top><td><b>advance_v</b></td><td>
+<p>Vertical component of glyph advance, in font units.</p>
 </td></tr>
 </table>
 </td></tr></table>
@@ -113,6 +125,14 @@ Defined in FT_INCREMENTAL_H (freetype/ftincrem.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Incremental_Metrics">FT_Incremental_Metrics</a></h4>
+<table align=center width="87%"><tr><td>
+Defined in FT_INCREMENTAL_H (freetype/ftincrem.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+   <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_Incremental_MetricsRec_*  <b>FT_Incremental_Metrics</b>;
+
+</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>A handle to an <a href="ft2-incremental.html#FT_Incremental_MetricsRec">FT_Incremental_MetricsRec</a> structure.</p>
 </td></tr></table><br>
@@ -342,6 +362,14 @@ Defined in FT_INCREMENTAL_H (freetype/ftincrem.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Incremental_Interface">FT_Incremental_Interface</a></h4>
 <table align=center width="87%"><tr><td>
+Defined in FT_INCREMENTAL_H (freetype/ftincrem.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+  <span class="keyword">typedef</span> <a href="ft2-incremental.html#FT_Incremental_InterfaceRec">FT_Incremental_InterfaceRec</a>*   <b>FT_Incremental_Interface</b>;
+
+</pre></table><br>
+<table align=center width="87%"><tr><td>
 <p>A pointer to an <a href="ft2-incremental.html#FT_Incremental_InterfaceRec">FT_Incremental_InterfaceRec</a> structure.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -352,6 +380,14 @@ Defined in FT_INCREMENTAL_H (freetype/ftincrem.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_PARAM_TAG_INCREMENTAL">FT_PARAM_TAG_INCREMENTAL</a></h4>
+<table align=center width="87%"><tr><td>
+Defined in FT_INCREMENTAL_H (freetype/ftincrem.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+#define <b>FT_PARAM_TAG_INCREMENTAL</b>  <a href="ft2-basic_types.html#FT_MAKE_TAG">FT_MAKE_TAG</a>( 'i', 'n', 'c', 'r' )
+
+</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>A constant used as the tag of <a href="ft2-base_interface.html#FT_Parameter">FT_Parameter</a> structures to indicate an incremental loading object to be used by FreeType.</p>
 </td></tr></table><br>

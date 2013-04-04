@@ -1115,6 +1115,8 @@ void QCommonStylePrivate::tabLayout(const QStyleOptionTabV3 *opt, const QWidget 
         QSize tabIconSize = opt->icon.actualSize(iconSize,
                         (opt->state & QStyle::State_Enabled) ? QIcon::Normal : QIcon::Disabled,
                         (opt->state & QStyle::State_Selected) ? QIcon::On : QIcon::Off  );
+        // High-dpi icons do not need adjustmet; make sure tabIconSize is not larger than iconSize
+        tabIconSize = QSize(qMin(tabIconSize.width(), iconSize.width()), qMin(tabIconSize.height(), iconSize.width()));
 
         *iconRect = QRect(tr.left(), tr.center().y() - tabIconSize.height() / 2,
                     tabIconSize.width(), tabIconSize .height());
@@ -1236,8 +1238,11 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                     state = QIcon::On;
 
                 QPixmap pixmap = button->icon.pixmap(button->iconSize, mode, state);
-                int labelWidth = pixmap.width();
-                int labelHeight = pixmap.height();
+
+                int pixmapWidth = pixmap.width() / pixmap.devicePixelRatio();
+                int pixmapHeight = pixmap.height() / pixmap.devicePixelRatio();
+                int labelWidth = pixmapWidth;
+                int labelHeight = pixmapHeight;
                 int iconSpacing = 4;//### 4 is currently hardcoded in QPushButton::sizeHint()
                 int textWidth = button->fontMetrics.boundingRect(opt->rect, tf, button->text).width();
                 if (!button->text.isEmpty())
@@ -1245,7 +1250,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
 
                 iconRect = QRect(textRect.x() + (textRect.width() - labelWidth) / 2,
                                  textRect.y() + (textRect.height() - labelHeight) / 2,
-                                 pixmap.width(), pixmap.height());
+                                 pixmapWidth, pixmapHeight);
 
                 iconRect = visualRect(button->direction, textRect, iconRect);
 
@@ -1517,9 +1522,9 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             if (!header->icon.isNull()) {
                 QPixmap pixmap
                     = header->icon.pixmap(proxy()->pixelMetric(PM_SmallIconSize), (header->state & State_Enabled) ? QIcon::Normal : QIcon::Disabled);
-                int pixw = pixmap.width();
+                int pixw = pixmap.width() / pixmap.devicePixelRatio();
 
-                QRect aligned = alignedRect(header->direction, QFlag(header->iconAlignment), pixmap.size(), rect);
+                QRect aligned = alignedRect(header->direction, QFlag(header->iconAlignment), pixmap.size() / pixmap.devicePixelRatio(), rect);
                 QRect inter = aligned.intersected(rect);
                 p->drawPixmap(inter.x(), inter.y(), pixmap, inter.x() - aligned.x(), inter.y() - aligned.y(), inter.width(), inter.height());
 
@@ -1574,7 +1579,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                         mode = QIcon::Normal;
                     pm = toolbutton->icon.pixmap(toolbutton->rect.size().boundedTo(toolbutton->iconSize),
                                                  mode, state);
-                    pmSize = pm.size();
+                    pmSize = pm.size() / pm.devicePixelRatio();
                 }
 
                 if (toolbutton->toolButtonStyle != Qt::ToolButtonIconOnly) {
@@ -1800,8 +1805,8 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 tr = cr;
                 tr.adjust(4, 0, -8, 0);
             } else {
-                int iw = pm.width() + 4;
-                ih = pm.height();
+                int iw = pm.width() / pm.devicePixelRatio() + 4;
+                ih = pm.height()/ pm.devicePixelRatio();
                 ir = QRect(cr.left() + 4, cr.top(), iw + 2, ih);
                 tr = QRect(ir.right(), cr.top(), cr.width() - ir.right() - 4, cr.height());
             }

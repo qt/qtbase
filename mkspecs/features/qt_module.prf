@@ -35,6 +35,8 @@ host_build {
             QT -= core core-private xml
             QT += bootstrap-private
         }
+    } else {
+        !build_pass:contains(QT_CONFIG, build_all): CONFIG += release
     }
 }
 

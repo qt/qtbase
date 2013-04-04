@@ -2,7 +2,7 @@ CONFIG += testcase
 TARGET = tst_qsqlthread
 SOURCES  += tst_qsqlthread.cpp
 
-QT = core sql testlib
+QT = core sql testlib core-private sql-private
 
 
 wince*: {
@@ -14,4 +14,3 @@ wince*: {
    win32:LIBS += -lws2_32
 }
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

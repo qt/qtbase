@@ -5,7 +5,7 @@
 /*    Load the basic TrueType tables, i.e., tables that can be either in   */
 /*    TTF or OTF fonts (body).                                             */
 /*                                                                         */
-/*  Copyright 1996-2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 by       */
+/*  Copyright 1996-2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 by */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -91,9 +91,9 @@
 
 #ifdef FT_DEBUG_LEVEL_TRACE
     if ( zero_length )
-      FT_TRACE4(( "ignoring empty table!\n" ));
+      FT_TRACE4(( "ignoring empty table\n" ));
     else
-      FT_TRACE4(( "could not find table!\n" ));
+      FT_TRACE4(( "could not find table\n" ));
 #endif
 
     return NULL;
@@ -168,10 +168,10 @@
   check_table_dir( SFNT_Header  sfnt,
                    FT_Stream    stream )
   {
-    FT_Error  error;
-    FT_UInt   nn, valid_entries = 0;
-    FT_UInt   has_head = 0, has_sing = 0, has_meta = 0;
-    FT_ULong  offset = sfnt->offset + 12;
+    FT_Error   error;
+    FT_UShort  nn, valid_entries = 0;
+    FT_UInt    has_head = 0, has_sing = 0, has_meta = 0;
+    FT_ULong   offset = sfnt->offset + 12;
 
     static const FT_Frame_Field  table_dir_entry_fields[] =
     {
@@ -364,7 +364,8 @@
     error = check_table_dir( &sfnt, stream );
     if ( error )
     {
-      FT_TRACE2(( "tt_face_load_font_dir: invalid table directory for TrueType!\n" ));
+      FT_TRACE2(( "tt_face_load_font_dir:"
+                  " invalid table directory for TrueType\n" ));
 
       goto Exit;
     }
@@ -685,8 +686,10 @@
       /* we add 4 phantom points later */
       if ( maxProfile->maxTwilightPoints > ( 0xFFFFU - 4 ) )
       {
-        FT_ERROR(( "Too much twilight points in `maxp' table;\n" ));
-        FT_ERROR(( "  some glyphs might be rendered incorrectly.\n" ));
+        FT_TRACE0(( "tt_face_load_maxp:"
+                    " too much twilight points in `maxp' table;\n"
+                    "                  "
+                    " some glyphs might be rendered incorrectly\n" ));
 
         maxProfile->maxTwilightPoints = 0xFFFFU - 4;
       }
@@ -779,7 +782,7 @@
 
     if ( storage_start > storage_limit )
     {
-      FT_ERROR(( "invalid `name' table\n" ));
+      FT_ERROR(( "tt_face_load_name: invalid `name' table\n" ));
       error = SFNT_Err_Name_Table_Missing;
       goto Exit;
     }

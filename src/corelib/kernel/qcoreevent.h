@@ -167,9 +167,9 @@ public:
 
         ToolBarChange = 120,                    // toolbar visibility toggled
 
-        ApplicationActivate = 121,              // application has been changed to active
+        ApplicationActivate = 121,              // deprecated. Use ApplicationStateChange instead.
         ApplicationActivated = ApplicationActivate, // deprecated
-        ApplicationDeactivate = 122,            // application has been changed to inactive
+        ApplicationDeactivate = 122,            // deprecated. Use ApplicationStateChange instead.
         ApplicationDeactivated = ApplicationDeactivate, // deprecated
 
         QueryWhatsThis = 123,                   // query what's this widget help
@@ -276,6 +276,7 @@ public:
         PlatformPanel = 212,
 
         StyleAnimationUpdate = 213,             // style animation target should be updated
+        ApplicationStateChange = 214,
 
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event

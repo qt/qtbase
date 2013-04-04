@@ -127,10 +127,10 @@ II. Support for flat-directory compilation
 
   2. Compile sources
 
-      cc -c -Ifreetype2/include ftsystem.c
-      cc -c -Ifreetype2/include ftinit.c
-      cc -c -Ifreetype2/include ftdebug.c
-      cc -c -Ifreetype2/include ftbase.c
+      cc -c -Ifreetype2/include -DFT2_BUILD_LIBRARY ftsystem.c
+      cc -c -Ifreetype2/include -DFT2_BUILD_LIBRARY ftinit.c
+      cc -c -Ifreetype2/include -DFT2_BUILD_LIBRARY ftdebug.c
+      cc -c -Ifreetype2/include -DFT2_BUILD_LIBRARY ftbase.c
       etc.
 
     You don't  need to define  the FT_FLAT_COMPILATION macro  (as this
@@ -138,7 +138,7 @@ II. Support for flat-directory compilation
 
 ----------------------------------------------------------------------
 
-Copyright 2003, 2005, 2006, 2009 by
+Copyright 2003, 2005, 2006, 2009, 2010 by
 David Turner, Robert Wilhelm, and Werner Lemberg.
 
 This  file is  part of  the FreeType  project, and  may only  be used,

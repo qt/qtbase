@@ -230,6 +230,10 @@ HRESULT STDMETHODCALLTYPE AccessibleRelation::get_targets(
  **************************************************************/
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::QueryInterface(REFIID id, LPVOID *iface)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
+    if (!accessible)
+        return E_NOINTERFACE;
+
     HRESULT hr = QWindowsMsaaAccessible::QueryInterface(id, iface);
     if (!SUCCEEDED(hr)) {
         if (id == IID_IServiceProvider) {
@@ -301,10 +305,11 @@ ULONG STDMETHODCALLTYPE QWindowsIA2Accessible::Release()
  **************************************************************/
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_nRelations(long *nRelations)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (!nRelations)
       return E_INVALIDARG;
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     return getRelationsHelper(0, 0, 0, nRelations);
@@ -312,10 +317,11 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_nRelations(long *nRelations
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_relation(long relationIndex, IAccessibleRelation **relation)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (!relation)
       return E_INVALIDARG;
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     return getRelationsHelper(relation, relationIndex,  1);
@@ -330,8 +336,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_relations(long maxRelations
                                         IAccessibleRelation **relations,
                                         long *nRelations)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     return getRelationsHelper(relations, 0, maxRelations, nRelations);
@@ -340,8 +347,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_relations(long maxRelations
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::role(long *ia2role)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     long r = accessible->role();
@@ -386,8 +394,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_groupPosition(long *groupLe
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_states(AccessibleStates *states)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
     if (!states)
         return E_POINTER;
@@ -462,23 +471,23 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_localizedExtendedStates(lon
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_uniqueID(long *outUniqueID)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
-    // ### FIXME SERIOUSLY, NOT A STABLE SOLUTION IF NODES ARE DELETED ETC
-    // Return 0 if no object and no parent. This is really an error case.
-    uint uid = uniqueID();
-    accessibleDebug("uniqueID: %08x", uid);
 
-    *outUniqueID = (long)uid;
-    return uid ? S_OK : S_FALSE;
+    accessibleDebug("uniqueID: %08x", id);
+
+    *outUniqueID = (long)id;
+    return int(id) < 0 ? S_OK : S_FALSE;
 }
 
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_windowHandle(HWND *windowHandle)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
     return GetWindow(windowHandle);
 }
@@ -486,8 +495,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_windowHandle(HWND *windowHa
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_indexInParent(long *indexInParent)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
     if (!indexInParent)
       return E_INVALIDARG;
@@ -497,7 +507,6 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_indexInParent(long *indexIn
         return S_FALSE;
     }
     int indexOfChild = par->indexOfChild(accessible);
-    delete par;
     Q_ASSERT(indexOfChild >= 0);
     *indexInParent = indexOfChild;
     return S_OK;
@@ -505,8 +514,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_indexInParent(long *indexIn
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_locale(IA2Locale *locale)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
     IA2Locale res;
     QLocale l;
@@ -519,8 +529,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_locale(IA2Locale *locale)
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_attributes(BSTR *attributes)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
     *attributes = 0;//QStringToBSTR(QString());
     return S_FALSE;
@@ -531,8 +542,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_attributes(BSTR *attributes
  **************************************************************/
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::nActions(long *nActions)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
     *nActions = 0;
 
@@ -543,8 +555,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::nActions(long *nActions)
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::doAction(long actionIndex)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
     if (QAccessibleActionInterface *actionIface = actionInterface()) {
         const QStringList actionNames = actionIface->actionNames();
@@ -559,8 +572,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::doAction(long actionIndex)
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_description(long actionIndex, BSTR *description)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
     *description = 0;
     if (QAccessibleActionInterface *actionIface = actionInterface()) {
@@ -575,8 +589,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_description(long actionInde
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_keyBinding(long actionIndex, long nMaxBindings, BSTR **keyBindings, long *nBindings)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
     Q_UNUSED(nMaxBindings);
     BSTR *arrayOfBindingsToReturn = 0;
@@ -603,8 +618,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_keyBinding(long actionIndex
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_name(long actionIndex, BSTR *name)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
     *name = 0;
     if (QAccessibleActionInterface *actionIface = actionInterface()) {
@@ -619,8 +635,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_name(long actionIndex, BSTR
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_localizedName(long actionIndex, BSTR *localizedName)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
     *localizedName = 0;
     if (QAccessibleActionInterface *actionIface = actionInterface()) {
@@ -639,8 +656,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_localizedName(long actionIn
  **************************************************************/
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_locationInParent(long *x, long *y)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     QPoint topLeft = accessible->rect().topLeft();
@@ -656,8 +674,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_locationInParent(long *x, l
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_foreground(IA2Color *foreground)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     // IA2Color is a typedef for long
@@ -667,8 +686,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_foreground(IA2Color *foregr
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_background(IA2Color *background)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     // IA2Color is a typedef for long
@@ -687,6 +707,8 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_background(IA2Color *backgr
 */
 QString QWindowsIA2Accessible::textForRange(int startOffset, int endOffset) const
 {
+    QAccessibleInterface *accessible = accessibleInterface();
+
     if (QAccessibleTextInterface *textIface = accessible->textInterface()) {
         if (endOffset == IA2_TEXT_OFFSET_LENGTH)
             endOffset = textIface->characterCount();
@@ -704,6 +726,7 @@ QString QWindowsIA2Accessible::textForRange(int startOffset, int endOffset) cons
 */
 void QWindowsIA2Accessible::replaceTextFallback(long startOffset, long endOffset, const QString &txt)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     QString t = textForRange(0, -1);
     if (endOffset == IA2_TEXT_OFFSET_LENGTH)
         endOffset = t.length();
@@ -717,6 +740,7 @@ void QWindowsIA2Accessible::replaceTextFallback(long startOffset, long endOffset
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::copyText(long startOffset, long endOffset)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
 #ifndef QT_NO_CLIPBOARD
     const QString t = textForRange(startOffset, endOffset);
@@ -729,6 +753,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::copyText(long startOffset, long
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::deleteText(long startOffset, long endOffset)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleEditableTextInterface *editableTextIface = accessible->editableTextInterface())
         editableTextIface->deleteText(startOffset, endOffset);
@@ -739,6 +764,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::deleteText(long startOffset, lo
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::insertText(long offset, BSTR *text)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     const QString txt(BSTRToQString(*text));
     if (QAccessibleEditableTextInterface *editableTextIface = accessible->editableTextInterface())
@@ -750,6 +776,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::insertText(long offset, BSTR *t
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::cutText(long startOffset, long endOffset)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
 #ifndef QT_NO_CLIPBOARD
     const QString t = textForRange(startOffset, endOffset);
@@ -766,6 +793,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::cutText(long startOffset, long 
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::pasteText(long offset)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
 #ifndef QT_NO_CLIPBOARD
     const QString txt = QGuiApplication::clipboard()->text();
@@ -781,6 +809,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::pasteText(long offset)
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::replaceText(long startOffset, long endOffset, BSTR *text)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     const QString txt(BSTRToQString(*text));
     if (QAccessibleEditableTextInterface *editableTextIface = accessible->editableTextInterface())
@@ -801,8 +830,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::setAttributes(long /*startOffse
  **************************************************************/
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_cellAt( long row, long column, IUnknown **cell)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     *cell = 0;
@@ -817,8 +847,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_cellAt( long row, long colu
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_caption( IUnknown **captionInterface)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     *captionInterface = 0;
@@ -831,8 +862,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_caption( IUnknown **caption
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_columnDescription( long column, BSTR *description)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     *description = 0;
@@ -846,8 +878,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_columnDescription( long col
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_nColumns( long *columnCount)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     if (QAccessibleTableInterface *tableIface = tableInterface()) {
@@ -859,8 +892,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_nColumns( long *columnCount
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_nRows(long *rowCount)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     if (QAccessibleTableInterface *tableIface = tableInterface()) {
@@ -872,8 +906,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_nRows(long *rowCount)
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_nSelectedCells(long *cellCount)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     if (QAccessibleTableInterface *tableIface = tableInterface()) {
@@ -885,8 +920,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_nSelectedCells(long *cellCo
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_nSelectedColumns(long *columnCount)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     if (QAccessibleTableInterface *tableIface = tableInterface()) {
@@ -898,8 +934,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_nSelectedColumns(long *colu
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_nSelectedRows(long *rowCount)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     if (QAccessibleTableInterface *tableIface = tableInterface()) {
@@ -911,8 +948,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_nSelectedRows(long *rowCoun
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_rowDescription(long row, BSTR *description)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     *description = 0;
@@ -926,10 +964,11 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_rowDescription(long row, BS
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_selectedCells(IUnknown ***cells, long *nSelectedCells)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     Q_UNUSED(cells);
     Q_UNUSED(nSelectedCells);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     QList<QAccessibleInterface*> selectedCells = tableInterface()->selectedCells();
@@ -938,8 +977,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_selectedCells(IUnknown ***c
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_selectedColumns(long **selectedColumns, long *nColumns)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     if (QAccessibleTableInterface *tableIface = tableInterface()) {
@@ -958,8 +998,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_selectedColumns(long **sele
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_selectedRows(long **selectedRows, long *nRows)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     if (QAccessibleTableInterface *tableIface = tableInterface()) {
@@ -978,8 +1019,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_selectedRows(long **selecte
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_summary(IUnknown **summaryInterface)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     *summaryInterface = 0;
@@ -992,8 +1034,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_summary(IUnknown **summaryI
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_isColumnSelected(long column, boolean *isSelected)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     if (QAccessibleTableInterface *tableIface = tableInterface()) {
@@ -1005,8 +1048,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_isColumnSelected(long colum
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_isRowSelected(long row, boolean *isSelected)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     if (QAccessibleTableInterface *tableIface = tableInterface()) {
@@ -1018,8 +1062,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_isRowSelected(long row, boo
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::selectRow(long row)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     if (QAccessibleTableInterface *tableIface = tableInterface()) {
@@ -1031,8 +1076,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::selectRow(long row)
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::selectColumn(long column)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     if (QAccessibleTableInterface *tableIface = tableInterface()) {
@@ -1044,8 +1090,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::selectColumn(long column)
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::unselectRow(long row)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     if (QAccessibleTableInterface *tableIface = tableInterface()) {
@@ -1057,8 +1104,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::unselectRow(long row)
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::unselectColumn(long column)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     if (QAccessibleTableInterface *tableIface = tableInterface()) {
@@ -1070,8 +1118,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::unselectColumn(long column)
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_modelChange( IA2TableModelChange * /*modelChange*/)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
     return E_NOTIMPL;
 }
@@ -1081,8 +1130,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_modelChange( IA2TableModelC
 \**************************************************************/
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_columnExtent(long *nColumnsSpanned)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     *nColumnsSpanned = tableCellInterface()->columnExtent();
@@ -1092,8 +1142,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_columnExtent(long *nColumns
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_columnHeaderCells(IUnknown ***cellAccessibles,
                                                                     long *nColumnHeaderCells)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
     const QList<QAccessibleInterface*> headerCells = tableCellInterface()->columnHeaderCells();
     return wrapListOfCells(headerCells, cellAccessibles, nColumnHeaderCells);
@@ -1101,8 +1152,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_columnHeaderCells(IUnknown 
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_columnIndex(long *columnIndex)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
     *columnIndex = tableCellInterface()->columnIndex();
     return S_OK;
@@ -1110,8 +1162,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_columnIndex(long *columnInd
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_rowExtent(long *nRowsSpanned)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
     *nRowsSpanned = tableCellInterface()->rowExtent();
     return S_OK;
@@ -1120,8 +1173,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_rowExtent(long *nRowsSpanne
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_rowHeaderCells(IUnknown ***cellAccessibles,
                                                                  long *nRowHeaderCells)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
     const QList<QAccessibleInterface*> headerCells = tableCellInterface()->rowHeaderCells();
     return wrapListOfCells(headerCells, cellAccessibles, nRowHeaderCells);
@@ -1129,8 +1183,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_rowHeaderCells(IUnknown ***
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_rowIndex(long *rowIndex)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
     *rowIndex = tableCellInterface()->rowIndex();
     return S_OK;
@@ -1138,8 +1193,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_rowIndex(long *rowIndex)
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_isSelected( boolean *isSelected)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
     *isSelected = tableCellInterface()->isSelected();
     return S_OK;
@@ -1149,8 +1205,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_rowColumnExtents(long *row,
                                                long *rowExtents, long *columnExtents,
                                                boolean *isSelected)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     tableCellInterface()->rowColumnExtents((int*)row, (int*)column, (int*)rowExtents, (int*)columnExtents, (bool*)isSelected);
@@ -1159,8 +1216,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_rowColumnExtents(long *row,
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_table(IUnknown **table)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
 
     QAccessibleInterface *tableIface = tableCellInterface()->table();
@@ -1175,6 +1233,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_table(IUnknown **table)
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::addSelection(long startOffset,
                                                            long endOffset)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *text = textInterface()) {
         text->addSelection(startOffset, endOffset);
@@ -1188,6 +1247,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_attributes(long offset,
                                                              long *endOffset,
                                                              BSTR *textAttributes)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *text = textInterface()) {
         const QString attrs = text->attributes(offset, (int*)startOffset, (int*)endOffset);
@@ -1199,6 +1259,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_attributes(long offset,
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_caretOffset(long *offset)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *text = textInterface()) {
         *offset = text->cursorPosition();
@@ -1215,6 +1276,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_characterExtents(long offse
                                                                    long *width,
                                                                    long *height)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *text = textInterface()) {
         QRect rect = text->characterRect(offset);
@@ -1228,6 +1290,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_characterExtents(long offse
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_nSelections(long *nSelections)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *text = textInterface()) {
         *nSelections = text->selectionCount();
@@ -1241,6 +1304,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_offsetAtPoint(long x,
                                                                 enum IA2CoordinateType coordType,
                                                                 long *offset)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *text = textInterface()) {
         QPoint screenPos = mapToScreenPos(coordType, x, y);
@@ -1255,6 +1319,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_selection(long selectionInd
                                                             long *startOffset,
                                                             long *endOffset)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *text = textInterface()) {
         text->selection(selectionIndex, (int*)startOffset, (int*)endOffset);
@@ -1267,6 +1332,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_text(long startOffset,
                                                        long endOffset,
                                                        BSTR *text)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *textif = textInterface()) {
         const QString t = textif->text(startOffset, endOffset);
@@ -1285,6 +1351,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_textBeforeOffset(long offse
                                                long *endOffset,
                                                BSTR *text)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *textIface = textInterface()) {
         const QString txt = textIface->textBeforeOffset(offset, (QAccessible2::BoundaryType)boundaryType, (int*)startOffset, (int*)endOffset);
@@ -1304,6 +1371,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_textAfterOffset(
     long *endOffset,
     BSTR *text)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *textIface = textInterface()) {
         const QString txt = textIface->textAfterOffset(offset, (QAccessible2::BoundaryType)boundaryType, (int*)startOffset, (int*)endOffset);
@@ -1322,6 +1390,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_textAtOffset(long offset,
                                                                long *endOffset,
                                                                BSTR *text)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *textIface = textInterface()) {
         const QString txt = textIface->textAtOffset(offset, (QAccessible2::BoundaryType)boundaryType, (int*)startOffset, (int*)endOffset);
@@ -1336,6 +1405,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_textAtOffset(long offset,
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::removeSelection(long selectionIndex)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *textIface = textInterface()) {
         textIface->removeSelection(selectionIndex);
@@ -1346,6 +1416,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::removeSelection(long selectionI
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::setCaretOffset(long offset)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *textIface = textInterface()) {
         textIface->setCursorPosition(offset);
@@ -1358,6 +1429,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::setSelection(long selectionInde
                                                            long startOffset,
                                                            long endOffset)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *textIface = textInterface()) {
         textIface->setSelection(selectionIndex, startOffset, endOffset);
@@ -1368,6 +1440,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::setSelection(long selectionInde
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_nCharacters(long *nCharacters)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *textIface = textInterface()) {
         *nCharacters = textIface->characterCount();
@@ -1380,6 +1453,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::scrollSubstringTo(long startInd
                                                                 long endIndex,
                                                                 enum IA2ScrollType scrollType)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *textIface = textInterface()) {
         Q_UNUSED(scrollType);   //###
@@ -1421,8 +1495,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_oldText(IA2TextSegment *old
  **************************************************************/
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_currentValue(VARIANT *currentValue)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
     if (QAccessibleValueInterface *valueIface = valueInterface()) {
         const QVariant var = valueIface->currentValue();
@@ -1436,8 +1511,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_currentValue(VARIANT *curre
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::setCurrentValue(VARIANT value)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
     HRESULT hr = S_FALSE;
     if (QAccessibleValueInterface *valueIface = valueInterface()) {
@@ -1452,8 +1528,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::setCurrentValue(VARIANT value)
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_maximumValue(VARIANT *maximumValue)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
     if (QAccessibleValueInterface *valueIface = valueInterface()) {
         const QVariant var = valueIface->maximumValue();
@@ -1466,8 +1543,9 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_maximumValue(VARIANT *maxim
 
 HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_minimumValue(VARIANT *minimumValue)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible->isValid())
+    if (!accessible)
         return E_FAIL;
     if (QAccessibleValueInterface *valueIface = valueInterface()) {
         const QVariant var = valueIface->minimumValue();
@@ -1539,6 +1617,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::QueryService(REFGUID guidServic
 */
 HRESULT QWindowsIA2Accessible::getRelationsHelper(IAccessibleRelation **relations, int startIndex, long maxRelations, long *nRelations /* = 0*/)
 {
+    QAccessibleInterface *accessible = accessibleInterface();
     if (nRelations)
         *nRelations = 0;
     typedef QPair<QAccessibleInterface *, QAccessible::Relation> RelationEntry;
@@ -1587,37 +1666,6 @@ HRESULT QWindowsIA2Accessible::wrapListOfCells(const QList<QAccessibleInterface*
     *nCellCount = count;
     return count > 0 ? S_OK : S_FALSE;
 }
-
-uint QWindowsIA2Accessible::uniqueID() const
-{
-    uint uid = 0;
-    if (QObject *obj = accessible->object())
-        uid = qHash(obj);
-
-    if (!uid) {
-        QAccessibleInterface *acc = accessible;
-        QVector<int> indexOfNodes;
-        while (acc && acc->isValid() && !acc->object()) {
-            QAccessibleInterface *par = acc->parent();
-            indexOfNodes.append(par->indexOfChild(acc));
-            if (acc != accessible)
-                delete acc;
-            acc = par;
-        }
-        if (acc) {
-            if (acc->object()) {
-                uid = qHash(acc->object());
-                for (int i = 0; i < indexOfNodes.count(); ++i)
-                    uid = qHash(uid + indexOfNodes.at(i));
-
-            }
-            if (acc != accessible)
-                delete acc;
-        }
-    }
-    return uid;
-}
-
 
 #define IF_EQUAL_RETURN_IIDSTRING(id, iid) if (id == iid) return QByteArray(#iid)
 

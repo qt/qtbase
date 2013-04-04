@@ -2,9 +2,9 @@
 /*                                                                         */
 /*  ftdebug.c                                                              */
 /*                                                                         */
-/*    Debugging and logging component for Win32 (body).                    */
+/*    Debugging and logging component for WinCE (body).                    */
 /*                                                                         */
-/*  Copyright 1996-2001, 2002, 2005, 2008 by                               */
+/*  Copyright 1996-2001, 2002, 2005, 2008, 2009 by                         */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -55,8 +55,6 @@
 #include <windows.h>
 
 
-#ifdef _WIN32_WCE
-
   void
   OutputDebugStringEx( const char*  str )
   {
@@ -70,12 +68,6 @@
 
     OutputDebugStringW( buf );
   }
-
-#else
-
-#define OutputDebugStringEx  OutputDebugStringA
-
-#endif
 
 
   FT_BASE_DEF( void )
@@ -149,19 +141,15 @@
   FT_BASE_DEF( void )
   ft_debug_init( void )
   {
-#ifdef _WIN32_WCE
-
     /* Windows Mobile doesn't have environment API:           */
     /* GetEnvironmentStrings, GetEnvironmentVariable, getenv. */
     /*                                                        */
     /* FIXME!!! How to set debug mode?                        */
+
+    /* const char*  ft2_debug = getenv( "FT2_DEBUG" ); */
+
     const char*  ft2_debug = 0;
 
-#else
-
-    const char*  ft2_debug = getenv( "FT2_DEBUG" );
-
-#endif
 
     if ( ft2_debug )
     {

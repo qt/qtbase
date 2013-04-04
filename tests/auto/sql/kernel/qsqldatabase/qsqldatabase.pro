@@ -2,7 +2,7 @@ CONFIG += testcase
 TARGET = tst_qsqldatabase
 SOURCES  += tst_qsqldatabase.cpp
 
-QT = core sql testlib
+QT = core sql testlib core-private sql-private
 
 win32: {
    !wince*: LIBS += -lws2_32
@@ -17,4 +17,3 @@ wince*: {
 
    DEPLOYMENT += testData
 }
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

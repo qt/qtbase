@@ -29,7 +29,7 @@ CONFIG += plugin no_plugin_name_prefix
 javac.input = JAVASOURCES
 javac.output = $$CLASS_DIR
 javac.CONFIG += combine
-javac.commands = javac -source 6 -target 6 -cp $$shell_quote($$join(JAVACLASSPATH, ":")) -d $$shell_quote($$CLASS_DIR) ${QMAKE_FILE_IN}
+javac.commands = javac -source 6 -target 6 -cp $$shell_quote($$shell_path($$join(JAVACLASSPATH, $$QMAKE_DIRLIST_SEP))) -d $$shell_quote($$CLASS_DIR) ${QMAKE_FILE_IN}
 # Force rebuild every time, because we don't know the paths of the destination files
 # as they depend on the code.
 javac.depends = FORCE
@@ -50,7 +50,11 @@ QMAKE_EXTENSION_SHLIB = jar
 # Override linker with dex (for Android) or jar (for other java builds)
 android {
     QMAKE_LINK_O_FLAG = --output=
-    QMAKE_LINK = $$SDK_ROOT/platform-tools/dx --dex
+    contains(QMAKE_HOST.os, Windows) {
+        QMAKE_LINK = $$PWD/data/android/dx $$SDK_ROOT --dex
+    } else {
+        QMAKE_LINK = $$SDK_ROOT/platform-tools/dx --dex
+    }
 } else {
     QMAKE_LINK_O_FLAG = "cf "
     QMAKE_LINK = jar

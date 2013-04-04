@@ -905,6 +905,16 @@ private:
     Qt::ScreenOrientation m_orientation;
 };
 
+class Q_GUI_EXPORT QApplicationStateChangeEvent : public QEvent
+{
+public:
+    explicit QApplicationStateChangeEvent(Qt::ApplicationState state);
+    Qt::ApplicationState applicationState() const;
+
+private:
+    Qt::ApplicationState m_applicationState;
+};
+
 QT_END_NAMESPACE
 
 #endif // QEVENT_H

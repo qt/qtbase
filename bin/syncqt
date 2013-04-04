@@ -1125,6 +1125,7 @@ if($check_includes) {
                 foreach my $header (@headers) {
                     my $header_skip_qt_begin_namespace_test = 0;
                     $header = 0 if($header =~ /^ui_.*.h/);
+                    $header = 0 if ($header eq lc($lib)."version.h");
                     foreach (@ignore_headers) {
                         $header = 0 if($header eq $_);
                     }

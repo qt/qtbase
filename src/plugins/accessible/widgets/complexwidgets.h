@@ -47,6 +47,7 @@
 #include <QtWidgets/qabstractitemview.h>
 #include <QtGui/private/qaccessible2_p.h>
 
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -101,6 +102,7 @@ class QAccessibleTabBar : public QAccessibleWidget
 {
 public:
     explicit QAccessibleTabBar(QWidget *w);
+    ~QAccessibleTabBar();
 
     int childCount() const;
     QString text(QAccessible::Text t) const;
@@ -113,6 +115,7 @@ public:
 
 protected:
     QTabBar *tabBar() const;
+    mutable QHash<int, QAccessible::Id> m_childInterfaces;
 };
 #endif // QT_NO_TABBAR
 

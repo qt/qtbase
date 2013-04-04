@@ -355,10 +355,10 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* <Description>                                                         */
   /*    Return a glyph's `control box'.  The control box encloses all the  */
-  /*    outline's points, including Bezier control points.  Though it      */
+  /*    outline's points, including Bézier control points.  Though it      */
   /*    coincides with the exact bounding box for most glyphs, it can be   */
   /*    slightly larger in some situations (like when rotating an outline  */
-  /*    which contains Bezier outside arcs).                               */
+  /*    which contains Bézier outside arcs).                               */
   /*                                                                       */
   /*    Computing the control box is very fast, while getting the bounding */
   /*    box can take much more time as it needs to walk over all segments  */
@@ -468,7 +468,7 @@ FT_BEGIN_HEADER
   /*        // convert to a bitmap (default render mode + destroying old)  */
   /*        if ( glyph->format != FT_GLYPH_FORMAT_BITMAP )                 */
   /*        {                                                              */
-  /*          error = FT_Glyph_To_Bitmap( &glyph, FT_RENDER_MODE_DEFAULT,  */
+  /*          error = FT_Glyph_To_Bitmap( &glyph, FT_RENDER_MODE_NORMAL,   */
   /*                                      0, 1 );                          */
   /*          if ( error ) // `glyph' unchanged                            */
   /*            ...                                                        */
