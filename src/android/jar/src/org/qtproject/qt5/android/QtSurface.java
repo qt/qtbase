@@ -103,7 +103,7 @@ public class QtSurface extends SurfaceView implements SurfaceHolder.Callback
         DisplayMetrics metrics = new DisplayMetrics();
         ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(metrics);
         QtNative.setApplicationDisplayMetrics(metrics.widthPixels,
-            metrics.heightPixels, getWidth(), getHeight(), metrics.xdpi, metrics.ydpi);
+                                              metrics.heightPixels, getWidth(), getHeight(), metrics.xdpi, metrics.ydpi, metrics.scaledDensity);
 
         if (m_usesGL)
             holder.setFormat(PixelFormat.RGBA_8888);
@@ -136,7 +136,8 @@ public class QtSurface extends SurfaceView implements SurfaceHolder.Callback
                                               width,
                                               height,
                                               metrics.xdpi,
-                                              metrics.ydpi);
+                                              metrics.ydpi,
+                                              metrics.scaledDensity);
 
         if (!m_started)
             return;

@@ -476,7 +476,7 @@ public class QtActivityDelegate
             m_activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
             QtNative.setApplicationDisplayMetrics(metrics.widthPixels, metrics.heightPixels,
                                                   metrics.widthPixels, metrics.heightPixels,
-                                                  metrics.xdpi, metrics.ydpi);
+                                                  metrics.xdpi, metrics.ydpi, metrics.scaledDensity);
         }
         m_layout = new QtLayout(m_activity);
         m_surface = new QtSurface(m_activity, 0);

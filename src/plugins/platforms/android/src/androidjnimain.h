@@ -81,6 +81,7 @@ namespace QtAndroid
     QWindow *topLevelWindowAt(const QPoint &globalPos);
     int desktopWidthPixels();
     int desktopHeightPixels();
+    double scaledDensity();
     JavaVM *javaVM();
     jclass findClass(const QString &className, JNIEnv *env);
     AAssetManager *assetManager();
