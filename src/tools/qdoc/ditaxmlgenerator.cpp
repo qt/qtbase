@@ -502,7 +502,7 @@ DitaXmlGenerator::~DitaXmlGenerator()
 void DitaXmlGenerator::initializeGenerator(const Config &config)
 {
     Generator::initializeGenerator(config);
-    obsoleteLinks = config.getBool(QLatin1String(CONFIG_OBSOLETELINKS));
+    obsoleteLinks = config.getBool(CONFIG_OBSOLETELINKS);
     setImageFileExtensions(QStringList() << "png" << "jpg" << "jpeg" << "gif");
 
     style = config.getString(DitaXmlGenerator::format() +

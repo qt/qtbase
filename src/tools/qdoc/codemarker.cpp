@@ -94,7 +94,7 @@ void CodeMarker::terminateMarker()
  */
 void CodeMarker::initialize(const Config& config)
 {
-    defaultLang = config.getString(QLatin1String(CONFIG_LANGUAGE));
+    defaultLang = config.getString(CONFIG_LANGUAGE);
     QList<CodeMarker *>::ConstIterator m = markers.constBegin();
     while (m != markers.constEnd()) {
         (*m)->initializeMarker(config);

@@ -136,7 +136,7 @@ void HtmlGenerator::initializeGenerator(const Config &config)
     };
 
     Generator::initializeGenerator(config);
-    obsoleteLinks = config.getBool(QLatin1String(CONFIG_OBSOLETELINKS));
+    obsoleteLinks = config.getBool(CONFIG_OBSOLETELINKS);
     setImageFileExtensions(QStringList() << "png" << "jpg" << "jpeg" << "gif");
     int i = 0;
     while (defaults[i].key) {

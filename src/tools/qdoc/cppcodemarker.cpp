@@ -802,31 +802,6 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
     return sections;
 }
 
-static const char * const typeTable[] = {
-    "bool", "char", "double", "float", "int", "long", "short",
-    "signed", "unsigned", "uint", "ulong", "ushort", "uchar", "void",
-    "qlonglong", "qulonglong",
-    "qint", "qint8", "qint16", "qint32", "qint64",
-    "quint", "quint8", "quint16", "quint32", "quint64",
-    "qreal", "cond", 0
-};
-
-static const char * const keywordTable[] = {
-    "and", "and_eq", "asm", "auto", "bitand", "bitor", "break",
-    "case", "catch", "class", "compl", "const", "const_cast",
-    "continue", "default", "delete", "do", "dynamic_cast", "else",
-    "enum", "explicit", "export", "extern", "false", "for", "friend",
-    "goto", "if", "include", "inline", "monitor", "mutable", "namespace",
-    "new", "not", "not_eq", "operator", "or", "or_eq", "private", "protected",
-    "public", "register", "reinterpret_cast", "return", "sizeof",
-    "static", "static_cast", "struct", "switch", "template", "this",
-    "throw", "true", "try", "typedef", "typeid", "typename", "union",
-    "using", "virtual", "volatile", "wchar_t", "while", "xor",
-    "xor_eq", "synchronized",
-    // Qt specific
-    "signals", "slots", "emit", 0
-};
-
 /*
     @char
     @class
@@ -844,25 +819,51 @@ QString CppCodeMarker::addMarkUp(const QString &in,
                                  const Node * /* relative */,
                                  const Location & /* location */)
 {
+    static QSet<QString> types;
+    static QSet<QString> keywords;
+
+    if (types.isEmpty()) {
+        // initialize statics
+        Q_ASSERT(keywords.isEmpty());
+        static const QString typeTable[] = {
+            QLatin1String("bool"), QLatin1String("char"), QLatin1String("double"), QLatin1String("float"), QLatin1String("int"), QLatin1String("long"), QLatin1String("short"),
+            QLatin1String("signed"), QLatin1String("unsigned"), QLatin1String("uint"), QLatin1String("ulong"), QLatin1String("ushort"), QLatin1String("uchar"), QLatin1String("void"),
+            QLatin1String("qlonglong"), QLatin1String("qulonglong"),
+            QLatin1String("qint"), QLatin1String("qint8"), QLatin1String("qint16"), QLatin1String("qint32"), QLatin1String("qint64"),
+            QLatin1String("quint"), QLatin1String("quint8"), QLatin1String("quint16"), QLatin1String("quint32"), QLatin1String("quint64"),
+            QLatin1String("qreal"), QLatin1String("cond")
+        };
+
+        static const QString keywordTable[] = {
+            QLatin1String("and"), QLatin1String("and_eq"), QLatin1String("asm"), QLatin1String("auto"), QLatin1String("bitand"), QLatin1String("bitor"), QLatin1String("break"),
+            QLatin1String("case"), QLatin1String("catch"), QLatin1String("class"), QLatin1String("compl"), QLatin1String("const"), QLatin1String("const_cast"),
+            QLatin1String("continue"), QLatin1String("default"), QLatin1String("delete"), QLatin1String("do"), QLatin1String("dynamic_cast"), QLatin1String("else"),
+            QLatin1String("enum"), QLatin1String("explicit"), QLatin1String("export"), QLatin1String("extern"), QLatin1String("false"), QLatin1String("for"), QLatin1String("friend"),
+            QLatin1String("goto"), QLatin1String("if"), QLatin1String("include"), QLatin1String("inline"), QLatin1String("monitor"), QLatin1String("mutable"), QLatin1String("namespace"),
+            QLatin1String("new"), QLatin1String("not"), QLatin1String("not_eq"), QLatin1String("operator"), QLatin1String("or"), QLatin1String("or_eq"), QLatin1String("private"), QLatin1String("protected"),
+            QLatin1String("public"), QLatin1String("register"), QLatin1String("reinterpret_cast"), QLatin1String("return"), QLatin1String("sizeof"),
+            QLatin1String("static"), QLatin1String("static_cast"), QLatin1String("struct"), QLatin1String("switch"), QLatin1String("template"), QLatin1String("this"),
+            QLatin1String("throw"), QLatin1String("true"), QLatin1String("try"), QLatin1String("typedef"), QLatin1String("typeid"), QLatin1String("typename"), QLatin1String("union"),
+            QLatin1String("using"), QLatin1String("virtual"), QLatin1String("volatile"), QLatin1String("wchar_t"), QLatin1String("while"), QLatin1String("xor"),
+            QLatin1String("xor_eq"), QLatin1String("synchronized"),
+            // Qt specific
+            QLatin1String("signals"), QLatin1String("slots"), QLatin1String("emit")
+        };
+
+        types.reserve(sizeof(typeTable) / sizeof(QString));
+        for (int j = sizeof(typeTable) / sizeof(QString) - 1; j; --j)
+            types.insert(typeTable[j]);
+
+        keywords.reserve(sizeof(keywordTable) / sizeof(QString));
+        for (int j = sizeof(keywordTable) / sizeof(QString) - 1; j; --j)
+            keywords.insert(keywordTable[j]);
+    }
 #define readChar() \
     ch = (i < (int)code.length()) ? code[i++].cell() : EOF
 
     QString code = in;
-
-    QMap<QString, int> types;
-    QMap<QString, int> keywords;
-    int j = 0;
-    while (typeTable[j] != 0) {
-        types.insert(QString(typeTable[j]), 0);
-        j++;
-    }
-    j = 0;
-    while (keywordTable[j] != 0) {
-        keywords.insert(QString(keywordTable[j]), 0);
-        j++;
-    }
-
-    QString out;
+    QStringList out;
+    QString text;
     int braceDepth = 0;
     int parenDepth = 0;
     int i = 0;
@@ -871,6 +872,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
     QChar ch;
     QRegExp classRegExp("Qt?(?:[A-Z3]+[a-z][A-Za-z]*|t)");
     QRegExp functionRegExp("q([A-Z][a-z]+)+");
+    QRegExp findFunctionRegExp(QStringLiteral("^\\s*\\("));
 
     readChar();
 
@@ -887,18 +889,18 @@ QString CppCodeMarker::addMarkUp(const QString &in,
             } while (ch.isLetterOrNumber() || ch == '_');
 
             if (classRegExp.exactMatch(ident)) {
-                tag = QLatin1String("type");
+                tag = QStringLiteral("type");
             } else if (functionRegExp.exactMatch(ident)) {
-                tag = QLatin1String("func");
+                tag = QStringLiteral("func");
                 target = true;
             } else if (types.contains(ident)) {
-                tag = QLatin1String("type");
+                tag = QStringLiteral("type");
             } else if (keywords.contains(ident)) {
-                tag = QLatin1String("keyword");
+                tag = QStringLiteral("keyword");
             } else if (braceDepth == 0 && parenDepth == 0) {
                 if (QString(code.unicode() + i - 1, code.length() - (i - 1))
-                        .indexOf(QRegExp(QLatin1String("^\\s*\\("))) == 0)
-                    tag = QLatin1String("func");
+                        .indexOf(findFunctionRegExp) == 0)
+                    tag = QStringLiteral("func");
                 target = true;
             }
         } else if (ch.isDigit()) {
@@ -906,7 +908,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
                 finish = i;
                 readChar();
             } while (ch.isLetterOrNumber() || ch == '.');
-            tag = QLatin1String("number");
+            tag = QStringLiteral("number");
         } else {
             switch (ch.unicode()) {
             case '+':
@@ -928,7 +930,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
             case '~':
                 finish = i;
                 readChar();
-                tag = QLatin1String("op");
+                tag = QStringLiteral("op");
                 break;
             case '"':
                 finish = i;
@@ -941,7 +943,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
                 }
                 finish = i;
                 readChar();
-                tag = QLatin1String("string");
+                tag = QStringLiteral("string");
                 break;
             case '#':
                 finish = i;
@@ -952,7 +954,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
                     finish = i;
                     readChar();
                 }
-                tag = QLatin1String("preprocessor");
+                tag = QStringLiteral("preprocessor");
                 break;
             case '\'':
                 finish = i;
@@ -965,7 +967,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
                 }
                 finish = i;
                 readChar();
-                tag = QLatin1String("char");
+                tag = QStringLiteral("char");
                 break;
             case '(':
                 finish = i;
@@ -983,7 +985,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
                 if (ch == ':') {
                     finish = i;
                     readChar();
-                    tag = QLatin1String("op");
+                    tag = QStringLiteral("op");
                 }
                 break;
             case '/':
@@ -994,7 +996,7 @@ QString CppCodeMarker::addMarkUp(const QString &in,
                         finish = i;
                         readChar();
                     } while (ch != EOF && ch != '\n');
-                    tag = QLatin1String("comment");
+                    tag = QStringLiteral("comment");
                 } else if (ch == '*') {
                     bool metAster = false;
                     bool metAsterSlash = false;
@@ -1015,9 +1017,9 @@ QString CppCodeMarker::addMarkUp(const QString &in,
                         finish = i;
                         readChar();
                     }
-                    tag = QLatin1String("comment");
+                    tag = QStringLiteral("comment");
                 } else {
-                    tag = QLatin1String("op");
+                    tag = QStringLiteral("op");
                 }
                 break;
             case '{':
@@ -1036,28 +1038,27 @@ QString CppCodeMarker::addMarkUp(const QString &in,
             }
         }
 
-        QString text;
         text = code.mid(start, finish - start);
         start = finish;
 
         if (!tag.isEmpty()) {
-            out += QLatin1String("<@") + tag;
+            out << QStringLiteral("<@") << tag;
             if (target)
-                out += QLatin1String(" target=\"") + text + QLatin1String("()\"");
-            out += QLatin1Char('>');
+                out << QStringLiteral(" target=\"") << text << QStringLiteral("()\"");
+            out << QStringLiteral(">");
         }
 
-        out += protect(text);
+        out << protect(text);
 
         if (!tag.isEmpty())
-            out += QLatin1String("</@") + tag + QLatin1Char('>');
+            out << QStringLiteral("</@") << tag << QStringLiteral(">");
     }
 
     if (start < code.length()) {
-        out += protect(code.mid(start));
+        out << protect(code.mid(start));
     }
 
-    return out;
+    return out.join(QString());
 }
 
 /*!

@@ -102,7 +102,7 @@ CodeParser::~CodeParser()
  */
 void CodeParser::initializeParser(const Config& config)
 {
-    showInternal = config.getBool(QLatin1String(CONFIG_SHOWINTERNAL));
+    showInternal = config.getBool(CONFIG_SHOWINTERNAL);
 }
 
 /*!

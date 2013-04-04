@@ -1643,7 +1643,7 @@ void Generator::initialize(const Config &config)
     }
     else
         outputPrefixes[QLatin1String("QML")] = QLatin1String("qml-");
-    noLinkErrors_ = config.getBool(QLatin1String(CONFIG_NOLINKERRORS));
+    noLinkErrors_ = config.getBool(CONFIG_NOLINKERRORS);
 }
 
 /*!

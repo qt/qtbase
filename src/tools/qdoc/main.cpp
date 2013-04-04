@@ -78,16 +78,16 @@ QT_BEGIN_NAMESPACE
   And those are all the default values for configuration variables.
  */
 static const struct {
-    const char *key;
-    const char *value;
+    const QString key;
+    const QString value;
 } defaults[] = {
-    { CONFIG_CODEINDENT, "4" },
-    { CONFIG_FALSEHOODS, "0" },
-    { CONFIG_FILEEXTENSIONS, "*.cpp *.h *.qdoc *.qml"},
-    { CONFIG_LANGUAGE, "Cpp" },
-    { CONFIG_OUTPUTFORMATS, "HTML" },
-    { CONFIG_TABSIZE, "8" },
-    { 0, 0 }
+    { CONFIG_CODEINDENT, QLatin1String("4") },
+    { CONFIG_FALSEHOODS, QLatin1String("0") },
+    { CONFIG_FILEEXTENSIONS, QLatin1String("*.cpp *.h *.qdoc *.qml") },
+    { CONFIG_LANGUAGE, QLatin1String("Cpp") },
+    { CONFIG_OUTPUTFORMATS, QLatin1String("HTML") },
+    { CONFIG_TABSIZE, QLatin1String("8") },
+    { QString(), QString() }
 };
 
 bool creationTimeBefore(const QFileInfo &fi1, const QFileInfo &fi2)
@@ -269,7 +269,7 @@ static void processQdocconfFile(const QString &fileName)
      */
     Config config(QCoreApplication::translate("QDoc", "qdoc"));
     int i = 0;
-    while (defaults[i].key) {
+    while (!defaults[i].key.isEmpty()) {
         config.setStringList(defaults[i].key, QStringList() << defaults[i].value);
         ++i;
     }
