@@ -296,6 +296,8 @@ struct ConverterFunctor : public AbstractConverterFunction
 
     template<typename T, bool>
     struct ValueTypeIsMetaType;
+    template<typename T, bool>
+    struct AssociativeValueTypeIsMetaType;
 }
 
 class Q_CORE_EXPORT QMetaType {
@@ -531,6 +533,9 @@ private:
     template<typename, typename> friend struct QtPrivate::ConverterMemberFunction;
     template<typename, typename> friend struct QtPrivate::ConverterMemberFunctionOk;
     template<typename, typename, typename> friend struct QtPrivate::ConverterFunctor;
+    template<typename T>
+    friend bool qRegisterAssociativeConverter();
+    template<typename, bool> friend struct QtPrivate::AssociativeValueTypeIsMetaType;
 #endif
 #else
 public:
@@ -876,6 +881,173 @@ struct QSequentialIterableConvertFunctor
 };
 }
 
+namespace QtMetaTypePrivate {
+template<typename T, bool = QtPrivate::is_same<typename T::const_iterator::value_type, typename T::mapped_type>::value>
+struct AssociativeContainerAccessor
+{
+    static const typename T::key_type& getKey(const typename T::const_iterator &it)
+    {
+        return it.key();
+    }
+
+    static const typename T::mapped_type& getValue(const typename T::const_iterator &it)
+    {
+        return it.value();
+    }
+};
+
+template<typename T, bool = QtPrivate::is_same<typename T::const_iterator::value_type, std::pair<const typename T::key_type, typename T::mapped_type> >::value>
+struct StlStyleAssociativeContainerAccessor;
+
+template<typename T>
+struct StlStyleAssociativeContainerAccessor<T, true>
+{
+    static const typename T::key_type& getKey(const typename T::const_iterator &it)
+    {
+        return it->first;
+    }
+
+    static const typename T::mapped_type& getValue(const typename T::const_iterator &it)
+    {
+        return it->second;
+    }
+};
+
+template<typename T>
+struct AssociativeContainerAccessor<T, false> : public StlStyleAssociativeContainerAccessor<T>
+{
+};
+
+class QAssociativeIterableImpl
+{
+public:
+    const void *_iterable;
+    void *_iterator;
+    int _metaType_id_key;
+    uint _metaType_flags_key;
+    int _metaType_id_value;
+    uint _metaType_flags_value;
+    typedef int(*sizeFunc)(const void *p);
+    typedef void (*findFunc)(const void *container, const void *p, void **iterator);
+    typedef void (*beginFunc)(const void *p, void **);
+    typedef void (*advanceFunc)(void **p, int);
+    typedef VariantData (*getFunc)(void * const *p, int metaTypeId, uint flags);
+    typedef void (*destroyIterFunc)(void **p);
+    typedef bool (*equalIterFunc)(void * const *p, void * const *other);
+
+    sizeFunc _size;
+    findFunc _find;
+    beginFunc _begin;
+    beginFunc _end;
+    advanceFunc _advance;
+    getFunc _getKey;
+    getFunc _getValue;
+    destroyIterFunc _destroyIter;
+    equalIterFunc _equalIter;
+
+    template<class T>
+    static int sizeImpl(const void *p)
+    { return std::distance(static_cast<const T*>(p)->begin(),
+                           static_cast<const T*>(p)->end()); }
+
+    template<class T>
+    static void findImpl(const void *container, const void *p, void **iterator)
+    { IteratorOwner<typename T::const_iterator>::assign(iterator,
+                                                        static_cast<const T*>(container)->find(*static_cast<const typename T::key_type*>(p))); }
+
+    template<class T>
+    static void advanceImpl(void **p, int step)
+    { std::advance(*static_cast<typename T::const_iterator*>(*p), step); }
+
+    template<class T>
+    static void beginImpl(const void *container, void **iterator)
+    { IteratorOwner<typename T::const_iterator>::assign(iterator, static_cast<const T*>(container)->begin()); }
+
+    template<class T>
+    static void endImpl(const void *container, void **iterator)
+    { IteratorOwner<typename T::const_iterator>::assign(iterator, static_cast<const T*>(container)->end()); }
+
+    template<class T>
+    static VariantData getKeyImpl(void * const *iterator, int metaTypeId, uint flags)
+    { return VariantData(metaTypeId, &AssociativeContainerAccessor<T>::getKey(*static_cast<typename T::const_iterator*>(*iterator)), flags); }
+
+    template<class T>
+    static VariantData getValueImpl(void * const *iterator, int metaTypeId, uint flags)
+    { return VariantData(metaTypeId, &AssociativeContainerAccessor<T>::getValue(*static_cast<typename T::const_iterator*>(*iterator)), flags); }
+
+    template<class T>
+    static void destroyIterImpl(void **iterator)
+    { IteratorOwner<typename T::const_iterator>::destroy(iterator); }
+
+    template<class T>
+    static bool equalIterImpl(void * const *iterator, void * const *other)
+    { return *static_cast<typename T::const_iterator*>(*iterator) == *static_cast<typename T::const_iterator*>(*other); }
+
+public:
+    template<class T> QAssociativeIterableImpl(const T*p)
+      : _iterable(p)
+      , _metaType_id_key(qMetaTypeId<typename T::key_type>())
+      , _metaType_flags_key(QTypeInfo<typename T::key_type>::isPointer)
+      , _metaType_id_value(qMetaTypeId<typename T::mapped_type>())
+      , _metaType_flags_value(QTypeInfo<typename T::mapped_type>::isPointer)
+      , _size(sizeImpl<T>)
+      , _find(findImpl<T>)
+      , _begin(beginImpl<T>)
+      , _end(endImpl<T>)
+      , _advance(advanceImpl<T>)
+      , _getKey(getKeyImpl<T>)
+      , _getValue(getValueImpl<T>)
+      , _destroyIter(destroyIterImpl<T>)
+      , _equalIter(equalIterImpl<T>)
+    {
+    }
+
+    QAssociativeIterableImpl()
+      : _iterable(0)
+      , _metaType_id_key(QMetaType::UnknownType)
+      , _metaType_flags_key(0)
+      , _metaType_id_value(QMetaType::UnknownType)
+      , _metaType_flags_value(0)
+      , _size(0)
+      , _find(0)
+      , _begin(0)
+      , _end(0)
+      , _advance(0)
+      , _getKey(0)
+      , _getValue(0)
+      , _destroyIter(0)
+      , _equalIter(0)
+    {
+    }
+
+    inline void begin() { _begin(_iterable, &_iterator); }
+    inline void end() { _end(_iterable, &_iterator); }
+    inline bool equal(const QAssociativeIterableImpl&other) const { return _equalIter(&_iterator, &other._iterator); }
+    inline QAssociativeIterableImpl &advance(int i) { _advance(&_iterator, i); return *this; }
+
+    inline void destroyIter() { _destroyIter(&_iterator); }
+
+    inline VariantData getCurrentKey() const { return _getKey(&_iterator, _metaType_id_key, _metaType_flags_value); }
+    inline VariantData getCurrentValue() const { return _getValue(&_iterator, _metaType_id_value, _metaType_flags_value); }
+
+    inline void find(const VariantData &key)
+    { _find(_iterable, key.data, &_iterator); }
+
+    int size() const { Q_ASSERT(_iterable); return _size(_iterable); }
+};
+
+template<typename From>
+struct QAssociativeIterableConvertFunctor
+{
+    QAssociativeIterableConvertFunctor() {}
+
+    QAssociativeIterableImpl operator()(const From& f) const
+    {
+        return QAssociativeIterableImpl(&f);
+    }
+};
+}
+
 class QObject;
 class QWidget;
 template <class T> class QSharedPointer;
@@ -978,6 +1150,23 @@ namespace QtPrivate
     QT_DEFINE_SEQUENTIAL_CONTAINER_TYPE(std::vector)
     QT_DEFINE_SEQUENTIAL_CONTAINER_TYPE(std::list)
 
+    template<typename T>
+    struct IsAssociativeContainer
+    {
+        enum { Value = false };
+    };
+
+#define QT_DEFINE_ASSOCIATIVE_CONTAINER_TYPE(CONTAINER) \
+    template<typename T, typename U> \
+    struct IsAssociativeContainer<CONTAINER<T, U> > \
+    { \
+        enum { Value = true }; \
+    };
+    QT_DEFINE_ASSOCIATIVE_CONTAINER_TYPE(QHash)
+    QT_DEFINE_ASSOCIATIVE_CONTAINER_TYPE(QMap)
+    QT_DEFINE_ASSOCIATIVE_CONTAINER_TYPE(std::map)
+
+
     template<typename T, bool = QtPrivate::IsSequentialContainer<T>::Value>
     struct SequentialContainerConverterHelper
     {
@@ -1015,6 +1204,60 @@ namespace QtPrivate
 
     template<typename T>
     struct SequentialContainerConverterHelper<T, true> : ValueTypeIsMetaType<T>
+    {
+    };
+
+    template<typename T, bool = QtPrivate::IsAssociativeContainer<T>::Value>
+    struct AssociativeContainerConverterHelper
+    {
+        static bool registerConverter(int)
+        {
+            return false;
+        }
+    };
+
+    template<typename T, bool = QMetaTypeId2<typename T::mapped_type>::Defined>
+    struct AssociativeValueTypeIsMetaType
+    {
+        static bool registerConverter(int)
+        {
+            return false;
+        }
+    };
+
+    template<typename T>
+    struct AssociativeValueTypeIsMetaType<T, true>
+    {
+        static bool registerConverter(int id)
+        {
+            const int toId = qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>();
+            if (!QMetaType::hasRegisteredConverterFunction(id, toId)) {
+                static const QtMetaTypePrivate::QAssociativeIterableConvertFunctor<T> o;
+                static const QtPrivate::ConverterFunctor<T,
+                                            QtMetaTypePrivate::QAssociativeIterableImpl,
+                                            QtMetaTypePrivate::QAssociativeIterableConvertFunctor<T> > f(o);
+                return QMetaType::registerConverterFunction(&f, id, toId);
+            }
+            return true;
+        }
+    };
+
+    template<typename T, bool = QMetaTypeId2<typename T::key_type>::Defined>
+    struct KeyAndValueTypeIsMetaType
+    {
+        static bool registerConverter(int)
+        {
+            return false;
+        }
+    };
+
+    template<typename T>
+    struct KeyAndValueTypeIsMetaType<T, true> : AssociativeValueTypeIsMetaType<T>
+    {
+    };
+
+    template<typename T>
+    struct AssociativeContainerConverterHelper<T, true> : KeyAndValueTypeIsMetaType<T>
     {
     };
 
@@ -1118,6 +1361,7 @@ int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normaliz
 
     if (id > 0) {
         QtPrivate::SequentialContainerConverterHelper<T>::registerConverter(id);
+        QtPrivate::AssociativeContainerConverterHelper<T>::registerConverter(id);
     }
 
     return id;
@@ -1501,6 +1745,7 @@ QT_END_NAMESPACE
 QT_FOR_EACH_STATIC_TYPE(Q_DECLARE_BUILTIN_METATYPE)
 
 Q_DECLARE_METATYPE(QtMetaTypePrivate::QSequentialIterableImpl)
+Q_DECLARE_METATYPE(QtMetaTypePrivate::QAssociativeIterableImpl)
 
 QT_BEGIN_NAMESPACE
 
@@ -1520,9 +1765,26 @@ bool qRegisterSequentialConverter()
     static const QtPrivate::ConverterFunctor<T,
             QtMetaTypePrivate::QSequentialIterableImpl,
             QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> > f(o);
-    return QMetaType::registerConverterFunction(
-        &f,
-          id, toId);
+    return QMetaType::registerConverterFunction(&f, id, toId);
+}
+
+template<typename T>
+bool qRegisterAssociativeConverter()
+{
+    Q_STATIC_ASSERT_X(QMetaTypeId2<typename T::key_type>::Defined
+                   && QMetaTypeId2<typename T::mapped_type>::Defined,
+      "The key_type and mapped_type of an associative container must themselves be metatypes.");
+
+    const int id = qMetaTypeId<T>();
+    const int toId = qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>();
+    if (QMetaType::hasRegisteredConverterFunction(id, toId))
+        return true;
+    static const QtMetaTypePrivate::QAssociativeIterableConvertFunctor<T> o;
+    static const QtPrivate::ConverterFunctor<T,
+            QtMetaTypePrivate::QAssociativeIterableImpl,
+            QtMetaTypePrivate::QAssociativeIterableConvertFunctor<T> > f(o);
+
+    return QMetaType::registerConverterFunction(&f, id, toId);
 }
 
 QT_END_NAMESPACE

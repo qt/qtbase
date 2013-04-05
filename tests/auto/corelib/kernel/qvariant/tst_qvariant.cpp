@@ -3460,6 +3460,55 @@ struct ContainerAPI<std::forward_list<QString> >
 };
 #endif
 
+template<typename Container>
+struct KeyGetter
+{
+    static const typename Container::key_type & get(const typename Container::const_iterator &it)
+    {
+        return it.key();
+    }
+    static const typename Container::mapped_type & value(const typename Container::const_iterator &it)
+    {
+        return it.value();
+    }
+};
+
+template<typename T, typename U>
+struct KeyGetter<std::map<T, U> >
+{
+    static const T & get(const typename std::map<T, U>::const_iterator &it)
+    {
+        return it->first;
+    }
+    static const U & value(const typename std::map<T, U>::const_iterator &it)
+    {
+        return it->second;
+    }
+};
+
+
+// We have no built-in defines to check the stdlib features.
+// #define TEST_UNORDERED_MAP
+
+#ifdef TEST_UNORDERED_MAP
+#include <unordered_map>
+typedef std::unordered_map<int, bool> StdUnorderedMap_int_bool;
+Q_DECLARE_METATYPE(StdUnorderedMap_int_bool)
+
+template<typename T, typename U>
+struct KeyGetter<std::unordered_map<T, U> >
+{
+    static const T & get(const typename std::unordered_map<T, U>::const_iterator &it)
+    {
+        return it->first;
+    }
+    static const U & value(const typename std::unordered_map<T, U>::const_iterator &it)
+    {
+        return it->second;
+    }
+};
+#endif
+
 void tst_QVariant::iterateContainerElements()
 {
 #ifdef Q_COMPILER_RANGE_FOR
@@ -3544,6 +3593,42 @@ void tst_QVariant::iterateContainerElements()
     TEST_SEQUENTIAL_ITERATION(std::forward_list, int)
     TEST_SEQUENTIAL_ITERATION(std::forward_list, QVariant)
     TEST_SEQUENTIAL_ITERATION(std::forward_list, QString)
+#endif
+
+#define TEST_ASSOCIATIVE_ITERATION(CONTAINER, KEY_TYPE, MAPPED_TYPE) \
+    { \
+        int numSeen = 0; \
+        CONTAINER<KEY_TYPE, MAPPED_TYPE> mapping; \
+        mapping[5] = true; \
+        mapping[15] = false; \
+        \
+        QVariant mappingVariant = QVariant::fromValue(mapping); \
+        QVariantMap varMap = mappingVariant.value<QVariantMap>(); \
+        QVariantMap varHash = mappingVariant.value<QVariantMap>(); \
+        QAssociativeIterable mappingIter = mappingVariant.value<QAssociativeIterable>(); \
+        \
+        CONTAINER<KEY_TYPE, MAPPED_TYPE>::const_iterator containerIter = mapping.begin(); \
+        const CONTAINER<KEY_TYPE, MAPPED_TYPE>::const_iterator containerEnd = mapping.end(); \
+        for ( ; containerIter != containerEnd; ++containerIter, ++numSeen) \
+        { \
+            MAPPED_TYPE expected = KeyGetter<CONTAINER<KEY_TYPE, MAPPED_TYPE> >::value(containerIter); \
+            KEY_TYPE key = KeyGetter<CONTAINER<KEY_TYPE, MAPPED_TYPE> >::get(containerIter); \
+            MAPPED_TYPE actual = mappingIter.value(key).value<MAPPED_TYPE >(); \
+            QCOMPARE(varMap.value(QString::number(key)).value<MAPPED_TYPE>(), expected); \
+            QCOMPARE(varHash.value(QString::number(key)).value<MAPPED_TYPE>(), expected); \
+            QCOMPARE(actual, expected); \
+        } \
+        QCOMPARE(numSeen, (int)std::distance(mapping.begin(), mapping.end())); \
+        QCOMPARE(containerIter, containerEnd); \
+        \
+    }
+
+    TEST_ASSOCIATIVE_ITERATION(QHash, int, bool)
+    TEST_ASSOCIATIVE_ITERATION(QMap, int, bool)
+    TEST_ASSOCIATIVE_ITERATION(std::map, int, bool)
+#ifdef TEST_UNORDERED_MAP
+    qRegisterAssociativeConverter<StdUnorderedMap_int_bool>();
+    TEST_ASSOCIATIVE_ITERATION(std::unordered_map, int, bool)
 #endif
 }
 

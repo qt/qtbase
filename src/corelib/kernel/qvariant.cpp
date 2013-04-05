@@ -2755,7 +2755,14 @@ static bool canConvertMetaObject(int fromId, int toId, QObject *fromObject)
 
     This requires that the value_type of the container is itself a metatype.
 
-    \sa convert(), QSequentialIterable, qRegisterSequentialConverter()
+    Similarly, a QVariant containing a sequential container will also return true for this
+    function the \a targetTypeId is QVariantHash or QVariantMap. It is possible to iterate over
+    the contents of the container without extracting it as a (copied) QVariantHash or QVariantMap:
+
+    \snippet code/src_corelib_kernel_qvariant.cpp 10
+
+    \sa convert(), QSequentialIterable, qRegisterSequentialConverter(), QAssociativeIterable,
+        qRegisterAssociativeConverter()
 */
 bool QVariant::canConvert(int targetTypeId) const
 {
@@ -2764,6 +2771,14 @@ bool QVariant::canConvert(int targetTypeId) const
               || d.type == QMetaType::QStringList
               || QMetaType::hasRegisteredConverterFunction(d.type,
                     qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>()))) {
+        return true;
+    }
+
+    if ((targetTypeId == QMetaType::QVariantHash || targetTypeId == QMetaType::QVariantMap)
+            && (d.type == QMetaType::QVariantMap
+              || d.type == QMetaType::QVariantHash
+              || QMetaType::hasRegisteredConverterFunction(d.type,
+                    qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>()))) {
         return true;
     }
 
@@ -3421,6 +3436,178 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     leads to undefined results.
 
     \sa operator+(), operator-=(), canReverseIterate()
+*/
+
+/*!
+    \class QAssociativeIterable
+
+    \inmodule QtCore
+    \brief The QAssociativeIterable class is an iterable interface for an associative container in a QVariant.
+
+    This class allows several methods of accessing the elements of an associative container held within
+    a QVariant. An instance of QAssociativeIterable can be extracted from a QVariant if it can
+    be converted to a QVariantHash or QVariantMap.
+
+    \snippet code/src_corelib_kernel_qvariant.cpp 10
+
+    The container itself is not copied before iterating over it.
+
+    \sa QVariant
+*/
+
+/*! \fn QAssociativeIterable::QAssociativeIterable(QtMetaTypePrivate::QAssociativeIterableImpl)
+
+    \internal
+*/
+
+/*! \fn QAssociativeIterable::const_iterator QAssociativeIterable::begin() const
+
+    Returns a QAssociativeIterable::const_iterator for the beginning of the container. This
+    can be used in stl-style iteration.
+
+    \sa end()
+*/
+
+/*! \fn QAssociativeIterable::const_iterator QAssociativeIterable::end() const
+
+    Returns a QAssociativeIterable::const_iterator for the end of the container. This
+    can be used in stl-style iteration.
+
+    \sa begin()
+*/
+
+/*! \fn QVariant QAssociativeIterable::value(const QVariant &key) const
+
+    Returns the value for the given \a key in the container, if the types are convertible.
+*/
+
+/*! \fn int QAssociativeIterable::size() const
+
+    Returns the number of elements in the container.
+*/
+
+/*!
+    \class QAssociativeIterable::const_iterator
+
+    \inmodule QtCore
+    \brief The QAssociativeIterable::const_iterator allows iteration over a container in a QVariant.
+
+    A QAssociativeIterable::const_iterator can only be created by a QAssociativeIterable instance,
+    and can be used in a way similar to other stl-style iterators.
+
+    \snippet code/src_corelib_kernel_qvariant.cpp 10
+
+    \sa QAssociativeIterable
+*/
+
+
+/*! \fn QAssociativeIterable::const_iterator::~const_iterator()
+
+    Destroys the QAssociativeIterable::const_iterator.
+*/
+
+/*! \fn QAssociativeIterable::const_iterator::const_iterator(const const_iterator &other)
+
+    Creates a copy of \a other.
+*/
+
+/*! \fn QVariant QAssociativeIterable::const_iterator::operator*() const
+
+    Returns the current value, converted to a QVariant.
+*/
+
+/*! \fn QVariant QAssociativeIterable::const_iterator::key() const
+
+    Returns the current key, converted to a QVariant.
+*/
+
+/*! \fn QVariant QAssociativeIterable::const_iterator::value() const
+
+    Returns the current value, converted to a QVariant.
+*/
+
+/*! \fn bool QAssociativeIterable::const_iterator::operator==(const const_iterator &other) const
+
+    Returns true if \a other points to the same item as this
+    iterator; otherwise returns false.
+
+    \sa operator!=()
+*/
+
+/*! \fn bool QAssociativeIterable::const_iterator::operator!=(const const_iterator &other) const
+
+    Returns true if \a other points to a different item than this
+    iterator; otherwise returns false.
+
+    \sa operator==()
+*/
+
+/*! \fn QAssociativeIterable::const_iterator &QAssociativeIterable::const_iterator::operator++()
+
+    The prefix ++ operator (\c{++it}) advances the iterator to the
+    next item in the container and returns an iterator to the new current
+    item.
+
+    Calling this function on QAssociativeIterable::end() leads to undefined results.
+
+    \sa operator--()
+*/
+
+/*! \fn QAssociativeIterable::const_iterator QAssociativeIterable::const_iterator::operator++(int)
+
+    \overload
+
+    The postfix ++ operator (\c{it++}) advances the iterator to the
+    next item in the container and returns an iterator to the previously
+    current item.
+*/
+
+/*! \fn QAssociativeIterable::const_iterator &QAssociativeIterable::const_iterator::operator--()
+
+    The prefix -- operator (\c{--it}) makes the preceding item
+    current and returns an iterator to the new current item.
+
+    Calling this function on QAssociativeIterable::begin() leads to undefined results.
+
+    \sa operator++()
+*/
+
+/*! \fn QAssociativeIterable::const_iterator QAssociativeIterable::const_iterator::operator--(int)
+
+    \overload
+
+    The postfix -- operator (\c{it--}) makes the preceding item
+    current and returns an iterator to the previously current item.
+*/
+
+/*! \fn QAssociativeIterable::const_iterator &QAssociativeIterable::const_iterator::operator+=(int j)
+
+    Advances the iterator by \a j items.
+
+    \sa operator-=(), operator+()
+*/
+
+/*! \fn QAssociativeIterable::const_iterator &QAssociativeIterable::const_iterator::operator-=(int j)
+
+    Makes the iterator go back by \a j items.
+
+    \sa operator+=(), operator-()
+*/
+
+/*! \fn QAssociativeIterable::const_iterator QAssociativeIterable::const_iterator::operator+(int j) const
+
+    Returns an iterator to the item at \a j positions forward from
+    this iterator.
+
+    \sa operator-(), operator+=()
+*/
+
+/*! \fn QAssociativeIterable::const_iterator QAssociativeIterable::const_iterator::operator-(int j) const
+
+    Returns an iterator to the item at \a j positions backward from
+    this iterator.
+
+    \sa operator+(), operator-=()
 */
 
 QT_END_NAMESPACE

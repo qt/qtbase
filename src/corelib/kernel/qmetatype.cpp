@@ -1990,6 +1990,21 @@ const QMetaObject *QMetaType::metaObjectForType(int type)
     \sa QVariant::canConvert()
 */
 
+/*!
+    \fn bool qRegisterAssociativeConverter()
+    \relates QMetaType
+    \since 5.2
+
+    Registers an associative container so that it can be converted to
+    a QVariantHash or QVariantMap. If the key_type and mapped_type of the container
+    was not declared with Q_DECLARE_METATYPE(), compilation will fail.
+
+    Note that it is not necessary to call this method for Qt containers (QHash,
+    QMap etc) or for std::map. Such containers are automatically registered by Qt.
+
+    \sa QVariant::canConvert()
+*/
+
 namespace {
 class TypeInfo {
     template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
