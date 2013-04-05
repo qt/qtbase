@@ -672,7 +672,7 @@ struct QMetaTypeIdQObject<T*, /* isPointerToTypeDerivedFromQObject */ true>
             return id;
         const char * const cName = T::staticMetaObject.className();
         QByteArray typeName;
-        typeName.reserve(strlen(cName) + 1);
+        typeName.reserve(int(strlen(cName)) + 1);
         typeName.append(cName).append('*');
         const int newId = qRegisterNormalizedMetaType<T*>(
                         typeName,
