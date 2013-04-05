@@ -674,6 +674,22 @@ namespace QtPrivate {
             return QSequentialIterable(v.value<QtMetaTypePrivate::QSequentialIterableImpl>());
         }
     };
+    template<>
+    struct QVariantValueHelperInterface<QVariantList>
+    {
+        static QVariantList invoke(const QVariant &v)
+        {
+            if (v.userType() == qMetaTypeId<QStringList>() || QMetaType::hasRegisteredConverterFunction(v.userType(), qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>())) {
+                QSequentialIterable iter = QVariantValueHelperInterface<QSequentialIterable>::invoke(v);
+                QVariantList l;
+                l.reserve(iter.size());
+                for (QSequentialIterable::const_iterator it = iter.begin(), end = iter.end(); it != end; ++it)
+                    l << *it;
+                return l;
+            }
+            return QVariantValueHelper<QVariantList>::invoke(v);
+        }
+    };
 }
 
 template<typename T> inline T qvariant_cast(const QVariant &v)

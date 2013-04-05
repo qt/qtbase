@@ -3085,6 +3085,13 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     returned. Note that this only works for QObject subclasses which use the
     Q_OBJECT macro.
 
+    If the QVariant contains a sequential container and \c{T} is QVariantList, the
+    elements of the container will be converted into QVariants and returned as a QVariantList.
+
+    \snippet code/src_corelib_kernel_qvariant.cpp 9
+
+    The qRegisterSequentialConverter method must first be called for the container.
+
     \sa setValue(), fromValue(), canConvert()
 */
 

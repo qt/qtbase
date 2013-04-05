@@ -3364,6 +3364,24 @@ struct ContainerAPI
     {
         return variant.value<typename Container::value_type>() == value;
     }
+    static bool compare(QVariant variant, const QVariant &value)
+    {
+        return variant == value;
+    }
+};
+
+template<typename Container>
+struct ContainerAPI<Container, QVariant>
+{
+    static void insert(Container &container, int value)
+    {
+        container.push_back(QVariant::fromValue(value));
+    }
+
+    static bool compare(QVariant variant, const QVariant &value)
+    {
+        return variant == value;
+    }
 };
 
 template<typename Container>
@@ -3377,6 +3395,10 @@ struct ContainerAPI<Container, QString>
     static bool compare(const QVariant &variant, QString value)
     {
         return variant.value<QString>() == value;
+    }
+    static bool compare(QVariant variant, const QVariant &value)
+    {
+        return variant == value;
     }
 };
 
@@ -3400,7 +3422,26 @@ struct ContainerAPI<std::forward_list<Value_Type> >
     {
         return variant.value<Value_Type>() == value;
     }
+    static bool compare(QVariant variant, const QVariant &value)
+    {
+        return variant == value;
+    }
 };
+
+template<>
+struct ContainerAPI<std::forward_list<QVariant> >
+{
+    static void insert(std::forward_list<QVariant> &container, int value)
+    {
+        container.push_front(QVariant::fromValue(value));
+    }
+
+    static bool compare(QVariant variant, const QVariant &value)
+    {
+        return variant == value;
+    }
+};
+
 template<>
 struct ContainerAPI<std::forward_list<QString> >
 {
@@ -3411,6 +3452,10 @@ struct ContainerAPI<std::forward_list<QString> >
     static bool compare(const QVariant &variant, QString value)
     {
         return variant.value<QString>() == value;
+    }
+    static bool compare(QVariant variant, const QVariant &value)
+    {
+        return variant == value;
     }
 };
 #endif
@@ -3424,6 +3469,7 @@ void tst_QVariant::iterateContainerElements()
         containerIter = intList.begin(); \
         for (QVariant v : listIter) { \
             QVERIFY(ContainerAPI<CONTAINER<VALUE_TYPE > >::compare(v, *containerIter)); \
+            QVERIFY(ContainerAPI<CONTAINER<VALUE_TYPE > >::compare(v, varList.at(numSeen))); \
             ++containerIter; \
             ++numSeen; \
         } \
@@ -3445,13 +3491,17 @@ void tst_QVariant::iterateContainerElements()
         \
         QVariant listVariant = QVariant::fromValue(intList); \
         QVERIFY(listVariant.canConvert<QVariantList>()); \
+        QVariantList varList = listVariant.value<QVariantList>(); \
+        QCOMPARE(varList.size(), (int)std::distance(intList.begin(), intList.end())); \
         QSequentialIterable listIter = listVariant.value<QSequentialIterable>(); \
+        QCOMPARE(varList.size(), listIter.size()); \
         \
         CONTAINER<VALUE_TYPE >::iterator containerIter = intList.begin(); \
         const CONTAINER<VALUE_TYPE >::iterator containerEnd = intList.end(); \
         for (int i = 0; i < listIter.size(); ++i, ++containerIter, ++numSeen) \
         { \
             QVERIFY(ContainerAPI<CONTAINER<VALUE_TYPE > >::compare(listIter.at(i), *containerIter)); \
+            QVERIFY(ContainerAPI<CONTAINER<VALUE_TYPE > >::compare(listIter.at(i), varList.at(i))); \
         } \
         QCOMPARE(numSeen, (int)std::distance(intList.begin(), intList.end())); \
         QCOMPARE(containerIter, containerEnd); \
@@ -3460,6 +3510,7 @@ void tst_QVariant::iterateContainerElements()
         numSeen = 0; \
         Q_FOREACH (const QVariant &v, listIter) { \
             QVERIFY(ContainerAPI<CONTAINER<VALUE_TYPE > >::compare(v, *containerIter)); \
+            QVERIFY(ContainerAPI<CONTAINER<VALUE_TYPE > >::compare(v, varList.at(numSeen))); \
             ++containerIter; \
             ++numSeen; \
         } \
