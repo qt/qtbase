@@ -139,6 +139,11 @@ public:
     explicit QImage(const QString &fileName, const char *format = 0);
 
     QImage(const QImage &);
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QImage(QImage &&other)
+        : QPaintDevice(), d(0)
+    { qSwap(d, other.d); }
+#endif
     ~QImage();
 
     QImage &operator=(const QImage &);
