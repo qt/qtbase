@@ -901,6 +901,7 @@ CFG_USE_GNUMAKE=no
 CFG_XINPUT2=auto
 CFG_XINPUT=runtime
 CFG_XKB=auto
+CFG_XKBCOMMON=no
 CFG_XCB=auto
 CFG_XCB_GLX=no
 CFG_EGLFS=auto
@@ -5261,14 +5262,12 @@ if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xkbcommon >= 0.2.0" 2>/dev/null
     QMAKE_CFLAGS_XKBCOMMON="`$PKG_CONFIG --cflags xkbcommon 2>/dev/null`"
     QMAKE_LIBS_XKBCOMMON="`$PKG_CONFIG --libs xkbcommon 2>/dev/null`"
     QT_CONFIG="$QT_CONFIG xkbcommon"
+    CFG_XKBCOMMON=yes
 elif [ "$CFG_XCB" != "no" ]; then
-    echo "WARNING: XCB support enabled but libxkbcommon 0.2.0 (or higher) not found."
-    echo "Not satisfying this requirement will disable the compose key functionality,"
-    echo "which includes text input with dead keys."
     QMakeVar add DEFINES QT_NO_XKBCOMMON
 fi
 
-if [ -n "$QMAKE_CFLAGS_XKBCOMMON" ] || [ -n "$QMAKE_LIBS_XKBCOMMON" ]; then
+if [ "$CFG_XKBCOMMON" != "no" ]; then
     QMakeVar set QMAKE_CFLAGS_XKBCOMMON "$QMAKE_CFLAGS_XKBCOMMON"
     QMakeVar set QMAKE_LIBS_XKBCOMMON "$QMAKE_LIBS_XKBCOMMON"
 fi
@@ -6745,6 +6744,7 @@ echo "    SQLite 2 ............. $CFG_SQL_sqlite2"
 echo "    SQLite ............... $CFG_SQL_sqlite ($CFG_SQLITE)"
 echo "    TDS .................. $CFG_SQL_tds"
 echo "  udev ................... $CFG_LIBUDEV"
+echo "  xkbcommon .............. $CFG_XKBCOMMON"
 if [ "$CFG_ZLIB" = "no" ]; then
     echo "  zlib ................... no"
 else
@@ -6771,6 +6771,11 @@ if [ "$CFG_OPENSSL" = "linked" ] && [ "$OPENSSL_LIBS" = "" ]; then
     echo "For example:"
     echo "    OPENSSL_LIBS='-L/opt/ssl/lib -lssl -lcrypto' ./configure -openssl-linked"
     echo
+fi
+if [ "$CFG_XCB" != no ] && [ "$CFG_XKBCOMMON" = "no" ]; then
+    echo "WARNING: XCB support enabled but libxkbcommon 0.2.0 (or higher) not found."
+    echo "Not satisfying this requirement will disable the compose key functionality,"
+    echo "which includes text input with dead keys."
 fi
 
 exec 1>&3 3>&- # restore stdout
