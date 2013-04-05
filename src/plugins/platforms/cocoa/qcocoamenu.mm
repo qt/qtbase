@@ -97,7 +97,6 @@ static inline QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *getMenuLoader()
     if (![menuItem tag])
         return YES;
 
-
     QCocoaMenuItem* cocoaItem = reinterpret_cast<QCocoaMenuItem *>([menuItem tag]);
     return cocoaItem->isEnabled();
 }
@@ -311,8 +310,39 @@ void QCocoaMenu::showPopup(const QWindow *parentWindow, QPoint pos, const QPlatf
     QCocoaWindow *cocoaWindow = parentWindow ? static_cast<QCocoaWindow *>(parentWindow->handle()) : 0;
     NSView *view = cocoaWindow ? cocoaWindow->contentView() : nil;
     NSMenuItem *nsItem = item ? ((QCocoaMenuItem *)item)->nsItem() : nil;
-    NSPoint nsPos = NSMakePoint(pos.x(), pos.y());
-    [m_nativeMenu popUpMenuPositioningItem:nsItem atLocation:nsPos inView:view];
+
+    // Ideally, we would call -popUpMenuPositioningItem:atLocation:inView:.
+    // However, this showed not to work with modal windows where the menu items
+    // would appear disabled. So, we resort to a more artisanal solution. Note
+    // that this implies several things.
+    //
+    // First, we need to transform 'pos' to window or screen coordinates.
+    NSPoint nsPos = NSMakePoint(pos.x() - 1, pos.y());
+    if (view) {
+        nsPos.y = view.frame.size.height - nsPos.y;
+    } else if (!QGuiApplication::screens().isEmpty()) {
+        QScreen *screen = QGuiApplication::screens().at(0);
+        nsPos.y = screen->availableVirtualSize().height() - nsPos.y;
+    }
+    if (nsItem) {
+        // Then, we need to position the menu ourselves to have the specified item
+        // at the specified position. This also means that we have to guess the menu
+        // item's height. (We could use HITheme to get it, but it looks like an overkill
+        // at this point).
+        CGFloat itemHeight = m_nativeMenu.font.pointSize == 13 ? 18.0 : 19.0;
+        nsPos.y += [m_nativeMenu indexOfItem:nsItem] * itemHeight;
+    }
+    // Last, we need to synthesize an event.
+    NSEvent *menuEvent = [NSEvent mouseEventWithType:NSRightMouseDown
+                                            location:nsPos
+                                       modifierFlags:0
+                                           timestamp:0
+                                        windowNumber:view ? view.window.windowNumber : 0
+                                             context:nil
+                                         eventNumber:0
+                                          clickCount:1
+                                            pressure:1.0];
+    [NSMenu popUpContextMenu:m_nativeMenu withEvent:menuEvent forView:view];
 
     // The call above blocks, and also swallows any mouse release event,
     // so we need to clear any mouse button that triggered the menu popup.
