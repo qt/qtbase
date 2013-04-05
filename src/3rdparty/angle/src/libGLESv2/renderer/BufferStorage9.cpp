@@ -54,7 +54,8 @@ void BufferStorage9::setData(const void* data, unsigned int size, unsigned int o
     }
 
     mSize = std::max(mSize, offset + size);
-    memcpy(reinterpret_cast<char*>(mMemory) + offset, data, size);
+    if (data)
+        memcpy(reinterpret_cast<char*>(mMemory) + offset, data, size);
 }
 
 void BufferStorage9::clear()

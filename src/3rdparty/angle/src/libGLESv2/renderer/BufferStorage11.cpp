@@ -182,7 +182,8 @@ void BufferStorage11::setData(const void* data, unsigned int size, unsigned int 
                 return gl::error(GL_OUT_OF_MEMORY);
             }
 
-            memcpy(mappedResource.pData, data, size);
+            if (data)
+                memcpy(mappedResource.pData, data, size);
 
             context->Unmap(mStagingBuffer, 0);
         }
@@ -211,12 +212,21 @@ void BufferStorage11::setData(const void* data, unsigned int size, unsigned int 
                 mBufferSize = 0;
             }
 
-            D3D11_SUBRESOURCE_DATA initialData;
-            initialData.pSysMem = data;
-            initialData.SysMemPitch = size;
-            initialData.SysMemSlicePitch = 0;
 
-            result = device->CreateBuffer(&bufferDesc, &initialData, &mBuffer);
+            if (data)
+            {
+                D3D11_SUBRESOURCE_DATA initialData;
+                initialData.pSysMem = data;
+                initialData.SysMemPitch = size;
+                initialData.SysMemSlicePitch = 0;
+
+                result = device->CreateBuffer(&bufferDesc, &initialData, &mBuffer);
+            }
+            else
+            {
+                result = device->CreateBuffer(&bufferDesc, NULL, &mBuffer);
+            }
+
             if (FAILED(result))
             {
                 return gl::error(GL_OUT_OF_MEMORY);
