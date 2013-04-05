@@ -344,6 +344,7 @@ struct  QtFontFamily
     bool askedForFallback;
     unsigned char writingSystems[QFontDatabase::WritingSystemsCount];
 
+    bool matchesFamilyName(const QString &familyName) const;
     QtFontFoundry *foundry(const QString &f, bool = false);
 };
 
@@ -381,6 +382,11 @@ QtFontFoundry *QtFontFamily::foundry(const QString &f, bool create)
 
     foundries[count] = new QtFontFoundry(f);
     return foundries[count++];
+}
+
+bool QtFontFamily::matchesFamilyName(const QString &familyName) const
+{
+    return name.compare(familyName, Qt::CaseInsensitive) == 0 || aliases.contains(familyName, Qt::CaseInsensitive);
 }
 
 
@@ -852,19 +858,7 @@ static bool matchFamilyName(const QString &familyName, QtFontFamily *f)
 {
     if (familyName.isEmpty())
         return true;
-
-    if (f->name.compare(familyName, Qt::CaseInsensitive) == 0)
-        return true;
-
-    QStringList::const_iterator it = f->aliases.constBegin();
-    while (it != f->aliases.constEnd()) {
-        if ((*it).compare(familyName, Qt::CaseInsensitive) == 0)
-            return true;
-
-        ++it;
-    }
-
-    return false;
+    return f->matchesFamilyName(familyName);
 }
 
 /*!
