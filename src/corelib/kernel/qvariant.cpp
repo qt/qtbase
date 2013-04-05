@@ -2753,11 +2753,9 @@ static bool canConvertMetaObject(int fromId, int toId, QObject *fromObject)
 
     \snippet code/src_corelib_kernel_qvariant.cpp 9
 
-    This requires that the value_type of the container is itself a metatype. To make it
-    possible to convert or iterate over a sequential container, the qRegisterSequentialConverter
-    method must first be called for the container.
+    This requires that the value_type of the container is itself a metatype.
 
-    \sa convert(), QSequentialIterable
+    \sa convert(), QSequentialIterable, qRegisterSequentialConverter()
 */
 bool QVariant::canConvert(int targetTypeId) const
 {
@@ -3090,9 +3088,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
     \snippet code/src_corelib_kernel_qvariant.cpp 9
 
-    The qRegisterSequentialConverter method must first be called for the container.
-
-    \sa setValue(), fromValue(), canConvert()
+    \sa setValue(), fromValue(), canConvert(), qRegisterSequentialConverter()
 */
 
 /*! \fn bool QVariant::canConvert() const

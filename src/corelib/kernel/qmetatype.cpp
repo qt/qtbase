@@ -1971,6 +1971,10 @@ const QMetaObject *QMetaType::metaObjectForType(int type)
     a QVariantList. If compilation fails, then you probably forgot to
     Q_DECLARE_METATYPE the value type.
 
+    Note that it is not necessary to call this method for Qt containers (QList,
+    QVector etc) or for std::vector or std::list. Such containers are automatically
+    registered by Qt.
+
     \sa QVariant::canConvert()
 */
 

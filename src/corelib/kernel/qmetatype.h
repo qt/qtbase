@@ -307,6 +307,9 @@ struct ConverterFunctor : public AbstractConverterFunction
 
     UnaryFunction m_function;
 };
+
+    template<typename T, bool>
+    struct ValueTypeIsMetaType;
 }
 
 class Q_CORE_EXPORT QMetaType {
@@ -538,6 +541,7 @@ private:
 #ifndef Q_QDOC
     template<typename T>
     friend bool qRegisterSequentialConverter();
+    template<typename, bool> friend struct QtPrivate::ValueTypeIsMetaType;
 #endif
 #else
 public:
@@ -946,6 +950,63 @@ namespace QtPrivate
         enum { Value = true };
     };
 
+    template<typename T>
+    struct IsSequentialContainer
+    {
+        enum { Value = false };
+    };
+
+#define QT_DEFINE_SEQUENTIAL_CONTAINER_TYPE(CONTAINER) \
+    template<typename T> \
+    struct IsSequentialContainer<CONTAINER<T> > \
+    { \
+        enum { Value = true }; \
+    };
+    QT_FOR_EACH_AUTOMATIC_TEMPLATE_1ARG(QT_DEFINE_SEQUENTIAL_CONTAINER_TYPE)
+    QT_DEFINE_SEQUENTIAL_CONTAINER_TYPE(std::vector)
+    QT_DEFINE_SEQUENTIAL_CONTAINER_TYPE(std::list)
+
+    template<typename T, bool = QtPrivate::IsSequentialContainer<T>::Value>
+    struct SequentialContainerConverterHelper
+    {
+        static bool registerConverter(int)
+        {
+            return false;
+        }
+    };
+
+    template<typename T, bool = QMetaTypeId2<typename T::value_type>::Defined>
+    struct ValueTypeIsMetaType
+    {
+        static bool registerConverter(int)
+        {
+            return false;
+        }
+    };
+
+    template<typename T>
+    struct ValueTypeIsMetaType<T, true>
+    {
+        static bool registerConverter(int id)
+        {
+            const int toId = qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>();
+            if (!QMetaType::hasRegisteredConverterFunction(id, toId)) {
+                QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> f;
+                return QMetaType::registerConverterFunction(
+                    new QtPrivate::ConverterFunctor<T,
+                                                  QtMetaTypePrivate::QSequentialIterableImpl,
+                                                  QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> >(f),
+                  id, toId);
+            }
+            return true;
+        }
+    };
+
+    template<typename T>
+    struct SequentialContainerConverterHelper<T, true> : ValueTypeIsMetaType<T>
+    {
+    };
+
     Q_CORE_EXPORT bool isBuiltinType(const QByteArray &type);
 } // namespace QtPrivate
 
@@ -1035,7 +1096,7 @@ int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normaliz
     if (defined)
         flags |= QMetaType::WasDeclaredAsMetaType;
 
-    return QMetaType::registerNormalizedType(normalizedTypeName,
+    const int id = QMetaType::registerNormalizedType(normalizedTypeName,
                                    QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Delete,
                                    QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Create,
                                    QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Destruct,
@@ -1043,6 +1104,12 @@ int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normaliz
                                    sizeof(T),
                                    flags,
                                    QtPrivate::MetaObjectForType<T>::value());
+
+    if (id > 0) {
+        QtPrivate::SequentialContainerConverterHelper<T>::registerConverter(id);
+    }
+
+    return id;
 }
 
 template <typename T>

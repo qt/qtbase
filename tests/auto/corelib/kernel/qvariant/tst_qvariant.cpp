@@ -3518,25 +3518,6 @@ void tst_QVariant::iterateContainerElements()
         TEST_RANGE_FOR(CONTAINER, VALUE_TYPE) \
     }
 
-    qRegisterSequentialConverter<QVector<int> >();
-    qRegisterSequentialConverter<QVector<QVariant> >();
-    qRegisterSequentialConverter<QVector<QString> >();
-    qRegisterSequentialConverter<QQueue<int> >();
-    qRegisterSequentialConverter<QQueue<QVariant> >();
-    qRegisterSequentialConverter<QQueue<QString> >();
-    qRegisterSequentialConverter<QList<int> >();
-    qRegisterSequentialConverter<QList<QVariant> >();
-    qRegisterSequentialConverter<QList<QString> >();
-    qRegisterSequentialConverter<QStack<int> >();
-    qRegisterSequentialConverter<QStack<QVariant> >();
-    qRegisterSequentialConverter<QStack<QString> >();
-    qRegisterSequentialConverter<std::vector<int> >();
-    qRegisterSequentialConverter<std::vector<QVariant> >();
-    qRegisterSequentialConverter<std::vector<QString> >();
-    qRegisterSequentialConverter<std::list<int> >();
-    qRegisterSequentialConverter<std::list<QVariant> >();
-    qRegisterSequentialConverter<std::list<QString> >();
-
     TEST_SEQUENTIAL_ITERATION(QVector, int)
     TEST_SEQUENTIAL_ITERATION(QVector, QVariant)
     TEST_SEQUENTIAL_ITERATION(QVector, QString)

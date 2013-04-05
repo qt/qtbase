@@ -137,8 +137,6 @@ QVariant data = QVariant::fromValue(object);
 
 //! [9]
 
-qRegisterSequentialConverter<QList<int> >();
-
 QList<int> intList;
 intList.push_back(7);
 intList.push_back(11);
