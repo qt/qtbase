@@ -187,6 +187,19 @@ QT_BEGIN_NAMESPACE
 #define QT_DEFINE_METATYPE_ID(TypeName, Id, Name) \
     TypeName = Id,
 
+#define QT_FOR_EACH_AUTOMATIC_TEMPLATE_1ARG(F) \
+    F(QList) \
+    F(QVector) \
+    F(QQueue) \
+    F(QStack) \
+    F(QSet) \
+    F(QLinkedList)
+
+#define QT_FOR_EACH_AUTOMATIC_TEMPLATE_2ARG(F) \
+    F(QHash, class) \
+    F(QMap, class) \
+    F(QPair, struct)
+
 class QDataStream;
 class QMetaTypeInterface;
 struct QMetaObject;
@@ -849,19 +862,6 @@ template <typename T> \
 struct QMetaTypeId< SMART_POINTER<T> > : public QMetaTypeId_ ## SMART_POINTER ## _QObjectStar<T> \
 { \
 };
-
-#define QT_FOR_EACH_AUTOMATIC_TEMPLATE_1ARG(F) \
-    F(QList) \
-    F(QVector) \
-    F(QQueue) \
-    F(QStack) \
-    F(QSet) \
-    F(QLinkedList)
-
-#define QT_FOR_EACH_AUTOMATIC_TEMPLATE_2ARG(F) \
-    F(QHash, class) \
-    F(QMap, class) \
-    F(QPair, struct)
 
 #define QT_FOR_EACH_AUTOMATIC_TEMPLATE_SMART_POINTER(F) \
     F(QSharedPointer) \
