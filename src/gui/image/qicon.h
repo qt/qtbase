@@ -62,6 +62,10 @@ public:
     QIcon();
     QIcon(const QPixmap &pixmap);
     QIcon(const QIcon &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+    QIcon(QIcon &&other)
+        :d(0) { qSwap(d, other.d); }
+#endif
     explicit QIcon(const QString &fileName); // file or resource name
     explicit QIcon(QIconEngine *engine);
     ~QIcon();
