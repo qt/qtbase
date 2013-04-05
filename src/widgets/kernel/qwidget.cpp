@@ -9517,6 +9517,9 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
     bool wasCreated = testAttribute(Qt::WA_WState_Created);
     QWidget *oldtlw = window();
 
+    if (f & Qt::Window) // Frame geometry likely changes, refresh.
+        d->data.fstrut_dirty = true;
+
     QWidget *desktopWidget = 0;
     if (parent && parent->windowType() == Qt::Desktop)
         desktopWidget = parent;
