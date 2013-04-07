@@ -619,9 +619,8 @@ static void getEngineData(const QFontPrivate *d, const QFontDef &def)
         // create a new one
         d->engineData = new QFontEngineData;
         QFontCache::instance()->insertEngineData(def, d->engineData);
-    } else {
-        d->engineData->ref.ref();
     }
+    d->engineData->ref.ref();
 }
 
 static QStringList familyList(const QFontDef &req)
