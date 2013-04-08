@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/qt-project.org/styles/commonstyle">
+        <file>images/cleartext-16.png</file>
         <file>images/filelink-16.png</file>
         <file>images/filelink-32.png</file>
         <file>images/filelink-128.png</file>

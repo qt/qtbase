@@ -1986,6 +1986,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SP_MediaSeekBackward Icon indicating that media should seek backward.
     \value SP_MediaVolume Icon indicating a volume control.
     \value SP_MediaVolumeMuted Icon indicating a muted volume control.
+    \value SP_LineEditClearButton Icon for a standard clear button in a QLineEdit. This enum value was added in Qt 5.2.
     \value SP_CustomBase  Base value for custom standard pixmaps;
     custom values must be greater than this value.
 

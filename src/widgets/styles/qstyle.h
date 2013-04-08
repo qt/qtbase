@@ -777,6 +777,7 @@ public:
         SP_MediaSeekBackward,
         SP_MediaVolume,
         SP_MediaVolumeMuted,
+        SP_LineEditClearButton,
         // do not add any values below/greater than this
         SP_CustomBase = 0xf0000000
     };
