@@ -5,7 +5,7 @@ isEmpty(QMAKE_MAC_SDK): \
 contains(QMAKE_MAC_SDK, .*/.*): \
     error("QMAKE_MAC_SDK can only contain short-form SDK names (eg. macosx, iphoneos)")
 
-QMAKE_MAC_SDK_PATH = $$system("xcodebuild -sdk $$QMAKE_MAC_SDK -version Path 2>/dev/null")
+QMAKE_MAC_SDK_PATH = $$system("/usr/bin/xcodebuild -sdk $$QMAKE_MAC_SDK -version Path 2>/dev/null")
 isEmpty(QMAKE_MAC_SDK_PATH): error("Could not resolve SDK path for \'$$QMAKE_MAC_SDK\'")
 
 !equals(MAKEFILE_GENERATOR, XCODE) {
@@ -24,7 +24,7 @@ for(tool, $$list(QMAKE_CC QMAKE_CXX QMAKE_FIX_RPATH QMAKE_AR QMAKE_RANLIB QMAKE_
     value = $$eval($$tool)
     isEmpty(value): next()
 
-    sysrooted = $$system("xcrun -sdk $$QMAKE_MAC_SDK -find $$first(value) 2>/dev/null")
+    sysrooted = $$system("/usr/bin/xcrun -sdk $$QMAKE_MAC_SDK -find $$first(value) 2>/dev/null")
     isEmpty(sysrooted): next()
 
     $$tool = $$sysrooted $$member(value, 1, -1)
