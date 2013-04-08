@@ -1896,50 +1896,14 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
     }
 }
 
+extern QPalette qt_fusionPalette();
+
 /*!
   \reimp
 */
 QPalette QFusionStyle::standardPalette () const
 {
-    QPalette palette = QCommonStyle::standardPalette();
-    palette.setBrush(QPalette::Active, QPalette::Highlight, QColor(48, 140, 198));
-    palette.setBrush(QPalette::Inactive, QPalette::Highlight, QColor(145, 141, 126));
-    palette.setBrush(QPalette::Disabled, QPalette::Highlight, QColor(145, 141, 126));
-
-    QColor backGround(239, 235, 231);
-
-    QColor light = backGround.lighter(150);
-    QColor base = Qt::white;
-    QColor dark = QColor(170, 156, 143).darker(110);
-    dark = backGround.darker(150);
-    QColor darkDisabled = QColor(209, 200, 191).darker(110);
-
-    //### Find the correct disabled text color
-    palette.setBrush(QPalette::Disabled, QPalette::Text, QColor(190, 190, 190));
-
-    palette.setBrush(QPalette::Window, backGround);
-    palette.setBrush(QPalette::Mid, backGround.darker(130));
-    palette.setBrush(QPalette::Light, light);
-
-    palette.setBrush(QPalette::Active, QPalette::Base, base);
-    palette.setBrush(QPalette::Inactive, QPalette::Base, base);
-    palette.setBrush(QPalette::Disabled, QPalette::Base, backGround);
-
-    palette.setBrush(QPalette::Midlight, palette.mid().color().lighter(110));
-
-    palette.setBrush(QPalette::All, QPalette::Dark, dark);
-    palette.setBrush(QPalette::Disabled, QPalette::Dark, darkDisabled);
-
-    QColor button = backGround;
-
-    palette.setBrush(QPalette::Button, button);
-
-    QColor shadow = dark.darker(135);
-    palette.setBrush(QPalette::Shadow, shadow);
-    palette.setBrush(QPalette::Disabled, QPalette::Shadow, shadow.lighter(150));
-    palette.setBrush(QPalette::HighlightedText, QColor(QRgb(0xffffffff)));
-
-    return palette;
+    return qt_fusionPalette();
 }
 
 /*!

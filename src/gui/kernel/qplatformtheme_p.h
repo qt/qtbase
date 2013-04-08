@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,82 +39,36 @@
 **
 ****************************************************************************/
 
-#ifndef QGENERICUNIXTHEMES_H
-#define QGENERICUNIXTHEMES_H
+#ifndef QPLATFORMTHEME_P_H
+#define QPLATFORMTHEME_P_H
 
-#include <qpa/qplatformtheme.h>
-#include <QtCore/QString>
-#include <QtCore/QStringList>
-#include <QtGui/QFont>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is part of the QPA API and is not meant to be used
+// in applications. Usage of this API may make your code
+// source and binary incompatible with future versions of Qt.
+//
+
+#include <QtCore/QtGlobal>
 
 QT_BEGIN_NAMESPACE
 
-class ResourceHelper
+class QPalette;
+
+class Q_GUI_EXPORT QPlatformThemePrivate
 {
 public:
-    ResourceHelper();
-    ~ResourceHelper() { clear(); }
+    QPlatformThemePrivate();
 
-    void clear();
+    virtual ~QPlatformThemePrivate();
 
-    QPalette *palettes[QPlatformTheme::NPalettes];
-    QFont *fonts[QPlatformTheme::NFonts];
+    void initializeSystemPalette();
+
+    QPalette *systemPalette;
 };
-
-class QGenericUnixThemePrivate;
-
-class QGenericUnixTheme : public QPlatformTheme
-{
-    Q_DECLARE_PRIVATE(QGenericUnixTheme)
-public:
-    QGenericUnixTheme();
-
-    static QPlatformTheme *createUnixTheme(const QString &name);
-    static QStringList themeNames();
-
-    virtual const QFont *font(Font type) const;
-    virtual QVariant themeHint(ThemeHint hint) const;
-
-    static QStringList xdgIconThemePaths();
-
-    static const char *name;
-};
-
-#ifndef QT_NO_SETTINGS
-class QKdeThemePrivate;
-
-class QKdeTheme : public QPlatformTheme
-{
-    Q_DECLARE_PRIVATE(QKdeTheme)
-    QKdeTheme(const QString &kdeHome, int kdeVersion);
-public:
-
-    static QPlatformTheme *createKdeTheme();
-    virtual QVariant themeHint(ThemeHint hint) const;
-
-    virtual const QPalette *palette(Palette type = SystemPalette) const;
-
-    virtual const QFont *font(Font type) const;
-
-    static const char *name;
-};
-#endif // QT_NO_SETTINGS
-
-class QGnomeThemePrivate;
-
-class QGnomeTheme : public QPlatformTheme
-{
-    Q_DECLARE_PRIVATE(QGnomeTheme)
-public:
-    QGnomeTheme();
-    virtual QVariant themeHint(ThemeHint hint) const;
-    virtual const QFont *font(Font type) const;
-
-    static const char *name;
-};
-
-QPlatformTheme *qt_createUnixTheme();
 
 QT_END_NAMESPACE
 
-#endif // QGENERICUNIXTHEMES_H
+#endif // QPLATFORMTHEME_P_H
