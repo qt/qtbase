@@ -41,9 +41,12 @@
 #include <QWindow>
 
 #include <QColor>
+#include <QMutex>
 #include <QOpenGLShaderProgram>
 #include <QSharedPointer>
 #include <QTimer>
+
+class HelloWindow;
 
 class Renderer : public QObject
 {
@@ -54,8 +57,10 @@ public:
 
     QSurfaceFormat format() const { return m_format; }
 
-public slots:
-    void render(QSurface *surface, const QColor &color, const QSize &viewSize);
+    void setAnimating(HelloWindow *window, bool animating);
+
+private slots:
+    void render();
 
 private:
     void initialize();
@@ -78,24 +83,22 @@ private:
     QSurfaceFormat m_format;
     QOpenGLContext *m_context;
     QOpenGLShaderProgram *m_program;
+
+    QList<HelloWindow *> m_windows;
+    int m_currentWindow;
+
+    QMutex m_windowLock;
 };
 
 class HelloWindow : public QWindow
 {
-    Q_OBJECT
-
 public:
     explicit HelloWindow(const QSharedPointer<Renderer> &renderer);
 
+    QColor color() const;
     void updateColor();
 
     void exposeEvent(QExposeEvent *event);
-
-signals:
-    void needRender(QSurface *surface, const QColor &color, const QSize &viewSize);
-
-private slots:
-    void render();
 
 private:
     void mousePressEvent(QMouseEvent *);
@@ -103,5 +106,5 @@ private:
     int m_colorIndex;
     QColor m_color;
     const QSharedPointer<Renderer> m_renderer;
-    QTimer *m_timer;
+    mutable QMutex m_colorLock;
 };

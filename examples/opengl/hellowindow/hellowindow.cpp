@@ -46,6 +46,7 @@
 Renderer::Renderer(const QSurfaceFormat &format, Renderer *share, QScreen *screen)
     : m_initialized(false)
     , m_format(format)
+    , m_currentWindow(0)
 {
     m_context = new QOpenGLContext(this);
     if (screen)
@@ -57,7 +58,7 @@ Renderer::Renderer(const QSurfaceFormat &format, Renderer *share, QScreen *scree
 }
 
 HelloWindow::HelloWindow(const QSharedPointer<Renderer> &renderer)
-    : m_colorIndex(0), m_renderer(renderer), m_timer(0)
+    : m_colorIndex(0), m_renderer(renderer)
 {
     setSurfaceType(QWindow::OpenGLSurface);
     setFlags(Qt::Window | Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
@@ -68,21 +69,12 @@ HelloWindow::HelloWindow(const QSharedPointer<Renderer> &renderer)
 
     create();
 
-    connect(this, SIGNAL(needRender(QSurface *, const QColor &, const QSize &)),
-            renderer.data(), SLOT(render(QSurface *, const QColor &, const QSize &)));
-
     updateColor();
 }
 
 void HelloWindow::exposeEvent(QExposeEvent *)
 {
-    render();
-
-    if (!m_timer) {
-        m_timer = new QTimer(this);
-        connect(m_timer, SIGNAL(timeout()), this, SLOT(render()));
-        m_timer->start(10);
-    }
+    m_renderer->setAnimating(this, isExposed());
 }
 
 void HelloWindow::mousePressEvent(QMouseEvent *)
@@ -90,14 +82,16 @@ void HelloWindow::mousePressEvent(QMouseEvent *)
     updateColor();
 }
 
-void HelloWindow::render()
+QColor HelloWindow::color() const
 {
-    if (isExposed())
-        emit needRender(this, m_color, size());
+    QMutexLocker locker(&m_colorLock);
+    return m_color;
 }
 
 void HelloWindow::updateColor()
 {
+    QMutexLocker locker(&m_colorLock);
+
     QColor colors[] =
     {
         QColor(100, 255, 0),
@@ -108,10 +102,40 @@ void HelloWindow::updateColor()
     m_colorIndex = 1 - m_colorIndex;
 }
 
-void Renderer::render(QSurface *surface, const QColor &color, const QSize &viewSize)
+void Renderer::setAnimating(HelloWindow *window, bool animating)
 {
+    QMutexLocker locker(&m_windowLock);
+    if (m_windows.contains(window) == animating)
+        return;
+
+    if (animating) {
+        m_windows << window;
+        if (m_windows.size() == 1)
+            QTimer::singleShot(0, this, SLOT(render()));
+    } else {
+        m_currentWindow = 0;
+        m_windows.removeOne(window);
+    }
+}
+
+void Renderer::render()
+{
+    QMutexLocker locker(&m_windowLock);
+
+    if (m_windows.isEmpty())
+        return;
+
+    HelloWindow *surface = m_windows.at(m_currentWindow);
+    QColor color = surface->color();
+
+    m_currentWindow = (m_currentWindow + 1) % m_windows.size();
+
     if (!m_context->makeCurrent(surface))
         return;
+
+    QSize viewSize = surface->size();
+
+    locker.unlock();
 
     if (!m_initialized) {
         initialize();
@@ -146,6 +170,8 @@ void Renderer::render(QSurface *surface, const QColor &color, const QSize &viewS
     m_context->swapBuffers(surface);
 
     m_fAngle += 1.0f;
+
+    QTimer::singleShot(0, this, SLOT(render()));
 }
 
 void Renderer::paintQtLogo()
