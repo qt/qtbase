@@ -498,6 +498,18 @@ void QQnxScreen::onWindowPost(QQnxWindow *window)
     }
 }
 
+void QQnxScreen::adjustOrientation()
+{
+    if (!m_primaryScreen)
+        return;
+
+    bool ok = false;
+    const int rotation = qgetenv("ORIENTATION").toInt(&ok);
+
+    if (ok)
+        setRotation(rotation);
+}
+
 QPlatformCursor * QQnxScreen::cursor() const
 {
     return m_cursor;

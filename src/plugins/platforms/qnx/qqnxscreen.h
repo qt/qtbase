@@ -92,6 +92,7 @@ public:
     void updateHierarchy();
 
     void onWindowPost(QQnxWindow *window);
+    void adjustOrientation();
 
     QSharedPointer<QQnxRootWindow> rootWindow() const;
 

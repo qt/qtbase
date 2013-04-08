@@ -486,6 +486,7 @@ void QQnxIntegration::createDisplay(screen_display_t display, bool isPrimary)
     QQnxScreen *screen = new QQnxScreen(m_screenContext, display, isPrimary);
     m_screens.append(screen);
     screenAdded(screen);
+    screen->adjustOrientation();
 
     QObject::connect(m_screenEventHandler, SIGNAL(newWindowCreated(void*)),
                      screen, SLOT(newWindowCreated(void*)));
