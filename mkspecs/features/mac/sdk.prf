@@ -24,7 +24,9 @@ for(tool, $$list(QMAKE_CC QMAKE_CXX QMAKE_FIX_RPATH QMAKE_AR QMAKE_RANLIB QMAKE_
     value = $$eval($$tool)
     isEmpty(value): next()
 
-    sysrooted = $$system("xcrun -sdk $$QMAKE_MAC_SDK -find $$first(value)")
+    sysrooted = $$system("xcrun -sdk $$QMAKE_MAC_SDK -find $$first(value) 2>/dev/null")
+    isEmpty(sysrooted): next()
+
     $$tool = $$sysrooted $$member(value, 1, -1)
 }
 
