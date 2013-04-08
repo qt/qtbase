@@ -38,51 +38,39 @@
 **
 ****************************************************************************/
 
-#ifndef WINDOW_H
-#define WINDOW_H
+#ifndef FILTERWIDGET_H
+#define FILTERWIDGET_H
 
-#include <QWidget>
+#include <QLineEdit>
+#include <QRegExp>
 
 QT_BEGIN_NAMESPACE
-class QAbstractItemModel;
-class QCheckBox;
-class QComboBox;
-class QDateEdit;
-class QGroupBox;
-class QLabel;
-class QLineEdit;
-class QTreeView;
+class QAction;
+class QActionGroup;
 QT_END_NAMESPACE
-class MySortFilterProxyModel;
-class FilterWidget;
-//! [0]
-class Window : public QWidget
+
+Q_DECLARE_METATYPE(QRegExp::PatternSyntax)
+
+class FilterWidget : public QLineEdit
 {
     Q_OBJECT
-
+    Q_PROPERTY(Qt::CaseSensitivity caseSensitivity READ caseSensitivity WRITE setCaseSensitivity)
+    Q_PROPERTY(QRegExp::PatternSyntax patternSyntax READ patternSyntax WRITE setPatternSyntax)
 public:
-    Window();
+    explicit FilterWidget(QWidget *parent = 0);
 
-    void setSourceModel(QAbstractItemModel *model);
+    Qt::CaseSensitivity caseSensitivity() const;
+    void setCaseSensitivity(Qt::CaseSensitivity);
 
-private slots:
-    void textFilterChanged();
-    void dateFilterChanged();
+    QRegExp::PatternSyntax patternSyntax() const;
+    void setPatternSyntax(QRegExp::PatternSyntax);
+
+signals:
+    void filterChanged();
 
 private:
-    MySortFilterProxyModel *proxyModel;
-
-    QGroupBox *sourceGroupBox;
-    QGroupBox *proxyGroupBox;
-    QTreeView *sourceView;
-    QTreeView *proxyView;
-    QLabel *filterPatternLabel;
-    QLabel *fromLabel;
-    QLabel *toLabel;
-    FilterWidget *filterWidget;
-    QDateEdit *fromDateEdit;
-    QDateEdit *toDateEdit;
+    QAction *m_caseSensitivityAction;
+    QActionGroup *m_patternGroup;
 };
-//! [0]
 
-#endif // WINDOW_H
+#endif // FILTERWIDGET_H

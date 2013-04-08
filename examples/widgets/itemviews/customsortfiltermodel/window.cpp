@@ -42,6 +42,7 @@
 
 #include "mysortfilterproxymodel.h"
 #include "window.h"
+#include "filterwidget.h"
 
 //! [0]
 Window::Window()
@@ -63,19 +64,12 @@ Window::Window()
     //! [2]
 
     //! [3]
-    filterCaseSensitivityCheckBox = new QCheckBox(tr("Case sensitive filter"));
-    filterCaseSensitivityCheckBox->setChecked(true);
-
-    filterPatternLineEdit = new QLineEdit;
-    filterPatternLineEdit->setText("Grace|Sports");
+    filterWidget = new FilterWidget;
+    filterWidget->setText("Grace|Sports");
+    connect(filterWidget, SIGNAL(filterChanged()), this, SLOT(textFilterChanged()));
 
     filterPatternLabel = new QLabel(tr("&Filter pattern:"));
-    filterPatternLabel->setBuddy(filterPatternLineEdit);
-
-    filterSyntaxComboBox = new QComboBox;
-    filterSyntaxComboBox->addItem(tr("Regular expression"), QRegExp::RegExp);
-    filterSyntaxComboBox->addItem(tr("Wildcard"), QRegExp::Wildcard);
-    filterSyntaxComboBox->addItem(tr("Fixed string"), QRegExp::FixedString);
+    filterPatternLabel->setBuddy(filterWidget);
 
     fromDateEdit = new QDateEdit;
     fromDateEdit->setDate(QDate(1970, 01, 01));
@@ -87,11 +81,7 @@ Window::Window()
     toLabel = new QLabel(tr("&To:"));
     toLabel->setBuddy(toDateEdit);
 
-    connect(filterPatternLineEdit, SIGNAL(textChanged(QString)),
-            this, SLOT(textFilterChanged()));
-    connect(filterSyntaxComboBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(textFilterChanged()));
-    connect(filterCaseSensitivityCheckBox, SIGNAL(toggled(bool)),
+    connect(filterWidget, SIGNAL(textChanged(QString)),
             this, SLOT(textFilterChanged()));
     connect(fromDateEdit, SIGNAL(dateChanged(QDate)),
             this, SLOT(dateFilterChanged()));
@@ -111,9 +101,7 @@ Window::Window()
     QGridLayout *proxyLayout = new QGridLayout;
     proxyLayout->addWidget(proxyView, 0, 0, 1, 3);
     proxyLayout->addWidget(filterPatternLabel, 1, 0);
-    proxyLayout->addWidget(filterPatternLineEdit, 1, 1);
-    proxyLayout->addWidget(filterSyntaxComboBox, 1, 2);
-    proxyLayout->addWidget(filterCaseSensitivityCheckBox, 2, 0, 1, 3);
+    proxyLayout->addWidget(filterWidget, 1, 1);
     proxyLayout->addWidget(fromLabel, 3, 0);
     proxyLayout->addWidget(fromDateEdit, 3, 1, 1, 2);
     proxyLayout->addWidget(toLabel, 4, 0);
@@ -145,14 +133,9 @@ void Window::setSourceModel(QAbstractItemModel *model)
 //! [8]
 void Window::textFilterChanged()
 {
-    QRegExp::PatternSyntax syntax =
-            QRegExp::PatternSyntax(filterSyntaxComboBox->itemData(
-                    filterSyntaxComboBox->currentIndex()).toInt());
-    Qt::CaseSensitivity caseSensitivity =
-            filterCaseSensitivityCheckBox->isChecked() ? Qt::CaseSensitive
-                                                       : Qt::CaseInsensitive;
-
-    QRegExp regExp(filterPatternLineEdit->text(), caseSensitivity, syntax);
+    QRegExp regExp(filterWidget->text(),
+                   filterWidget->caseSensitivity(),
+                   filterWidget->patternSyntax());
     proxyModel->setFilterRegExp(regExp);
 }
 //! [8]
