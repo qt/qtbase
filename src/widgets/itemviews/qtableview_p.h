@@ -181,6 +181,8 @@ public:
                           const QStyleOptionViewItem &option, QBitArray *drawn,
                           int firstVisualRow, int lastVisualRow, int firstVisualColumn, int lastVisualColumn);
     void drawCell(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index);
+    int widthHintForIndex(const QModelIndex &index, int hint, const QStyleOptionViewItem &option) const;
+    int heightHintForIndex(const QModelIndex &index, int hint, const QStyleOptionViewItem &option) const;
 
     bool showGrid;
     Qt::PenStyle gridStyle;

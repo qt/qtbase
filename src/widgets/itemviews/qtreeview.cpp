@@ -1527,6 +1527,23 @@ void QTreeViewPrivate::calcLogicalIndices(QVector<int> *logicalIndices, QVector<
     }
 }
 
+/*!
+  \internal
+  Get sizeHint width for single index (providing existing hint and style option) and index in viewIndex i.
+*/
+int QTreeViewPrivate::widthHintForIndex(const QModelIndex &index, int hint, const QStyleOptionViewItem &option, int i) const
+{
+    QWidget *editor = editorForIndex(index).widget.data();
+    if (editor && persistent.contains(editor)) {
+        hint = qMax(hint, editor->sizeHint().width());
+        int min = editor->minimumSize().width();
+        int max = editor->maximumSize().width();
+        hint = qBound(min, hint, max);
+    }
+    int xhint = delegateForIndex(index)->sizeHint(option, index).width();
+    hint = qMax(hint, xhint + (index.column() == 0 ? indentationForItem(i) : 0));
+    return hint;
+}
 
 /*!
     Draws the row in the tree view that contains the model item \a index,
@@ -2811,15 +2828,7 @@ int QTreeView::sizeHintForColumn(int column) const
             continue; // we have no good size hint
         QModelIndex index = viewItems.at(i).index;
         index = index.sibling(index.row(), column);
-        QWidget *editor = d->editorForIndex(index).widget.data();
-        if (editor && d->persistent.contains(editor)) {
-            w = qMax(w, editor->sizeHint().width());
-            int min = editor->minimumSize().width();
-            int max = editor->maximumSize().width();
-            w = qBound(min, w, max);
-        }
-        int hint = d->delegateForIndex(index)->sizeHint(option, index).width();
-        w = qMax(w, hint + (column == 0 ? d->indentationForItem(i) : 0));
+        w = d->widthHintForIndex(index, w, option, i);
     }
     return w;
 }

@@ -931,6 +931,44 @@ void QTableViewPrivate::drawCell(QPainter *painter, const QStyleOptionViewItem &
 }
 
 /*!
+  \internal
+  Get sizeHint width for single Index (providing existing hint and style option)
+*/
+int QTableViewPrivate::widthHintForIndex(const QModelIndex &index, int hint, const QStyleOptionViewItem &option) const
+{
+    Q_Q(const QTableView);
+    QWidget *editor = editorForIndex(index).widget.data();
+    if (editor && persistent.contains(editor)) {
+        hint = qMax(hint, editor->sizeHint().width());
+        int min = editor->minimumSize().width();
+        int max = editor->maximumSize().width();
+        hint = qBound(min, hint, max);
+    }
+    hint = qMax(hint, q->itemDelegate(index)->sizeHint(option, index).width());
+    return hint;
+}
+
+/*!
+  \internal
+  Get sizeHint height for single Index (providing existing hint and style option)
+*/
+int QTableViewPrivate::heightHintForIndex(const QModelIndex &index, int hint, const QStyleOptionViewItem &option) const
+{
+    Q_Q(const QTableView);
+    QWidget *editor = editorForIndex(index).widget.data();
+    if (editor && persistent.contains(editor)) {
+        hint = qMax(hint, editor->sizeHint().height());
+        int min = editor->minimumSize().height();
+        int max = editor->maximumSize().height();
+        hint = qBound(min, hint, max);
+    }
+
+    hint = qMax(hint, q->itemDelegate(index)->sizeHint(option, index).height());
+    return hint;
+}
+
+
+/*!
     \class QTableView
 
     \brief The QTableView class provides a default model/view
@@ -2203,16 +2241,8 @@ int QTableView::sizeHintForRow(int row) const
             option.rect.setX(columnViewportPosition(index.column()));
             option.rect.setWidth(columnWidth(index.column()));
         }
+        hint = d->heightHintForIndex(index, hint, option);
 
-        QWidget *editor = d->editorForIndex(index).widget.data();
-        if (editor && d->persistent.contains(editor)) {
-            hint = qMax(hint, editor->sizeHint().height());
-            int min = editor->minimumSize().height();
-            int max = editor->maximumSize().height();
-            hint = qBound(min, hint, max);
-        }
-
-        hint = qMax(hint, itemDelegate(index)->sizeHint(option, index).height());
         ++columnsProcessed;
         if (columnsProcessed == maximumProcessCols)
             break;
@@ -2262,15 +2292,7 @@ int QTableView::sizeHintForColumn(int column) const
             continue;
         index = d->model->index(logicalRow, column, d->root);
 
-        QWidget *editor = d->editorForIndex(index).widget.data();
-        if (editor && d->persistent.contains(editor)) {
-            hint = qMax(hint, editor->sizeHint().width());
-            int min = editor->minimumSize().width();
-            int max = editor->maximumSize().width();
-            hint = qBound(min, hint, max);
-        }
-
-        hint = qMax(hint, itemDelegate(index)->sizeHint(option, index).width());
+        hint = d->widthHintForIndex(index, hint, option);
         ++rowsProcessed;
         if (rowsProcessed == maximumProcessRows)
             break;
