@@ -3,9 +3,7 @@ QT = core-private
 CONFIG += link_pkgconfig
 MODULE_CONFIG = dbusadaptors dbusinterfaces
 
-!isEmpty(DBUS_PATH) {
-    INCLUDEPATH += $$DBUS_PATH/include
-    QMAKE_LIBDIR += $$DBUS_PATH/lib
+!contains(QT_LIBS_DBUS, .*dbus-1.*) {
     win32:CONFIG(debug, debug|release):QT_LIBS_DBUS += -ldbus-1d
     else:QT_LIBS_DBUS += -ldbus-1
 }

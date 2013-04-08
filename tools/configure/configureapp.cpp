@@ -988,7 +988,7 @@ void Configure::parseCmdLine()
         } else if (configCmdLine.at(i).startsWith("OPENSSL_LIBS_RELEASE=")) {
             opensslLibsRelease = configCmdLine.at(i);
         } else if (configCmdLine.at(i).startsWith("OPENSSL_PATH=")) {
-            opensslPath = QDir::fromNativeSeparators(configCmdLine.at(i));
+            opensslPath = QDir::fromNativeSeparators(configCmdLine.at(i).section("=", 1));
         } else if (configCmdLine.at(i).startsWith("PSQL_LIBS=")) {
             psqlLibs = configCmdLine.at(i);
         } else if (configCmdLine.at(i).startsWith("SYBASE=")) {
@@ -996,9 +996,9 @@ void Configure::parseCmdLine()
         } else if (configCmdLine.at(i).startsWith("SYBASE_LIBS=")) {
             sybaseLibs = configCmdLine.at(i);
         } else if (configCmdLine.at(i).startsWith("DBUS_PATH=")) {
-            dbusPath = QDir::fromNativeSeparators(configCmdLine.at(i));
+            dbusPath = QDir::fromNativeSeparators(configCmdLine.at(i).section("=", 1));
         } else if (configCmdLine.at(i).startsWith("MYSQL_PATH=")) {
-            mysqlPath = QDir::fromNativeSeparators(configCmdLine.at(i));
+            mysqlPath = QDir::fromNativeSeparators(configCmdLine.at(i).section("=", 1));
         } else if (configCmdLine.at(i).startsWith("ZLIB_LIBS=")) {
             zlibLibs = QDir::fromNativeSeparators(configCmdLine.at(i));
         }
@@ -2811,13 +2811,19 @@ void Configure::generateOutputVars()
         } else if (opensslLibs.isEmpty()) {
             qmakeVars += QString("OPENSSL_LIBS    = -lssleay32 -llibeay32");
         }
-        if (!opensslPath.isEmpty())
-            qmakeVars += opensslPath;
+        if (!opensslPath.isEmpty()) {
+            qmakeVars += QString("OPENSSL_CFLAGS += -I%1/include").arg(opensslPath);
+            qmakeVars += QString("OPENSSL_LIBS += -L%1/lib").arg(opensslPath);
+        }
     }
-    if (dictionary[ "DBUS" ] != "no" && !dbusPath.isEmpty())
-        qmakeVars += dbusPath;
-    if (dictionary[ "SQL_MYSQL" ] != "no" && !mysqlPath.isEmpty())
-        qmakeVars += mysqlPath;
+    if (dictionary[ "DBUS" ] != "no" && !dbusPath.isEmpty()) {
+        qmakeVars += QString("QT_CFLAGS_DBUS = -I%1/include").arg(dbusPath);
+        qmakeVars += QString("QT_LIBS_DBUS = -L%1/lib").arg(dbusPath);
+    }
+    if (dictionary[ "SQL_MYSQL" ] != "no" && !mysqlPath.isEmpty()) {
+        qmakeVars += QString("QT_CFLAGS_MYSQL = -I%1/include").arg(mysqlPath);
+        qmakeVars += QString("QT_LFLAGS_MYSQL = -L%1/lib").arg(mysqlPath);
+    }
     if (!psqlLibs.isEmpty())
         qmakeVars += QString("QT_LFLAGS_PSQL=") + psqlLibs.section("=", 1);
     if (!zlibLibs.isEmpty())
