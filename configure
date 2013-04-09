@@ -2565,14 +2565,7 @@ if [ -z "$PLATFORM" ]; then
         "
         ;;
      Linux:*)
-        case "$UNAME_MACHINE" in
-            x86_64|s390x|ppc64)
-                PLATFORM=linux-g++-64
-                ;;
-            *)
-                PLATFORM=linux-g++
-                ;;
-        esac
+        PLATFORM=linux-g++
         PLATFORM_NOTES="
             - Also available for Linux: linux-kcc linux-icc linux-cxx
         "
