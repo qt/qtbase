@@ -1132,15 +1132,14 @@ void QDB2Result::detachFromResultSet()
 /************************************/
 
 QDB2Driver::QDB2Driver(QObject* parent)
-    : QSqlDriver(parent)
+    : QSqlDriver(*new QDB2DriverPrivate, parent)
 {
-    d = new QDB2DriverPrivate;
 }
 
 QDB2Driver::QDB2Driver(Qt::HANDLE env, Qt::HANDLE con, QObject* parent)
-    : QSqlDriver(parent)
+    : QSqlDriver(*new QDB2DriverPrivate, parent)
 {
-    d = new QDB2DriverPrivate;
+    Q_D(QDB2Driver);
     d->hEnv = (SQLHANDLE)env;
     d->hDbc = (SQLHANDLE)con;
     if (env && con) {
@@ -1157,6 +1156,7 @@ QDB2Driver::~QDB2Driver()
 bool QDB2Driver::open(const QString& db, const QString& user, const QString& password, const QString& host, int port,
                        const QString& connOpts)
 {
+    Q_D(QDB2Driver);
     if (isOpen())
       close();
     SQLRETURN r;
@@ -1259,6 +1259,7 @@ bool QDB2Driver::open(const QString& db, const QString& user, const QString& pas
 
 void QDB2Driver::close()
 {
+    Q_D(QDB2Driver);
     SQLRETURN r;
     if (d->hDbc) {
         // Open statements/descriptors handles are automatically cleaned up by SQLDisconnect
@@ -1285,11 +1286,13 @@ void QDB2Driver::close()
 
 QSqlResult *QDB2Driver::createResult() const
 {
+    Q_D(const QDB2Driver);
     return new QDB2Result(this, d);
 }
 
 QSqlRecord QDB2Driver::record(const QString& tableName) const
 {
+    Q_D(const QDB2Driver);
     QSqlRecord fil;
     if (!isOpen())
         return fil;
@@ -1363,6 +1366,7 @@ QSqlRecord QDB2Driver::record(const QString& tableName) const
 
 QStringList QDB2Driver::tables(QSql::TableType type) const
 {
+    Q_D(const QDB2Driver);
     QStringList tl;
     if (!isOpen())
         return tl;
@@ -1434,6 +1438,7 @@ QStringList QDB2Driver::tables(QSql::TableType type) const
 
 QSqlIndex QDB2Driver::primaryIndex(const QString& tablename) const
 {
+    Q_D(const QDB2Driver);
     QSqlIndex index(tablename);
     if (!isOpen())
         return index;
@@ -1535,6 +1540,7 @@ bool QDB2Driver::beginTransaction()
 
 bool QDB2Driver::commitTransaction()
 {
+    Q_D(QDB2Driver);
     if (!isOpen()) {
         qWarning("QDB2Driver::commitTransaction: Database not open");
         return false;
@@ -1552,6 +1558,7 @@ bool QDB2Driver::commitTransaction()
 
 bool QDB2Driver::rollbackTransaction()
 {
+    Q_D(QDB2Driver);
     if (!isOpen()) {
         qWarning("QDB2Driver::rollbackTransaction: Database not open");
         return false;
@@ -1569,6 +1576,7 @@ bool QDB2Driver::rollbackTransaction()
 
 bool QDB2Driver::setAutoCommit(bool autoCommit)
 {
+    Q_D(QDB2Driver);
     SQLUINTEGER ac = autoCommit ? SQL_AUTOCOMMIT_ON : SQL_AUTOCOMMIT_OFF;
     SQLRETURN r  = SQLSetConnectAttr(d->hDbc,
                                       SQL_ATTR_AUTOCOMMIT,
@@ -1627,6 +1635,7 @@ QString QDB2Driver::formatValue(const QSqlField &field, bool trimStrings) const
 
 QVariant QDB2Driver::handle() const
 {
+    Q_D(const QDB2Driver);
     return QVariant(qRegisterMetaType<SQLHANDLE>("SQLHANDLE"), &d->hDbc);
 }
 

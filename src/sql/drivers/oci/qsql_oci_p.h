@@ -73,6 +73,7 @@ class QOCIDriverPrivate;
 
 class Q_EXPORT_SQLDRIVER_OCI QOCIDriver : public QSqlDriver
 {
+    Q_DECLARE_PRIVATE(QOCIDriver)
     Q_OBJECT
     friend struct QOCIResultPrivate;
     friend class QOCIPrivate;
@@ -101,8 +102,6 @@ protected:
     bool                beginTransaction();
     bool                commitTransaction();
     bool                rollbackTransaction();
-private:
-    QOCIDriverPrivate *d;
 };
 
 QT_END_NAMESPACE
