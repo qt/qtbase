@@ -493,7 +493,7 @@ void QVector<T>::reallocData(const int asize, const int aalloc, QArrayData::Allo
             }
             x->capacityReserved = d->capacityReserved;
         } else {
-            Q_ASSERT(d->alloc == aalloc); // resize, without changing allocation size
+            Q_ASSERT(int(d->alloc) == aalloc); // resize, without changing allocation size
             Q_ASSERT(isDetached());       // can be done only on detached d
             Q_ASSERT(x == d);             // in this case we do not need to allocate anything
             if (asize <= d->size) {
