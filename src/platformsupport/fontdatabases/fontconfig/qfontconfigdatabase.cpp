@@ -356,7 +356,7 @@ static bool isSymbolFont(FontFile *fontFile)
         return false;
 
     QFontEngine::FaceId id;
-    id.filename = fontFile->fileName.toLocal8Bit();
+    id.filename = QFile::encodeName(fontFile->fileName);
     id.index = fontFile->indexValue;
 
     QFreetypeFace *f = QFreetypeFace::getFace(id);
@@ -567,7 +567,7 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QChar::Script sc
     QFontEngineFT *engine;
     FontFile *fontfile = static_cast<FontFile *> (usrPtr);
     QFontEngine::FaceId fid;
-    fid.filename = fontfile->fileName.toLocal8Bit();
+    fid.filename = QFile::encodeName(fontfile->fileName);
     fid.index = fontfile->indexValue;
 
     bool antialias = !(fontDef.styleStrategy & QFont::NoAntialias);
