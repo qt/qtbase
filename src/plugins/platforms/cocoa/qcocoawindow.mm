@@ -211,9 +211,8 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     m_qtView = [[QNSView alloc] initWithQWindow:tlw platformWindow:this];
     m_contentView = m_qtView;
     setGeometry(tlw->geometry());
-
     recreateWindow(parent());
-
+    tlw->setGeometry(geometry());
     m_inConstructor = false;
 }
 
