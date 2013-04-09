@@ -107,8 +107,6 @@ public:
     static QString fontNameSubstitute(const QString &familyName);
 
 private:
-    friend class QRawFontPrivate;
-
     QImage imageForGlyph(glyph_t t, QFixed subPixelPosition, int margin, const QTransform &xform);
     void collectMetrics();
 
