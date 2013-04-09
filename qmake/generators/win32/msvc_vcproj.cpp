@@ -981,12 +981,8 @@ void VcprojGenerator::initConfiguration()
         initDeploymentTool();
     initPreLinkEventTools();
 
-    // Set definite values in both configurations
-    if (isDebug) {
-        conf.compiler.PreprocessorDefinitions.removeAll("NDEBUG");
-    } else {
+    if (!isDebug)
         conf.compiler.PreprocessorDefinitions += "NDEBUG";
-    }
 }
 
 void VcprojGenerator::initCompilerTool()
