@@ -6608,6 +6608,50 @@ fi
 #-------------------------------------------------------------------------------
 exec 3>&1 1>$outpath/config.summary # redirect output temporarily to config.summary
 
+report_support()
+{
+    case "$#,$2" in
+        2,auto)
+            # 2 arguments and the result is "auto", so just say "yes"
+            # this is usually an error in the configure script, but oh well..
+            echo "$1 yes"
+            return
+            ;;
+        [012],* | *,no*)
+            # 0, 1 or 2 arguments, or anything starting with "no"
+            # print just the first part of the argument (before the dash)
+            echo "$1 ${2%%-*}"
+            return
+            :;
+    esac
+    local heading
+    heading=$1
+    shift
+
+    local value
+    value=$1
+    shift
+
+    while [ $# -gt 0 ]; do
+        if [ "$value" = "$1" ]; then
+            echo "$heading yes ($2)"
+            return
+        fi
+        shift
+        shift
+    done
+    echo "$heading $value"
+}
+
+report_support_plugin()
+{
+    report_support "$1" "$2-$3" \
+        yes-qt "in $4, using bundled copy" \
+        yes-system "in $4, using system library" \
+        plugin-qt "plugin, using bundled copy" \
+        plugin-system "plugin, using system library"
+}
+
 echo
 echo "   Configure summary"
 echo
@@ -6665,142 +6709,89 @@ fi
 # Qt modules
 echo
 echo "Qt modules and options:"
-[ "$CFG_DBUS" = "no" ]     && echo "  Qt D-Bus ............... no"
-[ "$CFG_DBUS" = "yes" ]    && echo "  Qt D-Bus ............... yes (loading dbus-1 at runtime)"
-[ "$CFG_DBUS" = "linked" ] && echo "  Qt D-Bus ............... yes (linked to dbus-1)"
-echo "  Qt Concurrent .......... $CFG_CONCURRENT"
-echo "  Qt GUI ................. $CFG_GUI"
-echo "  Qt Widgets ............. $CFG_WIDGETS"
-if [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
-    echo "  JavaScriptCore JIT ..... To be decided by JavaScriptCore"
-else
-    echo "  JavaScriptCore JIT ..... $CFG_JAVASCRIPTCORE_JIT"
-fi
-echo "  QML debugging .......... $CFG_QML_DEBUG"
-echo "  Use system proxies ..... $CFG_SYSTEM_PROXIES"
+report_support "  Qt D-Bus ..............." "$CFG_DBUS" yes "loading dbus-1 at runtime" linked "linked to dbus-1"
+report_support "  Qt Concurrent .........." "$CFG_CONCURRENT"
+report_support "  Qt GUI ................." "$CFG_GUI"
+report_support "  Qt Widgets ............." "$CFG_WIDGETS"
+report_support "  JavaScriptCore JIT ....." "$CFG_JAVASCRIPTCORE_JIT" auto "To be decided by JavaScriptCore"
+report_support "  QML debugging .........." "$CFG_QML_DEBUG"
+report_support "  Use system proxies ....." "$CFG_SYSTEM_PROXIES"
 
 # Other things
 # Please keep sorted and properly grouped! The output is quite long, so it's
 # hard to find something you're searching for if it's not sorted.
 echo
 echo "Support enabled for:"
-echo "  Accessibility .......... $CFG_ACCESSIBILITY"
-echo "  ALSA ................... $CFG_ALSA"
-echo "  CUPS ................... $CFG_CUPS"
+report_support "  Accessibility .........." "$CFG_ACCESSIBILITY"
+report_support "  ALSA ..................." "$CFG_ALSA"
+report_support "  CUPS ..................." "$CFG_CUPS"
 [ "$XPLATFORM_MINGW" = "yes" ] && \
-    echo "  DirectWrite ............ $CFG_DIRECTWRITE"
-echo "  FontConfig ............. $CFG_FONTCONFIG"
-echo "  Iconv .................. $CFG_ICONV"
-echo "  ICU .................... $CFG_ICU"
-echo "  Image formats:"
-echo "    GIF .................. $CFG_GIF"
-if [ "$CFG_JPEG" = "no" ]; then
-    echo "    JPEG ................. $CFG_JPEG"
-else
-    echo "    JPEG ................. $CFG_JPEG ($CFG_LIBJPEG)"
-fi
-if [ "$CFG_PNG" = "no" ]; then
-    echo "    PNG .................. $CFG_PNG"
-else
-    echo "    PNG .................. $CFG_PNG ($CFG_LIBPNG)"
-fi
-echo "  Glib ................... $CFG_GLIB"
-echo "  GStreamer .............. $CFG_GSTREAMER"
-echo "  GTK theme .............. $CFG_QGTKSTYLE"
-echo "  Large Files ............ $CFG_LARGEFILE"
-echo "  Networking:"
+    report_support "  DirectWrite ............" "$CFG_DIRECTWRITE"
+report_support "  FontConfig ............." "$CFG_FONTCONFIG"
+report_support "  Iconv .................." "$CFG_ICONV"
+report_support "  ICU ...................." "$CFG_ICU"
+report_support "  Image formats:"
+report_support_plugin "    GIF .................." "$CFG_GIF" system QtGui
+report_support_plugin "    JPEG ................." "$CFG_JPEG" "$CFG_LIBJPEG" QtGui
+report_support_plugin "    PNG .................." "$CFG_PNG" "$CFG_LIBPNG" QtGui
+report_support "  Glib ..................." "$CFG_GLIB"
+report_support "  GStreamer .............." "$CFG_GSTREAMER"
+report_support "  GTK theme .............." "$CFG_QGTKSTYLE"
+report_support "  Large File ............." "$CFG_LARGEFILE"
+report_support "  libudev ................" "$CFG_LIBUDEV"
+report_support "  Networking:"
 [ "$BUILD_ON_MAC" = "yes" ] && \
-    echo "    CoreWlan ............. $CFG_COREWLAN"
-echo "    getaddrinfo .......... $CFG_GETADDRINFO"
-echo "    getifaddrs ........... $CFG_GETIFADDRS"
-echo "    IPv6 ifname .......... $CFG_IPV6IFNAME"
-OPENSSL_LINKAGE=""
-if [ "$CFG_OPENSSL" = "yes" ]; then
-    OPENSSL_LINKAGE="(loading libraries at run-time)"
-elif [ "$CFG_OPENSSL" = "linked" ]; then
-    OPENSSL_LINKAGE="(linked to the libraries)"
-fi
-echo "    OpenSSL .............. $CFG_OPENSSL $OPENSSL_LINKAGE"
-unset OPENSSL_LINKAGE
-echo "  NIS .................... $CFG_NIS"
-if [ "$CFG_OPENGL" = "desktop" ]; then
-    echo "  OpenGL ................. yes (Desktop OpenGL)"
-elif [ "$CFG_OPENGL" = "es2" ]; then
-    echo "  OpenGL ................. yes (OpenGL ES 2.x)"
-else
-    echo "  OpenGL ................. no"
-fi
-if [ "$CFG_OPENVG" ]; then
-    if [ "$CFG_OPENVG_SHIVA" = "yes" ]; then
-        echo "  OpenVG ................. ShivaVG"
-    else
-        echo "  OpenVG ................. $CFG_OPENVG"
-    fi
-fi
-if [ "$CFG_PCRE" = "no" ]; then
-    echo "  PCRE ................... no"
-else
-    pcre_sys=system
-    [ "$CFG_PCRE" = "qt" ] && pcre_sys=qt
-    echo "  PCRE ................... yes ($pcre_sys)"
-    unset pcre_sys
-fi
+    report_support "    CoreWlan ............." "$CFG_COREWLAN"
+report_support "    getaddrinfo .........." "$CFG_GETADDRINFO"
+report_support "    getifaddrs ..........." "$CFG_GETIFADDRS"
+report_support "    IPv6 ifname .........." "$CFG_IPV6IFNAME"
+report_support "    OpenSSL .............." "$CFG_OPENSSL" yes "loading libraries at run-time" linked "linked to the libraries"
+report_support "  NIS ...................." "$CFG_NIS"
+report_support "  OpenGL ................." "$CFG_OPENGL" yes "Desktop OpenGL" es2 "OpenGL ES 2.x"
+report_support "  OpenVG ................." "$CFG_OPENVG-$CFG_OPENVG_SHIVA" yes-yes "ShivaVG" yes-no "native"
+report_support "  PCRE ..................." "$CFG_PCRE" yes "system library" qt "bundled copy"
 if [ -n "$PKG_CONFIG" ]; then
-    echo "  pkg-config ............. yes"
+    report_support "  pkg-config ............. yes"
 else
-    echo "  pkg-config ............. no"
+    report_support "  pkg-config ............. no"
 fi
-echo "  PulseAudio ............. $CFG_PULSEAUDIO"
-echo "  QPA backends:"
-echo "    DirectFB ............. $CFG_DIRECTFB"
-echo "    EGLFS ................ $CFG_EGLFS"
-echo "    KMS .................. $CFG_KMS"
-echo "    LinuxFB .............. $CFG_LINUXFB"
-echo "    XCB .................. $CFG_XCB"
+report_support "  PulseAudio ............." "$CFG_PULSEAUDIO"
+report_support "  QPA backends:"
+report_support "    DirectFB ............." "$CFG_DIRECTFB"
+report_support "    EGLFS ................" "$CFG_EGLFS"
+report_support "    KMS .................." "$CFG_KMS"
+report_support "    LinuxFB .............." "$CFG_LINUXFB"
+report_support "    XCB .................." "$CFG_XCB" system "system library" qt "bundled copy"
 if [ "$CFG_XCB" != "no" ]; then
-    echo "      MIT-SHM ............ $CFG_MITSHM"
-    echo "      Xcursor ............ $CFG_XCURSOR"
-    echo "      Xfixes ............. $CFG_XFIXES"
-    echo "      Xi ................. $CFG_XINPUT"
-    echo "      Xi2 ................ $CFG_XINPUT2"
-    echo "      Xinerama ........... $CFG_XINERAMA"
-    echo "      Xrandr ............. $CFG_XRANDR"
-    echo "      Xrender ............ $CFG_XRENDER"
-    echo "      XKB ................ $CFG_XKB"
-    echo "      XShape ............. $CFG_XSHAPE"
-    echo "      XSync .............. $CFG_XSYNC"
-    echo "      XVideo ............. $CFG_XVIDEO"
+    report_support "      MIT-SHM ............" "$CFG_MITSHM"
+    report_support "      Xcursor ............" "$CFG_XCURSOR" runtime "loaded at runtime"
+    report_support "      Xfixes ............." "$CFG_XFIXES" runtime "loaded at runtime"
+    report_support "      Xi ................." "$CFG_XINPUT" runtime "loaded at runtime"
+    report_support "      Xi2 ................" "$CFG_XINPUT2" runtime "loaded at runtime"
+    report_support "      Xinerama ..........." "$CFG_XINERAMA" runtime "loaded at runtime"
+    report_support "      Xrandr ............." "$CFG_XRANDR" runtime "loaded at runtime"
+    report_support "      Xrender ............" "$CFG_XRENDER"
+    report_support "      XKB ................" "$CFG_XKB"
+    report_support "      XShape ............." "$CFG_XSHAPE"
+    report_support "      XSync .............." "$CFG_XSYNC"
+    report_support "      XVideo ............." "$CFG_XVIDEO"
 fi
-echo "  Session management ..... $CFG_SM"
+report_support "  Session management ....." "$CFG_SM"
 [ "$XPLATFORM_QNX" = "yes" ] && \
-    echo "  SLOG2 .................. $CFG_SLOG2"
-echo "  SQL drivers:"
-echo "    DB2 .................. $CFG_SQL_db2"
-echo "    InterBase ............ $CFG_SQL_ibase"
-echo "    MySQL ................ $CFG_SQL_mysql"
-echo "    OCI .................. $CFG_SQL_oci"
-echo "    ODBC ................. $CFG_SQL_odbc"
-echo "    PostgreSQL ........... $CFG_SQL_psql"
-echo "    SQLite 2 ............. $CFG_SQL_sqlite2"
-echo "    SQLite ............... $CFG_SQL_sqlite ($CFG_SQLITE)"
-echo "    TDS .................. $CFG_SQL_tds"
-echo "  udev ................... $CFG_LIBUDEV"
-if [ "$CFG_XKBCOMMON" = "no" ]; then
-    echo "  xkbcommon............... no"
-else
-    xkbcommon_sys=system
-    [ "$CFG_XKBCOMMON" = "qt" ] && xkbcommon_sys=qt
-    echo "  xkbcommon............... yes ($xkbcommon_sys)"
-    unset xkbcommon_sys
-fi
-if [ "$CFG_ZLIB" = "no" ]; then
-    echo "  zlib ................... no"
-else
-    zlib_sys=system
-    [ "$CFG_ZLIB" = "yes" ] && zlib_sys=qt
-    echo "  zlib ................... yes ($zlib_sys)"
-    unset zlib_sys
-fi
+    report_support "  SLOG2 .................." "$CFG_SLOG2"
+report_support "  SQL drivers:"
+report_support "    DB2 .................." "$CFG_SQL_db2" plugin "plugin" yes "built into QtSql"
+report_support "    InterBase ............" "$CFG_SQL_ibase" plugin "plugin" yes "built into QtSql"
+report_support "    MySQL ................" "$CFG_SQL_mysql" plugin "plugin" yes "built into QtSql"
+report_support "    OCI .................." "$CFG_SQL_oci" plugin "plugin" yes "built into QtSql"
+report_support "    ODBC ................." "$CFG_SQL_odbc" plugin "plugin" yes "built into QtSql"
+report_support "    PostgreSQL ..........." "$CFG_SQL_psql" plugin "plugin" yes "built into QtSql"
+report_support "    SQLite 2 ............." "$CFG_SQL_sqlite2" plugin "plugin" yes "built into QtSql"
+report_support_plugin "    SQLite ..............." "$CFG_SQL_sqlite" "$CFG_SQLITE" QtSql
+report_support "    TDS .................." "$CFG_SQL_tds" plugin "plugin" yes "built into QtSql"
+report_support "  udev ..................." "$CFG_LIBUDEV"
+report_support "  xkbcommon .............." "$CFG_XKBCOMMON" system "system library" qt "bundled copy"
+report_support "  zlib ..................." "$CFG_ZLIB" system "system library" yes "bundled copy"
 
 echo
 
