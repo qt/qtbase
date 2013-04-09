@@ -2017,6 +2017,8 @@ void tst_QTreeView::clicked()
     view.setModel(&model);
     view.show();
 
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
     QModelIndex firstIndex = model.index(0, 0, QModelIndex());
     QVERIFY(firstIndex.isValid());
     int itemHeight = view.visualRect(firstIndex).height();
