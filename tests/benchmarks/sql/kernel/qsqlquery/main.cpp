@@ -44,7 +44,7 @@
 
 #include "../../../../auto/sql/kernel/qsqldatabase/tst_databases.h"
 
-const QString qtest(qTableName( "qtest", __FILE__ ));
+const QString qtest(qTableName("qtest", __FILE__, QSqlDatabase()));
 
 class tst_QSqlQuery : public QObject
 {
@@ -149,56 +149,56 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
     QStringList tablenames;
     // drop all the table in case a testcase failed
     tablenames <<  qtest
-               << qTableName( "qtest_null", __FILE__ )
-               << qTableName( "qtest_blob", __FILE__ )
-               << qTableName( "qtest_bittest", __FILE__ )
-               << qTableName( "qtest_nullblob", __FILE__ )
-               << qTableName( "qtest_rawtest", __FILE__ )
-               << qTableName( "qtest_precision", __FILE__ )
-               << qTableName( "qtest_prepare", __FILE__ )
-               << qTableName( "qtestj1", __FILE__ )
-               << qTableName( "qtestj2", __FILE__ )
-               << qTableName( "char1Select", __FILE__ )
-               << qTableName( "char1SU", __FILE__ )
-               << qTableName( "qxmltest", __FILE__ )
-               << qTableName( "qtest_exerr", __FILE__ )
-               << qTableName( "qtest_empty", __FILE__ )
-               << qTableName( "clobby", __FILE__ )
-               << qTableName( "bindtest", __FILE__ )
-               << qTableName( "more_results", __FILE__ )
-               << qTableName( "blobstest", __FILE__ )
-               << qTableName( "oraRowId", __FILE__ )
-               << qTableName( "qtest_batch", __FILE__ )
-               << qTableName("bug6421", __FILE__).toUpper()
-               << qTableName("bug5765", __FILE__)
-               << qTableName("bug6852", __FILE__)
-               << qTableName( "qtest_lockedtable", __FILE__ )
-               << qTableName( "Planet", __FILE__ )
-               << qTableName( "task_250026", __FILE__ )
-               << qTableName( "task_234422", __FILE__ )
-               << qTableName("test141895", __FILE__)
-               << qTableName("qtest_oraOCINumber", __FILE__);
+               << qTableName("qtest_null", __FILE__, db)
+               << qTableName("qtest_blob", __FILE__, db)
+               << qTableName("qtest_bittest", __FILE__, db)
+               << qTableName("qtest_nullblob", __FILE__, db)
+               << qTableName("qtest_rawtest", __FILE__, db)
+               << qTableName("qtest_precision", __FILE__, db)
+               << qTableName("qtest_prepare", __FILE__, db)
+               << qTableName("qtestj1", __FILE__, db)
+               << qTableName("qtestj2", __FILE__, db)
+               << qTableName("char1Select", __FILE__, db)
+               << qTableName("char1SU", __FILE__, db)
+               << qTableName("qxmltest", __FILE__, db)
+               << qTableName("qtest_exerr", __FILE__, db)
+               << qTableName("qtest_empty", __FILE__, db)
+               << qTableName("clobby", __FILE__, db)
+               << qTableName("bindtest", __FILE__, db)
+               << qTableName("more_results", __FILE__, db)
+               << qTableName("blobstest", __FILE__, db)
+               << qTableName("oraRowId", __FILE__, db)
+               << qTableName("qtest_batch", __FILE__, db)
+               << qTableName("bug6421", __FILE__, db).toUpper()
+               << qTableName("bug5765", __FILE__, db)
+               << qTableName("bug6852", __FILE__, db)
+               << qTableName("qtest_lockedtable", __FILE__, db)
+               << qTableName("Planet", __FILE__, db)
+               << qTableName("task_250026", __FILE__, db)
+               << qTableName("task_234422", __FILE__, db)
+               << qTableName("test141895", __FILE__, db)
+               << qTableName("qtest_oraOCINumber", __FILE__, db);
 
     if ( db.driverName().startsWith("QPSQL") )
-        tablenames << qTableName("task_233829", __FILE__);
+        tablenames << qTableName("task_233829", __FILE__, db);
 
     if ( db.driverName().startsWith("QSQLITE") )
-        tablenames << qTableName( "record_sqlite", __FILE__ );
+        tablenames << qTableName("record_sqlite", __FILE__, db);
 
     if ( tst_Databases::isSqlServer( db ) || db.driverName().startsWith( "QOCI" ) )
-        tablenames << qTableName( "qtest_longstr", __FILE__ );
+        tablenames << qTableName("qtest_longstr", __FILE__, db);
 
     if (tst_Databases::isSqlServer( db ))
-        db.exec("DROP PROCEDURE " + qTableName("test141895_proc", __FILE__));
+        db.exec("DROP PROCEDURE " + qTableName("test141895_proc", __FILE__, db));
 
     if (tst_Databases::isMySQL( db ))
-        db.exec("DROP PROCEDURE IF EXISTS "+qTableName("bug6852_proc", __FILE__));
+        db.exec("DROP PROCEDURE IF EXISTS "+qTableName("bug6852_proc", __FILE__, db));
 
     tst_Databases::safeDropTables( db, tablenames );
 
     if ( db.driverName().startsWith( "QOCI" ) ) {
         QSqlQuery q( db );
-        q.exec( "DROP PACKAGE " + qTableName("pkg", __FILE__) );
+        q.exec("DROP PACKAGE " + qTableName("pkg", __FILE__, db));
     }
 }
 
@@ -219,15 +219,15 @@ void tst_QSqlQuery::createTestTables( QSqlDatabase db )
         QVERIFY_SQL( q, exec( "create table " + qtest + " (id int "+tst_Databases::autoFieldName(db) +" NOT NULL, t_varchar varchar(20), t_char char(20), primary key(id))" ) );
 
     if ( tst_Databases::isSqlServer( db ) || db.driverName().startsWith( "QTDS" ) )
-        QVERIFY_SQL( q, exec( "create table " + qTableName( "qtest_null", __FILE__ ) + " (id int null, t_varchar varchar(20) null)" ) );
+        QVERIFY_SQL(q, exec("create table " + qTableName("qtest_null", __FILE__, db) + " (id int null, t_varchar varchar(20) null)" ) );
     else
-        QVERIFY_SQL( q, exec( "create table " + qTableName( "qtest_null", __FILE__ ) + " (id int, t_varchar varchar(20))" ) );
+        QVERIFY_SQL(q, exec("create table " + qTableName("qtest_null", __FILE__, db) + " (id int, t_varchar varchar(20))" ) );
 }
 
 void tst_QSqlQuery::populateTestTables( QSqlDatabase db )
 {
     QSqlQuery q( db );
-    const QString qtest_null(qTableName( "qtest_null", __FILE__ ));
+    const QString qtest_null(qTableName("qtest_null", __FILE__, db));
     q.exec( "delete from " + qtest );
     QVERIFY_SQL( q, exec( "insert into " + qtest + " values (1, 'VarChar1', 'Char1')" ) );
     QVERIFY_SQL( q, exec( "insert into " + qtest + " values (2, 'VarChar2', 'Char2')" ) );
@@ -251,7 +251,7 @@ void tst_QSqlQuery::benchmark()
         QSKIP( "Test requires MySQL >= 5.0");
 
     QSqlQuery q(db);
-    const QString tableName(qTableName("benchmark", __FILE__));
+    const QString tableName(qTableName("benchmark", __FILE__, db));
 
     tst_Databases::safeDropTable( db, tableName );
 

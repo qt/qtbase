@@ -88,6 +88,12 @@ QSizeF QEglFSScreen::physicalSize() const
     return QEglFSHooks::hooks()->physicalScreenSize();
 }
 
+QDpi QEglFSScreen::logicalDpi() const
+{
+    return QEglFSHooks::hooks()->logicalDpi();
+}
+
+
 QPlatformCursor *QEglFSScreen::cursor() const
 {
     return m_cursor;

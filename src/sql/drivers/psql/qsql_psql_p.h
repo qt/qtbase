@@ -103,6 +103,7 @@ class QPSQLDriverPrivate;
 class Q_EXPORT_SQLDRIVER_PSQL QPSQLDriver : public QSqlDriver
 {
     friend class QPSQLResultPrivate;
+    Q_DECLARE_PRIVATE(QPSQLDriver)
 
     Q_OBJECT
 public:
@@ -155,10 +156,6 @@ protected:
 
 private Q_SLOTS:
     void _q_handleNotification(int);
-
-private:
-    void init();
-    QPSQLDriverPrivate *d;
 };
 
 QT_END_NAMESPACE

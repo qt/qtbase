@@ -123,6 +123,7 @@ private:
 
 class Q_EXPORT_SQLDRIVER_ODBC QODBCDriver : public QSqlDriver
 {
+    Q_DECLARE_PRIVATE(QODBCDriver)
     Q_OBJECT
 public:
     explicit QODBCDriver(QObject *parent=0);
@@ -154,10 +155,8 @@ protected:
     bool rollbackTransaction();
 
 private:
-    void init();
     bool endTrans();
     void cleanup();
-    QODBCDriverPrivate* d;
     friend class QODBCPrivate;
 };
 

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2002-2010 The ANGLE Project Authors. All rights reserved.
+// Copyright (c) 2002-2013 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -15,6 +15,8 @@
 
 #ifndef __INTERMEDIATE_H
 #define __INTERMEDIATE_H
+
+#include "GLSLANG/ShaderLang.h"
 
 #include "compiler/Common.h"
 #include "compiler/Types.h"
@@ -181,7 +183,7 @@ enum TOperator {
     EOpVectorTimesScalarAssign,
     EOpMatrixTimesScalarAssign,
     EOpMatrixTimesMatrixAssign,
-    EOpDivAssign,
+    EOpDivAssign
 };
 
 extern const char* getOperatorString(TOperator op);
@@ -257,6 +259,10 @@ public:
     const char* getQualifierString() const { return type.getQualifierString(); }
     TString getCompleteString() const { return type.getCompleteString(); }
 
+    int totalRegisterCount() const { return type.totalRegisterCount(); }
+    int elementRegisterCount() const { return type.elementRegisterCount(); }
+    int getArraySize() const { return type.getArraySize(); }
+
 protected:
     TType type;
 };
@@ -267,7 +273,7 @@ protected:
 enum TLoopType {
     ELoopFor,
     ELoopWhile,
-    ELoopDoWhile,
+    ELoopDoWhile
 };
 
 class TIntermLoop : public TIntermNode {
@@ -356,7 +362,10 @@ public:
     TIntermConstantUnion(ConstantUnion *unionPointer, const TType& t) : TIntermTyped(t), unionArrayPointer(unionPointer) { }
 
     ConstantUnion* getUnionArrayPointer() const { return unionArrayPointer; }
-    void setUnionArrayPointer(ConstantUnion *c) { unionArrayPointer = c; }
+    
+    int getIConst(int index) const { return unionArrayPointer ? unionArrayPointer[index].getIConst() : 0; }
+    float getFConst(int index) const { return unionArrayPointer ? unionArrayPointer[index].getFConst() : 0.0f; }
+    bool getBConst(int index) const { return unionArrayPointer ? unionArrayPointer[index].getBConst() : false; }
 
     virtual TIntermConstantUnion* getAsConstantUnion()  { return this; }
     virtual void traverse(TIntermTraverser*);
@@ -389,7 +398,7 @@ protected:
 //
 class TIntermBinary : public TIntermOperator {
 public:
-    TIntermBinary(TOperator o) : TIntermOperator(o) {}
+    TIntermBinary(TOperator o) : TIntermOperator(o), addIndexClamp(false) {}
 
     virtual TIntermBinary* getAsBinaryNode() { return this; }
     virtual void traverse(TIntermTraverser*);
@@ -400,9 +409,15 @@ public:
     TIntermTyped* getRight() const { return right; }
     bool promote(TInfoSink&);
 
+    void setAddIndexClamp() { addIndexClamp = true; }
+    bool getAddIndexClamp() { return addIndexClamp; }
+
 protected:
     TIntermTyped* left;
     TIntermTyped* right;
+
+    // If set to true, wrap any EOpIndexIndirect with a clamp to bounds.
+    bool addIndexClamp;
 };
 
 //
@@ -544,6 +559,10 @@ public:
 
     void incrementDepth() {depth++;}
     void decrementDepth() {depth--;}
+
+    // Return the original name if hash function pointer is NULL;
+    // otherwise return the hashed name.
+    static TString hash(const TString& name, ShHashFunction64 hashFunction);
 
     const bool preVisit;
     const bool inVisit;

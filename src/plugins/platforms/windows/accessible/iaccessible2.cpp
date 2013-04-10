@@ -1354,7 +1354,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_textBeforeOffset(long offse
     QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *textIface = textInterface()) {
-        const QString txt = textIface->textBeforeOffset(offset, (QAccessible2::BoundaryType)boundaryType, (int*)startOffset, (int*)endOffset);
+        const QString txt = textIface->textBeforeOffset(offset, (QAccessible::TextBoundaryType)boundaryType, (int*)startOffset, (int*)endOffset);
         if (!txt.isEmpty()) {
             *text = QStringToBSTR(txt);
             return S_OK;
@@ -1374,7 +1374,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_textAfterOffset(
     QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *textIface = textInterface()) {
-        const QString txt = textIface->textAfterOffset(offset, (QAccessible2::BoundaryType)boundaryType, (int*)startOffset, (int*)endOffset);
+        const QString txt = textIface->textAfterOffset(offset, (QAccessible::TextBoundaryType)boundaryType, (int*)startOffset, (int*)endOffset);
         if (!txt.isEmpty()) {
             *text = QStringToBSTR(txt);
             return S_OK;
@@ -1393,7 +1393,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_textAtOffset(long offset,
     QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
     if (QAccessibleTextInterface *textIface = textInterface()) {
-        const QString txt = textIface->textAtOffset(offset, (QAccessible2::BoundaryType)boundaryType, (int*)startOffset, (int*)endOffset);
+        const QString txt = textIface->textAtOffset(offset, (QAccessible::TextBoundaryType)boundaryType, (int*)startOffset, (int*)endOffset);
         if (!txt.isEmpty()) {
             *text = QStringToBSTR(txt);
             return S_OK;

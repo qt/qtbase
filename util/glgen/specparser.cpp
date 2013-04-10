@@ -253,7 +253,7 @@ void SpecParser::parseFunctions(QTextStream &stream)
             // Extract the OpenGL version in which this function was deprecated.
             // If it is OpenGL 3.1 then it must be a compatibility profile function
             QString deprecatedVersion = deprecatedRegExp.cap(1).simplified();
-            if (deprecatedVersion == QStringLiteral("3.1"))
+            if (deprecatedVersion == QStringLiteral("3.1") && !inDeprecationException(currentFunction.name))
                 currentVersionProfile.profile = VersionProfile::CompatibilityProfile;
 
         } else if (categoryRegExp.indexIn(line) != -1) {
@@ -304,4 +304,9 @@ void SpecParser::parseFunctions(QTextStream &stream)
 
     m_versions = versions.toList();
     qSort(m_versions);
+}
+
+bool SpecParser::inDeprecationException(const QString &functionName) const
+{
+    return (functionName == QStringLiteral("TexImage3D"));
 }

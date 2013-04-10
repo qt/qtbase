@@ -71,6 +71,7 @@ class QSQLiteDriver;
 
 class Q_EXPORT_SQLDRIVER_SQLITE QSQLiteDriver : public QSqlDriver
 {
+    Q_DECLARE_PRIVATE(QSQLiteDriver)
     Q_OBJECT
     friend class QSQLiteResult;
 public:
@@ -95,9 +96,6 @@ public:
     QSqlIndex primaryIndex(const QString &table) const;
     QVariant handle() const;
     QString escapeIdentifier(const QString &identifier, IdentifierType) const;
-
-private:
-    QSQLiteDriverPrivate* d;
 };
 
 QT_END_NAMESPACE

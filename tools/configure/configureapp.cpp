@@ -566,6 +566,9 @@ void Configure::parseCmdLine()
         else if (configCmdLine.at(i) == "-angle") {
             dictionary[ "ANGLE" ] = "yes";
             dictionary[ "ANGLE_FROM" ] = "commandline";
+        } else if (configCmdLine.at(i) == "-angle-d3d11") {
+            dictionary[ "ANGLE" ] = "d3d11";
+            dictionary[ "ANGLE_FROM" ] = "commandline";
         } else if (configCmdLine.at(i) == "-no-angle") {
             dictionary[ "ANGLE" ] = "no";
             dictionary[ "ANGLE_FROM" ] = "commandline";
@@ -1673,7 +1676,7 @@ bool Configure::displayHelp()
         desc(       "-libdir <dir>",                    "Libraries will be installed to <dir>\n(default PREFIX/lib)");
         desc(       "-headerdir <dir>",                 "Headers will be installed to <dir>\n(default PREFIX/include)");
         desc(       "-archdatadir <dir>",               "Architecture-dependent data used by Qt will be installed to <dir>\n(default PREFIX)");
-        desc(       "-libexecdir <dir>",                "Program executables will be installed to <dir>\n(default ARCHDATADIR/lib)");
+        desc(       "-libexecdir <dir>",                "Program executables will be installed to <dir>\n(default ARCHDATADIR/bin)");
         desc(       "-plugindir <dir>",                 "Plugins will be installed to <dir>\n(default ARCHDATADIR/plugins)");
         desc(       "-importdir <dir>",                 "Imports for QML1 will be installed to <dir>\n(default ARCHDATADIR/imports)");
         desc(       "-qmldir <dir>",                    "Imports for QML2 will be installed to <dir>\n(default ARCHDATADIR/qml)");
@@ -1838,6 +1841,7 @@ bool Configure::displayHelp()
         }
 
         desc("ANGLE", "yes",       "-angle",            "Use the ANGLE implementation of OpenGL ES 2.0.");
+        desc("ANGLE", "d3d11",     "-angle-d3d11",      "Use the Direct3D 11-based ANGLE implementation of OpenGL ES 2.0.");
         desc("ANGLE", "no",        "-no-angle",         "Do not use ANGLE.\nSee http://code.google.com/p/angleproject/\n");
 #endif
         // Qt\Windows only options go below here --------------------------------------------------------------------------------
@@ -2038,7 +2042,7 @@ bool Configure::checkAngleAvailability(QString *errorMessage /* = 0 */) const
         }
     }
 
-    const QString directXLibrary = QStringLiteral("d3d9.lib");
+    const QString directXLibrary = dictionary["ANGLE"] == "d3d11" ? QStringLiteral("d3d11.lib") : QStringLiteral("d3d9.lib");
     if (!findFile(directXLibrary)) {
         if (errorMessage)
             *errorMessage = QString::fromLatin1("The library '%1' could not be found.").arg(directXLibrary);
@@ -2368,7 +2372,7 @@ bool Configure::verifyConfiguration()
     }
 
     // -angle given on command line, but Direct X cannot be found.
-    if (dictionary["ANGLE"] == "yes") {
+    if (dictionary["ANGLE"] != "no") {
         QString errorMessage;
         if (!checkAngleAvailability(&errorMessage)) {
             cout << "WARNING: ANGLE specified, but the DirectX SDK could not be detected:" << endl
@@ -2505,8 +2509,11 @@ void Configure::generateOutputVars()
         qtConfig  += "icu";
 
     // ANGLE --------------------------------------------------------
-    if (dictionary[ "ANGLE" ] == "yes")
+    if (dictionary[ "ANGLE" ] != "no") {
         qtConfig  += "angle";
+        if (dictionary[ "ANGLE" ] == "d3d11")
+            qmakeConfig += "angle_d3d11";
+    }
 
     // Image formates -----------------------------------------------
     if (dictionary[ "GIF" ] == "no")
@@ -3685,7 +3692,7 @@ void Configure::generateQConfigCpp()
         dictionary["QT_INSTALL_ARCHDATA"] = qipempty ? "" : dictionary["QT_INSTALL_PREFIX"];
     if (!dictionary["QT_INSTALL_LIBEXECS"].size()) {
         if (dictionary["QT_INSTALL_ARCHDATA"] == dictionary["QT_INSTALL_PREFIX"])
-            dictionary["QT_INSTALL_LIBEXECS"] = qipempty ? "" : dictionary["QT_INSTALL_ARCHDATA"] + "/lib";
+            dictionary["QT_INSTALL_LIBEXECS"] = qipempty ? "" : dictionary["QT_INSTALL_ARCHDATA"] + "/bin";
         else
             dictionary["QT_INSTALL_LIBEXECS"] = qipempty ? "" : dictionary["QT_INSTALL_ARCHDATA"] + "/libexec";
     }

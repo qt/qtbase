@@ -118,6 +118,10 @@ public:
 
     void setReadBufferSize(qint64 size);
 
+    void connectToHost(const QHostAddress &address,
+                       quint16 port, OpenMode openMode = ReadWrite);
+    void diconnectFromHost();
+
 signals:
     void infoHashReceived(const QByteArray &infoHash);
     void readyToTransfer();
@@ -132,11 +136,6 @@ signals:
     void blockReceived(int pieceIndex, int begin, const QByteArray &data);
 
     void bytesReceived(qint64 size);
-
-protected slots:
-    void connectToHostImplementation(const QString &hostName,
-                                     quint16 port, OpenMode openMode = ReadWrite);
-    void diconnectFromHostImplementation();
 
 protected:
     void timerEvent(QTimerEvent *event);

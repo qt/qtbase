@@ -177,6 +177,20 @@ namespace QtAndroidMenu
             resetMenuBar();
     }
 
+    static QString removeAmpersandEscapes(QString s)
+    {
+        int i = 0;
+        while (i < s.size()) {
+            ++i;
+            if (s.at(i-1) != QLatin1Char('&'))
+                continue;
+            if (i < s.size() && s.at(i) == QLatin1Char('&'))
+                ++i;
+            s.remove(i-1,1);
+        }
+        return s.trimmed();
+    }
+
     static void fillMenuItem(JNIEnv *env, jobject menuItem, bool checkable, bool checked, bool enabled, bool visible, const QIcon &icon=QIcon())
     {
         env->CallObjectMethod(menuItem, setCheckableMenuItemMethodID, checkable);
@@ -204,8 +218,9 @@ namespace QtAndroidMenu
          foreach (QAndroidPlatformMenuItem *item, platformMenu->menuItems()) {
              if (item->isSeparator())
                  continue;
-             jstring jtext = env->NewString(reinterpret_cast<const jchar *>(item->text().data()),
-                                            item->text().length());
+             QString itemText = removeAmpersandEscapes(item->text());
+             jstring jtext = env->NewString(reinterpret_cast<const jchar *>(itemText.data()),
+                                           itemText.length());
              jobject menuItem = env->CallObjectMethod(menu,
                                                       addMenuItemMethodID,
                                                       menuNoneValue,
@@ -239,8 +254,9 @@ namespace QtAndroidMenu
             order = addAllMenuItemsToMenu(env, menu, static_cast<QAndroidPlatformMenu *>(menus.front()));
         } else {
             foreach (QAndroidPlatformMenu *item, menus) {
-                jstring jtext = env->NewString(reinterpret_cast<const jchar *>(item->text().data()),
-                                               item->text().length());
+                QString itemText = removeAmpersandEscapes(item->text());
+                jstring jtext = env->NewString(reinterpret_cast<const jchar *>(itemText.data()),
+                                               itemText.length());
                 jobject menuItem = env->CallObjectMethod(menu,
                                                          addMenuItemMethodID,
                                                          menuNoneValue,
@@ -299,8 +315,9 @@ namespace QtAndroidMenu
         if (!visibleMenu)
             return;
 
-        jstring jtext = env->NewString(reinterpret_cast<const jchar*>(visibleMenu->text().data()),
-                                       visibleMenu->text().length());
+        QString menuText = removeAmpersandEscapes(visibleMenu->text());
+        jstring jtext = env->NewString(reinterpret_cast<const jchar*>(menuText.data()),
+                                       menuText.length());
         env->CallObjectMethod(menu, setHeaderTitleContextMenuMethodID, jtext);
         env->DeleteLocalRef(jtext);
         addAllMenuItemsToMenu(env, menu, visibleMenu);

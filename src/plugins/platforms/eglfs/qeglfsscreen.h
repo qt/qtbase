@@ -64,6 +64,7 @@ public:
     QImage::Format format() const;
 
     QSizeF physicalSize() const;
+    QDpi logicalDpi() const;
 
     QPlatformCursor *cursor() const;
 

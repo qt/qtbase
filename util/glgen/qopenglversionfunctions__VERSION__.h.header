@@ -51,7 +51,9 @@
 #ifndef QOPENGLVERSIONFUNCTIONS__VERSION___H
 #define QOPENGLVERSIONFUNCTIONS__VERSION___H
 
-#ifndef QT_NO_OPENGL
+#include <QtCore/qglobal.h>
+
+#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
 
 #include <QtGui/QOpenGLVersionFunctions>
 #include <QtGui/qopenglcontext.h>

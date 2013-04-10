@@ -49,17 +49,6 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \namespace QAccessible2
-    \ingroup accessibility
-    \internal
-
-    \brief The QAccessible2 namespace defines constants relating to
-    IAccessible2-based interfaces
-
-    \l{IAccessible2 Specification}
-*/
-
-/*!
     \class QAccessibleTextInterface
     \internal
     \inmodule QtGui
@@ -139,7 +128,7 @@ QT_BEGIN_NAMESPACE
     of that item; returns an empty string if there is no such an item.
     Sets \a startOffset and \a endOffset values to -1 on error.
 */
-QString QAccessibleTextInterface::textBeforeOffset(int offset, QAccessible2::BoundaryType boundaryType,
+QString QAccessibleTextInterface::textBeforeOffset(int offset, QAccessible::TextBoundaryType boundaryType,
                                                    int *startOffset, int *endOffset) const
 {
     const QString txt = text(0, characterCount());
@@ -155,13 +144,13 @@ QString QAccessibleTextInterface::textBeforeOffset(int offset, QAccessible2::Bou
 
     QTextBoundaryFinder::BoundaryType type;
     switch (boundaryType) {
-    case QAccessible2::CharBoundary:
+    case QAccessible::CharBoundary:
         type = QTextBoundaryFinder::Grapheme;
         break;
-    case QAccessible2::WordBoundary:
+    case QAccessible::WordBoundary:
         type = QTextBoundaryFinder::Word;
         break;
-    case QAccessible2::SentenceBoundary:
+    case QAccessible::SentenceBoundary:
         type = QTextBoundaryFinder::Sentence;
         break;
     default:
@@ -199,7 +188,7 @@ QString QAccessibleTextInterface::textBeforeOffset(int offset, QAccessible2::Bou
     of that item; returns an empty string if there is no such an item.
     Sets \a startOffset and \a endOffset values to -1 on error.
 */
-QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible2::BoundaryType boundaryType,
+QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible::TextBoundaryType boundaryType,
                                                   int *startOffset, int *endOffset) const
 {
     const QString txt = text(0, characterCount());
@@ -215,13 +204,13 @@ QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible2::Boun
 
     QTextBoundaryFinder::BoundaryType type;
     switch (boundaryType) {
-    case QAccessible2::CharBoundary:
+    case QAccessible::CharBoundary:
         type = QTextBoundaryFinder::Grapheme;
         break;
-    case QAccessible2::WordBoundary:
+    case QAccessible::WordBoundary:
         type = QTextBoundaryFinder::Word;
         break;
-    case QAccessible2::SentenceBoundary:
+    case QAccessible::SentenceBoundary:
         type = QTextBoundaryFinder::Sentence;
         break;
     default:
@@ -259,7 +248,7 @@ QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible2::Boun
     of that item; returns an empty string if there is no such an item.
     Sets \a startOffset and \a endOffset values to -1 on error.
 */
-QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible2::BoundaryType boundaryType,
+QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoundaryType boundaryType,
                                                int *startOffset, int *endOffset) const
 {
     const QString txt = text(0, characterCount());
@@ -275,13 +264,13 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible2::Boundar
 
     QTextBoundaryFinder::BoundaryType type;
     switch (boundaryType) {
-    case QAccessible2::CharBoundary:
+    case QAccessible::CharBoundary:
         type = QTextBoundaryFinder::Grapheme;
         break;
-    case QAccessible2::WordBoundary:
+    case QAccessible::WordBoundary:
         type = QTextBoundaryFinder::Word;
         break;
-    case QAccessible2::SentenceBoundary:
+    case QAccessible::SentenceBoundary:
         type = QTextBoundaryFinder::Sentence;
         break;
     default:

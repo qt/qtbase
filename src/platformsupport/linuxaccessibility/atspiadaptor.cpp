@@ -1791,7 +1791,7 @@ bool AtSpiAdaptor::textInterface(QAccessibleInterface *interface, const QString 
         int offset = message.arguments().at(0).toInt();
         int start;
         int end;
-        QString result = interface->textInterface()->textAtOffset(offset, QAccessible2::CharBoundary, &start, &end);
+        QString result = interface->textInterface()->textAtOffset(offset, QAccessible::CharBoundary, &start, &end);
         sendReply(connection, message, (int) *(qPrintable (result)));
     } else if (function == QLatin1String("GetCharacterExtents")) {
         int offset = message.arguments().at(0).toInt();
@@ -1879,23 +1879,23 @@ bool AtSpiAdaptor::textInterface(QAccessibleInterface *interface, const QString 
     return true;
 }
 
-QAccessible2::BoundaryType AtSpiAdaptor::qAccessibleBoundaryType(int atspiTextBoundaryType) const
+QAccessible::TextBoundaryType AtSpiAdaptor::qAccessibleBoundaryType(int atspiTextBoundaryType) const
 {
     switch (atspiTextBoundaryType) {
     case ATSPI_TEXT_BOUNDARY_CHAR:
-        return QAccessible2::CharBoundary;
+        return QAccessible::CharBoundary;
     case ATSPI_TEXT_BOUNDARY_WORD_START:
     case ATSPI_TEXT_BOUNDARY_WORD_END:
-        return QAccessible2::WordBoundary;
+        return QAccessible::WordBoundary;
     case ATSPI_TEXT_BOUNDARY_SENTENCE_START:
     case ATSPI_TEXT_BOUNDARY_SENTENCE_END:
-        return QAccessible2::SentenceBoundary;
+        return QAccessible::SentenceBoundary;
     case ATSPI_TEXT_BOUNDARY_LINE_START:
     case ATSPI_TEXT_BOUNDARY_LINE_END:
-        return QAccessible2::LineBoundary;
+        return QAccessible::LineBoundary;
     }
     Q_ASSERT_X(0, "", "Requested invalid boundary type.");
-    return QAccessible2::CharBoundary;
+    return QAccessible::CharBoundary;
 }
 
 // FIXME all attribute methods below should share code

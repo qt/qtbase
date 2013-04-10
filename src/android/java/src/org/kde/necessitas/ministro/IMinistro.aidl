@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2012, BogDan Vatra <bogdan@kde.org>
+    Copyright (c) 2011-2013, BogDan Vatra <bogdan@kde.org>
     Contact: http://www.qt-project.org/legal
 
     Redistribution and use in source and binary forms, with or without
@@ -24,6 +24,7 @@
     THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+
 package org.kde.necessitas.ministro;
 
 import org.kde.necessitas.ministro.IMinistroCallback;
@@ -37,13 +38,13 @@ interface IMinistro
 * param parameters
 *            parameters fields:
 *                 * Key Name                   Key type         Explanations
+*                   "sources"                  StringArray      Sources list from where Ministro will download the libs. Make sure you are using ONLY secure locations.
+*                   "repository"               String           Overwrites the default Ministro repository. Possible values: default, stable, testing and unstable
 *                   "required.modules"         StringArray      Required modules by your application
 *                   "application.title"        String           Application name, used to show more informations to user
 *                   "qt.provider"              String           Qt libs provider, currently only "necessitas" is supported.
-*                   "minimum.ministro.api"     Integer          Minimum Ministro API level, used to check if Ministro service compatible with your application. Current API Level is 1 !
-*                   "minimum.qt.version"       Integer          Minimim Qt version (e.g. 0x040800, which means Qt 4.8.0, check http://doc.trolltech.com/4.8/qtglobal.html#QT_VERSION)!
-*                   "3rd.party.repositories"   StringArray      3rd party repositories, which should be downloaded by ministro, needs minimum.ministro.api >= 2
-*                   Check http://community.kde.org/Necessitas/Ministro for more details.
+*                   "minimum.ministro.api"     Integer          Minimum Ministro API level, used to check if Ministro service compatible with your application. Current API Level is 3 !
+*                   "minimum.qt.version"       Integer          Minimim Qt version (e.g. 0x040800, which means Qt 4.8.0, check http://qt-project.org/doc/qt-4.8/qtglobal.html#QT_VERSION)!
 */
     void requestLoader(in IMinistroCallback callback, in Bundle parameters);
 }

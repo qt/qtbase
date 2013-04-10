@@ -48,22 +48,12 @@ HEADERS += \
     $$ANGLE_DIR/src/compiler/ValidateLimitations.h \
     $$ANGLE_DIR/src/compiler/VariableInfo.h \
     $$ANGLE_DIR/src/compiler/VariablePacker.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/atom.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/compile.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/cpp.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/length_limits.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/memory.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/parser.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/preprocess.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/scanner.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/slglobals.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/symbols.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/tokens.h \
     $$ANGLE_DIR/src/compiler/timing/RestrictFragmentShaderTiming.h \
     $$ANGLE_DIR/src/compiler/timing/RestrictVertexShaderTiming.h \
     $$ANGLE_DIR/src/compiler/depgraph/DependencyGraph.h \
     $$ANGLE_DIR/src/compiler/depgraph/DependencyGraphBuilder.h \
-    $$ANGLE_DIR/src/compiler/depgraph/DependencyGraphOutput.h
+    $$ANGLE_DIR/src/compiler/depgraph/DependencyGraphOutput.h \
+    $$ANGLE_DIR/src/third_party/compiler/ArrayBoundsClamper.h
 
 SOURCES += \
     $$ANGLE_DIR/src/compiler/BuiltInFunctionEmulator.cpp \
@@ -93,19 +83,13 @@ SOURCES += \
     $$ANGLE_DIR/src/compiler/ValidateLimitations.cpp \
     $$ANGLE_DIR/src/compiler/VariableInfo.cpp \
     $$ANGLE_DIR/src/compiler/VariablePacker.cpp \
-    $$ANGLE_DIR/src/compiler/preprocessor/atom.c \
-    $$ANGLE_DIR/src/compiler/preprocessor/cpp.c \
-    $$ANGLE_DIR/src/compiler/preprocessor/cppstruct.c \
-    $$ANGLE_DIR/src/compiler/preprocessor/memory.c \
-    $$ANGLE_DIR/src/compiler/preprocessor/scanner.c \
-    $$ANGLE_DIR/src/compiler/preprocessor/symbols.c \
-    $$ANGLE_DIR/src/compiler/preprocessor/tokens.c \
     $$ANGLE_DIR/src/compiler/depgraph/DependencyGraph.cpp \
     $$ANGLE_DIR/src/compiler/depgraph/DependencyGraphBuilder.cpp \
     $$ANGLE_DIR/src/compiler/depgraph/DependencyGraphOutput.cpp \
     $$ANGLE_DIR/src/compiler/depgraph/DependencyGraphTraverse.cpp \
     $$ANGLE_DIR/src/compiler/timing/RestrictFragmentShaderTiming.cpp \
-    $$ANGLE_DIR/src/compiler/timing/RestrictVertexShaderTiming.cpp
+    $$ANGLE_DIR/src/compiler/timing/RestrictVertexShaderTiming.cpp \
+    $$ANGLE_DIR/src/third_party/compiler/ArrayBoundsClamper.cpp
 
 # NOTE: 'win_flex' and 'bison' can be found in qt5/gnuwin32/bin
 flex.commands = $$addGnuPath(win_flex) --noline --nounistd --outfile=${QMAKE_FILE_BASE}_lex.cpp ${QMAKE_FILE_NAME}

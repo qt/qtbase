@@ -178,6 +178,15 @@ QSize QEglFSHooks::screenSize() const
     return size;
 }
 
+QDpi QEglFSHooks::logicalDpi() const
+{
+    QSizeF ps = physicalScreenSize();
+    QSize s = screenSize();
+
+    return QDpi(25.4 * s.width() / ps.width(),
+                25.4 * s.height() / ps.height());
+}
+
 int QEglFSHooks::screenDepth() const
 {
     static int depth = qgetenv("QT_QPA_EGLFS_DEPTH").toInt();

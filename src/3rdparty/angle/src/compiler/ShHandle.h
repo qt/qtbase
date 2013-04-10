@@ -18,13 +18,16 @@
 
 #include "compiler/BuiltInFunctionEmulator.h"
 #include "compiler/ExtensionBehavior.h"
+#include "compiler/HashNames.h"
 #include "compiler/InfoSink.h"
 #include "compiler/SymbolTable.h"
 #include "compiler/VariableInfo.h"
+#include "third_party/compiler/ArrayBoundsClamper.h"
 
 class LongNameMap;
 class TCompiler;
 class TDependencyGraph;
+class TranslatorHLSL;
 
 //
 // Helper function to identify specs that are based on the WebGL spec,
@@ -40,6 +43,7 @@ public:
     TShHandleBase();
     virtual ~TShHandleBase();
     virtual TCompiler* getAsCompiler() { return 0; }
+    virtual TranslatorHLSL* getAsTranslatorHLSL() { return 0; }
 
 protected:
     // Memory allocator. Allocates and tracks memory required by the compiler.
@@ -59,7 +63,7 @@ public:
 
     bool Init(const ShBuiltInResources& resources);
     bool compile(const char* const shaderStrings[],
-                 const int numStrings,
+                 size_t numStrings,
                  int compileOptions);
 
     // Get results of the last compilation.
@@ -67,6 +71,10 @@ public:
     const TVariableInfoList& getAttribs() const { return attribs; }
     const TVariableInfoList& getUniforms() const { return uniforms; }
     int getMappedNameMaxLength() const;
+
+    ShHashFunction64 getHashFunction() const { return hashFunction; }
+    NameMap& getNameMap() { return nameMap; }
+    TSymbolTable& getSymbolTable() { return symbolTable; }
 
 protected:
     ShShaderType getShaderType() const { return shaderType; }
@@ -100,7 +108,11 @@ protected:
     bool enforceFragmentShaderTimingRestrictions(const TDependencyGraph& graph);
     // Get built-in extensions with default behavior.
     const TExtensionBehavior& getExtensionBehavior() const;
+    // Get the resources set by InitBuiltInSymbolTable
+    const ShBuiltInResources& getResources() const;
 
+    const ArrayBoundsClamper& getArrayBoundsClamper() const;
+    ShArrayIndexClampingStrategy getArrayIndexClampingStrategy() const;
     const BuiltInFunctionEmulator& getBuiltInFunctionEmulator() const;
 
 private:
@@ -109,12 +121,17 @@ private:
 
     int maxUniformVectors;
 
+    ShBuiltInResources compileResources;
+
     // Built-in symbol table for the given language, spec, and resources.
     // It is preserved from compile-to-compile.
     TSymbolTable symbolTable;
     // Built-in extensions with default behavior.
     TExtensionBehavior extensionBehavior;
+    bool fragmentPrecisionHigh;
 
+    ArrayBoundsClamper arrayBoundsClamper;
+    ShArrayIndexClampingStrategy clampingStrategy;
     BuiltInFunctionEmulator builtInFunctionEmulator;
 
     // Results of compilation.
@@ -124,6 +141,10 @@ private:
 
     // Cached copy of the ref-counted singleton.
     LongNameMap* longNameMap;
+
+    // name hashing.
+    ShHashFunction64 hashFunction;
+    NameMap nameMap;
 };
 
 //

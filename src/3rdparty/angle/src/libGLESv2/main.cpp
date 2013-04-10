@@ -1,3 +1,4 @@
+#include "precompiled.h"
 //
 // Copyright (c) 2002-2012 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -7,12 +8,8 @@
 // main.cpp: DLL entry point and management of thread-local data.
 
 #include "libGLESv2/main.h"
-#include "libGLESv2/utilities.h"
 
-#include "common/debug.h"
-#include "libEGL/Surface.h"
-
-#include "libGLESv2/Framebuffer.h"
+#include "libGLESv2/Context.h"
 
 #ifndef QT_OPENGL_ES_2_ANGLE_STATIC
 
@@ -101,7 +98,7 @@ void makeCurrent(Context *context, egl::Display *display, egl::Surface *surface)
 
     if (context && display && surface)
     {
-        context->makeCurrent(display, surface);
+        context->makeCurrent(surface);
     }
 }
 
@@ -118,7 +115,7 @@ Context *getNonLostContext()
     {
         if (context->isContextLost())
         {
-            error(GL_OUT_OF_MEMORY);
+            gl::error(GL_OUT_OF_MEMORY);
             return NULL;
         }
         else
@@ -132,27 +129,6 @@ Context *getNonLostContext()
 egl::Display *getDisplay()
 {
     return current()->display;
-}
-
-IDirect3DDevice9 *getDevice()
-{
-    egl::Display *display = getDisplay();
-
-    return display->getDevice();
-}
-
-bool checkDeviceLost(HRESULT errorCode)
-{
-    egl::Display *display = NULL;
-
-    if (isDeviceLostError(errorCode))
-    {
-        display = gl::getDisplay();
-        display->notifyDeviceLost();
-        return true;
-    }
-    return false;
-}
 }
 
 // Records an error code
@@ -188,3 +164,6 @@ void error(GLenum errorCode)
         }
     }
 }
+
+}
+

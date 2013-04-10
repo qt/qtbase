@@ -386,15 +386,15 @@ bool PeerWireClient::canTransferMore() const
         || !outgoingBuffer.isEmpty() || !pendingBlocks.isEmpty();
 }
 
-void PeerWireClient::connectToHostImplementation(const QString &hostName,
-                                                 quint16 port, OpenMode openMode)
+void PeerWireClient::connectToHost(const QHostAddress &address,
+                                   quint16 port, OpenMode openMode)
 
 {
     setOpenMode(openMode);
-    socket.connectToHost(hostName, port, openMode);
+    socket.connectToHost(address, port, openMode);
 }
 
-void PeerWireClient::diconnectFromHostImplementation()
+void PeerWireClient::diconnectFromHost()
 {
     socket.disconnectFromHost();
 }

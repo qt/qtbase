@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2012, BogDan Vatra <bogdan@kde.org>
+    Copyright (c) 2012-2013, BogDan Vatra <bogdan@kde.org>
     Contact: http://www.qt-project.org/legal
 
     Redistribution and use in source and binary forms, with or without
@@ -76,9 +76,8 @@ import android.view.ActionMode.Callback;
 public class QtActivity extends Activity
 {
     private final static int MINISTRO_INSTALL_REQUEST_CODE = 0xf3ee; // request code used to know when Ministro instalation is finished
-    private static final int MINISTRO_API_LEVEL = 2; // Ministro api level (check IMinistro.aidl file)
+    private static final int MINISTRO_API_LEVEL = 3; // Ministro api level (check IMinistro.aidl file)
     private static final int NECESSITAS_API_LEVEL = 2; // Necessitas api level used by platform plugin
-    private static final String QT_PROVIDER = "necessitas";
     private static final int QT_VERSION = 0x050100; // This app requires at least Qt version 5.1.0
 
     private static final String ERROR_CODE_KEY = "error.code";
@@ -97,30 +96,44 @@ public class QtActivity extends Activity
     /// Ministro server parameter keys
     private static final String REQUIRED_MODULES_KEY = "required.modules";
     private static final String APPLICATION_TITLE_KEY = "application.title";
-    private static final String QT_PROVIDER_KEY = "qt.provider";
     private static final String MINIMUM_MINISTRO_API_KEY = "minimum.ministro.api";
     private static final String MINIMUM_QT_VERSION_KEY = "minimum.qt.version";
-//    private static final String REPOSITORIES="3rd.party.repositories"; // needs MINISTRO_API_LEVEL >=2 !!!
-                                                                       // Use this key to specify any 3rd party repositories urls
-                                                                       // Ministro will download these repositories into thier
+    private static final String SOURCES_KEY = "sources";               // needs MINISTRO_API_LEVEL >=3 !!!
+                                                                       // Use this key to specify any 3rd party sources urls
+                                                                       // Ministro will download these repositories into their
                                                                        // own folders, check http://community.kde.org/Necessitas/Ministro
                                                                        // for more details.
+
+    private static final String REPOSITORY_KEY = "repository";         // use this key to overwrite the default ministro repsitory
 
     private static final String APPLICATION_PARAMETERS = null; // use this variable to pass any parameters to your application,
                                                                // the parameters must not contain any white spaces
                                                                // and must be separated with "\t"
                                                                // e.g "-param1\t-param2=value2\t-param3\tvalue3"
 
-    private static final String ENVIRONMENT_VARIABLES = "QT_USE_ANDROID_NATIVE_STYLE=1\t";
+    private static final String ENVIRONMENT_VARIABLES = "QT_USE_ANDROID_NATIVE_STYLE=0\t";
                                                                // use this variable to add any environment variables to your application.
                                                                // the env vars must be separated with "\t"
                                                                // e.g. "ENV_VAR1=1\tENV_VAR2=2\t"
                                                                // Currently the following vars are used by the android plugin:
-                                                               // * QT_USE_ANDROID_NATIVE_STYLE - 0 if you don't want to use android style plugin, it will save a few ms at startup.
+                                                               // * QT_USE_ANDROID_NATIVE_STYLE - 1 to use the android widget style if available,
+                                                               //   note that the android style plugin in Qt 5.1 is not fully functional.
 
     private static final int INCOMPATIBLE_MINISTRO_VERSION = 1; // Incompatible Ministro version. Ministro needs to be upgraded.
     private ActivityInfo m_activityInfo = null; // activity info object, used to access the libs and the strings
     private DexClassLoader m_classLoader = null; // loader object
+    private String[] m_sources = {"https://files.kde.org/necessitas/ministro/android/necessitas/qt5/latest"}; // Make sure you are using ONLY secure locations
+    private String m_repository = "default"; // Overwrites the default Ministro repository
+                                                        // Possible values:
+                                                        // * default - Ministro default repository set with "Ministro configuration tool".
+                                                        // By default the stable version is used. Only this or stable repositories should
+                                                        // be used in production.
+                                                        // * stable - stable repository, only this and default repositories should be used
+                                                        // in production.
+                                                        // * testing - testing repository, DO NOT use this repository in production,
+                                                        // this repository is used to push a new release, and should be used to test your application.
+                                                        // * unstable - unstable repository, DO NOT use this repository in production,
+                                                        // this repository is used to push Qt snapshots.
     private String[] m_qtLibs = null; // required qt libs
 
     // this function is used to load and start the loader
@@ -190,7 +203,7 @@ public class QtActivity extends Activity
         } catch (Exception e) {
             e.printStackTrace();
             AlertDialog errorDialog = new AlertDialog.Builder(QtActivity.this).create();
-            if (m_activityInfo != null && m_activityInfo.metaData.containsKey("android.app.fatal_error_msg"))
+            if (m_activityInfo.metaData.containsKey("android.app.fatal_error_msg"))
                 errorDialog.setMessage(m_activityInfo.metaData.getString("android.app.fatal_error_msg"));
             else
                 errorDialog.setMessage("Fatal error, your application can't be started.");
@@ -217,12 +230,12 @@ public class QtActivity extends Activity
                     parameters.putStringArray(REQUIRED_MODULES_KEY, m_qtLibs);
                     parameters.putString(APPLICATION_TITLE_KEY, (String)QtActivity.this.getTitle());
                     parameters.putInt(MINIMUM_MINISTRO_API_KEY, MINISTRO_API_LEVEL);
-                    parameters.putString(QT_PROVIDER_KEY, QT_PROVIDER);
                     parameters.putInt(MINIMUM_QT_VERSION_KEY, QT_VERSION);
                     parameters.putString(ENVIRONMENT_VARIABLES_KEY, ENVIRONMENT_VARIABLES);
                     if (null!=APPLICATION_PARAMETERS)
                         parameters.putString(APPLICATION_PARAMETERS_KEY, APPLICATION_PARAMETERS);
-                    // parameters.putStringArray(REPOSITORIES, null);
+                    parameters.putStringArray(SOURCES_KEY, m_sources);
+                    parameters.putString(REPOSITORY_KEY, m_repository);
                     m_service.requestLoader(m_ministroCallback, parameters);
                 }
             } catch (RemoteException e) {
@@ -281,7 +294,7 @@ public class QtActivity extends Activity
     {
         AlertDialog errorDialog = new AlertDialog.Builder(QtActivity.this).create();
 
-        if (m_activityInfo != null && m_activityInfo.metaData.containsKey("android.app.ministro_not_found_msg"))
+        if (m_activityInfo.metaData.containsKey("android.app.ministro_not_found_msg"))
             errorDialog.setMessage(m_activityInfo.metaData.getString("android.app.ministro_not_found_msg"));
         else
             errorDialog.setMessage("Can't find Ministro service.\nThe application can't start.");
@@ -298,27 +311,34 @@ public class QtActivity extends Activity
     private void startApp(final boolean firstStart)
     {
         try {
-            ActivityInfo ai=getPackageManager().getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
-            if (ai.metaData.containsKey("android.app.qt_libs_resource_id")) {
-                int resourceId = ai.metaData.getInt("android.app.qt_libs_resource_id");
+            if (m_activityInfo.metaData.containsKey("android.app.qt_sources_resource_id")) {
+                int resourceId = m_activityInfo.metaData.getInt("android.app.qt_sources_resource_id");
+                m_sources = getResources().getStringArray(resourceId);
+            }
+
+            if (m_activityInfo.metaData.containsKey("android.app.repository"))
+                m_repository = m_activityInfo.metaData.getString("android.app.repository");
+
+            if (m_activityInfo.metaData.containsKey("android.app.qt_libs_resource_id")) {
+                int resourceId = m_activityInfo.metaData.getInt("android.app.qt_libs_resource_id");
                 m_qtLibs = getResources().getStringArray(resourceId);
             }
 
-            if (ai.metaData.containsKey("android.app.use_local_qt_libs")
-                    && ai.metaData.getInt("android.app.use_local_qt_libs") == 1) {
+            if (m_activityInfo.metaData.containsKey("android.app.use_local_qt_libs")
+                    && m_activityInfo.metaData.getInt("android.app.use_local_qt_libs") == 1) {
                 ArrayList<String> libraryList = new ArrayList<String>();
 
                 String localPrefix = "/data/local/tmp/qt/";
-                if (ai.metaData.containsKey("android.app.libs_prefix"))
-                    localPrefix = ai.metaData.getString("android.app.libs_prefix");
+                if (m_activityInfo.metaData.containsKey("android.app.libs_prefix"))
+                    localPrefix = m_activityInfo.metaData.getString("android.app.libs_prefix");
 
                 if (m_qtLibs != null) {
                     for (int i=0;i<m_qtLibs.length;i++)
                         libraryList.add(localPrefix+"lib/lib"+m_qtLibs[i]+".so");
                 }
 
-                if (ai.metaData.containsKey("android.app.load_local_libs")) {
-                    String[] extraLibs = ai.metaData.getString("android.app.load_local_libs").split(":");
+                if (m_activityInfo.metaData.containsKey("android.app.load_local_libs")) {
+                    String[] extraLibs = m_activityInfo.metaData.getString("android.app.load_local_libs").split(":");
                     for (String lib : extraLibs) {
                         if (lib.length() > 0)
                             libraryList.add(localPrefix + lib);
@@ -327,8 +347,8 @@ public class QtActivity extends Activity
 
                 String dexPaths = new String();
                 String pathSeparator = System.getProperty("path.separator", ":");
-                if (ai.metaData.containsKey("android.app.load_local_jars")) {
-                    String[] jarFiles = ai.metaData.getString("android.app.load_local_jars").split(":");
+                if (m_activityInfo.metaData.containsKey("android.app.load_local_jars")) {
+                    String[] jarFiles = m_activityInfo.metaData.getString("android.app.load_local_jars").split(":");
                     for (String jar:jarFiles) {
                         if (jar.length() > 0) {
                             if (dexPaths.length() > 0)
@@ -342,9 +362,9 @@ public class QtActivity extends Activity
                 loaderParams.putInt(ERROR_CODE_KEY, 0);
                 loaderParams.putString(DEX_PATH_KEY, dexPaths);
                 loaderParams.putString(LOADER_CLASS_NAME_KEY, "org.qtproject.qt5.android.QtActivityDelegate");
-                if (ai.metaData.containsKey("android.app.static_init_classes")) {
+                if (m_activityInfo.metaData.containsKey("android.app.static_init_classes")) {
                     loaderParams.putStringArray(STATIC_INIT_CLASSES_KEY,
-                                                ai.metaData.getString("android.app.static_init_classes").split(":"));
+                                                m_activityInfo.metaData.getString("android.app.static_init_classes").split(":"));
                 }
                 loaderParams.putStringArrayList(NATIVE_LIBRARIES_KEY, libraryList);
                 loaderParams.putString(ENVIRONMENT_VARIABLES_KEY, ENVIRONMENT_VARIABLES
@@ -365,7 +385,7 @@ public class QtActivity extends Activity
             } catch (Exception e) {
                 if (firstStart) {
                     String msg = "This application requires Ministro service. Would you like to install it?";
-                    if (m_activityInfo != null && m_activityInfo.metaData.containsKey("android.app.ministro_needed_msg"))
+                    if (m_activityInfo.metaData.containsKey("android.app.ministro_needed_msg"))
                         msg = m_activityInfo.metaData.getString("android.app.ministro_needed_msg");
                     downloadUpgradeMinistro(msg);
                 } else {

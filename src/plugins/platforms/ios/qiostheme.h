@@ -42,6 +42,7 @@
 #ifndef QIOSTHEME_H
 #define QIOSTHEME_H
 
+#include <QtCore/QHash>
 #include <qpa/qplatformtheme.h>
 
 QT_BEGIN_NAMESPACE
@@ -57,6 +58,9 @@ public:
     const QFont *font(Font type = SystemFont) const;
 
     static const char *name;
+
+private:
+    mutable QHash<QPlatformTheme::Font, QFont *> m_fonts;
 };
 
 QT_END_NAMESPACE

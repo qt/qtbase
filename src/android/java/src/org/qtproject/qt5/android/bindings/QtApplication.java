@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2012, BogDan Vatra <bogdan@kde.org>
+    Copyright (c) 2012-2013, BogDan Vatra <bogdan@kde.org>
     Contact: http://www.qt-project.org/legal
 
     Redistribution and use in source and binary forms, with or without

@@ -79,6 +79,8 @@ private slots:
     void reset();
     void dataChanged();
 
+    void itemData();
+
 protected:
     void verifyIdentity(QAbstractItemModel *model, const QModelIndex &parent = QModelIndex());
 
@@ -362,6 +364,30 @@ void tst_QIdentityProxyModel::dataChanged()
 
     verifyIdentity(&model);
     m_proxy->setSourceModel(0);
+}
+
+class AppendStringProxy : public QIdentityProxyModel
+{
+public:
+    QVariant data(const QModelIndex &index, int role) const
+    {
+        const QVariant result = sourceModel()->data(index, role);
+        if (role != Qt::DisplayRole)
+            return result;
+        return result.toString() + "_appended";
+    }
+};
+
+void tst_QIdentityProxyModel::itemData()
+{
+    QStringListModel model(QStringList() << "Monday" << "Tuesday" << "Wednesday");
+    AppendStringProxy proxy;
+    proxy.setSourceModel(&model);
+
+    const QModelIndex topIndex = proxy.index(0, 0);
+    QCOMPARE(topIndex.data(Qt::DisplayRole).toString(), QStringLiteral("Monday_appended"));
+    QCOMPARE(proxy.data(topIndex, Qt::DisplayRole).toString(), QStringLiteral("Monday_appended"));
+    QCOMPARE(proxy.itemData(topIndex).value(Qt::DisplayRole).toString(), QStringLiteral("Monday_appended"));
 }
 
 QTEST_MAIN(tst_QIdentityProxyModel)

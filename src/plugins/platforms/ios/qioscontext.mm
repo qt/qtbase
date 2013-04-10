@@ -44,7 +44,7 @@
 
 #include <dlfcn.h>
 
-#include <QtGui/QOpenGlContext>
+#include <QtGui/QOpenGLContext>
 
 #import <OpenGLES/EAGL.h>
 #import <QuartzCore/CAEAGLLayer.h>

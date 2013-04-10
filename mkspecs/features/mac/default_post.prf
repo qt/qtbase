@@ -15,3 +15,7 @@ qt:!isEmpty(QT_CONFIG) {
         contains(QT_CONFIG, x86_64):!contains(QT_CONFIG, x86):CONFIG += x86_64
     }
 }
+
+# Ensure that we process sdk.prf first, as it will update QMAKE_CXX
+# and friends that other features/extra compilers may depend on.
+sdk: load(sdk)

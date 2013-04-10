@@ -440,9 +440,6 @@ public:
     const QList<RelatedClass> &derivedClasses() const { return derived; }
     const QList<RelatedClass> &ignoredBaseClasses() const { return ignoredBases; }
 
-    bool hideFromMainList() const { return hidden; }
-    void setHideFromMainList(bool value) { hidden = value; }
-
     QString serviceName() const { return sname; }
     void setServiceName(const QString& value) { sname = value; }
     QmlClassNode* qmlElement() { return qmlelement; }
@@ -456,7 +453,6 @@ private:
     QList<RelatedClass> bases;
     QList<RelatedClass> derived;
     QList<RelatedClass> ignoredBases;
-    bool hidden;
     bool abstract_;
     QString sname;
     QmlClassNode* qmlelement;

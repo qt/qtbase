@@ -27,7 +27,7 @@
 
 /*!
     \module QtGui
-    \title Qt GUI C++ API
+    \title Qt GUI C++ Classes
     \ingroup modules
 
     \brief The Qt GUI module provides the basic enablers for graphical
@@ -164,7 +164,7 @@
 
     \section1 Reference
     \list
-    \li \l{Qt GUI C++ API}
+    \li \l{Qt GUI C++ Classes}
         \list
         \li \l{Event Classes}
         \li \l{Painting Classes}

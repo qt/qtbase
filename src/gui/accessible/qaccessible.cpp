@@ -46,6 +46,8 @@
 #include "qaccessibleplugin.h"
 #include "qaccessibleobject.h"
 #include "qaccessiblebridge.h"
+#include <QtCore/qtextboundaryfinder.h>
+#include <QtGui/qtextcursor.h>
 #include <QtGui/QGuiApplication>
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformaccessibility.h>
@@ -788,6 +790,77 @@ void QAccessible::updateAccessibility(QAccessibleEvent *event)
     \brief Use QAccessible::updateAccessibility(QAccessibleEvent*) instead.
 */
 #endif
+
+/*!
+    \internal
+    \brief getBoundaries is a helper function to find the accessible text boundaries for QTextCursor based documents.
+    \param documentCursor a valid cursor bound to the document (not null). It needs to ba at the position to look for the boundary
+    \param boundaryType the type of boundary to find
+    \return the boundaries as pair
+*/
+QPair< int, int > QAccessible::qAccessibleTextBoundaryHelper(const QTextCursor &offsetCursor, TextBoundaryType boundaryType)
+{
+    Q_ASSERT(!offsetCursor.isNull());
+
+    QTextCursor endCursor = offsetCursor;
+    endCursor.movePosition(QTextCursor::End);
+    int characterCount = endCursor.position();
+
+    QPair<int, int> result;
+    QTextCursor cursor = offsetCursor;
+    switch (boundaryType) {
+    case CharBoundary:
+        result.first = cursor.position();
+        cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
+        result.second = cursor.position();
+        break;
+    case WordBoundary:
+        cursor.movePosition(QTextCursor::StartOfWord, QTextCursor::MoveAnchor);
+        result.first = cursor.position();
+        cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+        result.second = cursor.position();
+        break;
+    case SentenceBoundary: {
+        // QCursor does not provide functionality to move to next sentence.
+        // We therefore find the current block, then go through the block using
+        // QTextBoundaryFinder and find the sentence the \offset represents
+        cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::MoveAnchor);
+        result.first = cursor.position();
+        cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+        result.second = cursor.position();
+        QString blockText = cursor.selectedText();
+        const int offsetWithinBlockText = offsetCursor.position() - result.first;
+        QTextBoundaryFinder sentenceFinder(QTextBoundaryFinder::Sentence, blockText);
+        sentenceFinder.setPosition(offsetWithinBlockText);
+        int prevBoundary = offsetWithinBlockText;
+        int nextBoundary = offsetWithinBlockText;
+        if (!(sentenceFinder.boundaryReasons() & QTextBoundaryFinder::StartOfItem))
+            prevBoundary = sentenceFinder.toPreviousBoundary();
+        nextBoundary = sentenceFinder.toNextBoundary();
+        if (nextBoundary != -1)
+            result.second = result.first + nextBoundary;
+        if (prevBoundary != -1)
+            result.first += prevBoundary;
+        break; }
+    case LineBoundary:
+        cursor.movePosition(QTextCursor::StartOfLine, QTextCursor::MoveAnchor);
+        result.first = cursor.position();
+        cursor.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
+        result.second = cursor.position();
+        break;
+    case ParagraphBoundary:
+        cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::MoveAnchor);
+        result.first = cursor.position();
+        cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+        result.second = cursor.position();
+        break;
+    case NoBoundary:
+        result.first = 0;
+        result.second = characterCount;
+        break;
+    }
+    return result;
+}
 
 /*!
     \class QAccessibleInterface

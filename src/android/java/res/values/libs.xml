@@ -1,8 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
+    <array name="qt_sources">
+        <item>https://files.kde.org/necessitas/ministro/android/necessitas/qt5/latest</item>
+    </array>
+    <string name="repository">default</string>
     <array name="qt_libs">
-        <item>QtCore</item>
-        <item>QtGui</item>
+        <item>Qt5Core</item>
     </array>
     <array name="bundled_libs"/>
 </resources>

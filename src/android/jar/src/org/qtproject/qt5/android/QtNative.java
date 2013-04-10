@@ -72,6 +72,7 @@ public class QtNative
     private static int m_displayMetricsDesktopHeightPixels = 0;
     private static double m_displayMetricsXDpi = .0;
     private static double m_displayMetricsYDpi = .0;
+    private static double m_displayMetricsScaledDensity = 1.0;
     private static int m_oldx, m_oldy;
     private static final int m_moveThreshold = 0;
     private static ClipboardManager m_clipboardManager = null;
@@ -195,7 +196,8 @@ public class QtNative
                               m_displayMetricsDesktopWidthPixels,
                               m_displayMetricsDesktopHeightPixels,
                               m_displayMetricsXDpi,
-                              m_displayMetricsYDpi);
+                              m_displayMetricsYDpi,
+                              m_displayMetricsScaledDensity);
             if (params.length() > 0)
                 params = "\t" + params;
             startQtApplication(f.getAbsolutePath() + "\t" + params, environment);
@@ -209,7 +211,8 @@ public class QtNative
                                                     int desktopWidthPixels,
                                                     int desktopHeightPixels,
                                                     double XDpi,
-                                                    double YDpi)
+                                                    double YDpi,
+                                                    double scaledDensity)
     {
         /* Fix buggy dpi report */
         if (XDpi < android.util.DisplayMetrics.DENSITY_LOW)
@@ -224,7 +227,8 @@ public class QtNative
                                   desktopWidthPixels,
                                   desktopHeightPixels,
                                   XDpi,
-                                  YDpi);
+                                  YDpi,
+                                  scaledDensity);
             } else {
                 m_displayMetricsScreenWidthPixels = screenWidthPixels;
                 m_displayMetricsScreenHeightPixels = screenHeightPixels;
@@ -232,6 +236,7 @@ public class QtNative
                 m_displayMetricsDesktopHeightPixels = desktopHeightPixels;
                 m_displayMetricsXDpi = XDpi;
                 m_displayMetricsYDpi = YDpi;
+                m_displayMetricsScaledDensity = scaledDensity;
             }
         }
     }
@@ -535,7 +540,8 @@ public class QtNative
                                                 int desktopWidthPixels,
                                                 int desktopHeightPixels,
                                                 double XDpi,
-                                                double YDpi);
+                                                double YDpi,
+                                                double scaledDensity);
     public static native void handleOrientationChanged(int newOrientation);
     // screen methods
 

@@ -1,0 +1,72 @@
+From cde4cd6155791355872f635491630c21c791e7f4 Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@digia.com>
+Date: Fri, 5 Apr 2013 15:11:59 +0300
+Subject: [PATCH] ANGLE: Avoid memory copies on buffers when data is null
+
+With data=0, ANGLE can crash when setting the buffer data. As this
+should be a legal operation, don't perform a memcpy when data is null.
+
+Change-Id: I3fa1260482549b1da50d7a68001a65decb98f258
+---
+ src/3rdparty/angle/src/libGLESv2/renderer/BufferStorage11.cpp | 22 ++++++++++++++++------
+ src/3rdparty/angle/src/libGLESv2/renderer/BufferStorage9.cpp  |  3 ++-
+ 2 files changed, 18 insertions(+), 7 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/BufferStorage11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/BufferStorage11.cpp
+index 4c37bdb..7fe9e6b 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/BufferStorage11.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/BufferStorage11.cpp
+@@ -182,7 +182,8 @@ void BufferStorage11::setData(const void* data, unsigned int size, unsigned int
+                 return gl::error(GL_OUT_OF_MEMORY);
+             }
+ 
+-            memcpy(mappedResource.pData, data, size);
++            if (data)
++                memcpy(mappedResource.pData, data, size);
+ 
+             context->Unmap(mStagingBuffer, 0);
+         }
+@@ -211,12 +212,21 @@ void BufferStorage11::setData(const void* data, unsigned int size, unsigned int
+                 mBufferSize = 0;
+             }
+ 
+-            D3D11_SUBRESOURCE_DATA initialData;
+-            initialData.pSysMem = data;
+-            initialData.SysMemPitch = size;
+-            initialData.SysMemSlicePitch = 0;
+ 
+-            result = device->CreateBuffer(&bufferDesc, &initialData, &mBuffer);
++            if (data)
++            {
++                D3D11_SUBRESOURCE_DATA initialData;
++                initialData.pSysMem = data;
++                initialData.SysMemPitch = size;
++                initialData.SysMemSlicePitch = 0;
++
++                result = device->CreateBuffer(&bufferDesc, &initialData, &mBuffer);
++            }
++            else
++            {
++                result = device->CreateBuffer(&bufferDesc, NULL, &mBuffer);
++            }
++
+             if (FAILED(result))
+             {
+                 return gl::error(GL_OUT_OF_MEMORY);
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/BufferStorage9.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/BufferStorage9.cpp
+index 7fc14fc..4468461 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/BufferStorage9.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/BufferStorage9.cpp
+@@ -54,7 +54,8 @@ void BufferStorage9::setData(const void* data, unsigned int size, unsigned int o
+     }
+ 
+     mSize = std::max(mSize, offset + size);
+-    memcpy(reinterpret_cast<char*>(mMemory) + offset, data, size);
++    if (data)
++        memcpy(reinterpret_cast<char*>(mMemory) + offset, data, size);
+ }
+ 
+ void BufferStorage9::clear()
+-- 
+1.8.1.msysgit.1
+

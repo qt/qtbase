@@ -233,7 +233,7 @@ macSDKify()
 
     sdk=$(getSingleQMakeVariable "QMAKE_MAC_SDK" "$1")
     if [ -z "$sdk" ]; then echo "QMAKE_MAC_SDK must be set when building on Mac" >&2; exit 1; fi
-    sysroot=$(xcodebuild -sdk $sdk -version Path 2>/dev/null)
+    sysroot=$(/usr/bin/xcodebuild -sdk $sdk -version Path 2>/dev/null)
     if [ -z "$sysroot" ]; then echo "Failed to resolve SDK path for '$sdk'" >&2; exit 1; fi
 
     case "$sdk" in
@@ -256,7 +256,7 @@ macSDKify()
                 # Prefix tool with toolchain path
                 var=$(echo "$line" | cut -d '=' -f 1)
                 val=$(echo "$line" | cut -d '=' -f 2-)
-                sdk_val=$(xcrun -sdk $sdk -find $(echo $val | cut -d ' ' -f 1))
+                sdk_val=$(/usr/bin/xcrun -sdk $sdk -find $(echo $val | cut -d ' ' -f 1))
                 val=$(echo $sdk_val $(echo $val | cut -s -d ' ' -f 2-))
                 echo "$var=$val"
             ;;
@@ -443,6 +443,28 @@ HOST_DIRLIST_SEP=":"
 if [ "$OSTYPE" = "msys" ]; then
     HOST_DIRLIST_SEP=";"
     BUILD_ON_MSYS=yes
+fi
+
+#-------------------------------------------------------------------------------
+# Verify Xcode installation on Mac OS
+#-------------------------------------------------------------------------------
+
+if [ "$BUILD_ON_MAC" = "yes" ]; then
+    if ! /usr/bin/xcode-select --print-path >/dev/null 2>&1; then
+        echo >&2
+        echo "   No Xcode is selected. Use xcode-select -switch to choose an Xcode" >&2
+        echo "   version. See the xcode-select man page for more information." >&2
+        echo >&2
+        exit 2
+    fi
+
+    if ! /usr/bin/xcrun -find xcrun >/dev/null 2>&1; then
+        echo >&2
+        echo "   Xcode not set up properly. You may need to confirm the license" >&2
+        echo "   agreement by running /usr/bin/xcodebuild without arguments." >&2
+        echo >&2
+        exit 2
+    fi
 fi
 
 #-----------------------------------------------------------------------------
@@ -2459,7 +2481,7 @@ if [ -z "$PLATFORM" ]; then
         # about the OS version, since we're not using the clang version that comes
         # with the system. We use 'xcrun' to check the clang version that's part of
         # the Xcode installation.
-        if [ "$(xcrun -sdk macosx clang -v 2>&1 | sed -n 's/.*version \([0-9]\).*/\1/p')" -ge 3 ]; then
+        if [ "$(/usr/bin/xcrun -sdk macosx clang -v 2>&1 | sed -n 's/.*version \([0-9]\).*/\1/p')" -ge 3 ]; then
             PLATFORM=macx-clang
 
             # Advertise g++ as an alternative on Lion and below
@@ -2814,9 +2836,10 @@ if [ "$CFG_FORCEDEBUGINFO" = "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG force_debug_info"
 fi
 
-# iOS builds should be static to be able to submit to the App Store
 if [ "$XPLATFORM_IOS" = "yes" ]; then
-    CFG_SHARED="no"
+    CFG_SHARED="no" # iOS builds should be static to be able to submit to the App Store
+    CFG_CXX11="no" # C++11 support disabled for now
+    CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtdeclarative qtquickcontrols qtwebkit qtgraphicaleffects qtdoc qtmultimedia qtwebkit-examples-and-demos qttools"
 fi
 
 # disable GTK style support auto-detection on Mac
@@ -3040,7 +3063,7 @@ fi
 QT_INSTALL_BINS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_BINS"`
 
 if [ "$XPLATFORM_MINGW" = "yes" ]; then
-    QT_INSTALL_LIBEXECS_DIRNAME="lib"
+    QT_INSTALL_LIBEXECS_DIRNAME="bin"
 else
     QT_INSTALL_LIBEXECS_DIRNAME="libexec"
 fi

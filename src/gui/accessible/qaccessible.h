@@ -62,6 +62,7 @@ QT_BEGIN_NAMESPACE
 class QAccessibleInterface;
 class QAccessibleEvent;
 class QWindow;
+class QTextCursor;
 
 // We need to inherit QObject to expose the enums to QML.
 class Q_GUI_EXPORT QAccessible
@@ -331,6 +332,15 @@ public:
         TableCellInterface
     };
 
+    enum TextBoundaryType {
+        CharBoundary,
+        WordBoundary,
+        SentenceBoundary,
+        ParagraphBoundary,
+        LineBoundary,
+        NoBoundary
+    };
+
     typedef QAccessibleInterface*(*InterfaceFactory)(const QString &key, QObject*);
     typedef void(*UpdateHandler)(QAccessibleEvent *event);
     typedef void(*RootObjectHandler)(QObject*);
@@ -358,6 +368,8 @@ public:
     static void setRootObject(QObject *object);
 
     static void cleanup();
+
+    static QPair< int, int > qAccessibleTextBoundaryHelper(const QTextCursor &cursor, TextBoundaryType boundaryType);
 
 private:
     static UpdateHandler updateHandler;

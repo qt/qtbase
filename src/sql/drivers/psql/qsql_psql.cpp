@@ -124,9 +124,9 @@ inline void qPQfreemem(void *buffer)
 
 class QPSQLDriverPrivate : public QSqlDriverPrivate
 {
+    Q_DECLARE_PUBLIC(QPSQLDriver)
 public:
-    QPSQLDriverPrivate(QPSQLDriver *qq) : QSqlDriverPrivate(),
-        q(qq),
+    QPSQLDriverPrivate() : QSqlDriverPrivate(),
         connection(0),
         isUtf8(false),
         pro(QPSQLDriver::Version6),
@@ -135,7 +135,6 @@ public:
         hasBackslashEscape(false)
     { dbmsType = PostgreSQL; }
 
-    QPSQLDriver *q;
     PGconn *connection;
     bool isUtf8;
     QPSQLDriver::Protocol pro;
@@ -179,10 +178,11 @@ void QPSQLDriverPrivate::appendTables(QStringList &tl, QSqlQuery &t, QChar type)
 
 PGresult * QPSQLDriverPrivate::exec(const char * stmt) const
 {
+    Q_Q(const QPSQLDriver);
     PGresult *result = PQexec(connection, stmt);
     if (seid.size() && !pendingNotifyCheck) {
         pendingNotifyCheck = true;
-        QMetaObject::invokeMethod(q, "_q_handleNotification", Qt::QueuedConnection, Q_ARG(int,0));
+        QMetaObject::invokeMethod(const_cast<QPSQLDriver*>(q), "_q_handleNotification", Qt::QueuedConnection, Q_ARG(int,0));
     }
     return result;
 }
@@ -205,7 +205,11 @@ public:
 
     QString fieldSerial(int i) const { return QLatin1Char('$') + QString::number(i + 1); }
     void deallocatePreparedStmt();
-    const QPSQLDriverPrivate * privDriver() const {Q_Q(const QPSQLResult); return reinterpret_cast<const QPSQLDriver *>(q->driver())->d; }
+    const QPSQLDriverPrivate * privDriver() const
+    {
+        Q_Q(const QPSQLResult);
+        return reinterpret_cast<const QPSQLDriver *>(q->driver())->d_func();
+    }
 
     PGresult *result;
     int currentSize;
@@ -767,15 +771,14 @@ QPSQLDriver::Protocol QPSQLDriverPrivate::getPSQLVersion()
 }
 
 QPSQLDriver::QPSQLDriver(QObject *parent)
-    : QSqlDriver(parent)
+    : QSqlDriver(*new QPSQLDriverPrivate, parent)
 {
-    init();
 }
 
 QPSQLDriver::QPSQLDriver(PGconn *conn, QObject *parent)
-    : QSqlDriver(parent)
+    : QSqlDriver(*new QPSQLDriverPrivate, parent)
 {
-    init();
+    Q_D(QPSQLDriver);
     d->connection = conn;
     if (conn) {
         d->pro = d->getPSQLVersion();
@@ -785,24 +788,22 @@ QPSQLDriver::QPSQLDriver(PGconn *conn, QObject *parent)
     }
 }
 
-void QPSQLDriver::init()
-{
-    d = new QPSQLDriverPrivate(this);
-}
-
 QPSQLDriver::~QPSQLDriver()
 {
+    Q_D(QPSQLDriver);
     if (d->connection)
         PQfinish(d->connection);
 }
 
 QVariant QPSQLDriver::handle() const
 {
+    Q_D(const QPSQLDriver);
     return QVariant::fromValue(d->connection);
 }
 
 bool QPSQLDriver::hasFeature(DriverFeature f) const
 {
+    Q_D(const QPSQLDriver);
     switch (f) {
     case Transactions:
     case QuerySize:
@@ -849,6 +850,7 @@ bool QPSQLDriver::open(const QString & db,
                         int port,
                         const QString& connOpts)
 {
+    Q_D(QPSQLDriver);
     if (isOpen())
         close();
     QString connectString;
@@ -891,6 +893,7 @@ bool QPSQLDriver::open(const QString & db,
 
 void QPSQLDriver::close()
 {
+    Q_D(QPSQLDriver);
     if (isOpen()) {
 
         d->seid.clear();
@@ -915,6 +918,7 @@ QSqlResult *QPSQLDriver::createResult() const
 
 bool QPSQLDriver::beginTransaction()
 {
+    Q_D(const QPSQLDriver);
     if (!isOpen()) {
         qWarning("QPSQLDriver::beginTransaction: Database not open");
         return false;
@@ -932,6 +936,7 @@ bool QPSQLDriver::beginTransaction()
 
 bool QPSQLDriver::commitTransaction()
 {
+    Q_D(QPSQLDriver);
     if (!isOpen()) {
         qWarning("QPSQLDriver::commitTransaction: Database not open");
         return false;
@@ -965,6 +970,7 @@ bool QPSQLDriver::commitTransaction()
 
 bool QPSQLDriver::rollbackTransaction()
 {
+    Q_D(QPSQLDriver);
     if (!isOpen()) {
         qWarning("QPSQLDriver::rollbackTransaction: Database not open");
         return false;
@@ -982,6 +988,7 @@ bool QPSQLDriver::rollbackTransaction()
 
 QStringList QPSQLDriver::tables(QSql::TableType type) const
 {
+    Q_D(const QPSQLDriver);
     QStringList tl;
     if (!isOpen())
         return tl;
@@ -989,9 +996,9 @@ QStringList QPSQLDriver::tables(QSql::TableType type) const
     t.setForwardOnly(true);
 
     if (type & QSql::Tables)
-        d->appendTables(tl, t, QLatin1Char('r'));
+        const_cast<QPSQLDriverPrivate*>(d)->appendTables(tl, t, QLatin1Char('r'));
     if (type & QSql::Views)
-        d->appendTables(tl, t, QLatin1Char('v'));
+        const_cast<QPSQLDriverPrivate*>(d)->appendTables(tl, t, QLatin1Char('v'));
     if (type & QSql::SystemTables) {
         t.exec(QLatin1String("select relname from pg_class where (relkind = 'r') "
                 "and (relname like 'pg_%') "));
@@ -1013,6 +1020,7 @@ static void qSplitTableName(QString &tablename, QString &schema)
 
 QSqlIndex QPSQLDriver::primaryIndex(const QString& tablename) const
 {
+    Q_D(const QPSQLDriver);
     QSqlIndex idx(tablename);
     if (!isOpen())
         return idx;
@@ -1094,6 +1102,7 @@ QSqlIndex QPSQLDriver::primaryIndex(const QString& tablename) const
 
 QSqlRecord QPSQLDriver::record(const QString& tablename) const
 {
+    Q_D(const QPSQLDriver);
     QSqlRecord info;
     if (!isOpen())
         return info;
@@ -1231,6 +1240,7 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
 
 QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
 {
+    Q_D(const QPSQLDriver);
     QString r;
     if (field.isNull()) {
         r = QLatin1String("NULL");
@@ -1326,16 +1336,19 @@ QString QPSQLDriver::escapeIdentifier(const QString &identifier, IdentifierType)
 
 bool QPSQLDriver::isOpen() const
 {
+    Q_D(const QPSQLDriver);
     return PQstatus(d->connection) == CONNECTION_OK;
 }
 
 QPSQLDriver::Protocol QPSQLDriver::protocol() const
 {
+    Q_D(const QPSQLDriver);
     return d->pro;
 }
 
 bool QPSQLDriver::subscribeToNotification(const QString &name)
 {
+    Q_D(QPSQLDriver);
     if (!isOpen()) {
         qWarning("QPSQLDriver::subscribeToNotificationImplementation: database not open.");
         return false;
@@ -1373,6 +1386,7 @@ bool QPSQLDriver::subscribeToNotification(const QString &name)
 
 bool QPSQLDriver::unsubscribeFromNotification(const QString &name)
 {
+    Q_D(QPSQLDriver);
     if (!isOpen()) {
         qWarning("QPSQLDriver::unsubscribeFromNotificationImplementation: database not open.");
         return false;
@@ -1404,11 +1418,13 @@ bool QPSQLDriver::unsubscribeFromNotification(const QString &name)
 
 QStringList QPSQLDriver::subscribedToNotifications() const
 {
+    Q_D(const QPSQLDriver);
     return d->seid;
 }
 
 void QPSQLDriver::_q_handleNotification(int)
 {
+    Q_D(QPSQLDriver);
     d->pendingNotifyCheck = false;
     PQconsumeInput(d->connection);
 

@@ -104,9 +104,9 @@ QCocoaMenuItem::~QCocoaMenuItem()
 {
     if (m_merged) {
         [m_native setHidden:YES];
+    } else {
+        [m_native release];
     }
-
-    [m_native release];
 }
 
 void QCocoaMenuItem::setText(const QString &text)

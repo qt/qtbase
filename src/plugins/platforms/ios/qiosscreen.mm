@@ -142,7 +142,7 @@ QIOSScreen::QIOSScreen(unsigned int screenIndex)
 
     if (isQtApplication()) {
         // When in a non-mixed environment, let QScreen follow the current interface orientation:
-        setPrimaryOrientation(toQtScreenOrientation(rootViewController().interfaceOrientation));
+        setPrimaryOrientation(toQtScreenOrientation(UIDeviceOrientation(rootViewController().interfaceOrientation)));
     }
 
     [pool release];

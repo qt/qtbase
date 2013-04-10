@@ -529,18 +529,6 @@ void QGtkStylePrivate::initGtkWidgets() const
         return;
     }
 
-    static QString themeName;
-    if (!gtkWidgetMap()->contains("GtkWindow") && themeName.isEmpty()) {
-        themeName = getThemeName();
-
-        if (themeName == QLS("Qt") || themeName == QLS("Qt4")) {
-            // Due to namespace conflicts with Qt3 and obvious recursion with Qt4,
-            // we cannot support the GTK_Qt Gtk engine
-            qWarning("QGtkStyle cannot be used together with the GTK_Qt engine.");
-            return;
-        }
-    }
-
     if (QGtkStylePrivate::gtk_init) {
 #ifndef Q_OS_MAC
         // Gtk will set the Qt error handler so we have to reset it afterwards
@@ -688,38 +676,12 @@ bool QGtkStylePrivate::getGConfBool(const QString &key, bool fallback)
 QString QGtkStylePrivate::getThemeName()
 {
     QString themeName;
-    // We try to parse the gtkrc file first
-    // primarily to avoid resolving Gtk functions if
-    // the KDE 3 "Qt" style is currently in use
-    QString rcPaths = QString::fromLocal8Bit(qgetenv("GTK2_RC_FILES"));
-    if (!rcPaths.isEmpty()) {
-        QStringList paths = rcPaths.split(QLS(":"));
-        foreach (const QString &rcPath, paths) {
-            if (!rcPath.isEmpty()) {
-                QFile rcFile(rcPath);
-                if (rcFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-                    QTextStream in(&rcFile);
-                    while(!in.atEnd()) {
-                        QString line = in.readLine();
-                        if (line.contains(QLS("gtk-theme-name"))) {
-                            line = line.right(line.length() - line.indexOf(QLatin1Char('=')) - 1);
-                            line.remove(QLatin1Char('\"'));
-                            line = line.trimmed();
-                            themeName = line;
-                            break;
-                        }
-                    }
-                }
-            }
-            if (!themeName.isEmpty())
-                break;
-        }
-    }
-
-    // Fall back to gconf
-    if (themeName.isEmpty() && resolveGConf())
-        themeName = getGConfString(QLS("/desktop/gnome/interface/gtk_theme"));
-
+    // Read the theme name from GtkSettings
+    GtkSettings *settings = QGtkStylePrivate::gtk_settings_get_default();
+    gchararray value;
+    g_object_get(settings, "gtk-theme-name", &value, NULL);
+    themeName = QString::fromUtf8(value);
+    g_free(value);
     return themeName;
 }
 
