@@ -6,7 +6,7 @@ defineTest(fixExclusiveOutputDirs) {
     count(ARGS, 2, greaterThan):isEqual($$list($$lower($$3)), false):appendFirstBuild = false
     else:appendFirstBuild = true
 
-    isEmpty(QMAKE_DIR_REPLACE):QMAKE_DIR_REPLACE += OBJECTS_DIR MOC_DIR RCC_DIR
+    isEmpty(QMAKE_DIR_REPLACE):QMAKE_DIR_REPLACE += OBJECTS_DIR MOC_DIR RCC_DIR PRECOMPILED_DIR
     lessThan(firstBuild, $$secondBuild):eval($${firstBuild}_and_$${secondBuild}_target:QMAKE_DIR_REPLACE += DESTDIR)
     else:eval($${secondBuild}_and_$${firstBuild}_target:QMAKE_DIR_REPLACE += DESTDIR)
     for(fix, QMAKE_DIR_REPLACE) {

@@ -101,6 +101,7 @@ private:
 
 class Q_EXPORT_SQLDRIVER_DB2 QDB2Driver : public QSqlDriver
 {
+    Q_DECLARE_PRIVATE(QDB2Driver)
     Q_OBJECT
 public:
     explicit QDB2Driver(QObject* parent = 0);
@@ -127,7 +128,6 @@ public:
 
 private:
     bool setAutoCommit(bool autoCommit);
-    QDB2DriverPrivate* d;
 };
 
 QT_END_NAMESPACE

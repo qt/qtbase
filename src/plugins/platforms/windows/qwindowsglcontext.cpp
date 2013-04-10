@@ -279,7 +279,7 @@ static PIXELFORMATDESCRIPTOR
 
     if (format.stereo())
         pfd.dwFlags |= PFD_STEREO;
-    if (format.swapBehavior() == QSurfaceFormat::DoubleBuffer && !isPixmap)
+    if (format.swapBehavior() != QSurfaceFormat::SingleBuffer && !isPixmap)
         pfd.dwFlags |= PFD_DOUBLEBUFFER;
     pfd.cDepthBits =
         format.depthBufferSize() >= 0 ? format.depthBufferSize() : 32;
@@ -389,12 +389,11 @@ static int choosePixelFormat(HDC hdc,
     iAttributes[i++] = WGL_COLOR_BITS_ARB;
     iAttributes[i++] = 24;
     switch (format.swapBehavior()) {
-    case QSurfaceFormat::DefaultSwapBehavior:
-        break;
     case QSurfaceFormat::SingleBuffer:
         iAttributes[i++] = WGL_DOUBLE_BUFFER_ARB;
         iAttributes[i++] = FALSE;
         break;
+    case QSurfaceFormat::DefaultSwapBehavior:
     case QSurfaceFormat::DoubleBuffer:
     case QSurfaceFormat::TripleBuffer:
         iAttributes[i++] = WGL_DOUBLE_BUFFER_ARB;

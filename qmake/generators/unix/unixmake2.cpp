@@ -579,7 +579,10 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                   << "-$(DEL_FILE) " << destdir << "$(TARGET0)\n\t"
                   << "-$(DEL_FILE) " << destdir << "$(TARGET1)\n\t"
                   << "-$(DEL_FILE) " << destdir << "$(TARGET2)\n\t"
-                  << "-$(MOVE) $(TARGET) $(TARGET0) $(TARGET1) $(TARGET2) " << destdir;
+                  << "-$(MOVE) $(TARGET)  " << destdir << "\n\t"
+                  << "-$(MOVE) $(TARGET0) " << destdir << "\n\t"
+                  << "-$(MOVE) $(TARGET1) " << destdir << "\n\t"
+                  << "-$(MOVE) $(TARGET2) " << destdir << "\n\t";
             if(!project->isEmpty("QMAKE_POST_LINK"))
                 t << "\n\t" << var("QMAKE_POST_LINK");
             t << endl << endl;
@@ -592,7 +595,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 t  << "\n\t"
                    << "-$(DEL_FILE) " << destdir << "$(TARGET)\n\t"
                    << "-$(DEL_FILE) " << destdir << "$(TARGET0)\n\t"
-                   << "-$(MOVE) $(TARGET) $(TARGET0) " << destdir;
+                   << "-$(MOVE) $(TARGET)  " << destdir << "\n\t"
+                   << "-$(MOVE) $(TARGET0) " << destdir << "\n\t";
             if(!project->isEmpty("QMAKE_POST_LINK"))
                 t << "\n\t" << var("QMAKE_POST_LINK");
             t << endl << endl;

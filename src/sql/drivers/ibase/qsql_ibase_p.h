@@ -64,9 +64,9 @@ class QIBaseDriver;
 
 class QIBaseDriver : public QSqlDriver
 {
-    Q_OBJECT
-    friend class QIBaseDriverPrivate;
     friend class QIBaseResultPrivate;
+    Q_DECLARE_PRIVATE(QIBaseDriver)
+    Q_OBJECT
 public:
     explicit QIBaseDriver(QObject *parent = 0);
     explicit QIBaseDriver(isc_db_handle connection, QObject *parent = 0);
@@ -104,9 +104,6 @@ public:
 
 private Q_SLOTS:
     void qHandleEventNotification(void* updatedResultBuffer);
-
-private:
-    QIBaseDriverPrivate* d;
 };
 
 QT_END_NAMESPACE

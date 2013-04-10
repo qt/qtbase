@@ -1,0 +1,58 @@
+From 654677720bd856b59387cfd034f441eba8c0e97f Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@digia.com>
+Date: Thu, 4 Apr 2013 14:21:58 +0300
+Subject: [PATCH] ANGLE DX11: Prevent assert when view is minimized or size
+ goes to 0x0
+
+This allows the Direct3D 11 version of ANGLE to gracefully allow
+surfaces with dimensions of 0. This is important because Qt may resize
+the surface to 0x0 because of window minimization or other user
+action (window resize). As EGL specifies that empty (0x0) surfaces are
+valid, this makes sure an assert doesn't occur in the case that a valid
+surface is resized to an empty one.
+
+Change-Id: Ia60c4c694090d03c1da7f43c56e90b925c8eab6d
+---
+ src/3rdparty/angle/src/libEGL/Surface.cpp                 | 9 ++++++++-
+ src/3rdparty/angle/src/libGLESv2/renderer/SwapChain11.cpp | 3 +++
+ 2 files changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/src/3rdparty/angle/src/libEGL/Surface.cpp b/src/3rdparty/angle/src/libEGL/Surface.cpp
+index 5ece724..8387443 100644
+--- a/src/3rdparty/angle/src/libEGL/Surface.cpp
++++ b/src/3rdparty/angle/src/libEGL/Surface.cpp
+@@ -172,9 +172,16 @@ bool Surface::resetSwapChain()
+ 
+ bool Surface::resizeSwapChain(int backbufferWidth, int backbufferHeight)
+ {
+-    ASSERT(backbufferWidth >= 0 && backbufferHeight >= 0);
+     ASSERT(mSwapChain);
+ 
++    // Prevent bad swap chain resize by calling reset if size is invalid
++    if (backbufferWidth < 1 || backbufferHeight < 1)
++    {
++        mWidth = backbufferWidth;
++        mHeight = backbufferHeight;
++        return mSwapChain->reset(0, 0, mSwapInterval) == EGL_SUCCESS;
++    }
++
+     EGLint status = mSwapChain->resize(backbufferWidth, backbufferHeight);
+ 
+     if (status == EGL_CONTEXT_LOST)
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain11.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain11.cpp
+index 87422be..98f8875 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain11.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/SwapChain11.cpp
+@@ -368,6 +368,9 @@ EGLint SwapChain11::resize(EGLint backbufferWidth, EGLint backbufferHeight)
+         return EGL_BAD_ACCESS;
+     }
+ 
++    if (!mSwapChain)
++        reset(backbufferWidth, backbufferHeight, mSwapInterval);
++
+     // Can only call resize if we have already created our swap buffer and resources
+     ASSERT(mSwapChain && mBackBufferTexture && mBackBufferRTView);
+ 
+-- 
+1.8.1.msysgit.1
+

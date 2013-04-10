@@ -971,7 +971,7 @@ Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names 
     QVariant to convert between types given suitable data; it is still
     possible to supply data which cannot actually be converted.
 
-    For example, canConvert(int) would return true when called on a variant
+    For example, canConvert(Int) would return true when called on a variant
     containing a string because, in principle, QVariant is able to convert
     strings of numbers to integers.
     However, if the string contains non-numeric characters, it cannot be

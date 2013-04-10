@@ -1440,7 +1440,6 @@ NamespaceNode::NamespaceNode(InnerNode *parent, const QString& name)
 ClassNode::ClassNode(InnerNode *parent, const QString& name)
     : InnerNode(Class, parent, name)
 {
-    hidden = false;
     abstract_ = false;
     qmlelement = 0;
     setPageType(ApiPage);

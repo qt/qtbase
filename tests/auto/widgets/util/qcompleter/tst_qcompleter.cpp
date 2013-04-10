@@ -178,6 +178,7 @@ private:
 tst_QCompleter::tst_QCompleter() : completer(0), completionColumn(0), columnCount(3)
 {
     treeWidget = new QTreeWidget;
+    treeWidget->move(100, 100);
     treeWidget->setColumnCount(columnCount);
 }
 
@@ -1065,12 +1066,13 @@ void tst_QCompleter::modelDeletion()
     completer->setCompletionPrefix("i");
     completer->setModel(listModel);
     QVERIFY(completer->completionCount() == 3);
-    QListView *view = new QListView;
+    QScopedPointer<QListView> view(new QListView);
     view->setModel(completer->completionModel());
     delete listModel;
+    view->move(200, 200);
     view->show();
     qApp->processEvents();
-    delete view;
+    view.reset();
     QVERIFY(completer->completionCount() == 0);
     QVERIFY(completer->currentRow() == -1);
 }
@@ -1083,10 +1085,10 @@ void tst_QCompleter::multipleWidgets()
     completer.setCompletionMode(QCompleter::InlineCompletion);
 
     QWidget window;
+    window.move(200, 200);
     window.show();
     QApplication::setActiveWindow(&window);
     QVERIFY(QTest::qWaitForWindowActive(&window));
-    QVERIFY(qApp->activeWindow() == &window);
 
     QFocusEvent focusIn(QEvent::FocusIn);
     QFocusEvent focusOut(QEvent::FocusOut);
@@ -1128,13 +1130,11 @@ void tst_QCompleter::focusIn()
     QCompleter completer(list);
 
     QWidget window;
+    window.move(200, 200);
     window.show();
-    QTest::qWait(100);
     window.activateWindow();
     QApplication::setActiveWindow(&window);
-    QTest::qWait(100);
-
-    QTRY_COMPARE(qApp->activeWindow(), &window);
+    QVERIFY(QTest::qWaitForWindowActive(&window));
 
     QComboBox *comboBox = new QComboBox(&window);
     comboBox->setEditable(true);
@@ -1194,7 +1194,9 @@ void tst_QCompleter::disabledItems()
     QCompleter *completer = new QCompleter(model, &lineEdit);
     QSignalSpy spy(completer, SIGNAL(activated(QString)));
     lineEdit.setCompleter(completer);
+    lineEdit.move(200, 200);
     lineEdit.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&lineEdit));
 
     QTest::keyPress(&lineEdit, Qt::Key_S);
     QTest::keyPress(&lineEdit, Qt::Key_U);
@@ -1212,15 +1214,19 @@ void tst_QCompleter::task178797_activatedOnReturn()
 {
     QStringList words;
     words << "foobar1" << "foobar2";
-    QLineEdit *ledit = new QLineEdit;
+    QLineEdit ledit;
+    setFrameless(&ledit);
     QCompleter *completer = new QCompleter(words);
-    ledit->setCompleter(completer);
+    ledit.setCompleter(completer);
     QSignalSpy spy(completer, SIGNAL(activated(QString)));
     QCOMPARE(spy.count(), 0);
-    ledit->show();
-    QTest::keyClick(ledit, Qt::Key_F);
+    ledit.move(200, 200);
+    ledit.show();
+    qApp->setActiveWindow(&ledit);
+    QVERIFY(QTest::qWaitForWindowActive(&ledit));
+    QTest::keyClick(&ledit, Qt::Key_F);
     qApp->processEvents();
-    QVERIFY(qApp->activePopupWidget());
+    QTRY_VERIFY(qApp->activePopupWidget());
     QTest::keyClick(qApp->activePopupWidget(), Qt::Key_Down);
     qApp->processEvents();
     QTest::keyClick(qApp->activePopupWidget(), Qt::Key_Return);
@@ -1289,19 +1295,20 @@ private slots:
 
 void tst_QCompleter::task246056_setCompletionPrefix()
 {
-    task246056_ComboBox *comboBox = new task246056_ComboBox;
-    setFrameless(comboBox);
-    QVERIFY(comboBox->completer());
-    comboBox->addItem("");
-    comboBox->addItem("a1");
-    comboBox->addItem("a2");
-    comboBox->show();
-    comboBox->setFocus();
-    QTest::qWait(100);
-    QTest::keyPress(comboBox, 'a');
-    QTest::keyPress(comboBox->completer()->popup(), Qt::Key_Down);
-    QTest::keyPress(comboBox->completer()->popup(), Qt::Key_Down);
-    QTest::keyPress(comboBox->completer()->popup(), Qt::Key_Enter); // don't crash!
+    task246056_ComboBox comboBox;
+    setFrameless(&comboBox);
+    QVERIFY(comboBox.completer());
+    comboBox.addItem("");
+    comboBox.addItem("a1");
+    comboBox.addItem("a2");
+    comboBox.move(200, 200);
+    comboBox.show();
+    QApplication::setActiveWindow(&comboBox);
+    QVERIFY(QTest::qWaitForWindowActive(&comboBox));
+    QTest::keyPress(&comboBox, 'a');
+    QTest::keyPress(comboBox.completer()->popup(), Qt::Key_Down);
+    QTest::keyPress(comboBox.completer()->popup(), Qt::Key_Down);
+    QTest::keyPress(comboBox.completer()->popup(), Qt::Key_Enter); // don't crash!
 }
 
 class task250064_TextEdit : public QTextEdit
@@ -1326,39 +1333,41 @@ class task250064_Widget : public QWidget
 {
     Q_OBJECT
 public:
-    task250064_TextEdit *textEdit;
-
-    task250064_Widget(task250064_TextEdit *textEdit)
-        : textEdit(textEdit)
+    task250064_Widget() : m_textEdit(new task250064_TextEdit)
     {
         QTabWidget *tabWidget = new QTabWidget;
         tabWidget->setFocusPolicy(Qt::ClickFocus);
-        tabWidget->addTab(textEdit, "untitled");
+        tabWidget->addTab(m_textEdit, "untitled");
 
         QVBoxLayout *layout = new QVBoxLayout(this);
         layout->addWidget(tabWidget);
 
-        textEdit->setPlainText("bla bla bla");
-        textEdit->setFocus();
+        m_textEdit->setPlainText("bla bla bla");
+        m_textEdit->setFocus();
     }
 
     void setCompletionModel()
     {
-        textEdit->completer->setModel(0);
+        m_textEdit->completer->setModel(0);
     }
+
+    QTextEdit *textEdit() const { return m_textEdit; }
+
+private:
+    task250064_TextEdit *m_textEdit;
 };
 
 void tst_QCompleter::task250064_lostFocus()
 {
-    task250064_TextEdit *textEdit = new task250064_TextEdit;
-    task250064_Widget *widget = new task250064_Widget(textEdit);
-    widget->show();
-    QTest::qWait(100);
-    QTest::keyPress(textEdit, 'a');
-    Qt::FocusPolicy origPolicy = textEdit->focusPolicy();
+    task250064_Widget widget;
+    widget.show();
+    QApplication::setActiveWindow(&widget);
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
+    QTest::keyPress(widget.textEdit(), 'a');
+    Qt::FocusPolicy origPolicy = widget.textEdit()->focusPolicy();
     QVERIFY(origPolicy != Qt::NoFocus);
-    widget->setCompletionModel();
-    QCOMPARE(textEdit->focusPolicy(), origPolicy);
+    widget.setCompletionModel();
+    QCOMPARE(widget.textEdit()->focusPolicy(), origPolicy);
 }
 
 void tst_QCompleter::task253125_lineEditCompletion_data()
@@ -1391,6 +1400,7 @@ void tst_QCompleter::task253125_lineEditCompletion()
 
     QLineEdit edit;
     edit.setCompleter(completer);
+    edit.move(200, 200);
     edit.show();
     edit.setFocus();
     QApplication::setActiveWindow(&edit);
@@ -1423,6 +1433,7 @@ void tst_QCompleter::task247560_keyboardNavigation()
 
     QLineEdit edit;
     edit.setCompleter(&completer);
+    edit.move(200, 200);
     edit.show();
     edit.setFocus();
     QApplication::setActiveWindow(&edit);
@@ -1543,6 +1554,7 @@ void tst_QCompleter::QTBUG_14292_filesystem()
     comp.setModel(&model);
     edit.setCompleter(&comp);
 
+    edit.move(200, 200);
     edit.show();
     QApplication::setActiveWindow(&edit);
     QVERIFY(QTest::qWaitForWindowActive(&edit));
@@ -1583,6 +1595,7 @@ void tst_QCompleter::QTBUG_14292_filesystem()
     QTRY_VERIFY(!comp.popup()->isVisible());
 
     QWidget w;
+    w.move(400, 200);
     w.show();
     QApplication::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));

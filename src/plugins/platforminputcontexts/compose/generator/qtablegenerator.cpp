@@ -287,7 +287,8 @@ ushort TableGenerator::keysymToUtf8(uint32_t sym)
 uint32_t TableGenerator::stringToKeysym(QString keysymName)
 {
     uint32_t keysym;
-    const char *name = keysymName.toLatin1().constData();
+    QByteArray keysymArray = keysymName.toLatin1();
+    const char *name = keysymArray.constData();
 
     if ((keysym = xkb_keysym_from_name(name, (xkb_keysym_flags)0)) == XKB_KEY_NoSymbol)
         qWarning() << QString("Qt Warrning - invalid keysym: %1").arg(keysymName);

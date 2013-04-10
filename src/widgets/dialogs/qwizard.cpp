@@ -1936,7 +1936,7 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
 
     Here, we call QWizardPage::field() to access the contents of the
     \c className field (which was defined in the \c ClassInfoPage)
-    and use it to initialize the \c OuputFilePage. The field's
+    and use it to initialize the \c OutputFilePage. The field's
     contents is returned as a QVariant.
 
     When we create a field using QWizardPage::registerField(), we
@@ -3131,6 +3131,16 @@ bool QWizard::event(QEvent *event)
         d->handleAeroStyleChange();
     }
     else if (d->isVistaThemeEnabled()) {
+        if (event->type() == QEvent::Resize
+                || event->type() == QEvent::LayoutDirectionChange) {
+            const int buttonLeft = (layoutDirection() == Qt::RightToLeft
+                                    ? width() - d->vistaHelper->backButton()->sizeHint().width()
+                                    : 0);
+
+            d->vistaHelper->backButton()->move(buttonLeft,
+                                               d->vistaHelper->backButton()->y());
+        }
+
         d->vistaHelper->mouseEvent(event);
     }
 #endif

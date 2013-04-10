@@ -12,7 +12,11 @@
 class TOutputESSL : public TOutputGLSLBase
 {
 public:
-    TOutputESSL(TInfoSinkBase& objSink);
+    TOutputESSL(TInfoSinkBase& objSink,
+                ShArrayIndexClampingStrategy clampingStrategy,
+                ShHashFunction64 hashFunction,
+                NameMap& nameMap,
+                TSymbolTable& symbolTable);
 
 protected:
     virtual bool writeVariablePrecision(TPrecision precision);

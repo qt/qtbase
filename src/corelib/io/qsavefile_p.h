@@ -68,6 +68,9 @@ protected:
     QString fileName;
 
     QFileDevice::FileError writeError;
+
+    bool useTemporaryFile;
+    bool directWriteFallback;
 };
 
 QT_END_NAMESPACE

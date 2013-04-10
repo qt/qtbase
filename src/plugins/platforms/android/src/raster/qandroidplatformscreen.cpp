@@ -69,3 +69,9 @@ QRegion QAndroidPlatformScreen::doRedraw()
     QtAndroid::flushImage(mGeometry.topLeft(), *mScreenImage, touched.boundingRect());
     return touched;
 }
+
+QDpi QAndroidPlatformScreen::logicalDpi() const
+{
+    qreal lDpi = QtAndroid::scaledDensity() * 100;
+    return QDpi(lDpi, lDpi);
+}

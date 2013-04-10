@@ -56,6 +56,7 @@ public:
     EGLNativeDisplayType platformDisplay() const;
     QSize screenSize() const;
     QSizeF physicalScreenSize() const;
+    QDpi logicalDpi() const;
     int screenDepth() const;
     QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &inputFormat) const;
     EGLNativeWindowType createNativeWindow(const QSize &size, const QSurfaceFormat &format);
@@ -84,6 +85,12 @@ QSize QEglFSAndroidHooks::screenSize() const
 QSizeF QEglFSAndroidHooks::physicalScreenSize() const
 {
     return QSizeF(QAndroidPlatformIntegration::m_defaultPhysicalSizeWidth, QAndroidPlatformIntegration::m_defaultPhysicalSizeHeight);
+}
+
+QDpi QEglFSAndroidHooks::logicalDpi() const
+{
+    qreal lDpi = QtAndroid::scaledDensity() * 100;
+    return QDpi(lDpi, lDpi);
 }
 
 

@@ -41,6 +41,7 @@ Cpp.ignoretokens        += \
                           Q_OPENVG_EXPORT \
                           Q_OUTOFLINE_TEMPLATE \
                           Q_PRINTSUPPORT_EXPORT \
+                          Q_QML_EXPORT \
                           Q_SCRIPT_EXPORT \
                           Q_SCRIPTTOOLS_EXPORT \
                           Q_SQL_EXPORT \

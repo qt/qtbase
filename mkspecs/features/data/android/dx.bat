@@ -41,7 +41,7 @@ set jarfile=dx.jar
 set "frameworkdir=%androidsdk%\platform-tools"
 
 if exist "%frameworkdir%\%jarfile%" goto JarFileOk
-    set "frameworkdir=%androidsdk%\lib"
+    set "frameworkdir=%frameworkdir%\lib"
 
 if exist "%frameworkdir%\%jarfile%" goto JarFileOk
     set "frameworkdir=%androidsdk%\framework"

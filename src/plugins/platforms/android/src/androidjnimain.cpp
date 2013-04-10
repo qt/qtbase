@@ -123,6 +123,7 @@ static QAndroidPlatformIntegration *m_androidPlatformIntegration = 0;
 
 static int m_desktopWidthPixels  = 0;
 static int m_desktopHeightPixels = 0;
+static double m_scaledDensity = 0;
 
 static volatile bool m_pauseApplication;
 
@@ -285,6 +286,11 @@ namespace QtAndroid
     int desktopHeightPixels()
     {
         return m_desktopHeightPixels;
+    }
+
+    double scaledDensity()
+    {
+        return m_scaledDensity;
     }
 
     JavaVM *javaVM()
@@ -623,10 +629,11 @@ static void destroySurface(JNIEnv *env, jobject /*thiz*/)
 static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
                             jint /*widthPixels*/, jint /*heightPixels*/,
                             jint desktopWidthPixels, jint desktopHeightPixels,
-                            jdouble xdpi, jdouble ydpi)
+                            jdouble xdpi, jdouble ydpi, jdouble scaledDensity)
 {
     m_desktopWidthPixels = desktopWidthPixels;
     m_desktopHeightPixels = desktopHeightPixels;
+    m_scaledDensity = scaledDensity;
 
     if (!m_androidPlatformIntegration) {
         QAndroidPlatformIntegration::setDefaultDisplayMetrics(desktopWidthPixels,desktopHeightPixels,
@@ -687,7 +694,7 @@ static JNINativeMethod methods[] = {
     {"resumeQtApp", "()V", (void *)resumeQtApp},
     {"quitQtAndroidPlugin", "()V", (void *)quitQtAndroidPlugin},
     {"terminateQt", "()V", (void *)terminateQt},
-    {"setDisplayMetrics", "(IIIIDD)V", (void *)setDisplayMetrics},
+    {"setDisplayMetrics", "(IIIIDDD)V", (void *)setDisplayMetrics},
     {"setSurface", "(Ljava/lang/Object;)V", (void *)setSurface},
     {"destroySurface", "()V", (void *)destroySurface},
     {"lockSurface", "()V", (void *)lockSurface},

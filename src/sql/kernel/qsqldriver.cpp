@@ -88,6 +88,13 @@ QSqlDriver::QSqlDriver(QObject *parent)
 {
 }
 
+/*!  \internal
+*/
+QSqlDriver::QSqlDriver(QSqlDriverPrivate &dd, QObject *parent)
+    : QObject(dd, parent)
+{
+}
+
 /*!
     Destroys the object and frees any allocated resources.
 */

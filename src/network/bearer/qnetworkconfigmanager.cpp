@@ -55,10 +55,13 @@
 QT_BEGIN_NAMESPACE
 
 static QBasicAtomicPointer<QNetworkConfigurationManagerPrivate> connManager_ptr;
+static QBasicAtomicInt appShutdown;
 
 static void connManager_cleanup()
 {
     // this is not atomic or thread-safe!
+    int shutdown = appShutdown.fetchAndStoreAcquire(1);
+    Q_ASSERT(shutdown == 0);
     QNetworkConfigurationManagerPrivate *cmp = connManager_ptr.fetchAndStoreAcquire(0);
     if (cmp)
         cmp->cleanup();
@@ -72,7 +75,8 @@ void QNetworkConfigurationManagerPrivate::addPostRoutine()
 QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
 {
     QNetworkConfigurationManagerPrivate *ptr = connManager_ptr.loadAcquire();
-    if (!ptr) {
+    int shutdown = appShutdown.loadAcquire();
+    if (!ptr && !shutdown) {
         static QBasicMutex connManager_mutex;
         QMutexLocker locker(&connManager_mutex);
         if (!(ptr = connManager_ptr.loadAcquire())) {

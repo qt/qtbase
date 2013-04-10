@@ -84,6 +84,7 @@ class QTDSDriver;
 
 class Q_EXPORT_SQLDRIVER_TDS QTDSDriver : public QSqlDriver
 {
+    Q_DECLARE_PRIVATE(QTDSDriver)
     Q_OBJECT
     friend class QTDSResult;
 public:
@@ -115,7 +116,6 @@ protected:
     bool rollbackTransaction();
 private:
     void init();
-    QTDSDriverPrivate *d;
 };
 
 QT_END_NAMESPACE

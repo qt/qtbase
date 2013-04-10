@@ -146,7 +146,7 @@ int main(int argc, char **argv)
     new MainApplicationAdaptor(app);
 
     // connect to D-Bus and register as an object:
-    QDBusConnection::sessionBus().registerObject("/MainApplication", app);
+    QDBusConnection::sessionBus().registerObject("/MainApplication", &app);
 
     // add main window, etc.
     [...]

@@ -97,14 +97,10 @@ void TrackerClient::timerEvent(QTimerEvent *event)
 
 void TrackerClient::fetchPeerList()
 {
-    // Prepare connection details
-    QString fullUrl = metaInfo.announceUrl();
-    QUrl url(fullUrl);
-    QString passkey = "?";
-    if (fullUrl.contains("?passkey")) {
-        passkey = metaInfo.announceUrl().mid(fullUrl.indexOf("?passkey"), -1);
-        passkey += '&';
-    }
+    QUrl url(metaInfo.announceUrl());
+
+    // Base the query on announce url to include a passkey (if any)
+    QUrlQuery query(url);
 
     // Percent encode the hash
     QByteArray infoHash = torrentDownloader->infoHash();
@@ -115,43 +111,44 @@ void TrackerClient::fetchPeerList()
     }
 
     bool seeding = (torrentDownloader->state() == TorrentClient::Seeding);
-    QByteArray query;
-    query += url.path().toLatin1();
-    query += passkey;
-    query += "info_hash=" + encodedSum;
-    query += "&peer_id=" + ConnectionManager::instance()->clientId();
-    query += "&port=" + QByteArray::number(TorrentServer::instance()->serverPort());
-    query += "&compact=1";
-    query += "&uploaded=" + QByteArray::number(torrentDownloader->uploadedBytes());
+
+    query.addQueryItem("info_hash", encodedSum);
+    query.addQueryItem("peer_id", ConnectionManager::instance()->clientId());
+    query.addQueryItem("port", QByteArray::number(TorrentServer::instance()->serverPort()));
+    query.addQueryItem("compact", "1");
+    query.addQueryItem("uploaded", QByteArray::number(torrentDownloader->uploadedBytes()));
 
     if (!firstSeeding) {
-        query += "&downloaded=0";
-        query += "&left=0";
+        query.addQueryItem("downloaded", "0");
+        query.addQueryItem("left", "0");
     } else {
-        query += "&downloaded=" + QByteArray::number(
-            torrentDownloader->downloadedBytes());
+        query.addQueryItem("downloaded",
+                           QByteArray::number(torrentDownloader->downloadedBytes()));
         int left = qMax<int>(0, metaInfo.totalSize() - torrentDownloader->downloadedBytes());
-        query += "&left=" + QByteArray::number(seeding ? 0 : left);
+        query.addQueryItem("left", QByteArray::number(seeding ? 0 : left));
     }
 
     if (seeding && firstSeeding) {
-        query += "&event=completed";
+        query.addQueryItem("event", "completed");
         firstSeeding = false;
     } else if (firstTrackerRequest) {
         firstTrackerRequest = false;
-        query += "&event=started";
+        query.addQueryItem("event", "started");
     } else if(lastTrackerRequest) {
-        query += "&event=stopped";
+        query.addQueryItem("event", "stopped");
     }
 
     if (!trackerId.isEmpty())
-        query += "&trackerid=" + trackerId;
+        query.addQueryItem("trackerid", trackerId);
+
+    url.setQuery(query);
 
     QNetworkRequest req(url);
     if (!url.userName().isEmpty()) {
         uname = url.userName();
         pwd = url.password();
-        connect(&http, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), this, SLOT(provideAuthentication(QNetworkReply*,QAuthenticator*)));
+        connect(&http, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
+                this, SLOT(provideAuthentication(QNetworkReply*,QAuthenticator*)));
     }
     http.get(req);
 }

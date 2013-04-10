@@ -51,16 +51,17 @@
 #ifndef QOPENGLVERSIONFUNCTIONS_H
 #define QOPENGLVERSIONFUNCTIONS_H
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_OPENGL
 
-#include <QtCore/QtGlobal>
 #include <QtCore/qhash.h>
 #include <QtCore/qpair.h>
 #include <QtGui/qopengl.h>
 
-class QOpenGLContext;
-
 QT_BEGIN_NAMESPACE
+
+class QOpenGLContext;
 
 #if 0
 // silence syncqt warnings

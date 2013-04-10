@@ -295,7 +295,8 @@ typedef QHash<QModelIndex, QSortFilterProxyModelPrivate::Mapping *> IndexMap;
 void QSortFilterProxyModelPrivate::_q_sourceModelDestroyed()
 {
     QAbstractProxyModelPrivate::_q_sourceModelDestroyed();
-    _q_clearMapping();
+    qDeleteAll(source_index_mapping);
+    source_index_mapping.clear();
 }
 
 void QSortFilterProxyModelPrivate::remove_from_mapping(const QModelIndex &source_parent)

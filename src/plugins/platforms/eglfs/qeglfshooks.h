@@ -43,6 +43,7 @@
 #define QEGLFSHOOKS_H
 
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformscreen.h>
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QImage>
 #include <EGL/egl.h>
@@ -61,6 +62,7 @@ public:
     virtual EGLNativeDisplayType platformDisplay() const;
     virtual QSizeF physicalScreenSize() const;
     virtual QSize screenSize() const;
+    virtual QDpi logicalDpi() const;
     virtual int screenDepth() const;
     virtual QImage::Format screenFormat() const;
     virtual QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &inputFormat) const;

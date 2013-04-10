@@ -9,9 +9,7 @@ get_filename_component(_qt5$${CMAKE_MODULE_NAME}_install_prefix \"${CMAKE_CURREN
 set(_qt5$${CMAKE_MODULE_NAME}_install_prefix \"$$[QT_INSTALL_PREFIX]\")
 !!ENDIF
 
-set(Qt5$${CMAKE_MODULE_NAME}_VERSION_MAJOR "$$eval(QT.$${MODULE}.MAJOR_VERSION)")
-set(Qt5$${CMAKE_MODULE_NAME}_VERSION_MINOR "$$eval(QT.$${MODULE}.MINOR_VERSION)")
-set(Qt5$${CMAKE_MODULE_NAME}_VERSION_PATCH "$$eval(QT.$${MODULE}.PATCH_VERSION)")
+# For backwards compatibility only. Use Qt5$${CMAKE_MODULE_NAME}_VERSION instead.
 set(Qt5$${CMAKE_MODULE_NAME}_VERSION_STRING "$$eval(QT.$${MODULE}.MAJOR_VERSION).$$eval(QT.$${MODULE}.MINOR_VERSION).$$eval(QT.$${MODULE}.PATCH_VERSION)")
 
 set(Qt5$${CMAKE_MODULE_NAME}_LIBRARIES Qt5::$${CMAKE_MODULE_NAME})
@@ -88,7 +86,7 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
                 ${Qt5$${CMAKE_MODULE_NAME}_VERSION_STRING} ${_Qt5$${CMAKE_MODULE_NAME}_FIND_VERSION_EXACT}
                 ${_Qt5$${CMAKE_MODULE_NAME}_DEPENDENCIES_FIND_QUIET}
                 ${_Qt5$${CMAKE_MODULE_NAME}_FIND_DEPENDENCIES_REQUIRED}
-                PATHS \"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}\" NO_DEFAULT_PATH
+                PATHS \"${CMAKE_CURRENT_LIST_DIR}/..\" NO_DEFAULT_PATH
             )
         endif()
 

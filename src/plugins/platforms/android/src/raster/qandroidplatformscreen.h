@@ -50,6 +50,7 @@ class QAndroidPlatformScreen: public QFbScreen
 public:
     QAndroidPlatformScreen();
     void topWindowChanged(QWindow *w);
+    QDpi logicalDpi() const;
 
 public slots:
     QRegion doRedraw();

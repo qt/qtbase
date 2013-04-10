@@ -2088,10 +2088,9 @@ void QOCIResult::virtual_hook(int id, void *data)
 
 
 QOCIDriver::QOCIDriver(QObject* parent)
-    : QSqlDriver(parent)
+    : QSqlDriver(*new QOCIDriverPrivate, parent)
 {
-    d = new QOCIDriverPrivate();
-
+    Q_D(QOCIDriver);
 #ifdef QOCI_THREADED
     const ub4 mode = OCI_UTF16 | OCI_OBJECT | OCI_THREADED;
 #else
@@ -2116,9 +2115,9 @@ QOCIDriver::QOCIDriver(QObject* parent)
 }
 
 QOCIDriver::QOCIDriver(OCIEnv* env, OCISvcCtx* ctx, QObject* parent)
-    : QSqlDriver(parent)
+    : QSqlDriver(*new QOCIDriverPrivate, parent)
 {
-    d = new QOCIDriverPrivate();
+    Q_D(QOCIDriver);
     d->env = env;
     d->svc = ctx;
 
@@ -2132,6 +2131,7 @@ QOCIDriver::QOCIDriver(OCIEnv* env, OCISvcCtx* ctx, QObject* parent)
 
 QOCIDriver::~QOCIDriver()
 {
+    Q_D(QOCIDriver);
     if (isOpen())
         close();
     int r = OCIHandleFree(d->err, OCI_HTYPE_ERROR);
@@ -2144,6 +2144,7 @@ QOCIDriver::~QOCIDriver()
 
 bool QOCIDriver::hasFeature(DriverFeature f) const
 {
+    Q_D(const QOCIDriver);
     switch (f) {
     case Transactions:
     case LastInsertId:
@@ -2202,6 +2203,7 @@ bool QOCIDriver::open(const QString & db,
                        int port,
                        const QString &opts)
 {
+    Q_D(QOCIDriver);
     int r;
 
     if (isOpen())
@@ -2288,6 +2290,7 @@ bool QOCIDriver::open(const QString & db,
 
 void QOCIDriver::close()
 {
+    Q_D(QOCIDriver);
     if (!isOpen())
         return;
 
@@ -2305,11 +2308,13 @@ void QOCIDriver::close()
 
 QSqlResult *QOCIDriver::createResult() const
 {
+    Q_D(const QOCIDriver);
     return new QOCIResult(this, d);
 }
 
 bool QOCIDriver::beginTransaction()
 {
+    Q_D(QOCIDriver);
     if (!isOpen()) {
         qWarning("QOCIDriver::beginTransaction: Database not open");
         return false;
@@ -2330,6 +2335,7 @@ bool QOCIDriver::beginTransaction()
 
 bool QOCIDriver::commitTransaction()
 {
+    Q_D(QOCIDriver);
     if (!isOpen()) {
         qWarning("QOCIDriver::commitTransaction: Database not open");
         return false;
@@ -2349,6 +2355,7 @@ bool QOCIDriver::commitTransaction()
 
 bool QOCIDriver::rollbackTransaction()
 {
+    Q_D(QOCIDriver);
     if (!isOpen()) {
         qWarning("QOCIDriver::rollbackTransaction: Database not open");
         return false;
@@ -2368,6 +2375,7 @@ bool QOCIDriver::rollbackTransaction()
 
 QStringList QOCIDriver::tables(QSql::TableType type) const
 {
+    Q_D(const QOCIDriver);
     QStringList tl;
     QStringList sysUsers = QStringList() << QLatin1String("MDSYS")
                                     << QLatin1String("LBACSYS")
@@ -2473,6 +2481,7 @@ void qSplitTableAndOwner(const QString & tname, QString * tbl,
 
 QSqlRecord QOCIDriver::record(const QString& tablename) const
 {
+    Q_D(const QOCIDriver);
     QSqlRecord fil;
     if (!isOpen())
         return fil;
@@ -2546,6 +2555,7 @@ QSqlRecord QOCIDriver::record(const QString& tablename) const
 
 QSqlIndex QOCIDriver::primaryIndex(const QString& tablename) const
 {
+    Q_D(const QOCIDriver);
     QSqlIndex idx(tablename);
     if (!isOpen())
         return idx;
@@ -2666,6 +2676,7 @@ QString QOCIDriver::formatValue(const QSqlField &field, bool trimStrings) const
 
 QVariant QOCIDriver::handle() const
 {
+    Q_D(const QOCIDriver);
     return QVariant::fromValue(d->env);
 }
 

@@ -102,7 +102,6 @@ static QTouchDevice *touchDevice = 0;
 {
     CGImageRelease(m_maskImage);
     m_maskImage = 0;
-    delete[] m_maskData;
     m_maskData = 0;
     m_window = 0;
     if (m_subscribesForGlobalFrameNotifications) {
@@ -322,6 +321,7 @@ static QTouchDevice *touchDevice = 0;
         CGImageRelease(m_maskImage);
     if (region->isEmpty()) {
         m_maskImage = 0;
+        return;
     }
 
     const QRect &rect = region->boundingRect();

@@ -59,6 +59,7 @@ QIOSTheme::QIOSTheme()
 
 QIOSTheme::~QIOSTheme()
 {
+    qDeleteAll(m_fonts);
 }
 
 QVariant QIOSTheme::themeHint(ThemeHint hint) const
@@ -73,8 +74,7 @@ QVariant QIOSTheme::themeHint(ThemeHint hint) const
 
 const QFont *QIOSTheme::font(Font type) const
 {
-    static QHash<QPlatformTheme::Font, QFont *> fonts;
-    if (fonts.isEmpty()) {
+    if (m_fonts.isEmpty()) {
         // The real system font on iOS is '.Helvetica Neue UI', as returned by both [UIFont systemFontOfSize]
         // and CTFontCreateUIFontForLanguage(kCTFontSystemFontType, ...), but this font is not included when
         // populating the available fonts in QCoreTextFontDatabase::populateFontDatabase(), since the font
@@ -84,13 +84,13 @@ const QFont *QIOSTheme::font(Font type) const
         // For now we hard-code the font to Helvetica, which should be very close to the actual
         // system font.
         QLatin1String systemFontFamilyName("Helvetica");
-        fonts.insert(QPlatformTheme::SystemFont, new QFont(systemFontFamilyName, [UIFont systemFontSize]));
-        fonts.insert(QPlatformTheme::SmallFont, new QFont(systemFontFamilyName, [UIFont smallSystemFontSize]));
-        fonts.insert(QPlatformTheme::LabelFont, new QFont(systemFontFamilyName, [UIFont labelFontSize]));
-        fonts.insert(QPlatformTheme::PushButtonFont, new QFont(systemFontFamilyName, [UIFont buttonFontSize]));
+        m_fonts.insert(QPlatformTheme::SystemFont, new QFont(systemFontFamilyName, [UIFont systemFontSize]));
+        m_fonts.insert(QPlatformTheme::SmallFont, new QFont(systemFontFamilyName, [UIFont smallSystemFontSize]));
+        m_fonts.insert(QPlatformTheme::LabelFont, new QFont(systemFontFamilyName, [UIFont labelFontSize]));
+        m_fonts.insert(QPlatformTheme::PushButtonFont, new QFont(systemFontFamilyName, [UIFont buttonFontSize]));
     }
 
-    return fonts.value(type, 0);
+    return m_fonts.value(type, 0);
 }
 
 QT_END_NAMESPACE

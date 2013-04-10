@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2002-2012 The ANGLE Project Authors. All rights reserved.
+// Copyright (c) 2002-2013 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -8,13 +8,14 @@
 
 #include "common/angleutils.h"
 #include "compiler/debug.h"
-#include "compiler/InfoSink.h"
-#include "compiler/UnfoldShortCircuit.h"
-#include "compiler/SearchSymbol.h"
 #include "compiler/DetectDiscontinuity.h"
+#include "compiler/InfoSink.h"
+#include "compiler/SearchSymbol.h"
+#include "compiler/UnfoldShortCircuit.h"
 
-#include <stdio.h>
 #include <algorithm>
+#include <cfloat>
+#include <stdio.h>
 
 namespace sh
 {
@@ -26,7 +27,8 @@ TString str(int i)
     return buffer;
 }
 
-OutputHLSL::OutputHLSL(TParseContext &context) : TIntermTraverser(true, true, true), mContext(context)
+OutputHLSL::OutputHLSL(TParseContext &context, const ShBuiltInResources& resources, ShShaderOutput outputType)
+    : TIntermTraverser(true, true, true), mContext(context), mOutputType(outputType)
 {
     mUnfoldShortCircuit = new UnfoldShortCircuit(context, this);
     mInsideFunction = false;
@@ -46,6 +48,8 @@ OutputHLSL::OutputHLSL(TParseContext &context) : TIntermTraverser(true, true, tr
     mUsesTexture2DProjLod0_bias = false;
     mUsesTextureCubeLod0 = false;
     mUsesTextureCubeLod0_bias = false;
+    mUsesFragColor = false;
+    mUsesFragData = false;
     mUsesDepthRange = false;
     mUsesFragCoord = false;
     mUsesPointCoord = false;
@@ -80,6 +84,8 @@ OutputHLSL::OutputHLSL(TParseContext &context) : TIntermTraverser(true, true, tr
     mUsesAtan2_3 = false;
     mUsesAtan2_4 = false;
 
+    mNumRenderTargets = resources.EXT_draw_buffers ? resources.MaxDrawBuffers : 1;
+
     mScopeDepth = 0;
 
     mUniqueIndex = 0;
@@ -89,6 +95,24 @@ OutputHLSL::OutputHLSL(TParseContext &context) : TIntermTraverser(true, true, tr
     mInsideDiscontinuousLoop = false;
 
     mExcessiveLoopIndex = NULL;
+
+    if (mOutputType == SH_HLSL9_OUTPUT)
+    {
+        if (mContext.shaderType == SH_FRAGMENT_SHADER)
+        {
+            mUniformRegister = 3;   // Reserve registers for dx_DepthRange, dx_ViewCoords and dx_DepthFront
+        }
+        else
+        {
+            mUniformRegister = 2;   // Reserve registers for dx_DepthRange and dx_ViewAdjust
+        }
+    }
+    else
+    {
+        mUniformRegister = 0;
+    }
+
+    mSamplerRegister = 0;
 }
 
 OutputHLSL::~OutputHLSL()
@@ -98,7 +122,7 @@ OutputHLSL::~OutputHLSL()
 
 void OutputHLSL::output()
 {
-    mContainsLoopDiscontinuity = containsLoopDiscontinuity(mContext.treeRoot);
+    mContainsLoopDiscontinuity = mContext.shaderType == SH_FRAGMENT_SHADER && containsLoopDiscontinuity(mContext.treeRoot);
 
     mContext.treeRoot->traverse(this);   // Output the body first to determine what has to go in the header
     header();
@@ -110,6 +134,11 @@ void OutputHLSL::output()
 TInfoSinkBase &OutputHLSL::getBodyStream()
 {
     return mBody;
+}
+
+const ActiveUniforms &OutputHLSL::getUniforms()
+{
+    return mActiveUniforms;
 }
 
 int OutputHLSL::vectorSize(const TType &type) const
@@ -135,58 +164,71 @@ void OutputHLSL::header()
         out << *constructor;
     }
 
+    TString uniforms;
+    TString varyings;
+    TString attributes;
+
+    for (ReferencedSymbols::const_iterator uniform = mReferencedUniforms.begin(); uniform != mReferencedUniforms.end(); uniform++)
+    {
+        const TType &type = uniform->second->getType();
+        const TString &name = uniform->second->getSymbol();
+
+        if (mOutputType == SH_HLSL11_OUTPUT && IsSampler(type.getBasicType()))   // Also declare the texture
+        {
+            int index = samplerRegister(mReferencedUniforms[name]);
+
+            uniforms += "uniform SamplerState sampler_" + decorateUniform(name, type) + arrayString(type) + 
+                        " : register(s" + str(index) + ");\n";
+
+            uniforms += "uniform " + textureString(type) + " texture_" + decorateUniform(name, type) + arrayString(type) + 
+                        " : register(t" + str(index) + ");\n";
+        }
+        else
+        {
+            uniforms += "uniform " + typeString(type) + " " + decorateUniform(name, type) + arrayString(type) + 
+                        " : register(" + registerString(mReferencedUniforms[name]) + ");\n";
+        }
+    }
+
+    for (ReferencedSymbols::const_iterator varying = mReferencedVaryings.begin(); varying != mReferencedVaryings.end(); varying++)
+    {
+        const TType &type = varying->second->getType();
+        const TString &name = varying->second->getSymbol();
+
+        // Program linking depends on this exact format
+        varyings += "static " + typeString(type) + " " + decorate(name) + arrayString(type) + " = " + initializer(type) + ";\n";
+    }
+
+    for (ReferencedSymbols::const_iterator attribute = mReferencedAttributes.begin(); attribute != mReferencedAttributes.end(); attribute++)
+    {
+        const TType &type = attribute->second->getType();
+        const TString &name = attribute->second->getSymbol();
+
+        attributes += "static " + typeString(type) + " " + decorate(name) + arrayString(type) + " = " + initializer(type) + ";\n";
+    }
+
     if (shaderType == SH_FRAGMENT_SHADER)
     {
-        TString uniforms;
-        TString varyings;
+        TExtensionBehavior::const_iterator iter = mContext.extensionBehavior().find("GL_EXT_draw_buffers");
+        bool usingMRTExtension = iter != mContext.extensionBehavior().end() && iter->second == EBhEnable;
 
-        TSymbolTableLevel *symbols = mContext.symbolTable.getGlobalLevel();
-        int semanticIndex = 0;
-
-        for (TSymbolTableLevel::const_iterator namedSymbol = symbols->begin(); namedSymbol != symbols->end(); namedSymbol++)
-        {
-            const TSymbol *symbol = (*namedSymbol).second;
-            const TString &name = symbol->getName();
-
-            if (symbol->isVariable())
-            {
-                const TVariable *variable = static_cast<const TVariable*>(symbol);
-                const TType &type = variable->getType();
-                TQualifier qualifier = type.getQualifier();
-
-                if (qualifier == EvqUniform)
-                {
-                    if (mReferencedUniforms.find(name.c_str()) != mReferencedUniforms.end())
-                    {
-                        uniforms += "uniform " + typeString(type) + " " + decorateUniform(name, type) + arrayString(type) + ";\n";
-                    }
-                }
-                else if (qualifier == EvqVaryingIn || qualifier == EvqInvariantVaryingIn)
-                {
-                    if (mReferencedVaryings.find(name.c_str()) != mReferencedVaryings.end())
-                    {
-                        // Program linking depends on this exact format
-                        varyings += "static " + typeString(type) + " " + decorate(name) + arrayString(type) + " = " + initializer(type) + ";\n";
-
-                        semanticIndex += type.isArray() ? type.getArraySize() : 1;
-                    }
-                }
-                else if (qualifier == EvqGlobal || qualifier == EvqTemporary)
-                {
-                    // Globals are declared and intialized as an aggregate node
-                }
-                else if (qualifier == EvqConst)
-                {
-                    // Constants are repeated as literals where used
-                }
-                else UNREACHABLE();
-            }
-        }
+        unsigned int numColorValues = usingMRTExtension ? mNumRenderTargets : 1;
 
         out << "// Varyings\n";
         out <<  varyings;
         out << "\n"
-               "static float4 gl_Color[1] = {float4(0, 0, 0, 0)};\n";
+               "static float4 gl_Color[" << numColorValues << "] =\n"
+               "{\n";
+        for (unsigned int i = 0; i < numColorValues; i++)
+        {
+            out << "    float4(0, 0, 0, 0)";
+            if (i + 1 != numColorValues)
+            {
+                out << ",";
+            }
+            out << "\n";
+        }
+        out << "};\n";
 
         if (mUsesFragCoord)
         {
@@ -205,205 +247,379 @@ void OutputHLSL::header()
 
         out << "\n";
 
-        if (mUsesFragCoord)
+        if (mUsesDepthRange)
         {
-            out << "uniform float4 dx_Coord;\n"
-                   "uniform float2 dx_Depth;\n";
+            out << "struct gl_DepthRangeParameters\n"
+                   "{\n"
+                   "    float near;\n"
+                   "    float far;\n"
+                   "    float diff;\n"
+                   "};\n"
+                   "\n";
         }
 
-        if (mUsesFrontFacing)
+        if (mOutputType == SH_HLSL11_OUTPUT)
         {
-            out << "uniform bool dx_PointsOrLines;\n"
-                   "uniform bool dx_FrontCCW;\n";
+            out << "cbuffer DriverConstants : register(b1)\n"
+                   "{\n";
+
+            if (mUsesDepthRange)
+            {
+                out << "    float3 dx_DepthRange : packoffset(c0);\n";
+            }
+
+            if (mUsesFragCoord)
+            {
+                out << "    float4 dx_ViewCoords : packoffset(c1);\n";
+            }
+
+            if (mUsesFragCoord || mUsesFrontFacing)
+            {
+                out << "    float3 dx_DepthFront : packoffset(c2);\n";
+            }
+
+            out << "};\n";
+        }
+        else
+        {
+            if (mUsesDepthRange)
+            {
+                out << "uniform float3 dx_DepthRange : register(c0);";
+            }
+
+            if (mUsesFragCoord)
+            {
+                out << "uniform float4 dx_ViewCoords : register(c1);\n";
+            }
+
+            if (mUsesFragCoord || mUsesFrontFacing)
+            {
+                out << "uniform float3 dx_DepthFront : register(c2);\n";
+            }
+        }
+
+        out << "\n";
+
+        if (mUsesDepthRange)
+        {
+            out << "static gl_DepthRangeParameters gl_DepthRange = {dx_DepthRange.x, dx_DepthRange.y, dx_DepthRange.z};\n"
+                   "\n";
         }
         
-        out << "\n";
         out <<  uniforms;
         out << "\n";
 
         if (mUsesTexture2D)
         {
-            out << "float4 gl_texture2D(sampler2D s, float2 t)\n"
-                   "{\n"
-                   "    return tex2D(s, t);\n"
-                   "}\n"
-                   "\n";
+            if (mOutputType == SH_HLSL9_OUTPUT)
+            {
+                out << "float4 gl_texture2D(sampler2D s, float2 t)\n"
+                       "{\n"
+                       "    return tex2D(s, t);\n"
+                       "}\n"
+                       "\n";
+            }
+            else if (mOutputType == SH_HLSL11_OUTPUT)
+            {
+                out << "float4 gl_texture2D(Texture2D t, SamplerState s, float2 uv)\n"
+                       "{\n"
+                       "    return t.Sample(s, uv);\n"
+                       "}\n"
+                       "\n";
+            }
+            else UNREACHABLE();
         }
 
         if (mUsesTexture2D_bias)
         {
-            out << "float4 gl_texture2D(sampler2D s, float2 t, float bias)\n"
-                   "{\n"
-                   "    return tex2Dbias(s, float4(t.x, t.y, 0, bias));\n"
-                   "}\n"
-                   "\n";
+            if (mOutputType == SH_HLSL9_OUTPUT)
+            {
+                out << "float4 gl_texture2D(sampler2D s, float2 t, float bias)\n"
+                       "{\n"
+                       "    return tex2Dbias(s, float4(t.x, t.y, 0, bias));\n"
+                       "}\n"
+                       "\n";
+            }
+            else if (mOutputType == SH_HLSL11_OUTPUT)
+            {
+                out << "float4 gl_texture2D(Texture2D t, SamplerState s, float2 uv, float bias)\n"
+                       "{\n"
+                       "    return t.SampleBias(s, uv, bias);\n"
+                       "}\n"
+                       "\n";
+            }
+            else UNREACHABLE();
         }
 
         if (mUsesTexture2DProj)
         {
-            out << "float4 gl_texture2DProj(sampler2D s, float3 t)\n"
-                   "{\n"
-                   "    return tex2Dproj(s, float4(t.x, t.y, 0, t.z));\n"
-                   "}\n"
-                   "\n"
-                   "float4 gl_texture2DProj(sampler2D s, float4 t)\n"
-                   "{\n"
-                   "    return tex2Dproj(s, t);\n"
-                   "}\n"
-                   "\n";
+            if (mOutputType == SH_HLSL9_OUTPUT)
+            {
+                out << "float4 gl_texture2DProj(sampler2D s, float3 t)\n"
+                       "{\n"
+                       "    return tex2Dproj(s, float4(t.x, t.y, 0, t.z));\n"
+                       "}\n"
+                       "\n"
+                       "float4 gl_texture2DProj(sampler2D s, float4 t)\n"
+                       "{\n"
+                       "    return tex2Dproj(s, t);\n"
+                       "}\n"
+                       "\n";
+            }
+            else if (mOutputType == SH_HLSL11_OUTPUT)
+            {
+                out << "float4 gl_texture2DProj(Texture2D t, SamplerState s, float3 uvw)\n"
+                       "{\n"
+                       "    return t.Sample(s, float2(uvw.x / uvw.z, uvw.y / uvw.z));\n"
+                       "}\n"
+                       "\n"
+                       "float4 gl_texture2DProj(Texture2D t, SamplerState s, float4 uvw)\n"
+                       "{\n"
+                       "    return t.Sample(s, float2(uvw.x / uvw.w, uvw.y / uvw.w));\n"
+                       "}\n"
+                       "\n";
+            }
+            else UNREACHABLE();
         }
 
         if (mUsesTexture2DProj_bias)
         {
-            out << "float4 gl_texture2DProj(sampler2D s, float3 t, float bias)\n"
-                   "{\n"
-                   "    return tex2Dbias(s, float4(t.x / t.z, t.y / t.z, 0, bias));\n"
-                   "}\n"
-                   "\n"
-                   "float4 gl_texture2DProj(sampler2D s, float4 t, float bias)\n"
-                   "{\n"
-                   "    return tex2Dbias(s, float4(t.x / t.w, t.y / t.w, 0, bias));\n"
-                   "}\n"
-                   "\n";
+            if (mOutputType == SH_HLSL9_OUTPUT)
+            {
+                out << "float4 gl_texture2DProj(sampler2D s, float3 t, float bias)\n"
+                       "{\n"
+                       "    return tex2Dbias(s, float4(t.x / t.z, t.y / t.z, 0, bias));\n"
+                       "}\n"
+                       "\n"
+                       "float4 gl_texture2DProj(sampler2D s, float4 t, float bias)\n"
+                       "{\n"
+                       "    return tex2Dbias(s, float4(t.x / t.w, t.y / t.w, 0, bias));\n"
+                       "}\n"
+                       "\n";
+            }
+            else if (mOutputType == SH_HLSL11_OUTPUT)
+            {
+                out << "float4 gl_texture2DProj(Texture2D t, SamplerState s, float3 uvw, float bias)\n"
+                       "{\n"
+                       "    return t.SampleBias(s, float2(uvw.x / uvw.z, uvw.y / uvw.z), bias);\n"
+                       "}\n"
+                       "\n"
+                       "float4 gl_texture2DProj(Texture2D t, SamplerState s, float4 uvw, float bias)\n"
+                       "{\n"
+                       "    return t.SampleBias(s, float2(uvw.x / uvw.w, uvw.y / uvw.w), bias);\n"
+                       "}\n"
+                       "\n";
+            }
+            else UNREACHABLE();
         }
 
         if (mUsesTextureCube)
         {
-            out << "float4 gl_textureCube(samplerCUBE s, float3 t)\n"
-                   "{\n"
-                   "    return texCUBE(s, t);\n"
-                   "}\n"
-                   "\n";
+            if (mOutputType == SH_HLSL9_OUTPUT)
+            {
+                out << "float4 gl_textureCube(samplerCUBE s, float3 t)\n"
+                       "{\n"
+                       "    return texCUBE(s, t);\n"
+                       "}\n"
+                       "\n";
+            }
+            else if (mOutputType == SH_HLSL11_OUTPUT)
+            {
+                out << "float4 gl_textureCube(TextureCube t, SamplerState s, float3 uvw)\n"
+                       "{\n"
+                       "    return t.Sample(s, uvw);\n"
+                       "}\n"
+                       "\n";
+            }
+            else UNREACHABLE();
         }
 
         if (mUsesTextureCube_bias)
         {
-            out << "float4 gl_textureCube(samplerCUBE s, float3 t, float bias)\n"
-                   "{\n"
-                   "    return texCUBEbias(s, float4(t.x, t.y, t.z, bias));\n"
-                   "}\n"
-                   "\n";
+            if (mOutputType == SH_HLSL9_OUTPUT)
+            {
+                out << "float4 gl_textureCube(samplerCUBE s, float3 t, float bias)\n"
+                       "{\n"
+                       "    return texCUBEbias(s, float4(t.x, t.y, t.z, bias));\n"
+                       "}\n"
+                       "\n";
+            }
+            else if (mOutputType == SH_HLSL11_OUTPUT)
+            {
+                out << "float4 gl_textureCube(TextureCube t, SamplerState s, float3 uvw, float bias)\n"
+                       "{\n"
+                       "    return t.SampleBias(s, uvw, bias);\n"
+                       "}\n"
+                       "\n";
+            }
+            else UNREACHABLE();
         }
 
         // These *Lod0 intrinsics are not available in GL fragment shaders.
         // They are used to sample using discontinuous texture coordinates.
         if (mUsesTexture2DLod0)
         {
-            out << "float4 gl_texture2DLod0(sampler2D s, float2 t)\n"
-                   "{\n"
-                   "    return tex2Dlod(s, float4(t.x, t.y, 0, 0));\n"
-                   "}\n"
-                   "\n";
+            if (mOutputType == SH_HLSL9_OUTPUT)
+            {
+                out << "float4 gl_texture2DLod0(sampler2D s, float2 t)\n"
+                       "{\n"
+                       "    return tex2Dlod(s, float4(t.x, t.y, 0, 0));\n"
+                       "}\n"
+                       "\n";
+            }
+            else if (mOutputType == SH_HLSL11_OUTPUT)
+            {
+                out << "float4 gl_texture2DLod0(Texture2D t, SamplerState s, float2 uv)\n"
+                       "{\n"
+                       "    return t.SampleLevel(s, uv, 0);\n"
+                       "}\n"
+                       "\n";
+            }
+            else UNREACHABLE();
         }
 
         if (mUsesTexture2DLod0_bias)
         {
-            out << "float4 gl_texture2DLod0(sampler2D s, float2 t, float bias)\n"
-                   "{\n"
-                   "    return tex2Dlod(s, float4(t.x, t.y, 0, 0));\n"
-                   "}\n"
-                   "\n";
+            if (mOutputType == SH_HLSL9_OUTPUT)
+            {
+                out << "float4 gl_texture2DLod0(sampler2D s, float2 t, float bias)\n"
+                       "{\n"
+                       "    return tex2Dlod(s, float4(t.x, t.y, 0, 0));\n"
+                       "}\n"
+                       "\n";
+            }
+            else if (mOutputType == SH_HLSL11_OUTPUT)
+            {
+                out << "float4 gl_texture2DLod0(Texture2D t, SamplerState s, float2 uv, float bias)\n"
+                       "{\n"
+                       "    return t.SampleLevel(s, uv, 0);\n"
+                       "}\n"
+                       "\n";
+            }
+            else UNREACHABLE();
         }
 
         if (mUsesTexture2DProjLod0)
         {
-            out << "float4 gl_texture2DProjLod0(sampler2D s, float3 t)\n"
-                   "{\n"
-                   "    return tex2Dlod(s, float4(t.x / t.z, t.y / t.z, 0, 0));\n"
-                   "}\n"
-                   "\n"
-                   "float4 gl_texture2DProjLod(sampler2D s, float4 t)\n"
-                   "{\n"
-                   "    return tex2Dlod(s, float4(t.x / t.w, t.y / t.w, 0, 0));\n"
-                   "}\n"
-                   "\n";
+            if (mOutputType == SH_HLSL9_OUTPUT)
+            {
+                out << "float4 gl_texture2DProjLod0(sampler2D s, float3 t)\n"
+                       "{\n"
+                       "    return tex2Dlod(s, float4(t.x / t.z, t.y / t.z, 0, 0));\n"
+                       "}\n"
+                       "\n"
+                       "float4 gl_texture2DProjLod(sampler2D s, float4 t)\n"
+                       "{\n"
+                       "    return tex2Dlod(s, float4(t.x / t.w, t.y / t.w, 0, 0));\n"
+                       "}\n"
+                       "\n";
+            }
+            else if (mOutputType == SH_HLSL11_OUTPUT)
+            {
+                out << "float4 gl_texture2DProjLod0(Texture2D t, SamplerState s, float3 uvw)\n"
+                       "{\n"
+                       "    return t.SampleLevel(s, float2(uvw.x / uvw.z, uvw.y / uvw.z), 0);\n"
+                       "}\n"
+                       "\n"
+                       "float4 gl_texture2DProjLod0(Texture2D t, SamplerState s, float4 uvw)\n"
+                       "{\n"
+                       "    return t.SampleLevel(s, float2(uvw.x / uvw.w, uvw.y / uvw.w), 0);\n"
+                       "}\n"
+                       "\n";
+            }
+            else UNREACHABLE();
         }
 
         if (mUsesTexture2DProjLod0_bias)
         {
-            out << "float4 gl_texture2DProjLod0_bias(sampler2D s, float3 t, float bias)\n"
-                   "{\n"
-                   "    return tex2Dlod(s, float4(t.x / t.z, t.y / t.z, 0, 0));\n"
-                   "}\n"
-                   "\n"
-                   "float4 gl_texture2DProjLod_bias(sampler2D s, float4 t, float bias)\n"
-                   "{\n"
-                   "    return tex2Dlod(s, float4(t.x / t.w, t.y / t.w, 0, 0));\n"
-                   "}\n"
-                   "\n";
+            if (mOutputType == SH_HLSL9_OUTPUT)
+            {
+                out << "float4 gl_texture2DProjLod0_bias(sampler2D s, float3 t, float bias)\n"
+                       "{\n"
+                       "    return tex2Dlod(s, float4(t.x / t.z, t.y / t.z, 0, 0));\n"
+                       "}\n"
+                       "\n"
+                       "float4 gl_texture2DProjLod_bias(sampler2D s, float4 t, float bias)\n"
+                       "{\n"
+                       "    return tex2Dlod(s, float4(t.x / t.w, t.y / t.w, 0, 0));\n"
+                       "}\n"
+                       "\n";
+            }
+            else if (mOutputType == SH_HLSL11_OUTPUT)
+            {
+                out << "float4 gl_texture2DProjLod_bias(Texture2D t, SamplerState s, float3 uvw, float bias)\n"
+                       "{\n"
+                       "    return t.SampleLevel(s, float2(uvw.x / uvw.z, uvw.y / uvw.z), 0);\n"
+                       "}\n"
+                       "\n"
+                       "float4 gl_texture2DProjLod_bias(Texture2D t, SamplerState s, float4 uvw, float bias)\n"
+                       "{\n"
+                       "    return t.SampleLevel(s, float2(uvw.x / uvw.w, uvw.y / uvw.w), 0);\n"
+                       "}\n"
+                       "\n";
+            }
+            else UNREACHABLE();
         }
 
         if (mUsesTextureCubeLod0)
         {
-            out << "float4 gl_textureCubeLod0(samplerCUBE s, float3 t)\n"
-                   "{\n"
-                   "    return texCUBElod(s, float4(t.x, t.y, t.z, 0));\n"
-                   "}\n"
-                   "\n";
+            if (mOutputType == SH_HLSL9_OUTPUT)
+            {
+                out << "float4 gl_textureCubeLod0(samplerCUBE s, float3 t)\n"
+                       "{\n"
+                       "    return texCUBElod(s, float4(t.x, t.y, t.z, 0));\n"
+                       "}\n"
+                       "\n";
+            }
+            else if (mOutputType == SH_HLSL11_OUTPUT)
+            {
+                out << "float4 gl_textureCubeLod0(TextureCube t, SamplerState s, float3 uvw)\n"
+                       "{\n"
+                       "    return t.SampleLevel(s, uvw, 0);\n"
+                       "}\n"
+                       "\n";
+            }
+            else UNREACHABLE();
         }
 
         if (mUsesTextureCubeLod0_bias)
         {
-            out << "float4 gl_textureCubeLod0(samplerCUBE s, float3 t, float bias)\n"
-                   "{\n"
-                   "    return texCUBElod(s, float4(t.x, t.y, t.z, 0));\n"
-                   "}\n"
-                   "\n";
+            if (mOutputType == SH_HLSL9_OUTPUT)
+            {
+                out << "float4 gl_textureCubeLod0(samplerCUBE s, float3 t, float bias)\n"
+                       "{\n"
+                       "    return texCUBElod(s, float4(t.x, t.y, t.z, 0));\n"
+                       "}\n"
+                       "\n";
+            }
+            else if (mOutputType == SH_HLSL11_OUTPUT)
+            {
+                out << "float4 gl_textureCubeLod0(TextureCube t, SamplerState s, float3 uvw, float bias)\n"
+                       "{\n"
+                       "    return t.SampleLevel(s, uvw, 0);\n"
+                       "}\n"
+                       "\n";
+            }
+            else UNREACHABLE();
+        }
+
+        if (usingMRTExtension && mNumRenderTargets > 1)
+        {
+            out << "#define GL_USES_MRT\n";
+        }
+
+        if (mUsesFragColor)
+        {
+            out << "#define GL_USES_FRAG_COLOR\n";
+        }
+
+        if (mUsesFragData)
+        {
+            out << "#define GL_USES_FRAG_DATA\n";
         }
     }
     else   // Vertex shader
     {
-        TString uniforms;
-        TString attributes;
-        TString varyings;
-
-        TSymbolTableLevel *symbols = mContext.symbolTable.getGlobalLevel();
-
-        for (TSymbolTableLevel::const_iterator namedSymbol = symbols->begin(); namedSymbol != symbols->end(); namedSymbol++)
-        {
-            const TSymbol *symbol = (*namedSymbol).second;
-            const TString &name = symbol->getName();
-
-            if (symbol->isVariable())
-            {
-                const TVariable *variable = static_cast<const TVariable*>(symbol);
-                const TType &type = variable->getType();
-                TQualifier qualifier = type.getQualifier();
-
-                if (qualifier == EvqUniform)
-                {
-                    if (mReferencedUniforms.find(name.c_str()) != mReferencedUniforms.end())
-                    {
-                        uniforms += "uniform " + typeString(type) + " " + decorateUniform(name, type) + arrayString(type) + ";\n";
-                    }
-                }
-                else if (qualifier == EvqAttribute)
-                {
-                    if (mReferencedAttributes.find(name.c_str()) != mReferencedAttributes.end())
-                    {
-                        attributes += "static " + typeString(type) + " " + decorate(name) + arrayString(type) + " = " + initializer(type) + ";\n";
-                    }
-                }
-                else if (qualifier == EvqVaryingOut || qualifier == EvqInvariantVaryingOut)
-                {
-                    if (mReferencedVaryings.find(name.c_str()) != mReferencedVaryings.end())
-                    {
-                        // Program linking depends on this exact format
-                        varyings += "static " + typeString(type) + " " + decorate(name) + arrayString(type) + " = " + initializer(type) + ";\n";
-                    }
-                }
-                else if (qualifier == EvqGlobal || qualifier == EvqTemporary)
-                {
-                    // Globals are declared and intialized as an aggregate node
-                }
-                else if (qualifier == EvqConst)
-                {
-                    // Constants are repeated as literals where used
-                }
-                else UNREACHABLE();
-            }
-        }
-
         out << "// Attributes\n";
         out <<  attributes;
         out << "\n"
@@ -417,74 +633,194 @@ void OutputHLSL::header()
         out << "\n"
                "// Varyings\n";
         out <<  varyings;
-        out << "\n"
-               "uniform float2 dx_HalfPixelSize;\n"
-               "\n";
-        out <<  uniforms;
+        out << "\n";
+
+        if (mUsesDepthRange)
+        {
+            out << "struct gl_DepthRangeParameters\n"
+                   "{\n"
+                   "    float near;\n"
+                   "    float far;\n"
+                   "    float diff;\n"
+                   "};\n"
+                   "\n";
+        }
+
+        if (mOutputType == SH_HLSL11_OUTPUT)
+        {
+            if (mUsesDepthRange)
+            {
+                out << "cbuffer DriverConstants : register(b1)\n"
+                       "{\n"
+                       "    float3 dx_DepthRange : packoffset(c0);\n"
+                       "};\n"
+                       "\n";
+            }
+        }
+        else
+        {
+            if (mUsesDepthRange)
+            {
+                out << "uniform float3 dx_DepthRange : register(c0);\n";
+            }
+
+            out << "uniform float4 dx_ViewAdjust : register(c1);\n"
+                   "\n";
+        }
+
+        if (mUsesDepthRange)
+        {
+            out << "static gl_DepthRangeParameters gl_DepthRange = {dx_DepthRange.x, dx_DepthRange.y, dx_DepthRange.z};\n"
+                   "\n";
+        }
+
+        out << uniforms;
         out << "\n";
         
         if (mUsesTexture2D)
         {
-            out << "float4 gl_texture2D(sampler2D s, float2 t)\n"
-                   "{\n"
-                   "    return tex2Dlod(s, float4(t.x, t.y, 0, 0));\n"
-                   "}\n"
-                   "\n";
+            if (mOutputType == SH_HLSL9_OUTPUT)
+            {
+                out << "float4 gl_texture2D(sampler2D s, float2 t)\n"
+                       "{\n"
+                       "    return tex2Dlod(s, float4(t.x, t.y, 0, 0));\n"
+                       "}\n"
+                       "\n";
+            }
+            else if (mOutputType == SH_HLSL11_OUTPUT)
+            {
+                out << "float4 gl_texture2D(Texture2D t, SamplerState s, float2 uv)\n"
+                       "{\n"
+                       "    return t.SampleLevel(s, uv, 0);\n"
+                       "}\n"
+                       "\n";
+            }
+            else UNREACHABLE();
         }
 
         if (mUsesTexture2DLod)
         {
-            out << "float4 gl_texture2DLod(sampler2D s, float2 t, float lod)\n"
-                   "{\n"
-                   "    return tex2Dlod(s, float4(t.x, t.y, 0, lod));\n"
-                   "}\n"
-                   "\n";
+            if (mOutputType == SH_HLSL9_OUTPUT)
+            {
+                out << "float4 gl_texture2DLod(sampler2D s, float2 t, float lod)\n"
+                       "{\n"
+                       "    return tex2Dlod(s, float4(t.x, t.y, 0, lod));\n"
+                       "}\n"
+                       "\n";
+            }
+            else if (mOutputType == SH_HLSL11_OUTPUT)
+            {
+                out << "float4 gl_texture2DLod(Texture2D t, SamplerState s, float2 uv, float lod)\n"
+                       "{\n"
+                       "    return t.SampleLevel(s, uv, lod);\n"
+                       "}\n"
+                       "\n";
+            }
+            else UNREACHABLE();
         }
 
         if (mUsesTexture2DProj)
         {
-            out << "float4 gl_texture2DProj(sampler2D s, float3 t)\n"
-                   "{\n"
-                   "    return tex2Dlod(s, float4(t.x / t.z, t.y / t.z, 0, 0));\n"
-                   "}\n"
-                   "\n"
-                   "float4 gl_texture2DProj(sampler2D s, float4 t)\n"
-                   "{\n"
-                   "    return tex2Dlod(s, float4(t.x / t.w, t.y / t.w, 0, 0));\n"
-                   "}\n"
-                   "\n";
+            if (mOutputType == SH_HLSL9_OUTPUT)
+            {
+                out << "float4 gl_texture2DProj(sampler2D s, float3 t)\n"
+                       "{\n"
+                       "    return tex2Dlod(s, float4(t.x / t.z, t.y / t.z, 0, 0));\n"
+                       "}\n"
+                       "\n"
+                       "float4 gl_texture2DProj(sampler2D s, float4 t)\n"
+                       "{\n"
+                       "    return tex2Dlod(s, float4(t.x / t.w, t.y / t.w, 0, 0));\n"
+                       "}\n"
+                       "\n";
+            }
+            else if (mOutputType == SH_HLSL11_OUTPUT)
+            {
+                out << "float4 gl_texture2DProj(Texture2D t, SamplerState s, float3 uvw)\n"
+                       "{\n"
+                       "    return t.SampleLevel(s, float2(uvw.x / uvw.z, uvw.y / uvw.z), 0);\n"
+                       "}\n"
+                       "\n"
+                       "float4 gl_texture2DProj(Texture2D t, SamplerState s, float4 uvw)\n"
+                       "{\n"
+                       "    return t.SampleLevel(s, float2(uvw.x / uvw.w, uvw.y / uvw.w), 0);\n"
+                       "}\n"
+                       "\n";
+            }
+            else UNREACHABLE();
         }
 
         if (mUsesTexture2DProjLod)
         {
-            out << "float4 gl_texture2DProjLod(sampler2D s, float3 t, float lod)\n"
-                   "{\n"
-                   "    return tex2Dlod(s, float4(t.x / t.z, t.y / t.z, 0, lod));\n"
-                   "}\n"
-                   "\n"
-                   "float4 gl_texture2DProjLod(sampler2D s, float4 t, float lod)\n"
-                   "{\n"
-                   "    return tex2Dlod(s, float4(t.x / t.w, t.y / t.w, 0, lod));\n"
-                   "}\n"
-                   "\n";
+            if (mOutputType == SH_HLSL9_OUTPUT)
+            {
+                out << "float4 gl_texture2DProjLod(sampler2D s, float3 t, float lod)\n"
+                       "{\n"
+                       "    return tex2Dlod(s, float4(t.x / t.z, t.y / t.z, 0, lod));\n"
+                       "}\n"
+                       "\n"
+                       "float4 gl_texture2DProjLod(sampler2D s, float4 t, float lod)\n"
+                       "{\n"
+                       "    return tex2Dlod(s, float4(t.x / t.w, t.y / t.w, 0, lod));\n"
+                       "}\n"
+                       "\n";
+            }
+            else if (mOutputType == SH_HLSL11_OUTPUT)
+            {
+                out << "float4 gl_texture2DProj(Texture2D t, SamplerState s, float3 uvw, float lod)\n"
+                       "{\n"
+                       "    return t.SampleLevel(s, float2(uvw.x / uvw.z, uvw.y / uvw.z), lod);\n"
+                       "}\n"
+                       "\n"
+                       "float4 gl_texture2DProj(Texture2D t, SamplerState s, float4 uvw)\n"
+                       "{\n"
+                       "    return t.SampleLevel(s, float2(uvw.x / uvw.w, uvw.y / uvw.w), lod);\n"
+                       "}\n"
+                       "\n";
+            }
+            else UNREACHABLE();
         }
 
         if (mUsesTextureCube)
         {
-            out << "float4 gl_textureCube(samplerCUBE s, float3 t)\n"
-                   "{\n"
-                   "    return texCUBElod(s, float4(t.x, t.y, t.z, 0));\n"
-                   "}\n"
-                   "\n";
+            if (mOutputType == SH_HLSL9_OUTPUT)
+            {
+                out << "float4 gl_textureCube(samplerCUBE s, float3 t)\n"
+                       "{\n"
+                       "    return texCUBElod(s, float4(t.x, t.y, t.z, 0));\n"
+                       "}\n"
+                       "\n";
+            }
+            else if (mOutputType == SH_HLSL11_OUTPUT)
+            {
+                out << "float4 gl_textureCube(TextureCube t, SamplerState s, float3 uvw)\n"
+                       "{\n"
+                       "    return t.SampleLevel(s, uvw, 0);\n"
+                       "}\n"
+                       "\n";
+            }
+            else UNREACHABLE();
         }
 
         if (mUsesTextureCubeLod)
         {
-            out << "float4 gl_textureCubeLod(samplerCUBE s, float3 t, float lod)\n"
-                   "{\n"
-                   "    return texCUBElod(s, float4(t.x, t.y, t.z, lod));\n"
-                   "}\n"
-                   "\n";
+            if (mOutputType == SH_HLSL9_OUTPUT)
+            {
+                out << "float4 gl_textureCubeLod(samplerCUBE s, float3 t, float lod)\n"
+                       "{\n"
+                       "    return texCUBElod(s, float4(t.x, t.y, t.z, lod));\n"
+                       "}\n"
+                       "\n";
+            }
+            else if (mOutputType == SH_HLSL11_OUTPUT)
+            {
+                out << "float4 gl_textureCubeLod(TextureCube t, SamplerState s, float3 uvw, float lod)\n"
+                       "{\n"
+                       "    return t.SampleLevel(s, uvw, lod);\n"
+                       "}\n"
+                       "\n";
+            }
+            else UNREACHABLE();
         }
     }
 
@@ -506,20 +842,6 @@ void OutputHLSL::header()
     if (mUsesPointSize)
     {
         out << "#define GL_USES_POINT_SIZE\n";
-    }
-
-    if (mUsesDepthRange)
-    {
-        out << "struct gl_DepthRangeParameters\n"
-               "{\n"
-               "    float near;\n"
-               "    float far;\n"
-               "    float diff;\n"
-               "};\n"
-               "\n"
-               "uniform float3 dx_DepthRange;"
-               "static gl_DepthRangeParameters gl_DepthRange = {dx_DepthRange.x, dx_DepthRange.y, dx_DepthRange.z};\n"
-               "\n";
     }
 
     if (mUsesXor)
@@ -812,10 +1134,12 @@ void OutputHLSL::visitSymbol(TIntermSymbol *node)
     if (name == "gl_FragColor")
     {
         out << "gl_Color[0]";
+        mUsesFragColor = true;
     }
     else if (name == "gl_FragData")
     {
         out << "gl_Color";
+        mUsesFragData = true;
     }
     else if (name == "gl_DepthRange")
     {
@@ -848,17 +1172,17 @@ void OutputHLSL::visitSymbol(TIntermSymbol *node)
 
         if (qualifier == EvqUniform)
         {
-            mReferencedUniforms.insert(name.c_str());
+            mReferencedUniforms[name] = node;
             out << decorateUniform(name, node->getType());
         }
         else if (qualifier == EvqAttribute)
         {
-            mReferencedAttributes.insert(name.c_str());
+            mReferencedAttributes[name] = node;
             out << decorate(name);
         }
         else if (qualifier == EvqVaryingOut || qualifier == EvqInvariantVaryingOut || qualifier == EvqVaryingIn || qualifier == EvqInvariantVaryingIn)
         {
-            mReferencedVaryings.insert(name.c_str());
+            mReferencedVaryings[name] = node;
             out << decorate(name);
         }
         else
@@ -973,7 +1297,7 @@ bool OutputHLSL::visitBinary(Visit visit, TIntermBinary *node)
 
                     if (element)
                     {
-                        int i = element->getUnionArrayPointer()[0].getIConst();
+                        int i = element->getIConst(0);
 
                         switch (i)
                         {
@@ -1276,7 +1600,6 @@ bool OutputHLSL::visitAggregate(Visit visit, TIntermAggregate *node)
         {
             TIntermSequence &sequence = node->getSequence();
             TIntermTyped *variable = sequence[0]->getAsTyped();
-            bool visit = true;
 
             if (variable && (variable->getQualifier() == EvqTemporary || variable->getQualifier() == EvqGlobal))
             {
@@ -1309,18 +1632,10 @@ bool OutputHLSL::visitAggregate(Visit visit, TIntermAggregate *node)
                             (*sit)->traverse(this);
                         }
 
-                        if (visit && this->inVisit)
+                        if (*sit != sequence.back())
                         {
-                            if (*sit != sequence.back())
-                            {
-                                visit = this->visitAggregate(InVisit, node);
-                            }
+                            out << ", ";
                         }
-                    }
-
-                    if (visit && this->postVisit)
-                    {
-                        this->visitAggregate(PostVisit, node);
                     }
                 }
                 else if (variable->getAsSymbolNode() && variable->getAsSymbolNode()->getSymbol() == "")   // Type (struct) declaration
@@ -1329,7 +1644,24 @@ bool OutputHLSL::visitAggregate(Visit visit, TIntermAggregate *node)
                 }
                 else UNREACHABLE();
             }
-            
+            else if (variable && (variable->getQualifier() == EvqVaryingOut || variable->getQualifier() == EvqInvariantVaryingOut))
+            {
+                for (TIntermSequence::iterator sit = sequence.begin(); sit != sequence.end(); sit++)
+                {
+                    TIntermSymbol *symbol = (*sit)->getAsSymbolNode();
+
+                    if (symbol)
+                    {
+                        // Vertex (output) varyings which are declared but not written to should still be declared to allow successful linking
+                        mReferencedVaryings[symbol->getSymbol()] = symbol;
+                    }
+                    else
+                    {
+                        (*sit)->traverse(this);
+                    }
+                }
+            }
+
             return false;
         }
         else if (visit == InVisit)
@@ -1440,151 +1772,163 @@ bool OutputHLSL::visitAggregate(Visit visit, TIntermAggregate *node)
         break;
       case EOpFunctionCall:
         {
-            if (visit == PreVisit)
+            TString name = TFunction::unmangleName(node->getName());
+            bool lod0 = mInsideDiscontinuousLoop || mOutputLod0Function;
+
+            if (node->isUserDefined())
             {
-                TString name = TFunction::unmangleName(node->getName());
-                bool lod0 = mInsideDiscontinuousLoop || mOutputLod0Function;
-
-                if (node->isUserDefined())
-                {
-                    out << decorate(name) << (lod0 ? "Lod0(" : "(");
-                }
-                else
-                {
-                    if (name == "texture2D")
-                    {
-                        if (!lod0)
-                        {
-                            if (node->getSequence().size() == 2)
-                            {
-                                mUsesTexture2D = true;
-                            }
-                            else if (node->getSequence().size() == 3)
-                            {
-                                mUsesTexture2D_bias = true;
-                            }
-                            else UNREACHABLE();
-
-                            out << "gl_texture2D(";
-                        }
-                        else
-                        {
-                            if (node->getSequence().size() == 2)
-                            {
-                                mUsesTexture2DLod0 = true;
-                            }
-                            else if (node->getSequence().size() == 3)
-                            {
-                                mUsesTexture2DLod0_bias = true;
-                            }
-                            else UNREACHABLE();
-
-                            out << "gl_texture2DLod0(";
-                        }
-                    }
-                    else if (name == "texture2DProj")
-                    {
-                        if (!lod0)
-                        {
-                            if (node->getSequence().size() == 2)
-                            {
-                                mUsesTexture2DProj = true;
-                            }
-                            else if (node->getSequence().size() == 3)
-                            {
-                                mUsesTexture2DProj_bias = true;
-                            }
-                            else UNREACHABLE();
-
-                            out << "gl_texture2DProj(";
-                        }
-                        else
-                        {
-                            if (node->getSequence().size() == 2)
-                            {
-                                mUsesTexture2DProjLod0 = true;
-                            }
-                            else if (node->getSequence().size() == 3)
-                            {
-                                mUsesTexture2DProjLod0_bias = true;
-                            }
-                            else UNREACHABLE();
-
-                            out << "gl_texture2DProjLod0(";
-                        }
-                    }
-                    else if (name == "textureCube")
-                    {
-                        if (!lod0)
-                        {
-                            if (node->getSequence().size() == 2)
-                            {
-                                mUsesTextureCube = true;
-                            }
-                            else if (node->getSequence().size() == 3)
-                            {
-                                mUsesTextureCube_bias = true;
-                            }
-                            else UNREACHABLE();
-
-                            out << "gl_textureCube(";
-                        }
-                        else
-                        {
-                            if (node->getSequence().size() == 2)
-                            {
-                                mUsesTextureCubeLod0 = true;
-                            }
-                            else if (node->getSequence().size() == 3)
-                            {
-                                mUsesTextureCubeLod0_bias = true;
-                            }
-                            else UNREACHABLE();
-
-                            out << "gl_textureCubeLod0(";
-                        }
-                    }
-                    else if (name == "texture2DLod")
-                    {
-                        if (node->getSequence().size() == 3)
-                        {
-                            mUsesTexture2DLod = true;
-                        }
-                        else UNREACHABLE();
-
-                        out << "gl_texture2DLod(";
-                    }
-                    else if (name == "texture2DProjLod")
-                    {
-                        if (node->getSequence().size() == 3)
-                        {
-                            mUsesTexture2DProjLod = true;
-                        }
-                        else UNREACHABLE();
-
-                        out << "gl_texture2DProjLod(";
-                    }
-                    else if (name == "textureCubeLod")
-                    {
-                        if (node->getSequence().size() == 3)
-                        {
-                            mUsesTextureCubeLod = true;
-                        }
-                        else UNREACHABLE();
-
-                        out << "gl_textureCubeLod(";
-                    }
-                    else UNREACHABLE();
-                }
-            }
-            else if (visit == InVisit)
-            {
-                out << ", ";
+                out << decorate(name) << (lod0 ? "Lod0(" : "(");
             }
             else
             {
-                out << ")";
+                if (name == "texture2D")
+                {
+                    if (!lod0)
+                    {
+                        if (node->getSequence().size() == 2)
+                        {
+                            mUsesTexture2D = true;
+                        }
+                        else if (node->getSequence().size() == 3)
+                        {
+                            mUsesTexture2D_bias = true;
+                        }
+                        else UNREACHABLE();
+
+                        out << "gl_texture2D(";
+                    }
+                    else
+                    {
+                        if (node->getSequence().size() == 2)
+                        {
+                            mUsesTexture2DLod0 = true;
+                        }
+                        else if (node->getSequence().size() == 3)
+                        {
+                            mUsesTexture2DLod0_bias = true;
+                        }
+                        else UNREACHABLE();
+
+                        out << "gl_texture2DLod0(";
+                    }
+                }
+                else if (name == "texture2DProj")
+                {
+                    if (!lod0)
+                    {
+                        if (node->getSequence().size() == 2)
+                        {
+                            mUsesTexture2DProj = true;
+                        }
+                        else if (node->getSequence().size() == 3)
+                        {
+                            mUsesTexture2DProj_bias = true;
+                        }
+                        else UNREACHABLE();
+
+                        out << "gl_texture2DProj(";
+                    }
+                    else
+                    {
+                        if (node->getSequence().size() == 2)
+                        {
+                            mUsesTexture2DProjLod0 = true;
+                        }
+                        else if (node->getSequence().size() == 3)
+                        {
+                            mUsesTexture2DProjLod0_bias = true;
+                        }
+                        else UNREACHABLE();
+
+                        out << "gl_texture2DProjLod0(";
+                    }
+                }
+                else if (name == "textureCube")
+                {
+                    if (!lod0)
+                    {
+                        if (node->getSequence().size() == 2)
+                        {
+                            mUsesTextureCube = true;
+                        }
+                        else if (node->getSequence().size() == 3)
+                        {
+                            mUsesTextureCube_bias = true;
+                        }
+                        else UNREACHABLE();
+
+                        out << "gl_textureCube(";
+                    }
+                    else
+                    {
+                        if (node->getSequence().size() == 2)
+                        {
+                            mUsesTextureCubeLod0 = true;
+                        }
+                        else if (node->getSequence().size() == 3)
+                        {
+                            mUsesTextureCubeLod0_bias = true;
+                        }
+                        else UNREACHABLE();
+
+                        out << "gl_textureCubeLod0(";
+                    }
+                }
+                else if (name == "texture2DLod")
+                {
+                    if (node->getSequence().size() == 3)
+                    {
+                        mUsesTexture2DLod = true;
+                    }
+                    else UNREACHABLE();
+
+                    out << "gl_texture2DLod(";
+                }
+                else if (name == "texture2DProjLod")
+                {
+                    if (node->getSequence().size() == 3)
+                    {
+                        mUsesTexture2DProjLod = true;
+                    }
+                    else UNREACHABLE();
+
+                    out << "gl_texture2DProjLod(";
+                }
+                else if (name == "textureCubeLod")
+                {
+                    if (node->getSequence().size() == 3)
+                    {
+                        mUsesTextureCubeLod = true;
+                    }
+                    else UNREACHABLE();
+
+                    out << "gl_textureCubeLod(";
+                }
+                else UNREACHABLE();
             }
+
+            TIntermSequence &arguments = node->getSequence();
+
+            for (TIntermSequence::iterator arg = arguments.begin(); arg != arguments.end(); arg++)
+            {
+                if (mOutputType == SH_HLSL11_OUTPUT && IsSampler((*arg)->getAsTyped()->getBasicType()))
+                {
+                    out << "texture_";
+                    (*arg)->traverse(this);
+                    out << ", sampler_";
+                }
+
+                (*arg)->traverse(this);
+
+                if (arg < arguments.end() - 1)
+                {
+                    out << ", ";
+                }
+            }
+
+            out << ")";
+
+            return false;
         }
         break;
       case EOpParameters:       outputTriplet(visit, "(", ", ", ")\n{\n");             break;
@@ -1778,14 +2122,17 @@ bool OutputHLSL::visitLoop(Visit visit, TIntermLoop *node)
 {
     bool wasDiscontinuous = mInsideDiscontinuousLoop;
 
-    if (!mInsideDiscontinuousLoop)
+    if (mContainsLoopDiscontinuity && !mInsideDiscontinuousLoop)
     {
         mInsideDiscontinuousLoop = containsLoopDiscontinuity(node);
     }
 
-    if (handleExcessiveLoop(node))
+    if (mOutputType == SH_HLSL9_OUTPUT)
     {
-        return false;
+        if (handleExcessiveLoop(node))
+        {
+            return false;
+        }
     }
 
     TInfoSinkBase &out = mBody;
@@ -1976,7 +2323,7 @@ bool OutputHLSL::handleExcessiveLoop(TIntermLoop *node)
                         if (constant->getBasicType() == EbtInt && constant->getNominalSize() == 1)
                         {
                             index = symbol;
-                            initial = constant->getUnionArrayPointer()[0].getIConst();
+                            initial = constant->getIConst(0);
                         }
                     }
                 }
@@ -1998,7 +2345,7 @@ bool OutputHLSL::handleExcessiveLoop(TIntermLoop *node)
                 if (constant->getBasicType() == EbtInt && constant->getNominalSize() == 1)
                 {
                     comparator = test->getOp();
-                    limit = constant->getUnionArrayPointer()[0].getIConst();
+                    limit = constant->getIConst(0);
                 }
             }
         }
@@ -2019,7 +2366,7 @@ bool OutputHLSL::handleExcessiveLoop(TIntermLoop *node)
             {
                 if (constant->getBasicType() == EbtInt && constant->getNominalSize() == 1)
                 {
-                    int value = constant->getUnionArrayPointer()[0].getIConst();
+                    int value = constant->getIConst(0);
 
                     switch (op)
                     {
@@ -2191,6 +2538,12 @@ TString OutputHLSL::argumentString(const TIntermSymbol *symbol)
         name = decorate(name);
     }
 
+    if (mOutputType == SH_HLSL11_OUTPUT && IsSampler(type.getBasicType()))
+    {
+       return qualifierString(qualifier) + " " + textureString(type) + " texture_" + name + arrayString(type) + ", " +
+              qualifierString(qualifier) + " SamplerState sampler_" + name + arrayString(type);
+    }
+
     return qualifierString(qualifier) + " " + typeString(type) + " " + name + arrayString(type);
 }
 
@@ -2285,8 +2638,26 @@ TString OutputHLSL::typeString(const TType &type)
         }
     }
 
-    UNIMPLEMENTED();   // FIXME
+    UNREACHABLE();
     return "<unknown type>";
+}
+
+TString OutputHLSL::textureString(const TType &type)
+{
+    switch (type.getBasicType())
+    {
+      case EbtSampler2D:
+        return "Texture2D";
+      case EbtSamplerCube:
+        return "TextureCube";
+      case EbtSamplerExternalOES:
+        return "Texture2D";
+      default:
+        break;
+    }
+
+    UNREACHABLE();
+    return "<unknown texture type>";
 }
 
 TString OutputHLSL::arrayString(const TType &type)
@@ -2565,7 +2936,7 @@ const ConstantUnion *OutputHLSL::writeConstantUnion(const TType &type, const Con
         {
             switch (constUnion->getType())
             {
-              case EbtFloat: out << constUnion->getFConst(); break;
+              case EbtFloat: out << std::min(FLT_MAX, std::max(-FLT_MAX, constUnion->getFConst())); break;
               case EbtInt:   out << constUnion->getIConst(); break;
               case EbtBool:  out << constUnion->getBConst(); break;
               default: UNREACHABLE();
@@ -2640,11 +3011,7 @@ TString OutputHLSL::decorate(const TString &string)
 
 TString OutputHLSL::decorateUniform(const TString &string, const TType &type)
 {
-    if (type.isArray())
-    {
-        return "ar_" + string;   // Allows identifying arrays of size 1
-    }
-    else if (type.getBasicType() == EbtSamplerExternalOES)
+    if (type.getBasicType() == EbtSamplerExternalOES)
     {
         return "ex_" + string;
     }
@@ -2661,4 +3028,197 @@ TString OutputHLSL::decorateField(const TString &string, const TType &structure)
 
     return string;
 }
+
+TString OutputHLSL::registerString(TIntermSymbol *operand)
+{
+    ASSERT(operand->getQualifier() == EvqUniform);
+
+    if (IsSampler(operand->getBasicType()))
+    {
+        return "s" + str(samplerRegister(operand));
+    }
+
+    return "c" + str(uniformRegister(operand));
+}
+
+int OutputHLSL::samplerRegister(TIntermSymbol *sampler)
+{
+    const TType &type = sampler->getType();
+    ASSERT(IsSampler(type.getBasicType()));
+
+    int index = mSamplerRegister;
+    mSamplerRegister += sampler->totalRegisterCount();
+
+    declareUniform(type, sampler->getSymbol(), index);
+
+    return index;
+}
+
+int OutputHLSL::uniformRegister(TIntermSymbol *uniform)
+{
+    const TType &type = uniform->getType();
+    ASSERT(!IsSampler(type.getBasicType()));
+
+    int index = mUniformRegister;
+    mUniformRegister += uniform->totalRegisterCount();
+
+    declareUniform(type, uniform->getSymbol(), index);
+
+    return index;
+}
+
+void OutputHLSL::declareUniform(const TType &type, const TString &name, int index)
+{
+    const TTypeList *structure = type.getStruct();
+
+    if (!structure)
+    {
+        mActiveUniforms.push_back(Uniform(glVariableType(type), glVariablePrecision(type), name.c_str(), type.getArraySize(), index));
+    }
+    else
+    {
+        if (type.isArray())
+        {
+            int elementIndex = index;
+
+            for (int i = 0; i < type.getArraySize(); i++)
+            {
+                for (size_t j = 0; j < structure->size(); j++)
+                {
+                    const TType &fieldType = *(*structure)[j].type;
+                    const TString &fieldName = fieldType.getFieldName();
+
+                    const TString uniformName = name + "[" + str(i) + "]." + fieldName;
+                    declareUniform(fieldType, uniformName, elementIndex);
+                    elementIndex += fieldType.totalRegisterCount();
+                }
+            }
+        }
+        else
+        {
+            int fieldIndex = index;
+
+            for (size_t i = 0; i < structure->size(); i++)
+            {
+                const TType &fieldType = *(*structure)[i].type;
+                const TString &fieldName = fieldType.getFieldName();
+
+                const TString uniformName = name + "." + fieldName;
+                declareUniform(fieldType, uniformName, fieldIndex);
+                fieldIndex += fieldType.totalRegisterCount();
+            }
+        }
+    }
+}
+
+GLenum OutputHLSL::glVariableType(const TType &type)
+{
+    if (type.getBasicType() == EbtFloat)
+    {
+        if (type.isScalar())
+        {
+            return GL_FLOAT;
+        }
+        else if (type.isVector())
+        {
+            switch(type.getNominalSize())
+            {
+              case 2: return GL_FLOAT_VEC2;
+              case 3: return GL_FLOAT_VEC3;
+              case 4: return GL_FLOAT_VEC4;
+              default: UNREACHABLE();
+            }
+        }
+        else if (type.isMatrix())
+        {
+            switch(type.getNominalSize())
+            {
+              case 2: return GL_FLOAT_MAT2;
+              case 3: return GL_FLOAT_MAT3;
+              case 4: return GL_FLOAT_MAT4;
+              default: UNREACHABLE();
+            }
+        }
+        else UNREACHABLE();
+    }
+    else if (type.getBasicType() == EbtInt)
+    {
+        if (type.isScalar())
+        {
+            return GL_INT;
+        }
+        else if (type.isVector())
+        {
+            switch(type.getNominalSize())
+            {
+              case 2: return GL_INT_VEC2;
+              case 3: return GL_INT_VEC3;
+              case 4: return GL_INT_VEC4;
+              default: UNREACHABLE();
+            }
+        }
+        else UNREACHABLE();
+    }
+    else if (type.getBasicType() == EbtBool)
+    {
+        if (type.isScalar())
+        {
+            return GL_BOOL;
+        }
+        else if (type.isVector())
+        {
+            switch(type.getNominalSize())
+            {
+              case 2: return GL_BOOL_VEC2;
+              case 3: return GL_BOOL_VEC3;
+              case 4: return GL_BOOL_VEC4;
+              default: UNREACHABLE();
+            }
+        }
+        else UNREACHABLE();
+    }
+    else if (type.getBasicType() == EbtSampler2D)
+    {
+        return GL_SAMPLER_2D;
+    }
+    else if (type.getBasicType() == EbtSamplerCube)
+    {
+        return GL_SAMPLER_CUBE;
+    }
+    else UNREACHABLE();
+
+    return GL_NONE;
+}
+
+GLenum OutputHLSL::glVariablePrecision(const TType &type)
+{
+    if (type.getBasicType() == EbtFloat)
+    {
+        switch (type.getPrecision())
+        {
+          case EbpHigh:   return GL_HIGH_FLOAT;
+          case EbpMedium: return GL_MEDIUM_FLOAT;
+          case EbpLow:    return GL_LOW_FLOAT;
+          case EbpUndefined:
+            // Should be defined as the default precision by the parser
+          default: UNREACHABLE();
+        }
+    }
+    else if (type.getBasicType() == EbtInt)
+    {
+        switch (type.getPrecision())
+        {
+          case EbpHigh:   return GL_HIGH_INT;
+          case EbpMedium: return GL_MEDIUM_INT;
+          case EbpLow:    return GL_LOW_INT;
+          case EbpUndefined:
+            // Should be defined as the default precision by the parser
+          default: UNREACHABLE();
+        }
+    }
+
+    // Other types (boolean, sampler) don't have a precision
+    return GL_NONE;
+}
+
 }

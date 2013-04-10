@@ -262,7 +262,7 @@ static const KeyPair entries[NumEntries] = {
     { NSF6FunctionKey, Qt::Key_F6 },
     { NSF7FunctionKey, Qt::Key_F7 },
     { NSF8FunctionKey, Qt::Key_F8 },
-    { NSF9FunctionKey, Qt::Key_F8 },
+    { NSF9FunctionKey, Qt::Key_F9 },
     { NSF10FunctionKey, Qt::Key_F10 },
     { NSF11FunctionKey, Qt::Key_F11 },
     { NSF12FunctionKey, Qt::Key_F12 },
@@ -764,6 +764,9 @@ CGContextRef qt_mac_cg_context(QPaintDevice *pdev)
     return ret;
 }
 
+// qpaintengine_mac.mm
+extern void qt_mac_cgimage_data_free(void *, const void *memoryToFree, size_t);
+
 CGImageRef qt_mac_toCGImage(const QImage &qImage, bool isMask, uchar **dataCopy)
 {
     int width = qImage.width();
@@ -777,8 +780,7 @@ CGImageRef qt_mac_toCGImage(const QImage &qImage, bool isMask, uchar **dataCopy)
 
     const uchar *imageData = qImage.bits();
     if (dataCopy) {
-        delete[] *dataCopy;
-        *dataCopy = new uchar[qImage.byteCount()];
+        *dataCopy = static_cast<uchar *>(malloc(qImage.byteCount()));
         memcpy(*dataCopy, imageData, qImage.byteCount());
     }
     int bitDepth = qImage.depth();
@@ -789,7 +791,7 @@ CGImageRef qt_mac_toCGImage(const QImage &qImage, bool isMask, uchar **dataCopy)
                 NULL,
                 dataCopy ? *dataCopy : imageData,
                 qImage.byteCount(),
-                NULL);
+                dataCopy ? qt_mac_cgimage_data_free : NULL);
 
     CGImageRef cgImage = 0;
     if (isMask) {

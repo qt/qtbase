@@ -541,7 +541,6 @@ QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) co
     case QPlatformIntegration::ShowIsFullScreen:
     case QPlatformIntegration::PasswordMaskDelay:
     case QPlatformIntegration::StartDragVelocity:
-    case QPlatformIntegration::SynthesizeMouseFromTouchEvents:
         break; // Not implemented
     case QPlatformIntegration::FontSmoothingGamma:
         return QVariant(QWindowsFontDatabase::fontSmoothingGamma());
@@ -551,6 +550,11 @@ QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) co
         break;
     case QPlatformIntegration::UseRtlExtensions:
         return QVariant(d->m_context.useRTLExtensions());
+    case QPlatformIntegration::SynthesizeMouseFromTouchEvents:
+        // We do not want Qt to synthesize mouse events as Windows also does that.
+        // Alternatively, Windows-generated touch mouse events can be identified and
+        // ignored by checking GetMessageExtraInfo() for MI_WP_SIGNATURE (0xFF515700).
+       return false;
     }
     return QPlatformIntegration::styleHint(hint);
 }

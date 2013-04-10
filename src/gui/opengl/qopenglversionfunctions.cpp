@@ -384,6 +384,7 @@ QOpenGLFunctions_1_2_CoreBackend::QOpenGLFunctions_1_2_CoreBackend(QOpenGLContex
     // OpenGL 1.2 core functions
     CopyTexSubImage3D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLint , GLint , GLint , GLint , GLsizei , GLsizei )>(context->getProcAddress("glCopyTexSubImage3D"));
     TexSubImage3D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLint , GLint , GLsizei , GLsizei , GLsizei , GLenum , GLenum , const GLvoid *)>(context->getProcAddress("glTexSubImage3D"));
+    TexImage3D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLsizei , GLsizei , GLint , GLenum , GLenum , const GLvoid *)>(context->getProcAddress("glTexImage3D"));
     DrawRangeElements = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLuint , GLuint , GLsizei , GLenum , const GLvoid *)>(context->getProcAddress("glDrawRangeElements"));
     BlendEquation = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum )>(context->getProcAddress("glBlendEquation"));
     BlendColor = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLfloat , GLfloat , GLfloat , GLfloat )>(context->getProcAddress("glBlendColor"));
@@ -1593,7 +1594,6 @@ QOpenGLFunctions_1_2_DeprecatedBackend::QOpenGLFunctions_1_2_DeprecatedBackend(Q
     ColorTableParameteriv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , const GLint *)>(context->getProcAddress("glColorTableParameteriv"));
     ColorTableParameterfv = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , const GLfloat *)>(context->getProcAddress("glColorTableParameterfv"));
     ColorTable = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLenum , GLsizei , GLenum , GLenum , const GLvoid *)>(context->getProcAddress("glColorTable"));
-    TexImage3D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum , GLint , GLint , GLsizei , GLsizei , GLsizei , GLint , GLenum , GLenum , const GLvoid *)>(context->getProcAddress("glTexImage3D"));
 
 }
 

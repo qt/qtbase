@@ -4,43 +4,43 @@ TARGET = $$qtLibraryTarget(preprocessor)
 
 include(../../config.pri)
 
-INCLUDEPATH = $$ANGLE_DIR/src/compiler/preprocessor/new
+INCLUDEPATH = $$ANGLE_DIR/src/compiler/preprocessor
 
 DEFINES += _SECURE_SCL=0
 
 
 FLEX_SOURCES =  \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/Tokenizer.l
+    $$ANGLE_DIR/src/compiler/preprocessor/Tokenizer.l
 
 BISON_SOURCES = \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/ExpressionParser.y
+    $$ANGLE_DIR/src/compiler/preprocessor/ExpressionParser.y
 
 HEADERS += \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/Diagnostics.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/DirectiveHandler.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/DirectiveParser.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/ExpressionParser.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/Input.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/Lexer.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/Macro.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/MacroExpander.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/numeric_lex.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/pp_utils.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/Preprocessor.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/SourceLocation.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/Token.h \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/Tokenizer.h
+    $$ANGLE_DIR/src/compiler/preprocessor/DiagnosticsBase.h \
+    $$ANGLE_DIR/src/compiler/preprocessor/DirectiveHandlerBase.h \
+    $$ANGLE_DIR/src/compiler/preprocessor/DirectiveParser.h \
+    $$ANGLE_DIR/src/compiler/preprocessor/ExpressionParser.h \
+    $$ANGLE_DIR/src/compiler/preprocessor/Input.h \
+    $$ANGLE_DIR/src/compiler/preprocessor/Lexer.h \
+    $$ANGLE_DIR/src/compiler/preprocessor/Macro.h \
+    $$ANGLE_DIR/src/compiler/preprocessor/MacroExpander.h \
+    $$ANGLE_DIR/src/compiler/preprocessor/numeric_lex.h \
+    $$ANGLE_DIR/src/compiler/preprocessor/pp_utils.h \
+    $$ANGLE_DIR/src/compiler/preprocessor/Preprocessor.h \
+    $$ANGLE_DIR/src/compiler/preprocessor/SourceLocation.h \
+    $$ANGLE_DIR/src/compiler/preprocessor/Token.h \
+    $$ANGLE_DIR/src/compiler/preprocessor/Tokenizer.h
 
 SOURCES += \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/Diagnostics.cpp \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/DirectiveHandler.cpp \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/DirectiveParser.cpp \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/Input.cpp \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/Lexer.cpp \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/Macro.cpp \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/MacroExpander.cpp \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/Preprocessor.cpp \
-    $$ANGLE_DIR/src/compiler/preprocessor/new/Token.cpp
+    $$ANGLE_DIR/src/compiler/preprocessor/DiagnosticsBase.cpp \
+    $$ANGLE_DIR/src/compiler/preprocessor/DirectiveHandlerBase.cpp \
+    $$ANGLE_DIR/src/compiler/preprocessor/DirectiveParser.cpp \
+    $$ANGLE_DIR/src/compiler/preprocessor/Input.cpp \
+    $$ANGLE_DIR/src/compiler/preprocessor/Lexer.cpp \
+    $$ANGLE_DIR/src/compiler/preprocessor/Macro.cpp \
+    $$ANGLE_DIR/src/compiler/preprocessor/MacroExpander.cpp \
+    $$ANGLE_DIR/src/compiler/preprocessor/Preprocessor.cpp \
+    $$ANGLE_DIR/src/compiler/preprocessor/Token.cpp
 
 # NOTE: 'win_flex' and 'bison' can be found in qt5/gnuwin32/bin
 flex.commands = $$addGnuPath(win_flex) --noline --nounistd --outfile=${QMAKE_FILE_BASE}.cpp ${QMAKE_FILE_NAME}

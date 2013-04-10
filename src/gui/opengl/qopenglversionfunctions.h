@@ -258,6 +258,7 @@ public:
     // OpenGL 1.2 core functions
     void (QOPENGLF_APIENTRYP CopyTexSubImage3D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height);
     void (QOPENGLF_APIENTRYP TexSubImage3D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const GLvoid *pixels);
+    void (QOPENGLF_APIENTRYP TexImage3D)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
     void (QOPENGLF_APIENTRYP DrawRangeElements)(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices);
     void (QOPENGLF_APIENTRYP BlendEquation)(GLenum mode);
     void (QOPENGLF_APIENTRYP BlendColor)(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
@@ -1171,7 +1172,6 @@ public:
     void (QOPENGLF_APIENTRYP ColorTableParameteriv)(GLenum target, GLenum pname, const GLint *params);
     void (QOPENGLF_APIENTRYP ColorTableParameterfv)(GLenum target, GLenum pname, const GLfloat *params);
     void (QOPENGLF_APIENTRYP ColorTable)(GLenum target, GLenum internalformat, GLsizei width, GLenum format, GLenum type, const GLvoid *table);
-    void (QOPENGLF_APIENTRYP TexImage3D)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
 
 };
 

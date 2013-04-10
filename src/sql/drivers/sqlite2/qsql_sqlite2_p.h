@@ -71,8 +71,9 @@ class QSQLite2Driver;
 
 class QSQLite2Driver : public QSqlDriver
 {
-    Q_OBJECT
     friend class QSQLite2Result;
+    Q_DECLARE_PRIVATE(QSQLite2Driver)
+    Q_OBJECT
 public:
     explicit QSQLite2Driver(QObject *parent = 0);
     explicit QSQLite2Driver(sqlite *connection, QObject *parent = 0);
@@ -100,9 +101,6 @@ public:
     QSqlIndex primaryIndex(const QString &table) const;
     QVariant handle() const;
     QString escapeIdentifier(const QString &identifier, IdentifierType) const;
-
-private:
-    QSQLite2DriverPrivate* d;
 };
 
 QT_END_NAMESPACE

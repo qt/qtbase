@@ -46,6 +46,11 @@ DEFINES +=  ANGLE_DISABLE_TRACE \
             ANGLE_COMPILE_OPTIMIZATION_LEVEL=D3DCOMPILE_OPTIMIZATION_LEVEL0 \
             ANGLE_USE_NEW_PREPROCESSOR=1
 
+angle_d3d11 {
+    DEFINES += ANGLE_ENABLE_D3D11
+    !build_pass: message("Enabling D3D11 mode for ANGLE")
+}
+
 CONFIG(debug, debug|release) {
     DEFINES += _DEBUG
 } else {

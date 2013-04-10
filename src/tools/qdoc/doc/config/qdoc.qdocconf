@@ -20,7 +20,7 @@ tagfile = ../html/qdoc.tags
 qhp.projects            = QDoc
 
 qhp.QDoc.file                = qdoc.qhp
-qhp.QDoc.namespace           = qdoc.$QT_VERSION_TAG
+qhp.QDoc.namespace           = org.qt-project.qdoc.$QT_VERSION_TAG
 qhp.QDoc.virtualFolder       = qdoc
 qhp.QDoc.indexTitle          = QDoc Manual
 qhp.QDoc.indexRoot           =

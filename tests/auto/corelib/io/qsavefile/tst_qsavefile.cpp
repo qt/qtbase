@@ -66,6 +66,7 @@ private slots:
     void textStreamManualFlush();
     void textStreamAutoFlush();
     void saveTwice();
+    void transactionalWriteNoPermissionsOnDir_data();
     void transactionalWriteNoPermissionsOnDir();
     void transactionalWriteNoPermissionsOnFile();
     void transactionalWriteCanceled();
@@ -153,20 +154,86 @@ void tst_QSaveFile::textStreamAutoFlush()
     QFile::remove(targetFile);
 }
 
+void tst_QSaveFile::transactionalWriteNoPermissionsOnDir_data()
+{
+    QTest::addColumn<bool>("directWriteFallback");
+
+    QTest::newRow("default") << false;
+    QTest::newRow("directWriteFallback") << true;
+}
+
 void tst_QSaveFile::transactionalWriteNoPermissionsOnDir()
 {
 #ifdef Q_OS_UNIX
-    if (::geteuid() == 0)
-        QSKIP("not valid running this test as root");
+    QFETCH(bool, directWriteFallback);
+    // Restore permissions so that the QTemporaryDir cleanup can happen
+    class PermissionRestorer
+    {
+        QString m_path;
+    public:
+        PermissionRestorer(const QString& path)
+            : m_path(path)
+        {}
 
-    // You can write into /dev/zero, but you can't create a /dev/zero.XXXXXX temp file.
-    QSaveFile file("/dev/zero");
-    if (!QDir("/dev").exists())
-        QSKIP("/dev doesn't exist on this system");
+        ~PermissionRestorer()
+        {
+            restore();
+        }
+        void restore()
+        {
+            QFile file(m_path);
+            file.setPermissions(QFile::Permissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner));
+        }
+    };
 
-    QVERIFY(!file.open(QIODevice::WriteOnly));
-    QCOMPARE((int)file.error(), (int)QFile::OpenError);
-    QVERIFY(!file.commit());
+
+    QTemporaryDir dir;
+    QVERIFY(QFile(dir.path()).setPermissions(QFile::ReadOwner | QFile::ExeOwner));
+    PermissionRestorer permissionRestorer(dir.path());
+
+    const QString targetFile = dir.path() + QString::fromLatin1("/outfile");
+    QSaveFile firstTry(targetFile);
+    QVERIFY(!firstTry.open(QIODevice::WriteOnly));
+    QCOMPARE((int)firstTry.error(), (int)QFile::OpenError);
+    QVERIFY(!firstTry.commit());
+
+    // Now make an existing writable file
+    permissionRestorer.restore();
+    QFile f(targetFile);
+    QVERIFY(f.open(QIODevice::WriteOnly));
+    QCOMPARE(f.write("Hello"), Q_INT64_C(5));
+    f.close();
+
+    // Make the directory non-writable again
+    QVERIFY(QFile(dir.path()).setPermissions(QFile::ReadOwner | QFile::ExeOwner));
+
+    // And write to it again using QSaveFile; only works if directWriteFallback is enabled
+    QSaveFile file(targetFile);
+    file.setDirectWriteFallback(directWriteFallback);
+    QCOMPARE(file.directWriteFallback(), directWriteFallback);
+    if (directWriteFallback) {
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        QCOMPARE((int)file.error(), (int)QFile::NoError);
+        QCOMPARE(file.write("World"), Q_INT64_C(5));
+        QVERIFY(file.commit());
+
+        QFile reader(targetFile);
+        QVERIFY(reader.open(QIODevice::ReadOnly));
+        QCOMPARE(QString::fromLatin1(reader.readAll()), QString::fromLatin1("World"));
+        reader.close();
+
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        QCOMPARE((int)file.error(), (int)QFile::NoError);
+        QCOMPARE(file.write("W"), Q_INT64_C(1));
+        file.cancelWriting(); // no effect, as per the documentation
+        QVERIFY(file.commit());
+
+        QVERIFY(reader.open(QIODevice::ReadOnly));
+        QCOMPARE(QString::fromLatin1(reader.readAll()), QString::fromLatin1("W"));
+    } else {
+        QVERIFY(!file.open(QIODevice::WriteOnly));
+        QCOMPARE((int)file.error(), (int)QFile::OpenError);
+    }
 #endif
 }
 

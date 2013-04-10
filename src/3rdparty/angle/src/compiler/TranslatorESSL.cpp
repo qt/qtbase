@@ -22,8 +22,11 @@ void TranslatorESSL::translate(TIntermNode* root) {
     getBuiltInFunctionEmulator().OutputEmulatedFunctionDefinition(
         sink, getShaderType() == SH_FRAGMENT_SHADER);
 
+    // Write array bounds clamping emulation if needed.
+    getArrayBoundsClamper().OutputClampingFunctionDefinition(sink);
+
     // Write translated shader.
-    TOutputESSL outputESSL(sink);
+    TOutputESSL outputESSL(sink, getArrayIndexClampingStrategy(), getHashFunction(), getNameMap(), getSymbolTable());
     root->traverse(&outputESSL);
 }
 

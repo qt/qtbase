@@ -156,11 +156,11 @@ public:
     int offsetAtPoint(const QPoint &point) const;
     void selection(int selectionIndex, int *startOffset, int *endOffset) const;
     QString text(int startOffset, int endOffset) const;
-    QString textBeforeOffset (int offset, QAccessible2::BoundaryType boundaryType,
+    QString textBeforeOffset (int offset, QAccessible::TextBoundaryType boundaryType,
             int *startOffset, int *endOffset) const;
-    QString textAfterOffset(int offset, QAccessible2::BoundaryType boundaryType,
+    QString textAfterOffset(int offset, QAccessible::TextBoundaryType boundaryType,
             int *startOffset, int *endOffset) const;
-    QString textAtOffset(int offset, QAccessible2::BoundaryType boundaryType,
+    QString textAtOffset(int offset, QAccessible::TextBoundaryType boundaryType,
             int *startOffset, int *endOffset) const;
     void removeSelection(int selectionIndex);
     void setCursorPosition(int position);

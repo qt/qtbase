@@ -240,7 +240,11 @@ void QVistaBackButton::paintEvent(QPaintEvent *)
     else if (underMouse())
         state = WIZ_NAV_BB_HOT;
 
-    pDrawThemeBackground(theme, hdc, WIZ_NAV_BACKBUTTON, state, &clipRect, &clipRect);
+    WIZ_NAVIGATIONPARTS buttonType = (layoutDirection() == Qt::LeftToRight
+                                      ? WIZ_NAV_BACKBUTTON
+                                      : WIZ_NAV_FORWARDBUTTON);
+
+    pDrawThemeBackground(theme, hdc, buttonType, state, &clipRect, &clipRect);
 }
 
 /******************************************************************************
@@ -385,7 +389,11 @@ void QVistaHelper::drawTitleBar(QPainter *painter)
         glowOffset = glowSize();
     }
 
-    const QRect textRectangle(titleOffset() - glowOffset, verticalCenter - textHeight / 2, textWidth, textHeight);
+    const int titleLeft = (wizard->layoutDirection() == Qt::LeftToRight
+                           ? titleOffset() - glowOffset
+                           : wizard->width() - titleOffset() - textWidth + glowOffset);
+
+    const QRect textRectangle(titleLeft, verticalCenter - textHeight / 2, textWidth, textHeight);
     if (isWindow) {
         drawTitleText(painter, text, textRectangle, hdc);
     } else {
@@ -397,7 +405,11 @@ void QVistaHelper::drawTitleBar(QPainter *painter)
 
     const QIcon windowIcon = wizard->windowIcon();
     if (!windowIcon.isNull()) {
-        const QRect rect(origin.x() + leftMargin(),
+        const int iconLeft = (wizard->layoutDirection() == Qt::LeftToRight
+                              ? leftMargin()
+                              : wizard->width() - leftMargin() - iconSize());
+
+        const QRect rect(origin.x() + iconLeft,
                          origin.y() + verticalCenter - iconSize() / 2, iconSize(), iconSize());
         const HICON hIcon = qt_pixmapToWinHICON(windowIcon.pixmap(iconSize()));
         DrawIconEx(hdc, rect.left(), rect.top(), hIcon, 0, 0, 0, NULL, DI_NORMAL | DI_COMPAT);
