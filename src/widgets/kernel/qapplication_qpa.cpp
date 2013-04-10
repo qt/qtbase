@@ -409,6 +409,7 @@ QWidget *QApplication::topLevelAt(const QPoint &pos)
 
 void QApplication::beep()
 {
+    QMetaObject::invokeMethod(QGuiApplication::platformNativeInterface(), "beep");
 }
 
 void QApplication::alert(QWidget *widget, int duration)
