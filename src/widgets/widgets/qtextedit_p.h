@@ -130,6 +130,8 @@ public:
 
     QString anchorToScrollToWhenVisible;
 
+    QString placeholderText;
+
 #ifdef QT_KEYPAD_NAVIGATION
     QBasicTimer deleteAllTimer;
 #endif

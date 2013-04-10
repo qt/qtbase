@@ -85,6 +85,7 @@ class Q_WIDGETS_EXPORT QTextEdit : public QAbstractScrollArea
     Q_PROPERTY(int cursorWidth READ cursorWidth WRITE setCursorWidth)
     Q_PROPERTY(Qt::TextInteractionFlags textInteractionFlags READ textInteractionFlags WRITE setTextInteractionFlags)
     Q_PROPERTY(QTextDocument *document READ document WRITE setDocument DESIGNABLE false)
+    Q_PROPERTY(QString placeholderText READ placeholderText WRITE setPlaceholderText)
 public:
     enum LineWrapMode {
         NoWrap,
@@ -107,6 +108,9 @@ public:
 
     void setDocument(QTextDocument *document);
     QTextDocument *document() const;
+
+    void setPlaceholderText(const QString &placeholderText);
+    QString placeholderText() const;
 
     void setTextCursor(const QTextCursor &cursor);
     QTextCursor textCursor() const;

@@ -773,6 +773,36 @@ QTextDocument *QTextEdit::document() const
 }
 
 /*!
+    \since 5.2
+
+    \property QTextEdit::placeholderText
+    \brief the editor placeholder text
+
+    Setting this property makes the editor display a grayed-out
+    placeholder text as long as the document() is empty and the widget doesn't
+    have focus.
+
+    By default, this property contains an empty string.
+
+    \sa document()
+*/
+QString QTextEdit::placeholderText() const
+{
+    Q_D(const QTextEdit);
+    return d->placeholderText;
+}
+
+void QTextEdit::setPlaceholderText(const QString &placeholderText)
+{
+    Q_D(QTextEdit);
+    if (d->placeholderText != placeholderText) {
+        d->placeholderText = placeholderText;
+        if (!hasFocus() && d->control->document()->isEmpty())
+            d->viewport->update();
+    }
+}
+
+/*!
     Sets the visible \a cursor.
 */
 void QTextEdit::setTextCursor(const QTextCursor &cursor)
@@ -1499,6 +1529,13 @@ void QTextEdit::paintEvent(QPaintEvent *e)
     Q_D(QTextEdit);
     QPainter p(d->viewport);
     d->paint(&p, e);
+    if (!d->placeholderText.isEmpty() && !hasFocus() && d->control->document()->isEmpty()) {
+        QColor col = palette().text().color();
+        col.setAlpha(128);
+        p.setPen(col);
+        const int margin = int(document()->documentMargin());
+        p.drawText(d->viewport->rect().adjusted(margin, margin, -margin, -margin), Qt::AlignTop | Qt::TextWordWrap, d->placeholderText);
+    }
 }
 
 void QTextEditPrivate::_q_currentCharFormatChanged(const QTextCharFormat &fmt)
@@ -1712,6 +1749,8 @@ void QTextEdit::focusInEvent(QFocusEvent *e)
     }
     QAbstractScrollArea::focusInEvent(e);
     d->sendControlEvent(e);
+    if (!d->placeholderText.isEmpty() && d->control->document()->isEmpty())
+        d->viewport->update();
 }
 
 /*! \reimp
@@ -1721,6 +1760,8 @@ void QTextEdit::focusOutEvent(QFocusEvent *e)
     Q_D(QTextEdit);
     QAbstractScrollArea::focusOutEvent(e);
     d->sendControlEvent(e);
+    if (!d->placeholderText.isEmpty() && d->control->document()->isEmpty())
+        d->viewport->update();
 }
 
 /*! \reimp
