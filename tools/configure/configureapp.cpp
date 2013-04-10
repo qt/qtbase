@@ -2871,6 +2871,12 @@ void Configure::generateCachefile()
             moduleStream << "QT_SKIP_MODULES += " << skipModules.join(' ') << endl;
         moduleStream << endl;
 
+        moduleStream << "host_build {" << endl;
+        moduleStream << "    QT_CPU_FEATURES = " << dictionary["QT_HOST_CPU_FEATURES"] << endl;
+        moduleStream << "} else {" << endl;
+        moduleStream << "    QT_CPU_FEATURES = " << dictionary["QT_CPU_FEATURES"] << endl;
+        moduleStream << "}" << endl;
+
         if (dictionary["QT_EDITION"] != "QT_EDITION_OPENSOURCE")
             moduleStream << "DEFINES        *= QT_EDITION=QT_EDITION_DESKTOP" << endl;
 
@@ -3151,10 +3157,8 @@ void Configure::generateQConfigPri()
         configStream << endl;
         configStream << "host_build {" << endl;
         configStream << "    QT_ARCH = " << dictionary["QT_HOST_ARCH"] << endl;
-        configStream << "    QT_CPU_FEATURES = " << dictionary["QT_HOST_CPU_FEATURES"] << endl;
         configStream << "} else {" << endl;
         configStream << "    QT_ARCH = " << dictionary["QT_ARCH"] << endl;
-        configStream << "    QT_CPU_FEATURES = " << dictionary["QT_CPU_FEATURES"] << endl;
         if (dictionary.contains("XQMAKESPEC") && !dictionary["XQMAKESPEC"].startsWith("wince")) {
             // FIXME: add detection
             configStream << "    QMAKE_DEFAULT_LIBDIRS = /lib /usr/lib" << endl;

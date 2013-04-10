@@ -6413,10 +6413,8 @@ cat >>"$QTCONFIG.tmp" <<EOF
 CONFIG += $QTCONFIG_CONFIG
 host_build {
     QT_ARCH = $CFG_HOST_ARCH
-    QT_CPU_FEATURES = $CFG_HOST_CPUFEATURES
 } else {
     QT_ARCH = $CFG_ARCH
-    QT_CPU_FEATURES = $CFG_CPUFEATURES
     QMAKE_DEFAULT_LIBDIRS = `echo "$DEFAULT_LIBDIRS" | sed 's,^,",;s,$,",' | tr '\n' ' '`
     QMAKE_DEFAULT_INCDIRS = `echo "$DEFAULT_INCDIRS" | sed 's,^,",;s,$,",' | tr '\n' ' '`
 }
@@ -6500,6 +6498,14 @@ echo "QT_BUILD_PARTS += $CFG_BUILD_PARTS" >> "$QTMODULE.tmp"
 if [ -n "$CFG_SKIP_MODULES" ]; then
     echo "QT_SKIP_MODULES += $CFG_SKIP_MODULES" >> "$QTMODULE.tmp"
 fi
+
+cat >>"$QTMODULE.tmp" <<EOF
+host_build {
+    QT_CPU_FEATURES = $CFG_HOST_CPUFEATURES
+} else {
+    QT_CPU_FEATURES = $CFG_CPUFEATURES
+}
+EOF
 
 if [ -n "$QT_CFLAGS_PSQL" ]; then
     echo "QT_CFLAGS_PSQL   = $QT_CFLAGS_PSQL" >> "$QTMODULE.tmp"
