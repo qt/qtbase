@@ -189,6 +189,7 @@ QXcbWindow::QXcbWindow(QWindow *window)
     , m_usingSyncProtocol(false)
     , m_deferredActivation(false)
     , m_embedded(false)
+    , m_alertState(false)
     , m_netWmUserTimeWindow(XCB_NONE)
     , m_dirtyFrameMargins(false)
 #if defined(XCB_USE_EGL)
@@ -2046,5 +2047,18 @@ void QXcbWindow::setMask(const QRegion &region)
 }
 
 #endif // !QT_NO_SHAPE
+
+void QXcbWindow::setAlertState(bool enabled)
+{
+    if (m_alertState == enabled)
+        return;
+    const NetWmStates oldState = netWmStates();
+    m_alertState = enabled;
+    if (enabled) {
+        setNetWmStates(oldState | NetWmStateDemandsAttention);
+    } else {
+        setNetWmStates(oldState & ~NetWmStateDemandsAttention);
+    }
+}
 
 QT_END_NAMESPACE

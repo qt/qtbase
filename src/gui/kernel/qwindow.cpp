@@ -58,6 +58,7 @@
 
 #include <private/qevent_p.h>
 
+#include <QtCore/QTimer>
 #include <QtCore/QDebug>
 
 #include <QStyleHints>
@@ -2150,6 +2151,33 @@ QWindow *QWindow::fromWinId(WId id)
     return window;
 }
 
+/*!
+    Causes an alert to be shown for \a msec miliseconds. If \a msec is \c 0 (the
+    default), then the alert is shown indefinitely until the window becomes
+    active again.
+
+    In alert state, the window indicates that it demands attention, for example by
+    flashing or bouncing the taskbar entry.
+
+    \since 5.1
+*/
+
+void QWindow::alert(int msec)
+{
+    Q_D(QWindow);
+    if (!d->platformWindow || d->platformWindow->isAlertState())
+        return;
+    d->platformWindow->setAlertState(true);
+    if (d->platformWindow->isAlertState() && msec)
+        QTimer::singleShot(msec, this, SLOT(_q_clearAlert()));
+}
+
+void QWindowPrivate::_q_clearAlert()
+{
+    if (platformWindow && platformWindow->isAlertState())
+        platformWindow->setAlertState(false);
+}
+
 #ifndef QT_NO_CURSOR
 /*!
     \brief set the cursor shape for this window
@@ -2233,3 +2261,5 @@ void QWindowPrivate::applyCursor()
 #endif // QT_NO_CURSOR
 
 QT_END_NAMESPACE
+
+#include "moc_qwindow.cpp"

@@ -128,6 +128,9 @@ public:
     virtual void setFrameStrutEventsEnabled(bool enabled);
     virtual bool frameStrutEventsEnabled() const;
 
+    virtual void setAlertState(bool enabled);
+    virtual bool isAlertState() const;
+
     static QRect initialGeometry(const QWindow *w,
         const QRect &initialGeometry, int defaultWidth, int defaultHeight);
 

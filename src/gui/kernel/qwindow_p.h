@@ -125,6 +125,7 @@ public:
     virtual QWindow *eventReceiver() { Q_Q(QWindow); return q; }
 
     void updateVisibility();
+    void _q_clearAlert();
 
     QWindow::SurfaceType surfaceType;
     Qt::WindowFlags windowFlags;

@@ -1592,6 +1592,11 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
     if (previous == newFocus)
         return;
 
+    if (newFocus)
+        if (QPlatformWindow *platformWindow = newFocus->handle())
+            if (platformWindow->isAlertState())
+                platformWindow->setAlertState(false);
+
     QObject *previousFocusObject = previous ? previous->focusObject() : 0;
 
     if (previous) {

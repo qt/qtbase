@@ -290,6 +290,8 @@ public Q_SLOTS:
     Q_REVISION(1) void setMaximumWidth(int w);
     Q_REVISION(1) void setMaximumHeight(int h);
 
+    void alert(int msec);
+
 Q_SIGNALS:
     void screenChanged(QScreen *screen);
     void modalityChanged(Qt::WindowModality modality);
@@ -346,6 +348,7 @@ protected:
     QWindow(QWindowPrivate &dd, QWindow *parent);
 
 private:
+    Q_PRIVATE_SLOT(d_func(), void _q_clearAlert())
     QPlatformSurface *surfaceHandle() const;
 
     Q_DISABLE_COPY(QWindow)
