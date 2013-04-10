@@ -12,6 +12,9 @@
 # Get the SIMD flags
 load(qt_build_config)
 
+# Set QT_CPU_FEATURES for convenience
+QT_CPU_FEATURES = $$eval(QT_CPU_FEATURES.$$QT_ARCH)
+
 #
 # Set up compilers for SIMD (SSE/AVX, NEON etc)
 #

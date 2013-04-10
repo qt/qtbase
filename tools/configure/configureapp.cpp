@@ -2872,9 +2872,11 @@ void Configure::generateCachefile()
         moduleStream << endl;
 
         moduleStream << "host_build {" << endl;
-        moduleStream << "    QT_CPU_FEATURES = " << dictionary["QT_HOST_CPU_FEATURES"] << endl;
+        moduleStream << "    QT_CPU_FEATURES." << dictionary["QT_HOST_ARCH"] <<
+                                    " = " << dictionary["QT_HOST_CPU_FEATURES"] << endl;
         moduleStream << "} else {" << endl;
-        moduleStream << "    QT_CPU_FEATURES = " << dictionary["QT_CPU_FEATURES"] << endl;
+        moduleStream << "    QT_CPU_FEATURES." << dictionary["QT_ARCH"] <<
+                                    " = " << dictionary["QT_CPU_FEATURES"] << endl;
         moduleStream << "}" << endl;
 
         if (dictionary["QT_EDITION"] != "QT_EDITION_OPENSOURCE")
