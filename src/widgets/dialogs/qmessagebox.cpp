@@ -1412,7 +1412,10 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
                 buttonTexts += buttons[i]->text() + QLatin1String("   ");
             }
             textToCopy += buttonTexts + separator;
-
+#ifndef QT_NO_TEXTEDIT
+            if (d->detailsText)
+                textToCopy += d->detailsText->text() + separator;
+#endif
             QApplication::clipboard()->setText(textToCopy);
             return;
         }
