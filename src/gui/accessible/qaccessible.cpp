@@ -1507,7 +1507,7 @@ QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(m_object);
     if (!iface || !iface->isValid()) {
         static bool hasWarned = false;
-        if (!hasWarned) {
+        if (!iface && !hasWarned) {
             qWarning() << "Problem creating accessible interface for: " << m_object << endl
                        << "Make sure to deploy Qt with accessibility plugins.";
             hasWarned = true;
