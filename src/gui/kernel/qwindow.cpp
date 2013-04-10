@@ -874,6 +874,14 @@ bool QWindow::isExposed() const
 }
 
 /*!
+    \property QWindow::active
+    \brief the active status of the window
+    \since 5.1
+
+    \sa requestActivate()
+*/
+
+/*!
     Returns true if the window should appear active from a style perspective.
 
     This is the case for the window that has input focus as well as windows

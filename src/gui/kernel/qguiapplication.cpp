@@ -1640,6 +1640,10 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
     }
 
     emit qApp->focusWindowChanged(newFocus);
+    if (previous)
+        emit previous->activeChanged();
+    if (newFocus)
+        emit newFocus->activeChanged();
 }
 
 void QGuiApplicationPrivate::processWindowStateChangedEvent(QWindowSystemInterfacePrivate::WindowStateChangedEvent *wse)
