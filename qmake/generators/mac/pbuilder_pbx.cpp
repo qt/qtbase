@@ -1409,7 +1409,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                                                      + fixListForOutput("QMAKE_LIBS_PRIVATE"),
                                                      SettingsAsList, 6) << ";" << "\n";
                 }
-                const ProStringList &archs = project->values("QT_ARCH");
+                const ProStringList &archs = !project->values("QMAKE_XCODE_ARCHS").isEmpty() ?
+                                                project->values("QMAKE_XCODE_ARCHS") : project->values("QT_ARCH");
                 if (!archs.isEmpty())
                     t << "\t\t\t\t" << writeSettings("ARCHS", archs) << ";" << "\n";
                 if (!project->isEmpty("OBJECTS_DIR"))

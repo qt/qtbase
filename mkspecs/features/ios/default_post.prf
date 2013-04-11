@@ -46,24 +46,27 @@ isEmpty(QT_ARCH) {
     # but we fail to pick up the architecture since we're not passing -arch
     # yet. Xcode does not seem to have a way to run the shared toolchain
     # in a way that will automatically  do this (for example xcrun -sdk).
-    contains(QMAKE_MAC_SDK, iphoneos.*): QT_ARCH = armv7
+    contains(QMAKE_MAC_SDK, iphoneos.*): QT_ARCH = arm
     else: QT_ARCH = i386 # Simulator
+}
+
+# Be more specific about which architecture we're targeting
+equals(QT_ARCH, arm): \
+    actual_archs = armv7
+else: \
+    actual_archs = $$QT_ARCH
+
+equals(MAKEFILE_GENERATOR, XCODE) {
+    QMAKE_XCODE_ARCHS = $$actual_archs
 } else {
-    # Fix up the QT_ARCH to be more specific
-    equals(QT_ARCH, arm) {
-        # Samsung S5PC100, Apple A4, A5, A5X
-        QT_ARCH = armv7
+    for(arch, actual_archs): \
+        arch_flags += -arch $$arch
 
-        # FIXME: How do we support armv7s when Qt can't do universal builds?
-    }
+    QMAKE_CFLAGS           += $$arch_flags
+    QMAKE_CXXFLAGS         += $$arch_flags
+    QMAKE_OBJECTIVE_CFLAGS += $$arch_flags
+    QMAKE_LFLAGS           += $$arch_flags
 }
-
-!equals(MAKEFILE_GENERATOR, XCODE) {
-    arch_flag = -arch $$QT_ARCH
-    QMAKE_CFLAGS           += $$arch_flag
-    QMAKE_CXXFLAGS         += $$arch_flag
-    QMAKE_OBJECTIVE_CFLAGS += $$arch_flag
-    QMAKE_LFLAGS           += $$arch_flag
-}
+unset(actual_archs)
 
 load(default_post)
