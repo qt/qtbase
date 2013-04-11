@@ -31,3 +31,12 @@ defineReplace(cmakeTargetPath) {
     else: path = $$1
     return(/$$path)
 }
+
+defineReplace(cmakeTargetPaths) {
+    variable = $$1
+    out =
+    for(v, variable) {
+        out += \"$$cmakeTargetPath($$v)\"
+    }
+    return ($$join(out, " "))
+}
