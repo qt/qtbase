@@ -271,22 +271,19 @@ QWindowsContextPrivate::QWindowsContextPrivate() :
     m_eventType(QByteArrayLiteral("windows_generic_MSG")),
     m_lastActiveWindow(0), m_asyncExpose(0)
 {
+    const QSysInfo::WinVersion ver = QSysInfo::windowsVersion();
 #ifndef Q_OS_WINCE
     QWindowsContext::user32dll.init();
     QWindowsContext::shell32dll.init();
-#endif
     // Ensure metrics functions report correct data, QTBUG-30063.
     if (QWindowsContext::user32dll.setProcessDPIAware)
         QWindowsContext::user32dll.setProcessDPIAware();
-    m_displayContext = GetDC(0);
-    m_defaultDPI = GetDeviceCaps(m_displayContext, LOGPIXELSY);
 
-    const QSysInfo::WinVersion ver = QSysInfo::windowsVersion();
-#ifndef Q_OS_WINCE
     if (hasTouchSupport(ver) && QWindowsContext::user32dll.initTouch())
         m_systemInfo |= QWindowsContext::SI_SupportsTouch;
-#endif
-
+#endif // !Q_OS_WINCE
+    m_displayContext = GetDC(0);
+    m_defaultDPI = GetDeviceCaps(m_displayContext, LOGPIXELSY);
     if (useRTL_Extensions(ver)) {
         m_systemInfo |= QWindowsContext::SI_RTL_Extensions;
         m_keyMapper.setUseRTLExtensions(true);
