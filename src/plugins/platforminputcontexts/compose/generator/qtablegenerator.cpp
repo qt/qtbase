@@ -252,14 +252,14 @@ void TableGenerator::parseIncludeInstruction(QString line)
     processFile(line);
 }
 
-ushort TableGenerator::keysymToUtf8(uint32_t sym)
+ushort TableGenerator::keysymToUtf8(quint32 sym)
 {
     QByteArray chars;
     int bytes;
     chars.resize(8);
 
     if (needWorkaround(sym)) {
-        uint32_t codepoint;
+        quint32 codepoint;
         if (sym == XKB_KEY_KP_Space)
             codepoint = XKB_KEY_space & 0x7f;
         else
@@ -284,9 +284,9 @@ ushort TableGenerator::keysymToUtf8(uint32_t sym)
     return ch->unicode();
 }
 
-uint32_t TableGenerator::stringToKeysym(QString keysymName)
+quint32 TableGenerator::stringToKeysym(QString keysymName)
 {
-    uint32_t keysym;
+    quint32 keysym;
     QByteArray keysymArray = keysymName.toLatin1();
     const char *name = keysymArray.constData();
 
