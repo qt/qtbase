@@ -169,7 +169,7 @@ void QPagedPaintDevice::setPageSize(PageSize size)
     if (size >= Custom)
         return;
     d->pageSize = size;
-    d->pageSizeMM = QSizeF(pageSizes[A4].width, pageSizes[A4].height);
+    d->pageSizeMM = QSizeF(pageSizes[size].width, pageSizes[size].height);
 }
 
 /*!
