@@ -170,8 +170,6 @@ public:
     void setMask(const QRegion &region);
     QRegion mask() const;
 
-    void requestActivate();
-
     bool isActive() const;
 
     void reportContentOrientationChange(Qt::ScreenOrientation orientation);
@@ -264,6 +262,8 @@ public:
     static QWindow *fromWinId(WId id);
 
 public Q_SLOTS:
+    Q_REVISION(1) void requestActivate();
+
     void setVisible(bool visible);
 
     void show();
