@@ -171,7 +171,7 @@ Configure::Configure(int& argc, char** argv)
                 QTextStream stream(&syncqt_bat);
                 stream << "@echo off" << endl
                        << "call " << QDir::toNativeSeparators(sourcePath + "/bin/syncqt.bat")
-                       << " -mkspecsdir \"" << QDir::toNativeSeparators(buildPath) << "/mkspecs\" %*" << endl;
+                       << " %*" << endl;
                 syncqt_bat.close();
             }
         }
@@ -1616,7 +1616,7 @@ bool Configure::displayHelp()
         desc(       "-libdir <dir>",                    "Libraries will be installed to <dir>\n(default PREFIX/lib)");
         desc(       "-headerdir <dir>",                 "Headers will be installed to <dir>\n(default PREFIX/include)");
         desc(       "-archdatadir <dir>",               "Architecture-dependent data used by Qt will be installed to <dir>\n(default PREFIX)");
-        desc(       "-libexecdir <dir>",                "Program executables will be installed to <dir>\n(default ARCHDATADIR/lib)");
+        desc(       "-libexecdir <dir>",                "Program executables will be installed to <dir>\n(default ARCHDATADIR/bin)");
         desc(       "-plugindir <dir>",                 "Plugins will be installed to <dir>\n(default ARCHDATADIR/plugins)");
         desc(       "-importdir <dir>",                 "Imports for QML1 will be installed to <dir>\n(default ARCHDATADIR/imports)");
         desc(       "-qmldir <dir>",                    "Imports for QML2 will be installed to <dir>\n(default ARCHDATADIR/qml)");
@@ -2017,7 +2017,8 @@ bool Configure::checkAvailability(const QString &part)
 
     else if (part == "ICU")
         available = findFile("unicode/utypes.h") && findFile("unicode/ucol.h") && findFile("unicode/ustring.h")
-                        && (findFile("icuin.lib") || findFile("libicuin.lib")); // libicun.lib if compiled with mingw
+                        && (findFile("icuin.lib") || findFile("sicuin.lib")
+                              || findFile("libicuin.lib") || findFile("libsicuin.lib")); // "lib" prefix for mingw, 's' prefix for static
 
     else if (part == "ANGLE") {
         available = checkAngleAvailability();
@@ -2126,6 +2127,8 @@ bool Configure::checkAvailability(const QString &part)
 */
 void Configure::autoDetection()
 {
+    cout << "Running configuration tests..." << endl;
+
     if (dictionary["C++11"] == "auto") {
         if (!dictionary["QMAKESPEC"].contains("msvc"))
             dictionary["C++11"] = tryCompileProject("common/c++11") ? "yes" : "no";
@@ -3583,7 +3586,7 @@ void Configure::generateQConfigCpp()
         dictionary["QT_INSTALL_ARCHDATA"] = qipempty ? "" : dictionary["QT_INSTALL_PREFIX"];
     if (!dictionary["QT_INSTALL_LIBEXECS"].size()) {
         if (dictionary["QT_INSTALL_ARCHDATA"] == dictionary["QT_INSTALL_PREFIX"])
-            dictionary["QT_INSTALL_LIBEXECS"] = qipempty ? "" : dictionary["QT_INSTALL_ARCHDATA"] + "/lib";
+            dictionary["QT_INSTALL_LIBEXECS"] = qipempty ? "" : dictionary["QT_INSTALL_ARCHDATA"] + "/bin";
         else
             dictionary["QT_INSTALL_LIBEXECS"] = qipempty ? "" : dictionary["QT_INSTALL_ARCHDATA"] + "/libexec";
     }

@@ -13,7 +13,7 @@ SUBDIRS += src
     else: \
         mod_component_base = $$dirname(_QMAKE_CACHE_)
     QMAKE_SYNCQT += -minimal -module KHR -module EGL -module GLES2 \
-        -mkspecsdir $$[QT_HOST_DATA/get]/mkspecs -outdir $$mod_component_base $$dirname(_QMAKE_CONF_)
+        -version none -outdir $$mod_component_base $$dirname(_QMAKE_CONF_)
     !silent:message($$QMAKE_SYNCQT)
     system($$QMAKE_SYNCQT)|error("Failed to run: $$QMAKE_SYNCQT")
 }

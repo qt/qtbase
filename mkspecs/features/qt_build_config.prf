@@ -20,10 +20,11 @@
     debug(1, "Not loading qmodule.pri twice")
 }
 
+# force_independent can be set externally. prefix_build not.
 !exists($$[QT_HOST_DATA]/.qmake.cache): \
-    CONFIG += prefix_build
+    CONFIG += prefix_build force_independent
 
-!build_pass:!isEmpty(_QMAKE_SUPER_CACHE_):prefix_build {
+!build_pass:!isEmpty(_QMAKE_SUPER_CACHE_):force_independent {
     # When doing a -prefix build of top-level qt5/qt.pro, we need to announce
     # this repo's module pris' location to the other repos.
     isEmpty(MODULE_QMAKE_OUTDIR): MODULE_QMAKE_OUTDIR = $$shadowed($$dirname(_QMAKE_CONF_))

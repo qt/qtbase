@@ -83,9 +83,6 @@ our $quoted_basedir;
 # Make sure we use Windows line endings for chomp and friends on Windows.
 $INPUT_RECORD_SEPARATOR = "\r\n" if ($^O eq "msys");
 
-my $mkspecsdir = dirname(dirname($0));
-normalizePath(\$mkspecsdir) if (defined $mkspecsdir);
-
 # will be defined based on the modules sync.profile
 our (%modules, %moduleheaders, @allmoduleheadersprivate, %classnames, %explicitheaders, %deprecatedheaders);
 our @qpa_headers = ();
@@ -103,6 +100,7 @@ my $copy_headers = 0;
 my $create_uic_class_map = 0;
 my $create_private_headers = 1;
 my $minimal = 0;
+my $module_version = 0;
 my @modules_to_sync ;
 $force_relative = 1 if ( -d "/System/Library/Frameworks" );
 
@@ -128,7 +126,7 @@ sub showUsage
     print "  -showonly             Show action but not perform        (default: " . ($showonly ? "yes" : "no") . ")\n";
     print "  -minimal              Do not create CamelCase headers    (default: " . ($minimal ? "yes" : "no") . ")\n";
     print "  -outdir <PATH>        Specify output directory for sync  (default: $out_basedir)\n";
-    print "  -mkspecsdir <PATH>    Set the path to the mkspecs        (detected: " . (defined $mkspecsdir ? $mkspecsdir : "-none-") . ")\n";
+    print "  -version <VERSION>    Specify the module's version       (default: detect from qglobal.h)\n";
     print "  -quiet                Only report problems, not activity (same as -verbose 0)\n";
     print "  -v, -verbose <level>  Sets the verbosity level (max. 4)  (default: $verbose_level)\n";
     print "                        The short form increases the level by +1\n";
@@ -662,8 +660,8 @@ while ( @ARGV ) {
     } elsif($arg eq "-private") {
         $var = "create_private_headers";
         $val = "yes";
-    } elsif($arg eq "-mkspecsdir") {
-        $var = "mkspecsdir";
+    } elsif($arg eq "-version") {
+        $var = "version";
         $val = shift @ARGV;
     } elsif($arg =~/^-/) {
         print "Unknown option: $arg\n\n" if(!$var);
@@ -739,12 +737,11 @@ while ( @ARGV ) {
         push @modules_to_sync, $module;
         $moduleheaders{$module} = $headerdir;
         $create_uic_class_map = 0;
-    } elsif ($var eq "mkspecsdir") {
+    } elsif ($var eq "version") {
         if($val) {
-            $mkspecsdir = $val;
-            normalizePath(\$mkspecsdir);
+            $module_version = $val;
         } else {
-            die "The -mkspecsdir option requires an argument";
+            die "The -version option requires an argument";
         }
     } elsif ($var eq "output") {
         my $outdir = $val;
@@ -758,11 +755,6 @@ while ( @ARGV ) {
         normalizePath(\$out_basedir);
     }
 }
-
-die "Cannot automatically detect/use provided path to QtBase's build directory!\n" .
-    "QTDIR detected/provided: " . (defined $mkspecsdir ? $mkspecsdir : "-none-") . "\n" .
-    "Please use the -mkspecsdir option to provide the correct path.\nsyncqt failed"
-        if (!$mkspecsdir || !-d $mkspecsdir);
 
 # if we have no $basedir we cannot be sure which sources you want, so die
 die "Could not find any sync.profile for your module!\nPass <module directory> to syncqt to sync your header files.\nsyncqt failed" if (!$basedir);
@@ -785,12 +777,12 @@ my %allmoduleheadersprivate = map { $_ => 1 } @allmoduleheadersprivate;
 
 $isunix = checkUnix; #cache checkUnix
 
-my $qt_version = fileContents($mkspecsdir."/qconfig.pri");
-if (length($qt_version)) {
-    $qt_version =~ s,.*^QT_VERSION[ \t]*=[ \t]*(\S+).*,$1,sm;
-} else {
-    $qt_version = fileContents($basedir."/src/corelib/global/qglobal.h");
-    $qt_version =~ s,.*^#[ \t]*define[ \t]+QT_VERSION_STR[ \t]+"([^"]+)".*,$1,sm;
+if (!$module_version) {
+    my $filco = fileContents($basedir."/src/corelib/global/qglobal.h");
+    if ($filco !~ m,.*^#[ \t]*define[ \t]+QT_VERSION_STR[ \t]+"([^"]+)".*,sm) {
+        die "Cannot determine Qt/Module version. Use -version.\n";
+    }
+    $module_version = $1;
 }
 foreach my $lib (@modules_to_sync) {
     die "No such module: $lib" unless(defined $modules{$lib});
@@ -798,11 +790,6 @@ foreach my $lib (@modules_to_sync) {
     #iteration info
     my @dirs = split(/;/, $modules{$lib});
     my $dir = $dirs[0];
-
-    my $project = $dir;
-    $project =~ s,/([^/]+)$,/$1/$1.pro,;
-    my $module_version = fileContents($project);
-    $module_version = $qt_version unless ($module_version =~ s,.*^VERSION[ \t]*=[ \t]*(\S+).*,$1,sm);
 
     my $pathtoheaders = "";
     $pathtoheaders = $moduleheaders{$lib} if ($moduleheaders{$lib});

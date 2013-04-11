@@ -76,7 +76,7 @@ QT_BEGIN_NAMESPACE
   QCoreGraphicsPaintEngine utility functions
  *****************************************************************************/
 
-void qt_mac_clip_cg(CGContextRef hd, const QRegion &rgn, CGAffineTransform *orig_xform)
+static void qt_mac_clip_cg(CGContextRef hd, const QRegion &rgn, CGAffineTransform *orig_xform)
 {
     CGAffineTransform old_xform = CGAffineTransformIdentity;
     if (orig_xform) { //setup xforms

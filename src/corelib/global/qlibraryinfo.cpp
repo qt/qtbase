@@ -273,7 +273,11 @@ static const struct {
     { "Documentation", "doc" }, // should be ${Data}/doc
     { "Headers", "include" },
     { "Libraries", "lib" },
+#ifdef Q_OS_WIN
+    { "LibraryExecutables", "bin" },
+#else
     { "LibraryExecutables", "libexec" }, // should be ${ArchData}/libexec
+#endif
     { "Binaries", "bin" },
     { "Plugins", "plugins" }, // should be ${ArchData}/plugins
     { "Imports", "imports" }, // should be ${ArchData}/imports

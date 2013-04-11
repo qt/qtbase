@@ -178,7 +178,7 @@
 
     Suppose we have a class MyClass, which is derived from QObject and
     which uses the Q_OBJECT macro in its private section. We want to
-    declare a property in MyClass to keep track of a priorty
+    declare a property in MyClass to keep track of a priority
     value. The name of the property will be \e priority, and its type
     will be an enumeration type named \e Priority, which is defined in
     MyClass.

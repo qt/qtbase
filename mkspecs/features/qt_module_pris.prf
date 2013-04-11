@@ -11,7 +11,7 @@
 
 load(qt_build_paths)
 MODULE_FWD_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_lib_$${MODULE}.pri
-prefix_build: \
+force_independent: \
     MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_lib_$${MODULE}.pri
 else: \
     MODULE_PRI = $$MODULE_FWD_PRI
@@ -71,11 +71,11 @@ else: \
         $$module_config \
         "QT.$${MODULE}.DEFINES = $$MODULE_DEFINES" \ # assume sufficient quoting
         "" \
-        "QT_CONFIG += $$MODULE" # this is obsolete, but some code still depends on it
+        "QT_MODULES += $$MODULE"
     write_file($$MODULE_PRI, MODULE_PRI_CONT)|error("Aborting.")
     MODULE_PRI_FILES = $$MODULE_PRI
 
-    prefix_build {
+    force_independent {
 
         # Create a forwarding module .pri file
         MODULE_FWD_PRI_CONT = \
@@ -113,7 +113,7 @@ else: \
                     includes private_includes bins libs libexecs plugins imports qml \
                     rpath_link rpath_link_private \
             )):defined(QT.$${MODULE}.$$var, var):cache(QT.$${MODULE}.$$var, transient)
-    cache(QT_CONFIG, transient)
+    cache(QT_MODULES, transient)
 
 } # !build_pass
 
