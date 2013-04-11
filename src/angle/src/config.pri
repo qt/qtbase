@@ -54,12 +54,13 @@ angle_d3d11 {
 CONFIG(debug, debug|release) {
     DEFINES += _DEBUG
 } else {
+    CONFIG += rtti_off
     DEFINES += NDEBUG
 }
 
 # c++11 is needed by MinGW to get support for unordered_map.
 CONFIG -= qt
-CONFIG += stl rtti_off exceptions c++11
+CONFIG += stl exceptions c++11
 
 contains(QT_CONFIG, debug_and_release):CONFIG += debug_and_release
 contains(QT_CONFIG, build_all):CONFIG += build_all
