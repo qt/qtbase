@@ -2230,7 +2230,8 @@ int QTableView::sizeHintForRow(int row) const
     int hint = 0;
     QModelIndex index;
     int columnsProcessed = 0;
-    for (int column = left; column <= right; ++column) {
+    int column = left;
+    for (; column <= right; ++column) {
         int logicalColumn = d->horizontalHeader->logicalIndex(column);
         if (d->horizontalHeader->isSectionHidden(logicalColumn))
             continue;
@@ -2246,6 +2247,47 @@ int QTableView::sizeHintForRow(int row) const
         ++columnsProcessed;
         if (columnsProcessed == maximumProcessCols)
             break;
+    }
+
+    int actualRight = d->model->columnCount(d->root) - 1;
+    int idxLeft = left;
+    int idxRight = column - 1;
+
+    while (columnsProcessed != maximumProcessCols && (idxLeft > 0 || idxRight < actualRight)) {
+        int logicalIdx  = -1;
+
+        if ((columnsProcessed % 2 && idxLeft > 0) || idxRight == actualRight) {
+            while (idxLeft > 0) {
+                --idxLeft;
+                int logcol = d->horizontalHeader->logicalIndex(idxLeft);
+                if (d->horizontalHeader->isSectionHidden(logcol))
+                    continue;
+                logicalIdx = logcol;
+                break;
+            }
+        } else {
+            while (idxRight < actualRight) {
+                ++idxRight;
+                int logcol = d->horizontalHeader->logicalIndex(idxRight);
+                if (d->horizontalHeader->isSectionHidden(logcol))
+                    continue;
+                logicalIdx = logcol;
+                break;
+            }
+        }
+        if (logicalIdx < 0)
+            continue;
+
+        index = d->model->index(row, logicalIdx, d->root);
+
+        if (d->wrapItemText) {// for wrapping boundaries
+            option.rect.setY(rowViewportPosition(index.row()));
+            option.rect.setHeight(rowHeight(index.row()));
+            option.rect.setX(columnViewportPosition(index.column()));
+            option.rect.setWidth(columnWidth(index.column()));
+        }
+        hint = d->heightHintForIndex(index, hint, option);
+        ++columnsProcessed;
     }
 
     return d->showGrid ? hint + 1 : hint;
@@ -2286,7 +2328,8 @@ int QTableView::sizeHintForColumn(int column) const
     int hint = 0;
     int rowsProcessed = 0;
     QModelIndex index;
-    for (int row = top; row <= bottom; ++row) {
+    int row = top;
+    for (; row <= bottom; ++row) {
         int logicalRow = d->verticalHeader->logicalIndex(row);
         if (d->verticalHeader->isSectionHidden(logicalRow))
             continue;
@@ -2296,6 +2339,40 @@ int QTableView::sizeHintForColumn(int column) const
         ++rowsProcessed;
         if (rowsProcessed == maximumProcessRows)
             break;
+    }
+
+    int actualBottom = d->model->rowCount(d->root) - 1;
+    int idxTop = top;
+    int idxBottom = row - 1;
+
+    while (rowsProcessed != maximumProcessRows && (idxTop > 0 || idxBottom < actualBottom)) {
+        int logicalIdx  = -1;
+
+        if ((rowsProcessed % 2 && idxTop > 0) || idxBottom == actualBottom) {
+            while (idxTop > 0) {
+                --idxTop;
+                int logrow = d->verticalHeader->logicalIndex(idxTop);
+                if (d->verticalHeader->isSectionHidden(logrow))
+                    continue;
+                logicalIdx = logrow;
+                break;
+            }
+        } else {
+            while (idxBottom < actualBottom) {
+                ++idxBottom;
+                int logrow = d->verticalHeader->logicalIndex(idxBottom);
+                if (d->verticalHeader->isSectionHidden(logrow))
+                    continue;
+                logicalIdx = logrow;
+                break;
+            }
+        }
+        if (logicalIdx < 0)
+            continue;
+
+        index = d->model->index(logicalIdx, column, d->root);
+        hint = d->widthHintForIndex(index, hint, option);
+        ++rowsProcessed;
     }
 
     return d->showGrid ? hint + 1 : hint;
