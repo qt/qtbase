@@ -3282,7 +3282,7 @@ Installation options:
                             (default PREFIX/include)
     -libdir <dir> ......... Libraries will be installed to <dir>
                             (default PREFIX/lib)
-    -archdatadir <dir>..... Arch-dependent data used by Qt will be installed to <dir>
+    -archdatadir <dir> .... Arch-dependent data used by Qt will be installed to <dir>
                             (default PREFIX)
     -plugindir <dir> ...... Plugins will be installed to <dir>
                             (default ARCHDATADIR/plugins)
@@ -3328,7 +3328,7 @@ Configure options:
     -opensource ........ Compile and link the Open-Source Edition of Qt.
     -commercial ........ Compile and link the Commercial Edition of Qt.
 
-    -confirm-license.... Automatically acknowledge the license (use with
+    -confirm-license ... Automatically acknowledge the license (use with
                          either -opensource or -commercial)
 
     -no-c++11 .......... Do not compile Qt with C++11 support enabled.
@@ -3377,8 +3377,8 @@ Configure options:
     -no-sse2 ........... Do not compile with use of SSE2 instructions.
     -no-sse3 ........... Do not compile with use of SSE3 instructions.
     -no-ssse3 .......... Do not compile with use of SSSE3 instructions.
-    -no-sse4.1.......... Do not compile with use of SSE4.1 instructions.
-    -no-sse4.2.......... Do not compile with use of SSE4.2 instructions.
+    -no-sse4.1 ......... Do not compile with use of SSE4.1 instructions.
+    -no-sse4.2 ......... Do not compile with use of SSE4.2 instructions.
     -no-avx ............ Do not compile with use of AVX instructions.
     -no-avx2 ........... Do not compile with use of AVX2 instructions.
     -no-neon ........... Do not compile with use of NEON instructions.
@@ -3388,7 +3388,7 @@ Configure options:
     -qtnamespace <name>  Wraps all Qt library code in 'namespace <name> {...}'.
     -qtlibinfix <infix>  Renames all libQt*.so to libQt*<infix>.so.
 
-    -testcocoon          Instrument Qt with the TestCocoon code coverage tool.
+    -testcocoon ........ Instrument Qt with the TestCocoon code coverage tool.
 
     -D <string> ........ Add an explicit define to the preprocessor.
     -I <string> ........ Add an explicit include path.
@@ -3552,8 +3552,8 @@ EOF
 if [ "$XPLATFORM_MAEMO" = "yes" ]; then
     cat << EOF
 
- $X2N  -no-xinput2......... Do not compile XInput2 support.
- $X2Y  -xinput2............ Compile XInput2 support.
+ $X2N  -no-xinput2 ........ Do not compile XInput2 support.
+ $X2Y  -xinput2 ........... Compile XInput2 support.
 
 EOF
 
