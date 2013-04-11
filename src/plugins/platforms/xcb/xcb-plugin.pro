@@ -6,7 +6,6 @@ load(qt_plugin)
 
 QT += core-private gui-private platformsupport-private
 
-
 SOURCES = \
         qxcbclipboard.cpp \
         qxcbconnection.cpp \
@@ -116,3 +115,11 @@ contains(QT_CONFIG, xcb-qt) {
     !contains(DEFINES, QT_NO_SHAPE):LIBS += -lxcb-shape
 }
 
+# libxkbcommon
+contains(QT_CONFIG, xkbcommon-qt): {
+    include(../../../3rdparty/xkbcommon.pri)
+} else {
+    LIBS += $$QMAKE_LIBS_XKBCOMMON
+    QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_XKBCOMMON
+    LIBS += -lxkbcommon
+}
