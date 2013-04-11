@@ -6209,16 +6209,28 @@ fi
 # Add compiler sub-architecture support
 echo "" >>"$outpath/src/corelib/global/qconfig.h.new"
 echo "// Compiler sub-arch support" >>"$outpath/src/corelib/global/qconfig.h.new"
-for SUBARCH in SSE2 SSE3 SSSE3 SSE4_1 SSE4_2 AVX AVX2 \
-    IWMMXT NEON \
-    MIPS_DSP MIPS_DSPR2; do
-    eval "VAL=\$CFG_$SUBARCH"
-    case "$VAL" in
-        yes)
-            echo "#define QT_COMPILER_SUPPORTS_$SUBARCH" \
-                >>"$outpath/src/corelib/global/qconfig.h.new"
+for SUBARCH in X86: SSE2 SSE3 SSSE3 SSE4_1 SSE4_2 AVX AVX2 : \
+               ARM: IWMMXT NEON : \
+               MIPS: MIPS_DSP MIPS_DSPR2 :
+do
+    line=""
+    case $SUBARCH in
+        :)
+            line="#endif"
+            ;;
+        *:)
+            line="#ifdef Q_PROCESSOR_$(echo $SUBARCH | sed 's/:$//')"
+            ;;
+        *)
+            eval "VAL=\$CFG_$SUBARCH"
+            case "$VAL" in
+                yes)
+                    line=" #define QT_COMPILER_SUPPORTS_$SUBARCH"
+                    ;;
+            esac
             ;;
     esac
+    [ -n "$line" ] && echo "$line" >>"$outpath/src/corelib/global/qconfig.h.new"
 done
 
 echo "" >>"$outpath/src/corelib/global/qconfig.h.new"
