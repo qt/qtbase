@@ -334,7 +334,7 @@ bool QBuffer::open(OpenMode flags)
     if ((flags & Truncate) == Truncate)
         d->buf->resize(0);
 
-    return QIODevice::open(flags);
+    return QIODevice::open(flags | QIODevice::Unbuffered);
 }
 
 /*!
