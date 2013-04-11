@@ -401,9 +401,18 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
     for (int i = 0; i < pathElements.count(); ++i) {
         QString element = pathElements.at(i);
 #ifdef Q_OS_WIN
-        // On Windows, "filename......." and "filename" are equivalent Task #133928
-        while (element.endsWith(QLatin1Char('.')))
+        // On Windows, "filename    " and "filename" are equivalent and
+        // "filename  .  " and "filename" are equivalent
+        // "filename......." and "filename" are equivalent Task #133928
+        // whereas "filename  .txt" is still "filename  .txt"
+        // If after stripping the characters there is nothing left then we
+        // just return the parent directory as it is assumed that the path
+        // is referring to the parent
+        while (element.endsWith(QLatin1Char('.')) || element.endsWith(QLatin1Char(' ')))
             element.chop(1);
+        // Only filenames that can't possibly exist will be end up being empty
+        if (element.isEmpty())
+            return parent;
 #endif
         bool alreadyExisted = parent->children.contains(element);
 

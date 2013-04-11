@@ -148,6 +148,7 @@ private slots:
     void enableChooseButton();
     void hooks();
     void widgetlessNativeDialog();
+    void trailingDotsAndSpaces();
 #ifdef Q_OS_UNIX
 #ifdef QT_BUILD_INTERNAL
     void tildeExpansion_data();
@@ -1411,6 +1412,33 @@ void tst_QFiledialog::widgetlessNativeDialog()
     QVERIFY(!model);
     QPushButton *button = fd.findChild<QPushButton*>();
     QVERIFY(!button);
+}
+
+void tst_QFiledialog::trailingDotsAndSpaces()
+{
+#ifndef Q_OS_WIN
+    QSKIP("This is only tested on Windows");
+#endif
+    QNonNativeFileDialog fd;
+    fd.setViewMode(QFileDialog::List);
+    fd.setFileMode(QFileDialog::ExistingFile);
+    fd.setOptions(QFileDialog::DontUseNativeDialog);
+    fd.show();
+    QLineEdit *lineEdit = fd.findChild<QLineEdit *>("fileNameEdit");
+    QVERIFY(lineEdit);
+    QListView *list = fd.findChild<QListView *>("listView");
+    QVERIFY(list);
+    QTest::qWait(1000);
+    int currentChildrenCount = list->model()->rowCount(list->rootIndex());
+    QTest::keyClick(lineEdit, Qt::Key_Space);
+    QTest::keyClick(lineEdit, Qt::Key_Period);
+    QTest::qWait(1000);
+    QVERIFY(currentChildrenCount == list->model()->rowCount(list->rootIndex()));
+    lineEdit->clear();
+    QTest::keyClick(lineEdit, Qt::Key_Period);
+    QTest::keyClick(lineEdit, Qt::Key_Space);
+    QTest::qWait(1000);
+    QVERIFY(currentChildrenCount == list->model()->rowCount(list->rootIndex()));
 }
 
 #ifdef Q_OS_UNIX
