@@ -740,6 +740,8 @@ void QWindowsFontEngineDirectWrite::initFontInfo(const QFontDef &request,
 
     if (familyNames != NULL)
         familyNames->Release();
+    if (fontFamily)
+        fontFamily->Release();
 
     if (FAILED(hr))
         qErrnoWarning(hr, "initFontInfo: Failed to get family name");
