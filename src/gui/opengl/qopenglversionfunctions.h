@@ -91,7 +91,7 @@ struct QOpenGLVersionStatus
     OpenGLStatus status;
 };
 
-inline uint qHash(const QOpenGLVersionStatus &v, uint seed)
+inline uint qHash(const QOpenGLVersionStatus &v, uint seed = 0)
 {
     return qHash(static_cast<int>(v.status * 1000)
                + v.version.first * 100 + v.version.second * 10, seed);
