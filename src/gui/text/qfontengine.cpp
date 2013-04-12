@@ -263,11 +263,15 @@ void *QFontEngine::harfbuzzFont() const
 {
     HB_FontRec *hbFont = (HB_FontRec *)font_;
     if (!hbFont->x_ppem) {
-        QFixed emSquare = emSquareSize();
+        qint64 emSquare = emSquareSize().truncate();
+        Q_ASSERT(emSquare == emSquareSize().toInt()); // ensure no truncation
+        if (emSquare == 0)
+            emSquare = 1000; // a fallback value suitable for Type1 fonts
         hbFont->y_ppem = fontDef.pixelSize;
         hbFont->x_ppem = fontDef.pixelSize * fontDef.stretch / 100;
-        hbFont->x_scale = (QFixed(hbFont->x_ppem * (1 << 16)) / emSquare).value();
-        hbFont->y_scale = (QFixed(hbFont->y_ppem * (1 << 16)) / emSquare).value();
+        // same as QFixed(x)/QFixed(emSquare) but without int32 overflow for x
+        hbFont->x_scale = (((qint64)hbFont->x_ppem << 6) * 0x10000L + (emSquare >> 1)) / emSquare;
+        hbFont->y_scale = (((qint64)hbFont->y_ppem << 6) * 0x10000L + (emSquare >> 1)) / emSquare;
     }
     return font_;
 }
