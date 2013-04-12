@@ -123,7 +123,7 @@ QFontEngine *QBasicFontDatabase::fontEngine(const QFontDef &fontDef, QChar::Scri
     QFontEngineFT *engine;
     FontFile *fontfile = static_cast<FontFile *> (usrPtr);
     QFontEngine::FaceId fid;
-    fid.filename = fontfile->fileName.toLocal8Bit();
+    fid.filename = QFile::encodeName(fontfile->fileName);
     fid.index = fontfile->indexValue;
     engine = new QFontEngineFT(fontDef);
 

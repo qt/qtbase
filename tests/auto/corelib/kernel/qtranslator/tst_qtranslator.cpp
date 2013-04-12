@@ -200,10 +200,9 @@ void tst_QTranslator::plural()
     tor.load("hellotr_la");
     QVERIFY(!tor.isEmpty());
     QCoreApplication::installTranslator(&tor);
-    QCoreApplication::Encoding e = QCoreApplication::UnicodeUTF8;
-    QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, e, 0), QString::fromLatin1("Hallo 0 Welten!"));
-    QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, e, 1), QString::fromLatin1("Hallo 1 Welt!"));
-    QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, e, 2), QString::fromLatin1("Hallo 2 Welten!"));
+    QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, 0), QString::fromLatin1("Hallo 0 Welten!"));
+    QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, 1), QString::fromLatin1("Hallo 1 Welt!"));
+    QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, 2), QString::fromLatin1("Hallo 2 Welten!"));
 }
 
 void tst_QTranslator::translate_qm_file_generated_with_msgfmt()
@@ -253,10 +252,9 @@ void tst_QTranslator::dependencies()
 
         // plural
         QCoreApplication::installTranslator(&tor);
-        QCoreApplication::Encoding e = QCoreApplication::UnicodeUTF8;
-        QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, e, 0), QString::fromLatin1("Hallo 0 Welten!"));
-        QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, e, 1), QString::fromLatin1("Hallo 1 Welt!"));
-        QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, e, 2), QString::fromLatin1("Hallo 2 Welten!"));
+        QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, 0), QString::fromLatin1("Hallo 0 Welten!"));
+        QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, 1), QString::fromLatin1("Hallo 1 Welt!"));
+        QCOMPARE(QCoreApplication::translate("QPushButton", "Hello %n world(s)!", 0, 2), QString::fromLatin1("Hallo 2 Welten!"));
 
         // pick up translation from the file with dependencies
         QCOMPARE(tor.translate("QPushButton", "It's a small world"), QString::fromLatin1("Es ist eine kleine Welt"));

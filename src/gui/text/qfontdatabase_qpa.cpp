@@ -110,8 +110,7 @@ static QStringList fallbackFamilies(const QString &family, QFont::Style style, Q
     for (i = retList.begin(); i != retList.end(); ++i) {
         bool contains = false;
         for (int j = 0; j < db->count; j++) {
-            QtFontFamily *qtFamily = db->families[j];
-            if (!(i->compare(qtFamily->name,Qt::CaseInsensitive))) {
+            if (db->families[j]->matchesFamilyName(*i)) {
                 contains = true;
                 break;
             }

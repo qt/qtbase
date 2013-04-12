@@ -690,33 +690,36 @@ void tst_QFont::defaultFamily()
 
 void tst_QFont::sharing()
 {
+    // QFontCache references the engineData
+    int refs_by_cache = 1;
+
     QFont f;
     f.setStyleHint(QFont::Serif);
     f.exactMatch(); // loads engine
     QCOMPARE(QFontPrivate::get(f)->ref.load(), 1);
     QVERIFY(QFontPrivate::get(f)->engineData);
-    QCOMPARE(QFontPrivate::get(f)->engineData->ref.load(), 1);
+    QCOMPARE(QFontPrivate::get(f)->engineData->ref.load(), 1 + refs_by_cache);
 
     QFont f2(f);
     QVERIFY(QFontPrivate::get(f2) == QFontPrivate::get(f));
     QCOMPARE(QFontPrivate::get(f2)->ref.load(), 2);
     QVERIFY(QFontPrivate::get(f2)->engineData);
     QVERIFY(QFontPrivate::get(f2)->engineData == QFontPrivate::get(f)->engineData);
-    QCOMPARE(QFontPrivate::get(f2)->engineData->ref.load(), 1);
+    QCOMPARE(QFontPrivate::get(f2)->engineData->ref.load(), 1 + refs_by_cache);
 
     f2.setKerning(!f.kerning());
     QVERIFY(QFontPrivate::get(f2) != QFontPrivate::get(f));
     QCOMPARE(QFontPrivate::get(f2)->ref.load(), 1);
     QVERIFY(QFontPrivate::get(f2)->engineData);
     QVERIFY(QFontPrivate::get(f2)->engineData == QFontPrivate::get(f)->engineData);
-    QCOMPARE(QFontPrivate::get(f2)->engineData->ref.load(), 2);
+    QCOMPARE(QFontPrivate::get(f2)->engineData->ref.load(), 2 + refs_by_cache);
 
     f2 = f;
     QVERIFY(QFontPrivate::get(f2) == QFontPrivate::get(f));
     QCOMPARE(QFontPrivate::get(f2)->ref.load(), 2);
     QVERIFY(QFontPrivate::get(f2)->engineData);
     QVERIFY(QFontPrivate::get(f2)->engineData == QFontPrivate::get(f)->engineData);
-    QCOMPARE(QFontPrivate::get(f2)->engineData->ref.load(), 1);
+    QCOMPARE(QFontPrivate::get(f2)->engineData->ref.load(), 1 + refs_by_cache);
 
     if (f.pointSize() > 0)
         f2.setPointSize(f.pointSize() * 2 / 3);

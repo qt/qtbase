@@ -285,7 +285,7 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
         return false;
 
     if (!QDir::isAbsolutePath(value))
-        value.prepend(QString::fromLocal8Bit(qgetenv("windir") + "\\Fonts\\"));
+        value.prepend(QFile::decodeName(qgetenv("windir") + "\\Fonts\\"));
 
     QPlatformFontDatabase::registerFont(faceName, QString(), foundryName, weight, style, stretch,
         antialias, scalable, size, fixed, writingSystems, createFontFile(value, index));

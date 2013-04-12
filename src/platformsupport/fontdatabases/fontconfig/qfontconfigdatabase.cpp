@@ -356,7 +356,7 @@ static bool isSymbolFont(FontFile *fontFile)
         return false;
 
     QFontEngine::FaceId id;
-    id.filename = fontFile->fileName.toLocal8Bit();
+    id.filename = QFile::encodeName(fontFile->fileName);
     id.index = fontFile->indexValue;
 
     QFreetypeFace *f = QFreetypeFace::getFace(id);
@@ -369,6 +369,8 @@ static bool isSymbolFont(FontFile *fontFile)
     f->release(id);
     return hasSymbolMap;
 }
+
+Q_GUI_EXPORT void qt_registerAliasToFontFamily(const QString &familyName, const QString &alias);
 
 void QFontconfigDatabase::populateFontDatabase()
 {
@@ -511,6 +513,9 @@ void QFontconfigDatabase::populateFontDatabase()
         QString styleName = style_value ? QString::fromUtf8((const char *) style_value) : QString();
         QPlatformFontDatabase::registerFont(familyName,styleName,QLatin1String((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,fixedPitch,writingSystems,fontFile);
 //        qDebug() << familyName << (const char *)foundry_value << weight << style << &writingSystems << scalable << true << pixel_size;
+
+        for (int k = 1; FcPatternGetString(fonts->fonts[i], FC_FAMILY, k, &value) == FcResultMatch; ++k)
+            qt_registerAliasToFontFamily(familyName, QString::fromUtf8((const char *)value));
     }
 
     FcFontSetDestroy (fonts);
@@ -562,7 +567,7 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QChar::Script sc
     QFontEngineFT *engine;
     FontFile *fontfile = static_cast<FontFile *> (usrPtr);
     QFontEngine::FaceId fid;
-    fid.filename = fontfile->fileName.toLocal8Bit();
+    fid.filename = QFile::encodeName(fontfile->fileName);
     fid.index = fontfile->indexValue;
 
     bool antialias = !(fontDef.styleStrategy & QFont::NoAntialias);

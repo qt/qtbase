@@ -215,6 +215,7 @@ function(QT5_ADD_RESOURCES outfiles )
     set(${outfiles} ${${outfiles}} PARENT_SCOPE)
 endfunction()
 
+set(_Qt5_COMPONENT_PATH "${CMAKE_CURRENT_LIST_DIR}/..")
 
 if (NOT CMAKE_VERSION VERSION_LESS 2.8.9)
     macro(qt5_use_modules _target _link_type)
@@ -234,7 +235,7 @@ if (NOT CMAKE_VERSION VERSION_LESS 2.8.9)
 
         foreach(_module ${_qt5_modules})
             if (NOT Qt5${_module}_FOUND)
-                find_package(Qt5${_module} PATHS ${_qt5Core_install_prefix} NO_DEFAULT_PATH)
+                find_package(Qt5${_module} PATHS "${_Qt5_COMPONENT_PATH}" NO_DEFAULT_PATH)
                 if (NOT Qt5${_module}_FOUND)
                     message(FATAL_ERROR "Can not use \"${_module}\" module which has not yet been found.")
                 endif()

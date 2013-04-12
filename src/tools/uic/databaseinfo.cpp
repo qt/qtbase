@@ -46,8 +46,7 @@
 
 QT_BEGIN_NAMESPACE
 
-DatabaseInfo::DatabaseInfo(Driver *drv)
-    : driver(drv)
+DatabaseInfo::DatabaseInfo()
 {
 }
 

@@ -643,7 +643,7 @@ void tst_QCoreApplication::customEventDispatcher()
     QCOMPARE(QCoreApplication::eventDispatcher(), ed);
     // test the alternative API of QAbstractEventDispatcher
     QCOMPARE(QAbstractEventDispatcher::instance(), ed);
-    QWeakPointer<DummyEventDispatcher> weak_ed(ed);
+    QPointer<DummyEventDispatcher> weak_ed(ed);
     QVERIFY(!weak_ed.isNull());
     {
         int argc = 1;

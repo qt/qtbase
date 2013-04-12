@@ -284,7 +284,7 @@ public:
     void appendTouchPoint(const QTouchEvent::TouchPoint &touchPoint);
     void removeTouchPoint(int touchPointId);
     bool translateTouchToMouse(QWidget *widget, QTouchEvent *event);
-    static void translateRawTouchEvent(QWidget *widget,
+    static bool translateRawTouchEvent(QWidget *widget,
                                        QTouchDevice *device,
                                        const QList<QTouchEvent::TouchPoint> &touchPoints,
                                        ulong timestamp);

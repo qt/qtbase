@@ -1,12 +1,10 @@
         INSTALLING Qt Source Package Version %VERSION%.
 
 For full installation instructions for each supported platform, please
-see http://qt-project.org/doc/qt-%SHORTVERSION%/installation.html, the file
-doc/html/installation.html in this package, or follow one of the following
-links:
+see http://qt-project.org/doc/qt-%SHORTVERSION%/qtdoc/installation.html,
+or follow one of these links:
 
-Embedded Linux:   http://qt-project.org/doc/qt-%SHORTVERSION%/qt-embedded-install.html
-Mac OS X:         http://qt-project.org/doc/qt-%SHORTVERSION%/install-mac.html
-Windows:          http://qt-project.org/doc/qt-%SHORTVERSION%/install-win.html
-Windows CE:       http://qt-project.org/doc/qt-%SHORTVERSION%/install-wince.html
-X11 Platforms:    http://qt-project.org/doc/qt-%SHORTVERSION%/install-x11.html
+Mac OS X:         http://qt-project.org/doc/qt-%SHORTVERSION%/qtdoc/install-mac.html
+Windows:          http://qt-project.org/doc/qt-%SHORTVERSION%/qtdoc/install-win.html
+Windows CE:       http://qt-project.org/doc/qt-%SHORTVERSION%/qtdoc/install-wince.html
+X11 Platforms:    http://qt-project.org/doc/qt-%SHORTVERSION%/qtdoc/install-x11.html

@@ -22,17 +22,11 @@ information about a particular change.
 General Improvements
 --------------------
 
-Third party components
-----------------------
-
-Legal
------
-
+ - Lots of fixes to enable static builds on Windows, Linux and Mac.
 
 ****************************************************************************
 *                          Library                                         *
 ****************************************************************************
-
 
 QtCore
 -----
@@ -44,28 +38,34 @@ QtCore
 QtGui
 -----
 
+ - [QTBUG-14766] Fixed potential access violation in QPixmap::copy() for <32 bit pixmaps.
+ - [QTBUG-24762] Fixed dashes being rendered differently depending on system clip.
+ - [QTBUG-25036] Fixed artifacts when drawing same line with different clips.
+ - [QTBUG-29643] Fixed crashes when using QImage in combination with QCoreApplication.
+
 QtWidgets
 ---------
 
-- [QTBUG-28817] Fixed QColorDialog::setOption(), QFontDialog::setOption().
+ - [QTBUG-28817] Fixed QColorDialog::setOption(), QFontDialog::setOption().
+ - [QTBUG-29680] Fix mouse double click events not bubbling up to parent widgets.
 
 QtNetwork
 ---------
 
-QtDBus
-------
+ - [QTBUG-29103] Toggle on demand loading of root certs properly.
 
 QtConcurrent
 ------------
 
-QtOpenGL
---------
-
-QtTest
-------
+ - [QTBUG-28984] Fix compilation of Qt Concurrent with gcc 4.3.
 
 QtSql
 -----
+
+ - Fix QSqlTableModel:revert() for OnFieldChange.
+ - [QTBUG-29102] Support refreshing inserted rows with auto columns.
+ - [QTBUG-29108] Fix QSqlTableModel::headerData() for empty query with inserted row.
+ - [QTBUG-29217] Fix QSqlTableModel::setData() for non-change detection.
 
 ****************************************************************************
 *                          Database Drivers                                *
@@ -84,15 +84,22 @@ postgres
 Qt for Linux/X11
 ----------------
 
+ - Fix focus handling of native child widgets in xcb.
+ - Fixed crash when VNCing and trying to use non-present XFixes extension.
+
 Qt for Windows
 --------------
 
- - [QTBUG-30185] Fixed adding of suffixes in Window native file save dialog.
+ - [QTBUG-28439] Implement QPlatformWindow::isExposed() on Windows.
  - [QTBUG-29010, QTBUG-28531] Fixed handling of layered windows required for
    translucent or non-opaque windows.
+ - [QTBUG-30185] Fixed adding of suffixes in Window native file save dialog.
 
 Qt for Mac OS X
 ---------------
+
+ - [QTBUG-29389] Fix transient scroll bar appearance before the proper one.
+ - [QTBUG-25297, QTBUG-29434] Add QMdiSubWindow size grip back.
 
 Qt for BlackBerry
 -----------------
@@ -103,11 +110,14 @@ Qt for Embedded Linux
 Qt for Windows CE
 -----------------
 
+ - Removed User32.dll usage.
+ - Fix compilation with QT_NO_CURSOR.
 
 ****************************************************************************
 *                      Compiler Specific Changes                           *
 ****************************************************************************
 
+ - [QTBUG-29099] Fix gcc OOM error when compiling in release mode.
 
 ****************************************************************************
 *                          Tools                                           *
