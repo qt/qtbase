@@ -145,7 +145,8 @@ bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
 
 QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWindow *window) const
 {
-    QPlatformWindow *w = new QEglFSWindow(window);
+    QEglFSWindow *w = new QEglFSWindow(window);
+    w->create();
     w->requestActivateWindow();
     return w;
 }
