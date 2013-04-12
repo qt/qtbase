@@ -257,6 +257,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     , has_shape_extension(false)
     , has_randr_extension(false)
     , has_input_shape(false)
+    , has_touch_without_mouse_emulation(false)
     , m_buttons(0)
     , m_focusWindow(0)
 {

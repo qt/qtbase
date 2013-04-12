@@ -92,6 +92,9 @@ void QXcbConnection::initializeXInput2()
             // Tablet support: Find the stylus-related devices.
             xi2SetupTabletDevices();
 #endif // QT_NO_TABLETEVENT
+#ifdef XI2_TOUCH_DEBUG
+            qDebug("XInput version %d.%d is supported", xiMajor, m_xi2Minor);
+#endif
         }
     }
 }
@@ -118,7 +121,16 @@ void QXcbConnection::xi2Select(xcb_window_t window)
     mask.deviceid = XIAllMasterDevices;
     mask.mask_len = sizeof(bitMask);
     mask.mask = xiBitMask;
-    XISelectEvents(xDisplay, window, &mask, 1);
+    Status result = XISelectEvents(xDisplay, window, &mask, 1);
+    // If we have XInput 2.2 and successfully enable touch on the master
+    // devices, then evdev touchscreens will provide touch only. In most other
+    // cases, there will be emulated mouse events, because true X11 touch
+    // support is so new that for the older drivers, mouse emulation was the
+    // only way; and it's still the fallback even with the modern evdev driver.
+    // But if neither Qt nor X11 does mouse emulation, it will not be possible
+    // to interact with mouse-oriented QWidgets; so we have to let Qt do it.
+    if (m_xi2Minor >= 2 && result == Success)
+        has_touch_without_mouse_emulation = true;
 #endif
 
 #ifndef QT_NO_TABLETEVENT

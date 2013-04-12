@@ -94,6 +94,7 @@ public:
 
     QStringList themeNames() const;
     QPlatformTheme *createPlatformTheme(const QString &name) const;
+    QVariant styleHint(StyleHint hint) const;
 
     QXcbConnection *defaultConnection() const { return m_connections.first(); }
 
