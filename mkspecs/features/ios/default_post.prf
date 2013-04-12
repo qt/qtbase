@@ -18,7 +18,7 @@ gui_app {
     # linker have seen a use for so far. We need this because we load the platform
     # plugin from the platform plugin itself, using Q_IMPORT_PLUGIN.
     lib_path_and_base = $$[QT_INSTALL_PLUGINS/get]/platforms/libqios$$qtPlatformTargetSuffix()
-    LIBS += "-force_load $${lib_path_and_base}.$${QMAKE_EXTENSION_STATICLIB}"
+    LIBS += -Wl,-force_load,$${lib_path_and_base}.$${QMAKE_EXTENSION_STATICLIB}
     LIBS += $$fromfile($${lib_path_and_base}.prl, QMAKE_PRL_LIBS)
 
     # Which means we don't want the auto-generated import for the platform plugin
