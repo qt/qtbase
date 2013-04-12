@@ -905,7 +905,7 @@ QCocoaMenuBar *QCocoaWindow::menubar() const
 void QCocoaWindow::registerTouch(bool enable)
 {
     m_registerTouchCount += enable ? 1 : -1;
-    if (m_registerTouchCount == 1)
+    if (enable && m_registerTouchCount == 1)
         [m_contentView setAcceptsTouchEvents:YES];
     else if (m_registerTouchCount == 0)
         [m_contentView setAcceptsTouchEvents:NO];
