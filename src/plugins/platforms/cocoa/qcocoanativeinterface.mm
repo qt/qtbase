@@ -228,6 +228,11 @@ void QCocoaNativeInterface::setWindowContentView(QPlatformWindow *window, void *
 
 void QCocoaNativeInterface::registerTouchWindow(QWindow *window,  bool enable)
 {
+    // Make sure the QCocoaWindow is created when enabling. Disabling might
+    // happen on window destruction, don't (re)create the QCocoaWindow then.
+    if (enable)
+        window->create();
+
     QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
     if (cocoaWindow)
         cocoaWindow->registerTouch(enable);
