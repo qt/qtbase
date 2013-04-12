@@ -68,10 +68,12 @@ public:
     virtual void invalidateSurface();
     virtual void resetSurface();
 
-private:
-    WId m_winid;
+protected:
     EGLSurface m_surface;
     EGLNativeWindowType m_window;
+
+private:
+    WId m_winid;
     EGLConfig m_config;
     QSurfaceFormat m_format;
 };
