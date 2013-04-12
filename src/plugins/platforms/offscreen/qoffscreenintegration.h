@@ -60,7 +60,9 @@ public:
 
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+#ifndef QT_NO_DRAGANDDROP
     QPlatformDrag *drag() const;
+#endif
     QPlatformServices *services() const;
 
     QPlatformFontDatabase *fontDatabase() const;
@@ -71,7 +73,9 @@ public:
 private:
     QAbstractEventDispatcher *m_eventDispatcher;
     QScopedPointer<QPlatformFontDatabase> m_fontDatabase;
+#ifndef QT_NO_DRAGANDDROP
     QScopedPointer<QPlatformDrag> m_drag;
+#endif
     QScopedPointer<QPlatformServices> m_services;
 };
 

@@ -73,12 +73,14 @@ public:
     QScopedPointer<QPlatformCursor> m_cursor;
 };
 
+#ifndef QT_NO_DRAGANDDROP
 class QOffscreenDrag : public QPlatformDrag
 {
 public:
     QMimeData *platformDropData() { return 0; }
     Qt::DropAction drag(QDrag *) { return Qt::IgnoreAction; }
 };
+#endif
 
 class QOffscreenBackingStore : public QPlatformBackingStore
 {
