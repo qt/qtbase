@@ -1180,7 +1180,7 @@ if($check_includes) {
                                             }
                                         }
                                     } elsif ($header_skip_qt_begin_namespace_test == 0 and $line =~ /^QT_BEGIN_NAMESPACE(_[A-Z_]+)?\s*$/) {
-                                        $qt_namespace_suffix = $1 // "";
+                                        $qt_namespace_suffix = defined($1) ? $1 : "";
                                         $qt_begin_namespace_found = 1;
                                     } elsif ($header_skip_qt_begin_namespace_test == 0 and $line =~ /^QT_END_NAMESPACE$qt_namespace_suffix\s*$/) {
                                         $qt_end_namespace_found = 1;
