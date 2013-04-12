@@ -254,7 +254,8 @@ void tst_QMetaType::constructCoreType_data()
 {
     QTest::addColumn<int>("typeId");
     for (int i = QMetaType::FirstCoreType; i <= QMetaType::LastCoreType; ++i)
-        QTest::newRow(QMetaType::typeName(i)) << i;
+        if (i != QMetaType::Void)
+            QTest::newRow(QMetaType::typeName(i)) << i;
     // GUI types are tested in tst_QGuiMetaType.
 }
 
