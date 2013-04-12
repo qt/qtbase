@@ -2830,6 +2830,7 @@ if [ "$CFG_FORCEDEBUGINFO" = "yes" ]; then
 fi
 
 if [ "$XPLATFORM_IOS" = "yes" ]; then
+    CFG_RPATH="no"
     CFG_PKGCONFIG="no"
     CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS examples tests"
     CFG_SHARED="no" # iOS builds should be static to be able to submit to the App Store
