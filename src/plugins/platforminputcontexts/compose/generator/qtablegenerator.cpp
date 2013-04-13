@@ -291,7 +291,7 @@ quint32 TableGenerator::stringToKeysym(QString keysymName)
     const char *name = keysymArray.constData();
 
     if ((keysym = xkb_keysym_from_name(name, (xkb_keysym_flags)0)) == XKB_KEY_NoSymbol)
-        qWarning() << QString("Qt Warrning - invalid keysym: %1").arg(keysymName);
+        qWarning() << QString("Qt Warning - invalid keysym: %1").arg(keysymName);
 
     return keysym;
 }
