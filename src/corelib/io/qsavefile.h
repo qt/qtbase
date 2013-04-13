@@ -42,6 +42,10 @@
 #ifndef QSAVEFILE_H
 #define QSAVEFILE_H
 
+#include <QtCore/qglobal.h>
+
+#ifndef QT_NO_TEMPORARYFILE
+
 #include <QtCore/qfiledevice.h>
 #include <QtCore/qstring.h>
 
@@ -50,7 +54,6 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-
 
 class QAbstractFileEngine;
 class QSaveFilePrivate;
@@ -89,5 +92,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_TEMPORARYFILE
 
 #endif // QSAVEFILE_H

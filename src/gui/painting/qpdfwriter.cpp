@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include <qpdfwriter.h>
+
+#ifndef QT_NO_PDF
+
 #include <QtCore/private/qobject_p.h>
 #include "private/qpdf_p.h"
 #include <QtCore/qfile.h>
@@ -214,3 +217,5 @@ void QPdfWriter::setMargins(const Margins &m)
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_PDF

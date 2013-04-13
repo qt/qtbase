@@ -45,6 +45,7 @@
 #include "QtCore/qcoreapplication.h"
 #include "QtCore/qfileinfo.h"
 #include "QtCore/qdebug.h"
+#include "QtCore/qdatetime.h"
 
 #include "private/qcore_unix_p.h" // qt_safe_open
 #include "private/qabstractfileengine_p.h"
@@ -80,12 +81,13 @@ static qint64 qt_write_loop(int fd, const char *data, qint64 len)
 
 int QLockFilePrivate::checkFcntlWorksAfterFlock()
 {
+#ifndef QT_NO_TEMPORARYFILE
     QTemporaryFile file;
     if (!file.open())
-        return -2;
+        return 0;
     const int fd = file.d_func()->engine()->handle();
     if (flock(fd, LOCK_EX | LOCK_NB) == -1) // other threads, and other processes on a local fs
-        return -3;
+        return 0;
     struct flock flockData;
     flockData.l_type = F_WRLCK;
     flockData.l_whence = SEEK_SET;
@@ -95,6 +97,9 @@ int QLockFilePrivate::checkFcntlWorksAfterFlock()
     if (fcntl(fd, F_SETLK, &flockData) == -1) // for networked filesystems
         return 0;
     return 1;
+#else
+    return 0;
+#endif
 }
 
 static QBasicAtomicInt fcntlOK = Q_BASIC_ATOMIC_INITIALIZER(-1);

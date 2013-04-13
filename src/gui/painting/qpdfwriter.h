@@ -42,11 +42,14 @@
 #ifndef QPDFWRITER_H
 #define QPDFWRITER_H
 
+#include <QtCore/qglobal.h>
+
+#ifndef QT_NO_PDF
+
 #include <QtCore/qobject.h>
 #include <QtGui/qpagedpaintdevice.h>
 
 QT_BEGIN_NAMESPACE
-
 
 class QIODevice;
 class QPdfWriterPrivate;
@@ -82,5 +85,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_PDF
 
 #endif

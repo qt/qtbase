@@ -39,8 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qplatformdefs.h"
 #include "qsavefile.h"
+
+#ifndef QT_NO_TEMPORARYFILE
+
+#include "qplatformdefs.h"
 #include "private/qsavefile_p.h"
 #include "qfileinfo.h"
 #include "qabstractfileengine_p.h"
@@ -381,3 +384,5 @@ bool QSaveFile::directWriteFallback() const
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_TEMPORARYFILE

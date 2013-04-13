@@ -311,6 +311,11 @@
 #define QT_NO_LOCALSERVER
 #endif
 
+// QPdf
+#if !defined(QT_NO_PDF) && (defined(QT_NO_TEMPORARYFILE))
+#define QT_NO_PDF
+#endif
+
 // QMenu
 #if !defined(QT_NO_MENU) && (defined(QT_NO_ACTION))
 #define QT_NO_MENU
