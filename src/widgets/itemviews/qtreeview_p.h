@@ -148,6 +148,7 @@ public:
 #endif
 
     int firstVisibleItem(int *offset = 0) const;
+    int lastVisibleItem(int firstVisual = -1, int offset = -1) const;
     int columnAt(int x) const;
     bool hasVisibleChildren( const QModelIndex& parent) const;
 

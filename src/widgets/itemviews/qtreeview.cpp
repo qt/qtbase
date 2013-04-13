@@ -2815,20 +2815,54 @@ int QTreeView::sizeHintForColumn(int column) const
     QStyleOptionViewItem option = d->viewOptions();
     const QVector<QTreeViewItem> viewItems = d->viewItems;
 
-    int start = 0;
-    int end = viewItems.count();
-    if(end > 1000) { //if we have too many item this function would be too slow.
-        //we get a good approximation by only iterate over 1000 items.
-        start = qMax(0, d->firstVisibleItem() - 100);
-        end = qMin(end, start + 900);
-    }
+    const int maximumProcessRows = 1000; // To avoid this to take forever.
 
-    for (int i = start; i < end; ++i) {
+    int offset = 0;
+    int start = d->firstVisibleItem(&offset);
+    int end = d->lastVisibleItem(start, offset);
+
+    int rowsProcessed = 0;
+
+    for (int i = start; i <= end; ++i) {
         if (viewItems.at(i).spanning)
             continue; // we have no good size hint
         QModelIndex index = viewItems.at(i).index;
         index = index.sibling(index.row(), column);
         w = d->widthHintForIndex(index, w, option, i);
+        ++rowsProcessed;
+        if (rowsProcessed == maximumProcessRows)
+            break;
+    }
+
+    --end;
+    int actualBottom = viewItems.size() - 1;
+    while (rowsProcessed != maximumProcessRows && (start > 0 || end < actualBottom)) {
+        int idx  = -1;
+
+        if ((rowsProcessed % 2 && start > 0) || end == actualBottom) {
+            while (start > 0) {
+                --start;
+                if (viewItems.at(start).spanning)
+                    continue;
+                idx = start;
+                break;
+            }
+        } else {
+            while (end < actualBottom) {
+                ++end;
+                if (viewItems.at(end).spanning)
+                    continue;
+                idx = end;
+                break;
+            }
+        }
+        if (idx < 0)
+            continue;
+
+        QModelIndex index = viewItems.at(idx).index;
+        index = index.sibling(index.row(), column);
+        w = d->widthHintForIndex(index, w, option, idx);
+        ++rowsProcessed;
     }
     return w;
 }
@@ -3525,6 +3559,21 @@ int QTreeViewPrivate::firstVisibleItem(int *offset) const
         }
     }
     return -1;
+}
+
+int QTreeViewPrivate::lastVisibleItem(int firstVisual, int offset) const
+{
+    if (firstVisual < 0 || offset < 0)
+        firstVisual = firstVisibleItem(&offset);
+    int y = - offset;
+    int value = viewport->height();
+
+    for (int i = firstVisual; i < viewItems.count(); ++i) {
+        y += itemHeight(i); // the height value is cached
+        if (y > value)
+            return i;
+    }
+    return viewItems.size() - 1;
 }
 
 int QTreeViewPrivate::columnAt(int x) const
