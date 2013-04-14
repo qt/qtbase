@@ -179,10 +179,12 @@ void HtmlGenerator::initializeGenerator(const Config &config)
     projectUrl = config.getString(CONFIG_URL);
     tagFile_ = config.getString(CONFIG_TAGFILE);
 
+#ifndef QT_NO_TEXTCODEC
     outputEncoding = config.getString(CONFIG_OUTPUTENCODING);
     if (outputEncoding.isEmpty())
         outputEncoding = QLatin1String("UTF-8");
     outputCodec = QTextCodec::codecForName(outputEncoding.toLocal8Bit());
+#endif
 
     naturalLanguage = config.getString(CONFIG_NATURALLANGUAGE);
     if (naturalLanguage.isEmpty())
@@ -1743,7 +1745,11 @@ void HtmlGenerator::generateHeader(const QString& title,
                                    const Node *node,
                                    CodeMarker *marker)
 {
+#ifndef QT_NO_TEXTCODEC
     out() << QString("<?xml version=\"1.0\" encoding=\"%1\"?>\n").arg(outputEncoding);
+#else
+    out() << QString("<?xml version=\"1.0\"?>\n");
+#endif
     out() << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
     out() << QString("<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"%1\" lang=\"%1\">\n").arg(naturalLanguage);
     out() << "<head>\n";
@@ -3185,7 +3191,11 @@ QString HtmlGenerator::registerRef(const QString& ref)
 
 QString HtmlGenerator::protectEnc(const QString &string)
 {
+#ifndef QT_NO_TEXTCODEC
     return protect(string, outputEncoding);
+#else
+    return protect(string);
+#endif
 }
 
 QString HtmlGenerator::protect(const QString &string, const QString &outputEncoding)

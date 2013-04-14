@@ -170,11 +170,13 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
     if (!encoding.isEmpty()
         && atomName == format + QLatin1String(";charset=") + QString::fromLatin1(encoding)) {
 
+#ifndef QT_NO_TEXTCODEC
         if (requestedType == QVariant::String) {
             QTextCodec *codec = QTextCodec::codecForName(encoding);
             if (codec)
                 return codec->toUnicode(data);
         }
+#endif
 
         return data;
     }

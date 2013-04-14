@@ -877,7 +877,9 @@ void Config::load(Location location, const QString& fileName)
     }
 
     QTextStream stream(&fin);
+#ifndef QT_NO_TEXTCODEC
     stream.setCodec("UTF-8");
+#endif
     QString text = stream.readAll();
     text += QLatin1String("\n\n");
     text += QLatin1Char('\0');

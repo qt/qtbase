@@ -101,7 +101,9 @@ static QRegExp *definedX = 0;
 static QRegExp *defines = 0;
 static QRegExp *falsehoods = 0;
 
+#ifndef QT_NO_TEXTCODEC
 static QTextCodec *sourceCodec = 0;
+#endif
 
 /*
   This function is a perfect hash function for the 37 keywords of C99
@@ -496,7 +498,9 @@ void Tokenizer::initialize(const Config &config)
     QString sourceEncoding = config.getString(CONFIG_SOURCEENCODING);
     if (sourceEncoding.isEmpty())
         sourceEncoding = QLatin1String("ISO-8859-1");
+#ifndef QT_NO_TEXTCODEC
     sourceCodec = QTextCodec::codecForName(sourceEncoding.toLocal8Bit());
+#endif
 
     comment = new QRegExp("/(?:\\*.*\\*/|/.*\n|/[^\n]*$)");
     comment->setMinimal(true);
@@ -770,12 +774,20 @@ bool Tokenizer::isTrue(const QString &condition)
 
 QString Tokenizer::lexeme() const
 {
+#ifndef QT_NO_TEXTCODEC
     return sourceCodec->toUnicode(yyLex);
+#else
+    return QString::fromUtf8(yyLex);
+#endif
 }
 
 QString Tokenizer::previousLexeme() const
 {
+#ifndef QT_NO_TEXTCODEC
     return sourceCodec->toUnicode(yyPrevLex);
+#else
+    return QString::fromUtf8(yyPrevLex);
+#endif
 }
 
 QT_END_NAMESPACE

@@ -273,8 +273,10 @@ void Generator::beginSubPage(const InnerNode* node, const QString& fileName)
         node->location().fatal(tr("Cannot open output file '%1'").arg(outFile->fileName()));
     QTextStream* out = new QTextStream(outFile);
 
+#ifndef QT_NO_TEXTCODEC
     if (outputCodec)
         out->setCodec(outputCodec);
+#endif
     outStreamStack.push(out);
     const_cast<InnerNode*>(node)->setOutputFileName(fileName);
 }
