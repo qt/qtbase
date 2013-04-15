@@ -46,6 +46,7 @@
 #include <QtGui/QIcon>
 #include <QtGui/QRegion>
 
+#include "qxcbintegration.h"
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
 #include "qxcbdrag.h"
@@ -653,6 +654,9 @@ void QXcbWindow::show()
         updateNetWmUserTime(connection()->time());
 
     Q_XCB_CALL(xcb_map_window(xcb_connection(), m_window));
+
+    m_screen->windowShown(this);
+
     xcb_flush(xcb_connection());
 
     connection()->sync();

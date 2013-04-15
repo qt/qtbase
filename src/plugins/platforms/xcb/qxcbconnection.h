@@ -388,6 +388,9 @@ public:
     QXcbWindow *focusWindow() const { return m_focusWindow; }
     void setFocusWindow(QXcbWindow *);
 
+    QByteArray startupId() const { return m_startupId; }
+    void clearStartupId() { m_startupId.clear(); }
+
 private slots:
     void processXcbEvents();
 
@@ -516,6 +519,8 @@ private:
     Qt::MouseButtons m_buttons;
 
     QXcbWindow *m_focusWindow;
+
+    QByteArray m_startupId;
 };
 
 #define DISPLAY_FROM_XCB(object) ((Display *)(object->connection()->xlib_display()))

@@ -344,6 +344,10 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
     m_drag = new QXcbDrag(this);
 #endif
 
+    m_startupId = qgetenv("DESKTOP_STARTUP_ID");
+    if (!m_startupId.isNull())
+        qunsetenv("DESKTOP_STARTUP_ID");
+
     sync();
 }
 

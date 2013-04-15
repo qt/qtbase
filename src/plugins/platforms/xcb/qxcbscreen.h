@@ -87,6 +87,7 @@ public:
 
     xcb_window_t clientLeader() const { return m_clientLeader; }
 
+    void windowShown(QXcbWindow *window);
     QString windowManagerName() const { return m_windowManagerName; }
     bool syncRequestSupported() const { return m_syncRequestSupported; }
 
@@ -105,6 +106,7 @@ private:
     static bool xResource(const QByteArray &identifier,
                          const QByteArray &expectedIdentifier,
                          int *value);
+    void sendStartupMessage(const QByteArray &message) const;
 
     xcb_screen_t *m_screen;
     xcb_randr_crtc_t m_crtc;
