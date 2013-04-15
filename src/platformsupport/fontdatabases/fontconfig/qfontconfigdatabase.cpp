@@ -491,8 +491,22 @@ void QFontconfigDatabase::populateFontDatabase()
         fontFile->fileName = QLatin1String((const char *)file_value);
         fontFile->indexValue = indexValue;
 
-        if (isSymbolFont(fontFile))
-            writingSystems.setSupported(QFontDatabase::Other);
+        if (!writingSystems.supported(QFontDatabase::Symbol)) {
+            // Symbol encoding used to encode various crap in the 32..255 character
+            // code range, which belongs to Latin character code range.
+            // Symbol fonts usually don't have any other code ranges support.
+            bool mightBeSymbolFont = true;
+            for (int j = 2; j < QFontDatabase::WritingSystemsCount; ++j) {
+                if (writingSystems.supported(QFontDatabase::WritingSystem(j))) {
+                    mightBeSymbolFont = false;
+                    break;
+                }
+            }
+            if (mightBeSymbolFont && isSymbolFont(fontFile)) {
+                writingSystems.setSupported(QFontDatabase::Latin, false);
+                writingSystems.setSupported(QFontDatabase::Symbol);
+            }
+        }
 
         QFont::Style style = (slant_value == FC_SLANT_ITALIC)
                          ? QFont::StyleItalic
