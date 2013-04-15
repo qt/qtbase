@@ -852,7 +852,7 @@ void QCocoaWindow::syncWindowState(Qt::WindowState newState)
     // if content view width or height is 0 then the window animations will crash so
     // do nothing except set the new state
     NSRect contentRect = [contentView() frame];
-    if (contentRect.size.width <= 0 || contentRect.size.height <= 0) {
+    if (contentRect.size.width < 0 || contentRect.size.height < 0) {
         qWarning() << Q_FUNC_INFO << "invalid window content view size, check your window geometry";
         m_synchedWindowState = newState;
         return;
