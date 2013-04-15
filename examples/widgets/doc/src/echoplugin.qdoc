@@ -28,7 +28,7 @@
 /*!
     \example tools/echoplugin
     \title Echo Plugin Example
-    \group examples-widgets-tools
+    \ingroup examples-widgets-tools
 
     \brief This example shows how to create a Qt plugin.
 

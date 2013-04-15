@@ -28,7 +28,7 @@
 /*!
     \example richtext/syntaxhighlighter
     \title Syntax Highlighter Example
-    \group examples-richtext
+    \ingroup examples-richtext
     \brief The Syntax Highligher example shows how to perform
     simple syntax highlighing.
 
