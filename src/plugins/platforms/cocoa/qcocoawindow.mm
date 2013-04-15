@@ -471,6 +471,8 @@ void QCocoaWindow::setWindowIcon(const QIcon &icon)
 
     NSButton *iconButton = [m_nsWindow standardWindowButton:NSWindowDocumentIconButton];
     if (iconButton == nil) {
+        if (icon.isNull())
+            return;
         NSString *title = QCFString::toNSString(window()->title());
         [m_nsWindow setRepresentedURL:[NSURL fileURLWithPath:title]];
         iconButton = [m_nsWindow standardWindowButton:NSWindowDocumentIconButton];
