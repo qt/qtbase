@@ -56,7 +56,8 @@ extern int qt_main(int argc, char *argv[]);
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
-    self.window.rootViewController = [[[QIOSViewController alloc] init] autorelease];
+    self.qiosViewController = [[[QIOSViewController alloc] init] autorelease];
+    self.window.rootViewController = self.qiosViewController;
 
 #ifdef QT_DEBUG
     self.window.backgroundColor = [UIColor cyanColor];

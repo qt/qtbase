@@ -58,10 +58,14 @@ bool isQtApplication()
     return isQt;
 }
 
-QIOSViewController *rootViewController()
+QIOSViewController *qiosViewController()
 {
+    // If Qt controls the application, we have created a root view controller were we place top-level
+    // QWindows. Note that in a mixed native application, our view controller might later be removed or
+    // added as a child of another controller. To protect against that, we keep an explicit pointer to the
+    // view controller in cases where this is the controller we need to access.
     static QIOSViewController *c = isQtApplication() ?
-        static_cast<QIOSViewController *>([UIApplication sharedApplication].delegate.window.rootViewController) : nil;
+        static_cast<QIOSApplicationDelegate *>([UIApplication sharedApplication].delegate).qiosViewController : nil;
     return c;
 }
 
