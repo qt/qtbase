@@ -90,7 +90,8 @@ public:
         WindowMasks,
         MultipleWindows,
         ApplicationState,
-        ForeignWindows
+        ForeignWindows,
+        NonFullScreenWindows
     };
 
     virtual ~QPlatformIntegration() { }

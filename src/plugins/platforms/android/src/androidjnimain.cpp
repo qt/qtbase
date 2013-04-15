@@ -559,7 +559,6 @@ static void setSurface(JNIEnv *env, jobject /*thiz*/, jobject jSurface)
         m_surfaceMutex.unlock();
         m_androidPlatformIntegration->surfaceChanged();
     } else if (m_androidPlatformIntegration && sameNativeWindow) {
-        QAndroidOpenGLPlatformWindow *window = m_androidPlatformIntegration->primaryWindow();
         QPlatformScreen *screen = m_androidPlatformIntegration->screen();
         QSize size = QtAndroid::nativeWindowSize();
 
@@ -567,13 +566,19 @@ static void setSurface(JNIEnv *env, jobject /*thiz*/, jobject jSurface)
         QWindowSystemInterface::handleScreenAvailableGeometryChange(screen->screen(), geometry);
         QWindowSystemInterface::handleScreenGeometryChange(screen->screen(), geometry);
 
-        if (window != 0) {
-            window->lock();
-            window->scheduleResize(size);
+        // Resize all top level windows, since they share the same surface
+        foreach (QWindow *w, QGuiApplication::topLevelWindows()) {
+            QAndroidOpenGLPlatformWindow *window =
+                    static_cast<QAndroidOpenGLPlatformWindow *>(w->handle());
 
-            QWindowSystemInterface::handleExposeEvent(window->window(),
-                                                      QRegion(window->window()->geometry()));
-            window->unlock();
+            if (window != 0) {
+                window->lock();
+                window->scheduleResize(size);
+
+                QWindowSystemInterface::handleExposeEvent(window->window(),
+                                                          QRegion(window->window()->geometry()));
+                window->unlock();
+            }
         }
 
         m_surfaceMutex.unlock();

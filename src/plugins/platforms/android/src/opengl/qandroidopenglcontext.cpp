@@ -62,16 +62,16 @@ void QAndroidOpenGLContext::swapBuffers(QPlatformSurface *surface)
 {
     QEglFSContext::swapBuffers(surface);
 
-    QAndroidOpenGLPlatformWindow *primaryWindow = m_platformIntegration->primaryWindow();
-    if (primaryWindow == surface) {
-        primaryWindow->lock();
-        QSize size = primaryWindow->scheduledResize();
+    if (surface->surface()->surfaceClass() == QSurface::Window) {
+        QAndroidOpenGLPlatformWindow *window = static_cast<QAndroidOpenGLPlatformWindow *>(surface);
+        window->lock();
+        QSize size = window->scheduledResize();
         if (size.isValid()) {
             QRect geometry(QPoint(0, 0), size);
-            primaryWindow->setGeometry(geometry);
-            primaryWindow->scheduleResize(QSize());
+            window->setGeometry(geometry);
+            window->scheduleResize(QSize());
         }
-        primaryWindow->unlock();
+        window->unlock();
     }
 }
 
