@@ -386,6 +386,8 @@ QList<QCocoaMenuItem *> QCocoaMenu::merged() const
 
 void QCocoaMenu::syncModalState(bool modal)
 {
+    QCocoaAutoReleasePool pool;
+
     if (!m_enabled)
         modal = true;
 
