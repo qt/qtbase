@@ -48,6 +48,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonParseError>
+#include <QUrl>
 
 #include <bps/navigator.h>
 #include <bps/navigator_invoke.h>
@@ -258,12 +259,13 @@ void QQnxFilePicker::handleFilePickerResponse(const char *data)
 
     foreach (const QVariant &variant, array) {
         const QJsonObject object = QJsonObject::fromVariantMap(variant.toMap());
-        const QString uri = object.value(QStringLiteral("uri")).toString();
+        const QUrl url(object.value(QStringLiteral("uri")).toString());
+        const QString localFile = url.toLocalFile(); // strip "file://"
 
-        if (!uri.isEmpty())
-            m_selectedFiles << uri;
+        if (!localFile.isEmpty())
+            m_selectedFiles << localFile;
 
-        qFilePickerDebug() << "FilePicker uri response:" << uri;
+        qFilePickerDebug() << "FilePicker uri response:" << localFile;
     }
 
     Q_EMIT closed();
