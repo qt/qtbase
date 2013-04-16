@@ -25,3 +25,7 @@ QtWidgets
 - QAbstractScrollArea now has a SizeAdjustPolicy. If it is set to AdjustToContents
   it will make use of the new protected viewportSizeHint() (binary compatible since it
   was reserved in Qt5). This function returns a suggested size based on contents.
+
+- [QTBUG-4206] QTableView resizeToContents will now adjust to actual contents
+  and not just visible area. QHeaderView::setAutoResizePrecision() has been
+  introduced to control how precise the autoResize should be.

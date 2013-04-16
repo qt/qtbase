@@ -2208,7 +2208,7 @@ void QTableView::updateGeometries()
     if a larger row height is required by either the vertical header or
     the item delegate, that width will be used instead.
 
-    \sa QWidget::sizeHint, verticalHeader()
+    \sa QWidget::sizeHint, verticalHeader(), QHeaderView::resizeContentsPrecision()
 */
 int QTableView::sizeHintForRow(int row) const
 {
@@ -2218,7 +2218,8 @@ int QTableView::sizeHintForRow(int row) const
         return -1;
 
     ensurePolished();
-    const int maximumProcessCols = 1000; // To avoid this to take forever.
+    const int maximumProcessCols = d->verticalHeader->resizeContentsPrecision();
+
 
     int left = qMax(0, d->horizontalHeader->visualIndexAt(0));
     int right = d->horizontalHeader->visualIndexAt(d->viewport->width());
@@ -2252,6 +2253,9 @@ int QTableView::sizeHintForRow(int row) const
     int actualRight = d->model->columnCount(d->root) - 1;
     int idxLeft = left;
     int idxRight = column - 1;
+
+    if (maximumProcessCols == 0)
+        columnsProcessed = 0; // skip the while loop
 
     while (columnsProcessed != maximumProcessCols && (idxLeft > 0 || idxRight < actualRight)) {
         int logicalIdx  = -1;
@@ -2306,7 +2310,7 @@ int QTableView::sizeHintForRow(int row) const
     required by either the horizontal header or the item delegate, the larger
     width will be used instead.
 
-    \sa QWidget::sizeHint, horizontalHeader()
+    \sa QWidget::sizeHint, horizontalHeader(), QHeaderView::resizeContentsPrecision()
 */
 int QTableView::sizeHintForColumn(int column) const
 {
@@ -2316,7 +2320,7 @@ int QTableView::sizeHintForColumn(int column) const
         return -1;
 
     ensurePolished();
-    const int maximumProcessRows = 1000; // To avoid this to take forever.
+    const int maximumProcessRows = d->horizontalHeader->resizeContentsPrecision();
 
     int top = qMax(0, d->verticalHeader->visualIndexAt(0));
     int bottom = d->verticalHeader->visualIndexAt(d->viewport->height());
@@ -2344,6 +2348,9 @@ int QTableView::sizeHintForColumn(int column) const
     int actualBottom = d->model->rowCount(d->root) - 1;
     int idxTop = top;
     int idxBottom = row - 1;
+
+    if (maximumProcessRows == 0)
+        rowsProcessed = 0;  // skip the while loop
 
     while (rowsProcessed != maximumProcessRows && (idxTop > 0 || idxBottom < actualBottom)) {
         int logicalIdx  = -1;
@@ -3038,6 +3045,8 @@ void QTableView::showColumn(int column)
 /*!
     Resizes the given \a row based on the size hints of the delegate
     used to render each item in the row.
+
+    \sa resizeRowsToContents(), sizeHintForRow(), QHeaderView::resizeContentsPrecision()
 */
 void QTableView::resizeRowToContents(int row)
 {
@@ -3050,6 +3059,8 @@ void QTableView::resizeRowToContents(int row)
 /*!
     Resizes all rows based on the size hints of the delegate
     used to render each item in the rows.
+
+    \sa resizeRowToContents(), sizeHintForRow(), QHeaderView::resizeContentsPrecision()
 */
 void QTableView::resizeRowsToContents()
 {
@@ -3063,6 +3074,8 @@ void QTableView::resizeRowsToContents()
 
     \note Only visible columns will be resized. Reimplement sizeHintForColumn()
     to resize hidden columns as well.
+
+    \sa resizeColumnsToContents(), sizeHintForColumn(), QHeaderView::resizeContentsPrecision()
 */
 void QTableView::resizeColumnToContents(int column)
 {
@@ -3075,6 +3088,8 @@ void QTableView::resizeColumnToContents(int column)
 /*!
     Resizes all columns based on the size hints of the delegate
     used to render each item in the columns.
+
+    \sa resizeColumnToContents(), sizeHintForColumn(), QHeaderView::resizeContentsPrecision()
 */
 void QTableView::resizeColumnsToContents()
 {

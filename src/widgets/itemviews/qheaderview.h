@@ -133,6 +133,10 @@ public:
     ResizeMode sectionResizeMode(int logicalIndex) const;
     void setSectionResizeMode(ResizeMode mode);
     void setSectionResizeMode(int logicalIndex, ResizeMode mode);
+
+    void setResizeContentsPrecision(int precision, bool resizeNow = true);
+    int  resizeContentsPrecision() const;
+
 #if QT_DEPRECATED_SINCE(5, 0)
     inline QT_DEPRECATED void setResizeMode(ResizeMode mode)
         { setSectionResizeMode(mode); }

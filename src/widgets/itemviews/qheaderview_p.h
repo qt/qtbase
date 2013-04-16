@@ -99,7 +99,8 @@ public:
           sectionIndicatorOffset(0),
           sectionIndicator(0),
           globalResizeMode(QHeaderView::Interactive),
-          sectionStartposRecalc(true)
+          sectionStartposRecalc(true),
+          resizeContentsPrecision(1000)
     {}
 
 
@@ -291,6 +292,7 @@ public:
     QHeaderView::ResizeMode globalResizeMode;
     QList<QPersistentModelIndex> persistentHiddenSections;
     mutable bool sectionStartposRecalc;
+    int resizeContentsPrecision;
     // header sections
 
     struct SectionItem {

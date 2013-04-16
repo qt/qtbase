@@ -2565,7 +2565,7 @@ void QTreeView::columnCountChanged(int oldCount, int newCount)
 /*!
   Resizes the \a column given to the size of its contents.
 
-  \sa columnWidth(), setColumnWidth()
+  \sa columnWidth(), setColumnWidth(), sizeHintForColumn(), QHeaderView::resizeContentsPrecision()
 */
 void QTreeView::resizeColumnToContents(int column)
 {
@@ -2801,7 +2801,7 @@ void QTreeView::updateGeometries()
   if a larger column width is required by either the view's header or
   the item delegate, that width will be used instead.
 
-  \sa QWidget::sizeHint, header()
+  \sa QWidget::sizeHint, header(), QHeaderView::resizeContentsPrecision()
 */
 int QTreeView::sizeHintForColumn(int column) const
 {
@@ -2814,7 +2814,7 @@ int QTreeView::sizeHintForColumn(int column) const
     QStyleOptionViewItem option = d->viewOptions();
     const QVector<QTreeViewItem> viewItems = d->viewItems;
 
-    const int maximumProcessRows = 1000; // To avoid this to take forever.
+    const int maximumProcessRows = d->header->resizeContentsPrecision(); // To avoid this to take forever.
 
     int offset = 0;
     int start = d->firstVisibleItem(&offset);
@@ -2835,6 +2835,10 @@ int QTreeView::sizeHintForColumn(int column) const
 
     --end;
     int actualBottom = viewItems.size() - 1;
+
+    if (maximumProcessRows == 0)
+        rowsProcessed = 0; // skip the while loop
+
     while (rowsProcessed != maximumProcessRows && (start > 0 || end < actualBottom)) {
         int idx  = -1;
 

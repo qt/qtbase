@@ -1253,7 +1253,7 @@ void QHeaderView::setSectionResizeMode(ResizeMode mode)
     property is set to true. This is the default for the horizontal headers provided
     by QTreeView.
 
-    \sa setStretchLastSection()
+    \sa setStretchLastSection(), resizeContentsPrecision()
 */
 
 void QHeaderView::setSectionResizeMode(int logicalIndex, ResizeMode mode)
@@ -1314,6 +1314,53 @@ QHeaderView::ResizeMode QHeaderView::sectionResizeMode(int logicalIndex) const
     if (visual == -1)
         return Fixed; //the default value
     return d->headerSectionResizeMode(visual);
+}
+
+/*!
+   \since 5.2
+   Sets how precise QHeaderView should calculate the size when ResizeToContents is used.
+   A low value will provide a less accurate but fast auto resize while a higher
+   value will provide a more accurate resize that however can be slow.
+
+   The number \a precision specifies how many sections that should be consider
+   when calculating the preferred size.
+
+   The default value is 1000 meaning that a horizontal column with auto-resize will look
+   at maximum 1000 rows on calculating when doing an auto resize.
+
+   Special value 0 means that it will look at only the visible area.
+   Special value -1 will imply looking at all elements.
+
+   This value is used in QTableView::sizeHintForColumn(), QTableView::sizeHintForRow()
+   and QTreeView::sizeHintForColumn(). Reimplementing these functions can make this
+   function not having an effect.
+
+   If \a resizeSectionsNow is set to true (default) it will do adjustment of sections by calling
+   resizeSections().  (regardless if the precision was changed).
+
+    \sa resizeContentsPrecision(), setSectionResizeMode(), resizeSections(), QTableView::sizeHintForColumn(), QTableView::sizeHintForRow(), QTreeView::sizeHintForColumn()
+*/
+
+void QHeaderView::setResizeContentsPrecision(int precision, bool resizeSectionsNow)
+{
+    Q_D(QHeaderView);
+    d->resizeContentsPrecision = precision;
+    if (resizeSectionsNow)
+        resizeSections();
+}
+
+/*!
+  \since 5.2
+  Returns how precise QHeaderView will calculate on ResizeToContents.
+
+  \sa setResizeContentsPrecision(), setSectionResizeMode()
+
+*/
+
+int QHeaderView::resizeContentsPrecision() const
+{
+    Q_D(const QHeaderView);
+    return d->resizeContentsPrecision;
 }
 
 // ### Qt 6 - remove this obsolete function
@@ -3583,6 +3630,8 @@ void QHeaderViewPrivate::write(QDataStream &out) const
     out << int(globalResizeMode);
 
     out << sectionItems;
+    if (out.version() >= QDataStream::Qt_5_2)
+        out << resizeContentsPrecision;
 }
 
 bool QHeaderViewPrivate::read(QDataStream &in)
@@ -3634,6 +3683,10 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     }
     sectionItems = newSectionItems;
     recalcSectionStartPos();
+
+    if (in.version() >= QDataStream::Qt_5_2)
+        in >> resizeContentsPrecision;
+
     return true;
 }
 
