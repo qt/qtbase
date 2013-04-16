@@ -65,6 +65,7 @@ public:
     void handleMappingNotifyEvent(const xcb_xkb_map_notify_event_t *event);
 
     Qt::KeyboardModifiers translateModifiers(int s) const;
+    QList<int> possibleKeys(const QKeyEvent *e) const;
 
     void updateKeymap();
     void updateXKBState(xcb_xkb_state_notify_event_t *state);

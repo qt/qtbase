@@ -559,6 +559,19 @@ static const unsigned int KeyTbl[] = {
     0,                          0
 };
 
+// Possible modifier states.
+static const Qt::KeyboardModifiers ModsTbl[] = {
+    Qt::NoModifier,                                             // 0
+    Qt::ShiftModifier,                                          // 1
+    Qt::ControlModifier,                                        // 2
+    Qt::ControlModifier | Qt::ShiftModifier,                    // 3
+    Qt::AltModifier,                                            // 4
+    Qt::AltModifier | Qt::ShiftModifier,                        // 5
+    Qt::AltModifier | Qt::ControlModifier,                      // 6
+    Qt::AltModifier | Qt::ShiftModifier | Qt::ControlModifier,  // 7
+    Qt::NoModifier                                             // Fall-back to raw Key_*
+};
+
 Qt::KeyboardModifiers QXcbKeyboard::translateModifiers(int s) const
 {
     Qt::KeyboardModifiers ret = 0;
@@ -706,6 +719,76 @@ void QXcbKeyboard::updateXKBState(xcb_xkb_state_notify_event_t *state)
         }
     }
 }
+
+QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
+{
+    // turn off the modifier bits which doesn't participate in shortcuts
+    Qt::KeyboardModifiers notNeeded = Qt::MetaModifier | Qt::KeypadModifier | Qt::GroupSwitchModifier;
+    Qt::KeyboardModifiers modifiers = event->modifiers() &= ~notNeeded;
+    // create a fresh kb state and test against the relevant modifier combinations
+    // NOTE: it should be possible to query the keymap directly, once it gets
+    // supported by libxkbcommon
+    struct xkb_state * kb_state = xkb_state_new(xkb_keymap);
+    if (!kb_state) {
+        qWarning("QXcbKeyboard: failed to compile xkb keymap");
+        return QList<int>();
+    }
+    // get kb state from the master xkb_state and update the temporary kb_state
+    xkb_layout_index_t baseLayout = xkb_state_serialize_layout(xkb_state, XKB_STATE_LAYOUT_DEPRESSED);
+    xkb_layout_index_t latchedLayout = xkb_state_serialize_layout(xkb_state, XKB_STATE_LAYOUT_LATCHED);
+    xkb_layout_index_t lockedLayout = xkb_state_serialize_layout(xkb_state, XKB_STATE_LAYOUT_LOCKED);
+    xkb_mod_index_t latchedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LATCHED);
+    xkb_mod_index_t lockedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LOCKED);
+
+    xkb_state_update_mask(kb_state, 0, latchedMods, lockedMods,
+                                    baseLayout, latchedLayout, lockedLayout);
+
+    xkb_keysym_t baseKeysym = xkb_state_key_get_one_sym(kb_state, event->nativeScanCode());
+    if (baseKeysym == XKB_KEY_NoSymbol) {
+        return QList<int>();
+    }
+
+    QList<int> result;
+    int qtKey = keysymToQtKey(baseKeysym, modifiers, keysymToUnicode(baseKeysym));
+    result += (qtKey + modifiers); // The base key is _always_ valid, of course
+
+    xkb_mod_index_t shiftMod = xkb_keymap_mod_get_index(xkb_keymap, "Shift");
+    xkb_mod_index_t altMod = xkb_keymap_mod_get_index(xkb_keymap, "Alt");
+    xkb_mod_index_t controlMod = xkb_keymap_mod_get_index(xkb_keymap, "Control");
+
+    xkb_keysym_t sym;
+    xkb_mod_mask_t depressed = 0;
+
+    //obtain a list of possible shortcuts for the given key event
+    for (uint i = 1; i < sizeof(ModsTbl) / sizeof(*ModsTbl) ; ++i) {
+        Qt::KeyboardModifiers neededMods = ModsTbl[i];
+        if ((modifiers & neededMods) == neededMods) {
+
+            if (neededMods & Qt::AltModifier)
+                depressed |= (1 << altMod);
+            if (neededMods & Qt::ShiftModifier)
+                depressed |= (1 << shiftMod);
+            if (neededMods & Qt::ControlModifier)
+                depressed |= (1 << controlMod);
+
+            // update a keyboard state from a set of explicit masks
+            xkb_state_update_mask(kb_state, depressed, latchedMods, lockedMods,
+                                            baseLayout, latchedLayout, lockedLayout);
+            sym = xkb_state_key_get_one_sym(kb_state, event->nativeScanCode());
+
+            if (sym == XKB_KEY_NoSymbol || sym == baseKeysym)
+              continue;
+
+            Qt::KeyboardModifiers mods = modifiers & ~neededMods;
+            qtKey = keysymToQtKey(sym, mods, keysymToUnicode(sym));
+            result += (qtKey + mods);
+            depressed = 0;
+        }
+    }
+
+    xkb_state_unref(kb_state);
+    return result;
+ }
 
 int QXcbKeyboard::keysymToQtKey(xcb_keysym_t key) const
 {

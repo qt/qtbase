@@ -91,6 +91,7 @@ public:
     QPlatformServices *services() const;
 
     Qt::KeyboardModifiers queryKeyboardModifiers() const;
+    QList<int> possibleKeys(const QKeyEvent *e) const;
 
     QStringList themeNames() const;
     QPlatformTheme *createPlatformTheme(const QString &name) const;

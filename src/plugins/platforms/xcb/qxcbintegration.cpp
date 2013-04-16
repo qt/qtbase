@@ -327,6 +327,11 @@ Qt::KeyboardModifiers QXcbIntegration::queryKeyboardModifiers() const
     return conn->keyboard()->translateModifiers(keybMask);
 }
 
+QList<int> QXcbIntegration::possibleKeys(const QKeyEvent *e) const
+{
+    return m_connections.at(0)->keyboard()->possibleKeys(e);
+}
+
 QStringList QXcbIntegration::themeNames() const
 {
     return QGenericUnixTheme::themeNames();
