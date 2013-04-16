@@ -253,9 +253,21 @@ void AccessibilitySceneManager::updateItemFlags(QGraphicsRectItem *item, QAccess
         }
     }
 
+    if (m_optionsWidget->hideNullObjectItems()) {
+        if (interface->object() == 0) {
+            shouldShow = false;
+        }
+    }
+
+    if (m_optionsWidget->hideNullRectItems()) {
+        if (interface->rect().isNull()) {
+            shouldShow = false;
+        }
+    }
+
     item->setVisible(shouldShow);
 
-    if (interface->object() == m_selectedObject)
+    if (interface->object() && interface->object() == m_selectedObject)
         item->setBrush(QColor(Qt::yellow));
     else
         item->setBrush(QColor(Qt::white));
@@ -392,7 +404,7 @@ void AccessibilitySceneManager::addGraphicsItems(AccessibilitySceneManager::Tree
     graphicsItem->setRect(0, 0, m_treeItemWidth, m_treeItemHeight);
     graphicsItem->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
 
-    if (item.object == m_selectedObject)
+    if (item.object && item.object == m_selectedObject)
         graphicsItem->setBrush(QColor(Qt::yellow));
     else
         graphicsItem->setBrush(QColor(Qt::white));

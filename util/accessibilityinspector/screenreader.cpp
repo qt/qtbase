@@ -107,7 +107,8 @@ void ScreenReader::processTouchPoint()
     }
 
     m_selectedInterface = currentInterface;
-    emit selected(m_selectedInterface->object());
+    if (m_selectedInterface->object())
+        emit selected(m_selectedInterface->object());
     if (m_optionsWidget->enableTextToSpeach())
         speak(m_selectedInterface->text(QAccessible::Name)
               /*+ "," + translateRole(m_selectedInterface->role(0)) */);

@@ -77,6 +77,18 @@ public:
         m_hidePaneItems->setChecked(true);
         connect(m_hidePaneItems, SIGNAL(toggled(bool)), SIGNAL(optionsChanged()));
 
+        m_hideNullObjectItems = new QCheckBox(this);
+        m_layout->addWidget(m_hideNullObjectItems);
+        m_hideNullObjectItems->setText("Hide Items with a null QObject pointer");
+        m_hideNullObjectItems->setChecked(true);
+        connect(m_hideNullObjectItems, SIGNAL(toggled(bool)), SIGNAL(optionsChanged()));
+
+        m_hideNullRectItems = new QCheckBox(this);
+        m_layout->addWidget(m_hideNullRectItems);
+        m_hideNullRectItems->setText("Hide Items with a null rect");
+        m_hideNullRectItems->setChecked(true);
+        connect(m_hideNullRectItems, SIGNAL(toggled(bool)), SIGNAL(optionsChanged()));
+
         m_enableTextToSpeach = new QCheckBox(this);
         m_layout->addWidget(m_enableTextToSpeach);
         m_enableTextToSpeach->setText("Enable Text To Speech");
@@ -96,6 +108,8 @@ public:
     bool hideInvisibleItems() { return m_hideInvisibleItems->isChecked(); }
     bool hideOffscreenItems() { return m_hideOffscreenItems->isChecked(); }
     bool hidePaneItems() { return m_hidePaneItems->isChecked(); }
+    bool hideNullObjectItems() { return m_hideNullObjectItems->isChecked(); }
+    bool hideNullRectItems() { return m_hideNullRectItems->isChecked(); }
     bool enableTextToSpeach() { return m_enableTextToSpeach->isChecked(); }
 signals:
     void optionsChanged();
@@ -109,6 +123,8 @@ private:
     QCheckBox *m_hideInvisibleItems;
     QCheckBox *m_hideOffscreenItems;
     QCheckBox *m_hidePaneItems;
+    QCheckBox *m_hideNullObjectItems;
+    QCheckBox *m_hideNullRectItems;
     QCheckBox *m_enableTextToSpeach;
     QSlider *m_scale;
 };
