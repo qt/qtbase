@@ -299,7 +299,10 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     }
 
     xcb_extension_t *extensions[] = {
-        &xcb_shm_id, &xcb_xfixes_id, &xcb_randr_id, &xcb_shape_id, &xcb_sync_id, &xcb_xkb_id,
+        &xcb_shm_id, &xcb_xfixes_id, &xcb_randr_id, &xcb_shape_id, &xcb_sync_id,
+#ifndef QT_NO_XKB
+        &xcb_xkb_id,
+#endif
 #ifdef XCB_USE_RENDER
         &xcb_render_id,
 #endif
@@ -747,6 +750,7 @@ void QXcbConnection::handleButtonRelease(xcb_generic_event_t *ev)
     m_buttons &= ~translateMouseButton(event->detail);
 }
 
+#ifndef QT_NO_XKB
 namespace {
     typedef union {
         /* All XKB events share these fields. */
@@ -761,6 +765,7 @@ namespace {
         xcb_xkb_state_notify_event_t state_notify;
     } _xkb_event;
 }
+#endif
 
 void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
 {
@@ -786,12 +791,21 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         case XCB_EXPOSE:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleExposeEvent);
         case XCB_BUTTON_PRESS:
+#ifdef QT_NO_XKB
+            m_keyboard->updateXKBStateFromCore(((xcb_button_press_event_t *)event)->state);
+#endif
             handleButtonPress(event);
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_press_event_t, event, handleButtonPressEvent);
         case XCB_BUTTON_RELEASE:
+#ifdef QT_NO_XKB
+            m_keyboard->updateXKBStateFromCore(((xcb_button_release_event_t *)event)->state);
+#endif
             handleButtonRelease(event);
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_release_event_t, event, handleButtonReleaseEvent);
         case XCB_MOTION_NOTIFY:
+#ifdef QT_NO_XKB
+            m_keyboard->updateXKBStateFromCore(((xcb_motion_notify_event_t *)event)->state);
+#endif
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_motion_notify_event_t, event, handleMotionNotifyEvent);
         case XCB_CONFIGURE_NOTIFY:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_configure_notify_event_t, event, handleConfigureNotifyEvent);
@@ -805,15 +819,29 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         case XCB_ENTER_NOTIFY:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_enter_notify_event_t, event, handleEnterNotifyEvent);
         case XCB_LEAVE_NOTIFY:
+#ifdef QT_NO_XKB
+            m_keyboard->updateXKBStateFromCore(((xcb_leave_notify_event_t *)event)->state);
+#endif
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_leave_notify_event_t, event, handleLeaveNotifyEvent);
         case XCB_FOCUS_IN:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_in_event_t, event, handleFocusInEvent);
         case XCB_FOCUS_OUT:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_out_event_t, event, handleFocusOutEvent);
         case XCB_KEY_PRESS:
+#ifdef QT_NO_XKB
+            m_keyboard->updateXKBStateFromCore(((xcb_key_press_event_t *)event)->state);
+#endif
             HANDLE_KEYBOARD_EVENT(xcb_key_press_event_t, handleKeyPressEvent);
         case XCB_KEY_RELEASE:
+#ifdef QT_NO_XKB
+            m_keyboard->updateXKBStateFromCore(((xcb_key_release_event_t *)event)->state);
+#endif
             HANDLE_KEYBOARD_EVENT(xcb_key_release_event_t, handleKeyReleaseEvent);
+#ifdef QT_NO_XKB
+        case XCB_MAPPING_NOTIFY:
+            m_keyboard->handleMappingNotifyEvent((xcb_mapping_notify_event_t *)event);
+            break;
+#endif
         case XCB_SELECTION_REQUEST:
         {
             xcb_selection_request_event_t *sr = (xcb_selection_request_event_t *)event;
@@ -876,6 +904,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
                 }
             }
             handled = true;
+#ifndef QT_NO_XKB
         } else if (response_type == xkb_first_event) { // https://bugs.freedesktop.org/show_bug.cgi?id=51295
             _xkb_event *xkb_event = reinterpret_cast<_xkb_event *>(event);
             if (xkb_event->any.deviceID == m_keyboard->coreDeviceId()) {
@@ -892,6 +921,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
                         break;
                 }
             }
+#endif
         }
     }
 
@@ -1574,6 +1604,7 @@ void QXcbConnection::initializeXShape()
 
 void QXcbConnection::initializeXKB()
 {
+#ifndef QT_NO_XKB
     const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_connection, &xcb_xkb_id);
     if (!reply || !reply->present) {
         xkb_first_event = 0;
@@ -1629,6 +1660,7 @@ void QXcbConnection::initializeXKB()
         qWarning() << "Qt: failed to select notify events from xcb-xkb";
         return;
     }
+#endif
 }
 
 #if defined(XCB_USE_EGL)

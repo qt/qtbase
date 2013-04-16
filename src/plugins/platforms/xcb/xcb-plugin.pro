@@ -111,7 +111,11 @@ contains(QT_CONFIG, xcb-qt) {
 } else {
     LIBS += -lxcb -lxcb-image -lxcb-icccm -lxcb-sync -lxcb-xfixes -lxcb-shm -lxcb-randr
     !contains(DEFINES, QT_NO_SHAPE):LIBS += -lxcb-shape
-    !contains(DEFINES, QT_NO_XKB):LIBS += -lxcb-xkb
+    contains(DEFINES, QT_NO_XKB) {
+        LIBS += -lxcb-keysyms
+    } else {
+        LIBS += -lxcb-xkb
+    }
 }
 
 # libxkbcommon

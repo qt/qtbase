@@ -44,6 +44,10 @@
 
 #include "qxcbobject.h"
 
+#ifdef QT_NO_XKB
+#include <xcb/xcb_keysyms.h>
+#endif
+
 #include <xkbcommon/xkbcommon.h>
 
 #include <QEvent>
@@ -62,14 +66,21 @@ public:
     void handleKeyPressEvent(QXcbWindowEventListener *eventListener, const xcb_key_press_event_t *event);
     void handleKeyReleaseEvent(QXcbWindowEventListener *eventListener, const xcb_key_release_event_t *event);
 
-    void handleMappingNotifyEvent(const xcb_xkb_map_notify_event_t *event);
+    void handleMappingNotifyEvent(const void *event);
 
     Qt::KeyboardModifiers translateModifiers(int s) const;
-    QList<int> possibleKeys(const QKeyEvent *e) const;
 
     void updateKeymap();
-    void updateXKBState(xcb_xkb_state_notify_event_t *state);
+    QList<int> possibleKeys(const QKeyEvent *e) const;
+
+#ifdef QT_NO_XKB
+    void updateXKBStateFromCore(quint16 state);
+    void updateXKBMods();
+    quint32 xkbModMask(quint16 state);
+#else
     int coreDeviceId() { return core_device_id; }
+    void updateXKBState(xcb_xkb_state_notify_event_t *state);
+#endif
 
 protected:
     void handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycode_t code, quint16 state, xcb_timestamp_t time);
@@ -80,10 +91,16 @@ protected:
     int keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers &modifiers, QString text) const;
 
     void readXKBConfig(struct xkb_rule_names *names);
+
+#ifdef QT_NO_XKB
+    void updateModifiers();
+#else
     void updateVModMapping();
     void updateVModToRModMapping();
+#endif
 
 private:
+    bool m_config;
     xcb_keycode_t m_autorepeat_code;
 
     struct xkb_context *xkb_context;
@@ -96,12 +113,27 @@ private:
         uint meta;
     };
 
-    _mod_masks vmod_masks;
     _mod_masks rmod_masks;
 
-    int core_device_id;
+#ifdef QT_NO_XKB
+    xcb_key_symbols_t *m_key_symbols;
 
-    bool m_config;
+    struct _xkb_mods {
+        xkb_mod_index_t shift;
+        xkb_mod_index_t lock;
+        xkb_mod_index_t control;
+        xkb_mod_index_t mod1;
+        xkb_mod_index_t mod2;
+        xkb_mod_index_t mod3;
+        xkb_mod_index_t mod4;
+        xkb_mod_index_t mod5;
+    };
+
+    _xkb_mods xkb_mods;
+#else
+    _mod_masks vmod_masks;
+    int core_device_id;
+#endif
 };
 
 QT_END_NAMESPACE
