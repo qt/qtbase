@@ -62,7 +62,7 @@ void MouseInterceptingGraphicsScene::mouseDoubleClickEvent(QGraphicsSceneMouseEv
 AccessibilitySceneManager *sceneManager = 0;
 QAccessible::UpdateHandler previousUpdateHandler = 0;
 bool updateHandlerRecursion = false;
-void accessibilityUpdateHandler(QObject *object, int who, QAccessible::Event reason)
+void accessibilityUpdateHandler(QAccessibleEvent *event)
 {
     if (updateHandlerRecursion)
         return;
@@ -70,13 +70,13 @@ void accessibilityUpdateHandler(QObject *object, int who, QAccessible::Event rea
     updateHandlerRecursion = true;
 
     if (sceneManager) {
-        sceneManager->handleUpdate(object, reason);
+        sceneManager->handleUpdate(event);
 
         //qDebug() << "update";
     }
 
     if (previousUpdateHandler) // call prev just to be sure.
-        previousUpdateHandler(object, who, reason);
+        previousUpdateHandler(event);
 
     updateHandlerRecursion = false;
 }
