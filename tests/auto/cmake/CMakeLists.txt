@@ -121,6 +121,12 @@ test_module_includes(
 )
 expect_pass(test_concurrent_module)
 expect_pass(test_openglextensions_module)
+if (NOT APPLE)
+    if (QT_WITH_ANGLE OR NOT WIN32)
+        expect_pass(test_egl_lib)
+    endif()
+    expect_pass(test_opengl_lib)
+endif()
 
 if (NOT CMAKE_VERSION VERSION_LESS 2.8.11)
     expect_pass(test_interface)
