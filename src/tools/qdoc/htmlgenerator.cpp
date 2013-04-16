@@ -470,10 +470,10 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
             generateAnnotatedList(relative, marker, qdb_->getCppClasses());
         }
         else if (atom->string() == "classes") {
-            generateCompactList(relative, qdb_->getCppClasses(), true);
+            generateCompactList(Generic, relative, qdb_->getCppClasses(), true);
         }
         else if (atom->string() == "qmlclasses") {
-            generateCompactList(relative, qdb_->getQmlTypes(), true);
+            generateCompactList(Generic, relative, qdb_->getQmlTypes(), true);
         }
         else if (atom->string().contains("classesbymodule")) {
             QString arg = atom->string().trimmed();
@@ -492,10 +492,19 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
             generateClassHierarchy(relative, qdb_->getCppClasses());
         }
         else if (atom->string() == "compatclasses") {
-            generateCompactList(relative, qdb_->getCompatibilityClasses(), false);
+            generateCompactList(Generic, relative, qdb_->getCompatibilityClasses(), false);
         }
         else if (atom->string() == "obsoleteclasses") {
-            generateCompactList(relative, qdb_->getObsoleteClasses(), false);
+            generateCompactList(Generic, relative, qdb_->getObsoleteClasses(), false);
+        }
+        else if (atom->string() == "obsoleteqmltypes") {
+            generateCompactList(Generic, relative, qdb_->getObsoleteQmlTypes(), false);
+        }
+        else if (atom->string() == "obsoletecppmembers") {
+            generateCompactList(Obsolete, relative, qdb_->getClassesWithObsoleteMembers(), false);
+        }
+        else if (atom->string() == "obsoleteqmlmembers") {
+            generateCompactList(Obsolete, relative, qdb_->getQmlTypesWithObsoleteMembers(), false);
         }
         else if (atom->string() == "functionindex") {
             generateFunctionIndex(relative);
@@ -504,10 +513,10 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
             generateLegaleseList(relative, marker);
         }
         else if (atom->string() == "mainclasses") {
-            generateCompactList(relative, qdb_->getMainClasses(), true);
+            generateCompactList(Generic, relative, qdb_->getMainClasses(), true);
         }
         else if (atom->string() == "services") {
-            generateCompactList(relative, qdb_->getServiceClasses(), false);
+            generateCompactList(Generic, relative, qdb_->getServiceClasses(), false);
         }
         else if (atom->string() == "overviews") {
             generateOverviewList(relative);
@@ -640,9 +649,9 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
                           << "\"></a>\n";
                     out() << "<h3>" << protectEnc((*s).name) << "</h3>\n";
                     if (idx == Class)
-                        generateCompactList(0, ncmap, false, QString("Q"));
+                        generateCompactList(Generic, 0, ncmap, false, QString("Q"));
                     else if (idx == QmlClass)
-                        generateCompactList(0, nqcmap, false, QString("Q"));
+                        generateCompactList(Generic, 0, nqcmap, false, QString("Q"));
                     else if (idx == MemberFunction) {
                         ParentMaps parentmaps;
                         ParentMaps::iterator pmap;
@@ -1131,9 +1140,10 @@ void HtmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
     QString obsoleteLink = generateLowStatusMemberFile(inner,
                                                        marker,
                                                        CodeMarker::Obsolete);
-    if (!obsoleteLink.isEmpty())
+    if (!obsoleteLink.isEmpty()) {
         out() << "<li><a href=\"" << obsoleteLink << "\">"
               << "Obsolete members</a></li>\n";
+    }
 
     QString compatLink = generateLowStatusMemberFile(inner,
                                                      marker,
@@ -1481,9 +1491,10 @@ void HtmlGenerator::generateDocNode(DocNode* dn, CodeMarker* marker)
         QString obsoleteLink = generateLowStatusMemberFile(dn,
                                                            marker,
                                                            CodeMarker::Obsolete);
-        if (!obsoleteLink.isEmpty())
+        if (!obsoleteLink.isEmpty()) {
             out() << "<li><a href=\"" << obsoleteLink << "\">"
                   << "Obsolete members</a></li>\n";
+        }
 
         QString compatLink = generateLowStatusMemberFile(dn,
                                                          marker,
@@ -2105,7 +2116,7 @@ QString HtmlGenerator::generateAllQmlMembersFile(const QmlClassNode* qml_cn,
     return fileName;
 }
 
-QString HtmlGenerator::generateLowStatusMemberFile(const InnerNode *inner,
+QString HtmlGenerator::generateLowStatusMemberFile(InnerNode *inner,
                                                    CodeMarker *marker,
                                                    CodeMarker::Status status)
 {
@@ -2132,6 +2143,10 @@ QString HtmlGenerator::generateLowStatusMemberFile(const InnerNode *inner,
     else {
         title = "Obsolete Members for " + inner->name();
         fileName = fileBase(inner) + "-obsolete." + fileExtension();
+    }
+    if (status == CodeMarker::Obsolete) {
+        QString link = QString("../" + Generator::outputSubdir() + QLatin1Char('/')) + fileName;
+        inner->setObsoleteLink(link);
     }
 
     beginSubPage(inner, fileName);
@@ -2292,7 +2307,8 @@ void HtmlGenerator::generateAnnotatedList(const Node *relative,
   normally you let it figure it out itself by looking at
   the name of the first and last classes in \a classMap.
  */
-void HtmlGenerator::generateCompactList(const Node *relative,
+void HtmlGenerator::generateCompactList(ListType listType,
+                                        const Node *relative,
                                         const NodeMap &classMap,
                                         bool includeAlphabet,
                                         QString commonPrefix)
@@ -2452,11 +2468,19 @@ void HtmlGenerator::generateCompactList(const Node *relative,
             for (int i=0; i<curParOffset; i++)
                 ++it;
 
-            /*
-              Previously, we used generateFullName() for this, but we
-              require some special formatting.
-            */
-            out() << "<a href=\"" << linkForNode(it.value(), relative) << "\">";
+            if (listType == Generic) {
+                /*
+                  Previously, we used generateFullName() for this, but we
+                  require some special formatting.
+                */
+                out() << "<a href=\"" << linkForNode(it.value(), relative) << "\">";
+            }
+            else if (listType == Obsolete) {
+                QString fileName = fileBase(it.value()) + "-obsolete." + fileExtension();
+                QString link = QString("../" + it.value()->outputSubdirectory() +
+                                       QLatin1Char('/')) + fileName;
+                out() << "<a href=\"" << link << "\">";
+            }
 
             QStringList pieces;
             if (it.value()->subType() == Node::QmlClass)

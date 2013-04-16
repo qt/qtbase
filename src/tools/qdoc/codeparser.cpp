@@ -237,7 +237,7 @@ void CodeParser::processCommonMetaCommand(const Location& location,
         node->setStatus(Node::Compat);
     }
     else if (command == COMMAND_DEPRECATED) {
-        node->setStatus(Node::Deprecated);
+        node->setStatus(Node::Obsolete);
     }
     else if ((command == COMMAND_INGROUP) || (command == COMMAND_INPUBLICGROUP)) {
         // Note: \ingroup and \inpublicgroup are now the same.

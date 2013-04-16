@@ -430,6 +430,7 @@ void QDocDatabase::buildCollections()
     findAllLegaleseTexts(treeRoot());
     findAllNamespaces(treeRoot());
     findAllSince(treeRoot());
+    findAllObsoleteThings(treeRoot());
 }
 
 /*!
@@ -450,9 +451,6 @@ void QDocDatabase::findAllClasses(const InnerNode* node)
 
                 if ((*c)->status() == Node::Compat) {
                     compatClasses_.insert(className, *c);
-                }
-                else if ((*c)->status() == Node::Obsolete) {
-                    obsoleteClasses_.insert(className, *c);
                 }
                 else {
                     nonCompatClasses_.insert(className, *c);
@@ -541,6 +539,98 @@ void QDocDatabase::findAllNamespaces(const InnerNode* node)
                     if (!(*c)->name().isEmpty())
                         namespaceIndex_.insert((*c)->name(), *c);
                 }
+            }
+        }
+        ++c;
+    }
+}
+
+/*!
+  Finds all nodes with status = Obsolete and sorts them into
+  maps. They can be C++ classes, QML types, or they can be
+  functions, enum types, typedefs, methods, etc.
+ */
+void QDocDatabase::findAllObsoleteThings(const InnerNode* node)
+{
+    NodeList::const_iterator c = node->childNodes().constBegin();
+    while (c != node->childNodes().constEnd()) {
+        if ((*c)->access() != Node::Private) {
+            QString name = (*c)->name();
+            if ((*c)->status() == Node::Obsolete) {
+                if ((*c)->type() == Node::Class) {
+                    if ((*c)->parent() && (*c)->parent()->type() == Node::Namespace &&
+                        !(*c)->parent()->name().isEmpty())
+                        name = (*c)->parent()->name() + "::" + name;
+                    obsoleteClasses_.insert(name, *c);
+                }
+                else if ((*c)->type() == Node::Document && (*c)->subType() == Node::QmlClass) {
+                    if (name.startsWith(QLatin1String("QML:")))
+                        name = name.mid(4);
+                    name = (*c)->qmlModuleIdentifier() + "::" + name;
+                    obsoleteQmlTypes_.insert(name,*c);
+                }
+            }
+            else if ((*c)->type() == Node::Class) {
+                InnerNode* n = static_cast<InnerNode*>(*c);
+                bool inserted = false;
+                NodeList::const_iterator p = n->childNodes().constBegin();
+                while (p != n->childNodes().constEnd()) {
+                    if ((*p)->access() != Node::Private) {
+                        switch ((*p)->type()) {
+                        case Node::Enum:
+                        case Node::Typedef:
+                        case Node::Function:
+                        case Node::Property:
+                        case Node::Variable:
+                            if ((*p)->status() == Node::Obsolete) {
+                                if ((*c)->parent() && (*c)->parent()->type() == Node::Namespace &&
+                                    !(*c)->parent()->name().isEmpty())
+                                    name = (*c)->parent()->name() + "::" + name;
+                                classesWithObsoleteMembers_.insert(name, *c);
+                                inserted = true;
+                            }
+                            break;
+                        default:
+                            break;
+                        }
+                    }
+                    if (inserted)
+                        break;
+                    ++p;
+                }
+            }
+            else if ((*c)->type() == Node::Document && (*c)->subType() == Node::QmlClass) {
+                InnerNode* n = static_cast<InnerNode*>(*c);
+                bool inserted = false;
+                NodeList::const_iterator p = n->childNodes().constBegin();
+                while (p != n->childNodes().constEnd()) {
+                    if ((*p)->access() != Node::Private) {
+                        switch ((*c)->type()) {
+                        case Node::QmlProperty:
+                        case Node::QmlSignal:
+                        case Node::QmlSignalHandler:
+                        case Node::QmlMethod:
+                            if ((*c)->parent()) {
+                                Node* parent = (*c)->parent();
+                                if (parent->subType() == Node::QmlPropertyGroup && parent->parent())
+                                    parent = parent->parent();
+                                if (parent && parent->subType() == Node::QmlClass && !parent->name().isEmpty())
+                                    name = parent->name() + "::" + name;
+                            }
+                            qmlTypesWithObsoleteMembers_.insert(name,*c);
+                            inserted = true;
+                            break;
+                        default:
+                            break;
+                        }
+                    }
+                    if (inserted)
+                        break;
+                    ++p;
+                }
+            }
+            else if ((*c)->isInnerNode()) {
+                findAllObsoleteThings(static_cast<InnerNode*>(*c));
             }
         }
         ++c;

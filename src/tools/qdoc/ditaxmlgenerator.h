@@ -46,7 +46,6 @@
 #include <qregexp.h>
 #include <qxmlstream.h>
 #include "codemarker.h"
-#include "config.h"
 #include "generator.h"
 
 QT_BEGIN_NAMESPACE
@@ -374,16 +373,12 @@ private:
                                  Doc::Sections sectioningUnit,
                                  int numColumns,
                                  const Node* relative = 0);
-    void generateLowStatusMembers(const InnerNode* inner,
-                                  CodeMarker* marker,
-                                  CodeMarker::Status status);
-    QString generateLowStatusMemberFile(const InnerNode* inner,
-                                        CodeMarker* marker,
-                                        CodeMarker::Status status);
+    void generateLowStatusMembers(InnerNode* inner, CodeMarker* marker, CodeMarker::Status status);
     void generateClassHierarchy(const Node* relative, NodeMap& classMap);
     void generateAnnotatedList(const Node* relative, CodeMarker* marker, const NodeMap& nodeMap);
     void generateAnnotatedList(const Node* relative, CodeMarker* marker, const NodeList& nodes);
-    void generateCompactList(const Node* relative,
+    void generateCompactList(ListType listType,
+                             const Node* relative,
                              const NodeMap& classMap,
                              bool includeAlphabet,
                              QString commonPrefix = QString());
@@ -484,9 +479,7 @@ private:
 
     bool noLinks;
     bool obsoleteLinks;
-    bool offlineDocs;
 
-    int codeIndent;
     int divNestingLevel;
     int sectionNestingLevel;
     int tableColumnCount;

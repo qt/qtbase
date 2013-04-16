@@ -455,39 +455,6 @@ void CodeMarker::insert(FastSection &fastSection,
     }
 }
 
-void CodeMarker::insert(FastSection& fastSection,
-                        Node* node,
-                        SynopsisStyle style,
-                        bool /* includeClassName */)
-{
-    if (node->status() == Node::Compat || node->status() == Node::Obsolete)
-        return;
-
-    bool inheritedMember = false;
-    InnerNode* parent = node->parent();
-    if (parent && (parent->type() == Node::Document) &&
-            (parent->subType() == Node::QmlPropertyGroup)) {
-        parent = parent->parent();
-    }
-    inheritedMember = (parent != fastSection.parent_);
-
-    if (!inheritedMember || style == Subpage) {
-        QString key = sortName(node);
-        if (!fastSection.memberMap.contains(key))
-            fastSection.memberMap.insert(key, node);
-    }
-    else {
-        if ((parent->type() == Node::Document) && (parent->subType() == Node::QmlClass)) {
-            if (fastSection.inherited.isEmpty()
-                    || fastSection.inherited.last().first != parent) {
-                QPair<InnerNode*, int> p(parent, 0);
-                fastSection.inherited.append(p);
-            }
-            fastSection.inherited.last().second++;
-        }
-    }
-}
-
 /*!
   Returns true if \a node represents a reimplemented member
   function in the class of the FastSection \a fs. If it is
