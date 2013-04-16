@@ -99,6 +99,8 @@ AccessibilityInspector::~AccessibilityInspector()
 void AccessibilityInspector::inspectWindow(QWindow *window)
 {
     qDebug() << "AccessibilityInspector::inspectWindow()" << window;
+    if (window->parent() || window->transientParent())
+        return;
 
     optionsWidget = new OptionsWidget();
 
