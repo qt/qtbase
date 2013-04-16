@@ -1113,10 +1113,15 @@ void QTableView::doItemsLayout()
 {
     Q_D(QTableView);
     QAbstractItemView::doItemsLayout();
-    if (verticalScrollMode() == QAbstractItemView::ScrollPerItem)
-        d->verticalHeader->setOffsetToSectionPosition(verticalScrollBar()->value());
-    else
+    if (verticalScrollMode() == QAbstractItemView::ScrollPerItem) {
+        const int max = verticalScrollBar()->maximum();
+        if (max > 0 && verticalScrollBar()->value() == max)
+            d->verticalHeader->setOffsetToLastSection();
+        else
+            d->verticalHeader->setOffsetToSectionPosition(verticalScrollBar()->value());
+    } else {
         d->verticalHeader->setOffset(verticalScrollBar()->value());
+    }
     if (!d->verticalHeader->updatesEnabled())
         d->verticalHeader->setUpdatesEnabled(true);
 }
