@@ -164,23 +164,6 @@ void AccessibilityInspector::saveWindowGeometry()
 
 QString translateRole(QAccessible::Role role)
 {
-    if (role == 0x2B)
-        return "PushButton";
-    if (role == 0x2C)
-        return "CheckBox";
-    if (role == 0x2D)
-        return "RadioButton";
-    if (role == 0xA)
-        return "Client";
-    if (role == 0x29)
-        return "Static Text";
-    if (role == 0x33)
-        return "Slider";
-    if (role == 0x33)
-        return "Slider";
-    if (role == 0x10)
-        return "Pane";
-
-    return QString::number(role, 16);
+    return qAccessibleRoleString(role);
 }
 
