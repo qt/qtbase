@@ -4182,14 +4182,27 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
         else
             writer.writeCDATA(QString("No description available"));
         writer.writeEndElement(); // description
+
+        // Add words from module name as tags (QtQuickControls -> qt,quick,controls)
+        QRegExp re("([A-Z][a-z0-9]+)");
+        int pos = 0;
+        while ((pos = re.indexIn(project, pos)) != -1) {
+            tags << re.cap(1).toLower();
+            pos += re.matchedLength();
+        }
         tags += QSet<QString>::fromList(en->title().toLower().split(QLatin1Char(' ')));
         if (!tags.isEmpty()) {
             writer.writeStartElement("tags");
             bool wrote_one = false;
+            // Exclude invalid and common words
             foreach (QString tag, tags) {
+                if (tag.length() < 2)
+                    continue;
                 if (tag.at(0).isDigit())
                     continue;
                 if (tag.at(0) == '-')
+                    continue;
+                if (tag == QStringLiteral("qt"))
                     continue;
                 if (tag.startsWith("example"))
                     continue;
