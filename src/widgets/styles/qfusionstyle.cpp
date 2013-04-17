@@ -1681,7 +1681,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             if (menuItem->menuItemType == QStyleOptionMenuItem::SubMenu) {// draw sub menu arrow
                 int dim = (menuItem->rect.height() - 4) / 2;
                 PrimitiveElement arrow;
-                arrow = QApplication::isRightToLeft() ? PE_IndicatorArrowLeft : PE_IndicatorArrowRight;
+                arrow = option->direction == Qt::RightToLeft ? PE_IndicatorArrowLeft : PE_IndicatorArrowRight;
                 int xpos = menuItem->rect.left() + menuItem->rect.width() - 3 - dim;
                 QRect  vSubMenuRect = visualRect(option->direction, menuItem->rect,
                                                  QRect(xpos, menuItem->rect.top() + menuItem->rect.height() / 2 - dim / 2, dim, dim));

@@ -897,29 +897,10 @@ void tst_QMenu::QTBUG7411_submenus_activate()
     QTRY_VERIFY(sub1.isVisible());
 }
 
-class LayoutDirectionSaver
-{
-    Q_DISABLE_COPY(LayoutDirectionSaver)
-public:
-    explicit LayoutDirectionSaver(Qt::LayoutDirection direction)
-        : m_oldDirection(qApp->layoutDirection())
-    {
-        qApp->setLayoutDirection(direction);
-    }
-
-    ~LayoutDirectionSaver()
-    {
-        qApp->setLayoutDirection(m_oldDirection);
-    }
-
-private:
-    const Qt::LayoutDirection m_oldDirection;
-};
-
 void tst_QMenu::QTBUG30595_rtl_submenu()
 {
-    LayoutDirectionSaver directionSaver(Qt::RightToLeft);
     QMenu menu("Test Menu");
+    menu.setLayoutDirection(Qt::RightToLeft);
     QMenu sub("&sub");
     sub.addAction("bar");
     sub.setTitle("&sub");

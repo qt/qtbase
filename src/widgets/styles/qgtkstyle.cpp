@@ -2985,7 +2985,7 @@ void QGtkStyle::drawControl(ControlElement element,
         GtkStyle *gtkStatusbarStyle = d->gtk_widget_get_style(gtkStatusbar);
         QRect gripRect = option->rect.adjusted(0, 0, -gtkStatusbarStyle->xthickness, -gtkStatusbarStyle->ythickness);
         gtkPainter->paintResizeGrip(gtkStatusbar, "statusbar", gripRect, GTK_STATE_NORMAL,
-                                    GTK_SHADOW_OUT, QApplication::isRightToLeft() ?
+                                    GTK_SHADOW_OUT, option->direction == Qt::RightToLeft ?
                                     GDK_WINDOW_EDGE_SOUTH_WEST : GDK_WINDOW_EDGE_SOUTH_EAST,
                                     gtkStatusbarStyle);
     }
@@ -3366,7 +3366,7 @@ void QGtkStyle::drawControl(ControlElement element,
                                                        menuItem->rect.height() / 2 - dim / 2, dim, dim));
                 GtkStateType state = enabled ? (act ? GTK_STATE_PRELIGHT: GTK_STATE_NORMAL) : GTK_STATE_INSENSITIVE;
                 GtkShadowType shadowType = (state == GTK_STATE_PRELIGHT) ? GTK_SHADOW_OUT : GTK_SHADOW_IN;
-                gtkPainter->paintArrow(gtkMenuItem, "menuitem", vSubMenuRect, QApplication::isRightToLeft() ? GTK_ARROW_LEFT : GTK_ARROW_RIGHT, state,
+                gtkPainter->paintArrow(gtkMenuItem, "menuitem", vSubMenuRect, option->direction == Qt::RightToLeft ? GTK_ARROW_LEFT : GTK_ARROW_RIGHT, state,
                                        shadowType, false, style);
             }
         }
