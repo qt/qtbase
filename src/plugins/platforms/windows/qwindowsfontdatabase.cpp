@@ -1173,7 +1173,7 @@ QFontEngine *QWindowsFontDatabase::fontEngine(const QByteArray &fontData, qreal 
         fontFile->Release();
 
         fontEngine = new QWindowsFontEngineDirectWrite(directWriteFontFace, pixelSize,
-                                                       m_fontEngineData);
+                                                       sharedFontData());
 
         // Get font family from font data
         fontEngine->fontDef.family = font.familyName();
