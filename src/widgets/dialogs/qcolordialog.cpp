@@ -63,6 +63,8 @@
 #include "qmimedata.h"
 #include "qspinbox.h"
 #include "qdialogbuttonbox.h"
+#include "qscreen.h"
+#include "qcursor.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -1417,6 +1419,15 @@ bool QColorDialogPrivate::selectColor(const QColor &col)
     return false;
 }
 
+QColor QColorDialogPrivate::grabScreenColor(const QPoint &p)
+{
+    const QDesktopWidget *desktop = QApplication::desktop();
+    const QPixmap pixmap = QGuiApplication::screens().at(desktop->screenNumber())->grabWindow(desktop->winId(),
+                                                                                              p.x(), p.y(), 1, 1);
+    QImage i = pixmap.toImage();
+    return i.pixel(0, 0);
+}
+
 //sets all widgets except cs to display rgb
 void QColorDialogPrivate::_q_newColorTypedIn(QRgb rgb)
 {
@@ -1442,6 +1453,48 @@ void QColorDialogPrivate::_q_newStandard(int r, int c)
         custom->setSelected(-1,-1);
 }
 
+void QColorDialogPrivate::_q_pickScreenColor()
+{
+    Q_Q(QColorDialog);
+    screenColorPicking = true;
+    // If user pushes Escape, the last color before picking will be restored.
+    beforeScreenColorPicking = cs->currentColor();
+    /*For some reason, q->grabMouse(Qt::CrossCursor) doesn't change
+     * the cursor, and therefore I have to change it manually.
+     */
+    q->grabMouse();
+    q->setCursor(Qt::CrossCursor);
+    q->grabKeyboard();
+    /* With setMouseTracking(true) the desired color can be more precisedly picked up,
+     * and continuously pushing the mouse button is not necessary.
+     */
+    q->setMouseTracking(true);
+
+    addCusBt->setDisabled(true);
+    buttons->setDisabled(true);
+    screenColorPickerButton->setDisabled(true);
+
+    q->setCurrentColor(grabScreenColor(QCursor::pos()));
+    lblScreenColorInfo->setText(QColorDialog::tr("Cursor at %1, %2, color: %3\nPress ESC to cancel")
+                                .arg(QCursor::pos().x())
+                                .arg(QCursor::pos().y())
+                                .arg(q->currentColor().name()));
+}
+
+void QColorDialogPrivate::releaseColorPicking()
+{
+    Q_Q(QColorDialog);
+    screenColorPicking = false;
+    q->releaseMouse();
+    q->releaseKeyboard();
+    q->setCursor(Qt::ArrowCursor);
+    q->setMouseTracking(false);
+    lblScreenColorInfo->setText(QLatin1String("\n"));
+    addCusBt->setDisabled(false);
+    buttons->setDisabled(false);
+    screenColorPickerButton->setDisabled(false);
+}
+
 void QColorDialogPrivate::init(const QColor &initial)
 {
     Q_Q(QColorDialog);
@@ -1450,7 +1503,7 @@ void QColorDialogPrivate::init(const QColor &initial)
     q->setWindowTitle(QColorDialog::tr("Select Color"));
 
     nativeDialogInUse = (platformColorDialogHelper() != 0);
-
+    screenColorPicking = false;
     nextCust = 0;
     QVBoxLayout *mainLay = new QVBoxLayout(q);
     // there's nothing in this dialog that benefits from sizing up
@@ -1485,6 +1538,15 @@ void QColorDialogPrivate::init(const QColor &initial)
         q->connect(standard, SIGNAL(selected(int,int)), SLOT(_q_newStandard(int,int)));
         leftLay->addWidget(lblBasicColors);
         leftLay->addWidget(standard);
+
+#if !defined(Q_OS_WINCE) && !defined(QT_SMALL_COLORDIALOG)
+        // The screen color picker button
+        screenColorPickerButton = new QPushButton(QColorDialog::tr("Pick Screen Color"));
+        leftLay->addWidget(screenColorPickerButton);
+        lblScreenColorInfo = new QLabel(QLatin1String("\n"));
+        leftLay->addWidget(lblScreenColorInfo);
+        q->connect(screenColorPickerButton, SIGNAL(clicked()), SLOT(_q_pickScreenColor()));
+#endif
 
 #if !defined(Q_OS_WINCE)
         leftLay->addStretch();
@@ -1657,6 +1719,11 @@ static const Qt::WindowFlags DefaultWindowFlags =
     custom colors are shared by all color dialogs, and remembered
     during the execution of the program. Use setCustomColor() to set
     the custom colors, and use customColor() to get them.
+
+    When pressing the "Pick Screen Color" button, the cursor changes to a haircross
+    and the colors on the screen are scanned. The user can pick up one by clicking
+    the mouse or the Enter button. Pressing Escape restores the last color selected
+    before entering this mode.
 
     The \l{dialogs/standarddialogs}{Standard Dialogs} example shows
     how to use QColorDialog as well as other built-in Qt dialogs.
@@ -1969,6 +2036,57 @@ void QColorDialog::changeEvent(QEvent *e)
     if (e->type() == QEvent::LanguageChange)
         d->retranslateStrings();
     QDialog::changeEvent(e);
+}
+
+/*!
+    \reimp
+*/
+void QColorDialog::mouseMoveEvent(QMouseEvent *e)
+{
+    Q_D(QColorDialog);
+    if (d->screenColorPicking) {
+        setCurrentColor(d->grabScreenColor(e->globalPos()));
+        d->lblScreenColorInfo->setText(QColorDialog::tr("Cursor at %1, %2, color: %3\nPress ESC to cancel")
+                                       .arg(e->globalPos().x())
+                                       .arg(e->globalPos().y())
+                                       .arg(currentColor().name()));
+        return;
+    }
+    QDialog::mouseMoveEvent(e);
+}
+
+/*!
+    \reimp
+*/
+void QColorDialog::mouseReleaseEvent(QMouseEvent *e)
+{
+    Q_D(QColorDialog);
+    if (d->screenColorPicking) {
+        setCurrentColor(d->grabScreenColor(e->globalPos()));
+        d->releaseColorPicking();
+        return;
+    }
+    QDialog::mouseReleaseEvent(e);
+}
+
+/*!
+    \reimp
+*/
+void QColorDialog::keyPressEvent(QKeyEvent *e)
+{
+    Q_D(QColorDialog);
+    if (d->screenColorPicking) {
+        if (e->key() == Qt::Key_Escape) {
+            d->releaseColorPicking();
+            d->setCurrentColor(d->beforeScreenColorPicking);
+        } else if (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) {
+            setCurrentColor(d->grabScreenColor(QCursor::pos()));
+            d->releaseColorPicking();
+        }
+        e->accept();
+        return;
+    }
+    QDialog::keyPressEvent(e);
 }
 
 /*!
