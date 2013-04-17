@@ -842,9 +842,6 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::FocusOutEvent:
         handleFocusEvent(et, platformWindow);
         return true;
-    case QtWindows::ShowEvent:
-        platformWindow->handleShown();
-        return false; // Indicate transient children should be shown by windows (SW_PARENTOPENING)
     case QtWindows::HideEvent:
         platformWindow->handleHidden();
         return false;// Indicate transient children should be hidden by windows (SW_PARENTCLOSING)

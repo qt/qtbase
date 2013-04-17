@@ -839,6 +839,15 @@ QWindowsWindow::~QWindowsWindow()
     destroyIcon();
 }
 
+void QWindowsWindow::fireExpose(const QRegion &region, bool force)
+{
+    if (region.isEmpty() && !force)
+        clearFlag(Exposed);
+    else
+        setFlag(Exposed);
+    QWindowSystemInterface::handleExposeEvent(window(), region);
+}
+
 void QWindowsWindow::destroyWindow()
 {
     if (QWindowsContext::verboseIntegration || QWindowsContext::verboseWindows)
@@ -942,13 +951,19 @@ void QWindowsWindow::setVisible(bool visible)
     if (m_data.hwnd) {
         if (visible) {
             show_sys();
-            QWindowSystemInterface::handleExposeEvent(window(),
-                                                      QRect(QPoint(), geometry().size()));
+
+            // When the window is layered, we won't get WM_PAINT, and "we" are in control
+            // over the rendering of the window
+            // There is nobody waiting for this, so we don't need to flush afterwards.
+            QWindow *w = window();
+            if (w->format().hasAlpha() || qFuzzyCompare(w->opacity(), qreal(1)))
+                fireExpose(QRect(0, 0, w->width(), w->height()));
+
         } else {
             if (hasMouseCapture())
                 setMouseGrabEnabled(false);
             hide_sys();
-            QWindowSystemInterface::handleExposeEvent(window(), QRegion());
+            fireExpose(QRegion());
         }
     }
 }
@@ -1094,14 +1109,9 @@ void QWindowsWindow::setParent_sys(const QPlatformWindow *parent) const
     }
 }
 
-void QWindowsWindow::handleShown()
-{
-    QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), geometry().size()));
-}
-
 void QWindowsWindow::handleHidden()
 {
-    QWindowSystemInterface::handleExposeEvent(window(), QRegion());
+    fireExpose(QRegion());
 }
 
 void QWindowsWindow::setGeometry(const QRect &rectIn)
@@ -1267,28 +1277,21 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
     if (message == WM_ERASEBKGND) // Backing store - ignored.
         return true;
     PAINTSTRUCT ps;
-    if (testFlag(OpenGLSurface)) {
-        // Observed painting problems with Aero style disabled (QTBUG-7865).
-        if (testFlag(OpenGLDoubleBuffered))
-            InvalidateRect(hwnd, 0, false);
-        BeginPaint(hwnd, &ps);
-        QWindowSystemInterface::handleExposeEvent(window(), QRegion(qrectFromRECT(ps.rcPaint)));
-        if (!QWindowsContext::instance()->asyncExpose())
-            QWindowSystemInterface::flushWindowSystemEvents();
 
-        EndPaint(hwnd, &ps);
-    } else {
-        BeginPaint(hwnd, &ps);
-        const QRect updateRect = qrectFromRECT(ps.rcPaint);
+    // Observed painting problems with Aero style disabled (QTBUG-7865).
+    if (testFlag(OpenGLSurface) && testFlag(OpenGLDoubleBuffered))
+        InvalidateRect(hwnd, 0, false);
 
-        if (QWindowsContext::verboseIntegration)
-            qDebug() << __FUNCTION__ << this << window() << updateRect;
+    BeginPaint(hwnd, &ps);
 
-        QWindowSystemInterface::handleExposeEvent(window(), QRegion(updateRect));
-        if (!QWindowsContext::instance()->asyncExpose())
-            QWindowSystemInterface::flushWindowSystemEvents();
-        EndPaint(hwnd, &ps);
-    }
+    // If the a window is obscured by another window (such as a child window)
+    // we still need to send isExposed=true, for compatibility.
+    // Our tests depend on it.
+    fireExpose(QRegion(qrectFromRECT(ps.rcPaint)), true);
+    if (!QWindowsContext::instance()->asyncExpose())
+        QWindowSystemInterface::flushWindowSystemEvents();
+
+    EndPaint(hwnd, &ps);
     return true;
 }
 
