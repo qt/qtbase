@@ -39,8 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qioseventdispatcher.h"
-#import "qiosapplicationdelegate.h"
+#include "qioseventdispatcher_p.h"
 #include <qdebug.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <QtCore/QThread>

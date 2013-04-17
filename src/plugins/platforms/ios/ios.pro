@@ -13,7 +13,6 @@ OBJECTIVE_SOURCES = \
     qiosintegration.mm \
     qioswindow.mm \
     qiosscreen.mm \
-    qioseventdispatcher.mm \
     qiosbackingstore.mm \
     qiosapplicationdelegate.mm \
     qiosviewcontroller.mm \
@@ -26,7 +25,6 @@ HEADERS = \
     qiosintegration.h \
     qioswindow.h \
     qiosscreen.h \
-    qioseventdispatcher.h \
     qiosbackingstore.h \
     qiosapplicationdelegate.h \
     qiosviewcontroller.h \

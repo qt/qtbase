@@ -8,6 +8,14 @@ HEADERS +=\
     $$PWD/qgenericunixeventdispatcher_p.h\
 }
 
+ios {
+OBJECTIVE_SOURCES +=\
+    $$PWD/qioseventdispatcher.mm
+
+HEADERS +=\
+    $$PWD/qioseventdispatcher_p.h
+}
+
 contains(QT_CONFIG, glib) {
     SOURCES +=$$PWD/qeventdispatcher_glib.cpp
     HEADERS +=$$PWD/qeventdispatcher_glib_p.h

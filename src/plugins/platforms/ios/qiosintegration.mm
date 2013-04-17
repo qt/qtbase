@@ -43,11 +43,11 @@
 #include "qioswindow.h"
 #include "qiosbackingstore.h"
 #include "qiosscreen.h"
-#include "qioseventdispatcher.h"
 #include "qioscontext.h"
 #include "qiosinputcontext.h"
 #include "qiostheme.h"
 
+#include <QtPlatformSupport/private/qioseventdispatcher_p.h>
 #include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
 #include <QDir>
 
