@@ -1967,8 +1967,8 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
                 pos.setX(mouse.x() - size.width());
 
 #ifndef QT_NO_MENUBAR
-            // if in a menubar, it should be right-aligned
-            if (qobject_cast<QMenuBar*>(d->causedPopup.widget))
+            // if the menu is in a menubar or is a submenu, it should be right-aligned
+            if (qobject_cast<QMenuBar*>(d->causedPopup.widget) || qobject_cast<QMenu*>(d->causedPopup.widget))
                 pos.rx() -= size.width();
 #endif //QT_NO_MENUBAR
 
