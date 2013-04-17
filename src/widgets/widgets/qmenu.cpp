@@ -3004,6 +3004,7 @@ void QMenu::actionEvent(QActionEvent *e)
         } else if (e->type() == QEvent::ActionRemoved) {
             QPlatformMenuItem *menuItem = d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->action()));
             d->platformMenu->removeMenuItem(menuItem);
+            delete menuItem;
         } else if (e->type() == QEvent::ActionChanged) {
             QPlatformMenuItem *menuItem = d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->action()));
             copyActionToPlatformItem(e->action(), menuItem);
