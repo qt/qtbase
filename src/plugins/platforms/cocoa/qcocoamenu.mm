@@ -323,7 +323,8 @@ void QCocoaMenu::showPopup(const QWindow *parentWindow, QPoint pos, const QPlatf
         // typical use-case for a choice list, or non-editable combobox. We can't
         // re-use the popUpContextMenu:withEvent:forView: logic below since it won't
         // respect the menu's minimum width.
-        NSPopUpButtonCell *popupCell = [[NSPopUpButtonCell alloc] initTextCell:@"" pullsDown:NO];
+        NSPopUpButtonCell *popupCell = [[[NSPopUpButtonCell alloc] initTextCell:@"" pullsDown:NO]
+                                                                   autorelease];
         [popupCell setAltersStateOfSelectedItem:NO];
         [popupCell setTransparent:YES];
         [popupCell setMenu:m_nativeMenu];
@@ -350,7 +351,6 @@ void QCocoaMenu::showPopup(const QWindow *parentWindow, QPoint pos, const QPlatf
                                     eventNumber:0
                                     clickCount:1
                                     pressure:1.0];
-        NSSize size = m_nativeMenu.size;
         [NSMenu popUpContextMenu:m_nativeMenu withEvent:menuEvent forView:view];
     }
 

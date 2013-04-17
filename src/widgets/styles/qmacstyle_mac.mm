@@ -1785,6 +1785,7 @@ QMacStyle::~QMacStyle()
 
         NotificationReceiver *receiver = static_cast<NotificationReceiver *>(d->receiver);
         [[NSNotificationCenter defaultCenter] removeObserver:receiver];
+        [receiver release];
     }
 #endif
 
