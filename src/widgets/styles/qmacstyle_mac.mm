@@ -661,11 +661,11 @@ static CGColorSpaceRef qt_mac_displayColorSpace(const QWidget *widget)
 
 bool qt_macWindowIsTextured(const QWidget *window)
 {
-    NSWindow *nswindow = static_cast<NSWindow*>(
-        QApplication::platformNativeInterface()->nativeResourceForWindow("NSWindow", window->windowHandle()));
-    if (!nswindow)
-        return false;
-    return ([nswindow styleMask] & NSTexturedBackgroundWindowMask) ? true : false;
+    if (QWindow *w = window->windowHandle())
+        if (w->handle())
+            if (NSWindow *nswindow = static_cast<NSWindow*>(QGuiApplication::platformNativeInterface()->nativeResourceForWindow(QByteArrayLiteral("NSWindow"), w)))
+                return ([nswindow styleMask] & NSTexturedBackgroundWindowMask) ? true : false;
+    return false;
 }
 
 /*****************************************************************************
