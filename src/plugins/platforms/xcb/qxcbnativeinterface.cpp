@@ -77,6 +77,7 @@ public:
         insert("glxcontext",QXcbNativeInterface::GLXContext);
         insert("apptime",QXcbNativeInterface::AppTime);
         insert("appusertime",QXcbNativeInterface::AppUserTime);
+        insert("hintstyle", QXcbNativeInterface::ScreenHintStyle);
     }
 };
 
@@ -139,6 +140,8 @@ void *QXcbNativeInterface::nativeResourceForScreen(const QByteArray &resource, Q
     case AppUserTime:
         result = appUserTime(xcbScreen);
         break;
+    case ScreenHintStyle:
+        result = reinterpret_cast<void *>(xcbScreen->hintStyle() + 1);
     default:
         break;
     }

@@ -64,7 +64,8 @@ public:
         EglContext,
         GLXContext,
         AppTime,
-        AppUserTime
+        AppUserTime,
+        ScreenHintStyle
     };
 
     QXcbNativeInterface();

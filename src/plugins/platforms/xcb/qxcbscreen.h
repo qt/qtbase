@@ -50,6 +50,8 @@
 
 #include "qxcbobject.h"
 
+#include <private/qfontengine_p.h>
+
 QT_BEGIN_NAMESPACE
 
 class QXcbConnection;
@@ -97,7 +99,13 @@ public:
     void updateRefreshRate();
 
     void readXResources();
+
+    QFontEngine::HintStyle hintStyle() const { return m_hintStyle; }
 private:
+    static bool xResource(const QByteArray &identifier,
+                         const QByteArray &expectedIdentifier,
+                         int *value);
+
     xcb_screen_t *m_screen;
     xcb_randr_crtc_t m_crtc;
     QString m_outputName;
@@ -116,6 +124,7 @@ private:
     QXcbCursor *m_cursor;
     int m_refreshRate;
     int m_forcedDpi;
+    QFontEngine::HintStyle m_hintStyle;
 };
 
 QT_END_NAMESPACE
