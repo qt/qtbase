@@ -232,7 +232,7 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
         QScopedPointer<QFreetypeFace> newFreetype(new QFreetypeFace);
         FT_Face face;
         if (!face_id.filename.isEmpty()) {
-            QString fileName = QString::fromUtf8(face_id.filename);
+            QString fileName = QFile::decodeName(face_id.filename);
             if (face_id.filename.startsWith(":qmemoryfonts/")) {
                 // from qfontdatabase.cpp
                 QByteArray idx = face_id.filename;

@@ -87,6 +87,7 @@ const char _CompileOnly[]                       = "CompileOnly";
 const char _ConfigurationType[]                 = "ConfigurationType";
 const char _Culture[]                           = "Culture";
 const char _DLLDataFileName[]                   = "DLLDataFileName";
+const char _DataExecutionPrevention[]           = "DataExecutionPrevention";
 const char _DebugInformationFormat[]            = "DebugInformationFormat";
 const char _DefaultCharIsUnsigned[]             = "DefaultCharIsUnsigned";
 const char _DefaultCharType[]                   = "DefaultCharType";
@@ -179,6 +180,7 @@ const char _ProgramDatabase[]                   = "ProgramDatabase";
 const char _ProgramDataBaseFileName[]           = "ProgramDataBaseFileName";
 const char _ProgramDatabaseFile[]               = "ProgramDatabaseFile";
 const char _ProxyFileName[]                     = "ProxyFileName";
+const char _RandomizedBaseAddress[]             = "RandomizedBaseAddress";
 const char _RedirectOutputAndErrors[]           = "RedirectOutputAndErrors";
 const char _RegisterOutput[]                    = "RegisterOutput";
 const char _RelativePath[]                      = "RelativePath";
@@ -2560,6 +2562,7 @@ void VCProjectWriter::write(XmlOutput &xml, const VCLinkerTool &tool)
         << attrX(_AdditionalOptions, tool.AdditionalOptions, " ")
         << attrX(_AddModuleNamesToAssembly, tool.AddModuleNamesToAssembly)
         << attrS(_BaseAddress, tool.BaseAddress)
+        << attrT(_DataExecutionPrevention, tool.DataExecutionPrevention)
         << attrX(_DelayLoadDLLs, tool.DelayLoadDLLs)
         << attrE(_EnableCOMDATFolding, tool.EnableCOMDATFolding, /*ifNot*/ optFoldingDefault)
         << attrS(_EntryPointSymbol, tool.EntryPointSymbol)
@@ -2590,6 +2593,7 @@ void VCProjectWriter::write(XmlOutput &xml, const VCLinkerTool &tool)
         << attrE(_OptimizeReferences, tool.OptimizeReferences, /*ifNot*/ optReferencesDefault)
         << attrS(_OutputFile, tool.OutputFile)
         << attr(_ProgramDatabaseFile, tool.ProgramDatabaseFile)
+        << attrT(_RandomizedBaseAddress, tool.RandomizedBaseAddress)
         << attrT(_RegisterOutput, tool.RegisterOutput)
         << attrT(_ResourceOnlyDLL, tool.ResourceOnlyDLL)
         << attrT(_SetChecksum, tool.SetChecksum)

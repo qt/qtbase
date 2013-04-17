@@ -39,8 +39,6 @@
 **
 ****************************************************************************/
 
-#define QT_DEPRECATED
-#define QT_DISABLE_DEPRECATED_BEFORE 0
 #include "private/qdataurl_p.h"
 #include <QtTest/QtTest>
 #include <QtCore/QDebug>

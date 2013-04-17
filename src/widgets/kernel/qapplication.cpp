@@ -3210,7 +3210,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         res = acceptTouchEvents && d->notify_helper(widget, touchEvent);
 
         // If the touch event wasn't accepted, synthesize a mouse event and see if the widget wants it.
-        if (!touchEvent->isAccepted())
+        if (!touchEvent->isAccepted() && QGuiApplicationPrivate::synthesizeMouseFromTouchEventsEnabled())
             res = d->translateTouchToMouse(widget, touchEvent);
         break;
     }
@@ -3237,7 +3237,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             res = acceptTouchEvents && d->notify_helper(widget, touchEvent);
 
             // If the touch event wasn't accepted, synthesize a mouse event and see if the widget wants it.
-            if (!touchEvent->isAccepted()) {
+            if (!touchEvent->isAccepted() && QGuiApplicationPrivate::synthesizeMouseFromTouchEventsEnabled()) {
                 res = d->translateTouchToMouse(widget, touchEvent);
                 eventAccepted = touchEvent->isAccepted();
                 if (eventAccepted)
@@ -3801,10 +3801,6 @@ private:
 
 bool QApplicationPrivate::translateTouchToMouse(QWidget *widget, QTouchEvent *event)
 {
-    // Check if the platform wants synthesized mouse events.
-    if (!QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::SynthesizeMouseFromTouchEvents).toBool())
-        return false;
-
     Q_FOREACH (const QTouchEvent::TouchPoint &p, event->touchPoints()) {
         const QEvent::Type eventType = (p.state() & Qt::TouchPointPressed) ? QEvent::MouseButtonPress
                                      : (p.state() & Qt::TouchPointReleased) ? QEvent::MouseButtonRelease
@@ -3841,7 +3837,7 @@ bool QApplicationPrivate::translateTouchToMouse(QWidget *widget, QTouchEvent *ev
     return false;
 }
 
-void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
+bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                                                  QTouchDevice *device,
                                                  const QList<QTouchEvent::TouchPoint> &touchPoints,
                                                  ulong timestamp)
@@ -3903,8 +3899,9 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
     }
 
     if (widgetsNeedingEvents.isEmpty())
-        return;
+        return false;
 
+    bool accepted = false;
     QHash<QWidget *, StatesAndTouchPoints>::ConstIterator it = widgetsNeedingEvents.constBegin();
     const QHash<QWidget *, StatesAndTouchPoints>::ConstIterator end = widgetsNeedingEvents.constEnd();
     for (; it != end; ++it) {
@@ -3943,19 +3940,23 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
         {
             // if the TouchBegin handler recurses, we assume that means the event
             // has been implicitly accepted and continue to send touch events
-            widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent);
-            (void ) QApplication::sendSpontaneousEvent(widget, &touchEvent);
+            if (QApplication::sendSpontaneousEvent(widget, &touchEvent) && touchEvent.isAccepted()) {
+                accepted = true;
+                widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent);
+            }
             break;
         }
         default:
             if (widget->testAttribute(Qt::WA_WState_AcceptedTouchBeginEvent)) {
                 if (touchEvent.type() == QEvent::TouchEnd)
                     widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent, false);
-                (void) QApplication::sendSpontaneousEvent(widget, &touchEvent);
+                if (QApplication::sendSpontaneousEvent(widget, &touchEvent) && touchEvent.isAccepted())
+                    accepted = true;
             }
             break;
         }
     }
+    return accepted;
 }
 
 void QApplicationPrivate::translateTouchCancel(QTouchDevice *device, ulong timestamp)

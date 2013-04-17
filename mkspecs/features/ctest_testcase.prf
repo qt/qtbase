@@ -38,6 +38,10 @@ isEmpty(CMAKE_VERSION) {
             CMAKE_BUILD_TYPE = Debug
             CONFIG(release, debug|release):CMAKE_BUILD_TYPE = Release
             win32-g++*:CMAKE_GENERATOR = -G \"MinGW Makefiles\"
+            win32:equals(QT_ARCH, x86_64) {
+                win32-msvc2010:CMAKE_GENERATOR = -G \"Visual Studio 10 Win64\"
+                win32-msvc2012:CMAKE_GENERATOR = -G \"Visual Studio 11 Win64\"
+            }
 
             BUILD_DIR = $$replace($$list($$OUT_PWD/build), /, $$QMAKE_DIR_SEP)
 
@@ -53,9 +57,6 @@ isEmpty(CMAKE_VERSION) {
             dependentmodules -= $$CMAKE_QT_MODULES_UNDER_TEST
             dependentmodules = $$cmakeModuleList($$dependentmodules)
 
-            SET = set
-            equals(QMAKE_DIR_SEP, "/"):SET = export
-
             CMAKE_MODULE_VERSIONS =
             CMAKE_MODULES_UNDER_TEST =
             for (MODULE_UNDER_TEST, CMAKE_QT_MODULES_UNDER_TEST) {
@@ -69,8 +70,9 @@ isEmpty(CMAKE_VERSION) {
             CMAKE_MODULES_UNDER_TEST = $$join(CMAKE_MODULES_UNDER_TEST, ;)
 
             check.commands = \
-                $(MKDIR) $$BUILD_DIR && cd $$BUILD_DIR && $$SET VERBOSE=1 && \
+                $(MKDIR) $$BUILD_DIR && cd $$BUILD_DIR && \
                 cmake $$_PRO_FILE_PWD_ $$CMAKE_GENERATOR \
+                    -DCMAKE_VERBOSE_MAKEFILE=1 \
                     $$CMAKE_MODULE_DEFINES \
                     -DCMAKE_BUILD_TYPE=$${CMAKE_BUILD_TYPE} \
                     -DCMAKE_PREFIX_PATH=$$CMAKE_PREFIX_PATH \

@@ -84,6 +84,9 @@ namespace QTest
         QTEST_ASSERT(window);
         extern int Q_TESTLIB_EXPORT defaultMouseDelay();
 
+        if (!window->geometry().contains(pos))
+            QTest::qWarn("Mouse event occurs outside of target window.");
+
          static Qt::MouseButton lastButton = Qt::NoButton;
 
         if (delay == -1 || delay < defaultMouseDelay())

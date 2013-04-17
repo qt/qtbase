@@ -876,7 +876,13 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
 #if defined(QT_USE_SLOG2)
     slog2_default_handler(type, logMessage.toLocal8Bit().constData());
 #elif defined(Q_OS_ANDROID)
-    android_default_message_handler(type, context, logMessage);
+    static bool logToAndroid = qEnvironmentVariableIsEmpty("QT_ANDROID_PLAIN_LOG");
+    if (logToAndroid) {
+        android_default_message_handler(type, context, logMessage);
+    } else {
+        fprintf(stderr, "%s", logMessage.toLocal8Bit().constData());
+        fflush(stderr);
+    }
 #else
     fprintf(stderr, "%s", logMessage.toLocal8Bit().constData());
     fflush(stderr);

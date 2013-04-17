@@ -74,19 +74,23 @@
 #include <qstyleditemdelegate.h>
 #include <qproxystyle.h>
 
+static inline void setFrameless(QWidget *w)
+{
+    Qt::WindowFlags flags = w->windowFlags();
+    flags |= Qt::FramelessWindowHint;
+    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    w->setWindowFlags(flags);
+}
+
 class tst_QComboBox : public QObject
 {
     Q_OBJECT
 
 public:
-    tst_QComboBox();
-    ~tst_QComboBox();
+    tst_QComboBox() {}
 
 public slots:
-    void initTestCase();
-    void cleanupTestCase();
     void init();
-    void cleanup();
 
 private slots:
     void getSetCheck();
@@ -156,11 +160,6 @@ private slots:
     void maxVisibleItems();
     void task_QTBUG_10491_currentIndexAndModelColumn();
     void highlightedSignal();
-
-private:
-    QComboBox *testWidget;
-    QWidget *parent;
-    QPushButton* ok;
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -373,53 +372,40 @@ typedef QList<QIcon> IconList;
 
 Q_DECLARE_METATYPE(QComboBox::InsertPolicy)
 
-tst_QComboBox::tst_QComboBox()
+class TestWidget : public QWidget
 {
-    parent = 0;
-}
+public:
+    TestWidget() : QWidget(0, Qt::Window), m_comboBox(new QComboBox(this))
+    {
+        setObjectName("parent");
+        move(200, 200);
+        resize(400, 400);
+        m_comboBox->setGeometry(0, 0, 100, 100);
+        m_comboBox->setObjectName("testObject");
+        m_comboBox->setEditable(false);
+    }
 
-tst_QComboBox::~tst_QComboBox()
-{
-}
+    QComboBox *comboBox() const { return m_comboBox; }
+
+private:
+    QComboBox *m_comboBox;
 
 
-void tst_QComboBox::initTestCase()
-{
-    // Create the test class
-    parent = new QWidget(0, Qt::Window);
-    parent->setObjectName("parent");
-    parent->resize(400, 400);
-    testWidget = new QComboBox(parent);
-    testWidget->setObjectName("testObject");
-    testWidget->setGeometry(0, 0, 100, 100);
-    parent->show();
-}
-
-void tst_QComboBox::cleanupTestCase()
-{
-    delete parent;
-    parent = 0;
-}
-
+};
 
 void tst_QComboBox::init()
 {
-    // all tests starts with a clean non-editable combobox
-    testWidget->setEditable(false);
-    testWidget->clear();
 #ifdef Q_OS_WINCE //disable magic for WindowsCE
     qApp->setAutoMaximizeThreshold(-1);
 #endif
 }
 
-void tst_QComboBox::cleanup()
-{
-    //nothing
-}
-
-
 void tst_QComboBox::setEditable()
 {
+    TestWidget topLevel;
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QComboBox *testWidget = topLevel.comboBox();
     // make sure we have no lineedit
     QVERIFY(!testWidget->lineEdit());
     // test setEditable(true)
@@ -442,10 +428,14 @@ void tst_QComboBox::setEditable()
 void tst_QComboBox::setPalette()
 {
 #ifdef Q_OS_MAC
-    if (testWidget->style()->inherits("QMacStyle")) {
+    if (QApplication::style()->inherits("QMacStyle")) {
         QSKIP("This test doesn't make sense for pixmap-based styles");
     }
 #endif
+    TestWidget topLevel;
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QComboBox *testWidget = topLevel.comboBox();
     QPalette pal = testWidget->palette();
     pal.setColor(QPalette::Base, Qt::red);
     testWidget->setPalette(pal);
@@ -477,6 +467,10 @@ void tst_QComboBox::setPalette()
 
 void tst_QComboBox::sizeAdjustPolicy()
 {
+    TestWidget topLevel;
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QComboBox *testWidget = topLevel.comboBox();
     // test that adding new items will not change the sizehint for AdjustToContentsOnFirstShow
     QVERIFY(!testWidget->count());
     QVERIFY(testWidget->sizeAdjustPolicy() == QComboBox::AdjustToContentsOnFirstShow);
@@ -537,6 +531,10 @@ void tst_QComboBox::sizeAdjustPolicy()
 
 void tst_QComboBox::clear()
 {
+    TestWidget topLevel;
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QComboBox *testWidget = topLevel.comboBox();
     // first non editable combobox
     testWidget->addItem("foo");
     testWidget->addItem("bar");
@@ -711,6 +709,10 @@ void tst_QComboBox::insertPolicy()
     QFETCH(QString, userInput);
     QFETCH(QStringList, result);
 
+    TestWidget topLevel;
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QComboBox *testWidget = topLevel.comboBox();
     testWidget->clear();
     testWidget->setInsertPolicy(insertPolicy);
     testWidget->addItems(initialEntries);
@@ -740,6 +742,10 @@ void tst_QComboBox::insertPolicy()
 // Apps running with valgrind are not fast enough.
 void tst_QComboBox::virtualAutocompletion()
 {
+    TestWidget topLevel;
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QComboBox *testWidget = topLevel.comboBox();
     testWidget->clear();
     testWidget->setAutoCompletion(true);
     testWidget->addItem("Foo");
@@ -792,9 +798,13 @@ void tst_QComboBox::autoCompletionCaseSensitivity()
 {
     //we have put the focus because the completer
     //is only used when the widget actually has the focus
+    TestWidget topLevel;
+    topLevel.show();
+    QComboBox *testWidget = topLevel.comboBox();
+    qApp->setActiveWindow(&topLevel);
     testWidget->setFocus();
-    qApp->setActiveWindow(testWidget);
-    QTRY_COMPARE(qApp->focusWidget(), (QWidget *)testWidget);
+    QVERIFY(QTest::qWaitForWindowActive(&topLevel));
+    QCOMPARE(qApp->focusWidget(), (QWidget *)testWidget);
 
     testWidget->clear();
     testWidget->setAutoCompletion(true);
@@ -886,6 +896,10 @@ void tst_QComboBox::autoCompletionCaseSensitivity()
 
 void tst_QComboBox::hide()
 {
+    TestWidget topLevel;
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QComboBox *testWidget = topLevel.comboBox();
     testWidget->addItem("foo");
     testWidget->showPopup();
     //allow combobox effect to complete
@@ -1101,6 +1115,10 @@ void tst_QComboBox::currentIndex()
     QFETCH(QString, expectedCurrentText);
     QFETCH(int, expectedSignalCount);
 
+    TestWidget topLevel;
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QComboBox *testWidget = topLevel.comboBox();
     // test both editable/non-editable combobox
     for (int edit = 0; edit < 2; ++edit) {
         testWidget->clear();
@@ -1196,6 +1214,10 @@ void tst_QComboBox::insertItems()
     QFETCH(int, insertIndex);
     QFETCH(int, expectedIndex);
 
+    TestWidget topLevel;
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QComboBox *testWidget = topLevel.comboBox();
     testWidget->insertItems(0, initialItems);
     QCOMPARE(testWidget->count(), initialItems.count());
 
@@ -1234,6 +1256,10 @@ void tst_QComboBox::insertItem()
     QFETCH(int, expectedIndex);
     QFETCH(bool, editable);
 
+    TestWidget topLevel;
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QComboBox *testWidget = topLevel.comboBox();
     testWidget->insertItems(0, initialItems);
     QCOMPARE(testWidget->count(), initialItems.count());
 
@@ -1251,6 +1277,10 @@ void tst_QComboBox::insertItem()
 
 void tst_QComboBox::insertOnCurrentIndex()
 {
+    TestWidget topLevel;
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QComboBox *testWidget = topLevel.comboBox();
     testWidget->setEditable(true);
     testWidget->addItem("first item");
     testWidget->setCurrentIndex(0);
@@ -1308,6 +1338,10 @@ void tst_QComboBox::textpixmapdata()
 
     QVERIFY(text.count() == icons.count() && text.count() == variant.count());
 
+    TestWidget topLevel;
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QComboBox *testWidget = topLevel.comboBox();
     for (int i = 0; i<text.count(); ++i) {
         testWidget->insertItem(i, text.at(i));
         testWidget->setItemIcon(i, icons.at(i));
@@ -1333,6 +1367,10 @@ void tst_QComboBox::textpixmapdata()
 
 void tst_QComboBox::setCurrentIndex()
 {
+    TestWidget topLevel;
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QComboBox *testWidget = topLevel.comboBox();
     QCOMPARE(testWidget->count(), 0);
     testWidget->addItem("foo");
     testWidget->addItem("bar");
@@ -1360,6 +1398,10 @@ void tst_QComboBox::setCurrentText()
 {
     QFETCH(bool, editable);
 
+    TestWidget topLevel;
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QComboBox *testWidget = topLevel.comboBox();
     QCOMPARE(testWidget->count(), 0);
     testWidget->addItems(QStringList() << "foo" << "bar");
     QCOMPARE(testWidget->count(), 2);
@@ -1411,6 +1453,10 @@ void tst_QComboBox::currentTextChanged()
 {
     QFETCH(bool, editable);
 
+    TestWidget topLevel;
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QComboBox *testWidget = topLevel.comboBox();
     QCOMPARE(testWidget->count(), 0);
     testWidget->addItems(QStringList() << "foo" << "bar");
     QCOMPARE(testWidget->count(), 2);
@@ -1455,6 +1501,10 @@ void tst_QComboBox::currentTextChanged()
 
 void tst_QComboBox::editTextChanged()
 {
+    TestWidget topLevel;
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QComboBox *testWidget = topLevel.comboBox();
     QCOMPARE(testWidget->count(), 0);
     testWidget->addItem("foo");
     testWidget->addItem("bar");
@@ -1677,6 +1727,7 @@ public:
 void tst_QComboBox::ensureReturnIsIgnored()
 {
     ReturnClass r;
+    r.move(200, 200);
     r.show();
 
     QTest::keyClick(r.edit, Qt::Key_Return);
@@ -1716,6 +1767,10 @@ void tst_QComboBox::findText()
     QFETCH(QString, search);
     QFETCH(int, result);
 
+    TestWidget topLevel;
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QComboBox *testWidget = topLevel.comboBox();
     testWidget->clear();
     testWidget->addItems(items);
 
@@ -1824,6 +1879,7 @@ void tst_QComboBox::flaggedItems()
     QFETCH(int, expectedIndex);
 
     QComboBox comboBox;
+    setFrameless(&comboBox);
     QListWidget listWidget;
     listWidget.addItems(itemList);
 
@@ -1836,6 +1892,7 @@ void tst_QComboBox::flaggedItems()
 
     comboBox.setModel(listWidget.model());
     comboBox.setView(&listWidget);
+    comboBox.move(200, 200);
     comboBox.show();
     QApplication::setActiveWindow(&comboBox);
     comboBox.activateWindow();
@@ -1987,6 +2044,8 @@ void tst_QComboBox::itemListPosition()
     //we test QFontComboBox because it has the specific behaviour to set a fixed size
     //to the list view
     QWidget topLevel;
+    topLevel.resize(200, 200);
+    topLevel.move(100, 100);
     QFontComboBox combo(&topLevel);
 
     //the code to get the available screen space is copied from QComboBox code
@@ -2047,6 +2106,8 @@ void tst_QComboBox::task190351_layout()
     QApplication::setStyle(QStyleFactory::create(QLatin1String("Fusion")));
 
     QComboBox listCombo;
+    listCombo.move(200, 200);
+    setFrameless(&listCombo);
     QListWidget *list = new QListWidget();
     listCombo.setModel(list->model());
     listCombo.setView(list);
@@ -2111,7 +2172,10 @@ void tst_QComboBox::task191329_size()
     const QString oldStyle = QApplication::style()->objectName();
     QApplication::setStyle(QStyleFactory::create(QLatin1String("Fusion")));
 
+
     QComboBox tableCombo;
+    setFrameless(&tableCombo);
+    tableCombo.move(200, 200);
     int rows;
     if (QApplication::desktop()->screenGeometry().height() < 480)
         rows = 8;
@@ -2159,6 +2223,8 @@ void tst_QComboBox::task190205_setModelAdjustToContents()
     finalContent << "bar" << "foooooooobar";
 
     QComboBox box;
+    setFrameless(&box);
+    box.move(100, 100);
     box.setSizeAdjustPolicy(QComboBox::AdjustToContents);
     box.addItems(initialContent);
     box.show();
@@ -2169,6 +2235,9 @@ void tst_QComboBox::task190205_setModelAdjustToContents()
     box.setModel(new QStringListModel(finalContent));
 
     QComboBox correctBox;
+    setFrameless(&correctBox);
+    correctBox.move(400, 100);
+
     correctBox.addItems(finalContent);
     correctBox.show();
 
@@ -2210,6 +2279,8 @@ void tst_QComboBox::task248169_popupWithMinimalSize()
 void tst_QComboBox::task247863_keyBoardSelection()
 {
   QComboBox combo;
+  setFrameless(&combo);
+  combo.move(200, 200);
   combo.setEditable(false);
   combo.addItem( QLatin1String("111"));
   combo.addItem( QLatin1String("222"));
@@ -2230,6 +2301,8 @@ void tst_QComboBox::task247863_keyBoardSelection()
 void tst_QComboBox::task220195_keyBoardSelection2()
 {
     QComboBox combo;
+    setFrameless(&combo);
+    combo.move(200, 200);
     combo.setEditable(false);
     combo.addItem( QLatin1String("foo1"));
     combo.addItem( QLatin1String("foo2"));
@@ -2315,6 +2388,7 @@ void tst_QComboBox::noScrollbar()
         QWidget topLevel;
         QComboBox comboBox(&topLevel);
         comboBox.addItems(initialContent);
+        topLevel.move(200, 200);
         topLevel.show();
         comboBox.resize(200, comboBox.height());
         QTRY_VERIFY(comboBox.isVisible());
@@ -2331,6 +2405,7 @@ void tst_QComboBox::noScrollbar()
         QComboBox comboBox;
         comboBox.setModel(table->model());
         comboBox.setView(table);
+        comboBox.move(200, 200);
         comboBox.show();
         QTRY_VERIFY(comboBox.isVisible());
         comboBox.resize(200, comboBox.height());
@@ -2447,6 +2522,7 @@ void tst_QComboBox::task260974_menuItemRectangleForComboBoxPopup()
         QComboBox comboBox;
         comboBox.setStyle(&style);
         comboBox.addItem("Item 1");
+        comboBox.move(200, 200);
 
         comboBox.show();
         QTRY_VERIFY(comboBox.isVisible());
@@ -2511,8 +2587,11 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
 {
     QComboBox combo;
     combo.setEditable(false);
+    setFrameless(&combo);
+    combo.move(200, 200);
     for (int i = 0; i < 80; i++)
         combo.addItem( QString::number(i));
+
     combo.show();
     QApplication::setActiveWindow(&combo);
     QVERIFY(QTest::qWaitForWindowActive(&combo));
@@ -2523,7 +2602,7 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
     combo.setFocus();
     QTRY_VERIFY(combo.hasFocus());
 
-    QTest::keyClick(testWidget->lineEdit(), Qt::Key_Space);
+    QTest::keyClick(combo.lineEdit(), Qt::Key_Space);
     QTest::qWait(30);
     QTRY_VERIFY(combo.view());
     QTRY_VERIFY(combo.view()->isVisible());
@@ -2568,6 +2647,7 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
 void tst_QComboBox::task_QTBUG_1071_changingFocusEmitsActivated()
 {
     QWidget w;
+    w.move(200, 200);
     QVBoxLayout layout(&w);
     QComboBox cb;
     cb.setEditable(true);
@@ -2603,6 +2683,7 @@ void tst_QComboBox::maxVisibleItems()
         content += QString::number(i);
 
     comboBox.addItems(content);
+    comboBox.move(200, 200);
     comboBox.show();
     comboBox.resize(200, comboBox.height());
     QTRY_VERIFY(comboBox.isVisible());

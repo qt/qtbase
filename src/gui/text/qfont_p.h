@@ -143,6 +143,9 @@ public:
     QFontCache *fontCache;
 
     QFontEngine *engines[QChar::ScriptCount];
+
+private:
+    Q_DISABLE_COPY(QFontEngineData)
 };
 
 

@@ -53,7 +53,7 @@ class Driver;
 class DatabaseInfo : public TreeWalker
 {
 public:
-    DatabaseInfo(Driver *driver);
+    DatabaseInfo();
 
     void acceptUI(DomUI *node);
     void acceptWidget(DomWidget *node);
@@ -68,7 +68,6 @@ public:
     { return m_fields.value(connection); }
 
 private:
-    Driver *driver;
     QStringList m_connections;
     QMap<QString, QStringList> m_cursors;
     QMap<QString, QStringList> m_fields;

@@ -83,7 +83,6 @@ private:
                                int unindent = 0);
 
     bool silent;
-    bool validRegExp;
     QStringList plainLines;
     QStringList markedLines;
     Location codeLocation;

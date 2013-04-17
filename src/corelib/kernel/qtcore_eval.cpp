@@ -496,6 +496,7 @@ public:
             setParent(parentWidget(), Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
             QTimer::singleShot(7000, this, SLOT(close()));
             setAttribute(Qt::WA_DeleteOnClose);
+            setAttribute(Qt::WA_QuitOnClose, false);
         }
 
         setFixedSize(sizeHint());
