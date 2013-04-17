@@ -52,7 +52,11 @@ QIOSBackingStore::QIOSBackingStore(QWindow *window)
     , m_context(new QOpenGLContext)
     , m_device(0)
 {
-    m_context->setFormat(window->requestedFormat());
+    QSurfaceFormat fmt = window->requestedFormat();
+    fmt.setDepthBufferSize(16);
+    fmt.setStencilBufferSize(8);
+
+    m_context->setFormat(fmt);
     m_context->setScreen(window->screen());
     m_context->create();
 }
