@@ -27,19 +27,22 @@ CMAKE_PARTIAL_MODULE_DEPS = $$replace(CMAKE_MODULE_DEPS, ";", ";Qt5::")
 # The /lib paths are made symlinks to the /usr/lib paths. If someone searching
 # for a Qt 5 package finds it in /lib/cmake/Qt5Core, although it has been
 # installed in /usr/lib/cmake/Qt5Core, relative paths to the includes and
-# executables will not work. So, we treat installations to /usr as non-relocatable
-# packages with absolute paths.
-CMAKE_INSTALL_LIBS_DIR = $$[QT_INSTALL_LIBS]
-contains(CMAKE_INSTALL_LIBS_DIR, ^(/usr)?/lib(64)?.*): CMAKE_FORCE_ABSOLUTE_PATHS = True
+# executables will not work.
+# To work around this, we insert code into the generated config files to check
+# at cmake time whether package has been found via a symlink, and correct
+# that to an absolute path. This is only done for installations to
+# the /usr or / prefix.
+CMAKE_INSTALL_LIBS_DIR = $$cmakeTargetPath($$[QT_INSTALL_LIBS])
+contains(CMAKE_INSTALL_LIBS_DIR, ^(/usr)?/lib(64)?.*): CMAKE_USR_MOVE_WORKAROUND = $$CMAKE_INSTALL_LIBS_DIR
 
 CMAKE_INCLUDE_DIR = $$cmakeRelativePath($$[QT_INSTALL_HEADERS], $$[QT_INSTALL_PREFIX])
-!isEmpty(CMAKE_FORCE_ABSOLUTE_PATHS)|contains(CMAKE_INCLUDE_DIR, "^\\.\\./.*") {
+contains(CMAKE_INCLUDE_DIR, "^\\.\\./.*") {
     CMAKE_INCLUDE_DIR = $$[QT_INSTALL_HEADERS]/
     CMAKE_INCLUDE_DIR_IS_ABSOLUTE = True
 }
 
 CMAKE_LIB_DIR = $$cmakeRelativePath($$[QT_INSTALL_LIBS], $$[QT_INSTALL_PREFIX])
-!isEmpty(CMAKE_FORCE_ABSOLUTE_PATHS)|contains(CMAKE_LIB_DIR,"^\\.\\./.*") {
+contains(CMAKE_LIB_DIR,"^\\.\\./.*") {
     CMAKE_LIB_DIR = $$[QT_INSTALL_LIBS]/
     CMAKE_LIB_DIR_IS_ABSOLUTE = True
 } else {
@@ -50,13 +53,13 @@ CMAKE_LIB_DIR = $$cmakeRelativePath($$[QT_INSTALL_LIBS], $$[QT_INSTALL_PREFIX])
 }
 
 CMAKE_BIN_DIR = $$cmakeRelativePath($$[QT_HOST_BINS], $$[QT_INSTALL_PREFIX])
-!isEmpty(CMAKE_FORCE_ABSOLUTE_PATHS)|contains(CMAKE_BIN_DIR, "^\\.\\./.*") {
+contains(CMAKE_BIN_DIR, "^\\.\\./.*") {
     CMAKE_BIN_DIR = $$[QT_HOST_BINS]/
     CMAKE_BIN_DIR_IS_ABSOLUTE = True
 }
 
 CMAKE_HOST_DATA_DIR = $$cmakeRelativePath($$[QT_HOST_DATA], $$[QT_INSTALL_PREFIX])
-!isEmpty(CMAKE_FORCE_ABSOLUTE_PATHS)|contains(CMAKE_HOST_DATA_DIR, "^\\.\\./.*") {
+contains(CMAKE_HOST_DATA_DIR, "^\\.\\./.*") {
     CMAKE_HOST_DATA_DIR = $$[QT_HOST_DATA]/
     CMAKE_HOST_DATA_DIR_IS_ABSOLUTE = True
 }
