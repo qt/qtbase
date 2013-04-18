@@ -244,6 +244,7 @@ QImage QRasterPlatformPixmap::toImage(const QRect &rect) const
         QImage newImage(image.scanLine(clipped.y()) + clipped.x() * (du / 8),
                       clipped.width(), clipped.height(),
                       image.bytesPerLine(), image.format());
+        newImage.setDevicePixelRatio(image.devicePixelRatio());
         return newImage;
     } else {
         return image.copy(clipped);
