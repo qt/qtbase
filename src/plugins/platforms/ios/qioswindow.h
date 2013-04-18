@@ -77,6 +77,9 @@ public:
     int effectiveWidth() const;
     int effectiveHeight() const;
 
+    bool setMouseGrabEnabled(bool grab) { return grab; }
+    bool setKeyboardGrabEnabled(bool grab) { return grab; }
+
     WId winId() const { return WId(m_view); };
 
     QList<QWindowSystemInterface::TouchPoint> &touchPoints()  { return m_touchPoints; }
