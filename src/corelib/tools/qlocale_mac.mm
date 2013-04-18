@@ -401,7 +401,9 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         return macDayName(in.toInt(), (type == DayNameShort));
     case MonthNameLong:
     case MonthNameShort:
-        return macMonthName(in.toInt(), (type == MonthNameShort));
+    case StandaloneMonthNameLong:
+    case StandaloneMonthNameShort:
+        return macMonthName(in.toInt(), (type == MonthNameShort || type == StandaloneMonthNameShort));
     case DateToStringShort:
     case DateToStringLong:
         return macDateToString(in.toDate(), (type == DateToStringShort));
