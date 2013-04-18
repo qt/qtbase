@@ -117,7 +117,9 @@ void QIOSEventDispatcher::maybeStartCFRunLoopTimer()
         m_runLoopTimerRef = CFRunLoopTimerCreate(0, ttf, oneyear, 0, 0, QIOSEventDispatcher::nonBlockingTimerRunLoopCallback, &info);
         Q_ASSERT(m_runLoopTimerRef != 0);
 
-        CFRunLoopAddTimer(CFRunLoopGetMain(), m_runLoopTimerRef, kCFRunLoopCommonModes);
+        CFRunLoopRef mainRunLoop = CFRunLoopGetMain();
+        CFRunLoopAddTimer(mainRunLoop, m_runLoopTimerRef, kCFRunLoopCommonModes);
+        CFRunLoopAddTimer(mainRunLoop, m_runLoopTimerRef, (CFStringRef) UITrackingRunLoopMode);
     } else {
         struct timespec tv;
         // Calculate when the next timer should fire:
@@ -167,6 +169,7 @@ QIOSEventDispatcher::QIOSEventDispatcher(QObject *parent)
     m_blockingTimerRunLoopSource = CFRunLoopSourceCreate(kCFAllocatorDefault, 0, &context);
     Q_ASSERT(m_blockingTimerRunLoopSource);
     CFRunLoopAddSource(mainRunLoop, m_blockingTimerRunLoopSource, kCFRunLoopCommonModes);
+    CFRunLoopAddSource(mainRunLoop, m_blockingTimerRunLoopSource, (CFStringRef) UITrackingRunLoopMode);
 
     // source used to handle posted events:
     context.perform = QIOSEventDispatcher::postedEventsRunLoopCallback;
@@ -183,7 +186,9 @@ QIOSEventDispatcher::~QIOSEventDispatcher()
 
     qDeleteAll(m_timerInfoList);
     maybeStopCFRunLoopTimer();
-    CFRunLoopRemoveSource(CFRunLoopGetMain(), m_blockingTimerRunLoopSource, kCFRunLoopCommonModes);
+
+    CFRunLoopRemoveSource(mainRunLoop, m_blockingTimerRunLoopSource, kCFRunLoopCommonModes);
+    CFRunLoopRemoveSource(mainRunLoop, m_blockingTimerRunLoopSource, (CFStringRef) UITrackingRunLoopMode);
     CFRelease(m_blockingTimerRunLoopSource);
 
     m_cfSocketNotifier.removeSocketNotifiers();
@@ -198,14 +203,42 @@ bool QIOSEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
     bool execFlagSet = (flags & QEventLoop::DialogExec) || (flags & QEventLoop::EventLoopExec);
     bool useExecMode = execFlagSet && !excludeUserEvents;
 
+    CFTimeInterval distantFuture = CFTimeInterval(3600. * 24. * 365. * 10.);
+    SInt32 result;
+
     if (useExecMode) {
-        NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
-        while ([runLoop runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]] && !m_interrupted);
+        while (!m_interrupted) {
+            // Run a single pass on the runloop to unblock it
+            result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, true);
+
+            // Run the default runloop until interrupted (by Qt or UIKit)
+            if (result != kCFRunLoopRunFinished)
+                result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, distantFuture, false);
+
+            // App has quit or Qt has interrupted?
+            if (result == kCFRunLoopRunFinished || m_interrupted)
+                break;
+
+            // Runloop was interrupted by UIKit?
+            if (result == kCFRunLoopRunStopped && !m_interrupted) {
+                // Run runloop in UI tracking mode
+                if (CFRunLoopRunInMode((CFStringRef) UITrackingRunLoopMode,
+                                        distantFuture, false) == kCFRunLoopRunFinished)
+                    break;
+            }
+        }
         eventsProcessed = true;
     } else {
         if (!(flags & QEventLoop::WaitForMoreEvents))
             wakeUp();
-        eventsProcessed = [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
+
+        // Run runloop in default mode
+        result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, distantFuture, true);
+        if (result != kCFRunLoopRunFinished) {
+            // Run runloop in UI tracking mode
+            CFRunLoopRunInMode((CFStringRef) UITrackingRunLoopMode, distantFuture, false);
+        }
+        eventsProcessed = (result == kCFRunLoopRunHandledSource);
     }
     return eventsProcessed;
 }
@@ -308,8 +341,9 @@ void QIOSEventDispatcher::wakeUp()
 
 void QIOSEventDispatcher::interrupt()
 {
-    wakeUp();
+    // Stop the runloop, which will cause processEvents() to exit
     m_interrupted = true;
+    CFRunLoopStop(CFRunLoopGetMain());
 }
 
 void QIOSEventDispatcher::flush()
