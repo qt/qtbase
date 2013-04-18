@@ -516,9 +516,17 @@ Q_OUTOFLINE_TEMPLATE RandomAccessIterator qBinaryFindHelper(RandomAccessIterator
 
 } //namespace QAlgorithmsPrivate
 
+
+// Use __builtin_popcount on gcc. Clang claims to be gcc
+// but has a bug where __builtin_popcount is not marked as
+// constexpr.
+#if defined(Q_CC_GNU) && !defined(Q_CC_CLANG)
+#define QALGORITHMS_USE_BUILTIN_POPCOUNT
+#endif
+
 Q_DECL_CONSTEXPR inline uint qPopulationCount(quint32 v)
 {
-#ifdef Q_CC_GNU
+#ifdef QALGORITHMS_USE_BUILTIN_POPCOUNT
     return __builtin_popcount(v);
 #else
     // See http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
@@ -531,7 +539,7 @@ Q_DECL_CONSTEXPR inline uint qPopulationCount(quint32 v)
 
 Q_DECL_CONSTEXPR inline uint qPopulationCount(quint8 v)
 {
-#ifdef Q_CC_GNU
+#ifdef QALGORITHMS_USE_BUILTIN_POPCOUNT
     return __builtin_popcount(v);
 #else
     return
@@ -541,7 +549,7 @@ Q_DECL_CONSTEXPR inline uint qPopulationCount(quint8 v)
 
 Q_DECL_CONSTEXPR inline uint qPopulationCount(quint16 v)
 {
-#ifdef Q_CC_GNU
+#ifdef QALGORITHMS_USE_BUILTIN_POPCOUNT
     return __builtin_popcount(v);
 #else
     return
@@ -552,7 +560,7 @@ Q_DECL_CONSTEXPR inline uint qPopulationCount(quint16 v)
 
 Q_DECL_CONSTEXPR inline uint qPopulationCount(quint64 v)
 {
-#ifdef Q_CC_GNU
+#ifdef QALGORITHMS_USE_BUILTIN_POPCOUNT
     return __builtin_popcountll(v);
 #else
     return
@@ -569,6 +577,11 @@ Q_DECL_CONSTEXPR inline uint qPopulationCount(long unsigned int v)
 {
     return qPopulationCount(static_cast<quint64>(v));
 }
+
+#if defined(Q_CC_GNU) && !defined(Q_CC_CLANG)
+#undef QALGORITHMS_USE_BUILTIN_POPCOUNT
+#endif
+
 
 QT_END_NAMESPACE
 
