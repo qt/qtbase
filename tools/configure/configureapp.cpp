@@ -214,6 +214,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "QMAKE_INTERNAL" ]  = "no";
     dictionary[ "PROCESS" ]         = "partial";
     dictionary[ "WIDGETS" ]         = "yes";
+    dictionary[ "GUI" ]             = "yes";
     dictionary[ "RTTI" ]            = "yes";
     dictionary[ "STRIP" ]           = "yes";
     dictionary[ "SSE2" ]            = "auto";
@@ -810,6 +811,11 @@ void Configure::parseCmdLine()
             dictionary[ "WIDGETS" ] = "yes";
         else if (configCmdLine.at(i) == "-no-widgets")
             dictionary[ "WIDGETS" ] = "no";
+
+        else if (configCmdLine.at(i) == "-gui")
+            dictionary[ "GUI" ] = "yes";
+        else if (configCmdLine.at(i) == "-no-gui")
+            dictionary[ "GUI" ] = "no";
 
         else if (configCmdLine.at(i) == "-rtti")
             dictionary[ "RTTI" ] = "yes";
@@ -1724,6 +1730,7 @@ bool Configure::displayHelp()
         desc(                   "-skip <module>",       "Exclude an entire module from the build.\n");
 
         desc("WIDGETS", "no", "-no-widgets",            "Disable Qt Widgets module.\n");
+        desc("GUI", "no", "-no-gui",                    "Disable Qt GUI module.\n");
 
         desc("ACCESSIBILITY", "no", "-no-accessibility", "Disable accessibility support.\n");
         desc(                   "",                      "Disabling accessibility is not recommended, as it will break QStyle\n"
@@ -2493,6 +2500,9 @@ void Configure::generateOutputVars()
 
     if (dictionary[ "WIDGETS" ] == "no")
         qtConfig += "no-widgets";
+
+    if (dictionary[ "GUI" ] == "no")
+        qtConfig += "no-gui";
 
     // Compression --------------------------------------------------
     if (dictionary[ "ZLIB" ] == "qt")
@@ -3327,6 +3337,7 @@ void Configure::generateConfigfiles()
 
         if (dictionary["ACCESSIBILITY"] == "no")     qconfigList += "QT_NO_ACCESSIBILITY";
         if (dictionary["WIDGETS"] == "no")           qconfigList += "QT_NO_WIDGETS";
+        if (dictionary["GUI"] == "no")               qconfigList += "QT_NO_GUI";
         if (dictionary["OPENGL"] == "no")            qconfigList += "QT_NO_OPENGL";
         if (dictionary["OPENVG"] == "no")            qconfigList += "QT_NO_OPENVG";
         if (dictionary["OPENSSL"] == "no") {
@@ -3516,6 +3527,7 @@ void Configure::displayConfig()
     sout << "OpenSSL support............." << dictionary[ "OPENSSL" ] << endl;
     sout << "Qt D-Bus support............" << dictionary[ "DBUS" ] << endl;
     sout << "Qt Widgets module support..." << dictionary[ "WIDGETS" ] << endl;
+    sout << "Qt GUI module support......." << dictionary[ "GUI" ] << endl;
     sout << "QML debugging..............." << dictionary[ "QML_DEBUG" ] << endl;
     sout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl;
     sout << "Use system proxies.........." << dictionary[ "SYSTEM_PROXIES" ] << endl << endl;
