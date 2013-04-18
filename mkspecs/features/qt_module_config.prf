@@ -1,2 +1,0 @@
-warning("load(qt_module_config) is obsolete. Use load(qt_module) instead.")
-load(qt_module)
