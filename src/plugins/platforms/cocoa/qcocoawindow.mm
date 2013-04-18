@@ -283,6 +283,10 @@ void QCocoaWindow::setVisible(bool visible)
                 parentCocoaWindow->m_activePopupWindow = window();
                 // QTBUG-30266: a window should not be resizable while a transient popup is open
                 // Since this isn't a native popup, the window manager doesn't close the popup when you click outside
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+                if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7
+                    && !([parentCocoaWindow->m_nsWindow styleMask] & NSFullScreenWindowMask))
+#endif
                 [parentCocoaWindow->m_nsWindow setStyleMask:
                     (parentCocoaWindow->windowStyleMask(parentCocoaWindow->m_windowFlags) & ~NSResizableWindowMask)];
             }
@@ -346,7 +350,12 @@ void QCocoaWindow::setVisible(bool visible)
         } else {
             [m_contentView setHidden:YES];
         }
-        if (parentCocoaWindow && window()->type() == Qt::Popup)
+        if (parentCocoaWindow && window()->type() == Qt::Popup
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+            && QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7
+            && !([parentCocoaWindow->m_nsWindow styleMask] & NSFullScreenWindowMask)
+#endif
+           )
             // QTBUG-30266: a window should not be resizable while a transient popup is open
             [parentCocoaWindow->m_nsWindow setStyleMask:parentCocoaWindow->windowStyleMask(parentCocoaWindow->m_windowFlags)];
     }
