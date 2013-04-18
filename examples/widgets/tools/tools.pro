@@ -5,8 +5,8 @@ SUBDIRS       = \
                 customcompleter \
                 echoplugin \
                 i18n \
-                plugandpaint \
                 plugandpaintplugins \
+                plugandpaint \
                 regexp \
                 settingseditor \
                 styleplugin \
