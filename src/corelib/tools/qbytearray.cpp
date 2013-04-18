@@ -556,6 +556,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
         d.take(); // realloc was successful
         d.reset(p);
         d->offset = sizeof(QByteArrayData);
+        d->size = 0; // Shut up valgrind "uninitialized variable" warning
 
         int res = ::uncompress((uchar*)d->data(), &len,
                                (uchar*)data+4, nbytes-4);
