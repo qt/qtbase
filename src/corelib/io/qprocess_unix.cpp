@@ -617,8 +617,10 @@ void QProcessPrivate::startProcess()
     // Duplicate the environment.
     int envc = 0;
     char **envp = 0;
-    if (environment.d.constData())
+    if (environment.d.constData()) {
+        QProcessEnvironmentPrivate::MutexLocker locker(environment.d);
         envp = _q_dupEnvironment(environment.d.constData()->hash, &envc);
+    }
 
     // Encode the working directory if it's non-empty, otherwise just pass 0.
     const char *workingDirPtr = 0;
