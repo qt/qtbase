@@ -482,8 +482,10 @@ void QIOSWindow::updateWindowLevel()
     else if (window()->flags() & Qt::WindowStaysOnTopHint)
         m_windowLevel = 100;
     else if (window()->isModal())
+        m_windowLevel = 40;
+    else if (type == Qt::Popup)
         m_windowLevel = 30;
-    else if (windowIsPopup())
+    else if (type == Qt::SplashScreen)
         m_windowLevel = 20;
     else if (type == Qt::Tool)
         m_windowLevel = 10;
