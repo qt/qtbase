@@ -11,8 +11,12 @@
             <meta-data android:name="android.app.qt_libs_resource_id" android:resource="@array/qt_libs"/>
             <meta-data android:name="android.app.bundled_libs_resource_id" android:resource="@array/bundled_libs"/>
             <meta-data android:name="android.app.lib_name" android:value=""/>
+            <!-- Deploy Qt libs as part of package -->
+            <meta-data android:name="android.app.bundle_local_qt_libs" android:value="1"/>
+            <meta-data android:name="android.app.bundled_in_lib_resource_id" android:resource="@array/bundled_in_lib"/>
+            <meta-data android:name="android.app.bundled_in_assets_resource_id" android:resource="@array/bundled_in_assets"/>
             <!-- Run with local libs -->
-            <meta-data android:name="android.app.use_local_qt_libs" android:value="0"/>
+            <meta-data android:name="android.app.use_local_qt_libs" android:value="1"/>
             <meta-data android:name="android.app.libs_prefix" android:value="/data/local/tmp/qt/"/>
             <meta-data android:name="android.app.load_local_libs" android:value=""/>
             <meta-data android:name="android.app.load_local_jars" android:value=""/>

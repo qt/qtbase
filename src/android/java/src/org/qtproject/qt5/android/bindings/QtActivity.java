@@ -27,6 +27,11 @@
 package org.qtproject.qt5.android.bindings;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.InputStream;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,6 +52,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.content.res.Resources.Theme;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.net.Uri;
@@ -89,6 +95,8 @@ public class QtActivity extends Activity
     private static final String ENVIRONMENT_VARIABLES_KEY = "environment.variables";
     private static final String APPLICATION_PARAMETERS_KEY = "application.parameters";
     private static final String BUNDLED_LIBRARIES_KEY = "bundled.libraries";
+    private static final String BUNDLED_IN_LIB_RESOURCE_ID_KEY = "android.app.bundled_in_lib_resource_id";
+    private static final String BUNDLED_IN_ASSETS_RESOURCE_ID_KEY = "android.app.bundled_in_assets_resource_id";
     private static final String MAIN_LIBRARY_KEY = "main.library";
     private static final String STATIC_INIT_CLASSES_KEY = "static.init.classes";
     private static final String NECESSITAS_API_LEVEL_KEY = "necessitas.api.level";
@@ -120,6 +128,8 @@ public class QtActivity extends Activity
                                                                //   note that the android style plugin in Qt 5.1 is not fully functional.
 
     private static final int INCOMPATIBLE_MINISTRO_VERSION = 1; // Incompatible Ministro version. Ministro needs to be upgraded.
+    private static final int BUFFER_SIZE = 1024;
+
     private ActivityInfo m_activityInfo = null; // activity info object, used to access the libs and the strings
     private DexClassLoader m_classLoader = null; // loader object
     private String[] m_sources = {"https://files.kde.org/necessitas/ministro/android/necessitas/qt5/latest"}; // Make sure you are using ONLY secure locations
@@ -308,6 +318,92 @@ public class QtActivity extends Activity
         errorDialog.show();
     }
 
+    static private void copyFile(InputStream inputStream, OutputStream outputStream)
+        throws IOException
+    {
+        byte[] buffer = new byte[BUFFER_SIZE];
+
+        int count;
+        while ((count = inputStream.read(buffer)) > 0)
+            outputStream.write(buffer, 0, count);
+    }
+
+
+    private void copyAsset(String source, String destination)
+        throws IOException
+    {
+        // Already exists, we don't have to do anything
+        File destinationFile = new File(destination);
+        if (destinationFile.exists())
+            return;
+
+        File parentDirectory = destinationFile.getParentFile();
+        if (!parentDirectory.exists())
+            parentDirectory.mkdirs();
+
+        destinationFile.createNewFile();
+
+        AssetManager assetsManager = getAssets();
+        InputStream inputStream = assetsManager.open(source);
+        OutputStream outputStream = new FileOutputStream(destinationFile);
+        copyFile(inputStream, outputStream);
+    }
+
+    private static void createBundledBinary(String source, String destination)
+        throws IOException
+    {
+        // Already exists, we don't have to do anything
+        File destinationFile = new File(destination);
+        if (destinationFile.exists())
+            return;
+
+        File parentDirectory = destinationFile.getParentFile();
+        if (!parentDirectory.exists())
+            parentDirectory.mkdirs();
+
+        destinationFile.createNewFile();
+
+        InputStream inputStream = new FileInputStream(source);
+        OutputStream outputStream = new FileOutputStream(destinationFile);
+        copyFile(inputStream, outputStream);
+    }
+
+    private void extractBundledPluginsAndImports(String localPrefix)
+        throws IOException
+    {
+        ArrayList<String> libs = new ArrayList<String>();
+
+        {
+            String key = BUNDLED_IN_LIB_RESOURCE_ID_KEY;
+            java.util.Set<String> keys = m_activityInfo.metaData.keySet();
+            if (m_activityInfo.metaData.containsKey(key)) {
+                String[] list = getResources().getStringArray(m_activityInfo.metaData.getInt(key));
+
+                for (String bundledImportBinary : list) {
+                    String[] split = bundledImportBinary.split(":");
+                    String sourceFileName = localPrefix + "lib/" + split[0];
+                    String destinationFileName = localPrefix + split[1];
+                    createBundledBinary(sourceFileName, destinationFileName);
+                }
+            }
+        }
+
+        {
+            String key = BUNDLED_IN_ASSETS_RESOURCE_ID_KEY;
+            if (m_activityInfo.metaData.containsKey(key)) {
+                String[] list = getResources().getStringArray(m_activityInfo.metaData.getInt(key));
+
+                for (String fileName : list) {
+                    String[] split = fileName.split(":");
+                    String sourceFileName = split[0];
+                    String destinationFileName = localPrefix + split[1];
+                    copyAsset(sourceFileName, destinationFileName);
+                }
+            }
+
+        }
+    }
+
     private void startApp(final boolean firstStart)
     {
         try {
@@ -328,13 +424,26 @@ public class QtActivity extends Activity
                     && m_activityInfo.metaData.getInt("android.app.use_local_qt_libs") == 1) {
                 ArrayList<String> libraryList = new ArrayList<String>();
 
+
                 String localPrefix = "/data/local/tmp/qt/";
                 if (m_activityInfo.metaData.containsKey("android.app.libs_prefix"))
                     localPrefix = m_activityInfo.metaData.getString("android.app.libs_prefix");
 
+                boolean bundlingQtLibs = false;
+                if (m_activityInfo.metaData.containsKey("android.app.bundle_local_qt_libs")
+                    && m_activityInfo.metaData.getInt("android.app.bundle_local_qt_libs") == 1) {
+                    localPrefix = getApplicationInfo().dataDir + "/";
+                    extractBundledPluginsAndImports(localPrefix);
+                    bundlingQtLibs = true;
+                }
+
                 if (m_qtLibs != null) {
-                    for (int i=0;i<m_qtLibs.length;i++)
-                        libraryList.add(localPrefix+"lib/lib"+m_qtLibs[i]+".so");
+                    for (int i=0;i<m_qtLibs.length;i++) {
+                        libraryList.add(localPrefix
+                                        + "lib/lib"
+                                        + m_qtLibs[i]
+                                        + ".so");
+                    }
                 }
 
                 if (m_activityInfo.metaData.containsKey("android.app.load_local_libs")) {
@@ -345,9 +454,10 @@ public class QtActivity extends Activity
                     }
                 }
 
+
                 String dexPaths = new String();
                 String pathSeparator = System.getProperty("path.separator", ":");
-                if (m_activityInfo.metaData.containsKey("android.app.load_local_jars")) {
+                if (!bundlingQtLibs && m_activityInfo.metaData.containsKey("android.app.load_local_jars")) {
                     String[] jarFiles = m_activityInfo.metaData.getString("android.app.load_local_jars").split(":");
                     for (String jar:jarFiles) {
                         if (jar.length() > 0) {
