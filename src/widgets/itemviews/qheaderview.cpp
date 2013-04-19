@@ -3540,6 +3540,19 @@ int QHeaderViewPrivate::adjustedVisualIndex(int visualIndex) const
     return visualIndex;
 }
 
+void QHeaderViewPrivate::setScrollOffset(const QScrollBar *scrollBar, QAbstractItemView::ScrollMode scrollMode)
+{
+    Q_Q(QHeaderView);
+    if (scrollMode == QAbstractItemView::ScrollPerItem) {
+        if (scrollBar->maximum() > 0 && scrollBar->value() == scrollBar->maximum())
+            q->setOffsetToLastSection();
+        else
+            q->setOffsetToSectionPosition(scrollBar->value());
+    } else {
+        q->setOffset(scrollBar->value());
+    }
+}
+
 #ifndef QT_NO_DATASTREAM
 void QHeaderViewPrivate::write(QDataStream &out) const
 {

@@ -341,6 +341,7 @@ public:
     // other
     int viewSectionSizeHint(int logical) const;
     int adjustedVisualIndex(int visualIndex) const;
+    void setScrollOffset(const QScrollBar *scrollBar, QAbstractItemView::ScrollMode scrollMode);
 
 #ifndef QT_NO_DATASTREAM
     void write(QDataStream &out) const;

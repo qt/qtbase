@@ -2401,16 +2401,11 @@ void QTreeView::scrollContentsBy(int dx, int dy)
 
     dx = isRightToLeft() ? -dx : dx;
     if (dx) {
+        int oldOffset = d->header->offset();
+        d->header->d_func()->setScrollOffset(horizontalScrollBar(), horizontalScrollMode());
         if (horizontalScrollMode() == QAbstractItemView::ScrollPerItem) {
-            int oldOffset = d->header->offset();
-            if (horizontalScrollBar()->value() == horizontalScrollBar()->maximum())
-                d->header->setOffsetToLastSection();
-            else
-                d->header->setOffsetToSectionPosition(horizontalScrollBar()->value());
             int newOffset = d->header->offset();
             dx = isRightToLeft() ? newOffset - oldOffset : oldOffset - newOffset;
-        } else {
-            d->header->setOffset(horizontalScrollBar()->value());
         }
     }
 

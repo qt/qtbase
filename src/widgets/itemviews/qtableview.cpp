@@ -1126,15 +1126,7 @@ void QTableView::doItemsLayout()
 {
     Q_D(QTableView);
     QAbstractItemView::doItemsLayout();
-    if (verticalScrollMode() == QAbstractItemView::ScrollPerItem) {
-        const int max = verticalScrollBar()->maximum();
-        if (max > 0 && verticalScrollBar()->value() == max)
-            d->verticalHeader->setOffsetToLastSection();
-        else
-            d->verticalHeader->setOffsetToSectionPosition(verticalScrollBar()->value());
-    } else {
-        d->verticalHeader->setOffset(verticalScrollBar()->value());
-    }
+    d->verticalHeader->d_func()->setScrollOffset(verticalScrollBar(), verticalScrollMode());
     if (!d->verticalHeader->updatesEnabled())
         d->verticalHeader->setUpdatesEnabled(true);
 }
@@ -1271,29 +1263,19 @@ void QTableView::scrollContentsBy(int dx, int dy)
 
     dx = isRightToLeft() ? -dx : dx;
     if (dx) {
+        int oldOffset = d->horizontalHeader->offset();
+        d->horizontalHeader->d_func()->setScrollOffset(horizontalScrollBar(), horizontalScrollMode());
         if (horizontalScrollMode() == QAbstractItemView::ScrollPerItem) {
-            int oldOffset = d->horizontalHeader->offset();
-            if (horizontalScrollBar()->value() == horizontalScrollBar()->maximum())
-                d->horizontalHeader->setOffsetToLastSection();
-            else
-                d->horizontalHeader->setOffsetToSectionPosition(horizontalScrollBar()->value());
             int newOffset = d->horizontalHeader->offset();
             dx = isRightToLeft() ? newOffset - oldOffset : oldOffset - newOffset;
-        } else {
-            d->horizontalHeader->setOffset(horizontalScrollBar()->value());
         }
     }
     if (dy) {
+        int oldOffset = d->verticalHeader->offset();
+        d->verticalHeader->d_func()->setScrollOffset(verticalScrollBar(), verticalScrollMode());
         if (verticalScrollMode() == QAbstractItemView::ScrollPerItem) {
-            int oldOffset = d->verticalHeader->offset();
-            if (verticalScrollBar()->value() == verticalScrollBar()->maximum())
-                d->verticalHeader->setOffsetToLastSection();
-            else
-                d->verticalHeader->setOffsetToSectionPosition(verticalScrollBar()->value());
             int newOffset = d->verticalHeader->offset();
             dy = oldOffset - newOffset;
-        } else {
-            d->verticalHeader->setOffset(verticalScrollBar()->value());
         }
     }
     d->scrollContentsBy(dx, dy);
