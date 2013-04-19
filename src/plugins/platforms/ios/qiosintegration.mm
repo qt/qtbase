@@ -79,11 +79,6 @@ QIOSIntegration::QIOSIntegration()
     QWindowSystemInterface::registerTouchDevice(m_touchDevice);
 }
 
-QIOSIntegration::~QIOSIntegration()
-{
-    delete m_touchDevice;
-}
-
 bool QIOSIntegration::hasCapability(Capability cap) const
 {
     switch (cap) {

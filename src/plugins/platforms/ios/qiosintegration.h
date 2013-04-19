@@ -52,7 +52,6 @@ class QIOSIntegration : public QPlatformIntegration, public QPlatformNativeInter
 {
 public:
     QIOSIntegration();
-    ~QIOSIntegration();
 
     bool hasCapability(Capability cap) const;
 
