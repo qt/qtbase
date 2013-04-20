@@ -69,7 +69,7 @@ my $normalizePath_fixDrive = ($^O eq "msys" ? 1 : 0);
 sub normalizePath {
     my $s = shift;
     $$s =~ s=\\=/=g;
-    if ($normalizePath_fixDrive && $$s =~ m,^/([a-zA-Z])/(.*),) {
+    if ($normalizePath_fixDrive && ($$s =~ m,^/([a-zA-Z])/(.*), || $$s =~ m,^([a-zA-Z]):/(.*),)) {
         $$s = lc($1) . ":/$2";
     }
 }
