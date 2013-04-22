@@ -55,6 +55,7 @@
 #include <qdesktopwidget.h>
 #include <qpa/qplatformcursor.h>
 #include <qpa/qplatformtheme.h>
+#include <qpa/qplatformwindow.h>
 
 #include <qdebug.h>
 #include <qpa/qwindowsysteminterface.h>
@@ -408,10 +409,20 @@ QWidget *QApplication::topLevelAt(const QPoint &pos)
 
 void QApplication::beep()
 {
+    QMetaObject::invokeMethod(QGuiApplication::platformNativeInterface(), "beep");
 }
 
-void QApplication::alert(QWidget *, int)
+void QApplication::alert(QWidget *widget, int duration)
 {
+    if (widget) {
+       if (widget->window()->isActiveWindow()&& !widget->window()->windowState() & Qt::WindowMinimized)
+            return;
+        if (QWindow *window= QApplicationPrivate::windowForWidget(widget))
+            window->alert(duration);
+    } else {
+        foreach (QWidget *topLevel, topLevelWidgets())
+            QApplication::alert(topLevel, duration);
+    }
 }
 
 void qt_init(QApplicationPrivate *priv, int type)

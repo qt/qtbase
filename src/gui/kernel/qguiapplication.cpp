@@ -180,7 +180,7 @@ static void initPalette()
         if (const QPalette *themePalette = QGuiApplicationPrivate::platformTheme()->palette())
             QGuiApplicationPrivate::app_pal = new QPalette(*themePalette);
     if (!QGuiApplicationPrivate::app_pal)
-        QGuiApplicationPrivate::app_pal = new QPalette(Qt::black);
+        QGuiApplicationPrivate::app_pal = new QPalette(Qt::gray);
 }
 
 static inline void clearPalette()
@@ -1014,6 +1014,7 @@ void QGuiApplicationPrivate::init()
     // and QImage conversion functions
     qInitImageConversions();
 
+    initPalette();
     QFont::initialize();
 
 #ifndef QT_NO_CURSOR
@@ -1590,6 +1591,11 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
 
     if (previous == newFocus)
         return;
+
+    if (newFocus)
+        if (QPlatformWindow *platformWindow = newFocus->handle())
+            if (platformWindow->isAlertState())
+                platformWindow->setAlertState(false);
 
     QObject *previousFocusObject = previous ? previous->focusObject() : 0;
 

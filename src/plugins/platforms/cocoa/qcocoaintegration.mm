@@ -122,7 +122,9 @@ void QCocoaScreen::updateGeometry()
     m_physicalSize = QSizeF(size.width, size.height);
     m_logicalDpi.first = 72;
     m_logicalDpi.second = 72;
-    float refresh = CGDisplayModeGetRefreshRate(CGDisplayCopyDisplayMode(dpy));
+    CGDisplayModeRef displayMode = CGDisplayCopyDisplayMode(dpy);
+    float refresh = CGDisplayModeGetRefreshRate(displayMode);
+    CGDisplayModeRelease(displayMode);
     if (refresh > 0)
         m_refreshRate = refresh;
 

@@ -741,11 +741,14 @@ void QCocoaEventDispatcherPrivate::endModalSession(QWindow *window)
     // when we stop the _current_ modal session (which is the session on top of
     // the stack, and might not belong to 'window').
     int stackSize = cocoaModalSessionStack.size();
+    int endedSessions = 0;
     for (int i=stackSize-1; i>=0; --i) {
         QCocoaModalSessionInfo &info = cocoaModalSessionStack[i];
+        if (!info.window)
+            endedSessions++;
         if (info.window == window) {
             info.window = 0;
-            if (i == stackSize-1) {
+            if (i + endedSessions == stackSize-1) {
                 // The top sessions ended. Interrupt the event dispatcher to
                 // start spinning the correct session immediately. Like in
                 // beginModalSession(), we call interrupt() before clearing

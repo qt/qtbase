@@ -616,7 +616,6 @@ public class QtActivityDelegate
         } catch (Exception e) {
             e.printStackTrace();
         }
-//        setFullScreen(savedInstanceState.getBoolean("FullScreen"));
         m_started = savedInstanceState.getBoolean("Started");
         if (m_started)
             m_surface.applicationStarted(true);

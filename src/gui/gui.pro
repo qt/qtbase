@@ -35,4 +35,20 @@ include(itemmodels/itemmodels.pri)
 
 QMAKE_LIBS += $$QMAKE_LIBS_GUI
 
+load(cmake_functions)
+
+!contains(QT_CONFIG, angle) {
+    contains(QT_CONFIG, opengles1) {
+        CMAKE_GL_INCDIRS = $$cmakeTargetPaths($$QMAKE_INCDIR_OPENGL_ES1)
+        CMAKE_GL_HEADER_NAME = GLES/gl.h
+    } else:contains(QT_CONFIG, opengles2) {
+        CMAKE_GL_INCDIRS = $$cmakeTargetPaths($$QMAKE_INCDIR_OPENGL_ES2)
+        CMAKE_GL_HEADER_NAME = GLES2/gl2.h
+    } else {
+        CMAKE_GL_INCDIRS = $$cmakeTargetPaths($$QMAKE_INCDIR_OPENGL)
+        CMAKE_GL_HEADER_NAME = GL/gl.h
+        mac: CMAKE_GL_HEADER_NAME = gl.h
+    }
+}
+
 QMAKE_DYNAMIC_LIST_FILE = $$PWD/QtGui.dynlist

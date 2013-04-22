@@ -658,7 +658,11 @@
 #      define Q_COMPILER_ALIGNOF
 #      define Q_COMPILER_INHERITING_CONSTRUCTORS
 #      define Q_COMPILER_THREAD_LOCAL
+#      if (__GNUC__ * 100 + __GNUC_MINOR__) > 408 || __GNUC_PATCHLEVEL__ > 1
+#         define Q_COMPILER_REF_QUALIFIERS
+#      endif
 #    endif
+     /* C++11 features are complete as of GCC 4.8.1 */
 #  endif
 #endif
 

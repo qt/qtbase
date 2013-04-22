@@ -63,6 +63,9 @@
 #include <QtWidgets/private/qaccessiblewidget_p.h>
 #include <math.h>
 #include <qpa/qplatformnativeinterface.h>
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformaccessibility.h>
+#include <QtGui/private/qguiapplication_p.h>
 
 #if defined(Q_OS_WIN) && defined(interface)
 #   undef interface
@@ -311,6 +314,8 @@ void tst_QAccessibility::onClicked()
 void tst_QAccessibility::initTestCase()
 {
     QTestAccessibility::initialize();
+    QPlatformIntegration *pfIntegration = QGuiApplicationPrivate::platformIntegration();
+    pfIntegration->accessibility()->setActive(true);
 }
 
 void tst_QAccessibility::cleanupTestCase()

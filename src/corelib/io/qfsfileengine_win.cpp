@@ -520,9 +520,35 @@ bool QFSFileEngine::rename(const QString &newName)
 bool QFSFileEngine::renameOverwrite(const QString &newName)
 {
     Q_D(QFSFileEngine);
+#if defined(Q_OS_WINCE)
+    // Windows Embedded Compact 7 does not have MoveFileEx, simulate it with  the following sequence:
+    //   1. DeleteAndRenameFile  (Should work on RAM FS when both files exist)
+    //   2. DeleteFile/MoveFile  (Should work on all file systems)
+    //
+    // DeleteFile/MoveFile fallback implementation violates atomicity, but it is more acceptable than
+    // alternative CopyFile/DeleteFile sequence for the following reasons:
+    //
+    //  1. DeleteFile/MoveFile is way faster than CopyFile/DeleteFile and thus more atomic.
+    //  2. Given the intended use case of this function in QSaveFile, DeleteFile/MoveFile sequence will
+    //     delete the old content, but leave a file "filename.ext.XXXXXX" in the same directory if MoveFile fails.
+    //     With CopyFile/DeleteFile sequence, it can happen that new data is partially copied to target file
+    //     (because CopyFile is not atomic either), thus leaving *some* content to target file.
+    //     This makes the need for application level recovery harder to detect than in DeleteFile/MoveFile
+    //     sequence where target file simply does not exist.
+    //
+    bool ret = ::DeleteAndRenameFile((wchar_t*)QFileSystemEntry(newName).nativeFilePath().utf16(),
+                                     (wchar_t*)d->fileEntry.nativeFilePath().utf16()) != 0;
+    if (!ret) {
+        ret = ::DeleteFile((wchar_t*)d->fileEntry.nativeFilePath().utf16()) != 0;
+        if (ret)
+            ret = ::MoveFile((wchar_t*)d->fileEntry.nativeFilePath().utf16(),
+                             (wchar_t*)QFileSystemEntry(newName).nativeFilePath().utf16()) != 0;
+    }
+#else
     bool ret = ::MoveFileEx((wchar_t*)d->fileEntry.nativeFilePath().utf16(),
                             (wchar_t*)QFileSystemEntry(newName).nativeFilePath().utf16(),
                             MOVEFILE_REPLACE_EXISTING) != 0;
+#endif
     if (!ret)
         setError(QFile::RenameError, QSystemError(::GetLastError(), QSystemError::NativeError).toString());
     return ret;

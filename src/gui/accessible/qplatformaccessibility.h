@@ -69,6 +69,11 @@ public:
     virtual void initialize();
     virtual void cleanup();
 
+    inline bool isActive() const { return m_active; }
+    inline void setActive(bool active) { m_active = active; }
+
+private:
+    bool m_active;
 };
 
 QT_END_NAMESPACE

@@ -225,17 +225,24 @@ QTransform QPainterPrivate::viewTransform() const
     return QTransform();
 }
 
+int QPainterPrivate::effectiveDevicePixelRatio() const
+{
+    // Limited feature introduction for Qt 5.0.0, remove ifdef in a later release.
+#ifdef Q_OS_MAC
+    // Special cases for devices that does not support PdmDevicePixelRatio go here:
+    if (device->devType() == QInternal::Printer)
+        return 1;
+
+    return qMax(1, device->metric(QPaintDevice::PdmDevicePixelRatio));
+#else
+    return 1;
+#endif
+}
+
 QTransform QPainterPrivate::hidpiScaleTransform() const
 {
-#ifdef Q_OS_MAC
-    // Limited feature introduction for Qt 5.0.0, remove ifdef in a later release.
-    if (device->devType() == QInternal::Printer || device->physicalDpiX() == 0 || device->logicalDpiX() == 0)
-        return QTransform();
-    const qreal deviceScale = (device->physicalDpiX() / device->logicalDpiX());
-    if (deviceScale > 1.0)
-        return QTransform::fromScale(deviceScale, deviceScale);
-#endif
-    return QTransform();
+    int devicePixelRatio = effectiveDevicePixelRatio();
+    return QTransform::fromScale(devicePixelRatio, devicePixelRatio);
 }
 
 /*
@@ -1837,14 +1844,7 @@ bool QPainter::begin(QPaintDevice *pd)
 
     Q_ASSERT(d->engine->isActive());
 
-#ifdef Q_OS_MAC
-    // Limited feature introduction for Qt 5.0.0, remove ifdef in a later release.
-    const bool isHighDpi = (pd->devType() == QInternal::Printer || d->device->physicalDpiX() == 0 || d->device->logicalDpiX() == 0) ?
-                           false : (d->device->physicalDpiX() / d->device->logicalDpiX() > 1);
-#else
-    const bool isHighDpi = false;
-#endif
-    if (!d->state->redirectionMatrix.isIdentity() || isHighDpi)
+    if (!d->state->redirectionMatrix.isIdentity() || d->effectiveDevicePixelRatio() > 1)
         d->updateMatrix();
 
     Q_ASSERT(d->engine->isActive());

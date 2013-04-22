@@ -44,6 +44,7 @@
 #include <private/qglpixelbuffer_p.h>
 #include <private/qglframebufferobject_p.h>
 #include <qopenglfunctions.h>
+#include <qwindow.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -67,6 +68,8 @@ int QGLPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
         const QGLFormat f = format();
         return f.redBufferSize() + f.greenBufferSize() + f.blueBufferSize() + f.alphaBufferSize();
     }
+    case PdmDevicePixelRatio:
+        return 1;
     default:
         qWarning("QGLPaintDevice::metric() - metric %d not known", metric);
         return 0;
@@ -186,7 +189,12 @@ void QGLWidgetGLPaintDevice::endPaint()
 
 QSize QGLWidgetGLPaintDevice::size() const
 {
+#ifdef Q_OS_MAC
+    return glWidget->size() * (glWidget->windowHandle() ?
+                               glWidget->windowHandle()->devicePixelRatio() : qApp->devicePixelRatio());
+#else
     return glWidget->size();
+#endif
 }
 
 QGLContext* QGLWidgetGLPaintDevice::context() const

@@ -107,20 +107,6 @@ public class QtSurface extends SurfaceView implements SurfaceHolder.Callback
 
         if (m_usesGL)
             holder.setFormat(PixelFormat.RGBA_8888);
-
-//        if (!m_started)
-//            return;
-//
-//        if (m_usesGL)
-//            QtApplication.setSurface(holder.getSurface());
-//        else
-//        {
-//            QtApplication.lockSurface();
-//            QtApplication.setSurface(null);
-//            m_bitmap=Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565);
-//            QtApplication.setSurface(m_bitmap);
-//            QtApplication.unlockSurface();
-//        }
     }
 
     @Override

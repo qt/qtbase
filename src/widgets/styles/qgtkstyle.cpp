@@ -2985,7 +2985,7 @@ void QGtkStyle::drawControl(ControlElement element,
         GtkStyle *gtkStatusbarStyle = d->gtk_widget_get_style(gtkStatusbar);
         QRect gripRect = option->rect.adjusted(0, 0, -gtkStatusbarStyle->xthickness, -gtkStatusbarStyle->ythickness);
         gtkPainter->paintResizeGrip(gtkStatusbar, "statusbar", gripRect, GTK_STATE_NORMAL,
-                                    GTK_SHADOW_OUT, QApplication::isRightToLeft() ?
+                                    GTK_SHADOW_OUT, option->direction == Qt::RightToLeft ?
                                     GDK_WINDOW_EDGE_SOUTH_WEST : GDK_WINDOW_EDGE_SOUTH_EAST,
                                     gtkStatusbarStyle);
     }
@@ -3366,7 +3366,7 @@ void QGtkStyle::drawControl(ControlElement element,
                                                        menuItem->rect.height() / 2 - dim / 2, dim, dim));
                 GtkStateType state = enabled ? (act ? GTK_STATE_PRELIGHT: GTK_STATE_NORMAL) : GTK_STATE_INSENSITIVE;
                 GtkShadowType shadowType = (state == GTK_STATE_PRELIGHT) ? GTK_SHADOW_OUT : GTK_SHADOW_IN;
-                gtkPainter->paintArrow(gtkMenuItem, "menuitem", vSubMenuRect, QApplication::isRightToLeft() ? GTK_ARROW_LEFT : GTK_ARROW_RIGHT, state,
+                gtkPainter->paintArrow(gtkMenuItem, "menuitem", vSubMenuRect, option->direction == Qt::RightToLeft ? GTK_ARROW_LEFT : GTK_ARROW_RIGHT, state,
                                        shadowType, false, style);
             }
         }
@@ -3629,7 +3629,7 @@ QRect QGtkStyle::subControlRect(ComplexControl control, const QStyleOptionComple
 #ifndef QT_NO_GROUPBOX
 
     case CC_GroupBox:
-        if (qstyleoption_cast<const QStyleOptionGroupBox *>(option)) {
+        if (const QStyleOptionGroupBox * groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(option)) {
             rect = option->rect.adjusted(0, groupBoxTopMargin, 0, -groupBoxBottomMargin);
             int topMargin = 0;
             int topHeight = 0;
@@ -3645,27 +3645,29 @@ QRect QGtkStyle::subControlRect(ComplexControl control, const QStyleOptionComple
                 return frameRect.adjusted(leftMarginExtension + margin, margin + topHeight + groupBoxTitleMargin, -margin, -margin);
             }
 
-            if (const QGroupBox *groupBoxWidget = qobject_cast<const QGroupBox *>(widget)) {
+            QFontMetrics fontMetrics = option->fontMetrics;
+            if (qobject_cast<const QGroupBox *>(widget)) {
                 //Prepare metrics for a bold font
                 QFont font = widget->font();
                 font.setBold(true);
-                QFontMetrics fontMetrics(font);
-                QSize textRect = fontMetrics.boundingRect(groupBoxWidget->title()).size() + QSize(4, 4);
-                int indicatorWidth = proxy()->pixelMetric(PM_IndicatorWidth, option, widget);
-                int indicatorHeight = proxy()->pixelMetric(PM_IndicatorHeight, option, widget);
-
-                if (subControl == SC_GroupBoxCheckBox) {
-                    rect.setWidth(indicatorWidth);
-                    rect.setHeight(indicatorHeight);
-                    rect.moveTop((textRect.height() - indicatorHeight) / 2);
-
-                } else if (subControl == SC_GroupBoxLabel) {
-                    if (groupBoxWidget->isCheckable())
-                        rect.adjust(indicatorWidth + 4, 0, 0, 0);
-                    rect.setSize(textRect);
-                }
-                rect = visualRect(option->direction, option->rect, rect);
+                fontMetrics = QFontMetrics(font);
             }
+
+            QSize textRect = fontMetrics.boundingRect(groupBox->text).size() + QSize(4, 4);
+            int indicatorWidth = proxy()->pixelMetric(PM_IndicatorWidth, option, widget);
+            int indicatorHeight = proxy()->pixelMetric(PM_IndicatorHeight, option, widget);
+
+            if (subControl == SC_GroupBoxCheckBox) {
+                rect.setWidth(indicatorWidth);
+                rect.setHeight(indicatorHeight);
+                rect.moveTop((textRect.height() - indicatorHeight) / 2);
+
+            } else if (subControl == SC_GroupBoxLabel) {
+                if (groupBox->subControls & SC_GroupBoxCheckBox)
+                    rect.adjust(indicatorWidth + 4, 0, 0, 0);
+                rect.setSize(textRect);
+            }
+            rect = visualRect(option->direction, option->rect, rect);
         }
 
         return rect;

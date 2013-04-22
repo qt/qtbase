@@ -553,10 +553,8 @@ QVariant QMacPasteboardMimeTiff::convertToMime(const QString &mime, QList<QByteA
                                                 a.size(), kCFAllocatorNull);
     QCFType<CGImageSourceRef> imageSource = CGImageSourceCreateWithData(tiffData, 0);
     image = CGImageSourceCreateImageAtIndex(imageSource, 0, 0);
-
-    // ### TODO (msorvig) QPixmap conversion
-    //if (image != 0)
-    //    ret = QVariant(QPixmap::fromMacCGImageRef(image).toImage());
+    if (image != 0)
+        ret = QVariant(qt_mac_toQImage(image));
     return ret;
 }
 

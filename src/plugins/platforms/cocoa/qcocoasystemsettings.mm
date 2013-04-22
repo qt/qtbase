@@ -176,7 +176,7 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
     QHash<QPlatformTheme::Palette, QPalette*> palettes;
     QColor qc;
     for (int i = 0; mac_widget_colors[i].paletteRole != QPlatformTheme::NPalettes; i++) {
-        QPalette pal = *qt_mac_createSystemPalette();
+        QPalette &pal = *qt_mac_createSystemPalette();
         if (mac_widget_colors[i].active != 0) {
             qc = qt_mac_colorForThemeTextColor(mac_widget_colors[i].active);
             pal.setColor(QPalette::Active, QPalette::Text, qc);
@@ -223,7 +223,7 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
             pal.setBrush(QPalette::Disabled, QPalette::Base,
                          pal.brush(QPalette::Active, QPalette::Base));
         }
-        palettes.insert(mac_widget_colors[i].paletteRole, new QPalette(pal));
+        palettes.insert(mac_widget_colors[i].paletteRole, &pal);
     }
     return palettes;
 }

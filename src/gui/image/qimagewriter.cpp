@@ -789,9 +789,9 @@ QList<QByteArray> QImageWriter::supportedMimeTypes()
     mimeTypes << "image/jpeg";
 #endif
 
-#ifndef QT_NO_LIBRARY
+#ifndef QT_NO_IMAGEFORMATPLUGIN
     supportedImageHandlerMimeTypes(loader(), QImageIOPlugin::CanWrite, &mimeTypes);
-#endif // QT_NO_LIBRARY
+#endif // QT_NO_IMAGEFORMATPLUGIN
 
     QList<QByteArray> sortedMimeTypes;
     for (QSet<QByteArray>::ConstIterator it = mimeTypes.constBegin(); it != mimeTypes.constEnd(); ++it)

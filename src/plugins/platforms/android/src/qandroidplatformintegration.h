@@ -95,7 +95,6 @@ public:
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     void invalidateNativeSurface();
     void surfaceChanged();
-    QAndroidOpenGLPlatformWindow *primaryWindow() const { return m_primaryWindow; }
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
 #endif
 
@@ -138,8 +137,6 @@ private:
 #ifndef ANDROID_PLUGIN_OPENGL
     QAbstractEventDispatcher *m_eventDispatcher;
     QAndroidPlatformScreen *m_primaryScreen;
-#else
-    mutable QAndroidOpenGLPlatformWindow *m_primaryWindow;
 #endif
 
     QThread *m_mainThread;

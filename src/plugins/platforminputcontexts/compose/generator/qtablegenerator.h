@@ -109,8 +109,8 @@ protected:
     bool findSystemComposeDir();
     QString systemComposeDir();
 
-    ushort keysymToUtf8(uint32_t sym);
-    uint32_t stringToKeysym(QString keysymName);
+    ushort keysymToUtf8(quint32 sym);
+    quint32 stringToKeysym(QString keysymName);
 
     void readLocaleMappings();
     void initPossibleLocations();

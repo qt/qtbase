@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 class QPlatformScreen;
 
 bool isQtApplication();
-QIOSViewController *rootViewController();
+QIOSViewController *qiosViewController();
 
 CGRect toCGRect(const QRect &rect);
 QRect fromCGRect(const CGRect &rect);

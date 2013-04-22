@@ -114,6 +114,8 @@ void QCocoaMenuBar::insertMenu(QPlatformMenu *platformMenu, QPlatformMenu *befor
 
 void QCocoaMenuBar::removeMenu(QPlatformMenu *platformMenu)
 {
+    QCocoaAutoReleasePool pool;
+
     QCocoaMenu *menu = static_cast<QCocoaMenu *>(platformMenu);
     if (!m_menus.contains(menu)) {
         qWarning() << Q_FUNC_INFO << "Trying to remove a menu that does not belong to the menubar";

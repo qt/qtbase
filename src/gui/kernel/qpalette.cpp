@@ -1096,6 +1096,40 @@ void QPalette::setColorGroup(ColorGroup cg, const QBrush &foreground, const QBru
     setBrush(cg, ToolTipText, toolTipText);
 }
 
+Q_GUI_EXPORT QPalette qt_fusionPalette()
+{
+    QColor backGround(239, 235, 231);
+    QColor light = backGround.lighter(150);
+    QColor mid(backGround.darker(130));
+    QColor midLight = mid.lighter(110);
+    QColor base = Qt::white;
+    QColor disabledBase(backGround);
+    QColor dark = backGround.darker(150);
+    QColor darkDisabled = QColor(209, 200, 191).darker(110);
+    QColor text = Qt::black;
+    QColor hightlightedText = Qt::white;
+    QColor disabledText = QColor(190, 190, 190);
+    QColor button = backGround;
+    QColor shadow = dark.darker(135);
+    QColor disabledShadow = shadow.lighter(150);
+
+    QPalette fusionPalette(Qt::black,backGround,light,dark,mid,text,base);
+    fusionPalette.setBrush(QPalette::Midlight, midLight);
+    fusionPalette.setBrush(QPalette::Button, button);
+    fusionPalette.setBrush(QPalette::Shadow, shadow);
+    fusionPalette.setBrush(QPalette::HighlightedText, hightlightedText);
+
+    fusionPalette.setBrush(QPalette::Disabled, QPalette::Text, disabledText);
+    fusionPalette.setBrush(QPalette::Disabled, QPalette::Base, disabledBase);
+    fusionPalette.setBrush(QPalette::Disabled, QPalette::Dark, darkDisabled);
+    fusionPalette.setBrush(QPalette::Disabled, QPalette::Shadow, disabledShadow);
+
+    fusionPalette.setBrush(QPalette::Active, QPalette::Highlight, QColor(48, 140, 198));
+    fusionPalette.setBrush(QPalette::Inactive, QPalette::Highlight, QColor(145, 141, 126));
+    fusionPalette.setBrush(QPalette::Disabled, QPalette::Highlight, QColor(145, 141, 126));
+    return fusionPalette;
+}
+
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QPalette &)
 {

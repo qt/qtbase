@@ -113,6 +113,8 @@ public:
 
     Q_INVOKABLE QString registerWindowClass(const QString &classNameIn, void *eventProc) const;
 
+    Q_INVOKABLE void beep() { MessageBeep(MB_OK); } // For QApplication
+
     bool asyncExpose() const;
     void setAsyncExpose(bool value);
 

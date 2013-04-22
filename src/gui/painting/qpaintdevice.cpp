@@ -95,6 +95,8 @@ int QPaintDevice::metric(PaintDeviceMetric m) const
     } else if (m == PdmNumColors) {
         // FIXME: does this need to be a real value?
         return 256;
+    } else if (m == PdmDevicePixelRatio) {
+        return 1;
     } else {
         qDebug("Unrecognised metric %d!",m);
         return 0;

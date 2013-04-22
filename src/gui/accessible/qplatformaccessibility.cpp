@@ -73,6 +73,7 @@ Q_GLOBAL_STATIC(QVector<QAccessibleBridge *>, bridges)
     \sa QAccessible
 */
 QPlatformAccessibility::QPlatformAccessibility()
+    : m_active(false)
 {
 }
 

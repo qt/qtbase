@@ -63,7 +63,7 @@ public slots:
     void populateAccessibilityScene();
     void updateAccessibilitySceneItemFlags();
     void populateAccessibilityTreeScene();
-    void handleUpdate(QObject *object, QAccessible::Event reason);
+    void handleUpdate(QAccessibleEvent *event);
     void setSelected(QObject *object);
 
     void changeScale(int scale);

@@ -2639,18 +2639,6 @@ QFontCache::QFontCache()
 QFontCache::~QFontCache()
 {
     clear();
-    {
-        EngineDataCache::ConstIterator it = engineDataCache.constBegin(),
-                                 end = engineDataCache.constEnd();
-        while (it != end) {
-            if (!it.value()->ref.deref())
-                delete it.value();
-            else
-                FC_DEBUG("QFontCache::~QFontCache: engineData %p still has refcount %d",
-                         it.value(), it.value()->ref.load());
-            ++it;
-        }
-    }
 }
 
 void QFontCache::clear()
@@ -2669,29 +2657,47 @@ void QFontCache::clear()
                     data->engines[i] = 0;
                 }
             }
+            if (!data->ref.deref()) {
+                delete data;
+            } else {
+                FC_DEBUG("QFontCache::clear: engineData %p still has refcount %d",
+                         data, data->ref.load());
+            }
             ++it;
         }
     }
 
-    bool mightHaveEnginesLeftForCleanup = true;
-    while (mightHaveEnginesLeftForCleanup) {
+    engineDataCache.clear();
+
+
+    bool mightHaveEnginesLeftForCleanup;
+    do {
         mightHaveEnginesLeftForCleanup = false;
         for (EngineCache::Iterator it = engineCache.begin(), end = engineCache.end();
-            it != end; ++it) {
-            if (it.value().data && engineCacheCount.value(it.value().data) > 0) {
-                --engineCacheCount[it.value().data];
-                if (!it.value().data->ref.deref()) {
-                    Q_ASSERT(engineCacheCount.value(it.value().data) == 0);
-                    delete it.value().data;
-                    mightHaveEnginesLeftForCleanup = true;
+             it != end; ++it) {
+            QFontEngine *engine = it.value().data;
+            if (engine) {
+                const int cacheCount = --engineCacheCount[engine];
+                Q_ASSERT(cacheCount >= 0);
+                if (!engine->ref.deref()) {
+                    Q_ASSERT(cacheCount == 0);
+                    mightHaveEnginesLeftForCleanup = engine->type() == QFontEngine::Multi;
+                    delete engine;
+                } else if (cacheCount == 0) {
+                    FC_DEBUG("QFontCache::clear: engine %p still has refcount %d",
+                             engine, engine->ref.load());
                 }
                 it.value().data = 0;
             }
         }
-    }
+    } while (mightHaveEnginesLeftForCleanup);
 
     engineCache.clear();
     engineCacheCount.clear();
+
+
+    total_cost = 0;
+    max_cost = min_cost;
 }
 
 

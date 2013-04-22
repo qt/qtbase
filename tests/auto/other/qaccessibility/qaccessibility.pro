@@ -1,7 +1,7 @@
 CONFIG += testcase
 TARGET = tst_qaccessibility
 requires(contains(QT_CONFIG,accessibility))
-QT += testlib gui-private widgets-private
+QT += testlib core-private gui-private widgets-private
 SOURCES  += tst_qaccessibility.cpp
 
 unix:!mac:LIBS+=-lm

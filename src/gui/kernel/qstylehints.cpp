@@ -193,6 +193,15 @@ int QStyleHints::passwordMaskDelay() const
 }
 
 /*!
+    Returns the character used to mask the characters typed into text input
+    fields in password mode.
+*/
+QChar QStyleHints::passwordMaskCharacter() const
+{
+    return themeableHint(QPlatformTheme::PasswordMaskCharacter, QPlatformIntegration::PasswordMaskCharacter).toChar();
+}
+
+/*!
     Returns the gamma value used in font smoothing.
 */
 qreal QStyleHints::fontSmoothingGamma() const

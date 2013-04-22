@@ -42,6 +42,8 @@
 #include "qgenericunixthemes_p.h"
 #include "../../services/genericunix/qgenericunixservices_p.h"
 
+#include "qpa/qplatformtheme_p.h"
+
 #include <QtGui/QPalette>
 #include <QtGui/QFont>
 #include <QtGui/QGuiApplication>
@@ -87,15 +89,27 @@ const char *QGenericUnixTheme::name = "generic";
 static const char defaultSystemFontNameC[] = "Sans Serif";
 enum { defaultSystemFontSize = 9 };
 
+class QGenericUnixThemePrivate : public QPlatformThemePrivate
+{
+public:
+    QGenericUnixThemePrivate()
+        : QPlatformThemePrivate()
+        , systemFont(QLatin1String(defaultSystemFontNameC), defaultSystemFontSize)
+    { }
+
+    const QFont systemFont;
+};
+
 QGenericUnixTheme::QGenericUnixTheme()
-    : m_systemFont(QLatin1String(defaultSystemFontNameC), defaultSystemFontSize)
+    : QPlatformTheme(new QGenericUnixThemePrivate())
 {
 }
 
 const QFont *QGenericUnixTheme::font(Font type) const
 {
+    Q_D(const QGenericUnixTheme);
     if (type == QPlatformTheme::SystemFont)
-        return &m_systemFont;
+        return &d->systemFont;
     return 0;
 }
 
@@ -142,6 +156,93 @@ QVariant QGenericUnixTheme::themeHint(ThemeHint hint) const
 }
 
 #ifndef QT_NO_SETTINGS
+class QKdeThemePrivate : public QPlatformThemePrivate
+{
+public:
+    QKdeThemePrivate(const QString &kdeHome, int kdeVersion)
+        : kdeHome(kdeHome)
+        , kdeVersion(kdeVersion)
+        , toolButtonStyle(Qt::ToolButtonTextBesideIcon)
+        , toolBarIconSize(0)
+    { }
+
+    QString globalSettingsFile() const
+    {
+        return kdeHome + QStringLiteral("/share/config/kdeglobals");
+    }
+
+    void refresh();
+    static void readKdeSystemPalette(const QSettings &kdeSettings, QPalette *pal);
+    static QFont *readKdeFontSetting(const QSettings &settings, const QString &key);
+    static QStringList kdeIconThemeSearchPaths(const QString &kdeHome);
+
+
+    const QString kdeHome;
+    const int kdeVersion;
+
+    ResourceHelper resources;
+    QString iconThemeName;
+    QString iconFallbackThemeName;
+    QStringList styleNames;
+    int toolButtonStyle;
+    int toolBarIconSize;
+};
+
+void QKdeThemePrivate::refresh()
+{
+    resources.clear();
+
+    toolButtonStyle = Qt::ToolButtonTextBesideIcon;
+    toolBarIconSize = 0;
+    styleNames.clear();
+    styleNames << QStringLiteral("Oxygen") << QStringLiteral("fusion") << QStringLiteral("windows");
+    iconFallbackThemeName = iconThemeName = QStringLiteral("oxygen");
+
+    // Read settings file.
+    const QString settingsFile = globalSettingsFile();
+    if (!QFileInfo(settingsFile).isReadable())
+        return;
+
+    const QSettings kdeSettings(settingsFile, QSettings::IniFormat);
+
+    QPalette systemPalette = QPalette();
+    readKdeSystemPalette(kdeSettings, &systemPalette);
+    resources.palettes[QPlatformTheme::SystemPalette] = new QPalette(systemPalette);
+    //## TODO tooltip color
+
+    const QVariant styleValue = kdeSettings.value(QStringLiteral("widgetStyle"));
+    if (styleValue.isValid()) {
+        const QString style = styleValue.toString();
+        if (style != styleNames.front())
+            styleNames.push_front(style);
+    }
+
+    const QVariant themeValue = kdeSettings.value(QStringLiteral("Icons/Theme"));
+    if (themeValue.isValid())
+        iconThemeName = themeValue.toString();
+
+    const QVariant toolBarIconSizeValue = kdeSettings.value(QStringLiteral("ToolbarIcons/Size"));
+    if (toolBarIconSizeValue.isValid())
+        toolBarIconSize = toolBarIconSizeValue.toInt();
+
+    const QVariant toolbarStyleValue = kdeSettings.value(QStringLiteral("ToolButtonStyle"));
+    if (toolbarStyleValue.isValid()) {
+        const QString toolBarStyle = toolbarStyleValue.toString();
+        if (toolBarStyle == QStringLiteral("TextBesideIcon"))
+            toolButtonStyle =  Qt::ToolButtonTextBesideIcon;
+        else if (toolBarStyle == QStringLiteral("TextOnly"))
+            toolButtonStyle = Qt::ToolButtonTextOnly;
+        else if (toolBarStyle == QStringLiteral("TextUnderIcon"))
+            toolButtonStyle = Qt::ToolButtonTextUnderIcon;
+    }
+
+    // Read system font, ignore 'fixed' 'smallestReadableFont'
+    if (QFont *systemFont = readKdeFontSetting(kdeSettings, QStringLiteral("font"))) {
+        resources.fonts[QPlatformTheme::SystemFont] = systemFont;
+    } else {
+        resources.fonts[QPlatformTheme::SystemFont] = new QFont(QLatin1String(defaultSystemFontNameC), defaultSystemFontSize);
+    }
+}
 
 // Reads the color from the KDE configuration, and store it in the
 // palette with the given color role if found.
@@ -158,7 +259,7 @@ static inline bool kdeColor(QPalette *pal, QPalette::ColorRole role,
     return true;
 }
 
-static inline void readKdeSystemPalette(const QSettings &kdeSettings, QPalette *pal)
+void QKdeThemePrivate::readKdeSystemPalette(const QSettings &kdeSettings, QPalette *pal)
 {
     kdeColor(pal, QPalette::Button, kdeSettings, QStringLiteral("Colors:Button/BackgroundNormal"));
     kdeColor(pal, QPalette::Window, kdeSettings, QStringLiteral("Colors:Window/BackgroundNormal"));
@@ -183,14 +284,13 @@ static inline void readKdeSystemPalette(const QSettings &kdeSettings, QPalette *
 
 const char *QKdeTheme::name = "kde";
 
-QKdeTheme::QKdeTheme(const QString &kdeHome, int kdeVersion) :
-    m_kdeHome(kdeHome), m_kdeVersion(kdeVersion),
-    m_toolButtonStyle(Qt::ToolButtonTextBesideIcon), m_toolBarIconSize(0)
+QKdeTheme::QKdeTheme(const QString &kdeHome, int kdeVersion)
+    : QPlatformTheme(new QKdeThemePrivate(kdeHome,kdeVersion))
 {
-    refresh();
+    d_func()->refresh();
 }
 
-static inline QFont *readKdeFontSetting(const QSettings &settings, const QString &key)
+QFont *QKdeThemePrivate::readKdeFontSetting(const QSettings &settings, const QString &key)
 {
     const QVariant fontValue = settings.value(key);
     if (fontValue.isValid()) {
@@ -218,68 +318,8 @@ static inline QFont *readKdeFontSetting(const QSettings &settings, const QString
     return 0;
 }
 
-void QKdeTheme::refresh()
-{
-    m_resources.clear();
 
-    m_toolButtonStyle = Qt::ToolButtonTextBesideIcon;
-    m_toolBarIconSize = 0;
-    m_styleNames.clear();
-    m_styleNames << QStringLiteral("Oxygen") << QStringLiteral("fusion") << QStringLiteral("windows");
-    m_iconFallbackThemeName = m_iconThemeName = QStringLiteral("oxygen");
-
-    // Read settings file.
-    const QString settingsFile = globalSettingsFile();
-    if (!QFileInfo(settingsFile).isReadable())
-        return;
-
-    const QSettings kdeSettings(settingsFile, QSettings::IniFormat);
-
-    QPalette systemPalette = QPalette();
-    readKdeSystemPalette(kdeSettings, &systemPalette);
-    m_resources.palettes[SystemPalette] = new QPalette(systemPalette);
-    //## TODO tooltip color
-
-    const QVariant styleValue = kdeSettings.value(QStringLiteral("widgetStyle"));
-    if (styleValue.isValid()) {
-        const QString style = styleValue.toString();
-        if (style != m_styleNames.front())
-            m_styleNames.push_front(style);
-    }
-
-    const QVariant themeValue = kdeSettings.value(QStringLiteral("Icons/Theme"));
-    if (themeValue.isValid())
-        m_iconThemeName = themeValue.toString();
-
-    const QVariant toolBarIconSizeValue = kdeSettings.value(QStringLiteral("ToolbarIcons/Size"));
-    if (toolBarIconSizeValue.isValid())
-        m_toolBarIconSize = toolBarIconSizeValue.toInt();
-
-    const QVariant toolbarStyleValue = kdeSettings.value(QStringLiteral("ToolButtonStyle"));
-    if (toolbarStyleValue.isValid()) {
-        const QString toolBarStyle = toolbarStyleValue.toString();
-        if (toolBarStyle == QStringLiteral("TextBesideIcon"))
-            m_toolButtonStyle =  Qt::ToolButtonTextBesideIcon;
-        else if (toolBarStyle == QStringLiteral("TextOnly"))
-            m_toolButtonStyle = Qt::ToolButtonTextOnly;
-        else if (toolBarStyle == QStringLiteral("TextUnderIcon"))
-            m_toolButtonStyle = Qt::ToolButtonTextUnderIcon;
-    }
-
-    // Read system font, ignore 'fixed' 'smallestReadableFont'
-    if (QFont *systemFont = readKdeFontSetting(kdeSettings, QStringLiteral("font"))) {
-        m_resources.fonts[SystemFont] = systemFont;
-    } else {
-        m_resources.fonts[SystemFont] = new QFont(QLatin1String(defaultSystemFontNameC), defaultSystemFontSize);
-    }
-}
-
-QString QKdeTheme::globalSettingsFile() const
-{
-    return m_kdeHome + QStringLiteral("/share/config/kdeglobals");
-}
-
-static QStringList kdeIconThemeSearchPaths(const QString &kdeHome)
+QStringList QKdeThemePrivate::kdeIconThemeSearchPaths(const QString &kdeHome)
 {
     QStringList candidates = QStringList(kdeHome);
     const QString kdeDirs = QFile::decodeName(qgetenv("KDEDIRS"));
@@ -298,6 +338,7 @@ static QStringList kdeIconThemeSearchPaths(const QString &kdeHome)
 
 QVariant QKdeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
 {
+    Q_D(const QKdeTheme);
     switch (hint) {
     case QPlatformTheme::UseFullScreenForPopupMenu:
         return QVariant(true);
@@ -306,23 +347,35 @@ QVariant QKdeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
     case QPlatformTheme::DialogButtonBoxLayout:
         return QVariant(2); // QDialogButtonBox::KdeLayout
     case QPlatformTheme::ToolButtonStyle:
-        return QVariant(m_toolButtonStyle);
+        return QVariant(d->toolButtonStyle);
     case QPlatformTheme::ToolBarIconSize:
-        return QVariant(m_toolBarIconSize);
+        return QVariant(d->toolBarIconSize);
     case QPlatformTheme::SystemIconThemeName:
-        return QVariant(m_iconThemeName);
+        return QVariant(d->iconThemeName);
     case QPlatformTheme::SystemIconFallbackThemeName:
-        return QVariant(m_iconFallbackThemeName);
+        return QVariant(d->iconFallbackThemeName);
     case QPlatformTheme::IconThemeSearchPaths:
-        return QVariant(kdeIconThemeSearchPaths(m_kdeHome));
+        return QVariant(d->kdeIconThemeSearchPaths(d->kdeHome));
     case QPlatformTheme::StyleNames:
-        return QVariant(m_styleNames);
+        return QVariant(d->styleNames);
     case QPlatformTheme::KeyboardScheme:
         return QVariant(int(KdeKeyboardScheme));
     default:
         break;
     }
     return QPlatformTheme::themeHint(hint);
+}
+
+const QPalette *QKdeTheme::palette(Palette type) const
+{
+    Q_D(const QKdeTheme);
+    return d->resources.palettes[type];
+}
+
+const QFont *QKdeTheme::font(Font type) const
+{
+    Q_D(const QKdeTheme);
+    return d->resources.fonts[type];
 }
 
 QPlatformTheme *QKdeTheme::createKdeTheme()
@@ -361,8 +414,18 @@ QPlatformTheme *QKdeTheme::createKdeTheme()
 
 const char *QGnomeTheme::name = "gnome";
 
+class QGnomeThemePrivate : public QPlatformThemePrivate
+{
+public:
+    QGnomeThemePrivate()
+        : systemFont(QLatin1Literal(defaultSystemFontNameC), defaultSystemFontSize)
+    {}
+
+    const QFont systemFont;
+};
+
 QGnomeTheme::QGnomeTheme()
-   : m_systemFont(QLatin1String(defaultSystemFontNameC), defaultSystemFontSize)
+    : QPlatformTheme(new QGnomeThemePrivate())
 {
 }
 
@@ -385,6 +448,8 @@ QVariant QGnomeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
     }
     case QPlatformTheme::KeyboardScheme:
         return QVariant(int(GnomeKeyboardScheme));
+    case QPlatformTheme::PasswordMaskCharacter:
+        return QVariant(QChar(0x2022));
     default:
         break;
     }
@@ -393,8 +458,10 @@ QVariant QGnomeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
 
 const QFont *QGnomeTheme::font(Font type) const
 {
+    Q_D(const QGnomeTheme);
     if (type == QPlatformTheme::SystemFont)
-        return &m_systemFont;
+        return &d->systemFont;
+
     return 0;
 }
 

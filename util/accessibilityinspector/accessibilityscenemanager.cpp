@@ -73,7 +73,6 @@ void AccessibilitySceneManager::updateAccessibilitySceneItemFlags()
         if (!interface)
             continue;
         updateItemFlags(m_graphicsItems.value(object), interface);
-        delete interface;
     }
 }
 
@@ -89,15 +88,18 @@ void AccessibilitySceneManager::populateAccessibilityTreeScene()
     populateAccessibilityTreeScene(rootInterface);
 }
 
-void AccessibilitySceneManager::handleUpdate(QObject *object, QAccessible::Event reason)
+void AccessibilitySceneManager::handleUpdate(QAccessibleEvent *event)
 {
+    QObject *object = event->object();
+    QAccessible::Event type = event->type();
+
     QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(object);
     if (!interface)
         return;
 
     QString name = interface->text(QAccessible::Name);
 
-    if (reason == QAccessible::ObjectCreated) {
+    if (type == QAccessible::ObjectCreated) {
   //      qDebug() << "ObjectCreated" << object << name;
         populateAccessibilityScene(interface, m_scene);
     }
@@ -109,7 +111,7 @@ void AccessibilitySceneManager::handleUpdate(QObject *object, QAccessible::Event
         return;
     }
 
-    if (reason == QAccessible::LocationChanged) {
+    if (type == QAccessible::LocationChanged) {
 
         //if (name.startsWith("List"))
             qDebug() << "locationChange" << object << name << interface->rect();
@@ -119,12 +121,10 @@ void AccessibilitySceneManager::handleUpdate(QObject *object, QAccessible::Event
            QAccessibleInterface *child = interface->child(i);
            if (child) {
                updateItem(m_graphicsItems.value(child->object()), child);
-               delete child;
             }
         }
 
-        delete interface;
-    } else if (reason == QAccessible::ObjectDestroyed) {
+    } else if (type == QAccessible::ObjectDestroyed) {
 //        qDebug() << "ObjectDestroyed" << object << name;
         delete m_graphicsItems.value(object);
         m_graphicsItems.remove(object);
@@ -132,28 +132,25 @@ void AccessibilitySceneManager::handleUpdate(QObject *object, QAccessible::Event
         if (object == m_selectedObject) {
             m_selectedObject = 0;
         }
-    } else if (reason == QAccessible::ObjectHide) {
+    } else if (type == QAccessible::ObjectHide) {
 //        qDebug() << "ObjectCreated Hide" << object;
         updateItemFlags(item, interface);
-    } else if (reason == QAccessible::ObjectShow) {
+    } else if (type == QAccessible::ObjectShow) {
 //        qDebug() << "ObjectCreated Show" << object;
         updateItemFlags(item, interface);
-    } else if (reason == QAccessible::ScrollingStart) {
+    } else if (type == QAccessible::ScrollingStart) {
         qDebug() << "ObjectCreated ScrollingStart" << object;
-        QAccessibleInterface *child = 0;
         for (int i = 0; i < interface->childCount(); ++i) {
             QAccessibleInterface *child = interface->child(i);
             if (child) {
                 m_animatedObjects.insert(child->object());
-                delete child;
             }
         }
-    } else if (reason == QAccessible::ScrollingEnd) {
+    } else if (type == QAccessible::ScrollingEnd) {
         // qDebug() << "ObjectCreated ScrollingEnd" << object;
         foreach (QObject *object, m_animatedObjects) {
             updateItem(m_graphicsItems.value(object), interface);
         }
-        delete interface;
         m_animatedObjects.clear();
 
     } else {
@@ -197,10 +194,7 @@ void AccessibilitySceneManager::updateItems(QObject *root)
     for (int i = 0; i < interface->childCount(); ++i) {
         QAccessibleInterface *child = interface->child(i);
         updateItems(child->object());
-        delete child;
     }
-
-    delete interface;
 }
 
 void AccessibilitySceneManager::updateItem(QObject *object)
@@ -213,8 +207,6 @@ void AccessibilitySceneManager::updateItem(QObject *object)
         return;
 
     updateItem(m_graphicsItems.value(object), interface);
-
-    delete interface;
 }
 
 void AccessibilitySceneManager::updateItem(QGraphicsRectItem *item, QAccessibleInterface *interface)
@@ -253,9 +245,21 @@ void AccessibilitySceneManager::updateItemFlags(QGraphicsRectItem *item, QAccess
         }
     }
 
+    if (m_optionsWidget->hideNullObjectItems()) {
+        if (interface->object() == 0) {
+            shouldShow = false;
+        }
+    }
+
+    if (m_optionsWidget->hideNullRectItems()) {
+        if (interface->rect().isNull()) {
+            shouldShow = false;
+        }
+    }
+
     item->setVisible(shouldShow);
 
-    if (interface->object() == m_selectedObject)
+    if (interface->object() && interface->object() == m_selectedObject)
         item->setBrush(QColor(Qt::yellow));
     else
         item->setBrush(QColor(Qt::white));
@@ -320,7 +324,6 @@ void AccessibilitySceneManager::populateAccessibilityScene(QAccessibleInterface 
         QAccessibleInterface *child = interface->child(i);
         updateItems(child->object());
         populateAccessibilityScene(child, scene);
-        delete child;
     }
 }
 
@@ -339,7 +342,6 @@ AccessibilitySceneManager::TreeItem AccessibilitySceneManager::computeLevels(QAc
             TreeItem childLevel = computeLevels(child, level + 1);
             currentLevel.children.append(childLevel);
             currentLevel.width += childLevel.width + m_treeItemHorizontalPadding;
-            delete child;
         }
     }
 
@@ -392,7 +394,7 @@ void AccessibilitySceneManager::addGraphicsItems(AccessibilitySceneManager::Tree
     graphicsItem->setRect(0, 0, m_treeItemWidth, m_treeItemHeight);
     graphicsItem->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
 
-    if (item.object == m_selectedObject)
+    if (item.object && item.object == m_selectedObject)
         graphicsItem->setBrush(QColor(Qt::yellow));
     else
         graphicsItem->setBrush(QColor(Qt::white));
@@ -473,11 +475,7 @@ bool AccessibilitySceneManager::isHidden(QAccessibleInterface *interface)
             return true;
         }
 
-        QAccessibleInterface *parent = current->parent();
-
-        if (current != interface)
-            delete current;
-        current = parent;
+        current = current->parent();
     }
 
     return false;

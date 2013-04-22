@@ -244,6 +244,7 @@ QImage QRasterPlatformPixmap::toImage(const QRect &rect) const
         QImage newImage(image.scanLine(clipped.y()) + clipped.x() * (du / 8),
                       clipped.width(), clipped.height(),
                       image.bytesPerLine(), image.format());
+        newImage.setDevicePixelRatio(image.devicePixelRatio());
         return newImage;
     } else {
         return image.copy(clipped);
@@ -278,11 +279,13 @@ int QRasterPlatformPixmap::metric(QPaintDevice::PaintDeviceMetric metric) const
     case QPaintDevice::PdmDpiX:
         return qt_defaultDpiX();
     case QPaintDevice::PdmPhysicalDpiX:
-        return qt_defaultDpiX() * image.devicePixelRatio();
+        return qt_defaultDpiX();
     case QPaintDevice::PdmDpiY:
         return qt_defaultDpiX();
     case QPaintDevice::PdmPhysicalDpiY:
-        return qt_defaultDpiY() * image.devicePixelRatio();
+        return qt_defaultDpiY();
+    case QPaintDevice::PdmDevicePixelRatio:
+        return image.devicePixelRatio();
     default:
         qWarning("QRasterPlatformPixmap::metric(): Unhandled metric type %d", metric);
         break;

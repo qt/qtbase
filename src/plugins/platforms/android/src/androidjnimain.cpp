@@ -74,9 +74,7 @@
 #  include "qandroidopenglplatformwindow.h"
 #endif
 
-#if __ANDROID_API__ > 8
-# include <android/native_window_jni.h>
-#endif
+#include <android/native_window_jni.h>
 
 static jmethodID m_redrawSurfaceMethodID = 0;
 
@@ -543,32 +541,6 @@ static void terminateQt(JNIEnv *env, jclass /*clazz*/)
     env->DeleteGlobalRef(m_bitmapDrawableClass);
 }
 
-#ifdef ANDROID_PLUGIN_OPENGL
-#if __ANDROID_API__ < 9
-struct FakeNativeWindow
-{
-    long long dummyNativeWindow;// force 64 bits alignment
-};
-
-class FakeSurface: public FakeNativeWindow
-{
-public:
-    virtual void FakeSurfaceMethod()
-    {
-        fakeSurface = 0;
-    }
-
-    int fakeSurface;
-};
-
-EGLNativeWindowType ANativeWindow_fromSurface(JNIEnv *env, jobject jSurface)
-{
-    FakeSurface *surface = static_cast<FakeSurface *>(env->GetIntField(jSurface, m_surfaceFieldID));
-    return static_cast<EGLNativeWindowType>(static_cast<FakeNativeWindow*>(surface));
-}
-#endif // __ANDROID_API__ < 9
-#endif // ANDROID_PLUGIN_OPENGL
-
 static void setSurface(JNIEnv *env, jobject /*thiz*/, jobject jSurface)
 {
 #ifndef ANDROID_PLUGIN_OPENGL
@@ -587,7 +559,6 @@ static void setSurface(JNIEnv *env, jobject /*thiz*/, jobject jSurface)
         m_surfaceMutex.unlock();
         m_androidPlatformIntegration->surfaceChanged();
     } else if (m_androidPlatformIntegration && sameNativeWindow) {
-        QAndroidOpenGLPlatformWindow *window = m_androidPlatformIntegration->primaryWindow();
         QPlatformScreen *screen = m_androidPlatformIntegration->screen();
         QSize size = QtAndroid::nativeWindowSize();
 
@@ -595,13 +566,19 @@ static void setSurface(JNIEnv *env, jobject /*thiz*/, jobject jSurface)
         QWindowSystemInterface::handleScreenAvailableGeometryChange(screen->screen(), geometry);
         QWindowSystemInterface::handleScreenGeometryChange(screen->screen(), geometry);
 
-        if (window != 0) {
-            window->lock();
-            window->scheduleResize(size);
+        // Resize all top level windows, since they share the same surface
+        foreach (QWindow *w, QGuiApplication::topLevelWindows()) {
+            QAndroidOpenGLPlatformWindow *window =
+                    static_cast<QAndroidOpenGLPlatformWindow *>(w->handle());
 
-            QWindowSystemInterface::handleExposeEvent(window->window(),
-                                                      QRegion(window->window()->geometry()));
-            window->unlock();
+            if (window != 0) {
+                window->lock();
+                window->scheduleResize(size);
+
+                QWindowSystemInterface::handleExposeEvent(window->window(),
+                                                          QRegion(window->window()->geometry()));
+                window->unlock();
+            }
         }
 
         m_surfaceMutex.unlock();
@@ -753,12 +730,7 @@ static int registerNatives(JNIEnv *env)
 
 #ifdef ANDROID_PLUGIN_OPENGL
     FIND_AND_CHECK_CLASS("android/view/Surface");
-#if __ANDROID_API__ < 9
-# define ANDROID_VIEW_SURFACE_JNI_ID "mSurface"
-#else
-# define ANDROID_VIEW_SURFACE_JNI_ID "mNativeSurface"
-#endif
-    GET_AND_CHECK_FIELD(m_surfaceFieldID, clazz, ANDROID_VIEW_SURFACE_JNI_ID, "I");
+    GET_AND_CHECK_FIELD(m_surfaceFieldID, clazz, "mNativeSurface", "I");
 #endif
 
     jmethodID methodID;

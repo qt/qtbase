@@ -65,7 +65,8 @@ public:
         PdmDpiX,
         PdmDpiY,
         PdmPhysicalDpiX,
-        PdmPhysicalDpiY
+        PdmPhysicalDpiY,
+        PdmDevicePixelRatio
     };
 
     virtual ~QPaintDevice();
@@ -82,6 +83,7 @@ public:
     int logicalDpiY() const { return metric(PdmDpiY); }
     int physicalDpiX() const { return metric(PdmPhysicalDpiX); }
     int physicalDpiY() const { return metric(PdmPhysicalDpiY); }
+    int devicePixelRatio() const { return metric(PdmDevicePixelRatio); }
     int colorCount() const { return metric(PdmNumColors); }
     int depth() const { return metric(PdmDepth); }
 

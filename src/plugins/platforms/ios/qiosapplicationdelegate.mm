@@ -46,6 +46,7 @@
 @implementation QIOSApplicationDelegate
 
 @synthesize window;
+@synthesize qiosViewController;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
@@ -85,6 +86,7 @@
 
 - (void)dealloc
 {
+    [qiosViewController release];
     [window release];
     [super dealloc];
 }

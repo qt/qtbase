@@ -90,7 +90,8 @@ public:
         WindowMasks,
         MultipleWindows,
         ApplicationState,
-        ForeignWindows
+        ForeignWindows,
+        NonFullScreenWindows
     };
 
     virtual ~QPlatformIntegration() { }
@@ -139,7 +140,8 @@ public:
         FontSmoothingGamma,
         StartDragVelocity,
         UseRtlExtensions,
-        SynthesizeMouseFromTouchEvents
+        SynthesizeMouseFromTouchEvents,
+        PasswordMaskCharacter
     };
 
     virtual QVariant styleHint(StyleHint hint) const;

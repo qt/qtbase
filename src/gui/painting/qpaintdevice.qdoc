@@ -114,6 +114,10 @@
     \value PdmPhysicalDpiY The vertical resolution of the device in
     dots per inch. See also physicalDpiY().
 
+    \value PdmDevicePixelRatio The device pixel ratio for device. Common
+    values are 1 for normal-dpi displays and 2 for high-dpi "retina"
+    displays.
+
     \sa metric()
 */
 
@@ -272,4 +276,13 @@
     the corresponding QPaintEngine must handle the resolution mapping.
 
     \sa physicalDpiX(), logicalDpiY()
+*/
+
+/*!
+    \fn int QPaintDevice::devicePixelRatio() const
+
+    Returns the device pixel ratio for device.
+
+    Common values are 1 for normal-dpi displays and 2 for high-dpi
+    "retina" displays.
 */

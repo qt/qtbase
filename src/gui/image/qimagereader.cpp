@@ -1513,9 +1513,9 @@ QList<QByteArray> QImageReader::supportedMimeTypes()
     for (int i = 0; i < _qt_NumFormats; ++i)
         mimeTypes << _qt_BuiltInFormats[i].mimeType;
 
-#ifndef QT_NO_LIBRARY
+#ifndef QT_NO_IMAGEFORMATPLUGIN
     supportedImageHandlerMimeTypes(loader(), QImageIOPlugin::CanRead, &mimeTypes);
-#endif // QT_NO_LIBRARY
+#endif // QT_NO_IMAGEFORMATPLUGIN
 
     QList<QByteArray> sortedMimeTypes;
     for (QSet<QByteArray>::ConstIterator it = mimeTypes.constBegin(); it != mimeTypes.constEnd(); ++it)

@@ -274,12 +274,11 @@ struct ThemeMapData {
 
     bool dataValid         : 1; // Only used to detect if hash value is ok
     bool partIsTransparent : 1;
-    bool hasAnyData        : 1; // False = part & state has not data, NOP
     bool hasAlphaChannel   : 1; // True =  part & state has real Alpha
     bool wasAlphaSwapped   : 1; // True =  alpha channel needs to be swapped
     bool hadInvalidAlpha   : 1; // True =  alpha channel contained invalid alpha values
 
-    ThemeMapData() : dataValid(false), partIsTransparent(false), hasAnyData(false),
+    ThemeMapData() : dataValid(false), partIsTransparent(false),
                      hasAlphaChannel(false), wasAlphaSwapped(false), hadInvalidAlpha(false) {}
 };
 
@@ -339,7 +338,6 @@ public:
     void drawBackgroundThruNativeBuffer(XPThemeData &themeData);
     void drawBackgroundDirectly(XPThemeData &themeData);
 
-    bool hasAnyData(const QRect &rect);
     bool hasAlphaChannel(const QRect &rect);
     bool fixAlphaChannel(const QRect &rect);
     bool swapAlphaChannel(const QRect &rect, bool allPixels = false);

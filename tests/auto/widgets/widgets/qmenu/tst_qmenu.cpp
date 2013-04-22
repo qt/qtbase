@@ -101,6 +101,7 @@ private slots:
     void pushButtonPopulateOnAboutToShow();
     void QTBUG7907_submenus_autoselect();
     void QTBUG7411_submenus_activate();
+    void QTBUG30595_rtl_submenu();
     void QTBUG20403_nested_popup_on_shortcut_trigger();
     void QTBUG_10735_crashWithDialog();
 protected slots:
@@ -894,6 +895,22 @@ void tst_QMenu::QTBUG7411_submenus_activate()
     QVERIFY(!sub1.isVisible());
     QTest::keyPress(&menu, Qt::Key_S);
     QTRY_VERIFY(sub1.isVisible());
+}
+
+void tst_QMenu::QTBUG30595_rtl_submenu()
+{
+    QMenu menu("Test Menu");
+    menu.setLayoutDirection(Qt::RightToLeft);
+    QMenu sub("&sub");
+    sub.addAction("bar");
+    sub.setTitle("&sub");
+    menu.addMenu(&sub);
+    menu.move(200, 20);
+    menu.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&menu));
+    QTest::mouseClick(&menu, Qt::LeftButton, Qt::NoModifier, QPoint(5,5) );
+    QTRY_VERIFY(sub.isVisible());
+    QVERIFY(sub.pos().x() < menu.pos().x());
 }
 
 void tst_QMenu::QTBUG20403_nested_popup_on_shortcut_trigger()

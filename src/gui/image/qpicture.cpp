@@ -956,6 +956,9 @@ int QPicture::metric(PaintDeviceMetric m) const
         case PdmDepth:
             val = 24;
             break;
+        case PdmDevicePixelRatio:
+            val = 1;
+            break;
         default:
             val = 0;
             qWarning("QPicture::metric: Invalid metric command");

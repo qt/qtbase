@@ -52,6 +52,7 @@
 //
 
 #include <QtCore/QtGlobal>
+#include <QtCore/QScopedPointer>
 
 QT_BEGIN_NAMESPACE
 
@@ -63,6 +64,7 @@ class QPlatformMenu;
 class QPlatformMenuBar;
 class QPlatformDialogHelper;
 class QPlatformSystemTrayIcon;
+class QPlatformThemePrivate;
 class QVariant;
 class QPalette;
 class QFont;
@@ -72,6 +74,7 @@ class QFileInfo;
 
 class Q_GUI_EXPORT QPlatformTheme
 {
+    Q_DECLARE_PRIVATE(QPlatformTheme)
 public:
     enum ThemeHint {
         CursorFlashTime,
@@ -100,7 +103,8 @@ public:
         UiEffects,
         SpellCheckUnderlineStyle,
         TabAllWidgets,
-        IconPixmapSizes
+        IconPixmapSizes,
+        PasswordMaskCharacter
     };
 
     enum DialogType {
@@ -249,6 +253,7 @@ public:
         AnimateToolBoxUiEffect = 0x40
     };
 
+    explicit QPlatformTheme();
     virtual ~QPlatformTheme();
 
     virtual QPlatformMenuItem* createPlatformMenuItem() const;
@@ -274,6 +279,12 @@ public:
     virtual QIconEngine *createIconEngine(const QString &iconName) const;
 
     static QVariant defaultThemeHint(ThemeHint hint);
+
+protected:
+    explicit QPlatformTheme(QPlatformThemePrivate *priv);
+    QScopedPointer<QPlatformThemePrivate> d_ptr;
+private:
+    Q_DISABLE_COPY(QPlatformTheme)
 };
 
 QT_END_NAMESPACE

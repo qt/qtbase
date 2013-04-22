@@ -440,9 +440,12 @@ if [ -d /System/Library/Frameworks/Carbon.framework ]; then
 fi
 BUILD_ON_MSYS=no
 HOST_DIRLIST_SEP=":"
+DEV_NULL=/dev/null
 if [ "$OSTYPE" = "msys" ]; then
     HOST_DIRLIST_SEP=";"
     BUILD_ON_MSYS=yes
+    DEV_NULL=/tmp/empty-file
+    echo "" > $DEV_NULL
 fi
 
 #-------------------------------------------------------------------------------
@@ -898,6 +901,7 @@ CFG_USE_GNUMAKE=no
 CFG_XINPUT2=auto
 CFG_XINPUT=runtime
 CFG_XKB=auto
+CFG_XKBCOMMON=no
 CFG_XCB=auto
 CFG_XCB_GLX=no
 CFG_EGLFS=auto
@@ -2830,6 +2834,9 @@ if [ "$CFG_FORCEDEBUGINFO" = "yes" ]; then
 fi
 
 if [ "$XPLATFORM_IOS" = "yes" ]; then
+    CFG_RPATH="no"
+    CFG_PKGCONFIG="no"
+    CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS examples tests"
     CFG_SHARED="no" # iOS builds should be static to be able to submit to the App Store
     CFG_CXX11="no" # C++11 support disabled for now
     CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtdeclarative qtquickcontrols qtwebkit qtgraphicaleffects qtdoc qtmultimedia qtwebkit-examples-and-demos qttools"
@@ -3279,7 +3286,7 @@ Installation options:
                             (default PREFIX/include)
     -libdir <dir> ......... Libraries will be installed to <dir>
                             (default PREFIX/lib)
-    -archdatadir <dir>..... Arch-dependent data used by Qt will be installed to <dir>
+    -archdatadir <dir> .... Arch-dependent data used by Qt will be installed to <dir>
                             (default PREFIX)
     -plugindir <dir> ...... Plugins will be installed to <dir>
                             (default ARCHDATADIR/plugins)
@@ -3325,7 +3332,7 @@ Configure options:
     -opensource ........ Compile and link the Open-Source Edition of Qt.
     -commercial ........ Compile and link the Commercial Edition of Qt.
 
-    -confirm-license.... Automatically acknowledge the license (use with
+    -confirm-license ... Automatically acknowledge the license (use with
                          either -opensource or -commercial)
 
     -no-c++11 .......... Do not compile Qt with C++11 support enabled.
@@ -3374,8 +3381,8 @@ Configure options:
     -no-sse2 ........... Do not compile with use of SSE2 instructions.
     -no-sse3 ........... Do not compile with use of SSE3 instructions.
     -no-ssse3 .......... Do not compile with use of SSSE3 instructions.
-    -no-sse4.1.......... Do not compile with use of SSE4.1 instructions.
-    -no-sse4.2.......... Do not compile with use of SSE4.2 instructions.
+    -no-sse4.1 ......... Do not compile with use of SSE4.1 instructions.
+    -no-sse4.2 ......... Do not compile with use of SSE4.2 instructions.
     -no-avx ............ Do not compile with use of AVX instructions.
     -no-avx2 ........... Do not compile with use of AVX2 instructions.
     -no-neon ........... Do not compile with use of NEON instructions.
@@ -3385,7 +3392,7 @@ Configure options:
     -qtnamespace <name>  Wraps all Qt library code in 'namespace <name> {...}'.
     -qtlibinfix <infix>  Renames all libQt*.so to libQt*<infix>.so.
 
-    -testcocoon          Instrument Qt with the TestCocoon code coverage tool.
+    -testcocoon ........ Instrument Qt with the TestCocoon code coverage tool.
 
     -D <string> ........ Add an explicit define to the preprocessor.
     -I <string> ........ Add an explicit include path.
@@ -3549,8 +3556,8 @@ EOF
 if [ "$XPLATFORM_MAEMO" = "yes" ]; then
     cat << EOF
 
- $X2N  -no-xinput2......... Do not compile XInput2 support.
- $X2Y  -xinput2............ Compile XInput2 support.
+ $X2N  -no-xinput2 ........ Do not compile XInput2 support.
+ $X2Y  -xinput2 ........... Compile XInput2 support.
 
 EOF
 
@@ -4050,7 +4057,7 @@ fi
 #-------------------------------------------------------------------------------
 # Verify makespec
 #-------------------------------------------------------------------------------
-QMAKE_OUTPUT=`$outpath/bin/qmake -E -nocache -spec "$XQMAKESPEC" "QT=" /dev/null 2>&1 >/dev/null`
+QMAKE_OUTPUT=`$outpath/bin/qmake -E -nocache -spec "$XQMAKESPEC" "QT=" $DEV_NULL 2>&1 >/dev/null`
 if [ $? != "0" ]; then
     echo "Failed to process makespec for platform '$XPLATFORM'"
     if [ "$OPT_VERBOSE" = "yes" ]; then
@@ -4066,7 +4073,7 @@ fi
 #-------------------------------------------------------------------------------
 if [ -z "$PKG_CONFIG" ]; then
     # See if PKG_CONFIG is set in the mkspec:
-    PKG_CONFIG="`"$outpath/bin/qmake" -E -nocache -spec "$XQMAKESPEC" "CONFIG=" /dev/null 2>&1 | sed -n -e 's,^PKG_CONFIG = \(.*\),\1,p'`"
+    PKG_CONFIG="`"$outpath/bin/qmake" -E -nocache -spec "$XQMAKESPEC" "CONFIG=" $DEV_NULL 2>&1 | sed -n -e 's,^PKG_CONFIG = \(.*\),\1,p'`"
 fi
 if [ -z "$PKG_CONFIG" ]; then
     PKG_CONFIG=`"$WHICH" pkg-config 2>/dev/null`
@@ -5254,14 +5261,12 @@ if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xkbcommon >= 0.2.0" 2>/dev/null
     QMAKE_CFLAGS_XKBCOMMON="`$PKG_CONFIG --cflags xkbcommon 2>/dev/null`"
     QMAKE_LIBS_XKBCOMMON="`$PKG_CONFIG --libs xkbcommon 2>/dev/null`"
     QT_CONFIG="$QT_CONFIG xkbcommon"
+    CFG_XKBCOMMON=yes
 elif [ "$CFG_XCB" != "no" ]; then
-    echo "WARNING: XCB support enabled but libxkbcommon 0.2.0 (or higher) not found."
-    echo "Not satisfying this requirement will disable the compose key functionality,"
-    echo "which includes text input with dead keys."
     QMakeVar add DEFINES QT_NO_XKBCOMMON
 fi
 
-if [ -n "$QMAKE_CFLAGS_XKBCOMMON" ] || [ -n "$QMAKE_LIBS_XKBCOMMON" ]; then
+if [ "$CFG_XKBCOMMON" != "no" ]; then
     QMakeVar set QMAKE_CFLAGS_XKBCOMMON "$QMAKE_CFLAGS_XKBCOMMON"
     QMakeVar set QMAKE_LIBS_XKBCOMMON "$QMAKE_LIBS_XKBCOMMON"
 fi
@@ -6583,16 +6588,16 @@ fi
 exec 3>&1 1>$outpath/config.summary # redirect output temporarily to config.summary
 
 echo
+echo "   Configure summary"
+echo
 if [ "$XPLATFORM" = "$PLATFORM" ]; then
-    echo "Build type:    $PLATFORM"
+    # the missing space before $CFG_FEATURES is intentional
+    echo "Build type:    $PLATFORM ($CFG_ARCH, CPU features:${CFG_CPUFEATURES- none detected})"
 else
-    echo "Building on:   $PLATFORM"
-    echo "Building for:  $XPLATFORM"
+    echo "Building on:   $PLATFORM ($CFG_HOST_ARCH, CPU features:${CFG_HOST_CPUFEATURES- none detected})"
+    echo "Building for:  $XPLATFORM ($CFG_ARCH, CPU features:${CFG_CPUFEATURES- none detected})"
 fi
 
-# the missing space before $CFG_FEATURES is intentional
-echo "Architecture:  $CFG_ARCH, features:$CFG_CPUFEATURES"
-echo "Host architecture: $CFG_HOST_ARCH, features:$CFG_HOST_CPUFEATURES"
 
 if [ -n "$PLATFORM_NOTES" ]; then
     echo "Platform notes:"
@@ -6605,150 +6610,170 @@ if [ "$OPT_VERBOSE" = "yes" ]; then
     echo $ECHO_N "qmake vars .......... $ECHO_C"
     cat "$QMAKE_VARS_FILE" | tr '\n' ' '
     echo "qmake switches ......... $QMAKE_SWITCHES"
+    echo
 fi
 
-echo "Build .................. $CFG_BUILD_PARTS"
-echo "Configuration .......... $QMAKE_CONFIG $QT_CONFIG"
+# Build configuration
+echo "Build options:"
+echo $ECHO_N "  Configuration .......... $ECHO_C"
+echo $QMAKE_CONFIG $QT_CONFIG | tr ' ' '\n' | sort | tr '\n' ' '
+echo
+echo "  Build parts ............ $CFG_BUILD_PARTS"
+release="release"
+[ "$CFG_FORCEDEBUGINFO" = "yes" ] && release="release (with debug info)"
+[ "$CFG_DEBUG" = "yes" ] && build_mode="debug" || build_mode=$release
 if [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
-   echo "Debug .................. yes (combined)"
-   if [ "$CFG_DEBUG" = "yes" ]; then
-       echo "Default Link ........... debug"
-   else
-       echo "Default Link ........... release"
-   fi
+   echo "  Mode ................... debug and $release; default link: $build_mode"
 else
-   echo "Debug .................. $CFG_DEBUG"
+   echo "  Mode ................... $build_mode"
 fi
-if [ "$CFG_RELEASE" = "yes" ] || [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
-    echo "Force debug info ....... $CFG_FORCEDEBUGINFO"
-fi
-echo "C++11 support .......... $CFG_CXX11"
-if [ -n "$PKG_CONFIG" ]; then
-    echo "pkg-config ............. yes"
-else
-    echo "pkg-config ............. no"
-fi
-[ "$CFG_DBUS" = "no" ]     && echo "Qt D-Bus module ........ no"
-[ "$CFG_DBUS" = "yes" ]    && echo "Qt D-Bus module ........ yes (run-time)"
-[ "$CFG_DBUS" = "linked" ] && echo "Qt D-Bus module ........ yes (linked)"
-echo "Qt Concurrent code ..... $CFG_CONCURRENT"
-echo "Qt GUI module .......... $CFG_GUI"
-echo "Qt Widgets module ...... $CFG_WIDGETS"
-if [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
-    echo "JavaScriptCore JIT ..... To be decided by JavaScriptCore"
-else
-    echo "JavaScriptCore JIT ..... $CFG_JAVASCRIPTCORE_JIT"
-fi
-echo "QML debugging .......... $CFG_QML_DEBUG"
-echo "PCH support ............ $CFG_PRECOMPILE"
+unset build_mode release
+echo "  Using C++11 ............ $CFG_CXX11"
+echo "  Using PCH .............. $CFG_PRECOMPILE"
+echo "  Target compiler supports:"
 if [ "$CFG_ARCH" = "i386" -o "$CFG_ARCH" = "x86_64" ]; then
-    echo "SSE2/SSE3/SSSE3......... ${CFG_SSE2}/${CFG_SSE3}/${CFG_SSSE3}"
-    echo "SSE4.1/SSE4.2........... ${CFG_SSSE3}/${CFG_SSE4_1}/${CFG_SSE4_2}"
-    echo "AVX/AVX2................ ${CFG_AVX}/${CFG_AVX2}"
+    echo "    SSE2/SSE3/SSSE3 ...... ${CFG_SSE2}/${CFG_SSE3}/${CFG_SSSE3}"
+    echo "    SSE4.1/SSE4.2 ........ ${CFG_SSE4_1}/${CFG_SSE4_2}"
+    echo "    AVX/AVX2 ............. ${CFG_AVX}/${CFG_AVX2}"
 elif [ "$CFG_ARCH" = "arm" ]; then
-    echo "iWMMXt support ......... ${CFG_IWMMXT}"
-    echo "NEON support ........... ${CFG_NEON}"
+    echo "    iWMMXt/Neon .......... ${CFG_IWMMXT}/${CFG_NEON}"
+elif [ "$CFG_ARCH" = "mips" ]; then
+    echo "    DSP/DSPr2 ............ ${CFG_MIPS_DSP}/${CFG_MIPS_DSPR2}"
 fi
-if [ "$CFG_ARCH" = "mips" ]; then
-    echo "MIPS_DSP/MIPS_DSPR2..... ${CFG_MIPS_DSP}/${CFG_MIPS_DSPR2}"
-fi
-echo "IPv6 ifname support .... $CFG_IPV6IFNAME"
-echo "getaddrinfo support .... $CFG_GETADDRINFO"
-echo "getifaddrs support ..... $CFG_GETIFADDRS"
-echo "Accessibility .......... $CFG_ACCESSIBILITY"
-echo "NIS support ............ $CFG_NIS"
-echo "CUPS support ........... $CFG_CUPS"
-echo "Iconv support .......... $CFG_ICONV"
-echo "Glib support ........... $CFG_GLIB"
-echo "GStreamer support ...... $CFG_GSTREAMER"
-echo "PulseAudio support ..... $CFG_PULSEAUDIO"
-echo "Large File support ..... $CFG_LARGEFILE"
-echo "GIF support ............ $CFG_GIF"
-if [ "$CFG_JPEG" = "no" ]; then
-    echo "JPEG support ........... $CFG_JPEG"
+
+# Qt modules
+echo
+echo "Qt modules and options:"
+[ "$CFG_DBUS" = "no" ]     && echo "  Qt D-Bus ............... no"
+[ "$CFG_DBUS" = "yes" ]    && echo "  Qt D-Bus ............... yes (loading dbus-1 at runtime)"
+[ "$CFG_DBUS" = "linked" ] && echo "  Qt D-Bus ............... yes (linked to dbus-1)"
+echo "  Qt Concurrent .......... $CFG_CONCURRENT"
+echo "  Qt GUI ................. $CFG_GUI"
+echo "  Qt Widgets ............. $CFG_WIDGETS"
+if [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
+    echo "  JavaScriptCore JIT ..... To be decided by JavaScriptCore"
 else
-    echo "JPEG support ........... $CFG_JPEG ($CFG_LIBJPEG)"
+    echo "  JavaScriptCore JIT ..... $CFG_JAVASCRIPTCORE_JIT"
+fi
+echo "  QML debugging .......... $CFG_QML_DEBUG"
+echo "  Use system proxies ..... $CFG_SYSTEM_PROXIES"
+
+# Other things
+# Please keep sorted and properly grouped! The output is quite long, so it's
+# hard to find something you're searching for if it's not sorted.
+echo
+echo "Support enabled for:"
+echo "  Accessibility .......... $CFG_ACCESSIBILITY"
+echo "  ALSA ................... $CFG_ALSA"
+echo "  CUPS ................... $CFG_CUPS"
+[ "$XPLATFORM_MINGW" = "yes" ] && \
+    echo "  DirectWrite ............ $CFG_DIRECTWRITE"
+echo "  FontConfig ............. $CFG_FONTCONFIG"
+echo "  Iconv .................. $CFG_ICONV"
+echo "  ICU .................... $CFG_ICU"
+echo "  Image formats:"
+echo "    GIF .................. $CFG_GIF"
+if [ "$CFG_JPEG" = "no" ]; then
+    echo "    JPEG ................. $CFG_JPEG"
+else
+    echo "    JPEG ................. $CFG_JPEG ($CFG_LIBJPEG)"
 fi
 if [ "$CFG_PNG" = "no" ]; then
-    echo "PNG support ............ $CFG_PNG"
+    echo "    PNG .................. $CFG_PNG"
 else
-    echo "PNG support ............ $CFG_PNG ($CFG_LIBPNG)"
+    echo "    PNG .................. $CFG_PNG ($CFG_LIBPNG)"
 fi
-echo "zlib support ........... $CFG_ZLIB"
-echo "Session management ..... $CFG_SM"
-echo "libudev support ........ $CFG_LIBUDEV"
-
-if [ "$XPLATFORM_QNX" = "yes" ]; then
-    echo "SLOG2 support .......... $CFG_SLOG2"
-fi
-echo "Use system proxies ..... $CFG_SYSTEM_PROXIES"
-
-if [ "$CFG_OPENGL" = "desktop" ]; then
-    echo "OpenGL support ......... yes (Desktop OpenGL)"
-elif [ "$CFG_OPENGL" = "es2" ]; then
-    echo "OpenGL support ......... yes (OpenGL ES 2.x)"
-else
-    echo "OpenGL support ......... no"
-fi
-
-if [ "$CFG_OPENVG" ]; then
-    if [ "$CFG_OPENVG_SHIVA" = "yes" ]; then
-        echo "OpenVG support ......... ShivaVG"
-    else
-        echo "OpenVG support ......... $CFG_OPENVG"
-    fi
-fi
-
-echo "XShape support ......... $CFG_XSHAPE"
-echo "XVideo support ......... $CFG_XVIDEO"
-echo "XSync support .......... $CFG_XSYNC"
-echo "Xinerama support ....... $CFG_XINERAMA"
-echo "Xcursor support ........ $CFG_XCURSOR"
-echo "Xfixes support ......... $CFG_XFIXES"
-echo "Xrandr support ......... $CFG_XRANDR"
-echo "Xi support ............. $CFG_XINPUT"
-echo "Xi2 support ............ $CFG_XINPUT2"
-echo "MIT-SHM support ........ $CFG_MITSHM"
-echo "FontConfig support ..... $CFG_FONTCONFIG"
-echo "XKB support ............ $CFG_XKB"
-echo "GTK theme support ...... $CFG_QGTKSTYLE"
-
-if [ "$XPLATFORM_MINGW" = "yes" ] ; then
-    echo "DirectWrite support .... $CFG_DIRECTWRITE"
-fi
-
-[ "$CFG_SQL_mysql" != "no" ] && echo "MySQL support .......... $CFG_SQL_mysql"
-[ "$CFG_SQL_psql" != "no" ] && echo "PostgreSQL support ..... $CFG_SQL_psql"
-[ "$CFG_SQL_odbc" != "no" ] && echo "ODBC support ........... $CFG_SQL_odbc"
-[ "$CFG_SQL_oci" != "no" ] && echo "OCI support ............ $CFG_SQL_oci"
-[ "$CFG_SQL_tds" != "no" ] && echo "TDS support ............ $CFG_SQL_tds"
-[ "$CFG_SQL_db2" != "no" ] && echo "DB2 support ............ $CFG_SQL_db2"
-[ "$CFG_SQL_ibase" != "no" ] && echo "InterBase support ...... $CFG_SQL_ibase"
-[ "$CFG_SQL_sqlite2" != "no" ] && echo "SQLite 2 support ....... $CFG_SQL_sqlite2"
-[ "$CFG_SQL_sqlite" != "no" ] && echo "SQLite support ......... $CFG_SQL_sqlite ($CFG_SQLITE)"
-
+echo "  Glib ................... $CFG_GLIB"
+echo "  GStreamer .............. $CFG_GSTREAMER"
+echo "  GTK theme .............. $CFG_QGTKSTYLE"
+echo "  Large Files ............ $CFG_LARGEFILE"
+echo "  Networking:"
+[ "$BUILD_ON_MAC" = "yes" ] && \
+    echo "    CoreWlan ............. $CFG_COREWLAN"
+echo "    getaddrinfo .......... $CFG_GETADDRINFO"
+echo "    getifaddrs ........... $CFG_GETIFADDRS"
+echo "    IPv6 ifname .......... $CFG_IPV6IFNAME"
 OPENSSL_LINKAGE=""
 if [ "$CFG_OPENSSL" = "yes" ]; then
-    OPENSSL_LINKAGE="(run-time)"
+    OPENSSL_LINKAGE="(loading libraries at run-time)"
 elif [ "$CFG_OPENSSL" = "linked" ]; then
-    OPENSSL_LINKAGE="(linked)"
+    OPENSSL_LINKAGE="(linked to the libraries)"
 fi
-echo "OpenSSL support ........ $CFG_OPENSSL $OPENSSL_LINKAGE"
-echo "Alsa support ........... $CFG_ALSA"
-if [ "$BUILD_ON_MAC" = "yes" ]; then
-    echo "CoreWlan support ....... $CFG_COREWLAN"
+echo "    OpenSSL .............. $CFG_OPENSSL $OPENSSL_LINKAGE"
+unset OPENSSL_LINKAGE
+echo "  NIS .................... $CFG_NIS"
+if [ "$CFG_OPENGL" = "desktop" ]; then
+    echo "  OpenGL ................. yes (Desktop OpenGL)"
+elif [ "$CFG_OPENGL" = "es2" ]; then
+    echo "  OpenGL ................. yes (OpenGL ES 2.x)"
+else
+    echo "  OpenGL ................. no"
 fi
-echo "libICU support ......... $CFG_ICU"
-echo "PCRE support ........... $CFG_PCRE"
-echo "Xcb support ............ $CFG_XCB"
-echo "Xrender support ........ $CFG_XRENDER"
-if [ "$XPLATFORM_MAEMO" = "yes" ] && [ "$CFG_XCB" != "no" ]; then
-    echo "XInput2 support ........ $CFG_XINPUT2"
+if [ "$CFG_OPENVG" ]; then
+    if [ "$CFG_OPENVG_SHIVA" = "yes" ]; then
+        echo "  OpenVG ................. ShivaVG"
+    else
+        echo "  OpenVG ................. $CFG_OPENVG"
+    fi
 fi
-echo "EGLFS support .......... $CFG_EGLFS"
-echo "DirectFB support ....... $CFG_DIRECTFB"
-echo "LinuxFB support ........ $CFG_LINUXFB"
-echo "KMS support ............ $CFG_KMS"
+if [ "$CFG_PCRE" = "no" ]; then
+    echo "  PCRE ................... no"
+else
+    pcre_sys=system
+    [ "$CFG_PCRE" = "qt" ] && pcre_sys=qt
+    echo "  PCRE ................... yes ($pcre_sys)"
+    unset pcre_sys
+fi
+if [ -n "$PKG_CONFIG" ]; then
+    echo "  pkg-config ............. yes"
+else
+    echo "  pkg-config ............. no"
+fi
+echo "  PulseAudio ............. $CFG_PULSEAUDIO"
+echo "  QPA backends:"
+echo "    DirectFB ............. $CFG_DIRECTFB"
+echo "    EGLFS ................ $CFG_EGLFS"
+echo "    KMS .................. $CFG_KMS"
+echo "    LinuxFB .............. $CFG_LINUXFB"
+echo "    XCB .................. $CFG_XCB"
+if [ "$CFG_XCB" != "no" ]; then
+    echo "      MIT-SHM ............ $CFG_MITSHM"
+    echo "      Xcursor ............ $CFG_XCURSOR"
+    echo "      Xfixes ............. $CFG_XFIXES"
+    echo "      Xi ................. $CFG_XINPUT"
+    echo "      Xi2 ................ $CFG_XINPUT2"
+    echo "      Xinerama ........... $CFG_XINERAMA"
+    echo "      Xrandr ............. $CFG_XRANDR"
+    echo "      Xrender ............ $CFG_XRENDER"
+    echo "      XKB ................ $CFG_XKB"
+    echo "      XShape ............. $CFG_XSHAPE"
+    echo "      XSync .............. $CFG_XSYNC"
+    echo "      XVideo ............. $CFG_XVIDEO"
+fi
+echo "  Session management ..... $CFG_SM"
+[ "$XPLATFORM_QNX" = "yes" ] && \
+    echo "  SLOG2 .................. $CFG_SLOG2"
+echo "  SQL drivers:"
+echo "    DB2 .................. $CFG_SQL_db2"
+echo "    InterBase ............ $CFG_SQL_ibase"
+echo "    MySQL ................ $CFG_SQL_mysql"
+echo "    OCI .................. $CFG_SQL_oci"
+echo "    ODBC ................. $CFG_SQL_odbc"
+echo "    PostgreSQL ........... $CFG_SQL_psql"
+echo "    SQLite 2 ............. $CFG_SQL_sqlite2"
+echo "    SQLite ............... $CFG_SQL_sqlite ($CFG_SQLITE)"
+echo "    TDS .................. $CFG_SQL_tds"
+echo "  udev ................... $CFG_LIBUDEV"
+echo "  xkbcommon .............. $CFG_XKBCOMMON"
+if [ "$CFG_ZLIB" = "no" ]; then
+    echo "  zlib ................... no"
+else
+    zlib_sys=system
+    [ "$CFG_ZLIB" = "yes" ] && zlib_sys=qt
+    echo "  zlib ................... yes ($zlib_sys)"
+    unset zlib_sys
+fi
+
 echo
 
 # complain about not being able to use dynamic plugins if we are using a static build
@@ -6766,6 +6791,11 @@ if [ "$CFG_OPENSSL" = "linked" ] && [ "$OPENSSL_LIBS" = "" ]; then
     echo "For example:"
     echo "    OPENSSL_LIBS='-L/opt/ssl/lib -lssl -lcrypto' ./configure -openssl-linked"
     echo
+fi
+if [ "$CFG_XCB" != no ] && [ "$CFG_XKBCOMMON" = "no" ]; then
+    echo "WARNING: XCB support enabled but libxkbcommon 0.2.0 (or higher) not found."
+    echo "Not satisfying this requirement will disable the compose key functionality,"
+    echo "which includes text input with dead keys."
 fi
 
 exec 1>&3 3>&- # restore stdout

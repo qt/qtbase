@@ -52,7 +52,9 @@
 #include <QtCore/qsettings.h>
 #include <QtGui/qaccessible.h>
 #include <QtGui/private/qaccessible2_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformnativeinterface.h>
+#include <qpa/qplatformintegration.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qguiapplication.h>
 
@@ -245,6 +247,8 @@ bool QWindowsAccessibility::handleAccessibleObjectFromWindowRequest(HWND hwnd, W
     if (static_cast<long>(lParam) == static_cast<long>(UiaRootObjectId)) {
         /* For UI Automation */
     } else if ((DWORD)lParam == DWORD(OBJID_CLIENT)) {
+        // Start handling accessibility internally
+        QGuiApplicationPrivate::platformIntegration()->accessibility()->setActive(true);
 #if 1
         // Ignoring all requests while starting up
         // ### Maybe QPA takes care of this???

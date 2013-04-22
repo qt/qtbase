@@ -85,10 +85,8 @@ void *QCocoaNativeInterface::nativeResourceForContext(const QByteArray &resource
 
 void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
 {
-    if (!window->handle()) {
-        qWarning("QCocoaNativeInterface::nativeResourceForWindow: Native window has not been created.");
+    if (!window->handle())
         return 0;
-    }
 
     if (resourceString == "nsopenglcontext") {
         return static_cast<QCocoaWindow *>(window->handle())->currentContext()->nsOpenGLContext();
@@ -228,6 +226,11 @@ void QCocoaNativeInterface::setWindowContentView(QPlatformWindow *window, void *
 
 void QCocoaNativeInterface::registerTouchWindow(QWindow *window,  bool enable)
 {
+    // Make sure the QCocoaWindow is created when enabling. Disabling might
+    // happen on window destruction, don't (re)create the QCocoaWindow then.
+    if (enable)
+        window->create();
+
     QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
     if (cocoaWindow)
         cocoaWindow->registerTouch(enable);

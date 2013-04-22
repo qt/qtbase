@@ -151,6 +151,7 @@
             [kids addObject: element];
             [element release];
         }
+        // ### maybe we should use NSAccessibilityUnignoredChildren(kids); this needs more profiling
         return kids;
 
     } else if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
@@ -256,7 +257,7 @@
 // misc
 
 - (BOOL)accessibilityIsIgnored {
-    return false; //QCocoaAccessible::shouldBeIgnored(QAccessible::accessibleInterface(id));
+    return QCocoaAccessible::shouldBeIgnored(QAccessible::accessibleInterface(axid));
 }
 
 - (id)accessibilityHitTest:(NSPoint)point {

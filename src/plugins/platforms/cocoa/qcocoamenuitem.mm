@@ -218,8 +218,6 @@ NSMenuItem *QCocoaMenuItem::sync()
                     mergeItem = [loader aboutMenuItem];
                 else
                     mergeItem = [loader aboutQtMenuItem];
-
-                m_merged = true;
             } else if (m_text.startsWith(tr("Config"), Qt::CaseInsensitive)
                        || m_text.startsWith(tr("Preference"), Qt::CaseInsensitive)
                        || m_text.startsWith(tr("Options"), Qt::CaseInsensitive)
@@ -240,9 +238,9 @@ NSMenuItem *QCocoaMenuItem::sync()
 
         if (mergeItem) {
             m_merged = true;
+            [mergeItem retain];
             [m_native release];
             m_native = mergeItem;
-            [m_native retain]; // balance out release!
             [m_native setTag:reinterpret_cast<NSInteger>(this)];
         } else if (m_merged) {
             // was previously merged, but no longer
@@ -256,13 +254,12 @@ NSMenuItem *QCocoaMenuItem::sync()
         m_native = [[NSMenuItem alloc] initWithTitle:QCFString::toNSString(m_text)
             action:nil
                 keyEquivalent:@""];
-        [m_native retain];
         [m_native setTag:reinterpret_cast<NSInteger>(this)];
     }
 
 //  [m_native setHidden:YES];
 //  [m_native setHidden:NO];
-   [m_native setHidden: !m_isVisible];
+    [m_native setHidden: !m_isVisible];
     [m_native setEnabled: m_enabled];
     QString text = m_text;
     QKeySequence accel = m_shortcut;

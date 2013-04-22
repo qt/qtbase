@@ -295,9 +295,9 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
     lower quality output than HighResolution and should only be used
     for drafts.
 
-    \value PrinterResolution This value is deprecated. Is is
+    \value PrinterResolution This value is deprecated. It is
     equivalent to ScreenResolution on Unix and HighResolution on
-    Windows and Mac. Due do the difference between ScreenResolution
+    Windows and Mac. Due to the difference between ScreenResolution
     and HighResolution, use of this value may lead to non-portable
     printer code.
 

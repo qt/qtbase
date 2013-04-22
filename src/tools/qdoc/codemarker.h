@@ -178,10 +178,6 @@ protected:
                 Node *node,
                 SynopsisStyle style,
                 Status status);
-    void insert(FastSection& fastSection,
-                Node* node,
-                SynopsisStyle style,
-                bool includeClassName = false);
     bool insertReimpFunc(FastSection& fs, Node* node, Status status);
     void append(QList<Section>& sectionList, const FastSection& fastSection, bool includeKeys = false);
 

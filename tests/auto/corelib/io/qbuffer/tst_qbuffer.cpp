@@ -149,20 +149,25 @@ void tst_QBuffer::readBlock()
     const int arraySize = 10;
     char a[arraySize];
     QBuffer b;
+    QCOMPARE(b.bytesAvailable(), (qint64) 0); // no data
     QCOMPARE(b.read(a, arraySize), (qint64) -1); // not opened
     QVERIFY(b.atEnd());
 
     QByteArray ba;
     ba.resize(arraySize);
     b.setBuffer(&ba);
+    QCOMPARE(b.bytesAvailable(), (qint64) arraySize);
     b.open(QIODevice::WriteOnly);
+    QCOMPARE(b.bytesAvailable(), (qint64) arraySize);
     QTest::ignoreMessage(QtWarningMsg, "QIODevice::read: WriteOnly device");
     QCOMPARE(b.read(a, arraySize), (qint64) -1); // no read access
     b.close();
 
     b.open(QIODevice::ReadOnly);
+    QCOMPARE(b.bytesAvailable(), (qint64) arraySize);
     QCOMPARE(b.read(a, arraySize), (qint64) arraySize);
     QVERIFY(b.atEnd());
+    QCOMPARE(b.bytesAvailable(), (qint64) 0);
 
     // up to 3.0.x reading beyond the end was an error while ok
     // this has been made consistent with other QIODevice sub classes in 3.1
@@ -172,10 +177,13 @@ void tst_QBuffer::readBlock()
     // read in two chunks
     b.close();
     b.open(QIODevice::ReadOnly);
+    QCOMPARE(b.bytesAvailable(), (qint64) arraySize);
     QCOMPARE(b.read(a, arraySize/2), (qint64) arraySize/2);
+    QCOMPARE(b.bytesAvailable(), (qint64) arraySize/2);
     QCOMPARE(b.read(a + arraySize/2, arraySize - arraySize/2),
             (qint64)(arraySize - arraySize/2));
     QVERIFY(b.atEnd());
+    QCOMPARE(b.bytesAvailable(), (qint64) 0);
 }
 
 void tst_QBuffer::readBlockPastEnd()
@@ -319,9 +327,12 @@ void tst_QBuffer::seekTest()
 
     buf.open(QIODevice::ReadWrite);
     QCOMPARE(buf.pos(), qint64(0));
+    QCOMPARE(buf.bytesAvailable(), qint64(0));
 
     QByteArray data = str.toLatin1();
     QCOMPARE(buf.write( data.constData(), data.size() ), qint64(data.size()));
+    QCOMPARE(buf.bytesAvailable(), qint64(0)); // we're at the end
+    QCOMPARE(buf.size(), qint64(data.size()));
 
     QTest::ignoreMessage(QtWarningMsg, "QBuffer::seek: Invalid pos: -1");
     DO_INVALID_SEEK(-1);
@@ -336,6 +347,7 @@ void tst_QBuffer::seekTest()
     {
         char c = 'a';
         QVERIFY(buf.seek(qint64(str.size())));
+        QCOMPARE(buf.bytesAvailable(), qint64(0));
         QCOMPARE(buf.read(&c, qint64(1)), qint64(0));
         QCOMPARE(c, 'a');
         QCOMPARE(buf.write(&c, qint64(1)), qint64(1));
@@ -347,6 +359,7 @@ void tst_QBuffer::seekTest()
         const int offset = 1; // any positive integer will do
         const qint64 pos = buf.size() + offset;
         QVERIFY(buf.seek(pos));
+        QCOMPARE(buf.bytesAvailable(), qint64(0));
         QCOMPARE(buf.pos(), pos);
         QVERIFY(!buf.getChar(&c));
         QVERIFY(buf.seek(pos - 1));
@@ -533,7 +546,11 @@ void tst_QBuffer::readLineBoundaries()
         lineByLine.append(buffer.readLine());
 
     buffer.seek(0);
-    QCOMPARE(lineByLine, buffer.readAll());
+    QCOMPARE(buffer.bytesAvailable(), lineByLine.size());
+
+    QByteArray all = buffer.readAll();
+    QCOMPARE(all.size(), lineByLine.size());
+    QCOMPARE(all, lineByLine);
 }
 
 // Test that any character in a buffer can be read and pushed back.
@@ -548,7 +565,9 @@ void tst_QBuffer::getAndUngetChar()
 
     // Take a copy of the data held in the buffer
     buffer.seek(0);
+    QCOMPARE(buffer.bytesAvailable(), buffer.size());
     QByteArray data = buffer.readAll();
+    QCOMPARE(buffer.bytesAvailable(), qint64(0));
 
     // Get and unget each character in order
     for (qint64 i = 0; i < buffer.size(); ++i) {
@@ -570,7 +589,9 @@ void tst_QBuffer::getAndUngetChar()
 
     // Verify that the state of the buffer still matches the original data.
     buffer.seek(0);
+    QCOMPARE(buffer.bytesAvailable(), data.size());
     QCOMPARE(buffer.readAll(), data);
+    QCOMPARE(buffer.bytesAvailable(), qint64(0));
 }
 
 void tst_QBuffer::writeAfterQByteArrayResize()
