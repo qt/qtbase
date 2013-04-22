@@ -422,7 +422,7 @@ break;
     if (QXcbWindow *platformWindow = platformWindowFromId(e->event)) { \
         handled = QWindowSystemInterface::handleNativeEvent(platformWindow->window(), m_nativeInterface->genericEventFilterType(), event, &result); \
         if (!handled) \
-            m_keyboard->handler(m_focusWindow, e); \
+            m_keyboard->handler(m_focusWindow ? m_focusWindow : platformWindow, e); \
     } \
 } \
 break;
