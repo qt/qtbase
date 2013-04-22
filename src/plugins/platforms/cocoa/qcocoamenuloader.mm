@@ -41,6 +41,7 @@
 
 #include "qcocoamenuloader.h"
 
+#include "messages.h"
 #include "qcocoahelpers.h"
 #include "qcocoamenubar.h"
 #include "qcocoamenuitem.h"
@@ -56,30 +57,6 @@ QT_FORWARD_DECLARE_CLASS(QString)
 
 
 QT_BEGIN_NAMESPACE
-
-#ifndef QT_NO_TRANSLATION
-static const char *application_menu_strings[] = {
-    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Services"),
-    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Hide %1"),
-    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Hide Others"),
-    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Show All"),
-    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Preferences..."),
-    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","Quit %1"),
-    QT_TRANSLATE_NOOP("MAC_APPLICATION_MENU","About %1")
-    };
-
-QString qt_mac_applicationmenu_string(int type)
-{
-    QString menuString = QString::fromLatin1(application_menu_strings[type]);
-    QString translated = qApp->translate("QMenuBar", application_menu_strings[type]);
-    if (translated != menuString) {
-        return translated;
-    } else {
-        return qApp->translate("MAC_APPLICATION_MENU",
-                               application_menu_strings[type]);
-    }
-}
-#endif
 
 /*
     Loads and instantiates the main app menu from the menu nib file(s).

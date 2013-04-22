@@ -42,6 +42,7 @@
 #include "qcocoamenuitem.h"
 
 #include "qcocoamenu.h"
+#include "messages.h"
 #include "qcocoahelpers.h"
 #include "qcocoaautoreleasepool.h"
 #include "qt_mac_p.h"
@@ -209,28 +210,24 @@ NSMenuItem *QCocoaMenuItem::sync()
         case PreferencesRole:
             mergeItem = [loader preferencesMenuItem];
             break;
-        case TextHeuristicRole: {
-            QString aboutString = tr("About").toLower();
-            if (m_text.startsWith(aboutString, Qt::CaseInsensitive)
-                || m_text.endsWith(aboutString, Qt::CaseInsensitive))
-            {
+        case TextHeuristicRole:
+            switch (detectMenuRole(m_text)) {
+            case QPlatformMenuItem::AboutRole:
                 if (m_text.indexOf(QRegExp(QString::fromLatin1("qt$"), Qt::CaseInsensitive)) == -1)
                     mergeItem = [loader aboutMenuItem];
                 else
                     mergeItem = [loader aboutQtMenuItem];
-            } else if (m_text.startsWith(tr("Config"), Qt::CaseInsensitive)
-                       || m_text.startsWith(tr("Preference"), Qt::CaseInsensitive)
-                       || m_text.startsWith(tr("Options"), Qt::CaseInsensitive)
-                       || m_text.startsWith(tr("Setting"), Qt::CaseInsensitive)
-                       || m_text.startsWith(tr("Setup"), Qt::CaseInsensitive)) {
+                break;
+            case QPlatformMenuItem::PreferencesRole:
                 mergeItem = [loader preferencesMenuItem];
-            } else if (m_text.startsWith(tr("Quit"), Qt::CaseInsensitive)
-                       || m_text.startsWith(tr("Exit"), Qt::CaseInsensitive)) {
+                break;
+            case QPlatformMenuItem::QuitRole:
                 mergeItem = [loader quitMenuItem];
+                break;
+            default:
+                break;
             }
-
             break;
-        }
 
         default:
             qWarning() << Q_FUNC_INFO << "unsupported role" << (int) m_role;
@@ -323,7 +320,7 @@ QString QCocoaMenuItem::mergeText()
         return qt_mac_applicationmenu_string(6).arg(qt_mac_applicationName());
     } else if (m_native== [loader aboutQtMenuItem]) {
         if (m_text == QString("About Qt"))
-            return tr("About Qt");
+            return msgAboutQt();
         else
             return m_text;
     } else if (m_native == [loader preferencesMenuItem]) {
