@@ -43,6 +43,7 @@
 #define QACCESSIBLEMENU_H
 
 #include <QtWidgets/private/qaccessiblewidget_p.h>
+#include <QtCore/qpointer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -120,7 +121,7 @@ protected:
     QAction *action() const;
 private:
     QAction *m_action;
-    QWidget *m_owner; // can hold either QMenu or the QMenuBar that contains the action
+    QPointer<QWidget> m_owner; // can hold either QMenu or the QMenuBar that contains the action
 };
 
 #endif // QT_NO_MENU
