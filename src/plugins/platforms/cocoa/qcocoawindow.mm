@@ -188,6 +188,8 @@ static bool isMouseEvent(NSEvent *ev)
 
 @end
 
+const int QCocoaWindow::NoAlertRequest = -1;
+
 QCocoaWindow::QCocoaWindow(QWindow *tlw)
     : QPlatformWindow(tlw)
     , m_nsWindow(0)
@@ -202,6 +204,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_frameStrutEventsEnabled(false)
     , m_isExposed(false)
     , m_registerTouchCount(0)
+    , m_alertRequest(NoAlertRequest)
 {
 #ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
     qDebug() << "QCocoaWindow::QCocoaWindow" << this;
@@ -494,6 +497,21 @@ void QCocoaWindow::setWindowIcon(const QIcon &icon)
         [iconButton setImage:image];
         [image release];
     }
+}
+
+void QCocoaWindow::setAlertState(bool enabled)
+{
+    if (m_alertRequest == NoAlertRequest && enabled) {
+        m_alertRequest = [NSApp requestUserAttention:NSCriticalRequest];
+    } else if (m_alertRequest != NoAlertRequest && !enabled) {
+        [NSApp cancelUserAttentionRequest:m_alertRequest];
+        m_alertRequest = NoAlertRequest;
+    }
+}
+
+bool QCocoaWindow::isAlertState() const
+{
+    return m_alertRequest != NoAlertRequest;
 }
 
 void QCocoaWindow::raise()

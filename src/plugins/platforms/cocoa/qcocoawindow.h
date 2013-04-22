@@ -106,6 +106,8 @@ public:
     void setWindowTitle(const QString &title);
     void setWindowFilePath(const QString &filePath);
     void setWindowIcon(const QIcon &icon);
+    void setAlertState(bool enabled);
+    bool isAlertState() const;
     void raise();
     void lower();
     bool isExposed() const;
@@ -190,6 +192,9 @@ public: // for QNSView
     bool m_frameStrutEventsEnabled;
     bool m_isExposed;
     int m_registerTouchCount;
+
+    static const int NoAlertRequest;
+    NSInteger m_alertRequest;
 };
 
 QT_END_NAMESPACE

@@ -415,7 +415,7 @@ void QApplication::beep()
 void QApplication::alert(QWidget *widget, int duration)
 {
     if (widget) {
-       if (widget->window()->isActiveWindow()&& !widget->window()->windowState() & Qt::WindowMinimized)
+       if (widget->window()->isActiveWindow() && !(widget->window()->windowState() & Qt::WindowMinimized))
             return;
         if (QWindow *window= QApplicationPrivate::windowForWidget(widget))
             window->alert(duration);
