@@ -736,7 +736,7 @@ Qt::KeyboardModifiers QXcbKeyboard::translateModifiers(int s)
 
 int QXcbKeyboard::translateKeySym(uint key) const
 {
-    int code = -1;
+    int code = Qt::Key_unknown;
     int i = 0;                                // any other keys
     while (KeyTbl[i]) {
         if (key == KeyTbl[i]) {
