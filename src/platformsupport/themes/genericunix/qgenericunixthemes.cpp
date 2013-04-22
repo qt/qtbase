@@ -425,7 +425,11 @@ QStringList QGenericUnixTheme::themeNames()
 #ifndef QT_NO_SETTINGS
             result.push_back(QLatin1String(QKdeTheme::name));
 #endif
-        } else { // Gnome, Unity, other Gtk-based desktops like XFCE.
+        } else if (desktopEnvironment == QByteArrayLiteral("GNOME") ||
+                desktopEnvironment == QByteArrayLiteral("UNITY") ||
+                desktopEnvironment == QByteArrayLiteral("MATE") ||
+                desktopEnvironment == QByteArrayLiteral("XFCE") ||
+                desktopEnvironment == QByteArrayLiteral("LXDE")) { // Gtk-based desktops
             // prefer the GTK2 theme implementation with native dialogs etc.
             result.push_back(QStringLiteral("gtk2"));
             // fallback to the generic Gnome theme if loading the GTK2 theme fails
