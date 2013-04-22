@@ -170,7 +170,9 @@ static inline QImage::Format imageFormatForDepth(int depth)
         case 32: return QImage::Format_ARGB32_Premultiplied;
         case 24: return QImage::Format_RGB32;
         case 16: return QImage::Format_RGB16;
-        default: return QImage::Format_Invalid;
+        default:
+                 qWarning("Unsupported screen depth: %d", depth);
+                 return QImage::Format_Invalid;
     }
 }
 
