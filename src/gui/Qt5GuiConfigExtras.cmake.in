@@ -1,6 +1,4 @@
 
-!!IF !mac
-
 !!IF !isEmpty(CMAKE_ANGLE_EGL_DLL_RELEASE)
 
 !!IF isEmpty(CMAKE_INCLUDE_DIR_IS_ABSOLUTE)
@@ -73,6 +71,9 @@ macro(_qt5gui_find_extra_libs Name Libs LibDir IncDirs)
                 PATHS \"${LibDir}\" NO_DEFAULT_PATH
 !!ENDIF
             )
+!!IF mac
+            set(Qt5Gui_${_cmake_lib_name}_LIBRARY "${Qt5Gui_${_cmake_lib_name}_LIBRARY}/${_lib}")
+!!ENDIF
             if (NOT Qt5Gui_${_cmake_lib_name}_LIBRARY)
                 message(FATAL_ERROR \"Failed to find \\\"${_lib}\\\" in \\\"${LibDir}\\\", using the CMAKE_FIND_ROOT_PATH \\\"${CMAKE_FIND_ROOT_PATH}\\\".\")
             endif()
@@ -123,5 +124,3 @@ foreach(_config ${_configs})
     )
 endforeach()
 unset(_configs)
-
-!!ENDIF
