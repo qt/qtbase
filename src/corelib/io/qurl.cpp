@@ -3731,7 +3731,7 @@ QString QUrl::errorString() const
         return QString();
 
     QString errorSource;
-    int errorPosition;
+    int errorPosition = 0;
     QUrlPrivate::ErrorCode errorCode = d->validityError(&errorSource, &errorPosition);
     if (errorCode == QUrlPrivate::NoError)
         return QString();
