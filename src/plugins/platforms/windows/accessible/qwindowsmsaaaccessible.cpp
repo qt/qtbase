@@ -721,22 +721,7 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accChild(VARIANT varChildI
     if (varChildID.vt != VT_I4)
         return E_INVALIDARG;
 
-
-    int childIndex = varChildID.lVal;
-
-    QAccessibleInterface *acc = 0;
-
-
-    if (childIndex == 0) {
-        // Yes, some AT clients (Active Accessibility Object Inspector)
-        // actually ask for the same object. As a consequence, we need to clone ourselves:
-        acc = accessible;
-    } else if (childIndex < 0) {
-        acc = QAccessible::accessibleInterface((QAccessible::Id)childIndex);
-    } else {
-        acc = accessible->child(childIndex - 1);
-    }
-
+    QAccessibleInterface *acc = childPointer(accessible, varChildID);
     if (acc) {
         *ppdispChild = QWindowsAccessibility::wrap(acc);
         return S_OK;
@@ -825,7 +810,7 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accDescription(VARIANT var
 
     QString descr;
     if (varID.lVal) {
-        QAccessibleInterface *child = childPointer(varID);
+        QAccessibleInterface *child = childPointer(accessible, varID);
         if (!child)
             return E_FAIL;
         descr = child->text(QAccessible::Description);
@@ -850,7 +835,7 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accHelp(VARIANT varID, BST
 
     QString help;
     if (varID.lVal) {
-        QAccessibleInterface *child = childPointer(varID);
+        QAccessibleInterface *child = childPointer(accessible, varID);
         if (!child)
             return E_FAIL;
         help = child->text(QAccessible::Help);
@@ -909,7 +894,7 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accName(VARIANT varID, BST
 
     QString name;
     if (varID.lVal) {
-        QAccessibleInterface *child = childPointer(varID);
+        QAccessibleInterface *child = childPointer(accessible, varID);
         if (!child)
             return E_FAIL;
         name = child->text(QAccessible::Name);
@@ -952,7 +937,7 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accRole(VARIANT varID, VAR
 
     QAccessible::Role role;
     if (varID.lVal) {
-        QAccessibleInterface *child = childPointer(varID);
+        QAccessibleInterface *child = childPointer(accessible, varID);
         if (!child)
             return E_FAIL;
         role = child->role();
@@ -987,7 +972,7 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accState(VARIANT varID, VA
 
     QAccessible::State state;
     if (varID.lVal) {
-        QAccessibleInterface *child = childPointer(varID);
+        QAccessibleInterface *child = childPointer(accessible, varID);
         if (!child)
             return E_FAIL;
         state = child->state();
