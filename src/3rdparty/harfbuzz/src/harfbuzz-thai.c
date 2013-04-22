@@ -261,7 +261,7 @@ static HB_Bool HB_ThaiConvertStringToGlyphIndices (HB_ShaperItem *item)
         for (int lgi = 0; lgi < lgn; lgi++) {
             if ( rglyphs[lgi] == 0xdd/*TH_BLANK_BASE_GLYPH*/ ) {
                 glyphString[slen++] = C_DOTTED_CIRCLE;
-            } else if (cstr[i] == (signed char)~0) {
+            } else if ((unsigned char)cstr[i] == (unsigned char)~0) {
                 // The only glyphs that should be passed to this function that cannot be mapped to
                 // tis620 are the ones of type Inherited class.  Pass these glyphs untouched.
                 glyphString[slen++] = string[i];

@@ -114,8 +114,8 @@ static void setInterleavedWordsInto8bytes(UINT8* dest, UINT32 even, UINT32 odd)
 		const UINT32 * pI = (const UINT32 *)input; \
 		UINT32 * pS = state; \
 		UINT32 t, x0, x1; \
-	    int i; \
-	    for (i = (rateInLanes)-1; i >= 0; --i) \
+        int i; \
+        for (i = (int)(rateInLanes)-1; i >= 0; --i) \
 		{ \
 			x0 = *(pI++); \
 			t = (x0 ^ (x0 >>  1)) & 0x22222222UL;  x0 = x0 ^ t ^ (t <<  1); \
@@ -170,7 +170,7 @@ static void xor8bytesIntoInterleavedWords(UINT32* evenAndOdd, const UINT8* sourc
 
 #define xorLanesIntoState(laneCount, state, input) \
     { \
-        int i; \
+        unsigned i; \
         for(i=0; i<(laneCount); i++) \
             xor8bytesIntoInterleavedWords(state+i*2, input+i*8); \
     }
@@ -212,7 +212,7 @@ static void setInterleavedWordsInto8bytes(UINT8* dest, UINT32* evenAndOdd)
 
 #define extractLanes(laneCount, state, data) \
     { \
-        int i; \
+        unsigned i; \
         for(i=0; i<(laneCount); i++) \
             setInterleavedWordsInto8bytes(data+i*8, (UINT32*)state+i*2); \
     }
