@@ -41,6 +41,14 @@ Third party components
   * [QTBUG-8836] QAbstractItemView now allows manual deselect in
     SingleSelection mode (with control modifier)
 
+- QtCore
+
+  * The serialization behavior for QDateTime has reverted to pre-Qt 5,
+    due to the issue mentioned in section 4 here:
+    http://lists.qt-project.org/pipermail/development/2013-March/010559.html
+
+    This means that the QDataStream version will be 14 with Qt 5.1.
+
 ****************************************************************************
 *                          Library                                         *
 ****************************************************************************

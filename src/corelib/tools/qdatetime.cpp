@@ -3691,8 +3691,11 @@ QDataStream &operator>>(QDataStream &in, QTime &time)
 */
 QDataStream &operator<<(QDataStream &out, const QDateTime &dateTime)
 {
-    if (out.version() >= 13) {
+    if (out.version() == 13) {
         if (dateTime.isValid()) {
+            // This approach is wrong and should not be used again; it breaks
+            // the guarantee that a deserialised local datetime is the same time
+            // of day, regardless of which timezone it was serialised in.
             QDateTime asUTC = dateTime.toUTC();
             out << asUTC.d->date << asUTC.d->time;
         } else {
@@ -3721,7 +3724,7 @@ QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)
 
     in >> dateTime.d->date >> dateTime.d->time;
 
-    if (in.version() >= 13) {
+    if (in.version() == 13) {
         qint8 ts = 0;
         in >> ts;
         if (dateTime.isValid()) {
