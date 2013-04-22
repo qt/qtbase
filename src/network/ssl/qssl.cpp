@@ -161,6 +161,8 @@ QT_BEGIN_NAMESPACE
     mechanism for renegotiating the connection parameters. When enabled, this
     option can allow connections for legacy servers, but it introduces the
     possibility that an attacker could inject plaintext into the SSL session.
+    \value SslOptionDisableSessionSharing Disables SSL session sharing via
+    the session ID handshake attribute.
 
     By default, SslOptionDisableEmptyFragments is turned on since this causes
     problems with a large number of servers. SslOptionDisableLegacyRenegotiation

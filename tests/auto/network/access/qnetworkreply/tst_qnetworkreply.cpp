@@ -5920,7 +5920,7 @@ void tst_QNetworkReply::sslSessionSharing()
     warmupRequest.setAttribute(QNetworkRequest::User, sessionSharingEnabled); // so we can read it from the slot
     if (! sessionSharingEnabled) {
         QSslConfiguration configuration(QSslConfiguration::defaultConfiguration());
-        configuration.setSslOption(QSsl::SslOptionDisableSessionTickets, true);
+        configuration.setSslOption(QSsl::SslOptionDisableSessionSharing, true);
         warmupRequest.setSslConfiguration(configuration);
     }
     QNetworkReply *reply = manager.get(warmupRequest);

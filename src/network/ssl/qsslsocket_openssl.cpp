@@ -1439,7 +1439,7 @@ void QSslSocketBackendPrivate::continueHandshake()
 #endif
 
     // Cache this SSL session inside the QSslContext
-    if (!(configuration.sslOptions & QSsl::SslOptionDisableSessionTickets)) {
+    if (!(configuration.sslOptions & QSsl::SslOptionDisableSessionSharing)) {
         if (!sslContextPointer->cacheSession(ssl))
             sslContextPointer.clear(); // we could not cache the session
     }
