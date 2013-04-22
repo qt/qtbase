@@ -5,6 +5,7 @@ SUBDIRS = \
         qbytearray \
         qcontiguouscache \
         qlist \
+        qlocale \
         qmap \
         qrect \
         qregexp \
