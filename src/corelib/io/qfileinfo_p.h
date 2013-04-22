@@ -58,6 +58,7 @@
 #include "qatomic.h"
 #include "qshareddata.h"
 #include "qfilesystemengine_p.h"
+#include "qvector.h"
 
 #include <QtCore/private/qabstractfileengine_p.h>
 #include <QtCore/private/qfilesystementry_p.h>
@@ -152,7 +153,12 @@ public:
     bool cache_enabled : 1;
     mutable uint fileFlags;
     mutable qint64 fileSize;
-    mutable QDateTime fileTimes[3];
+    // ### Qt6: FIXME: This vector is essentially a plain array
+    // mutable QDateTime fileTimes[3], but the array is slower
+    // to initialize than the QVector as QDateTime has a pimpl.
+    // In Qt 6, QDateTime should inline its data members,
+    // and this here can be an array again.
+    mutable QVector<QDateTime> fileTimes;
     inline bool getCachedFlag(uint c) const
     { return cache_enabled ? (cachedFlags & c) : 0; }
     inline void setCachedFlag(uint c) const
