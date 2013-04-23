@@ -405,7 +405,7 @@ inline bool QAbstractItemModel::moveRow(const QModelIndex &sourceParent, int sou
 { return moveRows(sourceParent, sourceRow, 1, destinationParent, destinationChild); }
 inline bool QAbstractItemModel::moveColumn(const QModelIndex &sourceParent, int sourceColumn,
                                            const QModelIndex &destinationParent, int destinationChild)
-{ return moveRows(sourceParent, sourceColumn, 1, destinationParent, destinationChild); }
+{ return moveColumns(sourceParent, sourceColumn, 1, destinationParent, destinationChild); }
 inline QModelIndex QAbstractItemModel::createIndex(int arow, int acolumn, void *adata) const
 { return QModelIndex(arow, acolumn, adata, this); }
 inline QModelIndex QAbstractItemModel::createIndex(int arow, int acolumn, quintptr aid) const
