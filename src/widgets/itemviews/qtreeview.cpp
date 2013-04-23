@@ -878,7 +878,7 @@ bool QTreeView::isSortingEnabled() const
     \property QTreeView::animated
     \brief whether animations are enabled
 
-    If this property is true the treeview will animate expandsion
+    If this property is true the treeview will animate expansion
     and collapsing of branches. If this property is false, the treeview
     will expand or collapse branches immediately without showing
     the animation.
