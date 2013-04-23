@@ -42,6 +42,8 @@
 #ifndef QOPENGLVERTEXARRAYOBJECT_H
 #define QOPENGLVERTEXARRAYOBJECT_H
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_OPENGL
 
 #include <QtCore/QObject>
