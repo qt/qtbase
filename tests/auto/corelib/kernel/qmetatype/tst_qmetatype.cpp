@@ -1825,11 +1825,15 @@ typedef Undefined (*UndefinedFunction0)();
 typedef Undefined (*UndefinedFunction1)(Undefined);
 typedef Undefined (*UndefinedFunction2)(Undefined, Undefined);
 typedef Undefined (*UndefinedFunction3)(Undefined, Undefined, Undefined);
+typedef Undefined (*UndefinedFunction4)(Undefined, Undefined, Undefined, Undefined, Undefined, Undefined, Undefined, Undefined);
 
 Q_DECLARE_METATYPE(UndefinedFunction0);
 Q_DECLARE_METATYPE(UndefinedFunction1);
 Q_DECLARE_METATYPE(UndefinedFunction2);
 Q_DECLARE_METATYPE(UndefinedFunction3);
+#ifdef Q_COMPILER_VARIADIC_TEMPLATES
+Q_DECLARE_METATYPE(UndefinedFunction4);
+#endif
 
 QTEST_MAIN(tst_QMetaType)
 #include "tst_qmetatype.moc"

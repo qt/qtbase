@@ -563,11 +563,16 @@ namespace QtPrivate {
         { return -1; }
     };
 
+#ifndef Q_COMPILER_VARIADIC_TEMPLATES
     // Function pointers don't derive from QObject
     template <class Result> struct IsPointerToTypeDerivedFromQObject<Result(*)()> { enum { Value = false }; };
     template <class Result, class Arg0> struct IsPointerToTypeDerivedFromQObject<Result(*)(Arg0)> { enum { Value = false }; };
     template <class Result, class Arg0, class Arg1> struct IsPointerToTypeDerivedFromQObject<Result(*)(Arg0, Arg1)> { enum { Value = false }; };
     template <class Result, class Arg0, class Arg1, class Arg2> struct IsPointerToTypeDerivedFromQObject<Result(*)(Arg0, Arg1, Arg2)> { enum { Value = false }; };
+#else
+    template <typename Result, typename... Args>
+    struct IsPointerToTypeDerivedFromQObject<Result(*)(Args...)> { enum { Value = false }; };
+#endif
 
     template<typename T>
     struct QMetaTypeTypeFlags
