@@ -202,6 +202,9 @@ public Q_SLOTS:
 
     void centerCursor();
 
+    void zoomIn(int range = 1);
+    void zoomOut(int range = 1);
+
 Q_SIGNALS:
     void textChanged();
     void undoAvailable(bool b);

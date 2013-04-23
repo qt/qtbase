@@ -2223,10 +2223,56 @@ void QPlainTextEdit::changeEvent(QEvent *e)
 #ifndef QT_NO_WHEELEVENT
 void QPlainTextEdit::wheelEvent(QWheelEvent *e)
 {
+    Q_D(QPlainTextEdit);
+    if (!(d->control->textInteractionFlags() & Qt::TextEditable)) {
+        if (e->modifiers() & Qt::ControlModifier) {
+            const int delta = e->delta();
+            if (delta < 0)
+                zoomOut();
+            else if (delta > 0)
+                zoomIn();
+            return;
+        }
+    }
     QAbstractScrollArea::wheelEvent(e);
     updateMicroFocus();
 }
 #endif
+
+/*!
+    \fn QPlainTextEdit::zoomIn(int range)
+
+    Zooms in on the text by making the base font size \a range
+    points larger and recalculating all font sizes to be the new size.
+    This does not change the size of any images.
+
+    \sa zoomOut()
+*/
+void QPlainTextEdit::zoomIn(int range)
+{
+    QFont f = font();
+    const int newSize = f.pointSize() + range;
+    if (newSize <= 0)
+        return;
+    f.setPointSize(newSize);
+    setFont(f);
+}
+
+/*!
+    \fn QPlainTextEdit::zoomOut(int range)
+
+    \overload
+
+    Zooms out on the text by making the base font size \a range points
+    smaller and recalculating all font sizes to be the new size. This
+    does not change the size of any images.
+
+    \sa zoomIn()
+*/
+void QPlainTextEdit::zoomOut(int range)
+{
+    zoomIn(-range);
+}
 
 #ifndef QT_NO_CONTEXTMENU
 /*!  This function creates the standard context menu which is shown
