@@ -759,7 +759,7 @@ bool QOpenGLContext::makeCurrent(QSurface *surface)
         return false;
 
     if (surface->surfaceType() != QSurface::OpenGLSurface) {
-        qWarning() << "QOpenGLContext::makeCurrent() called with non-opengl surface";
+        qWarning() << "QOpenGLContext::makeCurrent() called with non-opengl surface" << surface;
         return false;
     }
 
