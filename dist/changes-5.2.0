@@ -29,3 +29,5 @@ QtWidgets
 - [QTBUG-4206] QTableView resizeToContents will now adjust to actual contents
   and not just visible area. QHeaderView::setAutoResizePrecision() has been
   introduced to control how precise the autoResize should be.
+
+- QFileDialog::setDefaultSuffix() removes leading dot characters.

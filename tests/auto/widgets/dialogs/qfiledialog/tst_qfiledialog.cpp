@@ -621,6 +621,8 @@ void tst_QFiledialog::defaultSuffix()
     QCOMPARE(fd.defaultSuffix(), QString());
     fd.setDefaultSuffix("txt");
     QCOMPARE(fd.defaultSuffix(), QString("txt"));
+    fd.setDefaultSuffix(".txt");
+    QCOMPARE(fd.defaultSuffix(), QString("txt"));
     fd.setDefaultSuffix(QString());
     QCOMPARE(fd.defaultSuffix(), QString());
 }

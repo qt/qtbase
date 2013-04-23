@@ -495,6 +495,8 @@ QStringList QFileDialogOptions::nameFilters() const
 void QFileDialogOptions::setDefaultSuffix(const QString &suffix)
 {
     d->defaultSuffix = suffix;
+    if (d->defaultSuffix.size() > 1 && d->defaultSuffix.startsWith(QLatin1Char('.')))
+        d->defaultSuffix.remove(0, 1); // Silently change ".txt" -> "txt".
 }
 
 QString QFileDialogOptions::defaultSuffix() const

@@ -1552,6 +1552,8 @@ bool QFileDialog::confirmOverwrite() const
     filename if it has no suffix already. The suffix is typically
     used to indicate the file type (e.g. "txt" indicates a text
     file).
+
+    If the first character is a dot ('.'), it is removed.
 */
 void QFileDialog::setDefaultSuffix(const QString &suffix)
 {
