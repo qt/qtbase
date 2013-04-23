@@ -1666,22 +1666,11 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
     QWindow *window = e->window.data();
     modifier_buttons = e->modifiers;
     if (e->nullWindow
-#ifdef Q_OS_ANDROID
-           || (e->keyType == QEvent::KeyRelease && e->key == Qt::Key_Back) || e->key == Qt::Key_Menu
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+           || e->key == Qt::Key_Back || e->key == Qt::Key_Menu
 #endif
             ) {
         window = QGuiApplication::focusWindow();
-    }
-    if (!window
-#ifdef Q_OS_ANDROID
-           && e->keyType != QEvent::KeyRelease && e->key != Qt::Key_Back
-#endif
-            ) {
-        return;
-    }
-    if (window && window->d_func()->blockedByModalWindow) {
-        // a modal window is blocking this window, don't allow key events through
-        return;
     }
 
     QKeyEvent ev(e->keyType, e->key, e->modifiers,
@@ -1689,18 +1678,24 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
                  e->unicode, e->repeat, e->repeatCount);
     ev.setTimestamp(e->timestamp);
 
-#ifdef Q_OS_ANDROID
-    if (e->keyType == QEvent::KeyRelease && e->key == Qt::Key_Back) {
-        if (!window) {
-            qApp->quit();
-        } else {
-            QGuiApplication::sendEvent(window, &ev);
-            if (!ev.isAccepted() && e->key == Qt::Key_Back)
-                QWindowSystemInterface::handleCloseEvent(window);
-        }
-    } else
-#endif
+    // only deliver key events when we have a window, and no modal window is blocking this window
+
+    if (window && !window->d_func()->blockedByModalWindow)
         QGuiApplication::sendSpontaneousEvent(window, &ev);
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+    else
+        ev.setAccepted(false);
+
+    static bool backKeyPressAccepted = false;
+    if (e->keyType == QEvent::KeyPress) {
+        backKeyPressAccepted = e->key == Qt::Key_Back && ev.isAccepted();
+    } else if (e->keyType == QEvent::KeyRelease && e->key == Qt::Key_Back && !backKeyPressAccepted && !ev.isAccepted()) {
+        if (!window)
+            qApp->quit();
+        else
+            QWindowSystemInterface::handleCloseEvent(window);
+    }
+#endif
 }
 
 void QGuiApplicationPrivate::processEnterEvent(QWindowSystemInterfacePrivate::EnterEvent *e)
