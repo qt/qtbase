@@ -1366,9 +1366,23 @@ void QWindowsWindow::setWindowState(Qt::WindowState state)
     }
 }
 
+// Return the effective screen for full screen mode in a virtual desktop.
+static const QScreen *effectiveScreen(const QWindow *w)
+{
+    QPoint center = w->geometry().center();
+    if (!w->isTopLevel())
+        center = w->mapToGlobal(center);
+    const QScreen *screen = w->screen();
+    if (!screen->geometry().contains(center))
+        foreach (const QScreen *sibling, screen->virtualSiblings())
+            if (sibling->geometry().contains(center))
+                return sibling;
+    return screen;
+}
+
 bool QWindowsWindow::isFullScreen_sys() const
 {
-    return geometry_sys() == window()->screen()->geometry();
+    return geometry_sys() == effectiveScreen(window())->geometry();
 }
 
 /*!
@@ -1444,7 +1458,7 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
                 newStyle |= WS_VISIBLE;
             setStyle(newStyle);
 
-            const QRect r = window()->screen()->geometry();
+            const QRect r = effectiveScreen(window())->geometry();
             const UINT swpf = SWP_FRAMECHANGED | SWP_NOACTIVATE;
             const bool wasSync = testFlag(SynchronousGeometryChangeEvent);
             setFlag(SynchronousGeometryChangeEvent);
