@@ -133,10 +133,14 @@ public:
 
     bool copy()
     {
+#ifdef QT_NO_CLIPBOARD
+        return false;
+#else
         if (!copyAvailable)
             return false;
         textEdit->copy();
         return true;
+#endif
     }
 
 private slots:
