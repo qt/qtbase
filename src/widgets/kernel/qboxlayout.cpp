@@ -942,7 +942,8 @@ void QBoxLayout::insertSpacerItem(int index, QSpacerItem *spacerItem)
 void QBoxLayout::insertLayout(int index, QLayout *layout, int stretch)
 {
     Q_D(QBoxLayout);
-    addChildLayout(layout);
+    if (!adoptLayout(layout))
+        return;
     if (index < 0)                                // append
         index = d->list.count();
     QBoxLayoutItem *it = new QBoxLayoutItem(layout, stretch);
