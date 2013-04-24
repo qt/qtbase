@@ -127,6 +127,8 @@ public:
     NSView *contentView() const;
     void setContentView(NSView *contentView);
 
+    void setEmbeddedInForeignView(bool subwindow);
+
     void windowWillMove();
     void windowDidMove();
     void windowDidResize();
@@ -175,7 +177,10 @@ public: // for QNSView
     NSView *m_contentView;
     QNSView *m_qtView;
     NSWindow *m_nsWindow;
-    bool m_contentViewIsEmbedded; // true if the m_contentView is embedded in a "foregin" NSView hiearchy
+
+    // TODO merge to one variable if possible
+    bool m_contentViewIsEmbedded; // true if the m_contentView is actually embedded in a "foreign" NSView hiearchy
+    bool m_contentViewIsToBeEmbedded; // true if the m_contentView is intended to be embedded in a "foreign" NSView hiearchy
 
     QNSWindowDelegate *m_nsWindowDelegate;
     Qt::WindowFlags m_windowFlags;

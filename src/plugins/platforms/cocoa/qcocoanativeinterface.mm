@@ -120,6 +120,8 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QCocoaNativeInter
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setWindowContentView);
     if (resource.toLower() == "registertouchwindow")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::registerTouchWindow);
+    if (resource.toLower() == "setembeddedinforeignview")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setEmbeddedInForeignView);
 
     return 0;
 }
@@ -227,6 +229,12 @@ void QCocoaNativeInterface::setWindowContentView(QPlatformWindow *window, void *
 {
     QCocoaWindow *cocoaPlatformWindow = static_cast<QCocoaWindow *>(window);
     cocoaPlatformWindow->setContentView(reinterpret_cast<NSView *>(contentView));
+}
+
+void QCocoaNativeInterface::setEmbeddedInForeignView(QPlatformWindow *window, bool embedded)
+{
+    QCocoaWindow *cocoaPlatformWindow = static_cast<QCocoaWindow *>(window);
+    cocoaPlatformWindow->setEmbeddedInForeignView(embedded);
 }
 
 void QCocoaNativeInterface::registerTouchWindow(QWindow *window,  bool enable)

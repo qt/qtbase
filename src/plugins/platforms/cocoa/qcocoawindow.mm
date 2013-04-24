@@ -194,6 +194,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     : QPlatformWindow(tlw)
     , m_nsWindow(0)
     , m_contentViewIsEmbedded(false)
+    , m_contentViewIsToBeEmbedded(false)
     , m_nsWindowDelegate(0)
     , m_synchedWindowState(Qt::WindowActive)
     , m_windowModality(Qt::NonModal)
@@ -654,6 +655,12 @@ void QCocoaWindow::setContentView(NSView *contentView)
     recreateWindow(parent()); // Adds the content view to parent NSView
 }
 
+void QCocoaWindow::setEmbeddedInForeignView(bool embedded)
+{
+    m_contentViewIsToBeEmbedded = embedded;
+    recreateWindow(0); // destroy what was already created
+}
+
 void QCocoaWindow::windowWillMove()
 {
     // Close any open popups on window move
@@ -715,8 +722,8 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         m_nsWindowDelegate = 0;
     }
 
-    if (window()->type() == Qt::SubWindow) {
-        // Subwindows don't have a NSWindow.
+    if (m_contentViewIsToBeEmbedded) {
+        // An embedded window doesn't have its own NSWindow.
     } else if (!parentWindow) {
         // Create a new NSWindow if this is a top-level window.
         m_nsWindow = createNSWindow();

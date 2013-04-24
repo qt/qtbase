@@ -172,7 +172,7 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)viewDidMoveToSuperview
 {
-    if (!(m_window->type() & Qt::SubWindow))
+    if (!(m_platformWindow->m_contentViewIsToBeEmbedded))
         return;
 
     if ([self superview]) {
@@ -208,7 +208,7 @@ static QTouchDevice *touchDevice = 0;
         NSRect rect = [self frame];
         NSRect windowRect = [[self window] frame];
         geometry = QRect(windowRect.origin.x, qt_mac_flipYCoordinate(windowRect.origin.y + rect.size.height), rect.size.width, rect.size.height);
-    } else if (m_window->type() & Qt::SubWindow) {
+    } else if (m_platformWindow->m_contentViewIsToBeEmbedded) {
         // embedded child window, use the frame rect ### merge with case below
         geometry = qt_mac_toQRect([self bounds]);
     } else {
@@ -229,9 +229,9 @@ static QTouchDevice *touchDevice = 0;
     m_platformWindow->QPlatformWindow::setGeometry(geometry);
 
     // Don't send the geometry change if the QWindow is designated to be
-    // embedded in a foregin view hiearchy but has not actually been
+    // embedded in a foreign view hiearchy but has not actually been
     // embedded yet - it's too early.
-    if ((m_window->type() & Qt::SubWindow) && !m_platformWindow->m_contentViewIsEmbedded)
+    if (m_platformWindow->m_contentViewIsToBeEmbedded && !m_platformWindow->m_contentViewIsEmbedded)
         return;
 
     // Send a geometry change event to Qt, if it's ready to handle events
