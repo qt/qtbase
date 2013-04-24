@@ -106,7 +106,7 @@ if (NOT NO_WIDGETS)
   list(APPEND qt_module_includes
     Widgets QWidget
     OpenGL QGLBuffer
-    PrintSupport QPrintDialog
+    PrintSupport QPrinter
   )
 endif()
 
