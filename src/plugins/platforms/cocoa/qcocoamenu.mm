@@ -154,6 +154,7 @@ void QCocoaMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *
     QCocoaMenuItem *cocoaItem = static_cast<QCocoaMenuItem *>(menuItem);
     QCocoaMenuItem *beforeItem = static_cast<QCocoaMenuItem *>(before);
 
+    menuItem->setParent(this);
     cocoaItem->sync();
     if (beforeItem) {
         int index = m_menuItems.indexOf(beforeItem);
@@ -209,6 +210,10 @@ void QCocoaMenu::removeMenuItem(QPlatformMenuItem *menuItem)
         qWarning() << Q_FUNC_INFO << "Menu does not contain the item to be removed";
         return;
     }
+
+    if (menuItem->parent() == this)
+        menuItem->setParent(0);
+
     m_menuItems.removeOne(cocoaItem);
     if (!cocoaItem->isMerged()) {
         if (m_nativeMenu != [cocoaItem->nsItem() menu]) {

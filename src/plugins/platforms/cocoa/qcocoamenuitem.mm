@@ -124,10 +124,13 @@ void QCocoaMenuItem::setMenu(QPlatformMenu *menu)
 {
     if (menu == m_menu)
         return;
+    if (m_menu && m_menu->parent() == this)
+        m_menu->setParent(0);
 
     QCocoaAutoReleasePool pool;
     m_menu = static_cast<QCocoaMenu *>(menu);
     if (m_menu) {
+        m_menu->setParent(this);
     } else {
         // we previously had a menu, but no longer
         // clear out our item so the nexy sync() call builds a new one

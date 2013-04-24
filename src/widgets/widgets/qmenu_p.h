@@ -101,7 +101,8 @@ public:
     ~QMenuPrivate()
     {
         delete scroll;
-        delete platformMenu;
+        if (!platformMenu.isNull() && !platformMenu->parent())
+            delete platformMenu.data();
 #if defined(Q_OS_WINCE) && !defined(QT_NO_MENUBAR)
         delete wce_menu;
 #endif
@@ -228,7 +229,7 @@ public:
     //menu fading/scrolling effects
     bool doChildEffects;
 
-    QPlatformMenu *platformMenu;
+    QPointer<QPlatformMenu> platformMenu;
 
     QPointer<QAction> actionAboutToTrigger;
 
