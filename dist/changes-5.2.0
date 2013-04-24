@@ -31,3 +31,10 @@ QtWidgets
   introduced to control how precise the autoResize should be.
 
 - QFileDialog::setDefaultSuffix() removes leading dot characters.
+
+QtCore
+------
+- [QTBUG-30250] QTime, QDateTime:
+  When calling QTime::toString(Qt::TextDate) and QTime::toString(Qt::ISODate),
+  milliseconds are now included in the returned string. This also applies to
+  QDateTime::toString(Qt::TextDate) and QDateTime::toString(ISODate).

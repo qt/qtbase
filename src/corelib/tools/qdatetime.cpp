@@ -1474,15 +1474,15 @@ int QTime::msec() const
 /*!
     \overload
 
-    Returns the time as a string. Milliseconds are not included. The
-    \a format parameter determines the format of the string.
+    Returns the time as a string. The \a format parameter determines
+    the format of the string.
 
-    If \a format is Qt::TextDate, the string format is HH:MM:SS; e.g. 1
-    second before midnight would be "23:59:59".
+    If \a format is Qt::TextDate, the string format is HH:MM:SS.zzz;
+    e.g. 1 second before midnight would be "23:59:59.000".
 
     If \a format is Qt::ISODate, the string format corresponds to the
-    ISO 8601 extended specification for representations of dates,
-    which is also HH:MM:SS.
+    ISO 8601 extended specification (with decimal fractions) for
+    representations of dates; also HH:MM:SS.zzz.
 
     If the \a format is Qt::SystemLocaleShortDate or
     Qt::SystemLocaleLongDate, the string format depends on the locale
@@ -1521,10 +1521,11 @@ QString QTime::toString(Qt::DateFormat format) const
     default:
     case Qt::ISODate:
     case Qt::TextDate:
-        return QString::fromLatin1("%1:%2:%3")
+        return QString::fromLatin1("%1:%2:%3.%4")
             .arg(hour(), 2, 10, QLatin1Char('0'))
             .arg(minute(), 2, 10, QLatin1Char('0'))
-            .arg(second(), 2, 10, QLatin1Char('0'));
+            .arg(second(), 2, 10, QLatin1Char('0'))
+            .arg(msec(), 3, 10, QLatin1Char('0'));
     }
 }
 
@@ -2465,15 +2466,15 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
     the default way. QDate::shortDayName(), QDate::shortMonthName(),
     and QTime::toString() are used to generate the string, so the
     day and month names will be localized names. An example of this
-    formatting is "Wed May 20 03:40:13 1998".
+    formatting is "Wed May 20 03:40:13.456 1998".
 
     If the \a format is Qt::ISODate, the string format corresponds
-    to the ISO 8601 extended specification for representations of
-    dates and times, taking the form YYYY-MM-DDTHH:MM:SS[Z|[+|-]HH:MM],
-    depending on the timeSpec() of the QDateTime. If the timeSpec()
-    is Qt::UTC, Z will be appended to the string; if the timeSpec() is
-    Qt::OffsetFromUTC, the offset in hours and minutes from UTC will
-    be appended to the string.
+    to the ISO 8601 extended specification (with decimal fractions) for
+    representations of dates and times, taking the form
+    YYYY-MM-DDTHH:MM:SS.zzz[Z|[+|-]HH:MM], depending on the timeSpec()
+    of the QDateTime. If the timeSpec() is Qt::UTC, Z will be appended
+    to the string; if the timeSpec() is Qt::OffsetFromUTC, the offset
+    in hours and minutes from UTC will be appended to the string.
 
     If the \a format is Qt::SystemLocaleShortDate or
     Qt::SystemLocaleLongDate, the string format depends on the locale

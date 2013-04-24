@@ -614,25 +614,27 @@ void tst_QTime::fromStringDateFormat()
 
 void tst_QTime::toStringDateFormat_data()
 {
-    // Since we can't define an element of Qt::DateFormat, str1 will be the string
-    // in TextDate format, and str2 will be the time in ISODate format.
+    QTest::addColumn<QTime>("time");
+    QTest::addColumn<Qt::DateFormat>("format");
+    QTest::addColumn<QString>("expected");
 
-    QTest::addColumn<QTime>("t");
-    QTest::addColumn<QString>("str1");
-    QTest::addColumn<QString>("str2");
-
-    QTest::newRow( "data0" ) << QTime(0,0,0,0) << QString("00:00:00") << QString("00:00:00");
-    QTest::newRow( "data1" ) << QTime(10,12,34,0) << QString("10:12:34") << QString("10:12:34");
+    QTest::newRow("00:00:00.000") << QTime(0, 0, 0, 0) << Qt::TextDate << QString("00:00:00.000");
+    QTest::newRow("ISO 00:00:00.000") << QTime(0, 0, 0, 0) << Qt::ISODate << QString("00:00:00.000");
+    QTest::newRow("Text 10:12:34.000") << QTime(10, 12, 34, 0) << Qt::TextDate << QString("10:12:34.000");
+    QTest::newRow("ISO 10:12:34.000") << QTime(10, 12, 34, 0) << Qt::ISODate << QString("10:12:34.000");
+    QTest::newRow("Text 10:12:34.001") << QTime(10, 12, 34, 001) << Qt::TextDate << QString("10:12:34.001");
+    QTest::newRow("ISO 10:12:34.001") << QTime(10, 12, 34, 001) << Qt::ISODate << QString("10:12:34.001");
+    QTest::newRow("Text 10:12:34.999") << QTime(10, 12, 34, 999) << Qt::TextDate << QString("10:12:34.999");
+    QTest::newRow("ISO 10:12:34.999") << QTime(10, 12, 34, 999) << Qt::ISODate << QString("10:12:34.999");
 }
 
 void tst_QTime::toStringDateFormat()
 {
-    QFETCH( QTime, t );
-    QFETCH( QString, str1 );
-    QFETCH( QString, str2 );
+    QFETCH(QTime, time);
+    QFETCH(Qt::DateFormat, format);
+    QFETCH(QString, expected);
 
-    QCOMPARE( str1, t.toString( Qt::TextDate ) );
-    QCOMPARE( str2, t.toString( Qt::ISODate ) );
+    QCOMPARE(time.toString(format), expected);
 }
 
 void tst_QTime::toStringFormat_data()
