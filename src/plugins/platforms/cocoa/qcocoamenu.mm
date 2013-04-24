@@ -50,6 +50,27 @@
 #include "qcocoawindow.h"
 #import "qnsview.h"
 
+NSString *qt_mac_removePrivateUnicode(NSString* string)
+{
+    int len = [string length];
+    if (len) {
+        QVarLengthArray <unichar, 10> characters(len);
+        bool changed = false;
+        for (int i = 0; i<len; i++) {
+            characters[i] = [string characterAtIndex:i];
+            // check if they belong to key codes in private unicode range
+            // currently we need to handle only the NSDeleteFunctionKey
+            if (characters[i] == NSDeleteFunctionKey) {
+                characters[i] = NSDeleteCharacter;
+                changed = true;
+            }
+        }
+        if (changed)
+            return [NSString stringWithCharacters:characters.data() length:len];
+    }
+    return string;
+}
+
 static inline QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *getMenuLoader()
 {
     return [NSApp QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)];
@@ -99,6 +120,80 @@ static inline QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *getMenuLoader()
 
     QCocoaMenuItem* cocoaItem = reinterpret_cast<QCocoaMenuItem *>([menuItem tag]);
     return cocoaItem->isEnabled();
+}
+
+- (BOOL)menuHasKeyEquivalent:(NSMenu *)menu forEvent:(NSEvent *)event target:(id *)target action:(SEL *)action
+{
+    /*
+       Check if the menu actually has a keysequence defined for this key event.
+       If it does, then we will first send the key sequence to the QWidget that has focus
+       since (in Qt's eyes) it needs to a chance at the key event first (QEvent::ShortcutOverride).
+       If the widget accepts the key event, we then return YES, but set the target and action to be nil,
+       which means that the action should not be triggered, and instead dispatch the event ourselves.
+       In every other case we return NO, which means that Cocoa can do as it pleases
+       (i.e., fire the menu action).
+    */
+
+    // Change the private unicode keys to the ones used in setting the "Key Equivalents"
+    NSString *characters = qt_mac_removePrivateUnicode([event characters]);
+    if ([self hasShortcut:menu
+            forKey:characters
+            // Interested only in Shift, Cmd, Ctrl & Alt Keys, so ignoring masks like, Caps lock, Num Lock ...
+            forModifiers:([event modifierFlags] & (NSShiftKeyMask | NSControlKeyMask | NSCommandKeyMask | NSAlternateKeyMask))
+            ]) {
+        QObject *object = qApp->focusObject();
+        if (object) {
+            QChar ch;
+            int keyCode;
+            ulong nativeModifiers = [event modifierFlags];
+            Qt::KeyboardModifiers modifiers = [QNSView convertKeyModifiers: nativeModifiers];
+            NSString *charactersIgnoringModifiers = [event charactersIgnoringModifiers];
+            NSString *characters = [event characters];
+
+            if ([charactersIgnoringModifiers length] > 0) { // convert the first character into a key code
+                if ((modifiers & Qt::ControlModifier) && ([characters length] != 0)) {
+                    ch = QChar([characters characterAtIndex:0]);
+                } else {
+                    ch = QChar([charactersIgnoringModifiers characterAtIndex:0]);
+                }
+                keyCode = qt_mac_cocoaKey2QtKey(ch);
+            } else {
+                // might be a dead key
+                ch = QChar::ReplacementCharacter;
+                keyCode = Qt::Key_unknown;
+            }
+
+            QKeyEvent accel_ev(QEvent::ShortcutOverride, (keyCode & (~Qt::KeyboardModifierMask)),
+                               Qt::KeyboardModifiers(keyCode & Qt::KeyboardModifierMask));
+            accel_ev.ignore();
+            QCoreApplication::sendEvent(object, &accel_ev);
+            if (accel_ev.isAccepted()) {
+                [[NSApp keyWindow] sendEvent: event];
+                *target = nil;
+                *action = nil;
+                return YES;
+            }
+        }
+    }
+    return NO;
+}
+
+- (BOOL)hasShortcut:(NSMenu *)menu forKey:(NSString *)key forModifiers:(NSUInteger)modifier
+{
+    for (NSMenuItem *item in [menu itemArray]) {
+        if (![item isEnabled] || [item isHidden] || [item isSeparatorItem])
+            continue;
+        if ([item hasSubmenu]
+            && [self hasShortcut:[item submenu] forKey:key forModifiers:modifier])
+            return YES;
+
+        NSString *menuKey = [item keyEquivalent];
+        if (menuKey
+            && NSOrderedSame == [menuKey compare:key]
+            && modifier == [item keyEquivalentModifierMask])
+            return YES;
+    }
+    return NO;
 }
 
 @end

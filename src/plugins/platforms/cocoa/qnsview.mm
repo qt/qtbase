@@ -494,7 +494,7 @@ static QTouchDevice *touchDevice = 0;
     QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
     nativeDrag->setLastMouseEvent(theEvent, self);
 
-    Qt::KeyboardModifiers keyboardModifiers = [self convertKeyModifiers:[theEvent modifierFlags]];
+    Qt::KeyboardModifiers keyboardModifiers = [QNSView convertKeyModifiers:[theEvent modifierFlags]];
     QWindowSystemInterface::handleMouseEvent(m_window, timestamp, qtWindowPoint, qtScreenPoint, m_buttons, keyboardModifiers);
 }
 
@@ -556,7 +556,7 @@ static QTouchDevice *touchDevice = 0;
             [inputManager handleMouseEvent:theEvent];
         }
     } else {
-        if ([self convertKeyModifiers:[theEvent modifierFlags]] & Qt::MetaModifier) {
+        if ([QNSView convertKeyModifiers:[theEvent modifierFlags]] & Qt::MetaModifier) {
             m_buttons |= Qt::RightButton;
             m_sendUpAsRightButton = true;
         } else {
@@ -826,7 +826,7 @@ static QTouchDevice *touchDevice = 0;
     if ([theEvent respondsToSelector:@selector(scrollingDeltaX)]) {
         NSEventPhase phase = [theEvent phase];
         if (phase == NSEventPhaseBegan) {
-            currentWheelModifiers = [self convertKeyModifiers:[theEvent modifierFlags]];
+            currentWheelModifiers = [QNSView convertKeyModifiers:[theEvent modifierFlags]];
         }
 
         QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_screenPoint, pixelDelta, angleDelta, currentWheelModifiers);
@@ -838,7 +838,7 @@ static QTouchDevice *touchDevice = 0;
 #endif
     {
         QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_screenPoint, pixelDelta, angleDelta,
-                                                 [self convertKeyModifiers:[theEvent modifierFlags]]);
+                                                 [QNSView convertKeyModifiers:[theEvent modifierFlags]]);
     }
 }
 #endif //QT_NO_WHEELEVENT
@@ -848,7 +848,7 @@ static QTouchDevice *touchDevice = 0;
     return qt_mac_cocoaKey2QtKey(keyChar);
 }
 
-- (Qt::KeyboardModifiers) convertKeyModifiers : (ulong)modifierFlags
++ (Qt::KeyboardModifiers) convertKeyModifiers : (ulong)modifierFlags
 {
     Qt::KeyboardModifiers qtMods =Qt::NoModifier;
     if (modifierFlags &  NSShiftKeyMask)
@@ -868,7 +868,7 @@ static QTouchDevice *touchDevice = 0;
 {
     ulong timestamp = [nsevent timestamp] * 1000;
     ulong nativeModifiers = [nsevent modifierFlags];
-    Qt::KeyboardModifiers modifiers = [self convertKeyModifiers: nativeModifiers];
+    Qt::KeyboardModifiers modifiers = [QNSView convertKeyModifiers: nativeModifiers];
     NSString *charactersIgnoringModifiers = [nsevent charactersIgnoringModifiers];
     NSString *characters = [nsevent characters];
 
@@ -948,7 +948,7 @@ static QTouchDevice *touchDevice = 0;
 {
     ulong timestamp = [nsevent timestamp] * 1000;
     ulong modifiers = [nsevent modifierFlags];
-    Qt::KeyboardModifiers qmodifiers = [self convertKeyModifiers:modifiers];
+    Qt::KeyboardModifiers qmodifiers = [QNSView convertKeyModifiers:modifiers];
 
     // calculate the delta and remember the current modifiers for next time
     static ulong m_lastKnownModifiers;
@@ -1278,7 +1278,7 @@ static QTouchDevice *touchDevice = 0;
     Qt::DropActions qtAllowed = qt_mac_mapNSDragOperations([sender draggingSourceOperationMask]);
 
     // update these so selecting move/copy/link works
-    QGuiApplicationPrivate::modifier_buttons = [self convertKeyModifiers: [[NSApp currentEvent] modifierFlags]];
+    QGuiApplicationPrivate::modifier_buttons = [QNSView convertKeyModifiers: [[NSApp currentEvent] modifierFlags]];
 
     QPlatformDragQtResponse response(false, Qt::IgnoreAction, QRect());
     if ([sender draggingSource] != nil) {
