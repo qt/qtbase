@@ -272,6 +272,7 @@ private:
     inline bool isFullScreen_sys() const;
     inline void setWindowState_sys(Qt::WindowState newState);
     inline void setParent_sys(const QPlatformWindow *parent) const;
+    inline void updateTransientParent() const;
     void destroyWindow();
     void registerDropSite();
     void unregisterDropSite();

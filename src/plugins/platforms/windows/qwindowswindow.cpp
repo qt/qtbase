@@ -1013,6 +1013,24 @@ QPoint QWindowsWindow::mapFromGlobal(const QPoint &pos) const
         return pos;
 }
 
+// Update the transient parent for a toplevel window. The concept does not
+// really exist on Windows, the relationship is set by passing a parent along with !WS_CHILD
+// to window creation or by setting the parent using  GWL_HWNDPARENT (as opposed to
+// SetParent, which would make it a real child).
+void QWindowsWindow::updateTransientParent() const
+{
+#ifndef Q_OS_WINCE
+    // Update transient parent.
+    const HWND oldTransientParent =
+        GetAncestor(m_data.hwnd, GA_PARENT) == GetDesktopWindow() ? GetAncestor(m_data.hwnd, GA_ROOTOWNER) : HWND(0);
+    HWND newTransientParent = 0;
+    if (const QWindow *tp = window()->transientParent())
+        newTransientParent = QWindowsWindow::handleOf(tp);
+    if (newTransientParent && newTransientParent != oldTransientParent)
+        SetWindowLongPtr(m_data.hwnd, GWL_HWNDPARENT, (LONG_PTR)newTransientParent);
+#endif // !Q_OS_WINCE
+}
+
 // partially from QWidgetPrivate::show_sys()
 void QWindowsWindow::show_sys() const
 {
@@ -1027,19 +1045,22 @@ void QWindowsWindow::show_sys() const
             sm = SW_SHOWMINIMIZED;
             if (!isVisible())
                 sm = SW_SHOWMINNOACTIVE;
-        } else if (state & Qt::WindowMaximized) {
-            sm = SW_SHOWMAXIMIZED;
-            // Windows will not behave correctly when we try to maximize a window which does not
-            // have minimize nor maximize buttons in the window frame. Windows would then ignore
-            // non-available geometry, and rather maximize the widget to the full screen, minus the
-            // window frame (caption). So, we do a trick here, by adding a maximize button before
-            // maximizing the widget, and then remove the maximize button afterwards.
-            if (flags & Qt::WindowTitleHint &&
-                !(flags & (Qt::WindowMinMaxButtonsHint | Qt::FramelessWindowHint))) {
-                fakedMaximize = TRUE;
-                setStyle(style() | WS_MAXIMIZEBOX);
-            }
-        }
+        } else {
+            updateTransientParent();
+            if (state & Qt::WindowMaximized) {
+                sm = SW_SHOWMAXIMIZED;
+                // Windows will not behave correctly when we try to maximize a window which does not
+                // have minimize nor maximize buttons in the window frame. Windows would then ignore
+                // non-available geometry, and rather maximize the widget to the full screen, minus the
+                // window frame (caption). So, we do a trick here, by adding a maximize button before
+                // maximizing the widget, and then remove the maximize button afterwards.
+                if (flags & Qt::WindowTitleHint &&
+                        !(flags & (Qt::WindowMinMaxButtonsHint | Qt::FramelessWindowHint))) {
+                    fakedMaximize = TRUE;
+                    setStyle(style() | WS_MAXIMIZEBOX);
+                }
+            } // Qt::WindowMaximized
+        } // !Qt::WindowMinimized
     }
     if (type == Qt::Popup || type == Qt::ToolTip || type == Qt::Tool)
         sm = SW_SHOWNOACTIVATE;
