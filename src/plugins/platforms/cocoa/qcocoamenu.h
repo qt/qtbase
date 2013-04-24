@@ -81,8 +81,6 @@ public:
     void setMinimumWidth(int width);
     void setFont(const QFont &font);
 
-    void setParentItem(QCocoaMenuItem* item);
-
     inline NSMenu *nsMenu() const
         { return m_nativeMenu; }
     inline NSMenuItem *nsMenuItem() const

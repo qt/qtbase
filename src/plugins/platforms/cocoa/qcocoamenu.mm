@@ -289,11 +289,6 @@ void QCocoaMenu::syncSeparatorsCollapsible(bool enable)
     }
 }
 
-void QCocoaMenu::setParentItem(QCocoaMenuItem *item)
-{
-    Q_UNUSED(item);
-}
-
 void QCocoaMenu::setEnabled(bool enabled)
 {
     m_enabled = enabled;

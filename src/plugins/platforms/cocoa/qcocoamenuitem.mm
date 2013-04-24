@@ -128,7 +128,6 @@ void QCocoaMenuItem::setMenu(QPlatformMenu *menu)
     QCocoaAutoReleasePool pool;
     m_menu = static_cast<QCocoaMenu *>(menu);
     if (m_menu) {
-        m_menu->setParentItem(this);
     } else {
         // we previously had a menu, but no longer
         // clear out our item so the nexy sync() call builds a new one
@@ -254,23 +253,11 @@ NSMenuItem *QCocoaMenuItem::sync()
         [m_native setTag:reinterpret_cast<NSInteger>(this)];
     }
 
-//  [m_native setHidden:YES];
-//  [m_native setHidden:NO];
     [m_native setHidden: !m_isVisible];
     [m_native setEnabled: m_enabled];
-    QString text = m_text;
-    QKeySequence accel = m_shortcut;
 
-    {
-        int st = text.lastIndexOf(QLatin1Char('\t'));
-        if (st != -1) {
-            accel = QKeySequence(text.right(text.length()-(st+1)));
-            text.remove(st, text.length()-st);
-        }
-    }
-
-    text = mergeText();
-    accel = mergeAccel();
+    QString text = mergeText();
+    QKeySequence accel = mergeAccel();
 
     // Show multiple key sequences as part of the menu text.
     if (accel.count() > 1)
