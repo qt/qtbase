@@ -110,6 +110,7 @@ void QCocoaMenuBar::insertMenu(QPlatformMenu *platformMenu, QPlatformMenu *befor
     }
 
     platformMenu->setParent(this);
+    syncMenu(platformMenu);
     [m_nativeMenu setSubmenu: menu->nsMenu() forItem: menu->nsMenuItem()];
 }
 
@@ -132,7 +133,9 @@ void QCocoaMenuBar::removeMenu(QPlatformMenu *platformMenu)
 
 void QCocoaMenuBar::syncMenu(QPlatformMenu *menu)
 {
-    Q_UNUSED(menu);
+    QCocoaMenu *cocoaMenu = static_cast<QCocoaMenu *>(menu);
+    Q_FOREACH (QCocoaMenuItem *item, cocoaMenu->items())
+        cocoaMenu->syncMenuItem(item);
 }
 
 void QCocoaMenuBar::handleReparent(QWindow *newParentWindow)

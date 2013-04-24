@@ -42,6 +42,7 @@
 #include "qcocoamenuitem.h"
 
 #include "qcocoamenu.h"
+#include "qcocoamenubar.h"
 #include "messages.h"
 #include "qcocoahelpers.h"
 #include "qcocoaautoreleasepool.h"
@@ -90,6 +91,7 @@ NSUInteger keySequenceModifierMask(const QKeySequence &accel)
 
 QCocoaMenuItem::QCocoaMenuItem() :
     m_native(NULL),
+    m_textSynced(false),
     m_menu(NULL),
     m_isVisible(true),
     m_enabled(true),
@@ -156,6 +158,8 @@ void QCocoaMenuItem::setFont(const QFont &font)
 
 void QCocoaMenuItem::setRole(MenuRole role)
 {
+    if (role != m_role)
+        m_textSynced = false; // Changing role deserves a second chance.
     m_role = role;
 }
 
@@ -193,7 +197,7 @@ NSMenuItem *QCocoaMenuItem::sync()
         }
     }
 
-    if ((m_role != NoRole) || m_merged) {
+    if ((m_role != NoRole && !m_textSynced) || m_merged) {
         NSMenuItem *mergeItem = nil;
         QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = getMenuLoader();
         switch (m_role) {
@@ -212,7 +216,17 @@ NSMenuItem *QCocoaMenuItem::sync()
         case PreferencesRole:
             mergeItem = [loader preferencesMenuItem];
             break;
-        case TextHeuristicRole:
+        case TextHeuristicRole: {
+            QObject *p = parent();
+            int depth = 1;
+            QCocoaMenuBar *menubar = 0;
+            while (depth < 3 && p && !(menubar = qobject_cast<QCocoaMenuBar *>(p))) {
+                ++depth;
+                p = p->parent();
+            }
+            if (depth == 3 || !menubar)
+                break; // Menu item too deep in the hierarchy, or not connected to any menubar
+
             switch (detectMenuRole(m_text)) {
             case QPlatformMenuItem::AboutRole:
                 if (m_text.indexOf(QRegExp(QString::fromLatin1("qt$"), Qt::CaseInsensitive)) == -1)
@@ -227,15 +241,18 @@ NSMenuItem *QCocoaMenuItem::sync()
                 mergeItem = [loader quitMenuItem];
                 break;
             default:
+                m_textSynced = true;
                 break;
             }
             break;
+        }
 
         default:
             qWarning() << Q_FUNC_INFO << "unsupported role" << (int) m_role;
         }
 
         if (mergeItem) {
+            m_textSynced = true;
             m_merged = true;
             [mergeItem retain];
             [m_native release];
@@ -247,6 +264,8 @@ NSMenuItem *QCocoaMenuItem::sync()
             m_native = nil; // create item below
             m_merged = false;
         }
+    } else {
+        m_textSynced = true; // NoRole, and that was set explicitly. So, nothing to do anymore.
     }
 
     if (!m_native) {

@@ -271,8 +271,11 @@ void QCocoaMenu::syncSeparatorsCollapsible(bool enable)
         NSArray *itemArray = [m_nativeMenu itemArray];
         for (unsigned int i = 0; i < [itemArray count]; ++i) {
             NSMenuItem *item = reinterpret_cast<NSMenuItem *>([itemArray objectAtIndex:i]);
-            if ([item isSeparatorItem])
+            if ([item isSeparatorItem]) {
+                QCocoaMenuItem *cocoaItem = reinterpret_cast<QCocoaMenuItem *>([item tag]);
+                cocoaItem->setVisible(!previousIsSeparator);
                 [item setHidden:previousIsSeparator];
+            }
 
             if (![item isHidden]) {
                 previousItem = item;
@@ -281,8 +284,11 @@ void QCocoaMenu::syncSeparatorsCollapsible(bool enable)
         }
 
         // We now need to check the final item since we don't want any separators at the end of the list.
-        if (previousItem && previousIsSeparator)
+        if (previousItem && previousIsSeparator) {
+            QCocoaMenuItem *cocoaItem = reinterpret_cast<QCocoaMenuItem *>([previousItem tag]);
+            cocoaItem->setVisible(false);
             [previousItem setHidden:YES];
+        }
     } else {
         foreach (QCocoaMenuItem *item, m_menuItems) {
             if (!item->isSeparator())
@@ -376,6 +382,11 @@ QPlatformMenuItem *QCocoaMenu::menuItemForTag(quintptr tag) const
     }
 
     return 0;
+}
+
+QList<QCocoaMenuItem *> QCocoaMenu::items() const
+{
+    return m_menuItems;
 }
 
 QList<QCocoaMenuItem *> QCocoaMenu::merged() const
