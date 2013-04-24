@@ -618,7 +618,6 @@
 #    endif
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 404
        /* C++11 features supported in GCC 4.4: */
-#      define Q_COMPILER_ATOMICS
 #      define Q_COMPILER_AUTO_FUNCTION
 #      define Q_COMPILER_AUTO_TYPE
 #      define Q_COMPILER_CLASS_ENUM
@@ -642,6 +641,11 @@
 #      define Q_COMPILER_RANGE_FOR
 #    endif
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 407
+       /* GCC 4.4 implemented <atomic> and std::atomic using its old intrinsics.
+        * However, the implementation is incomplete for most platforms until GCC 4.7:
+        * instead, std::atomic would use an external lock. Since we need an std::atomic
+        * that is behavior-compatible with QBasicAtomic, we only enable it here */
+#      define Q_COMPILER_ATOMICS
        /* GCC 4.6.x has problems dealing with noexcept expressions,
         * so turn the feature on for 4.7 and above, only */
 #      define Q_COMPILER_NOEXCEPT
