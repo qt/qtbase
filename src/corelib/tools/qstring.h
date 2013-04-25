@@ -298,12 +298,20 @@ public:
 
     QString    &vsprintf(const char *format, va_list ap)
 #if defined(Q_CC_GNU) && !defined(__INSURE__)
+#  if defined(Q_CC_MINGW) && !defined(Q_CC_CLANG)
+        __attribute__ ((format (gnu_printf, 2, 0)))
+#  else
         __attribute__ ((format (printf, 2, 0)))
+#  endif
 #endif
         ;
     QString    &sprintf(const char *format, ...)
 #if defined(Q_CC_GNU) && !defined(__INSURE__)
+#  if defined(Q_CC_MINGW) && !defined(Q_CC_CLANG)
+        __attribute__ ((format (gnu_printf, 2, 3)))
+#  else
         __attribute__ ((format (printf, 2, 3)))
+#  endif
 #endif
         ;
 
