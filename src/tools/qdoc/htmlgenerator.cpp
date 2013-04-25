@@ -4184,7 +4184,7 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
         writer.writeEndElement(); // description
 
         // Add words from module name as tags (QtQuickControls -> qt,quick,controls)
-        QRegExp re("([A-Z][a-z0-9]+)");
+        QRegExp re("([A-Z]+[a-z0-9]*)");
         int pos = 0;
         while ((pos = re.indexIn(project, pos)) != -1) {
             tags << re.cap(1).toLower();
