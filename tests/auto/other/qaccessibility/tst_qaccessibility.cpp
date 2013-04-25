@@ -2600,6 +2600,12 @@ void tst_QAccessibility::treeTest()
     QCOMPARE(iface->indexOfChild(child2), 4);
     QCOMPARE(child2->text(QAccessible::Name), QString("Austria"));
 
+    treeView->setHeaderHidden(true);
+    QAccessibleInterface *accSpain = iface->child(0);
+    QCOMPARE(accSpain->role(), QAccessible::TreeItem);
+    QCOMPARE(iface->indexOfChild(accSpain), 0);
+    treeView->setHeaderHidden(false);
+
     QTestAccessibility::clearEvents();
 
     // table 2
