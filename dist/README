@@ -58,11 +58,12 @@ Directory Structure
 -------------------
 
 The default top-level installation directory is the directory "Qt<version>" in
-your home directory, but you can specify another directory (<install_dir>). Each
-Qt version is installed in the <install_dir>/<version> directory. This
-directory contains subdirectories for the Qt libraries (<compiler>),
-documentation (doc), and sources (src). The <compiler> directory contains
-subdirectories for development tools (bin) and examples.
+your home directory, but you can specify another directory (<install_dir>). On
+Windows, however, the default top-level installation directory is "C:\Qt\Qt<version>".
+Each Qt version is installed in the <install_dir>/<version> directory. This directory
+contains subdirectories for the Qt libraries (<compiler>) and sources (Src).
+The <compiler> directory contains subdirectories for development tools (bin) and
+examples.
 
 
 Starting Development Tools
@@ -80,25 +81,21 @@ the command line. You can also launch some of them as standalone applications.
 For example:
 
 - Qt Assistant, the Qt documentation reader
-- qmlscene, the viewer for Qt Quick2 declarative QML applications
-- QMLViewer, the viewer for Qt Quick1 declarative QML applications
-- Qt Designer, the GUI designer for Qt widgets-based applications
+- Qt QML Scene, the viewer for Qt Quick 2 files
+- Qt QML Viewer, the viewer for Qt Quick 1 files
+and - Qt Designer, the GUI designer for Qt widgets-based applications
+
+You can use Qt Creator to develop with other Qt versions as well:
+
+   http://qt-project.org/doc/qtcreator-2.6/creator-project-qmake.html
 
 
 Running Example Applications
 ----------------------------
 
-You can open example applications in the Qt Creator Welcome mode to build and
-run them.
-
-The QML based Quick 2 examples are located in
-<install_dir>/<version>/<compiler>/examples/qtdeclarative. You can load them
-using the qmlscene application.
-
-The QML based Quick 1 examples are located in
-<install_dir>/<version>/<compiler>/examples/qtquick1. You can view them with the
-QMLViewer application.
-
+You can open most example applications in the Qt Creator Welcome mode to build
+and run them. Additional examples can be opened by browsing
+<install_dir>/<version>/<compiler>/examples.
 
 Building Qt 5 from Source
 -------------------------
