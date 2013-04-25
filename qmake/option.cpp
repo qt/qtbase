@@ -338,6 +338,7 @@ Option::init(int argc, char **argv)
             QDir currentDir = QDir::current();
 #ifdef Q_OS_WIN
             QStringList paths = QString::fromLocal8Bit(pEnv).split(QLatin1String(";"));
+            paths.prepend(QLatin1String("."));
 #else
             QStringList paths = QString::fromLocal8Bit(pEnv).split(QLatin1String(":"));
 #endif
