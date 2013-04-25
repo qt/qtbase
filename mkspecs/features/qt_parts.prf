@@ -27,7 +27,7 @@ exists($$_PRO_FILE_PWD_/tools/tools.pro) {
     sub_tools.subdir = tools
     sub_tools.target = sub-tools
     sub_tools.depends = sub_src
-    !contains(QT_BUILD_PARTS, tools): sub_tools.CONFIG = no_default_target no_default_install
+    # conditional treatment happens on a case-by-case basis
     SUBDIRS += sub_tools
 }
 

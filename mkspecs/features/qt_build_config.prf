@@ -50,3 +50,19 @@ CONFIG += \
     # Qt modules get compiled without exceptions enabled by default.
     # However, testcases should be still built with exceptions.
     exceptions_off testcase_exceptions
+
+
+defineTest(qtBuildPart) {
+    bp = $$eval($$upper($$section(_QMAKE_CONF_, /, -2, -2))_BUILD_PARTS)
+    isEmpty(bp): bp = $$QT_BUILD_PARTS
+    contains(bp, $$1): return(true)
+    return(false)
+}
+
+defineTest(qtNomakeTools) {
+    qtBuildPart(tools): return()
+    for (d, 1) {
+        $${d}.CONFIG += no_default_target no_default_install
+        export($${d}.CONFIG)
+    }
+}
