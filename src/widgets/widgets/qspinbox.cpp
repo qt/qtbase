@@ -78,6 +78,8 @@ public:
         q->setInputMethodHints(Qt::ImhDigitsOnly);
         setLayoutItemMargins(QStyle::SE_SpinBoxLayoutItem);
     }
+
+    int displayIntegerBase;
 };
 
 class QDoubleSpinBoxPrivate : public QAbstractSpinBoxPrivate
@@ -425,6 +427,38 @@ void QSpinBox::setRange(int minimum, int maximum)
 }
 
 /*!
+    \property QSpinBox::displayIntegerBase
+
+    \brief the base used to display the value of the spin box
+
+    The default displayIntegerBase value is 10.
+
+    \sa textFromValue(), valueFromText()
+    \since 5.2
+*/
+
+int QSpinBox::displayIntegerBase() const
+{
+    Q_D(const QSpinBox);
+    return d->displayIntegerBase;
+}
+
+void QSpinBox::setDisplayIntegerBase(int base)
+{
+    Q_D(QSpinBox);
+    // Falls back to base 10 on invalid bases (like QString)
+    if (base < 2 || base > 36) {
+        qWarning("QSpinBox::setDisplayIntegerBase: Invalid base (%d)", base);
+        base = 10;
+    }
+
+    if (base != d->displayIntegerBase) {
+        d->displayIntegerBase = base;
+        d->updateEdit();
+    }
+}
+
+/*!
     This virtual function is used by the spin box whenever it needs to
     display the given \a value. The default implementation returns a
     string containing \a value printed in the standard way using
@@ -444,9 +478,18 @@ void QSpinBox::setRange(int minimum, int maximum)
 
 QString QSpinBox::textFromValue(int value) const
 {
-    QString str = locale().toString(value);
-    if (qAbs(value) >= 1000 || value == INT_MIN) {
-        str.remove(locale().groupSeparator());
+    Q_D(const QSpinBox);
+    QString str;
+
+    if (d->displayIntegerBase != 10) {
+        str = QString::number(qAbs(value), d->displayIntegerBase);
+        if (value < 0)
+            str.prepend('-');
+    } else {
+        str = locale().toString(value);
+        if (qAbs(value) >= 1000 || value == INT_MIN) {
+            str.remove(locale().groupSeparator());
+        }
     }
 
     return str;
@@ -926,6 +969,7 @@ QSpinBoxPrivate::QSpinBoxPrivate()
     minimum = QVariant((int)0);
     maximum = QVariant((int)99);
     value = minimum;
+    displayIntegerBase = 10;
     singleStep = QVariant((int)1);
     type = QVariant::Int;
 }
@@ -1003,11 +1047,15 @@ QVariant QSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
         state = QValidator::Invalid; // special-case -0 will be interpreted as 0 and thus not be invalid with a range from 0-100
     } else {
         bool ok = false;
-        num = locale.toInt(copy, &ok);
-        if (!ok && copy.contains(locale.groupSeparator()) && (max >= 1000 || min <= -1000)) {
-            QString copy2 = copy;
-            copy2.remove(locale.groupSeparator());
-            num = locale.toInt(copy2, &ok);
+        if (displayIntegerBase != 10) {
+            num = copy.toInt(&ok, displayIntegerBase);
+        } else {
+            num = locale.toInt(copy, &ok);
+            if (!ok && copy.contains(locale.groupSeparator()) && (max >= 1000 || min <= -1000)) {
+                QString copy2 = copy;
+                copy2.remove(locale.groupSeparator());
+                num = locale.toInt(copy2, &ok);
+            }
         }
         QSBDEBUG() << __FILE__ << __LINE__<< "num is set to" << num;
         if (!ok) {

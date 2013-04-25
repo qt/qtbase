@@ -98,6 +98,9 @@ private slots:
     void setValue_data();
     void setValue();
 
+    void setDisplayIntegerBase_data();
+    void setDisplayIntegerBase();
+
     void setPrefixSuffix_data();
     void setPrefixSuffix();
 
@@ -272,6 +275,61 @@ void tst_QSpinBox::setValue()
     spin.setRange(INT_MIN, INT_MAX);
     spin.setValue(set);
     QCOMPARE(spin.value(), expected);
+}
+
+void tst_QSpinBox::setDisplayIntegerBase_data()
+{
+    QTest::addColumn<int>("value");
+    QTest::addColumn<int>("base");
+    QTest::addColumn<QString>("string");
+
+    QTest::newRow("base 10") << 42 << 10 << "42";
+    QTest::newRow("base 2") << 42 << 2 << "101010";
+    QTest::newRow("base 8") << 42 << 8 << "52";
+    QTest::newRow("base 16") << 42 << 16 << "2a";
+    QTest::newRow("base 0") << 42 << 0 << "42";
+    QTest::newRow("base -4") << 42 << -4 << "42";
+    QTest::newRow("base 40") << 42 << 40 << "42";
+
+    QTest::newRow("negative base 10") << -42 << 10 << "-42";
+    QTest::newRow("negative base 2") << -42 << 2 << "-101010";
+    QTest::newRow("negative base 8") << -42 << 8 << "-52";
+    QTest::newRow("negative base 16") << -42 << 16 << "-2a";
+    QTest::newRow("negative base 0") << -42 << 0 << "-42";
+    QTest::newRow("negative base -4") << -42 << -4 << "-42";
+    QTest::newRow("negative base 40") << -42 << 40 << "-42";
+
+    QTest::newRow("0 base 10") << 0 << 10 << "0";
+    QTest::newRow("0 base 2") << 0 << 2 << "0";
+    QTest::newRow("0 base 8") << 0 << 8 << "0";
+    QTest::newRow("0 base 16") << 0 << 16 << "0";
+    QTest::newRow("0 base 0") << 0 << 0 << "0";
+    QTest::newRow("0 base -4") << 0 << -4 << "0";
+    QTest::newRow("0 base 40") << 0 << 40 << "0";
+}
+
+void tst_QSpinBox::setDisplayIntegerBase()
+{
+    QFETCH(int, value);
+    QFETCH(int, base);
+    QFETCH(QString, string);
+
+    SpinBox spin;
+    spin.setRange(INT_MIN, INT_MAX);
+
+    spin.setValue(value);
+    QCOMPARE(spin.lineEdit()->text(), QString::number(value));
+
+    spin.setDisplayIntegerBase(base);
+    QCOMPARE(spin.lineEdit()->text(), string);
+
+    spin.setValue(0);
+    QCOMPARE(spin.value(), 0);
+    QCOMPARE(spin.lineEdit()->text(), QString::number(0, base));
+
+    spin.lineEdit()->clear();
+    QTest::keyClicks(spin.lineEdit(), string);
+    QCOMPARE(spin.value(), value);
 }
 
 void tst_QSpinBox::setPrefixSuffix_data()

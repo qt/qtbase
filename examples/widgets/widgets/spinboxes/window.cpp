@@ -94,6 +94,14 @@ void Window::createSpinBoxes()
     priceSpinBox->setValue(99);
 //! [4] //! [5]
 
+    QLabel *hexLabel = new QLabel(tr("Enter a value between "
+        "%1 and %2:").arg('-' + QString::number(31, 16)).arg(QString::number(31, 16)));
+    QSpinBox *hexSpinBox = new QSpinBox;
+    hexSpinBox->setRange(-31, 31);
+    hexSpinBox->setSingleStep(1);
+    hexSpinBox->setValue(0);
+    hexSpinBox->setDisplayIntegerBase(16);
+
     QVBoxLayout *spinBoxLayout = new QVBoxLayout;
     spinBoxLayout->addWidget(integerLabel);
     spinBoxLayout->addWidget(integerSpinBox);
@@ -101,6 +109,8 @@ void Window::createSpinBoxes()
     spinBoxLayout->addWidget(zoomSpinBox);
     spinBoxLayout->addWidget(priceLabel);
     spinBoxLayout->addWidget(priceSpinBox);
+    spinBoxLayout->addWidget(hexLabel);
+    spinBoxLayout->addWidget(hexSpinBox);
     spinBoxesGroup->setLayout(spinBoxLayout);
 }
 //! [5]
