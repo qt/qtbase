@@ -231,6 +231,8 @@
     \value PreferLocalFile If the URL is a local file according to isLocalFile()
      and contains no query or fragment, a local file path is returned.
     \value StripTrailingSlash  The trailing slash is removed if one is present.
+    \value NormalizePathSegments  Modifies the path to remove redundant directory separators,
+             and to resolve "."s and ".."s (as far as possible).
 
     Note that the case folding rules in \l{RFC 3491}{Nameprep}, which QUrl
     conforms to, require host names to always be converted to lower case,
@@ -324,6 +326,7 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+extern QString qt_normalizePathSegments(const QString &name, bool allowUncPaths); // qdir.cpp
 
 inline static bool isHex(char c)
 {
@@ -803,6 +806,9 @@ inline void QUrlPrivate::appendPassword(QString &appendTo, QUrl::FormattingOptio
 inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
 {
     QString thePath = path;
+    if (options & QUrl::NormalizePathSegments) {
+        thePath = qt_normalizePathSegments(path, false);
+    }
     if (options & QUrl::RemoveFilename) {
         const int slash = path.lastIndexOf(QLatin1Char('/'));
         if (slash == -1)
@@ -3235,7 +3241,7 @@ QUrl QUrl::adjusted(QUrl::FormattingOptions options) const
         that.setFragment(QString());
     if (options & RemovePath) {
         that.setPath(QString());
-    } else if (options & (StripTrailingSlash | RemoveFilename)) {
+    } else if (options & (StripTrailingSlash | RemoveFilename | NormalizePathSegments)) {
         QString path;
         d->appendPath(path, options, QUrlPrivate::Path);
         that.setPath(path);

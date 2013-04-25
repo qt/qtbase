@@ -141,7 +141,8 @@ public:
         // 0x100 was a private code in Qt 4, keep unused for a while
         PreferLocalFile = 0x200,
         StripTrailingSlash = 0x400,
-        RemoveFilename = 0x800
+        RemoveFilename = 0x800,
+        NormalizePathSegments = 0x1000
     };
 
     enum ComponentFormattingOption {

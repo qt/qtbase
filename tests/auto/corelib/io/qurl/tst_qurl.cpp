@@ -298,6 +298,17 @@ void tst_QUrl::comparison()
     QEXPECT_FAIL("", "Normalization not implemented, will probably not be implemented like this", Continue);
     QCOMPARE(url3, url4);
 
+    QUrl url3bis = QUrl::fromEncoded("example://a/b/c/%7Bfoo%7D/");
+    QUrl url3bisNoSlash = QUrl::fromEncoded("example://a/b/c/%7Bfoo%7D");
+    QUrl url4bis = QUrl::fromEncoded("example://a/.//b/../b/c//%7Bfoo%7D/");
+    QCOMPARE(url4bis.adjusted(QUrl::NormalizePathSegments), url3bis);
+    QCOMPARE(url4bis.adjusted(QUrl::NormalizePathSegments | QUrl::StripTrailingSlash), url3bisNoSlash);
+
+    QUrl url4EncodedDots = QUrl("example://a/.//b/%2E%2E%2F/b/c/");
+    QCOMPARE(QString::fromLatin1(url4EncodedDots.toEncoded()), QString::fromLatin1("example://a/.//b/..%2F/b/c/"));
+    QCOMPARE(url4EncodedDots.toString(), QString("example://a/.//b/..%2F/b/c/"));
+    QCOMPARE(url4EncodedDots.adjusted(QUrl::NormalizePathSegments).toString(), QString("example://a/b/..%2F/b/c/"));
+
     // 6.2.2.1 Make sure hexdecimal characters in percent encoding are
     // treated case-insensitively
     QUrl url5;
