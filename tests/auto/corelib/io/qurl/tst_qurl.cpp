@@ -2428,27 +2428,35 @@ void tst_QUrl::fromEncoded()
 void tst_QUrl::stripTrailingSlash_data()
 {
     QTest::addColumn<QString>("url");
-    QTest::addColumn<QString>("expected");
+    QTest::addColumn<QString>("expectedStrip");     // toString(Strip)
+    QTest::addColumn<QString>("expectedDir");       // toString(RemoveFilename)
+    QTest::addColumn<QString>("expectedDirStrip");  // toString(RemoveFilename|Strip)
 
-    QTest::newRow("subdir no slash") << "ftp://kde.org/dir/subdir" << "ftp://kde.org/dir/subdir";
-    QTest::newRow("ftp no slash") << "ftp://ftp.de.kde.org/dir" << "ftp://ftp.de.kde.org/dir";
-    QTest::newRow("ftp slash") << "ftp://ftp.de.kde.org/dir/" << "ftp://ftp.de.kde.org/dir";
-    QTest::newRow("file slash") << "file:///dir/" << "file:///dir";
-    QTest::newRow("file no slash") << "file:///dir/" << "file:///dir";
-    QTest::newRow("file root") << "file:///" << "file:///";
-    QTest::newRow("no path") << "remote://" << "remote://";
+    QTest::newRow("subdir no slash") << "ftp://kde.org/dir/subdir" << "ftp://kde.org/dir/subdir" << "ftp://kde.org/dir/" << "ftp://kde.org/dir";
+    QTest::newRow("ftp no slash") << "ftp://kde.org/dir" << "ftp://kde.org/dir" << "ftp://kde.org/" << "ftp://kde.org/";
+    QTest::newRow("ftp slash") << "ftp://kde.org/dir/" << "ftp://kde.org/dir" << "ftp://kde.org/dir/" << "ftp://kde.org/dir";
+    QTest::newRow("file slash") << "file:///dir/" << "file:///dir" << "file:///dir/" << "file:///dir";
+    QTest::newRow("file no slash") << "file:///dir" << "file:///dir" << "file:///" << "file:///";
+    QTest::newRow("file root") << "file:///" << "file:///" << "file:///" << "file:///";
+    QTest::newRow("no path") << "remote://" << "remote://" << "remote://" << "remote://";
 }
 
 void tst_QUrl::stripTrailingSlash()
 {
     QFETCH(QString, url);
-    QFETCH(QString, expected);
+    QFETCH(QString, expectedStrip);
+    QFETCH(QString, expectedDir);
+    QFETCH(QString, expectedDirStrip);
 
     QUrl u(url);
-    QCOMPARE(u.toString(QUrl::StripTrailingSlash), expected);
+    QCOMPARE(u.toString(QUrl::StripTrailingSlash), expectedStrip);
+    QCOMPARE(u.toString(QUrl::RemoveFilename), expectedDir);
+    QCOMPARE(u.toString(QUrl::RemoveFilename | QUrl::StripTrailingSlash), expectedDirStrip);
 
     // Same thing, using QUrl::adjusted()
-    QCOMPARE(u.adjusted(QUrl::StripTrailingSlash).toString(), expected);
+    QCOMPARE(u.adjusted(QUrl::StripTrailingSlash).toString(), expectedStrip);
+    QCOMPARE(u.adjusted(QUrl::RemoveFilename).toString(), expectedDir);
+    QCOMPARE(u.adjusted(QUrl::RemoveFilename | QUrl::StripTrailingSlash).toString(), expectedDirStrip);
 }
 
 void tst_QUrl::hosts_data()

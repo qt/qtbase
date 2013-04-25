@@ -225,6 +225,9 @@
     \value RemoveQuery  The query part of the URL (following a '?' character)
                         is removed.
     \value RemoveFragment
+    \value RemoveFilename The filename (i.e. everything after the last '/' in the path) is removed.
+            The trailing '/' is kept, unless StripTrailingSlash is set.
+            Only valid if RemovePath is not set.
     \value PreferLocalFile If the URL is a local file according to isLocalFile()
      and contains no query or fragment, a local file path is returned.
     \value StripTrailingSlash  The trailing slash is removed if one is present.
@@ -800,6 +803,12 @@ inline void QUrlPrivate::appendPassword(QString &appendTo, QUrl::FormattingOptio
 inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
 {
     QString thePath = path;
+    if (options & QUrl::RemoveFilename) {
+        const int slash = path.lastIndexOf(QLatin1Char('/'));
+        if (slash == -1)
+            return;
+        thePath = path.left(slash+1);
+    }
     // check if we need to remove trailing slashes
     if ((options & QUrl::StripTrailingSlash) && !thePath.isEmpty() && thePath != QLatin1String("/") && thePath.endsWith(QLatin1Char('/')))
         thePath.chop(1);
@@ -3226,7 +3235,7 @@ QUrl QUrl::adjusted(QUrl::FormattingOptions options) const
         that.setFragment(QString());
     if (options & RemovePath) {
         that.setPath(QString());
-    } else if (options & StripTrailingSlash) {
+    } else if (options & (StripTrailingSlash | RemoveFilename)) {
         QString path;
         d->appendPath(path, options, QUrlPrivate::Path);
         that.setPath(path);
