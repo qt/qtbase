@@ -242,8 +242,9 @@ void QXcbConnection::updateScreens()
             ((QXcbIntegration*)QGuiApplicationPrivate::platformIntegration())->screenAdded(screen);
 }
 
-QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char *displayName)
+QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, const char *displayName)
     : m_connection(0)
+    , m_canGrabServer(canGrabServer)
     , m_primaryScreen(0)
     , m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
     , m_nativeInterface(nativeInterface)
@@ -950,6 +951,18 @@ void QXcbEventReader::unlock()
 void QXcbConnection::setFocusWindow(QXcbWindow *w)
 {
     m_focusWindow = w;
+}
+
+void QXcbConnection::grabServer()
+{
+    if (m_canGrabServer)
+        xcb_grab_server(m_connection);
+}
+
+void QXcbConnection::ungrabServer()
+{
+    if (m_canGrabServer)
+        xcb_ungrab_server(m_connection);
 }
 
 void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom a, uint id)

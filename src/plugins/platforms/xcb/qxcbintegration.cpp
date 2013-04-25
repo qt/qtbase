@@ -91,7 +91,33 @@
 #endif
 #endif
 
+#include <QtCore/QFileInfo>
+
 QT_BEGIN_NAMESPACE
+
+#if defined(QT_DEBUG) && defined(Q_OS_LINUX)
+// Find out if our parent process is gdb by looking at the 'exe' symlink under /proc,.
+// or, for older Linuxes, read out 'cmdline'.
+static bool runningUnderDebugger()
+{
+    const QString parentProc = QLatin1String("/proc/") + QString::number(getppid());
+    const QFileInfo parentProcExe(parentProc + QLatin1String("/exe"));
+    if (parentProcExe.isSymLink())
+        return parentProcExe.symLinkTarget().endsWith(QLatin1String("/gdb"));
+    QFile f(parentProc + QLatin1String("/cmdline"));
+    if (!f.open(QIODevice::ReadOnly))
+        return false;
+    QByteArray s;
+    char c;
+    while (f.getChar(&c) && c) {
+        if (c == '/')
+            s.clear();
+        else
+            s += c;
+    }
+    return s == "gdb";
+}
+#endif
 
 QXcbIntegration::QXcbIntegration(const QStringList &parameters)
     : m_eventDispatcher(createUnixEventDispatcher())
@@ -104,7 +130,15 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
 #endif
     m_nativeInterface.reset(new QXcbNativeInterface);
 
-    m_connections << new QXcbConnection(m_nativeInterface.data());
+    bool canGrab = true;
+    #if defined(QT_DEBUG) && defined(Q_OS_LINUX)
+    canGrab = !runningUnderDebugger();
+    #endif
+    static bool canNotGrabEnv = qgetenv("QT_XCB_NO_GRAB_SERVER").length();
+    if (canNotGrabEnv)
+        canGrab = false;
+
+    m_connections << new QXcbConnection(m_nativeInterface.data(), canGrab);
 
     for (int i = 0; i < parameters.size() - 1; i += 2) {
 #ifdef Q_XCB_DEBUG

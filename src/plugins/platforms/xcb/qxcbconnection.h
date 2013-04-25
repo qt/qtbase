@@ -306,7 +306,7 @@ class QXcbConnection : public QObject
 {
     Q_OBJECT
 public:
-    QXcbConnection(QXcbNativeInterface *nativeInterface, const char *displayName = 0);
+    QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, const char *displayName = 0);
     ~QXcbConnection();
 
     QXcbConnection *connection() const { return const_cast<QXcbConnection *>(this); }
@@ -391,6 +391,8 @@ public:
     QByteArray startupId() const { return m_startupId; }
     void clearStartupId() { m_startupId.clear(); }
 
+    void grabServer();
+    void ungrabServer();
 private slots:
     void processXcbEvents();
 
@@ -454,6 +456,7 @@ private:
 
     xcb_connection_t *m_connection;
     const xcb_setup_t *m_setup;
+    bool m_canGrabServer;
 
     QList<QXcbScreen *> m_screens;
     int m_primaryScreen;
