@@ -65,6 +65,7 @@ class Q_GUI_EXPORT QColor
 {
 public:
     enum Spec { Invalid, Rgb, Hsv, Cmyk, Hsl };
+    enum NameFormat { HexRgb, HexArgb };
 
     QColor();
     QColor(Qt::GlobalColor color);
@@ -77,7 +78,9 @@ public:
 
     bool isValid() const;
 
+    // ### Qt 6: merge overloads
     QString name() const;
+    QString name(NameFormat format) const;
     void setNamedColor(const QString& name);
 
     static QStringList colorNames();

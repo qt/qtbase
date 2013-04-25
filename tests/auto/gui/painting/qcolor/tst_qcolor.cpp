@@ -61,6 +61,8 @@ private slots:
 
     void name_data();
     void name();
+    void namehex_data();
+    void namehex();
     void setNamedColor();
 
     void constructNamedColorWithSpace();
@@ -254,36 +256,75 @@ void tst_QColor::isValid()
     QVERIFY(color.isValid() == isValid);
 }
 
+Q_DECLARE_METATYPE(QColor::NameFormat);
+
 void tst_QColor::name_data()
 {
     QTest::addColumn<QColor>("color");
     QTest::addColumn<QString>("name");
+    QTest::addColumn<QColor::NameFormat>("nameFormat");
 
-    QTest::newRow("invalid") << QColor() << "#000000";
-    QTest::newRow("global color black") << QColor(Qt::black) << "#000000";
-    QTest::newRow("global color white") << QColor(Qt::white) << "#ffffff";
-    QTest::newRow("global color darkGray") << QColor(Qt::darkGray) << "#808080";
-    QTest::newRow("global color gray") << QColor(Qt::gray) << "#a0a0a4";
-    QTest::newRow("global color lightGray") << QColor(Qt::lightGray) << "#c0c0c0";
-    QTest::newRow("global color red") << QColor(Qt::red) << "#ff0000";
-    QTest::newRow("global color green") << QColor(Qt::green) << "#00ff00";
-    QTest::newRow("global color blue") << QColor(Qt::blue) << "#0000ff";
-    QTest::newRow("global color cyan") << QColor(Qt::cyan) << "#00ffff";
-    QTest::newRow("global color magenta") << QColor(Qt::magenta) << "#ff00ff";
-    QTest::newRow("global color yellow") << QColor(Qt::yellow) << "#ffff00";
-    QTest::newRow("global color darkRed") << QColor(Qt::darkRed) << "#800000";
-    QTest::newRow("global color darkGreen") << QColor(Qt::darkGreen) << "#008000";
-    QTest::newRow("global color darkBlue") << QColor(Qt::darkBlue) << "#000080";
-    QTest::newRow("global color darkCyan") << QColor(Qt::darkCyan) << "#008080";
-    QTest::newRow("global color darkMagenta") << QColor(Qt::darkMagenta) << "#800080";
-    QTest::newRow("global color darkYellow") << QColor(Qt::darkYellow) << "#808000";
+    QTest::newRow("invalid") << QColor() << "#000000" << QColor::HexRgb;
+    QTest::newRow("global color black") << QColor(Qt::black) << "#000000" << QColor::HexRgb;
+    QTest::newRow("global color white") << QColor(Qt::white) << "#ffffff" << QColor::HexRgb;
+    QTest::newRow("global color darkGray") << QColor(Qt::darkGray) << "#808080" << QColor::HexRgb;
+    QTest::newRow("global color gray") << QColor(Qt::gray) << "#a0a0a4" << QColor::HexRgb;
+    QTest::newRow("global color lightGray") << QColor(Qt::lightGray) << "#c0c0c0" << QColor::HexRgb;
+    QTest::newRow("global color red") << QColor(Qt::red) << "#ff0000" << QColor::HexRgb;
+    QTest::newRow("global color green") << QColor(Qt::green) << "#00ff00" << QColor::HexRgb;
+    QTest::newRow("global color blue") << QColor(Qt::blue) << "#0000ff" << QColor::HexRgb;
+    QTest::newRow("global color cyan") << QColor(Qt::cyan) << "#00ffff" << QColor::HexRgb;
+    QTest::newRow("global color magenta") << QColor(Qt::magenta) << "#ff00ff" << QColor::HexRgb;
+    QTest::newRow("global color yellow") << QColor(Qt::yellow) << "#ffff00" << QColor::HexRgb;
+    QTest::newRow("global color darkRed") << QColor(Qt::darkRed) << "#800000" << QColor::HexRgb;
+    QTest::newRow("global color darkGreen") << QColor(Qt::darkGreen) << "#008000" << QColor::HexRgb;
+    QTest::newRow("global color darkBlue") << QColor(Qt::darkBlue) << "#000080" << QColor::HexRgb;
+    QTest::newRow("global color darkCyan") << QColor(Qt::darkCyan) << "#008080" << QColor::HexRgb;
+    QTest::newRow("global color darkMagenta") << QColor(Qt::darkMagenta) << "#800080" << QColor::HexRgb;
+    QTest::newRow("global color darkYellow") << QColor(Qt::darkYellow) << "#808000" << QColor::HexRgb;
+    QTest::newRow("transparent red") << QColor(255, 0, 0, 102) << "#66ff0000" << QColor::HexArgb;
 }
 
 void tst_QColor::name()
 {
     QFETCH(QColor, color);
     QFETCH(QString, name);
-    QCOMPARE(color.name(), name);
+    QFETCH(QColor::NameFormat, nameFormat);
+    QCOMPARE(color.name(nameFormat), name);
+}
+
+void tst_QColor::namehex_data()
+{
+    QTest::addColumn<QString>("hexcolor");
+    QTest::addColumn<QColor>("color");
+
+    QTest::newRow("global color black") << "#000000" << QColor(Qt::black);
+    QTest::newRow("global color white") << "#ffffff" << QColor(Qt::white);
+    QTest::newRow("global color darkGray") << "#808080" << QColor(Qt::darkGray);
+    QTest::newRow("global color gray") << "#a0a0a4" << QColor(Qt::gray);
+    QTest::newRow("global color lightGray") << "#c0c0c0" << QColor(Qt::lightGray);
+    QTest::newRow("global color red") << "#ff0000" << QColor(Qt::red);
+    QTest::newRow("global color green") << "#00ff00" << QColor(Qt::green);
+    QTest::newRow("global color blue") << "#0000ff" << QColor(Qt::blue);
+    QTest::newRow("global color cyan") << "#00ffff" << QColor(Qt::cyan);
+    QTest::newRow("global color magenta") << "#ff00ff" << QColor(Qt::magenta);
+    QTest::newRow("global color yellow") << "#ffff00" << QColor(Qt::yellow);
+    QTest::newRow("global color darkRed") << "#800000" << QColor(Qt::darkRed);
+    QTest::newRow("global color darkGreen") << "#008000" << QColor(Qt::darkGreen);
+    QTest::newRow("global color darkBlue") << "#000080" << QColor(Qt::darkBlue);
+    QTest::newRow("global color darkCyan") << "#008080" << QColor(Qt::darkCyan);
+    QTest::newRow("global color darkMagenta") << "#800080" << QColor(Qt::darkMagenta);
+    QTest::newRow("global color darkYellow") << "#808000" << QColor(Qt::darkYellow);
+    QTest::newRow("transparent red") << "#66ff0000" << QColor(255, 0, 0, 102);
+    QTest::newRow("invalid red") << "#gg0000" << QColor();
+    QTest::newRow("invalid transparent") << "#gg00ff00" << QColor();
+}
+
+void tst_QColor::namehex()
+{
+    QFETCH(QString, hexcolor);
+    QFETCH(QColor, color);
+    QCOMPARE(QColor(hexcolor), color);
 }
 
 void tst_QColor::globalColors_data()

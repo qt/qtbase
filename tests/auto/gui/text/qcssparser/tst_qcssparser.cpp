@@ -344,8 +344,6 @@ void tst_QCssParser::term_data()
     val.variant = QVariant(QColor("#ffbb00"));
     QTest::newRow("hexcolor2") << true << "#fb0" << val;
 
-    QTest::newRow("hexcolor_failure") << false << "#cafebabe" << val;
-
     val.type = QCss::Value::Uri;
     val.variant = QString("www.kde.org");
     QTest::newRow("uri1") << true << "url(\"www.kde.org\")" << val;
@@ -366,9 +364,6 @@ void tst_QCssParser::term()
     QFETCH(bool, parseSuccess);
     QFETCH(QString, css);
     QFETCH(QCss::Value, expectedValue);
-
-    if (strcmp(QTest::currentDataTag(), "hexcolor_failure") == 0)
-        QTest::ignoreMessage(QtWarningMsg, "QCssParser::parseHexColor: Unknown color name '#cafebabe'");
 
     QCss::Parser parser(css);
     QCss::Value val;

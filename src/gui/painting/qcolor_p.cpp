@@ -79,7 +79,8 @@ bool qt_get_hex_rgb(const char *name, QRgb *rgb)
         return false;
     name++;
     int len = qstrlen(name);
-    int r, g, b;
+    int a, r, g, b;
+    a = 255;
     if (len == 12) {
         r = hex2int(name);
         g = hex2int(name + 4);
@@ -87,6 +88,11 @@ bool qt_get_hex_rgb(const char *name, QRgb *rgb)
     } else if (len == 9) {
         r = hex2int(name);
         g = hex2int(name + 3);
+        b = hex2int(name + 6);
+    } else if (len == 8) {
+        a = hex2int(name);
+        r = hex2int(name + 2);
+        g = hex2int(name + 4);
         b = hex2int(name + 6);
     } else if (len == 6) {
         r = hex2int(name);
@@ -99,11 +105,11 @@ bool qt_get_hex_rgb(const char *name, QRgb *rgb)
     } else {
         r = g = b = -1;
     }
-    if ((uint)r > 255 || (uint)g > 255 || (uint)b > 255) {
+    if ((uint)r > 255 || (uint)g > 255 || (uint)b > 255 || (uint)a > 255) {
         *rgb = 0;
         return false;
     }
-    *rgb = qRgb(r, g ,b);
+    *rgb = qRgba(r, g ,b, a);
     return true;
 }
 
