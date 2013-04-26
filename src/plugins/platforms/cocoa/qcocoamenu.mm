@@ -45,6 +45,8 @@
 #include "qcocoaautoreleasepool.h"
 
 #include <QtCore/QtDebug>
+#include <QtCore/private/qthread_p.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include "qcocoaapplication.h"
 #include "qcocoamenuloader.h"
 #include "qcocoawindow.h"
@@ -110,6 +112,7 @@ static inline QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *getMenuLoader()
 - (void) itemFired:(NSMenuItem*) item
 {
     QCocoaMenuItem *cocoaItem = reinterpret_cast<QCocoaMenuItem *>([item tag]);
+    QScopedLoopLevelCounter loopLevelCounter(QGuiApplicationPrivate::instance()->threadData);
     cocoaItem->activated();
 }
 

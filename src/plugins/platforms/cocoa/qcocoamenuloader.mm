@@ -47,10 +47,12 @@
 #include "qcocoamenuitem.h"
 
 #include <QtCore/private/qcore_mac_p.h>
+#include <QtCore/private/qthread_p.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qdebug.h>
+#include <QtGui/private/qguiapplication_p.h>
 
 QT_FORWARD_DECLARE_CLASS(QCFString)
 QT_FORWARD_DECLARE_CLASS(QString)
@@ -305,6 +307,7 @@ QT_END_NAMESPACE
 
     if ([item tag]) {
         QCocoaMenuItem *cocoaItem = reinterpret_cast<QCocoaMenuItem *>([item tag]);
+        QScopedLoopLevelCounter loopLevelCounter(QGuiApplicationPrivate::instance()->threadData);
         cocoaItem->activated();
     }
 }
