@@ -75,6 +75,9 @@ private slots:
     void const_shared_null();
     void twoArguments_qHash();
     void initializerList();
+
+    void qthash_data();
+    void qthash();
 };
 
 struct Foo {
@@ -1328,6 +1331,25 @@ void tst_QHash::initializerList()
 #else
     QSKIP("Compiler doesn't support initializer lists");
 #endif
+}
+
+void tst_QHash::qthash_data()
+{
+    QTest::addColumn<QString>("key");
+    QTest::addColumn<uint>("hash");
+
+    QTest::newRow("null") << QString() << 0u;
+    QTest::newRow("empty") << QStringLiteral("") << 0u;
+    QTest::newRow("abcdef") << QStringLiteral("abcdef") << 108567222u;
+    QTest::newRow("tqbfjotld") << QStringLiteral("The quick brown fox jumps over the lazy dog") << 140865879u;
+    QTest::newRow("42") << QStringLiteral("42") << 882u;
+}
+
+void tst_QHash::qthash()
+{
+    QFETCH(QString, key);
+    const uint result = qt_hash(key);
+    QTEST(result, "hash");
 }
 
 QTEST_APPLESS_MAIN(tst_QHash)
