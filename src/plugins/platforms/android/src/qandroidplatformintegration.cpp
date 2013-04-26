@@ -183,7 +183,6 @@ QAndroidPlatformIntegration::~QAndroidPlatformIntegration()
 {
     delete m_androidPlatformNativeInterface;
     delete m_androidFDB;
-    delete m_touchDevice;
     QtAndroid::setAndroidPlatformIntegration(NULL);
 }
 QPlatformFontDatabase *QAndroidPlatformIntegration::fontDatabase() const
