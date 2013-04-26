@@ -529,6 +529,9 @@ int qt_repeatCount(const QString &s, int i)
 static const QLocaleData *default_data = 0;
 static uint default_number_options = 0;
 
+static const QLocaleData *const c_data = locale_data;
+static QLocalePrivate c_private = { c_data, Q_BASIC_ATOMIC_INITIALIZER(1), 0 };
+
 #ifndef QT_NO_SYSTEMLOCALE
 
 
@@ -643,6 +646,12 @@ static const QLocaleData *defaultData()
     return default_data;
 }
 
+const QLocaleData *QLocaleData::c()
+{
+    Q_ASSERT(locale_index[QLocale::C] == 0);
+    return c_data;
+}
+
 static QString getLocaleListData(const ushort *data, int size, int index)
 {
     static const ushort separator = ';';
@@ -699,9 +708,10 @@ const QLocaleData *QLocalePrivate::dataPointerForIndex(quint16 index)
     return &locale_data[index];
 }
 
-
 static QLocalePrivate *localePrivateByName(const QString &name)
 {
+    if (name == QLatin1String("C"))
+        return &c_private;
     return QLocalePrivate::create(findLocaleData(name));
 }
 
@@ -713,6 +723,9 @@ static QLocalePrivate *defaultLocalePrivate()
 static QLocalePrivate *findLocalePrivate(QLocale::Language language, QLocale::Script script,
                                          QLocale::Country country)
 {
+    if (language == QLocale::C)
+        return &c_private;
+
     const QLocaleData *data = QLocaleData::findLocaleData(language, script, country);
 
     int numberOptions = 0;

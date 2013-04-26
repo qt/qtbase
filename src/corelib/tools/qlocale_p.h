@@ -164,6 +164,7 @@ public:
     static const QLocaleData *findLocaleData(QLocale::Language language,
                                              QLocale::Script script,
                                              QLocale::Country country);
+    static const QLocaleData *c();
 
     quint16 m_language_id, m_script_id, m_country_id;
 
