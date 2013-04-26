@@ -43,6 +43,8 @@
 #include "qxcbconnection.h"
 #include "qxcbwindow.h"
 #include "qxcbimage.h"
+#include "qxcbxsettings.h"
+
 #include <QtCore/QLibrary>
 #include <QtGui/QWindow>
 #include <QtGui/QBitmap>
@@ -54,9 +56,17 @@
 QT_BEGIN_NAMESPACE
 
 typedef int (*PtrXcursorLibraryLoadCursor)(void *, const char *);
+typedef char *(*PtrXcursorLibraryGetTheme)(void *);
+typedef int (*PtrXcursorLibrarySetTheme)(void *, const char *);
+typedef int (*PtrXcursorLibraryGetDefaultSize)(void *);
+
 #ifdef XCB_USE_XLIB
 static PtrXcursorLibraryLoadCursor ptrXcursorLibraryLoadCursor = 0;
+static PtrXcursorLibraryGetTheme ptrXcursorLibraryGetTheme = 0;
+static PtrXcursorLibrarySetTheme ptrXcursorLibrarySetTheme = 0;
+static PtrXcursorLibraryGetDefaultSize ptrXcursorLibraryGetDefaultSize = 0;
 #endif
+
 static xcb_font_t cursorFont = 0;
 static int cursorCount = 0;
 
@@ -263,7 +273,7 @@ static const char * const cursorNames[] = {
 };
 
 QXcbCursor::QXcbCursor(QXcbConnection *conn, QXcbScreen *screen)
-    : QXcbObject(conn), m_screen(screen)
+    : QXcbObject(conn), m_screen(screen), m_gtkCursorThemeInitialized(false)
 {
     if (cursorCount++)
         return;
@@ -273,21 +283,38 @@ QXcbCursor::QXcbCursor(QXcbConnection *conn, QXcbScreen *screen)
     xcb_open_font(xcb_connection(), cursorFont, strlen(cursorStr), cursorStr);
 
 #ifdef XCB_USE_XLIB
-    QLibrary xcursorLib(QLatin1String("Xcursor"), 1);
-    bool xcursorFound = xcursorLib.load();
-    if (!xcursorFound) { // try without the version number
-        xcursorLib.setFileName(QLatin1String("Xcursor"));
-        xcursorFound = xcursorLib.load();
+    static bool function_ptrs_not_initialized = true;
+    if (function_ptrs_not_initialized) {
+        QLibrary xcursorLib(QLatin1String("Xcursor"), 1);
+        bool xcursorFound = xcursorLib.load();
+        if (!xcursorFound) { // try without the version number
+            xcursorLib.setFileName(QLatin1String("Xcursor"));
+            xcursorFound = xcursorLib.load();
+        }
+        if (xcursorFound) {
+            ptrXcursorLibraryLoadCursor =
+                (PtrXcursorLibraryLoadCursor) xcursorLib.resolve("XcursorLibraryLoadCursor");
+            ptrXcursorLibraryGetTheme =
+                    (PtrXcursorLibraryGetTheme) xcursorLib.resolve("XcursorGetTheme");
+            ptrXcursorLibrarySetTheme =
+                    (PtrXcursorLibrarySetTheme) xcursorLib.resolve("XcursorSetTheme");
+            ptrXcursorLibraryGetDefaultSize =
+                    (PtrXcursorLibraryGetDefaultSize) xcursorLib.resolve("XcursorGetDefaultSize");
+        }
+        function_ptrs_not_initialized = false;
     }
-    if (xcursorFound)
-        ptrXcursorLibraryLoadCursor =
-            (PtrXcursorLibraryLoadCursor) xcursorLib.resolve("XcursorLibraryLoadCursor");
+
 #endif
 }
 
 QXcbCursor::~QXcbCursor()
 {
     xcb_connection_t *conn = xcb_connection();
+
+    if (m_gtkCursorThemeInitialized) {
+        m_screen->xSettings()->removeCallbackForHandle(this);
+    }
+
     if (!--cursorCount)
         xcb_close_font(conn, cursorFont);
 
@@ -448,6 +475,52 @@ xcb_cursor_t QXcbCursor::createNonStandardCursor(int cshape)
     return cursor;
 }
 
+#ifdef XCB_USE_XLIB
+bool updateCursorTheme(void *dpy, const QByteArray theme) {
+    if (!ptrXcursorLibraryGetTheme
+            || !ptrXcursorLibrarySetTheme)
+        return false;
+    QByteArray oldTheme = ptrXcursorLibraryGetTheme(dpy);
+    if (oldTheme == theme)
+        return false;
+
+    int setTheme = ptrXcursorLibrarySetTheme(dpy,theme.constData());
+    return setTheme;
+}
+
+ void QXcbCursor::cursorThemePropertyChanged(QXcbScreen *screen, const QByteArray &name, const QVariant &property, void *handle)
+{
+    Q_UNUSED(screen);
+    Q_UNUSED(name);
+    QXcbCursor *self = static_cast<QXcbCursor *>(handle);
+    updateCursorTheme(self->connection()->xlib_display(),property.toByteArray());
+}
+
+static xcb_cursor_t loadCursor(void *dpy, int cshape)
+{
+    xcb_cursor_t cursor = XCB_NONE;
+    if (!ptrXcursorLibraryLoadCursor || !dpy)
+        return cursor;
+    switch (cshape) {
+    case Qt::DragCopyCursor:
+        cursor = ptrXcursorLibraryLoadCursor(dpy, "dnd-copy");
+        break;
+    case Qt::DragMoveCursor:
+        cursor = ptrXcursorLibraryLoadCursor(dpy, "dnd-move");
+        break;
+    case Qt::DragLinkCursor:
+        cursor = ptrXcursorLibraryLoadCursor(dpy, "dnd-link");
+        break;
+    default:
+        break;
+    }
+    if (!cursor) {
+        cursor = ptrXcursorLibraryLoadCursor(dpy, cursorNames[cshape]);
+    }
+    return cursor;
+}
+#endif //XCB_USE_XLIB
+
 xcb_cursor_t QXcbCursor::createFontCursor(int cshape)
 {
     xcb_connection_t *conn = xcb_connection();
@@ -456,24 +529,18 @@ xcb_cursor_t QXcbCursor::createFontCursor(int cshape)
 
     // Try Xcursor first
 #ifdef XCB_USE_XLIB
-    if (ptrXcursorLibraryLoadCursor && cshape >= 0 && cshape < Qt::LastCursor) {
+    if (cshape >= 0 && cshape < Qt::LastCursor) {
         void *dpy = connection()->xlib_display();
         // special case for non-standard dnd-* cursors
-        switch (cshape) {
-        case Qt::DragCopyCursor:
-            cursor = ptrXcursorLibraryLoadCursor(dpy, "dnd-copy");
-            break;
-        case Qt::DragMoveCursor:
-            cursor = ptrXcursorLibraryLoadCursor(dpy, "dnd-move");
-            break;
-        case Qt::DragLinkCursor:
-            cursor = ptrXcursorLibraryLoadCursor(dpy, "dnd-link");
-            break;
-        default:
-            break;
+        cursor = loadCursor(dpy, cshape);
+        if (!cursor && !m_gtkCursorThemeInitialized) {
+            QByteArray gtkCursorTheme = m_screen->xSettings()->setting("Gtk/CursorThemeName").toByteArray();
+            m_screen->xSettings()->registerCallbackForProperty("Gtk/CursorThemeName",cursorThemePropertyChanged,this);
+            if (updateCursorTheme(dpy,gtkCursorTheme)) {
+                cursor = loadCursor(dpy, cshape);
+            }
+            m_gtkCursorThemeInitialized = true;
         }
-        if (!cursor)
-            cursor = ptrXcursorLibraryLoadCursor(dpy, cursorNames[cshape]);
     }
     if (cursor)
         return cursor;
