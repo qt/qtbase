@@ -713,6 +713,34 @@ static quint16 localeDataIndex(const QLocaleData *p)
     return index;
 }
 
+static QLocalePrivate *localePrivateByName(const QString &name)
+{
+    return new QLocalePrivate(localeDataIndex(findLocaleData(name)));
+}
+
+static QLocalePrivate *defaultLocalePrivate()
+{
+    return new QLocalePrivate(localeDataIndex(defaultData()), default_number_options);
+}
+
+static QLocalePrivate *findLocalePrivate(QLocale::Language language, QLocale::Script script,
+                                         QLocale::Country country)
+{
+    const QLocaleData *data = QLocaleData::findLocaleData(language, script, country);
+    int index;
+    int numberOptions = 0;
+
+    // If not found, should default to system
+    if (data->m_language_id == QLocale::C && language != QLocale::C) {
+        numberOptions = default_number_options;
+        index = localeDataIndex(defaultData());
+    } else {
+        index = localeDataIndex(data);
+    }
+    return new QLocalePrivate(index, numberOptions);
+}
+
+
 /*!
  \internal
 */
@@ -751,7 +779,7 @@ QLocale::QLocale(QLocalePrivate &dd)
 */
 
 QLocale::QLocale(const QString &name)
-    : d(new QLocalePrivate(localeDataIndex(findLocaleData(name))))
+    : d(localePrivateByName(name))
 {
 }
 
@@ -764,7 +792,7 @@ QLocale::QLocale(const QString &name)
 */
 
 QLocale::QLocale()
-    : d(new QLocalePrivate(localeDataIndex(defaultData()), default_number_options))
+    : d(defaultLocalePrivate())
 {
 }
 
@@ -788,21 +816,10 @@ QLocale::QLocale()
 */
 
 QLocale::QLocale(Language language, Country country)
+    : d(findLocalePrivate(language, QLocale::AnyScript, country))
 {
-    const QLocaleData *data = QLocaleData::findLocaleData(language, QLocale::AnyScript, country);
-    int index;
-    int numberOptions = 0;
-
-    // If not found, should default to system
-    if (data->m_language_id == QLocale::C && language != QLocale::C) {
-        numberOptions = default_number_options;
-        index = localeDataIndex(defaultData());
-    } else {
-        index = localeDataIndex(data);
-    }
-    d = new QLocalePrivate(index, numberOptions);
 }
-\
+
 /*!
     \since 4.8
 
@@ -828,19 +845,8 @@ QLocale::QLocale(Language language, Country country)
 */
 
 QLocale::QLocale(Language language, Script script, Country country)
+    : d(findLocalePrivate(language, script, country))
 {
-    const QLocaleData *data = QLocaleData::findLocaleData(language, script, country);
-    int index;
-    int numberOptions = 0;
-
-    // If not found, should default to system
-    if (data->m_language_id == QLocale::C && language != QLocale::C) {
-        numberOptions = default_number_options;
-        index = localeDataIndex(defaultData());
-    } else {
-        index = localeDataIndex(data);
-    }
-    d = new QLocalePrivate(index, numberOptions);
 }
 
 /*!
