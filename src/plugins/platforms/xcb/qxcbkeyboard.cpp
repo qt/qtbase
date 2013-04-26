@@ -1172,14 +1172,20 @@ xcb_keysym_t QXcbKeyboard::lookupString(QWindow *window, uint state, xcb_keycode
 #endif
 }
 
-void QXcbKeyboard::handleKeyPressEvent(QXcbWindow *window, const xcb_key_press_event_t *event)
+void QXcbKeyboard::handleKeyPressEvent(QXcbWindowEventListener *eventListener, const xcb_key_press_event_t *event)
 {
+    QXcbWindow *window = eventListener->toWindow();
+    if (!window)
+        return;
     window->updateNetWmUserTime(event->time);
     handleKeyEvent(window->window(), QEvent::KeyPress, event->detail, event->state, event->time);
 }
 
-void QXcbKeyboard::handleKeyReleaseEvent(QXcbWindow *window, const xcb_key_release_event_t *event)
+void QXcbKeyboard::handleKeyReleaseEvent(QXcbWindowEventListener *eventListener, const xcb_key_release_event_t *event)
 {
+    QXcbWindow *window = eventListener->toWindow();
+    if (!window)
+        return;
     handleKeyEvent(window->window(), QEvent::KeyRelease, event->detail, event->state, event->time);
 }
 

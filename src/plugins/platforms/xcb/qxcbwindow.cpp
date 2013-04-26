@@ -53,6 +53,7 @@
 #include "qxcbkeyboard.h"
 #include "qxcbwmsupport.h"
 #include "qxcbimage.h"
+#include "qxcbnativeinterface.h"
 
 #include <qpa/qplatformintegration.h>
 
@@ -224,7 +225,7 @@ void QXcbWindow::create()
         m_window = m_screen->root();
         m_depth = m_screen->screen()->root_depth;
         m_imageFormat = imageFormatForDepth(m_depth);
-        connection()->addWindow(m_window, this);
+        connection()->addWindowEventListener(m_window, this);
         return;
     }
 
@@ -347,7 +348,7 @@ void QXcbWindow::create()
                                      0));                             // value list
     }
 
-    connection()->addWindow(m_window, this);
+    connection()->addWindowEventListener(m_window, this);
 
     Q_XCB_CALL(xcb_change_window_attributes(xcb_connection(), m_window, mask, values));
 
@@ -481,7 +482,7 @@ void QXcbWindow::destroy()
             xcb_destroy_window(xcb_connection(), m_netWmUserTimeWindow);
             m_netWmUserTimeWindow = XCB_NONE;
         }
-        connection()->removeWindow(m_window);
+        connection()->removeWindowEventListener(m_window);
         Q_XCB_CALL(xcb_destroy_window(xcb_connection(), m_window));
         m_window = 0;
     }
@@ -1447,6 +1448,14 @@ private:
     bool m_pending;
 };
 
+bool QXcbWindow::handleGenericEvent(xcb_generic_event_t *event, long *result)
+{
+    return QWindowSystemInterface::handleNativeEvent(window(),
+                                                     connection()->nativeInterface()->genericEventFilterType(),
+                                                     event,
+                                                     result);
+}
+
 void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)
 {
     QRect rect(event->x, event->y, event->width, event->height);
@@ -1681,6 +1690,8 @@ void QXcbWindow::handleMotionNotifyEvent(const xcb_motion_notify_event_t *event)
 
     handleMouseEvent(event->time, local, global, modifiers);
 }
+
+QXcbWindow *QXcbWindow::toWindow() { return this; }
 
 void QXcbWindow::handleMouseEvent(xcb_timestamp_t time, const QPoint &local, const QPoint &global, Qt::KeyboardModifiers modifiers)
 {

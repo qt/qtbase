@@ -80,8 +80,6 @@ class QXcbClipboard;
 class QXcbWMSupport;
 class QXcbNativeInterface;
 
-typedef QHash<xcb_window_t, QXcbWindow *> WindowMapper;
-
 namespace QXcbAtom {
     enum Atom {
         // window-manager <-> client protocols
@@ -301,6 +299,30 @@ private:
     XcbPollForQueuedEventFunctionPointer m_xcb_poll_for_queued_event;
 };
 
+class QXcbWindowEventListener
+{
+public:
+    virtual bool handleGenericEvent(xcb_generic_event_t *, long *) { return false; }
+
+    virtual void handleExposeEvent(const xcb_expose_event_t *) {}
+    virtual void handleClientMessageEvent(const xcb_client_message_event_t *) {}
+    virtual void handleConfigureNotifyEvent(const xcb_configure_notify_event_t *) {}
+    virtual void handleMapNotifyEvent(const xcb_map_notify_event_t *) {}
+    virtual void handleUnmapNotifyEvent(const xcb_unmap_notify_event_t *) {}
+    virtual void handleButtonPressEvent(const xcb_button_press_event_t *) {}
+    virtual void handleButtonReleaseEvent(const xcb_button_release_event_t *) {}
+    virtual void handleMotionNotifyEvent(const xcb_motion_notify_event_t *) {}
+    virtual void handleEnterNotifyEvent(const xcb_enter_notify_event_t *) {}
+    virtual void handleLeaveNotifyEvent(const xcb_leave_notify_event_t *) {}
+    virtual void handleFocusInEvent(const xcb_focus_in_event_t *) {}
+    virtual void handleFocusOutEvent(const xcb_focus_out_event_t *) {}
+    virtual void handlePropertyNotifyEvent(const xcb_property_notify_event_t *) {}
+
+    virtual QXcbWindow *toWindow() { return 0; }
+};
+
+typedef QHash<xcb_window_t, QXcbWindowEventListener *> WindowMapper;
+
 class QAbstractEventDispatcher;
 class QXcbConnection : public QObject
 {
@@ -356,8 +378,9 @@ public:
     void handleXcbError(xcb_generic_error_t *error);
     void handleXcbEvent(xcb_generic_event_t *event);
 
-    void addWindow(xcb_window_t id, QXcbWindow *window);
-    void removeWindow(xcb_window_t id);
+    void addWindowEventListener(xcb_window_t id, QXcbWindowEventListener *eventListener);
+    void removeWindowEventListener(xcb_window_t id);
+    QXcbWindowEventListener *windowEventListenerFromId(xcb_window_t id);
     QXcbWindow *platformWindowFromId(xcb_window_t id);
 
     xcb_generic_event_t *checkEvent(int type);
@@ -393,6 +416,8 @@ public:
 
     void grabServer();
     void ungrabServer();
+
+    QXcbNativeInterface *nativeInterface() const { return m_nativeInterface; }
 private slots:
     void processXcbEvents();
 

@@ -391,28 +391,36 @@ QXcbConnection::~QXcbConnection()
     delete m_keyboard;
 }
 
-void QXcbConnection::addWindow(xcb_window_t id, QXcbWindow *window)
+void QXcbConnection::addWindowEventListener(xcb_window_t id, QXcbWindowEventListener *eventListener)
 {
-    m_mapper.insert(id, window);
+    m_mapper.insert(id, eventListener);
 }
 
-void QXcbConnection::removeWindow(xcb_window_t id)
+void QXcbConnection::removeWindowEventListener(xcb_window_t id)
 {
     m_mapper.remove(id);
 }
 
-QXcbWindow *QXcbConnection::platformWindowFromId(xcb_window_t id)
+QXcbWindowEventListener *QXcbConnection::windowEventListenerFromId(xcb_window_t id)
 {
     return m_mapper.value(id, 0);
+}
+
+QXcbWindow *QXcbConnection::platformWindowFromId(xcb_window_t id)
+{
+    QXcbWindowEventListener *listener = m_mapper.value(id, 0);
+    if (listener)
+        return listener->toWindow();
+    return 0;
 }
 
 #define HANDLE_PLATFORM_WINDOW_EVENT(event_t, windowMember, handler) \
 { \
     event_t *e = (event_t *)event; \
-    if (QXcbWindow *platformWindow = platformWindowFromId(e->windowMember))  { \
-        handled = QWindowSystemInterface::handleNativeEvent(platformWindow->window(), m_nativeInterface->genericEventFilterType(), event, &result); \
+    if (QXcbWindowEventListener *eventListener = windowEventListenerFromId(e->windowMember))  { \
+        handled = eventListener->handleGenericEvent(event, &result); \
         if (!handled) \
-            platformWindow->handler(e); \
+            eventListener->handler(e); \
     } \
 } \
 break;
@@ -420,10 +428,10 @@ break;
 #define HANDLE_KEYBOARD_EVENT(event_t, handler) \
 { \
     event_t *e = (event_t *)event; \
-    if (QXcbWindow *platformWindow = platformWindowFromId(e->event)) { \
-        handled = QWindowSystemInterface::handleNativeEvent(platformWindow->window(), m_nativeInterface->genericEventFilterType(), event, &result); \
+    if (QXcbWindowEventListener *eventListener = windowEventListenerFromId(e->event)) { \
+        handled = eventListener->handleGenericEvent(event, &result); \
         if (!handled) \
-            m_keyboard->handler(m_focusWindow ? m_focusWindow : platformWindow, e); \
+            m_keyboard->handler(m_focusWindow ? m_focusWindow : eventListener, e); \
     } \
 } \
 break;
