@@ -8,6 +8,10 @@ DEFINES   += QT_NO_USING_NAMESPACE
 
 QMAKE_DOCS = $$PWD/doc/qtgui.qdocconf
 
+MODULE_PLUGIN_TYPES = \
+    platforms \
+    imageformats
+
 load(qt_module)
 
 # Code coverage with TestCocoon

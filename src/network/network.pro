@@ -11,6 +11,9 @@ DEFINES += QT_NO_USING_NAMESPACE
 #DEFINES += QUDPSOCKET_DEBUG QUDPSERVER_DEBUG
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x64000000
 
+MODULE_PLUGIN_TYPES = \
+    bearer
+
 QMAKE_DOCS = $$PWD/doc/qtnetwork.qdocconf
 
 load(qt_module)

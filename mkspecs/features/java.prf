@@ -17,7 +17,10 @@ android {
     CONFIG += android_app
 }
 
-isEmpty(CLASS_DIR): CLASS_DIR = .classes
+isEmpty(CLASS_DIR) {
+    bundled_jar_file: CLASS_DIR = .classes.bundled
+    else: CLASS_DIR = .classes
+}
 
 CONFIG -= qt
 
@@ -47,17 +50,16 @@ QMAKE_LIBS_OPENGL_ES2 =
 QMAKE_LIBDIR =
 QMAKE_EXTENSION_SHLIB = jar
 
-# Override linker with dex (for Android) or jar (for other java builds)
-android {
-    QMAKE_LINK_O_FLAG = --output=
+# Override linker with dex (for distributable Android archives) or jar (for other java builds)
+android:!bundled_jar_file {
     contains(QMAKE_HOST.os, Windows) {
-        QMAKE_LINK = $$PWD/data/android/dx $$SDK_ROOT --dex
+        DEX_CMD = $$PWD/data/android/dx $$SDK_ROOT
     } else {
-        QMAKE_LINK = $$SDK_ROOT/platform-tools/dx --dex
+        DEX_CMD = $$SDK_ROOT/platform-tools/dx
     }
+    QMAKE_LINK_SHLIB_CMD = $$DEX_CMD --dex --output $(TARGET) $$CLASS_DIR
 } else {
-    QMAKE_LINK_O_FLAG = "cf "
-    QMAKE_LINK = jar
+    QMAKE_LINK_SHLIB_CMD = jar cf $(TARGET) -C $$CLASS_DIR .
 }
 
 # Force link step to always happen, since we are always updating the
