@@ -20,7 +20,8 @@ SOURCES = \
         main.cpp \
         qxcbnativeinterface.cpp \
         qxcbcursor.cpp \
-        qxcbimage.cpp
+        qxcbimage.cpp \
+        qxcbxsettings.cpp
 
 HEADERS = \
         qxcbclipboard.h \
@@ -36,7 +37,8 @@ HEADERS = \
         qxcbwmsupport.h \
         qxcbnativeinterface.h \
         qxcbcursor.h \
-        qxcbimage.h
+        qxcbimage.h \
+        qxcbxsettings.h
 
 LIBS += -ldl
 

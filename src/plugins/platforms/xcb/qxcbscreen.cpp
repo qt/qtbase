@@ -44,6 +44,7 @@
 #include "qxcbcursor.h"
 #include "qxcbimage.h"
 #include "qnamespace.h"
+#include "qxcbxsettings.h"
 
 #include <stdio.h>
 
@@ -68,6 +69,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
     , m_refreshRate(60)
     , m_forcedDpi(-1)
     , m_hintStyle(QFontEngine::HintStyle(-1))
+    , m_xSettings(0)
 {
     if (connection->hasXRandr())
         xcb_randr_select_input(xcb_connection(), screen()->root, true);
@@ -580,4 +582,12 @@ void QXcbScreen::readXResources()
     }
 }
 
+QXcbXSettings *QXcbScreen::xSettings() const
+{
+    if (!m_xSettings) {
+        QXcbScreen *self = const_cast<QXcbScreen *>(this);
+        self->m_xSettings = new QXcbXSettings(self);
+    }
+    return m_xSettings;
+}
 QT_END_NAMESPACE

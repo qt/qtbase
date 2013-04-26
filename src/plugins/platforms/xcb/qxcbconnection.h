@@ -269,6 +269,7 @@ namespace QXcbAtom {
 #if XCB_USE_MAEMO_WINDOW_PROPERTIES
         MeegoTouchOrientationAngle,
 #endif
+        _XSETTINGS_SETTINGS,
 
         NPredefinedAtoms,
 
