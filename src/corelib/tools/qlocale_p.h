@@ -208,10 +208,9 @@ public:
 class Q_CORE_EXPORT QLocalePrivate : public QSharedData
 {
 public:
-    explicit QLocalePrivate(int index, int numberOptions = 0)
-        : m_index(index), m_numberOptions(numberOptions)
+    explicit QLocalePrivate(const QLocaleData *data, int numberOptions = 0)
+        : m_data(data), m_numberOptions(numberOptions)
     {
-        m_data = dataPointerForIndex(index);
     }
 
     ~QLocalePrivate()
@@ -332,9 +331,8 @@ public:
     QString dateTimeToString(const QString &format, const QDate *date, const QTime *time,
                              const QLocale *q) const;
 
-    quint16 m_index;
-    quint16 m_numberOptions;
     const QLocaleData *m_data;
+    quint16 m_numberOptions;
 };
 
 inline char QLocalePrivate::digitToCLocale(QChar in) const

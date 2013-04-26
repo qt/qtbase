@@ -699,45 +699,30 @@ const QLocaleData *QLocalePrivate::dataPointerForIndex(quint16 index)
     return &locale_data[index];
 }
 
-static quint16 localeDataIndex(const QLocaleData *p)
-{
-#ifndef QT_NO_SYSTEMLOCALE
-    Q_ASSERT((p >= locale_data && p - locale_data < locale_data_size)
-             || (p != 0 && p == system_data));
-    quint16 index = p == system_data ? locale_data_size : p - locale_data;
-#else
-    Q_ASSERT(p >= locale_data && p - locale_data < locale_data_size);
-    quint16 index = p - locale_data;
-#endif
-
-    return index;
-}
 
 static QLocalePrivate *localePrivateByName(const QString &name)
 {
-    return new QLocalePrivate(localeDataIndex(findLocaleData(name)));
+    return new QLocalePrivate(findLocaleData(name));
 }
 
 static QLocalePrivate *defaultLocalePrivate()
 {
-    return new QLocalePrivate(localeDataIndex(defaultData()), default_number_options);
+    return new QLocalePrivate(defaultData(), default_number_options);
 }
 
 static QLocalePrivate *findLocalePrivate(QLocale::Language language, QLocale::Script script,
                                          QLocale::Country country)
 {
     const QLocaleData *data = QLocaleData::findLocaleData(language, script, country);
-    int index;
+
     int numberOptions = 0;
 
     // If not found, should default to system
     if (data->m_language_id == QLocale::C && language != QLocale::C) {
         numberOptions = default_number_options;
-        index = localeDataIndex(defaultData());
-    } else {
-        index = localeDataIndex(data);
+        data = defaultData();
     }
-    return new QLocalePrivate(index, numberOptions);
+    return new QLocalePrivate(data, numberOptions);
 }
 
 
@@ -2123,7 +2108,7 @@ QString QLocale::toString(double i, char f, int prec) const
 
 QLocale QLocale::system()
 {
-    return QLocale(*new QLocalePrivate(localeDataIndex(systemData())));
+    return QLocale(*new QLocalePrivate(systemData()));
 }
 
 
@@ -2158,7 +2143,7 @@ QList<QLocale> QLocale::matchingLocales(QLocale::Language language,
             && (language == QLocale::AnyLanguage || data->m_language_id == uint(language))) {
         if ((script == QLocale::AnyScript || data->m_script_id == uint(script))
             && (country == QLocale::AnyCountry || data->m_country_id == uint(country))) {
-            QLocale locale(*new QLocalePrivate(localeDataIndex(data)));
+            QLocale locale(*new QLocalePrivate(data));
             result.append(locale);
         }
         ++data;
