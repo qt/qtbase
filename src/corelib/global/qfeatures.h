@@ -238,7 +238,7 @@
 // QWheelEvent
 //#define QT_NO_WHEELEVENT
 
-//
+// 
 //#define QT_NO_XMLSTREAM
 
 // Animation
@@ -299,6 +299,11 @@
 // QInputContext
 #if !defined(QT_NO_IM) && (defined(QT_NO_LIBRARY))
 #define QT_NO_IM
+#endif
+
+// QImageIOPlugin
+#if !defined(QT_NO_IMAGEFORMATPLUGIN) && (defined(QT_NO_LIBRARY))
+#define QT_NO_IMAGEFORMATPLUGIN
 #endif
 
 // QLocalServer

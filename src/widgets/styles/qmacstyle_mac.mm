@@ -661,11 +661,11 @@ static CGColorSpaceRef qt_mac_displayColorSpace(const QWidget *widget)
 
 bool qt_macWindowIsTextured(const QWidget *window)
 {
-    NSWindow *nswindow = static_cast<NSWindow*>(
-        QApplication::platformNativeInterface()->nativeResourceForWindow("NSWindow", window->windowHandle()));
-    if (!nswindow)
-        return false;
-    return ([nswindow styleMask] & NSTexturedBackgroundWindowMask) ? true : false;
+    if (QWindow *w = window->windowHandle())
+        if (w->handle())
+            if (NSWindow *nswindow = static_cast<NSWindow*>(QGuiApplication::platformNativeInterface()->nativeResourceForWindow(QByteArrayLiteral("NSWindow"), w)))
+                return ([nswindow styleMask] & NSTexturedBackgroundWindowMask) ? true : false;
+    return false;
 }
 
 /*****************************************************************************
@@ -1785,6 +1785,7 @@ QMacStyle::~QMacStyle()
 
         NotificationReceiver *receiver = static_cast<NotificationReceiver *>(d->receiver);
         [[NSNotificationCenter defaultCenter] removeObserver:receiver];
+        [receiver release];
     }
 #endif
 
@@ -2464,9 +2465,6 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         break; }
     case SH_TabBar_PreferNoArrows:
         ret = true;
-        break;
-    case SH_LineEdit_PasswordCharacter:
-        ret = kBulletUnicode;
         break;
         /*
     case SH_DialogButtons_DefaultButton:

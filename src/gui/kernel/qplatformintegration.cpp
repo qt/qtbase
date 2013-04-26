@@ -210,6 +210,11 @@ QPlatformServices *QPlatformIntegration::services() const
     \value ForeignWindows The platform allows creating QWindows which represent
     native windows created by other processes or anyway created by using native
     libraries.
+
+    \value NonFullScreenWindows The platform supports top-level windows which do not
+    fill the screen. The default implementation returns true. Returning false for
+    this will cause all windows, including dialogs and popups, to be resized to fill the
+    screen.
  */
 
 
@@ -227,8 +232,7 @@ QPlatformServices *QPlatformIntegration::services() const
 
 bool QPlatformIntegration::hasCapability(Capability cap) const
 {
-    Q_UNUSED(cap);
-    return false;
+    return cap == NonFullScreenWindows;
 }
 
 QPlatformPixmap *QPlatformIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
@@ -309,6 +313,8 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return false;
     case PasswordMaskDelay:
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::PasswordMaskDelay);
+    case PasswordMaskCharacter:
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::PasswordMaskCharacter);
     case FontSmoothingGamma:
         return qreal(1.7);
     case StartDragVelocity:

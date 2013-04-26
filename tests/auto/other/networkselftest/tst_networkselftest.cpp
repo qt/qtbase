@@ -41,8 +41,7 @@
 
 #include <QtTest/QtTest>
 #include <QtNetwork/QtNetwork>
-
-#include <time.h>
+#include <QtCore/QDateTime>
 
 #ifndef QT_NO_BEARERMANAGEMENT
 #include <QtNetwork/qnetworkconfigmanager.h>
@@ -531,13 +530,9 @@ void tst_NetworkSelfTest::imapServer()
 
 void tst_NetworkSelfTest::httpServer()
 {
-    QString uniqueExtension;
-    qsrand(time(0));
-#ifndef Q_OS_WINCE
-    uniqueExtension = QString("%1%2%3").arg((qulonglong)this).arg(qrand()).arg((qulonglong)time(0));
-#else
-    uniqueExtension = QString("%1%2").arg((qulonglong)this).arg(qrand());
-#endif
+    QByteArray uniqueExtension = QByteArray::number((qulonglong)this) +
+                                 QByteArray::number((qulonglong)qrand()) +
+                                 QByteArray::number((qulonglong)QDateTime::currentDateTime().toTime_t());
 
     netChat(80, QList<Chat>()
             // HTTP/0.9 chat:
@@ -603,7 +598,7 @@ void tst_NetworkSelfTest::httpServer()
 
             // HTTP/1.0 PUT
             << Chat::Reconnect
-            << Chat::send("PUT /dav/networkselftest-" + uniqueExtension.toLatin1() + ".txt HTTP/1.0\r\n"
+            << Chat::send("PUT /dav/networkselftest-" + uniqueExtension + ".txt HTTP/1.0\r\n"
                           "Content-Length: 5\r\n"
                           "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
                           "Connection: close\r\n"
@@ -616,7 +611,7 @@ void tst_NetworkSelfTest::httpServer()
 
             // check that the file did get uploaded
             << Chat::Reconnect
-            << Chat::send("HEAD /dav/networkselftest-" + uniqueExtension.toLatin1() + ".txt HTTP/1.0\r\n"
+            << Chat::send("HEAD /dav/networkselftest-" + uniqueExtension + ".txt HTTP/1.0\r\n"
                           "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
                           "Connection: close\r\n"
                           "\r\n")
@@ -628,7 +623,7 @@ void tst_NetworkSelfTest::httpServer()
 
             // HTTP/1.0 DELETE
             << Chat::Reconnect
-            << Chat::send("DELETE /dav/networkselftest-" + uniqueExtension.toLatin1() + ".txt HTTP/1.0\r\n"
+            << Chat::send("DELETE /dav/networkselftest-" + uniqueExtension + ".txt HTTP/1.0\r\n"
                           "Host: " + QtNetworkSettings::serverName().toLatin1() + "\r\n"
                           "Connection: close\r\n"
                           "\r\n")

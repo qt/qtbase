@@ -1802,6 +1802,19 @@ QWindowsWindow *QWindowsWindow::childAt(const QPoint &clientPoint, unsigned cwex
 }
 
 #ifndef Q_OS_WINCE
+void QWindowsWindow::setAlertState(bool enabled)
+{
+    if (isAlertState() == enabled)
+        return;
+    if (enabled) {
+        alertWindow(0);
+        setFlag(AlertState);
+    } else {
+        stopAlertWindow();
+        clearFlag(AlertState);
+    }
+}
+
 void QWindowsWindow::alertWindow(int durationMs)
 {
     DWORD timeOutMs = GetCaretBlinkTime();

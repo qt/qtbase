@@ -26,7 +26,6 @@
 ****************************************************************************/
 
 /*! \example widgets/applicationicon
-    \group all-examples
     \title Application Icon Example
 
     \brief The example shows how to add an application icon to a mobile application.

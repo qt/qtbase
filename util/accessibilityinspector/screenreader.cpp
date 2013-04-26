@@ -42,6 +42,7 @@
 #include "screenreader.h"
 #include "optionswidget.h"
 #include "accessibilityscenemanager.h"
+#include <private/qaccessible2_p.h>
 #include <QtGui>
 
 ScreenReader::ScreenReader(QObject *parent) :
@@ -54,8 +55,6 @@ ScreenReader::ScreenReader(QObject *parent) :
 
 ScreenReader::~ScreenReader()
 {
-    delete m_selectedInterface;
-    delete m_rootInterface;
 }
 
 void ScreenReader::setRootObject(QObject *rootObject)
@@ -107,7 +106,8 @@ void ScreenReader::processTouchPoint()
     }
 
     m_selectedInterface = currentInterface;
-    emit selected(m_selectedInterface->object());
+    if (m_selectedInterface->object())
+        emit selected(m_selectedInterface->object());
     if (m_optionsWidget->enableTextToSpeach())
         speak(m_selectedInterface->text(QAccessible::Name)
               /*+ "," + translateRole(m_selectedInterface->role(0)) */);

@@ -63,7 +63,6 @@ QT_END_NAMESPACE
     QWindow *m_window;
     QCocoaWindow *m_platformWindow;
     Qt::MouseButtons m_buttons;
-    QAccessibleInterface *m_accessibleRoot;
     QString m_composingText;
     bool m_sendKeyEvent;
     QStringList *currentCustomDragTypes;

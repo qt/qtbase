@@ -150,13 +150,14 @@ private:
                                         CodeMarker *marker);
     QString generateAllQmlMembersFile(const QmlClassNode* qml_cn,
                                       CodeMarker* marker);
-    QString generateLowStatusMemberFile(const InnerNode *inner,
+    QString generateLowStatusMemberFile(InnerNode *inner,
                                         CodeMarker *marker,
                                         CodeMarker::Status status);
     void generateClassHierarchy(const Node *relative, NodeMap &classMap);
     void generateAnnotatedList(const Node* relative, CodeMarker* marker, const NodeMap& nodeMap);
     void generateAnnotatedList(const Node* relative, CodeMarker* marker, const NodeList& nodes);
-    void generateCompactList(const Node *relative,
+    void generateCompactList(ListType listType,
+                             const Node *relative,
                              const NodeMap &classMap,
                              bool includeAlphabet,
                              QString commonPrefix = QString());

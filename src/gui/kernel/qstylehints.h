@@ -62,6 +62,7 @@ public:
     int cursorFlashTime() const;
     bool showIsFullScreen() const;
     int passwordMaskDelay() const;
+    QChar passwordMaskCharacter() const;
     qreal fontSmoothingGamma() const;
     bool useRtlExtensions() const;
 

@@ -438,6 +438,9 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
                  kCFPreferencesCurrentUser,
                  kCFPreferencesAnyHost);
         QStringList result;
+        if (!languages)
+            return QVariant(result);
+
         CFTypeID typeId = CFGetTypeID(languages);
         if (typeId == CFArrayGetTypeID()) {
             const int cnt = CFArrayGetCount(languages.as<CFArrayRef>());

@@ -117,8 +117,8 @@ private:
 class Q_XML_EXPORT QXmlAttributes
 {
 public:
-    QXmlAttributes() {}
-    virtual ~QXmlAttributes() {}
+    QXmlAttributes();
+    virtual ~QXmlAttributes();
 
     int index(const QString& qName) const;
     int index(QLatin1String qName) const;
@@ -365,8 +365,8 @@ public:
 class Q_XML_EXPORT QXmlDefaultHandler : public QXmlContentHandler, public QXmlErrorHandler, public QXmlDTDHandler, public QXmlEntityResolver, public QXmlLexicalHandler, public QXmlDeclHandler
 {
 public:
-    QXmlDefaultHandler() { }
-    virtual ~QXmlDefaultHandler() { }
+    QXmlDefaultHandler();
+    virtual ~QXmlDefaultHandler();
 
     void setDocumentLocator(QXmlLocator* locator);
     bool startDocument();

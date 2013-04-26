@@ -325,9 +325,13 @@ bool QSslSocketBackendPrivate::initSslContext()
     Q_Q(QSslSocket);
 
     // If no external context was set (e.g. bei QHttpNetworkConnection) we will create a default context
-    if (!sslContextPointer)
+    if (!sslContextPointer) {
+        // create a deep copy of our configuration
+        QSslConfigurationPrivate *configurationCopy = new QSslConfigurationPrivate(configuration);
+        configurationCopy->ref.store(0);              // the QSslConfiguration constructor refs up
         sslContextPointer = QSharedPointer<QSslContext>(
-                    QSslContext::fromConfiguration(mode, QSslConfiguration(&configuration), allowRootCertOnDemandLoading));
+                    QSslContext::fromConfiguration(mode, configurationCopy, allowRootCertOnDemandLoading));
+    }
 
     if (sslContextPointer->error() != QSslError::NoError) {
         q->setErrorString(sslContextPointer->errorString());

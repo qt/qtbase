@@ -463,6 +463,32 @@ QString QPlatformWindow::formatWindowTitle(const QString &title, const QString &
 }
 
 /*!
+    Reimplement this method to set whether the window demands attention
+    (for example, by flashing the taskbar icon) depending on \a enabled.
+
+    \sa isAlertState()
+    \since 5.1
+*/
+
+void QPlatformWindow::setAlertState(bool enable)
+{
+    Q_UNUSED(enable)
+}
+
+/*!
+    Reimplement this method return whether the window is in
+    an alert state.
+
+    \sa setAlertState()
+    \since 5.1
+*/
+
+bool QPlatformWindow::isAlertState() const
+{
+    return false;
+}
+
+/*!
     Helper function to get initial geometry on windowing systems which do not
     do smart positioning and also do not provide a means of centering a
     transient window w.r.t. its parent. For example this is useful on Windows

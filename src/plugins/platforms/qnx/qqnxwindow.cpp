@@ -172,6 +172,7 @@ void QQnxWindow::setGeometry(const QRect &rect)
 {
     const QRect oldGeometry = setGeometryHelper(rect);
 
+#if !defined(QT_NO_OPENGL)
     // If this is an OpenGL window we need to request that the GL context updates
     // the EGLsurface on which it is rendering. The surface will be recreated the
     // next time QQnxGLContext::makeCurrent() is called.
@@ -184,6 +185,7 @@ void QQnxWindow::setGeometry(const QRect &rect)
         if (m_platformOpenGLContext != 0 && bufferSize() != rect.size())
             m_platformOpenGLContext->requestSurfaceChange();
     }
+#endif
 
     // Send a geometry change event to Qt (triggers resizeEvent() in QWindow/QWidget).
 
@@ -353,13 +355,12 @@ void QQnxWindow::setBufferSize(const QSize &size)
 
     // Create window buffers if they do not exist
     if (m_bufferSize.isEmpty()) {
+        val[0] = m_screen->nativeFormat();
 #if !defined(QT_NO_OPENGL)
         // Get pixel format from EGL config if using OpenGL;
         // otherwise inherit pixel format of window's screen
         if (m_platformOpenGLContext != 0) {
             val[0] = platformWindowFormatToNativeFormat(m_platformOpenGLContext->format());
-        } else {
-            val[0] = m_screen->nativeFormat();
         }
 #endif
 

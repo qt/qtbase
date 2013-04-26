@@ -286,6 +286,10 @@ void QCocoaWindow::setVisible(bool visible)
                 parentCocoaWindow->m_activePopupWindow = window();
                 // QTBUG-30266: a window should not be resizable while a transient popup is open
                 // Since this isn't a native popup, the window manager doesn't close the popup when you click outside
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+                if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7
+                    && !([parentCocoaWindow->m_nsWindow styleMask] & NSFullScreenWindowMask))
+#endif
                 [parentCocoaWindow->m_nsWindow setStyleMask:
                     (parentCocoaWindow->windowStyleMask(parentCocoaWindow->m_windowFlags) & ~NSResizableWindowMask)];
             }
@@ -349,7 +353,12 @@ void QCocoaWindow::setVisible(bool visible)
         } else {
             [m_contentView setHidden:YES];
         }
-        if (parentCocoaWindow && window()->type() == Qt::Popup)
+        if (parentCocoaWindow && window()->type() == Qt::Popup
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+            && QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7
+            && !([parentCocoaWindow->m_nsWindow styleMask] & NSFullScreenWindowMask)
+#endif
+           )
             // QTBUG-30266: a window should not be resizable while a transient popup is open
             [parentCocoaWindow->m_nsWindow setStyleMask:parentCocoaWindow->windowStyleMask(parentCocoaWindow->m_windowFlags)];
     }
@@ -474,6 +483,8 @@ void QCocoaWindow::setWindowIcon(const QIcon &icon)
 
     NSButton *iconButton = [m_nsWindow standardWindowButton:NSWindowDocumentIconButton];
     if (iconButton == nil) {
+        if (icon.isNull())
+            return;
         NSString *title = QCFString::toNSString(window()->title());
         [m_nsWindow setRepresentedURL:[NSURL fileURLWithPath:title]];
         iconButton = [m_nsWindow standardWindowButton:NSWindowDocumentIconButton];
@@ -855,7 +866,7 @@ void QCocoaWindow::syncWindowState(Qt::WindowState newState)
     // if content view width or height is 0 then the window animations will crash so
     // do nothing except set the new state
     NSRect contentRect = [contentView() frame];
-    if (contentRect.size.width <= 0 || contentRect.size.height <= 0) {
+    if (contentRect.size.width < 0 || contentRect.size.height < 0) {
         qWarning() << Q_FUNC_INFO << "invalid window content view size, check your window geometry";
         m_synchedWindowState = newState;
         return;
@@ -908,7 +919,7 @@ QCocoaMenuBar *QCocoaWindow::menubar() const
 void QCocoaWindow::registerTouch(bool enable)
 {
     m_registerTouchCount += enable ? 1 : -1;
-    if (m_registerTouchCount == 1)
+    if (enable && m_registerTouchCount == 1)
         [m_contentView setAcceptsTouchEvents:YES];
     else if (m_registerTouchCount == 0)
         [m_contentView setAcceptsTouchEvents:NO];

@@ -229,8 +229,8 @@ QTest::touchEvent(&widget)
     .move(0, QPoint(12, 12))
     .move(1, QPoint(45, 5));
 QTest::touchEvent(&widget)
-    .release(0)
-    .release(1);
+    .release(0, QPoint(12, 12))
+    .release(1, QPoint(45, 5));
 //! [25]
 
 

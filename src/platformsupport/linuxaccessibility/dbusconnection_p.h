@@ -67,8 +67,6 @@ Q_SIGNALS:
 private Q_SLOTS:
     void serviceRegistered();
     void serviceUnregistered();
-    void enabledStateCallback(const QDBusVariant &enabled);
-//    void enabledStateChanged(const QDBusVariant &);
     void connectA11yBus(const QString &address);
 
     void dbusError(const QDBusError &error);

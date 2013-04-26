@@ -44,6 +44,7 @@
 
 #include "qeglfswindow.h"
 #include <QtCore/qmutex.h>
+#include <QtCore/qreadwritelock.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -51,6 +52,7 @@ class QAndroidOpenGLPlatformWindow : public QEglFSWindow
 {
 public:
     QAndroidOpenGLPlatformWindow(QWindow *window);
+    ~QAndroidOpenGLPlatformWindow();
 
     QSize scheduledResize() const { return m_scheduledResize; }
     void scheduleResize(const QSize &size) { m_scheduledResize = size; }
@@ -60,12 +62,23 @@ public:
 
     bool isExposed() const;
 
+    void raise();
+
     void invalidateSurface();
     void resetSurface();
+
+    void setVisible(bool visible);
+
+    void destroy();
 
 private:
     QSize m_scheduledResize;
     QMutex m_lock;
+
+    static QReadWriteLock m_staticSurfaceLock;
+    static EGLSurface m_staticSurface;
+    static EGLNativeWindowType m_staticNativeWindow;
+    static QBasicAtomicInt m_referenceCount;
 };
 
 QT_END_NAMESPACE

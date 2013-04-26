@@ -48,6 +48,7 @@
 #include <qdebug.h>
 
 #include <QDBusConnectionInterface>
+#include "bus_interface.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -81,40 +82,29 @@ void DBusConnection::serviceRegistered()
 {
     // listen to enabled changes
     QDBusConnection c = QDBusConnection::sessionBus();
-    // FXIME check for changes of enabled state
-//    if (!c.connect(A11Y_SERVICE, A11Y_PATH, QStringLiteral("org.freedesktop.DBus.Properties"), QStringLiteral("PropertiesChanged"), this, SLOT(enabledStateChanged(QDBusVariant))))
-//        qWarning() << "Could not listen to accessibility enabled state changes.";
+    OrgA11yStatusInterface *a11yStatus = new OrgA11yStatusInterface(A11Y_SERVICE, A11Y_PATH, c, this);
 
-    // check if it's enabled right away
-    QDBusMessage enabledMessage = QDBusMessage::createMethodCall(A11Y_SERVICE, A11Y_PATH, QStringLiteral("org.freedesktop.DBus.Properties"), QStringLiteral("Get"));
-    QList<QVariant> args;
-    args << QStringLiteral("org.a11y.Status") << QStringLiteral("IsEnabled");
-    enabledMessage.setArguments(args);
-    c.callWithCallback(enabledMessage, this, SLOT(enabledStateCallback(QDBusVariant)), SLOT(dbusError(QDBusError)));
-}
+    // a11yStatus->isEnabled() returns always true (since Gnome 3.6)
+    bool enabled = a11yStatus->screenReaderEnabled();
+    if (enabled != m_enabled) {
+        m_enabled = enabled;
+        if (m_a11yConnection.isConnected()) {
+            emit enabledChanged(m_enabled);
+        } else {
+            QDBusConnection c = QDBusConnection::sessionBus();
+            QDBusMessage m = QDBusMessage::createMethodCall(QLatin1String("org.a11y.Bus"),
+                                                            QLatin1String("/org/a11y/bus"),
+                                                            QLatin1String("org.a11y.Bus"), QLatin1String("GetAddress"));
+            c.callWithCallback(m, this, SLOT(connectA11yBus(QString)), SLOT(dbusError(QDBusError)));
+        }
+    }
 
-void DBusConnection::dbusError(const QDBusError &error)
-{
-    qWarning() << "Accessibility encountered a DBus error:" << error;
+    //    connect(a11yStatus, ); QtDbus doesn't support notifications for property changes yet
 }
 
 void DBusConnection::serviceUnregistered()
 {
     emit enabledChanged(false);
-}
-
-void DBusConnection::enabledStateCallback(const QDBusVariant &enabled)
-{
-    m_enabled = enabled.variant().toBool();
-    if (m_a11yConnection.isConnected()) {
-        emit enabledChanged(m_enabled);
-    } else {
-        QDBusConnection c = QDBusConnection::sessionBus();
-        QDBusMessage m = QDBusMessage::createMethodCall(QLatin1String("org.a11y.Bus"),
-                                                        QLatin1String("/org/a11y/bus"),
-                                                        QLatin1String("org.a11y.Bus"), QLatin1String("GetAddress"));
-        c.callWithCallback(m, this, SLOT(connectA11yBus(QString)), SLOT(dbusError(QDBusError)));
-    }
 }
 
 void DBusConnection::connectA11yBus(const QString &address)
@@ -127,6 +117,11 @@ void DBusConnection::connectA11yBus(const QString &address)
 
     if (m_enabled)
         emit enabledChanged(true);
+}
+
+void DBusConnection::dbusError(const QDBusError &error)
+{
+    qWarning() << "Accessibility encountered a DBus error:" << error;
 }
 
 /*!

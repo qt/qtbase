@@ -180,7 +180,8 @@ bool shouldBeIgnored(QAccessibleInterface *interface)
     // state. Ignore interfaces with those flags set.
     const QAccessible::State state = interface->state();
     if (state.invisible ||
-        state.offscreen)
+        state.offscreen ||
+        state.invalid)
         return true;
 
     // Some roles are not interesting. In particular, container roles should be
@@ -189,12 +190,13 @@ bool shouldBeIgnored(QAccessibleInterface *interface)
     if (role == QAccessible::Border ||      // QFrame
         role == QAccessible::Application || // We use the system-provided application element.
         role == QAccessible::MenuItem ||    // The system also provides the menu items.
-        role == QAccessible::ToolBar)       // Access the tool buttons directly.
+        role == QAccessible::ToolBar ||     // Access the tool buttons directly.
+        role == QAccessible::Pane ||        // Scroll areas.
+        role == QAccessible::Client)        // The default for QWidget.
         return true;
 
     NSString *mac_role = macRole(interface);
     if (mac_role == NSAccessibilityWindowRole || // We use the system-provided window elements.
-        mac_role == NSAccessibilityGroupRole ||
         mac_role == NSAccessibilityUnknownRole)
         return true;
 

@@ -4905,20 +4905,12 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
             ret = -1;
         break;
     case SH_LineEdit_PasswordCharacter: {
-        const QFontMetrics &fm = opt ? opt->fontMetrics
-                                     : (widget ? widget->fontMetrics() : QFontMetrics(QFont()));
-        ret = 0;
-        if (fm.inFont(QChar(0x25CF))) {
-            ret = 0x25CF;
-        } else if (fm.inFont(QChar(0x2022))) {
-            ret = 0x2022;
-        } else {
-            ret = '*';
-        }
+        const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme();
+        const QPlatformTheme::ThemeHint hintType = QPlatformTheme::PasswordMaskCharacter;
+        const QVariant hint = theme ? theme->themeHint(hintType) : QPlatformTheme::defaultThemeHint(hintType);
+        ret = hint.toChar().unicode();
         break;
     }
-
-
     case SH_ToolBox_SelectedPageTitleBold:
         ret = 1;
         break;

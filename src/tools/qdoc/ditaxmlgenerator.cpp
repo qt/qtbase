@@ -473,8 +473,6 @@ DitaXmlGenerator::DitaXmlGenerator()
       inTableBody(false),
       noLinks(false),
       obsoleteLinks(false),
-      offlineDocs(true),
-      codeIndent(0),
       divNestingLevel(0),
       sectionNestingLevel(0),
       tableColumnCount(0),
@@ -573,8 +571,6 @@ void DitaXmlGenerator::initializeGenerator(const Config &config)
     customHeadElements = config.getStringList(DitaXmlGenerator::format() +
                                               Config::dot +
                                               DITAXMLGENERATOR_CUSTOMHEADELEMENTS);
-    // The following line was changed to fix QTBUG-27798
-    //codeIndent = config.getInt(CONFIG_CODEINDENT);
     version = config.getString(CONFIG_VERSION);
     vrm = version.split(QLatin1Char('.'));
 }
@@ -1024,10 +1020,10 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             generateAnnotatedList(relative, marker, qdb_->getCppClasses());
         }
         else if (atom->string() == "classes") {
-            generateCompactList(relative, qdb_->getCppClasses(), true);
+            generateCompactList(Generic, relative, qdb_->getCppClasses(), true);
         }
         else if (atom->string() == "qmlclasses") {
-            generateCompactList(relative, qdb_->getQmlTypes(), true);
+            generateCompactList(Generic, relative, qdb_->getQmlTypes(), true);
         }
         else if (atom->string().contains("classesbymodule")) {
             QString arg = atom->string().trimmed();
@@ -1046,10 +1042,19 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             generateClassHierarchy(relative, qdb_->getCppClasses());
         }
         else if (atom->string() == "compatclasses") {
-            generateCompactList(relative, qdb_->getCompatibilityClasses(), false);
+            generateCompactList(Generic, relative, qdb_->getCompatibilityClasses(), false);
         }
         else if (atom->string() == "obsoleteclasses") {
-            generateCompactList(relative, qdb_->getObsoleteClasses(), false);
+            generateCompactList(Generic, relative, qdb_->getObsoleteClasses(), false);
+        }
+        else if (atom->string() == "obsoleteqmltypes") {
+            generateCompactList(Generic, relative, qdb_->getObsoleteQmlTypes(), false);
+        }
+        else if (atom->string() == "obsoletecppmembers") {
+            generateCompactList(Obsolete, relative, qdb_->getClassesWithObsoleteMembers(), false);
+        }
+        else if (atom->string() == "obsoleteqmlmembers") {
+            generateCompactList(Obsolete, relative, qdb_->getQmlTypesWithObsoleteMembers(), false);
         }
         else if (atom->string() == "functionindex") {
             generateFunctionIndex(relative);
@@ -1058,10 +1063,10 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             generateLegaleseList(relative, marker);
         }
         else if (atom->string() == "mainclasses") {
-            generateCompactList(relative, qdb_->getMainClasses(), true);
+            generateCompactList(Generic, relative, qdb_->getMainClasses(), true);
         }
         else if (atom->string() == "services") {
-            generateCompactList(relative, qdb_->getServiceClasses(), false);
+            generateCompactList(Generic, relative, qdb_->getServiceClasses(), false);
         }
         else if (atom->string() == "overviews") {
             generateOverviewList(relative);
@@ -1176,9 +1181,9 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                     writeCharacters(protectEnc((*s).name));
                     writeEndTag(); // </p>
                     if (idx == Class)
-                        generateCompactList(0, ncmap, false, QString("Q"));
+                        generateCompactList(Generic, 0, ncmap, false, QString("Q"));
                     else if (idx == QmlClass)
-                        generateCompactList(0, nqcmap, false, QString("Q"));
+                        generateCompactList(Generic, 0, nqcmap, false, QString("Q"));
                     else if (idx == MemberFunction) {
                         ParentMaps parentmaps;
                         ParentMaps::iterator pmap;
@@ -2599,7 +2604,7 @@ void DitaXmlGenerator::generateTableOfContents(const Node* node,
     inLink_ = false;
 }
 
-void DitaXmlGenerator::generateLowStatusMembers(const InnerNode* inner,
+void DitaXmlGenerator::generateLowStatusMembers(InnerNode* inner,
                                                 CodeMarker* marker,
                                                 CodeMarker::Status status)
 {
@@ -2619,6 +2624,9 @@ void DitaXmlGenerator::generateLowStatusMembers(const InnerNode* inner,
     }
     if (sections.isEmpty())
         return;
+
+    if (status == CodeMarker::Obsolete)
+        inner->setObsoleteLink(fileBase(inner) + "-obsolete." + fileExtension());
 
     QList<Section>::ConstIterator s = sections.constBegin();
     while (s != sections.constEnd()) {
@@ -2779,7 +2787,8 @@ void DitaXmlGenerator::generateAnnotatedList(const Node* relative,
   normally you let it figure it out itself by looking at
   the name of the first and last classes in \a classMap.
  */
-void DitaXmlGenerator::generateCompactList(const Node* relative,
+void DitaXmlGenerator::generateCompactList(ListType , // currently not needed for DITA
+                                           const Node* relative,
                                            const NodeMap& classMap,
                                            bool includeAlphabet,
                                            QString commonPrefix)

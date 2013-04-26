@@ -86,6 +86,7 @@ class QDocIndexFiles
     static QDocIndexFiles* qdocIndexFiles_;
     QDocDatabase* qdb_;
     Generator* gen_;
+    QString project_;
     QList<QPair<ClassNode*,QString> > basesList_;
     QList<QPair<FunctionNode*,QString> > relatedList_;
 

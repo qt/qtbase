@@ -990,6 +990,7 @@ void QAbstractSpinBox::keyPressEvent(QKeyEvent *event)
         selectAll();
         event->ignore();
         emit editingFinished();
+        emit d->edit->returnPressed();
         return;
 
 #ifdef QT_KEYPAD_NAVIGATION

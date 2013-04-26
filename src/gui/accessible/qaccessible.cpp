@@ -441,7 +441,6 @@ Q_GLOBAL_STATIC(QAccessiblePluginsHash, qAccessiblePlugins);
 QAccessible::UpdateHandler QAccessible::updateHandler = 0;
 QAccessible::RootObjectHandler QAccessible::rootObjectHandler = 0;
 
-static bool accessibility_active = false;
 static bool cleanupAdded = false;
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -584,7 +583,6 @@ Q_GLOBAL_STATIC(QAccessibleCache, qAccessibleCache)
 */
 QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
 {
-    accessibility_active = true;
     if (!object)
         return 0;
 
@@ -699,17 +697,24 @@ QAccessibleInterface *QAccessible::accessibleInterface(Id id)
 
 
 /*!
-    Returns true if an accessibility implementation has been requested
-    during the runtime of the application; otherwise returns false.
+    Returns true if the platform requested accessibility information.
 
-    Use this function to prevent potentially expensive notifications via
-    updateAccessibility().
+    This function will return false until a tool such as a screen reader
+    accessed the accessibility framework. It is still possible to use
+    \l QAccessible::queryAccessibleInterface even if accessibility is not
+    active. But there will be no notifications sent to the platform.
+
+    It is recommended to use this function to prevent expensive notifications
+    via updateAccessibility() when they are not needed.
 */
 bool QAccessible::isActive()
 {
-    return accessibility_active;
+#ifndef QT_NO_ACCESSIBILITY
+    if (QPlatformAccessibility *pfAccessibility = platformAccessibility())
+        return pfAccessibility->isActive();
+#endif
+    return false;
 }
-
 
 
 /*!

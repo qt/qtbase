@@ -661,7 +661,7 @@ void _scrollBarRanges_data()
     }
 
     const QScreen *screen = QGuiApplication::primaryScreen();
-    if (screen && qFuzzyCompare(screen->logicalDotsPerInchX(), 96.0)) {
+    if (screen && qFuzzyCompare((double)screen->logicalDotsPerInchX(), 96.0)) {
         _scrollBarRanges_addTestData(QString("motif"), false);
         _scrollBarRanges_addTestData(QString("motif"), true);
     }

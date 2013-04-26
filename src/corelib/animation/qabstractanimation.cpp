@@ -827,8 +827,8 @@ void QAnimationDriver::start()
 {
     Q_D(QAnimationDriver);
     if (!d->running) {
-        emit started();
         d->running = true;
+        emit started();
     }
 }
 
@@ -837,8 +837,8 @@ void QAnimationDriver::stop()
 {
     Q_D(QAnimationDriver);
     if (d->running) {
-        emit stopped();
         d->running = false;
+        emit stopped();
     }
 }
 

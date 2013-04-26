@@ -59,6 +59,9 @@ public:
 QPlatformIntegration * QCocoaIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     Q_UNUSED(paramList);
+
+    QCocoaAutoReleasePool pool;
+
     if (system.toLower() == "cocoa")
         return new QCocoaIntegration;
 

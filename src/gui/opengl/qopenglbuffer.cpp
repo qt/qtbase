@@ -316,6 +316,8 @@ void QOpenGLBuffer::destroy()
         d->guard->free();
         d->guard = 0;
     }
+    delete d->funcs;
+    d->funcs = 0;
 }
 
 /*!

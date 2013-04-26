@@ -548,7 +548,7 @@ void tst_QStyle::testMacStyle()
 void tst_QStyle::testWindowsCEStyle()
 {
     QStyle *cstyle = QStyleFactory::create("WindowsCE");
-    QVERIFY(testAllFunctions(&cstyle));
+    QVERIFY(testAllFunctions(cstyle));
     delete cstyle;
 }
 #endif
@@ -558,7 +558,7 @@ void tst_QStyle::testWindowsCEStyle()
 void tst_QStyle::testWindowsMobileStyle()
 {
     QStyle *cstyle = QStyleFactory::create("WindowsMobile");
-    QVERIFY(testAllFunctions(&cstyle));
+    QVERIFY(testAllFunctions(cstyle));
     delete cstyle;
 }
 #endif

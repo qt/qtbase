@@ -90,6 +90,7 @@ enum DetailButtonLabel { ShowLabel = 0, HideLabel = 1 };
 #ifndef QT_NO_TEXTEDIT
 class QMessageBoxDetailsText : public QWidget
 {
+    Q_OBJECT
 public:
     class TextEdit : public QTextEdit
     {
@@ -109,6 +110,7 @@ public:
 
     QMessageBoxDetailsText(QWidget *parent=0)
         : QWidget(parent)
+        , copyAvailable(false)
     {
         QVBoxLayout *layout = new QVBoxLayout;
         layout->setMargin(0);
@@ -122,10 +124,29 @@ public:
         textEdit->setReadOnly(true);
         layout->addWidget(textEdit);
         setLayout(layout);
+
+        connect(textEdit, SIGNAL(copyAvailable(bool)),
+                this, SLOT(textCopyAvailable(bool)));
     }
     void setText(const QString &text) { textEdit->setPlainText(text); }
     QString text() const { return textEdit->toPlainText(); }
+
+    bool copy()
+    {
+        if (!copyAvailable)
+            return false;
+        textEdit->copy();
+        return true;
+    }
+
+private slots:
+    void textCopyAvailable(bool available)
+    {
+        copyAvailable = available;
+    }
+
 private:
+    bool copyAvailable;
     TextEdit *textEdit;
 };
 #endif // QT_NO_TEXTEDIT
@@ -1362,7 +1383,19 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
             return;
         }
 
-#if defined (Q_OS_WIN) && !defined(QT_NO_CLIPBOARD) && !defined(QT_NO_SHORTCUT)
+
+#if !defined(QT_NO_CLIPBOARD) && !defined(QT_NO_SHORTCUT)
+
+#if !defined(QT_NO_TEXTEDIT)
+        if (e == QKeySequence::Copy) {
+            if (d->detailsText->isVisible() && d->detailsText->copy()) {
+                e->setAccepted(true);
+                return;
+            }
+        }
+#endif // !QT_NO_TEXTEDIT
+
+#if defined(Q_OS_WIN)
         if (e == QKeySequence::Copy) {
             QString separator = QString::fromLatin1("---------------------------\n");
             QString textToCopy = separator;
@@ -1379,11 +1412,16 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
                 buttonTexts += buttons[i]->text() + QLatin1String("   ");
             }
             textToCopy += buttonTexts + separator;
-
+#ifndef QT_NO_TEXTEDIT
+            if (d->detailsText)
+                textToCopy += d->detailsText->text() + separator;
+#endif
             QApplication::clipboard()->setText(textToCopy);
             return;
         }
-#endif //QT_NO_SHORTCUT QT_NO_CLIPBOARD Q_OS_WIN
+#endif // Q_OS_WIN
+
+#endif // !QT_NO_CLIPBOARD && !QT_NO_SHORTCUT
 
 #ifndef QT_NO_SHORTCUT
     if (!(e->modifiers() & Qt::AltModifier)) {
@@ -2634,5 +2672,6 @@ QPixmap QMessageBox::standardIcon(Icon icon)
 QT_END_NAMESPACE
 
 #include "moc_qmessagebox.cpp"
+#include "qmessagebox.moc"
 
 #endif // QT_NO_MESSAGEBOX

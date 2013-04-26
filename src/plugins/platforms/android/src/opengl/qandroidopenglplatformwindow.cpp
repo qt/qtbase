@@ -45,9 +45,19 @@
 
 QT_BEGIN_NAMESPACE
 
+EGLSurface QAndroidOpenGLPlatformWindow::m_staticSurface = 0;
+EGLNativeWindowType QAndroidOpenGLPlatformWindow::m_staticNativeWindow = 0;
+QReadWriteLock QAndroidOpenGLPlatformWindow::m_staticSurfaceLock;
+QBasicAtomicInt QAndroidOpenGLPlatformWindow::m_referenceCount = Q_BASIC_ATOMIC_INITIALIZER(0);
+
 QAndroidOpenGLPlatformWindow::QAndroidOpenGLPlatformWindow(QWindow *window)
     : QEglFSWindow(window)
 {
+}
+
+QAndroidOpenGLPlatformWindow::~QAndroidOpenGLPlatformWindow()
+{
+    destroy();
 }
 
 bool QAndroidOpenGLPlatformWindow::isExposed() const
@@ -60,11 +70,57 @@ void QAndroidOpenGLPlatformWindow::invalidateSurface()
     QWindowSystemInterface::handleExposeEvent(window(), QRegion()); // Obscure event
     QWindowSystemInterface::flushWindowSystemEvents();
     QEglFSWindow::invalidateSurface();
+
+    m_window = 0;
+    m_surface = 0;
+
+    if (!m_referenceCount.deref()){
+        QWriteLocker locker(&m_staticSurfaceLock);
+
+        EGLDisplay display = (static_cast<QEglFSScreen *>(window()->screen()->handle()))->display();
+        eglDestroySurface(display, m_staticSurface);
+
+        m_staticSurface = 0;
+        m_staticNativeWindow = 0;
+    }
 }
 
 void QAndroidOpenGLPlatformWindow::resetSurface()
 {
-    QEglFSWindow::resetSurface();
+    m_referenceCount.ref();
+    if (m_staticSurface == 0) {
+        QWriteLocker locker(&m_staticSurfaceLock);
+        QEglFSWindow::resetSurface();
+        m_staticSurface = m_surface;
+        m_staticNativeWindow = m_window;
+    } else {
+        QReadLocker locker(&m_staticSurfaceLock);
+        Q_ASSERT(m_staticSurface != m_surface);
+        m_window = m_staticNativeWindow;
+        m_surface = m_staticSurface;
+    }
+
+    QWindowSystemInterface::handleExposeEvent(window(), QRegion(geometry())); // Expose event
+    QWindowSystemInterface::flushWindowSystemEvents();
+}
+
+void QAndroidOpenGLPlatformWindow::destroy()
+{
+    if (!m_referenceCount.deref()) {
+        QEglFSWindow::destroy();
+    } else {
+        m_window = 0;
+        m_surface = 0;
+    }
+}
+
+void QAndroidOpenGLPlatformWindow::raise()
+{
+}
+
+void QAndroidOpenGLPlatformWindow::setVisible(bool visible)
+{
+    QEglFSWindow::setVisible(visible);
     QWindowSystemInterface::handleExposeEvent(window(), QRegion(geometry())); // Expose event
     QWindowSystemInterface::flushWindowSystemEvents();
 }

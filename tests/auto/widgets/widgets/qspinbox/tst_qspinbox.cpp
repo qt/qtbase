@@ -138,7 +138,7 @@ private slots:
     void integerOverflow();
 
     void taskQTBUG_5008_textFromValueAndValidate();
-
+    void lineEditReturnPressed();
 public slots:
     void valueChangedHelper(const QString &);
     void valueChangedHelper(int);
@@ -1042,6 +1042,15 @@ void tst_QSpinBox::integerOverflow()
     QCOMPARE(sb.value(), INT_MIN + 1);
     sb.stepDown();
     QCOMPARE(sb.value(), INT_MIN);
+}
+
+void tst_QSpinBox::lineEditReturnPressed()
+{
+    SpinBox spinBox;
+    QSignalSpy spyCurrentChanged(spinBox.lineEdit(), SIGNAL(returnPressed()));
+    spinBox.show();
+    QTest::keyClick(&spinBox, Qt::Key_Return);
+    QCOMPARE(spyCurrentChanged.count(), 1);
 }
 
 QTEST_MAIN(tst_QSpinBox)

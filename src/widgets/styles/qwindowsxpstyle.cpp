@@ -570,30 +570,6 @@ void QWindowsXPStylePrivate::setTransparency(QWidget *widget, XPThemeData &theme
 }
 
 /*! \internal
-    Returns true if the native doublebuffer contains a pixel which
-    has a non-0xFF alpha value. Should only be use when its
-    guaranteed that data painted into the buffer wasn't a proper
-    alpha pixmap.
-*/
-bool QWindowsXPStylePrivate::hasAnyData(const QRect &rect)
-{
-    const int startX = rect.left();
-    const int startY = rect.top();
-    const int w = rect.width();
-    const int h = rect.height();
-
-    for (int y = startY; y < h; ++y) {
-        register DWORD *buffer = (DWORD*)bufferPixels + (y * bufferW);
-        for (int x = startX; x < w; ++x, ++buffer) {
-            int alpha = (*buffer) >> 24;
-            if (alpha != 0xFF) // buffer has been touched
-                return true;
-        }
-    }
-    return false;
-}
-
-/*! \internal
     Returns true if the native doublebuffer contains pixels with
     varying alpha value.
 */
@@ -857,7 +833,6 @@ void QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
     bool stateHasData = true; // We assume so;
     bool hasAlpha = false;
     bool partIsTransparent;
-    bool inspectData;
     bool potentialInvalidAlpha;
 
     QString pixmapCacheKey = QStringLiteral("$qt_xp_");
@@ -882,9 +857,6 @@ void QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
     bool haveCachedPixmap = false;
     bool isCached = data.dataValid;
     if (isCached) {
-        if (!(stateHasData = data.hasAnyData))
-            return; // Cached NOOP
-        inspectData = data.wasAlphaSwapped;
         partIsTransparent = data.partIsTransparent;
         hasAlpha = data.hasAlphaChannel;
         alphaType = data.alphaType;
@@ -907,13 +879,6 @@ void QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
         pGetThemeBool(themeData.handle(), themeData.partId, themeData.stateId, TMT_BORDERONLY, &tmt_borderonly);
         pGetThemeColor(themeData.handle(), themeData.partId, themeData.stateId, TMT_TRANSPARENTCOLOR, &tmt_transparentcolor);
         pGetThemePropertyOrigin(themeData.handle(), themeData.partId, themeData.stateId, TMT_CAPTIONMARGINS, &proporigin);
-        inspectData = (tmt_transparentcolor != 0 || tmt_borderonly || proporigin == PO_PART || proporigin == PO_STATE);
-
-        // ### This is a vista-specific workaround for broken alpha in titlebar pixmaps
-        if ((QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))) {
-            if (themeData.partId == WP_CAPTION || themeData.partId == WP_SMALLCAPTION)
-                inspectData = false;
-        }
 
         partIsTransparent = isTransparent(themeData);
 
@@ -922,14 +887,13 @@ void QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
         if (proporigin == PO_PART || proporigin == PO_STATE) {
             int tmt_glyphtype = GT_NONE;
             pGetThemeEnumValue(themeData.handle(), themeData.partId, themeData.stateId, TMT_GLYPHTYPE, &tmt_glyphtype);
-            potentialInvalidAlpha = partIsTransparent && !inspectData && tmt_glyphtype == GT_IMAGEGLYPH;
+            potentialInvalidAlpha = partIsTransparent && tmt_glyphtype == GT_IMAGEGLYPH;
         }
 
 #ifdef DEBUG_XP_STYLE
         printf("---[ NOT CACHED ]-----------------------> Name(%-10s) Part(%d) State(%d)\n",
                qPrintable(themeData.name), themeData.partId, themeData.stateId);
         printf("-->partIsTransparen      = %d\n", partIsTransparent);
-        printf("-->inspectData           = %d\n", inspectData);
         printf("-->potentialInvalidAlpha = %d\n", potentialInvalidAlpha);
         showProperties(themeData);
 #endif
@@ -979,7 +943,7 @@ void QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
         // Clear the buffer
         if (alphaType != NoAlpha) {
             // Consider have separate "memset" function for small chunks for more speedup
-            memset(bufferPixels, inspectData ? 0xFF : 0x00, bufferW * h * 4);
+            memset(bufferPixels, 0x00, bufferW * h * 4);
         }
 
         // Difference between area and rect
@@ -1021,8 +985,6 @@ void QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
         // If not cached, analyze the buffer data to figure
         // out alpha type, and if it contains data
         if (!isCached) {
-            if (inspectData)
-                stateHasData = hasAnyData(rect);
             // SHORTCUT: If the part's state has no data, cache it for NOOP later
             if (!stateHasData) {
                 memset(&data, 0, sizeof(data));
@@ -1037,10 +999,6 @@ void QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
             dumpNativeDIB(w, h);
 #endif
         }
-
-        // Swap alpha values, if needed
-        if (inspectData)
-            wasAlphaSwapped = swapAlphaChannel(rect);
 
         // Fix alpha values, if needed
         if (potentialInvalidAlpha)
@@ -1143,7 +1101,6 @@ void QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
         data.partIsTransparent = partIsTransparent;
         data.alphaType = alphaType;
         data.hasAlphaChannel = hasAlpha;
-        data.hasAnyData = stateHasData;
         data.wasAlphaSwapped = wasAlphaSwapped;
         data.hadInvalidAlpha = wasAlphaFixed;
         alphaCache.insert(key, data);

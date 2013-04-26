@@ -688,6 +688,7 @@ void QFontEngineMultiQPA::init(QFontEngine *fe)
     fe->ref.ref();
     fontDef = engines[0]->fontDef;
     setObjectName(QStringLiteral("QFontEngineMultiQPA"));
+    cache_cost = fe->cache_cost;
 }
 
 void QFontEngineMultiQPA::loadEngine(int at)

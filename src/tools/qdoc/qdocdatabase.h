@@ -113,6 +113,7 @@ class QDocDatabase
     void findAllFunctions(const InnerNode *node);
     void findAllLegaleseTexts(const InnerNode *node);
     void findAllNamespaces(const InnerNode *node);
+    void findAllObsoleteThings(const InnerNode* node);
     void findAllSince(const InnerNode *node);
     void buildCollections();
 
@@ -121,6 +122,9 @@ class QDocDatabase
     NodeMap& getMainClasses() { return mainClasses_; }
     NodeMap& getCompatibilityClasses() { return compatClasses_; }
     NodeMap& getObsoleteClasses() { return obsoleteClasses_; }
+    NodeMap& getClassesWithObsoleteMembers() { return classesWithObsoleteMembers_; }
+    NodeMap& getObsoleteQmlTypes() { return obsoleteQmlTypes_; }
+    NodeMap& getQmlTypesWithObsoleteMembers() { return qmlTypesWithObsoleteMembers_; }
     NodeMap& getNamespaces() { return namespaceIndex_; }
     NodeMap& getServiceClasses() { return serviceClasses_; }
     NodeMap& getQmlTypes() { return qmlClasses_; }
@@ -223,6 +227,9 @@ class QDocDatabase
     NodeMap                 mainClasses_;
     NodeMap                 compatClasses_;
     NodeMap                 obsoleteClasses_;
+    NodeMap                 classesWithObsoleteMembers_;
+    NodeMap                 obsoleteQmlTypes_;
+    NodeMap                 qmlTypesWithObsoleteMembers_;
     NodeMap                 namespaceIndex_;
     NodeMap                 serviceClasses_;
     NodeMap                 qmlClasses_;

@@ -121,7 +121,6 @@ static QTouchDevice *touchDevice = 0;
 
     m_window = window;
     m_platformWindow = platformWindow;
-    m_accessibleRoot = 0;
     m_sendKeyEvent = false;
 
 #ifdef QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
@@ -130,15 +129,13 @@ static QTouchDevice *touchDevice = 0;
     static bool skipAccessibilityForInspectorWindows = false;
     if (!skipAccessibilityForInspectorWindows) {
 
-        m_accessibleRoot = window->accessibleRoot();
+        // m_accessibleRoot = window->accessibleRoot();
 
         AccessibilityInspector *inspector = new AccessibilityInspector(window);
         skipAccessibilityForInspectorWindows = true;
         inspector->inspectWindow(window);
         skipAccessibilityForInspectorWindows = false;
     }
-#else
-    m_accessibleRoot = window->accessibleRoot();
 #endif
 
     [self registerDragTypes];

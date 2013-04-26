@@ -59,10 +59,6 @@ QEglFSWindow::QEglFSWindow(QWindow *w)
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglWindow %p: %p 0x%x\n", this, w, uint(m_winid));
 #endif
-
-    setWindowState(Qt::WindowFullScreen);
-
-    create();
 }
 
 QEglFSWindow::~QEglFSWindow()
@@ -72,6 +68,8 @@ QEglFSWindow::~QEglFSWindow()
 
 void QEglFSWindow::create()
 {
+    setWindowState(Qt::WindowFullScreen);
+
     if (m_window)
         return;
 

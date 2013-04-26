@@ -52,6 +52,7 @@
 #include <qpa/qplatformopenglcontext.h>
 #include <qpa/qplatformintegration.h>
 #include "QtGui/private/qwindow_p.h"
+#include "QtGui/private/qguiapplication_p.h"
 
 #include <qpa/qplatformcursor.h>
 #include <QtGui/QGuiApplication>
@@ -675,6 +676,16 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
         h = qMax(h,extra->minh);
     }
 
+    if (q->isWindow() && q->windowHandle()) {
+        QPlatformIntegration *integration = QGuiApplicationPrivate::platformIntegration();
+        if (!integration->hasCapability(QPlatformIntegration::NonFullScreenWindows)) {
+            x = 0;
+            y = 0;
+            w = q->windowHandle()->width();
+            h = q->windowHandle()->height();
+        }
+    }
+
     QPoint oldp = q->geometry().topLeft();
     QSize olds = q->size();
     QRect r(x, y, w, h);
@@ -720,7 +731,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
                     q->windowHandle()->setGeometry(QRect(posInNativeParent,r.size()));
                 }
                 const QWidgetBackingStore *bs = maybeBackingStore();
-                if (bs->store) {
+                if (bs && bs->store) {
                     if (isResize)
                         bs->store->resize(r.size());
                 }
@@ -836,6 +847,8 @@ int QWidget::metric(PaintDeviceMetric m) const
         return qRound(screen->physicalDotsPerInchX());
     } else if (m == PdmPhysicalDpiY) {
         return qRound(screen->physicalDotsPerInchY());
+    } else if (m == PdmDevicePixelRatio) {
+        return screen->devicePixelRatio();
     } else {
         val = QPaintDevice::metric(m);// XXX
     }

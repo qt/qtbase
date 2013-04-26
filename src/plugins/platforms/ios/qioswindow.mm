@@ -375,7 +375,7 @@ void QIOSWindow::setVisible(bool visible)
         requestActivateWindow();
     } else {
         // Activate top-most visible QWindow:
-        NSArray *subviews = rootViewController().view.subviews;
+        NSArray *subviews = qiosViewController().view.subviews;
         for (int i = int(subviews.count) - 1; i >= 0; --i) {
             UIView *view = [subviews objectAtIndex:i];
             if (!view.hidden) {
@@ -431,7 +431,7 @@ void QIOSWindow::setParent(const QPlatformWindow *parentWindow)
         UIView *parentView = reinterpret_cast<UIView *>(parentWindow->winId());
         [parentView addSubview:m_view];
     } else if (isQtApplication()) {
-        [rootViewController().view addSubview:m_view];
+        [qiosViewController().view addSubview:m_view];
     }
 }
 

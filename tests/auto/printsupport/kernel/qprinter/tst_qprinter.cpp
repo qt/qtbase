@@ -119,6 +119,8 @@ private slots:
 
     void taskQTBUG4497_reusePrinterOnDifferentFiles();
     void testPdfTitle();
+    void testPageMetrics_data();
+    void testPageMetrics();
 #endif
 };
 
@@ -1108,6 +1110,42 @@ void tst_QPrinter::testPdfTitle()
     const char *expected = reinterpret_cast<const char*>(expectedBuf);
     QVERIFY(file.readAll().contains(QByteArray(expected, 26)));
 }
+
+void tst_QPrinter::testPageMetrics_data()
+{
+    QTest::addColumn<int>("pageSize");
+    QTest::addColumn<int>("widthMM");
+    QTest::addColumn<int>("heightMM");
+    QTest::addColumn<float>("widthMMf");
+    QTest::addColumn<float>("heightMMf");
+
+    QTest::newRow("A4")     << int(QPrinter::A4)     << 210 << 297 << 210.0f << 297.0f;
+    QTest::newRow("A5")     << int(QPrinter::A5)     << 148 << 210 << 148.0f << 210.0f;
+    QTest::newRow("Letter") << int(QPrinter::Letter) << 216 << 279 << 215.9f << 279.4f;
+}
+
+void tst_QPrinter::testPageMetrics()
+{
+    QFETCH(int, pageSize);
+    QFETCH(int, widthMM);
+    QFETCH(int, heightMM);
+    QFETCH(float, widthMMf);
+    QFETCH(float, heightMMf);
+
+    QPrinter printer(QPrinter::HighResolution);
+    printer.setFullPage(true);
+    printer.setPageSize(QPrinter::PageSize(pageSize));
+
+    if (printer.pageSize() != pageSize) {
+        QSKIP("Current page size is not supported on this printer");
+        return;
+    }
+
+    QCOMPARE(printer.widthMM(), int(widthMM));
+    QCOMPARE(printer.heightMM(), int(heightMM));
+    QCOMPARE(printer.pageSizeMM(), QSizeF(widthMMf, heightMMf));
+}
+
 #endif // QT_NO_PRINTER
 
 QTEST_MAIN(tst_QPrinter)

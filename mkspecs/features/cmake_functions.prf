@@ -24,3 +24,19 @@ defineReplace(cmakeModuleList) {
     }
     return ($$join(out, ";"))
 }
+
+defineReplace(cmakeTargetPath) {
+    SYSR = $$[QT_SYSROOT]
+    !isEmpty(SYSR): path = $$relative_path($$1, $$[QT_SYSROOT])
+    else: path = $$1
+    return(/$$path)
+}
+
+defineReplace(cmakeTargetPaths) {
+    variable = $$1
+    out =
+    for(v, variable) {
+        out += \"$$cmakeTargetPath($$v)\"
+    }
+    return ($$join(out, " "))
+}

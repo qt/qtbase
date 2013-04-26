@@ -57,6 +57,10 @@
 #include "qglxintegration.h"
 #endif
 
+#ifndef XCB_USE_XLIB
+#  include <stdio.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QXcbResourceMap : public QMap<QByteArray, QXcbNativeInterface::ResourceType>
@@ -82,6 +86,16 @@ QXcbNativeInterface::QXcbNativeInterface() :
     m_genericEventFilterType(QByteArrayLiteral("xcb_generic_event_t"))
 
 {
+}
+
+void QXcbNativeInterface::beep() // For QApplication::beep()
+{
+#ifdef XCB_USE_XLIB
+    ::Display *display = (::Display *)nativeResourceForScreen(QByteArrayLiteral("display"), QGuiApplication::primaryScreen());
+    XBell(display, 0);
+#else
+    fputc(7, stdout);
+#endif
 }
 
 void *QXcbNativeInterface::nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context)

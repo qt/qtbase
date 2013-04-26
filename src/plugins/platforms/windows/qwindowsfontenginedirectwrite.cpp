@@ -222,6 +222,7 @@ QWindowsFontEngineDirectWrite::QWindowsFontEngineDirectWrite(IDWriteFontFace *di
 
     fontDef.pixelSize = pixelSize;
     collectMetrics();
+    cache_cost = (m_ascent.toInt() + m_descent.toInt()) * m_xHeight.toInt() * 2000;
 }
 
 QWindowsFontEngineDirectWrite::~QWindowsFontEngineDirectWrite()
@@ -727,6 +728,8 @@ void QWindowsFontEngineDirectWrite::initFontInfo(const QFontDef &request,
 
     if (familyNames != NULL)
         familyNames->Release();
+    if (fontFamily)
+        fontFamily->Release();
 
     if (FAILED(hr))
         qErrnoWarning(hr, "initFontInfo: Failed to get family name");

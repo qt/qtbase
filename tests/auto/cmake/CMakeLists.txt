@@ -70,8 +70,8 @@ if (NOT NO_DBUS)
     expect_pass(test_dbus_module)
 endif()
 expect_pass(test_multiple_find_package)
-if (NOT WIN32)
-    # Currently broken on windows. Reported upstream:
+if (NOT WIN32 OR (WIN32 AND NOT CMAKE_VERSION VERSION_LESS 2.8.11))
+    # Broken on windows on earlier CMake versions.
     # http://public.kitware.com/Bug/view.php?id=13392
     expect_pass(test_add_resources_delayed_file)
 endif()

@@ -11,6 +11,8 @@ fi
 
 if [ `echo $FILE | cut $CUT_ARG` = "/" ]; then
     true
+elif [ "$OSTYPE" = "msys" -a -z "${FILE##[a-zA-Z]:[/\\]*}" ]; then
+    true
 else
     RES="$PWD/$FILE"
     test -d "$RES" && RES="$RES/"

@@ -1057,7 +1057,7 @@ void tst_QFile::ungetChar()
     QCOMPARE(buf[2], '4');
 }
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 QString driveLetters()
 {
     wchar_t volumeName[MAX_PATH];
@@ -1094,7 +1094,9 @@ void tst_QFile::invalidFile_data()
 #if !defined(Q_OS_WIN)
     QTest::newRow( "x11" ) << QString( "qwe//" );
 #else
+#if !defined(Q_OS_WINCE)
     QTest::newRow( "colon2" ) << invalidDriveLetter() + QString::fromLatin1(":ail:invalid");
+#endif
     QTest::newRow( "colon3" ) << QString( ":failinvalid" );
     QTest::newRow( "forwardslash" ) << QString( "fail/invalid" );
     QTest::newRow( "asterisk" ) << QString( "fail*invalid" );

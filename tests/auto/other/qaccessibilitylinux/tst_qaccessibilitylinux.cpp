@@ -55,6 +55,7 @@
 #include <QDBusReply>
 
 #include "atspi/atspi-constants.h"
+#include "bus_interface.h"
 
 #include "dbusconnection_p.h"
 #include "struct_marshallers_p.h"
@@ -154,16 +155,21 @@ QDBusInterface *tst_QAccessibilityLinux::getInterface(const QString &path, const
     return new QDBusInterface(address, path, interfaceName, dbus.connection(), this);
 }
 
-
 void tst_QAccessibilityLinux::initTestCase()
 {
     // Oxygen style creates many extra items, it's simply unusable here
     qApp->setStyle("fusion");
     qApp->setApplicationName("tst_QAccessibilityLinux app");
 
+    // Pretend we are a screen reader
+    QDBusConnection c = QDBusConnection::sessionBus();
+    OrgA11yStatusInterface *a11yStatus = new OrgA11yStatusInterface(QStringLiteral("org.a11y.Bus"), QStringLiteral("/org/a11y/bus"), c, this);
+    a11yStatus->setScreenReaderEnabled(true);
+
     QTRY_VERIFY(dbus.isEnabled());
     QTRY_VERIFY(dbus.connection().isConnected());
     address = dbus.connection().baseService().toLatin1().data();
+    QVERIFY(!address.isEmpty());
 
     m_window = new AccessibleTestWindow();
     m_window->show();

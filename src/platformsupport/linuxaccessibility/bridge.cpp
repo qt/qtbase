@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 */
 
 QSpiAccessibleBridge::QSpiAccessibleBridge()
-    : cache(0), dec(0), dbusAdaptor(0), m_enabled(false)
+    : cache(0), dec(0), dbusAdaptor(0)
 {
     dbusConnection = new DBusConnection();
     connect(dbusConnection, SIGNAL(enabledChanged(bool)), this, SLOT(enabledChanged(bool)));
@@ -70,7 +70,7 @@ QSpiAccessibleBridge::QSpiAccessibleBridge()
 
 void QSpiAccessibleBridge::enabledChanged(bool enabled)
 {
-    m_enabled = enabled;
+    setActive(enabled);
     updateStatus();
 }
 
@@ -87,7 +87,7 @@ QDBusConnection QSpiAccessibleBridge::dBusConnection() const
 void QSpiAccessibleBridge::updateStatus()
 {
     // create the adaptor to handle everything if we are in enabled state
-    if (!dbusAdaptor && m_enabled) {
+    if (!dbusAdaptor && isActive()) {
         qSpiInitializeStructTypes();
         initializeConstantMappings();
 
@@ -106,7 +106,7 @@ void QSpiAccessibleBridge::notifyAccessibilityUpdate(QAccessibleEvent *event)
 {
     if (!dbusAdaptor)
         return;
-    if (m_enabled)
+    if (isActive())
         dbusAdaptor->notify(event);
 }
 

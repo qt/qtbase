@@ -27,7 +27,6 @@
 
 /*!
     \example widgets/elidedlabel
-    \group all-examples
     \title Elided Label Example
 
     \brief This example creates a widget similar to QLabel, that elides the last

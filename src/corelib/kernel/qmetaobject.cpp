@@ -1671,8 +1671,9 @@ void QMetaMethodPrivate::getParameterTypes(int *types) const
 QList<QByteArray> QMetaMethodPrivate::parameterTypes() const
 {
     Q_ASSERT(priv(mobj->d.data)->revision >= 7);
-    QList<QByteArray> list;
     int argc = parameterCount();
+    QList<QByteArray> list;
+    list.reserve(argc);
     int paramsIndex = parametersDataIndex();
     for (int i = 0; i < argc; ++i)
         list += typeNameFromTypeInfo(mobj, mobj->d.data[paramsIndex + i]);
@@ -1682,8 +1683,9 @@ QList<QByteArray> QMetaMethodPrivate::parameterTypes() const
 QList<QByteArray> QMetaMethodPrivate::parameterNames() const
 {
     Q_ASSERT(priv(mobj->d.data)->revision >= 7);
-    QList<QByteArray> list;
     int argc = parameterCount();
+    QList<QByteArray> list;
+    list.reserve(argc);
     int namesIndex = parametersDataIndex() + argc;
     for (int i = 0; i < argc; ++i)
         list += stringData(mobj, mobj->d.data[namesIndex + i]);

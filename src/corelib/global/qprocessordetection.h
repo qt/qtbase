@@ -101,6 +101,8 @@
       || defined(__ARM_ARCH_7A__) \
       || defined(__ARM_ARCH_7R__) \
       || defined(__ARM_ARCH_7M__) \
+      || defined(__ARM_ARCH_7S__) \
+      || defined(_ARM_ARCH_7) \
       || (defined(__TARGET_ARCH_ARM) && __TARGET_ARCH_ARM-0 >= 7) \
       || (defined(_M_ARM) && _M_ARM-0 >= 7)
 #    define Q_PROCESSOR_ARM_V7
