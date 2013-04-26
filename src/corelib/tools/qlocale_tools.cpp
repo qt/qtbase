@@ -178,8 +178,8 @@ QString &exponentForm(QChar zero, QChar decimal, QChar exponential,
         digits.insert(1, decimal);
 
     digits.append(exponential);
-    digits.append(QLocalePrivate::longLongToString(zero, group, plus, minus,
-                   exp, 2, 10, -1, QLocalePrivate::AlwaysShowSign));
+    digits.append(QLocaleData::longLongToString(zero, group, plus, minus,
+                   exp, 2, 10, -1, QLocaleData::AlwaysShowSign));
 
     return digits;
 }

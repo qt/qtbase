@@ -527,24 +527,24 @@ QVariant QSystemLocalePrivate::toCurrencyString(const QSystemLocale::CurrencyToS
     QString value;
     switch (arg.value.type()) {
     case QVariant::Int:
-        value = QLocalePrivate::longLongToString(QLatin1Char('0'), QLatin1Char(','), QLatin1Char('+'), QLatin1Char('-'),
+        value = QLocaleData::longLongToString(QLatin1Char('0'), QLatin1Char(','), QLatin1Char('+'), QLatin1Char('-'),
                                                  arg.value.toInt(), -1, 10, -1, QLocale::OmitGroupSeparator);
         break;
     case QVariant::UInt:
-        value = QLocalePrivate::unsLongLongToString(QLatin1Char('0'), QLatin1Char(','), QLatin1Char('+'),
+        value = QLocaleData::unsLongLongToString(QLatin1Char('0'), QLatin1Char(','), QLatin1Char('+'),
                                                     arg.value.toUInt(), -1, 10, -1, QLocale::OmitGroupSeparator);
         break;
     case QVariant::Double:
-        value = QLocalePrivate::doubleToString(QLatin1Char('0'), QLatin1Char('+'), QLatin1Char('-'),
+        value = QLocaleData::doubleToString(QLatin1Char('0'), QLatin1Char('+'), QLatin1Char('-'),
                                                QLatin1Char(' '), QLatin1Char(','), QLatin1Char('.'),
-                                               arg.value.toDouble(), -1, QLocalePrivate::DFDecimal, -1, QLocale::OmitGroupSeparator);
+                                               arg.value.toDouble(), -1, QLocaleData::DFDecimal, -1, QLocale::OmitGroupSeparator);
         break;
     case QVariant::LongLong:
-        value = QLocalePrivate::longLongToString(QLatin1Char('0'), QLatin1Char(','), QLatin1Char('+'), QLatin1Char('-'),
+        value = QLocaleData::longLongToString(QLatin1Char('0'), QLatin1Char(','), QLatin1Char('+'), QLatin1Char('-'),
                                                  arg.value.toLongLong(), -1, 10, -1, QLocale::OmitGroupSeparator);
         break;
     case QVariant::ULongLong:
-        value = QLocalePrivate::unsLongLongToString(QLatin1Char('0'), QLatin1Char(','), QLatin1Char('+'),
+        value = QLocaleData::unsLongLongToString(QLatin1Char('0'), QLatin1Char(','), QLatin1Char('+'),
                                                     arg.value.toULongLong(), -1, 10, -1, QLocale::OmitGroupSeparator);
         break;
     default:

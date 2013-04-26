@@ -166,6 +166,58 @@ public:
                                              QLocale::Country country);
     static const QLocaleData *c();
 
+    enum DoubleForm {
+        DFExponent = 0,
+        DFDecimal,
+        DFSignificantDigits,
+        _DFMax = DFSignificantDigits
+    };
+
+    enum Flags {
+        NoFlags             = 0,
+        Alternate           = 0x01,
+        ZeroPadded          = 0x02,
+        LeftAdjusted        = 0x04,
+        BlankBeforePositive = 0x08,
+        AlwaysShowSign      = 0x10,
+        ThousandsGroup      = 0x20,
+        CapitalEorX         = 0x40,
+
+        ShowBase            = 0x80,
+        UppercaseBase       = 0x100,
+        ForcePoint          = Alternate
+    };
+
+    static QString doubleToString(const QChar zero, const QChar plus,
+                                  const QChar minus, const QChar exponent,
+                                  const QChar group, const QChar decimal,
+                                  double d, int precision,
+                                  DoubleForm form,
+                                  int width, unsigned flags);
+    static QString longLongToString(const QChar zero, const QChar group,
+                                    const QChar plus, const QChar minus,
+                                    qint64 l, int precision, int base,
+                                    int width, unsigned flags);
+    static QString unsLongLongToString(const QChar zero, const QChar group,
+                                       const QChar plus,
+                                       quint64 l, int precision,
+                                       int base, int width,
+                                       unsigned flags);
+
+    QString doubleToString(double d,
+                           int precision = -1,
+                           DoubleForm form = DFSignificantDigits,
+                           int width = -1,
+                           unsigned flags = NoFlags) const;
+    QString longLongToString(qint64 l, int precision = -1,
+                             int base = 10,
+                             int width = -1,
+                             unsigned flags = NoFlags) const;
+    QString unsLongLongToString(quint64 l, int precision = -1,
+                                int base = 10,
+                                int width = -1,
+                                unsigned flags = NoFlags) const;
+
     quint16 m_language_id, m_script_id, m_country_id;
 
     quint16 m_decimal, m_group, m_list, m_percent, m_zero, m_minus, m_plus, m_exponential;
@@ -250,62 +302,11 @@ public:
 
     QLocale::MeasurementSystem measurementSystem() const;
 
-    enum DoubleForm {
-        DFExponent = 0,
-        DFDecimal,
-        DFSignificantDigits,
-        _DFMax = DFSignificantDigits
-    };
-
-    enum Flags {
-        NoFlags             = 0,
-        Alternate           = 0x01,
-        ZeroPadded          = 0x02,
-        LeftAdjusted        = 0x04,
-        BlankBeforePositive = 0x08,
-        AlwaysShowSign      = 0x10,
-        ThousandsGroup      = 0x20,
-        CapitalEorX         = 0x40,
-
-        ShowBase            = 0x80,
-        UppercaseBase       = 0x100,
-        ForcePoint          = Alternate
-    };
-
     enum GroupSeparatorMode {
         FailOnGroupSeparators,
         ParseGroupSeparators
     };
 
-    static QString doubleToString(const QChar zero, const QChar plus,
-                                  const QChar minus, const QChar exponent,
-                                  const QChar group, const QChar decimal,
-                                  double d, int precision,
-                                  DoubleForm form,
-                                  int width, unsigned flags);
-    static QString longLongToString(const QChar zero, const QChar group,
-                                    const QChar plus, const QChar minus,
-                                    qint64 l, int precision, int base,
-                                    int width, unsigned flags);
-    static QString unsLongLongToString(const QChar zero, const QChar group,
-                                       const QChar plus,
-                                       quint64 l, int precision,
-                                       int base, int width,
-                                       unsigned flags);
-
-    QString doubleToString(double d,
-                           int precision = -1,
-                           DoubleForm form = DFSignificantDigits,
-                           int width = -1,
-                           unsigned flags = NoFlags) const;
-    QString longLongToString(qint64 l, int precision = -1,
-                             int base = 10,
-                             int width = -1,
-                             unsigned flags = NoFlags) const;
-    QString unsLongLongToString(quint64 l, int precision = -1,
-                                int base = 10,
-                                int width = -1,
-                                unsigned flags = NoFlags) const;
     double stringToDouble(const QChar *begin, int len, bool *ok, GroupSeparatorMode group_sep_mode) const;
     qint64 stringToLongLong(const QChar *begin, int len, int base, bool *ok, GroupSeparatorMode group_sep_mode) const;
     quint64 stringToUnsLongLong(const QChar *begin, int len, int base, bool *ok, GroupSeparatorMode group_sep_mode) const;

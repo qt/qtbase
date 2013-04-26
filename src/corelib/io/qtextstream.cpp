@@ -2191,20 +2191,20 @@ void QTextStreamPrivate::putNumber(qulonglong number, bool negative)
     unsigned flags = 0;
     const QTextStream::NumberFlags numberFlags = params.numberFlags;
     if (numberFlags & QTextStream::ShowBase)
-        flags |= QLocalePrivate::ShowBase;
+        flags |= QLocaleData::ShowBase;
     if (numberFlags & QTextStream::ForceSign)
-        flags |= QLocalePrivate::AlwaysShowSign;
+        flags |= QLocaleData::AlwaysShowSign;
     if (numberFlags & QTextStream::UppercaseBase)
-        flags |= QLocalePrivate::UppercaseBase;
+        flags |= QLocaleData::UppercaseBase;
     if (numberFlags & QTextStream::UppercaseDigits)
-        flags |= QLocalePrivate::CapitalEorX;
+        flags |= QLocaleData::CapitalEorX;
 
     // add thousands group separators. For backward compatibility we
     // don't add a group separator for C locale.
     if (locale != QLocale::c())
-        flags |= QLocalePrivate::ThousandsGroup;
+        flags |= QLocaleData::ThousandsGroup;
 
-    const QLocalePrivate *dd = locale.d;
+    const QLocaleData *dd = locale.d->m_data;
     int base = params.integerBase ? params.integerBase : 10;
     if (negative && base == 10) {
         result = dd->longLongToString(-static_cast<qlonglong>(number), -1,
@@ -2388,32 +2388,32 @@ QTextStream &QTextStream::operator<<(double f)
     Q_D(QTextStream);
     CHECK_VALID_STREAM(*this);
 
-    QLocalePrivate::DoubleForm form = QLocalePrivate::DFDecimal;
+    QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
     switch (realNumberNotation()) {
     case FixedNotation:
-        form = QLocalePrivate::DFDecimal;
+        form = QLocaleData::DFDecimal;
         break;
     case ScientificNotation:
-        form = QLocalePrivate::DFExponent;
+        form = QLocaleData::DFExponent;
         break;
     case SmartNotation:
-        form = QLocalePrivate::DFSignificantDigits;
+        form = QLocaleData::DFSignificantDigits;
         break;
     }
 
     uint flags = 0;
     if (numberFlags() & ShowBase)
-        flags |= QLocalePrivate::ShowBase;
+        flags |= QLocaleData::ShowBase;
     if (numberFlags() & ForceSign)
-        flags |= QLocalePrivate::AlwaysShowSign;
+        flags |= QLocaleData::AlwaysShowSign;
     if (numberFlags() & UppercaseBase)
-        flags |= QLocalePrivate::UppercaseBase;
+        flags |= QLocaleData::UppercaseBase;
     if (numberFlags() & UppercaseDigits)
-        flags |= QLocalePrivate::CapitalEorX;
+        flags |= QLocaleData::CapitalEorX;
     if (numberFlags() & ForcePoint)
-        flags |= QLocalePrivate::Alternate;
+        flags |= QLocaleData::Alternate;
 
-    const QLocalePrivate *dd = d->locale.d;
+    const QLocaleData *dd = d->locale.d->m_data;
     QString num = dd->doubleToString(f, d->params.realNumberPrecision, form, -1, flags);
     d->putString(num, true);
     return *this;

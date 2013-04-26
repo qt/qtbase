@@ -3772,22 +3772,22 @@ QByteArray &QByteArray::setNum(qulonglong n, int base)
 
 QByteArray &QByteArray::setNum(double n, char f, int prec)
 {
-    QLocalePrivate::DoubleForm form = QLocalePrivate::DFDecimal;
+    QLocaleData::DoubleForm form = QLocaleData::DFDecimal;
     uint flags = 0;
 
     if (qIsUpper(f))
-        flags = QLocalePrivate::CapitalEorX;
+        flags = QLocaleData::CapitalEorX;
     f = qToLower(f);
 
     switch (f) {
         case 'f':
-            form = QLocalePrivate::DFDecimal;
+            form = QLocaleData::DFDecimal;
             break;
         case 'e':
-            form = QLocalePrivate::DFExponent;
+            form = QLocaleData::DFExponent;
             break;
         case 'g':
-            form = QLocalePrivate::DFSignificantDigits;
+            form = QLocaleData::DFSignificantDigits;
             break;
         default:
 #if defined(QT_CHECK_RANGE)
@@ -3796,8 +3796,7 @@ QByteArray &QByteArray::setNum(double n, char f, int prec)
             break;
     }
 
-    QLocale locale(QLocale::C);
-    *this = locale.d->doubleToString(n, prec, form, -1, flags).toLatin1();
+    *this = QLocaleData::c()->doubleToString(n, prec, form, -1, flags).toLatin1();
     return *this;
 }
 
