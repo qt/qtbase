@@ -505,6 +505,8 @@ QString QColor::name() const
 }
 
 /*!
+    \since 5.2
+
     Returns the name of the color in the specified \a format.
 
     \sa setNamedColor(), NameFormat
@@ -531,7 +533,7 @@ QString QColor::name(NameFormat format) const
     \list
     \li #RGB (each of R, G, and B is a single hex digit)
     \li #RRGGBB
-    \li #AARRGGBB
+    \li #AARRGGBB (Since 5.2)
     \li #RRRGGGBBB
     \li #RRRRGGGGBBBB
     \li A name from the list of colors defined in the list of \l{http://www.w3.org/TR/SVG/types.html#ColorKeywords}{SVG color keyword names}
