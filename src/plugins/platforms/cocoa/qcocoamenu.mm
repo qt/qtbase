@@ -371,7 +371,8 @@ void QCocoaMenu::syncSeparatorsCollapsible(bool enable)
             NSMenuItem *item = reinterpret_cast<NSMenuItem *>([itemArray objectAtIndex:i]);
             if ([item isSeparatorItem]) {
                 QCocoaMenuItem *cocoaItem = reinterpret_cast<QCocoaMenuItem *>([item tag]);
-                cocoaItem->setVisible(!previousIsSeparator);
+                if (cocoaItem)
+                    cocoaItem->setVisible(!previousIsSeparator);
                 [item setHidden:previousIsSeparator];
             }
 
@@ -384,7 +385,8 @@ void QCocoaMenu::syncSeparatorsCollapsible(bool enable)
         // We now need to check the final item since we don't want any separators at the end of the list.
         if (previousItem && previousIsSeparator) {
             QCocoaMenuItem *cocoaItem = reinterpret_cast<QCocoaMenuItem *>([previousItem tag]);
-            cocoaItem->setVisible(false);
+            if (cocoaItem)
+                cocoaItem->setVisible(false);
             [previousItem setHidden:YES];
         }
     } else {
