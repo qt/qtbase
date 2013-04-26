@@ -475,7 +475,7 @@ void QIOSWindow::raiseOrLower(bool raise)
 
 void QIOSWindow::updateWindowLevel()
 {
-    Qt::WindowType type = static_cast<Qt::WindowType>(int(window()->flags() & Qt::WindowType_Mask));
+    Qt::WindowType type = windowType();
 
     if (type == Qt::ToolTip)
         m_windowLevel = 120;
@@ -483,7 +483,7 @@ void QIOSWindow::updateWindowLevel()
         m_windowLevel = 100;
     else if (window()->isModal())
         m_windowLevel = 30;
-    else if (type & Qt::Popup & ~Qt::Window)
+    else if (windowIsPopup())
         m_windowLevel = 20;
     else if (type == Qt::Tool)
         m_windowLevel = 10;

@@ -96,6 +96,9 @@ private:
     void raiseOrLower(bool raise);
     void updateWindowLevel();
     bool blockedByModal();
+
+    inline Qt::WindowType windowType() { return static_cast<Qt::WindowType>(int(window()->flags() & Qt::WindowType_Mask)); }
+    inline bool windowIsPopup() { return windowType() & Qt::Popup & ~Qt::Window; }
 };
 
 QT_END_NAMESPACE
