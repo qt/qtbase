@@ -704,10 +704,8 @@ public class QtActivityDelegate
             }
         }
 
-        if (keyCode == KeyEvent.KEYCODE_BACK && m_keyboardIsVisible)
-        {
-            if (!m_keyboardIsHiding)
-                hideSoftwareKeyboard();
+        if (keyCode == KeyEvent.KEYCODE_BACK && m_keyboardIsVisible && !m_keyboardIsHiding) {
+            hideSoftwareKeyboard();
             return true;
         }
 
