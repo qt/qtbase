@@ -467,8 +467,6 @@ bool QBasicMutex::lockInternal(int timeout) QT_MUTEX_LOCK_NOEXCEPT
                 // we try to acquire the mutex by changing to dummyLocked()
                 if (d_ptr.testAndSetAcquire(d, dummyLocked())) {
                     // Mutex acquired
-                    Q_ASSERT(d->waiters.load() == -QMutexPrivate::BigNumber || d->waiters.load() == 0);
-                    d->waiters.store(0);
                     d->deref();
                     return true;
                 } else {
