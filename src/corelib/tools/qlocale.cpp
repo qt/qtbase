@@ -1232,12 +1232,12 @@ uint QLocale::toUInt(const QString &s, bool *ok) const
 
 qlonglong QLocale::toLongLong(const QString &s, bool *ok) const
 {
-    QLocalePrivate::GroupSeparatorMode mode
+    QLocaleData::GroupSeparatorMode mode
         = d->m_numberOptions & RejectGroupSeparator
-            ? QLocalePrivate::FailOnGroupSeparators
-            : QLocalePrivate::ParseGroupSeparators;
+            ? QLocaleData::FailOnGroupSeparators
+            : QLocaleData::ParseGroupSeparators;
 
-    return d->stringToLongLong(s.constData(), s.size(), 10, ok, mode);
+    return d->m_data->stringToLongLong(s.constData(), s.size(), 10, ok, mode);
 }
 
 /*!
@@ -1256,12 +1256,12 @@ qlonglong QLocale::toLongLong(const QString &s, bool *ok) const
 
 qulonglong QLocale::toULongLong(const QString &s, bool *ok) const
 {
-    QLocalePrivate::GroupSeparatorMode mode
+    QLocaleData::GroupSeparatorMode mode
         = d->m_numberOptions & RejectGroupSeparator
-            ? QLocalePrivate::FailOnGroupSeparators
-            : QLocalePrivate::ParseGroupSeparators;
+            ? QLocaleData::FailOnGroupSeparators
+            : QLocaleData::ParseGroupSeparators;
 
-    return d->stringToUnsLongLong(s.constData(), s.size(), 10, ok, mode);
+    return d->m_data->stringToUnsLongLong(s.constData(), s.size(), 10, ok, mode);
 }
 
 /*!
@@ -1315,12 +1315,12 @@ float QLocale::toFloat(const QString &s, bool *ok) const
 
 double QLocale::toDouble(const QString &s, bool *ok) const
 {
-    QLocalePrivate::GroupSeparatorMode mode
+    QLocaleData::GroupSeparatorMode mode
         = d->m_numberOptions & RejectGroupSeparator
-            ? QLocalePrivate::FailOnGroupSeparators
-            : QLocalePrivate::ParseGroupSeparators;
+            ? QLocaleData::FailOnGroupSeparators
+            : QLocaleData::ParseGroupSeparators;
 
-    return d->stringToDouble(s.constData(), s.size(), ok, mode);
+    return d->m_data->stringToDouble(s.constData(), s.size(), ok, mode);
 }
 
 /*!
@@ -1445,12 +1445,12 @@ uint QLocale::toUInt(const QStringRef &s, bool *ok) const
 
 qlonglong QLocale::toLongLong(const QStringRef &s, bool *ok) const
 {
-    QLocalePrivate::GroupSeparatorMode mode
+    QLocaleData::GroupSeparatorMode mode
         = d->m_numberOptions & RejectGroupSeparator
-            ? QLocalePrivate::FailOnGroupSeparators
-            : QLocalePrivate::ParseGroupSeparators;
+            ? QLocaleData::FailOnGroupSeparators
+            : QLocaleData::ParseGroupSeparators;
 
-    return d->stringToLongLong(s.constData(), s.size(), 10, ok, mode);
+    return d->m_data->stringToLongLong(s.constData(), s.size(), 10, ok, mode);
 }
 
 /*!
@@ -1471,12 +1471,12 @@ qlonglong QLocale::toLongLong(const QStringRef &s, bool *ok) const
 
 qulonglong QLocale::toULongLong(const QStringRef &s, bool *ok) const
 {
-    QLocalePrivate::GroupSeparatorMode mode
+    QLocaleData::GroupSeparatorMode mode
         = d->m_numberOptions & RejectGroupSeparator
-            ? QLocalePrivate::FailOnGroupSeparators
-            : QLocalePrivate::ParseGroupSeparators;
+            ? QLocaleData::FailOnGroupSeparators
+            : QLocaleData::ParseGroupSeparators;
 
-    return d->stringToUnsLongLong(s.constData(), s.size(), 10, ok, mode);
+    return d->m_data->stringToUnsLongLong(s.constData(), s.size(), 10, ok, mode);
 }
 
 /*!
@@ -1532,12 +1532,12 @@ float QLocale::toFloat(const QStringRef &s, bool *ok) const
 
 double QLocale::toDouble(const QStringRef &s, bool *ok) const
 {
-    QLocalePrivate::GroupSeparatorMode mode
+    QLocaleData::GroupSeparatorMode mode
         = d->m_numberOptions & RejectGroupSeparator
-            ? QLocalePrivate::FailOnGroupSeparators
-            : QLocalePrivate::ParseGroupSeparators;
+            ? QLocaleData::FailOnGroupSeparators
+            : QLocaleData::ParseGroupSeparators;
 
-    return d->stringToDouble(s.constData(), s.size(), ok, mode);
+    return d->m_data->stringToDouble(s.constData(), s.size(), ok, mode);
 }
 
 
@@ -3091,7 +3091,7 @@ QString QLocaleData::unsLongLongToString(const QChar zero, const QChar group,
     number. We can't detect junk here, since we don't even know the base
     of the number.
 */
-bool QLocalePrivate::numberToCLocale(const QChar *str, int len,
+bool QLocaleData::numberToCLocale(const QChar *str, int len,
                                             GroupSeparatorMode group_sep_mode,
                                             CharBuff *result) const
 {
@@ -3116,9 +3116,9 @@ bool QLocalePrivate::numberToCLocale(const QChar *str, int len,
 
         char out = digitToCLocale(in);
         if (out == 0) {
-            if (in == list())
+            if (in == m_list)
                 out = ';';
-            else if (in == percent())
+            else if (in == m_percent)
                 out = '%';
             // for handling base-x numbers
             else if (in.unicode() >= 'A' && in.unicode() <= 'Z')
@@ -3145,7 +3145,7 @@ bool QLocalePrivate::numberToCLocale(const QChar *str, int len,
     return idx == l;
 }
 
-bool QLocalePrivate::validateChars(const QString &str, NumberMode numMode, QByteArray *buff,
+bool QLocaleData::validateChars(const QString &str, NumberMode numMode, QByteArray *buff,
                                     int decDigits) const
 {
     buff->clear();
@@ -3238,7 +3238,7 @@ bool QLocalePrivate::validateChars(const QString &str, NumberMode numMode, QByte
     return true;
 }
 
-double QLocalePrivate::stringToDouble(const QChar *begin, int len, bool *ok,
+double QLocaleData::stringToDouble(const QChar *begin, int len, bool *ok,
                                         GroupSeparatorMode group_sep_mode) const
 {
     CharBuff buff;
@@ -3250,7 +3250,7 @@ double QLocalePrivate::stringToDouble(const QChar *begin, int len, bool *ok,
     return bytearrayToDouble(buff.constData(), ok);
 }
 
-qlonglong QLocalePrivate::stringToLongLong(const QChar *begin, int len, int base,
+qlonglong QLocaleData::stringToLongLong(const QChar *begin, int len, int base,
                                            bool *ok, GroupSeparatorMode group_sep_mode) const
 {
     CharBuff buff;
@@ -3263,7 +3263,7 @@ qlonglong QLocalePrivate::stringToLongLong(const QChar *begin, int len, int base
     return bytearrayToLongLong(buff.constData(), base, ok);
 }
 
-qulonglong QLocalePrivate::stringToUnsLongLong(const QChar *begin, int len, int base,
+qulonglong QLocaleData::stringToUnsLongLong(const QChar *begin, int len, int base,
                                                bool *ok, GroupSeparatorMode group_sep_mode) const
 {
     CharBuff buff;
@@ -3276,7 +3276,7 @@ qulonglong QLocalePrivate::stringToUnsLongLong(const QChar *begin, int len, int 
     return bytearrayToUnsLongLong(buff.constData(), base, ok);
 }
 
-double QLocalePrivate::bytearrayToDouble(const char *num, bool *ok, bool *overflow)
+double QLocaleData::bytearrayToDouble(const char *num, bool *ok, bool *overflow)
 {
     if (ok != 0)
         *ok = true;
@@ -3328,7 +3328,7 @@ double QLocalePrivate::bytearrayToDouble(const char *num, bool *ok, bool *overfl
     return d;
 }
 
-qlonglong QLocalePrivate::bytearrayToLongLong(const char *num, int base, bool *ok, bool *overflow)
+qlonglong QLocaleData::bytearrayToLongLong(const char *num, int base, bool *ok, bool *overflow)
 {
     bool _ok;
     const char *endptr;
@@ -3370,7 +3370,7 @@ qlonglong QLocalePrivate::bytearrayToLongLong(const char *num, int base, bool *o
     return l;
 }
 
-qulonglong QLocalePrivate::bytearrayToUnsLongLong(const char *num, int base, bool *ok)
+qulonglong QLocaleData::bytearrayToUnsLongLong(const char *num, int base, bool *ok)
 {
     bool _ok;
     const char *endptr;

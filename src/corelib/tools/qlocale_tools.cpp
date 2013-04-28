@@ -185,7 +185,7 @@ QString &exponentForm(QChar zero, QChar decimal, QChar exponential,
 }
 
 // Removes thousand-group separators in "C" locale.
-bool removeGroupSeparators(QLocalePrivate::CharBuff *num)
+bool removeGroupSeparators(QLocaleData::CharBuff *num)
 {
     int group_cnt = 0; // counts number of group chars
     int decpt_idx = -1;
