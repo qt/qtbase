@@ -251,6 +251,8 @@ public:
     bool operator ==(const QUrl &url) const;
     bool operator !=(const QUrl &url) const;
 
+    bool matches(const QUrl &url, FormattingOptions options) const;
+
     static QString fromPercentEncoding(const QByteArray &);
     static QByteArray toPercentEncoding(const QString &,
                                         const QByteArray &exclude = QByteArray(),

@@ -3435,6 +3435,75 @@ bool QUrl::operator ==(const QUrl &url) const
 }
 
 /*!
+    \since 5.2
+
+    Returns true if this URL and the given \a url are equal after
+    applying \a options to both; otherwise returns false.
+
+    This is equivalent to calling adjusted(options) on both URLs
+    and comparing the resulting urls, but faster.
+
+*/
+bool QUrl::matches(const QUrl &url, FormattingOptions options) const
+{
+    if (!d && !url.d)
+        return true;
+    if (!d)
+        return url.d->isEmpty();
+    if (!url.d)
+        return d->isEmpty();
+
+    // Compare which sections are present, but ignore Host
+    // which is set by parsing but not by construction, when empty.
+    int mask = QUrlPrivate::FullUrl & ~QUrlPrivate::Host;
+
+    if (options & QUrl::RemoveScheme)
+        mask &= ~QUrlPrivate::Scheme;
+    else if (d->scheme != url.d->scheme)
+        return false;
+
+    if (options & QUrl::RemovePassword)
+        mask &= ~QUrlPrivate::Password;
+    else if (d->password != url.d->password)
+        return false;
+
+    if (options & QUrl::RemoveUserInfo)
+        mask &= ~QUrlPrivate::UserName;
+    else if (d->userName != url.d->userName)
+        return false;
+
+    if (options & QUrl::RemovePort)
+        mask &= ~QUrlPrivate::Port;
+    else if (d->port != url.d->port)
+        return false;
+
+    if (options & QUrl::RemoveAuthority)
+        mask &= ~QUrlPrivate::Host;
+    else if (d->host != url.d->host)
+        return false;
+
+    if (options & QUrl::RemoveQuery)
+        mask &= ~QUrlPrivate::Query;
+    else if (d->query != url.d->query)
+        return false;
+
+    if (options & QUrl::RemoveFragment)
+        mask &= ~QUrlPrivate::Fragment;
+    else if (d->fragment != url.d->fragment)
+        return false;
+
+    if (!(d->sectionIsPresent & mask) == (url.d->sectionIsPresent & mask))
+        return false;
+
+    // Compare paths, after applying path-related options
+    QString path1;
+    d->appendPath(path1, options, QUrlPrivate::Path);
+    QString path2;
+    url.d->appendPath(path2, options, QUrlPrivate::Path);
+    return path1 == path2;
+}
+
+/*!
     Returns true if this URL and the given \a url are not equal;
     otherwise returns false.
 */

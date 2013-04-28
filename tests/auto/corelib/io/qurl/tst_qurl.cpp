@@ -295,6 +295,8 @@ void tst_QUrl::comparison()
     QVERIFY(url1 == url2);
     QVERIFY(!(url1 < url2));
     QVERIFY(!(url2 < url1));
+    QVERIFY(url1.matches(url2, QUrl::None));
+    QVERIFY(url1.matches(url2, QUrl::StripTrailingSlash));
 
     // 6.2.2 Syntax-based Normalization
     QUrl url3 = QUrl::fromEncoded("example://a/b/c/%7Bfoo%7D");
@@ -307,6 +309,9 @@ void tst_QUrl::comparison()
     QUrl url4bis = QUrl::fromEncoded("example://a/.//b/../b/c//%7Bfoo%7D/");
     QCOMPARE(url4bis.adjusted(QUrl::NormalizePathSegments), url3bis);
     QCOMPARE(url4bis.adjusted(QUrl::NormalizePathSegments | QUrl::StripTrailingSlash), url3bisNoSlash);
+    QVERIFY(url3bis.matches(url4bis, QUrl::NormalizePathSegments));
+    QVERIFY(!url3bisNoSlash.matches(url4bis, QUrl::NormalizePathSegments));
+    QVERIFY(url3bisNoSlash.matches(url4bis, QUrl::NormalizePathSegments | QUrl::StripTrailingSlash));
 
     QUrl url4EncodedDots = QUrl("example://a/.//b/%2E%2E%2F/b/c/");
     QCOMPARE(QString::fromLatin1(url4EncodedDots.toEncoded()), QString::fromLatin1("example://a/.//b/..%2F/b/c/"));
@@ -327,6 +332,59 @@ void tst_QUrl::comparison()
     url8.setEncodedQuery("a=c");
     QVERIFY(url7 != url8);
     QVERIFY(url7 < url8);
+
+    // Trailing slash difference
+    QUrl url9("http://qt-project.org/path/");
+    QUrl url9NoSlash("http://qt-project.org/path");
+    QVERIFY(!(url9 == url9NoSlash));
+    QVERIFY(!url9.matches(url9NoSlash, QUrl::None));
+    QVERIFY(url9.matches(url9NoSlash, QUrl::StripTrailingSlash));
+
+    // RemoveFilename
+    QUrl url10("http://qt-project.org/file");
+    QUrl url10bis("http://qt-project.org/otherfile");
+    QVERIFY(!(url10 == url10bis));
+    QVERIFY(!url10.matches(url10bis, QUrl::None));
+    QVERIFY(!url10.matches(url10bis, QUrl::StripTrailingSlash));
+    QVERIFY(url10.matches(url10bis, QUrl::RemoveFilename));
+
+    // RemoveAuthority
+    QUrl authUrl1("x://host/a/b");
+    QUrl authUrl2("x://host/a/");
+    QUrl authUrl3("x:/a/b");
+    QVERIFY(authUrl1.matches(authUrl2, QUrl::RemoveFilename));
+    QCOMPARE(authUrl1.adjusted(QUrl::RemoveAuthority), authUrl3.adjusted(QUrl::RemoveAuthority));
+    QVERIFY(authUrl1.matches(authUrl3, QUrl::RemoveAuthority));
+    QCOMPARE(authUrl2.adjusted(QUrl::RemoveAuthority | QUrl::RemoveFilename), authUrl3.adjusted(QUrl::RemoveAuthority | QUrl::RemoveFilename));
+    QVERIFY(authUrl2.matches(authUrl3, QUrl::RemoveAuthority | QUrl::RemoveFilename));
+    QVERIFY(authUrl3.matches(authUrl2, QUrl::RemoveAuthority | QUrl::RemoveFilename));
+
+    QUrl hostUrl1("file:/foo");
+    QUrl hostUrl2("file:///foo");
+    QVERIFY(hostUrl1 == hostUrl2);
+    QVERIFY(hostUrl1.matches(hostUrl2, QUrl::None));
+    QVERIFY(hostUrl1.matches(hostUrl2, QUrl::RemoveAuthority));
+
+    // RemovePassword
+    QUrl passUrl1("http://user:pass@host/");
+    QUrl passUrl2("http://user:PASS@host/");
+    QVERIFY(!(passUrl1 == passUrl2));
+    QVERIFY(passUrl1 != passUrl2);
+    QVERIFY(!passUrl1.matches(passUrl2, QUrl::None));
+    QVERIFY(passUrl1.matches(passUrl2, QUrl::RemovePassword));
+
+    // RemoveQuery, RemoveFragment
+    QUrl queryFragUrl1("http://host/file?query#fragment");
+    QUrl queryFragUrl2("http://host/file?q2#f2");
+    QUrl queryFragUrl3("http://host/file");
+    QVERIFY(!(queryFragUrl1 == queryFragUrl2));
+    QVERIFY(queryFragUrl1 != queryFragUrl2);
+    QVERIFY(!queryFragUrl1.matches(queryFragUrl2, QUrl::None));
+    QVERIFY(!queryFragUrl1.matches(queryFragUrl2, QUrl::RemoveQuery));
+    QVERIFY(!queryFragUrl1.matches(queryFragUrl2, QUrl::RemoveFragment));
+    QVERIFY(queryFragUrl1.matches(queryFragUrl2, QUrl::RemoveQuery | QUrl::RemoveFragment));
+    QVERIFY(queryFragUrl1.matches(queryFragUrl3, QUrl::RemoveQuery | QUrl::RemoveFragment));
+    QVERIFY(queryFragUrl3.matches(queryFragUrl1, QUrl::RemoveQuery | QUrl::RemoveFragment));
 }
 
 void tst_QUrl::comparison2_data()
