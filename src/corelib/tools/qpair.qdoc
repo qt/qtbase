@@ -96,6 +96,26 @@
     \sa qMakePair()
 */
 
+/*!
+    \fn QPair::QPair(const QPair<TT1, TT2> &p)
+    \since 5.2
+
+    Constructs a pair from the other pair \a p, of types TT1 and TT2. This
+    constructor will fail if \c first cannot be initialized from \c p.first or
+    if \c second cannot be initialized from \c p.second.
+
+    \sa qMakePair()
+*/
+
+/*!
+    \fn QPair &QPair::operator=(const QPair<TT1, TT2> &p)
+    \since 5.2
+
+    Copies the pair \a p onto this pair.
+
+    \sa qMakePair()
+*/
+
 /*! \fn bool operator==(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
 
     \relates QPair
