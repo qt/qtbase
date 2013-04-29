@@ -208,10 +208,12 @@ QPixmap QPlatformTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) co
     return QPixmap();
 }
 
-QPixmap QPlatformTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size) const
+QPixmap QPlatformTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size,
+                                       QPlatformTheme::IconOptions iconOptions) const
 {
     Q_UNUSED(fileInfo);
     Q_UNUSED(size);
+    Q_UNUSED(iconOptions);
     // TODO Should return QCommonStyle pixmaps?
     return QPixmap();
 }

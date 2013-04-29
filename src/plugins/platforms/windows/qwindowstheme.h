@@ -68,7 +68,8 @@ public:
         { return m_fonts[type]; }
 
     virtual QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const;
-    virtual QPixmap fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size) const;
+    virtual QPixmap fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size,
+                                   QPlatformTheme::IconOptions iconOptions = 0) const;
 
     void windowsThemeChanged(QWindow *window);
 

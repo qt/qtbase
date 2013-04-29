@@ -255,6 +255,11 @@ Q_WIDGETS_EXPORT _qt_filedialog_save_file_url_hook qt_filedialog_save_file_url_h
     static functions will always be an application modal dialog. If
     you want to use sheets, use QFileDialog::open() instead.
 
+    \value DontUseCustomDirectoryIcons Always use the default directory icon.
+    Some platforms allow the user to set a different icon. Custom icon lookup
+    cause a big performance impact over network or removable drives.
+    Setting this will enable the QFileIconProvider::DontUseCustomDirectoryIcons
+    option in the icon provider. This enum value was added in Qt 5.2.
 */
 
 /*!
@@ -754,6 +759,15 @@ void QFileDialog::setOptions(Options options)
 
     if (changed & ShowDirsOnly)
         setFilter((options & ShowDirsOnly) ? filter() & ~QDir::Files : filter() | QDir::Files);
+
+    if (changed & DontUseCustomDirectoryIcons) {
+        QFileIconProvider::Options providerOptions = iconProvider()->options();
+        if (options & DontUseCustomDirectoryIcons)
+            providerOptions |= QFileIconProvider::DontUseCustomDirectoryIcons;
+        else
+            providerOptions &= ~QFileIconProvider::DontUseCustomDirectoryIcons;
+        iconProvider()->setOptions(providerOptions);
+    }
 }
 
 QFileDialog::Options QFileDialog::options() const

@@ -154,6 +154,7 @@ FileDialogPanel::FileDialogPanel(QWidget *parent)
     , m_nameFilterDetailsVisible(new QCheckBox(tr("Name filter details visible")))
     , m_resolveSymLinks(new QCheckBox(tr("Resolve symlinks")))
     , m_native(new QCheckBox(tr("Use native dialog")))
+    , m_customDirIcons(new QCheckBox(tr("Don't use custom directory icons")))
     , m_acceptMode(createCombo(this, acceptModeComboData, sizeof(acceptModeComboData)/sizeof(ComboData)))
     , m_fileMode(createCombo(this, fileModeComboData, sizeof(fileModeComboData)/sizeof(ComboData)))
     , m_viewMode(createCombo(this, viewModeComboData, sizeof(viewModeComboData)/sizeof(ComboData)))
@@ -178,6 +179,7 @@ FileDialogPanel::FileDialogPanel(QWidget *parent)
     optionsLayout->addRow(m_nameFilterDetailsVisible);
     optionsLayout->addRow(m_resolveSymLinks);
     optionsLayout->addRow(m_readOnly);
+    optionsLayout->addRow(m_customDirIcons);
 
     // Files
     QGroupBox *filesGroupBox = new QGroupBox(tr("Files / Filters"));
@@ -322,6 +324,8 @@ QFileDialog::Options FileDialogPanel::options() const
         result |= QFileDialog::DontConfirmOverwrite;
     if (!m_native->isChecked())
         result |= QFileDialog::DontUseNativeDialog;
+    if (!m_customDirIcons->isChecked())
+        result |= QFileDialog::DontUseCustomDirectoryIcons;
     return result;
 }
 
@@ -454,6 +458,7 @@ void FileDialogPanel::restoreDefaults()
     m_resolveSymLinks->setChecked(d.resolveSymlinks());
     m_readOnly->setChecked(d.isReadOnly());
     m_native->setChecked(true);
+    m_customDirIcons->setChecked(d.testOption(QFileDialog::DontUseCustomDirectoryIcons));
     m_directory->setText(QDir::homePath());
     m_defaultSuffix->setText(QLatin1String("txt"));
     m_nameFilters->setPlainText(QLatin1String("Any files (*)\nImage files (*.png *.xpm *.jpg)\nText files (*.txt)"));

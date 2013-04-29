@@ -92,6 +92,7 @@ private:
     QCheckBox *m_nameFilterDetailsVisible;
     QCheckBox *m_resolveSymLinks;
     QCheckBox *m_native;
+    QCheckBox *m_customDirIcons;
     QComboBox *m_acceptMode;
     QComboBox *m_fileMode;
     QComboBox *m_viewMode;

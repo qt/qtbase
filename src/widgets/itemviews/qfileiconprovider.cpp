@@ -83,6 +83,16 @@ QT_BEGIN_NAMESPACE
   \value File
 */
 
+
+/*!
+    \enum QFileIconProvider::Option
+    \since 5.2
+
+    \value DontUseCustomDirectoryIcons Always use the default directory icon.
+    Some platforms allow the user to set a different icon. Custom icon lookup
+    cause a big performance impact over network or removable drives.
+*/
+
 class QFileIconProviderPrivate
 {
     Q_DECLARE_PUBLIC(QFileIconProvider)
@@ -94,6 +104,7 @@ public:
 
     QFileIconProvider *q_ptr;
     const QString homePath;
+    QFileIconProvider::Options options;
 
 private:
     mutable QIcon file;
@@ -193,6 +204,31 @@ QFileIconProvider::~QFileIconProvider()
 }
 
 /*!
+    \since 5.2
+    Sets \a options that affect the icon provider.
+    \sa options()
+*/
+
+void QFileIconProvider::setOptions(QFileIconProvider::Options options)
+{
+    Q_D(QFileIconProvider);
+    d->options = options;
+}
+
+/*!
+    \since 5.2
+    Returns all the options that affect the icon provider.
+    By default, all options are disabled.
+    \sa setOptions()
+*/
+
+QFileIconProvider::Options QFileIconProvider::options() const
+{
+    Q_D(const QFileIconProvider);
+    return d->options;
+}
+
+/*!
   Returns an icon set for the given \a type.
 */
 
@@ -228,6 +264,7 @@ static bool isCacheable(const QFileInfo &fi)
 #ifdef Q_OS_WIN
     // On windows it's faster to just look at the file extensions. QTBUG-13182
     const QString fileExtension = fi.suffix();
+    // Will return false for .exe, .lnk and .ico extensions
     return fileExtension.compare(QLatin1String("exe"), Qt::CaseInsensitive) &&
            fileExtension.compare(QLatin1String("lnk"), Qt::CaseInsensitive) &&
            fileExtension.compare(QLatin1String("ico"), Qt::CaseInsensitive);
@@ -247,7 +284,6 @@ QIcon QFileIconProviderPrivate::getIcon(const QFileInfo &fi) const
     if (sizes.isEmpty())
         return retIcon;
 
-    const QString fileExtension = fi.suffix().toUpper();
     const QString keyBase = QLatin1String("qt_.") + fi.suffix().toUpper();
 
     bool cacheable = isCacheable(fi);
@@ -269,8 +305,12 @@ QIcon QFileIconProviderPrivate::getIcon(const QFileInfo &fi) const
         }
     }
 
+    QPlatformTheme::IconOptions iconOptions;
+    if (options & QFileIconProvider::DontUseCustomDirectoryIcons)
+        iconOptions |= QPlatformTheme::DontUseCustomDirectoryIcons;
+
     Q_FOREACH (int size, sizes) {
-        QPixmap pixmap = theme->fileIconPixmap(fi, QSizeF(size, size));
+        QPixmap pixmap = theme->fileIconPixmap(fi, QSizeF(size, size), iconOptions);
         if (!pixmap.isNull()) {
             retIcon.addPixmap(pixmap);
             if (cacheable)

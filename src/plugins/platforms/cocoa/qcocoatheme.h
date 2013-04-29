@@ -68,7 +68,9 @@ public:
     const QPalette *palette(Palette type = SystemPalette) const;
     const QFont *font(Font type = SystemFont) const;
     QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const;
-    QPixmap fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size) const;
+    QPixmap fileIconPixmap(const QFileInfo &fileInfo,
+                           const QSizeF &size,
+                           QPlatformTheme::IconOptions options = 0) const;
 
     QVariant themeHint(ThemeHint hint) const;
 
