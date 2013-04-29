@@ -1,0 +1,30 @@
+From 142312b5cbea10257b6d3693b48817ae657018eb Mon Sep 17 00:00:00 2001
+From: Kai Koehne <kai.koehne@digia.com>
+Date: Mon, 22 Apr 2013 16:36:17 +0200
+Subject: [PATCH] Add missing intrin.h include for __cpuid
+
+This is already fixed upstream in
+
+https://codereview.appspot.com/8615046/patch/1/2
+
+Change-Id: I4b9e865f6b5622c484418a8381334381bc256887
+---
+ src/3rdparty/angle/src/libGLESv2/mathutil.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/3rdparty/angle/src/libGLESv2/mathutil.h b/src/3rdparty/angle/src/libGLESv2/mathutil.h
+index 672c443..bb48b94 100644
+--- a/src/3rdparty/angle/src/libGLESv2/mathutil.h
++++ b/src/3rdparty/angle/src/libGLESv2/mathutil.h
+@@ -9,6 +9,8 @@
+ #ifndef LIBGLESV2_MATHUTIL_H_
+ #define LIBGLESV2_MATHUTIL_H_
+ 
++#include <intrin.h>
++
+ #include "common/system.h"
+ #include "common/debug.h"
+ 
+-- 
+1.8.1.msysgit.1
+

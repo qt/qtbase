@@ -42,6 +42,8 @@
 #include "qcocoamenuitem.h"
 
 #include "qcocoamenu.h"
+#include "qcocoamenubar.h"
+#include "messages.h"
 #include "qcocoahelpers.h"
 #include "qcocoaautoreleasepool.h"
 #include "qt_mac_p.h"
@@ -89,6 +91,7 @@ NSUInteger keySequenceModifierMask(const QKeySequence &accel)
 
 QCocoaMenuItem::QCocoaMenuItem() :
     m_native(NULL),
+    m_textSynced(false),
     m_menu(NULL),
     m_isVisible(true),
     m_enabled(true),
@@ -123,11 +126,13 @@ void QCocoaMenuItem::setMenu(QPlatformMenu *menu)
 {
     if (menu == m_menu)
         return;
+    if (m_menu && m_menu->parent() == this)
+        m_menu->setParent(0);
 
     QCocoaAutoReleasePool pool;
     m_menu = static_cast<QCocoaMenu *>(menu);
     if (m_menu) {
-        m_menu->setParentItem(this);
+        m_menu->setParent(this);
     } else {
         // we previously had a menu, but no longer
         // clear out our item so the nexy sync() call builds a new one
@@ -153,6 +158,8 @@ void QCocoaMenuItem::setFont(const QFont &font)
 
 void QCocoaMenuItem::setRole(MenuRole role)
 {
+    if (role != m_role)
+        m_textSynced = false; // Changing role deserves a second chance.
     m_role = role;
 }
 
@@ -190,7 +197,7 @@ NSMenuItem *QCocoaMenuItem::sync()
         }
     }
 
-    if ((m_role != NoRole) || m_merged) {
+    if ((m_role != NoRole && !m_textSynced) || m_merged) {
         NSMenuItem *mergeItem = nil;
         QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = getMenuLoader();
         switch (m_role) {
@@ -210,25 +217,33 @@ NSMenuItem *QCocoaMenuItem::sync()
             mergeItem = [loader preferencesMenuItem];
             break;
         case TextHeuristicRole: {
-            QString aboutString = tr("About").toLower();
-            if (m_text.startsWith(aboutString, Qt::CaseInsensitive)
-                || m_text.endsWith(aboutString, Qt::CaseInsensitive))
-            {
+            QObject *p = parent();
+            int depth = 1;
+            QCocoaMenuBar *menubar = 0;
+            while (depth < 3 && p && !(menubar = qobject_cast<QCocoaMenuBar *>(p))) {
+                ++depth;
+                p = p->parent();
+            }
+            if (depth == 3 || !menubar)
+                break; // Menu item too deep in the hierarchy, or not connected to any menubar
+
+            switch (detectMenuRole(m_text)) {
+            case QPlatformMenuItem::AboutRole:
                 if (m_text.indexOf(QRegExp(QString::fromLatin1("qt$"), Qt::CaseInsensitive)) == -1)
                     mergeItem = [loader aboutMenuItem];
                 else
                     mergeItem = [loader aboutQtMenuItem];
-            } else if (m_text.startsWith(tr("Config"), Qt::CaseInsensitive)
-                       || m_text.startsWith(tr("Preference"), Qt::CaseInsensitive)
-                       || m_text.startsWith(tr("Options"), Qt::CaseInsensitive)
-                       || m_text.startsWith(tr("Setting"), Qt::CaseInsensitive)
-                       || m_text.startsWith(tr("Setup"), Qt::CaseInsensitive)) {
+                break;
+            case QPlatformMenuItem::PreferencesRole:
                 mergeItem = [loader preferencesMenuItem];
-            } else if (m_text.startsWith(tr("Quit"), Qt::CaseInsensitive)
-                       || m_text.startsWith(tr("Exit"), Qt::CaseInsensitive)) {
+                break;
+            case QPlatformMenuItem::QuitRole:
                 mergeItem = [loader quitMenuItem];
+                break;
+            default:
+                m_textSynced = true;
+                break;
             }
-
             break;
         }
 
@@ -237,6 +252,7 @@ NSMenuItem *QCocoaMenuItem::sync()
         }
 
         if (mergeItem) {
+            m_textSynced = true;
             m_merged = true;
             [mergeItem retain];
             [m_native release];
@@ -248,6 +264,8 @@ NSMenuItem *QCocoaMenuItem::sync()
             m_native = nil; // create item below
             m_merged = false;
         }
+    } else {
+        m_textSynced = true; // NoRole, and that was set explicitly. So, nothing to do anymore.
     }
 
     if (!m_native) {
@@ -257,23 +275,11 @@ NSMenuItem *QCocoaMenuItem::sync()
         [m_native setTag:reinterpret_cast<NSInteger>(this)];
     }
 
-//  [m_native setHidden:YES];
-//  [m_native setHidden:NO];
     [m_native setHidden: !m_isVisible];
     [m_native setEnabled: m_enabled];
-    QString text = m_text;
-    QKeySequence accel = m_shortcut;
 
-    {
-        int st = text.lastIndexOf(QLatin1Char('\t'));
-        if (st != -1) {
-            accel = QKeySequence(text.right(text.length()-(st+1)));
-            text.remove(st, text.length()-st);
-        }
-    }
-
-    text = mergeText();
-    accel = mergeAccel();
+    QString text = mergeText();
+    QKeySequence accel = mergeAccel();
 
     // Show multiple key sequences as part of the menu text.
     if (accel.count() > 1)
@@ -323,7 +329,7 @@ QString QCocoaMenuItem::mergeText()
         return qt_mac_applicationmenu_string(6).arg(qt_mac_applicationName());
     } else if (m_native== [loader aboutQtMenuItem]) {
         if (m_text == QString("About Qt"))
-            return tr("About Qt");
+            return msgAboutQt();
         else
             return m_text;
     } else if (m_native == [loader preferencesMenuItem]) {

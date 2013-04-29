@@ -8434,8 +8434,6 @@ void QWidget::mouseReleaseEvent(QMouseEvent *event)
     This event handler, for event \a event, can be reimplemented in a
     subclass to receive mouse double click events for the widget.
 
-    The default implementation generates a normal mouse press event.
-
     \note The widget will also receive mouse press and mouse release
     events in addition to the double click event. It is up to the
     developer to ensure that the application interprets these events
@@ -9876,11 +9874,16 @@ void QWidget::update()
 */
 void QWidget::update(const QRect &rect)
 {
-    if (!isVisible() || !updatesEnabled() || rect.isEmpty())
+    if (!isVisible() || !updatesEnabled())
+        return;
+
+    QRect r = rect & QWidget::rect();
+
+    if (r.isEmpty())
         return;
 
     if (testAttribute(Qt::WA_WState_InPaintEvent)) {
-        QApplication::postEvent(this, new QUpdateLaterEvent(rect));
+        QApplication::postEvent(this, new QUpdateLaterEvent(r));
         return;
     }
 
@@ -9893,9 +9896,9 @@ void QWidget::update(const QRect &rect)
 #endif // Q_WS_MAC
         QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
         if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
-            tlwExtra->backingStoreTracker->markDirty(rect, this);
+            tlwExtra->backingStoreTracker->markDirty(r, this);
     } else {
-        d_func()->repaint_sys(rect);
+        d_func()->repaint_sys(r);
     }
 }
 

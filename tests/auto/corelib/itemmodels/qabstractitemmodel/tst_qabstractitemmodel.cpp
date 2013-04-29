@@ -891,6 +891,10 @@ void tst_QAbstractItemModel::moveColumns()
     QCOMPARE(model.moveColumns(QModelIndex(), 6, 4, QModelIndex(), 1), true);
     QCOMPARE(columnsAboutToBeMovedSpy.count(), 1);
     QCOMPARE(columnsMovedSpy.count(), 1);
+
+    QCOMPARE(model.moveColumn(QModelIndex(), 4, QModelIndex(), 1), true);
+    QCOMPARE(columnsAboutToBeMovedSpy.count(), 2);
+    QCOMPARE(columnsMovedSpy.count(), 2);
 }
 
 void tst_QAbstractItemModel::reset()

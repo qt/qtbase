@@ -125,16 +125,15 @@ QT_BEGIN_NAMESPACE
     The environment of the calling process can be obtained using
     QProcessEnvironment::systemEnvironment().
 
-    On Unix systems, the variable names are case-sensitive. For that reason,
-    this class will not touch the names of the variables. Note as well that
+    On Unix systems, the variable names are case-sensitive. Note that the
     Unix environment allows both variable names and contents to contain arbitrary
-    binary data (except for the NUL character), but this is not supported by
-    QProcessEnvironment. This class only supports names and values that are
-    encodable by the current locale settings (see QTextCodec::codecForLocale).
+    binary data (except for the NUL character). QProcessEnvironment will preserve
+    such variables, but does not support manipulating variables whose names or
+    values are not encodable by the current locale settings (see
+    QTextCodec::codecForLocale).
 
-    On Windows, the variable names are case-insensitive. Therefore,
-    QProcessEnvironment will always uppercase the names and do case-insensitive
-    comparisons.
+    On Windows, the variable names are case-insensitive, but case-preserving.
+    QProcessEnvironment behaves accordingly.
 
     On Windows CE, the concept of environment does not exist. This class will
     keep the values set for compatibility with other platforms, but the values
@@ -298,9 +297,6 @@ void QProcessEnvironment::clear()
     Returns true if the environment variable of name \a name is found in
     this QProcessEnvironment object.
 
-    On Windows, variable names are case-insensitive, so the key is converted
-    to uppercase before searching. On other systems, names are case-sensitive
-    so no trasformation is applied.
 
     \sa insert(), value()
 */
@@ -313,10 +309,6 @@ bool QProcessEnvironment::contains(const QString &name) const
     Inserts the environment variable of name \a name and contents \a value
     into this QProcessEnvironment object. If that variable already existed,
     it is replaced by the new value.
-
-    On Windows, variable names are case-insensitive, so this function always
-    uppercases the variable name before inserting. On other systems, names
-    are case-sensitive, so no transformation is applied.
 
     On most systems, inserting a variable with no contents will have the
     same effect for applications as if the variable had not been set at all.
@@ -336,9 +328,6 @@ void QProcessEnvironment::insert(const QString &name, const QString &value)
     QProcessEnvironment object. If that variable did not exist before,
     nothing happens.
 
-    On Windows, variable names are case-insensitive, so the key is converted
-    to uppercase before searching. On other systems, names are case-sensitive
-    so no trasformation is applied.
 
     \sa contains(), insert(), value()
 */
@@ -352,10 +341,6 @@ void QProcessEnvironment::remove(const QString &name)
     Searches this QProcessEnvironment object for a variable identified by
     \a name and returns its value. If the variable is not found in this object,
     then \a defaultValue is returned instead.
-
-    On Windows, variable names are case-insensitive, so the key is converted
-    to uppercase before searching. On other systems, names are case-sensitive
-    so no trasformation is applied.
 
     \sa contains(), insert(), remove()
 */
@@ -376,10 +361,10 @@ QString QProcessEnvironment::value(const QString &name, const QString &defaultVa
     each environment variable that is set. The environment variable's name
     and its value are separated by an equal character ('=').
 
-    The QStringList contents returned by this function are suitable for use
-    with the QProcess::setEnvironment function. However, it is recommended
-    to use QProcess::setProcessEnvironment instead since that will avoid
-    unnecessary copying of the data.
+    The QStringList contents returned by this function are suitable for
+    presentation.
+    Use with the QProcess::setEnvironment function is not recommended due to
+    potential encoding problems under Unix, and worse performance.
 
     \sa systemEnvironment(), QProcess::systemEnvironment(), QProcess::environment(),
         QProcess::setEnvironment()

@@ -1225,7 +1225,8 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
             *gmodifs << QModifKeyName(Qt::CTRL, QLatin1String("ctrl+"))
                      << QModifKeyName(Qt::SHIFT, QLatin1String("shift+"))
                      << QModifKeyName(Qt::ALT, QLatin1String("alt+"))
-                     << QModifKeyName(Qt::META, QLatin1String("meta+"));
+                     << QModifKeyName(Qt::META, QLatin1String("meta+"))
+                     << QModifKeyName(Qt::KeypadModifier, QLatin1String("numpad+"));
         }
     } else {
         gmodifs = globalPortableModifs();
@@ -1233,7 +1234,8 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
             *gmodifs << QModifKeyName(Qt::CTRL, QLatin1String("ctrl+"))
                      << QModifKeyName(Qt::SHIFT, QLatin1String("shift+"))
                      << QModifKeyName(Qt::ALT, QLatin1String("alt+"))
-                     << QModifKeyName(Qt::META, QLatin1String("meta+"));
+                     << QModifKeyName(Qt::META, QLatin1String("meta+"))
+                     << QModifKeyName(Qt::KeypadModifier, QLatin1String("numpad+"));
         }
     }
     if (!gmodifs) return ret;
@@ -1244,7 +1246,8 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
         modifs << QModifKeyName(Qt::CTRL, QCoreApplication::translate("QShortcut", "Ctrl").toLower().append(QLatin1Char('+')))
                << QModifKeyName(Qt::SHIFT, QCoreApplication::translate("QShortcut", "Shift").toLower().append(QLatin1Char('+')))
                << QModifKeyName(Qt::ALT, QCoreApplication::translate("QShortcut", "Alt").toLower().append(QLatin1Char('+')))
-               << QModifKeyName(Qt::META, QCoreApplication::translate("QShortcut", "Meta").toLower().append(QLatin1Char('+')));
+               << QModifKeyName(Qt::META, QCoreApplication::translate("QShortcut", "Meta").toLower().append(QLatin1Char('+')))
+               << QModifKeyName(Qt::KeypadModifier, QCoreApplication::translate("QShortcut", "Numpad").toLower().append(QLatin1Char('+')));
     }
     modifs += *gmodifs; // Test non-translated ones last
 
@@ -1418,10 +1421,12 @@ QString QKeySequencePrivate::encodeString(int key, QKeySequence::SequenceFormat 
             addKey(s, nativeText ? QCoreApplication::translate("QShortcut", "Alt") : QString::fromLatin1("Alt"), format);
         if ((key & Qt::SHIFT) == Qt::SHIFT)
             addKey(s, nativeText ? QCoreApplication::translate("QShortcut", "Shift") : QString::fromLatin1("Shift"), format);
+        if ((key & Qt::KeypadModifier) == Qt::KeypadModifier)
+            addKey(s, nativeText ? QCoreApplication::translate("QShortcut", "Numpad") : QString::fromLatin1("Numpad"), format);
     }
 
 
-    key &= ~(Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier);
+    key &= ~(Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier | Qt::KeypadModifier);
     QString p;
 
     if (key && key < Qt::Key_Escape && key != Qt::Key_Space) {

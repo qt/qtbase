@@ -280,8 +280,7 @@ ushort TableGenerator::keysymToUtf8(quint32 sym)
     qDebug() << QString("keysym - 0x%1 : utf8 - %2").arg(QString::number(sym, 16))
                                                     .arg(codec->toUnicode(chars));
 #endif
-    const QChar *ch = QString(chars.data()).unicode();
-    return ch->unicode();
+    return QString::fromUtf8(chars).at(0).unicode();
 }
 
 quint32 TableGenerator::stringToKeysym(QString keysymName)

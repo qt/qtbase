@@ -55,7 +55,11 @@ QT_BEGIN_NAMESPACE
 
 static bool ignoreProxyFor(const QNetworkProxyQuery &query)
 {
-    const QList<QByteArray> noProxyTokens = qgetenv("no_proxy").split(',');
+    const QByteArray noProxy = qgetenv("no_proxy").trimmed();
+    if (noProxy.isEmpty())
+        return false;
+
+    const QList<QByteArray> noProxyTokens = noProxy.split(',');
 
     foreach (const QByteArray &rawToken, noProxyTokens) {
         QByteArray token = rawToken.trimmed();

@@ -172,7 +172,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
         parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
     d->deactivateWidgetCleanup();
 
-    if ((windowType() == Qt::Popup))
+    if ((windowType() == Qt::Popup) && qApp)
         qApp->d_func()->closePopup(this);
 
     if (this == QApplicationPrivate::active_window)

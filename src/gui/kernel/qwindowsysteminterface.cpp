@@ -140,11 +140,11 @@ void QWindowSystemInterface::handleGeometryChange(QWindow *tlw, const QRect &new
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleCloseEvent(QWindow *tlw)
+void QWindowSystemInterface::handleCloseEvent(QWindow *tlw, bool *accepted)
 {
     if (tlw) {
         QWindowSystemInterfacePrivate::CloseEvent *e =
-                new QWindowSystemInterfacePrivate::CloseEvent(tlw);
+                new QWindowSystemInterfacePrivate::CloseEvent(tlw, accepted);
         QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
     }
 }

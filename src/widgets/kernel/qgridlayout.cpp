@@ -1505,7 +1505,8 @@ void QGridLayout::addWidget(QWidget *widget, int fromRow, int fromColumn,
 void QGridLayout::addLayout(QLayout *layout, int row, int column, Qt::Alignment alignment)
 {
     Q_D(QGridLayout);
-    addChildLayout(layout);
+    if (!adoptLayout(layout))
+        return;
     QGridBox *b = new QGridBox(layout);
     b->setAlignment(alignment);
     d->add(b, row, column);
@@ -1524,7 +1525,8 @@ void QGridLayout::addLayout(QLayout *layout, int row, int column,
                                       int rowSpan, int columnSpan, Qt::Alignment alignment)
 {
     Q_D(QGridLayout);
-    addChildLayout(layout);
+    if (!adoptLayout(layout))
+        return;
     QGridBox *b = new QGridBox(layout);
     b->setAlignment(alignment);
     d->add(b, row, (rowSpan < 0) ? -1 : row + rowSpan - 1, column, (columnSpan < 0) ? -1 : column + columnSpan - 1);

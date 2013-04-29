@@ -153,13 +153,23 @@ protected:
          return 0;
     }
 
-    QAccessibleInterface *childPointer(VARIANT varID)
+    static QAccessibleInterface *childPointer(QAccessibleInterface *parent, VARIANT varID)
     {
         // -1 since windows API always uses 1 for the first child
-        QAccessibleInterface *iface = accessibleInterface();
-        if (iface)
-            return accessibleInterface()->child(varID.lVal - 1);
-        return 0;
+        Q_ASSERT(parent);
+
+        QAccessibleInterface *acc = 0;
+        int childIndex = varID.lVal;
+        if (childIndex == 0) {
+            // Yes, some AT clients (Active Accessibility Object Inspector)
+            // actually ask for the same object. As a consequence, we need to clone ourselves:
+            acc = parent;
+        } else if (childIndex < 0) {
+            acc = QAccessible::accessibleInterface((QAccessible::Id)childIndex);
+        } else {
+            acc = parent->child(childIndex - 1);
+        }
+        return acc;
     }
 
 private:

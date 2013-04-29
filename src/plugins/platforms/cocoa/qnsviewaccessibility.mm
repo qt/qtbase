@@ -106,9 +106,27 @@
 
     // Hit a child, forward to child accessible interface.
     QAccessible::Id childAxid = QAccessible::uniqueId(childInterface);
+    // FIXME: parent could be wrong
     QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement createElementWithId:childAxid parent:self ];
     [accessibleElement autorelease];
     return [accessibleElement accessibilityHitTest:point];
+}
+
+- (id)accessibilityFocusedUIElement {
+    if (!m_window->accessibleRoot())
+        return [super accessibilityFocusedUIElement];
+
+    QAccessibleInterface *childInterface = m_window->accessibleRoot()->focusChild();
+    if (childInterface) {
+        QAccessible::Id childAxid = QAccessible::uniqueId(childInterface);
+        // FIXME: parent could be wrong
+        QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement createElementWithId:childAxid parent:self];
+        [accessibleElement autorelease];
+        return accessibleElement;
+    }
+
+    // should not happen
+    return nil;
 }
 
 @end

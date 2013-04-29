@@ -151,7 +151,7 @@ struct QLocaleId
     QLocaleId withLikelySubtagsAdded() const;
     QLocaleId withLikelySubtagsRemoved() const;
 
-    QString bcp47Name() const;
+    QByteArray name(char separator = '-') const;
 
     ushort language_id, script_id, country_id;
 };
@@ -212,8 +212,6 @@ public:
         : m_index(index), m_numberOptions(numberOptions)
     {
         m_data = dataPointerForIndex(index);
-        m_localeID = bcp47Name().toLatin1();
-        m_localeID.replace('-','_');
     }
 
     ~QLocalePrivate()
@@ -232,7 +230,7 @@ public:
     quint16 languageId() const { return m_data->m_language_id; }
     quint16 countryId() const { return m_data->m_country_id; }
 
-    QString bcp47Name() const;
+    QByteArray bcp47Name(char separator = '-') const;
 
     // ### QByteArray::fromRawData would be more optimal
     inline QString languageCode() const { return QLocalePrivate::languageToCode(QLocale::Language(m_data->m_language_id)); }
@@ -334,11 +332,9 @@ public:
     QString dateTimeToString(const QString &format, const QDate *date, const QTime *time,
                              const QLocale *q) const;
 
-    friend class QLocale;
     quint16 m_index;
     quint16 m_numberOptions;
     const QLocaleData *m_data;
-    QByteArray m_localeID;
 };
 
 inline char QLocalePrivate::digitToCLocale(QChar in) const

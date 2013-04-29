@@ -46,12 +46,14 @@
 #include <QtGui/QIcon>
 #include <QtGui/QRegion>
 
+#include "qxcbintegration.h"
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
 #include "qxcbdrag.h"
 #include "qxcbkeyboard.h"
 #include "qxcbwmsupport.h"
 #include "qxcbimage.h"
+#include "qxcbnativeinterface.h"
 
 #include <qpa/qplatformintegration.h>
 
@@ -170,7 +172,9 @@ static inline QImage::Format imageFormatForDepth(int depth)
         case 32: return QImage::Format_ARGB32_Premultiplied;
         case 24: return QImage::Format_RGB32;
         case 16: return QImage::Format_RGB16;
-        default: return QImage::Format_Invalid;
+        default:
+                 qWarning("Unsupported screen depth: %d", depth);
+                 return QImage::Format_Invalid;
     }
 }
 
@@ -221,7 +225,7 @@ void QXcbWindow::create()
         m_window = m_screen->root();
         m_depth = m_screen->screen()->root_depth;
         m_imageFormat = imageFormatForDepth(m_depth);
-        connection()->addWindow(m_window, this);
+        connection()->addWindowEventListener(m_window, this);
         return;
     }
 
@@ -344,7 +348,7 @@ void QXcbWindow::create()
                                      0));                             // value list
     }
 
-    connection()->addWindow(m_window, this);
+    connection()->addWindowEventListener(m_window, this);
 
     Q_XCB_CALL(xcb_change_window_attributes(xcb_connection(), m_window, mask, values));
 
@@ -478,7 +482,7 @@ void QXcbWindow::destroy()
             xcb_destroy_window(xcb_connection(), m_netWmUserTimeWindow);
             m_netWmUserTimeWindow = XCB_NONE;
         }
-        connection()->removeWindow(m_window);
+        connection()->removeWindowEventListener(m_window);
         Q_XCB_CALL(xcb_destroy_window(xcb_connection(), m_window));
         m_window = 0;
     }
@@ -651,6 +655,9 @@ void QXcbWindow::show()
         updateNetWmUserTime(connection()->time());
 
     Q_XCB_CALL(xcb_map_window(xcb_connection(), m_window));
+
+    m_screen->windowShown(this);
+
     xcb_flush(xcb_connection());
 
     connection()->sync();
@@ -1441,6 +1448,14 @@ private:
     bool m_pending;
 };
 
+bool QXcbWindow::handleGenericEvent(xcb_generic_event_t *event, long *result)
+{
+    return QWindowSystemInterface::handleNativeEvent(window(),
+                                                     connection()->nativeInterface()->genericEventFilterType(),
+                                                     event,
+                                                     result);
+}
+
 void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)
 {
     QRect rect(event->x, event->y, event->width, event->height);
@@ -1486,6 +1501,11 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
             connection()->setTime(event->data.data32[1]);
             m_syncValue.lo = event->data.data32[2];
             m_syncValue.hi = event->data.data32[3];
+#ifndef QT_NO_WHATSTHIS
+        } else if (event->data.data32[0] == atom(QXcbAtom::_NET_WM_CONTEXT_HELP)) {
+            QEvent *e = new QEvent(QEvent::EnterWhatsThisMode);
+            QGuiApplication::postEvent(QGuiApplication::instance(), e);
+#endif
         } else {
             qWarning() << "QXcbWindow: Unhandled WM_PROTOCOLS message:" << connection()->atomName(event->data.data32[0]);
         }
@@ -1670,6 +1690,8 @@ void QXcbWindow::handleMotionNotifyEvent(const xcb_motion_notify_event_t *event)
 
     handleMouseEvent(event->time, local, global, modifiers);
 }
+
+QXcbWindow *QXcbWindow::toWindow() { return this; }
 
 void QXcbWindow::handleMouseEvent(xcb_timestamp_t time, const QPoint &local, const QPoint &global, Qt::KeyboardModifiers modifiers)
 {

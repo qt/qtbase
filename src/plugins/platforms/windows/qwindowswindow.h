@@ -133,7 +133,8 @@ public:
         WithinSetStyle = 0x800,
         WithinDestroy = 0x1000,
         TouchRegistered = 0x2000,
-        AlertState = 0x4000
+        AlertState = 0x4000,
+        Exposed = 0x08000
     };
 
     struct WindowData
@@ -161,7 +162,7 @@ public:
 
     virtual void setVisible(bool visible);
     bool isVisible() const;
-    virtual bool isExposed() const { return m_windowState != Qt::WindowMinimized && isVisible(); }
+    virtual bool isExposed() const { return testFlag(Exposed); }
     virtual bool isActive() const;
     virtual bool isEmbedded(const QPlatformWindow *parentWindow) const;
     virtual QPoint mapToGlobal(const QPoint &pos) const;
@@ -217,7 +218,6 @@ public:
 
     void handleMoved();
     void handleResized(int wParam);
-    void handleShown();
     void handleHidden();
 
     static inline HWND handleOf(const QWindow *w);
@@ -272,12 +272,14 @@ private:
     inline bool isFullScreen_sys() const;
     inline void setWindowState_sys(Qt::WindowState newState);
     inline void setParent_sys(const QPlatformWindow *parent) const;
+    inline void updateTransientParent() const;
     void destroyWindow();
     void registerDropSite();
     void unregisterDropSite();
     void handleGeometryChange();
     void handleWindowStateChange(Qt::WindowState state);
     inline void destroyIcon();
+    void fireExpose(const QRegion &region, bool force=false);
 
     mutable WindowData m_data;
     mutable unsigned m_flags;

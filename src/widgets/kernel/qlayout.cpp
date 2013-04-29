@@ -806,6 +806,16 @@ void QLayout::addChildLayout(QLayout *l)
 
 }
 
+/*!
+   \internal
+ */
+bool QLayout::adoptLayout(QLayout *layout)
+{
+    const bool ok = !layout->parent();
+    addChildLayout(layout);
+    return ok;
+}
+
 #ifdef QT_DEBUG
 static bool layoutDebug()
 {

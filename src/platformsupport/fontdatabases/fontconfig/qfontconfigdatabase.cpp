@@ -47,11 +47,17 @@
 
 #include <QtCore/QElapsedTimer>
 
+#include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformscreen.h>
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformservices.h>
 
 #include <QtGui/private/qfontengine_ft_p.h>
 #include <QtGui/private/qfontengine_p.h>
 #include <QtGui/private/qfontengine_qpa_p.h>
+#include <QtGui/private/qguiapplication_p.h>
+
+#include <QtGui/qguiapplication.h>
 
 #include <ft2build.h>
 #include FT_TRUETYPE_TABLES_H
@@ -640,6 +646,19 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QChar::Script sc
                 break;
             }
         }
+
+        if (f.hintingPreference == QFont::PreferDefaultHinting) {
+            QByteArray desktopEnvironment = QGuiApplicationPrivate::platformIntegration()->services()->desktopEnvironment();
+            if (desktopEnvironment == "GNOME" || desktopEnvironment == "UNITY") {
+                void *hintStyleResource =
+                        QGuiApplication::platformNativeInterface()->nativeResourceForScreen("hintstyle",
+                                                                                            QGuiApplication::primaryScreen());
+                int hintStyle = int(reinterpret_cast<qintptr>(hintStyleResource));
+                if (hintStyle > 0)
+                    default_hint_style = QFontEngine::HintStyle(hintStyle - 1);
+            }
+        }
+
         engine->setDefaultHintStyle(default_hint_style);
 
         if (antialias) {

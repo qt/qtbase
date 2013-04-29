@@ -79,7 +79,8 @@ void tst_QSqlDriver::recreateTestTables(QSqlDatabase db)
     QSqlQuery q(db);
     const QString relTEST1(qTableName("relTEST1", __FILE__, db));
 
-    if(tst_Databases::isPostgreSQL(db))
+    QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    if (dbType == QSqlDriverPrivate::PostgreSQL)
         QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
     tst_Databases::safeDropTable( db, relTEST1 );
@@ -129,23 +130,24 @@ void tst_QSqlDriver::record()
     QSqlRecord rec = db.driver()->record(tablename);
     QCOMPARE(rec.count(), 4);
 
+    QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
     // QTBUG-1363: QSqlField::length() always return -1 when using QODBC3 driver and QSqlDatabase::record()
-    if (db.driverName().startsWith("QODBC") && tst_Databases::isSqlServer(db))
+    if (dbType == QSqlDriverPrivate::MSSqlServer && db.driverName().startsWith("QODBC"))
         QCOMPARE(rec.field(1).length(), 20);
 
-    if (db.driverName().startsWith("QIBASE")|| db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2"))
+    if (dbType == QSqlDriverPrivate::Interbase || dbType == QSqlDriverPrivate::Oracle || dbType == QSqlDriverPrivate::DB2)
         for(int i = 0; i < fields.count(); ++i)
             fields[i] = fields[i].toUpper();
 
     for (int i = 0; i < fields.count(); ++i)
         QCOMPARE(rec.fieldName(i), fields[i]);
 
-    if (db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2"))
+    if (dbType == QSqlDriverPrivate::Interbase || dbType == QSqlDriverPrivate::Oracle || dbType == QSqlDriverPrivate::DB2)
         tablename = tablename.toUpper();
-    else if (db.driverName().startsWith("QPSQL"))
+    else if (dbType == QSqlDriverPrivate::PostgreSQL)
         tablename = tablename.toLower();
 
-    if(!db.driverName().startsWith("QODBC") && !db.databaseName().contains("PostgreSql")) {
+    if (dbType != QSqlDriverPrivate::PostgreSQL && !db.driverName().startsWith("QODBC")) {
         //check we can get records using a properly quoted table name
         rec = db.driver()->record(db.driver()->escapeIdentifier(tablename,QSqlDriver::TableName));
         QCOMPARE(rec.count(), 4);
@@ -154,18 +156,15 @@ void tst_QSqlDriver::record()
     for (int i = 0; i < fields.count(); ++i)
         QCOMPARE(rec.fieldName(i), fields[i]);
 
-    if( db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2"))
+    if (dbType == QSqlDriverPrivate::Interbase || dbType == QSqlDriverPrivate::Oracle || dbType == QSqlDriverPrivate::DB2)
         tablename = tablename.toLower();
-    else if (db.driverName().startsWith("QPSQL"))
+    else if (dbType == QSqlDriverPrivate::PostgreSQL)
         tablename = tablename.toUpper();
 
     //check that we can't get records using incorrect tablename casing that's been quoted
     rec = db.driver()->record(db.driver()->escapeIdentifier(tablename,QSqlDriver::TableName));
-    if (tst_Databases::isMySQL(db)
-      || db.driverName().startsWith("QSQLITE")
-      || db.driverName().startsWith("QTDS")
-      || tst_Databases::isSqlServer(db)
-      || tst_Databases::isMSAccess(db))
+    if (dbType == QSqlDriverPrivate::MySqlServer || dbType == QSqlDriverPrivate::SQLite || dbType == QSqlDriverPrivate::Sybase
+      || dbType == QSqlDriverPrivate::MSSqlServer || tst_Databases::isMSAccess(db))
         QCOMPARE(rec.count(), 4); //mysql, sqlite and tds will match
     else
         QCOMPARE(rec.count(), 0);
@@ -183,23 +182,24 @@ void tst_QSqlDriver::primaryIndex()
     QSqlIndex index = db.driver()->primaryIndex(tablename);
     QCOMPARE(index.count(), 1);
 
-    if( db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2"))
+    QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    if (dbType == QSqlDriverPrivate::Interbase || dbType == QSqlDriverPrivate::Oracle || dbType == QSqlDriverPrivate::DB2)
         QCOMPARE(index.fieldName(0), QString::fromLatin1("ID"));
     else
         QCOMPARE(index.fieldName(0), QString::fromLatin1("id"));
 
 
     //check that we can get the primary index using a quoted tablename
-    if( db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2"))
+    if (dbType == QSqlDriverPrivate::Interbase || dbType == QSqlDriverPrivate::Oracle || dbType == QSqlDriverPrivate::DB2)
         tablename = tablename.toUpper();
-    else if (db.driverName().startsWith("QPSQL"))
+    else if (dbType == QSqlDriverPrivate::PostgreSQL)
         tablename = tablename.toLower();
 
-    if(!db.driverName().startsWith("QODBC") && !db.databaseName().contains("PostgreSql")) {
+    if (dbType != QSqlDriverPrivate::PostgreSQL && !db.driverName().startsWith("QODBC")) {
         index = db.driver()->primaryIndex(db.driver()->escapeIdentifier(tablename, QSqlDriver::TableName));
         QCOMPARE(index.count(), 1);
     }
-    if( db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2"))
+    if (dbType == QSqlDriverPrivate::Interbase || dbType == QSqlDriverPrivate::Oracle || dbType == QSqlDriverPrivate::DB2)
         QCOMPARE(index.fieldName(0), QString::fromLatin1("ID"));
     else
         QCOMPARE(index.fieldName(0), QString::fromLatin1("id"));
@@ -207,17 +207,14 @@ void tst_QSqlDriver::primaryIndex()
 
 
     //check that we can not get the primary index using a quoted but incorrect table name casing
-    if( db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2"))
+    if (dbType == QSqlDriverPrivate::Interbase || dbType == QSqlDriverPrivate::Oracle || dbType == QSqlDriverPrivate::DB2)
         tablename = tablename.toLower();
-    else if (db.driverName().startsWith("QPSQL"))
+    else if (dbType == QSqlDriverPrivate::PostgreSQL)
         tablename = tablename.toUpper();
 
     index = db.driver()->primaryIndex(db.driver()->escapeIdentifier(tablename, QSqlDriver::TableName));
-    if (tst_Databases::isMySQL(db)
-      || db.driverName().startsWith("QSQLITE")
-      || db.driverName().startsWith("QTDS")
-      || tst_Databases::isSqlServer(db)
-      || tst_Databases::isMSAccess(db))
+    if (dbType == QSqlDriverPrivate::MySqlServer || dbType == QSqlDriverPrivate::SQLite || dbType == QSqlDriverPrivate::Sybase
+      || dbType == QSqlDriverPrivate::MSSqlServer || tst_Databases::isMSAccess(db))
         QCOMPARE(index.count(), 1); //mysql will always find the table name regardless of casing
     else
         QCOMPARE(index.count(), 0);

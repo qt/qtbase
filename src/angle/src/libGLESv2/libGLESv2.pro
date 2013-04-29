@@ -87,7 +87,7 @@ SOURCES += \
     $$ANGLE_DIR/src/libGLESv2/renderer/VertexBuffer.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/VertexDataManager.cpp
 
-sse2:SOURCES += $$ANGLE_DIR/src/libGLESv2/renderer/ImageSSE2.cpp
+SSE2_SOURCES += $$ANGLE_DIR/src/libGLESv2/renderer/ImageSSE2.cpp
 
 angle_d3d11 {
     HEADERS += \

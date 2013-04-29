@@ -201,6 +201,7 @@ private slots:
     void taskQTBUG_7774_RtoLVisualRegionForSelection();
     void taskQTBUG_8777_scrollToSpans();
     void taskQTBUG_10169_sizeHintForRow();
+    void taskQTBUG_30653_doItemsLayout();
 
     void mouseWheel_data();
     void mouseWheel();
@@ -4122,6 +4123,39 @@ void tst_QTableView::viewOptions()
     QtTestTableView view;
     QStyleOptionViewItem options = view.viewOptions();
     QVERIFY(options.showDecorationSelected);
+}
+
+void tst_QTableView::taskQTBUG_30653_doItemsLayout()
+{
+    QWidget topLevel;
+    QtTestTableView view(&topLevel);
+
+    QtTestTableModel model(5, 5);
+    view.setModel(&model);
+
+    QtTestItemDelegate delegate;
+    delegate.hint = QSize(50, 50);
+    view.setItemDelegate(&delegate);
+
+    view.resizeRowsToContents();
+    view.resizeColumnsToContents();
+
+    // show two and half rows/cols
+    int extraWidth = view.verticalHeader()->sizeHint().width() + view.verticalScrollBar()->sizeHint().width();
+    int extraHeight = view.horizontalHeader()->sizeHint().height() + view.horizontalScrollBar()->sizeHint().height();
+    view.resize(125 + extraWidth, 125 + extraHeight);
+
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+
+    // the offset after scrollToBottom() and doItemsLayout() should not differ
+    // as the view content should stay aligned to the last section
+    view.scrollToBottom();
+    int scrollToBottomOffset = view.verticalHeader()->offset();
+    view.doItemsLayout();
+    int doItemsLayoutOffset = view.verticalHeader()->offset();
+
+    QCOMPARE(scrollToBottomOffset, doItemsLayoutOffset);
 }
 
 QTEST_MAIN(tst_QTableView)

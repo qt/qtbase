@@ -41,6 +41,8 @@ OBJECTIVE_SOURCES += main.mm \
     qcocoaintrospection.mm \
     qcocoakeymapper.mm \
 
+SOURCES += messages.cpp
+
 HEADERS += qcocoaintegration.h \
     qcocoatheme.h \
     qcocoabackingstore.h \
@@ -75,6 +77,7 @@ HEADERS += qcocoaintegration.h \
     qcocoasystemtrayicon.h \
     qcocoaintrospection.h \
     qcocoakeymapper.h \
+    messages.h
 
 RESOURCES += qcocoaresources.qrc
 

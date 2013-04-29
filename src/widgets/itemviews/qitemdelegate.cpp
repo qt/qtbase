@@ -523,7 +523,10 @@ QWidget *QItemDelegate::createEditor(QWidget *parent,
     const QItemEditorFactory *factory = d->f;
     if (factory == 0)
         factory = QItemEditorFactory::defaultFactory();
-    return factory->createEditor(index.data(Qt::EditRole).userType(), parent);
+    QWidget *w = factory->createEditor(index.data(Qt::EditRole).userType(), parent);
+    if (w)
+        w->setFocusPolicy(Qt::WheelFocus);
+    return w;
 }
 
 /*!

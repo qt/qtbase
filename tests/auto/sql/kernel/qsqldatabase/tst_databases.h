@@ -108,14 +108,21 @@ inline QString fixupTableName(const QString &tableName, QSqlDatabase db)
 
 inline static QString qTableName(const QString& prefix, const char *sourceFileName, QSqlDatabase db)
 {
-    return fixupTableName(QString(QLatin1String("dbtst") + QString::number(qHash(QLatin1String(sourceFileName) +
+    QString tableStr = QLatin1String("dbtst");
+    if (db.driverName().toLower().contains("ODBC"))
+        tableStr += QLatin1String("_odbc");
+    return fixupTableName(QString(QLatin1String("dbtst") + db.driverName() +
+                          QString::number(qHash(QLatin1String(sourceFileName) +
                           "_" + qGetHostName().replace( "-", "_" )), 16) + "_" + prefix), db);
 }
 
 inline static QString qTableName(const QString& prefix, QSqlDatabase db)
 {
-    return fixupTableName(QString(db.driver()->escapeIdentifier(prefix + "_" + qGetHostName(), QSqlDriver::TableName)),
-                          db);
+    QString tableStr;
+    if (db.driverName().toLower().contains("ODBC"))
+        tableStr += QLatin1String("_odbc");
+    return fixupTableName(QString(db.driver()->escapeIdentifier(prefix + tableStr + "_" +
+                          qGetHostName(), QSqlDriver::TableName)),db);
 }
 
 inline static bool testWhiteSpaceNames( const QString &name )
@@ -240,6 +247,7 @@ public:
 
     void addDbs()
     {
+        //addDb("QOCI", "localhost", "system", "penandy");
 //         addDb( "QOCI8", "//horsehead.nokia.troll.no:1521/pony.troll.no", "scott", "tiger" ); // Oracle 9i on horsehead
 //         addDb( "QOCI8", "//horsehead.nokia.troll.no:1521/ustest.troll.no", "scott", "tiger", "" ); // Oracle 9i on horsehead
 //         addDb( "QOCI8", "//iceblink.nokia.troll.no:1521/ice.troll.no", "scott", "tiger", "" ); // Oracle 8 on iceblink (not currently working)
@@ -372,7 +380,7 @@ public:
         bool wasDropped;
         QSqlQuery q( db );
         QStringList dbtables=db.tables();
-
+        QSqlDriverPrivate::DBMSType dbType = getDatabaseType(db);
         foreach(const QString &tableName, tableNames)
         {
             wasDropped = true;
@@ -384,7 +392,7 @@ public:
                 foreach(const QString &table2, dbtables.filter(table, Qt::CaseInsensitive)) {
                     if(table2.compare(table.section('.', -1, -1), Qt::CaseInsensitive) == 0) {
                         table=db.driver()->escapeIdentifier(table2, QSqlDriver::TableName);
-                        if(isPostgreSQL(db))
+                        if (dbType == QSqlDriverPrivate::PostgreSQL)
                             wasDropped = q.exec( "drop table " + table + " cascade");
                         else
                             wasDropped = q.exec( "drop table " + table);
@@ -449,25 +457,26 @@ public:
     // blobSize is only used if the db doesn't have a generic blob type
     static QString blobTypeName( QSqlDatabase db, int blobSize = 10000 )
     {
-        if ( db.driverName().startsWith( "QMYSQL" ) )
+        const QSqlDriverPrivate::DBMSType dbType = getDatabaseType(db);
+        if (dbType == QSqlDriverPrivate::MySqlServer)
             return "longblob";
 
-        if ( db.driverName().startsWith( "QPSQL" ) )
+        if (dbType == QSqlDriverPrivate::PostgreSQL)
             return "bytea";
 
-        if ( db.driverName().startsWith( "QTDS" )
-                || isSqlServer( db )
+        if (dbType == QSqlDriverPrivate::Sybase
+                || dbType == QSqlDriverPrivate::MSSqlServer
                 || isMSAccess( db ) )
             return "image";
 
-        if ( db.driverName().startsWith( "QDB2" ) )
+        if (dbType == QSqlDriverPrivate::DB2)
             return QString( "blob(%1)" ).arg( blobSize );
 
-        if ( db.driverName().startsWith( "QIBASE" ) )
+        if (dbType == QSqlDriverPrivate::Interbase)
             return QString( "blob sub_type 0 segment size 4096" );
 
-        if ( db.driverName().startsWith( "QOCI" )
-                || db.driverName().startsWith( "QSQLITE" ) )
+        if (dbType == QSqlDriverPrivate::Oracle
+                || dbType == QSqlDriverPrivate::SQLite)
             return "blob";
 
         qDebug() <<  "tst_Databases::blobTypeName: Don't know the blob type for" << dbToString( db );
@@ -477,22 +486,24 @@ public:
 
     static QString dateTimeTypeName(QSqlDatabase db)
     {
-        if (db.driverName().startsWith("QPSQL"))
+        const QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+        if (dbType == QSqlDriverPrivate::PostgreSQL)
             return QLatin1String("timestamp");
-        if (db.driverName().startsWith("QOCI") && getOraVersion(db) >= 9)
+        if (dbType == QSqlDriverPrivate::Oracle && getOraVersion(db) >= 9)
             return QLatin1String("timestamp(0)");
         return QLatin1String("datetime");
     }
 
     static QString autoFieldName( QSqlDatabase db )
     {
-        if ( db.driverName().startsWith( "QMYSQL" ) )
+        const QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+        if (dbType == QSqlDriverPrivate::MySqlServer)
             return "AUTO_INCREMENT";
-        if ( db.driverName().startsWith( "QTDS" ) )
+        if (dbType == QSqlDriverPrivate::Sybase || dbType == QSqlDriverPrivate::MSSqlServer)
             return "IDENTITY";
-/*        if ( db.driverName().startsWith( "QPSQL" ) )
+/*        if (dbType == QSqlDriverPrivate::PostgreSQL)
             return "SERIAL";*/
-//        if ( db.driverName().startsWith( "QDB2" ) )
+//        if (dbType == QSqlDriverPrivate::DB2)
 //            return "GENERATED BY DEFAULT AS IDENTITY";
 
         return QString();
@@ -522,32 +533,15 @@ public:
         return result.toLocal8Bit();
     }
 
-    static bool isSqlServer( QSqlDatabase db )
+    static QSqlDriverPrivate::DBMSType getDatabaseType(QSqlDatabase db)
     {
         QSqlDriverPrivate *d = static_cast<QSqlDriverPrivate *>(QObjectPrivate::get(db.driver()));
-        return d->dbmsType == QSqlDriverPrivate::MSSqlServer;
+        return d->dbmsType;
     }
 
     static bool isMSAccess( QSqlDatabase db )
     {
         return db.databaseName().contains( "Access Driver", Qt::CaseInsensitive );
-    }
-
-    static bool isPostgreSQL( QSqlDatabase db )
-    {
-        QSqlDriverPrivate *d = static_cast<QSqlDriverPrivate *>(QObjectPrivate::get(db.driver()));
-        return d->dbmsType == QSqlDriverPrivate::PostgreSQL;
-    }
-
-    static bool isMySQL( QSqlDatabase db )
-    {
-        QSqlDriverPrivate *d = static_cast<QSqlDriverPrivate *>(QObjectPrivate::get(db.driver()));
-        return d->dbmsType == QSqlDriverPrivate::MySqlServer;
-    }
-    static bool isDB2( QSqlDatabase db )
-    {
-        QSqlDriverPrivate *d = static_cast<QSqlDriverPrivate *>(QObjectPrivate::get(db.driver()));
-        return d->dbmsType == QSqlDriverPrivate::DB2;
     }
 
     // -1 on fail, else Oracle version

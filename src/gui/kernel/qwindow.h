@@ -115,6 +115,7 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_PROPERTY(int maximumWidth READ maximumWidth WRITE setMaximumWidth NOTIFY maximumWidthChanged REVISION 1)
     Q_PROPERTY(int maximumHeight READ maximumHeight WRITE setMaximumHeight NOTIFY maximumHeightChanged REVISION 1)
     Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged)
+    Q_PROPERTY(bool active READ isActive NOTIFY activeChanged REVISION 1)
     Q_PROPERTY(Visibility visibility READ visibility WRITE setVisibility NOTIFY visibilityChanged REVISION 1)
     Q_PROPERTY(Qt::ScreenOrientation contentOrientation READ contentOrientation WRITE reportContentOrientationChange NOTIFY contentOrientationChanged REVISION 1)
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged REVISION 1)
@@ -169,8 +170,6 @@ public:
 
     void setMask(const QRegion &region);
     QRegion mask() const;
-
-    void requestActivate();
 
     bool isActive() const;
 
@@ -264,6 +263,8 @@ public:
     static QWindow *fromWinId(WId id);
 
 public Q_SLOTS:
+    Q_REVISION(1) void requestActivate();
+
     void setVisible(bool visible);
 
     void show();
@@ -310,6 +311,7 @@ Q_SIGNALS:
 
     void visibleChanged(bool arg);
     Q_REVISION(1) void visibilityChanged(QWindow::Visibility visibility);
+    Q_REVISION(1) void activeChanged();
     Q_REVISION(1) void contentOrientationChanged(Qt::ScreenOrientation orientation);
 
     void focusObjectChanged(QObject *object);

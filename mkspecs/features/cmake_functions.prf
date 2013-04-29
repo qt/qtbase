@@ -40,3 +40,26 @@ defineReplace(cmakeTargetPaths) {
     }
     return ($$join(out, " "))
 }
+
+defineReplace(cmakePortablePaths) {
+    variable = $$1
+    out =
+    for(v, variable) {
+        out += ${CMAKE_FIND_ROOT_PATH}$$cmakeTargetPath($$v)
+    }
+    return ($$join(out, ";"))
+}
+
+defineReplace(cmakeProcessLibs) {
+    variable = $$1
+    out =
+    for(v, variable) {
+        if(!equals(v, -framework)) {
+            v ~= s,^-l,,
+            v ~= s,^-lib,,
+            v ~= s,.lib$,,
+            out += $$v
+        }
+    }
+    return ($$join(out, ";"))
+}

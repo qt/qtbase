@@ -1,7 +1,7 @@
 include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 # Name of the project which must match the outputdir. Determines the .index file
-project = qtopengl
+project = QtOpenGL
 
 # Directories in which to search for files to document and images.
 # By default set to the root directory of the project for sources
@@ -32,23 +32,23 @@ examplesinstallpath     = opengl
 # Defines the name of the project. You cannot use operators (+, =, -) in
 # the name. Properties for this project are set using a qhp.<projectname>.property
 # format.
-qhp.projects = qtopengl
+qhp.projects = QtOpenGL
 
 # Sets the name of the output qhp file.
-qhp.qtopengl.file = qtopengl.qhp
+qhp.QtOpenGL.file = qtopengl.qhp
 
 # Namespace for the output file. This namespace is used to distinguish between
 # different documentation files in Creator/Assistant.
-qhp.qtopengl.namespace = org.qt-project.qtopengl.$QT_VERSION_TAG
+qhp.QtOpenGL.namespace = org.qt-project.qtopengl.$QT_VERSION_TAG
 
 # Title for the package, will be the main title for the package in
 # Assistant/Creator.
-qhp.qtopengl.indexTitle = Qt OpenGL
+qhp.QtOpenGL.indexTitle = Qt OpenGL
 
 # Only update the name of the project for the next variables.
-qhp.qtopengl.virtualFolder  = qtopengl
-qhp.qtopengl.subprojects = classes
-qhp.qtopengl.subprojects.classes.title = C++ Classes
-qhp.qtopengl.subprojects.classes.indexTitle = Qt OpenGL C++ Classes
-qhp.qtopengl.subprojects.classes.selectors = class fake:headerfile
-qhp.qtopengl.subprojects.classes.sortPages = true
+qhp.QtOpenGL.virtualFolder  = qtopengl
+qhp.QtOpenGL.subprojects = classes
+qhp.QtOpenGL.subprojects.classes.title = C++ Classes
+qhp.QtOpenGL.subprojects.classes.indexTitle = Qt OpenGL C++ Classes
+qhp.QtOpenGL.subprojects.classes.selectors = class fake:headerfile
+qhp.QtOpenGL.subprojects.classes.sortPages = true

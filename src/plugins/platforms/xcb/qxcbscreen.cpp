@@ -67,6 +67,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
     , m_number(number)
     , m_refreshRate(60)
     , m_forcedDpi(-1)
+    , m_hintStyle(QFontEngine::HintStyle(-1))
 {
     if (connection->hasXRandr())
         xcb_randr_select_input(xcb_connection(), screen()->root, true);
@@ -230,6 +231,40 @@ QWindow *QXcbScreen::topLevelAt(const QPoint &p) const
     } while (parent != child);
 
     return 0;
+}
+
+void QXcbScreen::windowShown(QXcbWindow *window)
+{
+    // Freedesktop.org Startup Notification
+    if (!connection()->startupId().isEmpty() && window->window()->isTopLevel()) {
+        sendStartupMessage(QByteArrayLiteral("remove: ID=") + connection()->startupId());
+        connection()->clearStartupId();
+    }
+}
+
+void QXcbScreen::sendStartupMessage(const QByteArray &message) const
+{
+    xcb_window_t rootWindow = root();
+
+    xcb_client_message_event_t ev;
+    ev.response_type = XCB_CLIENT_MESSAGE;
+    ev.format = 8;
+    ev.type = connection()->atom(QXcbAtom::_NET_STARTUP_INFO_BEGIN);
+    ev.window = rootWindow;
+    int sent = 0;
+    int length = message.length() + 1; // include NUL byte
+    const char *data = message.constData();
+    do {
+        if (sent == 20)
+            ev.type = connection()->atom(QXcbAtom::_NET_STARTUP_INFO);
+
+        const int start = sent;
+        const int numBytes = qMin(length - start, 20);
+        memcpy(ev.data.data8, data + start, numBytes);
+        xcb_send_event(connection()->xcb_connection(), false, rootWindow, XCB_EVENT_MASK_PROPERTY_CHANGE, (const char *) &ev);
+
+        sent += numBytes;
+    } while (sent < length);
 }
 
 const xcb_visualtype_t *QXcbScreen::visualForId(xcb_visualid_t visualid) const
@@ -481,6 +516,35 @@ QPixmap QXcbScreen::grabWindow(WId window, int x, int y, int width, int height) 
     return result;
 }
 
+bool QXcbScreen::xResource(const QByteArray &identifier,
+                           const QByteArray &expectedIdentifier,
+                           int *value)
+{
+    Q_ASSERT(value != 0);
+    if (identifier.startsWith(expectedIdentifier)) {
+        QByteArray stringValue = identifier.mid(expectedIdentifier.size());
+
+        bool ok;
+        *value = stringValue.toInt(&ok);
+        if (!ok) {
+            if (stringValue == "hintfull")
+                *value = QFontEngine::HintFull;
+            else if (stringValue == "hintnone")
+                *value = QFontEngine::HintNone;
+            else if (stringValue == "hintmedium")
+                *value = QFontEngine::HintMedium;
+            else if (stringValue == "hintslight")
+                *value = QFontEngine::HintLight;
+
+            return *value != 0;
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
 void QXcbScreen::readXResources()
 {
     int offset = 0;
@@ -508,13 +572,11 @@ void QXcbScreen::readXResources()
     QList<QByteArray> split = resources.split('\n');
     for (int i = 0; i < split.size(); ++i) {
         const QByteArray &r = split.at(i);
-        if (r.startsWith("Xft.dpi:\t")) {
-            bool ok;
-            int dpi = r.mid(sizeof("Xft.dpi:")).toInt(&ok);
-            if (ok)
-                m_forcedDpi = dpi;
-            break;
-        }
+        int value;
+        if (xResource(r, "Xft.dpi:\t", &value))
+            m_forcedDpi = value;
+        else if (xResource(r, "Xft.hintstyle:\t", &value))
+            m_hintStyle = QFontEngine::HintStyle(value);
     }
 }
 

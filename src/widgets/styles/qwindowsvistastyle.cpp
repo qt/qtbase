@@ -314,7 +314,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
         return;
     }
 
-    if (d->transitionsEnabled() && canAnimate(option)) {
+    if ((option->state & State_Enabled) && d->transitionsEnabled() && canAnimate(option)) {
         {
             QRect oldRect;
             QRect newRect;

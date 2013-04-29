@@ -1640,6 +1640,10 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
     }
 
     emit qApp->focusWindowChanged(newFocus);
+    if (previous)
+        emit previous->activeChanged();
+    if (newFocus)
+        emit newFocus->activeChanged();
 }
 
 void QGuiApplicationPrivate::processWindowStateChangedEvent(QWindowSystemInterfacePrivate::WindowStateChangedEvent *wse)
@@ -1736,6 +1740,9 @@ void QGuiApplicationPrivate::processCloseEvent(QWindowSystemInterfacePrivate::Cl
 
     QCloseEvent event;
     QGuiApplication::sendSpontaneousEvent(e->window.data(), &event);
+    if (e->accepted) {
+        *(e->accepted) = !event.isAccepted();
+    }
 }
 
 void QGuiApplicationPrivate::processFileOpenEvent(QWindowSystemInterfacePrivate::FileOpenEvent *e)

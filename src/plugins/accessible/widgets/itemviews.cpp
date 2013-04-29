@@ -120,6 +120,8 @@ QHeaderView *QAccessibleTable::horizontalHeader() const
 #ifndef QT_NO_TREEVIEW
     } else if (const QTreeView *tv = qobject_cast<const QTreeView*>(view())) {
         header = tv->header();
+        if (header && header->isHidden())
+            header = 0;
 #endif
     }
     return header;
@@ -766,7 +768,6 @@ int QAccessibleTree::indexOfChild(const QAccessibleInterface *iface) const
         int column = cell->m_index.column();
 
         int index = row * view()->model()->columnCount() + column;
-        Q_ASSERT(index >= treeView->model()->columnCount());
         return index;
     } else if (iface->role() == QAccessible::ColumnHeader){
         const QAccessibleTableHeaderCell* cell = static_cast<const QAccessibleTableHeaderCell*>(iface);
