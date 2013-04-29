@@ -15,7 +15,6 @@ SOURCES += $$PWD/main.cpp \
 
 HEADERS += $$PWD/qcomposeplatforminputcontext.h \
            $$PWD/generator/qtablegenerator.h \
-           $$PWD/xkbcommon_workaround.h \
 
 # libxkbcommon
 contains(QT_CONFIG, xkbcommon-qt): {
@@ -23,6 +22,10 @@ contains(QT_CONFIG, xkbcommon-qt): {
 } else {
     LIBS += $$QMAKE_LIBS_XKBCOMMON
     QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_XKBCOMMON
+    equals(QMAKE_VERSION_XKBCOMMON, "0.2.0") {
+        DEFINES += XKBCOMMON_0_2_0
+        INCLUDEPATH += ../../../3rdparty/xkbcommon/xkbcommon/
+    }
 }
 
 OTHER_FILES += $$PWD/compose.json

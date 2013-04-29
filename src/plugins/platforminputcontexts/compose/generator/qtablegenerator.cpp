@@ -49,7 +49,10 @@
 #include <QtCore/QString>
 
 #include <xkbcommon/xkbcommon.h>
+
+#ifdef XKBCOMMON_0_2_0
 #include <xkbcommon_workaround.h>
+#endif
 
 //#define DEBUG_GENERATOR
 
@@ -258,6 +261,7 @@ ushort TableGenerator::keysymToUtf8(quint32 sym)
     int bytes;
     chars.resize(8);
 
+#ifdef XKBCOMMON_0_2_0
     if (needWorkaround(sym)) {
         quint32 codepoint;
         if (sym == XKB_KEY_KP_Space)
@@ -269,6 +273,9 @@ ushort TableGenerator::keysymToUtf8(quint32 sym)
     } else {
         bytes = xkb_keysym_to_utf8(sym, chars.data(), chars.size());
     }
+#else
+    bytes = xkb_keysym_to_utf8(sym, chars.data(), chars.size());
+#endif
 
     if (bytes == -1)
         qWarning("TableGenerator::keysymToUtf8 - buffer too small");

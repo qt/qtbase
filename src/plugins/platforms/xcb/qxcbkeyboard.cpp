@@ -53,6 +53,10 @@
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformcursor.h>
 
+#ifdef XKBCOMMON_0_2_0
+#include <xkbcommon_workaround.h>
+#endif
+
 #ifndef XK_ISO_Left_Tab
 #define XK_ISO_Left_Tab         0xFE20
 #endif
@@ -1311,7 +1315,23 @@ QString QXcbKeyboard::keysymToUnicode(xcb_keysym_t sym) const
     int bytes;
     chars.resize(7);
 
-    if ((bytes = xkb_keysym_to_utf8(sym, chars.data(), chars.size())) == -1)
+#ifdef XKBCOMMON_0_2_0
+    if (needWorkaround(sym)) {
+        quint32 codepoint;
+        if (sym == XKB_KEY_KP_Space)
+            codepoint = XKB_KEY_space & 0x7f;
+        else
+            codepoint = sym & 0x7f;
+
+        bytes = utf32_to_utf8(codepoint, chars.data());
+    } else {
+        bytes = xkb_keysym_to_utf8(sym, chars.data(), chars.size());
+    }
+#else
+    bytes = xkb_keysym_to_utf8(sym, chars.data(), chars.size());
+#endif
+
+    if (bytes == -1)
         qWarning("QXcbKeyboard::handleKeyEvent - buffer too small");
     chars.resize(bytes-1);
 
