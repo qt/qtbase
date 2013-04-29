@@ -74,7 +74,6 @@ void QIOSBackingStore::beginPaint(const QRegion &)
 
     m_context->makeCurrent(window());
 
-    static_cast<QOpenGLPaintDevice *>(paintDevice())->setSize(window()->size());
     QIOSWindow *iosWindow = static_cast<QIOSWindow *>(window()->handle());
     static_cast<QOpenGLPaintDevice *>(paintDevice())->setSize(window()->size() * iosWindow->devicePixelRatio());
 }
