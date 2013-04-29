@@ -205,16 +205,16 @@ public:
     quint16 m_weekend_end : 3;
 };
 
-class Q_CORE_EXPORT QLocalePrivate : public QSharedData
+class Q_CORE_EXPORT QLocalePrivate
 {
 public:
-    explicit QLocalePrivate(const QLocaleData *data, int numberOptions = 0)
-        : m_data(data), m_numberOptions(numberOptions)
+    static QLocalePrivate *create(const QLocaleData *data, int numberOptions = 0)
     {
-    }
-
-    ~QLocalePrivate()
-    {
+        QLocalePrivate *retval = new QLocalePrivate;
+        retval->m_data = data;
+        retval->ref.store(1);
+        retval->m_numberOptions = numberOptions;
+        return retval;
     }
 
     QChar decimal() const { return QChar(m_data->m_decimal); }
@@ -332,8 +332,17 @@ public:
                              const QLocale *q) const;
 
     const QLocaleData *m_data;
+    QBasicAtomicInt ref;
     quint16 m_numberOptions;
 };
+
+template <>
+inline QLocalePrivate *QSharedDataPointer<QLocalePrivate>::clone()
+{
+    // cannot use QLocalePrivate's copy constructor
+    // since it is deleted in C++11
+    return QLocalePrivate::create(d->m_data, d->m_numberOptions);
+}
 
 inline char QLocalePrivate::digitToCLocale(QChar in) const
 {
