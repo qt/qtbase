@@ -3712,6 +3712,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
             QStyleOptionComboBox comboCopy = *cb;
             comboCopy.direction = Qt::LeftToRight;
+            if ((opt->state & QStyle::State_Small) && QSysInfo::macVersion() > QSysInfo::MV_10_6)
+                comboCopy.rect.translate(0, w ? -1 : -2); // Supports Qt Quick Controls
             QCommonStyle::drawControl(CE_ComboBoxLabel, &comboCopy, p, w);
         }
         break;
