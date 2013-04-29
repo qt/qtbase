@@ -68,8 +68,8 @@
 #define QT_STRINGIFY(x) QT_STRINGIFY2(x)
 
 #include <QtCore/qsystemdetection.h>
-#include <QtCore/qcompilerdetection.h>
 #include <QtCore/qprocessordetection.h>
+#include <QtCore/qcompilerdetection.h>
 
 #if defined (__ELF__)
 #  define Q_OF_ELF

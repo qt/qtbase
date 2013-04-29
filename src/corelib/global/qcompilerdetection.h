@@ -877,4 +877,26 @@
         Q_UNUSED(valueOfExpression); /* the value may not be used if Q_ASSERT_X and Q_ASSUME_IMPL are noop */\
     } while (0)
 
+
+/*
+    Sanitize compiler feature availability
+*/
+#if !defined(Q_PROCESSOR_X86)
+#  undef QT_COMPILER_SUPPORTS_SSE2
+#  undef QT_COMPILER_SUPPORTS_SSE3
+#  undef QT_COMPILER_SUPPORTS_SSSE3
+#  undef QT_COMPILER_SUPPORTS_SSE4_1
+#  undef QT_COMPILER_SUPPORTS_SSE4_2
+#  undef QT_COMPILER_SUPPORTS_AVX
+#  undef QT_COMPILER_SUPPORTS_AVX2
+#endif
+#if !defined(Q_PROCESSOR_ARM)
+#  undef QT_COMPILER_SUPPORTS_IWMMXT
+#  undef QT_COMPILER_SUPPORTS_NEON
+#endif
+#if !defined(Q_PROCESSOR_MIPS)
+#  undef QT_COMPILER_SUPPORTS_MIPS_DSP
+#  undef QT_COMPILER_SUPPORTS_MIPS_DSPR2
+#endif
+
 #endif // QCOMPILERDETECTION_H
