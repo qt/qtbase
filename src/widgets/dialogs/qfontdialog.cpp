@@ -479,7 +479,22 @@ void QFontDialogPrivate::updateFamilies()
 
     enum match_t { MATCH_NONE = 0, MATCH_LAST_RESORT = 1, MATCH_APP = 2, MATCH_FAMILY = 3 };
 
-    QStringList familyNames = fdb.families(writingSystem);
+    const QFontDialog::FontDialogOptions scalableMask = (QFontDialog::ScalableFonts | QFontDialog::NonScalableFonts);
+    const QFontDialog::FontDialogOptions spacingMask = (QFontDialog::ProportionalFonts | QFontDialog::MonospacedFonts);
+    const QFontDialog::FontDialogOptions options = q->options();
+
+    QStringList familyNames;
+    foreach (const QString &family, fdb.families(writingSystem)) {
+        if ((options & scalableMask) && (options & scalableMask) != scalableMask) {
+            if (bool(options & QFontDialog::ScalableFonts) != fdb.isSmoothlyScalable(family))
+                continue;
+        }
+        if ((options & spacingMask) && (options & spacingMask) != spacingMask) {
+            if (bool(options & QFontDialog::MonospacedFonts) != fdb.isFixedPitch(family))
+                continue;
+        }
+        familyNames << family;
+    }
 
     familyList->model()->setStringList(familyNames);
 
@@ -837,10 +852,21 @@ QFont QFontDialog::selectedFont() const
     This enum specifies various options that affect the look and feel
     of a font dialog.
 
+    For instance, it allows to specify which type of font should be
+    displayed. If none are specified all fonts available will be listed.
+
+    Note that the font filtering options might not be supported on some
+    platforms (e.g. Mac). They are always supported by the non native
+    dialog (used on Windows or Linux).
+
     \value NoButtons Don't display \uicontrol{OK} and \uicontrol{Cancel} buttons. (Useful for "live dialogs".)
     \value DontUseNativeDialog Use Qt's standard font dialog on the Mac instead of Apple's
                                native font panel. (Currently, the native dialog is never used,
                                but this is likely to change in future Qt releases.)
+    \value ScalableFonts Show scalable fonts
+    \value NonScalableFonts Show non scalable fonts
+    \value MonospacedFonts Show monospaced fonts
+    \value ProportionalFonts Show proportional fonts
 
     \sa options, setOption(), testOption()
 */

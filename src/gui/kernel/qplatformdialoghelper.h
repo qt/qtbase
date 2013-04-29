@@ -163,7 +163,11 @@ class Q_GUI_EXPORT QFontDialogOptions
 public:
     enum FontDialogOption {
         NoButtons           = 0x00000001,
-        DontUseNativeDialog = 0x00000002
+        DontUseNativeDialog = 0x00000002,
+        ScalableFonts       = 0x00000004,
+        NonScalableFonts    = 0x00000008,
+        MonospacedFonts     = 0x00000010,
+        ProportionalFonts   = 0x00000020
     };
 
     Q_DECLARE_FLAGS(FontDialogOptions, FontDialogOption)

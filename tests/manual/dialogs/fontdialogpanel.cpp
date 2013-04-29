@@ -67,12 +67,20 @@ FontDialogPanel::FontDialogPanel(QWidget *parent)
     , m_fontSizeBox(new QDoubleSpinBox)
     , m_noButtons(new QCheckBox(tr("Don't display OK/Cancel buttons")))
     , m_dontUseNativeDialog(new QCheckBox(tr("Don't use native dialog")))
+    , m_scalableFilter(new QCheckBox(tr("Filter scalable fonts")))
+    , m_nonScalableFilter(new QCheckBox(tr("Filter non scalable fonts")))
+    , m_monospacedFilter(new QCheckBox(tr("Filter monospaced fonts")))
+    , m_proportionalFilter(new QCheckBox(tr("Filter proportional fonts")))
 {
     // Options
     QGroupBox *optionsGroupBox = new QGroupBox(tr("Options"), this);
     QVBoxLayout *optionsLayout = new QVBoxLayout(optionsGroupBox);
     optionsLayout->addWidget(m_noButtons);
     optionsLayout->addWidget(m_dontUseNativeDialog);
+    optionsLayout->addWidget(m_scalableFilter);
+    optionsLayout->addWidget(m_nonScalableFilter);
+    optionsLayout->addWidget(m_monospacedFilter);
+    optionsLayout->addWidget(m_proportionalFilter);
 
     // Font
     QGroupBox *fontGroupBox = new QGroupBox(tr("Font"), this);
@@ -201,6 +209,10 @@ void FontDialogPanel::applySettings(QFontDialog *d) const
 {
     d->setOption(QFontDialog::NoButtons, m_noButtons->isChecked());
     d->setOption(QFontDialog::DontUseNativeDialog, m_dontUseNativeDialog->isChecked());
+    d->setOption(QFontDialog::ScalableFonts, m_scalableFilter->isChecked());
+    d->setOption(QFontDialog::NonScalableFonts, m_nonScalableFilter->isChecked());
+    d->setOption(QFontDialog::MonospacedFonts, m_monospacedFilter->isChecked());
+    d->setOption(QFontDialog::ProportionalFonts, m_proportionalFilter->isChecked());
 
     QFont font = m_fontFamilyBox->currentFont();
     font.setPointSizeF(m_fontSizeBox->value());

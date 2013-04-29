@@ -77,6 +77,10 @@ private:
     QDoubleSpinBox *m_fontSizeBox;
     QCheckBox *m_noButtons;
     QCheckBox *m_dontUseNativeDialog;
+    QCheckBox *m_scalableFilter;
+    QCheckBox *m_nonScalableFilter;
+    QCheckBox *m_monospacedFilter;
+    QCheckBox *m_proportionalFilter;
     QPushButton *m_deleteNonModalDialogButton;
     QPushButton *m_deleteModalDialogButton;
     QString m_result;
