@@ -229,17 +229,30 @@ QString Location::fileName() const
 
 
 /*!
- * \brief  Returns \a path which is canonicalized and relative to the config file.
- *
- *         QDir::relativeFilePath does not canonicalize the paths, so
- *         if the config file is located at qtbase\src\widgets\doc\qtwidgets.qdocconf
- *         and it has a reference to any ancestor folder (e.g. ".." or even "../doc")
- * \param path
- * \return
+  \brief  Returns \a path which is canonicalized and relative to the config file.
+
+  QDir::relativeFilePath does not canonicalize the paths, so
+  if the config file is located at qtbase\src\widgets\doc\qtwidgets.qdocconf
+  and it has a reference to any ancestor folder (e.g. ".." or even "../doc")
  */
-QString Location::canonicalRelativePath(const QString &path) const
+QString Location::canonicalRelativePath(const QString &path)
 {
     QDir configFileDir(QDir::current());
+    QDir dir(path);
+    const QString canon = dir.canonicalPath();
+    return configFileDir.relativeFilePath(canon);
+}
+
+/*!
+  \brief  Returns \a path which is canonicalized and relative to the \a configDir.
+
+  QDir::relativeFilePath does not canonicalize the paths, so
+  if the config file is located at qtbase\src\widgets\doc\qtwidgets.qdocconf
+  and it has a reference to any ancestor folder (e.g. ".." or even "../doc")
+ */
+QString Location::canonicalRelativePath(const QString &path, const QString &configDir)
+{
+    QDir configFileDir(configDir);
     QDir dir(path);
     const QString canon = dir.canonicalPath();
     return configFileDir.relativeFilePath(canon);

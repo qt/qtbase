@@ -56,19 +56,29 @@
 QT_BEGIN_NAMESPACE
 
 /*
-  In QStringPair, the first string is the path to a directory;
-  the second string is some value.
+  This struct contains all the information for
+  one config variable found in a qdocconf file.
  */
-typedef QPair<QString, QString> QStringPair;
+struct ConfigVar {
+    bool plus_;
+    QString name_;
+    QStringList values_;
+    QString currentPath_;
+    Location location_;
+
+  ConfigVar() : plus_(false) { }
+
+  ConfigVar(const QString& name, const QStringList& values, const QString& dir)
+    : plus_(true), name_(name), values_(values), currentPath_(dir) { }
+
+  ConfigVar(const QString& name, const QStringList& values, const QString& dir, const Location& loc)
+    : plus_(false), name_(name), values_(values), currentPath_(dir), location_(loc) { }
+};
 
 /*
-  In QStringListPair, the first string is the path to a directory;
-  the string list is a list of string values.
+  In this multimap, the key is a config variable name.
  */
-typedef QPair<QString, QStringList> QStringListPair;
-typedef QMultiMap<QString, QStringPair> QStringPairMultiMap;
-typedef QMap<QString, QStringPair> QStringPairMap;
-typedef QMap<QString, QStringListPair> QStringListPairMap;
+typedef QMultiMap<QString, ConfigVar> ConfigVarMultimap;
 
 class Config
 {
@@ -79,7 +89,6 @@ public:
     ~Config();
 
     void load(const QString& fileName);
-    void unload(const QString& fileName);
     void setStringList(const QString& var, const QStringList& values);
 
     const QString& programName() const { return prog; }
@@ -90,7 +99,6 @@ public:
     QString getOutputDir() const;
     QSet<QString> getOutputFormats() const;
     QString getString(const QString& var) const;
-    QString getPath(const QString& var) const;
     QSet<QString> getStringSet(const QString& var) const;
     QStringList getStringList(const QString& var) const;
     QStringList getCanonicalRelativePathList(const QString& var) const;
@@ -99,7 +107,7 @@ public:
     QRegExp getRegExp(const QString& var) const;
     QList<QRegExp> getRegExpList(const QString& var) const;
     QSet<QString> subVars(const QString& var) const;
-    void subVarsAndValues(const QString& var, QStringPairMap& t) const;
+    void subVarsAndValues(const QString& var, ConfigVarMultimap& t) const;
     QStringList getAllFiles(const QString& filesVar,
                             const QString& dirsVar,
                             const QSet<QString> &excludedDirs = QSet<QString>(),
@@ -146,12 +154,7 @@ private:
     QString prog;
     Location loc;
     Location lastLocation_;
-    QMap<QString, Location> locMap;
-    QMap<QString, QString> stringValueMap;
-    QMap<QString, QStringList> stringListValueMap;
-
-    QStringPairMap      stringPairMap;
-    QStringListPairMap  stringListPairMap;
+    ConfigVarMultimap   configVars_;
 
     static QMap<QString, QString> uncompressedFiles;
     static QMap<QString, QString> extractedDirs;

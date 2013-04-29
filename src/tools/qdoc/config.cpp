@@ -55,8 +55,9 @@
 
 QT_BEGIN_NAMESPACE
 
-/*
-  An entry on the MetaStack.
+/*!
+  An entry in a stack, where each entry is a list
+  of string values.
  */
 class MetaStackEntry
 {
@@ -68,14 +69,19 @@ public:
     QStringList next;
 };
 
-/*
+/*!
+  Start accumulating values in a list by appending an empty
+  string to the list.
  */
 void MetaStackEntry::open()
 {
     next.append(QString());
 }
 
-/*
+/*!
+  Stop accumulating values and append the list of accumulated
+  values to the complete list of accumulated values.
+
  */
 void MetaStackEntry::close()
 {
@@ -83,8 +89,10 @@ void MetaStackEntry::close()
     next.clear();
 }
 
-/*
-  ###
+/*!
+  \class MetaStack
+
+  This class maintains a stack of values of config file variables.
 */
 class MetaStack : private QStack<MetaStackEntry>
 {
@@ -97,12 +105,21 @@ public:
     QStringList getExpanded(const Location& location);
 };
 
+/*!
+  The default constructor pushes a new stack entry and
+  opens it.
+ */
 MetaStack::MetaStack()
 {
     push(MetaStackEntry());
     top().open();
 }
 
+/*!
+  Processes the character \a ch using the \a location.
+  It really just builds up a name by appending \a ch to
+  it.
+ */
 void MetaStack::process(QChar ch, const Location& location)
 {
     if (ch == QLatin1Char('{')) {
@@ -133,6 +150,9 @@ void MetaStack::process(QChar ch, const Location& location)
         top().open();
     }
     else {
+        /*
+          This is where all the processing is done.
+         */
         QStringList::Iterator pre = top().next.begin();
         while (pre != top().next.end()) {
             *pre += ch;
@@ -141,6 +161,9 @@ void MetaStack::process(QChar ch, const Location& location)
     }
 }
 
+/*!
+  Returns the accumulated string values.
+ */
 QStringList MetaStack::getExpanded(const Location& location)
 {
     if (count() > 1)
@@ -176,9 +199,7 @@ Config::Config(const QString& programName)
 {
     loc = Location::null;
     lastLocation_ = Location::null;
-    locMap.clear();
-    stringPairMap.clear();
-    stringListPairMap.clear();
+    configVars_.clear();
     numInstances++;
 }
 
@@ -211,19 +232,6 @@ void Config::load(const QString& fileName)
 }
 
 /*!
-  Writes the qdoc configuration data to the named file.
-  The previous contents of the file are overwritten.
- */
-void Config::unload(const QString& fileName)
-{
-    QStringPairMap::ConstIterator v = stringPairMap.constBegin();
-    while (v != stringPairMap.constEnd()) {
-        qDebug() << v.key() << " = " << v.value().second;
-        ++v;
-    }
-    qDebug() << "fileName:" << fileName;
-}
-/*!
   Joins all the strings in \a values into a single string with the
   individual \a values separated by ' '. Then it inserts the result
   into the string list map with \a var as the key.
@@ -233,10 +241,7 @@ void Config::unload(const QString& fileName)
  */
 void Config::setStringList(const QString& var, const QStringList& values)
 {
-    stringPairMap[var].first = QDir::currentPath();
-    stringPairMap[var].second = values.join(QLatin1Char(' '));
-    stringListPairMap[var].first = QDir::currentPath();
-    stringListPairMap[var].second = values;
+    configVars_.insert(var,ConfigVar(var, values, QDir::currentPath()));
 }
 
 /*!
@@ -303,30 +308,29 @@ QSet<QString> Config::getOutputFormats() const
  */
 QString Config::getString(const QString& var) const
 {
-    if (!locMap[var].isEmpty())
-        (Location&) lastLocation_ = locMap[var];
-    return stringPairMap[var].second;
-}
-
-/*!
-  This function looks up the variable \a var in the location map
-  and, if found, sets the internal variable \c{lastLocation_} to the
-  location that \a var maps to.
-
-  Then it looks up \a var in the configuration variable map and,
-  if found, constructs a path from the pair value, which consists
-  of the directory path of the configuration file where the value
-  came from, and the value itself. The constructed path is returned.
- */
-QString Config::getPath(const QString& var) const
-{
-    if (!locMap[var].isEmpty())
-        (Location&) lastLocation_ = locMap[var];
-    QString path;
-    if (stringPairMap.contains(var)) {
-        path = QDir(stringPairMap[var].first + "/" + stringPairMap[var].second).absolutePath();
+    QList<ConfigVar> configVars = configVars_.values(var);
+    QString value;
+    int high = 0;
+    if (!configVars.empty()) {
+        int i = configVars.size() - 1;
+        while (i >= 0) {
+            const ConfigVar& cv = configVars[i];
+            if (!cv.location_.isEmpty())
+                (Location&) lastLocation_ = cv.location_;
+            if (!cv.values_.isEmpty()) {
+                if (!cv.plus_)
+                    value.clear();
+                for (int j=0; j<cv.values_.size(); ++j) {
+                    if (!value.isEmpty() && !value.endsWith(QChar('\n')))
+                        value.append(QChar(' '));
+                    value.append(cv.values_[j]);
+                    high = j;
+                }
+            }
+            --i;
+        }
     }
-    return path;
+    return value;
 }
 
 /*!
@@ -341,19 +345,35 @@ QSet<QString> Config::getStringSet(const QString& var) const
 
 /*!
   First, this function looks up the configuration variable \a var
-  in the location map and, if found, sets the internal variable
+  in the location map. If found, it sets the internal variable
   \c{lastLocation_} to the Location that \a var maps to.
 
-  Then it looks up the configuration variable \a var in the string
-  list map, and returns the string list that \a var maps to.
+  Then it looks up the configuration variable \a var in the map of
+  configuration variable records. If found, it gets a list of all
+  the records for \a var. Then it appends all the values for \a var
+  to a list and returns the list. As it appends the values from each
+  record, if the \a var used '=' instead of '+=' the list is cleared
+  before the values are appended. \note '+=' should always be used.
+  The final list is returned.
  */
 QStringList Config::getStringList(const QString& var) const
 {
-    if (!locMap[var].isEmpty())
-        (Location&) lastLocation_ = locMap[var];
-    return stringListPairMap[var].second;
+    QList<ConfigVar> configVars = configVars_.values(var);
+    QStringList values;
+    if (!configVars.empty()) {
+        int i = configVars.size() - 1;
+        while (i >= 0) {
+            if (!configVars[i].location_.isEmpty())
+                (Location&) lastLocation_ = configVars[i].location_;
+            if (configVars[i].plus_)
+                values.append(configVars[i].values_);
+            else
+                values = configVars[i].values_;
+            --i;
+        }
+    }
+    return values;
 }
-
 
 /*!
    \brief Returns the a path list where all paths are canonicalized, then
@@ -363,18 +383,26 @@ QStringList Config::getStringList(const QString& var) const
  */
 QStringList Config::getCanonicalRelativePathList(const QString& var) const
 {
-    if (!locMap[var].isEmpty())
-        (Location&) lastLocation_ = locMap[var];
     QStringList t;
-    QStringListPairMap::const_iterator it = stringListPairMap.constFind(var);
-    if (it != stringListPairMap.constEnd()) {
-        const QStringList& sl = it.value().second;
-        if (!sl.isEmpty()) {
-            t.reserve(sl.size());
-            for (int i=0; i<sl.size(); ++i) {
-                const QString &canonicalized = location().canonicalRelativePath(sl[i]);
-                t.append(canonicalized);
+    QList<ConfigVar> configVars = configVars_.values(var);
+    if (!configVars.empty()) {
+        int i = configVars.size() - 1;
+        while (i >= 0) {
+            const ConfigVar& cv = configVars[i];
+            if (!cv.location_.isEmpty())
+                (Location&) lastLocation_ = cv.location_;
+            if (!cv.plus_)
+                t.clear();
+            const QString d = cv.currentPath_;
+            const QStringList& sl = cv.values_;
+            if (!sl.isEmpty()) {
+                t.reserve(t.size() + sl.size());
+                for (int i=0; i<sl.size(); ++i) {
+                    const QString& crp = Location::canonicalRelativePath(sl[i], d);
+                    t.append(crp);
+                }
             }
+            --i;
         }
     }
     return t;
@@ -382,32 +410,30 @@ QStringList Config::getCanonicalRelativePathList(const QString& var) const
 
 /*!
   This function should only be called when the configuration
-  variable \a var maps to a string list that contains file paths.
+  variable \a var maps to string lists that contain file paths.
   It cleans the paths with QDir::cleanPath() before returning
   them.
-
-  First, this function looks up the configuration variable \a var
-  in the location map and, if found, sets the internal variable
-  \c{lastLocation_} the Location that \a var maps to.
-
-  Then it looks up the configuration variable \a var in the string
-  list map, which maps to a string list that contains file paths.
-  These paths might not be clean, so QDir::cleanPath() is called
-  for each one. The string list returned contains cleaned paths.
  */
 QStringList Config::getCleanPathList(const QString& var) const
 {
-    if (!locMap[var].isEmpty())
-        (Location&) lastLocation_ = locMap[var];
     QStringList t;
-    QStringListPairMap::const_iterator it = stringListPairMap.constFind(var);
-    if (it != stringListPairMap.constEnd()) {
-        const QStringList& sl = it.value().second;
-        if (!sl.isEmpty()) {
-            t.reserve(sl.size());
-            for (int i=0; i<sl.size(); ++i) {
-                t.append(QDir::cleanPath(sl[i]));
+    QList<ConfigVar> configVars = configVars_.values(var);
+    if (!configVars.empty()) {
+        int i = configVars.size() - 1;
+        while (i >= 0) {
+            const ConfigVar& cv = configVars[i];
+            if (!cv.plus_)
+                t.clear();
+            if (!cv.location_.isEmpty())
+                (Location&) lastLocation_ = cv.location_;
+            const QStringList& sl = cv.values_;
+            if (!sl.isEmpty()) {
+                t.reserve(t.size() + sl.size());
+                for (int i=0; i<sl.size(); ++i) {
+                    t.append(QDir::cleanPath(sl[i].simplified()));
+                }
             }
+            --i;
         }
     }
     return t;
@@ -415,7 +441,7 @@ QStringList Config::getCleanPathList(const QString& var) const
 
 /*!
   This function should only be called when the configuration
-  variable \a var maps to a string list that contains file paths.
+  variable \a var maps to string lists that contain file paths.
   It cleans the paths with QDir::cleanPath() before returning
   them.
 
@@ -424,30 +450,39 @@ QStringList Config::getCleanPathList(const QString& var) const
   \c{lastLocation_} the Location that \a var maps to.
 
   Then it looks up the configuration variable \a var in the string
-  list map, which maps to a string list that contains file paths.
+  list map, which maps to one or more records that each contains a
+  list of file paths.
+
   These paths might not be clean, so QDir::cleanPath() is called
   for each one. The string list returned contains cleaned paths.
  */
 QStringList Config::getPathList(const QString& var) const
 {
-    if (!locMap[var].isEmpty())
-        (Location&) lastLocation_ = locMap[var];
     QStringList t;
-    QStringListPairMap::const_iterator it = stringListPairMap.constFind(var);
-    if (it != stringListPairMap.constEnd()) {
-        const QStringList& sl = it.value().second;
-        const QString d = it.value().first;
-        if (!sl.isEmpty()) {
-            t.reserve(sl.size());
-            for (int i=0; i<sl.size(); ++i) {
-                QFileInfo fileInfo;
-                QString path = d + "/" + QDir::cleanPath(sl[i]);
-                fileInfo.setFile(path);
-                if (!fileInfo.exists())
-                    lastLocation_.warning(tr("File '%1' does not exist").arg(path));
-                else
-                    t.append(path);
+    QList<ConfigVar> configVars = configVars_.values(var);
+    if (!configVars.empty()) {
+        int i = configVars.size() - 1;
+        while (i >= 0) {
+            const ConfigVar& cv = configVars[i];
+            if (!cv.plus_)
+                t.clear();
+            if (!cv.location_.isEmpty())
+                (Location&) lastLocation_ = cv.location_;
+            const QString d = cv.currentPath_;
+            const QStringList& sl = cv.values_;
+            if (!sl.isEmpty()) {
+                t.reserve(t.size() + sl.size());
+                for (int i=0; i<sl.size(); ++i) {
+                    QFileInfo fileInfo;
+                    QString path = d + "/" + QDir::cleanPath(sl[i].simplified());
+                    fileInfo.setFile(path);
+                    if (!fileInfo.exists())
+                        lastLocation_.warning(tr("File '%1' does not exist").arg(path));
+                    else
+                        t.append(path);
+                }
             }
+            --i;
         }
     }
     return t;
@@ -509,30 +544,31 @@ QSet<QString> Config::subVars(const QString& var) const
 {
     QSet<QString> result;
     QString varDot = var + QLatin1Char('.');
-    QStringPairMap::ConstIterator v = stringPairMap.constBegin();
-    while (v != stringPairMap.constEnd()) {
-        if (v.key().startsWith(varDot)) {
-            QString subVar = v.key().mid(varDot.length());
+    ConfigVarMultimap::ConstIterator i = configVars_.constBegin();
+    while (i != configVars_.constEnd()) {
+        if (i.key().startsWith(varDot)) {
+            QString subVar = i.key().mid(varDot.length());
             int dot = subVar.indexOf(QLatin1Char('.'));
             if (dot != -1)
                 subVar.truncate(dot);
-            result.insert(subVar);
+            if (!result.contains(subVar))
+                result.insert(subVar);
         }
-        ++v;
+        ++i;
     }
     return result;
 }
 
 /*!
-  Same as subVars(), but in this case we return a string map
-  with the matching keys (stripped of the prefix \a var and
-  mapped to their values. The pairs are inserted into \a t
+  Same as subVars(), but in this case we return a config var
+  multimap with the matching keys (stripped of the prefix \a var
+  and mapped to their values. The pairs are inserted into \a t
  */
-void Config::subVarsAndValues(const QString& var, QStringPairMap& t) const
+void Config::subVarsAndValues(const QString& var, ConfigVarMultimap& t) const
 {
     QString varDot = var + QLatin1Char('.');
-    QStringPairMap::ConstIterator v = stringPairMap.constBegin();
-    while (v != stringPairMap.constEnd()) {
+    ConfigVarMultimap::ConstIterator v = configVars_.constBegin();
+    while (v != configVars_.constEnd()) {
         if (v.key().startsWith(varDot)) {
             QString subVar = v.key().mid(varDot.length());
             int dot = subVar.indexOf(QLatin1Char('.'));
@@ -869,7 +905,7 @@ void Config::load(Location location, const QString& fileName)
             Location keyLoc = location;
             bool plus = false;
             QString stringValue;
-            QStringList stringListValue;
+            QStringList rhsValues;
             QString word;
             bool inQuote = false;
             bool prevWordQuoted = true;
@@ -931,6 +967,7 @@ void Config::load(Location location, const QString& fileName)
             else {
                 /*
                   It wasn't an include statement, so it's something else.
+                  We must see either '=' or '+=' next. If not, fatal error.
                  */
                 if (cc == '+') {
                     plus = true;
@@ -972,7 +1009,12 @@ void Config::load(Location location, const QString& fileName)
                                 if (metWord)
                                     stringValue += QLatin1Char(' ');
                                 stringValue += word;
-                                stringListValue << word;
+#if 0
+                                if (metWord)
+                                    rhsValues << QString(" " + word);
+                                else
+#endif
+                                rhsValues << word;
                                 metWord = true;
                                 word.clear();
                                 prevWordQuoted = false;
@@ -988,7 +1030,7 @@ void Config::load(Location location, const QString& fileName)
                                 stringValue += QLatin1Char(' ');
                             stringValue += word;
                             if (!word.isEmpty())
-                                stringListValue << word;
+                                rhsValues << word;
                             metWord = true;
                             word.clear();
                             prevWordQuoted = true;
@@ -1025,30 +1067,9 @@ void Config::load(Location location, const QString& fileName)
                     if (!keySyntax.exactMatch(*key))
                         keyLoc.fatal(tr("Invalid key '%1'").arg(*key));
 
-                    if (plus) {
-                        if (locMap[*key].isEmpty()) {
-                            locMap[*key] = keyLoc;
-                        }
-                        else {
-                            locMap[*key].setEtc(true);
-                        }
-                        if (stringPairMap[*key].second.isEmpty()) {
-                            stringPairMap[*key].first = QDir::currentPath();
-                            stringPairMap[*key].second = stringValue;
-                        }
-                        else {
-                            stringPairMap[*key].second += QLatin1Char(' ') + stringValue;
-                        }
-                        stringListPairMap[*key].first = QDir::currentPath();
-                        stringListPairMap[*key].second += stringListValue;
-                    }
-                    else {
-                        locMap[*key] = keyLoc;
-                        stringPairMap[*key].first = QDir::currentPath();
-                        stringPairMap[*key].second = stringValue;
-                        stringListPairMap[*key].first = QDir::currentPath();
-                        stringListPairMap[*key].second = stringListValue;
-                    }
+                    ConfigVarMultimap::Iterator i;
+                    i = configVars_.insert(*key, ConfigVar(*key, rhsValues, QDir::currentPath(), keyLoc));
+                    i.value().plus_ = (plus ? true : false);
                     ++key;
                 }
             }
@@ -1058,8 +1079,9 @@ void Config::load(Location location, const QString& fileName)
         }
     }
     popWorkingDir();
-    if (!workingDirs_.isEmpty())
-        QDir::setCurrent(QFileInfo(workingDirs_.top()).path());
+    if (!workingDirs_.isEmpty()) {
+        QDir::setCurrent(workingDirs_.top());
+    }
 }
 
 QStringList Config::getFilesHere(const QString& uncleanDir,
@@ -1068,8 +1090,7 @@ QStringList Config::getFilesHere(const QString& uncleanDir,
                                  const QSet<QString> &excludedDirs,
                                  const QSet<QString> &excludedFiles)
 {
-    //
-    QString dir = location.isEmpty() ? QDir::cleanPath(uncleanDir) : location.canonicalRelativePath(uncleanDir);
+    QString dir = location.isEmpty() ? QDir::cleanPath(uncleanDir) : Location::canonicalRelativePath(uncleanDir);
     QStringList result;
     if (excludedDirs.contains(dir))
         return result;

@@ -81,7 +81,6 @@ public:
     int depth() const { return stkDepth; }
     const QString& filePath() const { return stkTop->filePath; }
     QString fileName() const;
-    QString canonicalRelativePath(const QString &path) const;
     int lineNo() const { return stkTop->lineNo; }
     int columnNo() const { return stkTop->columnNo; }
     bool etc() const { return etcetera; }
@@ -101,6 +100,8 @@ public:
     static void logToStdErr(const QString& message);
     static void startLoggingProgress() { logProgress_ = true; }
     static void stopLoggingProgress() { logProgress_ = false; }
+    static QString canonicalRelativePath(const QString &path);
+    static QString canonicalRelativePath(const QString &path, const QString &configDir);
 
 private:
     enum MessageType { Warning, Error };
