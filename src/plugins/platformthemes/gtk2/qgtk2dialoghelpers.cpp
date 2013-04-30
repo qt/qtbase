@@ -430,6 +430,7 @@ void QGtk2FileDialogHelper::applyOptions()
     if (!initialNameFilter.isEmpty())
         selectNameFilter(initialNameFilter);
 
+#if GTK_CHECK_VERSION(2, 20, 0)
     GtkWidget *acceptButton = gtk_dialog_get_widget_for_response(gtkDialog, GTK_RESPONSE_OK);
     if (acceptButton) {
         if (opts->isLabelExplicitlySet(QFileDialogOptions::Accept))
@@ -447,6 +448,7 @@ void QGtk2FileDialogHelper::applyOptions()
         else
             gtk_button_set_label(GTK_BUTTON(rejectButton), GTK_STOCK_CANCEL);
     }
+#endif
 }
 
 void QGtk2FileDialogHelper::setNameFilters(const QStringList &filters)
