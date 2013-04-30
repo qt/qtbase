@@ -317,6 +317,7 @@ public:
     bool waitForDeadChild();
 #endif
 #ifdef Q_OS_WIN
+    bool drainOutputPipes();
     void flushPipeWriter();
     qint64 pipeWriterBytesToWrite() const;
 #endif
