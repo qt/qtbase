@@ -58,10 +58,11 @@ QIOSContext::QIOSContext(QOpenGLContext *context)
     m_format.setMajorVersion(2);
     m_format.setMinorVersion(0);
 
-    // Even though iOS internally double-buffers its rendering, we
-    // report single-buffered here since the buffer remains unchanged
-    // when swapping unlesss you manually clear it yourself.
-    m_format.setSwapBehavior(QSurfaceFormat::SingleBuffer);
+    // iOS internally double-buffers its rendering using copy instead of flipping,
+    // so technically we could report that we are single-buffered so that clients
+    // could take advantage of the unchanged buffer, but this means clients (and Qt)
+    // will also assume that swapBufferes() is not needed, which is _not_ the case.
+    m_format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
 }
 
 QIOSContext::~QIOSContext()
