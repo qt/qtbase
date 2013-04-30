@@ -165,8 +165,11 @@ NSString *macRole(QAccessibleInterface *interface)
         return roleMap[qtRole];
     }
 
-    // MAC_ACCESSIBILTY_DEBUG() << "return NSAccessibilityUnknownRole";
-    return NSAccessibilityUnknownRole;
+    // Treat unknown Qt roles as generic group container items. Returning
+    // NSAccessibilityUnknownRole is also possible but makes the screen
+    // reader focus on the item instead of passing focus to child items.
+    // MAC_ACCESSIBILTY_DEBUG() << "return NSAccessibilityGroupRole for unknown Qt role";
+    return NSAccessibilityGroupRole;
 }
 
 /*

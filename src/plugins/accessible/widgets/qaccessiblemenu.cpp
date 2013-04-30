@@ -206,7 +206,7 @@ int QAccessibleMenuItem::indexOfChild(const QAccessibleInterface * child) const
 
 bool QAccessibleMenuItem::isValid() const
 {
-    return m_action ? true : false;
+    return m_action && m_owner ? true : false;
 }
 
 QAccessibleInterface *QAccessibleMenuItem::parent() const

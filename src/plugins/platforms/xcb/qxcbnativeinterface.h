@@ -64,11 +64,14 @@ public:
         EglContext,
         GLXContext,
         AppTime,
-        AppUserTime
+        AppUserTime,
+        ScreenHintStyle,
+        StartupId
     };
 
     QXcbNativeInterface();
 
+    void *nativeResourceForIntegration(const QByteArray &resource) Q_DECL_OVERRIDE;
     void *nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context);
     void *nativeResourceForScreen(const QByteArray &resource, QScreen *screen);
     void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
@@ -85,6 +88,7 @@ public:
     void *graphicsDeviceForWindow(QWindow *window);
     void *appTime(const QXcbScreen *screen);
     void *appUserTime(const QXcbScreen *screen);
+    void *startupId();
     static void setAppTime(QScreen *screen, xcb_timestamp_t time);
     static void setAppUserTime(QScreen *screen, xcb_timestamp_t time);
     static void *eglContextForContext(QOpenGLContext *context);

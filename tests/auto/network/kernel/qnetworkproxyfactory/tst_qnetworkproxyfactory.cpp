@@ -87,6 +87,8 @@ private slots:
     void inNetworkAccessManager_data();
     void inNetworkAccessManager();
 #endif
+    void genericSystemProxy();
+    void genericSystemProxy_data();
 
 private:
     QString formatProxyName(const QNetworkProxy & proxy) const;
@@ -367,6 +369,45 @@ void tst_QNetworkProxyFactory::inNetworkAccessManager()
 
 #endif //QT_NO_BEARERMANAGEMENT
 
+Q_DECLARE_METATYPE(QNetworkProxy::ProxyType)
+
+void tst_QNetworkProxyFactory::genericSystemProxy()
+{
+    QFETCH(QByteArray, envVar);
+    QFETCH(QByteArray, url);
+    QFETCH(QNetworkProxy::ProxyType, proxyType);
+    QFETCH(QString, hostName);
+    QFETCH(int, port);
+
+// The generic system proxy is only available on the following platforms
+#if (!defined Q_OS_BLACKBERRY) && (!defined Q_OS_WIN) && ((!defined Q_OS_MAC) || defined Q_OS_IOS)
+    qputenv(envVar, url);
+    const QList<QNetworkProxy> systemProxy = QNetworkProxyFactory::systemProxyForQuery();
+    QCOMPARE(systemProxy.size(), 1);
+    QCOMPARE(systemProxy.first().type(), proxyType);
+    QCOMPARE(systemProxy.first().hostName(), hostName);
+    QCOMPARE(systemProxy.first().port(), static_cast<quint16>(port));
+    qunsetenv(envVar);
+#else
+    QSKIP("Generic system proxy not available on this platform.");
+#endif
+}
+
+void tst_QNetworkProxyFactory::genericSystemProxy_data()
+{
+    QTest::addColumn<QByteArray>("envVar");
+    QTest::addColumn<QByteArray>("url");
+    QTest::addColumn<QNetworkProxy::ProxyType>("proxyType");
+    QTest::addColumn<QString>("hostName");
+    QTest::addColumn<int>("port");
+
+    QTest::newRow("no proxy") << QByteArray("http_proxy") << QByteArray() << QNetworkProxy::NoProxy
+                              << QString() << 0;
+    QTest::newRow("socks5") << QByteArray("http_proxy") << QByteArray("socks5://127.0.0.1:4242")
+                            << QNetworkProxy::Socks5Proxy << QString("127.0.0.1") << 4242;
+    QTest::newRow("http") << QByteArray("http_proxy") << QByteArray("http://example.com:666")
+                          << QNetworkProxy::HttpProxy << QString("example.com") << 666;
+}
 
 class QSPFQThread : public QThread
 {

@@ -80,12 +80,14 @@
     }
 }
 
-- (void)windowWillClose:(NSNotification *)notification
+- (BOOL)windowShouldClose:(NSNotification *)notification
 {
     Q_UNUSED(notification);
     if (m_cocoaWindow) {
-        m_cocoaWindow->windowWillClose();
+        return m_cocoaWindow->windowShouldClose();
     }
+
+    return YES;
 }
 
 @end

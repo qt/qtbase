@@ -19,22 +19,24 @@ TEMPLATE = subdirs
 bp = $$eval($$upper($$TARGET)_BUILD_PARTS)
 !isEmpty(bp): QT_BUILD_PARTS = $$bp
 
-sub_src.subdir = src
-sub_src.target = sub-src
-SUBDIRS = sub_src
+exists($$_PRO_FILE_PWD_/src/src.pro) {
+    sub_src.subdir = src
+    sub_src.target = sub-src
+    SUBDIRS += sub_src
 
-exists($$_PRO_FILE_PWD_/tools/tools.pro) {
-    sub_tools.subdir = tools
-    sub_tools.target = sub-tools
-    sub_tools.depends = sub_src
-    !contains(QT_BUILD_PARTS, tools): sub_tools.CONFIG = no_default_target no_default_install
-    SUBDIRS += sub_tools
+    exists($$_PRO_FILE_PWD_/tools/tools.pro) {
+        sub_tools.subdir = tools
+        sub_tools.target = sub-tools
+        sub_tools.depends = sub_src
+        # conditional treatment happens on a case-by-case basis
+        SUBDIRS += sub_tools
+    }
 }
 
 exists($$_PRO_FILE_PWD_/examples/examples.pro) {
     sub_examples.subdir = examples
     sub_examples.target = sub-examples
-    sub_examples.depends = sub_src
+    contains(SUBDIRS, sub_src): sub_examples.depends = sub_src
     examples_need_tools: sub_examples.depends += sub_tools
     !contains(QT_BUILD_PARTS, examples): sub_examples.CONFIG = no_default_target no_default_install
     SUBDIRS += sub_examples
@@ -44,7 +46,7 @@ exists($$_PRO_FILE_PWD_/examples/examples.pro) {
 exists($$_PRO_FILE_PWD_/demos/demos.pro) {
     sub_demos.subdir = demos
     sub_demos.target = sub-demos
-    sub_demos.depends = sub_src
+    contains(SUBDIRS, sub_src): sub_demos.depends = sub_src
     examples_need_tools: sub_demos.depends += sub_tools
     !contains(QT_BUILD_PARTS, examples): sub_demos.CONFIG = no_default_target no_default_install
     SUBDIRS += sub_demos
@@ -53,7 +55,7 @@ exists($$_PRO_FILE_PWD_/demos/demos.pro) {
 exists($$_PRO_FILE_PWD_/tests/tests.pro) {
     sub_tests.subdir = tests
     sub_tests.target = sub-tests
-    sub_tests.depends = sub_src   # The tests may have a run-time only dependency on other parts
+    contains(SUBDIRS, sub_src): sub_tests.depends = sub_src   # The tests may have a run-time only dependency on other parts
     tests_need_tools: sub_tests.depends += sub_tools
     sub_tests.CONFIG = no_default_install
     !contains(QT_BUILD_PARTS, tests) {

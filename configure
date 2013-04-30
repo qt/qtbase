@@ -6947,5 +6947,6 @@ else
     echo Qt will be installed into $QT_INSTALL_PREFIX
 fi
 echo
-echo To reconfigure, run \'$MAKE confclean\' and \'configure\'.
+echo Prior to reconfiguration, make sure you remove any leftovers from
+echo the previous build.
 echo

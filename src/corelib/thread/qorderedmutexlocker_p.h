@@ -53,9 +53,9 @@
 // We mean it.
 //
 
-QT_BEGIN_NAMESPACE
-
 #include <QtCore/qmutex.h>
+
+QT_BEGIN_NAMESPACE
 
 /*
   Locks 2 mutexes in a defined order, avoiding a recursive lock if

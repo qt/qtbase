@@ -966,7 +966,7 @@ QKeyEvent::~QKeyEvent()
 
     \sa QApplication::keyboardModifiers()
 */
-//###### We must check with XGetModifierMapping
+
 Qt::KeyboardModifiers QKeyEvent::modifiers() const
 {
     if (key() == Qt::Key_Shift)
@@ -977,6 +977,8 @@ Qt::KeyboardModifiers QKeyEvent::modifiers() const
         return Qt::KeyboardModifiers(QInputEvent::modifiers()^Qt::AltModifier);
     if (key() == Qt::Key_Meta)
         return Qt::KeyboardModifiers(QInputEvent::modifiers()^Qt::MetaModifier);
+    if (key() == Qt::Key_AltGr)
+        return Qt::KeyboardModifiers(QInputEvent::modifiers()^Qt::GroupSwitchModifier);
     return QInputEvent::modifiers();
 }
 
@@ -990,9 +992,9 @@ Qt::KeyboardModifiers QKeyEvent::modifiers() const
 */
 bool QKeyEvent::matches(QKeySequence::StandardKey matchKey) const
 {
-    uint searchkey = (modifiers() | key()) & ~(Qt::KeypadModifier); //The keypad modifier should not make a difference
+    //The keypad and group switch modifier should not make a difference
+    uint searchkey = (modifiers() | key()) & ~(Qt::KeypadModifier | Qt::GroupSwitchModifier);
     const uint platform = QKeySequencePrivate::currentKeyPlatforms();
-
 
     uint N = QKeySequencePrivate::numberOfKeyBindings;
     int first = 0;

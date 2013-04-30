@@ -42,6 +42,8 @@
 #ifndef QOPENGLTIMERQUERY_H
 #define QOPENGLTIMERQUERY_H
 
+#include <QtCore/qglobal.h>
+
 #if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
 
 #include <QtCore/QObject>

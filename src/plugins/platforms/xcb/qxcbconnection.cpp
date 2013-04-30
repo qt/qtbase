@@ -242,8 +242,9 @@ void QXcbConnection::updateScreens()
             ((QXcbIntegration*)QGuiApplicationPrivate::platformIntegration())->screenAdded(screen);
 }
 
-QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char *displayName)
+QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGrabServer, const char *displayName)
     : m_connection(0)
+    , m_canGrabServer(canGrabServer)
     , m_primaryScreen(0)
     , m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
     , m_nativeInterface(nativeInterface)
@@ -344,6 +345,10 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
     m_drag = new QXcbDrag(this);
 #endif
 
+    m_startupId = qgetenv("DESKTOP_STARTUP_ID");
+    if (!m_startupId.isNull())
+        qunsetenv("DESKTOP_STARTUP_ID");
+
     sync();
 }
 
@@ -386,28 +391,36 @@ QXcbConnection::~QXcbConnection()
     delete m_keyboard;
 }
 
-void QXcbConnection::addWindow(xcb_window_t id, QXcbWindow *window)
+void QXcbConnection::addWindowEventListener(xcb_window_t id, QXcbWindowEventListener *eventListener)
 {
-    m_mapper.insert(id, window);
+    m_mapper.insert(id, eventListener);
 }
 
-void QXcbConnection::removeWindow(xcb_window_t id)
+void QXcbConnection::removeWindowEventListener(xcb_window_t id)
 {
     m_mapper.remove(id);
 }
 
-QXcbWindow *QXcbConnection::platformWindowFromId(xcb_window_t id)
+QXcbWindowEventListener *QXcbConnection::windowEventListenerFromId(xcb_window_t id)
 {
     return m_mapper.value(id, 0);
+}
+
+QXcbWindow *QXcbConnection::platformWindowFromId(xcb_window_t id)
+{
+    QXcbWindowEventListener *listener = m_mapper.value(id, 0);
+    if (listener)
+        return listener->toWindow();
+    return 0;
 }
 
 #define HANDLE_PLATFORM_WINDOW_EVENT(event_t, windowMember, handler) \
 { \
     event_t *e = (event_t *)event; \
-    if (QXcbWindow *platformWindow = platformWindowFromId(e->windowMember))  { \
-        handled = QWindowSystemInterface::handleNativeEvent(platformWindow->window(), m_nativeInterface->genericEventFilterType(), event, &result); \
+    if (QXcbWindowEventListener *eventListener = windowEventListenerFromId(e->windowMember))  { \
+        handled = eventListener->handleGenericEvent(event, &result); \
         if (!handled) \
-            platformWindow->handler(e); \
+            eventListener->handler(e); \
     } \
 } \
 break;
@@ -415,10 +428,10 @@ break;
 #define HANDLE_KEYBOARD_EVENT(event_t, handler) \
 { \
     event_t *e = (event_t *)event; \
-    if (QXcbWindow *platformWindow = platformWindowFromId(e->event)) { \
-        handled = QWindowSystemInterface::handleNativeEvent(platformWindow->window(), m_nativeInterface->genericEventFilterType(), event, &result); \
+    if (QXcbWindowEventListener *eventListener = windowEventListenerFromId(e->event)) { \
+        handled = eventListener->handleGenericEvent(event, &result); \
         if (!handled) \
-            m_keyboard->handler(m_focusWindow, e); \
+            m_keyboard->handler(m_focusWindow ? m_focusWindow : eventListener, e); \
     } \
 } \
 break;
@@ -946,6 +959,18 @@ void QXcbEventReader::unlock()
 void QXcbConnection::setFocusWindow(QXcbWindow *w)
 {
     m_focusWindow = w;
+}
+
+void QXcbConnection::grabServer()
+{
+    if (m_canGrabServer)
+        xcb_grab_server(m_connection);
+}
+
+void QXcbConnection::ungrabServer()
+{
+    if (m_canGrabServer)
+        xcb_ungrab_server(m_connection);
 }
 
 void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom a, uint id)

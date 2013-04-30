@@ -77,6 +77,9 @@ public:
     int effectiveWidth() const;
     int effectiveHeight() const;
 
+    bool setMouseGrabEnabled(bool grab) { return grab; }
+    bool setKeyboardGrabEnabled(bool grab) { return grab; }
+
     WId winId() const { return WId(m_view); };
 
     QList<QWindowSystemInterface::TouchPoint> &touchPoints()  { return m_touchPoints; }
@@ -96,6 +99,9 @@ private:
     void raiseOrLower(bool raise);
     void updateWindowLevel();
     bool blockedByModal();
+
+    inline Qt::WindowType windowType() { return static_cast<Qt::WindowType>(int(window()->flags() & Qt::WindowType_Mask)); }
+    inline bool windowIsPopup() { return windowType() & Qt::Popup & ~Qt::Window; }
 };
 
 QT_END_NAMESPACE

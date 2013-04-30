@@ -180,3 +180,5 @@ EXPORTS
 	glGetCurrentContext                      @147 NONAME
 	glGetProcAddress@4                       @148 NONAME
 	glBindTexImage@4                         @158 NONAME
+	glCreateRenderer                         @177 NONAME
+	glDestroyRenderer                        @178 NONAME

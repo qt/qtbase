@@ -124,8 +124,8 @@
 
     Releases the \a lockedMutex and waits on the wait condition.  The
     \a lockedMutex must be initially locked by the calling thread. If \a
-    lockedMutex is not in a locked state, this function returns
-    immediately. If \a lockedMutex is a recursive mutex, this function
+    lockedMutex is not in a locked state, the behavior is undefined. If
+    \a lockedMutex is a recursive mutex, this function
     returns immediately. The \a lockedMutex will be unlocked, and the
     calling thread will block until either of these conditions is met:
 

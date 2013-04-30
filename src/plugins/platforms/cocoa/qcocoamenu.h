@@ -47,10 +47,6 @@
 #include <qpa/qplatformmenu.h>
 #include "qcocoamenuitem.h"
 
-@class NSMenuItem;
-@class NSMenu;
-@class NSObject;
-
 QT_BEGIN_NAMESPACE
 
 class QCocoaMenu : public QPlatformMenu
@@ -81,8 +77,6 @@ public:
     void setMinimumWidth(int width);
     void setFont(const QFont &font);
 
-    void setParentItem(QCocoaMenuItem* item);
-
     inline NSMenu *nsMenu() const
         { return m_nativeMenu; }
     inline NSMenuItem *nsMenuItem() const
@@ -91,6 +85,7 @@ public:
     virtual QPlatformMenuItem *menuItemAt(int position) const;
     virtual QPlatformMenuItem *menuItemForTag(quintptr tag) const;
 
+    QList<QCocoaMenuItem *> items() const;
     QList<QCocoaMenuItem *> merged() const;
 private:
     QCocoaMenuItem *itemOrNull(int index) const;

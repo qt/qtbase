@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
 class QXcbScreen;
 class QXcbEGLSurface;
 class QIcon;
-class QXcbWindow : public QXcbObject, public QPlatformWindow
+class QXcbWindow : public QXcbObject, public QXcbWindowEventListener, public QPlatformWindow
 {
 public:
     enum NetWmState {
@@ -126,20 +126,24 @@ public:
     uint depth() const { return m_depth; }
     QImage::Format imageFormat() const { return m_imageFormat; }
 
-    void handleExposeEvent(const xcb_expose_event_t *event);
-    void handleClientMessageEvent(const xcb_client_message_event_t *event);
-    void handleConfigureNotifyEvent(const xcb_configure_notify_event_t *event);
-    void handleMapNotifyEvent(const xcb_map_notify_event_t *event);
-    void handleUnmapNotifyEvent(const xcb_unmap_notify_event_t *event);
-    void handleButtonPressEvent(const xcb_button_press_event_t *event);
-    void handleButtonReleaseEvent(const xcb_button_release_event_t *event);
-    void handleMotionNotifyEvent(const xcb_motion_notify_event_t *event);
+    bool handleGenericEvent(xcb_generic_event_t *event, long *result)  Q_DECL_OVERRIDE;
 
-    void handleEnterNotifyEvent(const xcb_enter_notify_event_t *event);
-    void handleLeaveNotifyEvent(const xcb_leave_notify_event_t *event);
-    void handleFocusInEvent(const xcb_focus_in_event_t *event);
-    void handleFocusOutEvent(const xcb_focus_out_event_t *event);
-    void handlePropertyNotifyEvent(const xcb_property_notify_event_t *event);
+    void handleExposeEvent(const xcb_expose_event_t *event) Q_DECL_OVERRIDE;
+    void handleClientMessageEvent(const xcb_client_message_event_t *event) Q_DECL_OVERRIDE;
+    void handleConfigureNotifyEvent(const xcb_configure_notify_event_t *event) Q_DECL_OVERRIDE;
+    void handleMapNotifyEvent(const xcb_map_notify_event_t *event) Q_DECL_OVERRIDE;
+    void handleUnmapNotifyEvent(const xcb_unmap_notify_event_t *event) Q_DECL_OVERRIDE;
+    void handleButtonPressEvent(const xcb_button_press_event_t *event) Q_DECL_OVERRIDE;
+    void handleButtonReleaseEvent(const xcb_button_release_event_t *event) Q_DECL_OVERRIDE;
+    void handleMotionNotifyEvent(const xcb_motion_notify_event_t *event) Q_DECL_OVERRIDE;
+
+    void handleEnterNotifyEvent(const xcb_enter_notify_event_t *event) Q_DECL_OVERRIDE;
+    void handleLeaveNotifyEvent(const xcb_leave_notify_event_t *event) Q_DECL_OVERRIDE;
+    void handleFocusInEvent(const xcb_focus_in_event_t *event) Q_DECL_OVERRIDE;
+    void handleFocusOutEvent(const xcb_focus_out_event_t *event) Q_DECL_OVERRIDE;
+    void handlePropertyNotifyEvent(const xcb_property_notify_event_t *event) Q_DECL_OVERRIDE;
+
+    QXcbWindow *toWindow() Q_DECL_OVERRIDE;
 
     void handleMouseEvent(xcb_timestamp_t time, const QPoint &local, const QPoint &global, Qt::KeyboardModifiers modifiers);
 

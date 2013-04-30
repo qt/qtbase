@@ -262,6 +262,10 @@ public:
 private:
     friend class QDateTimePrivate;
     void detach();
+
+    // ### Qt6: Using a private here has high impact on runtime
+    // on users such as QFileInfo. In Qt 6, the data members
+    // should be inlined.
     QExplicitlySharedDataPointer<QDateTimePrivate> d;
 
 #ifndef QT_NO_DATASTREAM

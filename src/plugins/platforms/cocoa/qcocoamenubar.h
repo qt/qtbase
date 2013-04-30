@@ -47,14 +47,13 @@
 #include <qpa/qplatformmenu.h>
 #include "qcocoamenu.h"
 
-@class NSMenu;
-
 QT_BEGIN_NAMESPACE
 
 class QCocoaWindow;
 
 class QCocoaMenuBar : public QPlatformMenuBar
 {
+    Q_OBJECT
 public:
     QCocoaMenuBar();
     virtual ~QCocoaMenuBar();

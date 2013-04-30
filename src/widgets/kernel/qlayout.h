@@ -148,6 +148,7 @@ protected:
     void childEvent(QChildEvent *e);
     void addChildLayout(QLayout *l);
     void addChildWidget(QWidget *w);
+    bool adoptLayout(QLayout *layout);
 
     QRect alignmentRect(const QRect&) const;
 protected:

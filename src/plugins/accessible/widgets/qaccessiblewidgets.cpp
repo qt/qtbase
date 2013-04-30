@@ -1127,7 +1127,7 @@ QAccessibleMainWindow::QAccessibleMainWindow(QWidget *widget)
 QAccessibleInterface *QAccessibleMainWindow::child(int index) const
 {
     QList<QWidget*> kids = childWidgets(mainWindow(), true);
-    if (index < kids.count()) {
+    if (index >= 0 && index < kids.count()) {
         return QAccessible::queryAccessibleInterface(kids.at(index));
     }
     return 0;

@@ -95,6 +95,8 @@ public:
     QStringList themeNames() const;
     QPlatformTheme *createPlatformTheme(const QString &name) const;
 
+    QXcbConnection *defaultConnection() const { return m_connections.first(); }
+
 private:
     QList<QXcbConnection *> m_connections;
 

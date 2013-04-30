@@ -79,7 +79,7 @@ class QFlags
 {
     Q_STATIC_ASSERT_X((sizeof(Enum) <= sizeof(int)),
                       "QFlags uses an int as storage, so an enum with underlying "
-                      "long long would overflow. Qt 5.1 will have support for 64bit enums.");
+                      "long long will overflow.");
     struct Private;
     typedef int (Private::*Zero);
 public:

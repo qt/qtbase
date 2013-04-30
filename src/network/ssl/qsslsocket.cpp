@@ -1908,6 +1908,7 @@ QSslSocketPrivate::QSslSocketPrivate()
     , mode(QSslSocket::UnencryptedMode)
     , autoStartHandshake(false)
     , connectionEncrypted(false)
+    , shutdown(false)
     , ignoreAllSslErrors(false)
     , readyReadEmittedPointer(0)
     , allowRootCertOnDemandLoading(true)
@@ -1933,6 +1934,7 @@ void QSslSocketPrivate::init()
     autoStartHandshake = false;
     connectionEncrypted = false;
     ignoreAllSslErrors = false;
+    shutdown = false;
 
     // we don't want to clear the ignoreErrorsList, so
     // that it is possible setting it before connecting

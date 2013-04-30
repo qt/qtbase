@@ -3981,40 +3981,15 @@ QScreenOrientationChangeEvent (0x7f04b8f8bbc8) 0
   QEvent (0x7f04b8efe720) 0
       primary-for QScreenOrientationChangeEvent (0x7f04b8f8bbc8)
 
-Class QAccessible::QPrivateSignal
-   size=1 align=1
-   base size=0 base align=1
-QAccessible::QPrivateSignal (0x7f04b8efe7e0) 0 empty
-
 Class QAccessible::State
    size=8 align=8
    base size=5 base align=8
 QAccessible::State (0x7f04b8efe840) 0
 
-Vtable for QAccessible
-QAccessible::_ZTV11QAccessible: 14u entries
-0     (int (*)(...))0
-8     (int (*)(...))(& _ZTI11QAccessible)
-16    (int (*)(...))QAccessible::metaObject
-24    (int (*)(...))QAccessible::qt_metacast
-32    (int (*)(...))QAccessible::qt_metacall
-40    (int (*)(...))QAccessible::~QAccessible
-48    (int (*)(...))QAccessible::~QAccessible
-56    (int (*)(...))QObject::event
-64    (int (*)(...))QObject::eventFilter
-72    (int (*)(...))QObject::timerEvent
-80    (int (*)(...))QObject::childEvent
-88    (int (*)(...))QObject::customEvent
-96    (int (*)(...))QObject::connectNotify
-104   (int (*)(...))QObject::disconnectNotify
-
 Class QAccessible
-   size=16 align=8
-   base size=16 base align=8
-QAccessible (0x7f04b8f8bd68) 0
-    vptr=((& QAccessible::_ZTV11QAccessible) + 16u)
-  QObject (0x7f04b8efe780) 0
-      primary-for QAccessible (0x7f04b8f8bd68)
+   size=1 align=1
+   base size=0 base align=1
+QAccessible (0x7f04b8f8bd68) 0 empty
 
 Vtable for QAccessibleInterface
 QAccessibleInterface::_ZTV20QAccessibleInterface: 23u entries

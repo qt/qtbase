@@ -455,7 +455,7 @@ void FileDialogPanel::restoreDefaults()
     m_readOnly->setChecked(d.isReadOnly());
     m_native->setChecked(true);
     m_directory->setText(QDir::homePath());
-    m_defaultSuffix->setText(QLatin1String(".txt"));
+    m_defaultSuffix->setText(QLatin1String("txt"));
     m_nameFilters->setPlainText(QLatin1String("Any files (*)\nImage files (*.png *.xpm *.jpg)\nText files (*.txt)"));
     m_selectedFileName->setText(QString());
     m_selectedNameFilter->setText(QString());

@@ -38,6 +38,10 @@ foreach(module ${CMAKE_MODULES_UNDER_TEST})
     )
 endforeach()
 
+if(CMAKE_CROSSCOMPILING AND CMAKE_FIND_ROOT_PATH)
+   list(APPEND BUILD_OPTIONS_LIST "-DCMAKE_CXX_LINK_FLAGS=--sysroot=\"${CMAKE_FIND_ROOT_PATH}\"")
+endif()
+
 macro(expect_pass _dir)
   string(REPLACE "(" "_" testname "${_dir}")
   string(REPLACE ")" "_" testname "${testname}")

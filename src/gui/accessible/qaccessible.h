@@ -66,11 +66,8 @@ class QTextCursor;
 
 // We need to inherit QObject to expose the enums to QML.
 class Q_GUI_EXPORT QAccessible
-#ifndef Q_QDOC
-        :public QObject
-#endif
 {
-    Q_OBJECT
+    Q_GADGET
     Q_ENUMS(Role Event State)
 public:
 

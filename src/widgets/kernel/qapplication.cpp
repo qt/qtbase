@@ -72,6 +72,9 @@
 #include <QtGui/qstylehints.h>
 #include <QtGui/qinputmethod.h>
 #include <qpa/qplatformtheme.h>
+#ifndef QT_NO_WHATSTHIS
+#include <QtWidgets/QWhatsThis>
+#endif
 
 #include "private/qkeymapper_p.h"
 
@@ -1856,6 +1859,11 @@ bool QApplication::event(QEvent *e)
         } else if (te->timerId() == d->toolTipFallAsleep.timerId()) {
             d->toolTipFallAsleep.stop();
         }
+#ifndef QT_NO_WHATSTHIS
+    } else if (e->type() == QEvent::EnterWhatsThisMode) {
+        QWhatsThis::enterWhatsThisMode();
+        return true;
+#endif
     }
 
     if(e->type() == QEvent::LanguageChange) {

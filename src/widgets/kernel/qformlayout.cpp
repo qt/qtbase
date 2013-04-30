@@ -976,8 +976,8 @@ void QFormLayoutPrivate::setLayout(int row, QFormLayout::ItemRole role, QLayout 
 {
     if (layout) {
         Q_Q(QFormLayout);
-        q->addChildLayout(layout);
-        setItem(row, role, layout);
+        if (q->adoptLayout(layout))
+            setItem(row, role, layout);
     }
 }
 

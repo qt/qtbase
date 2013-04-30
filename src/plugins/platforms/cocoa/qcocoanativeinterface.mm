@@ -120,8 +120,15 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QCocoaNativeInter
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setWindowContentView);
     if (resource.toLower() == "registertouchwindow")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::registerTouchWindow);
+    if (resource.toLower() == "setembeddedinforeignview")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setEmbeddedInForeignView);
 
     return 0;
+}
+
+void QCocoaNativeInterface::beep()
+{
+    NSBeep();
 }
 
 QPlatformPrinterSupport *QCocoaNativeInterface::createPlatformPrinterSupport()
@@ -224,8 +231,17 @@ void QCocoaNativeInterface::setWindowContentView(QPlatformWindow *window, void *
     cocoaPlatformWindow->setContentView(reinterpret_cast<NSView *>(contentView));
 }
 
+void QCocoaNativeInterface::setEmbeddedInForeignView(QPlatformWindow *window, bool embedded)
+{
+    QCocoaWindow *cocoaPlatformWindow = static_cast<QCocoaWindow *>(window);
+    cocoaPlatformWindow->setEmbeddedInForeignView(embedded);
+}
+
 void QCocoaNativeInterface::registerTouchWindow(QWindow *window,  bool enable)
 {
+    if (!window)
+        return;
+
     // Make sure the QCocoaWindow is created when enabling. Disabling might
     // happen on window destruction, don't (re)create the QCocoaWindow then.
     if (enable)

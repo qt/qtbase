@@ -49,6 +49,10 @@
 #    define WM_THEMECHANGED 0x031A
 #endif
 
+#ifndef GWL_HWNDPARENT
+#    define GWL_HWNDPARENT (-8)
+#endif
+
 /* Complement the definitions and declarations missing
  * when using MinGW or older Windows SDKs. */
 

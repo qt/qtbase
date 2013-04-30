@@ -191,10 +191,13 @@ static bool isMouseEvent(NSEvent *ev)
 
 @end
 
+const int QCocoaWindow::NoAlertRequest = -1;
+
 QCocoaWindow::QCocoaWindow(QWindow *tlw)
     : QPlatformWindow(tlw)
     , m_nsWindow(0)
     , m_contentViewIsEmbedded(false)
+    , m_contentViewIsToBeEmbedded(false)
     , m_nsWindowDelegate(0)
     , m_synchedWindowState(Qt::WindowActive)
     , m_windowModality(Qt::NonModal)
@@ -205,6 +208,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_frameStrutEventsEnabled(false)
     , m_isExposed(false)
     , m_registerTouchCount(0)
+    , m_alertRequest(NoAlertRequest)
 {
 #ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
     qDebug() << "QCocoaWindow::QCocoaWindow" << this;
@@ -406,7 +410,7 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
                  Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint;
         if (flags == Qt::Window) {
             styleMask = (NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSTitledWindowMask);
-        } else if (flags & Qt::Dialog) {
+        } else if ((flags & Qt::Dialog) == Qt::Dialog) {
             if (window()->modality() == Qt::NonModal)
                 styleMask = NSResizableWindowMask | NSClosableWindowMask | NSTitledWindowMask;
             else
@@ -497,6 +501,21 @@ void QCocoaWindow::setWindowIcon(const QIcon &icon)
         [iconButton setImage:image];
         [image release];
     }
+}
+
+void QCocoaWindow::setAlertState(bool enabled)
+{
+    if (m_alertRequest == NoAlertRequest && enabled) {
+        m_alertRequest = [NSApp requestUserAttention:NSCriticalRequest];
+    } else if (m_alertRequest != NoAlertRequest && !enabled) {
+        [NSApp cancelUserAttentionRequest:m_alertRequest];
+        m_alertRequest = NoAlertRequest;
+    }
+}
+
+bool QCocoaWindow::isAlertState() const
+{
+    return m_alertRequest != NoAlertRequest;
 }
 
 void QCocoaWindow::raise()
@@ -639,6 +658,12 @@ void QCocoaWindow::setContentView(NSView *contentView)
     recreateWindow(parent()); // Adds the content view to parent NSView
 }
 
+void QCocoaWindow::setEmbeddedInForeignView(bool embedded)
+{
+    m_contentViewIsToBeEmbedded = embedded;
+    recreateWindow(0); // destroy what was already created
+}
+
 void QCocoaWindow::windowWillMove()
 {
     // Close any open popups on window move
@@ -662,10 +687,12 @@ void QCocoaWindow::windowDidResize()
     [m_qtView updateGeometry];
 }
 
-void QCocoaWindow::windowWillClose()
+bool QCocoaWindow::windowShouldClose()
 {
-    QWindowSystemInterface::handleCloseEvent(window());
+    bool accepted = false;
+    QWindowSystemInterface::handleCloseEvent(window(), &accepted);
     QWindowSystemInterface::flushWindowSystemEvents();
+    return accepted;
 }
 
 bool QCocoaWindow::windowIsPopupType(Qt::WindowType type) const
@@ -700,8 +727,8 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         m_nsWindowDelegate = 0;
     }
 
-    if (window()->type() == Qt::SubWindow) {
-        // Subwindows don't have a NSWindow.
+    if (m_contentViewIsToBeEmbedded) {
+        // An embedded window doesn't have its own NSWindow.
     } else if (!parentWindow) {
         // Create a new NSWindow if this is a top-level window.
         m_nsWindow = createNSWindow();
@@ -866,7 +893,7 @@ void QCocoaWindow::syncWindowState(Qt::WindowState newState)
     // if content view width or height is 0 then the window animations will crash so
     // do nothing except set the new state
     NSRect contentRect = [contentView() frame];
-    if (contentRect.size.width < 0 || contentRect.size.height < 0) {
+    if (contentRect.size.width <= 0 || contentRect.size.height <= 0) {
         qWarning() << Q_FUNC_INFO << "invalid window content view size, check your window geometry";
         m_synchedWindowState = newState;
         return;

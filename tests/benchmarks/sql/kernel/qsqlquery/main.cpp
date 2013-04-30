@@ -117,6 +117,7 @@ void tst_QSqlQuery::cleanup()
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
+    const QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
 
     if ( QTest::currentTestFunction() == QLatin1String( "numRowsAffected" )
             || QTest::currentTestFunction() == QLatin1String( "transactions" )
@@ -126,8 +127,7 @@ void tst_QSqlQuery::cleanup()
         populateTestTables( db );
     }
 
-    if ( QTest::currentTestFailed() && ( db.driverName().startsWith( "QOCI" )
-                                         || db.driverName().startsWith( "QODBC" ) ) ) {
+    if (QTest::currentTestFailed() && (dbType == QSqlDriverPrivate::Oracle || db.driverName().startsWith("QODBC"))) {
         //since Oracle ODBC totally craps out on error, we init again
         db.close();
         db.open();
@@ -146,6 +146,7 @@ void tst_QSqlQuery::generic_data(const QString& engine)
 
 void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
 {
+    QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
     QStringList tablenames;
     // drop all the table in case a testcase failed
     tablenames <<  qtest
@@ -179,24 +180,24 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
                << qTableName("test141895", __FILE__, db)
                << qTableName("qtest_oraOCINumber", __FILE__, db);
 
-    if ( db.driverName().startsWith("QPSQL") )
+    if (dbType == QSqlDriverPrivate::PostgreSQL)
         tablenames << qTableName("task_233829", __FILE__, db);
 
-    if ( db.driverName().startsWith("QSQLITE") )
+    if (dbType == QSqlDriverPrivate::SQLite)
         tablenames << qTableName("record_sqlite", __FILE__, db);
 
-    if ( tst_Databases::isSqlServer( db ) || db.driverName().startsWith( "QOCI" ) )
+    if (dbType == QSqlDriverPrivate::MSSqlServer || dbType == QSqlDriverPrivate::Oracle)
         tablenames << qTableName("qtest_longstr", __FILE__, db);
 
-    if (tst_Databases::isSqlServer( db ))
+    if (dbType == QSqlDriverPrivate::MSSqlServer)
         db.exec("DROP PROCEDURE " + qTableName("test141895_proc", __FILE__, db));
 
-    if (tst_Databases::isMySQL( db ))
+    if (dbType == QSqlDriverPrivate::MySqlServer)
         db.exec("DROP PROCEDURE IF EXISTS "+qTableName("bug6852_proc", __FILE__, db));
 
     tst_Databases::safeDropTables( db, tablenames );
 
-    if ( db.driverName().startsWith( "QOCI" ) ) {
+    if (dbType == QSqlDriverPrivate::Oracle) {
         QSqlQuery q( db );
         q.exec("DROP PACKAGE " + qTableName("pkg", __FILE__, db));
     }
@@ -204,24 +205,25 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
 
 void tst_QSqlQuery::createTestTables( QSqlDatabase db )
 {
+    const QString qtestNull = qTableName("qtest_null", __FILE__, db);
     QSqlQuery q( db );
-
-    if ( db.driverName().startsWith( "QMYSQL" ) )
+    QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    if (dbType == QSqlDriverPrivate::MySqlServer)
         // ### stupid workaround until we find a way to hardcode this
         // in the MySQL server startup script
         q.exec( "set table_type=innodb" );
-    else if (tst_Databases::isPostgreSQL(db))
+    else if (dbType == QSqlDriverPrivate::PostgreSQL)
         QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
-    if (tst_Databases::isPostgreSQL(db))
+    if (dbType == QSqlDriverPrivate::PostgreSQL)
         QVERIFY_SQL( q, exec( "create table " + qtest + " (id serial NOT NULL, t_varchar varchar(20), t_char char(20), primary key(id)) WITH OIDS" ) );
     else
         QVERIFY_SQL( q, exec( "create table " + qtest + " (id int "+tst_Databases::autoFieldName(db) +" NOT NULL, t_varchar varchar(20), t_char char(20), primary key(id))" ) );
 
-    if ( tst_Databases::isSqlServer( db ) || db.driverName().startsWith( "QTDS" ) )
-        QVERIFY_SQL(q, exec("create table " + qTableName("qtest_null", __FILE__, db) + " (id int null, t_varchar varchar(20) null)" ) );
+    if (dbType == QSqlDriverPrivate::MSSqlServer || dbType == QSqlDriverPrivate::Sybase)
+        QVERIFY_SQL(q, exec("create table " + qtestNull + " (id int null, t_varchar varchar(20) null)"));
     else
-        QVERIFY_SQL(q, exec("create table " + qTableName("qtest_null", __FILE__, db) + " (id int, t_varchar varchar(20))" ) );
+        QVERIFY_SQL(q, exec("create table " + qtestNull + " (id int, t_varchar varchar(20))"));
 }
 
 void tst_QSqlQuery::populateTestTables( QSqlDatabase db )

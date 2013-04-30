@@ -154,7 +154,7 @@ void QMenuPrivate::init()
     }
 
     platformMenu = QGuiApplicationPrivate::platformTheme()->createPlatformMenu();
-    if (platformMenu) {
+    if (!platformMenu.isNull()) {
         QObject::connect(platformMenu, SIGNAL(aboutToShow()), q, SIGNAL(aboutToShow()));
         QObject::connect(platformMenu, SIGNAL(aboutToHide()), q, SIGNAL(aboutToHide()));
     }
@@ -2411,7 +2411,7 @@ void QMenu::changeEvent(QEvent *e)
         if (d->tornPopup) // torn-off menu
             d->tornPopup->setEnabled(isEnabled());
         d->menuAction->setEnabled(isEnabled());
-        if (d->platformMenu)
+        if (!d->platformMenu.isNull())
             d->platformMenu->setEnabled(isEnabled());
     }
     QWidget::changeEvent(e);
@@ -2992,7 +2992,7 @@ void QMenu::actionEvent(QActionEvent *e)
         d->widgetItems.remove(e->action());
     }
 
-    if (d->platformMenu) {
+    if (!d->platformMenu.isNull()) {
         if (e->type() == QEvent::ActionAdded) {
             QPlatformMenuItem *menuItem =
                 QGuiApplicationPrivate::platformTheme()->createPlatformMenuItem();
@@ -3201,7 +3201,7 @@ void QMenu::setSeparatorsCollapsible(bool collapse)
         d->updateActionRects();
         update();
     }
-    if (d->platformMenu)
+    if (!d->platformMenu.isNull())
         d->platformMenu->syncSeparatorsCollapsible(collapse);
 }
 

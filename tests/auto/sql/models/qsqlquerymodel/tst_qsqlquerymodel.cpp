@@ -158,7 +158,8 @@ void tst_QSqlQueryModel::createTestTables(QSqlDatabase db)
 {
     dropTestTables(db);
     QSqlQuery q(db);
-    if(tst_Databases::isPostgreSQL(db))
+    QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
+    if (dbType == QSqlDriverPrivate::PostgreSQL)
         QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
     QVERIFY_SQL( q, exec("create table " + qTableName("test", __FILE__, db) + "(id integer not null, name varchar(20), title integer, primary key (id))"));
     QVERIFY_SQL( q, exec("create table " + qTableName("test2", __FILE__, db) + "(id integer not null, title varchar(20), primary key (id))"));
@@ -312,12 +313,13 @@ void tst_QSqlQueryModel::insertColumn()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
 
     DBTestModel model;
     model.setQuery(QSqlQuery("select * from " + qTableName("test", __FILE__, db), db));
     model.fetchMore(); // necessary???
 
-    bool isToUpper = db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2");
+    bool isToUpper = (dbType == QSqlDriverPrivate::Interbase) || (dbType == QSqlDriverPrivate::Oracle) || (dbType == QSqlDriverPrivate::DB2);
     const QString idColumn(isToUpper ? "ID" : "id");
     const QString nameColumn(isToUpper ? "NAME" : "name");
     const QString titleColumn(isToUpper ? "TITLE" : "title");
@@ -415,13 +417,14 @@ void tst_QSqlQueryModel::record()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
 
     QSqlQueryModel model;
     model.setQuery(QSqlQuery("select * from " + qTableName("test", __FILE__, db), db));
 
     QSqlRecord rec = model.record();
 
-    bool isToUpper = db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2");
+    bool isToUpper = (dbType == QSqlDriverPrivate::Interbase) || (dbType == QSqlDriverPrivate::Oracle) || (dbType == QSqlDriverPrivate::DB2);
 
     QCOMPARE(rec.count(), 3);
     QCOMPARE(rec.fieldName(0), isToUpper ? QString("ID") : QString("id"));
@@ -445,6 +448,7 @@ void tst_QSqlQueryModel::setHeaderData()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const QSqlDriverPrivate::DBMSType dbType = tst_Databases::getDatabaseType(db);
 
     QSqlQueryModel model;
 
@@ -465,7 +469,7 @@ void tst_QSqlQueryModel::setHeaderData()
     QVERIFY(!model.setHeaderData(7, Qt::Horizontal, "foo", Qt::ToolTipRole));
     QVERIFY(!model.headerData(7, Qt::Horizontal, Qt::ToolTipRole).isValid());
 
-    bool isToUpper = db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2");
+    bool isToUpper = (dbType == QSqlDriverPrivate::Interbase) || (dbType == QSqlDriverPrivate::Oracle) || (dbType == QSqlDriverPrivate::DB2);
     QCOMPARE(model.headerData(0, Qt::Horizontal).toString(), isToUpper ? QString("ID") : QString("id"));
     QCOMPARE(model.headerData(1, Qt::Horizontal).toString(), isToUpper ? QString("NAME") : QString("name"));
     QCOMPARE(model.headerData(2, Qt::Horizontal).toString(), QString("bar"));
