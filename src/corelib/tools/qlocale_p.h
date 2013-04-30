@@ -247,7 +247,6 @@ public:
     static QLocale::Country codeToCountry(const QString &code);
     static void getLangAndCountry(const QString &name, QLocale::Language &lang,
                                   QLocale::Script &script, QLocale::Country &cntry);
-    static const QLocaleData *dataPointerForIndex(quint16 index);
 
     QLocale::MeasurementSystem measurementSystem() const;
 

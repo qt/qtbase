@@ -695,19 +695,6 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
 
 static const int locale_data_size = sizeof(locale_data)/sizeof(QLocaleData) - 1;
 
-const QLocaleData *QLocalePrivate::dataPointerForIndex(quint16 index)
-{
-#ifndef QT_NO_SYSTEMLOCALE
-    Q_ASSERT(index <= locale_data_size);
-    if (index == locale_data_size)
-        return system_data;
-#else
-    Q_ASSERT(index < locale_data_size);
-#endif
-
-    return &locale_data[index];
-}
-
 Q_GLOBAL_STATIC_WITH_ARGS(QSharedDataPointer<QLocalePrivate>, defaultLocalePrivate,
                           (QLocalePrivate::create(defaultData(), default_number_options)))
 
