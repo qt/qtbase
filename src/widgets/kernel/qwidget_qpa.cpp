@@ -543,6 +543,13 @@ void QWidgetPrivate::show_sys()
 #endif
         invalidateBuffer(q->rect());
         window->setVisible(true);
+        // Was the window moved by the Window system or QPlatformWindow::initialGeometry() ?
+        if (window->isTopLevel()) {
+            const QPoint crectTopLeft = q->data->crect.topLeft();
+            const QPoint windowTopLeft = window->geometry().topLeft();
+            if (crectTopLeft == QPoint(0, 0) && windowTopLeft != crectTopLeft)
+                q->data->crect.moveTopLeft(windowTopLeft);
+        }
     }
 }
 
