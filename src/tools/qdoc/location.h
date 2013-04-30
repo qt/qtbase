@@ -101,7 +101,6 @@ public:
     static void startLoggingProgress() { logProgress_ = true; }
     static void stopLoggingProgress() { logProgress_ = false; }
     static QString canonicalRelativePath(const QString &path);
-    static QString canonicalRelativePath(const QString &path, const QString &configDir);
 
 private:
     enum MessageType { Warning, Error };

@@ -101,7 +101,7 @@ public:
     QString getString(const QString& var) const;
     QSet<QString> getStringSet(const QString& var) const;
     QStringList getStringList(const QString& var) const;
-    QStringList getCanonicalRelativePathList(const QString& var) const;
+    QStringList getCanonicalPathList(const QString& var) const;
     QStringList getCleanPathList(const QString& var) const;
     QStringList getPathList(const QString& var) const;
     QRegExp getRegExp(const QString& var) const;

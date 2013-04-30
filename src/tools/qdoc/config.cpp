@@ -381,7 +381,7 @@ QStringList Config::getStringList(const QString& var) const
    \param var The variable containing the list of paths.
    \see   Location::canonicalRelativePath()
  */
-QStringList Config::getCanonicalRelativePathList(const QString& var) const
+QStringList Config::getCanonicalPathList(const QString& var) const
 {
     QStringList t;
     QList<ConfigVar> configVars = configVars_.values(var);
@@ -391,15 +391,16 @@ QStringList Config::getCanonicalRelativePathList(const QString& var) const
             const ConfigVar& cv = configVars[i];
             if (!cv.location_.isEmpty())
                 (Location&) lastLocation_ = cv.location_;
-            if (!cv.plus_)
+            if (!cv.plus_) {
                 t.clear();
+            }
             const QString d = cv.currentPath_;
             const QStringList& sl = cv.values_;
             if (!sl.isEmpty()) {
                 t.reserve(t.size() + sl.size());
                 for (int i=0; i<sl.size(); ++i) {
-                    const QString& crp = Location::canonicalRelativePath(sl[i], d);
-                    t.append(crp);
+                    QDir dir(d + "/" + sl[i]);
+                    t.append(dir.canonicalPath());
                 }
             }
             --i;
@@ -595,7 +596,7 @@ QStringList Config::getAllFiles(const QString &filesVar,
                                 const QSet<QString> &excludedFiles)
 {
     QStringList result = getStringList(filesVar);
-    QStringList dirs = getCanonicalRelativePathList(dirsVar);
+    QStringList dirs = getCanonicalPathList(dirsVar);
 
     QString nameFilter = getString(filesVar + dot + QLatin1String(CONFIG_FILEEXTENSIONS));
 
@@ -611,7 +612,7 @@ QStringList Config::getExampleQdocFiles(const QSet<QString> &excludedDirs,
                                         const QSet<QString> &excludedFiles)
 {
     QStringList result;
-    QStringList dirs = getCanonicalRelativePathList("exampledirs");
+    QStringList dirs = getCanonicalPathList("exampledirs");
     QString nameFilter = " *.qdoc";
 
     QStringList::ConstIterator d = dirs.constBegin();
@@ -626,7 +627,7 @@ QStringList Config::getExampleImageFiles(const QSet<QString> &excludedDirs,
                                          const QSet<QString> &excludedFiles)
 {
     QStringList result;
-    QStringList dirs = getCanonicalRelativePathList("exampledirs");
+    QStringList dirs = getCanonicalPathList("exampledirs");
     QString nameFilter = getString(CONFIG_EXAMPLES + dot + QLatin1String(CONFIG_IMAGEEXTENSIONS));
 
     QStringList::ConstIterator d = dirs.constBegin();
