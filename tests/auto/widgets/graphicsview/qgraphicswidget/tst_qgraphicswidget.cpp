@@ -1696,6 +1696,24 @@ void tst_QGraphicsWidget::verifyFocusChain()
         delete w;
     }
     {
+        // QTBUG-30923:
+        // Child QGraphicsWidget with tabFocusFirst gets removed & deleted should not crash.
+        // This case simulates what QtQuick1 does when you have QGraphicsObject based
+        // item in different qml views that are loaded one after another.
+        QGraphicsItem *parent1 = new QGraphicsRectItem(0); // root item
+        scene.addItem(parent1);
+        for (int i = 0; i < 2; i++) {
+            SubQGraphicsWidget *w1 = new SubQGraphicsWidget(parent1);
+            w1->setFocusPolicy(Qt::StrongFocus);
+            w1->setFocus();
+            QVERIFY(w1->hasFocus());
+            scene.removeItem(w1);
+            delete w1;
+            QApplication::processEvents();
+        }
+        delete parent1;
+    }
+    {
         // remove the tabFocusFirst widget from the scene.
         QWidget *window = new QWidget;
         QVBoxLayout *layout = new QVBoxLayout;
