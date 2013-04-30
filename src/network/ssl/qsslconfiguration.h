@@ -124,6 +124,10 @@ public:
     void setSslOption(QSsl::SslOption option, bool on);
     bool testSslOption(QSsl::SslOption option) const;
 
+    QByteArray session() const;
+    void setSession(const QByteArray &session);
+    int sessionTicketLifeTimeHint() const;
+
     static QSslConfiguration defaultConfiguration();
     static void setDefaultConfiguration(const QSslConfiguration &configuration);
 

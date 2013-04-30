@@ -1450,8 +1450,16 @@ void QSslSocketBackendPrivate::continueHandshake()
 
     // Cache this SSL session inside the QSslContext
     if (!(configuration.sslOptions & QSsl::SslOptionDisableSessionSharing)) {
-        if (!sslContextPointer->cacheSession(ssl))
+        if (!sslContextPointer->cacheSession(ssl)) {
             sslContextPointer.clear(); // we could not cache the session
+        } else {
+            // Cache the session for permanent usage as well
+            if (!(configuration.sslOptions & QSsl::SslOptionDisableSessionPersistence)) {
+                if (!sslContextPointer->sessionASN1().isEmpty())
+                    configuration.sslSession = sslContextPointer->sessionASN1();
+                configuration.sslSessionTicketLifeTimeHint = sslContextPointer->sessionTicketLifeTimeHint();
+            }
+        }
     }
 
     connectionEncrypted = true;

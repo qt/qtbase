@@ -465,6 +465,8 @@ void q_OPENSSL_add_all_algorithms_conf();
 int q_SSL_CTX_load_verify_locations(SSL_CTX *ctx, const char *CAfile, const char *CApath);
 long q_SSLeay();
 const char *q_SSLeay_version(int type);
+int q_i2d_SSL_SESSION(SSL_SESSION *in, unsigned char **pp);
+SSL_SESSION *q_d2i_SSL_SESSION(SSL_SESSION **a, const unsigned char **pp, long length);
 
 // Helper function
 class QDateTime;

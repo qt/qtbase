@@ -69,6 +69,9 @@ public:
     SSL* createSsl();
     bool cacheSession(SSL*); // should be called when handshake completed
 
+    QByteArray sessionASN1() const;
+    void setSessionASN1(const QByteArray &sessionASN1);
+    int sessionTicketLifeTimeHint() const;
 protected:
     QSslContext();
 
@@ -76,6 +79,8 @@ private:
     SSL_CTX* ctx;
     EVP_PKEY *pkey;
     SSL_SESSION *session;
+    QByteArray m_sessionASN1;
+    int m_sessionTicketLifeTimeHint;
     QSslError::SslError errorCode;
     QString errorStr;
     QSslConfiguration sslConfiguration;

@@ -85,7 +85,8 @@ public:
           peerVerifyDepth(0),
           allowRootCertOnDemandLoading(true),
           peerSessionShared(false),
-          sslOptions(QSslConfigurationPrivate::defaultSslOptions)
+          sslOptions(QSslConfigurationPrivate::defaultSslOptions),
+          sslSessionTicketLifeTimeHint(-1)
     { }
 
     QSslCertificate peerCertificate;
@@ -109,6 +110,9 @@ public:
     QSsl::SslOptions sslOptions;
 
     Q_AUTOTEST_EXPORT static const QSsl::SslOptions defaultSslOptions;
+
+    QByteArray sslSession;
+    int sslSessionTicketLifeTimeHint;
 
     // in qsslsocket.cpp:
     static QSslConfiguration defaultConfiguration();

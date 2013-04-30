@@ -49,7 +49,8 @@ QT_BEGIN_NAMESPACE
 
 const QSsl::SslOptions QSslConfigurationPrivate::defaultSslOptions = QSsl::SslOptionDisableEmptyFragments
                                                                     |QSsl::SslOptionDisableLegacyRenegotiation
-                                                                    |QSsl::SslOptionDisableCompression;
+                                                                    |QSsl::SslOptionDisableCompression
+                                                                    |QSsl::SslOptionDisableSessionPersistence;
 
 /*!
     \class QSslConfiguration
@@ -182,7 +183,9 @@ bool QSslConfiguration::operator==(const QSslConfiguration &other) const
         d->peerVerifyMode == other.d->peerVerifyMode &&
         d->peerVerifyDepth == other.d->peerVerifyDepth &&
         d->allowRootCertOnDemandLoading == other.d->allowRootCertOnDemandLoading &&
-        d->sslOptions == other.d->sslOptions;
+        d->sslOptions == other.d->sslOptions &&
+        d->sslSession == other.d->sslSession &&
+        d->sslSessionTicketLifeTimeHint == other.d->sslSessionTicketLifeTimeHint;
 }
 
 /*!
@@ -216,7 +219,9 @@ bool QSslConfiguration::isNull() const
             d->privateKey.isNull() &&
             d->peerCertificate.isNull() &&
             d->peerCertificateChain.count() == 0 &&
-            d->sslOptions == QSslConfigurationPrivate::defaultSslOptions);
+            d->sslOptions == QSslConfigurationPrivate::defaultSslOptions &&
+            d->sslSession.isNull() &&
+            d->sslSessionTicketLifeTimeHint == -1);
 }
 
 /*!
@@ -591,6 +596,60 @@ void QSslConfiguration::setSslOption(QSsl::SslOption option, bool on)
 bool QSslConfiguration::testSslOption(QSsl::SslOption option) const
 {
     return d->sslOptions & option;
+}
+
+/*!
+  \since 5.2
+
+  If QSsl::SslOptionDisableSessionPersistence was turned off, this
+  function returns the session used in the SSL handshake in ASN.1
+  format, suitable to e.g. be persisted to disk. If no session was
+  used or QSsl::SslOptionDisableSessionPersistence was not turned off,
+  this function returns an empty QByteArray.
+
+  \b{Note:} When persisting the session to disk or similar, be
+  careful not to expose the session to a potential attacker, as
+  knowledge of the session allows for eavesdropping on data
+  encrypted with the session parameters.
+
+  \sa setSession(), QSsl::SslOptionDisableSessionPersistence, setSslOption()
+ */
+QByteArray QSslConfiguration::session() const
+{
+    return d->sslSession;
+}
+
+/*!
+  \since 5.2
+
+  Sets the session to be used in an SSL handshake.
+  QSsl::SslOptionDisableSessionPersistence must be turned off
+  for this to work, and \a session must be in ASN.1 format
+  as returned by session().
+
+  \sa session(), QSsl::SslOptionDisableSessionPersistence, setSslOption()
+ */
+void QSslConfiguration::setSession(const QByteArray &session)
+{
+    d->sslSession = session;
+}
+
+/*!
+  \since 5.2
+
+  If QSsl::SslOptionDisableSessionPersistence was turned off, this
+  function returns the session ticket life time hint sent by the
+  server (which might be 0).
+  If the server did not send a session ticket (e.g. when
+  resuming a session or when the server does not support it) or
+  QSsl::SslOptionDisableSessionPersistence was not turned off,
+  this function returns -1.
+
+  \sa session(), QSsl::SslOptionDisableSessionPersistence, setSslOption()
+ */
+int QSslConfiguration::sessionTicketLifeTimeHint() const
+{
+    return d->sslSessionTicketLifeTimeHint;
 }
 
 /*!
