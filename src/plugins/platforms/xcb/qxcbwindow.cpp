@@ -630,7 +630,7 @@ void QXcbWindow::show()
         const QWindow *tp = window()->transientParent();
         if (isTransient(window()) || tp != 0) {
             xcb_window_t transientXcbParent = 0;
-            if (tp)
+            if (tp && tp->handle())
                 transientXcbParent = static_cast<const QXcbWindow *>(tp->handle())->winId();
             // Default to client leader if there is no transient parent, else modal dialogs can
             // be hidden by their parents.
