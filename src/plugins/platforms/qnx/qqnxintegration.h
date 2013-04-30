@@ -146,7 +146,7 @@ private:
     static void removeWindow(screen_window_t qnxWindow);
 
     screen_context_t m_screenContext;
-#if defined(QNX_SCREENEVENTTHREAD)
+#if defined(QQNX_SCREENEVENTTHREAD)
     QQnxScreenEventThread *m_screenEventThread;
 #endif
     QQnxNavigatorEventHandler *m_navigatorEventHandler;

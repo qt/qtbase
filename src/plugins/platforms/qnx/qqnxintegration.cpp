@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qqnxintegration.h"
-#if defined(QQNXSCREENEVENTTHREAD)
+#if defined(QQNX_SCREENEVENTTHREAD)
 #include "qqnxscreeneventthread.h"
 #endif
 #include "qqnxnativeinterface.h"
