@@ -52,20 +52,16 @@
 QIOSContext::QIOSContext(QOpenGLContext *context)
     : QPlatformOpenGLContext()
     , m_eaglContext([[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2])
+    , m_format(context->format())
 {
-    // Start out with the requested format
-    QSurfaceFormat format = context->format();
-
-    format.setRenderableType(QSurfaceFormat::OpenGLES);
-    format.setMajorVersion(2);
-    format.setMinorVersion(0);
+    m_format.setRenderableType(QSurfaceFormat::OpenGLES);
+    m_format.setMajorVersion(2);
+    m_format.setMinorVersion(0);
 
     // Even though iOS internally double-buffers its rendering, we
     // report single-buffered here since the buffer remains unchanged
     // when swapping unlesss you manually clear it yourself.
-    format.setSwapBehavior(QSurfaceFormat::SingleBuffer);
-
-    m_format = format;
+    m_format.setSwapBehavior(QSurfaceFormat::SingleBuffer);
 }
 
 QIOSContext::~QIOSContext()
