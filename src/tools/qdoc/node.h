@@ -200,11 +200,13 @@ public:
     virtual bool isCollisionNode() const { return false; }
     virtual bool isAttached() const { return false; }
     virtual bool isGroup() const { return false; }
+    virtual bool isWrapper() const;
     virtual void addMember(Node* ) { }
     virtual bool hasMembers() const { return false; }
     virtual bool hasNamespaces() const { return false; }
     virtual bool hasClasses() const { return false; }
     virtual void setAbstract(bool ) { }
+    virtual void setWrapper() { }
     virtual QString title() const { return QString(); }
     virtual bool hasProperty(const QString& ) const { return false; }
     virtual void getMemberNamespaces(NodeMap& ) { }
@@ -437,8 +439,10 @@ public:
     ClassNode(InnerNode* parent, const QString& name);
     virtual ~ClassNode() { }
     virtual bool isClass() const { return true; }
+    virtual bool isWrapper() const { return wrapper_; }
     virtual QString obsoleteLink() const { return obsoleteLink_; }
     virtual void setObsoleteLink(const QString& t) { obsoleteLink_ = t; };
+    virtual void setWrapper() { wrapper_ = true; }
 
     void addBaseClass(Access access,
                       ClassNode* node,
@@ -463,6 +467,7 @@ private:
     QList<RelatedClass> derived;
     QList<RelatedClass> ignoredBases;
     bool abstract_;
+    bool wrapper_;
     QString sname;
     QString obsoleteLink_;
     QmlClassNode* qmlelement;
@@ -568,7 +573,9 @@ public:
     virtual void setCurrentChild();
     virtual void clearCurrentChild();
     virtual bool isAbstract() const { return abstract_; }
+    virtual bool isWrapper() const { return wrapper_; }
     virtual void setAbstract(bool b) { abstract_ = b; }
+    virtual void setWrapper() { wrapper_ = true; }
     virtual bool isInternal() const { return (status() == Internal); }
     virtual QString qmlFullBaseName() const;
     virtual QString obsoleteLink() const { return obsoleteLink_; }
@@ -592,6 +599,7 @@ public:
 private:
     bool abstract_;
     bool cnodeRequired_;
+    bool wrapper_;
     ClassNode*    cnode_;
     QString      baseName_;
     QString             obsoleteLink_;

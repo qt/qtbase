@@ -48,6 +48,7 @@ QT_BEGIN_NAMESPACE
     \class QOpenGLFunctions_ES2
     \inmodule QtGui
     \since 5.1
+    \wrapper
     \brief The QOpenGLFunctions_ES2 class provides all functions for OpenGL ES 2
 
     \sa QAbstractOpenGLFunctions

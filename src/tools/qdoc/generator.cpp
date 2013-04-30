@@ -654,7 +654,7 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
         }
     }
     if (node->doc().isEmpty()) {
-        if (!quiet && !node->isReimp()) { // ### might be unnecessary
+        if (!node->isWrapper() && !quiet && !node->isReimp()) { // ### might be unnecessary
             node->location().warning(tr("No documentation for '%1'").arg(node->plainFullName()));
         }
     }

@@ -57,6 +57,7 @@ QT_BEGIN_NAMESPACE
     \class QOpenGLFunctions_1_1
     \inmodule QtGui
     \since 5.1
+    \wrapper
     \brief The QOpenGLFunctions_1_1 class provides all functions for this version and profile of OpenGL.
 
     \sa QAbstractOpenGLFunctions

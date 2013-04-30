@@ -60,6 +60,7 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_PAGEKEYWORDS            Doc::alias(QLatin1String("pagekeywords"))
 #define COMMAND_PRELIMINARY             Doc::alias(QLatin1String("preliminary"))
 #define COMMAND_SINCE                   Doc::alias(QLatin1String("since"))
+#define COMMAND_WRAPPER                 Doc::alias(QLatin1String("wrapper"))
 
 #define COMMAND_QMLABSTRACT             Doc::alias(QLatin1String("qmlabstract"))
 #define COMMAND_QMLCLASS                Doc::alias(QLatin1String("qmlclass"))
@@ -366,6 +367,9 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
             else if (command == COMMAND_SINCE) {
                 QString arg = args[0].first; //.join(' ');
                 node->setSince(arg);
+            }
+            else if (command == COMMAND_WRAPPER) {
+                node->setWrapper();
             }
             else {
                 doc.location().warning(tr("The \\%1 command is ignored in QML files").arg(command));

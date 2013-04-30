@@ -70,6 +70,7 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_SUBTITLE                Doc::alias(QLatin1String("subtitle"))
 #define COMMAND_THREADSAFE              Doc::alias(QLatin1String("threadsafe"))
 #define COMMAND_TITLE                   Doc::alias(QLatin1String("title"))
+#define COMMAND_WRAPPER                 Doc::alias(QLatin1String("wrapper"))
 
 QString CodeParser::currentSubDir_;
 QList<CodeParser *> CodeParser::parsers;
@@ -219,7 +220,8 @@ QSet<QString> CodeParser::commonMetaCommands()
                            << COMMAND_SINCE
                            << COMMAND_SUBTITLE
                            << COMMAND_THREADSAFE
-                           << COMMAND_TITLE;
+                           << COMMAND_TITLE
+                           << COMMAND_WRAPPER;
 }
 
 /*!
@@ -285,6 +287,9 @@ void CodeParser::processCommonMetaCommand(const Location& location,
     }
     else if (command == COMMAND_SINCE) {
         node->setSince(arg.first);
+    }
+    else if (command == COMMAND_WRAPPER) {
+        node->setWrapper();
     }
     else if (command == COMMAND_PAGEKEYWORDS) {
         node->addPageKeywords(arg.first);
