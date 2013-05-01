@@ -1734,6 +1734,11 @@ void tst_Moc::warnings()
 #endif
 
     QProcess proc;
+
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.insert("QT_MESSAGE_PATTERN", "no qDebug or qWarning please");
+    proc.setProcessEnvironment(env);
+
     proc.start("moc", args);
     QVERIFY(proc.waitForStarted());
 
