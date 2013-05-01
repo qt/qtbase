@@ -648,8 +648,8 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QChar::Script sc
         }
 
         if (f.hintingPreference == QFont::PreferDefaultHinting) {
-            QByteArray desktopEnvironment = QGuiApplicationPrivate::platformIntegration()->services()->desktopEnvironment();
-            if (desktopEnvironment == "GNOME" || desktopEnvironment == "UNITY") {
+            const QPlatformServices *services = QGuiApplicationPrivate::platformIntegration()->services();
+            if (services && (services->desktopEnvironment() == "GNOME" || services->desktopEnvironment() == "UNITY")) {
                 void *hintStyleResource =
                         QGuiApplication::platformNativeInterface()->nativeResourceForScreen("hintstyle",
                                                                                             QGuiApplication::primaryScreen());
