@@ -238,7 +238,10 @@ private:
     void defaultConstruct(T *from, T *to);
     void copyConstruct(const T *srcFrom, const T *srcTo, T *dstFrom);
     void destruct(T *from, T *to);
-
+    bool isValidIterator(const iterator &i) const
+    {
+        return (i <= d->end()) && (d->begin() <= i);
+    }
     class AlignmentDummy { Data header; T array[1]; };
 };
 
@@ -578,6 +581,8 @@ inline void QVector<T>::removeLast()
 template <typename T>
 typename QVector<T>::iterator QVector<T>::insert(iterator before, size_type n, const T &t)
 {
+    Q_ASSERT_X(isValidIterator(before),  "QVector::insert", "The specified iterator argument 'before' is invalid");
+
     int offset = std::distance(d->begin(), before);
     if (n != 0) {
         const T copy(t);
@@ -611,6 +616,9 @@ typename QVector<T>::iterator QVector<T>::insert(iterator before, size_type n, c
 template <typename T>
 typename QVector<T>::iterator QVector<T>::erase(iterator abegin, iterator aend)
 {
+    Q_ASSERT_X(isValidIterator(abegin), "QVector::erase", "The specified iterator argument 'abegin' is invalid");
+    Q_ASSERT_X(isValidIterator(aend), "QVector::erase", "The specified iterator argument 'aend' is invalid");
+
     const int itemsToErase = aend - abegin;
 
     if (!itemsToErase)
