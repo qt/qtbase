@@ -3040,7 +3040,8 @@ QList<QAction*> QWidget::actions() const
 
     Disabling a widget implicitly disables all its children. Enabling
     respectively enables all child widgets unless they have been
-    explicitly disabled.
+    explicitly disabled. It it not possible to explicitly enable a child
+    widget which is not a window while its parent widget remains disabled.
 
     By default, this property is true.
 
