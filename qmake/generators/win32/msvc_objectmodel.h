@@ -561,6 +561,7 @@ public:
     QStringList             UndefinePreprocessorDefinitions;
     pchOption               UsePrecompiledHeader;
     triState                UseUnicodeForAssemblerListing;
+    QStringList             TreatSpecificWarningsAsErrors;
     triState                WarnAsError;
     warningLevelOption      WarningLevel;
     triState                WholeProgramOptimization;
