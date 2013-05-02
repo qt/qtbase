@@ -41,7 +41,6 @@
 
 #include "qfileiconprovider.h"
 
-#ifndef QT_NO_FILEICONPROVIDER
 #include <qstyle.h>
 #include <qapplication.h>
 #include <qdir.h>
@@ -428,5 +427,3 @@ QString QFileIconProvider::type(const QFileInfo &info) const
 }
 
 QT_END_NAMESPACE
-
-#endif

@@ -49,8 +49,6 @@
 QT_BEGIN_NAMESPACE
 
 
-#ifndef QT_NO_FILEICONPROVIDER
-
 class QFileIconProviderPrivate;
 
 class Q_WIDGETS_EXPORT QFileIconProvider
@@ -78,11 +76,8 @@ private:
     Q_DISABLE_COPY(QFileIconProvider)
 };
 
-#endif // QT_NO_FILEICONPROVIDER
-
 Q_DECLARE_OPERATORS_FOR_FLAGS(QFileIconProvider::Options)
 
 QT_END_NAMESPACE
 
 #endif // QFILEICONPROVIDER_H
-
