@@ -106,10 +106,10 @@ enum asmListingOption {
     asmListingAsmSrc
 };
 enum basicRuntimeCheckOption {
-    runtimeBasicCheckNone,
-    runtimeCheckStackFrame,
-    runtimeCheckUninitVariables,
-    runtimeBasicCheckAll
+    runtimeBasicCheckNone = 0,
+    runtimeCheckStackFrame = 1,
+    runtimeCheckUninitVariables = 2,
+    runtimeBasicCheckAll = runtimeCheckStackFrame | runtimeCheckUninitVariables
 };
 enum browseInfoOption {
     brInfoNone,
@@ -580,6 +580,9 @@ public:
     QString                 PreprocessOutputPath;
 
     VCConfiguration*        config;
+
+private:
+    bool parseRuntimeCheckOption(char c, int *rtc);
 };
 
 class VCLinkerTool : public VCToolBase
