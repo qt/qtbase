@@ -56,8 +56,10 @@ contains(QT_CONFIG, angle) {
 
     CMAKE_QT_OPENGL_IMPLEMENTATION = GLESv2
 } else {
-    CMAKE_EGL_LIBS = $$cmakeProcessLibs($$QMAKE_LIBS_EGL)
-    !isEmpty(QMAKE_LIBDIR_EGL): CMAKE_EGL_LIBDIR += $$cmakeTargetPath($$QMAKE_LIBDIR_EGL)
+    contains(QT_CONFIG, egl) {
+        CMAKE_EGL_LIBS = $$cmakeProcessLibs($$QMAKE_LIBS_EGL)
+        !isEmpty(QMAKE_LIBDIR_EGL): CMAKE_EGL_LIBDIR += $$cmakeTargetPath($$QMAKE_LIBDIR_EGL)
+    }
 
     contains(QT_CONFIG, opengles1) {
         !isEmpty(QMAKE_INCDIR_OPENGL_ES1): CMAKE_GL_INCDIRS = $$cmakeTargetPaths($$QMAKE_INCDIR_OPENGL_ES1)
@@ -84,6 +86,6 @@ contains(QT_CONFIG, angle) {
     }
 }
 
-CMAKE_EGL_INCDIRS = $$cmakePortablePaths($$QMAKE_INCDIR_EGL)
+contains(QT_CONFIG, egl): CMAKE_EGL_INCDIRS = $$cmakePortablePaths($$QMAKE_INCDIR_EGL)
 
 QMAKE_DYNAMIC_LIST_FILE = $$PWD/QtGui.dynlist
