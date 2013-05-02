@@ -62,7 +62,7 @@ unset(_qt5gui_OPENGL_INCLUDE_DIR CACHE)
 
 macro(_qt5gui_find_extra_libs Name Libs LibDir IncDirs)
     set(Qt5Gui_${Name}_LIBRARIES)
-    set(Qt5Gui_EGL_INCLUDE_DIRS ${IncDirs})
+    set(Qt5Gui_${Name}_INCLUDE_DIRS ${IncDirs})
     foreach(_lib ${Libs})
         string(REGEX REPLACE "[^_A-Za-z0-9]" "_" _cmake_lib_name ${_lib})
         if (NOT TARGET Qt5::Gui_${_cmake_lib_name})
