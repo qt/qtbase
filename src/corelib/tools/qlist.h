@@ -346,6 +346,11 @@ private:
     void node_destruct(Node *n);
     void node_copy(Node *from, Node *to, Node *src);
     void node_destruct(Node *from, Node *to);
+
+    bool isValidIterator(const iterator &i) const
+    {
+        return (constBegin().i <= i.i) && (i.i <= constEnd().i);
+    }
 };
 
 #if defined(Q_CC_BOR)
@@ -433,6 +438,8 @@ Q_INLINE_TEMPLATE QList<T> &QList<T>::operator=(const QList<T> &l)
 template <typename T>
 inline typename QList<T>::iterator QList<T>::insert(iterator before, const T &t)
 {
+    Q_ASSERT_X(isValidIterator(before), "QList::insert", "The specified iterator argument 'before' is invalid");
+
     int iBefore = int(before.i - reinterpret_cast<Node *>(p.begin()));
     Node *n = reinterpret_cast<Node *>(p.insert(iBefore));
     QT_TRY {
@@ -445,8 +452,11 @@ inline typename QList<T>::iterator QList<T>::insert(iterator before, const T &t)
 }
 template <typename T>
 inline typename QList<T>::iterator QList<T>::erase(iterator it)
-{ node_destruct(it.i);
- return reinterpret_cast<Node *>(p.erase(reinterpret_cast<void**>(it.i))); }
+{
+    Q_ASSERT_X(isValidIterator(it), "QList::erase", "The specified iterator argument 'it' is invalid");
+    node_destruct(it.i);
+    return reinterpret_cast<Node *>(p.erase(reinterpret_cast<void**>(it.i)));
+}
 template <typename T>
 inline const T &QList<T>::at(int i) const
 { Q_ASSERT_X(i >= 0 && i < p.size(), "QList<T>::at", "index out of range");
@@ -811,6 +821,9 @@ template <typename T>
 Q_OUTOFLINE_TEMPLATE typename QList<T>::iterator QList<T>::erase(typename QList<T>::iterator afirst,
                                                                  typename QList<T>::iterator alast)
 {
+    Q_ASSERT_X(isValidIterator(afirst), "QList::erase", "The specified iterator argument 'afirst' is invalid");
+    Q_ASSERT_X(isValidIterator(alast), "QList::erase", "The specified iterator argument 'alast' is invalid");
+
     for (Node *n = afirst.i; n < alast.i; ++n)
         node_destruct(n);
     int idx = afirst - begin();
