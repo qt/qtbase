@@ -4117,8 +4117,6 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
             if (child->subType() == Node::File) {
                 QString file = child->name();
                 if (file.endsWith(".pro") || file.endsWith(".qmlproject")) {
-                    if (file.startsWith("demos/"))
-                        file = file.mid(6);
                     proFiles << file;
                 }
             }
@@ -4233,8 +4231,6 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
                 if (baseName.compare(ename, Qt::CaseInsensitive) == 0) {
                     if (!usedNames.contains(fileName)) {
                         writer.writeStartElement("fileToOpen");
-                        if (file.startsWith("demos/"))
-                            file = file.mid(6);
                         writer.writeCharacters(examplesPath + file);
                         writer.writeEndElement(); // fileToOpen
                         usedNames.insert(fileName);
@@ -4244,8 +4240,6 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
                          fileName.toLower().endsWith("main.qml")) {
                     if (!usedNames.contains(fileName)) {
                         writer.writeStartElement("fileToOpen");
-                        if (file.startsWith("demos/"))
-                            file = file.mid(6);
                         writer.writeCharacters(examplesPath + file);
                         writer.writeEndElement(); // fileToOpen
                         usedNames.insert(fileName);
