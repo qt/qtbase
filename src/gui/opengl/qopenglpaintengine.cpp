@@ -226,9 +226,17 @@ void QOpenGL2PaintEngineExPrivate::updateBrushTexture()
         if (currentBrushPixmap.width() > max_texture_size || currentBrushPixmap.height() > max_texture_size)
             currentBrushPixmap = currentBrushPixmap.scaled(max_texture_size, max_texture_size, Qt::KeepAspectRatio);
 
+#if defined(QT_OPENGL_ES_2)
+        // OpenGL ES does not support GL_REPEAT wrap modes for NPOT textures. So instead,
+        // we emulate GL_REPEAT by only taking the fractional part of the texture coords
+        // in the qopenglslTextureBrushSrcFragmentShader program.
+        GLuint wrapMode = GL_CLAMP_TO_EDGE;
+#else
+        GLuint wrapMode = GL_REPEAT;
+#endif
         funcs.glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
         QOpenGLTextureCache::cacheForContext(ctx)->bindTexture(ctx, currentBrushPixmap);
-        updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
+        updateTextureFilter(GL_TEXTURE_2D, wrapMode, q->state()->renderHints & QPainter::SmoothPixmapTransform);
         textureInvertedY = false;
     }
     brushTextureDirty = false;
