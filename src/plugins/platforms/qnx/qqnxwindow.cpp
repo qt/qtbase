@@ -136,6 +136,15 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
         qFatal("QQnxWindow: failed to set window swap interval, errno=%d", errno);
     }
 
+    if (window->flags() && Qt::WindowDoesNotAcceptFocus) {
+        errno = 0;
+        val = SCREEN_SENSITIVITY_NO_FOCUS;
+        result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_SENSITIVITY, &val);
+        if (result != 0) {
+            qFatal("QQnxWindow: failed to set window sensitivity, errno=%d", errno);
+        }
+    }
+
     setScreen(static_cast<QQnxScreen *>(window->screen()->handle()));
 
     // Add window to plugin's window mapper
