@@ -24,6 +24,7 @@ qpainfo \
 qscreen \
 qssloptions \
 qtabletevent \
+qtexteditlist \
 qtbug-8933 \
 qtouchevent \
 qwidget_zorder \
