@@ -290,6 +290,11 @@ QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
 #endif
 
 {
+    QString scheme = newUrl.scheme();
+    if (scheme == QLatin1String("preconnect-http")
+            || scheme == QLatin1String("preconnect-https"))
+        // make sure we do not close the socket after preconnecting
+        connectionCloseEnabled = false;
 }
 
 QHttpNetworkReplyPrivate::~QHttpNetworkReplyPrivate()

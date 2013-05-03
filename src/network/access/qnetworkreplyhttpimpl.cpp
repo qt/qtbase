@@ -629,7 +629,9 @@ void QNetworkReplyHttpImplPrivate::postRequest()
     QUrl url = request.url();
     httpRequest.setUrl(url);
 
-    bool ssl = url.scheme().toLower() == QLatin1String("https");
+    QString scheme = url.scheme().toLower();
+    bool ssl = (scheme == QLatin1String("https")
+                || scheme == QLatin1String("preconnect-https"));
     q->setAttribute(QNetworkRequest::ConnectionEncryptedAttribute, ssl);
     httpRequest.setSsl(ssl);
 

@@ -205,6 +205,16 @@ bool QHttpNetworkConnectionChannel::sendRequest()
             // _q_connected or _q_encrypted
             return false;
         }
+        QString scheme = request.url().scheme();
+        if (scheme == QLatin1String("preconnect-http")
+            || scheme == QLatin1String("preconnect-https")) {
+            state = QHttpNetworkConnectionChannel::IdleState;
+            reply->d_func()->state = QHttpNetworkReplyPrivate::AllDoneState;
+            allDone();
+            reply = 0; // so we can reuse this channel
+            return true; // we have a working connection and are done
+        }
+
         written = 0; // excluding the header
         bytesTotal = 0;
 

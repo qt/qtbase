@@ -50,6 +50,9 @@
 #include <QtNetwork/qtcpserver.h>
 #include "../../../../auto/network-settings.h"
 
+#ifdef QT_BUILD_INTERNAL
+#include <QtNetwork/private/qhostinfo_p.h>
+#endif
 
 Q_DECLARE_METATYPE(QSharedPointer<char>)
 
@@ -460,6 +463,7 @@ private slots:
 #ifndef QT_NO_SSL
     void echoPerformance_data();
     void echoPerformance();
+    void preConnectEncrypted();
 #endif
 
     void downloadPerformance();
@@ -472,9 +476,12 @@ private slots:
     void httpDownloadPerformanceDownloadBuffer();
     void httpsRequestChain();
     void httpsUpload();
+    void preConnect();
 
 private:
     void runHttpsUploadRequest(const QByteArray &data, const QNetworkRequest &request);
+    QPair<QNetworkReply *, qint64> runGetRequest(QNetworkAccessManager *manager,
+                                                 const QNetworkRequest &request);
 };
 
 void tst_qnetworkreply::initTestCase()
@@ -493,6 +500,19 @@ void tst_qnetworkreply::httpLatency()
         QVERIFY(!QTestEventLoop::instance().timeout());
         delete reply;
     }
+}
+
+QPair<QNetworkReply *, qint64> tst_qnetworkreply::runGetRequest(
+        QNetworkAccessManager *manager, const QNetworkRequest &request)
+{
+    QElapsedTimer timer;
+    timer.start();
+    QNetworkReply *reply = manager->get(request);
+    connect(reply, SIGNAL(sslErrors(QList<QSslError>)), reply, SLOT(ignoreSslErrors()));
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
+    QTestEventLoop::instance().enterLoop(20);
+    qint64 elapsed = timer.elapsed();
+    return qMakePair(reply, elapsed);
 }
 
 #ifndef QT_NO_SSL
@@ -526,6 +546,51 @@ void tst_qnetworkreply::echoPerformance()
         QVERIFY(reply->error() == QNetworkReply::NoError);
         delete reply;
     }
+}
+
+void tst_qnetworkreply::preConnectEncrypted()
+{
+    QString hostName = QLatin1String("www.google.com");
+
+    QNetworkAccessManager manager;
+    QNetworkRequest request(QUrl("https://" + hostName));
+
+    // make sure we have a full request including
+    // DNS lookup, TCP and SSL handshakes
+#ifdef QT_BUILD_INTERNAL
+    qt_qhostinfo_clear_cache();
+#else
+    qWarning("no internal build, could not clear DNS cache. Results may not be representative.");
+#endif
+
+    // first, benchmark a normal request
+    QPair<QNetworkReply *, qint64> normalResult = runGetRequest(&manager, request);
+    QNetworkReply *normalReply = normalResult.first;
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(normalReply->error() == QNetworkReply::NoError);
+    qint64 normalElapsed = normalResult.second;
+
+    // clear all caches again
+#ifdef QT_BUILD_INTERNAL
+    qt_qhostinfo_clear_cache();
+#else
+    qWarning("no internal build, could not clear DNS cache. Results may not be representative.");
+#endif
+    manager.clearAccessCache();
+
+    // now try to make the connection beforehand
+    manager.connectToHostEncrypted(hostName);
+    QTestEventLoop::instance().enterLoop(2);
+
+    // now make another request and hopefully use the existing connection
+    QPair<QNetworkReply *, qint64> preConnectResult = runGetRequest(&manager, request);
+    QNetworkReply *preConnectReply = normalResult.first;
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(preConnectReply->error() == QNetworkReply::NoError);
+    qint64 preConnectElapsed = preConnectResult.second;
+    qDebug() << request.url().toString() << "full request:" << normalElapsed
+             << "ms, pre-connect request:" << preConnectElapsed << "ms, difference:"
+             << (normalElapsed - preConnectElapsed) << "ms";
 }
 #endif
 
@@ -852,6 +917,50 @@ void tst_qnetworkreply::httpsUpload()
     }
 }
 
+void tst_qnetworkreply::preConnect()
+{
+    QString hostName = QLatin1String("www.google.com");
+
+    QNetworkAccessManager manager;
+    QNetworkRequest request(QUrl("http://" + hostName));
+
+    // make sure we have a full request including
+    // DNS lookup and TCP handshake
+#ifdef QT_BUILD_INTERNAL
+    qt_qhostinfo_clear_cache();
+#else
+    qWarning("no internal build, could not clear DNS cache. Results may not be representative.");
+#endif
+
+    // first, benchmark a normal request
+    QPair<QNetworkReply *, qint64> normalResult = runGetRequest(&manager, request);
+    QNetworkReply *normalReply = normalResult.first;
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(normalReply->error() == QNetworkReply::NoError);
+    qint64 normalElapsed = normalResult.second;
+
+    // clear all caches again
+#ifdef QT_BUILD_INTERNAL
+    qt_qhostinfo_clear_cache();
+#else
+    qWarning("no internal build, could not clear DNS cache. Results may not be representative.");
+#endif
+    manager.clearAccessCache();
+
+    // now try to make the connection beforehand
+    manager.connectToHost(hostName);
+    QTestEventLoop::instance().enterLoop(2);
+
+    // now make another request and hopefully use the existing connection
+    QPair<QNetworkReply *, qint64> preConnectResult = runGetRequest(&manager, request);
+    QNetworkReply *preConnectReply = normalResult.first;
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QVERIFY(preConnectReply->error() == QNetworkReply::NoError);
+    qint64 preConnectElapsed = preConnectResult.second;
+    qDebug() << request.url().toString() << "full request:" << normalElapsed
+             << "ms, pre-connect request:" << preConnectElapsed << "ms, difference:"
+             << (normalElapsed - preConnectElapsed) << "ms";
+}
 
 QTEST_MAIN(tst_qnetworkreply)
 

@@ -96,9 +96,11 @@ bool getProxyAuth(const QString& proxyHostname, const QString &scheme, QString& 
     SecProtocolType protocolType = kSecProtocolTypeAny;
     if (scheme.compare(QLatin1String("ftp"),Qt::CaseInsensitive)==0) {
         protocolType = kSecProtocolTypeFTP;
-    } else if (scheme.compare(QLatin1String("http"),Qt::CaseInsensitive)==0) {
+    } else if (scheme.compare(QLatin1String("http"),Qt::CaseInsensitive)==0
+               || scheme.compare(QLatin1String("preconnect-http"),Qt::CaseInsensitive)==0) {
         protocolType = kSecProtocolTypeHTTP;
-    } else if (scheme.compare(QLatin1String("https"),Qt::CaseInsensitive)==0) {
+    } else if (scheme.compare(QLatin1String("https"),Qt::CaseInsensitive)==0
+               || scheme.compare(QLatin1String("preconnect-https"),Qt::CaseInsensitive)==0) {
         protocolType = kSecProtocolTypeHTTPS;
     }
     QByteArray proxyHostnameUtf8(proxyHostname.toUtf8());
@@ -968,6 +970,53 @@ QNetworkAccessManager::NetworkAccessibility QNetworkAccessManager::networkAccess
     }
 }
 
+#ifndef QT_NO_SSL
+/*!
+    \since 5.2
+
+    Initiates a connection to the host given by \a hostName at port \a port, using
+    \a sslConfiguration. This function is useful to complete the TCP and SSL handshake
+    to a host before the HTTPS request is made, resulting in a lower network latency.
+
+    \note This function has no possibility to report errors.
+
+    \sa connectToHost(), get(), post(), put(), deleteResource()
+*/
+void QNetworkAccessManager::connectToHostEncrypted(const QString &hostName, quint16 port,
+                                                   const QSslConfiguration &sslConfiguration)
+{
+    QUrl url;
+    url.setHost(hostName);
+    url.setPort(port);
+    url.setScheme(QLatin1String("preconnect-https"));
+    QNetworkRequest request(url);
+    if (sslConfiguration != QSslConfiguration::defaultConfiguration())
+        request.setSslConfiguration(sslConfiguration);
+    get(request);
+}
+#endif
+
+/*!
+    \since 5.2
+
+    Initiates a connection to the host given by \a hostName at port \a port.
+    This function is useful to complete the TCP handshake
+    to a host before the HTTP request is made, resulting in a lower network latency.
+
+    \note This function has no possibility to report errors.
+
+    \sa connectToHostEncrypted(), get(), post(), put(), deleteResource()
+*/
+void QNetworkAccessManager::connectToHost(const QString &hostName, quint16 port)
+{
+    QUrl url;
+    url.setHost(hostName);
+    url.setPort(port);
+    url.setScheme(QLatin1String("preconnect-http"));
+    QNetworkRequest request(url);
+    get(request);
+}
+
 /*!
     \internal
 
@@ -1112,9 +1161,9 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 
 #ifndef QT_NO_HTTP
     // Since Qt 5 we use the new QNetworkReplyHttpImpl
-    if (scheme == QLatin1String("http")
+    if (scheme == QLatin1String("http") || scheme == QLatin1String("preconnect-http")
 #ifndef QT_NO_SSL
-        || scheme == QLatin1String("https")
+        || scheme == QLatin1String("https") || scheme == QLatin1String("preconnect-https")
 #endif
         ) {
         QNetworkReplyHttpImpl *reply = new QNetworkReplyHttpImpl(this, request, op, outgoingData);

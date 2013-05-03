@@ -2,7 +2,7 @@ TEMPLATE = app
 TARGET = tst_bench_qnetworkreply
 
 QT -= gui
-QT += network testlib
+QT += core-private network network-private testlib
 
 CONFIG += release
 

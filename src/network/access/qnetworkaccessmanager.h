@@ -43,6 +43,9 @@
 #define QNETWORKACCESSMANAGER_H
 
 #include <QtCore/QObject>
+#ifndef QT_NO_SSL
+#include <QtNetwork/QSslConfiguration>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -134,6 +137,12 @@ public:
     void setNetworkAccessible(NetworkAccessibility accessible);
     NetworkAccessibility networkAccessible() const;
 #endif
+
+#ifndef QT_NO_SSL
+    void connectToHostEncrypted(const QString &hostName, quint16 port = 443,
+                                const QSslConfiguration &sslConfiguration = QSslConfiguration::defaultConfiguration());
+#endif
+    void connectToHost(const QString &hostName, quint16 port = 80);
 
 Q_SIGNALS:
 #ifndef QT_NO_NETWORKPROXY
