@@ -622,8 +622,6 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     QHash<QString, VcsolutionDepend*> solution_depends;
     QList<VcsolutionDepend*> solution_cleanup;
 
-    QString oldpwd = qmake_getpwd();
-
     // Make sure that all temp projects are configured
     // for release so that the depends are created
     // without the debug <lib>dxxx.lib name mangling
