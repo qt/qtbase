@@ -369,9 +369,10 @@ bool QLinuxFbScreen::initialize(const QStringList &args)
 
     mDepth = determineDepth(vinfo);
     mBytesPerLine = finfo.line_length;
-    mGeometry = determineGeometry(vinfo, userGeometry);
+    QRect geometry = determineGeometry(vinfo, userGeometry);
+    mGeometry = QRect(QPoint(0, 0), geometry.size());
     mFormat = determineFormat(vinfo, mDepth);
-    mPhysicalSize = determinePhysicalSize(vinfo, userMmSize, mGeometry.size());
+    mPhysicalSize = determinePhysicalSize(vinfo, userMmSize, geometry.size());
 
     // mmap the framebuffer
     mMmap.size = finfo.smem_len;
@@ -381,11 +382,11 @@ bool QLinuxFbScreen::initialize(const QStringList &args)
         return false;
     }
 
-    mMmap.offset = mGeometry.y() * mBytesPerLine + mGeometry.x() * mDepth / 8;
+    mMmap.offset = geometry.y() * mBytesPerLine + geometry.x() * mDepth / 8;
     mMmap.data = data + mMmap.offset;
 
     QFbScreen::initializeCompositor();
-    mFbScreenImage = QImage(data, mGeometry.width(), mGeometry.height(), mBytesPerLine, mFormat);
+    mFbScreenImage = QImage(mMmap.data, geometry.width(), geometry.height(), mBytesPerLine, mFormat);
     mCursor = new QFbCursor(this);
 
     mTtyFd = openTtyDevice(ttyDevice);
