@@ -298,6 +298,8 @@ struct ConverterFunctor : public AbstractConverterFunction
     struct ValueTypeIsMetaType;
     template<typename T, bool>
     struct AssociativeValueTypeIsMetaType;
+    template<typename T, bool>
+    struct IsMetaTypePair;
 }
 
 class Q_CORE_EXPORT QMetaType {
@@ -536,6 +538,7 @@ private:
     template<typename T>
     friend bool qRegisterAssociativeConverter();
     template<typename, bool> friend struct QtPrivate::AssociativeValueTypeIsMetaType;
+    template<typename, bool> friend struct QtPrivate::IsMetaTypePair;
 #endif
 #else
 public:
@@ -1046,6 +1049,75 @@ struct QAssociativeIterableConvertFunctor
         return QAssociativeIterableImpl(&f);
     }
 };
+
+class QPairVariantInterfaceImpl
+{
+    const void *_pair;
+    int _metaType_id_first;
+    uint _metaType_flags_first;
+    int _metaType_id_second;
+    uint _metaType_flags_second;
+
+    typedef VariantData (*getFunc)(const void * const *p, int metaTypeId, uint flags);
+
+    getFunc _getFirst;
+    getFunc _getSecond;
+
+    template<class T>
+    static VariantData getFirstImpl(const void * const *pair, int metaTypeId, uint flags)
+    { return VariantData(metaTypeId, &static_cast<const T*>(*pair)->first, flags); }
+    template<class T>
+    static VariantData getSecondImpl(const void * const *pair, int metaTypeId, uint flags)
+    { return VariantData(metaTypeId, &static_cast<const T*>(*pair)->second, flags); }
+
+public:
+    template<class T> QPairVariantInterfaceImpl(const T*p)
+      : _pair(p)
+      , _metaType_id_first(qMetaTypeId<typename T::first_type>())
+      , _metaType_flags_first(QTypeInfo<typename T::first_type>::isPointer)
+      , _metaType_id_second(qMetaTypeId<typename T::second_type>())
+      , _metaType_flags_second(QTypeInfo<typename T::second_type>::isPointer)
+      , _getFirst(getFirstImpl<T>)
+      , _getSecond(getSecondImpl<T>)
+    {
+    }
+
+    QPairVariantInterfaceImpl()
+      : _pair(0)
+      , _getFirst(0)
+      , _getSecond(0)
+    {
+    }
+
+    inline VariantData first() const { return _getFirst(&_pair, _metaType_id_first, _metaType_flags_first); }
+    inline VariantData second() const { return _getSecond(&_pair, _metaType_id_second, _metaType_flags_second); }
+};
+
+template<typename From>
+struct QPairVariantInterfaceConvertFunctor;
+
+template<typename T, typename U>
+struct QPairVariantInterfaceConvertFunctor<QPair<T, U> >
+{
+    QPairVariantInterfaceConvertFunctor() {}
+
+    QPairVariantInterfaceImpl operator()(const QPair<T, U>& f) const
+    {
+        return QPairVariantInterfaceImpl(&f);
+    }
+};
+
+template<typename T, typename U>
+struct QPairVariantInterfaceConvertFunctor<std::pair<T, U> >
+{
+    QPairVariantInterfaceConvertFunctor() {}
+
+    QPairVariantInterfaceImpl operator()(const std::pair<T, U>& f) const
+    {
+        return QPairVariantInterfaceImpl(&f);
+    }
+};
+
 }
 
 class QObject;
@@ -1261,6 +1333,49 @@ namespace QtPrivate
     {
     };
 
+    template<typename T, bool = QMetaTypeId2<typename T::first_type>::Defined
+                                && QMetaTypeId2<typename T::second_type>::Defined>
+    struct IsMetaTypePair
+    {
+        static bool registerConverter(int)
+        {
+            return false;
+        }
+    };
+
+    template<typename T>
+    struct IsMetaTypePair<T, true>
+    {
+        static bool registerConverter(int id)
+        {
+            const int toId = qMetaTypeId<QtMetaTypePrivate::QPairVariantInterfaceImpl>();
+            if (!QMetaType::hasRegisteredConverterFunction(id, toId)) {
+                static const QtMetaTypePrivate::QPairVariantInterfaceConvertFunctor<T> o;
+                static const QtPrivate::ConverterFunctor<T,
+                                            QtMetaTypePrivate::QPairVariantInterfaceImpl,
+                                            QtMetaTypePrivate::QPairVariantInterfaceConvertFunctor<T> > f(o);
+                return QMetaType::registerConverterFunction(&f, id, toId);
+            }
+            return true;
+        }
+    };
+
+    template<typename T>
+    struct IsPair
+    {
+        static bool registerConverter(int)
+        {
+            return false;
+        }
+    };
+    template<typename T, typename U>
+    struct IsPair<QPair<T, U> > : IsMetaTypePair<QPair<T, U> > {};
+    template<typename T, typename U>
+    struct IsPair<std::pair<T, U> > : IsMetaTypePair<std::pair<T, U> > {};
+
+    template<typename T>
+    struct MetaTypePairHelper : IsPair<T> {};
+
     Q_CORE_EXPORT bool isBuiltinType(const QByteArray &type);
 } // namespace QtPrivate
 
@@ -1362,6 +1477,7 @@ int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normaliz
     if (id > 0) {
         QtPrivate::SequentialContainerConverterHelper<T>::registerConverter(id);
         QtPrivate::AssociativeContainerConverterHelper<T>::registerConverter(id);
+        QtPrivate::MetaTypePairHelper<T>::registerConverter(id);
     }
 
     return id;
@@ -1746,6 +1862,7 @@ QT_FOR_EACH_STATIC_TYPE(Q_DECLARE_BUILTIN_METATYPE)
 
 Q_DECLARE_METATYPE(QtMetaTypePrivate::QSequentialIterableImpl)
 Q_DECLARE_METATYPE(QtMetaTypePrivate::QAssociativeIterableImpl)
+Q_DECLARE_METATYPE(QtMetaTypePrivate::QPairVariantInterfaceImpl)
 
 QT_BEGIN_NAMESPACE
 

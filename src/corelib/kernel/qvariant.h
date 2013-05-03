@@ -832,6 +832,32 @@ namespace QtPrivate {
             return QVariantValueHelper<QVariantMap>::invoke(v);
         }
     };
+    template<>
+    struct QVariantValueHelperInterface<QPair<QVariant, QVariant> >
+    {
+        static QPair<QVariant, QVariant> invoke(const QVariant &v)
+        {
+            if (v.userType() == qMetaTypeId<QPair<QVariant, QVariant> >())
+                return QVariantValueHelper<QPair<QVariant, QVariant> >::invoke(v);
+
+            if (QMetaType::hasRegisteredConverterFunction(v.userType(), qMetaTypeId<QtMetaTypePrivate::QPairVariantInterfaceImpl>())) {
+                QtMetaTypePrivate::QPairVariantInterfaceImpl pi = v.value<QtMetaTypePrivate::QPairVariantInterfaceImpl>();
+
+                const QtMetaTypePrivate::VariantData d1 = pi.first();
+                QVariant v1(d1.metaTypeId, d1.data, d1.flags);
+                if (d1.metaTypeId == qMetaTypeId<QVariant>())
+                    v1 = *reinterpret_cast<const QVariant*>(d1.data);
+
+                const QtMetaTypePrivate::VariantData d2 = pi.second();
+                QVariant v2(d2.metaTypeId, d2.data, d2.flags);
+                if (d2.metaTypeId == qMetaTypeId<QVariant>())
+                    v2 = *reinterpret_cast<const QVariant*>(d2.data);
+
+                return QPair<QVariant, QVariant>(v1, v2);
+            }
+            return QVariantValueHelper<QPair<QVariant, QVariant> >::invoke(v);
+        }
+    };
 }
 
 template<typename T> inline T qvariant_cast(const QVariant &v)

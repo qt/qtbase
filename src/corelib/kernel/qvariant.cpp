@@ -2782,6 +2782,12 @@ bool QVariant::canConvert(int targetTypeId) const
         return true;
     }
 
+    if (targetTypeId == qMetaTypeId<QPair<QVariant, QVariant> >() &&
+              QMetaType::hasRegisteredConverterFunction(d.type,
+                    qMetaTypeId<QtMetaTypePrivate::QPairVariantInterfaceImpl>())) {
+        return true;
+    }
+
     if ((d.type >= QMetaType::User || targetTypeId >= QMetaType::User)
         && QMetaType::hasRegisteredConverterFunction(d.type, targetTypeId)) {
         return true;

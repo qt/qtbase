@@ -241,6 +241,7 @@ private slots:
     void implicitConstruction();
 
     void iterateContainerElements();
+    void pairElements();
 private:
     void dataStream_data(QDataStream::Version version);
     void loadQVariantFromDataStream(QDataStream::Version version);
@@ -3630,6 +3631,33 @@ void tst_QVariant::iterateContainerElements()
     qRegisterAssociativeConverter<StdUnorderedMap_int_bool>();
     TEST_ASSOCIATIVE_ITERATION(std::unordered_map, int, bool)
 #endif
+}
+
+void tst_QVariant::pairElements()
+{
+    typedef QPair<QVariant, QVariant> QVariantPair;
+
+#define TEST_PAIR_ELEMENT_ACCESS(PAIR, T1, T2, VALUE1, VALUE2) \
+    { \
+    PAIR<T1, T2> p(VALUE1, VALUE2); \
+    QVariant v = QVariant::fromValue(p); \
+    \
+    QVERIFY(v.canConvert<QVariantPair>()); \
+    QVariantPair pi = v.value<QVariantPair>(); \
+    QCOMPARE(pi.first, QVariant::fromValue(VALUE1)); \
+    QCOMPARE(pi.second, QVariant::fromValue(VALUE2)); \
+    }
+
+    TEST_PAIR_ELEMENT_ACCESS(QPair, int, int, 4, 5)
+    TEST_PAIR_ELEMENT_ACCESS(std::pair, int, int, 4, 5)
+    TEST_PAIR_ELEMENT_ACCESS(QPair, QString, QString, QStringLiteral("one"), QStringLiteral("two"))
+    TEST_PAIR_ELEMENT_ACCESS(std::pair, QString, QString, QStringLiteral("one"), QStringLiteral("two"))
+    TEST_PAIR_ELEMENT_ACCESS(QPair, QVariant, QVariant, 4, 5)
+    TEST_PAIR_ELEMENT_ACCESS(std::pair, QVariant, QVariant, 4, 5)
+    TEST_PAIR_ELEMENT_ACCESS(QPair, QVariant, int, 41, 15)
+    TEST_PAIR_ELEMENT_ACCESS(std::pair, QVariant, int, 34, 65)
+    TEST_PAIR_ELEMENT_ACCESS(QPair, int, QVariant, 24, 25)
+    TEST_PAIR_ELEMENT_ACCESS(std::pair, int, QVariant, 44, 15)
 }
 
 QTEST_MAIN(tst_QVariant)
