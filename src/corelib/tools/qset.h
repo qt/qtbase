@@ -181,7 +181,10 @@ public:
     inline const_iterator cend() const { return q_hash.end(); }
     inline const_iterator constEnd() const { return q_hash.constEnd(); }
     iterator erase(iterator i)
-        { return q_hash.erase(reinterpret_cast<typename Hash::iterator &>(i)); }
+    {
+        Q_ASSERT_X(isValidIterator(i), "QSet::erase", "The specified const_iterator argument 'i' is invalid");
+        return q_hash.erase(reinterpret_cast<typename Hash::iterator &>(i));
+    }
 
     // more Qt
     typedef iterator Iterator;
@@ -234,6 +237,10 @@ public:
 
 private:
     Hash q_hash;
+    bool isValidIterator(const iterator &i) const
+    {
+        return q_hash.isValidIterator(reinterpret_cast<const typename Hash::iterator&>(i));
+    }
 };
 
 template <class T>

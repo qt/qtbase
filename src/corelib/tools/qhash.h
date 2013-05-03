@@ -527,6 +527,7 @@ private:
         return true;
 #endif
     }
+    friend class QSet<Key>;
 };
 
 
