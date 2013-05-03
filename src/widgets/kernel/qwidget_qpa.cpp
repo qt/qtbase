@@ -137,6 +137,9 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     qt_window_private(win)->positionPolicy = topData()->posIncludesFrame ?
         QWindowPrivate::WindowFrameInclusive : QWindowPrivate::WindowFrameExclusive;
     win->create();
+    // Enable nonclient-area events for QDockWidget and other NonClientArea-mouse event processing.
+    if ((flags & Qt::Desktop) == Qt::Window)
+        win->handle()->setFrameStrutEventsEnabled(true);
 
     data.window_flags = win->flags();
 
