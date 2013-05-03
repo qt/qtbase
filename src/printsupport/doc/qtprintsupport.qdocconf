@@ -39,4 +39,5 @@ exampledirs += ../../../examples/widgets \
 
 excludedirs += ../../../examples/widgets/doc
 
-imagedirs   += images
+imagedirs   += images \
+               ../../widgets/doc/images \
