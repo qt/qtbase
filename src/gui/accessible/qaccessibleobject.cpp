@@ -100,10 +100,6 @@ QAccessibleObject::~QAccessibleObject()
 */
 QObject *QAccessibleObject::object() const
 {
-#ifndef QT_NO_DEBUG
-    if (!d->object)
-        qWarning("QAccessibleInterface is invalid. Crash pending...");
-#endif
     return d->object;
 }
 
