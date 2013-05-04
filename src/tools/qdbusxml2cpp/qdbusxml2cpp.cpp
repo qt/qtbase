@@ -401,6 +401,8 @@ static QStringList makeArgNames(const QDBusIntrospection::Arguments &inputArgs,
         QString name = arg.name;
         if (name.isEmpty())
             name = QString( QLatin1String("in%1") ).arg(i);
+        else
+            name.replace(QLatin1Char('-'), QLatin1Char('_'));
         while (retval.contains(name))
             name += QLatin1String("_");
         retval << name;
@@ -410,6 +412,8 @@ static QStringList makeArgNames(const QDBusIntrospection::Arguments &inputArgs,
         QString name = arg.name;
         if (name.isEmpty())
             name = QString( QLatin1String("out%1") ).arg(i);
+        else
+            name.replace(QLatin1Char('-'), QLatin1Char('_'));
         while (retval.contains(name))
             name += QLatin1String("_");
         retval << name;

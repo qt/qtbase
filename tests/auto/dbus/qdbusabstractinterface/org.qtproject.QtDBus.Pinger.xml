@@ -8,7 +8,7 @@
     </property>
     <signal name="voidSignal"/>
     <signal name="stringSignal">
-       <arg type="s"/>
+       <arg type="s" name="string-data"/>
     </signal>
     <signal name="complexSignal">
        <arg name="" type="(s)"/>
