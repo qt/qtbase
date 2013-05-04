@@ -310,6 +310,7 @@ tests/auto/corelib/plugin/quuid/testProcessUniqueness/testProcessUniqueness
 tests/auto/corelib/io/qlockfile/qlockfiletesthelper/qlockfile_test_helper
 tests/auto/dbus/qdbusabstractadaptor/qmyserver/qmyserver
 tests/auto/dbus/qdbusabstractinterface/qpinger/qpinger
+tests/auto/dbus/qdbusabstractinterface/test/pinger_interface.*
 tests/auto/dbus/qdbusinterface/qmyserver/qmyserver
 tests/auto/gui/kernel/qfileopenevent/qfileopeneventexternal/qfileopeneventexternal
 tests/auto/network/bearer/qnetworksession/lackey/lackey

@@ -47,13 +47,13 @@
 #include <QtDBus>
 
 #include "interface.h"
-#include "pinger.h"
+#include "pinger_interface.h"
 
 static const char serviceName[] = "org.qtproject.autotests.qpinger";
 static const char objectPath[] = "/org/qtproject/qpinger";
 static const char *interfaceName = serviceName;
 
-typedef QSharedPointer<com::trolltech::QtDBus::Pinger> Pinger;
+typedef QSharedPointer<org::qtproject::QtDBus::Pinger> Pinger;
 
 class tst_QDBusAbstractInterface: public QObject
 {
@@ -67,7 +67,7 @@ class tst_QDBusAbstractInterface: public QObject
             return Pinger();
         if (service.isEmpty() && !service.isNull())
             service = con.baseService();
-        return Pinger(new com::trolltech::QtDBus::Pinger(service, path, con));
+        return Pinger(new org::qtproject::QtDBus::Pinger(service, path, con));
     }
 
     Pinger getPingerPeer(const QString &path = "/")
@@ -75,7 +75,7 @@ class tst_QDBusAbstractInterface: public QObject
         QDBusConnection con = QDBusConnection("peer");
         if (!con.isConnected())
             return Pinger();
-        return Pinger(new com::trolltech::QtDBus::Pinger("", path, con));
+        return Pinger(new org::qtproject::QtDBus::Pinger("", path, con));
     }
 
     void resetServer()
@@ -547,7 +547,7 @@ void tst_QDBusAbstractInterface::callWithTimeout()
     }
 
     // Now using generated code
-    com::trolltech::QtDBus::Pinger p(server_serviceName, server_objectPath, QDBusConnection::sessionBus());
+    org::qtproject::QtDBus::Pinger p(server_serviceName, server_objectPath, QDBusConnection::sessionBus());
     {
         // Call with no timeout
         QDBusReply<int> reply = p.sleepMethod(100);
