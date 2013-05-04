@@ -219,7 +219,7 @@ Q_SIGNALS:
         QPrivateSignal
 #endif
     );
-    void finished(int exitCode);
+    void finished(int exitCode); // ### Qt 6: merge the two signals with a default value
     void finished(int exitCode, QProcess::ExitStatus exitStatus);
     void error(QProcess::ProcessError error);
     void stateChanged(QProcess::ProcessState state
