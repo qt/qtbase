@@ -298,15 +298,18 @@ void QDBusAdaptorConnector::relay(QObject *senderObj, int lastSignalIdx, void **
 
     // break down the parameter list
     QVector<int> types;
-    int inputCount = qDBusParametersForMethod(mm, types);
-    if (inputCount == -1)
+    QString errorMsg;
+    int inputCount = qDBusParametersForMethod(mm, types, errorMsg);
+    if (inputCount == -1) {
         // invalid signal signature
-        // qDBusParametersForMethod has already complained
+        qWarning("QDBusAbstractAdaptor: Cannot relay signal %s::%s: %s",
+                 senderMetaObject->className(), mm.methodSignature().constData(),
+                 qPrintable(errorMsg));
         return;
+    }
     if (inputCount + 1 != types.count() ||
         types.at(inputCount) == QDBusMetaTypeId::message()) {
         // invalid signal signature
-        // qDBusParametersForMethod has not yet complained about this one
         qWarning("QDBusAbstractAdaptor: Cannot relay signal %s::%s",
                  senderMetaObject->className(), mm.methodSignature().constData());
         return;

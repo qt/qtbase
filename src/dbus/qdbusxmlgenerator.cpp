@@ -41,6 +41,7 @@
 
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qstringlist.h>
+#include <QtCore/qdebug.h>
 
 #include "qdbusinterface_p.h"   // for ANNOTATION_NO_WAIT
 #include "qdbusabstractadaptor_p.h" // for QCLASSINFO_DBUS_*
@@ -159,17 +160,24 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
                 if (QDBusMetaType::signatureToType(typeName) == QVariant::Invalid)
                     xml += QString::fromLatin1("      <annotation name=\"org.qtproject.QtDBus.QtTypeName.Out0\" value=\"%1\"/>\n")
                         .arg(typeNameToXml(QMetaType::typeName(typeId)));
-            } else
+            } else {
+                qWarning() << "Unsupported return type" << typeId << QMetaType::typeName(typeId) << "in method" << mm.name();
                 continue;
+            }
         }
-        else if (typeId == QMetaType::UnknownType)
+        else if (typeId == QMetaType::UnknownType) {
+            qWarning() << "Invalid return type in method" << mm.name();
             continue;           // wasn't a valid type
+        }
 
         QList<QByteArray> names = mm.parameterNames();
         QVector<int> types;
-        int inputCount = qDBusParametersForMethod(mm, types);
-        if (inputCount == -1)
+        QString errorMsg;
+        int inputCount = qDBusParametersForMethod(mm, types, errorMsg);
+        if (inputCount == -1) {
+            qWarning() << "Skipped method" << mm.name() << ":" << qPrintable(errorMsg);
             continue;           // invalid form
+        }
         if (isSignal && inputCount + 1 != types.count())
             continue;           // signal with output arguments?
         if (isSignal && types.at(inputCount) == QDBusMetaTypeId::message())

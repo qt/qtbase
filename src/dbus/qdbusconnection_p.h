@@ -342,9 +342,9 @@ public:
 };
 
 // in qdbusmisc.cpp
-extern int qDBusParametersForMethod(const QMetaMethod &mm, QVector<int> &metaTypes);
+extern int qDBusParametersForMethod(const QMetaMethod &mm, QVector<int> &metaTypes, QString &errorMsg);
 #endif // QT_BOOTSTRAPPED
-extern Q_DBUS_EXPORT int qDBusParametersForMethod(const QList<QByteArray> &parameters, QVector<int>& metaTypes);
+extern Q_DBUS_EXPORT int qDBusParametersForMethod(const QList<QByteArray> &parameters, QVector<int>& metaTypes, QString &errorMsg);
 extern Q_DBUS_EXPORT bool qDBusCheckAsyncTag(const char *tag);
 #ifndef QT_BOOTSTRAPPED
 extern bool qDBusInterfaceInObject(QObject *obj, const QString &interface_name);

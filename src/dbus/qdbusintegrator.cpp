@@ -721,7 +721,8 @@ static int findSlot(const QMetaObject *mo, const QByteArray &name, int flags,
         if (isAsync && returnType != QMetaType::Void)
             continue;
 
-        int inputCount = qDBusParametersForMethod(mm, metaTypes);
+        QString errorMsg;
+        int inputCount = qDBusParametersForMethod(mm, metaTypes, errorMsg);
         if (inputCount == -1)
             continue;           // problem parsing
 
@@ -1312,7 +1313,8 @@ int QDBusConnectionPrivate::findSlot(QObject* obj, const QByteArray &normalizedN
     if (midx == -1)
         return -1;
 
-    int inputCount = qDBusParametersForMethod(obj->metaObject()->method(midx), params);
+    QString errorMsg;
+    int inputCount = qDBusParametersForMethod(obj->metaObject()->method(midx), params, errorMsg);
     if ( inputCount == -1 || inputCount + 1 != params.count() )
         return -1;              // failed to parse or invalid arguments or output arguments
 

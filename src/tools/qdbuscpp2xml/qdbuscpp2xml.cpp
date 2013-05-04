@@ -47,6 +47,7 @@
 #include <qbuffer.h>
 #include <qregexp.h>
 #include <qvector.h>
+#include <qdebug.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -95,14 +96,14 @@ static const char help[] =
     "\n";
 
 
-int qDBusParametersForMethod(const FunctionDef &mm, QVector<int>& metaTypes)
+int qDBusParametersForMethod(const FunctionDef &mm, QVector<int>& metaTypes, QString &errorMsg)
 {
     QList<QByteArray> parameterTypes;
 
     foreach (const ArgumentDef &arg, mm.arguments)
         parameterTypes.append(arg.normalizedType);
 
-    return qDBusParametersForMethod(parameterTypes, metaTypes);
+    return qDBusParametersForMethod(parameterTypes, metaTypes, errorMsg);
 }
 
 
@@ -140,9 +141,12 @@ static QString addFunction(const FunctionDef &mm, bool isSignal = false) {
     }
     QList<ArgumentDef> names = mm.arguments;
     QVector<int> types;
-    int inputCount = qDBusParametersForMethod(mm, types);
-    if (inputCount == -1)
+    QString errorMsg;
+    int inputCount = qDBusParametersForMethod(mm, types, errorMsg);
+    if (inputCount == -1) {
+        qWarning() << qPrintable(errorMsg);
         return QString();           // invalid form
+    }
     if (isSignal && inputCount + 1 != types.count())
         return QString();           // signal with output arguments?
     if (isSignal && types.at(inputCount) == QDBusMetaTypeId::message())

@@ -131,14 +131,14 @@ bool qDBusInterfaceInObject(QObject *obj, const QString &interface_name)
 // metaTypes.count() >= retval + 1 in all cases
 //
 // sig must be the normalised signature for the method
-int qDBusParametersForMethod(const QMetaMethod &mm, QVector<int> &metaTypes)
+int qDBusParametersForMethod(const QMetaMethod &mm, QVector<int> &metaTypes, QString &errorMsg)
 {
-    return qDBusParametersForMethod(mm.parameterTypes(), metaTypes);
+    return qDBusParametersForMethod(mm.parameterTypes(), metaTypes, errorMsg);
 }
 
 #endif // QT_BOOTSTRAPPED
 
-int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QVector<int>& metaTypes)
+int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QVector<int>& metaTypes, QString &errorMsg)
 {
     QDBusMetaTypeId::init();
     metaTypes.clear();
@@ -151,8 +151,7 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QVector<in
     for ( ; it != end; ++it) {
         const QByteArray &type = *it;
         if (type.endsWith('*')) {
-            //qWarning("Could not parse the method '%s'", mm.methodSignature().constData());
-            // pointer?
+            errorMsg = QLatin1String("Pointers are not supported: ") + QLatin1String(type);
             return -1;
         }
 
@@ -162,8 +161,7 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QVector<in
 
             int id = QMetaType::type(basictype);
             if (id == 0) {
-                //qWarning("Could not parse the method '%s'", mm.methodSignature().constData());
-                // invalid type in method parameter list
+                errorMsg = QLatin1String("Unregistered output type in parameter list: ") + QLatin1String(type);
                 return -1;
             } else if (QDBusMetaType::typeToSignature(id) == 0)
                 return -1;
@@ -174,22 +172,22 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QVector<in
         }
 
         if (seenMessage) {      // && !type.endsWith('&')
-            //qWarning("Could not parse the method '%s'", mm.methodSignature().constData());
-            // non-output parameters after message or after output params
+            errorMsg = QLatin1String("Invalid method, non-output parameters after message or after output parameters: ") + QLatin1String(type);
             return -1;          // not allowed
         }
 
         int id = QMetaType::type(type);
         if (id == QMetaType::UnknownType) {
-            //qWarning("Could not parse the method '%s'", mm.methodSignature().constData());
-            // invalid type in method parameter list
+            errorMsg = QLatin1String("Unregistered input type in parameter list: ") + QLatin1String(type);
             return -1;
         }
 
         if (id == QDBusMetaTypeId::message())
             seenMessage = true;
-        else if (QDBusMetaType::typeToSignature(id) == 0)
+        else if (QDBusMetaType::typeToSignature(id) == 0) {
+            errorMsg = QLatin1String("Type not registered with QtDBus in parameter list: ") + QLatin1String(type);
             return -1;
+        }
 
         metaTypes.append(id);
         ++inputCount;
