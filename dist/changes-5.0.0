@@ -945,7 +945,7 @@ Qt for Windows CE
   * QMAKE_SUBSTITUTES can now copy files verbatim.
   * MSVC desktop builds now use -Zc:wchar_t.
   * The following variables were added: QMAKESPEC, _QMAKE_CONF_ & _QMAKE_SUPER_CACHE_.
-  * QDBUSXML2CPP_{INTERFACES,ADAPTORS}_{HEADER,SOURCE}_FLAGS are now understood,
+  * QDBUSXML2CPP_{INTERFACE,ADAPTOR}_{HEADER,SOURCE}_FLAGS are now understood,
     and DBUS_{INTERFACES,ADAPTORS} support file groups with individual flags now.
   * QT_PRIVATE and PKGCONFIG_PRIVATE (analogous to LIBS_PRIVATE resp. PKGCONFIG) are now understood.
   * INSTALLS entries now support copying with subdirectory (e.g., entry.base = $$dirname(PWD)).
