@@ -304,14 +304,22 @@ void tst_QDBusAbstractInterface::makeStringCall()
     QCOMPARE(r.value(), targetObj.stringMethod());
 }
 
+static QHash<QString, QVariant> complexMethodArgs()
+{
+    QHash<QString, QVariant> args;
+    args.insert("arg1", "Hello world");
+    args.insert("arg2", 12345);
+    return args;
+}
+
 void tst_QDBusAbstractInterface::makeComplexCall()
 {
     Pinger p = getPinger();
     QVERIFY2(p, "Not connected to D-Bus");
 
-    QDBusReply<RegisteredType> r = p->complexMethod();
+    QDBusReply<RegisteredType> r = p->complexMethod(complexMethodArgs());
     QVERIFY(r.isValid());
-    QCOMPARE(r.value(), targetObj.complexMethod());
+    QCOMPARE(r.value(), targetObj.complexMethod(complexMethodArgs()));
 }
 
 void tst_QDBusAbstractInterface::makeMultiOutCall()
@@ -352,9 +360,9 @@ void tst_QDBusAbstractInterface::makeComplexCallPeer()
     Pinger p = getPingerPeer();
     QVERIFY2(p, "Not connected to D-Bus");
 
-    QDBusReply<RegisteredType> r = p->complexMethod();
+    QDBusReply<RegisteredType> r = p->complexMethod(complexMethodArgs());
     QVERIFY(r.isValid());
-    QCOMPARE(r.value(), targetObj.complexMethod());
+    QCOMPARE(r.value(), targetObj.complexMethod(complexMethodArgs()));
 }
 
 void tst_QDBusAbstractInterface::makeMultiOutCallPeer()
@@ -397,10 +405,10 @@ void tst_QDBusAbstractInterface::makeAsyncComplexCall()
     Pinger p = getPinger();
     QVERIFY2(p, "Not connected to D-Bus");
 
-    QDBusPendingReply<RegisteredType> r = p->complexMethod();
+    QDBusPendingReply<RegisteredType> r = p->complexMethod(complexMethodArgs());
     r.waitForFinished();
     QVERIFY(r.isValid());
-    QCOMPARE(r.value(), targetObj.complexMethod());
+    QCOMPARE(r.value(), targetObj.complexMethod(complexMethodArgs()));
 }
 
 void tst_QDBusAbstractInterface::makeAsyncMultiOutCall()
@@ -445,10 +453,10 @@ void tst_QDBusAbstractInterface::makeAsyncComplexCallPeer()
     Pinger p = getPingerPeer();
     QVERIFY2(p, "Not connected to D-Bus");
 
-    QDBusPendingReply<RegisteredType> r = p->complexMethod();
+    QDBusPendingReply<RegisteredType> r = p->complexMethod(complexMethodArgs());
     r.waitForFinished();
     QVERIFY(r.isValid());
-    QCOMPARE(r.value(), targetObj.complexMethod());
+    QCOMPARE(r.value(), targetObj.complexMethod(complexMethodArgs()));
 }
 
 void tst_QDBusAbstractInterface::makeAsyncMultiOutCallPeer()

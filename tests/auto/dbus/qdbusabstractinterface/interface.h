@@ -43,6 +43,7 @@
 #define INTERFACE_H
 
 #include <QtCore/QObject>
+#include <QtCore/QHash>
 #include <QtDBus/QDBusArgument>
 
 struct RegisteredType
@@ -103,7 +104,7 @@ public slots:
     Q_SCRIPTABLE void voidMethod() {}
     Q_SCRIPTABLE int sleepMethod(int);
     Q_SCRIPTABLE QString stringMethod() { return "Hello, world"; }
-    Q_SCRIPTABLE RegisteredType complexMethod() { return RegisteredType("Hello, world"); }
+    Q_SCRIPTABLE RegisteredType complexMethod(const QVariantHash &vars) { return RegisteredType(vars.value("arg1").toString()); }
     Q_SCRIPTABLE QString multiOutMethod(int &value) { value = 42; return "Hello, world"; }
 
 signals:
