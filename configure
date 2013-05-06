@@ -1409,7 +1409,7 @@ while [ "$#" -gt 0 ]; do
         OPT_OBSOLETE_HOST_ARG=yes
         ;;
     harfbuzz)
-        if [ "$BUILD_ON_MAC" = "yes" ] && [ "$VAL" = "yes" ]; then
+        if ([ "$BUILD_ON_MAC" = "yes" ] && [ "$VAL" = "yes" ]) || [ "$VAL" = "no" ]; then
             CFG_MAC_HARFBUZZ="$VAL"
         else
             UNKNOWN_OPT=yes
