@@ -872,14 +872,11 @@ static QTouchDevice *touchDevice = 0;
     NSString *charactersIgnoringModifiers = [nsevent charactersIgnoringModifiers];
     NSString *characters = [nsevent characters];
 
-    // [from Qt 4 impl] There is no way to get the scan code from carbon. But we cannot
+    // There is no way to get the scan code from carbon/cocoa. But we cannot
     // use the value 0, since it indicates that the event originates from somewhere
     // else than the keyboard.
     quint32 nativeScanCode = 1;
-
-    UInt32 nativeVirtualKey = 0;
-    EventRef eventRef = EventRef([nsevent eventRef]);
-    GetEventParameter(eventRef, kEventParamKeyCode, typeUInt32, 0, sizeof(nativeVirtualKey), 0, &nativeVirtualKey);
+    quint32 nativeVirtualKey = [nsevent keyCode];
 
     QChar ch;
     int keyCode;
