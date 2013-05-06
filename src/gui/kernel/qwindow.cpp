@@ -1896,9 +1896,11 @@ bool QWindow::event(QEvent *ev)
     case QEvent::Close: {
         Q_D(QWindow);
         bool wasVisible = isVisible();
-        destroy();
-        if (wasVisible)
-            d->maybeQuitOnLastWindowClosed();
+        if (ev->isAccepted()) {
+            destroy();
+            if (wasVisible)
+                d->maybeQuitOnLastWindowClosed();
+        }
         break; }
 
     case QEvent::Expose:
