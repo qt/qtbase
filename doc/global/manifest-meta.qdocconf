@@ -31,3 +31,22 @@
 #
 # manifestmeta.global.names           = *
 # manifestmeta.global.tags            = qt5
+
+manifestmeta.filters                =   highlighted
+
+manifestmeta.highlighted.names      =   "QtQuick/Qt Quick Demo - Same Game" \
+                                        "QtQuick/Qt Quick Demo - Photo Surface" \
+                                        "QtQuick/Qt Quick Demo - Tweet Search" \
+                                        "QtQuick/Qt Quick Demo - Maroon*" \
+                                        "QtQuick/Qt Quick Demo - Calqlatr" \
+                                        "QtQuick/Qt Quick Particles Examples - Emitters" \
+                                        "QtQuick/Qt Quick Examples - Shader Effects" \
+                                        "QtWebKitExamples/Fancy Browser" \
+                                        "QtWebKitExamples/Flickr View Example" \
+                                        "QtWebKitExamples/YouTube View Example" \
+                                        "QtQuickControls/Qt Quick Controls - Gallery" \
+                                        "QtQuickControls/Qt Quick Controls - Text Editor Example" \
+                                        "QtQuickControls/Qt Quick Controls - Table View Example" \
+                                        "QtWidgets/Application Example"
+
+manifestmeta.highlighted.attributes =   isHighlighted:true
