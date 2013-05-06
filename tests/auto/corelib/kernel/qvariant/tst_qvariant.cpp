@@ -142,6 +142,9 @@ private slots:
     void toDouble_data();
     void toDouble();
 
+    void toFloat_data();
+    void toFloat();
+
     void toPointF_data();
     void toPointF();
 
@@ -456,6 +459,9 @@ void tst_QVariant::canConvert_data()
     var = QVariant::fromValue<signed char>(-1);
     QTest::newRow("SChar")
         << var << N << N << Y << N << Y << N << N << N << N << Y << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
+    var = QVariant::fromValue<QJsonValue>(QJsonValue(QStringLiteral("hello")));
+    QTest::newRow("JsonValue")
+        << var << N << N << Y << N << N << N << N << N << N << Y << N << N << Y << N << N << N << Y << N << N << N << N << N << N << N << N << N << Y << N << N << Y << Y;
 
 #undef N
 #undef Y
@@ -511,6 +517,7 @@ void tst_QVariant::toInt_data()
     bytearray[2] = '0';
     bytearray[3] = '0';
     QTest::newRow( "QByteArray2" ) << QVariant( bytearray ) << 4500 << true;
+    QTest::newRow("QJsonValue") << QVariant(QJsonValue(321)) << 321 << true;
 }
 
 void tst_QVariant::toInt()
@@ -557,6 +564,7 @@ void tst_QVariant::toUInt_data()
     bytearray[2] = '2';
     bytearray[3] = '1';
     QTest::newRow( "QByteArray" ) << QVariant( bytearray ) << (uint)4321 << true;
+    QTest::newRow("QJsonValue") << QVariant(QJsonValue(321)) << (uint)321 << true;
 }
 
 void tst_QVariant::toUInt()
@@ -742,6 +750,8 @@ void tst_QVariant::toBool_data()
     QTest::newRow( "ulonglong1" ) << QVariant( (qulonglong)1 ) << true;
     QTest::newRow( "QChar" ) << QVariant(QChar('a')) << true;
     QTest::newRow( "Null_QChar" ) << QVariant(QChar(0)) << false;
+    QTest::newRow("QJsonValue(true)") << QVariant(QJsonValue(true)) << true;
+    QTest::newRow("QJsonValue(false)") << QVariant(QJsonValue(false)) << false;
 }
 
 void tst_QVariant::toBool()
@@ -805,6 +815,7 @@ void tst_QVariant::toDouble_data()
     bytearray[2] = '.';
     bytearray[3] = '1';
     QTest::newRow( "bytearray" ) << QVariant( bytearray ) << 32.1 << true;
+    QTest::newRow("QJsonValue") << QVariant(QJsonValue(32.1)) << 32.1 << true;
 }
 
 void tst_QVariant::toDouble()
@@ -818,6 +829,34 @@ void tst_QVariant::toDouble()
     double d = value.toDouble( &ok );
     QCOMPARE( d, result );
     QVERIFY( ok == valueOK );
+}
+
+void tst_QVariant::toFloat_data()
+{
+    QTest::addColumn<QVariant>("value");
+    QTest::addColumn<float>("result");
+    QTest::addColumn<bool>("valueOK");
+
+    QByteArray bytearray(4, ' ');
+    bytearray[0] = '3';
+    bytearray[1] = '2';
+    bytearray[2] = '.';
+    bytearray[3] = '1';
+    QTest::newRow("QByteArray") << QVariant(bytearray) << float(32.1) << true;
+    QTest::newRow("QJsonValue") << QVariant(QJsonValue(32.1)) << float(32.1) << true;
+}
+
+void tst_QVariant::toFloat()
+{
+    QFETCH(QVariant, value );
+    QFETCH(float, result);
+    QFETCH(bool, valueOK);
+    QVERIFY(value.isValid());
+    QVERIFY(value.canConvert(QMetaType::Float));
+    bool ok;
+    float d = value.toFloat(&ok);
+    QCOMPARE(d, result);
+    QVERIFY(ok == valueOK);
 }
 
 void tst_QVariant::toLongLong_data()
@@ -843,6 +882,7 @@ void tst_QVariant::toLongLong_data()
     bytearray[2] = '0';
     bytearray[3] = '0';
     QTest::newRow( "QByteArray" ) << QVariant( bytearray ) << (qlonglong) 3200 << true;
+    QTest::newRow("QJsonValue") << QVariant(QJsonValue(321)) << (qlonglong)321 << true;
 }
 
 void tst_QVariant::toLongLong()
@@ -887,6 +927,7 @@ void tst_QVariant::toULongLong_data()
     bytearray[2] = '0';
     bytearray[3] = '1';
     QTest::newRow( "QByteArray" ) << QVariant( bytearray ) << (qulonglong) 3201 << true;
+    QTest::newRow("QJsonValue") << QVariant(QJsonValue(321)) << (qulonglong)321 << true;
 }
 
 void tst_QVariant::toULongLong()
@@ -953,6 +994,7 @@ void tst_QVariant::toString_data()
     QTest::newRow( "qdatetime" ) << QVariant( QDateTime( QDate( 2002, 1, 1 ), QTime( 12, 34, 56 ) ) ) << QString( "2002-01-01T12:34:56" );
     QTest::newRow( "llong" ) << QVariant( (qlonglong)Q_INT64_C(123456789012) ) <<
         QString( "123456789012" );
+    QTest::newRow("QJsonValue") << QVariant(QJsonValue(QString("hello"))) << QString("hello");
 }
 
 void tst_QVariant::toString()
