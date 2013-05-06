@@ -324,6 +324,9 @@ bool QShortcutMap::tryShortcutEvent(QObject *o, QKeyEvent *e)
 {
     Q_D(QShortcutMap);
 
+    if (e->key() == Qt::Key_unknown)
+        return false;
+
     bool wasAccepted = e->isAccepted();
     bool wasSpontaneous = e->spont;
     if (d->currentState == QKeySequence::NoMatch) {
