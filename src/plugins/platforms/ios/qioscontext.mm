@@ -156,6 +156,9 @@ GLuint QIOSContext::defaultFramebufferObject(QPlatformSurface *surface) const
     if (framebufferObject.renderbufferWidth != platformWindow->effectiveWidth() ||
         framebufferObject.renderbufferHeight != platformWindow->effectiveHeight()) {
 
+        [EAGLContext setCurrentContext:m_eaglContext];
+        glBindFramebuffer(GL_FRAMEBUFFER, framebufferObject.handle);
+
         glBindRenderbuffer(GL_RENDERBUFFER, framebufferObject.colorRenderbuffer);
         UIView *view = reinterpret_cast<UIView *>(platformWindow->winId());
         CAEAGLLayer *layer = static_cast<CAEAGLLayer *>(view.layer);
