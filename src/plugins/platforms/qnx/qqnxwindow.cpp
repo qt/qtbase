@@ -332,6 +332,9 @@ QSize QQnxWindow::requestedBufferSize() const
 
 void QQnxWindow::adjustBufferSize()
 {
+    if (m_parentWindow)
+        return;
+
     const QSize windowSize = window()->size();
     if (windowSize != bufferSize())
         setBufferSize(windowSize);
@@ -574,8 +577,18 @@ void QQnxWindow::setParent(const QPlatformWindow *window)
             setScreen(m_parentWindow->m_screen);
 
         m_parentWindow->m_childWindows.push_back(this);
+
+        // we don't need any buffers, since
+        // Qt will draw to the parent TLW
+        // backing store.
+        setBufferSize(QSize(1, 1));
     } else {
         m_screen->addWindow(this);
+
+        // recreate buffers, in case the
+        // window has been reparented and
+        // becomes a TLW
+        adjustBufferSize();
     }
 
     m_screen->updateHierarchy();

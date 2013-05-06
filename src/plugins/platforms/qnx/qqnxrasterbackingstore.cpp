@@ -85,6 +85,11 @@ void QQnxRasterBackingStore::flush(QWindow *window, const QRegion &region, const
     if (window)
         targetWindow = static_cast<QQnxWindow *>(window->handle());
 
+    // we only need to flush the platformWindow backing store, since this is
+    // the buffer where all drawing operations of all windows, including the
+    // child windows, are performed; conceptually ,child windows have no buffers
+    // (actually they do have a 1x1 placeholder buffer due to libscreen limitations),
+    // since Qt will only draw to the backing store of the top-level window.
     QQnxWindow *platformWindow = this->platformWindow();
     if (!targetWindow || targetWindow == platformWindow) {
 
@@ -102,29 +107,6 @@ void QQnxRasterBackingStore::flush(QWindow *window, const QRegion &region, const
 
         // update the display with newly rendered content
         platformWindow->post(region);
-    } else if (targetWindow) {
-
-        // The contents of the backing store should be flushed to a different window than the
-        // window which owns the buffer.
-        // This typically happens for child windows, since child windows share a backing store with
-        // their top-level window (TLW).
-        // Simply copy the buffer over to the child window, to emulate a painting operation, and
-        // then post the window.
-        //
-        // ### Note that because of the design in the QNX QPA plugin, each window has its own buffers,
-        // even though they might share a backing store. This is unneeded overhead, but I don't think
-        // libscreen allows to have windows without buffers, or does it?
-
-        // We assume that the TLW has been flushed previously and that no changes were made to the
-        // backing store inbetween (### does Qt guarantee this?)
-        Q_ASSERT(!m_hasUnflushedPaintOperations);
-
-        targetWindow->adjustBufferSize();
-        targetWindow->blitFrom(platformWindow, offset, region);
-        targetWindow->post(region);
-
-    } else {
-        qWarning() << Q_FUNC_INFO << "flush() called without a valid window!";
     }
 
     m_hasUnflushedPaintOperations = false;
