@@ -26,7 +26,7 @@ SUBDIRS=\
            qgraphicsscene \
            qgraphicssceneindex \
 
-# These tests require the cleanlooks style
-!contains(styles, cleanlooks):SUBDIRS -= \
+# These tests require the fusion style
+!contains(styles, fusion):SUBDIRS -= \
     qgraphicsproxywidget \
     qgraphicswidget \
