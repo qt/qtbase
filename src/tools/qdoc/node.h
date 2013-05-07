@@ -179,6 +179,7 @@ public:
     void setLink(LinkType linkType, const QString &link, const QString &desc);
     void setUrl(const QString &url);
     void setTemplateStuff(const QString &templateStuff) { templateStuff_ = templateStuff; }
+    void setReconstitutedBrief(const QString &t) { reconstitutedBrief_ = t; }
     void setPageType(PageType t) { pageType_ = t; }
     void setPageType(const QString& t);
     void setParent(InnerNode* n) { parent_ = n; }
@@ -237,6 +238,7 @@ public:
     ThreadSafeness inheritedThreadSafeness() const;
     QString since() const { return since_; }
     QString templateStuff() const { return templateStuff_; }
+    const QString& reconstitutedBrief() const { return reconstitutedBrief_; }
     PageType pageType() const { return pageType_; }
     QString pageTypeString() const;
     QString nodeTypeString() const;
@@ -298,6 +300,7 @@ private:
     QString url_;
     QString since_;
     QString templateStuff_;
+    QString reconstitutedBrief_;
     mutable QString uuid_;
     QString outSubDir_;
     QString qmlModuleName_;

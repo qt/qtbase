@@ -505,6 +505,10 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
     node->setDoc(doc);
     node->setIndexNodeFlag();
     node->setOutputSubdirectory(project_.toLower());
+    QString briefAttr = element.attribute("brief");
+    if (!briefAttr.isEmpty()) {
+        node->setReconstitutedBrief(briefAttr);
+    }
 
     if (node->isInnerNode()) {
         InnerNode* inner = static_cast<InnerNode*>(node);
@@ -960,6 +964,9 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     default:
         break;
     }
+    QString brief = node->doc().briefText().toString();
+    if (!brief.isEmpty())
+        writer.writeAttribute("brief", brief);
 
     // Inner nodes and function nodes contain child nodes of some sort, either
     // actual child nodes or function parameters. For these, we close the

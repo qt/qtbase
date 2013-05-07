@@ -2287,10 +2287,19 @@ void HtmlGenerator::generateAnnotatedList(const Node *relative,
                 generateText(brief, node, marker);
                 out() << "</p></td>";
             }
+            else if (!node->reconstitutedBrief().isEmpty()) {
+                out() << "<td class=\"tblDescr\"><p>";
+                out() << node->reconstitutedBrief();
+                out() << "</p></td>";
+            }
         }
         else {
             out() << "<td class=\"tblDescr\"><p>";
-            out() << protectEnc(node->doc().briefText().toString());
+            if (!node->reconstitutedBrief().isEmpty()) {
+                out() << node->reconstitutedBrief();
+            }
+            else
+                out() << protectEnc(node->doc().briefText().toString());
             out() << "</p></td>";
         }
         out() << "</tr>\n";
