@@ -5829,8 +5829,11 @@ bool DitaXmlGenerator::writeMetadataElements(const InnerNode* inner,
 QString DitaXmlGenerator::getMetadataElement(const InnerNode* inner, DitaXmlGenerator::DitaTag t)
 {
     QString s = Generator::getMetadataElement(inner, ditaTags[t]);
-    if (s.isEmpty())
-        s = metadataDefault(t);
+    if (s.isEmpty()) {
+        QStringList sl = metadataDefault(t);
+        if (!sl.isEmpty())
+            s = sl[0];
+    }
     return s;
 }
 
@@ -5850,7 +5853,7 @@ QStringList DitaXmlGenerator::getMetadataElements(const InnerNode* inner,
 {
     QStringList s = Generator::getMetadataElements(inner,ditaTags[t]);
     if (s.isEmpty())
-        s.append(metadataDefault(t));
+        s = metadataDefault(t);
     return s;
 }
 
@@ -5858,9 +5861,9 @@ QStringList DitaXmlGenerator::getMetadataElements(const InnerNode* inner,
   Returns the value of key \a t or an empty string
   if \a t is not found in the map.
  */
-QString DitaXmlGenerator::metadataDefault(DitaTag t) const
+QStringList DitaXmlGenerator::metadataDefault(DitaTag t) const
 {
-    return metadataDefaults.value(ditaTags[t]).second;
+    return metadataDefaults.value(ditaTags[t]).values_;
 }
 
 /*!

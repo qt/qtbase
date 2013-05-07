@@ -21,6 +21,8 @@ ANDROID_JAR_DEPENDENCIES = \
 ANDROID_LIB_DEPENDENCIES = \
     plugins/platforms/android/libqtforandroid.so \
     libs/libgnustl_shared.so
+ANDROID_BUNDLED_JAR_DEPENDENCIES = \
+    jar/QtAndroid-bundled.jar
 
 load(qt_module)
 

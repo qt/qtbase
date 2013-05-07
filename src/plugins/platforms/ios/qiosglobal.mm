@@ -104,7 +104,8 @@ Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientat
         break;
     case UIDeviceOrientationFaceUp:
     case UIDeviceOrientationFaceDown:
-        qtOrientation = static_cast<Qt::ScreenOrientation>(-1); // not supported ATM.
+        // FIXME: Use cached device orientation, or fall back to interface orientation
+        qtOrientation = Qt::PortraitOrientation;
         break;
     default:
         qtOrientation = Qt::PortraitOrientation;

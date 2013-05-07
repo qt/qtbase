@@ -103,7 +103,7 @@
     \section1 Reference
     These are links to the API reference materials.
     \list
-    \li \l{Qt Core C++ Classes}{C++ classes}
+    \li \l{Qt Core C++ Classes}{C++ Classes}
         \list
         \li \l{Animation Framework}{Animation Classes}
         \li \l{Threading Classes}

@@ -83,9 +83,18 @@
 - (void) orientationChanged:(NSNotification *)notification
 {
     Q_UNUSED(notification);
-    Qt::ScreenOrientation orientation = toQtScreenOrientation([UIDevice currentDevice].orientation);
-    if (orientation != -1)
-        QWindowSystemInterface::handleScreenOrientationChange(m_screen->screen(), orientation);
+
+    UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
+    switch (deviceOrientation) {
+    case UIDeviceOrientationFaceUp:
+    case UIDeviceOrientationFaceDown:
+        // We ignore these events, as iOS will send events with the 'regular'
+        // orientations alongside these two orientations.
+        return;
+    default:
+        Qt::ScreenOrientation screenOrientation = toQtScreenOrientation(deviceOrientation);
+        QWindowSystemInterface::handleScreenOrientationChange(m_screen->screen(), screenOrientation);
+    }
 }
 
 @end

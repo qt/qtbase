@@ -4,6 +4,9 @@ QT         = core-private
 DEFINES += QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x62000000
 
+MODULE_PLUGIN_TYPES = \
+    sqldrivers
+
 QMAKE_DOCS = $$PWD/doc/qtsql.qdocconf
 
 load(qt_module)

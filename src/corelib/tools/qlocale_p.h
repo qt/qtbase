@@ -115,7 +115,9 @@ public:
         ListToSeparatedString, // QString
         LocaleChanged, // system locale changed
         NativeLanguageName, // QString
-        NativeCountryName // QString
+        NativeCountryName, // QString
+        StandaloneMonthNameLong, // QString, in: int
+        StandaloneMonthNameShort // QString, in: int
     };
     virtual QVariant query(QueryType type, QVariant in) const;
     virtual QLocale fallbackUiLocale() const;
@@ -162,6 +164,7 @@ public:
     static const QLocaleData *findLocaleData(QLocale::Language language,
                                              QLocale::Script script,
                                              QLocale::Country country);
+    static const QLocaleData *c();
 
     quint16 m_language_id, m_script_id, m_country_id;
 
@@ -205,17 +208,16 @@ public:
     quint16 m_weekend_end : 3;
 };
 
-class Q_CORE_EXPORT QLocalePrivate : public QSharedData
+class Q_CORE_EXPORT QLocalePrivate
 {
 public:
-    explicit QLocalePrivate(int index, int numberOptions = 0)
-        : m_index(index), m_numberOptions(numberOptions)
+    static QLocalePrivate *create(const QLocaleData *data, int numberOptions = 0)
     {
-        m_data = dataPointerForIndex(index);
-    }
-
-    ~QLocalePrivate()
-    {
+        QLocalePrivate *retval = new QLocalePrivate;
+        retval->m_data = data;
+        retval->ref.store(1);
+        retval->m_numberOptions = numberOptions;
+        return retval;
     }
 
     QChar decimal() const { return QChar(m_data->m_decimal); }
@@ -332,10 +334,18 @@ public:
     QString dateTimeToString(const QString &format, const QDate *date, const QTime *time,
                              const QLocale *q) const;
 
-    quint16 m_index;
-    quint16 m_numberOptions;
     const QLocaleData *m_data;
+    QBasicAtomicInt ref;
+    quint16 m_numberOptions;
 };
+
+template <>
+inline QLocalePrivate *QSharedDataPointer<QLocalePrivate>::clone()
+{
+    // cannot use QLocalePrivate's copy constructor
+    // since it is deleted in C++11
+    return QLocalePrivate::create(d->m_data, d->m_numberOptions);
+}
 
 inline char QLocalePrivate::digitToCLocale(QChar in) const
 {

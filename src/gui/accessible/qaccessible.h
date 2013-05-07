@@ -68,7 +68,7 @@ class QTextCursor;
 class Q_GUI_EXPORT QAccessible
 {
     Q_GADGET
-    Q_ENUMS(Role Event State)
+    Q_ENUMS(Role Event)
 public:
 
     enum Event {

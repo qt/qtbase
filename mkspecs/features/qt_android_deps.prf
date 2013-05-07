@@ -17,12 +17,27 @@ ANDROID_DEPENDS_DIR = $$MODULE_QMAKE_OUTDIR/lib/
 DEPENDENCY_FILE = $$ANDROID_DEPENDS_DIR$$TARGET-android-dependencies.xml
 
 !build_pass {
+    !isEmpty(MODULE_PLUGIN_TYPES) {
+        for(PLUGIN_TYPE, MODULE_PLUGIN_TYPES) {
+            ANDROID_BUNDLED_FILES += "plugins/$$PLUGIN_TYPE"
+        }
+    }
+
     !isEmpty(ANDROID_JAR_DEPENDENCIES) {
         for(JAR_FILE, ANDROID_JAR_DEPENDENCIES) {
             INIT_CLASS = $$section(JAR_FILE, ":", 1, 1)
             !isEmpty(INIT_CLASS): INIT_CLASS = "initClass=\"$$INIT_CLASS\""
             JAR_FILE = $$section(JAR_FILE, ":", 0, 0)
             FILE_CONTENT += "<jar file=\"$$JAR_FILE\" $$INIT_CLASS />"
+        }
+    }
+
+    !isEmpty(ANDROID_BUNDLED_JAR_DEPENDENCIES) {
+        for(JAR_FILE, ANDROID_BUNDLED_JAR_DEPENDENCIES) {
+            INIT_CLASS = $$section(JAR_FILE, ":", 1, 1)
+            !isEmpty(INIT_CLASS): INIT_CLASS = "initClass=\"$$INIT_CLASS\""
+            JAR_FILE = $$section(JAR_FILE, ":", 0, 0)
+            FILE_CONTENT += "<jar bundling=\"1\" file=\"$$JAR_FILE\" $$INIT_CLASS />"
         }
     }
 
@@ -40,13 +55,19 @@ DEPENDENCY_FILE = $$ANDROID_DEPENDS_DIR$$TARGET-android-dependencies.xml
         }
     }
 
+    !isEmpty(ANDROID_BUNDLED_FILES) {
+        for (BUNDLED_FILE, ANDROID_BUNDLED_FILES) {
+            FILE_CONTENT += "<bundled file=\"$$BUNDLED_FILE\" />"
+        }
+    }
+
     !isEmpty(FILE_CONTENT) {
         FILE_CONTENT = "<rules><dependencies><lib name=\"$$TARGET\"><depends>" $$FILE_CONTENT "</depends></lib></dependencies></rules>"
         write_file($$DEPENDENCY_FILE, FILE_CONTENT) | error("Aborting.")
     }
 }
 
-!isEmpty(ANDROID_JAR_DEPENDENCIES)|!isEmpty(ANDROID_LIB_DEPENDENCIES)|!isEmpty(ANDROID_LIB_DEPENDENCY_REPLACEMENTS) {
+!isEmpty(ANDROID_JAR_DEPENDENCIES)|!isEmpty(ANDROID_LIB_DEPENDENCIES)|!isEmpty(ANDROID_LIB_DEPENDENCY_REPLACEMENTS)|!isEmpty(ANDROID_BUNDLED_JAR_DEPENDENCIES)|!isEmpty(ANDROID_BUNDLED_FILES) {
     install_dependencies_file.files = $$DEPENDENCY_FILE
     install_dependencies_file.path = $$[QT_INSTALL_LIBS]
     INSTALLS += install_dependencies_file

@@ -1660,7 +1660,20 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
         extraHeight = 0,
         finalyoff = 0;
 
-    const QStyleOptionComboBox *combo = qstyleoption_cast<const QStyleOptionComboBox *>(opt);
+    const bool combo = opt->type == QStyleOption::SO_ComboBox;
+    const bool button = opt->type == QStyleOption::SO_Button;
+    const bool pressed = bdi->state == kThemeStatePressed;
+
+    if (button && pressed) {
+        if (bdi->kind == kThemePushButton) {
+            extraHeight = 2;
+        } else if (bdi->kind == kThemePushButtonSmall) {
+            xoff = 1;
+            extraWidth = 2;
+            extraHeight = 5;
+        }
+    }
+
     int width = int(macRect.size.width) + extraWidth;
     int height = int(macRect.size.height) + extraHeight;
 
@@ -1668,8 +1681,9 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
         return;   // nothing to draw
 
     QString key = QLatin1String("$qt_mac_style_ctb_") + QString::number(bdi->kind) + QLatin1Char('_')
-                  + QString::number(bdi->value) + QLatin1Char('_') + QString::number(width)
-                  + QLatin1Char('_') + QString::number(height);
+                  + QString::number(bdi->value) + QLatin1Char('_')
+                  + (button ? QString::number(bdi->state) + QLatin1Char('_') : QString())
+                  + QLatin1Char('_') + QString::number(width) + QLatin1Char('_') + QString::number(height);
     QPixmap pm;
     if (!QPixmapCache::find(key, pm)) {
         QPixmap activePixmap(width, height);
@@ -1680,17 +1694,18 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
                 // ourselves, if a scaled version is needed.
                 QPainter tmpPainter(&activePixmap);
                 QMacStylePrivate::drawCombobox(macRect, *bdi, &tmpPainter);
-            }
-            else {
+            } else {
                 QMacCGContext cg(&activePixmap);
                 HIRect newRect = CGRectMake(xoff, yoff, macRect.size.width, macRect.size.height);
+                if (button && pressed)
+                    bdi->state = kThemeStateActive;
                 HIThemeDrawButton(&newRect, bdi, cg, kHIThemeOrientationNormal, 0);
             }
         }
 
-        if (!combo && bdi->value == kThemeButtonOff) {
+        if (!combo && !button && bdi->value == kThemeButtonOff) {
             pm = activePixmap;
-        } else if (combo) {
+        } else if (combo || button) {
             QImage image = activePixmap.toImage();
 
             for (int y = 0; y < height; ++y) {
@@ -1711,6 +1726,8 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
                         qSwap(darkest, mid);
 
                     int gray = (mid + 2 * lightest) / 3;
+                    if (pressed)
+                        gray *= 0.88;
                     pixel = qRgba(gray, gray, gray, qAlpha(pixel));
                 }
             }
@@ -1753,7 +1770,7 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
         }
         QPixmapCache::insert(key, pm);
     }
-    p->drawPixmap(int(macRect.origin.x), int(macRect.origin.y) + finalyoff, width, height, pm);
+    p->drawPixmap(int(macRect.origin.x) - xoff, int(macRect.origin.y) + finalyoff, width, height, pm);
 }
 
 QMacStyle::QMacStyle()
@@ -3539,23 +3556,52 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 newRect.origin.y += QMacStylePrivate::PushButtonTopOffset;
                 newRect.size.width -= QMacStylePrivate::PushButtonRightOffset - 4;
             }
-            HIThemeDrawButton(&newRect, &bdi, cg, kHIThemeOrientationNormal, 0);
 
-            if (btn->features & QStyleOptionButton::HasMenu) {
+            bool hasMenu = btn->features & QStyleOptionButton::HasMenu;
+            if (hasMenu && bdi.state == kThemeStatePressed && QSysInfo::macVersion() > QSysInfo::MV_10_6)
+                d->drawColorlessButton(newRect, &bdi, p, opt);
+            else
+                HIThemeDrawButton(&newRect, &bdi, cg, kHIThemeOrientationNormal, 0);
+
+            if (hasMenu) {
                 int mbi = proxy()->pixelMetric(QStyle::PM_MenuButtonIndicator, btn, w);
                 QRect ir = btn->rect;
-                int arrowYOffset = bdi.kind == kThemePushButton ? 4 : 2;
-                HIRect arrowRect = CGRectMake(ir.right() - mbi - QMacStylePrivate::PushButtonRightOffset,
-                                              ir.height() / 2 - arrowYOffset, mbi, ir.height() / 2);
+                int arrowXOffset = 0;
+                if (QSysInfo::macVersion() > QSysInfo::MV_10_6)
+                    arrowXOffset = bdi.kind == kThemePushButton ? 6 :
+                                   bdi.kind == kThemePushButtonSmall ? 7 : 8;
+                int arrowYOffset;
+                if (QSysInfo::macVersion() > QSysInfo::MV_10_6)
+                    arrowYOffset = bdi.kind == kThemePushButton ? 3 :
+                                   bdi.kind == kThemePushButtonSmall ? 1 : 2;
+                else
+                    arrowYOffset = bdi.kind == kThemePushButton ? 4 : 2;
+                if (!w) {
+                    // adjustment for Qt Quick Controls
+                    arrowYOffset -= ir.top();
+                    if (bdi.kind == kThemePushButtonSmall)
+                        arrowYOffset += 1;
+                }
+                QRect ar = QRect(ir.right() - mbi - QMacStylePrivate::PushButtonRightOffset,
+                                 ir.height() / 2 - arrowYOffset, mbi, ir.height() / 2);
+                ar = visualRect(btn->direction, ir, ar);
+                HIRect arrowRect = CGRectMake(ar.x() + arrowXOffset, ar.y(), ar.width(), ar.height());
 
                 HIThemePopupArrowDrawInfo pdi;
                 pdi.version = qt_mac_hitheme_version;
                 pdi.state = tds == kThemeStateInactive ? kThemeStateActive : tds;
                 pdi.orientation = kThemeArrowDown;
-                if (arrowRect.size.width < 8.)
-                    pdi.size = kThemeArrow5pt;
-                else
-                    pdi.size = kThemeArrow9pt;
+                if (QSysInfo::macVersion() > QSysInfo::MV_10_6) {
+                    if (bdi.kind == kThemePushButtonMini)
+                        pdi.size = kThemeArrow5pt;
+                    else if (bdi.kind == kThemePushButton || bdi.kind == kThemePushButtonSmall)
+                        pdi.size = kThemeArrow7pt;
+                } else {
+                    if (arrowRect.size.width < 8.)
+                        pdi.size = kThemeArrow5pt;
+                    else
+                        pdi.size = kThemeArrow9pt;
+                }
                 HIThemeDrawPopupArrow(&arrowRect, &pdi, cg, kHIThemeOrientationNormal);
             }
         }
@@ -3621,8 +3667,12 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     QRect freeContentRect = btn->rect;
                     QRect textRect = itemTextRect(
                         btn->fontMetrics, freeContentRect, Qt::AlignCenter, btn->state & State_Enabled, btn->text);
-                    if (hasMenu)
-                        textRect.adjust(-1, 0, -1, 0);
+                    if (hasMenu) {
+                        if (QSysInfo::macVersion() > QSysInfo::MV_10_6)
+                            textRect.moveTo(w ? 15 : 11, textRect.top()); // Supports Qt Quick Controls
+                        else
+                            textRect.adjust(-1, 0, -1, 0);
+                    }
                     // Draw the icon:
                     if (hasIcon) {
                         int contentW = textRect.width();
@@ -3662,6 +3712,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
             QStyleOptionComboBox comboCopy = *cb;
             comboCopy.direction = Qt::LeftToRight;
+            if ((opt->state & QStyle::State_Small) && QSysInfo::macVersion() > QSysInfo::MV_10_6)
+                comboCopy.rect.translate(0, w ? -1 : -2); // Supports Qt Quick Controls
             QCommonStyle::drawControl(CE_ComboBoxLabel, &comboCopy, p, w);
         }
         break;

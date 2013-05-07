@@ -93,7 +93,7 @@
 
 #include "../../../network-settings.h"
 
-const char * const lupinellaIp = "10.3.4.6";
+#define TEST_DOMAIN ".test.macieira.org"
 
 
 class tst_QHostInfo : public QObject
@@ -223,7 +223,7 @@ void tst_QHostInfo::initTestCase()
     if (res == 0) {
         // this test worked
         freeaddrinfo(result);
-        res = getaddrinfo("ipv6-test.dev.troll.no", "80", &hint, &result);
+        res = getaddrinfo("aaaa-single" TEST_DOMAIN, "80", &hint, &result);
         if (res == 0 && result != 0 && result->ai_family != AF_INET) {
             freeaddrinfo(result);
             ipv6LookupsAvailable = true;
@@ -260,14 +260,14 @@ void tst_QHostInfo::lookupIPv4_data()
     QTest::newRow("lookup_01") << QtNetworkSettings::serverName() << QtNetworkSettings::serverIP().toString() << int(QHostInfo::NoError);
     QTest::newRow("empty") << "" << "" << int(QHostInfo::HostNotFound);
 
-    QTest::newRow("single_ip4") << "lupinella.troll.no" << lupinellaIp << int(QHostInfo::NoError);
-    QTest::newRow("multiple_ip4") << "multi.dev.troll.no" << "1.2.3.4 1.2.3.5 10.3.3.31" << int(QHostInfo::NoError);
-    QTest::newRow("literal_ip4") << lupinellaIp << lupinellaIp << int(QHostInfo::NoError);
+    QTest::newRow("single_ip4") << "a-single" TEST_DOMAIN << "192.0.2.1" << int(QHostInfo::NoError);
+    QTest::newRow("multiple_ip4") << "a-multi" TEST_DOMAIN << "192.0.2.1 192.0.2.2 192.0.2.3" << int(QHostInfo::NoError);
+    QTest::newRow("literal_ip4") << "192.0.2.1" << "192.0.2.1" << int(QHostInfo::NoError);
 
-    QTest::newRow("notfound") << "this-name-does-not-exist-hopefully." << "" << int(QHostInfo::HostNotFound);
+    QTest::newRow("notfound") << "invalid" TEST_DOMAIN << "" << int(QHostInfo::HostNotFound);
 
-    QTest::newRow("idn-ace") << "xn--alqualond-34a.troll.no" << "10.3.3.55" << int(QHostInfo::NoError);
-    QTest::newRow("idn-unicode") << QString::fromLatin1("alqualond\353.troll.no") << "10.3.3.55" << int(QHostInfo::NoError);
+    QTest::newRow("idn-ace") << "a-single.xn--alqualond-34a" TEST_DOMAIN << "192.0.2.1" << int(QHostInfo::NoError);
+    QTest::newRow("idn-unicode") << QString::fromLatin1("a-single.alqualond\353" TEST_DOMAIN) << "192.0.2.1" << int(QHostInfo::NoError);
 }
 
 void tst_QHostInfo::lookupIPv4()
@@ -305,11 +305,9 @@ void tst_QHostInfo::lookupIPv6_data()
     QTest::addColumn<QString>("addresses");
     QTest::addColumn<int>("err");
 
-    QTest::newRow("ipv6-net") << "www.ipv6-net.org" << "62.93.217.177 2001:618:1401::4" << int(QHostInfo::NoError);
-    QTest::newRow("ipv6-test") << "ipv6-test.dev.troll.no" << "2001:638:a00:2::2" << int(QHostInfo::NoError);
-    QTest::newRow("dns6-test") << "dns6-test-dev.troll.no" << "2001:470:1f01:115::10" << int(QHostInfo::NoError);
-    QTest::newRow("multi-dns6") << "multi-dns6-test-dev.troll.no" << "2001:470:1f01:115::11 2001:470:1f01:115::12" << int(QHostInfo::NoError);
-    QTest::newRow("dns46-test") << "dns46-test-dev.troll.no" << "10.3.4.90 2001:470:1f01:115::13" << int(QHostInfo::NoError);
+    QTest::newRow("aaaa-single") << "aaaa-single" TEST_DOMAIN << "2001:db8::1" << int(QHostInfo::NoError);
+    QTest::newRow("aaaa-multi") << "aaaa-multi" TEST_DOMAIN << "2001:db8::1 2001:db8::2 2001:db8::3" << int(QHostInfo::NoError);
+    QTest::newRow("a-plus-aaaa") << "a-plus-aaaa" TEST_DOMAIN << "198.51.100.1 2001:db8::1:1" << int(QHostInfo::NoError);
 
     // avoid using real IPv6 addresses here because this will do a DNS query
     // real addresses are between 2000:: and 3fff:ffff:ffff:ffff:ffff:ffff:ffff
@@ -415,7 +413,7 @@ void tst_QHostInfo::raceCondition()
 {
     for (int i = 0; i < 1000; ++i) {
         QTcpSocket socket;
-        socket.connectToHost("notavalidname.troll.no", 80);
+        socket.connectToHost("invalid" TEST_DOMAIN, 80);
     }
 }
 
@@ -424,10 +422,10 @@ class LookupThread : public QThread
 protected:
     inline void run()
     {
-         QHostInfo info = QHostInfo::fromName("qt-project.org");
+         QHostInfo info = QHostInfo::fromName("a-single" TEST_DOMAIN);
          QCOMPARE(info.error(), QHostInfo::NoError);
          QVERIFY(info.addresses().count() > 0);
-         QCOMPARE(info.addresses().at(0).toString(), QString("87.238.53.172"));
+         QCOMPARE(info.addresses().at(0).toString(), QString("192.0.2.1"));
     }
 };
 
@@ -462,7 +460,7 @@ public:
 void LookupReceiver::start()
 {
     for (int i=0;i<numrequests;i++)
-        QHostInfo::lookupHost(QString("qt-project.org"), this, SLOT(resultsReady(QHostInfo)));
+        QHostInfo::lookupHost(QString("a-single" TEST_DOMAIN), this, SLOT(resultsReady(QHostInfo)));
 }
 
 void LookupReceiver::resultsReady(const QHostInfo &info)
@@ -493,7 +491,7 @@ void tst_QHostInfo::threadSafetyAsynchronousAPI()
         QVERIFY(threads.at(k)->wait(60000));
     foreach (LookupReceiver* receiver, receivers) {
         QCOMPARE(receiver->result.error(), QHostInfo::NoError);
-        QCOMPARE(receiver->result.addresses().at(0).toString(), QString("87.238.53.172"));
+        QCOMPARE(receiver->result.addresses().at(0).toString(), QString("192.0.2.1"));
         QCOMPARE(receiver->numrequests, 0);
     }
 }
@@ -530,9 +528,15 @@ void tst_QHostInfo::multipleDifferentLookups_data()
 void tst_QHostInfo::multipleDifferentLookups()
 {
     QStringList hostnameList;
-    hostnameList << "www.ovi.com" << "www.nokia.com" << "qt-project.org" << "www.trolltech.com" << "troll.no"
-            << "www.qtcentre.org" << "forum.nokia.com" << "www.nokia.com" << "wiki.forum.nokia.com"
-            << "www.nokia.com" << "nokia.de" << "127.0.0.1" << "----";
+    hostnameList << "a-single" TEST_DOMAIN
+                 << "a-multi" TEST_DOMAIN
+                 << "aaaa-single" TEST_DOMAIN
+                 << "aaaa-multi" TEST_DOMAIN
+                 << "a-plus-aaaa" TEST_DOMAIN
+                 << "multi" TEST_DOMAIN
+                 << "localhost" TEST_DOMAIN
+                 << "cname" TEST_DOMAIN
+                 << "127.0.0.1" << "----";
 
     QFETCH(int, repeats);
     const int COUNT = hostnameList.size();
@@ -604,7 +608,7 @@ void tst_QHostInfo::abortHostLookup()
     lookupsDoneCounter = 0;
     bool valid = false;
     int id = -1;
-    QHostInfo result = qt_qhostinfo_lookup("qt-project.org", this, SLOT(resultsReady(QHostInfo)), &valid, &id);
+    QHostInfo result = qt_qhostinfo_lookup("a-single" TEST_DOMAIN, this, SLOT(resultsReady(QHostInfo)), &valid, &id);
     QVERIFY(!valid);
     //it is assumed that the DNS request/response in the backend is slower than it takes to call abort
     QHostInfo::abortHostLookup(id);
@@ -631,7 +635,7 @@ void tst_QHostInfo::abortHostLookupInDifferentThread()
     lookupsDoneCounter = 0;
     bool valid = false;
     int id = -1;
-    QHostInfo result = qt_qhostinfo_lookup("qt-project.org", this, SLOT(resultsReady(QHostInfo)), &valid, &id);
+    QHostInfo result = qt_qhostinfo_lookup("a-single" TEST_DOMAIN, this, SLOT(resultsReady(QHostInfo)), &valid, &id);
     QVERIFY(!valid);
     QThread thread;
     LookupAborter aborter;

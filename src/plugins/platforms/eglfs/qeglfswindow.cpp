@@ -131,6 +131,7 @@ void QEglFSWindow::setGeometry(const QRect &)
     QRect rect(screen()->availableGeometry());
     QPlatformWindow::setGeometry(rect);
     QWindowSystemInterface::handleGeometryChange(window(), rect);
+    QWindowSystemInterface::handleExposeEvent(window(), QRegion(rect));
 }
 
 void QEglFSWindow::setWindowState(Qt::WindowState)

@@ -8,4 +8,6 @@
         <item>Qt5Core</item>
     </array>
     <array name="bundled_libs"/>
+    <array name="bundled_in_lib" />
+    <array name="bundled_in_assets" />
 </resources>

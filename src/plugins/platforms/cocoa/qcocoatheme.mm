@@ -54,6 +54,7 @@
 #include "qcocoamenu.h"
 #include "qcocoamenubar.h"
 #include "qcocoahelpers.h"
+#include "qcocoaautoreleasepool.h"
 
 #include <QtCore/qfileinfo.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -250,27 +251,17 @@ QPixmap QCocoaTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
 
 QPixmap QCocoaTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size) const
 {
-    FSRef macRef;
-    OSStatus status = FSPathMakeRef(reinterpret_cast<const UInt8*>(fileInfo.canonicalFilePath().toUtf8().constData()),
-                                    &macRef, 0);
-    if (status != noErr)
-        return QPixmap();
-    FSCatalogInfo info;
-    HFSUniStr255 macName;
-    status = FSGetCatalogInfo(&macRef, kIconServicesCatalogInfoMask, &info, &macName, 0, 0);
-    if (status != noErr)
-        return QPixmap();
-    IconRef iconRef;
-    SInt16 iconLabel;
-    status = GetIconRefFromFileInfo(&macRef, macName.length, macName.unicode,
-                                    kIconServicesCatalogInfoMask, &info, kIconServicesNormalUsageFlag,
-                                    &iconRef, &iconLabel);
-    if (status != noErr)
+    QCocoaAutoReleasePool pool;
+
+    NSImage *iconImage = [[NSWorkspace sharedWorkspace] iconForFile:QCFString::toNSString(fileInfo.canonicalFilePath())];
+    if (!iconImage)
         return QPixmap();
 
-    QPixmap pixmap = qt_mac_convert_iconref(iconRef, size.width(), size.height());
-    ReleaseIconRef(iconRef);
-
+    NSRect iconRect = NSMakeRect(0, 0, size.width(), size.height());
+    CGImageRef cgImage = [iconImage CGImageForProposedRect:&iconRect
+                                                   context:[NSGraphicsContext currentContext]
+                                                     hints:nil];
+    QPixmap pixmap = QPixmap::fromImage(qt_mac_toQImage(cgImage));
     return pixmap;
 }
 

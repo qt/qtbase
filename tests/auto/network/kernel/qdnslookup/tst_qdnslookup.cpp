@@ -59,12 +59,51 @@ class tst_QDnsLookup: public QObject
 {
     Q_OBJECT
 
+    QString domainName(const QString &input);
+    QString domainNameList(const QString &input);
+public slots:
+    void initTestCase();
+
 private slots:
     void lookup_data();
     void lookup();
     void lookupReuse();
     void lookupAbortRetry();
 };
+
+void tst_QDnsLookup::initTestCase()
+{
+    QTest::addColumn<QString>("tld");
+    QTest::newRow("normal") << ".test.macieira.org";
+    QTest::newRow("idn") << ".alqualond\xc3\xab.test.macieira.org";
+}
+
+QString tst_QDnsLookup::domainName(const QString &input)
+{
+    if (input.isEmpty())
+        return input;
+
+    if (input.endsWith(QLatin1Char('.'))) {
+        QString nodot = input;
+        nodot.chop(1);
+        return nodot;
+    }
+
+    QFETCH_GLOBAL(QString, tld);
+    return input + tld;
+}
+
+QString tst_QDnsLookup::domainNameList(const QString &input)
+{
+    QStringList list = input.split(QLatin1Char(';'));
+    QString result;
+    foreach (const QString &s, list) {
+        if (!result.isEmpty())
+            result += ';';
+        result += domainName(s);
+    }
+    return result;
+}
 
 void tst_QDnsLookup::lookup_data()
 {
@@ -81,47 +120,42 @@ void tst_QDnsLookup::lookup_data()
 
     QTest::newRow("a-empty") << int(QDnsLookup::A) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << ""<< "" << QByteArray();
     QTest::newRow("a-notfound") << int(QDnsLookup::A) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
-    QTest::newRow("a-idn") << int(QDnsLookup::A) << QString::fromUtf8("alqualondë.troll.no") << int(QDnsLookup::NoError) << "alqualonde.troll.no" << "10.3.3.55" << "" << "" << "" << "" << QByteArray();
-    QTest::newRow("a-single") << int(QDnsLookup::A) << "lupinella.troll.no" << int(QDnsLookup::NoError) << "" << "10.3.4.6" << "" << "" << "" << "" << QByteArray();
-    QTest::newRow("a-multi") << int(QDnsLookup::A) << "multi.dev.troll.no" << int(QDnsLookup::NoError) << "" << "1.2.3.4 1.2.3.5 10.3.3.31" << "" << "" << "" << "" << QByteArray();
-
+    QTest::newRow("a-single") << int(QDnsLookup::A) << "a-single" << int(QDnsLookup::NoError) << "" << "192.0.2.1" << "" << "" << "" << "" << QByteArray();
+    QTest::newRow("a-multi") << int(QDnsLookup::A) << "a-multi" << int(QDnsLookup::NoError) << "" << "192.0.2.1;192.0.2.2;192.0.2.3" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("aaaa-empty") << int(QDnsLookup::AAAA) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("aaaa-notfound") << int(QDnsLookup::AAAA) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
-    QTest::newRow("aaaa-single") << int(QDnsLookup::AAAA) << "dns6-test-dev.troll.no" << int(QDnsLookup::NoError) << "" << "2001:470:1f01:115::10" << "" << "" << "" << "" << QByteArray();
-    QTest::newRow("aaaa-multi") << int(QDnsLookup::AAAA) << "multi-dns6-test-dev.troll.no" << int(QDnsLookup::NoError) << "" << "2001:470:1f01:115::11 2001:470:1f01:115::12" << "" << "" << "" << "" << QByteArray();
+    QTest::newRow("aaaa-single") << int(QDnsLookup::AAAA) << "aaaa-single" << int(QDnsLookup::NoError) << "" << "2001:db8::1" << "" << "" << "" << "" << QByteArray();
+    QTest::newRow("aaaa-multi") << int(QDnsLookup::AAAA) << "aaaa-multi" << int(QDnsLookup::NoError) << "" << "2001:db8::1;2001:db8::2;2001:db8::3" << "" << "" << "" << "" << QByteArray();
 
     QTest::newRow("any-empty") << int(QDnsLookup::ANY) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("any-notfound") << int(QDnsLookup::ANY) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
-    QTest::newRow("any-ascii") << int(QDnsLookup::ANY) << "fluke.troll.no" << int(QDnsLookup::NoError) << "" << "10.3.3.31" << "" << "" << "" << ""  << QByteArray();
+    QTest::newRow("any-a-single") << int(QDnsLookup::ANY) << "a-single" << int(QDnsLookup::NoError) << "" << "192.0.2.1" << "" << "" << "" << ""  << QByteArray();
+    QTest::newRow("any-a-plus-aaaa") << int(QDnsLookup::ANY) << "a-plus-aaaa" << int(QDnsLookup::NoError) << "" << "198.51.100.1;2001:db8::1:1" << "" << "" << "" << ""  << QByteArray();
+    QTest::newRow("any-multi") << int(QDnsLookup::ANY) << "multi" << int(QDnsLookup::NoError) << "" << "198.51.100.1;198.51.100.2;198.51.100.3;2001:db8::1:1;2001:db8::1:2" << "" << "" << "" << ""  << QByteArray();
 
     QTest::newRow("mx-empty") << int(QDnsLookup::MX) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("mx-notfound") << int(QDnsLookup::MX) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
-    QTest::newRow("mx-ascii") << int(QDnsLookup::MX) << "troll.no" << int(QDnsLookup::NoError) << "" << "" << "10 smtp.trolltech.com" << "" << "" << "" << QByteArray();
-#if 0
-    // FIXME: we need an IDN MX record in the troll.no domain
-    QTest::newRow("mx-idn") << int(QDnsLookup::MX) << QString::fromUtf8("råkat.se") << int(QDnsLookup::NoError) << "" << "" << "10 mail.cdr.se" << "" << "" << "" << QByteArray();
-#endif
+    QTest::newRow("mx-single") << int(QDnsLookup::MX) << "mx-single" << int(QDnsLookup::NoError) << "" << "" << "10 multi" << "" << "" << "" << QByteArray();
+    QTest::newRow("mx-single-cname") << int(QDnsLookup::MX) << "mx-single-cname" << int(QDnsLookup::NoError) << "" << "" << "10 cname" << "" << "" << "" << QByteArray();
+    QTest::newRow("mx-multi") << int(QDnsLookup::MX) << "mx-multi" << int(QDnsLookup::NoError) << "" << "" << "10 multi;20 a-single" << "" << "" << "" << QByteArray();
 
     QTest::newRow("ns-empty") << int(QDnsLookup::NS) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("ns-notfound") << int(QDnsLookup::NS) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
-    QTest::newRow("ns-ascii") << int(QDnsLookup::NS) << "troll.no" << int(QDnsLookup::NoError) << "" << "" << "" << "ns-0.trolltech.net ns-1.trolltech.net" << "" << "" << QByteArray();
+    QTest::newRow("ns-single") << int(QDnsLookup::NS) << "ns-single" << int(QDnsLookup::NoError) << "" << "" << "" << "ns3.macieira.info." << "" << "" << QByteArray();
+    QTest::newRow("ns-multi") << int(QDnsLookup::NS) << "ns-multi" << int(QDnsLookup::NoError) << "" << "" << "" << "gondolin.macieira.info.;ns3.macieira.info." << "" << "" << QByteArray();
 
     QTest::newRow("ptr-empty") << int(QDnsLookup::PTR) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("ptr-notfound") << int(QDnsLookup::PTR) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
-    // FIXME: we need PTR records in the troll.no domain
-    QTest::newRow("ptr-ascii") << int(QDnsLookup::PTR) << "8.8.8.8.in-addr.arpa" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "google-public-dns-a.google.com" << "" << QByteArray();
+    QTest::newRow("ptr-single") << int(QDnsLookup::PTR) << "ptr-single" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "a-single" << "" << QByteArray();
 
     QTest::newRow("srv-empty") << int(QDnsLookup::SRV) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("srv-notfound") << int(QDnsLookup::SRV) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
-#if 0
-    // FIXME: we need SRV records in the troll.no domain
-    QTest::newRow("srv-idn") << int(QDnsLookup::SRV) << QString::fromUtf8("_xmpp-client._tcp.råkat.se") << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "5 0 5224 jabber.cdr.se" << QByteArray();
-#endif
+    QTest::newRow("srv-single") << int(QDnsLookup::SRV) << "_echo._tcp.srv-single" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "5 0 7 multi" << QByteArray();
+    QTest::newRow("srv-prio") << int(QDnsLookup::SRV) << "_echo._tcp.srv-prio" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "1 0 7 multi;2 0 7 a-plus-aaaa" << QByteArray();
 
     QTest::newRow("txt-empty") << int(QDnsLookup::TXT) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("txt-notfound") << int(QDnsLookup::TXT) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
-    // FIXME: we need TXT records in the troll.no domain
-    QTest::newRow("txt-ascii") << int(QDnsLookup::TXT) << "gmail.com" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "" << QByteArray("v=spf1 redirect=_spf.google.com");
+    QTest::newRow("txt-single") << int(QDnsLookup::TXT) << "txt-single" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "" << QByteArray("Hello");
 }
 
 void tst_QDnsLookup::lookup()
@@ -136,6 +170,14 @@ void tst_QDnsLookup::lookup()
     QFETCH(QString, ptr);
     QFETCH(QString, srv);
     QFETCH(QByteArray, txt);
+
+    // transform the inputs
+    domain = domainName(domain);
+    cname = domainName(cname);
+    mx = domainNameList(mx);
+    ns = domainNameList(ns);
+    ptr = domainNameList(ptr);
+    srv = domainNameList(srv);
 
     QDnsLookup lookup;
     lookup.setType(static_cast<QDnsLookup::Type>(type));
@@ -168,7 +210,7 @@ void tst_QDnsLookup::lookup()
             addresses << record.value().toString().toLower();
     }
     addresses.sort();
-    QCOMPARE(addresses.join(' '), host);
+    QCOMPARE(addresses.join(';'), host);
 
     // mail exchanges
     QStringList mailExchanges;
@@ -176,7 +218,7 @@ void tst_QDnsLookup::lookup()
         QCOMPARE(record.name(), domain);
         mailExchanges << QString("%1 %2").arg(QString::number(record.preference()), record.exchange());
     }
-    QCOMPARE(mailExchanges.join(' '), mx);
+    QCOMPARE(mailExchanges.join(';'), mx);
 
     // name servers
     QStringList nameServers;
@@ -186,7 +228,7 @@ void tst_QDnsLookup::lookup()
             nameServers << record.value();
     }
     nameServers.sort();
-    QCOMPARE(nameServers.join(' '), ns);
+    QCOMPARE(nameServers.join(';'), ns);
 
     // pointers
     if (!ptr.isEmpty()) {
@@ -208,7 +250,7 @@ void tst_QDnsLookup::lookup()
                 QString::number(record.port()),
                 record.target());
     }
-    QCOMPARE(services.join(' '), srv);
+    QCOMPARE(services.join(';'), srv);
 
     // text
     if (!txt.isEmpty()) {
@@ -228,25 +270,25 @@ void tst_QDnsLookup::lookupReuse()
 
     // first lookup
     lookup.setType(QDnsLookup::A);
-    lookup.setName("lupinella.troll.no");
+    lookup.setName(domainName("a-single"));
     lookup.lookup();
     QVERIFY(waitForDone(&lookup));
     QVERIFY(lookup.isFinished());
     QCOMPARE(int(lookup.error()), int(QDnsLookup::NoError));
     QVERIFY(!lookup.hostAddressRecords().isEmpty());
-    QCOMPARE(lookup.hostAddressRecords().first().name(), QString("lupinella.troll.no"));
-    QCOMPARE(lookup.hostAddressRecords().first().value(), QHostAddress("10.3.4.6"));
+    QCOMPARE(lookup.hostAddressRecords().first().name(), domainName("a-single"));
+    QCOMPARE(lookup.hostAddressRecords().first().value(), QHostAddress("192.0.2.1"));
 
     // second lookup
     lookup.setType(QDnsLookup::AAAA);
-    lookup.setName("dns6-test-dev.troll.no");
+    lookup.setName(domainName("aaaa-single"));
     lookup.lookup();
     QVERIFY(waitForDone(&lookup));
     QVERIFY(lookup.isFinished());
     QCOMPARE(int(lookup.error()), int(QDnsLookup::NoError));
     QVERIFY(!lookup.hostAddressRecords().isEmpty());
-    QCOMPARE(lookup.hostAddressRecords().first().name(), QString("dns6-test-dev.troll.no"));
-    QCOMPARE(lookup.hostAddressRecords().first().value(), QHostAddress("2001:470:1f01:115::10"));
+    QCOMPARE(lookup.hostAddressRecords().first().name(), domainName("aaaa-single"));
+    QCOMPARE(lookup.hostAddressRecords().first().value(), QHostAddress("2001:db8::1"));
 }
 
 
@@ -256,7 +298,7 @@ void tst_QDnsLookup::lookupAbortRetry()
 
     // try and abort the lookup
     lookup.setType(QDnsLookup::A);
-    lookup.setName("lupinella.troll.no");
+    lookup.setName(domainName("a-single"));
     lookup.lookup();
     lookup.abort();
     QVERIFY(waitForDone(&lookup));
@@ -266,14 +308,14 @@ void tst_QDnsLookup::lookupAbortRetry()
 
     // retry a different lookup
     lookup.setType(QDnsLookup::AAAA);
-    lookup.setName("dns6-test-dev.troll.no");
+    lookup.setName(domainName("aaaa-single"));
     lookup.lookup();
     QVERIFY(waitForDone(&lookup));
     QVERIFY(lookup.isFinished());
     QCOMPARE(int(lookup.error()), int(QDnsLookup::NoError));
     QVERIFY(!lookup.hostAddressRecords().isEmpty());
-    QCOMPARE(lookup.hostAddressRecords().first().name(), QString("dns6-test-dev.troll.no"));
-    QCOMPARE(lookup.hostAddressRecords().first().value(), QHostAddress("2001:470:1f01:115::10"));
+    QCOMPARE(lookup.hostAddressRecords().first().name(), domainName("aaaa-single"));
+    QCOMPARE(lookup.hostAddressRecords().first().value(), QHostAddress("2001:db8::1"));
 }
 
 QTEST_MAIN(tst_QDnsLookup)

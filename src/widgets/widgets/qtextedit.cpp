@@ -445,6 +445,8 @@ void QTextEditPrivate::_q_ensureVisible(const QRectF &_rect)
     example, the documentTitle() function will return the text from
     within HTML \c{<title>} tags.
 
+    \note Zooming into HTML documents only works if the font-size is not set to a fixed size.
+
     \section1 Using QTextEdit as an Editor
 
     All the information about using QTextEdit as a display widget also

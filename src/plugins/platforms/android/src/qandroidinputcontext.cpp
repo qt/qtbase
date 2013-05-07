@@ -237,13 +237,11 @@ static JNINativeMethod methods[] = {
 
 QAndroidInputContext::QAndroidInputContext():QPlatformInputContext()
 {
-    JNIEnv *env = 0;
-    if (QtAndroid::javaVM()->AttachCurrentThread(&env, NULL) < 0) {
-        qCritical() << "AttachCurrentThread failed";
+    QtAndroid::AttachedJNIEnv env;
+    if (!env.jniEnv)
         return;
-    }
 
-    jclass clazz = QtAndroid::findClass(QtNativeInputConnectionClassName, env);
+    jclass clazz = QtAndroid::findClass(QtNativeInputConnectionClassName, env.jniEnv);
     if (clazz == NULL) {
         qCritical() << "Native registration unable to find class '"
                     << QtNativeInputConnectionClassName
@@ -251,14 +249,14 @@ QAndroidInputContext::QAndroidInputContext():QPlatformInputContext()
         return;
     }
 
-    if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) < 0) {
+    if (env.jniEnv->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) < 0) {
         qCritical() << "RegisterNatives failed for '"
                     << QtNativeInputConnectionClassName
                     << "'";
         return;
     }
 
-    clazz = QtAndroid::findClass(QtExtractedTextClassName, env);
+    clazz = QtAndroid::findClass(QtExtractedTextClassName, env.jniEnv);
     if (clazz == NULL) {
         qCritical() << "Native registration unable to find class '"
                     << QtExtractedTextClassName
@@ -266,44 +264,44 @@ QAndroidInputContext::QAndroidInputContext():QPlatformInputContext()
         return;
     }
 
-    m_extractedTextClass = static_cast<jclass>(env->NewGlobalRef(clazz));
-    m_classConstructorMethodID = env->GetMethodID(m_extractedTextClass, "<init>", "()V");
+    m_extractedTextClass = static_cast<jclass>(env.jniEnv->NewGlobalRef(clazz));
+    m_classConstructorMethodID = env.jniEnv->GetMethodID(m_extractedTextClass, "<init>", "()V");
     if (m_classConstructorMethodID == NULL) {
         qCritical() << "GetMethodID failed";
         return;
     }
 
-    m_partialEndOffsetFieldID = env->GetFieldID(m_extractedTextClass, "partialEndOffset", "I");
+    m_partialEndOffsetFieldID = env.jniEnv->GetFieldID(m_extractedTextClass, "partialEndOffset", "I");
     if (m_partialEndOffsetFieldID == NULL) {
         qCritical() << "Can't find field partialEndOffset";
         return;
     }
 
-    m_partialStartOffsetFieldID = env->GetFieldID(m_extractedTextClass, "partialStartOffset", "I");
+    m_partialStartOffsetFieldID = env.jniEnv->GetFieldID(m_extractedTextClass, "partialStartOffset", "I");
     if (m_partialStartOffsetFieldID == NULL) {
         qCritical() << "Can't find field partialStartOffset";
         return;
     }
 
-    m_selectionEndFieldID = env->GetFieldID(m_extractedTextClass, "selectionEnd", "I");
+    m_selectionEndFieldID = env.jniEnv->GetFieldID(m_extractedTextClass, "selectionEnd", "I");
     if (m_selectionEndFieldID == NULL) {
         qCritical() << "Can't find field selectionEnd";
         return;
     }
 
-    m_selectionStartFieldID = env->GetFieldID(m_extractedTextClass, "selectionStart", "I");
+    m_selectionStartFieldID = env.jniEnv->GetFieldID(m_extractedTextClass, "selectionStart", "I");
     if (m_selectionStartFieldID == NULL) {
         qCritical() << "Can't find field selectionStart";
         return;
     }
 
-    m_startOffsetFieldID = env->GetFieldID(m_extractedTextClass, "startOffset", "I");
+    m_startOffsetFieldID = env.jniEnv->GetFieldID(m_extractedTextClass, "startOffset", "I");
     if (m_startOffsetFieldID == NULL) {
         qCritical() << "Can't find field startOffset";
         return;
     }
 
-    m_textFieldID = env->GetFieldID(m_extractedTextClass, "text", "Ljava/lang/String;");
+    m_textFieldID = env.jniEnv->GetFieldID(m_extractedTextClass, "text", "Ljava/lang/String;");
     if (m_textFieldID == NULL) {
         qCritical() << "Can't find field text";
         return;

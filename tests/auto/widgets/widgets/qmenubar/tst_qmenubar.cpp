@@ -1184,7 +1184,12 @@ void tst_QMenuBar::task256322_highlight()
     QTest::mouseMove(win.menuBar(), nothingCenter);
     QTRY_VERIFY(!menu2.isVisible());
     QVERIFY(!menu.isVisible());
-    QCOMPARE(win.menuBar()->activeAction(), nothing);
+    QAction *activeAction = win.menuBar()->activeAction();
+#ifdef Q_OS_MAC
+    if ((QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) && (activeAction != nothing))
+        QEXPECT_FAIL("", "QTBUG-30565: Unstable test", Continue);
+#endif
+    QCOMPARE(activeAction, nothing);
     QTest::mouseRelease(win.menuBar(), Qt::LeftButton, 0, nothingCenter);
 }
 

@@ -51,7 +51,7 @@
 
     \section1 Qt's Classes for Network Programming
 
-    The \l{Qt Network - C++ Classes} page contains a list of the C++ classes
+    The \l{Qt Network C++ Classes} page contains a list of the C++ classes
     in Qt Network.
 
     \section1 High Level Network Operations for HTTP and FTP

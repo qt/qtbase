@@ -4082,8 +4082,22 @@ void tst_QString::arg()
 
     QCOMPARE( QString("%2 %L1").arg(12345.6789).arg(12345.6789),
              QString("12345.7 12.345,7") );
+    QCOMPARE( QString("[%2] [%L1]").arg(12345.6789, 9).arg(12345.6789, 9),
+              QString("[  12345.7] [ 12.345,7]") );
+    QCOMPARE( QString("[%2] [%L1]").arg(12345.6789, 9, 'g', 7).arg(12345.6789, 9, 'g', 7),
+              QString("[ 12345.68] [12.345,68]") );
+    QCOMPARE( QString("[%2] [%L1]").arg(12345.6789, 10, 'g', 7, QLatin1Char('0')).arg(12345.6789, 10, 'g', 7, QLatin1Char('0')),
+              QString("[0012345.68] [012.345,68]") );
+
     QCOMPARE( QString("%2 %L1").arg(123456789).arg(123456789),
              QString("123456789 123.456.789") );
+    QCOMPARE( QString("[%2] [%L1]").arg(123456789, 12).arg(123456789, 12),
+              QString("[   123456789] [ 123.456.789]") );
+    QCOMPARE( QString("[%2] [%L1]").arg(123456789, 13, 10, QLatin1Char('0')).arg(123456789, 12, 10, QLatin1Char('0')),
+              QString("[000123456789] [00123.456.789]") );
+    QCOMPARE( QString("[%2] [%L1]").arg(123456789, 13, 16, QLatin1Char('0')).arg(123456789, 12, 16, QLatin1Char('0')),
+              QString("[0000075bcd15] [00000075bcd15]") );
+
     QCOMPARE( QString("%L2 %L1 %3").arg(12345.7).arg(123456789).arg('c'),
              QString("123.456.789 12.345,7 c") );
 
@@ -4125,6 +4139,14 @@ void tst_QString::arg()
     QCOMPARE(QString("%1").arg(1000., 3, 'g', -1, QChar('x')), QString("1000"));
     QCOMPARE(QString("%1").arg(-1., 3, 'g', -1, QChar('x')), QString("x-1"));
     QCOMPARE(QString("%1").arg(-100., 3, 'g', -1, QChar('x')), QString("-100"));
+
+    QLocale::setDefault(QString("ar"));
+    QCOMPARE( QString("%L1").arg(12345.6789, 10, 'g', 7, QLatin1Char('0')),
+              QString::fromUtf8("\xd9\xa0\xd9\xa1\xd9\xa2\xd9\xac\xd9\xa3\xd9\xa4\xd9\xa5\xd9\xab\xd9\xa6\xd9\xa8") ); // "٠١٢٬٣٤٥٫٦٨"
+    QCOMPARE( QString("%L1").arg(123456789, 13, 10, QLatin1Char('0')),
+              QString("\xd9\xa0\xd9\xa0\xd9\xa1\xd9\xa2\xd9\xa3\xd9\xac\xd9\xa4\xd9\xa5\xd9\xa6\xd9\xac\xd9\xa7\xd9\xa8\xd9\xa9") ); // ٠٠١٢٣٬٤٥٦٬٧٨٩
+
+    QLocale::setDefault(QLocale::system());
 }
 
 void tst_QString::number()

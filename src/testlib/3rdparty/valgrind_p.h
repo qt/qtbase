@@ -133,6 +133,7 @@
         _zzq_arg1, _zzq_arg2, _zzq_arg3, _zzq_arg4, _zzq_arg5)    \
    {                                                              \
       (_zzq_rlval) = (_zzq_default);                              \
+      (void)_zzq_rlval;                                           \
    }
 
 #else  /* ! NVALGRIND */
@@ -205,6 +206,7 @@ typedef
                      : "cc", "memory"                             \
                     );                                            \
     _zzq_rlval = _zzq_result;                                     \
+    (void)_zzq_rlval;                                             \
   }
 
 #define VALGRIND_GET_NR_CONTEXT(_zzq_rlval)                       \
@@ -319,6 +321,7 @@ typedef
                      : "b" (_zzq_default), "b" (_zzq_ptr)         \
                      : "cc", "memory", "r3", "r4");               \
     _zzq_rlval = _zzq_result;                                     \
+    (void)_zzq_rlval;                                             \
   }
 
 #define VALGRIND_GET_NR_CONTEXT(_zzq_rlval)                       \
@@ -377,6 +380,7 @@ typedef
                      : "0" (_zzq_default), "r" (_zzq_ptr)         \
                      : "cc", "memory");                           \
     _zzq_rlval = _zzq_result;                                     \
+    (void)_zzq_rlval;                                             \
   }
 
 #define VALGRIND_GET_NR_CONTEXT(_zzq_rlval)                       \
@@ -447,6 +451,7 @@ typedef
                      : "b" (_zzq_ptr)                             \
                      : "r3", "r4", "cc", "memory");               \
     _zzq_rlval = _zzq_result;                                     \
+    (void)_zzq_rlval;                                             \
   }
 
 #define VALGRIND_GET_NR_CONTEXT(_zzq_rlval)                       \
@@ -519,6 +524,7 @@ typedef
                      : "b" (_zzq_ptr)                             \
                      : "r3", "r4", "cc", "memory");               \
     _zzq_rlval = _zzq_result;                                     \
+    (void)_zzq_rlval;                                             \
   }
 
 #define VALGRIND_GET_NR_CONTEXT(_zzq_rlval)                       \
