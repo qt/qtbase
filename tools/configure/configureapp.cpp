@@ -243,6 +243,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "QT_GLIB" ]         = "no";
     dictionary[ "QT_ICONV" ]        = "auto";
     dictionary[ "QT_INOTIFY" ]      = "auto";
+    dictionary[ "QT_EVENTFD" ]      = "auto";
     dictionary[ "QT_CUPS" ]         = "auto";
     dictionary[ "CFG_GCC_SYSROOT" ] = "yes";
     dictionary[ "SLOG2" ]           = "no";
@@ -908,6 +909,10 @@ void Configure::parseCmdLine()
             dictionary[ "WERROR" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-warnings-are-errors") {
             dictionary[ "WERROR" ] = "no";
+        } else if (configCmdLine.at(i) == "-no-eventfd") {
+            dictionary[ "QT_EVENTFD" ] = "no";
+        } else if (configCmdLine.at(i) == "-eventfd") {
+            dictionary[ "QT_EVENTFD" ] = "yes";
         }
 
         // Work around compiler nesting limitation
@@ -1787,6 +1792,9 @@ bool Configure::displayHelp()
         desc("QT_INOTIFY",  "yes",     "-inotify",      "Explicitly enable Qt inotify(7) support.");
         desc("QT_INOTIFY",  "no",      "-no-inotify",   "Explicitly disable Qt inotify(7) support.\n");
 
+        desc("QT_EVENTFD",  "yes",     "-eventfd",      "Enable eventfd(7) support in the UNIX event loop.");
+        desc("QT_EVENTFD",  "no",      "-no-eventfd",   "Disable eventfd(7) support in the UNIX event loop.\n");
+
         desc("LARGE_FILE",  "yes",     "-largefile",    "Enables Qt to access files larger than 4 GB.\n");
 
         desc("FONT_CONFIG", "yes",     "-fontconfig",   "Build with FontConfig support.");
@@ -2181,6 +2189,8 @@ bool Configure::checkAvailability(const QString &part)
         available = tryCompileProject("unix/iconv") || tryCompileProject("unix/gnu-libiconv");
     } else if (part == "INOTIFY") {
         available = tryCompileProject("unix/inotify");
+    } else if (part == "QT_EVENTFD") {
+        available = tryCompileProject("unix/eventfd");
     } else if (part == "CUPS") {
         available = (platform() != WINDOWS) && (platform() != WINDOWS_CE) && tryCompileProject("unix/cups");
     } else if (part == "STACK_PROTECTOR_STRONG") {
@@ -2322,6 +2332,9 @@ void Configure::autoDetection()
     if ((platform() == QNX || platform() == BLACKBERRY) && dictionary["SLOG2"] == "auto") {
         dictionary["SLOG2"] = checkAvailability("SLOG2") ? "yes" : "no";
     }
+
+    if (dictionary["QT_EVENTFD"] == "auto")
+        dictionary["QT_EVENTFD"] = checkAvailability("QT_EVENTFD") ? "yes" : "no";
 
     // Mark all unknown "auto" to the default value..
     for (QMap<QString,QString>::iterator i = dictionary.begin(); i != dictionary.end(); ++i) {
@@ -2721,6 +2734,9 @@ void Configure::generateOutputVars()
 
     if (dictionary["QT_INOTIFY"] == "yes")
         qtConfig += "inotify";
+
+    if (dictionary["QT_EVENTFD"] == "yes")
+        qtConfig += "eventfd";
 
     if (dictionary["FONT_CONFIG"] == "yes") {
         qtConfig += "fontconfig";
@@ -3379,6 +3395,7 @@ void Configure::generateConfigfiles()
         if (dictionary["QT_ICONV"] == "no")          qconfigList += "QT_NO_ICONV";
         if (dictionary["QT_GLIB"] == "no")           qconfigList += "QT_NO_GLIB";
         if (dictionary["QT_INOTIFY"] == "no")        qconfigList += "QT_NO_INOTIFY";
+        if (dictionary["QT_EVENTFD"] ==  "no")       qconfigList += "QT_NO_EVENTFD";
 
         if (dictionary["REDUCE_EXPORTS"] == "yes")     qconfigList += "QT_VISIBILITY_AVAILABLE";
         if (dictionary["REDUCE_RELOCATIONS"] == "yes") qconfigList += "QT_REDUCE_RELOCATIONS";
@@ -3521,6 +3538,7 @@ void Configure::displayConfig()
     sout << "NIS support................." << dictionary[ "NIS" ] << endl;
     sout << "Iconv support..............." << dictionary[ "QT_ICONV" ] << endl;
     sout << "Inotify support............." << dictionary[ "QT_INOTIFY" ] << endl;
+    sout << "eventfd(7) support.........." << dictionary[ "QT_EVENTFD" ] << endl;
     sout << "Glib support................" << dictionary[ "QT_GLIB" ] << endl;
     sout << "CUPS support................" << dictionary[ "QT_CUPS" ] << endl;
     sout << "OpenVG support.............." << dictionary[ "OPENVG" ] << endl;
