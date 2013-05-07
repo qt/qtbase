@@ -85,6 +85,9 @@ static QTouchDevice *touchDevice = 0;
         m_buttons = Qt::NoButton;
         m_sendKeyEvent = false;
         m_subscribesForGlobalFrameNotifications = false;
+        m_glContext = 0;
+        m_glContextDirty = false;
+        m_drawRectHasBeenCalled = false;
         currentCustomDragTypes = 0;
         m_sendUpAsRightButton = false;
 
@@ -150,7 +153,12 @@ static QTouchDevice *touchDevice = 0;
 
 - (void) setQCocoaGLContext:(QCocoaGLContext *)context
 {
-    [context->nsOpenGLContext() setView:self];
+    m_glContext = context;
+    if (m_drawRectHasBeenCalled) {
+        [m_glContext->nsOpenGLContext() setView:self];
+    } else {
+        m_glContextDirty = true;
+    }
     if (!m_subscribesForGlobalFrameNotifications) {
         // NSOpenGLContext expects us to repaint (or update) the view when
         // it changes position on screen. Since this happens unnoticed for
@@ -344,6 +352,13 @@ static QTouchDevice *touchDevice = 0;
 
 - (void) drawRect:(NSRect)dirtyRect
 {
+    if (m_glContext && m_glContextDirty) {
+        [m_glContext->nsOpenGLContext() setView:self];
+        m_glContextDirty = false;
+    } else {
+        m_drawRectHasBeenCalled = true;
+    }
+
     if (!m_backingStore)
         return;
 
