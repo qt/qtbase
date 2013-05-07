@@ -2782,7 +2782,6 @@ void QTreeView::updateGeometries()
         QRect vg = d->viewport->geometry();
         QRect geometryRect(vg.left(), vg.top() - hint.height(), vg.width(), hint.height());
         d->header->setGeometry(geometryRect);
-        //d->header->setOffset(horizontalScrollBar()->value()); // ### bug ???
         QMetaObject::invokeMethod(d->header, "updateGeometries");
         d->updateScrollBars();
         d->geometryRecursionBlock = false;
@@ -3382,7 +3381,7 @@ int QTreeViewPrivate::coordinateForItem(int item) const
     if (verticalScrollMode == QAbstractItemView::ScrollPerPixel) {
         if (uniformRowHeights)
             return (item * defaultItemHeight) - vbar->value();
-        // ### optimize (spans or caching)
+        // ### optimize (maybe do like QHeaderView by letting items have startposition)
         int y = 0;
         for (int i = 0; i < viewItems.count(); ++i) {
             if (i == item)
@@ -3549,7 +3548,7 @@ int QTreeViewPrivate::firstVisibleItem(int *offset) const
             *offset = -(value % defaultItemHeight);
         return value / defaultItemHeight;
     }
-    int y = 0; // ### optimize (use spans ?)
+    int y = 0; // ### (maybe do like QHeaderView by letting items have startposition)
     for (int i = 0; i < viewItems.count(); ++i) {
         y += itemHeight(i); // the height value is cached
         if (y > value) {
@@ -3618,7 +3617,7 @@ void QTreeViewPrivate::updateScrollBars()
         int contentsHeight = 0;
         if (uniformRowHeights) {
             contentsHeight = defaultItemHeight * viewItems.count();
-        } else { // ### optimize (spans or caching)
+        } else { // ### (maybe do like QHeaderView by letting items have startposition)
             for (int i = 0; i < viewItems.count(); ++i)
                 contentsHeight += itemHeight(i);
         }
