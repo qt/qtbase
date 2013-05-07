@@ -983,6 +983,7 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
 
     // in
     QTest::mouseMove(&view, QPoint(50, 50));
+    QSKIP("QTBUG-25294");
     QTRY_COMPARE(widget->testAttribute(Qt::WA_UnderMouse), hasWidget ? true : false);
     // ### this attribute isn't supported
     QCOMPARE(widget->enterCount, hasWidget ? 1 : 0);
