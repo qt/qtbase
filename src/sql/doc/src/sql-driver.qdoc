@@ -30,8 +30,6 @@
     \title SQL Database Drivers
     \brief How to configure and install Qt SQL drivers for supported databases.
 
-    \ingroup qt-sql
-
     The Qt SQL module uses driver \l{How to Create Qt
     Plugins}{plugins} to communicate with the different database
     APIs. Since Qt's SQL Module API is database-independent, all
