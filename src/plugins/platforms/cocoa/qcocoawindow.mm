@@ -192,6 +192,8 @@ const int QCocoaWindow::NoAlertRequest = -1;
 
 QCocoaWindow::QCocoaWindow(QWindow *tlw)
     : QPlatformWindow(tlw)
+    , m_contentView(nil)
+    , m_qtView(nil)
     , m_nsWindow(0)
     , m_contentViewIsEmbedded(false)
     , m_contentViewIsToBeEmbedded(false)
@@ -212,8 +214,13 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
 #endif
     QCocoaAutoReleasePool pool;
 
-    m_qtView = [[QNSView alloc] initWithQWindow:tlw platformWindow:this];
-    m_contentView = m_qtView;
+    if (tlw->type() == Qt::ForeignWindow) {
+        NSView *foreignView = (NSView *)WId(tlw->property("_q_foreignWinId").value<WId>());
+        setContentView(foreignView);
+    } else {
+        m_qtView = [[QNSView alloc] initWithQWindow:tlw platformWindow:this];
+        m_contentView = m_qtView;
+    }
     setGeometry(tlw->geometry());
     recreateWindow(parent());
     tlw->setGeometry(geometry());

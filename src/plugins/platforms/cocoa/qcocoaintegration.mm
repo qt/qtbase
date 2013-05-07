@@ -352,6 +352,7 @@ bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
     case BufferQueueingOpenGL:
     case WindowMasks:
     case MultipleWindows:
+    case ForeignWindows:
         return true;
     default:
         return QPlatformIntegration::hasCapability(cap);
