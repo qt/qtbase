@@ -276,6 +276,8 @@ Configure::Configure(int& argc, char** argv)
 
     dictionary[ "BUILDDEV" ]        = "no";
 
+    dictionary[ "COMPILE_EXAMPLES" ] = "auto";
+
     dictionary[ "C++11" ]           = "auto";
 
     dictionary[ "SHARED" ]          = "yes";
@@ -458,6 +460,13 @@ void Configure::parseCmdLine()
             dictionary[ "BUILDALL" ] = "yes";
         else if (configCmdLine.at(i) == "-force-debug-info")
             dictionary[ "FORCEDEBUGINFO" ] = "yes";
+
+        else if (configCmdLine.at(i) == "-compile-examples") {
+            dictionary[ "COMPILE_EXAMPLES" ] = "yes";
+        } else if (configCmdLine.at(i) == "-no-compile-examples") {
+            dictionary[ "COMPILE_EXAMPLES" ] = "no";
+        }
+
         else if (configCmdLine.at(i) == "-c++11")
             dictionary[ "C++11" ] = "yes";
         else if (configCmdLine.at(i) == "-no-c++11")
@@ -1696,6 +1705,8 @@ bool Configure::displayHelp()
 
         desc(                   "-skip <module>",       "Exclude an entire module from the build.\n");
 
+        desc(                   "-compile-examples",    "Compile examples even in a production build.\n");
+
         desc("WIDGETS", "no", "-no-widgets",            "Disable Qt Widgets module.\n");
         desc("GUI", "no", "-no-gui",                    "Disable Qt GUI module.\n");
 
@@ -1977,6 +1988,13 @@ QString Configure::defaultTo(const QString &option)
 
     if (option == "SYNCQT"
         && (!QFile::exists(sourcePath + "/bin/syncqt.pl")))
+        return "no";
+
+    // Do not actually build the examples in production builds with -prefix, unless requested
+    if (option == "COMPILE_EXAMPLES"
+        && QDir::cleanPath(dictionary[ "QT_BUILD_TREE" ])
+            != QDir::cleanPath(dictionary[ "QT_INSTALL_PREFIX" ])
+        && dictionary[ "BUILDDEV" ] == "no")
         return "no";
 
     return "yes";
@@ -2560,6 +2578,8 @@ void Configure::generateOutputVars()
     if (!buildParts.contains("libs"))
         buildParts += "libs";
     buildParts.removeDuplicates();
+    if (dictionary[ "COMPILE_EXAMPLES" ] == "yes")
+        qmakeConfig += "compile_examples";
 
     if (dictionary["MSVC_MP"] == "yes")
         qmakeConfig += "msvc_mp";
