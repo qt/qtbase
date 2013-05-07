@@ -440,7 +440,7 @@ void QInputDialogPrivate::_q_currentRowChanged(const QModelIndex &newIndex,
 
     \snippet dialogs/standarddialogs/dialog.cpp 3
 
-    The \c ok variable is set to true if the user clicks \uicontrol OK; otherwise it
+    The \c ok variable is set to true if the user clicks \uicontrol OK; otherwise, it
     is set to false.
 
     \image inputdialogs.png Input Dialogs
@@ -492,7 +492,7 @@ QInputDialog::~QInputDialog()
 
     \brief the mode used for input
 
-    This property help determines which widget is used for entering input into
+    This property helps determine which widget is used for entering input into
     the dialog.
 */
 void QInputDialog::setInputMode(InputMode mode)
@@ -545,7 +545,7 @@ QInputDialog::InputMode QInputDialog::inputMode() const
 
     \property QInputDialog::labelText
 
-    \brief the text to for the label to describe what needs to be input
+    \brief the label's text which describes what needs to be input
 */
 void QInputDialog::setLabelText(const QString &text)
 {
@@ -572,7 +572,7 @@ QString QInputDialog::labelText() const
     This enum specifies various options that affect the look and feel
     of an input dialog.
 
-    \value NoButtons Don't display \uicontrol{OK} and \uicontrol{Cancel} buttons. (Useful for "live dialogs".)
+    \value NoButtons Don't display \uicontrol{OK} and \uicontrol{Cancel} buttons (useful for "live dialogs").
     \value UseListViewForComboBoxItems Use a QListView rather than a non-editable QComboBox for
                                        displaying the items set with setComboBoxItems().
 
@@ -698,7 +698,7 @@ QLineEdit::EchoMode QInputDialog::textEchoMode() const
 
     \property QInputDialog::comboBoxEditable
 
-    \brief whether or not the combo box is used in the input dialog is editable
+    \brief whether or not the combo box used in the input dialog is editable
 */
 void QInputDialog::setComboBoxEditable(bool editable)
 {
@@ -724,7 +724,7 @@ bool QInputDialog::isComboBoxEditable() const
 
     \property QInputDialog::comboBoxItems
 
-    \brief the items used in the combobox for the input dialog
+    \brief the items used in the combo box for the input dialog
 */
 void QInputDialog::setComboBoxItems(const QStringList &items)
 {
@@ -956,7 +956,7 @@ void QInputDialog::setDoubleRange(double min, double max)
 
     \property QInputDialog::doubleDecimals
 
-    \brief sets the percision of the double spinbox in decimals
+    \brief sets the precision of the double spinbox in decimals
 
     \sa QDoubleSpinBox::setDecimals()
 */
@@ -1308,12 +1308,12 @@ double QInputDialog::getDouble(QWidget *parent, const QString &title, const QStr
     \a title is the text which is displayed in the title bar of the dialog.
     \a label is the text which is shown to the user (it should say what should
     be entered).
-    \a items is the string list which is inserted into the combobox.
+    \a items is the string list which is inserted into the combo box.
     \a current is the number  of the item which should be the current item.
     \a inputMethodHints is the input method hints that will be used if the
-    combobox is editable and an input method is active.
+    combo box is editable and an input method is active.
 
-    If \a editable is true the user can enter their own text; otherwise the
+    If \a editable is true the user can enter their own text; otherwise, the
     user may only select one of the existing items.
 
     If \a ok is nonnull \e *\a ok will be set to true if the user pressed
@@ -1321,7 +1321,7 @@ double QInputDialog::getDouble(QWidget *parent, const QString &title, const QStr
     is \a parent. The dialog will be modal and uses the widget \a flags.
 
     This function returns the text of the current item, or if \a editable is
-    true, the current text of the combobox.
+    true, the current text of the combo box.
 
     Use this static function like this:
 
