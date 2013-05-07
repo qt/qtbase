@@ -1598,7 +1598,11 @@ bool CppCodeParser::matchBaseList(ClassNode *classe, bool isClass)
 }
 
 /*!
-  Parse a C++ class, union, or struct declarion.
+  Parse a C++ class, union, or struct declaration.
+
+  This function only handles one level of class nesting, but that is
+  sufficient for Qt because there are no cases of class nesting more
+  than one level deep.
  */
 bool CppCodeParser::matchClassDecl(InnerNode *parent,
                                    const QString &templateStuff)
@@ -1612,6 +1616,18 @@ bool CppCodeParser::matchClassDecl(InnerNode *parent,
         return false;
     while (tok == Tok_Ident)
         readToken();
+    if (tok == Tok_Gulbrandsen) {
+        Node* n = parent->findChildNodeByNameAndType(previousLexeme(),Node::Class);
+        if (n) {
+            parent = static_cast<InnerNode*>(n);
+            if (parent) {
+                readToken();
+                if (tok != Tok_Ident)
+                    return false;
+                readToken();
+            }
+        }
+    }
     if (tok != Tok_Colon && tok != Tok_LeftBrace)
         return false;
 
