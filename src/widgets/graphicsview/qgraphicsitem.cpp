@@ -7186,7 +7186,7 @@ void QGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 */
 void QGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (flags() & ItemIsSelectable) {
+    if (event->button() == Qt::LeftButton && (flags() & ItemIsSelectable)) {
         bool multiSelect = (event->modifiers() & Qt::ControlModifier) != 0;
         if (event->scenePos() == event->buttonDownScenePos(Qt::LeftButton)) {
             // The item didn't move
