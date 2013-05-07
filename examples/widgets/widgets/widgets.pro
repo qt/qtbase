@@ -1,6 +1,5 @@
 TEMPLATE      = subdirs
 SUBDIRS       = analogclock \
-                applicationicon \
                 calculator \
                 calendarwidget \
                 charactermap \
@@ -13,7 +12,6 @@ SUBDIRS       = analogclock \
                 lineedits \
                 movie \
                 mousebuttons \
-                orientation \
                 scribble \
                 shapedclock \
                 sliders \
