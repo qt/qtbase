@@ -96,6 +96,16 @@ static inline QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *getMenuLoader()
     return self;
 }
 
+
+- (void)menu:(NSMenu*)menu willHighlightItem:(NSMenuItem*)item
+{
+    Q_UNUSED(menu);
+    if (item && [item tag]) {
+        QCocoaMenuItem *cocoaItem = reinterpret_cast<QCocoaMenuItem *>([item tag]);
+        cocoaItem->hovered();
+    }
+}
+
 - (void) menuWillOpen:(NSMenu*)m
 {
     Q_UNUSED(m);

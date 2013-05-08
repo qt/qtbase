@@ -2998,6 +2998,7 @@ void QMenu::actionEvent(QActionEvent *e)
                 QGuiApplicationPrivate::platformTheme()->createPlatformMenuItem();
             menuItem->setTag(reinterpret_cast<quintptr>(e->action()));
             QObject::connect(menuItem, SIGNAL(activated()), e->action(), SLOT(trigger()));
+            QObject::connect(menuItem, SIGNAL(hovered()), e->action(), SIGNAL(hovered()));
             copyActionToPlatformItem(e->action(), menuItem);
             QPlatformMenuItem* beforeItem = d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->before()));
             d->platformMenu->insertMenuItem(menuItem, beforeItem);
