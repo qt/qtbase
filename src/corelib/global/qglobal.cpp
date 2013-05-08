@@ -928,8 +928,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \endlist
 
     Some constants are defined only on certain platforms. You can use
-    the preprocessor symbols Q_OS_WIN and Q_OS_MAC to test that
-    the application is compiled under Windows or Mac.
+    the preprocessor symbols Q_OS_WIN and Q_OS_MACX to test that
+    the application is compiled under Windows or OS X.
 
     \sa QLibraryInfo
 */
@@ -1071,6 +1071,27 @@ bool qSharedBuild() Q_DECL_NOTHROW
 
     Defined on Darwin OS (synonym for Q_OS_MAC).
 */
+
+/*!
+    \macro Q_OS_MAC
+    \relates <QtGlobal>
+
+    Defined on OS X and iOS (synonym for Q_OS_DARWIN).
+ */
+
+/*!
+    \macro Q_OS_MACX
+    \relates <QtGlobal>
+
+    Defined on OS X.
+ */
+
+/*!
+    \macro Q_OS_IOS
+    \relates <QtGlobal>
+
+    Defined on iOS.
+ */
 
 /*!
     \macro Q_OS_WIN
@@ -1393,13 +1414,6 @@ bool qSharedBuild() Q_DECL_NOTHROW
     Defined if the application is compiled using Green Hills
     Optimizing C++ Compilers.
 */
-
-/*!
-  \macro Q_OS_MAC
-  \relates <QtGlobal>
-
-  Defined on MAC OS (synonym for Darwin).
- */
 
 /*!
     \macro Q_PROCESSOR_ALPHA
