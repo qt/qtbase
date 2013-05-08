@@ -4947,7 +4947,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
             if (cc == CC_ScrollBar && proxy()->styleHint(SH_ScrollBar_Transient, opt, widget)) {
                 bool wasActive = false;
-                CGFloat opacity = 1.0;
+                CGFloat opacity = 0.0;
                 CGFloat expandScale = 1.0;
                 CGFloat expandOffset = -1.0;
                 bool shouldExpand = false;
@@ -4972,6 +4972,10 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                             oldRect != slider->rect ||
                             oldState != slider->state ||
                             oldActiveControls != slider->activeSubControls) {
+
+                        // if the scrollbar is transient or its attributes, geometry or
+                        // state has changed, the opacity is reset back to 100% opaque
+                        opacity = 1.0;
 
                         styleObject->setProperty("_q_stylepos", slider->sliderPosition);
                         styleObject->setProperty("_q_stylemin", slider->minimum);
