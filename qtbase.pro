@@ -105,7 +105,7 @@ prefix_build|!equals(PWD, $$OUT_PWD) {
 mkspecs.path = $$[QT_HOST_DATA]/mkspecs
 mkspecs.files = \
     $$OUT_PWD/mkspecs/qconfig.pri $$OUT_PWD/mkspecs/qmodule.pri $$OUT_PWD/mkspecs/qdevice.pri \
-    $$files($$PWD/mkspecs/*)   # $$OUT_PWD contains only symlinks under Unix
+    $$files($$PWD/mkspecs/*)
 mkspecs.files -= $$PWD/mkspecs/modules
 INSTALLS += mkspecs
 

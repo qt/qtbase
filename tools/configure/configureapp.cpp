@@ -160,13 +160,7 @@ Configure::Configure(int& argc, char** argv)
         cout << "Preparing build tree..." << endl;
         QDir(buildPath).mkpath("bin");
 
-        //copy the mkspecs
         buildDir.mkpath("mkspecs");
-        if (!Environment::cpdir(sourcePath + "/mkspecs", buildPath + "/mkspecs")){
-            cout << "Couldn't copy mkspecs!" << sourcePath << " " << buildPath << endl;
-            dictionary["DONE"] = "error";
-            return;
-        }
 
         buildDir.mkpath("doc");
         if (!Environment::cpdir(sourcePath + "/doc/global", buildPath + "/doc/global")) {
@@ -3897,6 +3891,9 @@ void Configure::buildQmake()
         QTextStream confStream(&confFile);
         confStream << "[EffectivePaths]" << endl
                    << "Prefix=.." << endl;
+        if (sourcePath != buildPath)
+            confStream << "[EffectiveSourcePaths]" << endl
+                       << "Prefix=" << sourcePath << endl;
 
         confStream.flush();
         confFile.close();

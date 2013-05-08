@@ -2398,43 +2398,7 @@ if [ "$OPT_SHADOW" = "yes" ]; then
 
     [ -d "$outpath/bin" ] || mkdir -p "$outpath/bin"
 
-    # save a pre-existing mkspecs/modules dir
-    test -d "$outpath/mkspecs/modules" && \
-        mv "$outpath/mkspecs/modules" "$outpath/mkspecs-modules"
-    # ditto for mkspecs/modules-inst
-    test -d "$outpath/mkspecs/modules-inst" && \
-        mv "$outpath/mkspecs/modules-inst" "$outpath/mkspecs-modules-inst"
-
-    # symlink the mkspecs directory
     mkdir -p "$outpath/mkspecs"
-    rm -rf "$outpath"/mkspecs/*
-    ln -s "$relpath"/mkspecs/* "$outpath/mkspecs"
-
-    ShadowMkspecs()
-    {
-        rm -rf "$outpath/mkspecs/$1"
-        find "$relpath/mkspecs/$1" -type d | sed "s,^$relpath,$outpath," | xargs mkdir -p
-        find "$relpath/mkspecs/$1" -type f | sed "s,^$relpath/,," | while read f; do ln -s "$relpath/$f" "$outpath/$f"; done
-    }
-
-    # Special case for mkspecs/features directory.
-    # To be able to place .prf files into a shadow build directory,
-    # we're creating links for files only. The directory structure is reproduced.
-    ShadowMkspecs features
-
-    # The modules dir is special, too.
-    if test -d "$outpath/mkspecs-modules"; then
-        rm -rf "$outpath/mkspecs/modules"
-        mv "$outpath/mkspecs-modules" "$outpath/mkspecs/modules"
-    else
-        ShadowMkspecs modules
-    fi
-
-    # The modules-inst dir is not quite as special, but still.
-    if test -d "$outpath/mkspecs-modules-inst"; then
-        rm -rf "$outpath/mkspecs/modules-inst"
-        mv "$outpath/mkspecs-modules-inst" "$outpath/mkspecs/modules-inst"
-    fi
 
     # Prepare doc directory
     mkdir -p "$outpath/doc"
@@ -4090,6 +4054,12 @@ cat > "$QTCONFFILE" <<EOF
 [EffectivePaths]
 Prefix=..
 EOF
+if [ x"$relpath" != x"$outpath" ]; then
+    cat >> "$QTCONFFILE" <<EOF
+[EffectiveSourcePaths]
+Prefix=$relpath
+EOF
+fi
 
 #-------------------------------------------------------------------------------
 # write out device config before we run the test.
