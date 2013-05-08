@@ -918,6 +918,8 @@ signals:
 private slots:
     void rgbEd();
     void hsvEd();
+    void htmlEd();
+
 private:
     void showCurrentColor();
     int hue, sat, val;
@@ -929,6 +931,7 @@ private:
     QLabel *lblRed;
     QLabel *lblGreen;
     QLabel *lblBlue;
+    QLabel *lblHtml;
     QColSpinBox *hEd;
     QColSpinBox *sEd;
     QColSpinBox *vEd;
@@ -937,6 +940,7 @@ private:
     QColSpinBox *bEd;
     QColSpinBox *alphaEd;
     QLabel *alphaLab;
+    QLineEdit *htEd;
     QColorShowLabel *lab;
     bool rgbOriginal;
     QColorDialog *colorDialog;
@@ -1228,6 +1232,19 @@ QColorShower::QColorShower(QColorDialog *parent)
 #endif
     alphaEd->hide();
     alphaLab->hide();
+    lblHtml = new QLabel(this);
+    htEd = new QLineEdit(this);
+#ifndef QT_NO_SHORTCUT
+    lblHtml->setBuddy(htEd);
+#endif
+
+    QRegularExpression regExp(QStringLiteral("#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})"));
+    QRegularExpressionValidator *validator = new QRegularExpressionValidator(regExp, this);
+    htEd->setValidator(validator);
+
+    lblHtml->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+    gl->addWidget(lblHtml, 5, 1);
+    gl->addWidget(htEd, 5, 2);
 
     connect(hEd, SIGNAL(valueChanged(int)), this, SLOT(hsvEd()));
     connect(sEd, SIGNAL(valueChanged(int)), this, SLOT(hsvEd()));
@@ -1237,6 +1254,7 @@ QColorShower::QColorShower(QColorDialog *parent)
     connect(gEd, SIGNAL(valueChanged(int)), this, SLOT(rgbEd()));
     connect(bEd, SIGNAL(valueChanged(int)), this, SLOT(rgbEd()));
     connect(alphaEd, SIGNAL(valueChanged(int)), this, SLOT(rgbEd()));
+    connect(htEd, SIGNAL(textEdited(QString)), this, SLOT(htmlEd()));
 
     retranslateStrings();
 }
@@ -1271,6 +1289,8 @@ void QColorShower::rgbEd()
     sEd->setValue(sat);
     vEd->setValue(val);
 
+    htEd->setText(QColor(curCol).name());
+
     showCurrentColor();
     emit newCol(currentColor());
     updateQColor();
@@ -1286,6 +1306,31 @@ void QColorShower::hsvEd()
     QColor c;
     c.setHsv(hue, sat, val);
     curCol = c.rgb();
+
+    rEd->setValue(qRed(currentColor()));
+    gEd->setValue(qGreen(currentColor()));
+    bEd->setValue(qBlue(currentColor()));
+
+    htEd->setText(c.name());
+
+    showCurrentColor();
+    emit newCol(currentColor());
+    updateQColor();
+}
+
+void QColorShower::htmlEd()
+{
+    QColor c;
+    QString t = htEd->text();
+    c.setNamedColor(t);
+    if (!c.isValid())
+        return;
+    curCol = qRgba(c.red(), c.green(), c.blue(), currentAlpha());
+    rgb2hsv(curCol, hue, sat, val);
+
+    hEd->setValue(hue);
+    sEd->setValue(sat);
+    vEd->setValue(val);
 
     rEd->setValue(qRed(currentColor()));
     gEd->setValue(qGreen(currentColor()));
@@ -1311,6 +1356,8 @@ void QColorShower::setRgb(QRgb rgb)
     gEd->setValue(qGreen(currentColor()));
     bEd->setValue(qBlue(currentColor()));
 
+    htEd->setText(QColor(rgb).name());
+
     showCurrentColor();
     updateQColor();
 }
@@ -1334,6 +1381,8 @@ void QColorShower::setHsv(int h, int s, int v)
     gEd->setValue(qGreen(currentColor()));
     bEd->setValue(qBlue(currentColor()));
 
+    htEd->setText(c.name());
+
     showCurrentColor();
     updateQColor();
 }
@@ -1347,6 +1396,7 @@ void QColorShower::retranslateStrings()
     lblGreen->setText(QColorDialog::tr("&Green:"));
     lblBlue->setText(QColorDialog::tr("Bl&ue:"));
     alphaLab->setText(QColorDialog::tr("A&lpha channel:"));
+    lblHtml->setText(QColorDialog::tr("&HTML:"));
 }
 
 void QColorShower::updateQColor()
