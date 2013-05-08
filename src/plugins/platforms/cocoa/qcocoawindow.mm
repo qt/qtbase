@@ -272,8 +272,7 @@ void QCocoaWindow::setCocoaGeometry(const QRect &rect)
 
     if (m_nsWindow) {
         NSRect bounds = qt_mac_flipRect(rect, window());
-        [m_nsWindow setContentSize : bounds.size];
-        [m_nsWindow setFrameOrigin : bounds.origin];
+        [m_nsWindow setFrame:[m_nsWindow frameRectForContentRect:bounds] display:YES animate:NO];
     } else {
         [m_contentView setFrame : NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height())];
     }
