@@ -16,6 +16,14 @@ qt:!isEmpty(QT_CONFIG) {
     }
 }
 
+isEmpty(_QMAKE_CACHE_) {
+    warning("No .qmake.cache is present. This significantly slows down qmake with this makespec.")
+    warning("Call 'cache()' in the top-level project file to rectify this problem.")
+} else {
+    cache(QMAKE_XCODE_DEVELOPER_PATH)
+    cache(QMAKE_XCODE_VERSION)
+}
+
 # Ensure that we process sdk.prf first, as it will update QMAKE_CXX
 # and friends that other features/extra compilers may depend on.
 sdk: load(sdk)
