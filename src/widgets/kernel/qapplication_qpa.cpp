@@ -196,7 +196,6 @@ void QApplicationPrivate::closePopup(QWidget *popup)
                 // mouse release event or inside
                 qt_replay_popup_mouse_event = false;
             } else { // mouse press event
-                QGuiApplicationPrivate::mousePressTime -= 10000; // avoid double click
                 qt_replay_popup_mouse_event = true;
             }
 
