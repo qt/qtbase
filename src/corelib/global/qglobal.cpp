@@ -240,6 +240,12 @@ Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
 */
 
 /*!
+    \fn QFlags &QFlags::operator&=(Enum mask)
+
+    \overload
+*/
+
+/*!
     \fn QFlags &QFlags::operator|=(QFlags other)
 
     Performs a bitwise OR operation with \a other and stores the
