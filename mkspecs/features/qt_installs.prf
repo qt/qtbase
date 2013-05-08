@@ -12,10 +12,16 @@
 #library
 !qt_no_install_library {
     win32 {
-       dlltarget.path = $$[QT_INSTALL_BINS]
+       host_build: \
+           dlltarget.path = $$[QT_HOST_BINS]
+       else: \
+           dlltarget.path = $$[QT_INSTALL_BINS]
        INSTALLS += dlltarget
     }
-    target.path = $$[QT_INSTALL_LIBS]
+    host_build: \
+        target.path = $$[QT_HOST_LIBS]
+    else: \
+        target.path = $$[QT_INSTALL_LIBS]
     INSTALLS += target
 }
 

@@ -19,10 +19,18 @@ else: \
 !build_pass {
 
     # Create a module .pri file
-    unix:!static: \
-        module_rpath = "QT.$${MODULE}.rpath = $$[QT_INSTALL_LIBS/raw]"
+    host_build: \
+        module_libs = "\$\$QT_MODULE_HOST_LIB_BASE"
     else: \
+        module_libs = "\$\$QT_MODULE_LIB_BASE"
+    unix:!static {
+        host_build: \
+            module_rpath = "QT.$${MODULE}.rpath = $$[QT_HOST_LIBS]"
+        else: \
+            module_rpath = "QT.$${MODULE}.rpath = $$[QT_INSTALL_LIBS/raw]"
+    } else {
         module_rpath =
+    }
     !isEmpty(QT_FOR_PRIVATE) {
         contains(QT_FOR_PRIVATE, .*-private$):error("QT_FOR_PRIVATE may not contain *-private.")
         module_privdep = "QT.$${MODULE}.private_depends = $$QT_FOR_PRIVATE"
@@ -55,15 +63,17 @@ else: \
         "QT.$${MODULE}.PATCH_VERSION = $$section(VERSION, ., 2, 2)" \
         "" \
         "QT.$${MODULE}.name = $$TARGET" \
-        "QT.$${MODULE}.bins = \$\$QT_MODULE_BIN_BASE" \
-        "QT.$${MODULE}.includes = $$MODULE_INCLUDES" \
-        "QT.$${MODULE}.private_includes = $$MODULE_PRIVATE_INCLUDES" \
-        "QT.$${MODULE}.libs = \$\$QT_MODULE_LIB_BASE" \
-        "QT.$${MODULE}.libexecs = \$\$QT_MODULE_LIBEXEC_BASE" \
+        "QT.$${MODULE}.libs = $$module_libs" \
         $$module_rpath \
+        "QT.$${MODULE}.private_includes = $$MODULE_PRIVATE_INCLUDES"
+    !host_build: MODULE_PRI_CONT += \
+        "QT.$${MODULE}.includes = $$MODULE_INCLUDES" \
+        "QT.$${MODULE}.bins = \$\$QT_MODULE_BIN_BASE" \
+        "QT.$${MODULE}.libexecs = \$\$QT_MODULE_LIBEXEC_BASE" \
         "QT.$${MODULE}.plugins = \$\$QT_MODULE_PLUGIN_BASE" \
         "QT.$${MODULE}.imports = \$\$QT_MODULE_IMPORT_BASE" \
-        "QT.$${MODULE}.qml = \$\$QT_MODULE_QML_BASE" \
+        "QT.$${MODULE}.qml = \$\$QT_MODULE_QML_BASE"
+    MODULE_PRI_CONT += \
         "QT.$${MODULE}.depends =$$join(MODULE_DEPENDS, " ", " ")" \
         $$module_privdep \
         $$module_rundep \
@@ -84,6 +94,7 @@ else: \
             "QT_MODULE_IMPORT_BASE = $$MODULE_BASE_OUTDIR/imports" \
             "QT_MODULE_QML_BASE = $$MODULE_BASE_OUTDIR/qml" \
             "QT_MODULE_LIB_BASE = $$MODULE_BASE_OUTDIR/lib" \
+            "QT_MODULE_HOST_LIB_BASE = $$MODULE_BASE_OUTDIR/lib" \
             "QT_MODULE_LIBEXEC_BASE = $$MODULE_BASE_OUTDIR/libexec" \
             "QT_MODULE_PLUGIN_BASE = $$MODULE_BASE_OUTDIR/plugins" \
             "include($$MODULE_PRI)"
@@ -99,6 +110,7 @@ else: \
         QT_MODULE_IMPORT_BASE = $$[QT_INSTALL_IMPORTS]
         QT_MODULE_QML_BASE = $$[QT_INSTALL_QML]
         QT_MODULE_LIB_BASE = $$[QT_INSTALL_LIBS]
+        QT_MODULE_HOST_LIB_BASE = $$[QT_HOST_LIBS]
         QT_MODULE_LIBEXEC_BASE = $$[QT_INSTALL_LIBEXECS]
         QT_MODULE_PLUGIN_BASE = $$[QT_INSTALL_PLUGINS]
 

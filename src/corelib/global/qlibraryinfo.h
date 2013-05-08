@@ -82,6 +82,7 @@ public:
         SysrootPath,
         HostPrefixPath,
         HostBinariesPath,
+        HostLibrariesPath,
         HostDataPath,
         TargetSpecPath,
         HostSpecPath,

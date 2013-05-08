@@ -1003,6 +1003,7 @@ CFG_SYSROOT=
 CFG_GCC_SYSROOT="yes"
 QT_HOST_PREFIX=
 QT_HOST_BINS=
+QT_HOST_LIBS=
 QT_HOST_DATA=
 
 #flags for SQL drivers
@@ -1111,7 +1112,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style options that pass an argument
-    -prefix|-docdir|-headerdir|-plugindir|-importdir|-qmldir|-archdatadir|-datadir|-libdir|-bindir|-libexecdir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-skip|-platform|-xplatform|-device|-device-option|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir|-qpa|-qconfig|-android-sdk|-android-ndk|-android-ndk-platform|-android-ndk-host|-android-arch|-android-toolchain-version)
+    -prefix|-docdir|-headerdir|-plugindir|-importdir|-qmldir|-archdatadir|-datadir|-libdir|-bindir|-libexecdir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-skip|-platform|-xplatform|-device|-device-option|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir|-hostlibdir|-qpa|-qconfig|-android-sdk|-android-ndk|-android-ndk-platform|-android-ndk-host|-android-arch|-android-toolchain-version)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         shift
         VAL="$1"
@@ -1295,6 +1296,9 @@ while [ "$#" -gt 0 ]; do
         ;;
     hostbindir)
         QT_HOST_BINS="$VAL"
+        ;;
+    hostlibdir)
+        QT_HOST_LIBS="$VAL"
         ;;
     pkg-config)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -3152,6 +3156,15 @@ if [ -z "$QT_HOST_BINS" ]; then #default
 fi
 QT_HOST_BINS=`"$relpath/config.tests/unix/makeabs" "$QT_HOST_BINS"`
 
+if [ -z "$QT_HOST_LIBS" ]; then #default
+    if $haveHpx; then
+        QT_HOST_LIBS="$QT_HOST_PREFIX/lib" #fallback
+    else
+        QT_HOST_LIBS="$QT_INSTALL_LIBS"
+    fi
+fi
+QT_HOST_LIBS=`"$relpath/config.tests/unix/makeabs" "$QT_HOST_LIBS"`
+
 if [ -z "$QT_HOST_DATA" ]; then #default
     if $haveHpx; then
         QT_HOST_DATA="$QT_HOST_PREFIX"
@@ -3325,6 +3338,8 @@ Installation options:
 
     -hostbindir <dir> .. Host executables will be installed to <dir>
                          (default HOSTPREFIX/bin)
+    -hostlibdir <dir> .. Host libraries will be installed to <dir>
+                         (default HOSTPREFIX/lib)
     -hostdatadir <dir> . Data used by qmake will be installed to <dir>
                          (default HOSTPREFIX)
 
@@ -3839,6 +3854,7 @@ static const char qt_configure_prefix_path_strs[][256 + 12] = {
     "qt_ssrtpath=$CFG_SYSROOT",
     "qt_hpfxpath=$QT_HOST_PREFIX",
     "qt_hbinpath=$QT_HOST_BINS",
+    "qt_hlibpath=$QT_HOST_LIBS",
     "qt_hdatpath=$QT_HOST_DATA",
     "qt_targspec=$shortxspec",
     "qt_hostspec=$shortspec",

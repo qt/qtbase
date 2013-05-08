@@ -1171,6 +1171,13 @@ void Configure::parseCmdLine()
             dictionary[ "QT_HOST_BINS" ] = configCmdLine.at(i);
         }
 
+        else if (configCmdLine.at(i) == "-hostlibdir") {
+            ++i;
+            if (i == argCount)
+                break;
+            dictionary[ "QT_HOST_LIBS" ] = configCmdLine.at(i);
+        }
+
         else if (configCmdLine.at(i) == "-hostdatadir") {
             ++i;
             if (i == argCount)
@@ -1698,6 +1705,7 @@ bool Configure::displayHelp()
         desc(       "-testsdir <dir>",                  "Tests will be installed to <dir>\n(default PREFIX/tests)\n");
 
         desc(       "-hostbindir <dir>",                "Host executables will be installed to <dir>\n(default HOSTPREFIX/bin)");
+        desc(       "-hostlibdir <dir>",                "Host libraries will be installed to <dir>\n(default HOSTPREFIX/lib)");
         desc(       "-hostdatadir <dir>",               "Data used by qmake will be installed to <dir>\n(default HOSTPREFIX)");
 
 #if !defined(EVAL)
@@ -3758,6 +3766,8 @@ void Configure::generateQConfigCpp()
         haveHpx = true;
     if (dictionary["QT_HOST_BINS"].isEmpty())
         dictionary["QT_HOST_BINS"] = haveHpx ? dictionary["QT_HOST_PREFIX"] + "/bin" : dictionary["QT_INSTALL_BINS"];
+    if (dictionary["QT_HOST_LIBS"].isEmpty())
+        dictionary["QT_HOST_LIBS"] = haveHpx ? dictionary["QT_HOST_PREFIX"] + "/lib" : dictionary["QT_INSTALL_LIBS"];
     if (dictionary["QT_HOST_DATA"].isEmpty())
         dictionary["QT_HOST_DATA"] = haveHpx ? dictionary["QT_HOST_PREFIX"] : dictionary["QT_INSTALL_ARCHDATA"];
 
@@ -3798,6 +3808,7 @@ void Configure::generateQConfigCpp()
                   << "    \"qt_ssrtpath=" << formatPath(dictionary["CFG_SYSROOT"]) << "\"," << endl
                   << "    \"qt_hpfxpath=" << formatPath(dictionary["QT_HOST_PREFIX"]) << "\"," << endl
                   << "    \"qt_hbinpath=" << formatPath(dictionary["QT_HOST_BINS"]) << "\"," << endl
+                  << "    \"qt_hlibpath=" << formatPath(dictionary["QT_HOST_LIBS"]) << "\"," << endl
                   << "    \"qt_hdatpath=" << formatPath(dictionary["QT_HOST_DATA"]) << "\"," << endl
                   << "    \"qt_targspec=" << targSpec << "\"," << endl
                   << "    \"qt_hostspec=" << hostSpec << "\"," << endl
