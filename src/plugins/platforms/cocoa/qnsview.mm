@@ -1331,14 +1331,17 @@ static QTouchDevice *touchDevice = 0;
         QCocoaDropData mimeData([sender draggingPasteboard]);
         response = QWindowSystemInterface::handleDrop(m_window, &mimeData, qt_windowPoint, qtAllowed);
     }
+    if (response.isAccepted()) {
+        QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
+        nativeDrag->setAcceptedAction(response.acceptedAction());
+    }
     return response.isAccepted();
 }
 
 - (void)draggedImage:(NSImage*) img endedAt:(NSPoint) point operation:(NSDragOperation) operation
 {
     Q_UNUSED(img);
-    QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
-    nativeDrag->setAcceptedAction(qt_mac_mapNSDragOperation(operation));
+    Q_UNUSED(operation);
 
 // keep our state, and QGuiApplication state (buttons member) in-sync,
 // or future mouse events will be processed incorrectly
