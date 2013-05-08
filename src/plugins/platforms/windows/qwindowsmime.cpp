@@ -917,11 +917,11 @@ QVariant QWindowsMimeHtml::convertToMime(const QString &mime, IDataObject *pData
         qDebug("raw :");
         qDebug(html);
 #endif
-        int start = html.indexOf("StartFragment:");
-        int end = html.indexOf("EndFragment:");
+        int start = html.indexOf("StartHTML:");
+        int end = html.indexOf("EndHTML:");
 
         if (start != -1) {
-            int startOffset = start + 14;
+            int startOffset = start + 10;
             int i = startOffset;
             while (html.at(i) != '\r' && html.at(i) != '\n')
                 ++i;
@@ -930,7 +930,7 @@ QVariant QWindowsMimeHtml::convertToMime(const QString &mime, IDataObject *pData
         }
 
         if (end != -1) {
-            int endOffset = end + 12;
+            int endOffset = end + 8;
             int i = endOffset ;
             while (html.at(i) != '\r' && html.at(i) != '\n')
                 ++i;
@@ -939,8 +939,7 @@ QVariant QWindowsMimeHtml::convertToMime(const QString &mime, IDataObject *pData
         }
 
         if (end > start && start > 0) {
-            html = "<!--StartFragment-->" + html.mid(start, end - start);
-            html += "<!--EndFragment-->";
+            html = html.mid(start, end - start);
             html.replace('\r', "");
             result = QString::fromUtf8(html);
         }
@@ -954,10 +953,10 @@ bool QWindowsMimeHtml::convertFromMime(const FORMATETC &formatetc, const QMimeDa
         QByteArray data = mimeData->html().toUtf8();
         QByteArray result =
             "Version:1.0\r\n"                    // 0-12
-            "StartHTML:0000000105\r\n"            // 13-35
-            "EndHTML:0000000000\r\n"            // 36-55
-            "StartFragment:0000000000\r\n"            // 58-86
-            "EndFragment:0000000000\r\n\r\n";   // 87-105
+            "StartHTML:0000000107\r\n"           // 13-35
+            "EndHTML:0000000000\r\n"             // 36-55
+            "StartFragment:0000000000\r\n"       // 56-81
+            "EndFragment:0000000000\r\n\r\n";    // 82-107
 
         if (data.indexOf("<!--StartFragment-->") == -1)
             result += "<!--StartFragment-->";
