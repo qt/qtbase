@@ -1412,5 +1412,11 @@ void QWindowsMultiFontEngine::loadEngine(int at)
     // TODO: increase cost in QFontCache for the font engine loaded here
 }
 
+bool QWindowsFontEngine::supportsTransformation(const QTransform &transform) const
+{
+    // Support all transformations for ttf files, and translations for raster fonts
+    return ttf || transform.type() <= QTransform::TxTranslate;
+}
+
 QT_END_NAMESPACE
 

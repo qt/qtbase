@@ -3078,7 +3078,8 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
         ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
 
         drawCachedGlyphs(glyphs.size(), glyphs.constData(), positions.constData(), ti.fontEngine);
-    } else if (matrix.type() < QTransform::TxProject) {
+    } else if (matrix.type() < QTransform::TxProject
+               && ti.fontEngine->supportsTransformation(matrix)) {
         bool invertible;
         QTransform invMat = matrix.inverted(&invertible);
         if (!invertible)
