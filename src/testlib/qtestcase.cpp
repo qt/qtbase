@@ -84,7 +84,7 @@
 #include <time.h>
 #endif
 
-#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
+#if defined(Q_OS_MACX)
 #include <IOKit/pwr_mgt/IOPMLib.h>
 #endif
 
@@ -2130,7 +2130,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     int callgrindChildExitCode = 0;
 #endif
 
-#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
+#if defined(Q_OS_MACX)
     bool macNeedsActivate = qApp && (qstrcmp(qApp->metaObject()->className(), "QApplication") == 0);
     IOPMAssertionID powerID;
 #endif
@@ -2145,7 +2145,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     SetErrorMode(SetErrorMode(0) | SEM_NOGPFAULTERRORBOX);
 #endif
 
-#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
+#if defined(Q_OS_MACX)
     if (macNeedsActivate) {
         CFStringRef reasonForActivity= CFSTR("No Display Sleep");
         IOReturn ok = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep, kIOPMAssertionLevelOn, reasonForActivity, &powerID);
@@ -2198,7 +2198,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
          }
 
         QTestLog::stopLogging();
-#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
+#if defined(Q_OS_MACX)
          if (macNeedsActivate) {
              IOPMAssertionRelease(powerID);
          }
@@ -2215,7 +2215,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 
     QSignalDumper::endDump();
 
-#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
+#if defined(Q_OS_MACX)
      if (macNeedsActivate) {
          IOPMAssertionRelease(powerID);
      }

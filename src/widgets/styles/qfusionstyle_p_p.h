@@ -88,7 +88,7 @@ public:
     // On mac we want a standard blue color used when the system palette is used
     bool isMacSystemPalette(const QPalette &pal) const {
         Q_UNUSED(pal);
-#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
+#if defined(Q_OS_MACX)
         const QPalette *themePalette = QGuiApplicationPrivate::platformTheme()->palette();
         if (themePalette && themePalette->color(QPalette::Normal, QPalette::Highlight) ==
                 pal.color(QPalette::Normal, QPalette::Highlight) &&

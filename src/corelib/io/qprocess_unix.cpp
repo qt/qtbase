@@ -472,7 +472,7 @@ bool QProcessPrivate::createChannel(Channel &channel)
 }
 
 QT_BEGIN_INCLUDE_NAMESPACE
-#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
+#if defined(Q_OS_MACX)
 # include <crt_externs.h>
 # define environ (*_NSGetEnviron())
 #else
