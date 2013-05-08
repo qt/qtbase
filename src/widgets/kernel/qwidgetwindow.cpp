@@ -490,14 +490,12 @@ void QWidgetWindow::handleKeyEvent(QKeyEvent *event)
     if (QApplicationPrivate::instance()->modalState() && !qt_try_modal(m_widget, event->type()))
         return;
 
-    QObject *receiver = 0;
-    if (QApplicationPrivate::inPopupMode()) {
+    QObject *receiver = QWidget::keyboardGrabber();
+    if (!receiver && QApplicationPrivate::inPopupMode()) {
         QWidget *popup = QApplication::activePopupWidget();
         QWidget *popupFocusWidget = popup->focusWidget();
         receiver = popupFocusWidget ? popupFocusWidget : popup;
     }
-    if (!receiver)
-        receiver = QWidget::keyboardGrabber();
     if (!receiver)
         receiver = focusObject();
     QGuiApplication::sendSpontaneousEvent(receiver, event);
