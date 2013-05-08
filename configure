@@ -2405,17 +2405,6 @@ if [ "$OPT_SHADOW" = "yes" ]; then
         chmod 755 "$outpath/bin/syncqt"
     fi
 
-    for i in elf2e32_qtwrapper createpackage patch_capabilities qtmodule-configtests; do
-        rm -f "$outpath/bin/$i"
-        if [ -x "$relpath/bin/$i" ]; then
-            mkdir -p "$outpath/bin"
-            echo "#!/bin/sh" >"$outpath/bin/$i"
-            echo "QTDIR=\"$relpath\"; export QTDIR" >>"$outpath/bin/$i"
-            echo "\"$relpath/bin/$i\" \"\$@\"" >>"$outpath/bin/$i"
-            chmod 755 "$outpath/bin/$i"
-        fi
-    done
-
     # save a pre-existing mkspecs/modules dir
     test -d "$outpath/mkspecs/modules" && \
         mv "$outpath/mkspecs/modules" "$outpath/mkspecs-modules"
