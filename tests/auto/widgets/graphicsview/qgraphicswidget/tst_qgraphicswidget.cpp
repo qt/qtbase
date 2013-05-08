@@ -1214,7 +1214,7 @@ void tst_QGraphicsWidget::layoutDirection()
 {
     QFETCH(Qt::LayoutDirection, layoutDirection);
     QGraphicsScene scene;
-    QGraphicsView *view = new QGraphicsView(&scene);
+    QScopedPointer<QGraphicsView> view(new QGraphicsView(&scene));
     SubQGraphicsWidget widget;
     scene.addItem(&widget);
     QCOMPARE(widget.layoutDirection(), Qt::LeftToRight);
@@ -1229,14 +1229,13 @@ void tst_QGraphicsWidget::layoutDirection()
     widget.setLayoutDirection(layoutDirection);
     QCOMPARE(widget.testAttribute(Qt::WA_SetLayoutDirection), true);
     view->show();
-    QVERIFY(QTest::qWaitForWindowExposed(view));
+    QVERIFY(QTest::qWaitForWindowExposed(view.data()));
     for (int i = 0; i < children.count(); ++i) {
         QTRY_COMPARE(children[i]->layoutDirection(), layoutDirection);
         QTRY_COMPARE(children[i]->testAttribute(Qt::WA_SetLayoutDirection), false);
         view->repaint();
         QTRY_COMPARE(children[i]->m_painterLayoutDirection, layoutDirection);
     }
-    delete view;
 }
 
 void tst_QGraphicsWidget::paint_data()
@@ -1715,7 +1714,7 @@ void tst_QGraphicsWidget::verifyFocusChain()
     }
     {
         // remove the tabFocusFirst widget from the scene.
-        QWidget *window = new QWidget;
+        QScopedPointer<QWidget> window(new QWidget);
         QVBoxLayout *layout = new QVBoxLayout;
         window->setLayout(layout);
         QLineEdit *lineEdit = new QLineEdit;
@@ -1735,8 +1734,8 @@ void tst_QGraphicsWidget::verifyFocusChain()
         w1_2->setFocusPolicy(Qt::StrongFocus);
         scene.addItem(w1_2);
         window->show();
-        QApplication::setActiveWindow(window);
-        QVERIFY(QTest::qWaitForWindowActive(window));
+        QApplication::setActiveWindow(window.data());
+        QVERIFY(QTest::qWaitForWindowActive(window.data()));
 
         lineEdit->setFocus();
         QTRY_VERIFY(lineEdit->hasFocus());
@@ -1776,7 +1775,6 @@ void tst_QGraphicsWidget::verifyFocusChain()
         QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
         QTRY_VERIFY(w1_3->hasFocus());
         QTRY_VERIFY(compareFocusChain(view, QList<QGraphicsItem*>() << w1_3 << w1_4));
-        delete window;
     }
 }
 
@@ -2980,16 +2978,16 @@ void tst_QGraphicsWidget::respectHFW()
     QGraphicsScene scene;
     HFWWidget *window = new HFWWidget;
     scene.addItem(window);
-    QGraphicsView *view = new QGraphicsView(&scene);
+    QScopedPointer<QGraphicsView> view(new QGraphicsView(&scene));
     view->resize(400, 400);
     view->setSceneRect(-100, -100, 300,300);
 
     view->show();
     window->setGeometry(0, 0, 70, 70);
-    QVERIFY(QTest::qWaitForWindowActive(view));
+    QVERIFY(QTest::qWaitForWindowActive(view.data()));
 
     {   // here we go - simulate a interactive resize of the window
-        QTest::mouseMove(view, view->mapFromScene(71, 71)); // bottom right corner
+        QTest::mouseMove(view.data(), view->mapFromScene(71, 71)); // bottom right corner
 
         QTest::mousePress(view->viewport(), Qt::LeftButton, 0, view->mapFromScene(71, 71), 200);
         view->grabMouse();
@@ -3175,15 +3173,14 @@ void tst_QGraphicsWidget::initialShow2()
     QGraphicsScene dummyScene(0, 0, 200, 200);
     dummyScene.addItem(new QGraphicsRectItem(0, 0, 100, 100));
 
-    QGraphicsView *dummyView = new QGraphicsView(&dummyScene);
+    QScopedPointer<QGraphicsView> dummyView(new QGraphicsView(&dummyScene));
     dummyView->setWindowFlags(Qt::X11BypassWindowManagerHint);
     EventSpy paintSpy(dummyView->viewport(), QEvent::Paint);
     dummyView->show();
-    qApp->setActiveWindow(dummyView);
-    QVERIFY(QTest::qWaitForWindowActive(dummyView));
+    qApp->setActiveWindow(dummyView.data());
+    QVERIFY(QTest::qWaitForWindowActive(dummyView.data()));
     const int expectedRepaintCount = paintSpy.count();
-    delete dummyView;
-    dummyView = 0;
+    dummyView.reset();
 
     MyGraphicsWidget *widget = new MyGraphicsWidget;
     widget->resize(100, 100);
