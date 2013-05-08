@@ -375,6 +375,7 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
     case Node::Document: {
         const DocNode *docNode = static_cast<const DocNode*>(node);
         if (docNode->subType() != Node::ExternalPage &&
+                docNode->subType() != Node::Image &&
                 !docNode->fullTitle().isEmpty()) {
 
             if (docNode->subType() != Node::File) {
