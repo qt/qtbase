@@ -202,6 +202,17 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QElapsedTimer::QElapsedTimer()
+    \since 5.4
+
+    Constructs an invalid QElapsedTimer. A timer becomes valid once it has been
+    started.
+
+    \sa isValid(), start()
+*/
+
+
+/*!
     \fn bool QElapsedTimer::operator ==(const QElapsedTimer &other) const
 
     Returns \c true if this object and \a other contain the same time.
@@ -230,8 +241,8 @@ void QElapsedTimer::invalidate() Q_DECL_NOTHROW
 }
 
 /*!
-    Returns \c false if this object was invalidated by a call to invalidate() and
-    has not been restarted since.
+    Returns \c false if the timer has never been started or invalidated by a
+    call to invalidate().
 
     \sa invalidate(), start(), restart()
 */
