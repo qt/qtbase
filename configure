@@ -2396,15 +2396,6 @@ if [ "$OPT_SHADOW" = "yes" ]; then
 
     [ -d "$outpath/bin" ] || mkdir -p "$outpath/bin"
 
-    # make a syncqt script that can be used in the shadow
-    rm -f "$outpath/bin/syncqt"
-    if [ -x "$relpath/bin/syncqt" ]; then
-        mkdir -p "$outpath/bin"
-        echo "#!/bin/sh" >"$outpath/bin/syncqt"
-        echo "perl \"$relpath/bin/syncqt\" \"\$@\"" >>"$outpath/bin/syncqt"
-        chmod 755 "$outpath/bin/syncqt"
-    fi
-
     # save a pre-existing mkspecs/modules dir
     test -d "$outpath/mkspecs/modules" && \
         mv "$outpath/mkspecs/modules" "$outpath/mkspecs-modules"
@@ -3892,8 +3883,8 @@ fi
 # -----------------------------------------------------------------------------
 
 # symlink includes
-if [ -n "$PERL" ] && [ -x "$relpath/bin/syncqt" ]; then
-    "$outpath/bin/syncqt" -minimal -module QtCore "$relpath" || exit 1
+if [ -n "$PERL" ] && [ -x "$relpath/bin/syncqt.pl" ]; then
+    "$relpath/bin/syncqt.pl" -minimal -module QtCore "$relpath" || exit 1
 fi
 
 # $1: input variable name (awk regexp)

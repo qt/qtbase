@@ -160,24 +160,6 @@ Configure::Configure(int& argc, char** argv)
         cout << "Preparing build tree..." << endl;
         QDir(buildPath).mkpath("bin");
 
-        { //make a syncqt script(s) that can be used in the shadow
-            QFile syncqt(buildPath + "/bin/syncqt");
-            // no QFile::Text, just in case the perl interpreter can't cope with them (unlikely)
-            if (syncqt.open(QFile::WriteOnly)) {
-                QTextStream stream(&syncqt);
-                stream << "#!/usr/bin/perl -w" << endl
-                       << "require \"" << sourcePath + "/bin/syncqt\";" << endl;
-            }
-            QFile syncqt_bat(buildPath + "/bin/syncqt.bat");
-            if (syncqt_bat.open(QFile::WriteOnly | QFile::Text)) {
-                QTextStream stream(&syncqt_bat);
-                stream << "@echo off" << endl
-                       << "call " << QDir::toNativeSeparators(sourcePath + "/bin/syncqt.bat")
-                       << " %*" << endl;
-                syncqt_bat.close();
-            }
-        }
-
         //copy the mkspecs
         buildDir.mkpath("mkspecs");
         if (!Environment::cpdir(sourcePath + "/mkspecs", buildPath + "/mkspecs")){
@@ -2029,8 +2011,7 @@ QString Configure::defaultTo(const QString &option)
         return "auto";
 
     if (option == "SYNCQT"
-        && (!QFile::exists(sourcePath + "/bin/syncqt") ||
-            !QFile::exists(sourcePath + "/bin/syncqt.bat")))
+        && (!QFile::exists(sourcePath + "/bin/syncqt.pl")))
         return "no";
 
     return "yes";
@@ -3700,7 +3681,8 @@ void Configure::generateHeaders()
         if (!QStandardPaths::findExecutable(QStringLiteral("perl.exe")).isEmpty()) {
             cout << "Running syncqt..." << endl;
             QStringList args;
-            args += buildPath + "/bin/syncqt.bat";
+            args << "perl" << "-w";
+            args += sourcePath + "/bin/syncqt.pl";
             args << "-minimal" << "-module" << "QtCore";
             args += sourcePath;
             int retc = Environment::execute(args, QStringList(), QStringList());

@@ -77,17 +77,14 @@ INSTALLS += qmake
 
 #syncqt
 syncqt.path = $$[QT_HOST_BINS]
-syncqt.files = $$PWD/bin/syncqt
-equals(QMAKE_HOST.os, Windows):syncqt.files += $$PWD/bin/syncqt.bat
+syncqt.files = $$PWD/bin/syncqt.pl
 INSTALLS += syncqt
 
 # If we are doing a prefix build, create a "module" pri which enables
 # qtPrepareTool() to find the non-installed syncqt.
 prefix_build {
 
-    cmd = $$shell_path($$OUT_PWD/bin/syncqt)
-    contains(QMAKE_HOST.os, Windows): \
-        cmd = $${cmd}.bat
+    cmd = perl -w $$shell_path($$PWD/bin/syncqt.pl)
 
     TOOL_PRI = $$OUT_PWD/mkspecs/modules/qt_tool_syncqt.pri
 
