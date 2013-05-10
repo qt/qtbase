@@ -30,7 +30,7 @@ qwidget_zorder \
 repaint \
 socketengine \
 textrendering \
-widgets/itemviews/delegate \
+widgets \
 windowflags \
 windowgeometry \
 windowmodality \
