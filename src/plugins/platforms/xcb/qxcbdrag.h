@@ -143,8 +143,6 @@ private:
     xcb_window_t current_proxy_target;
 
     QXcbScreen *current_screen;
-    // timer used when target wants "continuous" move messages (eg. scroll)
-    int heartbeat;
 
     // 10 minute timer used to discard old XdndDrop transactions
     enum { XdndDropTransactionTimeout = 600000 };

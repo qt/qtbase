@@ -140,7 +140,6 @@ QXcbDrag::QXcbDrag(QXcbConnection *c) : QXcbObject(c)
     dropData = new QXcbDropData(this);
 
     init();
-    heartbeat = -1;
     cleanup_timer = -1;
 }
 
@@ -179,9 +178,6 @@ void QXcbDrag::startDrag()
 
     init();
 
-    heartbeat = startTimer(200);
-
-
     xcb_set_selection_owner(xcb_connection(), connection()->clipboard()->owner(),
                             atom(QXcbAtom::XdndSelection), connection()->time());
 
@@ -202,10 +198,6 @@ void QXcbDrag::startDrag()
 
 void QXcbDrag::endDrag()
 {
-    if (heartbeat != -1) {
-        killTimer(heartbeat);
-        heartbeat = -1;
-    }
     QBasicDrag::endDrag();
 }
 
@@ -484,11 +476,6 @@ void QXcbDrag::move(const QMouseEvent *me)
 void QXcbDrag::drop(const QMouseEvent *event)
 {
     QBasicDrag::drop(event);
-
-    if (heartbeat != -1) {
-        killTimer(heartbeat);
-        heartbeat = -1;
-    }
 
     if (!current_target)
         return;
@@ -1041,12 +1028,7 @@ void QXcbDrag::handleFinished(const xcb_client_message_event_t *event)
 
 void QXcbDrag::timerEvent(QTimerEvent* e)
 {
-    if (e->timerId() == heartbeat && source_sameanswer.isNull()) {
-        QPointF pos = QCursor::pos();
-        QMouseEvent me(QEvent::MouseMove, pos, pos, pos, Qt::LeftButton,
-                       QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());
-        move(&me);
-    } else if (e->timerId() == cleanup_timer) {
+    if (e->timerId() == cleanup_timer) {
         bool stopTimer = true;
         for (int i = 0; i < transactions.count(); ++i) {
             const Transaction &t = transactions.at(i);
