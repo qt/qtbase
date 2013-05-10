@@ -523,7 +523,6 @@ void QXcbDrag::drop(const QMouseEvent *event)
     current_proxy_target = 0;
     source_time = 0;
 //    current_embedding_widget = 0;
-    // #fixme resetDndState(false);
 }
 
 Qt::DropAction QXcbDrag::toDropAction(xcb_atom_t a) const
