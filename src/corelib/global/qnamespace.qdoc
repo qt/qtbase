@@ -1999,6 +1999,12 @@
     \value MSWindowsOwnDC  Gives the window its own display
            context on Windows.
 
+    \value BypassWindowManagerHint This flag can be used to indicate to the platform plugin
+           that "all" window manager protocols should be disabled. This flag will behave
+           different depending on what operating system the application is running on and
+           what window manager is running. The flag can be used to get a native window
+           with no configuration set.
+
     \value X11BypassWindowManagerHint  Bypass the window
            manager completely. This results in a borderless window
            that is not managed at all (i.e., no keyboard input unless
