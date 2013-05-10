@@ -6034,6 +6034,7 @@ void qInitDrawhelperAsm()
 
     const uint features = qCpuFeatures();
     if (false) {
+        Q_UNUSED(features);
 #ifdef QT_COMPILER_SUPPORTS_AVX
     } else if (features & AVX) {
         qt_memfill32 = qt_memfill32_avx;
