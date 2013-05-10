@@ -196,7 +196,7 @@ defineTest(qtPrepareTool) {
         $$1 = $$[QT_HOST_BINS]/$$2
         exists($$eval($$1).pl) {
             $$1 = perl -w $$eval($$1).pl
-        } else: contains(QMAKE_HOST.os, Windows):!contains($$1, .*\\.(exe|bat)$) {
+        } else: contains(QMAKE_HOST.os, Windows) {
             exists($$eval($$1).bat) {
                 $$1 = $$eval($$1).bat
             } else {
