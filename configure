@@ -446,6 +446,8 @@ if [ "$OSTYPE" = "msys" ]; then
     BUILD_ON_MSYS=yes
     DEV_NULL=/tmp/empty-file
     echo "" > $DEV_NULL
+    relpath=`(cd "$relpath"; pwd -W)`
+    outpath=`pwd -W`
 fi
 
 #-------------------------------------------------------------------------------
