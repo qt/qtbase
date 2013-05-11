@@ -374,7 +374,7 @@ void QPaintEngine::drawPolygon(const QPoint *points, int pointCount, PolygonDraw
     \value CoreGraphics Mac OS X's Quartz2D (CoreGraphics)
     \value QuickDraw Mac OS X's QuickDraw
     \value QWindowSystem Qt for Embedded Linux
-    \value PostScript
+    \value PostScript (No longer supported)
     \value OpenGL
     \value Picture QPicture format
     \value SVG Scalable Vector Graphics XML format

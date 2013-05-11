@@ -188,7 +188,6 @@ private:
     Q_DISABLE_COPY(QTextLayout)
 
     friend class QPainter;
-    friend class QPSPrinter;
     friend class QGraphicsSimpleTextItemPrivate;
     friend class QGraphicsSimpleTextItem;
     friend void qt_format_text(const QFont &font, const QRectF &_r, int tf, const QTextOption *, const QString& str,
