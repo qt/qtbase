@@ -69,7 +69,7 @@ QT_BEGIN_NAMESPACE
     and written to QDir::temp() before loading. (Earlier Qt versions used
     to require having the nib file in the Qt GUI framework.)
 */
-void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader)
+void qt_mac_loadMenuNib(QCocoaMenuLoader *qtMenuLoader)
 {
     // Create qt_menu.nib dir in temp.
     QDir temp = QDir::temp();
@@ -106,7 +106,7 @@ void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader)
 
 QT_END_NAMESPACE
 
-@implementation QT_MANGLE_NAMESPACE(QCocoaMenuLoader)
+@implementation QCocoaMenuLoader
 
 - (void)awakeFromNib
 {

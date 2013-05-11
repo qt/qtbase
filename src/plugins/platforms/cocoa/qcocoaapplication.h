@@ -89,8 +89,10 @@
 	Cocoa Application Categories
 */
 #include "qglobal.h"
+#include "private/qcore_mac_p.h"
 
 #import <AppKit/AppKit.h>
+
 @class QT_MANGLE_NAMESPACE(QCocoaMenuLoader);
 
 @interface NSApplication (QT_MANGLE_NAMESPACE(QApplicationIntegration))
@@ -105,6 +107,8 @@
 @interface QT_MANGLE_NAMESPACE(QNSApplication) : NSApplication {
 }
 @end
+
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSApplication);
 
 QT_BEGIN_NAMESPACE
 

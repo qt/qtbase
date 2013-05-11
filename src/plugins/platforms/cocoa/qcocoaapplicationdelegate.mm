@@ -88,14 +88,14 @@
 
 QT_USE_NAMESPACE
 
-static QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) *sharedCocoaApplicationDelegate = nil;
+static QCocoaApplicationDelegate *sharedCocoaApplicationDelegate = nil;
 
 static void cleanupCocoaApplicationDelegate()
 {
     [sharedCocoaApplicationDelegate release];
 }
 
-@implementation QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate)
+@implementation QCocoaApplicationDelegate
 
 - (id)init
 {
@@ -129,7 +129,7 @@ static void cleanupCocoaApplicationDelegate()
     return nil;
 }
 
-+ (QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate)*)sharedDelegate
++ (QCocoaApplicationDelegate *)sharedDelegate
 {
     @synchronized(self) {
         if (sharedCocoaApplicationDelegate == nil)
@@ -151,14 +151,14 @@ static void cleanupCocoaApplicationDelegate()
     return [[dockMenu retain] autorelease];
 }
 
-- (void)setMenuLoader:(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)menuLoader
+- (void)setMenuLoader:(QCocoaMenuLoader *)menuLoader
 {
     [menuLoader retain];
     [qtMenuLoader release];
     qtMenuLoader = menuLoader;
 }
 
-- (QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)menuLoader
+- (QCocoaMenuLoader *)menuLoader
 {
     return [[qtMenuLoader retain] autorelease];
 }
@@ -168,7 +168,7 @@ static void cleanupCocoaApplicationDelegate()
     [[NSApp mainMenu] cancelTracking];
 
     bool handle_quit = true;
-    NSMenuItem *quitMenuItem = [[[QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate] menuLoader] quitMenuItem];
+    NSMenuItem *quitMenuItem = [[[QCocoaApplicationDelegate sharedDelegate] menuLoader] quitMenuItem];
     if (!QGuiApplicationPrivate::instance()->modalWindowList.isEmpty()
         && [quitMenuItem isEnabled]) {
         int visible = 0;

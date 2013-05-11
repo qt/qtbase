@@ -135,12 +135,16 @@ QT_USE_NAMESPACE
 -(id)initWithQMenu:(QPlatformMenu*)qmenu;
 @end
 
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSStatusItem);
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSImageView);
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSMenu);
+
 QT_BEGIN_NAMESPACE
 class QSystemTrayIconSys
 {
 public:
     QSystemTrayIconSys(QCocoaSystemTrayIcon *sys) {
-        item = [[QT_MANGLE_NAMESPACE(QNSStatusItem) alloc] initWithSysTray:sys];
+        item = [[QNSStatusItem alloc] initWithSysTray:sys];
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8
         if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_8) {
             [[NSUserNotificationCenter defaultUserNotificationCenter] setDelegate:item];
@@ -156,7 +160,7 @@ public:
 #endif
         [item release];
     }
-    QT_MANGLE_NAMESPACE(QNSStatusItem) *item;
+    QNSStatusItem *item;
 };
 
 void QCocoaSystemTrayIcon::init()
@@ -310,8 +314,8 @@ QT_END_NAMESPACE
 @implementation NSStatusItem (Qt)
 @end
 
-@implementation QT_MANGLE_NAMESPACE(QNSImageView)
--(id)initWithParent:(QT_MANGLE_NAMESPACE(QNSStatusItem)*)myParent {
+@implementation QNSImageView
+-(id)initWithParent:(QNSStatusItem*)myParent {
     self = [super init];
     parent = myParent;
     down = NO;
@@ -406,7 +410,7 @@ QT_END_NAMESPACE
 }
 @end
 
-@implementation QT_MANGLE_NAMESPACE(QNSStatusItem)
+@implementation QNSStatusItem
 
 -(id)initWithSysTray:(QCocoaSystemTrayIcon *)sys
 {
@@ -416,7 +420,7 @@ QT_END_NAMESPACE
         menu = 0;
         menuVisible = false;
         systray = sys;
-        imageCell = [[QT_MANGLE_NAMESPACE(QNSImageView) alloc] initWithParent:self];
+        imageCell = [[QNSImageView alloc] initWithParent:self];
         [item setView: imageCell];
     }
     return self;
@@ -494,7 +498,7 @@ private:
     QSystemTrayIconQMenu();
 };
 
-@implementation QT_MANGLE_NAMESPACE(QNSMenu)
+@implementation QNSMenu
 -(id)initWithQMenu:(QPlatformMenu*)qm {
     self = [super init];
     if (self) {

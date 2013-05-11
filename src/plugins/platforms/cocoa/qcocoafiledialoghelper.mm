@@ -139,7 +139,9 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
 
 @end
 
-@implementation QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate)
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSOpenSavePanelDelegate);
+
+@implementation QNSOpenSavePanelDelegate
 
 - (id)initWithAcceptMode:
     (const QString &)selectFile
@@ -564,7 +566,7 @@ QCocoaFileDialogHelper::~QCocoaFileDialogHelper()
     if (!mDelegate)
         return;
     QCocoaAutoReleasePool pool;
-    [reinterpret_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate) release];
+    [reinterpret_cast<QNSOpenSavePanelDelegate *>(mDelegate) release];
     mDelegate = 0;
 }
 
@@ -599,14 +601,14 @@ extern void qt_mac_to_pascal_string(QString s, Str255 str, TextEncoding encoding
 
 void QCocoaFileDialogHelper::setDirectory(const QString &directory)
 {
-    QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate);
+    QNSOpenSavePanelDelegate *delegate = static_cast<QNSOpenSavePanelDelegate *>(mDelegate);
     if (delegate)
         [delegate->mSavePanel setDirectoryURL:[NSURL fileURLWithPath:QCFString::toNSString(directory)]];
 }
 
 QString QCocoaFileDialogHelper::directory() const
 {
-    QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate);
+    QNSOpenSavePanelDelegate *delegate = static_cast<QNSOpenSavePanelDelegate *>(mDelegate);
     if (delegate)
         return QCFString::toQString([[delegate->mSavePanel directoryURL] path]).normalized(QString::NormalizationForm_C);
     return QString();
@@ -625,7 +627,7 @@ void QCocoaFileDialogHelper::selectFile(const QString &filename)
 
 QStringList QCocoaFileDialogHelper::selectedFiles() const
 {
-    QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate);
+    QNSOpenSavePanelDelegate *delegate = static_cast<QNSOpenSavePanelDelegate *>(mDelegate);
     if (delegate)
         return [delegate selectedFiles];
     return QStringList();
@@ -633,7 +635,7 @@ QStringList QCocoaFileDialogHelper::selectedFiles() const
 
 void QCocoaFileDialogHelper::setFilter()
 {
-    QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate);
+    QNSOpenSavePanelDelegate *delegate = static_cast<QNSOpenSavePanelDelegate *>(mDelegate);
     if (!delegate)
         return;
     const SharedPointerFileDialogOptions &opts = options();
@@ -652,7 +654,7 @@ void QCocoaFileDialogHelper::selectNameFilter(const QString &filter)
         return;
     const int index = options()->nameFilters().indexOf(filter);
     if (index != -1) {
-        QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate);
+        QNSOpenSavePanelDelegate *delegate = static_cast<QNSOpenSavePanelDelegate *>(mDelegate);
         if (!delegate)
             return;
         [delegate->mPopUpButton selectItemAtIndex:index];
@@ -662,7 +664,7 @@ void QCocoaFileDialogHelper::selectNameFilter(const QString &filter)
 
 QString QCocoaFileDialogHelper::selectedNameFilter() const
 {
-    QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate);
+    QNSOpenSavePanelDelegate *delegate = static_cast<QNSOpenSavePanelDelegate *>(mDelegate);
     if (!delegate)
         return QString();
     int index = [delegate->mPopUpButton indexOfSelectedItem];
@@ -700,7 +702,7 @@ void QCocoaFileDialogHelper::createNSOpenSavePanelDelegate()
     const QString directory = opts->initialDirectory();
     const bool selectDir = selectedFiles.isEmpty();
     QString selection(selectDir ? directory : selectedFiles.front());
-    QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = [[QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) alloc]
+    QNSOpenSavePanelDelegate *delegate = [[QNSOpenSavePanelDelegate alloc]
         initWithAcceptMode:
             selection
             options:opts
@@ -712,7 +714,7 @@ void QCocoaFileDialogHelper::createNSOpenSavePanelDelegate()
 bool QCocoaFileDialogHelper::showCocoaFilePanel(Qt::WindowModality windowModality, QWindow *parent)
 {
     createNSOpenSavePanelDelegate();
-    QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate);
+    QNSOpenSavePanelDelegate *delegate = static_cast<QNSOpenSavePanelDelegate *>(mDelegate);
     if (!delegate)
         return false;
     if (windowModality == Qt::NonModal)
@@ -730,7 +732,7 @@ bool QCocoaFileDialogHelper::hideCocoaFilePanel()
         // open regarding whether or not to go native:
         return false;
     } else {
-        QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate);
+        QNSOpenSavePanelDelegate *delegate = static_cast<QNSOpenSavePanelDelegate *>(mDelegate);
         [delegate closePanel];
         // Even when we hide it, we are still using a
         // native dialog, so return true:
@@ -745,7 +747,7 @@ void QCocoaFileDialogHelper::exec()
     // yet been reactivated (regardless if [NSApp run] is still on the stack)),
     // showing a native modal dialog will fail.
     QCocoaAutoReleasePool pool;
-    QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate);
+    QNSOpenSavePanelDelegate *delegate = static_cast<QNSOpenSavePanelDelegate *>(mDelegate);
     if ([delegate runApplicationModalPanel])
         emit accept();
     else

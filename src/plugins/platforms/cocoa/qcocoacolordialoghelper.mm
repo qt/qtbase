@@ -87,7 +87,9 @@ static NSButton *macCreateButton(const char *text, NSView *superview)
 - (void)finishOffWithCode:(NSInteger)code;
 @end
 
-@implementation QT_MANGLE_NAMESPACE(QNSColorPanelDelegate)
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSColorPanelDelegate);
+
+@implementation QNSColorPanelDelegate
 
 - (id)initWithDialogHelper:(QCocoaColorDialogHelper *)helper
 {
@@ -348,7 +350,7 @@ QCocoaColorDialogHelper::~QCocoaColorDialogHelper()
 {
     if (!mDelegate)
         return;
-    [reinterpret_cast<QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *>(mDelegate) release];
+    [reinterpret_cast<QNSColorPanelDelegate *>(mDelegate) release];
     mDelegate = 0;
 }
 
@@ -358,7 +360,7 @@ void QCocoaColorDialogHelper::exec()
     // QEventLoop has been interrupted, and the second-most event loop has not
     // yet been reactivated (regardless if [NSApp run] is still on the stack)),
     // showing a native modal dialog will fail.
-    QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *>(mDelegate);
+    QNSColorPanelDelegate *delegate = static_cast<QNSColorPanelDelegate *>(mDelegate);
     if ([delegate runApplicationModalPanel])
         emit accept();
     else
@@ -378,14 +380,14 @@ void QCocoaColorDialogHelper::hide()
 {
     if (!mDelegate)
         return;
-    [reinterpret_cast<QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *>(mDelegate)->mColorPanel close];
+    [reinterpret_cast<QNSColorPanelDelegate *>(mDelegate)->mColorPanel close];
 }
 
 void QCocoaColorDialogHelper::setCurrentColor(const QColor &color)
 {
     if (!mDelegate)
         createNSColorPanelDelegate();
-    QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *>(mDelegate);
+    QNSColorPanelDelegate *delegate = static_cast<QNSColorPanelDelegate *>(mDelegate);
 
     // make sure that if ShowAlphaChannel option is set then also setShowsAlpha
     // needs to be set, otherwise alpha value is omitted
@@ -413,7 +415,7 @@ QColor QCocoaColorDialogHelper::currentColor() const
 {
     if (!mDelegate)
         return QColor();
-    return reinterpret_cast<QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *>(mDelegate)->mQtColor;
+    return reinterpret_cast<QNSColorPanelDelegate *>(mDelegate)->mQtColor;
 }
 
 void QCocoaColorDialogHelper::createNSColorPanelDelegate()
@@ -421,7 +423,7 @@ void QCocoaColorDialogHelper::createNSColorPanelDelegate()
     if (mDelegate)
         return;
 
-    QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *delegate = [[QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) alloc]
+    QNSColorPanelDelegate *delegate = [[QNSColorPanelDelegate alloc]
           initWithDialogHelper:this];
 
     mDelegate = delegate;
@@ -431,7 +433,7 @@ bool QCocoaColorDialogHelper::showCocoaColorPanel(Qt::WindowModality windowModal
 {
     Q_UNUSED(parent);
     createNSColorPanelDelegate();
-    QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *>(mDelegate);
+    QNSColorPanelDelegate *delegate = static_cast<QNSColorPanelDelegate *>(mDelegate);
     [delegate->mColorPanel setShowsAlpha:options()->testOption(QColorDialogOptions::ShowAlphaChannel)];
     if (windowModality == Qt::NonModal)
         [delegate showModelessPanel];
@@ -444,7 +446,7 @@ bool QCocoaColorDialogHelper::hideCocoaColorPanel()
     if (!mDelegate){
         return false;
     } else {
-        QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *>(mDelegate);
+        QNSColorPanelDelegate *delegate = static_cast<QNSColorPanelDelegate *>(mDelegate);
         [delegate closePanel];
         return true;
     }

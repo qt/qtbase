@@ -75,6 +75,12 @@
 
 #include "qstring.h"
 
+#if defined( __OBJC__) && defined(QT_NAMESPACE)
+#define QT_NAMESPACE_ALIAS_OBJC_CLASS(__KLASS__) @compatibility_alias __KLASS__ QT_MANGLE_NAMESPACE(__KLASS__)
+#else
+#define QT_NAMESPACE_ALIAS_OBJC_CLASS(__KLASS__)
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*

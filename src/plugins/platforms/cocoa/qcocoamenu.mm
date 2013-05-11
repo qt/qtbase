@@ -73,7 +73,7 @@ NSString *qt_mac_removePrivateUnicode(NSString* string)
     return string;
 }
 
-static inline QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *getMenuLoader()
+static inline QCocoaMenuLoader *getMenuLoader()
 {
     return [NSApp QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)];
 }
@@ -86,7 +86,9 @@ static inline QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *getMenuLoader()
 
 @end
 
-@implementation QT_MANGLE_NAMESPACE(QCocoaMenuDelegate)
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaMenuDelegate);
+
+@implementation QCocoaMenuDelegate
 
 - (id) initWithMenu:(QCocoaMenu*) m
 {
@@ -207,11 +209,11 @@ QCocoaMenu::QCocoaMenu() :
     m_enabled(true),
     m_tag(0)
 {
-    m_delegate = [[QT_MANGLE_NAMESPACE(QCocoaMenuDelegate) alloc] initWithMenu:this];
+    m_delegate = [[QCocoaMenuDelegate alloc] initWithMenu:this];
     m_nativeItem = [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""];
     m_nativeMenu = [[NSMenu alloc] initWithTitle:@"Untitled"];
     [m_nativeMenu setAutoenablesItems:YES];
-    m_nativeMenu.delegate = (QT_MANGLE_NAMESPACE(QCocoaMenuDelegate) *) m_delegate;
+    m_nativeMenu.delegate = (QCocoaMenuDelegate *) m_delegate;
     [m_nativeItem setSubmenu:m_nativeMenu];
 }
 

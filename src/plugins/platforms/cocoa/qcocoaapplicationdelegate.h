@@ -90,6 +90,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include <qglobal.h>
+#include <private/qcore_mac_p.h>
 
 @class QT_MANGLE_NAMESPACE(QCocoaMenuLoader);
 
@@ -108,3 +109,5 @@
 - (void)getUrl:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent;
 - (void) removeAppleEventHandlers;
 @end
+
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaApplicationDelegate);

@@ -87,12 +87,12 @@ QT_USE_NAMESPACE
 
 - (void)QT_MANGLE_NAMESPACE(qt_setDockMenu):(NSMenu *)newMenu
 {
-    [[QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate] setDockMenu:newMenu];
+    [[QCocoaApplicationDelegate sharedDelegate] setDockMenu:newMenu];
 }
 
 - (QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)
 {
-    return [[QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate] menuLoader];
+    return [[QCocoaApplicationDelegate sharedDelegate] menuLoader];
 }
 
 - (int)QT_MANGLE_NAMESPACE(qt_validModesForFontPanel):(NSFontPanel *)fontPanel
@@ -155,7 +155,7 @@ static const QByteArray q_macLocalEventType = QByteArrayLiteral("mac_generic_NSE
 
 @end
 
-@implementation QT_MANGLE_NAMESPACE(QNSApplication)
+@implementation QNSApplication
 
 - (void)qt_sendEvent_original:(NSEvent *)event
 {
@@ -189,7 +189,7 @@ QT_BEGIN_NAMESPACE
 
 void qt_redirectNSApplicationSendEvent()
 {
-    if ([NSApp isMemberOfClass:[QT_MANGLE_NAMESPACE(QNSApplication) class]]) {
+    if ([NSApp isMemberOfClass:[QNSApplication class]]) {
         // No need to change implementation since Qt
         // already controls a subclass of NSApplication
         return;
@@ -202,7 +202,7 @@ void qt_redirectNSApplicationSendEvent()
     qt_cocoa_change_implementation(
             [NSApplication class],
             @selector(sendEvent:),
-            [QT_MANGLE_NAMESPACE(QNSApplication) class],
+            [QNSApplication class],
             @selector(qt_sendEvent_replacement:),
             @selector(qt_sendEvent_original:));
  }

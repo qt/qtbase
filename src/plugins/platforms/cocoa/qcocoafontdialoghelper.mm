@@ -128,7 +128,9 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
 - (void)finishOffWithCode:(NSInteger)code;
 @end
 
-@implementation QT_MANGLE_NAMESPACE(QNSFontPanelDelegate)
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
+
+@implementation QNSFontPanelDelegate
 
 - (id)initWithDialogHelper:
     (QCocoaFontDialogHelper *)helper
@@ -363,7 +365,7 @@ QCocoaFontDialogHelper::~QCocoaFontDialogHelper()
 {
     if (!mDelegate)
         return;
-    [reinterpret_cast<QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *>(mDelegate) release];
+    [reinterpret_cast<QNSFontPanelDelegate *>(mDelegate) release];
     mDelegate = 0;
 }
 
@@ -373,7 +375,7 @@ void QCocoaFontDialogHelper::exec()
     // QEventLoop has been interrupted, and the second-most event loop has not
     // yet been reactivated (regardless if [NSApp run] is still on the stack)),
     // showing a native modal dialog will fail.
-    QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *>(mDelegate);
+    QNSFontPanelDelegate *delegate = static_cast<QNSFontPanelDelegate *>(mDelegate);
     if ([delegate runApplicationModalPanel])
         emit accept();
     else
@@ -393,7 +395,7 @@ void QCocoaFontDialogHelper::hide()
 {
     if (!mDelegate)
         return;
-    [reinterpret_cast<QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *>(mDelegate)->mFontPanel close];
+    [reinterpret_cast<QNSFontPanelDelegate *>(mDelegate)->mFontPanel close];
 }
 
 void QCocoaFontDialogHelper::setCurrentFont(const QFont &font)
@@ -421,14 +423,14 @@ void QCocoaFontDialogHelper::setCurrentFont(const QFont &font)
         createNSFontPanelDelegate();
 
     [mgr setSelectedFont:const_cast<NSFont *>(nsFont) isMultiple:NO];
-    static_cast<QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *>(mDelegate)->mQtFont = font;
+    static_cast<QNSFontPanelDelegate *>(mDelegate)->mQtFont = font;
 }
 
 QFont QCocoaFontDialogHelper::currentFont() const
 {
     if (!mDelegate)
         return QFont();
-    return reinterpret_cast<QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *>(mDelegate)->mQtFont;
+    return reinterpret_cast<QNSFontPanelDelegate *>(mDelegate)->mQtFont;
 }
 
 void QCocoaFontDialogHelper::createNSFontPanelDelegate()
@@ -436,7 +438,7 @@ void QCocoaFontDialogHelper::createNSFontPanelDelegate()
     if (mDelegate)
         return;
 
-    QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *delegate = [[QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) alloc]
+    QNSFontPanelDelegate *delegate = [[QNSFontPanelDelegate alloc]
           initWithDialogHelper:this];
 
     mDelegate = delegate;
@@ -446,7 +448,7 @@ bool QCocoaFontDialogHelper::showCocoaFontPanel(Qt::WindowModality windowModalit
 {
     Q_UNUSED(parent);
     createNSFontPanelDelegate();
-    QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *>(mDelegate);
+    QNSFontPanelDelegate *delegate = static_cast<QNSFontPanelDelegate *>(mDelegate);
     if (windowModality == Qt::NonModal)
         [delegate showModelessPanel];
     // no need to show a Qt::ApplicationModal dialog here, since it will be done in _q_platformRunNativeAppModalPanel()
@@ -458,7 +460,7 @@ bool QCocoaFontDialogHelper::hideCocoaFontPanel()
     if (!mDelegate){
         return false;
     } else {
-        QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *>(mDelegate);
+        QNSFontPanelDelegate *delegate = static_cast<QNSFontPanelDelegate *>(mDelegate);
         [delegate closePanel];
         return true;
     }

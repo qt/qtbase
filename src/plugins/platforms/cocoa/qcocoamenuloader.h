@@ -92,9 +92,11 @@
 - (NSArray *)mergeable;
 @end
 
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaMenuLoader);
+
 QT_BEGIN_NAMESPACE
 
-void qt_mac_loadMenuNib(QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader);
+void qt_mac_loadMenuNib(QCocoaMenuLoader *qtMenuLoader);
 
 QT_END_NAMESPACE
 
