@@ -93,7 +93,7 @@
 
 #include "../../../network-settings.h"
 
-#define TEST_DOMAIN ".test.macieira.org"
+#define TEST_DOMAIN ".test.qt-project.org"
 
 
 class tst_QHostInfo : public QObject

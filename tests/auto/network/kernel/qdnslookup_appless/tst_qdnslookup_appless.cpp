@@ -56,7 +56,7 @@ private slots:
 void tst_QDnsLookup_Appless::noApplication()
 {
     QTest::ignoreMessage(QtWarningMsg, "QDnsLookup requires a QCoreApplication");
-    QDnsLookup dns(QDnsLookup::A, "a-single.test.macieira.org");
+    QDnsLookup dns(QDnsLookup::A, "a-single.test.qt-project.org");
     dns.lookup();
 }
 
@@ -66,7 +66,7 @@ void tst_QDnsLookup_Appless::recreateApplication()
     char **argv = 0;
     for (int i = 0; i < 10; ++i) {
         QCoreApplication app(argc, argv);
-        QDnsLookup dns(QDnsLookup::A, "a-single.test.macieira.org");
+        QDnsLookup dns(QDnsLookup::A, "a-single.test.qt-project.org");
         dns.lookup();
         if (!dns.isFinished()) {
             QObject::connect(&dns, SIGNAL(finished()),
