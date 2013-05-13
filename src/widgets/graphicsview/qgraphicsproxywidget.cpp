@@ -825,7 +825,9 @@ bool QGraphicsProxyWidget::event(QEvent *event)
     }
     case QEvent::InputMethod: {
         inputMethodEvent(static_cast<QInputMethodEvent *>(event));
-        break;
+        if (event->isAccepted())
+            return true;
+        return false;
     }
     case QEvent::ShortcutOverride: {
         QWidget *focusWidget = d->widget->focusWidget();
