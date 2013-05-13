@@ -1005,6 +1005,7 @@ void tst_QPixmap::fromWinHICON_data()
 
 void tst_QPixmap::fromWinHICON()
 {
+#ifndef Q_OS_WINCE
     QFETCH(int, width);
     QFETCH(int, height);
     QFETCH(QString, image);
@@ -1020,6 +1021,7 @@ void tst_QPixmap::fromWinHICON()
     // between QImage::Format_ARGB32 and QImage::Format_ARGB32_Premultiplied, or elsewhere
 
     QVERIFY(compareImages(imageFromHICON, imageFromFile));
+#endif // Q_OS_WINCE
 }
 
 #endif // Q_OS_WIN
