@@ -200,8 +200,9 @@ const char _slnSolutionConf[]   = "\n\tGlobalSection(SolutionConfiguration) = pr
                                   "\n\t\tConfigName.0 = Debug|Win32"
                                   "\n\t\tConfigName.1 = Release|Win32"
                                   "\n\tEndGlobalSection";
-const char _slnProjDepBeg[]     = "\n\tGlobalSection(ProjectDependencies) = postSolution";
-const char _slnProjDepEnd[]     = "\n\tEndGlobalSection";
+
+const char _slnProjDepBeg[]     = "\n\tProjectSection(ProjectDependencies) = postProject";
+const char _slnProjDepEnd[]     = "\n\tEndProjectSection";
 const char _slnProjConfBeg[]    = "\n\tGlobalSection(ProjectConfiguration) = postSolution";
 const char _slnProjRelConfTag1[]= ".Release|%1.ActiveCfg = Release|";
 const char _slnProjRelConfTag2[]= ".Release|%1.Build.0 = Release|";
@@ -571,10 +572,6 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
 #endif
                     solution_cleanup.append(newDep);
                     solution_depends.insert(newDep->target, newDep);
-                    t << _slnProjectBeg << _slnMSVCvcprojGUID << _slnProjectMid
-                        << "\"" << newDep->orig_target << "\", \"" << newDep->vcprojFile
-                        << "\", \"" << newDep->uuid << "\"";
-                    t << _slnProjectEnd;
                 }
 nextfile:
                 qmake_setpwd(oldpwd);
@@ -634,6 +631,30 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     QHash<QString, ProStringList> subdirProjectLookup;
     collectDependencies(project, profileLookup, projGuids, extraSubdirs, solution_depends, solution_cleanup, t, subdirProjectLookup);
 
+    // write out projects
+    for (QList<VcsolutionDepend*>::Iterator it = solution_cleanup.begin(); it != solution_cleanup.end(); ++it) {
+        t << _slnProjectBeg << _slnMSVCvcprojGUID << _slnProjectMid
+            << "\"" << (*it)->orig_target << "\", \"" << (*it)->vcprojFile
+            << "\", \"" << (*it)->uuid << "\"";
+
+        debug_msg(1, "Project %s has dependencies: %s", (*it)->target.toLatin1().constData(), (*it)->dependencies.join(" ").toLatin1().constData());
+
+        bool hasDependency = false;
+        for (QStringList::iterator dit = (*it)->dependencies.begin();  dit != (*it)->dependencies.end(); ++dit) {
+            if (VcsolutionDepend *vc = solution_depends[*dit]) {
+                if (!hasDependency) {
+                    hasDependency = true;
+                    t << _slnProjDepBeg;
+                }
+                t << "\n\t\t" << vc->uuid << " = " << vc->uuid;
+            }
+        }
+        if (hasDependency)
+            t << _slnProjDepEnd;
+
+        t << _slnProjectEnd;
+    }
+
     t << _slnGlobalBeg;
 
     QHashIterator<VcsolutionDepend *, QStringList> extraIt(extraSubdirs);
@@ -657,20 +678,9 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     }
     t << slnConf;
 
-    t << _slnProjDepBeg;
-
     // Restore previous after_user_var options
     Option::globals->postcmds = old_after_vars;
 
-    // Figure out dependencies
-    for(QList<VcsolutionDepend*>::Iterator it = solution_cleanup.begin(); it != solution_cleanup.end(); ++it) {
-        int cnt = 0;
-        for(QStringList::iterator dit = (*it)->dependencies.begin();  dit != (*it)->dependencies.end(); ++dit) {
-            if(VcsolutionDepend *vc = solution_depends[*dit])
-                t << "\n\t\t" << (*it)->uuid << "." << cnt++ << " = " << vc->uuid;
-        }
-    }
-    t << _slnProjDepEnd;
     t << _slnProjConfBeg;
     for(QList<VcsolutionDepend*>::Iterator it = solution_cleanup.begin(); it != solution_cleanup.end(); ++it) {
         QString platform = is64Bit ? "x64" : "Win32";
