@@ -101,6 +101,7 @@ void qt_mac_remove_socket_from_runloop(const CFSocketRef socket, CFRunLoopSource
 
 QCFSocketNotifier::QCFSocketNotifier()
 :eventDispatcher(0)
+, maybeCancelWaitForMoreEvents(0)
 {
 
 }
