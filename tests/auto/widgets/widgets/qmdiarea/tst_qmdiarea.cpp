@@ -1705,6 +1705,11 @@ void tst_QMdiArea::tileSubWindows()
         subWindow->setMinimumSize(minSize);
 
     QCOMPARE(workspace.size(), QSize(350, 150));
+
+    // Prevent scrollbars from messing up the expected viewport calculation below
+    workspace.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    workspace.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
     workspace.tileSubWindows();
     // The sub-windows are now tiled like this:
     // | win 1 || win 2 || win 3 |
@@ -1723,10 +1728,11 @@ void tst_QMdiArea::tileSubWindows()
 #ifdef Q_OS_WINCE
     QSKIP("Not fixed yet! See task 197453");
 #endif
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "QTBUG-25298", Abort);
-#endif
     QTRY_COMPARE(workspace.viewport()->rect().size(), expectedViewportSize);
+
+    // Restore original scrollbar behavior for test below
+    workspace.setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    workspace.setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
     // Not enough space for all sub-windows to be visible -> provide scroll bars.
     workspace.resize(160, 150);
