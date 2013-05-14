@@ -404,8 +404,7 @@ void QAbstractPrintDialogPrivate::setPrinter(QPrinter *newPrinter)
     Mac OS X. This is no longer supported in Qt 4.5. If you want this
     functionality, use QPrintDialog::open().
 
-    \sa QPageSetupDialog, QPrinter, {Pixelator Example}, {Order Form Example},
-        {Image Viewer Example}, {Scribble Example}
+    \sa QPageSetupDialog, QPrinter
 */
 
 /*!

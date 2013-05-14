@@ -33,8 +33,7 @@ headerdirs  += ..
 
 sourcedirs  += ..
 
-exampledirs += ../../../examples/widgets \
-               ../ \
+exampledirs += ../ \
                snippets
 
 excludedirs += ../../../examples/widgets/doc
