@@ -1141,7 +1141,7 @@ bool QXcbDrag::dndEnable(QXcbWindow *w, bool on)
             if (desktop_proxy) // *WE* already have one.
                 return false;
 
-            connection()->grabServer();
+            QXcbConnectionGrabber grabber(connection());
 
             // As per Xdnd4, use XdndProxy
             xcb_window_t proxy_id = xdndProxy(connection(), w->xcb_window());
@@ -1157,7 +1157,6 @@ bool QXcbDrag::dndEnable(QXcbWindow *w, bool on)
                                     XCB_ATOM_WINDOW, 32, 1, &proxy_id);
             }
 
-            connection()->ungrabServer();
         } else {
             xdnd_widget = w;
         }

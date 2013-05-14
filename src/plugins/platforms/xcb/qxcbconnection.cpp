@@ -1720,4 +1720,24 @@ bool QXcbConnection::xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *event, int o
 }
 #endif // defined(XCB_USE_XINPUT2) || defined(XCB_USE_XINPUT2_MAEMO)
 
+QXcbConnectionGrabber::QXcbConnectionGrabber(QXcbConnection *connection)
+    :m_connection(connection)
+{
+    connection->grabServer();
+}
+
+QXcbConnectionGrabber::~QXcbConnectionGrabber()
+{
+    if (m_connection)
+        m_connection->ungrabServer();
+}
+
+void QXcbConnectionGrabber::release()
+{
+    if (m_connection) {
+        m_connection->ungrabServer();
+        m_connection = 0;
+    }
+}
+
 QT_END_NAMESPACE
