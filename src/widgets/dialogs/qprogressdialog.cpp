@@ -662,6 +662,7 @@ void QProgressDialog::setValue(int progress)
                     int estimate;
                     int totalSteps = maximum() - minimum();
                     int myprogress = progress - minimum();
+                    if (myprogress == 0) myprogress = 1;
                     if ((totalSteps - myprogress) >= INT_MAX / elapsed)
                         estimate = (totalSteps - myprogress) / myprogress * elapsed;
                     else

@@ -46,6 +46,7 @@
 #include <qdebug.h>
 #include <qprogressdialog.h>
 #include <qlabel.h>
+#include <qthread.h>
 
 class tst_QProgressDialog : public QObject
 {
@@ -58,6 +59,7 @@ public:
 private slots:
     void getSetCheck();
     void task198202();
+    void QTBUG_31046();
 };
 
 tst_QProgressDialog::tst_QProgressDialog()
@@ -147,6 +149,15 @@ void tst_QProgressDialog::task198202()
     dlg.setBar(0);
     QTest::qWait(20);
     QCOMPARE(dlg.sizeHint().height(), futureHeight);
+}
+
+void tst_QProgressDialog::QTBUG_31046()
+{
+    QProgressDialog dlg("", "", 50, 60);
+    dlg.setValue(0);
+    QThread::msleep(200);
+    dlg.setValue(50);
+    QCOMPARE(50, dlg.value());
 }
 
 QTEST_MAIN(tst_QProgressDialog)
