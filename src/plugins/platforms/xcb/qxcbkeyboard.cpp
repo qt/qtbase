@@ -815,27 +815,27 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
     xkb_state_update_mask(kb_state, 0, latchedMods, lockedMods,
                                     baseLayout, latchedLayout, lockedLayout);
 
-    xkb_keysym_t baseKeysym = xkb_state_key_get_one_sym(kb_state, event->nativeScanCode());
-    if (baseKeysym == XKB_KEY_NoSymbol) {
+    xkb_keysym_t sym = xkb_state_key_get_one_sym(kb_state, event->nativeScanCode());
+    if (sym == XKB_KEY_NoSymbol)
         return QList<int>();
-    }
 
     QList<int> result;
-    int qtKey = keysymToQtKey(baseKeysym, modifiers, keysymToUnicode(baseKeysym));
-    result += (qtKey + modifiers); // The base key is _always_ valid, of course
+    int baseQtKey = keysymToQtKey(sym, modifiers, keysymToUnicode(sym));
+    result += (baseQtKey + modifiers); // The base key is _always_ valid, of course
 
     xkb_mod_index_t shiftMod = xkb_keymap_mod_get_index(xkb_keymap, "Shift");
     xkb_mod_index_t altMod = xkb_keymap_mod_get_index(xkb_keymap, "Alt");
     xkb_mod_index_t controlMod = xkb_keymap_mod_get_index(xkb_keymap, "Control");
 
-    xkb_keysym_t sym;
-    xkb_mod_mask_t depressed = 0;
+    xkb_mod_mask_t depressed;
 
+    int qtKey = 0;
     //obtain a list of possible shortcuts for the given key event
     for (uint i = 1; i < sizeof(ModsTbl) / sizeof(*ModsTbl) ; ++i) {
         Qt::KeyboardModifiers neededMods = ModsTbl[i];
         if ((modifiers & neededMods) == neededMods) {
 
+            depressed = 0;
             if (neededMods & Qt::AltModifier)
                 depressed |= (1 << altMod);
             if (neededMods & Qt::ShiftModifier)
@@ -848,13 +848,16 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
                                             baseLayout, latchedLayout, lockedLayout);
             sym = xkb_state_key_get_one_sym(kb_state, event->nativeScanCode());
 
-            if (sym == XKB_KEY_NoSymbol || sym == baseKeysym)
-              continue;
+            if (sym == XKB_KEY_NoSymbol)
+                continue;
 
             Qt::KeyboardModifiers mods = modifiers & ~neededMods;
             qtKey = keysymToQtKey(sym, mods, keysymToUnicode(sym));
+
+            if (qtKey == baseQtKey)
+                continue;
+
             result += (qtKey + mods);
-            depressed = 0;
         }
     }
 
