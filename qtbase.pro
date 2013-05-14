@@ -82,7 +82,7 @@ INSTALLS += syncqt
 
 # If we are doing a prefix build, create a "module" pri which enables
 # qtPrepareTool() to find the non-installed syncqt.
-prefix_build {
+prefix_build|!equals(PWD, $$OUT_PWD) {
 
     cmd = perl -w $$shell_path($$PWD/bin/syncqt.pl)
 
