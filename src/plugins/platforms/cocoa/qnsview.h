@@ -70,8 +70,7 @@ QT_END_NAMESPACE
     Qt::KeyboardModifiers currentWheelModifiers;
     bool m_subscribesForGlobalFrameNotifications;
     QCocoaGLContext *m_glContext;
-    bool m_glContextDirty;
-    bool m_drawRectHasBeenCalled;
+    bool m_shouldSetGLContextinDrawRect;
 }
 
 - (id)init;
