@@ -428,8 +428,6 @@ public:
     ~QMetaTypeConversionRegistry()
     {
         const QWriteLocker locker(&lock);
-        Q_FOREACH (QtPrivate::AbstractConverterFunction *f, map)
-            f->destroy(f);
         map.clear();
     }
 
@@ -440,27 +438,33 @@ public:
         return map.contains(k);
     }
 
-    bool insertIfNotContains(int from, int to, QtPrivate::AbstractConverterFunction *f)
+    bool insertIfNotContains(int from, int to, const QtPrivate::AbstractConverterFunction *f)
     {
         const Key k(from, to);
         const QWriteLocker locker(&lock);
-        QtPrivate::AbstractConverterFunction* &fun = map[k];
+        const QtPrivate::AbstractConverterFunction* &fun = map[k];
         if (fun != 0)
             return false;
         fun = f;
         return true;
     }
 
-    QtPrivate::AbstractConverterFunction *function(int from, int to) const
+    const QtPrivate::AbstractConverterFunction *function(int from, int to) const
     {
         const Key k(from, to);
         const QReadLocker locker(&lock);
         return map.value(k, 0);
     }
 
+    void remove(int from, int to)
+    {
+        const Key k(from, to);
+        const QWriteLocker locker(&lock);
+        map.remove(k);
+    }
 private:
     mutable QReadWriteLock lock;
-    QHash<Key, QtPrivate::AbstractConverterFunction *> map;
+    QHash<Key, const QtPrivate::AbstractConverterFunction *> map;
 };
 
 namespace
@@ -514,16 +518,24 @@ Q_GLOBAL_STATIC(QMetaTypeConversionRegistry, customTypesConversionRegistry)
     \since 5.2
     \internal
 */
-bool QMetaType::registerConverterFunction(QtPrivate::AbstractConverterFunction *f, int from, int to)
+bool QMetaType::registerConverterFunction(const QtPrivate::AbstractConverterFunction *f, int from, int to)
 {
     if (!customTypesConversionRegistry()->insertIfNotContains(from, to, f)) {
         qWarning("Type conversion already registered from type %s to type %s",
                  QMetaType::typeName(from), QMetaType::typeName(to));
-        if (f)
-            f->destroy(f);
         return false;
     }
     return true;
+}
+
+/*!
+    \internal
+
+    Invoked automatically when a converter function object is destroyed.
+ */
+void QMetaType::unregisterConverterFunction(int from, int to)
+{
+    customTypesConversionRegistry()->remove(from, to);
 }
 
 /*!

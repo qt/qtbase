@@ -225,20 +225,19 @@ To convertImplicit(const From& from)
 struct AbstractConverterFunction
 {
     typedef bool (*Converter)(const AbstractConverterFunction *, const void *, void*);
-    typedef void (*Destroy)(AbstractConverterFunction *);
-    explicit AbstractConverterFunction(Converter c = 0, Destroy d = 0)
-        : convert(c), destroy(d) {}
+    explicit AbstractConverterFunction(Converter c = 0)
+        : convert(c) {}
     Q_DISABLE_COPY(AbstractConverterFunction)
     Converter convert;
-    Destroy destroy;
 };
 
 template<typename From, typename To>
 struct ConverterMemberFunction : public AbstractConverterFunction
 {
     explicit ConverterMemberFunction(To(From::*function)() const)
-        : AbstractConverterFunction(convert, destroy),
+        : AbstractConverterFunction(convert),
           m_function(function) {}
+    ~ConverterMemberFunction();
     static bool convert(const AbstractConverterFunction *_this, const void *in, void *out)
     {
         const From *f = static_cast<const From *>(in);
@@ -249,11 +248,6 @@ struct ConverterMemberFunction : public AbstractConverterFunction
         return true;
     }
 
-    static void destroy(AbstractConverterFunction *_this)
-    {
-        delete static_cast<ConverterMemberFunction *>(_this);
-    }
-
     To(From::* const m_function)() const;
 };
 
@@ -261,8 +255,9 @@ template<typename From, typename To>
 struct ConverterMemberFunctionOk : public AbstractConverterFunction
 {
     explicit ConverterMemberFunctionOk(To(From::*function)(bool *) const)
-        : AbstractConverterFunction(convert, destroy),
+        : AbstractConverterFunction(convert),
           m_function(function) {}
+    ~ConverterMemberFunctionOk();
     static bool convert(const AbstractConverterFunction *_this, const void *in, void *out)
     {
         const From *f = static_cast<const From *>(in);
@@ -276,11 +271,6 @@ struct ConverterMemberFunctionOk : public AbstractConverterFunction
         return ok;
     }
 
-    static void destroy(AbstractConverterFunction *_this)
-    {
-        delete static_cast<ConverterMemberFunctionOk *>(_this);
-    }
-
     To(From::* const m_function)(bool*) const;
 };
 
@@ -288,8 +278,9 @@ template<typename From, typename To, typename UnaryFunction>
 struct ConverterFunctor : public AbstractConverterFunction
 {
     explicit ConverterFunctor(UnaryFunction function)
-        : AbstractConverterFunction(convert, destroy),
+        : AbstractConverterFunction(convert),
           m_function(function) {}
+    ~ConverterFunctor();
     static bool convert(const AbstractConverterFunction *_this, const void *in, void *out)
     {
         const From *f = static_cast<const From *>(in);
@@ -298,11 +289,6 @@ struct ConverterFunctor : public AbstractConverterFunction
             static_cast<const ConverterFunctor *>(_this);
         *t = _typedThis->m_function(*f);
         return true;
-    }
-
-    static void destroy(AbstractConverterFunction *_this)
-    {
-        delete static_cast<ConverterFunctor *>(_this);
     }
 
     UnaryFunction m_function;
@@ -468,8 +454,8 @@ public:
 
         const int fromTypeId = qMetaTypeId<From>();
         const int toTypeId = qMetaTypeId<To>();
-        return registerConverterFunction(new QtPrivate::ConverterMemberFunction<From, To>(function),
-                                         fromTypeId, toTypeId);
+        static const QtPrivate::ConverterMemberFunction<From, To> f(function);
+        return registerConverterFunction(&f, fromTypeId, toTypeId);
     }
 
     // member function as in "double QString::toDouble(bool *ok = 0) const"
@@ -481,8 +467,8 @@ public:
 
         const int fromTypeId = qMetaTypeId<From>();
         const int toTypeId = qMetaTypeId<To>();
-        return registerConverterFunction(new QtPrivate::ConverterMemberFunctionOk<From, To>(function),
-                                         fromTypeId, toTypeId);
+        static const QtPrivate::ConverterMemberFunctionOk<From, To> f(function);
+        return registerConverterFunction(&f, fromTypeId, toTypeId);
     }
 
     // functor or function pointer
@@ -494,8 +480,8 @@ public:
 
         const int fromTypeId = qMetaTypeId<From>();
         const int toTypeId = qMetaTypeId<To>();
-        return registerConverterFunction(new QtPrivate::ConverterFunctor<From, To, UnaryFunction>(function),
-                                        fromTypeId, toTypeId);
+        static const QtPrivate::ConverterFunctor<From, To, UnaryFunction> f(function);
+        return registerConverterFunction(&f, fromTypeId, toTypeId);
     }
 #endif
 
@@ -542,11 +528,15 @@ private:
     template<typename T>
     friend bool qRegisterSequentialConverter();
     template<typename, bool> friend struct QtPrivate::ValueTypeIsMetaType;
+    template<typename, typename> friend struct QtPrivate::ConverterMemberFunction;
+    template<typename, typename> friend struct QtPrivate::ConverterMemberFunctionOk;
+    template<typename, typename, typename> friend struct QtPrivate::ConverterFunctor;
 #endif
 #else
 public:
 #endif
-    static bool registerConverterFunction(QtPrivate::AbstractConverterFunction *f, int from, int to);
+    static bool registerConverterFunction(const QtPrivate::AbstractConverterFunction *f, int from, int to);
+    static void unregisterConverterFunction(int from, int to);
 private:
 
     Creator m_creator;
@@ -566,6 +556,26 @@ private:
 #undef QT_DEFINE_METATYPE_ID
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QMetaType::TypeFlags)
+
+namespace QtPrivate {
+
+template<typename From, typename To>
+ConverterMemberFunction<From, To>::~ConverterMemberFunction()
+{
+    QMetaType::unregisterConverterFunction(qMetaTypeId<From>(), qMetaTypeId<To>());
+}
+template<typename From, typename To>
+ConverterMemberFunctionOk<From, To>::~ConverterMemberFunctionOk()
+{
+    QMetaType::unregisterConverterFunction(qMetaTypeId<From>(), qMetaTypeId<To>());
+}
+template<typename From, typename To, typename UnaryFunction>
+ConverterFunctor<From, To, UnaryFunction>::~ConverterFunctor()
+{
+    QMetaType::unregisterConverterFunction(qMetaTypeId<From>(), qMetaTypeId<To>());
+}
+
+}
 
 namespace QtMetaTypePrivate {
 template <typename T, bool Accepted = true>
@@ -857,6 +867,8 @@ public:
 template<typename From>
 struct QSequentialIterableConvertFunctor
 {
+    QSequentialIterableConvertFunctor() {}
+
     QSequentialIterableImpl operator()(const From &f) const
     {
         return QSequentialIterableImpl(&f);
@@ -991,12 +1003,11 @@ namespace QtPrivate
         {
             const int toId = qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>();
             if (!QMetaType::hasRegisteredConverterFunction(id, toId)) {
-                QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> f;
-                return QMetaType::registerConverterFunction(
-                    new QtPrivate::ConverterFunctor<T,
+                static const QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> o;
+                static const QtPrivate::ConverterFunctor<T,
                                                   QtMetaTypePrivate::QSequentialIterableImpl,
-                                                  QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> >(f),
-                  id, toId);
+                    QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> > f(o);
+                return QMetaType::registerConverterFunction(&f, id, toId);
             }
             return true;
         }
@@ -1505,11 +1516,12 @@ bool qRegisterSequentialConverter()
     if (QMetaType::hasRegisteredConverterFunction(id, toId))
         return true;
 
-    QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> f;
-    return QMetaType::registerConverterFunction(
-        new QtPrivate::ConverterFunctor<T,
+    static const QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> o;
+    static const QtPrivate::ConverterFunctor<T,
             QtMetaTypePrivate::QSequentialIterableImpl,
-            QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> >(f),
+            QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> > f(o);
+    return QMetaType::registerConverterFunction(
+        &f,
           id, toId);
 }
 
