@@ -41,3 +41,5 @@ if (_Qt5_NOTFOUND_MESSAGE)
     set(Qt5_NOT_FOUND_MESSAGE \"${_Qt5_NOTFOUND_MESSAGE}\")
     set(Qt5_FOUND False)
 endif()
+
+_qt5_Core_check_file_exists(\"${CMAKE_CURRENT_LIST_DIR}/Qt5ConfigVersion.cmake\")

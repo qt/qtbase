@@ -2,12 +2,15 @@
 if (NOT TARGET Qt5::uic)
     add_executable(Qt5::uic IMPORTED)
 
-    set_target_properties(Qt5::uic PROPERTIES
 !!IF isEmpty(CMAKE_BIN_DIR_IS_ABSOLUTE)
-        IMPORTED_LOCATION \"${_qt5Widgets_install_prefix}/$${CMAKE_BIN_DIR}uic$$CMAKE_BIN_SUFFIX\"
+    set(imported_location \"${_qt5Widgets_install_prefix}/$${CMAKE_BIN_DIR}uic$$CMAKE_BIN_SUFFIX\")
 !!ELSE
-        IMPORTED_LOCATION \"$${CMAKE_BIN_DIR}uic$$CMAKE_BIN_SUFFIX\"
+    set(imported_location \"$${CMAKE_BIN_DIR}uic$$CMAKE_BIN_SUFFIX\")
 !!ENDIF
+    _qt5_Widgets_check_file_exists(${imported_location})
+
+    set_target_properties(Qt5::uic PROPERTIES
+        IMPORTED_LOCATION ${imported_location}
     )
 endif()
 
