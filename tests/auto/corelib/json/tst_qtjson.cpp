@@ -231,9 +231,54 @@ void tst_QtJson::testNumbers()
         QJsonArray array;
         for (int i = 0; i < n; ++i)
             array.append((double)numbers[i]);
+
+        QByteArray serialized = QJsonDocument(array).toJson();
+        QJsonDocument json = QJsonDocument::fromJson(serialized);
+        QJsonArray array2 = json.array();
+
+        QCOMPARE(array.size(), array2.size());
         for (int i = 0; i < array.size(); ++i) {
             QCOMPARE(array.at(i).type(), QJsonValue::Double);
             QCOMPARE(array.at(i).toDouble(), (double)numbers[i]);
+            QCOMPARE(array2.at(i).type(), QJsonValue::Double);
+            QCOMPARE(array2.at(i).toDouble(), (double)numbers[i]);
+        }
+    }
+
+    {
+        qint64 numbers[] = {
+            0,
+            -1,
+            1,
+            (1UL<<54),
+            (1UL<<55),
+            (1UL<<56),
+            -(1UL<<54),
+            -(1UL<<55),
+            -(1UL<<56),
+            (1UL<<54) - 1,
+            (1UL<<55) - 1,
+            (1UL<<56) - 1,
+            -((1UL<<54) - 1),
+            -((1UL<<55) - 1),
+            -((1UL<<56) - 1)
+        };
+        int n = sizeof(numbers)/sizeof(qint64);
+
+        QJsonArray array;
+        for (int i = 0; i < n; ++i)
+            array.append((double)numbers[i]);
+
+        QByteArray serialized = QJsonDocument(array).toJson();
+        QJsonDocument json = QJsonDocument::fromJson(serialized);
+        QJsonArray array2 = json.array();
+
+        QCOMPARE(array.size(), array2.size());
+        for (int i = 0; i < array.size(); ++i) {
+            QCOMPARE(array.at(i).type(), QJsonValue::Double);
+            QCOMPARE(array.at(i).toDouble(), (double)numbers[i]);
+            QCOMPARE(array2.at(i).type(), QJsonValue::Double);
+            QCOMPARE(array2.at(i).toDouble(), (double)numbers[i]);
         }
     }
 
@@ -242,18 +287,18 @@ void tst_QtJson::testNumbers()
             0,
             -1,
             1,
-            (1<<26),
-            (1<<27),
-            (1<<28),
-            -(1<<26),
-            -(1<<27),
-            -(1<<28),
-            (1<<26) - 1,
-            (1<<27) - 1,
-            (1<<28) - 1,
-            -((1<<26) - 1),
-            -((1<<27) - 1),
-            -((1<<28) - 1),
+            (1UL<<54),
+            (1UL<<55),
+            (1UL<<56),
+            -(1UL<<54),
+            -(1UL<<55),
+            -(1UL<<56),
+            (1UL<<54) - 1,
+            (1UL<<55) - 1,
+            (1UL<<56) - 1,
+            -((1UL<<54) - 1),
+            -((1UL<<55) - 1),
+            -((1UL<<56) - 1),
             1.1,
             0.1,
             -0.1,
@@ -266,9 +311,17 @@ void tst_QtJson::testNumbers()
         QJsonArray array;
         for (int i = 0; i < n; ++i)
             array.append(numbers[i]);
+
+        QByteArray serialized = QJsonDocument(array).toJson();
+        QJsonDocument json = QJsonDocument::fromJson(serialized);
+        QJsonArray array2 = json.array();
+
+        QCOMPARE(array.size(), array2.size());
         for (int i = 0; i < array.size(); ++i) {
             QCOMPARE(array.at(i).type(), QJsonValue::Double);
             QCOMPARE(array.at(i).toDouble(), numbers[i]);
+            QCOMPARE(array2.at(i).type(), QJsonValue::Double);
+            QCOMPARE(array2.at(i).toDouble(), numbers[i]);
         }
     }
 

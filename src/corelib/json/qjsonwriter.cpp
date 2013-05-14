@@ -170,7 +170,7 @@ static void valueToJson(const QJsonPrivate::Base *b, const QJsonPrivate::Value &
         json += v.toBoolean() ? "true" : "false";
         break;
     case QJsonValue::Double:
-        json += QByteArray::number(v.toDouble(b));
+        json += QByteArray::number(v.toDouble(b), 'g', 13);
         break;
     case QJsonValue::String:
         json += '"';
