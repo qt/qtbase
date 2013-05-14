@@ -1622,6 +1622,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "ANGLE" ]               = "no";
         dictionary[ "REDUCE_RELOCATIONS" ]  = "yes";
         dictionary[ "QT_GETIFADDRS" ]       = "no";
+        dictionary[ "QT_XKBCOMMON" ]        = "no";
     }
 }
 
@@ -2811,6 +2812,9 @@ void Configure::generateCachefile()
 
         if (dictionary["QT_EDITION"] != "QT_EDITION_OPENSOURCE")
             moduleStream << "DEFINES        *= QT_EDITION=QT_EDITION_DESKTOP" << endl;
+
+        if (dictionary["QT_XKBCOMMON"] == "no")
+            moduleStream << "DEFINES += QT_NO_XKBCOMMON" << endl;
 
         if (dictionary["CETEST"] == "yes") {
             moduleStream << "QT_CE_RAPI_INC  = " << formatPath(dictionary["QT_CE_RAPI_INC"]) << endl;
