@@ -41,6 +41,8 @@ contains(CMAKE_INCLUDE_DIR, "^\\.\\./.*") {
     CMAKE_INCLUDE_DIR_IS_ABSOLUTE = True
 }
 
+!exists($$first(QT.$${MODULE}.private_includes)): CMAKE_NO_PRIVATE_INCLUDES = true
+
 CMAKE_LIB_DIR = $$cmakeRelativePath($$[QT_INSTALL_LIBS], $$[QT_INSTALL_PREFIX])
 contains(CMAKE_LIB_DIR,"^\\.\\./.*") {
     CMAKE_LIB_DIR = $$[QT_INSTALL_LIBS]/
