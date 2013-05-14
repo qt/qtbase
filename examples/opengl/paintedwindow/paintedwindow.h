@@ -74,7 +74,6 @@ private slots:
     void rotationDone();
 
 private:
-    void resizeEvent(QResizeEvent *);
     void exposeEvent(QExposeEvent *);
     void mousePressEvent(QMouseEvent *);
 
