@@ -58,7 +58,9 @@
 #include "qglxintegration.h"
 #endif
 
-#ifndef XCB_USE_XLIB
+#ifdef XCB_USE_XLIB
+#  include <X11/Xlib.h>
+#else
 #  include <stdio.h>
 #endif
 
