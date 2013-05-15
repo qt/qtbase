@@ -2,7 +2,7 @@ TARGET     = QtPlatformSupport
 QT         = core-private gui-private
 
 CONFIG += static internal_module
-mac:LIBS += -lz
+mac:LIBS_PRIVATE += -lz
 
 DEFINES += QT_NO_CAST_FROM_ASCII
 PRECOMPILED_HEADER = ../corelib/global/qt_pch.h

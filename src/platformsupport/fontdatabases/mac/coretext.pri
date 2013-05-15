@@ -3,8 +3,8 @@ OBJECTIVE_SOURCES += $$PWD/qfontengine_coretext.mm $$PWD/qcoretextfontdatabase.m
 
 ios: \
     # On iOS CoreText and CoreGraphics are stand-alone frameworks
-    LIBS += -framework CoreText -framework CoreGraphics
+    LIBS_PRIVATE += -framework CoreText -framework CoreGraphics
 else: \
     # On Mac OS they are part of the ApplicationServices umbrella framework,
     # even in 10.8 where they were also made available stand-alone.
-    LIBS += -framework ApplicationServices
+    LIBS_PRIVATE += -framework ApplicationServices

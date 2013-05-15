@@ -7,6 +7,6 @@ SOURCES += \
     $$PWD/qevdevmousemanager.cpp
 
 contains(QT_CONFIG, libudev) {
-    LIBS += $$QMAKE_LIBS_LIBUDEV
+    LIBS_PRIVATE += $$QMAKE_LIBS_LIBUDEV
 }
 
