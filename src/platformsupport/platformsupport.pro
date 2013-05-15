@@ -4,8 +4,6 @@ QT         = core-private gui-private
 CONFIG += static internal_module
 mac:LIBS += -lz
 
-load(qt_module)
-
 DEFINES += QT_NO_CAST_FROM_ASCII
 PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
 
@@ -23,3 +21,5 @@ include(services/services.pri)
 include(themes/themes.pri)
 include(linuxaccessibility/linuxaccessibility.pri)
 include(jniconvenience/jniconvenience.pri)
+
+load(qt_module)
