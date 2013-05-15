@@ -62,6 +62,7 @@ public:
     EGLNativeWindowType createNativeWindow(const QSize &size, const QSurfaceFormat &format);
     void destroyNativeWindow(EGLNativeWindowType window);
     bool hasCapability(QPlatformIntegration::Capability cap) const;
+    QEglFSCursor *createCursor(QEglFSScreen *screen) const;
 };
 
 void QEglFSAndroidHooks::platformInit()
@@ -132,6 +133,12 @@ QSurfaceFormat QEglFSAndroidHooks::surfaceFormatFor(const QSurfaceFormat &inputF
     ret.setGreenBufferSize(8);
     ret.setBlueBufferSize(8);
     return ret;
+}
+
+QEglFSCursor *QEglFSAndroidHooks::createCursor(QEglFSScreen *screen) const
+{
+    Q_UNUSED(screen);
+    return 0;
 }
 
 static QEglFSAndroidHooks eglFSAndroidHooks;

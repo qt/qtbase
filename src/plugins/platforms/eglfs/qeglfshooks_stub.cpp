@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qeglfshooks.h"
+#include "qeglfscursor.h"
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -249,8 +250,7 @@ bool QEglFSHooks::hasCapability(QPlatformIntegration::Capability cap) const
 
 QEglFSCursor *QEglFSHooks::createCursor(QEglFSScreen *screen) const
 {
-    Q_UNUSED(screen);
-    return 0;
+    return new QEglFSCursor(screen);
 }
 
 void QEglFSHooks::waitForVSync() const

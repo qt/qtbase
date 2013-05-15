@@ -478,7 +478,6 @@ public class QtActivity extends Activity
                 }
                 loaderParams.putStringArrayList(NATIVE_LIBRARIES_KEY, libraryList);
                 loaderParams.putString(ENVIRONMENT_VARIABLES_KEY, ENVIRONMENT_VARIABLES
-                                                                  + "QT_QPA_EGLFS_HIDECURSOR=1"
                                                                   + "\tQML2_IMPORT_PATH=" + localPrefix + "/qml"
                                                                   + "\tQML_IMPORT_PATH=" + localPrefix + "/imports"
                                                                   + "\tQT_PLUGIN_PATH=" + localPrefix + "/plugins");
