@@ -118,7 +118,7 @@ static bool isMouseEvent(NSEvent *ev)
 
     // Windows with a transient parent (such as combobox popup windows)
     // cannot become the main window:
-    if (m_cocoaPlatformWindow->window()->transientParent())
+    if (!m_cocoaPlatformWindow || m_cocoaPlatformWindow->window()->transientParent())
         canBecomeMain = NO;
 
     return canBecomeMain;
@@ -156,7 +156,8 @@ static bool isMouseEvent(NSEvent *ev)
 - (BOOL)canBecomeKeyWindow
 {
     // Only tool or dialog windows should become key:
-    if (m_cocoaPlatformWindow->window()->type() == Qt::Tool || m_cocoaPlatformWindow->window()->type() == Qt::Dialog)
+    if (m_cocoaPlatformWindow
+        && (m_cocoaPlatformWindow->window()->type() == Qt::Tool || m_cocoaPlatformWindow->window()->type() == Qt::Dialog))
         return YES;
     return NO;
 }
@@ -362,11 +363,22 @@ void QCocoaWindow::setVisible(bool visible)
                 QCocoaEventDispatcherPrivate *cocoaEventDispatcherPrivate = static_cast<QCocoaEventDispatcherPrivate *>(QObjectPrivate::get(cocoaEventDispatcher));
                 cocoaEventDispatcherPrivate->endModalSession(window());
                 m_hasModalSession = false;
+
+                [m_nsWindow orderOut:m_nsWindow];
+                if (m_nsWindow == [NSApp keyWindow] && !cocoaEventDispatcherPrivate->currentModalSession()) {
+                    // Probably because we call runModalSession: outside [NSApp run] in QCocoaEventDispatcher
+                    // (e.g., when show()-ing a modal QDialog instead of exec()-ing it), it can happen that
+                    // the current NSWindow is still key after being ordered out. Then, after checking we
+                    // don't have any other modal session left, it's safe to make the main window key again.
+                    NSWindow *mainWindow = [NSApp mainWindow];
+                    if (mainWindow && [mainWindow canBecomeKeyWindow])
+                        [mainWindow makeKeyWindow];
+                }
             } else {
                 if ([m_nsWindow isSheet])
                     [NSApp endSheet:m_nsWindow];
+                [m_nsWindow orderOut:m_nsWindow];
             }
-            [m_nsWindow orderOut:m_nsWindow];
         } else {
             [m_contentView setHidden:YES];
         }
