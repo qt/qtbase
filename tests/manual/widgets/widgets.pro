@@ -1,2 +1,3 @@
 TEMPLATE = subdirs
-SUBDIRS = itemviews qgraphicsview
+SUBDIRS = itemviews qgraphicsview kernel
+

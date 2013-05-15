@@ -120,7 +120,7 @@ class QTipLabel : public QLabel
 {
     Q_OBJECT
 public:
-    QTipLabel(const QString &text, QWidget *w);
+    QTipLabel(const QString &text, QWidget *w, int msecDisplayTime);
     ~QTipLabel();
     static QTipLabel *instance;
 
@@ -130,11 +130,11 @@ public:
 
     bool fadingOut;
 
-    void reuseTip(const QString &text);
+    void reuseTip(const QString &text, int msecDisplayTime);
     void hideTip();
     void hideTipImmediately();
     void setTipRect(QWidget *w, const QRect &r);
-    void restartExpireTimer();
+    void restartExpireTimer(int msecDisplayTime);
     bool tipChanged(const QPoint &pos, const QString &text, QObject *o);
     void placeTip(const QPoint &pos, QWidget *w);
 
@@ -166,7 +166,7 @@ private:
 
 QTipLabel *QTipLabel::instance = 0;
 
-QTipLabel::QTipLabel(const QString &text, QWidget *w)
+QTipLabel::QTipLabel(const QString &text, QWidget *w, int msecDisplayTime)
 #ifndef QT_NO_STYLE_STYLESHEET
     : QLabel(w, Qt::ToolTip | Qt::BypassGraphicsProxyWidget), styleSheetParent(0), widget(0)
 #else
@@ -187,17 +187,19 @@ QTipLabel::QTipLabel(const QString &text, QWidget *w)
     setWindowOpacity(style()->styleHint(QStyle::SH_ToolTipLabel_Opacity, 0, this) / 255.0);
     setMouseTracking(true);
     fadingOut = false;
-    reuseTip(text);
+    reuseTip(text, msecDisplayTime);
 }
 
-void QTipLabel::restartExpireTimer()
+void QTipLabel::restartExpireTimer(int msecDisplayTime)
 {
     int time = 10000 + 40 * qMax(0, text().length()-100);
+    if (msecDisplayTime > 0)
+        time = msecDisplayTime;
     expireTimer.start(time, this);
     hideTimer.stop();
 }
 
-void QTipLabel::reuseTip(const QString &text)
+void QTipLabel::reuseTip(const QString &text, int msecDisplayTime)
 {
 #ifndef QT_NO_STYLE_STYLESHEET
     if (styleSheetParent){
@@ -215,7 +217,7 @@ void QTipLabel::reuseTip(const QString &text)
     if (fm.descent() == 2 && fm.ascent() >= 11)
         ++extra.rheight();
     resize(sizeHint() + extra);
-    restartExpireTimer();
+    restartExpireTimer(msecDisplayTime);
 }
 
 void QTipLabel::paintEvent(QPaintEvent *ev)
@@ -440,6 +442,18 @@ bool QTipLabel::tipChanged(const QPoint &pos, const QString &text, QObject *o)
 
 void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, const QRect &rect)
 {
+    showText(pos, text, w, rect, -1);
+}
+
+/*!
+   \since 5.2
+   \overload
+   This is similar to QToolTip::showText(\a pos, \a text, \a w, \a rect) but with an extra parameter \a msecDisplayTime
+   that specifies how long the tool tip will be displayed, in milliseconds.
+*/
+
+void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, const QRect &rect, int msecDisplayTime)
+{
     if (QTipLabel::instance && QTipLabel::instance->isVisible()){ // a tip does already exist
         if (text.isEmpty()){ // empty text means hide current tip
             QTipLabel::instance->hideTip();
@@ -452,7 +466,7 @@ void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, cons
             if (w)
                 localPos = w->mapFromGlobal(pos);
             if (QTipLabel::instance->tipChanged(localPos, text, w)){
-                QTipLabel::instance->reuseTip(text);
+                QTipLabel::instance->reuseTip(text, msecDisplayTime);
                 QTipLabel::instance->setTipRect(w, rect);
                 QTipLabel::instance->placeTip(pos, w);
             }
@@ -462,11 +476,11 @@ void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, cons
 
     if (!text.isEmpty()){ // no tip can be reused, create new tip:
 #ifndef Q_WS_WIN
-        new QTipLabel(text, w); // sets QTipLabel::instance to itself
+        new QTipLabel(text, w, msecDisplayTime); // sets QTipLabel::instance to itself
 #else
         // On windows, we can't use the widget as parent otherwise the window will be
         // raised when the tooltip will be shown
-        new QTipLabel(text, QApplication::desktop()->screen(QTipLabel::getTipScreen(pos, w)));
+        new QTipLabel(text, QApplication::desktop()->screen(QTipLabel::getTipScreen(pos, w)), msecDisplayTime);
 #endif
         QTipLabel::instance->setTipRect(w, rect);
         QTipLabel::instance->placeTip(pos, w);

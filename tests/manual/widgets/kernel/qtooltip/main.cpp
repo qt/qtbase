@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Thorbjørn Lund Martsum - tmartsum[at]gmail.com
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtWidgets module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,37 +39,29 @@
 **
 ****************************************************************************/
 
-#ifndef QTOOLTIP_H
-#define QTOOLTIP_H
+#include <QtWidgets>
+#include <QTest>
 
-#include <QtWidgets/qwidget.h>
-
-QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_TOOLTIP
-
-class Q_WIDGETS_EXPORT QToolTip
+void showSomeToolTips()
 {
-    QToolTip() Q_DECL_EQ_DELETE;
-public:
-    // ### Qt 6 - merge the three showText functions below
-    static void showText(const QPoint &pos, const QString &text, QWidget *w = 0);
-    static void showText(const QPoint &pos, const QString &text, QWidget *w, const QRect &rect);
-    static void showText(const QPoint &pos, const QString &text, QWidget *w, const QRect &rect, int msecShowTime);
-    static inline void hideText() { showText(QPoint(), QString()); }
+    QPoint p(100 + 20, 100 + 20);
 
-    static bool isVisible();
-    static QString text();
+    for (int u = 1; u < 20; u += 5) {
+        QString s = "Seconds: " + QString::number(u);
+        QToolTip::showText(p, s, 0, QRect(), 1000 * u);
+        QTest::qWait((u + 1) * 1000);
+    }
 
-    static QPalette palette();
-    static void setPalette(const QPalette &);
-    static QFont font();
-    static void setFont(const QFont &);
-};
+    QToolTip::showText(p, "Seconds: 2", 0, QRect(), 2000);
+    QTest::qWait(3000);
 
-#endif // QT_NO_TOOLTIP
+    QToolTip::showText(p, "Standard label", 0, QRect());
+    QTest::qWait(12000);
+}
 
-QT_END_NAMESPACE
-
-#endif // QTOOLTIP_H
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
+    showSomeToolTips();
+    return 0;
+}
