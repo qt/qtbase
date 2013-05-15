@@ -81,6 +81,8 @@ QConnmanManagerInterface::QConnmanManagerInterface( QObject *parent)
                                  CONNMAN_MANAGER_INTERFACE,
                                  QDBusConnection::systemBus(), parent)
 {
+    qDBusRegisterMetaType<ConnmanMap>();
+    qDBusRegisterMetaType<ConnmanMapList>();
 }
 
 QConnmanManagerInterface::~QConnmanManagerInterface()
