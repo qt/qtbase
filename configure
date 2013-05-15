@@ -2483,7 +2483,10 @@ if [ -z "$PLATFORM" ]; then
         # about the OS version, since we're not using the clang version that comes
         # with the system. We use 'xcrun' to check the clang version that's part of
         # the Xcode installation.
-        if [ "$(/usr/bin/xcrun -sdk macosx clang -v 2>&1 | sed -n 's/.*version \([0-9]\).*/\1/p')" -ge 3 ]; then
+        XCRUN=`/usr/bin/xcrun -sdk macosx clang -v 2>&1`
+        CLANGVERSION=`echo "$XCRUN" | sed -n 's/.*version \([0-9]\).*/\1/p'`
+        expr "$CLANGVERSION" : '[0-9]' > /dev/null || { echo "Unable to determine CLANG version from output of xcrun: $XCRUN" ; exit 2 ; }
+        if [ "$CLANGVERSION" -ge 3 ]; then
             PLATFORM=macx-clang
 
             # Advertise g++ as an alternative on Lion and below
