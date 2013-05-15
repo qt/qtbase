@@ -106,8 +106,14 @@ public:
     inline void setDirectory(const QDir &directory);
     QDir directory() const;
 
+    void setDirectoryUrl(const QUrl &directory);
+    QUrl directoryUrl() const;
+
     void selectFile(const QString &filename);
     QStringList selectedFiles() const;
+
+    void selectUrl(const QUrl &url);
+    QList<QUrl> selectedUrls() const;
 
     void setNameFilterDetailsVisible(bool enabled);
     bool isNameFilterDetailsVisible() const;
@@ -185,6 +191,12 @@ Q_SIGNALS:
     void filesSelected(const QStringList &files);
     void currentChanged(const QString &path);
     void directoryEntered(const QString &directory);
+
+    void urlSelected(const QUrl &url);
+    void urlsSelected(const QList<QUrl> &urls);
+    void currentUrlChanged(const QUrl &url);
+    void directoryUrlEntered(const QUrl &directory);
+
     void filterSelected(const QString &filter);
 
 public:

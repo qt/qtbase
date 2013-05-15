@@ -275,37 +275,76 @@ Q_WIDGETS_EXPORT _qt_filedialog_save_file_url_hook qt_filedialog_save_file_url_h
 /*!
     \fn void QFileDialog::filesSelected(const QStringList &selected)
 
-    When the selection changes and the dialog is accepted, this signal is
-    emitted with the (possibly empty) list of \a selected files.
+    When the selection changes for local operations and the dialog is
+    accepted, this signal is emitted with the (possibly empty) list
+    of \a selected files.
 
     \sa currentChanged(), QDialog::Accepted
 */
 
+/*!
+    \fn void QFileDialog::urlsSelected(const QList<QUrl> &urls)
+
+    When the selection changes and the dialog is accepted, this signal is
+    emitted with the (possibly empty) list of selected \a urls.
+
+    \sa currentUrlChanged(), QDialog::Accepted
+    \since 5.2
+*/
 
 /*!
     \fn void QFileDialog::fileSelected(const QString &file)
 
-    When the selection changes and the dialog is accepted, this signal is
-    emitted with the (possibly empty) selected \a file.
+    When the selection changes for local operations and the dialog is
+    accepted, this signal is emitted with the (possibly empty)
+    selected \a file.
 
     \sa currentChanged(), QDialog::Accepted
 */
 
+/*!
+    \fn void QFileDialog::urlSelected(const QUrl &url)
+
+    When the selection changes and the dialog is accepted, this signal is
+    emitted with the (possibly empty) selected \a url.
+
+    \sa currentUrlChanged(), QDialog::Accepted
+    \since 5.2
+*/
 
 /*!
     \fn void QFileDialog::currentChanged(const QString &path)
 
-    When the current file changes, this signal is emitted with the
-    new file name as the \a path parameter.
+    When the current file changes for local operations, this signal is
+    emitted with the new file name as the \a path parameter.
 
     \sa filesSelected()
+*/
+
+/*!
+    \fn void QFileDialog::currentUrlChanged(const QUrl &url)
+
+    When the current file changes, this signal is emitted with the
+    new file URL as the \a url parameter.
+
+    \sa urlsSelected()
+    \since 5.2
 */
 
 /*!
   \fn void QFileDialog::directoryEntered(const QString &directory)
   \since 4.3
 
+  This signal is emitted for local operations when the user enters
+  a \a directory.
+*/
+
+/*!
+  \fn void QFileDialog::directoryUrlEntered(const QUrl &directory)
+
   This signal is emitted when the user enters a \a directory.
+
+  \since 5.2
 */
 
 /*!
@@ -904,6 +943,41 @@ QDir QFileDialog::directory() const
 }
 
 /*!
+    Sets the file dialog's current \a directory url.
+
+    \note The non-native QFileDialog supports only local files.
+
+    \since 5.2
+*/
+void QFileDialog::setDirectoryUrl(const QUrl &directory)
+{
+    Q_D(QFileDialog);
+    if (!directory.isValid())
+        return;
+
+    if (d->nativeDialogInUse)
+        d->setDirectory_sys(directory);
+    else if (directory.isLocalFile())
+        setDirectory(directory.toLocalFile());
+    else
+        qWarning() << "Non-native QFileDialog supports only local files";
+}
+
+/*!
+    Returns the url of the directory currently being displayed in the dialog.
+
+    \since 5.2
+*/
+QUrl QFileDialog::directoryUrl() const
+{
+    Q_D(const QFileDialog);
+    if (d->nativeDialogInUse)
+        return d->directory_sys();
+    else
+        return QUrl::fromLocalFile(directory().absolutePath());
+}
+
+/*!
     Selects the given \a filename in the file dialog.
 
     \sa selectedFiles()
@@ -950,6 +1024,28 @@ void QFileDialog::selectFile(const QString &filename)
     d->qFileDialogUi->listView->selectionModel()->clear();
     if (!isVisible() || !d->lineEdit()->hasFocus())
         d->lineEdit()->setText(file);
+}
+
+/*!
+    Selects the given \a url in the file dialog.
+
+    \note The non-native QFileDialog supports only local files.
+
+    \sa selectedUrls()
+    \since 5.2
+*/
+void QFileDialog::selectUrl(const QUrl &url)
+{
+    Q_D(QFileDialog);
+    if (!url.isValid())
+        return;
+
+    if (d->nativeDialogInUse)
+        d->selectFile_sys(url);
+    else if (url.isLocalFile())
+        selectFile(url.toLocalFile());
+    else
+        qWarning() << "Non-native QFileDialog supports only local files";
 }
 
 #ifdef Q_OS_UNIX
@@ -1118,6 +1214,27 @@ QStringList QFileDialog::selectedFiles() const
             files.append(d->rootIndex().data(QFileSystemModel::FilePathRole).toString());
     }
     return files;
+}
+
+/*!
+    Returns a list of urls containing the selected files in the dialog.
+    If no files are selected, or the mode is not ExistingFiles or
+    ExistingFile, selectedUrls() contains the current path in the viewport.
+
+    \sa selectedNameFilter(), selectUrl()
+    \since 5.2
+*/
+QList<QUrl> QFileDialog::selectedUrls() const
+{
+    Q_D(const QFileDialog);
+    if (d->nativeDialogInUse) {
+        return d->userSelectedFiles();
+    } else {
+        QList<QUrl> urls;
+        foreach (const QString &file, selectedFiles())
+            urls.append(QUrl::fromLocalFile(file));
+        return urls;
+    }
 }
 
 /*
@@ -3340,6 +3457,7 @@ void QFileDialogPrivate::_q_fileRenamed(const QString &path, const QString oldNa
 void QFileDialogPrivate::_q_nativeFileSelected(const QUrl &file)
 {
     Q_Q(QFileDialog);
+    emit q->urlSelected(file);
     if (file.isLocalFile())
         emit q->fileSelected(file.toLocalFile());
 }
@@ -3347,6 +3465,7 @@ void QFileDialogPrivate::_q_nativeFileSelected(const QUrl &file)
 void QFileDialogPrivate::_q_nativeFilesSelected(const QList<QUrl> &files)
 {
     Q_Q(QFileDialog);
+    emit q->urlsSelected(files);
     QStringList localFiles;
     foreach (const QUrl &file, files)
         if (file.isLocalFile())
@@ -3358,6 +3477,7 @@ void QFileDialogPrivate::_q_nativeFilesSelected(const QList<QUrl> &files)
 void QFileDialogPrivate::_q_nativeCurrentChanged(const QUrl &file)
 {
     Q_Q(QFileDialog);
+    emit q->currentUrlChanged(file);
     if (file.isLocalFile())
         emit q->currentChanged(file.toLocalFile());
 }
@@ -3365,6 +3485,7 @@ void QFileDialogPrivate::_q_nativeCurrentChanged(const QUrl &file)
 void QFileDialogPrivate::_q_nativeEnterDirectory(const QUrl &directory)
 {
     Q_Q(QFileDialog);
+    emit q->directoryUrlEntered(directory);
     if (!directory.isEmpty() && directory.isLocalFile()) { // Windows native dialogs occasionally emit signals with empty strings.
         *lastVisitedDir() = directory.toLocalFile();
         emit q->directoryEntered(directory.toLocalFile());
