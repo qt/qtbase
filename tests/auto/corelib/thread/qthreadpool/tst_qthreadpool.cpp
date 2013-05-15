@@ -94,6 +94,8 @@ private slots:
     void tryStart();
     void tryStartPeakThreadCount();
     void tryStartCount();
+    void priorityStart_data();
+    void priorityStart();
     void waitForDone();
     void waitForDoneTimeout();
     void destroyingWaitsForTasksToFinish();
@@ -745,6 +747,57 @@ void tst_QThreadPool::tryStartCount()
 
         QTest::qWait(100);
     }
+}
+
+void tst_QThreadPool::priorityStart_data()
+{
+    QTest::addColumn<int>("otherCount");
+    QTest::newRow("0") << 0;
+    QTest::newRow("1") << 1;
+    QTest::newRow("2") << 2;
+}
+
+void tst_QThreadPool::priorityStart()
+{
+    class Holder : public QRunnable
+    {
+    public:
+        QSemaphore &sem;
+        Holder(QSemaphore &sem) : sem(sem) {}
+        void run()
+        {
+            sem.acquire();
+        }
+    };
+    class Runner : public QRunnable
+    {
+    public:
+        QAtomicPointer<QRunnable> &ptr;
+        Runner(QAtomicPointer<QRunnable> &ptr) : ptr(ptr) {}
+        void run()
+        {
+            ptr.testAndSetRelaxed(0, this);
+        }
+    };
+
+    QFETCH(int, otherCount);
+    QSemaphore sem;
+    QAtomicPointer<QRunnable> firstStarted;
+    QRunnable *expected;
+    QThreadPool threadPool;
+    threadPool.setMaxThreadCount(1); // start only one thread at a time
+
+    // queue the holder first
+    // We need to be sure that all threads are active when we
+    // queue the two Runners
+    threadPool.start(new Holder(sem));
+    while (otherCount--)
+        threadPool.start(new Runner(firstStarted), 0); // priority 0
+    threadPool.start(expected = new Runner(firstStarted), 1); // priority 1
+
+    sem.release();
+    QVERIFY(threadPool.waitForDone());
+    QCOMPARE(firstStarted.load(), expected);
 }
 
 void tst_QThreadPool::waitForDone()
