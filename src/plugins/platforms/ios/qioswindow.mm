@@ -150,6 +150,8 @@
 
 - (void)updateTouchList:(NSSet *)touches withState:(Qt::TouchPointState)state
 {
+    QRect applicationRect = fromCGRect(self.window.screen.applicationFrame);
+
     foreach (UITouch *uiTouch, m_activeTouches.keys()) {
         QWindowSystemInterface::TouchPoint &touchPoint = m_activeTouches[uiTouch];
         if (![touches containsObject:uiTouch]) {
@@ -158,14 +160,12 @@
             touchPoint.state = state;
             touchPoint.pressure = (state == Qt::TouchPointReleased) ? 0.0 : 1.0;
 
-            // Set position
-            QRect viewGeometry = fromCGRect(self.frame);
-            QPoint touchViewLocation = fromCGPoint([uiTouch locationInView:self]);
-            QPoint touchScreenLocation = touchViewLocation + viewGeometry.topLeft();
-            touchPoint.area = QRectF(touchScreenLocation , QSize(0, 0));
-
-            CGSize fullscreenSize = self.window.rootViewController.view.bounds.size;
-            touchPoint.normalPosition = QPointF(touchScreenLocation.x() / fullscreenSize.width, touchScreenLocation.y() / fullscreenSize.height);
+            // Find the touch position relative to the window. Then calculate the screen
+            // position by subtracting the position of the applicationRect (since UIWindow
+            // does not take that into account when reporting its own frame):
+            QPoint touchPos = fromCGPoint([uiTouch locationInView:nil]);
+            touchPoint.area = QRectF(touchPos - applicationRect.topLeft(), QSize(0, 0));
+            touchPoint.normalPosition = QPointF(touchPos.x() / applicationRect.width(), touchPos.y() / applicationRect.height());
         }
     }
 }
