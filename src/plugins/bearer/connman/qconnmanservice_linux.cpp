@@ -74,7 +74,6 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, ConnmanMap &map)
     return argument;
 }
 
-static QDBusConnection dbusConnection = QDBusConnection::systemBus();
 QConnmanManagerInterface::QConnmanManagerInterface( QObject *parent)
         : QDBusAbstractInterface(QLatin1String(CONNMAN_SERVICE),
                                  QLatin1String(CONNMAN_MANAGER_PATH),
@@ -98,7 +97,7 @@ void QConnmanManagerInterface::connectNotify(const QMetaMethod &signal)
                                QLatin1String(CONNMAN_MANAGER_INTERFACE),
                                QLatin1String("PropertyChanged"),
                                this,SIGNAL(propertyChanged(QString,QDBusVariant)))) {
-            qWarning() << "PropertyCHanged not connected";
+            qWarning() << "PropertyChanged not connected";
         }
     }
 
@@ -118,7 +117,7 @@ void QConnmanManagerInterface::connectNotify(const QMetaMethod &signal)
         QConnmanDBusHelper *helper;
         helper = new QConnmanDBusHelper(this);
 
-        dbusConnection.connect(QLatin1String(CONNMAN_SERVICE),
+        QDBusConnection::systemBus().connect(QLatin1String(CONNMAN_SERVICE),
                                QLatin1String(CONNMAN_MANAGER_PATH),
                                QLatin1String(CONNMAN_MANAGER_INTERFACE),
                                QLatin1String("PropertyChanged"),
@@ -379,7 +378,7 @@ void QConnmanProfileInterface::connectNotify(const QMetaMethod &signal)
 {
     static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QConnmanProfileInterface::propertyChanged);
     if (signal == propertyChangedSignal) {
-        dbusConnection.connect(QLatin1String(CONNMAN_SERVICE),
+        QDBusConnection::systemBus().connect(QLatin1String(CONNMAN_SERVICE),
                                this->path(),
                                QLatin1String(CONNMAN_PROFILE_INTERFACE),
                                QLatin1String("PropertyChanged"),
@@ -449,7 +448,7 @@ void QConnmanServiceInterface::connectNotify(const QMetaMethod &signal)
 {
     static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QConnmanServiceInterface::propertyChanged);
     if (signal == propertyChangedSignal) {
-        dbusConnection.connect(QLatin1String(CONNMAN_SERVICE),
+        QDBusConnection::systemBus().connect(QLatin1String(CONNMAN_SERVICE),
                                this->path(),
                                QLatin1String(CONNMAN_SERVICE_INTERFACE),
                                QLatin1String("PropertyChanged"),
@@ -460,7 +459,7 @@ void QConnmanServiceInterface::connectNotify(const QMetaMethod &signal)
         QConnmanDBusHelper *helper;
         helper = new QConnmanDBusHelper(this);
 
-        dbusConnection.connect(QLatin1String(CONNMAN_SERVICE),
+        QDBusConnection::systemBus().connect(QLatin1String(CONNMAN_SERVICE),
                                this->path(),
                                QLatin1String(CONNMAN_SERVICE_INTERFACE),
                                QLatin1String("PropertyChanged"),
@@ -513,9 +512,6 @@ void QConnmanServiceInterface::remove()
 {
     QDBusReply<QVariantMap> reply = this->call(QLatin1String("Remove"));
 }
-
-// void moveBefore(QDBusObjectPath &service);
-// void moveAfter(QDBusObjectPath &service);
 
 // properties
 QString QConnmanServiceInterface::getState()
@@ -779,7 +775,7 @@ void QConnmanTechnologyInterface::connectNotify(const QMetaMethod &signal)
 {
     static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QConnmanTechnologyInterface::propertyChanged);
     if (signal == propertyChangedSignal) {
-        dbusConnection.connect(QLatin1String(CONNMAN_SERVICE),
+        QDBusConnection::systemBus().connect(QLatin1String(CONNMAN_SERVICE),
                                this->path(),
                                QLatin1String(CONNMAN_TECHNOLOGY_INTERFACE),
                                QLatin1String("PropertyChanged"),
@@ -790,7 +786,7 @@ void QConnmanTechnologyInterface::connectNotify(const QMetaMethod &signal)
         QConnmanDBusHelper *helper;
         helper = new QConnmanDBusHelper(this);
 
-        dbusConnection.connect(QLatin1String(CONNMAN_SERVICE),
+        QDBusConnection::systemBus().connect(QLatin1String(CONNMAN_SERVICE),
                                this->path(),
                                QLatin1String(CONNMAN_TECHNOLOGY_INTERFACE),
                                QLatin1String("PropertyChanged"),
@@ -861,23 +857,11 @@ QConnmanAgentInterface::~QConnmanAgentInterface()
 void QConnmanAgentInterface::connectNotify(const QMetaMethod &signal)
 {
     Q_UNUSED(signal);
-//    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QConnmanAgentInterface::propertyChanged);
-//    if (signal == propertyChangedSignal) {
-//        dbusConnection.connect(QLatin1String(CONNMAN_SERVICE),
-//                               this->path(),
-//                               QLatin1String(CONNMAN_NETWORK_INTERFACE),
-//                               QLatin1String("PropertyChanged"),
-//                               this,SIGNAL(propertyChanged(QString,QVariant&)));
-//    }
 }
 
 void QConnmanAgentInterface::disconnectNotify(const QMetaMethod &signal)
 {
     Q_UNUSED(signal);
-//    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QConnmanAgentInterface::propertyChanged);
-//    if (signal == propertyChangedSignal) {
-
-//    }
 }
 
 
@@ -888,10 +872,6 @@ void QConnmanAgentInterface::release()
 void QConnmanAgentInterface::reportError(QDBusObjectPath &/*path*/, const QString &/*error*/)
 {
 }
-
-//dict QConnmanAgentInterface::requestInput(QDBusObjectPath &path, dict fields)
-//{
-//}
 
 void QConnmanAgentInterface::cancel()
 {
