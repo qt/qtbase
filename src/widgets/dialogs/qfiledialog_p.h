@@ -130,8 +130,9 @@ public:
     static QString workingDirectory(const QString &path);
     static QString initialSelection(const QString &path);
     QStringList typedFiles() const;
-    QStringList userSelectedFiles() const;
+    QList<QUrl> userSelectedFiles() const;
     QStringList addDefaultSuffixToFiles(const QStringList filesToFix) const;
+    QList<QUrl> addDefaultSuffixToUrls(const QList<QUrl> &urlsToFix) const;
     bool removeDirectory(const QString &path);
     void setLabelTextControl(QFileDialog::DialogLabel label, const QString &text);
     inline void updateFileNameLabel();
@@ -206,7 +207,10 @@ public:
     void _q_updateOkButton();
     void _q_currentChanged(const QModelIndex &index);
     void _q_enterDirectory(const QModelIndex &index);
-    void _q_nativeEnterDirectory(const QString &directory);
+    void _q_nativeFileSelected(const QUrl &file);
+    void _q_nativeFilesSelected(const QList<QUrl> &files);
+    void _q_nativeCurrentChanged(const QUrl &file);
+    void _q_nativeEnterDirectory(const QUrl &directory);
     void _q_goToDirectory(const QString &);
     void _q_useNameFilter(int index);
     void _q_selectionChanged();
@@ -246,10 +250,10 @@ public:
     // used instead.
     bool canBeNativeDialog();
 
-    void setDirectory_sys(const QString &directory);
-    QString directory_sys() const;
-    void selectFile_sys(const QString &filename);
-    QStringList selectedFiles_sys() const;
+    void setDirectory_sys(const QUrl &directory);
+    QUrl directory_sys() const;
+    void selectFile_sys(const QUrl &filename);
+    QList<QUrl> selectedFiles_sys() const;
     void setFilter_sys();
     void selectNameFilter_sys(const QString &filter);
     QString selectedNameFilter_sys() const;
@@ -346,30 +350,40 @@ inline QString QFileDialogPrivate::rootPath() const {
     return model->rootPath();
 }
 
-inline void QFileDialogPrivate::setDirectory_sys(const QString &directory)
+inline void QFileDialogPrivate::setDirectory_sys(const QUrl &directory)
 {
-    if (QPlatformFileDialogHelper *helper = platformFileDialogHelper())
+    QPlatformFileDialogHelper *helper = platformFileDialogHelper();
+
+    if (!helper)
+        return;
+
+    if (helper->isSupportedUrl(directory))
         helper->setDirectory(directory);
 }
 
-inline QString QFileDialogPrivate::directory_sys() const
+inline QUrl QFileDialogPrivate::directory_sys() const
 {
     if (QPlatformFileDialogHelper *helper = platformFileDialogHelper())
         return helper->directory();
     return QString();
 }
 
-inline void QFileDialogPrivate::selectFile_sys(const QString &filename)
+inline void QFileDialogPrivate::selectFile_sys(const QUrl &filename)
 {
-    if (QPlatformFileDialogHelper *helper = platformFileDialogHelper())
+    QPlatformFileDialogHelper *helper = platformFileDialogHelper();
+
+    if (!helper)
+        return;
+
+    if (helper->isSupportedUrl(filename))
         helper->selectFile(filename);
 }
 
-inline QStringList QFileDialogPrivate::selectedFiles_sys() const
+inline QList<QUrl> QFileDialogPrivate::selectedFiles_sys() const
 {
     if (QPlatformFileDialogHelper *helper = platformFileDialogHelper())
         return helper->selectedFiles();
-    return QStringList();
+    return QList<QUrl>();
 }
 
 inline void QFileDialogPrivate::setFilter_sys()

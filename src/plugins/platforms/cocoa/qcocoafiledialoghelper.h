@@ -62,10 +62,10 @@ public:
 
     bool show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent);
     void hide();
-    void setDirectory(const QString &directory);
-    QString directory() const;
-    void selectFile(const QString &filename);
-    QStringList selectedFiles() const;
+    void setDirectory(const QUrl &directory) Q_DECL_OVERRIDE;
+    QUrl directory() const Q_DECL_OVERRIDE;
+    void selectFile(const QUrl &filename) Q_DECL_OVERRIDE;
+    QList<QUrl> selectedFiles() const Q_DECL_OVERRIDE;
     void setFilter();
     void selectNameFilter(const QString &filter);
     QString selectedNameFilter() const;

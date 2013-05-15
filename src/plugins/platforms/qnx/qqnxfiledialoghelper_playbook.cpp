@@ -102,7 +102,7 @@ bool QQnxFileDialogHelper::handleEvent(bps_event_t *event)
 
             for (int i = 0; i < pathCount; ++i) {
                 QString path = QFile::decodeName(filePaths[i]);
-                m_paths.append(path);
+                m_paths.append(QUrl::fromLocalFile(path));
                 qFileDialogHelperDebug() << "path =" << path;
             }
 
@@ -112,7 +112,7 @@ bool QQnxFileDialogHelper::handleEvent(bps_event_t *event)
             const char *filePath = dialog_event_get_filesave_filepath(event);
             QString path = QFile::decodeName(filePath);
             qFileDialogHelperDebug() << "path =" << path;
-            m_paths.append(path);
+            m_paths.append(QUrl::fromLocalFile(path));
         }
     } else { // Cancel
         m_result = QPlatformDialogHelper::Rejected;
@@ -188,7 +188,7 @@ bool QQnxFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modali
 
         // Maybe pre-select a filename
         if (!opts->initiallySelectedFiles().isEmpty()) {
-            QString fileName = opts->initiallySelectedFiles().first();
+            QString fileName = opts->initiallySelectedFiles().first().toLocalFile();
             dialog_set_filesave_filename(m_dialog, QFile::encodeName(fileName).constData());
         }
 
@@ -240,29 +240,29 @@ bool QQnxFileDialogHelper::defaultNameFilterDisables() const
     return false;
 }
 
-void QQnxFileDialogHelper::setDirectory(const QString &directory)
+void QQnxFileDialogHelper::setDirectory(const QUrl &directory)
 {
     qFileDialogHelperDebug() << Q_FUNC_INFO << "directory =" << directory;
     // No native API for setting the directory(!). The best we can do is to
     // set it as the file name but even then only with a file save dialog.
     if (m_dialog && m_acceptMode == QFileDialogOptions::AcceptSave)
-        dialog_set_filesave_filename(m_dialog, QFile::encodeName(directory).constData());
+        dialog_set_filesave_filename(m_dialog, QFile::encodeName(directory.toLocalFile()).constData());
 }
 
-QString QQnxFileDialogHelper::directory() const
+QUrl QQnxFileDialogHelper::directory() const
 {
     qFileDialogHelperDebug() << Q_FUNC_INFO;
     return m_paths.first();
 }
 
-void QQnxFileDialogHelper::selectFile(const QString &fileName)
+void QQnxFileDialogHelper::selectFile(const QUrl &fileName)
 {
     qFileDialogHelperDebug() << Q_FUNC_INFO << "filename =" << fileName;
     if (m_dialog && m_acceptMode == QFileDialogOptions::AcceptSave)
-        dialog_set_filesave_filename(m_dialog, QFile::encodeName(fileName).constData());
+        dialog_set_filesave_filename(m_dialog, QFile::encodeName(fileName.toLocalFile()).constData());
 }
 
-QStringList QQnxFileDialogHelper::selectedFiles() const
+QList<QUrl> QQnxFileDialogHelper::selectedFiles() const
 {
     qFileDialogHelperDebug() << Q_FUNC_INFO;
     return m_paths;

@@ -74,10 +74,10 @@ public:
     void hide();
 
     bool defaultNameFilterDisables() const;
-    void setDirectory(const QString &directory);
-    QString directory() const;
-    void selectFile(const QString &fileName);
-    QStringList selectedFiles() const;
+    void setDirectory(const QUrl &directory) Q_DECL_OVERRIDE;
+    QUrl directory() const Q_DECL_OVERRIDE;
+    void selectFile(const QUrl &fileName) Q_DECL_OVERRIDE;
+    QList<QUrl> selectedFiles() const Q_DECL_OVERRIDE;
     void setFilter();
     void selectNameFilter(const QString &filter);
     QString selectedNameFilter() const;
@@ -98,7 +98,7 @@ private:
 
     QPlatformDialogHelper::DialogCode m_result;
 #if defined(Q_OS_BLACKBERRY_TABLET)
-    QStringList m_paths;
+    QList<QUrl> m_paths;
 #endif
 };
 

@@ -120,8 +120,12 @@ bool QQnxFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modali
 
         m_dialog->setMode(mode);
 
-        if (!opts->initiallySelectedFiles().isEmpty())
-            m_dialog->setDefaultSaveFileNames(opts->initiallySelectedFiles());
+        if (!opts->initiallySelectedFiles().isEmpty()) {
+            QStringList files;
+            Q_FOREACH ( const QUrl &url, opts->initiallySelectedFiles() )
+                files.append(url.toLocalFile());
+            m_dialog->setDefaultSaveFileNames(files);
+        }
     }
 
     // Cache the accept mode so we know which functions to use to get the results back
@@ -144,29 +148,33 @@ bool QQnxFileDialogHelper::defaultNameFilterDisables() const
     return false;
 }
 
-void QQnxFileDialogHelper::setDirectory(const QString &directory)
+void QQnxFileDialogHelper::setDirectory(const QUrl &directory)
 {
-    m_dialog->addDirectory(directory);
+    m_dialog->addDirectory(directory.toLocalFile());
 }
 
-QString QQnxFileDialogHelper::directory() const
+QUrl QQnxFileDialogHelper::directory() const
 {
     qFileDialogHelperDebug() << Q_FUNC_INFO;
     if (!m_dialog->directories().isEmpty())
-        return m_dialog->directories().first();
+        return QUrl::fromLocalFile(m_dialog->directories().first());
 
-    return QString();
+    return QUrl();
 }
 
-void QQnxFileDialogHelper::selectFile(const QString &fileName)
+void QQnxFileDialogHelper::selectFile(const QUrl &fileName)
 {
-    m_dialog->addDefaultSaveFileName(fileName);
+    m_dialog->addDefaultSaveFileName(fileName.toLocalFile());
 }
 
-QStringList QQnxFileDialogHelper::selectedFiles() const
+QList<QUrl> QQnxFileDialogHelper::selectedFiles() const
 {
     qFileDialogHelperDebug() << Q_FUNC_INFO;
-    return m_dialog->selectedFiles();
+    QList<QUrl> urls;
+    QStringList files = m_dialog->selectedFiles();
+    Q_FOREACH (const QString &file, files)
+        urls.append(QUrl::fromLocalFile(file));
+    return urls;
 }
 
 void QQnxFileDialogHelper::setFilter()

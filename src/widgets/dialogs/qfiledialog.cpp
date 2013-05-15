@@ -549,11 +549,10 @@ QFileDialogPrivate::~QFileDialogPrivate()
 void QFileDialogPrivate::initHelper(QPlatformDialogHelper *h)
 {
     QFileDialog *d = q_func();
-    QObject::connect(h, SIGNAL(fileSelected(QString)), d, SIGNAL(fileSelected(QString)));
-    QObject::connect(h, SIGNAL(filesSelected(QStringList)), d, SIGNAL(filesSelected(QStringList)));
-    QObject::connect(h, SIGNAL(currentChanged(QString)), d, SIGNAL(currentChanged(QString)));
-    QObject::connect(h, SIGNAL(directoryEntered(QString)), d, SIGNAL(directoryEntered(QString)));
-    QObject::connect(h, SIGNAL(directoryEntered(QString)), d, SLOT(_q_nativeEnterDirectory(QString)));
+    QObject::connect(h, SIGNAL(fileSelected(QUrl)), d, SLOT(_q_nativeFileSelected(QUrl)));
+    QObject::connect(h, SIGNAL(filesSelected(QList<QUrl>)), d, SLOT(_q_nativeFilesSelected(QList<QUrl>)));
+    QObject::connect(h, SIGNAL(currentChanged(QUrl)), d, SLOT(_q_nativeCurrentChanged(QUrl)));
+    QObject::connect(h, SIGNAL(directoryEntered(QUrl)), d, SLOT(_q_nativeEnterDirectory(QUrl)));
     QObject::connect(h, SIGNAL(filterSelected(QString)), d, SIGNAL(filterSelected(QString)));
     static_cast<QPlatformFileDialogHelper *>(h)->setOptions(options);
 }
@@ -567,8 +566,8 @@ void QFileDialogPrivate::helperPrepareShow(QPlatformDialogHelper *)
     options->setSidebarUrls(qFileDialogUi->sidebar->urls());
     const QDir directory = q->directory();
     options->setInitialDirectory(directory.exists() ?
-                                 directory.absolutePath() :
-                                 QString());
+                                 QUrl::fromLocalFile(directory.absolutePath()) :
+                                 QUrl());
     options->setInitiallySelectedNameFilter(q->selectedNameFilter());
     options->setInitiallySelectedFiles(userSelectedFiles());
 }
@@ -876,7 +875,7 @@ void QFileDialog::setDirectory(const QString &directory)
     d->setLastVisitedDirectory(newDirectory);
 
     if (d->nativeDialogInUse){
-        d->setDirectory_sys(newDirectory);
+        d->setDirectory_sys(QUrl::fromLocalFile(newDirectory));
         return;
     }
     if (d->rootPath() == newDirectory)
@@ -901,7 +900,7 @@ void QFileDialog::setDirectory(const QString &directory)
 QDir QFileDialog::directory() const
 {
     Q_D(const QFileDialog);
-    return QDir(d->nativeDialogInUse ? d->directory_sys() : d->rootPath());
+    return QDir(d->nativeDialogInUse ? d->directory_sys().toLocalFile() : d->rootPath());
 }
 
 /*!
@@ -916,7 +915,7 @@ void QFileDialog::selectFile(const QString &filename)
         return;
 
     if (d->nativeDialogInUse){
-        d->selectFile_sys(filename);
+        d->selectFile_sys(QUrl::fromLocalFile(filename));
         return;
     }
 
@@ -1041,17 +1040,19 @@ QStringList QFileDialogPrivate::typedFiles() const
 // Return selected files without defaulting to the root of the file system model
 // used for initializing QFileDialogOptions for native dialogs. The default is
 // not suitable for native dialogs since it mostly equals directory().
-QStringList QFileDialogPrivate::userSelectedFiles() const
+QList<QUrl> QFileDialogPrivate::userSelectedFiles() const
 {
-    if (nativeDialogInUse)
-        return addDefaultSuffixToFiles(selectedFiles_sys());
+    QList<QUrl> files;
 
-    QStringList files;
+    if (nativeDialogInUse)
+        return addDefaultSuffixToUrls(selectedFiles_sys());
+
     foreach (const QModelIndex &index, qFileDialogUi->listView->selectionModel()->selectedRows())
-        files.append(index.data(QFileSystemModel::FilePathRole).toString());
+        files.append(QUrl::fromLocalFile(index.data(QFileSystemModel::FilePathRole).toString()));
 
     if (files.isEmpty() && !lineEdit()->text().isEmpty())
-        files = typedFiles();
+        foreach (const QString &path, typedFiles())
+            files.append(QUrl::fromLocalFile(path));
 
     return files;
 }
@@ -1082,6 +1083,20 @@ QStringList QFileDialogPrivate::addDefaultSuffixToFiles(const QStringList filesT
     return files;
 }
 
+QList<QUrl> QFileDialogPrivate::addDefaultSuffixToUrls(const QList<QUrl> &urlsToFix) const
+{
+    QList<QUrl> urls;
+    for (int i=0; i<urlsToFix.size(); ++i) {
+        QUrl url = urlsToFix.at(i);
+        // if the filename has no suffix, add the default suffix
+        const QString defaultSuffix = options->defaultSuffix();
+        if (!defaultSuffix.isEmpty() && !url.path().endsWith(QLatin1Char('/')) && url.path().lastIndexOf(QLatin1Char('.')) == -1)
+            url.setPath(url.path() + QLatin1Char('.') + defaultSuffix);
+        urls.append(url);
+    }
+    return urls;
+}
+
 
 /*!
     Returns a list of strings containing the absolute paths of the
@@ -1094,7 +1109,9 @@ QStringList QFileDialog::selectedFiles() const
 {
     Q_D(const QFileDialog);
 
-    QStringList files = d->userSelectedFiles();
+    QStringList files;
+    foreach (const QUrl &file, d->userSelectedFiles())
+        files.append(file.toLocalFile());
     if (files.isEmpty()) {
         const FileMode fm = fileMode();
         if (fm != ExistingFile && fm != ExistingFiles)
@@ -3320,10 +3337,38 @@ void QFileDialogPrivate::_q_fileRenamed(const QString &path, const QString oldNa
     }
 }
 
-void QFileDialogPrivate::_q_nativeEnterDirectory(const QString &directory)
+void QFileDialogPrivate::_q_nativeFileSelected(const QUrl &file)
 {
-    if (!directory.isEmpty()) // Windows native dialogs occasionally emit signals with empty strings.
-        *lastVisitedDir() = directory;
+    Q_Q(QFileDialog);
+    if (file.isLocalFile())
+        emit q->fileSelected(file.toLocalFile());
+}
+
+void QFileDialogPrivate::_q_nativeFilesSelected(const QList<QUrl> &files)
+{
+    Q_Q(QFileDialog);
+    QStringList localFiles;
+    foreach (const QUrl &file, files)
+        if (file.isLocalFile())
+            localFiles.append(file.toLocalFile());
+    if (!localFiles.isEmpty())
+        emit q->filesSelected(localFiles);
+}
+
+void QFileDialogPrivate::_q_nativeCurrentChanged(const QUrl &file)
+{
+    Q_Q(QFileDialog);
+    if (file.isLocalFile())
+        emit q->currentChanged(file.toLocalFile());
+}
+
+void QFileDialogPrivate::_q_nativeEnterDirectory(const QUrl &directory)
+{
+    Q_Q(QFileDialog);
+    if (!directory.isEmpty() && directory.isLocalFile()) { // Windows native dialogs occasionally emit signals with empty strings.
+        *lastVisitedDir() = directory.toLocalFile();
+        emit q->directoryEntered(directory.toLocalFile());
+    }
 }
 
 /*!

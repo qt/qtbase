@@ -90,10 +90,10 @@ public:
     void hide();
 
     bool defaultNameFilterDisables() const;
-    void setDirectory(const QString &directory);
-    QString directory() const;
-    void selectFile(const QString &filename);
-    QStringList selectedFiles() const;
+    void setDirectory(const QUrl &directory) Q_DECL_OVERRIDE;
+    QUrl directory() const Q_DECL_OVERRIDE;
+    void selectFile(const QUrl &filename) Q_DECL_OVERRIDE;
+    QList<QUrl> selectedFiles() const Q_DECL_OVERRIDE;
     void setFilter();
     void selectNameFilter(const QString &filter);
     QString selectedNameFilter() const;
@@ -107,8 +107,8 @@ private:
     void applyOptions();
     void setNameFilters(const QStringList &filters);
 
-    QString _dir;
-    QStringList _selection;
+    QUrl _dir;
+    QList<QUrl> _selection;
     QHash<QString, GtkFileFilter*> _filters;
     QHash<GtkFileFilter*, QString> _filterNames;
     QScopedPointer<QGtk2Dialog> d;

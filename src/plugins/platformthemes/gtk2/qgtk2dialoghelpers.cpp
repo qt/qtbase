@@ -282,13 +282,13 @@ bool QGtk2FileDialogHelper::defaultNameFilterDisables() const
     return false;
 }
 
-void QGtk2FileDialogHelper::setDirectory(const QString &directory)
+void QGtk2FileDialogHelper::setDirectory(const QUrl &directory)
 {
     GtkDialog *gtkDialog = d->gtkDialog();
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(gtkDialog), directory.toUtf8());
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(gtkDialog), directory.toLocalFile().toUtf8());
 }
 
-QString QGtk2FileDialogHelper::directory() const
+QUrl QGtk2FileDialogHelper::directory() const
 {
     // While GtkFileChooserDialog is hidden, gtk_file_chooser_get_current_folder()
     // returns a bogus value -> return the cached value before hiding
@@ -302,27 +302,27 @@ QString QGtk2FileDialogHelper::directory() const
         ret = QString::fromUtf8(folder);
         g_free(folder);
     }
-    return ret;
+    return QUrl::fromLocalFile(ret);
 }
 
-void QGtk2FileDialogHelper::selectFile(const QString &filename)
+void QGtk2FileDialogHelper::selectFile(const QUrl &filename)
 {
     GtkDialog *gtkDialog = d->gtkDialog();
-    gtk_file_chooser_select_filename(GTK_FILE_CHOOSER(gtkDialog), filename.toUtf8());
+    gtk_file_chooser_select_filename(GTK_FILE_CHOOSER(gtkDialog), filename.toLocalFile().toUtf8());
 }
 
-QStringList QGtk2FileDialogHelper::selectedFiles() const
+QList<QUrl> QGtk2FileDialogHelper::selectedFiles() const
 {
     // While GtkFileChooserDialog is hidden, gtk_file_chooser_get_filenames()
     // returns a bogus value -> return the cached value before hiding
     if (!_selection.isEmpty())
         return _selection;
 
-    QStringList selection;
+    QList<QUrl> selection;
     GtkDialog *gtkDialog = d->gtkDialog();
     GSList *filenames = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(gtkDialog));
     for (GSList *it  = filenames; it; it = it->next)
-        selection += QString::fromUtf8((const char*)it->data);
+        selection += QUrl::fromLocalFile(QString::fromUtf8((const char*)it->data));
     g_slist_free(filenames);
     return selection;
 }
@@ -356,7 +356,7 @@ void QGtk2FileDialogHelper::onAccepted()
     if (filter.isEmpty())
         emit filterSelected(filter);
 
-    QStringList files = selectedFiles();
+    QList<QUrl> files = selectedFiles();
     emit filesSelected(files);
     if (files.count() == 1)
         emit fileSelected(files.first());
@@ -370,7 +370,7 @@ void QGtk2FileDialogHelper::onSelectionChanged(GtkDialog *gtkDialog, QGtk2FileDi
         selection = QString::fromUtf8(filename);
         g_free(filename);
     }
-    emit helper->currentChanged(selection);
+    emit helper->currentChanged(QUrl::fromLocalFile(selection));
 }
 
 void QGtk2FileDialogHelper::onCurrentFolderChanged(QGtk2FileDialogHelper *dialog)
@@ -419,12 +419,12 @@ void QGtk2FileDialogHelper::applyOptions()
     if (!nameFilters.isEmpty())
         setNameFilters(nameFilters);
 
-    const QString initialDirectory = opts->initialDirectory();
+    const QString initialDirectory = opts->initialDirectory().toLocalFile();
     if (!initialDirectory.isEmpty())
         setDirectory(initialDirectory);
 
-    foreach (const QString &filename, opts->initiallySelectedFiles())
-        selectFile(filename);
+    foreach (const QUrl &filename, opts->initiallySelectedFiles())
+        selectFile(filename.toLocalFile());
 
     const QString initialNameFilter = opts->initiallySelectedNameFilter();
     if (!initialNameFilter.isEmpty())

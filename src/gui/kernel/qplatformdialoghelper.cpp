@@ -376,9 +376,9 @@ public:
     QStringList nameFilters;
     QString defaultSuffix;
     QStringList history;
-    QString initialDirectory;
+    QUrl initialDirectory;
     QString initiallySelectedNameFilter;
-    QStringList initiallySelectedFiles;
+    QList<QUrl> initiallySelectedFiles;
 };
 
 QFileDialogOptions::QFileDialogOptions() : d(new QFileDialogOptionsPrivate)
@@ -530,12 +530,12 @@ bool QFileDialogOptions::isLabelExplicitlySet(DialogLabel label)
     return label >= 0 && label < DialogLabelCount && !d->labels[label].isEmpty();
 }
 
-QString QFileDialogOptions::initialDirectory() const
+QUrl QFileDialogOptions::initialDirectory() const
 {
     return d->initialDirectory;
 }
 
-void QFileDialogOptions::setInitialDirectory(const QString &directory)
+void QFileDialogOptions::setInitialDirectory(const QUrl &directory)
 {
     d->initialDirectory = directory;
 }
@@ -550,14 +550,19 @@ void QFileDialogOptions::setInitiallySelectedNameFilter(const QString &filter)
     d->initiallySelectedNameFilter = filter;
 }
 
-QStringList QFileDialogOptions::initiallySelectedFiles() const
+QList<QUrl> QFileDialogOptions::initiallySelectedFiles() const
 {
     return d->initiallySelectedFiles;
 }
 
-void QFileDialogOptions::setInitiallySelectedFiles(const QStringList &files)
+void QFileDialogOptions::setInitiallySelectedFiles(const QList<QUrl> &files)
 {
     d->initiallySelectedFiles = files;
+}
+
+bool QPlatformFileDialogHelper::isSupportedUrl(const QUrl &url) const
+{
+    return url.isLocalFile();
 }
 
 /*!
