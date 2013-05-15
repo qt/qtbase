@@ -758,6 +758,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
         writer.writeAttribute("since", node->since());
     }
 
+    QString brief = node->doc().briefText().toString();
     switch (node->type()) {
     case Node::Class:
         {
@@ -773,6 +774,8 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             if (!node->moduleName().isEmpty())
                 writer.writeAttribute("module", node->moduleName());
             writeMembersAttribute(writer, classNode, Node::Document, Node::Group, "groups");
+            if (!brief.isEmpty())
+                writer.writeAttribute("brief", brief);
         }
         break;
     case Node::Namespace:
@@ -781,6 +784,8 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             if (!namespaceNode->moduleName().isEmpty())
                 writer.writeAttribute("module", namespaceNode->moduleName());
             writeMembersAttribute(writer, namespaceNode, Node::Document, Node::Group, "groups");
+            if (!brief.isEmpty())
+                writer.writeAttribute("brief", brief);
         }
         break;
     case Node::Document:
@@ -847,6 +852,8 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                 writer.writeAttribute("module", node->moduleName());
             }
             writeMembersAttribute(writer, docNode, Node::Document, Node::Group, "groups");
+            if (!brief.isEmpty())
+                writer.writeAttribute("brief", brief);
         }
         break;
     case Node::Function:
@@ -906,6 +913,8 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             if (propertyNode)
                 writer.writeAttribute("associated-property", propertyNode->name());
             writer.writeAttribute("type", functionNode->returnType());
+            if (!brief.isEmpty())
+                writer.writeAttribute("brief", brief);
         }
         break;
     case Node::QmlProperty:
@@ -914,12 +923,16 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             writer.writeAttribute("type", qpn->dataType());
             writer.writeAttribute("attached", qpn->isAttached() ? "true" : "false");
             writer.writeAttribute("writable", qpn->isWritable(qdb_) ? "true" : "false");
+            if (!brief.isEmpty())
+                writer.writeAttribute("brief", brief);
         }
         break;
     case Node::Property:
         {
             const PropertyNode* propertyNode = static_cast<const PropertyNode*>(node);
             writer.writeAttribute("type", propertyNode->dataType());
+            if (!brief.isEmpty())
+                writer.writeAttribute("brief", brief);
             foreach (const Node* fnNode, propertyNode->getters()) {
                 if (fnNode) {
                     const FunctionNode* functionNode = static_cast<const FunctionNode*>(fnNode);
@@ -959,14 +972,13 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             const VariableNode* variableNode = static_cast<const VariableNode*>(node);
             writer.writeAttribute("type", variableNode->dataType());
             writer.writeAttribute("static", variableNode->isStatic() ? "true" : "false");
+            if (!brief.isEmpty())
+                writer.writeAttribute("brief", brief);
         }
         break;
     default:
         break;
     }
-    QString brief = node->doc().briefText().toString();
-    if (!brief.isEmpty())
-        writer.writeAttribute("brief", brief);
 
     // Inner nodes and function nodes contain child nodes of some sort, either
     // actual child nodes or function parameters. For these, we close the
