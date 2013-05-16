@@ -407,7 +407,7 @@ void QIOSWindow::requestActivateWindow()
     // Note that several windows can be active at the same time if they exist in the same
     // hierarchy (transient children). But only one window can be QGuiApplication::focusWindow().
     // Dispite the name, 'requestActivateWindow' means raise and transfer focus to the window:
-    if (blockedByModal())
+    if (!window()->isTopLevel() || blockedByModal())
         return;
 
     raise();
