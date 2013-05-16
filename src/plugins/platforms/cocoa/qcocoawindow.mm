@@ -998,7 +998,8 @@ QWindow *QCocoaWindow::childWindowAt(QPoint windowPoint)
         if (QWindow *childWindow = qobject_cast<QWindow *>(child)) {
             if (childWindow->geometry().contains(windowPoint)) {
                 QCocoaWindow* platformWindow = static_cast<QCocoaWindow*>(childWindow->handle());
-                targetWindow = platformWindow->childWindowAt(windowPoint - childWindow->position());
+                if (platformWindow->isExposed())
+                    targetWindow = platformWindow->childWindowAt(windowPoint - childWindow->position());
             }
         }
     }
