@@ -66,6 +66,8 @@ public:
 
     void resize(const QSize &size);
 
+    void makeTranslucent();
+
     QByteArray groupName() const { return m_windowGroupName; }
 
 private:
@@ -74,6 +76,8 @@ private:
     const QQnxScreen *m_screen;
     screen_window_t m_window;
     QByteArray m_windowGroupName;
+
+    bool m_translucent;
 };
 
 QT_END_NAMESPACE

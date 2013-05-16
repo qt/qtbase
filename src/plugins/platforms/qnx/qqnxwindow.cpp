@@ -117,9 +117,13 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
     if (result != 0)
         qFatal("QQnxWindow: failed to set window alpha mode, errno=%d", errno);
 
-    // Make the window opaque
+    // Blend the window with Source Over Porter-Duff behavior onto whatever's
+    // behind it.
+    //
+    // If the desired use-case is opaque, the Widget painting framework will
+    // already fill in the alpha channel with full opacity.
     errno = 0;
-    val = SCREEN_TRANSPARENCY_NONE;
+    val = SCREEN_TRANSPARENCY_SOURCE_OVER;
     result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_TRANSPARENCY, &val);
     if (result != 0)
         qFatal("QQnxWindow: failed to set window transparency, errno=%d", errno);
@@ -369,6 +373,12 @@ void QQnxWindow::setBufferSize(const QSize &size)
         if (result != 0)
             qWarning() << "QQnxWindow: Buffer size was" << size;
             qFatal("QQnxWindow: failed to create window buffers, errno=%d", errno);
+
+        // If the child window has been configured for transparency, lazily create
+        // a full-screen buffer to back the root window.
+        if (window()->requestedFormat().hasAlpha()) {
+            m_screen->rootWindow()->makeTranslucent();
+        }
 
         // check if there are any buffers available
         int bufferCount = 0;
