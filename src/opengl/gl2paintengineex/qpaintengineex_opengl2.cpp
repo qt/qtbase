@@ -1217,7 +1217,7 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
     if (qpen_style(pen) == Qt::NoPen || qbrush_style(penBrush) == Qt::NoBrush)
         return;
 
-    QOpenGL2PaintEngineState *s = state();
+    QGL2PaintEngineState *s = state();
     if (qt_pen_is_cosmetic(pen, s->renderHints) && !qt_scaleForTransform(s->transform(), 0)) {
         // QTriangulatingStroker class is not meant to support cosmetically sheared strokes.
         QPaintEngineEx::stroke(path, pen);
@@ -1231,7 +1231,7 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 
 void QGL2PaintEngineExPrivate::stroke(const QVectorPath &path, const QPen &pen)
 {
-    const QOpenGL2PaintEngineState *s = q->state();
+    const QGL2PaintEngineState *s = q->state();
     if (snapToPixelGrid) {
         snapToPixelGrid = false;
         matrixDirty = true;
@@ -1504,7 +1504,7 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
     Q_D(QGL2PaintEngineEx);
 
     ensureActive();
-    QOpenGL2PaintEngineState *s = state();
+    QGL2PaintEngineState *s = state();
 
     const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
 
@@ -1579,7 +1579,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 {
     Q_Q(QGL2PaintEngineEx);
 
-    QOpenGL2PaintEngineState *s = q->state();
+    QGL2PaintEngineState *s = q->state();
 
     void *cacheKey = const_cast<QGLContext *>(QGLContextPrivate::contextGroup(ctx)->context());
     bool recreateVertexArrays = false;
@@ -2360,8 +2360,8 @@ void QGL2PaintEngineEx::setState(QPainterState *new_state)
 
     Q_D(QGL2PaintEngineEx);
 
-    QOpenGL2PaintEngineState *s = static_cast<QOpenGL2PaintEngineState *>(new_state);
-    QOpenGL2PaintEngineState *old_state = state();
+    QGL2PaintEngineState *s = static_cast<QGL2PaintEngineState *>(new_state);
+    QGL2PaintEngineState *old_state = state();
 
     QPaintEngineEx::setState(s);
 
@@ -2402,11 +2402,11 @@ QPainterState *QGL2PaintEngineEx::createState(QPainterState *orig) const
     if (orig)
         const_cast<QGL2PaintEngineEx *>(this)->ensureActive();
 
-    QOpenGL2PaintEngineState *s;
+    QGL2PaintEngineState *s;
     if (!orig)
-        s = new QOpenGL2PaintEngineState();
+        s = new QGL2PaintEngineState();
     else
-        s = new QOpenGL2PaintEngineState(*static_cast<QOpenGL2PaintEngineState *>(orig));
+        s = new QGL2PaintEngineState(*static_cast<QGL2PaintEngineState *>(orig));
 
     s->matrixChanged = false;
     s->compositionModeChanged = false;
@@ -2417,7 +2417,7 @@ QPainterState *QGL2PaintEngineEx::createState(QPainterState *orig) const
     return s;
 }
 
-QOpenGL2PaintEngineState::QOpenGL2PaintEngineState(QOpenGL2PaintEngineState &other)
+QGL2PaintEngineState::QGL2PaintEngineState(QGL2PaintEngineState &other)
     : QPainterState(other)
 {
     isNew = true;
@@ -2428,7 +2428,7 @@ QOpenGL2PaintEngineState::QOpenGL2PaintEngineState(QOpenGL2PaintEngineState &oth
     rectangleClip = other.rectangleClip;
 }
 
-QOpenGL2PaintEngineState::QOpenGL2PaintEngineState()
+QGL2PaintEngineState::QGL2PaintEngineState()
 {
     isNew = true;
     needsClipBufferClear = true;
@@ -2436,7 +2436,7 @@ QOpenGL2PaintEngineState::QOpenGL2PaintEngineState()
     canRestoreClip = true;
 }
 
-QOpenGL2PaintEngineState::~QOpenGL2PaintEngineState()
+QGL2PaintEngineState::~QGL2PaintEngineState()
 {
 }
 
