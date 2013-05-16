@@ -1118,11 +1118,11 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             }
         }
         return ReturnFalse;
-#ifdef PROEVALUATOR_FULL
     case T_REQUIRES:
+#ifdef PROEVALUATOR_FULL
         checkRequirements(args);
-        return ReturnFalse; // Another qmake breakage
 #endif
+        return ReturnFalse; // Another qmake breakage
     case T_EVAL: {
             VisitReturn ret = ReturnFalse;
             ProFile *pro = m_parser->parsedProBlock(args.join(statics.field_sep),
@@ -1389,14 +1389,14 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
         }
         return (func_t == T_ERROR && !m_cumulative) ? ReturnError : ReturnTrue;
     }
-#ifdef PROEVALUATOR_FULL
     case T_SYSTEM: {
-        if (m_cumulative) // Anything else would be insanity
-            return ReturnFalse;
         if (args.count() != 1) {
             evalError(fL1S("system(exec) requires one argument."));
             return ReturnFalse;
         }
+#ifdef PROEVALUATOR_FULL
+        if (m_cumulative) // Anything else would be insanity
+            return ReturnFalse;
 #ifndef QT_BOOTSTRAPPED
         QProcess proc;
         proc.setProcessChannelMode(QProcess::ForwardedChannels);
@@ -1407,8 +1407,10 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
                                   + IoUtils::shellQuote(QDir::toNativeSeparators(currentDirectory()))
                                   + QLatin1String(" && ") + args.at(0)).toLocal8Bit().constData()) == 0);
 #endif
-    }
+#else
+        return ReturnTrue;
 #endif
+    }
     case T_ISEMPTY: {
         if (args.count() != 1) {
             evalError(fL1S("isEmpty(var) requires one argument."));
@@ -1435,17 +1437,18 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
 
         return ReturnFalse;
     }
-#ifdef PROEVALUATOR_FULL
     case T_MKPATH: {
         if (args.count() != 1) {
             evalError(fL1S("mkpath(file) requires one argument."));
             return ReturnFalse;
         }
+#ifdef PROEVALUATOR_FULL
         const QString &fn = resolvePath(args.at(0).toQString(m_tmp1));
         if (!QDir::current().mkpath(fn)) {
             evalError(fL1S("Cannot create directory %1.").arg(QDir::toNativeSeparators(fn)));
             return ReturnFalse;
         }
+#endif
         return ReturnTrue;
     }
     case T_WRITE_FILE: {
@@ -1453,6 +1456,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             evalError(fL1S("write_file(name, [content var, [append]]) requires one to three arguments."));
             return ReturnFalse;
         }
+#ifdef PROEVALUATOR_FULL
         QIODevice::OpenMode mode = QIODevice::Truncate;
         QString contents;
         if (args.count() >= 2) {
@@ -1464,12 +1468,16 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
                     mode = QIODevice::Append;
         }
         return writeFile(QString(), resolvePath(args.at(0).toQString(m_tmp1)), mode, contents);
+#else
+        return ReturnTrue;
+#endif
     }
     case T_TOUCH: {
         if (args.count() != 2) {
             evalError(fL1S("touch(file, reffile) requires two arguments."));
             return ReturnFalse;
         }
+#ifdef PROEVALUATOR_FULL
         const QString &tfn = resolvePath(args.at(0).toQString(m_tmp1));
         const QString &rfn = resolvePath(args.at(1).toQString(m_tmp2));
 #ifdef Q_OS_UNIX
@@ -1506,6 +1514,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
         SetFileTime(wHand, 0, 0, &ft);
         CloseHandle(wHand);
 #endif
+#endif
         return ReturnTrue;
     }
     case T_CACHE: {
@@ -1513,6 +1522,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             evalError(fL1S("cache(var, [set|add|sub] [transient] [super], [srcvar]) requires one to three arguments."));
             return ReturnFalse;
         }
+#ifdef PROEVALUATOR_FULL
         bool persist = true;
         bool super = false;
         enum { CacheSet, CacheAdd, CacheSub } mode = CacheSet;
@@ -1638,8 +1648,10 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             fn = m_cachefile;
         }
         return writeFile(fL1S("cache "), fn, QIODevice::Append, varstr);
-    }
+#else
+        return ReturnTrue;
 #endif
+    }
     default:
         evalError(fL1S("Function '%1' is not implemented.").arg(function.toQString(m_tmp1)));
         return ReturnFalse;
