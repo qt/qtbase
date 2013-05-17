@@ -508,36 +508,6 @@ sub copyFile
 }
 
 ######################################################################
-# Syntax:  symlinkFile(file, ifile)
-# Params:  file, string, filename to create "symlink" for
-#          ifile, string, destination name of symlink
-#
-# Purpose: File is symlinked to ifile (or copied if filesystem doesn't
-#          support symlink).
-# Returns: 1 on success, else 0.
-######################################################################
-sub symlinkFile
-{
-    my ($lib, $file, $ifile) = @_;
-
-    if ($isunix) {
-        print "$lib: symlink created for $file " if ($verbose_level);
-        if ( $force_relative && ($ifile =~ /^$quoted_basedir/)) {
-            my $t = getcwd();
-            my $c = -1;
-            my $p = "../";
-            $t =~ s-^$quoted_basedir/--;
-            $p .= "../" while( ($c = index( $t, "/", $c + 1)) != -1 );
-            $file =~ s-^$quoted_basedir/-$p-;
-            print " ($file)\n" if($verbose_level);
-        }
-        print "\n" if($verbose_level);
-        return symlink($file, $ifile);
-    }
-    return copyFile($lib, $file, $ifile);
-}
-
-######################################################################
 # Syntax:  findFiles(dir, match, descend)
 # Params:  dir, string, directory to search for name
 #          match, string, regular expression to match in dir
