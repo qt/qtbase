@@ -2714,10 +2714,6 @@ if [ "$XPLATFORM_ANDROID" = "yes" ]; then
         QT_QPA_DEFAULT_PLATFORM="android"
         CFG_LARGEFILE="no"
 
-        # FIXME: Qt Creator requires this to be in the lib/ directory of Qt. This line can be removed
-        # once it's fixed to get the file directly from the NDK.
-        cp -f $CFG_DEFAULT_ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/libs/$CFG_DEFAULT_ANDROID_TARGET_ARCH/libgnustl_shared.so $outpath/lib
-
         DeviceVar set DEFAULT_ANDROID_SDK_ROOT "$CFG_DEFAULT_ANDROID_SDK_ROOT"
         DeviceVar set DEFAULT_ANDROID_NDK_ROOT "$CFG_DEFAULT_ANDROID_NDK_ROOT"
         DeviceVar set DEFAULT_ANDROID_PLATFORM "$CFG_DEFAULT_ANDROID_PLATFORM"
