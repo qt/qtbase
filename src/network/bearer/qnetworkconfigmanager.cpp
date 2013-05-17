@@ -62,6 +62,7 @@ static void connManager_cleanup()
     // this is not atomic or thread-safe!
     int shutdown = appShutdown.fetchAndStoreAcquire(1);
     Q_ASSERT(shutdown == 0);
+    Q_UNUSED(shutdown);
     QNetworkConfigurationManagerPrivate *cmp = connManager_ptr.fetchAndStoreAcquire(0);
     if (cmp)
         cmp->cleanup();
