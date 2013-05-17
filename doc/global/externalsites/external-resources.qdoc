@@ -62,28 +62,28 @@
 */
 
 /*!
-    \externalpage http://www.cmake.org/cmake/help/v2.8.9/cmake.html#command:find_package
+    \externalpage http://www.cmake.org/cmake/help/v2.8.11/cmake.html#command:find_package
     \title CMake find_package Documentation
 */
 
 /*!
-    \externalpage http://www.cmake.org/cmake/help/v2.8.9/cmake.html#prop_tgt:AUTOMOC
+    \externalpage http://www.cmake.org/cmake/help/v2.8.11/cmake.html#prop_tgt:AUTOMOC
     \title CMake AUTOMOC Documentation
 */
 
 
 /*!
-    \externalpage http://www.cmake.org/cmake/help/v2.8.9/cmake.html#prop_tgt:LOCATION
+    \externalpage http://www.cmake.org/cmake/help/v2.8.11/cmake.html#prop_tgt:LOCATION
     \title CMake LOCATION Documentation
 */
 
 /*!
-    \externalpage http://www.cmake.org/cmake/help/v2.8.9/cmake.html#prop_tgt:POSITION_INDEPENDENT_CODE
+    \externalpage http://www.cmake.org/cmake/help/v2.8.11/cmake.html#prop_tgt:POSITION_INDEPENDENT_CODE
     \title CMake POSITION_INDEPENDENT_CODE Documentation
 */
 
 /*!
-    \externalpage http://www.cmake.org/cmake/help/v2.8.9/cmake.html#command:target_link_libraries
+    \externalpage http://www.cmake.org/cmake/help/v2.8.11/cmake.html#command:target_link_libraries
     \title CMake target_link_libraries Documentation
 */
 
