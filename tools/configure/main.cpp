@@ -78,7 +78,7 @@ int runConfigure( int argc, char** argv )
     if (!app.isOk())
         return 3;
 
-    app.generateSystemVars();
+    app.prepareConfigTests();
     if (!app.isOk())
         return 3;
 

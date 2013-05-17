@@ -2376,7 +2376,7 @@ bool Configure::verifyConfiguration()
     return true;
 }
 
-void Configure::generateSystemVars()
+void Configure::prepareConfigTests()
 {
     // Generate an empty .qmake.cache file for config.tests
     QDir buildDir(buildPath);
