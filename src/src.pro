@@ -102,12 +102,14 @@ src_android.subdir = $$PWD/android
 
 # this order is important
 SUBDIRS += src_tools_bootstrap src_tools_moc src_tools_rcc src_corelib
+TOOLS = src_tools_moc src_tools_rcc
 win32:SUBDIRS += src_winmain
 SUBDIRS += src_network src_sql src_xml src_testlib
 contains(QT_CONFIG, dbus) {
     SUBDIRS += src_dbus
     force_bootstrap: SUBDIRS += src_tools_bootstrap_dbus
     SUBDIRS += src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
+    TOOLS += src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
     contains(QT_CONFIG, accessibility-atspi-bridge): \
         src_platformsupport.depends += src_dbus src_tools_qdbusxml2cpp
     src_plugins.depends += src_dbus src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
@@ -123,6 +125,7 @@ contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
     src_plugins.depends += src_gui src_platformsupport
     !contains(QT_CONFIG, no-widgets) {
         SUBDIRS += src_tools_uic src_widgets
+        TOOLS += src_tools_uic
         src_plugins.depends += src_widgets
         contains(QT_CONFIG, opengl(es1|es2)?) {
             SUBDIRS += src_opengl
@@ -139,3 +142,6 @@ SUBDIRS += src_plugins src_tools_qdoc
 nacl: SUBDIRS -= src_network src_testlib
 
 android:!android-no-sdk: SUBDIRS += src_android
+
+sub-tools.depends = $$TOOLS
+QMAKE_EXTRA_TARGETS = sub-tools
