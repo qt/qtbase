@@ -82,7 +82,11 @@ macro(_qt5gui_find_extra_libs Name Libs LibDir IncDirs)
             set(Qt5Gui_${_cmake_lib_name}_LIBRARY "${Qt5Gui_${_cmake_lib_name}_LIBRARY}/${_lib}")
 !!ENDIF
             if (NOT Qt5Gui_${_cmake_lib_name}_LIBRARY)
-                message(FATAL_ERROR \"Failed to find \\\"${_lib}\\\" in \\\"${LibDir}\\\", using the CMAKE_FIND_ROOT_PATH \\\"${CMAKE_FIND_ROOT_PATH}\\\".\")
+                if (\"${ARGN}\" STREQUAL \"OPTIONAL\")
+                    break()
+                else()
+                    message(FATAL_ERROR \"Failed to find \\\"${_lib}\\\" in \\\"${LibDir}\\\", using the CMAKE_FIND_ROOT_PATH \\\"${CMAKE_FIND_ROOT_PATH}\\\".\")
+                endif()
             endif()
             add_library(Qt5::Gui_${_cmake_lib_name} SHARED IMPORTED)
             set_property(TARGET Qt5::Gui_${_cmake_lib_name} APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${IncDirs})
@@ -117,7 +121,7 @@ endmacro()
 
 
 !!IF !isEmpty(CMAKE_EGL_LIBS)
-_qt5gui_find_extra_libs(EGL \"$$CMAKE_EGL_LIBS\" \"$$CMAKE_EGL_LIBDIR\" \"$$CMAKE_EGL_INCDIRS\")
+_qt5gui_find_extra_libs(EGL \"$$CMAKE_EGL_LIBS\" \"$$CMAKE_EGL_LIBDIR\" \"$$CMAKE_EGL_INCDIRS\" OPTIONAL)
 !!ENDIF
 
 !!IF !isEmpty(CMAKE_OPENGL_LIBS)
