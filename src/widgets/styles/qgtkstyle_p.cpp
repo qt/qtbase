@@ -641,7 +641,9 @@ QString QGtkStylePrivate::getGConfString(const QString &value, const QString &fa
 {
     QString retVal = fallback;
     if (resolveGConf()) {
+#if !defined(GLIB_VERSION_2_36)
         g_type_init();
+#endif
         GConfClient* client = gconf_client_get_default();
         GError *err = 0;
         char *str = gconf_client_get_string(client, qPrintable(value), &err);
@@ -660,7 +662,9 @@ bool QGtkStylePrivate::getGConfBool(const QString &key, bool fallback)
 {
     bool retVal = fallback;
     if (resolveGConf()) {
+#if !defined(GLIB_VERSION_2_36)
         g_type_init();
+#endif
         GConfClient* client = gconf_client_get_default();
         GError *err = 0;
         bool result = gconf_client_get_bool(client, qPrintable(key), &err);
