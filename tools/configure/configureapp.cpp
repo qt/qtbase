@@ -2388,52 +2388,6 @@ bool Configure::verifyConfiguration()
     return true;
 }
 
-/*
- Things that affect the Qt API/ABI:
-   Options:
-     minimal-config small-config medium-config large-config full-config
-
-   Options:
-     debug release
-
- Things that do not affect the Qt API/ABI:
-     system-jpeg no-jpeg jpeg
-     system-png no-png png
-     system-zlib no-zlib zlib
-     no-gif gif
-     dll staticlib
-
-     nocrosscompiler
-     GNUmake
-     largefile
-     nis
-     nas
-     tablet
-
-     X11     : x11sm xinerama xcursor xfixes xrandr xrender fontconfig xkb
-     Embedded: embedded freetype
-*/
-void Configure::generateBuildKey()
-{
-    QString spec = dictionary["QMAKESPEC"];
-
-    QString compiler = "msvc"; // ICC is compatible
-    if (spec.endsWith("-g++"))
-        compiler = "mingw";
-    else if (spec.endsWith("-borland"))
-        compiler = "borland";
-
-    // Build options which changes the Qt API/ABI
-    QStringList build_options;
-    if (!dictionary["QCONFIG"].isEmpty())
-        build_options += dictionary["QCONFIG"] + "-config ";
-    build_options.sort();
-
-    // Sorted defines that start with QT_NO_
-    QStringList build_defines = qmakeDefines.filter(QRegExp("^QT_NO_"));
-    build_defines.sort();
-}
-
 void Configure::generateSystemVars()
 {
     // Generate an empty .qmake.cache file for config.tests

@@ -96,8 +96,6 @@ int runConfigure( int argc, char** argv )
     if( !app.isDone() )
 	app.generateCachefile();
     if( !app.isDone() )
-        app.generateBuildKey();
-    if( !app.isDone() )
 	app.generateConfigfiles();
     // must be done after buildQmake()
     if (!app.isDone())

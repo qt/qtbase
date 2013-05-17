@@ -69,7 +69,6 @@ public:
 
     void generateOutputVars();
     void generateHeaders();
-    void generateBuildKey();
     void generateCachefile();
     void displayConfig();
     void generateMakefiles();
