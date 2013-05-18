@@ -325,6 +325,8 @@ public slots:
 signals:
     void signalWithArray(const double[3]);
     void signalWithNamedArray(const double namedArray[3]);
+    void signalWithIterator(QList<QUrl>::iterator);
+    void signalWithListPointer(QList<QUrl>*); //QTBUG-31002
 
 private slots:
     // for tst_Moc::preprocessorConditionals
