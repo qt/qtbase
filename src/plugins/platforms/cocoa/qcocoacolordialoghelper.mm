@@ -292,9 +292,9 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSColorPanelDelegate);
     return (mResultCode == NSOKButton);
 }
 
-- (QT_PREPEND_NAMESPACE(QPlatformDialogHelper::DialogCode))dialogResultCode
+- (QPlatformDialogHelper::DialogCode)dialogResultCode
 {
-    return (mResultCode == NSOKButton) ? QT_PREPEND_NAMESPACE(QPlatformDialogHelper::Accepted) : QT_PREPEND_NAMESPACE(QPlatformDialogHelper::Rejected);
+    return (mResultCode == NSOKButton) ? QPlatformDialogHelper::Accepted : QPlatformDialogHelper::Rejected;
 }
 
 - (BOOL)windowShouldClose:(id)window

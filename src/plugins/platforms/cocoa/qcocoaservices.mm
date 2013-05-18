@@ -55,7 +55,7 @@ bool QCocoaServices::openUrl(const QUrl &url)
     const QString scheme = url.scheme();
     if (scheme.isEmpty())
         return openDocument(url);
-    return [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:QT_PREPEND_NAMESPACE(QCFString::toNSString)(url.toString(QUrl::FullyEncoded))]];
+    return [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:QCFString::toNSString(url.toString(QUrl::FullyEncoded))]];
 }
 
 bool QCocoaServices::openDocument(const QUrl &url)
@@ -63,7 +63,7 @@ bool QCocoaServices::openDocument(const QUrl &url)
     if (!url.isValid())
         return false;
 
-    return [[NSWorkspace sharedWorkspace] openFile:QT_PREPEND_NAMESPACE(QCFString::toNSString)(url.toLocalFile())];
+    return [[NSWorkspace sharedWorkspace] openFile:QCFString::toNSString(url.toLocalFile())];
 }
 
 QT_END_NAMESPACE

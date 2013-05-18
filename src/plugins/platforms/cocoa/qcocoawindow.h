@@ -61,7 +61,7 @@ QT_FORWARD_DECLARE_CLASS(QCocoaWindow)
 @end
 
 @interface QNSPanel : NSPanel {
-    @public QT_PREPEND_NAMESPACE(QCocoaWindow) *m_cocoaPlatformWindow;
+    @public QCocoaWindow *m_cocoaPlatformWindow;
 }
 - (void)clearPlatformWindow;
 - (BOOL)canBecomeKeyWindow;
