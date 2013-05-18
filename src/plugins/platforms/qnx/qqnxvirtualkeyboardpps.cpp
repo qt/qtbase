@@ -209,13 +209,14 @@ void QQnxVirtualKeyboardPps::ppsDataReady()
     }
 
     if (pps_decoder_get_string(m_decoder, "msg", &value) == PPS_DECODER_OK) {
-        if (strcmp(value, "show") == 0) {
+        if (strcmp(value, "show") == 0)
             setVisible(true);
-        } else if (strcmp(value, "hide") == 0) {
+        else if (strcmp(value, "hide") == 0)
             setVisible(false);
-        } else if (strcmp(value, "info") == 0)
+        else if (strcmp(value, "info") == 0)
             handleKeyboardInfoMessage();
-        else if (strcmp(value, "connect") == 0) { }
+        else if (strcmp(value, "connect") == 0)
+            qVirtualKeyboardDebug() << Q_FUNC_INFO << "Unhandled command 'connect'";
         else
             qCritical("QQnxVirtualKeyboard: Unexpected keyboard PPS msg value: %s", value ? value : "[null]");
     } else if (pps_decoder_get_string(m_decoder, "res", &value) == PPS_DECODER_OK) {
@@ -223,8 +224,9 @@ void QQnxVirtualKeyboardPps::ppsDataReady()
             handleKeyboardInfoMessage();
         else
             qCritical("QQnxVirtualKeyboard: Unexpected keyboard PPS res value: %s", value ? value : "[null]");
-    } else
+    } else {
         qCritical("QQnxVirtualKeyboard: Unexpected keyboard PPS message type");
+    }
 }
 
 void QQnxVirtualKeyboardPps::handleKeyboardInfoMessage()
@@ -368,9 +370,8 @@ void QQnxVirtualKeyboardPps::applyKeyboardModeOptions(KeyboardMode mode)
 
     pps_encoder_end_object(m_encoder);
 
-    if (::write(m_fd, pps_encoder_buffer(m_encoder), pps_encoder_length(m_encoder)) == -1) {
+    if (::write(m_fd, pps_encoder_buffer(m_encoder), pps_encoder_length(m_encoder)) == -1)
         close();
-    }
 
     pps_encoder_reset(m_encoder);
 }

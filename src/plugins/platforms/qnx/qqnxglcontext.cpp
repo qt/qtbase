@@ -96,9 +96,8 @@ QQnxGLContext::QQnxGLContext(QOpenGLContext *glContext)
 
     // Set current rendering API
     EGLBoolean eglResult = eglBindAPI(EGL_OPENGL_ES_API);
-    if (eglResult != EGL_TRUE) {
+    if (eglResult != EGL_TRUE)
         qFatal("QQNX: failed to set EGL API, err=%d", eglGetError());
-    }
 
     // Get colour channel sizes from window format
     int alphaSize = format.alphaBufferSize();
@@ -149,9 +148,8 @@ QQnxGLContext::QQnxGLContext(QOpenGLContext *glContext)
 
     // Select EGL config based on requested window format
     m_eglConfig = q_configFromGLFormat(ms_eglDisplay, format);
-    if (m_eglConfig == 0) {
+    if (m_eglConfig == 0)
         qFatal("QQnxGLContext: failed to find EGL config");
-    }
 
     m_eglContext = eglCreateContext(ms_eglDisplay, m_eglConfig, EGL_NO_CONTEXT, contextAttrs());
     if (m_eglContext == EGL_NO_CONTEXT) {
@@ -168,9 +166,8 @@ QQnxGLContext::~QQnxGLContext()
     qGLContextDebug() << Q_FUNC_INFO;
 
     // Cleanup EGL context if it exists
-    if (m_eglContext != EGL_NO_CONTEXT) {
+    if (m_eglContext != EGL_NO_CONTEXT)
         eglDestroyContext(ms_eglDisplay, m_eglContext);
-    }
 
     // Cleanup EGL surface if it exists
     destroySurface();
@@ -216,9 +213,8 @@ bool QQnxGLContext::makeCurrent(QPlatformSurface *surface)
 
     // Set current rendering API
     EGLBoolean eglResult = eglBindAPI(EGL_OPENGL_ES_API);
-    if (eglResult != EGL_TRUE) {
+    if (eglResult != EGL_TRUE)
         qFatal("QQnxGLContext: failed to set EGL API, err=%d", eglGetError());
-    }
 
     if (m_newSurfaceRequested.testAndSetOrdered(true, false)) {
         qGLContextDebug() << "New EGL surface requested";
@@ -241,15 +237,13 @@ void QQnxGLContext::doneCurrent()
 
     // set current rendering API
     EGLBoolean eglResult = eglBindAPI(EGL_OPENGL_ES_API);
-    if (eglResult != EGL_TRUE) {
+    if (eglResult != EGL_TRUE)
         qFatal("QQNX: failed to set EGL API, err=%d", eglGetError());
-    }
 
     // clear curent EGL context and unbind EGL surface
     eglResult = eglMakeCurrent(ms_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-    if (eglResult != EGL_TRUE) {
+    if (eglResult != EGL_TRUE)
         qFatal("QQNX: failed to clear current EGL context, err=%d", eglGetError());
-    }
 }
 
 void QQnxGLContext::swapBuffers(QPlatformSurface *surface)
@@ -259,15 +253,13 @@ void QQnxGLContext::swapBuffers(QPlatformSurface *surface)
 
     // Set current rendering API
     EGLBoolean eglResult = eglBindAPI(EGL_OPENGL_ES_API);
-    if (eglResult != EGL_TRUE) {
+    if (eglResult != EGL_TRUE)
         qFatal("QQNX: failed to set EGL API, err=%d", eglGetError());
-    }
 
     // Post EGL surface to window
     eglResult = eglSwapBuffers(ms_eglDisplay, m_eglSurface);
-    if (eglResult != EGL_TRUE) {
+    if (eglResult != EGL_TRUE)
         qFatal("QQNX: failed to swap EGL buffers, err=%d", eglGetError());
-    }
 }
 
 QFunctionPointer QQnxGLContext::getProcAddress(const QByteArray &procName)
@@ -276,9 +268,8 @@ QFunctionPointer QQnxGLContext::getProcAddress(const QByteArray &procName)
 
     // Set current rendering API
     EGLBoolean eglResult = eglBindAPI(EGL_OPENGL_ES_API);
-    if (eglResult != EGL_TRUE) {
+    if (eglResult != EGL_TRUE)
         qFatal("QQNX: failed to set EGL API, err=%d", eglGetError());
-    }
 
     // Lookup EGL extension function pointer
     return static_cast<QFunctionPointer>(eglGetProcAddress(procName.constData()));
@@ -309,9 +300,8 @@ void QQnxGLContext::createSurface(QPlatformSurface *surface)
 
     // Get a pointer to the corresponding platform window
     QQnxWindow *platformWindow = dynamic_cast<QQnxWindow*>(surface);
-    if (!platformWindow) {
+    if (!platformWindow)
         qFatal("QQNX: unable to create EGLSurface without a QQnxWindow");
-    }
 
     // Link the window and context
     platformWindow->setPlatformOpenGLContext(this);

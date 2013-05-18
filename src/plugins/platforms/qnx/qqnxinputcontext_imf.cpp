@@ -606,12 +606,10 @@ static bool imfAvailable()
     static bool s_imfDisabled = getenv("DISABLE_IMF") != 0;
     static bool s_imfReady = false;
 
-    if ( s_imfInitFailed || s_imfDisabled) {
+    if ( s_imfInitFailed || s_imfDisabled)
         return false;
-    }
-    else if ( s_imfReady ) {
+    else if ( s_imfReady )
         return true;
-    }
 
     if ( p_imf_client_init == 0 ) {
         void *handle = dlopen("libinput_client.so.1", 0);
@@ -623,17 +621,15 @@ static bool imfAvailable()
             p_ictrl_dispatch_event = (int32_t (*)(event_t *))dlsym(handle, "ictrl_dispatch_event");
             p_vkb_init_selection_service = (int32_t (*)())dlsym(handle, "vkb_init_selection_service");
             p_ictrl_get_num_active_sessions = (int32_t (*)())dlsym(handle, "ictrl_get_num_active_sessions");
-        }
-        else
-        {
+        } else {
             qCritical() << Q_FUNC_INFO << "libinput_client.so.1 is not present - IMF services are disabled.";
             s_imfDisabled = true;
             return false;
         }
+
         if ( p_imf_client_init && p_ictrl_open_session && p_ictrl_dispatch_event ) {
             s_imfReady = true;
-        }
-        else {
+        } else {
             p_ictrl_open_session = 0;
             p_ictrl_dispatch_event = 0;
             s_imfDisabled = true;
@@ -1400,11 +1396,10 @@ spannable_string_t *QQnxInputContext::onGetTextBeforeCursor(input_session_t *ic,
     QString text = query.value(Qt::ImSurroundingText).toString();
     m_lastCaretPos = query.value(Qt::ImCursorPosition).toInt();
 
-    if (n < m_lastCaretPos) {
+    if (n < m_lastCaretPos)
         return toSpannableString(text.mid(m_lastCaretPos - n, n));
-    } else {
+    else
         return toSpannableString(text.mid(0, m_lastCaretPos));
-    }
 }
 
 int32_t QQnxInputContext::onPerformEditorAction(input_session_t *ic, int32_t editor_action)
