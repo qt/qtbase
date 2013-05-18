@@ -79,6 +79,9 @@
 
 QT_USE_NAMESPACE
 
+template <bool b> struct QTBUG_31218 {};
+struct QTBUG_31218_Derived : QTBUG_31218<-1<0> {};
+
 struct MyStruct {};
 struct MyStruct2 {};
 
