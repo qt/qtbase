@@ -3643,8 +3643,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     tti.version = qt_mac_hitheme_version;
                     tti.state = tds;
                     QColor textColor = btn->palette.buttonText().color();
-                    CGFloat colorComp[] = { textColor.redF(), textColor.greenF(),
-                                          textColor.blueF(), textColor.alphaF() };
+                    CGFloat colorComp[] = { static_cast<CGFloat>(textColor.redF()), static_cast<CGFloat>(textColor.greenF()),
+                                          static_cast<CGFloat>(textColor.blueF()), static_cast<CGFloat>(textColor.alphaF()) };
                     CGContextSetFillColorSpace(cg, qt_mac_genericColorSpace());
                     CGContextSetFillColor(cg, colorComp);
                     tti.fontID = themeId;
@@ -3883,8 +3883,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 tti.version = qt_mac_hitheme_version;
                 tti.state = tds;
                 QColor textColor = myTab.palette.windowText().color();
-                CGFloat colorComp[] = { textColor.redF(), textColor.greenF(),
-                                        textColor.blueF(), textColor.alphaF() };
+                CGFloat colorComp[] = { static_cast<CGFloat>(textColor.redF()), static_cast<CGFloat>(textColor.greenF()),
+                                        static_cast<CGFloat>(textColor.blueF()), static_cast<CGFloat>(textColor.alphaF()) };
                 CGContextSetFillColorSpace(cg, qt_mac_genericColorSpace());
                 CGContextSetFillColor(cg, colorComp);
                 switch (d->aquaSizeConstrain(opt, w)) {
@@ -4063,8 +4063,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 CGContextSetShouldAntialias(cg, true);
                 CGContextSetShouldSmoothFonts(cg, true);
                 QColor textColor = p->pen().color();
-                CGFloat colorComp[] = { textColor.redF(), textColor.greenF(),
-                                      textColor.blueF(), textColor.alphaF() };
+                CGFloat colorComp[] = { static_cast<CGFloat>(textColor.redF()), static_cast<CGFloat>(textColor.greenF()),
+                                      static_cast<CGFloat>(textColor.blueF()), static_cast<CGFloat>(textColor.alphaF()) };
                 CGContextSetFillColorSpace(cg, qt_mac_genericColorSpace());
                 CGContextSetFillColor(cg, colorComp);
                 HIThemeTextInfo tti;
@@ -5379,8 +5379,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 tti.version = qt_mac_hitheme_version;
                 tti.state = tds;
                 QColor textColor = groupBox.palette.windowText().color();
-                CGFloat colorComp[] = { textColor.redF(), textColor.greenF(),
-                                      textColor.blueF(), textColor.alphaF() };
+                CGFloat colorComp[] = { static_cast<CGFloat>(textColor.redF()), static_cast<CGFloat>(textColor.greenF()),
+                                      static_cast<CGFloat>(textColor.blueF()), static_cast<CGFloat>(textColor.alphaF()) };
                 CGContextSetFillColorSpace(cg, qt_mac_genericColorSpace());
                 CGContextSetFillColor(cg, colorComp);
                 tti.fontID = flat ? kThemeSystemFont : kThemeSmallSystemFont;
