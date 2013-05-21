@@ -55,9 +55,7 @@ int runConfigure( int argc, char** argv )
         return 3;
 
     app.parseCmdLine();
-#if !defined(EVAL)
     app.validateArgs();
-#endif
     if (!app.isOk())
         return 3;
     if( app.displayHelp() )
@@ -95,7 +93,6 @@ int runConfigure( int argc, char** argv )
 
     app.generateOutputVars();
 
-#if !defined(EVAL)
     if( !app.isDone() )
 	app.generateCachefile();
     if( !app.isDone() )
@@ -110,7 +107,6 @@ int runConfigure( int argc, char** argv )
         app.generateQConfigPri();
     if (!app.isDone())
         app.displayConfig();
-#endif
     if( !app.isDone() )
 	app.generateMakefiles();
     if( !app.isDone() )

@@ -395,7 +395,6 @@ void Configure::parseCmdLine()
     int i = 0;
     const QStringList imageFormats = QStringList() << "gif" << "png" << "jpeg";
 
-#if !defined(EVAL)
     if (argCount < 1) // skip rest if no arguments
         ;
     else if (configCmdLine.at(i) == "-redo") {
@@ -416,7 +415,6 @@ void Configure::parseCmdLine()
         i = 0;
     }
     argCount = configCmdLine.size();
-#endif
 
     bool isDeviceMkspec = false;
 
@@ -441,7 +439,6 @@ void Configure::parseCmdLine()
             || configCmdLine.at(i) == "-?")
             dictionary[ "HELP" ] = "yes";
 
-#if !defined(EVAL)
         else if (configCmdLine.at(i) == "-qconfig") {
             ++i;
             if (i == argCount)
@@ -493,9 +490,6 @@ void Configure::parseCmdLine()
             dictionary[ "FORCE_ASSERTS" ] = "yes";
         }
 
-
-#endif
-
         else if (configCmdLine.at(i) == "-platform") {
             ++i;
             if (i == argCount)
@@ -515,8 +509,6 @@ void Configure::parseCmdLine()
             // do nothing
         }
 
-
-#if !defined(EVAL)
         else if (configCmdLine.at(i) == "-no-zlib") {
             // No longer supported since Qt 4.4.0
             // But save the information for later so that we can print a warning
@@ -773,7 +765,7 @@ void Configure::parseCmdLine()
         else if (configCmdLine.at(i).startsWith("-no-imageformat-") &&
                  imageFormats.contains(configCmdLine.at(i).section('-', 3)))
             dictionary[ configCmdLine.at(i).section('-', 3).toUpper() ] = "no";
-#endif
+
         // IDE project generation -----------------------------------
         else if (configCmdLine.at(i) == "-no-vcproj")
             dictionary[ "VCPROJFILES" ] = "no";
@@ -788,7 +780,6 @@ void Configure::parseCmdLine()
             dictionary[ "NATIVE_GESTURES" ] = "yes";
         else if (configCmdLine.at(i) == "-no-native-gestures")
             dictionary[ "NATIVE_GESTURES" ] = "no";
-#if !defined(EVAL)
         // Others ---------------------------------------------------
         else if (configCmdLine.at(i) == "-widgets")
             dictionary[ "WIDGETS" ] = "yes";
@@ -1294,8 +1285,6 @@ void Configure::parseCmdLine()
             cout << "Unknown option " << configCmdLine.at(i) << endl;
             break;
         }
-
-#endif
     }
 
     // Ensure that QMAKESPEC exists in the mkspecs folder
@@ -1419,7 +1408,6 @@ void Configure::parseCmdLine()
     if (dictionary["FORCE_ASSERTS"] == "yes")
         qtConfig += "force_asserts";
 
-#if !defined(EVAL)
     for (QStringList::Iterator dis = disabledModules.begin(); dis != disabledModules.end(); ++dis) {
         modules.removeAll((*dis));
     }
@@ -1434,10 +1422,8 @@ void Configure::parseCmdLine()
 
     if ((dictionary[ "REDO" ] != "yes") && (dictionary[ "HELP" ] != "yes"))
         saveCmdLine();
-#endif
 }
 
-#if !defined(EVAL)
 void Configure::validateArgs()
 {
     // Validate the specified config
@@ -1484,8 +1470,6 @@ void Configure::validateArgs()
     else
         qmakeConfig += (*config) + "-config";
 }
-#endif
-
 
 // Output helper functions --------------------------------[ Start ]-
 /*!
@@ -1690,7 +1674,6 @@ bool Configure::displayHelp()
         desc(       "-hostlibdir <dir>",                "Host libraries will be installed to <dir>\n(default HOSTPREFIX/lib)");
         desc(       "-hostdatadir <dir>",               "Data used by qmake will be installed to <dir>\n(default HOSTPREFIX)");
 
-#if !defined(EVAL)
         desc("\nConfigure options:\n\n");
 
         desc(" The defaults (*) are usually acceptable. A plus (+) denotes a default value"
@@ -1761,7 +1744,6 @@ bool Configure::displayHelp()
         desc("OPENVG", "no","-no-openvg",               "Disables OpenVG functionality.");
         desc("OPENVG", "yes","-openvg",                 "Enables OpenVG functionality.\n");
         desc(                   "-force-asserts",       "Activate asserts in release mode.\n");
-#endif
         desc(                   "-platform <spec>",     "The operating system and compiler you are building on.\n(default %QMAKESPEC%)\n");
         desc(                   "-xplatform <spec>",    "The operating system and compiler you are cross compiling to.\n");
         desc(                   "",                     "See the README file for a list of supported operating systems and compilers.\n", false, ' ');
@@ -1802,18 +1784,15 @@ bool Configure::displayHelp()
         desc("WERROR",      "yes",     "-warnings-are-errors",   "Make warnings be treated as errors.");
         desc("WERROR",      "no",      "-no-warnings-are-errors","Make warnings be treated normally.");
 
-#if !defined(EVAL)
         desc(                   "-qtnamespace <name>", "Wraps all Qt library code in 'namespace name {...}'.");
         desc(                   "-qtlibinfix <infix>",  "Renames all Qt* libs to Qt*<infix>.\n");
         desc(                   "-D <define>",          "Add an explicit define to the preprocessor.");
         desc(                   "-I <includepath>",     "Add an explicit include path.");
         desc(                   "-L <librarypath>",     "Add an explicit library path.");
         desc(                   "-l <libraryname>",     "Add an explicit library name, residing in a librarypath.\n");
-#endif
 
         desc(                   "-help, -h, -?",        "Display this information.\n");
 
-#if !defined(EVAL)
         // 3rd party stuff options go below here --------------------------------------------------------------------------------
         desc("Third Party Libraries:\n\n");
 
@@ -1848,7 +1827,6 @@ bool Configure::displayHelp()
         desc("ANGLE", "yes",       "-angle",            "Use the ANGLE implementation of OpenGL ES 2.0.");
         desc("ANGLE", "d3d11",     "-angle-d3d11",      "Use the Direct3D 11-based ANGLE implementation of OpenGL ES 2.0.");
         desc("ANGLE", "no",        "-no-angle",         "Do not use ANGLE.\nSee http://code.google.com/p/angleproject/\n");
-#endif
         // Qt\Windows only options go below here --------------------------------------------------------------------------------
         desc("\nQt for Windows only:\n\n");
 
@@ -1860,7 +1838,6 @@ bool Configure::displayHelp()
 
         desc("PLUGIN_MANIFESTS", "no", "-no-plugin-manifests", "Do not embed manifests in plugins.");
         desc("PLUGIN_MANIFESTS", "yes", "-plugin-manifests",   "Embed manifests in plugins.\n");
-#if !defined(EVAL)
         desc("BUILD_QMAKE", "no", "-no-qmake",          "Do not compile qmake.");
         desc("BUILD_QMAKE", "yes", "-qmake",            "Compile qmake.\n");
 
@@ -1921,7 +1898,6 @@ bool Configure::displayHelp()
             desc(               "",                     qPrintable(QString("  %1").arg(allConfigs.at(i))), false, ' ');
         printf("\n");
 */
-#endif
         desc(                   "-loadconfig <config>", "Run configure with the parameters from file configure_<config>.cache.");
         desc(                   "-saveconfig <config>", "Run configure and save the parameters in file configure_<config>.cache.");
         desc(                   "-redo",                "Run configure with the same parameters as last time.\n");
@@ -2867,7 +2843,6 @@ void Configure::generateOutputVars()
     }
 }
 
-#if !defined(EVAL)
 void Configure::generateCachefile()
 {
     // Generate .qmake.cache
@@ -3217,7 +3192,6 @@ void Configure::generateQConfigPri()
         configFile.close();
     }
 }
-#endif
 
 QString Configure::addDefine(QString def)
 {
@@ -3251,7 +3225,6 @@ QString Configure::addDefine(QString def)
     return result;
 }
 
-#if !defined(EVAL)
 void Configure::generateConfigfiles()
 {
     QDir(buildPath).mkpath("src/corelib/global");
@@ -3457,9 +3430,7 @@ void Configure::generateConfigfiles()
         qdeviceFile.close();
     }
 }
-#endif
 
-#if !defined(EVAL)
 void Configure::displayConfig()
 {
     fstream sout;
@@ -3669,9 +3640,7 @@ void Configure::displayConfig()
         cout << str << endl;
     }
 }
-#endif
 
-#if !defined(EVAL)
 void Configure::generateHeaders()
 {
     if (dictionary["SYNCQT"] == "auto")
@@ -3959,7 +3928,6 @@ void Configure::buildQmake()
     }
 
 }
-#endif
 
 void Configure::appendMakeItem(int inList, const QString &item)
 {
@@ -4061,8 +4029,6 @@ Configure::ProjectType Configure::projectType(const QString& proFileName)
     // Default to app handling
     return App;
 }
-
-#if !defined(EVAL)
 
 bool Configure::showLicense(QString orgLicenseFile)
 {
@@ -4242,7 +4208,6 @@ void Configure::saveCmdLine()
         }
     }
 }
-#endif // !EVAL
 
 bool Configure::isDone()
 {
