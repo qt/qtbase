@@ -1285,6 +1285,9 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
     case QWindowSystemInterfacePrivate::WindowStateChanged:
         QGuiApplicationPrivate::processWindowStateChangedEvent(static_cast<QWindowSystemInterfacePrivate::WindowStateChangedEvent *>(e));
         break;
+    case QWindowSystemInterfacePrivate::WindowScreenChanged:
+        QGuiApplicationPrivate::processWindowScreenChangedEvent(static_cast<QWindowSystemInterfacePrivate::WindowScreenChangedEvent *>(e));
+        break;
     case QWindowSystemInterfacePrivate::ApplicationStateChanged:
             QGuiApplicationPrivate::processApplicationStateChangedEvent(static_cast<QWindowSystemInterfacePrivate::ApplicationStateChangedEvent *>(e));
         break;
@@ -1652,6 +1655,16 @@ void QGuiApplicationPrivate::processWindowStateChangedEvent(QWindowSystemInterfa
         QWindowStateChangeEvent e(window->windowState());
         window->d_func()->windowState = wse->newState;
         QGuiApplication::sendSpontaneousEvent(window, &e);
+    }
+}
+
+void QGuiApplicationPrivate::processWindowScreenChangedEvent(QWindowSystemInterfacePrivate::WindowScreenChangedEvent *wse)
+{
+    if (QWindow *window  = wse->window.data()) {
+        if (QScreen *screen = wse->screen.data())
+            window->d_func()->setScreen(screen, false /* recreate */);
+        else // Fall back to default behavior, and try to find some appropriate screen
+            window->setScreen(0);
     }
 }
 

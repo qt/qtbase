@@ -127,6 +127,8 @@ public:
     void updateVisibility();
     void _q_clearAlert();
 
+    void setScreen(QScreen *newScreen, bool recreate);
+
     QWindow::SurfaceType surfaceType;
     Qt::WindowFlags windowFlags;
     QWindow *parentWindow;

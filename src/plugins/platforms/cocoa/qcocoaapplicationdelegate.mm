@@ -100,9 +100,21 @@ static void cleanupCocoaApplicationDelegate()
 - (id)init
 {
     self = [super init];
-    if (self)
+    if (self) {
         inLaunch = true;
+        [[NSNotificationCenter defaultCenter]
+                addObserver:self
+                   selector:@selector(updateScreens:)
+                       name:NSApplicationDidChangeScreenParametersNotification
+                     object:NSApp];
+    }
     return self;
+}
+
+- (void)updateScreens:(NSNotification *)notification
+{
+    if (QCocoaIntegration *ci = dynamic_cast<QCocoaIntegration *>(QGuiApplicationPrivate::platformIntegration()))
+        ci->updateScreens();
 }
 
 - (void)dealloc
@@ -114,6 +126,8 @@ static void cleanupCocoaApplicationDelegate()
         [NSApp setDelegate:reflectionDelegate];
         [reflectionDelegate release];
     }
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+
     [super dealloc];
 }
 

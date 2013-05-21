@@ -58,6 +58,7 @@
 #include <private/qguiapplication_p.h>
 #include "qcocoabackingstore.h"
 #include "qcocoaglcontext.h"
+#include "qcocoaintegration.h"
 
 #ifdef QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
 #include <accessibilityinspector.h>
@@ -276,6 +277,15 @@ static QTouchDevice *touchDevice = 0;
         m_platformWindow->obscureWindow();
     } else if ([notificationName isEqualToString: @"NSWindowDidOrderOnScreenAndFinishAnimatingNotification"]) {
         m_platformWindow->exposeWindow();
+    } else if (notificationName == NSWindowDidChangeScreenNotification) {
+        if (m_window) {
+            QCocoaIntegration *ci = static_cast<QCocoaIntegration *>(QGuiApplicationPrivate::platformIntegration());
+            NSUInteger screenIndex = [[NSScreen screens] indexOfObject:self.window.screen];
+            if (screenIndex != NSNotFound) {
+                QCocoaScreen *cocoaScreen = ci->screenAtIndex(screenIndex);
+                QWindowSystemInterface::handleWindowScreenChanged(m_window, cocoaScreen->screen());
+            }
+        }
     } else {
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
