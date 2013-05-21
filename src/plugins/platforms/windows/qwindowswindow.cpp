@@ -775,7 +775,7 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w,
 QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
     QPlatformWindow(aWindow),
     m_data(data),
-    m_flags(0),
+    m_flags(WithinCreate),
     m_hdc(0),
     m_windowState(Qt::WindowNoState),
     m_opacity(1.0),
@@ -826,6 +826,7 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
     const qreal opacity = qt_window_private(aWindow)->opacity;
     if (!qFuzzyCompare(opacity, qreal(1.0)))
         setOpacity(opacity);
+    clearFlag(WithinCreate);
 }
 
 QWindowsWindow::~QWindowsWindow()
@@ -1481,8 +1482,10 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             if (visible)
                 newStyle |= WS_VISIBLE;
             setStyle(newStyle);
-
-            const QRect r = effectiveScreen(window())->geometry();
+            // Use geometry of QWindow::screen() within creation or the virtual screen the
+            // window is in (QTBUG-31166, QTBUG-30724).
+            const QScreen *screen = testFlag(WithinCreate) ? window()->screen() : effectiveScreen(window());
+            const QRect r = screen->geometry();
             const UINT swpf = SWP_FRAMECHANGED | SWP_NOACTIVATE;
             const bool wasSync = testFlag(SynchronousGeometryChangeEvent);
             setFlag(SynchronousGeometryChangeEvent);

@@ -134,7 +134,8 @@ public:
         WithinDestroy = 0x1000,
         TouchRegistered = 0x2000,
         AlertState = 0x4000,
-        Exposed = 0x08000
+        Exposed = 0x08000,
+        WithinCreate = 0x10000
     };
 
     struct WindowData
