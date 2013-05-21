@@ -1,6 +1,6 @@
 TARGET = qqnx
 
-QT += platformsupport platformsupport-private
+QT += platformsupport-private core-private gui-private
 
 # Uncomment this to build with support for IMF once it becomes available in the BBNDK
 #CONFIG += qqnx_imf
