@@ -1333,18 +1333,6 @@ void Configure::parseCmdLine()
         }
     }
 
-    // Tell the user how to proceed building Qt after configure finished its job
-    dictionary["QTBUILDINSTRUCTION"] = dictionary["MAKE"];
-    if (dictionary.contains("XQMAKESPEC")) {
-        if (dictionary["XQMAKESPEC"].startsWith("wince")) {
-            dictionary["QTBUILDINSTRUCTION"] =
-                QString("setcepaths.bat ") + dictionary["XQMAKESPEC"] + QString(" && ") + dictionary["MAKE"];
-        }
-    }
-
-    // Tell the user how to confclean before the next configure
-    dictionary["CONFCLEANINSTRUCTION"] = dictionary["MAKE"] + QString(" confclean");
-
     if (isDeviceMkspec) {
         const QStringList devices = mkspecs.filter("devices/", Qt::CaseInsensitive);
         const QStringList family = devices.filter(dictionary["XQMAKESPEC"], Qt::CaseInsensitive);
