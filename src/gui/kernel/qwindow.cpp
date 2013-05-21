@@ -1403,6 +1403,7 @@ void QWindow::setFramePosition(const QPoint &point)
     if (d->platformWindow) {
         d->platformWindow->setGeometry(QRect(point, size()));
     } else {
+        d->positionAutomatic = false;
         d->geometry.moveTopLeft(point);
     }
 }
