@@ -49,6 +49,7 @@
 #include "qiostheme.h"
 
 #include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
+#include <QDir>
 
 #include <QtDebug>
 
@@ -70,6 +71,9 @@ QIOSIntegration::QIOSIntegration()
             << "This is normally done automatically by qmake.\n";
         exit(-1);
     }
+
+    // Set current directory to app bundle folder
+    QDir::setCurrent(QString::fromUtf8([[[NSBundle mainBundle] bundlePath] UTF8String]));
 
     screenAdded(m_screen);
 
