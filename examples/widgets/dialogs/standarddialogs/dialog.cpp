@@ -121,6 +121,10 @@ Dialog::Dialog(QWidget *parent)
     textLabel->setFrameStyle(frameStyle);
     QPushButton *textButton = new QPushButton(tr("QInputDialog::get&Text()"));
 
+    multiLineTextLabel = new QLabel;
+    multiLineTextLabel->setFrameStyle(frameStyle);
+    QPushButton *multiLineTextButton = new QPushButton(tr("QInputDialog::get&MultiLineText()"));
+
     colorLabel = new QLabel;
     colorLabel->setFrameStyle(frameStyle);
     QPushButton *colorButton = new QPushButton(tr("QColorDialog::get&Color()"));
@@ -177,6 +181,7 @@ Dialog::Dialog(QWidget *parent)
     connect(doubleButton, SIGNAL(clicked()), this, SLOT(setDouble()));
     connect(itemButton, SIGNAL(clicked()), this, SLOT(setItem()));
     connect(textButton, SIGNAL(clicked()), this, SLOT(setText()));
+    connect(multiLineTextButton, SIGNAL(clicked()), this, SLOT(setMultiLineText()));
     connect(colorButton, SIGNAL(clicked()), this, SLOT(setColor()));
     connect(fontButton, SIGNAL(clicked()), this, SLOT(setFont()));
     connect(directoryButton, SIGNAL(clicked()),
@@ -206,7 +211,9 @@ Dialog::Dialog(QWidget *parent)
     layout->addWidget(itemLabel, 2, 1);
     layout->addWidget(textButton, 3, 0);
     layout->addWidget(textLabel, 3, 1);
-    layout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding), 4, 0);
+    layout->addWidget(multiLineTextButton, 4, 0);
+    layout->addWidget(multiLineTextLabel, 4, 1);
+    layout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding), 5, 0);
     toolbox->addItem(page, tr("Input Dialogs"));
 
     const QString doNotUseNativeDialog = tr("Do not use native dialog");
@@ -325,6 +332,17 @@ void Dialog::setText()
     if (ok && !text.isEmpty())
         textLabel->setText(text);
 //! [3]
+}
+
+void Dialog::setMultiLineText()
+{
+//! [4]
+    bool ok;
+    QString text = QInputDialog::getMultiLineText(this, tr("QInputDialog::getMultiLineText()"),
+                                                  tr("Address:"), "John Doe\nFreedom Street", &ok);
+    if (ok && !text.isEmpty())
+        multiLineTextLabel->setText(text);
+//! [4]
 }
 
 void Dialog::setColor()

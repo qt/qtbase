@@ -78,8 +78,9 @@ class Q_WIDGETS_EXPORT QInputDialog : public QDialog
 
 public:
     enum InputDialogOption {
-        NoButtons                   = 0x00000001,
-        UseListViewForComboBoxItems = 0x00000002
+        NoButtons                    = 0x00000001,
+        UseListViewForComboBoxItems  = 0x00000002,
+        UsePlainTextEditForTextInput = 0x00000004
     };
 
     Q_DECLARE_FLAGS(InputDialogOptions, InputDialogOption)
@@ -168,6 +169,9 @@ public:
                            QLineEdit::EchoMode echo = QLineEdit::Normal,
                            const QString &text = QString(), bool *ok = 0, Qt::WindowFlags flags = 0,
                            Qt::InputMethodHints inputMethodHints = Qt::ImhNone);
+    static QString getMultiLineText(QWidget *parent, const QString &title, const QString &label,
+                           const QString &text = QString(), bool *ok = 0, Qt::WindowFlags flags = 0,
+                           Qt::InputMethodHints inputMethodHints = Qt::ImhNone);
     static QString getItem(QWidget *parent, const QString &title, const QString &label,
                            const QStringList &items, int current = 0, bool editable = true,
                            bool *ok = 0, Qt::WindowFlags flags = 0,
@@ -204,6 +208,7 @@ public:
 private:
     Q_DISABLE_COPY(QInputDialog)
     Q_PRIVATE_SLOT(d_func(), void _q_textChanged(const QString&))
+    Q_PRIVATE_SLOT(d_func(), void _q_plainTextEditTextChanged())
     Q_PRIVATE_SLOT(d_func(), void _q_currentRowChanged(const QModelIndex&, const QModelIndex&))
 };
 

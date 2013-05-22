@@ -63,6 +63,7 @@ private slots:
     void setDouble();
     void setItem();
     void setText();
+    void setMultiLineText();
     void setColor();
     void setFont();
     void setExistingDirectory();
@@ -80,6 +81,7 @@ private:
     QLabel *doubleLabel;
     QLabel *itemLabel;
     QLabel *textLabel;
+    QLabel *multiLineTextLabel;
     QLabel *colorLabel;
     QLabel *fontLabel;
     QLabel *directoryLabel;
