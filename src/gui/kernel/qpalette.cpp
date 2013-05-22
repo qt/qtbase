@@ -1127,7 +1127,7 @@ Q_GUI_EXPORT QPalette qt_fusionPalette()
     fusionPalette.setBrush(QPalette::Disabled, QPalette::Shadow, disabledShadow);
 
     fusionPalette.setBrush(QPalette::Active, QPalette::Highlight, QColor(48, 140, 198));
-    fusionPalette.setBrush(QPalette::Inactive, QPalette::Highlight, QColor(145, 141, 126));
+    fusionPalette.setBrush(QPalette::Inactive, QPalette::Highlight, QColor(48, 140, 198));
     fusionPalette.setBrush(QPalette::Disabled, QPalette::Highlight, QColor(145, 141, 126));
     return fusionPalette;
 }

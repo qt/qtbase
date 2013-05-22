@@ -102,13 +102,13 @@ public:
     QColor highlight(const QPalette &pal) const {
         if (isMacSystemPalette(pal))
             return QColor(60, 140, 230);
-        return pal.color(QPalette::Active, QPalette::Highlight);
+        return pal.color(QPalette::Highlight);
     }
 
     QColor highlightedText(const QPalette &pal) const {
         if (isMacSystemPalette(pal))
             return Qt::white;
-        return pal.color(QPalette::Active, QPalette::HighlightedText);
+        return pal.color(QPalette::HighlightedText);
     }
 
     QColor outline(const QPalette &pal) const {
