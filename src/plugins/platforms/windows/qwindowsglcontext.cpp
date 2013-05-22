@@ -613,8 +613,12 @@ static HGLRC createContext(const QOpenGLStaticContext &staticContext,
 
     const HGLRC result =
         staticContext.wglCreateContextAttribsARB(hdc, shared, attributes);
-    if (!result)
-        qErrnoWarning("%s: wglCreateContextAttribsARB() failed.", __FUNCTION__);
+    if (!result) {
+        QString message;
+        QDebug(&message).nospace() << __FUNCTION__ << ": wglCreateContextAttribsARB() failed (GL error code: 0x"
+            << hex << glGetError() << dec << ") for format: " << format << ", shared context: " << shared;
+        qErrnoWarning("%s", qPrintable(message));
+    }
     return result;
 }
 
