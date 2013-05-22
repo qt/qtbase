@@ -795,8 +795,10 @@ NSWindow * QCocoaWindow::createNSWindow()
                                                     // before the window is shown and needs a proper window.).
         if ((type & Qt::Popup) == Qt::Popup)
             [window setHasShadow:YES];
-        else
+        else {
              setWindowShadow(flags);
+             [window setHidesOnDeactivate: NO];
+        }
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
         if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
