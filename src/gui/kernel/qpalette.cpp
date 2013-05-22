@@ -1120,6 +1120,8 @@ Q_GUI_EXPORT QPalette qt_fusionPalette()
     fusionPalette.setBrush(QPalette::HighlightedText, hightlightedText);
 
     fusionPalette.setBrush(QPalette::Disabled, QPalette::Text, disabledText);
+    fusionPalette.setBrush(QPalette::Disabled, QPalette::WindowText, disabledText);
+    fusionPalette.setBrush(QPalette::Disabled, QPalette::ButtonText, disabledText);
     fusionPalette.setBrush(QPalette::Disabled, QPalette::Base, disabledBase);
     fusionPalette.setBrush(QPalette::Disabled, QPalette::Dark, darkDisabled);
     fusionPalette.setBrush(QPalette::Disabled, QPalette::Shadow, disabledShadow);
