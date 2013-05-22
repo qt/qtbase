@@ -53,7 +53,7 @@ class View : public QGraphicsView
     Q_OBJECT
 
 public:
-    View(const QString &offices, const QString &images, QWidget *parent = 0);
+    View(const QString &items, const QString &images, QWidget *parent = 0);
 
 protected:
     void mouseReleaseEvent(QMouseEvent *event);
@@ -73,7 +73,7 @@ private:
     QGraphicsScene *scene;
     QList<InformationWindow *> informationWindows;
 //! [2] //! [3]
-    QSqlRelationalTableModel *officeTable;
+    QSqlRelationalTableModel *itemTable;
 };
 //! [3]
 

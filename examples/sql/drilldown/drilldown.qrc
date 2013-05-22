@@ -1,11 +1,8 @@
-<!DOCTYPE RCC><RCC version="1.0">
- <qresource>
-    <file>images/oslo.png</file>
-    <file>images/brisbane.png</file>
-    <file>images/redwood.png</file>
-    <file>images/berlin.png</file>
-    <file>images/munich.png</file>
-    <file>images/beijing.png</file>
-    <file>logo.png</file>
- </qresource>
+<RCC>
+    <qresource prefix="/">
+        <file>images/qt-logo.png</file>
+        <file>images/qt-quick.png</file>
+        <file>images/qt-creator.png</file>
+        <file>images/qt-project.png</file>
+    </qresource>
 </RCC>

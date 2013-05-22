@@ -37,20 +37,19 @@
     \image drilldown-example.png Screenshot of the Drill Down Example
 
     When running the example application, a user can retrieve
-    information about each of Nokia's Qt offices by clicking the
-    corresponding image. The application pops up an information window
-    displaying the data, and allows the users to alter the location
-    description as well as the image. The main view will be updated
-    when the users submit their changes.
+    information about each item by clicking the corresponding image.
+    The application pops up an information window displaying the data,
+    and allows the users to alter the description as well as the image.
+    The main view will be updated when the users submit their changes.
 
     The example consists of three classes:
 
     \list
         \li \c ImageItem is a custom graphics item class used to
-        display the office images.
+        display the images.
 
         \li \c View is the main application widget allowing the user to
-        browse through the various locations.
+        browse through the various items.
 
         \li \c InformationWindow displays the requested information,
         allowing the users to alter it and submit their changes to the
@@ -70,7 +69,7 @@
     \snippet drilldown/informationwindow.h 0
 
     When we create an information window, we pass the associated
-    location ID, a parent, and a pointer to the database, to the
+    item ID, a parent, and a pointer to the database, to the
     constructor. We will use the database pointer to populate our
     window with data, while passing the parent parameter on to the
     base class. The ID is stored for future reference.
@@ -84,7 +83,7 @@
 
     \snippet drilldown/informationwindow.h 1
 
-    Since we allow the users to alter some of the location data, we
+    Since we allow the users to alter some of the data, we
     must provide functionality for reverting and submitting their
     changes. The \c enableButtons() slot is provided for convenience
     to enable and disable the various buttons when required.
@@ -93,15 +92,15 @@
 
     The \c createButtons() function is also a convenience function,
     provided to simplify the constructor. As mentioned above we store
-    the location ID for future reference. We also store the name of
+    the item ID for future reference. We also store the name of
     the currently displayed image file to be able to determine when to
     emit the \c imageChanged() signal.
 
-    The information window uses the QLabel class to display the office
-    location and the country. The associated image file is displayed
-    using a QComboBox instance while the description is displayed using
-    QTextEdit. In addition, the window has three buttons to control
-    the data flow and whether the window is shown or not.
+    The information window uses the QLabel class to display the name of
+    an item. The associated image file is displayed using a QComboBox
+    instance while the description is displayed using QTextEdit. In
+    addition, the window has three buttons to control the data flow and
+    whether the window is shown or not.
 
     Finally, we declare a \e mapper. The QDataWidgetMapper class
     provides mapping between a section of a data model to widgets. We
@@ -110,7 +109,7 @@
 
     \section1 InformationWindow Class Implementation
 
-    The constructor takes three arguments: a location ID, a database
+    The constructor takes three arguments: an item ID, a database
     pointer and a parent widget. The database pointer is actually a
     pointer to a QSqlRelationalTableModel object providing an editable
     data model (with foreign key support) for our database table.
@@ -125,8 +124,8 @@
 
     \snippet drilldown/informationwindow.cpp 2
 
-    In this example, the information about the offices are stored in a
-    database table called "offices". When creating the model,
+    In this example, information about the items are stored in a
+    database table called "items". When creating the model,
     we will use a foreign key to establish a relation between this
     table and a second data base table, "images", containing the names
     of the available image files. We will get back to how this is done
@@ -140,7 +139,7 @@
     the foreign key (in this case the "imagefile" column number) as
     argument. We use QComboBox's \l {QComboBox::}{setModel()} function
     to make the combobox use the "images" model. And, since this model
-    has two columns ("locationid" and "file"), we also specify which
+    has two columns ("itemid" and "file"), we also specify which
     column we want to be visible using the QComboBox::setModelColumn()
     function.
 
@@ -156,7 +155,7 @@
     section is a column in the model, otherwise it is a row. We call
     the \l {QDataWidgetMapper::}{setCurrentIndex()} function to
     initialize the widgets with the data associated with the given
-    location ID. Every time the current index changes, all the widgets
+    item ID. Every time the current index changes, all the widgets
     are updated with the contents from the model.
 
     We also set the mapper's submit policy to
@@ -168,14 +167,14 @@
     view should use for its items. The QSqlRelationalDelegate class
     represents a delegate that unlike the default delegate, enables
     combobox functionality for fields that are foreign keys into other
-    tables (like "imagefile" in our "trolltechoffices" table).
+    tables (like "imagefile" in our "items" table).
 
     \snippet drilldown/informationwindow.cpp 4
 
     Finally, we connect the "something's changed" signals in the
     editors to our custom \c enableButtons() slot, enabling the users
     to either submit or revert their changes. We add all the widgets
-    into a layout, store the location ID and the name of the displayed
+    into a layout, store the item ID and the name of the displayed
     image file for future reference, and set the window title and
     initial size.
 
@@ -189,7 +188,7 @@
     application exits (i.e., if the user closes the information
     window, it is only hidden). For this reason we do not want to
     create more than one \c InformationWindow object for each
-    location, and we provide the public \c id() function to be able to
+    item, and we provide the public \c id() function to be able to
     determine whether a window already exists for a given location
     when the user requests information about it.
 
@@ -256,16 +255,15 @@
     {QDialogButtonBox::ButtonRole}{reject} role indicates that
     clicking the button causes the dialog to be rejected. On the other
     hand, since we only hide the information window, any changes that
-    the user has made wil be preserved until the user expliclity
-    revert or submit them.
+    the user has made will be preserved until the user explicitly
+    reverts or submits them.
 
     \snippet drilldown/informationwindow.cpp 10
 
     The \c enableButtons() slot is called to enable the buttons
     whenever the user changes the presented data. Likewise, when the
-    data the user choose to submit the changes, the buttons are
-    disabled to indicate that the current data is stored in the
-    database.
+    user chooses to submit the changes, the buttons are disabled to
+    indicate that the current data is stored in the database.
 
     This completes the \c InformationWindow class. Let's take a look
     at how we have used it in our example application.
@@ -280,19 +278,17 @@
     \snippet drilldown/view.h 1
 
     The QGraphicsView class is part of the \l {Graphics View
-    Framework} which we will use to display the images of Nokia's
-    Qt offices. To be able to respond to user interaction;
-    i.e., showing the
-    appropriate information window whenever the user clicks one of the
-    office images, we reimplement QGraphicsView's \l
-    {QGraphicsView::}{mouseReleaseEvent()} function.
+    Framework} which we will use to display the images. To be able to
+    respond to user interaction by displaying the appropriate
+    information window when the image is clicked, we reimplement
+    QGraphicsView's \l{QGraphicsView::}{mouseReleaseEvent()} function.
 
     Note that the constructor expects the names of two database
-    tables: One containing the detailed information about the offices,
+    tables: One containing the detailed information about the items,
     and another containing the names of the available image files.  We
     also provide a private \c updateImage() slot to catch \c
     {InformationWindow}'s \c imageChanged() signal that is emitted
-    whenever the user changes a location's image.
+    whenever the user changes an image associated with the item.
 
     \snippet drilldown/view.h 2
 
@@ -303,20 +299,20 @@
     The \c findWindow() function, on the other hand, is frequently
     used. It is called from the \c showInformation() function to
     detemine whether a window is already created for the given
-    location (whenever we create an \c InformationWindow object, we
+    item (whenever we create an \c InformationWindow object, we
     store a reference to it in the \c informationWindows list). The
     latter function is in turn called from our custom \c
     mouseReleaseEvent() implementation.
 
     \snippet drilldown/view.h 3
 
-    Finally we declare a QSqlRelationalTableModel pointer. As
+    Finally, we declare a QSqlRelationalTableModel pointer. As
     previously mentioned, the QSqlRelationalTableModel class provides
     an editable data model with foreign key support. There are a
     couple of things you should keep in mind when using the
     QSqlRelationalTableModel class: The table must have a primary key
     declared and this key cannot contain a relation to another table,
-    i.e., it cannot be a foreign key. Note also that if a relational
+    that is, it cannot be a foreign key. Also note that if a relational
     table contains keys that refer to non-existent rows in the
     referenced table, the rows containing the invalid keys will not be
     exposed through the model. It is the user's or the database's
@@ -327,11 +323,11 @@
     Although the constructor requests the names of both the table
     containing office details as well as the table containing the
     names of the available image files, we only have to create a
-    QSqlRelationalTableModel object for the office table:
+    QSqlRelationalTableModel object for the "items" table:
 
     \snippet drilldown/view.cpp 0
 
-    The reason is that once we have a model with the office details,
+    The reason is that once we have a model with the item details,
     we can create a relation to the available image files using
     QSqlRelationalTableModel's \l
     {QSqlRelationalTableModel::}{setRelation()} function. This
@@ -348,20 +344,19 @@
     \snippet drilldown/view.cpp 1
 
     Then we create the contents of our view, i.e., the scene and its
-    items. The location labels are regular QGraphicsTextItem objects,
-    and the "Qt" logo is represented by a QGraphicsPixmapItem
-    object. The images, on the other hand, are instances of the \c
-    ImageItem class (derived from QGraphicsPixmapItem). We will get
-    back to this shortly when reviewing the \c addItems() function.
+    items. The labels are regular QGraphicsTextItem objects, whereas
+    the images are instances of the \c ImageItem class, derived from
+    QGraphicsPixmapItem. We will get back to this shortly when reviewing
+    the \c addItems() function.
 
     Finally, we set the main application widget's size constraints and
     window title.
 
     \snippet drilldown/view.cpp 3
 
-    The \c addItems() function is called only once, i.e., when
-    creating the main application window. For each row in the database
-    table, we first extract the corresponding record using the model's
+    The \c addItems() function is called only once when creating the main
+    application window. For each row in the database table, we first
+    extract the corresponding record using the model's
     \l {QSqlRelationalTableModel::}{record()} function. The QSqlRecord
     class encapsulates both the functionality and characteristics of a
     database record, and supports adding and removing fields as well
@@ -394,7 +389,7 @@
     \snippet drilldown/view.cpp 6
 
     The \c showInformation() function is given an \c ImageItem object
-    as argument, and starts off by extracting the item's location
+    as argument, and starts off by extracting the item's item
     ID. Then it determines if there already is created an information
     window for this location. If it is, and the window is visible, it
     ensures that the window is raised to the top of the widget stack
@@ -402,7 +397,7 @@
     {QWidget::}{show()} slot gives the same result.
 
     If no window for the given location exists, we create one by
-    passing the location ID, a pointer to the model, and our view as a
+    passing the item ID, a pointer to the model, and our view as a
     parent, to the \c InformationWindow constructor. Note that we
     connect the information window's \c imageChanged() signal to \e
     this widget's \c updateImage() slot, before we give it a suitable
@@ -410,16 +405,16 @@
 
     \snippet drilldown/view.cpp 7
 
-    The \c updateImage() slot takes a location ID and the name of an
-    image files as arguments. It filters out the image items, and
-    updates the one that correspond to the given location ID, with the
+    The \c updateImage() slot takes an item ID and the name of an
+    image file as arguments. It filters out the image items, and
+    updates the one that correspond to the given item ID, with the
     provided image file.
 
     \snippet drilldown/view.cpp 8
 
     The \c findWindow() function simply searches through the list of
     existing windows, returning a pointer to the window that matches
-    the given location ID, or 0 if the window doesn't exists.
+    the given item ID, or 0 if the window doesn't exists.
 
     Finally, let's take a quick look at our custom \c ImageItem class:
 
@@ -442,7 +437,7 @@
     returning back to its original size when the cursor leaves its
     borders.
 
-    Finally, we store the location ID that this particular record is
+    Finally, we store the item ID that this particular record is
     associated with as well as a z-value. In the \l {Graphics View
     Framework}, an item's z-value determines its position in the item
     stack. An item of high z-value will be drawn on top of an item
@@ -460,8 +455,8 @@
     \snippet drilldown/imageitem.cpp 0
 
     Then we store the ID for future reference, and ensure that our
-    item will accept hover events. Hover events are delivered when
-    there is no current mouse grabber item. They are sent when the
+    image item will accept hover events. Hover events are delivered
+    when there is no current mouse grabber item. They are sent when the
     mouse cursor enters an item, when it moves around inside the item,
     and when the cursor leaves an item. As we mentioned earlier, none
     of the \l {Graphics View Framework}'s items accept hover
@@ -487,7 +482,7 @@
     \codeline
     \snippet drilldown/imageitem.cpp 2
 
-    Whenever the mouse cursor enters or leave the image item, the
+    Whenever the mouse cursor enters or leaves the image item, the
     corresponding event handlers are triggered: We first set the time
     line's direction, making the item expand or shrink,
     respectively. Then we alter the item's z-value if it is not already
@@ -532,6 +527,6 @@
     size regardless of the size of the source image. The \c id()
     function is trivial, and is simply provided to be able to identify
     the item. In the \c updateItemPosition() slot we call the
-    QGraphicsItem::setZValue() function, setting the elevation (i.e.,
-    the position) of the item.
+    QGraphicsItem::setZValue() function, setting the elevation of the
+    item.
 */
