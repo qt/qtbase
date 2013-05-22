@@ -203,10 +203,9 @@ static inline QSize clientSize(HWND hwnd)
     return qSizeOfRect(rect);
 }
 
-// from qwidget_win.cpp
-static bool shouldShowMaximizeButton(const QWindow *w)
+// from qwidget_win.cpp, pass flags separately in case they have been "autofixed".
+static bool shouldShowMaximizeButton(const QWindow *w, Qt::WindowFlags flags)
 {
-    const Qt::WindowFlags flags = w->flags();
     if ((flags & Qt::MSWindowsFixedSizeDialogHint) || !(flags & Qt::WindowMaximizeButtonHint))
         return false;
     // if the user explicitly asked for the maximize button, we try to add
@@ -433,7 +432,7 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
                     style |= WS_SYSMENU;
                 if (flags & Qt::WindowMinimizeButtonHint)
                     style |= WS_MINIMIZEBOX;
-                if (shouldShowMaximizeButton(w))
+                if (shouldShowMaximizeButton(w, flags))
                     style |= WS_MAXIMIZEBOX;
                 if (tool)
                     exStyle |= WS_EX_TOOLWINDOW;
