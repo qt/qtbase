@@ -128,6 +128,8 @@ private Q_SLOTS:
 
     void bom();
     void nesting();
+
+    void longStrings();
 private:
     QString testDataDir;
 };
@@ -2116,6 +2118,49 @@ void tst_QtJson::nesting()
     QVERIFY(doc.isNull());
     QVERIFY(error.error == QJsonParseError::DeepNesting);
 
+}
+
+void tst_QtJson::longStrings()
+{
+    // test around 15 and 16 bit boundaries, as these are limits
+    // in the data structures (for Latin1String in qjson_p.h)
+    QString s(0x7ff0, 'a');
+    for (int i = 0x7ff0; i < 0x8010; i++) {
+        s.append("c");
+
+        QMap <QString, QVariant> map;
+        map["key"] = s;
+
+        /* Create a QJsonDocument from the QMap ... */
+        QJsonDocument d1 = QJsonDocument::fromVariant(QVariant(map));
+        /* ... and a QByteArray from the QJsonDocument */
+        QByteArray a1 = d1.toJson();
+
+        /* Create a QJsonDocument from the QByteArray ... */
+        QJsonDocument d2 = QJsonDocument::fromJson(a1);
+        /* ... and a QByteArray from the QJsonDocument */
+        QByteArray a2 = d2.toJson();
+        QVERIFY(a1 == a2);
+    }
+
+    s = QString(0xfff0, 'a');
+    for (int i = 0xfff0; i < 0x10010; i++) {
+        s.append("c");
+
+        QMap <QString, QVariant> map;
+        map["key"] = s;
+
+        /* Create a QJsonDocument from the QMap ... */
+        QJsonDocument d1 = QJsonDocument::fromVariant(QVariant(map));
+        /* ... and a QByteArray from the QJsonDocument */
+        QByteArray a1 = d1.toJson();
+
+        /* Create a QJsonDocument from the QByteArray ... */
+        QJsonDocument d2 = QJsonDocument::fromJson(a1);
+        /* ... and a QByteArray from the QJsonDocument */
+        QByteArray a2 = d2.toJson();
+        QVERIFY(a1 == a2);
+    }
 }
 
 QTEST_MAIN(tst_QtJson)
