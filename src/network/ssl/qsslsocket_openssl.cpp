@@ -1594,7 +1594,7 @@ QList<QSslError> QSslSocketBackendPrivate::verify(QList<QSslCertificate> certifi
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
             q_sk_push( (_STACK *)intermediates, reinterpret_cast<X509 *>(cert.handle()));
 #else
-            q_sk_push( (STACK *)intermediates, reinterpret_cast<X509 *>(cert.handle()));
+            q_sk_push( (STACK *)intermediates, reinterpret_cast<char *>(cert.handle()));
 #endif
         }
     }

@@ -183,7 +183,7 @@ DEFINEFUNC(void, sk_free, _STACK *a, a, return, DUMMYARG)
 DEFINEFUNC2(void *, sk_value, STACK *a, a, int b, b, return 0, return)
 #else
 DEFINEFUNC(STACK *, sk_new_null, DUMMYARG, DUMMYARG, return 0, return)
-DEFINEFUNC2(void, sk_push, STACK *a, a, void *b, b, return, DUMMYARG)
+DEFINEFUNC2(void, sk_push, STACK *a, a, char *b, b, return, DUMMYARG)
 DEFINEFUNC(void, sk_free, STACK *a, a, return, DUMMYARG)
 DEFINEFUNC2(char *, sk_value, STACK *a, a, int b, b, return 0, return)
 #endif
@@ -297,7 +297,11 @@ DEFINEFUNC(int, X509_EXTENSION_get_critical, X509_EXTENSION *a, a, return 0, ret
 DEFINEFUNC(ASN1_OCTET_STRING *, X509_EXTENSION_get_data, X509_EXTENSION *a, a, return 0, return)
 DEFINEFUNC(void, BASIC_CONSTRAINTS_free, BASIC_CONSTRAINTS *a, a, return, DUMMYARG)
 DEFINEFUNC(void, AUTHORITY_KEYID_free, AUTHORITY_KEYID *a, a, return, DUMMYARG)
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
 DEFINEFUNC2(int, ASN1_STRING_print, BIO *a, a, const ASN1_STRING *b, b, return 0, return)
+#else
+DEFINEFUNC2(int, ASN1_STRING_print, BIO *a, a, ASN1_STRING *b, b, return 0, return)
+#endif
 DEFINEFUNC(X509_NAME *, X509_get_issuer_name, X509 *a, a, return 0, return)
 DEFINEFUNC(X509_NAME *, X509_get_subject_name, X509 *a, a, return 0, return)
 DEFINEFUNC(int, X509_verify_cert, X509_STORE_CTX *a, a, return -1, return)
