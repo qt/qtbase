@@ -9,7 +9,6 @@ PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
 
 include(cfsocketnotifier/cfsocketnotifier.pri)
 include(cglconvenience/cglconvenience.pri)
-include(dnd/dnd.pri)
 include(eglconvenience/eglconvenience.pri)
 include(eventdispatchers/eventdispatchers.pri)
 include(fbconvenience/fbconvenience.pri)
