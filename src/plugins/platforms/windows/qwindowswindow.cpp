@@ -332,6 +332,25 @@ QDebug operator<<(QDebug debug, const WindowCreationData &d)
     return debug;
 }
 
+// Fix top level window flags in case only the type flags are passed.
+static inline void fixTopLevelWindowFlags(Qt::WindowFlags &flags)
+{
+    switch (flags) {
+    case Qt::Window:
+        flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinimizeButtonHint
+              |Qt::WindowMaximizeButtonHint|Qt::WindowCloseButtonHint;
+        break;
+    case Qt::Dialog:
+        flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowContextHelpButtonHint | Qt::WindowCloseButtonHint;
+        break;
+    case Qt::Tool:
+         flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint;
+         break;
+    default:
+        break;
+    }
+}
+
 void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flagsIn,
                                     unsigned creationFlags)
 {
@@ -358,10 +377,8 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
         topLevel = (creationFlags & ForceTopLevel) ? true : w->isTopLevel();
     }
 
-    if (topLevel && flags == 1) {
-        flags |= Qt::WindowTitleHint|Qt::WindowSystemMenuHint|Qt::WindowMinimizeButtonHint
-                |Qt::WindowMaximizeButtonHint|Qt::WindowCloseButtonHint;
-    }
+    if (topLevel)
+        fixTopLevelWindowFlags(flags);
 
     type = static_cast<Qt::WindowType>(int(flags) & Qt::WindowType_Mask);
     switch (type) {
