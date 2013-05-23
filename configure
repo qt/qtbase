@@ -2664,15 +2664,12 @@ esac
 if [ "$XPLATFORM_ANDROID" = "yes" ]; then
     if [ -z "$CFG_DEFAULT_ANDROID_NDK_HOST" ]; then
         case $PLATFORM in
-        linux-*-64)
-            if [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/linux-x86_64" ]; then
-                CFG_DEFAULT_ANDROID_NDK_HOST=linux-x86_64
-            else
-                CFG_DEFAULT_ANDROID_NDK_HOST=linux-x86
-            fi
-            ;;
         linux-*)
-            CFG_DEFAULT_ANDROID_NDK_HOST=linux-x86
+            if [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/linux-x86" ]; then
+                CFG_DEFAULT_ANDROID_NDK_HOST=linux-x86
+            elif [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/linux-x86_64" ]; then
+                CFG_DEFAULT_ANDROID_NDK_HOST=linux-x86_64
+            fi
             ;;
         macx-*)
             CFG_DEFAULT_ANDROID_NDK_HOST=darwin-x86
