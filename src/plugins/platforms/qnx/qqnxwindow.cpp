@@ -370,9 +370,10 @@ void QQnxWindow::setBufferSize(const QSize &size)
 
         errno = 0;
         result = screen_create_window_buffers(m_window, MAX_BUFFER_COUNT);
-        if (result != 0)
+        if (result != 0) {
             qWarning() << "QQnxWindow: Buffer size was" << size;
             qFatal("QQnxWindow: failed to create window buffers, errno=%d", errno);
+        }
 
         // If the child window has been configured for transparency, lazily create
         // a full-screen buffer to back the root window.
