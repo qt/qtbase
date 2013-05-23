@@ -118,7 +118,7 @@ static bool isMouseEvent(NSEvent *ev)
 
     // Windows with a transient parent (such as combobox popup windows)
     // cannot become the main window:
-    if (m_cocoaPlatformWindow && m_cocoaPlatformWindow->window()->transientParent())
+    if (!m_cocoaPlatformWindow || m_cocoaPlatformWindow->window()->transientParent())
         canBecomeMain = NO;
 
     return canBecomeMain;
@@ -159,7 +159,8 @@ static bool isMouseEvent(NSEvent *ev)
         return NO;
 
     // Only tool or dialog windows should become key:
-    if (m_cocoaPlatformWindow->window()->type() == Qt::Tool || m_cocoaPlatformWindow->window()->type() == Qt::Dialog)
+    if (m_cocoaPlatformWindow
+        && (m_cocoaPlatformWindow->window()->type() == Qt::Tool || m_cocoaPlatformWindow->window()->type() == Qt::Dialog))
         return YES;
     return NO;
 }
@@ -195,6 +196,8 @@ const int QCocoaWindow::NoAlertRequest = -1;
 
 QCocoaWindow::QCocoaWindow(QWindow *tlw)
     : QPlatformWindow(tlw)
+    , m_contentView(nil)
+    , m_qtView(nil)
     , m_nsWindow(0)
     , m_contentViewIsEmbedded(false)
     , m_contentViewIsToBeEmbedded(false)
@@ -215,8 +218,23 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
 #endif
     QCocoaAutoReleasePool pool;
 
-    m_qtView = [[QNSView alloc] initWithQWindow:tlw platformWindow:this];
-    m_contentView = m_qtView;
+    if (tlw->type() == Qt::ForeignWindow) {
+        NSView *foreignView = (NSView *)WId(tlw->property("_q_foreignWinId").value<WId>());
+        setContentView(foreignView);
+    } else {
+        m_qtView = [[QNSView alloc] initWithQWindow:tlw platformWindow:this];
+        m_contentView = m_qtView;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+        // Enable high-dpi OpenGL for retina displays. Enabling has the side
+        // effect that Cocoa will start calling glViewport(0, 0, width, height),
+        // overriding any glViewport calls in application code. This is usually not a
+        // problem, except if the appilcation wants to have a "custom" viewport.
+        // (like the hellogl example)
+        if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7
+            && tlw->surfaceType() == QSurface::OpenGLSurface)
+            [m_contentView setWantsBestResolutionOpenGLSurface:YES];
+#endif
+    }
     setGeometry(tlw->geometry());
     recreateWindow(parent());
     tlw->setGeometry(geometry());
@@ -258,8 +276,7 @@ void QCocoaWindow::setCocoaGeometry(const QRect &rect)
 
     if (m_nsWindow) {
         NSRect bounds = qt_mac_flipRect(rect, window());
-        [m_nsWindow setContentSize : bounds.size];
-        [m_nsWindow setFrameOrigin : bounds.origin];
+        [m_nsWindow setFrame:[m_nsWindow frameRectForContentRect:bounds] display:YES animate:NO];
     } else {
         [m_contentView setFrame : NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height())];
     }
@@ -308,6 +325,8 @@ void QCocoaWindow::setVisible(bool visible)
         exposeWindow();
 
         if (m_nsWindow) {
+            QWindowSystemInterface::flushWindowSystemEvents();
+
             // setWindowState might have been called while the window was hidden and
             // will not change the NSWindow state in that case. Sync up here:
             syncWindowState(window()->windowState());
@@ -349,11 +368,22 @@ void QCocoaWindow::setVisible(bool visible)
                 QCocoaEventDispatcherPrivate *cocoaEventDispatcherPrivate = static_cast<QCocoaEventDispatcherPrivate *>(QObjectPrivate::get(cocoaEventDispatcher));
                 cocoaEventDispatcherPrivate->endModalSession(window());
                 m_hasModalSession = false;
+
+                [m_nsWindow orderOut:m_nsWindow];
+                if (m_nsWindow == [NSApp keyWindow] && !cocoaEventDispatcherPrivate->currentModalSession()) {
+                    // Probably because we call runModalSession: outside [NSApp run] in QCocoaEventDispatcher
+                    // (e.g., when show()-ing a modal QDialog instead of exec()-ing it), it can happen that
+                    // the current NSWindow is still key after being ordered out. Then, after checking we
+                    // don't have any other modal session left, it's safe to make the main window key again.
+                    NSWindow *mainWindow = [NSApp mainWindow];
+                    if (mainWindow && [mainWindow canBecomeKeyWindow])
+                        [mainWindow makeKeyWindow];
+                }
             } else {
                 if ([m_nsWindow isSheet])
                     [NSApp endSheet:m_nsWindow];
+                [m_nsWindow orderOut:m_nsWindow];
             }
-            [m_nsWindow orderOut:m_nsWindow];
         } else {
             [m_contentView setHidden:YES];
         }
@@ -446,8 +476,6 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
         NSInteger level = this->windowLevel(flags);
         [m_nsWindow setStyleMask:styleMask];
         [m_nsWindow setLevel:level];
-        [m_nsWindow setIgnoresMouseEvents:((flags & Qt::ToolTip) == Qt::ToolTip) ? YES : NO];
-        // TODO deal with WindowTransparentForInput; setIgnoresMouseEvents is too extreme, you can't click the titlebar
         setWindowShadow(flags);
     }
 
@@ -784,8 +812,10 @@ NSWindow * QCocoaWindow::createNSWindow()
                                                     // before the window is shown and needs a proper window.).
         if ((type & Qt::Popup) == Qt::Popup)
             [window setHasShadow:YES];
-        else
+        else {
              setWindowShadow(flags);
+             [window setHidesOnDeactivate: NO];
+        }
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
         if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
@@ -987,7 +1017,8 @@ QWindow *QCocoaWindow::childWindowAt(QPoint windowPoint)
         if (QWindow *childWindow = qobject_cast<QWindow *>(child)) {
             if (childWindow->geometry().contains(windowPoint)) {
                 QCocoaWindow* platformWindow = static_cast<QCocoaWindow*>(childWindow->handle());
-                targetWindow = platformWindow->childWindowAt(windowPoint - childWindow->position());
+                if (platformWindow->isExposed())
+                    targetWindow = platformWindow->childWindowAt(windowPoint - childWindow->position());
             }
         }
     }

@@ -858,11 +858,11 @@ QRect QFontMetrics::tightBoundingRect(const QString &text) const
     The \a flags argument is optional and currently only supports
     Qt::TextShowMnemonic as value.
 
-    The elide mark will follow the \l{Qt::LayoutDirection}{layout
-    direction}; it will be on the right side of the text for
-    right-to-left layouts, and on the left side for right-to-left
-    layouts. Note that this behavior is independent of the text
-    language.
+    The elide mark follows the \l{Qt::LayoutDirection}{layoutdirection}.
+    For example, it will be on the right side of the text for right-to-left
+    layouts if the \a mode is \c{Qt::ElideLeft}, and on the left side of the
+    text if the \a mode is \c{Qt::ElideRight}.
+
 */
 QString QFontMetrics::elidedText(const QString &text, Qt::TextElideMode mode, int width, int flags) const
 {
@@ -1643,13 +1643,18 @@ QRectF QFontMetricsF::tightBoundingRect(const QString &text) const
     Otherwise, returns the original string.
 
     The \a mode parameter specifies whether the text is elided on the
-    left (e.g., "...tech"), in the middle (e.g., "Tr...ch"), or on
-    the right (e.g., "Trol...").
+    left (for example, "...tech"), in the middle (for example, "Tr...ch"), or
+    on the right (for example, "Trol...").
 
     The \a width is specified in pixels, not characters.
 
     The \a flags argument is optional and currently only supports
     Qt::TextShowMnemonic as value.
+
+    The elide mark follows the \l{Qt::LayoutDirection}{layoutdirection}.
+    For example, it will be on the right side of the text for right-to-left
+    layouts if the \a mode is \c{Qt::ElideLeft}, and on the left side of the
+    text if the \a mode is \c{Qt::ElideRight}.
 */
 QString QFontMetricsF::elidedText(const QString &text, Qt::TextElideMode mode, qreal width, int flags) const
 {

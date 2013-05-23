@@ -13,7 +13,8 @@ exampledirs = .. \
               config
 
 imagedirs = ../../../doc/src/templates/images \
-            images
+            ../images \
+            ../../../../widgets/doc/images \
 
 tagfile = ../html/qdoc.tags
 

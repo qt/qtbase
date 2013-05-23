@@ -145,6 +145,7 @@ private slots:
     void connectFunctorArgDifference();
     void connectFunctorOverloads();
     void disconnectDoesNotLeakFunctor();
+    void connectBase();
 };
 
 struct QObjectCreatedOnShutdown
@@ -5810,6 +5811,30 @@ void tst_QObject::disconnectDoesNotLeakFunctor()
     }
     QCOMPARE(countedStructObjectsCount, 0);
 }
+
+class SubSender : public SenderObject {
+    Q_OBJECT
+};
+
+void tst_QObject::connectBase()
+{
+    SubSender sub;
+    ReceiverObject r1;
+    r1.reset();
+
+    QVERIFY( connect( &sub, &SubSender::signal1 , &r1, &ReceiverObject::slot1 ) );
+    QVERIFY( connect( &sub, static_cast<void (SenderObject::*)()>(&SubSender::signal2) , &r1, &ReceiverObject::slot2 ) );
+    QVERIFY( connect( &sub, static_cast<void (SubSender::*)()>(&SubSender::signal3) , &r1, &ReceiverObject::slot3 ) );
+
+    sub.emitSignal1();
+    sub.emitSignal2();
+    sub.emitSignal3();
+
+    QCOMPARE( r1.count_slot1, 1 );
+    QCOMPARE( r1.count_slot2, 1 );
+    QCOMPARE( r1.count_slot3, 1 );
+}
+
 
 QTEST_MAIN(tst_QObject)
 #include "tst_qobject.moc"

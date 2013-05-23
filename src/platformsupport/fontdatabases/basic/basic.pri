@@ -1,5 +1,4 @@
 DEFINES += QT_NO_FONTCONFIG
-QT += gui-private core-private
 
 HEADERS += \
         $$PWD/qbasicfontdatabase_p.h \

@@ -327,6 +327,11 @@ Qt::KeyboardModifiers QXcbIntegration::queryKeyboardModifiers() const
     return conn->keyboard()->translateModifiers(keybMask);
 }
 
+QList<int> QXcbIntegration::possibleKeys(const QKeyEvent *e) const
+{
+    return m_connections.at(0)->keyboard()->possibleKeys(e);
+}
+
 QStringList QXcbIntegration::themeNames() const
 {
     return QGenericUnixTheme::themeNames();
@@ -335,6 +340,33 @@ QStringList QXcbIntegration::themeNames() const
 QPlatformTheme *QXcbIntegration::createPlatformTheme(const QString &name) const
 {
     return QGenericUnixTheme::createUnixTheme(name);
+}
+
+QVariant QXcbIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
+{
+    switch (hint) {
+    case QPlatformIntegration::CursorFlashTime:
+    case QPlatformIntegration::KeyboardInputInterval:
+    case QPlatformIntegration::MouseDoubleClickInterval:
+    case QPlatformIntegration::StartDragDistance:
+    case QPlatformIntegration::StartDragTime:
+    case QPlatformIntegration::KeyboardAutoRepeatRate:
+    case QPlatformIntegration::PasswordMaskDelay:
+    case QPlatformIntegration::FontSmoothingGamma:
+    case QPlatformIntegration::StartDragVelocity:
+    case QPlatformIntegration::UseRtlExtensions:
+    case QPlatformIntegration::PasswordMaskCharacter:
+        // TODO using various xcb, gnome or KDE settings
+        break; // Not implemented, use defaults
+    case QPlatformIntegration::ShowIsFullScreen:
+        // X11 always has support for windows, but the
+        // window manager could prevent it (e.g. matchbox)
+        return false;
+    case QPlatformIntegration::SynthesizeMouseFromTouchEvents:
+        // We do not want Qt to synthesize mouse events if X11 already does it.
+        return m_connections.at(0)->hasTouchWithoutMouseEmulation();
+    }
+    return QPlatformIntegration::styleHint(hint);
 }
 
 QT_END_NAMESPACE

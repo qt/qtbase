@@ -237,8 +237,8 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         platformWindow->setFlag(QWindowsWindow::AutoMouseCapture);
         if (QWindowsContext::verboseEvents)
             qDebug() << "Automatic mouse capture " << window;
-        // Implement "Click to focus" for native child windows.
-        if (!window->isTopLevel() && QGuiApplication::focusWindow() != window)
+        // Implement "Click to focus" for native child windows (unless it is a native widget window).
+        if (!window->isTopLevel() && !window->inherits("QWidgetWindow") && QGuiApplication::focusWindow() != window)
             window->requestActivate();
     } else if (platformWindow->hasMouseCapture()
                && platformWindow->testFlag(QWindowsWindow::AutoMouseCapture)

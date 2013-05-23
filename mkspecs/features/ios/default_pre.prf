@@ -2,3 +2,9 @@
 unset(MAKEFILE_GENERATOR)
 
 load(default_pre)
+
+# Check for supported Xcode versions
+lessThan(QMAKE_XCODE_VERSION, "4.3"): \
+    error("This mkspec requires Xcode 4.3 or later")
+!lessThan(QMAKE_XCODE_VERSION, "4.7"): \
+    warning("The version of Xcode installed on this system is not recognized - custom compiler settings may be necessary")

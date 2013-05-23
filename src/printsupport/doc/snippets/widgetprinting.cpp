@@ -39,6 +39,11 @@
 ****************************************************************************/
 
 #include <QtGui>
+#include <QtWidgets>
+#ifndef QT_NO_PRINTER
+#include <QPrinter>
+#include <QPrintDialog>
+#endif
 
 class Window : public QWidget
 {
@@ -48,14 +53,20 @@ public:
     Window() {
         myWidget = new QPushButton("Print Me");
         connect(myWidget, SIGNAL(clicked()), this, SLOT(print()));
+        myWidget2 = new QPushButton("Print Document");
+        connect(myWidget2, SIGNAL(clicked()), this, SLOT(printFile()));
+        editor = new QTextEdit(this);
 
         QVBoxLayout *layout = new QVBoxLayout;
         layout->addWidget(myWidget);
+        layout->addWidget(myWidget2);
+        layout->addWidget(editor);
         setLayout(layout);
     }
 
 private slots:
     void print() {
+    #if !defined(QT_NO_PRINTER)
         QPrinter printer(QPrinter::HighResolution);
 
         printer.setOutputFileName("test.pdf");
@@ -73,11 +84,33 @@ private slots:
 
         myWidget->render(&painter);
 //! [0]
+    #endif
+    }
+
+    void printFile() {
+    #if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
+//! [1]
+        QPrinter printer;
+
+        QPrintDialog dialog(&printer, this);
+        dialog.setWindowTitle(tr("Print Document"));
+        if (editor->textCursor().hasSelection())
+            dialog.addEnabledOption(QAbstractPrintDialog::PrintSelection);
+        if (dialog.exec() != QDialog::Accepted) {
+            return;
+        }
+//! [1]
+        editor->print(&printer);
+    #endif
     }
 
 private:
     QPushButton *myWidget;
+    QPushButton *myWidget2;
+    QTextEdit   *editor;
 };
+
+#include "main.moc"
 
 int main(int argv, char **args)
 {
@@ -88,6 +121,3 @@ int main(int argv, char **args)
 
     return app.exec();
 }
-
-#include "main.moc"
-

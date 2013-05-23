@@ -82,15 +82,8 @@ public:
 
     WId winId() const { return WId(m_view); };
 
-    QList<QWindowSystemInterface::TouchPoint> &touchPoints()  { return m_touchPoints; }
-    QHash<UITouch *, int> &activeTouches() { return m_activeTouches; }
-    int &touchId() { return m_touchId; }
-
 private:
     UIView *m_view;
-    QList<QWindowSystemInterface::TouchPoint> m_touchPoints;
-    QHash<UITouch *, int> m_activeTouches;
-    int m_touchId;
 
     QRect m_requestedGeometry;
     int m_windowLevel;

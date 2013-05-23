@@ -350,6 +350,7 @@ void tst_QLocale::ctor()
     TEST_CTOR("es_ES", Spanish, Spain)
     TEST_CTOR("es_419", Spanish, LatinAmericaAndTheCaribbean)
     TEST_CTOR("es-419", Spanish, LatinAmericaAndTheCaribbean)
+    TEST_CTOR("fr_MA", French, Morocco)
 
     // test default countries for languages
     TEST_CTOR("zh", Chinese, China)

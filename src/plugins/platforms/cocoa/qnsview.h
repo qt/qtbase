@@ -69,6 +69,8 @@ QT_END_NAMESPACE
     bool m_sendUpAsRightButton;
     Qt::KeyboardModifiers currentWheelModifiers;
     bool m_subscribesForGlobalFrameNotifications;
+    QCocoaGLContext *m_glContext;
+    bool m_shouldSetGLContextinDrawRect;
 }
 
 - (id)init;

@@ -3821,7 +3821,8 @@ bool QApplicationPrivate::translateTouchToMouse(QWidget *widget, QTouchEvent *ev
         const QPoint pos = widget->mapFromGlobal(p.screenPos().toPoint());
 
         QMouseEvent mouseEvent(eventType, pos, p.screenPos().toPoint(),
-                               Qt::LeftButton, Qt::LeftButton,
+                               Qt::LeftButton,
+                               (eventType == QEvent::MouseButtonRelease) ? Qt::NoButton : Qt::LeftButton,
                                event->modifiers());
         mouseEvent.setAccepted(true);
         mouseEvent.setTimestamp(event->timestamp());

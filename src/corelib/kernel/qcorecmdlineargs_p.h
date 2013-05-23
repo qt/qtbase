@@ -101,11 +101,8 @@ static QVector<Char*> qWinCmdLine(Char *cmdParam, int length, int &argc)
                     }
                 }
                 if (*p == '\\') {                // escape char?
-                    p++;
-                    if (*p == Char('\"') || *p == Char('\''))
-                        ;                        // yes
-                    else
-                        p--;                        // treat \ literally
+                    if (*(p+1) == quote)
+                        p++;
                 } else {
                     if (!quote && (*p == Char('\"') || *p == Char('\''))) {        // " or ' quote
                         quote = *p++;

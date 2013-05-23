@@ -7,22 +7,27 @@ set(Qt5Gui_EGL_INCLUDE_DIRS \"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}/$$CMAK
 set(Qt5Gui_EGL_INCLUDE_DIRS \"$$CMAKE_INCLUDE_DIR\")
 !!ENDIF
 
+_qt5_Gui_check_file_exists(${Qt5Gui_EGL_INCLUDE_DIRS})
+
 set(Qt5Gui_OPENGL_INCLUDE_DIRS ${Qt5Gui_EGL_INCLUDE_DIRS})
 
 macro(_populate_qt5gui_gl_target_properties TargetName Configuration LIB_LOCATION IMPLIB_LOCATION)
     set_property(TARGET Qt5::${TargetName} APPEND PROPERTY IMPORTED_CONFIGURATIONS ${Configuration})
 
+!!IF isEmpty(CMAKE_LIB_DIR_IS_ABSOLUTE)
+    set(imported_location \"${_qt5Gui_install_prefix}/$${CMAKE_LIB_DIR}${LIB_LOCATION}\")
+!!ELSE
+    set(imported_location \"$${CMAKE_LIB_DIR}${LIB_LOCATION}\")
+!!ENDIF
+!!IF isEmpty(CMAKE_LIB_DIR_IS_ABSOLUTE)
+    set(imported_implib \"${_qt5Gui_install_prefix}/$${CMAKE_LIB_DIR}${IMPLIB_LOCATION}\")
+!!ELSE
+    set(imported_implib \"$${CMAKE_LIB_DIR}${IMPLIB_LOCATION}\")
+!!ENDIF
+
     set_target_properties(Qt5::${TargetName} PROPERTIES
-!!IF isEmpty(CMAKE_LIB_DIR_IS_ABSOLUTE)
-        \"IMPORTED_LOCATION_${Configuration}\" \"${_qt5Gui_install_prefix}/$${CMAKE_LIB_DIR}${LIB_LOCATION}\"
-!!ELSE
-        \"IMPORTED_LOCATION_${Configuration}\" \"$${CMAKE_LIB_DIR}${LIB_LOCATION}\"
-!!ENDIF
-!!IF isEmpty(CMAKE_LIB_DIR_IS_ABSOLUTE)
-        \"IMPORTED_IMPLIB_${Configuration}\" \"${_qt5Gui_install_prefix}/$${CMAKE_LIB_DIR}${IMPLIB_LOCATION}\"
-!!ELSE
-        \"IMPORTED_IMPLIB_${Configuration}\" \"$${CMAKE_LIB_DIR}${IMPLIB_LOCATION}\"
-!!ENDIF
+        \"IMPORTED_LOCATION_${Configuration}\" ${imported_location}
+        \"IMPORTED_IMPLIB_${Configuration}\" ${imported_implib}
     )
 endmacro()
 
@@ -53,6 +58,8 @@ if (NOT _qt5gui_OPENGL_INCLUDE_DIR)
     message(FATAL_ERROR \"Failed to find \\\"$$CMAKE_GL_HEADER_NAME\\\" in \\\"$$CMAKE_GL_INCDIRS\\\", using the CMAKE_FIND_ROOT_PATH \\\"${CMAKE_FIND_ROOT_PATH}\\\".\")
 endif()
 
+_qt5_Gui_check_file_exists(${_qt5gui_OPENGL_INCLUDE_DIR})
+
 list(APPEND Qt5Gui_INCLUDE_DIRS ${_qt5gui_OPENGL_INCLUDE_DIR})
 set_property(TARGET Qt5::Gui APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${_qt5gui_OPENGL_INCLUDE_DIR})
 
@@ -62,7 +69,7 @@ unset(_qt5gui_OPENGL_INCLUDE_DIR CACHE)
 
 macro(_qt5gui_find_extra_libs Name Libs LibDir IncDirs)
     set(Qt5Gui_${Name}_LIBRARIES)
-    set(Qt5Gui_EGL_INCLUDE_DIRS ${IncDirs})
+    set(Qt5Gui_${Name}_INCLUDE_DIRS ${IncDirs})
     foreach(_lib ${Libs})
         string(REGEX REPLACE "[^_A-Za-z0-9]" "_" _cmake_lib_name ${_lib})
         if (NOT TARGET Qt5::Gui_${_cmake_lib_name})
@@ -75,13 +82,19 @@ macro(_qt5gui_find_extra_libs Name Libs LibDir IncDirs)
             set(Qt5Gui_${_cmake_lib_name}_LIBRARY "${Qt5Gui_${_cmake_lib_name}_LIBRARY}/${_lib}")
 !!ENDIF
             if (NOT Qt5Gui_${_cmake_lib_name}_LIBRARY)
-                message(FATAL_ERROR \"Failed to find \\\"${_lib}\\\" in \\\"${LibDir}\\\", using the CMAKE_FIND_ROOT_PATH \\\"${CMAKE_FIND_ROOT_PATH}\\\".\")
+                if (\"${ARGN}\" STREQUAL \"OPTIONAL\")
+                    break()
+                else()
+                    message(FATAL_ERROR \"Failed to find \\\"${_lib}\\\" in \\\"${LibDir}\\\", using the CMAKE_FIND_ROOT_PATH \\\"${CMAKE_FIND_ROOT_PATH}\\\".\")
+                endif()
             endif()
             add_library(Qt5::Gui_${_cmake_lib_name} SHARED IMPORTED)
             set_property(TARGET Qt5::Gui_${_cmake_lib_name} APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${IncDirs})
 
             set_property(TARGET Qt5::Gui_${_cmake_lib_name} APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+            _qt5_Gui_check_file_exists(\"${Qt5Gui_${_cmake_lib_name}_LIBRARY}\")
             set_property(TARGET Qt5::Gui_${_cmake_lib_name} PROPERTY IMPORTED_LOCATION_RELEASE \"${Qt5Gui_${_cmake_lib_name}_LIBRARY}\")
+
 !!IF !isEmpty(CMAKE_WINDOWS_BUILD)
             set_property(TARGET Qt5::Gui_${_cmake_lib_name} PROPERTY IMPORTED_IMPLIB_RELEASE \"${Qt5Gui_${_cmake_lib_name}_LIBRARY}\")
 !!ENDIF
@@ -91,6 +104,7 @@ macro(_qt5gui_find_extra_libs Name Libs LibDir IncDirs)
                 PATHS \"${LibDir}\" NO_DEFAULT_PATH)
             if (Qt5Gui_${_cmake_lib_name}_LIBRARY_DEBUG)
                 set_property(TARGET Qt5::Gui_${_cmake_lib_name} APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
+                _qt5_Gui_check_file_exists(\"${Qt5Gui_${_cmake_lib_name}_LIBRARY_DEBUG}\")
                 set_property(TARGET Qt5::Gui_${_cmake_lib_name} PROPERTY IMPORTED_LOCATION_DEBUG \"${Qt5Gui_${_cmake_lib_name}_LIBRARY_DEBUG}\")
 !!IF !isEmpty(CMAKE_WINDOWS_BUILD)
                 set_property(TARGET Qt5::Gui_${_cmake_lib_name} PROPERTY IMPORTED_IMPLIB_DEBUG \"${Qt5Gui_${_cmake_lib_name}_LIBRARY_DEBUG}\")
@@ -100,11 +114,14 @@ macro(_qt5gui_find_extra_libs Name Libs LibDir IncDirs)
         endif()
         list(APPEND Qt5Gui_${Name}_LIBRARIES Qt5::Gui_${_cmake_lib_name})
     endforeach()
+    foreach(_dir ${IncDirs})
+        _qt5_Gui_check_file_exists(${_dir})
+    endforeach()
 endmacro()
 
 
 !!IF !isEmpty(CMAKE_EGL_LIBS)
-_qt5gui_find_extra_libs(EGL \"$$CMAKE_EGL_LIBS\" \"$$CMAKE_EGL_LIBDIR\" \"$$CMAKE_EGL_INCDIRS\")
+_qt5gui_find_extra_libs(EGL \"$$CMAKE_EGL_LIBS\" \"$$CMAKE_EGL_LIBDIR\" \"$$CMAKE_EGL_INCDIRS\" OPTIONAL)
 !!ENDIF
 
 !!IF !isEmpty(CMAKE_OPENGL_LIBS)

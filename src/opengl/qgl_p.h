@@ -132,6 +132,7 @@ class Q_OPENGL_EXPORT QGLWidgetPrivate : public QWidgetPrivate
 public:
     QGLWidgetPrivate() : QWidgetPrivate()
                        , disable_clear_on_painter_begin(false)
+                       , parent_changing(false)
     {
     }
 
@@ -142,7 +143,7 @@ public:
     bool renderCxPm(QPixmap *pixmap);
     void cleanupColormaps();
     void aboutToDestroy() {
-        if (glcx)
+        if (glcx && !parent_changing)
             glcx->reset();
     }
 
@@ -153,6 +154,7 @@ public:
     QGLColormap cmap;
 
     bool disable_clear_on_painter_begin;
+    bool parent_changing;
 };
 
 // QGLContextPrivate has the responsibility of creating context groups.

@@ -72,7 +72,7 @@
 #  include <envLib.h>
 #endif
 
-#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
+#if defined(Q_OS_MACX)
 #include <CoreServices/CoreServices.h>
 #endif
 
@@ -235,6 +235,12 @@ Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
 
 /*!
     \fn QFlags &QFlags::operator&=(uint mask)
+
+    \overload
+*/
+
+/*!
+    \fn QFlags &QFlags::operator&=(Enum mask)
 
     \overload
 */
@@ -928,8 +934,8 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \endlist
 
     Some constants are defined only on certain platforms. You can use
-    the preprocessor symbols Q_OS_WIN and Q_OS_MAC to test that
-    the application is compiled under Windows or Mac.
+    the preprocessor symbols Q_OS_WIN and Q_OS_MACX to test that
+    the application is compiled under Windows or OS X.
 
     \sa QLibraryInfo
 */
@@ -1071,6 +1077,27 @@ bool qSharedBuild() Q_DECL_NOTHROW
 
     Defined on Darwin OS (synonym for Q_OS_MAC).
 */
+
+/*!
+    \macro Q_OS_MAC
+    \relates <QtGlobal>
+
+    Defined on OS X and iOS (synonym for Q_OS_DARWIN).
+ */
+
+/*!
+    \macro Q_OS_MACX
+    \relates <QtGlobal>
+
+    Defined on OS X.
+ */
+
+/*!
+    \macro Q_OS_IOS
+    \relates <QtGlobal>
+
+    Defined on iOS.
+ */
 
 /*!
     \macro Q_OS_WIN
@@ -1395,13 +1422,6 @@ bool qSharedBuild() Q_DECL_NOTHROW
 */
 
 /*!
-  \macro Q_OS_MAC
-  \relates <QtGlobal>
-
-  Defined on MAC OS (synonym for Darwin).
- */
-
-/*!
     \macro Q_PROCESSOR_ALPHA
     \relates <QtGlobal>
 
@@ -1646,7 +1666,7 @@ static const unsigned int qt_one = 1;
 const int QSysInfo::ByteOrder = ((*((unsigned char *) &qt_one) == 0) ? BigEndian : LittleEndian);
 #endif
 
-#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
+#if defined(Q_OS_MACX)
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "private/qcore_mac_p.h"
@@ -1668,7 +1688,7 @@ Q_CORE_EXPORT void qt_mac_to_pascal_string(QString s, Str255 str, TextEncoding e
 Q_CORE_EXPORT QString qt_mac_from_pascal_string(const Str255 pstr) {
     return QCFString(CFStringCreateWithPascalString(0, pstr, CFStringGetSystemEncoding()));
 }
-#endif // defined(Q_OS_MAC) && !defined(Q_OS_IOS)
+#endif // defined(Q_OS_MACX)
 
 #if defined(Q_OS_MAC)
 

@@ -118,18 +118,17 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
     // Cache initial orientation of this display
     errno = 0;
     int result = screen_get_display_property_iv(m_display, SCREEN_PROPERTY_ROTATION, &m_initialRotation);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQnxScreen: failed to query display rotation, errno=%d", errno);
-    }
+
     m_currentRotation = m_initialRotation;
 
     // Cache size of this display in pixels
     errno = 0;
     int val[2];
     result = screen_get_display_property_iv(m_display, SCREEN_PROPERTY_SIZE, val);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQnxScreen: failed to query display size, errno=%d", errno);
-    }
 
     m_currentGeometry = m_initialGeometry = QRect(0, 0, val[0], val[1]);
 
@@ -165,9 +164,8 @@ static int defaultDepth()
         // check if display depth was specified in environment variable;
         // use default value if no valid value found
         defaultDepth = qgetenv("QQNX_DISPLAY_DEPTH").toInt();
-        if (defaultDepth != 16 && defaultDepth != 32) {
+        if (defaultDepth != 16 && defaultDepth != 32)
             defaultDepth = 32;
-        }
     }
     return defaultDepth;
 }

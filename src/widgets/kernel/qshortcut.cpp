@@ -246,9 +246,19 @@ static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidge
         QWidget *w = widgets.at(i);
 #ifndef QT_NO_MENU
         if (QMenu *menu = qobject_cast<QMenu *>(w)) {
+#ifdef Q_OS_MAC
+            // On Mac, menu item shortcuts are processed before reaching any window.
+            // That means that if a menu action shortcut has not been already processed
+            // (and reaches this point), then the menu item itself has been disabled.
+            // This occurs at the QPA level on Mac, were we disable all the Cocoa menus
+            // when showing a modal window.
+            Q_UNUSED(menu);
+            continue;
+#else
             QAction *a = menu->menuAction();
             if (correctActionContext(context, a, active_window))
                 return true;
+#endif
         } else
 #endif
             if (correctWidgetContext(context, w, active_window))

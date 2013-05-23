@@ -58,6 +58,7 @@
 #include <private/qguiapplication_p.h>
 #include "qcocoabackingstore.h"
 #include "qcocoaglcontext.h"
+#include "qcocoaintegration.h"
 
 #ifdef QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
 #include <accessibilityinspector.h>
@@ -85,6 +86,8 @@ static QTouchDevice *touchDevice = 0;
         m_buttons = Qt::NoButton;
         m_sendKeyEvent = false;
         m_subscribesForGlobalFrameNotifications = false;
+        m_glContext = 0;
+        m_shouldSetGLContextinDrawRect = false;
         currentCustomDragTypes = 0;
         m_sendUpAsRightButton = false;
 
@@ -150,7 +153,13 @@ static QTouchDevice *touchDevice = 0;
 
 - (void) setQCocoaGLContext:(QCocoaGLContext *)context
 {
-    [context->nsOpenGLContext() setView:self];
+    m_glContext = context;
+    [m_glContext->nsOpenGLContext() setView:self];
+    if (![m_glContext->nsOpenGLContext() view]) {
+        //was unable to set view
+        m_shouldSetGLContextinDrawRect = true;
+    }
+
     if (!m_subscribesForGlobalFrameNotifications) {
         // NSOpenGLContext expects us to repaint (or update) the view when
         // it changes position on screen. Since this happens unnoticed for
@@ -268,6 +277,15 @@ static QTouchDevice *touchDevice = 0;
         m_platformWindow->obscureWindow();
     } else if ([notificationName isEqualToString: @"NSWindowDidOrderOnScreenAndFinishAnimatingNotification"]) {
         m_platformWindow->exposeWindow();
+    } else if (notificationName == NSWindowDidChangeScreenNotification) {
+        if (m_window) {
+            QCocoaIntegration *ci = static_cast<QCocoaIntegration *>(QGuiApplicationPrivate::platformIntegration());
+            NSUInteger screenIndex = [[NSScreen screens] indexOfObject:self.window.screen];
+            if (screenIndex != NSNotFound) {
+                QCocoaScreen *cocoaScreen = ci->screenAtIndex(screenIndex);
+                QWindowSystemInterface::handleWindowScreenChanged(m_window, cocoaScreen->screen());
+            }
+        }
     } else {
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
@@ -344,6 +362,11 @@ static QTouchDevice *touchDevice = 0;
 
 - (void) drawRect:(NSRect)dirtyRect
 {
+    if (m_glContext && m_shouldSetGLContextinDrawRect) {
+        [m_glContext->nsOpenGLContext() setView:self];
+        m_shouldSetGLContextinDrawRect = false;
+    }
+
     if (!m_backingStore)
         return;
 
@@ -1304,14 +1327,17 @@ static QTouchDevice *touchDevice = 0;
         QCocoaDropData mimeData([sender draggingPasteboard]);
         response = QWindowSystemInterface::handleDrop(m_window, &mimeData, qt_windowPoint, qtAllowed);
     }
+    if (response.isAccepted()) {
+        QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
+        nativeDrag->setAcceptedAction(response.acceptedAction());
+    }
     return response.isAccepted();
 }
 
 - (void)draggedImage:(NSImage*) img endedAt:(NSPoint) point operation:(NSDragOperation) operation
 {
     Q_UNUSED(img);
-    QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
-    nativeDrag->setAcceptedAction(qt_mac_mapNSDragOperation(operation));
+    Q_UNUSED(operation);
 
 // keep our state, and QGuiApplication state (buttons member) in-sync,
 // or future mouse events will be processed incorrectly

@@ -345,7 +345,7 @@ QTextStream &operator<<(QTextStream &t, const ProString &str)
     return t;
 }
 
-static QString ProStringList_join(const ProStringList &this_, const QChar *sep, const size_t sepSize)
+static QString ProStringList_join(const ProStringList &this_, const QChar *sep, const int sepSize)
 {
     int totalLength = 0;
     const int sz = this_.size();

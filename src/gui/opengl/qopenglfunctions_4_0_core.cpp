@@ -57,6 +57,7 @@ QT_BEGIN_NAMESPACE
     \class QOpenGLFunctions_4_0_Core
     \inmodule QtGui
     \since 5.1
+    \wrapper
     \brief The QOpenGLFunctions_4_0_Core class provides all functions for this version and profile of OpenGL.
 
     \sa QAbstractOpenGLFunctions

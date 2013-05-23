@@ -161,7 +161,8 @@ void GLWidget::paintEvent(QPaintEvent *event)
     static GLfloat lightPosition[4] = { 0.5, 5.0, 7.0, 1.0 };
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
-    setupViewport(width(), height());
+    qreal pixelRatio = devicePixelRatio();
+    setupViewport(width() * pixelRatio, height() * pixelRatio);
 //! [6]
 
 //! [7]
@@ -200,7 +201,8 @@ void GLWidget::paintEvent(QPaintEvent *event)
 //! [11]
 void GLWidget::resizeGL(int width, int height)
 {
-    setupViewport(width, height);
+    qreal pixelRatio = devicePixelRatio();
+    setupViewport(width*pixelRatio, height*pixelRatio);
 }
 //! [11]
 

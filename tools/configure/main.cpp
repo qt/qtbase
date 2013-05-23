@@ -55,9 +55,7 @@ int runConfigure( int argc, char** argv )
         return 3;
 
     app.parseCmdLine();
-#if !defined(EVAL)
     app.validateArgs();
-#endif
     if (!app.isOk())
         return 3;
     if( app.displayHelp() )
@@ -70,22 +68,29 @@ int runConfigure( int argc, char** argv )
     if (!app.isOk())
         return 3;
 
+    // Source file with path settings. Needed by qmake.
     app.generateQConfigCpp();
 
+    // Bootstrapped includes. Needed by qmake.
     app.generateHeaders();
     if (!app.isOk())
         return 3;
 
+    // Bootstrap qmake. Needed by config tests.
     app.buildQmake();
     if (!app.isOk())
         return 3;
 
-    app.generateSystemVars();
+    // Prepare the config test build directory.
+    app.prepareConfigTests();
     if (!app.isOk())
         return 3;
 
     // Auto-detect modules and settings.
     app.autoDetection();
+
+    // ... and the CPU architectures.
+    app.detectArch();
 
     // After reading all command-line arguments, and doing all the
     // auto-detection, it's time to do some last minute validation.
@@ -95,22 +100,14 @@ int runConfigure( int argc, char** argv )
 
     app.generateOutputVars();
 
-#if !defined(EVAL)
     if( !app.isDone() )
 	app.generateCachefile();
     if( !app.isDone() )
-        app.generateBuildKey();
-    if( !app.isDone() )
 	app.generateConfigfiles();
-    // must be done after buildQmake()
-    if (!app.isDone())
-        app.detectArch();
-    // must be done after detectArch()
     if (!app.isDone())
         app.generateQConfigPri();
     if (!app.isDone())
         app.displayConfig();
-#endif
     if( !app.isDone() )
 	app.generateMakefiles();
     if( !app.isDone() )

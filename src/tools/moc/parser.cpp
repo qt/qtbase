@@ -64,10 +64,10 @@ void Parser::error(int rollback) {
 }
 void Parser::error(const char *msg) {
     if (msg || error_msg)
-        qWarning(ErrorFormatString "Error: %s",
+        fprintf(stderr, ErrorFormatString "Error: %s\n",
                  currentFilenames.top().constData(), symbol().lineNum, msg?msg:error_msg);
     else
-        qWarning(ErrorFormatString "Parse error at \"%s\"",
+        fprintf(stderr, ErrorFormatString "Parse error at \"%s\"\n",
                  currentFilenames.top().constData(), symbol().lineNum, symbol().lexem().data());
     exit(EXIT_FAILURE);
 }

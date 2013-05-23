@@ -1310,9 +1310,7 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     file, optionally manipulating the image data, before the QImage
     object is converted into a QPixmap to be shown on
     screen. Alternatively, if no manipulation is desired, the image
-    file can be loaded directly into a QPixmap. On Windows, the
-    QPixmap class also supports conversion between \c HBITMAP and
-    QPixmap.
+    file can be loaded directly into a QPixmap.
 
     QPixmap provides a collection of functions that can be used to
     obtain a variety of information about the pixmap. In addition,
@@ -1410,14 +1408,9 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     QPixmap using the fromImage(). If this is too expensive an
     operation, you can use QBitmap::fromImage() instead.
 
-    In addition, on Windows, the QPixmap class supports conversion to
-    and from HBITMAP: the toWinHBITMAP() function creates a HBITMAP
-    equivalent to the QPixmap, based on the given HBitmapFormat, and
-    returns the HBITMAP handle. The fromWinHBITMAP() function returns
-    a QPixmap that is equivalent to the given bitmap which has the
-    specified format. The QPixmap class also supports conversion to
-    and from HICON: the toWinHICON() function creates a HICON equivalent
-    to the QPixmap, and returns the HICON handle. The fromWinHICON()
+    The QPixmap class also supports conversion to and from HICON:
+    the toWinHICON() function creates a HICON equivalent to the
+    QPixmap, and returns the HICON handle. The fromWinHICON()
     function returns a QPixmap that is equivalent to the given icon.
 
     \section1 Pixmap Transformations

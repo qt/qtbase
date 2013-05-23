@@ -253,10 +253,13 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
 #endif
     , xfixes_first_event(0)
     , xrandr_first_event(0)
+    , xkb_first_event(0)
     , has_glx_extension(false)
     , has_shape_extension(false)
     , has_randr_extension(false)
     , has_input_shape(false)
+    , has_touch_without_mouse_emulation(false)
+    , has_xkb(false)
     , m_buttons(0)
     , m_focusWindow(0)
 {
@@ -297,6 +300,9 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
 
     xcb_extension_t *extensions[] = {
         &xcb_shm_id, &xcb_xfixes_id, &xcb_randr_id, &xcb_shape_id, &xcb_sync_id,
+#ifndef QT_NO_XKB
+        &xcb_xkb_id,
+#endif
 #ifdef XCB_USE_RENDER
         &xcb_render_id,
 #endif
@@ -335,6 +341,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     initializeXInput2();
 #endif
     initializeXShape();
+    initializeXKB();
 
     m_wmSupport.reset(new QXcbWMSupport(this));
     m_keyboard = new QXcbKeyboard(this);
@@ -478,7 +485,6 @@ void printXcbEvent(const char *message, xcb_generic_event_t *event)
     PRINT_XCB_EVENT(XCB_SELECTION_NOTIFY);
     PRINT_XCB_EVENT(XCB_COLORMAP_NOTIFY);
     PRINT_XCB_EVENT(XCB_CLIENT_MESSAGE);
-    PRINT_XCB_EVENT(XCB_MAPPING_NOTIFY);
     default:
         qDebug("QXcbConnection: %s: unknown event - response_type: %d - sequence: %d", message, int(event->response_type & ~0x80), int(event->sequence));
     }
@@ -744,6 +750,23 @@ void QXcbConnection::handleButtonRelease(xcb_generic_event_t *ev)
     m_buttons &= ~translateMouseButton(event->detail);
 }
 
+#ifndef QT_NO_XKB
+namespace {
+    typedef union {
+        /* All XKB events share these fields. */
+        struct {
+            uint8_t response_type;
+            uint8_t xkbType;
+            uint16_t sequence;
+            xcb_timestamp_t time;
+            uint8_t deviceID;
+        } any;
+        xcb_xkb_map_notify_event_t map_notify;
+        xcb_xkb_state_notify_event_t state_notify;
+    } _xkb_event;
+}
+#endif
+
 void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
 {
 #ifdef Q_XCB_DEBUG
@@ -768,12 +791,21 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         case XCB_EXPOSE:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleExposeEvent);
         case XCB_BUTTON_PRESS:
+#ifdef QT_NO_XKB
+            m_keyboard->updateXKBStateFromCore(((xcb_button_press_event_t *)event)->state);
+#endif
             handleButtonPress(event);
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_press_event_t, event, handleButtonPressEvent);
         case XCB_BUTTON_RELEASE:
+#ifdef QT_NO_XKB
+            m_keyboard->updateXKBStateFromCore(((xcb_button_release_event_t *)event)->state);
+#endif
             handleButtonRelease(event);
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_release_event_t, event, handleButtonReleaseEvent);
         case XCB_MOTION_NOTIFY:
+#ifdef QT_NO_XKB
+            m_keyboard->updateXKBStateFromCore(((xcb_motion_notify_event_t *)event)->state);
+#endif
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_motion_notify_event_t, event, handleMotionNotifyEvent);
         case XCB_CONFIGURE_NOTIFY:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_configure_notify_event_t, event, handleConfigureNotifyEvent);
@@ -787,18 +819,29 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         case XCB_ENTER_NOTIFY:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_enter_notify_event_t, event, handleEnterNotifyEvent);
         case XCB_LEAVE_NOTIFY:
+#ifdef QT_NO_XKB
+            m_keyboard->updateXKBStateFromCore(((xcb_leave_notify_event_t *)event)->state);
+#endif
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_leave_notify_event_t, event, handleLeaveNotifyEvent);
         case XCB_FOCUS_IN:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_in_event_t, event, handleFocusInEvent);
         case XCB_FOCUS_OUT:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_focus_out_event_t, event, handleFocusOutEvent);
         case XCB_KEY_PRESS:
+#ifdef QT_NO_XKB
+            m_keyboard->updateXKBStateFromCore(((xcb_key_press_event_t *)event)->state);
+#endif
             HANDLE_KEYBOARD_EVENT(xcb_key_press_event_t, handleKeyPressEvent);
         case XCB_KEY_RELEASE:
+#ifdef QT_NO_XKB
+            m_keyboard->updateXKBStateFromCore(((xcb_key_release_event_t *)event)->state);
+#endif
             HANDLE_KEYBOARD_EVENT(xcb_key_release_event_t, handleKeyReleaseEvent);
+#ifdef QT_NO_XKB
         case XCB_MAPPING_NOTIFY:
             m_keyboard->handleMappingNotifyEvent((xcb_mapping_notify_event_t *)event);
             break;
+#endif
         case XCB_SELECTION_REQUEST:
         {
             xcb_selection_request_event_t *sr = (xcb_selection_request_event_t *)event;
@@ -861,6 +904,24 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
                 }
             }
             handled = true;
+#ifndef QT_NO_XKB
+        } else if (response_type == xkb_first_event) { // https://bugs.freedesktop.org/show_bug.cgi?id=51295
+            _xkb_event *xkb_event = reinterpret_cast<_xkb_event *>(event);
+            if (xkb_event->any.deviceID == m_keyboard->coreDeviceId()) {
+                switch (xkb_event->any.xkbType) {
+                    case XCB_XKB_STATE_NOTIFY:
+                        m_keyboard->updateXKBState(&xkb_event->state_notify);
+                        handled = true;
+                        break;
+                    case XCB_XKB_MAP_NOTIFY:
+                        m_keyboard->handleMappingNotifyEvent(&xkb_event->map_notify);
+                        handled = true;
+                        break;
+                    default:
+                        break;
+                }
+            }
+#endif
         }
     }
 
@@ -868,7 +929,6 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
     if (!handled) {
         // Check if a custom XEvent constructor was registered in xlib for this event type, and call it discarding the constructed XEvent if any.
         // XESetWireToEvent might be used by libraries to intercept messages from the X server e.g. the OpenGL lib waiting for DRI2 events.
-
         Display *xdisplay = (Display *)m_xlib_display;
         XLockDisplay(xdisplay);
         Bool (*proc)(Display*, XEvent*, xEvent*) = XESetWireToEvent(xdisplay, response_type, 0);
@@ -1016,30 +1076,34 @@ namespace
 xcb_timestamp_t QXcbConnection::getTimestamp()
 {
     // send a dummy event to myself to get the timestamp from X server.
-    xcb_window_t rootWindow = screens().at(primaryScreen())->root();
-    xcb_change_property(xcb_connection(), XCB_PROP_MODE_APPEND, rootWindow, atom(QXcbAtom::CLIP_TEMPORARY),
+    xcb_window_t root_win = rootWindow();
+    xcb_change_property(xcb_connection(), XCB_PROP_MODE_APPEND, root_win, atom(QXcbAtom::CLIP_TEMPORARY),
                         XCB_ATOM_INTEGER, 32, 0, NULL);
 
     connection()->flush();
-    PropertyNotifyEvent checker(rootWindow, atom(QXcbAtom::CLIP_TEMPORARY));
+    PropertyNotifyEvent checker(root_win, atom(QXcbAtom::CLIP_TEMPORARY));
 
     xcb_generic_event_t *event = 0;
     // lets keep this inside a loop to avoid a possible race condition, where
     // reader thread has not yet had the time to acquire the mutex in order
     // to add the new set of events to its event queue
-    while (true) {
+    while (!event) {
         connection()->sync();
-        if ((event = checkEvent(checker)))
-            break;
+        event = checkEvent(checker);
     }
 
     xcb_property_notify_event_t *pn = (xcb_property_notify_event_t *)event;
     xcb_timestamp_t timestamp = pn->time;
     free(event);
 
-    xcb_delete_property(xcb_connection(), rootWindow, atom(QXcbAtom::CLIP_TEMPORARY));
+    xcb_delete_property(xcb_connection(), root_win, atom(QXcbAtom::CLIP_TEMPORARY));
 
     return timestamp;
+}
+
+xcb_window_t QXcbConnection::rootWindow()
+{
+    return screens().at(primaryScreen())->root();
 }
 
 void QXcbConnection::processXcbEvents()
@@ -1333,6 +1397,7 @@ static const char * xcb_atomnames = {
 #if XCB_USE_MAEMO_WINDOW_PROPERTIES
     "_MEEGOTOUCH_ORIENTATION_ANGLE\0"
 #endif
+    "_XSETTINGS_SETTINGS"
 };
 
 xcb_atom_t QXcbConnection::atom(QXcbAtom::Atom atom)
@@ -1538,6 +1603,67 @@ void QXcbConnection::initializeXShape()
     free(shape_query);
 }
 
+void QXcbConnection::initializeXKB()
+{
+#ifndef QT_NO_XKB
+    const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_connection, &xcb_xkb_id);
+    if (!reply || !reply->present) {
+        xkb_first_event = 0;
+        return;
+    }
+    xkb_first_event = reply->first_event;
+
+    xcb_connection_t *c = connection()->xcb_connection();
+    xcb_xkb_use_extension_cookie_t xkb_query_cookie;
+    xcb_xkb_use_extension_reply_t *xkb_query;
+
+    xkb_query_cookie = xcb_xkb_use_extension(c, XCB_XKB_MAJOR_VERSION, XCB_XKB_MINOR_VERSION);
+    xkb_query = xcb_xkb_use_extension_reply(c, xkb_query_cookie, 0);
+
+    if (!xkb_query) {
+        qWarning("Qt: Failed to initialize XKB extension");
+        return;
+    } else if (!xkb_query->supported) {
+        qWarning("Qt: Unsupported XKB version (want %d %d, has %d %d)",
+                 XCB_XKB_MAJOR_VERSION, XCB_XKB_MINOR_VERSION,
+                 xkb_query->serverMajor, xkb_query->serverMinor);
+        free(xkb_query);
+        return;
+    }
+
+    has_xkb = true;
+    free(xkb_query);
+
+    uint affectMap, map;
+    affectMap = map = XCB_XKB_MAP_PART_KEY_TYPES |
+            XCB_XKB_MAP_PART_KEY_SYMS |
+            XCB_XKB_MAP_PART_MODIFIER_MAP |
+            XCB_XKB_MAP_PART_EXPLICIT_COMPONENTS |
+            XCB_XKB_MAP_PART_KEY_ACTIONS |
+            XCB_XKB_MAP_PART_KEY_BEHAVIORS |
+            XCB_XKB_MAP_PART_VIRTUAL_MODS |
+            XCB_XKB_MAP_PART_VIRTUAL_MOD_MAP;
+
+    // Xkb events are reported to all interested clients without regard
+    // to the current keyboard input focus or grab state
+    xcb_void_cookie_t select = xcb_xkb_select_events_checked(c,
+                       XCB_XKB_ID_USE_CORE_KBD,
+                       XCB_XKB_EVENT_TYPE_STATE_NOTIFY | XCB_XKB_EVENT_TYPE_MAP_NOTIFY,
+                       0,
+                       XCB_XKB_EVENT_TYPE_STATE_NOTIFY | XCB_XKB_EVENT_TYPE_MAP_NOTIFY,
+                       affectMap,
+                       map,
+                       0);
+
+    xcb_generic_error_t *error = xcb_request_check(c, select);
+    if (error) {
+        free(error);
+        qWarning() << "Qt: failed to select notify events from xcb-xkb";
+        return;
+    }
+#endif
+}
+
 #if defined(XCB_USE_EGL)
 bool QXcbConnection::hasEgl() const
 {
@@ -1593,5 +1719,25 @@ bool QXcbConnection::xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *event, int o
     return false;
 }
 #endif // defined(XCB_USE_XINPUT2) || defined(XCB_USE_XINPUT2_MAEMO)
+
+QXcbConnectionGrabber::QXcbConnectionGrabber(QXcbConnection *connection)
+    :m_connection(connection)
+{
+    connection->grabServer();
+}
+
+QXcbConnectionGrabber::~QXcbConnectionGrabber()
+{
+    if (m_connection)
+        m_connection->ungrabServer();
+}
+
+void QXcbConnectionGrabber::release()
+{
+    if (m_connection) {
+        m_connection->ungrabServer();
+        m_connection = 0;
+    }
+}
 
 QT_END_NAMESPACE

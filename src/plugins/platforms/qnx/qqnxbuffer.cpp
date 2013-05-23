@@ -69,36 +69,31 @@ QQnxBuffer::QQnxBuffer(screen_buffer_t buffer)
     errno = 0;
     int size[2];
     int result = screen_get_buffer_property_iv(buffer, SCREEN_PROPERTY_BUFFER_SIZE, size);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQNX: failed to query buffer size, errno=%d", errno);
-    }
 
     // Get stride of buffer
     errno = 0;
     int stride;
     result = screen_get_buffer_property_iv(buffer, SCREEN_PROPERTY_STRIDE, &stride);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQNX: failed to query buffer stride, errno=%d", errno);
-    }
 
     // Get access to buffer's data
     errno = 0;
     uchar *dataPtr = 0;
     result = screen_get_buffer_property_pv(buffer, SCREEN_PROPERTY_POINTER, (void **)&dataPtr);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQNX: failed to query buffer pointer, errno=%d", errno);
-    }
-    if (dataPtr == 0) {
+    if (dataPtr == 0)
         qFatal("QQNX: buffer pointer is NULL, errno=%d", errno);
-    }
 
     // Get format of buffer
     errno = 0;
     int screenFormat;
     result = screen_get_buffer_property_iv(buffer, SCREEN_PROPERTY_FORMAT, &screenFormat);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQNX: failed to query buffer format, errno=%d", errno);
-    }
 
     // Convert screen format to QImage format
     QImage::Format imageFormat = QImage::Format_Invalid;
@@ -146,16 +141,14 @@ void QQnxBuffer::invalidateInCache()
     qBufferDebug() << Q_FUNC_INFO;
 
     // Verify native buffer exists
-    if (m_buffer == 0) {
+    if (m_buffer == 0)
         qFatal("QQNX: can't invalidate cache for null buffer");
-    }
 
     // Evict buffer's data from cache
     errno = 0;
     int result = msync(m_image.bits(), m_image.height() * m_image.bytesPerLine(), MS_INVALIDATE | MS_CACHE_ONLY);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQNX: failed to invalidate cache, errno=%d", errno);
-    }
 }
 
 QT_END_NAMESPACE

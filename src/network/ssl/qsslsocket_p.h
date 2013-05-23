@@ -78,7 +78,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
+#if defined(Q_OS_MACX)
     typedef OSStatus (*PtrSecCertificateGetData)(SecCertificateRef, CSSM_DATA_PTR);
     typedef OSStatus (*PtrSecTrustSettingsCopyCertificates)(int, CFArrayRef*);
     typedef OSStatus (*PtrSecTrustCopyAnchorCertificates)(CFArrayRef*);
@@ -145,7 +145,7 @@ public:
     static void addDefaultCaCertificate(const QSslCertificate &cert);
     static void addDefaultCaCertificates(const QList<QSslCertificate> &certs);
 
-#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
+#if defined(Q_OS_MACX)
     static PtrSecCertificateGetData ptrSecCertificateGetData;
     static PtrSecTrustSettingsCopyCertificates ptrSecTrustSettingsCopyCertificates;
     static PtrSecTrustCopyAnchorCertificates ptrSecTrustCopyAnchorCertificates;

@@ -138,6 +138,7 @@ public:
     static void handleWindowActivated(QWindow *w, Qt::FocusReason r = Qt::OtherFocusReason);
 
     static void handleWindowStateChanged(QWindow *w, Qt::WindowState newState);
+    static void handleWindowScreenChanged(QWindow *w, QScreen *newScreen);
 
     static void handleApplicationStateChanged(Qt::ApplicationState newState);
 

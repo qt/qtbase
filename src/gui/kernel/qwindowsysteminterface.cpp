@@ -126,6 +126,13 @@ void QWindowSystemInterface::handleWindowStateChanged(QWindow *tlw, Qt::WindowSt
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
+void QWindowSystemInterface::handleWindowScreenChanged(QWindow *tlw, QScreen *screen)
+{
+    QWindowSystemInterfacePrivate::WindowScreenChangedEvent *e =
+        new QWindowSystemInterfacePrivate::WindowScreenChangedEvent(tlw, screen);
+    QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+}
+
 void QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState newState)
 {
     Q_ASSERT(QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ApplicationState));

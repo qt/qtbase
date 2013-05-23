@@ -50,6 +50,7 @@
 //#define QEVENTDISPATCHERBLACKBERRY_DEBUG
 
 #ifdef QEVENTDISPATCHERBLACKBERRY_DEBUG
+#include <QThread>
 #define qEventDispatcherDebug qDebug() << QThread::currentThread()
 #else
 #define qEventDispatcherDebug QT_NO_QDEBUG_MACRO()

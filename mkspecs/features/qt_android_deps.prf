@@ -43,7 +43,10 @@ DEPENDENCY_FILE = $$ANDROID_DEPENDS_DIR$$TARGET-android-dependencies.xml
 
     !isEmpty(ANDROID_LIB_DEPENDENCIES) {
         for(LIB_FILE, ANDROID_LIB_DEPENDENCIES) {
-            FILE_CONTENT += "<lib file=\"$$LIB_FILE\" />"
+            EXTENDS = $$section(LIB_FILE, ":", 1, 1)
+            !isEmpty(EXTENDS): EXTENDS = "extends=\"$$EXTENDS\""
+            LIB_FILE = $$section(LIB_FILE, ":", 0, 0)
+            FILE_CONTENT += "<lib file=\"$$LIB_FILE\" $$EXTENDS />"
         }
     }
 

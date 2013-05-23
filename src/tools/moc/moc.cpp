@@ -1449,6 +1449,11 @@ bool Moc::until(Token target) {
             --index;
             break;
         }
+
+        if (braceCount <= 0 && t == SEMIC) {
+            // Abort on semicolon. Allow recovering bad template parsing (QTBUG-31218)
+            break;
+        }
     }
 
     if(target == COMMA && angleCount != 0 && possible != -1) {

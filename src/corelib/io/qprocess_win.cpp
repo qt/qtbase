@@ -625,21 +625,21 @@ bool QProcessPrivate::waitForStarted(int)
     return false;
 }
 
-static bool drainOutputPipes(QProcessPrivate *d)
+bool QProcessPrivate::drainOutputPipes()
 {
-    if (!d->stdoutReader && !d->stderrReader)
+    if (!stdoutReader && !stderrReader)
         return false;
 
     bool readyReadEmitted = false;
     forever {
         bool readOperationActive = false;
-        if (d->stdoutReader) {
-            readyReadEmitted |= d->stdoutReader->waitForReadyRead(0);
-            readOperationActive = d->stdoutReader->isReadOperationActive();
+        if (stdoutReader) {
+            readyReadEmitted |= stdoutReader->waitForReadyRead(0);
+            readOperationActive = stdoutReader->isReadOperationActive();
         }
-        if (d->stderrReader) {
-            readyReadEmitted |= d->stderrReader->waitForReadyRead(0);
-            readOperationActive |= d->stderrReader->isReadOperationActive();
+        if (stderrReader) {
+            readyReadEmitted |= stderrReader->waitForReadyRead(0);
+            readOperationActive |= stderrReader->isReadOperationActive();
         }
         if (!readOperationActive)
             break;
@@ -669,7 +669,7 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
         if (!pid)
             return false;
         if (WaitForSingleObject(pid->hProcess, 0) == WAIT_OBJECT_0) {
-            bool readyReadEmitted = drainOutputPipes(this);
+            bool readyReadEmitted = drainOutputPipes();
             _q_processDied();
             return readyReadEmitted;
         }
@@ -772,12 +772,12 @@ bool QProcessPrivate::waitForFinished(int msecs)
             timer.resetIncrements();
 
         if (!pid) {
-            drainOutputPipes(this);
+            drainOutputPipes();
             return true;
         }
 
         if (WaitForSingleObject(pid->hProcess, timer.nextSleepTime()) == WAIT_OBJECT_0) {
-            drainOutputPipes(this);
+            drainOutputPipes();
             _q_processDied();
             return true;
         }

@@ -159,7 +159,7 @@ template <class Key, class T> class QMap;
 class Q_CORE_EXPORT QAbstractItemModel : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(LayoutChangeHints)
+    Q_ENUMS(LayoutChangeHint)
 
     friend class QPersistentModelIndexData;
     friend class QAbstractItemViewPrivate;

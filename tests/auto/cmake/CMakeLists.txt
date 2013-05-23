@@ -121,7 +121,7 @@ test_module_includes(
 )
 expect_pass(test_concurrent_module)
 expect_pass(test_openglextensions_module)
-if (QT_WITH_ANGLE OR (NOT WIN32 AND NOT APPLE))
+if (QT_WITH_ANGLE OR (NOT WIN32 AND NOT APPLE AND NOT NO_EGL))
     expect_pass(test_egl_lib)
 endif()
 expect_pass(test_opengl_lib)

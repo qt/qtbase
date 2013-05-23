@@ -2763,11 +2763,22 @@ void DitaXmlGenerator::generateAnnotatedList(const Node* relative,
                 writeEndTag(); // </p>
                 writeEndTag(); // <entry>
             }
+            else if (!node->reconstitutedBrief().isEmpty()) {
+                writeStartTag(DT_entry);
+                writeStartTag(DT_p);
+                writeCharacters(node->reconstitutedBrief());
+                writeEndTag(); // </p>
+                writeEndTag(); // <entry>
+            }
         }
         else {
             writeStartTag(DT_entry);
             writeStartTag(DT_p);
-            writeCharacters(protectEnc(node->doc().briefText().toString())); // zzz
+            if (!node->reconstitutedBrief().isEmpty()) {
+                writeCharacters(node->reconstitutedBrief());
+            }
+            else
+                writeCharacters(protectEnc(node->doc().briefText().toString()));
             writeEndTag(); // </p>
             writeEndTag(); // <entry>
         }

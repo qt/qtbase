@@ -88,14 +88,10 @@ PaintedWindow::PaintedWindow()
     connect(this, SIGNAL(rotationChanged(qreal)), this, SLOT(paint()));
 }
 
-void PaintedWindow::resizeEvent(QResizeEvent *)
-{
-    paint();
-}
-
 void PaintedWindow::exposeEvent(QExposeEvent *)
 {
-    paint();
+    if (isExposed())
+        paint();
 }
 
 void PaintedWindow::mousePressEvent(QMouseEvent *)

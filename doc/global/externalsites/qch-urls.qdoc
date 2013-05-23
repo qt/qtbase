@@ -38,7 +38,7 @@
     \title external: Publishing Applications to Ovi Store
 */
 /*!
-    \externalpage http://doc.qt.digia.com/qtcreator/index.html
+    \externalpage http://qt-project.org/doc/qtcreator
     \title external: Qt Creator Manual
 */
 /*!
@@ -90,6 +90,6 @@
     \title external: Qt Mobility Examples
 */
 /*!
-    \externalpage http://doc-snapshot.qt-project.org/qtcreator-2.6/creator-overview.html
+    \externalpage http://qt-project.org/doc/qtcreator/creator-overview.html
     \title external: Qt Creator Overview
 */

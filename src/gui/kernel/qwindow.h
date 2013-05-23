@@ -330,6 +330,7 @@ protected:
 
     virtual void showEvent(QShowEvent *);
     virtual void hideEvent(QHideEvent *);
+    // TODO Qt 6 - add closeEvent virtual handler
 
     virtual bool event(QEvent *);
     virtual void keyPressEvent(QKeyEvent *);

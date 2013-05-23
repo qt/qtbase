@@ -149,6 +149,11 @@ void Text::stripLastAtom()
     }
 }
 
+/*!
+  This function traverses the atom list of the Text object,
+  extracting all the string parts. It concatenates them to
+  a result string and returns it.
+ */
 QString Text::toString() const
 {
     QString str;

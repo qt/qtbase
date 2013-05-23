@@ -35,8 +35,8 @@
 
   Qt provides extensive cross-platform support for printing. Using the printing
   systems on each platform, Qt applications can print to attached printers and
-  across networks to remote printers. Qt's printing system also enables PostScript
-  and PDF files to be generated, providing the foundation for basic report
+  across networks to remote printers. Qt's printing system also supports
+  PDF file generation, providing the foundation for basic report
   generation facilities.
 
   \tableofcontents
@@ -65,7 +65,7 @@
   a QPrintDialog, allowing the user to specify the printer to use, paper size, and
   other printing properties.
 
-  \snippet richtext/orderform/mainwindow.cpp 18
+  \snippet widgetprinting.cpp 1
 
   It is also possible to set certain default properties by modifying the QPrinter
   before it is supplied to the print dialog. For example, applications that

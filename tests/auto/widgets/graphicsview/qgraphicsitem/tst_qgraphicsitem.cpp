@@ -470,6 +470,7 @@ private slots:
     void QTBUG_13473_sceneposchange();
     void QTBUG_16374_crashInDestructor();
     void QTBUG_20699_focusScopeCrash();
+    void QTBUG_30990_rightClickSelection();
 
 private:
     QList<QGraphicsItem *> paintedItems;
@@ -11466,6 +11467,33 @@ void tst_QGraphicsItem::QTBUG_20699_focusScopeCrash()
     fi->setParentItem(fi2);
     fi->setFocus();
     fs.setFocus();
+}
+
+void tst_QGraphicsItem::QTBUG_30990_rightClickSelection()
+{
+    QGraphicsScene scene;
+    QGraphicsItem *item1 = scene.addRect(10, 10, 10, 10);
+    item1->setFlags(QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemIsMovable);
+    QGraphicsItem *item2 = scene.addRect(100, 100, 10, 10);
+    item2->setFlags(QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemIsMovable);
+
+    // right mouse press & release over an item should not make it selected
+    sendMousePress(&scene, item1->boundingRect().center(), Qt::RightButton);
+    QVERIFY(!item1->isSelected());
+    sendMouseRelease(&scene, item1->boundingRect().center(), Qt::RightButton);
+    QVERIFY(!item1->isSelected());
+
+    // right mouse press over one item, moving over another item,
+    // and then releasing should make neither of the items selected
+    sendMousePress(&scene, item1->boundingRect().center(), Qt::RightButton);
+    QVERIFY(!item1->isSelected());
+    QVERIFY(!item2->isSelected());
+    sendMouseMove(&scene, item2->boundingRect().center(), Qt::RightButton);
+    QVERIFY(!item1->isSelected());
+    QVERIFY(!item2->isSelected());
+    sendMouseRelease(&scene, item2->boundingRect().center(), Qt::RightButton);
+    QVERIFY(!item1->isSelected());
+    QVERIFY(!item2->isSelected());
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

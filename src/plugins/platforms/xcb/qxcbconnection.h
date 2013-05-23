@@ -53,6 +53,14 @@
 #include <QVarLengthArray>
 #include <qpa/qwindowsysteminterface.h>
 
+// This is needed to make Qt compile together with XKB. xkb.h is using a variable
+// which is called 'explicit', this is a reserved keyword in c++ */
+#ifndef QT_NO_XKB
+#define explicit dont_use_cxx_explicit
+#include <xcb/xkb.h>
+#undef explicit
+#endif
+
 #ifndef QT_NO_TABLETEVENT
 #include <QTabletEvent>
 #endif
@@ -261,6 +269,7 @@ namespace QXcbAtom {
 #if XCB_USE_MAEMO_WINDOW_PROPERTIES
         MeegoTouchOrientationAngle,
 #endif
+        _XSETTINGS_SETTINGS,
 
         NPredefinedAtoms,
 
@@ -355,7 +364,7 @@ public:
 #endif
 
     QXcbWMSupport *wmSupport() const { return m_wmSupport.data(); }
-
+    xcb_window_t rootWindow();
 #ifdef XCB_USE_XLIB
     void *xlib_display() const { return m_xlib_display; }
 #endif
@@ -401,6 +410,8 @@ public:
     bool hasXShape() const { return has_shape_extension; }
     bool hasXRandr() const { return has_randr_extension; }
     bool hasInputShape() const { return has_input_shape; }
+    bool hasTouchWithoutMouseEmulation() const { return has_touch_without_mouse_emulation; }
+    bool hasXKB() const { return has_xkb; }
 
     bool supportsThreadedRendering() const { return m_reader->isRunning(); }
 
@@ -429,6 +440,7 @@ private:
     void initializeXRender();
     void initializeXRandr();
     void initializeXShape();
+    void initializeXKB();
 #ifdef XCB_USE_XINPUT2_MAEMO
     void initializeXInput2Maemo();
     void finalizeXInput2Maemo();
@@ -538,11 +550,14 @@ private:
 
     uint32_t xfixes_first_event;
     uint32_t xrandr_first_event;
+    uint32_t xkb_first_event;
 
     bool has_glx_extension;
     bool has_shape_extension;
     bool has_randr_extension;
     bool has_input_shape;
+    bool has_touch_without_mouse_emulation;
+    bool has_xkb;
 
     Qt::MouseButtons m_buttons;
 
@@ -570,6 +585,15 @@ xcb_generic_event_t *QXcbConnection::checkEvent(T &checker)
     return 0;
 }
 
+class QXcbConnectionGrabber
+{
+public:
+    QXcbConnectionGrabber(QXcbConnection *connection);
+    ~QXcbConnectionGrabber();
+    void release();
+private:
+    QXcbConnection *m_connection;
+};
 
 #ifdef Q_XCB_DEBUG
 template <typename cookie_t>

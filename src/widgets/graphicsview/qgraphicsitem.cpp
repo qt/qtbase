@@ -1658,8 +1658,8 @@ const QGraphicsObject *QGraphicsItem::toGraphicsObject() const
   the parent. You should not \l{QGraphicsScene::addItem()}{add} the
   item to the scene yourself.
 
-  Calling this function on an item that is an ancestor of \a newParent
-  have undefined behaviour.
+  The behavior when calling this function on an item that is an ancestor of
+  \a newParent is undefined.
 
   \sa parentItem(), childItems()
 */
@@ -7186,7 +7186,7 @@ void QGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 */
 void QGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (flags() & ItemIsSelectable) {
+    if (event->button() == Qt::LeftButton && (flags() & ItemIsSelectable)) {
         bool multiSelect = (event->modifiers() & Qt::ControlModifier) != 0;
         if (event->scenePos() == event->buttonDownScenePos(Qt::LeftButton)) {
             // The item didn't move

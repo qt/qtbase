@@ -310,7 +310,6 @@ QString Config::getString(const QString& var) const
 {
     QList<ConfigVar> configVars = configVars_.values(var);
     QString value;
-    int high = 0;
     if (!configVars.empty()) {
         int i = configVars.size() - 1;
         while (i >= 0) {
@@ -324,7 +323,6 @@ QString Config::getString(const QString& var) const
                     if (!value.isEmpty() && !value.endsWith(QChar('\n')))
                         value.append(QChar(' '));
                     value.append(cv.values_[j]);
-                    high = j;
                 }
             }
             --i;

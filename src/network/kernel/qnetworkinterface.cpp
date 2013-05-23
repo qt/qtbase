@@ -555,7 +555,7 @@ QNetworkInterface QNetworkInterface::interfaceFromIndex(int index)
 
 /*!
     Returns a listing of all the network interfaces found on the host
-    machine.
+    machine.  In case of failure it returns a list with zero elements.
 */
 QList<QNetworkInterface> QNetworkInterface::allInterfaces()
 {

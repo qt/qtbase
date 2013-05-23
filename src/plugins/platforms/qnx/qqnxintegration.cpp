@@ -155,9 +155,8 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
     // Open connection to QNX composition manager
     errno = 0;
     int result = screen_create_context(&m_screenContext, SCREEN_APPLICATION_CONTEXT);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQnx: failed to connect to composition manager, errno=%d", errno);
-    }
 
     // Not on BlackBerry, it has specialized event dispatcher which also handles navigator events
 #if !defined(Q_OS_BLACKBERRY) && defined(QQNX_PPS)
@@ -388,9 +387,8 @@ QPlatformClipboard *QQnxIntegration::clipboard() const
     qIntegrationDebug() << Q_FUNC_INFO;
 
 #if defined(QQNX_PPS)
-    if (!m_clipboard) {
+    if (!m_clipboard)
         m_clipboard = new QQnxClipboard;
-    }
 #endif
     return m_clipboard;
 }
@@ -463,9 +461,8 @@ void QQnxIntegration::createDisplays()
     errno = 0;
     int displayCount;
     int result = screen_get_context_property_iv(m_screenContext, SCREEN_PROPERTY_DISPLAY_COUNT, &displayCount);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQnxIntegration: failed to query display count, errno=%d", errno);
-    }
 
     if (displayCount < 1) {
         // Never happens, even if there's no display, libscreen returns 1
@@ -476,9 +473,8 @@ void QQnxIntegration::createDisplays()
     errno = 0;
     screen_display_t *displays = (screen_display_t *)alloca(sizeof(screen_display_t) * displayCount);
     result = screen_get_context_property_pv(m_screenContext, SCREEN_PROPERTY_DISPLAYS, (void **)displays);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQnxIntegration: failed to query displays, errno=%d", errno);
-    }
 
     // If it's primary, we create a QScreen for it even if it's not attached
     // since Qt will dereference QGuiApplication::primaryScreen()

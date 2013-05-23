@@ -1673,7 +1673,7 @@ void QGraphicsWidget::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 */
 void QGraphicsWidget::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
-    Q_UNUSED(event);
+    QGraphicsObject::hoverLeaveEvent(event);
 }
 
 /*!

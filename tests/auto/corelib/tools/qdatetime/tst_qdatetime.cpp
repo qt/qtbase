@@ -1398,13 +1398,19 @@ void tst_QDateTime::operator_insert_extract()
     {
         QDataStream dataStream(&byteArray, QIODevice::WriteOnly);
         dataStream.setVersion(dataStreamVersion);
-        if (dataStreamVersion >= QDataStream::Qt_5_0) {
+        if (dataStreamVersion == QDataStream::Qt_5_0) {
             // Qt 5 serialises as UTC and converts back to the stored timeSpec when
             // deserialising; we don't need to do it ourselves...
             dataStream << dateTime << dateTime;
         } else {
-            // ... but lower versions don't, so we have to here.
+            // ... but other versions don't, so we have to here.
             dataStream << dateTimeAsUTC << dateTimeAsUTC;
+            // We'll also make sure that a deserialised local datetime is the same
+            // time of day (potentially different UTC time), regardless of which
+            // timezone it was serialised in. E.g.: Tue Aug 14 08:00:00 2012
+            // serialised in WST should be deserialised as Tue Aug 14 08:00:00 2012
+            // HST.
+            dataStream << dateTime;
         }
     }
 
@@ -1420,7 +1426,7 @@ void tst_QDateTime::operator_insert_extract()
         QDateTime deserialised;
         dataStream >> deserialised;
 
-        if (dataStreamVersion >= QDataStream::Qt_5_0) {
+        if (dataStreamVersion == QDataStream::Qt_5_0) {
             // Ensure local time is still correct. Again, Qt 5 handles the timeSpec
             // conversion (in this case, UTC => LocalTime) for us when deserialising.
             QCOMPARE(deserialised, expectedLocalTime);
@@ -1453,6 +1459,14 @@ void tst_QDateTime::operator_insert_extract()
         QCOMPARE(deserialised, expectedLocalTime);
         // Sanity check UTC times.
         QCOMPARE(deserialised.toUTC(), expectedLocalTime.toUTC());
+
+        if (dataStreamVersion != QDataStream::Qt_5_0) {
+            // Deserialised local datetime should be the same time of day,
+            // regardless of which timezone it was serialised in.
+            QDateTime localDeserialized;
+            dataStream >> localDeserialized;
+            QCOMPARE(localDeserialized, dateTime);
+        }
     }
 
     qputenv("TZ", previousTimeZone.toLocal8Bit().constData());

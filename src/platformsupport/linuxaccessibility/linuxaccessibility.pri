@@ -1,6 +1,6 @@
 contains(QT_CONFIG, accessibility-atspi-bridge) {
 
-    QT += dbus
+    QT_FOR_PRIVATE += dbus
     include(../../3rdparty/atspi2/atspi2.pri)
 
     INCLUDEPATH += $$PWD

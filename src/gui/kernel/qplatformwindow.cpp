@@ -425,8 +425,7 @@ bool QPlatformWindow::startSystemResize(const QPoint &pos, Qt::Corner corner)
 
 void QPlatformWindow::setFrameStrutEventsEnabled(bool enabled)
 {
-    if (enabled)
-        qWarning("This plugin does not support frame strut events.");
+    Q_UNUSED(enabled) // Do not warn as widgets enable it by default causing warnings with XCB.
 }
 
 /*!

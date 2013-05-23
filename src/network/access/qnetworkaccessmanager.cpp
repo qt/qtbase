@@ -82,7 +82,7 @@ Q_GLOBAL_STATIC(QNetworkAccessFtpBackendFactory, ftpBackend)
 Q_GLOBAL_STATIC(QNetworkAccessDebugPipeBackendFactory, debugpipeBackend)
 #endif
 
-#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
+#if defined(Q_OS_MACX)
 
 #include <CoreServices/CoreServices.h>
 #include <SystemConfiguration/SystemConfiguration.h>
@@ -1326,7 +1326,7 @@ void QNetworkAccessManagerPrivate::authenticationRequired(QAuthenticator *authen
     }
 
 #ifndef QT_NO_NETWORKPROXY
-#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
+#if defined(Q_OS_MACX)
     //now we try to get the username and password from keychain
     //if not successful signal will be emitted
     QString username;

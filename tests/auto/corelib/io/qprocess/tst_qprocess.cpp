@@ -152,6 +152,7 @@ private slots:
     void invalidProgramString_data();
     void invalidProgramString();
     void onlyOneStartedSignal();
+    void finishProcessBeforeReadingDone();
 
     // keep these at the end, since they use lots of processes and sometimes
     // caused obscure failures to occur in tests that followed them (esp. on the Mac)
@@ -2166,6 +2167,39 @@ void tst_QProcess::onlyOneStartedSignal()
     QVERIFY(process.waitForFinished(5000));
     QCOMPARE(spyStarted.count(), 1);
     QCOMPARE(spyFinished.count(), 1);
+}
+
+//-----------------------------------------------------------------------------
+
+class BlockOnReadStdOut : public QObject
+{
+    Q_OBJECT
+public:
+    BlockOnReadStdOut(QProcess *process)
+    {
+        connect(process, SIGNAL(readyReadStandardOutput()), SLOT(block()));
+    }
+
+public slots:
+    void block()
+    {
+        QThread::sleep(1);
+    }
+};
+
+void tst_QProcess::finishProcessBeforeReadingDone()
+{
+    QProcess process;
+    BlockOnReadStdOut blocker(&process);
+    QEventLoop loop;
+    connect(&process, SIGNAL(finished(int)), &loop, SLOT(quit()));
+    process.start("testProcessOutput/testProcessOutput");
+    QVERIFY(process.waitForStarted());
+    loop.exec();
+    QStringList lines = QString::fromLocal8Bit(process.readAllStandardOutput()).split(
+            QRegExp(QStringLiteral("[\r\n]")), QString::SkipEmptyParts);
+    QVERIFY(!lines.isEmpty());
+    QCOMPARE(lines.last(), QStringLiteral("10239 -this is a number"));
 }
 
 #endif //QT_NO_PROCESS

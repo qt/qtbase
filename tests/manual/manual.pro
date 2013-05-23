@@ -24,13 +24,14 @@ qpainfo \
 qscreen \
 qssloptions \
 qtabletevent \
+qtexteditlist \
 qtbug-8933 \
 qtouchevent \
 qwidget_zorder \
 repaint \
 socketengine \
 textrendering \
-widgets/itemviews/delegate \
+widgets \
 windowflags \
 windowgeometry \
 windowmodality \

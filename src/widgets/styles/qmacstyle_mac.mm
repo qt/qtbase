@@ -840,7 +840,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
                                                           : kThemeGrowRight | kThemeGrowDown;
             gbi.size = sz == QAquaSizeSmall ? kHIThemeGrowBoxSizeSmall : kHIThemeGrowBoxSizeNormal;
             if (HIThemeGetGrowBoxBounds(&p, &gbi, &r) == noErr)
-                ret = QSize(r.size.width, r.size.height);
+                ret = QSize(QSysInfo::MacintoshVersion <= QSysInfo::MV_10_6 ? r.size.width : 0, r.size.height);
         }
         break;
     case QStyle::CT_ComboBox:
@@ -3643,8 +3643,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     tti.version = qt_mac_hitheme_version;
                     tti.state = tds;
                     QColor textColor = btn->palette.buttonText().color();
-                    CGFloat colorComp[] = { textColor.redF(), textColor.greenF(),
-                                          textColor.blueF(), textColor.alphaF() };
+                    CGFloat colorComp[] = { static_cast<CGFloat>(textColor.redF()), static_cast<CGFloat>(textColor.greenF()),
+                                          static_cast<CGFloat>(textColor.blueF()), static_cast<CGFloat>(textColor.alphaF()) };
                     CGContextSetFillColorSpace(cg, qt_mac_genericColorSpace());
                     CGContextSetFillColor(cg, colorComp);
                     tti.fontID = themeId;
@@ -3883,8 +3883,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 tti.version = qt_mac_hitheme_version;
                 tti.state = tds;
                 QColor textColor = myTab.palette.windowText().color();
-                CGFloat colorComp[] = { textColor.redF(), textColor.greenF(),
-                                        textColor.blueF(), textColor.alphaF() };
+                CGFloat colorComp[] = { static_cast<CGFloat>(textColor.redF()), static_cast<CGFloat>(textColor.greenF()),
+                                        static_cast<CGFloat>(textColor.blueF()), static_cast<CGFloat>(textColor.alphaF()) };
                 CGContextSetFillColorSpace(cg, qt_mac_genericColorSpace());
                 CGContextSetFillColor(cg, colorComp);
                 switch (d->aquaSizeConstrain(opt, w)) {
@@ -4063,8 +4063,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 CGContextSetShouldAntialias(cg, true);
                 CGContextSetShouldSmoothFonts(cg, true);
                 QColor textColor = p->pen().color();
-                CGFloat colorComp[] = { textColor.redF(), textColor.greenF(),
-                                      textColor.blueF(), textColor.alphaF() };
+                CGFloat colorComp[] = { static_cast<CGFloat>(textColor.redF()), static_cast<CGFloat>(textColor.greenF()),
+                                      static_cast<CGFloat>(textColor.blueF()), static_cast<CGFloat>(textColor.alphaF()) };
                 CGContextSetFillColorSpace(cg, qt_mac_genericColorSpace());
                 CGContextSetFillColor(cg, colorComp);
                 HIThemeTextInfo tti;
@@ -4316,6 +4316,10 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
     case CE_ProgressBarGroove:
         break;
     case CE_SizeGrip: {
+        // We do not draw size grips on versions > 10.6
+        if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_6)
+            break;
+
         if (w && w->testAttribute(Qt::WA_MacOpaqueSizeGrip)) {
             HIThemeGrowBoxDrawInfo gdi;
             gdi.version = qt_mac_hitheme_version;
@@ -4947,7 +4951,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
             if (cc == CC_ScrollBar && proxy()->styleHint(SH_ScrollBar_Transient, opt, widget)) {
                 bool wasActive = false;
-                CGFloat opacity = 1.0;
+                CGFloat opacity = 0.0;
                 CGFloat expandScale = 1.0;
                 CGFloat expandOffset = -1.0;
                 bool shouldExpand = false;
@@ -4972,6 +4976,10 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                             oldRect != slider->rect ||
                             oldState != slider->state ||
                             oldActiveControls != slider->activeSubControls) {
+
+                        // if the scrollbar is transient or its attributes, geometry or
+                        // state has changed, the opacity is reset back to 100% opaque
+                        opacity = 1.0;
 
                         styleObject->setProperty("_q_stylepos", slider->sliderPosition);
                         styleObject->setProperty("_q_stylemin", slider->minimum);
@@ -5371,8 +5379,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 tti.version = qt_mac_hitheme_version;
                 tti.state = tds;
                 QColor textColor = groupBox.palette.windowText().color();
-                CGFloat colorComp[] = { textColor.redF(), textColor.greenF(),
-                                      textColor.blueF(), textColor.alphaF() };
+                CGFloat colorComp[] = { static_cast<CGFloat>(textColor.redF()), static_cast<CGFloat>(textColor.greenF()),
+                                      static_cast<CGFloat>(textColor.blueF()), static_cast<CGFloat>(textColor.alphaF()) };
                 CGContextSetFillColorSpace(cg, qt_mac_genericColorSpace());
                 CGContextSetFillColor(cg, colorComp);
                 tti.fontID = flat ? kThemeSystemFont : kThemeSmallSystemFont;

@@ -31,3 +31,42 @@
 #
 # manifestmeta.global.names           = *
 # manifestmeta.global.tags            = qt5
+
+manifestmeta.filters                =   highlighted webkit1 webkit2
+
+manifestmeta.highlighted.names      =   "QtQuick/Qt Quick Demo - Same Game" \
+                                        "QtQuick/Qt Quick Demo - Photo Surface" \
+                                        "QtQuick/Qt Quick Demo - Tweet Search" \
+                                        "QtQuick/Qt Quick Demo - Maroon*" \
+                                        "QtQuick/Qt Quick Demo - Calqlatr" \
+                                        "QtQuick/Qt Quick Particles Examples - Emitters" \
+                                        "QtQuick/Qt Quick Examples - Shader Effects" \
+                                        "QtWebKitExamples/Fancy Browser" \
+                                        "QtWebKitExamples/Flickr View Example" \
+                                        "QtWebKitExamples/YouTube View Example" \
+                                        "QtQuickControls/Qt Quick Controls - Gallery" \
+                                        "QtQuickControls/Qt Quick Controls - Text Editor Example" \
+                                        "QtQuickControls/Qt Quick Controls - Table View Example" \
+                                        "QtWidgets/Application Example"
+
+manifestmeta.highlighted.attributes =   isHighlighted:true
+
+# Add 'webkit1' tag for QtWebKit1 examples
+manifestmeta.webkit1.names          =  "QtWebKitExamples/Tab Browser" \
+                                       "QtWebKitExamples/DOM Traversal Example" \
+                                       "QtWebKitExamples/Fancy Browser Example" \
+                                       "QtWebKitExamples/Form Extractor Example" \
+                                       "QtWebKitExamples/WebKit Frame Capture Example" \
+                                       "QtWebKitExamples/The Webkit Bridge Tutorial*" \
+                                       "QtWebKitExamples/Previewer Example" \
+                                       "QtWebKitExamples/Wheel Scroller Example" \
+                                       "QtWebKitExamples/Simple Selector Example" \
+                                       "QtWebKitExamples/QObject XML Model Example"
+
+manifestmeta.webkit1.tags           =   webkit1
+
+# Add 'webkit2' tag for QtWebKit2 examples
+manifestmeta.webkit2.names          =  "QtWebKitExamples/Flickr View Example" \
+                                       "QtWebKitExamples/YouTube View Example"
+
+manifestmeta.webkit2.tags           =   webkit2

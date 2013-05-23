@@ -51,7 +51,10 @@ QT_BEGIN_NAMESPACE
 QFbBackingStore::QFbBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
 {
-    (static_cast<QFbWindow *>(window->handle()))->setBackingStore(this);
+    if (window->handle())
+        (static_cast<QFbWindow *>(window->handle()))->setBackingStore(this);
+    else
+        (static_cast<QFbScreen *>(window->screen()->handle()))->addBackingStore(this);
 }
 
 QFbBackingStore::~QFbBackingStore()

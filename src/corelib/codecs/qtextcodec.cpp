@@ -1065,8 +1065,10 @@ QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba, QTextCodec *defaultCo
             }
         }
     }
+    if (!c)
+        c = defaultCodec;
 
-    return defaultCodec;
+    return c;
 }
 
 /*!

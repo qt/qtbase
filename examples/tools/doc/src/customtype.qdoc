@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example tools/customtype
+    \example customtype
     \title Custom Type Example
 
     \brief The Custom Type example shows how to integrate a custom type into Qt's

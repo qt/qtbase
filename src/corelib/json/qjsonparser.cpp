@@ -76,6 +76,7 @@ QT_BEGIN_NAMESPACE
 #define JSONERR_UTERM_STR   QT_TRANSLATE_NOOP("QJsonParseError", "unterminated string")
 #define JSONERR_MISS_OBJ    QT_TRANSLATE_NOOP("QJsonParseError", "object is missing after a comma")
 #define JSONERR_DEEP_NEST   QT_TRANSLATE_NOOP("QJsonParseError", "too deeply nested document")
+#define JSONERR_DOC_LARGE   QT_TRANSLATE_NOOP("QJsonParseError", "too large document")
 
 /*!
     \class QJsonParseError
@@ -105,6 +106,7 @@ QT_BEGIN_NAMESPACE
     \value UnterminatedString       A string wasn't terminated with a quote
     \value MissingObject            An object was expected but couldn't be found
     \value DeepNesting              The JSON document is too deeply nested for the parser to parse it
+    \value DocumentTooLarge         The JSON document is too large for the parser to parse it
 */
 
 /*!
@@ -172,6 +174,9 @@ QString QJsonParseError::errorString() const
         break;
     case DeepNesting:
         sz = JSONERR_DEEP_NEST;
+        break;
+    case DocumentTooLarge:
+        sz = JSONERR_DOC_LARGE;
         break;
     }
 #ifndef QT_BOOTSTRAPPED
@@ -579,6 +584,10 @@ bool Parser::parseValue(QJsonPrivate::Value *val, int baseOffset)
         return false;
     case Quote: {
         val->type = QJsonValue::String;
+        if (current - baseOffset >= Value::MaxSize) {
+            lastError = QJsonParseError::DocumentTooLarge;
+            return false;
+        }
         val->value = current - baseOffset;
         bool latin1;
         if (!parseString(&latin1))
@@ -590,6 +599,10 @@ bool Parser::parseValue(QJsonPrivate::Value *val, int baseOffset)
     }
     case BeginArray:
         val->type = QJsonValue::Array;
+        if (current - baseOffset >= Value::MaxSize) {
+            lastError = QJsonParseError::DocumentTooLarge;
+            return false;
+        }
         val->value = current - baseOffset;
         if (!parseArray())
             return false;
@@ -598,6 +611,10 @@ bool Parser::parseValue(QJsonPrivate::Value *val, int baseOffset)
         return true;
     case BeginObject:
         val->type = QJsonValue::Object;
+        if (current - baseOffset >= Value::MaxSize) {
+            lastError = QJsonParseError::DocumentTooLarge;
+            return false;
+        }
         val->value = current - baseOffset;
         if (!parseObject())
             return false;
@@ -707,6 +724,10 @@ bool Parser::parseNumber(QJsonPrivate::Value *val, int baseOffset)
 
     int pos = reserveSpace(sizeof(double));
     *(quint64 *)(data + pos) = qToLittleEndian(ui);
+    if (current - baseOffset >= Value::MaxSize) {
+        lastError = QJsonParseError::DocumentTooLarge;
+        return false;
+    }
     val->value = pos - baseOffset;
     val->latinOrIntValue = false;
 

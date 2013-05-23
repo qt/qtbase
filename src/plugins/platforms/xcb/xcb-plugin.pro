@@ -6,7 +6,6 @@ load(qt_plugin)
 
 QT += core-private gui-private platformsupport-private
 
-
 SOURCES = \
         qxcbclipboard.cpp \
         qxcbconnection.cpp \
@@ -22,7 +21,7 @@ SOURCES = \
         qxcbnativeinterface.cpp \
         qxcbcursor.cpp \
         qxcbimage.cpp \
-        qxlibconvenience.cpp
+        qxcbxsettings.cpp
 
 HEADERS = \
         qxcbclipboard.h \
@@ -39,11 +38,11 @@ HEADERS = \
         qxcbnativeinterface.h \
         qxcbcursor.h \
         qxcbimage.h \
-        qxlibconvenience.h
+        qxcbxsettings.h
 
 LIBS += -ldl
 
-# needed by GLX, Xcursor, XLookupString, ...
+# needed by GLX, Xcursor ...
 contains(QT_CONFIG, xcb-xlib) {
     DEFINES += XCB_USE_XLIB
     LIBS += -lX11 -lX11-xcb
@@ -112,7 +111,23 @@ contains(QT_CONFIG, xcb-qt) {
     INCLUDEPATH += $$XCB_DIR/include $$XCB_DIR/sysinclude
     LIBS += -lxcb -L$$OUT_PWD/xcb-static -lxcb-static
 } else {
-    LIBS += -lxcb -lxcb-image -lxcb-keysyms -lxcb-icccm -lxcb-sync -lxcb-xfixes -lxcb-shm -lxcb-randr
+    LIBS += -lxcb -lxcb-image -lxcb-icccm -lxcb-sync -lxcb-xfixes -lxcb-shm -lxcb-randr
     !contains(DEFINES, QT_NO_SHAPE):LIBS += -lxcb-shape
+    contains(DEFINES, QT_NO_XKB) {
+        LIBS += -lxcb-keysyms
+    } else {
+        LIBS += -lxcb-xkb
+    }
 }
 
+# libxkbcommon
+contains(QT_CONFIG, xkbcommon-qt): {
+    include(../../../3rdparty/xkbcommon.pri)
+} else {
+    LIBS += $$QMAKE_LIBS_XKBCOMMON
+    QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_XKBCOMMON
+    equals(QMAKE_VERSION_XKBCOMMON, "0.2.0") {
+        DEFINES += XKBCOMMON_0_2_0
+        INCLUDEPATH += ../../../3rdparty/xkbcommon/xkbcommon/
+    }
+}

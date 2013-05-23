@@ -84,7 +84,7 @@ public:
     static QString resolveGroupName(uint groupId);
 #endif
 
-#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
+#if defined(Q_OS_MACX)
     static QString bundleName(const QFileSystemEntry &entry);
 #else
     static QString bundleName(const QFileSystemEntry &entry) { Q_UNUSED(entry) return QString(); }

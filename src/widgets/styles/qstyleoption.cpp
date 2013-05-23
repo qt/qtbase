@@ -206,7 +206,7 @@ void QStyleOption::init(const QWidget *widget)
     if (!(state & QStyle::State_Active) && !qt_mac_can_clickThrough(widget))
         state &= ~QStyle::State_Enabled;
 #endif
-#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
+#if defined(Q_OS_MACX)
     switch (QMacStyle::widgetSizePolicy(widget)) {
     case QMacStyle::SizeSmall:
         state |= QStyle::State_Small;

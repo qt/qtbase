@@ -362,6 +362,15 @@ void QGLWidgetPrivate::cleanupColormaps()
 
 bool QGLWidget::event(QEvent *e)
 {
+    Q_D(QGLWidget);
+
+    // A re-parent will destroy the window and re-create it. We should not reset the context while it happens.
+    if (e->type() == QEvent::ParentAboutToChange)
+        d->parent_changing = true;
+
+    if (e->type() == QEvent::ParentChange)
+        d->parent_changing = false;
+
     return QWidget::event(e);
 }
 

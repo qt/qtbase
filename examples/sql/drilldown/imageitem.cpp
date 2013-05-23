@@ -100,7 +100,7 @@ void ImageItem::setFrame(int frame)
 void ImageItem::adjust()
 {
     QMatrix matrix;
-    matrix.scale(150/ boundingRect().width(), 120/ boundingRect().height());
+    matrix.scale(120/ boundingRect().width(), 120/ boundingRect().height());
     setMatrix(matrix);
 }
 //! [4]

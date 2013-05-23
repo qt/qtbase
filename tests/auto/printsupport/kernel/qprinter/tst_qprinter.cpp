@@ -45,6 +45,8 @@
 #include <qpagesetupdialog.h>
 #include <qpainter.h>
 #include <qprintdialog.h>
+#include <qprintpreviewdialog.h>
+#include <qprintpreviewwidget.h>
 #include <qprinterinfo.h>
 #include <qvariant.h>
 #include <qpainter.h>
@@ -98,6 +100,7 @@ private slots:
     void testMargins_data();
     void testMargins();
     void testPageSetupDialog();
+    void testPrintPreviewDialog();
     void testMulitpleSets_data();
     void testMulitpleSets();
     void testPageMargins_data();
@@ -240,6 +243,49 @@ void tst_QPrinter::testPageSetupDialog()
         QPrinter printer;
         QPageSetupDialog dialog(&printer);
     }
+}
+
+// A preview dialog showing 4 pages for testPrintPreviewDialog().
+
+class MyPreviewDialog : public QPrintPreviewDialog {
+    Q_OBJECT
+public:
+    MyPreviewDialog(QPrinter *p) : QPrintPreviewDialog(p)
+    {
+        connect(this, SIGNAL(paintRequested(QPrinter*)), this, SLOT(slotPaintRequested(QPrinter*)));
+    }
+
+public slots:
+    void slotPaintRequested(QPrinter *p);
+};
+
+void MyPreviewDialog::slotPaintRequested(QPrinter *p)
+{
+    enum { pageCount = 4 };
+    QPainter painter;
+    painter.begin(p);
+    for (int i = 0; i < pageCount; ++i) {
+        const QRect f = p->pageRect(QPrinter::DevicePixel).toRect();
+        painter.fillRect(f, Qt::white);
+        painter.drawText(f.center(), QString::fromLatin1("Page %1").arg(i + 1));
+        if (i != pageCount - 1)
+            p->newPage();
+    }
+    painter.end();
+}
+
+void tst_QPrinter::testPrintPreviewDialog()
+{
+    // QTBUG-14517: Showing the dialog with Qt::WindowMaximized caused it to switch to
+    // page 2 due to the scrollbar logic (besides testing for crashes).
+    QPrinter printer;
+    MyPreviewDialog dialog(&printer);
+    dialog.setWindowState(Qt::WindowMaximized);
+    dialog.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+    QPrintPreviewWidget *widget = dialog.findChild<QPrintPreviewWidget *>();
+    QVERIFY(widget);
+    QCOMPARE(widget->currentPage(), 1);
 }
 
 #ifdef Q_OS_WIN

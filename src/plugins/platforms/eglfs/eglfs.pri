@@ -7,7 +7,7 @@ DEFINES += MESA_EGL_NO_X11_HEADERS
 
 #To test the hooks on x11 (xlib), comment the above define too
 #EGLFS_PLATFORM_HOOKS_SOURCES += qeglfshooks_x11.cpp
-#LIBS += -lX11
+#LIBS += -lX11 -lX11-xcb -lxcb
 
 SOURCES +=  $$PWD/qeglfsintegration.cpp \
             $$PWD/qeglfswindow.cpp \

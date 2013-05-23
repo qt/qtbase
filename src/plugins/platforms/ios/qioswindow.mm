@@ -68,6 +68,8 @@
     UIReturnKeyType returnKeyType;
     BOOL secureTextEntry;
     QIOSWindow *m_qioswindow;
+    QHash<UITouch *, QWindowSystemInterface::TouchPoint> m_activeTouches;
+    int m_nextTouchId;
 }
 
 @property(nonatomic) UITextAutocapitalizationType autocapitalizationType;
@@ -113,6 +115,7 @@
         keyboardType = UIKeyboardTypeDefault;
         returnKeyType = UIReturnKeyDone;
         secureTextEntry = NO;
+        m_nextTouchId = 0;
 
         if (isQtApplication())
             self.hidden = YES;
@@ -145,45 +148,25 @@
     [super layoutSubviews];
 }
 
-/*
-    Touch handling:
-
-    UIKit generates [Began -> Moved -> Ended] event sequences for
-    each touch point. The iOS plugin tracks each individual
-    touch and assigns it an id for use by Qt. The id counter is
-    incremented on each began and decrement as follows:
-    1) by one when the most recent touch ends.
-    2) to zero when all touches ends.
-
-    The TouchPoint list is reused between events.
-*/
 - (void)updateTouchList:(NSSet *)touches withState:(Qt::TouchPointState)state
 {
-    QList<QWindowSystemInterface::TouchPoint> &touchPoints = m_qioswindow->touchPoints();
-    QHash<UITouch *, int> &activeTouches = m_qioswindow->activeTouches();
+    QRect applicationRect = fromCGRect(self.window.screen.applicationFrame);
 
-    // Mark all touch points as stationary
-    for (QList<QWindowSystemInterface::TouchPoint>::iterator it = touchPoints.begin(); it != touchPoints.end(); ++it)
-        it->state = Qt::TouchPointStationary;
+    foreach (UITouch *uiTouch, m_activeTouches.keys()) {
+        QWindowSystemInterface::TouchPoint &touchPoint = m_activeTouches[uiTouch];
+        if (![touches containsObject:uiTouch]) {
+            touchPoint.state = Qt::TouchPointStationary;
+        } else {
+            touchPoint.state = state;
+            touchPoint.pressure = (state == Qt::TouchPointReleased) ? 0.0 : 1.0;
 
-     // Update changed touch points with the new state
-    for (UITouch *touch in touches) {
-        const int touchId = activeTouches.value(touch);
-        QWindowSystemInterface::TouchPoint &touchPoint = touchPoints[touchId];
-        touchPoint.state = state;
-        if (state == Qt::TouchPointPressed)
-            touchPoint.pressure = 1.0;
-        else if (state == Qt::TouchPointReleased)
-            touchPoint.pressure = 0.0;
-
-        // Set position
-        QRect viewGeometry = fromCGRect(self.frame);
-        QPoint touchViewLocation = fromCGPoint([touch locationInView:self]);
-        QPoint touchScreenLocation = touchViewLocation + viewGeometry.topLeft();
-        touchPoint.area = QRectF(touchScreenLocation , QSize(0, 0));
-
-        CGSize fullscreenSize = self.window.rootViewController.view.bounds.size;
-        touchPoint.normalPosition = QPointF(touchScreenLocation.x() / fullscreenSize.width, touchScreenLocation.y() / fullscreenSize.height);
+            // Find the touch position relative to the window. Then calculate the screen
+            // position by subtracting the position of the applicationRect (since UIWindow
+            // does not take that into account when reporting its own frame):
+            QPoint touchPos = fromCGPoint([uiTouch locationInView:nil]);
+            touchPoint.area = QRectF(touchPos - applicationRect.topLeft(), QSize(0, 0));
+            touchPoint.normalPosition = QPointF(touchPos.x() / applicationRect.width(), touchPos.y() / applicationRect.height());
+        }
     }
 }
 
@@ -191,8 +174,7 @@
 {
     // Send touch event synchronously
     QIOSIntegration *iosIntegration = static_cast<QIOSIntegration *>(QGuiApplicationPrivate::platformIntegration());
-    QWindowSystemInterface::handleTouchEvent(m_qioswindow->window(), timeStamp,
-                                             iosIntegration->touchDevice(), m_qioswindow->touchPoints());
+    QWindowSystemInterface::handleTouchEvent(m_qioswindow->window(), timeStamp, iosIntegration->touchDevice(), m_activeTouches.values());
     QWindowSystemInterface::flushWindowSystemEvents();
 }
 
@@ -204,19 +186,13 @@
     if (window != QGuiApplication::focusWindow())
         m_qioswindow->requestActivateWindow();
 
-    // Track Cocoa touch id to Qt touch id. The UITouch pointer is constant
-    // for the touch duration.
-    QHash<UITouch *, int> &activeTouches = m_qioswindow->activeTouches();
-    QList<QWindowSystemInterface::TouchPoint> &touchPoints = m_qioswindow->touchPoints();
-    for (UITouch *touch in touches)
-        activeTouches.insert(touch, m_qioswindow->touchId()++);
-
-    // Create new touch points if needed.
-    int newTouchPointsNeeded = m_qioswindow->touchId() - touchPoints.count();
-    for (int i =  0; i < newTouchPointsNeeded; ++i) {
-        QWindowSystemInterface::TouchPoint touchPoint;
-        touchPoint.id = touchPoints.count(); // id is the index in the touchPoints list.
-        touchPoints.append(touchPoint);
+    // UIKit generates [Began -> Moved -> Ended] event sequences for
+    // each touch point. Internally we keep a hashmap of active UITouch
+    // points to QWindowSystemInterface::TouchPoints, and assigns each TouchPoint
+    // an id for use by Qt.
+    for (UITouch *touch in touches) {
+        Q_ASSERT(!m_activeTouches.contains(touch));
+        m_activeTouches[touch].id = m_nextTouchId++;
     }
 
     [self updateTouchList:touches withState:Qt::TouchPointPressed];
@@ -234,19 +210,11 @@
     [self updateTouchList:touches withState:Qt::TouchPointReleased];
     [self sendTouchEventWithTimestamp:ulong(event.timestamp * 1000)];
 
-    // Remove ended touch points from the active set (event processing has completed at this point)
-    QHash<UITouch *, int> &activeTouches = m_qioswindow->activeTouches();
-    for (UITouch *touch in touches) {
-        int id = activeTouches.take(touch);
-
-        // If this touch is the most recent touch we can reuse its id
-        if (id == m_qioswindow->touchId() - 1)
-            --m_qioswindow->touchId();
-    }
-
-    // Reset the touch id when there are no more active touches
-    if (activeTouches.isEmpty())
-        m_qioswindow->touchId() = 0;
+    // Remove ended touch points from the active set:
+    for (UITouch *touch in touches)
+        m_activeTouches.remove(touch);
+    if (m_activeTouches.isEmpty())
+        m_nextTouchId = 0;
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
@@ -254,8 +222,8 @@
     Q_UNUSED(touches) // ### can a subset of the active touches be cancelled?
 
     // Clear current touch points
-    m_qioswindow->activeTouches().clear();
-    m_qioswindow->touchId() = 0;
+    m_activeTouches.clear();
+    m_nextTouchId = 0;
 
     // Send cancel touch event synchronously
     QIOSIntegration *iosIntegration = static_cast<QIOSIntegration *>(QGuiApplicationPrivate::platformIntegration());
@@ -322,7 +290,6 @@ QT_BEGIN_NAMESPACE
 QIOSWindow::QIOSWindow(QWindow *window)
     : QPlatformWindow(window)
     , m_view([[EAGLView alloc] initWithQIOSWindow:this])
-    , m_touchId(0)
     , m_requestedGeometry(QPlatformWindow::geometry())
     , m_windowLevel(0)
     , m_devicePixelRatio(1.0)

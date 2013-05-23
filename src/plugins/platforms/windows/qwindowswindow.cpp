@@ -203,10 +203,9 @@ static inline QSize clientSize(HWND hwnd)
     return qSizeOfRect(rect);
 }
 
-// from qwidget_win.cpp
-static bool shouldShowMaximizeButton(const QWindow *w)
+// from qwidget_win.cpp, pass flags separately in case they have been "autofixed".
+static bool shouldShowMaximizeButton(const QWindow *w, Qt::WindowFlags flags)
 {
-    const Qt::WindowFlags flags = w->flags();
     if ((flags & Qt::MSWindowsFixedSizeDialogHint) || !(flags & Qt::WindowMaximizeButtonHint))
         return false;
     // if the user explicitly asked for the maximize button, we try to add
@@ -333,6 +332,25 @@ QDebug operator<<(QDebug debug, const WindowCreationData &d)
     return debug;
 }
 
+// Fix top level window flags in case only the type flags are passed.
+static inline void fixTopLevelWindowFlags(Qt::WindowFlags &flags)
+{
+    switch (flags) {
+    case Qt::Window:
+        flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinimizeButtonHint
+              |Qt::WindowMaximizeButtonHint|Qt::WindowCloseButtonHint;
+        break;
+    case Qt::Dialog:
+        flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowContextHelpButtonHint | Qt::WindowCloseButtonHint;
+        break;
+    case Qt::Tool:
+         flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint;
+         break;
+    default:
+        break;
+    }
+}
+
 void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flagsIn,
                                     unsigned creationFlags)
 {
@@ -359,10 +377,8 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
         topLevel = (creationFlags & ForceTopLevel) ? true : w->isTopLevel();
     }
 
-    if (topLevel && flags == 1) {
-        flags |= Qt::WindowTitleHint|Qt::WindowSystemMenuHint|Qt::WindowMinimizeButtonHint
-                |Qt::WindowMaximizeButtonHint|Qt::WindowCloseButtonHint;
-    }
+    if (topLevel)
+        fixTopLevelWindowFlags(flags);
 
     type = static_cast<Qt::WindowType>(int(flags) & Qt::WindowType_Mask);
     switch (type) {
@@ -433,7 +449,7 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
                     style |= WS_SYSMENU;
                 if (flags & Qt::WindowMinimizeButtonHint)
                     style |= WS_MINIMIZEBOX;
-                if (shouldShowMaximizeButton(w))
+                if (shouldShowMaximizeButton(w, flags))
                     style |= WS_MAXIMIZEBOX;
                 if (tool)
                     exStyle |= WS_EX_TOOLWINDOW;
@@ -775,7 +791,7 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w,
 QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
     QPlatformWindow(aWindow),
     m_data(data),
-    m_flags(0),
+    m_flags(WithinCreate),
     m_hdc(0),
     m_windowState(Qt::WindowNoState),
     m_opacity(1.0),
@@ -826,6 +842,7 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
     const qreal opacity = qt_window_private(aWindow)->opacity;
     if (!qFuzzyCompare(opacity, qreal(1.0)))
         setOpacity(opacity);
+    clearFlag(WithinCreate);
 }
 
 QWindowsWindow::~QWindowsWindow()
@@ -1481,8 +1498,10 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             if (visible)
                 newStyle |= WS_VISIBLE;
             setStyle(newStyle);
-
-            const QRect r = effectiveScreen(window())->geometry();
+            // Use geometry of QWindow::screen() within creation or the virtual screen the
+            // window is in (QTBUG-31166, QTBUG-30724).
+            const QScreen *screen = testFlag(WithinCreate) ? window()->screen() : effectiveScreen(window());
+            const QRect r = screen->geometry();
             const UINT swpf = SWP_FRAMECHANGED | SWP_NOACTIVATE;
             const bool wasSync = testFlag(SynchronousGeometryChangeEvent);
             setFlag(SynchronousGeometryChangeEvent);

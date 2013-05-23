@@ -4010,10 +4010,6 @@ void tst_QWidget::update()
 
     QApplication::processEvents();
     QApplication::processEvents();
-
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL(0, "Cocoa compositor says to paint this twice.", Continue);
-#endif
     QTRY_COMPARE(w.numPaintEvents, 1);
 
     QCOMPARE(w.visibleRegion(), QRegion(w.rect()));

@@ -233,6 +233,11 @@ bool QProcessPrivate::waitForStarted(int)
     return false;
 }
 
+bool QProcessPrivate::drainOutputPipes()
+{
+    return true;
+}
+
 bool QProcessPrivate::waitForReadyRead(int msecs)
 {
     return false;

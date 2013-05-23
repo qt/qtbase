@@ -140,7 +140,6 @@ QXcbDrag::QXcbDrag(QXcbConnection *c) : QXcbObject(c)
     dropData = new QXcbDropData(this);
 
     init();
-    heartbeat = -1;
     cleanup_timer = -1;
 }
 
@@ -179,9 +178,6 @@ void QXcbDrag::startDrag()
 
     init();
 
-    heartbeat = startTimer(200);
-
-
     xcb_set_selection_owner(xcb_connection(), connection()->clipboard()->owner(),
                             atom(QXcbAtom::XdndSelection), connection()->time());
 
@@ -202,10 +198,6 @@ void QXcbDrag::startDrag()
 
 void QXcbDrag::endDrag()
 {
-    if (heartbeat != -1) {
-        killTimer(heartbeat);
-        heartbeat = -1;
-    }
     QBasicDrag::endDrag();
 }
 
@@ -485,11 +477,6 @@ void QXcbDrag::drop(const QMouseEvent *event)
 {
     QBasicDrag::drop(event);
 
-    if (heartbeat != -1) {
-        killTimer(heartbeat);
-        heartbeat = -1;
-    }
-
     if (!current_target)
         return;
 
@@ -536,7 +523,6 @@ void QXcbDrag::drop(const QMouseEvent *event)
     current_proxy_target = 0;
     source_time = 0;
 //    current_embedding_widget = 0;
-    // #fixme resetDndState(false);
 }
 
 Qt::DropAction QXcbDrag::toDropAction(xcb_atom_t a) const
@@ -1041,12 +1027,7 @@ void QXcbDrag::handleFinished(const xcb_client_message_event_t *event)
 
 void QXcbDrag::timerEvent(QTimerEvent* e)
 {
-    if (e->timerId() == heartbeat && source_sameanswer.isNull()) {
-        QPointF pos = QCursor::pos();
-        QMouseEvent me(QEvent::MouseMove, pos, pos, pos, Qt::LeftButton,
-                       QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());
-        move(&me);
-    } else if (e->timerId() == cleanup_timer) {
+    if (e->timerId() == cleanup_timer) {
         bool stopTimer = true;
         for (int i = 0; i < transactions.count(); ++i) {
             const Transaction &t = transactions.at(i);
@@ -1160,7 +1141,7 @@ bool QXcbDrag::dndEnable(QXcbWindow *w, bool on)
             if (desktop_proxy) // *WE* already have one.
                 return false;
 
-            connection()->grabServer();
+            QXcbConnectionGrabber grabber(connection());
 
             // As per Xdnd4, use XdndProxy
             xcb_window_t proxy_id = xdndProxy(connection(), w->xcb_window());
@@ -1176,7 +1157,6 @@ bool QXcbDrag::dndEnable(QXcbWindow *w, bool on)
                                     XCB_ATOM_WINDOW, 32, 1, &proxy_id);
             }
 
-            connection()->ungrabServer();
         } else {
             xdnd_widget = w;
         }

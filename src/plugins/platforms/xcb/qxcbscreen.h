@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
 
 class QXcbConnection;
 class QXcbCursor;
+class QXcbXSettings;
 
 class QXcbScreen : public QXcbObject, public QPlatformScreen
 {
@@ -102,6 +103,9 @@ public:
     void readXResources();
 
     QFontEngine::HintStyle hintStyle() const { return m_hintStyle; }
+
+    QXcbXSettings *xSettings() const;
+
 private:
     static bool xResource(const QByteArray &identifier,
                          const QByteArray &expectedIdentifier,
@@ -127,6 +131,7 @@ private:
     int m_refreshRate;
     int m_forcedDpi;
     QFontEngine::HintStyle m_hintStyle;
+    QXcbXSettings *m_xSettings;
 };
 
 QT_END_NAMESPACE

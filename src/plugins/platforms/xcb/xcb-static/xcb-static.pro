@@ -24,7 +24,8 @@ SOURCES += \
     $$LIBXCB_DIR/shm.c \
     $$LIBXCB_DIR/sync.c \
     $$LIBXCB_DIR/render.c \
-    $$LIBXCB_DIR/shape.c
+    $$LIBXCB_DIR/shape.c \
+    $$LIBXCB_DIR/xkb.c
 
 #
 # xcb-util

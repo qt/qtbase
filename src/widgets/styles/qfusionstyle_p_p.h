@@ -88,7 +88,7 @@ public:
     // On mac we want a standard blue color used when the system palette is used
     bool isMacSystemPalette(const QPalette &pal) const {
         Q_UNUSED(pal);
-#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
+#if defined(Q_OS_MACX)
         const QPalette *themePalette = QGuiApplicationPrivate::platformTheme()->palette();
         if (themePalette && themePalette->color(QPalette::Normal, QPalette::Highlight) ==
                 pal.color(QPalette::Normal, QPalette::Highlight) &&
@@ -102,13 +102,13 @@ public:
     QColor highlight(const QPalette &pal) const {
         if (isMacSystemPalette(pal))
             return QColor(60, 140, 230);
-        return pal.color(QPalette::Active, QPalette::Highlight);
+        return pal.color(QPalette::Highlight);
     }
 
     QColor highlightedText(const QPalette &pal) const {
         if (isMacSystemPalette(pal))
             return Qt::white;
-        return pal.color(QPalette::Active, QPalette::HighlightedText);
+        return pal.color(QPalette::HighlightedText);
     }
 
     QColor outline(const QPalette &pal) const {

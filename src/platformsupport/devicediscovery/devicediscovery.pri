@@ -5,7 +5,7 @@ linux:contains(QT_CONFIG, evdev) {
         SOURCES += $$PWD/qdevicediscovery_udev.cpp
 
         INCLUDEPATH += $$QMAKE_INCDIR_LIBUDEV
-        LIBS += $$QMAKE_LIBS_LIBUDEV
+        LIBS_PRIVATE += $$QMAKE_LIBS_LIBUDEV
     } else {
         SOURCES += $$PWD/qdevicediscovery_static.cpp
     }

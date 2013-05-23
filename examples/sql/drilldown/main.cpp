@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     if (!createConnection())
         return 1;
 
-    View view("offices", "images");
+    View view("items", "images");
     view.show();
 #ifdef QT_KEYPAD_NAVIGATION
     QApplication::setNavigationMode(Qt::NavigationModeCursorAuto);

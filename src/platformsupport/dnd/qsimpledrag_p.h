@@ -88,7 +88,7 @@ protected:
 private:
     void enableEventFilter();
     void disableEventFilter();
-    void resetDndState(bool deleteSource);
+    void restoreCursor();
     void exitDndEventLoop();
 
     bool m_restoreCursor;

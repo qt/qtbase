@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 class QFbWindow;
 class QFbCursor;
 class QPainter;
+class QFbBackingStore;
 
 class QFbScreen : public QObject, public QPlatformScreen
 {
@@ -73,6 +74,8 @@ public:
     virtual void raise(QFbWindow *window);
     virtual void lower(QFbWindow *window);
     virtual void topWindowChanged(QWindow *) {}
+
+    void addBackingStore(QFbBackingStore *bs) {mBackingStores << bs;}
 
 public slots:
     virtual void setDirty(const QRect &rect);
@@ -102,6 +105,7 @@ private:
 
     QPainter *mCompositePainter;
     QList<QPair<QRect, int> > mCachedRects;
+    QList <QFbBackingStore*> mBackingStores;
 
     friend class QFbWindow;
     bool mIsUpToDate;

@@ -345,6 +345,25 @@ void QWindowPrivate::updateVisibility()
         emit q->visibilityChanged(visibility);
 }
 
+void QWindowPrivate::setScreen(QScreen *newScreen, bool recreate)
+{
+    Q_Q(QWindow);
+    if (newScreen != q->screen()) {
+        const bool shouldRecreate = recreate && platformWindow != 0;
+        if (shouldRecreate)
+            q->destroy();
+        if (screen)
+            q->disconnect(screen, SIGNAL(destroyed(QObject*)), q, SLOT(screenDestroyed(QObject*)));
+        screen = newScreen;
+        if (newScreen) {
+            q->connect(screen, SIGNAL(destroyed(QObject*)), q, SLOT(screenDestroyed(QObject*)));
+            if (shouldRecreate)
+                q->create();
+        }
+        emit q->screenChanged(newScreen);
+    }
+}
+
 /*!
     Sets the \a surfaceType of the window.
 
@@ -1384,6 +1403,7 @@ void QWindow::setFramePosition(const QPoint &point)
     if (d->platformWindow) {
         d->platformWindow->setGeometry(QRect(point, size()));
     } else {
+        d->positionAutomatic = false;
         d->geometry.moveTopLeft(point);
     }
 }
@@ -1568,20 +1588,7 @@ void QWindow::setScreen(QScreen *newScreen)
     Q_D(QWindow);
     if (!newScreen)
         newScreen = QGuiApplication::primaryScreen();
-    if (newScreen != screen()) {
-        const bool wasCreated = d->platformWindow != 0;
-        if (wasCreated)
-            destroy();
-        if (d->screen)
-            disconnect(d->screen, SIGNAL(destroyed(QObject*)), this, SLOT(screenDestroyed(QObject*)));
-        d->screen = newScreen;
-        if (newScreen) {
-            connect(d->screen, SIGNAL(destroyed(QObject*)), this, SLOT(screenDestroyed(QObject*)));
-            if (wasCreated)
-                create();
-        }
-        emit screenChanged(newScreen);
-    }
+    d->setScreen(newScreen, true /* recreate */);
 }
 
 void QWindow::screenDestroyed(QObject *object)
@@ -1896,9 +1903,11 @@ bool QWindow::event(QEvent *ev)
     case QEvent::Close: {
         Q_D(QWindow);
         bool wasVisible = isVisible();
-        destroy();
-        if (wasVisible)
-            d->maybeQuitOnLastWindowClosed();
+        if (ev->isAccepted()) {
+            destroy();
+            if (wasVisible)
+                d->maybeQuitOnLastWindowClosed();
+        }
         break; }
 
     case QEvent::Expose:

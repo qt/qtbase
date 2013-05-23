@@ -55,12 +55,8 @@ QEglFSScreen::QEglFSScreen(EGLDisplay dpy)
 #endif
 
     static int hideCursor = qgetenv("QT_QPA_EGLFS_HIDECURSOR").toInt();
-    if (!hideCursor) {
-        if (QEglFSCursor *customCursor = QEglFSHooks::hooks()->createCursor(this))
-            m_cursor = customCursor;
-        else
-            m_cursor = new QEglFSCursor(this);
-    }
+    if (!hideCursor)
+        m_cursor = QEglFSHooks::hooks()->createCursor(this);
 }
 
 QEglFSScreen::~QEglFSScreen()

@@ -7,6 +7,11 @@ android {
         isEmpty(API_VERSION): API_VERSION = android-10
     }
 
+    isEmpty(BUILD_TOOLS_REVISION) {
+        BUILD_TOOLS_REVISION = $$(ANDROID_BUILD_TOOLS_REVISION)
+        isEmpty(BUILD_TOOLS_REVISION): BUILD_TOOLS_REVISION = 17.0.0
+    }
+
     !exists($$SDK_ROOT/platforms/$$API_VERSION/android.jar) {
         error("The Path $$SDK_ROOT/platforms/$$API_VERSION/android.jar does not exist. Make sure the ANDROID_SDK_ROOT and ANDROID_API_VERSION environment variables are correctly set.")
     }
@@ -56,7 +61,9 @@ android:!bundled_jar_file {
         DEX_CMD = $$PWD/data/android/dx $$SDK_ROOT
     } else {
         DEX_CMD = $$SDK_ROOT/platform-tools/dx
+        !exists($$DEX_CMD): DEX_CMD = $$SDK_ROOT/build-tools/$$BUILD_TOOLS_REVISION/dx
     }
+    !exists($$DEX_CMD): error("The path $$DEX_CMD does not exist. Please set the environment variable ANDROID_BUILD_TOOLS_REVISION to the revision of the build tools installed in your Android SDK.")
     QMAKE_LINK_SHLIB_CMD = $$DEX_CMD --dex --output $(TARGET) $$CLASS_DIR
 } else {
     QMAKE_LINK_SHLIB_CMD = jar cf $(TARGET) -C $$CLASS_DIR .

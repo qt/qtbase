@@ -291,6 +291,7 @@ static const struct {
     { "Sysroot", "" },
     { "HostPrefix", "" },
     { "HostBinaries", "bin" },
+    { "HostLibraries", "lib" },
     { "HostData", "." },
     { "TargetSpec", "" },
     { "HostSpec", "" },

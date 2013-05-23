@@ -30,8 +30,6 @@
   \title Data Types for Qt-supported Database Systems
   \brief Recommended data types for database systems
 
-  \ingroup qt-sql
-
   \section1 Recommended Data Types for Qt-Supported Database Systems
 
   This table shows the recommended data types for extracting data from

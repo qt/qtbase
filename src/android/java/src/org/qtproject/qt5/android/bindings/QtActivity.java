@@ -132,7 +132,7 @@ public class QtActivity extends Activity
 
     private ActivityInfo m_activityInfo = null; // activity info object, used to access the libs and the strings
     private DexClassLoader m_classLoader = null; // loader object
-    private String[] m_sources = {"https://files.kde.org/necessitas/ministro/android/necessitas/qt5/latest"}; // Make sure you are using ONLY secure locations
+    private String[] m_sources = {"https://download.qt-project.org/ministro/android/qt5/latest"}; // Make sure you are using ONLY secure locations
     private String m_repository = "default"; // Overwrites the default Ministro repository
                                                         // Possible values:
                                                         // * default - Ministro default repository set with "Ministro configuration tool".
@@ -478,7 +478,6 @@ public class QtActivity extends Activity
                 }
                 loaderParams.putStringArrayList(NATIVE_LIBRARIES_KEY, libraryList);
                 loaderParams.putString(ENVIRONMENT_VARIABLES_KEY, ENVIRONMENT_VARIABLES
-                                                                  + "QT_QPA_EGLFS_HIDECURSOR=1"
                                                                   + "\tQML2_IMPORT_PATH=" + localPrefix + "/qml"
                                                                   + "\tQML_IMPORT_PATH=" + localPrefix + "/imports"
                                                                   + "\tQT_PLUGIN_PATH=" + localPrefix + "/plugins");

@@ -875,6 +875,10 @@ void tst_QGL::graphicsViewClipping()
     scene.setSceneRect(view.viewport()->rect());
 
     QVERIFY(QTest::qWaitForWindowExposed(&view));
+    #ifdef Q_OS_MAC
+        // The black rectangle jumps from the center to the upper left for some reason.
+        QTest::qWait(100);
+    #endif
 
     QTRY_VERIFY(widget->painted);
 

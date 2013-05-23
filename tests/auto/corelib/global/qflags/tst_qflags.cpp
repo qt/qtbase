@@ -49,6 +49,7 @@ private slots:
     void testFlagMultiBits() const;
     void constExpr();
     void signedness();
+    void classEnum();
 };
 
 void tst_QFlags::testFlag() const
@@ -135,6 +136,121 @@ void tst_QFlags::signedness()
 
     Q_STATIC_ASSERT((QtPrivate::is_signed<Qt::AlignmentFlag>::value ==
                      QtPrivate::is_signed<Qt::Alignment::Int>::value));
+}
+
+#if defined(Q_COMPILER_CLASS_ENUM)
+enum class MyStrictEnum { StrictZero, StrictOne, StrictTwo, StrictFour=4 };
+Q_DECLARE_FLAGS( MyStrictFlags, MyStrictEnum )
+Q_DECLARE_OPERATORS_FOR_FLAGS( MyStrictFlags )
+
+Q_STATIC_ASSERT( !QTypeInfo<MyStrictFlags>::isComplex );
+Q_STATIC_ASSERT( !QTypeInfo<MyStrictFlags>::isStatic );
+Q_STATIC_ASSERT( !QTypeInfo<MyStrictFlags>::isLarge );
+Q_STATIC_ASSERT( !QTypeInfo<MyStrictFlags>::isPointer );
+#endif
+
+void tst_QFlags::classEnum()
+{
+#if defined(Q_COMPILER_CLASS_ENUM)
+    // The main aim of the test is making sure it compiles
+    // The QCOMPARE are there as an extra
+    MyStrictEnum e1 = MyStrictEnum::StrictOne;
+    MyStrictEnum e2 = MyStrictEnum::StrictTwo;
+
+    MyStrictFlags f1(MyStrictEnum::StrictOne);
+    QCOMPARE(f1, 1);
+
+    MyStrictFlags f2(e2);
+    QCOMPARE(f2, 2);
+
+    MyStrictFlags f0;
+    QCOMPARE(f0, 0);
+
+    MyStrictFlags f3(e2 | e1);
+    QCOMPARE(f3, 3);
+
+    QVERIFY(f3.testFlag(MyStrictEnum::StrictOne));
+    QVERIFY(!f1.testFlag(MyStrictEnum::StrictTwo));
+
+    QVERIFY(!f0);
+
+    QCOMPARE(f3 & int(1), 1);
+    QCOMPARE(f3 & uint(1), 1);
+    QCOMPARE(f3 & MyStrictEnum::StrictOne, 1);
+
+    MyStrictFlags aux;
+    aux = f3;
+    aux &= int(1);
+    QCOMPARE(aux, 1);
+
+    aux = f3;
+    aux &= uint(1);
+    QCOMPARE(aux, 1);
+
+    aux = f3;
+    aux &= MyStrictEnum::StrictOne;
+    QCOMPARE(aux, 1);
+
+    aux = f3;
+    aux &= f1;
+    QCOMPARE(aux, 1);
+
+    aux = f3 ^ f3;
+    QCOMPARE(aux, 0);
+
+    aux = f3 ^ f1;
+    QCOMPARE(aux, 2);
+
+    aux = f3 ^ f0;
+    QCOMPARE(aux, 3);
+
+    aux = f3 ^ MyStrictEnum::StrictOne;
+    QCOMPARE(aux, 2);
+
+    aux = f3 ^ MyStrictEnum::StrictZero;
+    QCOMPARE(aux, 3);
+
+    aux = f3;
+    aux ^= f3;
+    QCOMPARE(aux, 0);
+
+    aux = f3;
+    aux ^= f1;
+    QCOMPARE(aux, 2);
+
+    aux = f3;
+    aux ^= f0;
+    QCOMPARE(aux, 3);
+
+    aux = f3;
+    aux ^= MyStrictEnum::StrictOne;
+    QCOMPARE(aux, 2);
+
+    aux = f3;
+    aux ^= MyStrictEnum::StrictZero;
+    QCOMPARE(aux, 3);
+
+    aux = f1 | f2;
+    QCOMPARE(aux, 3);
+
+    aux = MyStrictEnum::StrictOne | MyStrictEnum::StrictTwo;
+    QCOMPARE(aux, 3);
+
+    aux = f1;
+    aux |= f2;
+    QCOMPARE(aux, 3);
+
+    aux = MyStrictEnum::StrictOne;
+    aux |= MyStrictEnum::StrictTwo;
+    QCOMPARE(aux, 3);
+
+    aux = ~f1;
+    QCOMPARE(aux, -2);
+
+    // Just to make sure it compiles
+    if (false)
+        qDebug() << f3;
+#endif
 }
 
 // (statically) check QTypeInfo for QFlags instantiations:

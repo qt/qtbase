@@ -196,7 +196,7 @@ public:
         Windows,
         QuickDraw, CoreGraphics, MacPrinter,
         QWindowSystem,
-        PostScript,
+        PostScript,   // ### Qt 6: Remove, update documentation
         OpenGL,
         Picture,
         SVG,
@@ -253,7 +253,6 @@ private:
 #ifndef QT_NO_QWS_QPF2
     friend class QFontEngineQPF;
 #endif
-    friend class QPSPrintEngine;
     friend class QMacPrintEngine;
     friend class QMacPrintEnginePrivate;
     friend class QFontEngineQPA;

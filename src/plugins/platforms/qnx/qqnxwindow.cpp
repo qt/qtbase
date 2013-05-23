@@ -87,9 +87,8 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
     // Create child QNX window
     errno = 0;
     result = screen_create_window_type(&m_window, m_screenContext, SCREEN_CHILD_WINDOW);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQnxWindow: failed to create window, errno=%d", errno);
-    }
 
     // Set window buffer usage based on rendering API
     int val;
@@ -108,32 +107,36 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
 
     errno = 0;
     result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_USAGE, &val);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQnxWindow: failed to set window buffer usage, errno=%d", errno);
-    }
 
     // Alpha channel is always pre-multiplied if present
     errno = 0;
     val = SCREEN_PRE_MULTIPLIED_ALPHA;
     result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_ALPHA_MODE, &val);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQnxWindow: failed to set window alpha mode, errno=%d", errno);
-    }
 
     // Make the window opaque
     errno = 0;
     val = SCREEN_TRANSPARENCY_NONE;
     result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_TRANSPARENCY, &val);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQnxWindow: failed to set window transparency, errno=%d", errno);
-    }
 
     // Set the window swap interval
     errno = 0;
     val = 1;
     result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_SWAP_INTERVAL, &val);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQnxWindow: failed to set window swap interval, errno=%d", errno);
+
+    if (window->flags() && Qt::WindowDoesNotAcceptFocus) {
+        errno = 0;
+        val = SCREEN_SENSITIVITY_NO_FOCUS;
+        result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_SENSITIVITY, &val);
+        if (result != 0)
+            qFatal("QQnxWindow: failed to set window sensitivity, errno=%d", errno);
     }
 
     setScreen(static_cast<QQnxScreen *>(window->screen()->handle()));
@@ -219,24 +222,21 @@ QRect QQnxWindow::setGeometryHelper(const QRect &rect)
     val[0] = rect.x();
     val[1] = rect.y();
     int result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_POSITION, val);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQnxWindow: failed to set window position, errno=%d", errno);
-    }
 
     errno = 0;
     val[0] = rect.width();
     val[1] = rect.height();
     result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_SIZE, val);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQnxWindow: failed to set window size, errno=%d", errno);
-    }
 
     // Set viewport size equal to window size
     errno = 0;
     result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_SOURCE_SIZE, val);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQnxWindow: failed to set window source size, errno=%d", errno);
-    }
 
     return oldGeometry;
 }
@@ -257,9 +257,8 @@ void QQnxWindow::setOffset(const QPoint &offset)
     val[0] = newGeometry.x();
     val[1] = newGeometry.y();
     int result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_POSITION, val);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQnxWindow: failed to set window position, errno=%d", errno);
-    }
 
     Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
         childWindow->setOffset(offset);
@@ -296,9 +295,8 @@ void QQnxWindow::updateVisibility(bool parentVisible)
     errno = 0;
     int val = (m_visible && parentVisible) ? 1 : 0;
     int result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_VISIBLE, &val);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQnxWindow: failed to set window visibility, errno=%d", errno);
-    }
 
     Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
         childWindow->updateVisibility(m_visible && parentVisible);
@@ -311,9 +309,8 @@ void QQnxWindow::setOpacity(qreal level)
     errno = 0;
     int val = (int)(level * 255);
     int result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_GLOBAL_ALPHA, &val);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQnxWindow: failed to set window global alpha, errno=%d", errno);
-    }
 
     // TODO: How to handle children of this window? If we change all the visibilities, then
     //       the transparency will look wrong...
@@ -352,9 +349,8 @@ void QQnxWindow::setBufferSize(const QSize &size)
 
     int val[2] = { nonEmptySize.width(), nonEmptySize.height() };
     int result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_BUFFER_SIZE, val);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQnxWindow: failed to set window buffer size, errno=%d", errno);
-    }
 
     // Create window buffers if they do not exist
     if (m_bufferSize.isEmpty()) {
@@ -362,31 +358,27 @@ void QQnxWindow::setBufferSize(const QSize &size)
 #if !defined(QT_NO_OPENGL)
         // Get pixel format from EGL config if using OpenGL;
         // otherwise inherit pixel format of window's screen
-        if (m_platformOpenGLContext != 0) {
+        if (m_platformOpenGLContext != 0)
             val[0] = platformWindowFormatToNativeFormat(m_platformOpenGLContext->format());
-        }
 #endif
 
         errno = 0;
         result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_FORMAT, val);
-        if (result != 0) {
+        if (result != 0)
             qFatal("QQnxWindow: failed to set window pixel format, errno=%d", errno);
-        }
 
         errno = 0;
         result = screen_create_window_buffers(m_window, MAX_BUFFER_COUNT);
-        if (result != 0) {
+        if (result != 0)
             qWarning() << "QQnxWindow: Buffer size was" << size;
             qFatal("QQnxWindow: failed to create window buffers, errno=%d", errno);
-        }
 
         // check if there are any buffers available
         int bufferCount = 0;
         result = screen_get_window_property_iv(m_window, SCREEN_PROPERTY_RENDER_BUFFER_COUNT, &bufferCount);
 
-        if (result != 0) {
+        if (result != 0)
             qFatal("QQnxWindow: failed to query window buffer count, errno=%d", errno);
-        }
 
         if (bufferCount != MAX_BUFFER_COUNT) {
             qFatal("QQnxWindow: invalid buffer count. Expected = %d, got = %d. You might experience problems.",
@@ -416,9 +408,8 @@ QQnxBuffer &QQnxWindow::renderBuffer()
         errno = 0;
         screen_buffer_t buffers[MAX_BUFFER_COUNT];
         const int result = screen_get_window_property_pv(m_window, SCREEN_PROPERTY_RENDER_BUFFERS, (void **)buffers);
-        if (result != 0) {
+        if (result != 0)
             qFatal("QQnxWindow: failed to query window buffers, errno=%d", errno);
-        }
 
         // Wrap each buffer
         for (int i = 0; i < MAX_BUFFER_COUNT; ++i) {
@@ -482,24 +473,21 @@ void QQnxWindow::post(const QRegion &dirty)
         // Update the display with contents of render buffer
         errno = 0;
         int result = screen_post_window(m_window, currentBuffer.nativeBuffer(), 1, dirtyRect, 0);
-        if (result != 0) {
+        if (result != 0)
             qFatal("QQnxWindow: failed to post window buffer, errno=%d", errno);
-        }
 
         // Advance to next nender buffer
         m_previousBufferIndex = m_currentBufferIndex++;
-        if (m_currentBufferIndex >= MAX_BUFFER_COUNT) {
+        if (m_currentBufferIndex >= MAX_BUFFER_COUNT)
             m_currentBufferIndex = 0;
-        }
 
         // Save modified region and clear scrolled region
         m_previousDirty = dirty;
         m_scrolled = QRegion();
 
         // Notify screen that window posted
-        if (m_screen != 0) {
+        if (m_screen != 0)
             m_screen->onWindowPost(this);
-        }
     }
 }
 
@@ -524,16 +512,14 @@ void QQnxWindow::setScreen(QQnxScreen *platformScreen)
     errno = 0;
     screen_display_t display = platformScreen->nativeDisplay();
     int result = screen_set_window_property_pv(m_window, SCREEN_PROPERTY_DISPLAY, (void **)&display);
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQnxWindow: failed to set window display, errno=%d", errno);
-    }
 
     // Add window to display's window group
     errno = 0;
     result = screen_join_window_group(m_window, platformScreen->windowGroupName());
-    if (result != 0) {
+    if (result != 0)
         qFatal("QQnxWindow: failed to join window group, errno=%d", errno);
-    }
 
     Q_FOREACH (QQnxWindow *childWindow, m_childWindows) {
         // Only subwindows and tooltips need necessarily be moved to another display with the window.
@@ -813,19 +799,16 @@ int QQnxWindow::platformWindowFormatToNativeFormat(const QSurfaceFormat &format)
     qWindowDebug() << Q_FUNC_INFO;
     // Extract size of colour channels from window format
     int redSize = format.redBufferSize();
-    if (redSize == -1) {
+    if (redSize == -1)
         qFatal("QQnxWindow: red size not defined");
-    }
 
     int greenSize = format.greenBufferSize();
-    if (greenSize == -1) {
+    if (greenSize == -1)
         qFatal("QQnxWindow: green size not defined");
-    }
 
     int blueSize = format.blueBufferSize();
-    if (blueSize == -1) {
+    if (blueSize == -1)
         qFatal("QQnxWindow: blue size not defined");
-    }
 
     // select matching native format
     if (redSize == 5 && greenSize == 6 && blueSize == 5) {

@@ -215,7 +215,7 @@ public:
     {
         QLocalePrivate *retval = new QLocalePrivate;
         retval->m_data = data;
-        retval->ref.store(1);
+        retval->ref.store(0);
         retval->m_numberOptions = numberOptions;
         return retval;
     }
@@ -247,7 +247,6 @@ public:
     static QLocale::Country codeToCountry(const QString &code);
     static void getLangAndCountry(const QString &name, QLocale::Language &lang,
                                   QLocale::Script &script, QLocale::Country &cntry);
-    static const QLocaleData *dataPointerForIndex(quint16 index);
 
     QLocale::MeasurementSystem measurementSystem() const;
 

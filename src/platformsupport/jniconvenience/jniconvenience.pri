@@ -1,6 +1,4 @@
 android:!android-no-sdk {
-    QT += gui-private
-
     HEADERS += $$PWD/qjnihelpers_p.h \
                $$PWD/qjniobject_p.h
 

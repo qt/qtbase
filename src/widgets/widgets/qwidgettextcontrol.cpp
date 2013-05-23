@@ -579,7 +579,7 @@ void QWidgetTextControlPrivate::selectionChanged(bool forceEmitSelectionChanged 
     if (forceEmitSelectionChanged) {
         emit q->selectionChanged();
 #ifndef QT_NO_ACCESSIBILITY
-        if (q->parent()) {
+        if (q->parent() && q->parent()->isWidgetType()) {
             QAccessibleTextSelectionEvent ev(q->parent(), cursor.anchor(), cursor.position());
             QAccessible::updateAccessibility(&ev);
         }
@@ -602,7 +602,7 @@ void QWidgetTextControlPrivate::selectionChanged(bool forceEmitSelectionChanged 
                     || cursor.anchor() != lastSelectionAnchor)))) {
         emit q->selectionChanged();
 #ifndef QT_NO_ACCESSIBILITY
-        if (q->parent()) {
+        if (q->parent() && q->parent()->isWidgetType()) {
             QAccessibleTextSelectionEvent ev(q->parent(), cursor.anchor(), cursor.position());
             QAccessible::updateAccessibility(&ev);
         }

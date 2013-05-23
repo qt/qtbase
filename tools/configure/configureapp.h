@@ -57,9 +57,7 @@ public:
     ~Configure();
 
     void parseCmdLine();
-#if !defined(EVAL)
     void validateArgs();
-#endif
     bool displayHelp();
 
     QString defaultTo(const QString &option);
@@ -70,27 +68,20 @@ public:
     bool verifyConfiguration();
 
     void generateOutputVars();
-#if !defined(EVAL)
     void generateHeaders();
-    void generateBuildKey();
     void generateCachefile();
     void displayConfig();
-#endif
     void generateMakefiles();
     void appendMakeItem(int inList, const QString &item);
-#if !defined(EVAL)
     void generateConfigfiles();
     void detectArch();
     void generateQConfigPri();
-    void generateSystemVars();
-#endif
+    void prepareConfigTests();
     void showSummary();
     QString firstLicensePath();
 
-#if !defined(EVAL)
     bool showLicense(QString licenseFile);
     void readLicense();
-#endif
 
     QString addDefine(QString def);
 
@@ -172,10 +163,8 @@ private:
     QString locateFile(const QString &fileName) const;
     bool findFile(const QString &fileName) const { return !locateFile(fileName).isEmpty(); }
     static QString findFileInPaths(const QString &fileName, const QStringList &paths);
-#if !defined(EVAL)
     void reloadCmdLine();
     void saveCmdLine();
-#endif
 
     bool tryCompileProject(const QString &projectPath, const QString &extraOptions = QString());
     bool compilerSupportsFlag(const QString &compilerAndArgs);

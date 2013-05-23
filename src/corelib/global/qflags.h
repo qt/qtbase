@@ -97,31 +97,32 @@ public:
     inline QFlags(const QFlags &other);
     inline QFlags &operator=(const QFlags &other);
 #endif
-    Q_DECL_CONSTEXPR inline QFlags(Enum f) : i(f) {}
+    Q_DECL_CONSTEXPR inline QFlags(Enum f) : i(Int(f)) {}
     Q_DECL_CONSTEXPR inline QFlags(Zero = 0) : i(0) {}
     Q_DECL_CONSTEXPR inline QFlags(QFlag f) : i(f) {}
 
     inline QFlags &operator&=(int mask) { i &= mask; return *this; }
     inline QFlags &operator&=(uint mask) { i &= mask; return *this; }
+    inline QFlags &operator&=(Enum mask) { i &= Int(mask); return *this; }
     inline QFlags &operator|=(QFlags f) { i |= f.i; return *this; }
-    inline QFlags &operator|=(Enum f) { i |= f; return *this; }
+    inline QFlags &operator|=(Enum f) { i |= Int(f); return *this; }
     inline QFlags &operator^=(QFlags f) { i ^= f.i; return *this; }
-    inline QFlags &operator^=(Enum f) { i ^= f; return *this; }
+    inline QFlags &operator^=(Enum f) { i ^= Int(f); return *this; }
 
     Q_DECL_CONSTEXPR  inline operator Int() const { return i; }
 
     Q_DECL_CONSTEXPR inline QFlags operator|(QFlags f) const { return QFlags(Enum(i | f.i)); }
-    Q_DECL_CONSTEXPR inline QFlags operator|(Enum f) const { return QFlags(Enum(i | f)); }
+    Q_DECL_CONSTEXPR inline QFlags operator|(Enum f) const { return QFlags(Enum(i | Int(f))); }
     Q_DECL_CONSTEXPR inline QFlags operator^(QFlags f) const { return QFlags(Enum(i ^ f.i)); }
-    Q_DECL_CONSTEXPR inline QFlags operator^(Enum f) const { return QFlags(Enum(i ^ f)); }
+    Q_DECL_CONSTEXPR inline QFlags operator^(Enum f) const { return QFlags(Enum(i ^ Int(f))); }
     Q_DECL_CONSTEXPR inline QFlags operator&(int mask) const { return QFlags(Enum(i & mask)); }
     Q_DECL_CONSTEXPR inline QFlags operator&(uint mask) const { return QFlags(Enum(i & mask)); }
-    Q_DECL_CONSTEXPR inline QFlags operator&(Enum f) const { return QFlags(Enum(i & f)); }
+    Q_DECL_CONSTEXPR inline QFlags operator&(Enum f) const { return QFlags(Enum(i & Int(f))); }
     Q_DECL_CONSTEXPR inline QFlags operator~() const { return QFlags(Enum(~i)); }
 
     Q_DECL_CONSTEXPR inline bool operator!() const { return !i; }
 
-    Q_DECL_CONSTEXPR inline bool testFlag(Enum f) const { return (i & f) == f && (f != 0 || i == Int(f) ); }
+    Q_DECL_CONSTEXPR inline bool testFlag(Enum f) const { return (i & Int(f)) == Int(f) && (Int(f) != 0 || i == Int(f) ); }
 private:
     Int i;
 };

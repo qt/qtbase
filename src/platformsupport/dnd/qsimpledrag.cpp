@@ -140,7 +140,6 @@ bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
             QKeyEvent *ke = static_cast<QKeyEvent *>(e);
             if (ke->key() == Qt::Key_Escape && e->type() == QEvent::KeyPress) {
                 cancel();
-                resetDndState(true);
                 disableEventFilter();
                 exitDndEventLoop();
 
@@ -154,13 +153,10 @@ bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
 
         case QEvent::MouseButtonRelease:
             disableEventFilter();
-
             if (canDrop()) {
                 drop(static_cast<QMouseEvent *>(e));
-                resetDndState(false);
             } else {
                 cancel();
-                resetDndState(true);
             }
             exitDndEventLoop();
             return true; // Eat all mouse events
@@ -195,7 +191,7 @@ Qt::DropAction QBasicDrag::drag(QDrag *o)
     return m_executed_drop_action;
 }
 
-void QBasicDrag::resetDndState(bool /* deleteSource */)
+void QBasicDrag::restoreCursor()
 {
     if (m_restoreCursor) {
 #ifndef QT_NO_CURSOR
@@ -227,6 +223,7 @@ void QBasicDrag::endDrag()
 void QBasicDrag::cancel()
 {
     disableEventFilter();
+    restoreCursor();
     m_drag_icon_window->setVisible(false);
 }
 
@@ -239,6 +236,7 @@ void QBasicDrag::move(const QMouseEvent *)
 void QBasicDrag::drop(const QMouseEvent *)
 {
     disableEventFilter();
+    restoreCursor();
     m_drag_icon_window->setVisible(false);
 }
 

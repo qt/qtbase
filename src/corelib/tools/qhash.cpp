@@ -235,17 +235,16 @@ static void qt_initialize_qhash_seed()
     \internal
 
     Private copy of the implementation of the Qt 4 qHash algorithm for strings,
+    (that is, QChar-based arrays, so all QString-like classes),
     to be used wherever the result is somehow stored or reused across multiple
     Qt versions. The public qHash implementation can change at any time,
     therefore one must not rely on the fact that it will always give the same
     results.
 
-    This function must *never* change its results.
+    The qt_hash functions must *never* change their results.
 */
-uint qt_hash(const QString &key) Q_DECL_NOTHROW
+static uint qt_hash(const QChar *p, int n) Q_DECL_NOTHROW
 {
-    const QChar *p = key.unicode();
-    int n = key.size();
     uint h = 0;
 
     while (n--) {
@@ -254,6 +253,24 @@ uint qt_hash(const QString &key) Q_DECL_NOTHROW
         h &= 0x0fffffff;
     }
     return h;
+}
+
+/*!
+    \internal
+    \overload
+*/
+uint qt_hash(const QString &key) Q_DECL_NOTHROW
+{
+    return qt_hash(key.unicode(), key.size());
+}
+
+/*!
+    \internal
+    \overload
+*/
+uint qt_hash(const QStringRef &key) Q_DECL_NOTHROW
+{
+    return qt_hash(key.unicode(), key.size());
 }
 
 /*

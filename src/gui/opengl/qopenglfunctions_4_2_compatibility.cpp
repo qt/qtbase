@@ -57,6 +57,7 @@ QT_BEGIN_NAMESPACE
     \class QOpenGLFunctions_4_2_Compatibility
     \inmodule QtGui
     \since 5.1
+    \wrapper
     \brief The QOpenGLFunctions_4_2_Compatibility class provides all functions for this version and profile of OpenGL.
 
     \sa QAbstractOpenGLFunctions

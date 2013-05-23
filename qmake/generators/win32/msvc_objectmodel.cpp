@@ -779,16 +779,14 @@ bool VCCLCompilerTool::parseOption(const char* option)
         found = false; break;
     case 'R':
         if(second == 'T' && third == 'C') {
-            if(fourth == '1')
-                BasicRuntimeChecks = runtimeBasicCheckAll;
-            else if(fourth == 'c')
-                SmallerTypeCheck = _True;
-            else if(fourth == 's')
-                BasicRuntimeChecks = runtimeCheckStackFrame;
-            else if(fourth == 'u')
-                BasicRuntimeChecks = runtimeCheckUninitVariables;
-            else
-                found = false; break;
+            int rtc = BasicRuntimeChecks;
+            for (size_t i = 4; option[i]; ++i) {
+                if (!parseRuntimeCheckOption(option[i], &rtc)) {
+                    found = false;
+                    break;
+                }
+            }
+            BasicRuntimeChecks = static_cast<basicRuntimeCheckOption>(rtc);
         }
         break;
     case 'T':
@@ -1117,6 +1115,12 @@ bool VCCLCompilerTool::parseOption(const char* option)
         case 'd':
             DisableSpecificWarnings += option+3;
             break;
+        case 'e':
+            if (config->CompilerVersion <= NET2008)
+                AdditionalOptions += option;
+            else
+                TreatSpecificWarningsAsErrors += option + 3;
+            break;
         default:
             AdditionalOptions += option;
         }
@@ -1129,6 +1133,21 @@ bool VCCLCompilerTool::parseOption(const char* option)
         warn_msg(WarnLogic, "Could not parse Compiler option: %s, added as AdditionalOption", option);
         AdditionalOptions += option;
     }
+    return true;
+}
+
+bool VCCLCompilerTool::parseRuntimeCheckOption(char c, int *rtc)
+{
+    if (c == '1')
+        *rtc = runtimeBasicCheckAll;
+    else if (c == 'c')
+        SmallerTypeCheck = _True;
+    else if (c == 's')
+        *rtc |= runtimeCheckStackFrame;
+    else if (c == 'u')
+        *rtc |= runtimeCheckUninitVariables;
+    else
+        return false;
     return true;
 }
 

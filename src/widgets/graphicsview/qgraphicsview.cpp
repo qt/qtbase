@@ -2938,6 +2938,8 @@ bool QGraphicsView::viewportEvent(QEvent *event)
             touchEvent->setTarget(viewport());
             QGraphicsViewPrivate::translateTouchEvent(d, touchEvent);
             (void) QApplication::sendEvent(d->scene, touchEvent);
+        } else {
+            event->ignore();
         }
 
         return true;

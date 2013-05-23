@@ -71,6 +71,19 @@ void QFbScreen::initializeCompositor()
 void QFbScreen::addWindow(QFbWindow *window)
 {
     mWindowStack.prepend(window);
+    if (!mBackingStores.isEmpty()) {
+        //check if we have a backing store for this window
+        for (int i = 0; i < mBackingStores.size(); ++i) {
+            QFbBackingStore *bs = mBackingStores.at(i);
+            // this gets called during QWindow::create() at a point where the
+            // invariant (window->handle()->window() == window) is broken
+            if (bs->window() == window->window()) {
+                window->setBackingStore(bs);
+                mBackingStores.removeAt(i);
+                break;
+            }
+        }
+    }
     invalidateRectCache();
     setDirty(window->geometry());
     QWindow *w = topWindow();

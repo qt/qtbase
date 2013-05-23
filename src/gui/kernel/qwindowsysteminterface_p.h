@@ -91,7 +91,8 @@ public:
         PlatformPanel = UserInputEvent | 0x17,
         ContextMenu = UserInputEvent | 0x18,
         ApplicationStateChanged = 0x19,
-        FlushEvents = 0x20
+        FlushEvents = 0x20,
+        WindowScreenChanged = 0x21
     };
 
     class WindowSystemEvent {
@@ -156,6 +157,16 @@ public:
 
         QPointer<QWindow> window;
         Qt::WindowState newState;
+    };
+
+    class WindowScreenChangedEvent : public WindowSystemEvent {
+    public:
+        WindowScreenChangedEvent(QWindow *w, QScreen *s)
+            : WindowSystemEvent(WindowScreenChanged), window(w), screen(s)
+        { }
+
+        QPointer<QWindow> window;
+        QPointer<QScreen> screen;
     };
 
     class ApplicationStateChangedEvent : public WindowSystemEvent {
