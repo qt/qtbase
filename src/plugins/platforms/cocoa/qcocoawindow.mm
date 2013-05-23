@@ -320,9 +320,10 @@ void QCocoaWindow::setVisible(bool visible)
         // - QNSViews for child windows are initialy not hidden and won't get the
         //   viewDidUnhide message.
         exposeWindow();
-        QWindowSystemInterface::flushWindowSystemEvents();
 
         if (m_nsWindow) {
+            QWindowSystemInterface::flushWindowSystemEvents();
+
             // setWindowState might have been called while the window was hidden and
             // will not change the NSWindow state in that case. Sync up here:
             syncWindowState(window()->windowState());
