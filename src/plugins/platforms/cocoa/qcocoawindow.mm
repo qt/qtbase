@@ -1010,15 +1010,11 @@ void QCocoaWindow::obscureWindow()
 QWindow *QCocoaWindow::childWindowAt(QPoint windowPoint)
 {
     QWindow *targetWindow = window();
-    foreach (QObject *child, targetWindow->children()) {
-        if (QWindow *childWindow = qobject_cast<QWindow *>(child)) {
-            if (childWindow->geometry().contains(windowPoint)) {
-                QCocoaWindow* platformWindow = static_cast<QCocoaWindow*>(childWindow->handle());
-                if (platformWindow->isExposed())
-                    targetWindow = platformWindow->childWindowAt(windowPoint - childWindow->position());
-            }
-        }
-    }
+    foreach (QObject *child, targetWindow->children())
+        if (QWindow *childWindow = qobject_cast<QWindow *>(child))
+            if (QPlatformWindow *handle = childWindow->handle())
+                if (handle->isExposed() && childWindow->geometry().contains(windowPoint))
+                    targetWindow = static_cast<QCocoaWindow*>(handle)->childWindowAt(windowPoint - childWindow->position());
 
     return targetWindow;
 }
