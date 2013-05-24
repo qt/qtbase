@@ -118,6 +118,7 @@ public:
     bool setKeyboardGrabEnabled(bool grab);
     bool setMouseGrabEnabled(bool grab);
     QMargins frameMargins() const;
+    QSurfaceFormat format() const;
 
     void requestActivateWindow();
 

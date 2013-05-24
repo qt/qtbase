@@ -253,6 +253,11 @@ QCocoaWindow::~QCocoaWindow()
     [m_nsWindowDelegate release];
 }
 
+QSurfaceFormat QCocoaWindow::format() const
+{
+    return window()->requestedFormat();
+}
+
 void QCocoaWindow::setGeometry(const QRect &rect)
 {
     if (geometry() == rect)

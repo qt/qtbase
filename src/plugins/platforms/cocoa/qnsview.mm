@@ -340,15 +340,20 @@ static QTouchDevice *touchDevice = 0;
     }
 
     const QRect &rect = region->boundingRect();
-    QImage maskImage(rect.size(), QImage::Format_RGB888);
-    maskImage.fill(Qt::white);
-    QPainter p(&maskImage);
-    p.setRenderHint(QPainter::Antialiasing);
+    QImage tmp(rect.size(), QImage::Format_RGB32);
+    tmp.fill(Qt::white);
+    QPainter p(&tmp);
     p.setClipRegion(*region);
-    p.fillRect(rect, QBrush(Qt::black));
+    p.fillRect(rect, Qt::black);
     p.end();
-
-    maskImage = maskImage.convertToFormat(QImage::Format_Indexed8);
+    QImage maskImage = QImage(rect.size(), QImage::Format_Indexed8);
+    for (int y=0; y<rect.height(); ++y) {
+        const uint *src = (const uint *) tmp.constScanLine(y);
+        uchar *dst = maskImage.scanLine(y);
+        for (int x=0; x<rect.width(); ++x) {
+            dst[x] = src[x] & 0xff;
+        }
+    }
     m_maskImage = qt_mac_toCGImage(maskImage, true, &m_maskData);
 }
 
