@@ -39,7 +39,6 @@
 /*!
     \page xml-processing.html
     \title XML Processing
-    \ingroup technology-apis
 
     \brief An Overview of the XML processing facilities in Qt.
 

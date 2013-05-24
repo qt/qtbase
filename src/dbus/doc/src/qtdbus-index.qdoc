@@ -31,7 +31,6 @@
     \brief An introduction to Inter-Process Communication and Remote Procedure Calling with D-Bus.
 
     \keyword QtDBus
-    \ingroup technology-apis
 
     \section1 Introduction
 

@@ -32,7 +32,6 @@
     to perform Inter-Process Communication using the \l{D-Bus} protocol.
 
     \ingroup modules
-    \ingroup technology-apis
 
     \target The QDBus compiler
 
