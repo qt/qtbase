@@ -957,10 +957,12 @@ bool QGLShaderProgram::link()
         d->glfuncs->glGetProgramInfoLog(program, value, &len, logbuf);
         d->log = QString::fromLatin1(logbuf);
         QString name = objectName();
-        if (name.isEmpty())
-            qWarning() << "QGLShader::link:" << d->log;
-        else
-            qWarning() << "QGLShader::link[" << name << "]:" << d->log;
+        if (!d->linked) {
+            if (name.isEmpty())
+                qWarning() << "QGLShader::link:" << d->log;
+            else
+                qWarning() << "QGLShader::link[" << name << "]:" << d->log;
+        }
         delete [] logbuf;
     }
     return d->linked;
