@@ -38,7 +38,8 @@ windowmodality \
 widgetgrab \
 xembed-raster \
 xembed-widgets \
-dialogs
+dialogs \
+windowtransparency
 
 !contains(QT_CONFIG, openssl):!contains(QT_CONFIG, openssl-linked):SUBDIRS -= qssloptions
 
@@ -49,4 +50,4 @@ win32 {
 }
 
 lessThan(QT_MAJOR_VERSION, 5): SUBDIRS -= bearerex lance qnetworkaccessmanager/qget qnetworkreply \
-qpainfo qscreen  socketengine xembed-raster xembed-widgets
+qpainfo qscreen  socketengine xembed-raster xembed-widgets windowtransparency
