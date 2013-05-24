@@ -113,6 +113,8 @@ static QTouchDevice *touchDevice = 0;
              name:NSViewGlobalFrameDidChangeNotification
              object:self];
 }
+    delete currentCustomDragTypes;
+
     [super dealloc];
 }
 
