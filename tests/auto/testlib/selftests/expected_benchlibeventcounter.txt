@@ -1,5 +1,5 @@
 ********* Start testing of tst_BenchlibEventCounter *********
-Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_BenchlibEventCounter::initTestCase()
 PASS   : tst_BenchlibEventCounter::events(0)
 RESULT : tst_BenchlibEventCounter::events():"0":

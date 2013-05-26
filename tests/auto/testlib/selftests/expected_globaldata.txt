@@ -1,5 +1,5 @@
 ********* Start testing of tst_globaldata *********
-Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 QDEBUG : tst_globaldata::initTestCase() initTestCase initTestCase (null) 
 PASS   : tst_globaldata::initTestCase()
 QDEBUG : tst_globaldata::testGlobal(1:local 1) init testGlobal local 1 

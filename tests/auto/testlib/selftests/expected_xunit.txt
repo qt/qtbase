@@ -1,5 +1,5 @@
 ********* Start testing of tst_Xunit *********
-Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_Xunit::initTestCase()
 WARNING: tst_Xunit::testFunc1() just a QWARN() !
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/xunit/tst_xunit.cpp(67)]

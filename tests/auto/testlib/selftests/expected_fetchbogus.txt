@@ -1,5 +1,5 @@
 ********* Start testing of tst_FetchBogus *********
-Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_FetchBogus::initTestCase()
 QFATAL : tst_FetchBogus::fetchBogus(foo) QFETCH: Requested testdata 'bubu' not available, check your _data function.
 FAIL!  : tst_FetchBogus::fetchBogus(foo) Received a fatal error.

@@ -1,5 +1,5 @@
 ********* Start testing of tst_Counting *********
-Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 INFO   : tst_Counting::initTestCase() entering
 PASS   : tst_Counting::initTestCase()
 INFO   : tst_Counting::testPassPass() entering

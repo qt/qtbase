@@ -1,5 +1,5 @@
 ********* Start testing of tst_FailCleanup *********
-Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_FailCleanup::initTestCase()
 PASS   : tst_FailCleanup::aTestFunction()
 FAIL!  : tst_FailCleanup::cleanupTestCase() 'false' returned FALSE. (Fail inside cleanupTestCase)

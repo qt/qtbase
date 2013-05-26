@@ -1,5 +1,5 @@
 ********* Start testing of tst_StrCmp *********
-Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_StrCmp::initTestCase()
 PASS   : tst_StrCmp::compareCharStars()
 XFAIL  : tst_StrCmp::compareByteArray() Next test should fail

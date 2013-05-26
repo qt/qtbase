@@ -1,5 +1,5 @@
 ********* Start testing of tst_FailInit *********
-Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 FAIL!  : tst_FailInit::initTestCase() 'false' returned FALSE. ()
    Loc: [tst_failinit.cpp(22)]
 PASS   : tst_FailInit::cleanupTestCase()

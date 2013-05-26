@@ -1,5 +1,5 @@
 ********* Start testing of tst_BenchlibCounting *********
-Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_BenchlibCounting::initTestCase()
 PASS   : tst_BenchlibCounting::passingBenchmark()
 RESULT : tst_BenchlibCounting::passingBenchmark():
