@@ -177,7 +177,7 @@ static inline QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *getMenuLoader()
             }
 
             QKeyEvent accel_ev(QEvent::ShortcutOverride, (keyCode & (~Qt::KeyboardModifierMask)),
-                               Qt::KeyboardModifiers(keyCode & Qt::KeyboardModifierMask));
+                               Qt::KeyboardModifiers(modifiers & Qt::KeyboardModifierMask));
             accel_ev.ignore();
             QCoreApplication::sendEvent(object, &accel_ev);
             if (accel_ev.isAccepted()) {
