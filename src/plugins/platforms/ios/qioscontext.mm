@@ -197,7 +197,7 @@ void QIOSContext::windowDestroyed(QObject *object)
 
 QFunctionPointer QIOSContext::getProcAddress(const QByteArray& functionName)
 {
-    return reinterpret_cast<QFunctionPointer>(dlsym(RTLD_NEXT, functionName.constData()));
+    return QFunctionPointer(dlsym(RTLD_DEFAULT, functionName.constData()));
 }
 
 #include "moc_qioscontext.cpp"
