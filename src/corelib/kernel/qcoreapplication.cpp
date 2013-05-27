@@ -1952,7 +1952,6 @@ QString QCoreApplication::applicationFilePath()
     char buff[maximum_path+1];
     if (_cmdname(buff)) {
         d->cachedApplicationFilePath = QDir::cleanPath(QString::fromLocal8Bit(buff));
-        return d->cachedApplicationFilePath;
     } else {
         qWarning("QCoreApplication::applicationFilePath: _cmdname() failed");
         // _cmdname() won't fail, but just in case, fallback to the old method
@@ -1961,11 +1960,11 @@ QString QCoreApplication::applicationFilePath()
         if (!executables.empty()) {
             //We assume that there is only one executable in the folder
             d->cachedApplicationFilePath = dir.absoluteFilePath(executables.first());
-            return d->cachedApplicationFilePath;
         } else {
-            return QString();
+            d->cachedApplicationFilePath = QString();
         }
     }
+    return d->cachedApplicationFilePath;
 #elif defined(Q_OS_MAC)
     QString qAppFileName_str = qAppFileName();
     if(!qAppFileName_str.isEmpty()) {
@@ -1984,34 +1983,38 @@ QString QCoreApplication::applicationFilePath()
         return d->cachedApplicationFilePath;
     }
 #  endif
+    if (!arguments().isEmpty()) {
+        QString argv0 = QFile::decodeName(arguments().at(0).toLocal8Bit());
+        QString absPath;
 
-    QString argv0 = QFile::decodeName(arguments().at(0).toLocal8Bit());
-    QString absPath;
+        if (!argv0.isEmpty() && argv0.at(0) == QLatin1Char('/')) {
+            /*
+              If argv0 starts with a slash, it is already an absolute
+              file path.
+            */
+            absPath = argv0;
+        } else if (argv0.contains(QLatin1Char('/'))) {
+            /*
+              If argv0 contains one or more slashes, it is a file path
+              relative to the current directory.
+            */
+            absPath = QDir::current().absoluteFilePath(argv0);
+        } else {
+            /*
+              Otherwise, the file path has to be determined using the
+              PATH environment variable.
+            */
+            absPath = QStandardPaths::findExecutable(argv0);
+        }
 
-    if (!argv0.isEmpty() && argv0.at(0) == QLatin1Char('/')) {
-        /*
-          If argv0 starts with a slash, it is already an absolute
-          file path.
-        */
-        absPath = argv0;
-    } else if (argv0.contains(QLatin1Char('/'))) {
-        /*
-          If argv0 contains one or more slashes, it is a file path
-          relative to the current directory.
-        */
-        absPath = QDir::current().absoluteFilePath(argv0);
+        absPath = QDir::cleanPath(absPath);
+
+        QFileInfo fi(absPath);
+        d->cachedApplicationFilePath = fi.exists() ? fi.canonicalFilePath() : QString();
     } else {
-        /*
-          Otherwise, the file path has to be determined using the
-          PATH environment variable.
-        */
-        absPath = QStandardPaths::findExecutable(argv0);
+        d->cachedApplicationFilePath = QString();
     }
 
-    absPath = QDir::cleanPath(absPath);
-
-    QFileInfo fi(absPath);
-    d->cachedApplicationFilePath = fi.exists() ? fi.canonicalFilePath() : QString();
     return d->cachedApplicationFilePath;
 #endif
 }
