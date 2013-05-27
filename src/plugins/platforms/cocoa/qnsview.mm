@@ -972,6 +972,23 @@ static QTouchDevice *touchDevice = 0;
     [self handleKeyEvent:nsevent eventType:int(QEvent::KeyRelease)];
 }
 
+- (BOOL)performKeyEquivalent:(NSEvent *)nsevent
+{
+    NSString *chars = [nsevent charactersIgnoringModifiers];
+
+    if ([nsevent type] == NSKeyDown && [chars length] > 0) {
+        QChar ch = [chars characterAtIndex:0];
+        Qt::Key qtKey = qt_mac_cocoaKey2QtKey(ch);
+        // check for Command + Key_Period
+        if ([nsevent modifierFlags] & NSCommandKeyMask
+                && qtKey == Qt::Key_Period) {
+            [self handleKeyEvent:nsevent eventType:int(QEvent::KeyPress)];
+            return YES;
+        }
+    }
+    return [super performKeyEquivalent:nsevent];
+}
+
 - (void)flagsChanged:(NSEvent *)nsevent
 {
     ulong timestamp = [nsevent timestamp] * 1000;
