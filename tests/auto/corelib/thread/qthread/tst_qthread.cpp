@@ -869,6 +869,9 @@ void tst_QThread::adoptedThreadFinished()
     nativeThread.join();
 
     QTestEventLoop::instance().enterLoop(5);
+#if defined(Q_OS_WINRT)
+    QEXPECT_FAIL("", "QTBUG-31397: Known not to work on WinRT", Abort);
+#endif
     QVERIFY(!QTestEventLoop::instance().timeout());
 }
 
@@ -884,6 +887,9 @@ void tst_QThread::adoptedThreadExecFinished()
     nativeThread.join();
 
     QTestEventLoop::instance().enterLoop(5);
+#if defined(Q_OS_WINRT)
+    QEXPECT_FAIL("", "QTBUG-31397: Known not to work on WinRT", Abort);
+#endif
     QVERIFY(!QTestEventLoop::instance().timeout());
 }
 
@@ -920,6 +926,9 @@ void tst_QThread::adoptMultipleThreads()
     }
 
     QTestEventLoop::instance().enterLoop(5);
+#if defined(Q_OS_WINRT)
+    QEXPECT_FAIL("", "QTBUG-31397: Known not to work on WinRT", Abort);
+#endif
     QVERIFY(!QTestEventLoop::instance().timeout());
     QCOMPARE(recorder.activationCount.load(), numThreads);
 }
@@ -962,6 +971,9 @@ void tst_QThread::adoptMultipleThreadsOverlap()
     }
 
     QTestEventLoop::instance().enterLoop(5);
+#if defined(Q_OS_WINRT)
+    QEXPECT_FAIL("", "QTBUG-31397: Known not to work on WinRT", Abort);
+#endif
     QVERIFY(!QTestEventLoop::instance().timeout());
     QCOMPARE(recorder.activationCount.load(), numThreads);
 }
