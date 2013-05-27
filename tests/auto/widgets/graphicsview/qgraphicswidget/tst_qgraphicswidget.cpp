@@ -3194,9 +3194,6 @@ void tst_QGraphicsWidget::initialShow2()
     qApp->setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
-#ifdef UBUNTU_LUCID
-    QEXPECT_FAIL("", "QTBUG-20778", Abort);
-#endif
     QTRY_COMPARE(widget->repaints, expectedRepaintCount);
 }
 
