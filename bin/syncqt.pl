@@ -97,7 +97,6 @@ my $force_win = 0;
 my $force_relative = 0;
 my $check_includes = 0;
 my $copy_headers = 0;
-my $create_uic_class_map = 0;
 my $create_private_headers = 1;
 my $minimal = 0;
 my $module_version = 0;
@@ -756,7 +755,6 @@ while ( @ARGV ) {
         $modules{$module} = $prodir;
         push @modules_to_sync, $module;
         $moduleheaders{$module} = $headerdir;
-        $create_uic_class_map = 0;
     } elsif ($var eq "version") {
         if($val) {
             $module_version = $val;
@@ -1120,25 +1118,6 @@ foreach my $lib (@modules_to_sync) {
         $headers_pri_contents .= "SYNCQT.QPA_HEADER_FILES = $pri_install_qpafiles\n";
         my $headers_pri_file = "$out_basedir/include/$lib/headers.pri";
         writeFile($headers_pri_file, $headers_pri_contents, $lib, "headers.pri file");
-    }
-}
-unless($showonly || !$create_uic_class_map) {
-    my $class_lib_map = "$out_basedir/src/tools/uic/qclass_lib_map.h";
-    if(-e $class_lib_map) {
-        open CLASS_LIB_MAP, "<$class_lib_map";
-        local $/;
-        binmode CLASS_LIB_MAP;
-        my $old_class_lib_map_contents = <CLASS_LIB_MAP>;
-        close CLASS_LIB_MAP;
-        $old_class_lib_map_contents =~ s/\r//g; # remove \r's , so comparison is ok on all platforms
-        $class_lib_map = 0 if($old_class_lib_map_contents eq $class_lib_map_contents);
-    }
-    if($class_lib_map) {
-        my $class_lib_map_dir = dirname($class_lib_map);
-        make_path($class_lib_map_dir, "<outdir>", $verbose_level);
-        open CLASS_LIB_MAP, ">$class_lib_map";
-        print CLASS_LIB_MAP $class_lib_map_contents;
-        close CLASS_LIB_MAP;
     }
 }
 
