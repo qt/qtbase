@@ -3351,6 +3351,37 @@ void Configure::generateConfigfiles()
         tmpFile.close();
     }
 
+    QTemporaryFile tmpFile2;
+    if (tmpFile2.open()) {
+        tmpStream.setDevice(&tmpFile2);
+        tmpStream << "#include \"../../src/corelib/global/qconfig.h\"" << endl;
+
+        tmpStream.flush();
+        tmpFile2.flush();
+
+        outName = buildPath + "/include/QtCore/qconfig.h";
+        ::SetFileAttributes((wchar_t*)outName.utf16(), FILE_ATTRIBUTE_NORMAL);
+        QFile::remove(outName);
+
+        tmpFile2.copy(outName);
+        tmpFile2.close();
+    }
+    QTemporaryFile tmpFile2a;
+    if (tmpFile2a.open()) {
+        tmpStream.setDevice(&tmpFile2a);
+        tmpStream << "#include \"qconfig.h\"" << endl;
+
+        tmpStream.flush();
+        tmpFile2a.flush();
+
+        outName = buildPath + "/include/QtCore/QtConfig";
+        ::SetFileAttributes((wchar_t*)outName.utf16(), FILE_ATTRIBUTE_NORMAL);
+        QFile::remove(outName);
+
+        tmpFile2a.copy(outName);
+        tmpFile2a.close();
+    }
+
     QTemporaryFile tmpFile3;
     if (tmpFile3.open()) {
         tmpStream.setDevice(&tmpFile3);

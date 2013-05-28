@@ -893,15 +893,8 @@ foreach my $lib (@modules_to_sync) {
             #calc files and "copy" them
             foreach my $subdir (@subdirs) {
                 my @headers = findFiles($subdir, "^[-a-z0-9_]*\\.h\$" , 0);
-                if (defined $inject_headers{$subdir}) {
-                    foreach my $if (@{$inject_headers{$subdir}}) {
-                        @headers = grep(!/^\Q$if\E$/, @headers); #in case we configure'd previously
-                        push @headers, "*".$if;
-                    }
-                }
                 my $header_dirname = "";
                 foreach my $header (@headers) {
-                    my $shadow = ($header =~ s/^\*//);
                     $header = 0 if($header =~ /^ui_.*.h/);
                     foreach (@ignore_headers) {
                         $header = 0 if($header eq $_);
@@ -923,7 +916,6 @@ foreach my $lib (@modules_to_sync) {
                         }
 
                         my $iheader = $subdir . "/" . $header;
-                        $iheader =~ s/^\Q$basedir\E/$out_basedir/ if ($shadow);
                         my @classes = $public_header && !$minimal ? classNames($iheader) : ();
                         if($showonly) {
                             print "$header [$lib]\n";
@@ -964,7 +956,7 @@ foreach my $lib (@modules_to_sync) {
                             }
 
                             foreach(@headers) { #sync them
-                                $header_copies++ if(syncHeader($lib, $_, $iheader, $copy_headers && !$shadow, $ts));
+                                $header_copies++ if (syncHeader($lib, $_, $iheader, $copy_headers, $ts));
                             }
 
                             if($public_header) {

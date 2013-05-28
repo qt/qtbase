@@ -6424,6 +6424,23 @@ else
     fi
 fi
 
+# create a forwarding header
+mkdir -p "$outpath/include/QtCore" || exit
+echo '#include "../../src/corelib/global/qconfig.h"' > $outpath/include/QtCore/qconfig.h.new
+if cmp -s "$outpath/include/QtCore/qconfig.h.new" "$outpath/include/QtCore/qconfig.h"; then
+    rm -f "$outpath/include/QtCore/qconfig.h.new"
+else
+    mv "$outpath/include/QtCore/qconfig.h.new" "$outpath/include/QtCore/qconfig.h" || exit
+fi
+
+# create a camelcase forwarding header
+echo '#include "qconfig.h"' > $outpath/include/QtCore/QtConfig.new
+if cmp -s "$outpath/include/QtCore/QtConfig.new" "$outpath/include/QtCore/QtConfig"; then
+    rm -f "$outpath/include/QtCore/QtConfig.new"
+else
+    mv "$outpath/include/QtCore/QtConfig.new" "$outpath/include/QtCore/QtConfig" || exit
+fi
+
 #-------------------------------------------------------------------------------
 # save configuration into qconfig.pri
 #-------------------------------------------------------------------------------
