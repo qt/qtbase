@@ -503,15 +503,6 @@ QWindowsWindow::WindowData
     const QWindowCreationContextPtr context(new QWindowCreationContext(w, rect, data.customMargins, style, exStyle));
     QWindowsContext::instance()->setWindowCreationContext(context);
 
-    QRect screenGeometry;
-    if (QScreen *screen = w->screen())
-        screenGeometry = screen->availableVirtualGeometry();
-
-    if (context->frameX < screenGeometry.left())
-        context->frameX = screenGeometry.left();
-    if (context->frameY < screenGeometry.top())
-        context->frameY = screenGeometry.top();
-
     if (QWindowsContext::verboseWindows)
         qDebug().nospace()
                 << "CreateWindowEx: " << w << *this
