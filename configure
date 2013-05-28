@@ -6421,9 +6421,7 @@ echo "#define QT_QPA_DEFAULT_PLATFORM_NAME \"$QT_QPA_DEFAULT_PLATFORM\"" >>"$out
 if cmp -s "$outpath/src/corelib/global/qconfig.h" "$outpath/src/corelib/global/qconfig.h.new"; then
     rm -f "$outpath/src/corelib/global/qconfig.h.new"
 else
-    [ -f "$outpath/src/corelib/global/qconfig.h" ] && chmod +w "$outpath/src/corelib/global/qconfig.h"
-    mv "$outpath/src/corelib/global/qconfig.h.new" "$outpath/src/corelib/global/qconfig.h"
-    chmod -w "$outpath/src/corelib/global/qconfig.h"
+    mv -f "$outpath/src/corelib/global/qconfig.h.new" "$outpath/src/corelib/global/qconfig.h"
 fi
 
 # create a forwarding header
