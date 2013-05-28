@@ -917,13 +917,13 @@ static QTouchDevice *touchDevice = 0;
 
     // we will send a key event unless the input method sets m_sendKeyEvent to false
     m_sendKeyEvent = true;
-
     QString text;
+    // ignore text for the U+F700-U+F8FF range. This is used by Cocoa when
+    // delivering function keys (e.g. arrow keys, backspace, F1-F35, etc.)
+    if (ch.unicode() < 0xf700 || ch.unicode() > 0xf8ff)
+        text = QCFString::toQString(characters);
+
     if (eventType == QEvent::KeyPress) {
-        // ignore text for the U+F700-U+F8FF range. This is used by Cocoa when
-        // delivering function keys (e.g. arrow keys, backspace, F1-F35, etc.)
-        if (ch.unicode() < 0xf700 || ch.unicode() > 0xf8ff)
-            text = QCFString::toQString(characters);
 
         if (m_composingText.isEmpty())
             m_sendKeyEvent = !QWindowSystemInterface::tryHandleShortcutEvent(m_window, timestamp, keyCode, modifiers, text);
