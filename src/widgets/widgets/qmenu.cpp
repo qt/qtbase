@@ -420,25 +420,17 @@ void QMenuPrivate::hideUpToMenuBar()
             if (QMenu *m = qobject_cast<QMenu*>(caused)) {
                 caused = m->d_func()->causedPopup.widget;
                 if (!m->d_func()->tornoff)
-                    hideMenu(m, fadeMenus);
+                    hideMenu(m);
                 if (!fadeMenus) // Mac doesn't clear the action until after hidden.
                     m->d_func()->setCurrentAction(0);
             } else {                caused = 0;
             }
         }
-#if defined(Q_WS_MAC)
-        if (fadeMenus) {
-            QEventLoop eventLoop;
-            QTimer::singleShot(int(MenuFadeTimeInSec * 1000), &eventLoop, SLOT(quit()));
-            QMacWindowFader::currentFader()->performFade();
-            eventLoop.exec();
-        }
-#endif
     }
     setCurrentAction(0);
 }
 
-void QMenuPrivate::hideMenu(QMenu *menu, bool justRegister)
+void QMenuPrivate::hideMenu(QMenu *menu)
 {
     if (!menu)
         return;
@@ -462,27 +454,10 @@ void QMenuPrivate::hideMenu(QMenu *menu, bool justRegister)
         eventLoop.exec();
     }
 
-    // Fade out.
-    if (menu->style()->styleHint(QStyle::SH_Menu_FadeOutOnHide)) {
-        // ### Qt 4.4:
-        // Should be something like: q->transitionWindow(Qt::FadeOutTransition, MenuFadeTimeInSec);
-        // Hopefully we'll integrate qt/research/windowtransitions into main before 4.4.
-        // Talk to Richard, Trenton or Bjoern.
-#if defined(Q_WS_MAC)
-        if (justRegister) {
-            QMacWindowFader::currentFader()->setFadeDuration(MenuFadeTimeInSec);
-            QMacWindowFader::currentFader()->registerWindowToFade(menu);
-        } else {
-            macWindowFade(qt_mac_window_for(menu), MenuFadeTimeInSec);
-        }
-
-#endif // Q_WS_MAC
-    }
     aboutToHide = false;
     menu->blockSignals(false);
 #endif // QT_NO_EFFECTS
-    if (!justRegister)
-        menu->close();
+    menu->close();
 }
 
 void QMenuPrivate::popupAction(QAction *action, int delay, bool activateFirst)
