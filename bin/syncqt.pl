@@ -383,6 +383,32 @@ sub fileContents {
 }
 
 ######################################################################
+# Syntax:  writeFile(filename, contents)
+# Params:  filename, string, filename of file to write
+#          contents, string, new contents for the file
+#
+# Purpose: Write file with given contents. If new contents match old
+#          ones, do no change the file's timestamp.
+# Returns: 1 if the file's contents changed.
+######################################################################
+sub writeFile {
+    my ($filename, $contents, $lib, $what) = @_;
+    my $oldcontents = fileContents($filename);
+    $oldcontents =~ s/\r//g; # remove \r's , so comparison is ok on all platforms
+    if ($oldcontents ne $contents) {
+        open(O, "> " . $filename) || die "Could not open $filename for writing: $!\n";
+        print O $contents;
+        close O;
+        if ($lib && $verbose_level) {
+            my $action = ($oldcontents eq "") ? "created" : "updated";
+            print "$lib: $action $what\n";
+        }
+        return 1;
+    }
+    return 0;
+}
+
+######################################################################
 # Syntax:  fileCompare(file1, file2)
 # Params:  file1, string, filename of first file
 #          file2, string, filename of second file
@@ -1076,23 +1102,7 @@ foreach my $lib (@modules_to_sync) {
         $headers_pri_contents .= "SYNCQT.PRIVATE_HEADER_FILES = $pri_install_pfiles\n";
         $headers_pri_contents .= "SYNCQT.QPA_HEADER_FILES = $pri_install_qpafiles\n";
         my $headers_pri_file = "$out_basedir/include/$lib/headers.pri";
-        if(-e $headers_pri_file) {
-            open HEADERS_PRI_FILE, "<$headers_pri_file";
-            local $/;
-            binmode HEADERS_PRI_FILE;
-            my $old_headers_pri_contents = <HEADERS_PRI_FILE>;
-            close HEADERS_PRI_FILE;
-            $old_headers_pri_contents =~ s/\r//g; # remove \r's , so comparison is ok on all platforms
-            $headers_pri_file = 0 if($old_headers_pri_contents eq $headers_pri_contents);
-        }
-        if($headers_pri_file) {
-            my $headers_pri_dir = dirname($headers_pri_file);
-            make_path($headers_pri_dir, $lib, $verbose_level);
-            open HEADERS_PRI_FILE, ">$headers_pri_file";
-            print HEADERS_PRI_FILE $headers_pri_contents;
-            close HEADERS_PRI_FILE;
-            print "$lib: created headers.pri file\n" if($verbose_level);
-        }
+        writeFile($headers_pri_file, $headers_pri_contents, $lib, "headers.pri file");
     }
 }
 unless($showonly || !$create_uic_class_map) {
