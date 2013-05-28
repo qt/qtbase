@@ -172,6 +172,30 @@ sub checkRelative {
 }
 
 ######################################################################
+# Syntax:  shouldMasterInclude(iheader)
+# Params:  iheader, string, filename to verify inclusion
+#
+# Purpose: Determines if header should be in the master include file.
+# Returns: 0 if file contains "#pragma qt_no_master_include" or not
+#          able to open, else 1.
+######################################################################
+sub shouldMasterInclude {
+    my ($iheader) = @_;
+    return 0 if (basename($iheader) =~ /_/);
+    return 0 if (basename($iheader) =~ /qconfig/);
+    if (open(F, "<$iheader")) {
+        while (<F>) {
+            chomp;
+            return 0 if (/^\#pragma qt_no_master_include$/);
+        }
+        close(F);
+    } else {
+        return 0;
+    }
+    return 1;
+}
+
+######################################################################
 # Syntax:  classNames(iheader)
 # Params:  iheader, string, filename to parse for classname "symlinks"
 #
@@ -828,6 +852,12 @@ foreach my $lib (@modules_to_sync) {
     my $pri_install_pfiles = "";
     my $pri_install_qpafiles = "";
 
+    my $libcapitals = uc($lib);
+    my $master_contents =
+        "#ifndef QT_".$libcapitals."_MODULE_H\n" .
+        "#define QT_".$libcapitals."_MODULE_H\n" .
+        "#include <$lib/${lib}Depends>\n";
+
     #remove the old files
     if($remove_stale) {
         my %injections = ();
@@ -960,6 +990,9 @@ foreach my $lib (@modules_to_sync) {
                             }
 
                             if($public_header) {
+                                #put it into the master file
+                                $master_contents .= "#include \"$public_header\"\n" if (shouldMasterInclude($iheader));
+
                                 #deal with the install directives
                                 if($public_header) {
                                     my $pri_install_iheader = fixPaths($iheader, $dir);
@@ -1017,6 +1050,11 @@ foreach my $lib (@modules_to_sync) {
             }
         }
     }
+
+    # close the master include:
+    $master_contents .=
+        "#include \"".lc($lib)."version.h\"\n" .
+        "#endif\n";
 
     unless ($showonly || $minimal) {
         # create deprecated headers
@@ -1099,6 +1137,10 @@ foreach my $lib (@modules_to_sync) {
             "\n".
             "#endif // QT_".uc($lib)."_VERSION_H\n";
         writeFile($vheader, $vhdrcont, $lib, "version header");
+
+        my $master_include = "$out_basedir/include/$lib/$lib";
+        $pri_install_files .= fixPaths($master_include, $dir) . " ";
+        writeFile($master_include, $master_contents, $lib, "master header");
 
         #handle the headers.pri for each module
         my $headers_pri_contents = "";
