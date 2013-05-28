@@ -6424,9 +6424,6 @@ else
     [ -f "$outpath/src/corelib/global/qconfig.h" ] && chmod +w "$outpath/src/corelib/global/qconfig.h"
     mv "$outpath/src/corelib/global/qconfig.h.new" "$outpath/src/corelib/global/qconfig.h"
     chmod -w "$outpath/src/corelib/global/qconfig.h"
-    if [ ! -f "$outpath/include/QtCore/qconfig.h" ]; then
-        ln -s "$outpath/src/corelib/global/qconfig.h" "$outpath/include/QtCore/qconfig.h"
-    fi
 fi
 
 # create a forwarding header
