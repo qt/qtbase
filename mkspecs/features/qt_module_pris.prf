@@ -56,6 +56,18 @@ else: \
         MODULE_PRIVATE_INCLUDES = \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME/$$VERSION \
                                   \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME/$$VERSION/$$MODULE_INCNAME
     }
+    !git_build:!equals(_PRO_FILE_PWD_, $$OUT_PWD) {
+        pub_inc = $$replace(MODULE_INCLUDES, ^\\\$\\\$QT_MODULE_INCLUDE_BASE, $$MODULE_BASE_DIR/include)
+        priv_inc = $$replace(MODULE_PRIVATE_INCLUDES, ^\\\$\\\$QT_MODULE_INCLUDE_BASE, $$MODULE_BASE_DIR/include)
+        force_independent {
+            MODULE_FWD_PRI_CONT_SUFFIX = \
+                "QT.$${MODULE}.includes += $$pub_inc" \
+                "QT.$${MODULE}.private_includes += $$priv_inc"
+        } else {
+            MODULE_INCLUDES += $$pub_inc
+            MODULE_PRIVATE_INCLUDES += $$priv_inc
+        }
+    }
     MODULE_PRI_CONT = \
         "QT.$${MODULE}.VERSION = $${VERSION}" \
         "QT.$${MODULE}.MAJOR_VERSION = $$section(VERSION, ., 0, 0)" \
@@ -97,7 +109,8 @@ else: \
             "QT_MODULE_HOST_LIB_BASE = $$MODULE_BASE_OUTDIR/lib" \
             "QT_MODULE_LIBEXEC_BASE = $$MODULE_BASE_OUTDIR/libexec" \
             "QT_MODULE_PLUGIN_BASE = $$MODULE_BASE_OUTDIR/plugins" \
-            "include($$MODULE_PRI)"
+            "include($$MODULE_PRI)" \
+            $$MODULE_FWD_PRI_CONT_SUFFIX
         write_file($$MODULE_FWD_PRI, MODULE_FWD_PRI_CONT)|error("Aborting.")
         touch($$MODULE_FWD_PRI, $$MODULE_PRI)
         MODULE_PRI_FILES += $$MODULE_FWD_PRI

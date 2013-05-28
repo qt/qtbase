@@ -2389,13 +2389,6 @@ fi
 if [ "$OPT_SHADOW" = "yes" ]; then
     echo "Preparing build tree..."
 
-    if [ -z "$PERL" ]; then
-        echo
-        echo "You need perl in your PATH to make a shadow build."
-        echo "Cannot proceed."
-        exit 1
-    fi
-
     [ -d "$outpath/bin" ] || mkdir -p "$outpath/bin"
 
     # save a pre-existing mkspecs/modules dir
@@ -3895,7 +3888,14 @@ fi
 # -----------------------------------------------------------------------------
 
 # symlink includes
-if [ -n "$PERL" ] && [ -x "$relpath/bin/syncqt.pl" ]; then
+if [ -e "$relpath/.git" ]; then
+    if [ -z "$PERL" ]; then
+        echo
+        echo "You need perl in your PATH to make a build from GIT."
+        echo "Cannot proceed."
+        exit 1
+    fi
+
     "$relpath/bin/syncqt.pl" -minimal -module QtCore "$relpath" || exit 1
 fi
 
@@ -4028,6 +4028,11 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
 
         echo "BUILD_PATH = $adjoutpath" >> "$mkfile"
         echo "SOURCE_PATH = $adjrelpath" >> "$mkfile"
+        if [ -e "$relpath/.git" ]; then
+            echo 'INC_PATH = $(BUILD_PATH)/include' >> "$mkfile"
+        else
+            echo 'INC_PATH = $(SOURCE_PATH)/include' >> "$mkfile"
+        fi
         echo "QMAKESPEC = $adjqmakespec" >> "$mkfile"
         echo "QT_VERSION = $QT_VERSION" >> "$mkfile"
         echo "EXTRA_CFLAGS = $EXTRA_CFLAGS" >> "$mkfile"
