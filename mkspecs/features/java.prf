@@ -62,8 +62,8 @@ android:!bundled_jar_file {
     } else {
         DEX_CMD = $$SDK_ROOT/platform-tools/dx
         !exists($$DEX_CMD): DEX_CMD = $$SDK_ROOT/build-tools/$$BUILD_TOOLS_REVISION/dx
+        !exists($$DEX_CMD): error("The path $$DEX_CMD does not exist. Please set the environment variable ANDROID_BUILD_TOOLS_REVISION to the revision of the build tools installed in your Android SDK.")
     }
-    !exists($$DEX_CMD): error("The path $$DEX_CMD does not exist. Please set the environment variable ANDROID_BUILD_TOOLS_REVISION to the revision of the build tools installed in your Android SDK.")
     QMAKE_LINK_SHLIB_CMD = $$DEX_CMD --dex --output $(TARGET) $$CLASS_DIR
 } else {
     QMAKE_LINK_SHLIB_CMD = jar cf $(TARGET) -C $$CLASS_DIR .
