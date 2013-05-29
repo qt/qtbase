@@ -250,9 +250,12 @@ void tst_QStyle::testProxyStyle()
 void tst_QStyle::drawItemPixmap()
 {
     testWidget->resize(300, 300);
-    testWidget->show();
+    testWidget->showNormal();
 
-    QPixmap p(QString(SRCDIR) + "/task_25863.png", "PNG");
+    const QString imageFileName = QFINDTESTDATA("task_25863.png");
+    QVERIFY(!imageFileName.isEmpty());
+
+    QPixmap p(imageFileName, "PNG");
     const QPixmap actualPix = testWidget->grab();
 
     QCOMPARE(actualPix, p);
