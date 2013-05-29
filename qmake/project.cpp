@@ -53,12 +53,12 @@ using namespace QMakeInternal;
 QT_BEGIN_NAMESPACE
 
 QMakeProject::QMakeProject()
-    : QMakeEvaluator(Option::globals, Option::parser, &Option::evalHandler)
+    : QMakeEvaluator(Option::globals, Option::parser, Option::vfs, &Option::evalHandler)
 {
 }
 
 QMakeProject::QMakeProject(QMakeProject *p)
-    : QMakeEvaluator(Option::globals, Option::parser, &Option::evalHandler)
+    : QMakeEvaluator(Option::globals, Option::parser, Option::vfs, &Option::evalHandler)
 {
     initFrom(*p);
 }

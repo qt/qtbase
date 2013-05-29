@@ -85,6 +85,8 @@ int runQMake(int argc, char **argv)
     // This is particularly important for things like QtCreator and scripted builds.
     setvbuf(stdout, (char *)NULL, _IONBF, 0);
 
+    QMakeVfs vfs;
+    Option::vfs = &vfs;
     QMakeGlobals globals;
     Option::globals = &globals;
 
@@ -130,7 +132,7 @@ int runQMake(int argc, char **argv)
 
     ProFileCache proFileCache;
     Option::proFileCache = &proFileCache;
-    QMakeParser parser(&proFileCache, &Option::evalHandler);
+    QMakeParser parser(&proFileCache, &vfs, &Option::evalHandler);
     Option::parser = &parser;
 
     QMakeProject project;

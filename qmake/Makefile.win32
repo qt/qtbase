@@ -57,7 +57,7 @@ ADDCLEAN    = vc60.pdb vc70.pdb qmake.pdb qmake.ilk
 !ENDIF
 
 #qmake code
-OBJS        = project.obj main.obj ioutils.obj proitems.obj \
+OBJS        = project.obj main.obj ioutils.obj proitems.obj qmakevfs.obj \
               qmakeglobals.obj qmakeparser.obj qmakeevaluator.obj qmakebuiltins.obj \
               makefile.obj unixmake.obj unixmake2.obj mingw_make.obj \
               option.obj winmakefile.obj projectgenerator.obj property.obj meta.obj \

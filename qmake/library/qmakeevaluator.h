@@ -127,7 +127,7 @@ public:
 
     static void initStatics();
     static void initFunctionStatics();
-    QMakeEvaluator(QMakeGlobals *option, QMakeParser *parser,
+    QMakeEvaluator(QMakeGlobals *option, QMakeParser *parser, QMakeVfs *vfs,
                    QMakeHandler *handler);
     ~QMakeEvaluator();
 
@@ -313,6 +313,7 @@ public:
     QMakeGlobals *m_option;
     QMakeParser *m_parser;
     QMakeHandler *m_handler;
+    QMakeVfs *m_vfs;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QMakeEvaluator::LoadFlags)

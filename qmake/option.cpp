@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 EvalHandler Option::evalHandler;
 QMakeGlobals *Option::globals;
 ProFileCache *Option::proFileCache;
+QMakeVfs *Option::vfs;
 QMakeParser *Option::parser;
 
 //convenience

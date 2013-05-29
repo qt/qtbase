@@ -4,7 +4,7 @@ QMKGENSRC = $(QMKSRC)/generators
 
 #qmake code
 OBJS=project.o option.o property.o main.o ioutils.o proitems.o \
-     qmakeglobals.o qmakeparser.o qmakeevaluator.o qmakebuiltins.o \
+     qmakevfs.o qmakeglobals.o qmakeparser.o qmakeevaluator.o qmakebuiltins.o \
      makefile.o unixmake2.o unixmake.o  \
      mingw_make.o winmakefile.o projectgenerator.o \
      meta.o makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
@@ -123,6 +123,9 @@ proitems.o: $(QMKLIBSRC)/proitems.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qmakeglobals.o: $(QMKLIBSRC)/qmakeglobals.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+qmakevfs.o: $(QMKLIBSRC)/qmakevfs.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qmakeparser.o: $(QMKLIBSRC)/qmakeparser.cpp
