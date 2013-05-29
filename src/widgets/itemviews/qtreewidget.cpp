@@ -1677,8 +1677,8 @@ void QTreeWidgetItemPrivate::propagateDisabled(QTreeWidgetItem *item)
     the item can be checked, edited, and selected.
 
     The default value for flags is
-    Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled.
-    If the item was constructed with a parent, flags will in addition contain Qt::ItemIsDropEnabled.
+    Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled |
+    Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled.
 
     \sa setFlags()
 */
