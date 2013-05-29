@@ -1841,7 +1841,7 @@ bool Configure::displayHelp()
         desc("BUILD_QMAKE", "no", "-no-qmake",          "Do not compile qmake.");
         desc("BUILD_QMAKE", "yes", "-qmake",            "Compile qmake.\n");
 
-        desc("PROCESS", "partial", "-process",          "Generate top-level Makefiles/Project files.");
+        desc("PROCESS", "partial", "-process",          "Generate only top-level Makefile.");
         desc("PROCESS", "full", "-fully-process",       "Generate Makefiles/Project files for the entire Qt\ntree.");
         desc("PROCESS", "no", "-dont-process",          "Do not generate Makefiles/Project files.\n");
 
@@ -3954,7 +3954,8 @@ void Configure::generateMakefiles()
         {
             QString dirName;
             bool generate = true;
-            bool doDsp = (dictionary["VCPROJFILES"] == "yes");
+            bool doDsp = (dictionary["VCPROJFILES"] == "yes"
+                          && dictionary["PROCESS"] == "full");
             while (generate) {
                 QString pwd = QDir::currentPath();
                 QString dirPath = buildPath + dirName;
