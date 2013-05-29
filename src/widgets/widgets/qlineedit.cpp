@@ -132,7 +132,8 @@ void QLineEdit::initStyleOption(QStyleOptionFrame *option) const
 
     A line edit allows the user to enter and edit a single line of
     plain text with a useful collection of editing functions,
-    including undo and redo, cut and paste, and drag and drop.
+    including undo and redo, cut and paste, and drag and drop (see
+    \l setDragEnabled()).
 
     By changing the echoMode() of a line edit, it can also be used as
     a "write-only" field, for inputs such as passwords.
