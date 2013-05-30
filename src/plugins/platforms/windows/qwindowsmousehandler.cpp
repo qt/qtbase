@@ -232,8 +232,10 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     }
 
     const QPoint globalPosition = QWindowsGeometryHint::mapToGlobal(hwnd, winEventPosition);
+    // In this context, neither an invisible nor a transparent window (transparent regarding mouse
+    // events, "click-through") can be considered as the window under mouse.
     QWindow *currentWindowUnderMouse = platformWindow->hasMouseCapture() ?
-        QWindowsScreen::windowAt(globalPosition) : window;
+        QWindowsScreen::windowAt(globalPosition, CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT) : window;
 
     compressMouseMove(&msg);
     // Qt expects the platform plugin to capture the mouse on
