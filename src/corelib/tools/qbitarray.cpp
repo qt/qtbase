@@ -122,7 +122,8 @@ QT_BEGIN_NAMESPACE
 */
 QBitArray::QBitArray(int size, bool value)
 {
-    if (!size) {
+    Q_ASSERT_X(size >= 0, "QBitArray::QBitArray", "Size must be greater than or equal to 0.");
+    if (size <= 0) {
         d.resize(0);
         return;
     }
