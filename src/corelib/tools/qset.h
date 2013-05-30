@@ -254,8 +254,16 @@ Q_INLINE_TEMPLATE QSet<T> &QSet<T>::unite(const QSet<T> &other)
 template <class T>
 Q_INLINE_TEMPLATE QSet<T> &QSet<T>::intersect(const QSet<T> &other)
 {
-    QSet<T> copy1(*this);
-    QSet<T> copy2(other);
+    QSet<T> copy1;
+    QSet<T> copy2;
+    if (size() <= other.size()) {
+        copy1 = *this;
+        copy2 = other;
+    } else {
+        copy1 = other;
+        copy2 = *this;
+        *this = copy1;
+    }
     typename QSet<T>::const_iterator i = copy1.constEnd();
     while (i != copy1.constBegin()) {
         --i;
