@@ -44,6 +44,7 @@
 
 #include <QtCore/qnamespace.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qobjectdefs.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -68,6 +69,9 @@ class QKeySequencePrivate;
 
 class Q_GUI_EXPORT QKeySequence
 {
+    Q_GADGET
+    Q_ENUMS(StandardKey)
+
 public:
     enum StandardKey {
         UnknownKey,
