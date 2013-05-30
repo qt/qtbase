@@ -75,6 +75,8 @@ private:
     static QCocoaMenuBar *findGlobalMenubar();
 
     bool shouldDisable(QCocoaWindow *active) const;
+    void insertNativeMenu(QCocoaMenu *menu, QCocoaMenu *beforeMenu);
+    void removeNativeMenu(QCocoaMenu *menu);
 
     QList<QCocoaMenu*> m_menus;
     NSMenu *m_nativeMenu;
