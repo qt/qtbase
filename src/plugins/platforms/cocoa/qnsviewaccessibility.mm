@@ -88,7 +88,7 @@
             [element release];
         }
 
-        return kids;
+        return NSAccessibilityUnignoredChildren(kids);
     } else {
         return [super accessibilityAttributeValue:attribute];
     }
