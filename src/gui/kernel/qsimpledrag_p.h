@@ -56,7 +56,7 @@ class QEventLoop;
 class QDropData;
 class QShapedPixmapWindow;
 
-class QBasicDrag : public QPlatformDrag, public QObject
+class Q_GUI_EXPORT QBasicDrag : public QPlatformDrag, public QObject
 {
 public:
     virtual ~QBasicDrag();
@@ -99,7 +99,7 @@ private:
     QShapedPixmapWindow *m_drag_icon_window;
 };
 
-class QSimpleDrag : public QBasicDrag
+class Q_GUI_EXPORT QSimpleDrag : public QBasicDrag
 {
 public:
     QSimpleDrag();

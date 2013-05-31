@@ -52,6 +52,8 @@
 
 #include "qelapsedtimer.h"
 #include "qcoreapplication_p.h"
+#include "qsysinfo.h"
+
 #include <private/qthread_p.h>
 #include <private/qmutexpool_p.h>
 
@@ -305,8 +307,14 @@ static void resolveTimerAPI()
 #endif
         triedResolve = true;
 #if !defined(Q_OS_WINCE)
+#  if defined(_MSC_VER) && _MSC_VER >= 1700
+        if (QSysInfo::WindowsVersion >= QSysInfo::WV_WINDOWS8) { // QTBUG-27266, Disable when running MSVC2012-built code on pre-Windows 8
+#  else
+        {
+#  endif
         qtimeSetEvent = (ptimeSetEvent)QSystemLibrary::resolve(QLatin1String("winmm"), "timeSetEvent");
         qtimeKillEvent = (ptimeKillEvent)QSystemLibrary::resolve(QLatin1String("winmm"), "timeKillEvent");
+        }
 #else
         qtimeSetEvent = (ptimeSetEvent)QSystemLibrary::resolve(QLatin1String("Mmtimer"), "timeSetEvent");
         qtimeKillEvent = (ptimeKillEvent)QSystemLibrary::resolve(QLatin1String("Mmtimer"), "timeKillEvent");

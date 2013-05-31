@@ -3366,7 +3366,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         if (const QStyleOptionToolButton *tb = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
             QStyleOptionToolButton myTb = *tb;
             myTb.state &= ~State_AutoRaise;
-            if (w && qobject_cast<QToolBar *>(w->parentWidget())) {
+            if (QStyleHelper::hasAncestor(opt->styleObject, QAccessible::ToolBar)) {
                 QRect cr = tb->rect;
                 int shiftX = 0;
                 int shiftY = 0;
@@ -3405,7 +3405,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         if (tb->toolButtonStyle != Qt::ToolButtonIconOnly) {
                             needText = true;
                             if (tb->toolButtonStyle == Qt::ToolButtonTextUnderIcon) {
-                                QMainWindow *mw = qobject_cast<QMainWindow *>(w->window());
+                                QMainWindow *mw = w ? qobject_cast<QMainWindow *>(w->window()) : 0;
                                 if (mw && mw->unifiedTitleAndToolBarOnMac()) {
                                     pr.setHeight(pixmap.size().height() / pixmap.devicePixelRatio());
                                     cr.adjust(0, pr.bottom() + 1, 0, 1);

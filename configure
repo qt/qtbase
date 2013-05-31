@@ -2344,12 +2344,6 @@ for e in gawk nawk awk; do
     fi
 done
 
-# find perl
-PERL="/usr/bin/perl"
-if "$WHICH" perl >/dev/null 2>&1 && ( perl /dev/null ) >/dev/null 2>&1; then
-    PERL=`$WHICH perl`
-fi
-
 ### skip this if the user just needs help...
 if [ "$OPT_HELP" != "yes" ]; then
 

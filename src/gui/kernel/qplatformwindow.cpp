@@ -510,15 +510,21 @@ QRect QPlatformWindow::initialGeometry(const QWindow *w,
         }
     }
     if (w->isTopLevel() && qt_window_private(const_cast<QWindow*>(w))->positionAutomatic) {
-        const QWindow *tp = w->transientParent();
-        if (tp) {
-            // A transient window should be centered w.r.t. its transient parent.
-            rect.moveCenter(tp->geometry().center());
-        } else {
-            // Center the window on the screen.  (Only applicable on platforms
-            // which do not provide a better way.)
-            QPlatformScreen *scr = QPlatformScreen::platformScreenForWindow(w);
-            rect.moveCenter(scr->availableGeometry().center());
+        if (const QPlatformScreen *platformScreen = QPlatformScreen::platformScreenForWindow(w)) {
+            const QRect availableGeometry = platformScreen->availableGeometry();
+            // Center unless the geometry ( + unknown window frame) is too large for the screen).
+            if (rect.height() < (availableGeometry.height() * 8) / 9
+                && rect.width() < (availableGeometry.width() * 8) / 9) {
+                const QWindow *tp = w->transientParent();
+                if (tp) {
+                    // A transient window should be centered w.r.t. its transient parent.
+                    rect.moveCenter(tp->geometry().center());
+                } else {
+                    // Center the window on the screen.  (Only applicable on platforms
+                    // which do not provide a better way.)
+                    rect.moveCenter(availableGeometry.center());
+                }
+            }
         }
     }
     return rect;

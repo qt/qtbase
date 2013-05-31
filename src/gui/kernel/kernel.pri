@@ -31,6 +31,8 @@ HEADERS += \
         kernel/qplatformclipboard.h \
         kernel/qplatformnativeinterface.h \
         kernel/qplatformmenu.h \
+        kernel/qshapedpixmapdndwindow_p.h \
+        kernel/qsimpledrag_p.h \
         kernel/qsurfaceformat.h \
         kernel/qguiapplication.h \
         kernel/qguiapplication_p.h \
@@ -89,6 +91,8 @@ SOURCES += \
         kernel/qplatformclipboard.cpp \
         kernel/qplatformnativeinterface.cpp \
         kernel/qsessionmanager.cpp \
+        kernel/qshapedpixmapdndwindow.cpp \
+        kernel/qsimpledrag.cpp \
         kernel/qsurfaceformat.cpp \
         kernel/qguiapplication.cpp \
         kernel/qwindow.cpp \

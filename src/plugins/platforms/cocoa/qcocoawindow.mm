@@ -823,6 +823,9 @@ NSWindow * QCocoaWindow::createNSWindow()
         if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
             // Make popup winows show on the same desktop as the parent full-screen window.
             [window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
+
+            if ((type & Qt::Popup) == Qt::Popup)
+                [window setAnimationBehavior:NSWindowAnimationBehaviorUtilityWindow];
         }
 #endif
         window->m_cocoaPlatformWindow = this;

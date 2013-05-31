@@ -111,21 +111,6 @@ public:
     }
 };
 
-// Class for chaining to gether a bunch of fades. It pretty much is only used for qmenu fading.
-class QMacWindowFader
-{
-    QWidgetList m_windowsToFade;
-    float m_duration;
-    Q_DISABLE_COPY(QMacWindowFader)
-public:
-    QMacWindowFader(); // PLEASE DON'T CALL THIS.
-    static QMacWindowFader *currentFader();
-    void registerWindowToFade(QWidget *window);
-    void setFadeDuration(float durationInSecs) { m_duration = durationInSecs; }
-    float fadeDuration() const { return m_duration; }
-    void performFade();
-};
-
 class Q_WIDGETS_EXPORT QMacCocoaAutoReleasePool
 {
 private:

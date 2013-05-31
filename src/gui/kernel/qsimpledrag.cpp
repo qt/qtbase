@@ -62,7 +62,7 @@
 #include <private/qguiapplication_p.h>
 #include <private/qdnd_p.h>
 
-#include <QtPlatformSupport/private/qshapedpixmapdndwindow_p.h>
+#include <private/qshapedpixmapdndwindow_p.h>
 
 QT_BEGIN_NAMESPACE
 
