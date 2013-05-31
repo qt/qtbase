@@ -965,7 +965,16 @@ int QTableViewPrivate::heightHintForIndex(const QModelIndex &index, int hint, QS
 
     if (wrapItemText) {// for wrapping boundaries
         option.rect.setY(q->rowViewportPosition(index.row()));
-        option.rect.setHeight(q->rowHeight(index.row()));
+        int height = q->rowHeight(index.row());
+        // if the option.height == 0 then q->itemDelegate(index)->sizeHint(option, index) will be wrong.
+        // The option.height == 0 is used to conclude that the text is not wrapped, and hence it will
+        // (exactly like widthHintForIndex) return a QSize with a long width (that we don't use) -
+        // and the height of the text if it was/is on one line.
+        // What we want is a height hint for the current width (and we know that this section is not hidden)
+        // Therefore we catch this special situation with:
+        if (height == 0)
+            height = 1;
+        option.rect.setHeight(height);
         option.rect.setX(q->columnViewportPosition(index.column()));
         option.rect.setWidth(q->columnWidth(index.column()));
     }
