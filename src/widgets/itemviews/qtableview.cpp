@@ -952,7 +952,7 @@ int QTableViewPrivate::widthHintForIndex(const QModelIndex &index, int hint, con
   \internal
   Get sizeHint height for single Index (providing existing hint and style option)
 */
-int QTableViewPrivate::heightHintForIndex(const QModelIndex &index, int hint, const QStyleOptionViewItem &option) const
+int QTableViewPrivate::heightHintForIndex(const QModelIndex &index, int hint, QStyleOptionViewItem &option) const
 {
     Q_Q(const QTableView);
     QWidget *editor = editorForIndex(index).widget.data();
@@ -963,6 +963,12 @@ int QTableViewPrivate::heightHintForIndex(const QModelIndex &index, int hint, co
         hint = qBound(min, hint, max);
     }
 
+    if (wrapItemText) {// for wrapping boundaries
+        option.rect.setY(q->rowViewportPosition(index.row()));
+        option.rect.setHeight(q->rowHeight(index.row()));
+        option.rect.setX(q->columnViewportPosition(index.column()));
+        option.rect.setWidth(q->columnWidth(index.column()));
+    }
     hint = qMax(hint, q->itemDelegate(index)->sizeHint(option, index).height());
     return hint;
 }
@@ -2237,12 +2243,6 @@ int QTableView::sizeHintForRow(int row) const
         if (d->horizontalHeader->isSectionHidden(logicalColumn))
             continue;
         index = d->model->index(row, logicalColumn, d->root);
-        if (d->wrapItemText) {// for wrapping boundaries
-            option.rect.setY(rowViewportPosition(index.row()));
-            option.rect.setHeight(rowHeight(index.row()));
-            option.rect.setX(columnViewportPosition(index.column()));
-            option.rect.setWidth(columnWidth(index.column()));
-        }
         hint = d->heightHintForIndex(index, hint, option);
 
         ++columnsProcessed;
@@ -2283,13 +2283,6 @@ int QTableView::sizeHintForRow(int row) const
             continue;
 
         index = d->model->index(row, logicalIdx, d->root);
-
-        if (d->wrapItemText) {// for wrapping boundaries
-            option.rect.setY(rowViewportPosition(index.row()));
-            option.rect.setHeight(rowHeight(index.row()));
-            option.rect.setX(columnViewportPosition(index.column()));
-            option.rect.setWidth(columnWidth(index.column()));
-        }
         hint = d->heightHintForIndex(index, hint, option);
         ++columnsProcessed;
     }
