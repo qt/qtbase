@@ -124,6 +124,7 @@ private:
     void setOffset(const QPoint &setOffset);
     void updateVisibility(bool parentVisible);
     void updateZorder(int &topZorder);
+    void applyWindowState();
 
     void fetchBuffers();
 
