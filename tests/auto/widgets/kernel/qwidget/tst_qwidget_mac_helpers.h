@@ -42,7 +42,7 @@
 #include <QtCore/QPair>
 #include <QtWidgets/QWidget>
 
-#pragma once // Yeah, it's deprecated in general, but it's standard practive for Mac OS X.
+#pragma once // Yeah, it's deprecated in general, but it's standard practice for Mac OS X.
 
 QString nativeWindowTitle(QWidget *widget, Qt::WindowState state);
 bool nativeWindowModified(QWidget *widget);
