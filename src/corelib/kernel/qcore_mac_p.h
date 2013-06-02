@@ -65,7 +65,7 @@
 
 #include "qglobal.h"
 
-#ifndef Q_OS_IOS
+#ifdef Q_OS_MACX
 #include <CoreServices/CoreServices.h>
 #endif
 

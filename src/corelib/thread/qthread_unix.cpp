@@ -83,9 +83,9 @@
 #   define old_qDebug qDebug
 #   undef qDebug
 # endif
-#ifndef Q_OS_IOS
+#ifdef Q_OS_MACX
 # include <CoreServices/CoreServices.h>
-#endif //Q_OS_IOS
+#endif // Q_OS_MACX
 
 # ifdef old_qDebug
 #   undef qDebug

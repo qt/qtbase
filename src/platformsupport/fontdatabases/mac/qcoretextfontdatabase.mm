@@ -41,7 +41,7 @@
 
 #include "qglobal.h"
 
-#ifndef Q_OS_IOS
+#ifdef Q_OS_MACX
 #import <Cocoa/Cocoa.h>
 #import <IOKit/graphics/IOGraphicsLib.h>
 #endif
@@ -107,7 +107,7 @@ static NSInteger languageMapSort(id obj1, id obj2, void *context)
 
 QCoreTextFontDatabase::QCoreTextFontDatabase()
 {
-#ifndef Q_OS_IOS
+#ifdef Q_OS_MACX
     QSettings appleSettings(QLatin1String("apple.com"));
     QVariant appleValue = appleSettings.value(QLatin1String("AppleAntiAliasingThreshold"));
     if (appleValue.isValid())
@@ -408,7 +408,7 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
 
     static bool didPopulateStyleFallbacks = false;
     if (!didPopulateStyleFallbacks) {
-#if !defined(Q_OS_IOS)
+#if defined(Q_OS_MACX)
         // Ensure we have the psNameToFamily mapping set up
         const_cast<QCoreTextFontDatabase*>(this)->populateFontDatabase();
 
@@ -457,7 +457,7 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
     return fallbackLists[styleLookupKey.arg(styleHint)];
 }
 
-#ifndef Q_OS_IOS
+#ifdef Q_OS_MACX
 QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
 {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8

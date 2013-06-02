@@ -1694,7 +1694,7 @@ Q_CORE_EXPORT QString qt_mac_from_pascal_string(const Str255 pstr) {
 
 QSysInfo::MacVersion QSysInfo::macVersion()
 {
-#ifndef Q_OS_IOS
+#ifdef Q_OS_MACX
     SInt32 gestalt_version;
     if (Gestalt(gestaltSystemVersion, &gestalt_version) == noErr) {
         return QSysInfo::MacVersion(((gestalt_version & 0x00F0) >> 4) + 2);
