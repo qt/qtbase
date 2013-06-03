@@ -725,6 +725,12 @@ bool QCocoaWindow::windowShouldClose()
     return accepted;
 }
 
+void QCocoaWindow::setSynchedWindowStateFromWindow()
+{
+    if (QWindow *w = window())
+        m_synchedWindowState = w->windowState();
+}
+
 bool QCocoaWindow::windowIsPopupType(Qt::WindowType type) const
 {
     if (type == Qt::Widget)

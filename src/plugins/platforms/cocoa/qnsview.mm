@@ -290,10 +290,15 @@ static QTouchDevice *touchDevice = 0;
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
-        if (notificationName == NSWindowDidEnterFullScreenNotification) {
-            QWindowSystemInterface::handleWindowStateChanged(m_window, Qt::WindowFullScreen);
-        } else if (notificationName == NSWindowDidExitFullScreenNotification) {
-            QWindowSystemInterface::handleWindowStateChanged(m_window, Qt::WindowNoState);
+        if (notificationName == NSWindowDidEnterFullScreenNotification
+            || notificationName == NSWindowDidExitFullScreenNotification) {
+            Qt::WindowState newState = notificationName == NSWindowDidEnterFullScreenNotification ?
+                        Qt::WindowFullScreen : Qt::WindowNoState;
+            QWindowSystemInterface::handleWindowStateChanged(m_window, newState);
+            // We want to read the window state back from the window,
+            // but the event we just sent may be asynchronous.
+            QWindowSystemInterface::flushWindowSystemEvents();
+            m_platformWindow->setSynchedWindowStateFromWindow();
         }
     }
 #endif
