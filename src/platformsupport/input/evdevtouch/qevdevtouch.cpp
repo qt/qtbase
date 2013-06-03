@@ -421,6 +421,8 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             tp.normalPosition = QPointF((contact.x - hw_range_x_min) / qreal(hw_range_x_max - hw_range_x_min),
                                         (contact.y - hw_range_y_min) / qreal(hw_range_y_max - hw_range_y_min));
 
+            tp.rawPositions.append(QPointF(contact.x, contact.y));
+
             m_touchPoints.append(tp);
 
             if (contact.state == Qt::TouchPointReleased)
