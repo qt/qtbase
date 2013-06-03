@@ -315,6 +315,9 @@ void QQnxGLContext::createSurface(QPlatformSurface *surface)
     }
     platformWindow->setBufferSize(surfaceSize);
 
+    // Post root window, in case it hasn't been posted yet, to make it appear.
+    platformWindow->screen()->onWindowPost(platformWindow);
+
     // Obtain the native handle for our window
     screen_window_t handle = platformWindow->nativeHandle();
 
