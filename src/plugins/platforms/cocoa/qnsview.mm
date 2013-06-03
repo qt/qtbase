@@ -306,6 +306,16 @@ static QTouchDevice *touchDevice = 0;
     }
 }
 
+- (void)notifyWindowWillZoom:(BOOL)willZoom
+{
+    Qt::WindowState newState = willZoom ? Qt::WindowMaximized : Qt::WindowNoState;
+    QWindowSystemInterface::handleWindowStateChanged(m_window, newState);
+    // We want to read the window state back from the window,
+    // but the event we just sent may be asynchronous.
+    QWindowSystemInterface::flushWindowSystemEvents();
+    m_platformWindow->setSynchedWindowStateFromWindow();
+}
+
 - (void)viewDidHide
 {
     m_platformWindow->obscureWindow();

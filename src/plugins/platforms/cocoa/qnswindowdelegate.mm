@@ -90,4 +90,12 @@
     return YES;
 }
 
+- (BOOL)windowShouldZoom:(NSWindow *)window toFrame:(NSRect)newFrame
+{
+    Q_UNUSED(newFrame);
+    if (m_cocoaWindow && m_cocoaWindow->m_qtView)
+        [m_cocoaWindow->m_qtView notifyWindowWillZoom:![window isZoomed]];
+    return YES;
+}
+
 @end

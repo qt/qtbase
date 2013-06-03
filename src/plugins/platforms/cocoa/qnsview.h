@@ -82,6 +82,7 @@ QT_END_NAMESPACE
 - (void)drawRect:(NSRect)dirtyRect;
 - (void)updateGeometry;
 - (void)windowNotification : (NSNotification *) windowNotification;
+- (void)notifyWindowWillZoom:(BOOL)willZoom;
 - (void)viewDidHide;
 - (void)viewDidUnhide;
 
