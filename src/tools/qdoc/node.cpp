@@ -862,9 +862,12 @@ Node* InnerNode::findChildNodeByNameAndType(const QString& name, Type type)
     if (type == Function)
         return primaryFunctionMap.value(name);
     else {
-        Node *node = childMap.value(name);
-        if (node && node->type() == type)
-            return node;
+        QList<Node*> nodes = childMap.values(name);
+        for (int i=0; i<nodes.size(); ++i) {
+            Node* node = nodes.at(i);
+            if (node->type() == type)
+                return node;
+        }
     }
     return 0;
 }

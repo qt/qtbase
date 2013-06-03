@@ -335,25 +335,16 @@ QT_END_NAMESPACE
 Q_DECLARE_METATYPE(GLuint)
 QT_BEGIN_NAMESPACE
 
-class Q_OPENGL_EXPORT QGLTextureDestroyer : public QObject
+class Q_OPENGL_EXPORT QGLTextureDestroyer
 {
-    Q_OBJECT
 public:
-    QGLTextureDestroyer() : QObject() {
-        connect(this, SIGNAL(freeTexture(QGLContext *, QPlatformPixmap *, quint32)),
-                this, SLOT(freeTexture_slot(QGLContext *, QPlatformPixmap *, quint32)));
-    }
-    void emitFreeTexture(QGLContext *context, QPlatformPixmap *boundPixmap, GLuint id) {
-        emit freeTexture(context, boundPixmap, id);
+    void emitFreeTexture(QGLContext *context, QPlatformPixmap *, GLuint id) {
+        if (context->contextHandle())
+            (new QOpenGLSharedResourceGuard(context->contextHandle(), id, freeTextureFunc))->free();
     }
 
-Q_SIGNALS:
-    void freeTexture(QGLContext *context, QPlatformPixmap *boundPixmap, quint32 id);
-
-private slots:
-    void freeTexture_slot(QGLContext *context, QPlatformPixmap *boundPixmap, quint32 id) {
-        Q_UNUSED(boundPixmap);
-        QGLShareContextScope scope(context);
+private:
+    static void freeTextureFunc(QOpenGLFunctions *, GLuint id) {
         glDeleteTextures(1, &id);
     }
 };

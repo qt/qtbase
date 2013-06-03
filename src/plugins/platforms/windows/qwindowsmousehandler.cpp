@@ -157,8 +157,18 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
                                                QtWindows::WindowsEventType et,
                                                MSG msg, LRESULT *result)
 {
+    enum { signatureMask = 0xffffff00, miWpSignature = 0xff515700 };
+
     if (et == QtWindows::MouseWheelEvent)
         return translateMouseWheelEvent(window, hwnd, msg, result);
+
+#ifndef Q_OS_WINCE
+    // Check for events synthesized from touch. Lower byte is touch index, 0 means pen.
+    const LPARAM extraInfo = GetMessageExtraInfo();
+    const bool fromTouch = (extraInfo & signatureMask) == miWpSignature && (extraInfo & 0xff);
+    if (fromTouch)
+        return false;
+#endif // !Q_OS_WINCE
 
     const QPoint winEventPosition(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
     if (et & QtWindows::NonClientEventFlag) {

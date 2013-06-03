@@ -552,11 +552,15 @@ QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) co
         break;
     case QPlatformIntegration::UseRtlExtensions:
         return QVariant(d->m_context.useRTLExtensions());
+#ifdef Q_OS_WINCE
     case QPlatformIntegration::SynthesizeMouseFromTouchEvents:
         // We do not want Qt to synthesize mouse events as Windows also does that.
         // Alternatively, Windows-generated touch mouse events can be identified and
         // ignored by checking GetMessageExtraInfo() for MI_WP_SIGNATURE (0xFF515700).
        return false;
+#endif // Q_OS_WINCE
+    default:
+        break;
     }
     return QPlatformIntegration::styleHint(hint);
 }

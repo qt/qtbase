@@ -241,7 +241,8 @@ NSMenuItem *QCocoaMenuItem::sync()
                 mergeItem = [loader quitMenuItem];
                 break;
             default:
-                m_textSynced = true;
+                if (!m_text.isEmpty())
+                    m_textSynced = true;
                 break;
             }
             break;
@@ -264,7 +265,7 @@ NSMenuItem *QCocoaMenuItem::sync()
             m_native = nil; // create item below
             m_merged = false;
         }
-    } else {
+    } else if (!m_text.isEmpty()) {
         m_textSynced = true; // NoRole, and that was set explicitly. So, nothing to do anymore.
     }
 
