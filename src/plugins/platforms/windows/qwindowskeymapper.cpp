@@ -793,7 +793,7 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
     // A multi-character key or a Input method character
     // not found by our look-ahead
     if (msgType == WM_CHAR || msgType == WM_IME_CHAR) {
-        sendExtendedPressRelease(receiver, 0, Qt::KeyboardModifier(state), scancode, vk_key, nModifiers, messageKeyText(msg), false, 0);
+        sendExtendedPressRelease(receiver, 0, Qt::KeyboardModifier(state), scancode, vk_key, nModifiers, messageKeyText(msg), false);
         return true;
     }
 
@@ -822,13 +822,13 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
                 if (dirStatus == VK_LSHIFT
                         && ((msg.wParam == VK_SHIFT && GetKeyState(VK_LCONTROL))
                             || (msg.wParam == VK_CONTROL && GetKeyState(VK_LSHIFT)))) {
-                    sendExtendedPressRelease(receiver, Qt::Key_Direction_L, 0, scancode, msg.wParam, nModifiers, QString(), false, 0);
+                    sendExtendedPressRelease(receiver, Qt::Key_Direction_L, 0, scancode, msg.wParam, nModifiers, QString(), false);
                     result = true;
                     dirStatus = 0;
                 } else if (dirStatus == VK_RSHIFT
                            && ( (msg.wParam == VK_SHIFT && GetKeyState(VK_RCONTROL))
                                 || (msg.wParam == VK_CONTROL && GetKeyState(VK_RSHIFT)))) {
-                    sendExtendedPressRelease(receiver, Qt::Key_Direction_R, 0, scancode, msg.wParam, nModifiers, QString(), false, 0);
+                    sendExtendedPressRelease(receiver, Qt::Key_Direction_R, 0, scancode, msg.wParam, nModifiers, QString(), false);
                     result = true;
                     dirStatus = 0;
                 } else {
@@ -1020,9 +1020,9 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
         if (rec) {
             if (code < Qt::Key_Shift || code > Qt::Key_ScrollLock) {
                 QWindowSystemInterface::handleExtendedKeyEvent(receiver, QEvent::KeyRelease, code,
-                                                               Qt::KeyboardModifier(state), scancode, msg.wParam, nModifiers, rec->text, true, 0);
+                                                               Qt::KeyboardModifier(state), scancode, msg.wParam, nModifiers, rec->text, true);
                 QWindowSystemInterface::handleExtendedKeyEvent(receiver, QEvent::KeyPress, code,
-                                                               Qt::KeyboardModifier(state), scancode, msg.wParam, nModifiers, rec->text, true, 0);
+                                                               Qt::KeyboardModifier(state), scancode, msg.wParam, nModifiers, rec->text, true);
                 result = true;
             }
         }
@@ -1033,7 +1033,7 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
             const char a = uch.row() ? 0 : uch.cell();
             key_recorder.storeKey(msg.wParam, a, state, text);
             QWindowSystemInterface::handleExtendedKeyEvent(receiver, QEvent::KeyPress, code,
-                                                           Qt::KeyboardModifier(state), scancode, msg.wParam, nModifiers, text, false, 0);
+                                                           Qt::KeyboardModifier(state), scancode, msg.wParam, nModifiers, text, false);
             result =true;
             bool store = true;
 #ifndef Q_OS_WINCE
@@ -1077,7 +1077,7 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
                 code = Qt::Key_Backtab;
             QWindowSystemInterface::handleExtendedKeyEvent(receiver, QEvent::KeyRelease, code,
                                                            Qt::KeyboardModifier(state), scancode, msg.wParam, nModifiers,
-                                                           (rec ? rec->text : QString()), false, 0);
+                                                           (rec ? rec->text : QString()), false);
             result = true;
 #ifndef Q_OS_WINCE
             // don't pass Alt to Windows unless we are embedded in a non-Qt window

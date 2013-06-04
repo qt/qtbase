@@ -78,7 +78,7 @@ set LIB=C:\Program Files\Windows CE Tools\wce500\Windows Mobile 5.0 Pocket PC SD
 
 //! [10]
 ********* Start testing of TestQString *********
-Config: Using QTest library %VERSION%, Qt %VERSION%
+Config: Using QtTest library %VERSION%, Qt %VERSION%
 PASS   : TestQString::initTestCase()
 PASS   : TestQString::toUpper()
 PASS   : TestQString::cleanupTestCase()

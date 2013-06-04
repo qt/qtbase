@@ -62,13 +62,19 @@ class QFontSubset
 public:
     explicit QFontSubset(QFontEngine *fe, int obj_id = 0)
         : object_id(obj_id), noEmbed(false), fontEngine(fe), downloaded_glyphs(0), standard_font(false)
-        { fontEngine->ref.ref(); addGlyph(0); }
+    {
+        fontEngine->ref.ref();
+#ifndef QT_NO_PDF
+        addGlyph(0);
+#endif
+    }
     ~QFontSubset() {
         if (!fontEngine->ref.deref())
             delete fontEngine;
     }
 
     QByteArray toTruetype() const;
+#ifndef QT_NO_PDF
     QByteArray widthArray() const;
     QByteArray createToUnicodeMap() const;
     QVector<int> getReverseMap() const;
@@ -77,6 +83,7 @@ public:
     static QByteArray glyphName(unsigned short unicode, bool symbol);
 
     int addGlyph(int index);
+#endif
     const int object_id;
     bool noEmbed;
     QFontEngine *fontEngine;

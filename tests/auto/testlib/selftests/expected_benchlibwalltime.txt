@@ -1,5 +1,5 @@
 ********* Start testing of tst_BenchlibWalltime *********
-Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_BenchlibWalltime::initTestCase()
 RESULT : tst_BenchlibWalltime::waitForOneThousand():
      1,000 msec per iteration (total: 1000, iterations: 1)

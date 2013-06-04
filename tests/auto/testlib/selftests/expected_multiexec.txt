@@ -1,33 +1,33 @@
 ********* Start testing of tst_Nothing *********
-Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_Nothing::initTestCase()
 PASS   : tst_Nothing::nothing()
 PASS   : tst_Nothing::cleanupTestCase()
 Totals: 3 passed, 0 failed, 0 skipped
 ********* Finished testing of tst_Nothing *********
 ********* Start testing of tst_Nothing *********
-Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_Nothing::initTestCase()
 PASS   : tst_Nothing::nothing()
 PASS   : tst_Nothing::cleanupTestCase()
 Totals: 3 passed, 0 failed, 0 skipped
 ********* Finished testing of tst_Nothing *********
 ********* Start testing of tst_Nothing *********
-Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_Nothing::initTestCase()
 PASS   : tst_Nothing::nothing()
 PASS   : tst_Nothing::cleanupTestCase()
 Totals: 3 passed, 0 failed, 0 skipped
 ********* Finished testing of tst_Nothing *********
 ********* Start testing of tst_Nothing *********
-Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_Nothing::initTestCase()
 PASS   : tst_Nothing::nothing()
 PASS   : tst_Nothing::cleanupTestCase()
 Totals: 3 passed, 0 failed, 0 skipped
 ********* Finished testing of tst_Nothing *********
 ********* Start testing of tst_Nothing *********
-Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_Nothing::initTestCase()
 PASS   : tst_Nothing::nothing()
 PASS   : tst_Nothing::cleanupTestCase()

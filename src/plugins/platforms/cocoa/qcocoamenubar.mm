@@ -136,6 +136,17 @@ void QCocoaMenuBar::syncMenu(QPlatformMenu *menu)
     QCocoaMenu *cocoaMenu = static_cast<QCocoaMenu *>(menu);
     Q_FOREACH (QCocoaMenuItem *item, cocoaMenu->items())
         cocoaMenu->syncMenuItem(item);
+
+    // If the NSMenu has no visble items, or only separators, we should hide it
+    // on the menubar. This can happen after syncing the menu items since they
+    // can be moved to other menus.
+    BOOL shouldHide = YES;
+    for (NSMenuItem *item in [cocoaMenu->nsMenu() itemArray])
+        if (![item isSeparatorItem] && ![item isHidden]) {
+            shouldHide = NO;
+            break;
+        }
+    [cocoaMenu->nsMenuItem() setHidden:shouldHide];
 }
 
 void QCocoaMenuBar::handleReparent(QWindow *newParentWindow)

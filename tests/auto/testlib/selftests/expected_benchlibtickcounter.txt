@@ -1,5 +1,5 @@
 ********* Start testing of tst_BenchlibTickCounter *********
-Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_BenchlibTickCounter::initTestCase()
 RESULT : tst_BenchlibTickCounter::threeBillionTicks():
      3,000,000,000 ticks per iteration (total: 3000000000, iterations: 1)

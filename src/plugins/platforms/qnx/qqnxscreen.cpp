@@ -62,6 +62,14 @@
 #error Please define QQNX_PHYSICAL_SCREEN_WIDTH and QQNX_PHYSICAL_SCREEN_HEIGHT to values greater than zero
 #endif
 
+// The default z-order of a window (intended to be overlain) created by
+// mmrender.
+static const int MMRENDER_DEFAULT_ZORDER = -1;
+
+// The maximum z-order at which a foreign window will be considered
+// an underlay.
+static const int MAX_UNDERLAY_ZORDER = MMRENDER_DEFAULT_ZORDER - 1;
+
 QT_BEGIN_NAMESPACE
 
 static QSize determineScreenSize(screen_display_t display, bool primaryScreen) {
@@ -463,16 +471,32 @@ void QQnxScreen::updateHierarchy()
     qScreenDebug() << Q_FUNC_INFO;
 
     QList<QQnxWindow*>::const_iterator it;
-    int topZorder = 1; // root window is z-order 0, all "top" level windows are "above" it
+    int result;
+    int topZorder;
 
+    errno = 0;
+    result = screen_get_window_property_iv(rootWindow()->nativeHandle(), SCREEN_PROPERTY_ZORDER, &topZorder);
+    if (result != 0)
+        qFatal("QQnxScreen: failed to query root window z-order, errno=%d", errno);
+
+    topZorder++; // root window has the lowest z-order in the windowgroup
+
+    // Underlays sit immediately above the root window in the z-ordering
+    Q_FOREACH (screen_window_t underlay, m_underlays) {
+        // Do nothing when this fails. This can happen if we have stale windows in m_underlays,
+        // which in turn can happen because a window was removed but we didn't get a notification
+        // yet.
+        screen_set_window_property_iv(underlay, SCREEN_PROPERTY_ZORDER, &topZorder);
+        topZorder++;
+    }
+
+    // Normal Qt windows come next above underlays in the z-ordering
     for (it = m_childWindows.constBegin(); it != m_childWindows.constEnd(); ++it)
         (*it)->updateZorder(topZorder);
 
-    topZorder++;
+    // Finally overlays sit above all else in the z-ordering
     Q_FOREACH (screen_window_t overlay, m_overlays) {
-        // Do nothing when this fails. This can happen if we have stale windows in mOverlays,
-        // which in turn can happen because a window was removed but we didn't get a notification
-        // yet.
+        // No error handling, see underlay logic above
         screen_set_window_property_iv(overlay, SCREEN_PROPERTY_ZORDER, &topZorder);
         topZorder++;
     }
@@ -529,10 +553,16 @@ void QQnxScreen::addOverlayWindow(screen_window_t window)
     updateHierarchy();
 }
 
-void QQnxScreen::removeOverlayWindow(screen_window_t window)
+void QQnxScreen::addUnderlayWindow(screen_window_t window)
 {
-    const int numOverlaysRemoved = m_overlays.removeAll(window);
-    if (numOverlaysRemoved > 0)
+    m_underlays.append(window);
+    updateHierarchy();
+}
+
+void QQnxScreen::removeOverlayOrUnderlayWindow(screen_window_t window)
+{
+    const int numRemoved = m_overlays.removeAll(window) + m_underlays.removeAll(window);
+    if (numRemoved > 0)
         updateHierarchy();
 }
 
@@ -546,13 +576,28 @@ void QQnxScreen::newWindowCreated(void *window)
         return;
     }
 
+    int zorder;
+    if (screen_get_window_property_iv(windowHandle, SCREEN_PROPERTY_ZORDER, &zorder) != 0) {
+        qWarning("QQnx: Failed to get z-order for window, errno=%d", errno);
+        zorder = 0;
+    }
+
     if (display == nativeDisplay()) {
         // A window was created on this screen. If we don't know about this window yet, it means
         // it was not created by Qt, but by some foreign library like the multimedia renderer, which
         // creates an overlay window when playing a video.
-        // Treat all foreign windows as overlays here.
-        if (!findWindow(windowHandle))
-            addOverlayWindow(windowHandle);
+        //
+        // Treat all foreign windows as overlays or underlays here.
+        //
+        // Assume that if a foreign window already has a Z-Order both negative and
+        // less than the default Z-Order installed by mmrender on windows it creates,
+        // the windows should be treated as an underlay. Otherwise, we treat it as an overlay.
+        if (!findWindow(windowHandle)) {
+            if (zorder <= MAX_UNDERLAY_ZORDER)
+                addUnderlayWindow(windowHandle);
+            else
+                addOverlayWindow(windowHandle);
+        }
     }
 }
 
@@ -560,7 +605,7 @@ void QQnxScreen::windowClosed(void *window)
 {
     Q_ASSERT(thread() == QThread::currentThread());
     const screen_window_t windowHandle = reinterpret_cast<screen_window_t>(window);
-    removeOverlayWindow(windowHandle);
+    removeOverlayOrUnderlayWindow(windowHandle);
 }
 
 void QQnxScreen::windowGroupStateChanged(const QByteArray &id, Qt::WindowState state)

@@ -851,6 +851,13 @@ Requires:
 Name: Color Names
 SeeAlso: ???
 
+Feature: PDF
+Description: Supports pdf format
+Section: Painting
+Requires: TEMPORARYFILE
+Name: QPdf
+SeeAlso: ???
+
 Feature: PRINTER
 Description: Supports printing
 Section: Painting

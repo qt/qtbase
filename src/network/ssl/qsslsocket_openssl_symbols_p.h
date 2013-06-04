@@ -285,7 +285,7 @@ void q_sk_free(_STACK *a);
 void * q_sk_value(STACK *a, int b);
 #else
 STACK *q_sk_new_null();
-void q_sk_push(STACK *st, void *data);
+void q_sk_push(STACK *st, char *data);
 void q_sk_free(STACK *a);
 char * q_sk_value(STACK *a, int b);
 #endif
@@ -399,7 +399,11 @@ int q_X509_EXTENSION_get_critical(X509_EXTENSION *a);
 ASN1_OCTET_STRING *q_X509_EXTENSION_get_data(X509_EXTENSION *a);
 void q_BASIC_CONSTRAINTS_free(BASIC_CONSTRAINTS *a);
 void q_AUTHORITY_KEYID_free(AUTHORITY_KEYID *a);
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
 int q_ASN1_STRING_print(BIO *a, const ASN1_STRING *b);
+#else
+int q_ASN1_STRING_print(BIO *a, ASN1_STRING *b);
+#endif
 X509_NAME *q_X509_get_issuer_name(X509 *a);
 X509_NAME *q_X509_get_subject_name(X509 *a);
 int q_X509_verify_cert(X509_STORE_CTX *ctx);

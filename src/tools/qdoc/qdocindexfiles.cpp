@@ -1183,8 +1183,13 @@ void QDocIndexFiles::generateIndexSections(QXmlStreamWriter& writer,
                   It is just a place holder for a collection of QML property
                   nodes. Recurse to its children, which are the QML property
                   nodes.
+
+                  Do the same thing for collision nodes - we want children
+                  of collision nodes in the index, but leaving out the
+                  parent collision page will make searching for nodes easier.
                  */
-                if (child->subType() == Node::QmlPropertyGroup) {
+                if (child->subType() == Node::QmlPropertyGroup ||
+                        child->subType() == Node::Collision) {
                     const InnerNode* pgn = static_cast<const InnerNode*>(child);
                     foreach (Node* c, pgn->childNodes()) {
                         generateIndexSections(writer, c, generateInternalNodes);

@@ -52,6 +52,11 @@
 //
 // We mean it.
 //
+
+#include <QtCore/qglobal.h>
+
+#ifndef QT_NO_PDF
+
 #include "QtGui/qmatrix.h"
 #include "QtCore/qstring.h"
 #include "QtCore/qvector.h"
@@ -327,6 +332,8 @@ void QPdfEngine::setResolution(int resolution)
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_PDF
 
 #endif // QPDF_P_H
 

@@ -82,12 +82,12 @@ QT_BEGIN_NAMESPACE
 class QGL2PaintEngineExPrivate;
 
 
-class QOpenGL2PaintEngineState : public QPainterState
+class QGL2PaintEngineState : public QPainterState
 {
 public:
-    QOpenGL2PaintEngineState(QOpenGL2PaintEngineState &other);
-    QOpenGL2PaintEngineState();
-    ~QOpenGL2PaintEngineState();
+    QGL2PaintEngineState(QGL2PaintEngineState &other);
+    QGL2PaintEngineState();
+    ~QGL2PaintEngineState();
 
     uint isNew : 1;
     uint needsClipBufferClear : 1;
@@ -141,11 +141,11 @@ public:
 
     virtual void setState(QPainterState *s);
     virtual QPainterState *createState(QPainterState *orig) const;
-    inline QOpenGL2PaintEngineState *state() {
-        return static_cast<QOpenGL2PaintEngineState *>(QPaintEngineEx::state());
+    inline QGL2PaintEngineState *state() {
+        return static_cast<QGL2PaintEngineState *>(QPaintEngineEx::state());
     }
-    inline const QOpenGL2PaintEngineState *state() const {
-        return static_cast<const QOpenGL2PaintEngineState *>(QPaintEngineEx::state());
+    inline const QGL2PaintEngineState *state() const {
+        return static_cast<const QGL2PaintEngineState *>(QPaintEngineEx::state());
     }
 
     void beginNativePainting();

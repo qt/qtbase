@@ -29,7 +29,6 @@
     \page gestures-overview.html
     \title Gestures in Widgets and Graphics View
     \startpage index.html Qt Reference Documentation
-    \ingroup technology-apis
     \ingroup qt-gui-concepts
 
     \brief An overview of Qt support for Gesture programming

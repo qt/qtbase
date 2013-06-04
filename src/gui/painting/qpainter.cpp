@@ -293,6 +293,7 @@ bool QPainterPrivate::attachPainterPrivate(QPainter *q, QPaintDevice *pdev)
     // Update matrix.
     if (q->d_ptr->state->WxF) {
         q->d_ptr->state->redirectionMatrix = q->d_ptr->state->matrix;
+        q->d_ptr->state->redirectionMatrix *= q->d_ptr->hidpiScaleTransform().inverted();
         q->d_ptr->state->redirectionMatrix.translate(-offset.x(), -offset.y());
         q->d_ptr->state->worldMatrix = QTransform();
         q->d_ptr->state->WxF = false;

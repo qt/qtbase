@@ -201,6 +201,12 @@ QT_BEGIN_NAMESPACE
     function to manipulate the rectangle's coordinates and dimensions
     in one go.
 
+    \section1 Constraints
+
+    QRect is limited to the minimum and maximum values for the \c int type.
+    Operations on a QRect that could potentially result in values outside this
+    range will result in undefined behavior.
+
     \sa QRectF, QRegion
 */
 

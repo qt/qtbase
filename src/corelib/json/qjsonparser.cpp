@@ -886,7 +886,8 @@ bool Parser::parseString(bool *latin1)
                 return false;
             }
         }
-        if (ch > 0xff) {
+        // bail out if the string is not pure latin1 or too long to hold as a latin1string (which has only 16 bit for the length)
+        if (ch > 0xff || json - start >= 0x8000) {
             *latin1 = false;
             break;
         }

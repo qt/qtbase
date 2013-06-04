@@ -60,7 +60,8 @@ static const int MAGIC_ZORDER_FOR_NO_NAV = 10;
 QQnxRootWindow::QQnxRootWindow(const QQnxScreen *screen)
     : m_screen(screen),
       m_window(0),
-      m_windowGroupName()
+      m_windowGroupName(),
+      m_translucent(false)
 {
     qRootWindowDebug() << Q_FUNC_INFO;
     // Create one top-level QNX window to act as a container for child windows
@@ -122,7 +123,10 @@ QQnxRootWindow::QQnxRootWindow(const QQnxScreen *screen)
     if (result != 0)
         qFatal("QQnxRootWindow: failed to set window size, errno=%d", errno);
 
-    // Fill the window with solid black
+    // Fill the window with solid black. Note that the LSB of the pixel value
+    // 0x00000000 just happens to be 0x00, so if and when this root window's
+    // alpha blending mode is changed from None to Source-Over, it will then
+    // be interpreted as transparent.
     errno = 0;
     val[0] = 0;
     result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_COLOR, val);
@@ -152,13 +156,62 @@ QQnxRootWindow::QQnxRootWindow(const QQnxScreen *screen)
         qFatal("QQnxRootWindow: failed to set window source size, errno=%d", errno);
 
     errno = 0;
-    val[0] = 1;
+    val[0] = 0;
     val[1] = 0;
     result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_SOURCE_POSITION, val);
     if (result != 0)
         qFatal("QQnxRootWindow: failed to set window source position, errno=%d", errno);
 
     createWindowGroup();
+
+    // Don't post yet. This will be lazily done from QQnxScreen upon first posting of
+    // a child window. Doing it now pre-emptively would create a flicker if one of
+    // the QWindow's about to be created sets its Qt::WA_TranslucentBackground flag
+    // and immediately triggers the buffer re-creation in makeTranslucent().
+}
+
+void QQnxRootWindow::makeTranslucent()
+{
+    if (m_translucent)
+        return;
+
+    int result;
+
+    errno = 0;
+    result = screen_destroy_window_buffers(m_window);
+    if (result != 0) {
+        qFatal("QQnxRootWindow: failed to destroy window buffer, errno=%d", errno);
+    }
+
+    QRect geometry = m_screen->geometry();
+    errno = 0;
+    int val[2];
+    val[0] = geometry.width();
+    val[1] = geometry.height();
+    result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_BUFFER_SIZE, val);
+    if (result != 0) {
+        qFatal("QQnxRootWindow: failed to set window buffer size, errno=%d", errno);
+    }
+
+    errno = 0;
+    result = screen_create_window_buffers(m_window, 1);
+    if (result != 0) {
+        qFatal("QQNX: failed to create window buffer, errno=%d", errno);
+    }
+
+    // Install an alpha channel on the root window.
+    //
+    // This is necessary in order to avoid interfering with any particular
+    // toplevel widget's QQnxWindow window instance from showing transparent
+    // if it desires.
+    errno = 0;
+    val[0] = SCREEN_TRANSPARENCY_SOURCE_OVER;
+    result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_TRANSPARENCY, val);
+    if (result != 0) {
+        qFatal("QQnxRootWindow: failed to set window transparency, errno=%d", errno);
+    }
+
+    m_translucent = true;
     post();
 }
 

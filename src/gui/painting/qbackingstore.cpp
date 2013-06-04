@@ -98,10 +98,12 @@ void QBackingStore::flush(const QRegion &region, QWindow *win, const QPoint &off
     if (!win)
         win = window();
 
+#ifdef QBACKINGSTORE_DEBUG
     if (win && win->isTopLevel() && !qt_window_private(win)->receivedExpose) {
         qWarning().nospace() << "QBackingStore::flush() called with non-exposed window "
             << win << ", behavior is undefined";
     }
+#endif
 
     d_ptr->platformBackingStore->flush(win, region, offset);
 }

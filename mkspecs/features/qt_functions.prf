@@ -240,13 +240,15 @@ defineTest(qtAddTargetEnv) {
             deppath += $$shell_path($$eval(QT.$${dep}.libs))
         equals(QMAKE_HOST.os, Windows) {
             deppath.name = PATH
-        } else:contains(QMAKE_HOST.os, Linux|FreeBSD) {
+        } else:contains(QMAKE_HOST.os, Linux|FreeBSD|OpenBSD|NetBSD|DragonFly|SunOS|HP-UX|QNX|GNU) {
             deppath.name = LD_LIBRARY_PATH
         } else:equals(QMAKE_HOST.os, Darwin) {
             contains(QT_CONFIG, qt_framework): \
                 deppath.name = DYLD_FRAMEWORK_PATH
             else: \
                 deppath.name = DYLD_LIBRARY_PATH
+        } else:equals(QMAKE_HOST.os, AIX) {
+            deppath.name = LIBPATH
         } else {
             error("Operating system not supported.")
         }

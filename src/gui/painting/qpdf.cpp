@@ -38,9 +38,13 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#include "qpdf_p.h"
+
+#ifndef QT_NO_PDF
+
 #include "qplatformdefs.h"
 #include <qdebug.h>
-#include "qpdf_p.h"
 #include <qfile.h>
 #include <qtemporaryfile.h>
 #include <private/qmath_p.h>
@@ -2624,5 +2628,6 @@ void QPdfEnginePrivate::newPage()
                  << "q q\n";
 }
 
-
 QT_END_NAMESPACE
+
+#endif // QT_NO_PDF

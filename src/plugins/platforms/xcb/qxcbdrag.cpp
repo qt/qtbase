@@ -57,8 +57,8 @@
 
 #include <qpa/qwindowsysteminterface.h>
 
-#include <QtPlatformSupport/private/qshapedpixmapdndwindow_p.h>
-#include <QtPlatformSupport/private/qsimpledrag_p.h>
+#include <private/qshapedpixmapdndwindow_p.h>
+#include <private/qsimpledrag_p.h>
 
 QT_BEGIN_NAMESPACE
 

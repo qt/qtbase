@@ -3138,7 +3138,7 @@ void DitaXmlGenerator::generateOverviewList(const Node* relative)
                     // If we encounter a group definition page, we add all
                     // the pages in that group to the list for that group.
                     foreach (Node* member, docNode->members()) {
-                        if (member->type() != Node::Document)
+                        if (member->isInternal() || member->type() != Node::Document)
                             continue;
                         DocNode* page = static_cast<DocNode*>(member);
                         if (page) {
@@ -3155,7 +3155,7 @@ void DitaXmlGenerator::generateOverviewList(const Node* relative)
                     // If we encounter a page that belongs to a group then
                     // we add that page to the list for that group.
                     const DocNode* gn = qdb_->getGroup(group);
-                    if (gn)
+                    if (gn && !docNode->isInternal())
                         docNodeMap[gn].insert(sortKey, docNode);
                 }
             }

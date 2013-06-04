@@ -319,7 +319,7 @@ void QPlainTestLogger::startLogging()
     } else {
         qsnprintf(buf, sizeof(buf),
                   "********* Start testing of %s *********\n"
-                  "Config: Using QTest library " QTEST_VERSION_STR
+                  "Config: Using QtTest library " QTEST_VERSION_STR
                   ", Qt %s\n", QTestResult::currentTestObjectName(), qVersion());
     }
     outputMessage(buf);

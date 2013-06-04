@@ -49,6 +49,7 @@
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <qpa/qplatformscreen_p.h>
 #include <private/qdnd_p.h>
+#include <private/qsimpledrag_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -99,7 +100,11 @@ QPlatformClipboard *QPlatformIntegration::clipboard() const
 */
 QPlatformDrag *QPlatformIntegration::drag() const
 {
-    return 0;
+    static QSimpleDrag *drag = 0;
+    if (!drag) {
+        drag = new QSimpleDrag;
+    }
+    return drag;
 }
 #endif
 

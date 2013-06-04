@@ -93,7 +93,7 @@
 #include <QtGui/QOpenGLContext>
 #endif
 
-#include <QtPlatformSupport/private/qsimpledrag_p.h>
+#include <private/qsimpledrag_p.h>
 
 #include <QtCore/QDebug>
 #include <QtCore/QHash>

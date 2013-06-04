@@ -53,6 +53,10 @@
 // We mean it.
 //
 
+#include <QtCore/qglobal.h>
+
+#ifndef QT_NO_TEMPORARYFILE
+
 #include "private/qfiledevice_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -74,5 +78,7 @@ protected:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_TEMPORARYFILE
 
 #endif // QSAVEFILE_P_H

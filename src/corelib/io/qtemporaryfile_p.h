@@ -42,6 +42,10 @@
 #ifndef QTEMPORARYFILE_P_H
 #define QTEMPORARYFILE_P_H
 
+#include <QtCore/qglobal.h>
+
+#ifndef QT_NO_TEMPORARYFILE
+
 #include "private/qfsfileengine_p.h"
 #include "private/qfilesystemengine_p.h"
 #include "private/qfile_p.h"
@@ -98,6 +102,8 @@ public:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_TEMPORARYFILE
 
 #endif /* QTEMPORARYFILE_P_H */
 

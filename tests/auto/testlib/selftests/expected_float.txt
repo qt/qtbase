@@ -1,5 +1,5 @@
 ********* Start testing of tst_float *********
-Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_float::initTestCase()
 PASS   : tst_float::floatComparisons(should SUCCEED 1)
 FAIL!  : tst_float::floatComparisons(should FAIL 1) Compared floats are not the same (fuzzy compare)

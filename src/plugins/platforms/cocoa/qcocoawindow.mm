@@ -256,6 +256,11 @@ QCocoaWindow::~QCocoaWindow()
     [m_nsWindowDelegate release];
 }
 
+QSurfaceFormat QCocoaWindow::format() const
+{
+    return window()->requestedFormat();
+}
+
 void QCocoaWindow::setGeometry(const QRect &rect)
 {
     if (geometry() == rect)
@@ -821,6 +826,9 @@ NSWindow * QCocoaWindow::createNSWindow()
         if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
             // Make popup winows show on the same desktop as the parent full-screen window.
             [window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
+
+            if ((type & Qt::Popup) == Qt::Popup)
+                [window setAnimationBehavior:NSWindowAnimationBehaviorUtilityWindow];
         }
 #endif
         window->m_cocoaPlatformWindow = this;
@@ -1013,15 +1021,11 @@ void QCocoaWindow::obscureWindow()
 QWindow *QCocoaWindow::childWindowAt(QPoint windowPoint)
 {
     QWindow *targetWindow = window();
-    foreach (QObject *child, targetWindow->children()) {
-        if (QWindow *childWindow = qobject_cast<QWindow *>(child)) {
-            if (childWindow->geometry().contains(windowPoint)) {
-                QCocoaWindow* platformWindow = static_cast<QCocoaWindow*>(childWindow->handle());
-                if (platformWindow->isExposed())
-                    targetWindow = platformWindow->childWindowAt(windowPoint - childWindow->position());
-            }
-        }
-    }
+    foreach (QObject *child, targetWindow->children())
+        if (QWindow *childWindow = qobject_cast<QWindow *>(child))
+            if (QPlatformWindow *handle = childWindow->handle())
+                if (handle->isExposed() && childWindow->geometry().contains(windowPoint))
+                    targetWindow = static_cast<QCocoaWindow*>(handle)->childWindowAt(windowPoint - childWindow->position());
 
     return targetWindow;
 }

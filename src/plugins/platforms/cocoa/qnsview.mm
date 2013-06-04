@@ -113,6 +113,8 @@ static QTouchDevice *touchDevice = 0;
              name:NSViewGlobalFrameDidChangeNotification
              object:self];
 }
+    delete currentCustomDragTypes;
+
     [super dealloc];
 }
 
@@ -340,15 +342,20 @@ static QTouchDevice *touchDevice = 0;
     }
 
     const QRect &rect = region->boundingRect();
-    QImage maskImage(rect.size(), QImage::Format_RGB888);
-    maskImage.fill(Qt::white);
-    QPainter p(&maskImage);
-    p.setRenderHint(QPainter::Antialiasing);
+    QImage tmp(rect.size(), QImage::Format_RGB32);
+    tmp.fill(Qt::white);
+    QPainter p(&tmp);
     p.setClipRegion(*region);
-    p.fillRect(rect, QBrush(Qt::black));
+    p.fillRect(rect, Qt::black);
     p.end();
-
-    maskImage = maskImage.convertToFormat(QImage::Format_Indexed8);
+    QImage maskImage = QImage(rect.size(), QImage::Format_Indexed8);
+    for (int y=0; y<rect.height(); ++y) {
+        const uint *src = (const uint *) tmp.constScanLine(y);
+        uchar *dst = maskImage.scanLine(y);
+        for (int x=0; x<rect.width(); ++x) {
+            dst[x] = src[x] & 0xff;
+        }
+    }
     m_maskImage = qt_mac_toCGImage(maskImage, true, &m_maskData);
 }
 
@@ -953,6 +960,23 @@ static QTouchDevice *touchDevice = 0;
     if (m_window->flags() & Qt::WindowTransparentForInput)
         return [super keyUp:nsevent];
     [self handleKeyEvent:nsevent eventType:int(QEvent::KeyRelease)];
+}
+
+- (BOOL)performKeyEquivalent:(NSEvent *)nsevent
+{
+    NSString *chars = [nsevent charactersIgnoringModifiers];
+
+    if ([nsevent type] == NSKeyDown && [chars length] > 0) {
+        QChar ch = [chars characterAtIndex:0];
+        Qt::Key qtKey = qt_mac_cocoaKey2QtKey(ch);
+        // check for Command + Key_Period
+        if ([nsevent modifierFlags] & NSCommandKeyMask
+                && qtKey == Qt::Key_Period) {
+            [self handleKeyEvent:nsevent eventType:int(QEvent::KeyPress)];
+            return YES;
+        }
+    }
+    return [super performKeyEquivalent:nsevent];
 }
 
 - (void)flagsChanged:(NSEvent *)nsevent

@@ -1,5 +1,5 @@
 ********* Start testing of tst_DateTime *********
-Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 PASS   : tst_DateTime::initTestCase()
 FAIL!  : tst_DateTime::dateTime() Compared values are not the same
    Actual   (local): 2000/05/03 04:03:04.000[local time]

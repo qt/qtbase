@@ -136,7 +136,7 @@ QIOSScreen::QIOSScreen(unsigned int screenIndex)
 
     int unscaledDpi = 163; // Regular iPhone DPI
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad
-        && deviceIdentifier != QStringLiteral("iPad2,5") /* iPad Mini */) {
+        && !deviceIdentifier.contains(QRegularExpression("^iPad2,[567]$")) /* excluding iPad Mini */) {
         unscaledDpi = 132;
     };
 

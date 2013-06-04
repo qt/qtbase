@@ -880,6 +880,7 @@ QT_DEFAULT_BUILD_PARTS="libs tools examples"
 CFG_BUILD_PARTS=""
 CFG_NOBUILD_PARTS=""
 CFG_SKIP_MODULES=""
+CFG_COMPILE_EXAMPLES=auto
 CFG_RELEASE_QMAKE=no
 CFG_AUDIO_BACKEND=auto
 CFG_V8SNAPSHOT=auto
@@ -1403,6 +1404,13 @@ while [ "$#" -gt 0 ]; do
             exit 1
         fi
         CFG_SKIP_MODULES="$CFG_SKIP_MODULES $VAL"
+        ;;
+    compile-examples)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_COMPILE_EXAMPLES="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
         ;;
     sdk)
         if [ "$BUILD_ON_MAC" = "yes" ]; then
@@ -2336,12 +2344,6 @@ for e in gawk nawk awk; do
     fi
 done
 
-# find perl
-PERL="/usr/bin/perl"
-if "$WHICH" perl >/dev/null 2>&1 && ( perl /dev/null ) >/dev/null 2>&1; then
-    PERL=`$WHICH perl`
-fi
-
 ### skip this if the user just needs help...
 if [ "$OPT_HELP" != "yes" ]; then
 
@@ -2664,15 +2666,12 @@ esac
 if [ "$XPLATFORM_ANDROID" = "yes" ]; then
     if [ -z "$CFG_DEFAULT_ANDROID_NDK_HOST" ]; then
         case $PLATFORM in
-        linux-*-64)
-            if [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/linux-x86_64" ]; then
-                CFG_DEFAULT_ANDROID_NDK_HOST=linux-x86_64
-            else
-                CFG_DEFAULT_ANDROID_NDK_HOST=linux-x86
-            fi
-            ;;
         linux-*)
-            CFG_DEFAULT_ANDROID_NDK_HOST=linux-x86
+            if [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/linux-x86" ]; then
+                CFG_DEFAULT_ANDROID_NDK_HOST=linux-x86
+            elif [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/linux-x86_64" ]; then
+                CFG_DEFAULT_ANDROID_NDK_HOST=linux-x86_64
+            fi
             ;;
         macx-*)
             CFG_DEFAULT_ANDROID_NDK_HOST=darwin-x86
@@ -3154,6 +3153,18 @@ else
     QT_HOST_DATA=`"$relpath/config.tests/unix/makeabs" "$QT_HOST_DATA"`
 fi
 
+# Do not actually build the examples in production builds with -prefix, unless requested
+if [ "$CFG_COMPILE_EXAMPLES" = auto ]; then
+    if [ "$CFG_DEV" = "yes" ] || [ "x$outpath" = "x$QT_INSTALL_PREFIX" ]; then
+        CFG_COMPILE_EXAMPLES=yes
+    else
+        CFG_COMPILE_EXAMPLES=no
+    fi
+fi
+if [ "$CFG_COMPILE_EXAMPLES" = "yes" ]; then
+    QMAKE_CONFIG="$QMAKE_CONFIG compile_examples"
+fi
+
 #-------------------------------------------------------------------------------
 # help - interactive parts of the script _after_ this section please
 #-------------------------------------------------------------------------------
@@ -3454,6 +3465,8 @@ Additional options:
     -nomake <part> ..... Exclude part from the list of parts to be built.
 
     -skip <module> ..... Exclude an entire module from the build.
+
+    -compile-examples .. Compile examples even in a production build.
 
     -no-gui ............ Don't build the Qt GUI module and dependencies.
  +  -gui ............... Build the Qt GUI module and dependencies.

@@ -142,7 +142,7 @@ QRect fromPortraitToPrimary(const QRect &rect, QPlatformScreen *screen)
     // aligned with UIScreen into whatever is the current orientation of QScreen.
     QRect geometry = screen->geometry();
     return geometry.width() < geometry.height() ? rect
-        : QRect(rect.y(), geometry.width() - rect.width() - rect.x(), rect.height(), rect.width());
+        : QRect(rect.y(), geometry.height() - rect.width() - rect.x(), rect.height(), rect.width());
 }
 
 QT_END_NAMESPACE

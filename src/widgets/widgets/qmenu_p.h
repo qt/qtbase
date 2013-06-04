@@ -189,7 +189,7 @@ public:
     virtual QList<QPointer<QWidget> > calcCausedStack() const;
     QMenuCaused causedPopup;
     void hideUpToMenuBar();
-    void hideMenu(QMenu *menu, bool justRegister = false);
+    void hideMenu(QMenu *menu);
 
     //index mappings
     inline QAction *actionAt(int i) const { return q_func()->actions().at(i); }

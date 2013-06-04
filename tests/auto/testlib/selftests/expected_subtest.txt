@@ -1,5 +1,5 @@
 ********* Start testing of tst_Subtest *********
-Config: Using QTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
+Config: Using QtTest library @INSERT_QT_VERSION_HERE@, Qt @INSERT_QT_VERSION_HERE@
 QDEBUG : tst_Subtest::initTestCase() initTestCase initTestCase (null) 
 PASS   : tst_Subtest::initTestCase()
 QDEBUG : tst_Subtest::test1() init test1 (null) 

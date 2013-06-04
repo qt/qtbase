@@ -1579,10 +1579,7 @@ QGLContextPrivate::QGLContextPrivate(QGLContext *context)
 {
     group = new QGLContextGroup(context);
 
-    if (qApp) {
-        texture_destroyer = new QGLTextureDestroyer;
-        texture_destroyer->moveToThread(qApp->thread());
-    }
+    texture_destroyer = new QGLTextureDestroyer;
 }
 
 QGLContextPrivate::~QGLContextPrivate()
