@@ -63,10 +63,10 @@ else: \
         force_independent {
             MODULE_FWD_PRI_CONT_SUFFIX = \
                 "QT.$${MODULE}.includes += $$pub_inc" \
-                "QT.$${MODULE}.private_includes += $$priv_inc"
+                "QT.$${MODULE}.private_includes = $$priv_inc"
         } else {
             MODULE_INCLUDES += $$pub_inc
-            MODULE_PRIVATE_INCLUDES += $$priv_inc
+            MODULE_PRIVATE_INCLUDES = $$priv_inc
         }
     }
     MODULE_PRI_CONT = \
