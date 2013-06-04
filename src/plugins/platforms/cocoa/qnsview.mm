@@ -251,6 +251,15 @@ static QTouchDevice *touchDevice = 0;
     }
 }
 
+- (void)notifyWindowStateChanged:(Qt::WindowState)newState
+{
+    QWindowSystemInterface::handleWindowStateChanged(m_window, newState);
+    // We want to read the window state back from the window,
+    // but the event we just sent may be asynchronous.
+    QWindowSystemInterface::flushWindowSystemEvents();
+    m_platformWindow->setSynchedWindowStateFromWindow();
+}
+
 - (void)windowNotification : (NSNotification *) windowNotification
 {
     //qDebug() << "windowNotification" << QCFString::toQString([windowNotification name]);
@@ -269,10 +278,11 @@ static QTouchDevice *touchDevice = 0;
             if (!m_platformWindow->windowIsPopupType())
                 QWindowSystemInterface::handleWindowActivated(0);
         }
-    } else if (notificationName == NSWindowDidMiniaturizeNotification) {
-        QWindowSystemInterface::handleWindowStateChanged(m_window, Qt::WindowMinimized);
-    } else if (notificationName == NSWindowDidDeminiaturizeNotification) {
-        QWindowSystemInterface::handleWindowStateChanged(m_window, Qt::WindowNoState);
+    } else if (notificationName == NSWindowDidMiniaturizeNotification
+               || notificationName == NSWindowDidDeminiaturizeNotification) {
+        Qt::WindowState newState = notificationName == NSWindowDidMiniaturizeNotification ?
+                    Qt::WindowMinimized : Qt::WindowNoState;
+        [self notifyWindowStateChanged:newState];
     } else if ([notificationName isEqualToString: @"NSWindowDidOrderOffScreenNotification"]) {
         m_platformWindow->obscureWindow();
     } else if ([notificationName isEqualToString: @"NSWindowDidOrderOnScreenAndFinishAnimatingNotification"]) {
@@ -294,11 +304,7 @@ static QTouchDevice *touchDevice = 0;
             || notificationName == NSWindowDidExitFullScreenNotification) {
             Qt::WindowState newState = notificationName == NSWindowDidEnterFullScreenNotification ?
                         Qt::WindowFullScreen : Qt::WindowNoState;
-            QWindowSystemInterface::handleWindowStateChanged(m_window, newState);
-            // We want to read the window state back from the window,
-            // but the event we just sent may be asynchronous.
-            QWindowSystemInterface::flushWindowSystemEvents();
-            m_platformWindow->setSynchedWindowStateFromWindow();
+            [self notifyWindowStateChanged:newState];
         }
     }
 #endif
@@ -309,11 +315,7 @@ static QTouchDevice *touchDevice = 0;
 - (void)notifyWindowWillZoom:(BOOL)willZoom
 {
     Qt::WindowState newState = willZoom ? Qt::WindowMaximized : Qt::WindowNoState;
-    QWindowSystemInterface::handleWindowStateChanged(m_window, newState);
-    // We want to read the window state back from the window,
-    // but the event we just sent may be asynchronous.
-    QWindowSystemInterface::flushWindowSystemEvents();
-    m_platformWindow->setSynchedWindowStateFromWindow();
+    [self notifyWindowStateChanged:newState];
 }
 
 - (void)viewDidHide
