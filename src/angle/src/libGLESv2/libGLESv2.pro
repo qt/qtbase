@@ -235,12 +235,12 @@ for (vs, CLEAR_SHADERS) {
 load(qt_installs)
 
 khr_headers.files = $$ANGLE_DIR/include/KHR/khrplatform.h
-khr_headers.path = $$[QT_INSTALL_HEADERS]/KHR
+khr_headers.path = $$[QT_INSTALL_HEADERS]/QtANGLE/KHR
 gles2_headers.files = \
     $$ANGLE_DIR/include/GLES2/gl2.h \
     $$ANGLE_DIR/include/GLES2/gl2ext.h \
     $$ANGLE_DIR/include/GLES2/gl2platform.h
-gles2_headers.path = $$[QT_INSTALL_HEADERS]/GLES2
+gles2_headers.path = $$[QT_INSTALL_HEADERS]/QtANGLE/GLES2
 INSTALLS += khr_headers gles2_headers
 
 
