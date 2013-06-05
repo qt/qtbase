@@ -54,6 +54,10 @@
 # include <windows.h>
 #endif
 
+#if defined(Q_OS_QNX) && defined(open)
+#undef open
+#endif
+
 #define BUFSIZE 1024*512
 #define FACTOR 1024*512
 #define TF_SIZE FACTOR*81
