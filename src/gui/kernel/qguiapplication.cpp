@@ -782,12 +782,14 @@ static void init_platform(const QString &pluginArgument, const QString &platform
         QGuiApplicationPrivate::platform_name = new QString(name);
     } else {
         QStringList keys = QPlatformIntegrationFactory::keys(platformPluginPath);
-        QString fatalMessage =
-            QString::fromLatin1("Failed to load platform plugin \"%1\". Available platforms are: \n").arg(name);
-        foreach(const QString &key, keys) {
-            fatalMessage.append(key + QLatin1Char('\n'));
-        }
-        qFatal("%s", fatalMessage.toLocal8Bit().constData());
+
+        QString fatalMessage
+                = QStringLiteral("Failed to find or load platform plugin \"%1\".\n").arg(name);
+        if (!keys.isEmpty())
+            fatalMessage += QStringLiteral("Available platforms are: %1\n").arg(
+                        keys.join(QStringLiteral(", ")));
+        fatalMessage += QStringLiteral("GUI applications require a platform plugin. Terminating.");
+        qFatal(qPrintable(fatalMessage));
         return;
     }
 
