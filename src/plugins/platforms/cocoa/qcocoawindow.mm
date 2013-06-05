@@ -486,7 +486,7 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
 
 void QCocoaWindow::setWindowState(Qt::WindowState state)
 {
-    if ([m_nsWindow isVisible])
+    if (window()->isVisible())
         syncWindowState(state);  // Window state set for hidden windows take effect when show() is called.
 }
 
