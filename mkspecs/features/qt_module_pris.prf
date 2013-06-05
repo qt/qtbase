@@ -56,6 +56,8 @@ else: \
         MODULE_PRIVATE_INCLUDES = \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME/$$VERSION \
                                   \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME/$$VERSION/$$MODULE_INCNAME
     }
+    MODULE_INCLUDES += $$MODULE_AUX_INCLUDES
+    MODULE_PRIVATE_INCLUDES += $$MODULE_PRIVATE_AUX_INCLUDES
     !git_build:if(!equals(_PRO_FILE_PWD_, $$OUT_PWD) \
                   |if(!prefix_build:!equals(MODULE_BASE_DIR, $$[QT_HOST_PREFIX]))) {
         pub_inc = $$replace(MODULE_INCLUDES, ^\\\$\\\$QT_MODULE_INCLUDE_BASE, $$MODULE_BASE_DIR/include)
