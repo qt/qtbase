@@ -33,7 +33,7 @@
     \brief The <QtAlgorithms> header includes the generic, template-based algorithms.
 
     Qt provides a number of global template functions in \c
-    <QtAlgorithms> that work on containers and perform well-know
+    <QtAlgorithms> that work on containers and perform well-known
     algorithms. You can use these algorithms with any \l {container
     class} that provides STL-style iterators, including Qt's QList,
     QLinkedList, QVector, QMap, and QHash classes.
