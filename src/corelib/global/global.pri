@@ -29,6 +29,11 @@ SOURCES += \
 # qlibraryinfo.cpp includes qconfig.cpp
 INCLUDEPATH += $$QT_BUILD_TREE/src/corelib/global
 
+# configure creates these, not syncqt, so we need to manually inject them
+targ_headers.files += \
+    $$OUT_PWD/global/qconfig.h \
+    $$QT_BUILD_TREE/include/QtCore/QtConfig
+
 # Only used on platforms with CONFIG += precompile_header
 PRECOMPILED_HEADER = global/qt_pch.h
 
