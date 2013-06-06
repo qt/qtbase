@@ -168,7 +168,17 @@ public:
         if (!runLoop)
             runLoop = CFRunLoopGetCurrent();
 
-        CFRunLoopAddObserver(runLoop, m_observer, mode);
+        if (!CFRunLoopContainsObserver(runLoop, m_observer, mode))
+            CFRunLoopAddObserver(runLoop, m_observer, mode);
+    }
+
+    void removeFromMode(CFStringRef mode, CFRunLoopRef runLoop = 0)
+    {
+        if (!runLoop)
+            runLoop = CFRunLoopGetCurrent();
+
+        if (CFRunLoopContainsObserver(runLoop, m_observer, mode))
+            CFRunLoopRemoveObserver(runLoop, m_observer, mode);
     }
 
 private:

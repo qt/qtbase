@@ -39,11 +39,33 @@
 **
 ****************************************************************************/
 
-#include "qiosapplicationdelegate.h"
+#ifndef QIOSEVENTDISPATCHER_H
+#define QIOSEVENTDISPATCHER_H
 
-extern "C" int qtmn(int argc, char *argv[])
+#include <QtPlatformSupport/private/qeventdispatcher_cf_p.h>
+
+QT_BEGIN_NAMESPACE
+
+class QIOSEventDispatcher : public QEventDispatcherCoreFoundation
 {
-    @autoreleasepool {
-        return UIApplicationMain(argc, argv, nil, NSStringFromClass([QIOSApplicationDelegate class]));
-    }
-}
+    Q_OBJECT
+
+public:
+    explicit QIOSEventDispatcher(QObject *parent = 0);
+
+    bool processEvents(QEventLoop::ProcessEventsFlags flags) Q_DECL_OVERRIDE;
+    void interrupt() Q_DECL_OVERRIDE;
+
+    void handleRunLoopExit(CFRunLoopActivity activity);
+
+    void checkIfApplicationShouldQuit();
+    void interruptQApplicationExec();
+
+private:
+    uint m_processEventCallsAfterAppExec;
+    RunLoopObserver<QIOSEventDispatcher> m_runLoopExitObserver;
+};
+
+QT_END_NAMESPACE
+
+#endif // QIOSEVENTDISPATCHER_H

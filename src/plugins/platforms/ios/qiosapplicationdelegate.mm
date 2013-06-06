@@ -46,8 +46,6 @@
 
 #include <QtCore/QtCore>
 
-extern "C" int main(int argc, char *argv[]);
-
 @implementation QIOSApplicationDelegate
 
 @synthesize window;
@@ -68,29 +66,8 @@ extern "C" int main(int argc, char *argv[]);
 
     [self.window makeKeyAndVisible];
 
-    // We schedule the main-redirection for the next eventloop pass so that we
-    // can return from this function and let UIApplicationMain finish its job.
-    [NSTimer scheduledTimerWithTimeInterval:.01f target:self
-        selector:@selector(runUserMain) userInfo:nil repeats:NO];
-
     return YES;
 }
-
-- (void)runUserMain
-{
-    NSArray *arguments = [[NSProcessInfo processInfo] arguments];
-    int argc = arguments.count;
-    char **argv = new char*[argc];
-    for (int i = 0; i < argc; ++i) {
-        NSString *arg = [arguments objectAtIndex:i];
-        argv[i] = reinterpret_cast<char *>(malloc([arg lengthOfBytesUsingEncoding:[NSString defaultCStringEncoding]]));
-        strcpy(argv[i], [arg cStringUsingEncoding:[NSString defaultCStringEncoding]]);
-    }
-
-    main(argc, argv);
-    delete[] argv;
-}
-
 
 - (void)dealloc
 {
