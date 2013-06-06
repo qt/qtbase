@@ -28,14 +28,8 @@ gui_app {
     # need to generate an import for it.
     CONFIG -= import_qpa_plugin
 
-    !no_main_wrapper {
-        # We link the iosmain library manually as well, since it's not really a plugin
-        lib_name = qiosmain
-        lib_path_and_base = $$[QT_INSTALL_PLUGINS/get]/platforms/lib$${lib_name}$$qtPlatformTargetSuffix()
-        LIBS += -L$$[QT_INSTALL_PLUGINS/get]/platforms -l$${lib_name}$$qtPlatformTargetSuffix()
-        LIBS += $$fromfile($${lib_path_and_base}.prl, QMAKE_PRL_LIBS)
-        DEFINES += main=qt_main
-    }
+    # FIXME: Solve using 'ld -r -alias -unexported_symbol' instead
+    !no_main_wrapper: DEFINES += main=qt_user_main
 }
 
 contains(MAKEFILE_GENERATOR, XCODE) {

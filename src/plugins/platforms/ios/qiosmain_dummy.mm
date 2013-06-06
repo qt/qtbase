@@ -39,56 +39,18 @@
 **
 ****************************************************************************/
 
-#include "qiosapplicationdelegate.h"
-#include "qiosviewcontroller.h"
+#include <QtCore/qglobal.h>
 
-int main(int argc, char *argv[])
+/*
+    This file provides a dummy implementation of qt_user_main, so that
+    we don't get an undefined symbol in the hybrid use-case, where we
+    don't rename main() to qt_user_main(). As long as the linker is not
+    passed -all_load, this translation unit is only picked up and used
+    if qt_user_main is not defined by the user's code.
+*/
+
+int qt_user_main(int, char **)
 {
-    @autoreleasepool {
-        return UIApplicationMain(argc, argv, nil, NSStringFromClass([QIOSMainWrapperApplicationDelegate class]));
-    }
+    qFatal("Hit dummy qt_user_main, this should never happen!");
+    return 0;
 }
-
-extern int qt_main(int argc, char *argv[]);
-
-@implementation QIOSMainWrapperApplicationDelegate
-
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
-{
-    self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
-    self.qiosViewController = [[[QIOSViewController alloc] init] autorelease];
-    self.window.rootViewController = self.qiosViewController;
-
-#ifdef QT_DEBUG
-    self.window.backgroundColor = [UIColor cyanColor];
-#endif
-
-    [self.window makeKeyAndVisible];
-
-    // We schedule the main-redirection for the next eventloop pass so that we
-    // can return from this function and let UIApplicationMain finish its job.
-    [NSTimer scheduledTimerWithTimeInterval:.01f target:self
-        selector:@selector(runUserMain) userInfo:nil repeats:NO];
-
-    if ([QIOSApplicationDelegate instancesRespondToSelector:_cmd])
-        return [super application:application didFinishLaunchingWithOptions:launchOptions];
-    else
-        return YES;
-}
-
-- (void)runUserMain
-{
-    NSArray *arguments = [[NSProcessInfo processInfo] arguments];
-    int argc = arguments.count;
-    char **argv = new char*[argc];
-    for (int i = 0; i < argc; ++i) {
-        NSString *arg = [arguments objectAtIndex:i];
-        argv[i] = reinterpret_cast<char *>(malloc([arg lengthOfBytesUsingEncoding:[NSString defaultCStringEncoding]]));
-        strcpy(argv[i], [arg cStringUsingEncoding:[NSString defaultCStringEncoding]]);
-    }
-
-    qt_main(argc, argv);
-    delete[] argv;
-}
-
-@end

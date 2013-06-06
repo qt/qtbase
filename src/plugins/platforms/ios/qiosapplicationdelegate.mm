@@ -39,8 +39,11 @@
 **
 ****************************************************************************/
 
-#import "qiosapplicationdelegate.h"
+#include "qiosapplicationdelegate.h"
+
+#include "qiosviewcontroller.h"
 #include "qioswindow.h"
+
 #include <QtCore/QtCore>
 
 @implementation QIOSApplicationDelegate
@@ -93,4 +96,47 @@
 
 @end
 
+extern int qt_user_main(int argc, char *argv[]);
+
+@implementation QIOSMainWrapperApplicationDelegate
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{
+    self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
+    self.qiosViewController = [[[QIOSViewController alloc] init] autorelease];
+    self.window.rootViewController = self.qiosViewController;
+
+#ifdef QT_DEBUG
+    self.window.backgroundColor = [UIColor cyanColor];
+#endif
+
+    [self.window makeKeyAndVisible];
+
+    // We schedule the main-redirection for the next eventloop pass so that we
+    // can return from this function and let UIApplicationMain finish its job.
+    [NSTimer scheduledTimerWithTimeInterval:.01f target:self
+        selector:@selector(runUserMain) userInfo:nil repeats:NO];
+
+    if ([QIOSApplicationDelegate instancesRespondToSelector:_cmd])
+        return [super application:application didFinishLaunchingWithOptions:launchOptions];
+    else
+        return YES;
+}
+
+- (void)runUserMain
+{
+    NSArray *arguments = [[NSProcessInfo processInfo] arguments];
+    int argc = arguments.count;
+    char **argv = new char*[argc];
+    for (int i = 0; i < argc; ++i) {
+        NSString *arg = [arguments objectAtIndex:i];
+        argv[i] = reinterpret_cast<char *>(malloc([arg lengthOfBytesUsingEncoding:[NSString defaultCStringEncoding]]));
+        strcpy(argv[i], [arg cStringUsingEncoding:[NSString defaultCStringEncoding]]);
+    }
+
+    qt_user_main(argc, argv);
+    delete[] argv;
+}
+
+@end
 
