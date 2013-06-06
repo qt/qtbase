@@ -456,6 +456,7 @@ class Q_CORE_EXPORT QMetaObject::Connection {
     void *d_ptr; //QObjectPrivate::Connection*
     explicit Connection(void *data) : d_ptr(data) {  }
     friend class QObject;
+    friend class QObjectPrivate;
     friend struct QMetaObject;
 public:
     ~Connection();

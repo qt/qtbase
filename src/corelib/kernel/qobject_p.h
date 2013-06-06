@@ -207,6 +207,13 @@ public:
     template <typename Func1, typename Func2>
     static inline bool disconnect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal,
                                   const typename QtPrivate::FunctionPointer<Func2>::Object *receiverPrivate, Func2 slot);
+
+    static QMetaObject::Connection connectImpl(const QObject *sender, int signal_index,
+                                               const QObject *receiver, void **slot,
+                                               QtPrivate::QSlotObjectBase *slotObj, Qt::ConnectionType type,
+                                               const int *types, const QMetaObject *senderMetaObject);
+    static QMetaObject::Connection connect(const QObject *sender, int signal_index, QtPrivate::QSlotObjectBase *slotObj, Qt::ConnectionType type);
+    static bool disconnect(const QObject *sender, int signal_index, void **slot);
 public:
     ExtraData *extraData;    // extra data set by the user
     QThreadData *threadData; // id of the thread that owns the object
