@@ -11,17 +11,21 @@ isEmpty(MAKEFILE_GENERATOR) {
 }
 
 gui_app {
-    # We have to do the link and dependency resolution for the platform plugin
-    # manually, since QTPLUGIN and the prl lookup logic does not support
-    # the -force_load link style. The -force_load option ensures that all
-    # symbols from the static library are included, not just the ones the
-    # linker have seen a use for so far. We need this because we load the platform
-    # plugin from the platform plugin itself, using Q_IMPORT_PLUGIN.
-    lib_path_and_base = $$[QT_INSTALL_PLUGINS/get]/platforms/libqios$$qtPlatformTargetSuffix()
-    LIBS += -Wl,-force_load,$${lib_path_and_base}.$${QMAKE_EXTENSION_STATICLIB}
-    LIBS += $$fromfile($${lib_path_and_base}.prl, QMAKE_PRL_LIBS)
+    LIBS *= -L$$[QT_INSTALL_PLUGINS/get]/platforms
 
-    # Which means we don't want the auto-generated import for the platform plugin
+    lib_name = qios
+    lib_path_and_base = $$[QT_INSTALL_PLUGINS/get]/platforms/lib$${lib_name}$$qtPlatformTargetSuffix()
+    LIBS += -l$${lib_name}$$qtPlatformTargetSuffix() $$fromfile($${lib_path_and_base}.prl, QMAKE_PRL_LIBS)
+
+    # By marking qt_registerPlatformPlugin as undefined, we ensure that
+    # the plugin.o translation unit is considered for inclusion in
+    # the final binary, which in turn ensures that the plugin's
+    # static initializer is included and run.
+    QMAKE_LFLAGS += -u _qt_registerPlatformPlugin
+
+    # We do link and dependency resolution for the platform plugin
+    # manually, since we know we always need the plugin, so we don't
+    # need to generate an import for it.
     CONFIG -= import_qpa_plugin
 
     !no_main_wrapper {
