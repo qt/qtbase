@@ -120,7 +120,7 @@ else: \
 
     } else { # prefix_build
 
-        # This is needed for the direct include() below.
+        # This is needed for the direct include() below. Mirrors qt_config.prf
         QT_MODULE_BIN_BASE = $$[QT_INSTALL_BINS]
         QT_MODULE_INCLUDE_BASE = $$[QT_INSTALL_HEADERS]
         QT_MODULE_IMPORT_BASE = $$[QT_INSTALL_IMPORTS]
