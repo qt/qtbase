@@ -39,6 +39,7 @@
 #include <QtCore/qfile.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qvector.h>
+#include <QtCore/qregularexpression.h>
 #include <QtGui/qtransform.h>
 #include <QtGui/QColor>
 #include <QtGui/QSurfaceFormat>
@@ -46,6 +47,8 @@
 #if !defined(QT_OPENGL_ES_2)
 #include <QtGui/qopenglfunctions_4_0_core.h>
 #endif
+
+#include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
@@ -401,6 +404,95 @@ static const char redefineHighp[] =
     "#endif\n";
 #endif
 
+struct QVersionDirectivePosition
+{
+    Q_DECL_CONSTEXPR QVersionDirectivePosition(int position = 0, int line = -1)
+        : position(position)
+        , line(line)
+    {
+    }
+
+    Q_DECL_CONSTEXPR bool hasPosition() const
+    {
+        return position > 0;
+    }
+
+    const int position;
+    const int line;
+};
+
+static QVersionDirectivePosition findVersionDirectivePosition(const char *source)
+{
+    Q_ASSERT(source);
+
+    QString working = QString::fromUtf8(source);
+
+    // According to the GLSL spec the #version directive must not be
+    // preceded by anything but whitespace and comments.
+    // In order to not get confused by #version directives within a
+    // multiline comment, we need to run a minimal preprocessor first.
+    enum {
+        Normal,
+        CommentStarting,
+        MultiLineComment,
+        SingleLineComment,
+        CommentEnding
+    } state = Normal;
+
+    for (QChar *c = working.begin(); c != working.end(); ++c) {
+        switch (state) {
+        case Normal:
+            if (*c == QLatin1Char('/'))
+                state = CommentStarting;
+            break;
+        case CommentStarting:
+            if (*c == QLatin1Char('*'))
+                state = MultiLineComment;
+            else if (*c == QLatin1Char('/'))
+                state = SingleLineComment;
+            else
+                state = Normal;
+            break;
+        case MultiLineComment:
+            if (*c == QLatin1Char('*'))
+                state = CommentEnding;
+            else if (*c == QLatin1Char('#'))
+                *c = QLatin1Char('_');
+            break;
+        case SingleLineComment:
+            if (*c == QLatin1Char('\n'))
+                state = Normal;
+            else if (*c == QLatin1Char('#'))
+                *c = QLatin1Char('_');
+            break;
+        case CommentEnding:
+            if (*c == QLatin1Char('/')) {
+                state = Normal;
+            } else {
+                if (*c == QLatin1Char('#'))
+                    *c = QLatin1Char('_');
+                state = MultiLineComment;
+            }
+            break;
+        }
+    }
+
+    // Search for #version directive
+    int splitPosition = 0;
+    int linePosition = 1;
+
+    static const QRegularExpression pattern(QStringLiteral("^#\\s*version.*(\\n)?"),
+                                            QRegularExpression::MultilineOption
+                                            | QRegularExpression::OptimizeOnFirstUsageOption);
+    QRegularExpressionMatch match = pattern.match(working);
+    if (match.hasMatch()) {
+        splitPosition = match.capturedEnd();
+        linePosition += int(std::count(working.begin(), working.begin() + splitPosition, QLatin1Char('\n')));
+    }
+
+    return QVersionDirectivePosition(splitPosition, linePosition);
+}
+
 /*!
     Sets the \a source code for this shader and compiles it.
     Returns \c true if the source was successfully compiled, false otherwise.
@@ -410,26 +502,24 @@ static const char redefineHighp[] =
 bool QOpenGLShader::compileSourceCode(const char *source)
 {
     Q_D(QOpenGLShader);
-    if (d->shaderGuard && d->shaderGuard->id()) {
-        QVarLengthArray<const char *, 4> src;
-        QVarLengthArray<GLint, 4> srclen;
-        int headerLen = 0;
-        while (source && source[headerLen] == '#') {
-            // Skip #version and #extension directives at the start of
-            // the shader code.  We need to insert the qualifierDefines
-            // and redefineHighp just after them.
-            if (qstrncmp(source + headerLen, "#version", 8) != 0 &&
-                    qstrncmp(source + headerLen, "#extension", 10) != 0) {
-                break;
-            }
-            while (source[headerLen] != '\0' && source[headerLen] != '\n')
-                ++headerLen;
-            if (source[headerLen] == '\n')
-                ++headerLen;
-        }
-        if (headerLen > 0) {
-            src.append(source);
-            srclen.append(GLint(headerLen));
+    // This method breaks the shader code into two parts:
+    // 1. Up to and including an optional #version directive.
+    // 2. The rest.
+    // If a #version directive exists, qualifierDefines and redefineHighp
+    // are inserted after. Otherwise they are inserted right at the start.
+    // In both cases a #line directive is appended in order to compensate
+    // for line number changes in case of compiler errors.
+
+    if (d->shaderGuard && d->shaderGuard->id() && source) {
+        const QVersionDirectivePosition versionDirectivePosition = findVersionDirectivePosition(source);
+
+        QVarLengthArray<const char *, 5> sourceChunks;
+        QVarLengthArray<GLint, 5> sourceChunkLengths;
+
+        if (versionDirectivePosition.hasPosition()) {
+            // Append source up to #version directive
+            sourceChunks.append(source);
+            sourceChunkLengths.append(GLint(versionDirectivePosition.position));
         }
 
         // The precision qualifiers are useful on OpenGL/ES systems,
@@ -442,20 +532,28 @@ bool QOpenGLShader::compileSourceCode(const char *source)
                 || true
 #endif
                 ) {
-            src.append(qualifierDefines);
-            srclen.append(GLint(sizeof(qualifierDefines) - 1));
+            sourceChunks.append(qualifierDefines);
+            sourceChunkLengths.append(GLint(sizeof(qualifierDefines) - 1));
         }
 
 #ifdef QOpenGL_REDEFINE_HIGHP
         if (d->shaderType == Fragment && !ctx_d->workaround_missingPrecisionQualifiers
             && QOpenGLContext::currentContext()->isOpenGLES()) {
-            src.append(redefineHighp);
-            srclen.append(GLint(sizeof(redefineHighp) - 1));
+            sourceChunks.append(redefineHighp);
+            sourceChunkLengths.append(GLint(sizeof(redefineHighp) - 1));
         }
 #endif
-        src.append(source + headerLen);
-        srclen.append(GLint(qstrlen(source + headerLen)));
-        d->glfuncs->glShaderSource(d->shaderGuard->id(), src.size(), src.data(), srclen.data());
+
+        // Append #line directive in order to compensate for text insertion
+        QByteArray lineDirective = QStringLiteral("#line %1\n").arg(versionDirectivePosition.line).toUtf8();
+        sourceChunks.append(lineDirective.constData());
+        sourceChunkLengths.append(GLint(lineDirective.length()));
+
+        // Append rest of shader code
+        sourceChunks.append(source + versionDirectivePosition.position);
+        sourceChunkLengths.append(GLint(qstrlen(source + versionDirectivePosition.position)));
+
+        d->glfuncs->glShaderSource(d->shaderGuard->id(), sourceChunks.size(), sourceChunks.data(), sourceChunkLengths.data());
         return d->compile(this);
     } else {
         return false;
