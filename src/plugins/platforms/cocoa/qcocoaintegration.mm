@@ -219,7 +219,7 @@ QCocoaIntegration::QCocoaIntegration()
     , mEventDispatcher(new QCocoaEventDispatcher())
     , mInputContext(new QCocoaInputContext)
 #ifndef QT_NO_ACCESSIBILITY
-    , mAccessibility(new QCococaAccessibility)
+    , mAccessibility(new QCocoaAccessibility)
 #endif
     , mCocoaClipboard(new QCocoaClipboard)
     , mCocoaDrag(new QCocoaDrag)

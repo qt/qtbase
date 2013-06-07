@@ -44,17 +44,17 @@
 #include <QtGui/private/qaccessible2_p.h>
 #include <private/qcore_mac_p.h>
 
-QCococaAccessibility::QCococaAccessibility()
+QCocoaAccessibility::QCocoaAccessibility()
 {
 
 }
 
-QCococaAccessibility::~QCococaAccessibility()
+QCocoaAccessibility::~QCocoaAccessibility()
 {
 
 }
 
-void QCococaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
+void QCocoaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
 {
     QObject *object = event->object();
     if (!object)
@@ -78,17 +78,17 @@ void QCococaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
     }
 }
 
-void QCococaAccessibility::setRootObject(QObject *o)
+void QCocoaAccessibility::setRootObject(QObject *o)
 {
     Q_UNUSED(o)
 }
 
-void QCococaAccessibility::initialize()
+void QCocoaAccessibility::initialize()
 {
 
 }
 
-void QCococaAccessibility::cleanup()
+void QCocoaAccessibility::cleanup()
 {
 
 }
