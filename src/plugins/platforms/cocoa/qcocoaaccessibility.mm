@@ -223,6 +223,26 @@ bool shouldBeIgnored(QAccessibleInterface *interface)
     return false;
 }
 
+NSArray *unignoredChildren(id parentObject, QAccessibleInterface *interface)
+{
+    int numKids = interface->childCount();
+    // qDebug() << "Children for: " << axid << iface << " are: " << numKids;
+
+    NSMutableArray *kids = [NSMutableArray arrayWithCapacity:numKids];
+    for (int i = 0; i < numKids; ++i) {
+        QAccessibleInterface *child = interface->child(i);
+        Q_ASSERT(child);
+        if (child->state().invalid || child->state().invisible)
+            continue;
+
+        QAccessible::Id childId = QAccessible::uniqueId(child);
+        //qDebug() << "    kid: " << childId << child;
+        QCocoaAccessibleElement *element = [QCocoaAccessibleElement createElementWithId:childId parent:parentObject];
+        [kids addObject: element];
+        [element release];
+    }
+    return NSAccessibilityUnignoredChildren(kids);
+}
 /*
     Translates a predefined QAccessibleActionInterface action to a Mac action constant.
     Returns 0 if the Qt Action has no mac equivalent. Ownership of the NSString is

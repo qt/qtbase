@@ -137,25 +137,7 @@
     } else if ([attribute isEqualToString:NSAccessibilityRoleDescriptionAttribute]) {
         return NSAccessibilityRoleDescription(role, nil);
     } else if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
-
-        int numKids = iface->childCount();
-        // qDebug() << "Children for: " << axid << iface << " are: " << numKids;
-
-        NSMutableArray *kids = [NSMutableArray arrayWithCapacity:numKids];
-        for (int i = 0; i < numKids; ++i) {
-            QAccessibleInterface *child = iface->child(i);
-            Q_ASSERT(child);
-            if (child->state().invalid || child->state().invisible)
-                continue;
-
-            QAccessible::Id childId = QAccessible::uniqueId(child);
-            //qDebug() << "    kid: " << childId << child;
-            QCocoaAccessibleElement *element = [QCocoaAccessibleElement createElementWithId:childId parent:self];
-            [kids addObject: element];
-            [element release];
-        }
-        return NSAccessibilityUnignoredChildren(kids);
-
+        return QCocoaAccessible::unignoredChildren(self, iface);
     } else if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
         // Just check if the app thinks we're focused.
         id focusedElement = [NSApp accessibilityAttributeValue:NSAccessibilityFocusedUIElementAttribute];
