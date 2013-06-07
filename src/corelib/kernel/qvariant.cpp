@@ -3163,9 +3163,11 @@ QDebug operator<<(QDebug dbg, const QVariant &v)
     if (typeId != QMetaType::UnknownType) {
         dbg.nospace() << QMetaType::typeName(typeId) << ", ";
         bool userStream = false;
-        if (typeId >= QMetaType::User)
+        bool canConvertToString = false;
+        if (typeId >= QMetaType::User) {
             userStream = QMetaType::debugStream(dbg, constData(v.d), typeId);
-        bool canConvertToString = v.canConvert<QString>();
+            canConvertToString = v.canConvert<QString>();
+        }
         if (!userStream && canConvertToString)
             dbg << v.toString();
         else if (!userStream)
