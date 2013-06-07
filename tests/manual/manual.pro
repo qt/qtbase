@@ -19,6 +19,7 @@ qlayout \
 qlocale \
 qnetworkaccessmanager/qget \
 qnetworkconfigurationmanager \
+qnetworkconfiguration \
 qnetworkreply \
 qpainfo \
 qscreen \

@@ -97,7 +97,9 @@ public:
         BearerWCDMA,
         BearerHSPA,
         BearerBluetooth,
-        BearerWiMAX
+        BearerWiMAX,
+        BearerEVDO,
+        BearerLTE
     };
 
     StateFlags state() const;

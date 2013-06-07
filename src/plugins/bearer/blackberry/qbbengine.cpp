@@ -98,10 +98,9 @@ interfaceType(netstatus_interface_type_t type)
         return QNetworkConfiguration::BearerBluetooth;
 
     case NETSTATUS_INTERFACE_TYPE_CELLULAR:
-        //### TODO  not sure which BearerType would be the best
-        //to return here. We need to be able to get more
-        //information on the bearer type in order to return
-        //the exact match.
+        // The exact bearer type is determined in QNetworkConfiguration
+        // at the time this info is queried, because opposed to the
+        // information here the type might change quickly.
         return QNetworkConfiguration::Bearer2G;
 
     case NETSTATUS_INTERFACE_TYPE_VPN:

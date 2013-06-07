@@ -42,6 +42,12 @@
 #include "qnetworkconfiguration.h"
 #include "qnetworkconfiguration_p.h"
 
+#ifdef Q_OS_BLACKBERRY
+#include "private/qcore_unix_p.h" // qt_safe_open
+#include <QDebug>
+#include <sys/pps.h>
+#endif // Q_OS_BLACKBERRY
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -198,7 +204,80 @@ QT_BEGIN_NAMESPACE
     \value BearerHSPA       The configuration is for High Speed Packet Access (HSPA) interface.
     \value BearerBluetooth  The configuration is for a Bluetooth interface.
     \value BearerWiMAX      The configuration is for a WiMAX interface.
+    \value BearerEVDO       The configuration is for an EVDO (3G) interface.
+    \value BearerLTE        The configuration is for a LTE (4G) interface.
 */
+
+#ifdef Q_OS_BLACKBERRY
+static const char cellularStatusFile[] = "/pps/services/radioctrl/modem0/status_public";
+
+static QNetworkConfiguration::BearerType cellularStatus()
+{
+    QNetworkConfiguration::BearerType ret = QNetworkConfiguration::BearerUnknown;
+
+    int cellularStatusFD;
+    if ((cellularStatusFD = qt_safe_open(cellularStatusFile, O_RDONLY)) == -1) {
+        qWarning() << Q_FUNC_INFO << "failed to open" << cellularStatusFile;
+        return ret;
+    }
+    char buf[2048];
+    if (qt_safe_read(cellularStatusFD, &buf, sizeof(buf)) == -1) {
+        qWarning() << Q_FUNC_INFO << "read from PPS file failed:" << strerror(errno);
+        qt_safe_close(cellularStatusFD);
+        return ret;
+    }
+    pps_decoder_t ppsDecoder;
+    if (pps_decoder_initialize(&ppsDecoder, buf) != PPS_DECODER_OK) {
+        qWarning() << Q_FUNC_INFO << "failed to initialize PPS decoder";
+        qt_safe_close(cellularStatusFD);
+        return ret;
+    }
+    pps_decoder_error_t err;
+    if ((err = pps_decoder_push(&ppsDecoder, 0)) != PPS_DECODER_OK) {
+        qWarning() << Q_FUNC_INFO << "pps_decoder_push failed" << err;
+        pps_decoder_cleanup(&ppsDecoder);
+        qt_safe_close(cellularStatusFD);
+        return ret;
+    }
+    if (!pps_decoder_is_integer(&ppsDecoder, "network_technology")) {
+        qWarning() << Q_FUNC_INFO << "field has not the expected data type";
+        pps_decoder_cleanup(&ppsDecoder);
+        qt_safe_close(cellularStatusFD);
+        return ret;
+    }
+    int type;
+    if (!pps_decoder_get_int(&ppsDecoder, "network_technology", &type)
+            == PPS_DECODER_OK) {
+        qWarning() << Q_FUNC_INFO << "could not read bearer type from PPS";
+        pps_decoder_cleanup(&ppsDecoder);
+        qt_safe_close(cellularStatusFD);
+        return ret;
+    }
+    switch (type) {
+    case 0: // 0 == NONE
+        break; // unhandled
+    case 1: // fallthrough, 1 == GSM
+    case 4: // 4 == CDMA_1X
+        ret = QNetworkConfiguration::Bearer2G;
+        break;
+    case 2: // 2 == UMTS
+        ret = QNetworkConfiguration::BearerWCDMA;
+        break;
+    case 8: // 8 == EVDO
+        ret = QNetworkConfiguration::BearerEVDO;
+        break;
+    case 16: // 16 == LTE
+        ret = QNetworkConfiguration::BearerLTE;
+        break;
+    default:
+        qWarning() << Q_FUNC_INFO << "unhandled bearer type" << type;
+        break;
+    }
+    pps_decoder_cleanup(&ppsDecoder);
+    qt_safe_close(cellularStatusFD);
+    return ret;
+}
+#endif // Q_OS_BLACKBERRY
 
 /*!
     Constructs an invalid configuration object.
@@ -420,6 +499,18 @@ QNetworkConfiguration::BearerType QNetworkConfiguration::bearerType() const
 
     QMutexLocker locker(&d->mutex);
 
+#ifdef Q_OS_BLACKBERRY
+    // for cellular configurations, we need to determine the exact
+    // type right now, because it might have changed after the last scan
+    if (d->bearerType == QNetworkConfiguration::Bearer2G) {
+        QNetworkConfiguration::BearerType type = cellularStatus();
+        // if reading the status failed for some reason, just
+        // fall back to 2G
+        return (type == QNetworkConfiguration::BearerUnknown)
+                ? QNetworkConfiguration::Bearer2G : type;
+    }
+#endif // Q_OS_BLACKBERRY
+
     return d->bearerType;
 }
 
@@ -464,6 +555,12 @@ QNetworkConfiguration::BearerType QNetworkConfiguration::bearerType() const
         \row
             \li BearerWiMAX
             \li WiMAX
+        \row
+            \li BearerEVDO
+            \li EVDO
+        \row
+            \li BearerLTE
+            \li LTE
     \endtable
 
     This function returns an empty string if this is an invalid configuration, a network
@@ -489,6 +586,20 @@ QString QNetworkConfiguration::bearerTypeName() const
     case BearerWLAN:
         return QStringLiteral("WLAN");
     case Bearer2G:
+#ifdef Q_OS_BLACKBERRY
+    {
+        // for cellular configurations, we need to determine the exact
+        // type right now, because it might have changed after the last scan
+        QNetworkConfiguration::BearerType type = cellularStatus();
+        if (type == QNetworkConfiguration::BearerWCDMA) {
+            return QStringLiteral("WCDMA");
+        } else if (type == QNetworkConfiguration::BearerEVDO) {
+            return QStringLiteral("EVDO");
+        }else if (type == QNetworkConfiguration::BearerLTE) {
+            return QStringLiteral("LTE");
+        }
+    }
+#endif // Q_OS_BLACKBERRY
         return QStringLiteral("2G");
     case BearerCDMA2000:
         return QStringLiteral("CDMA2000");
@@ -500,6 +611,10 @@ QString QNetworkConfiguration::bearerTypeName() const
         return QStringLiteral("Bluetooth");
     case BearerWiMAX:
         return QStringLiteral("WiMAX");
+    case BearerEVDO:
+        return QStringLiteral("EVDO");
+    case BearerLTE:
+        return QStringLiteral("LTE");
     case BearerUnknown:
         break;
     }
