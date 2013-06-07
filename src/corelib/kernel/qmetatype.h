@@ -830,8 +830,8 @@ struct QMetaTypeId_ ## SMART_POINTER ## _QObjectStar<T, true> \
             return id; \
         const char * const cName = T::staticMetaObject.className(); \
         QByteArray typeName; \
-        typeName.reserve(sizeof(#SMART_POINTER) + 1 + strlen(cName) + 1); \
-        typeName.append(#SMART_POINTER, sizeof(#SMART_POINTER) - 1) \
+        typeName.reserve(int(sizeof(#SMART_POINTER) + 1 + strlen(cName) + 1)); \
+        typeName.append(#SMART_POINTER, int(sizeof(#SMART_POINTER)) - 1) \
             .append('<').append(cName).append('>'); \
         const int newId = qRegisterNormalizedMetaType< SMART_POINTER<T> >( \
                         typeName, \
