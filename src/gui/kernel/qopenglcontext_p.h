@@ -96,7 +96,7 @@ private:
     friend class QOpenGLContextGroupPrivate;
     friend class QOpenGLMultiGroupSharedResource;
 
-    Q_DISABLE_COPY(QOpenGLSharedResource);
+    Q_DISABLE_COPY(QOpenGLSharedResource)
 };
 
 class Q_GUI_EXPORT QOpenGLSharedResourceGuard : public QOpenGLSharedResource

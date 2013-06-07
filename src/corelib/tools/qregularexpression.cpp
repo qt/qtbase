@@ -1031,7 +1031,7 @@ void QRegularExpressionPrivate::getPatternInfo()
 */
 class QPcreJitStackPointer
 {
-    Q_DISABLE_COPY(QPcreJitStackPointer);
+    Q_DISABLE_COPY(QPcreJitStackPointer)
 
 public:
     /*!
