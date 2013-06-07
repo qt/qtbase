@@ -82,6 +82,9 @@
         for (int i = 0; i < numKids; ++i) {
             QAccessibleInterface *child = m_window->accessibleRoot()->child(i);
             Q_ASSERT(child);
+            if (child->state().invalid || child->state().invisible)
+                continue;
+
             QAccessible::Id childAxid = QAccessible::uniqueId(child);
             QCocoaAccessibleElement *element = [QCocoaAccessibleElement createElementWithId:childAxid parent:self];
             [kids addObject: element];
