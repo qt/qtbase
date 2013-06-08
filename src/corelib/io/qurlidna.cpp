@@ -2066,8 +2066,8 @@ Q_AUTOTEST_EXPORT void qt_nameprep(QString *source, int from)
             if (uc <= 0xFFFF) {
                 *out++ = *in;
             } else {
-                *out++ = QChar::highSurrogate(uc);
-                *out++ = QChar::lowSurrogate(uc);
+                *out++ = in[-1];
+                *out++ = in[0];
             }
         }
     }
