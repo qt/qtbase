@@ -1472,7 +1472,8 @@ static void mapToLowerCase(QString *str, int from)
                     if (uc <= 0xffff)
                         str->replace(i, 1, reinterpret_cast<const QChar *>(&entry->mapping[0]), l);
                     else
-                        str->replace(i-1, 2, reinterpret_cast<const QChar *>(&entry->mapping[0]), l);
+                        str->replace(--i, 2, reinterpret_cast<const QChar *>(&entry->mapping[0]), l);
+                    i += l - 1;
                     d = 0;
                 } else {
                     if (!d)
