@@ -351,7 +351,7 @@ void tst_QUrlInternal::nameprep_testsuite_data()
         << QString() << 0 << 0;
 
     QTest::newRow("Non-ASCII multibyte space character U+1680")
-        << QString::fromUtf8("\xE1\x9A\x80")
+        << QString::fromUtf8("x\xE1\x9A\x80x")
         << QString()
         << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
 
@@ -376,12 +376,12 @@ void tst_QUrlInternal::nameprep_testsuite_data()
         << QString() << 0 << 0;
 
     QTest::newRow("Non-ASCII 8bit control character U+0085")
-        << QString::fromUtf8("\xC2\x85")
+        << QString::fromUtf8("x\xC2\x85x")
         << QString()
         << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
 
     QTest::newRow("Non-ASCII multibyte control character U+180E")
-        << QString::fromUtf8("\xE1\xA0\x8E")
+        << QString::fromUtf8("x\xE1\xA0\x8Ex")
         << QString()
         << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
 
@@ -391,47 +391,47 @@ void tst_QUrlInternal::nameprep_testsuite_data()
         << QString() << 0 << 0;
 
     QTest::newRow("Non-ASCII control character U+1D175")
-        << QString::fromUtf8("\xF0\x9D\x85\xB5")
+        << QString::fromUtf8("x\xF0\x9D\x85\xB5x")
         << QString()
         << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
 
     QTest::newRow("Plane 0 private use character U+F123")
-        << QString::fromUtf8("\xEF\x84\xA3")
+        << QString::fromUtf8("x\xEF\x84\xA3x")
         << QString()
         << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
 
     QTest::newRow("Plane 15 private use character U+F1234")
-        << QString::fromUtf8("\xF3\xB1\x88\xB4")
+        << QString::fromUtf8("x\xF3\xB1\x88\xB4x")
         << QString()
         << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
 
     QTest::newRow("Plane 16 private use character U+10F234")
-        << QString::fromUtf8("\xF4\x8F\x88\xB4")
+        << QString::fromUtf8("x\xF4\x8F\x88\xB4x")
         << QString()
         << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
 
     QTest::newRow("Non-character code point U+8FFFE")
-        << QString::fromUtf8("\xF2\x8F\xBF\xBE")
+        << QString::fromUtf8("x\xF2\x8F\xBF\xBEx")
         << QString()
         << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
 
     QTest::newRow("Non-character code point U+10FFFF")
-        << QString::fromUtf8("\xF4\x8F\xBF\xBF")
+        << QString::fromUtf8("x\xF4\x8F\xBF\xBFx")
         << QString()
         << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
 
     QTest::newRow("Surrogate code U+DF42")
-        << QString::fromUtf8("\xED\xBD\x82")
+        << QString::fromUtf8("x\xED\xBD\x82x")
         << QString()
         << QString("Nameprep") << 0 <<  STRINGPREP_CONTAINS_PROHIBITED;
 
     QTest::newRow("Non-plain text character U+FFFD")
-        << QString::fromUtf8("\xEF\xBF\xBD")
+        << QString::fromUtf8("x\xEF\xBF\xBDx")
         << QString()
         << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
 
     QTest::newRow("Ideographic description character U+2FF5")
-        << QString::fromUtf8("\xE2\xBF\xB5")
+        << QString::fromUtf8("x\xE2\xBF\xB5x")
         << QString()
         << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
 
@@ -441,22 +441,22 @@ void tst_QUrlInternal::nameprep_testsuite_data()
         << QString() << 0 << 0;
 
     QTest::newRow("Left-to-right mark U+200E")
-        << QString::fromUtf8("\xE2\x80\x8E")
-        << QString::fromUtf8("\xCC\x81")
+        << QString::fromUtf8("x\xE2\x80\x8Ex")
+        << QString()
         << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
 
     QTest::newRow("Deprecated U+202A")
-        << QString::fromUtf8("\xE2\x80\xAA")
-        << QString::fromUtf8("\xCC\x81")
+        << QString::fromUtf8("x\xE2\x80\xAA")
+        << QString()
         << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
 
     QTest::newRow("Language tagging character U+E0001")
-        << QString::fromUtf8("\xF3\xA0\x80\x81")
-        << QString::fromUtf8("\xCC\x81")
+        << QString::fromUtf8("x\xF3\xA0\x80\x81x")
+        << QString()
         << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
 
     QTest::newRow("Language tagging character U+E0042")
-        << QString::fromUtf8("\xF3\xA0\x81\x82")
+        << QString::fromUtf8("x\xF3\xA0\x81\x82x")
         << QString()
         << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
 
@@ -512,12 +512,6 @@ void tst_QUrlInternal::nameprep_testsuite()
     QFETCH(QString, out);
     QFETCH(QString, profile);
 
-    QEXPECT_FAIL("Left-to-right mark U+200E",
-                 "Investigate further", Continue);
-    QEXPECT_FAIL("Deprecated U+202A",
-                 "Investigate further", Continue);
-    QEXPECT_FAIL("Language tagging character U+E0001",
-                 "Investigate further", Continue);
     qt_nameprep(&in, 0);
     QCOMPARE(in, out);
 }
@@ -549,9 +543,9 @@ void tst_QUrlInternal::nameprep_highcodes_data()
             << QString() << 0 << 0;
     }
     {
-        QChar st[] = { 'D', 0xdb40, 0xdc20, 'o', 0xd834, 0xdd7a, '\'', 0x2060, 'h' };
+        QChar st[] = { 'D', 'o', '\'', 0x2060, 'h' };
         QChar se[] = { 'd', 'o', '\'', 'h' };
-        QTest::newRow("highcodes (D, U+E0020, o, U+1D17A, ', U+2060, h)")
+        QTest::newRow("highcodes (D, o, ', U+2060, h)")
             << QString(st, sizeof(st)/sizeof(st[0]))
             << QString(se, sizeof(se)/sizeof(se[0]))
             << QString() << 0 << 0;
