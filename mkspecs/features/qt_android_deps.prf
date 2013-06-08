@@ -13,7 +13,7 @@
 # of the module on JNI-based libraries etc. Used for deployment of an Android
 # app.
 
-ANDROID_DEPENDS_DIR = $$MODULE_QMAKE_OUTDIR/lib/
+ANDROID_DEPENDS_DIR = $$MODULE_BASE_OUTDIR/lib/
 DEPENDENCY_FILE = $$ANDROID_DEPENDS_DIR$$TARGET-android-dependencies.xml
 
 !build_pass {
