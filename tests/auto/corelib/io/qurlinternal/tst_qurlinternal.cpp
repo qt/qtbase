@@ -375,6 +375,11 @@ void tst_QUrlInternal::nameprep_testsuite_data()
         << QString::fromUtf8("\x10\x7F")
         << QString() << 0 << 0;
 
+    QTest::newRow("Non-ASCII 8bit control character U+0080")
+        << QString::fromUtf8("x\xC2\x80x")
+        << QString()
+        << QString("Nameprep") << 0 << STRINGPREP_CONTAINS_PROHIBITED;
+
     QTest::newRow("Non-ASCII 8bit control character U+0085")
         << QString::fromUtf8("x\xC2\x85x")
         << QString()

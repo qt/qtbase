@@ -2029,7 +2029,7 @@ Q_AUTOTEST_EXPORT void qt_nameprep(QString *source, int from)
 
     for ( ; out < e; ++out) {
         register ushort uc = out->unicode();
-        if (uc > 0x80) {
+        if (uc >= 0x80) {
             break;
         } else if (uc >= 'A' && uc <= 'Z') {
             *out = QChar(uc | 0x20);
