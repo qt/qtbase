@@ -50,7 +50,3 @@
 @property (strong, nonatomic) QIOSViewController *qiosViewController;
 
 @end
-
-@interface QIOSMainWrapperApplicationDelegate : QIOSApplicationDelegate
-@end
-

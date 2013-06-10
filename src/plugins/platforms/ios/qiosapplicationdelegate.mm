@@ -46,6 +46,8 @@
 
 #include <QtCore/QtCore>
 
+extern int qt_user_main(int argc, char *argv[]);
+
 @implementation QIOSApplicationDelegate
 
 @synthesize window;
@@ -53,55 +55,9 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    Q_UNUSED(application)
-    Q_UNUSED(launchOptions)
+    Q_UNUSED(application);
+    Q_UNUSED(launchOptions);
 
-    return YES;
-}
-
-- (void)applicationWillResignActive:(UIApplication *)application
-{
-    Q_UNUSED(application)
-}
-
-- (void)applicationDidEnterBackground:(UIApplication *)application
-{
-    Q_UNUSED(application)
-}
-
-- (void)applicationWillEnterForeground:(UIApplication *)application
-{
-    Q_UNUSED(application)
-    // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
-}
-
-- (void)applicationDidBecomeActive:(UIApplication *)application
-{
-    Q_UNUSED(application)
-    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-}
-
-- (void)applicationWillTerminate:(UIApplication *)application
-{
-    Q_UNUSED(application)
-    // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
-}
-
-- (void)dealloc
-{
-    [qiosViewController release];
-    [window release];
-    [super dealloc];
-}
-
-@end
-
-extern int qt_user_main(int argc, char *argv[]);
-
-@implementation QIOSMainWrapperApplicationDelegate
-
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
-{
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
     self.qiosViewController = [[[QIOSViewController alloc] init] autorelease];
     self.window.rootViewController = self.qiosViewController;
@@ -117,10 +73,7 @@ extern int qt_user_main(int argc, char *argv[]);
     [NSTimer scheduledTimerWithTimeInterval:.01f target:self
         selector:@selector(runUserMain) userInfo:nil repeats:NO];
 
-    if ([QIOSApplicationDelegate instancesRespondToSelector:_cmd])
-        return [super application:application didFinishLaunchingWithOptions:launchOptions];
-    else
-        return YES;
+    return YES;
 }
 
 - (void)runUserMain
@@ -136,6 +89,14 @@ extern int qt_user_main(int argc, char *argv[]);
 
     qt_user_main(argc, argv);
     delete[] argv;
+}
+
+
+- (void)dealloc
+{
+    [qiosViewController release];
+    [window release];
+    [super dealloc];
 }
 
 @end
