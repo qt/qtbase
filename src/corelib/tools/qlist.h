@@ -454,6 +454,11 @@ template <typename T>
 inline typename QList<T>::iterator QList<T>::erase(iterator it)
 {
     Q_ASSERT_X(isValidIterator(it), "QList::erase", "The specified iterator argument 'it' is invalid");
+    if (d->ref.isShared()) {
+        int offset = int(it.i - reinterpret_cast<Node *>(p.begin()));
+        it = begin(); // implies detach()
+        it += offset;
+    }
     node_destruct(it.i);
     return reinterpret_cast<Node *>(p.erase(reinterpret_cast<void**>(it.i)));
 }
@@ -819,6 +824,16 @@ Q_OUTOFLINE_TEMPLATE typename QList<T>::iterator QList<T>::erase(typename QList<
 {
     Q_ASSERT_X(isValidIterator(afirst), "QList::erase", "The specified iterator argument 'afirst' is invalid");
     Q_ASSERT_X(isValidIterator(alast), "QList::erase", "The specified iterator argument 'alast' is invalid");
+
+    if (d->ref.isShared()) {
+        // ### A block is erased and a detach is needed. We should shrink and only copy relevant items.
+        int offsetfirst = int(afirst.i - reinterpret_cast<Node *>(p.begin()));
+        int offsetlast = int(alast.i - reinterpret_cast<Node *>(p.begin()));
+        afirst = begin(); // implies detach()
+        alast = afirst;
+        afirst += offsetfirst;
+        alast += offsetlast;
+    }
 
     for (Node *n = afirst.i; n < alast.i; ++n)
         node_destruct(n);
