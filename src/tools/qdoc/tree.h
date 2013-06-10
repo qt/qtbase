@@ -82,9 +82,9 @@ class Tree
     ~Tree();
 
     EnumNode* findEnumNode(const QStringList& path, Node* start = 0);
-    ClassNode* findClassNode(const QStringList& path, Node* start = 0);
+    ClassNode* findClassNode(const QStringList& path, Node* start = 0) const;
     QmlClassNode* findQmlTypeNode(const QStringList& path);
-    NamespaceNode* findNamespaceNode(const QStringList& path);
+    NamespaceNode* findNamespaceNode(const QStringList& path) const;
     DocNode* findQmlModuleNode(const QStringList& path, Node* start = 0);
 
     Node* findNodeByNameAndType(const QStringList& path,
@@ -98,7 +98,7 @@ class Tree
                             Node* start,
                             Node::Type type,
                             Node::SubType subtype,
-                            bool acceptCollision = false);
+                            bool acceptCollision = false) const;
 
     const Node* findNode(const QStringList &path,
                          const Node* relative = 0,

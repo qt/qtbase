@@ -207,10 +207,10 @@ void CppCodeParser::parseSourceFile(const Location& location, const QString& fil
     readToken();
 
     /*
-      The set of active namespaces is cleared before parsing
+      The set of open namespaces is cleared before parsing
       each source file. The word "source" here means cpp file.
      */
-    activeNamespaces_.clear();
+    qdb_->clearOpenNamespaces();
 
     matchDocsAndStuff();
     in.close();
@@ -323,21 +323,18 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
             doc.startLocation().warning(tr("Invalid syntax in '\\%1'").arg(COMMAND_FN));
         }
         else {
-            if (!activeNamespaces_.isEmpty()) {
-                foreach (const QString& usedNamespace_, activeNamespaces_) {
-                    QStringList newPath = usedNamespace_.split("::") + parentPath;
-                    func = qdb_->findFunctionNode(newPath, clone);
-                    if (func)
-                        break;
-                }
-            }
-            // Search the root namespace if no match was found.
-            if (func == 0)
+            func = qdb_->findNodeInOpenNamespace(parentPath, clone);
+            /*
+              Search the root namespace if no match was found.
+            */
+            if (func == 0) {
                 func = qdb_->findFunctionNode(parentPath, clone);
+            }
 
             if (func == 0) {
-                if (parentPath.isEmpty() && !lastPath_.isEmpty())
+                if (parentPath.isEmpty() && !lastPath_.isEmpty()) {
                     func = qdb_->findFunctionNode(lastPath_, clone);
+                }
                 if (func == 0) {
                     doc.location().warning(tr("Cannot find '%1' in '\\%2' %3")
                                            .arg(clone->name() + "(...)")
@@ -426,16 +423,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
           C++ namespace, search for it first in all the known
           C++ namespaces.
          */
-        if (!activeNamespaces_.isEmpty()) {
-            foreach (const QString& usedNamespace_, activeNamespaces_) {
-                QStringList newPath = usedNamespace_.split("::") + path;
-                node = qdb_->findNodeByNameAndType(newPath, type, subtype);
-                if (node) {
-                    path = newPath;
-                    break;
-                }
-            }
-        }
+        node = qdb_->findNodeInOpenNamespace(path, type, subtype);
 
         /*
           If the node was not found in a C++ namespace, search
@@ -458,7 +446,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
             if (path.size() > 1) {
                 path.pop_back();
                 QString ns = path.join("::");
-                activeNamespaces_.insert(ns);
+                qdb_->insertOpenNamespace(ns);
             }
         }
         return node;
@@ -1718,7 +1706,7 @@ bool CppCodeParser::matchUsingDecl()
     /*
         So far, so good. We have 'using namespace Foo;'.
     */
-    activeNamespaces_.insert(name);
+    qdb_->insertOpenNamespace(name);
     return true;
 }
 
@@ -2125,13 +2113,7 @@ bool CppCodeParser::matchDocsAndStuff()
                 FunctionNode *func = 0;
 
                 if (matchFunctionDecl(0, &parentPath, &clone, QString(), extra)) {
-                    foreach (const QString& usedNamespace_, activeNamespaces_) {
-                        QStringList newPath = usedNamespace_.split("::") + parentPath;
-                        func = qdb_->findFunctionNode(newPath, clone);
-                        if (func) {
-                            break;
-                        }
-                    }
+                    func = qdb_->findNodeInOpenNamespace(parentPath, clone);
                     if (func == 0)
                         func = qdb_->findFunctionNode(parentPath, clone);
 
@@ -2256,9 +2238,8 @@ bool CppCodeParser::makeFunctionNode(const QString& signature,
     Tokenizer* outerTokenizer = tokenizer;
     int outerTok = tok;
 
-    Location loc;
     QByteArray latin1 = signature.toLatin1();
-    Tokenizer stringTokenizer(loc, latin1);
+    Tokenizer stringTokenizer(location(), latin1);
     stringTokenizer.setParsingFnOrMacro(true);
     tokenizer = &stringTokenizer;
     readToken();
