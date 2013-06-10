@@ -351,7 +351,7 @@ void QLineEdit::setPlaceholderText(const QString& placeholderText)
     Q_D(QLineEdit);
     if (d->placeholderText != placeholderText) {
         d->placeholderText = placeholderText;
-        if (!hasFocus())
+        if (d->control->text().isEmpty())
             update();
     }
 }
