@@ -43,6 +43,7 @@
 #define MESSAGEBOXPANEL_H
 
 #include <QWidget>
+#include <QCheckBox>
 
 QT_BEGIN_NAMESPACE
 class QComboBox;
@@ -77,6 +78,8 @@ private:
     QValidator *m_validator;
     QLabel *m_resultLabel;
     QCheckBox *m_chkReallocMsgBox;
+    QLineEdit *m_checkboxText;
+    QLabel *m_checkBoxResult;
     QMessageBox *m_msgbox;
     void setupMessageBox(QMessageBox &box);
 };

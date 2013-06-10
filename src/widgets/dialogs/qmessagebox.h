@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 class QLabel;
 class QMessageBoxPrivate;
 class QAbstractButton;
+class QCheckBox;
 
 class Q_WIDGETS_EXPORT QMessageBox : public QDialog
 {
@@ -187,6 +188,9 @@ public:
 
     void setTextInteractionFlags(Qt::TextInteractionFlags flags);
     Qt::TextInteractionFlags textInteractionFlags() const;
+
+    void setCheckBox(QCheckBox *cb);
+    QCheckBox* checkBox() const;
 
     static StandardButton information(QWidget *parent, const QString &title,
          const QString &text, StandardButtons buttons = Ok,

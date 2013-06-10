@@ -53,6 +53,7 @@
 #include <QtWidgets/qgridlayout.h>
 #include <QtWidgets/qdesktopwidget.h>
 #include <QtWidgets/qpushbutton.h>
+#include <QtWidgets/qcheckbox.h>
 #include <QtGui/qaccessible.h>
 #include <QtGui/qicon.h>
 #include <QtGui/qtextdocument.h>
@@ -198,7 +199,7 @@ class QMessageBoxPrivate : public QDialogPrivate
     Q_DECLARE_PUBLIC(QMessageBox)
 
 public:
-    QMessageBoxPrivate() : escapeButton(0), defaultButton(0), clickedButton(0), detailsButton(0),
+    QMessageBoxPrivate() : escapeButton(0), defaultButton(0), checkbox(0), clickedButton(0), detailsButton(0),
 #ifndef QT_NO_TEXTEDIT
                            detailsText(0),
 #endif
@@ -248,6 +249,7 @@ public:
     QList<QAbstractButton *> customButtonList;
     QAbstractButton *escapeButton;
     QPushButton *defaultButton;
+    QCheckBox *checkbox;
     QAbstractButton *clickedButton;
     DetailButton *detailsButton;
 #ifndef QT_NO_TEXTEDIT
@@ -317,8 +319,16 @@ void QMessageBoxPrivate::setupLayout()
 #endif
         grid->addWidget(informativeLabel, 1, hasIcon ? 2 : 1, 1, 1);
     }
+    if (checkbox) {
+        grid->addWidget(checkbox, informativeLabel ? 2 : 1, hasIcon ? 2 : 1, 1, 1, Qt::AlignLeft);
 #ifdef Q_OS_MAC
-    grid->addWidget(buttonBox, 3, hasIcon ? 2 : 1, 1, 1);
+        grid->addItem(new QSpacerItem(1, 15, QSizePolicy::Fixed, QSizePolicy::Fixed), grid->rowCount(), 0);
+#else
+        grid->addItem(new QSpacerItem(1, 7, QSizePolicy::Fixed, QSizePolicy::Fixed), grid->rowCount(), 0);
+#endif
+    }
+#ifdef Q_OS_MAC
+    grid->addWidget(buttonBox, grid->rowCount(), hasIcon ? 2 : 1, 1, 1);
     grid->setMargin(0);
     grid->setVerticalSpacing(8);
     grid->setHorizontalSpacing(0);
@@ -326,7 +336,7 @@ void QMessageBoxPrivate::setupLayout()
     grid->setRowStretch(1, 100);
     grid->setRowMinimumHeight(2, 6);
 #else
-    grid->addWidget(buttonBox, 2, 0, 1, grid->columnCount());
+    grid->addWidget(buttonBox, grid->rowCount(), 0, 1, grid->columnCount());
 #endif
     if (detailsText)
         grid->addWidget(detailsText, grid->rowCount(), 0, 1, grid->columnCount());
@@ -1125,6 +1135,51 @@ void QMessageBox::setDefaultButton(QMessageBox::StandardButton button)
 {
     Q_D(QMessageBox);
     setDefaultButton(d->buttonBox->button(QDialogButtonBox::StandardButton(button)));
+}
+
+/*! \since 5.2
+
+    Sets the checkbox \a cb on the message dialog. The message box takes ownership of the checkbox.
+    The argument \a cb can be 0 to remove an existing checkbox from the message box.
+
+    \sa checkBox()
+*/
+
+void QMessageBox::setCheckBox(QCheckBox *cb)
+{
+    Q_D(QMessageBox);
+
+    if (cb == d->checkbox)
+        return;
+
+    if (d->checkbox) {
+        d->checkbox->hide();
+        layout()->removeWidget(d->checkbox);
+        if (d->checkbox->parentWidget() == this) {
+            d->checkbox->setParent(0);
+            d->checkbox->deleteLater();
+        }
+    }
+    d->checkbox = cb;
+    if (d->checkbox) {
+        QSizePolicy sp = d->checkbox->sizePolicy();
+        sp.setHorizontalPolicy(QSizePolicy::MinimumExpanding);
+        d->checkbox->setSizePolicy(sp);
+    }
+    d->setupLayout();
+}
+
+
+/*! \since 5.2
+
+    Returns the checkbox shown on the dialog. This is 0 if no checkbox is set.
+    \sa setCheckBox()
+*/
+
+QCheckBox* QMessageBox::checkBox() const
+{
+    Q_D(const QMessageBox);
+    return d->checkbox;
 }
 
 /*!

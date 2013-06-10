@@ -63,6 +63,8 @@ MessageBoxPanel::MessageBoxPanel(QWidget *parent) : QWidget(parent)
 ,m_btnShowApply(new QPushButton)
 ,m_resultLabel(new QLabel)
 ,m_chkReallocMsgBox(new QCheckBox(QString::fromLatin1("Reallocate Message Box")))
+,m_checkboxText(new QLineEdit)
+,m_checkBoxResult(new QLabel)
 ,m_msgbox(new QMessageBox)
 {
     // --- Options ---
@@ -97,6 +99,10 @@ MessageBoxPanel::MessageBoxPanel(QWidget *parent) : QWidget(parent)
     m_buttonsMask->setText(QString::fromLatin1("0x00300400"));
     optionsLayout->addWidget(m_buttonsMask);
 
+    // check box check
+    optionsLayout->addWidget(new QLabel(QString::fromLatin1("Checkbox text ("" => no chkbox)")));
+    optionsLayout->addWidget(m_checkboxText);
+
     // reallocate
     optionsLayout->addWidget(m_chkReallocMsgBox);
     optionsLayout->addItem(new QSpacerItem(10, 10, QSizePolicy::Expanding, QSizePolicy::Expanding));
@@ -114,6 +120,7 @@ MessageBoxPanel::MessageBoxPanel(QWidget *parent) : QWidget(parent)
 
     // result label
     execLayout->addWidget(m_resultLabel);
+    execLayout->addWidget(m_checkBoxResult);
 
     execLayout->addItem(new QSpacerItem(10, 10, QSizePolicy::Expanding, QSizePolicy::Expanding));
     execGroupBox->setLayout(execLayout);
@@ -129,6 +136,7 @@ MessageBoxPanel::MessageBoxPanel(QWidget *parent) : QWidget(parent)
 void MessageBoxPanel::setupMessageBox(QMessageBox &box)
 {
     m_resultLabel->setText(QString());
+    m_checkBoxResult->setText(QString());
     box.setText(m_textInMsgBox->text());
     box.setInformativeText(m_informativeText->text());
     box.setDetailedText(m_detailedtext->text());
@@ -140,6 +148,10 @@ void MessageBoxPanel::setupMessageBox(QMessageBox &box)
     box.setStandardButtons((QMessageBox::StandardButtons) btns);
     if (box.standardButtons() == (QMessageBox::StandardButtons) 0)
         box.setStandardButtons(QMessageBox::Ok); // just to have something.
+
+    box.setCheckBox(0);
+    if (m_checkboxText->text().length() > 0)
+        box.setCheckBox(new QCheckBox(m_checkboxText->text()));
 
     box.setIcon((QMessageBox::Icon) m_iconComboBox->currentIndex());
 }
@@ -164,6 +176,12 @@ void MessageBoxPanel::doExec()
     QString sres;
     sres.setNum(res, 16);
     m_resultLabel->setText(QString::fromLatin1("Return value (hex): %1").arg(sres));
+    if (m_msgbox->checkBox()) {
+        if (m_msgbox->checkBox()->isChecked())
+            m_checkBoxResult->setText(QString::fromLatin1("Checkbox was checked"));
+        else
+            m_checkBoxResult->setText(QString::fromLatin1("Checkbox was not checked"));
+    }
 }
 
 void MessageBoxPanel::doShowApply()
