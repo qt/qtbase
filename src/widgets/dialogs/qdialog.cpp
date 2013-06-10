@@ -150,12 +150,11 @@ void QDialogPrivate::deletePlatformHelper()
     provide a \l{#return}{return value}, and they can have \l{#default}{default buttons}. QDialogs can also have a QSizeGrip in their
     lower-right corner, using setSizeGripEnabled().
 
-    Note that QDialog (an any other widget that has type Qt::Dialog) uses
-    the parent widget slightly differently from other classes in Qt. A
-    dialog is always a top-level widget, but if it has a parent, its
-    default location is centered on top of the parent's top-level widget
-    (if it is not top-level itself). It will also share the parent's
-    taskbar entry.
+    Note that QDialog (and any other widget that has type \c Qt::Dialog) uses
+    the parent widget slightly differently from other classes in Qt. A dialog is
+    always a top-level widget, but if it has a parent, its default location is
+    centered on top of the parent's top-level widget (if it is not top-level
+    itself). It will also share the parent's taskbar entry.
 
     Use the overload of the QWidget::setParent() function to change
     the ownership of a QDialog widget. This function allows you to

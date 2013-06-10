@@ -1755,12 +1755,12 @@ void HtmlGenerator::generateHeader(const QString& title,
     if (shortVersion.count(QChar('.')) == 2)
         shortVersion.truncate(shortVersion.lastIndexOf(QChar('.')));
     if (!project.isEmpty())
-        shortVersion = project + QLatin1Char(' ') + shortVersion + QLatin1String(": ");
+        shortVersion = QLatin1String(" | ") + project + QLatin1Char(' ') + shortVersion;
     else
-        shortVersion = QLatin1String("Qt ") + shortVersion + QLatin1String(": ");
+        shortVersion = QLatin1String(" | ") + QLatin1String("Qt ") + shortVersion ;
 
     // Generating page title
-    out() << "  <title>" << shortVersion << protectEnc(title) << "</title>\n";
+    out() << "  <title>" << protectEnc(title) << shortVersion << "</title>\n";
 
     // Include style sheet and script links.
     out() << headerStyles;
