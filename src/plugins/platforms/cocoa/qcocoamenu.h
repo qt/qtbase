@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QCocoaMenuBar;
+
 class QCocoaMenu : public QPlatformMenu
 {
 public:
@@ -87,6 +89,8 @@ public:
 
     QList<QCocoaMenuItem *> items() const;
     QList<QCocoaMenuItem *> merged() const;
+    void setMenuBar(QCocoaMenuBar *menuBar);
+    QCocoaMenuBar *menuBar() const;
 private:
     QCocoaMenuItem *itemOrNull(int index) const;
     void insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem);
@@ -97,6 +101,7 @@ private:
     NSObject *m_delegate;
     bool m_enabled;
     quintptr m_tag;
+    QCocoaMenuBar *m_menuBar;
 };
 
 QT_END_NAMESPACE
