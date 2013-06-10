@@ -140,6 +140,7 @@ private:
     QWindowsNativeImage *drawGDIGlyph(HFONT font, glyph_t, int margin, const QTransform &xform,
                                       QImage::Format mask_format);
     bool hasCFFTable() const;
+    bool hasCMapTable() const;
 
     const QSharedPointer<QWindowsFontEngineData> m_fontEngineData;
 
