@@ -6033,10 +6033,14 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
     bool useAquaGuideline = true;
 
     switch (ct) {
-    case QStyle::CT_SpinBox:
-        // hack to work around horrible sizeHint() code in QAbstractSpinBox
-        sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget);
-        sz.setHeight(sz.height() - 3);
+
+    case CT_SpinBox:
+        if (const QStyleOptionSpinBox *vopt = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
+            // Add button + frame widths
+            int buttonWidth = 20;
+            int fw = proxy()->pixelMetric(PM_SpinBoxFrameWidth, vopt, widget);
+            sz += QSize(buttonWidth + 2*fw, 2*fw - 3);
+        }
         break;
     case QStyle::CT_TabWidget:
         // the size between the pane and the "contentsRect" (+4,+4)
