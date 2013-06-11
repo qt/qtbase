@@ -1259,6 +1259,9 @@ void QDockWidget::setFloating(bool floating)
         d->endDrag(true);
 
     QRect r = d->undockedGeometry;
+    // Keep position when undocking for the first time.
+    if (floating && isVisible() && !r.isValid())
+        r = QRect(mapToGlobal(QPoint(0, 0)), size());
 
     d->setWindowState(floating, false, floating ? r : QRect());
 
