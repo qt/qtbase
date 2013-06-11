@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 2013 Thorbjørn Lund Martsum - tmartsum[at]gmail.com
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -39,52 +39,45 @@
 **
 ****************************************************************************/
 
-#include "filedialogpanel.h"
-#include "colordialogpanel.h"
-#include "fontdialogpanel.h"
-#include "wizardpanel.h"
-#include "messageboxpanel.h"
+#ifndef MESSAGEBOXPANEL_H
+#define MESSAGEBOXPANEL_H
 
-#include <QMainWindow>
-#include <QApplication>
-#include <QMenuBar>
-#include <QTabWidget>
-#include <QMenu>
-#include <QAction>
-#include <QKeySequence>
+#include <QWidget>
 
-// Test for dialogs, allowing to play with all dialog options for implementing native dialogs.
-// Compiles with Qt 4.8 and Qt 5.
+QT_BEGIN_NAMESPACE
+class QComboBox;
+class QCheckBox;
+class QPushButton;
+class QLineEdit;
+class QValidator;
+class QLabel;
+class QMessageBox;
+class QCheckBox;
+QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow {
+class MessageBoxPanel : public QWidget
+{
     Q_OBJECT
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MessageBoxPanel(QWidget *parent = 0);
+    ~MessageBoxPanel();
+
+public slots:
+    void doExec();
+    void doShowApply();
+
+private:
+    QComboBox *m_iconComboBox;
+    QLineEdit *m_textInMsgBox;
+    QLineEdit *m_informativeText;
+    QLineEdit *m_buttonsMask;
+    QPushButton *m_btnExec;
+    QPushButton *m_btnShowApply;
+    QValidator *m_validator;
+    QLabel *m_resultLabel;
+    QCheckBox *m_chkReallocMsgBox;
+    QMessageBox *m_msgbox;
+    void setupMessageBox(QMessageBox &box);
 };
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
-{
-    setWindowTitle(tr("Dialogs Qt %1").arg(QLatin1String(QT_VERSION_STR)));
-    QMenu *fileMenu = menuBar()->addMenu(tr("File"));
-    QAction *quitAction = fileMenu->addAction(tr("Quit"));
-    quitAction->setShortcut(QKeySequence(QKeySequence::Quit));
-    connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-    QTabWidget *tabWidget = new QTabWidget;
-    tabWidget->addTab(new FileDialogPanel, tr("QFileDialog"));
-    tabWidget->addTab(new ColorDialogPanel, tr("QColorDialog"));
-    tabWidget->addTab(new FontDialogPanel, tr("QFontDialog"));
-    tabWidget->addTab(new WizardPanel, tr("QWizard"));
-    tabWidget->addTab(new MessageBoxPanel, tr("QMessageBox"));
-    setCentralWidget(tabWidget);
-}
-
-int main(int argc, char *argv[])
-{
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.move(500, 200);
-    w.show();
-    return a.exec();
-}
-
-#include "main.moc"
+#endif

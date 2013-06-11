@@ -5,6 +5,6 @@ TARGET = dialogs
 TEMPLATE = app
 
 SOURCES += main.cpp filedialogpanel.cpp colordialogpanel.cpp fontdialogpanel.cpp \
-    wizardpanel.cpp
+    wizardpanel.cpp messageboxpanel.cpp
 HEADERS += filedialogpanel.h colordialogpanel.h fontdialogpanel.h \
-    wizardpanel.h
+    wizardpanel.h messageboxpanel.h
