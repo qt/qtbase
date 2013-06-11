@@ -119,9 +119,12 @@ QMacStylePrivate *mPrivate;
 {
     Q_UNUSED(notification);
     QEvent event(QEvent::StyleChange);
-    foreach (QWidget *widget, QApplication::allWidgets()) {
-        if (QScrollBar *scrollBar = qobject_cast<QScrollBar *>(widget))
-            QCoreApplication::sendEvent(scrollBar, &event);
+    QMutableSetIterator<QPointer<QObject> > it(QMacStylePrivate::scrollBars);
+    while (it.hasNext()) {
+        if (!it.next())
+            it.remove();
+        else
+            QCoreApplication::sendEvent(it.value(), &event);
     }
 }
 @end
@@ -141,6 +144,13 @@ const int QMacStylePrivate::BevelButtonH = 22;
 const int QMacStylePrivate::PushButtonContentPadding = 6;
 const qreal QMacStylePrivate::ScrollBarFadeOutDuration = 200.0;
 const qreal QMacStylePrivate::ScrollBarFadeOutDelay = 450.0;
+
+QSet<QPointer<QObject> > QMacStylePrivate::scrollBars;
+
+static uint qHash(const QPointer<QObject> &ptr)
+{
+    return qHash(ptr.data());
+}
 
 // These colors specify the titlebar gradient colors on
 // Leopard. Ideally we should get them from the system.
@@ -4934,6 +4944,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             // no longer possible to move it, second the up/down buttons are removed when
             // there is not enough space for them.
             if (cc == CC_ScrollBar) {
+                if (opt && opt->styleObject && !QMacStylePrivate::scrollBars.contains(opt->styleObject))
+                    QMacStylePrivate::scrollBars.insert(QPointer<QObject>(opt->styleObject));
                 const int scrollBarLength = (slider->orientation == Qt::Horizontal)
                     ? slider->rect.width() : slider->rect.height();
                 const QMacStyle::WidgetSizePolicy sizePolicy = widgetSizePolicy(widget, opt);
