@@ -78,6 +78,7 @@ struct QLibrarySettings
     QLibrarySettings();
     QScopedPointer<QSettings> settings;
 #ifdef QT_BOOTSTRAPPED
+    bool haveEffectiveSourcePaths;
     bool haveEffectivePaths;
     bool havePaths;
 #endif
@@ -99,8 +100,10 @@ public:
     static bool haveGroup(QLibraryInfo::PathGroup group)
     {
         QLibrarySettings *ls = qt_library_settings();
-        return ls ? (group == QLibraryInfo::EffectivePaths
-                     ? ls->haveEffectivePaths : ls->havePaths) : false;
+        return ls ? (group == QLibraryInfo::EffectiveSourcePaths
+                     ? ls->haveEffectiveSourcePaths
+                     : group == QLibraryInfo::EffectivePaths
+                       ? ls->haveEffectivePaths : ls->havePaths) : false;
     }
 #endif
     static QSettings *configuration()
@@ -122,7 +125,12 @@ QLibrarySettings::QLibrarySettings()
         // This code needs to be in the regular library, as otherwise a qt.conf that
         // works for qmake would break things for dynamically built Qt tools.
         QStringList children = settings->childGroups();
+#ifdef QT_BOOTSTRAPPED
+        haveEffectiveSourcePaths = children.contains(QLatin1String("EffectiveSourcePaths"));
+        haveEffectivePaths = haveEffectiveSourcePaths || children.contains(QLatin1String("EffectivePaths"));
+#else
         haveEffectivePaths = children.contains(QLatin1String("EffectivePaths"));
+#endif
         // Backwards compat: an existing but empty file is claimed to contain the Paths section.
         havePaths = !haveEffectivePaths || children.contains(QLatin1String("Paths"));
 #ifndef QT_BOOTSTRAPPED
@@ -130,6 +138,9 @@ QLibrarySettings::QLibrarySettings()
             settings.reset(0);
 #else
     } else {
+#ifdef QT_BOOTSTRAPPED
+        haveEffectiveSourcePaths = false;
+#endif
         haveEffectivePaths = false;
         havePaths = false;
 #endif
@@ -334,9 +345,12 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
     // and qt.conf with that section is present, use it, otherwise fall back to
     // FinalPaths. For FinalPaths, use qt.conf if present and contains not only
     // [EffectivePaths], otherwise fall back to builtins.
+    // EffectiveSourcePaths falls back to EffectivePaths.
     if (!QLibraryInfoPrivate::haveGroup(group)
-        && (group == FinalPaths
-            || !(group = FinalPaths, QLibraryInfoPrivate::haveGroup(FinalPaths))))
+        && !(group == EffectiveSourcePaths
+             && (group = EffectivePaths, QLibraryInfoPrivate::haveGroup(group)))
+        && !(group == EffectivePaths
+             && (group = FinalPaths, QLibraryInfoPrivate::haveGroup(group))))
 #elif !defined(QT_NO_SETTINGS)
     if (!QLibraryInfoPrivate::configuration())
 #endif
@@ -368,6 +382,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
             QSettings *config = QLibraryInfoPrivate::configuration();
             config->beginGroup(QLatin1String(
 #ifdef QT_BOOTSTRAPPED
+                   group == EffectiveSourcePaths ? "EffectiveSourcePaths" :
                    group == EffectivePaths ? "EffectivePaths" :
 #endif
                                              "Paths"));
