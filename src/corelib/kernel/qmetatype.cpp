@@ -90,6 +90,7 @@ struct DefinedTypesFilter {
 /*!
     \macro Q_DECLARE_OPAQUE_POINTER(PointerType)
     \relates QMetaType
+    \since 5.0
 
     This macro enables pointers to forward-declared types (\a PointerType)
     to be registered with QMetaType using either Q_DECLARE_METATYPE()
