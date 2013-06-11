@@ -151,12 +151,6 @@ Configure::Configure(int& argc, char** argv)
     const QString installPath = buildPath;
 #endif
     if (sourceDir != buildDir) { //shadow builds!
-        if (QStandardPaths::findExecutable(QStringLiteral("perl.exe")).isEmpty()) {
-            cout << "Error: Creating a shadow build of Qt requires" << endl
-                 << "perl to be in the PATH environment";
-            exit(0); // Exit cleanly for Ctrl+C
-        }
-
         cout << "Preparing build tree..." << endl;
         QDir(buildPath).mkpath("bin");
 
