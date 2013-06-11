@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 bool debug_accessibility();
 # define accessibleDebug !debug_accessibility() ? (void)0 : qDebug
 #else
-# define accessibleDebug
+# define accessibleDebug while (false) qDebug
 #endif
 
 #ifndef QT_NO_DEBUG_OUTPUT
