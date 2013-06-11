@@ -66,7 +66,7 @@
           \li \l {HTML Specific Configuration Variables}
           \li \l {Supporting Derived Projects}
           \li \l {Example Manifest Files}
-          \li \l {qt.qdocconf}
+          \li \l {qtgui.qdocconf}
           \li \l {minimum.qdocconf}
           \li \l {Generating DITA XML Output}
         \endlist
@@ -7179,13 +7179,13 @@
 
     \list
     \li A minimum configuration file: \l minimum.qdocconf
-    \li The Qt configuration file: \l qt.qdocconf
+    \li The Qt configuration file: \l qtgui.qdocconf
     \endlist
 */
 
 /*!
     \page 21-1-minimum-qdocconf.html
-    \previouspage qt.qdocconf
+    \previouspage qtgui.qdocconf
     \contentspage QDoc Manual
     \nextpage Generating DITA XML Output
 
@@ -7195,14 +7195,14 @@
 */
 
 /*!
-    \page 21-2-qt-qdocconf.html
+    \page 21-2-qtgui-qdocconf.html
     \previouspage Supporting Derived Projects
     \contentspage QDoc Manual
     \nextpage minimum.qdocconf
 
-    \title qt.qdocconf
+    \title qtgui.qdocconf
 
-    \quotefile files/qt.qdocconf
+    \quotefile files/qtgui.qdocconf
 */
 
 /*!
@@ -7548,10 +7548,9 @@
     The general syntax is \tt {extraimages.\e{format} = \e image}. The
     file extension is optional.
 
-    For example, in \l qt.qdocconf we use a couple of images within
-    the HTML.postheader variable which value is pure HTML. For that
-    reason, these images are specified using the \c extraimages
-    variable:
+    For example, if additional images are used within the HTML.postheader
+    value, then these images must also be specified using the \c
+    extraimages variable:
 
     \code
         extraimages.HTML = qt-logo
@@ -7819,7 +7818,7 @@
 
     Currently, C++ is the only language that QDoc understands. It is
     also the default language, and doesn't really need to be
-    specified. But for example in \l qt.qdocconf:
+    specified.
 
     \code
         language = Cpp
@@ -7889,7 +7888,7 @@
     The \c outputdir variable specifies the directory where QDoc will
     put the generated documentation.
 
-    In qt.qdocconf:
+    For example:
 
     \code
         outputdir = $QTDIR/doc/html
@@ -7971,8 +7970,6 @@
 
     The \c sourcedirs variable specifies the directories containing
     the \c .cpp or \c .qdoc files used in the documentation.
-
-    For example in \l qt.qdocconf
 
     \code
         sourcedirs = $QTDIR/src \
@@ -8157,7 +8154,7 @@
     The \c versionsym variable specifies a C++ preprocessor symbol
     that defines the version number of the documented software.
 
-    For example in \l qt.qdocconf:
+    For example:
 
     \code
         versionsym = QT_VERSION_STR
@@ -8270,7 +8267,7 @@
     Cpp.ignoredirectives} variables, non-standard constructs
     (typically macros) can result in erroneous documentation.
 
-    In \l qt.qdocconf:
+    For example:
 
     \code
     Cpp.ignoredirectives = Q_DECLARE_INTERFACE \
@@ -8323,8 +8320,6 @@
     If not specified by the \tt {\l Cpp.ignoretokens} or \tt {\l
     Cpp.ignoredirectives} variables, non-standard constructs
     (typically macros) can result in erroneous documentation.
-
-    In \l qt.qdocconf:
 
     \code
     Cpp.ignoretokens = QAXFACTORY_EXPORT \
@@ -8389,17 +8384,11 @@
     quotation marks. Note that if the value spans several lines, each
     line needs to be enclosed by quotation marks.
 
-    For example in \l qt.qdocconf:
-
     \code
         HTML.footer = "<p /><address><hr /><div align=\"center\">\n" \
                       ...
                       "</tr></table></div></address>"
     \endcode
-
-    The complete variable entry in \l qt.qdocconf provides the
-    standard footer of the \l {http://doc.qt.digia.com/4.0/index.html}
-    {Qt Reference Documentation}.
 
     \target HTML.postheader-variable
     \section1 HTML.postheader
@@ -8414,8 +8403,6 @@
     marks. Note that if the value spans several lines, each line needs
     to be enclosed by quotation marks.
 
-    For example in \l qt.qdocconf:
-
     \code
      HTML.postheader = "<table border=\"0\"..." \
                        ...
@@ -8426,8 +8413,6 @@
                        "</table>"
     \endcode
 
-    The complete variable entry in \l qt.qdocconf provides the
-    standard header of the \l {http://doc.qt.digia.com/}
     {Qt Reference Documentation}.
 
     \target HTML.style-variable
@@ -8439,8 +8424,6 @@
     The variable's value is given as raw HTML enclosed by quotation
     marks. Note that if the value spans several lines, each line needs
     to be enclosed by quotation marks.
-
-    For example in \l qt.qdocconf:
 
     \code
     HTML.style = "h3.fn,span.fn" \
@@ -8473,7 +8456,7 @@
     \endcode
 
     QDoc expects to find stylesheets in the directory containing the
-    \l qt.qdocconf file, and it will copy those specified to the output
+    \l qtgui.qdocconf file, and it will copy those specified to the output
     directory alongside the HTML pages.
 
 */
@@ -8565,7 +8548,7 @@
     This feature makes use of the comprehensive indexes generated by
     QDoc when it creates the Qt reference documentation.
 
-    For example, \l qt.qdocconf (the configuration file for Qt)
+    For example, \l qtgui.qdocconf (the configuration file for Qt)
     contains the following variable definitions:
 
     \code
@@ -8584,9 +8567,6 @@
 
     In a mini-project, you can use an index file by defining an \l
     indexes configuration variable in your \c .qdocconf file.
-
-    For example, you can create a \c qtcreator.qdocconf file to help you
-    check the Qt Creator documentation:
 
     \code
         project                 = QtCreator
