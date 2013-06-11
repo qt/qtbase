@@ -49,7 +49,8 @@ QT_BEGIN_NAMESPACE
 QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(QHttpNetworkRequest::Operation op,
         QHttpNetworkRequest::Priority pri, const QUrl &newUrl)
     : QHttpNetworkHeaderPrivate(newUrl), operation(op), priority(pri), uploadByteDevice(0),
-      autoDecompress(false), pipeliningAllowed(false), withCredentials(true)
+      autoDecompress(false), pipeliningAllowed(false), withCredentials(true),
+      preConnect(false)
 {
 }
 
@@ -64,6 +65,7 @@ QHttpNetworkRequestPrivate::QHttpNetworkRequestPrivate(const QHttpNetworkRequest
     customVerb = other.customVerb;
     withCredentials = other.withCredentials;
     ssl = other.ssl;
+    preConnect = other.preConnect;
 }
 
 QHttpNetworkRequestPrivate::~QHttpNetworkRequestPrivate()
@@ -75,7 +77,8 @@ bool QHttpNetworkRequestPrivate::operator==(const QHttpNetworkRequestPrivate &ot
     return QHttpNetworkHeaderPrivate::operator==(other)
         && (operation == other.operation)
         && (ssl == other.ssl)
-        && (uploadByteDevice == other.uploadByteDevice);
+        && (uploadByteDevice == other.uploadByteDevice)
+        && (preConnect == other.preConnect);
 }
 
 QByteArray QHttpNetworkRequestPrivate::methodName() const
@@ -203,6 +206,15 @@ bool QHttpNetworkRequest::isSsl() const
 void QHttpNetworkRequest::setSsl(bool s)
 {
     d->ssl = s;
+}
+
+bool QHttpNetworkRequest::isPreConnect() const
+{
+    return d->preConnect;
+}
+void QHttpNetworkRequest::setPreConnect(bool preConnect)
+{
+    d->preConnect = preConnect;
 }
 
 qint64 QHttpNetworkRequest::contentLength() const

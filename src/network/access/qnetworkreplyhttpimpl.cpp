@@ -635,6 +635,9 @@ void QNetworkReplyHttpImplPrivate::postRequest()
     q->setAttribute(QNetworkRequest::ConnectionEncryptedAttribute, ssl);
     httpRequest.setSsl(ssl);
 
+    bool preConnect = (scheme == QLatin1String("preconnect-http")
+                       || scheme == QLatin1String("preconnect-https"));
+    httpRequest.setPreConnect(preConnect);
 
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy transparentProxy, cacheProxy;

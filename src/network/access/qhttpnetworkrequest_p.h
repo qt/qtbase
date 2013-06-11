@@ -120,6 +120,9 @@ public:
     bool isSsl() const;
     void setSsl(bool);
 
+    bool isPreConnect() const;
+    void setPreConnect(bool preConnect);
+
     void setUploadByteDevice(QNonContiguousByteDevice *bd);
     QNonContiguousByteDevice* uploadByteDevice() const;
 
@@ -151,6 +154,7 @@ public:
     bool pipeliningAllowed;
     bool withCredentials;
     bool ssl;
+    bool preConnect;
 };
 
 

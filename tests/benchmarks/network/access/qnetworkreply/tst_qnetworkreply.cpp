@@ -463,6 +463,7 @@ private slots:
 #ifndef QT_NO_SSL
     void echoPerformance_data();
     void echoPerformance();
+    void preConnectEncrypted_data();
     void preConnectEncrypted();
 #endif
 
@@ -476,6 +477,7 @@ private slots:
     void httpDownloadPerformanceDownloadBuffer();
     void httpsRequestChain();
     void httpsUpload();
+    void preConnect_data();
     void preConnect();
 
 private:
@@ -548,6 +550,13 @@ void tst_qnetworkreply::echoPerformance()
     }
 }
 
+void tst_qnetworkreply::preConnectEncrypted_data()
+{
+    QTest::addColumn<int>("sleepTime");
+    QTest::newRow("2secs") << 2000; // to start a new request after preconnecting is done
+    QTest::newRow("100ms") << 100; // to start a new request while preconnecting is in-flight
+}
+
 void tst_qnetworkreply::preConnectEncrypted()
 {
     QString hostName = QLatin1String("www.google.com");
@@ -579,8 +588,9 @@ void tst_qnetworkreply::preConnectEncrypted()
     manager.clearAccessCache();
 
     // now try to make the connection beforehand
+    QFETCH(int, sleepTime);
     manager.connectToHostEncrypted(hostName);
-    QTestEventLoop::instance().enterLoop(2);
+    QTestEventLoop::instance().enterLoopMSecs(sleepTime);
 
     // now make another request and hopefully use the existing connection
     QPair<QNetworkReply *, qint64> preConnectResult = runGetRequest(&manager, request);
@@ -917,6 +927,11 @@ void tst_qnetworkreply::httpsUpload()
     }
 }
 
+void tst_qnetworkreply::preConnect_data()
+{
+    preConnectEncrypted_data();
+}
+
 void tst_qnetworkreply::preConnect()
 {
     QString hostName = QLatin1String("www.google.com");
@@ -948,8 +963,9 @@ void tst_qnetworkreply::preConnect()
     manager.clearAccessCache();
 
     // now try to make the connection beforehand
+    QFETCH(int, sleepTime);
     manager.connectToHost(hostName);
-    QTestEventLoop::instance().enterLoop(2);
+    QTestEventLoop::instance().enterLoopMSecs(sleepTime);
 
     // now make another request and hopefully use the existing connection
     QPair<QNetworkReply *, qint64> preConnectResult = runGetRequest(&manager, request);

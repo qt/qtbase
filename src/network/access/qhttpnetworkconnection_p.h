@@ -131,6 +131,8 @@ public:
     void setSslContext(QSharedPointer<QSslContext> context);
 #endif
 
+    void preConnectFinished();
+
 private:
     Q_DECLARE_PRIVATE(QHttpNetworkConnection)
     Q_DISABLE_COPY(QHttpNetworkConnection)
@@ -238,6 +240,8 @@ public:
     //The request queues
     QList<HttpMessagePair> highPriorityQueue;
     QList<HttpMessagePair> lowPriorityQueue;
+
+    int preConnectRequests;
 
 #ifndef QT_NO_SSL
     QSharedPointer<QSslContext> sslContext;

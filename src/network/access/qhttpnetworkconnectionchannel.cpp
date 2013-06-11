@@ -214,6 +214,7 @@ bool QHttpNetworkConnectionChannel::sendRequest()
             state = QHttpNetworkConnectionChannel::IdleState;
             reply->d_func()->state = QHttpNetworkReplyPrivate::AllDoneState;
             allDone();
+            connection->preConnectFinished(); // will only decrease the counter
             reply = 0; // so we can reuse this channel
             return true; // we have a working connection and are done
         }

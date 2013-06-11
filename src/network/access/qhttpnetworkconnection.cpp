@@ -85,6 +85,7 @@ QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &host
 #ifndef QT_NO_NETWORKPROXY
   , networkProxy(QNetworkProxy::NoProxy)
 #endif
+  , preConnectRequests(0)
 {
     channels = new QHttpNetworkConnectionChannel[channelCount];
 }
@@ -96,6 +97,7 @@ QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(quint16 channelCoun
 #ifndef QT_NO_NETWORKPROXY
   , networkProxy(QNetworkProxy::NoProxy)
 #endif
+  , preConnectRequests(0)
 {
     channels = new QHttpNetworkConnectionChannel[channelCount];
 }
@@ -541,6 +543,9 @@ QHttpNetworkReply* QHttpNetworkConnectionPrivate::queueRequest(const QHttpNetwor
     reply->d_func()->connectionChannel = &channels[0]; // will have the correct one set later
     HttpMessagePair pair = qMakePair(request, reply);
 
+    if (request.isPreConnect())
+        preConnectRequests++;
+
     switch (request.priority()) {
     case QHttpNetworkRequest::HighPriority:
         highPriorityQueue.prepend(pair);
@@ -925,15 +930,24 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     // If there is not already any connected channels we need to connect a new one.
     // We do not pair the channel with the request until we know if it is
     // connected or not. This is to reuse connected channels before we connect new once.
-    int queuedRequest = highPriorityQueue.count() + lowPriorityQueue.count();
-    for (int i = 0; i < channelCount; ++i) {
+    int queuedRequests = highPriorityQueue.count() + lowPriorityQueue.count();
+
+    // in case we have in-flight preconnect requests and normal requests,
+    // we only need one socket for each (preconnect, normal request) pair
+    int neededOpenChannels = queuedRequests;
+    if (preConnectRequests > 0) {
+        int normalRequests = queuedRequests - preConnectRequests;
+        neededOpenChannels = qMax(normalRequests, preConnectRequests);
+    }
+    for (int i = 0; i < channelCount && neededOpenChannels > 0; ++i) {
         bool connectChannel = false;
         if (channels[i].socket) {
             if ((channels[i].socket->state() == QAbstractSocket::ConnectingState)
                     || (channels[i].socket->state() == QAbstractSocket::HostLookupState)
                     || channels[i].pendingEncrypt) // pendingEncrypt == "EncryptingState"
-                queuedRequest--;
-            if ( queuedRequest <=0 )
+                neededOpenChannels--;
+
+            if (neededOpenChannels <= 0)
                 break;
             if (!channels[i].reply && !channels[i].isSocketBusy() && (channels[i].socket->state() == QAbstractSocket::UnconnectedState))
                 connectChannel = true;
@@ -947,11 +961,8 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
             else if (networkLayerState == IPv6)
                 channels[i].networkLayerPreference = QAbstractSocket::IPv6Protocol;
             channels[i].ensureConnection();
-            queuedRequest--;
+            neededOpenChannels--;
         }
-
-        if ( queuedRequest <=0 )
-            break;
     }
 }
 
@@ -1271,6 +1282,11 @@ void QHttpNetworkConnection::ignoreSslErrors(const QList<QSslError> &errors, int
 }
 
 #endif //QT_NO_SSL
+
+void QHttpNetworkConnection::preConnectFinished()
+{
+    d_func()->preConnectRequests--;
+}
 
 #ifndef QT_NO_NETWORKPROXY
 // only called from QHttpNetworkConnectionChannel::_q_proxyAuthenticationRequired, not
