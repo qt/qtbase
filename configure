@@ -2399,10 +2399,6 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     [ -d "$outpath/bin" ] || mkdir -p "$outpath/bin"
 
     mkdir -p "$outpath/mkspecs"
-
-    # Prepare doc directory
-    mkdir -p "$outpath/doc"
-    ln -f -s "$relpath"/doc/global "$outpath/doc"
 fi
 
 # symlink fonts to be able to run application from build directory

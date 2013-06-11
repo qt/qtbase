@@ -33,7 +33,7 @@ qtmver.value = $$replace(qtver.value, ^(\\d+\\.\\d+).*$, \\1)
 qtvertag.name = QT_VERSION_TAG
 qtvertag.value = $$replace(qtver.value, \.,)
 qtdocs.name = QT_INSTALL_DOCS
-qtdocs.value = $$[QT_INSTALL_DOCS/get]
+qtdocs.value = $$[QT_INSTALL_DOCS/src]
 qtAddToolEnv(QDOC, qtver qtmver qtvertag qtdocs)
 doc_command = $$QDOC $$QMAKE_DOCS
 prepare_docs {

@@ -157,17 +157,9 @@ Configure::Configure(int& argc, char** argv)
             exit(0); // Exit cleanly for Ctrl+C
         }
 
-        cout << "Preparing build tree..." << endl;
         QDir(buildPath).mkpath("bin");
 
         buildDir.mkpath("mkspecs");
-
-        buildDir.mkpath("doc");
-        if (!Environment::cpdir(sourcePath + "/doc/global", buildPath + "/doc/global")) {
-            cout << "Couldn't copy global documentation!" << sourcePath << " " << buildPath << endl;
-            dictionary["DONE"] = "error";
-            return;
-        }
     }
 
     defaultBuildParts << QStringLiteral("libs") << QStringLiteral("tools") << QStringLiteral("examples");
