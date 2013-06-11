@@ -1064,7 +1064,6 @@ QImage QOpenGLFramebufferObject::toImage() const
 
 /*!
     \fn bool QOpenGLFramebufferObject::bindDefault()
-    \internal
 
     Switches rendering back to the default, windowing system provided
     framebuffer.
