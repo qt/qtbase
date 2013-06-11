@@ -18,11 +18,11 @@ resource_combine {
        QMAKE_RESOURCE_FLAGS += -name ${QMAKE_FILE_BASE}
     }
 }
-rcc.commands = $$QMAKE_RCC $$QMAKE_RESOURCE_FLAGS "${QMAKE_FILE_IN}" -o "${QMAKE_FILE_OUT}"
-rcc.depend_command = $$QMAKE_RCC -list $$QMAKE_RESOURCE_FLAGS "${QMAKE_FILE_IN}"
+rcc.commands = $$QMAKE_RCC $$QMAKE_RESOURCE_FLAGS ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+rcc.depend_command = $$QMAKE_RCC -list $$QMAKE_RESOURCE_FLAGS ${QMAKE_FILE_IN}
 rcc.CONFIG += add_inputs_as_makefile_deps
 rcc.input = RESOURCES
 rcc.variable_out = SOURCES
 rcc.name = RCC ${QMAKE_FILE_IN}
-silent:rcc.commands = @echo rcc "${QMAKE_FILE_IN}" && $$rcc.commands
+silent:rcc.commands = @echo rcc ${QMAKE_FILE_IN} && $$rcc.commands
 QMAKE_EXTRA_COMPILERS += rcc
