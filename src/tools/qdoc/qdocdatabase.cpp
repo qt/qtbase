@@ -1126,4 +1126,56 @@ QString QDocDatabase::refForAtom(const Atom* atom)
     return QString();
 }
 
+/*!
+  If there are open namespaces, search for the function node
+  having the same function name as the \a clone node in each
+  open namespace. The \a parentPath is a portion of the path
+  name provided with the function name at the point of
+  reference. \a parentPath is usually a class name. Return
+  the pointer to the function node if one is found in an
+  open namespace. Otherwise return 0.
+
+  This open namespace concept is of dubious value and might
+  be removed.
+ */
+FunctionNode* QDocDatabase::findNodeInOpenNamespace(const QStringList& parentPath,
+                                                    const FunctionNode* clone)
+{
+    FunctionNode* fn = 0;
+    if (!openNamespaces_.isEmpty()) {
+        foreach (const QString& t, openNamespaces_) {
+            QStringList path = t.split("::") + parentPath;
+            fn = findFunctionNode(path, clone);
+            if (fn)
+                break;
+        }
+    }
+    return fn;
+}
+
+/*!
+  Find a node of the specified \a type and \a subtype that is
+  reached with the specified \a path. If such a node is found
+  in an open namespace, prefix \a path with the name of the
+  open namespace and "::" and return a pointer to the node.
+  Othewrwise return 0.
+ */
+Node* QDocDatabase::findNodeInOpenNamespace(QStringList& path,
+                                            Node::Type type,
+                                            Node::SubType subtype)
+{
+    Node* n = 0;
+    if (!openNamespaces_.isEmpty()) {
+        foreach (const QString& t, openNamespaces_) {
+            QStringList p = t.split("::") + path;
+            n = findNodeByNameAndType(p, type, subtype);
+            if (n) {
+                path = p;
+                break;
+            }
+        }
+    }
+    return n;
+}
+
 QT_END_NAMESPACE

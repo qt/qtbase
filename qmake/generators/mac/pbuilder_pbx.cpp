@@ -1340,7 +1340,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     ProString dir = project->first("DESTDIR");
                     if (QDir::isRelativePath(dir.toQString()))
                         dir.prepend(qmake_getpwd() + Option::dir_sep);
-                    t << "\t\t\t\t" << writeSettings("TARGET_BUILD_DIR", dir) << ";" << "\n";
+                    t << "\t\t\t\t" << writeSettings("INSTALL_DIR", dir) << ";" << "\n";
                 }
 
                 if (project->first("TEMPLATE") == "lib")

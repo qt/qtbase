@@ -32,7 +32,7 @@
     \brief This example demonstrates the usage of a tree view.
 
     \brief The Dir View example shows a tree view onto the local filing system. It uses the
-    QDirModel class to provide file and directory information.
+    QFileSystemModel class to provide file and directory information.
 
     \image dirview-example.png
 */

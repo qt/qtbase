@@ -101,10 +101,10 @@ void PureDocParser::parseSourceFile(const Location& location, const QString& fil
     readToken();
 
     /*
-      The set of active namespaces is cleared before parsing
+      The set of open namespaces is cleared before parsing
       each source file. The word "source" here means cpp file.
      */
-    activeNamespaces_.clear();
+    qdb_->clearOpenNamespaces();
 
     processQdocComments();
     in.close();

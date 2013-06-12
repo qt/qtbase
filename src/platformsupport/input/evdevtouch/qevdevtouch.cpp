@@ -125,6 +125,7 @@ public:
     bool m_forceToActiveWindow;
     QTouchDevice *m_device;
     bool m_typeB;
+    QTransform m_rotate;
 };
 
 QEvdevTouchScreenData::QEvdevTouchScreenData(QEvdevTouchScreenHandler *q_ptr, const QStringList &args)
@@ -177,10 +178,24 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &specification,
 
     QStringList args = spec.split(QLatin1Char(':'));
 
+    int rotationAngle = 0;
     for (int i = 0; i < args.count(); ++i) {
-        if (args.at(i).startsWith(QLatin1String("/dev/"))) {
+        if (args.at(i).startsWith(QLatin1String("/dev/")) && dev.isEmpty()) {
             dev = args.at(i);
-            break;
+        } else if (args.at(i).startsWith(QLatin1String("rotate"))) {
+            QString rotateArg = args.at(i).section(QLatin1Char('='), 1, 1);
+            bool ok;
+            uint argValue = rotateArg.toUInt(&ok);
+            if (ok) {
+                switch (argValue) {
+                case 90:
+                case 180:
+                case 270:
+                    rotationAngle = argValue;
+                default:
+                    break;
+                }
+            }
         }
     }
 
@@ -264,6 +279,9 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &specification,
         d->m_typeB = testBit(ABS_MT_SLOT, absbits);
 #endif
     qDebug("Protocol type %c %s", d->m_typeB ? 'B' : 'A', mtdevStr);
+
+    if (rotationAngle)
+        d->m_rotate = QTransform::fromTranslate(0.5, 0.5).rotate(rotationAngle).translate(-0.5, -0.5);
 
     d->registerDevice();
 }
@@ -421,6 +439,11 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             tp.normalPosition = QPointF((contact.x - hw_range_x_min) / qreal(hw_range_x_max - hw_range_x_min),
                                         (contact.y - hw_range_y_min) / qreal(hw_range_y_max - hw_range_y_min));
 
+            if (!m_rotate.isIdentity())
+                tp.normalPosition = m_rotate.map(tp.normalPosition);
+
+            tp.rawPositions.append(QPointF(contact.x, contact.y));
+
             m_touchPoints.append(tp);
 
             if (contact.state == Qt::TouchPointReleased)
@@ -513,9 +536,10 @@ void QEvdevTouchScreenData::reportPoints()
         QWindowSystemInterface::TouchPoint &tp(m_touchPoints[i]);
 
         // Generate a screen position that is always inside the active window
-        // or the primary screen.
-        const qreal wx = winRect.left() + tp.normalPosition.x() * winRect.width();
-        const qreal wy = winRect.top() + tp.normalPosition.y() * winRect.height();
+        // or the primary screen.  Even though we report this as a QRectF, internally
+        // Qt uses QRect/QPoint so we need to bound the size to winRect.size() - QSize(1, 1)
+        const qreal wx = winRect.left() + tp.normalPosition.x() * (winRect.width() - 1);
+        const qreal wy = winRect.top() + tp.normalPosition.y() * (winRect.height() - 1);
         const qreal sizeRatio = (winRect.width() + winRect.height()) / qreal(hw_w + hw_h);
         if (tp.area.width() == -1) // touch major was not provided
             tp.area = QRectF(0, 0, 8, 8);

@@ -151,8 +151,7 @@
             [kids addObject: element];
             [element release];
         }
-        // ### maybe we should use NSAccessibilityUnignoredChildren(kids); this needs more profiling
-        return kids;
+        return NSAccessibilityUnignoredChildren(kids);
 
     } else if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
         // Just check if the app thinks we're focused.
@@ -272,8 +271,7 @@
     // No child found, meaning we hit this element.
     if (!childInterface) {
 //        qDebug() << "Hit test returns: " << id << iface;
-        return self;
-        //return NSAccessibilityUnignoredAncestor(self);
+        return NSAccessibilityUnignoredAncestor(self);
     }
 
     QAccessible::Id childId = QAccessible::uniqueId(childInterface);

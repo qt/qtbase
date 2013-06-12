@@ -1937,6 +1937,21 @@ void tst_QUrl::strictParser_data()
     QTest::newRow("invalid-ipvfuture-3") << "http://[v789]" << "Invalid IPvFuture address";
     QTest::newRow("unbalanced-brackets") << "http://[ff02::1" << "Expected ']' to match '[' in hostname";
 
+    // invalid IDN hostnames happen in TolerantMode too
+    QTest::newRow("idn-prohibited-char-space") << "http:// " << "Invalid hostname (contains invalid characters)";
+    QTest::newRow("idn-prohibited-char-nbsp") << "http://\xc2\xa0" << "Invalid hostname (contains invalid characters)";
+    QTest::newRow("idn-prohibited-char-control-1f") << "http://\x1f" << "Invalid hostname (contains invalid characters)";
+    QTest::newRow("idn-prohibited-char-control-7f") << "http://\x7f" << "Invalid hostname (contains invalid characters)";
+    QTest::newRow("idn-prohibited-char-control-80") << "http://\xc2\x80" << "Invalid hostname (contains invalid characters)";
+    QTest::newRow("idn-prohibited-char-private-bmp") << "http://\xee\x80\x80" << "Invalid hostname (contains invalid characters)";
+    QTest::newRow("idn-prohibited-char-private-plane15") << "http://\xf3\xb0\x80\x80" << "Invalid hostname (contains invalid characters)";
+    QTest::newRow("idn-prohibited-char-private-plane16") << "http://\xf4\x80\x80\x80" << "Invalid hostname (contains invalid characters)";
+    QTest::newRow("idn-prohibited-char-ffff") << "http://\xef\xbf\xbf" << "Invalid hostname (contains invalid characters)";
+    QTest::newRow("idn-prohibited-char-surrogate-1") << "http://" + QString(QChar(0xD800)) << "Invalid hostname (contains invalid characters)";
+    QTest::newRow("idn-prohibited-char-surrogate-2") << "http://" + QString(QChar(0xDC00)) << "Invalid hostname (contains invalid characters)";
+    QTest::newRow("idn-prohibited-char-surrogate-3") << "http://" + QString(QChar(0xD800)) + "a" << "Invalid hostname (contains invalid characters)";
+    // FIXME: add some tests for prohibited BiDi (RFC 3454 section 6)
+
     // port errors happen in TolerantMode too
     QTest::newRow("empty-port-1") << "http://example.com:" << "Port field was empty";
     QTest::newRow("empty-port-2") << "http://example.com:/" << "Port field was empty";

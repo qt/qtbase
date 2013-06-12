@@ -68,10 +68,10 @@ QEglFSWindow::~QEglFSWindow()
 
 void QEglFSWindow::create()
 {
-    setWindowState(Qt::WindowFullScreen);
-
     if (m_window)
         return;
+
+    setWindowState(Qt::WindowFullScreen);
 
     if (window()->type() == Qt::Desktop) {
         QRect rect(QPoint(), QEglFSHooks::hooks()->screenSize());

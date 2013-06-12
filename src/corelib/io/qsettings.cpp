@@ -2527,7 +2527,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
         character in keys. In addition, if you save a top-level
         setting (a key with no slashes in it, e.g., "someKey"), it
         will appear in the INI file's "General" section. To avoid
-        overwriting other keys, if you save something using the a key
+        overwriting other keys, if you save something using a key
         such as "General/someKey", the key will be located in the
         "%General" section, \e not in the "General" section.
 

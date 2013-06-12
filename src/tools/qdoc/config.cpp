@@ -1089,7 +1089,7 @@ QStringList Config::getFilesHere(const QString& uncleanDir,
                                  const QSet<QString> &excludedDirs,
                                  const QSet<QString> &excludedFiles)
 {
-    QString dir = location.isEmpty() ? QDir::cleanPath(uncleanDir) : Location::canonicalRelativePath(uncleanDir);
+    QString dir = location.isEmpty() ? QDir::cleanPath(uncleanDir) : QDir(uncleanDir).canonicalPath();
     QStringList result;
     if (excludedDirs.contains(dir))
         return result;

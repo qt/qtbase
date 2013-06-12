@@ -2045,10 +2045,11 @@ void tst_QComboBox::itemListPosition()
     //we test QFontComboBox because it has the specific behaviour to set a fixed size
     //to the list view
     QWidget topLevel;
-    topLevel.resize(200, 200);
-    topLevel.move(100, 100);
+    QHBoxLayout *layout = new QHBoxLayout(&topLevel);
+
     QFontComboBox combo(&topLevel);
 
+    layout->addWidget(&combo);
     //the code to get the available screen space is copied from QComboBox code
     const int scrNumber = QApplication::desktop()->screenNumber(&combo);
 
@@ -2059,11 +2060,12 @@ void tst_QComboBox::itemListPosition()
                          QApplication::desktop()->screenGeometry(scrNumber) :
                          QApplication::desktop()->availableGeometry(scrNumber);
 
-    combo.move(screen.width()-combo.sizeHint().width(), 0); //puts the combo to the top-right corner
+    topLevel.move(screen.width() - topLevel.sizeHint().width() - 10, 0); //puts the combo to the top-right corner
 
     topLevel.show();
+
     //wait because the window manager can move the window if there is a right panel
-    QTRY_VERIFY(combo.isVisible());
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
     combo.showPopup();
     QTRY_VERIFY(combo.view());
     QTRY_VERIFY(combo.view()->isVisible());

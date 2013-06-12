@@ -283,7 +283,7 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
         sizes << 16 << 32 << 64 << 128;
         return QVariant::fromValue(sizes);
     }
-    case QPlatformTheme::PasswordMaskDelay:
+    case QPlatformTheme::PasswordMaskCharacter:
         return QVariant(QChar(kBulletUnicode));
     default:
         break;

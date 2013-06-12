@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Jeremy Lainé <jeremy.laine@m4x.org>
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -39,54 +39,98 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QCoreApplication>
-#include <QtNetwork/QDnsLookup>
+#include <QApplication>
+#include <QtWidgets>
 #include <QtTest/QtTest>
+#include <QtCore/qcoreapplication.h>
 
-class tst_QDnsLookup_Appless : public QObject
+#include "tst_qaccessibilitymac_helpers.h"
+
+QT_USE_NAMESPACE
+
+
+class AccessibleTestWindow : public QWidget
 {
     Q_OBJECT
+public:
+    AccessibleTestWindow()
+    {
+        new QHBoxLayout(this);
+    }
 
-private slots:
-    void noApplication();
-    void recreateApplication();
-    void destroyApplicationDuringLookup();
+    void addWidget(QWidget* widget)
+    {
+        layout()->addWidget(widget);
+        widget->show();
+        QTest::qWaitForWindowExposed(widget);
+    }
+
+    void clearChildren()
+    {
+        qDeleteAll(children());
+        new QHBoxLayout(this);
+    }
 };
 
-void tst_QDnsLookup_Appless::noApplication()
+class tst_QAccessibilityMac : public QObject
 {
-    QTest::ignoreMessage(QtWarningMsg, "QDnsLookup requires a QCoreApplication");
-    QDnsLookup dns(QDnsLookup::A, "a-single.test.qt-project.org");
-    dns.lookup();
+Q_OBJECT
+private slots:
+    void init();
+    void cleanup();
+
+    void lineEditTest();
+    void hierarchyTest();
+private:
+    AccessibleTestWindow *m_window;
+};
+
+
+void tst_QAccessibilityMac::init()
+{
+    m_window = new AccessibleTestWindow();
+    m_window->setWindowTitle("Test window");
+    m_window->show();
+    m_window->resize(400, 400);
+
+    QTest::qWaitForWindowExposed(m_window);
 }
 
-void tst_QDnsLookup_Appless::recreateApplication()
+void tst_QAccessibilityMac::cleanup()
 {
-    int argc = 0;
-    char **argv = 0;
-    for (int i = 0; i < 10; ++i) {
-        QCoreApplication app(argc, argv);
-        QDnsLookup dns(QDnsLookup::A, "a-single.test.qt-project.org");
-        dns.lookup();
-        if (!dns.isFinished()) {
-            QObject::connect(&dns, SIGNAL(finished()),
-                             &QTestEventLoop::instance(), SLOT(exitLoop()));
-            QTestEventLoop::instance().enterLoop(10);
-        }
-        QVERIFY(dns.isFinished());
-    }
+    delete m_window;
 }
 
-void tst_QDnsLookup_Appless::destroyApplicationDuringLookup()
+
+void tst_QAccessibilityMac::lineEditTest()
 {
-    int argc = 0;
-    char **argv = 0;
-    for (int i = 0; i < 10; ++i) {
-        QCoreApplication app(argc, argv);
-        QDnsLookup dns(QDnsLookup::A, "a-single.test.macieira.info");
-        dns.lookup();
-    }
+    if (!macNativeAccessibilityEnabled())
+        return;
+
+    QLineEdit *lineEdit = new QLineEdit(m_window);
+    lineEdit->setText("a11y test QLineEdit");
+    m_window->addWidget(lineEdit);
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
+    QCoreApplication::processEvents();
+    QVERIFY(testLineEdit());
 }
 
-QTEST_APPLESS_MAIN(tst_QDnsLookup_Appless)
-#include "tst_qdnslookup_appless.moc"
+void tst_QAccessibilityMac::hierarchyTest()
+{
+    if (!macNativeAccessibilityEnabled())
+        return;
+
+    QWidget *w = new QWidget(m_window);
+    m_window->addWidget(w);
+    QPushButton *b = new QPushButton(w);
+    w->setLayout(new QVBoxLayout());
+    w->layout()->addWidget(b);
+    b->setText("I am a button");
+
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
+    QCoreApplication::processEvents();
+    QVERIFY(testHierarchy());
+}
+
+QTEST_MAIN(tst_QAccessibilityMac)
+#include "tst_qaccessibilitymac.moc"

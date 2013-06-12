@@ -101,7 +101,7 @@ void tst_QMessageAuthenticationCode::result_data()
                                << QByteArray::fromHex("750c783e6ab0b503eaa86e310a5db738");
     QTest::newRow("rfc-md5-3") << QCryptographicHash::Md5
                                << QByteArray::fromHex("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-                               << QByteArray(50, 0xdd)
+                               << QByteArray(50, char(0xdd))
                                << QByteArray::fromHex("56be34521d144c88dbb8c733f0e8b3f6");
 }
 

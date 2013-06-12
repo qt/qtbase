@@ -451,8 +451,8 @@ void tst_QGuiVariant::vector2D()
     QVariant variant;
     QVector2D vector = qvariant_cast<QVector2D>(variant);
     QVERIFY(vector.isNull());
-    variant.setValue(QVector2D(0.1, 0.2));
-    QCOMPARE(QVector2D(0.1, 0.2), qvariant_cast<QVector2D>(variant));
+    variant.setValue(QVector2D(0.1f, 0.2f));
+    QCOMPARE(QVector2D(0.1f, 0.2f), qvariant_cast<QVector2D>(variant));
 
     void *pvector = QMetaType::create(QVariant::Vector2D, 0);
     QVERIFY(pvector);

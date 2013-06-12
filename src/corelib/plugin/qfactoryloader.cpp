@@ -121,6 +121,10 @@ void QFactoryLoader::update()
         d->loadedPaths << pluginDir;
 
         QString path = pluginDir + d->suffix;
+
+        if (qt_debug_component())
+            qDebug() << "QFactoryLoader::QFactoryLoader() checking directory path" << path << "...";
+
         if (!QDir(path).exists(QLatin1String(".")))
             continue;
 

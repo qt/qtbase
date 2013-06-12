@@ -398,7 +398,8 @@ QVector<T> &QVector<T>::operator=(const QVector<T> &v)
 template <typename T>
 QVector<T>::QVector(int asize)
 {
-    if (Q_LIKELY(asize)) {
+    Q_ASSERT_X(asize >= 0, "QVector::QVector", "Size must be greater than or equal to 0.");
+    if (Q_LIKELY(asize > 0)) {
         d = Data::allocate(asize);
         d->size = asize;
         defaultConstruct(d->begin(), d->end());
@@ -410,7 +411,8 @@ QVector<T>::QVector(int asize)
 template <typename T>
 QVector<T>::QVector(int asize, const T &t)
 {
-    if (asize) {
+    Q_ASSERT_X(asize >= 0, "QVector::QVector", "Size must be greater than or equal to 0.");
+    if (asize > 0) {
         d = Data::allocate(asize);
         d->size = asize;
         T* i = d->end();

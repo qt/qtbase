@@ -334,12 +334,13 @@ static inline float qrandom() { return (rand() % 100) / 100.f; }
 void renderAScene(int w, int h)
 {
 #ifdef QT_OPENGL_ES_2
+            Q_UNUSED(w)
+            Q_UNUSED(h)
             QGLShaderProgram program;
             program.addShaderFromSourceCode(QGLShader::Vertex, "attribute highp vec2 pos; void main() { gl_Position = vec4(pos.xy, 1.0, 1.0); }");
             program.addShaderFromSourceCode(QGLShader::Fragment, "uniform lowp vec4 color; void main() { gl_FragColor = color; }");
             program.bindAttributeLocation("pos", 0);
             program.bind();
-            int colorId = program.uniformLocation("color");
 
             glEnableVertexAttribArray(0);
 

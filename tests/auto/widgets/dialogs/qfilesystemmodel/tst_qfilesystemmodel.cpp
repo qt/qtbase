@@ -1033,6 +1033,14 @@ void tst_QFileSystemModel::roleNames()
     QVERIFY(values.contains(roleName));
 }
 
+static inline QByteArray permissionRowName(bool readOnly, int permission)
+{
+    QByteArray result = readOnly ? QByteArrayLiteral("ro") : QByteArrayLiteral("rw");
+    result += QByteArrayLiteral("-0");
+    result += QByteArray::number(permission, 16);
+    return result;
+}
+
 void tst_QFileSystemModel::permissions_data()
 {
     QTest::addColumn<int>("permissions");
@@ -1043,11 +1051,10 @@ void tst_QFileSystemModel::permissions_data()
         QFile::ReadOwner,
         QFile::WriteOwner|QFile::ReadOwner,
     };
-#define ROW_NAME(i) qPrintable(QString().sprintf("%s-0%04x", readOnly ? "ro" : "rw", permissions[i]))
-    for (int readOnly = false ; readOnly <= true; ++readOnly)
-        for (size_t i = 0; i < sizeof permissions / sizeof *permissions; ++i)
-            QTest::newRow(ROW_NAME(i)) << permissions[i] << bool(readOnly);
-#undef ROW_NAME
+    for (size_t i = 0; i < sizeof permissions / sizeof *permissions; ++i) {
+        QTest::newRow(permissionRowName(false, permissions[i]).constData()) << permissions[i] << false;
+        QTest::newRow(permissionRowName(true, permissions[i]).constData()) << permissions[i] << true;
+    }
 }
 
 void tst_QFileSystemModel::permissions() // checks QTBUG-20503

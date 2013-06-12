@@ -34,7 +34,7 @@ CFLAGS_BARE = -c -Fo./ \
               -W3 -nologo -O1 \
               $(CFLAGS_EXTRA) \
               -I$(QMKSRC) -I$(QMKSRC)\library -I$(QMKSRC)\generators -I$(QMKSRC)\generators\unix -I$(QMKSRC)\generators\win32 -I$(QMKSRC)\generators\mac -I$(QMKSRC)\generators\integrity \
-              -I$(BUILD_PATH)\include -I$(BUILD_PATH)\include\QtCore -I$(BUILD_PATH)\include\QtCore\$(QT_VERSION) -I$(BUILD_PATH)\include\QtCore\$(QT_VERSION)\QtCore \
+              -I$(INC_PATH) -I$(INC_PATH)\QtCore -I$(INC_PATH)\QtCore\$(QT_VERSION) -I$(INC_PATH)\QtCore\$(QT_VERSION)\QtCore \
               -I$(BUILD_PATH)\src\corelib\global -DHAVE_QCONFIG_CPP \
               -I$(SOURCE_PATH)\mkspecs\$(QMAKESPEC)  \
               -I$(SOURCE_PATH)\tools\shared \
