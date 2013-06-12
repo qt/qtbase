@@ -1469,6 +1469,14 @@ void tst_QListView::wordWrap()
     lv.setModel(&model);
     lv.setWordWrap(true);
     lv.setFixedSize(150, 150);
+#ifdef Q_OS_BLACKBERRY
+    // BB standard font size is too big, triggering
+    // a horizontal scrollbar even when word-wrapping
+    // is enabled
+    QFont font = lv.font();
+    font.setPointSize(5);
+    lv.setFont(font);
+#endif // Q_OS_BLACKBERRY
     lv.showNormal();
     QApplication::processEvents();
 
