@@ -5381,7 +5381,18 @@ elif [ "$CFG_XKBCOMMON" = "no" ]; then
 fi
 
 # EGL Support
-if [ "$CFG_EGL" != "no" ]; then
+if [ "$CFG_OPENGL" != "es2" ]; then
+    if [ "$CFG_EGL" = "yes" ] && [ "$CFG_OPENGL" = "desktop" ]; then
+        echo "EGL support was requested but Qt is being configured for desktop OpenGL."
+        echo "Either disable EGL support or enable OpenGL ES support."
+        exit 101
+    elif [ "$CFG_EGL" = "yes" ] && [ "$CFG_OPENGL" = "no" ]; then
+        echo "EGL support was requested but OpenGL ES support is disabled."
+        echo "Either disable EGL support or enable OpenGL ES support."
+        exit 101
+    fi
+    CFG_EGL=no
+elif [ "$CFG_EGL" != "no" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists egl 2>/dev/null; then
         QMAKE_INCDIR_EGL=`$PKG_CONFIG --cflags-only-I egl 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
         QMAKE_LIBS_EGL=`$PKG_CONFIG --libs egl 2>/dev/null`
@@ -5399,13 +5410,6 @@ if [ "$CFG_EGL" != "no" ]; then
     else
         CFG_EGL=no
     fi
-elif [ "$CFG_OPENGL" = "desktop" ]; then
-    if [ "$CFG_EGL" = "yes" ]; then
-        echo "EGL support was requested but Qt is being configured for desktop OpenGL."
-        echo "Either disable EGL support or enable OpenGL ES support."
-        exit 101
-    fi
-    CFG_EGL=no
 fi
 
 if [ "$CFG_EGLFS" != "no" ]; then
