@@ -1546,10 +1546,11 @@ void QWidgetPrivate::createTLExtra()
         x->inTopLevelResize = false;
         x->inRepaint = false;
         x->embedded = 0;
+        x->window = 0;
+        x->screenIndex = 0;
 #ifdef Q_WS_MAC
         x->wasMaximized = false;
 #endif // Q_WS_MAC
-        createTLSysExtra();
 #ifdef QWIDGET_EXTRA_DEBUG
         static int count = 0;
         qDebug() << "tlextra" << ++count;
@@ -10109,6 +10110,8 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         break; }
     case Qt::WA_NativeWindow: {
         d->createTLExtra();
+        if (on)
+            d->createTLSysExtra();
 #ifndef QT_NO_IM
         QWidget *focusWidget = d->effectiveFocusWidget();
         if (on && !internalWinId() && hasFocus()
