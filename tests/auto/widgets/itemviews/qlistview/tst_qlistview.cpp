@@ -1469,7 +1469,7 @@ void tst_QListView::wordWrap()
     lv.setModel(&model);
     lv.setWordWrap(true);
     lv.setFixedSize(150, 150);
-    lv.show();
+    lv.showNormal();
     QApplication::processEvents();
 
     QTRY_COMPARE(lv.horizontalScrollBar()->isVisible(), false);
@@ -2013,7 +2013,7 @@ void tst_QListView::taskQTBUG_9455_wrongScrollbarRanges()
     w.setMovement(QListView::Static);
     const int spacing = 40;
     w.setSpacing(spacing);
-    w.show();
+    w.showNormal();
     QVERIFY(QTest::qWaitForWindowExposed(&w));
     QCOMPARE(w.verticalScrollBar()->maximum(), w.contentsSize().height() - w.viewport()->geometry().height());
 }
@@ -2117,7 +2117,7 @@ void tst_QListView::taskQTBUG_21115_scrollToAndHiddenItems()
         list << QString::number(i);
     model.setStringList(list);
     lv.setModel(&model);
-    lv.show();
+    lv.showNormal();
     QVERIFY(QTest::qWaitForWindowExposed(&lv));
 
     // Save first item rect for reference
