@@ -16,11 +16,12 @@ set(Qt5Gui_OPENGL_INCLUDE_DIRS ${Qt5Gui_EGL_INCLUDE_DIRS})
 macro(_populate_qt5gui_gl_target_properties TargetName Configuration LIB_LOCATION IMPLIB_LOCATION)
     set_property(TARGET Qt5::${TargetName} APPEND PROPERTY IMPORTED_CONFIGURATIONS ${Configuration})
 
-!!IF isEmpty(CMAKE_LIB_DIR_IS_ABSOLUTE)
-    set(imported_location \"${_qt5Gui_install_prefix}/$${CMAKE_LIB_DIR}${LIB_LOCATION}\")
+!!IF isEmpty(CMAKE_DLL_DIR_IS_ABSOLUTE)
+    set(imported_location \"${_qt5Gui_install_prefix}/$${CMAKE_DLL_DIR}${LIB_LOCATION}\")
 !!ELSE
-    set(imported_location \"$${CMAKE_LIB_DIR}${LIB_LOCATION}\")
+    set(imported_location \"$${CMAKE_DLL_DIR}${LIB_LOCATION}\")
 !!ENDIF
+
 !!IF isEmpty(CMAKE_LIB_DIR_IS_ABSOLUTE)
     set(imported_implib \"${_qt5Gui_install_prefix}/$${CMAKE_LIB_DIR}${IMPLIB_LOCATION}\")
 !!ELSE
