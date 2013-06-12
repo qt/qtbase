@@ -1,4 +1,4 @@
-QMAKE_CFLAGS = -std=gnu99 -w
+QMAKE_CFLAGS += -std=gnu99 -w
 INCLUDEPATH += $$PWD/xkbcommon $$PWD/xkbcommon/src $$PWD/xkbcommon/src/xkbcomp
 
 DEFINES += DFLT_XKB_CONFIG_ROOT='\\"/usr/share/X11/xkb\\"'
