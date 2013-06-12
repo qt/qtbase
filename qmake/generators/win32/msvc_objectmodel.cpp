@@ -2335,7 +2335,6 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
         CustomBuildTool.Outputs += out;
 
         deps += CustomBuildTool.AdditionalDependencies;
-        deps += cmd.left(cmd.indexOf(' '));
         // Make sure that all deps are only once
         QHash<QString, bool> uniqDeps;
         for (int c = 0; c < deps.count(); ++c) {
