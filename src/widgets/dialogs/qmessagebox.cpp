@@ -1392,7 +1392,7 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
 
 #if !defined(QT_NO_TEXTEDIT)
         if (e == QKeySequence::Copy) {
-            if (d->detailsText->isVisible() && d->detailsText->copy()) {
+            if (d->detailsText && d->detailsText->isVisible() && d->detailsText->copy()) {
                 e->setAccepted(true);
                 return;
             }
