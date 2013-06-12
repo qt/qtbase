@@ -873,7 +873,7 @@ bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
         QPoint pos = event->globalPos() - state->pressPos;
         q->move(pos);
 
-        if (!state->ctrlDrag)
+        if (state && !state->ctrlDrag)
             mwlayout->hover(state->widgetItem, event->globalPos());
 
         ret = true;
