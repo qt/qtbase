@@ -837,7 +837,9 @@ foreach my $lib (@modules_to_sync) {
     die "No such module: $lib" unless(defined $modules{$lib});
 
     #iteration info
-    my @dirs = split(/;/, $modules{$lib});
+    my $module = $modules{$lib};
+    my $is_qt = !($module =~ s/^!//);
+    my @dirs = split(/;/, $module);
     my $dir = $dirs[0];
 
     my $pathtoheaders = "";
@@ -946,7 +948,7 @@ foreach my $lib (@modules_to_sync) {
                         }
 
                         my $iheader = $subdir . "/" . $header;
-                        my @classes = $public_header && !$minimal ? classNames($iheader) : ();
+                        my @classes = $public_header && (!$minimal && $is_qt) ? classNames($iheader) : ();
                         if($showonly) {
                             print "$header [$lib]\n";
                             foreach(@classes) {
@@ -1056,7 +1058,7 @@ foreach my $lib (@modules_to_sync) {
         "#include \"".lc($lib)."version.h\"\n" .
         "#endif\n";
 
-    unless ($showonly || $minimal) {
+    unless ($showonly || $minimal || !$is_qt) {
         # create deprecated headers
         my $first = 1;
         while (my ($header, $include) = each %{$deprecatedheaders{$lib}}) {
@@ -1141,7 +1143,9 @@ foreach my $lib (@modules_to_sync) {
         my $master_include = "$out_basedir/include/$lib/$lib";
         $pri_install_files .= fixPaths($master_include, $dir) . " ";
         writeFile($master_include, $master_contents, $lib, "master header");
+    }
 
+    unless ($showonly || $minimal) {
         #handle the headers.pri for each module
         my $headers_pri_contents = "";
         $headers_pri_contents .= "SYNCQT.HEADER_FILES = $pri_install_files\n";
@@ -1174,6 +1178,7 @@ unless($showonly || !$create_uic_class_map) {
 
 if($check_includes) {
     foreach my $lib (@modules_to_sync) {
+        next if ($modules{$lib} =~ /^!/);
             #calc subdirs
             my @subdirs = listSubdirs(map { s/^\^//; $_ } split(/;/, $modules{$lib}));
 

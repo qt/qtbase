@@ -825,7 +825,7 @@ public:
     inline void updateDirectory() { setDirectory(m_data.directory()); }
     inline QString directory() const;
     virtual void exec(HWND owner = 0);
-    inline void setNameFilters(const QStringList &f);
+    virtual void setNameFilters(const QStringList &f);
     inline void selectNameFilter(const QString &filter);
     inline void updateSelectedNameFilter() { selectNameFilter(m_data.selectedNameFilter()); }
     inline QString selectedNameFilter() const;
@@ -1335,12 +1335,11 @@ class QWindowsNativeSaveFileDialog : public QWindowsNativeFileDialogBase
 {
     Q_OBJECT
 public:
-    explicit QWindowsNativeSaveFileDialog(const QWindowsFileDialogSharedData &data);
+    explicit QWindowsNativeSaveFileDialog(const QWindowsFileDialogSharedData &data)
+        : QWindowsNativeFileDialogBase(data) {}
+    virtual void setNameFilters(const QStringList &f);
     virtual QStringList selectedFiles() const;
     virtual QStringList dialogResult() const;
-
-private slots:
-    void slotFilterSelected(const QString &);
 };
 
 // Return the first suffix from the name filter "Foo files (*.foo;*.bar)" -> "foo".
@@ -1358,20 +1357,21 @@ static inline QString suffixFromFilter(const QString &filter)
     return endPos >= 0 ? filter.mid(suffixPos, endPos - suffixPos) : QString();
 }
 
-QWindowsNativeSaveFileDialog::QWindowsNativeSaveFileDialog(const QWindowsFileDialogSharedData &data)
-    : QWindowsNativeFileDialogBase(data)
+void QWindowsNativeSaveFileDialog::setNameFilters(const QStringList &f)
 {
-    connect(this, &QWindowsNativeFileDialogBase::filterSelected,
-            this, &QWindowsNativeSaveFileDialog::slotFilterSelected);
-}
-
-void QWindowsNativeSaveFileDialog::slotFilterSelected(const QString &filter)
-{
-    // Cause the dialog to append the suffix of the current filter unless a default
-    // suffix is set (Note: Qt 4.8 sets the selected filter's suffix before
-    // calling GetSaveFileName()).
-    if (!hasDefaultSuffix())
-        setDefaultSuffixSys(suffixFromFilter(filter));
+    QWindowsNativeFileDialogBase::setNameFilters(f);
+    // QTBUG-31381, QTBUG-30748: IFileDialog will update the suffix of the selected name
+    // filter only if a default suffix is set (see docs). Set the first available
+    // suffix unless we have a defaultSuffix.
+    if (!hasDefaultSuffix()) {
+        foreach (const QString &filter, f) {
+            const QString suffix = suffixFromFilter(filter);
+            if (!suffix.isEmpty()) {
+                setDefaultSuffixSys(suffix);
+                break;
+            }
+        }
+    } // m_hasDefaultSuffix
 }
 
 QStringList QWindowsNativeSaveFileDialog::dialogResult() const

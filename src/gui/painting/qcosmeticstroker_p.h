@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 class QCosmeticStroker;
 
 
-typedef void (*StrokeLine)(QCosmeticStroker *stroker, qreal x1, qreal y1, qreal x2, qreal y2, int caps);
+typedef bool (*StrokeLine)(QCosmeticStroker *stroker, qreal x1, qreal y1, qreal x2, qreal y2, int caps);
 
 class QCosmeticStroker
 {

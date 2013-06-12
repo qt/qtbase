@@ -10,8 +10,17 @@
 #
 
 load(qt_build_paths)
+# Pre-generated headers in the source tree and
+# - shadow build or
+# - non-shadow non-prefix build of a module which is not qtbase (because the build-time
+#   generated headers all end up in qtbase).
+!git_build:if(!equals(_PRO_FILE_PWD_, $$OUT_PWD) \
+              |if(!prefix_build:!equals(MODULE_BASE_INDIR, $$[QT_HOST_PREFIX]))): \
+    CONFIG += split_incpath
+force_independent|split_incpath: \
+    CONFIG += need_fwd_pri
 MODULE_FWD_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_lib_$${MODULE}.pri
-force_independent: \
+need_fwd_pri: \
     MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_lib_$${MODULE}.pri
 else: \
     MODULE_PRI = $$MODULE_FWD_PRI
@@ -56,18 +65,22 @@ else: \
         MODULE_PRIVATE_INCLUDES = \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME/$$VERSION \
                                   \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME/$$VERSION/$$MODULE_INCNAME
     }
-    !git_build:if(!equals(_PRO_FILE_PWD_, $$OUT_PWD) \
-                  |if(!prefix_build:!equals(MODULE_BASE_DIR, $$[QT_HOST_PREFIX]))) {
-        pub_inc = $$replace(MODULE_INCLUDES, ^\\\$\\\$QT_MODULE_INCLUDE_BASE, $$MODULE_BASE_DIR/include)
-        priv_inc = $$replace(MODULE_PRIVATE_INCLUDES, ^\\\$\\\$QT_MODULE_INCLUDE_BASE, $$MODULE_BASE_DIR/include)
-        force_independent {
-            MODULE_FWD_PRI_CONT_SUFFIX = \
-                "QT.$${MODULE}.includes += $$pub_inc" \
-                "QT.$${MODULE}.private_includes = $$priv_inc"
-        } else {
-            MODULE_INCLUDES += $$pub_inc
-            MODULE_PRIVATE_INCLUDES = $$priv_inc
-        }
+    split_incpath: \
+        MODULE_SHADOW_INCLUDES = $$replace(MODULE_INCLUDES, ^\\\$\\\$QT_MODULE_INCLUDE_BASE, \
+                                                            $$MODULE_BASE_OUTDIR/include)
+    MODULE_INCLUDES += $$MODULE_AUX_INCLUDES
+    MODULE_PRIVATE_INCLUDES += $$MODULE_PRIVATE_AUX_INCLUDES
+    internal_module {
+        MODULE_PRIVATE_INCLUDES = $$MODULE_INCLUDES $$MODULE_PRIVATE_INCLUDES
+        MODULE_INCLUDES =
+        MODULE_PRIVATE_SHADOW_INCLUDES = $$MODULE_SHADOW_INCLUDES
+        MODULE_SHADOW_INCLUDES =
+    }
+    split_incpath {
+        !isEmpty(MODULE_SHADOW_INCLUDES): \
+            MODULE_FWD_PRI_CONT_SUFFIX += "QT.$${MODULE}.includes += $$MODULE_SHADOW_INCLUDES"
+        !isEmpty(MODULE_PRIVATE_SHADOW_INCLUDES): \
+            MODULE_FWD_PRI_CONT_SUFFIX += "QT.$${MODULE}.private_includes += $$MODULE_PRIVATE_SHADOW_INCLUDES"
     }
     MODULE_PRI_CONT = \
         "QT.$${MODULE}.VERSION = $${VERSION}" \
@@ -98,12 +111,17 @@ else: \
     write_file($$MODULE_PRI, MODULE_PRI_CONT)|error("Aborting.")
     MODULE_PRI_FILES = $$MODULE_PRI
 
-    force_independent {
+    need_fwd_pri {
+
+        split_incpath: \
+            MODULE_BASE_INCDIR = $$MODULE_BASE_INDIR
+        else: \
+            MODULE_BASE_INCDIR = $$MODULE_BASE_OUTDIR
 
         # Create a forwarding module .pri file
         MODULE_FWD_PRI_CONT = \
             "QT_MODULE_BIN_BASE = $$MODULE_BASE_OUTDIR/bin" \
-            "QT_MODULE_INCLUDE_BASE = $$MODULE_BASE_OUTDIR/include" \
+            "QT_MODULE_INCLUDE_BASE = $$MODULE_BASE_INCDIR/include" \
             "QT_MODULE_IMPORT_BASE = $$MODULE_BASE_OUTDIR/imports" \
             "QT_MODULE_QML_BASE = $$MODULE_BASE_OUTDIR/qml" \
             "QT_MODULE_LIB_BASE = $$MODULE_BASE_OUTDIR/lib" \
@@ -116,9 +134,9 @@ else: \
         touch($$MODULE_FWD_PRI, $$MODULE_PRI)
         MODULE_PRI_FILES += $$MODULE_FWD_PRI
 
-    } else { # prefix_build
+    } else {
 
-        # This is needed for the direct include() below.
+        # This is needed for the direct include() below. Mirrors qt_config.prf
         QT_MODULE_BIN_BASE = $$[QT_INSTALL_BINS]
         QT_MODULE_INCLUDE_BASE = $$[QT_INSTALL_HEADERS]
         QT_MODULE_IMPORT_BASE = $$[QT_INSTALL_IMPORTS]

@@ -42,7 +42,7 @@ isEmpty(QMAKE_COMPILER) {
     else:*-llvm*: \
         QMAKE_COMPILER = gcc llvm
     else:*-clang*: \
-        QMAKE_COMPILER = clang llvm
+        QMAKE_COMPILER = gcc clang llvm
     else:*-msvc*: \
         QMAKE_COMPILER = msvc
     else: \
