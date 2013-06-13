@@ -274,6 +274,7 @@ static NSButton *macCreateButton(const char *text, NSView *superview)
 - (void)showModelessPanel
 {
     mDialogIsExecuting = false;
+    mResultSet = false;
     [mColorPanel makeKeyAndOrderFront:mColorPanel];
 }
 
