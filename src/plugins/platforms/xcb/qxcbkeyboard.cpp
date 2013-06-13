@@ -248,6 +248,7 @@
 #define XF86XK_TouchpadToggle      0x1008FFA9
 #define XF86XK_TouchpadOn          0x1008FFB0
 #define XF86XK_TouchpadOff         0x1008FFB1
+#define XF86XK_AudioMicMute        0x1008FFB2
 
 
 // end of XF86keysyms.h
@@ -543,6 +544,7 @@ static const unsigned int KeyTbl[] = {
     XF86XK_TouchpadToggle,      Qt::Key_TouchpadToggle,
     XF86XK_TouchpadOn,          Qt::Key_TouchpadOn,
     XF86XK_TouchpadOff,         Qt::Key_TouchpadOff,
+    XF86XK_AudioMicMute,        Qt::Key_MicMute,
     XF86XK_Launch0,             Qt::Key_Launch2, // ### Qt 6: remap properly
     XF86XK_Launch1,             Qt::Key_Launch3,
     XF86XK_Launch2,             Qt::Key_Launch4,

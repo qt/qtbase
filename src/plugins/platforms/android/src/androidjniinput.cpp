@@ -333,7 +333,7 @@ namespace QtAndroidInput
                 return Qt::Key_BracketLeft;
 
             case 0x0000005a: // KEYCODE_MEDIA_FAST_FORWARD
-                return Qt::Key_Forward;
+                return Qt::Key_AudioForward;
 
             case 0x00000057:
                 return Qt::Key_MediaNext;
@@ -344,7 +344,7 @@ namespace QtAndroidInput
             case 0x00000058:
                 return Qt::Key_MediaPrevious;
 
-            case 0x00000059:
+            case 0x00000059: // KEYCODE_MEDIA_REWIND
                 return Qt::Key_AudioRewind;
 
             case 0x00000056:
@@ -356,8 +356,8 @@ namespace QtAndroidInput
             case 0x00000045:
                 return Qt::Key_Minus;
 
-            case 0x0000005b:
-                return Qt::Key_VolumeMute;
+            case 0x0000005b: // KEYCODE_MUTE
+                return Qt::Key_MicMute;
 
             case 0x0000004e:
                 return Qt::Key_NumLock;
@@ -404,6 +404,9 @@ namespace QtAndroidInput
 
             case 0x00000019:
                 return Qt::Key_VolumeDown;
+
+            case 0x000000a4: // KEYCODE_VOLUME_MUTE
+                return Qt::Key_VolumeMute;
 
             case 0x00000018:
                 return Qt::Key_VolumeUp;
