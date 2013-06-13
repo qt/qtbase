@@ -183,6 +183,9 @@ void QHttpNetworkConnectionChannel::close()
     else
         state = QHttpNetworkConnectionChannel::ClosingState;
 
+    // pendingEncrypt must only be true in between connected and encrypted states
+    pendingEncrypt = false;
+
     if (socket)
         socket->close();
 }

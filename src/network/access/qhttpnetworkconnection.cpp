@@ -929,7 +929,9 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     for (int i = 0; i < channelCount; ++i) {
         bool connectChannel = false;
         if (channels[i].socket) {
-            if ((channels[i].socket->state() == QAbstractSocket::ConnectingState) || (channels[i].socket->state() == QAbstractSocket::HostLookupState))
+            if ((channels[i].socket->state() == QAbstractSocket::ConnectingState)
+                    || (channels[i].socket->state() == QAbstractSocket::HostLookupState)
+                    || channels[i].pendingEncrypt) // pendingEncrypt == "EncryptingState"
                 queuedRequest--;
             if ( queuedRequest <=0 )
                 break;
