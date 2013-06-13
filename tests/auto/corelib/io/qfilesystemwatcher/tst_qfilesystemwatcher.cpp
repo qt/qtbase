@@ -94,20 +94,31 @@ tst_QFileSystemWatcher::tst_QFileSystemWatcher()
 void tst_QFileSystemWatcher::basicTest_data()
 {
     QTest::addColumn<QString>("backend");
-    QTest::newRow("native backend") << "native";
-    QTest::newRow("poller backend") << "poller";
+    QTest::addColumn<QString>("testFileName");
+    const QString testFile = QStringLiteral("testfile.txt");
+    // QTBUG-31341: Test the UNICODE capabilities; ensure no QString::toLower()
+    // is in the code path since that will lower case for example
+    // LATIN_CAPITAL_LETTER_I_WITH_DOT_ABOVE with context, whereas the Windows file
+    // system will not.
+    const QString specialCharacterFile =
+        QString(QChar(ushort(0x130))) // LATIN_CAPITAL_LETTER_I_WITH_DOT_ABOVE
+        + QChar(ushort(0x00DC)) // LATIN_CAPITAL_LETTER_U_WITH_DIAERESIS
+        + QStringLiteral(".txt");
+
+    QTest::newRow("native backend-testfile") << "native" << testFile;
+    QTest::newRow("poller backend-testfile") << "poller" << testFile;
+    QTest::newRow("native backend-specialchars") << "native" << specialCharacterFile;
 }
 
 void tst_QFileSystemWatcher::basicTest()
 {
     QFETCH(QString, backend);
+    QFETCH(QString, testFileName);
 
     // create test file
     QTemporaryDir temporaryDirectory(m_tempDirPattern);
     QVERIFY(temporaryDirectory.isValid());
-    QFile testFile(temporaryDirectory.path() + QStringLiteral("/testfile.txt"));
-    testFile.setPermissions(QFile::ReadOwner | QFile::WriteOwner);
-    testFile.remove();
+    QFile testFile(temporaryDirectory.path() + QLatin1Char('/') + testFileName);
     QVERIFY(testFile.open(QIODevice::WriteOnly | QIODevice::Truncate));
     testFile.write(QByteArray("hello"));
     testFile.close();

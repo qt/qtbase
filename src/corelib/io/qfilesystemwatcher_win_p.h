@@ -128,11 +128,27 @@ private:
 
 };
 
+class QFileSystemWatcherPathKey : public QString
+{
+public:
+    QFileSystemWatcherPathKey() {}
+    explicit QFileSystemWatcherPathKey(const QString &other) : QString(other) {}
+    QFileSystemWatcherPathKey(const QFileSystemWatcherPathKey &other) : QString(other) {}
+    bool operator==(const QFileSystemWatcherPathKey &other) const { return !compare(other, Qt::CaseInsensitive); }
+};
+
+Q_DECLARE_TYPEINFO(QFileSystemWatcherPathKey, Q_MOVABLE_TYPE);
+
+inline uint qHash(const QFileSystemWatcherPathKey &key) { return qHash(key.toCaseFolded()); }
+
 class QWindowsFileSystemWatcherEngineThread : public QThread
 {
     Q_OBJECT
 
 public:
+    typedef QHash<QFileSystemWatcherPathKey, QWindowsFileSystemWatcherEngine::Handle> HandleForDirHash;
+    typedef QHash<QFileSystemWatcherPathKey, QWindowsFileSystemWatcherEngine::PathInfo> PathInfoHash;
+
     QWindowsFileSystemWatcherEngineThread();
     ~QWindowsFileSystemWatcherEngineThread();
     void run();
@@ -143,9 +159,9 @@ public:
     QVector<Qt::HANDLE> handles;
     int msg;
 
-    QHash<QString, QWindowsFileSystemWatcherEngine::Handle> handleForDir;
+    HandleForDirHash handleForDir;
 
-    QHash<Qt::HANDLE, QHash<QString, QWindowsFileSystemWatcherEngine::PathInfo> > pathInfoForHandle;
+    QHash<Qt::HANDLE, PathInfoHash> pathInfoForHandle;
 
 Q_SIGNALS:
     void fileChanged(const QString &path, bool removed);
