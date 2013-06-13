@@ -46,6 +46,9 @@
 #include "qstringlist.h"
 #include "qstyle.h"
 #include "qvalidator.h"
+#include "qwidgetaction.h"
+#include "qimage.h"
+#include "qicon.h"
 #include "qcompleter.h"
 #include "qstandarditemmodel.h"
 #include <qpa/qplatformtheme.h>
@@ -61,8 +64,12 @@
 #include <private/qlineedit_p.h>
 #include <private/qwidgetlinecontrol_p.h>
 #include <qmenu.h>
+#include <qlabel.h>
 #include <qlayout.h>
 #include <qspinbox.h>
+#include <qlistview.h>
+#include <qstringlistmodel.h>
+#include <qsortfilterproxymodel.h>
 #include <qdebug.h>
 
 #include "qcommonstyle.h"
@@ -289,6 +296,8 @@ private slots:
 
     void undoRedoAndEchoModes_data();
     void undoRedoAndEchoModes();
+
+    void sideWidgets();
 
 protected slots:
     void editingFinished();
@@ -4046,6 +4055,40 @@ void tst_QLineEdit::undoRedoAndEchoModes()
     QVERIFY(!testWidget->isRedoAvailable());
     testWidget->redo();
     QCOMPARE(testWidget->text(), expected.at(2));
+}
+
+void tst_QLineEdit::sideWidgets()
+{
+    QWidget testWidget;
+    QVBoxLayout *l = new QVBoxLayout(&testWidget);
+    QLineEdit *lineEdit = new QLineEdit(&testWidget);
+    l->addWidget(lineEdit);
+    l->addSpacerItem(new QSpacerItem(0, 50, QSizePolicy::Ignored, QSizePolicy::Fixed));
+    QImage image(QSize(20, 20), QImage::Format_ARGB32);
+    image.fill(Qt::yellow);
+    QAction *iconAction = new QAction(QIcon(QPixmap::fromImage(image)), QString(), lineEdit);
+    QWidgetAction *label1Action = new QWidgetAction(lineEdit);
+    label1Action->setDefaultWidget(new QLabel(QStringLiteral("l1")));
+    QWidgetAction *label2Action = new QWidgetAction(lineEdit);
+    label2Action->setDefaultWidget(new QLabel(QStringLiteral("l2")));
+    QWidgetAction *label3Action = new QWidgetAction(lineEdit);
+    label3Action->setDefaultWidget(new QLabel(QStringLiteral("l3")));
+    lineEdit->addAction(iconAction, QLineEdit::LeadingPosition);
+    lineEdit->addAction(label2Action, QLineEdit::LeadingPosition);
+    lineEdit->addAction(label1Action, QLineEdit::TrailingPosition);
+    lineEdit->addAction(label3Action, QLineEdit::TrailingPosition);
+    testWidget.move(300, 300);
+    testWidget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&testWidget));
+    // Arbitrarily add/remove actions, trying to detect crashes. Add QTRY_VERIFY(false) to view the result.
+    delete label3Action;
+    lineEdit->removeAction(label2Action);
+    lineEdit->removeAction(iconAction);
+    lineEdit->removeAction(label1Action);
+    lineEdit->removeAction(iconAction);
+    lineEdit->removeAction(label1Action);
+    lineEdit->addAction(iconAction);
+    lineEdit->addAction(iconAction);
 }
 
 QTEST_MAIN(tst_QLineEdit)

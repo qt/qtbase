@@ -44,8 +44,10 @@
 
 #ifndef QT_NO_LINEEDIT
 
+#include "qvariant.h"
 #include "qabstractitemview.h"
 #include "qdrag.h"
+#include "qwidgetaction.h"
 #include "qclipboard.h"
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
@@ -53,6 +55,7 @@
 #ifndef QT_NO_IM
 #include "qinputmethod.h"
 #include "qlist.h"
+#include <qpropertyanimation.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -219,9 +222,9 @@ QRect QLineEditPrivate::adjustedContentsRect() const
     QStyleOptionFrameV2 opt;
     q->initStyleOption(&opt);
     QRect r = q->style()->subElementRect(QStyle::SE_LineEditContents, &opt, q);
-    r.setX(r.x() + leftTextMargin);
+    r.setX(r.x() + effectiveLeftTextMargin());
     r.setY(r.y() + topTextMargin);
-    r.setRight(r.right() - rightTextMargin);
+    r.setRight(r.right() - effectiveRightTextMargin());
     r.setBottom(r.bottom() - bottomTextMargin);
     return r;
 }
@@ -296,6 +299,160 @@ void QLineEditPrivate::drag()
 }
 
 #endif // QT_NO_DRAGANDDROP
+
+QLineEditIconButton::QLineEditIconButton(QWidget *parent)
+    : QToolButton(parent)
+    , m_opacity(0)
+{
+#ifndef QT_NO_CURSOR
+    setCursor(Qt::ArrowCursor);
+#endif
+    setFocusPolicy(Qt::NoFocus);
+}
+
+void QLineEditIconButton::paintEvent(QPaintEvent *)
+{
+    QPainter painter(this);
+    // Note isDown should really use the active state but in most styles
+    // this has no proper feedback
+    QIcon::Mode state = QIcon::Disabled;
+    if (isEnabled())
+        state = isDown() ? QIcon::Selected : QIcon::Normal;
+    const QPixmap iconPixmap = icon().pixmap(QSize(IconButtonSize, IconButtonSize),
+                                             state, QIcon::Off);
+    QRect pixmapRect = QRect(0, 0, iconPixmap.width(), iconPixmap.height());
+    pixmapRect.moveCenter(rect().center());
+    painter.setOpacity(m_opacity);
+    painter.drawPixmap(pixmapRect, iconPixmap);
+}
+
+void QLineEditIconButton::setOpacity(qreal value)
+{
+    if (!qFuzzyCompare(m_opacity, value)) {
+        m_opacity = value;
+        update();
+    }
+}
+
+void QLineEditIconButton::startOpacityAnimation(qreal endValue)
+{
+    QPropertyAnimation *animation = new QPropertyAnimation(this, QByteArrayLiteral("opacity"));
+    animation->setDuration(160);
+    animation->setEndValue(endValue);
+    animation->start(QAbstractAnimation::DeleteWhenStopped);
+}
+
+void QLineEditPrivate::_q_textChanged(const QString &text)
+{
+    if (hasSideWidgets()) {
+        const int newTextSize = text.size();
+        if (!newTextSize || !lastTextSize) {
+            lastTextSize = newTextSize;
+            const bool fadeIn = newTextSize > 0;
+            foreach (const SideWidgetEntry &e, leadingSideWidgets) {
+                if (e.flags & SideWidgetFadeInWithText)
+                   static_cast<QLineEditIconButton *>(e.widget)->animateShow(fadeIn);
+            }
+            foreach (const SideWidgetEntry &e, trailingSideWidgets) {
+                if (e.flags & SideWidgetFadeInWithText)
+                   static_cast<QLineEditIconButton *>(e.widget)->animateShow(fadeIn);
+            }
+        }
+    }
+}
+
+QSize QLineEditPrivate::iconSize() const
+{
+    if (!m_iconSize.isValid()) // This might require style-specific handling (pixel metric).
+        m_iconSize = QSize(QLineEditIconButton::IconButtonSize + 6, QLineEditIconButton::IconButtonSize + 2);
+    return m_iconSize;
+}
+
+void QLineEditPrivate::positionSideWidgets()
+{
+    Q_Q(QLineEdit);
+    if (hasSideWidgets()) {
+        const QRect contentRect = q->rect();
+        const QSize iconSize = QLineEditPrivate::iconSize();
+        const int delta = QLineEditIconButton::IconMargin + iconSize.width();
+        QRect widgetGeometry(QPoint(QLineEditIconButton::IconMargin, (contentRect.height() - iconSize.height()) / 2), iconSize);
+        foreach (const SideWidgetEntry &e, leftSideWidgetList()) {
+            e.widget->setGeometry(widgetGeometry);
+            widgetGeometry.moveLeft(widgetGeometry.left() + delta);
+        }
+        widgetGeometry.moveLeft(contentRect.width() - iconSize.width() - QLineEditIconButton::IconMargin);
+        foreach (const SideWidgetEntry &e, rightSideWidgetList()) {
+            e.widget->setGeometry(widgetGeometry);
+            widgetGeometry.moveLeft(widgetGeometry.left() - delta);
+        }
+    }
+}
+
+QLineEditPrivate::PositionIndexPair QLineEditPrivate::findSideWidget(const QAction *a) const
+{
+    for (int i = 0; i < leadingSideWidgets.size(); ++i) {
+        if (a == leadingSideWidgets.at(i).action)
+            return PositionIndexPair(QLineEdit::LeadingPosition, i);
+    }
+    for (int i = 0; i < trailingSideWidgets.size(); ++i) {
+        if (a == trailingSideWidgets.at(i).action)
+            return PositionIndexPair(QLineEdit::TrailingPosition, i);
+    }
+    return PositionIndexPair(QLineEdit::LeadingPosition, -1);
+}
+
+QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineEdit::ActionPosition position, int flags)
+{
+    Q_Q(QLineEdit);
+    if (!newAction)
+        return 0;
+    QWidget *w = 0;
+    // Store flags about QWidgetAction here since removeAction() may be called from ~QAction,
+    // in which a qobject_cast<> no longer works.
+    if (QWidgetAction *widgetAction = qobject_cast<QWidgetAction *>(newAction)) {
+        if ((w = widgetAction->requestWidget(q)))
+            flags |= SideWidgetCreatedByWidgetAction;
+    }
+    if (!w) {
+        QLineEditIconButton *toolButton = new QLineEditIconButton(q);
+        toolButton->setIcon(newAction->icon());
+        toolButton->setOpacity(lastTextSize > 0 || !(flags & SideWidgetFadeInWithText) ? 1 : 0);
+        toolButton->setDefaultAction(newAction);
+        w = toolButton;
+    }
+    if (!hasSideWidgets()) { // initial setup.
+        QObject::connect(q, SIGNAL(textChanged(QString)), q, SLOT(_q_textChanged(QString)));
+        lastTextSize = q->text().size();
+    }
+    // If there is a 'before' action, it takes preference
+    PositionIndexPair positionIndex = before ? findSideWidget(before) : PositionIndexPair(position, -1);
+    SideWidgetEntryList &list = positionIndex.first == QLineEdit::TrailingPosition ? trailingSideWidgets : leadingSideWidgets;
+    if (positionIndex.second < 0)
+        positionIndex.second = list.size();
+    list.insert(positionIndex.second, SideWidgetEntry(w, newAction, flags));
+    positionSideWidgets();
+    w->show();
+    return w;
+}
+
+void QLineEditPrivate::removeAction(const QActionEvent *e)
+{
+    Q_Q(QLineEdit);
+    QAction *action = e->action();
+    const PositionIndexPair positionIndex = findSideWidget(action);
+    if (positionIndex.second == -1)
+        return;
+     SideWidgetEntryList &list = positionIndex.first == QLineEdit::TrailingPosition ? trailingSideWidgets : leadingSideWidgets;
+     SideWidgetEntry entry = list.takeAt(positionIndex.second);
+     if (entry.flags & SideWidgetCreatedByWidgetAction)
+         static_cast<QWidgetAction *>(entry.action)->releaseWidget(entry.widget);
+     else
+         delete entry.widget;
+     positionSideWidgets();
+     if (!hasSideWidgets()) // Last widget, remove connection
+         QObject::disconnect(q, SIGNAL(textChanged(QString)), q, SLOT(_q_textChanged(QString)));
+     q->update();
+}
 
 QT_END_NAMESPACE
 

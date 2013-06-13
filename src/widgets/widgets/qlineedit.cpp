@@ -420,6 +420,60 @@ bool QLineEdit::hasFrame() const
     return d->frame;
 }
 
+/*!
+    \enum QLineEdit::ActionPosition
+
+    This enum type describes how a line edit should display the action widgets to be
+    added.
+
+    \value LeadingPosition  The widget is displayed to the left of the text
+                            when using layout direction \c Qt::LeftToRight or to
+                            the right when using \c Qt::RightToLeft, respectively.
+
+    \value TrailingPosition The widget is displayed to the right of the text
+                            when using layout direction \c Qt::LeftToRight or to
+                            the left when using \c Qt::RightToLeft, respectively.
+
+    \sa addAction(), removeAction(), QWidget::layoutDirection
+
+    \since 5.2
+*/
+
+/*!
+    \fn void QLineEdit::addAction(QAction *action)
+    \overload
+    \internal
+*/
+
+/*!
+    \overload
+
+    Adds the \a action to the list of actions at the \a position.
+
+    \since 5.2
+*/
+
+void QLineEdit::addAction(QAction *action, ActionPosition position)
+{
+    Q_D(QLineEdit);
+    QWidget::addAction(action);
+    d->addAction(action, 0, position);
+}
+
+/*!
+    \overload
+
+    Creates a new action with the given \a icon at the \a position.
+
+    \since 5.2
+*/
+
+QAction *QLineEdit::addAction(const QIcon &icon, ActionPosition position)
+{
+    QAction *result = new QAction(icon, QString(), this);
+    addAction(result, position);
+    return result;
+}
 
 void QLineEdit::setFrame(bool enable)
 {
@@ -606,7 +660,7 @@ QSize QLineEdit::sizeHint() const
             + d->topTextMargin + d->bottomTextMargin
             + d->topmargin + d->bottommargin;
     int w = fm.width(QLatin1Char('x')) * 17 + 2*d->horizontalMargin
-            + d->leftTextMargin + d->rightTextMargin
+            + d->effectiveLeftTextMargin() + d->effectiveRightTextMargin()
             + d->leftmargin + d->rightmargin; // "some"
     QStyleOptionFrameV2 opt;
     initStyleOption(&opt);
@@ -966,7 +1020,6 @@ void QLineEdit::setDragEnabled(bool b)
     Q_D(QLineEdit);
     d->dragEnabled = b;
 }
-
 
 /*!
   \property QLineEdit::cursorMoveStyle
@@ -1350,8 +1403,11 @@ bool QLineEdit::event(QEvent * e)
                 || style()->styleHint(QStyle::SH_BlinkCursorWhenTextSelected, &opt, this))
                 d->setCursorVisible(true);
         }
+    } else if (e->type() == QEvent::ActionRemoved) {
+        d->removeAction(static_cast<QActionEvent *>(e));
+    } else if (e->type() == QEvent::Resize) {
+        d->positionSideWidgets();
     }
-
 #ifdef QT_KEYPAD_NAVIGATION
     if (QApplication::keypadNavigationEnabled()) {
         if (e->type() == QEvent::EnterEditFocus) {
@@ -1777,9 +1833,9 @@ void QLineEdit::paintEvent(QPaintEvent *)
     initStyleOption(&panel);
     style()->drawPrimitive(QStyle::PE_PanelLineEdit, &panel, &p, this);
     r = style()->subElementRect(QStyle::SE_LineEditContents, &panel, this);
-    r.setX(r.x() + d->leftTextMargin);
+    r.setX(r.x() + d->effectiveLeftTextMargin());
     r.setY(r.y() + d->topTextMargin);
-    r.setRight(r.right() - d->rightTextMargin);
+    r.setRight(r.right() - d->effectiveRightTextMargin());
     r.setBottom(r.bottom() - d->bottomTextMargin);
     p.setClipRect(r);
 
@@ -2083,7 +2139,11 @@ void QLineEdit::changeEvent(QEvent *ev)
             initStyleOption(&opt);
             d->control->setPasswordCharacter(style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter, &opt, this));
         }
+        d->m_iconSize = QSize();
         update();
+        break;
+    case QEvent::LayoutDirectionChange:
+        d->positionSideWidgets();
         break;
     default:
         break;

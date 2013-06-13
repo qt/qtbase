@@ -58,7 +58,9 @@
 #ifndef QT_NO_LINEEDIT
 #include "private/qwidget_p.h"
 #include "QtWidgets/qlineedit.h"
+#include "QtWidgets/qtoolbutton.h"
 #include "QtGui/qtextlayout.h"
+#include "QtGui/qicon.h"
 #include "QtWidgets/qstyleoption.h"
 #include "QtCore/qbasictimer.h"
 #include "QtWidgets/qcompleter.h"
@@ -69,16 +71,54 @@
 
 QT_BEGIN_NAMESPACE
 
+// QLineEditIconButton: This is a simple helper class that represents clickable icons that fade in with text
+
+class QLineEditIconButton : public QToolButton
+{
+    Q_OBJECT
+    Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity)
+public:
+    enum { IconMargin = 4, IconButtonSize = 16 };
+
+    explicit QLineEditIconButton(QWidget *parent =  0);
+
+    qreal opacity() const { return m_opacity; }
+    void setOpacity(qreal value);
+    void animateShow(bool visible) { startOpacityAnimation(visible ? 1.0 : 0.0); }
+
+protected:
+    void paintEvent(QPaintEvent *event);
+
+private:
+    void startOpacityAnimation(qreal endValue);
+
+    qreal m_opacity;
+};
+
 class Q_AUTOTEST_EXPORT QLineEditPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QLineEdit)
 public:
+    enum SideWidgetFlag {
+        SideWidgetFadeInWithText = 0x1,
+        SideWidgetCreatedByWidgetAction = 0x2
+    };
+
+    struct SideWidgetEntry {
+        SideWidgetEntry(QWidget *w = 0, QAction *a = 0, int _flags = 0) : widget(w), action(a), flags(_flags) {}
+
+        QWidget *widget;
+        QAction *action;
+        int flags;
+    };
+    typedef QList<SideWidgetEntry> SideWidgetEntryList;
 
     QLineEditPrivate()
         : control(0), frame(1), contextMenuEnabled(1), cursorVisible(0),
         dragEnabled(0), clickCausedFocus(0), hscroll(0), vscroll(0),
         alignment(Qt::AlignLeading | Qt::AlignVCenter),
-        leftTextMargin(0), topTextMargin(0), rightTextMargin(0), bottomTextMargin(0)
+        leftTextMargin(0), topTextMargin(0), rightTextMargin(0), bottomTextMargin(0),
+        lastTextSize(0)
     {
     }
 
@@ -145,14 +185,48 @@ public:
     QBasicTimer dndTimer;
     void drag();
 #endif
+    void _q_textChanged(const QString &);
 
-    int leftTextMargin;
+    int leftTextMargin; // use effectiveLeftTextMargin() in case of icon.
     int topTextMargin;
-    int rightTextMargin;
+    int rightTextMargin; // use effectiveRightTextMargin() in case of icon.
     int bottomTextMargin;
 
     QString placeholderText;
+
+    QWidget *addAction(QAction *newAction, QAction *before, QLineEdit::ActionPosition, int flags = 0);
+    void removeAction(const QActionEvent *e);
+    QSize iconSize() const;
+    void positionSideWidgets();
+    inline bool hasSideWidgets() const { return !leadingSideWidgets.isEmpty() || !trailingSideWidgets.isEmpty(); }
+    inline const SideWidgetEntryList &leftSideWidgetList() const
+        { return q_func()->layoutDirection() == Qt::LeftToRight ? leadingSideWidgets : trailingSideWidgets; }
+    inline const SideWidgetEntryList &rightSideWidgetList() const
+        { return q_func()->layoutDirection() == Qt::LeftToRight ? trailingSideWidgets : leadingSideWidgets; }
+
+    int effectiveLeftTextMargin() const;
+    int effectiveRightTextMargin() const;
+
+private:
+    typedef QPair<QLineEdit::ActionPosition, int> PositionIndexPair;
+
+    PositionIndexPair findSideWidget(const QAction *a) const;
+
+    SideWidgetEntryList leadingSideWidgets;
+    SideWidgetEntryList trailingSideWidgets;
+    int lastTextSize;
+    mutable QSize m_iconSize;
 };
+
+inline int QLineEditPrivate::effectiveLeftTextMargin() const
+{
+    return leftTextMargin + leftSideWidgetList().size() * (QLineEditIconButton::IconMargin + iconSize().width());
+}
+
+inline int QLineEditPrivate::effectiveRightTextMargin() const
+{
+    return rightTextMargin + rightSideWidgetList().size() * (QLineEditIconButton::IconMargin + iconSize().width());
+}
 
 #endif // QT_NO_LINEEDIT
 
