@@ -191,7 +191,7 @@ defineTest(qtAddRpathLink) {
 
 # variable, default
 defineTest(qtPrepareTool) {
-    $$1 = $$eval(QT_TOOL.$${2}.command)
+    $$1 = $$eval(QT_TOOL.$${2}.binary)
     isEmpty($$1) {
         $$1 = $$[QT_HOST_BINS]/$$2
         exists($$eval($$1).pl) {
@@ -204,9 +204,9 @@ defineTest(qtPrepareTool) {
                 $$1 = $$BUNDLENAME
             }
         }
-        $$1 = $$shell_path($$eval($$1))
     }
-    export($$1)
+    $$1 = $$shell_path($$eval($$1))
+    qtAddTargetEnv($$1, QT_TOOL.$${2}.depends)
 }
 
 defineTest(qtAddToolEnv) {
@@ -233,7 +233,7 @@ defineTest(qtAddToolEnv) {
 }
 
 defineTest(qtAddTargetEnv) {
-    deps = $$replace(QT, -private$, )
+    deps = $$replace($$2, -private$, )
     deps = $$resolve_depends(deps, "QT.", ".depends" ".private_depends" ".run_depends")
     !isEmpty(deps) {
         for(dep, deps): \

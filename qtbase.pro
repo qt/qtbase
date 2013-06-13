@@ -88,7 +88,7 @@ prefix_build|!equals(PWD, $$OUT_PWD) {
 
     TOOL_PRI = $$OUT_PWD/mkspecs/modules/qt_tool_syncqt.pri
 
-    TOOL_PRI_CONT = "QT_TOOL.syncqt.command = $$val_escape(cmd)"
+    TOOL_PRI_CONT = "QT_TOOL.syncqt.binary = $$val_escape(cmd)"
     write_file($$TOOL_PRI, TOOL_PRI_CONT)|error("Aborting.")
 
     # Then, inject the new tool into the current cache state
@@ -97,7 +97,7 @@ prefix_build|!equals(PWD, $$OUT_PWD) {
         cache(QMAKE_INTERNAL_INCLUDED_FILES, add transient, added)
     }
     include($$TOOL_PRI)
-    cache(QT_TOOL.syncqt.command, transient)
+    cache(QT_TOOL.syncqt.binary, transient)
 
 }
 
