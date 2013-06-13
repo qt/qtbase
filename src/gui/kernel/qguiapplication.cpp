@@ -789,7 +789,7 @@ static void init_platform(const QString &pluginArgument, const QString &platform
             fatalMessage += QStringLiteral("Available platforms are: %1\n").arg(
                         keys.join(QStringLiteral(", ")));
         fatalMessage += QStringLiteral("GUI applications require a platform plugin. Terminating.");
-        qFatal(qPrintable(fatalMessage));
+        qFatal("%s", qPrintable(fatalMessage));
         return;
     }
 
