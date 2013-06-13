@@ -1,4 +1,4 @@
-qtPrepareTool(QMAKE_RCC, rcc)
+qtPrepareTool(QMAKE_RCC, rcc, _DEP)
 
 isEmpty(RCC_DIR):RCC_DIR = .
 isEmpty(QMAKE_MOD_RCC):QMAKE_MOD_RCC = qrc
@@ -19,7 +19,7 @@ resource_combine {
     }
 }
 rcc.commands = $$QMAKE_RCC $$QMAKE_RESOURCE_FLAGS ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
-rcc.depend_command = $$QMAKE_RCC -list $$QMAKE_RESOURCE_FLAGS ${QMAKE_FILE_IN}
+rcc.depend_command = $$QMAKE_RCC_DEP -list $$QMAKE_RESOURCE_FLAGS ${QMAKE_FILE_IN}
 rcc.CONFIG += add_inputs_as_makefile_deps
 rcc.input = RESOURCES
 rcc.variable_out = SOURCES
