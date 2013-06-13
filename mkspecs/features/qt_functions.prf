@@ -226,7 +226,7 @@ defineTest(qtAddToolEnv) {
             }
             !contains(TEMPLATE, vc.*) {
                 contains(MAKEFILE_GENERATOR, MS.*): val ~= s,%,%%,g
-                else: val ~= s,\\\$,\$\$,g
+                val ~= s,\\\$,\$\$,g
             }
             $$1 = "$$val $$eval($$1)"
         }
