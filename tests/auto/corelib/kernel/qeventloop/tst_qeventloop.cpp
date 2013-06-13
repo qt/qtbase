@@ -159,23 +159,6 @@ public slots:
     }
 };
 
-#ifndef QT_NO_EXCEPTIONS
-class QEventLoopTestException { };
-
-class ExceptionThrower : public QObject
-{
-    Q_OBJECT
-public:
-    ExceptionThrower() : QObject() { }
-public slots:
-    void throwException()
-    {
-        QEventLoopTestException e;
-        throw e;
-    }
-};
-#endif
-
 class tst_QEventLoop : public QObject
 {
     Q_OBJECT
@@ -183,9 +166,6 @@ private slots:
     // This test *must* run first. See the definition for why.
     void processEvents();
     void exec();
-#if !defined(QT_NO_EXCEPTIONS) && !defined(Q_OS_WINCE_WM)
-    void throwInExec();
-#endif
     void reexec();
     void execAfterExit();
     void wakeUp();
@@ -321,53 +301,6 @@ void tst_QEventLoop::exec()
         QCOMPARE(executor.returnCode, -1);
     }
 }
-
-#if !defined(QT_NO_EXCEPTIONS) && !defined(Q_OS_WINCE_WM)
-// Exceptions need to be enabled for this test
-// Q_OS_WINCE_WM case: this platform doesn't support propagating exceptions through the event loop
-// Windows Mobile cannot handle cross library exceptions
-// qobject.cpp will try to rethrow the exception after handling
-// which causes gwes.exe to crash
-void tst_QEventLoop::throwInExec()
-{
-// exceptions compiled in, runtime tests follow.
-#if defined(Q_OS_LINUX)
-    // C++ exceptions can't be passed through glib callbacks.  Skip the test if
-    // we're using the glib event loop.
-    QByteArray dispatcher = QAbstractEventDispatcher::instance()->metaObject()->className();
-    if (dispatcher.contains("Glib")) {
-        QSKIP(
-            qPrintable(QString(
-                "Throwing exceptions in exec() won't work if %1 event dispatcher is used.\n"
-                "Try running with QT_NO_GLIB=1 in environment."
-            ).arg(QString::fromLatin1(dispatcher)))
-        );
-    }
-#endif
-
-    {
-        // QEventLoop::exec() is exception safe
-        QEventLoop eventLoop;
-        int caughtExceptions = 0;
-
-        try {
-            ExceptionThrower exceptionThrower;
-            QTimer::singleShot(EXEC_TIMEOUT, &exceptionThrower, SLOT(throwException()));
-            (void) eventLoop.exec();
-        } catch (...) {
-            ++caughtExceptions;
-        }
-        try {
-            ExceptionThrower exceptionThrower;
-            QTimer::singleShot(EXEC_TIMEOUT, &exceptionThrower, SLOT(throwException()));
-            (void) eventLoop.exec();
-        } catch (...) {
-            ++caughtExceptions;
-        }
-        QCOMPARE(caughtExceptions, 2);
-    }
-}
-#endif
 
 void tst_QEventLoop::reexec()
 {

@@ -1,10 +1,9 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
-** Copyright (C) 2012 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author James Turner <james.turner@kdab.com>
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the plugins module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,50 +38,14 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QtCore/QString>
+#include <QtCore/QPair>
+#include <QtWidgets/QWidget>
 
-#ifndef QCOCOAMENUBAR_H
-#define QCOCOAMENUBAR_H
 
-#include <QtCore/QList>
-#include <qpa/qplatformmenu.h>
-#include "qcocoamenu.h"
+#pragma once // Yeah, it's deprecated in general, but it's standard practice for Mac OS X.
 
-QT_BEGIN_NAMESPACE
-
-class QCocoaWindow;
-
-class QCocoaMenuBar : public QPlatformMenuBar
-{
-    Q_OBJECT
-public:
-    QCocoaMenuBar();
-    virtual ~QCocoaMenuBar();
-
-    virtual void insertMenu(QPlatformMenu *menu, QPlatformMenu* before);
-    virtual void removeMenu(QPlatformMenu *menu);
-    virtual void syncMenu(QPlatformMenu *menuItem);
-    virtual void handleReparent(QWindow *newParentWindow);
-    virtual QPlatformMenu *menuForTag(quintptr tag) const;
-
-    inline NSMenu *nsMenu() const
-        { return m_nativeMenu; }
-
-    static void updateMenuBarImmediately();
-
-    QList<QCocoaMenuItem*> merged() const;
-private:
-    static QCocoaWindow *findWindowForMenubar();
-    static QCocoaMenuBar *findGlobalMenubar();
-
-    bool shouldDisable(QCocoaWindow *active) const;
-    void insertNativeMenu(QCocoaMenu *menu, QCocoaMenu *beforeMenu);
-    void removeNativeMenu(QCocoaMenu *menu);
-
-    QList<QCocoaMenu*> m_menus;
-    NSMenu *m_nativeMenu;
-    QCocoaWindow *m_window;
-};
-
-QT_END_NAMESPACE
-
-#endif
+bool macNativeAccessibilityEnabled();
+bool trusted();
+bool testLineEdit();
+bool testHierarchy();

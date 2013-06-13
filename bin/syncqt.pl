@@ -97,7 +97,6 @@ my $force_win = 0;
 my $force_relative = 0;
 my $check_includes = 0;
 my $copy_headers = 0;
-my $create_uic_class_map = 0;
 my $create_private_headers = 1;
 my $minimal = 0;
 my $module_version = 0;
@@ -168,6 +167,30 @@ sub checkRelative {
     my ($dir) = @_;
     return 0 if($dir =~ /^\//);
     return 0 if(!checkUnix() && $dir =~ /[a-zA-Z]:[\/\\]/);
+    return 1;
+}
+
+######################################################################
+# Syntax:  shouldMasterInclude(iheader)
+# Params:  iheader, string, filename to verify inclusion
+#
+# Purpose: Determines if header should be in the master include file.
+# Returns: 0 if file contains "#pragma qt_no_master_include" or not
+#          able to open, else 1.
+######################################################################
+sub shouldMasterInclude {
+    my ($iheader) = @_;
+    return 0 if (basename($iheader) =~ /_/);
+    return 0 if (basename($iheader) =~ /qconfig/);
+    if (open(F, "<$iheader")) {
+        while (<F>) {
+            chomp;
+            return 0 if (/^\#pragma qt_no_master_include$/);
+        }
+        close(F);
+    } else {
+        return 0;
+    }
     return 1;
 }
 
@@ -383,6 +406,32 @@ sub fileContents {
 }
 
 ######################################################################
+# Syntax:  writeFile(filename, contents)
+# Params:  filename, string, filename of file to write
+#          contents, string, new contents for the file
+#
+# Purpose: Write file with given contents. If new contents match old
+#          ones, do no change the file's timestamp.
+# Returns: 1 if the file's contents changed.
+######################################################################
+sub writeFile {
+    my ($filename, $contents, $lib, $what) = @_;
+    my $oldcontents = fileContents($filename);
+    $oldcontents =~ s/\r//g; # remove \r's , so comparison is ok on all platforms
+    if ($oldcontents ne $contents) {
+        open(O, "> " . $filename) || die "Could not open $filename for writing: $!\n";
+        print O $contents;
+        close O;
+        if ($lib && $verbose_level) {
+            my $action = ($oldcontents eq "") ? "created" : "updated";
+            print "$lib: $action $what\n";
+        }
+        return 1;
+    }
+    return 0;
+}
+
+######################################################################
 # Syntax:  fileCompare(file1, file2)
 # Params:  file1, string, filename of first file
 #          file2, string, filename of second file
@@ -455,36 +504,6 @@ sub copyFile
         }
     }
     return 0;
-}
-
-######################################################################
-# Syntax:  symlinkFile(file, ifile)
-# Params:  file, string, filename to create "symlink" for
-#          ifile, string, destination name of symlink
-#
-# Purpose: File is symlinked to ifile (or copied if filesystem doesn't
-#          support symlink).
-# Returns: 1 on success, else 0.
-######################################################################
-sub symlinkFile
-{
-    my ($lib, $file, $ifile) = @_;
-
-    if ($isunix) {
-        print "$lib: symlink created for $file " if ($verbose_level);
-        if ( $force_relative && ($ifile =~ /^$quoted_basedir/)) {
-            my $t = getcwd();
-            my $c = -1;
-            my $p = "../";
-            $t =~ s-^$quoted_basedir/--;
-            $p .= "../" while( ($c = index( $t, "/", $c + 1)) != -1 );
-            $file =~ s-^$quoted_basedir/-$p-;
-            print " ($file)\n" if($verbose_level);
-        }
-        print "\n" if($verbose_level);
-        return symlink($file, $ifile);
-    }
-    return copyFile($lib, $file, $ifile);
 }
 
 ######################################################################
@@ -736,7 +755,6 @@ while ( @ARGV ) {
         $modules{$module} = $prodir;
         push @modules_to_sync, $module;
         $moduleheaders{$module} = $headerdir;
-        $create_uic_class_map = 0;
     } elsif ($var eq "version") {
         if($val) {
             $module_version = $val;
@@ -801,6 +819,12 @@ foreach my $lib (@modules_to_sync) {
     my $pri_install_files = "";
     my $pri_install_pfiles = "";
     my $pri_install_qpafiles = "";
+
+    my $libcapitals = uc($lib);
+    my $master_contents =
+        "#ifndef QT_".$libcapitals."_MODULE_H\n" .
+        "#define QT_".$libcapitals."_MODULE_H\n" .
+        "#include <$lib/${lib}Depends>\n";
 
     #remove the old files
     if($remove_stale) {
@@ -867,15 +891,8 @@ foreach my $lib (@modules_to_sync) {
             #calc files and "copy" them
             foreach my $subdir (@subdirs) {
                 my @headers = findFiles($subdir, "^[-a-z0-9_]*\\.h\$" , 0);
-                if (defined $inject_headers{$subdir}) {
-                    foreach my $if (@{$inject_headers{$subdir}}) {
-                        @headers = grep(!/^\Q$if\E$/, @headers); #in case we configure'd previously
-                        push @headers, "*".$if;
-                    }
-                }
                 my $header_dirname = "";
                 foreach my $header (@headers) {
-                    my $shadow = ($header =~ s/^\*//);
                     $header = 0 if($header =~ /^ui_.*.h/);
                     foreach (@ignore_headers) {
                         $header = 0 if($header eq $_);
@@ -897,7 +914,6 @@ foreach my $lib (@modules_to_sync) {
                         }
 
                         my $iheader = $subdir . "/" . $header;
-                        $iheader =~ s/^\Q$basedir\E/$out_basedir/ if ($shadow);
                         my @classes = $public_header && !$minimal ? classNames($iheader) : ();
                         if($showonly) {
                             print "$header [$lib]\n";
@@ -938,10 +954,13 @@ foreach my $lib (@modules_to_sync) {
                             }
 
                             foreach(@headers) { #sync them
-                                $header_copies++ if(syncHeader($lib, $_, $iheader, $copy_headers && !$shadow, $ts));
+                                $header_copies++ if (syncHeader($lib, $_, $iheader, $copy_headers, $ts));
                             }
 
                             if($public_header) {
+                                #put it into the master file
+                                $master_contents .= "#include \"$public_header\"\n" if (shouldMasterInclude($iheader));
+
                                 #deal with the install directives
                                 if($public_header) {
                                     my $pri_install_iheader = fixPaths($iheader, $dir);
@@ -1000,6 +1019,11 @@ foreach my $lib (@modules_to_sync) {
         }
     }
 
+    # close the master include:
+    $master_contents .=
+        "#include \"".lc($lib)."version.h\"\n" .
+        "#endif\n";
+
     unless ($showonly || $minimal) {
         # create deprecated headers
         my $first = 1;
@@ -1021,34 +1045,37 @@ foreach my $lib (@modules_to_sync) {
                 my $header_dir = dirname($header_path);
                 make_path($header_dir, $lib, $verbose_level);
 
-                open(HEADER, ">$header_path") || die "Could not open $header_path for writing: $!\n";
-                print HEADER "#ifndef $guard\n";
-                print HEADER "#define $guard\n";
+                my $hdrcont =
+                    "#ifndef $guard\n" .
+                    "#define $guard\n";
                 my $warning = "Header <$lib/";
                 $warning .= "private/" unless ($public_header);
                 $warning .= "$header> is deprecated. Please include <$include> instead.";
-                print HEADER "#if defined(__GNUC__)\n";
-                print HEADER "#  warning $warning\n";
-                print HEADER "#elif defined(_MSC_VER)\n";
-                print HEADER "#  pragma message (\"$warning\")\n";
-                print HEADER "#endif\n";
-                print HEADER "#include <$include>\n";
+                $hdrcont .=
+                    "#if defined(__GNUC__)\n" .
+                    "#  warning $warning\n" .
+                    "#elif defined(_MSC_VER)\n" .
+                    "#  pragma message (\"$warning\")\n" .
+                    "#endif\n" .
+                    "#include <$include>\n";
                 if ($public_header) {
-                    print HEADER "#if 0\n";
-                    print HEADER "#pragma qt_no_master_include\n";
-                    print HEADER "#endif\n";
+                    $hdrcont .=
+                        "#if 0\n" .
+                        "#pragma qt_no_master_include\n" .
+                        "#endif\n";
                 }
-                print HEADER "#endif\n";
-                close HEADER;
-
-                if ($verbose_level < 3) {
-                    my $line_prefix = ",";
-                    $line_prefix = "$lib: created deprecated header(s) {" if ($first);
-                    print "$line_prefix $header";
-                } else {
-                    print "$lib: created deprecated header $header => $include\n";
+                $hdrcont .=
+                    "#endif\n";
+                if (writeFile($header_path, $hdrcont)) {
+                    if ($verbose_level < 3) {
+                        my $line_prefix = ",";
+                        $line_prefix = "$lib: created deprecated header(s) {" if ($first);
+                        print "$line_prefix $header";
+                    } else {
+                        print "$lib: created deprecated header $header => $include\n";
+                    }
+                    $first = 0;
                 }
-                $first = 0;
             }
 
             my $addendum = fixPaths($header_path, $dir) . " ";
@@ -1068,6 +1095,23 @@ foreach my $lib (@modules_to_sync) {
         syncHeader($lib, $VHeader, $vheader, 0);
         $pri_install_files .= fixPaths($vheader, $dir) . " ";
         $pri_install_classes .= fixPaths($VHeader, $dir) . " ";
+        my @versions = split(/\./, $module_version);
+        my $modulehexstring = sprintf("0x%02X%02X%02X", $versions[0], $versions[1], $versions[2]);
+        my $vhdrcont =
+            "/* This file was generated by syncqt. */\n".
+            "#ifndef QT_".uc($lib)."_VERSION_H\n".
+            "#define QT_".uc($lib)."_VERSION_H\n".
+            "\n".
+            "#define ".uc($lib)."_VERSION_STR \"".$module_version."\"\n".
+            "\n".
+            "#define ".uc($lib)."_VERSION ".$modulehexstring."\n".
+            "\n".
+            "#endif // QT_".uc($lib)."_VERSION_H\n";
+        writeFile($vheader, $vhdrcont, $lib, "version header");
+
+        my $master_include = "$out_basedir/include/$lib/$lib";
+        $pri_install_files .= fixPaths($master_include, $dir) . " ";
+        writeFile($master_include, $master_contents, $lib, "master header");
 
         #handle the headers.pri for each module
         my $headers_pri_contents = "";
@@ -1076,42 +1120,7 @@ foreach my $lib (@modules_to_sync) {
         $headers_pri_contents .= "SYNCQT.PRIVATE_HEADER_FILES = $pri_install_pfiles\n";
         $headers_pri_contents .= "SYNCQT.QPA_HEADER_FILES = $pri_install_qpafiles\n";
         my $headers_pri_file = "$out_basedir/include/$lib/headers.pri";
-        if(-e $headers_pri_file) {
-            open HEADERS_PRI_FILE, "<$headers_pri_file";
-            local $/;
-            binmode HEADERS_PRI_FILE;
-            my $old_headers_pri_contents = <HEADERS_PRI_FILE>;
-            close HEADERS_PRI_FILE;
-            $old_headers_pri_contents =~ s/\r//g; # remove \r's , so comparison is ok on all platforms
-            $headers_pri_file = 0 if($old_headers_pri_contents eq $headers_pri_contents);
-        }
-        if($headers_pri_file) {
-            my $headers_pri_dir = dirname($headers_pri_file);
-            make_path($headers_pri_dir, $lib, $verbose_level);
-            open HEADERS_PRI_FILE, ">$headers_pri_file";
-            print HEADERS_PRI_FILE $headers_pri_contents;
-            close HEADERS_PRI_FILE;
-            print "$lib: created headers.pri file\n" if($verbose_level);
-        }
-    }
-}
-unless($showonly || !$create_uic_class_map) {
-    my $class_lib_map = "$out_basedir/src/tools/uic/qclass_lib_map.h";
-    if(-e $class_lib_map) {
-        open CLASS_LIB_MAP, "<$class_lib_map";
-        local $/;
-        binmode CLASS_LIB_MAP;
-        my $old_class_lib_map_contents = <CLASS_LIB_MAP>;
-        close CLASS_LIB_MAP;
-        $old_class_lib_map_contents =~ s/\r//g; # remove \r's , so comparison is ok on all platforms
-        $class_lib_map = 0 if($old_class_lib_map_contents eq $class_lib_map_contents);
-    }
-    if($class_lib_map) {
-        my $class_lib_map_dir = dirname($class_lib_map);
-        make_path($class_lib_map_dir, "<outdir>", $verbose_level);
-        open CLASS_LIB_MAP, ">$class_lib_map";
-        print CLASS_LIB_MAP $class_lib_map_contents;
-        close CLASS_LIB_MAP;
+        writeFile($headers_pri_file, $headers_pri_contents, $lib, "headers.pri file");
     }
 }
 

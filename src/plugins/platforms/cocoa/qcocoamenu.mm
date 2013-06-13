@@ -217,7 +217,8 @@ QT_BEGIN_NAMESPACE
 
 QCocoaMenu::QCocoaMenu() :
     m_enabled(true),
-    m_tag(0)
+    m_tag(0),
+    m_menuBar(0)
 {
     m_delegate = [[QCocoaMenuDelegate alloc] initWithMenu:this];
     m_nativeItem = [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""];
@@ -534,6 +535,16 @@ void QCocoaMenu::syncModalState(bool modal)
 
         item->syncModalState(modal);
     }
+}
+
+void QCocoaMenu::setMenuBar(QCocoaMenuBar *menuBar)
+{
+    m_menuBar = menuBar;
+}
+
+QCocoaMenuBar *QCocoaMenu::menuBar() const
+{
+    return m_menuBar;
 }
 
 QT_END_NAMESPACE

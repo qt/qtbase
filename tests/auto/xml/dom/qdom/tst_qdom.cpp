@@ -1705,8 +1705,8 @@ void tst_QDom::germanUmlautToByteArray() const
     QByteArray baseline("<a");
 
     /* http://www.fileformat.info/info/unicode/char/00FC/index.htm */
-    baseline += 0xC3;
-    baseline += 0xBC;
+    baseline += char(0xC3);
+    baseline += char(0xBC);
     baseline += "b/>\n";
 
     QCOMPARE(data, baseline);

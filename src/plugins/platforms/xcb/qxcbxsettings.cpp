@@ -214,23 +214,37 @@ QXcbXSettings::QXcbXSettings(QXcbScreen *screen)
     QByteArray settings_atom_for_screen("_XSETTINGS_S");
     settings_atom_for_screen.append(QByteArray::number(screen->screenNumber()));
     xcb_intern_atom_cookie_t atom_cookie = xcb_intern_atom(screen->xcb_connection(),
-                                                           false,
+                                                           true,
                                                            settings_atom_for_screen.length(),
                                                            settings_atom_for_screen.constData());
-    xcb_intern_atom_reply_t *atom_reply = xcb_intern_atom_reply(screen->xcb_connection(),atom_cookie,NULL);
+    xcb_generic_error_t *error = 0;
+    xcb_intern_atom_reply_t *atom_reply = xcb_intern_atom_reply(screen->xcb_connection(),atom_cookie,&error);
+    if (error) {
+        qWarning() << Q_FUNC_INFO << "Failed to find XSETTINGS_S atom";
+        return;
+    }
     xcb_atom_t selection_owner_atom = atom_reply->atom;
     free(atom_reply);
 
     xcb_get_selection_owner_cookie_t selection_cookie =
             xcb_get_selection_owner(screen->xcb_connection(), selection_owner_atom);
+
     xcb_get_selection_owner_reply_t *selection_result =
-            xcb_get_selection_owner_reply(screen->xcb_connection(), selection_cookie, NULL);
+            xcb_get_selection_owner_reply(screen->xcb_connection(), selection_cookie, &error);
+    if (error) {
+        qWarning() << Q_FUNC_INFO << "Failed to get selection owner for XSETTINGS_S atom";
+        return;
+    }
 
     d_ptr->x_settings_window = selection_result->owner;
+    if (!d_ptr->x_settings_window) {
+        return;
+    }
     free(selection_result);
 
+    const uint32_t event = XCB_CW_EVENT_MASK;
     const uint32_t event_mask[] = { XCB_EVENT_MASK_STRUCTURE_NOTIFY|XCB_EVENT_MASK_PROPERTY_CHANGE };
-    xcb_change_window_attributes(screen->xcb_connection(),d_ptr->x_settings_window,XCB_CW_EVENT_MASK,event_mask);
+    xcb_change_window_attributes(screen->xcb_connection(),d_ptr->x_settings_window,event,event_mask);
 
     d_ptr->populateSettings(d_ptr->getSettings());
 }

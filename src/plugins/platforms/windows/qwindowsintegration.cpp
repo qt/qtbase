@@ -433,6 +433,9 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
         return 0;
     if (requested.flags != obtained.flags)
         window->setFlags(obtained.flags);
+    // Trigger geometry change signals of QWindow.
+    if ((obtained.flags & Qt::Desktop) != Qt::Desktop && requested.geometry != obtained.geometry)
+        QWindowSystemInterface::handleGeometryChange(window, obtained.geometry);
     return new QWindowsWindow(window, obtained);
 }
 

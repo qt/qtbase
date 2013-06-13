@@ -166,7 +166,6 @@ protected:
     QStringList lastPath_;
     QRegExp varComment;
     QRegExp sep;
-    QSet<QString> activeNamespaces_;
 
  private:
     QString sequentialIteratorDefinition;

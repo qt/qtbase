@@ -46,6 +46,12 @@ if exist "%frameworkdir%\%jarfile%" goto JarFileOk
 if exist "%frameworkdir%\%jarfile%" goto JarFileOk
     set "frameworkdir=%androidsdk%\framework"
 
+if exist "%frameworkdir%\%jarfile%" goto JarFileOk
+    set "frameworkdir=%androidsdk%\build-tools\%ANDROID_BUILD_TOOLS_REVISION%\lib"
+
+if exist "%frameworkdir%\%jarfile%" goto JarFileOk
+    set "frameworkdir=%androidsdk%\build-tools\17.0.0\lib"
+
 :JarFileOk
 
 set jarpath=%frameworkdir%\%jarfile%

@@ -255,6 +255,7 @@ qint64 QFSFileEnginePrivate::nativeSize() const
 
     if (!filled) {
         thatQ->setError(QFile::UnspecifiedError, qt_error_string(errno));
+        return 0;
     }
     return metaData.size();
 }

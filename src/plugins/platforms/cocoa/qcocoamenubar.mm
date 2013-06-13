@@ -83,9 +83,24 @@ QCocoaMenuBar::~QCocoaMenuBar()
     }
 }
 
-void QCocoaMenuBar::insertMenu(QPlatformMenu *platformMenu, QPlatformMenu *before)
+void QCocoaMenuBar::insertNativeMenu(QCocoaMenu *menu, QCocoaMenu *beforeMenu)
 {
     QCocoaAutoReleasePool pool;
+
+    if (beforeMenu) {
+        NSUInteger nativeIndex = [m_nativeMenu indexOfItem:beforeMenu->nsMenuItem()];
+        [m_nativeMenu insertItem: menu->nsMenuItem() atIndex: nativeIndex];
+    } else {
+        [m_nativeMenu addItem: menu->nsMenuItem()];
+    }
+
+    menu->setMenuBar(this);
+    syncMenu(static_cast<QPlatformMenu *>(menu));
+    [m_nativeMenu setSubmenu: menu->nsMenu() forItem: menu->nsMenuItem()];
+}
+
+void QCocoaMenuBar::insertMenu(QPlatformMenu *platformMenu, QPlatformMenu *before)
+{
     QCocoaMenu *menu = static_cast<QCocoaMenu *>(platformMenu);
     QCocoaMenu *beforeMenu = static_cast<QCocoaMenu *>(before);
 #ifdef QT_COCOA_ENABLE_MENU_DEBUG
@@ -96,39 +111,36 @@ void QCocoaMenuBar::insertMenu(QPlatformMenu *platformMenu, QPlatformMenu *befor
         qWarning() << Q_FUNC_INFO << "This menu already belongs to the menubar, remove it first";
         return;
     }
-    if (beforeMenu) {
-        if (!m_menus.contains(beforeMenu)) {
-            qWarning() << Q_FUNC_INFO << "The before menu does not belong to the menubar";
-            return;
-        }
-        m_menus.insert(m_menus.indexOf(beforeMenu), menu);
-        NSUInteger nativeIndex = [m_nativeMenu indexOfItem:beforeMenu->nsMenuItem()];
-        [m_nativeMenu insertItem: menu->nsMenuItem() atIndex: nativeIndex];
-    } else {
-        m_menus.append(menu);
-        [m_nativeMenu addItem: menu->nsMenuItem()];
+
+    if (beforeMenu && !m_menus.contains(beforeMenu)) {
+        qWarning() << Q_FUNC_INFO << "The before menu does not belong to the menubar";
+        return;
     }
 
-    platformMenu->setParent(this);
-    syncMenu(platformMenu);
-    [m_nativeMenu setSubmenu: menu->nsMenu() forItem: menu->nsMenuItem()];
+    m_menus.insert(beforeMenu ? m_menus.indexOf(beforeMenu) : m_menus.size(), menu);
+    if (!menu->menuBar())
+        insertNativeMenu(menu, beforeMenu);
+}
+
+void QCocoaMenuBar::removeNativeMenu(QCocoaMenu *menu)
+{
+    QCocoaAutoReleasePool pool;
+
+    if (menu->menuBar() == this)
+        menu->setMenuBar(0);
+    NSUInteger realIndex = [m_nativeMenu indexOfItem:menu->nsMenuItem()];
+    [m_nativeMenu removeItemAtIndex: realIndex];
 }
 
 void QCocoaMenuBar::removeMenu(QPlatformMenu *platformMenu)
 {
-    QCocoaAutoReleasePool pool;
-
     QCocoaMenu *menu = static_cast<QCocoaMenu *>(platformMenu);
     if (!m_menus.contains(menu)) {
         qWarning() << Q_FUNC_INFO << "Trying to remove a menu that does not belong to the menubar";
         return;
     }
     m_menus.removeOne(menu);
-
-    if (platformMenu->parent() == this)
-        platformMenu->setParent(0);
-    NSUInteger realIndex = [m_nativeMenu indexOfItem:menu->nsMenuItem()];
-    [m_nativeMenu removeItemAtIndex: realIndex];
+    removeNativeMenu(menu);
 }
 
 void QCocoaMenuBar::syncMenu(QPlatformMenu *menu)
@@ -205,6 +217,20 @@ void QCocoaMenuBar::updateMenuBarImmediately()
     foreach (QCocoaMenu *m, mb->m_menus) {
         mb->syncMenu(m);
         m->syncModalState(disableForModal);
+    }
+
+    // reparent shared menu items if necessary.
+    // We browse the list in reverse order to be sure that the next items are redrawn before the current ones,
+    // in this way we are sure that "beforeMenu" (see below) is part of the native menu before "m" is redraw
+    for (int i = mb->m_menus.size() - 1; i >= 0; i--) {
+        QCocoaMenu *m = mb->m_menus.at(i);
+        QCocoaMenuBar *menuBar = m->menuBar();
+        if (menuBar != mb) {
+            QCocoaMenu *beforeMenu  = i < (mb->m_menus.size() - 1) ? mb->m_menus.at(i + 1) : 0;
+            if (menuBar)
+                menuBar->removeNativeMenu(m);
+            mb->insertNativeMenu(m, beforeMenu);
+        }
     }
 
     QCocoaMenuLoader *loader = getMenuLoader();

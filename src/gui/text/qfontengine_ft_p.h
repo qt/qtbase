@@ -325,6 +325,7 @@ private:
     friend class QFontEngineMultiFontConfig;
 
     int loadFlags(QGlyphSet *set, GlyphFormat format, int flags, bool &hsubpixel, int &vfactor) const;
+    bool shouldUseDesignMetrics(ShaperFlags flags) const;
 
     GlyphFormat defaultFormat;
     FT_Matrix matrix;

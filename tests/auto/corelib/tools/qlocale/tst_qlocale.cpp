@@ -75,6 +75,52 @@ extern "C" DWORD GetThreadLocale(void) {
 #    include <stdlib.h>
 #endif
 
+#ifdef Q_OS_BLACKBERRY
+#include <unistd.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/pps.h>
+
+static const char ppsLanguageLocalePath[] = "/pps/services/confstr/_CS_LOCALE";
+static const size_t ppsBufferSize = 256;
+
+static QByteArray readPpsValue(const char *ppsObject, int ppsFd)
+{
+    QByteArray result;
+    if (!ppsObject || ppsFd == -1)
+        return result;
+
+    char buffer[ppsBufferSize];
+
+    int bytes = read(ppsFd, buffer, ppsBufferSize - 1);
+    if (bytes == -1) {
+        qFatal("Failed to read Locale pps, errno=%d", errno);
+        return result;
+    }
+    // ensure data is null terminated
+    buffer[bytes] = '\0';
+
+    pps_decoder_t ppsDecoder;
+    pps_decoder_initialize(&ppsDecoder, 0);
+    if (pps_decoder_parse_pps_str(&ppsDecoder, buffer) == PPS_DECODER_OK) {
+        pps_decoder_push(&ppsDecoder, 0);
+        const char *ppsBuff;
+        if (pps_decoder_get_string(&ppsDecoder, ppsObject, &ppsBuff) == PPS_DECODER_OK) {
+            result = ppsBuff;
+        } else {
+            int val;
+            if (pps_decoder_get_int(&ppsDecoder, ppsObject, &val) == PPS_DECODER_OK)
+                result = QByteArray::number(val);
+        }
+    }
+
+    pps_decoder_cleanup(&ppsDecoder);
+
+    return result;
+}
+#endif // Q_OS_BLACKBERRY
+
 Q_DECLARE_METATYPE(QLocale::FormatType)
 
 class tst_QLocale : public QObject
@@ -86,6 +132,7 @@ public:
 
 private slots:
     void initTestCase();
+    void cleanupTestCase();
 #ifdef Q_OS_WIN
     void windowsDefaultLocale();
 #endif
@@ -152,6 +199,10 @@ private slots:
 private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
     QString m_sysapp;
+
+#ifdef Q_OS_BLACKBERRY
+    int m_languageFd;
+#endif
 };
 
 tst_QLocale::tst_QLocale()
@@ -173,6 +224,18 @@ void tst_QLocale::initTestCase()
     QVERIFY2(fi.exists() && fi.isExecutable(),
              qPrintable(QDir::toNativeSeparators(m_sysapp)
                         + QStringLiteral(" does not exist or is not executable.")));
+
+#ifdef Q_OS_BLACKBERRY
+    if ((m_languageFd = open(ppsLanguageLocalePath, O_RDONLY)) == -1)
+        QFAIL("Failed to open language pps.");
+#endif
+}
+
+void tst_QLocale::cleanupTestCase()
+{
+#ifdef Q_OS_BLACKBERRY
+    close(m_languageFd);
+#endif
 }
 
 void tst_QLocale::ctor()
@@ -462,6 +525,11 @@ void tst_QLocale::emptyCtor()
     QVERIFY2(runSysApp(m_sysapp, env, &defaultLoc, &errorMessage),
              qPrintable(errorMessage));
 
+#ifdef Q_OS_BLACKBERRY
+    QString locale = readPpsValue("_CS_LOCALE", m_languageFd);
+    QVERIFY2(runSysApp(m_sysapp, env, &locale, &errorMessage),
+             qPrintable(errorMessage));
+#else
     TEST_CTOR("C", "C")
     TEST_CTOR("bla", "C")
     TEST_CTOR("zz", "C")
@@ -499,6 +567,7 @@ void tst_QLocale::emptyCtor()
     TEST_CTOR("en/", defaultLoc.toLatin1())
     TEST_CTOR("asdfghj", defaultLoc.toLatin1());
     TEST_CTOR("123456", defaultLoc.toLatin1());
+#endif // Q_OS_BLACKBERRY
 
 #undef TEST_CTOR
 }

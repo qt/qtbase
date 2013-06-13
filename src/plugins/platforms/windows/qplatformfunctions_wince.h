@@ -74,6 +74,7 @@
 
 #ifndef CWP_SKIPINVISIBLE
 #define CWP_SKIPINVISIBLE   0x0001
+#define CWP_SKIPTRANSPARENT 0x0004
 #define findPlatformWindowAt(a, b, c) findPlatformWindowAt(a, b)
 #endif
 

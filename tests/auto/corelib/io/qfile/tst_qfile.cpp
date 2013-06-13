@@ -1193,6 +1193,13 @@ void tst_QFile::permissions()
     if (qt_ntfs_permission_lookup)
         QEXPECT_FAIL("readonly", "QTBUG-25630", Abort);
 #endif
+#ifdef Q_OS_UNIX
+    if (strcmp(QTest::currentDataTag(), "readonly") == 0) {
+        // in case accidentally run as root
+        if (::getuid() == 0)
+            QSKIP("Running this test as root doesn't make sense");
+    }
+#endif
     QCOMPARE((memberResult == QFile::Permissions(perms)), expected);
     QCOMPARE((staticResult == QFile::Permissions(perms)), expected);
 }

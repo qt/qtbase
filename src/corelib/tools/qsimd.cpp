@@ -240,14 +240,14 @@ inline quint64 _xgetbv(__int64) { return 0; }
 #endif
 static void xgetbv(uint in, uint &eax, uint &edx)
 {
-#ifdef Q_OS_WIN
-    quint64 result = _xgetbv(in);
-    eax = result;
-    edx = result >> 32;
-#elif defined(Q_CC_GNU)
+#if defined(Q_CC_GNU)
     asm (".byte 0x0F, 0x01, 0xD0" // xgetbv instruction
         : "=a" (eax), "=d" (edx)
         : "c" (in));
+#elif defined(Q_OS_WIN)
+    quint64 result = _xgetbv(in);
+    eax = result;
+    edx = result >> 32;
 #endif
 }
 

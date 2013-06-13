@@ -1316,6 +1316,12 @@ void QFontEngineFT::doKerning(QGlyphLayout *g, QFontEngine::ShaperFlags flags) c
             unlockFace();
         }
     }
+
+    if (shouldUseDesignMetrics(flags) && !(fontDef.styleStrategy & QFont::ForceIntegerMetrics))
+        flags |= DesignMetrics;
+    else
+        flags &= ~DesignMetrics;
+
     QFontEngine::doKerning(g, flags);
 }
 
@@ -1571,12 +1577,18 @@ bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs
     return true;
 }
 
+bool QFontEngineFT::shouldUseDesignMetrics(QFontEngine::ShaperFlags flags) const
+{
+    if (!FT_IS_SCALABLE(freetype->face))
+        return false;
+
+    return default_hint_style == HintNone || default_hint_style == HintLight || (flags & DesignMetrics);
+}
+
 void QFontEngineFT::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlags flags) const
 {
     FT_Face face = 0;
-    bool design = (default_hint_style == HintNone ||
-                   default_hint_style == HintLight ||
-                   (flags & DesignMetrics)) && FT_IS_SCALABLE(freetype->face);
+    bool design = shouldUseDesignMetrics(flags);
     for (int i = 0; i < glyphs->numGlyphs; i++) {
         Glyph *g = cacheEnabled ? defaultGlyphSet.getGlyph(glyphs->glyphs[i]) : 0;
         // Since we are passing Format_None to loadGlyph, use same default format logic as loadGlyph

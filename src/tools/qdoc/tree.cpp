@@ -367,7 +367,11 @@ const FunctionNode* Tree::findFunctionNode(const QStringList& parentPath,
                                            const Node* relative,
                                            int findFlags) const
 {
-    const Node* parent = findNode(parentPath, relative, findFlags);
+    const Node* parent = findNamespaceNode(parentPath);
+    if (parent == 0)
+        parent = findClassNode(parentPath, 0);
+    if (parent == 0)
+        parent = findNode(parentPath, relative, findFlags);
     if (parent == 0 || !parent->isInnerNode())
         return 0;
     return ((InnerNode*)parent)->findFunctionNode(clone);
@@ -658,7 +662,7 @@ Node* Tree::findNodeRecursive(const QStringList& path,
                               Node* start,
                               Node::Type type,
                               Node::SubType subtype,
-                              bool acceptCollision)
+                              bool acceptCollision) const
 {
     if (!start || path.isEmpty())
         return 0; // no place to start, or nothing to search for.
@@ -736,7 +740,7 @@ EnumNode* Tree::findEnumNode(const QStringList& path, Node* start)
   at the root of the tree. Only a C++ class node named \a path is
   acceptible. If one is not found, 0 is returned.
  */
-ClassNode* Tree::findClassNode(const QStringList& path, Node* start)
+ClassNode* Tree::findClassNode(const QStringList& path, Node* start) const
 {
     if (!start)
         start = const_cast<NamespaceNode*>(root());
@@ -748,7 +752,7 @@ ClassNode* Tree::findClassNode(const QStringList& path, Node* start)
   the root of the tree. Only a Namespace node named \a path
   is acceptible. If one is not found, 0 is returned.
  */
-NamespaceNode* Tree::findNamespaceNode(const QStringList& path)
+NamespaceNode* Tree::findNamespaceNode(const QStringList& path) const
 {
     Node* start = const_cast<NamespaceNode*>(root());
     return static_cast<NamespaceNode*>(findNodeRecursive(path, 0, start, Node::Namespace, Node::NoSubType));

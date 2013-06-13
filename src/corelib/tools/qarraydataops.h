@@ -62,7 +62,7 @@ struct QPodArrayOps
         Q_ASSERT(newSize <= this->alloc);
 
         ::memset(this->end(), 0, (newSize - this->size) * sizeof(T));
-        this->size = newSize;
+        this->size = int(newSize);
     }
 
     void copyAppend(const T *b, const T *e)
@@ -84,7 +84,7 @@ struct QPodArrayOps
         const T *const end = iter + n;
         for (; iter != end; ++iter)
             ::memcpy(iter, &t, sizeof(T));
-        this->size += n;
+        this->size += int(n);
     }
 
     void truncate(size_t newSize)
@@ -92,7 +92,7 @@ struct QPodArrayOps
         Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(newSize < size_t(this->size));
 
-        this->size = newSize;
+        this->size = int(newSize);
     }
 
     void destroyAll() // Call from destructors, ONLY!

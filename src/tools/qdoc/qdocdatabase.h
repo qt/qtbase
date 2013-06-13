@@ -196,6 +196,11 @@ class QDocDatabase
                        Generator* g,
                        bool generateInternalNodes = false);
 
+    void clearOpenNamespaces() { openNamespaces_.clear(); }
+    void insertOpenNamespace(const QString& path) { openNamespaces_.insert(path); }
+    FunctionNode* findNodeInOpenNamespace(const QStringList& parentPath, const FunctionNode* clone);
+    Node* findNodeInOpenNamespace(QStringList& path, Node::Type type, Node::SubType subtype);
+
     /* debugging functions */
     void printModules() const;
     void printQmlModules() const;
@@ -240,6 +245,7 @@ class QDocDatabase
     TextToNodeMap           legaleseTexts_;
     DocNodeMultiMap         docNodesByTitle_;
     TargetRecMultiMap       targetRecMultiMap_;
+    QSet<QString>           openNamespaces_;
 };
 
 QT_END_NAMESPACE

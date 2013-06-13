@@ -5004,7 +5004,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_ItemView_ActivateItemOnSingleClick:
         ret = 0;
         if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
-            ret = theme->themeHint(QPlatformTheme::ToolButtonStyle).toBool() ? 1 : 0;
+            ret = theme->themeHint(QPlatformTheme::ItemViewActivateItemOnSingleClick).toBool() ? 1 : 0;
         break;
     case SH_TitleBar_ModifyNotification:
         ret = true;
