@@ -46,11 +46,13 @@
 #include <QFileDialog>
 #include <QPointer>
 
+QT_BEGIN_NAMESPACE
 class QPushButton;
 class QCheckBox;
 class QComboBox;
 class QLineEdit;
 class QPlainTextEdit;
+QT_END_NAMESPACE
 class LabelLineEdit;
 
 class FileDialogPanel : public QWidget

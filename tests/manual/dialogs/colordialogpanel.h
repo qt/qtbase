@@ -45,9 +45,11 @@
 #include <QPointer>
 #include <QColorDialog>
 
+QT_BEGIN_NAMESPACE
 class QComboBox;
 class QCheckBox;
 class QPushButton;
+QT_END_NAMESPACE
 
 class ColorDialogPanel : public QWidget
 {

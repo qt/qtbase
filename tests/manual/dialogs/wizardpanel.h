@@ -46,7 +46,9 @@
 
 class WizardStyleControl;
 class WizardOptionsControl;
+QT_BEGIN_NAMESPACE
 class QWizard;
+QT_END_NAMESPACE
 
 class WizardPanel : public QWidget
 {

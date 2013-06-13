@@ -45,10 +45,12 @@
 #include <QPointer>
 #include <QFontDialog>
 
+QT_BEGIN_NAMESPACE
 class QCheckBox;
 class QPushButton;
 class QFontComboBox;
 class QDoubleSpinBox;
+QT_END_NAMESPACE
 
 class FontDialogPanel : public QWidget
 {
