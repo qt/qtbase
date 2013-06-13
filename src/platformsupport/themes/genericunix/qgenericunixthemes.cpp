@@ -164,6 +164,7 @@ public:
         , kdeVersion(kdeVersion)
         , toolButtonStyle(Qt::ToolButtonTextBesideIcon)
         , toolBarIconSize(0)
+        , singleClick(true)
     { }
 
     QString globalSettingsFile() const
@@ -186,6 +187,7 @@ public:
     QStringList styleNames;
     int toolButtonStyle;
     int toolBarIconSize;
+    bool singleClick;
 };
 
 void QKdeThemePrivate::refresh()
@@ -216,6 +218,8 @@ void QKdeThemePrivate::refresh()
         if (style != styleNames.front())
             styleNames.push_front(style);
     }
+
+    singleClick = kdeSettings.value(QStringLiteral("KDE/SingleClick"), true).toBool();
 
     const QVariant themeValue = kdeSettings.value(QStringLiteral("Icons/Theme"));
     if (themeValue.isValid())
@@ -360,6 +364,8 @@ QVariant QKdeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         return QVariant(d->styleNames);
     case QPlatformTheme::KeyboardScheme:
         return QVariant(int(KdeKeyboardScheme));
+    case QPlatformTheme::ItemViewActivateItemOnSingleClick:
+        return QVariant(d->singleClick);
     default:
         break;
     }
