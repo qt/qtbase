@@ -224,8 +224,10 @@ defineTest(qtAddToolEnv) {
                 else: infix =
                 val = "(set $$name=$$join(value, ;)$$infix) &"
             }
-            contains(MAKEFILE_GENERATOR, MS.*): val ~= s,%,%%,g
-            else: val ~= s,\\\$,\$\$,g
+            !contains(TEMPLATE, vc.*) {
+                contains(MAKEFILE_GENERATOR, MS.*): val ~= s,%,%%,g
+                else: val ~= s,\\\$,\$\$,g
+            }
             $$1 = "$$val $$eval($$1)"
         }
     }
