@@ -76,8 +76,14 @@ bool QHttpNetworkRequestPrivate::operator==(const QHttpNetworkRequestPrivate &ot
 {
     return QHttpNetworkHeaderPrivate::operator==(other)
         && (operation == other.operation)
-        && (ssl == other.ssl)
+        && (priority == other.priority)
         && (uploadByteDevice == other.uploadByteDevice)
+        && (autoDecompress == other.autoDecompress)
+        && (pipeliningAllowed == other.pipeliningAllowed)
+        // we do not clear the customVerb in setOperation
+        && (operation != QHttpNetworkRequest::Custom || (customVerb == other.customVerb))
+        && (withCredentials == other.withCredentials)
+        && (ssl == other.ssl)
         && (preConnect == other.preConnect);
 }
 
