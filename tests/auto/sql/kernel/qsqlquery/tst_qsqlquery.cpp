@@ -195,6 +195,9 @@ private slots:
     void task_233829_data() { generic_data("QPSQL"); }
     void task_233829();
 
+    void QTBUG_12477_data() { generic_data("QPSQL"); }
+    void QTBUG_12477();
+
     void sqlServerReturn0_data() { generic_data(); }
     void sqlServerReturn0();
 
@@ -3010,6 +3013,47 @@ void tst_QSqlQuery::task_233829()
     q.bindValue(0,0.0 / k); // nan
     q.bindValue(1,0.0 / k); // nan
     QVERIFY_SQL(q,exec());
+}
+
+void tst_QSqlQuery::QTBUG_12477()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    if (!db.driverName().startsWith("QPSQL"))
+        QSKIP("PostgreSQL specific test");
+
+    QSqlQuery q(db);
+    QVERIFY_SQL(q, exec("SELECT 1::bit, '10101010000111101101'::varbit, "
+                              "'10101111011'::varbit(15), '22222.20'::numeric(16,2), "
+                              "'333333'::numeric(18), '444444'::numeric"));
+    QVERIFY_SQL(q, next());
+    QSqlRecord r = q.record();
+    QSqlField f;
+
+    f = r.field(0);
+    QCOMPARE(f.length(), 1);
+    QCOMPARE(f.precision(), -1);
+
+    f = r.field(1);
+    QCOMPARE(f.length(), -1);
+    QCOMPARE(f.precision(), -1);
+
+    f = r.field(2);
+    QCOMPARE(f.length(), 15);
+    QCOMPARE(f.precision(), -1);
+
+    f = r.field(3);
+    QCOMPARE(f.length(), 16);
+    QCOMPARE(f.precision(), 2);
+
+    f = r.field(4);
+    QCOMPARE(f.length(), 18);
+    QCOMPARE(f.precision(), 0);
+
+    f = r.field(5);
+    QCOMPARE(f.length(), -1);
+    QCOMPARE(f.precision(), -1);
 }
 
 void tst_QSqlQuery::sqlServerReturn0()
