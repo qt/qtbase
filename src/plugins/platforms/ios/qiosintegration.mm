@@ -90,6 +90,8 @@ bool QIOSIntegration::hasCapability(Capability cap) const
         return true;
     case MultipleWindows:
         return true;
+    case ApplicationState:
+        return true;
     default:
         return QPlatformIntegration::hasCapability(cap);
     }
