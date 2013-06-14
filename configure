@@ -7016,7 +7016,7 @@ fi
 MAKE=`basename "$MAKE"`
 echo
 echo Qt is now configured for building. Just run \'$MAKE\'.
-if [ "$relpath" = "$QT_INSTALL_PREFIX" ]; then
+if [ "$outpath" = "$QT_INSTALL_PREFIX" ]; then
     echo Once everything is built, Qt is installed.
     echo You should not run \'$MAKE install\'.
 else
