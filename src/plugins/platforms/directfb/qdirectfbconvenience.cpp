@@ -291,12 +291,14 @@ QDirectFbKeyMap::QDirectFbKeyMap()
     insert(DIKS_VOLUME_UP             , Qt::Key_VolumeUp);
     insert(DIKS_VOLUME_DOWN           , Qt::Key_VolumeDown);
     insert(DIKS_MUTE                  , Qt::Key_VolumeMute);
-    insert(DIKS_PLAYPAUSE             , Qt::Key_Pause);
+    insert(DIKS_PLAYPAUSE             , Qt::Key_MediaTogglePlayPause);
     insert(DIKS_PLAY                  , Qt::Key_MediaPlay);
     insert(DIKS_STOP                  , Qt::Key_MediaStop);
     insert(DIKS_RECORD                , Qt::Key_MediaRecord);
     insert(DIKS_PREVIOUS              , Qt::Key_MediaPrevious);
     insert(DIKS_NEXT                  , Qt::Key_MediaNext);
+    insert(DIKS_REWIND                , Qt::Key_AudioRewind);
+    insert(DIKS_FASTFORWARD           , Qt::Key_AudioForward);
 
     insert(DIKS_F1                    , Qt::Key_F1);
     insert(DIKS_F2                    , Qt::Key_F2);
