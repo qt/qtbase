@@ -1113,7 +1113,45 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style options that pass an argument
-    -prefix|-docdir|-headerdir|-plugindir|-importdir|-qmldir|-archdatadir|-datadir|-libdir|-bindir|-libexecdir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-skip|-platform|-xplatform|-device|-device-option|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir|-hostlibdir|-qpa|-qconfig|-android-sdk|-android-ndk|-android-ndk-platform|-android-ndk-host|-android-arch|-android-toolchain-version)
+    -prefix| \
+    -docdir| \
+    -headerdir| \
+    -plugindir| \
+    -importdir| \
+    -qmldir| \
+    -archdatadir| \
+    -datadir| \
+    -libdir| \
+    -bindir| \
+    -libexecdir| \
+    -translationdir| \
+    -sysconfdir| \
+    -examplesdir| \
+    -testsdir| \
+    -hostdatadir| \
+    -hostbindir| \
+    -hostlibdir| \
+    -sysroot| \
+    -depths| \
+    -make| \
+    -nomake| \
+    -skip| \
+    -platform| \
+    -xplatform| \
+    -device| \
+    -device-option| \
+    -sdk| \
+    -arch| \
+    -host-arch| \
+    -mysql_config| \
+    -qpa| \
+    -qconfig| \
+    -android-sdk| \
+    -android-ndk| \
+    -android-ndk-platform| \
+    -android-ndk-host| \
+    -android-arch| \
+    -android-toolchain-version)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         shift
         VAL="$1"
