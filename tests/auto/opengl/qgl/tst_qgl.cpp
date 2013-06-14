@@ -1309,14 +1309,17 @@ void tst_QGL::glWidgetReparent()
 {
     // Try it as a top-level first:
     GLWidget *widget = new GLWidget;
+    widget->setObjectName(QStringLiteral("glWidget1"));
     widget->setGeometry(0, 0, 200, 30);
     widget->show();
 
     QWidget grandParentWidget;
+    grandParentWidget.setObjectName(QStringLiteral("grandParentWidget"));
     grandParentWidget.setPalette(Qt::blue);
     QVBoxLayout grandParentLayout(&grandParentWidget);
 
     QWidget parentWidget(&grandParentWidget);
+    parentWidget.setObjectName(QStringLiteral("parentWidget"));
     grandParentLayout.addWidget(&parentWidget);
     parentWidget.setPalette(Qt::green);
     parentWidget.setAutoFillBackground(true);
@@ -1348,6 +1351,7 @@ void tst_QGL::glWidgetReparent()
     // Now do pretty much the same thing, but don't show the
     // widget first:
     widget = new GLWidget;
+    widget->setObjectName(QStringLiteral("glWidget2"));
     parentLayout.addWidget(widget);
 
     QVERIFY(QTest::qWaitForWindowExposed(&grandParentWidget));
