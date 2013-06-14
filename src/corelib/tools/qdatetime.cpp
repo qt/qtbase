@@ -3409,13 +3409,29 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
             return QDateTime();
         }
 
-        int second = (timeParts.count() > 2) ? timeParts.at(2).toInt(&ok) : 0;
-        if (!ok) {
-            return QDateTime();
+        int second = 0;
+        int millisecond = 0;
+        if (timeParts.count() > 2) {
+            QStringList secondParts = timeParts.at(2).split(QLatin1Char('.'));
+            if (secondParts.size() > 2) {
+                return QDateTime();
+            }
+
+            second = secondParts.first().toInt(&ok);
+            if (!ok) {
+                return QDateTime();
+            }
+
+            if (secondParts.size() > 1) {
+                millisecond = secondParts.last().toInt(&ok);
+                if (!ok) {
+                    return QDateTime();
+                }
+            }
         }
 
         QDate date(year, month, day);
-        QTime time(hour, minute, second);
+        QTime time(hour, minute, second, millisecond);
 
         if (parts.count() == 5)
             return QDateTime(date, time, Qt::LocalTime);

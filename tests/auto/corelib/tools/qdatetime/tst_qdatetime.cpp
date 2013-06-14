@@ -1614,6 +1614,8 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::TextDate << invalidDateTime();
     QTest::newRow("text invalid gmt minute") << QString::fromLatin1("Thu 1. Jan 1970 00:00:00 GMT+000X")
         << Qt::TextDate << invalidDateTime();
+    QTest::newRow("text second fraction") << QString::fromLatin1("Mon 6. May 2013 01:02:03.456")
+        << Qt::TextDate << QDateTime(QDate(2013, 5, 6), QTime(1, 2, 3, 456));
 
     // Test Qt::ISODate format.
     QTest::newRow("ISO +01:00") << QString::fromLatin1("1987-02-13T13:24:51+01:00")
