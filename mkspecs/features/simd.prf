@@ -116,7 +116,6 @@ load(qt_build_config)
     }
     neon {
         HEADERS += $$NEON_HEADERS
-        SOURCES += $$NEON_ASM
 
         neon_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS)
         !contains(QT_CPU_FEATURES, neon):neon_compiler.commands += $$QMAKE_CFLAGS_NEON
@@ -127,7 +126,16 @@ load(qt_build_config)
         neon_compiler.variable_out = OBJECTS
         neon_compiler.name = compiling[neon] ${QMAKE_FILE_IN}
         silent:neon_compiler.commands = @echo compiling[neon] ${QMAKE_FILE_IN} && $$neon_compiler.commands
-        QMAKE_EXTRA_COMPILERS += neon_compiler
+        neon_assembler.commands = $$QMAKE_CC -c $(CFLAGS)
+        !contains(QT_CPU_FEATURES, neon):neon_assembler.commands += $$QMAKE_CFLAGS_NEON
+        neon_assembler.commands += $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+        neon_assembler.dependency_type = TYPE_C
+        neon_assembler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
+        neon_assembler.input = NEON_ASM
+        neon_assembler.variable_out = OBJECTS
+        neon_assembler.name = assembling[neon] ${QMAKE_FILE_IN}
+        silent:neon_assembler.commands = @echo assembling[neon] ${QMAKE_FILE_IN} && $$neon_assembler.commands
+        QMAKE_EXTRA_COMPILERS += neon_compiler neon_assembler
     }
     iwmmxt {
         HEADERS += $$IWMMXT_HEADERS
@@ -150,24 +158,32 @@ load(qt_build_config)
         mips_dsp_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
         mips_dsp_compiler.dependency_type = TYPE_C
         mips_dsp_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
-        mips_dsp_compiler.input = MIPS_DSP_ASM MIPS_DSP_SOURCES
+        mips_dsp_compiler.input = MIPS_DSP_SOURCES
         mips_dsp_compiler.variable_out = OBJECTS
         mips_dsp_compiler.name = compiling[mips_dsp] ${QMAKE_FILE_IN}
         silent:mips_dsp_compiler.commands = @echo compiling[mips_dsp] ${QMAKE_FILE_IN} && $$mips_dsp_compiler.commands
+        mips_dsp_assembler.commands = $$QMAKE_CC -c
+        mips_dsp_assembler.commands += $(CFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+        mips_dsp_assembler.dependency_type = TYPE_C
+        mips_dsp_assembler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
+        mips_dsp_assembler.input = MIPS_DSP_ASM
+        mips_dsp_assembler.variable_out = OBJECTS
+        mips_dsp_assembler.name = assembling[mips_dsp] ${QMAKE_FILE_IN}
+        silent:mips_dsp_assembler.commands = @echo assembling[mips_dsp] ${QMAKE_FILE_IN} && $$mips_dsp_assembler.commands
         QMAKE_EXTRA_COMPILERS += mips_dsp_compiler
     }
     mips_dspr2 {
         HEADERS += $$MIPS_DSP_HEADERS
 
-        mips_dspr2_compiler.commands = $$QMAKE_CXX -c
-        mips_dspr2_compiler.commands += $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
-        mips_dspr2_compiler.dependency_type = TYPE_C
-        mips_dspr2_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
-        mips_dspr2_compiler.input = MIPS_DSPR2_ASM
-        mips_dspr2_compiler.variable_out = OBJECTS
-        mips_dspr2_compiler.name = compiling[mips_dspr2] ${QMAKE_FILE_IN}
-        silent:mips_dspr2_compiler.commands = @echo compiling[mips_dspr2] ${QMAKE_FILE_IN} && $$mips_dspr2_compiler.commands
-        QMAKE_EXTRA_COMPILERS += mips_dspr2_compiler
+        mips_dspr2_assembler.commands = $$QMAKE_CC -c
+        mips_dspr2_assembler.commands += $(CFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+        mips_dspr2_assembler.dependency_type = TYPE_C
+        mips_dspr2_assembler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
+        mips_dspr2_assembler.input = MIPS_DSPR2_ASM
+        mips_dspr2_assembler.variable_out = OBJECTS
+        mips_dspr2_assembler.name = assembling[mips_dspr2] ${QMAKE_FILE_IN}
+        silent:mips_dspr2_assembler.commands = @echo assembling[mips_dspr2] ${QMAKE_FILE_IN} && $$mips_dspr2_assembler.commands
+        QMAKE_EXTRA_COMPILERS += mips_dspr2_assembler
     }
 } else:win32-msvc* {
     sse2 {
