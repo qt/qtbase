@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
 class QWindow;
 class QPlatformScreen;
 class QWindowsScreenManager;
+class QWindowsTabletSupport;
 class QWindowsWindow;
 class QWindowsMimeConverter;
 struct QWindowCreationContext;
@@ -135,6 +136,7 @@ public:
     static int verboseInputMethods;
     static int verboseDialogs;
     static int verboseTheming;
+    static int verboseTablet;
 
     explicit QWindowsContext();
     ~QWindowsContext();
@@ -184,6 +186,7 @@ public:
 
     QWindowsMimeConverter &mimeConverter() const;
     QWindowsScreenManager &screenManager();
+    QWindowsTabletSupport *tabletSupport() const;
 #ifndef Q_OS_WINCE
     static QWindowsUser32DLL user32dll;
     static QWindowsShell32DLL shell32dll;

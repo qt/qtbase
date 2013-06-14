@@ -47,6 +47,7 @@
 #include "qtwindowsglobal.h"
 #include "qwindowsmime.h"
 #include "qwindowsinputcontext.h"
+#include "qwindowstabletsupport.h"
 #ifndef QT_NO_ACCESSIBILITY
 #include "accessible/qwindowsaccessibility.h"
 #endif
@@ -83,6 +84,7 @@ int QWindowsContext::verboseOLE = 0;
 int QWindowsContext::verboseInputMethods = 0;
 int QWindowsContext::verboseDialogs = 0;
 int QWindowsContext::verboseTheming = 0;
+int QWindowsContext::verboseTablet = 0;
 
 // Get verbosity of components from "foo:2,bar:3"
 static inline int componentVerbose(const char *v, const char *keyWord)
@@ -259,17 +261,20 @@ struct QWindowsContextPrivate {
     QWindowsMimeConverter m_mimeConverter;
     QWindowsScreenManager m_screenManager;
     QSharedPointer<QWindowCreationContext> m_creationContext;
+#if !defined(QT_NO_TABLETEVENT) && !defined(Q_OS_WINCE)
+    QScopedPointer<QWindowsTabletSupport> m_tabletSupport;
+#endif
     const HRESULT m_oleInitializeResult;
     const QByteArray m_eventType;
     QWindow *m_lastActiveWindow;
     bool m_asyncExpose;
 };
 
-QWindowsContextPrivate::QWindowsContextPrivate() :
-    m_systemInfo(0),
-    m_oleInitializeResult(OleInitialize(NULL)),
-    m_eventType(QByteArrayLiteral("windows_generic_MSG")),
-    m_lastActiveWindow(0), m_asyncExpose(0)
+QWindowsContextPrivate::QWindowsContextPrivate()
+    : m_systemInfo(0)
+    , m_oleInitializeResult(OleInitialize(NULL))
+    , m_eventType(QByteArrayLiteral("windows_generic_MSG"))
+    , m_lastActiveWindow(0), m_asyncExpose(0)
 {
     const QSysInfo::WinVersion ver = QSysInfo::windowsVersion();
 #ifndef Q_OS_WINCE
@@ -310,7 +315,13 @@ QWindowsContext::QWindowsContext() :
         QWindowsContext::verboseInputMethods = componentVerbose(v, "im");
         QWindowsContext::verboseDialogs = componentVerbose(v, "dialogs");
         QWindowsContext::verboseTheming = componentVerbose(v, "theming");
+        QWindowsContext::verboseTablet = componentVerbose(v, "tablet");
     }
+#if !defined(QT_NO_TABLETEVENT) && !defined(Q_OS_WINCE)
+    d->m_tabletSupport.reset(QWindowsTabletSupport::create());
+    if (QWindowsContext::verboseTablet)
+        qDebug() << "Tablet support: " << (d->m_tabletSupport.isNull() ? QStringLiteral("None") : d->m_tabletSupport->description());
+#endif
 }
 
 QWindowsContext::~QWindowsContext()
@@ -626,6 +637,15 @@ QWindowsScreenManager &QWindowsContext::screenManager()
     return d->m_screenManager;
 }
 
+QWindowsTabletSupport *QWindowsContext::tabletSupport() const
+{
+#if !defined(QT_NO_TABLETEVENT) && !defined(Q_OS_WINCE)
+    return d->m_tabletSupport.data();
+#else
+    return 0;
+#endif
+}
+
 /*!
     \brief Convenience to create a non-visible, message-only dummy
     window for example used as clipboard watcher or for GL.
@@ -854,6 +874,10 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return true;
 #ifndef Q_OS_WINCE
     case QtWindows::ActivateWindowEvent:
+#ifndef QT_NO_TABLETEVENT
+        if (!d->m_tabletSupport.isNull())
+            d->m_tabletSupport->notifyActivate();
+#endif // !QT_NO_TABLETEVENT
         if (platformWindow->testFlag(QWindowsWindow::BlockedByModal))
             if (const QWindow *modalWindow = QGuiApplication::modalWindow())
                 QWindowsWindow::baseWindowOf(modalWindow)->alertWindow();
