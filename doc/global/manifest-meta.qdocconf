@@ -36,7 +36,6 @@ manifestmeta.filters                =   highlighted webkit1 webkit2
 
 manifestmeta.highlighted.names      =   "QtQuick/Qt Quick Demo - Same Game" \
                                         "QtQuick/Qt Quick Demo - Photo Surface" \
-                                        "QtQuick/Qt Quick Demo - Tweet Search" \
                                         "QtQuick/Qt Quick Demo - Maroon*" \
                                         "QtQuick/Qt Quick Demo - Calqlatr" \
                                         "QtQuick/Qt Quick Particles Examples - Emitters" \
