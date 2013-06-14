@@ -98,6 +98,11 @@ static NSButton *macCreateButton(const char *text, NSView *superview)
     mDialogIsExecuting = false;
     mResultSet = false;
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7)
+        [mColorPanel setRestorable:NO];
+#endif
+
     if (mHelper->options()->testOption(QColorDialogOptions::NoButtons)) {
         mStolenContentView = 0;
         mOkButton = 0;
