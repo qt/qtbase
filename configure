@@ -4055,10 +4055,6 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         if [ '!' -z "$D_FLAGS" ]; then
             EXTRA_CFLAGS="$EXTRA_CFLAGS $D_FLAGS"
         fi
-        QMAKE_BIN_DIR="$QT_INSTALL_BINS"
-        [ -z "$QMAKE_BIN_DIR" ] && QMAKE_BIN_DIR="${QT_INSTALL_PREFIX}/bin"
-        QMAKE_DATA_DIR="$QT_INSTALL_ARCHDATA"
-        [ -z "$QMAKE_DATA_DIR" ] && QMAKE_DATA_DIR="${QT_INSTALL_PREFIX}"
         echo >>"$mkfile"
 	adjrelpath=`echo "$relpath" | sed 's/ /\\\\\\\\ /g'`
 	adjoutpath=`echo "$outpath" | sed 's/ /\\\\\\\\ /g'`
@@ -4078,8 +4074,6 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         echo "QTOBJS = $EXTRA_OBJS" >> "$mkfile"
         echo "QTSRCS = $EXTRA_SRCS" >> "$mkfile"
         echo "LFLAGS = $EXTRA_LFLAGS" >> "$mkfile"
-        echo "QT_INSTALL_BINS = \$(INSTALL_ROOT)$QMAKE_BIN_DIR" >> "$mkfile"
-        echo "QT_INSTALL_DATA = \$(INSTALL_ROOT)$QMAKE_DATA_DIR" >> "$mkfile"
         echo "EXEEXT = $EXEEXT" >> "$mkfile"
         echo "RM_F = rm -f" >> "$mkfile"
         echo "RM_RF = rm -rf" >> "$mkfile"
