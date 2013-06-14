@@ -450,7 +450,6 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
 {
     Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
     NSInteger styleMask = NSBorderlessWindowMask;
-
     if ((type & Qt::Popup) == Qt::Popup) {
         if (!windowIsPopupType(type) && !(flags & Qt::FramelessWindowHint))
             styleMask = (NSUtilityWindowMask | NSResizableWindowMask | NSClosableWindowMask |
@@ -458,14 +457,21 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     } else {
         // Filter flags for supported properties
         flags &= Qt::WindowType_Mask | Qt::FramelessWindowHint | Qt::WindowTitleHint |
-                 Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint;
+                 Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint | Qt::CustomizeWindowHint;
         if (flags == Qt::Window) {
             styleMask = (NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSTitledWindowMask);
         } else if ((flags & Qt::Dialog) == Qt::Dialog) {
-            if (window()->modality() == Qt::NonModal)
+            if (flags & Qt::CustomizeWindowHint) {
+                styleMask = NSResizableWindowMask;
+                if (flags & Qt::WindowTitleHint)
+                    styleMask |= NSTitledWindowMask;
+                if (flags & Qt::WindowCloseButtonHint)
+                    styleMask |= NSClosableWindowMask;
+                if (flags & Qt::WindowMinimizeButtonHint)
+                    styleMask |= NSMiniaturizableWindowMask;
+            } else {
                 styleMask = NSResizableWindowMask | NSClosableWindowMask | NSTitledWindowMask;
-            else
-                styleMask = NSResizableWindowMask | NSTitledWindowMask;
+            }
         } else if (!(flags & Qt::FramelessWindowHint)) {
             if ((flags & Qt::Dialog) || (flags & Qt::WindowMaximizeButtonHint))
                 styleMask |= NSResizableWindowMask;
