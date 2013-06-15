@@ -686,7 +686,7 @@ struct QMetaTypeIdQObject<T*, /* isPointerToTypeDerivedFromQObject */ true>
 template <typename T>
 inline int qRegisterMetaTypeStreamOperators()
 {
-    register int id = qMetaTypeId<T>();
+    int id = qMetaTypeId<T>();
     QMetaType::registerStreamOperators(id, QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Save,
                                            QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Load);
     return id;

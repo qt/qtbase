@@ -124,8 +124,8 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndAddWaitFree()
 
 inline bool QBasicAtomicInt::ref()
 {
-    register int originalValue;
-    register int newValue;
+    int originalValue;
+    int newValue;
     asm volatile("lwarx  %[originalValue]," _Q_VALUE "\n"
                  "addi   %[newValue], %[originalValue], %[one]\n"
                  "stwcx. %[newValue]," _Q_VALUE "\n"
@@ -141,8 +141,8 @@ inline bool QBasicAtomicInt::ref()
 
 inline bool QBasicAtomicInt::deref()
 {
-    register int originalValue;
-    register int newValue;
+    int originalValue;
+    int newValue;
     asm volatile("lwarx  %[originalValue]," _Q_VALUE "\n"
                  "addi   %[newValue], %[originalValue], %[minusOne]\n"
                  "stwcx. %[newValue]," _Q_VALUE "\n"
@@ -158,7 +158,7 @@ inline bool QBasicAtomicInt::deref()
 
 inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
 {
-    register int result;
+    int result;
     asm volatile("lwarx  %[result]," _Q_VALUE "\n"
                  "xor.   %[result], %[result], %[expectedValue]\n"
                  "bne    $+12\n"
@@ -175,7 +175,7 @@ inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
 
 inline bool QBasicAtomicInt::testAndSetAcquire(int expectedValue, int newValue)
 {
-    register int result;
+    int result;
     asm volatile("lwarx  %[result]," _Q_VALUE "\n"
                  "xor.   %[result], %[result], %[expectedValue]\n"
                  "bne    $+16\n"
@@ -193,7 +193,7 @@ inline bool QBasicAtomicInt::testAndSetAcquire(int expectedValue, int newValue)
 
 inline bool QBasicAtomicInt::testAndSetRelease(int expectedValue, int newValue)
 {
-    register int result;
+    int result;
     asm volatile("eieio\n"
                  "lwarx  %[result]," _Q_VALUE "\n"
                  "xor.   %[result], %[result], %[expectedValue]\n"
@@ -211,7 +211,7 @@ inline bool QBasicAtomicInt::testAndSetRelease(int expectedValue, int newValue)
 
 inline int QBasicAtomicInt::fetchAndStoreRelaxed(int newValue)
 {
-    register int originalValue;
+    int originalValue;
     asm volatile("lwarx  %[originalValue]," _Q_VALUE "\n"
                  "stwcx. %[newValue]," _Q_VALUE "\n"
                  "bne-   $-8\n"
@@ -225,7 +225,7 @@ inline int QBasicAtomicInt::fetchAndStoreRelaxed(int newValue)
 
 inline int QBasicAtomicInt::fetchAndStoreAcquire(int newValue)
 {
-    register int originalValue;
+    int originalValue;
     asm volatile("lwarx  %[originalValue]," _Q_VALUE "\n"
                  "stwcx. %[newValue]," _Q_VALUE "\n"
                  "bne-   $-8\n"
@@ -240,7 +240,7 @@ inline int QBasicAtomicInt::fetchAndStoreAcquire(int newValue)
 
 inline int QBasicAtomicInt::fetchAndStoreRelease(int newValue)
 {
-    register int originalValue;
+    int originalValue;
     asm volatile("eieio\n"
                  "lwarx  %[originalValue]," _Q_VALUE "\n"
                  "stwcx. %[newValue]," _Q_VALUE "\n"
@@ -255,8 +255,8 @@ inline int QBasicAtomicInt::fetchAndStoreRelease(int newValue)
 
 inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd)
 {
-    register int originalValue;
-    register int newValue;
+    int originalValue;
+    int newValue;
     asm volatile("lwarx  %[originalValue]," _Q_VALUE "\n"
                  "add    %[newValue], %[originalValue], %[valueToAdd]\n"
                  "stwcx. %[newValue]," _Q_VALUE "\n"
@@ -272,8 +272,8 @@ inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd)
 
 inline int QBasicAtomicInt::fetchAndAddAcquire(int valueToAdd)
 {
-    register int originalValue;
-    register int newValue;
+    int originalValue;
+    int newValue;
     asm volatile("lwarx  %[originalValue]," _Q_VALUE "\n"
                  "add    %[newValue], %[originalValue], %[valueToAdd]\n"
                  "stwcx. %[newValue]," _Q_VALUE "\n"
@@ -290,8 +290,8 @@ inline int QBasicAtomicInt::fetchAndAddAcquire(int valueToAdd)
 
 inline int QBasicAtomicInt::fetchAndAddRelease(int valueToAdd)
 {
-    register int originalValue;
-    register int newValue;
+    int originalValue;
+    int newValue;
     asm volatile("eieio\n"
                  "lwarx  %[originalValue]," _Q_VALUE "\n"
                  "add    %[newValue], %[originalValue], %[valueToAdd]\n"
@@ -317,7 +317,7 @@ inline int QBasicAtomicInt::fetchAndAddRelease(int valueToAdd)
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValue, T *newValue)
 {
-    register void *result;
+    void *result;
     asm volatile(LPARX"  %[result]," _Q_VALUE "\n"
                  "xor.   %[result], %[result], %[expectedValue]\n"
                  "bne    $+12\n"
@@ -335,7 +335,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValu
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetAcquire(T *expectedValue, T *newValue)
 {
-    register void *result;
+    void *result;
     asm volatile(LPARX"  %[result]," _Q_VALUE "\n"
                  "xor.   %[result], %[result], %[expectedValue]\n"
                  "bne    $+16\n"
@@ -354,7 +354,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetAcquire(T *expectedValu
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelease(T *expectedValue, T *newValue)
 {
-    register void *result;
+    void *result;
     asm volatile("eieio\n"
                  LPARX"  %[result]," _Q_VALUE "\n"
                  "xor.   %[result], %[result], %[expectedValue]\n"
@@ -373,7 +373,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelease(T *expectedValu
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
 {
-    register T *originalValue;
+    T *originalValue;
     asm volatile(LPARX"  %[originalValue]," _Q_VALUE "\n"
                  STPCX"  %[newValue]," _Q_VALUE "\n"
                  "bne-   $-8\n"
@@ -388,7 +388,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreAcquire(T *newValue)
 {
-    register T *originalValue;
+    T *originalValue;
     asm volatile(LPARX"  %[originalValue]," _Q_VALUE "\n"
                  STPCX"  %[newValue]," _Q_VALUE "\n"
                  "bne-   $-8\n"
@@ -404,7 +404,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreAcquire(T *newValue)
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelease(T *newValue)
 {
-    register T *originalValue;
+    T *originalValue;
     asm volatile("eieio\n"
                  LPARX"  %[originalValue]," _Q_VALUE "\n"
                  STPCX"  %[newValue]," _Q_VALUE "\n"
@@ -420,8 +420,8 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelease(T *newValue)
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelaxed(qptrdiff valueToAdd)
 {
-    register T *originalValue;
-    register T *newValue;
+    T *originalValue;
+    T *newValue;
     asm volatile(LPARX"  %[originalValue]," _Q_VALUE "\n"
                  "add    %[newValue], %[originalValue], %[valueToAdd]\n"
                  STPCX"  %[newValue]," _Q_VALUE "\n"
@@ -438,8 +438,8 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelaxed(qptrdiff valueTo
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddAcquire(qptrdiff valueToAdd)
 {
-    register T *originalValue;
-    register T *newValue;
+    T *originalValue;
+    T *newValue;
     asm volatile(LPARX"  %[originalValue]," _Q_VALUE "\n"
                  "add    %[newValue], %[originalValue], %[valueToAdd]\n"
                  STPCX"  %[newValue]," _Q_VALUE "\n"
@@ -457,8 +457,8 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddAcquire(qptrdiff valueTo
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueToAdd)
 {
-    register T *originalValue;
-    register T *newValue;
+    T *originalValue;
+    T *newValue;
     asm volatile("eieio\n"
                  LPARX"  %[originalValue]," _Q_VALUE "\n"
                  "add    %[newValue], %[originalValue], %[valueToAdd]\n"

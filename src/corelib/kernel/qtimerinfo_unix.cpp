@@ -153,7 +153,7 @@ void QTimerInfoList::timerRepair(const timespec &diff)
 {
     // repair all timers
     for (int i = 0; i < size(); ++i) {
-        register QTimerInfo *t = at(i);
+        QTimerInfo *t = at(i);
         t->timeout = t->timeout + diff;
     }
 }
@@ -182,7 +182,7 @@ void QTimerInfoList::timerInsert(QTimerInfo *ti)
 {
     int index = size();
     while (index--) {
-        register const QTimerInfo * const t = at(index);
+        const QTimerInfo * const t = at(index);
         if (!(ti->timeout < t->timeout))
             break;
     }
@@ -244,8 +244,8 @@ static void calculateCoarseTimerTimeout(QTimerInfo *t, timespec currentTime)
     //
     // The objective is to make most timers wake up at the same time, thereby reducing CPU wakeups.
 
-    register uint interval = uint(t->interval);
-    register uint msec = uint(t->timeout.tv_nsec) / 1000 / 1000;
+    uint interval = uint(t->interval);
+    uint msec = uint(t->timeout.tv_nsec) / 1000 / 1000;
     Q_ASSERT(interval >= 20);
 
     // Calculate how much we can round and still keep within 5% error
@@ -256,14 +256,14 @@ static void calculateCoarseTimerTimeout(QTimerInfo *t, timespec currentTime)
         if (interval < 50) {
             // round to even
             // round towards multiples of 50 ms
-            register bool roundUp = (msec % 50) >= 25;
+            bool roundUp = (msec % 50) >= 25;
             msec >>= 1;
             msec |= uint(roundUp);
             msec <<= 1;
         } else {
             // round to multiple of 4
             // round towards multiples of 100 ms
-            register bool roundUp = (msec % 100) >= 50;
+            bool roundUp = (msec % 100) >= 50;
             msec >>= 2;
             msec |= uint(roundUp);
             msec <<= 2;
@@ -423,7 +423,7 @@ int QTimerInfoList::timerRemainingTime(int timerId)
     timespec tm = {0, 0};
 
     for (int i = 0; i < count(); ++i) {
-        register QTimerInfo *t = at(i);
+        QTimerInfo *t = at(i);
         if (t->id == timerId) {
             if (currentTime < t->timeout) {
                 // time to wait
@@ -509,7 +509,7 @@ bool QTimerInfoList::unregisterTimer(int timerId)
 {
     // set timer inactive
     for (int i = 0; i < count(); ++i) {
-        register QTimerInfo *t = at(i);
+        QTimerInfo *t = at(i);
         if (t->id == timerId) {
             // found it
             removeAt(i);
@@ -530,7 +530,7 @@ bool QTimerInfoList::unregisterTimers(QObject *object)
     if (isEmpty())
         return false;
     for (int i = 0; i < count(); ++i) {
-        register QTimerInfo *t = at(i);
+        QTimerInfo *t = at(i);
         if (t->obj == object) {
             // object found
             removeAt(i);
@@ -550,7 +550,7 @@ QList<QAbstractEventDispatcher::TimerInfo> QTimerInfoList::registeredTimers(QObj
 {
     QList<QAbstractEventDispatcher::TimerInfo> list;
     for (int i = 0; i < count(); ++i) {
-        register const QTimerInfo * const t = at(i);
+        const QTimerInfo * const t = at(i);
         if (t->obj == object) {
             list << QAbstractEventDispatcher::TimerInfo(t->id,
                                                         (t->timerType == Qt::VeryCoarseTimer

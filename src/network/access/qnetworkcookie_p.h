@@ -73,7 +73,7 @@ public:
     bool httpOnly;
 };
 
-static inline bool isLWS(register char c)
+static inline bool isLWS(char c)
 {
     return c == ' ' || c == '\t' || c == '\r' || c == '\n';
 }

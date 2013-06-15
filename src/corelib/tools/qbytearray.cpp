@@ -261,8 +261,8 @@ int qstrcmp(const char *str1, const char *str2)
 
 int qstricmp(const char *str1, const char *str2)
 {
-    register const uchar *s1 = reinterpret_cast<const uchar *>(str1);
-    register const uchar *s2 = reinterpret_cast<const uchar *>(str2);
+    const uchar *s1 = reinterpret_cast<const uchar *>(str1);
+    const uchar *s2 = reinterpret_cast<const uchar *>(str2);
     int res;
     uchar c;
     if (!s1 || !s2)
@@ -295,8 +295,8 @@ int qstricmp(const char *str1, const char *str2)
 
 int qstrnicmp(const char *str1, const char *str2, uint len)
 {
-    register const uchar *s1 = reinterpret_cast<const uchar *>(str1);
-    register const uchar *s2 = reinterpret_cast<const uchar *>(str2);
+    const uchar *s1 = reinterpret_cast<const uchar *>(str1);
+    const uchar *s2 = reinterpret_cast<const uchar *>(str2);
     int res;
     uchar c;
     if (!s1 || !s2)
@@ -321,7 +321,7 @@ int qstrcmp(const QByteArray &str1, const char *str2)
     const char *str1data = str1.constData();
     const char *str1end = str1data + str1.length();
     for ( ; str1data < str1end && *str2; ++str1data, ++str2) {
-        register int diff = int(uchar(*str1data)) - uchar(*str2);
+        int diff = int(uchar(*str1data)) - uchar(*str2);
         if (diff)
             // found a difference
             return diff;
@@ -357,8 +357,8 @@ int qstrcmp(const QByteArray &str1, const QByteArray &str2)
 #if 0
 static void createCRC16Table()                        // build CRC16 lookup table
 {
-    register unsigned int i;
-    register unsigned int j;
+    unsigned int i;
+    unsigned int j;
     unsigned short crc_tbl[16];
     unsigned int v0, v1, v2, v3;
     for (i = 0; i < 16; i++) {
@@ -410,7 +410,7 @@ static const quint16 crc_tbl[16] = {
 
 quint16 qChecksum(const char *data, uint len)
 {
-    register quint16 crc = 0xffff;
+    quint16 crc = 0xffff;
     uchar c;
     const uchar *p = reinterpret_cast<const uchar *>(data);
     while (len--) {
@@ -2671,7 +2671,7 @@ QByteArray QByteArray::mid(int pos, int len) const
 QByteArray QByteArray::toLower() const
 {
     QByteArray s(*this);
-    register uchar *p = reinterpret_cast<uchar *>(s.data());
+    uchar *p = reinterpret_cast<uchar *>(s.data());
     if (p) {
         while (*p) {
             *p = QChar::toLower((ushort)*p);
@@ -2694,7 +2694,7 @@ QByteArray QByteArray::toLower() const
 QByteArray QByteArray::toUpper() const
 {
     QByteArray s(*this);
-    register uchar *p = reinterpret_cast<uchar *>(s.data());
+    uchar *p = reinterpret_cast<uchar *>(s.data());
     if (p) {
         while (*p) {
             *p = QChar::toUpper((ushort)*p);

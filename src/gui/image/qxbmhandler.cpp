@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
   X bitmap image read/write functions
  *****************************************************************************/
 
-static inline int hex2byte(register char *p)
+static inline int hex2byte(char *p)
 {
     return ((isdigit((uchar) *p) ? *p - '0' : toupper((uchar) *p) - 'A' + 10) << 4) |
            (isdigit((uchar) *(p+1)) ? *(p+1) - '0' : toupper((uchar) *(p+1)) - 'A' + 10);
@@ -215,7 +215,7 @@ static bool write_xbm_image(const QImage &sourceImage, QIODevice *device, const 
 	}
     }
     int bcnt = 0;
-    register char *p = buf;
+    char *p = buf;
     int bpl = (w+7)/8;
     for (int y = 0; y < h; ++y) {
         uchar *b = image.scanLine(y);

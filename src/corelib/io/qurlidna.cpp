@@ -2028,7 +2028,7 @@ Q_AUTOTEST_EXPORT void qt_nameprep(QString *source, int from)
     const QChar *e = src + source->size();
 
     for ( ; out < e; ++out) {
-        register ushort uc = out->unicode();
+        ushort uc = out->unicode();
         if (uc >= 0x80) {
             break;
         } else if (uc >= 'A' && uc <= 'Z') {
@@ -2121,7 +2121,7 @@ Q_AUTOTEST_EXPORT bool qt_check_std3rules(const QChar *uc, int len)
         return false;
 
     for (int i = 0; i < len; ++i) {
-        register ushort c = uc[i].unicode();
+        ushort c = uc[i].unicode();
         if (c == '-' && (i == 0 || i == len - 1))
             return false;
 
@@ -2504,7 +2504,7 @@ QString qt_ACE_do(const QString &domain, AceOperation op)
             const QChar *in = domain.constData() + lastIdx;
             const QChar *e = in + labelLength;
             for (; in < e; ++in, ++out) {
-                register ushort uc = in->unicode();
+                ushort uc = in->unicode();
                 if (uc > 0x7f)
                     simple = false;
                 if (uc >= 'A' && uc <= 'Z')
@@ -2533,7 +2533,7 @@ QString qt_ACE_do(const QString &domain, AceOperation op)
             // That means we need one or two temporaries
             qt_nameprep(&result, prevLen);
             labelLength = result.length() - prevLen;
-            register int toReserve = labelLength + 4 + 6; // "xn--" plus some extra bytes
+            int toReserve = labelLength + 4 + 6; // "xn--" plus some extra bytes
             aceForm.resize(0);
             if (toReserve > aceForm.capacity())
                 aceForm.reserve(toReserve);

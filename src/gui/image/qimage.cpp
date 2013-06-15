@@ -2270,7 +2270,7 @@ static void dither_to_Mono(QImageData *dst, const QImageData *src,
 
         int *b1, *b2;
         int wbytes = w * (d/8);
-        register const uchar *p = src->data;
+        const uchar *p = src->data;
         const uchar *end = p + wbytes;
         b2 = line2;
         if (use_gray) {                        // 8 bit image
@@ -2830,7 +2830,7 @@ static void convert_Mono_to_X32(QImageData *dest, const QImageData *src, Qt::Ima
     uchar *dest_data = dest->data;
     if (src->format == QImage::Format_Mono) {
         for (int y = 0; y < dest->height; y++) {
-            register uint *p = (uint *)dest_data;
+            uint *p = (uint *)dest_data;
             for (int x = 0; x < dest->width; x++)
                 *p++ = colorTable.at((src_data[x>>3] >> (7 - (x & 7))) & 1);
 
@@ -2839,7 +2839,7 @@ static void convert_Mono_to_X32(QImageData *dest, const QImageData *src, Qt::Ima
         }
     } else {
         for (int y = 0; y < dest->height; y++) {
-            register uint *p = (uint *)dest_data;
+            uint *p = (uint *)dest_data;
             for (int x = 0; x < dest->width; x++)
                 *p++ = colorTable.at((src_data[x>>3] >> (x & 7)) & 1);
 
@@ -2873,7 +2873,7 @@ static void convert_Mono_to_Indexed8(QImageData *dest, const QImageData *src, Qt
     uchar *dest_data = dest->data;
     if (src->format == QImage::Format_Mono) {
         for (int y = 0; y < dest->height; y++) {
-            register uchar *p = dest_data;
+            uchar *p = dest_data;
             for (int x = 0; x < dest->width; x++)
                 *p++ = (src_data[x>>3] >> (7 - (x & 7))) & 1;
             src_data += src->bytes_per_line;
@@ -2881,7 +2881,7 @@ static void convert_Mono_to_Indexed8(QImageData *dest, const QImageData *src, Qt
         }
     } else {
         for (int y = 0; y < dest->height; y++) {
-            register uchar *p = dest_data;
+            uchar *p = dest_data;
             for (int x = 0; x < dest->width; x++)
                 *p++ = (src_data[x>>3] >> (x & 7)) & 1;
             src_data += src->bytes_per_line;

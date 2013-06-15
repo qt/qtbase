@@ -707,7 +707,7 @@ QApplication::~QApplication()
         QWidgetSet *mySet = QWidgetPrivate::allWidgets;
         QWidgetPrivate::allWidgets = 0;
         for (QWidgetSet::ConstIterator it = mySet->constBegin(); it != mySet->constEnd(); ++it) {
-            register QWidget *w = *it;
+            QWidget *w = *it;
             if (!w->parent())                        // window
                 w->destroy(true, true);
         }
@@ -1044,7 +1044,7 @@ void QApplication::setStyle(QStyle *style)
     if (QApplicationPrivate::app_style) {
         if (QApplicationPrivate::is_app_running && !QApplicationPrivate::is_app_closing) {
             for (QWidgetList::ConstIterator it = all.constBegin(); it != all.constEnd(); ++it) {
-                register QWidget *w = *it;
+                QWidget *w = *it;
                 if (!(w->windowType() == Qt::Desktop) &&        // except desktop
                      w->testAttribute(Qt::WA_WState_Polished)) { // has been polished
                     QApplicationPrivate::app_style->unpolish(w);
@@ -1086,7 +1086,7 @@ void QApplication::setStyle(QStyle *style)
     // re-polish existing widgets if necessary
     if (QApplicationPrivate::is_app_running && !QApplicationPrivate::is_app_closing) {
         for (QWidgetList::ConstIterator it1 = all.constBegin(); it1 != all.constEnd(); ++it1) {
-            register QWidget *w = *it1;
+            QWidget *w = *it1;
             if (w->windowType() != Qt::Desktop && w->testAttribute(Qt::WA_WState_Polished)) {
                 if (w->style() == QApplicationPrivate::app_style)
                     QApplicationPrivate::app_style->polish(w);                // repolish
@@ -1098,7 +1098,7 @@ void QApplication::setStyle(QStyle *style)
         }
 
         for (QWidgetList::ConstIterator it2 = all.constBegin(); it2 != all.constEnd(); ++it2) {
-            register QWidget *w = *it2;
+            QWidget *w = *it2;
             if (w->windowType() != Qt::Desktop && !w->testAttribute(Qt::WA_SetStyle)) {
                     QEvent e(QEvent::StyleChange);
                     QApplication::sendEvent(w, &e);
@@ -1328,7 +1328,7 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
 
         QWidgetList wids = QApplication::allWidgets();
         for (QWidgetList::ConstIterator it = wids.constBegin(); it != wids.constEnd(); ++it) {
-            register QWidget *w = *it;
+            QWidget *w = *it;
             if (all || (!className && w->isWindow()) || w->inherits(className)) // matching class
                 QApplication::sendEvent(w, &e);
         }
@@ -1510,7 +1510,7 @@ void QApplication::setFont(const QFont &font, const char *className)
 
         QWidgetList wids = QApplication::allWidgets();
         for (QWidgetList::ConstIterator it = wids.constBegin(); it != wids.constEnd(); ++it) {
-            register QWidget *w = *it;
+            QWidget *w = *it;
             if (all || (!className && w->isWindow()) || w->inherits(className)) // matching class
                 sendEvent(w, &e);
         }
@@ -1580,7 +1580,7 @@ void QApplication::setWindowIcon(const QIcon &icon)
         QEvent e(QEvent::ApplicationWindowIconChange);
         QWidgetList all = QApplication::allWidgets();
         for (QWidgetList::ConstIterator it = all.constBegin(); it != all.constEnd(); ++it) {
-            register QWidget *w = *it;
+            QWidget *w = *it;
             if (w->isWindow())
                 sendEvent(w, &e);
         }
@@ -2962,7 +2962,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     && mouse->type() == QEvent::MouseMove && mouse->buttons() == 0) {
                     // but still send them through all application event filters (normally done by notify_helper)
                     for (int i = 0; d->extraData && i < d->extraData->eventFilters.size(); ++i) {
-                        register QObject *obj = d->extraData->eventFilters.at(i);
+                        QObject *obj = d->extraData->eventFilters.at(i);
                         if (!obj)
                             continue;
                         if (obj->d_func()->threadData != w->d_func()->threadData) {

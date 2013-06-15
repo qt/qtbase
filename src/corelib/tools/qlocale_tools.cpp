@@ -300,13 +300,13 @@ bool removeGroupSeparators(QLocalePrivate::CharBuff *num)
  * Ignores `locale' stuff.  Assumes that the upper and lower case
  * alphabets and digits are each contiguous.
  */
-qulonglong qstrtoull(const char *nptr, const char **endptr, register int base, bool *ok)
+qulonglong qstrtoull(const char *nptr, const char **endptr, int base, bool *ok)
 {
-    register const char *s = nptr;
-    register qulonglong acc;
-    register unsigned char c;
-    register qulonglong qbase, cutoff;
-    register int any, cutlim;
+    const char *s = nptr;
+    qulonglong acc;
+    unsigned char c;
+    qulonglong qbase, cutoff;
+    int any, cutlim;
 
     if (ok != 0)
         *ok = true;
@@ -381,13 +381,13 @@ qulonglong qstrtoull(const char *nptr, const char **endptr, register int base, b
  * Ignores `locale' stuff.  Assumes that the upper and lower case
  * alphabets and digits are each contiguous.
  */
-qlonglong qstrtoll(const char *nptr, const char **endptr, register int base, bool *ok)
+qlonglong qstrtoll(const char *nptr, const char **endptr, int base, bool *ok)
 {
-    register const char *s;
-    register qulonglong acc;
-    register unsigned char c;
-    register qulonglong qbase, cutoff;
-    register int neg, any, cutlim;
+    const char *s;
+    qulonglong acc;
+    unsigned char c;
+    qulonglong qbase, cutoff;
+    int neg, any, cutlim;
 
     /*
      * Skip white space and pick up leading +/- sign if any.

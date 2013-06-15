@@ -188,7 +188,7 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
             }
         }
     } else {                                        // read ascii data
-        register uchar *p;
+        uchar *p;
         int n;
         for (y=0; y<h; y++) {
             p = outImage->scanLine(y);
