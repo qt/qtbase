@@ -163,6 +163,10 @@ namespace QtAndroidInput
 
     static void longPress(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint x, jint y)
     {
+        //### TODO: add proper API for Qt 5.2
+        static bool rightMouseFromLongPress = qgetenv("QT_NECESSITAS_COMPATIBILITY_LONG_PRESS").toInt();
+        if (!rightMouseFromLongPress)
+            return;
         m_ignoreMouseEvents = true;
         QPoint globalPos(x,y);
         QWindow *tlw = topLevelWindowAt(globalPos);

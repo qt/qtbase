@@ -60,7 +60,7 @@ does not exist. The class documentation may be marked as
 
 The \l{qmltype-command}{\\qmltype} command is for QML type documentation.
 
-\snippet examples/qml.qdoc qmltype
+\snippet examples/qml.qdoc.sample qmltype
 
 The \l{instantiates-command}{\\instantiates} accepts the C++ class which
 implements the QML type as the argument. For types implemented in QML, this
@@ -108,7 +108,7 @@ with the \l{qmlsignal-command}{\\qmlsignal} command. Signal documentation
 must include the condition for emitting the signal, mention the corresponding
 signal handler, and document whether the signal accepts a parameter.
 
-\snippet examples/qml.qdoc signals
+\snippet examples/qml.qdoc.sample signals
 
 These are the possible documentation styles for signals:
 \list
@@ -127,7 +127,7 @@ documentation must reside immediately above the function declaration.
 The function documentation starts with a verb, indicating the operation the
 function performs.
 
-\snippet examples/qml.qdoc function
+\snippet examples/qml.qdoc.sample function
 
 Some common verbs for function documentation:
 \list
@@ -153,7 +153,7 @@ QML enumerations are documented as QML properties with the
 \l{qmlproperty-command}{\\qmlproperty} command. The type of the property
 is \c enumeration.
 
-\snippet examples/qml.qdoc enums
+\snippet examples/qml.qdoc.sample enums
 
 The QDoc comment lists the values of the enumeration. If the enumeration is
 implemented in C++, the documentation may link to the corresponding C++

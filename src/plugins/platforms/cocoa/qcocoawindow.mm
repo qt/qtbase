@@ -486,7 +486,7 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
 
 void QCocoaWindow::setWindowState(Qt::WindowState state)
 {
-    if ([m_nsWindow isVisible])
+    if (window()->isVisible())
         syncWindowState(state);  // Window state set for hidden windows take effect when show() is called.
 }
 
@@ -723,6 +723,12 @@ bool QCocoaWindow::windowShouldClose()
     QWindowSystemInterface::handleCloseEvent(window(), &accepted);
     QWindowSystemInterface::flushWindowSystemEvents();
     return accepted;
+}
+
+void QCocoaWindow::setSynchedWindowStateFromWindow()
+{
+    if (QWindow *w = window())
+        m_synchedWindowState = w->windowState();
 }
 
 bool QCocoaWindow::windowIsPopupType(Qt::WindowType type) const

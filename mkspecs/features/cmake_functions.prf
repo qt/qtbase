@@ -45,7 +45,7 @@ defineReplace(cmakePortablePaths) {
     variable = $$1
     out =
     for(v, variable) {
-        out += ${CMAKE_FIND_ROOT_PATH}$$cmakeTargetPath($$v)
+        out += $$[QT_SYSROOT]$$cmakeTargetPath($$v)
     }
     return ($$join(out, ";"))
 }

@@ -81,7 +81,9 @@ QT_END_NAMESPACE
 - (void)invalidateWindowShadowIfNeeded;
 - (void)drawRect:(NSRect)dirtyRect;
 - (void)updateGeometry;
+- (void)notifyWindowStateChanged:(Qt::WindowState)newState;
 - (void)windowNotification : (NSNotification *) windowNotification;
+- (void)notifyWindowWillZoom:(BOOL)willZoom;
 - (void)viewDidHide;
 - (void)viewDidUnhide;
 

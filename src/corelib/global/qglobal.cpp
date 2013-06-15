@@ -1050,9 +1050,9 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \value MV_10_0     Mac OS X 10.0 (unsupported)
     \value MV_10_1     Mac OS X 10.1 (unsupported)
     \value MV_10_2     Mac OS X 10.2 (unsupported)
-    \value MV_10_3     Mac OS X 10.3
-    \value MV_10_4     Mac OS X 10.4
-    \value MV_10_5     Mac OS X 10.5
+    \value MV_10_3     Mac OS X 10.3 (unsupported)
+    \value MV_10_4     Mac OS X 10.4 (unsupported)
+    \value MV_10_5     Mac OS X 10.5 (unsupported)
     \value MV_10_6     Mac OS X 10.6
     \value MV_10_7     Mac OS X 10.7
     \value MV_10_8     Mac OS X 10.8
