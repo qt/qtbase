@@ -913,6 +913,27 @@ Q_OUTOFLINE_TEMPLATE typename QMap<Key, T>::iterator QMap<Key, T>::erase(iterato
 
     Q_ASSERT_X(isValidIterator(const_iterator(it)), "QMap::erase", "The specified iterator argument 'it' is invalid");
 
+    if (d->ref.isShared()) {
+        const_iterator oldBegin = constBegin();
+        const_iterator old = const_iterator(it);
+        int backStepsWithSameKey = 0;
+
+        while (old != oldBegin) {
+            --old;
+            if (qMapLessThanKey(old.key(), it.key()))
+                break;
+            ++backStepsWithSameKey;
+        }
+
+        it = find(old.key()); // ensures detach
+        Q_ASSERT_X(it != iterator(d->end()), "QMap::erase", "Unable to locate same key in erase after detach.");
+
+        while (backStepsWithSameKey > 0) {
+            ++it;
+            --backStepsWithSameKey;
+        }
+    }
+
     Node *n = it.i;
     ++it;
     d->deleteNode(n);
