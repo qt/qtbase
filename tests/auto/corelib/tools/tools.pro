@@ -18,6 +18,7 @@ SUBDIRS=\
     qfreelist \
     qhash \
     qline \
+    qlinkedlist \
     qlist \
     qlocale \
     qmap \
