@@ -453,6 +453,9 @@ int QLinkedList<T>::count(const T &t) const
 template <typename T>
 typename QLinkedList<T>::iterator QLinkedList<T>::insert(iterator before, const T &t)
 {
+    if (d->ref.isShared())
+        before = detach_helper2(before);
+
     Node *i = before.i;
     Node *m = new Node(t);
     m->n = i;

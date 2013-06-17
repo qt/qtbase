@@ -47,6 +47,7 @@ class tst_QLinkedList : public QObject
     Q_OBJECT
 private slots:
     void eraseValidIteratorsOnSharedList() const;
+    void insertWithIteratorsOnSharedList() const;
 };
 
 void tst_QLinkedList::eraseValidIteratorsOnSharedList() const
@@ -71,6 +72,24 @@ void tst_QLinkedList::eraseValidIteratorsOnSharedList() const
     --r;
     --r;
     QCOMPARE(*r, 10); // Ensure that number 2 instance was removed;
+}
+
+void tst_QLinkedList::insertWithIteratorsOnSharedList() const
+{
+    QLinkedList<int> a, b;
+    a.append(5);
+    a.append(10);
+    a.append(20);
+    QLinkedList<int>::iterator i = a.begin();
+    ++i;
+    ++i;
+    b = a;
+
+    QLinkedList<int>::iterator i2 = a.insert(i, 15);
+    QCOMPARE(b.size(), 3);
+    QCOMPARE(a.size(), 4);
+    --i2;
+    QCOMPARE(*i2, 10);
 }
 
 QTEST_MAIN(tst_QLinkedList)
