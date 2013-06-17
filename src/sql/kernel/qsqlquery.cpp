@@ -326,6 +326,24 @@ bool QSqlQuery::isNull(int field) const
 }
 
 /*!
+    \overload
+
+    Returns true if there is no field with this \a name; otherwise
+    returns isNull(int index) for the corresponding field index.
+
+    This overload is less efficient than \l{QSqlQuery::}{isNull()}
+*/
+
+bool QSqlQuery::isNull(const QString &name) const
+{
+    int index = d->sqlResult->record().indexOf(name);
+    if (index > -1)
+        return isNull(index);
+    qWarning("QSqlQuery::isNull: unknown field name '%s'", qPrintable(name));
+    return true;
+}
+
+/*!
 
   Executes the SQL in \a query. Returns \c true and sets the query state
   to \l{isActive()}{active} if the query was successful; otherwise

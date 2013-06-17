@@ -1384,7 +1384,9 @@ void tst_QSqlQuery::isNull()
     QVERIFY_SQL(q, exec("select id, t_varchar from " + qTableName("qtest_null", __FILE__, db) + " order by id"));
     QVERIFY( q.next() );
     QVERIFY( !q.isNull( 0 ) );
+    QVERIFY(!q.isNull("id"));
     QVERIFY( q.isNull( 1 ) );
+    QVERIFY(q.isNull("t_varchar"));
     QCOMPARE( q.value( 0 ).toInt(), 0 );
     QCOMPARE( q.value( 1 ).toString(), QString() );
     QVERIFY( !q.value( 0 ).isNull() );
@@ -1392,10 +1394,13 @@ void tst_QSqlQuery::isNull()
 
     QVERIFY( q.next() );
     QVERIFY( !q.isNull( 0 ) );
+    QVERIFY(!q.isNull("id"));
     QVERIFY( !q.isNull( 1 ) );
+    QVERIFY(!q.isNull("t_varchar"));
 
     // For a non existent field, it should be returning true.
     QVERIFY(q.isNull(2));
+    QVERIFY(q.isNull("unknown"));
 }
 
 /*! TDS specific BIT field test */
