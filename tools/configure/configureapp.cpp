@@ -1570,8 +1570,8 @@ void Configure::desc(const char *mark_option, const char *mark, const char *opti
 void Configure::applySpecSpecifics()
 {
     if (dictionary.contains("XQMAKESPEC")) {
-        //Disable building tools, docs and translations when cross compiling.
-        nobuildParts << "docs" << "translations" << "tools";
+        //Disable building tools when cross compiling.
+        nobuildParts << "tools";
     }
 
     if (dictionary.value("XQMAKESPEC").startsWith("wince")) {
