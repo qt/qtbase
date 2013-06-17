@@ -28,8 +28,8 @@ defineTest(qtAddLibrary) {
     # Reverse-engineer the module name from the library name.
     for(var, QT_MODULES) {
         isEqual(QT.$${var}.name, $$1) {
-            qtAddModule($$var, , LIBS):return(true):break()
-            return(false):break() # Yes, the break is insanity. But necessary.
+            qtAddModule($$var, , LIBS)
+            return(true):break() # Yes, the break is insanity. But necessary.
         }
     }
     error("No module matching library '$$1' found.")
@@ -130,7 +130,6 @@ defineTest(qtAddModule) {
     export(QMAKE_RPATHDIR)
     export(QMAKE_RPATHLINKDIR)
     export(PRE_TARGETDEPS)
-    return(true)
 }
 
 # qt variable, libs variable
