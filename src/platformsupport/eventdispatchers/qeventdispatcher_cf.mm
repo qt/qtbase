@@ -460,8 +460,17 @@ void QEventDispatcherCoreFoundation::handleRunLoopActivity(CFRunLoopActivity act
 
 bool QEventDispatcherCoreFoundation::hasPendingEvents()
 {
-    qDebug() << __FUNCTION__ << "not implemented";
-    return false;
+    // There doesn't seem to be any API on iOS to peek into the other sources
+    // to figure out if there are pending non-Qt events. As a workaround, we
+    // assume that if the run-loop is currently blocking and waiting for a
+    // source to signal then there are no system-events pending. If this
+    // function is called from the main thread then the second clause
+    // of the condition will always be true, as the the run loop is
+    // never waiting in that case. The function would be more aptly named
+    // 'maybeHasPendingEvents' in our case.
+
+    extern uint qGlobalPostedEventsCount();
+    return qGlobalPostedEventsCount() || !CFRunLoopIsWaiting(CFRunLoopGetMain());
 }
 
 void QEventDispatcherCoreFoundation::wakeUp()
