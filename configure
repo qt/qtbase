@@ -876,6 +876,7 @@ CFG_SSE=auto
 CFG_FONTCONFIG=auto
 CFG_LIBFREETYPE=auto
 CFG_SQL_AVAILABLE=
+QT_ALL_BUILD_PARTS=" libs tools examples tests "
 QT_DEFAULT_BUILD_PARTS="libs tools examples"
 CFG_BUILD_PARTS=""
 CFG_NOBUILD_PARTS=""
@@ -1430,9 +1431,17 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     nomake)
+        if [ -n "${QT_ALL_BUILD_PARTS%%* $VAL *}" ]; then
+            echo "Unknown part $VAL passed to -nomake." >&2
+            exit 1
+        fi
 	CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS $VAL"
         ;;
     make)
+        if [ -n "${QT_ALL_BUILD_PARTS%%* $VAL *}" ]; then
+            echo "Unknown part $VAL passed to -make." >&2
+            exit 1
+        fi
 	CFG_BUILD_PARTS="$CFG_BUILD_PARTS $VAL"
         ;;
     skip)

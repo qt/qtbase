@@ -171,6 +171,8 @@ Configure::Configure(int& argc, char** argv)
     }
 
     defaultBuildParts << QStringLiteral("libs") << QStringLiteral("tools") << QStringLiteral("examples");
+    allBuildParts = defaultBuildParts;
+    allBuildParts << QStringLiteral("tests");
     dictionary[ "QT_SOURCE_TREE" ]    = sourcePath;
     dictionary[ "QT_BUILD_TREE" ]     = buildPath;
     dictionary[ "QT_INSTALL_PREFIX" ] = installPath;
@@ -1001,12 +1003,22 @@ void Configure::parseCmdLine()
             ++i;
             if (i == argCount)
                 break;
-            buildParts += configCmdLine.at(i);
+            QString part = configCmdLine.at(i);
+            if (!allBuildParts.contains(part)) {
+                cout << "Unknown part " << part << " passed to -make." << endl;
+                dictionary["DONE"] = "error";
+            }
+            buildParts += part;
         } else if (configCmdLine.at(i) == "-nomake") {
             ++i;
             if (i == argCount)
                 break;
-            nobuildParts.append(configCmdLine.at(i));
+            QString part = configCmdLine.at(i);
+            if (!allBuildParts.contains(part)) {
+                cout << "Unknown part " << part << " passed to -nomake." << endl;
+                dictionary["DONE"] = "error";
+            }
+            nobuildParts += part;
         }
 
         else if (configCmdLine.at(i) == "-skip") {
