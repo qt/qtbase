@@ -185,11 +185,11 @@ protected:
 
 void tst_QEventLoop::processEvents()
 {
-    QSignalSpy spy1(QAbstractEventDispatcher::instance(), SIGNAL(aboutToBlock()));
-    QSignalSpy spy2(QAbstractEventDispatcher::instance(), SIGNAL(awake()));
+    QSignalSpy aboutToBlockSpy(QAbstractEventDispatcher::instance(), SIGNAL(aboutToBlock()));
+    QSignalSpy awakeSpy(QAbstractEventDispatcher::instance(), SIGNAL(awake()));
 
-    QVERIFY(spy1.isValid());
-    QVERIFY(spy2.isValid());
+    QVERIFY(aboutToBlockSpy.isValid());
+    QVERIFY(awakeSpy.isValid());
 
     QEventLoop eventLoop;
 
@@ -198,8 +198,8 @@ void tst_QEventLoop::processEvents()
     // process posted events, QEventLoop::processEvents() should return
     // true
     QVERIFY(eventLoop.processEvents());
-    QCOMPARE(spy1.count(), 0);
-    QCOMPARE(spy2.count(), 1);
+    QCOMPARE(aboutToBlockSpy.count(), 0);
+    QCOMPARE(awakeSpy.count(), 1);
 
     // allow any session manager to complete its handshake, so that
     // there are no pending events left.
@@ -212,28 +212,28 @@ void tst_QEventLoop::processEvents()
 
     // no events to process, QEventLoop::processEvents() should return
     // false
-    spy1.clear();
-    spy2.clear();
+    aboutToBlockSpy.clear();
+    awakeSpy.clear();
     QVERIFY(!eventLoop.processEvents());
-    QCOMPARE(spy1.count(), 0);
-    QCOMPARE(spy2.count(), 1);
+    QCOMPARE(aboutToBlockSpy.count(), 0);
+    QCOMPARE(awakeSpy.count(), 1);
 
     // make sure the test doesn't block forever
     int timerId = startTimer(100);
 
     // wait for more events to process, QEventLoop::processEvents()
     // should return true
-    spy1.clear();
-    spy2.clear();
+    aboutToBlockSpy.clear();
+    awakeSpy.clear();
     QVERIFY(eventLoop.processEvents(QEventLoop::WaitForMoreEvents));
 
     // Verify that the eventloop has blocked and woken up. Some eventloops
     // may block and wake up multiple times.
-    QVERIFY(spy1.count() > 0);
-    QVERIFY(spy2.count() > 0);
+    QVERIFY(aboutToBlockSpy.count() > 0);
+    QVERIFY(awakeSpy.count() > 0);
     // We should get one awake for each aboutToBlock, plus one awake when
     // processEvents is entered.
-    QVERIFY(spy2.count() >= spy1.count());
+    QVERIFY(awakeSpy.count() >= aboutToBlockSpy.count());
 
     killTimer(timerId);
 }
