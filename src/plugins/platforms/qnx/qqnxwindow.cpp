@@ -647,6 +647,12 @@ void QQnxWindow::setWindowState(Qt::WindowState state)
         applyWindowState();
 }
 
+void QQnxWindow::propagateSizeHints()
+{
+    // nothing to do; silence base class warning
+    qWindowDebug() << Q_FUNC_INFO << ": ignored";
+}
+
 void QQnxWindow::gainedFocus()
 {
     qWindowDebug() << Q_FUNC_INFO << "window =" << window();

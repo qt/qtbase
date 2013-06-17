@@ -103,6 +103,8 @@ public:
     void requestActivateWindow();
     void setWindowState(Qt::WindowState state);
 
+    void propagateSizeHints();
+
     void gainedFocus();
 
     QQnxScreen *screen() const { return m_screen; }
