@@ -332,11 +332,14 @@ void QColumnView::scrollTo(const QModelIndex &index, ScrollHint hint)
     }
 
 #ifndef QT_NO_ANIMATION
-    d->currentAnimation.setEndValue(newScrollbarValue);
-    d->currentAnimation.start();
-#else
-    horizontalScrollBar()->setValue(newScrollbarValue);
+    if (style()->styleHint(QStyle::SH_Widget_Animate, 0, this)) {
+        d->currentAnimation.setEndValue(newScrollbarValue);
+        d->currentAnimation.start();
+    } else
 #endif //QT_NO_ANIMATION
+    {
+        horizontalScrollBar()->setValue(newScrollbarValue);
+    }
 }
 
 /*!

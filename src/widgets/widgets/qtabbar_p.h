@@ -138,6 +138,10 @@ public:
         } *animation;
 
         void startAnimation(QTabBarPrivate *priv, int duration) {
+            if (!priv->isAnimated()) {
+                priv->moveTabFinished(priv->tabList.indexOf(*this));
+                return;
+            }
             if (!animation)
                 animation = new TabBarAnimation(this, priv);
             animation->setStartValue(dragOffset);
@@ -162,6 +166,7 @@ public:
 
     int indexAtPos(const QPoint &p) const;
 
+    inline bool isAnimated() const { Q_Q(const QTabBar); return q->style()->styleHint(QStyle::SH_Widget_Animate, 0, q); }
     inline bool validIndex(int index) const { return index >= 0 && index < tabList.count(); }
     void setCurrentNextEnabledIndex(int offset);
 

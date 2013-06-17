@@ -700,6 +700,7 @@ public:
         SH_Menu_SupportsSections,
         SH_ToolTip_WakeUpDelay,
         SH_ToolTip_FallAsleepDelay,
+        SH_Widget_Animate,
         // Add new style hint values here
 
         SH_CustomBase = 0xf0000000

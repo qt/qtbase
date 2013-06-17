@@ -1900,6 +1900,10 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
            a tooltip is shown (notice: shown, not hidden). When a new wake isn't needed, a user-requested tooltip
            will be shown nearly instantly.
 
+    \value SH_Widget_Animate Determines if the widget should show animations or not, for example
+           a transition between checked and unchecked statuses in a checkbox.
+           This enum value has been introduced in Qt 5.2.
+
     \sa styleHint()
 */
 

@@ -65,6 +65,7 @@
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
 #include <qrubberband.h>
+#include "qtreeview.h"
 #include <private/qcommonstylepixmaps_p.h>
 #include <private/qmath_p.h>
 #include <qdebug.h>
@@ -5113,6 +5114,16 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         ret = 2000;
         break;
 #endif
+    case SH_Widget_Animate:
+#ifndef QT_NO_TREEVIEW
+        if (qobject_cast<const QTreeView*>(widget)) {
+            ret = false;
+        } else
+#endif
+            {
+            ret = true;
+        }
+        break;
     default:
         ret = 0;
         break;

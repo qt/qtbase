@@ -91,24 +91,28 @@ void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, boo
         QRect(QPoint(-500 - widget->width(), -500 - widget->height()), widget->size());
 
 #ifndef QT_NO_ANIMATION
-    AnimationMap::const_iterator it = m_animation_map.constFind(widget);
-    if (it != m_animation_map.constEnd() && (*it)->endValue().toRect() == final_geometry)
-        return;
+    //If the QStyle has animations, animate
+    if (widget->style()->styleHint(QStyle::SH_Widget_Animate, 0, widget)) {
+        AnimationMap::const_iterator it = m_animation_map.constFind(widget);
+        if (it != m_animation_map.constEnd() && (*it)->endValue().toRect() == final_geometry)
+            return;
 
-    QPropertyAnimation *anim = new QPropertyAnimation(widget, "geometry", widget);
-    anim->setDuration(animate ? 200 : 0);
-    anim->setEasingCurve(QEasingCurve::InOutQuad);
-    anim->setEndValue(final_geometry);
-    m_animation_map[widget] = anim;
-    connect(anim, SIGNAL(finished()), SLOT(animationFinished()));
-    anim->start(QPropertyAnimation::DeleteWhenStopped);
-#else
+        QPropertyAnimation *anim = new QPropertyAnimation(widget, "geometry", widget);
+        anim->setDuration(animate ? 200 : 0);
+        anim->setEasingCurve(QEasingCurve::InOutQuad);
+        anim->setEndValue(final_geometry);
+        m_animation_map[widget] = anim;
+        connect(anim, SIGNAL(finished()), SLOT(animationFinished()));
+        anim->start(QPropertyAnimation::DeleteWhenStopped);
+    } else
+#endif //QT_NO_ANIMATION
+    {
     //we do it in one shot
     widget->setGeometry(final_geometry);
 #ifndef QT_NO_MAINWINDOW
     m_mainWindowLayout->animationFinished(widget);
 #endif //QT_NO_MAINWINDOW
-#endif //QT_NO_ANIMATION
+    }
 }
 
 bool QWidgetAnimator::animating() const
