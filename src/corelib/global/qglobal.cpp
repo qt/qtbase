@@ -511,7 +511,7 @@ Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
     the application is compiled using Forte Developer, or Sun Studio
     C++.  The header file also declares a range of macros (Q_OS_*)
     that are defined for the specified platforms. For example,
-    Q_OS_X11 which is defined for the X Window System.
+    Q_OS_UNIX which is defined for the Unix-based systems.
 
     The purpose of these macros is to enable programmers to add
     compiler or platform specific code to their application.
