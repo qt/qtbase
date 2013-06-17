@@ -62,7 +62,6 @@ contains( styles, windows ) {
     HEADERS += styles/qwindowsstyle_p.h
     HEADERS += styles/qwindowsstyle_p_p.h
     SOURCES += styles/qwindowsstyle.cpp
-    DEFINES += QT_STYLE_WINDOWS
 } else {
     DEFINES += QT_NO_STYLE_WINDOWS
 }
@@ -74,7 +73,6 @@ contains( styles, windowsvista ) {
     !contains( styles, windowsxp ) {
         message( windowsvista requires windowsxp )
         styles += windowsxp
-        DEFINES += QT_STYLE_WINDOWSXP
     }
 } else {
     DEFINES += QT_NO_STYLE_WINDOWSVISTA
@@ -87,7 +85,6 @@ contains( styles, windowsxp ) {
     !contains( styles, windows ) {
         message( windowsxp requires windows )
         styles  += windows
-        DEFINES += QT_STYLE_WINDOWS
     }
 } else {
     DEFINES += QT_NO_STYLE_WINDOWSXP
