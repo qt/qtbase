@@ -132,6 +132,48 @@ private:
     CFRunLoopSourceRef m_source;
 };
 
+template <class T = QEventDispatcherCoreFoundation>
+class RunLoopObserver
+{
+public:
+    typedef void (T::*CallbackFunction) (CFRunLoopActivity activity);
+
+    RunLoopObserver(T *delegate, CallbackFunction callback, CFOptionFlags activities)
+        : m_delegate(delegate), m_callback(callback)
+    {
+        CFRunLoopObserverContext context = {};
+        context.info = this;
+
+        m_observer = CFRunLoopObserverCreate(kCFAllocatorDefault, activities, true, 0, process, &context);
+        Q_ASSERT(m_observer);
+    }
+
+    ~RunLoopObserver()
+    {
+        CFRunLoopObserverInvalidate(m_observer);
+        CFRelease(m_observer);
+    }
+
+    void addToMode(CFStringRef mode, CFRunLoopRef runLoop = 0)
+    {
+        if (!runLoop)
+            runLoop = CFRunLoopGetCurrent();
+
+        CFRunLoopAddObserver(runLoop, m_observer, mode);
+    }
+
+private:
+    static void process(CFRunLoopObserverRef, CFRunLoopActivity activity, void *info)
+    {
+        RunLoopObserver *self = static_cast<RunLoopObserver *>(info);
+        ((self->m_delegate)->*(self->m_callback))(activity);
+    }
+
+    T *m_delegate;
+    CallbackFunction m_callback;
+    CFRunLoopObserverRef m_observer;
+};
+
 class QEventDispatcherCoreFoundation : public QAbstractEventDispatcher
 {
     Q_OBJECT
@@ -163,6 +205,8 @@ private:
     RunLoopSource<> m_postedEventsRunLoopSource;
     RunLoopSource<> m_blockingTimerRunLoopSource;
 
+    RunLoopObserver<> m_awakeAndBlockObserver;
+
     QTimerInfoList m_timerInfoList;
     CFRunLoopTimerRef m_runLoopTimerRef;
 
@@ -170,8 +214,11 @@ private:
 
     void processPostedEvents();
     void processTimers();
+
     void maybeStartCFRunLoopTimer();
     void maybeStopCFRunLoopTimer();
+
+    void handleRunLoopActivity(CFRunLoopActivity activity);
 
     static void nonBlockingTimerRunLoopCallback(CFRunLoopTimerRef, void *info);
 };

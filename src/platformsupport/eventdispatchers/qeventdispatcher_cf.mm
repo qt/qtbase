@@ -134,6 +134,8 @@ QEventDispatcherCoreFoundation::QEventDispatcherCoreFoundation(QObject *parent)
     , m_interrupted(false)
     , m_postedEventsRunLoopSource(this, &QEventDispatcherCoreFoundation::processPostedEvents)
     , m_blockingTimerRunLoopSource(this, &QEventDispatcherCoreFoundation::processTimers)
+    , m_awakeAndBlockObserver(this, &QEventDispatcherCoreFoundation::handleRunLoopActivity,
+        kCFRunLoopBeforeWaiting | kCFRunLoopAfterWaiting)
     , m_runLoopTimerRef(0)
 {
     m_cfSocketNotifier.setHostEventDispatcher(this);
@@ -142,6 +144,8 @@ QEventDispatcherCoreFoundation::QEventDispatcherCoreFoundation(QObject *parent)
 
     m_blockingTimerRunLoopSource.addToMode(kCFRunLoopCommonModes);
     m_blockingTimerRunLoopSource.addToMode(CFStringRef(UITrackingRunLoopMode));
+
+    m_awakeAndBlockObserver.addToMode(kCFRunLoopCommonModes);
 }
 
 QEventDispatcherCoreFoundation::~QEventDispatcherCoreFoundation()
@@ -168,10 +172,31 @@ void QEventDispatcherCoreFoundation::processTimers()
     maybeStartCFRunLoopTimer();
 }
 
+void QEventDispatcherCoreFoundation::handleRunLoopActivity(CFRunLoopActivity activity)
+{
+    switch (activity) {
+    case kCFRunLoopBeforeWaiting:
+        emit aboutToBlock();
+        break;
+    case kCFRunLoopAfterWaiting:
+        emit awake();
+        break;
+    default:
+        Q_UNREACHABLE();
+    }
+}
+
 bool QEventDispatcherCoreFoundation::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     m_interrupted = false;
     bool eventsProcessed = false;
+
+    // The documentation states that this signal is emitted after the event
+    // loop returns from a function that could block, which is not the case
+    // here, but all the other event dispatchers emit awake at the start of
+    // processEvents, and the QEventLoop auto-test has an explicit check for
+    // this behavior, so we assume it's for a good reason and do it as well.
+    emit awake();
 
     bool excludeUserEvents = flags & QEventLoop::ExcludeUserInputEvents;
     bool execFlagSet = (flags & QEventLoop::DialogExec) || (flags & QEventLoop::EventLoopExec);
