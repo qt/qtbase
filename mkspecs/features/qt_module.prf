@@ -97,8 +97,8 @@ mac:CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework) {
           FRAMEWORK_HEADERS.version = Versions
           FRAMEWORK_HEADERS.files = $$SYNCQT.HEADER_FILES $$SYNCQT.HEADER_CLASSES
           FRAMEWORK_HEADERS.path = Headers
+          QMAKE_BUNDLE_DATA += FRAMEWORK_HEADERS
       }
-      QMAKE_BUNDLE_DATA += FRAMEWORK_HEADERS
    }
 }
 
