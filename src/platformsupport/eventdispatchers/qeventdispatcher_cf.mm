@@ -50,17 +50,6 @@
 QT_BEGIN_NAMESPACE
 QT_USE_NAMESPACE
 
-static Boolean runLoopSourceEqualCallback(const void *info1, const void *info2)
-{
-    return info1 == info2;
-}
-
-void QEventDispatcherCoreFoundation::postedEventsRunLoopCallback(void *info)
-{
-    QEventDispatcherCoreFoundation *self = static_cast<QEventDispatcherCoreFoundation *>(info);
-    self->processPostedEvents();
-}
-
 void QEventDispatcherCoreFoundation::nonBlockingTimerRunLoopCallback(CFRunLoopTimerRef, void *info)
 {
     // The (one and only) CFRunLoopTimer has fired, which means that at least
@@ -69,19 +58,8 @@ void QEventDispatcherCoreFoundation::nonBlockingTimerRunLoopCallback(CFRunLoopTi
     // timers will stop working. The work-around is to forward the callback to a
     // dedicated CFRunLoopSource that can recurse:
     QEventDispatcherCoreFoundation *self = static_cast<QEventDispatcherCoreFoundation *>(info);
-    CFRunLoopSourceSignal(self->m_blockingTimerRunLoopSource);
-}
-
-void QEventDispatcherCoreFoundation::blockingTimerRunLoopCallback(void *info)
-{
-    // TODO:
-    // We also need to block this new timer source
-    // along with the posted event source when calling processEvents()
-    // "manually" to prevent livelock deep in CFRunLoop.
-
-    QEventDispatcherCoreFoundation *self = static_cast<QEventDispatcherCoreFoundation *>(info);
-    self->m_timerInfoList.activateTimers();
-    self->maybeStartCFRunLoopTimer();
+    self->m_blockingTimerRunLoopSource.signal();
+    // FIXME: And not wake up main run loop?
 }
 
 void QEventDispatcherCoreFoundation::maybeStartCFRunLoopTimer()
@@ -147,52 +125,43 @@ void QEventDispatcherCoreFoundation::maybeStopCFRunLoopTimer()
     m_runLoopTimerRef = 0;
 }
 
+QEventDispatcherCoreFoundation::QEventDispatcherCoreFoundation(QObject *parent)
+    : QAbstractEventDispatcher(parent)
+    , m_interrupted(false)
+    , m_postedEventsRunLoopSource(this, &QEventDispatcherCoreFoundation::processPostedEvents)
+    , m_blockingTimerRunLoopSource(this, &QEventDispatcherCoreFoundation::processTimers)
+    , m_runLoopTimerRef(0)
+{
+    m_cfSocketNotifier.setHostEventDispatcher(this);
+
+    m_postedEventsRunLoopSource.addToMode(kCFRunLoopCommonModes);
+
+    m_blockingTimerRunLoopSource.addToMode(kCFRunLoopCommonModes);
+    m_blockingTimerRunLoopSource.addToMode(CFStringRef(UITrackingRunLoopMode));
+}
+
+QEventDispatcherCoreFoundation::~QEventDispatcherCoreFoundation()
+{
+    qDeleteAll(m_timerInfoList);
+    maybeStopCFRunLoopTimer();
+
+    m_cfSocketNotifier.removeSocketNotifiers();
+}
+
 void QEventDispatcherCoreFoundation::processPostedEvents()
 {
     QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::AllEvents);
 }
 
-QEventDispatcherCoreFoundation::QEventDispatcherCoreFoundation(QObject *parent)
-    : QAbstractEventDispatcher(parent)
-    , m_interrupted(false)
-    , m_runLoopTimerRef(0)
+void QEventDispatcherCoreFoundation::processTimers()
 {
-    m_cfSocketNotifier.setHostEventDispatcher(this);
+    // TODO:
+    // We also need to block this new timer source
+    // along with the posted event source when calling processEvents()
+    // "manually" to prevent livelock deep in CFRunLoop.
 
-    CFRunLoopRef mainRunLoop = CFRunLoopGetMain();
-    CFRunLoopSourceContext context;
-    bzero(&context, sizeof(CFRunLoopSourceContext));
-    context.equal = runLoopSourceEqualCallback;
-    context.info = this;
-
-    // source used to handle timers:
-    context.perform = QEventDispatcherCoreFoundation::blockingTimerRunLoopCallback;
-    m_blockingTimerRunLoopSource = CFRunLoopSourceCreate(kCFAllocatorDefault, 0, &context);
-    Q_ASSERT(m_blockingTimerRunLoopSource);
-    CFRunLoopAddSource(mainRunLoop, m_blockingTimerRunLoopSource, kCFRunLoopCommonModes);
-    CFRunLoopAddSource(mainRunLoop, m_blockingTimerRunLoopSource, (CFStringRef) UITrackingRunLoopMode);
-
-    // source used to handle posted events:
-    context.perform = QEventDispatcherCoreFoundation::postedEventsRunLoopCallback;
-    m_postedEventsRunLoopSource = CFRunLoopSourceCreate(kCFAllocatorDefault, 0, &context);
-    Q_ASSERT(m_postedEventsRunLoopSource);
-    CFRunLoopAddSource(mainRunLoop, m_postedEventsRunLoopSource, kCFRunLoopCommonModes);
-}
-
-QEventDispatcherCoreFoundation::~QEventDispatcherCoreFoundation()
-{
-    CFRunLoopRef mainRunLoop = CFRunLoopGetMain();
-    CFRunLoopRemoveSource(mainRunLoop, m_postedEventsRunLoopSource, kCFRunLoopCommonModes);
-    CFRelease(m_postedEventsRunLoopSource);
-
-    qDeleteAll(m_timerInfoList);
-    maybeStopCFRunLoopTimer();
-
-    CFRunLoopRemoveSource(mainRunLoop, m_blockingTimerRunLoopSource, kCFRunLoopCommonModes);
-    CFRunLoopRemoveSource(mainRunLoop, m_blockingTimerRunLoopSource, (CFStringRef) UITrackingRunLoopMode);
-    CFRelease(m_blockingTimerRunLoopSource);
-
-    m_cfSocketNotifier.removeSocketNotifiers();
+    m_timerInfoList.activateTimers();
+    maybeStartCFRunLoopTimer();
 }
 
 bool QEventDispatcherCoreFoundation::processEvents(QEventLoop::ProcessEventsFlags flags)
@@ -336,7 +305,7 @@ int QEventDispatcherCoreFoundation::remainingTime(int timerId)
 
 void QEventDispatcherCoreFoundation::wakeUp()
 {
-    CFRunLoopSourceSignal(m_postedEventsRunLoopSource);
+    m_postedEventsRunLoopSource.signal();
     CFRunLoopWakeUp(CFRunLoopGetMain());
 }
 

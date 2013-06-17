@@ -83,6 +83,55 @@
 
 QT_BEGIN_NAMESPACE
 
+class QEventDispatcherCoreFoundation;
+
+template <class T = QEventDispatcherCoreFoundation>
+class RunLoopSource
+{
+public:
+    typedef void (T::*CallbackFunction) ();
+
+    enum { kHighestPriority = 0 } RunLoopSourcePriority;
+
+    RunLoopSource(T *delegate, CallbackFunction callback)
+        : m_delegate(delegate), m_callback(callback)
+    {
+        CFRunLoopSourceContext context = {};
+        context.info = this;
+        context.perform = RunLoopSource::process;
+
+        m_source = CFRunLoopSourceCreate(kCFAllocatorDefault, kHighestPriority, &context);
+        Q_ASSERT(m_source);
+    }
+
+    ~RunLoopSource()
+    {
+        CFRunLoopSourceInvalidate(m_source);
+        CFRelease(m_source);
+    }
+
+    void addToMode(CFStringRef mode, CFRunLoopRef runLoop = 0)
+    {
+        if (!runLoop)
+            runLoop = CFRunLoopGetCurrent();
+
+        CFRunLoopAddSource(runLoop, m_source, mode);
+    }
+
+    void signal() { CFRunLoopSourceSignal(m_source); }
+
+private:
+    static void process(void *info)
+    {
+        RunLoopSource *self = static_cast<RunLoopSource *>(info);
+        ((self->m_delegate)->*(self->m_callback))();
+    }
+
+    T *m_delegate;
+    CallbackFunction m_callback;
+    CFRunLoopSourceRef m_source;
+};
+
 class QEventDispatcherCoreFoundation : public QAbstractEventDispatcher
 {
     Q_OBJECT
@@ -111,8 +160,8 @@ public:
 private:
     bool m_interrupted;
 
-    CFRunLoopSourceRef m_postedEventsRunLoopSource;
-    CFRunLoopSourceRef m_blockingTimerRunLoopSource;
+    RunLoopSource<> m_postedEventsRunLoopSource;
+    RunLoopSource<> m_blockingTimerRunLoopSource;
 
     QTimerInfoList m_timerInfoList;
     CFRunLoopTimerRef m_runLoopTimerRef;
@@ -120,12 +169,11 @@ private:
     QCFSocketNotifier m_cfSocketNotifier;
 
     void processPostedEvents();
+    void processTimers();
     void maybeStartCFRunLoopTimer();
     void maybeStopCFRunLoopTimer();
 
-    static void postedEventsRunLoopCallback(void *info);
     static void nonBlockingTimerRunLoopCallback(CFRunLoopTimerRef, void *info);
-    static void blockingTimerRunLoopCallback(void *info);
 };
 
 QT_END_NAMESPACE
