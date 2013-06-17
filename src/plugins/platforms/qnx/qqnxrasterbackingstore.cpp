@@ -81,6 +81,12 @@ void QQnxRasterBackingStore::flush(QWindow *window, const QRegion &region, const
 {
     qRasterBackingStoreDebug() << Q_FUNC_INFO << "w =" << this->window();
 
+    // Sometimes this method is called even though there is nothing to be
+    // flushed, for instance, after an expose event directly follows a
+    // geometry change event.
+    if (!m_hasUnflushedPaintOperations)
+            return;
+
     QQnxWindow *targetWindow = 0;
     if (window)
         targetWindow = static_cast<QQnxWindow *>(window->handle());
@@ -117,7 +123,6 @@ void QQnxRasterBackingStore::flush(QWindow *window, const QRegion &region, const
 
         // We assume that the TLW has been flushed previously and that no changes were made to the
         // backing store inbetween (### does Qt guarantee this?)
-        Q_ASSERT(!m_hasUnflushedPaintOperations);
 
         targetWindow->adjustBufferSize();
         targetWindow->blitFrom(platformWindow, offset, region);
