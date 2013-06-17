@@ -1438,11 +1438,15 @@ while [ "$#" -gt 0 ]; do
 	CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS $VAL"
         ;;
     make)
-        if [ -n "${QT_ALL_BUILD_PARTS%%* $VAL *}" ]; then
-            echo "Unknown part $VAL passed to -make." >&2
-            exit 1
+        if [ "$VAL" = "no" ]; then
+            UNKNOWN_OPT=yes
+        else
+            if [ -n "${QT_ALL_BUILD_PARTS%%* $VAL *}" ]; then
+                echo "Unknown part $VAL passed to -make." >&2
+                exit 1
+            fi
+            CFG_BUILD_PARTS="$CFG_BUILD_PARTS $VAL"
         fi
-	CFG_BUILD_PARTS="$CFG_BUILD_PARTS $VAL"
         ;;
     skip)
         VAL=qt${VAL#qt}
