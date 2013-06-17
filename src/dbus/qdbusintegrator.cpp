@@ -1844,6 +1844,12 @@ void QDBusConnectionPrivate::waitForFinished(QDBusPendingCallPrivate *pcall)
             // QDBusConnectionPrivate::processFinishedCall() is called automatically
         }
         pcall->mutex.lock();
+
+        if (pcall->pending) {
+            q_dbus_pending_call_unref(pcall->pending);
+            pcall->pending = 0;
+        }
+
         pcall->waitForFinishedCondition.wakeAll();
     }
 }
@@ -1890,9 +1896,10 @@ void QDBusConnectionPrivate::processFinishedCall(QDBusPendingCallPrivate *call)
             qDBusDebug() << "Deliver failed!";
     }
 
-    if (call->pending)
+    if (call->pending && !call->waitingForFinished) {
         q_dbus_pending_call_unref(call->pending);
-    call->pending = 0;
+        call->pending = 0;
+    }
 
     locker.unlock();
 
