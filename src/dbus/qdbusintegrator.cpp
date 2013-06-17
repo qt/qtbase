@@ -1828,7 +1828,6 @@ static void qDBusResultReceived(DBusPendingCall *pending, void *user_data)
 void QDBusConnectionPrivate::waitForFinished(QDBusPendingCallPrivate *pcall)
 {
     Q_ASSERT(pcall->pending);
-    Q_ASSERT(!pcall->autoDelete);
     //Q_ASSERT(pcall->mutex.isLocked()); // there's no such function
 
     if (pcall->waitingForFinished) {
@@ -1852,13 +1851,6 @@ void QDBusConnectionPrivate::waitForFinished(QDBusPendingCallPrivate *pcall)
 
         pcall->waitForFinishedCondition.wakeAll();
     }
-}
-
-// this function is called only in a Q_ASSERT
-static inline Q_DECL_UNUSED bool waitingForFinishedIsSet(QDBusPendingCallPrivate *call)
-{
-    const QMutexLocker locker(&call->mutex);
-    return call->waitingForFinished;
 }
 
 void QDBusConnectionPrivate::processFinishedCall(QDBusPendingCallPrivate *call)
@@ -1909,11 +1901,6 @@ void QDBusConnectionPrivate::processFinishedCall(QDBusPendingCallPrivate *call)
 
     if (msg.type() == QDBusMessage::ErrorMessage)
         emit connection->callWithCallbackFailed(QDBusError(msg), call->sentMessage);
-
-    if (call->autoDelete) {
-        Q_ASSERT(!waitingForFinishedIsSet(call)); // can't wait on a call with autoDelete!
-        delete call;
-    }
 }
 
 int QDBusConnectionPrivate::send(const QDBusMessage& message)
@@ -2132,7 +2119,6 @@ int QDBusConnectionPrivate::sendWithReplyAsync(const QDBusMessage &message, QObj
         return 1;
     }
 
-    pcall->autoDelete = true;
     pcall->ref.ref();
     pcall->setReplyCallback(receiver, returnMethod);
 
