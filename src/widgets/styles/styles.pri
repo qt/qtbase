@@ -58,14 +58,6 @@ contains( styles, mac ) {
     DEFINES += QT_NO_STYLE_MAC
 }
 
-contains( styles, windows ) {
-    HEADERS += styles/qwindowsstyle_p.h
-    HEADERS += styles/qwindowsstyle_p_p.h
-    SOURCES += styles/qwindowsstyle.cpp
-} else {
-    DEFINES += QT_NO_STYLE_WINDOWS
-}
-
 contains( styles, windowsvista ) {
     HEADERS += styles/qwindowsvistastyle_p.h
     HEADERS += styles/qwindowsvistastyle_p_p.h
@@ -88,6 +80,14 @@ contains( styles, windowsxp ) {
     }
 } else {
     DEFINES += QT_NO_STYLE_WINDOWSXP
+}
+
+contains( styles, windows ) {
+    HEADERS += styles/qwindowsstyle_p.h
+    HEADERS += styles/qwindowsstyle_p_p.h
+    SOURCES += styles/qwindowsstyle.cpp
+} else {
+    DEFINES += QT_NO_STYLE_WINDOWS
 }
 
 contains( styles, gtk ) {
