@@ -199,9 +199,8 @@ public:
     int send(const QDBusMessage &message);
     QDBusMessage sendWithReply(const QDBusMessage &message, int mode, int timeout = -1);
     QDBusMessage sendWithReplyLocal(const QDBusMessage &message);
-    QDBusPendingCallPrivate *sendWithReplyAsync(const QDBusMessage &message, int timeout = -1);
-    int sendWithReplyAsync(const QDBusMessage &message, QObject *receiver,
-                           const char *returnMethod, const char *errorMethod, int timeout = -1);
+    QDBusPendingCallPrivate *sendWithReplyAsync(const QDBusMessage &message, QObject *receiver,
+                                                const char *returnMethod, const char *errorMethod,int timeout = -1);
     bool connectSignal(const QString &service, const QString &path, const QString& interface,
                        const QString &name, const QStringList &argumentMatch, const QString &signature,
                        QObject *receiver, const char *slot);
