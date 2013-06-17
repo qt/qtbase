@@ -80,10 +80,8 @@ defineTest(qtAddModule) {
           FRAMEWORK_INCLUDE = $${MODULE_LIBS}/$${MODULE_NAME}.framework/Headers
           !qt_no_framework_direct_includes:exists($$FRAMEWORK_INCLUDE) {
                INCLUDEPATH *= $$FRAMEWORK_INCLUDE
-               LINKAGE = -F$${MODULE_LIBS}
-          } else {
-               QMAKE_FRAMEWORKPATH *= $${MODULE_LIBS}
           }
+          QMAKE_FRAMEWORKPATH *= $${MODULE_LIBS}
           LINKAGE += -framework $${MODULE_NAME}$${QT_LIBINFIX}
         }
     }
