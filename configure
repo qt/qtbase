@@ -61,6 +61,13 @@ if [ -f "$LICENSE_FILE" ]; then
     diff "${LICENSE_FILE}.tmp" "${LICENSE_FILE}" >/dev/null 2>&1 || LICENSE_FILE="${LICENSE_FILE}.tmp"
 fi
 
+# do this early so we don't store it in config.status
+CFG_TOPLEVEL=
+if [ x"$1" = x"-top-level" ]; then
+    CFG_TOPLEVEL=yes
+    shift
+fi
+
 # later cache the command line in config.status
 OPT_CMDLINE=`echo $@ | sed "s,-v ,,g; s,-v$,,g"`
 
@@ -6910,14 +6917,23 @@ rm -f "$QMAKE_VARS_FILE" 2>/dev/null
 #-------------------------------------------------------------------------------
 
 if [ "$CFG_PROCESS" != "no" ]; then
+(   # fork to make the cd stay local
+
+    relpathMangled=$relpath
+    if [ -n "$CFG_TOPLEVEL" ]; then
+        relpathMangled=`dirname "$relpath"`
+        cd ..
+    fi
 
     if [ "$CFG_PROCESS" = "full" ]; then
         echo "Creating makefiles. Please wait..."
-        "$outpath/bin/qmake" -r "$relpath"
+        "$outpath/bin/qmake" -r "$relpathMangled"
         echo "Done"
     else
-        "$outpath/bin/qmake" "$relpath"
+        "$outpath/bin/qmake" "$relpathMangled"
     fi
+
+)
 fi
 
 #-------------------------------------------------------------------------------
