@@ -72,7 +72,6 @@ public:
     QByteArray iid;
     QList<QLibraryPrivate*> libraryList;
     QMap<QString,QLibraryPrivate*> keyMap;
-    QStringList keyList;
     QString suffix;
     Qt::CaseSensitivity cs;
     QStringList loadedPaths;
@@ -172,10 +171,8 @@ void QFactoryLoader::update()
                 metaDataOk = true;
 
                 QJsonArray k = object.value(QLatin1String("Keys")).toArray();
-                for (int i = 0; i < k.size(); ++i) {
-                    QString s = k.at(i).toString();
-                    keys += s;
-                }
+                for (int i = 0; i < k.size(); ++i)
+                    keys += d->cs ? k.at(i).toString() : k.at(i).toString().toLower();
             }
             if (qt_debug_component())
                 qDebug() << "Got keys from plugin meta data" << keys;
@@ -192,9 +189,7 @@ void QFactoryLoader::update()
                 // library was built with a future Qt version,
                 // whereas the new one has a Qt version that fits
                 // better
-                QString key = keys.at(k);
-                if (!d->cs)
-                    key = key.toLower();
+                const QString &key = keys.at(k);
                 QLibraryPrivate *previous = d->keyMap.value(key);
                 int prev_qt_version = 0;
                 if (previous) {
@@ -203,7 +198,6 @@ void QFactoryLoader::update()
                 int qt_version = (int)library->metaData.value(QLatin1String("version")).toDouble();
                 if (!previous || (prev_qt_version > QT_VERSION && qt_version <= QT_VERSION)) {
                     d->keyMap[key] = library;
-                    d->keyList += keys.at(k);
                 }
             }
         }
