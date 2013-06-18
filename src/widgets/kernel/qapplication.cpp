@@ -2695,12 +2695,14 @@ bool QApplicationPrivate::shouldQuit()
         the ones without QuitOnClose), we emit the lastWindowClosed
         signal */
     QWidgetList list = QApplication::topLevelWidgets();
+    QWindowList processedWindows;
     for (int i = 0; i < list.size(); ++i) {
         QWidget *w = list.at(i);
+        processedWindows.push_back(w->windowHandle());
         if (w->isVisible() && !w->parentWidget() && w->testAttribute(Qt::WA_QuitOnClose))
             return false;
     }
-    return QGuiApplicationPrivate::shouldQuit();
+    return QGuiApplicationPrivate::shouldQuitInternal(processedWindows);
 }
 
 static inline void closeAllPopups()

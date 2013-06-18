@@ -91,6 +91,8 @@ public:
 
     virtual bool shouldQuit();
 
+    bool shouldQuitInternal(const QWindowList &processedWindows);
+
     static Qt::KeyboardModifiers modifier_buttons;
     static Qt::MouseButtons mouse_buttons;
 

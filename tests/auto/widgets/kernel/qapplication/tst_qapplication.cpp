@@ -783,6 +783,31 @@ void tst_QApplication::quitOnLastWindowClosed()
 
         QVERIFY(timerSpy.count() > 15);      // Should be around 20 if closing did not caused the quit
     }
+    {   // QTBUG-31569: If the last widget with Qt::WA_QuitOnClose set is closed, other
+        // widgets that don't have the attribute set should be closed automatically.
+        int argc = 0;
+        QApplication app(argc, 0);
+        QVERIFY(app.quitOnLastWindowClosed());
+
+        QWidget w1;
+        w1.show();
+
+        QWidget w2;
+        w2.setAttribute(Qt::WA_QuitOnClose, false);
+        w2.show();
+
+        QVERIFY(QTest::qWaitForWindowExposed(&w2));
+
+        QTimer timer;
+        timer.setInterval(100);
+        timer.start();
+        QSignalSpy timerSpy(&timer, SIGNAL(timeout()));
+
+        QTimer::singleShot(100, &w1, SLOT(close()));
+        app.exec();
+
+        QVERIFY(timerSpy.count() < 10);
+    }
 }
 
 class PromptOnCloseWidget : public QWidget
