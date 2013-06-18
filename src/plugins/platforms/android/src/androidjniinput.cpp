@@ -411,6 +411,24 @@ namespace QtAndroidInput
             case 0x00000018:
                 return Qt::Key_VolumeUp;
 
+            case 0x000000b7: // KEYCODE_PROG_RED
+                return Qt::Key_Red;
+
+            case 0x000000b8: // KEYCODE_PROG_GREEN
+                return Qt::Key_Green;
+
+            case 0x000000b9: // KEYCODE_PROG_YELLOW
+                return Qt::Key_Yellow;
+
+            case 0x000000ba: // KEYCODE_PROG_BLUE
+                return Qt::Key_Blue;
+
+            case 0x000000a6: // KEYCODE_CHANNEL_UP
+                return Qt::Key_ChannelUp;
+
+            case 0x000000a7: // KEYCODE_CHANNEL_DOWN
+                return Qt::Key_ChannelDown;
+
             case 0x00000000: // KEYCODE_UNKNOWN
             case 0x00000011: // KEYCODE_STAR ?!?!?
             case 0x00000012: // KEYCODE_POUND ?!?!?

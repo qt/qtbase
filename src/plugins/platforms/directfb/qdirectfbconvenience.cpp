@@ -286,6 +286,14 @@ QDirectFbKeyMap::QDirectFbKeyMap()
     insert(DIKS_MAIL                  , Qt::Key_LaunchMail);
     insert(DIKS_FAVORITES             , Qt::Key_Favorites);
 
+    insert(DIKS_RED                   , Qt::Key_Red);
+    insert(DIKS_GREEN                 , Qt::Key_Green);
+    insert(DIKS_YELLOW                , Qt::Key_Yellow);
+    insert(DIKS_BLUE                  , Qt::Key_Blue);
+
+    insert(DIKS_CHANNEL_UP            , Qt::Key_ChannelUp);
+    insert(DIKS_CHANNEL_DOWN          , Qt::Key_ChannelDown);
+
     insert(DIKS_BACK                  , Qt::Key_Back);
     insert(DIKS_FORWARD               , Qt::Key_Forward);
     insert(DIKS_VOLUME_UP             , Qt::Key_VolumeUp);

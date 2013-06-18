@@ -243,6 +243,10 @@
 #define XF86XK_Select              0x1008FFA0
 #define XF86XK_View                0x1008FFA1
 #define XF86XK_TopMenu             0x1008FFA2
+#define XF86XK_Red                 0x1008FFA3
+#define XF86XK_Green               0x1008FFA4
+#define XF86XK_Yellow              0x1008FFA5
+#define XF86XK_Blue                0x1008FFA6
 #define XF86XK_Suspend             0x1008FFA7
 #define XF86XK_Hibernate           0x1008FFA8
 #define XF86XK_TouchpadToggle      0x1008FFA9
@@ -538,6 +542,10 @@ static const unsigned int KeyTbl[] = {
     XF86XK_Select,              Qt::Key_Select,
     XF86XK_View,                Qt::Key_View,
     XF86XK_TopMenu,             Qt::Key_TopMenu,
+    XF86XK_Red,                 Qt::Key_Red,
+    XF86XK_Green,               Qt::Key_Green,
+    XF86XK_Yellow,              Qt::Key_Yellow,
+    XF86XK_Blue,                Qt::Key_Blue,
     XF86XK_Bluetooth,           Qt::Key_Bluetooth,
     XF86XK_Suspend,             Qt::Key_Suspend,
     XF86XK_Hibernate,           Qt::Key_Hibernate,

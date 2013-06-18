@@ -982,6 +982,14 @@ public:
 
         Key_MicMute = 0x01000113,
 
+        Key_Red = 0x01000114,
+        Key_Green = 0x01000115,
+        Key_Yellow = 0x01000116,
+        Key_Blue = 0x01000117,
+
+        Key_ChannelUp = 0x01000118,
+        Key_ChannelDown = 0x01000119,
+
         Key_MediaLast = 0x0100ffff,
 
         // Keypad navigation keys
