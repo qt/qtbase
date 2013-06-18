@@ -183,7 +183,7 @@ void QFactoryLoader::update()
                 continue;
             }
 
-            d->libraryList += library;
+            int keyUsageCount = 0;
             for (int k = 0; k < keys.count(); ++k) {
                 // first come first serve, unless the first
                 // library was built with a future Qt version,
@@ -198,8 +198,13 @@ void QFactoryLoader::update()
                 int qt_version = (int)library->metaData.value(QLatin1String("version")).toDouble();
                 if (!previous || (prev_qt_version > QT_VERSION && qt_version <= QT_VERSION)) {
                     d->keyMap[key] = library;
+                    ++keyUsageCount;
                 }
             }
+            if (keyUsageCount || keys.isEmpty())
+                d->libraryList += library;
+            else
+                library->release();
         }
     }
 #else
