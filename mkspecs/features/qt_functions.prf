@@ -71,11 +71,6 @@ defineTest(qtAddModule) {
     MODULE_LIBS_ADD = $$MODULE_LIBS
     MODULE_LIBS_ADD -= $$QMAKE_DEFAULT_LIBDIRS
 
-    INCLUDEPATH *= $$MODULE_INCLUDES
-    auto_use_privates|isEqual(2, UsePrivate) { # Tests function parameter 2 ($$2) being equal to 'UsePrivate'
-        INCLUDEPATH += $$eval(QT.$${1}.private_includes)
-    }
-
     unset(LINKAGE)
     mac:contains(MODULE_CONFIG, lib_bundle) {
           FRAMEWORK_INCLUDE = $${MODULE_LIBS}/$${MODULE_NAME}.framework/Headers
@@ -88,6 +83,10 @@ defineTest(qtAddModule) {
                     $$FRAMEWORK_INCLUDE/$$eval(QT.$${1}.VERSION)/$$MODULE_NAME
           QMAKE_FRAMEWORKPATH *= $${MODULE_LIBS}
           LINKAGE += -framework $${MODULE_NAME}$${QT_LIBINFIX}
+    } else {
+          INCLUDEPATH *= $$MODULE_INCLUDES
+          auto_use_privates|isEqual(2, UsePrivate): \
+               INCLUDEPATH += $$eval(QT.$${1}.private_includes)
     }
 
     # Re-insert the major version in the library name (cf qtLibraryTarget above)
