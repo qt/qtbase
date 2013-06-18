@@ -3958,15 +3958,11 @@ void Configure::generateMakefiles()
 
         QString pwd = QDir::currentPath();
         {
-            QString dirName;
             bool generate = true;
             bool doDsp = (dictionary["VCPROJFILES"] == "yes"
                           && dictionary["PROCESS"] == "full");
             while (generate) {
-                QString pwd = QDir::currentPath();
-                QString dirPath = buildPath + dirName;
                 QStringList args;
-
                 args << buildPath + "/bin/qmake";
 
                 if (doDsp) {
@@ -3985,7 +3981,7 @@ void Configure::generateMakefiles()
                 args << "-o";
                 args << buildPath;
 
-                QDir::setCurrent(dirPath);
+                QDir::setCurrent(buildPath);
                 if (int exitCode = Environment::execute(args, QStringList(), QStringList())) {
                     cout << "Qmake failed, return code " << exitCode  << endl << endl;
                     dictionary[ "DONE" ] = "error";
