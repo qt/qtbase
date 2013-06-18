@@ -351,7 +351,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     \section1 Styles in Item Views
 
     The painting of items in views is performed by a delegate. Qt's
-    default delegate, QStyledItemDelegate, is also used for for calculating bounding
+    default delegate, QStyledItemDelegate, is also used for calculating bounding
     rectangles of items, and their sub-elements for the various kind
     of item \l{Qt::ItemDataRole}{data roles}
     QStyledItemDelegate supports. See the QStyledItemDelegate class
