@@ -925,6 +925,7 @@ void VcprojGenerator::initConfiguration()
         conf.linker.GenerateDebugInformation = isDebug ? _True : _False;
         initLinkerTool();
     }
+    initManifestTool();
     initResourceTool();
     initIDLTool();
 
@@ -1043,6 +1044,19 @@ void VcprojGenerator::initLibrarianTool()
     conf.librarian.OutputFile = "$(OutDir)\\";
     conf.librarian.OutputFile += project->first("MSVCPROJ_TARGET").toQString();
     conf.librarian.AdditionalOptions += project->values("QMAKE_LIBFLAGS").toQStringList();
+}
+
+void VcprojGenerator::initManifestTool()
+{
+    VCManifestTool &tool = vcProject.Configuration.manifestTool;
+    const ProString tmplt = project->first("TEMPLATE");
+    if ((tmplt == "vclib"
+         && !project->isActiveConfig("embed_manifest_dll")
+         && !project->isActiveConfig("static"))
+        || (tmplt == "vcapp"
+            && !project->isActiveConfig("embed_manifest_exe"))) {
+        tool.EmbedManifest = _False;
+    }
 }
 
 void VcprojGenerator::initLinkerTool()

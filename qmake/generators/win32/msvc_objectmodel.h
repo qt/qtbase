@@ -675,6 +675,16 @@ public:
     VCConfiguration*        config;
 };
 
+class VCManifestTool : public VCToolBase
+{
+public:
+    VCManifestTool();
+    ~VCManifestTool();
+    bool parseOption(const char* option);
+
+    triState                EmbedManifest;
+};
+
 class VCMIDLTool : public VCToolBase
 {
 public:
@@ -874,6 +884,7 @@ public:
     VCCLCompilerTool        compiler;
     VCLinkerTool            linker;
     VCLibrarianTool         librarian;
+    VCManifestTool          manifestTool;
     VCCustomBuildTool       custom;
     VCMIDLTool              idl;
     VCPostBuildEventTool    postBuild;
@@ -1127,6 +1138,7 @@ public:
 
     virtual void write(XmlOutput &, const VCCLCompilerTool &);
     virtual void write(XmlOutput &, const VCLinkerTool &);
+    virtual void write(XmlOutput &, const VCManifestTool &);
     virtual void write(XmlOutput &, const VCMIDLTool &);
     virtual void write(XmlOutput &, const VCCustomBuildTool &);
     virtual void write(XmlOutput &, const VCLibrarianTool &);
