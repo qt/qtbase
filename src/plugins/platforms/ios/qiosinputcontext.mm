@@ -99,6 +99,7 @@ QIOSInputContext::QIOSInputContext()
     : QPlatformInputContext()
     , m_keyboardListener([[QIOSKeyboardListener alloc] initWithQIOSInputContext:this])
     , m_focusView(0)
+    , m_hasPendingHideRequest(false)
 {
 }
 
@@ -120,12 +121,20 @@ void QIOSInputContext::showInputPanel()
     // responder. Rather than searching for it from the top, we let the active QIOSWindow tell us which view to use.
     // Note that Qt will forward keyevents to whichever QObject that needs it, regardless of which UIView the input
     // actually came from. So in this respect, we're undermining iOS' responder chain.
+    m_hasPendingHideRequest = false;
     [m_focusView becomeFirstResponder];
 }
 
 void QIOSInputContext::hideInputPanel()
 {
-    [m_focusView resignFirstResponder];
+    // Delay hiding the keyboard for cases where the user is transferring focus between
+    // 'line edits'. In that case the 'line edit' that lost focus will close the input
+    // panel, just to see that the new 'line edit' will open it again:
+    m_hasPendingHideRequest = true;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (m_hasPendingHideRequest)
+            [m_focusView resignFirstResponder];
+    });
 }
 
 bool QIOSInputContext::isInputPanelVisible() const

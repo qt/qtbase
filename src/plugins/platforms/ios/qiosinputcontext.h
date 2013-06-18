@@ -66,6 +66,7 @@ public:
 private:
     QIOSKeyboardListener *m_keyboardListener;
     UIView *m_focusView;
+    bool m_hasPendingHideRequest;
 };
 
 QT_END_NAMESPACE
