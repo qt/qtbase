@@ -3977,7 +3977,7 @@ void Configure::generateMakefiles()
                 }
                 if (dictionary[ "PROCESS" ] == "full")
                     args << "-r";
-                args << (sourcePath + "/qtbase.pro");
+                args << sourcePath;
                 args << "-o";
                 args << buildPath;
 
