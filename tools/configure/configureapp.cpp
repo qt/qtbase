@@ -3978,8 +3978,6 @@ void Configure::generateMakefiles()
                 if (dictionary[ "PROCESS" ] == "full")
                     args << "-r";
                 args << sourcePath;
-                args << "-o";
-                args << buildPath;
 
                 QDir::setCurrent(buildPath);
                 if (int exitCode = Environment::execute(args, QStringList(), QStringList())) {
