@@ -2786,8 +2786,10 @@
     \section2 contains(variablename, value)
 
     Succeeds if the variable \c variablename contains the value \c value;
-    otherwise fails. You can check the return value of this function using
-    a scope.
+    otherwise fails. It is possible to specify a regular expression for
+    parameter \e value.
+
+    You can check the return value of this function using a scope.
 
     For example:
 
