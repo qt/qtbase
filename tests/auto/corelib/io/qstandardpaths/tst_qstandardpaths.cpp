@@ -52,7 +52,7 @@
 #include <sys/types.h>
 #endif
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_BLACKBERRY)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_ANDROID)
 #define Q_XDG_PLATFORM
 #endif
 
@@ -289,9 +289,9 @@ void tst_qstandardpaths::testDataLocation()
 {
     // On all platforms, DataLocation should be GenericDataLocation / organization name / app name
     // This allows one app to access the data of another app.
-    // Blackberry OS is an exception to this case, owing to the fact that
+    // Blackberry OS and Android are exceptions to this case, owing to the fact that
     // applications are sandboxed.
-#ifndef Q_OS_BLACKBERRY
+#if !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_ANDROID)
     const QString base = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::DataLocation), base + "/tst_qstandardpaths");
     QCoreApplication::instance()->setOrganizationName("Qt");
