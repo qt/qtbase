@@ -63,7 +63,6 @@ Window::Window(QWidget *parent)
 
 //! [1]
     QGridLayout *mainLayout = new QGridLayout;
-    mainLayout->setSizeConstraint(QLayout::SetNoConstraint);
     mainLayout->addWidget(fileLabel, 0, 0);
     mainLayout->addWidget(fileComboBox, 0, 1, 1, 2);
     mainLayout->addWidget(textLabel, 1, 0);
