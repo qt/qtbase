@@ -917,21 +917,19 @@ static void qt_message_print(QtMsgType msgType, const QMessageLogContext &contex
 static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, const QString &message)
 {
 #if defined(Q_CC_MSVC) && defined(QT_DEBUG) && defined(_DEBUG) && defined(_CRT_ERROR)
-        wchar_t contextFileL[256];
-        // we probably should let the compiler do this for us, by
-        // declaring QMessageLogContext::file to be const wchar_t * in
-        // the first place, but the #ifdefery above is very complex
-        // and we wouldn't be able to change it later on...
-        convert_to_wchar_t_elided(contextFileL, sizeof contextFileL / sizeof *contextFileL, context.file);
+    wchar_t contextFileL[256];
+    // we probably should let the compiler do this for us, by declaring QMessageLogContext::file to
+    // be const wchar_t * in the first place, but the #ifdefery above is very complex  and we
+    // wouldn't be able to change it later on...
+    convert_to_wchar_t_elided(contextFileL, sizeof contextFileL / sizeof *contextFileL,
+                              context.file);
     // get the current report mode
     int reportMode = _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_WNDW);
     _CrtSetReportMode(_CRT_ERROR, reportMode);
 
-        int ret = _CrtDbgReportW(_CRT_ERROR, contextFileL,
-                             context.line, _CRT_WIDE(QT_VERSION_STR),
-                             reinterpret_cast<const wchar_t *> (
-                                 message.utf16()));
-    if (ret == 0  && reportMode & _CRTDBG_MODE_WNDW)
+    int ret = _CrtDbgReportW(_CRT_ERROR, contextFileL, context.line, _CRT_WIDE(QT_VERSION_STR),
+                             reinterpret_cast<const wchar_t *>(message.utf16()));
+    if ((ret == 0) && (reportMode & _CRTDBG_MODE_WNDW))
         return; // ignore
     else if (ret == 1)
         _CrtDbgBreak();
