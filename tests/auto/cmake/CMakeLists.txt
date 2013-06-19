@@ -132,4 +132,5 @@ endif()
 
 if (NOT CMAKE_VERSION VERSION_LESS 2.8.12)
     expect_pass(test_interface_link_libraries)
+    expect_pass(test_moc_macro_target)
 endif()
