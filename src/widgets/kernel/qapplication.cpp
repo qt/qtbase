@@ -2929,12 +2929,8 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             QPoint relpos = mouse->pos();
 
             if (e->spontaneous()) {
-
-                if (e->type() == QEvent::MouseButtonPress) {
-                    QApplicationPrivate::giveFocusAccordingToFocusPolicy(w,
-                                                                         Qt::ClickFocus,
-                                                                         Qt::MouseFocusReason);
-                }
+                if (e->type() != QEvent::MouseMove)
+                    QApplicationPrivate::giveFocusAccordingToFocusPolicy(w, e, relpos);
 
                 // ### Qt 5 These dynamic tool tips should be an OPT-IN feature. Some platforms
                 // like Mac OS X (probably others too), can optimize their views by not
@@ -3022,11 +3018,8 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             QPoint relpos = wheel->pos();
             bool eventAccepted = wheel->isAccepted();
 
-            if (e->spontaneous()) {
-                QApplicationPrivate::giveFocusAccordingToFocusPolicy(w,
-                                                                     Qt::WheelFocus,
-                                                                     Qt::MouseFocusReason);
-            }
+            if (e->spontaneous())
+                QApplicationPrivate::giveFocusAccordingToFocusPolicy(w, e, relpos);
 
             while (w) {
                 QWheelEvent we(relpos, wheel->globalPos(), wheel->pixelDelta(), wheel->angleDelta(), wheel->delta(), wheel->orientation(), wheel->buttons(),
@@ -3214,6 +3207,11 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         QTouchEvent *touchEvent = static_cast<QTouchEvent *>(e);
         const bool acceptTouchEvents = widget->testAttribute(Qt::WA_AcceptTouchEvents);
 
+        if (e->type() != QEvent::TouchUpdate && acceptTouchEvents && e->spontaneous()) {
+            const QPoint localPos = touchEvent->touchPoints()[0].pos().toPoint();
+            QApplicationPrivate::giveFocusAccordingToFocusPolicy(widget, e, localPos);
+        }
+
         touchEvent->setTarget(widget);
         touchEvent->setAccepted(acceptTouchEvents);
 
@@ -3231,16 +3229,16 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         QWidget *widget = static_cast<QWidget *>(receiver);
         QTouchEvent *touchEvent = static_cast<QTouchEvent *>(e);
         bool eventAccepted = touchEvent->isAccepted();
-        if (widget->testAttribute(Qt::WA_AcceptTouchEvents) && e->spontaneous()) {
-            // give the widget focus if the focus policy allows it
-            QApplicationPrivate::giveFocusAccordingToFocusPolicy(widget,
-                                                                 Qt::ClickFocus,
-                                                                 Qt::MouseFocusReason);
+        bool acceptTouchEvents = widget->testAttribute(Qt::WA_AcceptTouchEvents);
+
+        if (acceptTouchEvents && e->spontaneous()) {
+            const QPoint localPos = touchEvent->touchPoints()[0].pos().toPoint();
+            QApplicationPrivate::giveFocusAccordingToFocusPolicy(widget, e, localPos);
         }
 
         while (widget) {
             // first, try to deliver the touch event
-            bool acceptTouchEvents = widget->testAttribute(Qt::WA_AcceptTouchEvents);
+            acceptTouchEvents = widget->testAttribute(Qt::WA_AcceptTouchEvents);
             touchEvent->setTarget(widget);
             touchEvent->setAccepted(acceptTouchEvents);
             QPointer<QWidget> p = widget;
@@ -3705,20 +3703,40 @@ bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event)
     return QGuiApplication::sendSpontaneousEvent(receiver, event);
 }
 
-
-void QApplicationPrivate::giveFocusAccordingToFocusPolicy(QWidget *widget,
-                                                          Qt::FocusPolicy focusPolicy,
-                                                          Qt::FocusReason focusReason)
+void QApplicationPrivate::giveFocusAccordingToFocusPolicy(QWidget *widget, QEvent *event, QPoint localPos)
 {
+    const bool setFocusOnRelease = QGuiApplication::styleHints()->setFocusOnTouchRelease();
+    Qt::FocusPolicy focusPolicy = Qt::ClickFocus;
+
+    switch (event->type()) {
+        case QEvent::MouseButtonPress:
+        case QEvent::TouchBegin:
+            if (setFocusOnRelease)
+                return;
+            break;
+        case QEvent::MouseButtonRelease:
+        case QEvent::TouchEnd:
+            if (!setFocusOnRelease)
+                return;
+            break;
+        case QEvent::Wheel:
+            focusPolicy = Qt::WheelFocus;
+            break;
+        default:
+            return;
+    }
+
     QWidget *focusWidget = widget;
     while (focusWidget) {
         if (focusWidget->isEnabled()
+            && focusWidget->rect().contains(localPos)
             && QApplicationPrivate::shouldSetFocus(focusWidget, focusPolicy)) {
-            focusWidget->setFocus(focusReason);
+            focusWidget->setFocus(Qt::MouseFocusReason);
             break;
         }
         if (focusWidget->isWindow())
             break;
+        localPos += focusWidget->pos();
         focusWidget = focusWidget->parentWidget();
     }
 }

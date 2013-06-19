@@ -294,9 +294,7 @@ public:
 private:
     static QApplicationPrivate *self;
 
-    static void giveFocusAccordingToFocusPolicy(QWidget *w,
-                                                Qt::FocusPolicy focusPolicy,
-                                                Qt::FocusReason focusReason);
+    static void giveFocusAccordingToFocusPolicy(QWidget *w, QEvent *event, QPoint localPos);
     static bool shouldSetFocus(QWidget *w, Qt::FocusPolicy policy);
 
 

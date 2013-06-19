@@ -65,6 +65,7 @@ public:
     QChar passwordMaskCharacter() const;
     qreal fontSmoothingGamma() const;
     bool useRtlExtensions() const;
+    bool setFocusOnTouchRelease() const;
 
 private:
     friend class QGuiApplication;

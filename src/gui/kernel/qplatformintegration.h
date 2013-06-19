@@ -141,7 +141,8 @@ public:
         StartDragVelocity,
         UseRtlExtensions,
         SynthesizeMouseFromTouchEvents,
-        PasswordMaskCharacter
+        PasswordMaskCharacter,
+        SetFocusOnTouchRelease
     };
 
     virtual QVariant styleHint(StyleHint hint) const;

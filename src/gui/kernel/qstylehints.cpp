@@ -218,4 +218,15 @@ bool QStyleHints::useRtlExtensions() const
     return hint(QPlatformIntegration::UseRtlExtensions).toBool();
 }
 
+/*!
+    Returns \c true if focus objects (line edits etc) should receive
+    input focus after a touch/mouse release. This is normal behavior on
+    touch platforms. On desktop platforms, the standard is to set
+    focus already on touch/mouse press.
+*/
+bool QStyleHints::setFocusOnTouchRelease() const
+{
+    return hint(QPlatformIntegration::SetFocusOnTouchRelease).toBool();
+}
+
 QT_END_NAMESPACE
