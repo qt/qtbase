@@ -110,7 +110,7 @@ public:
 
     To create a proper QTypeInfo specialization for A struct, we have to check
     all sub-components; B, C and D, then take the lowest common denominator and call
-    Q_DECLATE_TYPEINFO with the resulting flags. An easier and less fragile approach is to
+    Q_DECLARE_TYPEINFO with the resulting flags. An easier and less fragile approach is to
     use QTypeInfoMerger, which does that automatically. So struct A would have
     the following QTypeInfo definition:
 
