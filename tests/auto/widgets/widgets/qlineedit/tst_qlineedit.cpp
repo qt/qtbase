@@ -3673,8 +3673,6 @@ void tst_QLineEdit::taskQTBUG_7395_readOnlyShortcut()
 
 void tst_QLineEdit::QTBUG697_paletteCurrentColorGroup()
 {
-    if (m_keyboardScheme != QPlatformTheme::X11KeyboardScheme)
-        QSKIP("Only tested on X11");
     QLineEdit le;
     le.setText("               ");
     QPalette p = le.palette();
@@ -3692,7 +3690,12 @@ void tst_QLineEdit::QTBUG697_paletteCurrentColorGroup()
     QImage img(le.size(),QImage::Format_ARGB32 );
     le.render(&img);
     QCOMPARE(img.pixel(10, le.height()/2), QColor(Qt::green).rgb());
-    QApplication::setActiveWindow(0);
+
+    QWindow window;
+    window.resize(100, 50);
+    window.show();
+    window.requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(&window));
     le.render(&img);
     QCOMPARE(img.pixel(10, le.height()/2), QColor(Qt::red).rgb());
 }
