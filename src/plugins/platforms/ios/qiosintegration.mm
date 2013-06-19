@@ -135,6 +135,8 @@ QVariant QIOSIntegration::styleHint(StyleHint hint) const
     switch (hint) {
     case ShowIsFullScreen:
         return true;
+    case SetFocusOnTouchRelease:
+        return true;
     default:
         return QPlatformIntegration::styleHint(hint);
     }
