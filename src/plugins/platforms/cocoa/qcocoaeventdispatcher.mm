@@ -86,19 +86,12 @@
 #include "private/qthread_p.h"
 #include "private/qguiapplication_p.h"
 #include <qdebug.h>
-
-#undef slots
-#include <Cocoa/Cocoa.h>
-#include <Carbon/Carbon.h>
+#include "qcocoahelpers.h"
+#include "qcocoaapplication.h"
 
 QT_BEGIN_NAMESPACE
 
 QT_USE_NAMESPACE
-
-enum {
-    QtCocoaEventSubTypeWakeup       = SHRT_MAX,
-    QtCocoaEventSubTypePostMessage  = SHRT_MAX-1
-};
 
 static inline CFRunLoopRef mainRunLoop()
 {
@@ -377,53 +370,17 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
         if (!excludeUserEvents) {
             while (!d->queuedUserInputEvents.isEmpty()) {
                 event = static_cast<NSEvent *>(d->queuedUserInputEvents.takeFirst());
-                if (!filterNativeEvent("NSEvent", event, 0)) {
-                    [NSApp sendEvent:event];
+                if ([NSApp qt_filterOrSendEvent:event])
                     retVal = true;
-                }
                 [event release];
             }
         }
 
-        // If Qt is used as a plugin, or as an extension in a native cocoa
-        // application, we should not run or stop NSApplication; This will be
-        // done from the application itself. And if processEvents is called
-        // manually (rather than from a QEventLoop), we cannot enter a tight
-        // loop and block this call, but instead we need to return after one flush.
-        // Finally, if we are to exclude user input events, we cannot call [NSApp run]
-        // as we then loose control over which events gets dispatched:
-        const bool canExec_3rdParty = d->nsAppRunCalledByQt || ![NSApp isRunning];
-        const bool canExec_Qt = (!excludeUserEvents
-                                 && ((d->processEventsFlags & QEventLoop::DialogExec)
-                                     || (d->processEventsFlags & QEventLoop::EventLoopExec)));
-
-        if (canExec_Qt && canExec_3rdParty) {
-            // We can use exec-mode, meaning that we can stay in a tight loop until
-            // interrupted. This is mostly an optimization, but it allow us to use
-            // [NSApp run], which is the normal code path for cocoa applications.
-            if (NSModalSession session = d->currentModalSession()) {
-                QBoolBlocker execGuard(d->currentExecIsNSAppRun, false);
-                while ([NSApp runModalSession:session] == NSRunContinuesResponse && !d->interrupt)
-                    qt_mac_waitForMoreEvents(NSModalPanelRunLoopMode);
-
-                if (!d->interrupt && session == d->currentModalSessionCached) {
-                    // Someone called [NSApp stopModal:] from outside the event
-                    // dispatcher (e.g to stop a native dialog). But that call wrongly stopped
-                    // 'session' as well. As a result, we need to restart all internal sessions:
-                    d->temporarilyStopAllModalSessions();
-                }
-            } else {
-                d->nsAppRunCalledByQt = true;
-                QBoolBlocker execGuard(d->currentExecIsNSAppRun, true);
-                [NSApp run];
-            }
-            retVal = true;
-        } else {
+        {
             int lastSerialCopy = d->lastSerial;
             bool hadModalSession = d->currentModalSessionCached != 0;
             // We cannot block the thread (and run in a tight loop).
             // Instead we will process all current pending events and return.
-            d->ensureNSAppInitialized();
             if (NSModalSession session = d->currentModalSession()) {
                 // INVARIANT: a modal window is executing.
                 if (!excludeUserEvents) {
@@ -444,9 +401,9 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
                     // this case, we need more control over which events gets dispatched, and
                     // cannot use [NSApp runModalSession:session]:
                     event = [NSApp nextEventMatchingMask:NSAnyEventMask
-                    untilDate:nil
-                    inMode:NSModalPanelRunLoopMode
-                    dequeue: YES];
+                                               untilDate:nil
+                                                  inMode:NSModalPanelRunLoopMode
+                                                 dequeue:YES];
 
                     if (event) {
                         if (IsMouseOrKeyEvent(event)) {
@@ -454,18 +411,16 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
                             d->queuedUserInputEvents.append(event);
                             continue;
                         }
-                        if (!filterNativeEvent("NSEvent", event, 0)) {
-                            [NSApp sendEvent:event];
+                        if ([NSApp qt_filterOrSendEvent:event])
                             retVal = true;
-                        }
                     }
                 } while (!d->interrupt && event != nil);
             } else do {
                 // INVARIANT: No modal window is executing.
                 event = [NSApp nextEventMatchingMask:NSAnyEventMask
-                untilDate:nil
-                inMode:NSDefaultRunLoopMode
-                dequeue: YES];
+                                           untilDate:nil
+                                              inMode:NSDefaultRunLoopMode
+                                             dequeue:YES];
 
                 if (event) {
                     if (flags & QEventLoop::ExcludeUserInputEvents) {
@@ -475,10 +430,8 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
                             continue;
                         }
                     }
-                    if (!filterNativeEvent("NSEvent", event, 0)) {
-                        [NSApp sendEvent:event];
+                    if ([NSApp qt_filterOrSendEvent:event])
                         retVal = true;
-                    }
                 }
             } while (!d->interrupt && event != nil);
 
@@ -557,26 +510,6 @@ void QCocoaEventDispatcher::wakeUp()
   QEventDispatcherMac Implementation
  *****************************************************************************/
 
-void QCocoaEventDispatcherPrivate::ensureNSAppInitialized()
-{
-    // Some elements in Cocoa require NSApplication to be running before
-    // they get fully initialized, in particular the menu bar. This
-    // function is intended for cases where a dialog is told to execute before
-    // QGuiApplication::exec is called, or the application spins the events loop
-    // manually rather than calling QGuiApplication:exec.
-    // The function makes sure that NSApplication starts running, but stops
-    // it again as soon as the send posted events callback is called. That way
-    // we let Cocoa finish the initialization it seems to need. We'll only
-    // apply this trick at most once for any application, and we avoid doing it
-    // for the common case where main just starts QGuiApplication::exec.
-    if (nsAppRunCalledByQt || [NSApp isRunning])
-        return;
-    nsAppRunCalledByQt = true;
-    QBoolBlocker block1(interrupt, true);
-    QBoolBlocker block2(currentExecIsNSAppRun, true);
-    [NSApp run];
-}
-
 void QCocoaEventDispatcherPrivate::temporarilyStopAllModalSessions()
 {
     // Flush, and Stop, all created modal session, and as
@@ -621,7 +554,6 @@ NSModalSession QCocoaEventDispatcherPrivate::currentModalSession()
             if (!nswindow)
                 continue;
 
-            ensureNSAppInitialized();
             QBoolBlocker block1(blockSendPostedEvents, true);
             info.nswindow = nswindow;
             [(NSWindow*) info.nswindow retain];
@@ -766,8 +698,6 @@ QCocoaEventDispatcherPrivate::QCocoaEventDispatcherPrivate()
     : processEventsFlags(0),
       runLoopTimerRef(0),
       blockSendPostedEvents(false),
-      currentExecIsNSAppRun(false),
-      nsAppRunCalledByQt(false),
       cleanupModalSessionsNeeded(false),
       currentModalSessionCached(0),
       lastSerial(-1),
@@ -858,19 +788,8 @@ void QCocoaEventDispatcherPrivate::processPostedEvents()
     if (cleanupModalSessionsNeeded)
         cleanupModalSessions();
 
-    if (interrupt) {
-        if (currentExecIsNSAppRun) {
-            // The event dispatcher has been interrupted. But since
-            // [NSApplication run] is running the event loop, we
-            // delayed stopping it until now (to let cocoa process
-            // pending cocoa events first).
-            if (currentModalSessionCached)
-                temporarilyStopAllModalSessions();
-            [NSApp stop:NSApp];
-            cancelWaitForMoreEvents();
-        }
+    if (interrupt)
         return;
-    }
 
     int serial = serialNumber.load();
     if (!threadData->canWait || (serial != lastSerial)) {

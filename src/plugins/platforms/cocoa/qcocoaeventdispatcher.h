@@ -162,8 +162,6 @@ public:
     bool blockSendPostedEvents;
     // The following variables help organizing modal sessions:
     QStack<QCocoaModalSessionInfo> cocoaModalSessionStack;
-    bool currentExecIsNSAppRun;
-    bool nsAppRunCalledByQt;
     bool cleanupModalSessionsNeeded;
     NSModalSession currentModalSessionCached;
     NSModalSession currentModalSession();
@@ -175,7 +173,6 @@ public:
 
     void cancelWaitForMoreEvents();
     void maybeCancelWaitForMoreEvents();
-    void ensureNSAppInitialized();
 
     QCFSocketNotifier cfSocketNotifier;
     QList<void *> queuedUserInputEvents; // NSEvent *

@@ -99,15 +99,13 @@
     NSMenu *dockMenu;
     QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader;
     NSObject <NSApplicationDelegate> *reflectionDelegate;
-    bool inLaunch;
 }
 + (QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate)*)sharedDelegate;
 - (void)setDockMenu:(NSMenu *)newMenu;
 - (void)setMenuLoader:(QT_MANGLE_NAMESPACE(QCocoaMenuLoader)*)menuLoader;
 - (QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)menuLoader;
 - (void)setReflectionDelegate:(NSObject <NSApplicationDelegate> *)oldDelegate;
-- (void)getUrl:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent;
-- (void) removeAppleEventHandlers;
+- (NSObject<NSApplicationDelegate> *)reflectionDelegate;
 @end
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaApplicationDelegate);

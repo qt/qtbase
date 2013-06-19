@@ -83,6 +83,8 @@
 
 QT_USE_NAMESPACE
 
+static SEL qt_sendEvent_original_SEL = @selector(qt_sendEvent_original:);
+
 @implementation NSApplication (QT_MANGLE_NAMESPACE(QApplicationIntegration))
 
 - (void)QT_MANGLE_NAMESPACE(qt_setDockMenu):(NSMenu *)newMenu
@@ -153,34 +155,22 @@ static const QByteArray q_macLocalEventType = QByteArrayLiteral("mac_generic_NSE
     return false;
 }
 
-@end
-
-@implementation QNSApplication
-
-- (void)qt_sendEvent_original:(NSEvent *)event
+- (BOOL)qt_filterOrSendEvent:(NSEvent *)event
 {
-    Q_UNUSED(event);
-    // This method will only be used as a signature
-    // template for the method we add into NSApplication
-    // containing the original [NSApplication sendEvent:] implementation
+    if ([self qt_filterEvent:event])
+        return false;
+
+    Q_ASSERT_X([self respondsToSelector:qt_sendEvent_original_SEL], "qt_filterOrSendEvent:",
+            "Running event loop before calling qt_redirectNSApplicationSendEvent()");
+    [self performSelector:qt_sendEvent_original_SEL withObject:event];
+    return true;
 }
 
 - (void)qt_sendEvent_replacement:(NSEvent *)event
 {
     // This method (or its implementation to be precise) will
-    // be called instead of sendEvent if redirection occurs.
-    // 'self' will then be an instance of NSApplication
-    // (and not QNSApplication)
-    if (![NSApp qt_filterEvent:event])
-        [self qt_sendEvent_original:event];
-}
-
-- (void)sendEvent:(NSEvent *)event
-{
-    // This method will be called if
-    // no redirection occurs
-    if (![NSApp qt_filterEvent:event])
-        [super sendEvent:event];
+    // be called instead of sendEvent: after redirection occurs.
+    [self qt_filterOrSendEvent:event];
 }
 
 @end
@@ -189,22 +179,16 @@ QT_BEGIN_NAMESPACE
 
 void qt_redirectNSApplicationSendEvent()
 {
-    if ([NSApp isMemberOfClass:[QNSApplication class]]) {
-        // No need to change implementation since Qt
-        // already controls a subclass of NSApplication
-        return;
-    }
-
     // Change the implementation of [NSApplication sendEvent] to the
-    // implementation of qt_sendEvent_replacement found in QNSApplication.
+    // implementation of qt_sendEvent_replacement.
     // And keep the old implementation that gets overwritten inside a new
     // method 'qt_sendEvent_original' that we add to NSApplication
     qt_cocoa_change_implementation(
             [NSApplication class],
             @selector(sendEvent:),
-            [QNSApplication class],
+            [NSApplication class],
             @selector(qt_sendEvent_replacement:),
-            @selector(qt_sendEvent_original:));
+            qt_sendEvent_original_SEL);
  }
 
 void qt_resetNSApplicationSendEvent()

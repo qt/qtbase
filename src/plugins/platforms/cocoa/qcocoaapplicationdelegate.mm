@@ -101,7 +101,6 @@ static void cleanupCocoaApplicationDelegate()
 {
     self = [super init];
     if (self) {
-        inLaunch = true;
         [[NSNotificationCenter defaultCenter]
                 addObserver:self
                    selector:@selector(updateScreens:)
@@ -241,55 +240,6 @@ static void cleanupCocoaApplicationDelegate()
     return NSTerminateCancel;
 }
 
-- (void) applicationWillFinishLaunching:(NSNotification *)notification
-{
-    Q_UNUSED(notification);
-
-    /*
-        From the Cocoa documentation: "A good place to install event handlers
-        is in the applicationWillFinishLaunching: method of the application
-        delegate. At that point, the Application Kit has installed its default
-        event handlers, so if you install a handler for one of the same events,
-        it will replace the Application Kit version."
-    */
-
-    /*
-        If Qt is used as a plugin, we let the 3rd party application handle
-        events like quit and open file events. Otherwise, if we install our own
-        handlers, we easily end up breaking functionality the 3rd party
-        application depends on.
-     */
-    NSAppleEventManager *eventManager = [NSAppleEventManager sharedAppleEventManager];
-    [eventManager setEventHandler:self
-                      andSelector:@selector(appleEventQuit:withReplyEvent:)
-                    forEventClass:kCoreEventClass
-                       andEventID:kAEQuitApplication];
-    [eventManager setEventHandler:self
-                      andSelector:@selector(getUrl:withReplyEvent:)
-                    forEventClass:kInternetEventClass
-                       andEventID:kAEGetURL];
-}
-
-// called by QCocoaIntegration's destructor before resetting the application delegate to nil
-- (void) removeAppleEventHandlers
-{
-    NSAppleEventManager *eventManager = [NSAppleEventManager sharedAppleEventManager];
-    [eventManager removeEventHandlerForEventClass:kCoreEventClass andEventID:kAEQuitApplication];
-    [eventManager removeEventHandlerForEventClass:kInternetEventClass andEventID:kAEGetURL];
-}
-
-- (void)applicationDidFinishLaunching:(NSNotification *)aNotification
-{
-    Q_UNUSED(aNotification);
-    inLaunch = false;
-    // qt_release_apple_event_handler();
-
-
-    // Insert code here to initialize your application
-}
-
-
-
 - (void)application:(NSApplication *)sender openFiles:(NSArray *)filenames
 {
     Q_UNUSED(filenames);
@@ -297,14 +247,6 @@ static void cleanupCocoaApplicationDelegate()
 
     for (NSString *fileName in filenames) {
         QString qtFileName = QCFString::toQString(fileName);
-        if (inLaunch) {
-            // We need to be careful because Cocoa will be nice enough to take
-            // command line arguments and send them to us as events. Given the history
-            // of Qt Applications, this will result in behavior people don't want, as
-            // they might be doing the opening themselves with the command line parsing.
-            if (qApp->arguments().contains(qtFileName))
-                continue;
-        }
         QWindowSystemInterface::handleFileOpenEvent(qtFileName);
     }
 
@@ -367,6 +309,11 @@ static void cleanupCocoaApplicationDelegate()
 */
 }
 
+- (NSObject<NSApplicationDelegate> *)reflectionDelegate
+{
+    return reflectionDelegate;
+}
+
 - (void)setReflectionDelegate:(NSObject <NSApplicationDelegate> *)oldDelegate
 {
     [oldDelegate retain];
@@ -398,20 +345,6 @@ static void cleanupCocoaApplicationDelegate()
         [invocation invokeWithTarget:reflectionDelegate];
     else
         [self doesNotRecognizeSelector:invocationSelector];
-}
-
-- (void)getUrl:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
-{
-    Q_UNUSED(replyEvent);
-    NSString *urlString = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
-    QWindowSystemInterface::handleFileOpenEvent(QCFString::toQString(urlString));
-}
-
-- (void)appleEventQuit:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
-{
-    Q_UNUSED(event);
-    Q_UNUSED(replyEvent);
-    [NSApp terminate:self];
 }
 
 - (void)qtDispatcherToQAction:(id)sender
