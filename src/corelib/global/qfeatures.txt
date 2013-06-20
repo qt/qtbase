@@ -1102,7 +1102,7 @@ SeeAlso: ???
 Feature: DBUS
 Description: Provides classes for D-Bus.
 Section: D-Bus
-Requires: PROPERTIES DOM
+Requires: PROPERTIES XMLSTREAMREADER
 Name: Qt D-Bus module
 SeeAlso: ???
 

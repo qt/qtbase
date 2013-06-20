@@ -69,7 +69,7 @@ static inline int bm_find(const ushort *uc, uint l, int index, const ushort *puc
         return index > (int)l ? -1 : index;
     const uint pl_minus_one = pl - 1;
 
-    register const ushort *current = uc + index + pl_minus_one;
+    const ushort *current = uc + index + pl_minus_one;
     const ushort *end = uc + l;
     if (cs == Qt::CaseSensitive) {
         while (current < end) {

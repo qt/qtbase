@@ -99,9 +99,9 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMutex, textCodecsMutex, (QMutex::Recursive));
 QMutex *qTextCodecsMutex() { return textCodecsMutex(); }
 
 #if !defined(QT_USE_ICU)
-static char qtolower(register char c)
+static char qtolower(char c)
 { if (c >= 'A' && c <= 'Z') return c + 0x20; return c; }
-static bool qisalnum(register char c)
+static bool qisalnum(char c)
 { return (c >= '0' && c <= '9') || ((c | 0x20) >= 'a' && (c | 0x20) <= 'z'); }
 
 bool qTextCodecNameMatch(const char *n, const char *h)

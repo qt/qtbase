@@ -212,7 +212,7 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
     operation.sem_op = count;
     operation.sem_flg = SEM_UNDO;
 
-    register int res;
+    int res;
     EINTR_LOOP(res, semop(semaphore, &operation, 1));
     if (-1 == res) {
         // If the semaphore was removed be nice and create it and then modifySemaphore again

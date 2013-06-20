@@ -448,7 +448,7 @@ void ICOReader::read4BitBMP(QImage & image)
                 image = QImage();
                 break;
             }
-            register uchar *p = image.scanLine(h);
+            uchar *p = image.scanLine(h);
             uchar *b = buf;
             for (int i=0; i<icoAttrib.w/2; i++) {   // convert nibbles to bytes
                 *p++ = *b >> 4;
@@ -487,7 +487,7 @@ void ICOReader::read16_24_32BMP(QImage & image)
 {
     if (iod) {
         int h = icoAttrib.h;
-        register QRgb *p;
+        QRgb *p;
         QRgb  *end;
         uchar *buf = new uchar[image.bytesPerLine()];
         int    bpl = ((icoAttrib.w*icoAttrib.nbits+31)/32)*4;

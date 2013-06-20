@@ -380,7 +380,7 @@ void QWhatsThisPrivate::notifyToplevels(QEvent *e)
 {
     QWidgetList toplevels = QApplication::topLevelWidgets();
     for (int i = 0; i < toplevels.count(); ++i) {
-        register QWidget *w = toplevels.at(i);
+        QWidget *w = toplevels.at(i);
         QApplication::sendEvent(w, e);
     }
 }

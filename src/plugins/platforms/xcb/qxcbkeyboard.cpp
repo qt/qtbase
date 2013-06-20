@@ -883,13 +883,19 @@ int QXcbKeyboard::keysymToQtKey(xcb_keysym_t key) const
 int QXcbKeyboard::keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers &modifiers, QString text) const
 {
     int code = 0;
+#ifndef QT_NO_TEXTCODEC
     QTextCodec *systemCodec = QTextCodec::codecForLocale();
+#endif
     // Commentary in X11/keysymdef says that X codes match ASCII, so it
     // is safe to use the locale functions to process X codes in ISO8859-1.
     // This is mainly for compatibility - applications should not use the
     // Qt keycodes between 128 and 255 (extended ACSII codes), but should
     // rather use the QKeyEvent::text().
-    if (keysym < 128 || (keysym < 256 && systemCodec->mibEnum() == 4)) {
+    if (keysym < 128 || (keysym < 256
+#ifndef QT_NO_TEXTCODEC
+                         && systemCodec->mibEnum() == 4
+#endif
+                         )) {
         // upper-case key, if known
         code = isprint((int)keysym) ? toupper((int)keysym) : 0;
     } else if (keysym >= XK_F1 && keysym <= XK_F35) {

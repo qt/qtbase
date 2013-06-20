@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 
 static inline bool isValidCharacterNoDash(QChar c)
 {
-    register ushort u = c.unicode();
+    ushort u = c.unicode();
     return (u >= 'a' && u <= 'z')
             || (u >= 'A' && u <= 'Z')
             || (u >= '0' && u <= '9')
@@ -63,7 +63,7 @@ static inline bool isValidCharacterNoDash(QChar c)
 
 static inline bool isValidCharacter(QChar c)
 {
-    register ushort u = c.unicode();
+    ushort u = c.unicode();
     return (u >= 'a' && u <= 'z')
             || (u >= 'A' && u <= 'Z')
             || (u >= '0' && u <= '9')
@@ -72,7 +72,7 @@ static inline bool isValidCharacter(QChar c)
 
 static inline bool isValidNumber(QChar c)
 {
-    register ushort u = c.unicode();
+    ushort u = c.unicode();
     return (u >= '0' && u <= '9');
 }
 
@@ -259,7 +259,7 @@ static bool isFixedType(int c)
 // returns NULL if it isn't valid.
 static const char *validateSingleType(const char *signature)
 {
-    register char c = *signature;
+    char c = *signature;
     if (c == DBUS_TYPE_INVALID)
         return 0;
 

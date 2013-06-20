@@ -220,7 +220,7 @@ QT_BEGIN_NAMESPACE
 
 QInotifyFileSystemWatcherEngine *QInotifyFileSystemWatcherEngine::create(QObject *parent)
 {
-    register int fd = -1;
+    int fd = -1;
 #ifdef IN_CLOEXEC
     fd = inotify_init1(IN_CLOEXEC);
 #endif

@@ -114,8 +114,8 @@ template <typename T> struct QAtomicOps : QBasicAtomicOps<sizeof(T)>
 template<> template<typename T> inline
 bool QBasicAtomicOps<4>::ref(T &_q_value) Q_DECL_NOTHROW
 {
-    register T originalValue;
-    register T newValue;
+    T originalValue;
+    T newValue;
     do {
         originalValue = _q_value;
         newValue = originalValue + 1;
@@ -126,8 +126,8 @@ bool QBasicAtomicOps<4>::ref(T &_q_value) Q_DECL_NOTHROW
 template<> template <typename T> inline
 bool QBasicAtomicOps<4>::deref(T &_q_value) Q_DECL_NOTHROW
 {
-    register T originalValue;
-    register T newValue;
+    T originalValue;
+    T newValue;
     do {
         originalValue = _q_value;
         newValue = originalValue - 1;
@@ -138,7 +138,7 @@ bool QBasicAtomicOps<4>::deref(T &_q_value) Q_DECL_NOTHROW
 template<> template <typename T> inline
 bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
-    register T originalValue;
+    T originalValue;
     do {
         originalValue = _q_value;
         if (originalValue != expectedValue)
@@ -165,7 +165,7 @@ template<> template <typename T> inline
 T QBasicAtomicOps<4>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
 #if defined(__thumb__)
-    register T originalValue;
+    T originalValue;
     do {
         originalValue = _q_value;
     } while (_q_cmpxchg(originalValue, newValue, &_q_value) != 0);
@@ -184,8 +184,8 @@ T QBasicAtomicOps<4>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHR
 template<> template <typename T> inline
 T QBasicAtomicOps<4>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
-    register T originalValue;
-    register T newValue;
+    T originalValue;
+    T newValue;
     do {
         originalValue = _q_value;
         newValue = originalValue + valueToAdd;

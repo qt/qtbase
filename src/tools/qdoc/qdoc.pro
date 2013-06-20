@@ -38,7 +38,6 @@ HEADERS += atom.h \
            separator.h \
            text.h \
            tokenizer.h \
-           tr.h \
            tree.h
 SOURCES += atom.cpp \
            codechunk.cpp \

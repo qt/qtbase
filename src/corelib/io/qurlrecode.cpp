@@ -464,7 +464,7 @@ static int recode(QString &result, const ushort *begin, const ushort *end, QUrl:
     ushort *output = 0;
 
     for ( ; input != end; ++input) {
-        register ushort c;
+        ushort c;
         EncodingAction action;
 
         // try a run where no change is necessary
@@ -483,7 +483,7 @@ static int recode(QString &result, const ushort *begin, const ushort *end, QUrl:
         break;
 
 non_trivial:
-        register uint decoded;
+        uint decoded;
         if (c == '%' && retryBadEncoding) {
             // always write "%25"
             ensureDetached(result, output, begin, input, end);

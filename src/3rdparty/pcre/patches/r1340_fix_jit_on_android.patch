@@ -1,0 +1,18 @@
+Index: sljit/sljitConfigInternal.h
+===================================================================
+--- sljit/sljitConfigInternal.h	(revision 1339)
++++ sljit/sljitConfigInternal.h	(working copy)
+@@ -221,6 +221,13 @@
+ #define SLJIT_CACHE_FLUSH(from, to) \
+ 	sys_icache_invalidate((char*)(from), (char*)(to) - (char*)(from))
+ 
++#elif defined __ANDROID__
++
++/* Android lacks __clear_cache; instead, cacheflush should be used. */
++
++#define SLJIT_CACHE_FLUSH(from, to) \
++    cacheflush((long)(from), (long)(to), 0)
++
+ #elif (defined SLJIT_CONFIG_PPC_32 && SLJIT_CONFIG_PPC_32) || (defined SLJIT_CONFIG_PPC_64 && SLJIT_CONFIG_PPC_64)
+ 
+ /* The __clear_cache() implementation of GCC is a dummy function on PowerPC. */

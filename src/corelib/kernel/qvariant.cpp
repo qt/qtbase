@@ -162,6 +162,10 @@ static qlonglong qMetaTypeNumber(const QVariant::Private *d)
         return qRound64(d->data.f);
     case QVariant::Double:
         return qRound64(d->data.d);
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QJsonValue:
+        return v_cast<QJsonValue>(d)->toDouble();
+#endif
     }
     Q_ASSERT(false);
     return 0;
@@ -206,12 +210,14 @@ static qlonglong qConvertToNumber(const QVariant::Private *d, bool *ok)
     case QMetaType::Long:
     case QMetaType::Float:
     case QMetaType::LongLong:
+    case QMetaType::QJsonValue:
         return qMetaTypeNumber(d);
     case QVariant::ULongLong:
     case QVariant::UInt:
     case QMetaType::UChar:
     case QMetaType::UShort:
     case QMetaType::ULong:
+
         return qlonglong(qMetaTypeUNumber(d));
     }
 
@@ -240,6 +246,7 @@ static qulonglong qConvertToUnsignedNumber(const QVariant::Private *d, bool *ok)
     case QMetaType::Long:
     case QMetaType::Float:
     case QMetaType::LongLong:
+    case QMetaType::QJsonValue:
         return qulonglong(qMetaTypeNumber(d));
     case QVariant::ULongLong:
     case QVariant::UInt:
@@ -357,6 +364,9 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
 #ifndef QT_BOOTSTRAPPED
         case QVariant::Url:
             *str = v_cast<QUrl>(d)->toString();
+            break;
+        case QMetaType::QJsonValue:
+            *str = v_cast<QJsonValue>(d)->toString();
             break;
 #endif
         case QVariant::Uuid:
@@ -598,6 +608,11 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         case QMetaType::ULong:
             *b = qMetaTypeUNumber(d) != Q_UINT64_C(0);
             break;
+#ifndef QT_BOOTSTRAPPED
+        case QMetaType::QJsonValue:
+            *b = v_cast<QJsonValue>(d)->toBool();
+            break;
+#endif
         default:
             *b = false;
             return false;
@@ -634,6 +649,11 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         case QMetaType::ULong:
             *f = double(qMetaTypeUNumber(d));
             break;
+#ifndef QT_BOOTSTRAPPED
+        case QMetaType::QJsonValue:
+            *f = v_cast<QJsonValue>(d)->toDouble();
+            break;
+#endif
         default:
             *f = 0.0;
             return false;
@@ -670,6 +690,11 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         case QMetaType::ULong:
             *f = float(qMetaTypeUNumber(d));
             break;
+#ifndef QT_BOOTSTRAPPED
+        case QMetaType::QJsonValue:
+            *f = v_cast<QJsonValue>(d)->toDouble();
+            break;
+#endif
         default:
             *f = 0.0f;
             return false;
@@ -2809,6 +2834,29 @@ bool QVariant::canConvert(int targetTypeId) const
         return false;
     if (targetTypeId >= QMetaType::User)
         return canConvertMetaObject(currentType, targetTypeId, d.data.o);
+
+    if (currentType == QMetaType::QJsonValue) {
+        switch (targetTypeId) {
+        case QMetaType::QString:
+        case QMetaType::Bool:
+        case QMetaType::Int:
+        case QMetaType::UInt:
+        case QMetaType::Double:
+        case QMetaType::Float:
+        case QMetaType::ULong:
+        case QMetaType::Long:
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+        case QMetaType::UShort:
+        case QMetaType::UChar:
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::Short:
+            return true;
+        default:
+            return false;
+        }
+    }
 
     // FIXME It should be LastCoreType intead of Uuid
     if (currentType > int(QMetaType::QUuid) || targetTypeId > int(QMetaType::QUuid)) {

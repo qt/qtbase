@@ -172,7 +172,7 @@ template <typename BaseClass> struct QGenericAtomicOps
     {
         // implement fetchAndStore on top of testAndSet
         Q_FOREVER {
-            register T tmp = load(_q_value);
+            T tmp = load(_q_value);
             if (BaseClass::testAndSetRelaxed(_q_value, tmp, newValue))
                 return tmp;
         }
@@ -207,7 +207,7 @@ template <typename BaseClass> struct QGenericAtomicOps
     {
         // implement fetchAndAdd on top of testAndSet
         Q_FOREVER {
-            register T tmp = BaseClass::load(_q_value);
+            T tmp = BaseClass::load(_q_value);
             if (BaseClass::testAndSetRelaxed(_q_value, tmp, T(tmp + valueToAdd)))
                 return tmp;
         }

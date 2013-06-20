@@ -110,8 +110,8 @@ bool removeGroupSeparators(QLocalePrivate::CharBuff *num);
 Q_CORE_EXPORT char *qdtoa(double d, int mode, int ndigits, int *decpt,
                           int *sign, char **rve, char **digits_str);
 Q_CORE_EXPORT double qstrtod(const char *s00, char const **se, bool *ok);
-qlonglong qstrtoll(const char *nptr, const char **endptr, register int base, bool *ok);
-qulonglong qstrtoull(const char *nptr, const char **endptr, register int base, bool *ok);
+qlonglong qstrtoll(const char *nptr, const char **endptr, int base, bool *ok);
+qulonglong qstrtoull(const char *nptr, const char **endptr, int base, bool *ok);
 
 QT_END_NAMESPACE
 

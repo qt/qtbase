@@ -582,7 +582,7 @@ bool QWindowsXPStylePrivate::hasAlphaChannel(const QRect &rect)
 
     int firstAlpha = -1;
     for (int y = startY; y < h/2; ++y) {
-        register DWORD *buffer = (DWORD*)bufferPixels + (y * bufferW);
+        DWORD *buffer = (DWORD*)bufferPixels + (y * bufferW);
         for (int x = startX; x < w; ++x, ++buffer) {
             int alpha = (*buffer) >> 24;
             if (firstAlpha == -1)
@@ -611,8 +611,8 @@ bool QWindowsXPStylePrivate::fixAlphaChannel(const QRect &rect)
     bool hasFixedAlphaValue = false;
 
     for (int y = startY; y < h; ++y) {
-        register DWORD *buffer = (DWORD*)bufferPixels + (y * bufferW);
-        for (register int x = startX; x < w; ++x, ++buffer) {
+        DWORD *buffer = (DWORD*)bufferPixels + (y * bufferW);
+        for (int x = startX; x < w; ++x, ++buffer) {
             uint pixel = *buffer;
             int alpha = qAlpha(pixel);
             if (qRed(pixel) > alpha || qGreen(pixel) > alpha || qBlue(pixel) > alpha) {
@@ -643,13 +643,13 @@ bool QWindowsXPStylePrivate::swapAlphaChannel(const QRect &rect, bool allPixels)
 
     // Flip the alphas, so that 255-alpha pixels are 0, and 0-alpha are 255.
     for (int y = startY; y < h; ++y) {
-        register DWORD *buffer = (DWORD*)bufferPixels + (y * bufferW);
-        for (register int x = startX; x < w; ++x, ++buffer) {
+        DWORD *buffer = (DWORD*)bufferPixels + (y * bufferW);
+        for (int x = startX; x < w; ++x, ++buffer) {
             if (allPixels) {
                 *buffer |= 0xFF000000;
                 continue;
             }
-            register unsigned int alphaValue = (*buffer) & 0xFF000000;
+            unsigned int alphaValue = (*buffer) & 0xFF000000;
             if (alphaValue == 0xFF000000) {
                 *buffer = 0;
                 valueChange = true;

@@ -501,7 +501,7 @@ Q_AUTOTEST_EXPORT QByteArray qCleanupFuncinfo(QByteArray info)
         templatecount = 1;
         --pos;
         while (pos && templatecount) {
-            register char c = info.at(pos);
+            char c = info.at(pos);
             if (c == '>')
                 ++templatecount;
             else if (c == '<')

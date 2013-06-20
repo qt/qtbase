@@ -49,7 +49,6 @@
 #include <qstring.h>
 
 #include "location.h"
-#include "tr.h"
 
 QT_BEGIN_NAMESPACE
 

@@ -1122,7 +1122,6 @@ QPaintEngine *QGLFramebufferObject::paintEngine() const
 
 /*!
     \fn bool QGLFramebufferObject::bindDefault()
-    \internal
 
     Switches rendering back to the default, windowing system provided
     framebuffer.

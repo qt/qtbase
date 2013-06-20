@@ -54,23 +54,8 @@ contains( styles, mac ) {
         styles/qmacstyle_mac_p.h \
         styles/qmacstyle_mac_p_p.h
         OBJECTIVE_SOURCES += styles/qmacstyle_mac.mm
-
-    !contains( styles, windows ) {
-        message( mac requires windows )
-        styles += windows
-        DEFINES+= QT_STYLE_WINDOWS
-    }
 } else {
     DEFINES += QT_NO_STYLE_MAC
-}
-
-contains( styles, windows ) {
-    HEADERS += styles/qwindowsstyle_p.h
-    HEADERS += styles/qwindowsstyle_p_p.h
-    SOURCES += styles/qwindowsstyle.cpp
-    DEFINES += QT_STYLE_WINDOWS
-} else {
-    DEFINES += QT_NO_STYLE_WINDOWS
 }
 
 contains( styles, windowsvista ) {
@@ -80,7 +65,6 @@ contains( styles, windowsvista ) {
     !contains( styles, windowsxp ) {
         message( windowsvista requires windowsxp )
         styles += windowsxp
-        DEFINES += QT_STYLE_WINDOWSXP
     }
 } else {
     DEFINES += QT_NO_STYLE_WINDOWSVISTA
@@ -93,10 +77,17 @@ contains( styles, windowsxp ) {
     !contains( styles, windows ) {
         message( windowsxp requires windows )
         styles  += windows
-        DEFINES += QT_STYLE_WINDOWS
     }
 } else {
     DEFINES += QT_NO_STYLE_WINDOWSXP
+}
+
+contains( styles, windows ) {
+    HEADERS += styles/qwindowsstyle_p.h
+    HEADERS += styles/qwindowsstyle_p_p.h
+    SOURCES += styles/qwindowsstyle.cpp
+} else {
+    DEFINES += QT_NO_STYLE_WINDOWS
 }
 
 contains( styles, gtk ) {

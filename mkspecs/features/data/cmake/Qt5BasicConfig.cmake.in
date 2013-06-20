@@ -104,7 +104,11 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
     set(Qt5$${CMAKE_MODULE_NAME}_PRIVATE_INCLUDE_DIRS)
 !!ENDIF
 
-    foreach(_dir ${_Qt5$${CMAKE_MODULE_NAME}_OWN_INCLUDE_DIRS} ${Qt5$${CMAKE_MODULE_NAME}_PRIVATE_INCLUDE_DIRS})
+    foreach(_dir ${_Qt5$${CMAKE_MODULE_NAME}_OWN_INCLUDE_DIRS}
+!!IF isEmpty(CMAKE_BUILD_IS_FRAMEWORK)
+                 ${Qt5$${CMAKE_MODULE_NAME}_PRIVATE_INCLUDE_DIRS}
+!!ENDIF
+                 )
         _qt5_$${CMAKE_MODULE_NAME}_check_file_exists(${_dir})
     endforeach()
 

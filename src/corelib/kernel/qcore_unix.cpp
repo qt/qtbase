@@ -79,7 +79,7 @@ int qt_safe_select(int nfds, fd_set *fdread, fd_set *fdwrite, fd_set *fdexcept,
 {
     if (!orig_timeout) {
         // no timeout -> block forever
-        register int ret;
+        int ret;
         EINTR_LOOP(ret, select(nfds, fdread, fdwrite, fdexcept, 0));
         return ret;
     }

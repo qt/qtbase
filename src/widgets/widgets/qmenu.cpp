@@ -2854,9 +2854,9 @@ void QMenu::mouseMoveEvent(QMouseEvent *e)
     d->hasHadMouse = d->hasHadMouse || rect().contains(e->pos());
 
     QAction *action = d->actionAt(e->pos());
-    if (!action) {
+    if (!action || action->isSeparator()) {
         if (d->hasHadMouse
-            && (!d->currentAction
+            && (!d->currentAction || (action && action->isSeparator())
                 || !(d->currentAction->menu() && d->currentAction->menu()->isVisible())))
             d->setCurrentAction(0);
         return;

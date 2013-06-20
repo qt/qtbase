@@ -1121,13 +1121,13 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
                 fx &= fixed_scale - 1;
                 Q_ASSERT((fx >> 16) == 0);
                 while (b < end) {
-                    register int x1 = (fx >> 16);
-                    register int x2 = x1 + 1;
+                    int x1 = (fx >> 16);
+                    int x2 = x1 + 1;
                     Q_ASSERT(x1 >= 0);
                     Q_ASSERT(x2 < count);
 
-                    register int distx = (fx & 0x0000ffff) >> 8;
-                    register int idistx = 256 - distx;
+                    int distx = (fx & 0x0000ffff) >> 8;
+                    int idistx = 256 - distx;
                     int rb = ((intermediate_buffer[0][x1] * idistx + intermediate_buffer[0][x2] * distx) >> 8) & 0xff00ff;
                     int ag = (intermediate_buffer[1][x1] * idistx + intermediate_buffer[1][x2] * distx) & 0xff00ff00;
                     *b = rb | ag;
@@ -1533,13 +1533,13 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                 fx &= fixed_scale - 1;
                 Q_ASSERT((fx >> 16) == 0);
                 for (int i = 0; i < length; ++i) {
-                    register int x1 = (fx >> 16);
-                    register int x2 = x1 + 1;
+                    int x1 = (fx >> 16);
+                    int x2 = x1 + 1;
                     Q_ASSERT(x1 >= 0);
                     Q_ASSERT(x2 < count);
 
-                    register int distx = (fx & 0x0000ffff) >> 8;
-                    register int idistx = 256 - distx;
+                    int distx = (fx & 0x0000ffff) >> 8;
+                    int idistx = 256 - distx;
                     int rb = ((buf1[x1] * idistx + buf1[x2] * distx) >> 8) & 0xff00ff;
                     int ag = (buf2[x1] * idistx + buf2[x2] * distx) & 0xff00ff00;
                     buffer[i] = rb | ag;
