@@ -756,8 +756,9 @@ void QGtkStylePrivate::removeWidgetFromMap(const QHashableLatin1Literal &path)
     WidgetMap *map = gtkWidgetMap();
     WidgetMap::iterator it = map->find(path);
     if (it != map->end()) {
-        free(const_cast<char *>(it.key().data()));
+        char* keyData = const_cast<char *>(it.key().data());
         map->erase(it);
+        free(keyData);
     }
 }
 
