@@ -55,11 +55,8 @@ set_property(TARGET Qt5::Core APPEND PROPERTY
   COMPATIBLE_INTERFACE_STRING QT_MAJOR_VERSION
 )
 
-!!IF isEmpty(CMAKE_HOST_DATA_DIR_IS_ABSOLUTE)
-set(_qt5_corelib_extra_includes \"${_qt5Core_install_prefix}/$${CMAKE_HOST_DATA_DIR}/mkspecs/$${CMAKE_MKSPEC}\")
-!!ELSE
-set(_qt5_corelib_extra_includes \"$${CMAKE_HOST_DATA_DIR}mkspecs/$${CMAKE_MKSPEC}\")
-!!ENDIF
+include(\"${CMAKE_CURRENT_LIST_DIR}/Qt5CoreConfigExtrasMkspecDir.cmake\")
+
 foreach(_dir ${_qt5_corelib_extra_includes})
     _qt5_Core_check_file_exists(${_dir})
 endforeach()

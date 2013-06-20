@@ -77,12 +77,32 @@ cmake_umbrella_config_file.output = $$DESTDIR/cmake/Qt5/Qt5Config.cmake
 cmake_umbrella_config_version_file.input = $$PWD/../../mkspecs/features/data/cmake/Qt5ConfigVersion.cmake.in
 cmake_umbrella_config_version_file.output = $$DESTDIR/cmake/Qt5/Qt5ConfigVersion.cmake
 
+load(cmake_functions)
+
+CMAKE_HOST_DATA_DIR = $$cmakeRelativePath($$[QT_HOST_DATA/src], $$[QT_INSTALL_PREFIX])
+contains(CMAKE_HOST_DATA_DIR, "^\\.\\./.*"):!isEmpty(CMAKE_HOST_DATA_DIR) {
+    CMAKE_HOST_DATA_DIR = $$[QT_HOST_DATA/src]/
+    CMAKE_HOST_DATA_DIR_IS_ABSOLUTE = True
+}
+
+cmake_extras_mkspec_dir.input = $$PWD/Qt5CoreConfigExtrasMkspecDir.cmake.in
+cmake_extras_mkspec_dir.output = $$DESTDIR/cmake/Qt5Core/Qt5CoreConfigExtrasMkspecDir.cmake
+
+CMAKE_INSTALL_DATA_DIR = $$cmakeRelativePath($$[QT_HOST_DATA], $$[QT_INSTALL_PREFIX])
+contains(CMAKE_INSTALL_DATA_DIR, "^\\.\\./.*"):!isEmpty(CMAKE_INSTALL_DATA_DIR) {
+    CMAKE_INSTALL_DATA_DIR = $$[QT_HOST_DATA]/
+    CMAKE_INSTALL_DATA_DIR_IS_ABSOLUTE = True
+}
+
+cmake_extras_mkspec_dir_for_install.input = $$PWD/Qt5CoreConfigExtrasMkspecDirForInstall.cmake.in
+cmake_extras_mkspec_dir_for_install.output = $$DESTDIR/cmake/install/Qt5Core/Qt5CoreConfigExtrasMkspecDir.cmake
+
 cmake_qt5_umbrella_module_files.files = $$cmake_umbrella_config_file.output $$cmake_umbrella_config_version_file.output
 cmake_qt5_umbrella_module_files.path = $$[QT_INSTALL_LIBS]/cmake/Qt5
 
-QMAKE_SUBSTITUTES += ctest_macros_file cmake_umbrella_config_file cmake_umbrella_config_version_file
+QMAKE_SUBSTITUTES += ctest_macros_file cmake_umbrella_config_file cmake_umbrella_config_version_file cmake_extras_mkspec_dir cmake_extras_mkspec_dir_for_install
 
-ctest_qt5_module_files.files += $$ctest_macros_file.output
+ctest_qt5_module_files.files += $$ctest_macros_file.output $$cmake_extras_mkspec_dir_for_install.output
 
 ctest_qt5_module_files.path = $$[QT_INSTALL_LIBS]/cmake/Qt5Core
 

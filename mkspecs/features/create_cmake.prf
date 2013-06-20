@@ -11,11 +11,6 @@
 
 load(cmake_functions)
 
-defineReplace(cmakeRelativePath) {
-    path = $$relative_path($$1, $$2)
-    return($$replace(path, ([^/])$, \\1/))
-}
-
 CMAKE_MODULE_NAME = $$cmakeModuleName($${MODULE})
 
 CMAKE_MODULE_DEPS = $$cmakeModuleList($$sort_depends(QT.$${MODULE}.depends, QT.))
@@ -58,12 +53,6 @@ CMAKE_BIN_DIR = $$cmakeRelativePath($$[QT_HOST_BINS], $$[QT_INSTALL_PREFIX])
 contains(CMAKE_BIN_DIR, "^\\.\\./.*") {
     CMAKE_BIN_DIR = $$[QT_HOST_BINS]/
     CMAKE_BIN_DIR_IS_ABSOLUTE = True
-}
-
-CMAKE_HOST_DATA_DIR = $$cmakeRelativePath($$[QT_HOST_DATA], $$[QT_INSTALL_PREFIX])
-contains(CMAKE_HOST_DATA_DIR, "^\\.\\./.*") {
-    CMAKE_HOST_DATA_DIR = $$[QT_HOST_DATA]/
-    CMAKE_HOST_DATA_DIR_IS_ABSOLUTE = True
 }
 
 static|staticlib:CMAKE_STATIC_TYPE = true
