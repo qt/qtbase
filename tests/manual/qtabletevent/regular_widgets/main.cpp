@@ -43,12 +43,38 @@
 #include <QDebug>
 #include <QMouseEvent>
 #include <QTabletEvent>
-#include <QWidget>
+#include <QMainWindow>
+#include <QMenuBar>
+#include <QMenu>
+#include <QAction>
+#include <QVector>
+#include <QPainter>
+#include <QCursor>
+
+enum TabletPointType {
+    TabletButtonPress,
+    TabletButtonRelease,
+    TabletMove,
+    TabletDraw
+};
+
+struct TabletPoint
+{
+    TabletPoint(const QPoint &p = QPoint(), TabletPointType t = TabletMove) : pos(p), type(t) {}
+
+    QPoint pos;
+    TabletPointType type;
+};
 
 class EventReportWidget : public QWidget
 {
+    Q_OBJECT
 public:
     EventReportWidget();
+
+public slots:
+    void clearPoints() { m_points.clear(); update(); }
+
 protected:
     void mouseDoubleClickEvent(QMouseEvent *event) { outputMouseEvent(event); }
     void mouseMoveEvent(QMouseEvent *event) { outputMouseEvent(event); }
@@ -57,17 +83,48 @@ protected:
 
     void tabletEvent(QTabletEvent *);
 
+    void paintEvent(QPaintEvent *);
+
 private:
     void outputMouseEvent(QMouseEvent *event);
 
     bool m_lastIsMouseMove;
     bool m_lastIsTabletMove;
+    QVector<TabletPoint> m_points;
 };
 
 EventReportWidget::EventReportWidget()
     : m_lastIsMouseMove(false)
     , m_lastIsTabletMove(false)
 { }
+
+void EventReportWidget::paintEvent(QPaintEvent *)
+{
+    QPainter p(this);
+    const QRect geom = QRect(QPoint(0, 0), size());
+    p.fillRect(geom, Qt::white);
+    p.drawRect(QRect(geom.topLeft(), geom.bottomRight() - QPoint(1,1)));
+    foreach (const TabletPoint &t, m_points) {
+        if (geom.contains(t.pos)) {
+              QPainterPath pp;
+              pp.addEllipse(t.pos, 5, 5);
+              switch (t.type) {
+              case TabletButtonPress:
+                  p.fillPath(pp, Qt::black);
+                  break;
+              case TabletButtonRelease:
+                  p.fillPath(pp, Qt::red);
+                  break;
+              case TabletMove:
+                  p.drawPath(pp);
+                  break;
+              case TabletDraw:
+                  p.fillPath(pp, Qt::blue);
+                  break;
+              }
+          }
+    }
+}
 
 void EventReportWidget::tabletEvent(QTabletEvent *event)
 {
@@ -89,14 +146,20 @@ void EventReportWidget::tabletEvent(QTabletEvent *event)
 
         m_lastIsTabletMove = true;
         type = QString::fromLatin1("TabletMove");
+        m_points.push_back(TabletPoint(event->pos(), event->pressure() ? TabletDraw : TabletMove));
+        update();
         break;
     case QEvent::TabletPress:
         m_lastIsTabletMove = false;
         type = QString::fromLatin1("TabletPress");
+        m_points.push_back(TabletPoint(event->pos(), TabletButtonPress));
+        update();
         break;
     case QEvent::TabletRelease:
         m_lastIsTabletMove = false;
         type = QString::fromLatin1("TabletRelease");
+        m_points.push_back(TabletPoint(event->pos(), TabletButtonRelease));
+        update();
         break;
     default:
         Q_ASSERT(false);
@@ -105,7 +168,8 @@ void EventReportWidget::tabletEvent(QTabletEvent *event)
 
     qDebug() << "Tablet event, type = " << type
              << " position = " << event->pos()
-             << " global position = " << event->globalPos();
+             << " global position = " << event->globalPos()
+             << " cursor at " << QCursor::pos();
 }
 
 void EventReportWidget::outputMouseEvent(QMouseEvent *event)
@@ -144,7 +208,18 @@ void EventReportWidget::outputMouseEvent(QMouseEvent *event)
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    EventReportWidget widget;
-    widget.show();
+    QMainWindow mainWindow;
+    mainWindow.setWindowTitle(QString::fromLatin1("Tablet Test %1").arg(QT_VERSION_STR));
+    EventReportWidget *widget = new EventReportWidget;
+    widget->setMinimumSize(640, 480);
+    QMenu *fileMenu = mainWindow.menuBar()->addMenu("File");
+    QObject::connect(fileMenu->addAction("Clear"), SIGNAL(triggered()), widget, SLOT(clearPoints()));
+    QAction *quitAction = fileMenu->addAction("Quit");
+    QObject::connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+    quitAction->setShortcut(Qt::CTRL + Qt::Key_Q);
+    mainWindow.setCentralWidget(widget);
+    mainWindow.show();
     return app.exec();
 }
+
+#include "main.moc"
