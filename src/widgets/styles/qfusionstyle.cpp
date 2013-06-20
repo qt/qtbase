@@ -1219,6 +1219,10 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                                   - titleRect.bottom(),
                                   r.top() + titleRect.left() - rect.left(),
                                   titleRect.height(), titleRect.width());
+
+                painter->translate(r.left(), r.top() + r.width());
+                painter->rotate(-90);
+                painter->translate(-r.left(), -r.top());
             }
 
             if (!dwOpt->title.isEmpty()) {
