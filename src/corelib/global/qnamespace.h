@@ -980,6 +980,8 @@ public:
         Key_TouchpadOn = 0x01000111,
         Key_TouchpadOff = 0x01000112,
 
+        Key_MicMute = 0x01000113,
+
         Key_MediaLast = 0x0100ffff,
 
         // Keypad navigation keys

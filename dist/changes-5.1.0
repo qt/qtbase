@@ -88,7 +88,16 @@ QtGui
 QtNetwork
 ---------
 
- -
+ - QNetworkAccessManager / QNetworkReply:
+    * Add a new encrypted() signal so that applications can perform
+      additional checks on the certificate chain.
+ - QSslSocket:
+    * Support for sending intermediate certificates when QSslSocket is used
+      as a server, and when using client certificates.
+ - HTTPS internals:
+    * SSL sessions are re-used by default.
+ - QHostInfo:
+    * Allow QHostInfo::lookupHost() with no receiver to warm the DNS cache.
 
 QtWidgets
 ---------

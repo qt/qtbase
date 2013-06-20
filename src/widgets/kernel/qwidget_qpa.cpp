@@ -890,9 +890,7 @@ void QWidgetPrivate::deleteSysExtra()
 void QWidgetPrivate::createTLSysExtra()
 {
     Q_Q(QWidget);
-    extra->topextra->screenIndex = 0;
-    extra->topextra->window = 0;
-    if (q->testAttribute(Qt::WA_NativeWindow) || q->isWindow()) {
+    if (!extra->topextra->window && (q->testAttribute(Qt::WA_NativeWindow) || q->isWindow())) {
         extra->topextra->window = new QWidgetWindow(q);
         if (extra->minw || extra->minh)
             extra->topextra->window->setMinimumSize(QSize(extra->minw, extra->minh));

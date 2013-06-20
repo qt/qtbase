@@ -1044,14 +1044,13 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
             }
             if (slash) {
                 QString chunk = dirName.left(slash);
-                bool existed = false;
-                if (!isDirPath(chunk, &existed)) {
-                    if (!existed) {
-                        if (!mkDir(chunk))
-                            return false;
-                    } else {
-                        return false;
+                if (!mkDir(chunk)) {
+                    if (GetLastError() == ERROR_ALREADY_EXISTS) {
+                        bool existed = false;
+                        if (isDirPath(chunk, &existed) && existed)
+                            continue;
                     }
+                    return false;
                 }
             }
         }

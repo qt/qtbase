@@ -279,17 +279,18 @@ void tst_QTemporaryDir::openOnRootDrives()
 void tst_QTemporaryDir::stressTest()
 {
     const int iterations = 1000;
+    QTemporaryDir rootDir;
+    QVERIFY(rootDir.isValid());
 
     QSet<QString> names;
+    const QString pattern = rootDir.path() + QStringLiteral("/XXXXXX");
     for (int i = 0; i < iterations; ++i) {
-        QTemporaryDir dir;
+        QTemporaryDir dir(pattern);
         dir.setAutoRemove(false);
-        QVERIFY2(dir.isValid(), qPrintable(QString::number(i)));
+        QVERIFY2(dir.isValid(), qPrintable(QString::fromLatin1("Failed to create #%1 under %2.").arg(i).arg(QDir::toNativeSeparators(pattern))));
         QVERIFY(!names.contains(dir.path()));
         names.insert(dir.path());
     }
-    for (QSet<QString>::const_iterator it = names.constBegin(); it != names.constEnd(); ++it)
-        QDir(*it).removeRecursively();
 }
 
 void tst_QTemporaryDir::rename()

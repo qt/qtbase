@@ -510,11 +510,12 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
             }
             if (slash) {
                 const QByteArray chunk = QFile::encodeName(dirName.left(slash));
-                QT_STATBUF st;
-                if (QT_STAT(chunk.constData(), &st) != -1) {
-                    if ((st.st_mode & S_IFMT) != S_IFDIR)
-                        return false;
-                } else if (QT_MKDIR(chunk.constData(), 0777) != 0) {
+                if (QT_MKDIR(chunk.constData(), 0777) != 0) {
+                    if (errno == EEXIST) {
+                        QT_STATBUF st;
+                        if (QT_STAT(chunk.constData(), &st) == 0 && (st.st_mode & S_IFMT) == S_IFDIR)
+                            continue;
+                    }
                     return false;
                 }
             }
