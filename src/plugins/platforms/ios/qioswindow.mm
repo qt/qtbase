@@ -183,12 +183,6 @@
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    QWindow *window = m_qioswindow->window();
-
-    // Transfer focus to the touched window:
-    if (window != QGuiApplication::focusWindow())
-        m_qioswindow->requestActivateWindow();
-
     // UIKit generates [Began -> Moved -> Ended] event sequences for
     // each touch point. Internally we keep a hashmap of active UITouch
     // points to QWindowSystemInterface::TouchPoints, and assigns each TouchPoint
@@ -210,6 +204,14 @@
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
+    QWindow *window = m_qioswindow->window();
+    if (window != QGuiApplication::focusWindow() && m_activeTouches.size() == 1) {
+        // Activate the touched window if the last touch was released inside it:
+        UITouch *touch = static_cast<UITouch *>([[touches allObjects] lastObject]);
+        if (CGRectContainsPoint([self bounds], [touch locationInView:self]))
+            m_qioswindow->requestActivateWindow();
+    }
+
     [self updateTouchList:touches withState:Qt::TouchPointReleased];
     [self sendTouchEventWithTimestamp:ulong(event.timestamp * 1000)];
 
