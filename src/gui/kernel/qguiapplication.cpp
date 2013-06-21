@@ -94,9 +94,12 @@
 #include <QtGui/QClipboard>
 #endif
 
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MAC)
 #  include "private/qcore_mac_p.h"
-#endif
+#elif defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#  include <QtCore/qt_windows.h>
+#  include <QtCore/QLibraryInfo>
+#endif // Q_OS_WIN && !Q_OS_WINCE
 
 QT_BEGIN_NAMESPACE
 
@@ -789,6 +792,12 @@ static void init_platform(const QString &pluginArgument, const QString &platform
             fatalMessage += QStringLiteral("Available platforms are: %1\n").arg(
                         keys.join(QStringLiteral(", ")));
         fatalMessage += QStringLiteral("GUI applications require a platform plugin. Terminating.");
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+        // Windows: Display message box unless it is a console application
+        // or debug build showing an assert box.
+        if (!QLibraryInfo::isDebugBuild() && !GetConsoleWindow())
+            MessageBox(0, (LPCTSTR)fatalMessage.utf16(), (LPCTSTR)(QCoreApplication::applicationName().utf16()), MB_OK | MB_ICONERROR);
+#endif // Q_OS_WIN && !Q_OS_WINCE
         qFatal("%s", qPrintable(fatalMessage));
         return;
     }
