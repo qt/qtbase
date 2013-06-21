@@ -52,14 +52,14 @@ QT_BEGIN_NAMESPACE
 Q_GLOBAL_STATIC(QThreadPool, theInstance)
 
 /*
-    QThread wrapper, provides synchronizitaion against a ThreadPool
+    QThread wrapper, provides synchronization against a ThreadPool
 */
 class QThreadPoolThread : public QThread
 {
 public:
     QThreadPoolThread(QThreadPoolPrivate *manager);
     void run();
-    void registerTheadInactive();
+    void registerThreadInactive();
 
     QThreadPoolPrivate *manager;
     QRunnable *runnable;
@@ -103,7 +103,7 @@ void QThreadPoolThread::run()
                     qWarning("Qt Concurrent has caught an exception thrown from a worker thread.\n"
                              "This is not supported, exceptions thrown in worker threads must be\n"
                              "caught before control returns to Qt Concurrent.");
-                    registerTheadInactive();
+                    registerThreadInactive();
                     throw;
                 }
 #endif
@@ -121,7 +121,7 @@ void QThreadPoolThread::run()
         } while (r != 0);
 
         if (manager->isExiting) {
-            registerTheadInactive();
+            registerThreadInactive();
             break;
         }
 
@@ -129,7 +129,7 @@ void QThreadPoolThread::run()
         bool expired = manager->tooManyThreadsActive();
         if (!expired) {
             ++manager->waitingThreads;
-            registerTheadInactive();
+            registerThreadInactive();
             // wait for work, exiting after the expiry timeout is reached
             expired = !manager->runnableReady.wait(locker.mutex(), manager->expiryTimeout);
             ++manager->activeThreads;
@@ -139,13 +139,13 @@ void QThreadPoolThread::run()
         }
         if (expired) {
             manager->expiredThreads.enqueue(this);
-            registerTheadInactive();
+            registerThreadInactive();
             break;
         }
     }
 }
 
-void QThreadPoolThread::registerTheadInactive()
+void QThreadPoolThread::registerThreadInactive()
 {
     if (--manager->activeThreads == 0)
         manager->noActiveThreads.wakeAll();
@@ -262,7 +262,7 @@ void QThreadPoolPrivate::startThread(QRunnable *runnable)
 
 /*!
     \internal
-    Makes all threads exit, waits for each tread to exit and deletes it.
+    Makes all threads exit, waits for each thread to exit and deletes it.
 */
 void QThreadPoolPrivate::reset()
 {
@@ -322,8 +322,8 @@ void QThreadPoolPrivate::clear()
 
 /*!
     \internal
-    Seaches for \a runnable in the queue, removes it from the queue and
-    runs it if found. This functon does not return until the runnable
+    Searches for \a runnable in the queue, removes it from the queue and
+    runs it if found. This function does not return until the runnable
     has completed.
 */
 void QThreadPoolPrivate::stealRunnable(QRunnable *runnable)
