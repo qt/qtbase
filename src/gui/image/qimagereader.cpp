@@ -311,7 +311,7 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
                     QImageIOPlugin *plugin = qobject_cast<QImageIOPlugin *>(l->instance(i));
                     if (plugin && plugin->capabilities(device, testFormat) & QImageIOPlugin::CanRead) {
 #ifdef QIMAGEREADER_DEBUG
-                        qDebug() << "QImageReader::createReadHandler: the" << keys.at(i) << "plugin can read this format";
+                        qDebug() << "QImageReader::createReadHandler: the" << keyMap.keys().at(i) << "plugin can read this format";
 #endif
                         handler = plugin->create(device, testFormat);
                         break;
@@ -392,7 +392,7 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
                 if (plugin && plugin->capabilities(device, QByteArray()) & QImageIOPlugin::CanRead) {
                     handler = plugin->create(device, testFormat);
 #ifdef QIMAGEREADER_DEBUG
-                    qDebug() << "QImageReader::createReadHandler: the" << keys.at(i) << "plugin can read this data";
+                    qDebug() << "QImageReader::createReadHandler: the" << keyMap.keys().at(i) << "plugin can read this data";
 #endif
                     break;
                 }
