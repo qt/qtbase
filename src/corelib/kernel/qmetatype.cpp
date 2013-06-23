@@ -965,11 +965,11 @@ int QMetaType::registerNormalizedTypedef(const NS(QByteArray) &normalizedTypeNam
     }
 
     if (idx != aliasId) {
-        qFatal("QMetaType::registerTypedef: Binary compatibility break "
-            "-- Type name '%s' previously registered as typedef of '%s' [%i], "
-            "now registering as typedef of '%s' [%i].",
-            normalizedTypeName.constData(), QMetaType::typeName(idx), idx,
-            QMetaType::typeName(aliasId), aliasId);
+        qWarning("QMetaType::registerTypedef: "
+                 "-- Type name '%s' previously registered as typedef of '%s' [%i], "
+                 "now registering as typedef of '%s' [%i].",
+                 normalizedTypeName.constData(), QMetaType::typeName(idx), idx,
+                 QMetaType::typeName(aliasId), aliasId);
     }
     return idx;
 }
