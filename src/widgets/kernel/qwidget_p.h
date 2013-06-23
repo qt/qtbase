@@ -644,6 +644,7 @@ public:
     QRegion dirty;
 #ifndef QT_NO_TOOLTIP
     QString toolTip;
+    int toolTipDuration;
 #endif
 #ifndef QT_NO_STATUSTIP
     QString statusTip;

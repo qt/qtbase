@@ -243,6 +243,9 @@ QWidgetPrivate::QWidgetPrivate(int version)
 #if !defined(QT_NO_IM)
       , imHints(Qt::ImhNone)
 #endif
+#ifndef QT_NO_TOOLTIP
+      , toolTipDuration(-1)
+#endif
       , inheritedFontResolveMask(0)
       , inheritedPaletteResolveMask(0)
       , leftmargin(0)
@@ -8193,7 +8196,7 @@ bool QWidget::event(QEvent *event)
 #ifndef QT_NO_TOOLTIP
     case QEvent::ToolTip:
         if (!d->toolTip.isEmpty())
-            QToolTip::showText(static_cast<QHelpEvent*>(event)->globalPos(), d->toolTip, this);
+            QToolTip::showText(static_cast<QHelpEvent*>(event)->globalPos(), d->toolTip, this, QRect(), d->toolTipDuration);
         else
             event->ignore();
         break;
@@ -10410,6 +10413,30 @@ QString QWidget::toolTip() const
     Q_D(const QWidget);
     return d->toolTip;
 }
+
+/*!
+  \property QWidget::toolTipDuration
+  \brief the widget's tooltip duration
+  \since 5.2
+
+  Specifies how long time the tooltip will be displayed, in milliseconds.
+  If the value is -1 (default) the duration is calculated depending on the length of the tooltip.
+
+  \sa toolTip
+*/
+
+void QWidget::setToolTipDuration(int msec)
+{
+    Q_D(QWidget);
+    d->toolTipDuration = msec;
+}
+
+int QWidget::toolTipDuration() const
+{
+    Q_D(const QWidget);
+    return d->toolTipDuration;
+}
+
 #endif // QT_NO_TOOLTIP
 
 
