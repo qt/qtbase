@@ -43,6 +43,7 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qiodevice.h>
 #include <QtCore/qpair.h>
+#include <QtCore/qfloat16.h>
 
 #ifdef Status
 #error qdatastream.h must be included before any header file that defines Status
@@ -154,6 +155,7 @@ public:
     QDataStream &operator>>(quint64 &i);
 
     QDataStream &operator>>(bool &i);
+    QDataStream &operator>>(qfloat16 &f);
     QDataStream &operator>>(float &f);
     QDataStream &operator>>(double &f);
     QDataStream &operator>>(char *&str);
@@ -167,6 +169,7 @@ public:
     QDataStream &operator<<(qint64 i);
     QDataStream &operator<<(quint64 i);
     QDataStream &operator<<(bool i);
+    QDataStream &operator<<(qfloat16 f);
     QDataStream &operator<<(float f);
     QDataStream &operator<<(double f);
     QDataStream &operator<<(const char *str);
@@ -345,6 +348,9 @@ inline QDataStream &QDataStream::operator>>(quint32 &i)
 inline QDataStream &QDataStream::operator>>(quint64 &i)
 { return *this >> reinterpret_cast<qint64&>(i); }
 
+inline QDataStream &QDataStream::operator>>(qfloat16 &f)
+{ return *this >> reinterpret_cast<qint16&>(f); }
+
 inline QDataStream &QDataStream::operator<<(quint8 i)
 { return *this << qint8(i); }
 
@@ -356,6 +362,9 @@ inline QDataStream &QDataStream::operator<<(quint32 i)
 
 inline QDataStream &QDataStream::operator<<(quint64 i)
 { return *this << qint64(i); }
+
+inline QDataStream &QDataStream::operator<<(qfloat16 f)
+{ return *this << reinterpret_cast<qint16&>(f); }
 
 template <typename T>
 inline QDataStream &operator>>(QDataStream &s, QList<T> &l)

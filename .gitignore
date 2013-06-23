@@ -89,6 +89,7 @@ bin/makeqpf*
 bin/pixeltool*
 bin/qmake*
 bin/qdoc*
+bin/qfloat16-tables*
 bin/qt3to4*
 bin/qttracereplay*
 bin/rcc*
@@ -137,6 +138,7 @@ src/corelib/global/qconfig.h
 src/corelib/global/qconfig.h.qmake
 src/corelib/global/qconfig_p.h
 src/corelib/global/qfeatures.h
+src/corelib/global/qfloat16tables.cpp
 src/platformsupport/*_interface.*
 src/platformsupport/*_adaptor.*
 ui_*.h
