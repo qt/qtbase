@@ -47,7 +47,7 @@
 #define slots Baz
 #define emit Yoyodyne
 
-#include <QtGui/QtGui>
+#include <QtConcurrent/QtConcurrent>
 #include <QtCore>
 #include <QtNetwork/QtNetwork>
 #include <QtSql/QtSql>

@@ -44,7 +44,7 @@
 */
 
 #include "separator.h"
-#include "tr.h"
+#include <qcoreapplication.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -789,7 +789,7 @@ static void init_platform(const QString &pluginArgument, const QString &platform
             fatalMessage += QStringLiteral("Available platforms are: %1\n").arg(
                         keys.join(QStringLiteral(", ")));
         fatalMessage += QStringLiteral("GUI applications require a platform plugin. Terminating.");
-        qFatal(qPrintable(fatalMessage));
+        qFatal("%s", qPrintable(fatalMessage));
         return;
     }
 
@@ -2479,10 +2479,18 @@ void QGuiApplicationPrivate::emitLastWindowClosed()
 
 bool QGuiApplicationPrivate::shouldQuit()
 {
+    const QWindowList processedWindows;
+    return shouldQuitInternal(processedWindows);
+}
+
+bool QGuiApplicationPrivate::shouldQuitInternal(const QWindowList &processedWindows)
+{
     /* if there is no visible top-level window left, we allow the quit */
     QWindowList list = QGuiApplication::topLevelWindows();
     for (int i = 0; i < list.size(); ++i) {
         QWindow *w = list.at(i);
+        if (processedWindows.contains(w))
+            continue;
         if (w->isVisible() && !w->transientParent())
             return false;
     }

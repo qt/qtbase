@@ -117,8 +117,8 @@ template <typename T> struct QAtomicOps : QBasicAtomicOps<sizeof(T)>
 template<> template<typename T> inline
 bool QBasicAtomicOps<4>::ref(T &_q_value) Q_DECL_NOTHROW
 {
-    register T newValue;
-    register int result;
+    T newValue;
+    int result;
     asm volatile("0:\n"
                  "ldrex %[newValue], [%[_q_value]]\n"
                  "add %[newValue], %[newValue], #1\n"
@@ -136,8 +136,8 @@ bool QBasicAtomicOps<4>::ref(T &_q_value) Q_DECL_NOTHROW
 template<> template <typename T> inline
 bool QBasicAtomicOps<4>::deref(T &_q_value) Q_DECL_NOTHROW
 {
-    register T newValue;
-    register int result;
+    T newValue;
+    int result;
     asm volatile("0:\n"
                  "ldrex %[newValue], [%[_q_value]]\n"
                  "sub %[newValue], %[newValue], #1\n"
@@ -155,7 +155,7 @@ bool QBasicAtomicOps<4>::deref(T &_q_value) Q_DECL_NOTHROW
 template<> template <typename T> inline
 bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
-    register int result;
+    int result;
     asm volatile("0:\n"
                  "ldrex %[result], [%[_q_value]]\n"
                  "eors %[result], %[result], %[expectedValue]\n"
@@ -175,8 +175,8 @@ bool QBasicAtomicOps<4>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
 template<> template <typename T> inline
 T QBasicAtomicOps<4>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
-    register T originalValue;
-    register int result;
+    T originalValue;
+    int result;
     asm volatile("0:\n"
                  "ldrex %[originalValue], [%[_q_value]]\n"
                  "strex %[result], %[newValue], [%[_q_value]]\n"
@@ -194,9 +194,9 @@ T QBasicAtomicOps<4>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHR
 template<> template <typename T> inline
 T QBasicAtomicOps<4>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
-    register T originalValue;
-    register T newValue;
-    register int result;
+    T originalValue;
+    T newValue;
+    int result;
     asm volatile("0:\n"
                  "ldrex %[originalValue], [%[_q_value]]\n"
                  "add %[newValue], %[originalValue], %[valueToAdd]\n"
@@ -256,8 +256,8 @@ template<> struct QAtomicIntegerTraits<char32_t> { enum { IsInteger = 1 }; };
 template<> template<typename T> inline
 bool QBasicAtomicOps<1>::ref(T &_q_value) Q_DECL_NOTHROW
 {
-    register T newValue;
-    register int result;
+    T newValue;
+    int result;
     asm volatile("0:\n"
                  "ldrexb %[newValue], [%[_q_value]]\n"
                  "add %[newValue], %[newValue], #1\n"
@@ -275,8 +275,8 @@ bool QBasicAtomicOps<1>::ref(T &_q_value) Q_DECL_NOTHROW
 template<> template <typename T> inline
 bool QBasicAtomicOps<1>::deref(T &_q_value) Q_DECL_NOTHROW
 {
-    register T newValue;
-    register int result;
+    T newValue;
+    int result;
     asm volatile("0:\n"
                  "ldrexb %[newValue], [%[_q_value]]\n"
                  "sub %[newValue], %[newValue], #1\n"
@@ -294,7 +294,7 @@ bool QBasicAtomicOps<1>::deref(T &_q_value) Q_DECL_NOTHROW
 template<> template <typename T> inline
 bool QBasicAtomicOps<1>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
-    register T result;
+    T result;
     asm volatile("0:\n"
                  "ldrexb %[result], [%[_q_value]]\n"
                  "eors %[result], %[result], %[expectedValue]\n"
@@ -314,8 +314,8 @@ bool QBasicAtomicOps<1>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
 template<> template <typename T> inline
 T QBasicAtomicOps<1>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
-    register T originalValue;
-    register int result;
+    T originalValue;
+    int result;
     asm volatile("0:\n"
                  "ldrexb %[originalValue], [%[_q_value]]\n"
                  "strexb %[result], %[newValue], [%[_q_value]]\n"
@@ -333,9 +333,9 @@ T QBasicAtomicOps<1>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHR
 template<> template <typename T> inline
 T QBasicAtomicOps<1>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
-    register T originalValue;
-    register T newValue;
-    register int result;
+    T originalValue;
+    T newValue;
+    int result;
     asm volatile("0:\n"
                  "ldrexb %[originalValue], [%[_q_value]]\n"
                  "add %[newValue], %[originalValue], %[valueToAdd]\n"
@@ -355,8 +355,8 @@ T QBasicAtomicOps<1>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveTy
 template<> template<typename T> inline
 bool QBasicAtomicOps<2>::ref(T &_q_value) Q_DECL_NOTHROW
 {
-    register T newValue;
-    register int result;
+    T newValue;
+    int result;
     asm volatile("0:\n"
                  "ldrexh %[newValue], [%[_q_value]]\n"
                  "add %[newValue], %[newValue], #1\n"
@@ -374,8 +374,8 @@ bool QBasicAtomicOps<2>::ref(T &_q_value) Q_DECL_NOTHROW
 template<> template <typename T> inline
 bool QBasicAtomicOps<2>::deref(T &_q_value) Q_DECL_NOTHROW
 {
-    register T newValue;
-    register int result;
+    T newValue;
+    int result;
     asm volatile("0:\n"
                  "ldrexh %[newValue], [%[_q_value]]\n"
                  "sub %[newValue], %[newValue], #1\n"
@@ -393,7 +393,7 @@ bool QBasicAtomicOps<2>::deref(T &_q_value) Q_DECL_NOTHROW
 template<> template <typename T> inline
 bool QBasicAtomicOps<2>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
-    register T result;
+    T result;
     asm volatile("0:\n"
                  "ldrexh %[result], [%[_q_value]]\n"
                  "eors %[result], %[result], %[expectedValue]\n"
@@ -413,8 +413,8 @@ bool QBasicAtomicOps<2>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
 template<> template <typename T> inline
 T QBasicAtomicOps<2>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
-    register T originalValue;
-    register int result;
+    T originalValue;
+    int result;
     asm volatile("0:\n"
                  "ldrexh %[originalValue], [%[_q_value]]\n"
                  "strexh %[result], %[newValue], [%[_q_value]]\n"
@@ -432,9 +432,9 @@ T QBasicAtomicOps<2>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHR
 template<> template <typename T> inline
 T QBasicAtomicOps<2>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
-    register T originalValue;
-    register T newValue;
-    register int result;
+    T originalValue;
+    T newValue;
+    int result;
     asm volatile("0:\n"
                  "ldrexh %[originalValue], [%[_q_value]]\n"
                  "add %[newValue], %[originalValue], %[valueToAdd]\n"
@@ -462,8 +462,8 @@ T QBasicAtomicOps<2>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveTy
 template<> template<typename T> inline
 bool QBasicAtomicOps<8>::ref(T &_q_value) Q_DECL_NOTHROW
 {
-    register T newValue;
-    register int result;
+    T newValue;
+    int result;
     asm volatile("0:\n"
                  "ldrexd %[newValue], %H[newValue], [%[_q_value]]\n"
                  "adds %Q[newValue], %Q[newValue], #1\n"
@@ -482,8 +482,8 @@ bool QBasicAtomicOps<8>::ref(T &_q_value) Q_DECL_NOTHROW
 template<> template <typename T> inline
 bool QBasicAtomicOps<8>::deref(T &_q_value) Q_DECL_NOTHROW
 {
-    register T newValue;
-    register int result;
+    T newValue;
+    int result;
     asm volatile("0:\n"
                  "ldrexd %[newValue], %H[newValue], [%[_q_value]]\n"
                  "subs %Q[newValue], %Q[newValue], #1\n"
@@ -502,7 +502,7 @@ bool QBasicAtomicOps<8>::deref(T &_q_value) Q_DECL_NOTHROW
 template<> template <typename T> inline
 bool QBasicAtomicOps<8>::testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
 {
-    register T result;
+    T result;
     asm volatile("0:\n"
                  "ldrexd %[result], %H[result], [%[_q_value]]\n"
                  "eor %[result], %[result], %[expectedValue]\n"
@@ -524,8 +524,8 @@ bool QBasicAtomicOps<8>::testAndSetRelaxed(T &_q_value, T expectedValue, T newVa
 template<> template <typename T> inline
 T QBasicAtomicOps<8>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
-    register T originalValue;
-    register int result;
+    T originalValue;
+    int result;
     asm volatile("0:\n"
                  "ldrexd %[originalValue], %H[originalValue], [%[_q_value]]\n"
                  "strexd %[result], %[newValue], %H[newValue], [%[_q_value]]\n"
@@ -543,9 +543,9 @@ T QBasicAtomicOps<8>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHR
 template<> template <typename T> inline
 T QBasicAtomicOps<8>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
-    register T originalValue;
-    register T newValue;
-    register int result;
+    T originalValue;
+    T newValue;
+    int result;
     asm volatile("0:\n"
                  "ldrexd %[originalValue], %H[originalValue], [%[_q_value]]\n"
                  "adds %Q[newValue], %Q[originalValue], %Q[valueToAdd]\n"
@@ -588,8 +588,8 @@ T QBasicAtomicOps<8>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveTy
 
 inline bool QBasicAtomicInt::ref() Q_DECL_NOTHROW
 {
-    register int newValue;
-    register int result;
+    int newValue;
+    int result;
     retry:
     __asm {
         ldrex   newValue, [&_q_value]
@@ -603,8 +603,8 @@ inline bool QBasicAtomicInt::ref() Q_DECL_NOTHROW
 
 inline bool QBasicAtomicInt::deref() Q_DECL_NOTHROW
 {
-    register int newValue;
-    register int result;
+    int newValue;
+    int result;
     retry:
     __asm {
         ldrex   newValue, [&_q_value]
@@ -618,7 +618,7 @@ inline bool QBasicAtomicInt::deref() Q_DECL_NOTHROW
 
 inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue) Q_DECL_NOTHROW
 {
-    register int result;
+    int result;
     retry:
     __asm {
         ldrex   result, [&_q_value]
@@ -632,8 +632,8 @@ inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue) 
 
 inline int QBasicAtomicInt::fetchAndStoreRelaxed(int newValue) Q_DECL_NOTHROW
 {
-    register int originalValue;
-    register int result;
+    int originalValue;
+    int result;
     retry:
     __asm {
         ldrex   originalValue, [&_q_value]
@@ -646,9 +646,9 @@ inline int QBasicAtomicInt::fetchAndStoreRelaxed(int newValue) Q_DECL_NOTHROW
 
 inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd) Q_DECL_NOTHROW
 {
-    register int originalValue;
-    register int newValue;
-    register int result;
+    int originalValue;
+    int newValue;
+    int result;
     retry:
     __asm {
         ldrex   originalValue, [&_q_value]
@@ -663,7 +663,7 @@ inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd) Q_DECL_NOTHROW
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValue, T *newValue) Q_DECL_NOTHROW
 {
-    register T *result;
+    T *result;
     retry:
     __asm {
         ldrex   result, [&_q_value]
@@ -678,8 +678,8 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValu
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue) Q_DECL_NOTHROW
 {
-    register T *originalValue;
-    register int result;
+    T *originalValue;
+    int result;
     retry:
     __asm {
         ldrex   originalValue, [&_q_value]
@@ -693,9 +693,9 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue) Q
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelaxed(qptrdiff valueToAdd) Q_DECL_NOTHROW
 {
-    register T *originalValue;
-    register T *newValue;
-    register int result;
+    T *originalValue;
+    T *newValue;
+    int result;
     retry:
     __asm {
         ldrex   originalValue, [&_q_value]

@@ -12,6 +12,12 @@ MODULE_PLUGIN_TYPES = \
     platforms \
     imageformats
 
+# This is here only because the platform plugin is no module, obviously.
+win32:contains(QT_CONFIG, angle) {
+    MODULE_AUX_INCLUDES = \
+        \$\$QT_MODULE_INCLUDE_BASE/QtANGLE
+}
+
 load(qt_module)
 
 # Code coverage with TestCocoon

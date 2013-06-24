@@ -104,6 +104,7 @@ private:
 
     // Our variable dictionaries
     QMap<QString,QString> dictionary;
+    QStringList allBuildParts;
     QStringList defaultBuildParts;
     QStringList buildParts;
     QStringList nobuildParts;

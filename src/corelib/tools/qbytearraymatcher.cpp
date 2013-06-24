@@ -61,7 +61,7 @@ static inline int bm_find(const uchar *cc, int l, int index, const uchar *puc, u
         return index > l ? -1 : index;
     const uint pl_minus_one = pl - 1;
 
-    register const uchar *current = cc + index + pl_minus_one;
+    const uchar *current = cc + index + pl_minus_one;
     const uchar *end = cc + l;
     while (current < end) {
         uint skip = skiptable[*current];

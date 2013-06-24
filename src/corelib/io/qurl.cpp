@@ -882,7 +882,7 @@ inline bool QUrlPrivate::setScheme(const QString &value, int len, bool doSetErro
         // schemes are ASCII only, so we don't need the full Unicode toLower
         QChar *schemeData = scheme.data(); // force detaching here
         for (int i = needsLowercasing; i >= 0; --i) {
-            register ushort c = schemeData[i].unicode();
+            ushort c = schemeData[i].unicode();
             if (c >= 'A' && c <= 'Z')
                 schemeData[i] = c + 0x20;
         }
@@ -1244,7 +1244,7 @@ inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode
     const ushort *const data = reinterpret_cast<const ushort *>(begin);
 
     for (int i = 0; i < len; ++i) {
-        register uint uc = data[i];
+        uint uc = data[i];
         if (uc == '#' && hash == -1) {
             hash = i;
 
@@ -1472,7 +1472,7 @@ inline QUrlPrivate::ErrorCode QUrlPrivate::validityError(QString *source, int *p
 
     // check for a path of "text:text/"
     for (int i = 0; i < path.length(); ++i) {
-        register ushort c = path.at(i).unicode();
+        ushort c = path.at(i).unicode();
         if (c == '/') {
             // found the slash before the colon
             return NoError;
@@ -1512,7 +1512,7 @@ bool QUrlPrivate::validateComponent(QUrlPrivate::Section section, const QString 
 
     const ushort *const data = reinterpret_cast<const ushort *>(input.constData());
     for (uint i = uint(begin); i < uint(end); ++i) {
-        register uint uc = data[i];
+        uint uc = data[i];
         if (uc >= 0x80)
             continue;
 

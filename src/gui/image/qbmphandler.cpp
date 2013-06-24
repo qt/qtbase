@@ -53,7 +53,7 @@ static void swapPixel01(QImage *image)        // 1-bpp: swap 0 and 1 pixels
 {
     int i;
     if (image->depth() == 1 && image->colorCount() == 2) {
-        register uint *p = (uint *)image->bits();
+        uint *p = (uint *)image->bits();
         int nbytes = image->byteCount();
         for (i=0; i<nbytes/4; i++) {
             *p = ~*p;
@@ -368,7 +368,7 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, int offset, int
         if (comp == BMP_RLE4) {                // run length compression
             int x=0, y=0, c, i;
             quint8 b;
-            register uchar *p = data + (h-1)*bpl;
+            uchar *p = data + (h-1)*bpl;
             const uchar *endp = p + w;
             while (y < h) {
                 if (!d->getChar((char *)&b))
@@ -440,7 +440,7 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, int offset, int
             while (--h >= 0) {
                 if (d->read((char*)buf,buflen) != buflen)
                     break;
-                register uchar *p = data + h*bpl;
+                uchar *p = data + h*bpl;
                 uchar *b = buf;
                 for (int i=0; i<w/2; i++) {        // convert nibbles to bytes
                     *p++ = *b >> 4;
@@ -457,7 +457,7 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, int offset, int
         if (comp == BMP_RLE8) {                // run length compression
             int x=0, y=0;
             quint8 b;
-            register uchar *p = data + (h-1)*bpl;
+            uchar *p = data + (h-1)*bpl;
             const uchar *endp = p + w;
             while (y < h) {
                 if (!d->getChar((char *)&b))
@@ -520,7 +520,7 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, int offset, int
     }
 
     else if (nbits == 16 || nbits == 24 || nbits == 32) { // 16,24,32 bit BMP image
-        register QRgb *p;
+        QRgb *p;
         QRgb  *end;
         uchar *buf24 = new uchar[bpl];
         int    bpl24 = ((w*nbits+31)/32)*4;
@@ -632,7 +632,7 @@ bool qt_write_dib(QDataStream &s, QImage image)
 
     uchar *buf        = new uchar[bpl_bmp];
     uchar *b, *end;
-    register const uchar *p;
+    const uchar *p;
 
     memset(buf, 0, bpl_bmp);
     for (y=image.height()-1; y>=0; y--) {        // write the image bits

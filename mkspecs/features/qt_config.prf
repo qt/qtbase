@@ -15,9 +15,9 @@ QMAKE_QT_CONFIG = $$[QT_HOST_DATA/get]/mkspecs/qconfig.pri
    for(dir, QMAKE_MODULE_PATH) {
       debug(1, "Loading modules from $${dir}")
       for(mod, $$list($$files($$dir/qt_*.pri))) {
-         # For installed Qt these paths will be common for all modules
-         # For development these will vary per module, and syncqt will override the value in the
-         # qt_<module>.pri forwarding file
+         # For installed Qt these paths will be common for all modules.
+         # For uninstalled prefix builds these will vary per module, via the
+         # forwarding module pri files. Keep qt_module_pris.prf in sync with this!
          QT_MODULE_INCLUDE_BASE = $$[QT_INSTALL_HEADERS]
          QT_MODULE_LIB_BASE = $$[QT_INSTALL_LIBS]
          QT_MODULE_HOST_LIB_BASE = $$[QT_HOST_LIBS]

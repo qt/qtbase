@@ -938,7 +938,7 @@ bool QCoreApplicationPrivate::sendThroughApplicationEventFilters(QObject *receiv
     if (receiver->d_func()->threadData == this->threadData && extraData) {
         // application event filters are only called for objects in the GUI thread
         for (int i = 0; i < extraData->eventFilters.size(); ++i) {
-            register QObject *obj = extraData->eventFilters.at(i);
+            QObject *obj = extraData->eventFilters.at(i);
             if (!obj)
                 continue;
             if (obj->d_func()->threadData != threadData) {
@@ -957,7 +957,7 @@ bool QCoreApplicationPrivate::sendThroughObjectEventFilters(QObject *receiver, Q
     Q_Q(QCoreApplication);
     if (receiver != q && receiver->d_func()->extraData) {
         for (int i = 0; i < receiver->d_func()->extraData->eventFilters.size(); ++i) {
-            register QObject *obj = receiver->d_func()->extraData->eventFilters.at(i);
+            QObject *obj = receiver->d_func()->extraData->eventFilters.at(i);
             if (!obj)
                 continue;
             if (obj->d_func()->threadData != receiver->d_func()->threadData) {

@@ -429,7 +429,7 @@ void QLCDNumber::setDigitCount(int numDigits)
         bool doDisplay = d->ndigits == 0;
         if (numDigits == d->ndigits)             // no change
             return;
-        register int i;
+        int i;
         int dif;
         if (numDigits > d->ndigits) {            // expand
             dif = numDigits - d->ndigits;

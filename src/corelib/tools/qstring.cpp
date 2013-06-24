@@ -266,7 +266,7 @@ static bool qMemEquals(const quint16 *a, const quint16 *b, int length)
     if (a == b || !length)
         return true;
 
-    register union {
+    union {
         const quint16 *w;
         const quint32 *d;
         quintptr value;
@@ -291,7 +291,7 @@ static bool qMemEquals(const quint16 *a, const quint16 *b, int length)
 
         // both addresses are 4-bytes aligned
         // do a fast 32-bit comparison
-        register const quint32 *e = sa.d + (length >> 1);
+        const quint32 *e = sa.d + (length >> 1);
         for ( ; sa.d != e; ++sa.d, ++sb.d) {
             if (*sa.d != *sb.d)
                 return false;
@@ -301,7 +301,7 @@ static bool qMemEquals(const quint16 *a, const quint16 *b, int length)
         return (length & 1) ? *sa.w == *sb.w : true;
     } else {
         // one of the addresses isn't 4-byte aligned but the other is
-        register const quint16 *e = sa.w + length;
+        const quint16 *e = sa.w + length;
         for ( ; sa.w != e; ++sa.w, ++sb.w) {
             if (*sa.w != *sb.w)
                 return false;
@@ -4908,8 +4908,8 @@ int QString::compare_helper(const QChar *data1, int length1, const QChar *data2,
 {
     if (cs == Qt::CaseSensitive)
         return ucstrcmp(data1, length1, data2, length2);
-    register const ushort *s1 = reinterpret_cast<const ushort *>(data1);
-    register const ushort *s2 = reinterpret_cast<const ushort *>(data2);
+    const ushort *s1 = reinterpret_cast<const ushort *>(data1);
+    const ushort *s2 = reinterpret_cast<const ushort *>(data2);
     return ucstricmp(s1, s1 + length1, s2, s2 + length2);
 }
 

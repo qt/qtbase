@@ -113,6 +113,7 @@ static void cleanupCocoaApplicationDelegate()
 
 - (void)updateScreens:(NSNotification *)notification
 {
+    Q_UNUSED(notification);
     if (QCocoaIntegration *ci = dynamic_cast<QCocoaIntegration *>(QGuiApplicationPrivate::platformIntegration()))
         ci->updateScreens();
 }

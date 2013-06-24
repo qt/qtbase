@@ -164,6 +164,7 @@ public:
         , kdeVersion(kdeVersion)
         , toolButtonStyle(Qt::ToolButtonTextBesideIcon)
         , toolBarIconSize(0)
+        , singleClick(true)
     { }
 
     QString globalSettingsFile() const
@@ -186,6 +187,7 @@ public:
     QStringList styleNames;
     int toolButtonStyle;
     int toolBarIconSize;
+    bool singleClick;
 };
 
 void QKdeThemePrivate::refresh()
@@ -216,6 +218,8 @@ void QKdeThemePrivate::refresh()
         if (style != styleNames.front())
             styleNames.push_front(style);
     }
+
+    singleClick = kdeSettings.value(QStringLiteral("KDE/SingleClick"), true).toBool();
 
     const QVariant themeValue = kdeSettings.value(QStringLiteral("Icons/Theme"));
     if (themeValue.isValid())
@@ -261,6 +265,14 @@ static inline bool kdeColor(QPalette *pal, QPalette::ColorRole role,
 
 void QKdeThemePrivate::readKdeSystemPalette(const QSettings &kdeSettings, QPalette *pal)
 {
+    if (!kdeSettings.contains(QStringLiteral("Colors:Button/BackgroundNormal"))) {
+        // kcolorscheme.cpp: SetDefaultColors
+        const QColor defaultWindowBackground(214, 210, 208);
+        const QColor defaultButtonBackground(223, 220, 217);
+        *pal = QPalette(defaultButtonBackground, defaultWindowBackground);
+        return;
+    }
+
     kdeColor(pal, QPalette::Button, kdeSettings, QStringLiteral("Colors:Button/BackgroundNormal"));
     kdeColor(pal, QPalette::Window, kdeSettings, QStringLiteral("Colors:Window/BackgroundNormal"));
     kdeColor(pal, QPalette::Text, kdeSettings, QStringLiteral("Colors:View/ForegroundNormal"));
@@ -272,6 +284,34 @@ void QKdeThemePrivate::readKdeSystemPalette(const QSettings &kdeSettings, QPalet
     kdeColor(pal, QPalette::ButtonText, kdeSettings, QStringLiteral("Colors:Button/ForegroundNormal"));
     kdeColor(pal, QPalette::Link, kdeSettings, QStringLiteral("Colors:View/ForegroundLink"));
     kdeColor(pal, QPalette::LinkVisited, kdeSettings, QStringLiteral("Colors:View/ForegroundVisited"));
+    kdeColor(pal, QPalette::ToolTipBase, kdeSettings, QStringLiteral("Colors:Tooltip/BackgroundNormal"));
+    kdeColor(pal, QPalette::ToolTipText, kdeSettings, QStringLiteral("Colors:Tooltip/ForegroundNormal"));
+
+    // The above code sets _all_ color roles to "normal" colors. In KDE, the disabled
+    // color roles are calculated by applying various effects described in kdeglobals.
+    // We use a bit simpler approach here, similar logic than in qt_palette_from_color().
+    const QColor button = pal->color(QPalette::Button);
+    int h, s, v;
+    button.getHsv(&h, &s, &v);
+
+    const QBrush whiteBrush = QBrush(Qt::white);
+    const QBrush buttonBrush = QBrush(button);
+    const QBrush buttonBrushDark = QBrush(button.darker(v > 128 ? 200 : 50));
+    const QBrush buttonBrushDark150 = QBrush(button.darker(v > 128 ? 150 : 75));
+    const QBrush buttonBrushLight150 = QBrush(button.lighter(v > 128 ? 150 : 75));
+
+    pal->setBrush(QPalette::Disabled, QPalette::WindowText, buttonBrushDark);
+    pal->setBrush(QPalette::Disabled, QPalette::ButtonText, buttonBrushDark);
+    pal->setBrush(QPalette::Disabled, QPalette::Button, buttonBrush);
+    pal->setBrush(QPalette::Disabled, QPalette::Light, buttonBrushLight150);
+    pal->setBrush(QPalette::Disabled, QPalette::Dark, buttonBrushDark);
+    pal->setBrush(QPalette::Disabled, QPalette::Mid, buttonBrushDark150);
+    pal->setBrush(QPalette::Disabled, QPalette::Text, buttonBrushDark);
+    pal->setBrush(QPalette::Disabled, QPalette::BrightText, whiteBrush);
+    pal->setBrush(QPalette::Disabled, QPalette::Base, buttonBrush);
+    pal->setBrush(QPalette::Disabled, QPalette::Window, buttonBrush);
+    pal->setBrush(QPalette::Disabled, QPalette::Highlight, buttonBrushDark150);
+    pal->setBrush(QPalette::Disabled, QPalette::HighlightedText, buttonBrushLight150);
 }
 
 /*!
@@ -360,6 +400,8 @@ QVariant QKdeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         return QVariant(d->styleNames);
     case QPlatformTheme::KeyboardScheme:
         return QVariant(int(KdeKeyboardScheme));
+    case QPlatformTheme::ItemViewActivateItemOnSingleClick:
+        return QVariant(d->singleClick);
     default:
         break;
     }

@@ -84,7 +84,7 @@ static inline int qt_safe_socket(int domain, int type, int protocol, int flags =
 {
     Q_ASSERT((flags & ~O_NONBLOCK) == 0);
 
-    register int fd;
+    int fd;
 #if defined(SOCK_CLOEXEC) && defined(SOCK_NONBLOCK)
     int newtype = type | SOCK_CLOEXEC;
     if (flags & O_NONBLOCK)
@@ -112,7 +112,7 @@ static inline int qt_safe_accept(int s, struct sockaddr *addr, QT_SOCKLEN_T *add
 {
     Q_ASSERT((flags & ~O_NONBLOCK) == 0);
 
-    register int fd;
+    int fd;
 #if QT_UNIX_SUPPORTS_THREADSAFE_CLOEXEC && defined(SOCK_CLOEXEC) && defined(SOCK_NONBLOCK)
     // use accept4
     int sockflags = SOCK_CLOEXEC;
@@ -144,7 +144,7 @@ static inline int qt_safe_listen(int s, int backlog)
 
 static inline int qt_safe_connect(int sockfd, const struct sockaddr *addr, QT_SOCKLEN_T addrlen)
 {
-    register int ret;
+    int ret;
     // Solaris e.g. expects a non-const 2nd parameter
     EINTR_LOOP(ret, QT_SOCKET_CONNECT(sockfd, const_cast<struct sockaddr *>(addr), addrlen));
     return ret;
@@ -192,7 +192,7 @@ static inline int qt_safe_sendto(int sockfd, const void *buf, size_t len, int fl
     qt_ignore_sigpipe();
 #endif
 
-    register int ret;
+    int ret;
 #ifdef Q_OS_VXWORKS
     EINTR_LOOP(ret, ::sendto(sockfd, (char *) buf, len, flags, (struct sockaddr *) to, tolen));
 #else

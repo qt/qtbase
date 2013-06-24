@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 static inline bool isRecursive(QMutexData *d)
 {
-    register quintptr u = quintptr(d);
+    quintptr u = quintptr(d);
     if (Q_LIKELY(u <= 0x3))
         return false;
 #ifdef QT_LINUX_FUTEX

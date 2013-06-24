@@ -199,6 +199,7 @@ void QQnxWindow::setGeometry(const QRect &rect)
     // could result in re-entering QQnxWindow::setGeometry() again.
     QWindowSystemInterface::setSynchronousWindowsSystemEvents(true);
     QWindowSystemInterface::handleGeometryChange(window(), rect);
+    QWindowSystemInterface::handleExposeEvent(window(), rect);
     QWindowSystemInterface::setSynchronousWindowsSystemEvents(false);
 
     // Now move all children.

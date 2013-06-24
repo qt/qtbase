@@ -176,6 +176,12 @@ void tst_QWindow::positioning()
     QSKIP("Multiple failures in this test on Mac OS X, see QTBUG-23059");
 #endif
 
+
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(
+                QPlatformIntegration::NonFullScreenWindows)) {
+        QSKIP("This platform does not support non-fullscreen windows");
+    }
+
     // Some platforms enforce minimum widths for windows, which can cause extra resize
     // events, so set the width to suitably large value to avoid those.
     const QSize size = QSize(300, 40);
@@ -187,7 +193,8 @@ void tst_QWindow::positioning()
     QCOMPARE(window.geometry().size(), size);
     window.setGeometry(geometry);
     QCOMPARE(window.geometry(), geometry);
-    window.show();
+    //  explicitly use non-fullscreen show. show() can be fullscreen on some platforms
+    window.showNormal();
     QCoreApplication::processEvents();
 
     QTRY_COMPARE(window.received(QEvent::Resize), 1);
@@ -431,7 +438,7 @@ void tst_QWindow::testInputEvents()
 {
     InputTestWindow window;
     window.setGeometry(80, 80, 40, 40);
-    window.show();
+    window.showNormal();
     QVERIFY(QTest::qWaitForWindowExposed(&window));
 
     QWindowSystemInterface::handleKeyEvent(&window, QEvent::KeyPress, Qt::Key_A, Qt::NoModifier);

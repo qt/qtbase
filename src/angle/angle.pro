@@ -6,5 +6,5 @@ SUBDIRS += src
 #  2) If we made a 'QtANGLE' module, the include directory would be flattened which won't work since
 #     we need to support "#include <GLES2/gl2.h>"
 CONFIG += minimal_syncqt
-QMAKE_SYNCQT_OPTIONS = -module KHR -module EGL -module GLES2 -version none
+QMAKE_SYNCQT_OPTIONS = -module QtANGLE/KHR -module QtANGLE/EGL -module QtANGLE/GLES2 -version none
 load(qt_module_headers)

@@ -1739,10 +1739,10 @@ static void composeHelper(QString *str, QChar::UnicodeVersion version, int from)
     if (from < 0 || s.length() - from < 2)
         return;
 
-    int starter = 0; // starter position
     uint stcode = 0; // starter code point
-    int next = -1;
-    int lastCombining = 0;
+    int starter = -1; // starter position
+    int next = -1; // to prevent i == next
+    int lastCombining = 255; // to prevent combining > lastCombining
 
     int pos = from;
     while (pos < s.length()) {
@@ -1766,8 +1766,7 @@ static void composeHelper(QString *str, QChar::UnicodeVersion version, int from)
         }
 
         int combining = p->combiningClass;
-        if (i == next || combining > lastCombining) {
-            Q_ASSERT(starter >= from);
+        if ((i == next || combining > lastCombining) && starter >= from) {
             // allowed to form ligature with S
             uint ligature = ligatureHelper(stcode, uc);
             if (ligature) {

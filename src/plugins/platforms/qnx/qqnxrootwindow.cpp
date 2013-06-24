@@ -162,6 +162,16 @@ QQnxRootWindow::QQnxRootWindow(const QQnxScreen *screen)
     if (result != 0)
         qFatal("QQnxRootWindow: failed to set window source position, errno=%d", errno);
 
+    // Optionally disable the screen power save
+    bool ok = false;
+    const int disablePowerSave = qgetenv("QQNX_DISABLE_POWER_SAVE").toInt(&ok);
+    if (ok && disablePowerSave) {
+        const int mode = SCREEN_IDLE_MODE_KEEP_AWAKE;
+        result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_IDLE_MODE, &mode);
+        if (result != 0)
+            qWarning("QQnxRootWindow: failed to disable power saving mode");
+    }
+
     createWindowGroup();
 
     // Don't post yet. This will be lazily done from QQnxScreen upon first posting of

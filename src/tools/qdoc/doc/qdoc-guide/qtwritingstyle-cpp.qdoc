@@ -41,7 +41,7 @@ Note that the documentation must be in the implementation files such as \c .cpp.
 Class documentation is generated using the \l{class-command}{\\class} command and
 the name of the class as the first argument.
 
-\snippet examples/cpp.qdoc class
+\snippet examples/cpp.qdoc.sample class
 
 \l{Context commands} add information about the class, such as its module or
 which version the class was added.
@@ -79,7 +79,7 @@ Typically, function documentation immediately precedes the implementation of the
 function in the \c .cpp file. For function documentation that is not immediately
 above the implementation, the \l{fn-command}{\\fn} is needed.
 
-\snippet examples/cpp.qdoc function
+\snippet examples/cpp.qdoc.sample function
 
 The function documentation starts with a verb, indicating the operation the
 function performs. This also applies to constructors and destructors.
@@ -102,7 +102,7 @@ The \l{a-command}{\\a} command marks the parameter in the documentation.
 The return type documentation should link to the type documentation or be
 marked with the \l{c-command}{\\c} command in the case of boolean values.
 
-\snippet examples/cpp.qdoc return
+\snippet examples/cpp.qdoc.sample return
 
 \section1 Properties
 
@@ -110,7 +110,7 @@ The property documentation resides immediately above the read function's
 implementation. The \l{topic-commands}{topic command} for properties is
 \l{property-command}{\\property}.
 
-\snippet examples/cpp.qdoc property
+\snippet examples/cpp.qdoc.sample property
 
 Property documentation usually starts with "This property...", but these are
 alternate expressions:
@@ -142,7 +142,7 @@ The \l{topic-commands}{topic command} for signals, notifiers, and slots
 is \l{fn-command}{\\fn}. Signal documentation state when they are triggered
 or emitted.
 
-\snippet examples/cpp.qdoc signals
+\snippet examples/cpp.qdoc.sample signals
 
 Signal documentation typically begin with "This signal is triggered when...".
 Here are alternate styles:
@@ -164,7 +164,7 @@ notifiers together. To refer to a specifc version of a notifier or signal,
 simply refer to the property and mention that there are different versions of
 the notifier.
 
-\snippet examples/cpp.qdoc overloaded notifier
+\snippet examples/cpp.qdoc.sample overloaded notifier
 
 \section1 Enums, Namespaces, and other Types
 
@@ -181,7 +181,7 @@ continues with the type description.
 For enumerations, the \l{value-command}{\\value} command is for listing the
 values. QDoc creates a table of values for the enum.
 
-\snippet examples/cpp.qdoc enums
+\snippet examples/cpp.qdoc.sample enums
 
 */
 

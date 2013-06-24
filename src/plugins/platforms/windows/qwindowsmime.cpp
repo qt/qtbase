@@ -277,7 +277,7 @@ static bool qt_read_dibv5(QDataStream &s, QImage &image)
 
     int  bpl = image.bytesPerLine();
     uchar *data = image.bits();
-    register QRgb *p;
+    QRgb *p;
     QRgb  *end;
     uchar *buf24 = new uchar[bpl];
     int    bpl24 = ((w*nbits+31)/32)*4;

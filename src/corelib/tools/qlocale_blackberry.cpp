@@ -289,9 +289,9 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
     case DateToStringShort:
         return lc_region.toString(in.toDate(), QLocale::ShortFormat);
     case TimeToStringLong:
-        return lc_region.toString(in.toTime(), QLocale::LongFormat);
+        return lc_region.toString(in.toTime(), d->timeFormat(QLocale::LongFormat).toString());
     case TimeToStringShort:
-        return lc_region.toString(in.toTime(), QLocale::ShortFormat);
+        return lc_region.toString(in.toTime(), d->timeFormat(QLocale::ShortFormat).toString());
     case DateTimeToStringShort:
         return lc_region.toString(in.toDateTime(), d->dateTimeFormat(QLocale::ShortFormat).toString());
     case DateTimeToStringLong:

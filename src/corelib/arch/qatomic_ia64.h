@@ -192,7 +192,7 @@ template <typename T> struct QAtomicOps : QBasicAtomicOps<sizeof(T)>
     typedef T Type;
 };
 
-inline bool _q_ia64_fetchadd_immediate(register int value)
+inline bool _q_ia64_fetchadd_immediate(int value)
 {
     return value == 1 || value == -1
         || value == 4 || value == -4
@@ -218,7 +218,7 @@ inline int QBasicAtomicInt::fetchAndStoreAcquire(int newValue)
 
 inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
 {
-    register int expectedValueCopy = expectedValue;
+    int expectedValueCopy = expectedValue;
     return (static_cast<int>(_InterlockedCompareExchange(&_q_value,
                                                          newValue,
                                                          expectedValueCopy))
@@ -227,7 +227,7 @@ inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
 
 inline bool QBasicAtomicInt::testAndSetAcquire(int expectedValue, int newValue)
 {
-    register int expectedValueCopy = expectedValue;
+    int expectedValueCopy = expectedValue;
     return (static_cast<int>(_InterlockedCompareExchange_acq(reinterpret_cast<volatile uint *>(&_q_value),
                                                              newValue,
                                                              expectedValueCopy))
@@ -236,7 +236,7 @@ inline bool QBasicAtomicInt::testAndSetAcquire(int expectedValue, int newValue)
 
 inline bool QBasicAtomicInt::testAndSetRelease(int expectedValue, int newValue)
 {
-    register int expectedValueCopy = expectedValue;
+    int expectedValueCopy = expectedValue;
     return (static_cast<int>(_InterlockedCompareExchange_rel(reinterpret_cast<volatile uint *>(&_q_value),
                                                              newValue,
                                                              expectedValueCopy))
@@ -285,7 +285,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreAcquire(T *newValue)
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValue, T *newValue)
 {
-    register T *expectedValueCopy = expectedValue;
+    T *expectedValueCopy = expectedValue;
     return (_InterlockedCompareExchangePointer(reinterpret_cast<void * volatile*>(&_q_value),
                                                newValue,
                                                expectedValueCopy)
@@ -300,7 +300,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetAcquire(T *expectedValu
         volatile unsigned long *p;
     };
     x = &_q_value;
-    register T *expectedValueCopy = expectedValue;
+    T *expectedValueCopy = expectedValue;
     return (_InterlockedCompareExchange64_acq(p, quintptr(newValue), quintptr(expectedValueCopy))
 	    == quintptr(expectedValue));
 }
@@ -313,7 +313,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelease(T *expectedValu
         volatile unsigned long *p;
     };
     x = &_q_value;
-    register T *expectedValueCopy = expectedValue;
+    T *expectedValueCopy = expectedValue;
     return (_InterlockedCompareExchange64_rel(p, quintptr(newValue), quintptr(expectedValueCopy))
 	    == quintptr(expectedValue));
 }
@@ -912,7 +912,7 @@ T QBasicAtomicOps<1>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveTy
 {
     valueToAdd *= QAtomicAdditiveType<T>::AddScale;
     // implement the test-and-set loop
-    register T old, ret;
+    T old, ret;
     do {
         old = _q_value;
         _Asm_mov_to_ar((_Asm_app_reg)_AREG_CCV, (quint8)old, FENCE);
@@ -926,7 +926,7 @@ template<> template <typename T> inline
 T QBasicAtomicOps<1>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     // implement the test-and-set loop
-    register T old, ret;
+    T old, ret;
     do {
         old = _q_value;
         _Asm_mov_to_ar((_Asm_app_reg)_AREG_CCV, (quint8)old, FENCE);
@@ -941,7 +941,7 @@ T QBasicAtomicOps<2>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveTy
 {
     valueToAdd *= QAtomicAdditiveType<T>::AddScale;
     // implement the test-and-set loop
-    register T old, ret;
+    T old, ret;
     do {
         old = _q_value;
         _Asm_mov_to_ar((_Asm_app_reg)_AREG_CCV, (quint16)old, FENCE);
@@ -955,7 +955,7 @@ template<> template <typename T> inline
 T QBasicAtomicOps<2>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     // implement the test-and-set loop
-    register T old, ret;
+    T old, ret;
     do {
         old = _q_value;
         _Asm_mov_to_ar((_Asm_app_reg)_AREG_CCV, (quint16)old, FENCE);
@@ -970,7 +970,7 @@ T QBasicAtomicOps<4>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveTy
 {
     valueToAdd *= QAtomicAdditiveType<T>::AddScale;
     // implement the test-and-set loop
-    register T old, ret;
+    T old, ret;
     do {
         old = _q_value;
         _Asm_mov_to_ar((_Asm_app_reg)_AREG_CCV, (unsigned)old, FENCE);
@@ -984,7 +984,7 @@ template<> template <typename T> inline
 T QBasicAtomicOps<4>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     // implement the test-and-set loop
-    register T old, ret;
+    T old, ret;
     do {
         old = _q_value;
         _Asm_mov_to_ar((_Asm_app_reg)_AREG_CCV, (unsigned)old, FENCE);
@@ -999,7 +999,7 @@ T QBasicAtomicOps<8>::fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveTy
 {
     valueToAdd *= QAtomicAdditiveType<T>::AddScale;
     // implement the test-and-set loop
-    register T old, ret;
+    T old, ret;
     do {
         old = _q_value;
         _Asm_mov_to_ar((_Asm_app_reg)_AREG_CCV, (quint64)old, FENCE);
@@ -1013,7 +1013,7 @@ template<> template <typename T> inline
 T QBasicAtomicOps<8>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
 {
     // implement the test-and-set loop
-    register T old, ret;
+    T old, ret;
     do {
         old = _q_value;
         _Asm_mov_to_ar((_Asm_app_reg)_AREG_CCV, (quint64)old, FENCE);

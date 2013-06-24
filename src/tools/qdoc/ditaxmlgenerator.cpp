@@ -532,10 +532,12 @@ void DitaXmlGenerator::initializeGenerator(const Config &config)
     projectUrl = config.getString(CONFIG_URL);
     tagFile_ = config.getString(CONFIG_TAGFILE);
 
+#ifndef QT_NO_TEXTCODEC
     outputEncoding = config.getString(CONFIG_OUTPUTENCODING);
     if (outputEncoding.isEmpty())
         outputEncoding = QLatin1String("ISO-8859-1");
     outputCodec = QTextCodec::codecForName(outputEncoding.toLocal8Bit());
+#endif
 
     naturalLanguage = config.getString(CONFIG_NATURALLANGUAGE);
     if (naturalLanguage.isEmpty())
@@ -3586,7 +3588,11 @@ QString DitaXmlGenerator::registerRef(const QString& ref)
  */
 QString DitaXmlGenerator::protectEnc(const QString& string)
 {
+#ifndef QT_NO_TEXTCODEC
     return protect(string, outputEncoding);
+#else
+    return protect(string);
+#endif
 }
 
 QString DitaXmlGenerator::protect(const QString& string, const QString& ) //outputEncoding)
