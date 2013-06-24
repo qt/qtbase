@@ -61,6 +61,7 @@ public:
     void run();
     void registerThreadInactive();
 
+    QWaitCondition runnableReady;
     QThreadPoolPrivate *manager;
     QRunnable *runnable;
 };
@@ -128,14 +129,13 @@ void QThreadPoolThread::run()
         // if too many threads are active, expire this thread
         bool expired = manager->tooManyThreadsActive();
         if (!expired) {
-            ++manager->waitingThreads;
+            manager->waitingThreads.enqueue(this);
             registerThreadInactive();
             // wait for work, exiting after the expiry timeout is reached
-            expired = !manager->runnableReady.wait(locker.mutex(), manager->expiryTimeout);
+            runnableReady.wait(locker.mutex(), manager->expiryTimeout);
             ++manager->activeThreads;
-
-            if (expired)
-                --manager->waitingThreads;
+            if (manager->waitingThreads.removeOne(this))
+                expired = true;
         }
         if (expired) {
             manager->expiredThreads.enqueue(this);
@@ -160,7 +160,6 @@ QThreadPoolPrivate:: QThreadPoolPrivate()
       expiryTimeout(30000),
       maxThreadCount(qAbs(QThread::idealThreadCount())),
       reservedThreads(0),
-      waitingThreads(0),
       activeThreads(0)
 { }
 
@@ -176,11 +175,10 @@ bool QThreadPoolPrivate::tryStart(QRunnable *task)
     if (activeThreadCount() >= maxThreadCount)
         return false;
 
-    if (waitingThreads > 0) {
+    if (waitingThreads.count() > 0) {
         // recycle an available thread
-        --waitingThreads;
         enqueueTask(task);
-        runnableReady.wakeOne();
+        waitingThreads.takeFirst()->runnableReady.wakeOne();
         return true;
     }
 
@@ -225,7 +223,7 @@ int QThreadPoolPrivate::activeThreadCount() const
 {
     return (allThreads.count()
             - expiredThreads.count()
-            - waitingThreads
+            - waitingThreads.count()
             + reservedThreads);
 }
 
@@ -266,7 +264,6 @@ void QThreadPoolPrivate::reset()
 {
     QMutexLocker locker(&mutex);
     isExiting = true;
-    runnableReady.wakeAll();
 
     while (!allThreads.empty()) {
         // move the contents of the set out so that we can iterate without the lock
@@ -275,6 +272,7 @@ void QThreadPoolPrivate::reset()
         locker.unlock();
 
         foreach (QThreadPoolThread *thread, allThreadsCopy) {
+            thread->runnableReady.wakeAll();
             thread->wait();
             delete thread;
         }
@@ -283,7 +281,7 @@ void QThreadPoolPrivate::reset()
         // repeat until all newly arrived threads have also completed
     }
 
-    waitingThreads = 0;
+    waitingThreads.clear();
     expiredThreads.clear();
 
     isExiting = false;
@@ -459,10 +457,8 @@ void QThreadPool::start(QRunnable *runnable, int priority)
     if (!d->tryStart(runnable)) {
         d->enqueueTask(runnable, priority);
 
-        if (d->waitingThreads > 0) {
-            --d->waitingThreads;
-            d->runnableReady.wakeOne();
-        }
+        if (!d->waitingThreads.isEmpty())
+            d->waitingThreads.takeFirst()->runnableReady.wakeOne();
     }
 }
 
