@@ -43,6 +43,7 @@
 #include "qsocketnotifier.h"
 #include "qdebug.h"
 #include "qelapsedtimer.h"
+#include "private/qthread_p.h"
 
 #include <bps/bps.h>
 #include <bps/event.h>
@@ -350,11 +351,16 @@ int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writef
             }
         }
 
-        // Wait for event or file to be ready
         event = 0;
-        const int result = bps_get_event(&event, timeoutLeft);
-        if (result != BPS_SUCCESS)
-            qWarning("QEventDispatcherBlackberry::select: bps_get_event() failed");
+        {   // We need to increase loop level in this scope,
+            // because bps_get_event can also invoke callbacks
+            QScopedLoopLevelCounter loopLevelCounter(d->threadData);
+
+            // Wait for event or file to be ready
+            const int result = bps_get_event(&event, timeoutLeft);
+            if (result != BPS_SUCCESS)
+                qWarning("QEventDispatcherBlackberry::select: bps_get_event() failed");
+        }
 
         if (!event)    // In case of !event, we break out of the loop to let Qt process the timers
             break;     // (since timeout has expired) and socket notifiers that are now ready.
