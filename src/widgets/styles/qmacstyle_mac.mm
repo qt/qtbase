@@ -1630,6 +1630,19 @@ void QMacStylePrivate::getSliderInfo(QStyle::ComplexControl cc, const QStyleOpti
     }
 }
 
+void QMacStylePrivate::setAutoDefaultButton(QObject *button) const
+{
+    if (autoDefaultButton != button) {
+        if (QStyleAnimation *anim = animation(autoDefaultButton)) {
+            anim->updateTarget();
+            stopAnimation(autoDefaultButton);
+        }
+        autoDefaultButton = button;
+    }
+    if (autoDefaultButton && !animation(autoDefaultButton))
+        startAnimation(new QStyleAnimation(autoDefaultButton));
+}
+
 QMacStylePrivate::QMacStylePrivate()
     : mouseDown(false)
 {
@@ -3497,15 +3510,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             // takes precedence over a normal default button
             if (btn->features & QStyleOptionButton::AutoDefaultButton
                     && opt->state & State_Active && opt->state & State_HasFocus) {
-                d->autoDefaultButton = opt->styleObject;
-                if (!d->animation(opt->styleObject))
-                    d->startAnimation(new QStyleAnimation(opt->styleObject));
+                d->setAutoDefaultButton(opt->styleObject);
             } else if (d->autoDefaultButton == opt->styleObject) {
-                if (QStyleAnimation *animation = d->animation(opt->styleObject)) {
-                    animation->updateTarget();
-                    d->stopAnimation(opt->styleObject);
-                }
-                d->autoDefaultButton = 0;
+                d->setAutoDefaultButton(0);
             }
 
             if (!d->autoDefaultButton) {
