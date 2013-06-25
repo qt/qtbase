@@ -837,6 +837,8 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
     const qreal opacity = qt_window_private(aWindow)->opacity;
     if (!qFuzzyCompare(opacity, qreal(1.0)))
         setOpacity(opacity);
+    if (aWindow->isTopLevel())
+        setWindowIcon(aWindow->icon());
     clearFlag(WithinCreate);
 }
 

@@ -458,6 +458,8 @@ void QXcbWindow::create()
     const qreal opacity = qt_window_private(window())->opacity;
     if (!qFuzzyCompare(opacity, qreal(1.0)))
         setOpacity(opacity);
+    if (window()->isTopLevel())
+        setWindowIcon(window()->icon());
 }
 
 QXcbWindow::~QXcbWindow()
