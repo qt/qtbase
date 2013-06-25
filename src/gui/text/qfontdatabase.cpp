@@ -53,6 +53,7 @@
 
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformfontdatabase.h>
+#include <qpa/qplatformtheme.h>
 
 #include <stdlib.h>
 #include <limits.h>
@@ -1103,6 +1104,17 @@ QFontDatabase::QFontDatabase()
 */
 
 /*!
+    \enum QFontDatabase::SystemFont
+
+    \value GeneralFont              The default system font.
+    \value FixedFont                The fixed font that the system recommends.
+    \value TitleFont                The system standard font for titles.
+    \value SmallestReadableFont     The smallest readable system font.
+
+    \since 5.2
+*/
+
+/*!
     Returns a sorted list of the available writing systems. This is
     list generated from information about all installed fonts on the
     system.
@@ -2111,6 +2123,43 @@ QStringList QFontDatabase::applicationFontFamilies(int id)
 {
     QMutexLocker locker(fontDatabaseMutex());
     return privateDb()->applicationFonts.value(id).families;
+}
+
+/*!
+    \since 5.2
+
+    Returns the most adequate font for a given \a type case for proper integration
+    with the system's look and feel.
+
+    \sa QGuiApplication::font()
+*/
+
+QFont QFontDatabase::systemFont(QFontDatabase::SystemFont type)
+{
+    const QFont *font = 0;
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+        switch (type) {
+            case GeneralFont:
+                font = theme->font(QPlatformTheme::SystemFont);
+                break;
+            case FixedFont:
+                font = theme->font(QPlatformTheme::FixedFont);
+                break;
+            case TitleFont:
+                font = theme->font(QPlatformTheme::TitleBarFont);
+                break;
+            case SmallestReadableFont:
+                font = theme->font(QPlatformTheme::MiniFont);
+                break;
+        }
+    }
+
+    if (font)
+        return *font;
+    else if (QPlatformIntegration *integration = QGuiApplicationPrivate::platformIntegration())
+        return integration->fontDatabase()->defaultFont();
+    else
+        return QFont();
 }
 
 /*!

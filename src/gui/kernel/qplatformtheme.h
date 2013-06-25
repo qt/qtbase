@@ -154,6 +154,7 @@ public:
         ComboLineEditFont,
         SmallFont,
         MiniFont,
+        FixedFont,
         NFonts
     };
 

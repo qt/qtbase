@@ -49,6 +49,7 @@
 #include <QStringList>
 #include <QVariant>
 #include <QFont>
+#include <QFontDatabase>
 #include <QSysInfo>
 #include <QLibraryInfo>
 #include <QStandardPaths>
@@ -82,6 +83,12 @@ std::ostream &operator<<(std::ostream &str, const QStringList &l)
             str << ',';
         str << l.at(i).toStdString();
     }
+    return str;
+}
+
+std::ostream &operator<<(std::ostream &str, const QFont &f)
+{
+    std::cout << '"' << f.family().toStdString() << "\" "  << f.pointSize();
     return str;
 }
 
@@ -184,7 +191,12 @@ int main(int argc, char **argv)
             << " from " << platformTheme->themeHint(QPlatformTheme::IconThemeSearchPaths).toStringList() << '\n';
     }
     if (const QFont *systemFont = platformTheme->font())
-        std::cout << "  System font: \"" << systemFont->family().toStdString() << "\" "  << systemFont->pointSize() << '\n';
+        std::cout << "  System font: " << *systemFont<< '\n';
+    std::cout << "  General font : " << QFontDatabase::systemFont(QFontDatabase::GeneralFont) << '\n'
+              << "  Fixed font   : " << QFontDatabase::systemFont(QFontDatabase::FixedFont) << '\n'
+              << "  Title font   : " << QFontDatabase::systemFont(QFontDatabase::TitleFont) << '\n'
+              << "  Smallest font: " << QFontDatabase::systemFont(QFontDatabase::SmallestReadableFont) << "\n\n";
+
     if (platformTheme->usePlatformNativeDialog(QPlatformTheme::FileDialog))
         std::cout << "  Native file dialog\n";
     if (platformTheme->usePlatformNativeDialog(QPlatformTheme::ColorDialog))

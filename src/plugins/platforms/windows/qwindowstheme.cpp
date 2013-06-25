@@ -404,6 +404,8 @@ void QWindowsTheme::refreshFonts()
     const QFont messageBoxFont = QWindowsFontDatabase::LOGFONT_to_QFont(ncm.lfMessageFont);
     const QFont statusFont = QWindowsFontDatabase::LOGFONT_to_QFont(ncm.lfStatusFont);
     const QFont titleFont = QWindowsFontDatabase::LOGFONT_to_QFont(ncm.lfCaptionFont);
+    QFont fixedFont(QStringLiteral("Courier New"), messageBoxFont.pointSize());
+    fixedFont.setStyleHint(QFont::TypeWriter);
 
     LOGFONT lfIconTitleFont;
     SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfIconTitleFont), &lfIconTitleFont, 0);
@@ -418,6 +420,7 @@ void QWindowsTheme::refreshFonts()
     m_fonts[MdiSubWindowTitleFont] = new QFont(titleFont);
     m_fonts[DockWidgetTitleFont] = new QFont(titleFont);
     m_fonts[ItemViewFont] = new QFont(iconTitleFont);
+    m_fonts[FixedFont] = new QFont(fixedFont);
 
     if (QWindowsContext::verboseTheming)
         qDebug() << __FUNCTION__ << '\n'

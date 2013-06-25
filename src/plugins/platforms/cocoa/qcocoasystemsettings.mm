@@ -264,6 +264,10 @@ QHash<QPlatformTheme::Font, QFont *> qt_mac_createRoleFonts()
     fonts.insert(QPlatformTheme::SmallFont, qt_mac_qfontForThemeFont(kThemeSmallSystemFont));
     fonts.insert(QPlatformTheme::MiniFont, qt_mac_qfontForThemeFont(kThemeMiniSystemFont));
 
+    QFont* fixedFont = new QFont(QStringLiteral("Monaco"), fonts[QPlatformTheme::SystemFont]->pointSize());
+    fixedFont->setStyleHint(QFont::TypeWriter);
+    fonts.insert(QPlatformTheme::FixedFont, fixedFont);
+
     return fonts;
 }
 

@@ -95,9 +95,13 @@ public:
     QGenericUnixThemePrivate()
         : QPlatformThemePrivate()
         , systemFont(QLatin1String(defaultSystemFontNameC), defaultSystemFontSize)
-    { }
+        , fixedFont(QStringLiteral("monospace"), systemFont.pointSize())
+    {
+        fixedFont.setStyleHint(QFont::TypeWriter);
+    }
 
     const QFont systemFont;
+    QFont fixedFont;
 };
 
 QGenericUnixTheme::QGenericUnixTheme()
@@ -108,9 +112,14 @@ QGenericUnixTheme::QGenericUnixTheme()
 const QFont *QGenericUnixTheme::font(Font type) const
 {
     Q_D(const QGenericUnixTheme);
-    if (type == QPlatformTheme::SystemFont)
+    switch (type) {
+    case QPlatformTheme::SystemFont:
         return &d->systemFont;
-    return 0;
+    case QPlatformTheme::FixedFont:
+        return &d->fixedFont;
+    default:
+        return 0;
+    }
 }
 
 // Helper to return the icon theme paths from XDG.
@@ -240,11 +249,18 @@ void QKdeThemePrivate::refresh()
             toolButtonStyle = Qt::ToolButtonTextUnderIcon;
     }
 
-    // Read system font, ignore 'fixed' 'smallestReadableFont'
-    if (QFont *systemFont = readKdeFontSetting(kdeSettings, QStringLiteral("font"))) {
+    // Read system font, ignore 'smallestReadableFont'
+    if (QFont *systemFont = readKdeFontSetting(kdeSettings, QStringLiteral("font")))
         resources.fonts[QPlatformTheme::SystemFont] = systemFont;
-    } else {
+    else
         resources.fonts[QPlatformTheme::SystemFont] = new QFont(QLatin1String(defaultSystemFontNameC), defaultSystemFontSize);
+
+    if (QFont *fixedFont = readKdeFontSetting(kdeSettings, QStringLiteral("fixed"))) {
+        resources.fonts[QPlatformTheme::FixedFont] = fixedFont;
+    } else {
+        fixedFont = new QFont(QLatin1String(defaultSystemFontNameC), defaultSystemFontSize);
+        fixedFont->setStyleHint(QFont::TypeWriter);
+        resources.fonts[QPlatformTheme::FixedFont] = fixedFont;
     }
 }
 
@@ -461,9 +477,13 @@ class QGnomeThemePrivate : public QPlatformThemePrivate
 public:
     QGnomeThemePrivate()
         : systemFont(QLatin1Literal(defaultSystemFontNameC), defaultSystemFontSize)
-    {}
+        , fixedFont(QStringLiteral("monospace"), systemFont.pointSize())
+    {
+        fixedFont.setStyleHint(QFont::TypeWriter);
+    }
 
     const QFont systemFont;
+    QFont fixedFont;
 };
 
 QGnomeTheme::QGnomeTheme()
@@ -501,10 +521,14 @@ QVariant QGnomeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
 const QFont *QGnomeTheme::font(Font type) const
 {
     Q_D(const QGnomeTheme);
-    if (type == QPlatformTheme::SystemFont)
-        return &d->systemFont;
-
-    return 0;
+    switch (type) {
+    case QPlatformTheme::SystemFont:
+        return  &d->systemFont;
+    case QPlatformTheme::FixedFont:
+        return &d->fixedFont;
+    default:
+        return 0;
+    }
 }
 
 /*!
