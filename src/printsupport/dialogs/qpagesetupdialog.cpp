@@ -104,11 +104,6 @@ QT_BEGIN_NAMESPACE
 QPageSetupDialogPrivate::QPageSetupDialogPrivate(QPrinter *prntr) : printer(0), ownsPrinter(false)
 {
     setPrinter(prntr);
-    init();
-}
-
-void QPageSetupDialogPrivate::init()
-{
 }
 
 void QPageSetupDialogPrivate::setPrinter(QPrinter *newPrinter)
