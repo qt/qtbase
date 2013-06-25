@@ -102,10 +102,12 @@ Cpp.ignoretokens        += \
                           QT_END_NAMESPACE \
                           QT_FASTCALL \
                           QT_WIDGET_PLUGIN_EXPORT \
-                          QTBLUETOOTH_BEGIN_NAMESPACE \
-                          QTBLUETOOTH_END_NAMESAPCE \
-                          QTNFC_BEGIN_NAMESPACE \
-                          QTNFC_END_NAMESPACE \
+                          QT_BEGIN_NAMESPACE_NFC \
+                          QT_END_NAMESPACE_NFC \
+                          QT_USE_NAMESPACE_NFC \
+                          QT_BEGIN_NAMESPACE_BLUETOOTH \
+                          QT_END_NAMESPACE_BLUETOOTH \
+                          QT_USE_NAMESPACE_BLUETOOTH \
                           QWEBKIT_EXPORT
 
 Cpp.ignoredirectives    += \
