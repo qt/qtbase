@@ -3036,7 +3036,7 @@ gccout=`LC_ALL=C $TEST_COMPILER $SYSROOT_FLAG $TEST_COMPILER_CXXFLAGS -xc++ -E -
 libdirs=`echo "$gccout" | sed -n -e 's/^LIBRARY_PATH=\(.*\)/\1/p'`
 DEFAULT_LIBDIRS=`IFS=${HOST_DIRLIST_SEP}; for i in $libdirs; do test -d "$i" && cd "$i" && pwd; done`
 # extract from indented lines between '#include <...> search starts here:' and 'End of search list.'
-DEFAULT_INCDIRS=`echo "$gccout" | awk '
+DEFAULT_INCDIRS=`echo "$gccout" | $AWK '
 /^End of search/ { yup=0 }
 / \(framework directory\)$/ { next }
 yup { print substr($0, 2) }
@@ -6086,7 +6086,7 @@ case "$XPLATFORM" in
 	;;
     solaris-cc*)
         # Check the compiler version
-        case `${QMAKE_CONF_COMPILER} -V 2>&1 | awk '{print $4}'` in
+        case `${QMAKE_CONF_COMPILER} -V 2>&1 | $AWK '{print $4}'` in
             5.[012345678])
                 canBuildWebKit="no"
                 canBuildQtXmlPatterns="no"
