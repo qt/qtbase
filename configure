@@ -6703,11 +6703,9 @@ report_support()
             return
             :;
     esac
-    local heading
     heading=$1
     shift
 
-    local value
     value=$1
     shift
 
