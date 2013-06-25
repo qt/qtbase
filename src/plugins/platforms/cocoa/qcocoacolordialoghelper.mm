@@ -98,6 +98,11 @@ static NSButton *macCreateButton(const char *text, NSView *superview)
     mDialogIsExecuting = false;
     mResultSet = false;
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7)
+        [mColorPanel setRestorable:NO];
+#endif
+
     if (mHelper->options()->testOption(QColorDialogOptions::NoButtons)) {
         mStolenContentView = 0;
         mOkButton = 0;
@@ -274,6 +279,7 @@ static NSButton *macCreateButton(const char *text, NSView *superview)
 - (void)showModelessPanel
 {
     mDialogIsExecuting = false;
+    mResultSet = false;
     [mColorPanel makeKeyAndOrderFront:mColorPanel];
 }
 
@@ -367,10 +373,8 @@ void QCocoaColorDialogHelper::exec()
 
 bool QCocoaColorDialogHelper::show(Qt::WindowFlags, Qt::WindowModality windowModality, QWindow *parent)
 {
-    if (windowModality == Qt::WindowModal) {
-        // Cocoa's shared color panel cannot be shown as a sheet
-        return false;
-    }
+    if (windowModality == Qt::WindowModal)
+        windowModality = Qt::ApplicationModal;
     return showCocoaColorPanel(windowModality, parent);
 }
 
@@ -433,9 +437,9 @@ bool QCocoaColorDialogHelper::showCocoaColorPanel(Qt::WindowModality windowModal
     createNSColorPanelDelegate();
     QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) *>(mDelegate);
     [delegate->mColorPanel setShowsAlpha:options()->testOption(QColorDialogOptions::ShowAlphaChannel)];
-    if (windowModality == Qt::NonModal)
+    if (windowModality != Qt::WindowModal)
         [delegate showModelessPanel];
-    // no need to show a Qt::ApplicationModal dialog here, since it will be done in _q_platformRunNativeAppModalPanel()
+    // no need to show a Qt::WindowModal dialog here, because it's necessary to call exec() in that case
     return true;
 }
 

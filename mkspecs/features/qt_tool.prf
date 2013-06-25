@@ -19,17 +19,17 @@ CONFIG += console
 !build_pass:if(!host_build|!force_bootstrap|force_independent) {
     isEmpty(MODULE):MODULE = $$TARGET
 
-    MODULE_DEPENDS = $$replace(QT, -private$, )
+    !host_build|!force_bootstrap: MODULE_DEPENDS = $$replace(QT, -private$, )
 
     load(qt_build_paths)
 
     load(resolve_target)
-    cmd = $$shell_path($$QMAKE_RESOLVED_TARGET)
-    !host_build|!force_bootstrap: qtAddTargetEnv(cmd)
 
     TOOL_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_tool_$${MODULE}.pri
 
-    TOOL_PRI_CONT = "QT_TOOL.$${MODULE}.command = $$val_escape(cmd)"
+    TOOL_PRI_CONT = \
+        "QT_TOOL.$${MODULE}.binary = $$QMAKE_RESOLVED_TARGET" \
+        "QT_TOOL.$${MODULE}.depends =$$join(MODULE_DEPENDS, " ", " ")"
     write_file($$TOOL_PRI, TOOL_PRI_CONT)|error("Aborting.")
 
     # Then, inject the new tool into the current cache state
@@ -39,6 +39,7 @@ CONFIG += console
         unset(added)
     }
     include($$TOOL_PRI)
-    cache(QT_TOOL.$${MODULE}.command, transient)
+    for(var, $$list(binary depends)): \
+        cache(QT_TOOL.$${MODULE}.$$var, transient)
 
 }
