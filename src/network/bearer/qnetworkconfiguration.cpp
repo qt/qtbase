@@ -41,10 +41,10 @@
 
 #include "qnetworkconfiguration.h"
 #include "qnetworkconfiguration_p.h"
+#include <QDebug>
 
 #ifdef Q_OS_BLACKBERRY
 #include "private/qcore_unix_p.h" // qt_safe_open
-#include <QDebug>
 #include <sys/pps.h>
 #endif // Q_OS_BLACKBERRY
 
@@ -199,6 +199,8 @@ QT_BEGIN_NAMESPACE
     \value BearerEthernet   The configuration is for an Ethernet interfaces.
     \value BearerWLAN       The configuration is for a Wireless LAN interface.
     \value Bearer2G         The configuration is for a CSD, GPRS, HSCSD, EDGE or cdmaOne interface.
+    \value Bearer3G         The configuration is for a 3G interface.
+    \value Bearer4G         The configuration is for a 4G interface.
     \value BearerCDMA2000   The configuration is for CDMA interface.
     \value BearerWCDMA      The configuration is for W-CDMA/UMTS interface.
     \value BearerHSPA       The configuration is for High Speed Packet Access (HSPA) interface.
@@ -491,6 +493,8 @@ QList<QNetworkConfiguration> QNetworkConfiguration::children() const
     function can be used to retrieve a textural type name for the bearer.
 
     An invalid network configuration always returns the BearerUnknown value.
+
+    \sa bearerTypeName(), bearerTypeFamily()
 */
 QNetworkConfiguration::BearerType QNetworkConfiguration::bearerType() const
 {
@@ -514,6 +518,58 @@ QNetworkConfiguration::BearerType QNetworkConfiguration::bearerType() const
     return d->bearerType;
 }
 
+/*!
+    \since 5.2
+
+    Returns the bearer type family used by this network configuration.
+    The following table lists how bearerType() values map to
+    bearerTypeFamily() values:
+
+    \table
+        \header
+            \li bearer type
+            \li bearer type family
+        \row
+            \li BearerUnknown, Bearer2G, BearerEthernet, BearerWLAN,
+            BearerBluetooth
+            \li (same type)
+        \row
+            \li BearerCDMA2000, BearerEVDO, BearerWCDMA, BearerHSPA, Bearer3G
+            \li Bearer3G
+        \row
+            \li BearerWiMAX, BearerLTE, Bearer4G
+            \li Bearer4G
+    \endtable
+
+    An invalid network configuration always returns the BearerUnknown value.
+
+    \sa bearerType(), bearerTypeName()
+*/
+QNetworkConfiguration::BearerType QNetworkConfiguration::bearerTypeFamily() const
+{
+    QNetworkConfiguration::BearerType type = bearerType();
+    switch (type) {
+    case QNetworkConfiguration::BearerUnknown: // fallthrough
+    case QNetworkConfiguration::Bearer2G: // fallthrough
+    case QNetworkConfiguration::BearerEthernet: // fallthrough
+    case QNetworkConfiguration::BearerWLAN: // fallthrough
+    case QNetworkConfiguration::BearerBluetooth:
+        return type;
+    case QNetworkConfiguration::BearerCDMA2000: // fallthrough
+    case QNetworkConfiguration::BearerEVDO: // fallthrough
+    case QNetworkConfiguration::BearerWCDMA: // fallthrough
+    case QNetworkConfiguration::BearerHSPA: // fallthrough
+    case QNetworkConfiguration::Bearer3G:
+        return QNetworkConfiguration::Bearer3G;
+    case QNetworkConfiguration::BearerWiMAX: // fallthrough
+    case QNetworkConfiguration::BearerLTE: // fallthrough
+    case QNetworkConfiguration::Bearer4G:
+        return QNetworkConfiguration::Bearer4G;
+    default:
+        qWarning() << "unknown bearer type" << type;
+        return QNetworkConfiguration::BearerUnknown;
+    }
+}
 /*!
     Returns the type of bearer used by this network configuration as a string.
 
@@ -541,6 +597,12 @@ QNetworkConfiguration::BearerType QNetworkConfiguration::bearerType() const
             \li Bearer2G
             \li 2G
         \row
+            \li Bearer3G
+            \li 3G
+        \row
+            \li Bearer4G
+            \li 4G
+        \row
             \li BearerCDMA2000
             \li CDMA2000
         \row
@@ -567,7 +629,7 @@ QNetworkConfiguration::BearerType QNetworkConfiguration::bearerType() const
     configuration of type \l QNetworkConfiguration::ServiceNetwork or
     \l QNetworkConfiguration::UserChoice.
 
-    \sa bearerType()
+    \sa bearerType(), bearerTypeFamily()
 */
 QString QNetworkConfiguration::bearerTypeName() const
 {
@@ -601,6 +663,10 @@ QString QNetworkConfiguration::bearerTypeName() const
     }
 #endif // Q_OS_BLACKBERRY
         return QStringLiteral("2G");
+    case Bearer3G:
+        return QStringLiteral("3G");
+    case Bearer4G:
+        return QStringLiteral("4G");
     case BearerCDMA2000:
         return QStringLiteral("CDMA2000");
     case BearerWCDMA:

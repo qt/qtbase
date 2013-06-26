@@ -51,6 +51,7 @@ class tst_qnetworkconfiguration : public QObject
 
 private slots:
     void bearerType();
+    void bearerTypeFamily();
 };
 
 void tst_qnetworkconfiguration::bearerType()
@@ -108,6 +109,28 @@ void tst_qnetworkconfiguration::bearerType()
                  << "bearer type:" << type << "(" << typeString << ")"
                  << "elapsed:" << elapsed;
         QCOMPARE(allConfs.at(a).bearerTypeName(), typeString);
+    }
+}
+
+void tst_qnetworkconfiguration::bearerTypeFamily()
+{
+    QNetworkConfigurationManager m;
+    foreach (const QNetworkConfiguration &config,
+             m.allConfigurations(QNetworkConfiguration::Active)) {
+        QString family;
+        switch (config.bearerTypeFamily()) {
+        case QNetworkConfiguration::Bearer3G:
+            family = QLatin1String("Bearer3G");
+            break;
+        case QNetworkConfiguration::Bearer4G:
+            family = QLatin1String("Bearer4G");
+            break;
+        default:
+            family = config.bearerTypeName();
+        }
+        qDebug() << config.name() << "has bearer type"
+                    << config.bearerTypeName() << "of bearer type family"
+                    << family;
     }
 }
 
