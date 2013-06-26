@@ -10,28 +10,6 @@ isEmpty(MAKEFILE_GENERATOR) {
         MAKEFILE_GENERATOR = UNIX
 }
 
-gui_app {
-    LIBS *= -L$$[QT_INSTALL_PLUGINS/get]/platforms
-
-    lib_name = qios
-    lib_path_and_base = $$[QT_INSTALL_PLUGINS/get]/platforms/lib$${lib_name}$$qtPlatformTargetSuffix()
-    LIBS += -l$${lib_name}$$qtPlatformTargetSuffix() $$fromfile($${lib_path_and_base}.prl, QMAKE_PRL_LIBS)
-
-    # By marking qt_registerPlatformPlugin as undefined, we ensure that
-    # the plugin.o translation unit is considered for inclusion in
-    # the final binary, which in turn ensures that the plugin's
-    # static initializer is included and run.
-    QMAKE_LFLAGS += -u _qt_registerPlatformPlugin
-
-    # We do link and dependency resolution for the platform plugin
-    # manually, since we know we always need the plugin, so we don't
-    # need to generate an import for it.
-    CONFIG -= import_qpa_plugin
-
-    # FIXME: Solve using 'ld -r -alias -unexported_symbol' instead
-    !no_main_wrapper: DEFINES += main=qt_user_main
-}
-
 contains(MAKEFILE_GENERATOR, XCODE) {
     ios_device_family.name = TARGETED_DEVICE_FAMILY
     ios_device_family.value = $$QMAKE_IOS_TARGETED_DEVICE_FAMILY
