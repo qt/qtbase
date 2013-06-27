@@ -110,14 +110,14 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_PROPERTY(int y READ y WRITE setY NOTIFY yChanged)
     Q_PROPERTY(int width READ width WRITE setWidth NOTIFY widthChanged)
     Q_PROPERTY(int height READ height WRITE setHeight NOTIFY heightChanged)
-    Q_PROPERTY(int minimumWidth READ minimumWidth WRITE setMinimumWidth NOTIFY minimumWidthChanged REVISION 1)
-    Q_PROPERTY(int minimumHeight READ minimumHeight WRITE setMinimumHeight NOTIFY minimumHeightChanged REVISION 1)
-    Q_PROPERTY(int maximumWidth READ maximumWidth WRITE setMaximumWidth NOTIFY maximumWidthChanged REVISION 1)
-    Q_PROPERTY(int maximumHeight READ maximumHeight WRITE setMaximumHeight NOTIFY maximumHeightChanged REVISION 1)
+    Q_PROPERTY(int minimumWidth READ minimumWidth WRITE setMinimumWidth NOTIFY minimumWidthChanged)
+    Q_PROPERTY(int minimumHeight READ minimumHeight WRITE setMinimumHeight NOTIFY minimumHeightChanged)
+    Q_PROPERTY(int maximumWidth READ maximumWidth WRITE setMaximumWidth NOTIFY maximumWidthChanged)
+    Q_PROPERTY(int maximumHeight READ maximumHeight WRITE setMaximumHeight NOTIFY maximumHeightChanged)
     Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged)
     Q_PROPERTY(bool active READ isActive NOTIFY activeChanged REVISION 1)
     Q_PROPERTY(Visibility visibility READ visibility WRITE setVisibility NOTIFY visibilityChanged REVISION 1)
-    Q_PROPERTY(Qt::ScreenOrientation contentOrientation READ contentOrientation WRITE reportContentOrientationChange NOTIFY contentOrientationChanged REVISION 1)
+    Q_PROPERTY(Qt::ScreenOrientation contentOrientation READ contentOrientation WRITE reportContentOrientationChange NOTIFY contentOrientationChanged)
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged REVISION 1)
 
 public:
@@ -286,10 +286,10 @@ public Q_SLOTS:
     void setWidth(int arg);
     void setHeight(int arg);
 
-    Q_REVISION(1) void setMinimumWidth(int w);
-    Q_REVISION(1) void setMinimumHeight(int h);
-    Q_REVISION(1) void setMaximumWidth(int w);
-    Q_REVISION(1) void setMaximumHeight(int h);
+    void setMinimumWidth(int w);
+    void setMinimumHeight(int h);
+    void setMaximumWidth(int w);
+    void setMaximumHeight(int h);
 
     void alert(int msec);
 
@@ -304,15 +304,15 @@ Q_SIGNALS:
     void widthChanged(int arg);
     void heightChanged(int arg);
 
-    Q_REVISION(1) void minimumWidthChanged(int arg);
-    Q_REVISION(1) void minimumHeightChanged(int arg);
-    Q_REVISION(1) void maximumWidthChanged(int arg);
-    Q_REVISION(1) void maximumHeightChanged(int arg);
+    void minimumWidthChanged(int arg);
+    void minimumHeightChanged(int arg);
+    void maximumWidthChanged(int arg);
+    void maximumHeightChanged(int arg);
 
     void visibleChanged(bool arg);
     Q_REVISION(1) void visibilityChanged(QWindow::Visibility visibility);
     Q_REVISION(1) void activeChanged();
-    Q_REVISION(1) void contentOrientationChanged(Qt::ScreenOrientation orientation);
+    void contentOrientationChanged(Qt::ScreenOrientation orientation);
 
     void focusObjectChanged(QObject *object);
 
