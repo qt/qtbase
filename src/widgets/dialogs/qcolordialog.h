@@ -120,6 +120,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_addCustom())
     Q_PRIVATE_SLOT(d_func(), void _q_newHsv(int h, int s, int v))
     Q_PRIVATE_SLOT(d_func(), void _q_newColorTypedIn(QRgb rgb))
+    Q_PRIVATE_SLOT(d_func(), void _q_nextCustom(int, int))
     Q_PRIVATE_SLOT(d_func(), void _q_newCustom(int, int))
     Q_PRIVATE_SLOT(d_func(), void _q_newStandard(int, int))
     friend class QColorShower;
