@@ -66,6 +66,7 @@
 #endif
 
 #include "qandroidplatformtheme.h"
+#include "qandroidsystemlocale.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -108,6 +109,8 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
     m_androidFDB = new QAndroidPlatformFontDatabase();
     m_androidPlatformServices = new QAndroidPlatformServices();
     m_androidPlatformClipboard = new QAndroidPlatformClipboard();
+
+    m_androidSystemLocale = new QAndroidSystemLocale;
 }
 
 bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
@@ -183,6 +186,7 @@ QAndroidPlatformIntegration::~QAndroidPlatformIntegration()
 {
     delete m_androidPlatformNativeInterface;
     delete m_androidFDB;
+    delete m_androidSystemLocale;
     QtAndroid::setAndroidPlatformIntegration(NULL);
 }
 QPlatformFontDatabase *QAndroidPlatformIntegration::fontDatabase() const

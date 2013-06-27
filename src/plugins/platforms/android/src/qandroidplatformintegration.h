@@ -60,6 +60,7 @@ QT_BEGIN_NAMESPACE
 
 class QDesktopWidget;
 class QAndroidPlatformServices;
+class QAndroidSystemLocale;
 
 #ifdef ANDROID_PLUGIN_OPENGL
 class QAndroidOpenGLPlatformWindow;
@@ -152,6 +153,7 @@ private:
     QAndroidPlatformNativeInterface *m_androidPlatformNativeInterface;
     QAndroidPlatformServices *m_androidPlatformServices;
     QPlatformClipboard *m_androidPlatformClipboard;
+    QAndroidSystemLocale *m_androidSystemLocale;
 
     mutable QAndroidInputContext m_platformInputContext;
 };

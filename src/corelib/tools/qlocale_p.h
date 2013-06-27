@@ -62,7 +62,7 @@
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SYSTEMLOCALE
-class QSystemLocale
+class Q_CORE_EXPORT QSystemLocale
 {
 public:
     QSystemLocale();

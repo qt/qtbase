@@ -23,7 +23,8 @@ SOURCES += $$PWD/androidplatformplugin.cpp \
            $$PWD/qandroidplatformtheme.cpp \
            $$PWD/qandroidplatformmenubar.cpp \
            $$PWD/qandroidplatformmenu.cpp \
-           $$PWD/qandroidplatformmenuitem.cpp
+           $$PWD/qandroidplatformmenuitem.cpp \
+           $$PWD/qandroidsystemlocale.cpp
 
 
 HEADERS += $$PWD/qandroidplatformintegration.h \
@@ -39,7 +40,8 @@ HEADERS += $$PWD/qandroidplatformintegration.h \
            $$PWD/qandroidplatformtheme.h \
            $$PWD/qandroidplatformmenubar.h \
            $$PWD/qandroidplatformmenu.h \
-           $$PWD/qandroidplatformmenuitem.h
+           $$PWD/qandroidplatformmenuitem.h \
+           $$PWD/qandroidsystemlocale.h
 
 
 #Non-standard install directory, QTBUG-29859
