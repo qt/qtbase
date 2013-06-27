@@ -153,16 +153,17 @@ private:
     QSystemTrayIcon *q;
 };
 
-QSystemTrayIconSys::QSystemTrayIconSys(QSystemTrayIcon *qIn) :
-    q(qIn)
+QSystemTrayIconSys::QSystemTrayIconSys(QSystemTrayIcon *qIn)
+    : QWidget(0, Qt::Window | Qt::FramelessWindowHint | Qt::BypassWindowManagerHint)
+    , q(qIn)
 {
+    setObjectName(QStringLiteral("QSystemTrayIconSys"));
     setToolTip(q->toolTip());
     QX11SystemTrayContext *context = qX11SystemTrayContext();
     Q_ASSERT(context->isValid());
     setAttribute(Qt::WA_AlwaysShowToolTips, true);
     setAttribute(Qt::WA_TranslucentBackground, true);
     setAttribute(Qt::WA_QuitOnClose, false);
-    setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
     const QSize size(22, 22); // Gnome, standard size
     setGeometry(QRect(QPoint(0, 0), size));
     setMinimumSize(size);
@@ -182,7 +183,6 @@ QSystemTrayIconSys::QSystemTrayIconSys(QSystemTrayIcon *qIn) :
     ev.xclient.format = 32;
     memcpy((char *)&ev.xclient.data, (const char *) l, sizeof(l));
     XSendEvent(display, ev.xclient.window, False, 0, &ev);
-    XSync(display, False);
     show();
 }
 
