@@ -1520,12 +1520,8 @@ ProjectBuilderMakefileGenerator::fixForOutput(const QString &values)
             project->values("QMAKE_PBX_VARS").append(reg_var.cap(1));
         rep += reg_var.matchedLength();
     }
-    QString ret = values;
-    ret = ret.replace(QRegExp("\\\\ "), " "); //unescape spaces
-    ret = ret.replace(QRegExp("('|\\\\|\")"), "\\\\1"); //fix quotes
-    ret = ret.replace("\t", "    "); //fix tabs
-    ret = ret.replace(QRegExp(" "), "\\ "); //escape spaces
-    return ret;
+
+    return values;
 }
 
 ProStringList
@@ -1749,37 +1745,81 @@ ProjectBuilderMakefileGenerator::escapeFilePath(const QString &path) const
 #endif
 }
 
+static QString quotedStringLiteral(const QString &value)
+{
+    QString result;
+    const int len = value.length();
+    result.reserve(int(len * 1.1) + 2);
+
+    result += QLatin1Char('"');
+
+    // Escape
+    for (int i = 0; i < len; ++i) {
+        QChar character = value.at(i);;
+        ushort code = character.unicode();
+        switch (code) {
+        case '\\':
+            result += QLatin1String("\\\\");
+            break;
+        case '"':
+            result += QLatin1String("\\\"");
+            break;
+        case '\b':
+            result += QLatin1String("\\b");
+            break;
+        case '\n':
+            result += QLatin1String("\\n");
+            break;
+        case '\r':
+            result += QLatin1String("\\r");
+            break;
+        case '\t':
+            result += QLatin1String("\\t");
+            break;
+        default:
+            if (code >= 32 && code <= 127)
+                result += character;
+            else
+                result += QLatin1String("\\u") + QString::number(code, 16).rightJustified(4, '0');
+        }
+    }
+
+    result += QLatin1Char('"');
+
+    result.squeeze();
+    return result;
+}
+
 QString
 ProjectBuilderMakefileGenerator::writeSettings(const QString &var, const ProStringList &vals, int flags, int indent_level)
 {
     QString ret;
-    const QString quote = (flags & SettingsNoQuote) ? "" : "\"";
-    const QString escape_quote = quote.isEmpty() ? "" : QString("\\" + quote);
+    bool shouldQuote = !((flags & SettingsNoQuote));
+
     QString newline = "\n";
     for(int i = 0; i < indent_level; ++i)
         newline += "\t";
+
+    ret += var + " = ";
+
     if(flags & SettingsAsList) {
-        ret += var + " = (" + newline;
+        ret += "(" + newline;
         for(int i = 0, count = 0; i < vals.size(); ++i) {
             QString val = vals.at(i).toQString();
             if(!val.isEmpty()) {
                 if(count++ > 0)
                     ret += "," + newline;
-                ret += quote + val.replace(quote, escape_quote) + quote;
+                if (shouldQuote)
+                    val = quotedStringLiteral(val);
+                ret += val;
             }
         }
         ret += ")";
     } else {
-        ret += var + " = " + quote;
-        for(int i = 0; i < vals.size(); ++i) {
-            QString val = vals.at(i).toQString();
-//             if(val.isEmpty())
-//                 val = quote + quote;
-            if(i)
-                ret += " ";
-            ret += val;
-        }
-        ret += quote;
+        QString val = vals.join(QLatin1Char(' '));
+        if (shouldQuote)
+            val = quotedStringLiteral(val);
+        ret += val;
     }
     return ret;
 }
