@@ -181,7 +181,7 @@ void QPixmapIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode 
 {
     QSize pixmapSize = rect.size() * qt_effective_device_pixel_ratio(0);
     QPixmap px = pixmap(pixmapSize, mode, state);
-    painter->drawPixmap(rect, pixmap(pixmapSize, mode, state));
+    painter->drawPixmap(rect, px);
 }
 
 static inline int area(const QSize &s) { return s.width() * s.height(); }
