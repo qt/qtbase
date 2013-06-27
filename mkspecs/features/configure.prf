@@ -7,9 +7,6 @@ equals(MAKEFILE_GENERATOR, UNIX) {
         QMAKE_MAKE = mingw32-make
 } else:if(equals(MAKEFILE_GENERATOR, MSVC.NET)|equals(MAKEFILE_GENERATOR, MSBUILD)) {
     QMAKE_MAKE = nmake
-} else:ios {
-    # iOS unsets MAKEFILE_GENERATOR in its default_pre.prf
-    QMAKE_MAKE = make
 } else {
     error("Configure tests are not supported with the $$MAKEFILE_GENERATOR Makefile generator.")
 }

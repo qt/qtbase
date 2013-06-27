@@ -1,16 +1,44 @@
 
-CONFIG(qt):contains(QT, gui):equals(TEMPLATE, app): CONFIG += gui_app
+equals(TEMPLATE, app) {
+    qt:app_bundle:!macx-xcode {
+        # For Qt applications we want Xcode project files as the generated output,
+        # but since qmake doesn't handle the transition between makefiles and Xcode
+        # project files (which happens when using subdirs), we create a wrapper
+        # makefile that takes care of generating the Xcode project, and allows
+        # building by calling out to xcodebuild.
+        TEMPLATE = aux
 
-isEmpty(MAKEFILE_GENERATOR) {
-    gui_app:app_bundle: \
-        # For applications we want Xcode project files
-        MAKEFILE_GENERATOR = XCODE
-    else: \
-        # For libs, etc we still want regular Makefiles
-        MAKEFILE_GENERATOR = UNIX
+        CONFIG -= have_target qt staticlib dll
+        SOURCES =
+        RESOURCES =
+        INSTALLS =
+
+        TARGET_XCODE_PROJECT_DIR = $${TARGET}.xcodeproj
+
+        system("cd $$system_quote($$OUT_PWD) && $${QMAKE_QMAKE} $$system_quote($$_PRO_FILE_) -spec macx-xcode")
+
+        # We use xcodebuild to do the actual build, but filter out the verbose
+        # output that shows all environment variables for each build step.
+        xcodebuild_build.commands = "@xcodebuild build | grep -v setenv"
+        QMAKE_EXTRA_TARGETS += xcodebuild_build
+        all.depends = xcodebuild_build
+        QMAKE_EXTRA_TARGETS += all
+
+        # We do the same for the clean action
+        xcodebuild_clean.commands = "@xcodebuild clean"
+        QMAKE_EXTRA_TARGETS += xcodebuild_clean
+        clean.depends = xcodebuild_clean
+        QMAKE_EXTRA_TARGETS += clean
+
+        # And distclean
+        xcodebuild_distclean.commands = "$(DEL_FILE) -R $$TARGET_XCODE_PROJECT_DIR"
+        QMAKE_EXTRA_TARGETS += xcodebuild_distclean
+        distclean.depends = xcodebuild_distclean
+        QMAKE_EXTRA_TARGETS += distclean
+    }
 }
 
-contains(MAKEFILE_GENERATOR, XCODE) {
+macx-xcode {
     ios_device_family.name = TARGETED_DEVICE_FAMILY
     ios_device_family.value = $$QMAKE_IOS_TARGETED_DEVICE_FAMILY
     QMAKE_MAC_XCODE_SETTINGS += ios_device_family
@@ -32,7 +60,7 @@ equals(QT_ARCH, arm): \
 else: \
     actual_archs = $$QT_ARCH
 
-equals(MAKEFILE_GENERATOR, XCODE) {
+macx-xcode {
     QMAKE_XCODE_ARCHS = $$actual_archs
 } else {
     for(arch, actual_archs): \

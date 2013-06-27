@@ -1,5 +1,3 @@
-# Unset makefile generator, so we can auto-detect value in default_post
-!macx-xcode: unset(MAKEFILE_GENERATOR)
 
 load(default_pre)
 
