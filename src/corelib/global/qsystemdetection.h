@@ -207,11 +207,17 @@
 #  if !defined(__MAC_10_8)
 #       define __MAC_10_8 1080
 #  endif
+#  if !defined(__MAC_10_9)
+#       define __MAC_10_9 1090
+#  endif
 #  if !defined(MAC_OS_X_VERSION_10_7)
 #       define MAC_OS_X_VERSION_10_7 1070
 #  endif
 #  if !defined(MAC_OS_X_VERSION_10_8)
 #       define MAC_OS_X_VERSION_10_8 1080
+#  endif
+#  if !defined(MAC_OS_X_VERSION_10_9)
+#       define MAC_OS_X_VERSION_10_9 1090
 #  endif
 #
 #  if !defined(__IPHONE_4_3)
@@ -229,9 +235,12 @@
 #  if !defined(__IPHONE_6_1)
 #       define __IPHONE_6_1 60100
 #  endif
+#  if !defined(__IPHONE_7_0)
+#       define __IPHONE_7_0 70000
+#  endif
 #
 #  if (__MAC_OS_X_VERSION_MAX_ALLOWED > __MAC_10_8)
-#    warning "This version of Mac OS X is unsupported"
+#    warning "This version of OS X is unsupported"
 #  endif
 #endif
 
