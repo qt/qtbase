@@ -469,8 +469,14 @@ void QQnxScreenEventHandler::handleDisplayEvent(screen_event_t event)
 
     qScreenEventDebug() << Q_FUNC_INFO << "display attachment is now:" << isAttached;
     QQnxScreen *screen = m_qnxIntegration->screenForNative(nativeDisplay);
+
     if (!screen) {
         if (isAttached) {
+            int val[2];
+            screen_get_display_property_iv(nativeDisplay, SCREEN_PROPERTY_SIZE, val);
+            if (val[0] == 0 && val[1] == 0) //If screen size is invalid, wait for the next event
+                return;
+
             qScreenEventDebug() << "creating new QQnxScreen for newly attached display";
             m_qnxIntegration->createDisplay(nativeDisplay, false /* not primary, we assume */);
         }
