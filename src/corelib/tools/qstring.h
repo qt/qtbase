@@ -302,24 +302,8 @@ public:
                 const QString &a4, const QString &a5, const QString &a6,
                 const QString &a7, const QString &a8, const QString &a9) const Q_REQUIRED_RESULT;
 
-    QString    &vsprintf(const char *format, va_list ap)
-#if defined(Q_CC_GNU) && !defined(__INSURE__)
-#  if defined(Q_CC_MINGW) && !defined(Q_CC_CLANG)
-        __attribute__ ((format (gnu_printf, 2, 0)))
-#  else
-        __attribute__ ((format (printf, 2, 0)))
-#  endif
-#endif
-        ;
-    QString    &sprintf(const char *format, ...)
-#if defined(Q_CC_GNU) && !defined(__INSURE__)
-#  if defined(Q_CC_MINGW) && !defined(Q_CC_CLANG)
-        __attribute__ ((format (gnu_printf, 2, 3)))
-#  else
-        __attribute__ ((format (printf, 2, 3)))
-#  endif
-#endif
-        ;
+    QString &vsprintf(const char *format, va_list ap) Q_ATTRIBUTE_FORMAT_PRINTF(2, 0);
+    QString &sprintf(const char *format, ...) Q_ATTRIBUTE_FORMAT_PRINTF(2, 3);
 
     int indexOf(QChar c, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int indexOf(const QString &s, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
