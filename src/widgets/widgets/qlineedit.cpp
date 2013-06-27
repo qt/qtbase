@@ -1808,9 +1808,9 @@ void QLineEdit::paintEvent(QPaintEvent *)
             col.setAlpha(128);
             QPen oldpen = p.pen();
             p.setPen(col);
-            lineRect.adjust(minLB, 0, 0, 0);
-            QString elidedText = fm.elidedText(d->placeholderText, Qt::ElideRight, lineRect.width());
-            p.drawText(lineRect, va, elidedText);
+            QRect ph = lineRect.adjusted(minLB, 0, 0, 0);
+            QString elidedText = fm.elidedText(d->placeholderText, Qt::ElideRight, ph.width());
+            p.drawText(ph, va, elidedText);
             p.setPen(oldpen);
         }
     }
