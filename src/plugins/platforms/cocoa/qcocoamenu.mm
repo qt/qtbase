@@ -49,6 +49,7 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include "qcocoaapplication.h"
 #include "qcocoamenuloader.h"
+#include "qcocoamenubar.h"
 #include "qcocoawindow.h"
 #import "qnsview.h"
 
@@ -538,6 +539,7 @@ void QCocoaMenu::syncModalState(bool modal)
 void QCocoaMenu::setMenuBar(QCocoaMenuBar *menuBar)
 {
     m_menuBar = menuBar;
+    setParent(menuBar);
 }
 
 QCocoaMenuBar *QCocoaMenu::menuBar() const
