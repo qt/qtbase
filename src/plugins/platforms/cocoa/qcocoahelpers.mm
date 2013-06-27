@@ -124,16 +124,7 @@ CGImageRef qt_mac_image_to_cgimage(const QImage &img)
 
 NSImage *qt_mac_cgimage_to_nsimage(CGImageRef image)
 {
-    QCocoaAutoReleasePool pool;
-    NSImage *newImage = 0;
-    NSRect imageRect = NSMakeRect(0.0, 0.0, CGImageGetWidth(image), CGImageGetHeight(image));
-    newImage = [[NSImage alloc] initWithSize:imageRect.size];
-    [newImage lockFocus];
-    {
-        CGContextRef imageContext = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
-        CGContextDrawImage(imageContext, *(CGRect*)&imageRect, image);
-    }
-    [newImage unlockFocus];
+    NSImage *newImage = [[NSImage alloc] initWithCGImage:image size:NSZeroSize];
     return newImage;
 }
 
