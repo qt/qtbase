@@ -54,7 +54,7 @@ defineReplace(cmakeProcessLibs) {
     variable = $$1
     out =
     for(v, variable) {
-        if(!equals(v, -framework):!equals(v, -L.*)) {
+        if(!equals(v, -framework):!contains(v, -L.*)) {
             v ~= s,^-l,,
             v ~= s,^-lib,,
             v ~= s,.lib$,,

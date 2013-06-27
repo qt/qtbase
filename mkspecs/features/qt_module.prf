@@ -91,14 +91,15 @@ else: \
 mac:CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework) {
    #QMAKE_FRAMEWORK_VERSION = 4.0
    CONFIG += lib_bundle qt_no_framework_direct_includes qt_framework
-   CONFIG(release, debug|release) {
-      !debug_and_release|build_pass {
-          CONFIG -= qt_install_headers #no need to install these as well
-          FRAMEWORK_HEADERS.version = Versions
-          FRAMEWORK_HEADERS.files = $$SYNCQT.HEADER_FILES $$SYNCQT.HEADER_CLASSES
-          FRAMEWORK_HEADERS.path = Headers
-      }
-      QMAKE_BUNDLE_DATA += FRAMEWORK_HEADERS
+   CONFIG -= qt_install_headers #no need to install these as well
+   !debug_and_release|if(build_all:CONFIG(release, debug|release)) {
+        FRAMEWORK_HEADERS.version = Versions
+        FRAMEWORK_HEADERS.files = $$SYNCQT.HEADER_FILES $$SYNCQT.HEADER_CLASSES
+        FRAMEWORK_HEADERS.path = Headers
+        FRAMEWORK_PRIVATE_HEADERS.version = Versions
+        FRAMEWORK_PRIVATE_HEADERS.files = $$SYNCQT.PRIVATE_HEADER_FILES
+        FRAMEWORK_PRIVATE_HEADERS.path = Headers/$$VERSION/$$MODULE_INCNAME
+        QMAKE_BUNDLE_DATA += FRAMEWORK_HEADERS FRAMEWORK_PRIVATE_HEADERS
    }
 }
 

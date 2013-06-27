@@ -311,12 +311,28 @@ void tst_QDir::mkdir()
 void tst_QDir::makedirReturnCode()
 {
     QString dirName = QString::fromLatin1("makedirReturnCode");
-    QDir::current().rmdir(dirName); // cleanup a previous run.
+    QFile f(QDir::current().filePath(dirName));
+
+    // cleanup a previous run.
+    f.remove();
+    QDir::current().rmdir(dirName);
+
     QDir dir(dirName);
     QVERIFY(!dir.exists());
     QVERIFY(QDir::current().mkdir(dirName));
     QVERIFY(!QDir::current().mkdir(dirName)); // calling mkdir on an existing dir will fail.
     QVERIFY(QDir::current().mkpath(dirName)); // calling mkpath on an existing dir will pass
+
+    // Remove the directory and create a file with the same path
+    QDir::current().rmdir(dirName);
+    QVERIFY(!f.exists());
+    f.open(QIODevice::WriteOnly);
+    f.write("test");
+    f.close();
+    QVERIFY(f.exists());
+    QVERIFY(!QDir::current().mkdir(dirName)); // calling mkdir on an existing file will fail.
+    QVERIFY(!QDir::current().mkpath(dirName)); // calling mkpath on an existing file will fail.
+    f.remove();
 }
 
 void tst_QDir::rmdir_data()

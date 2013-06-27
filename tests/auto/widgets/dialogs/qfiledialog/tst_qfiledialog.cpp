@@ -44,6 +44,7 @@
 
 #include <qcoreapplication.h>
 #include <qdebug.h>
+#include <qsharedpointer.h>
 #include <qfiledialog.h>
 #include <qabstractitemdelegate.h>
 #include <qdirmodel.h>
@@ -441,33 +442,25 @@ void tst_QFiledialog::completer_data()
 
 void tst_QFiledialog::completer()
 {
+    typedef QSharedPointer<QTemporaryFile> TemporaryFilePtr;
+
     QFETCH(QString, input);
     QFETCH(QString, startPath);
     QFETCH(int, expected);
 
-    QString tempPath = QDir::tempPath() + '/' + "QFileDialogTestDir";
-    if (startPath.isEmpty())
-        startPath = tempPath;
+    QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
 
-    startPath = QDir::cleanPath(startPath);
+    const QString tempPath = tempDir.path();
+    startPath = startPath.isEmpty() ? tempPath : QDir::cleanPath(startPath);
 
     // make temp dir and files
-    {
-        QDir cleanup(tempPath);
-        QStringList x = cleanup.entryList();
-        for (int i = 0; i < x.count(); ++i)
-            QFile::remove(tempPath + '/' + x[i]);
-        cleanup.rmdir(tempPath);
-    }
-    QDir tmp(QDir::tempPath());
-    if (!tmp.exists(tempPath))
-        QVERIFY(tmp.mkdir("QFileDialogTestDir"));
-    QList<QTemporaryFile*> files;
+    QList<TemporaryFilePtr> files;
     QT_TRY {
     for (int i = 0; i < 10; ++i) {
-        QScopedPointer<QTemporaryFile> file(new QTemporaryFile(tempPath + "/rXXXXXX"));
-        file->open();
-        files.append(file.take());
+        TemporaryFilePtr file(new QTemporaryFile(tempPath + QStringLiteral("/rXXXXXX")));
+        QVERIFY(file->open());
+        files.append(file);
     }
 
     // ### flesh this out more
@@ -515,7 +508,7 @@ void tst_QFiledialog::completer()
 
     QStringList expectedFiles;
     if (expected == -1) {
-        QString fullPath = startPath.isEmpty() ? tempPath : startPath;
+        QString fullPath = startPath;
         if (!fullPath.endsWith(QLatin1Char('/')))
             fullPath.append(QLatin1Char('/'));
         fullPath.append(input);
@@ -551,10 +544,8 @@ void tst_QFiledialog::completer()
 
     QTRY_COMPARE(cModel->rowCount(), expected);
     } QT_CATCH(...) {
-        qDeleteAll(files);
         QT_RETHROW;
     }
-    qDeleteAll(files);
 }
 
 void tst_QFiledialog::completer_up()
@@ -890,9 +881,9 @@ void tst_QFiledialog::selectFiles()
 {
     QNonNativeFileDialog fd;
     fd.setViewMode(QFileDialog::List);
-    QString tempPath = QDir::tempPath() + '/' + "QFileDialogTestDir4SelectFiles";
-    QDir dir;
-    QVERIFY(dir.mkpath(tempPath));
+    QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    const QString tempPath = tempDir.path();
     fd.setDirectory(tempPath);
     QSignalSpy spyCurrentChanged(&fd, SIGNAL(currentChanged(QString)));
     QSignalSpy spyDirectoryEntered(&fd, SIGNAL(directoryEntered(QString)));
@@ -936,15 +927,12 @@ void tst_QFiledialog::selectFiles()
     QCOMPARE(spyDirectoryEntered.count(), 0);
     QCOMPARE(spyFilesSelected.count(), 0);
     QCOMPARE(spyFilterSelected.count(), 0);
-    for (int i=0; i < 5; ++i)
-        QFile::remove(filesPath + QString::fromLatin1("/qfiledialog_auto_test_not_pres_%1").arg(i));
 
     //If the selection is invalid then we fill the line edit but without the /
     QNonNativeFileDialog * dialog = new QNonNativeFileDialog( 0, "Save" );
     dialog->setFileMode( QFileDialog::AnyFile );
     dialog->setAcceptMode( QFileDialog::AcceptSave );
-    QString temporary = QDir::tempPath() + QLatin1String("/blah");
-    dialog->selectFile(temporary);
+    dialog->selectFile(tempPath + QStringLiteral("/blah"));
     dialog->show();
     QVERIFY(QTest::qWaitForWindowExposed(dialog));
     QLineEdit *lineEdit = dialog->findChild<QLineEdit*>("fileNameEdit");

@@ -104,6 +104,8 @@
 #include "qtabwidget.h" // Needed in inTabWidget()
 #endif // QT_KEYPAD_NAVIGATION
 
+#include "qwindowcontainer_p.h"
+
 
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
@@ -1549,10 +1551,11 @@ void QWidgetPrivate::createTLExtra()
         x->inTopLevelResize = false;
         x->inRepaint = false;
         x->embedded = 0;
+        x->window = 0;
+        x->screenIndex = 0;
 #ifdef Q_WS_MAC
         x->wasMaximized = false;
 #endif // Q_WS_MAC
-        createTLSysExtra();
 #ifdef QWIDGET_EXTRA_DEBUG
         static int count = 0;
         qDebug() << "tlextra" << ++count;
@@ -6252,6 +6255,17 @@ bool QWidget::isActiveWindow() const
         }
     }
 
+    // Check for an active window container
+    if (QWindow *ww = QGuiApplication::focusWindow()) {
+        while (ww) {
+            QWidgetWindow *qww = qobject_cast<QWidgetWindow *>(ww);
+            QWindowContainer *qwc = qww ? qobject_cast<QWindowContainer *>(qww->widget()) : 0;
+            if (qwc && qwc->topLevelWidget() == tlw)
+                return true;
+            ww = ww->parent();
+        }
+    }
+
     // Check if platform adaptation thinks the window is active. This is necessary for
     // example in case of ActiveQt servers that are embedded into another application.
     // Those are separate processes that are not part of the parent application Qt window/widget
@@ -10112,6 +10126,8 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         break; }
     case Qt::WA_NativeWindow: {
         d->createTLExtra();
+        if (on)
+            d->createTLSysExtra();
 #ifndef QT_NO_IM
         QWidget *focusWidget = d->effectiveFocusWidget();
         if (on && !internalWinId() && hasFocus()

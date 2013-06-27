@@ -73,7 +73,6 @@ class QPageSetupDialogPrivate : public QDialogPrivate
 public:
     QPageSetupDialogPrivate(QPrinter *printer);
 
-    virtual void init();
     void setPrinter(QPrinter *newPrinter);
 
     QPrinter *printer;

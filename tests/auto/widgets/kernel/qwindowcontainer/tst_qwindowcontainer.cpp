@@ -192,6 +192,11 @@ void tst_QWindowContainer::testActivation()
     QVERIFY(QTest::qWaitForWindowActive(root.windowHandle()));
     QVERIFY(QGuiApplication::focusWindow() == root.windowHandle());
 
+    // Verify that all states in the root widget indicate it is active
+    QVERIFY(root.windowHandle()->isActive());
+    QVERIFY(root.isActiveWindow());
+    QCOMPARE(root.palette().currentColorGroup(), QPalette::Active);
+
     // Under KDE (ubuntu 12.10), we experience that doing two activateWindow in a row
     // does not work. The second gets ignored by the window manager, even though the
     // timestamp in the xcb connection is unique for both.
@@ -201,6 +206,11 @@ void tst_QWindowContainer::testActivation()
     window->requestActivate();
     QVERIFY(QTest::qWaitForWindowActive(window));
     QVERIFY(QGuiApplication::focusWindow() == window);
+
+    // Verify that all states in the root widget still indicate it is active
+    QVERIFY(root.windowHandle()->isActive());
+    QVERIFY(root.isActiveWindow());
+    QCOMPARE(root.palette().currentColorGroup(), QPalette::Active);
 }
 
 

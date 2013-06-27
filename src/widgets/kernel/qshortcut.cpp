@@ -51,6 +51,7 @@
 #include <private/qapplication_p.h>
 #include <private/qshortcutmap_p.h>
 #include <private/qaction_p.h>
+#include <private/qwidgetwindow_qpa_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -86,6 +87,20 @@ bool qWidgetShortcutContextMatcher(QObject *object, Qt::ShortcutContext context)
     if (QApplication::activePopupWidget())
         active_window = QApplication::activePopupWidget();
 
+    if (!active_window) {
+        QWindow *qwindow = QGuiApplication::focusWindow();
+        if (qwindow && qwindow->isActive()) {
+            while (qwindow) {
+                QWidgetWindow *widgetWindow = qobject_cast<QWidgetWindow *>(qwindow);
+                if (widgetWindow) {
+                    active_window = widgetWindow->widget();
+                    break;
+                }
+                qwindow = qwindow->parent();
+            }
+        }
+    }
+
     if (!active_window)
         return false;
 
@@ -104,6 +119,18 @@ bool qWidgetShortcutContextMatcher(QObject *object, Qt::ShortcutContext context)
         QShortcut *s = qobject_cast<QShortcut *>(object);
         if (s)
             w = s->parentWidget();
+    }
+
+    if (!w) {
+        QWindow *qwindow = qobject_cast<QWindow *>(object);
+        while (qwindow) {
+            QWidgetWindow *widget_window = qobject_cast<QWidgetWindow *>(qwindow);
+            if (widget_window) {
+                w = widget_window->widget();
+                break;
+            }
+            qwindow = qwindow->parent();
+        }
     }
 
     if (!w)

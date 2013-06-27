@@ -66,7 +66,7 @@ private slots:
     void constructCopy();
 };
 
-#define FOR_EACH_GUI_METATYPE(F) \
+#define FOR_EACH_GUI_METATYPE_BASE(F) \
     F(QFont, QFont) \
     F(QPixmap, QPixmap) \
     F(QBrush, QBrush) \
@@ -76,7 +76,6 @@ private slots:
     F(QPolygon, QPolygon) \
     F(QRegion, QRegion) \
     F(QBitmap, QBitmap) \
-    F(QCursor, QCursor) \
     F(QKeySequence, QKeySequence) \
     F(QPen, QPen) \
     F(QTextLength, QTextLength) \
@@ -88,6 +87,16 @@ private slots:
     F(QVector3D, QVector3D) \
     F(QVector4D, QVector4D) \
     F(QQuaternion, QQuaternion)
+
+#ifndef QTEST_NO_CURSOR
+#   define FOR_EACH_GUI_METATYPE(F) \
+        FOR_EACH_GUI_METATYPE_BASE(F) \
+        F(QCursor, QCursor)
+#else // !QTEST_NO_CURSOR
+#   define FOR_EACH_GUI_METATYPE(F) \
+        FOR_EACH_GUI_METATYPE_BASE(F)
+#endif // !QTEST_NO_CURSOR
+
 
 namespace {
     template <typename T>

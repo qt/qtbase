@@ -194,6 +194,8 @@ public:
                                HIThemeButtonDrawInfo *bdi) const;
     QPixmap generateBackgroundPattern() const;
 
+    void setAutoDefaultButton(QObject *button) const;
+
 public:
     mutable QPointer<QObject> pressedButton;
     mutable QPointer<QObject> defaultButton;

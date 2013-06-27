@@ -44,8 +44,8 @@ else
 fi
 
 if strings - $binary 2>/dev/null | \
-    awk -F: '/==Qt=magic=Qt== Architecture/ { print "'$VARPREFIX'_ARCH=\"" $2 "\"" }
-             /==Qt=magic=Qt== Sub-architecture/ { print "'$VARPREFIX'_CPUFEATURES=\"" $2 "\"" }' > "$RESULTFILE"
+    awk -F: '/\=\=Qt\=magic\=Qt\=\= Architecture/ { print "'$VARPREFIX'_ARCH=\"" $2 "\"" }
+             /\=\=Qt\=magic\=Qt\=\= Sub-architecture/ { print "'$VARPREFIX'_CPUFEATURES=\"" $2 "\"" }' > "$RESULTFILE"
 then
     [ "$VERBOSE" = "yes" ] && echo "    Found architecture in binary" && \
         cat "$RESULTFILE"

@@ -574,14 +574,18 @@ void QPageSetupWidget::setRightMargin(double newValue)
 QPageSetupDialog::QPageSetupDialog(QPrinter *printer, QWidget *parent)
     : QDialog(*(new QUnixPageSetupDialogPrivate(printer)), parent)
 {
+    Q_D(QPageSetupDialog);
     setWindowTitle(QCoreApplication::translate("QPrintPreviewDialog", "Page Setup"));
+    static_cast<QUnixPageSetupDialogPrivate *>(d)->init();
 }
 
 
 QPageSetupDialog::QPageSetupDialog(QWidget *parent)
     : QDialog(*(new QUnixPageSetupDialogPrivate(0)), parent)
 {
+    Q_D(QPageSetupDialog);
     setWindowTitle(QCoreApplication::translate("QPrintPreviewDialog", "Page Setup"));
+    static_cast<QUnixPageSetupDialogPrivate *>(d)->init();
 }
 
 int QPageSetupDialog::exec()

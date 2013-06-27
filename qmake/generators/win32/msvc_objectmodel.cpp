@@ -97,6 +97,7 @@ const char _Description[]                       = "Description";
 const char _Detect64BitPortabilityProblems[]    = "Detect64BitPortabilityProblems";
 const char _DisableLanguageExtensions[]         = "DisableLanguageExtensions";
 const char _DisableSpecificWarnings[]           = "DisableSpecificWarnings";
+const char _EmbedManifest[]                     = "EmbedManifest";
 const char _EnableCOMDATFolding[]               = "EnableCOMDATFolding";
 const char _EnableErrorChecks[]                 = "EnableErrorChecks";
 const char _EnableEnhancedInstructionSet[]      = "EnableEnhancedInstructionSet";
@@ -224,6 +225,7 @@ const char _ValidateParameters[]                = "ValidateParameters";
 const char _VCCLCompilerTool[]                  = "VCCLCompilerTool";
 const char _VCLibrarianTool[]                   = "VCLibrarianTool";
 const char _VCLinkerTool[]                      = "VCLinkerTool";
+const char _VCManifestTool[]                    = "VCManifestTool";
 const char _VCCustomBuildTool[]                 = "VCCustomBuildTool";
 const char _VCResourceCompilerTool[]            = "VCResourceCompilerTool";
 const char _VCMIDLTool[]                        = "VCMIDLTool";
@@ -1718,6 +1720,23 @@ bool VCLinkerTool::parseOption(const char* option)
     return found;
 }
 
+// VCManifestTool ---------------------------------------------------
+VCManifestTool::VCManifestTool()
+    : EmbedManifest(unset)
+{
+}
+
+VCManifestTool::~VCManifestTool()
+{
+}
+
+bool VCManifestTool::parseOption(const char *option)
+{
+    Q_UNUSED(option);
+    // ### implement if we introduce QMAKE_MT_FLAGS
+    return false;
+}
+
 // VCMIDLTool -------------------------------------------------------
 VCMIDLTool::VCMIDLTool()
     :        DefaultCharType(midlCharUnsigned),
@@ -2335,7 +2354,6 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
         CustomBuildTool.Outputs += out;
 
         deps += CustomBuildTool.AdditionalDependencies;
-        deps += cmd.left(cmd.indexOf(' '));
         // Make sure that all deps are only once
         QHash<QString, bool> uniqDeps;
         for (int c = 0; c < deps.count(); ++c) {
@@ -2634,6 +2652,14 @@ void VCProjectWriter::write(XmlOutput &xml, const VCLinkerTool &tool)
         << closetag(_Tool);
 }
 
+void VCProjectWriter::write(XmlOutput &xml, const VCManifestTool &tool)
+{
+    xml << tag(_Tool)
+        << attrS(_Name, _VCManifestTool)
+        << attrT(_EmbedManifest, tool.EmbedManifest)
+        << closetag(_Tool);
+}
+
 void VCProjectWriter::write(XmlOutput &xml, const VCMIDLTool &tool)
 {
     xml << tag(_Tool)
@@ -2765,6 +2791,7 @@ void VCProjectWriter::write(XmlOutput &xml, const VCConfiguration &tool)
         write(xml, tool.librarian);
     else
         write(xml, tool.linker);
+    write(xml, tool.manifestTool);
     write(xml, tool.idl);
     write(xml, tool.postBuild);
     write(xml, tool.preBuild);

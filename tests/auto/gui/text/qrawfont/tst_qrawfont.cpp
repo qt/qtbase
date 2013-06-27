@@ -215,8 +215,8 @@ void tst_QRawFont::correctFontData_data()
                 << QFont::StyleNormal
                 << QFont::Normal
                 << QFont::HintingPreference(*hintingPreference)
-                << 1000.0
-                << 10.0;
+                << qreal(1000.0)
+                << qreal(10.0);
 
         fileName = testFontBoldItalic;
         title = fileName
@@ -229,8 +229,8 @@ void tst_QRawFont::correctFontData_data()
                 << QFont::StyleItalic
                 << QFont::Bold
                 << QFont::HintingPreference(*hintingPreference)
-                << 1000.0
-                << 10.0;
+                << qreal(1000.0)
+                << qreal(10.0);
 
         ++hintingPreference;
     }

@@ -375,6 +375,11 @@ QString Configure::firstLicensePath()
 
 void Configure::parseCmdLine()
 {
+    if (configCmdLine.size() && configCmdLine.at(0) == "-top-level") {
+        dictionary[ "TOPLEVEL" ] = "yes";
+        configCmdLine.removeAt(0);
+    }
+
     int argCount = configCmdLine.size();
     int i = 0;
     const QStringList imageFormats = QStringList() << "gif" << "png" << "jpeg";
@@ -3956,15 +3961,17 @@ void Configure::generateMakefiles()
 
         QString pwd = QDir::currentPath();
         {
-            QString dirName;
+            QString sourcePathMangled = sourcePath;
+            QString buildPathMangled = buildPath;
+            if (dictionary.contains("TOPLEVEL")) {
+                sourcePathMangled = QFileInfo(sourcePath).path();
+                buildPathMangled = QFileInfo(buildPath).path();
+            }
             bool generate = true;
             bool doDsp = (dictionary["VCPROJFILES"] == "yes"
                           && dictionary["PROCESS"] == "full");
             while (generate) {
-                QString pwd = QDir::currentPath();
-                QString dirPath = buildPath + dirName;
                 QStringList args;
-
                 args << buildPath + "/bin/qmake";
 
                 if (doDsp) {
@@ -3979,11 +3986,9 @@ void Configure::generateMakefiles()
                 }
                 if (dictionary[ "PROCESS" ] == "full")
                     args << "-r";
-                args << (sourcePath + "/qtbase.pro");
-                args << "-o";
-                args << buildPath;
+                args << sourcePathMangled;
 
-                QDir::setCurrent(dirPath);
+                QDir::setCurrent(buildPathMangled);
                 if (int exitCode = Environment::execute(args, QStringList(), QStringList())) {
                     cout << "Qmake failed, return code " << exitCode  << endl << endl;
                     dictionary[ "DONE" ] = "error";

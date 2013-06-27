@@ -24,10 +24,13 @@ sysrootified =
 for(val, QMAKE_INCDIR_OPENGL): sysrootified += $${QMAKE_MAC_SDK_PATH}$$val
 QMAKE_INCDIR_OPENGL = $$sysrootified
 
+QMAKESPEC_NAME = $$basename(QMAKESPEC)
+
 # Resolve SDK version of various tools
 for(tool, $$list(QMAKE_CC QMAKE_CXX QMAKE_FIX_RPATH QMAKE_AR QMAKE_RANLIB QMAKE_LINK QMAKE_LINK_SHLIB)) {
-    !isEmpty(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.$${tool}) {
-        $$tool = $$eval(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.$${tool})
+    tool_variable = QMAKE_MAC_SDK.$${QMAKESPEC_NAME}.$${QMAKE_MAC_SDK}.$${tool}
+    !isEmpty($$tool_variable) {
+        $$tool = $$eval($$tool_variable)
         next()
     }
 
@@ -38,7 +41,7 @@ for(tool, $$list(QMAKE_CC QMAKE_CXX QMAKE_FIX_RPATH QMAKE_AR QMAKE_RANLIB QMAKE_
     isEmpty(sysrooted): next()
 
     $$tool = $$sysrooted $$member(value, 1, -1)
-    !isEmpty(_QMAKE_CACHE_): cache(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.$${tool}, set, $$tool)
+    !isEmpty(_QMAKE_CACHE_): cache($$tool_variable, set, $$tool)
 }
 
 isEmpty(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.platform_name) {

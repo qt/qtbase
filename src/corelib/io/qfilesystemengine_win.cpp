@@ -1034,6 +1034,10 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
             }
             if (oldslash != -1)
                 oldslash = dirName.indexOf(QDir::separator(), oldslash);
+        } else if (dirName.size() > 2
+                && dirName.at(1) == QLatin1Char(':')) {
+            // Don't try to call mkdir with just a drive letter
+            oldslash = 2;
         }
         for (int slash=0; slash != -1; oldslash = slash) {
             slash = dirName.indexOf(QDir::separator(), oldslash+1);
@@ -1044,14 +1048,13 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
             }
             if (slash) {
                 QString chunk = dirName.left(slash);
-                bool existed = false;
-                if (!isDirPath(chunk, &existed)) {
-                    if (!existed) {
-                        if (!mkDir(chunk))
-                            return false;
-                    } else {
-                        return false;
+                if (!mkDir(chunk)) {
+                    if (GetLastError() == ERROR_ALREADY_EXISTS) {
+                        bool existed = false;
+                        if (isDirPath(chunk, &existed) && existed)
+                            continue;
                     }
+                    return false;
                 }
             }
         }
