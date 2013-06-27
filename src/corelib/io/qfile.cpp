@@ -571,6 +571,8 @@ QFile::rename(const QString &newName)
             d->setError(QFile::RenameError, tr("Destination file exists"));
             return false;
         }
+#ifndef QT_NO_TEMPORARYFILE
+        // This #ifndef disables the workaround it encloses. Therefore, this configuration is not recommended.
 #ifdef Q_OS_LINUX
         // rename() on Linux simply does nothing when renaming "foo" to "Foo" on a case-insensitive
         // FS, such as FAT32. Move the file away and rename in 2 steps to work around.
@@ -598,7 +600,8 @@ QFile::rename(const QString &newName)
                         arg(QDir::toNativeSeparators(tempFile.fileName()), tempFile.errorString()));
         }
         return false;
-#endif
+#endif // Q_OS_LINUX
+#endif // QT_NO_TEMPORARYFILE
     }
     unsetError();
     close();
