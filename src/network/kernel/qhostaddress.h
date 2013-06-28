@@ -64,6 +64,10 @@ public:
 
 typedef QIPv6Address Q_IPV6ADDR;
 
+class QHostAddress;
+// qHash is a friend, but we can't use default arguments for friends (§8.3.6.4)
+Q_NETWORK_EXPORT uint qHash(const QHostAddress &key, uint seed = 0);
+
 class Q_NETWORK_EXPORT QHostAddress
 {
 public:
@@ -121,7 +125,7 @@ public:
 
     static QPair<QHostAddress, int> parseSubnet(const QString &subnet);
 
-    friend Q_NETWORK_EXPORT uint qHash(const QHostAddress &key, uint seed = 0);
+    friend Q_NETWORK_EXPORT uint qHash(const QHostAddress &key, uint seed);
 protected:
     QScopedPointer<QHostAddressPrivate> d;
 };
