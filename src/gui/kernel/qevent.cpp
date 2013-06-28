@@ -4217,6 +4217,7 @@ void QTouchEvent::TouchPoint::setFlags(InfoFlags flags)
 QScrollPrepareEvent::QScrollPrepareEvent(const QPointF &startPos)
     : QEvent(QEvent::ScrollPrepare), m_target(0), m_startPos(startPos)
 {
+    Q_UNUSED(m_target);
 }
 
 /*!
