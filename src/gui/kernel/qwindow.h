@@ -291,7 +291,7 @@ public Q_SLOTS:
     void setMaximumWidth(int w);
     void setMaximumHeight(int h);
 
-    void alert(int msec);
+    Q_REVISION(1) void alert(int msec);
 
 Q_SIGNALS:
     void screenChanged(QScreen *screen);
