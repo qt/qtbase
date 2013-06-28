@@ -139,6 +139,24 @@ NSImage *qt_mac_create_nsimage(const QPixmap &pm)
     return nsImage;
 }
 
+NSImage *qt_mac_create_nsimage(const QIcon &icon)
+{
+    if (icon.isNull())
+        return nil;
+
+    NSImage *nsImage = [[NSImage alloc] init];
+    foreach (QSize size, icon.availableSizes()) {
+        QPixmap pm = icon.pixmap(size);
+        QImage image = pm.toImage();
+        CGImageRef cgImage = qt_mac_image_to_cgimage(image);
+        NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc] initWithCGImage:cgImage];
+        [nsImage addRepresentation:imageRep];
+        [imageRep release];
+        CGImageRelease(cgImage);
+    }
+    return nsImage;
+}
+
 HIMutableShapeRef qt_mac_QRegionToHIMutableShape(const QRegion &region)
 {
     HIMutableShapeRef shape = HIShapeCreateMutable();
