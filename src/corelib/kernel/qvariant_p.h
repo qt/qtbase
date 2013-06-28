@@ -224,7 +224,7 @@ class QVariantIsNull
     public:
         static const bool Value = (sizeof(test<T>(0)) == sizeof(Yes));
     };
-#elif defined(Q_CC_MSVC) && _MSC_VER >= 1400 // MSVC 2005, 2008 version: no decltype, but 'sealed' classes (>=2010 has decltype)
+#elif defined(Q_CC_MSVC) && _MSC_VER >= 1400 && !defined(Q_CC_INTEL) // MSVC 2005, 2008 version: no decltype, but 'sealed' classes (>=2010 has decltype)
     template<typename T>
     class HasIsNullMethod {
         struct Yes { char unused[1]; };

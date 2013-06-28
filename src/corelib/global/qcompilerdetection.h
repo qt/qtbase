@@ -467,7 +467,7 @@
 #  if __INTEL_COMPILER < 1200
 #    define Q_NO_TEMPLATE_FRIENDS
 #  endif
-#  if defined(_CHAR16T) || __cplusplus >= 201103L
+#  if __cplusplus >= 201103L
 #    define Q_COMPILER_VARIADIC_MACROS
 #    if __INTEL_COMPILER >= 1200
 #      define Q_COMPILER_AUTO_TYPE
