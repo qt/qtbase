@@ -45,6 +45,8 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <xcb/xcb.h>
 
+#include <QtCore/QRect>
+
 QT_BEGIN_NAMESPACE
 
 class QWidget;
@@ -66,7 +68,8 @@ public:
         AppTime,
         AppUserTime,
         ScreenHintStyle,
-        StartupId
+        StartupId,
+        TrayWindow
     };
 
     QXcbNativeInterface();
@@ -95,6 +98,12 @@ public:
     static void *glxContextForContext(QOpenGLContext *context);
 
     Q_INVOKABLE void beep();
+    Q_INVOKABLE bool systemTrayAvailable(const QScreen *screen) const;
+    Q_INVOKABLE bool requestSystemTrayWindowDock(const QWindow *window);
+    Q_INVOKABLE QRect systemTrayWindowGlobalGeometry(const QWindow *window);
+
+signals:
+    void systemTrayWindowChanged(QScreen *screen);
 
 private:
     const QByteArray m_genericEventFilterType;

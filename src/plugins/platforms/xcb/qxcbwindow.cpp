@@ -1530,6 +1530,9 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
 #endif
     } else if (event->type == atom(QXcbAtom::_XEMBED)) {
         handleXEmbedMessage(event);
+    } else if (event->type == atom(QXcbAtom::MANAGER) || event->type == atom(QXcbAtom::_NET_ACTIVE_WINDOW)) {
+        // Ignore _NET_ACTIVE_WINDOW which is received when the user clicks on a system tray icon and
+        // MANAGER which indicates the creation of a system tray.
     } else {
         qWarning() << "QXcbWindow: Unhandled client message:" << connection()->atomName(event->type);
     }

@@ -87,6 +87,7 @@ class QXcbKeyboard;
 class QXcbClipboard;
 class QXcbWMSupport;
 class QXcbNativeInterface;
+class QXcbSystemTrayTracker;
 
 namespace QXcbAtom {
     enum Atom {
@@ -98,6 +99,8 @@ namespace QXcbAtom {
         _NET_WM_CONTEXT_HELP,
         _NET_WM_SYNC_REQUEST,
         _NET_WM_SYNC_REQUEST_COUNTER,
+        MANAGER, // System tray notification
+        _NET_SYSTEM_TRAY_OPCODE, // System tray operation
 
         // ICCCM window state
         WM_STATE,
@@ -321,6 +324,7 @@ public:
     virtual void handleConfigureNotifyEvent(const xcb_configure_notify_event_t *) {}
     virtual void handleMapNotifyEvent(const xcb_map_notify_event_t *) {}
     virtual void handleUnmapNotifyEvent(const xcb_unmap_notify_event_t *) {}
+    virtual void handleDestroyNotifyEvent(const xcb_destroy_notify_event_t *) {}
     virtual void handleButtonPressEvent(const xcb_button_press_event_t *) {}
     virtual void handleButtonReleaseEvent(const xcb_button_release_event_t *) {}
     virtual void handleMotionNotifyEvent(const xcb_motion_notify_event_t *) {}
@@ -433,6 +437,9 @@ public:
     void ungrabServer();
 
     QXcbNativeInterface *nativeInterface() const { return m_nativeInterface; }
+
+    QXcbSystemTrayTracker *systemTrayTracker();
+
 private slots:
     void processXcbEvents();
 
@@ -566,6 +573,7 @@ private:
     QXcbWindow *m_focusWindow;
 
     QByteArray m_startupId;
+    QXcbSystemTrayTracker *m_systemTrayTracker;
 };
 
 #define DISPLAY_FROM_XCB(object) ((Display *)(object->connection()->xlib_display()))

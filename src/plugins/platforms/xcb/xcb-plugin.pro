@@ -21,7 +21,8 @@ SOURCES = \
         qxcbnativeinterface.cpp \
         qxcbcursor.cpp \
         qxcbimage.cpp \
-        qxcbxsettings.cpp
+        qxcbxsettings.cpp \
+        qxcbsystemtraytracker.cpp
 
 HEADERS = \
         qxcbclipboard.h \
@@ -38,7 +39,8 @@ HEADERS = \
         qxcbnativeinterface.h \
         qxcbcursor.h \
         qxcbimage.h \
-        qxcbxsettings.h
+        qxcbxsettings.h \
+        qxcbsystemtraytracker.h
 
 LIBS += -ldl
 

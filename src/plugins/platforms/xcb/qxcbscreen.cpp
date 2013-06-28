@@ -112,6 +112,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
         XCB_EVENT_MASK_ENTER_WINDOW
         | XCB_EVENT_MASK_LEAVE_WINDOW
         | XCB_EVENT_MASK_PROPERTY_CHANGE
+        | XCB_EVENT_MASK_STRUCTURE_NOTIFY // for the "MANAGER" atom (system tray notification).
     };
 
     xcb_change_window_attributes(xcb_connection(), screen()->root, mask, values);

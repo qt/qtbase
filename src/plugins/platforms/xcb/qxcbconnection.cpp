@@ -51,6 +51,7 @@
 #include "qxcbwmsupport.h"
 #include "qxcbnativeinterface.h"
 #include "qxcbintegration.h"
+#include "qxcbsystemtraytracker.h"
 
 #include <QtAlgorithms>
 #include <QSocketNotifier>
@@ -262,6 +263,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     , has_xkb(false)
     , m_buttons(0)
     , m_focusWindow(0)
+    , m_systemTrayTracker(0)
 {
 #ifdef XCB_USE_XLIB
     Display *dpy = XOpenDisplay(m_displayName.constData());
@@ -813,6 +815,8 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_map_notify_event_t, event, handleMapNotifyEvent);
         case XCB_UNMAP_NOTIFY:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_unmap_notify_event_t, event, handleUnmapNotifyEvent);
+        case XCB_DESTROY_NOTIFY:
+            HANDLE_PLATFORM_WINDOW_EVENT(xcb_destroy_notify_event_t, event, handleDestroyNotifyEvent);
         case XCB_CLIENT_MESSAGE:
             handleClientMessageEvent((xcb_client_message_event_t *)event);
             break;
@@ -1193,6 +1197,8 @@ void QXcbConnection::handleClientMessageEvent(const xcb_client_message_event_t *
         drag()->handleFinished(event);
     }
 #endif
+    if (m_systemTrayTracker && event->type == atom(QXcbAtom::MANAGER))
+        m_systemTrayTracker->notifyManagerClientMessageEvent(event);
 
     QXcbWindow *window = platformWindowFromId(event->window);
     if (!window)
@@ -1228,6 +1234,8 @@ static const char * xcb_atomnames = {
     "_NET_WM_CONTEXT_HELP\0"
     "_NET_WM_SYNC_REQUEST\0"
     "_NET_WM_SYNC_REQUEST_COUNTER\0"
+    "MANAGER\0"
+    "_NET_SYSTEM_TRAY_OPCODE\0"
 
     // ICCCM window state
     "WM_STATE\0"
@@ -1727,6 +1735,17 @@ bool QXcbConnection::xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *event, int o
     return false;
 }
 #endif // defined(XCB_USE_XINPUT2) || defined(XCB_USE_XINPUT2_MAEMO)
+
+QXcbSystemTrayTracker *QXcbConnection::systemTrayTracker()
+{
+    if (!m_systemTrayTracker) {
+        if ( (m_systemTrayTracker = QXcbSystemTrayTracker::create(this)) ) {
+            connect(m_systemTrayTracker, SIGNAL(systemTrayWindowChanged(QScreen*)),
+                    QGuiApplication::platformNativeInterface(), SIGNAL(systemTrayWindowChanged(QScreen*)));
+        }
+    }
+    return m_systemTrayTracker;
+}
 
 QXcbConnectionGrabber::QXcbConnectionGrabber(QXcbConnection *connection)
     :m_connection(connection)
