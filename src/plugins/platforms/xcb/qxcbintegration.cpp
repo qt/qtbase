@@ -365,6 +365,8 @@ QVariant QXcbIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
     case QPlatformIntegration::SynthesizeMouseFromTouchEvents:
         // We do not want Qt to synthesize mouse events if X11 already does it.
         return m_connections.at(0)->hasTouchWithoutMouseEmulation();
+    default:
+        break;
     }
     return QPlatformIntegration::styleHint(hint);
 }
