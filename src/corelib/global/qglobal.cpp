@@ -115,7 +115,35 @@ Q_STATIC_ASSERT_X(UCHAR_MAX == 255, "Qt assumes that char is 8 bits");
 */
 
 /*!
+    \fn QFlag::QFlag(uint value)
+    \since Qt 5.3
+
+    Constructs a QFlag object that stores the given \a value.
+*/
+
+/*!
+    \fn QFlag::QFlag(short value)
+    \since 5.3
+
+    Constructs a QFlag object that stores the given \a value.
+*/
+
+/*!
+    \fn QFlag::QFlag(ushort value)
+    \since Qt 5.3
+
+    Constructs a QFlag object that stores the given \a value.
+*/
+
+/*!
     \fn QFlag::operator int() const
+
+    Returns the value stored by the QFlag object.
+*/
+
+/*!
+    \fn QFlag::operator uint() const
+    \since Qt 5.3
 
     Returns the value stored by the QFlag object.
 */

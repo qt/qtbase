@@ -53,12 +53,18 @@ class QFlag
 {
     int i;
 public:
-    Q_DECL_CONSTEXPR inline QFlag(int i);
+#if !defined(__LP64__) && !defined(Q_QDOC)
+    Q_DECL_CONSTEXPR inline QFlag(long ai) : i(int(ai)) {}
+    Q_DECL_CONSTEXPR inline QFlag(ulong ai) : i(int(long(ai))) {}
+#endif
+    Q_DECL_CONSTEXPR inline QFlag(int ai) : i(ai) {}
+    Q_DECL_CONSTEXPR inline QFlag(uint ai) : i(int(ai)) {}
+    Q_DECL_CONSTEXPR inline QFlag(short ai) : i(int(ai)) {}
+    Q_DECL_CONSTEXPR inline QFlag(ushort ai) : i(int(uint(ai))) {}
     Q_DECL_CONSTEXPR inline operator int() const { return i; }
+    Q_DECL_CONSTEXPR inline operator uint() const { return uint(i); }
 };
 Q_DECLARE_TYPEINFO(QFlag, Q_PRIMITIVE_TYPE);
-
-Q_DECL_CONSTEXPR inline QFlag::QFlag(int ai) : i(ai) {}
 
 class QIncompatibleFlag
 {
