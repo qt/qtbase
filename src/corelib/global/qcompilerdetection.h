@@ -496,6 +496,15 @@
 #      define Q_COMPILER_INITIALIZER_LISTS
 #      define Q_COMPILER_NOEXCEPT
 #    endif
+#    if __INTEL_COMPILER >= 1400
+#      define Q_COMPILER_CONSTEXPR
+#      define Q_COMPILER_DELEGATING_CONSTRUCTORS
+#      define Q_COMPILER_EXPLICIT_OVERRIDES
+#      define Q_COMPILER_NONSTATIC_MEMBER_INIT
+#      define Q_COMPILER_RAW_STRINGS
+#      define Q_COMPILER_REF_QUALIFIERS
+#      define Q_COMPILER_UNRESTRICTED_UNIONS
+#    endif
 #  endif
 #endif
 
