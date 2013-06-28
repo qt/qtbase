@@ -661,20 +661,6 @@ Qt::AnchorPoint QGraphicsAnchorLayoutPrivate::oppositeEdge(Qt::AnchorPoint edge)
 
 
 /*!
- * \internal
- *
- * helper function in order to avoid overflowing anchor sizes
- * the returned size will never be larger than FLT_MAX
- *
- */
-inline static qreal checkAdd(qreal a, qreal b)
-{
-    if (FLT_MAX - b  < a)
-        return FLT_MAX;
-    return a + b;
-}
-
-/*!
     \internal
 
     Adds \a newAnchor to the graph.

@@ -370,18 +370,6 @@ QStringList QAccessibleComboBox::keyBindingsForAction(const QString &/*actionNam
 
 #endif // QT_NO_COMBOBOX
 
-static inline void removeInvisibleWidgetsFromList(QWidgetList *list)
-{
-    if (!list || list->isEmpty())
-        return;
-
-    for (int i = 0; i < list->count(); ++i) {
-        QWidget *widget = list->at(i);
-        if (!widget->isVisible())
-            list->removeAt(i);
-    }
-}
-
 #ifndef QT_NO_SCROLLAREA
 // ======================= QAccessibleAbstractScrollArea =======================
 QAccessibleAbstractScrollArea::QAccessibleAbstractScrollArea(QWidget *widget)
