@@ -46,11 +46,11 @@
 #include <QtGui>
 #include <qpa/qplatformaccessibility.h>
 
-class QCococaAccessibility : public QPlatformAccessibility
+class QCocoaAccessibility : public QPlatformAccessibility
 {
 public:
-    QCococaAccessibility();
-    ~QCococaAccessibility();
+    QCocoaAccessibility();
+    ~QCocoaAccessibility();
     void notifyAccessibilityUpdate(QAccessibleEvent *event);
     void setRootObject(QObject *o);
     void initialize();
@@ -79,6 +79,7 @@ namespace QCocoaAccessible {
 
 NSString *macRole(QAccessibleInterface *interface);
 bool shouldBeIgnored(QAccessibleInterface *interface);
+NSArray *unignoredChildren(id parentObject, QAccessibleInterface *interface);
 NSString *getTranslatedAction(const QString &qtAction);
 NSMutableArray *createTranslatedActionsList(const QStringList &qtActions);
 QString translateAction(NSString *nsAction);

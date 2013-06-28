@@ -30,9 +30,12 @@ SOURCES += \
 INCLUDEPATH += $$QT_BUILD_TREE/src/corelib/global
 
 # configure creates these, not syncqt, so we need to manually inject them
-targ_headers.files += \
+qconfig_h_files = \
     $$OUT_PWD/global/qconfig.h \
     $$QT_BUILD_TREE/include/QtCore/QtConfig
+targ_headers.files += $$qconfig_h_files
+contains(QMAKE_BUNDLE_DATA, FRAMEWORK_HEADERS): \
+    FRAMEWORK_HEADERS.files += $$qconfig_h_files
 
 # Only used on platforms with CONFIG += precompile_header
 PRECOMPILED_HEADER = global/qt_pch.h

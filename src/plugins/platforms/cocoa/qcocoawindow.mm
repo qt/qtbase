@@ -238,6 +238,8 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     setGeometry(tlw->geometry());
     recreateWindow(parent());
     tlw->setGeometry(geometry());
+    if (tlw->isTopLevel())
+        setWindowIcon(tlw->icon());
     m_inConstructor = false;
 }
 

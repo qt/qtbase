@@ -74,21 +74,7 @@
     } else if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
         if (!m_window->accessibleRoot())
             return [super accessibilityAttributeValue:attribute];
-
-        // Create QCocoaAccessibleElements for each child if the
-        // root accessible interface.
-        int numKids = m_window->accessibleRoot()->childCount();
-        NSMutableArray *kids = [NSMutableArray arrayWithCapacity:numKids];
-        for (int i = 0; i < numKids; ++i) {
-            QAccessibleInterface *child = m_window->accessibleRoot()->child(i);
-            Q_ASSERT(child);
-            QAccessible::Id childAxid = QAccessible::uniqueId(child);
-            QCocoaAccessibleElement *element = [QCocoaAccessibleElement createElementWithId:childAxid parent:self];
-            [kids addObject: element];
-            [element release];
-        }
-
-        return NSAccessibilityUnignoredChildren(kids);
+        return QCocoaAccessible::unignoredChildren(self, m_window->accessibleRoot());
     } else {
         return [super accessibilityAttributeValue:attribute];
     }

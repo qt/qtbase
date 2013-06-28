@@ -314,6 +314,9 @@ void tst_qmake::export_across_file_boundaries()
 
 void tst_qmake::include_dir()
 {
+#ifdef QT_NO_WIDGETS
+    QSKIP("This test depends on QtWidgets");
+#else
     QString workDir = base_path + "/testdata/include_dir";
     QVERIFY( test_compiler.qmake( workDir, "foo" ));
     QVERIFY( test_compiler.make( workDir ));
@@ -325,6 +328,7 @@ void tst_qmake::include_dir()
     QVERIFY( test_compiler.make( buildDir ));
     QVERIFY( test_compiler.exists( buildDir, "foo", Exe, "1.0.0" ));
     QVERIFY( test_compiler.makeDistClean( buildDir ));
+#endif
 }
 
 void tst_qmake::include_pwd()

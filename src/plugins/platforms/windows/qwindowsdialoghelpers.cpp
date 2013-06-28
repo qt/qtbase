@@ -1720,7 +1720,9 @@ int QWindowsXpNativeFileDialog::existingDirCallback(HWND hwnd, UINT uMsg, LPARAM
 {
     switch (uMsg) {
     case BFFM_INITIALIZED: {
-        const QString initialFile = m_data.selectedFile();
+        if (!m_title.isEmpty())
+            SetWindowText(hwnd, (wchar_t *)m_title.utf16());
+        const QString initialFile = QDir::toNativeSeparators(m_data.directory());
         if (!initialFile.isEmpty())
             SendMessage(hwnd, BFFM_SETSELECTION, TRUE, LPARAM(initialFile.utf16()));
     }
@@ -1743,8 +1745,7 @@ QStringList QWindowsXpNativeFileDialog::execExistingDir(HWND owner)
     initPath[0] = 0;
     bi.hwndOwner = owner;
     bi.pidlRoot = NULL;
-    //### This does not seem to be respected? - the dialog always displays "Browse for folder"
-    bi.lpszTitle = (wchar_t*)m_title.utf16();
+    bi.lpszTitle = 0;
     bi.pszDisplayName = initPath;
     bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_STATUSTEXT | BIF_NEWDIALOGSTYLE;
     bi.lpfn = xpFileDialogGetExistingDirCallbackProc;

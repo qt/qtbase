@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 const char _CLCompile[]                         = "ClCompile";
 const char _ItemGroup[]                         = "ItemGroup";
 const char _Link[]                              = "Link";
+const char _ManifestTool[]                      = "ManifestTool";
 const char _Midl[]                              = "Midl";
 const char _ResourceCompile[]                   = "ResourceCompile";
 
@@ -104,6 +105,7 @@ const char _DisableSpecificWarnings[]           = "DisableSpecificWarnings";
 const char _DisplayLibrary[]                    = "DisplayLibrary";
 const char _DLLDataFileName[]                   = "DLLDataFileName";
 const char _EmbedManagedResourceFile[]          = "EmbedManagedResourceFile";
+const char _EmbedManifest[]                     = "EmbedManifest";
 const char _EnableCOMDATFolding[]               = "EnableCOMDATFolding";
 const char _EnableUAC[]                         = "EnableUAC";
 const char _EnableErrorChecks[]                 = "EnableErrorChecks";
@@ -1657,6 +1659,7 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCConfiguration &tool)
             << attrTagS(_UseOfATL, toString(tool.UseOfATL))
             << attrTagS(_UseOfMfc, toString(tool.UseOfMfc))
             << attrTagT(_WholeProgramOptimization, tool.WholeProgramOptimization)
+            << attrTagT(_EmbedManifest, tool.manifestTool.EmbedManifest)
         << closetag();
 }
 

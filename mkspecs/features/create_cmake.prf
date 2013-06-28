@@ -55,6 +55,17 @@ contains(CMAKE_BIN_DIR, "^\\.\\./.*") {
     CMAKE_BIN_DIR_IS_ABSOLUTE = True
 }
 
+!isEmpty(DLLDESTDIR):!static:!staticlib {
+    CMAKE_DLL_DIR = $$cmakeRelativePath($$[QT_INSTALL_BINS], $$[QT_INSTALL_PREFIX])
+    contains(CMAKE_DLL_DIR, "^\\.\\./.*") {
+        CMAKE_DLL_DIR = $$[QT_INSTALL_BINS]/
+        CMAKE_DLL_DIR_IS_ABSOLUTE = True
+    }
+} else {
+    CMAKE_DLL_DIR = $$CMAKE_LIB_DIR
+    CMAKE_DLL_DIR_IS_ABSOLUTE = $$CMAKE_LIB_DIR_IS_ABSOLUTE
+}
+
 static|staticlib:CMAKE_STATIC_TYPE = true
 
 unix:contains(QT_CONFIG, reduce_relocations):CMAKE_ADD_FPIE_FLAGS = "true"

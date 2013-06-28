@@ -4140,11 +4140,12 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
                 if (match) {
                     tags += manifestMetaContent[idx].tags;
                     foreach (const QString &attr, manifestMetaContent[idx].attributes) {
-                        QStringList attrList = attr.split(QLatin1Char(':'), QString::SkipEmptyParts);
+                        QLatin1Char div(':');
+                        QStringList attrList = attr.split(div);
                         if (attrList.count() == 1)
                             attrList.append(QStringLiteral("true"));
-                        if (attrList.count() == 2)
-                            writer.writeAttribute(attrList[0], attrList[1]);
+                        QString attrName = attrList.takeFirst();
+                        writer.writeAttribute(attrName, attrList.join(div));
                     }
                 }
             }
