@@ -192,8 +192,6 @@ void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPo
 
 void QEglFSBackingStore::makeCurrent()
 {
-    // needed to prevent QOpenGLContext::makeCurrent() from failing
-    window()->setSurfaceType(QSurface::OpenGLSurface);
     (static_cast<QEglFSWindow *>(window()->handle()))->create();
     m_context->makeCurrent(window());
 }

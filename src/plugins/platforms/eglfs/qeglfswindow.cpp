@@ -59,6 +59,7 @@ QEglFSWindow::QEglFSWindow(QWindow *w)
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglWindow %p: %p 0x%x\n", this, w, uint(m_winid));
 #endif
+    w->setSurfaceType(QSurface::OpenGLSurface);
 }
 
 QEglFSWindow::~QEglFSWindow()
