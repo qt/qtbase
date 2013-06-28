@@ -59,15 +59,6 @@ public:
 
     void setCurrentColor(const QColor&);
     QColor currentColor() const;
-
-public:
-    bool showCocoaColorPanel(Qt::WindowModality windowModality, QWindow *parent);
-    bool hideCocoaColorPanel();
-
-    void createNSColorPanelDelegate();
-
-private:
-    void *mDelegate;
 };
 
 QT_END_NAMESPACE
