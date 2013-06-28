@@ -1349,7 +1349,7 @@ bool QODBCResult::exec()
                 dt->day = qdt.day();
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
-                                      qParamType[(QFlag)(bindValueType(i)) & QSql::InOut],
+                                      qParamType[bindValueType(i) & QSql::InOut],
                                       SQL_C_DATE,
                                       SQL_DATE,
                                       0,
@@ -1369,7 +1369,7 @@ bool QODBCResult::exec()
                 dt->second = qdt.second();
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
-                                      qParamType[(QFlag)(bindValueType(i)) & QSql::InOut],
+                                      qParamType[bindValueType(i) & QSql::InOut],
                                       SQL_C_TIME,
                                       SQL_TIME,
                                       0,
@@ -1404,7 +1404,7 @@ bool QODBCResult::exec()
 
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
-                                      qParamType[(QFlag)(bindValueType(i)) & QSql::InOut],
+                                      qParamType[bindValueType(i) & QSql::InOut],
                                       SQL_C_TIMESTAMP,
                                       SQL_TIMESTAMP,
                                       d->driverPrivate->datetime_precision,
@@ -1417,7 +1417,7 @@ bool QODBCResult::exec()
             case QVariant::Int:
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
-                                      qParamType[(QFlag)(bindValueType(i)) & QSql::InOut],
+                                      qParamType[bindValueType(i) & QSql::InOut],
                                       SQL_C_SLONG,
                                       SQL_INTEGER,
                                       0,
@@ -1429,7 +1429,7 @@ bool QODBCResult::exec()
             case QVariant::UInt:
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
-                                      qParamType[(QFlag)(bindValueType(i)) & QSql::InOut],
+                                      qParamType[bindValueType(i) & QSql::InOut],
                                       SQL_C_ULONG,
                                       SQL_NUMERIC,
                                       15,
@@ -1441,7 +1441,7 @@ bool QODBCResult::exec()
             case QVariant::Double:
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
-                                      qParamType[(QFlag)(bindValueType(i)) & QSql::InOut],
+                                      qParamType[bindValueType(i) & QSql::InOut],
                                       SQL_C_DOUBLE,
                                       SQL_DOUBLE,
                                       0,
@@ -1453,7 +1453,7 @@ bool QODBCResult::exec()
             case QVariant::LongLong:
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
-                                      qParamType[(QFlag)(bindValueType(i)) & QSql::InOut],
+                                      qParamType[bindValueType(i) & QSql::InOut],
                                       SQL_C_SBIGINT,
                                       SQL_BIGINT,
                                       0,
@@ -1465,7 +1465,7 @@ bool QODBCResult::exec()
             case QVariant::ULongLong:
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
-                                      qParamType[(QFlag)(bindValueType(i)) & QSql::InOut],
+                                      qParamType[bindValueType(i) & QSql::InOut],
                                       SQL_C_UBIGINT,
                                       SQL_BIGINT,
                                       0,
@@ -1480,7 +1480,7 @@ bool QODBCResult::exec()
                 }
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
-                                      qParamType[(QFlag)(bindValueType(i)) & QSql::InOut],
+                                      qParamType[bindValueType(i) & QSql::InOut],
                                       SQL_C_BINARY,
                                       SQL_LONGVARBINARY,
                                       val.toByteArray().size(),
@@ -1492,7 +1492,7 @@ bool QODBCResult::exec()
             case QVariant::Bool:
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
-                                      qParamType[(QFlag)(bindValueType(i)) & QSql::InOut],
+                                      qParamType[bindValueType(i) & QSql::InOut],
                                       SQL_C_BIT,
                                       SQL_BIT,
                                       0,
@@ -1513,7 +1513,7 @@ bool QODBCResult::exec()
                         QByteArray ba((const char *)a.constData(), a.size() * sizeof(SQLTCHAR));
                         r = SQLBindParameter(d->hStmt,
                                             i + 1,
-                                            qParamType[(QFlag)(bindValueType(i)) & QSql::InOut],
+                                            qParamType[bindValueType(i) & QSql::InOut],
                                             SQL_C_TCHAR,
                                             strSize > 254 ? SQL_WLONGVARCHAR : SQL_WVARCHAR,
                                             0, // god knows... don't change this!
@@ -1527,7 +1527,7 @@ bool QODBCResult::exec()
                     QByteArray strba((const char *)toSQLTCHAR(str).constData(), str.size()*sizeof(SQLTCHAR));
                     r = SQLBindParameter(d->hStmt,
                                           i + 1,
-                                          qParamType[(QFlag)(bindValueType(i)) & QSql::InOut],
+                                          qParamType[bindValueType(i) & QSql::InOut],
                                           SQL_C_TCHAR,
                                           strSize > 254 ? SQL_WLONGVARCHAR : SQL_WVARCHAR,
                                           strSize,
@@ -1547,7 +1547,7 @@ bool QODBCResult::exec()
 
                     r = SQLBindParameter(d->hStmt,
                                           i + 1,
-                                          qParamType[(QFlag)(bindValueType(i)) & QSql::InOut],
+                                          qParamType[bindValueType(i) & QSql::InOut],
                                           SQL_C_CHAR,
                                           strSize > 254 ? SQL_LONGVARCHAR : SQL_VARCHAR,
                                           strSize,
@@ -1565,7 +1565,7 @@ bool QODBCResult::exec()
                     *ind = ba.size();
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
-                                      qParamType[(QFlag)(bindValueType(i)) & QSql::InOut],
+                                      qParamType[bindValueType(i) & QSql::InOut],
                                       SQL_C_BINARY,
                                       SQL_VARBINARY,
                                       ba.length() + 1,

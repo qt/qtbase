@@ -633,7 +633,7 @@ bool QDB2Result::exec()
                 dt->day = qdt.day();
                 r = SQLBindParameter(d->hStmt,
                                      i + 1,
-                                     qParamType[(QFlag)(bindValueType(i)) & 3],
+                                     qParamType[bindValueType(i) & 3],
                                      SQL_C_DATE,
                                      SQL_DATE,
                                      0,
@@ -653,7 +653,7 @@ bool QDB2Result::exec()
                 dt->second = qdt.second();
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
-                                      qParamType[(QFlag)(bindValueType(i)) & 3],
+                                      qParamType[bindValueType(i) & 3],
                                       SQL_C_TIME,
                                       SQL_TIME,
                                       0,
@@ -677,7 +677,7 @@ bool QDB2Result::exec()
                 dt->fraction = qdt.time().msec() * 1000000;
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
-                                      qParamType[(QFlag)(bindValueType(i)) & 3],
+                                      qParamType[bindValueType(i) & 3],
                                       SQL_C_TIMESTAMP,
                                       SQL_TIMESTAMP,
                                       0,
@@ -690,7 +690,7 @@ bool QDB2Result::exec()
             case QVariant::Int:
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
-                                      qParamType[(QFlag)(bindValueType(i)) & 3],
+                                      qParamType[bindValueType(i) & 3],
                                       SQL_C_SLONG,
                                       SQL_INTEGER,
                                       0,
@@ -702,7 +702,7 @@ bool QDB2Result::exec()
             case QVariant::Double:
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
-                                      qParamType[(QFlag)(bindValueType(i)) & 3],
+                                      qParamType[bindValueType(i) & 3],
                                       SQL_C_DOUBLE,
                                       SQL_DOUBLE,
                                       0,
@@ -717,7 +717,7 @@ bool QDB2Result::exec()
                     *ind = len;
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
-                                      qParamType[(QFlag)(bindValueType(i)) & 3],
+                                      qParamType[bindValueType(i) & 3],
                                       SQL_C_BINARY,
                                       SQL_LONGVARBINARY,
                                       len,
@@ -735,7 +735,7 @@ bool QDB2Result::exec()
                     QByteArray ba((char*)str.utf16(), str.capacity() * sizeof(QChar));
                     r = SQLBindParameter(d->hStmt,
                                         i + 1,
-                                        qParamType[(QFlag)(bindValueType(i)) & 3],
+                                        qParamType[bindValueType(i) & 3],
                                         SQL_C_WCHAR,
                                         SQL_WVARCHAR,
                                         str.length(),
@@ -749,7 +749,7 @@ bool QDB2Result::exec()
                     int len = str.length();
                     r = SQLBindParameter(d->hStmt,
                                         i + 1,
-                                        qParamType[(QFlag)(bindValueType(i)) & 3],
+                                        qParamType[bindValueType(i) & 3],
                                         SQL_C_WCHAR,
                                         SQL_WVARCHAR,
                                         len,
@@ -767,7 +767,7 @@ bool QDB2Result::exec()
                     *ind = ba.length();
                 r = SQLBindParameter(d->hStmt,
                                       i + 1,
-                                      qParamType[(QFlag)(bindValueType(i)) & 3],
+                                      qParamType[bindValueType(i) & 3],
                                       SQL_C_CHAR,
                                       SQL_VARCHAR,
                                       len,
