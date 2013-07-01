@@ -1894,6 +1894,12 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SH_Menu_SupportsSections Determines if the style displays sections in menus or treat them as
            plain separators. Sections are separators with a text and icon hint.
 
+    \value SH_ToolTip_WakeUpDelay Determines the delay before a tooltip is shown, in milliseconds.
+
+    \value SH_ToolTip_FallAsleepDelay Determines the delay (in milliseconds) before a new wake time is needed when
+           a tooltip is shown (notice: shown, not hidden). When a new wake isn't needed, a user-requested tooltip
+           will be shown nearly instantly.
+
     \sa styleHint()
 */
 

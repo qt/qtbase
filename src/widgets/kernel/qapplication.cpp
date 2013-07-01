@@ -1852,8 +1852,11 @@ bool QApplication::event(QEvent *e)
                 if (showToolTip) {
                     QHelpEvent e(QEvent::ToolTip, d->toolTipPos, d->toolTipGlobalPos);
                     QApplication::sendEvent(d->toolTipWidget, &e);
-                    if (e.isAccepted())
-                        d->toolTipFallAsleep.start(2000, this);
+                    if (e.isAccepted()) {
+                        QStyle *s = d->toolTipWidget->style();
+                        int sleepDelay = s->styleHint(QStyle::SH_ToolTip_FallAsleepDelay, 0, d->toolTipWidget, 0);
+                        d->toolTipFallAsleep.start(sleepDelay, this);
+                    }
                 }
             }
         } else if (te->timerId() == d->toolTipFallAsleep.timerId()) {
@@ -2956,7 +2959,9 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     d->toolTipWidget = w;
                     d->toolTipPos = relpos;
                     d->toolTipGlobalPos = mouse->globalPos();
-                    d->toolTipWakeUp.start(d->toolTipFallAsleep.isActive()?20:700, this);
+                    QStyle *s = d->toolTipWidget->style();
+                    int wakeDelay = s->styleHint(QStyle::SH_ToolTip_WakeUpDelay, 0, d->toolTipWidget, 0);
+                    d->toolTipWakeUp.start(d->toolTipFallAsleep.isActive() ? 20 : wakeDelay, this);
                 }
             }
 

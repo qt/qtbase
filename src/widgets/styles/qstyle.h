@@ -698,6 +698,8 @@ public:
         SH_RequestSoftwareInputPanel,
         SH_ScrollBar_Transient,
         SH_Menu_SupportsSections,
+        SH_ToolTip_WakeUpDelay,
+        SH_ToolTip_FallAsleepDelay,
         // Add new style hint values here
 
         SH_CustomBase = 0xf0000000

@@ -5105,6 +5105,14 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_Menu_SupportsSections:
         ret = false;
         break;
+#ifndef QT_NO_TOOLTIP
+    case SH_ToolTip_WakeUpDelay:
+        ret = 700;
+        break;
+    case SH_ToolTip_FallAsleepDelay:
+        ret = 2000;
+        break;
+#endif
     default:
         ret = 0;
         break;

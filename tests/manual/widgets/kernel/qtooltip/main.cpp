@@ -45,12 +45,46 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <QProxyStyle>
+#include <QSpinBox>
+
+class QToolTipTest : public QProxyStyle
+{
+    Q_OBJECT
+public:
+    QToolTipTest() : QProxyStyle()
+    {
+        wakeTime = QApplication::style()->styleHint(SH_ToolTip_WakeUpDelay);
+        sleepTime = QApplication::style()->styleHint(SH_ToolTip_FallAsleepDelay);
+    }
+
+    int styleHint(StyleHint hint, const QStyleOption *option = 0, const QWidget *widget = 0,
+                  QStyleHintReturn *returnData = 0) const
+    {
+        switch (hint) {
+            case SH_ToolTip_WakeUpDelay:
+                return wakeTime;
+            case SH_ToolTip_FallAsleepDelay:
+                return sleepTime;
+            default:
+                return QProxyStyle::styleHint(hint, option, widget, returnData);
+        }
+    }
+
+public slots:
+    void setWakeTime(int wake) { wakeTime = wake; }
+    void setSleepTime(int sleep) { sleepTime = sleep; }
+protected:
+    int wakeTime;
+    int sleepTime;
+};
 
 class TestDialog : public QDialog
 {
     Q_OBJECT
 public:
-    TestDialog();
+    TestDialog(QToolTipTest *s);
+    QToolTipTest *style;
 protected slots:
     void showSomeToolTips();
 };
@@ -72,7 +106,7 @@ void TestDialog::showSomeToolTips()
     QTest::qWait(12000);
 }
 
-TestDialog::TestDialog()
+TestDialog::TestDialog(QToolTipTest *s) : style(s)
 {
     // Notice that these tool tips will disappear if another tool tip is shown.
     QLabel *label1 = new QLabel(tr("Tooltip - Only two seconds display"));
@@ -89,10 +123,27 @@ TestDialog::TestDialog()
     Q_ASSERT(pb->toolTipDuration() == -1);
     connect(pb, SIGNAL(clicked()), this, SLOT(showSomeToolTips()));
 
+    QLabel *wakeLabel = new QLabel(tr("Wake Delay:"));
+    QSpinBox *wakeSpinBox = new QSpinBox();
+    wakeSpinBox->setRange(0, 100000);
+    wakeSpinBox->setValue(style->styleHint(QStyle::SH_ToolTip_WakeUpDelay));
+    connect(wakeSpinBox, SIGNAL(valueChanged(int)), style, SLOT(setWakeTime(int)));
+
+    QLabel *sleepLabel = new QLabel(tr("Sleep Delay:"));
+    QSpinBox *sleepSpinBox = new QSpinBox();
+    sleepSpinBox->setRange(0, 100000);
+    sleepSpinBox->setValue(style->styleHint(QStyle::SH_ToolTip_FallAsleepDelay));
+    connect(sleepSpinBox, SIGNAL(valueChanged(int)), style, SLOT(setSleepTime(int)));
+
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(label1);
     layout->addWidget(label2);
     layout->addWidget(pb);
+    layout->addWidget(wakeLabel);
+    layout->addWidget(wakeSpinBox);
+    layout->addWidget(wakeLabel);
+    layout->addWidget(sleepLabel);
+    layout->addWidget(sleepSpinBox);
 
     setLayout(layout);
 }
@@ -100,7 +151,9 @@ TestDialog::TestDialog()
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    TestDialog dlg;
+    QToolTipTest *style = new QToolTipTest();
+    QApplication::setStyle(style);
+    TestDialog dlg(style);
     dlg.show();
     return app.exec();
 }
