@@ -121,6 +121,7 @@ public class QtActivity extends Activity {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
+                finish();
                 System.exit(0);
             }
             String[] libs = new String[libraryList.size()];
