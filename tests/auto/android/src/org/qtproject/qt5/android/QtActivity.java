@@ -102,6 +102,7 @@ public class QtActivity extends Activity {
                 }
                 if (getIntent().getExtras().containsKey("lib_name")) {
                     mainLib = getIntent().getExtras().getString("lib_name");
+                    libraryList.add(mainLib);
                     int slash = mainLib.lastIndexOf("/");
                     if (slash >= 0) {
                         nativeLibDir = mainLib.substring(0, slash+1);
