@@ -78,6 +78,20 @@ endmacro()
 if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
 
 !!IF !no_module_headers
+!!IF !isEmpty(CMAKE_BUILD_IS_FRAMEWORK)
+    set(_Qt5$${CMAKE_MODULE_NAME}_OWN_INCLUDE_DIRS
+      \"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}/$${CMAKE_LIB_DIR}Qt$${CMAKE_MODULE_NAME}.framework\"
+      \"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}/$${CMAKE_LIB_DIR}Qt$${CMAKE_MODULE_NAME}.framework/Headers\"
+    )
+!!IF isEmpty(CMAKE_NO_PRIVATE_INCLUDES)
+    set(Qt5$${CMAKE_MODULE_NAME}_PRIVATE_INCLUDE_DIRS
+        \"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}/$${CMAKE_LIB_DIR}Qt$${CMAKE_MODULE_NAME}.framework/Versions/$$section(VERSION, ., 0, 0)/Headers/$$VERSION/\"
+        \"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}/$${CMAKE_LIB_DIR}Qt$${CMAKE_MODULE_NAME}.framework/Versions/$$section(VERSION, ., 0, 0)/Headers/$$VERSION/$${MODULE_INCNAME}\"
+    )
+!!ELSE
+    set(Qt5$${CMAKE_MODULE_NAME}_PRIVATE_INCLUDE_DIRS)
+!!ENDIF
+!!ELSE
 !!IF isEmpty(CMAKE_INCLUDE_DIR_IS_ABSOLUTE)
     set(_Qt5$${CMAKE_MODULE_NAME}_OWN_INCLUDE_DIRS \"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}/$$CMAKE_INCLUDE_DIR\" \"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}/$${CMAKE_INCLUDE_DIR}$${MODULE_INCNAME}\")
 !!IF isEmpty(CMAKE_NO_PRIVATE_INCLUDES)
@@ -97,6 +111,7 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
     )
 !!ELSE
     set(Qt5$${CMAKE_MODULE_NAME}_PRIVATE_INCLUDE_DIRS)
+!!ENDIF
 !!ENDIF
 !!ENDIF
 !!ELSE
