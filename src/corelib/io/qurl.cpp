@@ -1059,7 +1059,7 @@ inline void QUrlPrivate::appendHost(QString &appendTo, QUrl::FormattingOptions o
         // this is either an IPv4Address or a reg-name
         // if it is a reg-name, it is already stored in Unicode form
         if (options == QUrl::EncodeUnicode)
-            appendTo += qt_ACE_do(host, ToAceOnly);
+            appendTo += qt_ACE_do(host, ToAceOnly, AllowLeadingDot);
         else
             appendTo += host;
     }
@@ -1207,7 +1207,7 @@ inline bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl:
         return setHost(s, 0, s.length(), QUrl::StrictMode);
     }
 
-    s = qt_ACE_do(QString::fromRawData(begin, len), NormalizeAce);
+    s = qt_ACE_do(QString::fromRawData(begin, len), NormalizeAce, ForbidLeadingDot);
     if (s.isEmpty()) {
         setError(InvalidRegNameError, value);
         return false;
@@ -2976,7 +2976,7 @@ QString QUrl::topLevelDomain(ComponentFormattingOptions options) const
 {
     QString tld = qTopLevelDomain(host());
     if (options & EncodeUnicode) {
-        return qt_ACE_do(tld, ToAceOnly);
+        return qt_ACE_do(tld, ToAceOnly, AllowLeadingDot);
     }
     return tld;
 }
@@ -3296,7 +3296,7 @@ QString QUrl::fromEncodedComponent_helper(const QByteArray &ba)
 */
 QString QUrl::fromAce(const QByteArray &domain)
 {
-    return qt_ACE_do(QString::fromLatin1(domain), NormalizeAce);
+    return qt_ACE_do(QString::fromLatin1(domain), NormalizeAce, ForbidLeadingDot /*FIXME: make configurable*/);
 }
 
 /*!
@@ -3317,7 +3317,7 @@ QString QUrl::fromAce(const QByteArray &domain)
 */
 QByteArray QUrl::toAce(const QString &domain)
 {
-    QString result = qt_ACE_do(domain, ToAceOnly);
+    QString result = qt_ACE_do(domain, ToAceOnly, ForbidLeadingDot /*FIXME: make configurable*/);
     return result.toLatin1();
 }
 

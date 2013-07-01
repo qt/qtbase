@@ -2461,7 +2461,7 @@ static int nextDotDelimiter(const QString &domain, int from = 0)
     return ch - b;
 }
 
-QString qt_ACE_do(const QString &domain, AceOperation op)
+QString qt_ACE_do(const QString &domain, AceOperation op, AceLeadingDot dot)
 {
     if (domain.isEmpty())
         return domain;
@@ -2479,7 +2479,8 @@ QString qt_ACE_do(const QString &domain, AceOperation op)
         if (labelLength == 0) {
             if (idx == domain.length())
                 break;
-            return QString(); // two delimiters in a row -- empty label not allowed
+            if (dot == ForbidLeadingDot || idx > 0)
+                return QString(); // two delimiters in a row -- empty label not allowed
         }
 
         // RFC 3490 says, about the ToASCII operation:

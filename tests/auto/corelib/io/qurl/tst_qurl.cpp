@@ -2863,7 +2863,8 @@ void tst_QUrl::effectiveTLDs()
 {
     QFETCH(QUrl, domain);
     QFETCH(QString, TLD);
-    QCOMPARE(domain.topLevelDomain(), TLD);
+    QCOMPARE(domain.topLevelDomain(QUrl::PrettyDecoded), TLD);
+    QCOMPARE(domain.topLevelDomain(QUrl::FullyDecoded), TLD);
 }
 
 void tst_QUrl::lowercasesScheme()
