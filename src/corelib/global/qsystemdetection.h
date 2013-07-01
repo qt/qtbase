@@ -49,9 +49,9 @@
 /*
    The operating system, must be one of: (Q_OS_x)
 
-     DARWIN   - Darwin OS (synonym for Q_OS_MAC)
-     MAC      - OS X or iOS (synonym for Q_OS_DARWIN)
-     MACX     - OS X
+     DARWIN   - Any Darwin system
+     MAC      - OS X and iOS
+     OSX      - OS X
      IOS      - iOS
      MSDOS    - MS-DOS and Windows
      OS2      - OS/2
@@ -175,8 +175,9 @@
 #  include <TargetConditionals.h>
 #  if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #     define Q_OS_IOS
-#  else
-#     define Q_OS_MACX
+#  elif defined(TARGET_OS_MAC) && TARGET_OS_MAC
+#     define Q_OS_OSX
+#     define Q_OS_MACX // compatibility synonym
 #  endif
 #endif
 
