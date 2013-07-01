@@ -2479,7 +2479,8 @@ QString qt_ACE_do(const QString &domain, AceOperation op)
         if (labelLength == 0) {
             if (idx == domain.length())
                 break;
-            return QString(); // two delimiters in a row -- empty label not allowed
+            if (idx > 0)
+                return QString(); // two delimiters in a row -- empty label not allowed
         }
 
         // RFC 3490 says, about the ToASCII operation:
