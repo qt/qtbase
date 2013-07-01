@@ -545,8 +545,10 @@ void QGL2PaintEngineEx::beginNativePainting()
         d->funcs.glDisableVertexAttribArray(i);
 
 #ifndef QT_OPENGL_ES_2
+    const QGLContext *ctx = d->ctx;
     const QGLFormat &fmt = d->device->format();
     if (fmt.majorVersion() < 3 || (fmt.majorVersion() == 3 && fmt.minorVersion() < 1)
+        || (fmt.majorVersion() == 3 && fmt.minorVersion() == 1 && ctx->contextHandle()->hasExtension(QByteArrayLiteral("GL_ARB_compatibility")))
         || fmt.profile() == QGLFormat::CompatibilityProfile)
     {
         // be nice to people who mix OpenGL 1.x code with QPainter commands

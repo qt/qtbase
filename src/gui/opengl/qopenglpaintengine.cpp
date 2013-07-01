@@ -549,8 +549,10 @@ void QOpenGL2PaintEngineEx::beginNativePainting()
 
 #ifndef QT_OPENGL_ES_2
     Q_ASSERT(QOpenGLContext::currentContext());
+    const QOpenGLContext *ctx = d->ctx;
     const QSurfaceFormat &fmt = d->device->context()->format();
     if (fmt.majorVersion() < 3 || (fmt.majorVersion() == 3 && fmt.minorVersion() < 1)
+        || (fmt.majorVersion() == 3 && fmt.minorVersion() == 1 && ctx->hasExtension(QByteArrayLiteral("GL_ARB_compatibility")))
         || fmt.profile() == QSurfaceFormat::CompatibilityProfile)
     {
         // be nice to people who mix OpenGL 1.x code with QPainter commands
