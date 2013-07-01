@@ -8,7 +8,7 @@
   <testcase result="fail" name="dateTime">
     <failure message="Compared values are not the same
    Actual   (local): 2000/05/03 04:03:04.000[local time]
-   Expected (utc): 2000/05/03 04:03:04.000[UTC]" result="fail"/>
+   Expected (utc)  : 2000/05/03 04:03:04.000[UTC]" result="fail"/>
   </testcase>
   <testcase result="fail" name="qurl">
     <failure tag="empty rhs" message="Compared values are not the same

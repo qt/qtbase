@@ -33,14 +33,14 @@ PASS   : tst_Subtest::test3(data0)
 QDEBUG : tst_Subtest::test3(data1) init test3 data1 
 QDEBUG : tst_Subtest::test3(data1) test2 test3 data1 
 FAIL!  : tst_Subtest::test3(data1) Compared values are not the same
-   Actual   (str): hello1
+   Actual   (str)              : hello1
    Expected (QString("hello0")): hello0
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(154)]
 QDEBUG : tst_Subtest::test3(data1) cleanup test3 data1 
 QDEBUG : tst_Subtest::test3(data2) init test3 data2 
 QDEBUG : tst_Subtest::test3(data2) test2 test3 data2 
 FAIL!  : tst_Subtest::test3(data2) Compared values are not the same
-   Actual   (str): hello2
+   Actual   (str)              : hello2
    Expected (QString("hello0")): hello0
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp(154)]
 QDEBUG : tst_Subtest::test3(data2) cleanup test3 data2 

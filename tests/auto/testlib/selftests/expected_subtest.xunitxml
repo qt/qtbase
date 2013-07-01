@@ -38,13 +38,13 @@
     <!-- tag="data1" message="init test3 data1 " type="qdebug" -->
     <!-- tag="data1" message="test2 test3 data1 " type="qdebug" -->
     <failure tag="data1" message="Compared values are not the same
-   Actual   (str): hello1
+   Actual   (str)              : hello1
    Expected (QString(&quot;hello0&quot;)): hello0" result="fail"/>
     <!-- tag="data1" message="cleanup test3 data1 " type="qdebug" -->
     <!-- tag="data2" message="init test3 data2 " type="qdebug" -->
     <!-- tag="data2" message="test2 test3 data2 " type="qdebug" -->
     <failure tag="data2" message="Compared values are not the same
-   Actual   (str): hello2
+   Actual   (str)              : hello2
    Expected (QString(&quot;hello0&quot;)): hello0" result="fail"/>
     <!-- tag="data2" message="cleanup test3 data2 " type="qdebug" -->
   </testcase>

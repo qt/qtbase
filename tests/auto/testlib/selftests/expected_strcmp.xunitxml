@@ -22,11 +22,11 @@
   <testcase result="fail" name="failByteArrayNull">
     <failure message="Compared values are not the same
    Actual   (QByteArray(&quot;foo&quot;)): 66 6F 6F
-   Expected (QByteArray()): " result="fail"/>
+   Expected (QByteArray())     : " result="fail"/>
   </testcase>
   <testcase result="fail" name="failByteArrayEmpty">
     <failure message="Compared values are not the same
-   Actual   (QByteArray(&quot;&quot;)): 
+   Actual   (QByteArray(&quot;&quot;))   : 
    Expected (QByteArray(&quot;foo&quot;)): 66 6F 6F" result="fail"/>
   </testcase>
   <testcase result="fail" name="failByteArraySingleChars">

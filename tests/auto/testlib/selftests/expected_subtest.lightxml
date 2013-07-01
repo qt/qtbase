@@ -122,7 +122,7 @@
 <Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="154">
     <DataTag><![CDATA[data1]]></DataTag>
     <Description><![CDATA[Compared values are not the same
-   Actual   (str): hello1
+   Actual   (str)              : hello1
    Expected (QString("hello0")): hello0]]></Description>
 </Incident>
 <Message type="qdebug" file="" line="0">
@@ -140,7 +140,7 @@
 <Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="154">
     <DataTag><![CDATA[data2]]></DataTag>
     <Description><![CDATA[Compared values are not the same
-   Actual   (str): hello2
+   Actual   (str)              : hello2
    Expected (QString("hello0")): hello0]]></Description>
 </Incident>
 <Message type="qdebug" file="" line="0">

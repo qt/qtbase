@@ -268,10 +268,12 @@ bool QTestResult::compare(bool success, const char *failureMsg,
     if (success && QTest::expectFailMode) {
         qsnprintf(msg, 1024, "QCOMPARE(%s, %s) returned TRUE unexpectedly.", actual, expected);
     } else if (val1 || val2) {
-        qsnprintf(msg, 1024, "%s\n   Actual   (%s): %s\n   Expected (%s): %s",
+        size_t len1 = strlen(actual);
+        size_t len2 = strlen(expected);
+        qsnprintf(msg, 1024, "%s\n   Actual   (%s)%*s %s\n   Expected (%s)%*s %s",
                   failureMsg,
-                  actual, val1 ? val1 : "<null>",
-                  expected, val2 ? val2 : "<null>");
+                  actual, qMax(len1, len2) - len1 + 1, ":", val1 ? val1 : "<null>",
+                  expected, qMax(len1, len2) - len2 + 1, ":", val2 ? val2 : "<null>");
     } else
         qsnprintf(msg, 1024, "%s", failureMsg);
 

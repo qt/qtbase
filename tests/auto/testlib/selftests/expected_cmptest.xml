@@ -17,7 +17,7 @@
 <Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="214">
     <DataTag><![CDATA[int, string]]></DataTag>
     <Description><![CDATA[Compared values are not the same
-   Actual   (actual): QVariant(int,123)
+   Actual   (actual)  : QVariant(int,123)
    Expected (expected): QVariant(QString,hi)]]></Description>
 </Incident>
 <Incident type="pass" file="" line="0">
@@ -26,19 +26,19 @@
 <Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="214">
     <DataTag><![CDATA[null hash, invalid]]></DataTag>
     <Description><![CDATA[Compared values are not the same
-   Actual   (actual): QVariant(QVariantHash)
+   Actual   (actual)  : QVariant(QVariantHash)
    Expected (expected): QVariant()]]></Description>
 </Incident>
 <Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="214">
     <DataTag><![CDATA[string, null user type]]></DataTag>
     <Description><![CDATA[Compared values are not the same
-   Actual   (actual): QVariant(QString,A simple string)
+   Actual   (actual)  : QVariant(QString,A simple string)
    Expected (expected): QVariant(PhonyClass)]]></Description>
 </Incident>
 <Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="214">
     <DataTag><![CDATA[both non-null user type]]></DataTag>
     <Description><![CDATA[Compared values are not the same
-   Actual   (actual): QVariant(PhonyClass,<value not representable as string>)
+   Actual   (actual)  : QVariant(PhonyClass,<value not representable as string>)
    Expected (expected): QVariant(PhonyClass,<value not representable as string>)]]></Description>
 </Incident>
 </TestFunction>

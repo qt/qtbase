@@ -9,16 +9,16 @@
   <testcase result="pass" name="compare_pointerfuncs"/>
   <testcase result="fail" name="compare_tostring">
     <failure tag="int, string" message="Compared values are not the same
-   Actual   (actual): QVariant(int,123)
+   Actual   (actual)  : QVariant(int,123)
    Expected (expected): QVariant(QString,hi)" result="fail"/>
     <failure tag="null hash, invalid" message="Compared values are not the same
-   Actual   (actual): QVariant(QVariantHash)
+   Actual   (actual)  : QVariant(QVariantHash)
    Expected (expected): QVariant()" result="fail"/>
     <failure tag="string, null user type" message="Compared values are not the same
-   Actual   (actual): QVariant(QString,A simple string)
+   Actual   (actual)  : QVariant(QString,A simple string)
    Expected (expected): QVariant(PhonyClass)" result="fail"/>
     <failure tag="both non&#x002D;null user type" message="Compared values are not the same
-   Actual   (actual): QVariant(PhonyClass,&lt;value not representable as string&gt;)
+   Actual   (actual)  : QVariant(PhonyClass,&lt;value not representable as string&gt;)
    Expected (expected): QVariant(PhonyClass,&lt;value not representable as string&gt;)" result="fail"/>
   </testcase>
   <testcase result="fail" name="compareQStringLists">

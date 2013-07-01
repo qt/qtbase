@@ -11,7 +11,7 @@
 <Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datetime/tst_datetime.cpp" line="66">
     <Description><![CDATA[Compared values are not the same
    Actual   (local): 2000/05/03 04:03:04.000[local time]
-   Expected (utc): 2000/05/03 04:03:04.000[UTC]]]></Description>
+   Expected (utc)  : 2000/05/03 04:03:04.000[UTC]]]></Description>
 </Incident>
 </TestFunction>
 <TestFunction name="qurl">

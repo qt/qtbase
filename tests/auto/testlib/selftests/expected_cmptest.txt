@@ -4,20 +4,20 @@ PASS   : tst_Cmptest::initTestCase()
 PASS   : tst_Cmptest::compare_boolfuncs()
 PASS   : tst_Cmptest::compare_pointerfuncs()
 FAIL!  : tst_Cmptest::compare_tostring(int, string) Compared values are not the same
-   Actual   (actual): QVariant(int,123)
+   Actual   (actual)  : QVariant(int,123)
    Expected (expected): QVariant(QString,hi)
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(214)]
 PASS   : tst_Cmptest::compare_tostring(both invalid)
 FAIL!  : tst_Cmptest::compare_tostring(null hash, invalid) Compared values are not the same
-   Actual   (actual): QVariant(QVariantHash)
+   Actual   (actual)  : QVariant(QVariantHash)
    Expected (expected): QVariant()
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(214)]
 FAIL!  : tst_Cmptest::compare_tostring(string, null user type) Compared values are not the same
-   Actual   (actual): QVariant(QString,A simple string)
+   Actual   (actual)  : QVariant(QString,A simple string)
    Expected (expected): QVariant(PhonyClass)
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(214)]
 FAIL!  : tst_Cmptest::compare_tostring(both non-null user type) Compared values are not the same
-   Actual   (actual): QVariant(PhonyClass,<value not representable as string>)
+   Actual   (actual)  : QVariant(PhonyClass,<value not representable as string>)
    Expected (expected): QVariant(PhonyClass,<value not representable as string>)
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(214)]
 PASS   : tst_Cmptest::compareQStringLists(empty lists)
