@@ -2023,7 +2023,7 @@ void QWindowsNativeColorDialog::exec(HWND owner)
             qCustomColors[c] = COLORREFToQColor(m_customColors[c]).rgb();
         emit accepted();
         if (QWindowsContext::verboseDialogs)
-            qDebug() << '<' << __FUNCTION__ << m_color;
+            qDebug() << '<' << __FUNCTION__ << *m_color;
     } else {
         emit rejected();
     }
@@ -2044,7 +2044,7 @@ void QWindowsNativeColorDialog::exec(HWND owner)
 class QWindowsColorDialogHelper : public QWindowsDialogHelperBase<QPlatformColorDialogHelper>
 {
 public:
-    QWindowsColorDialogHelper() {}
+    QWindowsColorDialogHelper() : m_currentColor(new QColor) {}
 
     virtual bool supportsNonModalDialog()
         { return false; }
@@ -2064,6 +2064,8 @@ QWindowsNativeDialogBase *QWindowsColorDialogHelper::createNativeDialog()
 {
     QWindowsNativeColorDialog *nativeDialog = new QWindowsNativeColorDialog(m_currentColor);
     nativeDialog->setWindowTitle(options()->windowTitle());
+    connect(nativeDialog, SIGNAL(accepted()), this, SIGNAL(accept()));
+    connect(nativeDialog, SIGNAL(rejected()), this, SIGNAL(reject()));
     return nativeDialog;
 }
 #endif // USE_NATIVE_COLOR_DIALOG
