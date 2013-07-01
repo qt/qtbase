@@ -598,7 +598,7 @@ int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normaliz
                                    QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Create,
                                    QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Destruct,
                                    QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Construct,
-                                   sizeof(T),
+                                   int(sizeof(T)),
                                    flags,
                                    QtPrivate::MetaObjectForType<T>::value());
 }
@@ -761,8 +761,8 @@ struct QMetaTypeId< SINGLE_ARG_TEMPLATE<T> > \
         Q_ASSERT(tName); \
         const int tNameLen = qstrlen(tName); \
         QByteArray typeName; \
-        typeName.reserve(sizeof(#SINGLE_ARG_TEMPLATE) + 1 + tNameLen + 1 + 1); \
-        typeName.append(#SINGLE_ARG_TEMPLATE, sizeof(#SINGLE_ARG_TEMPLATE) - 1) \
+        typeName.reserve(int(sizeof(#SINGLE_ARG_TEMPLATE)) + 1 + tNameLen + 1 + 1); \
+        typeName.append(#SINGLE_ARG_TEMPLATE, int(sizeof(#SINGLE_ARG_TEMPLATE)) - 1) \
             .append('<').append(tName, tNameLen); \
         if (typeName.endsWith('>')) \
             typeName.append(' '); \
@@ -794,8 +794,8 @@ struct QMetaTypeId< DOUBLE_ARG_TEMPLATE<T, U> > \
         const int tNameLen = qstrlen(tName); \
         const int uNameLen = qstrlen(uName); \
         QByteArray typeName; \
-        typeName.reserve(sizeof(#DOUBLE_ARG_TEMPLATE) + 1 + tNameLen + 1 + uNameLen + 1 + 1); \
-        typeName.append(#DOUBLE_ARG_TEMPLATE, sizeof(#DOUBLE_ARG_TEMPLATE) - 1) \
+        typeName.reserve(int(sizeof(#DOUBLE_ARG_TEMPLATE)) + 1 + tNameLen + 1 + uNameLen + 1 + 1); \
+        typeName.append(#DOUBLE_ARG_TEMPLATE, int(sizeof(#DOUBLE_ARG_TEMPLATE)) - 1) \
             .append('<').append(tName, tNameLen).append(',').append(uName, uNameLen); \
         if (typeName.endsWith('>')) \
             typeName.append(' '); \
