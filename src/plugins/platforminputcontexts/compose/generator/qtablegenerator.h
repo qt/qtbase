@@ -42,18 +42,28 @@
 #ifndef QTABLEGENERATOR_H
 #define QTABLEGENERATOR_H
 
-#include <QtCore/QList>
+#include <QtCore/QVector>
 #include <QtCore/QFile>
 #include <QtCore/QMap>
 #include <QtCore/QString>
 
 #define QT_KEYSEQUENCE_MAX_LEN 6
 
+//#define DEBUG_GENERATOR
+
 struct QComposeTableElement {
     uint keys[QT_KEYSEQUENCE_MAX_LEN];
     uint value;
+#ifdef DEBUG_GENERATOR
     QString comment;
+#endif
 };
+
+#ifndef DEBUG_GENERATOR
+QT_BEGIN_NAMESPACE
+Q_DECLARE_TYPEINFO(QComposeTableElement, Q_PRIMITIVE_TYPE);
+QT_END_NAMESPACE
+#endif
 
 class Compare
 {
@@ -97,12 +107,12 @@ public:
     void printComposeTable() const;
     void orderComposeTable();
 
-    QList<QComposeTableElement> composeTable() const;
+    QVector<QComposeTableElement> composeTable() const;
     TableState tableState() const { return m_state; }
 
 protected:
     bool processFile(QString composeFileName);
-    void parseKeySequence(QString line);
+    void parseKeySequence(char *line);
     void parseIncludeInstruction(QString line);
 
     void findComposeFile();
@@ -110,16 +120,14 @@ protected:
     QString systemComposeDir();
 
     ushort keysymToUtf8(quint32 sym);
-    quint32 stringToKeysym(QString keysymName);
 
-    void readLocaleMappings();
+    QString readLocaleMappings(const QByteArray &locale);
     void initPossibleLocations();
     bool cleanState() const { return ((m_state & NoErrors) == NoErrors); }
     QString locale() const;
 
 private:
-      QList<QComposeTableElement> m_composeTable;
-      QMap<QString, QString> m_localeToTable;
+      QVector<QComposeTableElement> m_composeTable;
       TableState m_state;
       QString m_systemComposeDir;
       QList<QString> m_possibleLocations;
