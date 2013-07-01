@@ -232,6 +232,7 @@ if ($deploy_qt)
         print ("cp -L $_ $temp_dir/lib\n");
         system("cp -L $_ $temp_dir/lib");
     }
+    system("cp -L $android_ndk_dir/sources/cxx-stl/gnu-libstdc++/4.7/libs/armeabi-v7a/libgnustl_shared.so $temp_dir/lib");
     system("cp -a plugins $temp_dir");
     system("cp -a imports $temp_dir");
     system("cp -a qml $temp_dir");
