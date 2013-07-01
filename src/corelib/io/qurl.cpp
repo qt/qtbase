@@ -1132,21 +1132,24 @@ static const QChar *parseIpFuture(QString &host, const QChar *begin, const QChar
 }
 
 // ONLY the IPv6 address is parsed here, WITHOUT the brackets
-static bool parseIp6(QString &host, const QChar *begin, const QChar *end)
+static bool parseIp6(QString &host, const QChar *begin, const QChar *end, QUrl::ParsingMode mode)
 {
     QIPAddressUtils::IPv6Address address;
     if (!QIPAddressUtils::parseIp6(address, begin, end)) {
+        // this struct is kept in automatic storage because it's only 4 bytes
+        const ushort decodeColon[] = { decode(':'), 0 };
+
         // IPv6 failed parsing, check if it was a percent-encoded character in
         // the middle and try again
         QString decoded;
-        if (!qt_urlRecode(decoded, begin, end, QUrl::FullyEncoded, 0)) {
+        if (mode != QUrl::TolerantMode || !qt_urlRecode(decoded, begin, end, 0, decodeColon)) {
             // no transformation, nothing to re-parse
             return false;
         }
 
         // recurse
         // if the parsing fails again, the qt_urlRecode above will return 0
-        return parseIp6(host, decoded.constBegin(), decoded.constEnd());
+        return parseIp6(host, decoded.constBegin(), decoded.constEnd(), mode);
     }
 
     host.reserve(host.size() + (end - begin));
@@ -1183,7 +1186,7 @@ inline bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl:
             return !c;
         }
 
-        if (parseIp6(host, begin + 1, end - 1))
+        if (parseIp6(host, begin + 1, end - 1, mode))
             return true;
 
         setError(begin[1].unicode() == 'v' ? InvalidIPvFutureError : InvalidIPv6AddressError,
@@ -1214,7 +1217,7 @@ inline bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl:
 
     // check for percent-encoding first
     QString s;
-    if (mode == QUrl::TolerantMode && qt_urlRecode(s, begin, end, QUrl::DecodeReserved, 0)) {
+    if (mode == QUrl::TolerantMode && qt_urlRecode(s, begin, end, 0, 0)) {
         // something was decoded
         // anything encoded left?
         int pos = s.indexOf(QChar(0x25)); // '%'

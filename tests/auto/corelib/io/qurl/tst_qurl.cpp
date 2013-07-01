@@ -1656,6 +1656,9 @@ void tst_QUrl::ipv6_data()
     QTest::newRow("case :,") << QString::fromLatin1("//[:,]") << false << "";
     QTest::newRow("case ::bla") << QString::fromLatin1("//[::bla]") << false << "";
     QTest::newRow("case v4-mapped") << "//[0:0:0:0:0:ffff:7f00:1]" << true << "//[::ffff:127.0.0.1]";
+
+    QTest::newRow("encoded-digit") << "//[::%31]" << true << "//[::1]";
+    QTest::newRow("encoded-colon") << "//[%3A%3A]" << true << "//[::]";
 }
 
 void tst_QUrl::ipv6()
@@ -1950,6 +1953,7 @@ void tst_QUrl::strictParser_data()
     QTest::newRow("invalid-ipvfuture-1") << "http://[v7]" << "Invalid IPvFuture address";
     QTest::newRow("invalid-ipvfuture-2") << "http://[v7.]" << "Invalid IPvFuture address";
     QTest::newRow("invalid-ipvfuture-3") << "http://[v789]" << "Invalid IPvFuture address";
+    QTest::newRow("invalid-encoded-ipv6") << "x://[%3a%3a%31]" << "Invalid IPv6 address";
     QTest::newRow("unbalanced-brackets") << "http://[ff02::1" << "Expected ']' to match '[' in hostname";
 
     // invalid hostnames happen in TolerantMode too
