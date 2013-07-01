@@ -424,7 +424,7 @@ public:
     void appendHost(QString &appendTo, QUrl::FormattingOptions options) const;
     void appendPath(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const;
     void appendQuery(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const;
-    void appendFragment(QString &appendTo, QUrl::FormattingOptions options) const;
+    void appendFragment(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const;
 
     // the "end" parameters are like STL iterators: they point to one past the last valid element
     bool setScheme(const QString &value, int len, bool doSetError);
@@ -828,7 +828,7 @@ inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions o
     }
 }
 
-inline void QUrlPrivate::appendFragment(QString &appendTo, QUrl::FormattingOptions options) const
+inline void QUrlPrivate::appendFragment(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
 {
     appendToUser(appendTo, fragment, options, encodedFragmentActions, decodedFragmentInIsolationActions);
 }
@@ -2842,7 +2842,7 @@ QString QUrl::fragment(ComponentFormattingOptions options) const
     if (!d) return QString();
 
     QString result;
-    d->appendFragment(result, options);
+    d->appendFragment(result, options, QUrlPrivate::Fragment);
     if (d->hasFragment() && result.isNull())
         result.detach();
     return result;
@@ -3096,7 +3096,7 @@ QString QUrl::toString(FormattingOptions options) const
     }
     if (!(options & QUrl::RemoveFragment) && d->hasFragment()) {
         url += QLatin1Char('#');
-        d->appendFragment(url, options);
+        d->appendFragment(url, options, QUrlPrivate::FullUrl);
     }
 
     return url;
