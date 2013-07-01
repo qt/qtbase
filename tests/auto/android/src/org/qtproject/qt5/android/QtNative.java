@@ -164,7 +164,8 @@ public class QtNative extends Application
                               m_displayMetricsDesktopWidthPixels,
                               m_displayMetricsDesktopHeightPixels,
                               m_displayMetricsXDpi,
-                              m_displayMetricsYDpi);
+                              m_displayMetricsYDpi,
+                              1.0);
             startQtApplication(f.getAbsolutePath()+"\t"+params, environment);
             m_started = true;
         }
@@ -183,7 +184,7 @@ public class QtNative extends Application
 
         synchronized (m_mainActivityMutex) {
             if (m_started) {
-                setDisplayMetrics(screenWidthPixels, screenHeightPixels, desktopWidthPixels, desktopHeightPixels, XDpi, YDpi);
+                setDisplayMetrics(screenWidthPixels, screenHeightPixels, desktopWidthPixels, desktopHeightPixels, XDpi, YDpi, 1.0);
             } else {
                 m_displayMetricsScreenWidthPixels = screenWidthPixels;
                 m_displayMetricsScreenHeightPixels = screenHeightPixels;
@@ -379,8 +380,12 @@ public class QtNative extends Application
 
     // screen methods
     public static native void setDisplayMetrics(int screenWidthPixels,
-                    int screenHeightPixels, int desktopWidthPixels,
-                    int desktopHeightPixels, double XDpi, double YDpi);
+                                                int screenHeightPixels,
+                                                int desktopWidthPixels,
+                                                int desktopHeightPixels,
+                                                double XDpi,
+                                                double YDpi,
+                                                double scaledDensity);
     public static native void handleOrientationChanged(int newOrientation);
     // screen methods
 
