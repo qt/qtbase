@@ -1390,9 +1390,22 @@ void QWindowsWindow::handleWindowStateChange(Qt::WindowState state)
     setFlag(FrameDirty);
     m_windowState = state;
     QWindowSystemInterface::handleWindowStateChanged(window(), state);
-    if (state == Qt::WindowMinimized) {
+    switch (state) {
+    case Qt::WindowMinimized:
         handleHidden();
         QWindowSystemInterface::flushWindowSystemEvents(); // Tell QQuickWindow to stop rendering now.
+        break;
+    case Qt::WindowNoState:
+        // QTBUG-17548: We send expose events when receiving WM_Paint, but for
+        // layered windows, we won't receive any WM_Paint.
+        if (GetWindowLongPtr(m_data.hwnd, GWL_EXSTYLE) & WS_EX_LAYERED) {
+            fireExpose(QRegion(0, 0, window()->width(), window()->height()));
+            if (!QWindowsContext::instance()->asyncExpose())
+                QWindowSystemInterface::flushWindowSystemEvents();
+        }
+        break;
+    default:
+        break;
     }
 }
 
