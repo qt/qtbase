@@ -520,7 +520,7 @@ inline void QUrlPrivate::setError(ErrorCode errorCode, const QString &source, in
     error->position = supplement;
 }
 
-// From RFC 3896, Appendix A Collected ABNF for URI
+// From RFC 3986, Appendix A Collected ABNF for URI
 //    URI           = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
 //[...]
 //    scheme        = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
@@ -548,46 +548,63 @@ inline void QUrlPrivate::setError(ErrorCode errorCode, const QString &source, in
 // the path component has a complex ABNF that basically boils down to
 // slash-separated segments of "pchar"
 
-// The above is the strict definition of the URL components and it is what we
-// return encoded as FullyEncoded. However, we store the equivalent to
-// PrettyDecoded internally, as that is the default formatting mode and most
-// likely to be used. PrettyDecoded decodes spaces, unicode sequences and
-// unambiguous delimiters.
+// The above is the strict definition of the URL components and we mostly
+// adhere to it, with few exceptions. QUrl obeys the following behavior:
+//  - percent-encoding sequences always use uppercase HEXDIG;
+//  - unreserved characters are *always* decoded, no exceptions;
+//  - the space character and bytes with the high bit set are controlled by
+//    the EncodeSpaces and EncodeUnicode bits;
+//  - control characters, the percent sign itself, and bytes with the high
+//    bit set that don't form valid UTF-8 sequences are always encoded,
+//    except in FullyDecoded mode;
+//  - sub-delims are always left alone, except in FullyDecoded mode;
+//  - gen-delim change behavior depending on which section of the URL (or
+//    the entire URL) we're looking at; see below;
+//  - characters not mentioned above, like "<", and ">", are usually
+//    decoded in individual sections of the URL, but encoded when the full
+//    URL is put together (we can change on subjective definition of
+//    "pretty").
 //
-// An ambiguous delimiter is a delimiter that, if appeared decoded, would be
-// interpreted as the beginning of a new component. The exact delimiters that
-// match that definition change according to the use. When each field is
-// considered in isolation from the rest, there are no ambiguities. In other
-// words, we always store the most decoded form (except for the query, see
-// below).
+// The behavior for the delimiters bears some explanation. The spec says in
+// section 2.2:
+//     URIs that differ in the replacement of a reserved character with its
+//     corresponding percent-encoded octet are not equivalent.
+// (note: QUrl API mistakenly uses the "reserved" term, so we will refer to
+// them here as "delimiters").
 //
-// The ambiguities arise when components are put together. From last to first
-// component of a full URL, the ambiguities are:
-//  - fragment: none, since it's the last.
-//  - query: the "#" character is ambiguous, as it starts the fragment. In
-//    addition, the "+" character is treated specially, as should be both
-//    intra-query delimiters. Since we don't know which ones they are, we
-//    keep all reserved characters untouched.
-//  - path: the "#" and "?" characters are ambigous. In addition to them,
-//    the slash itself is considered special.
+// For that reason, we cannot encode delimiters found in decoded form and we
+// cannot decode the ones found in encoded form if that would change the
+// interpretation. Conversely, we *can* perform the transformation if it would
+// not change the interpretation. From the last component of a URL to the first,
+// here are the gen-delims we can unambiguously transform when the field is
+// taken in isolation:
+//  - fragment: none, since it's the last
+//    Deviation: the spec says "#" <-> %23 is unambiguous, but we treat it as if were
+//  - query: "#" is unambiguous
+//  - path: "#" and "?" are unambiguous
 //  - host: completely special but never ambiguous, see setHost() below.
-//  - password: the "#", "?", "/", "[", "]" and "@" characters are ambiguous
-//  - username: the "#", "?", "/", "[", "]", "@", and ":" characters are ambiguous
+//  - password: the "#", "?", "/", "[", "]" and "@" characters are unambiguous
+//  - username: the "#", "?", "/", "[", "]", "@", and ":" characters are unambiguous
 //  - scheme: doesn't accept any delimiter, see setScheme() below.
 //
-// When the authority component is considered in isolation, the ambiguities of
-// its components are:
-//  - host: special, never ambiguous
-//  - password: "[", "]", "@" are ambiguous
-//  - username: "[", "]", "@", ":" are ambiguous
+// Internally, QUrl stores each component in the format that corresponds to the
+// default mode (PrettyDecoded). It deviates from the "strict" FullyEncoded
+// mode in the following way:
+//  - spaces are decoded
+//  - valid UTF-8 sequences are decoded
+//  - gen-delims that can be unambiguously transformed are decoded
+//  - characters controlled by DecodeReserved are often decoded, though this behavior
+//    can change depending on the subjective definition of "pretty"
 //
-// Finally, when the userinfo is considered in isolation, the ambiguities of its
-// components are:
-//  - password: none, since it's the last
-//  - username: ":" is ambiguous
+// Note that the list of gen-delims that we can transform is different for the
+// user info (user name + password) and the authority (user info + host +
+// port).
+
 
 // list the recoding table modifications to be used with the recodeFromUser and
-// appendToUser functions, according to the rules above.
+// appendToUser functions, according to the rules above. Spaces and UTF-8
+// sequences are handled outside the tables.
+
 // the encodedXXX tables are run with the delimiters set to "leave" by default;
 // the decodedXXX tables are run with the delimiters set to "decode" by default
 // (except for the query, which doesn't use these functions)
@@ -596,103 +613,88 @@ inline void QUrlPrivate::setError(ErrorCode errorCode, const QString &source, in
 #define leave(x)  ushort(0x100 | (x))
 #define encode(x) ushort(0x200 | (x))
 
-static const ushort encodedUserNameActions[] = {
-    // first field, everything must be encoded, including the ":"
-    //    userinfo      = *( unreserved / pct-encoded / sub-delims / ":" )
-    encode('/'), // 0
-    encode('?'), // 1
-    encode('#'), // 2
+static const ushort userNameInIsolation[] = {
+    decode(':'), // 0
+    decode('@'), // 1
+    decode(']'), // 2
+    decode('['), // 3
+    decode('/'), // 4
+    decode('?'), // 5
+    decode('#'), // 6
+
+    decode('"'), // 7
+    decode('<'),
+    decode('>'),
+    decode('^'),
+    decode('\\'),
+    decode('|'),
+    decode('{'),
+    decode('}'),
+    0
+};
+static const ushort * const passwordInIsolation = userNameInIsolation + 1;
+static const ushort * const pathInIsolation = userNameInIsolation + 5;
+static const ushort * const queryInIsolation = userNameInIsolation + 6;
+static const ushort * const fragmentInIsolation = userNameInIsolation + 7;
+
+static const ushort userNameInUserInfo[] =  {
+    encode(':'), // 0
+    decode('@'), // 1
+    decode(']'), // 2
+    decode('['), // 3
+    decode('/'), // 4
+    decode('?'), // 5
+    decode('#'), // 6
+
+    decode('"'), // 7
+    decode('<'),
+    decode('>'),
+    decode('^'),
+    decode('\\'),
+    decode('|'),
+    decode('{'),
+    decode('}'),
+    0
+};
+static const ushort * const passwordInUserInfo = userNameInUserInfo + 1;
+
+static const ushort userNameInAuthority[] = {
+    encode(':'), // 0
+    encode('@'), // 1
+    encode(']'), // 2
     encode('['), // 3
-    encode(']'), // 4
-    encode('@'), // 5
-    encode(':'), // 6
+    decode('/'), // 4
+    decode('?'), // 5
+    decode('#'), // 6
+
+    decode('"'), // 7
+    decode('<'),
+    decode('>'),
+    decode('^'),
+    decode('\\'),
+    decode('|'),
+    decode('{'),
+    decode('}'),
     0
 };
-static const ushort * const decodedUserNameInAuthorityActions = encodedUserNameActions + 3;
-static const ushort * const decodedUserNameInUserInfoActions = encodedUserNameActions + 6;
-static const ushort * const decodedUserNameInUrlActions = encodedUserNameActions;
-static const ushort * const decodedUserNameInIsolationActions = 0;
+static const ushort * const passwordInAuthority = userNameInAuthority + 1;
 
-static const ushort encodedPasswordActions[] = {
-    // same as encodedUserNameActions, but decode ":"
-    //    userinfo      = *( unreserved / pct-encoded / sub-delims / ":" )
-    encode('/'), // 0
-    encode('?'), // 1
-    encode('#'), // 2
+static const ushort userNameInUrl[] = {
+    encode(':'), // 0
+    encode('@'), // 1
+    encode(']'), // 2
     encode('['), // 3
-    encode(']'), // 4
-    encode('@'), // 5
-    0
-};
-static const ushort * const decodedPasswordInAuthorityActions = encodedPasswordActions + 3;
-static const ushort * const decodedPasswordInUserInfoActions = 0;
-static const ushort * const decodedPasswordInUrlActions = encodedPasswordActions;
-static const ushort * const decodedPasswordInIsolationActions = 0;
+    encode('/'), // 4
+    encode('?'), // 5
+    encode('#'), // 6
 
-static const ushort encodedPathActions[] = {
-    //    pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
-    encode('['), // 0
-    encode(']'), // 1
-    encode('?'), // 2
-    encode('#'), // 3
-    leave('/'),  // 4
+    // no need to list encode(x) for the other characters
     0
 };
-static const ushort decodedPathInUrlActions[] = {
-    decode('{'), // 0
-    decode('}'), // 1
-    encode('?'), // 2
-    encode('#'), // 3
-    leave('/'),  // 4
-    0
-};
-static const ushort * const decodedPathInIsolationActions = encodedPathActions + 4; // leave('/')
-
-static const ushort encodedFragmentActions[] = {
-    //    fragment      = *( pchar / "/" / "?" )
-    // gen-delims permitted: ":" / "@" / "/" / "?"
-    //   ->   must encode: "[" / "]" / "#"
-    // HOWEVER: we allow "#" to remain decoded
-    decode('#'), // 0
-    decode(':'), // 1
-    decode('@'), // 2
-    decode('/'), // 3
-    decode('?'), // 4
-    encode('['), // 5
-    encode(']'), // 6
-    0
-};
-//static const ushort * const decodedFragmentInUrlActions = 0;
-static const ushort * const decodedFragmentInIsolationActions = 0;
-
-// the query is handled specially: the decodedQueryXXX tables are run with
-// the delimiters set to "leave" by default and the others set to "encode"
-static const ushort encodedQueryActions[] = {
-    //    query         = *( pchar / "/" / "?" )
-    // gen-delims permitted: ":" / "@" / "/" / "?"
-    // HOWEVER: we leave alone them alone, plus "[" and "]"
-    //   ->   must encode: "#"
-    encode('#'), // 0
-    0
-};
-static const ushort decodedQueryInIsolationActions[] = {
-    decode('"'), // 0
-    decode('<'), // 1
-    decode('>'), // 2
-    decode('^'), // 3
-    decode('\\'),// 4
-    decode('|'), // 5
-    decode('{'), // 6
-    decode('}'), // 7
-    decode('#'), // 8
-    0
-};
-static const ushort decodedQueryInUrlActions[] = {
-    decode('{'), // 6
-    decode('}'), // 7
-    encode('#'), // 8
-    0
-};
+static const ushort * const passwordInUrl = userNameInUrl + 1;
+static const ushort * const pathInUrl = userNameInUrl + 5;
+static const ushort * const queryInUrl = userNameInUrl + 6;
+static const ushort * const fragmentInUrl = 0;
 
 static inline void parseDecodedComponent(QString &data)
 {
@@ -705,32 +707,23 @@ recodeFromUser(const QString &input, const ushort *actions, int from, int to)
     QString output;
     const QChar *begin = input.constData() + from;
     const QChar *end = input.constData() + to;
-    if (qt_urlRecode(output, begin, end,
-                     QUrl::DecodeReserved, actions))
+    if (qt_urlRecode(output, begin, end, 0, actions))
         return output;
 
     return input.mid(from, to - from);
 }
 
-// appendXXXX functions:
-// the internal value is stored in its most decoded form, so that case is easy.
-// DecodeUnicode and DecodeSpaces are handled by qt_urlRecode.
-// That leaves these functions to handle two cases related to delimiters:
-//  1) encoded                           encodedXXXX tables
-//  2) decoded                           decodedXXXX tables
+// appendXXXX functions: copy from the internal form to the external, user form.
+// the internal value is stored in its PrettyDecoded form, so that case is easy.
 static inline void appendToUser(QString &appendTo, const QString &value, QUrl::FormattingOptions options,
-                                const ushort *encodedActions, const ushort *decodedActions)
+                                const ushort *actions)
 {
+    options |= QUrl::EncodeDelimiters;
+
     if (options == QUrl::PrettyDecoded) {
         appendTo += value;
         return;
     }
-
-    const ushort *actions = 0;
-    if (options & QUrl::EncodeDelimiters)
-        actions = encodedActions;
-    else
-        actions = decodedActions;
 
     if (!qt_urlRecode(appendTo, value.constData(), value.constEnd(), options, actions))
         appendTo += value;
@@ -758,31 +751,33 @@ inline void QUrlPrivate::appendUserInfo(QString &appendTo, QUrl::FormattingOptio
     const ushort *userNameActions;
     const ushort *passwordActions;
     if (options & QUrl::EncodeDelimiters) {
-        userNameActions = encodedUserNameActions;
-        passwordActions = encodedPasswordActions;
+        userNameActions = userNameInUrl;
+        passwordActions = passwordInUrl;
     } else {
         switch (appendingTo) {
         case UserInfo:
-            userNameActions = decodedUserNameInUserInfoActions;
-            passwordActions = decodedPasswordInUserInfoActions;
+            userNameActions = userNameInUserInfo;
+            passwordActions = passwordInUserInfo;
             break;
 
         case Authority:
-            userNameActions = decodedUserNameInAuthorityActions;
-            passwordActions = decodedPasswordInAuthorityActions;
+            userNameActions = userNameInAuthority;
+            passwordActions = passwordInAuthority;
             break;
 
         case FullUrl:
+            userNameActions = userNameInUrl;
+            passwordActions = passwordInUrl;
+            break;
+
         default:
-            userNameActions = decodedUserNameInUrlActions;
-            passwordActions = decodedPasswordInUrlActions;
+            // can't happen
+            Q_UNREACHABLE();
             break;
         }
     }
 
-    if ((options & QUrl::EncodeReserved) == 0)
-        options |= QUrl::DecodeReserved;
-
+    options |= QUrl::EncodeDelimiters;
     if (!qt_urlRecode(appendTo, userName.constData(), userName.constEnd(), options, userNameActions))
         appendTo += userName;
     if (options & QUrl::RemovePassword || !hasPassword()) {
@@ -796,12 +791,16 @@ inline void QUrlPrivate::appendUserInfo(QString &appendTo, QUrl::FormattingOptio
 
 inline void QUrlPrivate::appendUserName(QString &appendTo, QUrl::FormattingOptions options) const
 {
-    appendToUser(appendTo, userName, options, encodedUserNameActions, decodedUserNameInIsolationActions);
+    // only called from QUrl::userName()
+    appendToUser(appendTo, userName, options,
+                 options & QUrl::EncodeDelimiters ? userNameInUrl : userNameInIsolation);
 }
 
 inline void QUrlPrivate::appendPassword(QString &appendTo, QUrl::FormattingOptions options) const
 {
-    appendToUser(appendTo, password, options, encodedPasswordActions, decodedPasswordInIsolationActions);
+    // only called from QUrl::password()
+    appendToUser(appendTo, password, options,
+                 options & QUrl::EncodeDelimiters ? passwordInUrl : passwordInIsolation);
 }
 
 inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
@@ -822,41 +821,21 @@ inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions o
             thePath.chop(1);
     }
 
-    if (appendingTo != Path && !(options & QUrl::EncodeDelimiters)) {
-        if (!qt_urlRecode(appendTo, thePath.constData(), thePath.constEnd(), options, decodedPathInUrlActions))
-            appendTo += thePath;
+    appendToUser(appendTo, thePath, options,
+                 appendingTo == FullUrl || options & QUrl::EncodeDelimiters ? pathInUrl : pathInIsolation);
 
-    } else {
-        appendToUser(appendTo, thePath, options, encodedPathActions, decodedPathInIsolationActions);
-    }
 }
 
 inline void QUrlPrivate::appendFragment(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
 {
-    appendToUser(appendTo, fragment, options, encodedFragmentActions, decodedFragmentInIsolationActions);
+    appendToUser(appendTo, fragment, options,
+                 appendingTo == FullUrl || options & QUrl::EncodeDelimiters ? fragmentInUrl : fragmentInIsolation);
 }
 
 inline void QUrlPrivate::appendQuery(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
 {
-    // almost the same code as the previous functions
-    // except we prefer not to touch the delimiters
-    if (options == QUrl::PrettyDecoded && appendingTo == Query) {
-        appendTo += query;
-        return;
-    }
-
-    const ushort *actions = 0;
-    if (options & QUrl::EncodeDelimiters) {
-        actions = encodedQueryActions;
-    } else {
-        // reset to default qt_urlRecode behaviour (leave delimiters alone)
-        options |= QUrl::EncodeDelimiters;
-        actions = appendingTo == Query ? decodedQueryInIsolationActions : decodedQueryInUrlActions;
-    }
-
-    if (!qt_urlRecode(appendTo, query.constData(), query.constData() + query.length(),
-                      options, actions))
-        appendTo += query;
+    appendToUser(appendTo, query, options,
+                 appendingTo == FullUrl || options & QUrl::EncodeDelimiters ? queryInUrl : queryInIsolation);
 }
 
 // setXXX functions
@@ -1001,42 +980,31 @@ inline void QUrlPrivate::setUserInfo(const QString &userInfo, int from, int end)
 inline void QUrlPrivate::setUserName(const QString &value, int from, int end)
 {
     sectionIsPresent |= UserName;
-    userName = recodeFromUser(value, decodedUserNameInIsolationActions, from, end);
+    userName = recodeFromUser(value, userNameInIsolation, from, end);
 }
 
 inline void QUrlPrivate::setPassword(const QString &value, int from, int end)
 {
     sectionIsPresent |= Password;
-    password = recodeFromUser(value, decodedPasswordInIsolationActions, from, end);
+    password = recodeFromUser(value, passwordInIsolation, from, end);
 }
 
 inline void QUrlPrivate::setPath(const QString &value, int from, int end)
 {
     // sectionIsPresent |= Path; // not used, save some cycles
-    path = recodeFromUser(value, decodedPathInIsolationActions, from, end);
+    path = recodeFromUser(value, pathInIsolation, from, end);
 }
 
 inline void QUrlPrivate::setFragment(const QString &value, int from, int end)
 {
     sectionIsPresent |= Fragment;
-    fragment = recodeFromUser(value, decodedFragmentInIsolationActions, from, end);
+    fragment = recodeFromUser(value, fragmentInIsolation, from, end);
 }
 
 inline void QUrlPrivate::setQuery(const QString &value, int from, int iend)
 {
     sectionIsPresent |= Query;
-
-    // use the default actions for the query (don't set QUrl::DecodeAllDelimiters)
-    QString output;
-    const QChar *begin = value.constData() + from;
-    const QChar *end = value.constData() + iend;
-
-    // leave delimiters alone but decode the rest
-    if (qt_urlRecode(output, begin, end, QUrl::EncodeDelimiters,
-                     decodedQueryInIsolationActions))
-        query = output;
-    else
-        query = value.mid(from, iend - from);
+    query = recodeFromUser(value, queryInIsolation, from, iend);
 }
 
 // Host handling

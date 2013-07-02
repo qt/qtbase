@@ -113,59 +113,6 @@ static const uchar defaultActionTable[96] = {
 // 0x00 if it belongs to this category
 // 0xff if it doesn't
 
-static const uchar delimsMask[96] = {
-    0xff, // space
-    0x00, // '!' (sub-delim)
-    0xff, // '"'
-    0x00, // '#' (gen-delim)
-    0x00, // '$' (gen-delim)
-    0xff, // '%' (percent)
-    0x00, // '&' (gen-delim)
-    0x00, // "'" (sub-delim)
-    0x00, // '(' (sub-delim)
-    0x00, // ')' (sub-delim)
-    0x00, // '*' (sub-delim)
-    0x00, // '+' (sub-delim)
-    0x00, // ',' (sub-delim)
-    0xff, // '-' (unreserved)
-    0xff, // '.' (unreserved)
-    0x00, // '/' (gen-delim)
-
-    0xff, 0xff, 0xff, 0xff, 0xff,  // '0' to '4' (unreserved)
-    0xff, 0xff, 0xff, 0xff, 0xff,  // '5' to '9' (unreserved)
-    0x00, // ':' (gen-delim)
-    0x00, // ';' (sub-delim)
-    0xff, // '<'
-    0x00, // '=' (sub-delim)
-    0xff, // '>'
-    0x00, // '?' (gen-delim)
-
-    0x00, // '@' (gen-delim)
-    0xff, 0xff, 0xff, 0xff, 0xff,  // 'A' to 'E' (unreserved)
-    0xff, 0xff, 0xff, 0xff, 0xff,  // 'F' to 'J' (unreserved)
-    0xff, 0xff, 0xff, 0xff, 0xff,  // 'K' to 'O' (unreserved)
-    0xff, 0xff, 0xff, 0xff, 0xff,  // 'P' to 'T' (unreserved)
-    0xff, 0xff, 0xff, 0xff, 0xff, 0xff,  // 'U' to 'Z' (unreserved)
-    0x00, // '[' (gen-delim)
-    0xff, // '\'
-    0x00, // ']' (gen-delim)
-    0xff, // '^'
-    0xff, // '_' (unreserved)
-
-    0xff, // '`'
-    0xff, 0xff, 0xff, 0xff, 0xff,  // 'a' to 'e' (unreserved)
-    0xff, 0xff, 0xff, 0xff, 0xff,  // 'f' to 'j' (unreserved)
-    0xff, 0xff, 0xff, 0xff, 0xff,  // 'k' to 'o' (unreserved)
-    0xff, 0xff, 0xff, 0xff, 0xff,  // 'p' to 't' (unreserved)
-    0xff, 0xff, 0xff, 0xff, 0xff, 0xff,  // 'u' to 'z' (unreserved)
-    0xff, // '{'
-    0xff, // '|'
-    0xff, // '}'
-    0xff, // '~' (unreserved)
-
-    0xff  // BSKP
-};
-
 static const uchar reservedMask[96] = {
     0xff, // space
     0xff, // '!' (sub-delim)
@@ -617,8 +564,6 @@ static void maskTable(uchar (&table)[N], const uchar (&mask)[N])
 
     The \a encoding option modifies the default behaviour:
     \list
-    \li QUrl::EncodeDelimiters: if set, delimiters will be left untransformed (note: not encoded!);
-                                if unset, delimiters will be decoded
     \li QUrl::DecodeReserved: if set, reserved characters will be decoded;
                               if unset, reserved characters will be encoded
     \li QUrl::EncodeSpaces: if set, spaces will be encoded to "%20"; if unset, they will be " "
@@ -664,8 +609,6 @@ qt_urlRecode(QString &appendTo, const QChar *begin, const QChar *end,
         actionTable[0x7F - ' '] = EncodeCharacter;
     } else {
         memcpy(actionTable, defaultActionTable, sizeof actionTable);
-        if (!(encoding & QUrl::EncodeDelimiters))
-            maskTable(actionTable, delimsMask);
         if (encoding & QUrl::DecodeReserved)
             maskTable(actionTable, reservedMask);
         if (!(encoding & QUrl::EncodeSpaces))
