@@ -1322,7 +1322,8 @@ void VcprojGenerator::initGeneratedFiles()
     vcProject.GeneratedFiles.addFiles(project->values("GENERATED_SOURCES"));
     vcProject.GeneratedFiles.addFiles(project->values("GENERATED_FILES"));
     vcProject.GeneratedFiles.addFiles(project->values("IDLSOURCES"));
-    vcProject.GeneratedFiles.addFiles(project->values("RES_FILE"));
+    if (project->values("RC_FILE").isEmpty())
+        vcProject.GeneratedFiles.addFiles(project->values("RES_FILE"));
     vcProject.GeneratedFiles.addFiles(project->values("QMAKE_IMAGE_COLLECTION"));   // compat
     if(!extraCompilerOutputs.isEmpty())
         vcProject.GeneratedFiles.addFiles(extraCompilerOutputs.keys());
