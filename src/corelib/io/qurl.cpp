@@ -65,7 +65,8 @@
     unencoded representation is suitable for showing to users, but
     the encoded representation is typically what you would send to
     a web server. For example, the unencoded URL
-    "http://b\\uuml\c{}hler.example.com" would be sent to the server as
+    "http://bühler.example.com/List of applicants.xml"
+    would be sent to the server as
     "http://xn--bhler-kva.example.com/List%20of%20applicants.xml".
 
     A URL can also be constructed piece by piece by calling
@@ -75,8 +76,10 @@
     password, host and port. setUserInfo() sets the user name and
     password at once.
 
-    Call isValid() to check if the URL is valid. This can be done at
-    any point during the constructing of a URL.
+    Call isValid() to check if the URL is valid. This can be done at any point
+    during the constructing of a URL. If isValid() returns false, you should
+    clear() the URL before proceeding, or start over by parsing a new URL with
+    setUrl().
 
     Constructing a query is particularly convenient through the use of the \l
     QUrlQuery class and its methods QUrlQuery::setQueryItems(),
@@ -101,13 +104,19 @@
     toString(). This representation is appropriate for displaying a
     URL to a user in unencoded form. The encoded form however, as
     returned by toEncoded(), is for internal use, passing to web
-    servers, mail clients and so on.
+    servers, mail clients and so on. Both forms are technically correct
+    and represent the same URL unambiguously -- in fact, passing either
+    form to QUrl's constructor or to setUrl() will yield the same QUrl
+    object.
 
     QUrl conforms to the URI specification from
     \l{RFC 3986} (Uniform Resource Identifier: Generic Syntax), and includes
     scheme extensions from \l{RFC 1738} (Uniform Resource Locators). Case
     folding rules in QUrl conform to \l{RFC 3491} (Nameprep: A Stringprep
-    Profile for Internationalized Domain Names (IDN)).
+    Profile for Internationalized Domain Names (IDN)). It is also compatible with the
+    \l{http://freedesktop.org/wiki/Specifications/file-uri-spec/}{file URI specification}
+    from freedesktop.org, provided that the locale encodes file names using
+    UTF-8 (required by IDN).
 
     \section2 Error checking
 
@@ -170,6 +179,8 @@
                        of a percent-encoded sequence. This mode is only valid for the
                        setters setting components of a URL; it is not permitted in
                        the QUrl constructor, in fromEncoded() or in setUrl().
+                       For more information on this mode, see the documentation for
+                       QUrl::FullyDecoded.
 
     In TolerantMode, the parser has the following behaviour:
 
@@ -186,11 +197,12 @@
     \li Reserved and unreserved characters: An encoded URL should only
     contain a few characters as literals; all other characters should
     be percent-encoded. In TolerantMode, these characters will be
-    automatically percent-encoded where they are not allowed:
+    accepted if they are found in the URL:
             space / double-quote / "<" / ">" / "\" /
             "^" / "`" / "{" / "|" / "}"
     Those same characters can be decoded again by passing QUrl::DecodeReserved
-    to toString() or toEncoded().
+    to toString() or toEncoded(). In the getters of individual components,
+    those characters are often returned in decoded form.
 
     \endlist
 
@@ -268,11 +280,15 @@
                             would appear in the URL when the full URL is
                             represented as text. The delimiters are affected
                             by this option change from component to component.
+                            This flag has no effect in toString() or toEncoded().
 
-    \value EncodeReserved  Leave the US-ASCII reserved characters in their encoded
-                           forms.
+    \value EncodeReserved  Leave US-ASCII characters not permitted in the URL by
+                           the specification in their encoded form. This is the
+                           default on toString() and toEncoded().
 
-    \value DecodeReserved   Decode the US-ASCII reserved characters.
+    \value DecodeReserved  Decode the US-ASCII characters that the URL specification
+                           does not allow to appear in the URL. This is the
+                           default on the getters of individual components.
 
     \value FullyEncoded    Leave all characters in their properly-encoded form,
                            as this component would appear as part of a URL. When
@@ -284,28 +300,68 @@
                            components of the URL, this decodes every percent
                            encoding sequence, including control characters (U+0000
                            to U+001F) and UTF-8 sequences found in percent-encoded form.
-                           Note: if the component contains non-US-ASCII sequences
-                           that aren't valid UTF-8 sequences, the behaviour is
-                           undefined since QString cannot represent those values
-                           (data will be lost!)
+                           Use of this mode may cause data loss, see below for more information.
                            This mode is should not be used in functions where more
                            than one URL component is returned (userInfo() and authority())
                            and it is not allowed in url() and toString().
 
     The values of EncodeReserved and DecodeReserved should not be used together
-    in one call. The behaviour is undefined if that happens. They are provided
-    as separate values because the behaviour of the "pretty mode" with regards
+    in one call. The behavior is undefined if that happens. They are provided
+    as separate values because the behavior of the "pretty mode" with regards
     to reserved characters is different on certain components and specially on
     the full URL.
 
-    The FullyDecoded mode is similar to the behaviour of the functions
-    returning QString in Qt 4.x, including the fact that they will most likely
-    cause data loss if the component in question contains a non-UTF-8
-    percent-encoded sequence. Fortunately, those cases aren't common, so this
-    mode should be used when the component in question is used in a non-URL
-    context. For example, in an FTP client application, the path to the remote
-    file could be stored in a QUrl object, and the string to be transmitted to
-    the FTP server should be obtained using this flag.
+    \section2 Full decoding
+
+    The FullyDecoded mode is similar to the behavior of the functions returning
+    QString in Qt 4.x, in that every character represents itself and never has
+    any special meaning. This is true even for the percent character ('%'),
+    which should be interpreted to mean a literal percent, not the beginning of
+    a percent-encoded sequence. The same actual character, in all other
+    decoding modes, is represented by the sequence "%25".
+
+    Whenever re-applying data obtained with QUrl::FullyDecoded into a QUrl,
+    care must be taken to use the QUrl::DecodedMode parameter to the setters
+    (like setPath() and setUserName()). Failure to do so may cause
+    re-interpretation of the percent character ('%') as the beginning of a
+    percent-encoded sequence.
+
+    This mode is quite useful when portions of a URL are used in a non-URL
+    context. For example, to extract the username, password or file paths in an
+    FTP client application, the FullyDecoded mode should be used.
+
+    This mode should be used with care, since there are two conditions that
+    cannot be reliably represented in the returned QString. They are:
+
+    \list
+      \li \b{Non-UTF-8 sequences:} URLs may contain sequences of
+      percent-encoded characters that do not form valid UTF-8 sequences. Since
+      URLs need to be decoded using UTF-8, any decoder failure will result in
+      the QString containing one or more replacement characters where the
+      sequence existed.
+
+      \li \b{Encoded delimiters:} URLs are also allowed to make a distinction
+      between a delimiter found in its literal form and its equivalent in
+      percent-encoded form. This is most commonly found in the query, but is
+      permitted in most parts of the URL.
+    \endlist
+
+    The following example illustrates the problem:
+
+    \code
+        QUrl original("http://example.com/?q=a%2B%3Db%26c");
+        QUrl copy(original);
+        copy.setQuery(copy.query(QUrl::FullyDecoded), QUrl::DecodedMode);
+
+        qDebug() << original.toString();   // prints: http://example.com/?q=a%2B%3Db%26c
+        qDebug() << copy.toString();       // prints: http://example.com/?q=a+=b&c
+    \endcode
+
+    If the two URLs were used via HTTP GET, the interpretation by the web
+    server would probably be different. In the first case, it would interpret
+    as one parameter, with a key of "q" and value "a+=b&c". In the second
+    case, it would probably interpret as two parameters, one with a key of "q"
+    and value "a =b", and the second with a key "c" and no value.
 
     \sa QUrl::FormattingOptions
 */
@@ -1620,7 +1676,9 @@ inline void QUrlPrivate::validate() const
 /*!
     Constructs a URL by parsing \a url. QUrl will automatically percent encode
     all characters that are not allowed in a URL and decode the percent-encoded
-    sequences that represent a character that is allowed in a URL.
+    sequences that represent an unreserved character (letters, digits, hyphens,
+    undercores, dots and tildes). All other characters are left in their
+    original forms.
 
     Parses the \a url using the parser mode \a parsingMode. In TolerantMode
     (the default), QUrl will correct certain mistakes, notably the presence of
@@ -1722,8 +1780,9 @@ void QUrl::clear()
 /*!
     Parses \a url and sets this object to that value. QUrl will automatically
     percent encode all characters that are not allowed in a URL and decode the
-    percent-encoded sequences that represent a character that is allowed in a
-    URL.
+    percent-encoded sequences that represent an unreserved character (letters,
+    digits, hyphens, undercores, dots and tildes). All other characters are
+    left in their original forms.
 
     Parses the \a url using the parser mode \a parsingMode. In TolerantMode
     (the default), QUrl will correct certain mistakes, notably the presence of
@@ -1797,6 +1856,7 @@ void QUrl::setScheme(const QString &scheme)
 
     The scheme can only contain US-ASCII letters or digits, which means it
     cannot contain any character that would otherwise require encoding.
+    Additionally, schemes are always returned in lowercase form.
 
     \sa setScheme(), isRelative()
 */

@@ -82,7 +82,7 @@ QT_BEGIN_NAMESPACE
 
   All of the getter methods in QUrlQuery support an optional parameter of type
   QUrl::ComponentFormattingOptions, including query(), which dictate how to
-  encode the data in question. Regardless of the mode, the returned value must
+  encode the data in question. Except for QUrl::FullyDecoded, the returned value must
   still be considered a percent-encoded string, as there are certain values
   which cannot be expressed in decoded form (like control characters, byte
   sequences not decodable to UTF-8). For that reason, the percent character is
@@ -103,6 +103,20 @@ QT_BEGIN_NAMESPACE
   "%2B" sequence to a plus sign nor encode a plus sign. In fact, any "%2B" or
   "+" sequences found in the keys, values, or query string are left exactly
   like written (except for the uppercasing of "%2b" to "%2B").
+
+  \section2 Full decoding
+
+  With QUrl::FullyDecoded formatting, all percent-encoded sequences will be
+  decoded fully and the '%' character is used to represent itself.
+  QUrl::FullyDecoded should be used with care, since it may cause data loss.
+  See the documentation of QUrl::FullyDecoded for information on what data may
+  be lost.
+
+  This formatting mode should be used only when dealing with text presented to
+  the user in contexts where percent-encoding is not desired. Note that
+  QUrlQuery setters and query methods do not support the counterpart
+  QUrl::DecodedMode parsing, so using QUrl::FullyDecoded to obtain a listing of
+  keys may result in keys not found in the object.
 
   \section1 Non-standard delimiters
 
