@@ -189,7 +189,7 @@ static bool parseIp6(const QString &address, QIPAddressUtils::IPv6Address &addr,
     } else {
         scopeId->clear();
     }
-    return QIPAddressUtils::parseIp6(addr, tmp.constBegin(), tmp.constEnd());
+    return QIPAddressUtils::parseIp6(addr, tmp.constBegin(), tmp.constEnd()) == 0;
 }
 
 bool QHostAddressPrivate::parse()

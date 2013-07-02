@@ -1141,7 +1141,8 @@ static const QChar *parseIpFuture(QString &host, const QChar *begin, const QChar
 static bool parseIp6(QString &host, const QChar *begin, const QChar *end, QUrl::ParsingMode mode)
 {
     QIPAddressUtils::IPv6Address address;
-    if (!QIPAddressUtils::parseIp6(address, begin, end)) {
+    const QChar *ret = QIPAddressUtils::parseIp6(address, begin, end);
+    if (ret) {
         // this struct is kept in automatic storage because it's only 4 bytes
         const ushort decodeColon[] = { decode(':'), 0 };
 

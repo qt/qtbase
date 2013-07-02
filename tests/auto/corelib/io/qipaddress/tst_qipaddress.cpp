@@ -361,7 +361,7 @@ void tst_QIpAddress::parseIp6()
 #endif
 
     Ip6 result;
-    bool ok = QIPAddressUtils::parseIp6(result.u8, address.constBegin(), address.constEnd());
+    bool ok = QIPAddressUtils::parseIp6(result.u8, address.constBegin(), address.constEnd()) == 0;
     QVERIFY(ok);
     QCOMPARE(result, expected);
 }
@@ -441,7 +441,7 @@ void tst_QIpAddress::invalidParseIp6()
 #endif
 
     Ip6 result;
-    bool ok = QIPAddressUtils::parseIp6(result.u8, address.constBegin(), address.constEnd());
+    bool ok = QIPAddressUtils::parseIp6(result.u8, address.constBegin(), address.constEnd()) == 0;
     QVERIFY(!ok);
 }
 
