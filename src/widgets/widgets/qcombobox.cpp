@@ -59,6 +59,7 @@
 #include <qheaderview.h>
 #include <qmath.h>
 #include <qmetaobject.h>
+#include <qabstractproxymodel.h>
 #include <private/qguiapplication_p.h>
 #include <private/qapplication_p.h>
 #include <private/qcombobox_p.h>
@@ -173,18 +174,28 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
     return menuOption;
 }
 
-#ifdef QT_KEYPAD_NAVIGATION
-void QComboBoxPrivate::_q_completerActivated()
+#ifndef QT_NO_COMPLETER
+void QComboBoxPrivate::_q_completerActivated(const QModelIndex &index)
 {
     Q_Q(QComboBox);
+    if (index.isValid() && q->completer()) {
+        QAbstractProxyModel *proxy = qobject_cast<QAbstractProxyModel *>(q->completer()->completionModel());
+        if (proxy) {
+            q->setCurrentIndex(proxy->mapToSource(index).row());
+            emitActivated(currentIndex);
+        }
+    }
+
+#  ifdef QT_KEYPAD_NAVIGATION
     if ( QApplication::keypadNavigationEnabled()
          && q->isEditable()
          && q->completer()
          && q->completer()->completionMode() == QCompleter::UnfilteredPopupCompletion ) {
         q->setEditFocus(false);
     }
+#  endif // QT_KEYPAD_NAVIGATION
 }
-#endif
+#endif // !QT_NO_COMPLETER
 
 void QComboBoxPrivate::updateArrow(QStyle::StateFlag state)
 {
@@ -1149,6 +1160,14 @@ void QComboBoxPrivate::_q_editingFinished()
 void QComboBoxPrivate::_q_returnPressed()
 {
     Q_Q(QComboBox);
+
+    // The insertion code below does not apply when the policy is QComboBox::NoInsert.
+    // In case a completer is installed, item activation via the completer is handled
+    // in _q_completerActivated(). Otherwise _q_editingFinished() updates the current
+    // index as appropriate.
+    if (insertPolicy == QComboBox::NoInsert)
+        return;
+
     if (lineEdit && !lineEdit->text().isEmpty()) {
         if (q->count() >= maxCount && !(this->insertPolicy == QComboBox::InsertAtCurrent))
             return;
@@ -1191,7 +1210,6 @@ void QComboBoxPrivate::_q_returnPressed()
                     break;
             }
             break;
-        case QComboBox::NoInsert:
         default:
             break;
         }
@@ -1393,6 +1411,7 @@ void QComboBox::setAutoCompletion(bool enable)
         if (d->lineEdit->completer())
             return;
         d->completer = new QCompleter(d->model, d->lineEdit);
+        connect(d->completer, SIGNAL(activated(QModelIndex)), this, SLOT(_q_completerActivated(QModelIndex)));
         d->completer->setCaseSensitivity(d->autoCompletionCaseSensitivity);
         d->completer->setCompletionMode(QCompleter::InlineCompletion);
         d->completer->setCompletionColumn(d->modelColumn);
@@ -1805,8 +1824,10 @@ void QComboBox::setCompleter(QCompleter *c)
     if (!d->lineEdit)
         return;
     d->lineEdit->setCompleter(c);
-    if (c)
+    if (c) {
+        connect(c, SIGNAL(activated(QModelIndex)), this, SLOT(_q_completerActivated(QModelIndex)));
         c->setWidget(this);
+    }
 }
 
 /*!
