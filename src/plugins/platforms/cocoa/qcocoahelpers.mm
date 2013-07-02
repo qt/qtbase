@@ -84,11 +84,8 @@ static void drawImageReleaseData (void *info, const void *, size_t)
 
 CGImageRef qt_mac_image_to_cgimage(const QImage &img)
 {
-    if (img.width() <= 0 || img.height() <= 0) {
-        qWarning() << Q_FUNC_INFO <<
-            "trying to set" << img.width() << "x" << img.height() << "size for CGImage";
+    if (img.isNull())
         return 0;
-    }
 
     QImage *image;
     if (img.depth() != 32)
