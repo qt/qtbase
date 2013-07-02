@@ -141,8 +141,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \enum QOpenGLFunctions::OpenGLFeature
-    This enum defines OpenGL/ES 2.0 features that may be optional
-    on other platforms.
+    This enum defines OpenGL and OpenGL ES features whose presence
+    may depend on the implementation.
 
     \value Multitexture glActiveTexture() function is available.
     \value Shaders Shader functions are available.
