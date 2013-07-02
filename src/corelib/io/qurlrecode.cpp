@@ -573,6 +573,13 @@ static int decode(QString &appendTo, const ushort *begin, const ushort *end)
             continue;
         }
 
+        if (Q_UNLIKELY(end - input < 3 || !isHex(input[1]) || !isHex(input[2]))) {
+            // badly-encoded data
+            appendTo.resize(origSize + (end - begin));
+            memcpy(appendTo.begin() + origSize, begin, (end - begin) * sizeof(ushort));
+            return end - begin;
+        }
+
         if (Q_UNLIKELY(!output)) {
             // detach
             appendTo.resize(origSize + (end - begin));
@@ -582,9 +589,6 @@ static int decode(QString &appendTo, const ushort *begin, const ushort *end)
         }
 
         ++input;
-        Q_ASSERT(input <= end - 2); // we need two characters
-        Q_ASSERT(isHex(input[0]));
-        Q_ASSERT(isHex(input[1]));
         *output++ = decodeNibble(input[0]) << 4 | decodeNibble(input[1]);
         input += 2;
     }
@@ -635,6 +639,9 @@ static void maskTable(uchar (&table)[N], const uchar (&mask)[N])
     handled. It consists of a sequence of 16-bit values, where the low 8 bits
     indicate the character in question and the high 8 bits are either \c
     EncodeCharacter, \c LeaveCharacter or \c DecodeCharacter.
+
+    This function corrects percent-encoded errors by interpreting every '%' as
+    meaning "%25" (all percents in the same content).
  */
 
 Q_AUTOTEST_EXPORT int

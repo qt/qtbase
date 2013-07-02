@@ -824,12 +824,20 @@ void tst_QUrlInternal::correctEncodedMistakes()
     QFETCH(QString, expected);
 
     // prepend some data to be sure that it remains there
-    QString output = QTest::currentDataTag();
-    expected.prepend(output);
+    QString dataTag = QTest::currentDataTag();
+    QString output = dataTag;
 
     if (!qt_urlRecode(output, input.constData(), input.constData() + input.length(), 0))
         output += input;
-    QCOMPARE(output, expected);
+    QCOMPARE(output, dataTag + expected);
+
+    // now try the full decode mode
+    output = dataTag;
+    QString expected2 = QUrl::fromPercentEncoding(expected.toLatin1());
+
+    if (!qt_urlRecode(output, input.constData(), input.constData() + input.length(), QUrl::FullyDecoded))
+        output += input;
+    QCOMPARE(output, dataTag + expected2);
 }
 
 static void addUtf8Data(const char *name, const char *data)
