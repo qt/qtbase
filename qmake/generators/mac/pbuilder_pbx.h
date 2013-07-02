@@ -61,6 +61,7 @@ class ProjectBuilderMakefileGenerator : public UnixMakefileGenerator
     QString findProgram(const ProString &prog);
     QString fixForOutput(const QString &file);
     ProStringList fixListForOutput(const char *where);
+    ProStringList fixListForOutput(const ProStringList &list);
     int     reftypeForFile(const QString &where);
     QString sourceTreeForFile(const QString &where);
     QString projectSuffix() const;

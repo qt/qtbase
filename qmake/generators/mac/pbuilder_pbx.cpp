@@ -1382,24 +1382,24 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                         !project->values("QMAKE_FRAMEWORKPATH").isEmpty() ? SettingsAsList : 0, 5) << ";" << "\n";
 
                 {
-                    ProStringList cflags = fixListForOutput("QMAKE_CFLAGS");
+                    ProStringList cflags = project->values("QMAKE_CFLAGS");
                     const ProStringList &prl_defines = project->values("PRL_EXPORT_DEFINES");
                     for (int i = 0; i < prl_defines.size(); ++i)
                         cflags += "-D" + prl_defines.at(i);
                     const ProStringList &defines = project->values("DEFINES");
                     for (int i = 0; i < defines.size(); ++i)
                         cflags += "-D" + defines.at(i);
-                    t << "\t\t\t\t" << writeSettings("OTHER_CFLAGS", cflags, SettingsAsList, 5) << ";" << "\n";
+                    t << "\t\t\t\t" << writeSettings("OTHER_CFLAGS", fixListForOutput(cflags), SettingsAsList, 5) << ";" << "\n";
                 }
                 {
-                    ProStringList cxxflags = fixListForOutput("QMAKE_CXXFLAGS");
+                    ProStringList cxxflags = project->values("QMAKE_CXXFLAGS");
                     const ProStringList &prl_defines = project->values("PRL_EXPORT_DEFINES");
                     for (int i = 0; i < prl_defines.size(); ++i)
                         cxxflags += "-D" + prl_defines.at(i);
                     const ProStringList &defines = project->values("DEFINES");
                     for (int i = 0; i < defines.size(); ++i)
                         cxxflags += "-D" + defines.at(i);
-                    t << "\t\t\t\t" << writeSettings("OTHER_CPLUSPLUSFLAGS", cxxflags, SettingsAsList, 5) << ";" << "\n";
+                    t << "\t\t\t\t" << writeSettings("OTHER_CPLUSPLUSFLAGS", fixListForOutput(cxxflags), SettingsAsList, 5) << ";" << "\n";
                 }
                 if (!project->isActiveConfig("staticlib")) {
                     t << "\t\t\t\t" << writeSettings("OTHER_LDFLAGS",
@@ -1527,8 +1527,13 @@ ProjectBuilderMakefileGenerator::fixForOutput(const QString &values)
 ProStringList
 ProjectBuilderMakefileGenerator::fixListForOutput(const char *where)
 {
+    return fixListForOutput(project->values(where));
+}
+
+ProStringList
+ProjectBuilderMakefileGenerator::fixListForOutput(const ProStringList &l)
+{
     ProStringList ret;
-    const ProStringList &l = project->values(where);
     for(int i = 0; i < l.count(); i++)
         ret += fixForOutput(l[i].toQString());
     return ret;
