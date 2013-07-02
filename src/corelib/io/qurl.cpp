@@ -774,8 +774,6 @@ recodeFromUser(const QString &input, const ushort *actions, int from, int to)
 static inline void appendToUser(QString &appendTo, const QString &value, QUrl::FormattingOptions options,
                                 const ushort *actions)
 {
-    options |= QUrl::EncodeDelimiters;
-
     if (options == QUrl::PrettyDecoded) {
         appendTo += value;
         return;
@@ -833,7 +831,6 @@ inline void QUrlPrivate::appendUserInfo(QString &appendTo, QUrl::FormattingOptio
         }
     }
 
-    options |= QUrl::EncodeDelimiters;
     if (!qt_urlRecode(appendTo, userName.constData(), userName.constEnd(), options, userNameActions))
         appendTo += userName;
     if (options & QUrl::RemovePassword || !hasPassword()) {
