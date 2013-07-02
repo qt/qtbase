@@ -1096,6 +1096,7 @@ static const QChar *parseIpFuture(QString &host, const QChar *begin, const QChar
             "-._~";       // unreserved
 
     // the brackets and the "v" have been checked
+    const QChar *const origBegin = begin;
     if (begin[3].unicode() != '.')
         return &begin[3];
     if ((begin[2].unicode() >= 'A' && begin[2].unicode() <= 'F') ||
@@ -1128,12 +1129,12 @@ static const QChar *parseIpFuture(QString &host, const QChar *begin, const QChar
             else if (begin->unicode() < 0x80 && strchr(acceptable, begin->unicode()) != 0)
                 host += *begin;
             else
-                return begin;
+                return decoded.isEmpty() ? begin : &origBegin[2];
         }
         host += QLatin1Char(']');
         return 0;
     }
-    return &begin[2];
+    return &origBegin[2];
 }
 
 // ONLY the IPv6 address is parsed here, WITHOUT the brackets
