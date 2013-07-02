@@ -158,6 +158,7 @@ QT_BEGIN_NAMESPACE
     \value StencilSeparate Separate stencil functions are available.
     \value NPOTTextures Non power of two textures are available.
     \value NPOTTextureRepeat Non power of two textures can use GL_REPEAT as wrap parameter.
+    \value FixedFunctionPipeline The fixed function pipeline is available.
 */
 
 // Hidden private fields for additional extension data.
@@ -331,6 +332,13 @@ static int qt_gl_resolve_features()
     if (format.majorVersion() >= 3)
         features |= QOpenGLFunctions::Framebuffers;
 
+    const QPair<int, int> version = format.version();
+    if (version < qMakePair(3, 0)
+            || (version == qMakePair(3, 0) && format.testOption(QSurfaceFormat::DeprecatedFunctions))
+            || (version == qMakePair(3, 1) && extensions.match("GL_ARB_compatibility"))
+            || (version >= qMakePair(3, 2) && format.profile() == QSurfaceFormat::CompatibilityProfile)) {
+        features |= QOpenGLFunctions::FixedFunctionPipeline;
+    }
     return features;
 #endif
 }
