@@ -111,6 +111,8 @@ private slots:
     void percentEncoding();
     void swap();
     void symmetry();
+    void ipvfuture_data();
+    void ipvfuture();
     void ipv6_data();
     void ipv6();
     void ipv6_2_data();
@@ -1616,6 +1618,66 @@ void tst_QUrl::symmetry()
     }
 }
 
+void tst_QUrl::ipvfuture_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<bool>("isValid");
+    QTest::addColumn<QString>("output");
+
+    // No one uses IPvFuture yet, so we have no clue what it might contain
+    // We're just testing that it can hold what the RFC says it should hold:
+    //    IPvFuture     = "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" )
+    QTest::newRow("missing-version-dot") << "x://[v]" << false;
+    QTest::newRow("missing-version") << "x://[v.]" << false;
+    QTest::newRow("missing-version-2") << "x://[v.1234]" << false;
+    QTest::newRow("missing-dot") << "x://[v7]" << false;
+    QTest::newRow("missing-dot-2") << "x://[v71234]" << false;
+    QTest::newRow("missing-data") << "x://[v7.]" << false;
+    QTest::newRow("non-hex-version") << "x://[vz.1234]" << false;
+
+    QTest::newRow("digit-ver") << "x://[v7.1]" << true << "x://[v7.1]";
+    QTest::newRow("lowercase-hex-ver") << "x://[va.1]" << true << "x://[va.1]";
+    QTest::newRow("lowercase-hex-ver") << "x://[vA.1]" << true << "x://[vA.1]";
+
+    QTest::newRow("data-digits") << "x://[v7.1234]" << true << "x://[v7.1234]";
+    QTest::newRow("data-unreserved") << "x://[v7.hello~-WORLD_.com]" << true << "x://[v7.hello~-WORLD_.com]";
+    QTest::newRow("data-sub-delims-colon") << "x://[v7.!$&'()*+,;=:]" << true << "x://[v7.!$&'()*+,;=:]";
+
+    // we're using the tolerant parser
+    QTest::newRow("data-encoded-digits") << "x://[v7.%31%32%33%34]" << true << "x://[v7.1234]";
+    QTest::newRow("data-encoded-unreserved") << "x://[v7.%7E%2D%54%5f%2E]" << true << "x://[v7.~-T_.]";
+    QTest::newRow("data-encoded-sub-delims-colon") << "x://[v7.%21%24%26%27%28%29%2A%2B%2C%3B%3D%3A]" << true << "x://[v7.!$&'()*+,;=:]";
+
+    // should we test "[%76%37%2ex]" -> "[v7.x]" ?
+
+    QTest::newRow("data-invalid-space") << "x://[v7.%20]" << false;
+    QTest::newRow("data-invalid-control") << "x://[v7.\x7f]" << false;
+    QTest::newRow("data-invalid-other-1") << "x://[v7.{1234}]" << false;
+    QTest::newRow("data-invalid-other-2") << "x://[v7.<hello>]" << false;
+    QTest::newRow("data-invalid-unicode") << "x://[v7.æøå]" << false;
+    QTest::newRow("data-invalid-percent") << "x://[v7.%]" << false;
+    QTest::newRow("data-invalid-percent-percent") << "x://[v7.%25]" << false;
+}
+
+void tst_QUrl::ipvfuture()
+{
+    QFETCH(QString, input);
+    QFETCH(bool, isValid);
+
+    QUrl url(input);
+    if (isValid) {
+        QVERIFY2(url.isValid(), qPrintable(url.errorString()));
+
+        QFETCH(QString, output);
+        QCOMPARE(url.toString(), output);
+
+        QUrl url2(output);
+        QCOMPARE(url2, url);
+    } else {
+        QVERIFY(!url.isValid());
+    }
+}
+
 
 void tst_QUrl::ipv6_data()
 {
@@ -1953,7 +2015,9 @@ void tst_QUrl::strictParser_data()
     QTest::newRow("invalid-ipvfuture-1") << "http://[v7]" << "Invalid IPvFuture address";
     QTest::newRow("invalid-ipvfuture-2") << "http://[v7.]" << "Invalid IPvFuture address";
     QTest::newRow("invalid-ipvfuture-3") << "http://[v789]" << "Invalid IPvFuture address";
+    QTest::newRow("invalid-ipvfuture-char1") << "http://[v7.^]" << "Invalid IPvFuture address";
     QTest::newRow("invalid-encoded-ipv6") << "x://[%3a%3a%31]" << "Invalid IPv6 address";
+    QTest::newRow("invalid-encoded-ipvfuture") << "x://[v7.%7E%2D%54%5f%2E]" << "Invalid IPvFuture address";
     QTest::newRow("unbalanced-brackets") << "http://[ff02::1" << "Expected ']' to match '[' in hostname";
 
     // invalid hostnames happen in TolerantMode too

@@ -1087,7 +1087,7 @@ inline void QUrlPrivate::appendHost(QString &appendTo, QUrl::FormattingOptions o
 
 // the whole IPvFuture is passed and parsed here, including brackets;
 // returns null if the parsing was successful, or the QChar of the first failure
-static const QChar *parseIpFuture(QString &host, const QChar *begin, const QChar *end)
+static const QChar *parseIpFuture(QString &host, const QChar *begin, const QChar *end, QUrl::ParsingMode mode)
 {
     //    IPvFuture     = "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" )
     static const char acceptable[] =
@@ -1098,17 +1098,18 @@ static const QChar *parseIpFuture(QString &host, const QChar *begin, const QChar
     // the brackets and the "v" have been checked
     if (begin[3].unicode() != '.')
         return &begin[3];
-    if ((begin[2].unicode() >= 'A' && begin[2].unicode() >= 'F') ||
+    if ((begin[2].unicode() >= 'A' && begin[2].unicode() <= 'F') ||
             (begin[2].unicode() >= 'a' && begin[2].unicode() <= 'f') ||
             (begin[2].unicode() >= '0' && begin[2].unicode() <= '9')) {
         // this is so unlikely that we'll just go down the slow path
         // decode the whole string, skipping the "[vH." and "]" which we already know to be there
         host += QString::fromRawData(begin, 4);
+
         begin += 4;
         --end;
 
         QString decoded;
-        if (qt_urlRecode(decoded, begin, end, QUrl::FullyEncoded, 0)) {
+        if (mode == QUrl::TolerantMode && qt_urlRecode(decoded, begin, end, QUrl::FullyDecoded, 0)) {
             begin = decoded.constBegin();
             end = decoded.constEnd();
         }
@@ -1180,7 +1181,7 @@ inline bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl:
         }
 
         if (len > 5 && begin[1].unicode() == 'v') {
-            const QChar *c = parseIpFuture(host, begin, end);
+            const QChar *c = parseIpFuture(host, begin, end, mode);
             if (c)
                 setError(InvalidIPvFutureError, value, c - value.constData());
             return !c;
@@ -3653,7 +3654,7 @@ static QString errorMessage(QUrlPrivate::ErrorCode errorCode, const QString &err
     case QUrlPrivate::InvalidIPv6AddressError:
         return QStringLiteral("Invalid IPv6 address");
     case QUrlPrivate::InvalidIPvFutureError:
-        return QStringLiteral("Invalid IPvFuture address");
+        return QStringLiteral("Invalid IPvFuture address (character '%1' not permitted)").arg(c);
     case QUrlPrivate::HostMissingEndBracket:
         return QStringLiteral("Expected ']' to match '[' in hostname");
 
