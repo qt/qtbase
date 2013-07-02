@@ -111,7 +111,7 @@ public:
 
     QPointer<QEventLoop> eventLoop;
 
-    bool nativeDialogInUse; // Assigned in setVisible_sys() in derived classes.
+    bool nativeDialogInUse;
     QPlatformDialogHelper *platformHelper() const;
 
 private:

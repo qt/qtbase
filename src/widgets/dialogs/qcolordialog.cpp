@@ -1267,7 +1267,7 @@ inline bool QColorDialogPrivate::isAlphaVisible() const { return cs->isAlphaVisi
 
 QColor QColorDialogPrivate::currentQColor() const
 {
-    if (!options->testOption(QColorDialogOptions::DontUseNativeDialog) && nativeDialogInUse)
+    if (nativeDialogInUse)
         return platformColorDialogHelper()->currentColor();
     return cs->currentQColor();
 }
@@ -1410,16 +1410,20 @@ void QColorShower::updateQColor()
 //sets all widgets to display h,s,v
 void QColorDialogPrivate::_q_newHsv(int h, int s, int v)
 {
-    cs->setHsv(h, s, v);
-    cp->setCol(h, s);
-    lp->setCol(h, s, v);
+    if (!nativeDialogInUse) {
+        cs->setHsv(h, s, v);
+        cp->setCol(h, s);
+        lp->setCol(h, s, v);
+    }
 }
 
 //sets all widgets to display rgb
 void QColorDialogPrivate::setCurrentColor(QRgb rgb)
 {
-    cs->setRgb(rgb);
-    _q_newColorTypedIn(rgb);
+    if (!nativeDialogInUse) {
+        cs->setRgb(rgb);
+        _q_newColorTypedIn(rgb);
+    }
 }
 
 // hack; doesn't keep curCol in sync, so use with care
@@ -1481,10 +1485,12 @@ QColor QColorDialogPrivate::grabScreenColor(const QPoint &p)
 //sets all widgets except cs to display rgb
 void QColorDialogPrivate::_q_newColorTypedIn(QRgb rgb)
 {
-    int h, s, v;
-    rgb2hsv(rgb, h, s, v);
-    cp->setCol(h, s);
-    lp->setCol(h, s, v);
+    if (!nativeDialogInUse) {
+        int h, s, v;
+        rgb2hsv(rgb, h, s, v);
+        cp->setCol(h, s);
+        lp->setCol(h, s, v);
+    }
 }
 
 void QColorDialogPrivate::_q_newCustom(int r, int c)
@@ -1552,9 +1558,24 @@ void QColorDialogPrivate::init(const QColor &initial)
     q->setSizeGripEnabled(false);
     q->setWindowTitle(QColorDialog::tr("Select Color"));
 
+    // default: use the native dialog if possible.  Can be overridden in setOptions()
     nativeDialogInUse = (platformColorDialogHelper() != 0);
     screenColorPicking = false;
     nextCust = 0;
+
+    if (!nativeDialogInUse)
+        initWidgets();
+
+#ifdef Q_WS_MAC
+    delegate = 0;
+#endif
+
+    q->setCurrentColor(initial);
+}
+
+void QColorDialogPrivate::initWidgets()
+{
+    Q_Q(QColorDialog);
     QVBoxLayout *mainLay = new QVBoxLayout(q);
     // there's nothing in this dialog that benefits from sizing up
     mainLay->setSizeConstraint(QLayout::SetFixedSize);
@@ -1700,12 +1721,6 @@ void QColorDialogPrivate::init(const QColor &initial)
     QObject::connect(cancel, SIGNAL(clicked()), q, SLOT(reject()));
 
     retranslateStrings();
-
-#ifdef Q_WS_MAC
-    delegate = 0;
-#endif
-
-    q->setCurrentColor(initial);
 }
 
 void QColorDialogPrivate::initHelper(QPlatformDialogHelper *h)
@@ -1816,12 +1831,13 @@ QColorDialog::QColorDialog(const QColor &initial, QWidget *parent)
 void QColorDialog::setCurrentColor(const QColor &color)
 {
     Q_D(QColorDialog);
-    d->setCurrentColor(color.rgb());
-    d->selectColor(color);
-    d->setCurrentAlpha(color.alpha());
-
-    if (!testOption(QColorDialog::DontUseNativeDialog) && d->nativeDialogInUse)
+    if (d->nativeDialogInUse)
         d->platformColorDialogHelper()->setCurrentColor(color);
+    else {
+        d->setCurrentColor(color.rgb());
+        d->selectColor(color);
+        d->setCurrentAlpha(color.alpha());
+    }
 }
 
 QColor QColorDialog::currentColor() const
@@ -1891,10 +1907,14 @@ void QColorDialog::setOptions(ColorDialogOptions options)
         return;
 
     d->options->setOptions(QColorDialogOptions::ColorDialogOptions(int(options)));
-    d->buttons->setVisible(!(options & NoButtons));
-    d->showAlpha(options & ShowAlphaChannel);
-    if (options & DontUseNativeDialog)
+    if ((options & DontUseNativeDialog) && d->nativeDialogInUse) {
         d->nativeDialogInUse = false;
+        d->initWidgets();
+    }
+    if (!d->nativeDialogInUse) {
+        d->buttons->setVisible(!(options & NoButtons));
+        d->showAlpha(options & ShowAlphaChannel);
+    }
 }
 
 QColorDialog::ColorDialogOptions QColorDialog::options() const
@@ -1976,7 +1996,7 @@ void QColorDialog::setVisible(bool visible)
     }
 #else
 
-    if (!(options() & DontUseNativeDialog) && d->nativeDialogInUse) {
+    if (d->nativeDialogInUse) {
         d->setNativeDialogVisible(visible);
         // Set WA_DontShowOnScreen so that QDialog::setVisible(visible) below
         // updates the state correctly, but skips showing the non-native version:

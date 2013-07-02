@@ -82,6 +82,7 @@ public:
         { return static_cast<QPlatformColorDialogHelper *>(platformHelper()); }
 
     void init(const QColor &initial);
+    void initWidgets();
     QRgb currentColor() const;
     QColor currentQColor() const;
     void setCurrentColor(QRgb rgb);
