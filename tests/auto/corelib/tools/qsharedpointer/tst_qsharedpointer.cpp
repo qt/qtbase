@@ -112,6 +112,7 @@ private slots:
     void invalidConstructs();
 
     void qvariantCast();
+    void sharedFromThis();
 
 public slots:
     void cleanup() { safetyCheck(); }
@@ -2139,6 +2140,228 @@ void tst_QSharedPointer::qvariantCast()
         QWeakPointer<QThread> other = qWeakPointerFromVariant<QThread>(v);
         QVERIFY(!other);
     }
+}
+
+class SomeClass : public QEnableSharedFromThis<SomeClass>
+{
+public:
+    SomeClass()
+    {
+    }
+
+    QSharedPointer<SomeClass> getSharedPtr()
+    {
+        return sharedFromThis();
+    }
+
+    QSharedPointer<const SomeClass> getSharedPtr() const
+    {
+        return sharedFromThis();
+    }
+
+    Data data;
+};
+
+void tst_QSharedPointer::sharedFromThis()
+{
+    const int generations = Data::generationCounter;
+    const int destructions = Data::destructorCounter;
+
+    {
+        SomeClass sc;
+        QSharedPointer<SomeClass> scp = sc.sharedFromThis();
+        QVERIFY(scp.isNull());
+        QCOMPARE(Data::generationCounter, generations + 1);
+        QCOMPARE(Data::destructorCounter, destructions);
+
+        QSharedPointer<const SomeClass> const_scp = sc.sharedFromThis();
+        QVERIFY(const_scp.isNull());
+        QCOMPARE(Data::generationCounter, generations + 1);
+        QCOMPARE(Data::destructorCounter, destructions);
+    }
+
+    QCOMPARE(Data::generationCounter, generations + 1);
+    QCOMPARE(Data::destructorCounter, destructions + 1);
+
+    {
+        const SomeClass sc;
+        QSharedPointer<const SomeClass> const_scp = sc.sharedFromThis();
+        QVERIFY(const_scp.isNull());
+        QCOMPARE(Data::generationCounter, generations + 2);
+        QCOMPARE(Data::destructorCounter, destructions + 1);
+    }
+
+    QCOMPARE(Data::generationCounter, generations + 2);
+    QCOMPARE(Data::destructorCounter, destructions + 2);
+
+    {
+        SomeClass *sc = new SomeClass;
+        QCOMPARE(Data::generationCounter, generations + 3);
+        QCOMPARE(Data::destructorCounter, destructions + 2);
+
+        QSharedPointer<SomeClass> scp;
+        QVERIFY(scp.isNull());
+        QCOMPARE(Data::generationCounter, generations + 3);
+        QCOMPARE(Data::destructorCounter, destructions + 2);
+
+        scp = sc->sharedFromThis();
+        QVERIFY(scp.isNull());
+        QCOMPARE(Data::generationCounter, generations + 3);
+        QCOMPARE(Data::destructorCounter, destructions + 2);
+
+        scp = QSharedPointer<SomeClass>(sc);
+        QVERIFY(!scp.isNull());
+        QCOMPARE(scp.data(), sc);
+        QCOMPARE(Data::generationCounter, generations + 3);
+        QCOMPARE(Data::destructorCounter, destructions + 2);
+
+        QSharedPointer<SomeClass> scp2;
+        QVERIFY(scp2.isNull());
+        QCOMPARE(Data::generationCounter, generations + 3);
+        QCOMPARE(Data::destructorCounter, destructions + 2);
+
+        scp2 = sc->sharedFromThis();
+        QVERIFY(!scp2.isNull());
+        QVERIFY(scp == scp2);
+        QCOMPARE(scp2.data(), sc);
+        QCOMPARE(Data::generationCounter, generations + 3);
+        QCOMPARE(Data::destructorCounter, destructions + 2);
+
+        QSharedPointer<const SomeClass> scp3;
+        QVERIFY(scp3.isNull());
+        QCOMPARE(Data::generationCounter, generations + 3);
+        QCOMPARE(Data::destructorCounter, destructions + 2);
+
+        scp3 = sc->sharedFromThis();
+        QVERIFY(!scp3.isNull());
+        QVERIFY(scp == scp3);
+        QVERIFY(scp2 == scp3);
+        QCOMPARE(scp3.data(), sc);
+        QCOMPARE(Data::generationCounter, generations + 3);
+        QCOMPARE(Data::destructorCounter, destructions + 2);
+
+        QSharedPointer<SomeClass> scp4;
+        QVERIFY(scp4.isNull());
+        QCOMPARE(Data::generationCounter, generations + 3);
+        QCOMPARE(Data::destructorCounter, destructions + 2);
+
+        scp4 = sc->getSharedPtr();
+        QVERIFY(!scp4.isNull());
+        QVERIFY(scp == scp4);
+        QVERIFY(scp2 == scp4);
+        QVERIFY(scp3 == scp4);
+        QCOMPARE(scp4.data(), sc);
+        QCOMPARE(Data::generationCounter, generations + 3);
+        QCOMPARE(Data::destructorCounter, destructions + 2);
+
+        QSharedPointer<const SomeClass> scp5;
+        QVERIFY(scp5.isNull());
+        QCOMPARE(Data::generationCounter, generations + 3);
+        QCOMPARE(Data::destructorCounter, destructions + 2);
+
+        scp5 = const_cast<const SomeClass *>(sc)->getSharedPtr();
+        QVERIFY(!scp4.isNull());
+        QVERIFY(scp == scp5);
+        QVERIFY(scp2 == scp5);
+        QVERIFY(scp3 == scp5);
+        QVERIFY(scp4 == scp5);
+        QCOMPARE(scp5.data(), sc);
+        QCOMPARE(Data::generationCounter, generations + 3);
+        QCOMPARE(Data::destructorCounter, destructions + 2);
+    }
+
+    QCOMPARE(Data::generationCounter, generations + 3);
+    QCOMPARE(Data::destructorCounter, destructions + 3);
+
+    QSharedPointer<SomeClass> scp;
+
+    QVERIFY(scp.isNull());
+
+    {
+        QSharedPointer<SomeClass> scp2(new SomeClass());
+        QVERIFY(!scp2.isNull());
+
+        scp = scp2->sharedFromThis();
+        QVERIFY(!scp.isNull());
+
+        QVERIFY(scp == scp2);
+        QCOMPARE(Data::generationCounter, generations + 4);
+        QCOMPARE(Data::destructorCounter, destructions + 3);
+    }
+
+
+    QCOMPARE(Data::generationCounter, generations + 4);
+    QCOMPARE(Data::destructorCounter, destructions + 3);
+    QVERIFY(!scp.isNull());
+
+    {
+        QSharedPointer<const SomeClass> scp2;
+        scp2 = scp->sharedFromThis();
+        QVERIFY(!scp2.isNull());
+
+        QVERIFY(scp == scp2);
+        QCOMPARE(Data::generationCounter, generations + 4);
+        QCOMPARE(Data::destructorCounter, destructions + 3);
+    }
+
+    QCOMPARE(Data::generationCounter, generations + 4);
+    QCOMPARE(Data::destructorCounter, destructions + 3);
+    QVERIFY(!scp.isNull());
+
+    {
+        QSharedPointer<SomeClass> scp2;
+        scp2 = scp->getSharedPtr();
+        QVERIFY(!scp2.isNull());
+
+        QVERIFY(scp == scp2);
+        QCOMPARE(Data::generationCounter, generations + 4);
+        QCOMPARE(Data::destructorCounter, destructions + 3);
+    }
+
+    QCOMPARE(Data::generationCounter, generations + 4);
+    QCOMPARE(Data::destructorCounter, destructions + 3);
+    QVERIFY(!scp.isNull());
+
+    {
+        QSharedPointer<const SomeClass> scp2;
+        scp2 = qSharedPointerConstCast<const SomeClass>(scp)->getSharedPtr();
+        QVERIFY(!scp2.isNull());
+
+        QVERIFY(scp == scp2);
+        QCOMPARE(Data::generationCounter, generations + 4);
+        QCOMPARE(Data::destructorCounter, destructions + 3);
+    }
+
+    QCOMPARE(Data::generationCounter, generations + 4);
+    QCOMPARE(Data::destructorCounter, destructions + 3);
+    QVERIFY(!scp.isNull());
+
+    {
+        QSharedPointer<SomeClass> scp2;
+        scp2 = scp->sharedFromThis();
+        QVERIFY(!scp2.isNull());
+
+        QVERIFY(scp == scp2);
+        QCOMPARE(Data::generationCounter, generations + 4);
+        QCOMPARE(Data::destructorCounter, destructions + 3);
+
+        scp2.clear();
+
+        QCOMPARE(Data::generationCounter, generations + 4);
+        QCOMPARE(Data::destructorCounter, destructions + 3);
+        QVERIFY(!scp.isNull());
+        QVERIFY(scp2.isNull());
+    }
+
+    QCOMPARE(Data::generationCounter, generations + 4);
+    QCOMPARE(Data::destructorCounter, destructions + 3);
+    QVERIFY(!scp.isNull());
+
+    scp.clear();
+
+    QCOMPARE(Data::generationCounter, generations + 4);
+    QCOMPARE(Data::destructorCounter, destructions + 4);
+
 }
 
 namespace ReentrancyWhileDestructing {

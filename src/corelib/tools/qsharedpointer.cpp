@@ -372,6 +372,43 @@
 */
 
 /*!
+    \class QEnableSharedFromThis
+    \inmodule QtCore
+    \brief A base class that allows to obtain a QSharedPointer for an object already managed by a shared pointer
+    \since 5.4
+
+    You can inherit this class when you need to create a QSharedPointer
+    from any instance of a class -- for instance, from within the
+    object itself. The key point is that the "obvious" technique of
+    just returning QSharedPointer<T>(this) can not be used, because
+    this winds up creating multiple distinct QSharedPointer objects
+    with separate reference counts. For this reason you must never
+    create more than one QSharedPointer from the same raw pointer.
+
+    QEnableSharedFromThis defines two member functions called
+    sharedFromThis() that return a QSharedPointer<T> and
+    QSharedPointer<const T>, depending on constness, to \c this:
+
+    \code
+    class Y: public QEnableSharedFromThis<Y>
+    {
+    public:
+        QSharedPointer<Y> f()
+        {
+            return sharedFromThis();
+        }
+    };
+
+    int main()
+    {
+        QSharedPointer<Y> p(new Y());
+        QSharedPointer<Y> y = p->f();
+        Q_ASSERT(p == y); // p and q must share ownership
+    }
+    \endcode
+*/
+
+/*!
     \fn QSharedPointer::QSharedPointer()
 
     Creates a QSharedPointer that points to null (0).
@@ -921,6 +958,23 @@
 
     Clears this QWeakPointer object, dropping the reference that it
     may have had to the pointer.
+*/
+
+/*!
+    \fn QSharedPointer<T> QEnableSharedFromThis::sharedFromThis()
+    \since 5.4
+
+    If \c this (that is, the subclass instance invoking this method) is being
+    managed by a QSharedPointer, returns a shared pointer instance pointing to
+    \c this; otherwise returns a QSharedPointer holding a null pointer.
+*/
+
+/*!
+    \fn QSharedPointer<const T> QEnableSharedFromThis::sharedFromThis() const
+    \overload
+    \since 5.4
+
+    Const overload of sharedFromThis().
 */
 
 /*!

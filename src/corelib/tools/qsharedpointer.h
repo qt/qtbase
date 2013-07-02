@@ -131,6 +131,14 @@ public:
     QSharedPointer<T> lock() const;
 };
 
+template <class T>
+class QEnableSharedFromThis
+{
+public:
+    QSharedPointer<T> sharedFromThis();
+    QSharedPointer<const T> sharedFromThis() const;
+};
+
 template<class T, class X> bool operator==(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2);
 template<class T, class X> bool operator!=(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2);
 template<class T, class X> bool operator==(const QSharedPointer<T> &ptr1, const X *ptr2);
