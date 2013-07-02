@@ -1105,6 +1105,10 @@ static const QChar *parseIpFuture(QString &host, const QChar *begin, const QChar
         // decode the whole string, skipping the "[vH." and "]" which we already know to be there
         host += QString::fromRawData(begin, 4);
 
+        // uppercase the version, if necessary
+        if (begin[2].unicode() >= 'a')
+            host[host.length() - 2] = begin[2].unicode() - 0x20;
+
         begin += 4;
         --end;
 

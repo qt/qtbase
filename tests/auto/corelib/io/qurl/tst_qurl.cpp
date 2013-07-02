@@ -1636,7 +1636,7 @@ void tst_QUrl::ipvfuture_data()
     QTest::newRow("non-hex-version") << "x://[vz.1234]" << false;
 
     QTest::newRow("digit-ver") << "x://[v7.1]" << true << "x://[v7.1]";
-    QTest::newRow("lowercase-hex-ver") << "x://[va.1]" << true << "x://[va.1]";
+    QTest::newRow("lowercase-hex-ver") << "x://[va.1]" << true << "x://[vA.1]";
     QTest::newRow("lowercase-hex-ver") << "x://[vA.1]" << true << "x://[vA.1]";
 
     QTest::newRow("data-digits") << "x://[v7.1234]" << true << "x://[v7.1234]";
