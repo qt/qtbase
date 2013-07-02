@@ -14,7 +14,8 @@ SUBDIRS += \
     other \
     widgets \
     printsupport \
-    cmake
+    cmake \
+    installed_cmake
 
 wince*:                                     SUBDIRS -= printsupport
 cross_compile:                              SUBDIRS -= tools
