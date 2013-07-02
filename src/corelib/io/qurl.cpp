@@ -374,6 +374,7 @@ public:
         InvalidRegNameError = Host << 8,
         InvalidIPv4AddressError,
         InvalidIPv6AddressError,
+        InvalidCharacterInIPv6Error,
         InvalidIPvFutureError,
         HostMissingEndBracket,
 
@@ -1138,7 +1139,7 @@ static const QChar *parseIpFuture(QString &host, const QChar *begin, const QChar
 }
 
 // ONLY the IPv6 address is parsed here, WITHOUT the brackets
-static bool parseIp6(QString &host, const QChar *begin, const QChar *end, QUrl::ParsingMode mode)
+static const QChar *parseIp6(QString &host, const QChar *begin, const QChar *end, QUrl::ParsingMode mode)
 {
     QIPAddressUtils::IPv6Address address;
     const QChar *ret = QIPAddressUtils::parseIp6(address, begin, end);
@@ -1149,21 +1150,24 @@ static bool parseIp6(QString &host, const QChar *begin, const QChar *end, QUrl::
         // IPv6 failed parsing, check if it was a percent-encoded character in
         // the middle and try again
         QString decoded;
-        if (mode != QUrl::TolerantMode || !qt_urlRecode(decoded, begin, end, 0, decodeColon)) {
-            // no transformation, nothing to re-parse
-            return false;
+        if (mode == QUrl::TolerantMode && qt_urlRecode(decoded, begin, end, 0, decodeColon)) {
+            // recurse
+            // if the parsing fails again, the qt_urlRecode above will return 0
+            ret = parseIp6(host, decoded.constBegin(), decoded.constEnd(), mode);
+
+            // we can't return ret, otherwise it would be dangling
+            return ret ? end : 0;
         }
 
-        // recurse
-        // if the parsing fails again, the qt_urlRecode above will return 0
-        return parseIp6(host, decoded.constBegin(), decoded.constEnd(), mode);
+        // no transformation, nothing to re-parse
+        return ret;
     }
 
     host.reserve(host.size() + (end - begin));
     host += QLatin1Char('[');
     QIPAddressUtils::toString(host, address);
     host += QLatin1Char(']');
-    return true;
+    return 0;
 }
 
 inline bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl::ParsingMode mode)
@@ -1191,13 +1195,18 @@ inline bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl:
             if (c)
                 setError(InvalidIPvFutureError, value, c - value.constData());
             return !c;
+        } else if (begin[1].unicode() == 'v') {
+            setError(InvalidIPvFutureError, value, from);
         }
 
-        if (parseIp6(host, begin + 1, end - 1, mode))
+        const QChar *c = parseIp6(host, begin + 1, end - 1, mode);
+        if (!c)
             return true;
 
-        setError(begin[1].unicode() == 'v' ? InvalidIPvFutureError : InvalidIPv6AddressError,
-                 value, from);
+        if (c == end - 1)
+            setError(InvalidIPv6AddressError, value, from);
+        else
+            setError(InvalidCharacterInIPv6Error, value, c - value.constData());
         return false;
     }
 
@@ -3659,6 +3668,8 @@ static QString errorMessage(QUrlPrivate::ErrorCode errorCode, const QString &err
         return QString(); // doesn't happen yet
     case QUrlPrivate::InvalidIPv6AddressError:
         return QStringLiteral("Invalid IPv6 address");
+    case QUrlPrivate::InvalidCharacterInIPv6Error:
+        return QStringLiteral("Invalid IPv6 address (character '%1' not permitted)").arg(c);
     case QUrlPrivate::InvalidIPvFutureError:
         return QStringLiteral("Invalid IPvFuture address (character '%1' not permitted)").arg(c);
     case QUrlPrivate::HostMissingEndBracket:

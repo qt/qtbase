@@ -2012,6 +2012,8 @@ void tst_QUrl::strictParser_data()
     QTest::newRow("invalid-regname") << "http://bad<hostname>" << "Invalid hostname (contains invalid characters)";
     QTest::newRow("invalid-regname-2") << "http://b%61d" << "Invalid hostname (contains invalid characters)";
     QTest::newRow("invalid-ipv6") << "http://[:::]" << "Invalid IPv6 address";
+    QTest::newRow("invalid-ipv6-char1") << "http://[::g]" << "Invalid IPv6 address (character 'g' not permitted)";
+    QTest::newRow("invalid-ipv6-char2") << "http://[z::]" << "Invalid IPv6 address (character 'z' not permitted)";
     QTest::newRow("invalid-ipvfuture-1") << "http://[v7]" << "Invalid IPvFuture address";
     QTest::newRow("invalid-ipvfuture-2") << "http://[v7.]" << "Invalid IPvFuture address";
     QTest::newRow("invalid-ipvfuture-3") << "http://[v789]" << "Invalid IPvFuture address";
