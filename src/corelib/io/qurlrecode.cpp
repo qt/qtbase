@@ -598,22 +598,11 @@ qt_urlRecode(QString &appendTo, const QChar *begin, const QChar *end,
         return decode(appendTo, reinterpret_cast<const ushort *>(begin), reinterpret_cast<const ushort *>(end));
     }
 
-    if (!(encoding & QUrl::EncodeDelimiters) && encoding & QUrl::DecodeReserved) {
-        // reset the table
-        memset(actionTable, DecodeCharacter, sizeof actionTable);
-        if (encoding & QUrl::EncodeSpaces)
-            actionTable[0] = EncodeCharacter;
-
-        // these are always encoded
-        actionTable['%' - ' '] = EncodeCharacter;
-        actionTable[0x7F - ' '] = EncodeCharacter;
-    } else {
-        memcpy(actionTable, defaultActionTable, sizeof actionTable);
-        if (encoding & QUrl::DecodeReserved)
-            maskTable(actionTable, reservedMask);
-        if (!(encoding & QUrl::EncodeSpaces))
-            actionTable[0] = DecodeCharacter; // decode
-    }
+    memcpy(actionTable, defaultActionTable, sizeof actionTable);
+    if (encoding & QUrl::DecodeReserved)
+        maskTable(actionTable, reservedMask);
+    if (!(encoding & QUrl::EncodeSpaces))
+        actionTable[0] = DecodeCharacter; // decode
 
     if (tableModifications) {
         for (const ushort *p = tableModifications; *p; ++p)
