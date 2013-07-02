@@ -2053,6 +2053,8 @@ QString VCXProjectWriter::platformToolSetVersion(const DotNET version)
     {
     case NET2012:
         return "v110";
+    case NET2013:
+        return "v120";
     }
     return QString();
 }
