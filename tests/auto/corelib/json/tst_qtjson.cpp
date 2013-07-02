@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <QtTest>
+
 #include "qjsonarray.h"
 #include "qjsonobject.h"
 #include "qjsonvalue.h"
@@ -62,6 +63,8 @@ private Q_SLOTS:
 
     void testValueSimple();
     void testNumbers();
+    void testNumbers_2();
+    void testNumbers_3();
 
     void testObjectSimple();
     void testObjectSmallKeys();
@@ -327,6 +330,65 @@ void tst_QtJson::testNumbers()
         }
     }
 
+}
+
+void tst_QtJson::testNumbers_2()
+{
+    // test cases from TC39 test suite for ECMAScript
+    // http://hg.ecmascript.org/tests/test262/file/d067d2f0ca30/test/suite/ch08/8.5/8.5.1.js
+
+    // Fill an array with 2 to the power of (0 ... -1075)
+    double value = 1;
+    double floatValues[1076], floatValues_1[1076];
+    QJsonObject jObject;
+    for (int power = 0; power <= 1075; power++) {
+        floatValues[power] = value;
+        jObject.insert(QString::number(power), QJsonValue(floatValues[power]));
+        // Use basic math operations for testing, which are required to support 'gradual underflow' rather
+        // than Math.pow etc..., which are defined as 'implementation dependent'.
+        value = value * 0.5;
+    }
+
+    QJsonDocument jDocument1(jObject);
+    QByteArray ba(jDocument1.toJson());
+
+    QJsonDocument jDocument2(QJsonDocument::fromJson(ba));
+    for (int power = 0; power <= 1075; power++) {
+        floatValues_1[power] = jDocument2.object().value(QString::number(power)).toDouble();
+        QVERIFY2(floatValues[power] == floatValues_1[power], QString("floatValues[%1] != floatValues_1[%1]").arg(power).toLatin1());
+    }
+
+    // The last value is below min denorm and should round to 0, everything else should contain a value
+    QVERIFY2(floatValues_1[1075] == 0, "Value after min denorm should round to 0");
+
+    // Validate the last actual value is min denorm
+    QVERIFY2(floatValues_1[1074] == 4.9406564584124654417656879286822e-324, QString("Min denorm value is incorrect: %1").arg(floatValues_1[1074]).toLatin1());
+
+    // Validate that every value is half the value before it up to 1
+    for (int index = 1074; index > 0; index--) {
+        QVERIFY2(floatValues_1[index] != 0, QString("2**- %1 should not be 0").arg(index).toLatin1());
+
+        QVERIFY2(floatValues_1[index - 1] == (floatValues_1[index] * 2), QString("Value should be double adjacent value at index %1").arg(index).toLatin1());
+    }
+}
+
+void tst_QtJson::testNumbers_3()
+{
+    // test case from QTBUG-31926
+    double d1 = 1.123451234512345;
+    double d2 = 1.123451234512346;
+
+    QJsonObject jObject;
+    jObject.insert("d1", QJsonValue(d1));
+    jObject.insert("d2", QJsonValue(d2));
+    QJsonDocument jDocument1(jObject);
+    QByteArray ba(jDocument1.toJson());
+
+    QJsonDocument jDocument2(QJsonDocument::fromJson(ba));
+
+    double d1_1(jDocument2.object().value("d1").toDouble());
+    double d2_1(jDocument2.object().value("d2").toDouble());
+    QVERIFY(d1_1 != d2_1);
 }
 
 void tst_QtJson::testObjectSimple()
