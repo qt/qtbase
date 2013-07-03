@@ -362,7 +362,6 @@ CGColorSpaceRef QCoreGraphicsPaintEngine::macDisplayColorSpace(const QWidget *wi
     CGColorSpaceRef colorSpace;
 
     CGDirectDisplayID displayID;
-    CMProfileRef displayProfile = 0;
     if (widget == 0) {
         displayID = CGMainDisplayID();
     } else {
@@ -376,18 +375,11 @@ CGColorSpaceRef QCoreGraphicsPaintEngine::macDisplayColorSpace(const QWidget *wi
     if ((colorSpace = m_displayColorSpaceHash.value(displayID)))
         return colorSpace;
 
-    CMError err = CMGetProfileByAVID((CMDisplayIDType)displayID, &displayProfile);
-    if (err == noErr) {
-        colorSpace = CGColorSpaceCreateWithPlatformColorSpace(displayProfile);
-    } else if (widget) {
-        return macDisplayColorSpace(0); // fall back on main display
-    }
-
+    colorSpace = CGDisplayCopyColorSpace(displayID);
     if (colorSpace == 0)
         colorSpace = CGColorSpaceCreateDeviceRGB();
 
     m_displayColorSpaceHash.insert(displayID, colorSpace);
-    CMCloseProfile(displayProfile);
     if (!m_postRoutineRegistered) {
         m_postRoutineRegistered = true;
         qAddPostRoutine(QCoreGraphicsPaintEngine::cleanUpMacColorSpaces);

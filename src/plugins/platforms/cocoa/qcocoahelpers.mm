@@ -502,7 +502,6 @@ CGColorSpaceRef qt_mac_displayColorSpace(const QWidget *widget)
     CGColorSpaceRef colorSpace;
 
     CGDirectDisplayID displayID;
-    CMProfileRef displayProfile = 0;
     if (widget == 0) {
         displayID = CGMainDisplayID();
     } else {
@@ -520,18 +519,11 @@ CGColorSpaceRef qt_mac_displayColorSpace(const QWidget *widget)
     if ((colorSpace = m_displayColorSpaceHash.value(displayID)))
         return colorSpace;
 
-    CMError err = CMGetProfileByAVID((CMDisplayIDType)displayID, &displayProfile);
-    if (err == noErr) {
-        colorSpace = CGColorSpaceCreateWithPlatformColorSpace(displayProfile);
-    } else if (widget) {
-        return qt_mac_displayColorSpace(0); // fall back on main display
-    }
-
+    colorSpace = CGDisplayCopyColorSpace(displayID);
     if (colorSpace == 0)
         colorSpace = CGColorSpaceCreateDeviceRGB();
 
     m_displayColorSpaceHash.insert(displayID, colorSpace);
-    CMCloseProfile(displayProfile);
     if (!m_postRoutineRegistered) {
         m_postRoutineRegistered = true;
         void qt_mac_cleanUpMacColorSpaces();
@@ -804,20 +796,7 @@ CGImageRef qt_mac_toCGImage(const QImage &qImage, bool isMask, uchar **dataCopy)
                                     NULL,
                                     false);
     } else {
-        // Try get a device color space. Using the device color space means
-        // that the CGImage can be drawn to screen without per-pixel color
-        // space conversion, at the cost of less color accuracy.
-        CGColorSpaceRef cgColourSpaceRef = 0;
-        CMProfileRef sysProfile;
-        if (CMGetSystemProfile(&sysProfile) == noErr)
-        {
-            cgColourSpaceRef = CGColorSpaceCreateWithPlatformColorSpace(sysProfile);
-            CMCloseProfile(sysProfile);
-        }
-
-        // Fall back to Generic RGB if a profile was not found.
-        if (!cgColourSpaceRef)
-            cgColourSpaceRef = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+        CGColorSpaceRef cgColourSpaceRef = qt_mac_displayColorSpace(0);
 
         // Create a CGBitmapInfo contiaining the image format.
         // Support the 8-bit per component (A)RGB formats.
@@ -851,7 +830,6 @@ CGImageRef qt_mac_toCGImage(const QImage &qImage, bool isMask, uchar **dataCopy)
                                 NULL,
                                 false,
                                 kCGRenderingIntentDefault);
-        CGColorSpaceRelease(cgColourSpaceRef);
     }
     CGDataProviderRelease(cgDataProviderRef);
     return cgImage;
