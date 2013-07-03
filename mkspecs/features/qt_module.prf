@@ -91,7 +91,6 @@ else: \
 mac:CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework) {
    #QMAKE_FRAMEWORK_VERSION = 4.0
    CONFIG += lib_bundle qt_framework
-   CONFIG -= qt_install_headers #no need to install these as well
    !debug_and_release|if(build_all:CONFIG(release, debug|release)) {
         FRAMEWORK_HEADERS.version = Versions
         FRAMEWORK_HEADERS.files = $$SYNCQT.HEADER_FILES $$SYNCQT.HEADER_CLASSES
