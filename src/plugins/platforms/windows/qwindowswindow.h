@@ -124,18 +124,19 @@ public:
         WithinSetParent = 0x2,
         FrameDirty = 0x4,            //! Frame outdated by setStyle, recalculate in next query.
         OpenGLSurface = 0x10,
-        OpenGLDoubleBuffered = 0x20,
-        OpenGlPixelFormatInitialized = 0x40,
-        BlockedByModal = 0x80,
-        SizeGripOperation = 0x100,
-        FrameStrutEventsEnabled = 0x200,
-        SynchronousGeometryChangeEvent = 0x400,
-        WithinSetStyle = 0x800,
-        WithinDestroy = 0x1000,
-        TouchRegistered = 0x2000,
-        AlertState = 0x4000,
-        Exposed = 0x08000,
-        WithinCreate = 0x10000
+        OpenGL_ES2 = 0x20,
+        OpenGLDoubleBuffered = 0x40,
+        OpenGlPixelFormatInitialized = 0x80,
+        BlockedByModal = 0x100,
+        SizeGripOperation = 0x200,
+        FrameStrutEventsEnabled = 0x400,
+        SynchronousGeometryChangeEvent = 0x800,
+        WithinSetStyle = 0x1000,
+        WithinDestroy = 0x2000,
+        TouchRegistered = 0x4000,
+        AlertState = 0x8000,
+        Exposed = 0x10000,
+        WithinCreate = 0x20000
     };
 
     struct WindowData

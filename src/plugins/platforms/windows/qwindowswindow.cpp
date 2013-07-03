@@ -808,8 +808,12 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
     const Qt::WindowType type = aWindow->type();
     if (type == Qt::Desktop)
         return; // No further handling for Qt::Desktop
-    if (aWindow->surfaceType() == QWindow::OpenGLSurface)
+    if (aWindow->surfaceType() == QWindow::OpenGLSurface) {
         setFlag(OpenGLSurface);
+#ifdef QT_OPENGL_ES_2
+        setFlag(OpenGL_ES2);
+#endif
+    }
     if (aWindow->isTopLevel()) {
         switch (type) {
         case Qt::Window:
@@ -1233,9 +1237,16 @@ void QWindowsWindow::handleGeometryChange()
     //Prevent recursive resizes for Windows CE
     if (testFlag(WithinSetStyle))
         return;
+    const QRect previousGeometry = m_data.geometry;
     m_data.geometry = geometry_sys();
     QPlatformWindow::setGeometry(m_data.geometry);
     QWindowSystemInterface::handleGeometryChange(window(), m_data.geometry);
+    // QTBUG-32121: OpenGL/normal windows (with exception of ANGLE) do not receive
+    // expose events when shrinking, synthesize.
+    if (!testFlag(OpenGL_ES2) && isExposed()
+        && !(m_data.geometry.width() > previousGeometry.width() || m_data.geometry.height() > previousGeometry.height())) {
+        fireExpose(QRegion(m_data.geometry), true);
+    }
     if (testFlag(SynchronousGeometryChangeEvent))
         QWindowSystemInterface::flushWindowSystemEvents();
 
