@@ -47,7 +47,3 @@ callTest($$value)
 !isEqual(RESULT,$$value) {
    message( "FAILED: result [$$RESULT] != $$value" )
 }
-
-
-
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

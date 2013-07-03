@@ -10,6 +10,3 @@ JOINEDNEWVAR = $$join( NEWVAR, "-" )
 !contains( JOINEDNEWVAR, 5-4-3 ) {
   message( "FAILED: member [$$JOINEDNEWVAR != 5-4-3]" )
 }
-
-
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

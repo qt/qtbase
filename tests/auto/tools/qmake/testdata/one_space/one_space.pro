@@ -2,4 +2,3 @@ TEMPLATE		= app
 SOURCES		= main.cpp
 TARGET		= "one space"
 DESTDIR		= ./
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

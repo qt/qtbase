@@ -10,4 +10,3 @@ HEADERS += object1.h \
            object8.h \
            object9.h
 SOURCES += main.cpp
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
