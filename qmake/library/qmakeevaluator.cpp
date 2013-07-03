@@ -276,6 +276,8 @@ ProStringList QMakeEvaluator::split_value_list(const QString &vals, const ProFil
         ushort unicode = vals_data[x].unicode();
         if (unicode == quote) {
             quote = 0;
+            hadWord = true;
+            build += QChar(unicode);
             continue;
         }
         switch (unicode) {
@@ -283,7 +285,7 @@ ProStringList QMakeEvaluator::split_value_list(const QString &vals, const ProFil
         case '\'':
             quote = unicode;
             hadWord = true;
-            continue;
+            break;
         case ' ':
         case '\t':
             if (!quote) {
@@ -294,22 +296,23 @@ ProStringList QMakeEvaluator::split_value_list(const QString &vals, const ProFil
                 }
                 continue;
             }
-            build += QChar(unicode);
             break;
         case '\\':
             if (x + 1 != vals_len) {
                 ushort next = vals_data[++x].unicode();
-                if (next == '\'' || next == '"' || next == '\\')
+                if (next == '\'' || next == '"' || next == '\\') {
+                    build += QChar(unicode);
                     unicode = next;
-                else
+                } else {
                     --x;
+                }
             }
             // fallthrough
         default:
             hadWord = true;
-            build += QChar(unicode);
             break;
         }
+        build += QChar(unicode);
     }
     if (hadWord)
         ret << ProString(build).setSource(source);
