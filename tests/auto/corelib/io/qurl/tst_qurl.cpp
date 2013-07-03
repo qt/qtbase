@@ -3503,9 +3503,6 @@ void tst_QUrl::setComponents_data()
     QTest::newRow("invalid-scheme-encode") << QUrl("http://example.com")
                                            << int(Scheme) << "http%61" << Decoded << false
                                            << PrettyDecoded << "" << "";
-    QTest::newRow("userinfo-encode") << QUrl("http://example.com")
-                                     << int(UserInfo) << "h%61llo:world@" << Decoded << true
-                                     << PrettyDecoded << "h%2561llo:world@" << "http://h%2561llo:world%40@example.com";
     QTest::newRow("username-encode") << QUrl("http://example.com")
                                      << int(UserName) << "h%61llo:world" << Decoded << true
                                      << PrettyDecoded << "h%2561llo:world" << "http://h%2561llo%3Aworld@example.com";
@@ -3516,9 +3513,6 @@ void tst_QUrl::setComponents_data()
     QTest::newRow("invalid-host-encode") << QUrl("http://example.com")
                                          << int(Host) << "ex%61mple.com" << Decoded << false
                                          << PrettyDecoded << "" << "";
-    QTest::newRow("invalid-authority-encode") << QUrl("http://example.com")
-                                              << int(Authority) << "ex%61mple.com" << Decoded << false
-                                              << PrettyDecoded << "" << "";
     QTest::newRow("path-encode") << QUrl("http://example.com/foo")
                                  << int(Path) << "/bar%23" << Decoded << true
                                  << PrettyDecoded << "/bar%2523" << "http://example.com/bar%2523";
@@ -3528,11 +3522,7 @@ void tst_QUrl::setComponents_data()
     QTest::newRow("fragment-encode") << QUrl("http://example.com/foo#z")
                                      << int(Fragment) << "bar%23" << Decoded << true
                                      << PrettyDecoded << "bar%2523" << "http://example.com/foo#bar%2523";
-    // force decoding; note how the userinfo becomes ambiguous
-    QTest::newRow("userinfo-decode") << QUrl("http://example.com")
-                                     << int(UserInfo) << "hello%3Aworld:}}>b9o%25kR(" << Tolerant << true
-                                     << FullyDecoded << "hello:world:}}>b9o%kR("
-                                     << "http://hello%3Aworld:%7D%7D%3Eb9o%25kR(@example.com";
+    // force decoding
     QTest::newRow("username-decode") << QUrl("http://example.com")
                                      << int(UserName) << "hello%3Aworld%25" << Tolerant << true
                                      << FullyDecoded << "hello:world%" << "http://hello%3Aworld%25@example.com";

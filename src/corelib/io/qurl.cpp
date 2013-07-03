@@ -301,9 +301,6 @@
                            encoding sequence, including control characters (U+0000
                            to U+001F) and UTF-8 sequences found in percent-encoded form.
                            Use of this mode may cause data loss, see below for more information.
-                           This mode is should not be used in functions where more
-                           than one URL component is returned (userInfo() and authority())
-                           and it is not allowed in url() and toString().
 
     The values of EncodeReserved and DecodeReserved should not be used together
     in one call. The behavior is undefined if that happens. They are provided
@@ -1885,10 +1882,11 @@ QString QUrl::scheme() const
     and some characters (including space) are not allowed in undecoded form. In
     TolerantMode (the default), all characters are accepted in undecoded form
     and the tolerant parser will correct stray '%' not followed by two hex
-    characters. In DecodedMode, '%' stand for themselves and encoded characters
-    are not possible. Because of that, in DecodedMode, it is not possible to
-    use the delimiter characters as non-delimiters (e.g., a password containing
-    a '@').
+    characters.
+
+    This function does not allow \a mode to be QUrl::DecodedMode. To set fully
+    decoded data, call setUserName(), setPassword(), setHost() and setPort()
+    individually.
 
     \sa setUserInfo(), setHost(), setPort()
 */
@@ -1896,13 +1894,13 @@ void QUrl::setAuthority(const QString &authority, ParsingMode mode)
 {
     detach();
     d->clearError();
-    QString data = authority;
+
     if (mode == DecodedMode) {
-        parseDecodedComponent(data);
-        mode = TolerantMode;
+        qWarning("QUrl::setAuthority(): QUrl::DecodedMode is not permitted in this function");
+        return;
     }
 
-    d->setAuthority(data, 0, data.length(), mode);
+    d->setAuthority(authority, 0, authority.length(), mode);
     if (authority.isNull()) {
         // QUrlPrivate::setAuthority cleared almost everything
         // but it leaves the Host bit set
@@ -1914,19 +1912,25 @@ void QUrl::setAuthority(const QString &authority, ParsingMode mode)
     Returns the authority of the URL if it is defined; otherwise
     an empty string is returned.
 
-    The \a options argument controls how to format the authority portion of the
-    URL. The value of QUrl::FullyDecoded should be avoided, since it may
-    produce an ambiguous return value (for example, if the username contains a
-    colon ':' or either the username or password contain an at-sign '@'). In
-    all other cases, this function returns an unambiguous value, which may
-    contain those characters still percent-encoded, plus some control
-    sequences not representable in decoded form in QString.
+    This function returns an unambiguous value, which may contain that
+    characters still percent-encoded, plus some control sequences not
+    representable in decoded form in QString.
+
+    The \a options argument controls how to format the user info component. The
+    value of QUrl::FullyDecoded is not permitted in this function. If you need
+    to obtain fully decoded data, call userName(), password(), host() and
+    port() individually.
 
     \sa setAuthority(), userInfo(), userName(), password(), host(), port()
 */
 QString QUrl::authority(ComponentFormattingOptions options) const
 {
     if (!d) return QString();
+
+    if (options == QUrl::FullyDecoded) {
+        qWarning("QUrl::authority(): QUrl::FullyDecoded is not permitted in this function");
+        return QString();
+    }
 
     QString result;
     d->appendAuthority(result, options, QUrlPrivate::Authority);
@@ -1949,9 +1953,10 @@ QString QUrl::authority(ComponentFormattingOptions options) const
     and some characters (including space) are not allowed in undecoded form. In
     TolerantMode (the default), all characters are accepted in undecoded form
     and the tolerant parser will correct stray '%' not followed by two hex
-    characters. In DecodedMode, '%' stand for themselves and encoded characters
-    are not possible. Because of that, in DecodedMode, it is not possible to
-    use the ':' delimiter characters as non-delimiter in the user name.
+    characters.
+
+    This function does not allow \a mode to be QUrl::DecodedMode. To set fully
+    decoded data, call setUserName() and setPassword() individually.
 
     \sa userInfo(), setUserName(), setPassword(), setAuthority()
 */
@@ -1961,8 +1966,8 @@ void QUrl::setUserInfo(const QString &userInfo, ParsingMode mode)
     d->clearError();
     QString trimmed = userInfo.trimmed();
     if (mode == DecodedMode) {
-        parseDecodedComponent(trimmed);
-        mode = TolerantMode;
+        qWarning("QUrl::setUserInfo(): QUrl::DecodedMode is not permitted in this function");
+        return;
     }
 
     d->setUserInfo(trimmed, 0, trimmed.length());
@@ -1981,18 +1986,24 @@ void QUrl::setUserInfo(const QString &userInfo, ParsingMode mode)
     Returns the user info of the URL, or an empty string if the user
     info is undefined.
 
+    This function returns an unambiguous value, which may contain that
+    characters still percent-encoded, plus some control sequences not
+    representable in decoded form in QString.
+
     The \a options argument controls how to format the user info component. The
-    value of QUrl::FullyDecoded should be avoided, since it may produce an
-    ambiguous return value (for example, if the username contains a colon ':').
-    In all other cases, this function returns an unambiguous value, which may
-    contain that characters still percent-encoded, plus some control sequences
-    not representable in decoded form in QString.
+    value of QUrl::FullyDecoded is not permitted in this function. If you need
+    to obtain fully decoded data, call userName() and password() individually.
 
     \sa setUserInfo(), userName(), password(), authority()
 */
 QString QUrl::userInfo(ComponentFormattingOptions options) const
 {
     if (!d) return QString();
+
+    if (options == QUrl::FullyDecoded) {
+        qWarning("QUrl::userInfo(): QUrl::FullyDecoded is not permitted in this function");
+        return QString();
+    }
 
     QString result;
     d->appendUserInfo(result, options, QUrlPrivate::UserInfo);
