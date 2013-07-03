@@ -2265,6 +2265,27 @@ void tst_QPainter::setOpacity_data()
 
     QTest::newRow("RGB444 on RGB444") << QImage::Format_RGB444
                                       << QImage::Format_RGB444;
+
+    QTest::newRow("RGBA8888P on RGBA8888P") << QImage::Format_RGBA8888_Premultiplied
+                                            << QImage::Format_RGBA8888_Premultiplied;
+
+    QTest::newRow("RGBA8888 on RGBA8888") << QImage::Format_RGBA8888
+                                          << QImage::Format_RGBA8888;
+
+    QTest::newRow("RGBx8888 on RGBx8888") << QImage::Format_RGBX8888
+                                          << QImage::Format_RGBX8888;
+
+    QTest::newRow("RGBA8888P on ARGB32P") << QImage::Format_RGBA8888_Premultiplied
+                                          << QImage::Format_ARGB32_Premultiplied;
+
+    QTest::newRow("RGBx8888 on ARGB32P") << QImage::Format_RGBX8888
+                                         << QImage::Format_ARGB32_Premultiplied;
+
+    QTest::newRow("ARGB32P on RGBA8888P") << QImage::Format_ARGB32_Premultiplied
+                                          << QImage::Format_RGBA8888_Premultiplied;
+
+    QTest::newRow("RGB32 on RGBx8888") << QImage::Format_RGB32
+                                       << QImage::Format_RGBX8888;
 }
 
 void tst_QPainter::setOpacity()

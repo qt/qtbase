@@ -1017,7 +1017,7 @@ QImage qSmoothScaleImage(const QImage &src, int dw, int dh)
         return QImage();
     }
 
-    if (src.format() == QImage::Format_ARGB32_Premultiplied)
+    if (src.format() == QImage::Format_ARGB32_Premultiplied || src.format() == QImage::Format_RGBA8888_Premultiplied)
         qt_qimageScaleArgb(scaleinfo, (unsigned int *)buffer.scanLine(0),
                            0, 0, 0, 0, dw, dh, dw, src.bytesPerLine() / 4);
     else

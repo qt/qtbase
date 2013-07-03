@@ -435,6 +435,8 @@ void QRasterPaintEngine::init()
     case QImage::Format_ARGB4444_Premultiplied:
     case QImage::Format_ARGB32_Premultiplied:
     case QImage::Format_ARGB32:
+    case QImage::Format_RGBA8888_Premultiplied:
+    case QImage::Format_RGBA8888:
         gccaps |= PorterDuff;
         break;
     case QImage::Format_RGB32:
@@ -443,6 +445,7 @@ void QRasterPaintEngine::init()
     case QImage::Format_RGB666:
     case QImage::Format_RGB888:
     case QImage::Format_RGB16:
+    case QImage::Format_RGBX8888:
         break;
     default:
         break;
@@ -2261,6 +2264,7 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
         case QImage::Format_ARGB6666_Premultiplied:
         case QImage::Format_ARGB8555_Premultiplied:
         case QImage::Format_ARGB4444_Premultiplied:
+        case QImage::Format_RGBA8888_Premultiplied:
             // Combine premultiplied color with the opacity set on the painter.
             d->solid_color_filler.solid.color =
                 ((((color & 0x00ff00ff) * s->intOpacity) >> 8) & 0x00ff00ff)

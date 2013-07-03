@@ -653,6 +653,30 @@ static Q_ALWAYS_INLINE uint PREMUL(uint x) {
 }
 #endif
 
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+static Q_ALWAYS_INLINE quint32 RGBA2ARGB(quint32 x) {
+    quint32 rgb = x >> 8;
+    quint32 a = x << 24;
+    return a | rgb;
+}
+
+static Q_ALWAYS_INLINE quint32 ARGB2RGBA(quint32 x) {
+    quint32 rgb = x << 8;
+    quint32 a = x >> 24;
+    return a | rgb;
+}
+#else
+static Q_ALWAYS_INLINE quint32 RGBA2ARGB(quint32 x) {
+    // RGBA8888 is ABGR32 on little endian.
+    quint32 ag = x & 0xff00ff00;
+    quint32 rg = x & 0x00ff00ff;
+    return ag | (rg  << 16) | (rg >> 16);
+}
+
+static Q_ALWAYS_INLINE quint32 ARGB2RGBA(quint32 x) {
+    return RGBA2ARGB(x);
+}
+#endif
 
 static Q_ALWAYS_INLINE uint BYTE_MUL_RGB16(uint x, uint a) {
     a += 1;

@@ -128,6 +128,9 @@ inline int qt_depthForFormat(QImage::Format format)
     case QImage::Format_RGB32:
     case QImage::Format_ARGB32:
     case QImage::Format_ARGB32_Premultiplied:
+    case QImage::Format_RGBX8888:
+    case QImage::Format_RGBA8888:
+    case QImage::Format_RGBA8888_Premultiplied:
         depth = 32;
         break;
     case QImage::Format_RGB555:

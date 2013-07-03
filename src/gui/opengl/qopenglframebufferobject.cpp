@@ -1012,23 +1012,28 @@ QOpenGLFramebufferObjectFormat QOpenGLFramebufferObject::format() const
 
 Q_GUI_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha)
 {
-    QImage img(size, (alpha_format && include_alpha) ? QImage::Format_ARGB32_Premultiplied
-                                                     : QImage::Format_RGB32);
     int w = size.width();
     int h = size.height();
 
+    while (glGetError());
+
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+    QImage img(size, (alpha_format && include_alpha) ? QImage::Format_ARGB32_Premultiplied
+                                                     : QImage::Format_RGB32);
 #ifdef QT_OPENGL_ES
     GLint fmt = GL_BGRA_EXT;
 #else
     GLint fmt = GL_BGRA;
 #endif
-    while (glGetError());
     glReadPixels(0, 0, w, h, fmt, GL_UNSIGNED_BYTE, img.bits());
-    if (glGetError()) {
-        glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
-        img = img.rgbSwapped();
-    }
-    return img.mirrored();
+    if (!glGetError())
+        return img.mirrored();
+#endif
+
+    QImage rgbaImage(size, (alpha_format && include_alpha) ? QImage::Format_RGBA8888_Premultiplied
+                                                           : QImage::Format_RGBX8888);
+    glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgbaImage.bits());
+    return rgbaImage.mirrored();
 }
 
 /*!

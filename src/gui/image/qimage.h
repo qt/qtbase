@@ -110,6 +110,9 @@ public:
         Format_RGB888,
         Format_RGB444,
         Format_ARGB4444_Premultiplied,
+        Format_RGBX8888,
+        Format_RGBA8888,
+        Format_RGBA8888_Premultiplied,
 #if 0
         // reserved for future use
         Format_RGB15,

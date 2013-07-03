@@ -1092,7 +1092,7 @@ static bool write_xpm_image(const QImage &sourceImage, QIODevice *device, const 
         return false;
 
     QImage image;
-    if (sourceImage.depth() != 32)
+    if (sourceImage.format() != QImage::Format_RGB32 || sourceImage.format() != QImage::Format_ARGB32 || sourceImage.format() != QImage::Format_ARGB32_Premultiplied)
         image = sourceImage.convertToFormat(QImage::Format_RGB32);
     else
         image = sourceImage;
