@@ -845,7 +845,6 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
 QWindowsWindow::~QWindowsWindow()
 {
 #ifndef Q_OS_WINCE
-    QWindowSystemInterface::flushWindowSystemEvents();
     if (testFlag(TouchRegistered))
         QWindowsContext::user32dll.unregisterTouchWindow(m_data.hwnd);
 #endif // !Q_OS_WINCE
