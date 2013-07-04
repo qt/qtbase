@@ -52,7 +52,6 @@ class qfileinfo : public QObject
 {
     Q_OBJECT
 private slots:
-    void canonicalFileNamePerformance();
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     void symLinkTargetPerformanceLNK();
     void symLinkTargetPerformanceMounpoint();
@@ -69,18 +68,6 @@ void qfileinfo::initTestCase()
 
 void qfileinfo::cleanupTestCase()
 {
-}
-
-void qfileinfo::canonicalFileNamePerformance()
-{
-    QString appPath = QCoreApplication::applicationFilePath();
-    QFSFileEnginePrivate::canonicalized(appPath); // warmup
-    QFSFileEnginePrivate::canonicalized(appPath); // more warmup
-    QBENCHMARK {
-        for (int i = 0; i < 5000; i++) {
-            QFSFileEnginePrivate::canonicalized(appPath);
-        }
-    }
 }
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
@@ -102,7 +89,7 @@ void qfileinfo::symLinkTargetPerformanceMounpoint()
 {
     wchar_t buffer[MAX_PATH];
     QString rootPath = QDir::toNativeSeparators(QDir::rootPath());
-    QVERIFY(GetVolumeNameForVolumeMountPointW(rootPath.utf16(), buffer, MAX_PATH));
+    QVERIFY(GetVolumeNameForVolumeMountPointW((LPCWSTR)rootPath.utf16(), buffer, MAX_PATH));
     QString rootVolume = QString::fromWCharArray(buffer);
     QString mountpoint = "mountpoint";
     rootVolume.replace("\\\\?\\","\\??\\");
