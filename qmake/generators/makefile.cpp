@@ -317,6 +317,10 @@ MakefileGenerator::findFilesInVPATH(ProStringList l, uchar flags, const QString 
         if(!val.isEmpty()) {
             QString qval = val.toQString();
             QString file = fixEnvVariables(qval);
+            if (file.isEmpty()) {
+                ++val_it;
+                continue;
+            }
             if(!(flags & VPATH_NoFixify))
                 file = fileFixify(file, qmake_getpwd(), Option::output_dir);
             if (file.at(0) == '\"' && file.at(file.length() - 1) == '\"')
