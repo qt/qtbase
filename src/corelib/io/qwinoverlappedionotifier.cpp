@@ -122,6 +122,8 @@ public:
         mutex.unlock();
     }
 
+    using QThread::isRunning;
+
 protected:
     void run()
     {
@@ -216,6 +218,11 @@ void QWinOverlappedIoNotifier::setEnabled(bool enabled)
  */
 bool QWinOverlappedIoNotifier::waitForNotified(int msecs, OVERLAPPED *overlapped)
 {
+    if (!iocp->isRunning()) {
+        qWarning("Called QWinOverlappedIoNotifier::waitForNotified on inactive notifier.");
+        return false;
+    }
+
     forever {
         DWORD result = WaitForSingleObject(hSemaphore, msecs == -1 ? INFINITE : DWORD(msecs));
         if (result == WAIT_OBJECT_0) {
