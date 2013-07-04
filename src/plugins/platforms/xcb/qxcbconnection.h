@@ -345,7 +345,8 @@ public:
     const QList<QXcbScreen *> &screens() const { return m_screens; }
     int primaryScreen() const { return m_primaryScreen; }
 
-    xcb_atom_t atom(QXcbAtom::Atom atom);
+    xcb_atom_t atom(QXcbAtom::Atom atom) const;
+    QXcbAtom::Atom qatom(xcb_atom_t atom) const;
     xcb_atom_t internAtom(const char *name);
     QByteArray atomName(xcb_atom_t atom);
 
@@ -477,8 +478,6 @@ private:
         };
         QHash<int, ValuatorClassInfo> valuatorInfo;
     };
-    void xi2QueryTabletData(void *dev, TabletData *tabletData); // use no XI stuff in headers
-    void xi2SetupTabletDevices();
     bool xi2HandleTabletEvent(void *event, TabletData *tabletData);
     void xi2ReportTabletEvent(const TabletData &tabletData, void *event);
     QVector<TabletData> m_tabletData;

@@ -1400,9 +1400,14 @@ static const char * xcb_atomnames = {
     "_XSETTINGS_SETTINGS"
 };
 
-xcb_atom_t QXcbConnection::atom(QXcbAtom::Atom atom)
+xcb_atom_t QXcbConnection::atom(QXcbAtom::Atom atom) const
 {
     return m_allAtoms[atom];
+}
+
+QXcbAtom::Atom QXcbConnection::qatom(xcb_atom_t xatom) const
+{
+    return static_cast<QXcbAtom::Atom>(qFind(m_allAtoms, m_allAtoms + QXcbAtom::NAtoms, xatom) - m_allAtoms);
 }
 
 void QXcbConnection::initializeAllAtoms() {

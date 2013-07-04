@@ -44,8 +44,8 @@
 #include "qxcbwindow.h"
 #include "qtouchdevice.h"
 #include <qpa/qwindowsysteminterface.h>
-//#define XI2_TOUCH_DEBUG
-#ifdef XI2_TOUCH_DEBUG
+//#define XI2_DEBUG
+#ifdef XI2_DEBUG
 #include <QDebug>
 #endif
 
@@ -65,18 +65,11 @@ struct XInput2DeviceData {
     QTouchDevice *qtTouchDevice;
 };
 
-#ifndef QT_NO_TABLETEVENT
-static inline bool q_xi2_is_tablet(XIDeviceInfo *dev)
-{
-    QByteArray name(dev->name);
-    name = name.toLower();
-    // Cannot just check for "wacom" because that would also pick up the touch and tablet-button devices.
-    return name.contains("stylus") || name.contains("eraser");
-}
-#endif // QT_NO_TABLETEVENT
-
 void QXcbConnection::initializeXInput2()
 {
+#ifndef QT_NO_TABLETEVENT
+    m_tabletData.clear();
+#endif
     Display *xDisplay = static_cast<Display *>(m_xlib_display);
     if (XQueryExtension(xDisplay, "XInputExtension", &m_xiOpCode, &m_xiEventBase, &m_xiErrorBase)) {
         int xiMajor = 2;
@@ -88,13 +81,60 @@ void QXcbConnection::initializeXInput2()
             m_xi2Enabled = true;
         }
         if (m_xi2Enabled) {
-#ifndef QT_NO_TABLETEVENT
-            // Tablet support: Find the stylus-related devices.
-            xi2SetupTabletDevices();
-#endif // QT_NO_TABLETEVENT
-#ifdef XI2_TOUCH_DEBUG
+#ifdef XI2_DEBUG
             qDebug("XInput version %d.%d is supported", xiMajor, m_xi2Minor);
 #endif
+            int deviceCount = 0;
+            XIDeviceInfo *devices = XIQueryDevice(xDisplay, XIAllDevices, &deviceCount);
+            for (int i = 0; i < deviceCount; ++i) {
+                // Only non-master pointing devices are relevant here.
+                if (devices[i].use != XISlavePointer)
+                    continue;
+#ifdef XI2_DEBUG
+                qDebug() << "input device "<< devices[i].name;
+#endif
+#ifndef QT_NO_TABLETEVENT
+                TabletData tabletData;
+#endif
+                for (int c = 0; c < devices[i].num_classes; ++c) {
+                    switch (devices[i].classes[c]->type) {
+                    case XIValuatorClass: {
+                        XIValuatorClassInfo *vci = reinterpret_cast<XIValuatorClassInfo *>(devices[i].classes[c]);
+                        const int valuatorAtom = qatom(vci->label);
+#ifdef XI2_DEBUG
+                        qDebug() << "   has valuator" << atomName(vci->label) << "recognized?" << (valuatorAtom < QXcbAtom::NAtoms);
+#endif
+#ifndef QT_NO_TABLETEVENT
+                        if (valuatorAtom < QXcbAtom::NAtoms) {
+                            TabletData::ValuatorClassInfo info;
+                            info.minVal = vci->min;
+                            info.maxVal = vci->max;
+                            info.number = vci->number;
+                            tabletData.valuatorInfo[valuatorAtom] = info;
+                        }
+#endif // QT_NO_TABLETEVENT
+                    } break;
+                    default:
+                        break;
+                    }
+                }
+#ifndef QT_NO_TABLETEVENT
+                // If we have found the valuators which we expect a tablet to have, assume it's a tablet.
+                if (tabletData.valuatorInfo.contains(QXcbAtom::AbsX) &&
+                        tabletData.valuatorInfo.contains(QXcbAtom::AbsY) &&
+                        tabletData.valuatorInfo.contains(QXcbAtom::AbsPressure)) {
+                    tabletData.deviceId = devices[i].deviceid;
+                    tabletData.pointerType = QTabletEvent::Pen;
+                    if (QByteArray(devices[i].name).toLower().contains("eraser"))
+                        tabletData.pointerType = QTabletEvent::Eraser;
+                    m_tabletData.append(tabletData);
+#ifdef XI2_DEBUG
+                    qDebug() << "   it's a tablet";
+#endif
+                }
+#endif // QT_NO_TABLETEVENT
+            }
+            XIFreeDeviceInfo(devices);
         }
     }
 }
@@ -131,7 +171,7 @@ void QXcbConnection::xi2Select(xcb_window_t window)
     // to interact with mouse-oriented QWidgets; so we have to let Qt do it.
     if (m_xi2Minor >= 2 && result == Success)
         has_touch_without_mouse_emulation = true;
-#endif
+#endif // XCB_USE_XINPUT22
 
 #ifndef QT_NO_TABLETEVENT
     // For each tablet, select some additional event types.
@@ -179,7 +219,7 @@ XInput2DeviceData *QXcbConnection::deviceForId(int id)
                     break;
                 }
             } break;
-#endif
+#endif // XCB_USE_XINPUT22
             case XIValuatorClass: {
                 XIValuatorClassInfo *vci = reinterpret_cast<XIValuatorClassInfo *>(classinfo);
                 if (vci->label == atom(QXcbAtom::AbsMTPositionX))
@@ -195,9 +235,9 @@ XInput2DeviceData *QXcbConnection::deviceForId(int id)
         dev->qtTouchDevice->setName(dev->xiDeviceInfo->name);
         if (caps != 0)
             QWindowSystemInterface::registerTouchDevice(dev->qtTouchDevice);
-#ifdef XI2_TOUCH_DEBUG
-        qDebug("registered new device %s with %d classes and %d max touch points",
-            dev->xiDeviceInfo->name, dev->xiDeviceInfo->num_classes, dev->qtTouchDevice->maxTouchPoints());
+#ifdef XI2_DEBUG
+        qDebug("registered new device %s with %d classes",
+            dev->xiDeviceInfo->name, dev->xiDeviceInfo->num_classes);
 #endif
         m_touchDevices[id] = dev;
     }
@@ -218,7 +258,7 @@ static qreal valuatorNormalized(double value, XIValuatorClassInfo *vci)
         value = vci->min;
     return (value - vci->min) / (vci->max - vci->min);
 }
-#endif
+#endif // XCB_USE_XINPUT22
 
 void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
 {
@@ -237,7 +277,7 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
 #ifdef XCB_USE_XINPUT22
         if (xiEvent->evtype == XI_TouchBegin || xiEvent->evtype == XI_TouchUpdate || xiEvent->evtype == XI_TouchEnd) {
             xXIDeviceEvent* xiDeviceEvent = reinterpret_cast<xXIDeviceEvent *>(event);
-#ifdef XI2_TOUCH_DEBUG
+#ifdef XI2_DEBUG
             qDebug("XI2 event type %d seq %d detail %d pos 0x%X,0x%X %f,%f root pos %f,%f",
                 event->event_type, xiEvent->sequenceNumber, xiDeviceEvent->detail,
                 xiDeviceEvent->event_x, xiDeviceEvent->event_y,
@@ -267,7 +307,7 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
                         double value;
                         if (!xi2GetValuatorValueIfSet(xiDeviceEvent, n, &value))
                             continue;
-#ifdef XI2_TOUCH_DEBUG
+#ifdef XI2_DEBUG
                         qDebug("   valuator class label %d value %lf from range %lf -> %lf name %s",
                             vci->label, value, vci->min, vci->max, XGetAtomName(static_cast<Display *>(m_xlib_display), vci->label) );
 #endif
@@ -318,7 +358,7 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
                 touchPoint.area = QRectF(x - w/2, y - h/2, w, h);
                 touchPoint.normalPosition = QPointF(nx, ny);
 
-#ifdef XI2_TOUCH_DEBUG
+#ifdef XI2_DEBUG
                 qDebug() << "   tp "  << touchPoint.id << " state " << touchPoint.state << " pos norm " << touchPoint.normalPosition <<
                     " area " << touchPoint.area << " pressure " << touchPoint.pressure;
 #endif
@@ -328,80 +368,11 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
                     m_touchPoints.remove(touchPoint.id);
             }
         }
-#endif
+#endif // XCB_USE_XINPUT22
     }
 }
 
 #ifndef QT_NO_TABLETEVENT
-void QXcbConnection::xi2QueryTabletData(void *dev, TabletData *tabletData)
-{
-    XIDeviceInfo *device = static_cast<XIDeviceInfo *>(dev);
-    tabletData->deviceId = device->deviceid;
-
-    tabletData->pointerType = QTabletEvent::Pen;
-    if (QByteArray(device->name).toLower().contains("eraser"))
-        tabletData->pointerType = QTabletEvent::Eraser;
-
-    for (int i = 0; i < device->num_classes; ++i) {
-        switch (device->classes[i]->type) {
-        case XIValuatorClass: {
-            XIValuatorClassInfo *vci = reinterpret_cast<XIValuatorClassInfo *>(device->classes[i]);
-            int val = 0;
-            if (vci->label == atom(QXcbAtom::AbsX))
-                val = QXcbAtom::AbsX;
-            else if (vci->label == atom(QXcbAtom::AbsY))
-                val = QXcbAtom::AbsY;
-            else if (vci->label == atom(QXcbAtom::AbsPressure))
-                val = QXcbAtom::AbsPressure;
-            else if (vci->label == atom(QXcbAtom::AbsTiltX))
-                val = QXcbAtom::AbsTiltX;
-            else if (vci->label == atom(QXcbAtom::AbsTiltY))
-                val = QXcbAtom::AbsTiltY;
-            else if (vci->label == atom(QXcbAtom::AbsWheel))
-                val = QXcbAtom::AbsWheel;
-            else if (vci->label == atom(QXcbAtom::AbsDistance))
-                val = QXcbAtom::AbsDistance;
-            if (val) {
-                TabletData::ValuatorClassInfo info;
-                info.minVal = vci->min;
-                info.maxVal = vci->max;
-                info.number = vci->number;
-                tabletData->valuatorInfo[val] = info;
-            }
-        }
-            break;
-        default:
-            break;
-        }
-    }
-}
-
-void QXcbConnection::xi2SetupTabletDevices()
-{
-    Display *xDisplay = static_cast<Display *>(m_xlib_display);
-    m_tabletData.clear();
-    int deviceCount = 0;
-    XIDeviceInfo *devices = XIQueryDevice(xDisplay, XIAllDevices, &deviceCount);
-    if (devices) {
-        for (int i = 0; i < deviceCount; ++i) {
-            int unused = 0;
-            XIDeviceInfo *dev = XIQueryDevice(xDisplay, devices[i].deviceid, &unused);
-            if (dev) {
-                if (q_xi2_is_tablet(dev)) {
-                    TabletData tabletData;
-                    xi2QueryTabletData(dev, &tabletData);
-#ifdef XI2_TOUCH_DEBUG
-                    qDebug() << "found tablet" << dev->name;
-#endif
-                    m_tabletData.append(tabletData);
-                }
-                XIFreeDeviceInfo(dev);
-            }
-        }
-        XIFreeDeviceInfo(devices);
-    }
-}
-
 bool QXcbConnection::xi2HandleTabletEvent(void *event, TabletData *tabletData)
 {
     bool handled = true;
