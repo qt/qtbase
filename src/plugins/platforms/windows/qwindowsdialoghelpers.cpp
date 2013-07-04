@@ -2098,9 +2098,9 @@ QPlatformDialogHelper *createHelper(QPlatformTheme::DialogType type)
         return 0;
     switch (type) {
     case QPlatformTheme::FileDialog:
-#ifndef Q_OS_WINCE
+#ifndef Q_OS_WINCE // Note: "Windows XP Professional x64 Edition has version number WV_5_2 (WV_2003).
         if (QWindowsIntegration::instance()->options() & QWindowsIntegration::XpNativeDialogs
-            || QSysInfo::windowsVersion() == QSysInfo::WV_XP) {
+            || QSysInfo::windowsVersion() <= QSysInfo::WV_2003) {
             return new QWindowsXpFileDialogHelper();
         }
         if (QSysInfo::windowsVersion() > QSysInfo::WV_XP)
