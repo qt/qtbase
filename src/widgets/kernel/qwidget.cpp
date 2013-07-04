@@ -1401,7 +1401,7 @@ QWidget::~QWidget()
             w = w->d_func()->extra->focus_proxy;
         QWidget *window = w->window();
         QWExtra *e = window ? window->d_func()->extra : 0;
-        if (!e || !e->proxyWidget)
+        if (!e || !e->proxyWidget || (w->parentWidget() && w->parentWidget()->d_func()->focus_child == this))
 #endif
         clearFocus();
     } QT_CATCH(...) {
