@@ -61,7 +61,7 @@ defineTest(qtAddModule) {
     MODULE_CONFIG = $$eval(QT.$${1}.module_config)
     MODULE_MAJOR_VERSION = $$eval(QT.$${1}.MAJOR_VERSION)
 
-    isEmpty(MODULE_INCLUDES):!if(auto_use_privates|isEqual(2, UsePrivate)): \
+    contains(MODULE_CONFIG, internal_module):!if(auto_use_privates|isEqual(2, UsePrivate)): \
         error("Module $$1 has no public API.")
 
     qtProcessModuleFlags(CONFIG, QT.$${1}.CONFIG)
