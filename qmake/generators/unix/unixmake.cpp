@@ -818,15 +818,20 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
             if(!project->isEmpty("QMAKE_RANLIB"))
                 ret += QString("\n\t$(RANLIB) \"") + dst_targ + "\"";
         } else if(!project->isActiveConfig("debug") && !project->isActiveConfig("nostrip") && !project->isEmpty("QMAKE_STRIP")) {
+            QString suffix;
             ret += "\n\t-$(STRIP)";
-            if(project->first("TEMPLATE") == "lib" && !project->isEmpty("QMAKE_STRIPFLAGS_LIB"))
-                ret += " " + var("QMAKE_STRIPFLAGS_LIB");
-            else if(project->first("TEMPLATE") == "app" && !project->isEmpty("QMAKE_STRIPFLAGS_APP"))
-                ret += " " + var("QMAKE_STRIPFLAGS_APP");
-            if(bundle)
-                ret = " \"" + dst_targ + "/Contents/MacOS/$(QMAKE_TARGET)\"";
-            else
-                ret += " \"" + dst_targ + "\"";
+            if (project->first("TEMPLATE") == "lib") {
+                if (!project->isEmpty("QMAKE_STRIPFLAGS_LIB"))
+                    ret += " " + var("QMAKE_STRIPFLAGS_LIB");
+                if (bundle)
+                    suffix = "/Versions/" + project->first("QMAKE_FRAMEWORK_VERSION") + "/$(TARGET)";
+            } else if (project->first("TEMPLATE") == "app") {
+                if (!project->isEmpty("QMAKE_STRIPFLAGS_APP"))
+                    ret += " " + var("QMAKE_STRIPFLAGS_APP");
+                if (bundle)
+                    suffix = "/" + project->first("QMAKE_BUNDLE_LOCATION") + "/$(QMAKE_TARGET)";
+            }
+            ret += " \"" + dst_targ + suffix + "\"";
         }
         if(!uninst.isEmpty())
             uninst.append("\n\t");
