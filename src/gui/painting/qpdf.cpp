@@ -2518,6 +2518,10 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
 
     qreal size = ti.fontEngine->fontDef.pixelSize;
 
+#if defined(Q_OS_WIN)
+    size = (ti.fontEngine->ascent() + ti.fontEngine->descent()).toReal();
+#endif
+
     QVarLengthArray<glyph_t> glyphs;
     QVarLengthArray<QFixedPoint> positions;
     QTransform m = QTransform::fromTranslate(p.x(), p.y());
