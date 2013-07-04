@@ -59,6 +59,7 @@ private slots:
     void count();
     void clear();
     void beginEnd();
+    void firstLast();
     void key();
 
     void swap();
@@ -375,6 +376,34 @@ void tst_QMap::beginEnd()
     map2.insert( "2", "c" );
     QVERIFY( map.constBegin() == map.constBegin() );
     QVERIFY( map.constBegin() != map2.constBegin() );
+}
+
+void tst_QMap::firstLast()
+{
+    // sample string->string map
+    StringMap map;
+    map.insert("0", "a");
+    map.insert("1", "b");
+    map.insert("5", "e");
+
+    QCOMPARE(map.firstKey(), QStringLiteral("0"));
+    QCOMPARE(map.lastKey(), QStringLiteral("5"));
+    QCOMPARE(map.first(), QStringLiteral("a"));
+    QCOMPARE(map.last(), QStringLiteral("e"));
+
+    // const map
+    const StringMap const_map = map;
+    QCOMPARE(map.firstKey(), const_map.firstKey());
+    QCOMPARE(map.lastKey(), const_map.lastKey());
+    QCOMPARE(map.first(), const_map.first());
+    QCOMPARE(map.last(), const_map.last());
+
+    map.take(map.firstKey());
+    QCOMPARE(map.firstKey(), QStringLiteral("1"));
+    QCOMPARE(map.lastKey(), QStringLiteral("5"));
+
+    map.take(map.lastKey());
+    QCOMPARE(map.lastKey(), map.lastKey());
 }
 
 void tst_QMap::key()

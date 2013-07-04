@@ -879,6 +879,48 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa constBegin(), end()
 */
 
+/*! \fn const Key &QMap::firstKey() const
+
+    Returns a reference to the smallest key in the map.
+    This function assumes that the map is not empty.
+
+    \sa lastKey(), first(), isEmpty()
+*/
+
+/*! \fn const Key &QMap::lastKey() const
+
+    Returns a reference to the largest key in the map.
+    This function assumes that the map is not empty.
+
+    \sa firstKey(), last(), isEmpty()
+*/
+
+/*! \fn T &QMap::first()
+
+    Returns a reference to the first value in the map, that is the value mapped
+    to the smallest key. This function assumes that the map is not empty.
+
+    \sa last(), firstKey(), isEmpty()
+*/
+
+/*! \fn const T &QMap::first() const
+
+    \overload
+*/
+
+/*! \fn T &QMap::last()
+
+    Returns a reference to the last value in the map, that is the value mapped
+    to the largest key. This function assumes that the map is not empty.
+
+    \sa first(), lastKey(), isEmpty()
+*/
+
+/*! \fn const T &QMap::last() const
+
+    \overload
+*/
+
 /*! \fn QMap::iterator QMap::erase(iterator pos)
 
     Removes the (key, value) pair pointed to by the iterator \a pos
