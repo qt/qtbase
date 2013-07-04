@@ -479,6 +479,8 @@ QT_END_NAMESPACE
 #  include <stdio.h>
 #  include <stdlib.h>
 
+#include "private/qcoreapplication_p.h"
+
 extern const char qt_core_interpreter[] __attribute__((section(".interp")))
     = ELF_INTERPRETER;
 
@@ -501,8 +503,8 @@ void qt_core_boilerplate()
     QT_PREPEND_NAMESPACE(qDumpCPUFeatures)();
 
 #ifdef QT_EVAL
-    extern void qt_core_eval_init(uint);
-    qt_core_eval_init(1);
+    extern void qt_core_eval_init(QCoreApplicationPrivate::Type);
+    qt_core_eval_init(QCoreApplicationPrivate::Tty);
 #endif
 
     exit(0);

@@ -381,7 +381,7 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
     , origArgc(aargc)
     , origArgv(new char *[aargc])
 #endif
-    , application_type(0)
+    , application_type(QCoreApplicationPrivate::Tty)
 #ifndef QT_NO_QOBJECT
     , in_exec(false)
     , aboutToQuitEmitted(false)
@@ -724,7 +724,7 @@ void QCoreApplication::init()
 #endif
 
 #ifdef QT_EVAL
-    extern void qt_core_eval_init(uint);
+    extern void qt_core_eval_init(QCoreApplicationPrivate::Type);
     qt_core_eval_init(d->application_type);
 #endif
 

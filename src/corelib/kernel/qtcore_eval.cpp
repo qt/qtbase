@@ -44,6 +44,7 @@
 #include <qlibraryinfo.h>
 #include <qobject.h>
 #include <qcoreapplication.h>
+#include <private/qcoreapplication_p.h>
 
 #include "stdio.h"
 #include "stdlib.h"
@@ -52,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 #include "qconfig_eval.cpp"
 
-static const char boilerplate_unsuported[] =
+static const char boilerplate_supported_but_time_limited[] =
     "\nQt %1 Evaluation License\n"
     "Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).\n"
     "This trial version may only be used for evaluation purposes\n"
@@ -86,13 +87,19 @@ static const char will_shutdown_now[] =
     "timeout and will shut down.\n"
     "Contact http://qt.digia.com/contact-us for pricing and purchasing information.\n";
 
-static int qt_eval_is_supported()
+enum EvaluationStatus {
+    EvaluationNotSupported = 0,
+    EvaluationSupportedButTimeLimited,
+    EvaluationSupported
+};
+
+static EvaluationStatus qt_eval_is_supported()
 {
     const volatile char *const license_key = qt_eval_key_data + 12;
 
     // fast fail
     if (!qt_eval_key_data[0] || !*license_key)
-        return -1;
+        return EvaluationNotSupported;
 
     // is this an unsupported evaluation?
     const volatile char *typecode = license_key;
@@ -103,31 +110,33 @@ static int qt_eval_is_supported()
 
     if (!field && typecode[1] == '4' && typecode[2] == 'M') {
         if (typecode[0] == 'Q')
-            return 0;
+            return EvaluationSupportedButTimeLimited;
         else if (typecode[0] == 'R' || typecode[0] == 'Z')
-            return 1;
+            return EvaluationSupported;
     }
-    return -1;
+    return EvaluationNotSupported;
 }
 
 static int qt_eval_days_left()
 {
-    if (qt_eval_is_supported() < 0)
-        return -2;
-
     QDate today = QDate::currentDate();
     QDate build = QLibraryInfo::buildDate();
     return qMax<qint64>(-1, today.daysTo(build) + 30);
+}
+
+static bool qt_eval_is_expired()
+{
+    return qt_eval_days_left() < 0;
 }
 
 static QString qt_eval_string()
 {
     const char *msg;
     switch (qt_eval_is_supported()) {
-    case 0:
-        msg = boilerplate_unsuported;
+    case EvaluationSupportedButTimeLimited:
+        msg = boilerplate_supported_but_time_limited;
         break;
-    case 1:
+    case EvaluationSupported:
         msg = boilerplate_supported;
         break;
     default:
@@ -153,7 +162,7 @@ public:
 
     QCoreFuriCuri() : QObject(), warn(-1), kill(-1)
     {
-        if (!qt_eval_is_supported()) {
+        if (qt_eval_is_supported() == EvaluationSupportedButTimeLimited) {
             warn = startTimer(WARN_TIMEOUT);
             kill = 0;
         }
@@ -173,27 +182,20 @@ public:
 
 #if defined(QT_BUILD_CORE_LIB) || defined (QT_BOOTSTRAPPED)
 
-void qt_core_eval_init(uint type)
+void qt_core_eval_init(QCoreApplicationPrivate::Type type)
 {
-    if (!type)
-        return;     // GUI app
-
-    switch (qt_eval_days_left()) {
-    case -2:
+    if (type != QCoreApplicationPrivate::Tty)
         return;
 
-    case -1:
-        fprintf(stderr, "%s\n", boilerplate_expired);
-        if (type == 0) {
-            // if we're a console app only.
-            exit(0);
-        }
+    if (!qt_eval_is_supported())
+        return;
 
-    default:
+    if (qt_eval_is_expired()) {
+        fprintf(stderr, "%s\n", boilerplate_expired);
+        exit(0);
+    } else {
         fprintf(stderr, "%s\n", qPrintable(qt_eval_string()));
-        if (type == 0) {
-            Q_UNUSED(new QCoreFuriCuri());
-        }
+        Q_UNUSED(new QCoreFuriCuri());
     }
 }
 #endif
@@ -453,12 +455,7 @@ public:
     {
         setWindowTitle(QLatin1String(" "));
 
-        QString str = qt_eval_string();
-        if (expired) {
-            str = QLatin1String(boilerplate_expired);
-        } else {
-            str = qt_eval_string();
-        }
+        QString str = expired ? QLatin1String(boilerplate_expired) : qt_eval_string();
         str = str.trimmed();
 
         QFrame *border = new QFrame(this);
@@ -520,23 +517,21 @@ public:
 };
 
 
-void qt_gui_eval_init(uint)
+void qt_gui_eval_init(QCoreApplicationPrivate::Type type)
 {
-    switch (qt_eval_days_left()) {
-    case -2:
+    Q_UNUSED(type);
+
+    if (!qt_eval_is_supported())
         return;
 
-    case -1: {
+    if (qt_eval_is_expired()) {
         EvalMessageBox box(true);
         box.exec();
         ::exit(0);
-    }
-
-    default: {
+    } else {
         EvalMessageBox *box = new EvalMessageBox(false);
         box->show();
         Q_UNUSED(new QGuiFuriCuri());
-    }
     }
 }
 
@@ -547,14 +542,14 @@ static QString qt_eval_title_prefix()
 
 QString qt_eval_adapt_window_title(const QString &title)
 {
-    if (qt_eval_days_left() == -2)
+    if (!qt_eval_is_supported())
         return title;
     return qt_eval_title_prefix() + title;
 }
 
 void qt_eval_init_widget(QWidget *w)
 {
-    if (qt_eval_days_left() == -2)
+    if (!qt_eval_is_supported())
         return;
     if (w->isTopLevel() && w->windowTitle().isEmpty() && w->windowType() != Qt::Desktop ) {
         w->setWindowTitle(QLatin1String(" "));

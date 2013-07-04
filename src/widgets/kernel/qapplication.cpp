@@ -556,7 +556,7 @@ void QApplicationPrivate::construct()
     eventDispatcher->startingUp();
 
 #ifdef QT_EVAL
-    extern void qt_gui_eval_init(uint);
+    extern void qt_gui_eval_init(QCoreApplicationPrivate::Type);
     qt_gui_eval_init(application_type);
 #endif
 
