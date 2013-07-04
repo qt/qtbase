@@ -115,10 +115,10 @@ bool MingwMakefileGenerator::writeMakefile(QTextStream &t)
 {
     writeHeader(t);
     if(!project->values("QMAKE_FAILED_REQUIREMENTS").isEmpty()) {
-        t << "all clean:" << "\n\t"
+        t << "all clean:\n\t"
           << "@echo \"Some of the required modules ("
-          << var("QMAKE_FAILED_REQUIREMENTS") << ") are not available.\"" << "\n\t"
-          << "@echo \"Skipped.\"" << endl << endl;
+          << var("QMAKE_FAILED_REQUIREMENTS") << ") are not available.\"\n\t"
+          << "@echo \"Skipped.\"\n\n";
         writeMakeQmake(t);
         return true;
     }
@@ -134,10 +134,10 @@ bool MingwMakefileGenerator::writeMakefile(QTextStream &t)
             const ProStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
             for (ProStringList::ConstIterator it = qut.begin(); it != qut.end(); ++it)
                 t << *it << " ";
-            t << "first all clean install distclean uninstall: qmake" << endl
-              << "qmake_all:" << endl;
+            t << "first all clean install distclean uninstall: qmake\n"
+              << "qmake_all:\n";
             writeMakeQmake(t);
-            t << "FORCE:" << endl << endl;
+            t << "FORCE:\n\n";
             return true;
         }
         writeMingwParts(t);
@@ -156,7 +156,7 @@ void createLdObjectScriptFile(const QString &fileName, const ProStringList &objL
     QFile file(filePath);
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream t(&file);
-        t << "INPUT(" << endl;
+        t << "INPUT(\n";
         for (ProStringList::ConstIterator it = objList.constBegin(); it != objList.constEnd(); ++it) {
             QString path = (*it).toQString();
             if (QDir::isRelativePath(path))
@@ -164,7 +164,7 @@ void createLdObjectScriptFile(const QString &fileName, const ProStringList &objL
             else
                 t << path << endl;
         }
-        t << ");" << endl;
+        t << ");\n";
 	t.flush();
         file.close();
     }
@@ -180,7 +180,7 @@ void createArObjectScriptFile(const QString &fileName, const QString &target, co
         for (ProStringList::ConstIterator it = objList.constBegin(); it != objList.constEnd(); ++it) {
             t << "ADDMOD " << *it << endl;
         }
-        t << "SAVE" << endl;
+        t << "SAVE\n";
 	t.flush();
         file.close();
     }
@@ -214,13 +214,13 @@ void MingwMakefileGenerator::writeMingwParts(QTextStream &t)
 	t << escapeDependencyPath(cHeader) << ": " << escapeDependencyPath(header) << " "
           << escapeDependencyPaths(findDependencies(header)).join(" \\\n\t\t")
 	  << "\n\t" << mkdir_p_asstring(preCompHeaderOut)
-	  << "\n\t" << "$(CC) -x c-header -c $(CFLAGS) $(INCPATH) -o " << cHeader << " " << header
+          << "\n\t$(CC) -x c-header -c $(CFLAGS) $(INCPATH) -o " << cHeader << " " << header
           << endl << endl;
 	QString cppHeader = preCompHeaderOut + Option::dir_sep + "c++";
 	t << escapeDependencyPath(cppHeader) << ": " << escapeDependencyPath(header) << " "
           << escapeDependencyPaths(findDependencies(header)).join(" \\\n\t\t")
 	  << "\n\t" << mkdir_p_asstring(preCompHeaderOut)
-	  << "\n\t" << "$(CXX) -x c++-header -c $(CXXFLAGS) $(INCPATH) -o " << cppHeader << " " << header
+          << "\n\t$(CXX) -x c++-header -c $(CXXFLAGS) $(INCPATH) -o " << cppHeader << " " << header
           << endl << endl;
     }
 }
@@ -393,19 +393,19 @@ void MingwMakefileGenerator::writeObjectsPart(QTextStream &t)
 
 void MingwMakefileGenerator::writeBuildRulesPart(QTextStream &t)
 {
-    t << "first: all" << endl;
-    t << "all: " << escapeDependencyPath(fileFixify(Option::output.fileName())) << " " << valGlue(escapeDependencyPaths(project->values("ALL_DEPS"))," "," "," ") << " $(DESTDIR_TARGET)" << endl << endl;
+    t << "first: all\n";
+    t << "all: " << escapeDependencyPath(fileFixify(Option::output.fileName())) << " " << valGlue(escapeDependencyPaths(project->values("ALL_DEPS"))," "," "," ") << " $(DESTDIR_TARGET)\n\n";
     t << "$(DESTDIR_TARGET): " << var("PRE_TARGETDEPS") << " $(OBJECTS) " << var("POST_TARGETDEPS");
     if(!project->isEmpty("QMAKE_PRE_LINK"))
         t << "\n\t" <<var("QMAKE_PRE_LINK");
     if(project->isActiveConfig("staticlib") && project->first("TEMPLATE") == "lib") {
 	if (project->values("OBJECTS").count() < var("QMAKE_LINK_OBJECT_MAX").toInt()) {
-            t << "\n\t" << "$(LIB) $(DESTDIR_TARGET) " << objectsLinkLine << " " ;
+            t << "\n\t$(LIB) $(DESTDIR_TARGET) " << objectsLinkLine << " " ;
         } else {
             t << "\n\t" << objectsLinkLine << " " ;
         }
     } else if (project->first("TEMPLATE") != "aux") {
-        t << "\n\t" << "$(LINKER) $(LFLAGS) " << var("QMAKE_LINK_O_FLAG") << "$(DESTDIR_TARGET) " << objectsLinkLine << " " << " $(LIBS)";
+        t << "\n\t$(LINKER) $(LFLAGS) " << var("QMAKE_LINK_O_FLAG") << "$(DESTDIR_TARGET) " << objectsLinkLine << "  $(LIBS)";
     }
     if(!project->isEmpty("QMAKE_POST_LINK"))
         t << "\n\t" <<var("QMAKE_POST_LINK");
@@ -432,7 +432,7 @@ void MingwMakefileGenerator::writeRcFilePart(QTextStream &t)
     if (!rc_file.isEmpty()) {
         t << escapeDependencyPath(var("RES_FILE")) << ": " << rc_file << "\n\t"
           << var("QMAKE_RC") << " -i " << rc_file << " -o " << var("RES_FILE")
-          << incPathStr << " $(DEFINES)" << endl << endl;
+          << incPathStr << " $(DEFINES)\n\n";
     }
 }
 
