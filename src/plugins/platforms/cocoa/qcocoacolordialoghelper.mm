@@ -295,6 +295,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSColorPanelDelegate);
     // close down during the cleanup.
     qApp->processEvents(QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers);
     [NSApp runModalForWindow:mColorPanel];
+    mDialogIsExecuting = false;
     return (mResultCode == NSOKButton);
 }
 
@@ -384,7 +385,13 @@ void QCocoaColorDialogHelper::hide()
 {
     if (!mDelegate)
         return;
-    [reinterpret_cast<QNSColorPanelDelegate *>(mDelegate)->mColorPanel close];
+    QNSColorPanelDelegate *delegate = static_cast<QNSColorPanelDelegate *>(mDelegate);
+    if (![delegate->mColorPanel isVisible])
+        return;
+    if (delegate->mDialogIsExecuting)
+        [delegate->mColorPanel performClose:delegate];
+    else
+        [delegate->mColorPanel close];
 }
 
 void QCocoaColorDialogHelper::setCurrentColor(const QColor &color)
