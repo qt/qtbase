@@ -233,6 +233,8 @@ private:
 
     virtual void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics);
 
+    virtual bool supportsTransformation(const QTransform &transform) const;
+
     virtual bool canRender(const QChar *string, int len);
 
     virtual void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs,
