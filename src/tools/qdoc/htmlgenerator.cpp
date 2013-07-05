@@ -474,7 +474,7 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
         else if (atom->string() == "classes") {
             generateCompactList(Generic, relative, qdb_->getCppClasses(), true);
         }
-        else if (atom->string() == "qmlclasses") {
+        else if (atom->string() == "qmltypes") {
             generateCompactList(Generic, relative, qdb_->getQmlTypes(), true);
         }
         else if (atom->string().contains("classesbymodule")) {
