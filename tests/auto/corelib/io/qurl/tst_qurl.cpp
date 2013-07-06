@@ -946,8 +946,12 @@ void tst_QUrl::toString()
     QFETCH(uint, options);
     QFETCH(QString, string);
 
+    QUrl::FormattingOptions opt(options);
+
     QUrl url(urlString);
-    QCOMPARE(url.toString(QUrl::FormattingOptions(options)), string);
+    QCOMPARE(url.toString(opt), string);
+
+    QCOMPARE(url.adjusted(opt).toString(), string);
 }
 
 void tst_QUrl::toAndFromStringList_data()
@@ -2426,6 +2430,7 @@ void tst_QUrl::stripTrailingSlash_data()
     QTest::addColumn<QString>("url");
     QTest::addColumn<QString>("expected");
 
+    QTest::newRow("subdir no slash") << "ftp://kde.org/dir/subdir" << "ftp://kde.org/dir/subdir";
     QTest::newRow("ftp no slash") << "ftp://ftp.de.kde.org/dir" << "ftp://ftp.de.kde.org/dir";
     QTest::newRow("ftp slash") << "ftp://ftp.de.kde.org/dir/" << "ftp://ftp.de.kde.org/dir";
     QTest::newRow("file slash") << "file:///dir/" << "file:///dir";
@@ -2441,6 +2446,9 @@ void tst_QUrl::stripTrailingSlash()
 
     QUrl u(url);
     QCOMPARE(u.toString(QUrl::StripTrailingSlash), expected);
+
+    // Same thing, using QUrl::adjusted()
+    QCOMPARE(u.adjusted(QUrl::StripTrailingSlash).toString(), expected);
 }
 
 void tst_QUrl::hosts_data()

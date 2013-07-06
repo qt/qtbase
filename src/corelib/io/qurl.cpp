@@ -799,12 +799,17 @@ inline void QUrlPrivate::appendPassword(QString &appendTo, QUrl::FormattingOptio
 
 inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
 {
+    QString thePath = path;
+    // check if we need to remove trailing slashes
+    if ((options & QUrl::StripTrailingSlash) && !thePath.isEmpty() && thePath != QLatin1String("/") && thePath.endsWith(QLatin1Char('/')))
+        thePath.chop(1);
+
     if (appendingTo != Path && !(options & QUrl::EncodeDelimiters)) {
-        if (!qt_urlRecode(appendTo, path.constData(), path.constEnd(), options, decodedPathInUrlActions))
-            appendTo += path;
+        if (!qt_urlRecode(appendTo, thePath.constData(), thePath.constEnd(), options, decodedPathInUrlActions))
+            appendTo += thePath;
 
     } else {
-        appendToUser(appendTo, path, options, encodedPathActions, decodedPathInIsolationActions);
+        appendToUser(appendTo, thePath, options, encodedPathActions, decodedPathInIsolationActions);
     }
 }
 
@@ -3148,12 +3153,8 @@ QString QUrl::toString(FormattingOptions options) const
         url += QLatin1String("//");
     }
 
-    if (!(options & QUrl::RemovePath)) {
+    if (!(options & QUrl::RemovePath))
         d->appendPath(url, options, QUrlPrivate::FullUrl);
-        // check if we need to remove trailing slashes
-        if ((options & StripTrailingSlash) && !d->path.isEmpty() && d->path != QLatin1String("/") && url.endsWith(QLatin1Char('/')))
-            url.chop(1);
-    }
 
     if (!(options & QUrl::RemoveQuery) && d->hasQuery()) {
         url += QLatin1Char('?');
@@ -3185,6 +3186,52 @@ QString QUrl::toString(FormattingOptions options) const
 QString QUrl::toDisplayString(FormattingOptions options) const
 {
     return toString(options | RemovePassword);
+}
+
+/*!
+    \since 5.2
+
+    Returns an adjusted version of the URL.
+    The output can be customized by passing flags with \a options.
+
+    The encoding options from QUrl::ComponentFormattingOption don't make
+    much sense for this method, nor does QUrl::PreferLocalFile.
+
+    This is always equivalent to QUrl(url.toString(options)).
+
+    \sa FormattingOptions, toEncoded(), toString()
+*/
+QUrl QUrl::adjusted(QUrl::FormattingOptions options) const
+{
+    if (!isValid()) {
+        // also catches isEmpty()
+        return QUrl();
+    }
+    QUrl that = *this;
+    if (options & RemoveScheme)
+        that.setScheme(QString());
+    if ((options & RemoveAuthority) == RemoveAuthority) {
+        that.setAuthority(QString());
+    } else {
+        if ((options & RemoveUserInfo) == RemoveUserInfo)
+            that.setUserInfo(QString());
+        else if (options & RemovePassword)
+            that.setPassword(QString());
+        if (options & RemovePort)
+            that.setPort(-1);
+    }
+    if (options & RemoveQuery)
+        that.setQuery(QString());
+    if (options & RemoveFragment)
+        that.setFragment(QString());
+    if (options & RemovePath) {
+        that.setPath(QString());
+    } else if (options & StripTrailingSlash) {
+        QString path;
+        d->appendPath(path, options, QUrlPrivate::Path);
+        that.setPath(path);
+    }
+    return that;
 }
 
 /*!
