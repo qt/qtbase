@@ -1959,7 +1959,7 @@ void QProcess::start(const QString &program, const QStringList &arguments, OpenM
     d->program = program;
     d->arguments = arguments;
 
-    open(mode);
+    d->start(mode);
 }
 
 /*!
@@ -1975,7 +1975,17 @@ void QProcess::start(const QString &program, const QStringList &arguments, OpenM
  */
 void QProcess::start(OpenMode mode)
 {
-    open(mode);
+    Q_D(QProcess);
+    if (d->processState != NotRunning) {
+        qWarning("QProcess::start: Process is already running");
+        return;
+    }
+    if (d->program.isEmpty()) {
+        qWarning("QProcess::start: program not set");
+        return;
+    }
+
+    d->start(mode);
 }
 
 /*!
@@ -2008,34 +2018,39 @@ bool QProcess::open(OpenMode mode)
         return false;
     }
 
+    d->start(mode);
+    return true;
+}
+
+void QProcessPrivate::start(QIODevice::OpenMode mode)
+{
+    Q_Q(QProcess);
 #if defined QPROCESS_DEBUG
     qDebug() << "QProcess::start(" << program << ',' << arguments << ',' << mode << ')';
 #endif
 
-    d->outputReadBuffer.clear();
-    d->errorReadBuffer.clear();
+    outputReadBuffer.clear();
+    errorReadBuffer.clear();
 
-    if (d->stdinChannel.type != QProcessPrivate::Channel::Normal)
-        mode &= ~WriteOnly;     // not open for writing
-    if (d->stdoutChannel.type != QProcessPrivate::Channel::Normal &&
-        (d->stderrChannel.type != QProcessPrivate::Channel::Normal ||
-         d->processChannelMode == MergedChannels))
-        mode &= ~ReadOnly;      // not open for reading
+    if (stdinChannel.type != QProcessPrivate::Channel::Normal)
+        mode &= ~QIODevice::WriteOnly;     // not open for writing
+    if (stdoutChannel.type != QProcessPrivate::Channel::Normal &&
+        (stderrChannel.type != QProcessPrivate::Channel::Normal ||
+         processChannelMode == QProcess::MergedChannels))
+        mode &= ~QIODevice::ReadOnly;      // not open for reading
     if (mode == 0)
-        mode = Unbuffered;
-    QIODevice::open(mode);
+        mode = QIODevice::Unbuffered;
+    q->QIODevice::open(mode);
 
-    d->stdinChannel.closed = false;
-    d->stdoutChannel.closed = false;
-    d->stderrChannel.closed = false;
+    stdinChannel.closed = false;
+    stdoutChannel.closed = false;
+    stderrChannel.closed = false;
 
-    d->exitCode = 0;
-    d->exitStatus = NormalExit;
-    d->processError = QProcess::UnknownError;
-    d->errorString.clear();
-    d->startProcess();
-
-    return true;
+    exitCode = 0;
+    exitStatus = QProcess::NormalExit;
+    processError = QProcess::UnknownError;
+    errorString.clear();
+    startProcess();
 }
 
 

@@ -79,6 +79,7 @@ private slots:
     void listenAndConnect();
 
     void connectWithOpen();
+    void connectWithOldOpen();
 
     void sendData_data();
     void sendData();
@@ -462,6 +463,33 @@ void tst_QLocalSocket::connectWithOpen()
     LocalSocket socket;
     socket.setServerName("tst_qlocalsocket");
     QVERIFY(socket.open());
+
+    bool timedOut = true;
+    QVERIFY(server.waitForNewConnection(3000, &timedOut));
+
+#if defined(QT_LOCALSOCKET_TCP)
+    QTest::qWait(250);
+#endif
+    QVERIFY(!timedOut);
+
+    socket.close();
+    server.close();
+}
+
+void tst_QLocalSocket::connectWithOldOpen()
+{
+    class OverriddenOpen : public LocalSocket
+    {
+    public:
+        virtual bool open(OpenMode mode) Q_DECL_OVERRIDE
+        { return QIODevice::open(mode); }
+    };
+
+    LocalServer server;
+    QCOMPARE(server.listen("tst_qlocalsocket"), true);
+
+    OverriddenOpen socket;
+    socket.connectToServer("tst_qlocalsocket");
 
     bool timedOut = true;
     QVERIFY(server.waitForNewConnection(3000, &timedOut));
