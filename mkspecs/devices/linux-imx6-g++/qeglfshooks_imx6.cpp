@@ -51,6 +51,7 @@ public:
     virtual QSize screenSize() const;
     virtual EGLNativeWindowType createNativeWindow(const QSize &size, const QSurfaceFormat &format);
     virtual void destroyNativeWindow(EGLNativeWindowType window);
+    virtual EGLNativeDisplayType platformDisplay() const;
 
 private:
     QSize mScreenSize;
@@ -70,6 +71,11 @@ QEglFSImx6Hooks::QEglFSImx6Hooks()
 QSize QEglFSImx6Hooks::screenSize() const
 {
     return mScreenSize;
+}
+
+EGLNativeDisplayType QEglFSImx6Hooks::platformDisplay() const
+{
+    return mNativeDisplay;
 }
 
 EGLNativeWindowType QEglFSImx6Hooks::createNativeWindow(const QSize &size, const QSurfaceFormat &format)
