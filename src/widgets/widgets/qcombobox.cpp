@@ -1136,10 +1136,9 @@ Qt::MatchFlags QComboBoxPrivate::matchFlags() const
 void QComboBoxPrivate::_q_editingFinished()
 {
     Q_Q(QComboBox);
-    if (lineEdit && !lineEdit->text().isEmpty()) {
-        //here we just check if the current item was entered
+    if (lineEdit && !lineEdit->text().isEmpty() && itemText(currentIndex) != lineEdit->text()) {
         const int index = q_func()->findText(lineEdit->text(), matchFlags());
-        if (index != -1 && itemText(currentIndex) != lineEdit->text()) {
+        if (index != -1) {
             q->setCurrentIndex(index);
             emitActivated(currentIndex);
         }
