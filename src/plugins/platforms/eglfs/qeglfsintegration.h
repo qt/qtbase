@@ -74,6 +74,8 @@ public:
     void *nativeResourceForIntegration(const QByteArray &resource);
     void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context);
 
+    NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource) Q_DECL_OVERRIDE;
+
     QPlatformScreen *screen() const { return mScreen; }
     static EGLConfig chooseConfig(EGLDisplay display, const QSurfaceFormat &format);
 

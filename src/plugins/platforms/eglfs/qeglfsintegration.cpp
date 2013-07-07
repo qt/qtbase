@@ -74,6 +74,8 @@
 
 QT_BEGIN_NAMESPACE
 
+static void *eglContextForContext(QOpenGLContext *context);
+
 QEglFSIntegration::QEglFSIntegration()
     : mEventDispatcher(createUnixEventDispatcher()), mFontDb(new QGenericUnixFontDatabase())
 {
@@ -213,6 +215,26 @@ void *QEglFSIntegration::nativeResourceForContext(const QByteArray &resource, QO
         return handle->eglContext();
 
     return 0;
+}
+
+QPlatformNativeInterface::NativeResourceForContextFunction QEglFSIntegration::nativeResourceFunctionForContext(const QByteArray &resource)
+{
+    QByteArray lowerCaseResource = resource.toLower();
+    if (lowerCaseResource == "get_egl_context")
+        return NativeResourceForContextFunction(eglContextForContext);
+
+    return 0;
+}
+
+static void *eglContextForContext(QOpenGLContext *context)
+{
+    Q_ASSERT(context);
+
+    QEGLPlatformContext *handle = static_cast<QEGLPlatformContext *>(context->handle());
+    if (!handle)
+        return 0;
+
+    return handle->eglContext();
 }
 
 EGLConfig QEglFSIntegration::chooseConfig(EGLDisplay display, const QSurfaceFormat &format)
