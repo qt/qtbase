@@ -560,7 +560,7 @@ bool QLocalSocket::waitForDisconnected(int msecs)
 {
     Q_D(QLocalSocket);
     if (state() == UnconnectedState) {
-        qWarning() << "QLocalSocket::waitForDisconnected() is not allowed in UnconnectedState";
+        qWarning("QLocalSocket::waitForDisconnected() is not allowed in UnconnectedState");
         return false;
     }
     return (d->unixSocket.waitForDisconnected(msecs));

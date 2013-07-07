@@ -270,6 +270,7 @@ void tst_QLocalSocket::socket_basic()
     //QCOMPARE(socket.socketDescriptor(), (qintptr)-1);
     QCOMPARE(socket.state(), QLocalSocket::UnconnectedState);
     QCOMPARE(socket.waitForConnected(0), false);
+    QTest::ignoreMessage(QtWarningMsg, "QLocalSocket::waitForDisconnected() is not allowed in UnconnectedState");
     QCOMPARE(socket.waitForDisconnected(0), false);
     QCOMPARE(socket.waitForReadyRead(0), false);
 
@@ -313,6 +314,7 @@ void tst_QLocalSocket::listen()
         QVERIFY(server.errorString().isEmpty());
         QCOMPARE(server.serverError(), QAbstractSocket::UnknownSocketError);
         // already isListening
+        QTest::ignoreMessage(QtWarningMsg, "QLocalServer::listen() called when already listening");
         QVERIFY(!server.listen(name));
     } else {
         QVERIFY(!server.errorString().isEmpty());
@@ -1015,15 +1017,16 @@ void tst_QLocalSocket::writeToClientAndDisconnect()
     clientSocket->close();
     server.close();
 
-    QTRY_COMPARE(readChannelFinishedSpy.count(), 1);
-    QCOMPARE(client.read(buffer, sizeof(buffer)), (qint64)sizeof(buffer));
     client.waitForDisconnected();
+    QCOMPARE(readChannelFinishedSpy.count(), 1);
+    QCOMPARE(client.read(buffer, sizeof(buffer)), (qint64)sizeof(buffer));
     QCOMPARE(client.state(), QLocalSocket::UnconnectedState);
 }
 
 void tst_QLocalSocket::debug()
 {
     // Make sure this compiles
+    QTest::ignoreMessage(QtDebugMsg, "QLocalSocket::ConnectionRefusedError QLocalSocket::UnconnectedState ");
     qDebug() << QLocalSocket::ConnectionRefusedError << QLocalSocket::UnconnectedState;
 }
 
@@ -1155,7 +1158,7 @@ void tst_QLocalSocket::verifyListenWithDescriptor()
     QFETCH(bool, abstract);
     QFETCH(bool, bound);
 
-    qDebug() << "socket" << path << abstract;
+//    qDebug() << "socket" << path << abstract;
 
     int listenSocket;
 

@@ -378,8 +378,10 @@ bool QLocalSocket::waitForConnected(int msecs)
 bool QLocalSocket::waitForDisconnected(int msecs)
 {
     Q_D(QLocalSocket);
-    if (state() == UnconnectedState)
+    if (state() == UnconnectedState) {
+        qWarning("QLocalSocket::waitForDisconnected() is not allowed in UnconnectedState");
         return false;
+    }
     if (!openMode().testFlag(QIODevice::ReadOnly)) {
         qWarning("QLocalSocket::waitForDisconnected isn't supported for write only pipes.");
         return false;
