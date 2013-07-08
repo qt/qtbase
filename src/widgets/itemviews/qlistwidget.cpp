@@ -347,7 +347,11 @@ void QListModel::ensureSorted(int column, Qt::SortOrder order, int start, int en
     bool changed = false;
     for (int i = 0; i < count; ++i) {
         int oldRow = sorting.at(i).second;
+        int tmpitepos = lit - tmp.begin();
         QListWidgetItem *item = tmp.takeAt(oldRow);
+        if (tmpitepos > tmp.size())
+            --tmpitepos;
+        lit = tmp.begin() + tmpitepos;
         lit = sortedInsertionIterator(lit, tmp.end(), order, item);
         int newRow = qMax(lit - tmp.begin(), 0);
         lit = tmp.insert(lit, item);
