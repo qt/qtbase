@@ -1586,11 +1586,14 @@ static QStringList extraTryFontsForFamily(const QString& family)
                 break;
             }
         }
-        QStringList fm = QFontDatabase().families();
+        QFontDatabase db;
+        const QStringList families = db.families();
         const char **tf = tryFonts;
         while (tf && *tf) {
-            if (fm.contains(QLatin1String(*tf)))
-                result << QLatin1String(*tf);
+            // QTBUG-31689, family might be an English alias for a localized font name.
+            const QString family = QString::fromLatin1(*tf);
+            if (families.contains(family) || db.hasFamily(family))
+                result << family;
             ++tf;
         }
     }

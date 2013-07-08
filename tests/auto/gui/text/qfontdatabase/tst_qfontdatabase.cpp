@@ -73,6 +73,8 @@ private slots:
 
     void addAppFont_data();
     void addAppFont();
+
+    void aliases();
 };
 
 tst_QFontDatabase::tst_QFontDatabase()
@@ -266,6 +268,23 @@ void tst_QFontDatabase::addAppFont()
     QEXPECT_FAIL("font file", "QTBUG-23062", Continue);
 #endif
     QCOMPARE(db.families(), oldFamilies);
+}
+
+QT_BEGIN_NAMESPACE
+Q_GUI_EXPORT void qt_registerAliasToFontFamily(const QString &familyName, const QString &alias);
+QT_END_NAMESPACE
+
+void tst_QFontDatabase::aliases()
+{
+    QFontDatabase db;
+    const QStringList families = db.families();
+    QVERIFY(!families.isEmpty());
+    const QString firstFont = families.front();
+    QVERIFY(db.hasFamily(firstFont));
+    const QString alias = QStringLiteral("AliasToFirstFont") + firstFont;
+    QVERIFY(!db.hasFamily(alias));
+    qt_registerAliasToFontFamily(firstFont, alias);
+    QVERIFY(db.hasFamily(alias));
 }
 
 QTEST_MAIN(tst_QFontDatabase)

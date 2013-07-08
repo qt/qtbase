@@ -101,6 +101,17 @@ Q_GUI_EXPORT void qt_registerAliasToFontFamily(const QString &familyName, const 
     f->aliases.push_back(alias);
 }
 
+QString qt_resolveFontFamilyAlias(const QString &alias)
+{
+    if (!alias.isEmpty()) {
+        const QFontDatabasePrivate *d = privateDb();
+        for (int i = 0; i < d->count; ++i)
+            if (d->families[i]->matchesFamilyName(alias))
+                return d->families[i]->name;
+    }
+    return alias;
+}
+
 static QStringList fallbackFamilies(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script)
 {
     QStringList retList = QGuiApplicationPrivate::platformIntegration()->fontDatabase()->fallbacksForFamily(family,style,styleHint,script);
