@@ -73,8 +73,8 @@
 **
 ****************************************************************************/
 
-#ifndef QEVENTDISPATCHER_IOS_P_H
-#define QEVENTDISPATCHER_IOS_P_H
+#ifndef QEVENTDISPATCHER_CF_P_H
+#define QEVENTDISPATCHER_CF_P_H
 
 #include <QtCore/qabstracteventdispatcher.h>
 #include <QtCore/private/qtimerinfo_unix_p.h>
@@ -83,13 +83,13 @@
 
 QT_BEGIN_NAMESPACE
 
-class QIOSEventDispatcher : public QAbstractEventDispatcher
+class QEventDispatcherCoreFoundation : public QAbstractEventDispatcher
 {
     Q_OBJECT
 
 public:
-    explicit QIOSEventDispatcher(QObject *parent = 0);
-    ~QIOSEventDispatcher();
+    explicit QEventDispatcherCoreFoundation(QObject *parent = 0);
+    ~QEventDispatcherCoreFoundation();
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags);
     bool hasPendingEvents();
@@ -130,4 +130,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QEVENTDISPATCHER_IOS_P_H
+#endif // QEVENTDISPATCHER_CF_P_H

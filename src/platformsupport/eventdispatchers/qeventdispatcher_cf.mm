@@ -39,11 +39,12 @@
 **
 ****************************************************************************/
 
-#include "qioseventdispatcher_p.h"
+#include "qeventdispatcher_cf_p.h"
 #include <qdebug.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <QtCore/QThread>
 #include <QtCore/private/qcoreapplication_p.h>
+
 #include <UIKit/UIApplication.h>
 
 QT_BEGIN_NAMESPACE
@@ -54,36 +55,36 @@ static Boolean runLoopSourceEqualCallback(const void *info1, const void *info2)
     return info1 == info2;
 }
 
-void QIOSEventDispatcher::postedEventsRunLoopCallback(void *info)
+void QEventDispatcherCoreFoundation::postedEventsRunLoopCallback(void *info)
 {
-    QIOSEventDispatcher *self = static_cast<QIOSEventDispatcher *>(info);
+    QEventDispatcherCoreFoundation *self = static_cast<QEventDispatcherCoreFoundation *>(info);
     self->processPostedEvents();
 }
 
-void QIOSEventDispatcher::nonBlockingTimerRunLoopCallback(CFRunLoopTimerRef, void *info)
+void QEventDispatcherCoreFoundation::nonBlockingTimerRunLoopCallback(CFRunLoopTimerRef, void *info)
 {
     // The (one and only) CFRunLoopTimer has fired, which means that at least
     // one QTimer should now fire as well. Note that CFRunLoopTimer's callback will
     // never recurse. So if the app starts a new QEventLoop within this callback, other
     // timers will stop working. The work-around is to forward the callback to a
     // dedicated CFRunLoopSource that can recurse:
-    QIOSEventDispatcher *self = static_cast<QIOSEventDispatcher *>(info);
+    QEventDispatcherCoreFoundation *self = static_cast<QEventDispatcherCoreFoundation *>(info);
     CFRunLoopSourceSignal(self->m_blockingTimerRunLoopSource);
 }
 
-void QIOSEventDispatcher::blockingTimerRunLoopCallback(void *info)
+void QEventDispatcherCoreFoundation::blockingTimerRunLoopCallback(void *info)
 {
     // TODO:
     // We also need to block this new timer source
     // along with the posted event source when calling processEvents()
     // "manually" to prevent livelock deep in CFRunLoop.
 
-    QIOSEventDispatcher *self = static_cast<QIOSEventDispatcher *>(info);
+    QEventDispatcherCoreFoundation *self = static_cast<QEventDispatcherCoreFoundation *>(info);
     self->m_timerInfoList.activateTimers();
     self->maybeStartCFRunLoopTimer();
 }
 
-void QIOSEventDispatcher::maybeStartCFRunLoopTimer()
+void QEventDispatcherCoreFoundation::maybeStartCFRunLoopTimer()
 {
     // Find out when the next registered timer should fire, and schedule
     // runLoopTimer accordingly. If the runLoopTimer does not yet exist, and
@@ -114,7 +115,7 @@ void QIOSEventDispatcher::maybeStartCFRunLoopTimer()
         CFRunLoopTimerContext info = { 0, this, 0, 0, 0 };
         // create the timer with a large interval, as recommended by the CFRunLoopTimerSetNextFireDate()
         // documentation, since we will adjust the timer's time-to-fire as needed to keep Qt timers working
-        m_runLoopTimerRef = CFRunLoopTimerCreate(0, ttf, oneyear, 0, 0, QIOSEventDispatcher::nonBlockingTimerRunLoopCallback, &info);
+        m_runLoopTimerRef = CFRunLoopTimerCreate(0, ttf, oneyear, 0, 0, QEventDispatcherCoreFoundation::nonBlockingTimerRunLoopCallback, &info);
         Q_ASSERT(m_runLoopTimerRef != 0);
 
         CFRunLoopRef mainRunLoop = CFRunLoopGetMain();
@@ -136,7 +137,7 @@ void QIOSEventDispatcher::maybeStartCFRunLoopTimer()
     }
 }
 
-void QIOSEventDispatcher::maybeStopCFRunLoopTimer()
+void QEventDispatcherCoreFoundation::maybeStopCFRunLoopTimer()
 {
     if (m_runLoopTimerRef == 0)
         return;
@@ -146,12 +147,12 @@ void QIOSEventDispatcher::maybeStopCFRunLoopTimer()
     m_runLoopTimerRef = 0;
 }
 
-void QIOSEventDispatcher::processPostedEvents()
+void QEventDispatcherCoreFoundation::processPostedEvents()
 {
     QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::AllEvents);
 }
 
-QIOSEventDispatcher::QIOSEventDispatcher(QObject *parent)
+QEventDispatcherCoreFoundation::QEventDispatcherCoreFoundation(QObject *parent)
     : QAbstractEventDispatcher(parent)
     , m_interrupted(false)
     , m_runLoopTimerRef(0)
@@ -165,20 +166,20 @@ QIOSEventDispatcher::QIOSEventDispatcher(QObject *parent)
     context.info = this;
 
     // source used to handle timers:
-    context.perform = QIOSEventDispatcher::blockingTimerRunLoopCallback;
+    context.perform = QEventDispatcherCoreFoundation::blockingTimerRunLoopCallback;
     m_blockingTimerRunLoopSource = CFRunLoopSourceCreate(kCFAllocatorDefault, 0, &context);
     Q_ASSERT(m_blockingTimerRunLoopSource);
     CFRunLoopAddSource(mainRunLoop, m_blockingTimerRunLoopSource, kCFRunLoopCommonModes);
     CFRunLoopAddSource(mainRunLoop, m_blockingTimerRunLoopSource, (CFStringRef) UITrackingRunLoopMode);
 
     // source used to handle posted events:
-    context.perform = QIOSEventDispatcher::postedEventsRunLoopCallback;
+    context.perform = QEventDispatcherCoreFoundation::postedEventsRunLoopCallback;
     m_postedEventsRunLoopSource = CFRunLoopSourceCreate(kCFAllocatorDefault, 0, &context);
     Q_ASSERT(m_postedEventsRunLoopSource);
     CFRunLoopAddSource(mainRunLoop, m_postedEventsRunLoopSource, kCFRunLoopCommonModes);
 }
 
-QIOSEventDispatcher::~QIOSEventDispatcher()
+QEventDispatcherCoreFoundation::~QEventDispatcherCoreFoundation()
 {
     CFRunLoopRef mainRunLoop = CFRunLoopGetMain();
     CFRunLoopRemoveSource(mainRunLoop, m_postedEventsRunLoopSource, kCFRunLoopCommonModes);
@@ -194,7 +195,7 @@ QIOSEventDispatcher::~QIOSEventDispatcher()
     m_cfSocketNotifier.removeSocketNotifiers();
 }
 
-bool QIOSEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
+bool QEventDispatcherCoreFoundation::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     m_interrupted = false;
     bool eventsProcessed = false;
@@ -243,30 +244,30 @@ bool QIOSEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
     return eventsProcessed;
 }
 
-bool QIOSEventDispatcher::hasPendingEvents()
+bool QEventDispatcherCoreFoundation::hasPendingEvents()
 {
     qDebug() << __FUNCTION__ << "not implemented";
     return false;
 }
 
-void QIOSEventDispatcher::registerSocketNotifier(QSocketNotifier *notifier)
+void QEventDispatcherCoreFoundation::registerSocketNotifier(QSocketNotifier *notifier)
 {
     m_cfSocketNotifier.registerSocketNotifier(notifier);
 }
 
-void QIOSEventDispatcher::unregisterSocketNotifier(QSocketNotifier *notifier)
+void QEventDispatcherCoreFoundation::unregisterSocketNotifier(QSocketNotifier *notifier)
 {
     m_cfSocketNotifier.unregisterSocketNotifier(notifier);
 }
 
-void QIOSEventDispatcher::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *obj)
+void QEventDispatcherCoreFoundation::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *obj)
 {
 #ifndef QT_NO_DEBUG
     if (timerId < 1 || interval < 0 || !obj) {
-        qWarning("QIOSEventDispatcher::registerTimer: invalid arguments");
+        qWarning("QEventDispatcherCoreFoundation::registerTimer: invalid arguments");
         return;
     } else if (obj->thread() != thread() || thread() != QThread::currentThread()) {
-        qWarning("QIOSEventDispatcher: timers cannot be started from another thread");
+        qWarning("QEventDispatcherCoreFoundation: timers cannot be started from another thread");
         return;
     }
 #endif
@@ -275,11 +276,11 @@ void QIOSEventDispatcher::registerTimer(int timerId, int interval, Qt::TimerType
     maybeStartCFRunLoopTimer();
 }
 
-bool QIOSEventDispatcher::unregisterTimer(int timerId)
+bool QEventDispatcherCoreFoundation::unregisterTimer(int timerId)
 {
 #ifndef QT_NO_DEBUG
     if (timerId < 1) {
-        qWarning("QIOSEventDispatcher::unregisterTimer: invalid argument");
+        qWarning("QEventDispatcherCoreFoundation::unregisterTimer: invalid argument");
         return false;
     } else if (thread() != QThread::currentThread()) {
         qWarning("QObject::killTimer: timers cannot be stopped from another thread");
@@ -292,11 +293,11 @@ bool QIOSEventDispatcher::unregisterTimer(int timerId)
     return returnValue;
 }
 
-bool QIOSEventDispatcher::unregisterTimers(QObject *object)
+bool QEventDispatcherCoreFoundation::unregisterTimers(QObject *object)
 {
 #ifndef QT_NO_DEBUG
     if (!object) {
-        qWarning("QIOSEventDispatcher::unregisterTimers: invalid argument");
+        qWarning("QEventDispatcherCoreFoundation::unregisterTimers: invalid argument");
         return false;
     } else if (object->thread() != thread() || thread() != QThread::currentThread()) {
         qWarning("QObject::killTimers: timers cannot be stopped from another thread");
@@ -309,11 +310,11 @@ bool QIOSEventDispatcher::unregisterTimers(QObject *object)
     return returnValue;
 }
 
-QList<QAbstractEventDispatcher::TimerInfo> QIOSEventDispatcher::registeredTimers(QObject *object) const
+QList<QAbstractEventDispatcher::TimerInfo> QEventDispatcherCoreFoundation::registeredTimers(QObject *object) const
 {
 #ifndef QT_NO_DEBUG
     if (!object) {
-        qWarning("QIOSEventDispatcher:registeredTimers: invalid argument");
+        qWarning("QEventDispatcherCoreFoundation:registeredTimers: invalid argument");
         return QList<TimerInfo>();
     }
 #endif
@@ -321,11 +322,11 @@ QList<QAbstractEventDispatcher::TimerInfo> QIOSEventDispatcher::registeredTimers
     return m_timerInfoList.registeredTimers(object);
 }
 
-int QIOSEventDispatcher::remainingTime(int timerId)
+int QEventDispatcherCoreFoundation::remainingTime(int timerId)
 {
 #ifndef QT_NO_DEBUG
     if (timerId < 1) {
-        qWarning("QIOSEventDispatcher::remainingTime: invalid argument");
+        qWarning("QEventDispatcherCoreFoundation::remainingTime: invalid argument");
         return -1;
     }
 #endif
@@ -333,20 +334,20 @@ int QIOSEventDispatcher::remainingTime(int timerId)
     return m_timerInfoList.timerRemainingTime(timerId);
 }
 
-void QIOSEventDispatcher::wakeUp()
+void QEventDispatcherCoreFoundation::wakeUp()
 {
     CFRunLoopSourceSignal(m_postedEventsRunLoopSource);
     CFRunLoopWakeUp(CFRunLoopGetMain());
 }
 
-void QIOSEventDispatcher::interrupt()
+void QEventDispatcherCoreFoundation::interrupt()
 {
     // Stop the runloop, which will cause processEvents() to exit
     m_interrupted = true;
     CFRunLoopStop(CFRunLoopGetMain());
 }
 
-void QIOSEventDispatcher::flush()
+void QEventDispatcherCoreFoundation::flush()
 {
     // X11 only.
 }

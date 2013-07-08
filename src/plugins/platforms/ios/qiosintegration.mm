@@ -47,7 +47,7 @@
 #include "qiosinputcontext.h"
 #include "qiostheme.h"
 
-#include <QtPlatformSupport/private/qioseventdispatcher_p.h>
+#include <QtPlatformSupport/private/qeventdispatcher_cf_p.h>
 #include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
 #include <QDir>
 
@@ -117,7 +117,7 @@ QPlatformOpenGLContext *QIOSIntegration::createPlatformOpenGLContext(QOpenGLCont
 
 QAbstractEventDispatcher *QIOSIntegration::guiThreadEventDispatcher() const
 {
-    return new QIOSEventDispatcher();
+    return new QEventDispatcherCoreFoundation;
 }
 
 QPlatformFontDatabase * QIOSIntegration::fontDatabase() const

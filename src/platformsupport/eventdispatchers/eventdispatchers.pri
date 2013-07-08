@@ -10,10 +10,10 @@ HEADERS +=\
 
 ios {
 OBJECTIVE_SOURCES +=\
-    $$PWD/qioseventdispatcher.mm
+    $$PWD/qeventdispatcher_cf.mm
 
 HEADERS +=\
-    $$PWD/qioseventdispatcher_p.h
+    $$PWD/qeventdispatcher_cf_p.h
 }
 
 contains(QT_CONFIG, glib) {
