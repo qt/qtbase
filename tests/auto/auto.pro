@@ -17,6 +17,8 @@ SUBDIRS += \
     cmake \
     installed_cmake
 
+installed_cmake.depends = cmake
+
 wince*:                                     SUBDIRS -= printsupport
 cross_compile:                              SUBDIRS -= tools
 !qtHaveModule(opengl):                      SUBDIRS -= opengl
