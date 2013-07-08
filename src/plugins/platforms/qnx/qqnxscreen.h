@@ -133,7 +133,6 @@ private:
     Qt::ScreenOrientation m_nativeOrientation;
     QRect m_initialGeometry;
     QRect m_currentGeometry;
-    QPlatformOpenGLContext *m_platformContext;
 
     QList<QQnxWindow *> m_childWindows;
     QList<screen_window_t> m_overlays;

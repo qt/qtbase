@@ -59,6 +59,8 @@ public:
     QQnxGLContext(QOpenGLContext *glContext);
     virtual ~QQnxGLContext();
 
+    static EGLenum checkEGLError(const char *msg);
+
     static void initialize();
     static void shutdown();
 
@@ -71,13 +73,10 @@ public:
 
     virtual QSurfaceFormat format() const { return m_windowFormat; }
 
-    bool isCurrent() const;
-
-    void createSurface(QPlatformSurface *surface);
-    void destroySurface();
-
+    static EGLDisplay getEglDisplay();
+    EGLConfig getEglConfig() const { return m_eglConfig;}
 private:
-    /** \todo Should this be non-static so we can use additional displays? */
+    //Can be static because different displays returne the same handle
     static EGLDisplay ms_eglDisplay;
 
     QSurfaceFormat m_windowFormat;
@@ -85,9 +84,7 @@ private:
 
     EGLConfig m_eglConfig;
     EGLContext m_eglContext;
-    EGLSurface m_eglSurface;
-
-    QAtomicInt m_newSurfaceRequested;
+    EGLSurface m_currentEglSurface;
 
     static EGLint *contextAttrs();
 };

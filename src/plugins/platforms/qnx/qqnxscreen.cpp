@@ -126,7 +126,6 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
       m_posted(false),
       m_keyboardHeight(0),
       m_nativeOrientation(Qt::PrimaryOrientation),
-      m_platformContext(0),
       m_cursor(new QQnxCursor())
 {
     qScreenDebug() << Q_FUNC_INFO;
@@ -482,9 +481,14 @@ void QQnxScreen::updateHierarchy()
     int topZorder;
 
     errno = 0;
-    result = screen_get_window_property_iv(rootWindow()->nativeHandle(), SCREEN_PROPERTY_ZORDER, &topZorder);
-    if (result != 0)
-        qFatal("QQnxScreen: failed to query root window z-order, errno=%d", errno);
+    if (isPrimaryScreen()) {
+        result = screen_get_window_property_iv(rootWindow()->nativeHandle(), SCREEN_PROPERTY_ZORDER, &topZorder);
+        if (result != 0)
+            qFatal("QQnxScreen: failed to query root window z-order, errno=%d", errno);
+    } else {
+        topZorder = 0;  //We do not need z ordering on the secondary screen, because only one window
+                        //is supported there
+    }
 
     topZorder++; // root window has the lowest z-order in the windowgroup
 

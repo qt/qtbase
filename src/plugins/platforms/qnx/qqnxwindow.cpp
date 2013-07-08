@@ -72,13 +72,15 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
       m_window(0),
       m_currentBufferIndex(-1),
       m_previousBufferIndex(-1),
-#if !defined(QT_NO_OPENGL)
-      m_platformOpenGLContext(0),
-#endif
       m_screen(0),
       m_parentWindow(0),
       m_visible(false),
       m_windowState(Qt::WindowNoState),
+#if !defined(QT_NO_OPENGL)
+      m_platformOpenGLContext(0),
+      m_newSurfaceRequested(true),
+      m_eglSurface(EGL_NO_SURFACE),
+#endif
       m_requestedBufferSize(window->geometry().size())
 {
     qWindowDebug() << Q_FUNC_INFO << "window =" << window << ", size =" << window->size();
@@ -86,7 +88,11 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
 
     // Create child QNX window
     errno = 0;
-    result = screen_create_window_type(&m_window, m_screenContext, SCREEN_CHILD_WINDOW);
+    if (static_cast<QQnxScreen *>(window->screen()->handle())->isPrimaryScreen()) {
+        result = screen_create_window_type(&m_window, m_screenContext, SCREEN_CHILD_WINDOW);
+    } else {
+        result = screen_create_window(&m_window, m_screenContext);
+    }
     if (result != 0)
         qFatal("QQnxWindow: failed to create window, errno=%d", errno);
 
@@ -172,6 +178,11 @@ QQnxWindow::~QQnxWindow()
 
     // Cleanup QNX window and its buffers
     screen_destroy_window(m_window);
+
+#if !defined(QT_NO_OPENGL)
+    // Cleanup EGL surface if it exists
+    destroyEGLSurface();
+#endif
 }
 
 void QQnxWindow::setGeometry(const QRect &rect)
@@ -180,16 +191,16 @@ void QQnxWindow::setGeometry(const QRect &rect)
 
 #if !defined(QT_NO_OPENGL)
     // If this is an OpenGL window we need to request that the GL context updates
-    // the EGLsurface on which it is rendering. The surface will be recreated the
-    // next time QQnxGLContext::makeCurrent() is called.
+    // the EGLsurface on which it is rendering.
     {
         // We want the setting of the atomic bool in the GL context to be atomic with
         // setting m_requestedBufferSize and therefore extended the scope to include
         // that test.
         const QMutexLocker locker(&m_mutex);
         m_requestedBufferSize = rect.size();
-        if (m_platformOpenGLContext != 0 && bufferSize() != rect.size())
-            m_platformOpenGLContext->requestSurfaceChange();
+        if (m_platformOpenGLContext != 0 && bufferSize() != rect.size()) {
+            m_newSurfaceRequested.testAndSetRelease(false, true);
+        }
     }
 #endif
 
@@ -517,8 +528,12 @@ void QQnxWindow::setScreen(QQnxScreen *platformScreen)
     if (m_screen == platformScreen)
         return;
 
-    if (m_screen)
+    if (m_screen) {
+        qWindowDebug() << Q_FUNC_INFO << "Moving window to different screen";
         m_screen->removeWindow(this);
+        screen_leave_window_group(m_window);
+    }
+
     platformScreen->addWindow(this);
     m_screen = platformScreen;
 
@@ -529,17 +544,20 @@ void QQnxWindow::setScreen(QQnxScreen *platformScreen)
     if (result != 0)
         qFatal("QQnxWindow: failed to set window display, errno=%d", errno);
 
-    // Add window to display's window group
-    errno = 0;
-    result = screen_join_window_group(m_window, platformScreen->windowGroupName());
-    if (result != 0)
-        qFatal("QQnxWindow: failed to join window group, errno=%d", errno);
 
-    Q_FOREACH (QQnxWindow *childWindow, m_childWindows) {
-        // Only subwindows and tooltips need necessarily be moved to another display with the window.
-        if ((window()->type() & Qt::WindowType_Mask) == Qt::SubWindow ||
-            (window()->type() & Qt::WindowType_Mask) == Qt::ToolTip)
-            childWindow->setScreen(platformScreen);
+    if (m_screen->isPrimaryScreen()) {
+        // Add window to display's window group
+        errno = 0;
+        result = screen_join_window_group(m_window, platformScreen->windowGroupName());
+        if (result != 0)
+            qFatal("QQnxWindow: failed to join window group, errno=%d", errno);
+
+        Q_FOREACH (QQnxWindow *childWindow, m_childWindows) {
+            // Only subwindows and tooltips need necessarily be moved to another display with the window.
+            if ((window()->type() & Qt::WindowType_Mask) == Qt::SubWindow ||
+                (window()->type() & Qt::WindowType_Mask) == Qt::ToolTip)
+                childWindow->setScreen(platformScreen);
+        }
     }
 
     m_screen->updateHierarchy();
@@ -717,6 +735,79 @@ void QQnxWindow::minimize()
     qWarning("Qt::WindowMinimized is not supported by this OS version");
 #endif
 }
+
+#if !defined(QT_NO_OPENGL)
+void QQnxWindow::createEGLSurface()
+{
+    // Fetch the surface size from the window and update
+    // the window's buffers before we create the EGL surface
+    const QSize surfaceSize = requestedBufferSize();
+    if (!surfaceSize.isValid()) {
+        qFatal("QQNX: Trying to create 0 size EGL surface. "
+               "Please set a valid window size before calling QOpenGLContext::makeCurrent()");
+    }
+    setBufferSize(surfaceSize);
+
+    // Post root window, in case it hasn't been posted yet, to make it appear.
+    screen()->onWindowPost(0);
+
+    const EGLint eglSurfaceAttrs[] =
+    {
+        EGL_RENDER_BUFFER, EGL_BACK_BUFFER,
+        EGL_NONE
+    };
+
+    qWindowDebug() << "Creating EGL surface" << platformOpenGLContext()->getEglDisplay()
+                   << platformOpenGLContext()->getEglConfig();
+    // Create EGL surface
+    m_eglSurface = eglCreateWindowSurface(platformOpenGLContext()->getEglDisplay()
+                                          , platformOpenGLContext()->getEglConfig(),
+                                          (EGLNativeWindowType) m_window, eglSurfaceAttrs);
+    if (m_eglSurface == EGL_NO_SURFACE) {
+        QQnxGLContext::checkEGLError("eglCreateWindowSurface");
+        qFatal("QQNX: failed to create EGL surface, err=%d", eglGetError());
+    }
+}
+
+void QQnxWindow::destroyEGLSurface()
+{
+    // Destroy EGL surface if it exists
+    if (m_eglSurface != EGL_NO_SURFACE) {
+        EGLBoolean eglResult = eglDestroySurface(platformOpenGLContext()->getEglDisplay(), m_eglSurface);
+        if (eglResult != EGL_TRUE)
+            qFatal("QQNX: failed to destroy EGL surface, err=%d", eglGetError());
+    }
+
+    m_eglSurface = EGL_NO_SURFACE;
+}
+
+void QQnxWindow::swapEGLBuffers()
+{
+    qWindowDebug() << Q_FUNC_INFO;
+    // Set current rendering API
+    EGLBoolean eglResult = eglBindAPI(EGL_OPENGL_ES_API);
+    if (eglResult != EGL_TRUE)
+        qFatal("QQNX: failed to set EGL API, err=%d", eglGetError());
+
+    // Post EGL surface to window
+    eglResult = eglSwapBuffers(m_platformOpenGLContext->getEglDisplay(), m_eglSurface);
+    if (eglResult != EGL_TRUE)
+        qFatal("QQNX: failed to swap EGL buffers, err=%d", eglGetError());
+}
+
+EGLSurface QQnxWindow::getSurface()
+{
+    if (m_newSurfaceRequested.testAndSetOrdered(true, false)) {
+        if (m_eglSurface != EGL_NO_SURFACE) {
+            platformOpenGLContext()->doneCurrent();
+            destroyEGLSurface();
+        }
+        createEGLSurface();
+    }
+
+    return m_eglSurface;
+}
+#endif
 
 void QQnxWindow::updateZorder(int &topZorder)
 {

@@ -120,6 +120,13 @@ public:
     void blitFrom(QQnxWindow *sourceWindow, const QPoint &sourceOffset, const QRegion &targetRegion);
     void minimize();
 
+#if !defined(QT_NO_OPENGL)
+    void createEGLSurface();
+    void destroyEGLSurface();
+    void swapEGLBuffers();
+    EGLSurface getSurface();
+#endif
+
 private:
     QRect setGeometryHelper(const QRect &rect);
     void removeFromParent();
@@ -147,9 +154,6 @@ private:
     QRegion m_previousDirty;
     QRegion m_scrolled;
 
-#if !defined(QT_NO_OPENGL)
-    QQnxGLContext *m_platformOpenGLContext;
-#endif
     QQnxScreen *m_screen;
     QList<QQnxWindow*> m_childWindows;
     QQnxWindow *m_parentWindow;
@@ -164,6 +168,13 @@ private:
     // EGL surface. All of this has to be done from the thread that is calling
     // QQnxGLContext::makeCurrent()
     mutable QMutex m_mutex;
+
+#if !defined(QT_NO_OPENGL)
+    QQnxGLContext *m_platformOpenGLContext;
+    QAtomicInt m_newSurfaceRequested;
+    EGLSurface m_eglSurface;
+#endif
+
     QSize m_requestedBufferSize;
 };
 
