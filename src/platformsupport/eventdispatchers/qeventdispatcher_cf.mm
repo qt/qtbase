@@ -45,10 +45,15 @@
 #include <QtCore/QThread>
 #include <QtCore/private/qcoreapplication_p.h>
 
+#include <limits>
+
 #include <UIKit/UIApplication.h>
 
 QT_BEGIN_NAMESPACE
 QT_USE_NAMESPACE
+
+static const CFTimeInterval kCFTimeIntervalMinimum = 0;
+static const CFTimeInterval kCFTimeIntervalDistantFuture = std::numeric_limits<CFTimeInterval>::max();
 
 void QEventDispatcherCoreFoundation::nonBlockingTimerRunLoopCallback(CFRunLoopTimerRef, void *info)
 {
@@ -77,7 +82,6 @@ void QEventDispatcherCoreFoundation::maybeStartCFRunLoopTimer()
 
     if (m_runLoopTimerRef == 0) {
         // start the CFRunLoopTimer
-        CFTimeInterval oneyear = CFTimeInterval(3600. * 24. * 365.);
 
         // calculate when the next timer should fire:
         struct timespec tv;
@@ -86,14 +90,14 @@ void QEventDispatcherCoreFoundation::maybeStartCFRunLoopTimer()
         } else {
             // this shouldn't really happen, but in case it does, set the timer
             // to fire a some point in the distant future:
-            interval = oneyear;
+            interval = kCFTimeIntervalDistantFuture;
         }
 
         ttf += interval;
         CFRunLoopTimerContext info = { 0, this, 0, 0, 0 };
         // create the timer with a large interval, as recommended by the CFRunLoopTimerSetNextFireDate()
         // documentation, since we will adjust the timer's time-to-fire as needed to keep Qt timers working
-        m_runLoopTimerRef = CFRunLoopTimerCreate(0, ttf, oneyear, 0, 0, QEventDispatcherCoreFoundation::nonBlockingTimerRunLoopCallback, &info);
+        m_runLoopTimerRef = CFRunLoopTimerCreate(0, ttf, kCFTimeIntervalDistantFuture, 0, 0, QEventDispatcherCoreFoundation::nonBlockingTimerRunLoopCallback, &info);
         Q_ASSERT(m_runLoopTimerRef != 0);
 
         CFRunLoopRef mainRunLoop = CFRunLoopGetMain();
@@ -173,17 +177,16 @@ bool QEventDispatcherCoreFoundation::processEvents(QEventLoop::ProcessEventsFlag
     bool execFlagSet = (flags & QEventLoop::DialogExec) || (flags & QEventLoop::EventLoopExec);
     bool useExecMode = execFlagSet && !excludeUserEvents;
 
-    CFTimeInterval distantFuture = CFTimeInterval(3600. * 24. * 365. * 10.);
     SInt32 result;
 
     if (useExecMode) {
         while (!m_interrupted) {
             // Run a single pass on the runloop to unblock it
-            result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, true);
+            result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, kCFTimeIntervalMinimum, true);
 
             // Run the default runloop until interrupted (by Qt or UIKit)
             if (result != kCFRunLoopRunFinished)
-                result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, distantFuture, false);
+                result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, kCFTimeIntervalDistantFuture, false);
 
             // App has quit or Qt has interrupted?
             if (result == kCFRunLoopRunFinished || m_interrupted)
@@ -193,7 +196,7 @@ bool QEventDispatcherCoreFoundation::processEvents(QEventLoop::ProcessEventsFlag
             if (result == kCFRunLoopRunStopped && !m_interrupted) {
                 // Run runloop in UI tracking mode
                 if (CFRunLoopRunInMode((CFStringRef) UITrackingRunLoopMode,
-                                        distantFuture, false) == kCFRunLoopRunFinished)
+                                        kCFTimeIntervalDistantFuture, false) == kCFRunLoopRunFinished)
                     break;
             }
         }
@@ -203,10 +206,10 @@ bool QEventDispatcherCoreFoundation::processEvents(QEventLoop::ProcessEventsFlag
             wakeUp();
 
         // Run runloop in default mode
-        result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, distantFuture, true);
+        result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, kCFTimeIntervalDistantFuture, true);
         if (result != kCFRunLoopRunFinished) {
             // Run runloop in UI tracking mode
-            CFRunLoopRunInMode((CFStringRef) UITrackingRunLoopMode, distantFuture, false);
+            CFRunLoopRunInMode((CFStringRef) UITrackingRunLoopMode, kCFTimeIntervalDistantFuture, false);
         }
         eventsProcessed = (result == kCFRunLoopRunHandledSource);
     }
