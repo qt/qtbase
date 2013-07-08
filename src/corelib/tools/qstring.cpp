@@ -820,17 +820,43 @@ const QString::Null QString::null = { };
 */
 
 /*!
+    \typedef QString::size_type
+
+    The QString::size_type typedef provides an STL-style type for sizes (int).
+*/
+
+/*!
+    \typedef QString::difference_type
+
+    The QString::size_type typedef provides an STL-style type for difference between pointers.
+*/
+
+/*!
     \typedef QString::const_reference
 
     The QString::const_reference typedef provides an STL-style
-    const reference for QString.
+    const reference for a QString element (QChar).
 */
 /*!
     \typedef QString::reference
 
-    The QString::const_reference typedef provides an STL-style
-    reference for QString.
+    The QString::reference typedef provides an STL-style
+    reference for a QString element (QChar).
 */
+
+/*!
+    \typedef QString::const_pointer
+
+    The QString::const_pointer typedef provides an STL-style
+    const pointer to a QString element (QChar).
+*/
+/*!
+    \typedef QString::pointer
+
+    The QString::const_pointer typedef provides an STL-style
+    pointer to a QString element (QChar).
+*/
+
 /*!
     \typedef QString::value_type
 
