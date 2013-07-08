@@ -134,6 +134,11 @@ if (NOT TARGET Qt5::WinMain)
         get_target_property(_configs Qt5::Core IMPORTED_CONFIGURATIONS)
         foreach(_config ${_configs})
             set_property(TARGET Qt5::Core APPEND PROPERTY
+                INTERFACE_LINK_LIBRARIES
+                    $<$<AND:${_isExe},${_isWin32},${_isNotExcluded},${_isPolicyNEW}>:Qt5::WinMain>
+            )
+            # For backward compatibility with CMake < 2.8.12
+            set_property(TARGET Qt5::Core APPEND PROPERTY
                 IMPORTED_LINK_INTERFACE_LIBRARIES_${_config}
                     $<$<AND:${_isExe},${_isWin32},${_isNotExcluded},${_isPolicyNEW}>:Qt5::WinMain>
             )
