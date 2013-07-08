@@ -1,0 +1,7 @@
+
+isEmpty(QMAKE_INFO_PLIST) {
+    plist_template = $$absolute_path(../../$$[QMAKE_XSPEC]/Info.plist.$${TEMPLATE})
+    exists($$plist_template): QMAKE_INFO_PLIST = $$plist_template
+}
+
+load(default_post)
