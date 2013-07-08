@@ -202,6 +202,20 @@ void *QEglFSIntegration::nativeResourceForIntegration(const QByteArray &resource
     return 0;
 }
 
+void *QEglFSIntegration::nativeResourceForWindow(const QByteArray &resource, QWindow *window)
+{
+    QByteArray lowerCaseResource = resource.toLower();
+
+    if (lowerCaseResource == "egldisplay") {
+        if (window)
+            return static_cast<QEglFSScreen *>(window->handle()->screen())->display();
+        else
+            return static_cast<QEglFSScreen *>(mScreen)->display();
+    }
+
+    return 0;
+}
+
 void *QEglFSIntegration::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context)
 {
     QByteArray lowerCaseResource = resource.toLower();
