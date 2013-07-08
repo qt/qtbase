@@ -2521,9 +2521,11 @@ void tst_QUrl::stripTrailingSlash_data()
     QTest::newRow("subdir no slash") << "ftp://kde.org/dir/subdir" << "ftp://kde.org/dir/subdir" << "ftp://kde.org/dir/" << "ftp://kde.org/dir";
     QTest::newRow("ftp no slash") << "ftp://kde.org/dir" << "ftp://kde.org/dir" << "ftp://kde.org/" << "ftp://kde.org/";
     QTest::newRow("ftp slash") << "ftp://kde.org/dir/" << "ftp://kde.org/dir" << "ftp://kde.org/dir/" << "ftp://kde.org/dir";
+    QTest::newRow("ftp_two_slashes") << "ftp://kde.org/dir//" << "ftp://kde.org/dir" << "ftp://kde.org/dir//" << "ftp://kde.org/dir";
     QTest::newRow("file slash") << "file:///dir/" << "file:///dir" << "file:///dir/" << "file:///dir";
     QTest::newRow("file no slash") << "file:///dir" << "file:///dir" << "file:///" << "file:///";
     QTest::newRow("file root") << "file:///" << "file:///" << "file:///" << "file:///";
+    QTest::newRow("file_root_manyslashes") << "file://///" << "file:///" << "file://///" << "file:///";
     QTest::newRow("no path") << "remote://" << "remote://" << "remote://" << "remote://";
 }
 

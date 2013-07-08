@@ -817,8 +817,10 @@ inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions o
         thePath = path.left(slash+1);
     }
     // check if we need to remove trailing slashes
-    if ((options & QUrl::StripTrailingSlash) && !thePath.isEmpty() && thePath != QLatin1String("/") && thePath.endsWith(QLatin1Char('/')))
-        thePath.chop(1);
+    if (options & QUrl::StripTrailingSlash) {
+        while (thePath.length() > 1 && thePath.endsWith(QLatin1Char('/')))
+            thePath.chop(1);
+    }
 
     if (appendingTo != Path && !(options & QUrl::EncodeDelimiters)) {
         if (!qt_urlRecode(appendTo, thePath.constData(), thePath.constEnd(), options, decodedPathInUrlActions))
