@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#define QT_NO_URL_CAST_FROM_STRING
 #include "qwindowsservices.h"
 #include "qtwindows_additional.h"
 
@@ -55,19 +56,20 @@ QT_BEGIN_NAMESPACE
 
 enum { debug = 0 };
 
-static inline bool shellExecute(const QString &file)
+static inline bool shellExecute(const QUrl &url)
 {
 #ifndef Q_OS_WINCE
-    const QString nativeFilePath = QDir::toNativeSeparators(file);
+    const QString nativeFilePath =
+            url.isLocalFile() ? QDir::toNativeSeparators(url.toLocalFile()) : url.toString(QUrl::FullyEncoded);
     const quintptr result = (quintptr)ShellExecute(0, 0, (wchar_t*)nativeFilePath.utf16(), 0, 0, SW_SHOWNORMAL);
     // ShellExecute returns a value greater than 32 if successful
     if (result <= 32) {
-        qWarning("ShellExecute '%s' failed (error %s).", qPrintable(file), qPrintable(QString::number(result)));
+        qWarning("ShellExecute '%s' failed (error %s).", qPrintable(url.toString()), qPrintable(QString::number(result)));
         return false;
     }
     return true;
 #else
-    Q_UNUSED(file)
+    Q_UNUSED(url);
     return false;
 #endif
 }
@@ -131,7 +133,7 @@ static inline bool launchMail(const QUrl &url)
     }
     // Pass the url as the parameter. Should use QProcess::startDetached(),
     // but that cannot handle a Windows command line [yet].
-    command.replace(QStringLiteral("%1"), url.toString());
+    command.replace(QStringLiteral("%1"), url.toString(QUrl::FullyEncoded));
     if (debug)
         qDebug() << __FUNCTION__ << "Launching" << command;
     //start the process
@@ -152,16 +154,14 @@ static inline bool launchMail(const QUrl &url)
 bool QWindowsServices::openUrl(const QUrl &url)
 {
     const QString scheme = url.scheme();
-    if (scheme.isEmpty())
-        return openDocument(url);
     if (scheme == QStringLiteral("mailto") && launchMail(url))
         return true;
-    return shellExecute(QLatin1String(url.toEncoded()));
+    return shellExecute(url);
 }
 
 bool QWindowsServices::openDocument(const QUrl &url)
 {
-    return shellExecute(url.isLocalFile() ? url.toLocalFile() : url.toString());
+    return shellExecute(url);
 }
 
 QT_END_NAMESPACE

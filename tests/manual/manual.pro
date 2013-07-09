@@ -9,6 +9,7 @@ lance \
 network_remote_stresstest \
 network_stresstest \
 qcursor \
+qdesktopservices \
 qdesktopwidget \
 qgraphicsitem \
 qgraphicsitemgroup \
