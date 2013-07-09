@@ -54,6 +54,7 @@ public:
     virtual ~tst_QFontDatabase();
 
 public slots:
+    void initTestCase();
     void init();
     void cleanup();
 private slots:
@@ -75,18 +76,24 @@ private slots:
     void addAppFont();
 
     void aliases();
+
+private:
+    const QString m_testFont;
 };
 
 tst_QFontDatabase::tst_QFontDatabase()
+    : m_testFont(QFINDTESTDATA("FreeMono.ttf"))
 {
-#ifndef Q_OS_IRIX
-    QDir::setCurrent(SRCDIR);
-#endif
 }
 
 tst_QFontDatabase::~tst_QFontDatabase()
 {
 
+}
+
+void tst_QFontDatabase::initTestCase()
+{
+    QVERIFY(!m_testFont.isEmpty());
 }
 
 void tst_QFontDatabase::init()
@@ -230,13 +237,13 @@ void tst_QFontDatabase::addAppFont()
 
     int id;
     if (useMemoryFont) {
-        QFile fontfile("FreeMono.ttf");
+        QFile fontfile(m_testFont);
         fontfile.open(QIODevice::ReadOnly);
         QByteArray fontdata = fontfile.readAll();
         QVERIFY(!fontdata.isEmpty());
         id = QFontDatabase::addApplicationFontFromData(fontdata);
     } else {
-        id = QFontDatabase::addApplicationFont("FreeMono.ttf");
+        id = QFontDatabase::addApplicationFont(m_testFont);
     }
 #if defined(Q_OS_HPUX) && defined(QT_NO_FONTCONFIG)
     // Documentation says that X11 systems that don't have fontconfig
