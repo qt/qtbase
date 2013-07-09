@@ -9,8 +9,6 @@ win32 {
 check.commands =
 QMAKE_EXTRA_TARGETS *= check
 
-insignificant_test: return()
-
 isEmpty(CMAKE_VERSION) {
     message("cmake executable not found. Not running CMake unit tests")
     return()
@@ -94,3 +92,6 @@ check.commands = \
         $${CMAKE_MODULE_VERSIONS} \
         -DCMAKE_MODULES_UNDER_TEST=\"$$CMAKE_MODULES_UNDER_TEST\" && \
     $(TESTRUNNER) ctest --output-on-failure
+
+insignificant_test:!isEmpty(check.commands): \
+    check.commands = -$${check.commands}
