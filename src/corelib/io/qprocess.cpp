@@ -727,9 +727,11 @@ void QProcessPrivate::Channel::clear()
     \fn void QProcess::finished(int exitCode, QProcess::ExitStatus exitStatus)
 
     This signal is emitted when the process finishes. \a exitCode is the exit
-    code of the process, and \a exitStatus is the exit status.  After the
-    process has finished, the buffers in QProcess are still intact. You can
-    still read any data that the process may have written before it finished.
+    code of the process (only valid for normal exits), and \a exitStatus is
+    the exit status.
+    After the process has finished, the buffers in QProcess are still intact.
+    You can still read any data that the process may have written before it
+    finished.
 
     \sa exitStatus()
 */
@@ -2234,6 +2236,8 @@ void QProcess::kill()
 
 /*!
     Returns the exit code of the last process that finished.
+
+    This value is not valid unless exitStatus() returns NormalExit.
 */
 int QProcess::exitCode() const
 {
