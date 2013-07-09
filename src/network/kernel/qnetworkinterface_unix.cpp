@@ -410,14 +410,9 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
 {
     QList<QNetworkInterfacePrivate *> interfaces;
 
-    int socket;
-    if ((socket = qt_safe_socket(AF_INET, SOCK_STREAM, IPPROTO_IP)) == -1)
-        return interfaces;      // error
-
     ifaddrs *interfaceListing;
     if (getifaddrs(&interfaceListing) == -1) {
         // error
-        ::close(socket);
         return interfaces;
     }
 
@@ -452,7 +447,6 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
     }
 
     freeifaddrs(interfaceListing);
-    ::close(socket);
     return interfaces;
 }
 #endif
