@@ -9,7 +9,7 @@ isEmpty(QMAKE_PLATFORM) {
     isEmpty(TARGET_PLATFORM) {
         equals(MAKEFILE_GENERATOR, UNIX) {
             equals(QMAKE_HOST.os, Darwin): \
-                TARGET_PLATFORM = macx
+                TARGET_PLATFORM = macx # backwards compatibility; cannot change
             else: \
                 TARGET_PLATFORM = unix
         } else:if(equals(MAKEFILE_GENERATOR, MSVC.NET) \
@@ -28,12 +28,18 @@ isEmpty(QMAKE_PLATFORM) {
     equals(TARGET_PLATFORM, unix): \
         QMAKE_PLATFORM = unix
     else:equals(TARGET_PLATFORM, macx): \
-        QMAKE_PLATFORM = mac macx unix
+        QMAKE_PLATFORM = osx macx mac darwin unix
     else:equals(TARGET_PLATFORM, win32): \
         QMAKE_PLATFORM = win32
     else: \
         error("Qmake spec sets an invalid TARGET_PLATFORM.")
 }
+
+contains(QMAKE_PLATFORM, macx):!contains(QMAKE_PLATFORM, osx) {
+    warning("qmake spec specifies platform macx, but not osx.")
+    QMAKE_PLATFORM = osx $$QMAKE_PLATFORM
+}
+
 CONFIG += $$QMAKE_PLATFORM
 
 isEmpty(QMAKE_COMPILER) {
