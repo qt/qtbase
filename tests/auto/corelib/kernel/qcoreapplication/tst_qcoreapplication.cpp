@@ -69,6 +69,7 @@ private slots:
     void eventLoopExecAfterExit();
     void customEventDispatcher();
     void testQuitLock();
+    void QTBUG31606_QEventDestructorDeadLock();
 };
 
 class EventSpy : public QObject
@@ -768,6 +769,33 @@ void tst_QCoreApplication::testQuitLock()
     QuitTester tester;
     app.exec();
 }
+
+
+void tst_QCoreApplication::QTBUG31606_QEventDestructorDeadLock()
+{
+    class MyEvent : public QEvent
+    { public:
+        MyEvent() : QEvent(QEvent::Type(QEvent::User + 1)) {}
+        ~MyEvent() {
+            QCoreApplication::postEvent(qApp, new QEvent(QEvent::Type(QEvent::User+2)));
+        }
+    };
+
+    int argc = 1;
+    char *argv[] = { const_cast<char*>("tst_qcoreapplication") };
+    QCoreApplication app(argc, argv);
+
+    EventSpy spy;
+    app.installEventFilter(&spy);
+
+    QCoreApplication::postEvent(&app, new MyEvent);
+    QCoreApplication::processEvents();
+    QVERIFY(spy.recordedEvents.contains(QEvent::User + 1));
+    QVERIFY(!spy.recordedEvents.contains(QEvent::User + 2));
+    QCoreApplication::processEvents();
+    QVERIFY(spy.recordedEvents.contains(QEvent::User + 2));
+}
+
 
 static void createQObjectOnDestruction()
 {
