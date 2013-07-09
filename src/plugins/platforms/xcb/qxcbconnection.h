@@ -255,6 +255,8 @@ namespace QXcbAtom {
         AbsMTPressure,
         AbsMTTrackingID,
         MaxContacts,
+        RelX,
+        RelY,
         // XInput2 tablet
         AbsX,
         AbsY,

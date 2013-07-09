@@ -1384,6 +1384,8 @@ static const char * xcb_atomnames = {
     "Abs MT Pressure\0"
     "Abs MT Tracking ID\0"
     "Max Contacts\0"
+    "Rel X\0"
+    "Rel Y\0"
     // XInput2 tablet
     "Abs X\0"
     "Abs Y\0"
