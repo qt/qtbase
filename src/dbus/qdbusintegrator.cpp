@@ -1681,13 +1681,13 @@ static dbus_int32_t server_slot = -1;
 
 void QDBusConnectionPrivate::setServer(DBusServer *s, const QDBusErrorInternal &error)
 {
+    mode = ServerMode;
     if (!s) {
         handleError(error);
         return;
     }
 
     server = s;
-    mode = ServerMode;
 
     dbus_bool_t data_allocated = q_dbus_server_allocate_data_slot(&server_slot);
     if (data_allocated && server_slot < 0)
@@ -1718,13 +1718,13 @@ void QDBusConnectionPrivate::setServer(DBusServer *s, const QDBusErrorInternal &
 
 void QDBusConnectionPrivate::setPeer(DBusConnection *c, const QDBusErrorInternal &error)
 {
+    mode = PeerMode;
     if (!c) {
         handleError(error);
         return;
     }
 
     connection = c;
-    mode = PeerMode;
 
     q_dbus_connection_set_exit_on_disconnect(connection, false);
     q_dbus_connection_set_watch_functions(connection,
@@ -1771,13 +1771,13 @@ static QDBusConnection::ConnectionCapabilities connectionCapabilies(DBusConnecti
 
 void QDBusConnectionPrivate::setConnection(DBusConnection *dbc, const QDBusErrorInternal &error)
 {
+    mode = ClientMode;
     if (!dbc) {
         handleError(error);
         return;
     }
 
     connection = dbc;
-    mode = ClientMode;
 
     const char *service = q_dbus_bus_get_unique_name(connection);
     Q_ASSERT(service);
