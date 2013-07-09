@@ -111,11 +111,6 @@ static Boolean runLoopSourceEqualCallback(const void *info1, const void *info2)
 void QCocoaEventDispatcherPrivate::runLoopTimerCallback(CFRunLoopTimerRef, void *info)
 {
     QCocoaEventDispatcherPrivate *d = static_cast<QCocoaEventDispatcherPrivate *>(info);
-    if ((d->processEventsFlags & QEventLoop::EventLoopExec) == 0) {
-        // processEvents() was called "manually," ignore this source for now
-        d->maybeCancelWaitForMoreEvents();
-        return;
-    }
     CFRunLoopSourceSignal(d->activateTimersSourceRef);
 }
 
@@ -810,11 +805,6 @@ void QCocoaEventDispatcherPrivate::firstLoopEntry(CFRunLoopObserverRef ref,
 void QCocoaEventDispatcherPrivate::postedEventsSourceCallback(void *info)
 {
     QCocoaEventDispatcherPrivate *d = static_cast<QCocoaEventDispatcherPrivate *>(info);
-    if ((d->processEventsFlags & QEventLoop::EventLoopExec) == 0) {
-        // processEvents() was called "manually," ignore this source for now
-        d->maybeCancelWaitForMoreEvents();
-        return;
-    }
     d->processPostedEvents();
     d->maybeCancelWaitForMoreEvents();
 }
