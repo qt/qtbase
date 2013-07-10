@@ -127,7 +127,7 @@ static jfieldID getCachedFieldID(JNIEnv *env,
     return id;
 }
 
-QJNIObject::QJNIObject(const char *className)
+QJNIObjectPrivate::QJNIObjectPrivate(const char *className)
     : m_jobject(0)
     , m_jclass(0)
     , m_own_jclass(false)
@@ -147,7 +147,7 @@ QJNIObject::QJNIObject(const char *className)
     }
 }
 
-QJNIObject::QJNIObject(const char *className, const char *sig, ...)
+QJNIObjectPrivate::QJNIObjectPrivate(const char *className, const char *sig, va_list args)
     : m_jobject(0)
     , m_jclass(0)
     , m_own_jclass(false)
@@ -157,10 +157,7 @@ QJNIObject::QJNIObject(const char *className, const char *sig, ...)
     if (m_jclass) {
         jmethodID constructorId = getCachedMethodID(env, m_jclass, "<init>", sig);
         if (constructorId) {
-            va_list args;
-            va_start(args, sig);
             jobject obj = env->NewObjectV(m_jclass, constructorId, args);
-            va_end(args);
             if (obj) {
                 m_jobject = env->NewGlobalRef(obj);
                 env->DeleteLocalRef(obj);
@@ -169,7 +166,7 @@ QJNIObject::QJNIObject(const char *className, const char *sig, ...)
     }
 }
 
-QJNIObject::QJNIObject(jclass clazz)
+QJNIObjectPrivate::QJNIObjectPrivate(jclass clazz)
     : m_jobject(0)
     , m_jclass(0)
     , m_own_jclass(true)
@@ -189,7 +186,7 @@ QJNIObject::QJNIObject(jclass clazz)
     }
 }
 
-QJNIObject::QJNIObject(jclass clazz, const char *sig, ...)
+QJNIObjectPrivate::QJNIObjectPrivate(jclass clazz, const char *sig, va_list args)
     : m_jobject(0)
     , m_jclass(0)
     , m_own_jclass(true)
@@ -200,10 +197,7 @@ QJNIObject::QJNIObject(jclass clazz, const char *sig, ...)
         if (m_jclass) {
             jmethodID constructorId = getCachedMethodID(env, m_jclass, "<init>", sig);
             if (constructorId) {
-                va_list args;
-                va_start(args, sig);
                 jobject obj = env->NewObjectV(m_jclass, constructorId, args);
-                va_end(args);
                 if (obj) {
                     m_jobject = env->NewGlobalRef(obj);
                     env->DeleteLocalRef(obj);
@@ -213,7 +207,7 @@ QJNIObject::QJNIObject(jclass clazz, const char *sig, ...)
     }
 }
 
-QJNIObject::QJNIObject(jobject obj)
+QJNIObjectPrivate::QJNIObjectPrivate(jobject obj)
     : m_jobject(0)
     , m_jclass(0)
     , m_own_jclass(true)
@@ -223,7 +217,7 @@ QJNIObject::QJNIObject(jobject obj)
     m_jclass = static_cast<jclass>(env->NewGlobalRef(env->GetObjectClass(m_jobject)));
 }
 
-QJNIObject::~QJNIObject()
+QJNIObjectPrivate::~QJNIObjectPrivate()
 {
     QAttachedJNIEnv env;
     if (m_jobject)
@@ -231,6 +225,23 @@ QJNIObject::~QJNIObject()
     if (m_jclass && m_own_jclass)
         env->DeleteGlobalRef(m_jclass);
 }
+
+QJNIObject::QJNIObject(const char *className, const char *sig, ...)
+{
+    va_list args;
+    va_start(args, sig);
+    d = QSharedPointer<QJNIObjectPrivate>(new QJNIObjectPrivate(className, sig, args));
+    va_end(args);
+}
+
+QJNIObject::QJNIObject(jclass clazz, const char *sig, ...)
+{
+    va_list args;
+    va_start(args, sig);
+    d = QSharedPointer<QJNIObjectPrivate>(new QJNIObjectPrivate(clazz, sig, args));
+    va_end(args);
+}
+
 
 bool QJNIObject::isClassAvailable(const char *className)
 {
@@ -248,11 +259,11 @@ template <>
 void QJNIObject::callMethod<void>(const char *methodName, const char *sig, ...)
 {
     QAttachedJNIEnv env;
-    jmethodID id = getCachedMethodID(env, m_jclass, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, methodName, sig);
     if (id) {
         va_list args;
         va_start(args, sig);
-        env->CallVoidMethodV(m_jobject, id, args);
+        env->CallVoidMethodV(d->m_jobject, id, args);
         va_end(args);
     }
 }
@@ -262,11 +273,11 @@ jboolean QJNIObject::callMethod<jboolean>(const char *methodName, const char *si
 {
     QAttachedJNIEnv env;
     jboolean res = 0;
-    jmethodID id = getCachedMethodID(env, m_jclass, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, methodName, sig);
     if (id) {
         va_list args;
         va_start(args, sig);
-        res = env->CallBooleanMethodV(m_jobject, id, args);
+        res = env->CallBooleanMethodV(d->m_jobject, id, args);
         va_end(args);
     }
     return res;
@@ -277,11 +288,11 @@ jbyte QJNIObject::callMethod<jbyte>(const char *methodName, const char *sig, ...
 {
     QAttachedJNIEnv env;
     jbyte res = 0;
-    jmethodID id = getCachedMethodID(env, m_jclass, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, methodName, sig);
     if (id) {
         va_list args;
         va_start(args, sig);
-        res = env->CallByteMethodV(m_jobject, id, args);
+        res = env->CallByteMethodV(d->m_jobject, id, args);
         va_end(args);
     }
     return res;
@@ -292,11 +303,11 @@ jchar QJNIObject::callMethod<jchar>(const char *methodName, const char *sig, ...
 {
     QAttachedJNIEnv env;
     jchar res = 0;
-    jmethodID id = getCachedMethodID(env, m_jclass, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, methodName, sig);
     if (id) {
         va_list args;
         va_start(args, sig);
-        res = env->CallCharMethodV(m_jobject, id, args);
+        res = env->CallCharMethodV(d->m_jobject, id, args);
         va_end(args);
     }
     return res;
@@ -307,11 +318,11 @@ jshort QJNIObject::callMethod<jshort>(const char *methodName, const char *sig, .
 {
     QAttachedJNIEnv env;
     jshort res = 0;
-    jmethodID id = getCachedMethodID(env, m_jclass, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, methodName, sig);
     if (id) {
         va_list args;
         va_start(args, sig);
-        res = env->CallShortMethodV(m_jobject, id, args);
+        res = env->CallShortMethodV(d->m_jobject, id, args);
         va_end(args);
     }
     return res;
@@ -322,11 +333,11 @@ jint QJNIObject::callMethod<jint>(const char *methodName, const char *sig, ...)
 {
     QAttachedJNIEnv env;
     jint res = 0;
-    jmethodID id = getCachedMethodID(env, m_jclass, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, methodName, sig);
     if (id) {
         va_list args;
         va_start(args, sig);
-        res = env->CallIntMethodV(m_jobject, id, args);
+        res = env->CallIntMethodV(d->m_jobject, id, args);
         va_end(args);
     }
     return res;
@@ -337,11 +348,11 @@ jlong QJNIObject::callMethod<jlong>(const char *methodName, const char *sig, ...
 {
     QAttachedJNIEnv env;
     jlong res = 0;
-    jmethodID id = getCachedMethodID(env, m_jclass, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, methodName, sig);
     if (id) {
         va_list args;
         va_start(args, sig);
-        res = env->CallLongMethodV(m_jobject, id, args);
+        res = env->CallLongMethodV(d->m_jobject, id, args);
         va_end(args);
     }
     return res;
@@ -352,11 +363,11 @@ jfloat QJNIObject::callMethod<jfloat>(const char *methodName, const char *sig, .
 {
     QAttachedJNIEnv env;
     jfloat res = 0.f;
-    jmethodID id = getCachedMethodID(env, m_jclass, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, methodName, sig);
     if (id) {
         va_list args;
         va_start(args, sig);
-        res = env->CallFloatMethodV(m_jobject, id, args);
+        res = env->CallFloatMethodV(d->m_jobject, id, args);
         va_end(args);
     }
     return res;
@@ -367,11 +378,11 @@ jdouble QJNIObject::callMethod<jdouble>(const char *methodName, const char *sig,
 {
     QAttachedJNIEnv env;
     jdouble res = 0.;
-    jmethodID id = getCachedMethodID(env, m_jclass, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, methodName, sig);
     if (id) {
         va_list args;
         va_start(args, sig);
-        res = env->CallDoubleMethodV(m_jobject, id, args);
+        res = env->CallDoubleMethodV(d->m_jobject, id, args);
         va_end(args);
     }
     return res;
@@ -384,11 +395,11 @@ QJNILocalRef<jobject> QJNIObject::callObjectMethod<jobject>(const char *methodNa
 {
     QAttachedJNIEnv env;
     jobject res = 0;
-    jmethodID id = getCachedMethodID(env, m_jclass, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, methodName, sig);
     if (id) {
         va_list args;
         va_start(args, sig);
-        res = env->CallObjectMethodV(m_jobject, id, args);
+        res = env->CallObjectMethodV(d->m_jobject, id, args);
         va_end(args);
     }
     return QJNILocalRef<jobject>(res);
@@ -401,11 +412,11 @@ QJNILocalRef<jstring> QJNIObject::callObjectMethod<jstring>(const char *methodNa
 {
     QAttachedJNIEnv env;
     jstring res = 0;
-    jmethodID id = getCachedMethodID(env, m_jclass, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, methodName, sig);
     if (id) {
         va_list args;
         va_start(args, sig);
-        res = static_cast<jstring>(env->CallObjectMethodV(m_jobject, id, args));
+        res = static_cast<jstring>(env->CallObjectMethodV(d->m_jobject, id, args));
         va_end(args);
     }
     return QJNILocalRef<jstring>(res);
@@ -418,11 +429,11 @@ QJNILocalRef<jobjectArray> QJNIObject::callObjectMethod<jobjectArray>(const char
 {
     QAttachedJNIEnv env;
     jobjectArray res = 0;
-    jmethodID id = getCachedMethodID(env, m_jclass, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, methodName, sig);
     if (id) {
         va_list args;
         va_start(args, sig);
-        res = static_cast<jobjectArray>(env->CallObjectMethodV(m_jobject, id, args));
+        res = static_cast<jobjectArray>(env->CallObjectMethodV(d->m_jobject, id, args));
         va_end(args);
     }
     return QJNILocalRef<jobjectArray>(res);
@@ -435,11 +446,11 @@ QJNILocalRef<jbooleanArray> QJNIObject::callObjectMethod<jbooleanArray>(const ch
 {
     QAttachedJNIEnv env;
     jbooleanArray res = 0;
-    jmethodID id = getCachedMethodID(env, m_jclass, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, methodName, sig);
     if (id) {
         va_list args;
         va_start(args, sig);
-        res = static_cast<jbooleanArray>(env->CallObjectMethodV(m_jobject, id, args));
+        res = static_cast<jbooleanArray>(env->CallObjectMethodV(d->m_jobject, id, args));
         va_end(args);
     }
     return QJNILocalRef<jbooleanArray>(res);
@@ -452,11 +463,11 @@ QJNILocalRef<jbyteArray> QJNIObject::callObjectMethod<jbyteArray>(const char *me
 {
     QAttachedJNIEnv env;
     jbyteArray res = 0;
-    jmethodID id = getCachedMethodID(env, m_jclass, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, methodName, sig);
     if (id) {
         va_list args;
         va_start(args, sig);
-        res = static_cast<jbyteArray>(env->CallObjectMethodV(m_jobject, id, args));
+        res = static_cast<jbyteArray>(env->CallObjectMethodV(d->m_jobject, id, args));
         va_end(args);
     }
     return QJNILocalRef<jbyteArray>(res);
@@ -469,11 +480,11 @@ QJNILocalRef<jcharArray> QJNIObject::callObjectMethod<jcharArray>(const char *me
 {
     QAttachedJNIEnv env;
     jcharArray res = 0;
-    jmethodID id = getCachedMethodID(env, m_jclass, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, methodName, sig);
     if (id) {
         va_list args;
         va_start(args, sig);
-        res = static_cast<jcharArray>(env->CallObjectMethodV(m_jobject, id, args));
+        res = static_cast<jcharArray>(env->CallObjectMethodV(d->m_jobject, id, args));
         va_end(args);
     }
     return QJNILocalRef<jcharArray>(res);
@@ -486,11 +497,11 @@ QJNILocalRef<jshortArray> QJNIObject::callObjectMethod<jshortArray>(const char *
 {
     QAttachedJNIEnv env;
     jshortArray res = 0;
-    jmethodID id = getCachedMethodID(env, m_jclass, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, methodName, sig);
     if (id) {
         va_list args;
         va_start(args, sig);
-        res = static_cast<jshortArray>(env->CallObjectMethodV(m_jobject, id, args));
+        res = static_cast<jshortArray>(env->CallObjectMethodV(d->m_jobject, id, args));
         va_end(args);
     }
     return QJNILocalRef<jshortArray>(res);
@@ -503,11 +514,11 @@ QJNILocalRef<jintArray> QJNIObject::callObjectMethod<jintArray>(const char *meth
 {
     QAttachedJNIEnv env;
     jintArray res = 0;
-    jmethodID id = getCachedMethodID(env, m_jclass, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, methodName, sig);
     if (id) {
         va_list args;
         va_start(args, sig);
-        res = static_cast<jintArray>(env->CallObjectMethodV(m_jobject, id, args));
+        res = static_cast<jintArray>(env->CallObjectMethodV(d->m_jobject, id, args));
         va_end(args);
     }
     return QJNILocalRef<jintArray>(res);
@@ -520,11 +531,11 @@ QJNILocalRef<jlongArray> QJNIObject::callObjectMethod<jlongArray>(const char *me
 {
     QAttachedJNIEnv env;
     jlongArray res = 0;
-    jmethodID id = getCachedMethodID(env, m_jclass, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, methodName, sig);
     if (id) {
         va_list args;
         va_start(args, sig);
-        res = static_cast<jlongArray>(env->CallObjectMethodV(m_jobject, id, args));
+        res = static_cast<jlongArray>(env->CallObjectMethodV(d->m_jobject, id, args));
         va_end(args);
     }
     return QJNILocalRef<jlongArray>(res);
@@ -537,11 +548,11 @@ QJNILocalRef<jfloatArray> QJNIObject::callObjectMethod<jfloatArray>(const char *
 {
     QAttachedJNIEnv env;
     jfloatArray res = 0;
-    jmethodID id = getCachedMethodID(env, m_jclass, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, methodName, sig);
     if (id) {
         va_list args;
         va_start(args, sig);
-        res = static_cast<jfloatArray>(env->CallObjectMethodV(m_jobject, id, args));
+        res = static_cast<jfloatArray>(env->CallObjectMethodV(d->m_jobject, id, args));
         va_end(args);
     }
     return QJNILocalRef<jfloatArray>(res);
@@ -554,11 +565,11 @@ QJNILocalRef<jdoubleArray> QJNIObject::callObjectMethod<jdoubleArray>(const char
 {
     QAttachedJNIEnv env;
     jdoubleArray res = 0;
-    jmethodID id = getCachedMethodID(env, m_jclass, methodName, sig);
+    jmethodID id = getCachedMethodID(env, d->m_jclass, methodName, sig);
     if (id) {
         va_list args;
         va_start(args, sig);
-        res = static_cast<jdoubleArray>(env->CallObjectMethodV(m_jobject, id, args));
+        res = static_cast<jdoubleArray>(env->CallObjectMethodV(d->m_jobject, id, args));
         va_end(args);
     }
     return QJNILocalRef<jdoubleArray>(res);
@@ -1796,9 +1807,9 @@ jboolean QJNIObject::getField<jboolean>(const char *fieldName)
 {
     QAttachedJNIEnv env;
     jboolean res = 0;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "Z");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "Z");
     if (id)
-        res = env->GetBooleanField(m_jobject, id);
+        res = env->GetBooleanField(d->m_jobject, id);
 
     return res;
 }
@@ -1808,9 +1819,9 @@ jbyte QJNIObject::getField<jbyte>(const char *fieldName)
 {
     QAttachedJNIEnv env;
     jbyte res = 0;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "B");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "B");
     if (id)
-        res = env->GetByteField(m_jobject, id);
+        res = env->GetByteField(d->m_jobject, id);
 
     return res;
 }
@@ -1820,9 +1831,9 @@ jchar QJNIObject::getField<jchar>(const char *fieldName)
 {
     QAttachedJNIEnv env;
     jchar res = 0;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "C");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "C");
     if (id)
-        res = env->GetCharField(m_jobject, id);
+        res = env->GetCharField(d->m_jobject, id);
 
     return res;
 }
@@ -1832,9 +1843,9 @@ jshort QJNIObject::getField<jshort>(const char *fieldName)
 {
     QAttachedJNIEnv env;
     jshort res = 0;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "S");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "S");
     if (id)
-        res = env->GetShortField(m_jobject, id);
+        res = env->GetShortField(d->m_jobject, id);
 
     return res;
 }
@@ -1844,9 +1855,9 @@ jint QJNIObject::getField<jint>(const char *fieldName)
 {
     QAttachedJNIEnv env;
     jint res = 0;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "I");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "I");
     if (id)
-        res = env->GetIntField(m_jobject, id);
+        res = env->GetIntField(d->m_jobject, id);
 
     return res;
 }
@@ -1856,9 +1867,9 @@ jlong QJNIObject::getField<jlong>(const char *fieldName)
 {
     QAttachedJNIEnv env;
     jlong res = 0;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "J");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "J");
     if (id)
-        res = env->GetLongField(m_jobject, id);
+        res = env->GetLongField(d->m_jobject, id);
 
     return res;
 }
@@ -1868,9 +1879,9 @@ jfloat QJNIObject::getField<jfloat>(const char *fieldName)
 {
     QAttachedJNIEnv env;
     jfloat res = 0.f;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "F");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "F");
     if (id)
-        res = env->GetFloatField(m_jobject, id);
+        res = env->GetFloatField(d->m_jobject, id);
 
     return res;
 }
@@ -1880,9 +1891,9 @@ jdouble QJNIObject::getField<jdouble>(const char *fieldName)
 {
     QAttachedJNIEnv env;
     jdouble res = 0.;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "D");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "D");
     if (id)
-        res = env->GetDoubleField(m_jobject, id);
+        res = env->GetDoubleField(d->m_jobject, id);
 
     return res;
 }
@@ -1892,9 +1903,9 @@ QJNILocalRef<jobject> QJNIObject::getObjectField<jobject>(const char *fieldName,
 {
     QAttachedJNIEnv env;
     jobject res = 0;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, sig);
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, sig);
     if (id)
-        res = env->GetObjectField(m_jobject, id);
+        res = env->GetObjectField(d->m_jobject, id);
 
     return QJNILocalRef<jobject>(res);
 }
@@ -1904,9 +1915,9 @@ QJNILocalRef<jbooleanArray> QJNIObject::getObjectField<jbooleanArray>(const char
 {
     QAttachedJNIEnv env;
     jbooleanArray res = 0;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "[Z");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "[Z");
     if (id)
-        res = static_cast<jbooleanArray>(env->GetObjectField(m_jobject, id));
+        res = static_cast<jbooleanArray>(env->GetObjectField(d->m_jobject, id));
 
     return QJNILocalRef<jbooleanArray>(res);
 }
@@ -1916,9 +1927,9 @@ QJNILocalRef<jbyteArray> QJNIObject::getObjectField<jbyteArray>(const char *fiel
 {
     QAttachedJNIEnv env;
     jbyteArray res = 0;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "[B");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "[B");
     if (id)
-        res = static_cast<jbyteArray>(env->GetObjectField(m_jobject, id));
+        res = static_cast<jbyteArray>(env->GetObjectField(d->m_jobject, id));
 
     return QJNILocalRef<jbyteArray>(res);
 }
@@ -1928,9 +1939,9 @@ QJNILocalRef<jcharArray> QJNIObject::getObjectField<jcharArray>(const char *fiel
 {
     QAttachedJNIEnv env;
     jcharArray res = 0;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "[C");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "[C");
     if (id)
-        res = static_cast<jcharArray>(env->GetObjectField(m_jobject, id));
+        res = static_cast<jcharArray>(env->GetObjectField(d->m_jobject, id));
 
     return QJNILocalRef<jcharArray>(res);
 }
@@ -1940,9 +1951,9 @@ QJNILocalRef<jshortArray> QJNIObject::getObjectField<jshortArray>(const char *fi
 {
     QAttachedJNIEnv env;
     jshortArray res = 0;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "[S");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "[S");
     if (id)
-        res = static_cast<jshortArray>(env->GetObjectField(m_jobject, id));
+        res = static_cast<jshortArray>(env->GetObjectField(d->m_jobject, id));
 
     return QJNILocalRef<jshortArray>(res);
 }
@@ -1952,9 +1963,9 @@ QJNILocalRef<jintArray> QJNIObject::getObjectField<jintArray>(const char *fieldN
 {
     QAttachedJNIEnv env;
     jintArray res = 0;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "[I");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "[I");
     if (id)
-        res = static_cast<jintArray>(env->GetObjectField(m_jobject, id));
+        res = static_cast<jintArray>(env->GetObjectField(d->m_jobject, id));
 
     return QJNILocalRef<jintArray>(res);
 }
@@ -1964,9 +1975,9 @@ QJNILocalRef<jlongArray> QJNIObject::getObjectField<jlongArray>(const char *fiel
 {
     QAttachedJNIEnv env;
     jlongArray res = 0;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "[J");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "[J");
     if (id)
-        res = static_cast<jlongArray>(env->GetObjectField(m_jobject, id));
+        res = static_cast<jlongArray>(env->GetObjectField(d->m_jobject, id));
 
     return QJNILocalRef<jlongArray>(res);
 }
@@ -1976,9 +1987,9 @@ QJNILocalRef<jfloatArray> QJNIObject::getObjectField<jfloatArray>(const char *fi
 {
     QAttachedJNIEnv env;
     jfloatArray res = 0;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "[F");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "[F");
     if (id)
-        res = static_cast<jfloatArray>(env->GetObjectField(m_jobject, id));
+        res = static_cast<jfloatArray>(env->GetObjectField(d->m_jobject, id));
 
     return QJNILocalRef<jfloatArray>(res);
 }
@@ -1988,9 +1999,9 @@ QJNILocalRef<jdoubleArray> QJNIObject::getObjectField<jdoubleArray>(const char *
 {
     QAttachedJNIEnv env;
     jdoubleArray res = 0;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "[D");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "[D");
     if (id)
-        res = static_cast<jdoubleArray>(env->GetObjectField(m_jobject, id));
+        res = static_cast<jdoubleArray>(env->GetObjectField(d->m_jobject, id));
 
     return QJNILocalRef<jdoubleArray>(res);
 }
@@ -2000,9 +2011,9 @@ QJNILocalRef<jstring> QJNIObject::getObjectField<jstring>(const char *fieldName)
 {
     QAttachedJNIEnv env;
     jstring res = 0;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "Ljava/lang/String;");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "Ljava/lang/String;");
     if (id)
-        res = static_cast<jstring>(env->GetObjectField(m_jobject, id));
+        res = static_cast<jstring>(env->GetObjectField(d->m_jobject, id));
 
     return QJNILocalRef<jstring>(res);
 }
@@ -2013,9 +2024,9 @@ QJNILocalRef<jobjectArray> QJNIObject::getObjectField<jobjectArray>(const char *
 {
     QAttachedJNIEnv env;
     jobjectArray res = 0;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, sig);
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, sig);
     if (id)
-        res = static_cast<jobjectArray>(env->GetObjectField(m_jobject, id));
+        res = static_cast<jobjectArray>(env->GetObjectField(d->m_jobject, id));
 
     return QJNILocalRef<jobjectArray>(res);
 }
@@ -2024,9 +2035,9 @@ template <>
 void QJNIObject::setField<jboolean>(const char *fieldName, jboolean value)
 {
     QAttachedJNIEnv env;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "Z");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "Z");
     if (id)
-        env->SetBooleanField(m_jobject, id, value);
+        env->SetBooleanField(d->m_jobject, id, value);
 
 }
 
@@ -2034,9 +2045,9 @@ template <>
 void QJNIObject::setField<jbyte>(const char *fieldName, jbyte value)
 {
     QAttachedJNIEnv env;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "B");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "B");
     if (id)
-        env->SetByteField(m_jobject, id, value);
+        env->SetByteField(d->m_jobject, id, value);
 
 }
 
@@ -2044,9 +2055,9 @@ template <>
 void QJNIObject::setField<jchar>(const char *fieldName, jchar value)
 {
     QAttachedJNIEnv env;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "C");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "C");
     if (id)
-        env->SetCharField(m_jobject, id, value);
+        env->SetCharField(d->m_jobject, id, value);
 
 }
 
@@ -2054,9 +2065,9 @@ template <>
 void QJNIObject::setField<jshort>(const char *fieldName, jshort value)
 {
     QAttachedJNIEnv env;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "S");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "S");
     if (id)
-        env->SetShortField(m_jobject, id, value);
+        env->SetShortField(d->m_jobject, id, value);
 
 }
 
@@ -2064,9 +2075,9 @@ template <>
 void QJNIObject::setField<jint>(const char *fieldName, jint value)
 {
     QAttachedJNIEnv env;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "I");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "I");
     if (id)
-        env->SetIntField(m_jobject, id, value);
+        env->SetIntField(d->m_jobject, id, value);
 
 }
 
@@ -2074,9 +2085,9 @@ template <>
 void QJNIObject::setField<jlong>(const char *fieldName, jlong value)
 {
     QAttachedJNIEnv env;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "J");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "J");
     if (id)
-        env->SetLongField(m_jobject, id, value);
+        env->SetLongField(d->m_jobject, id, value);
 
 }
 
@@ -2084,9 +2095,9 @@ template <>
 void QJNIObject::setField<jfloat>(const char *fieldName, jfloat value)
 {
     QAttachedJNIEnv env;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "F");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "F");
     if (id)
-        env->SetFloatField(m_jobject, id, value);
+        env->SetFloatField(d->m_jobject, id, value);
 
 }
 
@@ -2094,9 +2105,9 @@ template <>
 void QJNIObject::setField<jdouble>(const char *fieldName, jdouble value)
 {
     QAttachedJNIEnv env;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "D");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "D");
     if (id)
-        env->SetDoubleField(m_jobject, id, value);
+        env->SetDoubleField(d->m_jobject, id, value);
 
 }
 
@@ -2104,9 +2115,9 @@ template <>
 void QJNIObject::setField<jbooleanArray>(const char *fieldName, jbooleanArray value)
 {
     QAttachedJNIEnv env;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "[Z");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "[Z");
     if (id)
-        env->SetObjectField(m_jobject, id, value);
+        env->SetObjectField(d->m_jobject, id, value);
 
 }
 
@@ -2114,9 +2125,9 @@ template <>
 void QJNIObject::setField<jbyteArray>(const char *fieldName, jbyteArray value)
 {
     QAttachedJNIEnv env;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "[B");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "[B");
     if (id)
-        env->SetObjectField(m_jobject, id, value);
+        env->SetObjectField(d->m_jobject, id, value);
 
 }
 
@@ -2124,9 +2135,9 @@ template <>
 void QJNIObject::setField<jcharArray>(const char *fieldName, jcharArray value)
 {
     QAttachedJNIEnv env;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "[C");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "[C");
     if (id)
-        env->SetObjectField(m_jobject, id, value);
+        env->SetObjectField(d->m_jobject, id, value);
 
 }
 
@@ -2134,9 +2145,9 @@ template <>
 void QJNIObject::setField<jshortArray>(const char *fieldName, jshortArray value)
 {
     QAttachedJNIEnv env;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "[S");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "[S");
     if (id)
-        env->SetObjectField(m_jobject, id, value);
+        env->SetObjectField(d->m_jobject, id, value);
 
 }
 
@@ -2144,9 +2155,9 @@ template <>
 void QJNIObject::setField<jintArray>(const char *fieldName, jintArray value)
 {
     QAttachedJNIEnv env;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "[I");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "[I");
     if (id)
-        env->SetObjectField(m_jobject, id, value);
+        env->SetObjectField(d->m_jobject, id, value);
 
 }
 
@@ -2154,9 +2165,9 @@ template <>
 void QJNIObject::setField<jlongArray>(const char *fieldName, jlongArray value)
 {
     QAttachedJNIEnv env;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "[J");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "[J");
     if (id)
-        env->SetObjectField(m_jobject, id, value);
+        env->SetObjectField(d->m_jobject, id, value);
 
 }
 
@@ -2164,9 +2175,9 @@ template <>
 void QJNIObject::setField<jfloatArray>(const char *fieldName, jfloatArray value)
 {
     QAttachedJNIEnv env;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "[F");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "[F");
     if (id)
-        env->SetObjectField(m_jobject, id, value);
+        env->SetObjectField(d->m_jobject, id, value);
 
 }
 
@@ -2174,9 +2185,9 @@ template <>
 void QJNIObject::setField<jdoubleArray>(const char *fieldName, jdoubleArray value)
 {
     QAttachedJNIEnv env;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "[D");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "[D");
     if (id)
-        env->SetObjectField(m_jobject, id, value);
+        env->SetObjectField(d->m_jobject, id, value);
 
 }
 
@@ -2184,9 +2195,9 @@ template <>
 void QJNIObject::setField<jstring>(const char *fieldName, jstring value)
 {
     QAttachedJNIEnv env;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, "Ljava/lang/String;");
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, "Ljava/lang/String;");
     if (id)
-        env->SetObjectField(m_jobject, id, value);
+        env->SetObjectField(d->m_jobject, id, value);
 
 }
 
@@ -2194,9 +2205,9 @@ template <>
 void QJNIObject::setField<jobject>(const char *fieldName, const char *sig, jobject value)
 {
     QAttachedJNIEnv env;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, sig);
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, sig);
     if (id)
-        env->SetObjectField(m_jobject, id, value);
+        env->SetObjectField(d->m_jobject, id, value);
 
 }
 
@@ -2206,9 +2217,9 @@ void QJNIObject::setField<jobjectArray>(const char *fieldName,
                                         jobjectArray value)
 {
     QAttachedJNIEnv env;
-    jfieldID id = getCachedFieldID(env, m_jclass, fieldName, sig);
+    jfieldID id = getCachedFieldID(env, d->m_jclass, fieldName, sig);
     if (id)
-        env->SetObjectField(m_jobject, id, value);
+        env->SetObjectField(d->m_jobject, id, value);
 
 }
 
