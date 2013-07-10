@@ -22,6 +22,25 @@
 #define ANGLE_COMPILE_OPTIMIZATION_LEVEL D3DCOMPILE_OPTIMIZATION_LEVEL3
 #endif
 
+#ifdef __MINGW32__
+
+#ifndef D3DCOMPILER_DLL
+
+//Add define + typedefs for older MinGW-w64 headers (pre 5783)
+
+#define D3DCOMPILER_DLL L"d3dcompiler_43.dll"
+
+HRESULT WINAPI D3DCompile(const void *data, SIZE_T data_size, const char *filename,
+        const D3D_SHADER_MACRO *defines, ID3DInclude *include, const char *entrypoint,
+        const char *target, UINT sflags, UINT eflags, ID3DBlob **shader, ID3DBlob **error_messages);
+typedef HRESULT (WINAPI *pD3DCompile)(const void *data, SIZE_T data_size, const char *filename,
+        const D3D_SHADER_MACRO *defines, ID3DInclude *include, const char *entrypoint,
+        const char *target, UINT sflags, UINT eflags, ID3DBlob **shader, ID3DBlob **error_messages);
+
+#endif // D3DCOMPILER_DLL
+
+#endif // __MINGW32__
+
 namespace rx
 {
 

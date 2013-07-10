@@ -1,0 +1,52 @@
+From 82fd5de3ae5e242730fdaf8044f17227337d881c Mon Sep 17 00:00:00 2001
+From: Kai Koehne <kai.koehne@digia.com>
+Date: Wed, 10 Jul 2013 14:00:13 +0200
+Subject: [PATCH] Fix compilation of libGLESv2 with older MinGW-w64 headers
+
+Fix compilation of libGLESv2 for mingw-headers predating MinGW-w64
+svn commit 5567 (like MinGW-builds gcc 4.7.2-rev8, the toolchain
+we officially support).
+
+Commit 5567 added the D3DCOMPILER_DLL define to d3dcompiler.h, but with
+a trailing semicolon that has then fixed in commit 5783. Any toolchain
+that ships MinGW-w64 headers from a version in between (like
+MinGW-builds gcc 4.7.2-rev11) will unfortunately remain broken.
+
+Change-Id: I31272a1a991c4fc0f1611f8fb7510be51d6bb925
+---
+ .../angle/src/libGLESv2/renderer/Renderer.cpp         | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
+index 41cdb8b..218356c 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
+@@ -22,6 +22,25 @@
+ #define ANGLE_COMPILE_OPTIMIZATION_LEVEL D3DCOMPILE_OPTIMIZATION_LEVEL3
+ #endif
+ 
++#ifdef __MINGW32__
++
++#ifndef D3DCOMPILER_DLL
++
++//Add define + typedefs for older MinGW-w64 headers (pre 5783)
++
++#define D3DCOMPILER_DLL L"d3dcompiler_43.dll"
++
++HRESULT WINAPI D3DCompile(const void *data, SIZE_T data_size, const char *filename,
++        const D3D_SHADER_MACRO *defines, ID3DInclude *include, const char *entrypoint,
++        const char *target, UINT sflags, UINT eflags, ID3DBlob **shader, ID3DBlob **error_messages);
++typedef HRESULT (WINAPI *pD3DCompile)(const void *data, SIZE_T data_size, const char *filename,
++        const D3D_SHADER_MACRO *defines, ID3DInclude *include, const char *entrypoint,
++        const char *target, UINT sflags, UINT eflags, ID3DBlob **shader, ID3DBlob **error_messages);
++
++#endif // D3DCOMPILER_DLL
++
++#endif // __MINGW32__
++
+ namespace rx
+ {
+ 
+-- 
+1.8.3.msysgit.0
+
