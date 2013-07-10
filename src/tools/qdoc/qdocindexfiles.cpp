@@ -217,8 +217,18 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
             location = Location(name);
         node = qbtn;
     }
-    else if (element.nodeName() == "qmlproperty") {
+    else if (element.nodeName() == "qmlpropertygroup") {
         QmlClassNode* qcn = static_cast<QmlClassNode*>(parent);
+        QmlPropertyGroupNode* qpgn = new QmlPropertyGroupNode(qcn, name);
+        if (element.hasAttribute("location"))
+            name = element.attribute("location", QString());
+        if (!indexUrl.isEmpty())
+            location = Location(indexUrl + QLatin1Char('/') + name);
+        else if (!indexUrl.isNull())
+            location = Location(name);
+        node = qpgn;
+    }
+    else if (element.nodeName() == "qmlproperty") {
         QString type = element.attribute("type");
         bool attached = false;
         if (element.attribute("attached") == "true")
@@ -226,7 +236,15 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         bool readonly = false;
         if (element.attribute("writable") == "false")
             readonly = true;
-        QmlPropertyNode* qpn = new QmlPropertyNode(qcn, name, type, attached);
+        QmlPropertyNode* qpn = 0;
+        if (parent->type() == Node::Document) {
+            QmlClassNode* qcn = static_cast<QmlClassNode*>(parent);
+            qpn = new QmlPropertyNode(qcn, name, type, attached);
+        }
+        else if (parent->type() == Node::QmlPropertyGroup) {
+            QmlPropertyGroupNode* qpgn = static_cast<QmlPropertyGroupNode*>(parent);
+            qpn = new QmlPropertyNode(qpgn, name, type, attached);
+        }
         qpn->setReadOnly(readonly);
         node = qpn;
     }
@@ -279,10 +297,6 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         }
         else if (element.attribute("subtype") == "qmlclass") {
             subtype = Node::QmlClass;
-            ptype = Node::ApiPage;
-        }
-        else if (element.attribute("subtype") == "qmlpropertygroup") {
-            subtype = Node::QmlPropertyGroup;
             ptype = Node::ApiPage;
         }
         else if (element.attribute("subtype") == "qmlbasictype") {
@@ -501,7 +515,7 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
 
     // Create some content for the node.
     QSet<QString> emptySet;
-    Doc doc(location, location, " ", emptySet); // placeholder
+    Doc doc(location, location, " ", emptySet, emptySet); // placeholder
     node->setDoc(doc);
     node->setIndexNodeFlag();
     node->setOutputSubdirectory(project_.toLower());
@@ -643,6 +657,9 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
         break;
     case Node::QmlProperty:
         nodeName = "qmlproperty";
+        break;
+    case Node::QmlPropertyGroup:
+        nodeName = "qmlpropertygroup";
         break;
     case Node::QmlSignal:
         nodeName = "qmlsignal";
@@ -927,6 +944,12 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                 writer.writeAttribute("brief", brief);
         }
         break;
+    case Node::QmlPropertyGroup:
+        {
+            if (!brief.isEmpty())
+                writer.writeAttribute("brief", brief);
+        }
+        break;
     case Node::Property:
         {
             const PropertyNode* propertyNode = static_cast<const PropertyNode*>(node);
@@ -1179,17 +1202,12 @@ void QDocIndexFiles::generateIndexSections(QXmlStreamWriter& writer,
 
             foreach (Node* child, cnodes) {
                 /*
-                  Don't generate anything for a QML property group node.
-                  It is just a place holder for a collection of QML property
-                  nodes. Recurse to its children, which are the QML property
-                  nodes.
-
-                  Do the same thing for collision nodes - we want children
-                  of collision nodes in the index, but leaving out the
-                  parent collision page will make searching for nodes easier.
+                  Don't generate anything for a collision node. We want
+                  children of collision nodes in the index, but leaving
+                  out the parent collision page will make searching for
+                  nodes easier.
                  */
-                if (child->subType() == Node::QmlPropertyGroup ||
-                        child->subType() == Node::Collision) {
+                if (child->subType() == Node::Collision) {
                     const InnerNode* pgn = static_cast<const InnerNode*>(child);
                     foreach (Node* c, pgn->childNodes()) {
                         generateIndexSections(writer, c, generateInternalNodes);

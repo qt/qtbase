@@ -118,9 +118,9 @@ void PureDocParser::parseSourceFile(const Location& location, const QString& fil
  */
 bool PureDocParser::processQdocComments()
 {
-    QSet<QString> topicCommandsAllowed = topicCommands();
-    QSet<QString> otherMetacommandsAllowed = otherMetaCommands();
-    QSet<QString> metacommandsAllowed = topicCommandsAllowed + otherMetacommandsAllowed;
+    const QSet<QString>& topicCommandsAllowed = topicCommands();
+    const QSet<QString>& otherMetacommandsAllowed = otherMetaCommands();
+    const QSet<QString>& metacommandsAllowed = topicCommandsAllowed + otherMetacommandsAllowed;
 
     while (tok != Tok_Eoi) {
         if (tok == Tok_Doc) {
@@ -137,55 +137,68 @@ bool PureDocParser::processQdocComments()
             /*
               Doc parses the comment.
              */
-            Doc doc(start_loc,end_loc,comment,metacommandsAllowed);
+            Doc doc(start_loc, end_loc, comment, metacommandsAllowed, topicCommandsAllowed);
 
             QString topic;
-            ArgList args;
+            bool isQmlPropertyTopic = false;
 
-            QSet<QString> topicCommandsUsed = topicCommandsAllowed & doc.metaCommandsUsed();
-
-            /*
-              There should be one topic command in the set,
-              or none. If the set is empty, then the comment
-              should be a function description.
-             */
-            if (topicCommandsUsed.count() > 0) {
-                topic = *topicCommandsUsed.begin();
-                args = doc.metaCommandArgs(topic);
+            const TopicList& topics = doc.topicsUsed();
+            if (!topics.isEmpty()) {
+                topic = topics[0].topic;
+                if ((topic == COMMAND_QMLPROPERTY) ||
+                    (topic == COMMAND_QMLPROPERTYGROUP) ||
+                    (topic == COMMAND_QMLATTACHEDPROPERTY)) {
+                    isQmlPropertyTopic = true;
+                }
+            }
+            if (isQmlPropertyTopic && topics.size() > 1) {
+                qDebug() << "MULTIPLE TOPICS:" << doc.location().fileName() << doc.location().lineNo();
+                for (int i=0; i<topics.size(); ++i) {
+                    qDebug() << "  " << topics[i].topic << topics[i].args;
+                }
             }
 
             NodeList nodes;
-            QList<Doc> docs;
+            DocList docs;
 
             if (topic.isEmpty()) {
                 doc.location().warning(tr("This qdoc comment contains no topic command "
                                           "(e.g., '\\%1', '\\%2').")
                                        .arg(COMMAND_MODULE).arg(COMMAND_PAGE));
             }
+            else if (isQmlPropertyTopic) {
+                Doc nodeDoc = doc;
+                processQmlProperties(nodeDoc, nodes, docs);
+            }
             else {
-                /*
-                  There is a topic command. Process it.
-                 */
-                if ((topic == COMMAND_QMLPROPERTY) ||
-                        (topic == COMMAND_QMLATTACHEDPROPERTY)) {
+                ArgList args;
+                QSet<QString> topicCommandsUsed = topicCommandsAllowed & doc.metaCommandsUsed();
+                if (topicCommandsUsed.count() > 0) {
+                    topic = *topicCommandsUsed.begin();
+                    args = doc.metaCommandArgs(topic);
+                }
+                if (topicCommandsUsed.count() > 1) {
+                    QString topics;
+                    QSet<QString>::ConstIterator t = topicCommandsUsed.constBegin();
+                    while (t != topicCommandsUsed.constEnd()) {
+                        topics += " \\" + *t + ",";
+                        ++t;
+                    }
+                    topics[topics.lastIndexOf(',')] = '.';
+                    int i = topics.lastIndexOf(',');
+                    topics[i] = ' ';
+                    topics.insert(i+1,"and");
+                    doc.location().warning(tr("Multiple topic commands found in comment: %1").arg(topics));
+                }
+                ArgList::ConstIterator a = args.begin();
+                while (a != args.end()) {
                     Doc nodeDoc = doc;
-                    Node* node = processTopicCommandGroup(nodeDoc,topic,args);
+                    Node* node = processTopicCommand(nodeDoc,topic,*a);
                     if (node != 0) {
                         nodes.append(node);
                         docs.append(nodeDoc);
                     }
-                }
-                else {
-                    ArgList::ConstIterator a = args.begin();
-                    while (a != args.end()) {
-                        Doc nodeDoc = doc;
-                        Node* node = processTopicCommand(nodeDoc,topic,*a);
-                        if (node != 0) {
-                            nodes.append(node);
-                            docs.append(nodeDoc);
-                        }
-                        ++a;
-                    }
+                    ++a;
                 }
             }
 

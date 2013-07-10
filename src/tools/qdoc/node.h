@@ -60,6 +60,7 @@ class InnerNode;
 class ExampleNode;
 class QmlClassNode;
 class QDocDatabase;
+class QmlPropertyNode;
 
 typedef QList<Node*> NodeList;
 typedef QMap<QString, Node*> NodeMap;
@@ -80,6 +81,7 @@ public:
         Function,
         Property,
         Variable,
+        QmlPropertyGroup,
         QmlProperty,
         QmlSignal,
         QmlSignalHandler,
@@ -98,7 +100,6 @@ public:
         Page,
         ExternalPage,
         QmlClass,
-        QmlPropertyGroup,
         QmlBasicType,
         QmlModule,
         DitaMap,
@@ -200,8 +201,11 @@ public:
     virtual bool isQmlPropertyGroup() const { return false; }
     virtual bool isCollisionNode() const { return false; }
     virtual bool isAttached() const { return false; }
+    virtual bool isAlias() const { return false; }
     virtual bool isGroup() const { return false; }
     virtual bool isWrapper() const;
+    virtual bool isReadOnly() const { return false; }
+    virtual bool isDefault() const { return false; }
     virtual void addMember(Node* ) { }
     virtual bool hasMembers() const { return false; }
     virtual bool hasNamespaces() const { return false; }
@@ -209,10 +213,12 @@ public:
     virtual void setAbstract(bool ) { }
     virtual void setWrapper() { }
     virtual QString title() const { return QString(); }
-    virtual bool hasProperty(const QString& ) const { return false; }
+    virtual QmlPropertyNode* hasQmlProperty(const QString& ) const { return 0; }
     virtual void getMemberNamespaces(NodeMap& ) { }
     virtual void getMemberClasses(NodeMap& ) { }
     virtual bool isInternal() const;
+    virtual void setDataType(const QString& ) { }
+    virtual void setReadOnly(bool ) { }
     bool isIndexNode() const { return indexNodeFlag_; }
     bool wasSeen() const { return seen_; }
     Type type() const { return nodeType_; }
@@ -231,7 +237,7 @@ public:
     Access access() const { return access_; }
     QString accessString() const;
     const Location& location() const { return loc; }
-    const Doc& doc() const { return d; }
+    const Doc& doc() const { return doc_; }
     Status status() const { return status_; }
     Status inheritedStatus() const;
     ThreadSafeness threadSafeness() const;
@@ -294,7 +300,7 @@ private:
     InnerNode* relatesTo_;
     QString name_;
     Location loc;
-    Doc d;
+    Doc doc_;
     QMap<LinkType, QPair<QString, QString> > linkMap_;
     QString moduleName_;
     QString url_;
@@ -366,6 +372,7 @@ public:
     virtual void setCurrentChild(InnerNode* ) { }
     virtual void setOutputFileName(const QString& f) { outputFileName_ = f; }
     virtual QString outputFileName() const { return outputFileName_; }
+    virtual QmlPropertyNode* hasQmlProperty(const QString& ) const;
 
     void printChildren(const QString& title);
     void printMembers(const QString& title);
@@ -497,8 +504,6 @@ public:
     virtual QString nameForLists() const { return title(); }
     virtual void setImageFileName(const QString& ) { }
     virtual bool isGroup() const { return (subType() == Node::Group); }
-    virtual bool isQmlPropertyGroup() const { return (nodeSubtype_ == QmlPropertyGroup); }
-    virtual bool hasProperty(const QString& ) const;
 
 protected:
     SubType nodeSubtype_;
@@ -619,11 +624,11 @@ public:
     virtual bool isQmlNode() const { return true; }
 };
 
-class QmlPropGroupNode : public DocNode
+class QmlPropertyGroupNode : public InnerNode
 {
 public:
-    QmlPropGroupNode(QmlClassNode* parent, const QString& name);
-    virtual ~QmlPropGroupNode() { }
+    QmlPropertyGroupNode(QmlClassNode* parent, const QString& name);
+    virtual ~QmlPropertyGroupNode() { }
     virtual bool isQmlNode() const { return true; }
     virtual bool isQtQuickNode() const { return parent()->isQtQuickNode(); }
     virtual QString qmlTypeName() const { return parent()->qmlTypeName(); }
@@ -631,6 +636,7 @@ public:
     virtual QString qmlModuleVersion() const { return parent()->qmlModuleVersion(); }
     virtual QString qmlModuleIdentifier() const { return parent()->qmlModuleIdentifier(); }
     virtual QString idNumber();
+    virtual bool isQmlPropertyGroup() const { return true; }
 
     const QString& element() const { return parent()->name(); }
 
@@ -645,34 +651,27 @@ class QmlPropertyNode : public LeafNode
     Q_DECLARE_TR_FUNCTIONS(QDoc::QmlPropertyNode)
 
 public:
-    QmlPropertyNode(QmlClassNode *parent,
-                    const QString& name,
-                    const QString& type,
-                    bool attached);
-    QmlPropertyNode(QmlPropGroupNode* parent,
-                    const QString& name,
-                    const QString& type,
-                    bool attached);
-    QmlPropertyNode(QmlPropertyNode* parent,
+    QmlPropertyNode(InnerNode *parent,
                     const QString& name,
                     const QString& type,
                     bool attached);
     virtual ~QmlPropertyNode() { }
 
-    void setDataType(const QString& dataType) { type_ = dataType; }
+    virtual void setDataType(const QString& dataType) { type_ = dataType; }
     void setStored(bool stored) { stored_ = toFlagValue(stored); }
     void setDesignable(bool designable) { designable_ = toFlagValue(designable); }
-    void setReadOnly(bool ro) { readOnly_ = toFlagValue(ro); }
+    virtual void setReadOnly(bool ro) { readOnly_ = toFlagValue(ro); }
     void setDefault() { isdefault_ = true; }
 
     const QString &dataType() const { return type_; }
     QString qualifiedDataType() const { return type_; }
     bool isReadOnlySet() const { return (readOnly_ != FlagValueDefault); }
-    bool isDefault() const { return isdefault_; }
     bool isStored() const { return fromFlagValue(stored_,true); }
     bool isDesignable() const { return fromFlagValue(designable_,false); }
     bool isWritable(QDocDatabase* qdb);
-    bool isReadOnly() const { return fromFlagValue(readOnly_,false); }
+    virtual bool isDefault() const { return isdefault_; }
+    virtual bool isReadOnly() const { return fromFlagValue(readOnly_,false); }
+    virtual bool isAlias() const { return isAlias_; }
     virtual bool isAttached() const { return attached_; }
     virtual bool isQmlNode() const { return true; }
     virtual bool isQtQuickNode() const { return parent()->isQtQuickNode(); }
@@ -680,22 +679,19 @@ public:
     virtual QString qmlModuleName() const { return parent()->qmlModuleName(); }
     virtual QString qmlModuleVersion() const { return parent()->qmlModuleVersion(); }
     virtual QString qmlModuleIdentifier() const { return parent()->qmlModuleIdentifier(); }
-    virtual bool hasProperty(const QString& name) const;
 
     PropertyNode* correspondingProperty(QDocDatabase* qdb);
 
-    const QString& element() const { return static_cast<QmlPropGroupNode*>(parent())->element(); }
-    void appendQmlPropNode(QmlPropertyNode* p) { qmlPropNodes_.append(p); }
-    const NodeList& qmlPropNodes() const { return qmlPropNodes_; }
+    const QString& element() const { return static_cast<QmlPropertyGroupNode*>(parent())->element(); }
 
 private:
     QString type_;
     FlagValue   stored_;
     FlagValue   designable_;
+    bool    isAlias_;
     bool    isdefault_;
     bool    attached_;
     FlagValue   readOnly_;
-    NodeList qmlPropNodes_;
 };
 
 class EnumItem
@@ -892,7 +888,7 @@ public:
     PropertyNode(InnerNode* parent, const QString& name);
     virtual ~PropertyNode() { }
 
-    void setDataType(const QString& dataType) { type_ = dataType; }
+    virtual void setDataType(const QString& dataType) { type_ = dataType; }
     void addFunction(FunctionNode* function, FunctionRole role);
     void addSignal(FunctionNode* function, FunctionRole role);
     void setStored(bool stored) { stored_ = toFlagValue(stored); }

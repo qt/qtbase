@@ -1110,40 +1110,15 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
             while (qcn != 0) {
                 NodeList::ConstIterator c = qcn->childNodes().constBegin();
                 while (c != qcn->childNodes().constEnd()) {
-                    if ((*c)->subType() == Node::QmlPropertyGroup) {
-                        const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(*c);
-                        NodeList::ConstIterator p = qpgn->childNodes().constBegin();
-                        while (p != qpgn->childNodes().constEnd()) {
-                            if ((*p)->type() == Node::QmlProperty) {
-                                const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(*p);
-                                if (pn->isAttached())
-                                    insert(qmlattachedproperties,*p,style,Okay);
-                                else
-                                    insert(qmlproperties,*p,style,Okay);
-                            }
-                            ++p;
-                        }
+                    if ((*c)->type() == Node::QmlPropertyGroup) {
+                        insert(qmlproperties, *c, style, Okay);
                     }
                     else if ((*c)->type() == Node::QmlProperty) {
                         const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(*c);
-                        if (pn->qmlPropNodes().isEmpty()) {
-                            if (pn->isAttached())
-                                insert(qmlattachedproperties,*c,style,Okay);
-                            else
-                                insert(qmlproperties,*c,style,Okay);
-                        }
+                        if (pn->isAttached())
+                            insert(qmlattachedproperties,*c,style,Okay);
                         else {
-                            NodeList::ConstIterator p = pn->qmlPropNodes().constBegin();
-                            while (p != pn->qmlPropNodes().constEnd()) {
-                                if ((*p)->type() == Node::QmlProperty) {
-                                    const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(*p);
-                                    if (pn->isAttached())
-                                        insert(qmlattachedproperties,*p,style,Okay);
-                                    else
-                                        insert(qmlproperties,*p,style,Okay);
-                                }
-                                ++p;
-                            }
+                            insert(qmlproperties,*c,style,Okay);
                         }
                     }
                     else if ((*c)->type() == Node::QmlSignal) {
@@ -1196,24 +1171,8 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
             while (qcn != 0) {
                 NodeList::ConstIterator c = qcn->childNodes().constBegin();
                 while (c != qcn->childNodes().constEnd()) {
-                    if ((*c)->subType() == Node::QmlPropertyGroup) {
-                        bool attached = false;
-                        const QmlPropGroupNode* pgn = static_cast<const QmlPropGroupNode*>(*c);
-                        NodeList::ConstIterator C = pgn->childNodes().constBegin();
-                        while (C != pgn->childNodes().constEnd()) {
-                            if ((*C)->type() == Node::QmlProperty) {
-                                const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(*C);
-                                if (pn->isAttached()) {
-                                    attached = true;
-                                    break;
-                                }
-                            }
-                            ++C;
-                        }
-                        if (attached)
-                            insert(qmlattachedproperties,*c,style,Okay);
-                        else
-                            insert(qmlproperties,*c,style,Okay);
+                    if ((*c)->type() == Node::QmlPropertyGroup) {
+                        insert(qmlproperties,*c,style,Okay);
                     }
                     else if ((*c)->type() == Node::QmlProperty) {
                         const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(*c);
@@ -1278,8 +1237,8 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
                 }
                 NodeList::ConstIterator c = current->childNodes().constBegin();
                 while (c != current->childNodes().constEnd()) {
-                    if ((*c)->subType() == Node::QmlPropertyGroup) {
-                        const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(*c);
+                    if ((*c)->type() == Node::QmlPropertyGroup) {
+                        const QmlPropertyGroupNode* qpgn = static_cast<const QmlPropertyGroupNode*>(*c);
                         NodeList::ConstIterator p = qpgn->childNodes().constBegin();
                         while (p != qpgn->childNodes().constEnd()) {
                             if ((*p)->type() == Node::QmlProperty) {

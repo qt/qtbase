@@ -70,6 +70,7 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_QMLTYPE                 Doc::alias("qmltype")
 #define COMMAND_QMLMODULE               Doc::alias("qmlmodule")
 #define COMMAND_QMLPROPERTY             Doc::alias("qmlproperty")
+#define COMMAND_QMLPROPERTYGROUP        Doc::alias("qmlpropertygroup")
 #define COMMAND_QMLATTACHEDPROPERTY     Doc::alias("qmlattachedproperty")
 #define COMMAND_QMLINHERITS             Doc::alias("inherits")
 #define COMMAND_QMLINSTANTIATES         Doc::alias("instantiates")
@@ -166,9 +167,9 @@ void QmlCodeParser::parseSourceFile(const Location& location, const QString& fil
     extractPragmas(newCode);
     lexer->setCode(newCode, 1);
 
-    QSet<QString> topicCommandsAllowed = topicCommands();
-    QSet<QString> otherMetacommandsAllowed = otherMetaCommands();
-    QSet<QString> metacommandsAllowed = topicCommandsAllowed + otherMetacommandsAllowed;
+    const QSet<QString>& topicCommandsAllowed = topicCommands();
+    const QSet<QString>& otherMetacommandsAllowed = otherMetaCommands();
+    const QSet<QString>& metacommandsAllowed = topicCommandsAllowed + otherMetacommandsAllowed;
 
     if (parser->parse()) {
         QQmlJS::AST::UiProgram *ast = parser->ast();
@@ -195,42 +196,52 @@ void QmlCodeParser::doneParsingSourceFiles()
 {
 }
 
+static QSet<QString> topicCommands_;
 /*!
   Returns the set of strings representing the topic commands.
  */
-QSet<QString> QmlCodeParser::topicCommands()
+const QSet<QString>& QmlCodeParser::topicCommands()
 {
-    return QSet<QString>() << COMMAND_VARIABLE
-                           << COMMAND_QMLCLASS
-                           << COMMAND_QMLTYPE
-                           << COMMAND_QMLPROPERTY
-                           << COMMAND_QMLATTACHEDPROPERTY
-                           << COMMAND_QMLSIGNAL
-                           << COMMAND_QMLATTACHEDSIGNAL
-                           << COMMAND_QMLMETHOD
-                           << COMMAND_QMLATTACHEDMETHOD
-                           << COMMAND_QMLBASICTYPE;
+    if (topicCommands_.isEmpty()) {
+        topicCommands_ << COMMAND_VARIABLE
+                       << COMMAND_QMLCLASS
+                       << COMMAND_QMLTYPE
+                       << COMMAND_QMLPROPERTY
+                       << COMMAND_QMLPROPERTYGROUP
+                       << COMMAND_QMLATTACHEDPROPERTY
+                       << COMMAND_QMLSIGNAL
+                       << COMMAND_QMLATTACHEDSIGNAL
+                       << COMMAND_QMLMETHOD
+                       << COMMAND_QMLATTACHEDMETHOD
+                       << COMMAND_QMLBASICTYPE;
+    }
+    return topicCommands_;
 }
 
+static QSet<QString> otherMetaCommands_;
 /*!
   Returns the set of strings representing the common metacommands
   plus some other metacommands.
  */
-QSet<QString> QmlCodeParser::otherMetaCommands()
+const QSet<QString>& QmlCodeParser::otherMetaCommands()
 {
-    return commonMetaCommands() << COMMAND_STARTPAGE
-                                << COMMAND_QMLINHERITS
-                                << COMMAND_QMLDEFAULT
-                                << COMMAND_QMLREADONLY
-                                << COMMAND_DEPRECATED
-                                << COMMAND_INGROUP
-                                << COMMAND_INTERNAL
-                                << COMMAND_OBSOLETE
-                                << COMMAND_PRELIMINARY
-                                << COMMAND_SINCE
-                                << COMMAND_QMLABSTRACT
-                                << COMMAND_INQMLMODULE
-                                << COMMAND_WRAPPER;
+    if (otherMetaCommands_.isEmpty()) {
+        otherMetaCommands_ = commonMetaCommands();
+        otherMetaCommands_ << COMMAND_STARTPAGE
+                           << COMMAND_QMLINHERITS
+                           << COMMAND_QMLDEFAULT
+                           << COMMAND_QMLREADONLY
+                           << COMMAND_DEPRECATED
+                           << COMMAND_INGROUP
+                           << COMMAND_INTERNAL
+                           << COMMAND_OBSOLETE
+                           << COMMAND_PRELIMINARY
+                           << COMMAND_SINCE
+                           << COMMAND_QMLABSTRACT
+                           << COMMAND_INQMLMODULE
+                           << COMMAND_WRAPPER;
+    }
+    return otherMetaCommands_;
 }
 
 /*!

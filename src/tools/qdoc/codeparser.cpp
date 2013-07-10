@@ -199,29 +199,33 @@ CodeParser *CodeParser::parserForSourceFile(const QString &filePath)
     return 0;
 }
 
+static QSet<QString> commonMetaCommands_;
 /*!
   Returns the set of strings representing the common metacommands.
  */
-QSet<QString> CodeParser::commonMetaCommands()
+const QSet<QString>& CodeParser::commonMetaCommands()
 {
-    return QSet<QString>() << COMMAND_COMPAT
-                           << COMMAND_DEPRECATED
-                           << COMMAND_INGROUP
-                           << COMMAND_INMODULE
-                           << COMMAND_INQMLMODULE
-                           << COMMAND_INTERNAL
-                           << COMMAND_MAINCLASS
-                           << COMMAND_NONREENTRANT
-                           << COMMAND_OBSOLETE
-                           << COMMAND_PAGEKEYWORDS
-                           << COMMAND_PRELIMINARY
-                           << COMMAND_INPUBLICGROUP
-                           << COMMAND_REENTRANT
-                           << COMMAND_SINCE
-                           << COMMAND_SUBTITLE
-                           << COMMAND_THREADSAFE
-                           << COMMAND_TITLE
-                           << COMMAND_WRAPPER;
+    if (commonMetaCommands_.isEmpty()) {
+        commonMetaCommands_ << COMMAND_COMPAT
+                            << COMMAND_DEPRECATED
+                            << COMMAND_INGROUP
+                            << COMMAND_INMODULE
+                            << COMMAND_INQMLMODULE
+                            << COMMAND_INTERNAL
+                            << COMMAND_MAINCLASS
+                            << COMMAND_NONREENTRANT
+                            << COMMAND_OBSOLETE
+                            << COMMAND_PAGEKEYWORDS
+                            << COMMAND_PRELIMINARY
+                            << COMMAND_INPUBLICGROUP
+                            << COMMAND_REENTRANT
+                            << COMMAND_SINCE
+                            << COMMAND_SUBTITLE
+                            << COMMAND_THREADSAFE
+                            << COMMAND_TITLE
+                            << COMMAND_WRAPPER;
+    }
+    return commonMetaCommands_;
 }
 
 /*!
@@ -269,8 +273,8 @@ void CodeParser::processCommonMetaCommand(const Location& location,
         if (!showInternal) {
             node->setAccess(Node::Private);
             node->setStatus(Node::Internal);
-            if (node->subType() == Node::QmlPropertyGroup) {
-                const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(node);
+            if (node->type() == Node::QmlPropertyGroup) {
+                const QmlPropertyGroupNode* qpgn = static_cast<const QmlPropertyGroupNode*>(node);
                 NodeList::ConstIterator p = qpgn->childNodes().constBegin();
                 while (p != qpgn->childNodes().constEnd()) {
                     if ((*p)->type() == Node::QmlProperty) {

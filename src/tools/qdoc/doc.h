@@ -71,7 +71,10 @@ struct Topic
 {
     QString topic;
     QString args;
+    Topic() { }
     Topic(QString& t, QString a) : topic(t), args(a) { }
+    bool isEmpty() const { return topic.isEmpty(); }
+    void clear() { topic.clear(); args.clear(); }
 };
 typedef QList<Topic> TopicList;
 
@@ -136,10 +139,6 @@ public:
     };
 
     Doc() : priv(0) {}
-    Doc(const Location &start_loc,
-        const Location &end_loc,
-        const QString &source,
-        const QSet<QString> &metaCommandSet);
     Doc(const Location& start_loc,
         const Location& end_loc,
         const QString& source,
@@ -196,6 +195,7 @@ private:
     void detach();
     DocPrivate *priv;
 };
+typedef QList<Doc> DocList;
 
 QT_END_NAMESPACE
 

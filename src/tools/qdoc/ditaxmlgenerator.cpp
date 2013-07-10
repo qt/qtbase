@@ -3677,8 +3677,8 @@ QString DitaXmlGenerator::guidForNode(const Node* node)
         return fn->guid();
     }
     case Node::Document:
-        if (node->subType() != Node::QmlPropertyGroup)
-            break;
+        break;
+    case Node::QmlPropertyGroup:
     case Node::QmlProperty:
     case Node::Property:
         return node->guid();
@@ -3743,7 +3743,7 @@ QString DitaXmlGenerator::linkForNode(const Node* node, const Node* relative)
     }
     QString link = fn;
 
-    if (!node->isInnerNode() || node->subType() == Node::QmlPropertyGroup) {
+    if (!node->isInnerNode() || node->type() == Node::QmlPropertyGroup) {
         QString guid = guidForNode(node);
         if (relative && fn == fileName(relative) && guid == guidForNode(relative)) {
             return QString();
@@ -4079,8 +4079,8 @@ void DitaXmlGenerator::generateDetailedQmlMember(Node* node,
     QString marked;
     QmlPropertyNode* qpn = 0;
 
-    if (node->subType() == Node::QmlPropertyGroup) {
-        const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(node);
+    if (node->type() == Node::QmlPropertyGroup) {
+        const QmlPropertyGroupNode* qpgn = static_cast<const QmlPropertyGroupNode*>(node);
         NodeList::ConstIterator p = qpgn->childNodes().constBegin();
         if (qpgn->childNodes().size() == 1) {
             qpn = static_cast<QmlPropertyNode*>(*p);
@@ -4114,50 +4114,10 @@ void DitaXmlGenerator::generateDetailedQmlMember(Node* node,
     }
     else if (node->type() == Node::QmlProperty) {
         qpn = static_cast<QmlPropertyNode*>(node);
-        if (qpn->qmlPropNodes().isEmpty()) {
-            startQmlProperty(qpn,relative,marker);
-            writeApiDesc(node, marker, node->title());
-            writeEndTag(); // </qmlPropertyDetail>
-            writeEndTag(); // </qmlProperty>
-        }
-        else if (qpn->qmlPropNodes().size() == 1) {
-            Node* n = qpn->qmlPropNodes().at(0);
-            if (n->type() == Node::QmlProperty) {
-                qpn = static_cast<QmlPropertyNode*>(n);
-                startQmlProperty(qpn,relative,marker);
-                writeApiDesc(node, marker, node->title());
-                writeEndTag(); // </qmlPropertyDetail>
-                writeEndTag(); // </qmlProperty>
-            }
-        }
-        else {
-            /*
-              The QML property node has multiple override nodes.
-              Process the whole list as we would for a QML property
-              group.
-             */
-            writeStartTag(DT_qmlPropertyGroup);
-            QString id = "id-qml-propertygroup-" + node->name();
-            id.replace('.','-');
-            xmlWriter().writeAttribute("id",id);
-            writeStartTag(DT_apiName);
-            //writeCharacters("...");
-            writeEndTag(); // </apiName>
-            writeStartTag(DT_qmlPropertyGroupDetail);
-            writeApiDesc(node, marker, node->title());
-            writeEndTag(); // </qmlPropertyGroupDetail>
-            NodeList::ConstIterator p = qpn->qmlPropNodes().constBegin();
-            while (p != qpn->qmlPropNodes().constEnd()) {
-                if ((*p)->type() == Node::QmlProperty) {
-                    QmlPropertyNode* q = static_cast<QmlPropertyNode*>(*p);
-                    startQmlProperty(q,relative,marker);
-                    writeEndTag(); // </qmlPropertyDetail>
-                    writeEndTag(); // </qmlProperty>
-                }
-                ++p;
-            }
-            writeEndTag(); // </qmlPropertyGroup
-        }
+        startQmlProperty(qpn,relative,marker);
+        writeApiDesc(node, marker, node->title());
+        writeEndTag(); // </qmlPropertyDetail>
+        writeEndTag(); // </qmlProperty>
     }
     else if (node->type() == Node::QmlSignal)
         writeQmlRef(DT_qmlSignal,node,relative,marker);
@@ -5326,13 +5286,13 @@ DitaXmlGenerator::generateInnerNode(InnerNode* node)
             return;
         if (docNode->subType() == Node::Image)
             return;
-        if (docNode->subType() == Node::QmlPropertyGroup)
-            return;
         if (docNode->subType() == Node::Page) {
             if (node->count() > 0)
                 qDebug("PAGE %s HAS CHILDREN", qPrintable(docNode->title()));
         }
     }
+    else if (node->type() == Node::QmlPropertyGroup)
+        return;
 
     /*
       Obtain a code marker for the source file.
@@ -5487,8 +5447,6 @@ Node* DitaXmlGenerator::collectNodesByTypeAndSubtype(const InnerNode* parent)
                 if (!isDuplicate(nodeSubtypeMaps[Node::QmlClass],child->title(),child))
                     nodeSubtypeMaps[Node::QmlClass]->insert(child->title(),child);
                 break;
-            case Node::QmlPropertyGroup:
-                break;
             case Node::QmlBasicType:
                 if (!isDuplicate(nodeSubtypeMaps[Node::QmlBasicType],child->title(),child))
                     nodeSubtypeMaps[Node::QmlBasicType]->insert(child->title(),child);
@@ -5516,6 +5474,8 @@ Node* DitaXmlGenerator::collectNodesByTypeAndSubtype(const InnerNode* parent)
         case Node::Variable:
             break;
         case Node::QmlProperty:
+            break;
+        case Node::QmlPropertyGroup:
             break;
         case Node::QmlSignal:
             break;

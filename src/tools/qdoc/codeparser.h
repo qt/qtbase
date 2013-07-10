@@ -86,7 +86,7 @@ public:
     static const QString& currentOutputSubdirectory() { return currentSubDir_; }
 
 protected:
-    QSet<QString> commonMetaCommands();
+    const QSet<QString>& commonMetaCommands();
     void processCommonMetaCommand(const Location& location,
                                   const QString& command,
                                   const ArgLocPair& arg,

@@ -135,6 +135,7 @@ void HelpProjectWriter::readSelectors(SubProject &subproject, const QStringList 
     typeHash["qmlsignal"] = Node::QmlSignal;
     typeHash["qmlsignalhandler"] = Node::QmlSignalHandler;
     typeHash["qmlmethod"] = Node::QmlMethod;
+    typeHash["qmlpropertygroup"] = Node::QmlPropertyGroup;
 
     QHash<QString, Node::SubType> subTypeHash;
     subTypeHash["example"] = Node::Example;
@@ -145,7 +146,6 @@ void HelpProjectWriter::readSelectors(SubProject &subproject, const QStringList 
     subTypeHash["page"] = Node::Page;
     subTypeHash["externalpage"] = Node::ExternalPage;
     subTypeHash["qmlclass"] = Node::QmlClass;
-    subTypeHash["qmlpropertygroup"] = Node::QmlPropertyGroup;
     subTypeHash["qmlbasictype"] = Node::QmlBasicType;
 
     QSet<Node::SubType> allSubTypes = QSet<Node::SubType>::fromList(subTypeHash.values());
@@ -435,21 +435,24 @@ void HelpProjectWriter::generateSections(HelpProject &project,
                 continue;
 
             if (childNode->type() == Node::Document) {
+                childMap[static_cast<const DocNode *>(childNode)->fullTitle()] = childNode;
+            }
+            else if (childNode->type() == Node::QmlPropertyGroup) {
                 /*
                   Don't visit QML property group nodes,
                   but visit their children, which are all
                   QML property nodes.
+
+                  This is probably not correct anymore,
+                  because The Qml Property Group is an
+                  actual documented thing.
                  */
-                if (childNode->subType() == Node::QmlPropertyGroup) {
-                    const InnerNode* inner = static_cast<const InnerNode*>(childNode);
-                    foreach (const Node* n, inner->childNodes()) {
-                        if (n->access() == Node::Private)
-                            continue;
-                        childMap[n->fullDocumentName()] = n;
-                    }
+                const InnerNode* inner = static_cast<const InnerNode*>(childNode);
+                foreach (const Node* n, inner->childNodes()) {
+                    if (n->access() == Node::Private)
+                        continue;
+                    childMap[n->fullDocumentName()] = n;
                 }
-                else
-                    childMap[static_cast<const DocNode *>(childNode)->fullTitle()] = childNode;
             }
             else {
                 // Store member status of children

@@ -272,37 +272,42 @@ void CppCodeParser::doneParsingSourceFiles()
     qdb_->treeRoot()->makeUndocumentedChildrenInternal();
 }
 
+static QSet<QString> topicCommands_;
 /*!
   Returns the set of strings reopresenting the topic commands.
  */
-QSet<QString> CppCodeParser::topicCommands()
+const QSet<QString>& CppCodeParser::topicCommands()
 {
-    return QSet<QString>() << COMMAND_CLASS
-                           << COMMAND_DITAMAP
-                           << COMMAND_ENUM
-                           << COMMAND_EXAMPLE
-                           << COMMAND_EXTERNALPAGE
-                           << COMMAND_FILE
-                           << COMMAND_FN
-                           << COMMAND_GROUP
-                           << COMMAND_HEADERFILE
-                           << COMMAND_MACRO
-                           << COMMAND_MODULE
-                           << COMMAND_NAMESPACE
-                           << COMMAND_PAGE
-                           << COMMAND_PROPERTY
-                           << COMMAND_TYPEDEF
-                           << COMMAND_VARIABLE
-                           << COMMAND_QMLCLASS
-                           << COMMAND_QMLTYPE
-                           << COMMAND_QMLPROPERTY
-                           << COMMAND_QMLATTACHEDPROPERTY
-                           << COMMAND_QMLSIGNAL
-                           << COMMAND_QMLATTACHEDSIGNAL
-                           << COMMAND_QMLMETHOD
-                           << COMMAND_QMLATTACHEDMETHOD
-                           << COMMAND_QMLBASICTYPE
-                           << COMMAND_QMLMODULE;
+    if (topicCommands_.isEmpty()) {
+        topicCommands_ << COMMAND_CLASS
+                       << COMMAND_DITAMAP
+                       << COMMAND_ENUM
+                       << COMMAND_EXAMPLE
+                       << COMMAND_EXTERNALPAGE
+                       << COMMAND_FILE
+                       << COMMAND_FN
+                       << COMMAND_GROUP
+                       << COMMAND_HEADERFILE
+                       << COMMAND_MACRO
+                       << COMMAND_MODULE
+                       << COMMAND_NAMESPACE
+                       << COMMAND_PAGE
+                       << COMMAND_PROPERTY
+                       << COMMAND_TYPEDEF
+                       << COMMAND_VARIABLE
+                       << COMMAND_QMLCLASS
+                       << COMMAND_QMLTYPE
+                       << COMMAND_QMLPROPERTY
+                       << COMMAND_QMLPROPERTYGROUP
+                       << COMMAND_QMLATTACHEDPROPERTY
+                       << COMMAND_QMLSIGNAL
+                       << COMMAND_QMLATTACHEDSIGNAL
+                       << COMMAND_QMLMETHOD
+                       << COMMAND_QMLATTACHEDMETHOD
+                       << COMMAND_QMLBASICTYPE
+                       << COMMAND_QMLMODULE;
+    }
+    return topicCommands_;
 }
 
 /*!
@@ -643,6 +648,35 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
 }
 
 /*!
+  A QML property group argument has the form...
+
+  <QML-module>::<element>::<name>
+
+  This function splits the argument into those parts.
+  A <QML-module> is the QML equivalent of a C++ namespace.
+  So this function splits \a arg on "::" and stores the
+  parts in \a module, \a element, and \a name, and returns
+  true. If any part is not found, a qdoc warning is emitted
+  and false is returned.
+ */
+bool CppCodeParser::splitQmlPropertyGroupArg(const QString& arg,
+                                             QString& module,
+                                             QString& element,
+                                             QString& name)
+{
+    QStringList colonSplit = arg.split("::");
+    if (colonSplit.size() == 3) {
+        module = colonSplit[0];
+        element = colonSplit[1];
+        name = colonSplit[2];
+        return true;
+    }
+    QString msg = "Unrecognizable QML module/component qualifier for " + arg;
+    location().warning(tr(msg.toLatin1().data()));
+    return false;
+}
+
+/*!
   A QML property argument has the form...
 
   <type> <element>::<name>
@@ -750,79 +784,118 @@ bool CppCodeParser::splitQmlMethodArg(const QString& arg,
   Currently, this function is called only for \e{qmlproperty}
   and \e{qmlattachedproperty}.
  */
-Node* CppCodeParser::processTopicCommandGroup(const Doc& doc,
-                                              const QString& command,
-                                              const ArgList& args)
+void CppCodeParser::processQmlProperties(const Doc& doc, NodeList& nodes, DocList& docs)
 {
-    QmlPropGroupNode* qmlPropGroup = 0;
-    if ((command == COMMAND_QMLPROPERTY) ||
-            (command == COMMAND_QMLATTACHEDPROPERTY)) {
-        QString arg;
-        QString type;
-        QString module;
-        QString element;
-        QString property;
-        QmlClassNode* qmlClass = 0;
-        bool attached = (command == COMMAND_QMLATTACHEDPROPERTY);
-        ArgList::ConstIterator argsIter = args.constBegin();
-        arg = argsIter->first;
-        if (splitQmlPropertyArg(arg,type,module,element,property)) {
-            qmlClass = qdb_->findQmlType(module,element);
-            if (qmlClass) {
-                qmlPropGroup = new QmlPropGroupNode(qmlClass,property); //,attached);
-                qmlPropGroup->setLocation(doc.startLocation());
-            }
+    QString arg;
+    QString type;
+    QString topic;
+    QString module;
+    QString element;
+    QString property;
+    QmlPropertyNode* qpn = 0;
+    QmlClassNode* qmlClass = 0;
+    QmlPropertyGroupNode* qpgn = 0;
+
+    Topic qmlPropertyGroupTopic;
+    const TopicList& topics = doc.topicsUsed();
+    for (int i=0; i<topics.size(); ++i) {
+        if (topics.at(i).topic == COMMAND_QMLPROPERTYGROUP) {
+            qmlPropertyGroupTopic = topics.at(i);
+            break;
         }
-        if (qmlPropGroup) {
-            if (qmlClass->hasProperty(property)) {
-                doc.startLocation().warning(tr("QML property documented multiple times: '%1'").arg(arg));
+    }
+    if (qmlPropertyGroupTopic.isEmpty() && topics.size() > 1) {
+        qmlPropertyGroupTopic = topics.at(0);
+        qmlPropertyGroupTopic.topic = COMMAND_QMLPROPERTYGROUP;
+        arg = qmlPropertyGroupTopic.args;
+        if (splitQmlPropertyArg(arg, type, module, element, property)) {
+            int i = property.indexOf('.');
+            if (i != -1) {
+                property = property.left(i);
+                qmlPropertyGroupTopic.args = module + "::" + element + "::" + property;
+                doc.location().warning(tr("No QML property group command found; using \\%1 %2")
+                                       .arg(COMMAND_QMLPROPERTYGROUP).arg(qmlPropertyGroupTopic.args));
             }
             else {
-                QmlPropertyNode *qmlPropNode = new QmlPropertyNode(qmlPropGroup,property,type,attached);
-                qmlPropNode->setLocation(doc.startLocation());
-            }
-            ++argsIter;
-            while (argsIter != args.constEnd()) {
-                arg = argsIter->first;
-                if (splitQmlPropertyArg(arg,type,module,element,property)) {
-                    if (qmlClass->hasProperty(property)) {
-                        doc.startLocation().warning(tr("QML property documented multiple times: '%1'").arg(arg));
-                    }
-                    else {
-                        QmlPropertyNode* qmlPropNode = new QmlPropertyNode(qmlPropGroup,
-                                                                           property,
-                                                                           type,
-                                                                           attached);
-                        qmlPropNode->setLocation(doc.startLocation());
-                    }
-                }
-                ++argsIter;
+                /*
+                  Assumption: No '.' in the property name
+                  means there is no property group.
+                 */
+                qmlPropertyGroupTopic.clear();
             }
         }
     }
-    return qmlPropGroup;
+
+    if (!qmlPropertyGroupTopic.isEmpty()) {
+        arg = qmlPropertyGroupTopic.args;
+        if (splitQmlPropertyGroupArg(arg, module, element, property)) {
+            qmlClass = qdb_->findQmlType(module, element);
+            if (qmlClass) {
+                qpgn = new QmlPropertyGroupNode(qmlClass, property);
+                qpgn->setLocation(doc.startLocation());
+            }
+        }
+        if (topics.size() == 1) {
+            nodes.append(qpgn);
+            docs.append(doc);
+            return;
+        }
+    }
+    for (int i=0; i<topics.size(); ++i) {
+        if (topics.at(i).topic == COMMAND_QMLPROPERTYGROUP)
+            continue;
+        topic = topics.at(i).topic;
+        arg = topics.at(i).args;
+        if ((topic == COMMAND_QMLPROPERTY) || (topic == COMMAND_QMLATTACHEDPROPERTY)) {
+            bool attached = (topic == COMMAND_QMLATTACHEDPROPERTY);
+            if (splitQmlPropertyArg(arg, type, module, element, property)) {
+                qmlClass = qdb_->findQmlType(module, element);
+                if (qmlClass) {
+                    if (qmlClass->hasQmlProperty(property) != 0) {
+                        QString msg = tr("QML property documented multiple times: '%1'").arg(arg);
+                        doc.startLocation().warning(msg);
+                    }
+                    else if (qpgn) {
+                        qpn = new QmlPropertyNode(qpgn, property, type, attached);
+                        qpn->setLocation(doc.startLocation());
+                    }
+                    else {
+                        qpn = new QmlPropertyNode(qmlClass, property, type, attached);
+                        qpn->setLocation(doc.startLocation());
+                        nodes.append(qpn);
+                        docs.append(doc);
+                    }
+                }
+            }
+        }
+    }
 }
 
+static QSet<QString> otherMetaCommands_;
 /*!
   Returns the set of strings representing the common metacommands
   plus some other metacommands.
  */
-QSet<QString> CppCodeParser::otherMetaCommands()
+const QSet<QString>& CppCodeParser::otherMetaCommands()
 {
-    return commonMetaCommands() << COMMAND_INHEADERFILE
-                                << COMMAND_OVERLOAD
-                                << COMMAND_REIMP
-                                << COMMAND_RELATES
-                                << COMMAND_CONTENTSPAGE
-                                << COMMAND_NEXTPAGE
-                                << COMMAND_PREVIOUSPAGE
-                                << COMMAND_INDEXPAGE
-                                << COMMAND_STARTPAGE
-                                << COMMAND_QMLINHERITS
-                                << COMMAND_QMLINSTANTIATES
-                                << COMMAND_QMLDEFAULT
-                                << COMMAND_QMLREADONLY
-                                << COMMAND_QMLABSTRACT;
+    if (otherMetaCommands_.isEmpty()) {
+        otherMetaCommands_ = commonMetaCommands();
+        otherMetaCommands_ << COMMAND_INHEADERFILE
+                           << COMMAND_OVERLOAD
+                           << COMMAND_REIMP
+                           << COMMAND_RELATES
+                           << COMMAND_CONTENTSPAGE
+                           << COMMAND_NEXTPAGE
+                           << COMMAND_PREVIOUSPAGE
+                           << COMMAND_INDEXPAGE
+                           << COMMAND_STARTPAGE
+                           << COMMAND_QMLINHERITS
+                           << COMMAND_QMLINSTANTIATES
+                           << COMMAND_QMLDEFAULT
+                           << COMMAND_QMLREADONLY
+                           << COMMAND_QMLABSTRACT;
+    }
+    return otherMetaCommands_;
 }
 
 /*!
@@ -961,8 +1034,8 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
             QmlPropertyNode* qpn = static_cast<QmlPropertyNode*>(node);
             qpn->setDefault();
         }
-        else if (node->type() == Node::Document && node->subType() == Node::QmlPropertyGroup) {
-            QmlPropGroupNode* qpgn = static_cast<QmlPropGroupNode*>(node);
+        else if (node->type() == Node::QmlPropertyGroup) {
+            QmlPropertyGroupNode* qpgn = static_cast<QmlPropertyGroupNode*>(node);
             NodeList::ConstIterator p = qpgn->childNodes().constBegin();
             while (p != qpgn->childNodes().constEnd()) {
                 if ((*p)->type() == Node::QmlProperty) {
@@ -978,8 +1051,8 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
             QmlPropertyNode* qpn = static_cast<QmlPropertyNode*>(node);
             qpn->setReadOnly(1);
         }
-        else if (node->type() == Node::Document && node->subType() == Node::QmlPropertyGroup) {
-            QmlPropGroupNode* qpgn = static_cast<QmlPropGroupNode*>(node);
+        else if (node->type() == Node::QmlPropertyGroup) {
+            QmlPropertyGroupNode* qpgn = static_cast<QmlPropertyGroupNode*>(node);
             NodeList::ConstIterator p = qpgn->childNodes().constBegin();
             while (p != qpgn->childNodes().constEnd()) {
                 if ((*p)->type() == Node::QmlProperty) {
@@ -2067,10 +2140,9 @@ bool CppCodeParser::matchDeclList(InnerNode *parent)
 bool CppCodeParser::matchDocsAndStuff()
 {
     ExtraFuncData extra;
-    QSet<QString> topicCommandsAllowed = topicCommands();
-    QSet<QString> otherMetacommandsAllowed = otherMetaCommands();
-    QSet<QString> metacommandsAllowed = topicCommandsAllowed +
-            otherMetacommandsAllowed;
+    const QSet<QString>& topicCommandsAllowed = topicCommands();
+    const QSet<QString>& otherMetacommandsAllowed = otherMetaCommands();
+    const QSet<QString>& metacommandsAllowed = topicCommandsAllowed + otherMetacommandsAllowed;
 
     while (tok != Tok_Eoi) {
         if (tok == Tok_Doc) {
@@ -2087,25 +2159,22 @@ bool CppCodeParser::matchDocsAndStuff()
             /*
               Doc parses the comment.
              */
-            Doc doc(start_loc,end_loc,comment,metacommandsAllowed);
-
+            Doc doc(start_loc,end_loc,comment,metacommandsAllowed, topicCommandsAllowed);
             QString topic;
-            ArgList args;
+            bool isQmlPropertyTopic = false;
 
-            QSet<QString> topicCommandsUsed = topicCommandsAllowed & doc.metaCommandsUsed();
-
-            /*
-              There should be one topic command in the set,
-              or none. If the set is empty, then the comment
-              should be a function description.
-             */
-            if (topicCommandsUsed.count() > 0) {
-                topic = *topicCommandsUsed.constBegin();
-                args = doc.metaCommandArgs(topic);
+            const TopicList& topics = doc.topicsUsed();
+            if (!topics.isEmpty()) {
+                topic = topics[0].topic;
+                if ((topic == COMMAND_QMLPROPERTY) ||
+                    (topic == COMMAND_QMLPROPERTYGROUP) ||
+                    (topic == COMMAND_QMLATTACHEDPROPERTY)) {
+                    isQmlPropertyTopic = true;
+                }
             }
-
+            // if (isQmlPropertyTopic && doc.location().fileName().endsWith("qquickitem.cpp")) {
             NodeList nodes;
-            QList<Doc> docs;
+            DocList docs;
 
             if (topic.isEmpty()) {
                 QStringList parentPath;
@@ -2133,43 +2202,39 @@ bool CppCodeParser::matchDocsAndStuff()
                                 .arg(COMMAND_FN).arg(COMMAND_PAGE));
                 }
             }
+            else if (isQmlPropertyTopic) {
+                Doc nodeDoc = doc;
+                processQmlProperties(nodeDoc, nodes, docs);
+            }
             else {
-                /*
-                  There is a topic command. Process it.
-                 */
-                if ((topic == COMMAND_QMLPROPERTY) ||
-                        (topic == COMMAND_QMLATTACHEDPROPERTY)) {
+                ArgList args;
+                const QSet<QString>& topicCommandsUsed = topicCommandsAllowed & doc.metaCommandsUsed();
+                if (topicCommandsUsed.count() > 0) {
+                    topic = *topicCommandsUsed.constBegin();
+                    args = doc.metaCommandArgs(topic);
+                }
+                if (topicCommandsUsed.count() > 1) {
+                    QString topics;
+                    QSet<QString>::ConstIterator t = topicCommandsUsed.constBegin();
+                    while (t != topicCommandsUsed.constEnd()) {
+                        topics += " \\" + *t + ",";
+                        ++t;
+                    }
+                    topics[topics.lastIndexOf(',')] = '.';
+                    int i = topics.lastIndexOf(',');
+                    topics[i] = ' ';
+                    topics.insert(i+1,"and");
+                    doc.location().warning(tr("Multiple topic commands found in comment: %1").arg(topics));
+                }
+                ArgList::ConstIterator a = args.constBegin();
+                while (a != args.constEnd()) {
                     Doc nodeDoc = doc;
-                    Node *node = processTopicCommandGroup(nodeDoc, topic,args);
+                    Node *node = processTopicCommand(nodeDoc,topic,*a);
                     if (node != 0) {
                         nodes.append(node);
                         docs.append(nodeDoc);
                     }
-                }
-                else {
-                    if (topicCommandsUsed.count() > 1) {
-                        QString topics;
-                        QSet<QString>::ConstIterator t = topicCommandsUsed.constBegin();
-                        while (t != topicCommandsUsed.constEnd()) {
-                            topics += " \\" + *t + ",";
-                            ++t;
-                        }
-                        topics[topics.lastIndexOf(',')] = '.';
-                        int i = topics.lastIndexOf(',');
-                        topics[i] = ' ';
-                        topics.insert(i+1,"and");
-                        doc.location().warning(tr("Multiple topic commands found in comment: %1").arg(topics));
-                    }
-                    ArgList::ConstIterator a = args.constBegin();
-                    while (a != args.constEnd()) {
-                        Doc nodeDoc = doc;
-                        Node *node = processTopicCommand(nodeDoc,topic,*a);
-                        if (node != 0) {
-                            nodes.append(node);
-                            docs.append(nodeDoc);
-                        }
-                        ++a;
-                    }
+                    ++a;
                 }
             }
 

@@ -3266,8 +3266,8 @@ QString HtmlGenerator::refForNode(const Node *node)
         }
         break;
     case Node::Document:
-        if (node->subType() != Node::QmlPropertyGroup)
-            break;
+        break;
+    case Node::QmlPropertyGroup:
     case Node::QmlProperty:
     case Node::Property:
         ref = node->name() + "-prop";
@@ -3330,7 +3330,7 @@ QString HtmlGenerator::linkForNode(const Node *node, const Node *relative)
     }
     QString link = fn;
 
-    if (!node->isInnerNode() || node->subType() == Node::QmlPropertyGroup) {
+    if (!node->isInnerNode() || node->type() == Node::QmlPropertyGroup) {
         QString ref = refForNode(node);
         if (relative && fn == fileName(relative) && ref == refForNode(relative))
             return QString();
@@ -3736,6 +3736,22 @@ void HtmlGenerator::generateQmlSummary(const Section& section,
         while (m != section.members.constEnd()) {
             out() << "<li class=\"fn\">";
             generateQmlItem(*m,relative,marker,true);
+            if ((*m)->type() == Node::QmlPropertyGroup) {
+                const QmlPropertyGroupNode* qpgn = static_cast<const QmlPropertyGroupNode*>(*m);
+                if (!qpgn->childNodes().isEmpty()) {
+                    NodeList::ConstIterator p = qpgn->childNodes().constBegin();
+                    out() << "<ul>\n";
+                    while (p != qpgn->childNodes().constEnd()) {
+                        if ((*p)->type() == Node::QmlProperty) {
+                            out() << "<li class=\"fn\">";
+                            generateQmlItem(*p, relative, marker, true);
+                            out() << "</li>\n";
+                        }
+                        ++p;
+                    }
+                    out() << "</ul>\n";
+                }
+            }
             out() << "</li>\n";
             ++m;
         }
@@ -3757,11 +3773,18 @@ void HtmlGenerator::generateDetailedQmlMember(Node *node,
 #endif
     generateExtractionMark(node, MemberMark);
     out() << "<div class=\"qmlitem\">";
-    if (node->subType() == Node::QmlPropertyGroup) {
-        const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(node);
+    if (node->type() == Node::QmlPropertyGroup) {
+        const QmlPropertyGroupNode* qpgn = static_cast<const QmlPropertyGroupNode*>(node);
         NodeList::ConstIterator p = qpgn->childNodes().constBegin();
         out() << "<div class=\"qmlproto\">";
         out() << "<table class=\"qmlname\">";
+
+        QString heading = "Property Group:  " + qpgn->name();
+        out() << "<tr valign=\"top\" class=\"even\">";
+        out() << "<th class=\"centerAlign\"><p>";
+        out() << "<a name=\"" + refForNode(qpgn) + "\"></a>";
+        out() << "<b>" << heading << "</b>";
+        out() << "</p></th></tr>";
         while (p != qpgn->childNodes().constEnd()) {
             if ((*p)->type() == Node::QmlProperty) {
                 qpn = static_cast<QmlPropertyNode*>(*p);
@@ -3783,68 +3806,23 @@ void HtmlGenerator::generateDetailedQmlMember(Node *node,
     }
     else if (node->type() == Node::QmlProperty) {
         qpn = static_cast<QmlPropertyNode*>(node);
-        /*
-          If the QML property node has a single subproperty,
-          override, replace qpn with that override node and
-          proceed as normal.
-         */
-        if (qpn->qmlPropNodes().size() == 1) {
-            Node* n = qpn->qmlPropNodes().at(0);
-            if (n->type() == Node::QmlProperty)
-                qpn = static_cast<QmlPropertyNode*>(n);
+        out() << "<div class=\"qmlproto\">";
+        out() << "<table class=\"qmlname\">";
+        out() << "<tr valign=\"top\" class=\"odd\">";
+        out() << "<td class=\"tblQmlPropNode\"><p>";
+        out() << "<a name=\"" + refForNode(qpn) + "\"></a>";
+        if (!qpn->isReadOnlySet()) {
+            if (qpn->declarativeCppNode())
+                qpn->setReadOnly(!qpn->isWritable(qdb_));
         }
-        /*
-          Now qpn either has no overrides, or it has more
-          than 1. If it has none, proceed to output as nortmal.
-         */
-        if (qpn->qmlPropNodes().isEmpty()) {
-            out() << "<div class=\"qmlproto\">";
-            out() << "<table class=\"qmlname\">";
-            out() << "<tr valign=\"top\" class=\"odd\">";
-            out() << "<td class=\"tblQmlPropNode\"><p>";
-            out() << "<a name=\"" + refForNode(qpn) + "\"></a>";
-            if (!qpn->isReadOnlySet()) {
-                if (qpn->declarativeCppNode())
-                    qpn->setReadOnly(!qpn->isWritable(qdb_));
-            }
-            if (qpn->isReadOnly())
-                out() << "<span class=\"qmlreadonly\">read-only</span>";
-            if (qpn->isDefault())
-                out() << "<span class=\"qmldefault\">default</span>";
-            generateQmlItem(qpn, relative, marker, false);
-            out() << "</p></td></tr>";
-            out() << "</table>";
-            out() << "</div>";
-        }
-        else {
-            /*
-              The QML property node has multiple override nodes.
-              Process the whole list as we would for a QML property
-              group.
-             */
-            NodeList::ConstIterator p = qpn->qmlPropNodes().constBegin();
-            out() << "<div class=\"qmlproto\">";
-            out() << "<table class=\"qmlname\">";
-            while (p != qpn->qmlPropNodes().constEnd()) {
-                if ((*p)->type() == Node::QmlProperty) {
-                    QmlPropertyNode* q = static_cast<QmlPropertyNode*>(*p);
-                    out() << "<tr valign=\"top\" class=\"odd\">";
-                    out() << "<td class=\"tblQmlPropNode\"><p>";
-                    out() << "<a name=\"" + refForNode(q) + "\"></a>";
-                    if (!qpn->isReadOnlySet())
-                        qpn->setReadOnly(!qpn->isWritable(qdb_));
-                    if (qpn->isReadOnly())
-                        out() << "<span class=\"qmlreadonly\">read-only</span>";
-                    if (qpn->isDefault())
-                        out() << "<span class=\"qmldefault\">default</span>";
-                    generateQmlItem(q, relative, marker, false);
-                    out() << "</p></td></tr>";
-                }
-                ++p;
-            }
-            out() << "</table>";
-            out() << "</div>";
-        }
+        if (qpn->isReadOnly())
+            out() << "<span class=\"qmlreadonly\">read-only</span>";
+        if (qpn->isDefault())
+            out() << "<span class=\"qmldefault\">default</span>";
+        generateQmlItem(qpn, relative, marker, false);
+        out() << "</p></td></tr>";
+        out() << "</table>";
+        out() << "</div>";
     }
     else if (node->type() == Node::QmlSignal) {
         const FunctionNode* qsn = static_cast<const FunctionNode*>(node);
@@ -4317,8 +4295,6 @@ void HtmlGenerator::reportOrphans(const InnerNode* parent)
                 break;
             case Node::QmlClass:
                 break;
-            case Node::QmlPropertyGroup:
-                break;
             case Node::QmlBasicType:
                 break;
             case Node::QmlModule:
@@ -4351,6 +4327,8 @@ void HtmlGenerator::reportOrphans(const InnerNode* parent)
         case Node::Variable:
             if (!related)
                 child->location().warning(tr("Global variable, %1, %2").arg(child->name()).arg(message));
+            break;
+        case Node::QmlPropertyGroup:
             break;
         case Node::QmlProperty:
             if (!related)

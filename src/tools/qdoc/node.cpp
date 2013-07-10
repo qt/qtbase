@@ -151,11 +151,11 @@ QString Node::fullName(const Node* relative) const
  */
 void Node::setDoc(const Doc& doc, bool replace)
 {
-    if (!d.isEmpty() && !replace) {
+    if (!doc_.isEmpty() && !replace) {
         doc.location().warning(tr("Overrides a previous doc"));
-        d.location().warning(tr("(The previous doc is here)"));
+        doc_.location().warning(tr("(The previous doc is here)"));
     }
-    d = doc;
+    doc_ = doc;
 }
 
 /*!
@@ -311,6 +311,8 @@ QString Node::nodeTypeString(unsigned t)
         return "variable";
     case QmlProperty:
         return "QML property";
+    case QmlPropertyGroup:
+        return "QML property group";
     case QmlSignal:
         return "QML signal";
     case QmlSignalHandler:
@@ -359,8 +361,6 @@ QString Node::nodeSubtypeString(unsigned t)
         return "external page";
     case QmlClass:
         return "QML type";
-    case QmlPropertyGroup:
-        return "QML property group";
     case QmlBasicType:
         return "QML basic type";
     case QmlModule:
@@ -742,12 +742,12 @@ void InnerNode::getMemberClasses(NodeMap& out)
 Node *InnerNode::findChildNodeByName(const QString& name)
 {
     Node *node = childMap.value(name);
-    if (node && node->subType() != QmlPropertyGroup)
+    if (node && node->type() != QmlPropertyGroup)
         return node;
     if ((type() == Document) && (subType() == QmlClass)) {
         for (int i=0; i<children_.size(); ++i) {
             Node* n = children_.at(i);
-            if (n->subType() == QmlPropertyGroup) {
+            if (n->type() == QmlPropertyGroup) {
                 node = static_cast<InnerNode*>(n)->findChildNodeByName(name);
                 if (node)
                     return node;
@@ -771,7 +771,7 @@ void InnerNode::findNodes(const QString& name, QList<Node*>& n)
         if ((type() == Document) && (subType() == QmlClass)) {
             for (int i=0; i<children_.size(); ++i) {
                 node = children_.at(i);
-                if (node->subType() == QmlPropertyGroup) {
+                if (node->type() == QmlPropertyGroup) {
                     node = static_cast<InnerNode*>(node)->findChildNodeByName(name);
                     if (node) {
                         n.append(node);
@@ -793,7 +793,7 @@ void InnerNode::findNodes(const QString& name, QList<Node*>& n)
          */
         for (int i=0; i<nodes.size(); ++i) {
             node = nodes.at(i);
-            if (node->subType() != QmlPropertyGroup)
+            if (node->type() != QmlPropertyGroup)
                 n.append(node);
             else {
                 node = static_cast<InnerNode*>(node)->findChildNodeByName(name);
@@ -829,14 +829,14 @@ Node* InnerNode::findChildNodeByName(const QString& name, bool qml)
                 if (!node->isQmlNode())
                     return node;
             }
-            else if (node->isQmlNode() && (node->subType() != QmlPropertyGroup))
+            else if (node->isQmlNode() && (node->type() != QmlPropertyGroup))
                 return node;
         }
     }
     if (qml && (type() == Document) && (subType() == QmlClass)) {
         for (int i=0; i<children_.size(); ++i) {
             Node* node = children_.at(i);
-            if (node->subType() == QmlPropertyGroup) {
+            if (node->type() == QmlPropertyGroup) {
                 node = static_cast<InnerNode*>(node)->findChildNodeByName(name);
                 if (node)
                     return node;
@@ -1371,6 +1371,26 @@ void InnerNode::removeRelated(Node *pseudoChild)
 }
 
 /*!
+  If this node has a child that is a QML property named \a n,
+  return the pointer to that child.
+ */
+QmlPropertyNode* InnerNode::hasQmlProperty(const QString& n) const
+{
+    foreach (Node* child, childNodes()) {
+        if (child->type() == Node::QmlProperty) {
+            if (child->name() == n)
+                return static_cast<QmlPropertyNode*>(child);
+        }
+        else if (child->type() == Node::QmlPropertyGroup) {
+            QmlPropertyNode* t = child->hasQmlProperty(n);
+            if (t)
+                return t;
+        }
+    }
+    return 0;
+}
+
+/*!
   \class LeafNode
  */
 
@@ -1670,25 +1690,6 @@ QString DocNode::subTitle() const
             return name();
     }
     return QString();
-}
-
-/*!
-  Returns true if this QML type or property group contains a
-  property named \a name.
- */
-bool DocNode::hasProperty(const QString& name) const
-{
-    foreach (Node* child, childNodes()) {
-        if (child->type() == Node::Document && child->subType() == Node::QmlPropertyGroup) {
-            if (child->hasProperty(name))
-                return true;
-        }
-        else if (child->type() == Node::QmlProperty) {
-            if (child->hasProperty(name))
-                return true;
-        }
-    }
-    return false;
 }
 
 /*!
@@ -2273,8 +2274,8 @@ QmlBasicTypeNode::QmlBasicTypeNode(InnerNode *parent,
   Constructor for the Qml property group node. \a parent is
   always a QmlClassNode.
  */
-QmlPropGroupNode::QmlPropGroupNode(QmlClassNode* parent, const QString& name)
-    : DocNode(parent, name, QmlPropertyGroup, Node::ApiPage)
+QmlPropertyGroupNode::QmlPropertyGroupNode(QmlClassNode* parent, const QString& name)
+    : InnerNode(QmlPropertyGroup, parent, name)
 {
     idNumber_ = -1;
 }
@@ -2286,24 +2287,17 @@ QmlPropGroupNode::QmlPropGroupNode(QmlClassNode* parent, const QString& name)
   property group count and set the id number to the new
   value.
  */
-QString QmlPropGroupNode::idNumber()
+QString QmlPropertyGroupNode::idNumber()
 {
     if (idNumber_ == -1)
         idNumber_ = incPropertyGroupCount();
     return QString().setNum(idNumber_);
 }
 
-
 /*!
-  Constructor for the QML property node, when the \a parent
-  is QML property group node. This constructor is only used
-  for creating QML property nodes for QML elements, i.e.
-  not for creating QML property nodes for QML components.
-  Hopefully, this constructor will become obsolete, so don't
-  use it unless one of the other two constructors can't be
-  used.
+  Constructor for the QML property node.
  */
-QmlPropertyNode::QmlPropertyNode(QmlPropGroupNode *parent,
+QmlPropertyNode::QmlPropertyNode(InnerNode* parent,
                                  const QString& name,
                                  const QString& type,
                                  bool attached)
@@ -2311,56 +2305,14 @@ QmlPropertyNode::QmlPropertyNode(QmlPropGroupNode *parent,
       type_(type),
       stored_(FlagValueDefault),
       designable_(FlagValueDefault),
+      isAlias_(false),
       isdefault_(false),
       attached_(attached),
       readOnly_(FlagValueDefault)
 {
     setPageType(ApiPage);
-}
-
-/*!
-  Constructor for the QML property node, when the \a parent
-  is a QML class node.
- */
-QmlPropertyNode::QmlPropertyNode(QmlClassNode *parent,
-                                 const QString& name,
-                                 const QString& type,
-                                 bool attached)
-    : LeafNode(QmlProperty, parent, name),
-      type_(type),
-      stored_(FlagValueDefault),
-      designable_(FlagValueDefault),
-      isdefault_(false),
-      attached_(attached),
-      readOnly_(FlagValueDefault)
-{
-    setPageType(ApiPage);
-}
-
-/*!
-  Constructor for the QML property node, when the \a parent
-  is a QML property node. Strictly speaking, this is not the
-  way QML property nodes were originally meant to be built,
-  because this constructor has another QML property node as
-  its parent. But this constructor is useful for documenting
-  QML properties in QML components, i.e., when you override
-  the definition of a property with the \e{qmlproperty}
-  command. It actually uses the parent of \a parent as the
-  parent.
- */
-QmlPropertyNode::QmlPropertyNode(QmlPropertyNode* parent,
-                                 const QString& name,
-                                 const QString& type,
-                                 bool attached)
-    : LeafNode(parent->parent(), QmlProperty, name),
-      type_(type),
-      stored_(FlagValueDefault),
-      designable_(FlagValueDefault),
-      isdefault_(false),
-      attached_(attached),
-      readOnly_(FlagValueDefault)
-{
-    setPageType(ApiPage);
+    if (type_ == QString("alias"))
+        isAlias_ = true;
 }
 
 /*!
@@ -2448,23 +2400,6 @@ PropertyNode* QmlPropertyNode::correspondingProperty(QDocDatabase* qdb)
     }
 
     return 0;
-}
-
-/*!
-  Returns true if this QML type or property group contains a
-  property named \a name.
- */
-bool QmlPropertyNode::hasProperty(const QString& n) const
-{
-    if (name() == n)
-        return true;
-    foreach (Node* child, qmlPropNodes()) {
-        if (child->type() == Node::QmlProperty) {
-            if (child->name() == n)
-                return true;
-        }
-    }
-    return false;
 }
 
 /*! \class NameCollisionNode
@@ -2586,11 +2521,10 @@ QString Node::fullDocumentName() const
     const Node* n = this;
 
     do {
-        if (!n->name().isEmpty() &&
-                ((n->type() != Node::Document) || (n->subType() != Node::QmlPropertyGroup)))
+        if (!n->name().isEmpty() && n->type() != Node::QmlPropertyGroup)
             pieces.insert(0, n->name());
 
-        if ((n->type() == Node::Document) && (n->subType() != Node::QmlPropertyGroup)) {
+        if (n->type() == Node::Document) {
             if ((n->subType() == Node::QmlClass) && !n->qmlModuleName().isEmpty())
                 pieces.insert(0, n->qmlModuleIdentifier());
             break;
@@ -2806,12 +2740,6 @@ QString Node::idForNode() const
             case Node::QmlClass:
                 str = "qml-class-" + name();
                 break;
-            case Node::QmlPropertyGroup:
-                {
-                    Node* n = const_cast<Node*>(this);
-                    str = "qml-propertygroup-" + n->name();
-                }
-                break;
             case Node::Page:
             case Node::Group:
             case Node::Module:
@@ -2851,6 +2779,12 @@ QString Node::idForNode() const
         break;
     case Node::QmlProperty:
         str = "qml-property-" + name();
+        break;
+    case Node::QmlPropertyGroup:
+        {
+            Node* n = const_cast<Node*>(this);
+            str = "qml-propertygroup-" + n->name();
+        }
         break;
     case Node::Property:
         str = "property-" + name();

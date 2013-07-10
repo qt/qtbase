@@ -301,7 +301,7 @@ QString Generator::fileBase(const Node *node) const
         node = node->relates();
     else if (!node->isInnerNode())
         node = node->parent();
-    if (node->subType() == Node::QmlPropertyGroup) {
+    if (node->type() == Node::QmlPropertyGroup) {
         node = node->parent();
     }
 
@@ -469,7 +469,7 @@ QString Generator::fullDocumentLocation(const Node *node, bool subdir)
         parentName = fullDocumentLocation(node->relates());
     }
     else if ((parentNode = node->parent())) {
-        if (parentNode->subType() == Node::QmlPropertyGroup) {
+        if (parentNode->type() == Node::QmlPropertyGroup) {
             parentNode = parentNode->parent();
             parentName = fullDocumentLocation(parentNode);
         }
@@ -942,13 +942,13 @@ void Generator::generateInnerNode(InnerNode* node)
             return;
         if (docNode->subType() == Node::Image)
             return;
-        if (docNode->subType() == Node::QmlPropertyGroup)
-            return;
         if (docNode->subType() == Node::Page) {
             if (node->count() > 0)
                 qDebug("PAGE %s HAS CHILDREN", qPrintable(docNode->title()));
         }
     }
+    else if (node->type() == Node::QmlPropertyGroup)
+        return;
 
     /*
       Obtain a code marker for the source file.
@@ -1910,8 +1910,6 @@ QString Generator::typeString(const Node *node)
         switch (node->subType()) {
         case Node::QmlClass:
             return "type";
-        case Node::QmlPropertyGroup:
-            return "property group";
         case Node::QmlBasicType:
             return "type";
         default:
@@ -1926,6 +1924,16 @@ QString Generator::typeString(const Node *node)
         return "function";
     case Node::Property:
         return "property";
+    case Node::QmlPropertyGroup:
+        return "property group";
+    case Node::QmlProperty:
+        return "QML property";
+    case Node::QmlSignal:
+        return "QML signal";
+    case Node::QmlSignalHandler:
+        return "QML signal handler";
+    case Node::QmlMethod:
+        return "QML method";
     default:
         return "documentation";
     }

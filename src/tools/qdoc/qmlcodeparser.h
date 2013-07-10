@@ -79,8 +79,8 @@ public:
     void extractPragmas(QString &script);
 
 protected:
-    virtual QSet<QString> topicCommands();
-    virtual QSet<QString> otherMetaCommands();
+    const QSet<QString>& topicCommands();
+    const QSet<QString>& otherMetaCommands();
 
 private:
     QQmlJS::Engine engine;

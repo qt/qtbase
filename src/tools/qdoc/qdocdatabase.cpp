@@ -612,7 +612,7 @@ void QDocDatabase::findAllObsoleteThings(const InnerNode* node)
                         case Node::QmlMethod:
                             if ((*c)->parent()) {
                                 Node* parent = (*c)->parent();
-                                if (parent->subType() == Node::QmlPropertyGroup && parent->parent())
+                                if (parent->type() == Node::QmlPropertyGroup && parent->parent())
                                     parent = parent->parent();
                                 if (parent && parent->subType() == Node::QmlClass && !parent->name().isEmpty())
                                     name = parent->name() + "::" + name;

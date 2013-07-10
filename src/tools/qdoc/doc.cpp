@@ -376,7 +376,7 @@ public:
     bool hasLegalese : 1;
     bool hasSectioningUnits : 1;
     DocPrivateExtra *extra;
-    TopicList topics;
+    TopicList topics_;
     DitaRefList ditamap_;
 };
 
@@ -571,7 +571,7 @@ void DocParser::parse(const QString& source,
     cachedPos = 0;
     priv = docPrivate;
     priv->text << Atom::Nop;
-    priv->topics.clear();
+    priv->topics_.clear();
 
     paraState = OutsideParagraph;
     inTableHeader = false;
@@ -1404,7 +1404,7 @@ void DocParser::parse(const QString& source,
                         QString arg = getMetaCommandArgument(cmdStr);
                         priv->metaCommandMap[cmdStr].append(ArgLocPair(arg,location()));
                         if (possibleTopics.contains(cmdStr)) {
-                            priv->topics.append(Topic(cmdStr,arg));
+                            priv->topics_.append(Topic(cmdStr,arg));
                         }
                     }
                     else if (macroHash()->contains(cmdStr)) {
@@ -2751,6 +2751,7 @@ QString DocParser::slashed(const QString& str)
 #define COMMAND_BRIEF                   Doc::alias("brief")
 #define COMMAND_QMLBRIEF                Doc::alias("qmlbrief")
 
+#if 0
 Doc::Doc(const Location& start_loc,
          const Location& end_loc,
          const QString& source,
@@ -2760,6 +2761,7 @@ Doc::Doc(const Location& start_loc,
     DocParser parser;
     parser.parse(source,priv,metaCommandSet,QSet<QString>());
 }
+#endif
 
 /*!
   Parse the qdoc comment \a source. Build up a list of all the topic
@@ -3026,7 +3028,7 @@ const QSet<QString> &Doc::metaCommandsUsed() const
  */
 const TopicList& Doc::topicsUsed() const
 {
-    return priv == 0 ? *nullTopicList() : priv->topics;
+    return priv == 0 ? *nullTopicList() : priv->topics_;
 }
 
 ArgList Doc::metaCommandArgs(const QString& metacommand) const

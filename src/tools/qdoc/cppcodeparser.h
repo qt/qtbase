@@ -84,13 +84,16 @@ public:
     virtual void doneParsingSourceFiles();
 
 protected:
-    virtual QSet<QString> topicCommands();
+    const QSet<QString>& topicCommands();
+    const QSet<QString>& otherMetaCommands();
     virtual Node* processTopicCommand(const Doc& doc,
                                       const QString& command,
                                       const ArgLocPair& arg);
-    virtual Node *processTopicCommandGroup(const Doc& doc,
-                                           const QString& command,
-                                           const ArgList& args);
+    void processQmlProperties(const Doc& doc, NodeList& nodes, DocList& docs);
+    bool splitQmlPropertyGroupArg(const QString& arg,
+                                  QString& module,
+                                  QString& element,
+                                  QString& name);
     bool splitQmlPropertyArg(const QString& arg,
                              QString& type,
                              QString& module,
@@ -100,7 +103,6 @@ protected:
                            QString& type,
                            QString& module,
                            QString& element);
-    virtual QSet<QString> otherMetaCommands();
     virtual void processOtherMetaCommand(const Doc& doc,
                                          const QString& command,
                                          const ArgLocPair& argLocPair,
@@ -212,6 +214,7 @@ protected:
 #define COMMAND_QMLCLASS                Doc::alias("qmlclass")
 #define COMMAND_QMLTYPE                 Doc::alias("qmltype")
 #define COMMAND_QMLPROPERTY             Doc::alias("qmlproperty")
+#define COMMAND_QMLPROPERTYGROUP        Doc::alias("qmlpropertygroup")
 #define COMMAND_QMLATTACHEDPROPERTY     Doc::alias("qmlattachedproperty")
 #define COMMAND_QMLINHERITS             Doc::alias("inherits")
 #define COMMAND_QMLINSTANTIATES         Doc::alias("instantiates")
