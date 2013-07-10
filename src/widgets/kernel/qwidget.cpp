@@ -4836,7 +4836,7 @@ QGraphicsEffect *QWidget::graphicsEffect() const
     on this widget, QWidget will delete the existing effect before installing
     the new \a effect.
 
-    If \a effect is the installed on a different widget, setGraphicsEffect() will remove
+    If \a effect is the installed effect on a different widget, setGraphicsEffect() will remove
     the effect from the widget and install it on this widget.
 
     QWidget takes ownership of \a effect.
