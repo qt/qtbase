@@ -157,33 +157,39 @@ private:
 template <class T, class X>
 bool operator==(const QJNILocalRef<T> &ptr1, const QJNILocalRef<X> &ptr2)
 {
-    return ptr1.m_obj == ptr2.m_obj;
+    QAttachedJNIEnv env;
+    return env->IsSameObject(ptr1.m_obj, ptr2.m_obj);
 }
 template <class T, class X>
 bool operator!=(const QJNILocalRef<T> &ptr1, const QJNILocalRef<X> &ptr2)
 {
-    return ptr1.m_obj != ptr2.m_obj;
+    QAttachedJNIEnv env;
+    return !env->IsSameObject(ptr1.m_obj, ptr2.m_obj);
 }
 
 template <class T, class X>
 bool operator==(const QJNILocalRef<T> &ptr1, X ptr2)
 {
-    return ptr1.m_obj == ptr2;
+    QAttachedJNIEnv env;
+    return env->IsSameObject(ptr1.m_obj, ptr2);
 }
 template <class T, class X>
 bool operator==(T ptr1, const QJNILocalRef<X> &ptr2)
 {
-    return ptr1 == ptr2.m_obj;
+    QAttachedJNIEnv env;
+    return env->IsSameObject(ptr1, ptr2.m_obj);
 }
 template <class T, class X>
 bool operator!=(const QJNILocalRef<T> &ptr1, X ptr2)
 {
-    return !(ptr1 == ptr2);
+    QAttachedJNIEnv env;
+    return !env->IsSameObject(ptr1.m_obj, ptr2);
 }
 template <class T, class X>
 bool operator!=(const T *ptr1, const QJNILocalRef<X> &ptr2)
 {
-    return !(ptr2 == ptr1);
+    QAttachedJNIEnv env;
+    return !env->IsSameObject(ptr1, ptr2.m_obj);
 }
 
 QT_END_NAMESPACE
