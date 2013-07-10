@@ -219,7 +219,7 @@ void tst_QWindow::positioning()
     // if our positioning is actually fully respected by the window manager
     // test whether it correctly handles frame positioning as well
     if (originalPos == geometry.topLeft() && (originalMargins.top() != 0 || originalMargins.left() != 0)) {
-        QPoint framePos(40, 40);
+        QPoint framePos = QGuiApplication::primaryScreen()->availableVirtualGeometry().topLeft() + QPoint(40, 40);
 
         window.reset();
         window.setFramePosition(framePos);
