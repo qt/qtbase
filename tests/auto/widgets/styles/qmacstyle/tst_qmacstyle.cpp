@@ -87,6 +87,7 @@ private slots:
     void layoutSpacings();
     void smallMiniNormalExclusivity_data();
     void smallMiniNormalExclusivity();
+    void passwordCharacter();
 
 private:
     static QSize msh(QWidget *widget);
@@ -403,6 +404,17 @@ void tst_QMacStyle::smallMiniNormalExclusivity()
             QEXPECT_FAIL("", "QTBUG-25296", Abort);
         QCOMPARE(size.height(), expected[i]);
     }
+}
+
+void tst_QMacStyle::passwordCharacter()
+{
+    QLineEdit lineEdit;
+    lineEdit.setEchoMode(QLineEdit::Password);
+    QTest::keyClick(&lineEdit, Qt::Key_P);
+    // Should be no password delay; text should instantly be masked.
+    const QChar bullet(0x2022);
+    const QString expected(1, bullet);
+    QCOMPARE(lineEdit.displayText(), expected);
 }
 
 QTEST_MAIN(tst_QMacStyle)
