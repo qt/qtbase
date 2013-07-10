@@ -170,13 +170,6 @@ void tst_QWindow::eventOrderOnShow()
 
 void tst_QWindow::positioning()
 {
-#ifdef Q_OS_MAC
-    // the fullscreen animation delay on OS X Lion also causes failures in
-    // the isActive() test below, so it's best to just skip it for now
-    QSKIP("Multiple failures in this test on Mac OS X, see QTBUG-23059");
-#endif
-
-
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(
                 QPlatformIntegration::NonFullScreenWindows)) {
         QSKIP("This platform does not support non-fullscreen windows");
@@ -210,6 +203,9 @@ void tst_QWindow::positioning()
 
     window.setWindowState(Qt::WindowFullScreen);
     QCoreApplication::processEvents();
+#ifdef Q_OS_MACX
+    QEXPECT_FAIL("", "Multiple failures in this test on Mac OS X, see QTBUG-23059", Abort);
+#endif
     QTRY_COMPARE(window.received(QEvent::Resize), 2);
 
     window.setWindowState(Qt::WindowNoState);
