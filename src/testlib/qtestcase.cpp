@@ -2077,6 +2077,18 @@ FatalSignalHandler::~FatalSignalHandler()
 
 } // namespace
 
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+static LONG WINAPI windowsFaultHandler(struct _EXCEPTION_POINTERS *exInfo)
+{
+    char appName[MAX_PATH];
+    if (!GetModuleFileNameA(NULL, appName, MAX_PATH))
+        appName[0] = 0;
+    fprintf(stderr, "A crash occurred in %s (exception code 0x%lx).",
+            appName, exInfo->ExceptionRecord->ExceptionCode);
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+#endif // Q_OS_WIN) && !Q_OS_WINCE
+
 /*!
     Executes tests declared in \a testObject. In addition, the private slots
     \c{initTestCase()}, \c{cleanupTestCase()}, \c{init()} and \c{cleanup()}
@@ -2163,6 +2175,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
         _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
 # endif
         SetErrorMode(SetErrorMode(0) | SEM_NOGPFAULTERRORBOX);
+        SetUnhandledExceptionFilter(windowsFaultHandler);
     } // !noCrashHandler
 #endif // Q_OS_WIN) && !Q_OS_WINCE
 
