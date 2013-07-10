@@ -247,6 +247,9 @@
     2000.
     \li \c -nocrashhandler \br
     Disables the crash handler on Unix platforms.
+    On Windows, it re-enables the Windows Error Reporting dialog, which is
+    turned off by default.
+
     \li \c -platform \e name \br
     This command line argument applies to all Qt applications, but might be
     especially useful in the context of auto-testing. By using the "offscreen"

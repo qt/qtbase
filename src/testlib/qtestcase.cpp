@@ -1130,9 +1130,7 @@ namespace QTest
     static int keyDelay = -1;
     static int mouseDelay = -1;
     static int eventDelay = -1;
-#if defined(Q_OS_UNIX)
     static bool noCrashHandler = false;
-#endif
 
 /*! \internal
     Invoke a method of the object without generating warning if the method does not exist
@@ -1335,9 +1333,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
          " -mousedelay ms      : Set default delay for mouse simulation to ms milliseconds\n"
          " -maxwarnings n      : Sets the maximum amount of messages to output.\n"
          "                       0 means unlimited, default: 2000\n"
-#if defined(Q_OS_UNIX)
          " -nocrashhandler     : Disables the crash handler\n"
-#endif
          "\n"
          " Benchmarking options:\n"
 #ifdef QTESTLIB_USE_VALGRIND
@@ -1468,10 +1464,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             } else {
                 QTestLog::setMaxWarnings(qToInt(argv[++i]));
             }
-#if defined(Q_OS_UNIX)
         } else if (strcmp(argv[i], "-nocrashhandler") == 0) {
             QTest::noCrashHandler = true;
-#endif
 #ifdef QTESTLIB_USE_VALGRIND
         } else if (strcmp(argv[i], "-callgrind") == 0) {
             if (QBenchmarkValgrindUtils::haveValgrind())
@@ -2138,13 +2132,6 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     try {
 #endif
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-# if !defined(Q_CC_MINGW)
-    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
-# endif
-    SetErrorMode(SetErrorMode(0) | SEM_NOGPFAULTERRORBOX);
-#endif
-
 #if defined(Q_OS_MACX)
     if (macNeedsActivate) {
         CFStringRef reasonForActivity= CFSTR("No Display Sleep");
@@ -2169,6 +2156,15 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
         QTestResult::setCurrentAppname(argv[0]);
 
     qtest_qParseArgs(argc, argv, false);
+
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    if (!noCrashHandler) {
+# ifndef Q_CC_MINGW
+        _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
+# endif
+        SetErrorMode(SetErrorMode(0) | SEM_NOGPFAULTERRORBOX);
+    } // !noCrashHandler
+#endif // Q_OS_WIN) && !Q_OS_WINCE
 
 #ifdef QTESTLIB_USE_VALGRIND
     if (QBenchmarkGlobalData::current->mode() == QBenchmarkGlobalData::CallgrindParentProcess) {
