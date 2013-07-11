@@ -497,12 +497,13 @@ void QHttpSocketEngine::slotSocketConnected()
     Q_D(QHttpSocketEngine);
 
     // Send the greeting.
-    const char method[] = "CONNECT ";
+    const char method[] = "CONNECT";
     QByteArray peerAddress = d->peerName.isEmpty() ?
                              d->peerAddress.toString().toLatin1() :
                              QUrl::toAce(d->peerName);
     QByteArray path = peerAddress + ':' + QByteArray::number(d->peerPort);
     QByteArray data = method;
+    data += " ";
     data += path;
     data += " HTTP/1.1\r\n";
     data += "Proxy-Connection: keep-alive\r\n";
