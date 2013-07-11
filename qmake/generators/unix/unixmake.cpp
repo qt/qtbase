@@ -727,7 +727,7 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
     if(t != "target" || project->first("TEMPLATE") == "subdirs")
         return QString();
 
-    bool bundle = false;
+    enum { NoBundle, SolidBundle, SlicedBundle } bundle = NoBundle;
     const QString root = "$(INSTALL_ROOT)";
     ProStringList &uninst = project->values(ProKey(t + ".uninstall"));
     QString ret, destdir = project->first("DESTDIR").toQString();
@@ -743,7 +743,7 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
     const ProStringList &targets = project->values(ProKey(t + ".targets"));
     if(!project->isEmpty("QMAKE_BUNDLE")) {
         target = project->first("QMAKE_BUNDLE").toQString();
-        bundle = true;
+        bundle = project->isActiveConfig("sliced_bundle") ? SlicedBundle : SolidBundle;
     } else if(project->first("TEMPLATE") == "app") {
         target = "$(QMAKE_TARGET)";
     } else if(project->first("TEMPLATE") == "lib") {
@@ -768,7 +768,7 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
         uninst.append("-$(DEL_FILE) \"" + dst + "\"");
     }
 
-    if(!bundle && project->isActiveConfig("compile_libtool")) {
+    if (bundle == NoBundle && project->isActiveConfig("compile_libtool")) {
         QString src_targ = target;
         if(src_targ == "$(TARGET)")
             src_targ = "$(TARGETL)";
@@ -781,23 +781,36 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
         QString src_targ = target;
         if(!destdir.isEmpty())
             src_targ = Option::fixPathToTargetOS(destdir + target, false);
-        QString dst_targ = filePrefixRoot(root, fileFixify(targetdir + target, FileFixifyAbsolute));
-        if(bundle) {
-            if(!ret.isEmpty())
-                ret += "\n\t";
-            ret += "$(DEL_FILE) -r \"" + dst_targ + "\"\n\t";
+        QString plain_targ = filePrefixRoot(root, fileFixify(targetdir + target, FileFixifyAbsolute));
+        QString dst_targ = plain_targ;
+        if (bundle != NoBundle) {
+            QString suffix;
+            if (project->first("TEMPLATE") == "lib")
+                suffix = "/Versions/" + project->first("QMAKE_FRAMEWORK_VERSION") + "/$(TARGET)";
+            else
+                suffix = "/" + project->first("QMAKE_BUNDLE_LOCATION") + "/$(QMAKE_TARGET)";
+            dst_targ += suffix;
+            if (bundle == SolidBundle) {
+                if (!ret.isEmpty())
+                    ret += "\n\t";
+                ret += "$(DEL_FILE) -r \"" + plain_targ + "\"\n\t";
+            } else {
+                src_targ += suffix;
+            }
         }
         if(!ret.isEmpty())
             ret += "\n\t";
 
         QString copy_cmd("-");
-        if (bundle)
-            copy_cmd += "$(INSTALL_DIR)";
-        else if (project->first("TEMPLATE") == "lib" && project->isActiveConfig("staticlib"))
-            copy_cmd += "$(INSTALL_FILE)";
-        else
-            copy_cmd += "$(INSTALL_PROGRAM)";
-        copy_cmd += " \"" + src_targ + "\" \"" + dst_targ + "\"";
+        if (bundle == SolidBundle) {
+            copy_cmd += "$(INSTALL_DIR) \"" + src_targ + "\" \"" + plain_targ + "\"";
+        } else if (project->first("TEMPLATE") == "lib" && project->isActiveConfig("staticlib")) {
+            copy_cmd += "$(INSTALL_FILE) \"" + src_targ + "\" \"" + dst_targ + "\"";
+        } else {
+            if (bundle == SlicedBundle)
+                ret += mkdir_p_asstring("\"`dirname \"" + dst_targ + "\"`\"", false) + "\n\t";
+            copy_cmd += "$(INSTALL_PROGRAM) \"" + src_targ + "\" \"" + dst_targ + "\"";
+        }
         if(project->first("TEMPLATE") == "lib" && !project->isActiveConfig("staticlib")
            && project->values(ProKey(t + ".CONFIG")).indexOf("fix_rpath") != -1) {
             if(!project->isEmpty("QMAKE_FIX_RPATH")) {
@@ -818,27 +831,37 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
             if(!project->isEmpty("QMAKE_RANLIB"))
                 ret += QString("\n\t$(RANLIB) \"") + dst_targ + "\"";
         } else if(!project->isActiveConfig("debug") && !project->isActiveConfig("nostrip") && !project->isEmpty("QMAKE_STRIP")) {
-            QString suffix;
             ret += "\n\t-$(STRIP)";
             if (project->first("TEMPLATE") == "lib") {
                 if (!project->isEmpty("QMAKE_STRIPFLAGS_LIB"))
                     ret += " " + var("QMAKE_STRIPFLAGS_LIB");
-                if (bundle)
-                    suffix = "/Versions/" + project->first("QMAKE_FRAMEWORK_VERSION") + "/$(TARGET)";
             } else if (project->first("TEMPLATE") == "app") {
                 if (!project->isEmpty("QMAKE_STRIPFLAGS_APP"))
                     ret += " " + var("QMAKE_STRIPFLAGS_APP");
-                if (bundle)
-                    suffix = "/" + project->first("QMAKE_BUNDLE_LOCATION") + "/$(QMAKE_TARGET)";
             }
-            ret += " \"" + dst_targ + suffix + "\"";
+            ret += " \"" + dst_targ + "\"";
         }
         if(!uninst.isEmpty())
             uninst.append("\n\t");
-        if(bundle)
-            uninst.append("-$(DEL_FILE) -r \"" + dst_targ + "\"");
+        if (bundle == SolidBundle)
+            uninst.append("-$(DEL_FILE) -r \"" + plain_targ + "\"");
         else
             uninst.append("-$(DEL_FILE) \"" + dst_targ + "\"");
+        if (bundle == SlicedBundle) {
+            int dstlen = project->first("DESTDIR").length();
+            foreach (const ProString &src, project->values("QMAKE_BUNDLED_FILES")) {
+                QString file = unescapeFilePath(src.toQString()).mid(dstlen);
+                QString dst = filePrefixRoot(root, fileFixify(targetdir + file, FileFixifyAbsolute));
+                if (!ret.isEmpty())
+                    ret += "\n\t";
+                ret += mkdir_p_asstring("\"`dirname \"" + dst + "\"`\"", false) + "\n\t";
+                ret += "-$(DEL_FILE) \"" + dst + "\"\n\t"; // Can't overwrite symlinks to directories
+                ret += "-$(INSTALL_DIR) " + src + " \"" + dst + "\""; // Use cp -R to copy symlinks
+                if (!uninst.isEmpty())
+                    uninst.append("\n\t");
+                uninst.append("-$(DEL_FILE) \"" + dst + "\"");
+            }
+        }
         if(!links.isEmpty()) {
             for(int i = 0; i < links.size(); ++i) {
                 if (target_mode == TARG_UNIX_MODE || target_mode == TARG_MAC_MODE) {
