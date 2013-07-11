@@ -166,7 +166,7 @@ void QPdfWriter::setPageSize(PageSize size)
     Q_D(const QPdfWriter);
 
     QPagedPaintDevice::setPageSize(size);
-    d->engine->d_func()->paperSize = pageSizeMM() * 25.4/72.;
+    d->engine->d_func()->setPaperSize(pageSizeMM());
 }
 
 /*!
@@ -177,7 +177,7 @@ void QPdfWriter::setPageSizeMM(const QSizeF &size)
     Q_D(const QPdfWriter);
 
     QPagedPaintDevice::setPageSizeMM(size);
-    d->engine->d_func()->paperSize = pageSizeMM() * 25.4/72.;
+    d->engine->d_func()->setPaperSize(pageSizeMM());
 }
 
 /*!

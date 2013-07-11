@@ -870,7 +870,12 @@ void Moc::generate(FILE *out)
         findRequiredContainers(&classList[i], &requiredQtContainers);
     }
 
-    foreach (const QByteArray &qtContainer, requiredQtContainers) {
+    // after finding the containers, we sort them into a list to avoid
+    // non-deterministic behavior which may cause rebuilds unnecessarily.
+    QList<QByteArray> requiredContainerList = requiredQtContainers.toList();
+    std::sort(requiredContainerList.begin(), requiredContainerList.end());
+
+    foreach (const QByteArray &qtContainer, requiredContainerList) {
         fprintf(out, "#include <QtCore/%s>\n", qtContainer.constData());
     }
 

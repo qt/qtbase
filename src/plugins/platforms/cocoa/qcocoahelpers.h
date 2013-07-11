@@ -71,6 +71,7 @@ inline NSMutableArray *qt_mac_QStringListToNSMutableArray(const QStringList &qst
 CGImageRef qt_mac_image_to_cgimage(const QImage &image);
 NSImage *qt_mac_cgimage_to_nsimage(CGImageRef iamge);
 NSImage *qt_mac_create_nsimage(const QPixmap &pm);
+NSImage *qt_mac_create_nsimage(const QIcon &icon);
 
 NSSize qt_mac_toNSSize(const QSize &qtSize);
 NSRect qt_mac_toNSRect(const QRect &rect);

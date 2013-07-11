@@ -87,19 +87,19 @@ contains(TARGET, QtAddOn.*): \
 else: \
     DEFINES += QT_BUILD_$${ucmodule}_LIB
 
-#mac frameworks
+# OS X and iOS frameworks
 mac:CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework) {
    #QMAKE_FRAMEWORK_VERSION = 4.0
-   CONFIG += lib_bundle qt_no_framework_direct_includes qt_framework
-   CONFIG -= qt_install_headers #no need to install these as well
+   CONFIG += lib_bundle qt_framework
    !debug_and_release|if(build_all:CONFIG(release, debug|release)) {
         FRAMEWORK_HEADERS.version = Versions
         FRAMEWORK_HEADERS.files = $$SYNCQT.HEADER_FILES $$SYNCQT.HEADER_CLASSES
         FRAMEWORK_HEADERS.path = Headers
-        FRAMEWORK_PRIVATE_HEADERS.version = Versions
         FRAMEWORK_PRIVATE_HEADERS.files = $$SYNCQT.PRIVATE_HEADER_FILES
-        FRAMEWORK_PRIVATE_HEADERS.path = Headers/$$VERSION/$$MODULE_INCNAME
-        QMAKE_BUNDLE_DATA += FRAMEWORK_HEADERS FRAMEWORK_PRIVATE_HEADERS
+        FRAMEWORK_PRIVATE_HEADERS.path = Headers/$$VERSION/$$MODULE_INCNAME/private
+        FRAMEWORK_QPA_HEADERS.files = $$SYNCQT.QPA_HEADER_FILES
+        FRAMEWORK_QPA_HEADERS.path = Headers/$$VERSION/$$MODULE_INCNAME/qpa
+        QMAKE_BUNDLE_DATA += FRAMEWORK_HEADERS FRAMEWORK_PRIVATE_HEADERS FRAMEWORK_QPA_HEADERS
    }
 }
 

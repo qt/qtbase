@@ -98,6 +98,9 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QModelIndex &);
 
 class QPersistentModelIndexData;
 
+// qHash is a friend, but we can't use default arguments for friends (§8.3.6.4)
+uint qHash(const QPersistentModelIndex &index, uint seed = 0);
+
 class Q_CORE_EXPORT QPersistentModelIndex
 {
 public:
@@ -133,7 +136,7 @@ public:
     bool isValid() const;
 private:
     QPersistentModelIndexData *d;
-    friend uint qHash(const QPersistentModelIndex &, uint seed = 0);
+    friend uint qHash(const QPersistentModelIndex &, uint seed);
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QPersistentModelIndex &);
 #endif

@@ -310,7 +310,8 @@ NSMenuItem *QCocoaMenuItem::sync()
     }
 
     if (!m_icon.isNull()) {
-        NSImage *img = static_cast<NSImage *>(qt_mac_create_nsimage(m_icon.pixmap(16, QIcon::Normal)));
+        NSImage *img = qt_mac_create_nsimage(m_icon);
+        [img setSize:NSMakeSize(16, 16)];
         [m_native setImage: img];
         [img release];
     }

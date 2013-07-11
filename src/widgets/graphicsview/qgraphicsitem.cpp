@@ -2741,7 +2741,7 @@ QGraphicsEffect *QGraphicsItem::graphicsEffect() const
     the new \a effect. You can delete an existing effect by calling
     setGraphicsEffect(0).
 
-    If \a effect is the installed on a different item, setGraphicsEffect() will remove
+    If \a effect is the installed effect on a different item, setGraphicsEffect() will remove
     the effect from the item and install it on this item.
 
     QGraphicsItem takes ownership of \a effect.

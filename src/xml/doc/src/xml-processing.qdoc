@@ -233,7 +233,7 @@
     {hasError()} can be used to check and view the errors.
 
     An example of QXmlStreamReader implementation would be the \c XbelReader in
-    \l{QXmlStream Bookmarks Example}, which is a subclass of QXmlStreamReader.
+    \l{QXmlStream Bookmarks Example}, which wraps a QXmlStreamReader.
     The constructor takes \a treeWidget as a parameter and the class has Xbel
     specific functions:
 
@@ -278,8 +278,8 @@
     or subsequent calls to \l{QXmlStreamWriter::writeStartElement()}
     {writeStartElement()}.
 
-    The \c XbelWriter class from \l{QXmlStream Bookmarks Example} is a subclass
-    of QXmlStreamWriter. Its \c writeFile() function illustrates the core
+    The \c XbelWriter class from \l{QXmlStream Bookmarks Example} wraps a
+    QXmlStreamWriter. Its \c writeFile() function illustrates the core
     functions of QXmlStreamWriter mentioned above:
 
     \snippet streambookmarks/xbelwriter.cpp 1

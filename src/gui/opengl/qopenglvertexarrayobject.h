@@ -102,6 +102,7 @@ public:
 private:
     Q_DISABLE_COPY(QOpenGLVertexArrayObject)
     Q_DECLARE_PRIVATE(QOpenGLVertexArrayObject)
+    Q_PRIVATE_SLOT(d_func(), void _q_contextAboutToBeDestroyed())
     QOpenGLVertexArrayObject(QOpenGLVertexArrayObjectPrivate &dd);
 };
 

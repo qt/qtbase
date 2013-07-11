@@ -126,6 +126,8 @@ bool QApplicationPrivate::modalState()
 
 QWidget *qt_tlw_for_window(QWindow *wnd)
 {
+    while (wnd && !wnd->isTopLevel()) // QTBUG-32177, wnd might be a QQuickView embedded via window container.
+        wnd = wnd->parent();
     if (wnd)
         foreach (QWidget *tlw, qApp->topLevelWidgets())
             if (tlw->windowHandle() == wnd)

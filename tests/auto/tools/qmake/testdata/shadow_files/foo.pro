@@ -12,7 +12,3 @@ INSTALLS+=target
 test.files=test.txt foo.bar
 test.path=dist
 INSTALLS+=test
-
-
-
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

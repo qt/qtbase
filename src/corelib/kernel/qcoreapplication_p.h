@@ -135,7 +135,7 @@ public:
     static bool isTranslatorInstalled(QTranslator *translator);
 #endif
 
-    uint application_type;
+    QCoreApplicationPrivate::Type application_type;
 
     QString cachedApplicationDirPath;
     QString cachedApplicationFilePath;

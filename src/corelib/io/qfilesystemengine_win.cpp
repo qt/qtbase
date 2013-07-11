@@ -1049,7 +1049,8 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
             if (slash) {
                 QString chunk = dirName.left(slash);
                 if (!mkDir(chunk)) {
-                    if (GetLastError() == ERROR_ALREADY_EXISTS) {
+                    const DWORD lastError = GetLastError();
+                    if (lastError == ERROR_ALREADY_EXISTS || lastError == ERROR_ACCESS_DENIED) {
                         bool existed = false;
                         if (isDirPath(chunk, &existed) && existed)
                             continue;

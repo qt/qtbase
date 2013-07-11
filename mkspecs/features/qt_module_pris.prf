@@ -51,11 +51,15 @@ else: \
     else: \
         module_rundep =
     static: \
-        module_build_type = "QT.$${MODULE}.module_config = staticlib"
+        module_build_type = staticlib
     else:mac:contains(QT_CONFIG, qt_framework): \
-        module_build_type = "QT.$${MODULE}.module_config = lib_bundle"
+        module_build_type = lib_bundle
     else: \
         module_build_type =
+    internal_module: \
+        module_build_type += internal_module
+    !isEmpty(module_build_type): \
+        module_build_type = "QT.$${MODULE}.module_config = $$module_build_type"
     !isEmpty(MODULE_CONFIG): \
         module_config = "QT.$${MODULE}.CONFIG = $$MODULE_CONFIG"
     else: \

@@ -3327,10 +3327,16 @@ bool QRasterPaintEngine::requiresPretransformedGlyphPositions(QFontEngine *fontE
 
 bool QRasterPaintEngine::shouldDrawCachedGlyphs(QFontEngine *fontEngine, const QTransform &m) const
 {
+    // The raster engine does not support projected cached glyph drawing
+    if (m.type() >= QTransform::TxProject)
+        return false;
+
     // The font engine might not support filling the glyph cache
     // with the given transform applied, in which case we need to
-    // fall back to the QPainterPath code-path.
-    if (!fontEngine->supportsTransformation(m))
+    // fall back to the QPainterPath code-path. This does not apply
+    // for engines with internal caching, as we don't use the engine
+    // to fill up our cache in that case.
+    if (!fontEngine->hasInternalCaching() && !fontEngine->supportsTransformation(m))
         return false;
 
     return QPaintEngineEx::shouldDrawCachedGlyphs(fontEngine, m);

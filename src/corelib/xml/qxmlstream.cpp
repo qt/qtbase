@@ -2038,7 +2038,7 @@ QStringRef QXmlStreamReader::dtdSystemId() const
   element's namespace declarations. Otherwise an empty vector is
   returned.
 
-  The QXmlStreamNamespaceDeclaration class is defined to be a QVector
+  The QXmlStreamNamespaceDeclarations class is defined to be a QVector
   of QXmlStreamNamespaceDeclaration.
 
   \sa addExtraNamespaceDeclaration(), addExtraNamespaceDeclarations()

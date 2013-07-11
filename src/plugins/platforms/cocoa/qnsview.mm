@@ -916,6 +916,7 @@ static QTouchDevice *touchDevice = 0;
     ulong timestamp = [nsevent timestamp] * 1000;
     ulong nativeModifiers = [nsevent modifierFlags];
     Qt::KeyboardModifiers modifiers = [QNSView convertKeyModifiers: nativeModifiers];
+    NSString *charactersIgnoringModifiers = [nsevent charactersIgnoringModifiers];
     NSString *characters = [nsevent characters];
 
     // There is no way to get the scan code from carbon/cocoa. But we cannot
@@ -927,7 +928,10 @@ static QTouchDevice *touchDevice = 0;
     QChar ch = QChar::ReplacementCharacter;
     int keyCode = Qt::Key_unknown;
     if ([characters length] != 0) {
-        ch = QChar([characters characterAtIndex:0]);
+        if ((modifiers & Qt::MetaModifier) && ([charactersIgnoringModifiers length] != 0))
+            ch = QChar([charactersIgnoringModifiers characterAtIndex:0]);
+        else
+            ch = QChar([characters characterAtIndex:0]);
         keyCode = [self convertKeyCode:ch];
     }
 

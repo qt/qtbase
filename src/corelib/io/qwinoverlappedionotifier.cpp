@@ -83,7 +83,9 @@ class QWinIoCompletionPort : protected QThread
 {
 public:
     QWinIoCompletionPort()
-        : hPort(INVALID_HANDLE_VALUE)
+        : finishThreadKey(reinterpret_cast<ULONG_PTR>(this)),
+          drainQueueKey(reinterpret_cast<ULONG_PTR>(this + 1)),
+          hPort(INVALID_HANDLE_VALUE)
     {
         setObjectName(QLatin1String("I/O completion port thread"));
         HANDLE hIOCP = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0);
@@ -92,13 +94,19 @@ public:
             return;
         }
         hPort = hIOCP;
+        hQueueDrainedEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+        if (!hQueueDrainedEvent) {
+            qErrnoWarning("CreateEvent failed.");
+            return;
+        }
     }
 
     ~QWinIoCompletionPort()
     {
-        PostQueuedCompletionStatus(hPort, 0, 0, NULL);
+        PostQueuedCompletionStatus(hPort, 0, finishThreadKey, NULL);
         QThread::wait();
         CloseHandle(hPort);
+        CloseHandle(hQueueDrainedEvent);
     }
 
     void registerNotifier(QWinOverlappedIoNotifier *notifier)
@@ -122,29 +130,50 @@ public:
         mutex.unlock();
     }
 
+    void drainQueue()
+    {
+        QMutexLocker locker(&drainQueueMutex);
+        ResetEvent(hQueueDrainedEvent);
+        PostQueuedCompletionStatus(hPort, 0, drainQueueKey, NULL);
+        WaitForSingleObject(hQueueDrainedEvent, INFINITE);
+    }
+
+    using QThread::isRunning;
+
 protected:
     void run()
     {
         DWORD dwBytesRead;
         ULONG_PTR pulCompletionKey;
         OVERLAPPED *overlapped;
+        DWORD msecs = INFINITE;
 
         forever {
             BOOL success = GetQueuedCompletionStatus(hPort,
                                                      &dwBytesRead,
                                                      &pulCompletionKey,
                                                      &overlapped,
-                                                     INFINITE);
+                                                     msecs);
 
             DWORD errorCode = success ? ERROR_SUCCESS : GetLastError();
             if (!success && !overlapped) {
+                if (!msecs) {
+                    // Time out in drain mode. The completion status queue is empty.
+                    msecs = INFINITE;
+                    SetEvent(hQueueDrainedEvent);
+                    continue;
+                }
                 qErrnoWarning(errorCode, "GetQueuedCompletionStatus failed.");
                 return;
             }
 
-            if (success && !(dwBytesRead || pulCompletionKey || overlapped)) {
-                // We've posted null values via PostQueuedCompletionStatus to end this thread.
+            if (pulCompletionKey == finishThreadKey)
                 return;
+            if (pulCompletionKey == drainQueueKey) {
+                // Enter drain mode.
+                Q_ASSERT(msecs == INFINITE);
+                msecs = 0;
+                continue;
             }
 
             QWinOverlappedIoNotifier *notifier = reinterpret_cast<QWinOverlappedIoNotifier *>(pulCompletionKey);
@@ -156,9 +185,13 @@ protected:
     }
 
 private:
+    const ULONG_PTR finishThreadKey;
+    const ULONG_PTR drainQueueKey;
     HANDLE hPort;
     QSet<QWinOverlappedIoNotifier *> notifiers;
     QMutex mutex;
+    QMutex drainQueueMutex;
+    HANDLE hQueueDrainedEvent;
 };
 
 QWinIoCompletionPort *QWinOverlappedIoNotifier::iocp = 0;
@@ -216,7 +249,14 @@ void QWinOverlappedIoNotifier::setEnabled(bool enabled)
  */
 bool QWinOverlappedIoNotifier::waitForNotified(int msecs, OVERLAPPED *overlapped)
 {
+    if (!iocp->isRunning()) {
+        qWarning("Called QWinOverlappedIoNotifier::waitForNotified on inactive notifier.");
+        return false;
+    }
+
     forever {
+        if (msecs == 0)
+            iocp->drainQueue();
         DWORD result = WaitForSingleObject(hSemaphore, msecs == -1 ? INFINITE : DWORD(msecs));
         if (result == WAIT_OBJECT_0) {
             ReleaseSemaphore(hSemaphore, 1, NULL);

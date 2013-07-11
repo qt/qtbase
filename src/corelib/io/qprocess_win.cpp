@@ -641,7 +641,7 @@ bool QProcessPrivate::drainOutputPipes()
             readyReadEmitted |= stderrReader->waitForReadyRead(0);
             readOperationActive |= stderrReader->isReadOperationActive();
         }
-        if (!readOperationActive)
+        if (!readOperationActive || !readyReadEmitted)
             break;
         Sleep(100);
     }

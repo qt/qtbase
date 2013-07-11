@@ -6,4 +6,3 @@ indirect.output = $$OUT_PWD/sub/indirect_test.txt
 copy.input = $$PWD/copy.txt
 copy.output = $$OUT_PWD/copy_test.txt
 copy.CONFIG = verbatim
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

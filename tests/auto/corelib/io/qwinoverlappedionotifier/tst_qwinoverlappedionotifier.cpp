@@ -175,7 +175,6 @@ void tst_QWinOverlappedIoNotifier::waitForNotified()
     HANDLE hFile = CreateFile(reinterpret_cast<const wchar_t*>(fileName.utf16()),
                               GENERIC_READ, FILE_SHARE_READ,
                               NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
-    QCOMPARE(notifier.waitForNotified(0, 0), false);
     notifier.setHandle(hFile);
     notifier.setEnabled(true);
     QCOMPARE(notifier.waitForNotified(100, 0), false);

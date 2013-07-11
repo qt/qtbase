@@ -190,8 +190,11 @@ void QIOSContext::windowDestroyed(QObject *object)
 {
     QWindow *window = static_cast<QWindow *>(object);
     if (m_framebufferObjects.contains(window)) {
+        EAGLContext *originalContext = [EAGLContext currentContext];
+        [EAGLContext setCurrentContext:m_eaglContext];
         deleteBuffers(m_framebufferObjects[window]);
         m_framebufferObjects.remove(window);
+        [EAGLContext setCurrentContext:originalContext];
     }
 }
 

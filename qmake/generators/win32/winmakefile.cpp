@@ -423,56 +423,56 @@ void Win32MakefileGenerator::processRcFileVar()
         int rcLang = project->intValue("RC_LANG", 1033);            // default: English(USA)
         int rcCodePage = project->intValue("RC_CODEPAGE", 1200);    // default: Unicode
 
-        ts << "# if defined(UNDER_CE)" << endl;
-        ts << "#  include <winbase.h>" << endl;
-        ts << "# else" << endl;
-        ts << "#  include <winver.h>" << endl;
-        ts << "# endif" << endl;
+        ts << "# if defined(UNDER_CE)\n";
+        ts << "#  include <winbase.h>\n";
+        ts << "# else\n";
+        ts << "#  include <winver.h>\n";
+        ts << "# endif\n";
         ts << endl;
         if (!rcIcons.isEmpty()) {
             for (int i = 0; i < rcIcons.size(); ++i)
                 ts << QString("IDI_ICON%1\tICON\tDISCARDABLE\t%2").arg(i + 1).arg(cQuoted(rcIcons[i])) << endl;
             ts << endl;
         }
-        ts << "VS_VERSION_INFO VERSIONINFO" << endl;
+        ts << "VS_VERSION_INFO VERSIONINFO\n";
         ts << "\tFILEVERSION " << QString(versionString).replace(".", ",") << endl;
         ts << "\tPRODUCTVERSION " << QString(versionString).replace(".", ",") << endl;
-        ts << "\tFILEFLAGSMASK 0x3fL" << endl;
-        ts << "#ifdef _DEBUG" << endl;
-        ts << "\tFILEFLAGS VS_FF_DEBUG" << endl;
-        ts << "#else" << endl;
-        ts << "\tFILEFLAGS 0x0L" << endl;
-        ts << "#endif" << endl;
-        ts << "\tFILEOS VOS__WINDOWS32" << endl;
+        ts << "\tFILEFLAGSMASK 0x3fL\n";
+        ts << "#ifdef _DEBUG\n";
+        ts << "\tFILEFLAGS VS_FF_DEBUG\n";
+        ts << "#else\n";
+        ts << "\tFILEFLAGS 0x0L\n";
+        ts << "#endif\n";
+        ts << "\tFILEOS VOS__WINDOWS32\n";
         if (project->isActiveConfig("shared"))
-            ts << "\tFILETYPE VFT_DLL" << endl;
+            ts << "\tFILETYPE VFT_DLL\n";
         else
-            ts << "\tFILETYPE VFT_APP" << endl;
-        ts << "\tFILESUBTYPE 0x0L" << endl;
-        ts << "\tBEGIN" << endl;
-        ts << "\t\tBLOCK \"StringFileInfo\"" << endl;
-        ts << "\t\tBEGIN" << endl;
+            ts << "\tFILETYPE VFT_APP\n";
+        ts << "\tFILESUBTYPE 0x0L\n";
+        ts << "\tBEGIN\n";
+        ts << "\t\tBLOCK \"StringFileInfo\"\n";
+        ts << "\t\tBEGIN\n";
         ts << "\t\t\tBLOCK \""
            << QString("%1%2").arg(rcLang, 4, 16, QLatin1Char('0')).arg(rcCodePage, 4, 16, QLatin1Char('0'))
-           << "\"" << endl;
-        ts << "\t\t\tBEGIN" << endl;
-        ts << "\t\t\t\tVALUE \"CompanyName\", \"" << companyName << "\\0\"" << endl;
-        ts << "\t\t\t\tVALUE \"FileDescription\", \"" <<  description << "\\0\"" << endl;
-        ts << "\t\t\t\tVALUE \"FileVersion\", \"" << versionString << "\\0\"" << endl;
-        ts << "\t\t\t\tVALUE \"LegalCopyright\", \"" << copyright << "\\0\"" << endl;
-        ts << "\t\t\t\tVALUE \"OriginalFilename\", \"" << originalName << "\\0\"" << endl;
-        ts << "\t\t\t\tVALUE \"ProductName\", \"" << productName << "\\0\"" << endl;
-        ts << "\t\t\t\tVALUE \"ProductVersion\", \"" << versionString << "\\0\"" << endl;
-        ts << "\t\t\tEND" << endl;
-        ts << "\t\tEND" << endl;
-        ts << "\t\tBLOCK \"VarFileInfo\"" << endl;
-        ts << "\t\tBEGIN" << endl;
+           << "\"\n";
+        ts << "\t\t\tBEGIN\n";
+        ts << "\t\t\t\tVALUE \"CompanyName\", \"" << companyName << "\\0\"\n";
+        ts << "\t\t\t\tVALUE \"FileDescription\", \"" <<  description << "\\0\"\n";
+        ts << "\t\t\t\tVALUE \"FileVersion\", \"" << versionString << "\\0\"\n";
+        ts << "\t\t\t\tVALUE \"LegalCopyright\", \"" << copyright << "\\0\"\n";
+        ts << "\t\t\t\tVALUE \"OriginalFilename\", \"" << originalName << "\\0\"\n";
+        ts << "\t\t\t\tVALUE \"ProductName\", \"" << productName << "\\0\"\n";
+        ts << "\t\t\t\tVALUE \"ProductVersion\", \"" << versionString << "\\0\"\n";
+        ts << "\t\t\tEND\n";
+        ts << "\t\tEND\n";
+        ts << "\t\tBLOCK \"VarFileInfo\"\n";
+        ts << "\t\tBEGIN\n";
         ts << "\t\t\tVALUE \"Translation\", "
            << QString("0x%1").arg(rcLang, 4, 16, QLatin1Char('0'))
            << ", " << QString("%1").arg(rcCodePage, 4) << endl;
-        ts << "\t\tEND" << endl;
-        ts << "\tEND" << endl;
-        ts << "/* End of Version info */" << endl;
+        ts << "\t\tEND\n";
+        ts << "\tEND\n";
+        ts << "/* End of Version info */\n";
         ts << endl;
 
         ts.flush();
@@ -598,7 +598,7 @@ void Win32MakefileGenerator::writeCleanParts(QTextStream &t)
             }
         }
     }
-    t << "\n\t-$(DEL_FILE) $(DESTDIR_TARGET)" << endl;
+    t << "\n\t-$(DEL_FILE) $(DESTDIR_TARGET)\n";
     {
         QString ofile = Option::fixPathToTargetOS(fileFixify(Option::output.fileName()));
         if(!ofile.isEmpty())
@@ -617,7 +617,7 @@ void Win32MakefileGenerator::writeIncPart(QTextStream &t)
         inc.replace(QRegExp("\\\\$"), "");
         inc.replace(QRegExp("\""), "");
         if(!inc.isEmpty())
-            t << "-I" << "\"" << inc << "\" ";
+            t << "-I\"" << inc << "\" ";
     }
     t << "-I\"" << specdir() << "\""
       << endl;
@@ -625,14 +625,14 @@ void Win32MakefileGenerator::writeIncPart(QTextStream &t)
 
 void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
 {
-    t << "####### Compiler, tools and options" << endl << endl;
+    t << "####### Compiler, tools and options\n\n";
     t << "CC            = " << var("QMAKE_CC") << endl;
     t << "CXX           = " << var("QMAKE_CXX") << endl;
     t << "DEFINES       = "
       << varGlue("PRL_EXPORT_DEFINES","-D"," -D"," ")
       << varGlue("DEFINES","-D"," -D","") << endl;
-    t << "CFLAGS        = " << var("QMAKE_CFLAGS") << " $(DEFINES)" << endl;
-    t << "CXXFLAGS      = " << var("QMAKE_CXXFLAGS") << " $(DEFINES)" << endl;
+    t << "CFLAGS        = " << var("QMAKE_CFLAGS") << " $(DEFINES)\n";
+    t << "CXXFLAGS      = " << var("QMAKE_CXXFLAGS") << " $(DEFINES)\n";
 
     writeIncPart(t);
     writeLibsPart(t);
@@ -659,14 +659,14 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
     t << "INSTALL_DIR     = " << var("QMAKE_INSTALL_DIR") << endl;
     t << endl;
 
-    t << "####### Output directory" << endl << endl;
+    t << "####### Output directory\n\n";
     if(!project->values("OBJECTS_DIR").isEmpty())
         t << "OBJECTS_DIR   = " << var("OBJECTS_DIR").replace(QRegExp("\\\\$"),"") << endl;
     else
-        t << "OBJECTS_DIR   = . " << endl;
+        t << "OBJECTS_DIR   = . \n";
     t << endl;
 
-    t << "####### Files" << endl << endl;
+    t << "####### Files\n\n";
     t << "SOURCES       = " << valList(escapeFilePaths(project->values("SOURCES")))
       << " " << valList(escapeFilePaths(project->values("GENERATED_SOURCES"))) << endl;
 
@@ -688,21 +688,21 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
     t << "QMAKE_TARGET  = " << var("QMAKE_ORIG_TARGET") << endl;
     // The comment is important to maintain variable compatibility with Unix
     // Makefiles, while not interpreting a trailing-slash as a linebreak
-    t << "DESTDIR        = " << escapeFilePath(destDir) << " #avoid trailing-slash linebreak" << endl;
+    t << "DESTDIR        = " << escapeFilePath(destDir) << " #avoid trailing-slash linebreak\n";
     t << "TARGET         = " << escapeFilePath(target) << endl;
     t << "DESTDIR_TARGET = " << escapeFilePath(var("DEST_TARGET")) << endl;
     t << endl;
 
-    t << "####### Implicit rules" << endl << endl;
+    t << "####### Implicit rules\n\n";
     writeImplicitRulesPart(t);
 
-    t << "####### Build rules" << endl << endl;
+    t << "####### Build rules\n\n";
     writeBuildRulesPart(t);
 
     if(project->isActiveConfig("shared") && !project->values("DLLDESTDIR").isEmpty()) {
         const ProStringList &dlldirs = project->values("DLLDESTDIR");
         for (ProStringList::ConstIterator dlldir = dlldirs.begin(); dlldir != dlldirs.end(); ++dlldir) {
-            t << "\t" << "-$(COPY_FILE) \"$(DESTDIR_TARGET)\" "
+            t << "\t-$(COPY_FILE) \"$(DESTDIR_TARGET)\" "
               << Option::fixPathToTargetOS((*dlldir).toQString(), false) << endl;
         }
     }
@@ -725,8 +725,8 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
                 dist_files << ui_h;
         }
     }
-    t << "dist:" << "\n\t"
-      << "$(ZIP) " << var("QMAKE_ORIG_TARGET") << ".zip " << "$(SOURCES) $(DIST) "
+    t << "dist:\n\t"
+      << "$(ZIP) " << var("QMAKE_ORIG_TARGET") << ".zip $(SOURCES) $(DIST) "
       << dist_files.join(' ') << " " << var("TRANSLATIONS") << " ";
     if(!project->isEmpty("QMAKE_EXTRA_COMPILERS")) {
         const ProStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");

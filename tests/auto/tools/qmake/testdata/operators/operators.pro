@@ -21,5 +21,3 @@ VAR ~= s/QT_+/Q_
 !contains( VAR, Q_DLL ) {
    message( "FAILED: ~=" )
 }
-
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

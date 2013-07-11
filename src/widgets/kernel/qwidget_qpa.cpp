@@ -887,6 +887,10 @@ void QWidgetPrivate::deleteSysExtra()
 
 }
 
+#ifdef Q_OS_WIN
+static const char activeXNativeParentHandleProperty[] = "_q_embedded_native_parent_handle";
+#endif
+
 void QWidgetPrivate::createTLSysExtra()
 {
     Q_Q(QWidget);
@@ -897,6 +901,10 @@ void QWidgetPrivate::createTLSysExtra()
         if (extra->maxw != QWIDGETSIZE_MAX || extra->maxh != QWIDGETSIZE_MAX)
             extra->topextra->window->setMaximumSize(QSize(extra->maxw, extra->maxh));
 #ifdef Q_OS_WIN
+        // Pass on native parent handle for Widget embedded into Active X.
+        const QVariant activeXNativeParentHandle = q->property(activeXNativeParentHandleProperty);
+        if (activeXNativeParentHandle.isValid())
+            extra->topextra->window->setProperty(activeXNativeParentHandleProperty, activeXNativeParentHandle);
         if (q->inherits("QTipLabel") || q->inherits("QAlphaWidget"))
             extra->topextra->window->setProperty("_q_windowsDropShadow", QVariant(true));
 #endif

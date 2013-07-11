@@ -17,7 +17,3 @@ callDoExport()
 !isEqual(EXPORTED, "foo bar baz") {
    message( "FAILED: global-scope exports [$$EXPORTED] != foo bar baz" )   
 }
-
-
-
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

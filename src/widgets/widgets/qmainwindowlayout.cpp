@@ -1016,19 +1016,6 @@ void QMainWindowLayout::toggleToolBarsVisible()
 
 #ifndef QT_NO_DOCKWIDGET
 
-static inline void validateDockWidgetArea(Qt::DockWidgetArea &area)
-{
-    switch (area) {
-    case Qt::LeftDockWidgetArea:
-    case Qt::RightDockWidgetArea:
-    case Qt::TopDockWidgetArea:
-    case Qt::BottomDockWidgetArea:
-        break;
-    default:
-        area = Qt::LeftDockWidgetArea;
-    }
-}
-
 static QInternal::DockPosition toDockPos(Qt::DockWidgetArea area)
 {
     switch (area) {

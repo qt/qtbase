@@ -36,7 +36,8 @@ TARGET = tst_headersclean
 
 includes =
 for(q, QT) {
-    qn = $$eval(QT.$${q}.name)
+    sq = $$replace(q, -private\$, )
+    qn = $$eval(QT.$${sq}.name)
     isEmpty(qn): \
         QT -= $$q
     else: \

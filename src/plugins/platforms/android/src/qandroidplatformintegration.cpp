@@ -220,6 +220,16 @@ QPlatformServices *QAndroidPlatformIntegration::services() const
     return m_androidPlatformServices;
 }
 
+QVariant QAndroidPlatformIntegration::styleHint(StyleHint hint) const
+{
+    switch (hint) {
+    case ShowIsFullScreen:
+        return true;
+    default:
+        return QPlatformIntegration::styleHint(hint);
+    }
+}
+
 static const QLatin1String androidThemeName("android");
 QStringList QAndroidPlatformIntegration::themeNames() const
 {

@@ -787,11 +787,12 @@ static void init_platform(const QString &pluginArgument, const QString &platform
         QStringList keys = QPlatformIntegrationFactory::keys(platformPluginPath);
 
         QString fatalMessage
-                = QStringLiteral("Failed to find or load platform plugin \"%1\".\n").arg(name);
-        if (!keys.isEmpty())
-            fatalMessage += QStringLiteral("Available platforms are: %1\n").arg(
+                = QStringLiteral("This application failed to start because it could not find or load the Qt platform plugin \"%1\".\n\n").arg(name);
+        if (!keys.isEmpty()) {
+            fatalMessage += QStringLiteral("Available platform plugins are: %1.\n\n").arg(
                         keys.join(QStringLiteral(", ")));
-        fatalMessage += QStringLiteral("GUI applications require a platform plugin. Terminating.");
+        }
+        fatalMessage += QStringLiteral("Reinstalling the application may fix this problem.");
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
         // Windows: Display message box unless it is a console application
         // or debug build showing an assert box.

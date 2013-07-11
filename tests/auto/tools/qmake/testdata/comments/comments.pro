@@ -29,6 +29,3 @@ LIST = 1 2 3 4$${LITERAL_HASH}five
 !equals( LIST, 1 2 3 4$${LITERAL_HASH}five ) {
     message( "FAILED: using LITERAL_HASH" )
 }
-
-
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

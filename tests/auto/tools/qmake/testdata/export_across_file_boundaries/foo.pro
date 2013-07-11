@@ -12,7 +12,3 @@ O_BAR=$$fromfile(oink.pri,BAR)
 !equals(O_FOO,bar) {
    message( "FAILED: export() invisible from default_pre.prf through \$$fromfile()" )
 }
-
-
-
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

@@ -171,4 +171,5 @@ else: \
 testReplace($$shell_quote($$in), $$out, "shell_quote")
 
 testReplace($$reverse($$list(one two three)), three two one, "reverse")
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
+
+testReplace($$cat(textfile), hi '"holla he"' 'hu!')

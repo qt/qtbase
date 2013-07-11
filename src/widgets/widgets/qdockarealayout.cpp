@@ -2577,7 +2577,6 @@ void QDockAreaLayout::remove(const QList<int> &path)
     docks[index].remove(path.mid(1));
 }
 
-static inline int qMin(int i1, int i2, int i3) { return qMin(i1, qMin(i2, i3)); }
 static inline int qMax(int i1, int i2, int i3) { return qMax(i1, qMax(i2, i3)); }
 
 void QDockAreaLayout::getGrid(QVector<QLayoutStruct> *_ver_struct_list,

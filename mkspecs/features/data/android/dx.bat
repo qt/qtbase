@@ -27,34 +27,35 @@ REM and set up progdir to be the fully-qualified pathname of its directory.
 set prog=%~f0
 
 if [%1]==[] goto badArgs
-set "androidsdk=%1"
+set "dx_jar_path=%1"
 shift /1
 
 if [%1]==[] goto badArgs
 
+REM Use dpZ here to make it more like the Google version.
+for %%F in ("%dx_jar_path%") do set dpZ=%%~dpF
+
 rem Check we have a valid Java.exe in the path.
 set java_exe=
-call "%androidsdk%\tools\lib\find_java.bat"
+if exist    "%dpZ%..\tools\lib\find_java.bat" call    "%dpZ%..\tools\lib\find_java.bat"
+if exist "%dpZ%..\..\tools\lib\find_java.bat" call "%dpZ%..\..\tools\lib\find_java.bat"
+
 if not defined java_exe goto :EOF
 
 set jarfile=dx.jar
-set "frameworkdir=%androidsdk%\platform-tools"
+set "frameworkdir=%dpZ%"
+rem frameworkdir must not end with a dir sep.
+set "frameworkdir=%frameworkdir:~0,-1%"
 
 if exist "%frameworkdir%\%jarfile%" goto JarFileOk
-    set "frameworkdir=%frameworkdir%\lib"
+    set "frameworkdir=%dpZ%lib"
 
 if exist "%frameworkdir%\%jarfile%" goto JarFileOk
-    set "frameworkdir=%androidsdk%\framework"
-
-if exist "%frameworkdir%\%jarfile%" goto JarFileOk
-    set "frameworkdir=%androidsdk%\build-tools\%ANDROID_BUILD_TOOLS_REVISION%\lib"
-
-if exist "%frameworkdir%\%jarfile%" goto JarFileOk
-    set "frameworkdir=%androidsdk%\build-tools\17.0.0\lib"
+    set "frameworkdir=%dpZ%..\framework"
 
 :JarFileOk
 
-set jarpath=%frameworkdir%\%jarfile%
+set "jarpath=%frameworkdir%\%jarfile%"
 
 set javaOpts=
 set args=
@@ -97,12 +98,11 @@ set a=%~1
 :endArgs
 
 set javaOpts=%javaOpts% %defaultXmx% %defaultXss%
-
 call "%java_exe%" %javaOpts% -Djava.ext.dirs="%frameworkdir%" -jar "%jarpath%" %params%
 
 goto :EOF
 
 :badArgs
-echo Usage:   dx (for Qt) <android_sdk_path> <dx_arguments>
-echo Example: dx (for Qt) C:\android-sdk --dex --output=target.jar .classes
+echo Usage:   dx (for Qt) ^<android_sdk_dx_jar_path^> ^<dx_arguments^>
+echo Example: dx (for Qt) C:\android-sdk\build-tools\17.0.0\dx.jar --dex --output=target.jar .classes
 

@@ -119,7 +119,7 @@ public:
     the size of the alpha buffer; the size of the depth and stencil buffers;
     and number of samples per pixel for multisampling. In addition, the format
     contains surface configuration parameters such as OpenGL profile and
-    version for rendering, whether or not enable stereo buffers, and swap
+    version for rendering, whether or not to enable stereo buffers, and swap
     behaviour.
 */
 
@@ -361,7 +361,7 @@ int QSurfaceFormat::depthBufferSize() const
     Set the swap \a behavior of the surface.
 
     The swap behavior specifies whether single, double, or triple
-    buffering is desired. The default, SwapBehavior::DefaultSwapBehavior,
+    buffering is desired. The default, DefaultSwapBehavior,
     gives the default swap behavior of the platform.
 */
 void QSurfaceFormat::setSwapBehavior(SwapBehavior behavior)
