@@ -85,7 +85,7 @@ Q_GUI_EXPORT  void qt_registerFont(const QString &familyName, const QString &sty
     size->handle = handle;
 }
 
-Q_GUI_EXPORT void qt_registerAliasToFontFamily(const QString &familyName, const QString &alias)
+void qt_registerAliasToFontFamily(const QString &familyName, const QString &alias)
 {
     if (alias.isEmpty())
         return;

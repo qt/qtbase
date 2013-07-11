@@ -122,6 +122,8 @@ public:
                              QFont::Style style, QFont::Stretch stretch, bool antialiased,
                              bool scalable, int pixelSize, bool fixedPitch,
                              const QSupportedWritingSystems &writingSystems, void *handle);
+
+    static void registerAliasToFontFamily(const QString &familyName, const QString &alias);
 };
 
 QT_END_NAMESPACE

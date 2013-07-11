@@ -838,8 +838,6 @@ error:
     return i18n_name;
 }
 
-Q_GUI_EXPORT void qt_registerAliasToFontFamily(const QString &familyName, const QString &alias);
-
 static bool addFontToDatabase(const QString &familyName, uchar charSet,
                               const TEXTMETRIC *textmetric,
                               const FONTSIGNATURE *signature,
@@ -932,7 +930,7 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
                                             QFont::StyleItalic, stretch, antialias, scalable, size, fixed, writingSystems, 0);
 
     if (!englishName.isEmpty())
-        qt_registerAliasToFontFamily(familyName, englishName);
+        QPlatformFontDatabase::registerAliasToFontFamily(familyName, englishName);
 
     return true;
 }

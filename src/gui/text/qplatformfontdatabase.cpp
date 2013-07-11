@@ -53,6 +53,8 @@ extern void qt_registerFont(const QString &familyname, const QString &stylename,
                             bool scalable, int pixelSize, bool fixedPitch,
                             const QSupportedWritingSystems &writingSystems, void *hanlde);
 
+void qt_registerAliasToFontFamily(const QString &familyName, const QString &alias);
+
 /*!
     \fn void QPlatformFontDatabase::registerQPF2Font(const QByteArray &dataArray, void *handle)
 
@@ -514,6 +516,17 @@ QSupportedWritingSystems QPlatformFontDatabase::writingSystemsFromTrueTypeBits(q
         writingSystems.setSupported(QFontDatabase::Symbol);
 
     return writingSystems;
+}
+
+/*!
+    Helper function that register the \a alias for the \a familyName.
+
+    \since 5.2
+*/
+
+void QPlatformFontDatabase::registerAliasToFontFamily(const QString &familyName, const QString &alias)
+{
+    qt_registerAliasToFontFamily(familyName, alias);
 }
 
 /*!

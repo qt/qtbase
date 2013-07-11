@@ -122,8 +122,6 @@ static FontFile * createFontFile(const QString &fileName, int index)
 extern bool localizedName(const QString &name);
 extern QString getEnglishName(const QString &familyName);
 
-Q_GUI_EXPORT void qt_registerAliasToFontFamily(const QString &familyName, const QString &alias);
-
 static bool addFontToDatabase(const QString &familyName, uchar charSet,
                               const TEXTMETRIC *textmetric,
                               const FONTSIGNATURE *signature,
@@ -304,7 +302,7 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
                                             antialias, scalable, size, fixed, writingSystems, createFontFile(value, index));
 
     if (!englishName.isEmpty())
-        qt_registerAliasToFontFamily(faceName, englishName);
+        QPlatformFontDatabase::registerAliasToFontFamily(faceName, englishName);
 
     return true;
 }

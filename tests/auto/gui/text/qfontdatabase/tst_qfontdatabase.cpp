@@ -44,6 +44,7 @@
 #include <qfontdatabase.h>
 #include <qfontinfo.h>
 #include <qfontmetrics.h>
+#include <qpa/qplatformfontdatabase.h>
 
 class tst_QFontDatabase : public QObject
 {
@@ -277,10 +278,6 @@ void tst_QFontDatabase::addAppFont()
     QCOMPARE(db.families(), oldFamilies);
 }
 
-QT_BEGIN_NAMESPACE
-Q_GUI_EXPORT void qt_registerAliasToFontFamily(const QString &familyName, const QString &alias);
-QT_END_NAMESPACE
-
 void tst_QFontDatabase::aliases()
 {
     QFontDatabase db;
@@ -290,7 +287,7 @@ void tst_QFontDatabase::aliases()
     QVERIFY(db.hasFamily(firstFont));
     const QString alias = QStringLiteral("AliasToFirstFont") + firstFont;
     QVERIFY(!db.hasFamily(alias));
-    qt_registerAliasToFontFamily(firstFont, alias);
+    QPlatformFontDatabase::registerAliasToFontFamily(firstFont, alias);
     QVERIFY(db.hasFamily(alias));
 }
 
