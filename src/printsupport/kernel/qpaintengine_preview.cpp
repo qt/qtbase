@@ -94,6 +94,7 @@ bool QPreviewPaintEngine::begin(QPaintDevice *)
     page->d_func()->in_memory_only = true;
     d->painter = new QPainter(page);
     d->engine = d->painter->paintEngine();
+    *d->painter->d_func()->state = *painter()->d_func()->state;
     d->pages.append(page);
     d->state = QPrinter::Active;
     return true;
