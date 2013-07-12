@@ -55,15 +55,17 @@ private slots:
 
 };
 
+const char urlC[] = "http://download.qt-project.org/official_releases/online_installers/qt-linux-opensource-1.4.0-x86-online.run";
+
 void tst_qhttpnetworkconnection::bigRemoteFile()
 {
     QNetworkAccessManager manager;
     qint64 size;
     QTime t;
-    QNetworkRequest request(QUrl("http://nds1.nokia.com/files/support/global/phones/software/Nokia_Ovi_Suite_webinstaller.exe"));
+    QNetworkRequest request(QUrl(QString::fromLatin1(urlC)));
     QNetworkReply* reply = manager.get(request);
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
-    qDebug() << "Starting download";
+    qDebug() << "Starting download" << urlC;
     t.start();
     QTestEventLoop::instance().enterLoop(50);
     QVERIFY(!QTestEventLoop::instance().timeout());
