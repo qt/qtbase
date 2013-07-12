@@ -69,6 +69,7 @@
 #include <qheaderview.h>
 #include <qlineedit.h>
 #include <qmainwindow.h>
+#include <qmdisubwindow.h>
 #include <qmenubar.h>
 #include <qpaintdevice.h>
 #include <qpainter.h>
@@ -849,8 +850,17 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
             gbi.direction = QApplication::isRightToLeft() ? kThemeGrowLeft | kThemeGrowDown
                                                           : kThemeGrowRight | kThemeGrowDown;
             gbi.size = sz == QAquaSizeSmall ? kHIThemeGrowBoxSizeSmall : kHIThemeGrowBoxSizeNormal;
-            if (HIThemeGetGrowBoxBounds(&p, &gbi, &r) == noErr)
-                ret = QSize(QSysInfo::MacintoshVersion <= QSysInfo::MV_10_6 ? r.size.width : 0, r.size.height);
+            if (HIThemeGetGrowBoxBounds(&p, &gbi, &r) == noErr) {
+                int width = 0;
+                // Snow Leopard and older get a size grip, as well as QMdiSubWindows.
+                if (QSysInfo::MacintoshVersion <= QSysInfo::MV_10_6
+#ifndef QT_NO_MDIAREA
+                    || (widg && widg->parentWidget() && qobject_cast<QMdiSubWindow *>(widg->parentWidget()))
+#endif
+                   )
+                    width = r.size.width;
+                ret = QSize(width, r.size.height);
+            }
         }
         break;
     case QStyle::CT_ComboBox:
@@ -4333,8 +4343,12 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
     case CE_ProgressBarGroove:
         break;
     case CE_SizeGrip: {
-        // We do not draw size grips on versions > 10.6
-        if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_6)
+        // We do not draw size grips on versions > 10.6 unless it's a QMdiSubWindow
+        if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_6
+#ifndef QT_NO_MDIAREA
+            && !(w && w->parentWidget() && qobject_cast<QMdiSubWindow *>(w->parentWidget()))
+#endif
+            )
             break;
 
         if (w && w->testAttribute(Qt::WA_MacOpaqueSizeGrip)) {
