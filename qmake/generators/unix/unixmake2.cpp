@@ -561,9 +561,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
               << mkdir_p_asstring("\"`dirname $(DESTDIR)$(TARGETD)`\"", false) << "\n\t"
               << "-$(MOVE) $(TARGET) $(DESTDIR)$(TARGETD)\n\t"
               << mkdir_p_asstring("\"`dirname $(DESTDIR)$(TARGET0)`\"", false) << "\n\t"
-              << varGlue("QMAKE_LN_SHLIB","-"," "," Versions/" +
-                         project->first("QMAKE_FRAMEWORK_VERSION") +
-                         "/$(TARGET) $(DESTDIR)$(TARGET0)") << "\n\t"
+              << varGlue("QMAKE_LN_SHLIB", "-", " ",
+                         " Versions/Current/$(TARGET) $(DESTDIR)$(TARGET0)") << "\n\t"
               << "-$(DEL_FILE) " << destdir << "Versions/Current\n\t"
               << varGlue("QMAKE_LN_SHLIB","-"," ", " " + project->first("QMAKE_FRAMEWORK_VERSION") +
                          " " + destdir + "Versions/Current") << "\n\t";
