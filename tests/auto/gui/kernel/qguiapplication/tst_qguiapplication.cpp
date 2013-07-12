@@ -43,10 +43,14 @@
 #include <QtTest/QtTest>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QWindow>
+#include <QtGui/QScreen>
+#include <QtGui/QCursor>
 #include <qpa/qwindowsysteminterface.h>
 #include <qgenericplugin.h>
 
 #include <QDebug>
+
+enum { spacing  = 50, windowSize = 200 };
 
 class tst_QGuiApplication: public QObject
 {
@@ -103,8 +107,17 @@ void tst_QGuiApplication::focusObject()
     QGuiApplication app(argc, 0);
 
     QObject obj1, obj2, obj3;
+    const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
+
     DummyWindow window1;
+    window1.resize(windowSize, windowSize);
+    window1.setTitle(QStringLiteral("focusObject:window1"));
+    window1.setFramePosition(QPoint(screenGeometry.left() + spacing, screenGeometry.top() + spacing));
     DummyWindow window2;
+    window2.resize(windowSize, windowSize);
+    window2.setFramePosition(QPoint(screenGeometry.left() + 2 * spacing + windowSize, screenGeometry.top() + spacing));
+    window2.setTitle(QStringLiteral("focusObject:window2"));
+
     window1.show();
 
     QSignalSpy spy(&app, SIGNAL(focusObjectChanged(QObject*)));
@@ -204,11 +217,19 @@ void tst_QGuiApplication::abortQuitOnShow()
 {
     int argc = 0;
     QGuiApplication app(argc, 0);
-    QWindow *window1 = new ShowCloseShowWindow(false);
+    const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
+
+    QScopedPointer<QWindow> window1(new ShowCloseShowWindow(false));
+    window1->resize(windowSize, windowSize);
+    window1->setFramePosition(QPoint(screenGeometry.left() + spacing, screenGeometry.top() + spacing));
+    window1->setTitle(QStringLiteral("abortQuitOnShow:window1"));
     window1->show();
     QCOMPARE(app.exec(), 0);
 
-    QWindow *window2 = new ShowCloseShowWindow(true);
+    QScopedPointer<QWindow> window2(new ShowCloseShowWindow(true));
+    window2->setTitle(QStringLiteral("abortQuitOnShow:window2"));
+    window2->resize(windowSize, windowSize);
+    window2->setFramePosition(QPoint(screenGeometry.left() + 2 * spacing + windowSize, screenGeometry.top() + spacing));
     window2->show();
     QCOMPARE(app.exec(), 1);
 }
@@ -240,10 +261,18 @@ void tst_QGuiApplication::changeFocusWindow()
 {
     int argc = 0;
     QGuiApplication app(argc, 0);
+    const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
 
     // focus is changed between FocusAboutToChange and FocusChanged
-    FocusChangeWindow window1, window2;
+    FocusChangeWindow window1;
+    window1.resize(windowSize, windowSize);
+    window1.setFramePosition(QPoint(screenGeometry.left() + spacing, screenGeometry.top() + spacing));
+    window1.setTitle(QStringLiteral("changeFocusWindow:window1"));
     window1.show();
+    FocusChangeWindow window2;
+    window2.resize(windowSize, windowSize);
+    window2.setFramePosition(QPoint(screenGeometry.left() + 2 * spacing + windowSize, screenGeometry.top() + spacing));
+    window2.setTitle(QStringLiteral("changeFocusWindow:window2"));
     window2.show();
     QVERIFY(QTest::qWaitForWindowExposed(&window1));
     QVERIFY(QTest::qWaitForWindowExposed(&window2));
@@ -260,62 +289,67 @@ void tst_QGuiApplication::keyboardModifiers()
 {
     int argc = 0;
     QGuiApplication app(argc, 0);
+    const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
 
-    QWindow *window = new QWindow;
+    QScopedPointer<QWindow> window(new QWindow);
+    window->resize(windowSize, windowSize);
+    window->setFramePosition(QPoint(screenGeometry.left() + spacing, screenGeometry.top() + spacing));
+    window->setTitle(QStringLiteral("keyboardModifiers"));
+
     window->show();
-    QVERIFY(QTest::qWaitForWindowExposed(window));
+    QVERIFY(QTest::qWaitForWindowExposed(window.data()));
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
 
     // mouse events
     QPoint center = window->geometry().center();
-    QTest::mouseEvent(QTest::MousePress, window, Qt::LeftButton, Qt::NoModifier, center);
+    QTest::mouseEvent(QTest::MousePress, window.data(), Qt::LeftButton, Qt::NoModifier, center);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
-    QTest::mouseEvent(QTest::MouseRelease, window, Qt::LeftButton, Qt::NoModifier, center);
+    QTest::mouseEvent(QTest::MouseRelease, window.data(), Qt::LeftButton, Qt::NoModifier, center);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
-    QTest::mouseEvent(QTest::MousePress, window, Qt::RightButton, Qt::ControlModifier, center);
+    QTest::mouseEvent(QTest::MousePress, window.data(), Qt::RightButton, Qt::ControlModifier, center);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
-    QTest::mouseEvent(QTest::MouseRelease, window, Qt::RightButton, Qt::ControlModifier, center);
+    QTest::mouseEvent(QTest::MouseRelease, window.data(), Qt::RightButton, Qt::ControlModifier, center);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
 
     // shortcut events
-    QWindowSystemInterface::tryHandleShortcutEvent(window, Qt::Key_5, Qt::MetaModifier);
+    QWindowSystemInterface::tryHandleShortcutEvent(window.data(), Qt::Key_5, Qt::MetaModifier);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::MetaModifier);
-    QWindowSystemInterface::tryHandleShortcutEvent(window, Qt::Key_Period, Qt::NoModifier);
+    QWindowSystemInterface::tryHandleShortcutEvent(window.data(), Qt::Key_Period, Qt::NoModifier);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
-    QWindowSystemInterface::tryHandleShortcutEvent(window, Qt::Key_0, Qt::ControlModifier);
+    QWindowSystemInterface::tryHandleShortcutEvent(window.data(), Qt::Key_0, Qt::ControlModifier);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
 
     // key events
-    QTest::keyEvent(QTest::Press, window, Qt::Key_C);
+    QTest::keyEvent(QTest::Press, window.data(), Qt::Key_C);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
-    QTest::keyEvent(QTest::Release, window, Qt::Key_C);
-    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
-
-    QTest::keyEvent(QTest::Press, window, Qt::Key_U, Qt::ControlModifier);
-    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
-    QTest::keyEvent(QTest::Release, window, Qt::Key_U, Qt::ControlModifier);
-    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
-
-    QTest::keyEvent(QTest::Press, window, Qt::Key_T);
-    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
-    QTest::keyEvent(QTest::Release, window, Qt::Key_T);
+    QTest::keyEvent(QTest::Release, window.data(), Qt::Key_C);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
 
-    QTest::keyEvent(QTest::Press, window, Qt::Key_E, Qt::ControlModifier);
+    QTest::keyEvent(QTest::Press, window.data(), Qt::Key_U, Qt::ControlModifier);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
-    QTest::keyEvent(QTest::Release, window, Qt::Key_E, Qt::ControlModifier);
+    QTest::keyEvent(QTest::Release, window.data(), Qt::Key_U, Qt::ControlModifier);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
+
+    QTest::keyEvent(QTest::Press, window.data(), Qt::Key_T);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
+    QTest::keyEvent(QTest::Release, window.data(), Qt::Key_T);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
+
+    QTest::keyEvent(QTest::Press, window.data(), Qt::Key_E, Qt::ControlModifier);
+    QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
+    QTest::keyEvent(QTest::Release, window.data(), Qt::Key_E, Qt::ControlModifier);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
 
     // wheel events
     QPoint global = window->mapToGlobal(center);
     QPoint delta(0, 1);
-    QWindowSystemInterface::handleWheelEvent(window, center, global, delta, delta, Qt::NoModifier);
+    QWindowSystemInterface::handleWheelEvent(window.data(), center, global, delta, delta, Qt::NoModifier);
     QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::AllEvents);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
-    QWindowSystemInterface::handleWheelEvent(window, center, global, delta, delta, Qt::AltModifier);
+    QWindowSystemInterface::handleWheelEvent(window.data(), center, global, delta, delta, Qt::AltModifier);
     QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::AllEvents);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::AltModifier);
-    QWindowSystemInterface::handleWheelEvent(window, center, global, delta, delta, Qt::ControlModifier);
+    QWindowSystemInterface::handleWheelEvent(window.data(), center, global, delta, delta, Qt::ControlModifier);
     QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::AllEvents);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
 
@@ -323,12 +357,11 @@ void tst_QGuiApplication::keyboardModifiers()
     QList<const QTouchDevice *> touchDevices = QTouchDevice::devices();
     if (!touchDevices.isEmpty()) {
         QTouchDevice *touchDevice = const_cast<QTouchDevice *>(touchDevices.first());
-        QTest::touchEvent(window, touchDevice).press(1, center).release(1, center);
+        QTest::touchEvent(window.data(), touchDevice).press(1, center).release(1, center);
         QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
     }
 
     window->close();
-    delete window;
 }
 
 class BlockableWindow : public QWindow
@@ -374,27 +407,55 @@ void tst_QGuiApplication::modalWindow()
 {
     int argc = 0;
     QGuiApplication app(argc, 0);
+    const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
 
-    BlockableWindow *window1 = new BlockableWindow;
+    int x = screenGeometry.left() + spacing;
+    int y = screenGeometry.top() + spacing;
 
-    BlockableWindow *window2 = new BlockableWindow;
+    QScopedPointer<BlockableWindow> window1(new BlockableWindow);
+    window1->setTitle(QStringLiteral("window1"));
+    window1->resize(windowSize, windowSize);
+    window1->setFramePosition(QPoint(x, y));
+    x += spacing + windowSize;
 
-    BlockableWindow *windowModalWindow1 = new BlockableWindow;
-    windowModalWindow1->setTransientParent(window1);
+    QScopedPointer<BlockableWindow> window2(new BlockableWindow);
+    window2->setTitle(QStringLiteral("window2"));
+    window2->resize(windowSize, windowSize);
+    window2->setFramePosition(QPoint(x, y));
+    x += spacing + windowSize;
+
+    QScopedPointer<BlockableWindow> windowModalWindow1(new BlockableWindow);
+    windowModalWindow1->setTitle(QStringLiteral("windowModalWindow1"));
+    windowModalWindow1->setTransientParent(window1.data());
     windowModalWindow1->setModality(Qt::WindowModal);
+    windowModalWindow1->resize(windowSize, windowSize);
+    windowModalWindow1->setFramePosition(QPoint(x, y));
+    x += spacing + windowSize;
 
-    BlockableWindow *windowModalWindow2 = new BlockableWindow;
-    windowModalWindow2->setTransientParent(windowModalWindow1);
+    QScopedPointer<BlockableWindow> windowModalWindow2(new BlockableWindow);
+    windowModalWindow2->setTitle(QStringLiteral("windowModalWindow2"));
+    windowModalWindow2->setTransientParent(windowModalWindow1.data());
     windowModalWindow2->setModality(Qt::WindowModal);
+    windowModalWindow2->resize(windowSize, windowSize);
+    windowModalWindow2->setFramePosition(QPoint(x, y));
+    x = screenGeometry.left() + spacing;
+    y += spacing + windowSize;
 
-    BlockableWindow *applicationModalWindow1 = new BlockableWindow;
+    QScopedPointer<BlockableWindow> applicationModalWindow1(new BlockableWindow);
+    applicationModalWindow1->setTitle(QStringLiteral("applicationModalWindow1"));
     applicationModalWindow1->setModality(Qt::ApplicationModal);
+    applicationModalWindow1->resize(windowSize, windowSize);
+    applicationModalWindow1->setFramePosition(QPoint(x, y));
+
+#ifndef QT_NO_CURSOR // Get the mouse cursor out of the way since we are manually sending enter/leave.
+    QCursor::setPos(QPoint(x + 2 * spacing + windowSize, y));
+#endif
 
     // show the 2 windows, nothing is blocked
     window1->show();
     window2->show();
-    QVERIFY(QTest::qWaitForWindowExposed(window1));
-    QVERIFY(QTest::qWaitForWindowExposed(window2));
+    QVERIFY(QTest::qWaitForWindowExposed(window1.data()));
+    QVERIFY(QTest::qWaitForWindowExposed(window2.data()));
     QCOMPARE(app.modalWindow(), static_cast<QWindow *>(0));
     QCOMPARE(window1->blocked, 0);
     QCOMPARE(window2->blocked, 0);
@@ -403,14 +464,14 @@ void tst_QGuiApplication::modalWindow()
     QCOMPARE(applicationModalWindow1->blocked, 0);
 
     // enter mouse in window1
-    QWindowSystemInterface::handleEnterEvent(window1);
+    QWindowSystemInterface::handleEnterEvent(window1.data());
     QGuiApplication::processEvents();
     QCOMPARE(window1->enters, 1);
     QCOMPARE(window1->leaves, 0);
 
     // show applicationModalWindow1, everything is blocked
     applicationModalWindow1->show();
-    QCOMPARE(app.modalWindow(), applicationModalWindow1);
+    QCOMPARE(app.modalWindow(), applicationModalWindow1.data());
     QCOMPARE(window1->blocked, 1);
     QCOMPARE(window2->blocked, 1);
     QCOMPARE(windowModalWindow1->blocked, 1);
@@ -428,9 +489,9 @@ void tst_QGuiApplication::modalWindow()
     window1->resetCounts();
 
     // Try entering/leaving blocked window2 - no events should reach it
-    QWindowSystemInterface::handleEnterEvent(window2);
+    QWindowSystemInterface::handleEnterEvent(window2.data());
     QGuiApplication::processEvents();
-    QWindowSystemInterface::handleLeaveEvent(window2);
+    QWindowSystemInterface::handleLeaveEvent(window2.data());
     QGuiApplication::processEvents();
     QCOMPARE(window2->enters, 0);
     QCOMPARE(window2->leaves, 0);
@@ -445,14 +506,14 @@ void tst_QGuiApplication::modalWindow()
     QCOMPARE(applicationModalWindow1->blocked, 0);
 
     // Enter window2 - should not be blocked
-    QWindowSystemInterface::handleEnterEvent(window2);
+    QWindowSystemInterface::handleEnterEvent(window2.data());
     QGuiApplication::processEvents();
     QCOMPARE(window2->enters, 1);
     QCOMPARE(window2->leaves, 0);
 
     // show the windowModalWindow1, only window1 is blocked
     windowModalWindow1->show();
-    QCOMPARE(app.modalWindow(), windowModalWindow1);
+    QCOMPARE(app.modalWindow(), windowModalWindow1.data());
     QCOMPARE(window1->blocked, 1);
     QCOMPARE(window2->blocked, 0);
     QCOMPARE(windowModalWindow1->blocked, 0);
@@ -470,7 +531,7 @@ void tst_QGuiApplication::modalWindow()
 
     // show the windowModalWindow2, windowModalWindow1 is blocked as well
     windowModalWindow2->show();
-    QCOMPARE(app.modalWindow(), windowModalWindow2);
+    QCOMPARE(app.modalWindow(), windowModalWindow2.data());
     QCOMPARE(window1->blocked, 1);
     QCOMPARE(window2->blocked, 0);
     QCOMPARE(windowModalWindow1->blocked, 1);
@@ -479,7 +540,7 @@ void tst_QGuiApplication::modalWindow()
 
     // hide windowModalWindow1, nothing is unblocked
     windowModalWindow1->hide();
-    QCOMPARE(app.modalWindow(), windowModalWindow2);
+    QCOMPARE(app.modalWindow(), windowModalWindow2.data());
     QCOMPARE(window1->blocked, 1);
     QCOMPARE(window2->blocked, 0);
     QCOMPARE(windowModalWindow1->blocked, 1);
@@ -497,7 +558,7 @@ void tst_QGuiApplication::modalWindow()
 
     // show windowModalWindow1 again, window1 is blocked
     windowModalWindow1->show();
-    QCOMPARE(app.modalWindow(), windowModalWindow1);
+    QCOMPARE(app.modalWindow(), windowModalWindow1.data());
     QCOMPARE(window1->blocked, 1);
     QCOMPARE(window2->blocked, 0);
     QCOMPARE(windowModalWindow1->blocked, 0);
@@ -506,7 +567,7 @@ void tst_QGuiApplication::modalWindow()
 
     // show windowModalWindow2 again, windowModalWindow1 is also blocked
     windowModalWindow2->show();
-    QCOMPARE(app.modalWindow(), windowModalWindow2);
+    QCOMPARE(app.modalWindow(), windowModalWindow2.data());
     QCOMPARE(window1->blocked, 1);
     QCOMPARE(window2->blocked, 0);
     QCOMPARE(windowModalWindow1->blocked, 1);
@@ -515,7 +576,7 @@ void tst_QGuiApplication::modalWindow()
 
     // show applicationModalWindow1, everything is blocked
     applicationModalWindow1->show();
-    QCOMPARE(app.modalWindow(), applicationModalWindow1);
+    QCOMPARE(app.modalWindow(), applicationModalWindow1.data());
     QCOMPARE(window1->blocked, 1);
     QCOMPARE(window2->blocked, 1);
     QCOMPARE(windowModalWindow1->blocked, 1);
@@ -535,7 +596,7 @@ void tst_QGuiApplication::modalWindow()
 
     // hide applicationModalWindow1, windowModalWindow1 and window1 are blocked
     applicationModalWindow1->hide();
-    QCOMPARE(app.modalWindow(), windowModalWindow2);
+    QCOMPARE(app.modalWindow(), windowModalWindow2.data());
     QCOMPARE(window1->blocked, 1);
     QCOMPARE(window2->blocked, 0);
     QCOMPARE(windowModalWindow1->blocked, 1);
@@ -544,7 +605,7 @@ void tst_QGuiApplication::modalWindow()
 
     // hide windowModalWindow2, window1 is blocked
     windowModalWindow2->hide();
-    QCOMPARE(app.modalWindow(), windowModalWindow1);
+    QCOMPARE(app.modalWindow(), windowModalWindow1.data());
     QCOMPARE(window1->blocked, 1);
     QCOMPARE(window2->blocked, 0);
     QCOMPARE(windowModalWindow1->blocked, 0);
@@ -562,12 +623,6 @@ void tst_QGuiApplication::modalWindow()
 
     window2->hide();
     window1->hide();
-
-    delete applicationModalWindow1;
-    delete windowModalWindow2;
-    delete windowModalWindow1;
-    delete window2;
-    delete window1;
 }
 
 void tst_QGuiApplication::quitOnLastWindowClosed()
@@ -575,6 +630,7 @@ void tst_QGuiApplication::quitOnLastWindowClosed()
     {
         int argc = 0;
         QGuiApplication app(argc, 0);
+        const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
 
         QTimer timer;
         timer.setInterval(100);
@@ -582,18 +638,25 @@ void tst_QGuiApplication::quitOnLastWindowClosed()
         QSignalSpy spy(&app, SIGNAL(aboutToQuit()));
         QSignalSpy spy2(&timer, SIGNAL(timeout()));
 
-        QPointer<QWindow> mainWindow = new QWindow;
-        QPointer<QWindow> dialog = new QWindow;
+        QWindow mainWindow;
+        mainWindow.setTitle(QStringLiteral("quitOnLastWindowClosedMainWindow"));
+        mainWindow.resize(windowSize, windowSize);
+        mainWindow.setFramePosition(QPoint(screenGeometry.left() + spacing, screenGeometry.top() + spacing));
 
-        dialog->setTransientParent(mainWindow);
+        QWindow dialog;
+        dialog.setTransientParent(&mainWindow);
+        dialog.setTitle(QStringLiteral("quitOnLastWindowClosedDialog"));
+        dialog.resize(windowSize, windowSize);
+        dialog.setFramePosition(QPoint(screenGeometry.left() + 2 * spacing + windowSize, screenGeometry.top() + spacing));
 
         QVERIFY(app.quitOnLastWindowClosed());
 
-        mainWindow->show();
-        dialog->show();
+        mainWindow.show();
+        dialog.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&dialog));
 
         timer.start();
-        QTimer::singleShot(1000, mainWindow, SLOT(close())); // This should quit the application
+        QTimer::singleShot(1000, &mainWindow, SLOT(close())); // This should quit the application
         QTimer::singleShot(2000, &app, SLOT(quit()));        // This makes sure we quit even if it didn't
 
         app.exec();
@@ -604,6 +667,7 @@ void tst_QGuiApplication::quitOnLastWindowClosed()
     {
         int argc = 0;
         QGuiApplication app(argc, 0);
+        const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
 
         QTimer timer;
         timer.setInterval(100);
@@ -611,17 +675,25 @@ void tst_QGuiApplication::quitOnLastWindowClosed()
         QSignalSpy spy(&app, SIGNAL(aboutToQuit()));
         QSignalSpy spy2(&timer, SIGNAL(timeout()));
 
-        QPointer<QWindow> mainWindow = new QWindow;
-        QPointer<QWindow> dialog = new QWindow;
+        QWindow mainWindow;
+        mainWindow.setTitle(QStringLiteral("quitOnLastWindowClosedMainWindow"));
+        mainWindow.resize(windowSize, windowSize);
+        mainWindow.setFramePosition(QPoint(screenGeometry.left() + spacing, screenGeometry.top() + spacing));
 
-        QVERIFY(!dialog->transientParent());
+        QWindow dialog;
+        dialog.setTitle(QStringLiteral("quitOnLastWindowClosedDialog"));
+        dialog.resize(windowSize, windowSize);
+        dialog.setFramePosition(QPoint(screenGeometry.left() + 2 * spacing + windowSize, screenGeometry.top() + spacing));
+
+        QVERIFY(!dialog.transientParent());
         QVERIFY(app.quitOnLastWindowClosed());
 
-        mainWindow->show();
-        dialog->show();
+        mainWindow.show();
+        dialog.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&dialog));
 
         timer.start();
-        QTimer::singleShot(1000, mainWindow, SLOT(close())); // This should not quit the application
+        QTimer::singleShot(1000, &mainWindow, SLOT(close())); // This should not quit the application
         QTimer::singleShot(2000, &app, SLOT(quit()));
 
         app.exec();

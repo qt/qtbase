@@ -3873,7 +3873,7 @@ static inline __m128i mergeQuestionMarks(__m128i chunk)
     // SSE has no compare instruction for unsigned comparison.
     // The variables must be shiffted + 0x8000 to be compared
     const __m128i signedBitOffset = _mm_set1_epi16(0x8000);
-    const __m128i thresholdMask = _mm_set1_epi16(0xff + 0x8000);
+    const __m128i thresholdMask = _mm_set1_epi16(short(0xff + 0x8000));
 
     const __m128i signedChunk = _mm_add_epi16(chunk, signedBitOffset);
     const __m128i offLimitMask = _mm_cmpgt_epi16(signedChunk, thresholdMask);

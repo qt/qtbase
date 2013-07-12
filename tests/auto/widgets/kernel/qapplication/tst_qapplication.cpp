@@ -694,18 +694,20 @@ void tst_QApplication::quitOnLastWindowClosed()
         QSignalSpy spy(&app, SIGNAL(aboutToQuit()));
         QSignalSpy spy2(&timer, SIGNAL(timeout()));
 
-        QPointer<QMainWindow> mainWindow = new QMainWindow;
-        QPointer<QDialog> dialog = new QDialog(mainWindow);
+        QMainWindow mainWindow;
+        QDialog *dialog = new QDialog(&mainWindow);
 
         QVERIFY(app.quitOnLastWindowClosed());
-        QVERIFY(mainWindow->testAttribute(Qt::WA_QuitOnClose));
+        QVERIFY(mainWindow.testAttribute(Qt::WA_QuitOnClose));
         QVERIFY(dialog->testAttribute(Qt::WA_QuitOnClose));
 
-        mainWindow->show();
+        mainWindow.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
         dialog->show();
+        QVERIFY(QTest::qWaitForWindowExposed(dialog));
 
         timer.start();
-        QTimer::singleShot(1000, mainWindow, SLOT(close())); // This should quit the application
+        QTimer::singleShot(1000, &mainWindow, SLOT(close())); // This should quit the application
         QTimer::singleShot(2000, &app, SLOT(quit()));        // This makes sure we quit even if it didn't
 
         app.exec();
@@ -722,15 +724,16 @@ void tst_QApplication::quitOnLastWindowClosed()
         QSignalSpy spy(&app, SIGNAL(aboutToQuit()));
         QSignalSpy spy2(&timer, SIGNAL(timeout()));
 
-        QPointer<CloseEventTestWindow> mainWindow = new CloseEventTestWindow;
+        CloseEventTestWindow mainWindow;
 
         QVERIFY(app.quitOnLastWindowClosed());
-        QVERIFY(mainWindow->testAttribute(Qt::WA_QuitOnClose));
+        QVERIFY(mainWindow.testAttribute(Qt::WA_QuitOnClose));
 
-        mainWindow->show();
+        mainWindow.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
 
         timer.start();
-        QTimer::singleShot(1000, mainWindow, SLOT(close())); // This should quit the application
+        QTimer::singleShot(1000, &mainWindow, SLOT(close())); // This should quit the application
         QTimer::singleShot(2000, &app, SLOT(quit()));        // This makes sure we quit even if it didn't
 
         app.exec();

@@ -367,23 +367,6 @@ public:
 };
 //! [35]
 
-
-//! [36]
-Q_PROPERTY(type name
-           READ getFunction
-           [WRITE setFunction]
-           [RESET resetFunction]
-           [NOTIFY notifySignal]
-           [REVISION int]
-           [DESIGNABLE bool]
-           [SCRIPTABLE bool]
-           [STORED bool]
-           [USER bool]
-           [CONSTANT]
-           [FINAL])
-//! [36]
-
-
 //! [37]
 Q_PROPERTY(QString title READ title WRITE setTitle USER true)
 //! [37]

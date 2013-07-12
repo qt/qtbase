@@ -62,10 +62,10 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
         const ProStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
         for (ProStringList::ConstIterator it = qut.begin(); it != qut.end(); ++it)
             t << *it << " ";
-        t << "all first clean:" << "\n\t"
+        t << "all first clean:\n\t"
           << "@echo \"Some of the required modules ("
-          << var("QMAKE_FAILED_REQUIREMENTS") << ") are not available.\"" << "\n\t"
-          << "@echo \"Skipped.\"" << endl << endl;
+          << var("QMAKE_FAILED_REQUIREMENTS") << ") are not available.\"\n\t"
+          << "@echo \"Skipped.\"\n\n";
         writeMakeQmake(t);
         return true;
     }
@@ -193,7 +193,7 @@ void NmakeMakefileGenerator::writeNmakeParts(QTextStream &t)
     if(usePCH) {
         QString precompRule = QString("-c -Yc -Fp%1 -Fo%2").arg(precompPch).arg(precompObj);
         t << precompObj << ": " << precompH << " " << escapeDependencyPaths(findDependencies(precompH)).join(" \\\n\t\t")
-          << "\n\t" << "$(CXX) " + precompRule +" $(CXXFLAGS) $(INCPATH) -TP " << precompH << endl << endl;
+          << "\n\t$(CXX) " + precompRule +" $(CXXFLAGS) $(INCPATH) -TP " << precompH << endl << endl;
     }
 }
 
@@ -359,10 +359,10 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
                 objDir = "";
             for(QStringList::Iterator cppit = Option::cpp_ext.begin(); cppit != Option::cpp_ext.end(); ++cppit)
                 t << "{" << it.key() << "}" << (*cppit) << "{" << objDir << "}" << Option::obj_ext << "::\n\t"
-                  << var("QMAKE_RUN_CXX_IMP_BATCH").replace(QRegExp("\\$@"), var("OBJECTS_DIR")) << endl << "\t$<" << endl << "<<" << endl << endl;
+                  << var("QMAKE_RUN_CXX_IMP_BATCH").replace(QRegExp("\\$@"), var("OBJECTS_DIR")) << endl << "\t$<\n<<\n\n";
             for(QStringList::Iterator cit = Option::c_ext.begin(); cit != Option::c_ext.end(); ++cit)
                 t << "{" << it.key() << "}" << (*cit) << "{" << objDir << "}" << Option::obj_ext << "::\n\t"
-                  << var("QMAKE_RUN_CC_IMP_BATCH").replace(QRegExp("\\$@"), var("OBJECTS_DIR")) << endl << "\t$<" << endl << "<<" << endl << endl;
+                  << var("QMAKE_RUN_CC_IMP_BATCH").replace(QRegExp("\\$@"), var("OBJECTS_DIR")) << endl << "\t$<\n<<\n\n";
         }
     } else {
         for(QStringList::Iterator cppit = Option::cpp_ext.begin(); cppit != Option::cpp_ext.end(); ++cppit)
@@ -377,14 +377,14 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
 {
     const ProString templateName = project->first("TEMPLATE");
 
-    t << "first: all" << endl;
-    t << "all: " << fileFixify(Option::output.fileName()) << " " << varGlue("ALL_DEPS"," "," "," ") << "$(DESTDIR_TARGET)" << endl << endl;
+    t << "first: all\n";
+    t << "all: " << fileFixify(Option::output.fileName()) << " " << varGlue("ALL_DEPS"," "," "," ") << "$(DESTDIR_TARGET)\n\n";
     t << "$(DESTDIR_TARGET): " << var("PRE_TARGETDEPS") << " $(OBJECTS) " << var("POST_TARGETDEPS");
 
     if(!project->isEmpty("QMAKE_PRE_LINK"))
         t << "\n\t" <<var("QMAKE_PRE_LINK");
     if(project->isActiveConfig("staticlib")) {
-        t << "\n\t" << "$(LIBAPP) $(LIBFLAGS) " << var("QMAKE_LINK_O_FLAG") << "$(DESTDIR_TARGET) @<<" << "\n\t  "
+        t << "\n\t$(LIBAPP) $(LIBFLAGS) " << var("QMAKE_LINK_O_FLAG") << "$(DESTDIR_TARGET) @<<\n\t  "
           << "$(OBJECTS)"
           << "\n<<";
     } else if (templateName != "aux") {
@@ -433,7 +433,7 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
                     writeLinkCommand(t, extraLFlags, manifest_res);
                     t << "\n\tif exist " << manifest_bak << " del " << manifest_bak;
                 } else {
-                    t << "\n\t" << "rc.exe /fo" << manifest_res << " " << manifest_rc;
+                    t << "\n\trc.exe /fo" << manifest_res << " " << manifest_rc;
                     t << "\n\t";
                     writeLinkCommand(t, extraLFlags, manifest_res);
                 }
@@ -441,7 +441,7 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
                 // directly embed the manifest in the executable after linking
                 t << "\n\t";
                 writeLinkCommand(t, extraLFlags);
-                t << "\n\t" << "mt.exe /nologo /manifest " << manifest
+                t << "\n\tmt.exe /nologo /manifest " << manifest
                   << " /outputresource:$(DESTDIR_TARGET);" << resourceId;
             }
         }  else {

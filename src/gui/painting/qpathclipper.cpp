@@ -1036,16 +1036,6 @@ qreal QWingedEdge::delta(int vertex, int a, int b) const
         return result;
 }
 
-static inline QPointF midPoint(const QWingedEdge &list, int ei)
-{
-    const QPathEdge *ep = list.edge(ei);
-    Q_ASSERT(ep);
-
-    const QPointF a = *list.vertex(ep->first);
-    const QPointF b = *list.vertex(ep->second);
-    return a + 0.5 * (b - a);
-}
-
 QWingedEdge::TraversalStatus QWingedEdge::findInsertStatus(int vi, int ei) const
 {
     const QPathVertex *vp = vertex(vi);

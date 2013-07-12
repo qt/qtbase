@@ -3,7 +3,7 @@ SUBDIRS = \
         qdir \
         qdiriterator \
         qfile \
-        #qfileinfo \    # FIXME: broken
+        qfileinfo \
         qiodevice \
         qprocess \
         qtemporaryfile

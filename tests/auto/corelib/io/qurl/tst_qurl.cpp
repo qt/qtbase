@@ -1941,7 +1941,10 @@ void tst_QUrl::strictParser_data()
     QTest::newRow("invalid-ipvfuture-3") << "http://[v789]" << "Invalid IPvFuture address";
     QTest::newRow("unbalanced-brackets") << "http://[ff02::1" << "Expected ']' to match '[' in hostname";
 
-    // invalid IDN hostnames happen in TolerantMode too
+    // invalid hostnames happen in TolerantMode too
+    QTest::newRow("invalid-hostname-leading-dot") << "http://.co.uk" << "Invalid hostname (contains invalid characters)";
+    QTest::newRow("invalid-hostname-double-dot") << "http://co..uk" << "Invalid hostname (contains invalid characters)";
+    QTest::newRow("invalid-hostname-non-LDH") << "http://foo,bar.example.com" << "Invalid hostname (contains invalid characters)";
     QTest::newRow("idn-prohibited-char-space") << "http:// " << "Invalid hostname (contains invalid characters)";
     QTest::newRow("idn-prohibited-char-nbsp") << "http://\xc2\xa0" << "Invalid hostname (contains invalid characters)";
     QTest::newRow("idn-prohibited-char-control-1f") << "http://\x1f" << "Invalid hostname (contains invalid characters)";

@@ -136,6 +136,7 @@ public:
 
 signals:
     void selected(int row, int col);
+    void currentChanged(int row, int col);
 
 protected:
     virtual void paintCell(QPainter *, int row, int col, const QRect&);
@@ -311,6 +312,8 @@ void QWellArray::setCurrent(int row, int col)
 
     updateCell(oldRow, oldCol);
     updateCell(curRow, curCol);
+
+    emit currentChanged(curRow, curCol);
 }
 
 /*
@@ -344,6 +347,7 @@ void QWellArray::setSelected(int row, int col)
 void QWellArray::focusInEvent(QFocusEvent*)
 {
     updateCell(curRow, curCol);
+    emit currentChanged(curRow, curCol);
 }
 
 void QWellArray::setCellBrush(int row, int col, const QBrush &b)
@@ -1493,11 +1497,15 @@ void QColorDialogPrivate::_q_newColorTypedIn(QRgb rgb)
     }
 }
 
+void QColorDialogPrivate::_q_nextCustom(int r, int c)
+{
+    nextCust = r + 2 * c;
+}
+
 void QColorDialogPrivate::_q_newCustom(int r, int c)
 {
     const int i = r + 2 * c;
     setCurrentColor(QColorDialogOptions::customColor(i));
-    nextCust = i;
     if (standard)
         standard->setSelected(-1,-1);
 }
@@ -1627,6 +1635,7 @@ void QColorDialogPrivate::initWidgets()
         custom->setAcceptDrops(true);
 
         q->connect(custom, SIGNAL(selected(int,int)), SLOT(_q_newCustom(int,int)));
+        q->connect(custom, SIGNAL(currentChanged(int,int)), SLOT(_q_nextCustom(int,int)));
         lblCustomColors = new QLabel(q);
 #ifndef QT_NO_SHORTCUT
         lblCustomColors->setBuddy(custom);

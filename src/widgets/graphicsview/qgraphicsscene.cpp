@@ -1810,10 +1810,6 @@ void QGraphicsScene::render(QPainter *painter, const QRectF &target, const QRect
                         .translate(-sourceRect.left(), -sourceRect.top());
     painter->setWorldTransform(painterTransform, true);
 
-    // Two unit vectors.
-    QLineF v1(0, 0, 1, 0);
-    QLineF v2(0, 0, 0, 1);
-
     // Generate the style options
     QStyleOptionGraphicsItem *styleOptionArray = new QStyleOptionGraphicsItem[numItems];
     for (int i = 0; i < numItems; ++i)

@@ -3921,7 +3921,7 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
     they have additional features accessible through the \l
     {Meta-Object System}.
 
-    \snippet code/src_corelib_kernel_qobject.cpp 36
+    \snippet code/doc_src_properties.cpp 0
 
     The property name and type and the \c READ function are required.
     The type can be any type supported by QVariant, or it can be a

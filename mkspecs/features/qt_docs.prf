@@ -19,11 +19,12 @@ isEmpty(QMAKE_DOCS_TARGETDIR): QMAKE_DOCS_TARGETDIR = $$QMAKE_DOCS_TARGET
 QMAKE_DOCS_OUTPUTDIR = $$QMAKE_DOCS_BASE_OUTDIR/$$QMAKE_DOCS_TARGETDIR
 
 qtPrepareTool(QDOC, qdoc)
-for(qmod, QMAKEMODULES): \
-    QDOC += -indexdir $$section(qmod, /, 0, -3)/doc
 QDOC += -outputdir $$QMAKE_DOCS_OUTPUTDIR
 !build_online_docs: \
     QDOC += -installdir $$[QT_INSTALL_DOCS]
+DOC_INDEXES =
+for(qmod, QMAKEMODULES): \
+    DOC_INDEXES += -indexdir $$section(qmod, /, 0, -3)/doc
 qtver.name = QT_VERSION
 qtver.value = $$VERSION
 isEmpty(qtver.value): qtver.value = $$MODULE_VERSION
@@ -38,9 +39,9 @@ qtAddToolEnv(QDOC, qtver qtmver qtvertag qtdocs)
 doc_command = $$QDOC $$QMAKE_DOCS
 prepare_docs {
     prepare_docs.commands += $$doc_command -prepare -no-link-errors
-    generate_docs.commands += $$doc_command -generate
+    generate_docs.commands += $$doc_command -generate $$DOC_INDEXES
 } else {
-    html_docs.commands += $$doc_command
+    html_docs.commands += $$doc_command $$DOC_INDEXES
 }
 
 !build_online_docs {

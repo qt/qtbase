@@ -564,15 +564,10 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::accLocation(long *pxLeft, long
     if (!accessible)
         return E_FAIL;
 
-    QRect rect;
-    if (varID.lVal) {
-        QAccessibleInterface *child = accessible->child(varID.lVal - 1);
-        if (!child || !child->isValid())
-            return E_FAIL;
-        rect = child->rect();
-    } else {
-        rect = accessible->rect();
-    }
+    QAccessibleInterface *acc = childPointer(accessible, varID);
+    if (!acc || !acc->isValid())
+        return E_FAIL;
+    const QRect rect = acc->rect();
 
     *pxLeft = rect.x();
     *pyTop = rect.y();

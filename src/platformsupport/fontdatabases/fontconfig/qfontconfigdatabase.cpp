@@ -250,45 +250,6 @@ static const char *languageForWritingSystem[] = {
 };
 enum { LanguageCount = sizeof(languageForWritingSystem) / sizeof(const char *) };
 
-// Unfortunately FontConfig doesn't know about some languages. We have to test these through the
-// charset. The lists below contain the systems where we need to do this.
-static const ushort sampleCharForWritingSystem[] = {
-    0,     // Any
-    0,  // Latin
-    0,  // Greek
-    0,  // Cyrillic
-    0,  // Armenian
-    0,  // Hebrew
-    0,  // Arabic
-    0, // Syriac
-    0, // Thaana
-    0,  // Devanagari
-    0,  // Bengali
-    0,  // Gurmukhi
-    0,  // Gujarati
-    0,  // Oriya
-    0,  // Tamil
-    0xc15,  // Telugu
-    0xc95,  // Kannada
-    0xd15,  // Malayalam
-    0xd9a,  // Sinhala
-    0,  // Thai
-    0,  // Lao
-    0,  // Tibetan
-    0x1000,  // Myanmar
-    0,  // Georgian
-    0,  // Khmer
-    0, // SimplifiedChinese
-    0, // TraditionalChinese
-    0,  // Japanese
-    0,  // Korean
-    0,  // Vietnamese
-    0, // Symbol
-    0x1681, // Ogham
-    0x16a0, // Runic
-    0x7ca // N'Ko
-};
-enum { SampleCharCount = sizeof(sampleCharForWritingSystem) / sizeof(ushort) };
 
 // Newer FontConfig let's us sort out fonts that contain certain glyphs, but no
 // open type tables for is directly. Do this so we don't pick some strange
@@ -354,26 +315,6 @@ static const char *getFcFamilyForStyleHint(const QFont::StyleHint style)
         break;
     }
     return stylehint;
-}
-
-static bool isSymbolFont(FontFile *fontFile)
-{
-    if (fontFile == 0 || fontFile->fileName.isEmpty())
-        return false;
-
-    QFontEngine::FaceId id;
-    id.filename = QFile::encodeName(fontFile->fileName);
-    id.index = fontFile->indexValue;
-
-    QFreetypeFace *f = QFreetypeFace::getFace(id);
-    if (f == 0) {
-        qWarning("isSymbolFont: Couldn't open face %s/%d", id.filename.data(), id.index);
-        return false;
-    }
-
-    bool hasSymbolMap = f->symbol_map;
-    f->release(id);
-    return hasSymbolMap;
 }
 
 Q_GUI_EXPORT void qt_registerAliasToFontFamily(const QString &familyName, const QString &alias);
@@ -453,14 +394,20 @@ void QFontconfigDatabase::populateFontDatabase()
         FcLangSet *langset = 0;
         FcResult res = FcPatternGetLangSet(fonts->fonts[i], FC_LANG, 0, &langset);
         if (res == FcResultMatch) {
+            bool hasLang = false;
             for (int i = 1; i < LanguageCount; ++i) {
                 const FcChar8 *lang = (const FcChar8*) languageForWritingSystem[i];
                 if (lang) {
                     FcLangResult langRes = FcLangSetHasLang(langset, lang);
-                    if (langRes != FcLangDifferentLang)
+                    if (langRes != FcLangDifferentLang) {
                         writingSystems.setSupported(QFontDatabase::WritingSystem(i));
+                        hasLang = true;
+                    }
                 }
             }
+            if (!hasLang)
+                // none of our known languages, add it to the other set
+                writingSystems.setSupported(QFontDatabase::Other);
         } else {
             // we set Other to supported for symbol fonts. It makes no
             // sense to merge these with other ones, as they are
@@ -468,18 +415,6 @@ void QFontconfigDatabase::populateFontDatabase()
             writingSystems.setSupported(QFontDatabase::Other);
         }
 
-        FcCharSet *cs = 0;
-        res = FcPatternGetCharSet(fonts->fonts[i], FC_CHARSET, 0, &cs);
-        if (res == FcResultMatch) {
-            // some languages are not supported by FontConfig, we rather check the
-            // charset to detect these
-            for (int i = 1; i < SampleCharCount; ++i) {
-                if (!sampleCharForWritingSystem[i] || writingSystems.supported(QFontDatabase::WritingSystem(i)))
-                    continue;
-                if (FcCharSetHasChar(cs, sampleCharForWritingSystem[i]))
-                    writingSystems.setSupported(QFontDatabase::WritingSystem(i));
-            }
-        }
 
 #if FC_VERSION >= 20297
         for (int j = 1; j < LanguageCount; ++j) {
@@ -496,23 +431,6 @@ void QFontconfigDatabase::populateFontDatabase()
         FontFile *fontFile = new FontFile;
         fontFile->fileName = QLatin1String((const char *)file_value);
         fontFile->indexValue = indexValue;
-
-        if (!writingSystems.supported(QFontDatabase::Symbol)) {
-            // Symbol encoding used to encode various crap in the 32..255 character
-            // code range, which belongs to Latin character code range.
-            // Symbol fonts usually don't have any other code ranges support.
-            bool mightBeSymbolFont = true;
-            for (int j = 2; j < QFontDatabase::WritingSystemsCount; ++j) {
-                if (writingSystems.supported(QFontDatabase::WritingSystem(j))) {
-                    mightBeSymbolFont = false;
-                    break;
-                }
-            }
-            if (mightBeSymbolFont && isSymbolFont(fontFile)) {
-                writingSystems.setSupported(QFontDatabase::Latin, false);
-                writingSystems.setSupported(QFontDatabase::Symbol);
-            }
-        }
 
         QFont::Style style = (slant_value == FC_SLANT_ITALIC)
                          ? QFont::StyleItalic

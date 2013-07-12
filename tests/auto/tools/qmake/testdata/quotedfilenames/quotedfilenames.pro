@@ -18,7 +18,3 @@ rcc_test.depends = $$QMAKE_RCC
 QMAKE_EXTRA_COMPILERS += rcc_test
 
 DESTDIR		= ./
-
-
-
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

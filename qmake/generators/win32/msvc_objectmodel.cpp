@@ -235,6 +235,7 @@ const char _WarningLevel[]                      = "WarningLevel";
 const char _WholeProgramOptimization[]          = "WholeProgramOptimization";
 const char _CompileForArchitecture[]            = "CompileForArchitecture";
 const char _InterworkCalls[]                    = "InterworkCalls";
+const char _GenerateManifest[]                  = "GenerateManifest";
 
 // XmlOutput stream functions ------------------------------
 inline XmlOutput::xml_output attrT(const char *name, const triState v)
@@ -2649,6 +2650,7 @@ void VCProjectWriter::write(XmlOutput &xml, const VCLinkerTool &tool)
         << attrS(_TypeLibraryFile, tool.TypeLibraryFile)
         << attrL(_TypeLibraryResourceID, tool.TypeLibraryResourceID, /*ifNot*/ rcUseDefault)
         << attrS(_Version, tool.Version)
+        << attrT(_GenerateManifest, tool.GenerateManifest)
         << closetag(_Tool);
 }
 

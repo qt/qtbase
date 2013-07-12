@@ -84,6 +84,7 @@ public:
 
 protected:
     void handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycode_t code, quint16 state, xcb_timestamp_t time);
+    void resolveMaskConflicts();
 
     QString keysymToUnicode(xcb_keysym_t sym) const;
 
@@ -111,6 +112,8 @@ private:
         uint alt;
         uint altgr;
         uint meta;
+        uint super;
+        uint hyper;
     };
 
     _mod_masks rmod_masks;

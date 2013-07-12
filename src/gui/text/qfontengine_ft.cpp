@@ -1437,6 +1437,14 @@ void QFontEngineFT::getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_me
     unlockFace();
 }
 
+bool QFontEngineFT::supportsTransformation(const QTransform &transform) const
+{
+    // The freetype engine falls back to QFontEngine for tranformed glyphs,
+    // which uses fast-tranform and produces very ugly results, so we claim
+    // to support just translations.
+    return transform.type() <= QTransform::TxTranslate;
+}
+
 static inline unsigned int getChar(const QChar *str, int &i, const int len)
 {
     uint ucs4 = str[i].unicode();

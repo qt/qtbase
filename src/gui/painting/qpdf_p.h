@@ -226,6 +226,7 @@ public:
 
     QRect paperRect() const;
     QRect pageRect() const;
+    void setPaperSize(const QSizeF &pageSizeMM);
 
     int width() const {
         QRect r = paperRect();

@@ -381,7 +381,7 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
     , origArgc(aargc)
     , origArgv(new char *[aargc])
 #endif
-    , application_type(0)
+    , application_type(QCoreApplicationPrivate::Tty)
 #ifndef QT_NO_QOBJECT
     , in_exec(false)
     , aboutToQuitEmitted(false)
@@ -724,7 +724,7 @@ void QCoreApplication::init()
 #endif
 
 #ifdef QT_EVAL
-    extern void qt_core_eval_init(uint);
+    extern void qt_core_eval_init(QCoreApplicationPrivate::Type);
     qt_core_eval_init(d->application_type);
 #endif
 
@@ -1451,7 +1451,7 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
         // first, we diddle the event so that we can deliver
         // it, and that no one will try to touch it later.
         pe.event->posted = false;
-        QScopedPointer<QEvent> e(pe.event);
+        QEvent *e = pe.event;
         QObject * r = pe.receiver;
 
         --r->d_func()->postedEvents;
@@ -1469,8 +1469,10 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
         };
         MutexUnlocker unlocker(locker);
 
+        QScopedPointer<QEvent> event_deleter(e); // will delete the event (with the mutex unlocked)
+
         // after all that work, it's time to deliver the event.
-        QCoreApplication::sendEvent(r, e.data());
+        QCoreApplication::sendEvent(r, e);
 
         // careful when adding anything below this point - the
         // sendEvent() call might invalidate any invariants this

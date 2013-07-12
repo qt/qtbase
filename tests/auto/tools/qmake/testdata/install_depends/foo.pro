@@ -18,7 +18,3 @@ INSTALLS+=test2
 target.path=dist
 target.depends=install_test1 install_test2
 INSTALLS+=target
-
-
-
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

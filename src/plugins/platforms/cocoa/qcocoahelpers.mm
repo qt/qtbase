@@ -84,11 +84,8 @@ static void drawImageReleaseData (void *info, const void *, size_t)
 
 CGImageRef qt_mac_image_to_cgimage(const QImage &img)
 {
-    if (img.width() <= 0 || img.height() <= 0) {
-        qWarning() << Q_FUNC_INFO <<
-            "trying to set" << img.width() << "x" << img.height() << "size for CGImage";
+    if (img.isNull())
         return 0;
-    }
 
     QImage *image;
     if (img.depth() != 32)
@@ -124,16 +121,7 @@ CGImageRef qt_mac_image_to_cgimage(const QImage &img)
 
 NSImage *qt_mac_cgimage_to_nsimage(CGImageRef image)
 {
-    QCocoaAutoReleasePool pool;
-    NSImage *newImage = 0;
-    NSRect imageRect = NSMakeRect(0.0, 0.0, CGImageGetWidth(image), CGImageGetHeight(image));
-    newImage = [[NSImage alloc] initWithSize:imageRect.size];
-    [newImage lockFocus];
-    {
-        CGContextRef imageContext = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
-        CGContextDrawImage(imageContext, *(CGRect*)&imageRect, image);
-    }
-    [newImage unlockFocus];
+    NSImage *newImage = [[NSImage alloc] initWithCGImage:image size:NSZeroSize];
     return newImage;
 }
 
@@ -145,6 +133,24 @@ NSImage *qt_mac_create_nsimage(const QPixmap &pm)
     CGImageRef cgImage = qt_mac_image_to_cgimage(image);
     NSImage *nsImage = qt_mac_cgimage_to_nsimage(cgImage);
     CGImageRelease(cgImage);
+    return nsImage;
+}
+
+NSImage *qt_mac_create_nsimage(const QIcon &icon)
+{
+    if (icon.isNull())
+        return nil;
+
+    NSImage *nsImage = [[NSImage alloc] init];
+    foreach (QSize size, icon.availableSizes()) {
+        QPixmap pm = icon.pixmap(size);
+        QImage image = pm.toImage();
+        CGImageRef cgImage = qt_mac_image_to_cgimage(image);
+        NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc] initWithCGImage:cgImage];
+        [nsImage addRepresentation:imageRep];
+        [imageRep release];
+        CGImageRelease(cgImage);
+    }
     return nsImage;
 }
 

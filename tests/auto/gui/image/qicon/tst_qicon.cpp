@@ -439,6 +439,9 @@ void tst_QIcon::availableSizes()
         // we try to load an icon from resources
         QIcon icon(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-open-16.png"));
         QList<QSize> availableSizes = icon.availableSizes();
+#ifdef QT_NO_WIDGETS
+        QEXPECT_FAIL("", "See QTBUG-31993", Abort);
+#endif
         QCOMPARE(availableSizes.size(), 1);
         QCOMPARE(availableSizes.at(0), QSize(16, 16));
     }
@@ -635,6 +638,9 @@ void tst_QIcon::task223279_inconsistentAddFile()
     icon2.addFile(QLatin1String("IconThatDoesntExist"));
     QPixmap pm2 = icon1.pixmap(32, 32);
 
+#ifdef QT_NO_WIDGETS
+        QEXPECT_FAIL("", "See QTBUG-31993", Abort);
+#endif
     QCOMPARE(pm1.isNull(), false);
     QCOMPARE(pm1.size(), QSize(16,16));
     QCOMPARE(pm1.isNull(), pm2.isNull());

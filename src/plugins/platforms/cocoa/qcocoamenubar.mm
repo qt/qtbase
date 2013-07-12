@@ -203,6 +203,11 @@ void QCocoaMenuBar::updateMenuBarImmediately()
     QCocoaAutoReleasePool pool;
     QCocoaMenuBar *mb = findGlobalMenubar();
     QCocoaWindow *cw = findWindowForMenubar();
+
+    QWindow *win = cw ? cw->window() : 0;
+    if (win && (win->flags() & Qt::Popup) == Qt::Popup)
+        return; // context menus, comboboxes, etc. don't need to update the menubar
+
     if (cw && cw->menubar())
         mb = cw->menubar();
 

@@ -154,7 +154,7 @@ UnixMakefileGenerator::init()
         }
     }
     ldadd += project->values("QMAKE_LIBDIR_FLAGS");
-    if (project->isActiveConfig("macx")) {
+    if (project->isActiveConfig("mac")) {
         if (!project->isEmpty("QMAKE_FRAMEWORKPATH")) {
             const ProStringList &fwdirs = project->values("QMAKE_FRAMEWORKPATH");
             for (int i = 0; i < fwdirs.size(); ++i)
@@ -262,7 +262,7 @@ UnixMakefileGenerator::init()
             project->values(runCompImp).append("$(" + compiler + ") " + compile_flag + " " + var("QMAKE_CC_O_FLAG") + "\"$@\" \"$<\"");
     }
 
-    if(project->isActiveConfig("macx") && !project->isEmpty("TARGET") && !project->isActiveConfig("compile_libtool") &&
+    if (project->isActiveConfig("mac") && !project->isEmpty("TARGET") && !project->isActiveConfig("compile_libtool") &&
        ((project->isActiveConfig("build_pass") || project->isEmpty("BUILDS")))) {
         ProString bundle;
         if(project->isActiveConfig("bundle") && !project->isEmpty("QMAKE_BUNDLE_EXTENSION")) {

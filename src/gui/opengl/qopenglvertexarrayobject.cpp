@@ -118,6 +118,9 @@ public:
     void destroy();
     void bind();
     void release();
+    void _q_contextAboutToBeDestroyed();
+
+    Q_DECLARE_PUBLIC(QOpenGLVertexArrayObject)
 
     GLuint vao;
 
@@ -141,12 +144,22 @@ public:
 
 bool QOpenGLVertexArrayObjectPrivate::create()
 {
+    if (vao) {
+        qWarning("QOpenGLVertexArrayObject::create() VAO is already created");
+        return false;
+    }
+
+    Q_Q(QOpenGLVertexArrayObject);
+    if (context)
+        QObject::disconnect(context, SIGNAL(aboutToBeDestroyed()), q, SLOT(_q_contextAboutToBeDestroyed()));
+
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
     if (!ctx) {
         qWarning("QOpenGLVertexArrayObject::create() requires a valid current OpenGL context");
         return false;
     }
     context = ctx;
+    QObject::connect(context, SIGNAL(aboutToBeDestroyed()), q, SLOT(_q_contextAboutToBeDestroyed()));
 
 #if defined(QT_OPENGL_ES_2)
     if (ctx->hasExtension("GL_OES_vertex_array_object")) {
@@ -197,8 +210,16 @@ void QOpenGLVertexArrayObjectPrivate::destroy()
     case NotSupported:
         break;
     }
-    vao = 0;
 #endif
+    vao = 0;
+}
+
+/*!
+    \internal
+*/
+void QOpenGLVertexArrayObjectPrivate::_q_contextAboutToBeDestroyed()
+{
+    destroy();
 }
 
 void QOpenGLVertexArrayObjectPrivate::bind()
@@ -327,7 +348,7 @@ QOpenGLVertexArrayObject::~QOpenGLVertexArrayObject()
 
     Q_D(QOpenGLVertexArrayObject);
     QOpenGLContext *oldContext = 0;
-    if (d->context && d->context != ctx) {
+    if (d->context && ctx && d->context != ctx) {
         oldContext = ctx;
         if (d->context->makeCurrent(oldContext->surface())) {
             ctx = d->context;
@@ -471,3 +492,5 @@ void QOpenGLVertexArrayObject::release()
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qopenglvertexarrayobject.cpp"

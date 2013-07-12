@@ -100,6 +100,7 @@ public:
 
     void _q_newHsv(int h, int s, int v);
     void _q_newColorTypedIn(QRgb rgb);
+    void _q_nextCustom(int, int);
     void _q_newCustom(int, int);
     void _q_newStandard(int, int);
     void _q_pickScreenColor();

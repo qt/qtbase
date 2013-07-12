@@ -267,15 +267,7 @@ void tst_QProcess::simpleStart()
         QCOMPARE(process->state(), QProcess::Running);
     QVERIFY2(process->waitForStarted(5000), qPrintable(process->errorString()));
     QCOMPARE(process->state(), QProcess::Running);
-#if defined(Q_OS_WINCE)
-    // Note: This actually seems incorrect, it will only exit the while loop when finishing fails
-    while (process->waitForFinished(5000))
-    { }
-#else
-    while (process->waitForReadyRead(5000))
-    { }
-#endif
-    QCOMPARE(int(process->state()), int(QProcess::NotRunning));
+    QTRY_COMPARE(process->state(), QProcess::NotRunning);
 
     delete process;
     process = 0;

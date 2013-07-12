@@ -58,7 +58,13 @@ QMAKE_EXTENSION_SHLIB = jar
 # Override linker with dex (for distributable Android archives) or jar (for other java builds)
 android:!bundled_jar_file {
     contains(QMAKE_HOST.os, Windows) {
-        DEX_CMD = $$PWD/data/android/dx $$SDK_ROOT
+        # The location where dx.bat expects itself to be found is used as the landmark instead
+        # of the base sdk folder.
+        # Doing it this way makes this logic more similar to the other platforms and
+        # also means that our dx.bat is more like Google's dx.bat
+        DEX_BAT = $$SDK_ROOT/platform-tools/dx.bat
+        !exists($$DEX_BAT): DEX_BAT = $$SDK_ROOT/build-tools/$$BUILD_TOOLS_REVISION/dx.bat
+        DEX_CMD = $$PWD/data/android/dx $$DEX_BAT
     } else {
         DEX_CMD = $$SDK_ROOT/platform-tools/dx
         !exists($$DEX_CMD): DEX_CMD = $$SDK_ROOT/build-tools/$$BUILD_TOOLS_REVISION/dx
