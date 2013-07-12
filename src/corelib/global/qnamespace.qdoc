@@ -67,6 +67,7 @@
     \value AlignTop Aligns with the top.
     \value AlignBottom Aligns with the bottom.
     \value AlignVCenter Centers vertically in the available space.
+    \value AlignBaseline Aligns with the baseline.
 
     You can use only one of the horizontal flags at a time. There is
     one two-dimensional flag:

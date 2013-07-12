@@ -223,7 +223,7 @@ public:
 
     // Text formatting flags for QPainter::drawText and QLabel.
     // The following two enums can be combined to one integer which
-    // is passed as 'flags' to drawText and qt_format_text.
+    // is passed as 'flags' to QPainter::drawText, QFontMetrics::boundingRect and qt_format_text.
 
     enum AlignmentFlag {
         AlignLeft = 0x0001,
@@ -238,7 +238,12 @@ public:
         AlignTop = 0x0020,
         AlignBottom = 0x0040,
         AlignVCenter = 0x0080,
-        AlignVertical_Mask = AlignTop | AlignBottom | AlignVCenter,
+        AlignBaseline = 0x0100,
+        // Note that 0x100 will clash with Qt::TextSingleLine = 0x100 due to what the comment above
+        // this enum declaration states. However, since Qt::AlignBaseline is only used by layouts,
+        // it doesn't make sense to pass Qt::AlignBaseline to QPainter::drawText(), so there
+        // shouldn't really be any ambiguity between the two overlapping enum values.
+        AlignVertical_Mask = AlignTop | AlignBottom | AlignVCenter | AlignBaseline,
 
         AlignCenter = AlignVCenter | AlignHCenter
     };
