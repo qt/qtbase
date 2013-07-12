@@ -798,7 +798,6 @@ void tst_qnetworkreply::httpsRequestChain()
     int count = 10;
 
     QNetworkRequest request(QUrl("https://" + QtNetworkSettings::serverName() + "/fluke.gif"));
-    //QNetworkRequest request(QUrl("https://www.nokia.com/robots.txt"));
     // Disable keep-alive so we have the full re-connecting of TCP.
     request.setRawHeader("Connection", "close");
 
@@ -808,7 +807,6 @@ void tst_qnetworkreply::httpsRequestChain()
 
     // Warm up DNS cache and then immediately start HTTP
     QHostInfo::lookupHost(QtNetworkSettings::serverName(), &helper, SLOT(doNextRequest()));
-    //QHostInfo::lookupHost("www.nokia.com", &helper, SLOT(doNextRequest()));
 
     // we can use QBENCHMARK_ONCE when we find out how to make it really run once.
     // there is still a warmup-run :(
