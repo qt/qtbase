@@ -850,6 +850,22 @@ Q_OUTOFLINE_TEMPLATE typename QHash<Key, T>::iterator QHash<Key, T>::erase(itera
     if (it == iterator(e))
         return it;
 
+    if (d->ref.isShared()) {
+        int bucketNum = (it.i->h % d->numBuckets);
+        const_iterator bucketIterator(*(d->buckets + bucketNum));
+        int stepsFromBucketStartToIte = 0;
+        while (bucketIterator != it) {
+            ++stepsFromBucketStartToIte;
+            ++bucketIterator;
+        }
+        detach();
+        it = iterator(*(d->buckets + bucketNum));
+        while (stepsFromBucketStartToIte > 0) {
+            --stepsFromBucketStartToIte;
+            ++it;
+        }
+    }
+
     iterator ret = it;
     ++ret;
 
