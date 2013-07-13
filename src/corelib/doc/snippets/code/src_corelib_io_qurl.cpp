@@ -85,3 +85,9 @@ QByteArray ba = QUrl::toPercentEncoding("{a fishy string?}", "{}", "s");
 qDebug(ba.constData());
 // prints "{a fi%73hy %73tring%3F}"
 //! [6]
+
+//! [7]
+QUrl url("http://qt-project.org/support/file.html");
+// url.adjusted(RemoveFilename) == "http://qt-project.org/support/"
+// url.fileName() == "file.html"
+//! [7]

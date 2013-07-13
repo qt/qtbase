@@ -162,6 +162,8 @@ private slots:
     void binaryData();
     void fromUserInput_data();
     void fromUserInput();
+    void fileName_data();
+    void fileName();
     void isEmptyForEncodedUrl();
     void toEncodedNotUsingUninitializedPath();
     void emptyAuthorityRemovesExistingAuthority();
@@ -2824,6 +2826,43 @@ void tst_QUrl::fromUserInput()
 
     QUrl url = QUrl::fromUserInput(string);
     QCOMPARE(url, guessUrlFromString);
+}
+
+void tst_QUrl::fileName_data()
+{
+    QTest::addColumn<QString>("urlStr");
+    QTest::addColumn<QString>("expectedDirPath");
+    QTest::addColumn<QString>("expectedPrettyDecodedFileName");
+    QTest::addColumn<QString>("expectedFullyDecodedFileName");
+
+    QTest::newRow("fromDocu") << "http://qt-project.org/support/file.html"
+                              << "/support/" << "file.html" << "file.html";
+    QTest::newRow("absoluteFile") << "file:///temp/tmp.txt"
+                              << "/temp/" << "tmp.txt" << "tmp.txt";
+    QTest::newRow("absoluteDir") << "file:///temp/"
+                              << "/temp/" << QString() << QString();
+    QTest::newRow("absoluteInRoot") << "file:///temp"
+                              << "/" << "temp" << "temp";
+    QTest::newRow("relative") << "temp/tmp.txt"
+                              << "temp/" << "tmp.txt" << "tmp.txt";
+    QTest::newRow("relativeNoSlash") << "tmp.txt"
+                              << QString() << "tmp.txt" << "tmp.txt";
+    QTest::newRow("encoded") << "print:/specials/Print%20To%20File%20(PDF%252FAcrobat)"
+                              << "/specials/" << "Print To File (PDF%252FAcrobat)" << "Print To File (PDF%2FAcrobat)";
+}
+
+void tst_QUrl::fileName()
+{
+    QFETCH(QString, urlStr);
+    QFETCH(QString, expectedDirPath);
+    QFETCH(QString, expectedPrettyDecodedFileName);
+    QFETCH(QString, expectedFullyDecodedFileName);
+
+    QUrl url(urlStr);
+    QVERIFY(url.isValid());
+    QCOMPARE(url.adjusted(QUrl::RemoveFilename).path(), expectedDirPath);
+    QCOMPARE(url.fileName(QUrl::PrettyDecoded), expectedPrettyDecodedFileName);
+    QCOMPARE(url.fileName(QUrl::FullyDecoded), expectedFullyDecodedFileName);
 }
 
 // This is a regression test for a previously fixed bug where isEmpty didn't

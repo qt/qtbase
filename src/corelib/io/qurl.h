@@ -224,6 +224,7 @@ public:
 
     void setPath(const QString &path, ParsingMode mode = TolerantMode);
     QString path(ComponentFormattingOptions options = PrettyDecoded) const;
+    QString fileName(ComponentFormattingOptions options = PrettyDecoded) const;
 
     bool hasQuery() const;
     void setQuery(const QString &query, ParsingMode mode = TolerantMode);

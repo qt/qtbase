@@ -2416,6 +2416,36 @@ QString QUrl::path(ComponentFormattingOptions options) const
 */
 
 /*!
+    \since 5.2
+
+    Returns the name of the file, excluding the directory path.
+
+    Note that, if this QUrl object is given a path ending in a slash, the name of the file is considered empty.
+
+    If the path doesn't contain any slash, it is fully returned as the fileName.
+
+    Example:
+
+    \snippet code/src_corelib_io_qurl.cpp 7
+
+    The \a options argument controls how to format the file name component. All
+    values produce an unambiguous result. With QUrl::FullyDecoded, all
+    percent-encoded sequences are decoded; otherwise, the returned value may
+    contain some percent-encoded sequences for some control sequences not
+    representable in decoded form in QString.
+
+    \sa path()
+*/
+QString QUrl::fileName(ComponentFormattingOptions options) const
+{
+    const QString ourPath = path(options);
+    const int slash = ourPath.lastIndexOf(QLatin1Char('/'));
+    if (slash == -1)
+        return ourPath;
+    return ourPath.mid(slash + 1);
+}
+
+/*!
     \since 4.2
 
     Returns true if this URL contains a Query (i.e., if ? was seen on it).
