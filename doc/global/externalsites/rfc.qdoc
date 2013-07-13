@@ -77,3 +77,18 @@
     \externalpage http://www.rfc-editor.org/rfc/rfc3986.txt
     \title RFC 3986
 */
+
+/*!
+    \externalpage http://www.rfc-editor.org/rfc/rfc2822.txt
+    \title RFC 2822
+*/
+
+/*!
+    \externalpage http://www.rfc-editor.org/rfc/rfc1036.txt
+    \title RFC 1036
+*/
+
+/*!
+    \externalpage http://www.rfc-editor.org/rfc/rfc850.txt
+    \title RFC 850
+*/

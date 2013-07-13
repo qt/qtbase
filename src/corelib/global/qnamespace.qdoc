@@ -585,6 +585,10 @@
     \value LocalDate \e{This enum value is deprecated.} Use Qt::SystemLocaleShortDate
     instead (or Qt::SystemLocaleLongDate if you want long dates).
 
+    \value RFC2822Date \l{RFC 2822}, \l{RFC 850} and \l{RFC 1036} format: either
+    \c{[ddd,] dd MMM yyyy hh:mm[:ss] +/-TZ} or \c{ddd MMM dd yyyy hh:mm[:ss] +/-TZ}
+    for combined dates and times.
+
     \note For \c ISODate formats, each \c Y, \c M and \c D represents a single digit
     of the year, month and day used to specify the date. Each \c H, \c M and \c S
     represents a single digit of the hour, minute and second used to specify the time.

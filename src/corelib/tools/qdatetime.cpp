@@ -158,9 +158,19 @@ static const char monthDays[] = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30,
 static const char * const qt_shortMonthNames[] = {
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+
+int qt_monthNumberFromShortName(const QString &shortName)
+{
+    for (unsigned int i = 0; i < sizeof(qt_shortMonthNames) / sizeof(qt_shortMonthNames[0]); ++i) {
+        if (shortName == QLatin1String(qt_shortMonthNames[i]))
+            return i + 1;
+    }
+    return -1;
+}
 #endif
 #ifndef QT_NO_DATESTRING
 static QString fmtDateTime(const QString& f, const QTime* dt = 0, const QDate* dd = 0);
+static void rfcDateImpl(const QString &s, QDate *dd = 0, QTime *dt = 0, int *utfcOffset = 0);
 #endif
 
 /*****************************************************************************
@@ -735,6 +745,10 @@ QString QDate::longDayName(int weekday, MonthNameType type)
     QLocale::ShortFormat) or QLocale().toString(date,
     QLocale::LongFormat).
 
+    If the \a format is Qt::RFC2822Date, the string is formatted in
+    an \l{RFC 2822} compatible way. An example of this formatting is
+    "20 May 1995".
+
     If the date is invalid, an empty string will be returned.
 
     \warning The Qt::ISODate format is only valid for years in the
@@ -771,6 +785,8 @@ QString QDate::toString(Qt::DateFormat f) const
                 .arg(y);
         }
 #endif
+    case Qt::RFC2822Date:
+        return toString(QStringLiteral("dd MMM yyyy"));
     case Qt::ISODate:
         {
             if (year() < 0 || year() > 9999)
@@ -1124,6 +1140,11 @@ QDate QDate::fromString(const QString& s, Qt::DateFormat f)
     case Qt::DefaultLocaleLongDate:
         return fromString(s, QLocale().dateFormat(f == Qt::DefaultLocaleLongDate ? QLocale::LongFormat
                                                                                  : QLocale::ShortFormat));
+    case Qt::RFC2822Date: {
+        QDate date;
+        rfcDateImpl(s, &date);
+        return date;
+    }
     default:
 #ifndef QT_NO_TEXTDATE
     case Qt::TextDate: {
@@ -1498,6 +1519,10 @@ int QTime::msec() const
     QLocale::ShortFormat) or QLocale().toString(time,
     QLocale::LongFormat).
 
+    If the \a format is Qt::RFC2822Date, the string is formatted in
+    an \l{RFC 2822} compatible way. An example of this formatting is
+    "23:59:20".
+
     If the time is invalid, an empty string will be returned.
 */
 
@@ -1518,6 +1543,11 @@ QString QTime::toString(Qt::DateFormat format) const
         return QLocale().toString(*this, format == Qt::DefaultLocaleLongDate ? QLocale::LongFormat
                                   : QLocale::ShortFormat);
 
+    case Qt::RFC2822Date:
+        return QString::fromLatin1("%1:%2:%3")
+            .arg(hour(), 2, 10, QLatin1Char('0'))
+            .arg(minute(), 2, 10, QLatin1Char('0'))
+            .arg(second(), 2, 10, QLatin1Char('0'));
     default:
     case Qt::ISODate:
     case Qt::TextDate:
@@ -1789,6 +1819,11 @@ QTime fromStringImpl(const QString &s, Qt::DateFormat f, bool &isMidnight24)
     {
         QLocale::FormatType formatType(f == Qt::DefaultLocaleLongDate ? QLocale::LongFormat : QLocale::ShortFormat);
         return QTime::fromString(s, QLocale().timeFormat(formatType));
+    }
+    case Qt::RFC2822Date: {
+        QTime time;
+        rfcDateImpl(s, 0, &time);
+        return time;
     }
     case Qt::TextDate:
     case Qt::ISODate:
@@ -2490,6 +2525,9 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
     QLocale::ShortFormat) or QLocale().toString(datetime,
     QLocale::LongFormat).
 
+    If the \a format is Qt::RFC2822Date, the string is formatted
+    following \l{RFC 2822}.
+
     If the datetime is invalid, an empty string will be returned.
 
     \warning The Qt::ISODate format is only valid for years in the
@@ -2526,6 +2564,28 @@ QString QDateTime::toString(Qt::DateFormat f) const
         default:
             break;
         }
+    } else if (f == Qt::RFC2822Date) {
+        buf = toString(QStringLiteral("dd MMM yyyy hh:mm:ss "));
+
+        int utcOffset = d->utcOffset;
+        if (timeSpec() == Qt::LocalTime) {
+            QDateTime utc = toUTC();
+            utc.setTimeSpec(timeSpec());
+            utcOffset = utc.secsTo(*this);
+        }
+
+        const int offset = qAbs(utcOffset);
+        buf += QLatin1Char((offset == utcOffset) ? '+' : '-');
+
+        const int hour = offset / 3600;
+        if (hour < 10)
+            buf += QLatin1Char('0');
+        buf += QString::number(hour);
+
+        const int min = (offset - (hour * 3600)) / 60;
+        if (min < 10)
+            buf += QLatin1Char('0');
+        buf += QString::number(min);
     }
 #ifndef QT_NO_TEXTDATE
     else if (f == Qt::TextDate) {
@@ -3333,6 +3393,19 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
 
         return QDateTime(date, time, ts);
     }
+    case Qt::RFC2822Date: {
+        QDate date;
+        QTime time;
+        int utcOffset = 0;
+        rfcDateImpl(s, &date, &time, &utcOffset);
+
+        if (!date.isValid() || !time.isValid())
+            return QDateTime();
+
+        QDateTime dateTime(date, time, Qt::UTC);
+        dateTime.setUtcOffset(utcOffset);
+        return dateTime;
+    }
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
     case Qt::SystemLocaleLongDate:
@@ -3952,6 +4025,68 @@ static QString fmtDateTime(const QString& f, const QTime* dt, const QDate* dd)
     buf += getFmtString(frm, dt, dd, ap);
 
     return buf;
+}
+
+static void rfcDateImpl(const QString &s, QDate *dd, QTime *dt, int *utcOffset)
+{
+    int day = -1;
+    int month = -1;
+    int year = -1;
+    int hour = -1;
+    int min = -1;
+    int sec = -1;
+    int hourOffset = 0;
+    int minOffset = 0;
+    bool positiveOffset = false;
+
+    // Matches "Wdy, DD Mon YYYY HH:MM:SS ±hhmm" (Wdy, being optional)
+    QRegExp rex(QStringLiteral("^(?:[A-Z][a-z]+,)?[ \\t]*(\\d{1,2})[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d)(?::(\\d\\d))?)?[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
+    if (s.indexOf(rex) == 0) {
+        if (dd) {
+            day = rex.cap(1).toInt();
+            month = qt_monthNumberFromShortName(rex.cap(2));
+            year = rex.cap(3).toInt();
+        }
+        if (dt) {
+            if (!rex.cap(4).isEmpty()) {
+                hour = rex.cap(4).toInt();
+                min = rex.cap(5).toInt();
+                sec = rex.cap(6).toInt();
+            }
+            positiveOffset = (rex.cap(7) == QStringLiteral("+"));
+            hourOffset = rex.cap(8).toInt();
+            minOffset = rex.cap(9).toInt();
+        }
+        if (utcOffset)
+            *utcOffset = ((hourOffset * 60 + minOffset) * (positiveOffset ? 60 : -60));
+    } else {
+        // Matches "Wdy Mon DD HH:MM:SS YYYY"
+        QRegExp rex(QStringLiteral("^[A-Z][a-z]+[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d):(\\d\\d))?[ \\t]+(\\d\\d\\d\\d)[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
+        if (s.indexOf(rex) == 0) {
+            if (dd) {
+                month = qt_monthNumberFromShortName(rex.cap(1));
+                day = rex.cap(2).toInt();
+                year = rex.cap(6).toInt();
+            }
+            if (dt) {
+                if (!rex.cap(3).isEmpty()) {
+                    hour = rex.cap(3).toInt();
+                    min = rex.cap(4).toInt();
+                    sec = rex.cap(5).toInt();
+                }
+                positiveOffset = (rex.cap(7) == QStringLiteral("+"));
+                hourOffset = rex.cap(8).toInt();
+                minOffset = rex.cap(9).toInt();
+            }
+            if (utcOffset)
+                *utcOffset = ((hourOffset * 60 + minOffset) * (positiveOffset ? 60 : -60));
+        }
+    }
+
+    if (dd)
+        *dd = QDate(year, month, day);
+    if (dt)
+        *dt = QTime(hour, min, sec);
 }
 #endif // QT_NO_DATESTRING
 

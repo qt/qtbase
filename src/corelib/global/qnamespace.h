@@ -1181,7 +1181,8 @@ public:
         SystemLocaleShortDate,
         SystemLocaleLongDate,
         DefaultLocaleShortDate,
-        DefaultLocaleLongDate
+        DefaultLocaleLongDate,
+        RFC2822Date        // RFC 2822 (+ 850 and 1036 during parsing)
     };
 
     enum TimeSpec {
