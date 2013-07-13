@@ -795,6 +795,27 @@ static inline char qToLower(char c)
     \sa QString, QBitArray
 */
 
+/*!
+    \enum QByteArray::Base64Option
+    \since 5.2
+
+    This enum contains the options available for encoding and decoding Base64.
+    Base64 is defined by \l{RFC 4648}, with the following options:
+
+    \value Base64Encoding     (default) The regular Base64 alphabet, called simply "base64"
+    \value Base64UrlEncoding  An alternate alphabet, called "base64url", which replaces two
+                              characters in the alphabet to be more friendly to URLs.
+    \value KeepTrailingEquals (default) Keeps the trailing padding equal signs at the end
+                              of the encoded data, so the data is always a size multiple of
+                              four.
+    \value OmitTrailingEquals Omits adding the padding equal signs at the end of the encoded
+                              data.
+
+    QByteArray::fromBase64() ignores the KeepTrailingEquals and
+    OmitTrailingEquals options and will not flag errors in case they are
+    missing or if there are too many of them.
+*/
+
 /*! \fn QByteArray::iterator QByteArray::begin()
 
     \internal
@@ -3539,14 +3560,34 @@ float QByteArray::toFloat(bool *ok) const
 
     \snippet code/src_corelib_tools_qbytearray.cpp 39
 
-    The algorithm used to encode Base64-encoded data is defined in \l{RFC 2045}.
+    The algorithm used to encode Base64-encoded data is defined in \l{RFC 4648}.
 
     \sa fromBase64()
 */
 QByteArray QByteArray::toBase64() const
 {
-    const char alphabet[] = "ABCDEFGH" "IJKLMNOP" "QRSTUVWX" "YZabcdef"
-                            "ghijklmn" "opqrstuv" "wxyz0123" "456789+/";
+    return toBase64(Base64Encoding);
+}
+
+/*!
+    \since 5.2
+    \overload
+
+    Returns a copy of the byte array, encoded using the options \a options.
+
+    \snippet code/src_corelib_tools_qbytearray.cpp 39bis
+
+    The algorithm used to encode Base64-encoded data is defined in \l{RFC 4648}.
+
+    \sa fromBase64()
+*/
+QByteArray QByteArray::toBase64(Base64Options options) const
+{
+    const char alphabet_base64[] = "ABCDEFGH" "IJKLMNOP" "QRSTUVWX" "YZabcdef"
+                                   "ghijklmn" "opqrstuv" "wxyz0123" "456789+/";
+    const char alphabet_base64url[] = "ABCDEFGH" "IJKLMNOP" "QRSTUVWX" "YZabcdef"
+                                      "ghijklmn" "opqrstuv" "wxyz0123" "456789-_";
+    const char *const alphabet = options & Base64UrlEncoding ? alphabet_base64url : alphabet_base64;
     const char padchar = '=';
     int padlen = 0;
 
@@ -3575,14 +3616,18 @@ QByteArray QByteArray::toBase64() const
         *out++ = alphabet[j];
         *out++ = alphabet[k];
 
-        if (padlen > 1)
-            *out++ = padchar;
-        else
+        if (padlen > 1) {
+            if ((options & OmitTrailingEquals) == 0)
+                *out++ = padchar;
+        } else {
             *out++ = alphabet[l];
-        if (padlen > 0)
-            *out++ = padchar;
-        else
+        }
+        if (padlen > 0) {
+            if ((options & OmitTrailingEquals) == 0)
+                *out++ = padchar;
+        } else {
             *out++ = alphabet[m];
+        }
     }
 
     tmp.truncate(out - tmp.data());
@@ -3941,11 +3986,33 @@ QByteArray &QByteArray::setRawData(const char *data, uint size)
 
     \snippet code/src_corelib_tools_qbytearray.cpp 44
 
-    The algorithm used to decode Base64-encoded data is defined in \l{RFC 2045}.
+    The algorithm used to decode Base64-encoded data is defined in \l{RFC 4648}.
 
     \sa toBase64()
 */
 QByteArray QByteArray::fromBase64(const QByteArray &base64)
+{
+    return fromBase64(base64, Base64Encoding);
+}
+
+/*!
+    \since 5.2
+    \overload
+
+    Returns a decoded copy of the Base64 array \a base64, using the alphabet
+    defined by \a options. Input is not checked for validity; invalid
+    characters in the input are skipped, enabling the decoding process to
+    continue with subsequent characters.
+
+    For example:
+
+    \snippet code/src_corelib_tools_qbytearray.cpp 44bis
+
+    The algorithm used to decode Base64-encoded data is defined in \l{RFC 4648}.
+
+    \sa toBase64()
+*/
+QByteArray QByteArray::fromBase64(const QByteArray &base64, Base64Options options)
 {
     unsigned int buf = 0;
     int nbits = 0;
@@ -3962,9 +4029,13 @@ QByteArray QByteArray::fromBase64(const QByteArray &base64)
             d = ch - 'a' + 26;
         else if (ch >= '0' && ch <= '9')
             d = ch - '0' + 52;
-        else if (ch == '+')
+        else if (ch == '+' && (options & Base64UrlEncoding) == 0)
             d = 62;
-        else if (ch == '/')
+        else if (ch == '-' && (options & Base64UrlEncoding) != 0)
+            d = 62;
+        else if (ch == '/' && (options & Base64UrlEncoding) == 0)
+            d = 63;
+        else if (ch == '_' && (options & Base64UrlEncoding) != 0)
             d = 63;
         else
             d = -1;

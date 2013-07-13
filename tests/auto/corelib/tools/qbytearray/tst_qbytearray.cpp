@@ -614,6 +614,24 @@ void tst_QByteArray::base64()
 
     QByteArray arr64 = rawdata.toBase64();
     QCOMPARE(arr64, base64);
+
+    arr64 = rawdata.toBase64(QByteArray::Base64Encoding);
+    QCOMPARE(arr64, base64);
+
+    QByteArray base64noequals = base64;
+    base64noequals.replace('=', "");
+    arr64 = rawdata.toBase64(QByteArray::Base64Encoding | QByteArray::OmitTrailingEquals);
+    QCOMPARE(arr64, base64noequals);
+
+    QByteArray base64url = base64;
+    base64url.replace('/', '_').replace('+', '-');
+    arr64 = rawdata.toBase64(QByteArray::Base64UrlEncoding);
+    QCOMPARE(arr64, base64url);
+
+    QByteArray base64urlnoequals = base64url;
+    base64urlnoequals.replace('=', "");
+    arr64 = rawdata.toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals);
+    QCOMPARE(arr64, base64urlnoequals);
 }
 
 //different from the previous test as the input are invalid
@@ -662,6 +680,23 @@ void tst_QByteArray::fromBase64()
 
     QByteArray arr = QByteArray::fromBase64(base64);
     QCOMPARE(arr, rawdata);
+
+    arr = QByteArray::fromBase64(base64, QByteArray::Base64Encoding);
+    QCOMPARE(arr, rawdata);
+
+    // try "base64url" encoding
+    QByteArray base64url = base64;
+    base64url.replace('/', '_').replace('+', '-');
+    arr = QByteArray::fromBase64(base64url, QByteArray::Base64UrlEncoding);
+    QCOMPARE(arr, rawdata);
+
+    if (base64 != base64url) {
+        // check that the invalid decodings fail
+        arr = QByteArray::fromBase64(base64, QByteArray::Base64UrlEncoding);
+        QVERIFY(arr != rawdata);
+        arr = QByteArray::fromBase64(base64url, QByteArray::Base64Encoding);
+        QVERIFY(arr != rawdata);
+    }
 }
 
 void tst_QByteArray::qvsnprintf()

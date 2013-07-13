@@ -173,6 +173,15 @@ private:
     typedef QTypedArrayData<char> Data;
 
 public:
+    enum Base64Option {
+        Base64Encoding = 0,
+        Base64UrlEncoding = 1,
+
+        KeepTrailingEquals = 0,
+        OmitTrailingEquals = 2
+    };
+    Q_DECLARE_FLAGS(Base64Options, Base64Option)
+
     inline QByteArray();
     QByteArray(const char *, int size = -1);
     QByteArray(int size, char c);
@@ -317,7 +326,8 @@ public:
     qulonglong toULongLong(bool *ok = 0, int base = 10) const;
     float toFloat(bool *ok = 0) const;
     double toDouble(bool *ok = 0) const;
-    QByteArray toBase64() const;
+    QByteArray toBase64(Base64Options options) const;
+    QByteArray toBase64() const; // ### Qt6 merge with previous
     QByteArray toHex() const;
     QByteArray toPercentEncoding(const QByteArray &exclude = QByteArray(),
                                  const QByteArray &include = QByteArray(),
@@ -339,7 +349,8 @@ public:
     static QByteArray number(qulonglong, int base = 10);
     static QByteArray number(double, char f = 'g', int prec = 6);
     static QByteArray fromRawData(const char *, int size);
-    static QByteArray fromBase64(const QByteArray &base64);
+    static QByteArray fromBase64(const QByteArray &base64, Base64Options options);
+    static QByteArray fromBase64(const QByteArray &base64); // ### Qt6 merge with previous
     static QByteArray fromHex(const QByteArray &hexEncoded);
     static QByteArray fromPercentEncoding(const QByteArray &pctEncoded, char percent = '%');
 
@@ -391,6 +402,8 @@ public:
     typedef Data * DataPtr;
     inline DataPtr &data_ptr() { return d; }
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QByteArray::Base64Options)
 
 inline QByteArray::QByteArray(): d(Data::sharedNull()) { }
 inline QByteArray::~QByteArray() { if (!d->ref.deref()) Data::deallocate(d); }

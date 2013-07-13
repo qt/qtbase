@@ -352,6 +352,14 @@ QByteArray text("Qt is great!");
 text.toBase64();        // returns "UXQgaXMgZ3JlYXQh"
 //! [39]
 
+//! [39bis]
+QByteArray text("<p>Hello?</p>");
+text.toBase64(QByteArray::Base64 | QByteArray::OmitTrailingEquals);      // returns "PHA+SGVsbG8/PC9wPg"
+text.toBase64(QByteArray::Base64);                                       // returns "PHA+SGVsbG8/PC9wPg=="
+text.toBase64(QByteArray::Base64Url);                                    // returns "PHA-SGVsbG8_PC9wPg=="
+text.toBase64(QByteArray::Base64Url | QByteArray::OmitTrailingEquals);   // returns "PHA-SGVsbG8_PC9wPg"
+//! [39bis]
+
 
 //! [40]
 QByteArray ba;
@@ -393,6 +401,11 @@ QDataStream in(&data, QIODevice::ReadOnly);
 QByteArray text = QByteArray::fromBase64("UXQgaXMgZ3JlYXQh");
 text.data();            // returns "Qt is great!"
 //! [44]
+
+//! [44bis]
+QByteArray::fromBase64("PHA+SGVsbG8/PC9wPg==", QByteArray::Base64Encoding); // returns "<p>Hello?</p>"
+QByteArray::fromBase64("PHA-SGVsbG8_PC9wPg==", QByteArray::Base64UrlEncoding); // returns "<p>Hello?</p>"
+//! [44bis]
 
 
 //! [45]
