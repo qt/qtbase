@@ -4235,6 +4235,12 @@ FileWriter::FileWriter(const QString &name)
 bool FileWriter::flush()
 {
     QTextStream::flush();
+    QFile oldFile(m_name);
+    if (oldFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        if (oldFile.readAll() == m_buffer.data())
+            return true;
+        oldFile.close();
+    }
     QString dir = QFileInfo(m_name).absolutePath();
     if (!QDir().mkpath(dir)) {
         cout << "Cannot create directory " << qPrintable(QDir::toNativeSeparators(dir)) << ".\n";
