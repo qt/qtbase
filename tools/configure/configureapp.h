@@ -43,6 +43,7 @@
 #include <qstring.h>
 #include <qstringlist.h>
 #include <qlist.h>
+#include <qbuffer.h>
 #include <qtextstream.h>
 #include <qdir.h>
 
@@ -191,5 +192,14 @@ public:
     Configure::ProjectType qmakeTemplate;
 };
 
+class FileWriter : public QTextStream
+{
+public:
+    FileWriter(const QString &name);
+    bool flush();
+private:
+    QString m_name;
+    QBuffer m_buffer;
+};
 
 QT_END_NAMESPACE
