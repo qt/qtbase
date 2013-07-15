@@ -394,7 +394,7 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
     static const char *const empty = "";
     if (argc == 0 || argv == 0) {
         argc = 0;
-        argv = (char **)&empty; // ouch! careful with QCoreApplication::argv()!
+        argv = (char **)&empty;
     }
 #ifdef Q_OS_WIN
     qCopy(argv, argv + argc, origArgv);
@@ -588,10 +588,6 @@ void QCoreApplicationPrivate::initLocale()
     constructor should be accessed using the arguments() function.
     Note that some arguments supplied by the user may have been
     processed and removed by QCoreApplication.
-
-    In cases where command line arguments need to be obtained using the
-    argv() function, you must convert them from the local string encoding
-    using QString::fromLocal8Bit().
 
     \section1 Locale Settings
 

@@ -768,6 +768,9 @@ QStringList QFontconfigDatabase::addApplicationFont(const QByteArray &fontData, 
 
 QString QFontconfigDatabase::resolveFontFamilyAlias(const QString &family) const
 {
+    QString resolved = QBasicFontDatabase::resolveFontFamilyAlias(family);
+    if (!resolved.isEmpty() && resolved != family)
+        return resolved;
     FcPattern *pattern = FcPatternCreate();
     if (!pattern)
         return family;
@@ -781,7 +784,7 @@ QString QFontconfigDatabase::resolveFontFamilyAlias(const QString &family) const
 
     FcChar8 *familyAfterSubstitution = 0;
     FcPatternGetString(pattern, FC_FAMILY, 0, &familyAfterSubstitution);
-    QString resolved = QString::fromUtf8((const char *) familyAfterSubstitution);
+    resolved = QString::fromUtf8((const char *) familyAfterSubstitution);
     FcPatternDestroy(pattern);
 
     return resolved;

@@ -198,7 +198,7 @@ void SlippyMap::download()
     m_url = QUrl(path.arg(zoom).arg(grab.x()).arg(grab.y()));
     QNetworkRequest request;
     request.setUrl(m_url);
-    request.setRawHeader("User-Agent", "Nokia (Qt) Graphics Dojo 1.0");
+    request.setRawHeader("User-Agent", "Digia (Qt) Graphics Dojo 1.0");
     request.setAttribute(QNetworkRequest::User, QVariant(grab));
     m_manager.get(request);
 }

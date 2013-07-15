@@ -825,8 +825,6 @@ void tst_QHttpNetworkConnection::getMultiple()
         // for the "real" results, use a URL that has "internet latency" for you. Then (6 connections, pipelining) will win.
         // for LAN latency, you will possibly get that (1 connection, no pipelining) is the fastest
         QHttpNetworkRequest *request = new QHttpNetworkRequest("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
-        // located in Berlin:
-        //QHttpNetworkRequest *request = new QHttpNetworkRequest(QUrl("http://klinsmann.nokia.trolltech.de/~berlin/qtcreatorad.gif"));
         if (pipeliningAllowed)
             request->setPipeliningAllowed(true);
         requests.append(request);
