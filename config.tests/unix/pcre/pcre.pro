@@ -1,3 +1,3 @@
 SOURCES = pcre.cpp
-CONFIG -= qt dylib app_bundle
+CONFIG -= qt dylib
 LIBS += -lpcre16

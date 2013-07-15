@@ -1,4 +1,4 @@
 SOURCES = fontconfig.cpp
-CONFIG -= qt app_bundle
+CONFIG -= qt
 LIBS += -lfreetype -lfontconfig
 include(../../unix/freetype/freetype.pri)
