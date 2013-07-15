@@ -245,13 +245,11 @@ bool QmlDocVisitor::applyDocumentation(QQmlJS::AST::SourceLocation location, Nod
         NodeList nodes;
         Node* nodePassedIn = node;
         InnerNode* parent = nodePassedIn->parent();
-        int pgc_idx = -1;
         node->setDoc(doc);
         nodes.append(node);
         if (topicsUsed.size() > 0) {
             for (int i=0; i<topicsUsed.size(); ++i) {
                 if (topicsUsed.at(i).topic == QString("qmlpropertygroup")) {
-                    pgc_idx = i;
                     qDebug() << "PROPERTY GROUP COMMAND SEEN:" <<  topicsUsed.at(i).args << filePath_;
                     break;
                 }
