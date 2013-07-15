@@ -1987,10 +1987,10 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                                 if(!exists(file)) {
                                     QString localFile;
                                     QList<QMakeLocalFileName> depdirs = QMakeSourceFileInfo::dependencyPaths();
-                                    for(QList<QMakeLocalFileName>::Iterator it = depdirs.begin();
-                                        it != depdirs.end(); ++it) {
-                                        if(exists((*it).real() + Option::dir_sep + file)) {
-                                            localFile = (*it).local() + Option::dir_sep + file;
+                                    for (QList<QMakeLocalFileName>::Iterator dit = depdirs.begin();
+                                        dit != depdirs.end(); ++dit) {
+                                        if (exists((*dit).real() + Option::dir_sep + file)) {
+                                            localFile = (*dit).local() + Option::dir_sep + file;
                                             break;
                                         }
                                     }
@@ -2065,10 +2065,10 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                             if(!exists(file)) {
                                 QString localFile;
                                 QList<QMakeLocalFileName> depdirs = QMakeSourceFileInfo::dependencyPaths();
-                                for(QList<QMakeLocalFileName>::Iterator it = depdirs.begin();
-                                    it != depdirs.end(); ++it) {
-                                    if(exists((*it).real() + Option::dir_sep + file)) {
-                                        localFile = (*it).local() + Option::dir_sep + file;
+                                for (QList<QMakeLocalFileName>::Iterator dit = depdirs.begin();
+                                    dit != depdirs.end(); ++dit) {
+                                    if (exists((*dit).real() + Option::dir_sep + file)) {
+                                        localFile = (*dit).local() + Option::dir_sep + file;
                                         break;
                                     }
                                 }
