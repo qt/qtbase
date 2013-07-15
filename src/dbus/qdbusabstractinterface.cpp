@@ -288,7 +288,8 @@ QDBusAbstractInterface::QDBusAbstractInterface(QDBusAbstractInterfacePrivate &d,
     if (d.isValid &&
         d.connection.isConnected()
         && !d.service.isEmpty()
-        && !d.service.startsWith(QLatin1Char(':')))
+        && !d.service.startsWith(QLatin1Char(':'))
+        && d.connectionPrivate()->mode != QDBusConnectionPrivate::PeerMode)
         d_func()->connection.connect(QLatin1String(DBUS_SERVICE_DBUS), // service
                                      QString(), // path
                                      QLatin1String(DBUS_INTERFACE_DBUS), // interface
@@ -313,7 +314,8 @@ QDBusAbstractInterface::QDBusAbstractInterface(const QString &service, const QSt
     if (d_func()->isValid &&
         d_func()->connection.isConnected()
         && !service.isEmpty()
-        && !service.startsWith(QLatin1Char(':')))
+        && !service.startsWith(QLatin1Char(':'))
+        && d_func()->connectionPrivate()->mode != QDBusConnectionPrivate::PeerMode)
         d_func()->connection.connect(QLatin1String(DBUS_SERVICE_DBUS), // service
                                      QString(), // path
                                      QLatin1String(DBUS_INTERFACE_DBUS), // interface
@@ -340,7 +342,13 @@ QDBusAbstractInterface::~QDBusAbstractInterface()
 */
 bool QDBusAbstractInterface::isValid() const
 {
-    return !d_func()->currentOwner.isEmpty();
+    Q_D(const QDBusAbstractInterface);
+    /* We don't retrieve the owner name for peer connections */
+    if (d->connectionPrivate() && d->connectionPrivate()->mode == QDBusConnectionPrivate::PeerMode) {
+        return d->isValid;
+    } else {
+        return !d->currentOwner.isEmpty();
+    }
 }
 
 /*!
