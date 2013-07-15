@@ -48,8 +48,8 @@ int main(int argc, char *argv[])
     Q_INIT_RESOURCE(styleexample);
 
     app.setApplicationName("style");
-    app.setOrganizationName("Nokia");
-    app.setOrganizationDomain("com.nokia.qt");
+    app.setOrganizationName("QtProject");
+    app.setOrganizationDomain("www.qt-project.org");
 
     StyleWidget widget;
     widget.showFullScreen();

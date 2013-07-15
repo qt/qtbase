@@ -379,9 +379,11 @@ QFont QPlatformFontDatabase::defaultFont() const
     \since 5.0
  */
 
+QString qt_resolveFontFamilyAlias(const QString &alias);
+
 QString QPlatformFontDatabase::resolveFontFamilyAlias(const QString &family) const
 {
-    return family;
+    return qt_resolveFontFamilyAlias(family);
 }
 
 /*!

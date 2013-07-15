@@ -2927,7 +2927,7 @@ void QMdiSubWindow::showEvent(QShowEvent *showEvent)
 #if !defined(QT_NO_SIZEGRIP) && defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
     if (qobject_cast<QMacStyle *>(style()) && !d->sizeGrip
             && !(windowFlags() & Qt::FramelessWindowHint)) {
-        d->setSizeGrip(new QSizeGrip(0));
+        d->setSizeGrip(new QSizeGrip(this));
         Q_ASSERT(d->sizeGrip);
         if (isMinimized())
             d->setSizeGripVisible(false);

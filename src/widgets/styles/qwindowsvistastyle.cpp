@@ -523,10 +523,11 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
     case PE_Frame: {
 #ifndef QT_NO_ACCESSIBILITY
         if (QStyleHelper::isInstanceOf(option->styleObject, QAccessible::EditableText)
-                || QStyleHelper::isInstanceOf(option->styleObject, QAccessible::StaticText)) {
+                || QStyleHelper::isInstanceOf(option->styleObject, QAccessible::StaticText) ||
 #else
-        if (false) {
+        if (
 #endif
+            (widget && widget->inherits("QTextEdit"))) {
             painter->save();
             int stateId = ETS_NORMAL;
             if (!(state & State_Enabled))
