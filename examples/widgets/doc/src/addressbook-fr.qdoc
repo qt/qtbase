@@ -71,8 +71,6 @@
 */
 
 /*!
-    \page tutorials-addressbook-fr-part1.html
-
     \example tutorials/addressbook-fr/part1
     \title Carnet d'adresses 1 - Conception de l'interface utilisateur
 
@@ -229,8 +227,6 @@
 */
 
 /*!
-    \page tutorials-addressbook-fr-part2.html
-
     \example tutorials/addressbook-fr/part2
     \title Carnet d'adresses 2 - Ajouter des adresses
 
@@ -389,8 +385,6 @@
 */
 
 /*!
-    \page tutorials-addressbook-fr-part3.html
-
     \example tutorials/addressbook-fr/part3
     \title Carnet d'adresses 3 - Navigation entre les éléments
 
@@ -508,8 +502,6 @@
 */
 
 /*!
-
-    \page tutorials-addressbook-fr-part4.html
 
     \example tutorials/addressbook-fr/part4
     \title Carnet d'Adresses 4 - éditer et supprimer des adresses
@@ -659,8 +651,6 @@
 */
 
 /*!
-    \page tutorials-addressbook-fr-part5.html
-
     \example tutorials/addressbook-fr/part5
     \title Carnet d'adresse 5 - Ajout d'une fonction de recherche
 
@@ -808,8 +798,6 @@
 */
 
 /*!
-    \page tutorials-addressbook-part6.html
-
     \example tutorials/addressbook-fr/part6
     \title Carnet d'Adresses 6 - Sauvegarde et chargement
 
@@ -945,8 +933,6 @@
 */
 
 /*!
-    \page tutorials-addressbook-fr-part7.html
-
     \example tutorials/addressbook-fr/part7
     \title Carnet d'adresse 7 - Fonctionnalités avancées
 

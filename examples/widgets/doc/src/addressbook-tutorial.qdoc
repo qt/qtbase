@@ -77,8 +77,6 @@
 */
 
 /*!
-    \page tutorials-addressbook-part1.html
-
     \example tutorials/addressbook/part1
     \title Part 1 - Designing the User Interface
 
@@ -231,8 +229,6 @@
 */
 
 /*!
-    \page tutorials-addressbook-part2.html
-
     \example tutorials/addressbook/part2
     \title Part 2 - Adding Addresses
 
@@ -382,8 +378,6 @@
 */
 
 /*!
-    \page tutorials-addressbook-part3.html
-
     \example tutorials/addressbook/part3
     \title Part 3 - Navigating between Entries
 
@@ -499,8 +493,6 @@
 */
 
 /*!
-    \page tutorials-addressbook-part4.html
-
     \example tutorials/addressbook/part4
     \title Part 4 - Editing and Removing Addresses
 
@@ -633,8 +625,6 @@
   */
 
 /*!
-    \page tutorials-addressbook-part5.html
-
     \example tutorials/addressbook/part5
     \title Part 5 - Adding a Find Function
 
@@ -777,8 +767,6 @@
 */
 
 /*!
-    \page tutorials-addressbook-part6.html
-
     \example tutorials/addressbook/part6
     \title Part 6 - Loading and Saving
 
@@ -899,8 +887,6 @@
 */
 
 /*!
-    \page tutorials-addressbook-part7.html
-
     \example tutorials/addressbook/part7
     \title Part 7 - Additional Features
 
