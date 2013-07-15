@@ -516,7 +516,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
     //HEADER
     const int pbVersion = pbuilderVersion();
     ProStringList buildConfigGroups;
-    buildConfigGroups << "PROJECTTARGET";
+    buildConfigGroups << "PROJECT" << "TARGET";
 
     t << "// !$*UTF8*$!\n"
       << "{\n"
