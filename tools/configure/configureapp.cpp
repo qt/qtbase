@@ -92,22 +92,6 @@ static inline void promptKeyPress()
         exit(0);      // Exit cleanly for Ctrl+C
 }
 
-bool writeToFile(const char* text, const QString &filename)
-{
-    QByteArray symFile(text);
-    QFile file(filename);
-    QDir dir(QFileInfo(file).absoluteDir());
-    if (!dir.exists())
-        dir.mkpath(dir.absolutePath());
-    if (!file.open(QFile::WriteOnly | QFile::Text)) {
-        cout << "Couldn't write to " << qPrintable(filename) << ": " << qPrintable(file.errorString())
-             << endl;
-        return false;
-    }
-    file.write(symFile);
-    return true;
-}
-
 Configure::Configure(int& argc, char** argv)
 {
     // Default values for indentation
@@ -4284,33 +4268,6 @@ int Configure::platform() const
         return ANDROID;
 
     return WINDOWS;
-}
-
-bool
-Configure::filesDiffer(const QString &fn1, const QString &fn2)
-{
-    QFile file1(fn1), file2(fn2);
-    if (!file1.open(QFile::ReadOnly) || !file2.open(QFile::ReadOnly))
-        return true;
-    const int chunk = 2048;
-    int used1 = 0, used2 = 0;
-    char b1[chunk], b2[chunk];
-    while (!file1.atEnd() && !file2.atEnd()) {
-        if (!used1)
-            used1 = file1.read(b1, chunk);
-        if (!used2)
-            used2 = file2.read(b2, chunk);
-        if (used1 > 0 && used2 > 0) {
-            const int cmp = qMin(used1, used2);
-            if (memcmp(b1, b2, cmp))
-                return true;
-            if ((used1 -= cmp))
-                memcpy(b1, b1+cmp, used1);
-            if ((used2 -= cmp))
-                memcpy(b2, b2+cmp, used2);
-        }
-    }
-    return !file1.atEnd() || !file2.atEnd();
 }
 
 QT_END_NAMESPACE

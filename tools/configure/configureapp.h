@@ -159,7 +159,6 @@ private:
 
     QString formatPath(const QString &path);
     QString formatPaths(const QStringList &paths);
-    bool filesDiffer(const QString &file1, const QString &file2);
 
     QString locateFile(const QString &fileName) const;
     bool findFile(const QString &fileName) const { return !locateFile(fileName).isEmpty(); }
