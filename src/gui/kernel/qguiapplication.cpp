@@ -210,6 +210,11 @@ static inline void clearFontUnlocked()
     QGuiApplicationPrivate::app_font = 0;
 }
 
+static inline bool isPopupWindow(const QWindow *w)
+{
+    return (w->flags() & Qt::WindowType_Mask) == Qt::Popup;
+}
+
 /*!
     \class QGuiApplication
     \brief The QGuiApplication class manages the GUI application's control
@@ -493,7 +498,7 @@ static void updateBlockedStatusRecursion(QWindow *window, bool shouldBeBlocked)
 void QGuiApplicationPrivate::updateBlockedStatus(QWindow *window)
 {
     bool shouldBeBlocked = false;
-    if ((window->type() & Qt::Popup) != Qt::Popup && !self->modalWindowList.isEmpty())
+    if (!isPopupWindow(window) && !self->modalWindowList.isEmpty())
         shouldBeBlocked = self->isWindowBlocked(window);
     updateBlockedStatusRecursion(window, shouldBeBlocked);
 }
@@ -503,7 +508,7 @@ void QGuiApplicationPrivate::showModalWindow(QWindow *modal)
     self->modalWindowList.prepend(modal);
 
     // Send leave for currently entered window if it should be blocked
-    if (currentMouseWindow && (currentMouseWindow->type() & Qt::Popup) != Qt::Popup) {
+    if (currentMouseWindow && !isPopupWindow(currentMouseWindow)) {
         bool shouldBeBlocked = self->isWindowBlocked(currentMouseWindow);
         if (shouldBeBlocked) {
             // Remove the new window from modalWindowList temporarily so leave can go through

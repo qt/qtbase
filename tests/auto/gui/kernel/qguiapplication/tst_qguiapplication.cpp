@@ -422,6 +422,7 @@ void tst_QGuiApplication::modalWindow()
 
     QScopedPointer<BlockableWindow> window2(new BlockableWindow);
     window2->setTitle(QStringLiteral("window2"));
+    window2->setFlags(window2->flags() & Qt::Tool); // QTBUG-32433, don't be fooled by unusual window flags.
     window2->resize(windowSize, windowSize);
     window2->setFramePosition(QPoint(x, y));
     x += spacing + windowSize;
