@@ -472,6 +472,21 @@ if (isSignalConnected(valueChangedSignal)) {
 }
 //! [49]
 
+//! [50]
+void someFunction();
+QPushButton *button = new QPushButton;
+QObject::connect(button, &QPushButton::clicked, this, someFunction, Qt::QueuedConnection);
+//! [50]
+
+//! [51]
+QByteArray page = ...;
+QTcpSocket *socket = new QTcpSocket;
+socket->connectToHost("qt-project.org", 80);
+QObject::connect(socket, &QTcpSocket::connected, this, [=] () {
+        socket->write("GET " + page + "\r\n");
+    }, Qt::AutoConnection);
+//! [51]
+
 //! [meta data]
 //: This is a comment for the translator.
 //= qtn_foo_bar
