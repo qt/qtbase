@@ -477,18 +477,25 @@ QWindow *QGuiApplication::modalWindow()
     return QGuiApplicationPrivate::self->modalWindowList.first();
 }
 
+static void updateBlockedStatusRecursion(QWindow *window, bool shouldBeBlocked)
+{
+    QWindowPrivate *p = qt_window_private(window);
+    if (p->blockedByModalWindow != shouldBeBlocked) {
+        p->blockedByModalWindow = shouldBeBlocked;
+        QEvent e(shouldBeBlocked ? QEvent::WindowBlocked : QEvent::WindowUnblocked);
+        QGuiApplication::sendEvent(window, &e);
+        foreach (QObject *c, window->children())
+            if (c->isWindowType())
+                updateBlockedStatusRecursion(static_cast<QWindow *>(c), shouldBeBlocked);
+    }
+}
+
 void QGuiApplicationPrivate::updateBlockedStatus(QWindow *window)
 {
     bool shouldBeBlocked = false;
     if ((window->type() & Qt::Popup) != Qt::Popup && !self->modalWindowList.isEmpty())
         shouldBeBlocked = self->isWindowBlocked(window);
-
-    if (shouldBeBlocked != window->d_func()->blockedByModalWindow) {
-        QEvent e(shouldBeBlocked ? QEvent::WindowBlocked : QEvent::WindowUnblocked);
-
-        window->d_func()->blockedByModalWindow = shouldBeBlocked;
-        QGuiApplication::sendEvent(window, &e);
-    }
+    updateBlockedStatusRecursion(window, shouldBeBlocked);
 }
 
 void QGuiApplicationPrivate::showModalWindow(QWindow *modal)
