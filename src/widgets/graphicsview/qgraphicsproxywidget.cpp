@@ -356,6 +356,9 @@ QWidget *QGraphicsProxyWidgetPrivate::findFocusChild(QWidget *child, bool next) 
         }
     }
 
+    if (!child)
+        return 0;
+
     QWidget *oldChild = child;
     uint focus_flag = qt_tab_all_widgets() ? Qt::TabFocus : Qt::StrongFocus;
     do {
