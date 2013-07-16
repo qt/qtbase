@@ -61,6 +61,8 @@ private slots:
     void movingItems();
     void connectedToSceneRectChanged();
     void items();
+    void boundingRectPointIntersection_data();
+    void boundingRectPointIntersection();
     void removeItems();
     void clear();
 
@@ -231,6 +233,56 @@ void tst_QGraphicsSceneIndex::items()
     // Move from unindexed items into untransformable items.
     QTest::qWait(50);
     QCOMPARE(scene.items().size(), 3);
+}
+
+class CustomShapeItem : public QGraphicsItem
+{
+public:
+    CustomShapeItem(const QPainterPath &shape) : QGraphicsItem(0), mShape(shape) {}
+
+    QPainterPath shape() const { return mShape; }
+    QRectF boundingRect() const { return mShape.boundingRect(); }
+    void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) {}
+private:
+    QPainterPath mShape;
+};
+
+Q_DECLARE_METATYPE(Qt::ItemSelectionMode)
+Q_DECLARE_METATYPE(QPainterPath)
+
+void tst_QGraphicsSceneIndex::boundingRectPointIntersection_data()
+{
+    QTest::addColumn<QPainterPath>("itemShape");
+    QTest::addColumn<Qt::ItemSelectionMode>("mode");
+
+    QTest::newRow("zero shape - intersects rect") << QPainterPath() << Qt::IntersectsItemBoundingRect;
+    QTest::newRow("zero shape - contains rect") << QPainterPath() << Qt::ContainsItemBoundingRect;
+
+    QPainterPath triangle;
+    triangle.moveTo(50, 0);
+    triangle.lineTo(0, 50);
+    triangle.lineTo(100, 50);
+    triangle.lineTo(50, 0);
+    QTest::newRow("triangle shape - intersects rect") << triangle << Qt::IntersectsItemBoundingRect;
+    QTest::newRow("triangle shape - contains rect") << triangle << Qt::ContainsItemBoundingRect;
+
+    QPainterPath rect;
+    rect.addRect(QRectF(0, 0, 100, 100));
+    QTest::newRow("rectangle shape - intersects rect") << rect << Qt::IntersectsItemBoundingRect;
+    QTest::newRow("rectangle shape - contains rect") << rect << Qt::ContainsItemBoundingRect;
+}
+
+void tst_QGraphicsSceneIndex::boundingRectPointIntersection()
+{
+    QFETCH(QPainterPath, itemShape);
+    QFETCH(Qt::ItemSelectionMode, mode);
+
+    QGraphicsScene scene;
+    CustomShapeItem *item = new CustomShapeItem(itemShape);
+    scene.addItem(item);
+    QList<QGraphicsItem*> items = scene.items(QPointF(0, 0), mode, Qt::AscendingOrder);
+    QVERIFY(!items.isEmpty());
+    QCOMPARE(items.first(), item);
 }
 
 class RectWidget : public QGraphicsWidget
