@@ -253,11 +253,8 @@ void tst_QFontDatabase::addAppFont()
     return;
 #endif
     QCOMPARE(fontDbChangedSpy.count(), 1);
-// addApplicationFont is supported on Mac, don't skip the test if it breaks.
-#ifndef Q_OS_MAC
     if (id == -1)
         QSKIP("Skip the test since app fonts are not supported on this system");
-#endif
 
     const QStringList addedFamilies = QFontDatabase::applicationFontFamilies(id);
     QVERIFY(!addedFamilies.isEmpty());
@@ -272,9 +269,6 @@ void tst_QFontDatabase::addAppFont()
     QVERIFY(QFontDatabase::removeApplicationFont(id));
     QCOMPARE(fontDbChangedSpy.count(), 2);
 
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("font file", "QTBUG-23062", Continue);
-#endif
     QCOMPARE(db.families(), oldFamilies);
 }
 
