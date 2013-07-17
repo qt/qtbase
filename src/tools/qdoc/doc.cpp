@@ -1068,7 +1068,7 @@ void DocParser::parse(const QString& source,
                         }
 
                         if (!inTableHeader && !inTableRow) {
-                            location().warning(tr("Missing '\\%1' or '\\%1' before '\\%3'")
+                            location().warning(tr("Missing '\\%1' or '\\%2' before '\\%3'")
                                                .arg(cmdName(CMD_HEADER))
                                                .arg(cmdName(CMD_ROW))
                                                .arg(cmdName(CMD_LI)));
@@ -1190,7 +1190,7 @@ void DocParser::parse(const QString& source,
                     leavePara();
                     p1 = getRestOfLine();
                     if (p1.isEmpty())
-                        location().warning(tr("Missing format name after '\\%1")
+                        location().warning(tr("Missing format name after '\\%1'")
                                            .arg(cmdName(CMD_RAW)));
                     append(Atom::FormatIf, p1);
                     append(Atom::RawString, untabifyEtc(getUntilEnd(cmd)));
