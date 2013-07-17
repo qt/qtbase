@@ -2763,12 +2763,8 @@ QString
 MakefileGenerator::unescapeFilePath(const QString &path) const
 {
     QString ret = path;
-    if(!ret.isEmpty()) {
-        if(ret.contains(QLatin1String("\\ ")))
-            ret.replace(QLatin1String("\\ "), QLatin1String(" "));
-        if(ret.contains(QLatin1Char('\"')))
-            ret.remove(QLatin1Char('\"'));
-    }
+    ret.replace(QLatin1String("\\ "), QLatin1String(" "));
+    ret.remove(QLatin1Char('\"'));
     return ret;
 }
 
