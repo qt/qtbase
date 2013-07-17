@@ -256,7 +256,7 @@ Configure::Configure(int& argc, char** argv)
 
     dictionary[ "BUILDDEV" ]        = "no";
 
-    dictionary[ "COMPILE_EXAMPLES" ] = "auto";
+    dictionary[ "COMPILE_EXAMPLES" ] = "yes";
 
     dictionary[ "C++11" ]           = "auto";
 
@@ -1702,7 +1702,7 @@ bool Configure::displayHelp()
 
         desc(                   "-skip <module>",       "Exclude an entire module from the build.\n");
 
-        desc(                   "-compile-examples",    "Compile examples even in a production build.\n");
+        desc(                   "-no-compile-examples", "Install only the sources of examples.\n");
 
         desc("WIDGETS", "no", "-no-widgets",            "Disable Qt Widgets module.\n");
         desc("GUI", "no", "-no-gui",                    "Disable Qt GUI module.\n");
@@ -1985,13 +1985,6 @@ QString Configure::defaultTo(const QString &option)
 
     if (option == "SYNCQT"
         && (!QFile::exists(sourcePath + "/.git")))
-        return "no";
-
-    // Do not actually build the examples in production builds with -prefix, unless requested
-    if (option == "COMPILE_EXAMPLES"
-        && QDir::cleanPath(dictionary[ "QT_BUILD_TREE" ])
-            != QDir::cleanPath(dictionary[ "QT_INSTALL_PREFIX" ])
-        && dictionary[ "BUILDDEV" ] == "no")
         return "no";
 
     return "yes";
