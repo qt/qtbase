@@ -899,8 +899,8 @@ QString Win32MakefileGenerator::escapeFilePath(const QString &path) const
 QString Win32MakefileGenerator::cQuoted(const QString &str)
 {
     QString ret = str;
-    ret.replace(QLatin1Char('"'), QStringLiteral("\\\""));
     ret.replace(QLatin1Char('\\'), QStringLiteral("\\\\"));
+    ret.replace(QLatin1Char('"'), QStringLiteral("\\\""));
     ret.prepend(QLatin1Char('"'));
     ret.append(QLatin1Char('"'));
     return ret;
