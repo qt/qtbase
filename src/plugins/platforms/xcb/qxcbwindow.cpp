@@ -1643,7 +1643,8 @@ void QXcbWindow::handleButtonPressEvent(const xcb_button_press_event_t *event)
 {
     if (window() != QGuiApplication::focusWindow()) {
         QWindow *w = static_cast<QWindowPrivate *>(QObjectPrivate::get(window()))->eventReceiver();
-        w->requestActivate();
+        if (!(w->flags() & Qt::WindowDoesNotAcceptFocus))
+            w->requestActivate();
     }
 
     updateNetWmUserTime(event->time);
