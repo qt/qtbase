@@ -297,6 +297,7 @@ private slots:
     void undoRedoAndEchoModes_data();
     void undoRedoAndEchoModes();
 
+    void clearButton();
     void sideWidgets();
 
 protected slots:
@@ -4055,6 +4056,47 @@ void tst_QLineEdit::undoRedoAndEchoModes()
     QVERIFY(!testWidget->isRedoAvailable());
     testWidget->redo();
     QCOMPARE(testWidget->text(), expected.at(2));
+}
+
+void tst_QLineEdit::clearButton()
+{
+    // Construct a listview with a stringlist model and filter model.
+    QWidget testWidget;
+    QVBoxLayout *l = new QVBoxLayout(&testWidget);
+    QLineEdit *filterLineEdit = new QLineEdit(&testWidget);
+    l->addWidget(filterLineEdit);
+    QListView *listView = new QListView(&testWidget);
+    QStringListModel *model = new QStringListModel(QStringList() << QStringLiteral("aa") << QStringLiteral("ab") << QStringLiteral("cc"), listView);
+    QSortFilterProxyModel *filterModel = new QSortFilterProxyModel(listView);
+    filterModel->setSourceModel(model);
+    connect(filterLineEdit, SIGNAL(textChanged(QString)), filterModel, SLOT(setFilterFixedString(QString)));
+    listView->setModel(filterModel);
+    l->addWidget(listView);
+    testWidget.move(300, 300);
+    testWidget.show();
+    qApp->setActiveWindow(&testWidget);
+    QVERIFY(QTest::qWaitForWindowActive(&testWidget));
+    // Flip the clear button on,off, trying to detect crashes.
+    filterLineEdit->setClearButtonEnabled(true);
+    QVERIFY(filterLineEdit->isClearButtonEnabled());
+    filterLineEdit->setClearButtonEnabled(true);
+    QVERIFY(filterLineEdit->isClearButtonEnabled());
+    filterLineEdit->setClearButtonEnabled(false);
+    QVERIFY(!filterLineEdit->isClearButtonEnabled());
+    filterLineEdit->setClearButtonEnabled(false);
+    QVERIFY(!filterLineEdit->isClearButtonEnabled());
+    filterLineEdit->setClearButtonEnabled(true);
+    QVERIFY(filterLineEdit->isClearButtonEnabled());
+    // Emulate filtering
+    QToolButton *clearButton = filterLineEdit->findChild<QToolButton *>();
+    QVERIFY(clearButton);
+    QCOMPARE(filterModel->rowCount(), 3);
+    QTest::keyClick(filterLineEdit, 'a');
+    QTRY_COMPARE(filterModel->rowCount(), 2); // matches 'aa', 'ab'
+    QTest::keyClick(filterLineEdit, 'b');
+    QTRY_COMPARE(filterModel->rowCount(), 1); // matches 'ab'
+    QTest::mouseClick(clearButton, Qt::LeftButton, 0, QRect(QPoint(0, 0), clearButton->size()).center());
+    QTRY_COMPARE(filterModel->rowCount(), 3);
 }
 
 void tst_QLineEdit::sideWidgets()

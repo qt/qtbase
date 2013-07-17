@@ -368,6 +368,14 @@ QSize QLineEditPrivate::iconSize() const
     return m_iconSize;
 }
 
+QIcon QLineEditPrivate::clearButtonIcon() const
+{
+    Q_Q(const QLineEdit);
+    QStyleOptionFrameV2 styleOption;
+    q->initStyleOption(&styleOption);
+    return QIcon(q->style()->standardPixmap(QStyle::SP_LineEditClearButton, &styleOption, q));
+}
+
 void QLineEditPrivate::positionSideWidgets()
 {
     Q_Q(QLineEdit);
@@ -417,6 +425,8 @@ QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineE
         QLineEditIconButton *toolButton = new QLineEditIconButton(q);
         toolButton->setIcon(newAction->icon());
         toolButton->setOpacity(lastTextSize > 0 || !(flags & SideWidgetFadeInWithText) ? 1 : 0);
+        if (flags & SideWidgetClearButton)
+            QObject::connect(toolButton, SIGNAL(clicked()), q, SLOT(clear()));
         toolButton->setDefaultAction(newAction);
         w = toolButton;
     }

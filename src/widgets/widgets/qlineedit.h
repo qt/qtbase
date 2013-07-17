@@ -85,6 +85,7 @@ class Q_WIDGETS_EXPORT QLineEdit : public QWidget
     Q_PROPERTY(bool acceptableInput READ hasAcceptableInput)
     Q_PROPERTY(QString placeholderText READ placeholderText WRITE setPlaceholderText)
     Q_PROPERTY(Qt::CursorMoveStyle cursorMoveStyle READ cursorMoveStyle WRITE setCursorMoveStyle)
+    Q_PROPERTY(bool clearButtonEnabled READ isClearButtonEnabled WRITE setClearButtonEnabled)
 public:
     enum ActionPosition {
         LeadingPosition,
@@ -107,6 +108,9 @@ public:
 
     void setFrame(bool);
     bool hasFrame() const;
+
+    void setClearButtonEnabled(bool enable);
+    bool isClearButtonEnabled() const;
 
     enum EchoMode { Normal, NoEcho, Password, PasswordEchoOnEdit };
     EchoMode echoMode() const;

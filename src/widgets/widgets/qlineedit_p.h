@@ -101,7 +101,8 @@ class Q_AUTOTEST_EXPORT QLineEditPrivate : public QWidgetPrivate
 public:
     enum SideWidgetFlag {
         SideWidgetFadeInWithText = 0x1,
-        SideWidgetCreatedByWidgetAction = 0x2
+        SideWidgetCreatedByWidgetAction = 0x2,
+        SideWidgetClearButton = 0x4
     };
 
     struct SideWidgetEntry {
@@ -197,6 +198,7 @@ public:
     QWidget *addAction(QAction *newAction, QAction *before, QLineEdit::ActionPosition, int flags = 0);
     void removeAction(const QActionEvent *e);
     QSize iconSize() const;
+    QIcon clearButtonIcon() const;
     void positionSideWidgets();
     inline bool hasSideWidgets() const { return !leadingSideWidgets.isEmpty() || !trailingSideWidgets.isEmpty(); }
     inline const SideWidgetEntryList &leftSideWidgetList() const

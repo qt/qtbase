@@ -475,6 +475,42 @@ QAction *QLineEdit::addAction(const QIcon &icon, ActionPosition position)
     return result;
 }
 
+/*!
+    \property QLineEdit::clearButtonEnabled
+    \brief Whether the line edit displays a clear button when it is not empty.
+
+    If enabled, the line edit displays a trailing \e clear button when it contains
+    some text, otherwise the line edit does not show a clear button (the
+    default).
+
+    \sa addAction(), removeAction()
+    \since 5.2
+*/
+
+static const char clearButtonActionNameC[] = "_q_qlineeditclearaction";
+
+void QLineEdit::setClearButtonEnabled(bool enable)
+{
+    Q_D(QLineEdit);
+    if (enable == isClearButtonEnabled())
+        return;
+    if (enable) {
+        QAction *clearAction = new QAction(d->clearButtonIcon(), QString(), this);
+        clearAction->setObjectName(QLatin1String(clearButtonActionNameC));
+        d->addAction(clearAction, 0, QLineEdit::TrailingPosition, QLineEditPrivate::SideWidgetClearButton | QLineEditPrivate::SideWidgetFadeInWithText);
+    } else {
+        QAction *clearAction = findChild<QAction *>(QLatin1String(clearButtonActionNameC));
+        Q_ASSERT(clearAction);
+        removeAction(clearAction);
+        delete clearAction;
+    }
+}
+
+bool QLineEdit::isClearButtonEnabled() const
+{
+    return findChild<QAction *>(QLatin1String(clearButtonActionNameC));
+}
+
 void QLineEdit::setFrame(bool enable)
 {
     Q_D(QLineEdit);
@@ -2143,6 +2179,9 @@ void QLineEdit::changeEvent(QEvent *ev)
         update();
         break;
     case QEvent::LayoutDirectionChange:
+        foreach (const QLineEditPrivate::SideWidgetEntry &e, d->trailingSideWidgets) // Refresh icon to show arrow in right direction.
+            if (e.flags & QLineEditPrivate::SideWidgetClearButton)
+                static_cast<QLineEditIconButton *>(e.widget)->setIcon(d->clearButtonIcon());
         d->positionSideWidgets();
         break;
     default:
