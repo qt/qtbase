@@ -580,7 +580,7 @@ class JobObject : public QObject
 public:
 
     explicit JobObject(QEventLoop *loop, QObject *parent = 0)
-        : QObject(parent), loop(loop), locker(loop)
+        : QObject(parent), locker(loop)
     {
     }
 
@@ -606,7 +606,6 @@ signals:
     void done();
 
 private:
-    QEventLoop *loop;
     QEventLoopLocker locker;
 };
 
