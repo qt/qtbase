@@ -165,6 +165,10 @@ public slots:
     }
 };
 
+#ifdef QT_GUI_LIB
+  #define tst_QEventLoop tst_QGuiEventLoop
+#endif
+
 class tst_QEventLoop : public QObject
 {
     Q_OBJECT
