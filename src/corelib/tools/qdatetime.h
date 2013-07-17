@@ -219,6 +219,7 @@ public:
     QTime time() const;
     Qt::TimeSpec timeSpec() const;
     int offsetFromUtc() const;
+    QString timeZoneAbbreviation() const;
 
     qint64 toMSecsSinceEpoch() const;
     // ### Qt 6: use quint64 instead of uint

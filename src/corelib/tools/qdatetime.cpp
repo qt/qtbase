@@ -174,6 +174,7 @@ static void rfcDateImpl(const QString &s, QDate *dd = 0, QTime *dt = 0, int *utf
 #endif
 static QDateTimePrivate::Spec utcToLocal(QDate &date, QTime &time);
 static void utcToOffset(QDate *date, QTime *time, qint32 offset);
+static QDate adjustDate(QDate date);
 
 // Return offset in [+-]HH:MM format
 // Qt::ISODate puts : between the hours and minutes, but Qt:TextDate does not
@@ -224,6 +225,68 @@ static int fromOffsetString(const QString &offsetString, bool *valid)
     *valid = true;
     return ((hour * 60) + minute) * 60;
 }
+
+#if !defined(Q_OS_WINCE)
+// Calls the platform variant of mktime for the given date and time,
+// and updates the date, time, spec and abbreviation with the returned values
+// If the date falls outside the 1970 to 2037 range supported by mktime / time_t
+// then null date/time will be returned, you should call adjustDate() first if
+// you need a guaranteed result.
+static time_t qt_mktime(QDate *date, QTime *time, QDateTimePrivate::Spec *spec,
+                        QString *abbreviation, bool *ok)
+{
+    if (ok)
+        *ok = false;
+    int yy, mm, dd;
+    date->getDate(&yy, &mm, &dd);
+    tm local;
+    local.tm_sec = time->second();
+    local.tm_min = time->minute();
+    local.tm_hour = time->hour();
+    local.tm_mday = dd;
+    local.tm_mon = mm - 1;
+    local.tm_year = yy - 1900;
+    local.tm_wday = 0;
+    local.tm_yday = 0;
+    local.tm_isdst = -1;
+#if defined(Q_OS_WIN)
+    _tzset();
+#else
+    tzset();
+#endif // Q_OS_WIN
+    const time_t secsSinceEpoch = mktime(&local);
+    if (secsSinceEpoch != (uint)-1) {
+        *date = QDate(local.tm_year + 1900, local.tm_mon + 1, local.tm_mday);
+        *time = QTime(local.tm_hour, local.tm_min, local.tm_sec, time->msec());
+        if (local.tm_isdst == 1) {
+            if (spec)
+                *spec = QDateTimePrivate::LocalDST;
+            if (abbreviation)
+                *abbreviation = QString::fromLocal8Bit(tzname[1]);
+        } else if (local.tm_isdst == 0) {
+            if (spec)
+                *spec = QDateTimePrivate::LocalStandard;
+            if (abbreviation)
+                *abbreviation = QString::fromLocal8Bit(tzname[0]);
+        } else {
+            if (spec)
+                *spec = QDateTimePrivate::LocalUnknown;
+            if (abbreviation)
+                *abbreviation = QString::fromLocal8Bit(tzname[0]);
+        }
+        if (ok)
+            *ok = true;
+    } else {
+        *date = QDate();
+        *time = QTime();
+        if (spec)
+            *spec = QDateTimePrivate::LocalUnknown;
+        if (abbreviation)
+            *abbreviation = QString();
+    }
+    return secsSinceEpoch;
+}
+#endif // !Q_OS_WINCE
 
 /*****************************************************************************
   QDate member functions
@@ -2453,6 +2516,49 @@ int QDateTime::offsetFromUtc() const
     default:  // Any Qt::LocalTime
         const QDateTime fakeDate(d->date, d->time, Qt::UTC);
         return (fakeDate.toMSecsSinceEpoch() - toMSecsSinceEpoch()) / 1000;
+    }
+}
+
+/*!
+    \since 5.2
+
+    Returns the Time Zone Abbreviation for the datetime.
+
+    If the timeSpec() is Qt::UTC this will be "UTC".
+
+    If the timeSpec() is Qt::OffsetFromUTC this will be in the format
+    "UTC[+-]00:00".
+
+    If the timeSpec() is Qt::LocalTime then the host system is queried for the
+    correct abbreviation.
+
+    Note that abbreviations may or may not be localized.
+
+    Note too that the abbreviation is not guaranteed to be a unique value,
+    i.e. different time zones may have the same abbreviation.
+
+    \sa timeSpec()
+*/
+
+QString QDateTime::timeZoneAbbreviation() const
+{
+    switch (d->spec) {
+    case QDateTimePrivate::UTC:
+        return QStringLiteral("UTC");
+    case QDateTimePrivate::OffsetFromUTC:
+        return QLatin1String("UTC") + toOffsetString(Qt::ISODate, d->m_offsetFromUtc);
+    default:  { // Any Qt::LocalTime
+#if defined(Q_OS_WINCE)
+        // TODO Stub to enable compilation on WinCE
+        return QString();
+#else
+        QDate dt = adjustDate(d->date);
+        QTime tm = d->time;
+        QString abbrev;
+        qt_mktime(&dt, &tm, 0, &abbrev, 0);
+        return abbrev;
+#endif // !Q_OS_WINCE
+        }
     }
 }
 
