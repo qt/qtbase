@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 #include "qfileiconprovider.h"
+#include "qfileiconprovider_p.h"
 
-#include <qstyle.h>
 #include <qapplication.h>
 #include <qdir.h>
 #include <qpixmapcache.h>
@@ -91,36 +91,6 @@ QT_BEGIN_NAMESPACE
     Some platforms allow the user to set a different icon. Custom icon lookup
     cause a big performance impact over network or removable drives.
 */
-
-class QFileIconProviderPrivate
-{
-    Q_DECLARE_PUBLIC(QFileIconProvider)
-
-public:
-    QFileIconProviderPrivate();
-    QIcon getIcon(QStyle::StandardPixmap name) const;
-    QIcon getIcon(const QFileInfo &fi) const;
-
-    QFileIconProvider *q_ptr;
-    const QString homePath;
-    QFileIconProvider::Options options;
-
-private:
-    mutable QIcon file;
-    mutable QIcon fileLink;
-    mutable QIcon directory;
-    mutable QIcon directoryLink;
-    mutable QIcon harddisk;
-    mutable QIcon floppy;
-    mutable QIcon cdrom;
-    mutable QIcon ram;
-    mutable QIcon network;
-    mutable QIcon computer;
-    mutable QIcon desktop;
-    mutable QIcon trashcan;
-    mutable QIcon generic;
-    mutable QIcon home;
-};
 
 QFileIconProviderPrivate::QFileIconProviderPrivate() :
     homePath(QDir::home().absolutePath())
