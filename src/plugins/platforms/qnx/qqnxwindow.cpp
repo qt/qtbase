@@ -135,7 +135,7 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
     if (result != 0)
         qFatal("QQnxWindow: failed to set window swap interval, errno=%d", errno);
 
-    if (window->flags() && Qt::WindowDoesNotAcceptFocus) {
+    if (window->flags() & Qt::WindowDoesNotAcceptFocus) {
         errno = 0;
         val = SCREEN_SENSITIVITY_NO_FOCUS;
         result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_SENSITIVITY, &val);
