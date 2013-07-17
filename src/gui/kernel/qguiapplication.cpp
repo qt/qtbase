@@ -773,14 +773,14 @@ QString QGuiApplication::platformName()
            *QGuiApplicationPrivate::platform_name : QString();
 }
 
-static void init_platform(const QString &pluginArgument, const QString &platformPluginPath)
+static void init_platform(const QString &pluginArgument, const QString &platformPluginPath, int &argc, char **argv)
 {
     // Split into platform name and arguments
     QStringList arguments = pluginArgument.split(QLatin1Char(':'));
     const QString name = arguments.takeFirst().toLower();
 
    // Create the platform integration.
-    QGuiApplicationPrivate::platform_integration = QPlatformIntegrationFactory::create(name, arguments, platformPluginPath);
+    QGuiApplicationPrivate::platform_integration = QPlatformIntegrationFactory::create(name, arguments, argc, argv, platformPluginPath);
     if (QGuiApplicationPrivate::platform_integration) {
         QGuiApplicationPrivate::platform_name = new QString(name);
     } else {
@@ -908,7 +908,7 @@ void QGuiApplicationPrivate::createPlatformIntegration()
         argc = j;
     }
 
-    init_platform(QLatin1String(platformName), platformPluginPath);
+    init_platform(QLatin1String(platformName), platformPluginPath, argc, argv);
 
 }
 

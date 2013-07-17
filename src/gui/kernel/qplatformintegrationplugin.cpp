@@ -52,4 +52,18 @@ QPlatformIntegrationPlugin::~QPlatformIntegrationPlugin()
 {
 }
 
+QPlatformIntegration *QPlatformIntegrationPlugin::create(const QString &key, const QStringList &paramList)
+{
+    Q_UNUSED(key)
+    Q_UNUSED(paramList);
+    return 0;
+}
+
+QPlatformIntegration *QPlatformIntegrationPlugin::create(const QString &key, const QStringList &paramList, int &argc, char **argv)
+{
+    Q_UNUSED(argc)
+    Q_UNUSED(argv)
+    return create(key, paramList); // Fallback for platform plugins that do not implement the argc/argv version.
+}
+
 QT_END_NAMESPACE

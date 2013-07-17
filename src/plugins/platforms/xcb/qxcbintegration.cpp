@@ -119,7 +119,7 @@ static bool runningUnderDebugger()
 }
 #endif
 
-QXcbIntegration::QXcbIntegration(const QStringList &parameters)
+QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char **argv)
     : m_eventDispatcher(createUnixEventDispatcher())
     ,  m_services(new QGenericUnixServices)
 {
@@ -138,7 +138,25 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
     if (canNotGrabEnv)
         canGrab = false;
 
-    m_connections << new QXcbConnection(m_nativeInterface.data(), canGrab);
+    // Parse arguments
+    const char *displayName = 0;
+    if (argc) {
+        int j = 1;
+        for (int i = 1; i < argc; i++) {
+            char *arg = argv[i];
+            if (arg) {
+                if (!strcmp(arg, "-display") && i < argc - 1) {
+                    displayName = argv[++i];
+                    arg = 0;
+                }
+            }
+            if (arg)
+                argv[j++] = arg;
+        }
+        argc = j;
+    } // argc
+
+    m_connections << new QXcbConnection(m_nativeInterface.data(), canGrab, displayName);
 
     for (int i = 0; i < parameters.size() - 1; i += 2) {
 #ifdef Q_XCB_DEBUG

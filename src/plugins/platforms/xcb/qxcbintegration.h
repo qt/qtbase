@@ -55,7 +55,7 @@ class QXcbScreen;
 class QXcbIntegration : public QPlatformIntegration
 {
 public:
-    QXcbIntegration(const QStringList &parameters);
+    QXcbIntegration(const QStringList &parameters, int &argc, char **argv);
     ~QXcbIntegration();
 
     QPlatformWindow *createPlatformWindow(QWindow *window) const;

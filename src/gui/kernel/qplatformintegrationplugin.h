@@ -68,7 +68,8 @@ public:
     explicit QPlatformIntegrationPlugin(QObject *parent = 0);
     ~QPlatformIntegrationPlugin();
 
-    virtual QPlatformIntegration *create(const QString &key, const QStringList &paramList) = 0;
+    virtual QPlatformIntegration *create(const QString &key, const QStringList &paramList);
+    virtual QPlatformIntegration *create(const QString &key, const QStringList &paramList, int &argc, char **argv);
 };
 
 QT_END_NAMESPACE
