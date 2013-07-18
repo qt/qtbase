@@ -163,6 +163,7 @@ private slots:
     void formatTime_data();
     void formatDateTime();
     void formatDateTime_data();
+    void formatTimeZone();
     void toDateTime_data();
     void toDateTime();
     void negativeNumbers();
@@ -199,6 +200,7 @@ private slots:
 private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
     QString m_sysapp;
+    bool europeanTimeZone;
 
 #ifdef Q_OS_BLACKBERRY
     int m_languageFd;
@@ -208,6 +210,11 @@ private:
 tst_QLocale::tst_QLocale()
 {
     qRegisterMetaType<QLocale::FormatType>("QLocale::FormatType");
+
+    // Test if in Central European Time zone
+    uint x1 = QDateTime(QDate(1990, 1, 1), QTime()).toTime_t();
+    uint x2 = QDateTime(QDate(1990, 6, 1), QTime()).toTime_t();
+    europeanTimeZone = (x1 == 631148400 && x2 == 644191200);
 }
 
 void tst_QLocale::initTestCase()
@@ -1198,6 +1205,59 @@ void tst_QLocale::formatDateTime_data()
     QTest::newRow("28no_NO") << "no_NO" << QDateTime()
                              << "'\"yymm\"'" << "";
 
+    QDateTime testLongHour(QDate(1999, 12, 31), QTime(23, 59, 59, 999));
+    QDateTime testShortHour(QDate(1999, 12, 31), QTime(3, 59, 59, 999));
+    QDateTime testZeroHour(QDate(1999, 12, 31), QTime(0, 59, 59, 999));
+
+    QTest::newRow("datetime0")      << "en_US" << QDateTime()
+                                    << QString("dd-MM-yyyy hh:mm:ss") << QString();
+    QTest::newRow("datetime1")      << "en_US" << testLongHour
+                                    << QString("dd-'mmddyy'MM-yyyy hh:mm:ss.zzz")
+                                    << QString("31-mmddyy12-1999 23:59:59.999");
+    QTest::newRow("datetime2")      << "en_US" << testLongHour
+                                    << QString("dd-'apAP'MM-yyyy hh:mm:ss.zzz")
+                                    << QString("31-apAP12-1999 23:59:59.999");
+    QTest::newRow("datetime3")      << "en_US" << testLongHour
+                                    << QString("Apdd-MM-yyyy hh:mm:ss.zzz")
+                                    << QString("PMp31-12-1999 11:59:59.999");
+    QTest::newRow("datetime4")      << "en_US" << testLongHour
+                                    << QString("'ap'apdd-MM-yyyy 'AP'hh:mm:ss.zzz")
+                                    << QString("appm31-12-1999 AP11:59:59.999");
+    QTest::newRow("datetime5")      << "en_US" << testLongHour
+                                    << QString("'''") << QString("'");
+    QTest::newRow("datetime6")      << "en_US" << testLongHour
+                                    << QString("'ap") << QString("ap");
+    QTest::newRow("datetime7")      << "en_US" << testLongHour
+                                    << QString("' ' 'hh' hh") << QString("  hh 23");
+    QTest::newRow("datetime8")      << "en_US" << testLongHour
+                                    << QString("d'foobar'") << QString("31foobar");
+    QTest::newRow("datetime9")      << "en_US" << testShortHour
+                                    << QString("hhhhh") << QString("03033");
+    QTest::newRow("datetime11")     << "en_US" << testLongHour
+                                    << QString("HHHhhhAaAPap") << QString("23231111PMpmPMpm");
+    QTest::newRow("datetime12")     << "en_US" << testShortHour
+                                    << QString("HHHhhhAaAPap") << QString("033033AMamAMam");
+    QTest::newRow("datetime13")     << "en_US" << QDateTime(QDate(1974, 12, 1), QTime(14, 14, 20))
+                                    << QString("hh''mm''ss dd''MM''yyyy")
+                                    << QString("14'14'20 01'12'1974");
+    QTest::newRow("AM no p")        << "en_US" << testZeroHour
+                                    << QString("hhAX") << QString("12AMX");
+    QTest::newRow("AM no p, x 2")   << "en_US" << testShortHour
+                                    << QString("hhhhhaA") << QString("03033amAM");
+    QTest::newRow("am 0 hour")      << "en_US" << testZeroHour
+                                    << QString("hAP") << QString("12AM");
+    QTest::newRow("AM zero hour")   << "en_US" << testZeroHour
+                                    << QString("hhAP") << QString("12AM");
+    QTest::newRow("dddd")           << "en_US" << testZeroHour
+                                    << QString("dddd") << QString("Friday");
+    QTest::newRow("ddd")            << "en_US" << testZeroHour
+                                    << QString("ddd") << QString("Fri");
+    QTest::newRow("MMMM")           << "en_US" << testZeroHour
+                                    << QString("MMMM") << QString("December");
+    QTest::newRow("MMM")            << "en_US" << testZeroHour
+                                    << QString("MMM") << QString("Dec");
+    QTest::newRow("empty")          << "en_US" << testZeroHour
+                                    << QString("") << QString("");
 }
 
 void tst_QLocale::formatDateTime()
@@ -1209,6 +1269,46 @@ void tst_QLocale::formatDateTime()
 
     QLocale l(localeName);
     QCOMPARE(l.toString(dateTime, format), result);
+}
+
+void tst_QLocale::formatTimeZone()
+{
+    QLocale enUS("en_US");
+
+    QDateTime dt1(QDate(2013, 1, 1), QTime(1, 0, 0), Qt::OffsetFromUTC, 60 * 60);
+    QCOMPARE(enUS.toString(dt1, "t"), QString("UTC+01:00"));
+
+    QDateTime dt2(QDate(2013, 1, 1), QTime(1, 0, 0), Qt::OffsetFromUTC, -60 * 60);
+    QCOMPARE(enUS.toString(dt2, "t"), QString("UTC-01:00"));
+
+    QDateTime dt3(QDate(2013, 1, 1), QTime(0, 0, 0), Qt::UTC);
+    QCOMPARE(enUS.toString(dt3, "t"), QString("UTC"));
+
+    // LocalTime should vary
+    if (europeanTimeZone) {
+        // Time definitely in Standard Time
+        QDateTime dt4(QDate(2013, 1, 1), QTime(0, 0, 0), Qt::LocalTime);
+#ifdef Q_OS_WIN
+        QEXPECT_FAIL("", "Windows only returns long name (QTBUG-32759)", Continue);
+#endif // Q_OS_WIN
+        QCOMPARE(enUS.toString(dt4, "t"), QString("CET"));
+
+        // Time definitely in Daylight Time
+        QDateTime dt5(QDate(2013, 6, 1), QTime(0, 0, 0), Qt::LocalTime);
+#ifdef Q_OS_WIN
+        QEXPECT_FAIL("", "Windows only returns long name (QTBUG-32759)", Continue);
+#endif // Q_OS_WIN
+        QCOMPARE(enUS.toString(dt5, "t"), QString("CEST"));
+    } else {
+        QSKIP("You must test using Central European (CET/CEST) time zone, e.g. TZ=Europe/Oslo");
+    }
+
+    // Current datetime should return current abbreviation
+    QCOMPARE(enUS.toString(QDateTime::currentDateTime(), "t"),
+             QDateTime::currentDateTime().timeZoneAbbreviation());
+
+    // Time on its own will always be current local time zone
+    QCOMPARE(enUS.toString(QTime(1, 2, 3), "t"), QDateTime::currentDateTime().timeZoneAbbreviation());
 }
 
 void tst_QLocale::toDateTime_data()
