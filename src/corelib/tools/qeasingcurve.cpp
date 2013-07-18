@@ -608,14 +608,16 @@ struct BezierEase : public QEasingCurveFunction
             sign = -1;
         d = d * sign;
 
-        qreal t_i = _fast_cbrt(d);
+        qreal t = _fast_cbrt(d);
 
         //one step of Halley's Method to get a better approximation
-        const qreal t_i_cubic = t_i * t_i * t_i;
-        qreal t = t_i * (t_i_cubic + d + d) / (t_i_cubic + t_i_cubic + d);
+        const qreal t_cubic = t * t * t;
+        const qreal f = t_cubic + t_cubic + d;
+        if (f != qreal(0.0))
+            t = t * (t_cubic + d + d) / f;
 
         //another step
-        /*t_i = t;
+        /*qreal t_i = t;
          t_i_cubic = pow(t_i, 3);
          t = t_i * (t_i_cubic + d + d) / (t_i_cubic + t_i_cubic + d);*/
 
