@@ -3120,6 +3120,7 @@ void Configure::generateQConfigPri()
         configStream << endl;
         configStream << "host_build {" << endl;
         configStream << "    QT_ARCH = " << dictionary["QT_HOST_ARCH"] << endl;
+        configStream << "    QT_TARGET_ARCH = " << dictionary["QT_ARCH"] << endl;
         configStream << "} else {" << endl;
         configStream << "    QT_ARCH = " << dictionary["QT_ARCH"] << endl;
         if (dictionary.contains("XQMAKESPEC") && !dictionary["XQMAKESPEC"].startsWith("wince")) {
