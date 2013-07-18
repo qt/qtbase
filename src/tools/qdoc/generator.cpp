@@ -305,10 +305,18 @@ QString Generator::fileBase(const Node *node) const
         node = node->parent();
     }
 
-    QString base = node->doc().baseName();
-    if (!base.isEmpty())
-        return base;
+    if (node->type() == Node::Document && node->subType() == Node::Collision) {
+        const NameCollisionNode* ncn = static_cast<const NameCollisionNode*>(node);
+        if (ncn->currentChild())
+            return fileBase(ncn->currentChild());
+    }
 
+    if (node->hasBaseName()) {
+        //qDebug() << "RETURNING:" << node->baseName();
+        return node->baseName();
+    }
+
+    QString base;
     const Node *p = node;
 
     forever {
@@ -377,6 +385,8 @@ QString Generator::fileBase(const Node *node) const
     }
     while (res.endsWith(QLatin1Char('-')))
         res.chop(1);
+    Node* n = const_cast<Node*>(node);
+    n->setBaseName(res);
     return res;
 }
 

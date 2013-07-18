@@ -164,7 +164,10 @@ public:
     QString plainName() const;
     QString plainFullName(const Node* relative = 0) const;
     QString fullName(const Node* relative=0) const;
+    const QString& baseName() const { return baseName_; }
+    bool hasBaseName() const { return !baseName_.isEmpty(); }
 
+    void setBaseName(const QString& bn) { baseName_ = bn; }
     void setAccess(Access access) { access_ = access; }
     void setLocation(const Location& location) { loc = location; }
     void setDoc(const Doc& doc, bool replace = false);
@@ -302,6 +305,7 @@ private:
     Location loc;
     Doc doc_;
     QMap<LinkType, QPair<QString, QString> > linkMap_;
+    QString baseName_;
     QString moduleName_;
     QString url_;
     QString since_;

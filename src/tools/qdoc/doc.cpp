@@ -80,7 +80,6 @@ enum {
     CMD_ANNOTATEDLIST,
     CMD_B,
     CMD_BADCODE,
-    CMD_BASENAME,
     CMD_BOLD,
     CMD_BR,
     CMD_BRIEF,
@@ -198,7 +197,6 @@ static struct {
     { "annotatedlist", CMD_ANNOTATEDLIST, 0 },
     { "b", CMD_B, 0 },
     { "badcode", CMD_BADCODE, 0 },
-    { "basename", CMD_BASENAME, 0 }, // ### don't document for now
     { "bold", CMD_BOLD, 0 },
     { "br", CMD_BR, 0 },
     { "brief", CMD_BRIEF, 0 },
@@ -316,7 +314,6 @@ Q_GLOBAL_STATIC(QHash_QString_Macro, macroHash)
 class DocPrivateExtra
 {
 public:
-    QString             baseName;
     Doc::Sections       granularity;
     Doc::Sections       section; // ###
     QList<Atom*>        tableOfContents;
@@ -466,7 +463,6 @@ private:
     Location& location();
     QString detailsUnknownCommand(const QSet<QString>& metaCommandSet,
                                   const QString& str);
-    void insertBaseName(const QString &baseName);
     void insertTarget(const QString& target, bool keyword);
     void include(const QString& fileName, const QString& identifier);
     void startFormat(const QString& format, int cmd);
@@ -643,10 +639,6 @@ void DocParser::parse(const QString& source,
                 case CMD_BADCODE:
                     leavePara();
                     append(Atom::CodeBad,getCode(CMD_BADCODE, marker));
-                    break;
-                case CMD_BASENAME:
-                    leavePara();
-                    insertBaseName(getArgument());
                     break;
                 case CMD_BR:
                     leavePara();
@@ -1667,29 +1659,6 @@ QString DocParser::detailsUnknownCommand(const QSet<QString> &metaCommandSet,
     if (best.isEmpty())
         return QString();
     return tr("Maybe you meant '\\%1'?").arg(best);
-}
-
-void DocParser::insertBaseName(const QString &baseName)
-{
-    priv->constructExtra();
-    if (currentSection == priv->extra->section) {
-        priv->extra->baseName = baseName;
-    }
-    else {
-        Atom *atom = priv->text.firstAtom();
-        Atom *sectionLeft = 0;
-
-        int delta = currentSection - priv->extra->section;
-
-        while (atom != 0) {
-            if (atom->type() == Atom::SectionLeft &&
-                    atom->string().toInt() == delta)
-                sectionLeft = atom;
-            atom = atom->next();
-        }
-        if (sectionLeft != 0)
-            (void) new Atom(sectionLeft, Atom::BaseName, baseName);
-    }
 }
 
 void DocParser::insertTarget(const QString &target, bool keyword)
@@ -2978,17 +2947,6 @@ Text Doc::legaleseText() const
         return Text();
     else
         return body().subText(Atom::LegaleseLeft, Atom::LegaleseRight);
-}
-
-const QString& Doc::baseName() const
-{
-    static QString null;
-    if (priv == 0 || priv->extra == 0) {
-        return null;
-    }
-    else {
-        return priv->extra->baseName;
-    }
 }
 
 Doc::Sections Doc::granularity() const

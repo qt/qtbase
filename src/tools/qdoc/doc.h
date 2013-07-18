@@ -164,7 +164,6 @@ public:
     Text briefText(bool inclusive = false) const;
     Text trimmedBriefText(const QString &className) const;
     Text legaleseText() const;
-    const QString& baseName() const;
     Sections granularity() const;
     const QSet<QString> &parameterNames() const;
     const QStringList &enumItemNames() const;

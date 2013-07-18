@@ -3779,7 +3779,7 @@ void HtmlGenerator::generateDetailedQmlMember(Node *node,
         out() << "<div class=\"qmlproto\">";
         out() << "<table class=\"qmlname\">";
 
-        QString heading = "Property Group:  " + qpgn->name();
+        QString heading = qpgn->name() + " group";
         out() << "<tr valign=\"top\" class=\"even\">";
         out() << "<th class=\"centerAlign\"><p>";
         out() << "<a name=\"" + refForNode(qpgn) + "\"></a>";

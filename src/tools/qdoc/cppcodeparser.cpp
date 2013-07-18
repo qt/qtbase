@@ -612,10 +612,10 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
              (command == COMMAND_QMLATTACHEDSIGNAL) ||
              (command == COMMAND_QMLATTACHEDMETHOD)) {
         QString module;
-        QString element;
+        QString qmlType;
         QString type;
-        if (splitQmlMethodArg(arg.first,type,module,element)) {
-            QmlClassNode* qmlClass = qdb_->findQmlType(module,element);
+        if (splitQmlMethodArg(arg.first,type,module,qmlType)) {
+            QmlClassNode* qmlClass = qdb_->findQmlType(module,qmlType);
             if (qmlClass) {
                 bool attached = false;
                 Node::Type nodeType = Node::QmlMethod;
@@ -650,24 +650,24 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
 /*!
   A QML property group argument has the form...
 
-  <QML-module>::<element>::<name>
+  <QML-module>::<QML-type>::<name>
 
   This function splits the argument into those parts.
   A <QML-module> is the QML equivalent of a C++ namespace.
   So this function splits \a arg on "::" and stores the
-  parts in \a module, \a element, and \a name, and returns
+  parts in \a module, \a qmlType, and \a name, and returns
   true. If any part is not found, a qdoc warning is emitted
   and false is returned.
  */
 bool CppCodeParser::splitQmlPropertyGroupArg(const QString& arg,
                                              QString& module,
-                                             QString& element,
+                                             QString& qmlType,
                                              QString& name)
 {
     QStringList colonSplit = arg.split("::");
     if (colonSplit.size() == 3) {
         module = colonSplit[0];
-        element = colonSplit[1];
+        qmlType = colonSplit[1];
         name = colonSplit[2];
         return true;
     }
@@ -679,26 +679,26 @@ bool CppCodeParser::splitQmlPropertyGroupArg(const QString& arg,
 /*!
   A QML property argument has the form...
 
-  <type> <element>::<name>
-  <type> <QML-module>::<element>::<name>
+  <type> <QML-type>::<name>
+  <type> <QML-module>::<QML-type>::<name>
 
   This function splits the argument into one of those
   two forms. The three part form is the old form, which
   was used before the creation of Qt Quick 2 and Qt
   Components. A <QML-module> is the QML equivalent of a
   C++ namespace. So this function splits \a arg on "::"
-  and stores the parts in \a type, \a module, \a element,
+  and stores the parts in \a type, \a module, \a qmlType,
   and \a name, and returns true. If any part other than
   \a module is not found, a qdoc warning is emitted and
   false is returned.
 
-  \note The two elements \e{Component} and \e{QtObject} never
-  have a module qualifier.
+  \note The two QML types \e{Component} and \e{QtObject}
+  never have a module qualifier.
  */
 bool CppCodeParser::splitQmlPropertyArg(const QString& arg,
                                         QString& type,
                                         QString& module,
-                                        QString& element,
+                                        QString& qmlType,
                                         QString& name)
 {
     QStringList blankSplit = arg.split(QLatin1Char(' '));
@@ -707,13 +707,13 @@ bool CppCodeParser::splitQmlPropertyArg(const QString& arg,
         QStringList colonSplit(blankSplit[1].split("::"));
         if (colonSplit.size() == 3) {
             module = colonSplit[0];
-            element = colonSplit[1];
+            qmlType = colonSplit[1];
             name = colonSplit[2];
             return true;
         }
         if (colonSplit.size() == 2) {
             module.clear();
-            element = colonSplit[0];
+            qmlType = colonSplit[0];
             name = colonSplit[1];
             return true;
         }
@@ -730,21 +730,21 @@ bool CppCodeParser::splitQmlPropertyArg(const QString& arg,
 /*!
   A QML signal or method argument has the form...
 
-  <type> <element>::<name>(<param>, <param>, ...)
-  <type> <QML-module>::<element>::<name>(<param>, <param>, ...)
+  <type> <QML-type>::<name>(<param>, <param>, ...)
+  <type> <QML-module>::<QML-type>::<name>(<param>, <param>, ...)
 
   This function splits the argument into one of those two
-  forms, sets \a module, \a element, and \a name, and returns
+  forms, sets \a module, \a qmlType, and \a name, and returns
   true. If the argument doesn't match either form, an error
   message is emitted and false is returned.
 
-  \note The two elements \e{Component} and \e{QtObject} never
+  \note The two QML types \e{Component} and \e{QtObject} never
   have a module qualifier.
  */
 bool CppCodeParser::splitQmlMethodArg(const QString& arg,
                                       QString& type,
                                       QString& module,
-                                      QString& element)
+                                      QString& qmlType)
 {
     QStringList colonSplit(arg.split("::"));
     if (colonSplit.size() > 1) {
@@ -753,22 +753,22 @@ bool CppCodeParser::splitQmlMethodArg(const QString& arg,
             type = blankSplit[0];
             if (colonSplit.size() > 2) {
                 module = blankSplit[1];
-                element = colonSplit[1];
+                qmlType = colonSplit[1];
             }
             else {
                 module.clear();
-                element = blankSplit[1];
+                qmlType = blankSplit[1];
             }
         }
         else {
             type.clear();
             if (colonSplit.size() > 2) {
                 module = colonSplit[0];
-                element = colonSplit[1];
+                qmlType = colonSplit[1];
             }
             else {
                 module.clear();
-                element = colonSplit[0];
+                qmlType = colonSplit[0];
             }
         }
         return true;
@@ -790,7 +790,7 @@ void CppCodeParser::processQmlProperties(const Doc& doc, NodeList& nodes, DocLis
     QString type;
     QString topic;
     QString module;
-    QString element;
+    QString qmlType;
     QString property;
     QmlPropertyNode* qpn = 0;
     QmlClassNode* qmlClass = 0;
@@ -808,11 +808,11 @@ void CppCodeParser::processQmlProperties(const Doc& doc, NodeList& nodes, DocLis
         qmlPropertyGroupTopic = topics.at(0);
         qmlPropertyGroupTopic.topic = COMMAND_QMLPROPERTYGROUP;
         arg = qmlPropertyGroupTopic.args;
-        if (splitQmlPropertyArg(arg, type, module, element, property)) {
+        if (splitQmlPropertyArg(arg, type, module, qmlType, property)) {
             int i = property.indexOf('.');
             if (i != -1) {
                 property = property.left(i);
-                qmlPropertyGroupTopic.args = module + "::" + element + "::" + property;
+                qmlPropertyGroupTopic.args = module + "::" + qmlType + "::" + property;
                 doc.location().warning(tr("No QML property group command found; using \\%1 %2")
                                        .arg(COMMAND_QMLPROPERTYGROUP).arg(qmlPropertyGroupTopic.args));
             }
@@ -828,8 +828,8 @@ void CppCodeParser::processQmlProperties(const Doc& doc, NodeList& nodes, DocLis
 
     if (!qmlPropertyGroupTopic.isEmpty()) {
         arg = qmlPropertyGroupTopic.args;
-        if (splitQmlPropertyGroupArg(arg, module, element, property)) {
-            qmlClass = qdb_->findQmlType(module, element);
+        if (splitQmlPropertyGroupArg(arg, module, qmlType, property)) {
+            qmlClass = qdb_->findQmlType(module, qmlType);
             if (qmlClass) {
                 qpgn = new QmlPropertyGroupNode(qmlClass, property);
                 qpgn->setLocation(doc.startLocation());
@@ -848,8 +848,8 @@ void CppCodeParser::processQmlProperties(const Doc& doc, NodeList& nodes, DocLis
         arg = topics.at(i).args;
         if ((topic == COMMAND_QMLPROPERTY) || (topic == COMMAND_QMLATTACHEDPROPERTY)) {
             bool attached = (topic == COMMAND_QMLATTACHEDPROPERTY);
-            if (splitQmlPropertyArg(arg, type, module, element, property)) {
-                qmlClass = qdb_->findQmlType(module, element);
+            if (splitQmlPropertyArg(arg, type, module, qmlType, property)) {
+                qmlClass = qdb_->findQmlType(module, qmlType);
                 if (qmlClass) {
                     if (qmlClass->hasQmlProperty(property) != 0) {
                         QString msg = tr("QML property documented multiple times: '%1'").arg(arg);
@@ -2327,7 +2327,7 @@ bool CppCodeParser::makeFunctionNode(const QString& signature,
   the \a type.
 
   \a parent is the QML class node. The QML module and QML
-  element names have already been consumed to find \a parent.
+  type names have already been consumed to find \a parent.
   What remains in \a sig is the method signature. The method
   must be a child of \a parent.
  */
