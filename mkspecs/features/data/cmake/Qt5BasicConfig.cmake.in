@@ -119,13 +119,20 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
     set(Qt5$${CMAKE_MODULE_NAME}_PRIVATE_INCLUDE_DIRS)
 !!ENDIF
 
-    foreach(_dir ${_Qt5$${CMAKE_MODULE_NAME}_OWN_INCLUDE_DIRS}
-!!IF isEmpty(CMAKE_BUILD_IS_FRAMEWORK)
-                 ${Qt5$${CMAKE_MODULE_NAME}_PRIVATE_INCLUDE_DIRS}
-!!ENDIF
-                 )
+    foreach(_dir ${_Qt5$${CMAKE_MODULE_NAME}_OWN_INCLUDE_DIRS})
         _qt5_$${CMAKE_MODULE_NAME}_check_file_exists(${_dir})
     endforeach()
+
+!!IF isEmpty(CMAKE_BUILD_IS_FRAMEWORK)
+    # Only check existence of private includes if the Private component is
+    # specified.
+    list(FIND Qt5$${CMAKE_MODULE_NAME}_FIND_COMPONENTS Private _check_private)
+    if (NOT _check_private STREQUAL -1)
+        foreach(_dir ${Qt5$${CMAKE_MODULE_NAME}_PRIVATE_INCLUDE_DIRS})
+            _qt5_$${CMAKE_MODULE_NAME}_check_file_exists(${_dir})
+        endforeach()
+    endif()
+!!ENDIF
 
     set(Qt5$${CMAKE_MODULE_NAME}_INCLUDE_DIRS ${_Qt5$${CMAKE_MODULE_NAME}_OWN_INCLUDE_DIRS})
 
