@@ -872,45 +872,42 @@ QString QDate::longDayName(int weekday, MonthNameType type)
 
     \sa shortDayName(), shortMonthName()
 */
-QString QDate::toString(Qt::DateFormat f) const
+QString QDate::toString(Qt::DateFormat format) const
 {
     if (!isValid())
         return QString();
+
     int y, m, d;
-    getDateFromJulianDay(jd, &y, &m, &d);
-    switch (f) {
+
+    switch (format) {
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
+        return QLocale::system().toString(*this, QLocale::ShortFormat);
     case Qt::SystemLocaleLongDate:
-        return QLocale::system().toString(*this, f == Qt::SystemLocaleLongDate ? QLocale::LongFormat
-                                                                               : QLocale::ShortFormat);
+        return QLocale::system().toString(*this, QLocale::LongFormat);
     case Qt::LocaleDate:
     case Qt::DefaultLocaleShortDate:
+        return QLocale().toString(*this, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
-        return QLocale().toString(*this, f == Qt::DefaultLocaleLongDate ? QLocale::LongFormat
-                                                                        : QLocale::ShortFormat);
+        return QLocale().toString(*this, QLocale::LongFormat);
+    case Qt::RFC2822Date:
+        return toString(QStringLiteral("dd MMM yyyy"));
     default:
 #ifndef QT_NO_TEXTDATE
     case Qt::TextDate:
-        {
-            return QString::fromLatin1("%0 %1 %2 %3")
-                .arg(shortDayName(dayOfWeek()))
-                .arg(shortMonthName(m))
-                .arg(d)
-                .arg(y);
-        }
+        getDateFromJulianDay(jd, &y, &m, &d);
+        return QString::fromUtf8("%1 %2 %3 %4").arg(shortDayName(dayOfWeek()))
+                                               .arg(shortMonthName(m))
+                                               .arg(d)
+                                               .arg(y);
 #endif
-    case Qt::RFC2822Date:
-        return toString(QStringLiteral("dd MMM yyyy"));
     case Qt::ISODate:
-        {
-            if (year() < 0 || year() > 9999)
-                return QString();
-            QString year(QString::number(y).rightJustified(4, QLatin1Char('0')));
-            QString month(QString::number(m).rightJustified(2, QLatin1Char('0')));
-            QString day(QString::number(d).rightJustified(2, QLatin1Char('0')));
-            return year + QLatin1Char('-') + month + QLatin1Char('-') + day;
-        }
+        getDateFromJulianDay(jd, &y, &m, &d);
+        if (y < 0 || y > 9999)
+            return QString();
+        return QString::fromUtf8("%1-%2-%3").arg(y, 4, 10, QLatin1Char('0'))
+                                            .arg(m, 2, 10, QLatin1Char('0'))
+                                            .arg(d, 2, 10, QLatin1Char('0'));
     }
 }
 
@@ -1224,44 +1221,34 @@ qint64 QDate::daysTo(const QDate &d) const
     English short month names (e.g. "Jan"). Although localized month
     names can also be used, they depend on the user's locale settings.
 */
-QDate QDate::fromString(const QString& s, Qt::DateFormat f)
+QDate QDate::fromString(const QString& string, Qt::DateFormat format)
 {
-    if (s.isEmpty())
+    if (string.isEmpty())
         return QDate();
 
-    switch (f) {
-    case Qt::ISODate:
-        {
-            int year(s.mid(0, 4).toInt());
-            int month(s.mid(5, 2).toInt());
-            int day(s.mid(8, 2).toInt());
-            if (year && month && day)
-                return QDate(year, month, day);
-        }
-        break;
+    switch (format) {
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
+        return QLocale::system().toDate(string, QLocale::ShortFormat);
     case Qt::SystemLocaleLongDate:
-        return fromString(s, QLocale::system().dateFormat(f == Qt::SystemLocaleLongDate ? QLocale::LongFormat
-                                                                                        : QLocale::ShortFormat));
+        return QLocale::system().toDate(string, QLocale::LongFormat);
     case Qt::LocaleDate:
     case Qt::DefaultLocaleShortDate:
+        return QLocale().toDate(string, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
-        return fromString(s, QLocale().dateFormat(f == Qt::DefaultLocaleLongDate ? QLocale::LongFormat
-                                                                                 : QLocale::ShortFormat));
+        return QLocale().toDate(string, QLocale::LongFormat);
     case Qt::RFC2822Date: {
         QDate date;
-        rfcDateImpl(s, &date);
+        rfcDateImpl(string, &date);
         return date;
     }
     default:
 #ifndef QT_NO_TEXTDATE
     case Qt::TextDate: {
-        QStringList parts = s.split(QLatin1Char(' '), QString::SkipEmptyParts);
+        QStringList parts = string.split(QLatin1Char(' '), QString::SkipEmptyParts);
 
-        if (parts.count() != 4) {
+        if (parts.count() != 4)
             return QDate();
-        }
 
         QString monthName = parts.at(1);
         int month = -1;
@@ -1280,28 +1267,25 @@ QDate QDate::fromString(const QString& s, Qt::DateFormat f)
                     break;
                 }
             }
-            if (month == -1) {
+            if (month == -1)
                 // Month name matches neither English nor other localised name.
                 return QDate();
-            }
         }
 
-        bool ok;
-        int day = parts.at(2).toInt(&ok);
-        if (!ok) {
-            return QDate();
-        }
-
+        bool ok = false;
         int year = parts.at(3).toInt(&ok);
-        if (!ok) {
+        if (!ok)
             return QDate();
-        }
 
-        return QDate(year, month, day);
-    }
-#else
-        break;
-#endif
+        return QDate(year, month, parts.at(2).toInt());
+        }
+#endif // QT_NO_TEXTDATE
+    case Qt::ISODate: {
+        const int year = string.mid(0, 4).toInt();
+        if (year <= 0 || year > 9999)
+            return QDate();
+        return QDate(year, string.mid(5, 2).toInt(), string.mid(8, 2).toInt());
+        }
     }
     return QDate();
 }
@@ -1633,6 +1617,8 @@ int QTime::msec() const
     "23:59:20".
 
     If the time is invalid, an empty string will be returned.
+
+    \sa QDate::toString(), QDateTime::toString()
 */
 
 QString QTime::toString(Qt::DateFormat format) const
@@ -1643,28 +1629,25 @@ QString QTime::toString(Qt::DateFormat format) const
     switch (format) {
     case Qt::SystemLocaleDate:
     case Qt::SystemLocaleShortDate:
+        return QLocale::system().toString(*this, QLocale::ShortFormat);
     case Qt::SystemLocaleLongDate:
-        return QLocale::system().toString(*this, format == Qt::SystemLocaleLongDate ? QLocale::LongFormat
-                                          : QLocale::ShortFormat);
+        return QLocale::system().toString(*this, QLocale::LongFormat);
     case Qt::LocaleDate:
     case Qt::DefaultLocaleShortDate:
+        return QLocale().toString(*this, QLocale::ShortFormat);
     case Qt::DefaultLocaleLongDate:
-        return QLocale().toString(*this, format == Qt::DefaultLocaleLongDate ? QLocale::LongFormat
-                                  : QLocale::ShortFormat);
-
+        return QLocale().toString(*this, QLocale::LongFormat);
     case Qt::RFC2822Date:
-        return QString::fromLatin1("%1:%2:%3")
-            .arg(hour(), 2, 10, QLatin1Char('0'))
-            .arg(minute(), 2, 10, QLatin1Char('0'))
-            .arg(second(), 2, 10, QLatin1Char('0'));
-    default:
+        return QString::fromLatin1("%1:%2:%3").arg(hour(), 2, 10, QLatin1Char('0'))
+                                              .arg(minute(), 2, 10, QLatin1Char('0'))
+                                              .arg(second(), 2, 10, QLatin1Char('0'));
     case Qt::ISODate:
     case Qt::TextDate:
-        return QString::fromLatin1("%1:%2:%3.%4")
-            .arg(hour(), 2, 10, QLatin1Char('0'))
-            .arg(minute(), 2, 10, QLatin1Char('0'))
-            .arg(second(), 2, 10, QLatin1Char('0'))
-            .arg(msec(), 3, 10, QLatin1Char('0'));
+    default:
+        return QString::fromUtf8("%1:%2:%3.%4").arg(hour(), 2, 10, QLatin1Char('0'))
+                                               .arg(minute(), 2, 10, QLatin1Char('0'))
+                                               .arg(second(), 2, 10, QLatin1Char('0'))
+                                               .arg(msec(), 3, 10, QLatin1Char('0'));
     }
 }
 
@@ -1899,104 +1882,68 @@ int QTime::msecsTo(const QTime &t) const
 
 #ifndef QT_NO_DATESTRING
 
-// These anonymous functions tidy up QDateTime::fromString()
-// and avoid confusion of responsibility between it and QTime::fromString().
-namespace {
-inline bool isMidnight(int hour, int minute, int second, int msec)
+static QTime fromIsoTimeString(const QString &string, Qt::DateFormat format, bool *isMidnight24)
 {
-    return hour == 24 && minute == 0 && second == 0 && msec == 0;
-}
+    if (isMidnight24)
+        *isMidnight24 = false;
 
-QTime fromStringImpl(const QString &s, Qt::DateFormat f, bool &isMidnight24)
-{
-    if (s.isEmpty()) {
-        // Return a null time.
+    const int size = string.size();
+    if (size < 5)
         return QTime();
-    }
 
-    switch (f) {
-    case Qt::SystemLocaleDate:
-    case Qt::SystemLocaleShortDate:
-    case Qt::SystemLocaleLongDate:
-    {
-        QLocale::FormatType formatType(Qt::SystemLocaleLongDate ? QLocale::LongFormat : QLocale::ShortFormat);
-        return QTime::fromString(s, QLocale::system().timeFormat(formatType));
-    }
-    case Qt::LocaleDate:
-    case Qt::DefaultLocaleShortDate:
-    case Qt::DefaultLocaleLongDate:
-    {
-        QLocale::FormatType formatType(f == Qt::DefaultLocaleLongDate ? QLocale::LongFormat : QLocale::ShortFormat);
-        return QTime::fromString(s, QLocale().timeFormat(formatType));
-    }
-    case Qt::RFC2822Date: {
-        QTime time;
-        rfcDateImpl(s, 0, &time);
-        return time;
-    }
-    case Qt::TextDate:
-    case Qt::ISODate:
-    {
-        bool ok = true;
-        const int hour(s.mid(0, 2).toInt(&ok));
+    bool ok = false;
+    int hour = string.mid(0, 2).toInt(&ok);
+    if (!ok)
+        return QTime();
+    const int minute = string.mid(3, 2).toInt(&ok);
+    if (!ok)
+        return QTime();
+    int second = 0;
+    int msec = 0;
+
+    if (size == 5) {
+        // HH:MM format
+        second = 0;
+        msec = 0;
+    } else if (string.at(5) == QLatin1Char(',') || string.at(5) == QLatin1Char('.')) {
+        if (format == Qt::TextDate)
+            return QTime();
+        // ISODate HH:MM.SSSSSS format
+        // We only want 5 digits worth of fraction of minute. This follows the existing
+        // behavior that determines how milliseconds are read; 4 millisecond digits are
+        // read and then rounded to 3. If we read at most 5 digits for fraction of minute,
+        // the maximum amount of millisecond digits it will expand to once converted to
+        // seconds is 4. E.g. 12:34,99999 will expand to 12:34:59.9994. The milliseconds
+        // will then be rounded up AND clamped to 999.
+        const float minuteFraction = QString::fromUtf8("0.%1").arg(string.mid(6, 5)).toFloat(&ok);
         if (!ok)
             return QTime();
-        const int minute(s.mid(3, 2).toInt(&ok));
+        const float secondWithMs = minuteFraction * 60;
+        const float secondNoMs = std::floor(secondWithMs);
+        const float secondFraction = secondWithMs - secondNoMs;
+        second = secondNoMs;
+        msec = qMin(qRound(secondFraction * 1000.0), 999);
+    } else {
+        // HH:MM:SS or HH:MM:SS.sssss
+        second = string.mid(6, 2).toInt(&ok);
         if (!ok)
             return QTime();
-        if (f == Qt::ISODate) {
-            if (s.size() == 5) {
-                // Do not need to specify seconds if using ISO format.
-                return QTime(hour, minute, 0, 0);
-            } else if ((s.size() > 6) && (s[5] == QLatin1Char(',') || s[5] == QLatin1Char('.'))) {
-                // Possibly specifying fraction of a minute.
-
-                // We only want 5 digits worth of fraction of minute. This follows the existing
-                // behaviour that determines how milliseconds are read; 4 millisecond digits are
-                // read and then rounded to 3. If we read at most 5 digits for fraction of minute,
-                // the maximum amount of millisecond digits it will expand to once converted to
-                // seconds is 4. E.g. 12:34,99999 will expand to 12:34:59.9994. The milliseconds
-                // will then be rounded up AND clamped to 999.
-                const QString minuteFractionStr(QLatin1String("0.") + s.mid(6, 5));
-                const float minuteFraction = minuteFractionStr.toFloat(&ok);
-                if (!ok)
-                    return QTime();
-                const float secondWithMs = minuteFraction * 60;
-                const float second = std::floor(secondWithMs);
-                const float millisecond = 1000 * (secondWithMs - second);
-                const int millisecondRounded = qMin(qRound(millisecond), 999);
-
-                if (isMidnight(hour, minute, second, millisecondRounded)) {
-                    isMidnight24 = true;
-                    return QTime(0, 0, 0, 0);
-                }
-
-                return QTime(hour, minute, second, millisecondRounded);
-            }
+        if (size > 8 && (string.at(8) == QLatin1Char(',') || string.at(8) == QLatin1Char('.'))) {
+            const double secondFraction = QString::fromUtf8("0.%1").arg(string.mid(9, 4)).toDouble(&ok);
+            if (!ok)
+                return QTime();
+            msec = qMin(qRound(secondFraction * 1000.0), 999);
         }
-
-        const int second(s.mid(6, 2).toInt(&ok));
-        if (!ok)
-            return QTime();
-        const QString msec_s(QLatin1String("0.") + s.mid(9, 4));
-        const double msec(msec_s.toDouble(&ok));
-        if (!ok)
-            return QTime(hour, minute, second, 0);
-
-        if (f == Qt::ISODate) {
-            if (isMidnight(hour, minute, second, msec)) {
-                isMidnight24 = true;
-                return QTime(0, 0, 0, 0);
-            }
-        }
-        return QTime(hour, minute, second, qMin(qRound(msec * 1000.0), 999));
     }
-    }
-    Q_UNREACHABLE();
-    return QTime();
-}
-}
 
+    if (format == Qt::ISODate && hour == 24 && minute == 0 && second == 0 && msec == 0) {
+        if (isMidnight24)
+            *isMidnight24 = true;
+        hour = 0;
+    }
+
+    return QTime(hour, minute, second, msec);
+}
 
 /*!
     \fn QTime QTime::fromString(const QString &string, Qt::DateFormat format)
@@ -2010,10 +1957,32 @@ QTime fromStringImpl(const QString &s, Qt::DateFormat f, bool &isMidnight24)
     fails for the default locale). This should be considered an
     implementation detail.
 */
-QTime QTime::fromString(const QString& s, Qt::DateFormat f)
+QTime QTime::fromString(const QString& string, Qt::DateFormat format)
 {
-    bool unused;
-    return fromStringImpl(s, f, unused);
+    if (string.isEmpty())
+        return QTime();
+
+    switch (format) {
+    case Qt::SystemLocaleDate:
+    case Qt::SystemLocaleShortDate:
+        return QLocale::system().toTime(string, QLocale::ShortFormat);
+    case Qt::SystemLocaleLongDate:
+        return QLocale::system().toTime(string, QLocale::LongFormat);
+    case Qt::LocaleDate:
+    case Qt::DefaultLocaleShortDate:
+        return QLocale().toTime(string, QLocale::ShortFormat);
+    case Qt::DefaultLocaleLongDate:
+        return QLocale().toTime(string, QLocale::LongFormat);
+    case Qt::RFC2822Date: {
+        QTime time;
+        rfcDateImpl(string, 0, &time);
+        return time;
+    }
+    case Qt::ISODate:
+    case Qt::TextDate:
+    default:
+        return fromIsoTimeString(string, format, 0);
+    }
 }
 
 /*!
@@ -2814,30 +2783,24 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
     \sa QDate::toString(), QTime::toString(), Qt::DateFormat
 */
 
-QString QDateTime::toString(Qt::DateFormat f) const
+QString QDateTime::toString(Qt::DateFormat format) const
 {
     QString buf;
     if (!isValid())
         return buf;
 
-    if (f == Qt::ISODate) {
-        buf = d->date.toString(Qt::ISODate);
-        if (buf.isEmpty())
-            return QString();   // failed to convert
-        buf += QLatin1Char('T');
-        buf += d->time.toString(Qt::ISODate);
-        switch (d->spec) {
-        case QDateTimePrivate::UTC:
-            buf += QLatin1Char('Z');
-            break;
-        case QDateTimePrivate::OffsetFromUTC: {
-            buf += toOffsetString(Qt::ISODate, d->m_offsetFromUtc);
-            break;
-        }
-        default:
-            break;
-        }
-    } else if (f == Qt::RFC2822Date) {
+    switch (format) {
+    case Qt::SystemLocaleDate:
+    case Qt::SystemLocaleShortDate:
+        return QLocale::system().toString(*this, QLocale::ShortFormat);
+    case Qt::SystemLocaleLongDate:
+        return QLocale::system().toString(*this, QLocale::LongFormat);
+    case Qt::LocaleDate:
+    case Qt::DefaultLocaleShortDate:
+        return QLocale().toString(*this, QLocale::ShortFormat);
+    case Qt::DefaultLocaleLongDate:
+        return QLocale().toString(*this, QLocale::LongFormat);
+    case Qt::RFC2822Date: {
         buf = toString(QStringLiteral("dd MMM yyyy hh:mm:ss "));
 
         int utcOffset = d->m_offsetFromUtc;
@@ -2859,50 +2822,42 @@ QString QDateTime::toString(Qt::DateFormat f) const
         if (min < 10)
             buf += QLatin1Char('0');
         buf += QString::number(min);
+        return buf;
     }
+    default:
 #ifndef QT_NO_TEXTDATE
-    else if (f == Qt::TextDate) {
-#ifndef Q_OS_WIN
-        buf = d->date.shortDayName(d->date.dayOfWeek());
-        buf += QLatin1Char(' ');
-        buf += d->date.shortMonthName(d->date.month());
-        buf += QLatin1Char(' ');
-        buf += QString::number(d->date.day());
-#else
-        wchar_t out[255];
-        GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_ILDATE, out, 255);
-        QString winstr = QString::fromWCharArray(out);
-        switch (winstr.toInt()) {
-        case 1:
-            buf = d->date.shortDayName(d->date.dayOfWeek());
-            buf += QLatin1Char(' ');
-            buf += QString::number(d->date.day());
-            buf += QLatin1String(". ");
-            buf += d->date.shortMonthName(d->date.month());
-            break;
-        default:
-            buf = d->date.shortDayName(d->date.dayOfWeek());
-            buf += QLatin1Char(' ');
-            buf += d->date.shortMonthName(d->date.month());
-            buf += QLatin1Char(' ');
-            buf += QString::number(d->date.day());
+    case Qt::TextDate:
+        //We cant use date.toString(Qt::TextDate) as we need to insert the time before the year
+        buf = QString::fromUtf8("%1 %2 %3 %4 %5").arg(d->date.shortDayName(d->date.dayOfWeek()))
+                                                 .arg(d->date.shortMonthName(d->date.month()))
+                                                 .arg(d->date.day())
+                                                 .arg(d->time.toString(Qt::TextDate))
+                                                 .arg(d->date.year());
+        if (timeSpec() != Qt::LocalTime) {
+            buf += QStringLiteral(" GMT");
+            if (d->spec == QDateTimePrivate::OffsetFromUTC)
+                buf += toOffsetString(Qt::TextDate, d->m_offsetFromUtc);
         }
+        return buf;
 #endif
-        buf += QLatin1Char(' ');
-        buf += d->time.toString();
-        buf += QLatin1Char(' ');
-        buf += QString::number(d->date.year());
-    }
-#endif
-    else {
-        buf = d->date.toString(f);
+    case Qt::ISODate:
+        buf = d->date.toString(Qt::ISODate);
         if (buf.isEmpty())
             return QString();   // failed to convert
-        buf += QLatin1Char(' ');
-        buf += d->time.toString(f);
+        buf += QLatin1Char('T');
+        buf += d->time.toString(Qt::ISODate);
+        switch (d->spec) {
+        case QDateTimePrivate::UTC:
+            buf += QLatin1Char('Z');
+            break;
+        case QDateTimePrivate::OffsetFromUTC:
+            buf += toOffsetString(Qt::ISODate, d->m_offsetFromUtc);
+            break;
+        default:
+            break;
+        }
+        return buf;
     }
-
-    return buf;
 }
 
 /*!
@@ -3675,55 +3630,27 @@ static int fromShortMonthName(const QString &monthName)
     English short month names (e.g. "Jan"). Although localized month
     names can also be used, they depend on the user's locale settings.
 */
-QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
+QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
 {
-    if (s.isEmpty()) {
+    if (string.isEmpty())
         return QDateTime();
-    }
 
-    switch (f) {
-    case Qt::ISODate: {
-        QString tmp = s;
-        Qt::TimeSpec ts = Qt::LocalTime;
-        QDate date = QDate::fromString(tmp.left(10), Qt::ISODate);
-        if (tmp.size() == 10)
-            return QDateTime(date);
-
-        tmp = tmp.mid(11);
-
-        // Recognize UTC specifications
-        if (tmp.endsWith(QLatin1Char('Z'))) {
-            ts = Qt::UTC;
-            tmp.chop(1);
-        }
-
-        // Recognize timezone specifications
-        int offset = 0;
-        const int signIndex = tmp.indexOf(QRegExp(QStringLiteral("[+-]")));
-        if (signIndex >= 0) {
-            bool ok;
-            offset = fromOffsetString(tmp.mid(signIndex), &ok);
-            if (!ok)
-                return QDateTime();
-            tmp = tmp.left(signIndex);
-            ts = Qt::OffsetFromUTC;
-        }
-
-        bool isMidnight24 = false;
-        // Might be end of day (24:00, including variants), which QTime considers invalid.
-        QTime time(fromStringImpl(tmp, Qt::ISODate, isMidnight24));
-        if (isMidnight24) {
-            // ISO 8601 (section 4.2.3) says that 24:00 is equivalent to 00:00 the next day.
-            date = date.addDays(1);
-        }
-
-        return QDateTime(date, time, ts, offset);
-    }
+    switch (format) {
+    case Qt::SystemLocaleDate:
+    case Qt::SystemLocaleShortDate:
+        return QLocale::system().toDateTime(string, QLocale::ShortFormat);
+    case Qt::SystemLocaleLongDate:
+        return QLocale::system().toDateTime(string, QLocale::LongFormat);
+    case Qt::LocaleDate:
+    case Qt::DefaultLocaleShortDate:
+        return QLocale().toDateTime(string, QLocale::ShortFormat);
+    case Qt::DefaultLocaleLongDate:
+        return QLocale().toDateTime(string, QLocale::LongFormat);
     case Qt::RFC2822Date: {
         QDate date;
         QTime time;
         int utcOffset = 0;
-        rfcDateImpl(s, &date, &time, &utcOffset);
+        rfcDateImpl(string, &date, &time, &utcOffset);
 
         if (!date.isValid() || !time.isValid())
             return QDateTime();
@@ -3732,81 +3659,115 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
         dateTime.setOffsetFromUtc(utcOffset);
         return dateTime;
     }
-    case Qt::SystemLocaleDate:
-    case Qt::SystemLocaleShortDate:
-    case Qt::SystemLocaleLongDate:
-        return fromString(s, QLocale::system().dateTimeFormat(f == Qt::SystemLocaleLongDate ? QLocale::LongFormat
-                                                                                            : QLocale::ShortFormat));
-    case Qt::LocaleDate:
-    case Qt::DefaultLocaleShortDate:
-    case Qt::DefaultLocaleLongDate:
-        return fromString(s, QLocale().dateTimeFormat(f == Qt::DefaultLocaleLongDate ? QLocale::LongFormat
-                                                                                     : QLocale::ShortFormat));
+    case Qt::ISODate: {
+        const int size = string.size();
+        if (size < 10)
+            return QDateTime();
+
+        QString isoString = string;
+        Qt::TimeSpec spec = Qt::LocalTime;
+
+        QDate date = QDate::fromString(isoString.left(10), Qt::ISODate);
+        if (!date.isValid())
+            return QDateTime();
+        if (size == 10)
+            return QDateTime(date);
+
+        isoString.remove(0, 11);
+        int offset = 0;
+        // Check end of string for Time Zone definition, either Z for UTC or [+-]HH:MM for Offset
+        if (isoString.endsWith(QLatin1Char('Z'))) {
+            spec = Qt::UTC;
+            isoString.chop(1);
+        } else {
+            const int signIndex = isoString.indexOf(QRegExp(QStringLiteral("[+-]")));
+            if (signIndex >= 0) {
+                bool ok;
+                offset = fromOffsetString(isoString.mid(signIndex), &ok);
+                if (!ok)
+                    return QDateTime();
+                isoString = isoString.left(signIndex);
+                spec = Qt::OffsetFromUTC;
+            }
+        }
+
+        // Might be end of day (24:00, including variants), which QTime considers invalid.
+        // ISO 8601 (section 4.2.3) says that 24:00 is equivalent to 00:00 the next day.
+        bool isMidnight24 = false;
+        QTime time = fromIsoTimeString(isoString, Qt::ISODate, &isMidnight24);
+        if (!time.isValid())
+            return QDateTime();
+        if (isMidnight24)
+            date = date.addDays(1);
+        return QDateTime(date, time, spec, offset);
+    }
 #if !defined(QT_NO_TEXTDATE)
     case Qt::TextDate: {
-        QStringList parts = s.split(QLatin1Char(' '), QString::SkipEmptyParts);
+        QStringList parts = string.split(QLatin1Char(' '), QString::SkipEmptyParts);
 
-        if ((parts.count() < 5) || (parts.count() > 6)) {
+        if ((parts.count() < 5) || (parts.count() > 6))
             return QDateTime();
-        }
 
         // Accept "Sun Dec 1 13:02:00 1974" and "Sun 1. Dec 13:02:00 1974"
-        int month = -1, day = -1;
-        bool ok;
+        int month = 0;
+        int day = 0;
+        bool ok = false;
 
+        // First try month then day
         month = fromShortMonthName(parts.at(1));
-        if (month != -1) {
-            day = parts.at(2).toInt(&ok);
-            if (!ok)
-                day = -1;
-        }
+        if (month)
+            day = parts.at(2).toInt();
 
-        if (month == -1 || day == -1) {
-            // first variant failed, lets try the other
+        // If failed try day then month
+        if (!month || !day) {
             month = fromShortMonthName(parts.at(2));
-            if (month != -1) {
+            if (month) {
                 QString dayStr = parts.at(1);
                 if (dayStr.endsWith(QLatin1Char('.'))) {
                     dayStr.chop(1);
-                    day = dayStr.toInt(&ok);
-                    if (!ok)
-                        day = -1;
-                } else {
-                    day = -1;
+                    day = dayStr.toInt();
                 }
             }
         }
 
-        if (month == -1 || day == -1) {
-            // both variants failed, give up
+        // If both failed, give up
+        if (!month || !day)
+            return QDateTime();
+
+        // Year can be before or after time, "Sun Dec 1 1974 13:02:00" or "Sun Dec 1 13:02:00 1974"
+        // Guess which by looking for ':' in the time
+        int year = 0;
+        int yearPart = 0;
+        int timePart = 0;
+        if (parts.at(3).contains(QLatin1Char(':'))) {
+            yearPart = 4;
+            timePart = 3;
+        } else if (parts.at(4).contains(QLatin1Char(':'))) {
+            yearPart = 3;
+            timePart = 4;
+        } else {
             return QDateTime();
         }
 
-        int year;
-        QStringList timeParts = parts.at(3).split(QLatin1Char(':'));
-        if ((timeParts.count() == 3) || (timeParts.count() == 2)) {
-            // Year is after time, e.g. "Sun Dec 1 13:02:00 1974"
-            year = parts.at(4).toInt(&ok);
-            if (!ok)
-                return QDateTime();
-        } else { // Year is before time, e.g. "Sun Dec 1 1974 13:02:00"
-            timeParts = parts.at(4).split(QLatin1Char(':'));
-            if ((timeParts.count() != 3) && (timeParts.count() != 2))
-                return QDateTime();
-            year = parts.at(3).toInt(&ok);
-            if (!ok)
-                return QDateTime();
-        }
+        year = parts.at(yearPart).toInt(&ok);
+        if (!ok)
+            return QDateTime();
+
+        QDate date(year, month, day);
+        if (!date.isValid())
+            return QDateTime();
+
+        QStringList timeParts = parts.at(timePart).split(QLatin1Char(':'));
+        if (timeParts.count() < 2 || timeParts.count() > 3)
+            return QDateTime();
 
         int hour = timeParts.at(0).toInt(&ok);
-        if (!ok) {
+        if (!ok)
             return QDateTime();
-        }
 
         int minute = timeParts.at(1).toInt(&ok);
-        if (!ok) {
+        if (!ok)
             return QDateTime();
-        }
 
         int second = 0;
         int millisecond = 0;
@@ -3829,8 +3790,9 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
             }
         }
 
-        QDate date(year, month, day);
         QTime time(hour, minute, second, millisecond);
+        if (!time.isValid())
+            return QDateTime();
 
         if (parts.count() == 5)
             return QDateTime(date, time, Qt::LocalTime);

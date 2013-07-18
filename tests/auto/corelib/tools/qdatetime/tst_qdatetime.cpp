@@ -85,6 +85,8 @@ private slots:
     void fromMSecsSinceEpoch();
     void toString_isoDate_data();
     void toString_isoDate();
+    void toString_textDate_data();
+    void toString_textDate();
     void toString_rfcDate_data();
     void toString_rfcDate();
     void toString_enumformat();
@@ -622,8 +624,8 @@ void tst_QDateTime::fromMSecsSinceEpoch()
 
 void tst_QDateTime::toString_isoDate_data()
 {
-    QTest::addColumn<QDateTime>("dt");
-    QTest::addColumn<QString>("formatted");
+    QTest::addColumn<QDateTime>("datetime");
+    QTest::addColumn<QString>("expected");
 
     QTest::newRow("localtime")
             << QDateTime(QDate(1978, 11, 9), QTime(13, 28, 34))
@@ -650,10 +652,68 @@ void tst_QDateTime::toString_isoDate_data()
 
 void tst_QDateTime::toString_isoDate()
 {
-    QFETCH(QDateTime, dt);
-    QFETCH(QString, formatted);
+    QFETCH(QDateTime, datetime);
+    QFETCH(QString, expected);
 
-    QCOMPARE(dt.toString(Qt::ISODate), formatted);
+    QLocale oldLocale;
+    QLocale::setDefault(QLocale("en_US"));
+
+    QString result = datetime.toString(Qt::ISODate);
+    QCOMPARE(result, expected);
+
+    QDateTime resultDatetime = QDateTime::fromString(result, Qt::ISODate);
+    // If expecting invalid result the datetime may still be valid, i.e. year < 0 or > 9999
+    if (!expected.isEmpty()) {
+        QCOMPARE(resultDatetime, datetime);
+        QCOMPARE(resultDatetime.date(), datetime.date());
+        QCOMPARE(resultDatetime.time(), datetime.time());
+        QCOMPARE(resultDatetime.timeSpec(), datetime.timeSpec());
+        QCOMPARE(resultDatetime.utcOffset(), datetime.utcOffset());
+    } else {
+        QCOMPARE(resultDatetime, QDateTime());
+    }
+
+    QLocale::setDefault(oldLocale);
+}
+
+void tst_QDateTime::toString_textDate_data()
+{
+    QTest::addColumn<QDateTime>("datetime");
+    QTest::addColumn<QString>("expected");
+
+    QTest::newRow("localtime")  << QDateTime(QDate(2013, 1, 2), QTime(1, 2, 3), Qt::LocalTime)
+                                << QString("Wed Jan 2 01:02:03.000 2013");
+    QTest::newRow("utc")        << QDateTime(QDate(2013, 1, 2), QTime(1, 2, 3), Qt::UTC)
+                                << QString("Wed Jan 2 01:02:03.000 2013 GMT");
+    QTest::newRow("offset+")    << QDateTime(QDate(2013, 1, 2), QTime(1, 2, 3), Qt::OffsetFromUTC,
+                                             10 * 60 * 60)
+                                << QString("Wed Jan 2 01:02:03.000 2013 GMT+1000");
+    QTest::newRow("offset-")    << QDateTime(QDate(2013, 1, 2), QTime(1, 2, 3), Qt::OffsetFromUTC,
+                                             -10 * 60 * 60)
+                                << QString("Wed Jan 2 01:02:03.000 2013 GMT-1000");
+    QTest::newRow("invalid")    << QDateTime()
+                                << QString("");
+}
+
+void tst_QDateTime::toString_textDate()
+{
+    QFETCH(QDateTime, datetime);
+    QFETCH(QString, expected);
+
+    QLocale oldLocale;
+    QLocale::setDefault(QLocale("en_US"));
+
+    QString result = datetime.toString(Qt::TextDate);
+    QCOMPARE(result, expected);
+
+    QDateTime resultDatetime = QDateTime::fromString(result, Qt::TextDate);
+    QCOMPARE(resultDatetime, datetime);
+    QCOMPARE(resultDatetime.date(), datetime.date());
+    QCOMPARE(resultDatetime.time(), datetime.time());
+    QCOMPARE(resultDatetime.timeSpec(), datetime.timeSpec());
+    QCOMPARE(resultDatetime.utcOffset(), datetime.utcOffset());
+
+    QLocale::setDefault(oldLocale);
 }
 
 void tst_QDateTime::toString_rfcDate_data()
@@ -1762,7 +1822,7 @@ void tst_QDateTime::fromStringDateFormat_data()
     QTest::newRow("text invalid month name") << QString::fromLatin1("Thu Jaz 1 1970 00:12:34")
         << Qt::TextDate << invalidDateTime();
     QTest::newRow("text invalid date") << QString::fromLatin1("Thu Jan 32 1970 00:12:34")
-        << Qt::TextDate << QDateTime(invalidDate(), QTime(0, 12, 34), Qt::LocalTime);
+        << Qt::TextDate << invalidDateTime();
     QTest::newRow("text invalid day #1") << QString::fromLatin1("Thu Jan XX 1970 00:12:34")
         << Qt::TextDate << invalidDateTime();
     QTest::newRow("text invalid day #2") << QString::fromLatin1("Thu X. Jan 00:00:00 1970")
