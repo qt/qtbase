@@ -463,9 +463,9 @@ private slots:
 #ifndef QT_NO_SSL
     void echoPerformance_data();
     void echoPerformance();
-    void preConnectEncrypted_data();
     void preConnectEncrypted();
-#endif
+#endif // !QT_NO_SSL
+    void preConnectEncrypted_data();
 
     void downloadPerformance();
     void uploadPerformance();
@@ -550,13 +550,6 @@ void tst_qnetworkreply::echoPerformance()
     }
 }
 
-void tst_qnetworkreply::preConnectEncrypted_data()
-{
-    QTest::addColumn<int>("sleepTime");
-    QTest::newRow("2secs") << 2000; // to start a new request after preconnecting is done
-    QTest::newRow("100ms") << 100; // to start a new request while preconnecting is in-flight
-}
-
 void tst_qnetworkreply::preConnectEncrypted()
 {
     QString hostName = QLatin1String("www.google.com");
@@ -602,7 +595,14 @@ void tst_qnetworkreply::preConnectEncrypted()
              << "ms, pre-connect request:" << preConnectElapsed << "ms, difference:"
              << (normalElapsed - preConnectElapsed) << "ms";
 }
-#endif
+#endif // !QT_NO_SSL
+
+void tst_qnetworkreply::preConnectEncrypted_data()
+{
+    QTest::addColumn<int>("sleepTime");
+    QTest::newRow("2secs") << 2000; // to start a new request after preconnecting is done
+    QTest::newRow("100ms") << 100; // to start a new request while preconnecting is in-flight
+}
 
 void tst_qnetworkreply::downloadPerformance()
 {
