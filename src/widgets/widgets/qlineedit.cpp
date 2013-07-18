@@ -1983,6 +1983,13 @@ void QLineEdit::contextMenuEvent(QContextMenuEvent *event)
     }
 }
 
+static inline void setActionIcon(QAction *action, const QString &name)
+{
+    const QIcon icon = QIcon::fromTheme(name);
+    if (!icon.isNull())
+        action->setIcon(icon);
+}
+
 /*!  This function creates the standard context menu which is shown
         when the user clicks on the line edit with the right mouse
         button. It is called from the default contextMenuEvent() handler.
@@ -1999,10 +2006,12 @@ QMenu *QLineEdit::createStandardContextMenu()
     if (!isReadOnly()) {
         action = popup->addAction(QLineEdit::tr("&Undo") + ACCEL_KEY(QKeySequence::Undo));
         action->setEnabled(d->control->isUndoAvailable());
+        setActionIcon(action, QStringLiteral("edit-undo"));
         connect(action, SIGNAL(triggered()), SLOT(undo()));
 
         action = popup->addAction(QLineEdit::tr("&Redo") + ACCEL_KEY(QKeySequence::Redo));
         action->setEnabled(d->control->isRedoAvailable());
+        setActionIcon(action, QStringLiteral("edit-redo"));
         connect(action, SIGNAL(triggered()), SLOT(redo()));
 
         popup->addSeparator();
@@ -2013,17 +2022,20 @@ QMenu *QLineEdit::createStandardContextMenu()
         action = popup->addAction(QLineEdit::tr("Cu&t") + ACCEL_KEY(QKeySequence::Cut));
         action->setEnabled(!d->control->isReadOnly() && d->control->hasSelectedText()
                 && d->control->echoMode() == QLineEdit::Normal);
+        setActionIcon(action, QStringLiteral("edit-cut"));
         connect(action, SIGNAL(triggered()), SLOT(cut()));
     }
 
     action = popup->addAction(QLineEdit::tr("&Copy") + ACCEL_KEY(QKeySequence::Copy));
     action->setEnabled(d->control->hasSelectedText()
             && d->control->echoMode() == QLineEdit::Normal);
+    setActionIcon(action, QStringLiteral("edit-copy"));
     connect(action, SIGNAL(triggered()), SLOT(copy()));
 
     if (!isReadOnly()) {
         action = popup->addAction(QLineEdit::tr("&Paste") + ACCEL_KEY(QKeySequence::Paste));
         action->setEnabled(!d->control->isReadOnly() && !QApplication::clipboard()->text().isEmpty());
+        setActionIcon(action, QStringLiteral("edit-paste"));
         connect(action, SIGNAL(triggered()), SLOT(paste()));
     }
 #endif
@@ -2031,6 +2043,7 @@ QMenu *QLineEdit::createStandardContextMenu()
     if (!isReadOnly()) {
         action = popup->addAction(QLineEdit::tr("Delete"));
         action->setEnabled(!d->control->isReadOnly() && !d->control->text().isEmpty() && d->control->hasSelectedText());
+        setActionIcon(action, QStringLiteral("edit-delete"));
         connect(action, SIGNAL(triggered()), d->control, SLOT(_q_deleteSelected()));
     }
 
