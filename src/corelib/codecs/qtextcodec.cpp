@@ -600,9 +600,6 @@ QTextCodec* QTextCodec::codecForMib(int mib)
 */
 QList<QByteArray> QTextCodec::availableCodecs()
 {
-#ifdef QT_USE_ICU
-    return QIcuCodec::availableCodecs();
-#else
     QMutexLocker locker(textCodecsMutex());
 
     QCoreGlobalData *globalData = QCoreGlobalData::instance();
@@ -616,8 +613,11 @@ QList<QByteArray> QTextCodec::availableCodecs()
         codecs += globalData->allCodecs.at(i)->aliases();
     }
 
-    return codecs;
+#ifdef QT_USE_ICU
+    codecs += QIcuCodec::availableCodecs();
 #endif
+
+    return codecs;
 }
 
 /*!
