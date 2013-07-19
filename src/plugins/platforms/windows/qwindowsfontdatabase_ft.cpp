@@ -54,6 +54,9 @@
 #include <QtGui/QFontDatabase>
 
 #include <wchar.h>
+#ifdef Q_OS_WINCE
+#include <QtEndian>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -271,6 +274,12 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
                 continue;
             fontCache.insert(fontName, fontFile);
             settings.setValue(fontName, fontFile);
+
+            if (localizedName(fontName)) {
+                QString englishFontName = getEnglishName(fontName);
+                fontCache.insert(englishFontName, fontFile);
+                settings.setValue(englishFontName, fontFile);
+            }
         }
 
         value = fontCache.value(faceName);
@@ -283,7 +292,11 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
         return false;
 
     if (!QDir::isAbsolutePath(value))
+#ifndef Q_OS_WINCE
         value.prepend(QFile::decodeName(qgetenv("windir") + "\\Fonts\\"));
+#else
+        value.prepend(QFile::decodeName("/Windows/"));
+#endif
 
     QPlatformFontDatabase::registerFont(faceName, QString(), foundryName, weight, style, stretch,
         antialias, scalable, size, fixed, writingSystems, createFontFile(value, index));
@@ -307,6 +320,24 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
     return true;
 }
 
+#ifdef Q_OS_WINCE
+static QByteArray getFntTable(HFONT hfont, uint tag)
+{
+    HDC hdc = GetDC(0);
+    HGDIOBJ oldFont = SelectObject(hdc, hfont);
+    quint32 t = qFromBigEndian<quint32>(tag);
+    QByteArray buffer;
+
+    DWORD length = GetFontData(hdc, t, 0, NULL, 0);
+    if (length != GDI_ERROR) {
+        buffer.resize(length);
+        GetFontData(hdc, t, 0, reinterpret_cast<uchar *>(buffer.data()), length);
+    }
+    SelectObject(hdc, oldFont);
+    return buffer;
+}
+#endif
+
 static int CALLBACK storeFont(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetric,
                               int type, LPARAM namesSetIn)
 {
@@ -316,7 +347,33 @@ static int CALLBACK storeFont(ENUMLOGFONTEX* f, NEWTEXTMETRICEX *textmetric,
                                + QString::fromWCharArray(f->elfFullName);
     const uchar charSet = f->elfLogFont.lfCharSet;
 
+#ifndef Q_OS_WINCE
     const FONTSIGNATURE signature = textmetric->ntmFontSig;
+#else
+    FONTSIGNATURE signature;
+    QByteArray table;
+
+    if (type & TRUETYPE_FONTTYPE) {
+        HFONT hfont = CreateFontIndirect(&f->elfLogFont);
+        table = getFntTable(hfont, MAKE_TAG('O', 'S', '/', '2'));
+        DeleteObject((HGDIOBJ)hfont);
+    }
+
+    if (table.length() >= 86) {
+        // See also qfontdatabase_mac.cpp, offsets taken from OS/2 table in the TrueType spec
+        uchar *tableData = reinterpret_cast<uchar *>(table.data());
+
+        signature.fsUsb[0] = qFromBigEndian<quint32>(tableData + 42);
+        signature.fsUsb[1] = qFromBigEndian<quint32>(tableData + 46);
+        signature.fsUsb[2] = qFromBigEndian<quint32>(tableData + 50);
+        signature.fsUsb[3] = qFromBigEndian<quint32>(tableData + 54);
+
+        signature.fsCsb[0] = qFromBigEndian<quint32>(tableData + 78);
+        signature.fsCsb[1] = qFromBigEndian<quint32>(tableData + 82);
+    } else {
+        memset(&signature, 0, sizeof(signature));
+    }
+#endif
 
     // NEWTEXTMETRICEX is a NEWTEXTMETRIC, which according to the documentation is
     // identical to a TEXTMETRIC except for the last four members, which we don't use
@@ -501,6 +558,17 @@ QStringList QWindowsFontDatabaseFT::fallbacksForFamily(const QString &family, QF
         default:
             result << QString::fromLatin1("Arial");
     }
+
+#ifdef Q_OS_WINCE
+    QSettings settings(QLatin1String("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\FontLink\\SystemLink"), QSettings::NativeFormat);
+    const QStringList fontList = settings.value(family).toStringList();
+    foreach (const QString &fallback, fontList) {
+        const int sep = fallback.indexOf(QLatin1Char(','));
+        if (sep > 0)
+            result << fallback.mid(sep + 1);
+    }
+#endif
+
     if (QWindowsContext::verboseFonts)
         qDebug() << __FUNCTION__ << family << style << styleHint
                  << script << result << m_families;
