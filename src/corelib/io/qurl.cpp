@@ -632,7 +632,6 @@ inline void QUrlPrivate::setError(ErrorCode errorCode, const QString &source, in
 // here are the gen-delims we can unambiguously transform when the field is
 // taken in isolation:
 //  - fragment: none, since it's the last
-//    Deviation: the spec says "#" <-> %23 is unambiguous, but we treat it as if were
 //  - query: "#" is unambiguous
 //  - path: "#" and "?" are unambiguous
 //  - host: completely special but never ambiguous, see setHost() below.
@@ -747,7 +746,7 @@ static const ushort userNameInUrl[] = {
 static const ushort * const passwordInUrl = userNameInUrl + 1;
 static const ushort * const pathInUrl = userNameInUrl + 5;
 static const ushort * const queryInUrl = userNameInUrl + 6;
-static const ushort * const fragmentInUrl = 0;
+static const ushort * const fragmentInUrl = userNameInUrl + 6;
 
 static inline void parseDecodedComponent(QString &data)
 {
@@ -879,7 +878,8 @@ inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions o
 inline void QUrlPrivate::appendFragment(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
 {
     appendToUser(appendTo, fragment, options,
-                 appendingTo == FullUrl || options & QUrl::EncodeDelimiters ? fragmentInUrl : fragmentInIsolation);
+                 options & QUrl::EncodeDelimiters ? fragmentInUrl :
+                 appendingTo == FullUrl ? 0 : fragmentInIsolation);
 }
 
 inline void QUrlPrivate::appendQuery(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const

@@ -2506,7 +2506,7 @@ void tst_QUrl::setEncodedFragment_data()
     QTest::newRow("basic test") << BA("http://www.kde.org") << BA("abc") << BA("http://www.kde.org#abc");
     QTest::newRow("initial url has fragment") << BA("http://www.kde.org#old") << BA("new") << BA("http://www.kde.org#new");
     QTest::newRow("encoded fragment") << BA("http://www.kde.org") << BA("a%20c") << BA("http://www.kde.org#a%20c");
-    QTest::newRow("with #") << BA("http://www.kde.org") << BA("a#b") << BA("http://www.kde.org#a#b");
+    QTest::newRow("with #") << BA("http://www.kde.org") << BA("a#b") << BA("http://www.kde.org#a%23b"); // toString uses "a#b"
     QTest::newRow("unicode") << BA("http://www.kde.org") << BA("\xc3\xa9") << BA("http://www.kde.org#%C3%A9");
     QTest::newRow("binary") << BA("http://www.kde.org") << BA("\x00\xc0\x80", 3) << BA("http://www.kde.org#%00%C0%80");
 }
@@ -3151,12 +3151,12 @@ void tst_QUrl::componentEncodings_data()
                                                 << "x://%5B%3A%2F%3F%23%40%5D:%5B%2F%3F%23%40%5D@host/%2F%3F%23?%23";
 
     // 2) test that the other delimiters remain decoded
-    QTest::newRow("decoded-gendelims-unchanging") << QUrl("x://::@host/:@/[]?:/?@[]?##:/?@[]")
+    QTest::newRow("decoded-gendelims-unchanging") << QUrl("x://::@host/:@/[]?:/?@[]?#:/?@[]")
                                                   << int(QUrl::FullyEncoded)
                                                   << "" << ":" << "::"
                                                   << "host" << "::@host"
-                                                  << "/:@/[]" << ":/?@[]?" << "#:/?@[]"
-                                                  << "x://::@host/:@/[]?:/?@[]?##:/?@[]";
+                                                  << "/:@/[]" << ":/?@[]?" << ":/?@[]"
+                                                  << "x://::@host/:@/[]?:/?@[]?#:/?@[]";
 
     // 3) and test that the same encoded sequences remain encoded
     QTest::newRow("encoded-gendelims-unchanging") << QUrl("x://:%3A@host/%3A%40%5B%5D?%3A%2F%3F%40%5B%5D#%23%3A%2F%3F%40%5B%5D")

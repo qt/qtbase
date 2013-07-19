@@ -104,6 +104,11 @@ void tst_QDesktopServices::openUrl_data()
             << QUrl("http://google.com/search?q=/profile/5")
             << "This should search \"/profile/5\" on Google.";
 
+    // see QTBUG-31945
+    QTest::newRow("two-fragments")
+            << QUrl("http://developer.apple.com/library/ios/#documentation/uikit/reference/UIViewController_Class/Reference/Reference.html#//apple_ref/doc/uid/TP40006926-CH3-SW81")
+            << "This should open \"Implementing a Container View Controller\" in the UIViewController docs";
+
     QTest::newRow("mail")
             << QUrl("mailto:development@qt-project.org")
             << "This should open an email composer with the destination set to development@qt-project.org";
@@ -118,7 +123,7 @@ void tst_QDesktopServices::openUrl()
     QFETCH(QUrl, data);
     QFETCH(QString, message);
     qWarning("\n\nOpening \"%s\": %s", qPrintable(data.toString()), qPrintable(message));
-    QDesktopServices::openUrl(data);
+    QVERIFY(QDesktopServices::openUrl(data));
 }
 
 QTEST_MAIN(tst_QDesktopServices)
