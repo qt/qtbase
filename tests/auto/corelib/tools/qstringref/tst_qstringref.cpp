@@ -88,6 +88,9 @@ private slots:
     void integer_conversion_data();
     void integer_conversion();
     void trimmed();
+    void left();
+    void right();
+    void mid();
 };
 
 static QStringRef emptyRef()
@@ -1792,6 +1795,145 @@ void tst_QStringRef::trimmed()
     b = a.midRef(4);
     QCOMPARE(b.compare(QStringLiteral(" a   ")), 0);
     QCOMPARE(b.trimmed().compare(QStringLiteral("a")), 0);
+}
+
+void tst_QStringRef::left()
+{
+    QString originalString = "OrginalString~";
+    QStringRef ref = originalString.leftRef(originalString.size() - 1);
+    QCOMPARE(ref.toString(), QStringLiteral("OrginalString"));
+
+    QVERIFY(ref.left(0).toString().isEmpty());
+    QCOMPARE(ref.left(ref.size()).toString(), QStringLiteral("OrginalString"));
+
+    QStringRef nullRef;
+    QVERIFY(nullRef.isNull());
+    QVERIFY(nullRef.left(3).toString().isEmpty());
+    QVERIFY(nullRef.left(0).toString().isEmpty());
+    QVERIFY(nullRef.left(-1).toString().isEmpty());
+
+    QStringRef emptyRef(&originalString, 0, 0);
+    QVERIFY(emptyRef.isEmpty());
+    QVERIFY(emptyRef.left(3).toString().isEmpty());
+    QVERIFY(emptyRef.left(0).toString().isEmpty());
+    QVERIFY(emptyRef.left(-1).toString().isEmpty());
+
+    QCOMPARE(ref.left(-1), ref);
+    QCOMPARE(ref.left(100), ref);
+}
+
+void tst_QStringRef::right()
+{
+    QString originalString = "~OrginalString";
+    QStringRef ref = originalString.rightRef(originalString.size() - 1);
+    QCOMPARE(ref.toString(), QLatin1String("OrginalString"));
+
+    QCOMPARE(ref.right(ref.size() - 6).toString(), QLatin1String("String"));
+    QCOMPARE(ref.right(ref.size()).toString(), QLatin1String("OrginalString"));
+    QCOMPARE(ref.right(0).toString(), QLatin1String("OrginalString"));
+
+    QStringRef nullRef;
+    QVERIFY(nullRef.isNull());
+    QVERIFY(nullRef.right(3).toString().isEmpty());
+    QVERIFY(nullRef.right(0).toString().isEmpty());
+    QVERIFY(nullRef.right(-1).toString().isEmpty());
+
+    QStringRef emptyRef(&originalString, 0, 0);
+    QVERIFY(emptyRef.isEmpty());
+    QVERIFY(emptyRef.right(3).toString().isEmpty());
+    QVERIFY(emptyRef.right(0).toString().isEmpty());
+    QVERIFY(emptyRef.right(-1).toString().isEmpty());
+
+    QCOMPARE(ref.right(-1), ref);
+    QCOMPARE(ref.right(100), ref);
+}
+
+void tst_QStringRef::mid()
+{
+    QString orig = QStringLiteral("~ABCDEFGHIEfGEFG~"); // 15 + 2 chars
+    QStringRef a = orig.midRef(1, 15);
+    QCOMPARE(a.size(), orig.size() - 2);
+
+    QCOMPARE(a.mid(3,3).toString(),(QString)"DEF");
+    QCOMPARE(a.mid(0,0).toString(),(QString)"");
+    QVERIFY(!a.mid(15,0).toString().isNull());
+    QVERIFY(a.mid(15,0).toString().isEmpty());
+    QVERIFY(!a.mid(15,1).toString().isNull());
+    QVERIFY(a.mid(15,1).toString().isEmpty());
+    QVERIFY(a.mid(9999).toString().isEmpty());
+    QVERIFY(a.mid(9999,1).toString().isEmpty());
+
+    QCOMPARE(a.mid(-1, 6), a.mid(0, 5));
+    QVERIFY(a.mid(-100, 6).isEmpty());
+    QVERIFY(a.mid(INT_MIN, 0).isEmpty());
+    QCOMPARE(a.mid(INT_MIN, -1), a);
+    QVERIFY(a.mid(INT_MIN, INT_MAX).isNull());
+    QVERIFY(a.mid(INT_MIN + 1, INT_MAX).isEmpty());
+    QCOMPARE(a.mid(INT_MIN + 2, INT_MAX), a.left(1));
+    QCOMPARE(a.mid(INT_MIN + a.size() + 1, INT_MAX), a);
+    QVERIFY(a.mid(INT_MAX).isNull());
+    QVERIFY(a.mid(INT_MAX, INT_MAX).isNull());
+    QCOMPARE(a.mid(-5, INT_MAX), a);
+    QCOMPARE(a.mid(-1, INT_MAX), a);
+    QCOMPARE(a.mid(0, INT_MAX), a);
+    QCOMPARE(a.mid(1, INT_MAX).toString(), QString("BCDEFGHIEfGEFG"));
+    QCOMPARE(a.mid(5, INT_MAX).toString(), QString("FGHIEfGEFG"));
+    QVERIFY(a.mid(20, INT_MAX).isNull());
+    QCOMPARE(a.mid(-1, -1), a);
+
+    QStringRef nullRef;
+    QVERIFY(nullRef.mid(3,3).toString().isEmpty());
+    QVERIFY(nullRef.mid(0,0).toString().isEmpty());
+    QVERIFY(nullRef.mid(9999,0).toString().isEmpty());
+    QVERIFY(nullRef.mid(9999,1).toString().isEmpty());
+
+    QVERIFY(nullRef.mid(-1, 6).isNull());
+    QVERIFY(nullRef.mid(-100, 6).isNull());
+    QVERIFY(nullRef.mid(INT_MIN, 0).isNull());
+    QVERIFY(nullRef.mid(INT_MIN, -1).isNull());
+    QVERIFY(nullRef.mid(INT_MIN, INT_MAX).isNull());
+    QVERIFY(nullRef.mid(INT_MIN + 1, INT_MAX).isNull());
+    QVERIFY(nullRef.mid(INT_MIN + 2, INT_MAX).isNull());
+    QVERIFY(nullRef.mid(INT_MIN + nullRef.size() + 1, INT_MAX).isNull());
+    QVERIFY(nullRef.mid(INT_MAX).isNull());
+    QVERIFY(nullRef.mid(INT_MAX, INT_MAX).isNull());
+    QVERIFY(nullRef.mid(-5, INT_MAX).isNull());
+    QVERIFY(nullRef.mid(-1, INT_MAX).isNull());
+    QVERIFY(nullRef.mid(0, INT_MAX).isNull());
+    QVERIFY(nullRef.mid(1, INT_MAX).isNull());
+    QVERIFY(nullRef.mid(5, INT_MAX).isNull());
+    QVERIFY(nullRef.mid(20, INT_MAX).isNull());
+    QVERIFY(nullRef.mid(-1, -1).isNull());
+
+    QString ninePineapples = "~Nine pineapples~";
+    QStringRef x = ninePineapples.midRef(1, ninePineapples.size() - 1);
+    QCOMPARE(x.mid(5, 4).toString(), QString("pine"));
+    QCOMPARE(x.mid(5).toString(), QString("pineapples~"));
+
+    QCOMPARE(x.mid(-1, 6), x.mid(0, 5));
+    QVERIFY(x.mid(-100, 6).isEmpty());
+    QVERIFY(x.mid(INT_MIN, 0).isEmpty());
+    QCOMPARE(x.mid(INT_MIN, -1).toString(), x.toString());
+    QVERIFY(x.mid(INT_MIN, INT_MAX).isNull());
+    QVERIFY(x.mid(INT_MIN + 1, INT_MAX).isEmpty());
+    QCOMPARE(x.mid(INT_MIN + 2, INT_MAX), x.left(1));
+    QCOMPARE(x.mid(INT_MIN + x.size() + 1, INT_MAX).toString(), x.toString());
+    QVERIFY(x.mid(INT_MAX).isNull());
+    QVERIFY(x.mid(INT_MAX, INT_MAX).isNull());
+    QCOMPARE(x.mid(-5, INT_MAX).toString(), x.toString());
+    QCOMPARE(x.mid(-1, INT_MAX).toString(), x.toString());
+    QCOMPARE(x.mid(0, INT_MAX), x);
+    QCOMPARE(x.mid(1, INT_MAX).toString(), QString("ine pineapples~"));
+    QCOMPARE(x.mid(5, INT_MAX).toString(), QString("pineapples~"));
+    QVERIFY(x.mid(20, INT_MAX).isNull());
+    QCOMPARE(x.mid(-1, -1), x);
+
+    QStringRef emptyRef(&ninePineapples, 0, 0);
+    QVERIFY(emptyRef.mid(1).isEmpty());
+    QVERIFY(emptyRef.mid(-1).isEmpty());
+    QVERIFY(emptyRef.mid(0).isEmpty());
+    QVERIFY(emptyRef.mid(0, 3).isEmpty());
+    QVERIFY(emptyRef.mid(-10, 3).isEmpty());
 }
 
 QTEST_APPLESS_MAIN(tst_QStringRef)

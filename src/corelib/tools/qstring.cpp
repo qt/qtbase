@@ -8477,6 +8477,25 @@ QString &QString::append(const QStringRef &str)
 }
 
 /*!
+    \fn QStringRef::left(int n) const
+    \since 5.2
+
+    Returns a substring reference to the \a n leftmost characters
+    of the string.
+
+    If \a n is greater than size() or less than zero, a reference to the entire
+    string is returned.
+
+    \sa right(), mid(), startsWith()
+*/
+QStringRef QStringRef::left(int n) const
+{
+    if (n >= m_size || n < 0)
+        return *this;
+    return QStringRef(m_string, m_position, n);
+}
+
+/*!
     \since 4.4
 
     Returns a substring reference to the \a n leftmost characters
@@ -8494,6 +8513,25 @@ QStringRef QString::leftRef(int n)  const
     if (n >= d->size || n < 0)
         n = d->size;
     return QStringRef(this, 0, n);
+}
+
+/*!
+    \fn QStringRef::right(int n) const
+    \since 5.2
+
+    Returns a substring reference to the \a n rightmost characters
+    of the string.
+
+    If \a n is greater than size() or less than zero, a reference to the entire
+    string is returned.
+
+    \sa left(), mid(), endsWith()
+*/
+QStringRef QStringRef::right(int n) const
+{
+    if (n >= m_size || n < 0)
+        return *this;
+    return QStringRef(m_string, n + m_position, m_size - n);
 }
 
 /*!
@@ -8517,6 +8555,40 @@ QStringRef QString::rightRef(int n) const
 }
 
 /*!
+    \fn QStringRef::mid(int position, int n = -1) const
+    \since 5.2
+
+    Returns a substring reference to \a n characters of this string,
+    starting at the specified \a position.
+
+    If the \a position exceeds the length of the string, a null
+    reference is returned.
+
+    If there are less than \a n characters available in the string,
+    starting at the given \a position, or if \a n is -1 (default), the
+    function returns all characters from the specified \a position
+    onwards.
+
+    \sa left(), right()
+*/
+QStringRef QStringRef::mid(int pos, int n) const
+{
+    if (pos > m_size)
+        return QStringRef();
+    if (pos < 0) {
+        if (n < 0 || n + pos >= m_size)
+            return QStringRef(m_string, m_position, m_size);
+        if (n + pos <= 0)
+            return QStringRef();
+        n += pos;
+        pos = 0;
+    } else if (n < 0 || n > m_size - pos) {
+        n = m_size - pos;
+    }
+    return QStringRef(m_string, pos + m_position, n);
+}
+
+/*!
     \since 4.4
 
     Returns a substring reference to \a n characters of this string,
@@ -8536,7 +8608,6 @@ QStringRef QString::rightRef(int n) const
 
     \sa mid(), leftRef(), rightRef()
 */
-
 QStringRef QString::midRef(int position, int n) const
 {
     if (position > d->size)

@@ -1226,6 +1226,10 @@ public:
     int count(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     int count(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
+    QStringRef left(int n) const Q_REQUIRED_RESULT;
+    QStringRef right(int n) const Q_REQUIRED_RESULT;
+    QStringRef mid(int pos, int n = -1) const Q_REQUIRED_RESULT;
+
     bool startsWith(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool startsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool startsWith(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
