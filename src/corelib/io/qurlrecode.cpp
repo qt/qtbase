@@ -507,6 +507,27 @@ non_trivial:
     return 0;
 }
 
+/*!
+    \since 5.0
+    \internal
+
+    This function decodes a percent-encoded string located from \a begin to \a
+    end, by appending each character to \a appendTo. It returns the number of
+    characters appended. Each percent-encoded sequence is decoded as follows:
+
+    \list
+      \li from %00 to %7F: the exact decoded value is appended;
+      \li from %80 to %FF: QChar::ReplacementCharacter is appended;
+      \li bad encoding: original input is copied to the output, undecoded.
+    \endlist
+
+    Given the above, it's important for the input to already have all UTF-8
+    percent sequences decoded by qt_urlRecode (that is, the input should not
+    have been processed with QUrl::EncodeUnicode).
+
+    The input should also be a valid percent-encoded sequence (the output of
+    qt_urlRecode is always valid).
+*/
 static int decode(QString &appendTo, const ushort *begin, const ushort *end)
 {
     const int origSize = appendTo.size();
@@ -537,6 +558,8 @@ static int decode(QString &appendTo, const ushort *begin, const ushort *end)
 
         ++input;
         *output++ = decodeNibble(input[0]) << 4 | decodeNibble(input[1]);
+        if (output[-1] >= 0x80)
+            output[-1] = QChar::ReplacementCharacter;
         input += 2;
     }
 
