@@ -192,6 +192,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "CETEST" ]          = "auto";
     dictionary[ "CE_SIGNATURE" ]    = "no";
     dictionary[ "AUDIO_BACKEND" ]   = "auto";
+    dictionary[ "WMF_BACKEND" ]     = "auto";
     dictionary[ "WMSDK" ]           = "auto";
     dictionary[ "V8SNAPSHOT" ]      = "auto";
     dictionary[ "QML_DEBUG" ]       = "yes";
@@ -855,6 +856,10 @@ void Configure::parseCmdLine()
             dictionary[ "AUDIO_BACKEND" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-audio-backend") {
             dictionary[ "AUDIO_BACKEND" ] = "no";
+        } else if (configCmdLine.at(i) == "-wmf-backend") {
+            dictionary[ "WMF_BACKEND" ] = "yes";
+        } else if (configCmdLine.at(i) == "-no-wmf-backend") {
+            dictionary[ "WMF_BACKEND" ] = "no";
         } else if (configCmdLine.at(i) == "-no-qml-debug") {
             dictionary[ "QML_DEBUG" ] = "no";
         } else if (configCmdLine.at(i) == "-qml-debug") {
@@ -1869,6 +1874,8 @@ bool Configure::displayHelp()
         desc("DBUS", "linked",   "-dbus-linked",        "Compile in D-Bus support and link to libdbus-1.\n");
         desc("AUDIO_BACKEND", "no","-no-audio-backend", "Do not compile in the platform audio backend into\nQt Multimedia.");
         desc("AUDIO_BACKEND", "yes","-audio-backend",   "Compile in the platform audio backend into Qt Multimedia.\n");
+        desc("WMF_BACKEND", "no","-no-wmf-backend",     "Do not compile in the windows media foundation backend\ninto Qt Multimedia.");
+        desc("WMF_BACKEND", "yes","-wmf-backend",       "Compile in the windows media foundation backend into Qt Multimedia.\n");
         desc("QML_DEBUG", "no",    "-no-qml-debug",     "Do not build the in-process QML debugging support.");
         desc("QML_DEBUG", "yes",   "-qml-debug",        "Build the in-process QML debugging support.\n");
         desc("DIRECTWRITE", "no", "-no-directwrite", "Do not build support for DirectWrite font rendering.");
@@ -2145,6 +2152,8 @@ bool Configure::checkAvailability(const QString &part)
         available = true;
     } else if (part == "AUDIO_BACKEND") {
         available = true;
+    } else if (part == "WMF_BACKEND") {
+        available = findFile("mfapi.h") && findFile("mf.lib");
     } else if (part == "DIRECTWRITE") {
         available = findFile("dwrite.h") && findFile("d2d1.h") && findFile("dwrite.lib");
     } else if (part == "ICONV") {
@@ -2264,6 +2273,8 @@ void Configure::autoDetection()
         dictionary["QML_DEBUG"] = dictionary["QML"] == "yes" ? "yes" : "no";
     if (dictionary["AUDIO_BACKEND"] == "auto")
         dictionary["AUDIO_BACKEND"] = checkAvailability("AUDIO_BACKEND") ? "yes" : "no";
+    if (dictionary["WMF_BACKEND"] == "auto")
+        dictionary["WMF_BACKEND"] = checkAvailability("WMF_BACKEND") ? "yes" : "no";
     if (dictionary["WMSDK"] == "auto")
         dictionary["WMSDK"] = checkAvailability("WMSDK") ? "yes" : "no";
 
@@ -2628,6 +2639,9 @@ void Configure::generateOutputVars()
     // ### Vestige
     if (dictionary["AUDIO_BACKEND"] == "yes")
         qtConfig += "audio-backend";
+
+    if (dictionary["WMF_BACKEND"] == "yes")
+        qtConfig += "wmf-backend";
 
     if (dictionary["DIRECTWRITE"] == "yes")
         qtConfig += "directwrite";
