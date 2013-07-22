@@ -550,7 +550,7 @@ static QPair<QLibrary*, QLibrary*> loadOpenSsl()
 #ifdef Q_OS_OPENBSD
     libcrypto->setLoadHints(QLibrary::ExportExternalSymbolsHint);
 #endif
-#ifdef SHLIB_VERSION_NUMBER
+#if defined(SHLIB_VERSION_NUMBER) && !defined(Q_OS_QNX) // on QNX, the libs are always libssl.so and libcrypto.so
     // first attempt: the canonical name is libssl.so.<SHLIB_VERSION_NUMBER>
     libssl->setFileNameAndVersion(QLatin1String("ssl"), QLatin1String(SHLIB_VERSION_NUMBER));
     libcrypto->setFileNameAndVersion(QLatin1String("crypto"), QLatin1String(SHLIB_VERSION_NUMBER));
