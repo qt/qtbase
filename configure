@@ -2342,11 +2342,19 @@ while [ "$#" -gt 0 ]; do
         CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION="$VAL"
         ;;
     l*)  # -lfoo
-        L_FLAGS="$L_FLAGS -l\"${VAR#l}\""
+        if [ "$VAL" = "yes" ]; then
+            L_FLAGS="$L_FLAGS -l\"${VAR#l}\""
+        else
+            UNKNOWN_OPT=yes
+        fi
         ;;
     fw*)  # -fwfoo
-        if [ "$BUILD_ON_MAC" = "yes" ]; then
-            L_FLAGS="$L_FLAGS -framework \"${VAR#fw}\""
+        if [ "$VAL" = "yes" ]; then
+            if [ "$BUILD_ON_MAC" = "yes" ]; then
+                L_FLAGS="$L_FLAGS -framework \"${VAR#fw}\""
+            else
+                UNKNOWN_OPT=yes
+            fi
         else
             UNKNOWN_OPT=yes
         fi
