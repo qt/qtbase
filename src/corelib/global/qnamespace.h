@@ -998,6 +998,10 @@ public:
         Key_ChannelUp = 0x01000118,
         Key_ChannelDown = 0x01000119,
 
+        Key_Guide    = 0x0100011a,
+        Key_Info     = 0x0100011b,
+        Key_Settings = 0x0100011c,
+
         Key_MediaLast = 0x0100ffff,
 
         // Keypad navigation keys
@@ -1015,6 +1019,7 @@ public:
         //Key_Jisho   = 0x01020007, // IME: Dictionary key
         //Key_Oyayubi_Left = 0x01020008, // IME: Left Oyayubi key
         //Key_Oyayubi_Right = 0x01020009, // IME: Right Oyayubi key
+        Key_Exit    = 0x0102000a,
 
         // Device keys
         Key_Context1 = 0x01100000,

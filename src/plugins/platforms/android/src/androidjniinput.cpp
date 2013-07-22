@@ -471,6 +471,9 @@ namespace QtAndroidInput
             case 0x000000ba: // KEYCODE_PROG_BLUE
                 return Qt::Key_Blue;
 
+            case 0x000000a5: // KEYCODE_INFO
+                return Qt::Key_Info;
+
             case 0x000000a6: // KEYCODE_CHANNEL_UP
                 return Qt::Key_ChannelUp;
 
@@ -483,8 +486,14 @@ namespace QtAndroidInput
             case 0x000000a9: // KEYCODE_ZOOM_OUT
                 return Qt::Key_ZoomOut;
 
+            case 0x000000ac: // KEYCODE_GUIDE
+                return Qt::Key_Guide;
+
             case 0x000000af: // KEYCODE_CAPTIONS
                 return Qt::Key_Subtitle;
+
+            case 0x000000b0: // KEYCODE_SETTINGS
+                return Qt::Key_Settings;
 
             case 0x000000d0: // KEYCODE_CALENDAR
                 return Qt::Key_Calendar;
