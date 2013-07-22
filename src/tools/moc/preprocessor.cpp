@@ -645,7 +645,7 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
             // 0 argument macros are a bit special. They are ok if the
             // argument is pure whitespace or empty
             (macro.arguments.size() != 0 || arguments.size() != 1 || !arguments.at(0).isEmpty()))
-            that->error("Macro argument mismatch.");
+            that->warning("Macro argument mismatch.");
 
         // now replace the macro arguments with the expanded arguments
         enum Mode {
@@ -662,7 +662,7 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
             }
             int index = macro.arguments.indexOf(s);
             if (mode == Normal) {
-                if (index >= 0) {
+                if (index >= 0 && index < arguments.size()) {
                     // each argument undoergoes macro expansion if it's not used as part of a # or ##
                     if (i == macro.symbols.size() - 1 || macro.symbols.at(i + 1).token != PP_HASHHASH) {
                         Symbols arg = arguments.at(index);
