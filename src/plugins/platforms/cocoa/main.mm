@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 class QCocoaIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.1" FILE "cocoa.json")
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.2" FILE "cocoa.json")
 public:
     QPlatformIntegration *create(const QString&, const QStringList&);
 };

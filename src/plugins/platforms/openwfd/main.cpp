@@ -46,7 +46,7 @@ QT_BEGIN_NAMESPACE
 
 class QOpenWFDIntegrationPlugin : public QPlatformIntegrationPlugin
 {
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.1")
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.2")
 public:
     QPlatformIntegration *create(const QString&, const QStringList&);
 };

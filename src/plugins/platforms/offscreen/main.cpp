@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
 class QOffscreenIntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.1" FILE "offscreen.json")
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.2" FILE "offscreen.json")
 public:
     QPlatformIntegration *create(const QString&, const QStringList&);
 };

@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 class QAndroidPlatformIntegrationPlugin: public QPlatformIntegrationPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.1" FILE "android.json")
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.2" FILE "android.json")
 public:
     QPlatformIntegration *create(const QString &key, const QStringList &paramList);
 };
