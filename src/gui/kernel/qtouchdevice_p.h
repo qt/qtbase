@@ -64,12 +64,14 @@ class QTouchDevicePrivate
 public:
     QTouchDevicePrivate()
         : type(QTouchDevice::TouchScreen),
-          caps(QTouchDevice::Position)
+          caps(QTouchDevice::Position),
+          maxTouchPoints(1)
     { }
 
     QTouchDevice::DeviceType type;
     QTouchDevice::Capabilities caps;
     QString name;
+    int maxTouchPoints;
 
     static void registerDevice(QTouchDevice *dev);
     static bool isRegistered(QTouchDevice *dev);

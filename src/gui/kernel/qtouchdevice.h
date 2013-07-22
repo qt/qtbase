@@ -75,10 +75,12 @@ public:
     QString name() const;
     DeviceType type() const;
     Capabilities capabilities() const;
+    int maximumTouchPoints() const;
 
     void setName(const QString &name);
     void setType(DeviceType devType);
     void setCapabilities(Capabilities caps);
+    void setMaximumTouchPoints(int max);
 
 private:
     QTouchDevicePrivate *d;

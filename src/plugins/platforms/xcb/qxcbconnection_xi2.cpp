@@ -210,6 +210,7 @@ XInput2DeviceData *QXcbConnection::deviceForId(int id)
 #ifdef XCB_USE_XINPUT22
             case XITouchClass: {
                 XITouchClassInfo *tci = reinterpret_cast<XITouchClassInfo *>(classinfo);
+                dev->qtTouchDevice->setMaximumTouchPoints(tci->num_touches);
                 switch (tci->mode) {
                 case XIModeRelative:
                     dev->qtTouchDevice->setType(QTouchDevice::TouchPad);
@@ -236,8 +237,8 @@ XInput2DeviceData *QXcbConnection::deviceForId(int id)
         if (caps != 0)
             QWindowSystemInterface::registerTouchDevice(dev->qtTouchDevice);
 #ifdef XI2_DEBUG
-        qDebug("registered new device %s with %d classes",
-            dev->xiDeviceInfo->name, dev->xiDeviceInfo->num_classes);
+        qDebug("registered new device %s with %d classes and %d maximum touch points",
+            dev->xiDeviceInfo->name, dev->xiDeviceInfo->num_classes, dev->qtTouchDevice->maximumTouchPoints());
 #endif
         m_touchDevices[id] = dev;
     }

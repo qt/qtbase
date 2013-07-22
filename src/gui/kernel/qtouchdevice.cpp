@@ -140,6 +140,16 @@ QTouchDevice::Capabilities QTouchDevice::capabilities() const
 }
 
 /*!
+    Returns the maximum number of simultaneous touch points (fingers) that
+    can be detected.
+    \since 5.2
+  */
+int QTouchDevice::maximumTouchPoints() const
+{
+    return d->maxTouchPoints;
+}
+
+/*!
     Returns the touch device name.
 
     This string may often be empty. It is however useful for systems that have
@@ -166,6 +176,15 @@ void QTouchDevice::setType(DeviceType devType)
 void QTouchDevice::setCapabilities(Capabilities caps)
 {
     d->caps = caps;
+}
+
+/*!
+  Sets the maximum number of simultaneous touchpoints \a max
+  supported by the device and its driver.
+  */
+void QTouchDevice::setMaximumTouchPoints(int max)
+{
+    d->maxTouchPoints = max;
 }
 
 /*!
