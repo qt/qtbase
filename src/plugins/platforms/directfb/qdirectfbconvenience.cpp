@@ -282,9 +282,12 @@ QDirectFbKeyMap::QDirectFbKeyMap()
     insert(DIKS_MENU                  , Qt::Key_Menu);
     insert(DIKS_HELP                  , Qt::Key_Help);
 
+    insert(DIKS_CD                    , Qt::Key_CD);
     insert(DIKS_INTERNET              , Qt::Key_HomePage);
     insert(DIKS_MAIL                  , Qt::Key_LaunchMail);
     insert(DIKS_FAVORITES             , Qt::Key_Favorites);
+    insert(DIKS_PHONE                 , Qt::Key_Phone);
+    insert(DIKS_TIME                  , Qt::Key_Time);
 
     insert(DIKS_RED                   , Qt::Key_Red);
     insert(DIKS_GREEN                 , Qt::Key_Green);
@@ -307,6 +310,7 @@ QDirectFbKeyMap::QDirectFbKeyMap()
     insert(DIKS_NEXT                  , Qt::Key_MediaNext);
     insert(DIKS_REWIND                , Qt::Key_AudioRewind);
     insert(DIKS_FASTFORWARD           , Qt::Key_AudioForward);
+    insert(DIKS_SUBTITLE              , Qt::Key_Subtitle);
 
     insert(DIKS_F1                    , Qt::Key_F1);
     insert(DIKS_F2                    , Qt::Key_F2);

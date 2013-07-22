@@ -907,7 +907,7 @@ public:
         Key_BrightnessAdjust = 0x010000c2,
         Key_Finance = 0x010000c3,
         Key_Community = 0x010000c4,
-        Key_AudioRewind = 0x010000c5,
+        Key_AudioRewind = 0x010000c5, // Media rewind
         Key_BackForward = 0x010000c6,
         Key_ApplicationLeft = 0x010000c7,
         Key_ApplicationRight = 0x010000c8,
@@ -919,7 +919,7 @@ public:
         Key_Close = 0x010000ce,
         Key_Copy = 0x010000cf,
         Key_Cut = 0x010000d0,
-        Key_Display = 0x010000d1,
+        Key_Display = 0x010000d1, // Output switch key
         Key_DOS = 0x010000d2,
         Key_Documents = 0x010000d3,
         Key_Excel = 0x010000d4,
@@ -968,9 +968,9 @@ public:
         Key_Bluetooth = 0x010000ff,
         Key_WLAN = 0x01000100,
         Key_UWB = 0x01000101,
-        Key_AudioForward = 0x01000102,
-        Key_AudioRepeat = 0x01000103,
-        Key_AudioRandomPlay = 0x01000104,
+        Key_AudioForward = 0x01000102, // Media fast-forward
+        Key_AudioRepeat = 0x01000103, // Toggle repeat mode
+        Key_AudioRandomPlay = 0x01000104, // Toggle shuffle mode
         Key_Subtitle = 0x01000105,
         Key_AudioCycleTrack = 0x01000106,
         Key_Time = 0x01000107,

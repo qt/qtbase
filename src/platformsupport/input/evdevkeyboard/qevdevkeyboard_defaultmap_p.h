@@ -42,6 +42,9 @@
 #ifndef QEVDEVKEYBOARDHANDLER_DEFAULTMAP_P_H
 #define QEVDEVKEYBOARDHANDLER_DEFAULTMAP_P_H
 
+#include "qnamespace.h"
+#include "linux/input.h"
+
 // no QT_BEGIN_NAMESPACE, since we include it internally...
 
 const QEvdevKeyboardMap::Mapping QEvdevKeyboardHandler::s_keymap_default[] = {
@@ -631,7 +634,30 @@ const QEvdevKeyboardMap::Mapping QEvdevKeyboardHandler::s_keymap_default[] = {
     { 111, 0xffff, 0x01000007, 0x00, 0x00, 0x0000 },
     { 111, 0xffff, 0x01000000, 0x06, 0x08, 0x0200 },
     { 111, 0xffff, 0x01000000, 0x0c, 0x08, 0x0200 },
-    { 119, 0xffff, 0x01000008, 0x00, 0x00, 0x0000 },
+
+    // 113 -> 248
+    { KEY_MUTE,         0xffff, Qt::Key_VolumeMute,     0x00, 0x00, 0x0000 },
+    { KEY_VOLUMEDOWN,   0xffff, Qt::Key_VolumeDown,     0x00, 0x00, 0x0000 },
+    { KEY_VOLUMEUP,     0xffff, Qt::Key_VolumeUp,       0x00, 0x00, 0x0000 },
+    { KEY_PAUSE,        0xffff, Qt::Key_Pause,          0x00, 0x00, 0x0000 },
+    { KEY_STOP,         0xffff, Qt::Key_Stop,           0x00, 0x00, 0x0000 },
+    { KEY_RECORD,       0xffff, Qt::Key_MediaRecord,    0x00, 0x00, 0x0000 },
+    { KEY_REWIND,       0xffff, Qt::Key_AudioRewind,    0x00, 0x00, 0x0000 },
+    { KEY_PLAYPAUSE,    0xffff, Qt::Key_MediaTogglePlayPause,  0x00, 0x00, 0x0000 },
+    { KEY_PLAY,         0xffff, Qt::Key_MediaPlay,      0x00, 0x00, 0x0000 },
+    { KEY_FASTFORWARD,  0xffff, Qt::Key_AudioForward,   0x00, 0x00, 0x0000 },
+    { KEY_CANCEL,       0xffff, Qt::Key_Cancel,         0x00, 0x00, 0x0000 },
+    { 248,              0xffff, Qt::Key_MicMute,        0x00, 0x00, 0x0000 },
+    // 0x160 ->
+    { KEY_SELECT,       0xffff, Qt::Key_Select,         0x00, 0x00, 0x0000 },
+    { KEY_CLEAR,        0xffff, Qt::Key_Clear,          0x00, 0x00, 0x0000 },
+    { KEY_CALENDAR,     0xffff, Qt::Key_Calendar,       0x00, 0x00, 0x0000 },
+    { KEY_RED,          0xffff, Qt::Key_Red,            0x00, 0x00, 0x0000 },
+    { KEY_GREEN,        0xffff, Qt::Key_Green,          0x00, 0x00, 0x0000 },
+    { KEY_YELLOW,       0xffff, Qt::Key_Yellow,         0x00, 0x00, 0x0000 },
+    { KEY_BLUE,         0xffff, Qt::Key_Blue,           0x00, 0x00, 0x0000 },
+    { KEY_CHANNELUP,    0xffff, Qt::Key_ChannelUp,      0x00, 0x00, 0x0000 },
+    { KEY_CHANNELDOWN,  0xffff, Qt::Key_ChannelDown,    0x00, 0x00, 0x0000 },
 };
 
 const QEvdevKeyboardMap::Composing QEvdevKeyboardHandler::s_keycompose_default[] = {
