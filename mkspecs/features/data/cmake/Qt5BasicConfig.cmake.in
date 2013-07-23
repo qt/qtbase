@@ -49,7 +49,7 @@ macro(_populate_$${CMAKE_MODULE_NAME}_target_properties Configuration LIB_LOCATI
 !!IF isEmpty(CMAKE_DLL_DIR_IS_ABSOLUTE)
     set(imported_location \"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}/$${CMAKE_DLL_DIR}${LIB_LOCATION}\")
 !!ELSE
-    set(imported_location \"IMPORTED_LOCATION_${Configuration}\" \"$${CMAKE_DLL_DIR}${LIB_LOCATION}\")
+    set(imported_location \"$${CMAKE_DLL_DIR}${LIB_LOCATION}\")
 !!ENDIF
     _qt5_$${CMAKE_MODULE_NAME}_check_file_exists(${imported_location})
     set_target_properties(Qt5::$${CMAKE_MODULE_NAME} PROPERTIES
