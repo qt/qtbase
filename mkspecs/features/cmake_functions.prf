@@ -63,3 +63,8 @@ defineReplace(cmakeProcessLibs) {
     }
     return ($$join(out, ";"))
 }
+
+defineReplace(cmakeRelativePath) {
+    path = $$relative_path($$1, $$2)
+    return($$replace(path, ([^/])$, \\1/))
+}
