@@ -7537,6 +7537,10 @@ void tst_QNetworkReply::backgroundRequestInterruption()
         QNetworkSessionPrivate::setUsagePolicies(*const_cast<QNetworkSession *>(session.data()), original);
 
     QVERIFY(reply->isFinished());
+#ifdef Q_OS_MACX
+    if (QSysInfo::MacintoshVersion == QSysInfo::MV_10_8)
+        QEXPECT_FAIL("ftp, bg, nobg", "See QTBUG-32435", Abort);
+#endif
     QCOMPARE(reply->error(), error);
 #endif
 }

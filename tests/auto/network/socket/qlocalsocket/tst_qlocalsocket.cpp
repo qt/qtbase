@@ -78,6 +78,9 @@ private slots:
     void listenAndConnect_data();
     void listenAndConnect();
 
+    void connectWithOpen();
+    void connectWithOldOpen();
+
     void sendData_data();
     void sendData();
 
@@ -267,6 +270,7 @@ void tst_QLocalSocket::socket_basic()
     //QCOMPARE(socket.socketDescriptor(), (qintptr)-1);
     QCOMPARE(socket.state(), QLocalSocket::UnconnectedState);
     QCOMPARE(socket.waitForConnected(0), false);
+    QTest::ignoreMessage(QtWarningMsg, "QLocalSocket::waitForDisconnected() is not allowed in UnconnectedState");
     QCOMPARE(socket.waitForDisconnected(0), false);
     QCOMPARE(socket.waitForReadyRead(0), false);
 
@@ -310,6 +314,7 @@ void tst_QLocalSocket::listen()
         QVERIFY(server.errorString().isEmpty());
         QCOMPARE(server.serverError(), QAbstractSocket::UnknownSocketError);
         // already isListening
+        QTest::ignoreMessage(QtWarningMsg, "QLocalServer::listen() called when already listening");
         QVERIFY(!server.listen(name));
     } else {
         QVERIFY(!server.errorString().isEmpty());
@@ -450,6 +455,54 @@ void tst_QLocalSocket::listenAndConnect()
 
     QCOMPARE(server.hits.count(), (canListen ? connections : 0));
     QCOMPARE(spyNewConnection.count(), (canListen ? connections : 0));
+}
+
+void tst_QLocalSocket::connectWithOpen()
+{
+    LocalServer server;
+    QVERIFY(server.listen("tst_qlocalsocket"));
+
+    LocalSocket socket;
+    socket.setServerName("tst_qlocalsocket");
+    QVERIFY(socket.open());
+
+    bool timedOut = true;
+    QVERIFY(server.waitForNewConnection(3000, &timedOut));
+
+#if defined(QT_LOCALSOCKET_TCP)
+    QTest::qWait(250);
+#endif
+    QVERIFY(!timedOut);
+
+    socket.close();
+    server.close();
+}
+
+void tst_QLocalSocket::connectWithOldOpen()
+{
+    class OverriddenOpen : public LocalSocket
+    {
+    public:
+        virtual bool open(OpenMode mode) Q_DECL_OVERRIDE
+        { return QIODevice::open(mode); }
+    };
+
+    LocalServer server;
+    QCOMPARE(server.listen("tst_qlocalsocket"), true);
+
+    OverriddenOpen socket;
+    socket.connectToServer("tst_qlocalsocket");
+
+    bool timedOut = true;
+    QVERIFY(server.waitForNewConnection(3000, &timedOut));
+
+#if defined(QT_LOCALSOCKET_TCP)
+    QTest::qWait(250);
+#endif
+    QVERIFY(!timedOut);
+
+    socket.close();
+    server.close();
 }
 
 void tst_QLocalSocket::sendData_data()
@@ -964,15 +1017,16 @@ void tst_QLocalSocket::writeToClientAndDisconnect()
     clientSocket->close();
     server.close();
 
-    QTRY_COMPARE(readChannelFinishedSpy.count(), 1);
-    QCOMPARE(client.read(buffer, sizeof(buffer)), (qint64)sizeof(buffer));
     client.waitForDisconnected();
+    QCOMPARE(readChannelFinishedSpy.count(), 1);
+    QCOMPARE(client.read(buffer, sizeof(buffer)), (qint64)sizeof(buffer));
     QCOMPARE(client.state(), QLocalSocket::UnconnectedState);
 }
 
 void tst_QLocalSocket::debug()
 {
     // Make sure this compiles
+    QTest::ignoreMessage(QtDebugMsg, "QLocalSocket::ConnectionRefusedError QLocalSocket::UnconnectedState ");
     qDebug() << QLocalSocket::ConnectionRefusedError << QLocalSocket::UnconnectedState;
 }
 
@@ -1104,7 +1158,7 @@ void tst_QLocalSocket::verifyListenWithDescriptor()
     QFETCH(bool, abstract);
     QFETCH(bool, bound);
 
-    qDebug() << "socket" << path << abstract;
+//    qDebug() << "socket" << path << abstract;
 
     int listenSocket;
 

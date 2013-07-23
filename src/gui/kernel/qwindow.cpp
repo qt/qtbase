@@ -871,6 +871,10 @@ QRegion QWindow::mask() const
 void QWindow::requestActivate()
 {
     Q_D(QWindow);
+    if (flags() & Qt::WindowDoesNotAcceptFocus) {
+        qWarning() << "requestActivate() called for " << this << " which has Qt::WindowDoesNotAcceptFocus set.";
+        return;
+    }
     if (d->platformWindow)
         d->platformWindow->requestActivateWindow();
 }

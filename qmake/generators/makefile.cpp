@@ -1984,17 +1984,29 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                             QStringList dep_cmd_deps = indeps.replace('\n', ' ').simplified().split(' ');
                             for(int i = 0; i < dep_cmd_deps.count(); ++i) {
                                 QString &file = dep_cmd_deps[i];
-                                if(!exists(file)) {
+                                QString absFile = QDir(Option::output_dir).absoluteFilePath(file);
+                                if (exists(absFile)) {
+                                    file = absFile;
+                                } else {
                                     QString localFile;
                                     QList<QMakeLocalFileName> depdirs = QMakeSourceFileInfo::dependencyPaths();
-                                    for(QList<QMakeLocalFileName>::Iterator it = depdirs.begin();
-                                        it != depdirs.end(); ++it) {
-                                        if(exists((*it).real() + Option::dir_sep + file)) {
-                                            localFile = (*it).local() + Option::dir_sep + file;
+                                    for (QList<QMakeLocalFileName>::Iterator dit = depdirs.begin();
+                                        dit != depdirs.end(); ++dit) {
+                                        if (exists((*dit).real() + Option::dir_sep + file)) {
+                                            localFile = (*dit).local() + Option::dir_sep + file;
                                             break;
                                         }
                                     }
-                                    file = localFile;
+                                    if (localFile.isEmpty()) {
+                                        if (exists(file))
+                                            warn_msg(WarnDeprecated, ".depend_command for extra compiler %s"
+                                                                     " prints paths relative to source directory",
+                                                                     (*it).toLatin1().constData());
+                                        else
+                                            file.clear();
+                                    } else {
+                                        file = localFile;
+                                    }
                                 }
                                 if(!file.isEmpty())
                                     file = fileFixify(file);
@@ -2062,17 +2074,29 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                         QStringList dep_cmd_deps = indeps.replace('\n', ' ').simplified().split(' ');
                         for(int i = 0; i < dep_cmd_deps.count(); ++i) {
                             QString &file = dep_cmd_deps[i];
-                            if(!exists(file)) {
+                            QString absFile = QDir(Option::output_dir).absoluteFilePath(file);
+                            if (exists(absFile)) {
+                                file = absFile;
+                            } else {
                                 QString localFile;
                                 QList<QMakeLocalFileName> depdirs = QMakeSourceFileInfo::dependencyPaths();
-                                for(QList<QMakeLocalFileName>::Iterator it = depdirs.begin();
-                                    it != depdirs.end(); ++it) {
-                                    if(exists((*it).real() + Option::dir_sep + file)) {
-                                        localFile = (*it).local() + Option::dir_sep + file;
+                                for (QList<QMakeLocalFileName>::Iterator dit = depdirs.begin();
+                                    dit != depdirs.end(); ++dit) {
+                                    if (exists((*dit).real() + Option::dir_sep + file)) {
+                                        localFile = (*dit).local() + Option::dir_sep + file;
                                         break;
                                     }
                                 }
-                                file = localFile;
+                                if (localFile.isEmpty()) {
+                                    if (exists(file))
+                                        warn_msg(WarnDeprecated, ".depend_command for extra compiler %s"
+                                                                 " prints paths relative to source directory",
+                                                                 (*it).toLatin1().constData());
+                                    else
+                                        file.clear();
+                                } else {
+                                    file = localFile;
+                                }
                             }
                             if(!file.isEmpty())
                                 file = fileFixify(file);
@@ -2738,12 +2762,8 @@ QString
 MakefileGenerator::unescapeFilePath(const QString &path) const
 {
     QString ret = path;
-    if(!ret.isEmpty()) {
-        if(ret.contains(QLatin1String("\\ ")))
-            ret.replace(QLatin1String("\\ "), QLatin1String(" "));
-        if(ret.contains(QLatin1Char('\"')))
-            ret.remove(QLatin1Char('\"'));
-    }
+    ret.replace(QLatin1String("\\ "), QLatin1String(" "));
+    ret.remove(QLatin1Char('\"'));
     return ret;
 }
 

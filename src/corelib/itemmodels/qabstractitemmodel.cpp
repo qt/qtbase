@@ -1911,8 +1911,8 @@ Qt::DropActions QAbstractItemModel::supportedDropActions() const
 /*!
     Returns the actions supported by the data in this model.
 
-    The default implementation returns supportedDropActions() unless specific
-    values have been set with setSupportedDragActions().
+    The default implementation returns supportedDropActions(). Reimplement
+    this function if you wish to support additional actions.
 
     supportedDragActions() is used by QAbstractItemView::startDrag() as the
     default values when a drag occurs.
@@ -1940,6 +1940,8 @@ void QAbstractItemModel::doSetSupportedDragActions(Qt::DropActions actions)
     \since 4.2
     \obsolete
     \fn void QAbstractItemModel::setSupportedDragActions(Qt::DropActions actions)
+
+    This function is obsolete. Reimplement supportedDragActions() instead.
 
     Sets the supported drag \a actions for the items in the model.
 

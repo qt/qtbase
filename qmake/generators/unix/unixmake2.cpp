@@ -118,6 +118,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                             (!project->isActiveConfig("staticlib")))),
          src_incremental=false;
 
+    ProStringList &bundledFiles = project->values("QMAKE_BUNDLED_FILES");
+
     t << "####### Compiler, tools and options\n\n";
     t << "CC            = " << var("QMAKE_CC") << endl;
     t << "CXX           = " << var("QMAKE_CXX") << endl;
@@ -555,18 +557,19 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 t << "\n\t" << var("QMAKE_POST_LINK");
             t << endl << endl;
         } else if(!project->isEmpty("QMAKE_BUNDLE")) {
+            QString currentLink = destdir + "Versions/Current";
+            bundledFiles << currentLink << destdir + "$(TARGET)";
             t << "\n\t"
               << "-$(DEL_FILE) $(TARGET) $(TARGET0) $(DESTDIR)$(TARGET0)\n\t"
               << var("QMAKE_LINK_SHLIB_CMD") << "\n\t"
               << mkdir_p_asstring("\"`dirname $(DESTDIR)$(TARGETD)`\"", false) << "\n\t"
               << "-$(MOVE) $(TARGET) $(DESTDIR)$(TARGETD)\n\t"
               << mkdir_p_asstring("\"`dirname $(DESTDIR)$(TARGET0)`\"", false) << "\n\t"
-              << varGlue("QMAKE_LN_SHLIB","-"," "," Versions/" +
-                         project->first("QMAKE_FRAMEWORK_VERSION") +
-                         "/$(TARGET) $(DESTDIR)$(TARGET0)") << "\n\t"
-              << "-$(DEL_FILE) " << destdir << "Versions/Current\n\t"
+              << varGlue("QMAKE_LN_SHLIB", "-", " ",
+                         " Versions/Current/$(TARGET) $(DESTDIR)$(TARGET0)") << "\n\t"
+              << "-$(DEL_FILE) " << currentLink << "\n\t"
               << varGlue("QMAKE_LN_SHLIB","-"," ", " " + project->first("QMAKE_FRAMEWORK_VERSION") +
-                         " " + destdir + "Versions/Current") << "\n\t";
+                         " " + currentLink) << "\n\t";
             if(!project->isEmpty("QMAKE_POST_LINK"))
                 t << "\n\t" << var("QMAKE_POST_LINK");
             t << endl << endl;
@@ -704,6 +707,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     }
     if(!project->first("QMAKE_BUNDLE_RESOURCE_FILE").isEmpty()) {
         ProString resources = escapeFilePath(project->first("QMAKE_BUNDLE_RESOURCE_FILE"));
+        bundledFiles << resources;
         QString destdir = escapeFilePath(project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/Contents/Resources");
         t << resources << ": \n\t";
         t << mkdir_p_asstring(destdir) << "\n\t";
@@ -713,6 +717,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         //copy the plist
         QString info_plist = escapeFilePath(fileFixify(project->first("QMAKE_INFO_PLIST").toQString())),
             info_plist_out = escapeFilePath(project->first("QMAKE_INFO_PLIST_OUT").toQString());
+        bundledFiles << info_plist_out;
         QString destdir = info_plist_out.section(Option::dir_sep, 0, -2);
         t << info_plist_out << ": \n\t";
         if(!destdir.isEmpty())
@@ -737,6 +742,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             if(!project->isEmpty("ICON")) {
                 QString dir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/Contents/Resources/";
                 const QString icon_path = escapeFilePath(dir + icon.section(Option::dir_sep, -1));
+                bundledFiles << icon_path;
                 t << icon_path << ": " << icon << "\n\t"
                   << mkdir_p_asstring(dir) << "\n\t"
                   << "@$(DEL_FILE) " << icon_path << "\n\t"
@@ -765,7 +771,9 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 if (!project->isEmpty(vkey)) {
                     QString version = project->first(vkey) + "/" +
                                       project->first("QMAKE_FRAMEWORK_VERSION") + "/";
-                    t << Option::fixPathToLocalOS(path + project->first(pkey)) << ": \n\t"
+                    QString link = Option::fixPathToLocalOS(path + project->first(pkey));
+                    bundledFiles << link;
+                    t << link << ": \n\t"
                       << mkdir_p_asstring(path) << "\n\t"
                       << "@$(SYMLINK) " << version << project->first(pkey) << " " << path << endl;
                     path += version;
@@ -779,6 +787,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                         src = fn;
                     src = escapeFilePath(src);
                     const QString dst = escapeFilePath(path + Option::dir_sep + fileInfo(fn).fileName());
+                    bundledFiles << dst;
                     t << dst << ": " << src << "\n\t"
                       << mkdir_p_asstring(path) << "\n\t";
                     QFileInfo fi(fileInfo(fn));

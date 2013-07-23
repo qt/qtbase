@@ -389,4 +389,48 @@ QVariant QXcbIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
     return QPlatformIntegration::styleHint(hint);
 }
 
+static QString argv0BaseName()
+{
+    QString result;
+    const QStringList arguments = QCoreApplication::arguments();
+    if (!arguments.isEmpty() && !arguments.front().isEmpty()) {
+        result = arguments.front();
+        const int lastSlashPos = result.lastIndexOf(QLatin1Char('/'));
+        if (lastSlashPos != -1)
+            result.remove(0, lastSlashPos + 1);
+    }
+    return result;
+}
+
+static const char resourceNameVar[] = "RESOURCE_NAME";
+
+QByteArray QXcbIntegration::wmClass() const
+{
+    if (m_wmClass.isEmpty()) {
+        // Instance name according to ICCCM 4.1.2.5
+        QString name;
+        if (name.isEmpty() && qEnvironmentVariableIsSet(resourceNameVar))
+            name = QString::fromLocal8Bit(qgetenv(resourceNameVar));
+        if (name.isEmpty())
+            name = argv0BaseName();
+
+        // Note: QCoreApplication::applicationName() cannot be called from the QGuiApplication constructor,
+        // hence this delayed initialization.
+        QString className = QCoreApplication::applicationName();
+        if (className.isEmpty()) {
+            className = argv0BaseName();
+            if (!className.isEmpty() && className.at(0).isLower())
+                className[0] = className.at(0).toUpper();
+        }
+
+        if (!name.isEmpty() && !className.isEmpty()) {
+            m_wmClass = name.toLocal8Bit();
+            m_wmClass.append('\0');
+            m_wmClass.append(className.toLocal8Bit());
+            m_wmClass.append('\0');
+        }
+    }
+    return m_wmClass;
+}
+
 QT_END_NAMESPACE

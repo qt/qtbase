@@ -92,22 +92,6 @@ static inline void promptKeyPress()
         exit(0);      // Exit cleanly for Ctrl+C
 }
 
-bool writeToFile(const char* text, const QString &filename)
-{
-    QByteArray symFile(text);
-    QFile file(filename);
-    QDir dir(QFileInfo(file).absoluteDir());
-    if (!dir.exists())
-        dir.mkpath(dir.absolutePath());
-    if (!file.open(QFile::WriteOnly | QFile::Text)) {
-        cout << "Couldn't write to " << qPrintable(filename) << ": " << qPrintable(file.errorString())
-             << endl;
-        return false;
-    }
-    file.write(symFile);
-    return true;
-}
-
 Configure::Configure(int& argc, char** argv)
 {
     // Default values for indentation
@@ -258,7 +242,7 @@ Configure::Configure(int& argc, char** argv)
 
     dictionary[ "BUILDDEV" ]        = "no";
 
-    dictionary[ "COMPILE_EXAMPLES" ] = "auto";
+    dictionary[ "COMPILE_EXAMPLES" ] = "yes";
 
     dictionary[ "C++11" ]           = "auto";
 
@@ -1704,7 +1688,7 @@ bool Configure::displayHelp()
 
         desc(                   "-skip <module>",       "Exclude an entire module from the build.\n");
 
-        desc(                   "-compile-examples",    "Compile examples even in a production build.\n");
+        desc(                   "-no-compile-examples", "Install only the sources of examples.\n");
 
         desc("WIDGETS", "no", "-no-widgets",            "Disable Qt Widgets module.\n");
         desc("GUI", "no", "-no-gui",                    "Disable Qt GUI module.\n");
@@ -1987,13 +1971,6 @@ QString Configure::defaultTo(const QString &option)
 
     if (option == "SYNCQT"
         && (!QFile::exists(sourcePath + "/.git")))
-        return "no";
-
-    // Do not actually build the examples in production builds with -prefix, unless requested
-    if (option == "COMPILE_EXAMPLES"
-        && QDir::cleanPath(dictionary[ "QT_BUILD_TREE" ])
-            != QDir::cleanPath(dictionary[ "QT_INSTALL_PREFIX" ])
-        && dictionary[ "BUILDDEV" ] == "no")
         return "no";
 
     return "yes";
@@ -2808,21 +2785,19 @@ void Configure::generateOutputVars()
 void Configure::generateCachefile()
 {
     // Generate .qmake.cache
-    QFile cacheFile(buildPath + "/.qmake.cache");
-    if (cacheFile.open(QFile::WriteOnly | QFile::Text)) { // Truncates any existing file.
-        QTextStream cacheStream(&cacheFile);
+    {
+        FileWriter cacheStream(buildPath + "/.qmake.cache");
 
         cacheStream << "QT_SOURCE_TREE = " << formatPath(dictionary["QT_SOURCE_TREE"]) << endl;
         cacheStream << "QT_BUILD_TREE = " << formatPath(dictionary["QT_BUILD_TREE"]) << endl;
 
-        cacheStream.flush();
-        cacheFile.close();
+        if (!cacheStream.flush())
+            dictionary[ "DONE" ] = "error";
     }
 
     // Generate qmodule.pri
-    QFile moduleFile(dictionary[ "QT_BUILD_TREE" ] + "/mkspecs/qmodule.pri");
-    if (moduleFile.open(QFile::WriteOnly | QFile::Text)) { // Truncates any existing file.
-        QTextStream moduleStream(&moduleFile);
+    {
+        FileWriter moduleStream(dictionary[ "QT_BUILD_TREE" ] + "/mkspecs/qmodule.pri");
 
         moduleStream << "QT_BUILD_PARTS += " << buildParts.join(' ') << endl;
         if (!skipModules.isEmpty())
@@ -2892,8 +2867,8 @@ void Configure::generateCachefile()
         for (QStringList::Iterator var = qmakeVars.begin(); var != qmakeVars.end(); ++var)
             moduleStream << (*var) << endl;
 
-        moduleStream.flush();
-        moduleFile.close();
+        if (!moduleStream.flush())
+            dictionary[ "DONE" ] = "error";
     }
 }
 
@@ -3089,9 +3064,8 @@ bool Configure::compilerSupportsFlag(const QString &compilerAndArgs)
 void Configure::generateQConfigPri()
 {
     // Generate qconfig.pri
-    QFile configFile(dictionary[ "QT_BUILD_TREE" ] + "/mkspecs/qconfig.pri");
-    if (configFile.open(QFile::WriteOnly | QFile::Text)) { // Truncates any existing file.
-        QTextStream configStream(&configFile);
+    {
+        FileWriter configStream(dictionary[ "QT_BUILD_TREE" ] + "/mkspecs/qconfig.pri");
 
         configStream << "CONFIG+= ";
         configStream << dictionary[ "BUILD" ];
@@ -3162,8 +3136,8 @@ void Configure::generateQConfigPri()
         if (dictionary[ "SHARED" ] == "no")
             configStream << "QT_DEFAULT_QPA_PLUGIN = q" << qpaPlatformName() << endl;
 
-        configStream.flush();
-        configFile.close();
+        if (!configStream.flush())
+            dictionary[ "DONE" ] = "error";
     }
 }
 
@@ -3201,13 +3175,8 @@ QString Configure::addDefine(QString def)
 
 void Configure::generateConfigfiles()
 {
-    QDir(buildPath).mkpath("src/corelib/global");
-    QString outName(buildPath + "/src/corelib/global/qconfig.h");
-    QTemporaryFile tmpFile;
-    QTextStream tmpStream;
-
-    if (tmpFile.open()) {
-        tmpStream.setDevice(&tmpFile);
+    {
+        FileWriter tmpStream(buildPath + "/src/corelib/global/qconfig.h");
 
         if (dictionary[ "QCONFIG" ] == "full") {
             tmpStream << "/* Everything */" << endl;
@@ -3217,8 +3186,7 @@ void Configure::generateConfigfiles()
             tmpStream << "#ifndef QT_BOOTSTRAPPED" << endl;
             QFile inFile(sourcePath + "/src/corelib/global/" + configName);
             if (inFile.open(QFile::ReadOnly)) {
-                QByteArray buffer = inFile.readAll();
-                tmpFile.write(buffer.constData(), buffer.size());
+                tmpStream << QTextStream(&inFile).readAll();
                 inFile.close();
             }
             tmpStream << "#endif // QT_BOOTSTRAPPED" << endl;
@@ -3349,68 +3317,40 @@ void Configure::generateConfigfiles()
 
         tmpStream<<"#define QT_QPA_DEFAULT_PLATFORM_NAME \"" << qpaPlatformName() << "\""<<endl;
 
-        tmpStream.flush();
-        tmpFile.flush();
-
-        // Replace old qconfig.h with new one
-        ::SetFileAttributes((wchar_t*)outName.utf16(), FILE_ATTRIBUTE_NORMAL);
-        QFile::remove(outName);
-        tmpFile.copy(outName);
-        tmpFile.close();
+        if (!tmpStream.flush())
+            dictionary[ "DONE" ] = "error";
     }
 
-    QTemporaryFile tmpFile2;
-    if (tmpFile2.open()) {
-        tmpStream.setDevice(&tmpFile2);
+    {
+        FileWriter tmpStream(buildPath + "/include/QtCore/qconfig.h");
+
         tmpStream << "#include \"../../src/corelib/global/qconfig.h\"" << endl;
 
-        tmpStream.flush();
-        tmpFile2.flush();
-
-        outName = buildPath + "/include/QtCore/qconfig.h";
-        ::SetFileAttributes((wchar_t*)outName.utf16(), FILE_ATTRIBUTE_NORMAL);
-        QFile::remove(outName);
-
-        tmpFile2.copy(outName);
-        tmpFile2.close();
+        if (!tmpStream.flush())
+            dictionary[ "DONE" ] = "error";
     }
-    QTemporaryFile tmpFile2a;
-    if (tmpFile2a.open()) {
-        tmpStream.setDevice(&tmpFile2a);
+    {
+        FileWriter tmpStream(buildPath + "/include/QtCore/QtConfig");
+
         tmpStream << "#include \"qconfig.h\"" << endl;
 
-        tmpStream.flush();
-        tmpFile2a.flush();
-
-        outName = buildPath + "/include/QtCore/QtConfig";
-        ::SetFileAttributes((wchar_t*)outName.utf16(), FILE_ATTRIBUTE_NORMAL);
-        QFile::remove(outName);
-
-        tmpFile2a.copy(outName);
-        tmpFile2a.close();
+        if (!tmpStream.flush())
+            dictionary[ "DONE" ] = "error";
     }
 
-    QTemporaryFile tmpFile3;
-    if (tmpFile3.open()) {
-        tmpStream.setDevice(&tmpFile3);
+    if (dictionary["EDITION"] == "Evaluation" || qmakeDefines.contains("QT_EVAL")) {
+        FileWriter tmpStream(buildPath + "/src/corelib/global/qconfig_eval.cpp");
+
         tmpStream << "/* Evaluation license key */" << endl
                   << "static const volatile char qt_eval_key_data              [512 + 12] = \"qt_qevalkey=" << licenseInfo["LICENSEKEYEXT"] << "\";" << endl;
 
-        tmpStream.flush();
-        tmpFile3.flush();
-
-        outName = buildPath + "/src/corelib/global/qconfig_eval.cpp";
-        ::SetFileAttributes((wchar_t*)outName.utf16(), FILE_ATTRIBUTE_NORMAL);
-        QFile::remove(outName);
-
-        if (dictionary["EDITION"] == "Evaluation" || qmakeDefines.contains("QT_EVAL"))
-            tmpFile3.copy(outName);
-        tmpFile3.close();
+        if (!tmpStream.flush())
+            dictionary[ "DONE" ] = "error";
     }
 
-    QFile qdeviceFile(dictionary["QT_BUILD_TREE"] + "/mkspecs/qdevice.pri");
-    if (qdeviceFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        tmpStream.setDevice(&qdeviceFile);
+    {
+        FileWriter tmpStream(dictionary["QT_BUILD_TREE"] + "/mkspecs/qdevice.pri");
+
         QString android_platform(dictionary.contains("ANDROID_PLATFORM")
                   ? dictionary["ANDROID_PLATFORM"]
                   : QString("android-9"));
@@ -3431,8 +3371,9 @@ void Configure::generateConfigfiles()
         tmpStream << "    DEFAULT_ANDROID_TARGET_ARCH = " << android_arch << endl;
         tmpStream << "    DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION = " << android_tc_vers << endl;
         tmpStream << "}" << endl;
-        tmpStream.flush();
-        qdeviceFile.close();
+
+        if (!tmpStream.flush())
+            dictionary[ "DONE" ] = "error";
     }
 }
 
@@ -3727,17 +3668,13 @@ void Configure::generateQConfigCpp()
     if (dictionary["QT_HOST_DATA"].isEmpty())
         dictionary["QT_HOST_DATA"] = haveHpx ? dictionary["QT_HOST_PREFIX"] : dictionary["QT_INSTALL_ARCHDATA"];
 
-    // Generate the new qconfig.cpp file
-    QDir(buildPath).mkpath("src/corelib/global");
-    const QString outName(buildPath + "/src/corelib/global/qconfig.cpp");
-
     QString specPfx = dictionary["QT_HOST_DATA"] + "/mkspecs/";
     QString hostSpec = stripPrefix(dictionary["QMAKESPEC"], specPfx);
     QString targSpec = dictionary.contains("XQMAKESPEC") ? stripPrefix(dictionary["XQMAKESPEC"], specPfx) : hostSpec;
 
-    QTemporaryFile tmpFile;
-    if (tmpFile.open()) {
-        QTextStream tmpStream(&tmpFile);
+    // Generate the new qconfig.cpp file
+    {
+        FileWriter tmpStream(buildPath + "/src/corelib/global/qconfig.cpp");
         tmpStream << "/* Licensed */" << endl
                   << "static const char qt_configure_licensee_str          [512 + 12] = \"qt_lcnsuser=" << licenseInfo["LICENSEE"] << "\";" << endl
                   << "static const char qt_configure_licensed_products_str [512 + 12] = \"qt_lcnsprod=" << dictionary["EDITION"] << "\";" << endl
@@ -3782,14 +3719,8 @@ void Configure::generateQConfigCpp()
         if ((platform() != WINDOWS) && (platform() != WINDOWS_CE))
             tmpStream << "#define QT_CONFIGURE_SETTINGS_PATH qt_configure_settings_path_str + 12;" << endl;
 
-        tmpStream.flush();
-        tmpFile.flush();
-
-        // Replace old qconfig.cpp with new one
-        ::SetFileAttributes((wchar_t*)outName.utf16(), FILE_ATTRIBUTE_NORMAL);
-        QFile::remove(outName);
-        tmpFile.copy(outName);
-        tmpFile.close();
+        if (!tmpStream.flush())
+            dictionary[ "DONE" ] = "error";
     }
 }
 
@@ -4284,31 +4215,47 @@ int Configure::platform() const
     return WINDOWS;
 }
 
-bool
-Configure::filesDiffer(const QString &fn1, const QString &fn2)
+FileWriter::FileWriter(const QString &name)
+    : QTextStream()
+    , m_name(name)
 {
-    QFile file1(fn1), file2(fn2);
-    if (!file1.open(QFile::ReadOnly) || !file2.open(QFile::ReadOnly))
-        return true;
-    const int chunk = 2048;
-    int used1 = 0, used2 = 0;
-    char b1[chunk], b2[chunk];
-    while (!file1.atEnd() && !file2.atEnd()) {
-        if (!used1)
-            used1 = file1.read(b1, chunk);
-        if (!used2)
-            used2 = file2.read(b2, chunk);
-        if (used1 > 0 && used2 > 0) {
-            const int cmp = qMin(used1, used2);
-            if (memcmp(b1, b2, cmp))
+    m_buffer.open(QIODevice::WriteOnly);
+    setDevice(&m_buffer);
+}
+
+bool FileWriter::flush()
+{
+    QTextStream::flush();
+    QFile oldFile(m_name);
+    if (oldFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        if (oldFile.readAll() == m_buffer.data())
+            return true;
+        oldFile.close();
+    }
+    QString dir = QFileInfo(m_name).absolutePath();
+    if (!QDir().mkpath(dir)) {
+        cout << "Cannot create directory " << qPrintable(QDir::toNativeSeparators(dir)) << ".\n";
+        return false;
+    }
+    QFile file(m_name + ".new");
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        if (file.write(m_buffer.data()) == m_buffer.data().size()) {
+            file.close();
+            if (file.error() == QFile::NoError) {
+                ::SetFileAttributes((wchar_t*)m_name.utf16(), FILE_ATTRIBUTE_NORMAL);
+                QFile::remove(m_name);
+                if (!file.rename(m_name)) {
+                    cout << "Cannot replace file " << qPrintable(QDir::toNativeSeparators(m_name)) << ".\n";
+                    return false;
+                }
                 return true;
-            if ((used1 -= cmp))
-                memcpy(b1, b1+cmp, used1);
-            if ((used2 -= cmp))
-                memcpy(b2, b2+cmp, used2);
+            }
         }
     }
-    return !file1.atEnd() || !file2.atEnd();
+    cout << "Cannot create file " << qPrintable(QDir::toNativeSeparators(file.fileName()))
+         << ": " << qPrintable(file.errorString()) << ".\n";
+    file.remove();
+    return false;
 }
 
 QT_END_NAMESPACE

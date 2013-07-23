@@ -82,6 +82,7 @@ private slots:
     void constructing();
     void simpleStart();
     void startWithOpen();
+    void startWithOldOpen();
     void execute();
     void startDetached();
     void crashTest();
@@ -293,6 +294,25 @@ void tst_QProcess::startWithOpen()
 
     QVERIFY(p.open(QIODevice::ReadOnly));
     QCOMPARE(p.openMode(), QIODevice::ReadOnly);
+    QVERIFY(p.waitForFinished(5000));
+}
+
+//-----------------------------------------------------------------------------
+void tst_QProcess::startWithOldOpen()
+{
+    // similar to the above, but we start with start() actually
+    // while open() is overridden to call QIODevice::open().
+    // This tests the BC requirement that "it works with the old implementation"
+    class OverriddenOpen : public QProcess
+    {
+    public:
+        virtual bool open(OpenMode mode) Q_DECL_OVERRIDE
+        { return QIODevice::open(mode); }
+    };
+
+    OverriddenOpen p;
+    p.start("testProcessNormal/testProcessNormal");
+    QVERIFY(p.waitForStarted(5000));
     QVERIFY(p.waitForFinished(5000));
 }
 

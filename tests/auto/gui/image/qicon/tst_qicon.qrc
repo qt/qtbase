@@ -16,5 +16,11 @@
 <file>./icons/themeparent/index.theme</file>
 <file>./icons/themeparent/scalable/actions/address-book-new.svg</file>
 <file>./icons/themeparent/scalable/actions/appointment-new.svg</file>
+<file>./styles/commonstyle/images/standardbutton-open-16.png</file>
+<file>./styles/commonstyle/images/standardbutton-open-32.png</file>
+<file>./styles/commonstyle/images/standardbutton-open-128.png</file>
+<file>./styles/commonstyle/images/standardbutton-save-16.png</file>
+<file>./styles/commonstyle/images/standardbutton-save-32.png</file>
+<file>./styles/commonstyle/images/standardbutton-save-128.png</file>
 </qresource>
 </RCC>

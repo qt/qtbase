@@ -241,8 +241,14 @@ Win32MakefileGenerator::processPrlFiles()
                 }
             }
             ProStringList &prl_libs = project->values("QMAKE_CURRENT_PRL_LIBS");
-            for (int prl = 0; prl < prl_libs.size(); ++prl)
-                l.insert(lit + prl + 1, prl_libs.at(prl));
+            for (int prl = 0; prl < prl_libs.size(); ++prl) {
+                ProString arg = prl_libs.at(prl);
+                if (arg.startsWith(libArg))
+                    arg = arg.left(libArg.length()) + escapeFilePath(arg.mid(libArg.length()).toQString());
+                else if (!arg.startsWith('/'))
+                    arg = escapeFilePath(arg.toQString());
+                l.insert(lit + prl + 1, arg);
+            }
             prl_libs.clear();
         }
 
@@ -899,8 +905,8 @@ QString Win32MakefileGenerator::escapeFilePath(const QString &path) const
 QString Win32MakefileGenerator::cQuoted(const QString &str)
 {
     QString ret = str;
-    ret.replace(QLatin1Char('"'), QStringLiteral("\\\""));
     ret.replace(QLatin1Char('\\'), QStringLiteral("\\\\"));
+    ret.replace(QLatin1Char('"'), QStringLiteral("\\\""));
     ret.prepend(QLatin1Char('"'));
     ret.append(QLatin1Char('"'));
     return ret;

@@ -346,6 +346,7 @@ public:
     QWinEventNotifier *processFinishedNotifier;
 #endif
 
+    void start(QIODevice::OpenMode mode);
     void startProcess();
 #if defined(Q_OS_UNIX) && !defined(Q_OS_QNX)
     void execChild(const char *workingDirectory, char **path, char **argv, char **envp);

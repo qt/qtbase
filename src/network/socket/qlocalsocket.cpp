@@ -71,6 +71,22 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn void QLocalSocket::connectToServer(OpenMode openMode)
+    \since 5.1
+
+    Attempts to make a connection to serverName().
+    setServerName() must be called before you open the connection.
+    Alternatively you can use connectToServer(const QString &name, OpenMode openMode);
+
+    The socket is opened in the given \a openMode and first enters ConnectingState.
+    If a connection is established, QLocalSocket enters ConnectedState and emits connected().
+
+    After calling this function, the socket can emit error() to signal that an error occurred.
+
+    \sa state(), serverName(), waitForConnected()
+*/
+
+/*!
     \fn void QLocalSocket::open(OpenMode openMode)
 
     Equivalent to connectToServer(OpenMode mode).
@@ -352,23 +368,10 @@ QLocalSocket::~QLocalSocket()
 #endif
 }
 
-/*!
-    \since 5.1
-
-    Attempts to make a connection to serverName().
-    setServerName() must be called before you open the connection.
-    Alternatively you can use connectToServer(const QString &name, OpenMode openMode);
-
-    The socket is opened in the given \a openMode and first enters ConnectingState.
-    If a connection is established, QLocalSocket enters ConnectedState and emits connected().
-
-    After calling this function, the socket can emit error() to signal that an error occurred.
-
-    \sa state(), serverName(), waitForConnected()
-*/
-void QLocalSocket::connectToServer(OpenMode openMode)
+bool QLocalSocket::open(OpenMode openMode)
 {
-    open(openMode);
+    connectToServer(openMode);
+    return isOpen();
 }
 
 /*! \overload
@@ -385,7 +388,7 @@ void QLocalSocket::connectToServer(OpenMode openMode)
 void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
 {
     setServerName(name);
-    open(openMode);
+    connectToServer(openMode);
 }
 
 /*!

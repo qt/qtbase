@@ -210,6 +210,11 @@ static inline void clearFontUnlocked()
     QGuiApplicationPrivate::app_font = 0;
 }
 
+static inline bool isPopupWindow(const QWindow *w)
+{
+    return (w->flags() & Qt::WindowType_Mask) == Qt::Popup;
+}
+
 /*!
     \class QGuiApplication
     \brief The QGuiApplication class manages the GUI application's control
@@ -477,18 +482,25 @@ QWindow *QGuiApplication::modalWindow()
     return QGuiApplicationPrivate::self->modalWindowList.first();
 }
 
+static void updateBlockedStatusRecursion(QWindow *window, bool shouldBeBlocked)
+{
+    QWindowPrivate *p = qt_window_private(window);
+    if (p->blockedByModalWindow != shouldBeBlocked) {
+        p->blockedByModalWindow = shouldBeBlocked;
+        QEvent e(shouldBeBlocked ? QEvent::WindowBlocked : QEvent::WindowUnblocked);
+        QGuiApplication::sendEvent(window, &e);
+        foreach (QObject *c, window->children())
+            if (c->isWindowType())
+                updateBlockedStatusRecursion(static_cast<QWindow *>(c), shouldBeBlocked);
+    }
+}
+
 void QGuiApplicationPrivate::updateBlockedStatus(QWindow *window)
 {
     bool shouldBeBlocked = false;
-    if ((window->type() & Qt::Popup) != Qt::Popup && !self->modalWindowList.isEmpty())
+    if (!isPopupWindow(window) && !self->modalWindowList.isEmpty())
         shouldBeBlocked = self->isWindowBlocked(window);
-
-    if (shouldBeBlocked != window->d_func()->blockedByModalWindow) {
-        QEvent e(shouldBeBlocked ? QEvent::WindowBlocked : QEvent::WindowUnblocked);
-
-        window->d_func()->blockedByModalWindow = shouldBeBlocked;
-        QGuiApplication::sendEvent(window, &e);
-    }
+    updateBlockedStatusRecursion(window, shouldBeBlocked);
 }
 
 void QGuiApplicationPrivate::showModalWindow(QWindow *modal)
@@ -496,7 +508,7 @@ void QGuiApplicationPrivate::showModalWindow(QWindow *modal)
     self->modalWindowList.prepend(modal);
 
     // Send leave for currently entered window if it should be blocked
-    if (currentMouseWindow && (currentMouseWindow->type() & Qt::Popup) != Qt::Popup) {
+    if (currentMouseWindow && !isPopupWindow(currentMouseWindow)) {
         bool shouldBeBlocked = self->isWindowBlocked(currentMouseWindow);
         if (shouldBeBlocked) {
             // Remove the new window from modalWindowList temporarily so leave can go through

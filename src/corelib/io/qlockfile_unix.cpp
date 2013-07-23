@@ -86,8 +86,10 @@ int QLockFilePrivate::checkFcntlWorksAfterFlock()
     if (!file.open())
         return 0;
     const int fd = file.d_func()->engine()->handle();
+#if defined(LOCK_EX) && defined(LOCK_NB)
     if (flock(fd, LOCK_EX | LOCK_NB) == -1) // other threads, and other processes on a local fs
         return 0;
+#endif
     struct flock flockData;
     flockData.l_type = F_WRLCK;
     flockData.l_whence = SEEK_SET;
@@ -121,8 +123,10 @@ static bool fcntlWorksAfterFlock()
 
 static bool setNativeLocks(int fd)
 {
+#if defined(LOCK_EX) && defined(LOCK_NB)
     if (flock(fd, LOCK_EX | LOCK_NB) == -1) // other threads, and other processes on a local fs
         return false;
+#endif
     struct flock flockData;
     flockData.l_type = F_WRLCK;
     flockData.l_whence = SEEK_SET;
