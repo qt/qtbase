@@ -2118,20 +2118,21 @@ QString HtmlGenerator::generateLowStatusMemberFile(InnerNode *inner,
     generateTitle(title, Text(), SmallSubTitle, inner, marker);
 
     if (status == CodeMarker::Compat) {
-        out() << "<p><b>The following class members are part of the "
+        out() << "<p><b>The following members of class "
+              << "<a href=\"" << linkForNode(inner, 0) << "\">"
+              << protectEnc(inner->name()) << "</a>"
+              << "are part of the "
                  "Qt compatibility layer.</b> We advise against "
                  "using them in new code.</p>\n";
     }
     else {
-        out() << "<p><b>The following class members are obsolete.</b> "
+        out() << "<p><b>The following members of class "
+              << "<a href=\"" << linkForNode(inner, 0) << "\">"
+              << protectEnc(inner->name()) << "</a>"
+              << " are obsolete.</b> "
               << "They are provided to keep old source code working. "
               << "We strongly advise against using them in new code.</p>\n";
     }
-
-    out() << "<p><ul><li><a href=\""
-          << linkForNode(inner, 0) << "\">"
-          << protectEnc(inner->name())
-          << " class reference</a></li></ul></p>\n";
 
     for (i = 0; i < sections.size(); ++i) {
         out() << "<h2>" << protectEnc(sections.at(i).name) << "</h2>\n";
