@@ -49,12 +49,13 @@ QT_BEGIN_NAMESPACE
 
 QT_USE_NAMESPACE
 
-void QDesktopWidgetPrivate::updateScreenList()
+void QDesktopWidgetPrivate::_q_updateScreens()
 {
     Q_Q(QDesktopWidget);
-    QList<QScreen *> screenList = QGuiApplication::screens();
-    int targetLength = screenList.length();
-    int currentLength = screens.length();
+    const QList<QScreen *> screenList = QGuiApplication::screens();
+    const int targetLength = screenList.length();
+    const int oldLength = screens.length();
+    int currentLength = oldLength;
 
     // Add or remove screen widgets as necessary
     if(currentLength > targetLength) {
@@ -65,23 +66,41 @@ void QDesktopWidgetPrivate::updateScreenList()
         }
     }
     else if (currentLength < targetLength) {
-        QDesktopScreenWidget *screen;
         while (currentLength < targetLength) {
-            screen = new QDesktopScreenWidget(currentLength++);
-            screens.append(screen);
+            QScreen *qScreen = screenList.at(currentLength);
+            QDesktopScreenWidget *screenWidget = new QDesktopScreenWidget(currentLength++);
+            screenWidget->setGeometry(qScreen->geometry());
+            QObject::connect(qScreen, SIGNAL(geometryChanged(QRect)),
+                             q, SLOT(_q_updateScreens()), Qt::QueuedConnection);
+            QObject::connect(qScreen, SIGNAL(destroyed()),
+                             q, SLOT(_q_updateScreens()), Qt::QueuedConnection);
+            screens.append(screenWidget);
         }
     }
 
     QRegion virtualGeometry;
 
-    // update the geometry of each screen widget
+    // update the geometry of each screen widget, determine virtual geometry
+    // and emit change signals afterwards.
+    QList<int> changedScreens;
     for (int i = 0; i < screens.length(); i++) {
-        QRect screenGeometry = screenList.at(i)->geometry();
-        screens.at(i)->setGeometry(screenGeometry);
+        const QRect screenGeometry = screenList.at(i)->geometry();
+        if (screenGeometry != screens.at(i)->geometry()) {
+            screens.at(i)->setGeometry(screenGeometry);
+            changedScreens.push_back(i);
+        }
         virtualGeometry += screenGeometry;
     }
 
     q->setGeometry(virtualGeometry.boundingRect());
+
+    if (oldLength != targetLength)
+        emit q->screenCountChanged(targetLength);
+
+    foreach (int changedScreen, changedScreens) {
+        emit q->resized(changedScreen);
+        emit q->workAreaResized(changedScreen);
+    }
 }
 
 QDesktopWidget::QDesktopWidget()
@@ -89,7 +108,8 @@ QDesktopWidget::QDesktopWidget()
 {
     Q_D(QDesktopWidget);
     setObjectName(QLatin1String("desktop"));
-    d->updateScreenList();
+    d->_q_updateScreens();
+    connect(qApp, SIGNAL(screenAdded(QScreen*)), this, SLOT(_q_updateScreens()));
 }
 
 QDesktopWidget::~QDesktopWidget()
@@ -169,3 +189,5 @@ void QDesktopWidget::resizeEvent(QResizeEvent *)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qdesktopwidget.cpp"
