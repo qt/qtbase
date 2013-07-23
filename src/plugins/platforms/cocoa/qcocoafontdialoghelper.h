@@ -47,9 +47,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFontDialog;
-class QFontDialogPrivate;
-
 class QCocoaFontDialogHelper : public QPlatformFontDialogHelper
 {
 public:
@@ -63,14 +60,6 @@ public:
 
     void setCurrentFont(const QFont &);
     QFont currentFont() const;
-
-protected:
-    void createNSFontPanelDelegate();
-    bool showCocoaFontPanel(Qt::WindowModality windowModality, QWindow *parent);
-    bool hideCocoaFontPanel();
-
-private:
-    void *mDelegate;
 };
 
 QT_END_NAMESPACE

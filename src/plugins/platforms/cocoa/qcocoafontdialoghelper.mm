@@ -132,12 +132,14 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
 
 @implementation QNSFontPanelDelegate
 
-- (id)initWithDialogHelper:
-    (QCocoaFontDialogHelper *)helper
+- (id)init
 {
     self = [super init];
     mFontPanel = [NSFontPanel sharedFontPanel];
-    mHelper = helper;
+    mHelper = 0;
+    mStolenContentView = 0;
+    mOkButton = 0;
+    mCancelButton = 0;
     mResultCode = NSCancelButton;
     mDialogIsExecuting = false;
     mResultSet = false;
@@ -147,13 +149,28 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
         [mFontPanel setRestorable:NO];
 #endif
 
+    [mFontPanel retain];
+    return self;
+}
+
+- (void)dealloc
+{
+    [self restoreOriginalContentView];
+    [mFontPanel setDelegate:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+
+    [super dealloc];
+}
+
+- (void)setDialogHelper:(QCocoaFontDialogHelper *)helper
+{
+    mHelper = helper;
+
     [mFontPanel setTitle:QCFString::toNSString(helper->options()->windowTitle())];
 
     if (mHelper->options()->testOption(QFontDialogOptions::NoButtons)) {
-        mStolenContentView = 0;
-        mOkButton = 0;
-        mCancelButton = 0;
-    } else {
+        [self restoreOriginalContentView];
+    } else if (!mStolenContentView) {
         // steal the font panel's contents view
         mStolenContentView = [mFontPanel contentView];
         [mStolenContentView retain];
@@ -178,28 +195,6 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
         [mCancelButton setAction:@selector(onCancelClicked)];
         [mCancelButton setTarget:self];
     }
-
-    [mFontPanel retain];
-    return self;
-}
-
-- (void)dealloc
-{
-    if (mOkButton) {
-        NSView *ourContentView = [mFontPanel contentView];
-
-        // return stolen stuff to its rightful owner
-        [mStolenContentView removeFromSuperview];
-        [mFontPanel setContentView:mStolenContentView];
-        [mOkButton release];
-        [mCancelButton release];
-        [ourContentView release];
-    }
-
-    [mFontPanel setDelegate:nil];
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-
-    [super dealloc];
 }
 
 - (void)closePanel
@@ -210,12 +205,31 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
 - (void)windowDidResize:(NSNotification *)notification
 {
     Q_UNUSED(notification);
-    if (mOkButton)
-        [self relayout];
+    [self relayout];
+}
+
+- (void)restoreOriginalContentView
+{
+    if (mStolenContentView) {
+        NSView *ourContentView = [mFontPanel contentView];
+
+        // return stolen stuff to its rightful owner
+        [mStolenContentView removeFromSuperview];
+        [mFontPanel setContentView:mStolenContentView];
+        [mOkButton release];
+        [mCancelButton release];
+        [ourContentView release];
+        mOkButton = 0;
+        mCancelButton = 0;
+        mStolenContentView = 0;
+    }
 }
 
 - (void)relayout
 {
+    if (!mOkButton)
+        return;
+
     [self relayoutToContentSize:[[mStolenContentView superview] frame].size];
 }
 
@@ -291,12 +305,14 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
     NSFont *panelFont = [fontManager convertFont:selectedFont];
     mQtFont = qfontForCocoaFont(panelFont, mQtFont);
 
-    emit mHelper->currentFontChanged(mQtFont);
+    if (mHelper)
+        emit mHelper->currentFontChanged(mQtFont);
 }
 
 - (void)showModelessPanel
 {
     mDialogIsExecuting = false;
+    mResultSet = false;
     [mFontPanel makeKeyAndOrderFront:mFontPanel];
 }
 
@@ -309,6 +325,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
     // close down during the cleanup.
     qApp->processEvents(QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers);
     [NSApp runModalForWindow:mFontPanel];
+    mDialogIsExecuting = false;
     return (mResultCode == NSOKButton);
 }
 
@@ -326,7 +343,8 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
         [self finishOffWithCode:NSCancelButton];
     } else {
         mResultSet = true;
-        emit mHelper->reject();
+        if (mHelper)
+            emit mHelper->reject();
     }
     return true;
 }
@@ -361,27 +379,101 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
 
 QT_BEGIN_NAMESPACE
 
-QCocoaFontDialogHelper::QCocoaFontDialogHelper() :
-    mDelegate(0)
+class QCocoaFontPanel
+{
+public:
+    QCocoaFontPanel()
+    {
+        mDelegate = [[QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) alloc] init];
+    }
+
+    ~QCocoaFontPanel()
+    {
+        [mDelegate release];
+    }
+
+    void init(QCocoaFontDialogHelper *helper)
+    {
+        [mDelegate setDialogHelper:helper];
+    }
+
+    void cleanup(QCocoaFontDialogHelper *helper)
+    {
+        if (mDelegate->mHelper == helper)
+            mDelegate->mHelper = 0;
+    }
+
+    bool exec()
+    {
+        // Note: If NSApp is not running (which is the case if e.g a top-most
+        // QEventLoop has been interrupted, and the second-most event loop has not
+        // yet been reactivated (regardless if [NSApp run] is still on the stack)),
+        // showing a native modal dialog will fail.
+        return [mDelegate runApplicationModalPanel];
+    }
+
+    bool show(Qt::WindowModality windowModality, QWindow *parent)
+    {
+        Q_UNUSED(parent);
+        if (windowModality != Qt::WindowModal)
+            [mDelegate showModelessPanel];
+        // no need to show a Qt::WindowModal dialog here, because it's necessary to call exec() in that case
+        return true;
+    }
+
+    void hide()
+    {
+        [mDelegate closePanel];
+    }
+
+    QFont currentFont() const
+    {
+        return mDelegate->mQtFont;
+    }
+
+    void setCurrentFont(const QFont &font)
+    {
+        NSFontManager *mgr = [NSFontManager sharedFontManager];
+        const NSFont *nsFont = 0;
+
+        int weight = 5;
+        NSFontTraitMask mask = 0;
+        if (font.style() == QFont::StyleItalic) {
+            mask |= NSItalicFontMask;
+        }
+        if (font.weight() == QFont::Bold) {
+            weight = 9;
+            mask |= NSBoldFontMask;
+        }
+
+        QFontInfo fontInfo(font);
+        nsFont = [mgr fontWithFamily:QCFString::toNSString(fontInfo.family())
+            traits:mask
+            weight:weight
+            size:fontInfo.pointSize()];
+
+        [mgr setSelectedFont:const_cast<NSFont *>(nsFont) isMultiple:NO];
+        mDelegate->mQtFont = font;
+    }
+
+private:
+    QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *mDelegate;
+};
+
+Q_GLOBAL_STATIC(QCocoaFontPanel, sharedFontPanel)
+
+QCocoaFontDialogHelper::QCocoaFontDialogHelper()
 {
 }
 
 QCocoaFontDialogHelper::~QCocoaFontDialogHelper()
 {
-    if (!mDelegate)
-        return;
-    [reinterpret_cast<QNSFontPanelDelegate *>(mDelegate) release];
-    mDelegate = 0;
+    sharedFontPanel()->cleanup(this);
 }
 
 void QCocoaFontDialogHelper::exec()
 {
-    // Note: If NSApp is not running (which is the case if e.g a top-most
-    // QEventLoop has been interrupted, and the second-most event loop has not
-    // yet been reactivated (regardless if [NSApp run] is still on the stack)),
-    // showing a native modal dialog will fail.
-    QNSFontPanelDelegate *delegate = static_cast<QNSFontPanelDelegate *>(mDelegate);
-    if ([delegate runApplicationModalPanel])
+    if (sharedFontPanel()->exec())
         emit accept();
     else
         emit reject();
@@ -389,86 +481,26 @@ void QCocoaFontDialogHelper::exec()
 
 bool QCocoaFontDialogHelper::show(Qt::WindowFlags, Qt::WindowModality windowModality, QWindow *parent)
 {
-    if (windowModality == Qt::WindowModal) {
-        // Cocoa's shared font panel cannot be shown as a sheet
-        return false;
-    }
-    return showCocoaFontPanel(windowModality, parent);
+    if (windowModality == Qt::WindowModal)
+        windowModality = Qt::ApplicationModal;
+    sharedFontPanel()->init(this);
+    return sharedFontPanel()->show(windowModality, parent);
 }
 
 void QCocoaFontDialogHelper::hide()
 {
-    if (!mDelegate)
-        return;
-    [reinterpret_cast<QNSFontPanelDelegate *>(mDelegate)->mFontPanel close];
+    sharedFontPanel()->hide();
 }
 
 void QCocoaFontDialogHelper::setCurrentFont(const QFont &font)
 {
-    NSFontManager *mgr = [NSFontManager sharedFontManager];
-    const NSFont *nsFont = 0;
-
-    int weight = 5;
-    NSFontTraitMask mask = 0;
-    if (font.style() == QFont::StyleItalic) {
-        mask |= NSItalicFontMask;
-    }
-    if (font.weight() == QFont::Bold) {
-        weight = 9;
-        mask |= NSBoldFontMask;
-    }
-
-    QFontInfo fontInfo(font);
-    nsFont = [mgr fontWithFamily:QCFString::toNSString(fontInfo.family())
-        traits:mask
-        weight:weight
-        size:fontInfo.pointSize()];
-
-    if (!mDelegate)
-        createNSFontPanelDelegate();
-
-    [mgr setSelectedFont:const_cast<NSFont *>(nsFont) isMultiple:NO];
-    static_cast<QNSFontPanelDelegate *>(mDelegate)->mQtFont = font;
+    sharedFontPanel()->init(this);
+    sharedFontPanel()->setCurrentFont(font);
 }
 
 QFont QCocoaFontDialogHelper::currentFont() const
 {
-    if (!mDelegate)
-        return QFont();
-    return reinterpret_cast<QNSFontPanelDelegate *>(mDelegate)->mQtFont;
-}
-
-void QCocoaFontDialogHelper::createNSFontPanelDelegate()
-{
-    if (mDelegate)
-        return;
-
-    QNSFontPanelDelegate *delegate = [[QNSFontPanelDelegate alloc]
-          initWithDialogHelper:this];
-
-    mDelegate = delegate;
-}
-
-bool QCocoaFontDialogHelper::showCocoaFontPanel(Qt::WindowModality windowModality, QWindow *parent)
-{
-    Q_UNUSED(parent);
-    createNSFontPanelDelegate();
-    QNSFontPanelDelegate *delegate = static_cast<QNSFontPanelDelegate *>(mDelegate);
-    if (windowModality == Qt::NonModal)
-        [delegate showModelessPanel];
-    // no need to show a Qt::ApplicationModal dialog here, since it will be done in _q_platformRunNativeAppModalPanel()
-    return true;
-}
-
-bool QCocoaFontDialogHelper::hideCocoaFontPanel()
-{
-    if (!mDelegate){
-        return false;
-    } else {
-        QNSFontPanelDelegate *delegate = static_cast<QNSFontPanelDelegate *>(mDelegate);
-        [delegate closePanel];
-        return true;
-    }
+    return sharedFontPanel()->currentFont();
 }
 
 QT_END_NAMESPACE
