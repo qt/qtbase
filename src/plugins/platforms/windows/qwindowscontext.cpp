@@ -848,10 +848,15 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::CloseEvent:
         QWindowSystemInterface::handleCloseEvent(platformWindow->window());
         return true;
-    case QtWindows::ThemeChanged: // ### fixme: Compress these events?
+    case QtWindows::ThemeChanged: {
+        // Switch from Aero to Classic changes margins.
+        const Qt::WindowFlags flags = platformWindow->window()->flags();
+        if ((flags & Qt::WindowType_Mask) != Qt::Desktop && !(flags & Qt::FramelessWindowHint))
+            platformWindow->setFlag(QWindowsWindow::FrameDirty);
         if (QWindowsTheme *theme = QWindowsTheme::instance())
             theme->windowsThemeChanged(platformWindow->window());
         return true;
+    }
 #ifndef Q_OS_WINCE
     case QtWindows::ActivateWindowEvent:
         if (platformWindow->testFlag(QWindowsWindow::BlockedByModal))
