@@ -1089,8 +1089,11 @@ inline void QUrlPrivate::setQuery(const QString &value, int from, int iend)
 
 inline void QUrlPrivate::appendHost(QString &appendTo, QUrl::FormattingOptions options) const
 {
-    // this is the only flag that matters
-    options &= QUrl::EncodeUnicode;
+    // EncodeUnicode is the only flag that matters
+    if ((options & QUrl::FullyDecoded) == QUrl::FullyDecoded)
+        options = 0;
+    else
+        options &= QUrl::EncodeUnicode;
     if (host.isEmpty())
         return;
     if (host.at(0).unicode() == '[') {

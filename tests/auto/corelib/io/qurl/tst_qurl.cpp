@@ -148,6 +148,8 @@ private slots:
     void stripTrailingSlash();
     void hosts_data();
     void hosts();
+    void hostFlags_data();
+    void hostFlags();
     void setPort();
     void toEncoded_data();
     void toEncoded();
@@ -2635,6 +2637,29 @@ void tst_QUrl::hosts()
     QFETCH(QString, url);
 
     QTEST(QUrl(url).host(), "host");
+}
+
+void tst_QUrl::hostFlags_data()
+{
+    QTest::addColumn<QString>("urlStr");
+    QTest::addColumn<QUrl::FormattingOptions>("options");
+    QTest::addColumn<QString>("expectedHost");
+
+    QString swedish = QString::fromUtf8("http://www.räksmörgås.se/pub?a=b&a=dø&a=f#vræl");
+    QTest::newRow("se_fullydecoded") << swedish << QUrl::FormattingOptions(QUrl::FullyDecoded) << QString::fromUtf8("www.räksmörgås.se");
+    QTest::newRow("se_fullyencoded") << swedish << QUrl::FormattingOptions(QUrl::FullyEncoded) << QString::fromUtf8("www.xn--rksmrgs-5wao1o.se");
+    QTest::newRow("se_prettydecoded") << swedish << QUrl::FormattingOptions(QUrl::PrettyDecoded) << QString::fromUtf8("www.räksmörgås.se");
+    QTest::newRow("se_encodespaces") << swedish << QUrl::FormattingOptions(QUrl::EncodeSpaces) << QString::fromUtf8("www.räksmörgås.se");
+}
+
+void tst_QUrl::hostFlags()
+{
+    QFETCH(QString, urlStr);
+    QFETCH(QUrl::FormattingOptions, options);
+    QFETCH(QString, expectedHost);
+
+    QUrl url(urlStr);
+    QCOMPARE(url.host(options), expectedHost);
 }
 
 void tst_QUrl::setPort()
