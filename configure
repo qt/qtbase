@@ -6669,24 +6669,6 @@ else
 fi
 
 #-------------------------------------------------------------------------------
-# save configuration into .qmake.cache
-#-------------------------------------------------------------------------------
-
-CACHEFILE="$outpath/.qmake.cache"
-[ -f "$CACHEFILE.tmp" ] && rm -f "$CACHEFILE.tmp"
-cat >>"$CACHEFILE.tmp" <<EOF
-QT_SOURCE_TREE = \$\$quote($relpath)
-QT_BUILD_TREE = \$\$quote($outpath)
-EOF
-
-# replace .qmake.cache if it differs from the newly created temp file
-if cmp -s "$CACHEFILE.tmp" "$CACHEFILE"; then
-    rm -f "$CACHEFILE.tmp"
-else
-    mv -f "$CACHEFILE.tmp" "$CACHEFILE"
-fi
-
-#-------------------------------------------------------------------------------
 # give feedback on configuration
 #-------------------------------------------------------------------------------
 exec 3>&1 1>$outpath/config.summary # redirect output temporarily to config.summary

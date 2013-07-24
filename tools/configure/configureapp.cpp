@@ -2812,17 +2812,6 @@ void Configure::generateOutputVars()
 
 void Configure::generateCachefile()
 {
-    // Generate .qmake.cache
-    {
-        FileWriter cacheStream(buildPath + "/.qmake.cache");
-
-        cacheStream << "QT_SOURCE_TREE = " << formatPath(dictionary["QT_SOURCE_TREE"]) << endl;
-        cacheStream << "QT_BUILD_TREE = " << formatPath(dictionary["QT_BUILD_TREE"]) << endl;
-
-        if (!cacheStream.flush())
-            dictionary[ "DONE" ] = "error";
-    }
-
     // Generate qmodule.pri
     {
         FileWriter moduleStream(dictionary[ "QT_BUILD_TREE" ] + "/mkspecs/qmodule.pri");
