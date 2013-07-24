@@ -1172,13 +1172,6 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
     currentFilenames.pop();
 }
 
-Symbols Preprocessor::preprocessed(const QByteArray &filename, FILE *file)
-{
-    QFile qfile;
-    qfile.open(file, QFile::ReadOnly);
-    return preprocessed(filename, &qfile);
-}
-
 Symbols Preprocessor::preprocessed(const QByteArray &filename, QIODevice *file)
 {
     QByteArray input = file->readAll();
