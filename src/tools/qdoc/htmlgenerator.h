@@ -139,6 +139,10 @@ private:
                        const Node *relative,
                        CodeMarker *marker);
     void generateFooter(const Node *node = 0);
+    void generateRequisites(InnerNode *inner,
+                            CodeMarker *marker);
+    void generateQmlRequisites(QmlClassNode *qcn,
+                            CodeMarker *marker);
     void generateBrief(const Node *node,
                        CodeMarker *marker,
                        const Node *relative = 0);
@@ -182,6 +186,7 @@ private:
     void generateQmlInstantiates(QmlClassNode* qcn, CodeMarker* marker);
     void generateInstantiatedBy(ClassNode* cn, CodeMarker* marker);
 
+    void generateRequisitesTable(const QStringList& requisitesOrder, QMap<QString, Text>& requisites);
     void generateSection(const NodeList& nl,
                          const Node *relative,
                          CodeMarker *marker,

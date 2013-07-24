@@ -185,6 +185,17 @@ protected:
     QString tagFile_;
     QStack<QTextStream*> outStreamStack;
 
+    void appendFullName(Text& text,
+                        const Node *apparentNode,
+                        const Node *relative,
+                        const Node *actualNode = 0);
+    void appendFullName(Text& text,
+                        const Node *apparentNode,
+                        const QString& fullName,
+                        const Node *actualNode);
+    void appendFullNames(Text& text, const NodeList& nodes, const Node* relative);
+    void appendSortedNames(Text& text, const ClassNode *classe, const QList<RelatedClass> &classes);
+
 private:
     static Generator* currentGenerator_;
     static QStringList exampleDirs;
@@ -209,16 +220,6 @@ private:
     static bool redirectDocumentationToDevNull_;
     static Passes qdocPass_;
 
-    void appendFullName(Text& text,
-                        const Node *apparentNode,
-                        const Node *relative,
-                        const Node *actualNode = 0);
-    void appendFullName(Text& text,
-                        const Node *apparentNode,
-                        const QString& fullName,
-                        const Node *actualNode);
-    void appendFullNames(Text& text, const NodeList& nodes, const Node* relative);
-    void appendSortedNames(Text& text, const ClassNode *classe, const QList<RelatedClass> &classes);
     void generateReimplementedFrom(const FunctionNode *func, CodeMarker *marker);
 
     QString amp;

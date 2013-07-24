@@ -1114,8 +1114,6 @@ void HtmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
     QList<Section> sections;
     QList<Section>::ConstIterator s;
 
-    ClassNode* classe = 0;
-
     QString title;
     QString rawTitle;
     QString fullTitle;
@@ -1125,7 +1123,6 @@ void HtmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
         title = rawTitle + " Namespace";
     }
     else if (inner->type() == Node::Class) {
-        classe = static_cast<ClassNode*>(inner);
         rawTitle = inner->plainName();
         fullTitle = inner->plainFullName();
         title = rawTitle + " Class";
@@ -1140,16 +1137,9 @@ void HtmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
     generateTableOfContents(inner,marker,&sections);
     generateTitle(title, subtitleText, SmallSubTitle, inner, marker);
     generateBrief(inner, marker);
-    generateIncludes(inner, marker);
+    generateRequisites(inner, marker);
     generateStatus(inner, marker);
-    if (classe) {
-        generateInherits(classe, marker);
-        generateInheritedBy(classe, marker);
-        if (classe->qmlElement() != 0)
-            generateInstantiatedBy(classe,marker);
-    }
     generateThreadSafeness(inner, marker);
-    generateSince(inner, marker);
 
     out() << "<ul>\n";
 
@@ -1530,10 +1520,7 @@ void HtmlGenerator::generateDocNode(DocNode* dn, CodeMarker* marker)
         const_cast<DocNode*>(dn)->setCurrentChild();
         ClassNode* cn = qml_cn->classNode();
         generateBrief(qml_cn, marker);
-        generateQmlInherits(qml_cn, marker);
-        generateQmlInheritedBy(qml_cn, marker);
-        generateQmlInstantiates(qml_cn, marker);
-        generateSince(qml_cn, marker);
+        generateQmlRequisites(qml_cn, marker);
 
         QString allQmlMembersLink = generateAllQmlMembersFile(qml_cn, marker);
         if (!allQmlMembersLink.isEmpty()) {
@@ -1837,6 +1824,259 @@ void HtmlGenerator::generateFooter(const Node *node)
 
     out() << "</body>\n";
     out() << "</html>\n";
+}
+
+/*!
+Lists the required imports and includes in a table.
+The number of rows is known, so this path is simpler than the generateSection() path.
+*/
+void HtmlGenerator::generateRequisites(InnerNode *inner, CodeMarker *marker)
+{
+    QMap<QString, Text> requisites;
+    Text text;
+
+    const QString headerText = "Header:";
+    const QString sinceText = "Since:";
+    const QString inheritedBytext = "Inherited By:";
+    const QString inheritsText = "Inherits:";
+    const QString instantiatedByText = "Instantiated By:";
+
+    //add the includes to the map
+    if (!inner->includes().isEmpty()) {
+        text.clear();
+        text << formattingRightMap()[ATOM_FORMATTING_BOLD]
+             << formattingLeftMap()[ATOM_FORMATTING_TELETYPE]
+             << highlightedCode(indent(codeIndent,
+                                       marker->markedUpIncludes(inner->includes())),
+                                       inner)
+             << formattingRightMap()[ATOM_FORMATTING_TELETYPE];
+        requisites.insert(headerText, text);
+    }
+
+    //The order of the requisites matter
+    QStringList requisiteorder;
+    requisiteorder << headerText
+                   << sinceText
+                   << instantiatedByText
+                   << inheritsText
+                   << inheritedBytext;
+
+    //add the since and project into the map
+    if (!inner->since().isEmpty()) {
+        text.clear();
+        QStringList since = inner->since().split(QLatin1Char(' '));
+        if (since.count() == 1) {
+            // Handle legacy use of \since <version>.
+            if (project.isEmpty())
+                text << "version";
+            else
+                text << Atom(Atom::Link, project)
+                     << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                     << Atom(Atom::String, project)
+                     << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
+            text << " " << since[0];
+        }
+        else {
+                // Reconstruct the <project> <version> string.
+                text << " " << since.join(' ');
+        }
+        text << Atom::ParaRight;
+        requisites.insert(sinceText, text);
+    }
+
+    //add the instantiated-by to the map if the class node is not internal
+    if (inner->type() == Node::Class) {
+        ClassNode* classe = static_cast<ClassNode*>(inner);
+        if (classe->qmlElement() != 0 && classe->status() != Node::Internal) {
+            text.clear();
+            text << Atom(Atom::LinkNode, CodeMarker::stringForNode(classe->qmlElement()))
+                 << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                 << Atom(Atom::String, classe->qmlElement()->name())
+                 << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
+            requisites.insert(instantiatedByText, text);
+
+        }
+
+        //add the inherits to the map
+        QList<RelatedClass>::ConstIterator r;
+        int index;
+        if (!classe->baseClasses().isEmpty()) {
+            text.clear();
+            r = classe->baseClasses().constBegin();
+            index = 0;
+            while (r != classe->baseClasses().constEnd()) {
+                text << Atom(Atom::LinkNode, CodeMarker::stringForNode((*r).node))
+                     << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                     << Atom(Atom::String, (*r).dataTypeWithTemplateArgs)
+                     << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
+
+                if ((*r).access == Node::Protected) {
+                    text << " (protected)";
+                }
+                else if ((*r).access == Node::Private) {
+                    text << " (private)";
+                }
+                text << separator(index++, classe->baseClasses().count());
+                ++r;
+            }
+            text << Atom::ParaRight;
+            requisites.insert(inheritsText, text);
+        }
+
+        //add the inherited-by to the map
+        if (!classe->derivedClasses().isEmpty()) {
+            text.clear();
+            text << Atom::ParaLeft;
+            appendSortedNames(text, classe, classe->derivedClasses());
+            text << Atom::ParaRight;
+            requisites.insert(inheritedBytext, text);
+        }
+
+    }
+
+    if (!requisites.isEmpty()) {
+        //generate the table
+        out() << "<table class=\"alignedsummary\">\n";
+
+        QStringList::ConstIterator i;
+        for (i = requisiteorder.begin(); i != requisiteorder.constEnd(); ++i) {
+
+            if (requisites.contains(*i)) {
+                out() << "<tr>"
+                    << "<td class=\"memItemLeft rightAlign topAlign\"> "
+                    << *i
+                    << "</td><td class=\"memItemRight bottomAlign\"> ";
+
+                if (*i == headerText)
+                    out() << requisites.value(*i).toString();
+                else
+                    generateText(requisites.value(*i), inner, marker);
+                out() << "</td></tr>";
+            }
+        }
+        out() << "</table>";
+    }
+}
+
+/*!
+Lists the required imports and includes in a table.
+The number of rows is known, so this path is simpler than the generateSection() path.
+*/
+void HtmlGenerator::generateQmlRequisites(QmlClassNode *qcn, CodeMarker *marker)
+{
+    if (!qcn)
+        return;
+    QMap<QString, Text> requisites;
+    Text text;
+
+    const QString importText = "Import Statement:";
+    const QString sinceText = "Since:";
+    const QString inheritedBytext = "Inherited By:";
+    const QString inheritsText = "Inherits:";
+    const QString instantiatesText = "Instantiates:";
+
+    //The order of the requisites matter
+    QStringList requisiteorder;
+    requisiteorder << importText
+                   << sinceText
+                   << instantiatesText
+                   << inheritsText
+                   << inheritedBytext;
+
+    //add the module name and version to the map
+    text.clear();
+    text << formattingRightMap()[ATOM_FORMATTING_BOLD]
+         << formattingLeftMap()[ATOM_FORMATTING_TELETYPE]
+         << "import " + qcn->qmlModuleName() + " " + qcn->qmlModuleVersion()
+         << formattingRightMap()[ATOM_FORMATTING_TELETYPE];
+    requisites.insert(importText, text);
+
+    //add the since and project into the map
+    if (!qcn->since().isEmpty()) {
+        text.clear();
+        QStringList since = qcn->since().split(QLatin1Char(' '));
+        if (since.count() == 1) {
+            // Handle legacy use of \since <version>.
+            if (project.isEmpty())
+                text << "version";
+            else
+                text << Atom(Atom::Link, project)
+                     << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                     << Atom(Atom::String, project)
+                     << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
+
+            text << " " << since[0];
+        }
+        else {
+                // Reconstruct the <project> <version> string.
+                text << " " << since.join(' ');
+        }
+        text << Atom::ParaRight;
+        requisites.insert(sinceText, text);
+    }
+
+    //add the instantiates to the map
+    ClassNode* cn = qcn->classNode();
+    if (cn && (cn->status() != Node::Internal)) {
+        text.clear();
+        text << Atom(Atom::LinkNode,CodeMarker::stringForNode(qcn));
+        text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
+        text << Atom(Atom::LinkNode,CodeMarker::stringForNode(cn));
+        text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK);
+        text << Atom(Atom::String, cn->name());
+        text << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
+        requisites.insert(instantiatesText, text);
+    }
+
+    //add the inherits to the map
+    const QmlClassNode* base = qcn->qmlBaseNode();
+    while (base && base->isInternal()) {
+        base = base->qmlBaseNode();
+    }
+    if (base) {
+        text.clear();
+        text << Atom::ParaLeft
+             << Atom(Atom::LinkNode,CodeMarker::stringForNode(base))
+             << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+             << Atom(Atom::String, base->name())
+             << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
+             << Atom::ParaRight;
+        requisites.insert(inheritsText, text);
+    }
+
+    //add the inherited-by to the map
+    NodeList subs;
+    QmlClassNode::subclasses(qcn->name(), subs);
+    if (!subs.isEmpty()) {
+        text.clear();
+        text << Atom::ParaLeft;
+        appendSortedQmlNames(text, qcn, subs);
+        text << Atom::ParaRight;
+        requisites.insert(inheritedBytext, text);
+    }
+
+    if (!requisites.isEmpty()) {
+        //generate the table
+        out() << "<table class=\"alignedsummary\">\n";
+
+        QStringList::ConstIterator i;
+        for (i = requisiteorder.begin(); i != requisiteorder.constEnd(); ++i) {
+
+            if (requisites.contains(*i)) {
+                out() << "<tr>"
+                    << "<td class=\"memItemLeft rightAlign topAlign\"> "
+                    << *i
+                    << "</td><td class=\"memItemRight bottomAlign\"> ";
+
+                if (*i == importText)
+                    out()<<requisites.value(*i).toString();
+                else
+                    generateText(requisites.value(*i), qcn, marker);
+                out() << "</td></tr>";
+            }
+        }
+        out() << "</table>";
+    }
 }
 
 void HtmlGenerator::generateBrief(const Node *node, CodeMarker *marker,

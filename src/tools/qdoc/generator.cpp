@@ -1113,7 +1113,10 @@ void Generator::generateSince(const Node *node, CodeMarker *marker)
             if (project.isEmpty())
                 text << "version";
             else
-                text << project;
+                text << Atom(Atom::Link, project)
+                     << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                     << Atom(Atom::String, project)
+                     << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
             text << " " << since[0];
         } else {
             // Reconstruct the <project> <version> string.
