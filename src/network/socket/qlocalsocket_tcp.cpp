@@ -214,13 +214,13 @@ void QLocalSocketPrivate::errorOccurred(QLocalSocket::LocalSocketError error, co
         q->emit stateChanged(state);
 }
 
-bool QLocalSocket::open(OpenMode openMode)
+void QLocalSocket::connectToServer(OpenMode openMode)
 {
     Q_D(QLocalSocket);
     if (state() == ConnectedState || state() == ConnectingState) {
         setErrorString(tr("Trying to connect while connection is in progress"));
         emit error(QLocalSocket::OperationError);
-        return false;
+        return;
     }
 
     d->errorString.clear();
@@ -230,7 +230,7 @@ bool QLocalSocket::open(OpenMode openMode)
     if (d->serverName.isEmpty()) {
         d->errorOccurred(ServerNotFoundError,
                          QLatin1String("QLocalSocket::connectToServer"));
-        return false;
+        return;
     }
 
     const QLatin1String prefix("QLocalServer/");
@@ -245,11 +245,10 @@ bool QLocalSocket::open(OpenMode openMode)
     if (!ok) {
         d->errorOccurred(ServerNotFoundError,
                          QLatin1String("QLocalSocket::connectToServer"));
-        return false;
+        return;
     }
     d->tcpSocket->connectToHost(QHostAddress::LocalHost, port, openMode);
     QIODevice::open(openMode);
-    return true;
 }
 
 bool QLocalSocket::setSocketDescriptor(qintptr socketDescriptor,
@@ -425,7 +424,7 @@ bool QLocalSocket::waitForDisconnected(int msecs)
 {
     Q_D(QLocalSocket);
     if (state() == UnconnectedState) {
-        qWarning() << "QLocalSocket::waitForDisconnected() is not allowed in UnconnectedState";
+        qWarning("QLocalSocket::waitForDisconnected() is not allowed in UnconnectedState");
         return false;
     }
     return (d->tcpSocket->waitForDisconnected(msecs));

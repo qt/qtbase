@@ -99,6 +99,8 @@ public:
 
     QXcbConnection *defaultConnection() const { return m_connections.first(); }
 
+    QByteArray wmClass() const;
+
 private:
     QList<QXcbConnection *> m_connections;
 
@@ -115,6 +117,8 @@ private:
     QScopedPointer<QPlatformServices> m_services;
 
     friend class QXcbConnection; // access QPlatformIntegration::screenAdded()
+
+    mutable QByteArray m_wmClass;
 };
 
 QT_END_NAMESPACE

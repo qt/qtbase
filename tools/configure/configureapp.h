@@ -43,6 +43,7 @@
 #include <qstring.h>
 #include <qstringlist.h>
 #include <qlist.h>
+#include <qbuffer.h>
 #include <qtextstream.h>
 #include <qdir.h>
 
@@ -159,7 +160,6 @@ private:
 
     QString formatPath(const QString &path);
     QString formatPaths(const QStringList &paths);
-    bool filesDiffer(const QString &file1, const QString &file2);
 
     QString locateFile(const QString &fileName) const;
     bool findFile(const QString &fileName) const { return !locateFile(fileName).isEmpty(); }
@@ -192,5 +192,14 @@ public:
     Configure::ProjectType qmakeTemplate;
 };
 
+class FileWriter : public QTextStream
+{
+public:
+    FileWriter(const QString &name);
+    bool flush();
+private:
+    QString m_name;
+    QBuffer m_buffer;
+};
 
 QT_END_NAMESPACE

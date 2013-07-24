@@ -516,7 +516,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
     //HEADER
     const int pbVersion = pbuilderVersion();
     ProStringList buildConfigGroups;
-    buildConfigGroups << "PROJECTTARGET";
+    buildConfigGroups << "PROJECT" << "TARGET";
 
     t << "// !$*UTF8*$!\n"
       << "{\n"
@@ -1099,10 +1099,9 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
         if (useCopyResourcesPhase) {
             if (!project->isEmpty("ICON")) {
                 ProString icon = project->first("ICON");
-                if (icon.length() >= 2 && (icon.at(0) == '"' || icon.at(0) == '\'') && icon.endsWith(icon.at(0))) {
+                if (icon.length() >= 2 && (icon.at(0) == '"' || icon.at(0) == '\'') && icon.endsWith(icon.at(0)))
                     icon = icon.mid(1, icon.length() - 2);
-                    bundle_resources_files += keyFor(icon + ".BUILDABLE");
-                }
+                bundle_resources_files += keyFor(icon + ".BUILDABLE");
             }
 
             QString grp("Copy Bundle Resources"), key = keyFor(grp);

@@ -137,7 +137,8 @@ void QFactoryLoader::update()
         //
         // ### FIXME find a proper solution
         //
-        const bool isLoadingDebugAndReleaseCocoa = plugins.contains("libqcocoa_debug.dylib") && plugins.contains("libqcocoa.dylib");
+        const bool isLoadingDebugAndReleaseCocoa = plugins.contains(QStringLiteral("libqcocoa_debug.dylib"))
+                && plugins.contains(QStringLiteral("libqcocoa.dylib"));
 #endif
         for (int j = 0; j < plugins.count(); ++j) {
             QString fileName = QDir::cleanPath(path + QLatin1Char('/') + plugins.at(j));

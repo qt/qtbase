@@ -151,7 +151,7 @@ public:
                                                         itemd->sceneTransform.dy())
                                      : itemd->sceneTransform.mapRect(brect);
             keep = sceneBoundingRect.intersects(QRectF(scenePoint, QSizeF(1, 1)));
-            if (keep) {
+            if (keep && (mode == Qt::ContainsItemShape || mode == Qt::IntersectsItemShape)) {
                 QPointF p = itemd->sceneTransformTranslateOnly
                           ? QPointF(scenePoint.x() - itemd->sceneTransform.dx(),
                                     scenePoint.y() - itemd->sceneTransform.dy())

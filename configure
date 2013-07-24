@@ -888,7 +888,7 @@ QT_DEFAULT_BUILD_PARTS="libs tools examples"
 CFG_BUILD_PARTS=""
 CFG_NOBUILD_PARTS=""
 CFG_SKIP_MODULES=""
-CFG_COMPILE_EXAMPLES=auto
+CFG_COMPILE_EXAMPLES=yes
 CFG_RELEASE_QMAKE=no
 CFG_AUDIO_BACKEND=auto
 CFG_V8SNAPSHOT=auto
@@ -3187,14 +3187,6 @@ else
     QT_HOST_DATA=`"$relpath/config.tests/unix/makeabs" "$QT_HOST_DATA"`
 fi
 
-# Do not actually build the examples in production builds with -prefix, unless requested
-if [ "$CFG_COMPILE_EXAMPLES" = auto ]; then
-    if [ "$CFG_DEV" = "yes" ] || [ "x$outpath" = "x$QT_INSTALL_PREFIX" ]; then
-        CFG_COMPILE_EXAMPLES=yes
-    else
-        CFG_COMPILE_EXAMPLES=no
-    fi
-fi
 if [ "$CFG_COMPILE_EXAMPLES" = "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG compile_examples"
 fi
@@ -3500,7 +3492,7 @@ Additional options:
 
     -skip <module> ..... Exclude an entire module from the build.
 
-    -compile-examples .. Compile examples even in a production build.
+    -no-compile-examples ... Install only the sources of examples.
 
     -no-gui ............ Don't build the Qt GUI module and dependencies.
  +  -gui ............... Build the Qt GUI module and dependencies.

@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 
 project(test_private_includes)
 
-find_package(Qt5Gui REQUIRED)
+find_package(Qt5Gui REQUIRED Private)
 
 include_directories(
   ${Qt5Gui_INCLUDE_DIRS}

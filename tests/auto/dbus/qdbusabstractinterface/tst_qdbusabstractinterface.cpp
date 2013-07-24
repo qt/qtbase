@@ -70,12 +70,12 @@ class tst_QDBusAbstractInterface: public QObject
         return Pinger(new org::qtproject::QtDBus::Pinger(service, path, con));
     }
 
-    Pinger getPingerPeer(const QString &path = "/")
+    Pinger getPingerPeer(const QString &path = "/", const QString &service = "")
     {
         QDBusConnection con = QDBusConnection("peer");
         if (!con.isConnected())
             return Pinger();
-        return Pinger(new org::qtproject::QtDBus::Pinger("", path, con));
+        return Pinger(new org::qtproject::QtDBus::Pinger(service, path, con));
     }
 
     void resetServer()
@@ -197,6 +197,10 @@ private slots:
     void directPropertyReadErrorsPeer();
     void directPropertyWriteErrorsPeer_data();
     void directPropertyWriteErrorsPeer();
+
+    void validity_data();
+    void validity();
+
 private:
     QProcess proc;
 };
@@ -1387,6 +1391,24 @@ void tst_QDBusAbstractInterface::directPropertyWriteErrorsPeer()
         QCOMPARE(int(p->lastError().type()), int(QDBusError::NoError));
     p->setStringProp("");
     QTEST(p->lastError().name(), "errorName");
+}
+
+void tst_QDBusAbstractInterface::validity_data()
+{
+    QTest::addColumn<QString>("service");
+
+    QTest::newRow("null-service") << "";
+    QTest::newRow("ignored-service") << "org.example.anyservice";
+}
+
+void tst_QDBusAbstractInterface::validity()
+{
+    /* Test case for QTBUG-32374 */
+    QFETCH(QString, service);
+    Pinger p = getPingerPeer("/", service);
+    QVERIFY2(p, "Not connected to D-Bus");
+
+    QVERIFY(p->isValid());
 }
 
 QTEST_MAIN(tst_QDBusAbstractInterface)

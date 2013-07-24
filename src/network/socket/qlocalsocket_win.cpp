@@ -128,13 +128,13 @@ void QLocalSocketPrivate::destroyPipeHandles()
     }
 }
 
-bool QLocalSocket::open(OpenMode openMode)
+void QLocalSocket::connectToServer(OpenMode openMode)
 {
     Q_D(QLocalSocket);
     if (state() == ConnectedState || state() == ConnectingState) {
         setErrorString(tr("Trying to connect while connection is in progress"));
         emit error(QLocalSocket::OperationError);
-        return false;
+        return;
     }
 
     d->error = QLocalSocket::UnknownSocketError;
@@ -147,7 +147,7 @@ bool QLocalSocket::open(OpenMode openMode)
         d->state = UnconnectedState;
         emit error(d->error);
         emit stateChanged(d->state);
-        return false;
+        return;
     }
 
     QString pipePath = QLatin1String("\\\\.\\pipe\\");
@@ -184,7 +184,7 @@ bool QLocalSocket::open(OpenMode openMode)
     if (localSocket == INVALID_HANDLE_VALUE) {
         d->setErrorString(QLatin1String("QLocalSocket::connectToServer"));
         d->fullServerName = QString();
-        return false;
+        return;
     }
 
     // we have a valid handle
@@ -192,7 +192,6 @@ bool QLocalSocket::open(OpenMode openMode)
         d->handle = localSocket;
         emit connected();
     }
-    return true;
 }
 
 // This is reading from the buffer
@@ -379,8 +378,10 @@ bool QLocalSocket::waitForConnected(int msecs)
 bool QLocalSocket::waitForDisconnected(int msecs)
 {
     Q_D(QLocalSocket);
-    if (state() == UnconnectedState)
+    if (state() == UnconnectedState) {
+        qWarning("QLocalSocket::waitForDisconnected() is not allowed in UnconnectedState");
         return false;
+    }
     if (!openMode().testFlag(QIODevice::ReadOnly)) {
         qWarning("QLocalSocket::waitForDisconnected isn't supported for write only pipes.");
         return false;

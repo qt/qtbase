@@ -375,32 +375,32 @@ void tst_QIcon::detach()
 void tst_QIcon::addFile()
 {
     QIcon icon;
-    icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-open-16.png"));
-    icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-open-32.png"));
-    icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-open-128.png"));
-    icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-save-16.png"), QSize(), QIcon::Selected);
-    icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-save-32.png"), QSize(), QIcon::Selected);
-    icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-save-128.png"), QSize(), QIcon::Selected);
+    icon.addFile(QLatin1String(":/styles/commonstyle/images/standardbutton-open-16.png"));
+    icon.addFile(QLatin1String(":/styles/commonstyle/images/standardbutton-open-32.png"));
+    icon.addFile(QLatin1String(":/styles/commonstyle/images/standardbutton-open-128.png"));
+    icon.addFile(QLatin1String(":/styles/commonstyle/images/standardbutton-save-16.png"), QSize(), QIcon::Selected);
+    icon.addFile(QLatin1String(":/styles/commonstyle/images/standardbutton-save-32.png"), QSize(), QIcon::Selected);
+    icon.addFile(QLatin1String(":/styles/commonstyle/images/standardbutton-save-128.png"), QSize(), QIcon::Selected);
 
 #ifndef Q_OS_WINCE
     QVERIFY(icon.pixmap(16, QIcon::Normal).toImage() ==
-            QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-open-16.png")).toImage());
+            QPixmap(QLatin1String(":/styles/commonstyle/images/standardbutton-open-16.png")).toImage());
     QVERIFY(icon.pixmap(32, QIcon::Normal).toImage() ==
-            QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-open-32.png")).toImage());
+            QPixmap(QLatin1String(":/styles/commonstyle/images/standardbutton-open-32.png")).toImage());
     QVERIFY(icon.pixmap(128, QIcon::Normal).toImage() ==
-            QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-open-128.png")).toImage());
+            QPixmap(QLatin1String(":/styles/commonstyle/images/standardbutton-open-128.png")).toImage());
     QVERIFY(icon.pixmap(16, QIcon::Selected).toImage() ==
-            QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-save-16.png")).toImage());
+            QPixmap(QLatin1String(":/styles/commonstyle/images/standardbutton-save-16.png")).toImage());
     QVERIFY(icon.pixmap(32, QIcon::Selected).toImage() ==
-            QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-save-32.png")).toImage());
+            QPixmap(QLatin1String(":/styles/commonstyle/images/standardbutton-save-32.png")).toImage());
     QVERIFY(icon.pixmap(128, QIcon::Selected).toImage() ==
-            QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-save-128.png")).toImage());
+            QPixmap(QLatin1String(":/styles/commonstyle/images/standardbutton-save-128.png")).toImage());
 #else
     // WinCE only includes the 16x16 images for size reasons
     QVERIFY(icon.pixmap(16, QIcon::Normal).toImage() ==
-            QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-open-16.png")).toImage());
+            QPixmap(QLatin1String(":/styles/commonstyle/images/standardbutton-open-16.png")).toImage());
     QVERIFY(icon.pixmap(16, QIcon::Selected).toImage() ==
-            QPixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-save-16.png")).toImage());
+            QPixmap(QLatin1String(":/styles/commonstyle/images/standardbutton-save-16.png")).toImage());
 #endif
 }
 
@@ -437,11 +437,8 @@ void tst_QIcon::availableSizes()
 
     {
         // we try to load an icon from resources
-        QIcon icon(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-open-16.png"));
+        QIcon icon(QLatin1String(":/styles/commonstyle/images/standardbutton-open-16.png"));
         QList<QSize> availableSizes = icon.availableSizes();
-#ifdef QT_NO_WIDGETS
-        QEXPECT_FAIL("", "See QTBUG-31993", Abort);
-#endif
         QCOMPARE(availableSizes.size(), 1);
         QCOMPARE(availableSizes.at(0), QSize(16, 16));
     }
@@ -449,7 +446,7 @@ void tst_QIcon::availableSizes()
     {
         // load an icon from binary data.
         QPixmap pix;
-        QFile file(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-open-16.png"));
+        QFile file(QLatin1String(":/styles/commonstyle/images/standardbutton-open-16.png"));
         QVERIFY(file.open(QIODevice::ReadOnly));
         uchar *data = file.map(0, file.size());
         QVERIFY(data != 0);
@@ -629,18 +626,15 @@ void tst_QIcon::fromTheme()
 void tst_QIcon::task223279_inconsistentAddFile()
 {
     QIcon icon1;
-    icon1.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-open-16.png"));
+    icon1.addFile(QLatin1String(":/styles/commonstyle/images/standardbutton-open-16.png"));
     icon1.addFile(QLatin1String("IconThatDoesntExist"), QSize(32, 32));
     QPixmap pm1 = icon1.pixmap(32, 32);
 
     QIcon icon2;
-    icon2.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/standardbutton-open-16.png"));
+    icon2.addFile(QLatin1String(":/styles/commonstyle/images/standardbutton-open-16.png"));
     icon2.addFile(QLatin1String("IconThatDoesntExist"));
     QPixmap pm2 = icon1.pixmap(32, 32);
 
-#ifdef QT_NO_WIDGETS
-        QEXPECT_FAIL("", "See QTBUG-31993", Abort);
-#endif
     QCOMPARE(pm1.isNull(), false);
     QCOMPARE(pm1.size(), QSize(16,16));
     QCOMPARE(pm1.isNull(), pm2.isNull());

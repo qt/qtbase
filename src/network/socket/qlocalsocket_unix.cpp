@@ -221,14 +221,14 @@ void QLocalSocketPrivate::errorOccurred(QLocalSocket::LocalSocketError error, co
         q->emit stateChanged(state);
 }
 
-bool QLocalSocket::open(OpenMode openMode)
+void QLocalSocket::connectToServer(OpenMode openMode)
 {
     Q_D(QLocalSocket);
     if (state() == ConnectedState || state() == ConnectingState) {
         QString errorString = d->generateErrorString(QLocalSocket::OperationError, QLatin1String("QLocalSocket::connectToserver"));
         setErrorString(errorString);
         emit error(QLocalSocket::OperationError);
-        return false;
+        return;
     }
 
     d->errorString.clear();
@@ -239,14 +239,14 @@ bool QLocalSocket::open(OpenMode openMode)
     if (d->serverName.isEmpty()) {
         d->errorOccurred(ServerNotFoundError,
                 QLatin1String("QLocalSocket::connectToServer"));
-        return false;
+        return;
     }
 
     // create the socket
     if (-1 == (d->connectingSocket = qt_safe_socket(PF_UNIX, SOCK_STREAM, 0))) {
         d->errorOccurred(UnsupportedSocketOperationError,
                         QLatin1String("QLocalSocket::connectToServer"));
-        return false;
+        return;
     }
     // set non blocking so we can try to connect and it won't wait
     int flags = fcntl(d->connectingSocket, F_GETFL, 0);
@@ -254,14 +254,14 @@ bool QLocalSocket::open(OpenMode openMode)
         || -1 == (fcntl(d->connectingSocket, F_SETFL, flags | O_NONBLOCK))) {
         d->errorOccurred(UnknownSocketError,
                 QLatin1String("QLocalSocket::connectToServer"));
-        return false;
+        return;
     }
 
     // _q_connectToSocket does the actual connecting
     d->connectingName = d->serverName;
     d->connectingOpenMode = openMode;
     d->_q_connectToSocket();
-    return true;
+    return;
 }
 
 /*!
@@ -560,7 +560,7 @@ bool QLocalSocket::waitForDisconnected(int msecs)
 {
     Q_D(QLocalSocket);
     if (state() == UnconnectedState) {
-        qWarning() << "QLocalSocket::waitForDisconnected() is not allowed in UnconnectedState";
+        qWarning("QLocalSocket::waitForDisconnected() is not allowed in UnconnectedState");
         return false;
     }
     return (d->unixSocket.waitForDisconnected(msecs));

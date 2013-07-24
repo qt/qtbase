@@ -1128,11 +1128,10 @@ QWindowsNativeImage *QWindowsFontEngine::drawGDIGlyph(HFONT font, glyph_t glyph,
     }
 #else // else wince
     unsigned int options = 0;
-#ifdef DEBUG
-    Q_ASSERT(!has_transformation);
-#else
-    Q_UNUSED(has_transformation);
-#endif
+    if (has_transformation) {
+        qWarning() << "QWindowsFontEngine is unable to apply transformations other than translations for fonts on Windows CE."
+                   << "If you need them anyway, start your application with -platform windows:fontengine=freetype.";
+   }
 #endif // wince
     QWindowsNativeImage *ni = new QWindowsNativeImage(iw + 2 * margin + 4,
                                                       ih + 2 * margin + 4,

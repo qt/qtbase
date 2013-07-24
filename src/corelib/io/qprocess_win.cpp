@@ -630,8 +630,9 @@ bool QProcessPrivate::drainOutputPipes()
     if (!stdoutReader && !stderrReader)
         return false;
 
-    bool readyReadEmitted = false;
+    bool someReadyReadEmitted = false;
     forever {
+        bool readyReadEmitted = false;
         bool readOperationActive = false;
         if (stdoutReader) {
             readyReadEmitted |= stdoutReader->waitForReadyRead(0);
@@ -641,12 +642,13 @@ bool QProcessPrivate::drainOutputPipes()
             readyReadEmitted |= stderrReader->waitForReadyRead(0);
             readOperationActive |= stderrReader->isReadOperationActive();
         }
+        someReadyReadEmitted |= readyReadEmitted;
         if (!readOperationActive || !readyReadEmitted)
             break;
         Sleep(100);
     }
 
-    return readyReadEmitted;
+    return someReadyReadEmitted;
 }
 
 bool QProcessPrivate::waitForReadyRead(int msecs)

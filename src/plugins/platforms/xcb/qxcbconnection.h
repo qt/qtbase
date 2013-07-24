@@ -102,6 +102,7 @@ namespace QXcbAtom {
         // ICCCM window state
         WM_STATE,
         WM_CHANGE_STATE,
+        WM_CLASS,
 
         // Session management
         WM_CLIENT_LEADER,

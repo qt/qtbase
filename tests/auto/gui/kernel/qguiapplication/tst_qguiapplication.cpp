@@ -372,8 +372,8 @@ public:
     int leaves;
     int enters;
 
-    inline BlockableWindow()
-        : QWindow(), blocked(false), leaves(0), enters(0) {}
+    inline explicit BlockableWindow(QWindow *parent = 0)
+        : QWindow(parent), blocked(false), leaves(0), enters(0) {}
 
     bool event(QEvent *e)
     {
@@ -416,10 +416,13 @@ void tst_QGuiApplication::modalWindow()
     window1->setTitle(QStringLiteral("window1"));
     window1->resize(windowSize, windowSize);
     window1->setFramePosition(QPoint(x, y));
+    BlockableWindow *childWindow1 = new BlockableWindow(window1.data());
+    childWindow1->resize(windowSize / 2, windowSize / 2);
     x += spacing + windowSize;
 
     QScopedPointer<BlockableWindow> window2(new BlockableWindow);
     window2->setTitle(QStringLiteral("window2"));
+    window2->setFlags(window2->flags() & Qt::Tool); // QTBUG-32433, don't be fooled by unusual window flags.
     window2->resize(windowSize, windowSize);
     window2->setFramePosition(QPoint(x, y));
     x += spacing + windowSize;
@@ -458,6 +461,7 @@ void tst_QGuiApplication::modalWindow()
     QVERIFY(QTest::qWaitForWindowExposed(window2.data()));
     QCOMPARE(app.modalWindow(), static_cast<QWindow *>(0));
     QCOMPARE(window1->blocked, 0);
+    QCOMPARE(childWindow1->blocked, 0);
     QCOMPARE(window2->blocked, 0);
     QCOMPARE(windowModalWindow1->blocked, 0);
     QCOMPARE(windowModalWindow2->blocked, 0);
@@ -473,6 +477,7 @@ void tst_QGuiApplication::modalWindow()
     applicationModalWindow1->show();
     QCOMPARE(app.modalWindow(), applicationModalWindow1.data());
     QCOMPARE(window1->blocked, 1);
+    QCOMPARE(childWindow1->blocked, 1); // QTBUG-32242, blocked status needs to be set on children as well.
     QCOMPARE(window2->blocked, 1);
     QCOMPARE(windowModalWindow1->blocked, 1);
     QCOMPARE(windowModalWindow2->blocked, 1);
@@ -500,6 +505,7 @@ void tst_QGuiApplication::modalWindow()
     applicationModalWindow1->hide();
     QCOMPARE(app.modalWindow(), static_cast<QWindow *>(0));
     QCOMPARE(window1->blocked, 0);
+    QCOMPARE(childWindow1->blocked, 0); // QTBUG-32242, blocked status needs to be set on children as well.
     QCOMPARE(window2->blocked, 0);
     QCOMPARE(windowModalWindow1->blocked, 0);
     QCOMPARE(windowModalWindow2->blocked, 0);

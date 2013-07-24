@@ -102,6 +102,7 @@ private slots:
     void moreToFromUnicode();
 
     void shiftJis();
+    void userCodec();
 };
 
 void tst_QTextCodec::toUnicode_data()
@@ -2310,6 +2311,53 @@ void tst_QTextCodec::shiftJis()
 
     QByteArray encoded = codec->fromUnicode(string);
     QCOMPARE(encoded, backslashTilde);
+}
+
+struct UserCodec : public QTextCodec
+{
+    // implement pure virtuals
+    QByteArray name() const Q_DECL_OVERRIDE
+    { return "UserCodec"; }
+    QList<QByteArray> aliases() const Q_DECL_OVERRIDE
+    { return QList<QByteArray>() << "usercodec" << "user-codec"; }
+    int mibEnum() const Q_DECL_OVERRIDE
+    { return 5000; }
+
+    virtual QString convertToUnicode(const char *, int, ConverterState *) const Q_DECL_OVERRIDE
+    { return QString(); }
+    virtual QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const Q_DECL_OVERRIDE
+    { return QByteArray(); }
+};
+
+void tst_QTextCodec::userCodec()
+{
+    // check that it isn't there
+    static bool executedOnce = false;
+    if (executedOnce)
+        QSKIP("Test already executed once");
+
+    QVERIFY(!QTextCodec::availableCodecs().contains("UserCodec"));
+    QVERIFY(!QTextCodec::codecForName("UserCodec"));
+
+    QTextCodec *codec = new UserCodec;
+    executedOnce = true;
+
+    QList<QByteArray> availableCodecs = QTextCodec::availableCodecs();
+    QVERIFY(availableCodecs.contains("UserCodec"));
+    QVERIFY(availableCodecs.contains("usercodec"));
+    QVERIFY(availableCodecs.contains("user-codec"));
+
+    QTextCodec *pcodec = QTextCodec::codecForName("UserCodec");
+    QCOMPARE(pcodec, codec);
+
+    pcodec = QTextCodec::codecForName("user-codec");
+    QCOMPARE(pcodec, codec);
+
+    pcodec = QTextCodec::codecForName("User-Codec");
+    QCOMPARE(pcodec, codec);
+
+    pcodec = QTextCodec::codecForMib(5000);
+    QCOMPARE(pcodec, codec);
 }
 
 struct DontCrashAtExit {

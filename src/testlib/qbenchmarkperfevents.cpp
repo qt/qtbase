@@ -130,7 +130,17 @@ static void initPerf()
 
 static int perf_event_open(perf_event_attr *attr, pid_t pid, int cpu, int group_fd, unsigned long flags)
 {
+#ifdef SYS_perf_event_open
     return syscall(SYS_perf_event_open, attr, pid, cpu, group_fd, flags);
+#else
+    Q_UNUSED(attr);
+    Q_UNUSED(pid);
+    Q_UNUSED(cpu);
+    Q_UNUSED(group_fd);
+    Q_UNUSED(flags);
+    errno = ENOSYS;
+    return -1;
+#endif
 }
 
 bool QBenchmarkPerfEventsMeasurer::isAvailable()
