@@ -122,10 +122,15 @@ private slots:
     void drawRect();
     void drawRect2();
 
+    void fillRect_data();
     void fillRect();
+    void fillRect2_data();
     void fillRect2();
+    void fillRect3_data() { fillRect2_data(); }
     void fillRect3();
+    void fillRect4_data() { fillRect2_data(); }
     void fillRect4();
+    void fillRectNonPremul();
 
     void drawEllipse_data();
     void drawEllipse();
@@ -1079,9 +1084,19 @@ void tst_QPainter::drawRect2()
     }
 }
 
+void tst_QPainter::fillRect_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+
+    QTest::newRow("argb32pm") << QImage::Format_ARGB32_Premultiplied;
+    QTest::newRow("rgba8888pm") << QImage::Format_RGBA8888_Premultiplied;
+}
+
 void tst_QPainter::fillRect()
 {
-    QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
+    QFETCH(QImage::Format, format);
+
+    QImage image(100, 100, format);
     image.fill(QColor(0, 0, 0, 0).rgba());
 
     QPainter p(&image);
@@ -1103,17 +1118,29 @@ void tst_QPainter::fillRect()
              QRect(0, 0, 50, 100));
 }
 
+void tst_QPainter::fillRect2_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+
+    QTest::newRow("argb32") << QImage::Format_ARGB32;
+    QTest::newRow("argb32pm") << QImage::Format_ARGB32_Premultiplied;
+    QTest::newRow("rgba8888") << QImage::Format_RGBA8888;
+    QTest::newRow("rgba8888pm") << QImage::Format_RGBA8888_Premultiplied;
+}
+
 void tst_QPainter::fillRect2()
 {
+    QFETCH(QImage::Format, format);
+
     QRgb background = 0x0;
 
-    QImage img(1, 20, QImage::Format_ARGB32_Premultiplied);
+    QImage img(1, 20, format);
     img.fill(background);
 
     QPainter p(&img);
 
     QRectF rect(0, 1, 1.2, 18);
-    p.fillRect(rect, Qt::black);
+    p.fillRect(rect, Qt::yellow);
 
     p.end();
 
@@ -1122,11 +1149,14 @@ void tst_QPainter::fillRect2()
 
     QCOMPARE(img.pixel(0, 1), img.pixel(0, 2));
     QCOMPARE(img.pixel(0, img.height() - 2), img.pixel(0, img.height() - 3));
+    QCOMPARE(img.pixel(0, 1), QColor(Qt::yellow).rgba());
 }
 
 void tst_QPainter::fillRect3()
 {
-    QImage img(1, 1, QImage::Format_ARGB32_Premultiplied);
+    QFETCH(QImage::Format, format);
+
+    QImage img(1, 1, format);
     img.fill(QColor(Qt::black).rgba());
 
     QPainter p(&img);
@@ -1139,7 +1169,9 @@ void tst_QPainter::fillRect3()
 
 void tst_QPainter::fillRect4()
 {
-    QImage image(100, 1, QImage::Format_ARGB32_Premultiplied);
+    QFETCH(QImage::Format, format);
+
+    QImage image(100, 1, format);
     image.fill(0x0);
 
     QImage expected = image;
@@ -1155,6 +1187,24 @@ void tst_QPainter::fillRect4()
     p.end();
 
     QCOMPARE(image, expected);
+}
+
+void tst_QPainter::fillRectNonPremul()
+{
+    QImage img1(1, 1, QImage::Format_ARGB32);
+    QImage img2(1, 1, QImage::Format_RGBA8888);
+
+    QPainter p1(&img1);
+    QPainter p2(&img2);
+
+    QRectF rect(0, 0, 1, 1);
+    p1.fillRect(rect, qRgba(31, 63, 127, 127));
+    p2.fillRect(rect, qRgba(31, 63, 127, 127));
+
+    p1.end();
+    p2.end();
+
+    QCOMPARE(img1.pixel(0, 0), img2.pixel(0,0));
 }
 
 void tst_QPainter::drawPath_data()

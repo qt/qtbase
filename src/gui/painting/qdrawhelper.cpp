@@ -5901,9 +5901,9 @@ static void qt_alphargbblit_quint32(QRasterBuffer *rasterBuffer,
     }
 }
 
-static void qt_rectfill_quint32(QRasterBuffer *rasterBuffer,
-                                int x, int y, int width, int height,
-                                quint32 color)
+static void qt_rectfill_argb32(QRasterBuffer *rasterBuffer,
+                               int x, int y, int width, int height,
+                               quint32 color)
 {
     qt_rectfill<quint32>(reinterpret_cast<quint32 *>(rasterBuffer->buffer()),
                          color, x, y, width, height, rasterBuffer->bytesPerLine());
@@ -5917,12 +5917,28 @@ static void qt_rectfill_quint16(QRasterBuffer *rasterBuffer,
                          qConvertRgb32To16(color), x, y, width, height, rasterBuffer->bytesPerLine());
 }
 
-static void qt_rectfill_nonpremul_quint32(QRasterBuffer *rasterBuffer,
-                                          int x, int y, int width, int height,
-                                          quint32 color)
+static void qt_rectfill_nonpremul_argb32(QRasterBuffer *rasterBuffer,
+                                         int x, int y, int width, int height,
+                                         quint32 color)
 {
     qt_rectfill<quint32>(reinterpret_cast<quint32 *>(rasterBuffer->buffer()),
                          INV_PREMUL(color), x, y, width, height, rasterBuffer->bytesPerLine());
+}
+
+static void qt_rectfill_rgba(QRasterBuffer *rasterBuffer,
+                             int x, int y, int width, int height,
+                             quint32 color)
+{
+    qt_rectfill<quint32>(reinterpret_cast<quint32 *>(rasterBuffer->buffer()),
+                         ARGB2RGBA(color), x, y, width, height, rasterBuffer->bytesPerLine());
+}
+
+static void qt_rectfill_nonpremul_rgba(QRasterBuffer *rasterBuffer,
+                                       int x, int y, int width, int height,
+                                       quint32 color)
+{
+    qt_rectfill<quint32>(reinterpret_cast<quint32 *>(rasterBuffer->buffer()),
+                         ARGB2RGBA(INV_PREMUL(color)), x, y, width, height, rasterBuffer->bytesPerLine());
 }
 
 
@@ -5958,7 +5974,7 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
         qt_bitmapblit_quint32,
         qt_alphamapblit_quint32,
         qt_alphargbblit_quint32,
-        qt_rectfill_quint32
+        qt_rectfill_argb32
     },
     // Format_ARGB32,
     {
@@ -5967,7 +5983,7 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
         qt_bitmapblit_quint32,
         qt_alphamapblit_quint32,
         qt_alphargbblit_quint32,
-        qt_rectfill_nonpremul_quint32
+        qt_rectfill_nonpremul_argb32
     },
     // Format_ARGB32_Premultiplied
     {
@@ -5976,7 +5992,7 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
         qt_bitmapblit_quint32,
         qt_alphamapblit_quint32,
         qt_alphargbblit_quint32,
-        qt_rectfill_quint32
+        qt_rectfill_argb32
     },
     // Format_RGB16
     {
@@ -6047,7 +6063,7 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
         0,
         0,
 #endif
-        qt_rectfill_quint32
+        qt_rectfill_rgba
     },
     // Format_RGBA8888
     {
@@ -6061,7 +6077,7 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
         0,
         0,
 #endif
-        qt_rectfill_quint32
+        qt_rectfill_nonpremul_rgba
     },
     // Format_RGB8888_Premultiplied
     {
@@ -6075,7 +6091,7 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
         0,
         0,
 #endif
-        qt_rectfill_quint32
+        qt_rectfill_rgba
     }
 };
 
