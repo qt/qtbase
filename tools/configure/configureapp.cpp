@@ -157,8 +157,6 @@ Configure::Configure(int& argc, char** argv)
     defaultBuildParts << QStringLiteral("libs") << QStringLiteral("tools") << QStringLiteral("examples");
     allBuildParts = defaultBuildParts;
     allBuildParts << QStringLiteral("tests");
-    dictionary[ "QT_SOURCE_TREE" ]    = sourcePath;
-    dictionary[ "QT_BUILD_TREE" ]     = buildPath;
     dictionary[ "QT_INSTALL_PREFIX" ] = installPath;
 
     dictionary[ "QMAKESPEC" ] = getenv("QMAKESPEC");
@@ -1141,7 +1139,7 @@ void Configure::parseCmdLine()
         else if (configCmdLine.at(i) == "-hostprefix") {
             ++i;
             if (i == argCount || configCmdLine.at(i).startsWith('-'))
-                dictionary[ "QT_HOST_PREFIX" ] = dictionary[ "QT_BUILD_TREE" ];
+                dictionary[ "QT_HOST_PREFIX" ] = buildPath;
             else
                 dictionary[ "QT_HOST_PREFIX" ] = configCmdLine.at(i);
         }
@@ -2814,7 +2812,7 @@ void Configure::generateCachefile()
 {
     // Generate qmodule.pri
     {
-        FileWriter moduleStream(dictionary[ "QT_BUILD_TREE" ] + "/mkspecs/qmodule.pri");
+        FileWriter moduleStream(buildPath + "/mkspecs/qmodule.pri");
 
         moduleStream << "QT_BUILD_PARTS += " << buildParts.join(' ') << endl;
         if (!skipModules.isEmpty())
@@ -3074,7 +3072,7 @@ void Configure::generateQConfigPri()
 {
     // Generate qconfig.pri
     {
-        FileWriter configStream(dictionary[ "QT_BUILD_TREE" ] + "/mkspecs/qconfig.pri");
+        FileWriter configStream(buildPath + "/mkspecs/qconfig.pri");
 
         configStream << "CONFIG+= ";
         configStream << dictionary[ "BUILD" ];
@@ -3357,7 +3355,7 @@ void Configure::generateConfigfiles()
     }
 
     {
-        FileWriter tmpStream(dictionary["QT_BUILD_TREE"] + "/mkspecs/qdevice.pri");
+        FileWriter tmpStream(buildPath + "/mkspecs/qdevice.pri");
 
         QString android_platform(dictionary.contains("ANDROID_PLATFORM")
                   ? dictionary["ANDROID_PLATFORM"]
@@ -3501,8 +3499,8 @@ void Configure::displayConfig()
     sout << "    SQLite2................." << dictionary[ "SQL_SQLITE2" ] << endl;
     sout << "    InterBase..............." << dictionary[ "SQL_IBASE" ] << endl << endl;
 
-    sout << "Sources are in.............." << QDir::toNativeSeparators(dictionary["QT_SOURCE_TREE"]) << endl;
-    sout << "Build is done in............" << QDir::toNativeSeparators(dictionary["QT_BUILD_TREE"]) << endl;
+    sout << "Sources are in.............." << QDir::toNativeSeparators(sourcePath) << endl;
+    sout << "Build is done in............" << QDir::toNativeSeparators(buildPath) << endl;
     sout << "Install prefix.............." << QDir::toNativeSeparators(dictionary["QT_INSTALL_PREFIX"]) << endl;
     sout << "Headers installed to........" << QDir::toNativeSeparators(dictionary["QT_INSTALL_HEADERS"]) << endl;
     sout << "Libraries installed to......" << QDir::toNativeSeparators(dictionary["QT_INSTALL_LIBS"]) << endl;
