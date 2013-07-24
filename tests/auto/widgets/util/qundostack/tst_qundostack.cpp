@@ -2974,10 +2974,14 @@ void tst_QUndoStack::commandTextFormat()
     if (QProcess::execute(binDir + "/lrelease -version") != 0)
         QSKIP("lrelease is missing or broken");
 
-    QVERIFY(!QProcess::execute(binDir + "/lrelease testdata/qundostack.ts"));
+    const QString tsFile = QFINDTESTDATA("testdata/qundostack.ts");
+    QVERIFY(!tsFile.isEmpty());
+    QVERIFY(!QProcess::execute(binDir + "/lrelease " + tsFile));
 
     QTranslator translator;
-    QVERIFY(translator.load("testdata/qundostack.qm"));
+    const QString qmFile = QFINDTESTDATA("testdata/qundostack.qm");
+    QVERIFY(!qmFile.isEmpty());
+    QVERIFY(translator.load(qmFile));
     qApp->installTranslator(&translator);
 
     QUndoStack stack;
