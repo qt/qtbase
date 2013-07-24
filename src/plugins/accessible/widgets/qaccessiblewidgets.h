@@ -42,8 +42,7 @@
 #ifndef QACCESSIBLEWIDGETS_H
 #define QACCESSIBLEWIDGETS_H
 
-#include <QtGui/private/qaccessible2_p.h>
-#include <QtWidgets/private/qaccessiblewidget_p.h>
+#include <QtWidgets/qaccessiblewidget.h>
 
 #ifndef QT_NO_ACCESSIBILITY
 

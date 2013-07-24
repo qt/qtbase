@@ -52,7 +52,6 @@ QT_BEGIN_NAMESPACE
     \class QAccessiblePlugin
     \brief The QAccessiblePlugin class provides an abstract base for
     accessibility plugins.
-    \internal
 
     \ingroup plugins
     \ingroup accessibility

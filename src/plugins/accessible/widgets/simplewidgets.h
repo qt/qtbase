@@ -43,8 +43,7 @@
 #define SIMPLEWIDGETS_H
 
 #include <QtCore/qcoreapplication.h>
-#include <QtGui/private/qaccessible2_p.h>
-#include <QtWidgets/private/qaccessiblewidget_p.h>
+#include <QtWidgets/qaccessiblewidget.h>
 
 QT_BEGIN_NAMESPACE
 

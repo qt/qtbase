@@ -58,9 +58,7 @@
 #endif
 #include <QtTest/QtTest>
 #include <QtGui>
-#include <QtGui/private/qaccessible2_p.h>
 #include <QtWidgets>
-#include <QtWidgets/private/qaccessiblewidget_p.h>
 #include <math.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformintegration.h>
@@ -71,8 +69,6 @@
 #   undef interface
 #endif
 
-#include <QtGui/private/qaccessible2_p.h>
-#include <QtWidgets/private/qaccessiblewidget_p.h>
 #include "QtTest/qtestaccessible.h"
 
 // Make a widget frameless to prevent size constraints of title bars

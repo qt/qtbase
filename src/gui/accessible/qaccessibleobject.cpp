@@ -61,10 +61,9 @@ public:
     \class QAccessibleObject
     \brief The QAccessibleObject class implements parts of the
     QAccessibleInterface for QObjects.
-    \internal
 
     \ingroup accessibility
-    \inmodule QtWidgets
+    \inmodule QtGui
 
     This class is part of \l {Accessibility for QWidget Applications}.
 
