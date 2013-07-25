@@ -209,12 +209,13 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
         }
 
         int wantedMask;
+        const bool isSlot = mm.methodType() == QMetaMethod::Slot;
         if (isScriptable)
             wantedMask = isSignal ? QDBusConnection::ExportScriptableSignals
-                                  : QDBusConnection::ExportScriptableSlots;
+                                  : isSlot ? QDBusConnection::ExportScriptableSlots : QDBusConnection::ExportScriptableInvokables;
         else
             wantedMask = isSignal ? QDBusConnection::ExportNonScriptableSignals
-                                  : QDBusConnection::ExportNonScriptableSlots;
+                                  : isSlot ? QDBusConnection::ExportNonScriptableSlots : QDBusConnection::ExportNonScriptableInvokables;
         if ((flags & wantedMask) != wantedMask)
             continue;
 
