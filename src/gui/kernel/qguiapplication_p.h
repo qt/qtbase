@@ -275,6 +275,8 @@ public:
     // hook reimplemented in QApplication to apply the QStyle function on the QIcon
     virtual QPixmap applyQIconStyleHelper(QIcon::Mode, const QPixmap &basePixmap) const { return basePixmap; }
 
+    static QRect applyWindowGeometrySpecification(const QRect &windowGeometry, const QWindow *window);
+
 protected:
     virtual void notifyThemeChanged();
 #ifndef QT_NO_DRAGANDDROP

@@ -7268,10 +7268,19 @@ void QWidget::setVisible(bool visible)
             create();
         }
 
-#if defined(Q_WS_X11)
-        if (windowType() == Qt::Window)
-            QApplicationPrivate::applyX11SpecificCommandLineArguments(this);
-#endif
+        // Handling of the -qwindowgeometry, -geometry command line arguments
+        if (windowType() == Qt::Window && windowHandle()) {
+            static bool done = false;
+            if (!done) {
+                done = true;
+                const QRect oldGeometry = frameGeometry();
+                const QRect geometry = QGuiApplicationPrivate::applyWindowGeometrySpecification(oldGeometry, windowHandle());
+                if (oldGeometry.size() != geometry.size())
+                    resize(geometry.size());
+                if (geometry.topLeft() != oldGeometry.topLeft())
+                    move(geometry.topLeft());
+            } // done
+        }
 
         bool wasResized = testAttribute(Qt::WA_Resized);
         Qt::WindowStates initialWindowState = windowState();

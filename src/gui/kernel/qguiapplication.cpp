@@ -101,6 +101,8 @@
 #  include <QtCore/QLibraryInfo>
 #endif // Q_OS_WIN && !Q_OS_WINCE
 
+#include <ctype.h>
+
 QT_BEGIN_NAMESPACE
 
 Q_GUI_EXPORT bool qt_is_gui_used = true;
@@ -214,6 +216,106 @@ static inline bool isPopupWindow(const QWindow *w)
 {
     return (w->flags() & Qt::WindowType_Mask) == Qt::Popup;
 }
+
+// Geometry specification for top level windows following the convention of the
+// -geometry command line arguments in X11 (see XParseGeometry).
+struct QWindowGeometrySpecification
+{
+    QWindowGeometrySpecification() : corner(Qt::TopLeftCorner), xOffset(-1), yOffset(-1), width(-1), height(-1) {}
+    static QWindowGeometrySpecification fromArgument(const QByteArray &a);
+    QRect apply(const QRect &windowGeometry, const QSize &windowMinimumSize, const QSize &windowMaximumSize, const QRect &availableGeometry) const;
+    inline QRect apply(const QRect &windowGeometry, const QWindow *window) const
+    { return apply(windowGeometry, window->minimumSize(), window->maximumSize(), window->screen()->virtualGeometry()); }
+
+    Qt::Corner corner;
+    int xOffset;
+    int yOffset;
+    int width;
+    int height;
+};
+
+// Parse a token of a X11 geometry specification "200x100+10-20".
+static inline int nextGeometryToken(const QByteArray &a, int &pos, char *op)
+{
+    *op = 0;
+    const int size = a.size();
+    if (pos >= size)
+        return -1;
+
+    *op = a.at(pos);
+    if (*op == '+' || *op == '-' || *op == 'x')
+        pos++;
+    else if (isdigit(*op))
+        *op = 'x'; // If it starts with a digit, it is supposed to be a width specification.
+    else
+        return -1;
+
+    const int numberPos = pos;
+    for ( ; pos < size && isdigit(a.at(pos)); ++pos) ;
+
+    bool ok;
+    const int result = a.mid(numberPos, pos - numberPos).toInt(&ok);
+    return ok ? result : -1;
+}
+
+QWindowGeometrySpecification QWindowGeometrySpecification::fromArgument(const QByteArray &a)
+{
+    QWindowGeometrySpecification result;
+    int pos = 0;
+    for (int i = 0; i < 4; ++i) {
+        char op;
+        const int value = nextGeometryToken(a, pos, &op);
+        if (value < 0)
+            break;
+        switch (op) {
+        case 'x':
+            (result.width >= 0 ? result.height : result.width) = value;
+            break;
+        case '+':
+        case '-':
+            if (result.xOffset >= 0) {
+                result.yOffset = value;
+                if (op == '-')
+                    result.corner = result.corner == Qt::TopRightCorner ? Qt::BottomRightCorner : Qt::BottomLeftCorner;
+            } else {
+                result.xOffset = value;
+                if (op == '-')
+                    result.corner = Qt::TopRightCorner;
+            }
+        }
+    }
+    return result;
+}
+
+QRect QWindowGeometrySpecification::apply(const QRect &windowGeometry, const QSize &windowMinimumSize, const QSize &windowMaximumSize, const QRect &availableGeometry) const
+{
+    QRect result = windowGeometry;
+    if (width >= 0 || height >= 0) {
+        QSize size = windowGeometry.size();
+        if (width >= 0)
+            size.setWidth(qBound(windowMinimumSize.width(), width, windowMaximumSize.width()));
+        if (height >= 0)
+            size.setHeight(qBound(windowMinimumSize.height(), height, windowMaximumSize.height()));
+        result.setSize(size);
+    }
+    if (xOffset >= 0 || yOffset >= 0) {
+        QPoint topLeft = windowGeometry.topLeft();
+        if (xOffset >= 0) {
+            topLeft.setX(corner == Qt::TopLeftCorner || corner == Qt::BottomLeftCorner ?
+                         xOffset :
+                         qMax(availableGeometry.right() - result.width() - xOffset, availableGeometry.left()));
+        }
+        if (yOffset >= 0) {
+            topLeft.setY(corner == Qt::TopLeftCorner || corner == Qt::TopRightCorner ?
+                         yOffset :
+                         qMax(availableGeometry.bottom() - result.height() - yOffset, availableGeometry.top()));
+        }
+        result.moveTopLeft(topLeft);
+    }
+    return result;
+}
+
+static QWindowGeometrySpecification windowGeometrySpecification;
 
 /*!
     \class QGuiApplication
@@ -910,6 +1012,9 @@ void QGuiApplicationPrivate::createPlatformIntegration()
         } else if (arg == "-platform") {
             if (++i < argc)
                 platformName = argv[i];
+        } else if (arg == "-qwindowgeometry" || (platformName == "xcb" && arg == "-geometry")) {
+            if (++i < argc)
+                windowGeometrySpecification = QWindowGeometrySpecification::fromArgument(argv[i]);
         } else {
             argv[j++] = argv[i];
         }
@@ -2396,6 +2501,11 @@ void QGuiApplication::setPalette(const QPalette &pal)
     else
         *QGuiApplicationPrivate::app_pal = pal;
     applicationResourceFlags |= ApplicationPaletteExplicitlySet;
+}
+
+QRect QGuiApplicationPrivate::applyWindowGeometrySpecification(const QRect &windowGeometry, const QWindow *window)
+{
+    return windowGeometrySpecification.apply(windowGeometry, window);
 }
 
 /*!
