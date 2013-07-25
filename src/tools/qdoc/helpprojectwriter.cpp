@@ -422,6 +422,11 @@ bool HelpProjectWriter::generateSection(HelpProject &project,
 void HelpProjectWriter::generateSections(HelpProject &project,
                                          QXmlStreamWriter &writer, const Node *node)
 {
+    /*
+      Don't include index nodes in the help file. Or DITA map nodes.
+     */
+    if (node->isIndexNode() || node->subType() == Node::DitaMap)
+        return;
     if (!generateSection(project, writer, node))
         return;
 

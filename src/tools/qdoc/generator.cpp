@@ -945,6 +945,8 @@ void Generator::generateInnerNode(InnerNode* node)
 {
     if (!node->url().isNull())
         return;
+    if (node->isIndexNode())
+        return;
 
     if (node->type() == Node::Document) {
         DocNode* docNode = static_cast<DocNode*>(node);
