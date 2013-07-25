@@ -28,6 +28,8 @@ contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
                ssl/qsslcertificateextension.cpp \
                ssl/qsslcontext.cpp
 
+android:!android-no-sdk: SOURCES += ssl/qsslsocket_openssl_android.cpp
+
     # Add optional SSL libs
     # Static linking of OpenSSL with msvc:
     #   - Binaries http://slproweb.com/products/Win32OpenSSL.html
