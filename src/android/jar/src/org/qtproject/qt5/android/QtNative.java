@@ -57,6 +57,12 @@ import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MotionEvent;
 
+import java.security.KeyStore;
+import java.security.cert.X509Certificate;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
 public class QtNative
 {
     private static Activity m_activity = null;
@@ -532,6 +538,33 @@ public class QtNative
                 m_activityDelegate.resetOptionsMenu();
             }
         });
+    }
+
+    private static byte[][] getSSLCertificates()
+    {
+        ArrayList<byte[]> certificateList = new ArrayList<byte[]>();
+
+        try {
+            TrustManagerFactory factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            factory.init((KeyStore) null);
+
+            for (TrustManager manager : factory.getTrustManagers()) {
+                if (manager instanceof X509TrustManager) {
+                    X509TrustManager trustManager = (X509TrustManager) manager;
+
+                    for (X509Certificate certificate : trustManager.getAcceptedIssuers()) {
+                        byte buffer[] = certificate.getEncoded();
+                        certificateList.add(buffer);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.e(QtTAG, "Failed to get certificates", e);
+        }
+
+        byte[][] certificateArray = new byte[certificateList.size()][];
+        certificateArray = certificateList.toArray(certificateArray);
+        return certificateArray;
     }
 
     // screen methods
