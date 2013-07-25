@@ -646,6 +646,9 @@ void QQnxScreen::activateWindowGroup(const QByteArray &id)
     if (!window)
         return;
 
+    Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
+        childWindow->setExposed(true);
+
     QWindowSystemInterface::handleWindowActivated(window);
 }
 
@@ -655,6 +658,9 @@ void QQnxScreen::deactivateWindowGroup(const QByteArray &id)
 
     if (!rootWindow() || id != rootWindow()->groupName())
         return;
+
+    Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
+        childWindow->setExposed(false);
 
     QWindowSystemInterface::handleWindowActivated(0);
 }

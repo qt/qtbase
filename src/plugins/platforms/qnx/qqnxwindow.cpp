@@ -75,6 +75,7 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
       m_screen(0),
       m_parentWindow(0),
       m_visible(false),
+      m_exposed(true),
       m_windowState(Qt::WindowNoState),
 #if !defined(QT_NO_OPENGL)
       m_platformOpenGLContext(0),
@@ -334,9 +335,19 @@ void QQnxWindow::setOpacity(qreal level)
     //       the transparency will look wrong...
 }
 
+void QQnxWindow::setExposed(bool exposed)
+{
+    qWindowDebug() << Q_FUNC_INFO << "window =" << window() << "expose =" << exposed;
+
+    if (m_exposed != exposed) {
+        m_exposed = exposed;
+        QWindowSystemInterface::handleExposeEvent(window(), window()->geometry());
+    }
+}
+
 bool QQnxWindow::isExposed() const
 {
-    return m_visible;
+    return m_visible && m_exposed;
 }
 
 QSize QQnxWindow::requestedBufferSize() const

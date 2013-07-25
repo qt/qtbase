@@ -102,6 +102,7 @@ public:
     void lower();
     void requestActivateWindow();
     void setWindowState(Qt::WindowState state);
+    void setExposed(bool exposed);
 
     void propagateSizeHints();
 
@@ -158,6 +159,7 @@ private:
     QList<QQnxWindow*> m_childWindows;
     QQnxWindow *m_parentWindow;
     bool m_visible;
+    bool m_exposed;
     QRect m_unmaximizedGeometry;
     Qt::WindowState m_windowState;
 
