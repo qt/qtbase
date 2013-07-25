@@ -796,11 +796,22 @@ void QSslSocketBackendPrivate::transmit()
             while ((nextDataBlockSize = writeBuffer.nextDataBlockSize()) > 0) {
                 int writtenBytes = q_SSL_write(ssl, writeBuffer.readPointer(), nextDataBlockSize);
                 if (writtenBytes <= 0) {
-                    // ### Better error handling.
-                    q->setErrorString(QSslSocket::tr("Unable to write data: %1").arg(getErrorsFromOpenSsl()));
-                    q->setSocketError(QAbstractSocket::SslInternalError);
-                    emit q->error(QAbstractSocket::SslInternalError);
-                    return;
+                    int error = q_SSL_get_error(ssl, writtenBytes);
+                    //write can result in a want_write_error - not an error - continue transmitting
+                    if (error == SSL_ERROR_WANT_WRITE) {
+                        transmitting = true;
+                        break;
+                    } else if (error == SSL_ERROR_WANT_READ) {
+                        //write can result in a want_read error, possibly due to renegotiation - not an error - stop transmitting
+                        transmitting = false;
+                        break;
+                    } else {
+                        // ### Better error handling.
+                        q->setErrorString(QSslSocket::tr("Unable to write data: %1").arg(getErrorsFromOpenSsl()));
+                        q->setSocketError(QAbstractSocket::SslInternalError);
+                        emit q->error(QAbstractSocket::SslInternalError);
+                        return;
+                    }
                 }
 #ifdef QSSLSOCKET_DEBUG
                 qDebug() << "QSslSocketBackendPrivate::transmit: encrypted" << writtenBytes << "bytes";
