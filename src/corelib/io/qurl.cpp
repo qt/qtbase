@@ -3252,8 +3252,8 @@ QUrl QUrl::adjusted(QUrl::FormattingOptions options) const
         that.setPath(QString());
     } else if (options & (StripTrailingSlash | RemoveFilename | NormalizePathSegments)) {
         QString path;
-        d->appendPath(path, options, QUrlPrivate::Path);
-        that.setPath(path);
+        d->appendPath(path, options | FullyEncoded, QUrlPrivate::Path);
+        that.setPath(path, TolerantMode);
     }
     return that;
 }
@@ -3967,9 +3967,9 @@ uint qHash(const QUrl &url, uint seed) Q_DECL_NOTHROW
 static QUrl adjustFtpPath(QUrl url)
 {
     if (url.scheme() == ftpScheme()) {
-        QString path = url.path();
+        QString path = url.path(QUrl::PrettyDecoded);
         if (path.startsWith(QLatin1String("//")))
-            url.setPath(QLatin1String("/%2F") + path.midRef(2));
+            url.setPath(QLatin1String("/%2F") + path.midRef(2), QUrl::TolerantMode);
     }
     return url;
 }

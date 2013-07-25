@@ -209,22 +209,22 @@ public:
     void setUserInfo(const QString &userInfo, ParsingMode mode = TolerantMode);
     QString userInfo(ComponentFormattingOptions options = PrettyDecoded) const;
 
-    void setUserName(const QString &userName, ParsingMode mode = TolerantMode);
-    QString userName(ComponentFormattingOptions options = PrettyDecoded) const;
+    void setUserName(const QString &userName, ParsingMode mode = DecodedMode);
+    QString userName(ComponentFormattingOptions options = FullyDecoded) const;
 
-    void setPassword(const QString &password, ParsingMode mode = TolerantMode);
-    QString password(ComponentFormattingOptions = PrettyDecoded) const;
+    void setPassword(const QString &password, ParsingMode mode = DecodedMode);
+    QString password(ComponentFormattingOptions = FullyDecoded) const;
 
-    void setHost(const QString &host, ParsingMode mode = TolerantMode);
-    QString host(ComponentFormattingOptions = PrettyDecoded) const;
-    QString topLevelDomain(ComponentFormattingOptions options = PrettyDecoded) const;
+    void setHost(const QString &host, ParsingMode mode = DecodedMode);
+    QString host(ComponentFormattingOptions = FullyDecoded) const;
+    QString topLevelDomain(ComponentFormattingOptions options = FullyDecoded) const;
 
     void setPort(int port);
     int port(int defaultPort = -1) const;
 
-    void setPath(const QString &path, ParsingMode mode = TolerantMode);
-    QString path(ComponentFormattingOptions options = PrettyDecoded) const;
-    QString fileName(ComponentFormattingOptions options = PrettyDecoded) const;
+    void setPath(const QString &path, ParsingMode mode = DecodedMode);
+    QString path(ComponentFormattingOptions options = FullyDecoded) const;
+    QString fileName(ComponentFormattingOptions options = FullyDecoded) const;
 
     bool hasQuery() const;
     void setQuery(const QString &query, ParsingMode mode = TolerantMode);

@@ -316,6 +316,8 @@ void tst_QUrl::comparison()
     QVERIFY(url3bisNoSlash.matches(url4bis, QUrl::NormalizePathSegments | QUrl::StripTrailingSlash));
 
     QUrl url4EncodedDots = QUrl("example://a/.//b/%2E%2E%2F/b/c/");
+    QCOMPARE(url4EncodedDots.path(QUrl::PrettyDecoded), QString("/.//b/..%2F/b/c/"));
+    QCOMPARE(url4EncodedDots.path(QUrl::FullyDecoded), QString("/.//b/..//b/c/"));
     QCOMPARE(QString::fromLatin1(url4EncodedDots.toEncoded()), QString::fromLatin1("example://a/.//b/..%2F/b/c/"));
     QCOMPARE(url4EncodedDots.toString(), QString("example://a/.//b/..%2F/b/c/"));
     QCOMPARE(url4EncodedDots.adjusted(QUrl::NormalizePathSegments).toString(), QString("example://a/b/..%2F/b/c/"));
@@ -497,18 +499,20 @@ void tst_QUrl::setUrl()
     }
 
     {
-        QUrl url("http://user:pass@[56::56:56:56:127.0.0.1]:99");
+        QUrl url("http://user%3A:pass%40@[56::56:56:56:127.0.0.1]:99");
         QVERIFY(url.isValid());
         QCOMPARE(url.scheme(), QString::fromLatin1("http"));
         QCOMPARE(url.path(), QString());
         QVERIFY(url.encodedQuery().isEmpty());
-        QCOMPARE(url.userInfo(), QString::fromLatin1("user:pass"));
+        QCOMPARE(url.userName(), QString::fromLatin1("user:"));
+        QCOMPARE(url.password(), QString::fromLatin1("pass@"));
+        QCOMPARE(url.userInfo(), QString::fromLatin1("user%3A:pass@"));
         QVERIFY(url.fragment().isEmpty());
         QCOMPARE(url.host(), QString::fromLatin1("56::56:56:56:7f00:1"));
-        QCOMPARE(url.authority(), QString::fromLatin1("user:pass@[56::56:56:56:7f00:1]:99"));
+        QCOMPARE(url.authority(), QString::fromLatin1("user%3A:pass%40@[56::56:56:56:7f00:1]:99"));
         QCOMPARE(url.port(), 99);
-        QCOMPARE(url.url(), QString::fromLatin1("http://user:pass@[56::56:56:56:7f00:1]:99"));
-        QCOMPARE(url.toDisplayString(), QString::fromLatin1("http://user@[56::56:56:56:7f00:1]:99"));
+        QCOMPARE(url.url(), QString::fromLatin1("http://user%3A:pass%40@[56::56:56:56:7f00:1]:99"));
+        QCOMPARE(url.toDisplayString(), QString::fromLatin1("http://user%3A@[56::56:56:56:7f00:1]:99"));
     }
 
     {
@@ -686,8 +690,8 @@ void tst_QUrl::setUrl()
 
         QUrl charles;
         charles.setPath("/home/charles/foo%20moo");
-        QCOMPARE(charles.path(), QString::fromLatin1("/home/charles/foo moo"));
-        QCOMPARE(charles.path(QUrl::FullyEncoded), QString::fromLatin1("/home/charles/foo%20moo"));
+        QCOMPARE(charles.path(), QString::fromLatin1("/home/charles/foo%20moo"));
+        QCOMPARE(charles.path(QUrl::FullyEncoded), QString::fromLatin1("/home/charles/foo%2520moo"));
 
         QUrl charles2("file:/home/charles/foo%20moo");
         QCOMPARE(charles2.path(), QString::fromLatin1("/home/charles/foo moo"));
@@ -760,7 +764,7 @@ void tst_QUrl::setUrl()
         QVERIFY(url.isValid());
         QCOMPARE(url.scheme(), QString("data"));
         QCOMPARE(url.host(), QString());
-        QCOMPARE(url.path(), QString("text/javascript,d5 %3D 'five\\u0027s'%3B"));
+        QCOMPARE(url.path(), QString("text/javascript,d5 = 'five\\u0027s';"));
         QCOMPARE(url.encodedPath().constData(), "text/javascript,d5%20%3D%20'five%5Cu0027s'%3B");
     }
 
@@ -1214,11 +1218,11 @@ void tst_QUrl::fromLocalFile_data()
     QTest::newRow("data7") << QString::fromLatin1("/Mambo <#5>.mp3") << QString::fromLatin1("file:///Mambo <%235>.mp3")
                            << QString::fromLatin1("/Mambo <#5>.mp3");
     QTest::newRow("data8") << QString::fromLatin1("/a%.txt") << QString::fromLatin1("file:///a%25.txt")
-                           << QString::fromLatin1("/a%25.txt");
+                           << QString::fromLatin1("/a%.txt");
     QTest::newRow("data9") << QString::fromLatin1("/a%25.txt") << QString::fromLatin1("file:///a%2525.txt")
-                           << QString::fromLatin1("/a%2525.txt");
+                           << QString::fromLatin1("/a%25.txt");
     QTest::newRow("data10") << QString::fromLatin1("/%80.txt") << QString::fromLatin1("file:///%2580.txt")
-                            << QString::fromLatin1("/%2580.txt");
+                            << QString::fromLatin1("/%80.txt");
 }
 
 void tst_QUrl::fromLocalFile()
@@ -2530,8 +2534,9 @@ void tst_QUrl::setEncodedFragment()
 void tst_QUrl::fromEncoded()
 {
     QUrl qurl2 = QUrl::fromEncoded("print:/specials/Print%20To%20File%20(PDF%252FAcrobat)", QUrl::TolerantMode);
-    QCOMPARE(qurl2.path(), QString::fromLatin1("/specials/Print To File (PDF%252FAcrobat)"));
-    QCOMPARE(QFileInfo(qurl2.path()).fileName(), QString::fromLatin1("Print To File (PDF%252FAcrobat)"));
+    QCOMPARE(qurl2.path(), QString::fromLatin1("/specials/Print To File (PDF%2FAcrobat)"));
+    QCOMPARE(QFileInfo(qurl2.path()).fileName(), QString::fromLatin1("Print To File (PDF%2FAcrobat)"));
+    QCOMPARE(qurl2.fileName(), QString::fromLatin1("Print To File (PDF%2FAcrobat)"));
     QCOMPARE(qurl2.toEncoded().constData(), "print:/specials/Print%20To%20File%20(PDF%252FAcrobat)");
 
     QUrl qurl = QUrl::fromEncoded("http://\303\244.de");
