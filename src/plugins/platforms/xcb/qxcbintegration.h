@@ -119,6 +119,7 @@ private:
     friend class QXcbConnection; // access QPlatformIntegration::screenAdded()
 
     mutable QByteArray m_wmClass;
+    const char *m_instanceName;
 };
 
 QT_END_NAMESPACE

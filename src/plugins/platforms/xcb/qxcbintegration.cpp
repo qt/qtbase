@@ -122,6 +122,7 @@ static bool runningUnderDebugger()
 QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char **argv)
     : m_eventDispatcher(createUnixEventDispatcher())
     ,  m_services(new QGenericUnixServices)
+    , m_instanceName(0)
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
 
@@ -147,6 +148,9 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
             if (arg) {
                 if (!strcmp(arg, "-display") && i < argc - 1) {
                     displayName = argv[++i];
+                    arg = 0;
+                } else if (!strcmp(arg, "-name") && i < argc - 1) {
+                    m_instanceName = argv[++i];
                     arg = 0;
                 }
             }
@@ -409,6 +413,8 @@ QByteArray QXcbIntegration::wmClass() const
     if (m_wmClass.isEmpty()) {
         // Instance name according to ICCCM 4.1.2.5
         QString name;
+        if (m_instanceName)
+            name = QString::fromLocal8Bit(m_instanceName);
         if (name.isEmpty() && qEnvironmentVariableIsSet(resourceNameVar))
             name = QString::fromLocal8Bit(qgetenv(resourceNameVar));
         if (name.isEmpty())
