@@ -668,8 +668,8 @@ int QDate::weekNumber(int *yearNumber) const
     \li 12 = "Dec"
     \endlist
 
-    The month names will be localized according to the system's default
-    locale settings.
+    The month names will be localized according to the system's
+    locale settings, i.e. using QLocale::system().
 
     Returns an empty string if the date is invalid.
 
@@ -715,8 +715,8 @@ QString QDate::shortMonthName(int month, QDate::MonthNameType type)
     \li 12 = "December"
     \endlist
 
-    The month names will be localized according to the system's default
-    locale settings.
+    The month names will be localized according to the system's
+    locale settings, i.e. using QLocale::system().
 
     Returns an empty string if the date is invalid.
 
@@ -757,8 +757,8 @@ QString QDate::longMonthName(int month, MonthNameType type)
     \li 7 = "Sun"
     \endlist
 
-    The day names will be localized according to the system's default
-    locale settings.
+    The day names will be localized according to the system's
+    locale settings, i.e. using QLocale::system().
 
     Returns an empty string if the date is invalid.
 
@@ -799,8 +799,8 @@ QString QDate::shortDayName(int weekday, MonthNameType type)
     \li 7 = "Sunday"
     \endlist
 
-    The day names will be localized according to the system's default
-    locale settings.
+    The day names will be localized according to the system's
+    locale settings, i.e. using QLocale::system().
 
     Returns an empty string if the date is invalid.
 
@@ -837,7 +837,7 @@ QString QDate::longDayName(int weekday, MonthNameType type)
     If the \a format is Qt::TextDate, the string is formatted in
     the default way. QDate::shortDayName() and QDate::shortMonthName()
     are used to generate the string, so the day and month names will
-    be localized names using the default locale from the system. An
+    be localized names using the system locale, i.e. QLocale::system(). An
     example of this formatting is "Sat May 20 1995".
 
     If the \a format is Qt::ISODate, the string format corresponds
@@ -923,18 +923,18 @@ QString QDate::toString(Qt::DateFormat format) const
     \row \li dd \li the day as number with a leading zero (01 to 31)
     \row \li ddd
          \li the abbreviated localized day name (e.g. 'Mon' to 'Sun').
-            Uses QDate::shortDayName().
+             Uses the system locale to localize the name, i.e. QLocale::system().
     \row \li dddd
          \li the long localized day name (e.g. 'Monday' to 'Sunday').
-            Uses QDate::longDayName().
+             Uses the system locale to localize the name, i.e. QLocale::system().
     \row \li M \li the month as number without a leading zero (1 to 12)
     \row \li MM \li the month as number with a leading zero (01 to 12)
     \row \li MMM
          \li the abbreviated localized month name (e.g. 'Jan' to 'Dec').
-            Uses QDate::shortMonthName().
+             Uses the system locale to localize the name, i.e. QLocale::system().
     \row \li MMMM
          \li the long localized month name (e.g. 'January' to 'December').
-            Uses QDate::longMonthName().
+             Uses the system locale to localize the name, i.e. QLocale::system().
     \row \li yy \li the year as two digit number (00 to 99)
     \row \li yyyy \li the year as four digit number. If the year is negative,
             a minus sign is prepended in addition.
@@ -1304,18 +1304,18 @@ QDate QDate::fromString(const QString& string, Qt::DateFormat format)
     \row \li dd \li The day as a number with a leading zero (01 to 31)
     \row \li ddd
          \li The abbreviated localized day name (e.g. 'Mon' to 'Sun').
-            Uses QDate::shortDayName().
+             Uses the system locale to localize the name, i.e. QLocale::system().
     \row \li dddd
          \li The long localized day name (e.g. 'Monday' to 'Sunday').
-            Uses QDate::longDayName().
+             Uses the system locale to localize the name, i.e. QLocale::system().
     \row \li M \li The month as a number without a leading zero (1 to 12)
     \row \li MM \li The month as a number with a leading zero (01 to 12)
     \row \li MMM
          \li The abbreviated localized month name (e.g. 'Jan' to 'Dec').
-            Uses QDate::shortMonthName().
+             Uses the system locale to localize the name, i.e. QLocale::system().
     \row \li MMMM
          \li The long localized month name (e.g. 'January' to 'December').
-            Uses QDate::longMonthName().
+             Uses the system locale to localize the name, i.e. QLocale::system().
     \row \li yy \li The year as two digit number (00 to 99)
     \row \li yyyy \li The year as four digit number. If the year is negative,
             a minus sign is prepended in addition.
@@ -2746,8 +2746,9 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
     If the \a format is Qt::TextDate, the string is formatted in
     the default way. QDate::shortDayName(), QDate::shortMonthName(),
     and QTime::toString() are used to generate the string, so the
-    day and month names will be localized names. An example of this
-    formatting is "Wed May 20 03:40:13.456 1998".
+    day and month names will be localized names using the system locale,
+    i.e. QLocale::system(). An example of this formatting is
+    "Wed May 20 03:40:13.456 1998".
 
     If the \a format is Qt::ISODate, the string format corresponds
     to the ISO 8601 extended specification (with decimal fractions) for
@@ -2872,18 +2873,18 @@ QString QDateTime::toString(Qt::DateFormat format) const
     \row \li dd \li the day as number with a leading zero (01 to 31)
     \row \li ddd
             \li the abbreviated localized day name (e.g. 'Mon' to 'Sun').
-            Uses QDate::shortDayName().
+            Uses the system locale to localize the name, i.e. QLocale::system().
     \row \li dddd
             \li the long localized day name (e.g. 'Monday' to 'Qt::Sunday').
-            Uses QDate::longDayName().
+            Uses the system locale to localize the name, i.e. QLocale::system().
     \row \li M \li the month as number without a leading zero (1-12)
     \row \li MM \li the month as number with a leading zero (01-12)
     \row \li MMM
             \li the abbreviated localized month name (e.g. 'Jan' to 'Dec').
-            Uses QDate::shortMonthName().
+            Uses the system locale to localize the name, i.e. QLocale::system().
     \row \li MMMM
             \li the long localized month name (e.g. 'January' to 'December').
-            Uses QDate::longMonthName().
+            Uses the system locale to localize the name, i.e. QLocale::system().
     \row \li yy \li the year as two digit number (00-99)
     \row \li yyyy \li the year as four digit number
     \endtable
@@ -2896,16 +2897,21 @@ QString QDateTime::toString(Qt::DateFormat format) const
          \li the hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
     \row \li hh
          \li the hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
+    \row \li H
+         \li the hour without a leading zero (0 to 23, even with AM/PM display)
+    \row \li HH
+         \li the hour with a leading zero (00 to 23, even with AM/PM display)
     \row \li m \li the minute without a leading zero (0 to 59)
     \row \li mm \li the minute with a leading zero (00 to 59)
     \row \li s \li the second without a leading zero (0 to 59)
     \row \li ss \li the second with a leading zero (00 to 59)
     \row \li z \li the milliseconds without leading zeroes (0 to 999)
     \row \li zzz \li the milliseconds with leading zeroes (000 to 999)
-    \row \li AP
-            \li use AM/PM display. \e AP will be replaced by either "AM" or "PM".
-    \row \li ap
-            \li use am/pm display. \e ap will be replaced by either "am" or "pm".
+    \row \li AP or A
+         \li use AM/PM display. \e A/AP will be replaced by either "AM" or "PM".
+    \row \li ap or a
+         \li use am/pm display. \e a/ap will be replaced by either "am" or "pm".
+    \row \li t \li the timezone (for example "CEST")
     \endtable
 
     All other input characters will be ignored. Any sequence of characters that
