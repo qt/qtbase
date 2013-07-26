@@ -343,28 +343,6 @@ public class QtNative
                 touchEnd(id,1);
         }
         //@ANDROID-5
-
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_UP:
-                mouseUp(id,(int) event.getX(), (int) event.getY());
-                break;
-
-            case MotionEvent.ACTION_DOWN:
-                mouseDown(id,(int) event.getX(), (int) event.getY());
-                m_oldx = (int) event.getX();
-                m_oldy = (int) event.getY();
-                break;
-
-            case MotionEvent.ACTION_MOVE:
-                int dx = (int) (event.getX() - m_oldx);
-                int dy = (int) (event.getY() - m_oldy);
-                if (Math.abs(dx) > m_moveThreshold || Math.abs(dy) > m_moveThreshold) {
-                    mouseMove(id, (int) event.getX(), (int) event.getY());
-                    m_oldx = (int) event.getX();
-                    m_oldy = (int) event.getY();
-                }
-                break;
-        }
     }
 
     static public void sendTrackballEvent(MotionEvent event, int id)
