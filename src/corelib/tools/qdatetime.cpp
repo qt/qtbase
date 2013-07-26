@@ -960,17 +960,11 @@ QString QDate::toString(Qt::DateFormat f) const
 
     If the datetime is invalid, an empty string will be returned.
 
-    \warning The Qt::ISODate format is only valid for years in the
-    range 0 to 9999. This restriction may apply to locale-aware
-    formats as well, depending on the locale settings.
-
     \sa QDateTime::toString(), QTime::toString(), QLocale::toString()
 
 */
 QString QDate::toString(const QString& format) const
 {
-    if (year() > 9999)
-        return QString();
     return QLocale::system().toString(*this, format);
 }
 #endif //QT_NO_DATESTRING
