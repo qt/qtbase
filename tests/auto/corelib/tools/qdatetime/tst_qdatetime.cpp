@@ -88,7 +88,6 @@ private slots:
     void toString_rfcDate_data();
     void toString_rfcDate();
     void toString_enumformat();
-    void toString_strformat_data();
     void toString_strformat();
     void addDays();
     void addMonths();
@@ -1700,64 +1699,15 @@ void tst_QDateTime::operator_insert_extract()
 }
 #endif
 
-void tst_QDateTime::toString_strformat_data()
-{
-    QTest::addColumn<QDateTime>("dt");
-    QTest::addColumn<QString>("format");
-    QTest::addColumn<QString>("str");
-
-    QTest::newRow( "datetime0" ) << QDateTime() << QString("dd-MM-yyyy hh:mm:ss") << QString();
-    QTest::newRow( "datetime1" ) << QDateTime(QDate(1999, 12, 31), QTime(23, 59, 59, 999))
-                                 << QString("dd-'mmddyy'MM-yyyy hh:mm:ss.zzz")
-                                 << QString("31-mmddyy12-1999 23:59:59.999");
-    QTest::newRow( "datetime2" ) << QDateTime(QDate(1999, 12, 31), QTime(23, 59, 59, 999))
-                                 << QString("dd-'apAP'MM-yyyy hh:mm:ss.zzz")
-                                 << QString("31-apAP12-1999 23:59:59.999");
-    QTest::newRow( "datetime3" ) << QDateTime(QDate(1999, 12, 31), QTime(23, 59, 59, 999))
-                                 << QString("Apdd-MM-yyyy hh:mm:ss.zzz")
-                                 << QString("PMp31-12-1999 11:59:59.999");
-    QTest::newRow( "datetime4" ) << QDateTime(QDate(1999, 12, 31), QTime(23, 59, 59, 999))
-                                 << QString("'ap'apdd-MM-yyyy 'AP'hh:mm:ss.zzz")
-                                 << QString("appm31-12-1999 AP11:59:59.999");
-    QTest::newRow( "datetime5" ) << QDateTime(QDate(1999, 12, 31), QTime(23, 59, 59, 999))
-                                 << QString("'''") << QString("'");
-    QTest::newRow( "datetime6" ) << QDateTime(QDate(1999, 12, 31), QTime(23, 59, 59, 999))
-                                 << QString("'ap") << QString("ap");
-    QTest::newRow( "datetime7" ) << QDateTime(QDate(1999, 12, 31), QTime(23, 59, 59, 999))
-                                 << QString("' ' 'hh' hh") << QString("  hh 23");
-    QTest::newRow( "datetime8" ) << QDateTime(QDate(1999, 12, 31), QTime(23, 59, 59, 999))
-                                 << QString("d'foobar'") << QString("31foobar");
-    QTest::newRow( "datetime9" ) << QDateTime(QDate(1999, 12, 31), QTime(3, 59, 59, 999))
-                                 << QString("hhhhh") << QString("03033");
-    QTest::newRow( "datetime11" ) << QDateTime(QDate(1999, 12, 31), QTime(23, 59, 59, 999))
-                                 << QString("HHHhhhAaAPap") << QString("23231111PMpmPMpm");
-    QTest::newRow( "datetime12" ) << QDateTime(QDate(1999, 12, 31), QTime(3, 59, 59, 999))
-                                 << QString("HHHhhhAaAPap") << QString("033033AMamAMam");
-    QTest::newRow( "datetime13" ) << QDateTime(QDate(1974, 12, 1), QTime(14, 14, 20))
-                                 << QString("hh''mm''ss dd''MM''yyyy")
-                                 << QString("14'14'20 01'12'1974");
-    QTest::newRow( "single, 0 => 12 AM" ) << QDateTime(QDate(1999, 12, 31), QTime(0, 59, 59, 999))
-        << QString("hAP") << QString("12AM");
-    QTest::newRow( "double, 0 => 12 AM" ) << QDateTime(QDate(1999, 12, 31), QTime(0, 59, 59, 999))
-        << QString("hhAP") << QString("12AM");
-    QTest::newRow( "dddd" ) << QDateTime(QDate(1999, 12, 31), QTime(0, 59, 59, 999))
-        << QString("dddd") << QString("Friday");
-    QTest::newRow( "ddd" ) << QDateTime(QDate(1999, 12, 31), QTime(0, 59, 59, 999))
-        << QString("ddd") << QString("Fri");
-    QTest::newRow( "MMMM" ) << QDateTime(QDate(1999, 12, 31), QTime(0, 59, 59, 999))
-        << QString("MMMM") << QString("December");
-    QTest::newRow( "MMM" ) << QDateTime(QDate(1999, 12, 31), QTime(0, 59, 59, 999))
-        << QString("MMM") << QString("Dec");
-    QTest::newRow( "emtpy" ) << QDateTime(QDate(1999, 12, 31), QTime(0, 59, 59, 999))
-        << QString("") << QString("");
-}
-
 void tst_QDateTime::toString_strformat()
 {
-    QFETCH( QDateTime, dt );
-    QFETCH( QString, format );
-    QFETCH( QString, str );
-    QCOMPARE( dt.toString( format ), str );
+    // Most tests are in QLocale, just test that the api works.
+    QDate testDate(2013, 1, 1);
+    QTime testTime(1, 2, 3);
+    QDateTime testDateTime(testDate, testTime, Qt::UTC);
+    QCOMPARE(testDate.toString("yyyy-MM-dd"), QString("2013-01-01"));
+    QCOMPARE(testTime.toString("hh:mm:ss"), QString("01:02:03"));
+    QCOMPARE(testDateTime.toString("yyyy-MM-dd hh:mm:ss t"), QString("2013-01-01 01:02:03 UTC"));
 }
 
 void tst_QDateTime::fromStringDateFormat_data()
