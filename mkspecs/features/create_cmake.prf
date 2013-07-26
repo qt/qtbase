@@ -11,11 +11,6 @@
 
 load(cmake_functions)
 
-defineReplace(cmakeRelativePath) {
-    path = $$relative_path($$1, $$2)
-    return($$replace(path, ([^/])$, \\1/))
-}
-
 CMAKE_MODULE_NAME = $$cmakeModuleName($${MODULE})
 
 CMAKE_MODULE_DEPS = $$cmakeModuleList($$sort_depends(QT.$${MODULE}.depends, QT.))
