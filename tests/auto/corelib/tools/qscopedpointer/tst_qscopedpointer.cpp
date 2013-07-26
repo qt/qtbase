@@ -42,6 +42,8 @@
 #include <QtTest/QtTest>
 #include <QtCore/QScopedPointer>
 
+#include <utility>
+
 /*!
  \class tst_QScopedPointer
  \internal
@@ -73,6 +75,7 @@ private Q_SLOTS:
     void objectSize();
     void comparison();
     void array();
+    void move();
     // TODO instanciate on const object
 };
 
@@ -458,6 +461,158 @@ void tst_QScopedPointer::array()
     QCOMPARE(instCount, RefCounted::instanceCount.load());
 }
 
+#ifdef Q_COMPILER_RVALUE_REFS
+struct CountedInteger
+{
+    CountedInteger(int i) : i(i)
+    {
+        ++instanceCount;
+    }
+    ~CountedInteger()
+    {
+        --instanceCount;
+    }
+    CountedInteger(const CountedInteger &c)
+        : i(c.i)
+    {
+        ++instanceCount;
+    }
+
+    static int instanceCount;
+    int i;
+};
+
+int CountedInteger::instanceCount = 0;
+
+QScopedPointer<CountedInteger> returnScopedPointer(int i)
+{
+    return QScopedPointer<CountedInteger>(new CountedInteger(i));
+}
+#endif
+
+void tst_QScopedPointer::move()
+{
+#ifndef Q_COMPILER_RVALUE_REFS
+    QSKIP("This test requires rvalues refs");
+#else
+    QCOMPARE(CountedInteger::instanceCount, 0);
+
+    {
+        QScopedPointer<CountedInteger> p = returnScopedPointer(42);
+        QVERIFY(!p.isNull());
+        QCOMPARE(p->i, 42);
+        QCOMPARE(CountedInteger::instanceCount, 1);
+
+        QScopedPointer<CountedInteger> q = returnScopedPointer(51);
+        QVERIFY(!q.isNull());
+        QCOMPARE(q->i, 51);
+        QCOMPARE(CountedInteger::instanceCount, 2);
+
+        q = returnScopedPointer(123);
+        QVERIFY(!q.isNull());
+        QCOMPARE(q->i, 123);
+        QCOMPARE(CountedInteger::instanceCount, 2);
+
+        p = std::move(q);
+        QVERIFY(!p.isNull());
+        QCOMPARE(p->i, 123);
+        QVERIFY(q.isNull());
+        QCOMPARE(CountedInteger::instanceCount, 1);
+
+        p = std::move(q);
+        QVERIFY(p.isNull());
+        QVERIFY(q.isNull());
+        QCOMPARE(CountedInteger::instanceCount, 0);
+    }
+
+    QCOMPARE(CountedInteger::instanceCount, 0);
+
+    {
+        QScopedPointer<CountedInteger> p = returnScopedPointer(1024);
+        QVERIFY(!p.isNull());
+        QCOMPARE(p->i, 1024);
+        QCOMPARE(CountedInteger::instanceCount, 1);
+
+        p.reset();
+        QVERIFY(p.isNull());
+        QCOMPARE(CountedInteger::instanceCount, 0);
+
+        p = returnScopedPointer(1024);
+        const CountedInteger * const rawPtr = p.data();
+        p = std::move(p);
+        // now p is in a "valid, but unspecified state". so the test must not crash.
+        // we do actually know that this move should've been a noop.
+        QVERIFY(!p.isNull());
+        QCOMPARE(p.data(), rawPtr);
+        QCOMPARE(p->i, 1024);
+        QCOMPARE(CountedInteger::instanceCount, 1);
+
+        p.reset();
+        QVERIFY(p.isNull());
+        QCOMPARE(CountedInteger::instanceCount, 0);
+    }
+
+    QCOMPARE(CountedInteger::instanceCount, 0);
+
+    {
+        QScopedPointer<CountedInteger> p = returnScopedPointer(-1);
+        QVERIFY(!p.isNull());
+        QCOMPARE(p->i, -1);
+        QCOMPARE(CountedInteger::instanceCount, 1);
+    }
+
+    QCOMPARE(CountedInteger::instanceCount, 0);
+
+    {
+        QScopedPointer<CountedInteger> p = returnScopedPointer(0);
+        QVERIFY(!p.isNull());
+        QCOMPARE(p->i, 0);
+        QCOMPARE(CountedInteger::instanceCount, 1);
+
+        QScopedPointer<CountedInteger> q;
+        QVERIFY(q.isNull());
+
+        p = std::move(q);
+        QVERIFY(p.isNull());
+        QVERIFY(q.isNull());
+        QCOMPARE(CountedInteger::instanceCount, 0);
+    }
+
+    QCOMPARE(CountedInteger::instanceCount, 0);
+
+    {
+        QScopedPointer<CountedInteger> p;
+        QVERIFY(p.isNull());
+        QCOMPARE(CountedInteger::instanceCount, 0);
+
+        QScopedPointer<CountedInteger> q = returnScopedPointer(123);
+        QVERIFY(!q.isNull());
+        QCOMPARE(q->i, 123);
+        QCOMPARE(CountedInteger::instanceCount, 1);
+
+        p = std::move(q);
+        QVERIFY(!p.isNull());
+        QCOMPARE(p->i, 123);
+        QVERIFY(q.isNull());
+        QCOMPARE(CountedInteger::instanceCount, 1);
+    }
+
+    QCOMPARE(CountedInteger::instanceCount, 0);
+
+    {
+        QScopedPointer<CountedInteger> p;
+        QVERIFY(p.isNull());
+        QCOMPARE(CountedInteger::instanceCount, 0);
+
+        p = returnScopedPointer(2001);
+        QVERIFY(!p.isNull());
+        QCOMPARE(p->i, 2001);
+        QCOMPARE(CountedInteger::instanceCount, 1);
+    }
+
+    QCOMPARE(CountedInteger::instanceCount, 0);
+#endif
+}
 
 QTEST_MAIN(tst_QScopedPointer)
 #include "tst_qscopedpointer.moc"
