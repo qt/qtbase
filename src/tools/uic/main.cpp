@@ -106,13 +106,6 @@ int runUic(int argc, char *argv[])
                 return 1;
             }
             driver.option().postfix = QLatin1String(argv[arg]);
-        } else if (opt == QLatin1String("-3")) {
-            ++arg;
-            if (!argv[arg]) {
-                showHelp(argv[0]);
-                return 1;
-            }
-            driver.option().uic3 = QFile::decodeName(argv[arg]);
         } else if (opt == QLatin1String("-tr") || opt == QLatin1String("-translate")) {
             ++arg;
             if (!argv[arg]) {
