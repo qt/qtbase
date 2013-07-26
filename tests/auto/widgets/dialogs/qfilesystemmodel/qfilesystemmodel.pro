@@ -7,5 +7,3 @@ QT += core-private gui testlib
 
 SOURCES		+= tst_qfilesystemmodel.cpp
 TARGET		= tst_qfilesystemmodel
-
-mac:CONFIG+=insignificant_test # QTBUG-27890
