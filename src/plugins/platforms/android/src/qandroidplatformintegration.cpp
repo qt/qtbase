@@ -50,6 +50,7 @@
 #include "qandroidplatformservices.h"
 #include "qandroidplatformfontdatabase.h"
 #include "qandroidplatformclipboard.h"
+#include "qandroidplatformaccessibility.h"
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 
 #ifndef ANDROID_PLUGIN_OPENGL
@@ -87,6 +88,9 @@ void *QAndroidPlatformNativeInterface::nativeResourceForIntegration(const QByteA
 
 QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &paramList)
     : m_touchDevice(0)
+#ifndef QT_NO_ACCESSIBILITY
+    , m_accessibility(0)
+#endif
 {
     Q_UNUSED(paramList);
 
@@ -258,6 +262,15 @@ void QAndroidPlatformIntegration::setDefaultDesktopSize(int gw, int gh)
     m_defaultGeometryWidth = gw;
     m_defaultGeometryHeight = gh;
 }
+
+#ifndef QT_NO_ACCESSIBILITY
+QPlatformAccessibility *QAndroidPlatformIntegration::accessibility() const
+{
+    if (!m_accessibility)
+        m_accessibility = new QAndroidPlatformAccessibility();
+    return m_accessibility;
+}
+#endif
 
 
 #ifndef ANDROID_PLUGIN_OPENGL

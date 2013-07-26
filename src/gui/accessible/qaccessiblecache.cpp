@@ -60,7 +60,9 @@ QAccessible::Id QAccessibleCache::acquireId() const
     static QAccessible::Id lastUsedId = FirstId;
 
     while (idToInterface.contains(lastUsedId)) {
-        if (lastUsedId == UINT_MAX) // (wrap back when when we reach UINT_MAX)
+        // (wrap back when when we reach UINT_MAX - 1)
+        // -1 because on Android -1 is taken for the "View" so just avoid it completely for consistency
+        if (lastUsedId == UINT_MAX - 1)
             lastUsedId = FirstId;
         else
             ++lastUsedId;

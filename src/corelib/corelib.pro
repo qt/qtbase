@@ -17,12 +17,14 @@ win32-g++*:QMAKE_CXXFLAGS_CXX11 = -std=gnu++0x
 QMAKE_DOCS = $$PWD/doc/qtcore.qdocconf
 
 ANDROID_JAR_DEPENDENCIES = \
-    jar/QtAndroid.jar
+    jar/QtAndroid.jar \
+    jar/QtAndroidAccessibility.jar
 ANDROID_LIB_DEPENDENCIES = \
     plugins/platforms/android/libqtforandroid.so \
     libs/libgnustl_shared.so
 ANDROID_BUNDLED_JAR_DEPENDENCIES = \
-    jar/QtAndroid-bundled.jar
+    jar/QtAndroid-bundled.jar \
+    jar/QtAndroidAccessibility-bundled.jar
 
 load(qt_module)
 

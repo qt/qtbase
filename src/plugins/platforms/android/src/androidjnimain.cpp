@@ -55,6 +55,7 @@
 #include <stdlib.h>
 
 #include "androidjnimain.h"
+#include "androidjniaccessibility.h"
 #include "androidjniinput.h"
 #include "androidjniclipboard.h"
 #include "androidjnimenu.h"
@@ -793,7 +794,8 @@ Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/)
     if (!registerNatives(env)
             || !QtAndroidInput::registerNatives(env)
             || !QtAndroidClipboard::registerNatives(env)
-            || !QtAndroidMenu::registerNatives(env)) {
+            || !QtAndroidMenu::registerNatives(env)
+            || !QtAndroidAccessibility::registerNatives(env)) {
         __android_log_print(ANDROID_LOG_FATAL, "Qt", "registerNatives failed");
         return -1;
     }
