@@ -83,6 +83,8 @@ public:
     void releaseThread();
 
     bool waitForDone(int msecs = -1);
+
+    void clear();
 };
 
 QT_END_NAMESPACE

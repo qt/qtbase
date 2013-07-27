@@ -97,6 +97,7 @@ private slots:
     void priorityStart_data();
     void priorityStart();
     void waitForDone();
+    void clear();
     void waitForDoneTimeout();
     void destroyingWaitsForTasksToFinish();
     void stressTest();
@@ -853,6 +854,34 @@ void tst_QThreadPool::waitForDoneTimeout()
     QVERIFY(!threadPool.waitForDone(100));
     task->mutex.unlock();
     QVERIFY(threadPool.waitForDone(400));
+}
+
+void tst_QThreadPool::clear()
+{
+    QSemaphore sem(0);
+    class BlockingRunnable : public QRunnable
+    {
+        public:
+            QSemaphore & sem;
+            BlockingRunnable(QSemaphore & sem) : sem(sem){}
+            void run()
+            {
+                sem.acquire();
+                count.ref();
+            }
+    };
+
+    QThreadPool threadPool;
+    threadPool.setMaxThreadCount(10);
+    int runs = 2 * threadPool.maxThreadCount();
+    count.store(0);
+    for (int i = 0; i <= runs; i++) {
+        threadPool.start(new BlockingRunnable(sem));
+    }
+    threadPool.clear();
+    sem.release(threadPool.maxThreadCount());
+    threadPool.waitForDone();
+    QCOMPARE(count.load(), threadPool.maxThreadCount());
 }
 
 void tst_QThreadPool::destroyingWaitsForTasksToFinish()

@@ -83,6 +83,7 @@ public:
     void startThread(QRunnable *runnable = 0);
     void reset();
     bool waitForDone(int msecs);
+    void clear();
     void stealRunnable(QRunnable *);
 
     mutable QMutex mutex;

@@ -308,6 +308,18 @@ bool QThreadPoolPrivate::waitForDone(int msecs)
     return queue.isEmpty() && activeThreads == 0;
 }
 
+void QThreadPoolPrivate::clear()
+{
+    QMutexLocker locker(&mutex);
+    for (QList<QPair<QRunnable *, int> >::const_iterator it = queue.constBegin();
+         it != queue.constEnd(); ++it) {
+        QRunnable* r = it->first;
+        if (r->autoDelete() && !--r->ref)
+            delete r;
+    }
+    queue.clear();
+}
+
 /*!
     \internal
     Seaches for \a runnable in the queue, removes it from the queue and
@@ -607,6 +619,21 @@ bool QThreadPool::waitForDone(int msecs)
     if (rc)
       d->reset();
     return rc;
+}
+
+/*!
+    \since 5.2
+
+    Removes the runnables that are not yet started from the queue.
+    The runnables for which \l{QRunnable::autoDelete()}{runnable->autoDelete()}
+    returns true are deleted.
+
+    \sa start()
+*/
+void QThreadPool::clear()
+{
+    Q_D(QThreadPool);
+    d->clear();
 }
 
 QT_END_NAMESPACE
