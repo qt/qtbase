@@ -277,6 +277,7 @@ private slots:
     void setSharableComplex_data() const;
     void setSharableComplex() const;
     void eraseValidIteratorsOnSharedList() const;
+    void insertWithValidIteratorsOnSharedList() const;
 private:
     template<typename T> void length() const;
     template<typename T> void append() const;
@@ -1651,6 +1652,21 @@ void tst_QList::eraseValidIteratorsOnSharedList() const
     QCOMPARE(a.size(), 3);
     QCOMPARE(a.at(0), 10);
     QCOMPARE(a.at(1), 50);
+}
+
+void tst_QList::insertWithValidIteratorsOnSharedList() const
+{
+    QList<int> a, b;
+    a.push_back(10);
+    a.push_back(20);
+    a.push_back(30);
+    QList<int>::iterator i = a.begin();
+    ++i;
+    b = a;
+    a.insert(i, 15);
+    QCOMPARE(a.size(), b.size() + 1);
+    QCOMPARE(b.at(1), 20);
+    QCOMPARE(a.at(1), 15);
 }
 
 QTEST_APPLESS_MAIN(tst_QList)

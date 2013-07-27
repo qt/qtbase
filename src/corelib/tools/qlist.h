@@ -441,7 +441,11 @@ inline typename QList<T>::iterator QList<T>::insert(iterator before, const T &t)
     Q_ASSERT_X(isValidIterator(before), "QList::insert", "The specified iterator argument 'before' is invalid");
 
     int iBefore = int(before.i - reinterpret_cast<Node *>(p.begin()));
-    Node *n = reinterpret_cast<Node *>(p.insert(iBefore));
+    Node *n = 0;
+    if (d->ref.isShared())
+        n = detach_helper_grow(iBefore, 1);
+    else
+        n = reinterpret_cast<Node *>(p.insert(iBefore));
     QT_TRY {
         node_construct(n, t);
     } QT_CATCH(...) {
