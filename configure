@@ -5196,24 +5196,6 @@ if compileTest x11/xlib "XLib"; then
     QT_CONFIG="$QT_CONFIG xlib"
 fi
 
-# auto-detect Xrender support
-if [ "$CFG_XRENDER" != "no" ]; then
-    if compileTest x11/xrender "Xrender"; then
-        CFG_XRENDER=yes
-        QT_CONFIG="$QT_CONFIG xrender"
-    else
-        if [ "$CFG_XRENDER" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-            echo "Xrender support cannot be enabled due to functionality tests!"
-            echo " Turn on verbose messaging (-v) to $0 to see the final report."
-            echo " If you believe this message is in error you may use the continue"
-            echo " switch (-continue) to $0 to continue."
-            exit 101
-        else
-            CFG_XRENDER=no
-        fi
-    fi
-fi
-
 if [ "$CFG_XCB" != "no" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xcb >= 1.5" 2>/dev/null; then
         QMAKE_CFLAGS_XCB="`$PKG_CONFIG --cflags xcb 2>/dev/null`"
@@ -5261,6 +5243,24 @@ if [ "$CFG_XCB" != "no" ]; then
 
         if compileTest qpa/xcb-xlib "xcb-xlib" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
             QT_CONFIG="$QT_CONFIG xcb-xlib"
+        fi
+
+        # auto-detect Xrender support
+        if [ "$CFG_XRENDER" != "no" ]; then
+            if compileTest x11/xrender "Xrender"; then
+                CFG_XRENDER=yes
+                QT_CONFIG="$QT_CONFIG xrender"
+            else
+                if [ "$CFG_XRENDER" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+                    echo "Xrender support cannot be enabled due to functionality tests!"
+                    echo " Turn on verbose messaging (-v) to $0 to see the final report."
+                    echo " If you believe this message is in error you may use the continue"
+                    echo " switch (-continue) to $0 to continue."
+                    exit 101
+                else
+                    CFG_XRENDER=no
+                fi
+            fi
         fi
 
         # auto-detect XInput2 support. Needed by xcb too.
