@@ -62,9 +62,9 @@ public class QtActivity extends Activity {
         QtNative.loadQtLibraries(libs);
         // start application
 
-        final String envPaths = "NECESSITAS_API_LEVEL=2\tHOME=" + getDir("files", MODE_WORLD_WRITEABLE).getAbsolutePath() +
-                              "\tTMPDIR=" + getDir("files", MODE_WORLD_WRITEABLE).getAbsolutePath() +
-                              "\tCACHE_PATH=" + getDir("files", MODE_WORLD_WRITEABLE).getAbsolutePath();
+        final String envPaths = "NECESSITAS_API_LEVEL=2\tHOME=" + getDir("files", MODE_WORLD_WRITEABLE | MODE_WORLD_READABLE).getAbsolutePath() +
+                              "\tTMPDIR=" + getDir("files", MODE_WORLD_WRITEABLE | MODE_WORLD_READABLE).getAbsolutePath() +
+                              "\tCACHE_PATH=" + getDir("files", MODE_WORLD_WRITEABLE | MODE_WORLD_READABLE).getAbsolutePath();
         if (environment != null && environment.length() > 0)
             environment = envPaths + "\t" + environment;
         else
@@ -138,7 +138,7 @@ public class QtActivity extends Activity {
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        getDir("files", MODE_WORLD_WRITEABLE);
+        getDir("files", MODE_WORLD_WRITEABLE | MODE_WORLD_READABLE);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         m_quitApp = true;
         QtNative.setMainActivity(this);
