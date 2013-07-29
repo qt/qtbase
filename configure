@@ -5191,11 +5191,6 @@ if [ "$CFG_TSLIB" != "no" ]; then
     fi
 fi
 
-# Check we actually have X11 :-)
-if compileTest x11/xlib "XLib"; then
-    QT_CONFIG="$QT_CONFIG xlib"
-fi
-
 if [ "$CFG_XCB" != "no" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xcb >= 1.5" 2>/dev/null; then
         QMAKE_CFLAGS_XCB="`$PKG_CONFIG --cflags xcb 2>/dev/null`"
@@ -5239,6 +5234,17 @@ if [ "$CFG_XCB" != "no" ]; then
                 echo " See src/plugins/platforms/xcb/README."
                 exit 1
             fi
+        fi
+
+        # Check for X11. Eventually we should port everything to XCB,
+        # but for now the port is incomplete and Xlib is a requirement.
+        if compileTest x11/xlib "XLib"; then
+            QT_CONFIG="$QT_CONFIG xlib"
+        else
+            echo "The test for linking against Xlib failed!"
+            echo " You might need to install dependency packages."
+            echo " See src/plugins/platforms/xcb/README."
+            exit 1
         fi
 
         if compileTest qpa/xcb-xlib "xcb-xlib" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
