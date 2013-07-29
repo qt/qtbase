@@ -53,6 +53,7 @@ QEglFSWindow::QEglFSWindow(QWindow *w)
     : QPlatformWindow(w)
     , m_surface(0)
     , m_window(0)
+    , has_window(false)
 {
     static int serialNo = 0;
     m_winid  = ++serialNo;
@@ -69,7 +70,7 @@ QEglFSWindow::~QEglFSWindow()
 
 void QEglFSWindow::create()
 {
-    if (m_window)
+    if (has_window)
         return;
 
     setWindowState(Qt::WindowFullScreen);
@@ -91,7 +92,7 @@ void QEglFSWindow::create()
 void QEglFSWindow::invalidateSurface()
 {
     // Native surface has been deleted behind our backs
-    m_window = 0;
+    has_window = false;
     if (m_surface != 0) {
         EGLDisplay display = (static_cast<QEglFSScreen *>(window()->screen()->handle()))->display();
         eglDestroySurface(display, m_surface);
@@ -104,6 +105,7 @@ void QEglFSWindow::resetSurface()
     EGLDisplay display = static_cast<QEglFSScreen *>(screen())->display();
 
     m_window = QEglFSHooks::hooks()->createNativeWindow(QEglFSHooks::hooks()->screenSize(), m_format);
+    has_window = true;
     m_surface = eglCreateWindowSurface(display, m_config, m_window, NULL);
     if (m_surface == EGL_NO_SURFACE) {
         EGLint error = eglGetError();
@@ -120,9 +122,9 @@ void QEglFSWindow::destroy()
         m_surface = 0;
     }
 
-    if (m_window) {
+    if (has_window) {
         QEglFSHooks::hooks()->destroyNativeWindow(m_window);
-        m_window = 0;
+        has_window = false;
     }
 }
 

@@ -76,6 +76,7 @@ private:
     WId m_winid;
     EGLConfig m_config;
     QSurfaceFormat m_format;
+    bool has_window;
 };
 QT_END_NAMESPACE
 #endif // QEGLFSWINDOW_H
