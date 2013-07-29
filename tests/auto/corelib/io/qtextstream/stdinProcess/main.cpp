@@ -40,17 +40,16 @@
 ****************************************************************************/
 
 
-#include <QtCore/QCoreApplication>
 #include <QtCore/QTextStream>
+#include <stdio.h>
 
-int main(int argc, char **argv)
+int main(int, char**)
 {
-    QCoreApplication a(argc, argv);
     QTextStream qin(stdin);
     if (!qin.atEnd()) {
-      int a, b, c;
-      qin >> a >> b >> c;
-      qDebug("%d %d %d", a, b, c);
+        int a, b, c;
+        qin >> a >> b >> c;
+        fprintf(stderr, "%d %d %d\n", a, b, c);
     }
     return 0;
 }

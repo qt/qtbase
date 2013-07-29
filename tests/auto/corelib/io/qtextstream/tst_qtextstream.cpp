@@ -1425,8 +1425,7 @@ void tst_QTextStream::readAllFromStdin()
     stdinProcess.closeWriteChannel();
 
     QVERIFY(stdinProcess.waitForFinished(5000));
-    QChar quoteChar('"');
-    QCOMPARE(stream.readAll(), QString::fromLatin1("%1hello world%2 \n").arg(quoteChar).arg(quoteChar));
+    QCOMPARE(stream.readAll(), QString::fromLatin1("hello world\n"));
 }
 
 // ------------------------------------------------------------------------------

@@ -40,13 +40,11 @@
 ****************************************************************************/
 
 
-#include <QtCore/QCoreApplication>
 #include <QtCore/QTextStream>
-#include <QtCore/QDebug>
+#include <stdio.h>
 
-int main(int argc, char **argv)
+int main(int, char**)
 {
-    QCoreApplication a(argc, argv);
-    qDebug() << QTextStream(stdin).readAll();
+    fprintf(stderr, "%s\n", QTextStream(stdin).readAll().toLatin1().constData());
     return 0;
 }
