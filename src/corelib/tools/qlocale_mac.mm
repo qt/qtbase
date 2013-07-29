@@ -434,7 +434,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
     case CurrencyToString:
         return macFormatCurrency(in.value<QSystemLocale::CurrencyToStringArgument>());
     case UILanguages: {
-        QCFType<CFPropertyListRef> languages = (CFArrayRef)CFPreferencesCopyValue(
+        QCFType<CFPropertyListRef> languages = CFPreferencesCopyValue(
                  CFSTR("AppleLanguages"),
                  kCFPreferencesAnyApplication,
                  kCFPreferencesCurrentUser,
