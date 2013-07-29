@@ -5116,13 +5116,13 @@ static void blend_transformed_tiled_argb(int count, const QSpan *spans, void *us
                 int l = qMin(length, buffer_size);
                 const uint *end = buffer + l;
                 uint *b = buffer;
+                int px16 = x % (image_width << 16);
+                int py16 = y % (image_height << 16);
+                int px_delta = fdx % (image_width << 16);
+                int py_delta = fdy % (image_height << 16);
                 while (b < end) {
-                    int px = x >> 16;
-                    int py = y >> 16;
-                    px %= image_width;
-                    py %= image_height;
-                    if (px < 0) px += image_width;
-                    if (py < 0) py += image_height;
+                    int px = px16 >> 16;
+                    int py = py16 >> 16;
                     int y_offset = py * scanline_offset;
 
                     Q_ASSERT(px >= 0 && px < image_width);
@@ -5131,6 +5131,14 @@ static void blend_transformed_tiled_argb(int count, const QSpan *spans, void *us
                     *b = image_bits[y_offset + px];
                     x += fdx;
                     y += fdy;
+                    px16 += px_delta;
+                    if (px16 >= image_width << 16)
+                        px16 -= image_width << 16;
+                    py16 += py_delta;
+                    if (py16 >= image_height << 16)
+                        py16 -= image_height << 16;
+                    if (px16 < 0) px16 += image_width << 16;
+                    if (py16 < 0) py16 += image_height << 16;
                     ++b;
                 }
                 func(target, buffer, l, coverage);
