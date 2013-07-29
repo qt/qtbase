@@ -2,7 +2,9 @@ TEMPLATE = subdirs
 
 android:!android-no-sdk: SUBDIRS += android
 
-SUBDIRS += minimal offscreen
+SUBDIRS += minimal
+
+!win32|contains(QT_CONFIG, freetype):SUBDIRS += offscreen
 
 contains(QT_CONFIG, xcb) {
     SUBDIRS += xcb
