@@ -52,6 +52,10 @@
 #include <unistd.h>
 #endif
 
+#ifdef Q_OS_ANDROID
+#include <sys/stat.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QAbstractTestLogger::QAbstractTestLogger(const char *filename)
@@ -69,6 +73,12 @@ QAbstractTestLogger::QAbstractTestLogger(const char *filename)
         fprintf(stderr, "Unable to open file for logging: %s\n", filename);
         ::exit(1);
     }
+#ifdef Q_OS_ANDROID
+    else {
+        // Make sure output is world-readable on Android
+        ::chmod(filename, 0666);
+    }
+#endif
 }
 
 QAbstractTestLogger::~QAbstractTestLogger()
