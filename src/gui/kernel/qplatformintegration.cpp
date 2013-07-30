@@ -237,7 +237,7 @@ QPlatformServices *QPlatformIntegration::services() const
 
 bool QPlatformIntegration::hasCapability(Capability cap) const
 {
-    return cap == NonFullScreenWindows;
+    return cap == NonFullScreenWindows || cap == NativeWidgets;
 }
 
 QPlatformPixmap *QPlatformIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const

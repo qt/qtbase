@@ -10039,6 +10039,13 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
     }
 #endif
 
+    // Don't set WA_NativeWindow on platforms that don't support it
+    if (attribute == Qt::WA_NativeWindow) {
+        QPlatformIntegration *platformIntegration = QGuiApplicationPrivate::platformIntegration();
+        if (!platformIntegration->hasCapability(QPlatformIntegration::NativeWidgets))
+            return;
+    }
+
     setAttribute_internal(attribute, on, data, d);
 
     switch (attribute) {
