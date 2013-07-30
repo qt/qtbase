@@ -373,7 +373,7 @@ public:
     bool isNull() const;
 
     inline QByteArray(QByteArrayDataPtr dd)
-        : d(reinterpret_cast<Data *>(dd.ptr))
+        : d(static_cast<Data *>(dd.ptr))
     {
     }
 
