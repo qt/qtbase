@@ -317,7 +317,12 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed sub
                 uchar g = src[x] >> 8;
                 uchar b = src[x];
                 quint32 avg = (quint32(r) + quint32(g) + quint32(b) + 1) / 3; // "+1" for rounding.
+#if defined(QT_OPENGL_ES_2)
+                // swizzle the bits to accommodate for the GL_RGBA upload.
+                src[x] = (avg << 24) | (quint32(r) << 0) | (quint32(g) << 8) | (quint32(b) << 16);
+#else
                 src[x] = (src[x] & 0x00ffffff) | (avg << 24);
+#endif
             }
         }
     }
@@ -325,8 +330,7 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed sub
     glBindTexture(GL_TEXTURE_2D, m_textureResource->m_texture);
     if (mask.format() == QImage::Format_RGB32) {
 #if defined(QT_OPENGL_ES_2)
-        // ###TODO Ensure extension is actually present on ES2
-        glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_BGRA_EXT, GL_UNSIGNED_BYTE, mask.bits());
+        glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_RGBA, GL_UNSIGNED_BYTE, mask.bits());
 #else
         glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_BGRA, GL_UNSIGNED_BYTE, mask.bits());
 #endif
