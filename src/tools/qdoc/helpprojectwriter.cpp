@@ -436,6 +436,9 @@ void HelpProjectWriter::generateSections(HelpProject &project,
         // Ensure that we don't visit nodes more than once.
         QMap<QString, const Node*> childMap;
         foreach (const Node *childNode, inner->childNodes()) {
+            if (childNode->isIndexNode())
+                continue;
+
             if (childNode->access() == Node::Private)
                 continue;
 
@@ -462,6 +465,10 @@ void HelpProjectWriter::generateSections(HelpProject &project,
             else {
                 // Store member status of children
                 project.memberStatus[node].insert(childNode->status());
+                if (childNode->relates()) {
+                    project.memberStatus[childNode->relates()].insert(childNode->status());
+                    project.files.insert(gen_->fullDocumentLocation(childNode->relates(),true));
+                }
 
                 if (childNode->type() == Node::Function) {
                     const FunctionNode *funcNode = static_cast<const FunctionNode *>(childNode);
