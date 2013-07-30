@@ -149,6 +149,9 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
         [mFontPanel setRestorable:NO];
 #endif
 
+    [mFontPanel setDelegate:self];
+    [[NSFontManager sharedFontManager] setDelegate:self];
+
     [mFontPanel retain];
     return self;
 }
@@ -157,6 +160,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
 {
     [self restoreOriginalContentView];
     [mFontPanel setDelegate:nil];
+    [[NSFontManager sharedFontManager] setDelegate:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 
     [super dealloc];
@@ -319,7 +323,6 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
 - (BOOL)runApplicationModalPanel
 {
     mDialogIsExecuting = true;
-    [mFontPanel setDelegate:self];
     // Call processEvents in case the event dispatcher has been interrupted, and needs to do
     // cleanup of modal sessions. Do this before showing the native dialog, otherwise it will
     // close down during the cleanup.
