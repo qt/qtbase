@@ -226,7 +226,9 @@ bool QQnxBpsEventFilter::handleNavigatorEvent(bps_event_t *event)
 #endif
             break;
         case NAVIGATOR_WINDOW_INVISIBLE:
+#if defined(Q_OS_BLACKBERRY_TABLET)
             m_navigatorEventHandler->handleWindowGroupDeactivated(id);
+#endif
             break;
         }
 
