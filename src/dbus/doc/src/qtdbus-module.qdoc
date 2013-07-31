@@ -32,6 +32,7 @@
     to perform Inter-Process Communication using the \l{D-Bus} protocol.
 
     \ingroup modules
+    \qtvariable dbus
 
     \target The QDBus compiler
 

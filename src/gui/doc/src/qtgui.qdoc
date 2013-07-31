@@ -29,6 +29,7 @@
     \module QtGui
     \title Qt GUI C++ Classes
     \ingroup modules
+    \qtvariable gui
 
     \brief The Qt GUI module provides the basic enablers for graphical
     applications written with Qt.

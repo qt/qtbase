@@ -29,6 +29,7 @@
     \module QtCore
     \title Qt Core C++ Classes
     \ingroup modules
+    \qtvariable core
 
     \brief Provides core non-GUI functionality.
 

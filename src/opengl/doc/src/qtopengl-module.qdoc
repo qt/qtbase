@@ -29,6 +29,7 @@
     \module QtOpenGL
     \title Qt OpenGL C++ Classes
     \ingroup modules
+    \qtvariable opengl
 
     \brief The Qt OpenGL module offers classes that make it easy to
     use OpenGL in Qt applications.

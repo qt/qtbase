@@ -29,6 +29,7 @@
     \module QtTest
     \title Qt Test C++ Classes
     \ingroup modules
+    \qtvariable testlib
 
     \keyword QtTest
 

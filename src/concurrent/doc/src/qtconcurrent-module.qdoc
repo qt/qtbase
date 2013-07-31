@@ -31,6 +31,7 @@
     \brief The Qt Concurrent module contains functionality to support concurrent execution of program code
 
     \ingroup modules
+    \qtvariable concurrent
 
     The Qt Concurrent module extends the basic threading support found in \l{Qt Core} module and
     simplifies the development of code that can be executed in parallel on all available CPU cores.

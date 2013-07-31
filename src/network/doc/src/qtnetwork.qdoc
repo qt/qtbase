@@ -65,6 +65,7 @@
     \module QtNetwork
     \title Qt Network C++ Classes
     \ingroup modules
+    \qtvariable network
     \brief Provides classes to make network programming easier and portable
 
     To include the definitions of the module's classes, use the
