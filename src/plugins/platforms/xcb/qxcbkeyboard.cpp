@@ -716,14 +716,14 @@ void QXcbKeyboard::updateXKBState(xcb_xkb_state_notify_event_t *state)
 
     if (connection()->hasXKB()) {
 
-        xkb_state_component newState;
-        newState = xkb_state_update_mask(xkb_state,
-                              state->baseMods,
-                              state->latchedMods,
-                              state->lockedMods,
-                              state->baseGroup,
-                              state->latchedGroup,
-                              state->lockedGroup);
+        const xkb_state_component newState
+                = xkb_state_update_mask(xkb_state,
+                                  state->baseMods,
+                                  state->latchedMods,
+                                  state->lockedMods,
+                                  state->baseGroup,
+                                  state->latchedGroup,
+                                  state->lockedGroup);
 
         if ((newState & XKB_STATE_LAYOUT_EFFECTIVE) == XKB_STATE_LAYOUT_EFFECTIVE) {
             //qWarning("TODO: Support KeyboardLayoutChange on QPA (QTBUG-27681)");
@@ -737,17 +737,22 @@ void QXcbKeyboard::updateXKBStateFromCore(quint16 state)
     if (!m_config)
         return;
 
-    quint32 modsDepressed, modsLatched, modsLocked;
-    modsDepressed = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_DEPRESSED);
-    modsLatched = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LATCHED);
-    modsLocked = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LOCKED);
+    const quint32 modsDepressed = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_DEPRESSED);
+    const quint32 modsLatched = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LATCHED);
+    const quint32 modsLocked = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LOCKED);
+    const quint32 xkbMask = xkbModMask(state);
 
-    quint32 xkbMask = xkbModMask(state);
-    xkb_state_component newState;
-    newState = xkb_state_update_mask(xkb_state,
-                          modsDepressed & xkbMask,
-                          modsLatched & xkbMask,
-                          modsLocked & xkbMask,
+    const quint32 latched = modsLatched & xkbMask;
+    const quint32 locked = modsLocked & xkbMask;
+    quint32 depressed = modsDepressed & xkbMask;
+    // set modifiers in depressed if they don't appear in any of the final masks
+    depressed |= ~(depressed | latched | locked) & xkbMask;
+
+    const xkb_state_component newState
+            = xkb_state_update_mask(xkb_state,
+                          depressed,
+                          latched,
+                          locked,
                           0,
                           0,
                           (state >> 13) & 3); // bits 13 and 14 report the state keyboard group
