@@ -455,7 +455,7 @@ public:
     virtual bool isClass() const { return true; }
     virtual bool isWrapper() const { return wrapper_; }
     virtual QString obsoleteLink() const { return obsoleteLink_; }
-    virtual void setObsoleteLink(const QString& t) { obsoleteLink_ = t; };
+    virtual void setObsoleteLink(const QString& t) { obsoleteLink_ = t; }
     virtual void setWrapper() { wrapper_ = true; }
 
     void addBaseClass(Access access,
@@ -497,9 +497,11 @@ public:
              PageType ptype);
     virtual ~DocNode() { }
 
+    void setQtVariable(const QString &variable) { qtVariable_ = variable; }
     void setTitle(const QString &title) { title_ = title; }
     void setSubTitle(const QString &subTitle) { subtitle_ = subTitle; }
 
+    QString qtVariable() const { return qtVariable_; }
     SubType subType() const { return nodeSubtype_; }
     virtual QString title() const;
     virtual QString fullTitle() const;
@@ -513,6 +515,9 @@ protected:
     SubType nodeSubtype_;
     QString title_;
     QString subtitle_;
+
+private:
+    QString qtVariable_;
 };
 
 class NameCollisionNode : public DocNode

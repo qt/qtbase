@@ -65,6 +65,7 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_PAGEKEYWORDS            Doc::alias(QLatin1String("pagekeywords"))
 #define COMMAND_PRELIMINARY             Doc::alias(QLatin1String("preliminary"))
 #define COMMAND_INPUBLICGROUP           Doc::alias(QLatin1String("inpublicgroup"))
+#define COMMAND_QTVARIABLE              Doc::alias(QLatin1String("qtvariable"))
 #define COMMAND_REENTRANT               Doc::alias(QLatin1String("reentrant"))
 #define COMMAND_SINCE                   Doc::alias(QLatin1String("since"))
 #define COMMAND_SUBTITLE                Doc::alias(QLatin1String("subtitle"))
@@ -218,6 +219,7 @@ const QSet<QString>& CodeParser::commonMetaCommands()
                             << COMMAND_PAGEKEYWORDS
                             << COMMAND_PRELIMINARY
                             << COMMAND_INPUBLICGROUP
+                            << COMMAND_QTVARIABLE
                             << COMMAND_REENTRANT
                             << COMMAND_SINCE
                             << COMMAND_SUBTITLE
@@ -320,6 +322,15 @@ void CodeParser::processCommonMetaCommand(const Location& location,
         }
         else
             location.warning(tr("Ignored '\\%1'").arg(COMMAND_TITLE));
+    }
+    else if (command == COMMAND_QTVARIABLE) {
+        if (node->subType() == Node::Module) {
+            DocNode *dn = static_cast<DocNode *>(node);
+            dn->setQtVariable(arg.first);
+        }
+        else
+            location.warning(tr("Command '\\%1' found outside of '\\module'. It can only be used within a module page.")
+                             .arg(COMMAND_QTVARIABLE));
     }
 }
 

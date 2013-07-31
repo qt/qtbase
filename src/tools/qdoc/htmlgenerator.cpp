@@ -1835,11 +1835,12 @@ void HtmlGenerator::generateRequisites(InnerNode *inner, CodeMarker *marker)
     QMap<QString, Text> requisites;
     Text text;
 
-    const QString headerText = "Header:";
-    const QString sinceText = "Since:";
-    const QString inheritedBytext = "Inherited By:";
-    const QString inheritsText = "Inherits:";
-    const QString instantiatedByText = "Instantiated By:";
+    const QString headerText = "Header";
+    const QString sinceText = "Since";
+    const QString inheritedBytext = "Inherited By";
+    const QString inheritsText = "Inherits";
+    const QString instantiatedByText = "Instantiated By";
+    const QString qtVariableText = "qmake";
 
     //add the includes to the map
     if (!inner->includes().isEmpty()) {
@@ -1856,6 +1857,7 @@ void HtmlGenerator::generateRequisites(InnerNode *inner, CodeMarker *marker)
     //The order of the requisites matter
     QStringList requisiteorder;
     requisiteorder << headerText
+                   << qtVariableText
                    << sinceText
                    << instantiatedByText
                    << inheritsText
@@ -1932,6 +1934,16 @@ void HtmlGenerator::generateRequisites(InnerNode *inner, CodeMarker *marker)
             requisites.insert(inheritedBytext, text);
         }
 
+        //add the QT variable to the map
+        DocNode * moduleNode = qdb_->findModule(classe->moduleName());
+        if (moduleNode || !moduleNode->qtVariable().isEmpty()) {
+            text.clear();
+            text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_TELETYPE)
+                 << "QT += " + moduleNode->qtVariable()
+                 << Atom(Atom::FormattingRight, ATOM_FORMATTING_TELETYPE);
+            requisites.insert(qtVariableText, text);
+        }
+
     }
 
     if (!requisites.isEmpty()) {
@@ -1944,7 +1956,7 @@ void HtmlGenerator::generateRequisites(InnerNode *inner, CodeMarker *marker)
             if (requisites.contains(*i)) {
                 out() << "<tr>"
                     << "<td class=\"memItemLeft rightAlign topAlign\"> "
-                    << *i
+                    << *i << ":"
                     << "</td><td class=\"memItemRight bottomAlign\"> ";
 
                 if (*i == headerText)

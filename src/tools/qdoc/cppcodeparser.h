@@ -241,6 +241,7 @@ protected:
 #define COMMAND_LICENSENAME             Doc::alias("licensename")
 #define COMMAND_LICENSEDESCRIPTION      Doc::alias("licensedescription")
 #define COMMAND_RELEASEDATE             Doc::alias("releasedate")
+#define COMMAND_QTVARIABLE              Doc::alias("qtvariable")
 
 QT_END_NAMESPACE
 
