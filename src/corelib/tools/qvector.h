@@ -234,6 +234,7 @@ private:
     friend class QRegion; // Optimization for QRegion::rects()
 
     void reallocData(const int size, const int alloc, QArrayData::AllocationOptions options = QArrayData::Default);
+    void reallocData(const int sz) { reallocData(sz, d->alloc); }
     void freeData(Data *d);
     void defaultConstruct(T *from, T *to);
     void copyConstruct(const T *srcFrom, const T *srcTo, T *dstFrom);
@@ -563,18 +564,17 @@ void QVector<T>::append(const T &t)
 }
 
 template <typename T>
-inline void QVector<T>::removeLast()
+void QVector<T>::removeLast()
 {
     Q_ASSERT(!isEmpty());
+    Q_ASSERT(d->alloc);
 
-    if (d->alloc) {
-        if (d->ref.isShared()) {
-            reallocData(d->size - 1, int(d->alloc));
-            return;
-        }
-        if (QTypeInfo<T>::isComplex)
-            (d->data() + d->size - 1)->~T();
+    if (!d->ref.isShared()) {
         --d->size;
+        if (QTypeInfo<T>::isComplex)
+            (d->data() + d->size)->~T();
+    } else {
+        reallocData(d->size - 1);
     }
 }
 
