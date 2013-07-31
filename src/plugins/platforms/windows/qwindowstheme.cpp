@@ -226,7 +226,6 @@ static inline QPalette menuPalette(const QPalette &systemPalette)
     const QColor menuColor(getSysColor(COLOR_MENU));
     const QColor menuTextColor(getSysColor(COLOR_MENUTEXT));
     const QColor disabled(getSysColor(COLOR_GRAYTEXT));
-    const bool isFlat = booleanSystemParametersInfo(SPI_GETFLATMENU, false);
     // we might need a special color group for the result.
     result.setColor(QPalette::Active, QPalette::Button, menuColor);
     result.setColor(QPalette::Active, QPalette::Text, menuTextColor);
@@ -235,6 +234,7 @@ static inline QPalette menuPalette(const QPalette &systemPalette)
     result.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
     result.setColor(QPalette::Disabled, QPalette::Text, disabled);
 #ifndef Q_OS_WINCE
+    const bool isFlat = booleanSystemParametersInfo(SPI_GETFLATMENU, false);
     result.setColor(QPalette::Disabled, QPalette::Highlight,
                     getSysColor(isFlat ? COLOR_MENUHILIGHT : COLOR_HIGHLIGHT));
 #else
