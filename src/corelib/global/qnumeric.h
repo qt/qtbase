@@ -57,6 +57,9 @@ Q_CORE_EXPORT double qSNaN();
 Q_CORE_EXPORT double qQNaN();
 Q_CORE_EXPORT double qInf();
 
+Q_CORE_EXPORT quint32 qFloatDistance(float a, float b);
+Q_CORE_EXPORT quint64 qFloatDistance(double a, double b);
+
 #define Q_INFINITY (QT_PREPEND_NAMESPACE(qInf)())
 #define Q_SNAN (QT_PREPEND_NAMESPACE(qSNaN)())
 #define Q_QNAN (QT_PREPEND_NAMESPACE(qQNaN)())
