@@ -423,11 +423,13 @@ NSInteger QCocoaWindow::windowLevel(Qt::WindowFlags flags)
     if (type == Qt::ToolTip)
         windowLevel = NSScreenSaverWindowLevel;
 
-    // A window should be in at least the same level as its parent.
-    const QWindow * const transientParent = window()->transientParent();
-    const QCocoaWindow * const transientParentWindow = transientParent ? static_cast<QCocoaWindow *>(transientParent->handle()) : 0;
-    if (transientParentWindow)
-        windowLevel = qMax([transientParentWindow->m_nsWindow level], windowLevel);
+    // Any "special" window should be in at least the same level as its parent.
+    if (type != Qt::Window) {
+        const QWindow * const transientParent = window()->transientParent();
+        const QCocoaWindow * const transientParentWindow = transientParent ? static_cast<QCocoaWindow *>(transientParent->handle()) : 0;
+        if (transientParentWindow)
+            windowLevel = qMax([transientParentWindow->m_nsWindow level], windowLevel);
+    }
 
     return windowLevel;
 }
