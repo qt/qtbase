@@ -95,6 +95,9 @@ QT_BEGIN_NAMESPACE
        this handler for pointers that were allocated with \c{new []}.
     \li QScopedPointerPodDeleter - deletes the pointer using \c{free()}. Use this
        handler for pointers that were allocated with \c{malloc()}.
+    \li QScopedPointerDeleteLater - deletes a pointer by calling \c{deleteLater()}
+       on it. Use this handler for pointers to QObject's that are actively
+       participating in a QEventLoop.
     \endlist
 
     You can pass your own classes as handlers, provided that they have a public
