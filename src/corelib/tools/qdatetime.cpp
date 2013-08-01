@@ -2716,7 +2716,10 @@ QString QDateTime::toString(const QString& format) const
 
 QDateTime QDateTime::addDays(qint64 ndays) const
 {
-    return QDateTime(d->date.addDays(ndays), d->time, timeSpec());
+    QDateTime dt(*this);
+    dt.detach();
+    dt.d->date = d->date.addDays(ndays);
+    return dt;
 }
 
 /*!
@@ -2729,7 +2732,10 @@ QDateTime QDateTime::addDays(qint64 ndays) const
 
 QDateTime QDateTime::addMonths(int nmonths) const
 {
-    return QDateTime(d->date.addMonths(nmonths), d->time, timeSpec());
+    QDateTime dt(*this);
+    dt.detach();
+    dt.d->date = d->date.addMonths(nmonths);
+    return dt;
 }
 
 /*!
@@ -2742,7 +2748,10 @@ QDateTime QDateTime::addMonths(int nmonths) const
 
 QDateTime QDateTime::addYears(int nyears) const
 {
-    return QDateTime(d->date.addYears(nyears), d->time, timeSpec());
+    QDateTime dt(*this);
+    dt.detach();
+    dt.d->date = d->date.addYears(nyears);
+    return dt;
 }
 
 QDateTime QDateTimePrivate::addMSecs(const QDateTime &dt, qint64 msecs)
