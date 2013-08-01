@@ -1430,8 +1430,9 @@ void tst_QDateTime::operator_insert_extract()
     QFETCH(QString, deserialiseAs);
     QFETCH(QDataStream::Version, dataStreamVersion);
 
-    // Save the previous timezone so we can restore it afterwards, just in case.
-    QString previousTimeZone = qgetenv("TZ");
+    // Save the previous timezone so we can restore it afterwards, otherwise later tests will break
+    QByteArray previousTimeZone = qgetenv("TZ");
+
     // Start off in a certain timezone.
     qputenv("TZ", serialiseAs.toLocal8Bit().constData());
     tzset();
@@ -1512,7 +1513,10 @@ void tst_QDateTime::operator_insert_extract()
         }
     }
 
-    qputenv("TZ", previousTimeZone.toLocal8Bit().constData());
+    if (previousTimeZone.isNull())
+        qunsetenv("TZ");
+    else
+        qputenv("TZ", previousTimeZone.constData());
     tzset();
 }
 #endif
