@@ -106,6 +106,14 @@ bool QEGLPlatformContext::makeCurrent(QPlatformSurface *surface)
 
     EGLSurface eglSurface = eglSurfaceForPlatformSurface(surface);
 
+    // shortcut: on some GPUs, eglMakeCurrent is not a cheap operation
+    if (eglGetCurrentContext() == m_eglContext &&
+        eglGetCurrentDisplay() == m_eglDisplay &&
+        eglGetCurrentSurface(EGL_READ) == eglSurface &&
+        eglGetCurrentSurface(EGL_DRAW) == eglSurface) {
+        return true;
+    }
+
     bool ok = eglMakeCurrent(m_eglDisplay, eglSurface, eglSurface, m_eglContext);
     if (!ok)
         qWarning("QEGLPlatformContext::makeCurrent: eglError: %x, this: %p \n", eglGetError(), this);
