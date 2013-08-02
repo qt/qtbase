@@ -80,7 +80,7 @@ QT_BEGIN_NAMESPACE
 
 #if defined(Q_OS_MACX)
 #define kSecTrustSettingsDomainSystem 2 // so we do not need to include the header file
-    PtrSecCertificateGetData QSslSocketPrivate::ptrSecCertificateGetData = 0;
+    PtrSecCertificateCopyData QSslSocketPrivate::ptrSecCertificateCopyData = 0;
     PtrSecTrustSettingsCopyCertificates QSslSocketPrivate::ptrSecTrustSettingsCopyCertificates = 0;
     PtrSecTrustCopyAnchorCertificates QSslSocketPrivate::ptrSecTrustCopyAnchorCertificates = 0;
 #elif defined(Q_OS_WIN)
@@ -492,8 +492,8 @@ void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
 #if defined(Q_OS_MACX)
     QLibrary securityLib("/System/Library/Frameworks/Security.framework/Versions/Current/Security");
     if (securityLib.load()) {
-        ptrSecCertificateGetData = (PtrSecCertificateGetData) securityLib.resolve("SecCertificateGetData");
-        if (!ptrSecCertificateGetData)
+        ptrSecCertificateCopyData = (PtrSecCertificateCopyData) securityLib.resolve("SecCertificateCopyData");
+        if (!ptrSecCertificateCopyData)
             qWarning("could not resolve symbols in security library"); // should never happen
 
         ptrSecTrustSettingsCopyCertificates = (PtrSecTrustSettingsCopyCertificates) securityLib.resolve("SecTrustSettingsCopyCertificates");
@@ -627,12 +627,11 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
     CFArrayRef cfCerts;
     OSStatus status = 1;
 
-    OSStatus SecCertificateGetData (
-       SecCertificateRef certificate,
-       CSSM_DATA_PTR data
+    CFDataRef SecCertificateCopyData (
+       SecCertificateRef certificate
     );
 
-    if (ptrSecCertificateGetData) {
+    if (ptrSecCertificateCopyData) {
         if (ptrSecTrustSettingsCopyCertificates)
             status = ptrSecTrustSettingsCopyCertificates(kSecTrustSettingsDomainSystem, &cfCerts);
         else if (ptrSecTrustCopyAnchorCertificates)
@@ -641,15 +640,16 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
             CFIndex size = CFArrayGetCount(cfCerts);
             for (CFIndex i = 0; i < size; ++i) {
                 SecCertificateRef cfCert = (SecCertificateRef)CFArrayGetValueAtIndex(cfCerts, i);
-                CSSM_DATA data;
-                CSSM_DATA_PTR dataPtr = &data;
-                if (ptrSecCertificateGetData(cfCert, dataPtr)) {
+                CFDataRef data;
+
+                data = ptrSecCertificateCopyData(cfCert);
+
+                if (data == NULL) {
                     qWarning("error retrieving a CA certificate from the system store");
                 } else {
-                    int len = data.Length;
-                    char *rawData = reinterpret_cast<char *>(data.Data);
-                    QByteArray rawCert(rawData, len);
+                    QByteArray rawCert = QByteArray::fromRawData((const char *)CFDataGetBytePtr(data), CFDataGetLength(data));
                     systemCerts.append(QSslCertificate::fromData(rawCert, QSsl::Der));
+                    CFRelease(data);
                 }
             }
             CFRelease(cfCerts);
