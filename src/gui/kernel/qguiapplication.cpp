@@ -1778,7 +1778,7 @@ void QGuiApplicationPrivate::processCloseEvent(QWindowSystemInterfacePrivate::Cl
     QCloseEvent event;
     QGuiApplication::sendSpontaneousEvent(e->window.data(), &event);
     if (e->accepted) {
-        *(e->accepted) = !event.isAccepted();
+        *(e->accepted) = event.isAccepted();
     }
 }
 
