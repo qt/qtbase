@@ -511,6 +511,15 @@ void QScrollArea::ensureWidgetVisible(QWidget *childWidget, int xmargin, int yma
     \brief the alignment of the scroll area's widget
     \since 4.2
 
+    A valid alignment is a combination of the following flags:
+    \list
+    \li \c Qt::AlignLeft
+    \li \c Qt::AlignHCenter
+    \li \c Qt::AlignRight
+    \li \c Qt::AlignTop
+    \li \c Qt::AlignVCenter
+    \li \c Qt::AlignBottom
+    \endlist
     By default, the widget stays rooted to the top-left corner of the
     scroll area.
 */
