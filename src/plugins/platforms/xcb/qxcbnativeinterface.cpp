@@ -85,6 +85,7 @@ public:
         insert("hintstyle", QXcbNativeInterface::ScreenHintStyle);
         insert("startupid", QXcbNativeInterface::StartupId);
         insert(QByteArrayLiteral("traywindow"), QXcbNativeInterface::TrayWindow);
+        insert(QByteArrayLiteral("gettimestamp"), QXcbNativeInterface::GetTimestamp);
     }
 };
 
@@ -200,6 +201,9 @@ void *QXcbNativeInterface::nativeResourceForScreen(const QByteArray &resource, Q
         if (QXcbSystemTrayTracker *s = systemTrayTracker(screen))
             result = (void *)quintptr(s->trayWindow());
         break;
+    case GetTimestamp:
+        result = getTimestamp(xcbScreen);
+        break;
     default:
         break;
     }
@@ -252,6 +256,11 @@ void *QXcbNativeInterface::appTime(const QXcbScreen *screen)
 void *QXcbNativeInterface::appUserTime(const QXcbScreen *screen)
 {
     return reinterpret_cast<void *>(quintptr(screen->connection()->netWmUserTime()));
+}
+
+void *QXcbNativeInterface::getTimestamp(const QXcbScreen *screen)
+{
+    return reinterpret_cast<void *>(quintptr(screen->connection()->getTimestamp()));
 }
 
 void *QXcbNativeInterface::startupId()
