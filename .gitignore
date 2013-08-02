@@ -61,6 +61,8 @@ Makefile*
 *.pro.user*
 *.qmlproject.user*
 *.gcov
+*.gcda
+*.gcno
 bin/Qt*.dll
 bin/assistant*
 bin/designer*

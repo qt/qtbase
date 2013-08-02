@@ -1518,6 +1518,11 @@ while [ "$#" -gt 0 ]; do
             QTCONFIG_CONFIG="$QTCONFIG_CONFIG testcocoon"
         fi
         ;;
+    gcov)
+        if [ "$VAL" = "yes" ]; then
+            QTCONFIG_CONFIG="$QTCONFIG_CONFIG gcov"
+        fi
+        ;;
     platform)
         PLATFORM="$VAL"
         # keep compatibility with old platform names
@@ -3438,6 +3443,7 @@ Configure options:
     -qtlibinfix <infix>  Renames all libQt*.so to libQt*<infix>.so.
 
     -testcocoon ........ Instrument Qt with the TestCocoon code coverage tool.
+    -gcov .............. Instrument Qt with the GCov code coverage tool.
 
     -D <string> ........ Add an explicit define to the preprocessor.
     -I <string> ........ Add an explicit include path.
