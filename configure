@@ -5354,7 +5354,7 @@ if [ "$CFG_XKBCOMMON" != "qt" ]; then
             QMakeVar set QMAKE_CFLAGS_XKBCOMMON "$QMAKE_CFLAGS_XKBCOMMON"
             QMakeVar set QMAKE_LIBS_XKBCOMMON "$QMAKE_LIBS_XKBCOMMON"
             QMakeVar set QMAKE_VERSION_XKBCOMMON "$QMAKE_VERSION_XKBCOMMON"
-            CFG_XKBCOMMON=yes
+            CFG_XKBCOMMON=system
         else
             CFG_XKBCOMMON=no
         fi
