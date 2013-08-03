@@ -14,7 +14,7 @@ Touchpads reporting absolute events will work too, the positions will
 be turned into relative. Touchscreens are however not supported.
 
 On development machines it might be useful to add the input devices
-to a group that your development user i part of. Ie add:
+to a group that your development user is part of. I.e. add:
 KERNEL=="event*", SUBSYSTEM=="input", MODE="0640", GROUP="users"
 
 to a file such as:
