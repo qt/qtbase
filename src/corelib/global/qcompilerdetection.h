@@ -584,7 +584,7 @@
 #    if __has_feature(cxx_alias_templates)
 #      define Q_COMPILER_TEMPLATE_ALIAS
 #    endif
-#    if 0 /* not implemented in clang yet */
+#    if __has_feature(cxx_thread_local)
 #      define Q_COMPILER_THREAD_LOCAL
 #    endif
 #    if __has_feature(cxx_user_literals)
