@@ -2119,6 +2119,7 @@
     \row    \li webkit                     \li \l{Qt WebKit}
     \row    \li webkitwidgets              \li \l{Qt WebKit Widgets}
     \row    \li widgets                    \li \l{Qt Widgets}
+    \row    \li winextras                  \li \l{Qt Windows Extras}
     \row    \li xml                        \li \l{Qt XML} (deprecated)
     \row    \li xmlpatterns                \li \l{Qt XML Patterns}
     \endtable

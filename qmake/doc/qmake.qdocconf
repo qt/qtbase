@@ -24,3 +24,6 @@ sources                 = src/qmake-manual.qdoc
 
 imagedirs               = src/images
 exampledirs             = src
+
+depends += \
+    qtwinextras
