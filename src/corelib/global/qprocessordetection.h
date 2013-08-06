@@ -157,11 +157,33 @@
     X86 is little-endian.
 */
 #elif defined(__i386) || defined(__i386__) || defined(_M_IX86)
-#  define Q_PROCESSOR_X86
 #  define Q_PROCESSOR_X86_32
 #  define Q_BYTE_ORDER Q_LITTLE_ENDIAN
+
+/*
+ * We define Q_PROCESSOR_X86 == 6 for anything above a equivalent or better
+ * than a Pentium Pro (the processor whose architecture was called P6) or an
+ * Athlon.
+ *
+ * All processors since the Pentium III and the Athlon 4 have SSE support, so
+ * we use that to detect. That leaves the original Athlon, Pentium Pro and
+ * Pentium II.
+ */
+
+#  if defined(_M_IX86)
+#    define Q_PROCESSOR_X86     (_M_IX86/100)
+#  elif defined(__i686__) || defined(__athlon__) || defined(__SSE__)
+#    define Q_PROCESSOR_X86     6
+#  elif defined(__i586__) || defined(__k6__)
+#    define Q_PROCESSOR_X86     5
+#  elif defined(__i486__)
+#    define Q_PROCESSOR_X86     4
+#  else
+#    define Q_PROCESSOR_X86     3
+#  endif
+
 #elif defined(__x86_64) || defined(__x86_64__) || defined(__amd64) || defined(_M_X64)
-#  define Q_PROCESSOR_X86
+#  define Q_PROCESSOR_X86       6
 #  define Q_PROCESSOR_X86_64
 #  define Q_BYTE_ORDER Q_LITTLE_ENDIAN
 
