@@ -513,12 +513,20 @@ void tst_QSettings::ctor()
         QSettings settings5(format, QSettings::UserScope, "SoftWare.ORG", "killerApp");
         if (format == QSettings::NativeFormat) {
 #if defined(Q_OS_WIN) || defined(Q_OS_DARWIN)
+# ifdef Q_OS_MACX
+            if (QSysInfo::MacintoshVersion == QSysInfo::MV_10_8)
+                QEXPECT_FAIL("native", "See QTBUG-32655", Continue);
+# endif // Q_OS_MACX
             QCOMPARE(settings5.value("key 1").toString(), QString("gurgle"));
 #else
             QVERIFY(!settings5.contains("key 1"));
 #endif
         } else {
 #if defined(Q_OS_WIN) || defined(Q_OS_DARWIN)
+# ifdef Q_OS_MACX
+            if (QSysInfo::MacintoshVersion == QSysInfo::MV_10_8)
+                QEXPECT_FAIL("", "See QTBUG-32655", Continue);
+# endif // Q_OS_MACX
             QCOMPARE(settings5.value("key 1").toString(), QString("gurgle"));
 #else
             QVERIFY(!settings5.contains("key 1"));
@@ -3162,6 +3170,10 @@ void tst_QSettings::rainersSyncBugOnMac()
 
     {
         QSettings s3(format, QSettings::UserScope, "software.org", "KillerAPP");
+#ifdef Q_OS_MACX
+        if (QSysInfo::MacintoshVersion == QSysInfo::MV_10_8)
+            QEXPECT_FAIL("native", "See QTBUG-32655", Continue);
+#endif
         QCOMPARE(s3.value("key1", 30).toInt(), 25);
     }
 }
