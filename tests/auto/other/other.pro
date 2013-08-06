@@ -4,8 +4,6 @@ SUBDIRS=\
    baselineexample \
    collections \
    compiler \
-   exceptionsafety \
-   # exceptionsafety_objects \    # QObjectPrivate is not safe
    gestures \
    headersclean \
    lancelot \
@@ -70,4 +68,3 @@ wince*|!contains(QT_CONFIG, accessibility): SUBDIRS -= qaccessibility
 !embedded|wince*: SUBDIRS -= \
            qdirectpainter
 
-!linux*-g++*:SUBDIRS -= exceptionsafety_objects
