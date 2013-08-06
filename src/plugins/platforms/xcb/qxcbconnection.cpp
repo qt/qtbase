@@ -658,6 +658,11 @@ void QXcbConnection::log(const char *file, int line, int sequence)
 
 void QXcbConnection::handleXcbError(xcb_generic_error_t *error)
 {
+    long result = 0;
+    QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance();
+    if (dispatcher && dispatcher->filterNativeEvent(m_nativeInterface->genericEventFilterType(), error, &result))
+        return;
+
     uint clamped_error_code = qMin<uint>(error->error_code, (sizeof(xcb_errors) / sizeof(xcb_errors[0])) - 1);
     uint clamped_major_code = qMin<uint>(error->major_code, (sizeof(xcb_protocol_request_codes) / sizeof(xcb_protocol_request_codes[0])) - 1);
 
