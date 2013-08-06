@@ -78,10 +78,11 @@ msvc {
     #   4239: nonstandard extension used : 'token' : conversion from 'type' to 'type'
     #   4244: 'argument' : conversion from 'type1' to 'type2', possible loss of data
     #   4245: 'conversion' : conversion from 'type1' to 'type2', signed/unsigned mismatch
+    #   4275: non - DLL-interface classkey 'identifier' used as base for DLL-interface classkey 'identifier'
     #   4512: 'class' : assignment operator could not be generated
     #   4702: unreachable code
     QMAKE_CFLAGS_WARN_ON    -= -W3
-    QMAKE_CFLAGS_WARN_ON    += -W4 -wd"4100" -wd"4127" -wd"4189" -wd"4239" -wd"4244" -wd"4245" -wd"4512" -wd"4702"
+    QMAKE_CFLAGS_WARN_ON    += -W4 -wd"4100" -wd"4127" -wd"4189" -wd"4239" -wd"4244" -wd"4245" -wd"4275" -wd"4512" -wd"4702"
     # Optimizations
     #   /Oy:   Omits frame pointer (x86 only).
     #   /Gy:   Enables function-level linking.
