@@ -159,7 +159,7 @@ static int maxBasicCpuidSupported()
 #if defined(Q_CC_GNU)
     qintptr tmp1;
 
-# ifdef Q_PROCESSOR_X86_32
+# if Q_PROCESSOR_X86 < 5
     // check if the CPUID instruction is supported
     long cpuid_supported;
     asm ("pushf\n"
