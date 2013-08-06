@@ -2635,11 +2635,13 @@ void QHeaderView::paintSection(QPainter *painter, const QRect &rect, int logical
     // the section position
     int visual = visualIndex(logicalIndex);
     Q_ASSERT(visual != -1);
-    if (count() == 1)
+    bool first = d->isFirstVisibleSection(visual);
+    bool last = d->isLastVisibleSection(visual);
+    if (first && last)
         opt.position = QStyleOptionHeader::OnlyOneSection;
-    else if (visual == 0)
+    else if (first)
         opt.position = QStyleOptionHeader::Beginning;
-    else if (visual == count() - 1)
+    else if (last)
         opt.position = QStyleOptionHeader::End;
     else
         opt.position = QStyleOptionHeader::Middle;
@@ -3060,6 +3062,22 @@ bool QHeaderViewPrivate::isSectionSelected(int section) const
     sectionSelected.setBit(i + 1, s); // selection state
     sectionSelected.setBit(i, true); // cache state
     return s;
+}
+
+bool QHeaderViewPrivate::isFirstVisibleSection(int section) const
+{
+    if (sectionStartposRecalc)
+        recalcSectionStartPos();
+    const SectionItem &item = sectionItems.at(section);
+    return item.size > 0 && item.calculated_startpos == 0;
+}
+
+bool QHeaderViewPrivate::isLastVisibleSection(int section) const
+{
+    if (sectionStartposRecalc)
+        recalcSectionStartPos();
+    const SectionItem &item = sectionItems.at(section);
+    return item.size > 0 && item.calculatedEndPos() == length;
 }
 
 /*!
