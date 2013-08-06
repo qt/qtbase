@@ -106,6 +106,22 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 // AVX 2, Intel Core 4th Generation ("Haswell")
 " avx2"
 #endif
+#ifdef __AVX512F__
+// AVX512 Foundation, Intel Xeon Phi codename "Knights Landing"
+" avx512f"
+#endif
+#ifdef __AVX512CD__
+// AVX512 Conflict Detection, Intel Xeon Phi codename "Knights Landing"
+" avx512cd"
+#endif
+#ifdef __AVX512ER__
+// AVX512 Exponentiation & Reciprocal, Intel Xeon Phi codename "Knights Landing"
+" avx512ef"
+#endif
+#ifdef __AVX512PF__
+// AVX512 Prefetch, Intel Xeon Phi codename "Knights Landing"
+" avx512pf"
+#endif
 #ifdef __BMI__
 // Bit Manipulation Instructions 1, Intel Core 4th Generation ("Haswell"), AMD "Bulldozer 2"
 " bmi"
@@ -168,6 +184,10 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 #ifdef __RDRND__
 // Random number generator, Intel Core 3rd Generation ("Ivy Bridge")
 " rdrnd"
+#endif
+#ifdef __SHA__
+// SHA-1 and SHA-256 instructions, Intel processor TBA
+" sha"
 #endif
 #if defined(__SSE__) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1) || defined(_M_X64)
 // Streaming SIMD Extensions, Intel Pentium III, AMD Athlon
