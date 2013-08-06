@@ -637,6 +637,14 @@ static const struct {
     { Qt::Key_Hangul_PostHanja,QT_TRANSLATE_NOOP("QShortcut", "Hangul PostHanja") },
     { Qt::Key_Hangul_Special,  QT_TRANSLATE_NOOP("QShortcut", "Hangul Special") },
 
+    // --------------------------------------------------------------
+    // Miscellaenous keys
+    { Qt::Key_Cancel,  QT_TRANSLATE_NOOP("QShortcut", "Cancel") },
+    { Qt::Key_Printer,  QT_TRANSLATE_NOOP("QShortcut", "Printer") },
+    { Qt::Key_Execute,  QT_TRANSLATE_NOOP("QShortcut", "Execute") },
+    { Qt::Key_Play,  QT_TRANSLATE_NOOP("QShortcut", "Play") },
+    { Qt::Key_Zoom,  QT_TRANSLATE_NOOP("QShortcut", "Zoom") },
+
     { 0, 0 }
 };
 
