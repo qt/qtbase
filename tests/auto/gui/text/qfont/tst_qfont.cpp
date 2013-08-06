@@ -667,6 +667,15 @@ void tst_QFont::defaultFamily_data()
 
 void tst_QFont::defaultFamily()
 {
+#if defined(Q_OS_MAC)
+    if (QSysInfo::MacintoshVersion == QSysInfo::MV_10_8) {
+        QEXPECT_FAIL("serif", "See QTBUG-32834", Continue);
+        QEXPECT_FAIL("monospace", "See QTBUG-32834", Continue);
+        QEXPECT_FAIL("cursive", "See QTBUG-32834", Continue);
+        QEXPECT_FAIL("fantasy", "See QTBUG-32834", Continue);
+    }
+#endif
+
     QFETCH(QFont::StyleHint, styleHint);
     QFETCH(QStringList, acceptableFamilies);
 
