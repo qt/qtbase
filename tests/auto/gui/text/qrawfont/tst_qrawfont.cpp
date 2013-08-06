@@ -675,6 +675,10 @@ void tst_QRawFont::fromFont()
 
     QFontDatabase fontDatabase;
     int id = fontDatabase.addApplicationFont(fileName);
+#ifdef Q_OS_MACX
+    if (QSysInfo::MacintoshVersion == QSysInfo::MV_10_8)
+        QEXPECT_FAIL("", "See QTBUG-32654", Abort);
+#endif
     QVERIFY(id >= 0);
 
     QFont font(familyName);
