@@ -1302,6 +1302,9 @@ QRect QXcbWindow::windowToWmGeometry(QRect r) const
         r.translate(m_frameMargins.left(), m_frameMargins.top());
     } else if (!frameInclusive && m_gravity == XCB_GRAVITY_NORTH_WEST) {
         r.translate(-m_frameMargins.left(), -m_frameMargins.top());
+    } else if (!frameInclusive && m_gravity == XCB_GRAVITY_CENTER) {
+        r.translate(-(m_frameMargins.left() - m_frameMargins.right())/2,
+                    -(m_frameMargins.top() - m_frameMargins.bottom())/2);
     }
     return r;
 }
