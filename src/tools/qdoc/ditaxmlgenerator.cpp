@@ -3758,7 +3758,7 @@ QString DitaXmlGenerator::linkForNode(const Node* node, const Node* relative)
       back down into the other subdirectory.
      */
     if (node && relative && (node != relative)) {
-        if (node->outputSubdirectory() != relative->outputSubdirectory())
+        if (useOutputSubdirs() && node->outputSubdirectory() != relative->outputSubdirectory())
             link.prepend(QString("../" + node->outputSubdirectory() + QLatin1Char('/')));
     }
     return link;

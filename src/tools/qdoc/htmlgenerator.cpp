@@ -2361,7 +2361,10 @@ QString HtmlGenerator::generateLowStatusMemberFile(InnerNode *inner,
         fileName = fileBase(inner) + "-obsolete." + fileExtension();
     }
     if (status == CodeMarker::Obsolete) {
-        QString link = QString("../" + Generator::outputSubdir() + QLatin1Char('/')) + fileName;
+        QString link;
+        if (useOutputSubdirs() && !Generator::outputSubdir().isEmpty())
+            link = QString("../" + Generator::outputSubdir() + QLatin1Char('/'));
+        link += fileName;
         inner->setObsoleteLink(link);
     }
 
@@ -2703,8 +2706,10 @@ void HtmlGenerator::generateCompactList(ListType listType,
             }
             else if (listType == Obsolete) {
                 QString fileName = fileBase(it.value()) + "-obsolete." + fileExtension();
-                QString link = QString("../" + it.value()->outputSubdirectory() +
-                                       QLatin1Char('/')) + fileName;
+                QString link;
+                if (useOutputSubdirs())
+                    link = QString("../" + it.value()->outputSubdirectory() + QLatin1Char('/'));
+                link += fileName;
                 out() << "<a href=\"" << link << "\">";
             }
 
@@ -3598,7 +3603,7 @@ QString HtmlGenerator::linkForNode(const Node *node, const Node *relative)
       back down into the other subdirectory.
      */
     if (node && relative && (node != relative)) {
-        if (node->outputSubdirectory() != relative->outputSubdirectory())
+        if (useOutputSubdirs() && node->outputSubdirectory() != relative->outputSubdirectory())
             link.prepend(QString("../" + node->outputSubdirectory() + QLatin1Char('/')));
     }
     return link;

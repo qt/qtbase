@@ -274,6 +274,7 @@ public:
 #define HTMLGENERATOR_POSTHEADER        "postheader"
 #define HTMLGENERATOR_POSTPOSTHEADER    "postpostheader"
 #define HTMLGENERATOR_NONAVIGATIONBAR   "nonavigationbar"
+#define HTMLGENERATOR_NOSUBDIRS         "nosubdirs"
 
 
 QT_END_NAMESPACE

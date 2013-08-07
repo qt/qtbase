@@ -763,7 +763,9 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     QString fullName = node->fullDocumentName();
     if (fullName != objName)
         writer.writeAttribute("fullname", fullName);
-    QString href = node->outputSubdirectory();
+    QString href;
+    if (Generator::useOutputSubdirs())
+        href = node->outputSubdirectory();
     if (!href.isEmpty())
         href.append(QLatin1Char('/'));
     href.append(gen_->fullDocumentLocation(node));

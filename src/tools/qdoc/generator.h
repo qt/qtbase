@@ -81,7 +81,7 @@ public:
     virtual void initializeGenerator(const Config &config);
     virtual void terminateGenerator();
 
-    QString fullDocumentLocation(const Node *node, bool subdir = false);
+    QString fullDocumentLocation(const Node *node, bool useSubdir = false);
     const Config* config() { return config_; }
 
     static Generator *currentGenerator() { return currentGenerator_; }
@@ -100,6 +100,8 @@ public:
     static bool runPrepareOnly() { return (qdocPass_ == Prepare); }
     static bool runGenerateOnly() { return (qdocPass_ == Generate); }
     static QString defaultModuleName() { return project; }
+    static void resetUseOutputSubdirs() { useOutputSubdirs_ = false; }
+    static bool useOutputSubdirs() { return useOutputSubdirs_; }
 
 protected:
     virtual void beginSubPage(const InnerNode* node, const QString& fileName);
@@ -219,6 +221,7 @@ private:
     static bool noLinkErrors_;
     static bool redirectDocumentationToDevNull_;
     static Passes qdocPass_;
+    static bool useOutputSubdirs_;
 
     void generateReimplementedFrom(const FunctionNode *func, CodeMarker *marker);
 

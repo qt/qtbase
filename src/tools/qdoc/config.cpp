@@ -279,10 +279,16 @@ int Config::getInt(const QString& var) const
   */
 QString Config::getOutputDir() const
 {
+    QString t;
     if (overrideOutputDir.isNull())
-        return getString(QLatin1String(CONFIG_OUTPUTDIR));
+        t = getString(QLatin1String(CONFIG_OUTPUTDIR));
     else
-        return overrideOutputDir;
+        t = overrideOutputDir;
+    if (!Generator::useOutputSubdirs()) {
+        t = t.left(t.lastIndexOf('/'));
+        t += QLatin1Char('/') + getString("HTML.outputsubdir");
+    }
+    return t;
 }
 
 /*!

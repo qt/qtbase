@@ -99,6 +99,7 @@ bool Generator::debugging_ = false;
 bool Generator::noLinkErrors_ = false;
 bool Generator::redirectDocumentationToDevNull_ = false;
 Generator::Passes Generator::qdocPass_ = Both;
+bool Generator::useOutputSubdirs_ = true;
 
 void Generator::setDebugSegfaultFlag(bool b)
 {
@@ -264,15 +265,17 @@ void Generator::writeOutFileNames()
 void Generator::beginSubPage(const InnerNode* node, const QString& fileName)
 {
     QString path = outputDir() + QLatin1Char('/');
-    if (!node->outputSubdirectory().isEmpty())
+    if (Generator::useOutputSubdirs() && !node->outputSubdirectory().isEmpty())
         path += node->outputSubdirectory() + QLatin1Char('/');
     path += fileName;
-    Generator::debugSegfault("Writing: " + path);
-    outFileNames.insert(fileName,fileName);
 
     QFile* outFile = new QFile(redirectDocumentationToDevNull_ ? QStringLiteral("/dev/null") : path);
+    if (outFile->exists())
+        node->location().error(tr("HTML file already exists; overwriting %1").arg(outFile->fileName()));
     if (!outFile->open(QFile::WriteOnly))
         node->location().fatal(tr("Cannot open output file '%1'").arg(outFile->fileName()));
+    Generator::debugSegfault("Writing: " + path);
+    outFileNames.insert(fileName,fileName);
     QTextStream* out = new QTextStream(outFile);
 
 #ifndef QT_NO_TEXTCODEC
@@ -419,7 +422,7 @@ QMap<QString, QString>& Generator::formattingRightMap()
 /*!
   Returns the full document location.
  */
-QString Generator::fullDocumentLocation(const Node *node, bool subdir)
+QString Generator::fullDocumentLocation(const Node *node, bool useSubdir)
 {
     if (!node)
         return QString();
@@ -431,11 +434,11 @@ QString Generator::fullDocumentLocation(const Node *node, bool subdir)
     QString fdl;
 
     /*
-      If the output is being sent to subdirectories of the
-      output directory, and if the subdir parameter is set,
-      prepend the subdirectory name + '/' to the result.
+      If the useSubdir parameter is set, then the output is
+      being sent to subdirectories of the output directory.
+      Prepend the subdirectory name + '/' to the result.
      */
-    if (subdir) {
+    if (useSubdir) {
         fdl = node->outputSubdirectory();
         if (!fdl.isEmpty())
             fdl.append(QLatin1Char('/'));
@@ -1491,6 +1494,10 @@ QString Generator::indent(int level, const QString& markedCode)
 
 void Generator::initialize(const Config &config)
 {
+
+    if (config.getBool(QString("HTML.nosubdirs")))
+        resetUseOutputSubdirs();
+
     outputFormats = config.getOutputFormats();
     redirectDocumentationToDevNull_ = config.getBool(CONFIG_REDIRECTDOCUMENTATIONTODEVNULL);
     if (!outputFormats.isEmpty()) {
@@ -1505,7 +1512,7 @@ void Generator::initialize(const Config &config)
 
         QDir dirInfo;
         if (dirInfo.exists(outDir_)) {
-            if (!runGenerateOnly()) {
+            if (!runGenerateOnly() && Generator::useOutputSubdirs()) {
                 if (!Config::removeDirContents(outDir_))
                     config.lastLocation().error(tr("Cannot empty output directory '%1'").arg(outDir_));
             }

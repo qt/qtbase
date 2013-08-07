@@ -165,6 +165,13 @@ static void loadIndexFiles(Config& config)
 
     dependModules += config.getStringList(CONFIG_DEPENDS);
 
+    bool noOutputSubdirs = false;
+    QString singleOutputSubdir;
+    if (config.getBool(QString("HTML.nosubdirs"))) {
+        noOutputSubdirs = true;
+        singleOutputSubdir = config.getString("HTML.outputsubdir");
+    }
+
     // Allow modules and third-party application/libraries to link
     // to the Qt docs without having to explicitly pass --indexdir.
     if (!indexDirs.contains(documentationPath))
@@ -199,8 +206,12 @@ static void loadIndexFiles(Config& config)
                 QString indexToAdd;
                 QList<QFileInfo> foundIndices;
                 for (int j = 0; j < indexDirs.size(); j++) {
-                    QString fileToLookFor = indexDirs[j] + QLatin1Char('/') + dependModules[i] +
-                            QLatin1Char('/') + dependModules[i] + QLatin1String(".index");
+                    QString fileToLookFor = indexDirs[j] + QLatin1Char('/');
+                    if (noOutputSubdirs)
+                        fileToLookFor += singleOutputSubdir + QLatin1Char('/');
+                    else
+                        fileToLookFor += dependModules[i] + QLatin1Char('/');
+                    fileToLookFor += dependModules[i] + QLatin1String(".index");
                     if (QFile::exists(fileToLookFor)) {
                         QFileInfo tempFileInfo(fileToLookFor);
                         if (!foundIndices.contains(tempFileInfo))
