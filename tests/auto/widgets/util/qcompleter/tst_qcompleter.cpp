@@ -1305,10 +1305,15 @@ void tst_QCompleter::task246056_setCompletionPrefix()
     comboBox.show();
     QApplication::setActiveWindow(&comboBox);
     QVERIFY(QTest::qWaitForWindowActive(&comboBox));
+    QSignalSpy spy(comboBox.completer(), SIGNAL(activated(QModelIndex)));
     QTest::keyPress(&comboBox, 'a');
     QTest::keyPress(comboBox.completer()->popup(), Qt::Key_Down);
     QTest::keyPress(comboBox.completer()->popup(), Qt::Key_Down);
     QTest::keyPress(comboBox.completer()->popup(), Qt::Key_Enter); // don't crash!
+    QCOMPARE(spy.count(), 1);
+    QList<QVariant> arguments = spy.at(0);
+    QModelIndex index = arguments.at(0).value<QModelIndex>();
+    QVERIFY(!index.isValid());
 }
 
 class task250064_TextEdit : public QTextEdit
