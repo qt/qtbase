@@ -3476,21 +3476,21 @@ void Configure::generateConfigfiles()
 
         tmpStream << endl << "// Compiler sub-arch support" << endl;
         if (dictionary[ "SSE2" ] == "yes")
-            tmpStream << "#define QT_COMPILER_SUPPORTS_SSE2" << endl;
+            tmpStream << "#define QT_COMPILER_SUPPORTS_SSE2 1" << endl;
         if (dictionary[ "SSE3" ] == "yes")
-            tmpStream << "#define QT_COMPILER_SUPPORTS_SSE3" << endl;
+            tmpStream << "#define QT_COMPILER_SUPPORTS_SSE3 1" << endl;
         if (dictionary[ "SSSE3" ] == "yes")
-            tmpStream << "#define QT_COMPILER_SUPPORTS_SSSE3" << endl;
+            tmpStream << "#define QT_COMPILER_SUPPORTS_SSSE3 1" << endl;
         if (dictionary[ "SSE4_1" ] == "yes")
-            tmpStream << "#define QT_COMPILER_SUPPORTS_SSE4_1" << endl;
+            tmpStream << "#define QT_COMPILER_SUPPORTS_SSE4_1 1" << endl;
         if (dictionary[ "SSE4_2" ] == "yes")
-            tmpStream << "#define QT_COMPILER_SUPPORTS_SSE4_2" << endl;
+            tmpStream << "#define QT_COMPILER_SUPPORTS_SSE4_2 1" << endl;
         if (dictionary[ "AVX" ] == "yes")
-            tmpStream << "#define QT_COMPILER_SUPPORTS_AVX" << endl;
+            tmpStream << "#define QT_COMPILER_SUPPORTS_AVX 1" << endl;
         if (dictionary[ "AVX2" ] == "yes")
-            tmpStream << "#define QT_COMPILER_SUPPORTS_AVX2" << endl;
+            tmpStream << "#define QT_COMPILER_SUPPORTS_AVX2 1" << endl;
         if (dictionary[ "IWMMXT" ] == "yes")
-            tmpStream << "#define QT_COMPILER_SUPPORTS_IWMMXT" << endl;
+            tmpStream << "#define QT_COMPILER_SUPPORTS_IWMMXT 1" << endl;
 
         if (dictionary["QREAL"] != "double")
             tmpStream << "#define QT_COORD_TYPE " << dictionary["QREAL"] << endl;

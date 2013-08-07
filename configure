@@ -6035,7 +6035,7 @@ for SUBARCH in SSE2 SSE3 SSSE3 SSE4_1 SSE4_2 AVX AVX2 \
     eval "VAL=\$CFG_$SUBARCH"
     case "$VAL" in
         yes)
-            echo "#define QT_COMPILER_SUPPORTS_$SUBARCH" \
+            echo "#define QT_COMPILER_SUPPORTS_$SUBARCH 1" \
                 >>"$outpath/src/corelib/global/qconfig.h.new"
             ;;
     esac

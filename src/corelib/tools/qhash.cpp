@@ -94,13 +94,14 @@ QT_BEGIN_NAMESPACE
     (for instance, gcc 4.4 does that even at -O0).
 */
 
-#ifdef __SSE4_2__
+#if QT_COMPILER_SUPPORTS_HERE(SSE4_2)
 static inline bool hasFastCrc32()
 {
-    return true;
+    return qCpuHasFeature(SSE4_2);
 }
 
 template <typename Char>
+QT_FUNCTION_TARGET(SSE4_2)
 static uint crc32(const Char *ptr, size_t len, uint h)
 {
     // The CRC32 instructions from Nehalem calculate a 32-bit CRC32 checksum

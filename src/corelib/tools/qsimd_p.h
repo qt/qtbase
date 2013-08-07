@@ -50,6 +50,7 @@
  * They mean the compiler supports the necessary flags and the headers
  * for the x86 and ARM intrinsics:
  *  - GCC: the -mXXX or march=YYY flag is necessary before #include
+ *    up to 4.8; GCC >= 4.9 can include unconditionally
  *  - Intel CC: #include can happen unconditionally
  *  - MSVC: #include can happen unconditionally
  *  - RVCT: ???
@@ -60,25 +61,99 @@
  * up do define __AVX__ if the -arch:AVX option is passed on the command-line.
  *
  * Supported XXX are:
- *   Flag  | Arch |  GCC  | Intel CC |  MSVC  |
- *  NEON   | ARM  | I & C | None     |   ?    |
- *  IWMMXT | ARM  | I & C | None     | I & C  |
- *  SSE2   | x86  | I & C | I & C    | I & C  |
- *  SSE3   | x86  | I & C | I & C    | I only |
- *  SSSE3  | x86  | I & C | I & C    | I only |
- *  SSE4_1 | x86  | I & C | I & C    | I only |
- *  SSE4_2 | x86  | I & C | I & C    | I only |
- *  AVX    | x86  | I & C | I & C    | I & C  |
- *  AVX2   | x86  | I & C | I & C    | I only |
+ *   Flag    | Arch |  GCC  | Intel CC |  MSVC  |
+ *  ARM_NEON | ARM  | I & C | None     |   ?    |
+ *  IWMMXT   | ARM  | I & C | None     | I & C  |
+ *  SSE2     | x86  | I & C | I & C    | I & C  |
+ *  SSE3     | x86  | I & C | I & C    | I only |
+ *  SSSE3    | x86  | I & C | I & C    | I only |
+ *  SSE4_1   | x86  | I & C | I & C    | I only |
+ *  SSE4_2   | x86  | I & C | I & C    | I only |
+ *  AVX      | x86  | I & C | I & C    | I & C  |
+ *  AVX2     | x86  | I & C | I & C    | I only |
  * I = intrinsics; C = code generation
+ *
+ * Code can use the following constructs to determine compiler support & status:
+ * - #ifdef __XXX__      (e.g: #ifdef __AVX__  or #ifdef __ARM_NEON__)
+ *   If this test passes, then the compiler is already generating code for that
+ *   given sub-architecture. The intrinsics for that sub-architecture are
+ *   #included and can be used without restriction or runtime check.
+ *
+ * - #if QT_COMPILER_SUPPORTS(XXX)
+ *   If this test passes, then the compiler is able to generate code for that
+ *   given sub-architecture in another translation unit, given the right set of
+ *   flags. Use of the intrinsics is not guaranteed. This is useful with
+ *   runtime detection (see below).
+ *
+ * - #if QT_COMPILER_SUPPORTS_HERE(XXX)
+ *   If this test passes, then the compiler is able to generate code for that
+ *   given sub-architecture in this translation unit, even if it is not doing
+ *   that now (it might be). Individual functions may be tagged with
+ *   QT_FUNCTION_TARGET(XXX) to cause the compiler to generate code for that
+ *   sub-arch. Only inside such functions is the use of the intrisics
+ *   guaranteed to work. This is useful with runtime detection (see below).
+ *
+ * Runtime detection of a CPU sub-architecture can be done with the
+ * qCpuHasFeature(XXX) function. There are two strategies for generating
+ * optimized code like that:
+ *
+ * 1) place the optimized code in a different translation unit (C or assembly
+ * sources) and pass the correct flags to the compiler to enable support. Those
+ * sources must not include qglobal.h, which means they cannot include this
+ * file either. The dispatcher function would look like this:
+ *
+ *      void foo()
+ *      {
+ *      #if QT_COMPILER_SUPPORTS(XXX)
+ *          if (qCpuHasFeature(XXX)) {
+ *              foo_optimized_xxx();
+ *              return;
+ *          }
+ *      #endif
+ *          foo_plain();
+ *      }
+ *
+ * 2) place the optimized code in a function tagged with QT_FUNCTION_TARGET and
+ * surrounded by #if QT_COMPILER_SUPPORTS_HERE(XXX). That code can freely use
+ * other Qt code. The dispatcher function would look like this:
+ *
+ *      void foo()
+ *      {
+ *      #if QT_COMPILER_SUPPORTS_HERE(XXX)
+ *          if (qCpuHasFeature(XXX)) {
+ *              foo_optimized_xxx();
+ *              return;
+ *          }
+ *      #endif
+ *          foo_plain();
+ *      }
  */
 
 #if defined(__MINGW64_VERSION_MAJOR) || (defined(Q_CC_MSVC) && !defined(Q_OS_WINCE))
 #include <intrin.h>
 #endif
 
+#define QT_COMPILER_SUPPORTS(x)     (QT_COMPILER_SUPPORTS_ ## x - 0)
+
+#if (defined(Q_CC_INTEL) || defined(Q_CC_MSVC) \
+    || (defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && (__GNUC__-0) * 100 + (__GNUC_MINOR__-0) >= 409)) \
+    && !defined(QT_BOOTSTRAPPED)
+#  define QT_COMPILER_SUPPORTS_SIMD_ALWAYS
+#  define QT_COMPILER_SUPPORTS_HERE(x)    QT_COMPILER_SUPPORTS(x)
+#  if defined(Q_CC_GNU) && !defined(Q_CC_INTEL)
+     /* GCC requires attributes for a function */
+#    define QT_FUNCTION_TARGET(x)  __attribute__((__target__(QT_FUNCTION_TARGET_STRING_ ## x)))
+#  else
+#    define QT_FUNCTION_TARGET(x)
+#  endif
+#else
+#  define QT_COMPILER_SUPPORTS_HERE(x)    defined(__ ## x ## __)
+#  define QT_FUNCTION_TARGET(x)
+#endif
+
 // SSE intrinsics
-#if defined(__SSE2__) || (defined(QT_COMPILER_SUPPORTS_SSE2) && defined(Q_CC_MSVC))
+#define QT_FUNCTION_TARGET_STRING_SSE2      "sse2"
+#if defined(__SSE2__) || (defined(QT_COMPILER_SUPPORTS_SSE2) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 #if defined(QT_LINUXBASE) || defined(Q_OS_ANDROID_NO_SDK)
 /// this is an evil hack - the posix_memalign declaration in LSB
 /// is wrong - see http://bugs.linuxbase.org/show_bug.cgi?id=2431
@@ -95,27 +170,33 @@
 #endif
 
 // SSE3 intrinsics
-#if defined(__SSE3__) || (defined(QT_COMPILER_SUPPORTS_SSE3) && defined(Q_CC_MSVC))
+#define QT_FUNCTION_TARGET_STRING_SSE3      "sse3"
+#if defined(__SSE3__) || (defined(QT_COMPILER_SUPPORTS_SSE3) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 #include <pmmintrin.h>
 #endif
 
 // SSSE3 intrinsics
-#if defined(__SSSE3__) || (defined(QT_COMPILER_SUPPORTS_SSSE3) && defined(Q_CC_MSVC))
+#define QT_FUNCTION_TARGET_STRING_SSSE3     "ssse3"
+#if defined(__SSSE3__) || (defined(QT_COMPILER_SUPPORTS_SSSE3) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 #include <tmmintrin.h>
 #endif
 
 // SSE4.1 intrinsics
-#if defined(__SSE4_1__) || (defined(QT_COMPILER_SUPPORTS_SSE4_1) && defined(Q_CC_MSVC))
+#define QT_FUNCTION_TARGET_STRING_SSE4_1    "sse4.1"
+#if defined(__SSE4_1__) || (defined(QT_COMPILER_SUPPORTS_SSE4_1) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 #include <smmintrin.h>
 #endif
 
 // SSE4.2 intrinsics
-#if defined(__SSE4_2__) || (defined(QT_COMPILER_SUPPORTS_SSE4_2) && defined(Q_CC_MSVC))
+#define QT_FUNCTION_TARGET_STRING_SSE4_2    "sse4.2"
+#if defined(__SSE4_2__) || (defined(QT_COMPILER_SUPPORTS_SSE4_2) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 #include <nmmintrin.h>
 #endif
 
 // AVX intrinsics
-#if defined(__AVX__) || (defined(QT_COMPILER_SUPPORTS_AVX) && defined(Q_CC_MSVC))
+#define QT_FUNCTION_TARGET_STRING_AVX       "avx"
+#define QT_FUNCTION_TARGET_STRING_AVX2      "avx2"
+#if defined(__AVX__) || (defined(QT_COMPILER_SUPPORTS_AVX) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 // immintrin.h is the ultimate header, we don't need anything else after this
 #include <immintrin.h>
 
@@ -147,8 +228,10 @@
 #endif
 
 // NEON intrinsics
+// note: as of GCC 4.9, does not support function targets for ARM
 #if defined __ARM_NEON__
 #include <arm_neon.h>
+#define QT_FUNCTION_TARGET_STRING_ARM_NEON      "neon"
 #endif
 
 
@@ -169,12 +252,14 @@
 #endif
 #endif
 
+#undef QT_COMPILER_SUPPORTS_SIMD_ALWAYS
+
 QT_BEGIN_NAMESPACE
 
 
 enum CPUFeatures {
     IWMMXT      = 0x1,
-    NEON        = 0x2,
+    NEON        = 0x2,  ARM_NEON = NEON,
     SSE2        = 0x4,
     SSE3        = 0x8,
     SSSE3       = 0x10,
