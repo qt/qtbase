@@ -272,6 +272,7 @@ QXcbClipboard::QXcbClipboard(QXcbConnection *c)
     , m_owner(XCB_NONE)
     , m_incr_active(false)
     , m_clipboard_closing(false)
+    , m_incr_receive_time(0)
 {
     Q_ASSERT(QClipboard::Clipboard == 0);
     Q_ASSERT(QClipboard::Selection == 1);
@@ -733,7 +734,7 @@ static inline int maxSelectionIncr(xcb_connection_t *c)
     return (l > 65536 ? 65536*4 : l*4) - 100;
 }
 
-bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property, bool deleteProperty, QByteArray *buffer, int *size, xcb_atom_t *type, int *format) const
+bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property, bool deleteProperty, QByteArray *buffer, int *size, xcb_atom_t *type, int *format)
 {
     int    maxsize = maxSelectionIncr(xcb_connection());
     ulong  bytes_left; // bytes_after
@@ -809,7 +810,8 @@ bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property,
     // correct size, not 0-term.
     if (size)
         *size = buffer_offset;
-
+    if (*type == atom(QXcbAtom::INCR))
+        m_incr_receive_time = connection()->getTimestamp();
     if (deleteProperty)
         xcb_delete_property(xcb_connection(), win, property);
 
@@ -913,6 +915,7 @@ QByteArray QXcbClipboard::clipboardReadIncrementalProperty(xcb_window_t win, xcb
     bool alloc_error = false;
     int  length;
     int  offset = 0;
+    xcb_timestamp_t prev_time = m_incr_receive_time;
 
     if (nbytes > 0) {
         // Reserve buffer + zero-terminator (for text data)
@@ -927,10 +930,14 @@ QByteArray QXcbClipboard::clipboardReadIncrementalProperty(xcb_window_t win, xcb
         xcb_generic_event_t *ge = waitForClipboardEvent(win, XCB_PROPERTY_NOTIFY, clipboard_timeout);
         if (!ge)
             break;
-
         xcb_property_notify_event_t *event = (xcb_property_notify_event_t *)ge;
-        if (event->atom != property || event->state != XCB_PROPERTY_NEW_VALUE)
+
+        if (event->atom != property
+                || event->state != XCB_PROPERTY_NEW_VALUE
+                    || event->time < prev_time)
             continue;
+        prev_time = event->time;
+
         if (clipboardReadProperty(win, property, true, &tmp_buf, &length, 0, 0)) {
             if (length == 0) {                // no more data, we're done
                 if (nullterm) {

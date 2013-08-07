@@ -78,7 +78,7 @@ public:
     void handleSelectionClearRequest(xcb_selection_clear_event_t *event);
     void handleXFixesSelectionRequest(xcb_xfixes_selection_notify_event_t *event);
 
-    bool clipboardReadProperty(xcb_window_t win, xcb_atom_t property, bool deleteProperty, QByteArray *buffer, int *size, xcb_atom_t *type, int *format) const;
+    bool clipboardReadProperty(xcb_window_t win, xcb_atom_t property, bool deleteProperty, QByteArray *buffer, int *size, xcb_atom_t *type, int *format);
     QByteArray clipboardReadIncrementalProperty(xcb_window_t win, xcb_atom_t property, int nbytes, bool nullterm);
 
     QByteArray getDataInFormat(xcb_atom_t modeAtom, xcb_atom_t fmtatom);
@@ -113,6 +113,7 @@ private:
 
     bool m_incr_active;
     bool m_clipboard_closing;
+    xcb_timestamp_t m_incr_receive_time;
 };
 
 #endif // QT_NO_CLIPBOARD
