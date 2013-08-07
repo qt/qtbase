@@ -2311,7 +2311,7 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
                     inputs += Option::fixPathToTargetOS(file, false);
                 }
             }
-            deps += inputs; // input files themselves too..
+            deps = inputs + deps; // input files themselves too..
 
             // Replace variables for command w/all input files
             // ### join gives path issues with directories containing spaces!
@@ -2319,7 +2319,7 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
                                                          inputs.join(' '),
                                                          out);
         } else {
-            deps += inFile; // input file itself too..
+            deps.prepend(inFile); // input file itself too..
             cmd = Project->replaceExtraCompilerVariables(tmp_cmd,
                                                          inFile,
                                                          out);
@@ -2356,14 +2356,14 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
 
         deps += CustomBuildTool.AdditionalDependencies;
         // Make sure that all deps are only once
-        QHash<QString, bool> uniqDeps;
+        QStringList uniqDeps;
         for (int c = 0; c < deps.count(); ++c) {
             QString aDep = deps.at(c).trimmed();
             if (!aDep.isEmpty())
-                uniqDeps[aDep] = false;
+                uniqDeps << aDep;
         }
-        CustomBuildTool.AdditionalDependencies = uniqDeps.keys();
-        CustomBuildTool.AdditionalDependencies.sort();
+        uniqDeps.removeDuplicates();
+        CustomBuildTool.AdditionalDependencies = uniqDeps;
     }
 
     // Ensure that none of the output files are also dependencies. Or else, the custom buildstep
