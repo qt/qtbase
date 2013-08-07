@@ -296,23 +296,27 @@ public:
     // header sections
 
     struct SectionItem {
-        int size;
+        uint size : 20;
+        uint reservedForIsHidden : 1;
+        uint resizeMode : 5;  // (holding QHeaderView::ResizeMode)
+        uint currentlyUnusedPadding : 6;
+
         union { // This union is made in order to save space and ensure good vector performance (on remove)
             mutable int calculated_startpos; // <- this is the primary used member.
             mutable int tmpLogIdx;         // When one of these 'tmp'-members has been used we call
             int tmpDataStreamSectionCount; // recalcSectionStartPos() or set sectionStartposRecalc to true
         };                                 // to ensure that calculated_startpos will be calculated afterwards.
-        QHeaderView::ResizeMode resizeMode;
+
         inline SectionItem() : size(0), resizeMode(QHeaderView::Interactive) {}
         inline SectionItem(int length, QHeaderView::ResizeMode mode)
-            : size(length), calculated_startpos(-1), resizeMode(mode) {}
+            : size(length), resizeMode(mode), calculated_startpos(-1) {}
         inline int sectionSize() const { return size; }
         inline int calculatedEndPos() const { return calculated_startpos + size; }
 #ifndef QT_NO_DATASTREAM
         inline void write(QDataStream &out) const
-        { out << size; out << 1; out << (int)resizeMode; }
+        { out << static_cast<int>(size); out << 1; out << (int)resizeMode; }
         inline void read(QDataStream &in)
-        { in >> size; in >> tmpDataStreamSectionCount; int m; in >> m; resizeMode = (QHeaderView::ResizeMode)m; }
+        { int m; in >> m; size = m; in >> tmpDataStreamSectionCount; in >> m; resizeMode = m; }
 #endif
     };
 

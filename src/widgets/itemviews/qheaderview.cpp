@@ -80,6 +80,7 @@ QDataStream &operator>>(QDataStream &in, QHeaderViewPrivate::SectionItem &sectio
 }
 #endif // QT_NO_DATASTREAM
 
+static const int maxSizeSection = 1048575; // since section size is in a bitfield (uint 20). See qheaderview_p.h
 
 /*!
     \class QHeaderView
@@ -884,7 +885,7 @@ void QHeaderView::swapSections(int first, int second)
 void QHeaderView::resizeSection(int logical, int size)
 {
     Q_D(QHeaderView);
-    if (logical < 0 || logical >= count() || size < 0)
+    if (logical < 0 || logical >= count() || size < 0 || size > maxSizeSection)
         return;
 
     if (isSectionHidden(logical)) {
@@ -1567,7 +1568,7 @@ int QHeaderView::defaultSectionSize() const
 void QHeaderView::setDefaultSectionSize(int size)
 {
     Q_D(QHeaderView);
-    if (size < 0)
+    if (size < 0 || size > maxSizeSection)
         return;
     d->setDefaultSectionSize(size);
 }
@@ -1602,7 +1603,7 @@ int QHeaderView::minimumSectionSize() const
 void QHeaderView::setMinimumSectionSize(int size)
 {
     Q_D(QHeaderView);
-    if (size < 0)
+    if (size < 0 || size > maxSizeSection)
         return;
     d->minimumSectionSize = size;
 }
@@ -3549,7 +3550,7 @@ QHeaderView::ResizeMode QHeaderViewPrivate::headerSectionResizeMode(int visual) 
 {
     if (visual < 0 || visual >= sectionItems.count())
         return globalResizeMode;
-    return sectionItems.at(visual).resizeMode;
+    return static_cast<QHeaderView::ResizeMode>(sectionItems.at(visual).resizeMode);
 }
 
 void QHeaderViewPrivate::setGlobalHeaderResizeMode(QHeaderView::ResizeMode mode)
