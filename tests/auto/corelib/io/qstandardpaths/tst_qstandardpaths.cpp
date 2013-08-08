@@ -56,11 +56,14 @@
 #define Q_XDG_PLATFORM
 #endif
 
+const int MaxStandardLocation = QStandardPaths::GenericCacheLocation;
+
 class tst_qstandardpaths : public QObject
 {
     Q_OBJECT
 
 private slots:
+    void dump();
     void testDefaultLocations();
     void testCustomLocations();
     void enableTestMode();
@@ -107,6 +110,39 @@ private:
     QString m_globalAppDir;
     QTemporaryDir m_globalAppTempDir;
 };
+
+static const char * const enumNames[MaxStandardLocation + 1 - int(QStandardPaths::DesktopLocation)] = {
+    "DesktopLocation",
+    "DocumentsLocation",
+    "FontsLocation",
+    "ApplicationsLocation",
+    "MusicLocation",
+    "MoviesLocation",
+    "PicturesLocation",
+    "TempLocation",
+    "HomeLocation",
+    "DataLocation",
+    "CacheLocation",
+    "GenericDataLocation",
+    "RuntimeLocation",
+    "ConfigLocation",
+    "DownloadLocation",
+    "GenericCacheLocation"
+};
+
+void tst_qstandardpaths::dump()
+{
+#ifdef Q_XDG_PLATFORM
+    setDefaultLocations();
+#endif
+    // This is not a test. It merely dumps the output.
+    for (int i = QStandardPaths::DesktopLocation; i <= MaxStandardLocation; ++i) {
+        QStandardPaths::StandardLocation s = QStandardPaths::StandardLocation(i);
+        qDebug() << enumNames[i]
+                 << QStandardPaths::writableLocation(s)
+                 << QStandardPaths::standardLocations(s);
+    }
+}
 
 void tst_qstandardpaths::testDefaultLocations()
 {
