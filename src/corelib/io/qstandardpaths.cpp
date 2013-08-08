@@ -347,6 +347,10 @@ QString QStandardPaths::displayName(StandardLocation type)
 
 /*!
   \fn void QStandardPaths::enableTestMode(bool testMode)
+  \obsolete Use QStandardPaths::setTestModeEnabled
+ */
+/*!
+  \fn void QStandardPaths::setTestModeEnabled(bool testMode)
 
   If \a testMode is true, this enables a special "test mode" in
   QStandardPaths, which changes writable locations
@@ -369,7 +373,14 @@ QString QStandardPaths::displayName(StandardLocation type)
 
 static bool qsp_testMode = false;
 
+#if QT_DEPRECATED_SINCE(5, 2)
 void QStandardPaths::enableTestMode(bool testMode)
+{
+    qsp_testMode = testMode;
+}
+#endif
+
+void QStandardPaths::setTestModeEnabled(bool testMode)
 {
     qsp_testMode = testMode;
 }

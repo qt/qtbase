@@ -166,7 +166,7 @@ void tst_qstandardpaths::testCustomLocations()
 void tst_qstandardpaths::enableTestMode()
 {
     QVERIFY(!QStandardPaths::isTestModeEnabled());
-    QStandardPaths::enableTestMode(true);
+    QStandardPaths::setTestModeEnabled(true);
     QVERIFY(QStandardPaths::isTestModeEnabled());
 
 #ifdef Q_XDG_PLATFORM
@@ -204,7 +204,7 @@ void tst_qstandardpaths::enableTestMode()
     // On Windows, what should "Program Files" become, in test mode?
     //testLocations.insert(QStandardPaths::ApplicationsLocation, QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation));
 
-    QStandardPaths::enableTestMode(false);
+    QStandardPaths::setTestModeEnabled(false);
 
     for (LocationHash::const_iterator it = testLocations.constBegin(); it != testLocations.constEnd(); ++it)
         QVERIFY2(QStandardPaths::writableLocation(it.key()) != it.value(), qPrintable(it.value()));
