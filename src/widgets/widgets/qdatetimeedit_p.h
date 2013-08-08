@@ -61,7 +61,7 @@
 #include "QtWidgets/qlabel.h"
 #include "QtWidgets/qdatetimeedit.h"
 #include "private/qabstractspinbox_p.h"
-#include "private/qdatetime_p.h"
+#include "private/qdatetimeparser_p.h"
 
 #include "qdebug.h"
 

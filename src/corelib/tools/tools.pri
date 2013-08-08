@@ -18,6 +18,7 @@ HEADERS +=  \
         tools/qcryptographichash.h \
         tools/qdatetime.h \
         tools/qdatetime_p.h \
+        tools/qdatetimeparser_p.h \
         tools/qeasingcurve.h \
         tools/qfreelist_p.h \
         tools/qhash.h \
@@ -75,6 +76,7 @@ SOURCES += \
         tools/qcommandlineparser.cpp \
         tools/qcryptographichash.cpp \
         tools/qdatetime.cpp \
+        tools/qdatetimeparser.cpp \
         tools/qeasingcurve.cpp \
         tools/qelapsedtimer.cpp \
         tools/qfreelist.cpp \
