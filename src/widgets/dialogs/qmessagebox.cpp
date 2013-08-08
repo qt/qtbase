@@ -201,6 +201,7 @@ public:
                            detectedEscapeButton(0), informativeLabel(0) { }
 
     void init(const QString &title = QString(), const QString &text = QString());
+    void setupLayout();
     void _q_buttonClicked(QAbstractButton *);
 
     QAbstractButton *findButton(int button0, int button1, int button2, int flags);
@@ -271,7 +272,6 @@ void QMessageBoxPrivate::init(const QString &title, const QString &text)
     label->setContentsMargins(2, 0, 0, 0);
     label->setIndent(9);
 #endif
-    icon = QMessageBox::NoIcon;
     iconLabel = new QLabel;
     iconLabel->setObjectName(QLatin1String("qt_msgboxex_icon_label"));
     iconLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -281,7 +281,24 @@ void QMessageBoxPrivate::init(const QString &title, const QString &text)
     buttonBox->setCenterButtons(q->style()->styleHint(QStyle::SH_MessageBox_CenterButtons, 0, q));
     QObject::connect(buttonBox, SIGNAL(clicked(QAbstractButton*)),
                      q, SLOT(_q_buttonClicked(QAbstractButton*)));
+    setupLayout();
+    if (!title.isEmpty() || !text.isEmpty()) {
+        q->setWindowTitle(title);
+        q->setText(text);
+    }
+    q->setModal(true);
+#ifdef Q_OS_MAC
+    QFont f = q->font();
+    f.setBold(true);
+    label->setFont(f);
+#endif
+    icon = QMessageBox::NoIcon;
+}
 
+void QMessageBoxPrivate::setupLayout()
+{
+    Q_Q(QMessageBox);
+    delete q->layout();
     QGridLayout *grid = new QGridLayout;
 #ifndef Q_OS_MAC
     grid->addWidget(iconLabel, 0, 0, 2, 1, Qt::AlignTop);
@@ -304,17 +321,6 @@ void QMessageBoxPrivate::init(const QString &title, const QString &text)
     grid->setSizeConstraint(QLayout::SetNoConstraint);
     q->setLayout(grid);
 
-    if (!title.isEmpty() || !text.isEmpty()) {
-        q->setWindowTitle(title);
-        q->setText(text);
-    }
-    q->setModal(true);
-
-#ifdef Q_OS_MAC
-    QFont f = q->font();
-    f.setBold(true);
-    label->setFont(f);
-#endif
     retranslateStrings();
 }
 
