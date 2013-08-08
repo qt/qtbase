@@ -1404,19 +1404,24 @@ int QSplitter::closestLegalPosition(int pos, int index)
     \property QSplitter::opaqueResize
     \brief whether resizing is opaque
 
-    Opaque resizing is on by default.
+    The default resize behavior is style dependent (determined by the
+    SH_Splitter_OpaqueResize style hint). However, you can override it
+    by calling setOpaqueResize()
+
+    \sa QStyle::StyleHint
 */
 
 bool QSplitter::opaqueResize() const
 {
     Q_D(const QSplitter);
-    return d->opaque;
+    return d->opaqueResizeSet ? d->opaque : style()->styleHint(QStyle::SH_Splitter_OpaqueResize, 0, this);
 }
 
 
 void QSplitter::setOpaqueResize(bool on)
 {
     Q_D(QSplitter);
+    d->opaqueResizeSet = true;
     d->opaque = on;
 }
 
@@ -1589,7 +1594,7 @@ static const qint32 SplitterMagic = 0xff;
 QByteArray QSplitter::saveState() const
 {
     Q_D(const QSplitter);
-    int version = 0;
+    int version = 1;
     QByteArray data;
     QDataStream stream(&data, QIODevice::WriteOnly);
 
@@ -1605,6 +1610,7 @@ QByteArray QSplitter::saveState() const
     stream << qint32(handleWidth());
     stream << opaqueResize();
     stream << qint32(orientation());
+    stream << d->opaqueResizeSet;
     return data;
 }
 
@@ -1627,7 +1633,7 @@ QByteArray QSplitter::saveState() const
 bool QSplitter::restoreState(const QByteArray &state)
 {
     Q_D(QSplitter);
-    int version = 0;
+    int version = 1;
     QByteArray sd = state;
     QDataStream stream(&sd, QIODevice::ReadOnly);
     QList<int> list;
@@ -1638,7 +1644,7 @@ bool QSplitter::restoreState(const QByteArray &state)
 
     stream >> marker;
     stream >> v;
-    if (marker != SplitterMagic || v != version)
+    if (marker != SplitterMagic || v > version)
         return false;
 
     stream >> list;
@@ -1656,6 +1662,9 @@ bool QSplitter::restoreState(const QByteArray &state)
     stream >> i;
     setOrientation(Qt::Orientation(i));
     d->doResize();
+
+    if (v >= 1)
+        stream >> d->opaqueResizeSet;
 
     return true;
 }

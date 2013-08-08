@@ -701,6 +701,7 @@ public:
         SH_ToolTip_WakeUpDelay,
         SH_ToolTip_FallAsleepDelay,
         SH_Widget_Animate,
+        SH_Splitter_OpaqueResize,
         // Add new style hint values here
 
         SH_CustomBase = 0xf0000000

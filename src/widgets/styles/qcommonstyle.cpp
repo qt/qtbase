@@ -5124,6 +5124,9 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
             ret = true;
         }
         break;
+    case SH_Splitter_OpaqueResize:
+        ret = true;
+        break;
     default:
         ret = 0;
         break;

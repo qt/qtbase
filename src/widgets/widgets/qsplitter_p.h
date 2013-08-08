@@ -83,7 +83,7 @@ class QSplitterPrivate : public QFramePrivate
     Q_DECLARE_PUBLIC(QSplitter)
 public:
     QSplitterPrivate() : rubberBand(0), opaque(true), firstShow(true),
-                         childrenCollapsible(true), compatMode(false), handleWidth(-1), blockChildAdd(false) {}
+                         childrenCollapsible(true), compatMode(false), handleWidth(-1), blockChildAdd(false), opaqueResizeSet(false) {}
 
     QPointer<QRubberBand> rubberBand;
     mutable QList<QSplitterLayoutStruct *> list;
@@ -94,6 +94,7 @@ public:
     bool compatMode : 8;
     int handleWidth;
     bool blockChildAdd;
+    bool opaqueResizeSet;
 
     inline int pick(const QPoint &pos) const
     { return orient == Qt::Horizontal ? pos.x() : pos.y(); }

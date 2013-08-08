@@ -1904,6 +1904,9 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
            a transition between checked and unchecked statuses in a checkbox.
            This enum value has been introduced in Qt 5.2.
 
+    \value SH_Splitter_OpaqueResize Determines if resizing is opaque
+           This enum value has been introduced in Qt 5.2
+
     \sa styleHint()
 */
 

@@ -109,6 +109,8 @@ void tst_QSplitter::getSetCheck()
     QSplitter obj1;
     // bool QSplitter::opaqueResize()
     // void QSplitter::setOpaqueResize(bool)
+    bool styleHint = obj1.style()->styleHint(QStyle::SH_Splitter_OpaqueResize);
+    QCOMPARE(styleHint, obj1.opaqueResize());
     obj1.setOpaqueResize(false);
     QCOMPARE(false, obj1.opaqueResize());
     obj1.setOpaqueResize(true);
