@@ -52,6 +52,7 @@
 //
 
 #include <QtCore/QtGlobal>
+#include "private/qkeysequence_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -65,6 +66,11 @@ public:
     virtual ~QPlatformThemePrivate();
 
     void initializeSystemPalette();
+
+    static const QKeyBinding keyBindings[];
+    static const uint numberOfKeyBindings;
+
+    static unsigned currentKeyPlatforms();
 
     QPalette *systemPalette;
 };

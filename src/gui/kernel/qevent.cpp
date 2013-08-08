@@ -45,7 +45,6 @@
 #include "qpa/qplatformintegration.h"
 #include "qpa/qplatformdrag.h"
 #include "private/qevent_p.h"
-#include "private/qkeysequence_p.h"
 #include "qdebug.h"
 #include "qmimedata.h"
 #include "private/qdnd_p.h"
@@ -1036,50 +1035,9 @@ bool QKeyEvent::matches(QKeySequence::StandardKey matchKey) const
 {
     //The keypad and group switch modifier should not make a difference
     uint searchkey = (modifiers() | key()) & ~(Qt::KeypadModifier | Qt::GroupSwitchModifier);
-    const uint platform = QKeySequencePrivate::currentKeyPlatforms();
 
-    uint N = QKeySequencePrivate::numberOfKeyBindings;
-    int first = 0;
-    int last = N - 1;
-
-    while (first <= last) {
-        int mid = (first + last) / 2;
-        QKeyBinding midVal = QKeySequencePrivate::keyBindings[mid];
-
-        if (searchkey > midVal.shortcut){
-            first = mid + 1;  // Search in top half
-        }
-        else if (searchkey < midVal.shortcut){
-            last = mid - 1; // Search in bottom half
-        }
-        else {
-            //found correct shortcut value, now we must check for platform match
-            if ((midVal.platform & platform) && (midVal.standardKey == matchKey)) {
-                return true;
-            } else { //We may have several equal values for different platforms, so we must search in both directions
-
-                //search forward
-                for ( unsigned int i = mid + 1 ; i < N - 1 ; ++i) {
-                    QKeyBinding current = QKeySequencePrivate::keyBindings[i];
-                    if (current.shortcut != searchkey)
-                        break;
-                    else if (current.platform & platform && current.standardKey == matchKey)
-                        return true;
-                }
-
-                //search back
-                for ( int i = mid - 1 ; i >= 0 ; --i) {
-                    QKeyBinding current = QKeySequencePrivate::keyBindings[i];
-                    if (current.shortcut != searchkey)
-                        break;
-                    else if (current.platform & platform && current.standardKey == matchKey)
-                        return true;
-                }
-                return false; //we could not find it among the matching keySequences
-            }
-        }
-    }
-    return false; //we could not find matching keySequences at all
+    const QList<QKeySequence> bindings = QKeySequence::keyBindings(matchKey);
+    return bindings.contains(QKeySequence(searchkey));
 }
 #endif // QT_NO_SHORTCUT
 

@@ -43,6 +43,7 @@
 #include <QtTest/QtTest>
 #include <qkeysequence.h>
 #include <qpa/qplatformtheme.h>
+#include <qpa/qplatformtheme_p.h>
 #include <private/qkeysequence_p.h>
 #include <private/qguiapplication_p.h>
 #include <QTranslator>
@@ -306,16 +307,16 @@ void tst_QKeySequence::checkMultipleCodes()
 }
 
 /*
-* We must ensure that the keyBindings data is always sorted
+* We must ensure that the keyBindings data are always sorted by standardKey
 * so that we can safely perform binary searches.
 */
 #ifdef QT_BUILD_INTERNAL
 void tst_QKeySequence::ensureSorted()
 {
-    uint N = QKeySequencePrivate::numberOfKeyBindings;
-    uint val = QKeySequencePrivate::keyBindings[0].shortcut;
+    uint N = QPlatformThemePrivate::numberOfKeyBindings;
+    uint val = QPlatformThemePrivate::keyBindings[0].standardKey;
     for ( uint i = 1 ; i < N ; ++i) {
-        uint nextval = QKeySequencePrivate::keyBindings[i].shortcut;
+        uint nextval = QPlatformThemePrivate::keyBindings[i].standardKey;
         if (nextval < val)
             qDebug() << "Data not sorted at index " << i;
         QVERIFY(nextval >= val);

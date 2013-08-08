@@ -49,6 +49,8 @@
 #include <qpalette.h>
 #include <qtextformat.h>
 #include <qiconloader_p.h>
+#include "private/qguiapplication_p.h"
+
 
 QT_BEGIN_NAMESPACE
 
@@ -138,6 +140,178 @@ QT_BEGIN_NAMESPACE
 
     \sa themeHint(), QStyle::pixelMetric()
 */
+
+
+// Table of key bindings. It must be sorted on key sequence:
+// The integer value of VK_KEY | Modifier Keys (e.g., VK_META, and etc.)
+// A priority of 1 indicates that this is the primary key binding when multiple are defined.
+
+enum KeyPlatform {
+    KB_Win = (1 << QPlatformTheme::WindowsKeyboardScheme),
+    KB_Mac = (1 << QPlatformTheme::MacKeyboardScheme),
+    KB_X11 = (1 << QPlatformTheme::X11KeyboardScheme),
+    KB_KDE = (1 << QPlatformTheme::KdeKeyboardScheme),
+    KB_Gnome = (1 << QPlatformTheme::GnomeKeyboardScheme),
+    KB_CDE = (1 << QPlatformTheme::CdeKeyboardScheme),
+    KB_All = 0xffff
+};
+
+const QKeyBinding QPlatformThemePrivate::keyBindings[] = {
+    //   StandardKey                            Priority    Key Sequence                            Platforms
+    {QKeySequence::HelpContents,            1,          Qt::CTRL | Qt::Key_Question,            KB_Mac},
+    {QKeySequence::HelpContents,            0,          Qt::Key_F1,                             KB_Win | KB_X11},
+    {QKeySequence::WhatsThis,               1,          Qt::SHIFT | Qt::Key_F1,                 KB_All},
+    {QKeySequence::Open,                    1,          Qt::CTRL | Qt::Key_O,                   KB_All},
+    {QKeySequence::Close,                   0,          Qt::CTRL | Qt::Key_F4,                  KB_Mac},
+    {QKeySequence::Close,                   1,          Qt::CTRL | Qt::Key_F4,                  KB_Win},
+    {QKeySequence::Close,                   1,          Qt::CTRL | Qt::Key_W,                   KB_Mac},
+    {QKeySequence::Close,                   0,          Qt::CTRL | Qt::Key_W,                   KB_Win | KB_X11},
+    {QKeySequence::Save,                    1,          Qt::CTRL | Qt::Key_S,                   KB_All},
+    {QKeySequence::New,                     1,          Qt::CTRL | Qt::Key_N,                   KB_All},
+    {QKeySequence::Delete,                  0,          Qt::META | Qt::Key_D,                   KB_Mac},
+    {QKeySequence::Delete,                  0,          Qt::CTRL | Qt::Key_D,                   KB_X11}, //emacs (line edit only)
+    {QKeySequence::Delete,                  1,          Qt::Key_Delete,                         KB_All},
+    {QKeySequence::Cut,                     1,          Qt::CTRL | Qt::Key_X,                   KB_All},
+    {QKeySequence::Cut,                     0,          Qt::SHIFT | Qt::Key_Delete,             KB_Win | KB_X11}, //## Check if this should work on mac
+    {QKeySequence::Cut,                     0,          Qt::Key_F20,                            KB_X11}, //Cut on sun keyboards
+    {QKeySequence::Copy,                    0,          Qt::CTRL | Qt::Key_Insert,              KB_X11 | KB_Win},
+    {QKeySequence::Copy,                    1,          Qt::CTRL | Qt::Key_C,                   KB_All},
+    {QKeySequence::Copy,                    0,          Qt::Key_F16,                            KB_X11}, //Copy on sun keyboards
+    {QKeySequence::Paste,                   0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Insert,  KB_X11},
+    {QKeySequence::Paste,                   1,          Qt::CTRL | Qt::Key_V,                   KB_All},
+    {QKeySequence::Paste,                   0,          Qt::SHIFT | Qt::Key_Insert,             KB_Win | KB_X11},
+    {QKeySequence::Paste,                   0,          Qt::Key_F18,                            KB_X11}, //Paste on sun keyboards
+    {QKeySequence::Undo,                    0,          Qt::ALT  | Qt::Key_Backspace,           KB_Win},
+    {QKeySequence::Undo,                    1,          Qt::CTRL | Qt::Key_Z,                   KB_All},
+    {QKeySequence::Undo,                    0,          Qt::Key_F14,                            KB_X11}, //Undo on sun keyboards
+    {QKeySequence::Redo,                    0,          Qt::ALT  | Qt::SHIFT | Qt::Key_Backspace,KB_Win},
+    {QKeySequence::Redo,                    0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Z,       KB_Mac},
+    {QKeySequence::Redo,                    0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Z,       KB_Win | KB_X11},
+    {QKeySequence::Redo,                    1,          Qt::CTRL | Qt::Key_Y,                   KB_Win},
+    {QKeySequence::Back,                    1,          Qt::ALT  | Qt::Key_Left,                KB_Win | KB_X11},
+    {QKeySequence::Back,                    0,          Qt::CTRL | Qt::Key_Left,                KB_Mac},
+    {QKeySequence::Back,                    1,          Qt::CTRL | Qt::Key_BracketLeft,         KB_Mac},
+    {QKeySequence::Back,                    0,          Qt::Key_Backspace,                      KB_Win},
+    {QKeySequence::Forward,                 1,          Qt::ALT  | Qt::Key_Right,               KB_Win | KB_X11},
+    {QKeySequence::Forward,                 0,          Qt::CTRL | Qt::Key_Right,               KB_Mac},
+    {QKeySequence::Forward,                 1,          Qt::CTRL | Qt::Key_BracketRight,        KB_Mac},
+    {QKeySequence::Forward,                 0,          Qt::SHIFT | Qt::Key_Backspace,          KB_Win},
+    {QKeySequence::Refresh,                 1,          Qt::CTRL | Qt::Key_R,                   KB_Gnome | KB_Mac},
+    {QKeySequence::Refresh,                 0,          Qt::Key_F5,                             KB_Win | KB_X11},
+    {QKeySequence::ZoomIn,                  1,          Qt::CTRL | Qt::Key_Plus,                KB_All},
+    {QKeySequence::ZoomOut,                 1,          Qt::CTRL | Qt::Key_Minus,               KB_All},
+    {QKeySequence::Print,                   1,          Qt::CTRL | Qt::Key_P,                   KB_All},
+    {QKeySequence::AddTab,                  1,          Qt::CTRL | Qt::SHIFT | Qt::Key_N,       KB_KDE},
+    {QKeySequence::AddTab,                  0,          Qt::CTRL | Qt::Key_T,                   KB_All},
+    {QKeySequence::NextChild,               0,          Qt::CTRL | Qt::Key_F6,                  KB_Win},
+    {QKeySequence::NextChild,               0,          Qt::CTRL | Qt::Key_Tab,                 KB_Mac}, //different priority from above
+    {QKeySequence::NextChild,               1,          Qt::CTRL | Qt::Key_Tab,                 KB_Win | KB_X11},
+    {QKeySequence::NextChild,               1,          Qt::CTRL | Qt::Key_BraceRight,          KB_Mac},
+    {QKeySequence::NextChild,               0,          Qt::CTRL | Qt::Key_Comma,               KB_KDE},
+    {QKeySequence::NextChild,               0,          Qt::Key_Forward,                        KB_All},
+    {QKeySequence::PreviousChild,           0,          Qt::CTRL | Qt::SHIFT | Qt::Key_F6,      KB_Win},
+    {QKeySequence::PreviousChild,           0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Backtab, KB_Mac },//different priority from above
+    {QKeySequence::PreviousChild,           1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Backtab, KB_Win | KB_X11},
+    {QKeySequence::PreviousChild,           1,          Qt::CTRL | Qt::Key_BraceLeft,           KB_Mac},
+    {QKeySequence::PreviousChild,           0,          Qt::CTRL | Qt::Key_Period,              KB_KDE},
+    {QKeySequence::PreviousChild,           0,          Qt::Key_Back,                           KB_All},
+    {QKeySequence::Find,                    0,          Qt::CTRL | Qt::Key_F,                   KB_All},
+    {QKeySequence::FindNext,                0,          Qt::CTRL | Qt::Key_G,                   KB_Win},
+    {QKeySequence::FindNext,                1,          Qt::CTRL | Qt::Key_G,                   KB_Gnome | KB_Mac},
+    {QKeySequence::FindNext,                1,          Qt::Key_F3,                             KB_Win},
+    {QKeySequence::FindNext,                0,          Qt::Key_F3,                             KB_X11},
+    {QKeySequence::FindPrevious,            0,          Qt::CTRL | Qt::SHIFT | Qt::Key_G,       KB_Win},
+    {QKeySequence::FindPrevious,            1,          Qt::CTRL | Qt::SHIFT | Qt::Key_G,       KB_Gnome | KB_Mac},
+    {QKeySequence::FindPrevious,            1,          Qt::SHIFT | Qt::Key_F3,                 KB_Win},
+    {QKeySequence::FindPrevious,            0,          Qt::SHIFT | Qt::Key_F3,                 KB_X11},
+    {QKeySequence::Replace,                 0,          Qt::CTRL | Qt::Key_R,                   KB_KDE},
+    {QKeySequence::Replace,                 0,          Qt::CTRL | Qt::Key_H,                   KB_Gnome},
+    {QKeySequence::Replace,                 0,          Qt::CTRL | Qt::Key_H,                   KB_Win},
+    {QKeySequence::SelectAll,               1,          Qt::CTRL | Qt::Key_A,                   KB_All},
+    {QKeySequence::Bold,                    1,          Qt::CTRL | Qt::Key_B,                   KB_All},
+    {QKeySequence::Italic,                  0,          Qt::CTRL | Qt::Key_I,                   KB_All},
+    {QKeySequence::Underline,               1,          Qt::CTRL | Qt::Key_U,                   KB_All},
+    {QKeySequence::MoveToNextChar,          0,          Qt::Key_Right,                          KB_All},
+    {QKeySequence::MoveToPreviousChar,      0,          Qt::Key_Left,                           KB_All},
+    {QKeySequence::MoveToNextWord,          0,          Qt::ALT  | Qt::Key_Right,               KB_Mac},
+    {QKeySequence::MoveToNextWord,          0,          Qt::CTRL | Qt::Key_Right,               KB_Win | KB_X11},
+    {QKeySequence::MoveToPreviousWord,      0,          Qt::ALT  | Qt::Key_Left,                KB_Mac},
+    {QKeySequence::MoveToPreviousWord,      0,          Qt::CTRL | Qt::Key_Left,                KB_Win | KB_X11},
+    {QKeySequence::MoveToNextLine,          0,          Qt::Key_Down,                           KB_All},
+    {QKeySequence::MoveToPreviousLine,      0,          Qt::Key_Up,                             KB_All},
+    {QKeySequence::MoveToNextPage,          0,          Qt::META | Qt::Key_PageDown,            KB_Mac},
+    {QKeySequence::MoveToNextPage,          0,          Qt::META | Qt::Key_Down,                KB_Mac},
+    {QKeySequence::MoveToNextPage,          0,          Qt::ALT  | Qt::Key_PageDown,            KB_Mac },
+    {QKeySequence::MoveToNextPage,          1,          Qt::Key_PageDown,                       KB_All},
+    {QKeySequence::MoveToPreviousPage,      0,          Qt::META | Qt::Key_PageUp,              KB_Mac},
+    {QKeySequence::MoveToPreviousPage,      0,          Qt::META | Qt::Key_Up,                  KB_Mac},
+    {QKeySequence::MoveToPreviousPage,      0,          Qt::ALT  | Qt::Key_PageUp,              KB_Mac },
+    {QKeySequence::MoveToPreviousPage,      1,          Qt::Key_PageUp,                         KB_All},
+    {QKeySequence::MoveToStartOfLine,       0,          Qt::META | Qt::Key_Left,                KB_Mac},
+    {QKeySequence::MoveToStartOfLine,       0,          Qt::CTRL | Qt::Key_Left,                KB_Mac },
+    {QKeySequence::MoveToStartOfLine,       0,          Qt::Key_Home,                           KB_Win | KB_X11},
+    {QKeySequence::MoveToEndOfLine,         0,          Qt::META | Qt::Key_Right,               KB_Mac},
+    {QKeySequence::MoveToEndOfLine,         0,          Qt::CTRL | Qt::Key_Right,               KB_Mac },
+    {QKeySequence::MoveToEndOfLine,         0,          Qt::Key_End,                            KB_Win | KB_X11},
+    {QKeySequence::MoveToStartOfBlock,      0,          Qt::META | Qt::Key_A,                   KB_Mac},
+    {QKeySequence::MoveToStartOfBlock,      0,          Qt::ALT  | Qt::Key_Up,                  KB_Mac}, //mac only
+    {QKeySequence::MoveToEndOfBlock,        0,          Qt::META | Qt::Key_E,                   KB_Mac},
+    {QKeySequence::MoveToEndOfBlock,        0,          Qt::ALT  | Qt::Key_Down,                KB_Mac}, //mac only
+    {QKeySequence::MoveToStartOfDocument,   1,          Qt::CTRL | Qt::Key_Up,                  KB_Mac},
+    {QKeySequence::MoveToStartOfDocument,   0,          Qt::CTRL | Qt::Key_Home,                KB_Win | KB_X11},
+    {QKeySequence::MoveToStartOfDocument,   0,          Qt::Key_Home,                           KB_Mac},
+    {QKeySequence::MoveToEndOfDocument,     1,          Qt::CTRL | Qt::Key_Down,                KB_Mac},
+    {QKeySequence::MoveToEndOfDocument,     0,          Qt::CTRL | Qt::Key_End,                 KB_Win | KB_X11},
+    {QKeySequence::MoveToEndOfDocument,     0,          Qt::Key_End,                            KB_Mac},
+    {QKeySequence::SelectNextChar,          0,          Qt::SHIFT | Qt::Key_Right,              KB_All},
+    {QKeySequence::SelectPreviousChar,      0,          Qt::SHIFT | Qt::Key_Left,               KB_All},
+    {QKeySequence::SelectNextWord,          0,          Qt::ALT  | Qt::SHIFT | Qt::Key_Right,   KB_Mac},
+    {QKeySequence::SelectNextWord,          0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Right,   KB_Win | KB_X11},
+    {QKeySequence::SelectPreviousWord,      0,          Qt::ALT  | Qt::SHIFT | Qt::Key_Left,    KB_Mac},
+    {QKeySequence::SelectPreviousWord,      0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Left,    KB_Win | KB_X11},
+    {QKeySequence::SelectNextLine,          0,          Qt::SHIFT | Qt::Key_Down,               KB_All},
+    {QKeySequence::SelectPreviousLine,      0,          Qt::SHIFT | Qt::Key_Up,                 KB_All},
+    {QKeySequence::SelectNextPage,          0,          Qt::SHIFT | Qt::Key_PageDown,           KB_All},
+    {QKeySequence::SelectPreviousPage,      0,          Qt::SHIFT | Qt::Key_PageUp,             KB_All},
+    {QKeySequence::SelectStartOfLine,       0,          Qt::META | Qt::SHIFT | Qt::Key_Left,    KB_Mac},
+    {QKeySequence::SelectStartOfLine,       1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Left,    KB_Mac },
+    {QKeySequence::SelectStartOfLine,       0,          Qt::SHIFT | Qt::Key_Home,               KB_Win | KB_X11},
+    {QKeySequence::SelectEndOfLine,         0,          Qt::META | Qt::SHIFT | Qt::Key_Right,   KB_Mac},
+    {QKeySequence::SelectEndOfLine,         1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Right,   KB_Mac },
+    {QKeySequence::SelectEndOfLine,         0,          Qt::SHIFT | Qt::Key_End,                KB_Win | KB_X11},
+    {QKeySequence::SelectStartOfBlock,      0,          Qt::META | Qt::SHIFT | Qt::Key_A,       KB_Mac},
+    {QKeySequence::SelectStartOfBlock,      0,          Qt::ALT  | Qt::SHIFT | Qt::Key_Up,      KB_Mac}, //mac only
+    {QKeySequence::SelectEndOfBlock,        0,          Qt::META | Qt::SHIFT | Qt::Key_E,       KB_Mac},
+    {QKeySequence::SelectEndOfBlock,        0,          Qt::ALT  | Qt::SHIFT | Qt::Key_Down,    KB_Mac}, //mac only
+    {QKeySequence::SelectStartOfDocument,   1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Up,      KB_Mac},
+    {QKeySequence::SelectStartOfDocument,   0,          Qt::CTRL | Qt::SHIFT | Qt::Key_Home,    KB_Win | KB_X11},
+    {QKeySequence::SelectStartOfDocument,   0,          Qt::SHIFT | Qt::Key_Home,               KB_Mac},
+    {QKeySequence::SelectEndOfDocument,     1,          Qt::CTRL | Qt::SHIFT | Qt::Key_Down,    KB_Mac},
+    {QKeySequence::SelectEndOfDocument,     0,          Qt::CTRL | Qt::SHIFT | Qt::Key_End,     KB_Win | KB_X11},
+    {QKeySequence::SelectEndOfDocument,     0,          Qt::SHIFT | Qt::Key_End,                KB_Mac},
+    {QKeySequence::DeleteStartOfWord,       0,          Qt::ALT  | Qt::Key_Backspace,           KB_Mac},
+    {QKeySequence::DeleteStartOfWord,       0,          Qt::CTRL | Qt::Key_Backspace,           KB_X11 | KB_Win},
+    {QKeySequence::DeleteEndOfWord,         0,          Qt::ALT  | Qt::Key_Delete,              KB_Mac},
+    {QKeySequence::DeleteEndOfWord,         0,          Qt::CTRL | Qt::Key_Delete,              KB_X11 | KB_Win},
+    {QKeySequence::DeleteEndOfLine,         0,          Qt::CTRL | Qt::Key_K,                   KB_X11}, //emacs (line edit only)
+    {QKeySequence::InsertParagraphSeparator,0,          Qt::Key_Enter,                          KB_All},
+    {QKeySequence::InsertParagraphSeparator,0,          Qt::Key_Return,                         KB_All},
+    {QKeySequence::InsertLineSeparator,     0,          Qt::META | Qt::Key_Enter,               KB_Mac},
+    {QKeySequence::InsertLineSeparator,     0,          Qt::META | Qt::Key_Return,              KB_Mac},
+    {QKeySequence::InsertLineSeparator,     0,          Qt::SHIFT | Qt::Key_Enter,              KB_All},
+    {QKeySequence::InsertLineSeparator,     0,          Qt::SHIFT | Qt::Key_Return,             KB_All},
+    {QKeySequence::SaveAs,                  0,          Qt::CTRL | Qt::SHIFT | Qt::Key_S,       KB_Gnome | KB_Mac},
+    {QKeySequence::Preferences,             0,          Qt::CTRL | Qt::Key_Comma,               KB_Mac},
+    {QKeySequence::Quit,                    0,          Qt::CTRL | Qt::Key_Q,                   KB_Gnome | KB_KDE | KB_Mac},
+    {QKeySequence::FullScreen,              1,          Qt::META | Qt::CTRL | Qt::Key_F,        KB_Mac},
+    {QKeySequence::FullScreen,              0,          Qt::ALT  | Qt::Key_Enter,               KB_Win},
+    {QKeySequence::FullScreen,              0,          Qt::CTRL | Qt::SHIFT | Qt::Key_F,       KB_KDE},
+    {QKeySequence::FullScreen,              1,          Qt::CTRL | Qt::Key_F11,                 KB_Gnome},
+    {QKeySequence::FullScreen,              1,          Qt::Key_F11,                            KB_Win | KB_KDE},
+    {QKeySequence::Deselect,                0,          Qt::CTRL | Qt::SHIFT | Qt::Key_A,       KB_X11}
+};
+
+const uint QPlatformThemePrivate::numberOfKeyBindings = sizeof(QPlatformThemePrivate::keyBindings)/(sizeof(QKeyBinding));
 
 QPlatformThemePrivate::QPlatformThemePrivate()
         : systemPalette(0)
@@ -324,6 +498,101 @@ QPlatformSystemTrayIcon *QPlatformTheme::createPlatformSystemTrayIcon() const
 QIconEngine *QPlatformTheme::createIconEngine(const QString &iconName) const
 {
     return new QIconLoaderEngine(iconName);
+}
+
+#if defined(Q_OS_MACX)
+static inline int maybeSwapShortcut(int shortcut)
+{
+    if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
+        uint oldshortcut = shortcut;
+        shortcut &= ~(Qt::CTRL | Qt::META);
+        if (oldshortcut & Qt::CTRL)
+            shortcut |= Qt::META;
+        if (oldshortcut & Qt::META)
+            shortcut |= Qt::CTRL;
+    }
+    return shortcut;
+}
+#endif
+
+/*!
+   Returns the key sequence that should be used for a standard action.
+
+  \since 5.2
+ */
+QList<QKeySequence> QPlatformTheme::keyBindings(QKeySequence::StandardKey key) const
+{
+    const uint platform = QPlatformThemePrivate::currentKeyPlatforms();
+    QList <QKeySequence> list;
+
+    uint N = QPlatformThemePrivate::numberOfKeyBindings;
+    int first = 0;
+    int last = N - 1;
+
+    while (first <= last) {
+        int mid = (first + last) / 2;
+        const QKeyBinding &midVal = QPlatformThemePrivate::keyBindings[mid];
+
+        if (key > midVal.standardKey){
+            first = mid + 1;  // Search in top half
+        }
+        else if (key < midVal.standardKey){
+            last = mid - 1; // Search in bottom half
+        }
+        else {
+            //We may have several equal values for different platforms, so we must search in both directions
+            //search forward including current location
+            for (unsigned int i = mid; i < N - 1 ; ++i) {
+                QKeyBinding current = QPlatformThemePrivate::keyBindings[i];
+                if (current.standardKey != key)
+                    break;
+                else if (current.platform & platform && current.standardKey == key) {
+                    uint shortcut =
+#if defined(Q_OS_MACX)
+                        maybeSwapShortcut(current.shortcut);
+#else
+                        current.shortcut;
+#endif
+                    if (current.priority > 0)
+                        list.prepend(QKeySequence(shortcut));
+                    else
+                        list.append(QKeySequence(shortcut));
+                }
+            }
+
+            //search back
+            for (int i = mid - 1 ; i >= 0 ; --i) {
+                QKeyBinding current = QPlatformThemePrivate::keyBindings[i];
+                if (current.standardKey != key)
+                    break;
+                else if (current.platform & platform && current.standardKey == key) {
+                    uint shortcut =
+#if defined(Q_OS_MACX)
+                        maybeSwapShortcut(current.shortcut);
+#else
+                        current.shortcut;
+#endif
+                    if (current.priority > 0)
+                        list.prepend(QKeySequence(shortcut));
+                    else
+                        list.append(QKeySequence(shortcut));
+                }
+            }
+            break;
+        }
+    }
+    return list;
+}
+
+unsigned QPlatformThemePrivate::currentKeyPlatforms()
+{
+    const uint keyboardScheme = QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::KeyboardScheme).toInt();
+    unsigned result = 1u << keyboardScheme;
+    if (keyboardScheme == QPlatformTheme::KdeKeyboardScheme
+        || keyboardScheme == QPlatformTheme::GnomeKeyboardScheme
+        || keyboardScheme == QPlatformTheme::CdeKeyboardScheme)
+        result |= KB_X11;
+    return result;
 }
 
 QT_END_NAMESPACE

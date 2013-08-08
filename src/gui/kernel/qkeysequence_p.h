@@ -84,11 +84,6 @@ public:
     int key[4];
     static QString encodeString(int key, QKeySequence::SequenceFormat format);
     static int decodeString(const QString &keyStr, QKeySequence::SequenceFormat format);
-
-    static const QKeyBinding keyBindings[];
-    static const uint numberOfKeyBindings;
-
-    static unsigned currentKeyPlatforms();
 };
 #endif // QT_NO_SHORTCUT
 

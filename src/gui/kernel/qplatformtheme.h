@@ -53,6 +53,7 @@
 
 #include <QtCore/QtGlobal>
 #include <QtCore/QScopedPointer>
+#include <QtGui/QKeySequence>
 
 QT_BEGIN_NAMESPACE
 
@@ -284,6 +285,8 @@ public:
                                    QPlatformTheme::IconOptions iconOptions = 0) const;
 
     virtual QIconEngine *createIconEngine(const QString &iconName) const;
+
+    virtual QList<QKeySequence> keyBindings(QKeySequence::StandardKey key) const;
 
     static QVariant defaultThemeHint(ThemeHint hint);
 
