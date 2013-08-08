@@ -1106,14 +1106,6 @@ void tst_QDateTime::toTimeSpec_data()
         << QDateTime(QDate(-271821, 4, 21), QTime(0, 0, 0), Qt::LocalTime);
 #endif
 
-    QTest::newRow("QDate min")
-        << QDateTime(QDate::fromJulianDay(minJd()), QTime(0, 0, 0), Qt::UTC)
-        << QDateTime(QDate::fromJulianDay(minJd()), QTime(1, 0, 0), Qt::LocalTime);
-
-    QTest::newRow("QDate max")
-        << QDateTime(QDate::fromJulianDay(maxJd()), QTime(22, 59, 59), Qt::UTC)
-        << QDateTime(QDate::fromJulianDay(maxJd()), QTime(23, 59, 59), Qt::LocalTime);
-
     if (europeanTimeZone) {
         QTest::newRow("summer1") << QDateTime(QDate(2004, 6, 30), utcTime, Qt::UTC)
                                  << QDateTime(QDate(2004, 6, 30), localDaylightTime, Qt::LocalTime);
@@ -2683,6 +2675,10 @@ void tst_QDateTime::daylightTransitions() const
         QVERIFY(test.isValid());
         QCOMPARE(test.date(), QDate(2012, 10, 28));
         QCOMPARE(test.time(), QTime(2, 0, 0));
+#ifdef Q_OS_WIN
+        // Windows uses SecondOccurrence
+        QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
+#endif // Q_OS_WIN
         QCOMPARE(test.toMSecsSinceEpoch(), standard2012 - msecsOneHour);
 
         // Add hour to tran FirstOccurrence to get to tran SecondOccurrence
@@ -2695,10 +2691,11 @@ void tst_QDateTime::daylightTransitions() const
         QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
 #endif // Q_OS_WIN
         QCOMPARE(test.time(), QTime(2, 0, 0));
-#ifdef Q_OS_WIN
+#ifndef Q_OS_MAC
         // Windows uses SecondOccurrence
+        // Linux mktime bug uses last calculation
         QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
-#endif // Q_OS_WIN
+#endif // Q_OS_MAC
         QCOMPARE(test.toMSecsSinceEpoch(), standard2012);
 
         // Add hour to tran SecondOccurrence to get to after tran FirstOccurrence
@@ -2706,15 +2703,17 @@ void tst_QDateTime::daylightTransitions() const
         test = test.addMSecs(msecsOneHour);
         QVERIFY(test.isValid());
         QCOMPARE(test.date(), QDate(2012, 10, 28));
-#ifdef Q_OS_MAC
+#ifndef Q_OS_WIN
         // Mac uses FirstOccurrence
+        // Linux mktime bug uses last calculation
         QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
-#endif // Q_OS_MAC
+#endif // Q_OS_WIN
         QCOMPARE(test.time(), QTime(3, 0, 0));
-#ifdef Q_OS_MAC
+#ifndef Q_OS_WIN
         // Mac uses FirstOccurrence
+        // Linux mktime bug uses last calculation
         QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
-#endif // Q_OS_MAC
+#endif // Q_OS_WIN
         QCOMPARE(test.toMSecsSinceEpoch(), standard2012 + msecsOneHour);
 
     } else {

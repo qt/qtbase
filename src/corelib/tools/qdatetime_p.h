@@ -82,8 +82,6 @@ public:
     // Get current date/time in UTC and put result in outDate and outTime
     void getUTC(QDate &outDate, QTime &outTime) const;
 
-    // Add msecs to given datetime and return result
-    static QDateTime addMSecs(const QDateTime &dt, qint64 msecs);
     // Add msecs to given datetime and put result in utcDate and utcTime
     static void addMSecs(QDate &utcDate, QTime &utcTime, qint64 msecs);
 
