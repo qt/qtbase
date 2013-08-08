@@ -120,6 +120,8 @@ qmake/qmake_pch.pch
 src/corelib/global/qconfig.cpp
 src/corelib/global/qconfig.h
 src/corelib/global/qconfig.h.qmake
+src/platformsupport/*_interface.*
+src/platformsupport/*_adaptor.*
 ui_*.h
 tests/auto/qprocess/test*/*.exe
 tests/auto/qtcpsocket/stressTest/*.exe
