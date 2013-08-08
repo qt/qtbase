@@ -7360,7 +7360,6 @@ void QGraphicsItem::updateMicroFocus()
                     if (qApp)
                         qApp->inputMethod()->update(Qt::ImQueryAll);
                     break;
-                    }
                 }
             }
         }
