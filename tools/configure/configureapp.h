@@ -77,6 +77,7 @@ public:
     void generateConfigfiles();
     void detectArch();
     void generateQConfigPri();
+    void generateQDevicePri();
     void prepareConfigTests();
     void showSummary();
     QString firstLicensePath();

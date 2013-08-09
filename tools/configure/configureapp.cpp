@@ -500,6 +500,14 @@ void Configure::parseCmdLine()
                 || configCmdLine.at(i) == "-device") {
             ++i;
             // do nothing
+        } else if (configCmdLine.at(i) == "-device-option") {
+            ++i;
+            const QString option = configCmdLine.at(i);
+            QString &devOpt = dictionary["DEVICE_OPTION"];
+            if (!devOpt.isEmpty())
+                devOpt.append("\n").append(option);
+            else
+                devOpt = option;
         }
 
         else if (configCmdLine.at(i) == "-no-zlib") {
@@ -3077,6 +3085,41 @@ bool Configure::compilerSupportsFlag(const QString &compilerAndArgs)
     return code == 0;
 }
 
+void Configure::generateQDevicePri()
+{
+    FileWriter deviceStream(buildPath + "/mkspecs/qdevice.pri");
+    if (dictionary.contains("DEVICE_OPTION")) {
+        const QString devoptionlist = dictionary["DEVICE_OPTION"];
+        const QStringList optionlist = devoptionlist.split(QStringLiteral("\n"));
+        foreach (const QString &entry, optionlist)
+            deviceStream << entry << "\n";
+    }
+    if (dictionary.contains("ANDROID_SDK_ROOT") && dictionary.contains("ANDROID_NDK_ROOT")) {
+        QString android_platform(dictionary.contains("ANDROID_PLATFORM")
+                  ? dictionary["ANDROID_PLATFORM"]
+                  : QString("android-9"));
+        deviceStream << "android_install {" << endl;
+        deviceStream << "    DEFAULT_ANDROID_SDK_ROOT = " << formatPath(dictionary["ANDROID_SDK_ROOT"]) << endl;
+        deviceStream << "    DEFAULT_ANDROID_NDK_ROOT = " << formatPath(dictionary["ANDROID_NDK_ROOT"]) << endl;
+        deviceStream << "    DEFAULT_ANDROID_PLATFORM = " << android_platform << endl;
+        if (QSysInfo::WordSize == 64)
+            deviceStream << "    DEFAULT_ANDROID_NDK_HOST = windows-x86_64" << endl;
+        else
+            deviceStream << "    DEFAULT_ANDROID_NDK_HOST = windows" << endl;
+        QString android_arch(dictionary.contains("ANDROID_TARGET_ARCH")
+                  ? dictionary["ANDROID_TARGET_ARCH"]
+                  : QString("armeabi-v7a"));
+        QString android_tc_vers(dictionary.contains("ANDROID_NDK_TOOLCHAIN_VERSION")
+                  ? dictionary["ANDROID_NDK_TOOLCHAIN_VERSION"]
+                  : QString("4.7"));
+        deviceStream << "    DEFAULT_ANDROID_TARGET_ARCH = " << android_arch << endl;
+        deviceStream << "    DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION = " << android_tc_vers << endl;
+        deviceStream << "}" << endl;
+    }
+    if (!deviceStream.flush())
+        dictionary[ "DONE" ] = "error";
+}
+
 void Configure::generateQConfigPri()
 {
     // Generate qconfig.pri
@@ -3363,33 +3406,6 @@ void Configure::generateConfigfiles()
             dictionary[ "DONE" ] = "error";
     }
 
-    {
-        FileWriter tmpStream(buildPath + "/mkspecs/qdevice.pri");
-
-        QString android_platform(dictionary.contains("ANDROID_PLATFORM")
-                  ? dictionary["ANDROID_PLATFORM"]
-                  : QString("android-9"));
-        tmpStream << "android_install {" << endl;
-        tmpStream << "    DEFAULT_ANDROID_SDK_ROOT = " << formatPath(dictionary["ANDROID_SDK_ROOT"]) << endl;
-        tmpStream << "    DEFAULT_ANDROID_NDK_ROOT = " << formatPath(dictionary["ANDROID_NDK_ROOT"]) << endl;
-        tmpStream << "    DEFAULT_ANDROID_PLATFORM = " << android_platform << endl;
-        if (QSysInfo::WordSize == 64)
-            tmpStream << "    DEFAULT_ANDROID_NDK_HOST = windows-x86_64" << endl;
-        else
-            tmpStream << "    DEFAULT_ANDROID_NDK_HOST = windows" << endl;
-        QString android_arch(dictionary.contains("ANDROID_TARGET_ARCH")
-                  ? dictionary["ANDROID_TARGET_ARCH"]
-                  : QString("armeabi-v7a"));
-        QString android_tc_vers(dictionary.contains("ANDROID_NDK_TOOLCHAIN_VERSION")
-                  ? dictionary["ANDROID_NDK_TOOLCHAIN_VERSION"]
-                  : QString("4.7"));
-        tmpStream << "    DEFAULT_ANDROID_TARGET_ARCH = " << android_arch << endl;
-        tmpStream << "    DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION = " << android_tc_vers << endl;
-        tmpStream << "}" << endl;
-
-        if (!tmpStream.flush())
-            dictionary[ "DONE" ] = "error";
-    }
 }
 
 void Configure::displayConfig()
