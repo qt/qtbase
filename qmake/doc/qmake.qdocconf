@@ -22,5 +22,54 @@ language                = Cpp
 
 sources                 = src/qmake-manual.qdoc
 
+depends += \
+    activeqt \
+    qt3d \
+    qtassistant \
+    qtbluetooth \
+    qtconcurrent \
+    qtcontacts \
+    qtcore \
+    qtdbus \
+    qtdesigner \
+    qtfeedback \
+    qtgraphicaleffects \
+    qtgui \
+    qthelp \
+    qtimageformats \
+    qtlinguist \
+    qtlocation \
+    qtmultimedia \
+    qtmultimediawidgets \
+    qtnetwork \
+    qtopengl \
+    qtorganizer \
+    qtprintsupport \
+    qtpublishsubscribe \
+    qtqml \
+    qtquick \
+    qtquickcontrols \
+    qtquickcontrolsstyles \
+    qtquickdialogs \
+    qtquicklayouts \
+    qtscript \
+    qtscripttools \
+    qtsensors \
+    qtserialport \
+    qtserviceframework \
+    qtsql \
+    qtsvg \
+    qtsysteminfo \
+    qttestlib \
+    qttools \
+    qtuitools \
+    qtversit \
+    qtwebkit \
+    qtwebkitexamples \
+    qtwidgets \
+    qtx11extras \
+    qtxml \
+    qtxmlpatterns
+
 imagedirs               = src/images
 exampledirs             = src
