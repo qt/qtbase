@@ -582,6 +582,11 @@ QWindow *QWindowsContext::windowUnderMouse() const
     return d->m_mouseHandler.windowUnderMouse();
 }
 
+void QWindowsContext::clearWindowUnderMouse()
+{
+    d->m_mouseHandler.clearWindowUnderMouse();
+}
+
 /*!
     \brief Find a child window at a screen point.
 
