@@ -173,11 +173,3 @@
         \endlist
     \endlist
  */
-
-/*!
-    \group events
-    \title Event Classes
-    \ingroup groups
-
-    \brief Classes that provide UI and input events.
-*/
