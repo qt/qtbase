@@ -302,10 +302,16 @@ void QMessageBoxPrivate::setupLayout()
     QGridLayout *grid = new QGridLayout;
     grid->addWidget(iconLabel, 0, 0, 2, 1, Qt::AlignTop);
     grid->addWidget(label, 0, 1, 1, 1);
+    if (informativeLabel)
+        grid->addWidget(informativeLabel, 1, 1, 1, 1);
 #ifndef Q_OS_MAC
     grid->addWidget(buttonBox, 2, 0, 1, 2);
 #else
     grid->addWidget(buttonBox, 3, 1, 1, 1);
+#endif
+    if (detailsText)
+        grid->addWidget(detailsText, grid->rowCount(), 0, 1, grid->columnCount());
+#ifdef Q_OS_MAC
     grid->setMargin(0);
     grid->setVerticalSpacing(8);
     grid->setHorizontalSpacing(0);
@@ -318,6 +324,7 @@ void QMessageBoxPrivate::setupLayout()
     q->setLayout(grid);
 
     retranslateStrings();
+    updateSize();
 }
 
 int QMessageBoxPrivate::layoutMinimumWidth()
@@ -2460,24 +2467,27 @@ void QMessageBox::setDetailedText(const QString &text)
 {
     Q_D(QMessageBox);
     if (text.isEmpty()) {
-        delete d->detailsText;
+        if (d->detailsText) {
+            d->detailsText->hide();
+            d->detailsText->deleteLater();
+        }
         d->detailsText = 0;
         removeButton(d->detailsButton);
-        delete d->detailsButton;
+        if (d->detailsButton) {
+            d->detailsButton->hide();
+            d->detailsButton->deleteLater();
+        }
         d->detailsButton = 0;
-        return;
+    } else {
+        if (!d->detailsText) {
+            d->detailsText = new QMessageBoxDetailsText(this);
+            d->detailsText->hide();
+        }
+        if (!d->detailsButton)
+            d->detailsButton = new DetailButton(this);
+        d->detailsText->setText(text);
     }
-
-    if (!d->detailsText) {
-        d->detailsText = new QMessageBoxDetailsText(this);
-        QGridLayout* grid = qobject_cast<QGridLayout*>(layout());
-        if (grid)
-            grid->addWidget(d->detailsText, grid->rowCount(), 0, 1, grid->columnCount());
-        d->detailsText->hide();
-    }
-    if (!d->detailsButton)
-        d->detailsButton = new DetailButton(this);
-    d->detailsText->setText(text);
+    d->setupLayout();
 }
 #endif // QT_NO_TEXTEDIT
 
@@ -2508,39 +2518,37 @@ void QMessageBox::setInformativeText(const QString &text)
 {
     Q_D(QMessageBox);
     if (text.isEmpty()) {
-        layout()->removeWidget(d->informativeLabel);
-        delete d->informativeLabel;
+        if (d->informativeLabel) {
+            d->informativeLabel->hide();
+            d->informativeLabel->deleteLater();
+        }
         d->informativeLabel = 0;
 #ifndef Q_OS_MAC
         d->label->setContentsMargins(2, 0, 0, 0);
 #endif
-        d->updateSize();
-        return;
-    }
-
-    if (!d->informativeLabel) {
-        QLabel *label = new QLabel;
-        label->setObjectName(QLatin1String("qt_msgbox_informativelabel"));
-        label->setTextInteractionFlags(Qt::TextInteractionFlags(style()->styleHint(QStyle::SH_MessageBox_TextInteractionFlags, 0, this)));
-        label->setAlignment(Qt::AlignTop | Qt::AlignLeft);
-        label->setOpenExternalLinks(true);
-        label->setWordWrap(true);
+    } else {
+        if (!d->informativeLabel) {
+            QLabel *label = new QLabel;
+            label->setObjectName(QLatin1String("qt_msgbox_informativelabel"));
+            label->setTextInteractionFlags(Qt::TextInteractionFlags(style()->styleHint(QStyle::SH_MessageBox_TextInteractionFlags, 0, this)));
+            label->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+            label->setOpenExternalLinks(true);
+            label->setWordWrap(true);
 #ifndef Q_OS_MAC
-        d->label->setContentsMargins(2, 0, 0, 0);
-        label->setContentsMargins(2, 0, 0, 6);
-        label->setIndent(9);
+            d->label->setContentsMargins(2, 0, 0, 0);
+            label->setContentsMargins(2, 0, 0, 6);
+            label->setIndent(9);
 #else
-        label->setContentsMargins(16, 0, 0, 0);
-        // apply a smaller font the information label on the mac
-        label->setFont(qt_app_fonts_hash()->value("QTipLabel"));
+            label->setContentsMargins(16, 0, 0, 0);
+            // apply a smaller font the information label on the mac
+            label->setFont(qt_app_fonts_hash()->value("QTipLabel"));
 #endif
-        label->setWordWrap(true);
-        QGridLayout *grid = static_cast<QGridLayout *>(layout());
-        grid->addWidget(label, 1, 1, 1, 1);
-        d->informativeLabel = label;
+            label->setWordWrap(true);
+            d->informativeLabel = label;
+        }
+        d->informativeLabel->setText(text);
     }
-    d->informativeLabel->setText(text);
-    d->updateSize();
+    d->setupLayout();
 }
 
 /*!
