@@ -216,6 +216,7 @@ QT_BEGIN_NAMESPACE
 
 QCocoaMenu::QCocoaMenu() :
     m_enabled(true),
+    m_visible(true),
     m_tag(0),
     m_menuBar(0)
 {
@@ -421,6 +422,7 @@ void QCocoaMenu::setEnabled(bool enabled)
 void QCocoaMenu::setVisible(bool visible)
 {
     [m_nativeItem setSubmenu:(visible ? m_nativeMenu : nil)];
+    m_visible = visible;
 }
 
 void QCocoaMenu::showPopup(const QWindow *parentWindow, QPoint pos, const QPlatformMenuItem *item)
