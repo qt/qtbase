@@ -286,7 +286,10 @@ QString Config::getOutputDir() const
         t = overrideOutputDir;
     if (!Generator::useOutputSubdirs()) {
         t = t.left(t.lastIndexOf('/'));
-        t += QLatin1Char('/') + getString("HTML.outputsubdir");
+        QString singleOutputSubdir = getString("HTML.outputsubdir");
+        if (singleOutputSubdir.isEmpty())
+            singleOutputSubdir = "html";
+        t += QLatin1Char('/') + singleOutputSubdir;
     }
     return t;
 }

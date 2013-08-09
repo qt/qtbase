@@ -170,6 +170,8 @@ static void loadIndexFiles(Config& config)
     if (config.getBool(QString("HTML.nosubdirs"))) {
         noOutputSubdirs = true;
         singleOutputSubdir = config.getString("HTML.outputsubdir");
+        if (singleOutputSubdir.isEmpty())
+            singleOutputSubdir = "html";
     }
 
     // Allow modules and third-party application/libraries to link
