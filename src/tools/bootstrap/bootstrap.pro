@@ -50,14 +50,11 @@ QMAKE_SYNCQT_OPTIONS += -version $$QT_VERSION
 
 load(qt_module)
 
-INCLUDEPATH += $$QT_BUILD_TREE/src/corelib/global
-
 SOURCES += \
            ../../corelib/codecs/qlatincodec.cpp \
            ../../corelib/codecs/qtextcodec.cpp \
            ../../corelib/codecs/qutfcodec.cpp \
            ../../corelib/global/qglobal.cpp \
-           ../../corelib/global/qlibraryinfo.cpp \
            ../../corelib/global/qlogging.cpp \
            ../../corelib/global/qmalloc.cpp \
            ../../corelib/global/qnumeric.cpp \
@@ -74,7 +71,6 @@ SOURCES += \
            ../../corelib/io/qfsfileengine_iterator.cpp \
            ../../corelib/io/qiodevice.cpp \
            ../../corelib/io/qfiledevice.cpp \
-           ../../corelib/io/qsettings.cpp \
            ../../corelib/io/qtemporaryfile.cpp \
            ../../corelib/io/qtextstream.cpp \
            ../../corelib/io/qstandardpaths.cpp \
@@ -124,13 +120,11 @@ unix:SOURCES += ../../corelib/io/qfilesystemengine_unix.cpp \
 win32:SOURCES += ../../corelib/io/qfilesystemengine_win.cpp \
                  ../../corelib/io/qfilesystemiterator_win.cpp \
                  ../../corelib/io/qfsfileengine_win.cpp \
-                 ../../corelib/io/qsettings_win.cpp \
                  ../../corelib/kernel/qcoreapplication_win.cpp \
                  ../../corelib/plugin/qsystemlibrary.cpp \
 
 mac {
-   SOURCES += ../../corelib/io/qsettings_mac.cpp \
-              ../../corelib/kernel/qcoreapplication_mac.cpp \
+   SOURCES += ../../corelib/kernel/qcoreapplication_mac.cpp \
               ../../corelib/kernel/qcore_mac.cpp
    LIBS += -framework CoreServices
 }
