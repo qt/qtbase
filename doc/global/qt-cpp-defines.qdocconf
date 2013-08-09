@@ -55,6 +55,7 @@ Cpp.ignoretokens        += \
                           Q_LOCATION_EXPORT \
                           Q_MULTIMEDIA_EXPORT \
                           Q_NETWORK_EXPORT \
+                          Q_NORETURN \
                           Q_OPENGL_EXPORT \
                           Q_OPENVG_EXPORT \
                           Q_OUTOFLINE_TEMPLATE \
