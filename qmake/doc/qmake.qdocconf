@@ -22,8 +22,8 @@ language                = Cpp
 
 sources                 = src/qmake-manual.qdoc
 
-imagedirs               = src/images
-exampledirs             = src
+imagedirs               = images
+exampledirs             = snippets
 
 depends += \
     qtwinextras
