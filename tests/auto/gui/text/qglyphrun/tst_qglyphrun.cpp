@@ -502,6 +502,10 @@ void tst_QGlyphRun::drawMultiScriptText2()
     drawGlyphs.save("drawMultiScriptText2_drawGlyphIndexes.png");
 #endif
 
+#ifdef Q_OS_MACX
+    if (drawGlyphs.toImage() != textLayoutDraw.toImage())
+        QEXPECT_FAIL("", "See QTBUG-32690", Continue);
+#endif // Q_OS_MACX
     QCOMPARE(drawGlyphs, textLayoutDraw);
 }
 
