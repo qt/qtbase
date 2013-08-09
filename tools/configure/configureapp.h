@@ -158,6 +158,8 @@ private:
     int descIndent;
     int outputWidth;
 
+    void substPrefix(QString *path);
+
     QString formatPath(const QString &path);
     QString formatPaths(const QStringList &paths);
 

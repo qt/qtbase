@@ -384,6 +384,16 @@ filterLibraryOptions()
     filterPathOptions -L "$DEFAULT_LIBDIRS"
 }
 
+substPrefix()
+{
+    base=${1#$QT_SYSROOT_PREFIX}
+    if [ x"$base" != x"$1" ]; then
+        echo "$QT_EXT_PREFIX$base"
+    else
+        echo "$1"
+    fi
+}
+
 #-------------------------------------------------------------------------------
 # device options
 #-------------------------------------------------------------------------------
@@ -1014,6 +1024,7 @@ QT_HOST_PREFIX=
 QT_HOST_BINS=
 QT_HOST_LIBS=
 QT_HOST_DATA=
+QT_EXT_PREFIX=
 
 #flags for SQL drivers
 QT_CFLAGS_PSQL=
@@ -1139,6 +1150,7 @@ while [ "$#" -gt 0 ]; do
     -hostdatadir| \
     -hostbindir| \
     -hostlibdir| \
+    -extprefix| \
     -sysroot| \
     -depths| \
     -make| \
@@ -1346,6 +1358,9 @@ while [ "$#" -gt 0 ]; do
         ;;
     hostlibdir)
         QT_HOST_LIBS="$VAL"
+        ;;
+    extprefix)
+        QT_EXT_PREFIX="$VAL"
         ;;
     pkg-config)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -3174,6 +3189,39 @@ if [ -z "$QT_INSTALL_TESTS" ]; then #default
 fi
 QT_INSTALL_TESTS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_TESTS"`
 
+#------- sysroot-external install paths --------
+
+QT_SYSROOT_PREFIX=$QT_INSTALL_PREFIX
+QT_SYSROOT_DOCS=$QT_INSTALL_DOCS
+QT_SYSROOT_HEADERS=$QT_INSTALL_HEADERS
+QT_SYSROOT_LIBS=$QT_INSTALL_LIBS
+QT_SYSROOT_LIBEXECS=$QT_INSTALL_LIBEXECS
+QT_SYSROOT_BINS=$QT_INSTALL_BINS
+QT_SYSROOT_PLUGINS=$QT_INSTALL_PLUGINS
+QT_SYSROOT_IMPORTS=$QT_INSTALL_IMPORTS
+QT_SYSROOT_QML=$QT_INSTALL_QML
+QT_SYSROOT_ARCHDATA=$QT_INSTALL_ARCHDATA
+QT_SYSROOT_DATA=$QT_INSTALL_DATA
+QT_SYSROOT_TRANSLATIONS=$QT_INSTALL_TRANSLATIONS
+QT_SYSROOT_EXAMPLES=$QT_INSTALL_EXAMPLES
+QT_SYSROOT_TESTS=$QT_INSTALL_TESTS
+if [ -n "$QT_EXT_PREFIX" ]; then
+    QT_INSTALL_PREFIX=$QT_EXT_PREFIX
+    QT_INSTALL_DOCS=`substPrefix "$QT_INSTALL_DOCS"`
+    QT_INSTALL_HEADERS=`substPrefix "$QT_INSTALL_HEADERS"`
+    QT_INSTALL_LIBS=`substPrefix "$QT_INSTALL_LIBS"`
+    QT_INSTALL_LIBEXECS=`substPrefix "$QT_INSTALL_LIBEXECS"`
+    QT_INSTALL_BINS=`substPrefix "$QT_INSTALL_BINS"`
+    QT_INSTALL_PLUGINS=`substPrefix "$QT_INSTALL_PLUGINS"`
+    QT_INSTALL_IMPORTS=`substPrefix "$QT_INSTALL_IMPORTS"`
+    QT_INSTALL_QML=`substPrefix "$QT_INSTALL_QML"`
+    QT_INSTALL_ARCHDATA=`substPrefix "$QT_INSTALL_ARCHDATA"`
+    QT_INSTALL_DATA=`substPrefix "$QT_INSTALL_DATA"`
+    QT_INSTALL_TRANSLATIONS=`substPrefix "$QT_INSTALL_TRANSLATIONS"`
+    QT_INSTALL_EXAMPLES=`substPrefix "$QT_INSTALL_EXAMPLES"`
+    QT_INSTALL_TESTS=`substPrefix "$QT_INSTALL_TESTS"`
+fi
+
 #------- host paths --------
 
 if [ -z "$QT_HOST_PREFIX" ]; then
@@ -3341,10 +3389,13 @@ Installation options:
     -prefix <dir> ...... This will install everything relative to <dir>
                          (default $QT_INSTALL_PREFIX)
 
+    -extprefix <dir> ... When -sysroot is used, install everything to <dir>,
+                         rather than into SYSROOT/PREFIX.
+
     -hostprefix [dir] .. Tools and libraries needed when developing
                          applications are installed in [dir]. If [dir] is
                          not given, the current build directory will be used.
-                         (default PREFIX)
+                         (default EXTPREFIX)
 
  You may use these to separate different parts of the install:
 
@@ -3869,6 +3920,12 @@ esac
 shortxspec=`echo $XQMAKESPEC | sed "s,^${relpath}/mkspecs/,,"`
 shortspec=`echo $QMAKESPEC | sed "s,^${relpath}/mkspecs/,,"`
 
+if [ -z "$QT_EXT_PREFIX" ]; then
+    QMAKE_SYSROOTIFY=y
+else
+    QMAKE_SYSROOTIFY=n
+fi
+
 cat > "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
 /* License Info */
 static const char qt_configure_licensee_str          [256 + 12] = "qt_lcnsuser=$Licensee";
@@ -3879,6 +3936,22 @@ static const char qt_configure_installation          [12+11]    = "qt_instdate=`
 
 /* Installation Info */
 static const char qt_configure_prefix_path_strs[][256 + 12] = {
+#ifndef QT_BUILD_QMAKE
+    "qt_prfxpath=$QT_SYSROOT_PREFIX",
+    "qt_docspath=$QT_SYSROOT_DOCS",
+    "qt_hdrspath=$QT_SYSROOT_HEADERS",
+    "qt_libspath=$QT_SYSROOT_LIBS",
+    "qt_lbexpath=$QT_SYSROOT_LIBEXECS",
+    "qt_binspath=$QT_SYSROOT_BINS",
+    "qt_plugpath=$QT_SYSROOT_PLUGINS",
+    "qt_impspath=$QT_SYSROOT_IMPORTS",
+    "qt_qml2path=$QT_SYSROOT_QML",
+    "qt_adatpath=$QT_SYSROOT_ARCHDATA",
+    "qt_datapath=$QT_SYSROOT_DATA",
+    "qt_trnspath=$QT_SYSROOT_TRANSLATIONS",
+    "qt_xmplpath=$QT_SYSROOT_EXAMPLES",
+    "qt_tstspath=$QT_SYSROOT_TESTS",
+#else
     "qt_prfxpath=$QT_INSTALL_PREFIX",
     "qt_docspath=$QT_INSTALL_DOCS",
     "qt_hdrspath=$QT_INSTALL_HEADERS",
@@ -3893,7 +3966,6 @@ static const char qt_configure_prefix_path_strs[][256 + 12] = {
     "qt_trnspath=$QT_INSTALL_TRANSLATIONS",
     "qt_xmplpath=$QT_INSTALL_EXAMPLES",
     "qt_tstspath=$QT_INSTALL_TESTS",
-#ifdef QT_BUILD_QMAKE
     "qt_ssrtpath=$CFG_SYSROOT",
     "qt_hpfxpath=$QT_HOST_PREFIX",
     "qt_hbinpath=$QT_HOST_BINS",
@@ -3904,6 +3976,10 @@ static const char qt_configure_prefix_path_strs[][256 + 12] = {
 #endif
 };
 static const char qt_configure_settings_path_str[256 + 12] = "qt_stngpath=$QT_INSTALL_SETTINGS";
+
+#ifdef QT_BUILD_QMAKE
+static const char qt_sysrootify_prefix[] = "qt_ssrtfpfx=$QMAKE_SYSROOTIFY";
+#endif
 EOF
 
 cat >> "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF

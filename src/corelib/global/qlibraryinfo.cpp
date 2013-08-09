@@ -309,7 +309,7 @@ QLibraryInfo::location(LibraryLocation loc)
     QString ret = rawLocation(loc, FinalPaths);
 
     // Automatically prepend the sysroot to target paths
-    if (loc < SysrootPath || loc > LastHostPath) {
+    if ((loc < SysrootPath || loc > LastHostPath) && qt_sysrootify_prefix[12] == 'y') {
         QString sysroot = rawLocation(SysrootPath, FinalPaths);
         if (!sysroot.isEmpty() && ret.length() > 2 && ret.at(1) == QLatin1Char(':')
             && (ret.at(2) == QLatin1Char('/') || ret.at(2) == QLatin1Char('\\')))
