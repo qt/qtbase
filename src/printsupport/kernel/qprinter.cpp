@@ -388,6 +388,10 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
   With setFullPage(false) (the default), the metrics will be a bit
   smaller; how much depends on the printer in use.
 
+  \note QPrinter::Folio is the Adobe specification for the Folio size.
+  On Windows if you want to use the same as DMPAPER_FOLIO then you should use
+  setPaperSize(QSizeF(8.5, 13), QPrinter::Inch).
+
   \omitvalue NPageSize
   \omitvalue NPaperSize
 */
