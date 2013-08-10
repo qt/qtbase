@@ -71,11 +71,16 @@ static inline bool qtransform_equals_no_translate(const QTransform &a, const QTr
 
 // Harfbuzz helper functions
 
+Q_STATIC_ASSERT(sizeof(HB_Glyph) == sizeof(glyph_t));
+Q_STATIC_ASSERT(sizeof(HB_Fixed) == sizeof(QFixed));
+
 static HB_Bool hb_stringToGlyphs(HB_Font font, const HB_UChar16 *string, hb_uint32 length, HB_Glyph *glyphs, hb_uint32 *numGlyphs, HB_Bool rightToLeft)
 {
     QFontEngine *fe = (QFontEngine *)font->userData;
 
-    QVarLengthGlyphLayoutArray qglyphs(*numGlyphs);
+    QGlyphLayout qglyphs;
+    qglyphs.numGlyphs = *numGlyphs;
+    qglyphs.glyphs = glyphs;
 
     QFontEngine::ShaperFlags shaperFlags(QFontEngine::GlyphIndicesOnly);
     if (rightToLeft)
@@ -84,28 +89,23 @@ static HB_Bool hb_stringToGlyphs(HB_Font font, const HB_UChar16 *string, hb_uint
     int nGlyphs = *numGlyphs;
     bool result = fe->stringToCMap(reinterpret_cast<const QChar *>(string), length, &qglyphs, &nGlyphs, shaperFlags);
     *numGlyphs = nGlyphs;
-    if (!result)
-        return false;
 
-    for (hb_uint32 i = 0; i < *numGlyphs; ++i)
-        glyphs[i] = qglyphs.glyphs[i];
-
-    return true;
+    return result;
 }
 
 static void hb_getAdvances(HB_Font font, const HB_Glyph *glyphs, hb_uint32 numGlyphs, HB_Fixed *advances, int flags)
 {
     QFontEngine *fe = (QFontEngine *)font->userData;
 
-    QVarLengthGlyphLayoutArray qglyphs(numGlyphs);
+    QVarLengthArray<QFixed> advances_y(numGlyphs);
 
-    for (hb_uint32 i = 0; i < numGlyphs; ++i)
-        qglyphs.glyphs[i] = glyphs[i];
+    QGlyphLayout qglyphs;
+    qglyphs.numGlyphs = numGlyphs;
+    qglyphs.glyphs = const_cast<glyph_t *>(glyphs);
+    qglyphs.advances_x = reinterpret_cast<QFixed *>(advances);
+    qglyphs.advances_y = advances_y.data(); // not used
 
     fe->recalcAdvances(&qglyphs, (flags & HB_ShaperFlag_UseDesignMetrics) ? QFontEngine::DesignMetrics : QFontEngine::ShaperFlags(0));
-
-    for (hb_uint32 i = 0; i < numGlyphs; ++i)
-        advances[i] = qglyphs.advances_x[i].value();
 }
 
 static HB_Bool hb_canRender(HB_Font font, const HB_UChar16 *string, hb_uint32 length)
@@ -1439,9 +1439,11 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
         bool surrogate = (str[i].isHighSurrogate() && i < len-1 && str[i+1].isLowSurrogate());
         uint ucs4 = surrogate ? QChar::surrogateToUcs4(str[i], str[i+1]) : str[i].unicode();
         if (glyphs->glyphs[glyph_pos] == 0 && str[i].category() != QChar::Separator_Line) {
-            QGlyphLayoutInstance tmp;
-            if (!(flags & GlyphIndicesOnly))
-                tmp = glyphs->instance(glyph_pos);
+            QFixedPoint tmpAdvance;
+            if (!(flags & GlyphIndicesOnly)) {
+                tmpAdvance.x = glyphs->advances_x[glyph_pos];
+                tmpAdvance.y = glyphs->advances_y[glyph_pos];
+            }
             for (int x=1; x < engines.size(); ++x) {
                 if (engines.at(x) == 0 && !shouldLoadFontEngineForCharacter(x, ucs4))
                     continue;
@@ -1455,10 +1457,8 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
                 if (engine->type() == Box)
                     continue;
 
-                if (!(flags & GlyphIndicesOnly)) {
+                if (!(flags & GlyphIndicesOnly))
                     glyphs->advances_x[glyph_pos] = glyphs->advances_y[glyph_pos] = 0;
-                    glyphs->offsets[glyph_pos] = QFixedPoint();
-                }
                 int num = 2;
                 QGlyphLayout offs = glyphs->mid(glyph_pos, num);
                 engine->stringToCMap(str + i, surrogate ? 2 : 1, &offs, &num, flags);
@@ -1471,8 +1471,10 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
             }
 
             // ensure we use metrics from the 1st font when we use the fallback image.
-            if (!(flags & GlyphIndicesOnly) && !glyphs->glyphs[glyph_pos])
-                glyphs->setInstance(glyph_pos, tmp);
+            if (!(flags & GlyphIndicesOnly) && glyphs->glyphs[glyph_pos] == 0) {
+                glyphs->advances_x[glyph_pos] = tmpAdvance.x;
+                glyphs->advances_y[glyph_pos] = tmpAdvance.y;
+            }
         }
 
         if (surrogate)
@@ -1774,22 +1776,27 @@ bool QFontEngineMulti::canRender(const QChar *string, int len)
     if (engine(0)->canRender(string, len))
         return true;
 
-    QVarLengthGlyphLayoutArray glyphs(len);
     int nglyphs = len;
-    if (!stringToCMap(string, len, &glyphs, &nglyphs, GlyphIndicesOnly)) {
+
+    QVarLengthArray<glyph_t> glyphs(nglyphs);
+
+    QGlyphLayout g;
+    g.numGlyphs = nglyphs;
+    g.glyphs = glyphs.data();
+    if (!stringToCMap(string, len, &g, &nglyphs, GlyphIndicesOnly)) {
         glyphs.resize(nglyphs);
-        stringToCMap(string, len, &glyphs, &nglyphs, GlyphIndicesOnly);
+        g.numGlyphs = nglyphs;
+        g.glyphs = glyphs.data();
+        if (!stringToCMap(string, len, &g, &nglyphs, GlyphIndicesOnly))
+            Q_ASSERT_X(false, Q_FUNC_INFO, "stringToCMap shouldn't fail twice");
     }
 
-    bool allExist = true;
     for (int i = 0; i < nglyphs; i++) {
-        if (!glyphs.glyphs[i]) {
-            allExist = false;
-            break;
-        }
+        if (g.glyphs[i] == 0)
+            return false;
     }
 
-    return allExist;
+    return true;
 }
 
 /* Implement alphaMapForGlyph() which is called by Lighthouse/Windows code.
