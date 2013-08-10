@@ -880,20 +880,20 @@ static QTouchDevice *touchDevice = 0;
             currentWheelModifiers = [QNSView convertKeyModifiers:[theEvent modifierFlags]];
         }
 
-        QWheelEvent::Phase ph = QWheelEvent::Changed;
+        Qt::ScrollPhase ph = Qt::ScrollUpdate;
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8
         if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_8) {
             // On 10.8 and above, MayBegin is likely to happen.  We treat it the same as an actual begin.
             if (phase == NSEventPhaseMayBegin)
-                ph = QWheelEvent::Started;
+                ph = Qt::ScrollBegin;
         } else
 #endif
         if (phase == NSEventPhaseBegan) {
             // On 10.7, MayBegin will not happen, so Began is the actual beginning.
-            ph = QWheelEvent::Started;
+            ph = Qt::ScrollBegin;
         }
         if (phase == NSEventPhaseEnded || phase == NSEventPhaseCancelled) {
-            ph = QWheelEvent::Ended;
+            ph = Qt::ScrollEnd;
         }
 
         QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_screenPoint, pixelDelta, angleDelta, currentWheelModifiers, ph);

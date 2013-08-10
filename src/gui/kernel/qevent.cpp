@@ -654,7 +654,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos, int delta
     event data: \a qt4Delta specifies the rotation, and \a qt4Orientation the
     direction.
 
-    The phase() is initialized to QWheelEvent::Changed. Use the other constructor
+    The phase() is initialized to Qt::ScrollUpdate. Use the other constructor
     to specify the phase explicitly.
 
     \sa posF(), globalPosF(), angleDelta(), pixelDelta()
@@ -664,7 +664,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
             QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
             Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
     : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), pixelD(pixelDelta),
-      angleD(angleDelta), qt4D(qt4Delta), qt4O(qt4Orientation), mouseState(buttons), ph(Changed)
+      angleD(angleDelta), qt4D(qt4Delta), qt4O(qt4Orientation), mouseState(buttons), ph(Qt::ScrollUpdate)
 {}
 
 /*!
@@ -685,14 +685,14 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
     event data: \a qt4Delta specifies the rotation, and \a qt4Orientation the
     direction.
 
-    The phase of the event is specified by \a phase.
+    The scrolling phase of the event is specified by \a phase.
 
     \sa posF(), globalPosF(), angleDelta(), pixelDelta(), phase()
 */
 
 QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
             QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
-            Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Phase phase)
+            Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase)
     : QInputEvent(Wheel, modifiers), p(pos), g(globalPos), pixelD(pixelDelta),
       angleD(angleDelta), qt4D(qt4Delta), qt4O(qt4Orientation), mouseState(buttons), ph(phase)
 {}
@@ -827,25 +827,10 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
 */
 
 /*!
-    \enum QWheelEvent::Phase
+    \fn Qt::ScrollPhase QWheelEvent::phase() const
     \since 5.2
 
-    This enum describes the phase of a wheel event.
-
-    \value Started Scrolling has started, but the scrolling
-    distance did not yet change.
-
-    \value Changed The scrolling distance has changed (default).
-
-    \value Ended Scrolling has ended, but the scrolling distance
-    did not change anymore.
-*/
-
-/*!
-    \fn QWheelEvent::Phase QWheelEvent::phase() const
-    \since 5.2
-
-    Returns the phase of this wheel event.
+    Returns the scrolling phase of this wheel event.
 */
 
 

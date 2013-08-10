@@ -95,6 +95,7 @@ Qt {
 #endif
     Q_ENUMS(CursorMoveStyle)
     Q_ENUMS(TimerType)
+    Q_ENUMS(ScrollPhase)
 #endif // defined(Q_MOC_RUN)
 
 #if defined(Q_MOC_RUN)
@@ -1568,6 +1569,12 @@ public:
         PreciseTimer,
         CoarseTimer,
         VeryCoarseTimer
+    };
+
+    enum ScrollPhase {
+        ScrollBegin = 1,
+        ScrollUpdate,
+        ScrollEnd
     };
 }
 #ifdef Q_MOC_RUN

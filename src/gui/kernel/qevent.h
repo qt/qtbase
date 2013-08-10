@@ -167,8 +167,6 @@ protected:
 class Q_GUI_EXPORT QWheelEvent : public QInputEvent
 {
 public:
-    enum Phase { Started, Changed, Ended };
-
     QWheelEvent(const QPointF &pos, int delta,
                 Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
                 Qt::Orientation orient = Qt::Vertical);
@@ -180,7 +178,7 @@ public:
                 Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
     QWheelEvent(const QPointF &pos, const QPointF& globalPos,
                 QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
-                Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Phase phase);
+                Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase);
 
     ~QWheelEvent();
 
@@ -204,7 +202,7 @@ public:
 
     inline Qt::MouseButtons buttons() const { return mouseState; }
 
-    inline Phase phase() const { return Phase(ph); }
+    inline Qt::ScrollPhase phase() const { return Qt::ScrollPhase(ph); }
 
 protected:
     QPointF p;

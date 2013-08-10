@@ -511,9 +511,9 @@ void QScrollBar::wheelEvent(QWheelEvent *event)
     if (d->scrollByDelta(event->orientation(), event->modifiers(), delta))
         event->accept();
 
-    if (event->phase() == QWheelEvent::Started)
+    if (event->phase() == Qt::ScrollBegin)
         d->setTransient(false);
-    else if (event->phase() == QWheelEvent::Ended)
+    else if (event->phase() == Qt::ScrollEnd)
         d->setTransient(true);
 }
 #endif

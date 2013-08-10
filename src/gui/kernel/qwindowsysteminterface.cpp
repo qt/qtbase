@@ -298,13 +298,13 @@ void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, con
     handleWheelEvent(tlw, timestamp, local, global, QPoint(), point, mods);
 }
 
-void QWindowSystemInterface::handleWheelEvent(QWindow *w, const QPointF & local, const QPointF & global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods, QWheelEvent::Phase phase)
+void QWindowSystemInterface::handleWheelEvent(QWindow *w, const QPointF & local, const QPointF & global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods, Qt::ScrollPhase phase)
 {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
     handleWheelEvent(w, time, local, global, pixelDelta, angleDelta, mods, phase);
 }
 
-void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, const QPointF & local, const QPointF & global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods, QWheelEvent::Phase phase)
+void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, const QPointF & local, const QPointF & global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods, Qt::ScrollPhase phase)
 {
     // Qt 4 sends two separate wheel events for horizontal and vertical
     // deltas. For Qt 5 we want to send the deltas in one event, but at the
@@ -315,9 +315,9 @@ void QWindowSystemInterface::handleWheelEvent(QWindow *tlw, ulong timestamp, con
     // Angle deltas must always be sent in addition to pixel deltas.
     QWindowSystemInterfacePrivate::WheelEvent *e;
 
-    // Pass QWheelEvent::Started and QWheelEvent::Ended through
+    // Pass Qt::ScrollBegin and Qt::ScrollEnd through
     // even if the wheel delta is null.
-    if (angleDelta.isNull() && phase == QWheelEvent::Changed)
+    if (angleDelta.isNull() && phase == Qt::ScrollUpdate)
         return;
 
     // Simple case: vertical deltas only:

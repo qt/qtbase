@@ -218,7 +218,7 @@ public:
     class WheelEvent : public InputEvent {
     public:
         WheelEvent(QWindow *w, ulong time, const QPointF & local, const QPointF & global, QPoint pixelD, QPoint angleD, int qt4D, Qt::Orientation qt4O,
-                   Qt::KeyboardModifiers mods, QWheelEvent::Phase phase = QWheelEvent::Changed)
+                   Qt::KeyboardModifiers mods, Qt::ScrollPhase phase = Qt::ScrollUpdate)
             : InputEvent(w, time, Wheel, mods), pixelDelta(pixelD), angleDelta(angleD), qt4Delta(qt4D), qt4Orientation(qt4O), localPos(local), globalPos(global), phase(phase) { }
         QPoint pixelDelta;
         QPoint angleDelta;
@@ -226,7 +226,7 @@ public:
         Qt::Orientation qt4Orientation;
         QPointF localPos;
         QPointF globalPos;
-        QWheelEvent::Phase phase;
+        Qt::ScrollPhase phase;
     };
 
     class KeyEvent : public InputEvent {

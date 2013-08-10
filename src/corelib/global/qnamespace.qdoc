@@ -2878,3 +2878,18 @@
     nearest full second (e.g. an interval of 23500ms will be rounded to
     24000ms, and 20300ms to 20000ms).
 */
+
+/*!
+    \enum Qt::ScrollPhase
+    \since 5.2
+
+    This enum describes the phase of scrolling.
+
+    \value ScrollBegin Scrolling is about to begin, but the scrolling
+    distance did not yet change.
+
+    \value ScrollUpdate The scrolling distance has changed (default).
+
+    \value ScrollEnd Scrolling has ended, but the scrolling distance
+    did not change anymore.
+*/
