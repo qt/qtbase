@@ -92,7 +92,7 @@
     \note For the current keyboard input locale take a look at
     QInputMethod::locale().
 
-    QLocale's data is based on Common Locale Data Repository v23.
+    QLocale's data is based on Common Locale Data Repository v23.1.
 
     The double-to-string and string-to-double conversion functions are
     covered by the following licenses:
@@ -584,6 +584,7 @@
     \value SouthKorea
     \value DemocraticRepublicOfKorea Obsolete, please use NorthKorea
     \value RepublicOfKorea Obsolete, please use SouthKorea
+    \value Kosovo
     \value Kuwait
     \value Kyrgyzstan
     \value Laos

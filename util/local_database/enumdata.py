@@ -616,7 +616,8 @@ country_list = {
     253 : [ "TristanDaCunha",                           "TA"  ],
     254 : [ "SouthSudan",                               "SS"  ],
     255 : [ "Bonaire",                                  "BQ"  ],
-    256 : [ "SintMaarten",                              "SX"  ]
+    256 : [ "SintMaarten",                              "SX"  ],
+    257 : [ "Kosovo",                                   "XK"  ]
 }
 
 script_list = {
