@@ -89,9 +89,9 @@ QTextItemIntCopy::QTextItemIntCopy(const QTextItem &item)
 
 QTextItemIntCopy::~QTextItemIntCopy()
 {
-    delete m_item.chars;
-    delete m_item.logClusters;
-    delete m_item.glyphs.data();
+    delete [] m_item.chars;
+    delete [] m_item.logClusters;
+    delete [] m_item.glyphs.data();
     if (!m_item.fontEngine->ref.deref())
         delete m_item.fontEngine;
 }
