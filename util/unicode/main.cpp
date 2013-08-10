@@ -689,8 +689,9 @@ static const char *property_string =
     "    ushort titleCaseSpecial    : 1;\n"
     "    ushort caseFoldSpecial     : 1;\n"
     "    ushort unicodeVersion      : 4;\n"
-    "    ushort graphemeBreakClass  : 8; /* 4 used */\n"
-    "    ushort wordBreakClass      : 8; /* 4 used */\n"
+    "    ushort nfQuickCheck        : 8;\n" // could be narrowed
+    "    ushort graphemeBreakClass  : 4; /* 4 used */\n"
+    "    ushort wordBreakClass      : 4; /* 4 used */\n"
     "    ushort sentenceBreakClass  : 8; /* 4 used */\n"
     "    ushort lineBreakClass      : 8; /* 6 used */\n"
     "    ushort script              : 8; /* 7 used */\n"
@@ -741,6 +742,7 @@ struct PropertyFlags {
                 && sentenceBreakClass == o.sentenceBreakClass
                 && lineBreakClass == o.lineBreakClass
                 && script == o.script
+                && nfQuickCheck == o.nfQuickCheck
             );
     }
     // from UnicodeData.txt
@@ -768,6 +770,8 @@ struct PropertyFlags {
     SentenceBreakClass sentenceBreakClass;
     LineBreakClass lineBreakClass;
     int script;
+    // from DerivedNormalizationProps.txt
+    uchar nfQuickCheck;
 };
 
 
@@ -873,6 +877,7 @@ struct UnicodeData {
         p.wordBreakClass = WordBreak_Other;
         p.sentenceBreakClass = SentenceBreak_Other;
         p.script = QChar::Script_Unknown;
+        p.nfQuickCheck = 0;
         propertyIndex = -1;
         excludedComposition = false;
     }
@@ -1270,9 +1275,12 @@ static void readDerivedNormalizationProps()
         Q_ASSERT(l.size() >= 2);
 
         QByteArray propName = l[1].trimmed();
-        if (propName != "Full_Composition_Exclusion")
+        if (propName != "Full_Composition_Exclusion" &&
+            propName != "NFD_QC" && propName != "NFC_QC" &&
+            propName != "NFKD_QC" && propName != "NFKC_QC") {
             // ###
             continue;
+        }
 
         QByteArray codes = l[0].trimmed();
         codes.replace("..", ".");
@@ -1289,7 +1297,35 @@ static void readDerivedNormalizationProps()
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
             UnicodeData &d = UnicodeData::valueRef(codepoint);
-            d.excludedComposition = true;
+            if (propName == "Full_Composition_Exclusion") {
+                d.excludedComposition = true;
+            } else {
+                Q_STATIC_ASSERT(QString::NormalizationForm_D == 0);
+                Q_STATIC_ASSERT(QString::NormalizationForm_C == 1);
+                Q_STATIC_ASSERT(QString::NormalizationForm_KD == 2);
+                Q_STATIC_ASSERT(QString::NormalizationForm_KC == 3);
+
+                QString::NormalizationForm form;
+                if (propName == "NFD_QC")
+                    form = QString::NormalizationForm_D;
+                else if (propName == "NFC_QC")
+                    form = QString::NormalizationForm_C;
+                else if (propName == "NFKD_QC")
+                    form = QString::NormalizationForm_KD;
+                else// if (propName == "NFKC_QC")
+                    form = QString::NormalizationForm_KC;
+
+                Q_ASSERT(l.size() == 3);
+                l[2] = l[2].trimmed();
+
+                enum { NFQC_YES = 0, NFQC_NO = 1, NFQC_MAYBE = 3 };
+                uchar ynm = (l[2] == "N" ? NFQC_NO : l[2] == "M" ? NFQC_MAYBE : NFQC_YES);
+                if (ynm == NFQC_MAYBE) {
+                    // if this changes, we need to revise the normalizationQuickCheckHelper() implementation
+                    Q_ASSERT(form == QString::NormalizationForm_C || form == QString::NormalizationForm_KC);
+                }
+                d.p.nfQuickCheck |= (ynm << (form << 1)); // 2 bits per NF
+            }
         }
     }
 
@@ -2246,8 +2282,11 @@ static QByteArray createPropertyInfo()
 //     "        ushort unicodeVersion      : 4;\n"
         out += QByteArray::number( p.age );
         out += ", ";
-//     "        ushort graphemeBreakClass  : 8; /* 4 used */\n"
-//     "        ushort wordBreakClass      : 8; /* 4 used */\n"
+//     "    ushort nfQuickCheck        : 8;\n"
+        out += QByteArray::number( p.nfQuickCheck );
+        out += ", ";
+//     "        ushort graphemeBreakClass  : 4; /* 4 used */\n"
+//     "        ushort wordBreakClass      : 4; /* 4 used */\n"
 //     "        ushort sentenceBreakClass  : 8; /* 4 used */\n"
 //     "        ushort lineBreakClass      : 8; /* 6 used */\n"
         out += QByteArray::number( p.graphemeBreakClass );
