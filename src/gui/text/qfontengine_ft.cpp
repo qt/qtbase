@@ -46,8 +46,6 @@
 #include "qfontengine_ft_p.h"
 #include "private/qimage_p.h"
 
-#include <private/qharfbuzz_p.h>
-
 #ifndef QT_NO_FREETYPE
 
 #include "qfile.h"
@@ -118,24 +116,6 @@ QT_BEGIN_NAMESPACE
 #define TRUNC(x)    ((x) >> 6)
 #define ROUND(x)    (((x)+32) & -64)
 
-static HB_Error hb_getSFntTable(void *font, HB_Tag tableTag, HB_Byte *buffer, HB_UInt *length)
-{
-#if (FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) > 20103
-    FT_Face face = (FT_Face)font;
-    FT_ULong ftlen = *length;
-    FT_Error error = 0;
-
-    if ( !FT_IS_SFNT(face) )
-        return HB_Err_Invalid_Argument;
-
-    error = FT_Load_Sfnt_Table(face, tableTag, 0, buffer, &ftlen);
-    *length = ftlen;
-    return (HB_Error)error;
-#else
-    return HB_Err_Invalid_Argument;
-#endif
-}
-
 // -------------------------- Freetype support ------------------------------
 
 class QtFreetypeData
@@ -191,19 +171,19 @@ int QFreetypeFace::getPointInOutline(glyph_t glyph, int flags, quint32 point, QF
         return error;
 
     if (face->glyph->format != FT_GLYPH_FORMAT_OUTLINE)
-        return HB_Err_Invalid_SubTable;
+        return Err_Invalid_SubTable;
 
     *nPoints = face->glyph->outline.n_points;
     if (!(*nPoints))
-        return HB_Err_Ok;
+        return Err_Ok;
 
     if (point > *nPoints)
-        return HB_Err_Invalid_SubTable;
+        return Err_Invalid_SubTable;
 
     *xpos = QFixed::fromFixed(face->glyph->outline.points[point].x);
     *ypos = QFixed::fromFixed(face->glyph->outline.points[point].y);
 
-    return HB_Err_Ok;
+    return Err_Ok;
 }
 
 extern QByteArray qt_fontdata_from_index(int);
@@ -260,11 +240,8 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
         }
         newFreetype->face = face;
 
-        HB_Face hbFace = qHBNewFace(face, hb_getSFntTable);
-        Q_CHECK_PTR(hbFace);
-        if (hbFace->font_for_init != 0)
-            hbFace = qHBLoadFace(hbFace);
-        newFreetype->hbFace = (void *)hbFace;
+        newFreetype->hbFace = 0;
+        newFreetype->hbFace_destroy_func = 0;
 
         newFreetype->ref.store(1);
         newFreetype->xsize = 0;
@@ -319,7 +296,10 @@ void QFreetypeFace::release(const QFontEngine::FaceId &face_id)
 {
     QtFreetypeData *freetypeData = qt_getFreetypeData();
     if (!ref.deref()) {
-        qHBFreeFace((HB_Face)hbFace);
+        if (hbFace && hbFace_destroy_func) {
+            hbFace_destroy_func(hbFace);
+            hbFace = 0;
+        }
         FT_Done_Face(face);
         if(freetypeData->faces.contains(face_id))
             freetypeData->faces.take(face_id);
@@ -695,8 +675,6 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
     if (FT_Get_PS_Font_Info(freetype->face, &psrec) == FT_Err_Ok) {
         symbol = bool(fontDef.family.contains(QLatin1String("symbol"), Qt::CaseInsensitive));
     }
-    // #####
-    ((HB_Face)freetype->hbFace)->isSymbolFont = symbol;
 
     lbearing = rbearing = SHRT_MIN;
     freetype->computeSize(fontDef, &xsize, &ysize, &defaultGlyphSet.outline_drawing);
@@ -734,18 +712,6 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
     if (line_thickness < 1)
         line_thickness = 1;
 
-    HB_FontRec *hbFont = (HB_FontRec *)font_;
-    hbFont->x_ppem  = face->size->metrics.x_ppem;
-    hbFont->y_ppem  = face->size->metrics.y_ppem;
-    hbFont->x_scale = face->size->metrics.x_scale;
-    hbFont->y_scale = face->size->metrics.y_scale;
-
-    // ###
-    if (face_ && face_destroy_func)
-        face_destroy_func(face_);
-    face_ = freetype->hbFace;
-    face_destroy_func = 0; // we share the face in QFreeTypeFace, don't let ~QFontEngine delete it
-
     metrics = face->size->metrics;
 
     /*
@@ -772,6 +738,15 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
     }
 
     fontDef.styleName = QString::fromUtf8(face->style_name);
+
+    if (!freetype->hbFace) {
+        freetype->hbFace = harfbuzzFace();
+        freetype->hbFace_destroy_func = face_destroy_func;
+    } else {
+        Q_ASSERT(!face_);
+        face_ = freetype->hbFace;
+    }
+    face_destroy_func = 0; // we share the HB face in QFreeTypeFace, so do not let ~QFontEngine() destroy it
 
     unlockFace();
 

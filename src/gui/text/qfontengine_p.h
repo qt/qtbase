@@ -75,6 +75,15 @@ struct QGlyphLayout;
     ((quint32)(ch4)) \
    )
 
+// ### this only used in getPointInOutline(), refactor it and then remove these magic numbers
+enum HB_Compat_Error {
+    Err_Ok                           = 0x0000,
+    Err_Not_Covered                  = 0xFFFF,
+    Err_Invalid_Argument             = 0x1A66,
+    Err_Invalid_SubTable_Format      = 0x157F,
+    Err_Invalid_SubTable             = 0x1570
+};
+
 typedef void (*qt_destroy_func_t) (void *user_data);
 
 class Q_GUI_EXPORT QFontEngine : public QObject

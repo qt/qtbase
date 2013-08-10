@@ -50,7 +50,6 @@
 #include <QtCore/qbuffer.h>
 #if !defined(QT_NO_FREETYPE)
 #include "private/qfontengine_ft_p.h"
-#include <private/qharfbuzz_p.h>
 #endif
 #include "private/qcore_unix_p.h" // overrides QT_OPEN
 
@@ -858,7 +857,7 @@ void QFontEngineQPF::doKerning(QGlyphLayout *g, QFontEngine::ShaperFlags flags) 
 int QFontEngineQPF::getPointInOutline(glyph_t glyph, int flags, quint32 point, QFixed *xpos, QFixed *ypos, quint32 *nPoints)
 {
     if (!freetype)
-        return HB_Err_Not_Covered;
+        return Err_Not_Covered;
     lockFace();
     int result = freetype->getPointInOutline(glyph, flags, point, xpos, ypos, nPoints);
     unlockFace();

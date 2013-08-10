@@ -143,7 +143,7 @@ int QFontEngine::getPointInOutline(glyph_t glyph, int flags, quint32 point, QFix
     Q_UNUSED(xpos)
     Q_UNUSED(ypos)
     Q_UNUSED(nPoints)
-    return HB_Err_Not_Covered;
+    return Err_Not_Covered;
 }
 
 static HB_Error hb_getPointInOutline(HB_Font font, HB_Glyph glyph, int flags, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints)
@@ -203,17 +203,6 @@ QFontEngine::QFontEngine()
     fsType = 0;
     symbol = false;
 
-    {
-        HB_FontRec *hbFont = (HB_FontRec *) malloc(sizeof(HB_FontRec));
-        Q_CHECK_PTR(hbFont);
-        memset(hbFont, 0, sizeof(HB_FontRec));
-        hbFont->klass = &hb_fontClass;
-        hbFont->userData = this;
-
-        font_ = (void *)hbFont;
-        font_destroy_func = free;
-    }
-
     glyphFormat = -1;
     m_subPixelPositionCount = 0;
 
@@ -262,8 +251,12 @@ QFixed QFontEngine::underlinePosition() const
 
 void *QFontEngine::harfbuzzFont() const
 {
-    HB_FontRec *hbFont = (HB_FontRec *)font_;
-    if (!hbFont->x_ppem) {
+    if (!font_) {
+        HB_FontRec *hbFont = (HB_FontRec *) malloc(sizeof(HB_FontRec));
+        Q_CHECK_PTR(hbFont);
+        hbFont->klass = &hb_fontClass;
+        hbFont->userData = const_cast<QFontEngine *>(this);
+
         qint64 emSquare = emSquareSize().truncate();
         Q_ASSERT(emSquare == emSquareSize().toInt()); // ensure no truncation
         if (emSquare == 0)
@@ -273,6 +266,9 @@ void *QFontEngine::harfbuzzFont() const
         // same as QFixed(x)/QFixed(emSquare) but without int32 overflow for x
         hbFont->x_scale = (((qint64)hbFont->x_ppem << 6) * 0x10000L + (emSquare >> 1)) / emSquare;
         hbFont->y_scale = (((qint64)hbFont->y_ppem << 6) * 0x10000L + (emSquare >> 1)) / emSquare;
+
+        font_ = (void *)hbFont;
+        font_destroy_func = free;
     }
     return font_;
 }

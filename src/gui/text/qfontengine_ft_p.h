@@ -99,7 +99,6 @@ struct QFreetypeFace
     }
 
     FT_Face face;
-    void *hbFace;
     int xsize; // 26.6
     int ysize; // 26.6
     FT_Matrix matrix;
@@ -124,6 +123,9 @@ private:
     QAtomicInt ref;
     QMutex _lock;
     QByteArray fontData;
+
+    void *hbFace;
+    qt_destroy_func_t hbFace_destroy_func;
 };
 
 // If this is exported this breaks compilation of the windows
