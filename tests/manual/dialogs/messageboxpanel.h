@@ -70,6 +70,7 @@ private:
     QComboBox *m_iconComboBox;
     QLineEdit *m_textInMsgBox;
     QLineEdit *m_informativeText;
+    QLineEdit *m_detailedtext;
     QLineEdit *m_buttonsMask;
     QPushButton *m_btnExec;
     QPushButton *m_btnShowApply;

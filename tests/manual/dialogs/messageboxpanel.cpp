@@ -57,6 +57,7 @@ MessageBoxPanel::MessageBoxPanel(QWidget *parent) : QWidget(parent)
 ,m_iconComboBox(new QComboBox)
 ,m_textInMsgBox(new QLineEdit)
 ,m_informativeText(new QLineEdit)
+,m_detailedtext(new QLineEdit)
 ,m_buttonsMask(new QLineEdit)
 ,m_btnExec(new QPushButton)
 ,m_btnShowApply(new QPushButton)
@@ -76,6 +77,10 @@ MessageBoxPanel::MessageBoxPanel(QWidget *parent) : QWidget(parent)
     // informative text
     optionsLayout->addWidget(new QLabel(QString::fromLatin1("Informative Text")));
     optionsLayout->addWidget(m_informativeText);
+
+    // detailed text
+    optionsLayout->addWidget(new QLabel(QString::fromLatin1("detailed Text")));
+    optionsLayout->addWidget(m_detailedtext);
 
     // icon
     QStringList items;
@@ -126,6 +131,7 @@ void MessageBoxPanel::setupMessageBox(QMessageBox &box)
     m_resultLabel->setText(QString());
     box.setText(m_textInMsgBox->text());
     box.setInformativeText(m_informativeText->text());
+    box.setDetailedText(m_detailedtext->text());
 
     QString btnHexText = m_buttonsMask->text();
     btnHexText = btnHexText.replace(QString::fromLatin1("0x"), QString(), Qt::CaseInsensitive);
