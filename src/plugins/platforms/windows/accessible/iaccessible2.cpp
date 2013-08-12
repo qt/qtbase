@@ -1207,10 +1207,14 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_rowColumnExtents(long *row,
 {
     QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-    if (!accessible)
+    if (!accessible || !tableCellInterface())
         return E_FAIL;
 
-    tableCellInterface()->rowColumnExtents((int*)row, (int*)column, (int*)rowExtents, (int*)columnExtents, (bool*)isSelected);
+    *row = (long)tableCellInterface()->rowIndex();
+    *column = (long)tableCellInterface()->columnIndex();
+    *rowExtents = (long)tableCellInterface()->rowExtent();
+    *columnExtents = (long)tableCellInterface()->columnExtent();
+    *isSelected = tableCellInterface()->isSelected();
     return S_OK;
 }
 

@@ -2242,11 +2242,14 @@ bool AtSpiAdaptor::tableInterface(QAccessibleInterface *interface, const QString
             col = index % cols;
             QAccessibleTableCellInterface *cell = interface->tableInterface()->cellAt(row, col)->tableCellInterface();
             if (cell) {
-                cell->rowColumnExtents(&row, &col, &rowExtents, &colExtents, &isSelected);
+                row = cell->rowIndex();
+                col = cell->columnIndex();
+                rowExtents = cell->rowExtent();
+                colExtents = cell->columnExtent();
+                isSelected = cell->isSelected();
                 success = true;
             }
         }
-
         QVariantList list;
         list << success << row << col << rowExtents << colExtents << isSelected;
         connection.send(message.createReply(list));

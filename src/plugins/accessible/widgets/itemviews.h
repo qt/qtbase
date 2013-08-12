@@ -194,7 +194,6 @@ public:
     virtual QList<QAccessibleInterface*> rowHeaderCells() const;
     virtual int rowIndex() const;
     virtual bool isSelected() const;
-    virtual void rowColumnExtents(int *row, int *column, int *rowExtents, int *columnExtents, bool *selected) const;
     virtual QAccessibleInterface* table() const;
 
     //action interface

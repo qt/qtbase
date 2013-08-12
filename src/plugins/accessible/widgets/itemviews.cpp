@@ -1010,15 +1010,6 @@ void QAccessibleTableCell::unselectCell()
     view->selectionModel()->select(m_index, QItemSelectionModel::Deselect);
 }
 
-void QAccessibleTableCell::rowColumnExtents(int *row, int *column, int *rowExtents, int *columnExtents, bool *selected) const
-{
-    *row = m_index.row();
-    *column = m_index.column();
-    *rowExtents = 1;
-    *columnExtents = 1;
-    *selected = isSelected();
-}
-
 QAccessibleInterface *QAccessibleTableCell::table() const
 {
     return QAccessible::queryAccessibleInterface(view);
