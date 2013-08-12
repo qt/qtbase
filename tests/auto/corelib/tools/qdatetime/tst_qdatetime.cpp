@@ -528,12 +528,7 @@ void tst_QDateTime::setMSecsSinceEpoch_data()
             // positive value 1 too big for qint64max, causing an overflow.
             << std::numeric_limits<qint64>::min() + 1
             << QDateTime(QDate(-292275056, 5, 16), QTime(16, 47, 4, 193), Qt::UTC)
-#ifdef Q_OS_WIN
-            // Windows applies Daylight Time to dates before 1980, Olsen does not
-            << QDateTime(QDate(-292275056, 5, 16), QTime(18, 47, 4, 193), Qt::LocalTime);
-#else
             << QDateTime(QDate(-292275056, 5, 16), QTime(17, 47, 4, 193), Qt::LocalTime);
-#endif
     QTest::newRow("max")
             << std::numeric_limits<qint64>::max()
             << QDateTime(QDate(292278994, 8, 17), QTime(7, 12, 55, 807), Qt::UTC)
@@ -561,7 +556,9 @@ void tst_QDateTime::setMSecsSinceEpoch()
         localDt.setTimeSpec(Qt::LocalTime);
         localDt.setMSecsSinceEpoch(msecs);
 
-        QCOMPARE(localDt, utc);
+        // LocalTime will overflow for max
+        if (msecs != std::numeric_limits<qint64>::max())
+            QCOMPARE(localDt, utc);
         QCOMPARE(localDt.timeSpec(), Qt::LocalTime);
     }
 
@@ -590,7 +587,9 @@ void tst_QDateTime::fromMSecsSinceEpoch()
     QDateTime dtUtc = QDateTime::fromMSecsSinceEpoch(msecs, Qt::UTC);
     QDateTime dtOffset = QDateTime::fromMSecsSinceEpoch(msecs, Qt::OffsetFromUTC, 60*60);
 
-    QCOMPARE(dtLocal, utc);
+    // LocalTime will overflow for max
+    if (msecs != std::numeric_limits<qint64>::max())
+        QCOMPARE(dtLocal, utc);
 
     QCOMPARE(dtUtc, utc);
     QCOMPARE(dtUtc.date(), utc.date());
@@ -598,7 +597,9 @@ void tst_QDateTime::fromMSecsSinceEpoch()
 
     QCOMPARE(dtOffset, utc);
     QCOMPARE(dtOffset.offsetFromUtc(), 60*60);
-    QCOMPARE(dtOffset.time(), utc.time().addMSecs(60*60*1000));
+    // // OffsetFromUTC will overflow for max
+    if (msecs != std::numeric_limits<qint64>::max())
+        QCOMPARE(dtOffset.time(), utc.time().addMSecs(60*60*1000));
 
     if (europeanTimeZone) {
         QCOMPARE(dtLocal.toLocalTime(), european);
@@ -608,7 +609,9 @@ void tst_QDateTime::fromMSecsSinceEpoch()
         QSKIP("You must test using Central European (CET/CEST) time zone, e.g. TZ=Europe/Oslo");
     }
 
-    QCOMPARE(dtLocal.toMSecsSinceEpoch(), msecs);
+    // LocalTime will overflow for max
+    if (msecs != std::numeric_limits<qint64>::max())
+        QCOMPARE(dtLocal.toMSecsSinceEpoch(), msecs);
     QCOMPARE(dtUtc.toMSecsSinceEpoch(), msecs);
     QCOMPARE(dtOffset.toMSecsSinceEpoch(), msecs);
 
@@ -619,7 +622,9 @@ void tst_QDateTime::fromMSecsSinceEpoch()
     }
 
     QDateTime reference(QDate(1970, 1, 1), QTime(), Qt::UTC);
-    QCOMPARE(dtLocal, reference.addMSecs(msecs));
+    // LocalTime will overflow for max
+    if (msecs != std::numeric_limits<qint64>::max())
+        QCOMPARE(dtLocal, reference.addMSecs(msecs));
     QCOMPARE(dtUtc, reference.addMSecs(msecs));
     QCOMPARE(dtOffset, reference.addMSecs(msecs));
 }
@@ -982,15 +987,8 @@ void tst_QDateTime::addSecs_data()
                            << QDateTime(QDate(2005, 1, 1), standardTime, Qt::LocalTime);
         QTest::newRow("cet3") << QDateTime(QDate(1760, 1, 1), standardTime, Qt::LocalTime) << 86400
                            << QDateTime(QDate(1760, 1, 2), standardTime, Qt::LocalTime);
-#ifdef Q_OS_WIN
-        // QDateTime uses 1980 on Windows, which did have daylight savings in July
-        QTest::newRow("cet4") << QDateTime(QDate(1760, 1, 1), standardTime, Qt::LocalTime) << (86400 * 185)
-                           << QDateTime(QDate(1760, 7, 4), daylightTime, Qt::LocalTime);
-#else
-        // QDateTime uses 1970 everywhere else, which did NOT have daylight savings in July
         QTest::newRow("cet4") << QDateTime(QDate(1760, 1, 1), standardTime, Qt::LocalTime) << (86400 * 185)
                            << QDateTime(QDate(1760, 7, 4), standardTime, Qt::LocalTime);
-#endif
         QTest::newRow("cet5") << QDateTime(QDate(1760, 1, 1), standardTime, Qt::LocalTime) << (86400 * 366)
                            << QDateTime(QDate(1761, 1, 1), standardTime, Qt::LocalTime);
         QTest::newRow("cet6") << QDateTime(QDate(4000, 1, 1), standardTime, Qt::LocalTime) << 86400
@@ -1088,33 +1086,16 @@ void tst_QDateTime::toTimeSpec_data()
 
     QTest::newRow("-271821/4/20 00:00 UTC (JavaScript min date, start of day)")
         << QDateTime(QDate(-271821, 4, 20), QTime(0, 0, 0), Qt::UTC)
-#ifdef Q_OS_WIN
-        // Windows applies Daylight Time to dates before 1980, Olsen does not
-        << QDateTime(QDate(-271821, 4, 20), QTime(2, 0, 0), Qt::LocalTime);
-#else
         << QDateTime(QDate(-271821, 4, 20), QTime(1, 0, 0), Qt::LocalTime);
-#endif
     QTest::newRow("-271821/4/20 23:00 UTC (JavaScript min date, end of day)")
         << QDateTime(QDate(-271821, 4, 20), QTime(23, 0, 0), Qt::UTC)
-#ifdef Q_OS_WIN
-        // Windows applies Daylight Time to dates before 1980, Olsen does not
-        << QDateTime(QDate(-271821, 4, 21), QTime(1, 0, 0), Qt::LocalTime);
-#else
         << QDateTime(QDate(-271821, 4, 21), QTime(0, 0, 0), Qt::LocalTime);
-#endif
 
     if (europeanTimeZone) {
         QTest::newRow("summer1") << QDateTime(QDate(2004, 6, 30), utcTime, Qt::UTC)
                                  << QDateTime(QDate(2004, 6, 30), localDaylightTime, Qt::LocalTime);
-#ifdef Q_OS_WIN
-        // QDateTime uses 1980 on Windows, which did have daylight savings in July
-        QTest::newRow("summer2") << QDateTime(QDate(1760, 6, 30), utcTime, Qt::UTC)
-                                 << QDateTime(QDate(1760, 6, 30), localDaylightTime, Qt::LocalTime);
-#else
-        // QDateTime uses 1970 everywhere else, which did NOT have daylight savings in July
         QTest::newRow("summer2") << QDateTime(QDate(1760, 6, 30), utcTime, Qt::UTC)
                                  << QDateTime(QDate(1760, 6, 30), localStandardTime, Qt::LocalTime);
-#endif
         QTest::newRow("summer3") << QDateTime(QDate(4000, 6, 30), utcTime, Qt::UTC)
                                  << QDateTime(QDate(4000, 6, 30), localDaylightTime, Qt::LocalTime);
 
@@ -2436,6 +2417,7 @@ void tst_QDateTime::daylightTransitions() const
         QCOMPARE(test.date(), QDate(2012, 3, 25));
         QCOMPARE(test.time(), QTime(3, 0, 0));
         QCOMPARE(test.toMSecsSinceEpoch(), daylight2012);
+
 
         // Test for correct behviour for DaylightTime -> StandardTime transition, i.e. second occurrence
 

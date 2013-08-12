@@ -80,28 +80,45 @@ public:
         DaylightTime
     };
 
-    QDateTimePrivate() : m_spec(Qt::LocalTime), m_offsetFromUtc(0) {}
-    QDateTimePrivate(const QDate &toDate, const QTime &toTime, Qt::TimeSpec toSpec,
-                     int offsetSeconds);
-    QDateTimePrivate(const QDateTimePrivate &other)
-        : QSharedData(other), date(other.date), time(other.time), m_spec(other.m_spec),
-          m_offsetFromUtc(other.m_offsetFromUtc)
+    // Status of date/time
+    enum StatusFlag {
+        NullDate            = 0x01,
+        NullTime            = 0x02,
+        ValidDate           = 0x04,
+        ValidTime           = 0x08,
+    };
+    Q_DECLARE_FLAGS(StatusFlags, StatusFlag)
+
+    QDateTimePrivate() : m_msecs(0),
+                         m_spec(Qt::LocalTime),
+                         m_offsetFromUtc(0),
+                         m_status(NullDate | NullTime)
     {}
 
-    QDate date;
-    QTime time;
+    QDateTimePrivate(const QDate &toDate, const QTime &toTime, Qt::TimeSpec toSpec,
+                     int offsetSeconds);
+
+    QDateTimePrivate(const QDateTimePrivate &other) : QSharedData(other),
+                                                      m_msecs(other.m_msecs),
+                                                      m_spec(other.m_spec),
+                                                      m_offsetFromUtc(other.m_offsetFromUtc),
+                                                      m_status(other.m_status)
+    {}
+
+    qint64 m_msecs;
     Qt::TimeSpec m_spec;
     int m_offsetFromUtc;
-
-    // Get current date/time in LocalTime and put result in outDate and outTime
-    Spec getLocal(QDate &outDate, QTime &outTime) const;
-    // Get current date/time in UTC and put result in outDate and outTime
-    void getUTC(QDate &outDate, QTime &outTime) const;
-
-    // Add msecs to given datetime and put result in utcDate and utcTime
-    static void addMSecs(QDate &utcDate, QTime &utcTime, qint64 msecs);
+    StatusFlags m_status;
 
     void setTimeSpec(Qt::TimeSpec spec, int offsetSeconds);
+    void setDateTime(const QDate &date, const QTime &time);
+    void getDateTime(QDate *date, QTime *time) const;
+
+    // Get/set date and time status
+    inline bool isNullDate() const { return (m_status & NullDate) == NullDate; }
+    inline bool isNullTime() const { return (m_status & NullTime) == NullTime; }
+    inline bool isValidDate() const { return (m_status & ValidDate) == ValidDate; }
+    inline bool isValidTime() const { return (m_status & ValidTime) == ValidTime; }
 
     static inline qint64 minJd() { return QDate::minJd(); }
     static inline qint64 maxJd() { return QDate::maxJd(); }

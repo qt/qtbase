@@ -108,6 +108,7 @@ struct tm {
 #endif // _TM_DEFINED
 
 FILETIME qt_wince_time_tToFt( time_t tt );
+time_t qt_wince_ftToTime_t( const FILETIME ft );
 
 // File I/O ---------------------------------------------------------
 #define _O_RDONLY       0x0001
@@ -433,6 +434,7 @@ generate_inline_return_func4(getenv_s, errno_t, size_t *, char *, size_t, const 
 generate_inline_return_func2(_putenv_s, errno_t, const char *, const char *)
 generate_inline_return_func0(_getpid, int)
 generate_inline_return_func1(time_tToFt, FILETIME, time_t)
+generate_inline_return_func1(ftToTime_t, time_t, FILETIME)
 generate_inline_return_func0(_getdrive, int)
 generate_inline_return_func2(_waccess, int, const wchar_t *, int)
 generate_inline_return_func3(_wopen, int, const wchar_t *, int, int)
