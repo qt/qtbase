@@ -266,13 +266,7 @@ void QMessageBoxPrivate::init(const QString &title, const QString &text)
     label->setTextInteractionFlags(Qt::TextInteractionFlags(q->style()->styleHint(QStyle::SH_MessageBox_TextInteractionFlags, 0, q)));
     label->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
     label->setOpenExternalLinks(true);
-#if defined(Q_OS_MAC)
-    label->setContentsMargins(16, 0, 0, 0);
-#else
-    label->setContentsMargins(2, 0, 0, 0);
-    label->setIndent(9);
-#endif
-    iconLabel = new QLabel;
+    iconLabel = new QLabel(q);
     iconLabel->setObjectName(QLatin1String("qt_msgboxex_icon_label"));
     iconLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
@@ -300,26 +294,37 @@ void QMessageBoxPrivate::setupLayout()
     Q_Q(QMessageBox);
     delete q->layout();
     QGridLayout *grid = new QGridLayout;
-    grid->addWidget(iconLabel, 0, 0, 2, 1, Qt::AlignTop);
-    grid->addWidget(label, 0, 1, 1, 1);
-    if (informativeLabel)
-        grid->addWidget(informativeLabel, 1, 1, 1, 1);
-#ifndef Q_OS_MAC
-    grid->addWidget(buttonBox, 2, 0, 1, 2);
-#else
-    grid->addWidget(buttonBox, 3, 1, 1, 1);
-#endif
-    if (detailsText)
-        grid->addWidget(detailsText, grid->rowCount(), 0, 1, grid->columnCount());
+    bool hasIcon = iconLabel->pixmap() && !iconLabel->pixmap()->isNull();
+
+    if (hasIcon)
+        grid->addWidget(iconLabel, 0, 0, 2, 1, Qt::AlignTop);
+    iconLabel->setVisible(hasIcon);
 #ifdef Q_OS_MAC
+    QSpacerItem *indentSpacer = new QSpacerItem(14, 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
+#else
+    QSpacerItem *indentSpacer = new QSpacerItem(hasIcon ? 7 : 15, 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
+#endif
+    grid->addItem(indentSpacer, 0, hasIcon ? 1 : 0, 2, 1);
+    grid->addWidget(label, 0, hasIcon ? 2 : 1, 1, 1);
+    if (informativeLabel) {
+#ifndef Q_OS_MAC
+        informativeLabel->setContentsMargins(0, 7, 0, 7);
+#endif
+        grid->addWidget(informativeLabel, 1, hasIcon ? 2 : 1, 1, 1);
+    }
+#ifdef Q_OS_MAC
+    grid->addWidget(buttonBox, 3, hasIcon ? 2 : 1, 1, 1);
     grid->setMargin(0);
     grid->setVerticalSpacing(8);
     grid->setHorizontalSpacing(0);
     q->setContentsMargins(24, 15, 24, 20);
     grid->setRowStretch(1, 100);
     grid->setRowMinimumHeight(2, 6);
+#else
+    grid->addWidget(buttonBox, 2, 0, 1, grid->columnCount());
 #endif
-
+    if (detailsText)
+        grid->addWidget(detailsText, grid->rowCount(), 0, 1, grid->columnCount());
     grid->setSizeConstraint(QLayout::SetNoConstraint);
     q->setLayout(grid);
 
@@ -1228,8 +1233,8 @@ void QMessageBox::setIconPixmap(const QPixmap &pixmap)
 {
     Q_D(QMessageBox);
     d->iconLabel->setPixmap(pixmap);
-    d->updateSize();
     d->icon = NoIcon;
+    d->setupLayout();
 }
 
 /*!
@@ -2523,9 +2528,6 @@ void QMessageBox::setInformativeText(const QString &text)
             d->informativeLabel->deleteLater();
         }
         d->informativeLabel = 0;
-#ifndef Q_OS_MAC
-        d->label->setContentsMargins(2, 0, 0, 0);
-#endif
     } else {
         if (!d->informativeLabel) {
             QLabel *label = new QLabel;
@@ -2534,12 +2536,7 @@ void QMessageBox::setInformativeText(const QString &text)
             label->setAlignment(Qt::AlignTop | Qt::AlignLeft);
             label->setOpenExternalLinks(true);
             label->setWordWrap(true);
-#ifndef Q_OS_MAC
-            d->label->setContentsMargins(2, 0, 0, 0);
-            label->setContentsMargins(2, 0, 0, 6);
-            label->setIndent(9);
-#else
-            label->setContentsMargins(16, 0, 0, 0);
+#ifdef Q_OS_MAC
             // apply a smaller font the information label on the mac
             label->setFont(qt_app_fonts_hash()->value("QTipLabel"));
 #endif
