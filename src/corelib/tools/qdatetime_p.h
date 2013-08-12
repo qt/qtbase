@@ -62,19 +62,35 @@ QT_BEGIN_NAMESPACE
 class QDateTimePrivate : public QSharedData
 {
 public:
-    enum Spec { LocalUnknown = -1, LocalStandard = 0, LocalDST = 1, UTC = 2, OffsetFromUTC = 3};
+    // Never change or delete this enum, it is required for backwards compatible
+    // serialization of QDateTime before 5.2, so is essentially public API
+    enum Spec {
+        LocalUnknown = -1,
+        LocalStandard = 0,
+        LocalDST = 1,
+        UTC = 2,
+        OffsetFromUTC = 3
+    };
 
-    QDateTimePrivate() : spec(LocalUnknown), m_offsetFromUtc(0) {}
+    // Daylight Time Status
+    enum DaylightStatus {
+        NoDaylightTime,
+        UnknownDaylightTime,
+        StandardTime,
+        DaylightTime
+    };
+
+    QDateTimePrivate() : m_spec(Qt::LocalTime), m_offsetFromUtc(0) {}
     QDateTimePrivate(const QDate &toDate, const QTime &toTime, Qt::TimeSpec toSpec,
                      int offsetSeconds);
     QDateTimePrivate(const QDateTimePrivate &other)
-        : QSharedData(other), date(other.date), time(other.time), spec(other.spec),
+        : QSharedData(other), date(other.date), time(other.time), m_spec(other.m_spec),
           m_offsetFromUtc(other.m_offsetFromUtc)
     {}
 
     QDate date;
     QTime time;
-    Spec spec;
+    Qt::TimeSpec m_spec;
     int m_offsetFromUtc;
 
     // Get current date/time in LocalTime and put result in outDate and outTime
@@ -84,6 +100,8 @@ public:
 
     // Add msecs to given datetime and put result in utcDate and utcTime
     static void addMSecs(QDate &utcDate, QTime &utcTime, qint64 msecs);
+
+    void setTimeSpec(Qt::TimeSpec spec, int offsetSeconds);
 
     static inline qint64 minJd() { return QDate::minJd(); }
     static inline qint64 maxJd() { return QDate::maxJd(); }
