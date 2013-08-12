@@ -1,5 +1,5 @@
 
-equals(TEMPLATE, app):contains(QT, gui) {
+equals(TEMPLATE, app):contains(QT, gui(-private)?) {
     LIBS *= -L$$[QT_INSTALL_PLUGINS/get]/platforms
 
     lib_name = qios
