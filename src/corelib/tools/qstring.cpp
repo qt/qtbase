@@ -6637,6 +6637,8 @@ void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::
     for (int i = from; i < len; ++i) {
         if (p[i].unicode() >= 0x80) {
             simple = false;
+            if (i > from)
+                from = i - 1;
             break;
         }
     }
@@ -6679,6 +6681,10 @@ void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::
             }
         }
     }
+
+    if (normalizationQuickCheckHelper(data, mode, from, &from))
+        return;
+
     decomposeHelper(data, mode < QString::NormalizationForm_KD, version, from);
 
     canonicalOrderHelper(data, version, from);
