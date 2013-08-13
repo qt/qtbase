@@ -168,6 +168,9 @@ public:
     bool operator>(const QTime &other) const { return mds > other.mds; }
     bool operator>=(const QTime &other) const { return mds >= other.mds; }
 
+    static inline QTime fromMSecsSinceStartOfDay(int msecs) { QTime t; t.mds = msecs; return t; }
+    inline int msecsSinceStartOfDay() const { return mds == NullTime ? 0 : mds; }
+
     static QTime currentTime();
 #ifndef QT_NO_DATESTRING
     static QTime fromString(const QString &s, Qt::DateFormat f = Qt::TextDate);

@@ -1864,6 +1864,25 @@ int QTime::msecsTo(const QTime &t) const
 */
 
 /*!
+    \fn QTime QTime::fromMSecsSinceStartOfDay(int msecs)
+
+    Returns a new QTime instance with the time set to the number of \a msecs
+    since the start of the day, i.e. since 00:00:00.
+
+    If \a msecs falls outside the valid range an invalid QTime will be returned.
+
+    \sa msecsSinceStartOfDay()
+*/
+
+/*!
+    \fn int QTime::msecsSinceStartOfDay() const
+
+    Returns the number of msecs since the start of the day, i.e. since 00:00:00.
+
+    \sa fromMSecsSinceStartOfDay()
+*/
+
+/*!
     \fn QTime::currentTime()
 
     Returns the current time as reported by the system clock.
@@ -2695,7 +2714,7 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
     }
 
     d->date = QDate(1970, 1, 1).addDays(ddays);
-    d->time = QTime(0, 0, 0).addMSecs(msecs);
+    d->time = QTime::fromMSecsSinceStartOfDay(msecs);
 
     if (d->spec == QDateTimePrivate::OffsetFromUTC)
         utcToOffset(&d->date, &d->time, d->m_offsetFromUtc);
@@ -4449,7 +4468,7 @@ uint qHash(const QDate &key, uint seed) Q_DECL_NOTHROW
 */
 uint qHash(const QTime &key, uint seed) Q_DECL_NOTHROW
 {
-    return qHash(QTime(0, 0, 0, 0).msecsTo(key), seed);
+    return qHash(key.msecsSinceStartOfDay(), seed);
 }
 
 QT_END_NAMESPACE
