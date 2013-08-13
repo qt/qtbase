@@ -1499,6 +1499,9 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
         } else if (event->data.data32[0] == atom(QXcbAtom::WM_TAKE_FOCUS)) {
             connection()->setTime(event->data.data32[1]);
         } else if (event->data.data32[0] == atom(QXcbAtom::_NET_WM_PING)) {
+            if (event->window == m_screen->root())
+                return;
+
             xcb_client_message_event_t reply = *event;
 
             reply.response_type = XCB_CLIENT_MESSAGE;
