@@ -342,7 +342,8 @@ void TableGenerator::parseKeySequence(QString line)
         }
     } else {
         // handle direct text encoded in the locale
-        elem.value = valueType.unicode();
+        const QChar localeValueType = (valueType == '\\') ? line.at(composeValueIndex + 1) : valueType;
+        elem.value = localeValueType.unicode();
     }
 
     // find the comment
