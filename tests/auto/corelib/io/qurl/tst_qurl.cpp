@@ -3368,6 +3368,11 @@ void tst_QUrl::setComponents_data()
     QTest::newRow("path-empty") << QUrl("http://example.com/path")
                                 << int(Path) << "" << Tolerant << true
                                 << PrettyDecoded << "" << "http://example.com";
+    // If the %3A gets decoded to ":", the URL becomes invalid;
+    // see test path-invalid-1 below
+    QTest::newRow("path-%3A-before-slash") << QUrl()
+                                           << int(Path) << "c%3A/" << Tolerant << true
+                                           << PrettyDecoded << "c%3A/" << "c%3A/";
 
     // the other fields can be present and be empty
     // that is, their delimiters would be present, but there would be nothing to one side
