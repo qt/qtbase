@@ -1007,7 +1007,12 @@ qreal QCocoaWindow::devicePixelRatio() const
 {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
-        return qreal([[m_contentView window] backingScaleFactor]);
+        NSWindow* window = [m_contentView window];
+        if (window) {
+          return qreal([window backingScaleFactor]);
+        } else {
+          return 1.0;
+        }
     } else
 #endif
     {
