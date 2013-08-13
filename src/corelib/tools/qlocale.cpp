@@ -652,6 +652,11 @@ const QLocaleData *QLocaleData::c()
     return c_data;
 }
 
+static inline QString getLocaleData(const ushort *data, int size)
+{
+    return size > 0 ? QString::fromRawData(reinterpret_cast<const QChar *>(data), size) : QString();
+}
+
 static QString getLocaleListData(const ushort *data, int size, int index)
 {
     static const ushort separator = ';';
@@ -665,14 +670,7 @@ static QString getLocaleListData(const ushort *data, int size, int index)
     const ushort *end = data;
     while (size > 0 && *end != separator)
         ++end, --size;
-    if (end-data == 0)
-        return QString();
-    return QString::fromRawData(reinterpret_cast<const QChar*>(data), end-data);
-}
-
-static inline QString getLocaleData(const ushort *data, int size)
-{
-    return size ? QString::fromRawData(reinterpret_cast<const QChar*>(data), size) : QString();
+    return getLocaleData(data, end - data);
 }
 
 
