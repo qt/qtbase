@@ -75,7 +75,8 @@ public:
         ConnectSent,
         Connected,
         SendAuthentication,
-        ReadResponseContent
+        ReadResponseContent,
+        ReadResponseHeader
     };
     QHttpSocketEngine(QObject *parent = 0);
     ~QHttpSocketEngine();
@@ -155,6 +156,8 @@ private:
     void emitReadNotification();
     void emitWriteNotification();
     void emitConnectionNotification();
+
+    bool readHttpHeader();
 
     Q_DECLARE_PRIVATE(QHttpSocketEngine)
     Q_DISABLE_COPY(QHttpSocketEngine)

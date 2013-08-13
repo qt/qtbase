@@ -545,7 +545,25 @@ void QHttpSocketEngine::slotSocketReadNotification()
         return;
     }
 
-  readResponseContent:
+    if (d->state == ConnectSent) {
+        d->reply->d_func()->state = QHttpNetworkReplyPrivate::NothingDoneState;
+        d->state = ReadResponseHeader;
+    }
+
+    if (d->state == ReadResponseHeader) {
+        bool ok = readHttpHeader();
+        if (!ok) {
+            // protocol error, this isn't HTTP
+            d->socket->close();
+            setState(QAbstractSocket::UnconnectedState);
+            setError(QAbstractSocket::ProxyProtocolError, tr("Did not receive HTTP response from proxy"));
+            emitConnectionNotification();
+            return;
+        }
+        if (d->state == ReadResponseHeader)
+            return; // readHttpHeader() was not done yet, need to wait for more header data
+    }
+
     if (d->state == ReadResponseContent) {
         char dummybuffer[4096];
         while (d->pendingResponseData) {
@@ -564,31 +582,8 @@ void QHttpSocketEngine::slotSocketReadNotification()
         }
         if (d->pendingResponseData > 0)
             return;
-        d->state = SendAuthentication;
-        slotSocketConnected();
-        return;
-    }
-
-    bool ok = true;
-    if (d->reply->d_func()->state == QHttpNetworkReplyPrivate::NothingDoneState)
-        d->reply->d_func()->state = QHttpNetworkReplyPrivate::ReadingStatusState;
-    if (d->reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingStatusState) {
-        ok = d->reply->d_func()->readStatus(d->socket) != -1;
-        if (ok && d->reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingStatusState)
-            return; //Not done parsing headers yet, wait for more data
-    }
-    if (ok && d->reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingHeaderState) {
-        ok = d->reply->d_func()->readHeader(d->socket) != -1;
-        if (ok && d->reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingHeaderState)
-            return; //Not done parsing headers yet, wait for more data
-    }
-    if (!ok) {
-        // protocol error, this isn't HTTP
-        d->socket->close();
-        setState(QAbstractSocket::UnconnectedState);
-        setError(QAbstractSocket::ProxyProtocolError, tr("Did not receive HTTP response from proxy"));
-        emitConnectionNotification();
-        return;
+        if (d->reply->d_func()->statusCode == 407)
+            d->state = SendAuthentication;
     }
 
     int statusCode = d->reply->statusCode();
@@ -664,16 +659,8 @@ void QHttpSocketEngine::slotSocketReadNotification()
             if (willClose) {
                 d->socket->connectToHost(d->proxy.hostName(), d->proxy.port());
             } else {
-                bool ok;
-                int contentLength = d->reply->headerField("Content-Length").toInt(&ok);
-                if (ok && contentLength > 0) {
-                    d->state = ReadResponseContent;
-                    d->pendingResponseData = contentLength;
-                    goto readResponseContent;
-                } else {
-                    d->state = SendAuthentication;
-                    slotSocketConnected();
-                }
+                // send the HTTP CONNECT again
+                slotSocketConnected();
             }
             return;
         }
@@ -699,6 +686,39 @@ void QHttpSocketEngine::slotSocketReadNotification()
 
     // The handshake is done; notify that we're connected (or failed to connect)
     emitConnectionNotification();
+}
+
+bool QHttpSocketEngine::readHttpHeader()
+{
+    Q_D(QHttpSocketEngine);
+
+    if (d->state != ReadResponseHeader)
+        return false;
+
+    bool ok = true;
+    if (d->reply->d_func()->state == QHttpNetworkReplyPrivate::NothingDoneState) {
+        // do not keep old content sizes, status etc. around
+        d->reply->d_func()->clearHttpLayerInformation();
+        d->reply->d_func()->state = QHttpNetworkReplyPrivate::ReadingStatusState;
+    }
+    if (d->reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingStatusState) {
+        ok = d->reply->d_func()->readStatus(d->socket) != -1;
+        if (ok && d->reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingStatusState)
+            return true; //Not done parsing headers yet, wait for more data
+    }
+    if (ok && d->reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingHeaderState) {
+        ok = d->reply->d_func()->readHeader(d->socket) != -1;
+        if (ok && d->reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingHeaderState)
+            return true; //Not done parsing headers yet, wait for more data
+    }
+    if (ok) {
+        bool contentLengthOk;
+        int contentLength = d->reply->headerField("Content-Length").toInt(&contentLengthOk);
+        if (contentLengthOk && contentLength > 0)
+            d->pendingResponseData = contentLength;
+        d->state = ReadResponseContent; // we are done reading the header
+    }
+    return ok;
 }
 
 void QHttpSocketEngine::slotSocketBytesWritten()
