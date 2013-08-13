@@ -66,9 +66,9 @@ QT_BEGIN_NAMESPACE
 
 using namespace QMakeInternal;
 
-static QString qtMD5(const QByteArray &src)
+static QString qtSha1(const QByteArray &src)
 {
-    QByteArray digest = QCryptographicHash::hash(src, QCryptographicHash::Md5);
+    QByteArray digest = QCryptographicHash::hash(src, QCryptographicHash::Sha1);
     return QString::fromLatin1(digest.toHex());
 }
 
@@ -1545,7 +1545,7 @@ ProjectBuilderMakefileGenerator::keyFor(const QString &block)
 #endif
     QString ret;
     if(!keys.contains(block)) {
-        ret = qtMD5(block.toUtf8()).left(24).toUpper();
+        ret = qtSha1(block.toUtf8()).left(24).toUpper();
         keys.insert(block, ret);
     } else {
         ret = keys[block];

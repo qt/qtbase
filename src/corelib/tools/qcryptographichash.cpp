@@ -46,7 +46,7 @@
 #include "../../3rdparty/sha1/sha1.cpp"
 
 #ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
-// qdoc only needs SHA-1
+// qdoc and qmake only need SHA-1
 #include "../../3rdparty/md5/md5.h"
 #include "../../3rdparty/md5/md5.cpp"
 #include "../../3rdparty/md4/md4.h"
