@@ -69,7 +69,6 @@ OBJECTS = \
     qxmlstream.o \
     qxmlutils.o \
     quuid.o \
-    qcryptographichash.o \
     registry.o
 
 $(TARGET): $(OBJECTS)
