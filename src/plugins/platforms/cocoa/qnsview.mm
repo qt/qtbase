@@ -872,13 +872,13 @@ static QTouchDevice *touchDevice = 0;
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     if ([theEvent respondsToSelector:@selector(scrollingDeltaX)]) {
         NSEventPhase phase = [theEvent phase];
-        if (phase == NSEventPhaseBegan) {
+        if (phase == NSEventPhaseBegan || phase == NSEventPhaseNone) {
             currentWheelModifiers = [QNSView convertKeyModifiers:[theEvent modifierFlags]];
         }
 
         QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_screenPoint, pixelDelta, angleDelta, currentWheelModifiers);
 
-        if (phase == NSEventPhaseEnded || phase == NSEventPhaseCancelled) {
+        if (phase == NSEventPhaseEnded || phase == NSEventPhaseCancelled || phase == NSEventPhaseNone) {
             currentWheelModifiers = Qt::NoModifier;
         }
     } else
