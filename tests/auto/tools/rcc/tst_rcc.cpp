@@ -70,6 +70,9 @@ private slots:
     void binary();
 
     void cleanupTestCase();
+
+private:
+    QString m_rcc;
 };
 
 void tst_rcc::initTestCase()
@@ -77,6 +80,7 @@ void tst_rcc::initTestCase()
     // rcc uses a QHash to store files in the resource system.
     // we must force a certain hash order when testing or tst_rcc will fail, see QTBUG-25078
     QVERIFY(qputenv("QT_RCC_TEST", "1"));
+    m_rcc = QLibraryInfo::location(QLibraryInfo::BinariesPath) + QLatin1String("/rcc");
 }
 
 QString findExpectedFile(const QString &base)
@@ -145,13 +149,12 @@ void tst_rcc::rcc()
     }
 
     // Launch
-    const QString command = QLatin1String("rcc");
     QProcess process;
-    process.start(command, QStringList(qrcfile));
+    process.start(m_rcc, QStringList(qrcfile));
     if (!process.waitForFinished()) {
         const QString path = QString::fromLocal8Bit(qgetenv("PATH"));
         QString message = QString::fromLatin1("'%1' could not be found when run from '%2'. Path: '%3' ").
-                          arg(command, QDir::currentPath(), path);
+                          arg(m_rcc, QDir::currentPath(), path);
         QFAIL(qPrintable(message));
     }
     const QChar cr = QLatin1Char('\r');
@@ -176,13 +179,14 @@ void tst_rcc::rcc()
 
 
 
-static void createRccBinaryData(const QString &baseDir, const QString &qrcFileName, const QString &rccFileName)
+static void createRccBinaryData(const QString &rcc, const QString &baseDir,
+    const QString &qrcFileName, const QString &rccFileName)
 {
     QString currentDir = QDir::currentPath();
     QDir::setCurrent(baseDir);
 
     QProcess rccProcess;
-    rccProcess.start("rcc", QStringList() << "-binary" << "-o" << rccFileName << qrcFileName);
+    rccProcess.start(rcc, QStringList() << "-binary" << "-o" << rccFileName << qrcFileName);
     bool ok = rccProcess.waitForFinished();
     if (!ok) {
         QString errorString = QString::fromLatin1("Could not start rcc (is it in PATH?): %1").arg(rccProcess.errorString());
@@ -262,7 +266,7 @@ void tst_rcc::binary_data()
         QFileInfo qrcFileInfo = iter.fileInfo();
         QString absoluteBaseName = QFileInfo(qrcFileInfo.absolutePath(), qrcFileInfo.baseName()).absoluteFilePath();
         QString rccFileName = absoluteBaseName + QLatin1String(".rcc");
-        createRccBinaryData(dataPath, qrcFileInfo.absoluteFilePath(), rccFileName);
+        createRccBinaryData(m_rcc, dataPath, qrcFileInfo.absoluteFilePath(), rccFileName);
 
         QString localeFileName = absoluteBaseName + QLatin1String(".locale");
         QFile localeFile(localeFileName);
