@@ -603,28 +603,35 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
     if (options & WhiteSpaces)
         getWhiteSpaces(string, length, attributes);
 
-    if (!items || numItems <= 0)
-        return;
     if (!qt_initcharattributes_default_algorithm_only) {
+        if (!items || numItems <= 0)
+            return;
+
         QVarLengthArray<HB_ScriptItem, 64> scriptItems;
         scriptItems.reserve(numItems);
         int start = 0;
+        HB_Script startScript = script_to_hbscript(items[start].script);
+        if (Q_UNLIKELY(startScript == HB_Script_Inherited))
+            startScript = HB_Script_Common;
         for (int i = start + 1; i < numItems; ++i) {
-            if (script_to_hbscript(items[i].script) == script_to_hbscript(items[start].script))
+            HB_Script script = script_to_hbscript(items[i].script);
+            if (Q_LIKELY(script == startScript || script == HB_Script_Inherited))
                 continue;
+            Q_ASSERT(items[i].position > items[start].position);
             HB_ScriptItem item;
             item.pos = items[start].position;
             item.length = items[i].position - items[start].position;
-            item.script = script_to_hbscript(items[start].script);
+            item.script = startScript;
             item.bidiLevel = 0; // unused
             scriptItems.append(item);
             start = i;
+            startScript = script;
         }
         if (items[start].position + 1 < length) {
             HB_ScriptItem item;
             item.pos = items[start].position;
             item.length = length - items[start].position;
-            item.script = script_to_hbscript(items[start].script);
+            item.script = startScript;
             item.bidiLevel = 0; // unused
             scriptItems.append(item);
         }
