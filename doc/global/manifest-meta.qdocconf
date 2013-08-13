@@ -108,7 +108,6 @@ manifestmeta.android.names          =  "QtQuick/Qt Quick Demo - Maroon*" \
                                        "QtWidgets/Regular Expressions Example" \
                                        "QtWidgets/Colliding Mice Example" \
                                        "QtWidgets/Basic Graphics Layouts Example" \
-                                       "QtWidgets/Boxes" \
                                        "QtWidgets/40000 Chips" \
                                        "QtWidgets/Diagram Scene Example" \
                                        "QtWidgets/Drag and Drop Robot Example" \
