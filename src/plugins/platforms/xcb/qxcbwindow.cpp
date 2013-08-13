@@ -1512,8 +1512,7 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
             m_syncValue.hi = event->data.data32[3];
 #ifndef QT_NO_WHATSTHIS
         } else if (event->data.data32[0] == atom(QXcbAtom::_NET_WM_CONTEXT_HELP)) {
-            QEvent *e = new QEvent(QEvent::EnterWhatsThisMode);
-            QGuiApplication::postEvent(QGuiApplication::instance(), e);
+            QWindowSystemInterface::handleEnterWhatsThisEvent();
 #endif
         } else {
             qWarning() << "QXcbWindow: Unhandled WM_PROTOCOLS message:" << connection()->atomName(event->data.data32[0]);

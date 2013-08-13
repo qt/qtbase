@@ -90,6 +90,7 @@ public:
         TabletLeaveProximity = UserInputEvent | 0x16,
         PlatformPanel = UserInputEvent | 0x17,
         ContextMenu = UserInputEvent | 0x18,
+        EnterWhatsThisMode = UserInputEvent | 0x19,
         ApplicationStateChanged = 0x19,
         FlushEvents = 0x20,
         WindowScreenChanged = 0x21

@@ -83,6 +83,7 @@ enum WindowsEventType // Simplify event types
     CalculateSize = WindowEventFlag + 16,
     FocusInEvent = WindowEventFlag + 17,
     FocusOutEvent = WindowEventFlag + 18,
+    WhatsThisEvent = WindowEventFlag + 19,
     MouseEvent = MouseEventFlag + 1,
     MouseWheelEvent = MouseEventFlag + 2,
     CursorEvent = MouseEventFlag + 3,
@@ -199,6 +200,12 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
     case WM_CONTEXTMENU:
         return QtWindows::ContextMenu;
 #endif
+    case WM_SYSCOMMAND:
+#ifndef Q_OS_WINCE
+        if ((wParamIn & 0xfff0) == SC_CONTEXTHELP)
+            return QtWindows::WhatsThisEvent;
+#endif
+        break;
     default:
         break;
     }

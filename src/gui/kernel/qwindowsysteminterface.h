@@ -184,6 +184,9 @@ public:
                                        const QPoint &pos, const QPoint &globalPos,
                                        Qt::KeyboardModifiers modifiers);
 #endif
+#ifndef QT_NO_WHATSTHIS
+    static void handleEnterWhatsThisEvent();
+#endif
 
     // For event dispatcher implementations
     static bool sendWindowSystemEvents(QEventLoop::ProcessEventsFlags flags);

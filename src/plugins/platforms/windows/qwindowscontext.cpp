@@ -887,6 +887,12 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::ContextMenu:
         return handleContextMenuEvent(platformWindow->window(), msg);
 #endif
+    case QtWindows::WhatsThisEvent: {
+#ifndef QT_NO_WHATSTHIS
+        QWindowSystemInterface::handleEnterWhatsThisEvent();
+        return true;
+#endif
+    }   break;
     default:
         break;
     }
