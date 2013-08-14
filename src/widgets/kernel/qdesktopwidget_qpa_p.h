@@ -74,7 +74,7 @@ class QDesktopWidgetPrivate : public QWidgetPrivate {
 
 public:
     ~QDesktopWidgetPrivate() {foreach(QDesktopScreenWidget *s, screens) delete s; }
-    void updateScreenList();
+    void _q_updateScreens();
 
     QList<QDesktopScreenWidget *> screens;
 };

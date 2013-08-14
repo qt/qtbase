@@ -1589,6 +1589,14 @@ bool QMetaObject::invokeMethod(QObject *obj,
     \internal
 */
 
+/*!
+    \macro Q_METAMETHOD_INVOKE_MAX_ARGS
+    \relates QMetaMethod
+
+    Equals maximum number of arguments available for
+    execution of the method via QMetaMethod::invoke()
+ */
+
 QByteArray QMetaMethodPrivate::signature() const
 {
     Q_ASSERT(priv(mobj->d.data)->revision >= 7);

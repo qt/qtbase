@@ -871,6 +871,9 @@ void QWindowsWindow::destroyWindow()
         qDebug() << __FUNCTION__ << this << window() << m_data.hwnd;
     if (m_data.hwnd) { // Stop event dispatching before Window is destroyed.
         setFlag(WithinDestroy);
+        QWindowsContext *context = QWindowsContext::instance();
+        if (context->windowUnderMouse() == window())
+            context->clearWindowUnderMouse();
         if (hasMouseCapture())
             setMouseGrabEnabled(false);
         unregisterDropSite();
@@ -893,7 +896,7 @@ void QWindowsWindow::destroyWindow()
 #endif // !Q_OS_WINCE
         if (m_data.hwnd != GetDesktopWindow())
             DestroyWindow(m_data.hwnd);
-        QWindowsContext::instance()->removeWindow(m_data.hwnd);
+        context->removeWindow(m_data.hwnd);
         m_data.hwnd = 0;
     }
 }
@@ -1795,6 +1798,7 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 }
 #endif // !Q_OS_WINCE
 
+#ifndef QT_NO_CURSOR
 // Return the default cursor (Arrow) from QWindowsCursor's cache.
 static inline QWindowsWindowCursor defaultCursor(const QWindow *w)
 {
@@ -1804,6 +1808,24 @@ static inline QWindowsWindowCursor defaultCursor(const QWindow *w)
                 return static_cast<QWindowsCursor *>(cursor)->standardWindowCursor(Qt::ArrowCursor);
     return QWindowsWindowCursor(Qt::ArrowCursor);
 }
+
+// Check whether to apply a new cursor. Either the window in question is
+// currently under mouse, or it is the parent of the window under mouse and
+// there is no other window with an explicitly set cursor in-between.
+static inline bool applyNewCursor(const QWindow *w)
+{
+    const QWindow *underMouse = QWindowsContext::instance()->windowUnderMouse();
+    if (underMouse == w)
+        return true;
+    for (const QWindow *p = underMouse; p ; p = p->parent()) {
+        if (p == w)
+            return true;
+        if (!QWindowsWindow::baseWindowOf(p)->cursor().isNull())
+            return false;
+    }
+    return false;
+}
+#endif // !QT_NO_CURSOR
 
 /*!
     \brief Applies to cursor property set on the window to the global cursor.
@@ -1824,23 +1846,6 @@ void QWindowsWindow::applyCursor()
         SetCursor(m_cursor.handle());
     }
 #endif
-}
-
-// Check whether to apply a new cursor. Either the window in question is
-// currently under mouse, or it is the parent of the window under mouse and
-// there is no other window with an explicitly set cursor in-between.
-static inline bool applyNewCursor(const QWindow *w)
-{
-    const QWindow *underMouse = QWindowsContext::instance()->windowUnderMouse();
-    if (underMouse == w)
-        return true;
-    for (const QWindow *p = underMouse; p ; p = p->parent()) {
-        if (p == w)
-            return true;
-        if (!QWindowsWindow::baseWindowOf(p)->cursor().isNull())
-            return false;
-    }
-    return false;
 }
 
 void QWindowsWindow::setCursor(const QWindowsWindowCursor &c)

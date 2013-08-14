@@ -851,6 +851,7 @@
     \contentspage {qmake Manual}{Contents}
     \previouspage Reference
     \nextpage Replace Functions
+    \keyword qmake Variable Reference
 
     The fundamental behavior of qmake is influenced by variable declarations that
     define the build process of each project. Some of these declare resources,
@@ -2423,6 +2424,7 @@
     \contentspage {qmake Manual}{Contents}
     \previouspage Variables
     \nextpage Test Functions
+    \keyword qmake Function Reference - Replace Functions
 
     qmake provides functions for processing the contents of variables
     during the configuration process. These functions are called
@@ -2752,6 +2754,7 @@
     \title Test Functions
     \contentspage {qmake Manual}{Contents}
     \previouspage Replace Functions
+    \keyword qmake Function Reference - Test Functions
 
     Test functions return a boolean value that you can test for in the
     conditional parts of scopes. Test functions can be divided into

@@ -168,6 +168,7 @@ public:
                                              unsigned cwex_flags) const;
 
     QWindow *windowUnderMouse() const;
+    void clearWindowUnderMouse();
 
     inline bool windowsProc(HWND hwnd, UINT message,
                             QtWindows::WindowsEventType et,

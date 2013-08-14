@@ -143,8 +143,6 @@ Configure::Configure(int& argc, char** argv)
     defaultBuildParts << QStringLiteral("libs") << QStringLiteral("tools") << QStringLiteral("examples");
     allBuildParts = defaultBuildParts;
     allBuildParts << QStringLiteral("tests");
-    dictionary[ "QT_SOURCE_TREE" ]    = sourcePath;
-    dictionary[ "QT_BUILD_TREE" ]     = buildPath;
     dictionary[ "QT_INSTALL_PREFIX" ] = installPath;
 
     dictionary[ "QMAKESPEC" ] = getenv("QMAKESPEC");
@@ -178,6 +176,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "CETEST" ]          = "auto";
     dictionary[ "CE_SIGNATURE" ]    = "no";
     dictionary[ "AUDIO_BACKEND" ]   = "auto";
+    dictionary[ "WMF_BACKEND" ]     = "auto";
     dictionary[ "WMSDK" ]           = "auto";
     dictionary[ "V8SNAPSHOT" ]      = "auto";
     dictionary[ "QML_DEBUG" ]       = "yes";
@@ -841,6 +840,10 @@ void Configure::parseCmdLine()
             dictionary[ "AUDIO_BACKEND" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-audio-backend") {
             dictionary[ "AUDIO_BACKEND" ] = "no";
+        } else if (configCmdLine.at(i) == "-wmf-backend") {
+            dictionary[ "WMF_BACKEND" ] = "yes";
+        } else if (configCmdLine.at(i) == "-no-wmf-backend") {
+            dictionary[ "WMF_BACKEND" ] = "no";
         } else if (configCmdLine.at(i) == "-no-qml-debug") {
             dictionary[ "QML_DEBUG" ] = "no";
         } else if (configCmdLine.at(i) == "-qml-debug") {
@@ -1122,7 +1125,7 @@ void Configure::parseCmdLine()
         else if (configCmdLine.at(i) == "-hostprefix") {
             ++i;
             if (i == argCount || configCmdLine.at(i).startsWith('-'))
-                dictionary[ "QT_HOST_PREFIX" ] = dictionary[ "QT_BUILD_TREE" ];
+                dictionary[ "QT_HOST_PREFIX" ] = buildPath;
             else
                 dictionary[ "QT_HOST_PREFIX" ] = configCmdLine.at(i);
         }
@@ -1855,6 +1858,8 @@ bool Configure::displayHelp()
         desc("DBUS", "linked",   "-dbus-linked",        "Compile in D-Bus support and link to libdbus-1.\n");
         desc("AUDIO_BACKEND", "no","-no-audio-backend", "Do not compile in the platform audio backend into\nQt Multimedia.");
         desc("AUDIO_BACKEND", "yes","-audio-backend",   "Compile in the platform audio backend into Qt Multimedia.\n");
+        desc("WMF_BACKEND", "no","-no-wmf-backend",     "Do not compile in the windows media foundation backend\ninto Qt Multimedia.");
+        desc("WMF_BACKEND", "yes","-wmf-backend",       "Compile in the windows media foundation backend into Qt Multimedia.\n");
         desc("QML_DEBUG", "no",    "-no-qml-debug",     "Do not build the in-process QML debugging support.");
         desc("QML_DEBUG", "yes",   "-qml-debug",        "Build the in-process QML debugging support.\n");
         desc("DIRECTWRITE", "no", "-no-directwrite", "Do not build support for DirectWrite font rendering.");
@@ -2131,6 +2136,8 @@ bool Configure::checkAvailability(const QString &part)
         available = true;
     } else if (part == "AUDIO_BACKEND") {
         available = true;
+    } else if (part == "WMF_BACKEND") {
+        available = findFile("mfapi.h") && findFile("mf.lib");
     } else if (part == "DIRECTWRITE") {
         available = findFile("dwrite.h") && findFile("d2d1.h") && findFile("dwrite.lib");
     } else if (part == "ICONV") {
@@ -2250,6 +2257,8 @@ void Configure::autoDetection()
         dictionary["QML_DEBUG"] = dictionary["QML"] == "yes" ? "yes" : "no";
     if (dictionary["AUDIO_BACKEND"] == "auto")
         dictionary["AUDIO_BACKEND"] = checkAvailability("AUDIO_BACKEND") ? "yes" : "no";
+    if (dictionary["WMF_BACKEND"] == "auto")
+        dictionary["WMF_BACKEND"] = checkAvailability("WMF_BACKEND") ? "yes" : "no";
     if (dictionary["WMSDK"] == "auto")
         dictionary["WMSDK"] = checkAvailability("WMSDK") ? "yes" : "no";
 
@@ -2615,6 +2624,9 @@ void Configure::generateOutputVars()
     if (dictionary["AUDIO_BACKEND"] == "yes")
         qtConfig += "audio-backend";
 
+    if (dictionary["WMF_BACKEND"] == "yes")
+        qtConfig += "wmf-backend";
+
     if (dictionary["DIRECTWRITE"] == "yes")
         qtConfig += "directwrite";
 
@@ -2784,20 +2796,9 @@ void Configure::generateOutputVars()
 
 void Configure::generateCachefile()
 {
-    // Generate .qmake.cache
-    {
-        FileWriter cacheStream(buildPath + "/.qmake.cache");
-
-        cacheStream << "QT_SOURCE_TREE = " << formatPath(dictionary["QT_SOURCE_TREE"]) << endl;
-        cacheStream << "QT_BUILD_TREE = " << formatPath(dictionary["QT_BUILD_TREE"]) << endl;
-
-        if (!cacheStream.flush())
-            dictionary[ "DONE" ] = "error";
-    }
-
     // Generate qmodule.pri
     {
-        FileWriter moduleStream(dictionary[ "QT_BUILD_TREE" ] + "/mkspecs/qmodule.pri");
+        FileWriter moduleStream(buildPath + "/mkspecs/qmodule.pri");
 
         moduleStream << "QT_BUILD_PARTS += " << buildParts.join(' ') << endl;
         if (!skipModules.isEmpty())
@@ -3065,7 +3066,7 @@ void Configure::generateQConfigPri()
 {
     // Generate qconfig.pri
     {
-        FileWriter configStream(dictionary[ "QT_BUILD_TREE" ] + "/mkspecs/qconfig.pri");
+        FileWriter configStream(buildPath + "/mkspecs/qconfig.pri");
 
         configStream << "CONFIG+= ";
         configStream << dictionary[ "BUILD" ];
@@ -3350,7 +3351,7 @@ void Configure::generateConfigfiles()
     }
 
     {
-        FileWriter tmpStream(dictionary["QT_BUILD_TREE"] + "/mkspecs/qdevice.pri");
+        FileWriter tmpStream(buildPath + "/mkspecs/qdevice.pri");
 
         QString android_platform(dictionary.contains("ANDROID_PLATFORM")
                   ? dictionary["ANDROID_PLATFORM"]
@@ -3494,8 +3495,8 @@ void Configure::displayConfig()
     sout << "    SQLite2................." << dictionary[ "SQL_SQLITE2" ] << endl;
     sout << "    InterBase..............." << dictionary[ "SQL_IBASE" ] << endl << endl;
 
-    sout << "Sources are in.............." << QDir::toNativeSeparators(dictionary["QT_SOURCE_TREE"]) << endl;
-    sout << "Build is done in............" << QDir::toNativeSeparators(dictionary["QT_BUILD_TREE"]) << endl;
+    sout << "Sources are in.............." << QDir::toNativeSeparators(sourcePath) << endl;
+    sout << "Build is done in............" << QDir::toNativeSeparators(buildPath) << endl;
     sout << "Install prefix.............." << QDir::toNativeSeparators(dictionary["QT_INSTALL_PREFIX"]) << endl;
     sout << "Headers installed to........" << QDir::toNativeSeparators(dictionary["QT_INSTALL_HEADERS"]) << endl;
     sout << "Libraries installed to......" << QDir::toNativeSeparators(dictionary["QT_INSTALL_LIBS"]) << endl;

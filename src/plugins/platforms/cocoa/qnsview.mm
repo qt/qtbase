@@ -1049,7 +1049,7 @@ static QTouchDevice *touchDevice = 0;
                                                timestamp,
                                                (lastKnownModifiers & mac_mask) ? QEvent::KeyRelease : QEvent::KeyPress,
                                                modifier_key_symbols[i].qt_code,
-                                               qmodifiers);
+                                               qmodifiers ^ [QNSView convertKeyModifiers:mac_mask]);
     }
 }
 

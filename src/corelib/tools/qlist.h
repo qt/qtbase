@@ -725,18 +725,14 @@ Q_OUTOFLINE_TEMPLATE QList<T>::QList(const QList<T> &l)
     if (!d->ref.ref()) {
         p.detach(d->alloc);
 
-        struct Cleanup
-        {
-            Cleanup(QListData::Data *d) : d_(d) {}
-            ~Cleanup() { if (d_) QListData::dispose(d_); }
-
-            QListData::Data *d_;
-        } tryCatch(d);
-
-        node_copy(reinterpret_cast<Node *>(p.begin()),
-                reinterpret_cast<Node *>(p.end()),
-                reinterpret_cast<Node *>(l.p.begin()));
-        tryCatch.d_ = 0;
+        QT_TRY {
+            node_copy(reinterpret_cast<Node *>(p.begin()),
+                    reinterpret_cast<Node *>(p.end()),
+                    reinterpret_cast<Node *>(l.p.begin()));
+        } QT_CATCH(...) {
+            QListData::dispose(d);
+            QT_RETHROW;
+        }
     }
 }
 

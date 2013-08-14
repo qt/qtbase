@@ -1226,7 +1226,7 @@ void QHashData::checkSanity()
 /*! \fn QList<T> QHash::values() const
 
     Returns a list containing all the values in the hash, in an
-    arbitrary order. If a key is associated multiple values, all of
+    arbitrary order. If a key is associated with multiple values, all of
     its values will be in the list, and not just the most recently
     inserted one.
 

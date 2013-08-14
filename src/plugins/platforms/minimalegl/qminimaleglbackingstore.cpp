@@ -80,9 +80,6 @@ void QMinimalEglBackingStore::flush(QWindow *window, const QRegion &region, cons
 
 void QMinimalEglBackingStore::beginPaint(const QRegion &)
 {
-    // needed to prevent QOpenGLContext::makeCurrent() from failing
-    window()->setSurfaceType(QSurface::OpenGLSurface);
-
     m_context->makeCurrent(window());
     m_device = new QOpenGLPaintDevice(window()->size());
 }

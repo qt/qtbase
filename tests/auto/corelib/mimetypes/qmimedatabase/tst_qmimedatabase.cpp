@@ -876,7 +876,10 @@ void tst_QMimeDatabase::installNewLocalMimeType()
     QDir().mkpath(destDir);
     const QString destFile = destDir + QLatin1String(yastFileName);
     QFile::remove(destFile);
+    const QString destQmlFile = destDir + QLatin1String(qmlAgainFileName);
+    QFile::remove(destQmlFile);
     QVERIFY(QFile::copy(m_yastMimeTypes, destFile));
+    QVERIFY(QFile::copy(m_qmlAgainFileName, destQmlFile));
     if (!runUpdateMimeDatabase(mimeDir)) {
         const QString skipWarning = QStringLiteral("shared-mime-info not found, skipping mime.cache test (")
                                     + QDir::toNativeSeparators(mimeDir) + QLatin1Char(')');
@@ -888,8 +891,17 @@ void tst_QMimeDatabase::installNewLocalMimeType()
     QVERIFY(db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
     checkHasMimeType("text/x-suse-ymp");
 
-    // Now test removing it again (note, this leaves a mostly-empty mime.cache file)
+    // Test that a double-definition of a mimetype doesn't lead to sniffing ("conflicting globs").
+    const QString qmlTestFile = QFINDTESTDATA("test.qml");
+    QVERIFY2(!qmlTestFile.isEmpty(),
+             qPrintable(QString::fromLatin1("Cannot find '%1' starting from '%2'").
+                        arg("test.qml", QDir::currentPath())));
+    QCOMPARE(db.mimeTypeForFile(qmlTestFile).name(),
+             QString::fromLatin1("text/x-qml"));
+
+    // Now test removing the local mimetypes again (note, this leaves a mostly-empty mime.cache file)
     QFile::remove(destFile);
+    QFile::remove(destQmlFile);
     if (!waitAndRunUpdateMimeDatabase(mimeDir))
         QSKIP("shared-mime-info not found, skipping mime.cache test");
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),

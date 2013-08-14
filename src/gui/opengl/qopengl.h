@@ -106,7 +106,7 @@ typedef GLfloat GLdouble;
 #  endif
 #  include <OpenGL/glext.h>
 # else
-#  define GL_GLEXT_LEGACY // Prevents GL/gl.h form #including system glext.h
+#  define GL_GLEXT_LEGACY // Prevents GL/gl.h from #including system glext.h
 #  include <GL/gl.h>
 #  include <QtGui/qopenglext.h>
 # endif // Q_OS_MAC

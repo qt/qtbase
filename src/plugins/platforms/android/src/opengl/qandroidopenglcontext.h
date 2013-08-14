@@ -58,6 +58,7 @@ public:
                           EGLenum eglApi = EGL_OPENGL_ES_API);
 
     void swapBuffers(QPlatformSurface *surface);
+    bool makeCurrent(QPlatformSurface *surface);
 
 private:
     const QAndroidPlatformIntegration *m_platformIntegration;

@@ -440,6 +440,10 @@ void tst_QColumnView::scrollTo()
         if (level >= 2) {
             if (!reverse) {
                 QTRY_VERIFY(view.HorizontalOffset() < 0);
+                if (last <= view.HorizontalOffset()) {
+                    qDebug() << "Test failure. last=" << last
+                             << " ; HorizontalOffset= " << view.HorizontalOffset();
+                }
                 QTRY_VERIFY(last > view.HorizontalOffset());
             } else {
                 QTRY_VERIFY(view.HorizontalOffset() > 0);
@@ -457,10 +461,15 @@ void tst_QColumnView::scrollTo()
         view.scrollTo(index, QAbstractItemView::EnsureVisible);
         index = index.parent();
         if (start != level) {
-            if (!reverse)
+            if (!reverse) {
                 QTRY_VERIFY(last < view.HorizontalOffset());
-            else
+            } else {
+                if (last <= view.HorizontalOffset()) {
+                    qDebug() << "Test failure. last=" << last
+                             << " ; HorizontalOffset= " << view.HorizontalOffset();
+                }
                 QTRY_VERIFY(last > view.HorizontalOffset());
+            }
         }
         level--;
         last = view.HorizontalOffset();

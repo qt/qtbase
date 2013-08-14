@@ -75,6 +75,7 @@ private:
         QByteArray name;
         QVarLengthArray<int, 4> inputTypes;
         QVarLengthArray<int, 4> outputTypes;
+        QByteArray rawReturnType;
         int flags;
     };
 
@@ -276,6 +277,9 @@ void QDBusMetaObjectGenerator::parseMethods()
 
             mm.outputTypes.append(type.id);
 
+            if (i == 0 && type.id == -1) {
+                mm.rawReturnType = type.name;
+            }
             if (i != 0) {
                 // non-const ref parameter
                 mm.parameterNames.append(arg.name.toLatin1());
@@ -471,10 +475,14 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
                 int type;
                 QByteArray typeName;
                 if (i < 0) { // Return type
-                    if (!mm.outputTypes.isEmpty())
+                    if (!mm.outputTypes.isEmpty()) {
                         type = mm.outputTypes.first();
-                    else
+                        if (type == -1) {
+                            type = IsUnresolvedType | strings.enter(mm.rawReturnType);
+                        }
+                    } else {
                         type = QMetaType::Void;
+                    }
                 } else if (i < mm.inputTypes.size()) {
                     type = mm.inputTypes.at(i);
                 } else {

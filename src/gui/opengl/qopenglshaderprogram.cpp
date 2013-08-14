@@ -429,7 +429,9 @@ bool QOpenGLShader::compileSourceCode(const char *source)
         // The precision qualifiers are useful on OpenGL/ES systems,
         // but usually not present on desktop systems.
         const QSurfaceFormat currentSurfaceFormat = QOpenGLContext::currentContext()->format();
+        QOpenGLContextPrivate *ctx_d = QOpenGLContextPrivate::get(QOpenGLContext::currentContext());
         if (currentSurfaceFormat.renderableType() == QSurfaceFormat::OpenGL
+                || ctx_d->workaround_missingPrecisionQualifiers
 #ifdef QT_OPENGL_FORCE_SHADER_DEFINES
                 || true
 #endif
@@ -439,7 +441,7 @@ bool QOpenGLShader::compileSourceCode(const char *source)
         }
 
 #ifdef QOpenGL_REDEFINE_HIGHP
-        if (d->shaderType == Fragment) {
+        if (d->shaderType == Fragment && !ctx_d->workaround_missingPrecisionQualifiers) {
             src.append(redefineHighp);
             srclen.append(GLint(sizeof(redefineHighp) - 1));
         }

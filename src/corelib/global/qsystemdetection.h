@@ -62,8 +62,8 @@
      SOLARIS  - Sun Solaris
      HPUX     - HP-UX
      ULTRIX   - DEC Ultrix
-     LINUX    - Linux
-     FREEBSD  - FreeBSD
+     LINUX    - Linux [has variants]
+     FREEBSD  - FreeBSD [has variants]
      NETBSD   - NetBSD
      OPENBSD  - OpenBSD
      BSDI     - BSD/OS
@@ -76,12 +76,20 @@
      DGUX     - DG/UX
      RELIANT  - Reliant UNIX
      DYNIX    - DYNIX/ptx
-     QNX      - QNX
+     QNX      - QNX [has variants]
      QNX6     - QNX RTP 6.1
      LYNX     - LynxOS
      BSD4     - Any BSD 4.4 system
      UNIX     - Any UNIX BSD/SYSV system
      ANDROID  - Android platform
+
+   The following operating systems have variants:
+     LINUX    - both Q_OS_LINUX and Q_OS_ANDROID are defined when building for Android
+              - only Q_OS_LINUX is defined if building for other Linux systems
+     QNX      - both Q_OS_QNX and Q_OS_BLACKBERRY are defined when building for Blackberry 10
+              - only Q_OS_QNX is defined if building for other QNX targets
+     FREEBSD  - Q_OS_FREEBSD is defined only when building for FreeBSD with a BSD userland
+              - Q_OS_FREEBSD_KERNEL is always defined on FreeBSD, even if the userland is from GNU
 */
 
 #if defined(__APPLE__) && (defined(__GNUC__) || defined(__xlC__) || defined(__xlc__))
@@ -118,8 +126,11 @@
 #  define Q_OS_NACL
 #elif defined(__linux__) || defined(__linux)
 #  define Q_OS_LINUX
-#elif defined(__FreeBSD__) || defined(__DragonFly__)
-#  define Q_OS_FREEBSD
+#elif defined(__FreeBSD__) || defined(__DragonFly__) || defined(__FreeBSD_kernel__)
+#  ifndef __FreeBSD_kernel__
+#    define Q_OS_FREEBSD
+#  endif
+#  define Q_OS_FREEBSD_KERNEL
 #  define Q_OS_BSD4
 #elif defined(__NetBSD__)
 #  define Q_OS_NETBSD
@@ -238,10 +249,6 @@
 #  endif
 #  if !defined(__IPHONE_7_0)
 #       define __IPHONE_7_0 70000
-#  endif
-#
-#  if (__MAC_OS_X_VERSION_MAX_ALLOWED > __MAC_10_8)
-#    warning "This version of OS X is unsupported"
 #  endif
 #endif
 

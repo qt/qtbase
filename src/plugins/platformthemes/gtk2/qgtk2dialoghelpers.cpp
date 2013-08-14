@@ -587,6 +587,7 @@ QFont QGtk2FontDialogHelper::currentFont() const
 
 void QGtk2FontDialogHelper::onAccepted()
 {
+    emit currentFontChanged(currentFont());
     emit accept();
     emit fontSelected(currentFont());
 }

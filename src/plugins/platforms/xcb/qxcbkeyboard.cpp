@@ -583,7 +583,7 @@ static const Qt::KeyboardModifiers ModsTbl[] = {
     Qt::AltModifier | Qt::ShiftModifier,                        // 5
     Qt::AltModifier | Qt::ControlModifier,                      // 6
     Qt::AltModifier | Qt::ShiftModifier | Qt::ControlModifier,  // 7
-    Qt::NoModifier                                             // Fall-back to raw Key_*
+    Qt::NoModifier                                              // Fall-back to raw Key_*, for non-latin1 kb layouts
 };
 
 Qt::KeyboardModifiers QXcbKeyboard::translateModifiers(int s) const
@@ -602,8 +602,9 @@ Qt::KeyboardModifiers QXcbKeyboard::translateModifiers(int s) const
     return ret;
 }
 
-void QXcbKeyboard::readXKBConfig(struct xkb_rule_names *xkb_names)
+void QXcbKeyboard::readXKBConfig()
 {
+    clearXKBConfig();
     xcb_generic_error_t *error;
     xcb_get_property_cookie_t cookie;
     xcb_get_property_reply_t *config_reply;
@@ -634,13 +635,28 @@ void QXcbKeyboard::readXKBConfig(struct xkb_rule_names *xkb_names)
         length -= len + 1;
     } while (p < end || i < 5);
 
-    xkb_names->rules = qstrdup(names[0]);
-    xkb_names->model = qstrdup(names[1]);
-    xkb_names->layout = qstrdup(names[2]);
-    xkb_names->variant = qstrdup(names[3]);
-    xkb_names->options = qstrdup(names[4]);
+    xkb_names.rules = qstrdup(names[0]);
+    xkb_names.model = qstrdup(names[1]);
+    xkb_names.layout = qstrdup(names[2]);
+    xkb_names.variant = qstrdup(names[3]);
+    xkb_names.options = qstrdup(names[4]);
 
     free(config_reply);
+}
+
+void QXcbKeyboard::clearXKBConfig()
+{
+    if (xkb_names.rules)
+        delete[] xkb_names.rules;
+    if (xkb_names.model)
+        delete[] xkb_names.model;
+    if (xkb_names.layout)
+        delete[] xkb_names.layout;
+    if (xkb_names.variant)
+        delete[] xkb_names.variant;
+    if (xkb_names.options)
+        delete[] xkb_names.options;
+    memset(&xkb_names, 0, sizeof(xkb_names));
 }
 
 void QXcbKeyboard::updateKeymap()
@@ -654,21 +670,12 @@ void QXcbKeyboard::updateKeymap()
             return;
         }
     }
-
-    struct xkb_rule_names xkb_names = {0, 0, 0, 0, 0};
-
-    readXKBConfig(&xkb_names);
+    readXKBConfig();
     // Compile a keymap from RMLVO (rules, models, layouts, variants and options) names
     if (xkb_keymap)
         xkb_keymap_unref(xkb_keymap);
 
     xkb_keymap = xkb_keymap_new_from_names(xkb_context, &xkb_names, (xkb_keymap_compile_flags)0);
-
-    delete[] xkb_names.rules;
-    delete[] xkb_names.model;
-    delete[] xkb_names.layout;
-    delete[] xkb_names.variant;
-    delete[] xkb_names.options;
 
     if (!xkb_keymap) {
         qWarning("Qt: Failed to compile a keymap");
@@ -724,14 +731,14 @@ void QXcbKeyboard::updateXKBState(xcb_xkb_state_notify_event_t *state)
 
     if (connection()->hasXKB()) {
 
-        xkb_state_component newState;
-        newState = xkb_state_update_mask(xkb_state,
-                              state->baseMods,
-                              state->latchedMods,
-                              state->lockedMods,
-                              state->baseGroup,
-                              state->latchedGroup,
-                              state->lockedGroup);
+        const xkb_state_component newState
+                = xkb_state_update_mask(xkb_state,
+                                  state->baseMods,
+                                  state->latchedMods,
+                                  state->lockedMods,
+                                  state->baseGroup,
+                                  state->latchedGroup,
+                                  state->lockedGroup);
 
         if ((newState & XKB_STATE_LAYOUT_EFFECTIVE) == XKB_STATE_LAYOUT_EFFECTIVE) {
             //qWarning("TODO: Support KeyboardLayoutChange on QPA (QTBUG-27681)");
@@ -745,17 +752,22 @@ void QXcbKeyboard::updateXKBStateFromCore(quint16 state)
     if (!m_config)
         return;
 
-    quint32 modsDepressed, modsLatched, modsLocked;
-    modsDepressed = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_DEPRESSED);
-    modsLatched = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LATCHED);
-    modsLocked = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LOCKED);
+    const quint32 modsDepressed = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_DEPRESSED);
+    const quint32 modsLatched = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LATCHED);
+    const quint32 modsLocked = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LOCKED);
+    const quint32 xkbMask = xkbModMask(state);
 
-    quint32 xkbMask = xkbModMask(state);
-    xkb_state_component newState;
-    newState = xkb_state_update_mask(xkb_state,
-                          modsDepressed & xkbMask,
-                          modsLatched & xkbMask,
-                          modsLocked & xkbMask,
+    const quint32 latched = modsLatched & xkbMask;
+    const quint32 locked = modsLocked & xkbMask;
+    quint32 depressed = modsDepressed & xkbMask;
+    // set modifiers in depressed if they don't appear in any of the final masks
+    depressed |= ~(depressed | latched | locked) & xkbMask;
+
+    const xkb_state_component newState
+            = xkb_state_update_mask(xkb_state,
+                          depressed,
+                          latched,
+                          locked,
                           0,
                           0,
                           (state >> 13) & 3); // bits 13 and 14 report the state keyboard group
@@ -838,7 +850,7 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
     xkb_mod_index_t controlMod = xkb_keymap_mod_get_index(xkb_keymap, "Control");
 
     xkb_mod_mask_t depressed;
-
+    struct xkb_keymap *fallback_keymap = 0;
     int qtKey = 0;
     //obtain a list of possible shortcuts for the given key event
     for (uint i = 1; i < sizeof(ModsTbl) / sizeof(*ModsTbl) ; ++i) {
@@ -854,8 +866,23 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
                 depressed |= (1 << controlMod);
 
             // update a keyboard state from a set of explicit masks
-            xkb_state_update_mask(kb_state, depressed, latchedMods, lockedMods,
-                                            baseLayout, latchedLayout, lockedLayout);
+            if (i == 8) {
+                // Add a fall back key for layouts with non Latin-1 characters
+                if (baseQtKey > 255) {
+                    struct xkb_rule_names names = { xkb_names.rules, xkb_names.model, "us", 0, 0 };
+                    fallback_keymap = xkb_keymap_new_from_names(xkb_context, &names, (xkb_keymap_compile_flags)0);
+                    if (!fallback_keymap)
+                        continue;
+                    xkb_state_unref(kb_state);
+                    kb_state = xkb_state_new(fallback_keymap);
+                    if (!kb_state)
+                        continue;
+                } else
+                    continue;
+            } else {
+                xkb_state_update_mask(kb_state, depressed, latchedMods, lockedMods,
+                                                baseLayout, latchedLayout, lockedLayout);
+            }
             sym = xkb_state_key_get_one_sym(kb_state, event->nativeScanCode());
 
             if (sym == XKB_KEY_NoSymbol)
@@ -870,8 +897,11 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
             result += (qtKey + mods);
         }
     }
+    if (kb_state)
+        xkb_state_unref(kb_state);
+    if (fallback_keymap)
+        xkb_keymap_unref(fallback_keymap);
 
-    xkb_state_unref(kb_state);
     return result;
  }
 
@@ -941,6 +971,7 @@ QXcbKeyboard::QXcbKeyboard(QXcbConnection *connection)
     , core_device_id(0)
 #endif
 {
+    memset(&xkb_names, 0, sizeof(xkb_names));
     updateKeymap();
 #ifndef QT_NO_XKB
     if (connection->hasXKB()) {
@@ -982,6 +1013,7 @@ QXcbKeyboard::~QXcbKeyboard()
 #ifdef QT_NO_XKB
     xcb_key_symbols_free(m_key_symbols);
 #endif
+    clearXKBConfig();
 }
 
 #ifndef QT_NO_XKB

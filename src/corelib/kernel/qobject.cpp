@@ -816,6 +816,14 @@ QObject::~QObject()
                         m->unlock();
 
                     connectionList.first = c->nextConnectionList;
+
+                    // The destroy operation must happen outside the lock
+                    if (c->isSlotObject) {
+                        locker.unlock();
+                        c->slotObj->destroyIfLastRef();
+                        c->isSlotObject = false;
+                        locker.relock();
+                    }
                     c->deref();
                 }
             }
@@ -3135,6 +3143,13 @@ bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
 
             c->receiver = 0;
 
+            if (c->isSlotObject) {
+                senderMutex->unlock();
+                c->slotObj->destroyIfLastRef();
+                c->isSlotObject = false;
+                senderMutex->lock();
+            }
+
             success = true;
 
             if (disconnectType == DisconnectOne)
@@ -4385,16 +4400,19 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
 
     QMutex *senderMutex = signalSlotLock(c->sender);
     QMutex *receiverMutex = signalSlotLock(c->receiver);
-    QOrderedMutexLocker locker(senderMutex, receiverMutex);
 
-    QObjectConnectionListVector *connectionLists = QObjectPrivate::get(c->sender)->connectionLists;
-    Q_ASSERT(connectionLists);
-    connectionLists->dirty = true;
+    {
+        QOrderedMutexLocker locker(senderMutex, receiverMutex);
 
-    *c->prev = c->next;
-    if (c->next)
-        c->next->prev = c->prev;
-    c->receiver = 0;
+        QObjectConnectionListVector *connectionLists = QObjectPrivate::get(c->sender)->connectionLists;
+        Q_ASSERT(connectionLists);
+        connectionLists->dirty = true;
+
+        *c->prev = c->next;
+        if (c->next)
+            c->next->prev = c->prev;
+        c->receiver = 0;
+    }
 
     // destroy the QSlotObject, if possible
     if (c->isSlotObject) {

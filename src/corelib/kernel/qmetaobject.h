@@ -50,6 +50,8 @@ QT_BEGIN_NAMESPACE
 
 template <typename T> class QList;
 
+#define Q_METAMETHOD_INVOKE_MAX_ARGS 10
+
 class Q_CORE_EXPORT QMetaMethod
 {
 public:

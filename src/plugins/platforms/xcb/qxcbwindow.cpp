@@ -1302,6 +1302,9 @@ QRect QXcbWindow::windowToWmGeometry(QRect r) const
         r.translate(m_frameMargins.left(), m_frameMargins.top());
     } else if (!frameInclusive && m_gravity == XCB_GRAVITY_NORTH_WEST) {
         r.translate(-m_frameMargins.left(), -m_frameMargins.top());
+    } else if (!frameInclusive && m_gravity == XCB_GRAVITY_CENTER) {
+        r.translate(-(m_frameMargins.left() - m_frameMargins.right())/2,
+                    -(m_frameMargins.top() - m_frameMargins.bottom())/2);
     }
     return r;
 }
@@ -1643,7 +1646,8 @@ void QXcbWindow::handleUnmapNotifyEvent(const xcb_unmap_notify_event_t *event)
 
 void QXcbWindow::handleButtonPressEvent(const xcb_button_press_event_t *event)
 {
-    if (window() != QGuiApplication::focusWindow()) {
+    const bool isWheel = event->detail >= 4 && event->detail <= 7;
+    if (!isWheel && window() != QGuiApplication::focusWindow()) {
         QWindow *w = static_cast<QWindowPrivate *>(QObjectPrivate::get(window()))->eventReceiver();
         if (!(w->flags() & Qt::WindowDoesNotAcceptFocus))
             w->requestActivate();
@@ -1665,7 +1669,7 @@ void QXcbWindow::handleButtonPressEvent(const xcb_button_press_event_t *event)
 
     Qt::KeyboardModifiers modifiers = connection()->keyboard()->translateModifiers(event->state);
 
-    if (event->detail >= 4 && event->detail <= 7) {
+    if (isWheel) {
         // Logic borrowed from qapplication_x11.cpp
         int delta = 120 * ((event->detail == 4 || event->detail == 6) ? 1 : -1);
         bool hor = (((event->detail == 4 || event->detail == 5)

@@ -1471,7 +1471,7 @@ QList<int> QDockAreaLayoutInfo::indexOf(QWidget *widget) const
             continue;
         }
 
-        if (!(item.flags & QDockAreaLayoutItem::GapItem) && item.widgetItem->widget() == widget) {
+        if (!(item.flags & QDockAreaLayoutItem::GapItem) && item.widgetItem && item.widgetItem->widget() == widget) {
             QList<int> result;
             result << i;
             return result;

@@ -270,7 +270,6 @@ void QCocoaWindow::setGeometry(const QRect &rect)
 #ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
     qDebug() << "QCocoaWindow::setGeometry" << this << rect;
 #endif
-    QPlatformWindow::setGeometry(rect);
     setCocoaGeometry(rect);
 }
 
@@ -278,8 +277,10 @@ void QCocoaWindow::setCocoaGeometry(const QRect &rect)
 {
     QCocoaAutoReleasePool pool;
 
-    if (m_contentViewIsEmbedded)
+    if (m_contentViewIsEmbedded) {
+        QPlatformWindow::setGeometry(rect);
         return;
+    }
 
     if (m_nsWindow) {
         NSRect bounds = qt_mac_flipRect(rect, window());
@@ -287,6 +288,8 @@ void QCocoaWindow::setCocoaGeometry(const QRect &rect)
     } else {
         [m_contentView setFrame : NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height())];
     }
+
+    // will call QPlatformWindow::setGeometry(rect) during resize confirmation (see qnsview.mm)
 }
 
 void QCocoaWindow::setVisible(bool visible)
@@ -423,11 +426,13 @@ NSInteger QCocoaWindow::windowLevel(Qt::WindowFlags flags)
     if (type == Qt::ToolTip)
         windowLevel = NSScreenSaverWindowLevel;
 
-    // A window should be in at least the same level as its parent.
-    const QWindow * const transientParent = window()->transientParent();
-    const QCocoaWindow * const transientParentWindow = transientParent ? static_cast<QCocoaWindow *>(transientParent->handle()) : 0;
-    if (transientParentWindow)
-        windowLevel = qMax([transientParentWindow->m_nsWindow level], windowLevel);
+    // Any "special" window should be in at least the same level as its parent.
+    if (type != Qt::Window) {
+        const QWindow * const transientParent = window()->transientParent();
+        const QCocoaWindow * const transientParentWindow = transientParent ? static_cast<QCocoaWindow *>(transientParent->handle()) : 0;
+        if (transientParentWindow)
+            windowLevel = qMax([transientParentWindow->m_nsWindow level], windowLevel);
+    }
 
     return windowLevel;
 }

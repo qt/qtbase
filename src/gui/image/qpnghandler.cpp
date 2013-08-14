@@ -408,9 +408,14 @@ static void read_image_scaled(QImage *outImage, png_structp png_ptr, png_infop i
 
     png_uint_32 width;
     png_uint_32 height;
+    png_int_32 offset_x;
+    png_int_32 offset_y;
+
     int bit_depth;
     int color_type;
+    int unit_type;
     png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, 0, 0, 0);
+    png_get_oFFs(png_ptr, info_ptr, &offset_x, &offset_y, &unit_type);
     uchar *data = outImage->bits();
     int bpl = outImage->bytesPerLine();
 
@@ -470,6 +475,10 @@ static void read_image_scaled(QImage *outImage, png_structp png_ptr, png_infop i
 
     outImage->setDotsPerMeterX((png_get_x_pixels_per_meter(png_ptr,info_ptr)*oxsz)/ixsz);
     outImage->setDotsPerMeterY((png_get_y_pixels_per_meter(png_ptr,info_ptr)*oysz)/iysz);
+
+    if (unit_type == PNG_OFFSET_PIXEL)
+        outImage->setOffset(QPoint(offset_x*oxsz/ixsz, offset_y*oysz/iysz));
+
 }
 
 #if defined(Q_C_CALLBACKS)
@@ -550,7 +559,6 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngHeader()
     return true;
 }
 
-
 bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngImage(QImage *outImage)
 {
     if (state == Error)
@@ -585,9 +593,14 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngImage(QImage *outImage)
     } else {
         png_uint_32 width;
         png_uint_32 height;
+        png_int_32 offset_x;
+        png_int_32 offset_y;
+
         int bit_depth;
         int color_type;
+        int unit_type;
         png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, 0, 0, 0);
+        png_get_oFFs(png_ptr, info_ptr, &offset_x, &offset_y, &unit_type);
         uchar *data = outImage->bits();
         int bpl = outImage->bytesPerLine();
         amp.row_pointers = new png_bytep[height];
@@ -600,6 +613,9 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngImage(QImage *outImage)
 
         outImage->setDotsPerMeterX(png_get_x_pixels_per_meter(png_ptr,info_ptr));
         outImage->setDotsPerMeterY(png_get_y_pixels_per_meter(png_ptr,info_ptr));
+
+        if (unit_type == PNG_OFFSET_PIXEL)
+            outImage->setOffset(QPoint(offset_x, offset_y));
 
         // sanity check palette entries
         if (color_type == PNG_COLOR_TYPE_PALETTE && outImage->format() == QImage::Format_Indexed8) {

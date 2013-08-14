@@ -6,6 +6,7 @@ SUBDIRS=\
    qevent \
    qfileopenevent \
    qguieventdispatcher \
+   qguieventloop \
    qguimetatype \
    qguitimer \
    qguivariant \

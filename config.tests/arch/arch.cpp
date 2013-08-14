@@ -103,15 +103,15 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 " avx"
 #endif
 #ifdef __AVX2__
-// AVX 2, Intel codename "Haswell"
+// AVX 2, Intel Core 4th Generation ("Haswell")
 " avx2"
 #endif
 #ifdef __BMI__
-// Bit Manipulation Instructions 1, Intel codename "Haswell", AMD "Bulldozer 2"
+// Bit Manipulation Instructions 1, Intel Core 4th Generation ("Haswell"), AMD "Bulldozer 2"
 " bmi"
 #endif
 #ifdef __BMI2__
-// Bit Manipulation Instructions 2, Intel codename "Haswell"
+// Bit Manipulation Instructions 2, Intel Core 4th Generation ("Haswell")
 " bmi2"
 #endif
 #ifdef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
@@ -120,11 +120,11 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 " cx16"
 #endif
 #ifdef __F16C__
-// 16-bit floating point conversion, Intel codename "Ivy Bridge"
+// 16-bit floating point conversion, Intel Core 3rd Generation ("Ivy Bridge")
 " f16c"
 #endif
 #ifdef __FMA__
-// Fused Multiply-Add with 3 arguments, Intel codename "Haswell", AMD "Bulldozer 2"
+// Fused Multiply-Add with 3 arguments, Intel Core 4th Generation ("Haswell"), AMD "Bulldozer 2"
 // a.k.a. "FMA3"
 " fma"
 #endif
@@ -133,7 +133,7 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 " fma4"
 #endif
 #ifdef __FSGSBASE__
-// rdfsgsbase, wrfsgsbase, Intel codename "Ivy Bridge"
+// rdfsgsbase, wrfsgsbase, Intel Core 3rd Generation ("Ivy Bridge")
 " fsgsbase"
 #endif
 #ifdef __LWP__
@@ -141,7 +141,7 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 " lwp"
 #endif
 #ifdef __LZCNT__
-// Leading-Zero bit count, Intel codename "Haswell"
+// Leading-Zero bit count, Intel Core 4th Generation ("Haswell")
 " lzcnt"
 #endif
 #ifdef __MMX__
@@ -166,7 +166,7 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 " popcnt"
 #endif
 #ifdef __RDRND__
-// Random number generator, Intel codename "Ivy Bridge"
+// Random number generator, Intel Core 3rd Generation ("Ivy Bridge")
 " rdrnd"
 #endif
 #if defined(__SSE__) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1) || defined(_M_X64)

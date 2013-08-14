@@ -586,7 +586,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
             d->data()[len] = 0;
 
             {
-                QByteArrayDataPtr dataPtr = { reinterpret_cast<QByteArrayData *>(d.take()) };
+                QByteArrayDataPtr dataPtr = { d.take() };
                 return QByteArray(dataPtr);
             }
 
@@ -3152,7 +3152,7 @@ QByteArray QByteArray::trimmed() const
     }
     int l = end - start + 1;
     if (l <= 0) {
-        QByteArrayDataPtr empty = { reinterpret_cast<QByteArrayData *>(Data::allocate(0)) };
+        QByteArrayDataPtr empty = { Data::allocate(0) };
         return QByteArray(empty);
     }
     return QByteArray(s+start, l);
@@ -3889,7 +3889,7 @@ QByteArray QByteArray::fromRawData(const char *data, int size)
         x = Data::fromRawData(data, size);
         Q_CHECK_PTR(x);
     }
-    QByteArrayDataPtr dataPtr = { reinterpret_cast<QByteArrayData *>(x) };
+    QByteArrayDataPtr dataPtr = { x };
     return QByteArray(dataPtr);
 }
 

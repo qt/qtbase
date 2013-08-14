@@ -622,6 +622,8 @@ void QItemSelectionModelPrivate::initModel(QAbstractItemModel *model)
                 q, SLOT(_q_layoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)));
         QObject::connect(model, SIGNAL(layoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
                 q, SLOT(_q_layoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)));
+        QObject::connect(model, SIGNAL(modelReset()),
+                q, SLOT(reset()));
     }
 }
 

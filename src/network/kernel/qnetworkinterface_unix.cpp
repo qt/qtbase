@@ -81,7 +81,7 @@
 
 QT_BEGIN_NAMESPACE
 
-static QHostAddress addressFromSockaddr(sockaddr *sa)
+static QHostAddress addressFromSockaddr(sockaddr *sa, int ifindex = 0, const QString &ifname = QString())
 {
     QHostAddress address;
     if (!sa)
@@ -92,7 +92,11 @@ static QHostAddress addressFromSockaddr(sockaddr *sa)
     else if (sa->sa_family == AF_INET6) {
         address.setAddress(((sockaddr_in6 *)sa)->sin6_addr.s6_addr);
         int scope = ((sockaddr_in6 *)sa)->sin6_scope_id;
-        if (scope) {
+        if (scope && scope == ifindex) {
+            // this is the most likely scenario:
+            // a scope ID in a socket is that of the interface this address came from
+            address.setScopeId(ifname);
+        } else  if (scope) {
 #ifndef QT_NO_IPV6IFNAME
             char scopeid[IFNAMSIZ];
             if (::if_indextoname(scope, scopeid)) {
@@ -410,14 +414,9 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
 {
     QList<QNetworkInterfacePrivate *> interfaces;
 
-    int socket;
-    if ((socket = qt_safe_socket(AF_INET, SOCK_STREAM, IPPROTO_IP)) == -1)
-        return interfaces;      // error
-
     ifaddrs *interfaceListing;
     if (getifaddrs(&interfaceListing) == -1) {
         // error
-        ::close(socket);
         return interfaces;
     }
 
@@ -439,20 +438,19 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
         }
 
         QNetworkAddressEntry entry;
-        entry.setIp(addressFromSockaddr(ptr->ifa_addr));
+        entry.setIp(addressFromSockaddr(ptr->ifa_addr, iface->index, iface->name));
         if (entry.ip().isNull())
             // could not parse the address
             continue;
 
-        entry.setNetmask(addressFromSockaddr(ptr->ifa_netmask));
+        entry.setNetmask(addressFromSockaddr(ptr->ifa_netmask, iface->index, iface->name));
         if (iface->flags & QNetworkInterface::CanBroadcast)
-            entry.setBroadcast(addressFromSockaddr(ptr->ifa_broadaddr));
+            entry.setBroadcast(addressFromSockaddr(ptr->ifa_broadaddr, iface->index, iface->name));
 
         iface->addressEntries << entry;
     }
 
     freeifaddrs(interfaceListing);
-    ::close(socket);
     return interfaces;
 }
 #endif

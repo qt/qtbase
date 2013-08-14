@@ -2370,10 +2370,9 @@ static char *_qdtoa( NEEDS_VOLATILE double d, int mode, int ndigits, int *decpt,
         }
 
     b = d2b(d, &be, &bbits);
-#ifdef Sudden_Underflow
     i = (int)(getWord0(d) >> Exp_shift1 & (Exp_mask>>Exp_shift1));
-#else
-    if ((i = int(getWord0(d) >> Exp_shift1 & (Exp_mask>>Exp_shift1))) != 0) {
+#ifndef Sudden_Underflow
+    if (i != 0) {
 #endif
         d2 = d;
         setWord0(&d2, getWord0(d2) & Frac_mask1);

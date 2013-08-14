@@ -161,6 +161,7 @@ private slots:
     void task_QTBUG_10491_currentIndexAndModelColumn();
     void highlightedSignal();
     void itemData();
+    void task_QTBUG_31146_popupCompletion();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -2899,6 +2900,40 @@ void tst_QComboBox::itemData()
         QCOMPARE(comboBox.currentData(Qt::UserRole + 1).toDouble(), d);
         QCOMPARE(comboBox.currentData(Qt::UserRole + 2).value<QIcon>(), icon);
     }
+}
+
+void tst_QComboBox::task_QTBUG_31146_popupCompletion()
+{
+    QComboBox comboBox;
+    comboBox.setEditable(true);
+    comboBox.setAutoCompletion(true);
+    comboBox.setInsertPolicy(QComboBox::NoInsert);
+    comboBox.completer()->setCaseSensitivity(Qt::CaseInsensitive);
+    comboBox.completer()->setCompletionMode(QCompleter::PopupCompletion);
+
+    comboBox.addItems(QStringList() << QStringLiteral("item") << QStringLiteral("item"));
+
+    comboBox.show();
+    comboBox.activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(&comboBox));
+
+    QCOMPARE(comboBox.currentIndex(), 0);
+
+    comboBox.lineEdit()->selectAll();
+    QTest::keyClicks(comboBox.lineEdit(), "item");
+
+    QTest::keyClick(comboBox.completer()->popup(), Qt::Key_Down);
+    QTest::keyClick(comboBox.completer()->popup(), Qt::Key_Down);
+    QTest::keyClick(comboBox.completer()->popup(), Qt::Key_Enter);
+    QCOMPARE(comboBox.currentIndex(), 1);
+
+    comboBox.lineEdit()->selectAll();
+    QTest::keyClicks(comboBox.lineEdit(), "item");
+
+    QTest::keyClick(comboBox.completer()->popup(), Qt::Key_Up);
+    QTest::keyClick(comboBox.completer()->popup(), Qt::Key_Up);
+    QTest::keyClick(comboBox.completer()->popup(), Qt::Key_Enter);
+    QCOMPARE(comboBox.currentIndex(), 0);
 }
 
 QTEST_MAIN(tst_QComboBox)

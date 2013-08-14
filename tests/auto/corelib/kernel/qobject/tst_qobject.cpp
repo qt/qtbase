@@ -5727,27 +5727,44 @@ void tst_QObject::connectFunctorOverloads()
 #endif
 }
 
+class GetSenderObject : public QObject
+{
+    Q_OBJECT
+public:
+    QObject *accessSender() { return sender(); }
+
+public Q_SLOTS:
+    void triggerSignal() { Q_EMIT aSignal(); }
+
+Q_SIGNALS:
+    void aSignal();
+};
+
 static int countedStructObjectsCount = 0;
 struct CountedStruct
 {
-    CountedStruct() { ++countedStructObjectsCount; }
-    CountedStruct(const CountedStruct &) { ++countedStructObjectsCount; }
+    CountedStruct() : sender(Q_NULLPTR) { ++countedStructObjectsCount; }
+    CountedStruct(GetSenderObject *sender) : sender(sender) { ++countedStructObjectsCount; }
+    CountedStruct(const CountedStruct &o) : sender(o.sender) { ++countedStructObjectsCount; }
     CountedStruct &operator=(const CountedStruct &) { return *this; }
-    ~CountedStruct() { --countedStructObjectsCount; }
-    void operator()() const {}
+    // accessSender here allows us to check if there's a deadlock
+    ~CountedStruct() { --countedStructObjectsCount; if (sender != Q_NULLPTR) (void)sender->accessSender(); }
+    void operator()() const { }
+
+    GetSenderObject *sender;
 };
 
 void tst_QObject::disconnectDoesNotLeakFunctor()
 {
     QCOMPARE(countedStructObjectsCount, 0);
     {
+        GetSenderObject obj;
         QMetaObject::Connection c;
         {
-            CountedStruct s;
+            CountedStruct s(&obj);
             QCOMPARE(countedStructObjectsCount, 1);
-            QTimer timer;
 
-            c = connect(&timer, &QTimer::timeout, s);
+            c = connect(&obj, &GetSenderObject::aSignal, s);
             QVERIFY(c);
             QCOMPARE(countedStructObjectsCount, 2);
             QVERIFY(QObject::disconnect(c));
@@ -5795,6 +5812,33 @@ void tst_QObject::disconnectDoesNotLeakFunctor()
         QCOMPARE(countedStructObjectsCount, 1); // only one instance, in Qt internals
         QVERIFY(QObject::disconnect(c));
         QCOMPARE(countedStructObjectsCount, 0); // functor being destroyed
+    }
+    QCOMPARE(countedStructObjectsCount, 0);
+    {
+        QTimer *timer = new QTimer;
+        QEventLoop e;
+
+        connect(timer, &QTimer::timeout, CountedStruct());
+        QCOMPARE(countedStructObjectsCount, 1); // only one instance, in Qt internals
+        timer->deleteLater();
+        connect(timer, &QObject::destroyed, &e, &QEventLoop::quit, Qt::QueuedConnection);
+        e.exec();
+        QCOMPARE(countedStructObjectsCount, 0); // functor being destroyed
+    }
+    QCOMPARE(countedStructObjectsCount, 0);
+    {
+        GetSenderObject obj;
+
+        connect(&obj, &GetSenderObject::aSignal, CountedStruct(&obj));
+        QCOMPARE(countedStructObjectsCount, 1);
+    }
+    QCOMPARE(countedStructObjectsCount, 0);
+    {
+        GetSenderObject obj;
+
+        connect(&obj, &GetSenderObject::aSignal, CountedStruct(&obj));
+        QCOMPARE(countedStructObjectsCount, 1);
+        QObject::disconnect(&obj, &GetSenderObject::aSignal, 0, 0);
     }
     QCOMPARE(countedStructObjectsCount, 0);
     {

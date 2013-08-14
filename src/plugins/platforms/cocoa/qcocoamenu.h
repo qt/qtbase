@@ -84,6 +84,8 @@ public:
     inline NSMenuItem *nsMenuItem() const
         { return m_nativeItem; }
 
+    inline bool isVisible() const { return m_visible; }
+
     virtual QPlatformMenuItem *menuItemAt(int position) const;
     virtual QPlatformMenuItem *menuItemForTag(quintptr tag) const;
 
@@ -100,6 +102,7 @@ private:
     NSMenuItem *m_nativeItem;
     NSObject *m_delegate;
     bool m_enabled;
+    bool m_visible;
     quintptr m_tag;
     QCocoaMenuBar *m_menuBar;
 };
