@@ -68,6 +68,10 @@
 
 QT_BEGIN_NAMESPACE
 
+/*****************************************************************************
+  Date/Time Constants
+ *****************************************************************************/
+
 enum {
     SECS_PER_DAY = 86400,
     MSECS_PER_DAY = 86400000,
@@ -78,6 +82,10 @@ enum {
     TIME_T_MAX = 2145916799,  // int maximum 2037-12-31T23:59:59 UTC
     JULIAN_DAY_FOR_EPOCH = 2440588 // result of julianDayFromDate(1970, 1, 1)
 };
+
+/*****************************************************************************
+  QDate static helper functions
+ *****************************************************************************/
 
 static inline QDate fixedDate(int y, int m, int d)
 {
@@ -144,6 +152,9 @@ static void getDateFromJulianDay(qint64 julianDay, int *yearp, int *monthp, int 
         *dayp = day;
 }
 
+/*****************************************************************************
+  Date/Time formatting helper functions
+ *****************************************************************************/
 
 static const char monthDays[] = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
@@ -163,8 +174,68 @@ int qt_monthNumberFromShortName(const QString &shortName)
 #endif
 
 #ifndef QT_NO_DATESTRING
-static void rfcDateImpl(const QString &s, QDate *dd = 0, QTime *dt = 0, int *utfcOffset = 0);
-#endif
+static void rfcDateImpl(const QString &s, QDate *dd = 0, QTime *dt = 0, int *utcOffset = 0)
+{
+    int day = -1;
+    int month = -1;
+    int year = -1;
+    int hour = -1;
+    int min = -1;
+    int sec = -1;
+    int hourOffset = 0;
+    int minOffset = 0;
+    bool positiveOffset = false;
+
+    // Matches "Wdy, DD Mon YYYY HH:MM:SS ±hhmm" (Wdy, being optional)
+    QRegExp rex(QStringLiteral("^(?:[A-Z][a-z]+,)?[ \\t]*(\\d{1,2})[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d)(?::(\\d\\d))?)?[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
+    if (s.indexOf(rex) == 0) {
+        if (dd) {
+            day = rex.cap(1).toInt();
+            month = qt_monthNumberFromShortName(rex.cap(2));
+            year = rex.cap(3).toInt();
+        }
+        if (dt) {
+            if (!rex.cap(4).isEmpty()) {
+                hour = rex.cap(4).toInt();
+                min = rex.cap(5).toInt();
+                sec = rex.cap(6).toInt();
+            }
+            positiveOffset = (rex.cap(7) == QStringLiteral("+"));
+            hourOffset = rex.cap(8).toInt();
+            minOffset = rex.cap(9).toInt();
+        }
+        if (utcOffset)
+            *utcOffset = ((hourOffset * 60 + minOffset) * (positiveOffset ? 60 : -60));
+    } else {
+        // Matches "Wdy Mon DD HH:MM:SS YYYY"
+        QRegExp rex(QStringLiteral("^[A-Z][a-z]+[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d):(\\d\\d))?[ \\t]+(\\d\\d\\d\\d)[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
+        if (s.indexOf(rex) == 0) {
+            if (dd) {
+                month = qt_monthNumberFromShortName(rex.cap(1));
+                day = rex.cap(2).toInt();
+                year = rex.cap(6).toInt();
+            }
+            if (dt) {
+                if (!rex.cap(3).isEmpty()) {
+                    hour = rex.cap(3).toInt();
+                    min = rex.cap(4).toInt();
+                    sec = rex.cap(5).toInt();
+                }
+                positiveOffset = (rex.cap(7) == QStringLiteral("+"));
+                hourOffset = rex.cap(8).toInt();
+                minOffset = rex.cap(9).toInt();
+            }
+            if (utcOffset)
+                *utcOffset = ((hourOffset * 60 + minOffset) * (positiveOffset ? 60 : -60));
+        }
+    }
+
+    if (dd)
+        *dd = QDate(year, month, day);
+    if (dt)
+        *dt = QTime(hour, min, sec);
+}
+#endif // QT_NO_DATESTRING
 
 // Return offset in [+-]HH:MM format
 // Qt::ISODate puts : between the hours and minutes, but Qt:TextDate does not
@@ -214,149 +285,6 @@ static int fromOffsetString(const QString &offsetString, bool *valid)
 
     *valid = true;
     return ((hour * 60) + minute) * 60;
-}
-
-// Returns the tzname, assume tzset has been called already
-static QString qt_tzname(QDateTimePrivate::DaylightStatus daylightStatus)
-{
-#if defined(Q_OS_WINCE)
-    TIME_ZONE_INFORMATION tzi;
-    DWORD res = GetTimeZoneInformation(&tzi);
-    if (res == TIME_ZONE_ID_UNKNOWN)
-        return QString();
-    else if (daylightStatus == QDateTimePrivate::DaylightTime)
-        return QString::fromWCharArray(tzi.DaylightName);
-    else
-        return QString::fromWCharArray(tzi.StandardName);
-#else
-    int isDst = (daylightStatus == QDateTimePrivate::DaylightTime) ? 1 : 0;
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-    size_t s = 0;
-    char name[512];
-    if (_get_tzname(&s, name, 512, isDst))
-        return QString();
-    return QString::fromLocal8Bit(name);
-#else
-    return QString::fromLocal8Bit(tzname[isDst]);
-#endif // Q_OS_WIN
-#endif // Q_OS_WINCE
-}
-
-// Calls the platform variant of mktime for the given date and time,
-// and updates the date, time, daylightStatus and abbreviation with the returned values
-// If the date falls outside the 1970 to 2037 range supported by mktime / time_t
-// then null date/time will be returned, you should adjust the date first if
-// you need a guaranteed result.
-static qint64 qt_mktime(QDate *date, QTime *time, QDateTimePrivate::DaylightStatus *daylightStatus,
-                        QString *abbreviation, bool *ok)
-{
-    const qint64 msec = time->msec();
-    int yy, mm, dd;
-    date->getDate(&yy, &mm, &dd);
-
-#if defined(Q_OS_WINCE)
-    // WinCE doesn't provide standard C library time functions
-    SYSTEMTIME st;
-    memset(&st, 0, sizeof(SYSTEMTIME));
-    st.wSecond = time->second();
-    st.wMinute = time->minute();
-    st.wHour = time->hour();
-    st.wDay = dd;
-    st.wMonth = mm;
-    st.wYear = yy;
-    FILETIME lft;
-    bool valid = SystemTimeToFileTime(&st, &lft);
-    FILETIME ft;
-    if (valid)
-        valid = LocalFileTimeToFileTime(&lft, &ft);
-    const time_t secsSinceEpoch = ftToTime_t(ft);
-    const time_t localSecs = ftToTime_t(lft);
-    TIME_ZONE_INFORMATION tzi;
-    GetTimeZoneInformation(&tzi);
-    bool isDaylight = false;
-    // Check for overflow
-    qint64 localDiff = qAbs(localSecs - secsSinceEpoch);
-    int daylightOffset = qAbs(tzi.Bias + tzi.DaylightBias) * 60;
-    if (localDiff > daylightOffset)
-        valid = false;
-    else
-        isDaylight = (localDiff == daylightOffset);
-    if (daylightStatus) {
-        if (isDaylight)
-            *daylightStatus = QDateTimePrivate::DaylightTime;
-        else
-            *daylightStatus = QDateTimePrivate::StandardTime;
-    }
-    if (abbreviation) {
-        if (isDaylight)
-            *abbreviation = QString::fromWCharArray(tzi.DaylightName);
-        else
-            *abbreviation = QString::fromWCharArray(tzi.StandardName);
-    }
-    if (ok)
-        *ok = valid;
-#else
-    // All other platforms provide standard C library time functions
-    tm local;
-    local.tm_sec = time->second();
-    local.tm_min = time->minute();
-    local.tm_hour = time->hour();
-    local.tm_mday = dd;
-    local.tm_mon = mm - 1;
-    local.tm_year = yy - 1900;
-    local.tm_wday = 0;
-    local.tm_yday = 0;
-    local.tm_isdst = -1;
-#if defined(Q_OS_WIN)
-    int hh = local.tm_hour;
-#endif // Q_OS_WIN
-    time_t secsSinceEpoch = mktime(&local);
-    if (secsSinceEpoch != time_t(-1)) {
-        *date = QDate(local.tm_year + 1900, local.tm_mon + 1, local.tm_mday);
-        *time = QTime(local.tm_hour, local.tm_min, local.tm_sec, msec);
-#if defined(Q_OS_WIN)
-        // Windows mktime for the missing hour subtracts 1 hour from the time
-        // instead of adding 1 hour.  If time differs and is standard time then
-        // this has happened, so add 2 hours to the time and 1 hour to the msecs
-        if (local.tm_isdst == 0 && local.tm_hour != hh) {
-            if (time->hour() >= 22)
-                *date = date->addDays(1);
-            *time = time->addSecs(2 * SECS_PER_HOUR);
-            secsSinceEpoch += SECS_PER_HOUR;
-            local.tm_isdst = 1;
-        }
-#endif // Q_OS_WIN
-        if (local.tm_isdst >= 1) {
-            if (daylightStatus)
-                *daylightStatus = QDateTimePrivate::DaylightTime;
-            if (abbreviation)
-                *abbreviation = qt_tzname(QDateTimePrivate::DaylightTime);
-        } else if (local.tm_isdst == 0) {
-            if (daylightStatus)
-                *daylightStatus = QDateTimePrivate::StandardTime;
-            if (abbreviation)
-                *abbreviation = qt_tzname(QDateTimePrivate::StandardTime);
-        } else {
-            if (daylightStatus)
-                *daylightStatus = QDateTimePrivate::UnknownDaylightTime;
-            if (abbreviation)
-                *abbreviation = qt_tzname(QDateTimePrivate::StandardTime);
-        }
-        if (ok)
-            *ok = true;
-    } else {
-        *date = QDate();
-        *time = QTime();
-        if (daylightStatus)
-            *daylightStatus = QDateTimePrivate::UnknownDaylightTime;
-        if (abbreviation)
-            *abbreviation = QString();
-        if (ok)
-            *ok = false;
-    }
-#endif // Q_OS_WINCE
-
-    return ((qint64)secsSinceEpoch * 1000) + msec;
 }
 
 /*****************************************************************************
@@ -2232,7 +2160,7 @@ int QTime::elapsed() const
 }
 
 /*****************************************************************************
-  QDateTimePrivate private helper functions
+  QDateTime static helper functions
  *****************************************************************************/
 
 // Calls the platform variant of tzset
@@ -2267,6 +2195,149 @@ static int qt_timezone()
 #else
         return timezone;
 #endif // Q_OS_WIN
+}
+
+// Returns the tzname, assume tzset has been called already
+static QString qt_tzname(QDateTimePrivate::DaylightStatus daylightStatus)
+{
+#if defined(Q_OS_WINCE)
+    TIME_ZONE_INFORMATION tzi;
+    DWORD res = GetTimeZoneInformation(&tzi);
+    if (res == TIME_ZONE_ID_UNKNOWN)
+        return QString();
+    else if (daylightStatus == QDateTimePrivate::DaylightTime)
+        return QString::fromWCharArray(tzi.DaylightName);
+    else
+        return QString::fromWCharArray(tzi.StandardName);
+#else
+    int isDst = (daylightStatus == QDateTimePrivate::DaylightTime) ? 1 : 0;
+#if defined(_MSC_VER) && _MSC_VER >= 1400
+    size_t s = 0;
+    char name[512];
+    if (_get_tzname(&s, name, 512, isDst))
+        return QString();
+    return QString::fromLocal8Bit(name);
+#else
+    return QString::fromLocal8Bit(tzname[isDst]);
+#endif // Q_OS_WIN
+#endif // Q_OS_WINCE
+}
+
+// Calls the platform variant of mktime for the given date and time,
+// and updates the date, time, daylightStatus and abbreviation with the returned values
+// If the date falls outside the 1970 to 2037 range supported by mktime / time_t
+// then null date/time will be returned, you should adjust the date first if
+// you need a guaranteed result.
+static qint64 qt_mktime(QDate *date, QTime *time, QDateTimePrivate::DaylightStatus *daylightStatus,
+                        QString *abbreviation, bool *ok)
+{
+    const qint64 msec = time->msec();
+    int yy, mm, dd;
+    date->getDate(&yy, &mm, &dd);
+
+#if defined(Q_OS_WINCE)
+    // WinCE doesn't provide standard C library time functions
+    SYSTEMTIME st;
+    memset(&st, 0, sizeof(SYSTEMTIME));
+    st.wSecond = time->second();
+    st.wMinute = time->minute();
+    st.wHour = time->hour();
+    st.wDay = dd;
+    st.wMonth = mm;
+    st.wYear = yy;
+    FILETIME lft;
+    bool valid = SystemTimeToFileTime(&st, &lft);
+    FILETIME ft;
+    if (valid)
+        valid = LocalFileTimeToFileTime(&lft, &ft);
+    const time_t secsSinceEpoch = ftToTime_t(ft);
+    const time_t localSecs = ftToTime_t(lft);
+    TIME_ZONE_INFORMATION tzi;
+    GetTimeZoneInformation(&tzi);
+    bool isDaylight = false;
+    // Check for overflow
+    qint64 localDiff = qAbs(localSecs - secsSinceEpoch);
+    int daylightOffset = qAbs(tzi.Bias + tzi.DaylightBias) * 60;
+    if (localDiff > daylightOffset)
+        valid = false;
+    else
+        isDaylight = (localDiff == daylightOffset);
+    if (daylightStatus) {
+        if (isDaylight)
+            *daylightStatus = QDateTimePrivate::DaylightTime;
+        else
+            *daylightStatus = QDateTimePrivate::StandardTime;
+    }
+    if (abbreviation) {
+        if (isDaylight)
+            *abbreviation = QString::fromWCharArray(tzi.DaylightName);
+        else
+            *abbreviation = QString::fromWCharArray(tzi.StandardName);
+    }
+    if (ok)
+        *ok = valid;
+#else
+    // All other platforms provide standard C library time functions
+    tm local;
+    local.tm_sec = time->second();
+    local.tm_min = time->minute();
+    local.tm_hour = time->hour();
+    local.tm_mday = dd;
+    local.tm_mon = mm - 1;
+    local.tm_year = yy - 1900;
+    local.tm_wday = 0;
+    local.tm_yday = 0;
+    local.tm_isdst = -1;
+#if defined(Q_OS_WIN)
+    int hh = local.tm_hour;
+#endif // Q_OS_WIN
+    time_t secsSinceEpoch = mktime(&local);
+    if (secsSinceEpoch != time_t(-1)) {
+        *date = QDate(local.tm_year + 1900, local.tm_mon + 1, local.tm_mday);
+        *time = QTime(local.tm_hour, local.tm_min, local.tm_sec, msec);
+#if defined(Q_OS_WIN)
+        // Windows mktime for the missing hour subtracts 1 hour from the time
+        // instead of adding 1 hour.  If time differs and is standard time then
+        // this has happened, so add 2 hours to the time and 1 hour to the msecs
+        if (local.tm_isdst == 0 && local.tm_hour != hh) {
+            if (time->hour() >= 22)
+                *date = date->addDays(1);
+            *time = time->addSecs(2 * SECS_PER_HOUR);
+            secsSinceEpoch += SECS_PER_HOUR;
+            local.tm_isdst = 1;
+        }
+#endif // Q_OS_WIN
+        if (local.tm_isdst >= 1) {
+            if (daylightStatus)
+                *daylightStatus = QDateTimePrivate::DaylightTime;
+            if (abbreviation)
+                *abbreviation = qt_tzname(QDateTimePrivate::DaylightTime);
+        } else if (local.tm_isdst == 0) {
+            if (daylightStatus)
+                *daylightStatus = QDateTimePrivate::StandardTime;
+            if (abbreviation)
+                *abbreviation = qt_tzname(QDateTimePrivate::StandardTime);
+        } else {
+            if (daylightStatus)
+                *daylightStatus = QDateTimePrivate::UnknownDaylightTime;
+            if (abbreviation)
+                *abbreviation = qt_tzname(QDateTimePrivate::StandardTime);
+        }
+        if (ok)
+            *ok = true;
+    } else {
+        *date = QDate();
+        *time = QTime();
+        if (daylightStatus)
+            *daylightStatus = QDateTimePrivate::UnknownDaylightTime;
+        if (abbreviation)
+            *abbreviation = QString();
+        if (ok)
+            *ok = false;
+    }
+#endif // Q_OS_WINCE
+
+    return ((qint64)secsSinceEpoch * 1000) + msec;
 }
 
 // Calls the platform variant of localtime for the given msecs, and updates
@@ -2514,6 +2585,17 @@ static qint64 localMSecsToEpochMSecs(qint64 localMsecs, QDate *localDate = 0, QT
 /*****************************************************************************
   QDateTimePrivate member functions
  *****************************************************************************/
+
+QDateTimePrivate::QDateTimePrivate(const QDate &toDate, const QTime &toTime, Qt::TimeSpec toSpec,
+                                   int offsetSeconds)
+    : m_msecs(0),
+      m_spec(Qt::LocalTime),
+      m_offsetFromUtc(0),
+      m_status(0)
+{
+    setTimeSpec(toSpec, offsetSeconds);
+    setDateTime(toDate, toTime);
+}
 
 void QDateTimePrivate::setTimeSpec(Qt::TimeSpec spec, int offsetSeconds)
 {
@@ -2809,26 +2891,6 @@ QDateTime::QDateTime(const QDate &date, const QTime &time, Qt::TimeSpec spec)
 QDateTime::QDateTime(const QDate &date, const QTime &time, Qt::TimeSpec spec, int offsetSeconds)
          : d(new QDateTimePrivate(date, time, spec, offsetSeconds))
 {
-}
-
-/*!
-    \internal
-    \since 5.2
-
-    Private.
-
-    Create a datetime with the given \a date, \a time, \a spec and \a offsetSeconds
-*/
-
-QDateTimePrivate::QDateTimePrivate(const QDate &toDate, const QTime &toTime, Qt::TimeSpec toSpec,
-                                   int offsetSeconds)
-    : m_msecs(0),
-      m_spec(Qt::LocalTime),
-      m_offsetFromUtc(0),
-      m_status(0)
-{
-    setTimeSpec(toSpec, offsetSeconds);
-    setDateTime(toDate, toTime);
 }
 
 /*!
@@ -4528,72 +4590,8 @@ QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)
 #endif // QT_NO_DATASTREAM
 
 /*****************************************************************************
-  Some static function used by QDate, QTime and QDateTime
+  Date / Time Debug Streams
 *****************************************************************************/
-
-#ifndef QT_NO_DATESTRING
-static void rfcDateImpl(const QString &s, QDate *dd, QTime *dt, int *utcOffset)
-{
-    int day = -1;
-    int month = -1;
-    int year = -1;
-    int hour = -1;
-    int min = -1;
-    int sec = -1;
-    int hourOffset = 0;
-    int minOffset = 0;
-    bool positiveOffset = false;
-
-    // Matches "Wdy, DD Mon YYYY HH:MM:SS ±hhmm" (Wdy, being optional)
-    QRegExp rex(QStringLiteral("^(?:[A-Z][a-z]+,)?[ \\t]*(\\d{1,2})[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d)(?::(\\d\\d))?)?[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
-    if (s.indexOf(rex) == 0) {
-        if (dd) {
-            day = rex.cap(1).toInt();
-            month = qt_monthNumberFromShortName(rex.cap(2));
-            year = rex.cap(3).toInt();
-        }
-        if (dt) {
-            if (!rex.cap(4).isEmpty()) {
-                hour = rex.cap(4).toInt();
-                min = rex.cap(5).toInt();
-                sec = rex.cap(6).toInt();
-            }
-            positiveOffset = (rex.cap(7) == QStringLiteral("+"));
-            hourOffset = rex.cap(8).toInt();
-            minOffset = rex.cap(9).toInt();
-        }
-        if (utcOffset)
-            *utcOffset = ((hourOffset * 60 + minOffset) * (positiveOffset ? 60 : -60));
-    } else {
-        // Matches "Wdy Mon DD HH:MM:SS YYYY"
-        QRegExp rex(QStringLiteral("^[A-Z][a-z]+[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d):(\\d\\d))?[ \\t]+(\\d\\d\\d\\d)[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
-        if (s.indexOf(rex) == 0) {
-            if (dd) {
-                month = qt_monthNumberFromShortName(rex.cap(1));
-                day = rex.cap(2).toInt();
-                year = rex.cap(6).toInt();
-            }
-            if (dt) {
-                if (!rex.cap(3).isEmpty()) {
-                    hour = rex.cap(3).toInt();
-                    min = rex.cap(4).toInt();
-                    sec = rex.cap(5).toInt();
-                }
-                positiveOffset = (rex.cap(7) == QStringLiteral("+"));
-                hourOffset = rex.cap(8).toInt();
-                minOffset = rex.cap(9).toInt();
-            }
-            if (utcOffset)
-                *utcOffset = ((hourOffset * 60 + minOffset) * (positiveOffset ? 60 : -60));
-        }
-    }
-
-    if (dd)
-        *dd = QDate(year, month, day);
-    if (dt)
-        *dt = QTime(hour, min, sec);
-}
-#endif // QT_NO_DATESTRING
 
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_NO_DATESTRING)
 QDebug operator<<(QDebug dbg, const QDate &date)
