@@ -488,7 +488,7 @@ static QTouchDevice *touchDevice = 0;
     return YES;
 }
 
-- (void)convertFromEvent:(NSEvent *)event toWindowPoint:(QPoint *)qtWindowPoint andScreenPoint:(QPoint *)qtScreenPoint
+- (void)convertFromEvent:(NSEvent *)event toWindowPoint:(QPointF *)qtWindowPoint andScreenPoint:(QPointF *)qtScreenPoint
 {
     // Calculate the mouse position in the QWindow and Qt screen coordinate system,
     // starting from coordinates in the NSWindow coordinate system.
@@ -511,19 +511,19 @@ static QTouchDevice *touchDevice = 0;
     NSPoint nsWindowPoint = [event locationInWindow];                    // NSWindow coordinates
 
     NSPoint nsViewPoint = [self convertPoint: nsWindowPoint fromView: nil]; // NSView/QWindow coordinates
-    *qtWindowPoint = QPoint(nsViewPoint.x, nsViewPoint.y);                     // NSView/QWindow coordinates
+    *qtWindowPoint = QPointF(nsViewPoint.x, nsViewPoint.y);                     // NSView/QWindow coordinates
 
     NSWindow *window = [self window];
     // Use convertRectToScreen if available (added in 10.7).
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     if ([window respondsToSelector:@selector(convertRectToScreen:)]) {
         NSRect screenRect = [window convertRectToScreen : NSMakeRect(nsWindowPoint.x, nsWindowPoint.y, 0, 0)]; // OS X screen coordinates
-        *qtScreenPoint = QPoint(screenRect.origin.x, qt_mac_flipYCoordinate(screenRect.origin.y));              // Qt screen coordinates
+        *qtScreenPoint = QPointF(screenRect.origin.x, qt_mac_flipYCoordinate(screenRect.origin.y));              // Qt screen coordinates
     } else
 #endif
     {
         NSPoint screenPoint = [window convertBaseToScreen : NSMakePoint(nsWindowPoint.x, nsWindowPoint.y)];
-        *qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
+        *qtScreenPoint = QPointF(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
     }
 }
 
@@ -534,7 +534,8 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)handleMouseEvent:(NSEvent *)theEvent
 {
-    QPoint qtWindowPoint, qtScreenPoint;
+    QPointF qtWindowPoint;
+    QPointF qtScreenPoint;
     [self convertFromEvent:theEvent toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
     ulong timestamp = [theEvent timestamp] * 1000;
 
@@ -674,9 +675,10 @@ static QTouchDevice *touchDevice = 0;
     if (m_window->flags() & Qt::WindowTransparentForInput)
         return [super mouseMoved:theEvent];
 
-    QPoint windowPoint, screenPoint;
+    QPointF windowPoint;
+    QPointF screenPoint;
     [self convertFromEvent:theEvent toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
-    QWindow *childWindow = m_platformWindow->childWindowAt(windowPoint);
+    QWindow *childWindow = m_platformWindow->childWindowAt(windowPoint.toPoint());
 
     // Top-level windows generate enter-leave events for sub-windows.
     // Qt wants to know which window (if any) will be entered at the
@@ -707,9 +709,10 @@ static QTouchDevice *touchDevice = 0;
     if (!m_platformWindow->m_nsWindow)
         return;
 
-    QPoint windowPoint, screenPoint;
+    QPointF windowPoint;
+    QPointF screenPoint;
     [self convertFromEvent:theEvent toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
-    m_platformWindow->m_underMouseWindow = m_platformWindow->childWindowAt(windowPoint);
+    m_platformWindow->m_underMouseWindow = m_platformWindow->childWindowAt(windowPoint.toPoint());
     QWindowSystemInterface::handleEnterEvent(m_platformWindow->m_underMouseWindow, windowPoint, screenPoint);
 }
 
@@ -857,7 +860,8 @@ static QTouchDevice *touchDevice = 0;
     }
 #endif
 
-    QPoint qt_windowPoint, qt_screenPoint;
+    QPointF qt_windowPoint;
+    QPointF qt_screenPoint;
     [self convertFromEvent:theEvent toWindowPoint:&qt_windowPoint andScreenPoint:&qt_screenPoint];
     NSTimeInterval timestamp = [theEvent timestamp];
     ulong qt_timestamp = timestamp * 1000;
