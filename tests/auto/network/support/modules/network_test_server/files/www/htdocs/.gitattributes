@@ -1,0 +1,4 @@
+# Test data deployed to the web server should not have line endings
+# changed, because we have autotests which depend on the exact size of
+# the files.
+* -crlf

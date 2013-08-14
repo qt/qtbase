@@ -1,0 +1,5 @@
+Require valid-user
+AuthUserFile /etc/squid/squid_passwd
+AuthType basic
+AuthName "password-protected area"
+Options Indexes

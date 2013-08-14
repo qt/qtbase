@@ -1,0 +1,11 @@
+# This file allows you to map usernames from the clients to the server.
+# Unix_name = SMB_name1 SMB_name2 ...
+#
+# See section 'username map' in the manual page of smb.conf for more
+# information.
+#
+# This file is _not_ included in the default configuration as it makes the
+# usage of an user named administrator impossible.
+
+root = administrator
+;nobody = guest pcguest smbguest

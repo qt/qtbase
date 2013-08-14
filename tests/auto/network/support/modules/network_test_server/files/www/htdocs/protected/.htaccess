@@ -1,0 +1,5 @@
+Require valid-user
+AuthUserFile /home/qt-test-server/passwords
+AuthType basic
+AuthName "password-protected area"
+Options Indexes

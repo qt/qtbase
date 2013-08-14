@@ -1,0 +1,2 @@
+#!/bin/sh
+exec /usr/sbin/tmpreaper 1d /home/writeables/dav/ /home/writeables/smb/ /home/qt-test-server/ftp/qtest/upload/

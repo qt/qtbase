@@ -1,0 +1,73 @@
+#
+# OpenSSL configuration file.
+#
+ 
+# Establish working directory.
+ 
+dir					= .
+ 
+[ ca ]
+default_ca				= CA_default
+ 
+[ CA_default ]
+serial					= $dir/serial
+database				= $dir/certindex.txt
+new_certs_dir				= $dir/certs
+certificate				= $dir/qt-test-server-cacert.pem
+private_key				= $dir/private/qt-test-server-cakey.pem
+default_days				= 3650
+default_md				= md5
+preserve				= no
+email_in_dn				= no
+nameopt					= default_ca
+certopt					= default_ca
+policy					= policy_match
+ 
+[ policy_match ]
+countryName				= match
+stateOrProvinceName			= match
+organizationName			= match
+organizationalUnitName			= optional
+commonName				= supplied
+emailAddress				= optional
+ 
+[ req ]
+default_bits				= 1024			# Size of keys
+default_keyfile				= key.pem		# name of generated keys
+default_md				= md5				# message digest algorithm
+string_mask				= nombstr		# permitted characters
+distinguished_name			= req_distinguished_name
+req_extensions				= v3_req
+ 
+[ req_distinguished_name ]
+# Variable name				Prompt string
+#-------------------------	  ----------------------------------
+0.organizationName			= Nokia
+organizationalUnitName			= Qt Software
+emailAddress				= nobody@nodomain.org
+emailAddress_max			= 40
+localityName				= Oslo
+stateOrProvinceName			= Oslo
+countryName				= NO
+countryName_min				= 2
+countryName_max				= 2
+commonName				= qt-test-server.qt-test-net
+commonName_max				= 64
+ 
+# Default values for the above, for consistency and less typing.
+# Variable name				Value
+#------------------------	  ------------------------------
+0.organizationName_default		= Nokia
+localityName_default			= Oslo
+stateOrProvinceName_default		= Oslo
+countryName_default			= NO
+ 
+[ v3_ca ]
+basicConstraints			= CA:TRUE
+subjectKeyIdentifier			= hash
+authorityKeyIdentifier			= keyid:always,issuer:always
+ 
+[ v3_req ]
+basicConstraints			= CA:FALSE
+subjectKeyIdentifier			= hash
+

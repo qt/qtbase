@@ -1,0 +1,137 @@
+#!/usr/bin/perl
+#---------------------------------------------------------
+#                      infocat
+#---------------------------------------------------------
+#
+# PURPOSE
+#  This perl script prints a catalog of the info files
+#  available via info2html at this site.
+#
+# AUTHOR
+#   Jon Howell <jonh@cs.dartmouth.edu>
+# 
+# HISTORY
+#    1997.05.16  V 1.0 
+#    1998.05.05  V 1.2   became part of info2html distribution
+#                        Jon Howell <jonh@cs.dartmouth.edu>
+#
+#------------------------------------------------------- 
+
+# set here the full path of the info2html.conf
+$VERSION = "1.4";
+$INFO2HTMLCONF = "./info2html.conf";
+require($INFO2HTMLCONF);  #-- configuration settings
+use CGI;
+
+#-- patterns
+$NODEBORDER    = '\037\014?';      #-- delimiter of an info node
+$REDIRSEP      = '\177';           #-- delimiter in tag tables
+$WS            = '[ \t]+';         #-- white space +
+$WSS           = '[ \t]*';         #-- white space *
+$TE            = '[\t\,\.\n]';     #-- end of a tag
+$TAG           = '[^\t\,\.\n]+';   #-- pattern for a tag
+$FTAG          = '[^\)]+';         #-- pattern for a file name in
+                                   #-- a cross reference
+
+#---------------------------------------------------------
+#                      Escape
+#---------------------------------------------------------
+#  This procedures escapes some special characeters. The
+#  escape sequence follows the WWW guide for escaped
+#  characters in URLs
+#---------------------------------------------------------
+sub Escape{
+  local($Tag) = @_; 
+  #-- escaping is not needed anymore  KG/28.6.94
+  #  $Tag =~ s/ /%20/g;     #  space
+  #  $Tag =~ s/\+/%AB/g;    #  +
+  #-- oh yes it is -- jonh 5/16/97
+  #$Tag;
+  return CGI::escape($Tag);
+}
+
+#----------------------------------------------------------
+#                    DeEscape
+#----------------------------------------------------------
+sub DeEscape{
+  local($Tag) = @_;
+  #-- deescaping is not needed anymore. KG/28.6.94
+  #$Tag =~ s/%AB/+/g;
+  #$Tag =~ s/%20/ /g;
+  #-- yes it is jonh 5/16/97
+  #$Tag;
+  $Tag =~ s/^ //g;
+  $Tag =~ s|\.\./||g;
+  $Tag =~ s|\.\.||g;
+  $Tag =~ s|\./||g;
+  return CGI::unescape($Tag);
+}
+
+# 
+#-------------------  MAIN -----------------------------
+# 
+print CGI::header('-type'=>'text/html',
+					'-expires'=>60*60*24);
+						# expires each day, in case I add new .info files
+						# to the @INFODIR path.
+						# -- jonh 1998.05.04
+
+print "<html><title>Info2HTML Catalog</title><body>\n";
+print "<h2>GNU info on the following topics is available here:</h2>\n";
+print "<ul>\n";
+
+# Collect them all into an array that can be sorted
+foreach $dir (@INFODIR) {
+    opendir DIR, $dir;
+    while ($infofile = readdir(DIR)) {
+        if ($infofile =~ m/.info.bz2$/ ) {
+            open INFOFILE, "bunzip2 -q -d -c < $dir/$infofile|";
+            $collect = 0;
+        }
+        elsif ($infofile =~ m/.info.gz$/ ) {
+            open INFOFILE, "gunzip -q -d -c < $dir/$infofile|";
+            $collect = 0;
+        }
+        elsif ($infofile =~ m/.info$/) {
+                open INFOFILE, $dir."/".$infofile;
+                $collect = 0;
+        }
+        else {
+            next;
+        }
+	$filedesc = "";
+	while (<INFOFILE>) {
+            last if (m/END-INFO-DIR-ENTRY/);
+	    s/^\* //;
+	    if ($collect and not ($_ =~ m/^[\s\n]*$/)) {
+		$filedesc .= "<br>" if ($collect < 4);
+            	$filedesc .= $_;
+		--$collect;
+		$filedesc .= " <b>...</b>\n" unless $collect;
+	    }
+            $collect=4 if (m/START-INFO-DIR-ENTRY/);
+	}
+	close INFOFILE;
+	$filedesc = $infofile if ($filedesc eq "");
+	# Add to the hash
+	$InfoFile{$filedesc} = $infofile;
+
+	#$filedesc =~ s/\n/\n/;
+	# print "<li><a href=\"info2html?($infofile)Top\">$filedesc</a>\n";
+    }
+}
+
+# Now output the list
+my @sorted =  sort { lc($a) cmp lc($b) } keys %InfoFile;
+foreach my $name ( @sorted ) {
+	print "<LI>"
+	    . "<A HREF=\"info2html?("
+	    . $InfoFile{$name}
+	    . ")Top\">"
+	    . $name
+	    . "</A>\n" ;
+}
+
+print "</ul>\n";
+print "info2html version ${VERSION}\n";
+print "\n</body>\n";

@@ -1,0 +1,730 @@
+#!/usr/bin/perl
+#---------------------------------------------------------
+#                      info2html
+#---------------------------------------------------------
+#
+# PURPOSE
+#  This perl script converts info nodes to HTML format.
+#  The node is specified on the command line using the
+#  syntax
+#           (<infofile>)<tag>
+#  If <infofile> and/or <tag> are missing, (dir)Top is assumed.
+#
+# AUTHOR
+#   Karl Guggisberg  <guggis@iam.unibe.ch>
+# 
+# HISTORY
+#   11.10.93  V 1.0 
+#   14.10.93  V 1.0a  some comments added
+#   15.10.93  V 1.0b  file for configuration settings
+#   16.10.93  V 1.0c  multiple info path possible
+#                     some bugs in escaping references removed
+#   28.6.94   V 1.0d  some minor changes
+#   8.4.95    V 1.1   bug fixes by Tim Witham 
+#                     <twitham@eng.fm.intel.com>
+# 1998.05.05  V 1.2   bug fixes, added expires headers, added infocat,
+#                     taken over web site maintenance.
+#                     Jon Howell <jonh@cs.dartmouth.edu>
+#
+#------------------------------------------------------- 
+
+# set here the full path of the info2html.conf
+$0 =~ m!(.*/)[^/]+$!;
+$INFO2HTMLCONF = "$1info2html.conf";
+require($INFO2HTMLCONF);  #-- configuration settings
+use CGI;
+
+#-- patterns
+$NODEBORDER    = '\037\014?';      #-- delimiter of an info node
+$REDIRSEP      = '\177';           #-- delimiter in tag tables
+$WS            = '[ \t]+';         #-- white space +
+$WSS           = '[ \t]*';         #-- white space *
+$TE            = '[\t\,\.]';     #-- end of a tag
+$TAG           = '[^\t\,\.]+';   #-- pattern for a tag
+$FTAG          = '[^\)]+';         #-- pattern for a file name in
+                                   #-- a cross reference
+
+#---------------------------------------------------------
+#                     DieFileNotFound
+#---------------------------------------------------------
+# Replies and error message if the file '$FileName' is
+# not accessible.
+#---------------------------------------------------------
+# Don't reveal where we're looking... --jonh 5/20/97 (and reapplied 5/4/1998)
+sub DieFileNotFound{
+  local($FileName) = CGI::escape(@_);
+  #-- TEXT : error message if a file could not be opened
+  print <<EOF;
+<html>
+<head>
+<title>Info Files  - Error Message</title>
+<h1>File IO Error</h1>
+</head>
+<body BGCOLOR="#ffffff" LINK="#008000" ALINK="#008000" VLINK="#fb8000">
+ The info file could not be opened for reading.
+</body>
+</html>
+EOF
+  die "\n";
+}
+
+#---------------------------------------------------------
+#                      Escape
+#---------------------------------------------------------
+#  This procedures escapes some special characeters. The
+#  escape sequence follows the WWW guide for escaped
+#  characters in URLs
+#---------------------------------------------------------
+sub Escape{
+  local($Tag) = @_; 
+  #-- escaping is not needed anymore  KG/28.6.94
+  $Tag =~ s/ /%20/g;		#  space
+  $Tag =~ s/\+/%AB/g;		#  +
+  #-- oh yes it is -- jonh 5/16/1997
+  #$Tag;
+  return CGI::escape($Tag);
+}
+
+#----------------------------------------------------------
+#                    DirnameCheck
+#----------------------------------------------------------
+sub DirnameCheck{
+  local($Base) = @_;
+  local($Dir)  = @_;
+
+  $Base =~ s@.*/@@g;
+  $Dir  =~ s@/[^/]*$@@;
+  $Dir = "" if ($Dir eq $Base);
+
+  for (@INFODIR) {
+	return(1)  if ( $Dir eq $_ );
+  }
+
+  return(0);
+}
+
+#----------------------------------------------------------
+#                    DeEscape
+#----------------------------------------------------------
+sub DeEscape{
+  local($Tag) = @_;
+  #-- deescaping is not needed anymore. KG/28.6.94
+  $Tag =~ s/%AB/+/g;
+  $Tag =~ s/%20/ /g;
+  #-- oh yes it is -- jonh 5/16/1997
+  #$Tag;
+  $Tag =~ s/^ //g;
+  $Tag =~ s|\.\./||g;
+  $Tag =~ s|\.\.||g;
+  $Tag =~ s|\./||g;
+  return CGI::unescape($Tag);
+}
+
+#----------------------------------------------------------
+#                   ParsHeaderToken
+#----------------------------------------------------------
+# Parses the heaer line of an info node for a specific 
+# link directive (e.g. Up, Prev)
+#----------------------------------------------------------
+sub ParsHeaderToken{
+  local($HL,$Token) = @_;
+  local($InfoFile,$Tag,$Temp);
+  return ("","") if $HL !~ /$Token:/; #-- token not available
+  $HL =~ m!$Token:$WS(\(($FTAG)\))!;
+  $InfoFile = $2;
+  $Temp     = $2 ne "" ? '\('.$2.'\)' : "";
+  $HL =~ m!$Token:$WS$Temp$WSS([^\t\,\.\n]+)?([\t\,\.\n])!;
+  $Tag = $1 ne "" ? $1 : "Top";
+  return $InfoFile,$Tag;
+}
+
+#---------------------------------------------------------
+#                         ParsHeaderLine
+#--------------------------------------------------------
+# Parses the header line on an info node for all link
+# directives allowed in a header line.
+# Sometimes the keyword 'Previous' is found in stead of
+# 'Prev'. Thats why the redirection line is checked
+# against both of these keywords.
+#-------------------------------------------------------
+sub ParsHeaderLine{
+  local($HL) = @_;
+  local(@LinkInfo,@LinkList);
+  #-- Node
+  @LinkInfo = &ParsHeaderToken($HL,"Node");
+  push(@LinkList,@LinkInfo);
+  #-- Next
+  @LinkInfo = &ParsHeaderToken($HL,"Next");
+  push(@LinkList,@LinkInfo);
+  #-- Up
+  @LinkInfo = &ParsHeaderToken($HL,"Up");
+  push(@LinkList,@LinkInfo);
+  #-- Prev or Previous
+  @LinkInfo = &ParsHeaderToken($HL,"Prev");
+  &ParsHeaderToken($HL,"Previous") if $LinkInfo[0] eq "" && $LinkInfo[1] eq "";
+  push(@LinkList,@LinkInfo);
+  return @LinkList;
+}
+
+############################################################
+# turn tabs into correct number of spaces
+#
+sub Tab2Space {
+    local($line) = @_;
+    $line =~ s/^\t/        /;	# 8 leading spaces if initial tab
+    while ($line =~ s/^([^\t]+)(\t)/$1 . ' ' x (8 - length($1) % 8)/e) {
+    }				# replace each tab with right num of spaces
+    return $line;
+}
+
+#--------------------------------------------------------
+#                     MenuItem2HTML
+#--------------------------------------------------------
+# Transform an info menu item in HTML with references
+#-------------------------------------------------------
+sub MenuItem2HTML{
+    local($Line,$BaseInfoFile) = @_;
+    local($MenuLinkTag,$MenuLinkFile,$MenuLinkRef,$MenuLinkText);
+
+    $Line = &Tab2Space($Line);	# make sure columns line up well
+
+    if ($Line =~ /\* ([^:]+)::/){ # -- is a simple entry ending with :: ?
+	$MenuLinkTag  = $1;
+	$MenuLinkRef  = $1;
+	$MenuLinkText = $';
+	$MenuLinkFile = &Escape($BaseInfoFile);
+
+    } elsif ($Line =~ /\* ([^:]+):(\s*\(($FTAG)\)\.?)?(.*)$/) {
+	$MenuLinkFile = $BaseInfoFile;
+	$MenuLinkRef  = $1;
+	$MenuLinkText = $4;
+	if ($2) {
+	    $MenuLinkFile = $3;
+	    $MenuLinkTag  = 'Top';
+	    $MenuLinkText = ($2 ? ' ' x (length($2)+1) : '') . "$4\n";
+	} else {
+	    $Line = "$4\n";
+	    if ($Line =~ /( *($TAG)?$TE(.*))$/) {
+		$MenuLinkTag  = $2;
+		$MenuLinkText = $Line;
+	    }
+	}
+    } else {			# can't determin link, just show it
+	return $Line;
+    }
+    $MenuLinkTag = &Escape($MenuLinkTag); # -- escape special chars
+    #-- produce a HTML line
+    return "* <a href=\"$PROGRAM?($MenuLinkFile)$MenuLinkTag\">$MenuLinkRef</a>$MenuLinkText";
+}
+  
+#-------------------------------------------------------------
+#                   ReadIndirectTable
+#------------------------------------------------------------
+# Scans an info file for the occurence of an 'Indirect:'
+# table. Scans the entrys and returns two lists with the 
+# filenames and the global offsets.
+#---------------------------------------------------------
+sub ReadIndirectTable{
+  local($FileName,*InfoFiles,*Offsets) = @_;
+  local($i,$Next);
+  if ( $FileName =~ /^(.+)\.gz$/ ) {
+    open(FH1,"gunzip -q -d -c  < " . $FileName . " 2>/dev/null |") || &DieFileNotFound($FileName);
+  } elsif ( $FileName =~ /^(.+)\.bz2$/ ) {
+    open(FH1,"bunzip2 -q -d -c < " . $FileName . " 2>/dev/null |") || &DieFileNotFound($FileName);
+  } else {
+    open(FH1,$FileName) || &DieFileNotFound($FileName);
+  }
+  #-- scan for start of Indirect: Table
+  while(<FH1>){
+    $Next = <FH1> if /$NODEBORDER/;
+    last if $Next =~ /^Indirect:/i;
+  }
+  $i = 0;
+  #-- scan the entrys and setup the arrays
+  while(<FH1>){
+    last if /$NODEBORDER/;
+    if(/([^:]+):[ \t]+(\d+)/){ 
+      push(@InfoFiles,$1);
+      push(@Offsets,$2);
+    }
+  }
+  close(FH1);
+}
+
+#---------------------------------------------------------
+#               ReadTagTable
+#--------------------------------------------------------
+#  Reads in a tag table from an info file.
+#  Returns an assoziative array with the tags found.
+#  Tags are transformed to lower case (info is not
+#  case sensitive for tags).
+#  The entrys in the assoziative Array are of the
+#  form 
+#            <file>#<offset>
+#  <file> may be empty if an indirect table is 
+#  present or if the node is located in the
+#  main file.
+#  'Exists' indicates if a tag table has been found.
+#  'IsIndirect' indicates if the tag table is based
+#  on a indirect table.
+#--------------------------------------------------------
+sub ReadTagTable{
+  local($FileName,*TagList,*Exists,*IsIndirect) = @_;
+  local($File,$Offset);
+
+  if ( $FileName =~ /^(.+)\.gz$/ ) {
+    open(FH,"gunzip -q -d -c  < " . $FileName . " 2>/dev/null |") || &DieFileNotFound($FileName);
+  } elsif ( $FileName =~ /^(.+)\.bz2$/ ) {
+    open(FH,"bunzip2 -q -d -c < " . $FileName . " 2>/dev/null |") || &DieFileNotFound($FileName);
+  } else {
+    open(FH,$FileName) || &DieFileNotFound($FileName);
+  }
+
+  $Exists = 0;
+  $IsIndirect = 0;
+  #-- scan for start of tag table
+  while(<FH>){
+    if(/$NODEBORDER/){
+      if (<FH> =~ /^Tag table:/i){
+        $Exists = 1;
+        last;
+      }
+    } 
+  }
+  #-- scan the entrys
+  while (<FH>){
+    $IsIndirect = 1 if /^\(Indirect\)/i;
+    last if /$NODEBORDER/;
+    /Node:[ \t]+([^$REDIRSEP]+)$REDIRSEP(\d+)/;
+    $Tag = $1;
+    $Tag =~ y/A-Z/a-z/;     #-- to lowercase 
+    $Offset = $2;
+    if(/File:[ \t]+([^\t,]+)/){
+      $File = $1;
+    }
+    else{
+      $File = "";
+    }
+    $TagList{$Tag} = $File."#".$Offset;
+  }
+  close(FH);
+}
+
+#----------------------------------------------------------
+#                   ParsCrossRefs
+#----------------------------------------------------------
+#  scans a line for the existence of cross references and
+#  transforms them to HTML using a little icon
+#----------------------------------------------------------
+sub ParsCrossRefs{
+  local($prev,$Line,$BaseInfoFile) = @_;
+  local($*,$NewLine,$Token) = (1);
+  $Line = " ".$Line;
+  if ($prev =~ /\*Note([^\t\,\.]*)$/i) {
+      if ($Line =~ /^$TAG$TE/) {
+	  $Line = "$prev-NEWLINE-$Line";
+      }
+  }
+  @Tokens = split(/(\*Note)/i,$Line);  # -- split the line
+  while($Token = shift @Tokens){
+    $CrossRefTag = $CrossRefRef = $CrossRefFile = $CrossRefText = '';
+    if($Token !~ /^\*Note/i){   #-- this part is pure text
+      $NewLine .= $Token;
+      next;                     #-- ... take the next part
+    }
+    $CrossRef = shift(@Tokens); 
+    if ($CrossRef !~ /:/){      #-- seems not to be a valid cross ref.
+      $NewLine .= $Token.$CrossRef;
+      next;                     # -- ... take the next one
+    }
+    if ($CrossRef =~ /^([^:]+)::/){  # -- a simple cross ref..
+      $CrossRefTag = $1;
+      $CrossRefText = $';
+      $CrossRefRef = $CrossRefTag;
+      $CrossRefTag =~ s/-NEWLINE-/ /g;
+      $CrossRefTag =~ s/^\s+//;
+      $CrossRefTag =~ s/\s+/ /g;
+      $CrossRefRef =~ s/-NEWLINE-/\n/g;
+      $CrossRefTag = &Escape($CrossRefTag);   # -- escape specials
+      $BaseInfoFile = &Escape($BaseInfoFile);
+      $NewLine .= "<a href=\"$PROGRAM?($BaseInfoFile)$CrossRefTag\">$CR_URL$CrossRefRef</a>$CrossRefText";
+      next;                     # -- .. take the next one
+  }
+    if ($CrossRef !~ /$TE/) {	# never mind if tag doesn't end on this line
+	$NewLine .= $Token.$CrossRef;
+	next;
+    }
+#print "--- Com. CR : $CrossRef --- \n";
+    $CrossRef =~ /([^:]+):/;    #-- A more complicated one ..
+    $CrossRefRef = $1;
+    $CrossRef  = $';
+    $CrossRefText = $CrossRef;
+    if ($CrossRef =~ /^(\s|\n|-NEWLINE-)*\(($FTAG)\)/){  #-- .. with another file ?
+     $CrossRefFile = $2;
+     $CrossRef = $';
+    }
+   $CrossRef  =~ /^(\s|\n|-NEWLINE-)*($TAG)?($TE)/;       #-- ... and a tag ?
+   $CrossRefTag = $2;
+   if ($CrossRefTag eq "" && $CrossRefFile eq ""){
+     $NewLine .= "*Note : $CrossRefText$3";
+     next;
+   }
+    
+    $CrossRefTag =~ s/-NEWLINE-/ /g;
+    $CrossRefTag =~ s/^\s+//;
+    $CrossRefTag =~ s/\s+/ /g;
+    $CrossRefRef =~ s/-NEWLINE-/\n/g;
+    $CrossRefText =~ s/-NEWLINE-/\n/g;
+    $CrossRefFile = $BaseInfoFile if $CrossRefFile eq "";
+    $CrossRefTag  = "Top" if $CrossRefTag eq "";
+    $CrossRefRef = "($CrossRefFile)$CrossRefTag" if $CrossRefRef eq '';
+    $CrossRefTag = &Escape($CrossRefTag);      #-- escape specials
+    $CrossRefFile = &Escape($CrossRefFile);
+    #-- append the HTML text
+    $NewLine .= "<a href=\"$PROGRAM?($CrossRefFile)$CrossRefTag\">$CR_URL$CrossRefRef</a>$CrossRefText";
+  }
+  if ($NewLine =~ /\*Note([^\t\,\.]*)$/i) {
+      return "DONTPRINTYET $NewLine";
+  } else {
+      $NewLine;  #-- return the new line
+  }
+}
+
+
+#-------------------------------------------------------------
+#                        PrintLinkInfo
+#-------------------------------------------------------------
+#  prints the HTML text for a link information in the
+#  header of an info node. Uses some icons URLs of icons
+#  are specified in 'info2html.conf'.
+#------------------------------------------------------------
+sub PrintLinkInfo{
+  local($LinkType,$LinkFile,$LinkTag,$BaseInfoFile) = @_;
+  local($LinkFileEsc);
+  return if $LinkFile eq "" && $LinkTag eq "";
+
+  #-- Linke Type 'Prev'
+  if ($LinkType =~ /Prev/){
+     $LinkTypeText = $PREV_URL;
+  }
+  #-- Link Type 'Up' 
+  elsif($LinkType =~ /Up/){
+    $LinkTypeText = $UP_URL;
+  }
+  #-- Link Type 'Next'
+  elsif($LinkType =~ /Next/){
+        $LinkTypeText = $NEXT_URL;
+  }
+  #-- If no auxiliary file specified use the current info file
+  $LinkFile = $LinkFile eq "" ? $BaseInfoFile : $LinkFile;
+  $LinkRef  = $LinkTag;
+  $LinkTag  = &Escape($LinkTag); 
+  $LinkFileEsc = &Escape($LinkFile);
+  #-- print the HTML Text
+  print <<EOF;
+<a href="$PROGRAM?($LinkFileEsc)$LinkTag">
+   $LinkTypeText
+  <em>($LinkFile)</em> <strong>$LinkRef</strong>
+</a>
+EOF
+}
+
+#-------------------------------------------------------------
+#                       PrintHeader
+#-------------------------------------------------------------
+#  Prints the header for an info node in HTML format
+#------------------------------------------------------------
+sub PrintHeader{
+  local(*LinkList,$BaseInfoFile) = @_;
+  #-- TEXT for the header of an info node
+  print <<EOF;
+<html>
+<head><title>Info: ($BaseInfoFile) $LinkList[1]</title></head>
+<body BGCOLOR="#ffffff" LINK="#008000" ALINK="#008000" VLINK="#fb8000">
+<h1><em>($BaseInfoFile)</em> $LinkList[1]</h1>
+EOF
+  print "<a href=\"infocat\">$CATALOG_URL Info Catalog</a>\n"; #jonh 1997-05-20
+  &PrintLinkInfo("Prev",$LinkList[6],$LinkList[7],$BaseInfoFile);
+  &PrintLinkInfo("Up",$LinkList[4],$LinkList[5],$BaseInfoFile);
+  &PrintLinkInfo("Next",$LinkList[2],$LinkList[3],$BaseInfoFile);
+  print <<EOF;
+<pre>
+EOF
+}
+
+
+#---------------------------------------------------------
+#                       PrintFooter
+#---------------------------------------------------------
+#  prints the footer for an info node in HTML format
+#---------------------------------------------------------
+sub PrintFooter{
+  local(*LinkList,$BaseInfoFile) =@_;
+  #-- TEXT for the footer of an info node
+  print <<EOF;
+</pre>
+EOF
+  print "<a href=\"infocat\">$CATALOG_URL Info Catalog</a>\n"; #jonh 1997-05-20
+  &PrintLinkInfo("Prev",$LinkList[6],$LinkList[7],$BaseInfoFile);
+  &PrintLinkInfo("Up",$LinkList[4],$LinkList[5],$BaseInfoFile);
+  &PrintLinkInfo("Next",$LinkList[2],$LinkList[3],$BaseInfoFile);
+  print <<EOF;
+<hr>
+<em>automatically generated by </em> 
+<a href="$DOC_URL"><b>info2html</b></a>
+</body></html>
+EOF
+}
+
+#----------------------------------------------------------
+#                 ReplyNotFoundMessage
+#----------------------------------------------------------
+sub ReplyNotFoundMessage{
+  local($FileName,$Tag) = @_;
+  $FileName = CGI::escape($FileName);
+  $Tag      = CGI::escape($Tag);
+  print <<EOF;
+<html>
+<head>
+<title>Info Files  -  Error Message</title>
+<h1>Error</h1>
+</head>
+<body BGCOLOR="#ffffff" LINK="#008000" ALINK="#008000" VLINK="#fb8000">
+The Info node <em>$Tag</em> in Info file <em>$FileName</em>
+does not exist.
+</body>
+</html>
+EOF
+}
+#-----------------------------------------------------------
+#                   InfoNode2HTML
+#-----------------------------------------------------------
+# scans an info file for the node with the name '$Tag'
+# starting at the postion '$Offset'.
+# If found the node is tranlated to HTML and printed.
+#------------------------------------------------------------
+sub InfoNode2HTML{
+  local($FileName,$Offset,$Tag,$BaseInfoFile) = @_;
+  local($Found);
+
+  if ( $FileName =~ /^(.+)\.gz$/ ) {
+    open(FH2,"gunzip -q -d -c  < " . $FileName . " 2>/dev/null |") || &DieFileNotFound($FileName);
+  } elsif ( $FileName =~ /^(.+)\.bz2$/ ) {
+    open(FH2,"bunzip2 -q -d -c < " . $FileName . " 2>/dev/null |") || &DieFileNotFound($FileName);
+  } else {
+    open(FH2,$FileName) || &DieFileNotFound($FileName);
+  }
+  seek(FH2,$Offset,0);
+  $Tag =~ y/A-Z/a-z/;    # -- to lowercase
+  #-- scan for the node start
+  $Found = 0;
+  while(<FH2>){
+    if (/$NODEBORDER/){
+      $Line = <FH2>;
+      @LinkList = &ParsHeaderLine($Line);
+      $CompareTag = $Tag;
+      $CompareTag =~ s/([^0-9A-Za-z])/\\$1/g;  #-- escape special chars !
+      $Temp = $LinkList[1];
+      $Temp =~ y/A-Z/a-z/;    #-- to lower case
+      if($Temp =~ /^\s*$CompareTag\s*$/){          #-- node start found ?
+        $Found = 1;
+        last;
+      }
+    }
+  }
+  if($Found == 0){                # -- break if not found
+    &ReplyNotFoundMessage($FileName,$Tag);
+    return;
+  }
+  &PrintHeader(*LinkList,$BaseInfoFile);
+  $InMenu = 0;
+  while(<FH2>){
+    last if /$NODEBORDER/;
+    #-- replace meta characters
+    s/&/&amp;/g;
+    s/>/&gt;/g;                         
+    s/</&lt;/g;
+    if (/^\* Menu/ && $InMenu ==0){       # -- start of menu section ?
+      $InMenu = 1;
+      print "</pre><h3>Menu</h3><pre>\n";
+    }
+    elsif (/^\* / && $InMenu == 1){        #-- a menu entry ?
+      $Line = &MenuItem2HTML($_,$BaseInfoFile);
+      print $Line;
+    }
+    else {                   #--  a normal line, just replace cross refs
+      $Line = &ParsCrossRefs($prev,$_,$BaseInfoFile);
+      if ($Line =~ /^DONTPRINTYET (.*)$/) {
+	  $prev = $1;
+      } else {
+	  $prev = $Line;
+	  $Line =~ s!- (Variable|Function|Macro|Command|Special Form|User Option):.*$!<em>$&</em>!;
+	  print $Line;
+      }
+    }
+  }
+  close(FH2);
+  &PrintFooter(*LinkList,$BaseInfoFile);
+}
+
+#-------------------------------------------------------------
+#                           max
+#------------------------------------------------------------
+sub max{
+  local($a,$b) = @_;
+  return  $a >= $b ? $a : $b;
+}
+
+#-----------------------------------------------------------
+#                   GetFileAndOffset
+#------------------------------------------------------------
+# This procedure locates a specific node in a info file
+# The location is based on the tag and indirect table in
+# basic info file if such tables are available. 
+# Because the offsets specified in the tag and in the
+# indirect table are more or less inacurate the computet
+# offset is set back 100 bytes. From this position
+# the specified node will looked for sequentially
+#------------------------------------------------------------
+sub GetFileAndOffset{
+  local($BaseInfoFile,$NodeName) = @_;
+  local($Exists,$IsIndirect,$File,$Offset,$FileOffset);
+  $NodeName =~ y/A-Z/a-z/;
+  &ReadIndirectTable($BaseInfoFile,*FileNames,*Offsets);
+  &ReadTagTable($BaseInfoFile,*TagList,*Exists,*IsIndirect);
+  if ($Exists == 0){       #-- no tag table available
+    return "",0;
+  }
+  if (! defined $TagList{$NodeName}){  #-- tag is not in the tag table
+    return "",0;
+  }
+  ($File,$Offset) = split(/#/,$TagList{$NodeName});
+  return $File, &max($Offset-100,0) if $File ne ""; #-- there is an 
+                                           #-- explicite not in the tag table
+  if ($IsIndirect == 1){
+    for $i (0..$#Offsets){
+      if ($Offsets[$i] <= $Offset) {	# cleaner if structure --jonh 1997.05.27
+      	$FileOffset = $Offsets[$i];
+      	$File = $FileNames[$i];
+      }
+    }
+    return $File, &max($Offset - $FileOffset - 100,0); #-- be safe (-100!)
+  }
+  else {
+    return "", &max($Offset - 100,0);
+  }
+}
+
+# FindFile: find the given file on the infopath, return full name or "".
+# Let filenames optionally have .info suffix.  Try named version first.
+sub FindFile {
+    local($File) = @_;
+    local($Alt, $Name);
+    if ($File =~ /^(.+)\.info/) {
+	$Alt = $1;
+    } else {
+	$Alt = $File . '.info';
+    }
+    for $Name ($File, $File . '.gz', $File . '.bz2', $Alt, $Alt . '.gz', $Alt . '.bz2') {
+	for (@INFODIR) {
+	    return "$_/$Name" if (-e "$_/$Name");
+	}
+    }
+    return "";
+}
+
+#-------------------------------------------------------
+# 
+#-------------------  MAIN -----------------------------
+print CGI::header('-type'=>'text/html',
+					'-expires'=>60*60*24*30);
+						# use a long expiration -- it's pretty
+						# stable data. Units are seconds; this is 1 month.
+						# -- jonh 1998.05.04
+#print "Content-type: text/html\n";  #-- Mime header for ncsa httpd 1.2
+#print "\n";
+
+$PROGRAM = $0;			# determine our basename and version
+$PROGRAM =~ s!.*/!!;
+
+$CommandLine = DeEscape($ENV{'QUERY_STRING'});	# jonh DeEscape() 1997.05.16
+if ($CommandLine =~ /\(([^\)]+)\)(.+)/) {
+    $BaseInfoFile = &DeEscape($1);
+    $NodeName     = &DeEscape($2);
+    &DirnameCheck($BaseInfoFile) || &DieFileNotFound($BaseInfoFile);
+} else {
+    $BaseInfoFile = 'dir';
+    $NodeName     = 'Top';
+}
+
+$BaseInfoFile = "dir" if $BaseInfoFile =~ /^dir$/i;
+$FileNameFull = &FindFile($BaseInfoFile);
+($File,$Offset) = &GetFileAndOffset($FileNameFull,$NodeName);
+$File = $BaseInfoFile if $File eq "";
+$FileNameFull = &FindFile($File);
+&InfoNode2HTML($FileNameFull,$Offset,$NodeName,$BaseInfoFile);
+
+exit 0;
+
+###############################################################################
+#                                                                             #
+#                      Longer, more boring history                            #
+#                                                                             #
+###############################################################################
+# ----------------------------
+# revision 1.12
+# date: 1995/04/05 16:58:51;  author: twitham;  state: Exp;  lines: +1 -0
+# Emphasize variable, function, macro, etc. definitions.
+# ----------------------------
+# revision 1.11
+# date: 1995/04/05 16:37:51;  author: twitham;  state: Exp;  lines: +5 -5
+# Fixed bug: (file) references must be next to the *Note blah:
+# ----------------------------
+# revision 1.10
+# date: 1995/04/05 15:24:25;  author: twitham;  state: Exp;  lines: +3 -3
+# Fixed bug: node name was matching as substring of longer node names.
+# ----------------------------
+# revision 1.9
+# date: 1995/04/04 23:27:14;  author: twitham;  state: Exp;  lines: +1 -0
+# Fixed bug of cross ref variables being used again within a page.
+# ----------------------------
+# revision 1.8
+# date: 1995/04/04 23:05:52;  author: twitham;  state: Exp;  lines: +2 -2
+# Added some spaces for clarity.
+# ----------------------------
+# revision 1.7
+# date: 1995/04/04 23:01:02;  author: twitham;  state: Exp;  lines: +8 -9
+# Cleaned up the HTML.
+# ----------------------------
+# revision 1.6
+# date: 1995/04/04 22:25:34;  author: twitham;  state: Exp;  lines: +51 -26
+# Got multi-line cross references working.
+# ----------------------------
+# revision 1.5
+# date: 1995/01/19 01:43:02;  author: twitham;  state: Exp;  lines: +27 -32
+# Changed to use (dir)Top as default,
+# and to make links relative to current page.
+# ----------------------------
+# revision 1.4
+# date: 1995/01/17 01:23:10;  author: twitham;  state: Exp;  lines: +24 -20
+# Cleaned up .info filename suffix option.
+# ----------------------------
+# revision 1.3
+# date: 1995/01/14 01:52:33;  author: twitham;  state: Exp;  lines: +61 -42
+# Lined up columns in menus, got indexes working, many other improvements.
+# ----------------------------
+# revision 1.2
+# date: 1995/01/13 16:33:33;  author: twitham;  state: Exp;  lines: +2 -10
+# almost working at this site.
+# ----------------------------
+# revision 1.1
+# date: 1995/01/13 16:33:04;  author: twitham;  state: Exp;
+# Initial revision
+# 
+# V 1.0d
+# 
+# Minor changes from 1.0b are 
+# 
+# 	  update to cgi specification 
+#  	  escaping/deescaping removed 
+# 	  error messages in english 

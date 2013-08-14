@@ -1,0 +1,7 @@
+if [ "x$(basename $0)" = "xsquid3-authenticating-ntlm" ]; then
+    NAME=squid3-authenticating-ntlm
+    DESC="Squid HTTP Proxy 3.0 (authenticating via ntlm)"
+    PIDFILE=/var/run/$NAME.pid
+    CONFIG=/etc/squid3/squid-authenticating-ntlm.conf
+    SQUID_ARGS="-D -YC -f $CONFIG"
+fi

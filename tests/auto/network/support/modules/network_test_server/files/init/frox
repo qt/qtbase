@@ -1,0 +1,89 @@
+#! /bin/sh
+
+### BEGIN INIT INFO
+# Provides:          frox
+# Required-Start:    $syslog
+# Required-Stop:     $syslog
+# Should-Start:      $local_fs $network
+# Should-Stop:       $local_fs $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Handles the frox daemon
+# Description:       Starts, stops and reloads configuration of
+#                    the frox FTP proxy.
+### END INIT INFO
+
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=/usr/local/sbin/frox
+NAME=frox
+DESC="frox: caching ftp proxy server"
+PIDFILE=/var/run/$NAME.pid
+
+# This value is overriden in /etc/default/frox if it exists
+RUN_DAEMON=no
+
+test -f $DAEMON || exit 0
+
+set -e
+
+# Get configuration
+if [ -r /etc/default/frox ]; then
+        . /etc/default/frox
+fi
+
+case "$1" in
+  start)
+	echo -n "Starting $DESC: "
+	if [ "$RUN_DAEMON" = "yes" ]; then
+		start-stop-daemon --start --quiet --pidfile $PIDFILE \
+		--exec $DAEMON
+		echo done
+	else
+		echo disabled 
+	fi
+	;;
+  stop)
+	echo -n "Stopping $DESC: "
+	start-stop-daemon --stop --oknodo --quiet --pidfile $PIDFILE \
+		--exec $DAEMON
+	echo done 
+	;;
+  reload|force-reload)
+  	echo "Reloading $DESC configuration files."
+	start-stop-daemon --stop --oknodo --signal 1 --quiet --exec $DAEMON
+  	;;
+  restart|force-reload)
+	echo -n "Restarting $DESC: "
+	start-stop-daemon --stop --oknodo --quiet --pidfile \
+		$PIDFILE --exec $DAEMON
+	sleep 1
+	start-stop-daemon --start --quiet --pidfile \
+		$PIDFILE --exec $DAEMON
+	echo "$NAME."
+	;;
+  status)
+        echo -n "Showing status of $DESC: "
+        if [ -f $PIDFILE ]; then
+            PID=`cat $PIDFILE`
+            if [ -z "`ps axf | grep ${PID} | grep -v grep`" ]; then
+                printf "%s\n" "Process dead but pidfile exists"
+                exit 1
+            else
+                echo "Running"
+                exit 0
+            fi
+        else
+            printf "%s\n" "Service not running"
+            exit 1
+        fi
+        ;;
+
+  *)
+	N=/etc/init.d/$NAME
+	echo "Usage: $N {start|stop|restart|force-reload}" >&2
+	exit 1
+	;;
+esac
+
+exit 0

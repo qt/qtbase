@@ -1,0 +1,70 @@
+#! /bin/sh
+#
+# dante SOCKS server init.d file. Based on /etc/init.d/skeleton:
+# Version:	@(#)skeleton  1.8  03-Mar-1998  miquels@cistron.nl
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=/usr/sbin/danted
+NAME=$(basename $0)     # may be `danted', `danted-authenticating', etc. Note: In boot it's 'S20danted' etc.
+DESC="Dante SOCKS daemon"
+PIDFILE=/var/run/qt_danted.pid
+CONFFILE=/etc/danted.conf
+
+test -f $DAEMON   || exit 0
+test -f $CONFFILE || { echo "error: $CONFFILE does not exist" 1>&2; exit 2; }
+
+set -e
+
+case "$1" in
+  start)
+	echo -n "Starting $DESC: "
+	start-stop-daemon --start --quiet --pidfile $PIDFILE \
+		--startas $DAEMON --make-pidfile --background \
+		-- -f $CONFFILE
+	echo "$NAME."
+	;;
+  stop)
+	echo -n "Stopping $DESC: "
+	start-stop-daemon --stop --quiet --oknodo --pidfile $PIDFILE
+	echo "$NAME."
+	;;
+  reload|force-reload)
+	echo "Reloading $DESC configuration files."
+	start-stop-daemon --stop --signal 1 --quiet --pidfile \
+		$PIDFILE
+  ;;
+  restart)
+	echo -n "Restarting $DESC: "
+	start-stop-daemon --stop --quiet --pidfile $PIDFILE || :
+	sleep 1
+	start-stop-daemon --start --quiet --pidfile $PIDFILE \
+	  --startas $DAEMON --make-pidfile --background      \
+	  -- -f $CONFFILE
+	echo "$NAME."
+	;;
+
+  status)
+        echo -n "Showing status of $DESC: "
+        if [ -f $PIDFILE ]; then
+            PID=`cat $PIDFILE`
+            if [ -z "`ps axf | grep ${PID} | grep -v grep`" ]; then
+                printf "%s\n" "Process dead but pidfile exists"
+                exit 1
+            else
+                echo "Running"
+                exit 0
+            fi
+        else
+            printf "%s\n" "Service not running"
+            exit 1
+        fi
+        ;;
+  *)
+	N=/etc/init.d/danted
+	# echo "Usage: $N {start|stop|restart|reload|force-reload}" >&2
+	echo "Usage: $N {start|stop|restart|force-reload}" >&2
+	exit 1
+	;;
+esac
+
+exit 0

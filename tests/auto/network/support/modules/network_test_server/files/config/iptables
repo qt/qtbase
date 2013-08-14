@@ -1,0 +1,7 @@
+# Maintained by puppet, do not edit manually, your changes will be lost
+*filter
+:INPUT ACCEPT [397:36926]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [151:16508]
+-A INPUT -p tcp -m tcp --dport 1357 -j DROP 
+COMMIT

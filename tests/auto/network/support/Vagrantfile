@@ -1,0 +1,55 @@
+
+VAGRANT_VERSION = "2"
+
+Vagrant.configure(VAGRANT_VERSION) do |config|
+
+  config.vm.define "network-test-server"
+
+  config.vm.box = "precise64"
+
+  config.vm.provider "virtualbox" do |v, override|
+    override.vm.box_url = "http://files.vagrantup.com/precise64.box"
+  end
+
+  config.vm.provider "vmware_fusion" do |v, override|
+    override.vm.box_url = "http://files.vagrantup.com/precise64_vmware.box"
+  end
+
+  config.vm.provider "vmware_workstation" do |v, override|
+    # Technically a vmware_fusion box, but Vagrant will take care of it
+    override.vm.box_url = "http://files.vagrantup.com/precise64_vmware.box"
+  end
+
+  config.vm.network :private_network, :ip => "192.168.33.10"
+
+  # Fix for busted .profile in default Ubuntu 12.04 image
+  config.vm.provision :fix_profile
+
+  config.vm.provision :puppet do |bootstrap_puppet|
+    bootstrap_puppet.manifest_file = "bootstrap.pp"
+    bootstrap_puppet.options = "--verbose --debug"
+  end
+
+  config.vm.provision :puppet do |setup_server|
+    setup_server.module_path = "modules"
+    setup_server.options = "--verbose --debug"
+  end
+
+end
+
+module FixProfile
+  class Plugin < Vagrant.plugin(VAGRANT_VERSION)
+    name "Fix broken .profile"
+    description "Fixes broken root user .profile for non-interactive shells"
+    provisioner(:fix_profile) do Provisioner end
+  end
+
+  class Provisioner < Vagrant.plugin(VAGRANT_VERSION, :provisioner)
+    def provision
+      original_shell = @machine.config.ssh.shell
+      @machine.config.ssh.shell = "bash --noprofile -l"
+      @machine.communicate.sudo("/bin/sed -i 's/^mesg/tty -s \\&\\& &/' $HOME/.profile")
+      @machine.config.ssh.shell = original_shell
+    end
+  end
+end
