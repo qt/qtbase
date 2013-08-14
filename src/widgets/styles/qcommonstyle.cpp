@@ -1329,7 +1329,6 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         break;
 #ifndef QT_NO_MENU
     case CE_MenuScroller: {
-        p->fillRect(opt->rect, opt->palette.background());
         QStyleOption arrowOpt = *opt;
         arrowOpt.state |= State_Enabled;
         proxy()->drawPrimitive(((opt->state & State_DownArrow) ? PE_IndicatorArrowDown : PE_IndicatorArrowUp),
