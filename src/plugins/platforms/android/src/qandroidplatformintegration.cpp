@@ -162,6 +162,7 @@ void QAndroidPlatformIntegration::invalidateNativeSurface()
 
 void QAndroidPlatformIntegration::surfaceChanged()
 {
+    QAndroidOpenGLPlatformWindow::updateStaticNativeWindow();
     foreach (QWindow *w, QGuiApplication::topLevelWindows()) {
         QAndroidOpenGLPlatformWindow *window =
                 static_cast<QAndroidOpenGLPlatformWindow *>(w->handle());

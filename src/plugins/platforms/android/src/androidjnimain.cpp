@@ -555,33 +555,37 @@ static void setSurface(JNIEnv *env, jobject /*thiz*/, jobject jSurface)
     m_nativeWindow = nativeWindow;
     if (m_waitForWindow)
         m_waitForWindowSemaphore.release();
-    if (m_androidPlatformIntegration && !sameNativeWindow) {
-        m_surfaceMutex.unlock();
-        m_androidPlatformIntegration->surfaceChanged();
-    } else if (m_androidPlatformIntegration && sameNativeWindow) {
-        QPlatformScreen *screen = m_androidPlatformIntegration->screen();
+
+    if (m_androidPlatformIntegration) {
         QSize size = QtAndroid::nativeWindowSize();
 
+        QPlatformScreen *screen = m_androidPlatformIntegration->screen();
         QRect geometry(QPoint(0, 0), size);
         QWindowSystemInterface::handleScreenAvailableGeometryChange(screen->screen(), geometry);
         QWindowSystemInterface::handleScreenGeometryChange(screen->screen(), geometry);
 
-        // Resize all top level windows, since they share the same surface
-        foreach (QWindow *w, QGuiApplication::topLevelWindows()) {
-            QAndroidOpenGLPlatformWindow *window =
-                    static_cast<QAndroidOpenGLPlatformWindow *>(w->handle());
+        if (!sameNativeWindow) {
+            m_surfaceMutex.unlock();
+            m_androidPlatformIntegration->surfaceChanged();
+        } else {
+            // Resize all top level windows, since they share the same surface
+            foreach (QWindow *w, QGuiApplication::topLevelWindows()) {
+                QAndroidOpenGLPlatformWindow *window =
+                        static_cast<QAndroidOpenGLPlatformWindow *>(w->handle());
 
-            if (window != 0) {
-                window->lock();
-                window->scheduleResize(size);
+                if (window != 0) {
+                    window->lock();
+                    window->scheduleResize(size);
 
-                QWindowSystemInterface::handleExposeEvent(window->window(),
-                                                          QRegion(window->window()->geometry()));
-                window->unlock();
+                    QWindowSystemInterface::handleExposeEvent(window->window(),
+                                                              QRegion(window->window()->geometry()));
+                    window->unlock();
+                }
             }
+
+            m_surfaceMutex.unlock();
         }
 
-        m_surfaceMutex.unlock();
     } else {
         m_surfaceMutex.unlock();
     }
