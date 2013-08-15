@@ -1444,7 +1444,7 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
                 tmpAdvance.x = glyphs->advances_x[glyph_pos];
                 tmpAdvance.y = glyphs->advances_y[glyph_pos];
             }
-            for (int x=1; x < engines.size(); ++x) {
+            for (int x = 1, n = qMin(engines.size(), 256); x < n; ++x) {
                 if (engines.at(x) == 0 && !shouldLoadFontEngineForCharacter(x, ucs4))
                     continue;
 
