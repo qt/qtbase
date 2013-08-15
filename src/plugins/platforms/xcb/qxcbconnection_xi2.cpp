@@ -141,9 +141,9 @@ void QXcbConnection::initializeXInput2()
 #endif
                 }
 #endif // QT_NO_TABLETEVENT
-#ifdef XI2_DEBUG
                 if (!isTablet) {
                     XInput2DeviceData *dev = deviceForId(devices[i].deviceid);
+#ifdef XI2_DEBUG
                     if (dev && dev->qtTouchDevice->type() == QTouchDevice::TouchScreen)
                         qDebug("   it's a touchscreen with type %d capabilities 0x%X max touch points %d",
                                dev->qtTouchDevice->type(), (unsigned int)dev->qtTouchDevice->capabilities(),
@@ -153,8 +153,10 @@ void QXcbConnection::initializeXInput2()
                                dev->qtTouchDevice->type(), (unsigned int)dev->qtTouchDevice->capabilities(),
                                dev->qtTouchDevice->maximumTouchPoints(),
                                dev->size.width(), dev->size.height());
-                }
+#else
+                    Q_UNUSED(dev);
 #endif // XI2_DEBUG
+                }
             }
             XIFreeDeviceInfo(devices);
         }
