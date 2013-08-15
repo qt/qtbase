@@ -47,6 +47,8 @@ INSTALLS += target
 
 TARGET = $$qtLibraryTarget($$TARGET)
 
+CONFIG += create_cmake
+
 load(qt_targets)
 load(qt_common)
 

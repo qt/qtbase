@@ -49,6 +49,12 @@ contains(CMAKE_BIN_DIR, "^\\.\\./.*") {
     CMAKE_BIN_DIR_IS_ABSOLUTE = True
 }
 
+CMAKE_PLUGIN_DIR = $$cmakeRelativePath($$[QT_INSTALL_PLUGINS], $$[QT_INSTALL_PREFIX])
+contains(CMAKE_PLUGIN_DIR, "^\\.\\./.*") {
+    CMAKE_PLUGIN_DIR = $$[QT_INSTALL_PLUGINS]/
+    CMAKE_PLUGIN_DIR_IS_ABSOLUTE = True
+}
+
 !isEmpty(DLLDESTDIR):!static:!staticlib {
     CMAKE_DLL_DIR = $$cmakeRelativePath($$[QT_INSTALL_BINS], $$[QT_INSTALL_PREFIX])
     contains(CMAKE_DLL_DIR, "^\\.\\./.*") {
@@ -82,6 +88,48 @@ CMAKE_RELEASE_TYPE =
 equals(QMAKE_HOST.os, Windows): CMAKE_BIN_SUFFIX = ".exe"
 if(build_all|CONFIG(debug, debug|release)): CMAKE_DEBUG_TYPE = debug
 if(build_all|CONFIG(release, debug|release)): CMAKE_RELEASE_TYPE = release
+
+contains(CONFIG, plugin) {
+    equals(PLUGIN_TYPE, bearer): PLUGIN_MODULE_NAME = network
+    else:equals(PLUGIN_TYPE, sqldrivers): PLUGIN_MODULE_NAME = sql
+    else:equals(PLUGIN_TYPE, accessible): PLUGIN_MODULE_NAME = widgets
+    else:equals(PLUGIN_TYPE, imageformats): PLUGIN_MODULE_NAME = gui
+    else:equals(PLUGIN_TYPE, platforminputcontexts): PLUGIN_MODULE_NAME = gui
+    else:equals(PLUGIN_TYPE, platformthemes): PLUGIN_MODULE_NAME = gui
+    else:equals(PLUGIN_TYPE, generic): PLUGIN_MODULE_NAME = gui
+    else:equals(PLUGIN_TYPE, platforms): PLUGIN_MODULE_NAME = gui
+    else: return()
+
+    CMAKE_MODULE_NAME = $$cmakeModuleName($$PLUGIN_MODULE_NAME)
+
+    CMAKE_PLUGIN_NAME = $$PLUGIN_CLASS_NAME
+
+    win32 {
+        CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/$${TARGET}.dll
+        CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/$${TARGET}d.dll
+    } else {
+        mac {
+            CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/lib$${TARGET}.dylib
+            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/lib$${TARGET}.dylib
+        } else {
+            CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/lib$${TARGET}.so
+            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/lib$${TARGET}.so
+        }
+    }
+    cmake_target_file.input = $$PWD/data/cmake/Qt5PluginTarget.cmake.in
+    cmake_target_file.output = $$DESTDIR/../../$${CMAKE_LIB_DIR}cmake/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}_$${PLUGIN_CLASS_NAME}.cmake
+
+    !build_pass:QMAKE_SUBSTITUTES += \
+      cmake_target_file
+
+    cmake_qt5_plugin_file.files = $$cmake_target_file.output
+    cmake_qt5_plugin_file.path = $$[QT_INSTALL_LIBS]/cmake/Qt5$${CMAKE_MODULE_NAME}
+    INSTALLS += cmake_qt5_plugin_file
+
+    return()
+}
+
+contains($$list(network sql widgets gui), $$MODULE): CMAKE_LOAD_PLUGINS = true
 
 unix:contains(QT_CONFIG, reduce_relocations):CMAKE_ADD_FPIE_FLAGS = "true"
 
