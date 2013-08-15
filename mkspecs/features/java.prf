@@ -12,10 +12,11 @@ android {
         isEmpty(BUILD_TOOLS_REVISION): BUILD_TOOLS_REVISION = 17.0.0
     }
 
-    !exists($$SDK_ROOT/platforms/$$API_VERSION/android.jar) {
-        error("The Path $$SDK_ROOT/platforms/$$API_VERSION/android.jar does not exist. Make sure the ANDROID_SDK_ROOT and ANDROID_API_VERSION environment variables are correctly set.")
+    ANDROID_JAR_FILE = $$SDK_ROOT/platforms/$$API_VERSION/android.jar
+    !exists($$ANDROID_JAR_FILE) {
+        error("The Path $$ANDROID_JAR_FILE does not exist. Make sure the ANDROID_SDK_ROOT and ANDROID_API_VERSION environment variables are correctly set.")
     }
-    JAVACLASSPATH += $$SDK_ROOT/platforms/$$API_VERSION/android.jar
+    JAVACLASSPATH += $$ANDROID_JAR_FILE
 
     # FIXME: This is a hack to work around some hardcoded values in the android.prf. The
     # android.prf should be fixed and this should be removed.
@@ -37,7 +38,7 @@ CONFIG += plugin no_plugin_name_prefix
 javac.input = JAVASOURCES
 javac.output = $$CLASS_DIR
 javac.CONFIG += combine
-javac.commands = javac -source 6 -target 6 -Xlint:unchecked -cp $$shell_quote($$shell_path($$join(JAVACLASSPATH, $$QMAKE_DIRLIST_SEP))) -d $$shell_quote($$CLASS_DIR) ${QMAKE_FILE_IN}
+javac.commands = javac -source 6 -target 6 -Xlint:unchecked -bootclasspath $$ANDROID_JAR_FILE -cp $$shell_quote($$shell_path($$join(JAVACLASSPATH, $$QMAKE_DIRLIST_SEP))) -d $$shell_quote($$CLASS_DIR) ${QMAKE_FILE_IN}
 # Force rebuild every time, because we don't know the paths of the destination files
 # as they depend on the code.
 javac.depends = FORCE
