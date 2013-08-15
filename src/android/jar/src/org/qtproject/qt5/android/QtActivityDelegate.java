@@ -310,7 +310,7 @@ public class QtActivityDelegate
 
                 try {
                     @SuppressWarnings("rawtypes")
-                    Class initClass = classLoader.loadClass(className);
+                    Class<?> initClass = classLoader.loadClass(className);
                     Object staticInitDataObject = initClass.newInstance(); // create an instance
                     Method m = initClass.getMethod("setActivity", Activity.class, Object.class);
                     m.invoke(staticInitDataObject, m_activity, this);
