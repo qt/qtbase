@@ -76,8 +76,11 @@
 #ifndef QEVENTDISPATCHER_CF_P_H
 #define QEVENTDISPATCHER_CF_P_H
 
+#define DEBUG_EVENT_DISPATCHER 0
+
 #include <QtCore/qabstracteventdispatcher.h>
 #include <QtCore/private/qtimerinfo_unix_p.h>
+#include <QtCore/qdebug.h>
 #include <QtPlatformSupport/private/qcfsocketnotifier_p.h>
 #include <CoreFoundation/CoreFoundation.h>
 
@@ -200,29 +203,55 @@ public:
     void flush();
 
 private:
-    bool m_interrupted;
-
     RunLoopSource<> m_postedEventsRunLoopSource;
-    RunLoopSource<> m_blockingTimerRunLoopSource;
-
-    RunLoopObserver<> m_awakeAndBlockObserver;
+    RunLoopObserver<> m_runLoopActivityObserver;
 
     QTimerInfoList m_timerInfoList;
-    CFRunLoopTimerRef m_runLoopTimerRef;
+    CFRunLoopTimerRef m_runLoopTimer;
+    CFRunLoopTimerRef m_blockedRunLoopTimer;
+    bool m_overdueTimerScheduled;
 
     QCFSocketNotifier m_cfSocketNotifier;
 
-    void processPostedEvents();
-    void processTimers();
+    struct ProcessEventsState
+    {
+        ProcessEventsState(QEventLoop::ProcessEventsFlags f)
+         : flags(f), wasInterrupted(false)
+         , processedPostedEvents(false), processedTimers(false)
+         , deferredWakeUp(false), deferredUpdateTimers(false) {}
 
-    void maybeStartCFRunLoopTimer();
-    void maybeStopCFRunLoopTimer();
+        QEventLoop::ProcessEventsFlags flags;
+        bool wasInterrupted;
+        bool processedPostedEvents;
+        bool processedTimers;
+        bool deferredWakeUp;
+        bool deferredUpdateTimers;
+    };
+
+    ProcessEventsState m_processEvents;
+
+    void processPostedEvents();
+    void processTimers(CFRunLoopTimerRef);
 
     void handleRunLoopActivity(CFRunLoopActivity activity);
 
-    static void nonBlockingTimerRunLoopCallback(CFRunLoopTimerRef, void *info);
+    void updateTimers();
+    void invalidateTimer();
 };
 
 QT_END_NAMESPACE
+
+#if DEBUG_EVENT_DISPATCHER
+extern uint g_eventDispatcherIndentationLevel;
+#define qEventDispatcherDebug() qDebug().nospace() \
+            << qPrintable(QString(QLatin1String("| ")).repeated(g_eventDispatcherIndentationLevel)) \
+            << __FUNCTION__ << "(): "
+#define qIndent() ++g_eventDispatcherIndentationLevel
+#define qUnIndent() --g_eventDispatcherIndentationLevel
+#else
+#define qEventDispatcherDebug() QT_NO_QDEBUG_MACRO()
+#define qIndent()
+#define qUnIndent()
+#endif
 
 #endif // QEVENTDISPATCHER_CF_P_H

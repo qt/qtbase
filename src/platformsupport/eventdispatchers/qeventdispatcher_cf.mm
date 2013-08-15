@@ -40,10 +40,16 @@
 ****************************************************************************/
 
 #include "qeventdispatcher_cf_p.h"
-#include <qdebug.h>
-#include <qpa/qwindowsysteminterface.h>
-#include <QtCore/QThread>
+
+#include <QtCore/qdebug.h>
+#include <QtCore/qmetaobject.h>
+#include <QtCore/qthread.h>
 #include <QtCore/private/qcoreapplication_p.h>
+#include <QtCore/private/qcore_unix_p.h>
+#include <QtCore/private/qcore_mac_p.h>
+#include <QtCore/private/qthread_p.h>
+
+#include <qpa/qwindowsysteminterface.h>
 
 #include <limits>
 
@@ -52,144 +58,132 @@
 QT_BEGIN_NAMESPACE
 QT_USE_NAMESPACE
 
+class RunLoopDebugger : public QObject
+{
+    Q_OBJECT
+
+    Q_ENUMS(Activity)
+    Q_ENUMS(Result)
+
+public:
+
+    #define Q_MIRROR_ENUM(name) name = name
+
+    enum Activity {
+        Q_MIRROR_ENUM(kCFRunLoopEntry),
+        Q_MIRROR_ENUM(kCFRunLoopBeforeTimers),
+        Q_MIRROR_ENUM(kCFRunLoopBeforeSources),
+        Q_MIRROR_ENUM(kCFRunLoopBeforeWaiting),
+        Q_MIRROR_ENUM(kCFRunLoopAfterWaiting),
+        Q_MIRROR_ENUM(kCFRunLoopExit)
+    };
+
+    enum Result {
+        Q_MIRROR_ENUM(kCFRunLoopRunFinished),
+        Q_MIRROR_ENUM(kCFRunLoopRunStopped),
+        Q_MIRROR_ENUM(kCFRunLoopRunTimedOut),
+        Q_MIRROR_ENUM(kCFRunLoopRunHandledSource)
+    };
+};
+
+#define Q_ENUM_PRINTER(enumName) \
+    static const char* qPrintable##enumName(int value) \
+    { \
+        return RunLoopDebugger::staticMetaObject.enumerator(RunLoopDebugger::staticMetaObject.indexOfEnumerator(#enumName)).valueToKey(value); \
+    }
+
+Q_ENUM_PRINTER(Activity);
+Q_ENUM_PRINTER(Result);
+
+QDebug operator<<(QDebug s, timespec tv)
+{
+    s << tv.tv_sec << "." << qSetFieldWidth(9) << qSetPadChar(QChar(48)) << tv.tv_nsec << reset;
+    return s;
+}
+
+#if DEBUG_EVENT_DISPATCHER
+uint g_eventDispatcherIndentationLevel = 0;
+#endif
+
 static const CFTimeInterval kCFTimeIntervalMinimum = 0;
 static const CFTimeInterval kCFTimeIntervalDistantFuture = std::numeric_limits<CFTimeInterval>::max();
 
-void QEventDispatcherCoreFoundation::nonBlockingTimerRunLoopCallback(CFRunLoopTimerRef, void *info)
-{
-    // The (one and only) CFRunLoopTimer has fired, which means that at least
-    // one QTimer should now fire as well. Note that CFRunLoopTimer's callback will
-    // never recurse. So if the app starts a new QEventLoop within this callback, other
-    // timers will stop working. The work-around is to forward the callback to a
-    // dedicated CFRunLoopSource that can recurse:
-    QEventDispatcherCoreFoundation *self = static_cast<QEventDispatcherCoreFoundation *>(info);
-    self->m_blockingTimerRunLoopSource.signal();
-    // FIXME: And not wake up main run loop?
-}
-
-void QEventDispatcherCoreFoundation::maybeStartCFRunLoopTimer()
-{
-    // Find out when the next registered timer should fire, and schedule
-    // runLoopTimer accordingly. If the runLoopTimer does not yet exist, and
-    // at least one timer is registered, start by creating the timer:
-    if (m_timerInfoList.isEmpty()) {
-        Q_ASSERT(m_runLoopTimerRef == 0);
-        return;
-    }
-
-    CFAbsoluteTime ttf = CFAbsoluteTimeGetCurrent();
-    CFTimeInterval interval;
-
-    if (m_runLoopTimerRef == 0) {
-        // start the CFRunLoopTimer
-
-        // calculate when the next timer should fire:
-        struct timespec tv;
-        if (m_timerInfoList.timerWait(tv)) {
-            interval = qMax(tv.tv_sec + tv.tv_nsec / 1000000000., 0.0000001);
-        } else {
-            // this shouldn't really happen, but in case it does, set the timer
-            // to fire a some point in the distant future:
-            interval = kCFTimeIntervalDistantFuture;
-        }
-
-        ttf += interval;
-        CFRunLoopTimerContext info = { 0, this, 0, 0, 0 };
-        // create the timer with a large interval, as recommended by the CFRunLoopTimerSetNextFireDate()
-        // documentation, since we will adjust the timer's time-to-fire as needed to keep Qt timers working
-        m_runLoopTimerRef = CFRunLoopTimerCreate(0, ttf, kCFTimeIntervalDistantFuture, 0, 0, QEventDispatcherCoreFoundation::nonBlockingTimerRunLoopCallback, &info);
-        Q_ASSERT(m_runLoopTimerRef != 0);
-
-        CFRunLoopRef mainRunLoop = CFRunLoopGetMain();
-        CFRunLoopAddTimer(mainRunLoop, m_runLoopTimerRef, kCFRunLoopCommonModes);
-        CFRunLoopAddTimer(mainRunLoop, m_runLoopTimerRef, (CFStringRef) UITrackingRunLoopMode);
-    } else {
-        struct timespec tv;
-        // Calculate when the next timer should fire:
-        if (m_timerInfoList.timerWait(tv)) {
-            interval = qMax(tv.tv_sec + tv.tv_nsec / 1000000000., 0.0000001);
-        } else {
-            // no timers can fire, but we cannot stop the CFRunLoopTimer, set the timer to fire at some
-            // point in the distant future (the timer interval is one year)
-            interval = CFRunLoopTimerGetInterval(m_runLoopTimerRef);
-        }
-
-        ttf += interval;
-        CFRunLoopTimerSetNextFireDate(m_runLoopTimerRef, ttf);
-    }
-}
-
-void QEventDispatcherCoreFoundation::maybeStopCFRunLoopTimer()
-{
-    if (m_runLoopTimerRef == 0)
-        return;
-
-    CFRunLoopTimerInvalidate(m_runLoopTimerRef);
-    CFRelease(m_runLoopTimerRef);
-    m_runLoopTimerRef = 0;
-}
+#pragma mark - Class definition
 
 QEventDispatcherCoreFoundation::QEventDispatcherCoreFoundation(QObject *parent)
     : QAbstractEventDispatcher(parent)
-    , m_interrupted(false)
     , m_postedEventsRunLoopSource(this, &QEventDispatcherCoreFoundation::processPostedEvents)
-    , m_blockingTimerRunLoopSource(this, &QEventDispatcherCoreFoundation::processTimers)
-    , m_awakeAndBlockObserver(this, &QEventDispatcherCoreFoundation::handleRunLoopActivity,
-        kCFRunLoopBeforeWaiting | kCFRunLoopAfterWaiting)
-    , m_runLoopTimerRef(0)
+    , m_runLoopActivityObserver(this, &QEventDispatcherCoreFoundation::handleRunLoopActivity,
+#if DEBUG_EVENT_DISPATCHER
+        kCFRunLoopAllActivities
+#else
+        kCFRunLoopBeforeWaiting | kCFRunLoopAfterWaiting
+#endif
+    )
+    , m_runLoopTimer(0)
+    , m_blockedRunLoopTimer(0)
+    , m_overdueTimerScheduled(false)
+    , m_processEvents(QEventLoop::EventLoopExec)
 {
     m_cfSocketNotifier.setHostEventDispatcher(this);
 
     m_postedEventsRunLoopSource.addToMode(kCFRunLoopCommonModes);
-
-    m_blockingTimerRunLoopSource.addToMode(kCFRunLoopCommonModes);
-    m_blockingTimerRunLoopSource.addToMode(CFStringRef(UITrackingRunLoopMode));
-
-    m_awakeAndBlockObserver.addToMode(kCFRunLoopCommonModes);
+    m_runLoopActivityObserver.addToMode(kCFRunLoopCommonModes);
 }
 
 QEventDispatcherCoreFoundation::~QEventDispatcherCoreFoundation()
 {
+    invalidateTimer();
     qDeleteAll(m_timerInfoList);
-    maybeStopCFRunLoopTimer();
 
     m_cfSocketNotifier.removeSocketNotifiers();
 }
 
-void QEventDispatcherCoreFoundation::processPostedEvents()
-{
-    QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::AllEvents);
-}
+/*!
+    Processes all pending events that match \a flags until there are no
+    more events to process. Returns true if pending events were handled;
+    otherwise returns false.
 
-void QEventDispatcherCoreFoundation::processTimers()
-{
-    // TODO:
-    // We also need to block this new timer source
-    // along with the posted event source when calling processEvents()
-    // "manually" to prevent livelock deep in CFRunLoop.
+    Note:
 
-    m_timerInfoList.activateTimers();
-    maybeStartCFRunLoopTimer();
-}
+      - All events are considered equal. This function should process
+        both system/native events (that we may or may not care about),
+        as well as Qt-events (posted events and timers).
 
-void QEventDispatcherCoreFoundation::handleRunLoopActivity(CFRunLoopActivity activity)
-{
-    switch (activity) {
-    case kCFRunLoopBeforeWaiting:
-        emit aboutToBlock();
-        break;
-    case kCFRunLoopAfterWaiting:
-        emit awake();
-        break;
-    default:
-        Q_UNREACHABLE();
-    }
-}
+      - The function should not return until all queued/available events
+        have been processed. If the WaitForMoreEvents is set, the
+        function should wait only if there were no events ready,
+        and _then_ process all newly queued/available events.
 
+    These notes apply to other function in this class as well, such as
+    hasPendingEvents().
+*/
 bool QEventDispatcherCoreFoundation::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
-    m_interrupted = false;
     bool eventsProcessed = false;
+
+    if (flags & (QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers))
+        qWarning() << "processEvents() flags" << flags << "not supported on iOS";
+
+    qEventDispatcherDebug() << "Entering with " << flags; qIndent();
+
+    if (m_blockedRunLoopTimer) {
+        Q_ASSERT(m_blockedRunLoopTimer == m_runLoopTimer);
+
+        qEventDispatcherDebug() << "Recursing from blocked timer " << m_blockedRunLoopTimer;
+        m_runLoopTimer = 0; // Unset current timer to force creation of new timer
+        updateTimers();
+    }
+
+    if (m_processEvents.deferredWakeUp) {
+        // We may be processing events recursivly as a result of processing a posted event,
+        // in which case we need to signal the run-loop source so that this iteration of
+        // processEvents will take care of the newly posted events.
+        m_postedEventsRunLoopSource.signal();
+        m_processEvents.deferredWakeUp = false;
+
+        qEventDispatcherDebug() << "Processed deferred wake-up";
+    }
 
     // The documentation states that this signal is emitted after the event
     // loop returns from a function that could block, which is not the case
@@ -198,47 +192,204 @@ bool QEventDispatcherCoreFoundation::processEvents(QEventLoop::ProcessEventsFlag
     // this behavior, so we assume it's for a good reason and do it as well.
     emit awake();
 
-    bool excludeUserEvents = flags & QEventLoop::ExcludeUserInputEvents;
-    bool execFlagSet = (flags & QEventLoop::DialogExec) || (flags & QEventLoop::EventLoopExec);
-    bool useExecMode = execFlagSet && !excludeUserEvents;
+    ProcessEventsState previousState = m_processEvents;
+    m_processEvents = ProcessEventsState(flags);
 
-    SInt32 result;
+    CFStringRef mode = kCFRunLoopDefaultMode;
 
-    if (useExecMode) {
-        while (!m_interrupted) {
-            // Run a single pass on the runloop to unblock it
-            result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, kCFTimeIntervalMinimum, true);
+    bool returnAfterSingleSourceHandled = !(m_processEvents.flags & QEventLoop::EventLoopExec);
 
-            // Run the default runloop until interrupted (by Qt or UIKit)
-            if (result != kCFRunLoopRunFinished)
-                result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, kCFTimeIntervalDistantFuture, false);
+    Q_FOREVER {
+        CFTimeInterval duration = (m_processEvents.flags & QEventLoop::WaitForMoreEvents) ?
+            kCFTimeIntervalDistantFuture : kCFTimeIntervalMinimum;
 
-            // App has quit or Qt has interrupted?
-            if (result == kCFRunLoopRunFinished || m_interrupted)
-                break;
+        qEventDispatcherDebug() << "Calling CFRunLoopRunInMode = " << qPrintable(QCFString::toQString(mode))
+            << " for " << duration << " ms, processing single source = " << returnAfterSingleSourceHandled; qIndent();
 
-            // Runloop was interrupted by UIKit?
-            if (result == kCFRunLoopRunStopped && !m_interrupted) {
-                // Run runloop in UI tracking mode
-                if (CFRunLoopRunInMode((CFStringRef) UITrackingRunLoopMode,
-                                        kCFTimeIntervalDistantFuture, false) == kCFRunLoopRunFinished)
+        SInt32 result = CFRunLoopRunInMode(mode, duration, returnAfterSingleSourceHandled);
+
+        qUnIndent(); qEventDispatcherDebug() << "result = " << qPrintableResult(result);
+
+        if (result == kCFRunLoopRunFinished) {
+            // This should only happen at application shutdown, as the main runloop
+            // will presumably always have sources registered.
+            break;
+        } else if (m_processEvents.wasInterrupted) {
+
+            if (m_processEvents.flags & QEventLoop::EventLoopExec) {
+                Q_ASSERT(result == kCFRunLoopRunStopped);
+
+                // The runloop was potentially stopped (interrupted) by us, as a response to
+                // a Qt event loop being asked to exit. We check that the topmost eventloop
+                // is still supposed to keep going and return if not. Note that the runloop
+                // might get stopped as a result of a non-top eventloop being asked to exit,
+                // in which case we continue running the top event loop until that is asked
+                // to exit, and then unwind back to the previous event loop which will break
+                // immediately, since it has already been exited.
+
+                QEventLoop *currentEventLoop = QThreadData::current()->eventLoops.top();
+                Q_ASSERT(currentEventLoop);
+
+                if (!currentEventLoop->isRunning()) {
+                    qEventDispatcherDebug() << "Top level event loop was exited";
                     break;
+                } else {
+                    qEventDispatcherDebug() << "Top level event loop still running, making another pass";
+                }
+            } else {
+                // We were called manually, through processEvents(), and should stop processing
+                // events, even if we didn't finish processing all the queued events.
+                qEventDispatcherDebug() << "Top level processEvents was interrupted";
+                break;
             }
         }
-        eventsProcessed = true;
-    } else {
-        if (!(flags & QEventLoop::WaitForMoreEvents))
-            wakeUp();
 
-        // Run runloop in default mode
-        result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, kCFTimeIntervalDistantFuture, true);
-        if (result != kCFRunLoopRunFinished) {
-            // Run runloop in UI tracking mode
-            CFRunLoopRunInMode((CFStringRef) UITrackingRunLoopMode, kCFTimeIntervalDistantFuture, false);
+        eventsProcessed |= (result == kCFRunLoopRunHandledSource
+                            || m_processEvents.processedPostedEvents
+                            || m_processEvents.processedTimers);
+
+        if (m_processEvents.flags & QEventLoop::EventLoopExec) {
+            // We were called from QEventLoop's exec(), which blocks until the event
+            // loop is asked to exit by calling processEvents repeatedly. Instead of
+            // re-entering this method again and again from QEventLoop, we can block
+            // here,  one lever closer to CFRunLoopRunInMode, by running the native
+            // event loop again and again until we're interrupted by QEventLoop.
+            continue;
+        } else {
+            // We were called 'manually', through processEvents()
+
+            if (result == kCFRunLoopRunHandledSource) {
+                // We processed one or more sources, but there might still be other
+                // sources that did not get a chance to process events, so we need
+                // to do another pass.
+
+                // But we should only wait for more events the first time
+                m_processEvents.flags &= ~QEventLoop::WaitForMoreEvents;
+                continue;
+
+            } else if (m_overdueTimerScheduled && !m_processEvents.processedTimers) {
+                // CFRunLoopRunInMode does not guarantee that a scheduled timer with a fire
+                // date in the past (overdue) will fire on the next run loop pass. The Qt
+                // APIs on the other hand document eg. zero-interval timers to always be
+                // handled after processing all available window-system events.
+                qEventDispatcherDebug() << "Manually processing timers due to overdue timer";
+                processTimers(0);
+                eventsProcessed = true;
+            }
         }
-        eventsProcessed = (result == kCFRunLoopRunHandledSource);
+
+        break;
     }
+
+    if (m_blockedRunLoopTimer) {
+        invalidateTimer();
+        m_runLoopTimer = m_blockedRunLoopTimer;
+    }
+
+    if (m_processEvents.deferredUpdateTimers)
+        updateTimers();
+
+    if (m_processEvents.deferredWakeUp) {
+        m_postedEventsRunLoopSource.signal();
+        qEventDispatcherDebug() << "Processed deferred wake-up";
+    }
+
+    bool wasInterrupted = m_processEvents.wasInterrupted;
+
+    // Restore state of previous processEvents() call
+    m_processEvents = previousState;
+
+    if (wasInterrupted) {
+        // The current processEvents run has been interrupted, but there may still be
+        // others below it (eg, in the case of nested event loops). We need to trigger
+        // another interrupt so that the parent processEvents call has a chance to check
+        // if it should continue.
+        qEventDispatcherDebug() << "Forwarding interrupt in case of nested processEvents";
+        interrupt();
+    }
+
+    qEventDispatcherDebug() << "Returning with eventsProcessed = " << eventsProcessed; qUnIndent();
+
     return eventsProcessed;
+}
+
+void QEventDispatcherCoreFoundation::processPostedEvents()
+{
+    if (m_processEvents.processedPostedEvents && !(m_processEvents.flags & QEventLoop::EventLoopExec)) {
+        qEventDispatcherDebug() << "Already processed events this pass";
+        return;
+    }
+
+    m_processEvents.processedPostedEvents = true;
+
+    qEventDispatcherDebug() << "Sending window system events for " << m_processEvents.flags; qIndent();
+    QWindowSystemInterface::sendWindowSystemEvents(m_processEvents.flags);
+    qUnIndent();
+}
+
+void QEventDispatcherCoreFoundation::processTimers(CFRunLoopTimerRef timer)
+{
+    if (m_processEvents.processedTimers && !(m_processEvents.flags & QEventLoop::EventLoopExec)) {
+        qEventDispatcherDebug() << "Already processed timers this pass";
+        m_processEvents.deferredUpdateTimers = true;
+        return;
+    }
+
+    qEventDispatcherDebug() << "CFRunLoopTimer " << timer << " fired, activating Qt timers"; qIndent();
+
+    // Activating Qt timers might recurse into processEvents() if a timer-callback
+    // brings up a new event-loop or tries to processes events manually. Although
+    // a CFRunLoop can recurse inside its callbacks, a single CFRunLoopTimer can
+    // not. So, for each recursion into processEvents() from a timer-callback we
+    // need to set up a new timer-source. Instead of doing it preemtivly each
+    // time we activate Qt timers, we set a flag here, and let processEvents()
+    // decide whether or not it needs to bring up a new timer source.
+
+    // We may have multiple recused timers, so keep track of the previous blocked timer
+    CFRunLoopTimerRef previouslyBlockedRunLoopTimer = m_blockedRunLoopTimer;
+
+    m_blockedRunLoopTimer = timer;
+    m_timerInfoList.activateTimers();
+    m_blockedRunLoopTimer = previouslyBlockedRunLoopTimer;
+    m_processEvents.processedTimers = true;
+
+    qUnIndent();
+
+    // Now that the timer source is unblocked we may need to schedule it again
+    updateTimers();
+}
+
+void QEventDispatcherCoreFoundation::handleRunLoopActivity(CFRunLoopActivity activity)
+{
+    qEventDispatcherDebug() << qPrintableActivity(activity);
+
+    switch (activity) {
+    case kCFRunLoopBeforeWaiting:
+        if (m_processEvents.processedTimers
+                && !(m_processEvents.flags & QEventLoop::EventLoopExec)
+                && m_processEvents.flags & QEventLoop::WaitForMoreEvents) {
+            // CoreFoundation does not treat a timer as a reason to exit CFRunLoopRunInMode
+            // when asked to only process a single source, so we risk waiting a long time for
+            // a 'proper' source to fire (typically a system source that we don't control).
+            // To fix this we do an explicit interrupt after processing our timer, so that
+            // processEvents() gets a chance to re-evaluate the state of things.
+            interrupt();
+        }
+        emit aboutToBlock();
+        break;
+    case kCFRunLoopAfterWaiting:
+        emit awake();
+        break;
+#if DEBUG_EVENT_DISPATCHER
+    case kCFRunLoopEntry:
+    case kCFRunLoopBeforeTimers:
+    case kCFRunLoopBeforeSources:
+    case kCFRunLoopExit:
+        break;
+#endif
+    default:
+        Q_UNREACHABLE();
+    }
 }
 
 bool QEventDispatcherCoreFoundation::hasPendingEvents()
@@ -246,6 +397,42 @@ bool QEventDispatcherCoreFoundation::hasPendingEvents()
     qDebug() << __FUNCTION__ << "not implemented";
     return false;
 }
+
+void QEventDispatcherCoreFoundation::wakeUp()
+{
+    if (m_processEvents.processedPostedEvents && !(m_processEvents.flags & QEventLoop::EventLoopExec)) {
+        // A manual processEvents call should only result in processing the events posted
+        // up until then. Any newly posted events as result of processing existing posted
+        // events should be handled in the next call to processEvents(). Since we're using
+        // a run-loop source to process our posted events we need to prevent it from being
+        // signaled as a result of posting new events, otherwise we end up in an infinite
+        // loop. We do however need to signal the source at some point, so that the newly
+        // posted event gets processed on the next processEvents() call, so we flag the
+        // need to do a deferred wake-up.
+        m_processEvents.deferredWakeUp = true;
+        qEventDispatcherDebug() << "Already processed posted events, deferring wakeUp";
+        return;
+    }
+
+    m_postedEventsRunLoopSource.signal();
+    CFRunLoopWakeUp(CFRunLoopGetMain());
+
+    qEventDispatcherDebug() << "Signaled posted event run-loop source";
+}
+
+void QEventDispatcherCoreFoundation::interrupt()
+{
+    qEventDispatcherDebug() << "Marking current processEvent as interrupted";
+    m_processEvents.wasInterrupted = true;
+    CFRunLoopStop(CFRunLoopGetMain());
+}
+
+void QEventDispatcherCoreFoundation::flush()
+{
+    // X11 only.
+}
+
+#pragma mark - Socket notifiers
 
 void QEventDispatcherCoreFoundation::registerSocketNotifier(QSocketNotifier *notifier)
 {
@@ -257,97 +444,113 @@ void QEventDispatcherCoreFoundation::unregisterSocketNotifier(QSocketNotifier *n
     m_cfSocketNotifier.unregisterSocketNotifier(notifier);
 }
 
-void QEventDispatcherCoreFoundation::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *obj)
-{
-#ifndef QT_NO_DEBUG
-    if (timerId < 1 || interval < 0 || !obj) {
-        qWarning("QEventDispatcherCoreFoundation::registerTimer: invalid arguments");
-        return;
-    } else if (obj->thread() != thread() || thread() != QThread::currentThread()) {
-        qWarning("QEventDispatcherCoreFoundation: timers cannot be started from another thread");
-        return;
-    }
-#endif
+#pragma mark - Timers
 
-    m_timerInfoList.registerTimer(timerId, interval, timerType, obj);
-    maybeStartCFRunLoopTimer();
+void QEventDispatcherCoreFoundation::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object)
+{
+    qEventDispatcherDebug() << "id = " << timerId << ", interval = " << interval
+        << ", type = " << timerType << ", object = " << object;
+
+    Q_ASSERT(timerId > 0 && interval >= 0 && object);
+    Q_ASSERT(object->thread() == thread() && thread() == QThread::currentThread());
+
+    m_timerInfoList.registerTimer(timerId, interval, timerType, object);
+    updateTimers();
 }
 
 bool QEventDispatcherCoreFoundation::unregisterTimer(int timerId)
 {
-#ifndef QT_NO_DEBUG
-    if (timerId < 1) {
-        qWarning("QEventDispatcherCoreFoundation::unregisterTimer: invalid argument");
-        return false;
-    } else if (thread() != QThread::currentThread()) {
-        qWarning("QObject::killTimer: timers cannot be stopped from another thread");
-        return false;
-    }
-#endif
+    Q_ASSERT(timerId > 0);
+    Q_ASSERT(thread() == QThread::currentThread());
 
     bool returnValue = m_timerInfoList.unregisterTimer(timerId);
-    m_timerInfoList.isEmpty() ? maybeStopCFRunLoopTimer() : maybeStartCFRunLoopTimer();
+
+    qEventDispatcherDebug() << "id = " << timerId << ", timers left: " << m_timerInfoList.size();
+
+    updateTimers();
     return returnValue;
 }
 
 bool QEventDispatcherCoreFoundation::unregisterTimers(QObject *object)
 {
-#ifndef QT_NO_DEBUG
-    if (!object) {
-        qWarning("QEventDispatcherCoreFoundation::unregisterTimers: invalid argument");
-        return false;
-    } else if (object->thread() != thread() || thread() != QThread::currentThread()) {
-        qWarning("QObject::killTimers: timers cannot be stopped from another thread");
-        return false;
-    }
-#endif
+    Q_ASSERT(object && object->thread() == thread() && thread() == QThread::currentThread());
 
     bool returnValue = m_timerInfoList.unregisterTimers(object);
-    m_timerInfoList.isEmpty() ? maybeStopCFRunLoopTimer() : maybeStartCFRunLoopTimer();
+
+    qEventDispatcherDebug() << "object = " << object << ", timers left: " << m_timerInfoList.size();
+
+    updateTimers();
     return returnValue;
 }
 
 QList<QAbstractEventDispatcher::TimerInfo> QEventDispatcherCoreFoundation::registeredTimers(QObject *object) const
 {
-#ifndef QT_NO_DEBUG
-    if (!object) {
-        qWarning("QEventDispatcherCoreFoundation:registeredTimers: invalid argument");
-        return QList<TimerInfo>();
-    }
-#endif
-
+    Q_ASSERT(object);
     return m_timerInfoList.registeredTimers(object);
 }
 
 int QEventDispatcherCoreFoundation::remainingTime(int timerId)
 {
-#ifndef QT_NO_DEBUG
-    if (timerId < 1) {
-        qWarning("QEventDispatcherCoreFoundation::remainingTime: invalid argument");
-        return -1;
-    }
-#endif
-
+    Q_ASSERT(timerId > 0);
     return m_timerInfoList.timerRemainingTime(timerId);
 }
 
-void QEventDispatcherCoreFoundation::wakeUp()
+static double timespecToSeconds(const timespec &spec)
 {
-    m_postedEventsRunLoopSource.signal();
-    CFRunLoopWakeUp(CFRunLoopGetMain());
+    static double nanosecondsPerSecond = 1.0 * 1000 * 1000 * 1000;
+    return spec.tv_sec + (spec.tv_nsec / nanosecondsPerSecond);
 }
 
-void QEventDispatcherCoreFoundation::interrupt()
+void QEventDispatcherCoreFoundation::updateTimers()
 {
-    // Stop the runloop, which will cause processEvents() to exit
-    m_interrupted = true;
-    CFRunLoopStop(CFRunLoopGetMain());
+    if (m_timerInfoList.size() > 0) {
+        // We have Qt timers registered, so create or reschedule CF timer to match
+
+        timespec tv = { -1, -1 };
+        CFAbsoluteTime timeToFire = m_timerInfoList.timerWait(tv) ?
+            // We have a timer ready to fire right now, or some time in the future
+            CFAbsoluteTimeGetCurrent() + timespecToSeconds(tv)
+            // We have timers, but they are all currently blocked by callbacks
+            : kCFTimeIntervalDistantFuture;
+
+        if (!m_runLoopTimer) {
+            m_runLoopTimer = CFRunLoopTimerCreateWithHandler(kCFAllocatorDefault,
+                timeToFire, kCFTimeIntervalDistantFuture, 0, 0, ^(CFRunLoopTimerRef timer) {
+                processTimers(timer);
+            });
+
+            CFRunLoopAddTimer(CFRunLoopGetMain(), m_runLoopTimer, kCFRunLoopCommonModes);
+            qEventDispatcherDebug() << "Created new CFRunLoopTimer " << m_runLoopTimer;
+
+        } else {
+            CFRunLoopTimerSetNextFireDate(m_runLoopTimer, timeToFire);
+            qEventDispatcherDebug() << "Re-scheduled CFRunLoopTimer " << m_runLoopTimer;
+        }
+
+        m_overdueTimerScheduled = !timespecToSeconds(tv);
+
+        qEventDispatcherDebug() << "Next timeout in " << tv << " seconds";
+
+    } else {
+        // No Qt timers are registered, so make sure we're not running any CF timers
+        invalidateTimer();
+
+        m_overdueTimerScheduled = false;
+    }
 }
 
-void QEventDispatcherCoreFoundation::flush()
+void QEventDispatcherCoreFoundation::invalidateTimer()
 {
-    // X11 only.
+    if (!m_runLoopTimer || (m_runLoopTimer == m_blockedRunLoopTimer))
+        return;
+
+    CFRunLoopTimerInvalidate(m_runLoopTimer);
+    qEventDispatcherDebug() << "Invalidated CFRunLoopTimer " << m_runLoopTimer;
+
+    CFRelease(m_runLoopTimer);
+    m_runLoopTimer = 0;
 }
+
+#include "qeventdispatcher_cf.moc"
 
 QT_END_NAMESPACE
-
