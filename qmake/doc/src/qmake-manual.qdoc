@@ -3066,6 +3066,80 @@
     And then, in the code:
 
     \snippet snippets/code/doc_src_qmake-manual.pro 158
+
+    \section2 prepareRecursiveTarget(target)
+
+    Facilitates the creation of project-wide targets similar to the \c install
+    target by preparing a target that iterates through all subdirectories. For
+    example:
+
+    \snippet snippets/code/doc_src_qmake-manual.pro 174
+
+    Subdirs that have \c have_no_default or \c no_<target>_target specified in
+    their .CONFIG are excluded from this target:
+
+    \snippet snippets/code/doc_src_qmake-manual.pro 175
+
+    You must add the prepared target manually to \l{QMAKE_EXTRA_TARGETS}:
+
+    \snippet snippets/code/doc_src_qmake-manual.pro 176
+
+    To make the target global, the code above needs to be included into every
+    subdirs subproject. In addition, to make these targets do anything,
+    non-subdirs subprojects need to include respective code. The easiest way to
+    achieve this is creating a custom feature file. For example:
+
+    \snippet snippets/code/doc_src_qmake-manual.pro 177
+
+    The feature file needs to be injected into each subproject, for example by
+    .qmake.conf:
+
+    \snippet snippets/code/doc_src_qmake-manual.pro 178
+
+    \section2 qtCompileTest(test)
+
+    Builds a test project. If the test passes, true is returned and
+    \c {config_<test>} is added to the \l{CONFIG} variable. Otherwise, false is
+    returned.
+
+    To make this function available, you need to load the respective feature
+    file:
+
+    \snippet snippets/code/doc_src_qmake-manual.pro 179
+
+    This also sets the variable QMAKE_CONFIG_TESTS_DIR to the
+    \c config.tests subdirectory of the project's parent directory.
+    It is possible to override this value after loading the feature file.
+
+    Inside the tests directory, there has to be one subdirectory per test that
+    contains a simple qmake project. The following code snippet illustrates the
+    .pro file of the project:
+
+    \snippet snippets/code/doc_src_qmake-manual.pro 180
+
+    The following code snippet illustrates the main .cpp file of the project:
+
+    \snippet snippets/code/doc_src_qmake-manual.pro 181
+
+    The following code snippet shows the invocation of the test:
+
+    \snippet snippets/code/doc_src_qmake-manual.pro 182
+
+    If the test project is built successfully, the test passes.
+
+    The test results are automatically cached, which also makes them
+    available to all subprojects. It is therefore recommended to run
+    all configuration tests in the top-level project file.
+
+    To suppress the re-use of cached results, pass \c{CONFIG+=recheck}
+    to qmake.
+
+    See also \l{load(feature)}{load()}.
+
+    \section2 qtHaveModule(name)
+
+    Checks whether the Qt module specified by \c name is present.
+    For a list of possible values, see \l{Variables#QT}{QT}.
 */
 
 /*!

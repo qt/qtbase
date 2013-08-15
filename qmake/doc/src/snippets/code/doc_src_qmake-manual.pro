@@ -915,3 +915,64 @@ greaterThan(TMP_VALUE, x456): message("Condition may be true.")
 #! [173]
 message("First line$$escape_expand(\\n)Second line")
 #! [173]
+
+
+#! [174]
+TEMPLATE = subdirs
+SUBDIRS = one two three
+prepareRecursiveTarget(check)
+#! [174]
+
+
+#! [175]
+two.CONFIG += no_check_target
+#! [175]
+
+
+#! [176]
+QMAKE_EXTRA_TARGETS += check
+#! [176]
+
+
+#! [177]
+# <project root>/features/mycheck.prf
+equals(TEMPLATE, subdirs) {
+    prepareRecursiveTarget(check)
+} else {
+    check.commands = echo hello user
+}
+QMAKE_EXTRA_TARGETS += check
+#! [177]
+
+
+#! [178]
+# <project root>/.qmake.conf
+CONFIG += mycheck
+#! [178]
+
+
+#! [179]
+# <project root>/project.pro
+load(configure)
+#! [179]
+
+
+#! [180]
+# <project root>/config.tests/test/test.pro
+SOURCES = main.cpp
+LIBS += -ltheFeature
+# Note that the test project is built without Qt by default.
+#! [180]
+
+
+#! [181]
+// <project root>/config.tests/test/main.cpp
+#include <TheFeature/MainHeader.h>
+int main() { return featureFunction(); }
+#! [181]
+
+
+#! [182]
+# <project root>/project.pro
+qtCompileTest(test)
+#! [182]
