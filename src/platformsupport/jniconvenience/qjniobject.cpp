@@ -57,6 +57,9 @@ static jclass getCachedClass(JNIEnv *env, const char *className)
         jclass c = env->FindClass(className);
         if (env->ExceptionCheck()) {
             c = 0;
+#ifdef QT_DEBUG
+            env->ExceptionDescribe();
+#endif // QT_DEBUG
             env->ExceptionClear();
         }
         if (c)
@@ -88,6 +91,9 @@ static jmethodID getCachedMethodID(JNIEnv *env,
 
         if (env->ExceptionCheck()) {
             id = 0;
+#ifdef QT_DEBUG
+            env->ExceptionDescribe();
+#endif // QT_DEBUG
             env->ExceptionClear();
         }
 
@@ -117,6 +123,9 @@ static jfieldID getCachedFieldID(JNIEnv *env,
 
         if (env->ExceptionCheck()) {
             id = 0;
+#ifdef QT_DEBUG
+            env->ExceptionDescribe();
+#endif // QT_DEBUG
             env->ExceptionClear();
         }
 
