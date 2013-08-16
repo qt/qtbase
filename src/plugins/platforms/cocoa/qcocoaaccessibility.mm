@@ -231,8 +231,7 @@ NSArray *unignoredChildren(id parentObject, QAccessibleInterface *interface)
     NSMutableArray *kids = [NSMutableArray arrayWithCapacity:numKids];
     for (int i = 0; i < numKids; ++i) {
         QAccessibleInterface *child = interface->child(i);
-        Q_ASSERT(child);
-        if (child->state().invalid || child->state().invisible)
+        if (!child || !child->isValid() || child->state().invalid || child->state().invisible)
             continue;
 
         QAccessible::Id childId = QAccessible::uniqueId(child);
