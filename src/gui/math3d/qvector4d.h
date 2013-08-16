@@ -82,6 +82,9 @@ public:
     void setZ(float z);
     void setW(float w);
 
+    float &operator[](int i);
+    float operator[](int i) const;
+
     float length() const;
     float lengthSquared() const;
 
@@ -157,6 +160,18 @@ inline void QVector4D::setX(float aX) { xp = aX; }
 inline void QVector4D::setY(float aY) { yp = aY; }
 inline void QVector4D::setZ(float aZ) { zp = aZ; }
 inline void QVector4D::setW(float aW) { wp = aW; }
+
+inline float &QVector4D::operator[](int i)
+{
+    Q_ASSERT(uint(i) < 4u);
+    return *(&xp + i);
+}
+
+inline float QVector4D::operator[](int i) const
+{
+    Q_ASSERT(uint(i) < 4u);
+    return *(&xp + i);
+}
 
 inline QVector4D &QVector4D::operator+=(const QVector4D &vector)
 {

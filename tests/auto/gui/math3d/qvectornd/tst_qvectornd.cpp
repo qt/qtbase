@@ -57,6 +57,10 @@ private slots:
     void create3();
     void create4();
 
+    void modify2();
+    void modify3();
+    void modify4();
+
     void length2_data();
     void length2();
     void length3_data();
@@ -568,6 +572,82 @@ void tst_QVectorND::create4()
 
     v14 = zerow.toVector3DAffine();
     QVERIFY(v14.isNull());
+}
+
+// Test modifying vectors in various ways
+void tst_QVectorND::modify2()
+{
+    const float e = 2.7182818f;
+    const float pi = 3.14159f;
+    const QVector2D p(e, pi);
+
+    QVector2D p1;
+    p1.setX(e);
+    p1.setY(pi);
+    QVERIFY(qFuzzyCompare(p, p1));
+
+    QVector2D p2;
+    p2[0] = e;
+    p2[1] = pi;
+    QVERIFY(qFuzzyCompare(p, p2));
+
+    QVector2D p3;
+    for (int i = 0; i < 2; ++i)
+        p3[i] = p[i];
+    QVERIFY(qFuzzyCompare(p, p3));
+}
+
+void tst_QVectorND::modify3()
+{
+    const float one = 1.0f;
+    const float e = 2.7182818f;
+    const float pi = 3.14159f;
+    const QVector3D p(one, e, pi);
+
+    QVector3D p1;
+    p1.setX(one);
+    p1.setY(e);
+    p1.setZ(pi);
+    QVERIFY(qFuzzyCompare(p, p1));
+
+    QVector3D p2;
+    p2[0] = one;
+    p2[1] = e;
+    p2[2] = pi;
+    QVERIFY(qFuzzyCompare(p, p2));
+
+    QVector3D p3;
+    for (int i = 0; i < 3; ++i)
+        p3[i] = p[i];
+    QVERIFY(qFuzzyCompare(p, p3));
+}
+
+void tst_QVectorND::modify4()
+{
+    const float one = 1.0f;
+    const float e = 2.7182818f;
+    const float pi = 3.14159f;
+    const float big = 1.0e6f;
+    const QVector4D p(one, e, pi, big);
+
+    QVector4D p1;
+    p1.setX(one);
+    p1.setY(e);
+    p1.setZ(pi);
+    p1.setW(big);
+    QVERIFY(qFuzzyCompare(p, p1));
+
+    QVector4D p2;
+    p2[0] = one;
+    p2[1] = e;
+    p2[2] = pi;
+    p2[3] = big;
+    QVERIFY(qFuzzyCompare(p, p2));
+
+    QVector4D p3;
+    for (int i = 0; i < 4; ++i)
+        p3[i] = p[i];
+    QVERIFY(qFuzzyCompare(p, p3));
 }
 
 // Test vector length computation for 2D vectors.

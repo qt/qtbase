@@ -79,6 +79,9 @@ public:
     void setY(float y);
     void setZ(float z);
 
+    float &operator[](int i);
+    float operator[](int i) const;
+
     float length() const;
     float lengthSquared() const;
 
@@ -159,6 +162,18 @@ inline float QVector3D::z() const { return zp; }
 inline void QVector3D::setX(float aX) { xp = aX; }
 inline void QVector3D::setY(float aY) { yp = aY; }
 inline void QVector3D::setZ(float aZ) { zp = aZ; }
+
+inline float &QVector3D::operator[](int i)
+{
+    Q_ASSERT(uint(i) < 3u);
+    return *(&xp + i);
+}
+
+inline float QVector3D::operator[](int i) const
+{
+    Q_ASSERT(uint(i) < 3u);
+    return *(&xp + i);
+}
 
 inline QVector3D &QVector3D::operator+=(const QVector3D &vector)
 {

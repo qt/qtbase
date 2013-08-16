@@ -160,6 +160,25 @@ QVector2D::QVector2D(const QVector4D& vector)
     \sa y(), setX()
 */
 
+/*! \fn float &QVector2D::operator[](int i)
+    \since 5.2
+
+    Returns the component of the vector at index position \a i
+    as a modifiable reference.
+
+    \a i must be a valid index position in the vector (i.e., 0 <= \a i
+    < 2).
+*/
+
+/*! \fn float QVector2D::operator[](int i) const
+    \since 5.2
+
+    Returns the component of the vector at index position \a i.
+
+    \a i must be a valid index position in the vector (i.e., 0 <= \a i
+    < 2).
+*/
+
 /*!
     Returns the length of the vector from the origin.
 

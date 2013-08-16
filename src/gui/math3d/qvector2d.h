@@ -76,6 +76,9 @@ public:
     void setX(float x);
     void setY(float y);
 
+    float &operator[](int i);
+    float operator[](int i) const;
+
     float length() const;
     float lengthSquared() const;
 
@@ -144,6 +147,18 @@ inline float QVector2D::y() const { return yp; }
 
 inline void QVector2D::setX(float aX) { xp = aX; }
 inline void QVector2D::setY(float aY) { yp = aY; }
+
+inline float &QVector2D::operator[](int i)
+{
+    Q_ASSERT(uint(i) < 2u);
+    return *(&xp + i);
+}
+
+inline float QVector2D::operator[](int i) const
+{
+    Q_ASSERT(uint(i) < 2u);
+    return *(&xp + i);
+}
 
 inline QVector2D &QVector2D::operator+=(const QVector2D &vector)
 {

@@ -196,6 +196,25 @@ QVector3D::QVector3D(const QVector4D& vector)
     \sa z(), setX(), setY()
 */
 
+/*! \fn float &QVector3D::operator[](int i)
+    \since 5.2
+
+    Returns the component of the vector at index position \a i
+    as a modifiable reference.
+
+    \a i must be a valid index position in the vector (i.e., 0 <= \a i
+    < 3).
+*/
+
+/*! \fn float QVector3D::operator[](int i) const
+    \since 5.2
+
+    Returns the component of the vector at index position \a i.
+
+    \a i must be a valid index position in the vector (i.e., 0 <= \a i
+    < 3).
+*/
+
 /*!
     Returns the normalized unit vector form of this vector.
 
