@@ -3255,11 +3255,14 @@ void tst_QFile::objectConstructors()
 
 void tst_QFile::caseSensitivity()
 {
-#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
+#if defined(Q_OS_WIN)
     const bool caseSensitive = false;
+#elif defined(Q_OS_MAC)
+     const bool caseSensitive = pathconf(QDir::currentPath().toLatin1().constData(), _PC_CASE_SENSITIVE);
 #else
     const bool caseSensitive = true;
 #endif
+
     QByteArray testData("a little test");
     QString filename("File.txt");
     {

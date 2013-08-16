@@ -26,4 +26,52 @@ imagedirs               = images
 exampledirs             = snippets
 
 depends += \
-    qtwinextras
+    activeqt \
+    qt3d \
+    qtassistant \
+    qtbluetooth \
+    qtconcurrent \
+    qtcontacts \
+    qtcore \
+    qtdbus \
+    qtdesigner \
+    qtfeedback \
+    qtgraphicaleffects \
+    qtgui \
+    qthelp \
+    qtimageformats \
+    qtlinguist \
+    qtlocation \
+    qtmultimedia \
+    qtmultimediawidgets \
+    qtnetwork \
+    qtopengl \
+    qtorganizer \
+    qtprintsupport \
+    qtpublishsubscribe \
+    qtqml \
+    qtquick \
+    qtquickcontrols \
+    qtquickcontrolsstyles \
+    qtquickdialogs \
+    qtquicklayouts \
+    qtscript \
+    qtscripttools \
+    qtsensors \
+    qtserialport \
+    qtserviceframework \
+    qtsql \
+    qtsvg \
+    qtsysteminfo \
+    qttestlib \
+    qttools \
+    qtuitools \
+    qtversit \
+    qtwebkit \
+    qtwebkitexamples \
+    qtwidgets \
+    qtwinextras \
+    qtx11extras \
+    qtxml \
+    qtxmlpatterns
+

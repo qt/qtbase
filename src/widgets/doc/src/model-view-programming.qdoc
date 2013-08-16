@@ -189,7 +189,7 @@
     to the QTableView::sortByColumn() slot or the
     QTreeView::sortByColumn() slot, respectively.
 
-    The alternative approach, if your model do not have the required
+    The alternative approach, if your model does not have the required
     interface or if you want to use a list view to present your data,
     is to use a proxy model to transform the structure of your model
     before presenting the data in the view. This is covered in detail

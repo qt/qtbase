@@ -254,7 +254,7 @@ void QDesktopServices::unsetUrlHandler(const QString &scheme)
     \enum QDesktopServices::StandardLocation
     \since 4.4
     \obsolete
-    Use QStandardPaths::StandardLocation
+    Use QStandardPaths::StandardLocation (see storageLocation() for porting notes)
 
     This enum describes the different locations that can be queried by
     QDesktopServices::storageLocation and QDesktopServices::displayName.
@@ -282,6 +282,26 @@ void QDesktopServices::unsetUrlHandler(const QString &scheme)
     \fn QString QDesktopServices::storageLocation(StandardLocation type)
     \obsolete
     Use QStandardPaths::writableLocation()
+
+    \note when porting QDesktopServices::DataLocation to QStandardPaths::DataLocation,
+    a different path will be returned.
+
+    \c{QDesktopServices::DataLocation} was \c{GenericDataLocation + "/data/organization/application"},
+    while QStandardPaths::DataLocation is \c{GenericDataLocation + "/organization/application"}.
+
+    Also note that \c{application} could be empty in Qt 4, if QCoreApplication::setApplicationName()
+    wasn't called, while in Qt 5 it defaults to the name of the executable.
+
+    Therefore, if you still need to access the Qt 4 path (for example for data migration to Qt 5), replace
+    \code
+    QDesktopServices::storageLocation(QDesktopServices::DataLocation)
+    \endcode
+    with
+    \code
+    QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) +
+    "/data/organization/application"
+    \endcode
+    (assuming an organization name and an application name were set).
 */
 
 /*!

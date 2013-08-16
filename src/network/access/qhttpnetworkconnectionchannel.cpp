@@ -1130,6 +1130,9 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
                 errorCode = QNetworkReply::RemoteHostClosedError;
             }
         } else if (state == QHttpNetworkConnectionChannel::ReadingState) {
+            if (!reply)
+                break;
+
             if (!reply->d_func()->expectContent()) {
                 // No content expected, this is a valid way to have the connection closed by the server
                 return;

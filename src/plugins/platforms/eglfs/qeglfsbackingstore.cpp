@@ -79,6 +79,9 @@ void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPo
 
     makeCurrent();
 
+    QRectF sr = window->screen()->geometry();
+    glViewport(0, 0, sr.width(), sr.height());
+
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglBackingStore::flush %p", window);
 #endif
@@ -120,7 +123,6 @@ void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPo
     };
 
     QRectF r = window->geometry();
-    QRectF sr = window->screen()->geometry();
 
     GLfloat x1 = (r.left() / sr.width()) * 2 - 1;
     GLfloat x2 = (r.right() / sr.width()) * 2 - 1;
@@ -192,8 +194,6 @@ void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPo
 
 void QEglFSBackingStore::makeCurrent()
 {
-    // needed to prevent QOpenGLContext::makeCurrent() from failing
-    window()->setSurfaceType(QSurface::OpenGLSurface);
     (static_cast<QEglFSWindow *>(window()->handle()))->create();
     m_context->makeCurrent(window());
 }

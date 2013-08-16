@@ -608,7 +608,7 @@ void tst_QCompleter::directoryModel_data()
 #elif defined (Q_OS_MAC)
         QTest::newRow("()") << "" << "" << "/" << "/";
         QTest::newRow("(/a)") << "/a" << "" << "Applications" << "/Applications";
-        QTest::newRow("(/d)") << "/d" << "" << "Developer" << "/Developer";
+        QTest::newRow("(/u)") << "/u" << "" << "Users" << "/Users";
 #else
         QTest::newRow("()") << "" << "" << "/" << "/";
 #if !defined(Q_OS_IRIX) && !defined(Q_OS_AIX) && !defined(Q_OS_HPUX)
@@ -1305,10 +1305,15 @@ void tst_QCompleter::task246056_setCompletionPrefix()
     comboBox.show();
     QApplication::setActiveWindow(&comboBox);
     QVERIFY(QTest::qWaitForWindowActive(&comboBox));
+    QSignalSpy spy(comboBox.completer(), SIGNAL(activated(QModelIndex)));
     QTest::keyPress(&comboBox, 'a');
     QTest::keyPress(comboBox.completer()->popup(), Qt::Key_Down);
     QTest::keyPress(comboBox.completer()->popup(), Qt::Key_Down);
     QTest::keyPress(comboBox.completer()->popup(), Qt::Key_Enter); // don't crash!
+    QCOMPARE(spy.count(), 1);
+    QList<QVariant> arguments = spy.at(0);
+    QModelIndex index = arguments.at(0).value<QModelIndex>();
+    QVERIFY(!index.isValid());
 }
 
 class task250064_TextEdit : public QTextEdit

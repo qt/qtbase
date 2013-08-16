@@ -42,7 +42,6 @@
 #include <QtTest/QtTest>
 
 #include <QtGui/QtGui>
-#include <QtWidgets/QtWidgets>
 
 class tst_QItemSelectionModel : public QObject
 {
@@ -1526,22 +1525,21 @@ public:
 void tst_QItemSelectionModel::resetModel()
 {
     MyStandardItemModel model(20, 20);
-    QTreeView view;
-    view.setModel(&model);
+    QItemSelectionModel *selectionModel = new QItemSelectionModel(&model);
 
-    QSignalSpy spy(view.selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)));
+    QSignalSpy spy(selectionModel, SIGNAL(selectionChanged(QItemSelection,QItemSelection)));
     QVERIFY(spy.isValid());
 
-    view.selectionModel()->select(QItemSelection(model.index(0, 0), model.index(5, 5)), QItemSelectionModel::Select);
+    selectionModel->select(QItemSelection(model.index(0, 0), model.index(5, 5)), QItemSelectionModel::Select);
 
     QCOMPARE(spy.count(), 1);
 
     model.reset();
 
-    QVERIFY(view.selectionModel()->selection().isEmpty());
-    QVERIFY(view.selectionModel()->hasSelection() == false);
+    QVERIFY(selectionModel->selection().isEmpty());
+    QVERIFY(selectionModel->hasSelection() == false);
 
-    view.selectionModel()->select(QItemSelection(model.index(0, 0), model.index(5, 5)), QItemSelectionModel::Select);
+    selectionModel->select(QItemSelection(model.index(0, 0), model.index(5, 5)), QItemSelectionModel::Select);
 
     QCOMPARE(spy.count(), 2);
     QCOMPARE(spy.at(1).count(), 2);
@@ -1905,22 +1903,20 @@ void tst_QItemSelectionModel::selectedColumns()
 void tst_QItemSelectionModel::setCurrentIndex()
 {
     // Build up a simple tree
-    QStandardItemModel *treemodel = new QStandardItemModel(0, 1);
+    QScopedPointer<QStandardItemModel> treemodel(new QStandardItemModel(0, 1));
     treemodel->insertRow(0, new QStandardItem(1));
     treemodel->insertRow(1, new QStandardItem(2));
 
-    QTreeView treeView;
-    treeView.setModel(treemodel);
-    QItemSelectionModel *selectionModel = treeView.selectionModel();
-    selectionModel->setCurrentIndex(
+    QItemSelectionModel selectionModel(treemodel.data());
+    selectionModel.setCurrentIndex(
             treemodel->index(0, 0, treemodel->index(0, 0)),
             QItemSelectionModel::SelectCurrent);
 
-    QSignalSpy currentSpy(selectionModel,
+    QSignalSpy currentSpy(&selectionModel,
             SIGNAL(currentChanged(QModelIndex,QModelIndex)));
-    QSignalSpy rowSpy(selectionModel,
+    QSignalSpy rowSpy(&selectionModel,
             SIGNAL(currentRowChanged(QModelIndex,QModelIndex)));
-    QSignalSpy columnSpy(selectionModel,
+    QSignalSpy columnSpy(&selectionModel,
             SIGNAL(currentColumnChanged(QModelIndex,QModelIndex)));
 
     QVERIFY(currentSpy.isValid());
@@ -1928,7 +1924,7 @@ void tst_QItemSelectionModel::setCurrentIndex()
     QVERIFY(columnSpy.isValid());
 
     // Select the same row and column indexes, but with a different parent
-    selectionModel->setCurrentIndex(
+    selectionModel.setCurrentIndex(
             treemodel->index(0, 0, treemodel->index(1, 0)),
             QItemSelectionModel::SelectCurrent);
 
@@ -1937,15 +1933,13 @@ void tst_QItemSelectionModel::setCurrentIndex()
     QCOMPARE(columnSpy.count(), 1);
 
     // Select another row in the same parent
-    selectionModel->setCurrentIndex(
+    selectionModel.setCurrentIndex(
             treemodel->index(1, 0, treemodel->index(1, 0)),
             QItemSelectionModel::SelectCurrent);
 
     QCOMPARE(currentSpy.count(), 2);
     QCOMPARE(rowSpy.count(), 2);
     QCOMPARE(columnSpy.count(), 1);
-
-    delete treemodel;
 }
 
 void tst_QItemSelectionModel::splitOnInsert()
@@ -1960,29 +1954,27 @@ void tst_QItemSelectionModel::splitOnInsert()
 
 void tst_QItemSelectionModel::rowIntersectsSelection1()
 {
-    QTableWidget table;
-    table.setColumnCount(1);
-    table.setRowCount(1);
-    table.setItem(0, 0, new QTableWidgetItem("foo"));
-    QAbstractItemModel *model = table.model();
-    QItemSelectionModel *selectionModel = table.selectionModel();
-    QModelIndex index = model->index(0, 0, QModelIndex());
+    QStandardItemModel model;
+    model.setItem(0, 0, new QStandardItem("foo"));
+    QItemSelectionModel selectionModel(&model);
 
-    selectionModel->select(index, QItemSelectionModel::Select);
-    QVERIFY(selectionModel->rowIntersectsSelection(0, QModelIndex()));
-    QVERIFY(selectionModel->columnIntersectsSelection(0, QModelIndex()));
+    QModelIndex index = model.index(0, 0, QModelIndex());
 
-    selectionModel->select(index, QItemSelectionModel::Deselect);
-    QVERIFY(!selectionModel->rowIntersectsSelection(0, QModelIndex()));
-    QVERIFY(!selectionModel->columnIntersectsSelection(0, QModelIndex()));
+    selectionModel.select(index, QItemSelectionModel::Select);
+    QVERIFY(selectionModel.rowIntersectsSelection(0, QModelIndex()));
+    QVERIFY(selectionModel.columnIntersectsSelection(0, QModelIndex()));
 
-    selectionModel->select(index, QItemSelectionModel::Toggle);
-    QVERIFY(selectionModel->rowIntersectsSelection(0, QModelIndex()));
-    QVERIFY(selectionModel->columnIntersectsSelection(0, QModelIndex()));
+    selectionModel.select(index, QItemSelectionModel::Deselect);
+    QVERIFY(!selectionModel.rowIntersectsSelection(0, QModelIndex()));
+    QVERIFY(!selectionModel.columnIntersectsSelection(0, QModelIndex()));
 
-    selectionModel->select(index, QItemSelectionModel::Toggle);
-    QVERIFY(!selectionModel->rowIntersectsSelection(0, QModelIndex()));
-    QVERIFY(!selectionModel->columnIntersectsSelection(0, QModelIndex()));
+    selectionModel.select(index, QItemSelectionModel::Toggle);
+    QVERIFY(selectionModel.rowIntersectsSelection(0, QModelIndex()));
+    QVERIFY(selectionModel.columnIntersectsSelection(0, QModelIndex()));
+
+    selectionModel.select(index, QItemSelectionModel::Toggle);
+    QVERIFY(!selectionModel.rowIntersectsSelection(0, QModelIndex()));
+    QVERIFY(!selectionModel.columnIntersectsSelection(0, QModelIndex()));
 }
 
 void tst_QItemSelectionModel::rowIntersectsSelection2()
@@ -2057,16 +2049,21 @@ void tst_QItemSelectionModel::rowIntersectsSelection3()
 
 void tst_QItemSelectionModel::unselectable()
 {
-    QTreeWidget w;
-    for (int i = 0; i < 10; ++i)
-        w.setItemSelected(new QTreeWidgetItem(&w), true);
-    QCOMPARE(w.topLevelItemCount(), 10);
-    QCOMPARE(w.selectionModel()->selectedIndexes().count(), 10);
-    QCOMPARE(w.selectionModel()->selectedRows().count(), 10);
+    QStandardItemModel model;
+    QStandardItem *parentItem = model.invisibleRootItem();
+
+    for (int i = 0; i < 10; ++i) {
+        QStandardItem *item = new QStandardItem(QString("item %0").arg(i));
+        parentItem->appendRow(item);
+    }
+    QItemSelectionModel selectionModel(&model);
+    selectionModel.select(QItemSelection(model.index(0, 0), model.index(9, 0)), QItemSelectionModel::Select);
+    QCOMPARE(selectionModel.selectedIndexes().count(), 10);
+    QCOMPARE(selectionModel.selectedRows().count(), 10);
     for (int j = 0; j < 10; ++j)
-        w.topLevelItem(j)->setFlags(0);
-    QCOMPARE(w.selectionModel()->selectedIndexes().count(), 0);
-    QCOMPARE(w.selectionModel()->selectedRows().count(), 0);
+        model.item(j)->setFlags(0);
+    QCOMPARE(selectionModel.selectedIndexes().count(), 0);
+    QCOMPARE(selectionModel.selectedRows().count(), 0);
 }
 
 void tst_QItemSelectionModel::selectedIndexes()

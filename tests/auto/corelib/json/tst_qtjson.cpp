@@ -1065,6 +1065,8 @@ void tst_QtJson::fromVariantMap()
 
 void tst_QtJson::toVariantMap()
 {
+    QCOMPARE(QMetaType::Type(QJsonValue(QJsonObject()).toVariant().type()), QMetaType::QVariantMap); // QTBUG-32524
+
     QJsonObject object;
     QVariantMap map = object.toVariantMap();
     QVERIFY(map.isEmpty());
@@ -1094,6 +1096,8 @@ void tst_QtJson::toVariantMap()
 
 void tst_QtJson::toVariantList()
 {
+    QCOMPARE(QMetaType::Type(QJsonValue(QJsonArray()).toVariant().type()), QMetaType::QVariantList); // QTBUG-32524
+
     QJsonArray array;
     QVariantList list = array.toVariantList();
     QVERIFY(list.isEmpty());

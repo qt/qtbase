@@ -235,6 +235,8 @@ QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint
     const QEvdevKeyboardMap::Mapping *map_plain = 0;
     const QEvdevKeyboardMap::Mapping *map_withmod = 0;
 
+    quint8 modifiers = m_modifiers;
+
     // get a specific and plain mapping for the keycode and the current modifiers
     for (int i = 0; i < m_keymap_size && !(map_plain && map_withmod); ++i) {
         const QEvdevKeyboardMap::Mapping *m = m_keymap + i;
@@ -250,9 +252,12 @@ QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint
         }
     }
 
+    if (m_locks[0] /*CapsLock*/ && map_withmod && (map_withmod->flags & QEvdevKeyboardMap::IsLetter))
+        modifiers ^= QEvdevKeyboardMap::ModShift;
+
 #ifdef QT_QPA_KEYMAP_DEBUG
     qWarning("Processing key event: keycode=%3d, modifiers=%02x pressed=%d, autorepeat=%d  |  plain=%d, withmod=%d, size=%d", \
-             keycode, m_modifiers, pressed ? 1 : 0, autorepeat ? 1 : 0, \
+             keycode, modifiers, pressed ? 1 : 0, autorepeat ? 1 : 0, \
              map_plain ? map_plain - m_keymap : -1, \
              map_withmod ? map_withmod - m_keymap : -1, \
              m_keymap_size);
@@ -263,7 +268,7 @@ QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint
     if (!it) {
 #ifdef QT_QPA_KEYMAP_DEBUG
         // we couldn't even find a plain mapping
-        qWarning("Could not find a suitable mapping for keycode: %3d, modifiers: %02x", keycode, m_modifiers);
+        qWarning("Could not find a suitable mapping for keycode: %3d, modifiers: %02x", keycode, modifiers);
 #endif
         return result;
     }
@@ -285,7 +290,7 @@ QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint
             lock ^= 1;
 
             switch (qtcode) {
-            case Qt::Key_CapsLock  : result = lock ? CapsLockOn : CapsLockOff; m_modifiers ^= QEvdevKeyboardMap::ModShift; break;
+            case Qt::Key_CapsLock  : result = lock ? CapsLockOn : CapsLockOff; break;
             case Qt::Key_NumLock   : result = lock ? NumLockOn : NumLockOff; break;
             case Qt::Key_ScrollLock: result = lock ? ScrollLockOn : ScrollLockOff; break;
             default                : break;
@@ -347,7 +352,7 @@ QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint
         // so just report the plain mapping with additional modifiers.
         if ((it == map_plain && it != map_withmod) ||
             (map_withmod && !(map_withmod->qtcode & modmask))) {
-            qtcode |= QEvdevKeyboardHandler::toQtModifiers(m_modifiers);
+            qtcode |= QEvdevKeyboardHandler::toQtModifiers(modifiers);
         }
 
         if (m_composing == 2 && first_press && !(it->flags & QEvdevKeyboardMap::IsModifier)) {

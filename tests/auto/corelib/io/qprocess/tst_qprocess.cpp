@@ -154,6 +154,7 @@ private slots:
     void invalidProgramString();
     void onlyOneStartedSignal();
     void finishProcessBeforeReadingDone();
+    void waitForStartedWithoutStart();
 
     // keep these at the end, since they use lots of processes and sometimes
     // caused obscure failures to occur in tests that followed them (esp. on the Mac)
@@ -2212,6 +2213,12 @@ void tst_QProcess::finishProcessBeforeReadingDone()
             QRegExp(QStringLiteral("[\r\n]")), QString::SkipEmptyParts);
     QVERIFY(!lines.isEmpty());
     QCOMPARE(lines.last(), QStringLiteral("10239 -this is a number"));
+}
+
+void tst_QProcess::waitForStartedWithoutStart()
+{
+    QProcess process;
+    QVERIFY(!process.waitForStarted(5000));
 }
 
 #endif //QT_NO_PROCESS

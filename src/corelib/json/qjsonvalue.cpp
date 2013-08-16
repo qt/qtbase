@@ -396,9 +396,13 @@ QVariant QJsonValue::toVariant() const
     case String:
         return toString();
     case Array:
-        return QJsonArray(d, static_cast<QJsonPrivate::Array *>(base)).toVariantList();
+        return d ?
+               QJsonArray(d, static_cast<QJsonPrivate::Array *>(base)).toVariantList() :
+               QVariantList();
     case Object:
-        return QJsonObject(d, static_cast<QJsonPrivate::Object *>(base)).toVariantMap();
+        return d ?
+               QJsonObject(d, static_cast<QJsonPrivate::Object *>(base)).toVariantMap() :
+               QVariantMap();
     case Null:
     case Undefined:
         break;

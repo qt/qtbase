@@ -187,10 +187,8 @@ void QMacPrintEnginePrivate::setPaperName(const QString &name)
 
     if (PMSessionGetCurrentPrinter(session(), &printer) == noErr) {
         CFArrayRef array;
-        if (PMPrinterGetPaperList(printer, &array) != noErr) {
-            PMRelease(printer);
+        if (PMPrinterGetPaperList(printer, &array) != noErr)
             return;
-        }
         int count = CFArrayGetCount(array);
         for (int i = 0; i < count; ++i) {
             PMPaper paper = static_cast<PMPaper>(const_cast<void *>(CFArrayGetValueAtIndex(array, i)));
@@ -208,7 +206,6 @@ void QMacPrintEnginePrivate::setPaperName(const QString &name)
                 }
             }
         }
-        PMRelease(printer);
     }
 }
 

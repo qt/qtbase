@@ -232,6 +232,10 @@ void QPlatformScreen::setOrientationUpdateMask(Qt::ScreenOrientations mask)
 
 QPlatformScreen * QPlatformScreen::platformScreenForWindow(const QWindow *window)
 {
+    // QTBUG 32681: It can happen during the transition between screens
+    // when one screen is disconnected that the window doesn't have a screen.
+    if (!window->screen())
+        return 0;
     return window->screen()->handle();
 }
 

@@ -1288,7 +1288,7 @@ void tst_QGL::glFBOUseInGLWidget()
 
     FBOUseInGLWidget w;
     w.resize(100, 100);
-    w.show();
+    w.showNormal();
 
     QVERIFY(QTest::qWaitForWindowExposed(&w));
 
@@ -1774,7 +1774,7 @@ void tst_QGL::clipTest()
 {
     ClipTestGLWidget glw;
     glw.resize(220, 220);
-    glw.show();
+    glw.showNormal();
 
     QVERIFY(QTest::qWaitForWindowExposed(&glw));
 

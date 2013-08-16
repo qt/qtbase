@@ -829,6 +829,7 @@ void QCompleterPrivate::_q_complete(QModelIndex index, bool highlighted)
 
     if (!index.isValid() || (!proxy->showAll && (index.row() >= proxy->engine->matchCount()))) {
         completion = prefix;
+        index = QModelIndex();
     } else {
         if (!(index.flags() & Qt::ItemIsEnabled))
             return;

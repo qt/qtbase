@@ -83,12 +83,12 @@
     \title Introduction to QDoc
 
     QDoc is a tool used by Qt Developers to generate documentation for
-    software projects. It works by extracting \e {qdoc comments} from
+    software projects. It works by extracting \e {QDoc comments} from
     project source files and then formatting these comments as HTML
-    pages or DITA XML documents, etc. QDoc finds qdoc comments in \c
-    {.cpp} files and in \c {.qdoc} files. QDoc does not look for qdoc
-    comments in \c {.h} files. A qdoc comment always begins with an
-    exclamation mark \b{!} e.g.:
+    pages or DITA XML documents. QDoc finds QDoc comments in \c
+    {.cpp} files and in \c {.qdoc} files. QDoc does not look for QDoc
+    comments in \c {.h} files. A QDoc comment always begins with an
+    exclamation mark (\b{!})). For example:
 
     \code
         / *!
@@ -112,27 +112,27 @@
             QObjects organize themselves in \l {Object Trees &
             Ownership} {object trees}. When you create a QObject with
             another object as parent, the object will automatically
-            add itself to the parent's children() list. The parent
-            takes ownership of the object; i.e., it will automatically
+            add itself to the parent's \c children() list. The parent
+            takes ownership of the object. It will automatically
             delete its children in its destructor. You can look for an
             object by name and optionally type using findChild() or
             findChildren().
 
             Every object has an objectName() and its class name can be
             found via the corresponding metaObject() (see
-            QMetaObject::className()).  You can determine whether the
+            QMetaObject::className()). You can determine whether the
             object's class inherits another class in the QObject
-            inheritance hierarchy by using the inherits() function.
+            inheritance hierarchy by using the \c inherits() function.
 
         ....
     * /
     \endcode
 
-    From the qdoc comment above, QDoc generates the now famous HTML
-    page \l {http://qt-project.org/doc/qt-5.0/qtcore/qobject.html#details}
+    From the QDoc comment above, QDoc generates the HTML page
+    \l {http://qt-project.org/doc/qt-5.0/qtcore/qobject.html#details}
     {QObject Class Reference}.
 
-    This manual explains how to use the QDoc commands in qdoc comments
+    This manual explains how to use the QDoc commands in QDoc comments
     to embed good documentation in your source files. It also explains
     how to make a \l {The QDoc Configuration File} {QDoc configuration
     file}, which you will pass to QDoc on the command line.
@@ -154,10 +154,10 @@
     and where to put the generated documentation. The configuration
     file also contains other information for QDoc.
 
-    See \l{The QDoc Configuration File} for a instructions on how to
-    build a QDoc configuration file.
+    See \l{The QDoc Configuration File} for instructions on how to
+    set up a QDoc configuration file.
 
-    \section1 How QDoc Works
+    \section1 How QDoc works
 
     QDoc begins by reading the configuration file you specified on the
     command line. It stores all the variables from the configuration
@@ -168,15 +168,15 @@
     HTML output. That's usually what you will want anyway, but you can
     also specify \e {DITAXML} to get DITA XML output instead.
 
-    Next, QDoc uses the values of the \l
-    {22-qdoc-configuration-generalvariables.html#headerdirs-variable}
+    Next, QDoc uses the values of the
+    \l {22-qdoc-configuration-generalvariables.html#headerdirs-variable}
     {headerdirs} variable and/or the \l
     {22-qdoc-configuration-generalvariables.html#headers-variable}
     {headers} variable to find and parse all the header files for your
-    project. QDoc does \e not scan header files for qdoc comments. It
+    project. QDoc does \e not scan header files for QDoc comments. It
     parses the header files to build a master tree of all the items
-    that should be documented (i.e. the items that QDoc should find
-    qdoc comments for).
+    that should be documented, in other words, the items that QDoc should find
+    QDoc comments for.
 
     After parsing all the header files and building the master tree of
     items to be documented, QDoc uses the value of the \l
@@ -185,11 +185,11 @@
     {22-qdoc-configuration-generalvariables.html#sources-variable}
     {sources} variable to find and parse all the \c {.cpp} and \c
     {.qdoc} files for your project. These are the files QDoc scans for
-    \e {qdoc comments}. Remember that a qdoc comment begins with
-    an exclamation mark, i.e. \b {/*!} .
+    \e {QDoc comments}. Remember that a QDoc comment begins with
+    an exclamation mark:  \b {/*!} .
 
-    For each qdoc comment it finds, it searches the master tree for
-    the item where the documentation belongs. The it interprets the
+    For each QDoc comment it finds, it searches the master tree for
+    the item where the documentation belongs. Then it interprets the
     qdoc commands in the comment and stores the interpreted commands
     and the comment text in the tree node for the item.
 
@@ -211,17 +211,17 @@
     \li \l {Markup Commands}
     \endlist
 
-    Topic commands identify the element you are documenting, e.g. a C++
-    class, function, or type, an example, or an extra page of text
+    Topic commands identify the element you are documenting, for example
+    a C++ class, function, type, or an extra page of text
     that doesn't map to an underlying C++ element.
 
     Context commands tell QDoc how the element being documented
-    relates to other documented elements, e.g. next and previous page
-    links or inclusion in page groups or library modules. Context
+    relates to other documented elements, for example, next and previous page
+    links, inclusion in page groups, or library modules. Context
     commands can also provide information about the documented element
-    that QDoc can't get from the source files, e.g. whether the
-    element is thread-safe, an overloaded or reimplemented function,
-    or that it has been deprecated.
+    that QDoc can't get from the source files, for example, whether the
+    element is thread-safe, whether it is an overloaded or reimplemented function,
+    or whether it has been deprecated.
 
     Markup commands tell QDoc how text and image elements in the
     document should be rendered, or about the document's outline
@@ -273,6 +273,7 @@
     \li \l {12-0-qdoc-commands-miscellaneous.html#meta-command} {\\meta}
     \li \l {06-qdoc-commands-includecodeinline.html#newcode-command} {\\newcode}
     \li \l {10-qdoc-commands-tablesandlists.html#li-command} {\\o} \span {class="newStuff"} {(deprecated, use \\li)}
+    \li \l {11-qdoc-commands-specialcontent.html#note-command} {\\note}
     \li \l {06-qdoc-commands-includecodeinline.html#oldcode-command} {\\oldcode}
     \li \l {12-0-qdoc-commands-miscellaneous.html#omit-command} {\\omit}
     \li \l {05-qdoc-commands-documentstructure.html#part-command} {\\part}
@@ -353,17 +354,17 @@
         The \a parent parameter is sent to the QWidget constructor.
     \endquotation
 
-    You can enclose the formal parameter name in curly brackets, if
-    you want to, but it isn't necessary.
+    The formal parameter name may be enclosed between curly brackets,
+    but that isn't required.
 
     \target c-command
     \section1 \\c (code font)
 
     The \\c command is used for rendering variable names, user-defined
-    class names, and C++ keywords (e.g. \c int and \c for) in the code
+    class names, and C++ keywords (for example, \c int and \c for) in the code
     font.
 
-    The command renders its argument using a typewriter font. For
+    The command renders its argument using a monospace font. For
     example:
 
     \code
@@ -378,7 +379,7 @@
 
     \quotation
         The \c AnalogClock class provides a clock widget with hour
-        and minute hands that is automatically updated every
+        and minute hands, which are automatically updated every
         few seconds.
     \endquotation
 
@@ -396,7 +397,7 @@
     \endquotation
 
     The \\c command accepts the special character \c \ within its
-    argument, i.e. it renders it as a normal character. So if you want
+    argument, which renders it as a normal character. So if you want
     to use nested commands, you must use the \l {tt-command} {teletype
     (\\tt)} command instead.
 
@@ -411,7 +412,7 @@
 
     An argument must be provided in curly braces, as in the qdoc
     comment shown below. The argument is not interpreted but is used
-    as attribute(s) of the tag that is ultimately output by qdoc.
+    as attribute(s) of the tag that is output by qdoc.
 
     For example, we might want to render an inline image so that it
     floats to the right of the current block of text:
@@ -432,7 +433,7 @@
     \endcode
 
     For HTML, the attribute value \e {float-right} then will refer to
-    a clause in the style.css file. which in this case could be:
+    a clause in the style.css file, which in this case could be:
 
     \code
        div.float-right
@@ -456,9 +457,9 @@
     Your DITA XML publishing program must then recognize the \e
     {outputclass} attribute value.
 
-    \note The \b {\\div} command can be nested.
+    \note Note that the \b {\\div} command can be nested.
 
-    Below is an example taken from the index.qdoc file used to
+    Below you can find an example taken from the index.qdoc file used to
     generate index.html for Qt 4.7:
 
     \code
@@ -491,7 +492,7 @@
     \endcode
 
     When all the class attribute values are defined as they are in the
-    style.css file that is used for rendering the Qt 4.7 documentation,
+    style.css file that is used for rendering the Qt documentation,
     the above example is rendered as:
 
           \div {class="indexbox guide"}
@@ -573,14 +574,13 @@
     \target span -command
     \section1 \\span
 
-    The \\span command is for applying special formatting
-    attributes to a small block of text.
+    The \\span command applies special formatting to a small block of text.
 
     Two arguments must be provided, each argument in curly braces, as
-    shown in the qdoc comment below. The first argument is not
-    interpreted but is used as the formatting attribute(s) of the tag
-    that is ultimately output by qdoc. The second argument is the text
-    to be rendered with the special formatting attributes.
+    shown in the QDoc comment below. The first argument is not
+    interpreted, but specifies the formatting attribute(s) of the tag
+    output by QDoc. The second argument is the text to be rendered with
+    the special formatting attributes.
 
     For example, we might want to render the first word of each
     element in a numeric list in blue.
@@ -633,8 +633,8 @@
 
     \code
        / *!
-           After \c setupUi() populates the main container with
-           child widgets it scans the main container's list of
+           After having populated the main container with
+           child widgets, \c setupUi() scans the main container's list of
            slots for names with the form
            \tt{on_\e{objectName}_\e{signalName}().}
        * /
@@ -643,10 +643,10 @@
     QDoc renders this as:
 
     \quotation
-        After \c setupUi() populates the main container with
-        child widgets it scans the main container's list of
-        slots for names with the form
-        \tt{on_\e{objectName}_\e{signalName}().}
+       After having populated the main container with
+       child widgets, \c setupUi() scans the main container's list of
+       slots for names with the form
+       \tt{on_\e{objectName}_\e{signalName}().}
     \endquotation
 
     If the text to be rendered in the code font contains spaces, enclose the
@@ -695,14 +695,14 @@
 
     \code
     / *!
-        Here, we render \e {a few words} in italic.
+        Here, we render \e {a few words} in italics.
     * /
     \endcode
 
     QDoc renders this as:
 
     \quotation
-        Here, we render \e {a few words} in italic.
+        Here, we render \e {a few words} in italics.
     \endquotation
 
     If you want to use other QDoc commands within an argument that
@@ -725,7 +725,7 @@
     \endquotation
 
     Finally, trailing punctuation is not included in an argument [4],
-    nor is 's [5]
+    nor is "'s" [5]
 
     \raw HTML
         <table align="center" cellpadding="2"
@@ -841,7 +841,7 @@
     \section1 \\uicontrol
 
     The \\uicontrol command is used to mark content as being used for UI
-    control elements. When using HTML the output is rendered in bold.
+    control elements. When using HTML, the output is rendered in bold.
     When using DITA XML the content is enclosed in a \c{uicontrol} tag.
 
     \sa \\b
@@ -854,7 +854,7 @@
     \code
     / *!
         The \underline {F}ile menu gives the users the possibility
-        to open, and edit, an existing file, save a new or modified
+        to edit an existing file, or save a new or modified
         file, and exit the application.
     * /
     \endcode
@@ -863,7 +863,7 @@
 
     \quotation
         The \underline {F}ile menu gives the users the possibility
-        to open, and edit, an existing file, save a new or modified
+        to edit an existing file, or save a new or modified
         file, and exit the application.
     \endquotation
 
@@ -873,12 +873,11 @@
     \target backslash-command
     \section1 \\\\ (double backslash)
 
-    The \\\\ command expands to a single backslash.
+    The \\\\ command expands to a double backslash.
 
-    QDoc commands always start with a backslash alone. To display an
-    actual backslash in the text you need to type two of the kind. If
-    you want to display two backslashes, you need to type four, and so
-    forth.
+    QDoc commands always start with a single backslash. To display a
+    single backslash in the text you need to type two backslashes. If
+    you want to display two backslashes, you need to type four.
 
     \code
     / *!
@@ -896,7 +895,7 @@
         writing C:\\windows\\home\\.
     \endquotation
 
-    However, if you want your text to appear in a typewriter font as
+    However, if you want your text to appear in a monospace font as
     well, you can use the \l {c-command} {\\c} command instead, which
     accepts and renders the backslash as any other character. For
     example:
@@ -905,7 +904,7 @@
     / *!
         The \\c command is useful if you want a
         backslash to appear verbatim, and the word
-        that contains it written in a typewriter font,
+        that contains it written in a monospace font,
         like this: \c {C:\windows\home\}.
     * /
     \endcode
@@ -915,7 +914,7 @@
     \quotation
         The \\c command is useful if you want a
         backslash to appear verbatim, and the word
-        that contains it written in a typewriter font,
+        that contains it written in a monospace font,
         like this: \c {C:\windows\home\}.
     \endquotation
 
@@ -931,8 +930,8 @@
 
     The document structuring commands are for dividing your document
     into sections. QDoc supports six kinds of sections: \c \part, \c
-    \chapter, \c \section1, \c \section2, \c \section3 and \c
-    \section4. The \c \section1..4 commands are the most useful. The
+    \chapter, \c \section1, \c \section2, \c \section3, and \c
+    \section4. The \c \section1..4 commands are the most useful. They
     correspond to the traditional section, subsection, etc used in
     outlining.
 
@@ -1098,7 +1097,7 @@
 
     Each section is a logical unit in the document. The section
     heading appears in the automatically generated table of contents
-    that normally appears in the upper righthand corner of the page.
+    that normally appears in the upper right-hand corner of the page.
 
     \target chapter-command
     \section1 \\chapter
@@ -1107,7 +1106,7 @@
     larger documents, and divides the document into chapters.
 
     See \l{part} {\\part} for an explanation of the various
-    section units, command argument and rendering.
+    section units, command argument, and rendering.
 
     \target sectionOne-command
     \section1 \\section1
@@ -1115,7 +1114,7 @@
     The \\section1 command starts a new section.
 
     See \l{part} {\\part} for an explanation of the various
-    section units, command argument and rendering.
+    section units, command argument, and rendering.
 
     \target sectionTwo-command
     \section1 \\section2
@@ -1123,7 +1122,7 @@
     The \\section2 command starts a new section.
 
     See \l{part} {\\part} for an explanation of the various
-    section units, command argument and rendering.
+    section units, command argument, and rendering.
 
     \target sectionThree-command
     \section1 \\section3
@@ -1131,7 +1130,7 @@
     The \\section3 command starts a new section.
 
     See \l{part} {\\part} for an explanation of the various
-    section units, command argument and rendering.
+    section units, command argument, and rendering.
 
     \target sectionFour-command
     \section1 \\section4
@@ -1139,7 +1138,7 @@
     The \\section4 command starts a new section.
 
     See \l{part} {\\part} for an explanation of the various
-    section units, command argument and rendering.
+    section units, command argument, and rendering.
 
 */
 
@@ -1178,7 +1177,7 @@
     When processing any of the \\code, \l {newcode-command} {\\newcode} or \l
     {oldcode-command} {\\oldcode} commands, QDoc removes all
     indentation that is common for the verbatim code blocks within a
-    \c{/}\c{*!} ...  \c{*}\c{/} comment before it adds the standard
+    \c{/}\c{*!} ... \c{*}\c{/} comment before it adds the standard
     indentation. For that reason the recommended style is to use 8
     spaces for the verbatim code contained within these commands
 
@@ -1224,7 +1223,7 @@
 
     See also \l {c-command} {\\c}, \l
     {07-0-qdoc-commands-includingexternalcode.html#quotefromfile-command}
-    {\\quotefromfile}, \l{newcode-command} {\\newcode} and \l {oldcode-command}
+    {\\quotefromfile}, \l{newcode-command} {\\newcode}, and \l {oldcode-command}
     {\\oldcode}.
 
     \target newcode-command
@@ -1233,13 +1232,15 @@
     The \\newcode, \\oldcode, and \\endcode commands enable you to
     show how to port a snippet of code to a new version of an API.
 
-    The \\newcode command, and its companion the \\oldcode command, is
+    The \\newcode command and its companion the \\oldcode command are
     a convenience combination of the \l {code-command} {\\code} commands:
-    The combination provides a text relating the two code snippets to each
-    other. The command requires a preceding \\oldcode statement.
+    this combination provides a text relating the two code snippets to each
+    other.
+
+    The \\newcode command requires a preceding \\oldcode statement.
 
     Like the \l{code-command}{\\code} command, the \\newcode command renders its
-    code on a new line in the documentation using a typewriter font and the
+    code on a new line in the documentation using a monospace font and the
     standard indentation.
 
            \code
@@ -1284,8 +1285,8 @@
     \section1 \\qml
 
     The \\qml and \\endqml commands enclose a snippet of QML source
-    code.  Currently, QDoc handles \\qml and \\endqml exactly the same
-    as \\code and \\endcode.
+    code. Currently, QDoc handles \\qml and \\endqml in exactly the same
+    way as \\code and \\endcode.
 
     \code
     / *!
@@ -1362,7 +1363,7 @@
     argument, make sure to follow the file name with a line break.
 
     The file's contents is rendered in a separate paragraph, using a
-    typewriter font and the standard indentation. The code is shown
+    monospace font and the standard indentation. The code is shown
     verbatim.
 
            \code
@@ -1476,7 +1477,7 @@
     substring with a line break.
 
     The line from the source file is rendered as a separate paragraph,
-    using a typewriter font and the standard indentation. The code is
+    using a monospace font and the standard indentation. The code is
     shown verbatim.
 
            \code
@@ -1605,7 +1606,7 @@
     {printline-command} {\\printline} command.
 
     The lines from the source file are rendered in a separate
-    paragraph, using a typewriter font and the standard
+    paragraph, using a monospace font and the standard
     indentation. The code is shown verbatim.
 
            \code
@@ -1654,7 +1655,7 @@
     {printline-command} {\\printline} command.
 
     The lines from the source file are rendered in a separate
-    paragraph, using a typewriter font and the standard
+    paragraph, using a monospace font and the standard
     indentation. The code is shown verbatim.
 
            \code
@@ -1779,7 +1780,7 @@
                \skipto main
                \printuntil }
 
-               First we create a QApplication object.  There
+               First we create a QApplication object. There
                has to be exactly one such object in
                every GUI application that uses Qt. Then
                we create a QPushButton, resize it to a reasonable
@@ -1797,7 +1798,7 @@
                \skipto main
                \printuntil }
 
-               First we create a QApplication object.  There has to be
+               First we create a QApplication object. There has to be
                exactly one such object in every GUI application that
                uses Qt. Then we create a QPushButton, resize it to a
                reasonable size ...
@@ -1874,7 +1875,7 @@
     The command is used in conjunction with the \l
     {quotefromfile-command} {\\quotefromfile} command, and should be
     stated on its own line. The dots are rendered on a new line, using
-    a typewriter font.
+    a monospace font.
 
            \code
            / *!
@@ -1928,10 +1929,10 @@
     The \\snippet command causes a code snippet to be included
     verbatim as preformatted text, which may be syntax highlighted.
 
-    Each code snippet are referenced by the file that holds it and by
+    Each code snippet is referenced by the file that holds it and by
     a unique identifier for that file. Snippet files are typically
     stored in a \c{snippets} directory inside the documentation
-    directory (e.g., \c{$QTDIR/doc/src/snippets}).
+    directory (for example, \c{$QTDIR/doc/src/snippets}).
 
     For example, the following documentation references a snippet in a
     file residing in a subdirectory of the documentation directory:
@@ -1942,7 +1943,7 @@
 
     The text following the file name is the unique identifier for the
     snippet. This is used to delimit the quoted code in the relevant
-    snippet file as shown in the following example that corresponds to
+    snippet file, as shown in the following example that corresponds to
     the above \c{\\snippet} command:
 
            \dots
@@ -2021,7 +2022,7 @@
          \target assertions
 
          Assertions make some statement about the text at the
-         point where they occur in the regexp but they do not
+         point where they occur in the regexp, but they do not
          match any characters.
 
          ...
@@ -2038,7 +2039,7 @@
         \target assertions
 
         Assertions make some statement about the text at the
-        point where they occur in the regexp but they do not
+        point where they occur in the regexp, but they do not
         match any characters.
 
         ...
@@ -2048,7 +2049,7 @@
       * /
     \endcode
 
-    For the one-parameter version the braces can often be omitted.
+    For the one-parameter version, the braces can often be omitted.
     The \\l command supports several kinds of links:
 
     \list
@@ -2069,7 +2070,7 @@
     \l {title-command} {\\title} command.
 
     \li \c {\l {Introduction to QDoc}}- The text from one of the
-    \l{part-command} {\\part}, \l{chapter} {\\chapter} or \l
+    \l{part-command} {\\part}, \l{chapter} {\\chapter}, or \l
     {sectionOne-command} {\\section} commands.
 
     \li \c {\l fontmatching} - The argument of a \l {target-command}
@@ -2085,8 +2086,8 @@
 
     \endlist
 
-    QDoc also tries to make a link out of any words that don't
-    resemble any normal English words, for example Qt class names or
+    QDoc also tries to make a link out of any word that doesn't
+    resemble a normal English word, for example, Qt class names or
     functions, like QWidget or QWidget::sizeHint(). In these cases,
     the \\l command can actually be omitted, but by using the command,
     you ensure that QDoc will emit a warning if it cannot find the
@@ -2103,7 +2104,7 @@
     \l {QWidget::} {sizeHint()}
     \endquotation
 
-    See also \l {sa-command} {\\sa}, \l {target-command} {\\target}
+    See also \l {sa-command} {\\sa}, \l {target-command} {\\target},
     and \l {keyword-command} {\\keyword}.
 
 
@@ -2116,7 +2117,7 @@
 
     The command takes a comma-separated list of links as its
     argument. If the line ends with a comma, you can continue
-    the list on the next line.  The general syntax is:
+    the list on the next line. The general syntax is:
 
     \code
     \sa {the first link}, {the second link},
@@ -2200,14 +2201,14 @@
     within the same document containing the target in two ways:
 
     \list
-      \li \c {\l {capturing parentheses}} (from within the same qdoc comment)
+      \li \c {\l {capturing parentheses}} (from within the same QDoc comment)
       \li \c {\l qregexp.html#capturing-parentheses} (from elsewhere in the same document)
     \endlist
 
     \note The brackets in the link example are required because the
     target name contains spaces.
 
-    From other documents, the target name can be linked this way:
+    The target name can be linked to in the following way from other documents:
 
     \list
       \li \c {\l http://qt-project.org/doc/qt-5.0/qtcore/qregexp.html#capturing-parentheses}
@@ -2252,7 +2253,7 @@
     * /
     \endcode
 
-    The location marked with the keyword can be linked with:
+    The location marked with the keyword can be linked to with:
 
     \code
     / *!
@@ -2264,7 +2265,7 @@
     QDoc renders this as:
 
     \quotation
-        When a string is surrounded by slashes, it's
+        When a string is surrounded by slashes, it is
         interpreted as a \l {regular expression}.
     \endquotation
 
@@ -2296,8 +2297,8 @@
     The command takes two arguments. The first argument is the name of
     the image file. The second argument is optional and is a simple
     description of the image, equivalent to the HTML alt="" in an image
-    tag. The description is used for tooltips, and for when a browser
-    doesn't support images, like the Lynx text browser.
+    tag. The description is used for tooltips and for browsers that don't
+    support images, like the Lynx text browser.
 
     The remaining text \e{after} the file name is the optional,
     description argument. Be sure to follow the file name or the
@@ -2414,7 +2415,7 @@
         \inlineimage training.jpg Qt Training
         The Qt Programming course is offered as a
         five day Open Enrollment Course. The classes
-        are open to the public. While the course is open
+        are open to the public. Although the course is open
         to anyone who wants to learn, attendees should
         have significant experience in C++ development
         to derive maximum benefit from the course.
@@ -2427,7 +2428,7 @@
        \inlineimage training.jpg Qt Training
         The Qt Programming course is offered as a
         five day Open Enrollment Course. The classes
-        are open to the public. While the course is open
+        are open to the public. Although the course is open
         to anyone who wants to learn, attendees should
         have significant experience in C++ development
         to derive maximum benefit from the course.
@@ -2584,10 +2585,10 @@
            / *!
                \table
                \header
-                   \li {3,1} This header cell spans three columns
+                   \li {3,1} This header cell spans three columns,
                       but only one row.
                \row
-                   \li {2, 1} This table cell spans two columns
+                   \li {2, 1} This table cell spans two columns,
                       but only one row
                    \li {1, 2} This table cell spans only one column,
                    but two rows.
@@ -2606,13 +2607,13 @@
 
                <tr valign="top" bgcolor="#a2c511">
                    <th colspan="3" rowspan=" 1">
-                   This header cell spans three columns but only one row
+                   This header cell spans three columns, but only one row.
                    </th>
                </tr>
 
                <tr valign="top" bgcolor="#d0d0d0">
                    <td colspan="2" rowspan=" 1">
-                   This table cell spans two columns but only one row
+                   This table cell spans two columns, but only one row.
                    </td>
                    <td rowspan=" 2">
                    This table cell spans only one column, but two rows.
@@ -2759,7 +2760,7 @@
            \endraw
 
     See also \l {table-command} {\\table}, \l {header-command}
-    {\\header} and \l {li-command} {\\li}.
+    {\\header}, and \l {li-command} {\\li}.
 
     \target value-command
     \section1 \\value
@@ -2935,10 +2936,10 @@
     is only used in \l{table-command} {tables} and \l{list-command}
     {lists}.
 
-    It considers everything until the next \\li command, or until the
-    next \l {table-command} {\\endtable} or \l {list-command} {\\endlist}
-    command, as its argument. See \l {table-command} {\\table} and \l
-    {list-command} {\\list} for examples.
+    It considers everything as its argument until the next \\li command, until the
+    next \l {table-command} {\\endtable}, or \l {list-command} {\\endlist}
+    command. See \l {table-command} {\\table} and \l {list-command} {\\list}
+   for examples.
 
     If the command is used within a table, you can also specify
     how many rows or columns the item should span.
@@ -2969,13 +2970,13 @@
 
                <tr valign="top" bgcolor="#a2c511">
                    <th colspan="3" rowspan=" 1">
-                   This header cell spans three columns but only one row
+                   This header cell spans three columns, but only one row.
                    </th>
                </tr>
 
                <tr valign="top" bgcolor="#d0d0d0">
                    <td colspan="2" rowspan=" 1">
-                   This table item spans two columns but only one row
+                   This table item spans two columns, but only one row.
                    </td>
                    <td rowspan=" 2">
                    This table item spans only one column, but two rows.
@@ -3006,7 +3007,7 @@
     \title Special Content
 
     The document contents commands identify parts of the documentation,
-    i.e. parts with a special rendering, conceptual meaning or
+    parts with a special rendering, conceptual meaning or
     function.
 
     \target abstract-command
@@ -3033,7 +3034,7 @@
 
         \code
         / *!
-          While the prospect of a significantly broader market is
+          Although the prospect of a significantly broader market is
           good news for Firstlogic, the notion also posed some
           challenges. Dave Dobson, director of technology for the La
           Crosse, Wisconsin-based company, said:
@@ -3081,6 +3082,12 @@
     have not been implemented. The footnote is rendered as a regular
     HTML paragraph.
 
+    \target note-command
+    \section1 \\note
+
+    The \\note command defines a new paragraph preceded by "Note:"
+    in bold.
+
     \target tableofcontents-command
     \section1 \\tableofcontents
 
@@ -3094,7 +3101,7 @@
     \section1 \\brief
 
     The \\brief command introduces a one-sentence description of a
-    class, namespace, header file, property or variable.
+    class, namespace, header file, property, or variable.
 
     The brief text is used to introduce the documentation of the
     associated object, and in lists generated using the \l
@@ -3117,13 +3124,13 @@
            \code
            / *!
                \property QWidget::isActiveWindow
-               \brief whether this widget's window is the active window
+               \brief Whether this widget's window is the active window
 
                The active window is the window that contains the widget that
                has keyboard focus.
 
                When popup windows are visible, this property is true
-               for both the active window \e and for the popup.
+               for both the active window \e and the popup.
 
                \sa activateWindow(), QApplication::activeWindow()
            * /
@@ -3134,7 +3141,7 @@
            \code
            / *!
                \property QWidget::geometry
-               \brief the geometry of the widget relative to its parent and
+               \brief The geometry of the widget relative to its parent and
                excluding the window frame
 
                When changing the geometry, the widget, if visible,
@@ -3342,7 +3349,7 @@
     In the generated HTML, the delimited text is surrounded by a \b
     {<div class="LegaleseLeft">} and \b {</div>} tags.
 
-    For example, here is a license agreement enclosed in \\legalese
+    An example of a license agreement enclosed in \\legalese
     and \\endlegalese:
 
         \code
@@ -3521,7 +3528,7 @@
 
     The \c classes argument provides a complete alphabetical list of
     the classes. Each class name is a link to the class's reference
-    documentation. This command is uded to generate the \l
+    documentation. This command is used to generate the \l
     {classes.html} {All Classes} page this way:
 
     \code
@@ -3530,7 +3537,7 @@
         \title All Classes
         \ingroup classlists
 
-        \brief If you know the name of the class you want, find it here.
+        \brief Alphabetical list of classes.
 
         This is a list of all Qt classes. For a list of the classes
         provided for compatibility with Qt3, see \l{Qt3 Support
@@ -3561,7 +3568,7 @@
           \title Phonon Module
           \ingroup modules
 
-          \brief The Phonon module contains namespaces and classes for multimedia functionality.
+          \brief Contains namespaces and classes for multimedia functionality.
 
           \generatelist{classesbymodule Phonon}
 
@@ -3577,7 +3584,7 @@
     \section2 \c compatclasses
 
     The \c compatclasses argument generates a list in alphabetical
-    order of the support classes.  It is normally used only to
+    order of the support classes. It is normally used only to
     generate the \l {compatclasses.html} {Qt3 Support Classes} page
     this way:
 
@@ -3587,7 +3594,7 @@
         \title Qt3 Support Classes
         \ingroup classlists
 
-        \brief These classes ease the porting of code from Qt 3 to Qt 4.
+        \brief Enable porting of code from Qt 3 to Qt 4.
 
         These are the classes that Qt provides for compatibility with Qt
         3. Most of these are provided by the Qt3Support module.
@@ -3616,7 +3623,7 @@
         link to where each one is declared.
 
         This is the list of all documented member functions and global
-        functions in the Qt API.  Each function has a link to the
+        functions in the Qt API. Each function has a link to the
         class or header file where it is declared and documented.
 
         \generatelist functionindex
@@ -3813,7 +3820,7 @@
                        QT3_SUPPORT symbol, turning on compatibility
                        function support).
 
-                       You can also define the symbol manually (e.g.,
+                       You can also define the symbol manually (for example,
                        if you don't want to link against the \c
                        Qt3Support library), or you can define \c
                        QT3_SUPPORT_WARNINGS instead, telling the
@@ -3886,8 +3893,8 @@
 
     The \\include command sends all or part of the file specified by
     its first argument to the QDoc input stream to be processed as a
-    qdoc comment snippet.  This command is often assigned the alias,
-    \e {input}, in the QDoc configuration file, e.g. \e {alias.include
+    QDoc comment snippet. This command is often assigned the alias,
+    \e {input}, in the QDoc configuration file, for example \e {alias.include
     = input}.
 
     The command is useful when some snippet of commands and text is to
@@ -3900,8 +3907,8 @@
 
     The command can have either one or two arguments. The first
     argument is always a file name. The contents of the file must be
-    QDoc input, i.e. a sequence of QDoc commands and text, but without
-    the enclosing qdoc comment \c{/}\c{*!}  ... \c{*}\c{/} delimeters.
+    QDoc input, in other words, a sequence of QDoc commands and text, but
+    without the enclosing QDoc comment \c{/}\c{*!} ... \c{*}\c{/} delimiters.
     If you want to include the entire named file, don't use the second
     argument. If you want to include only part of the file, see the
     \l{2-argument-form}{two argument form} below. Here is an example
@@ -3926,11 +3933,11 @@
     \target 2-argument-form}
     \section2 \\include filename snippet-identifier
 
-    It is kind of a pain to make a separate \c .qdocinc file for every
+    It is a waste of time to make a separate \c .qdocinc file for every
     QDoc include snippet you want to use in multiple places in the
     documentation, especially given that you probably have to put the
     copyright/license notice in every one of these files. So if you
-    have lots of these include snippets, you can put them all in a
+    have a large number of snippets to be included, you can put them all in a
     single file if you want, and surround each one with:
     \code
         //! [snippet-id1]
@@ -3965,8 +3972,8 @@
     XML files. It is also used when generating HTML output for specifying
     the \e maintainer(s) of a C++ class.
 
-    The command has two arguments: The first argument is the name of the
-    metadata attribute you wish to set, and the second argument is the
+    The command has two arguments: the first argument is the name of the
+    metadata attribute, and the second argument is the
     value for the attribute. Each argument should be enclosed in curly
     brackets, as shown in this example:
 
@@ -4026,14 +4033,14 @@
        </prolog>
     \endcode
 
-    In the example output, several values have been set using defualt
+    In the example output, several values have been set using default
     values obtained from the QDoc configuration file. See \l
     {Generating DITA XML Output} for details.
 
     \target omit-command
     \section1 \\omit
 
-    The \\omit command and the correspondning \\endomit command
+    The \\omit command and the corresponding \\endomit command
     delimit parts of the documentation that you want QDoc to skip. For
     example:
 
@@ -4091,8 +4098,8 @@
     commands in your \l {table-command} {\\table} or \l {list-command}
     {\\list}.
 
-    The command takes an argument specifying the code's format;
-    currently the only supported format is HTML.
+    The command takes an argument specifying the code's format.
+    Currently, the only supported format is HTML.
 
     The \\raw command is useful if you want some special HTML effects
     in your documentation.
@@ -4147,7 +4154,7 @@
            \tt {\span {id="color-cyan"} {cyan(#00ffff)}}.
        \endcode
 
-       ...which is rendered again as:
+       ...which is rendered as:
 
            \tt {\span {id="color-blue"} {Blue(#0000ff)}},
            \tt {\span {id="color-darkBlue"} {dark blue(#000080)}} and
@@ -4254,10 +4261,10 @@
     \endcode
 
     A topic command can appear anywhere in a comment but must stand
-    alone on its own line. Best practice is to let the topic commend
+    alone on its own line. It is good practice is to let the topic command
     be the first line of the comment. If the argument spans several
     lines, make sure that each line (except the last one) is ended
-    with a backslash. In addition QDoc counts parentheses, which means
+    with a backslash. Moreover, QDoc counts parentheses, which means
     that if it encounters a '(' it considers everything until the
     closing ')' as its argument.
 
@@ -4304,7 +4311,7 @@
 
     The HTML documentation for the named class is written to a
     \c{.html} file named from the class name, in lower case, and with
-    the double colon qulifier(s) replaced with '-'. For example, the
+    the double colon qualifier(s) replaced with '-'. For example, the
     documentation for the \c QMap::Iterator class is written to \c
     qmap-iterator.html.
 
@@ -4312,7 +4319,7 @@
 
     The file contains the class description from the \\class comment,
     plus the documentation generated from QDoc comments for all the
-    class members, i.e. a list of the class's types, properties,
+    class members: a list of the class's types, properties,
     functions, signals, and slots.
 
     In addition to the detailed description of the class, the \\class
@@ -4323,7 +4330,7 @@
     \code
     / *!
         \class PreviewWindow
-        \brief The PreviewWindow class is a custom widget
+        \brief The PreviewWindow class is a custom widget.
                displaying the names of its currently set
                window flags in a read-only text editor.
 
@@ -4626,7 +4633,7 @@
     \endquotation
 
     To achieve the same result without using the \\externalpage
-    command, you would have to hard code the address into your
+    command, you would have to hard-code the address into your
     documentation:
 
     \code
@@ -4649,7 +4656,7 @@
     and list of formal arguments with types. If the named function
     doesn't exist, QDoc emits a warning.
 
-    \note The \\fn command is QDoc's default command, i.e. when no
+    \note The \\fn command is QDoc's default command: when no
     topic command can be found in a QDoc comment, QDoc tries to tie
     the documentation to the following code as if it is the
     documentation for a function. Hence, it is normally not necessary
@@ -4695,7 +4702,7 @@
     {\\generatelist} command (see example below).
 
     The \\group command is typically followed by a \l {title-command}
-    {\\title} command and a short introduction to the group.  The
+    {\\title} command and a short introduction to the group. The
     HTML page for the group is written to a \c {.html} file put in
     <lower-case>\e{group}.html.
 
@@ -4710,7 +4717,7 @@
         \title Input/Output and Networking
 
         These classes are used to handle input and output to
-        and from external devices, processes, files etc. as
+        and from external devices, processes, files etc., as
         well as manipulating files and directories.
     * /
     \endcode
@@ -4724,7 +4731,7 @@
          <h1>Input/Output and Networking</h1>
 
          <p>These classes are used to handle input and output
-         to and from external devices, processes, files etc. as
+         to and from external devices, processes, files etc., as
          well as manipulating files and directories.</p>
 
          <p>
@@ -4781,13 +4788,13 @@
     \section1 \\headerfile
 
     The \\headerfile command is for documenting the global functions,
-    types and macros that are declared in a header file but not in a
-    namespace. The argument is the name of the header file.  The HTML
+    types and macros that are declared in a header file, but not in a
+    namespace. The argument is the name of the header file. The HTML
     page is written to a \c {.html} file constructed from the header
     file argument.
 
     The documentation for a function, type, or macro that is declared
-    in the header file being documented is included in the header file
+    in the header file being documented, is included in the header file
     page using the \l {relates-command} {\\relates} command.
 
     If the argument doesn't exist as a header file, the \\headerfile
@@ -4919,7 +4926,7 @@
 
         The Q_OBJECT macro must appear in the private section
         of a class definition that declares its own signals and
-        slots or that uses other services provided by Qt's
+        slots, or that uses other services provided by Qt's
         meta-object system.
 
         ...
@@ -4949,7 +4956,7 @@
     \section1 \\module
 
     The \\module creates a page that lists the classes belonging to
-    the module specified by the command's argument.  A class included
+    the module specified by the command's argument. A class included
     in the module by including the \l {inmodule-command} {\\inmodule}
     command in the \\class comment.
 
@@ -4965,8 +4972,7 @@
 
         \title Qt Network Module
 
-        \brief The Qt Network module offers classes that allow
-        you to write TCP/IP clients and servers.
+        \brief Contains classes for writing TCP/IP clients and servers.
 
         The network module provides classes to make network
         programming easier and portable. It offers both
@@ -5054,8 +5060,7 @@
     / *!
         \namespace Qt
 
-        \brief The Qt namespace contains miscellaneous
-        identifiers used throughout the Qt library.
+        \brief Contains miscellaneous identifiers used throughout the Qt library.
     * /
     \endcode
 
@@ -5089,7 +5094,7 @@
 
                \raw HTML
                <h2>Detailed Description</h2>
-               <p>The Qt namespace contains miscellaneous identifiers
+               <p>Contains miscellaneous identifiers
                used throughout the Qt library.</p>
                \endraw
 
@@ -5100,7 +5105,7 @@
     \section1 \\page
 
     The \\page command is for creating a stand-alone documentation
-    page.  The argument can consist of two parts separated by a
+    page. The argument can consist of two parts separated by a
     space. The first part is the name of the file where QDoc should
     store the page. The second part, if present, is a word that
     specifies the page type. Currently, the second part can be one of
@@ -5110,7 +5115,7 @@
 
     \li faq - A frequently asked question.
 
-    \li howto - A user guide for how to use some component of the
+    \li howto - A user guide on how to use some components of the
     software.
 
     \li example - A page that describes a working example.
@@ -5120,9 +5125,9 @@
 
     \li tutorial - For text pages that are part of a tutorial.
 
-    \li api - This is the type of page used for C++ class references
-    and QML type references, etc. You should never use this one for
-    the pages you write, because this one is reserved for qdoc.
+    \li api - This is the type of page used for C++ class references and
+    QML type references. You should never use this one for the pages
+    you write, because this one is reserved for qdoc.
 
     \endlist
 
@@ -5183,7 +5188,7 @@
     \code
     / *!
         \property QPushButton::flat
-        \brief whether the border is disabled
+        \brief Whether the border is disabled.
 
         This property's default is false.
     * /
@@ -5212,7 +5217,7 @@
     \code
     / *!
         \property QWidget::width
-        \brief the width of the widget excluding any window frame
+        \brief The width of the widget excluding any window frame.
 
         See the \l {Window Geometry} documentation for an
         overview of window geometry.
@@ -5344,7 +5349,7 @@
         \qmlbasictype int
         \ingroup qmlbasictypes
 
-        \brief An integer is a whole number, e.g. 0, 10, or -20.
+        \brief An integer is a whole number, for example 0, 10, or -20.
 
         An integer is a whole number, e.g. 0, 10, or -20. The possible
         \c int values range from around -2000000000 to around
@@ -5379,11 +5384,10 @@
         \qmlclass Transform QGraphicsTransform
         \ingroup qml-transform-elements
         \since 4.7
-        \brief The Transform elements provide a way of building
-        advanced transformations on Items.
+        \brief Provides a way of building advanced transformations on Items.
 
         The Transform element is a base type which cannot be
-        instantiated directly.  The following concrete Transform types
+        instantiated directly. The following concrete Transform types
         are available:
 
         \list
@@ -5407,7 +5411,7 @@
     page. The \\qmlclass comment should include the \l
     {since-command} {\\since} command, because all QML types are
     new. It should also include the \l{brief-command} {\\brief}
-    command. And if a type is a member of a group of QML
+    command. If a type is a member of a group of QML
     types, it should also include one or more \l{ingroup-command}
     {\\ingroup} commands.
 
@@ -5426,9 +5430,8 @@
 
         If either start or end is out of range, the selection is not changed.
 
-        After calling this, selectionStart will become the lesser and
-        selectionEnd will become the greater (regardless of the order
-        passed to this method).
+        After having called this, selectionStart will become the lesser, and
+        selectionEnd the greater (regardless of the order passed to this method).
 
        \sa selectionStart, selectionEnd
     * /
@@ -5458,7 +5461,7 @@
         advanced transformations on Items.
 
         The Transform element is a base type which cannot be
-        instantiated directly.  The concrete Transform types are:
+        instantiated directly. The concrete Transform types are:
 
         \list
           \li \l Rotation
@@ -5483,9 +5486,9 @@
     the C++ class QGraphicsTransform. A \\qmltype comment should
     always include a \l {since-command} {\\since} command, because all
     QML types are new. It should also include a \l{brief-command}
-    {\\brief} description. And if a QML type is a member of a group of
-    QML types, the \\qmltype comment should include one or more
-    \l{ingroup-command} {\\ingroup} commands.
+    {\\brief} description. If a QML type is a member of a QML type group,
+    the \\qmltype comment should include one or more \l{ingroup-command}
+    {\\ingroup} commands.
 
     \target qmlmethod-command
     \section1 \\qmlmethod
@@ -5502,9 +5505,8 @@
 
         If either start or end is out of range, the selection is not changed.
 
-        After calling this, selectionStart will become the lesser and
-        selectionEnd will become the greater (regardless of the order
-        passed to this method).
+        After having called this, selectionStart will become the lesser and
+        selectionEnd the greater (regardless of the order passed to this method).
 
        \sa selectionStart, selectionEnd
     * /
@@ -5624,7 +5626,7 @@
         \instantiates QGraphicsTransform
         \ingroup qml-transform-elements
         \since 4.7
-        \brief The Transform elements provide a way to build
+        \brief Provides elements provide a way to build
         advanced transformations on Items.
 
         The Transform element is a base type which cannot be
@@ -5645,7 +5647,7 @@
     argument is the name of the typedef. The documentation for
     the typedef will be included in the reference documentation
     for the class, namespace, or header file in which the typedef
-    is declared. To relat the \\typedef to a class, namespace, or
+    is declared. To relate the \\typedef to a class, namespace, or
     header file, the \\typedef comment must contain a
      \l {relates-command} {\\relates} command.
 
@@ -5736,14 +5738,14 @@
     \\brief command.
 
     The documentation will be located in the in the associated class,
-    header file or namespace documentation.
+    header file, or namespace documentation.
 
     In case of a member variable:
 
     \code
     / *!
         \variable QStyleOption::palette
-        \brief the palette that should be used when painting
+        \brief The palette that should be used when painting
                the control
     * /
     \endcode
@@ -5764,7 +5766,7 @@
         when painting the control.
     \endquotation
 
-    You can also document constants with the \\variable command.  For
+    You can also document constants with the \\variable command. For
     example, suppose you have the \c Type and \c UserType constants in
     the QTreeWidgetItem class:
 
@@ -5772,7 +5774,7 @@
     enum { Type = 0, UserType = 1000 };
     \endcode
 
-    For these, the \\vaqriable command can be used this way:
+    For these, the \\variable command can be used this way:
 
     \code
     / *!
@@ -5832,9 +5834,14 @@
     \title Context Commands
 
     The context commands provide information about the element being
-    documented that QDoc can't deduce on its own. e.g. Is a class
-    thread-safe? Is a function reentrant? Which module is the class a
-    member of? Context commands can appear anywhere in a QDoc comment,
+    documented that QDoc can't deduce on its own. For example:
+    \list
+    \li Is this class thread-safe?
+    \li Is this function reentrant?
+    \li Of which module is this class a member ?
+    \endlist
+
+    Context commands can appear anywhere in a QDoc comment,
     but they are normally placed near the top of the comment, just
     below the \l {Topic Commands} {topic} command.
 
@@ -5948,7 +5955,7 @@
     * /
     \endcode
 
-    QDoc renders the  "Getting Started" page in \c{creatingdialogs.html}:
+    QDoc renders the "Getting Started" page in \c{creatingdialogs.html}:
 
     \quotation
     \raw HTML
@@ -5992,7 +5999,7 @@
     titles and topics, while the start page is the page considered by
     the author to be the starting point of a multipage document.
 
-    The links are included in the generated HTML source code but have
+    The links are included in the generated HTML source code, but have
     no visual effect on the documentation:
 
     \code
@@ -6011,8 +6018,8 @@
 
     The \\previouspage command links the current page to the previous
     page in a sequence.a The command has two arguments, each enclosed
-    by curly braces: The first is the link target, i.e. the title of
-    the previous page, the second is the link text. If the page's
+    by curly braces: the first is the link target (the title of
+    the previous page), the second is the link text. If the page's
     title is equivalent to the link text, the second argument can be
     omitted.
 
@@ -6164,7 +6171,7 @@
     \code
     / *!
         \qmlproperty list<Change> State::changes
-        This property holds the changes to apply for this state
+        This property holds the changes to apply for this state.
         \default
 
         By default these changes are applied against the default state. If the state
@@ -6188,7 +6195,7 @@
 
     When generating the reference documentation for a class, QDoc will
     create and link to a separate page documenting its obsolete
-    functions.  Usually an equivalent function is provided as an
+    functions. Usually an equivalent function is provided as an
     alternative.
 
     \code
@@ -6382,8 +6389,8 @@
 
     \c Reentrant means that all the functions in the referenced class
     can be called simultaneously by multiple threads, provided that
-    each invocation of the functions reference unique data. While \c
-    threadsafe means that all the functions in the referenced class
+    each invocation of the functions reference unique data. \c
+    thread-safe means that all the functions in the referenced class
     can be called simultaneously by multiple threads even when each
     invocation references shared data.
 
@@ -6485,7 +6492,7 @@
     declared reentrant, and lists the exceptions (the declared
     nonreentrant functions). A link to the general documentation on \l
     {threads.html#reentrant} {reentrancy and thread-safety} is
-    included.  In addition a warning, "\b Warning: This function is
+    included. In addition a warning, "\b Warning: This function is
     not reentrant.", is generated in the nonreentrant functions'
     documentation.
 
@@ -6501,14 +6508,14 @@
     \section2 \\threadsafe
 
     The \\threadsafe command includes a line in the documentation to
-    indicate that the associated class or function is \e threadsafe
+    indicate that the associated class or function is \e threadsafe,
     and can be called simultaneously by multiple threads, even when
     separate invocations reference shared data.
 
     The command must stand on its own line.
 
     The documentation generated from this command will be similar to
-    the what is generated for the \l {reentrant-command} {\\reentrant}
+    the documentation generated for the \l {reentrant-command} {\\reentrant}
     command. See the example above in the \l {reentrant-example}
     {introduction}.
 
@@ -6555,12 +6562,15 @@
     \title Relating Things
 
     The relating commands are for specifying how one documented
-    element relates to another documented element. e.g., This function
-    is an overload of another function, or this function is a
-    reimplementation of another function, or this typedef is \e
-    related to some class or header file. There is also a command
-    for documenting that a QML type inherits some other QML
-    type.
+    element relates to another documented element. Some examples:
+    \list
+    \li This function is an overload of another function.
+    \li This function is a reimplementation of another function.
+    \li This typedef is \e related to some class or header file.
+    \endlist
+
+    There is also a command for documenting that a QML type inherits
+    some other QML type.
 
     \section1 Commands
 
@@ -6614,7 +6624,7 @@
 
     For a function name that is overloaded (except constructors), QDoc
     expects one primary version of the function, and all the others
-    marked with the \b {\\overload command}.  The primary version
+    marked with the \b {\\overload command}. The primary version
     should be fully documented. Each overload can have whatever extra
     documentation you want to add for just that overloaded version.
 
@@ -6820,7 +6830,7 @@
     the command's argument.
 
     For the basic classes in Qt, a class's module is determined by its
-    location, i.e. its directory. However, for extensions, like
+    location, namely its directory. However, for extensions like
     ActiveQt and Qt Designer, a class must be related to a module
     explicitly.
 
@@ -6854,7 +6864,7 @@
     \title Naming Things
 
     In general, a title command considers everything that follows it
-    until the first line break as its argument.  If the title is so
+    until the first line break as its argument. If the title is so
     long it must span multiple lines, end each line (except the last
     one) with a backslash.
 
@@ -6874,7 +6884,7 @@
 
         Signals and slots are used for communication between
         objects. The signals and slots mechanism is a central
-        feature of Qt and probably the part that differs most
+        feature of Qt, and probably the part that differs most
         from the features provided by other frameworks.
 
         ...
@@ -7003,7 +7013,7 @@
 
     The \\mapref command is for creating a mapref in the ditamap. A
     mapref refers to another ditamap, which you want to include in
-    your ditamap.  Like the \\topicref command, the \\mapref command
+    your ditamap. Like the \\topicref command, the \\mapref command
     has two arguments, but for the \\mapref command, both arguments
     are required. The arguments are essentially the same as described
     for \\topicref, but for \\mapref, the second command must be the
@@ -7021,7 +7031,7 @@
 
     \code
       \ditamap creator.ditamap
-      \title The DITA Map For Creator
+      \title The DITA Map for Creator
 
       \topicref {QML Module QtQuick 1}
         \topicref {QML Mouse Events} \endtopicref
@@ -7051,7 +7061,7 @@
       <!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//EN" "map.dtd">
       <map>
         <topicmeta>
-          <shortdesc>The DITA Map For Creator</shortdesc>
+          <shortdesc>The DITA Map for Creator</shortdesc>
         </topicmeta>
         <topicref navtitle="QML Module QtQuick 1" href="qtquick-1.xml">
           <topicref navtitle="QML Mouse Events" href="qtquick2-mouseevents.xml"/>
@@ -7107,12 +7117,12 @@
     while '+=' adds a new value to the current one.
 
     Some configuration variables accept a list of strings as their
-    value, e.g.
+    value, for example:
     \l {22-qdoc-configuration-generalvariables.html#sourcedirs-variable}
     {\c{sourcedirs}}, while others accept only a single string. Double
     quotes around a value string are optional, but including them allows
-    you to use special characters like '=' and ' \" ' within the valuem
-    string, e.g.:
+    you to use special characters like '=' and ' \" ' within the value
+    string, for example:
 
     \code
     HTML.postheader = "<a href=\"index.html\">Home</a>"
@@ -7215,7 +7225,7 @@
 
     QDoc can generate \l {http://dita.xml.org} {DITA XML output}.
 
-    In your confifiguration file, set your \c {outputformats} variable
+    In your configuration file, set your \c {outputformats} variable
     to \c {DITAXML}, and send the output to an appropriate directory:
 
     \code
@@ -7290,7 +7300,7 @@
         alias.e = i
     \endcode
 
-    This renames the built-in command \\e (italics) to be \\i.  The \c
+    This renames the built-in command \\e (italics) to be \\i. The \c
     alias variable is often used for compatibility reasons.
 
     See also \l {macro-variable} {macro}.
@@ -7353,12 +7363,12 @@
     line using the -D option. For example:
 
     \code
-        currentdirectory$ qdoc -Dconsoleedition qt.qdocconf
+        currentdirectory$ qdoc -Dconsoleedition qtgui.qdocconf
     \endcode
 
     In this case the -D option ensures that the \c consoleedition
     preprocessor symbol is defined when QDoc processes the source
-    files defined in the qt.qdocconf file.
+    files defined in the qtgui.qdocconf file.
 
     See also \l {falsehoods-variable} {falsehoods} and \l {if-command} {\\if}.
 
@@ -7402,7 +7412,7 @@
     The \l {examples-variable} {examples} {examples} and \l
     {exampledirs-variable} {exampledirs} variables are used by the \l
     {quotefromfile-command} {\\quotefromfile}, \l {quotefile-command}
-    {\\quotefile} and \l {example-command} {\\example} commands.  If
+    {\\quotefile} and \l {example-command} {\\example} commands. If
     both the \l {examples-variable} {examples} and \l
     {exampledirs-variable} {exampledirs} variables are defined, QDoc
     will search in both, first in \l {examples-variable} {examples}
@@ -7427,9 +7437,9 @@
         \quotefromfile widgets/calculator/calculator.cpp
     \endcode
 
-    QDoc will then see if there exists a file called \c calculator.cpp
+    QDoc will see if there is a file called \c calculator.cpp
     listed as a value in the \l {examples} {\c examples} variable. If
-    it doesn't, it will search in the \c exampledirs variable, and
+    there isn't, it will search in the \c exampledirs variable, and
     first see if there exists a file called
 
     \code
@@ -7485,7 +7495,7 @@
     The default extensions are *.cpp, *.h, *.js, *.xq, *.svg, *.xml
     and *.ui.
 
-    The extensions are given as standard wildcard expressions.  You
+    The extensions are given as standard wildcard expressions. You
     can add a file extension to the filter using '+='. For example:
 
     \code
@@ -7502,7 +7512,7 @@
     \l {sourcedirs-variable} {sourcedirs} or \l {headerdirs-variable} {headerdirs}
     variables.
 
-    For example,
+    For example:
 
     \code
         sourcedirs =  src/corelib
@@ -7548,9 +7558,10 @@
     The general syntax is \tt {extraimages.\e{format} = \e image}. The
     file extension is optional.
 
-    For example, if additional images are used within the HTML.postheader
-    value, then these images must also be specified using the \c
-    extraimages variable:
+    For example, in \l qtgui.qdocconf we use a couple of images within
+    the HTML.postheader variable which value is pure HTML. For that
+    reason, these images are specified using the \c extraimages
+    variable:
 
     \code
         extraimages.HTML = qt-logo
@@ -7646,11 +7657,11 @@
     \c headerdirs.
 
     In the specified directories, QDoc will only read the files with
-    the fileextensions specified in the \l {headers.fileextensions}
+    the \c fileextensions specified in the \l {headers.fileextensions}
     {\c headers.fileextensions} variable. The default extensions are
-    *.ch, *.h, *.h++, *.hh, *.hpp and *.hxx". The files specified by
-    \l {headers} {\c headers} will be read independent of their
-    fileextensions.
+    *.ch, *.h, *.h++, *.hh, *.hpp, and *.hxx". The files specified by
+    \l {headers} {\c headers} will be read without taking into account
+    their fileextensions.
 
     See also \l headers and \l headers.fileextensions.
 
@@ -7682,13 +7693,13 @@
     When processing the header files specified in the \l {headerdirs}
     {\c headerdirs} variable, QDoc will only read the files with the
     fileextensions specified in the \c headers.fileextensions
-    variable. In this way QDoc avoid spending time reading irrelevant
+    variable. In this way QDoc avoids spending time reading irrelevant
     files.
 
-    The default extensions are *.ch, *.h, *.h++, *.hh, *.hpp and
+    The default extensions are *.ch, *.h, *.h++, *.hh, *.hpp, and
     *.hxx.
 
-    The extensions are given as standard wildcard expressions.  You
+    The extensions are given as standard wildcard expressions. You
     can add a file extension to the filter using '+='. For example:
 
     \code
@@ -7707,9 +7718,9 @@
 
     The \l {images} {\c images} and \c imagedirs variables are used by
     the \l {image-command} {\\image} and \l {inlineimage-command}
-    {\\inlineimage} commands.  If both the \l {images} {\c images} and
-    \c imagedirs variables are defined, QDoc will search in both,
-    first in \l {images} {\c images} then in \c imagedirs.
+    {\\inlineimage} commands. If both the \l {images} {\c images} and
+    \c imagedirs variables are defined, QDoc will search in both. First
+    in \l {images} {\c images}, then in \c imagedirs.
 
     QDoc will search through the directories in the specified order,
     and accept the first matching file it finds. It will only search
@@ -7728,29 +7739,29 @@
         \image calculator-example.png
     \endcode
 
-    QDoc will then see if there exists a file called
+    QDoc will then see if there is a file called
     calculator-example.png listed as a value in the \c images
-    variable. If it doesn't, it will search in the \c imagedirs
-    variable, and first see if there exists a file called
+    variable. If there isn't, it will search in the \c imagedirs
+    variable for:
 
     \code
         $QTDIR/doc/src/images/calculator-example.png
     \endcode
 
-    If it doesn't, QDoc will look for a file called
+    If the file doesn't exist, QDoc will look for a file called
 
     \code
         $QTDIR/examples/calculator-example.png
     \endcode
 
     You can filter the images in an image directory using the \l
-    {images.fileextensions} {\c images.fileextensions} variable.  The
+    {images.fileextensions} {\c images.fileextensions} variable. The
     general idea behind the \l {images.fileextensions} {\c images.fileextensions}
     variable is to enable different image format for different output format.
 
     \warning The \l {images.fileextensions} {\c images.fileextensions}
-    variable's functionality is preliminay since QDoc at this point
-    only support HTML.
+    variable's functionality is preliminary since QDoc at this point
+    only supports HTML.
 
     See also \l images and \l images.fileextensions.
 
@@ -7779,7 +7790,7 @@
     image directory.
 
     The variable's values (the extensions) are given as standard
-    wildcard expressions.  The general syntax is: \tt
+    wildcard expressions. The general syntax is: \tt
     {images.fileextensions.\e{format} = *.\e{extension}}.
 
     The idea is to enable different image format for different output
@@ -7792,13 +7803,13 @@
 
     Then, when processing the \l {image-command} {\\image} and \l
     {inlineimage-command} {\\inlineimage} commands, QDoc will only
-    search for files with extensions specified in the output format's
-    associated image extension variable.
+    search for files with extensions specified in the variable
+    containing the list of output formats.
 
-    \warning This is preliminary functionality since QDoc at this
-    point only support HTML.
+    \warning This is only a preliminary functionality since QDoc at this
+    point only supports HTML.
 
-    The default extensions for HTML are *.png, *.jpg, *.jpeg and
+    The default extensions for HTML are *.png, *.jpg, *.jpeg, and
     *.gif.
 
     You can add a file extension to the filter using '+='. For
@@ -7818,13 +7829,14 @@
 
     Currently, C++ is the only language that QDoc understands. It is
     also the default language, and doesn't really need to be
-    specified.
+    specified. However, a possible example of a language variable
+    statement:
 
     \code
         language = Cpp
     \endcode
 
-    identifies the language of the Qt source code as C++.
+    This identifies C++ as the language of the Qt source code.
 
     \target macro-variable
     \section1 macro
@@ -7887,8 +7899,6 @@
 
     The \c outputdir variable specifies the directory where QDoc will
     put the generated documentation.
-
-    For example:
 
     \code
         outputdir = $QTDIR/doc/html
@@ -7972,13 +7982,8 @@
     the \c .cpp or \c .qdoc files used in the documentation.
 
     \code
-        sourcedirs = $QTDIR/src \
-                     $QTDIR/doc/src \
-                     $QTDIR/extensions/activeqt \
-                     $QTDIR/extensions/motif \
-                     $QTDIR/tools/designer/src/lib/extension \
-                     $QTDIR/tools/designer/src/lib/sdk \
-                     $QTDIR/tools/designer/src/lib/uilib
+        sourcedirs  += .. \
+                       ../../../examples/gui/doc/src
     \endcode
 
     When executed, the first thing QDoc will do is to read through the
@@ -7989,7 +7994,7 @@
 
     Then it will read through the sources specified in the \l
     {sources} {\c sources}, and the ones located in the directories
-    specified in the \l {sourcedirs} {\c sourcedirs} varible
+    specified in the \l {sourcedirs} {\c sourcedirs} variable
     (including all subdirectories), merging the documentation with the
     structure it retrieved from the header files.
 
@@ -7998,7 +8003,7 @@
     \c sourcedirs.
 
     In the specified directories, QDoc will only read the files with
-    the fileextensions specified in the \l {sources.fileextensions}
+    the \c fileextensions specified in the \l {sources.fileextensions}
     {\c sources.fileextensions} variable. The default extensions are
     *.c++, *.cc, *.cpp and *.cxx. The files specified by \l {sources}
     {\c sources} will be read independent of their fileextensions.
@@ -8023,7 +8028,7 @@
 
     Although qdoc will use the encoding to read source and
     documentation files, limitations of C++ compilers may prevent you
-    from using non-ASCII characters in source code comments.  In cases
+    from using non-ASCII characters in source code comments. In cases
     like these, it is possible to write API documentation completely
     in documentation files.
 
@@ -8063,7 +8068,7 @@
 
     The default extensions are *.c++, *.cc, *.cpp and *.cxx.
 
-    The extensions are given as standard wildcard expressions.  You
+    The extensions are given as standard wildcard expressions. You
     can add a file extension to the filter using '+='. For example:
 
     \code
@@ -8080,7 +8085,7 @@
     \section1 spurious
 
     The \c spurious variable excludes specified QDoc warnings from the
-    output.  The warnings are specified using standard wildcard
+    output. The warnings are specified using standard wildcard
     expressions.
 
     \code
@@ -8119,7 +8124,7 @@
     tabsize = 4
     \endcode
 
-    will give the tab character the size of 4 spaces.  The default
+    will give the tab character the size of 4 spaces. The default
     value of the variable is 8, and doesn't need to be specified.
 
     \target tagfile-variable
@@ -8154,8 +8159,6 @@
     The \c versionsym variable specifies a C++ preprocessor symbol
     that defines the version number of the documented software.
 
-    For example:
-
     \code
         versionsym = QT_VERSION_STR
     \endcode
@@ -8172,7 +8175,7 @@
     the documentation.
 
     \warning The \\version command's functionality is not fully
-    implemented; currently it only works within raw HTML code.
+    implemented. Currently, it only works within raw HTML code.
 
     See also \l {version} {\\version}.
 */
@@ -8259,15 +8262,12 @@
 
     \target Cpp.ignoredirectives-variable
     \section1  Cpp.ignoredirectives
-
     The \c Cpp.ignoredirectives variable makes QDoc ignore the
     specified non-standard constructs, within C++ source code.
 
     If not specified by the \tt {\l Cpp.ignoretokens} or \tt {\l
     Cpp.ignoredirectives} variables, non-standard constructs
     (typically macros) can result in erroneous documentation.
-
-    For example:
 
     \code
     Cpp.ignoredirectives = Q_DECLARE_INTERFACE \
@@ -8320,6 +8320,8 @@
     If not specified by the \tt {\l Cpp.ignoretokens} or \tt {\l
     Cpp.ignoredirectives} variables, non-standard constructs
     (typically macros) can result in erroneous documentation.
+
+    In \l qtgui.qdocconf:
 
     \code
     Cpp.ignoretokens = QAXFACTORY_EXPORT \
@@ -8390,6 +8392,9 @@
                       "</tr></table></div></address>"
     \endcode
 
+    The complete variable entry provides the standard footer of the
+    \l {http://doc.qt.digia.com/4.0/index.html} {Qt Reference Documentation}.
+
     \target HTML.postheader-variable
     \section1 HTML.postheader
 
@@ -8413,6 +8418,8 @@
                        "</table>"
     \endcode
 
+    The complete variable entry in \l qtgui.qdocconf provides the
+    standard header of the \l {http://doc.qt.digia.com/}
     {Qt Reference Documentation}.
 
     \target HTML.style-variable
@@ -8470,8 +8477,8 @@
     \title Supporting Derived Projects
 
     Some configuration variables allow you to use QDoc to support
-    Qt-based projects; i.e allow your project to contain links to the
-    online Qt documentation. This means that QDoc will be able to
+    Qt-based projects. They allow your project to contain links to the
+    online Qt documentation, which means that QDoc will be able to
     create links to the class reference documentation, without any
     explicit linking command.
 
@@ -8560,44 +8567,11 @@
     \endcode
 
     The \l project variable name is used to form a file name for the
-    index file; in this case the \c qt.index file is created.  The \l
-    url is stored in the index file. Later, when we use the index on
-    its own, QDoc will use this as the base URL when constructing
-    links to classes, functions, and other things listed in the index.
+    index file; in this case the \c qt.index file is created. The \l
+    url is stored in the index file. Afterwards, QDoc will use this
+    as the base URL when constructing links to classes, functions,
+    and other things listed in the index.
 
-    In a mini-project, you can use an index file by defining an \l
-    indexes configuration variable in your \c .qdocconf file.
-
-    \code
-        project                 = QtCreator
-        description             = Qt Creator Manual
-        url                     = http://qt-project.org/doc/qtcreator-2.6/
-
-        indexes                 = $QTDIR/doc/html/qt.index
-
-        outputdir               = html
-
-        headerdirs              = src
-        sourcedirs              = src \
-                                  examples
-        sources.fileextensions  = "*.cpp *.qdoc *.doc"
-
-        exampledirs = examples
-    \endcode
-
-    The code above requires that you run QDoc from the directory that
-    contains this file.
-
-    \b {To resolve the actual links to Qt classes, the
-    mini-project's \c .qdocconf file needs to assign a value to the \l
-    indexes variable; \c $QTDIR/doc/html/qt.index makes sure that you
-    always use the updated index file for the Qt documentation.}
-
-    The only disadvantages with this approach are the extra file that
-    QDoc has to generate and the time it takes to do so. Reading the
-    index back again later isn't instantaneous either, but it's
-    quicker than processing all the Qt classes each time you need to
-    write a new document.
 */
 
 /*!
@@ -8751,6 +8725,7 @@
     \li \l {15-qdoc-commands-navigation.html#nextpage-command} {\\nextpage}
     \li \l {06-qdoc-commands-includecodeinline.html#newcode-command} {\\newcode}
     \li \l {17-qdoc-commands-thread.html#nonreentrant-command} {\\nonreentrant}
+    \li \l {11-qdoc-commands-specialcontent.html#note-command} {\\note}
     \li \l {10-qdoc-commands-tablesandlists.html#li-command} {\\o} \span {class="newStuff"} {(deprecated, use \\li)}
 
     \li \l {16-qdoc-commands-status.html#obsolete-command} {\\obsolete}

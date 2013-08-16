@@ -468,7 +468,12 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
 
     timer.start(3000);
     eventLoop.exec();
-    QCOMPARE(fileChangedSpy.count(), 0);
+    int fileChangedSpyCount = fileChangedSpy.count();
+#ifdef Q_OS_WIN64
+    if (fileChangedSpyCount != 0)
+        QEXPECT_FAIL("", "See QTBUG-30943", Continue);
+#endif
+    QCOMPARE(fileChangedSpyCount, 0);
 #ifdef Q_OS_WINCE
     QEXPECT_FAIL("poller", "Directory does not get updated on file removal(See #137910)", Abort);
 #endif

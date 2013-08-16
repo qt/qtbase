@@ -58,6 +58,7 @@ QMinimalEglWindow::QMinimalEglWindow(QWindow *w)
     if (w->geometry() != screenGeometry) {
         QWindowSystemInterface::handleGeometryChange(w, screenGeometry);
     }
+    w->setSurfaceType(QSurface::OpenGLSurface);
 }
 
 void QMinimalEglWindow::setGeometry(const QRect &)

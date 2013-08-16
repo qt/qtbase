@@ -46,6 +46,12 @@
 #include <qcoreevent.h>
 #include <qeventloop.h>
 #include <private/qeventloop_p.h>
+#if defined(Q_OS_UNIX)
+  #include <private/qeventdispatcher_unix_p.h>
+  #if defined(HAVE_GLIB)
+    #include <private/qeventdispatcher_glib_p.h>
+  #endif
+#endif
 #include <qmutex.h>
 #include <qthread.h>
 #include <qtimer.h>
@@ -158,6 +164,10 @@ public slots:
         returnCode = eventLoop->exec();
     }
 };
+
+#ifdef QT_GUI_LIB
+  #define tst_QEventLoop tst_QGuiEventLoop
+#endif
 
 class tst_QEventLoop : public QObject
 {
@@ -491,11 +501,19 @@ void tst_QEventLoop::processEventsExcludeTimers()
     QCOMPARE(timerReceiver.gotTimerEvent, timerId);
     timerReceiver.gotTimerEvent = -1;
 
-    // normal process events will send timers
+    // but not if we exclude timers
     eventLoop.processEvents(QEventLoop::X11ExcludeTimers);
-#if !defined(Q_OS_UNIX)
-    QEXPECT_FAIL("", "X11ExcludeTimers only works on UN*X", Continue);
+
+    QAbstractEventDispatcher *eventDispatcher = QCoreApplication::eventDispatcher();
+#if defined(Q_OS_UNIX)
+    if (!qobject_cast<QEventDispatcherUNIX *>(eventDispatcher)
+  #if defined(HAVE_GLIB)
+        && !qobject_cast<QEventDispatcherGlib *>(eventDispatcher)
+  #endif
+        )
 #endif
+        QEXPECT_FAIL("", "X11ExcludeTimers only supported in the UNIX/Glib dispatchers", Continue);
+
     QCOMPARE(timerReceiver.gotTimerEvent, -1);
     timerReceiver.gotTimerEvent = -1;
 
@@ -580,7 +598,7 @@ class JobObject : public QObject
 public:
 
     explicit JobObject(QEventLoop *loop, QObject *parent = 0)
-        : QObject(parent), loop(loop), locker(loop)
+        : QObject(parent), locker(loop)
     {
     }
 
@@ -606,7 +624,6 @@ signals:
     void done();
 
 private:
-    QEventLoop *loop;
     QEventLoopLocker locker;
 };
 

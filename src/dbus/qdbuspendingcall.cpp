@@ -256,6 +256,11 @@ QDBusPendingCall::QDBusPendingCall(const QDBusPendingCall &other)
 QDBusPendingCall::QDBusPendingCall(QDBusPendingCallPrivate *dd)
     : d(dd)
 {
+    if (dd) {
+        bool r = dd->ref.deref();
+        Q_ASSERT(r);
+        Q_UNUSED(r);
+    }
 }
 
 /*!
@@ -469,6 +474,7 @@ QDBusPendingCall QDBusPendingCall::fromCompletedCall(const QDBusMessage &msg)
         msg.type() == QDBusMessage::ReplyMessage) {
         d = new QDBusPendingCallPrivate(QDBusMessage(), 0);
         d->replyMessage = msg;
+        d->ref.store(1);
     }
 
     return QDBusPendingCall(d);

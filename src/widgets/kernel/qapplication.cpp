@@ -2861,7 +2861,14 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 QKeyEvent* key = static_cast<QKeyEvent*>(e);
 #ifndef QT_NO_SHORTCUT
                 // Try looking for a Shortcut before sending key events
-                if (qApp->d_func()->shortcutMap.tryShortcutEvent(receiver, key))
+                QObject *shortcutReceiver = receiver;
+                if (!isWidget && isWindow) {
+                    QWindow *w = qobject_cast<QWindow *>(receiver);
+                    QObject *focus = w ? w->focusObject() : 0;
+                    if (focus)
+                        shortcutReceiver = focus;
+                }
+                if (qApp->d_func()->shortcutMap.tryShortcutEvent(shortcutReceiver, key))
                     return true;
 #endif
                 qt_in_tab_key_event = (key->key() == Qt::Key_Backtab

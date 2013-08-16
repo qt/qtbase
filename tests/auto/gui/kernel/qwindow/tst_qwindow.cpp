@@ -59,6 +59,7 @@ class tst_QWindow: public QObject
 
 private slots:
     void eventOrderOnShow();
+    void resizeEventAfterResize();
     void mapGlobal();
     void positioning();
     void isExposed();
@@ -166,6 +167,25 @@ void tst_QWindow::eventOrderOnShow()
 
     QVERIFY(window.eventIndex(QEvent::Show) < window.eventIndex(QEvent::Resize));
     QVERIFY(window.eventIndex(QEvent::Resize) < window.eventIndex(QEvent::Expose));
+}
+
+void tst_QWindow::resizeEventAfterResize()
+{
+    // Some platforms enforce minimum widths for windows, which can cause extra resize
+    // events, so set the width to suitably large value to avoid those.
+    QRect geometry(QGuiApplication::primaryScreen()->availableGeometry().topLeft() + QPoint(20, 20), QSize(300, 40));
+
+    Window window;
+    window.setGeometry(geometry);
+    window.show();
+
+    QTRY_COMPARE(window.received(QEvent::Resize), 1);
+
+    // QTBUG-32706
+    // Make sure we get a resizeEvent after calling resize
+    window.resize(400, 100);
+
+    QTRY_COMPARE(window.received(QEvent::Resize), 2);
 }
 
 void tst_QWindow::positioning()

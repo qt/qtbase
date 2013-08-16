@@ -197,6 +197,9 @@ public:
 private:
     static bool ensureLibraryLoaded();
     static void ensureCiphersAndCertsLoaded();
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
+    static QList<QByteArray> fetchSslCertificateData();
+#endif
 
     static bool s_libraryLoaded;
     static bool s_loadedCiphersAndCerts;

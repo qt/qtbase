@@ -615,10 +615,15 @@ void tst_QUndoGroup::commandTextFormat()
     if (QProcess::execute(binDir + "/lrelease -version") != 0)
         QSKIP("lrelease is missing or broken");
 
-    QVERIFY(!QProcess::execute(binDir + "/lrelease testdata/qundogroup.ts"));
+    const QString tsFile = QFINDTESTDATA("testdata/qundogroup.ts");
+    QVERIFY(!tsFile.isEmpty());
+    QVERIFY(!QProcess::execute(binDir + "/lrelease " + tsFile));
 
     QTranslator translator;
-    QVERIFY(translator.load("testdata/qundogroup.qm"));
+
+    const QString qmFile = QFINDTESTDATA("testdata/qundogroup.qm");
+    QVERIFY(!qmFile.isEmpty());
+    QVERIFY(translator.load(qmFile));
     qApp->installTranslator(&translator);
 
     QUndoGroup group;

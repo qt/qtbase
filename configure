@@ -2347,11 +2347,19 @@ while [ "$#" -gt 0 ]; do
         CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION="$VAL"
         ;;
     l*)  # -lfoo
-        L_FLAGS="$L_FLAGS -l\"${VAR#l}\""
+        if [ "$VAL" = "yes" ]; then
+            L_FLAGS="$L_FLAGS -l\"${VAR#l}\""
+        else
+            UNKNOWN_OPT=yes
+        fi
         ;;
     fw*)  # -fwfoo
-        if [ "$BUILD_ON_MAC" = "yes" ]; then
-            L_FLAGS="$L_FLAGS -framework \"${VAR#fw}\""
+        if [ "$VAL" = "yes" ]; then
+            if [ "$BUILD_ON_MAC" = "yes" ]; then
+                L_FLAGS="$L_FLAGS -framework \"${VAR#fw}\""
+            else
+                UNKNOWN_OPT=yes
+            fi
         else
             UNKNOWN_OPT=yes
         fi
@@ -2851,7 +2859,7 @@ if [ "$XPLATFORM_IOS" = "yes" ]; then
     CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS examples tests"
     CFG_SHARED="no" # iOS builds should be static to be able to submit to the App Store
     CFG_CXX11="no" # C++11 support disabled for now
-    CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtquickcontrols qtwebkit qtgraphicaleffects qtdoc qtmultimedia qtwebkit-examples-and-demos qttools"
+    CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtquickcontrols qtwebkit qtgraphicaleffects qtdoc qtmultimedia qtwebkit-examples qttools"
 fi
 
 # disable GTK style support auto-detection on Mac
@@ -5348,7 +5356,7 @@ if [ "$CFG_XKBCOMMON" != "qt" ]; then
             QMakeVar set QMAKE_CFLAGS_XKBCOMMON "$QMAKE_CFLAGS_XKBCOMMON"
             QMakeVar set QMAKE_LIBS_XKBCOMMON "$QMAKE_LIBS_XKBCOMMON"
             QMakeVar set QMAKE_VERSION_XKBCOMMON "$QMAKE_VERSION_XKBCOMMON"
-            CFG_XKBCOMMON=yes
+            CFG_XKBCOMMON=system
         else
             CFG_XKBCOMMON=no
         fi
@@ -6662,24 +6670,6 @@ if cmp -s "$QTMODULE.tmp" "$QTMODULE"; then
     rm -f "$QTMODULE.tmp"
 else
     mv -f "$QTMODULE.tmp" "$QTMODULE"
-fi
-
-#-------------------------------------------------------------------------------
-# save configuration into .qmake.cache
-#-------------------------------------------------------------------------------
-
-CACHEFILE="$outpath/.qmake.cache"
-[ -f "$CACHEFILE.tmp" ] && rm -f "$CACHEFILE.tmp"
-cat >>"$CACHEFILE.tmp" <<EOF
-QT_SOURCE_TREE = \$\$quote($relpath)
-QT_BUILD_TREE = \$\$quote($outpath)
-EOF
-
-# replace .qmake.cache if it differs from the newly created temp file
-if cmp -s "$CACHEFILE.tmp" "$CACHEFILE"; then
-    rm -f "$CACHEFILE.tmp"
-else
-    mv -f "$CACHEFILE.tmp" "$CACHEFILE"
 fi
 
 #-------------------------------------------------------------------------------

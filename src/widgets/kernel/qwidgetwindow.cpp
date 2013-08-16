@@ -538,9 +538,10 @@ void QWidgetWindow::handleResizeEvent(QResizeEvent *event)
     }
 }
 
-void QWidgetWindow::handleCloseEvent(QCloseEvent *)
+void QWidgetWindow::handleCloseEvent(QCloseEvent *event)
 {
-    m_widget->d_func()->close_helper(QWidgetPrivate::CloseWithSpontaneousEvent);
+    bool is_closing = m_widget->d_func()->close_helper(QWidgetPrivate::CloseWithSpontaneousEvent);
+    event->setAccepted(is_closing);
 }
 
 #ifndef QT_NO_WHEELEVENT

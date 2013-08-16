@@ -522,6 +522,8 @@ void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
     } else {
         qWarning("could not load crypt32 library"); // should never happen
     }
+#elif defined(Q_OS_QNX)
+    s_loadRootCertsOnDemand = true;
 #elif defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
     // check whether we can enable on-demand root-cert loading (i.e. check whether the sym links are there)
     QList<QByteArray> dirs = unixRootCertDirectories();
@@ -686,41 +688,48 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
     }
 #elif defined(Q_OS_UNIX)
     QSet<QString> certFiles;
-# ifdef Q_OS_ANDROID
-    QList<QByteArray> directories;
-    directories << qgetenv("MINISTRO_SSL_CERTS_PATH"); // Set by Ministro
-# else
-    QList<QByteArray> directories = unixRootCertDirectories();
-# endif
     QDir currentDir;
     QStringList nameFilters;
-# ifdef Q_OS_ANDROID
-    nameFilters << QLatin1String("*.der");
-#else
-    nameFilters << QLatin1String("*.pem") << QLatin1String("*.crt");
-# endif
-    currentDir.setNameFilters(nameFilters);
-    for (int a = 0; a < directories.count(); a++) {
-        currentDir.setPath(QLatin1String(directories.at(a)));
-        QDirIterator it(currentDir);
-        while(it.hasNext()) {
-            it.next();
-            // use canonical path here to not load the same certificate twice if symlinked
-            certFiles.insert(it.fileInfo().canonicalFilePath());
-        }
-    }
-    QSetIterator<QString> it(certFiles);
-    while(it.hasNext()) {
-# ifdef Q_OS_ANDROID
-        systemCerts.append(QSslCertificate::fromPath(it.next(), QSsl::Der));
-# else
-        systemCerts.append(QSslCertificate::fromPath(it.next(), QSsl::Pem));
-# endif
-    }
+    QList<QByteArray> directories;
+    QSsl::EncodingFormat platformEncodingFormat;
 # ifndef Q_OS_ANDROID
-    systemCerts.append(QSslCertificate::fromPath(QLatin1String("/etc/pki/tls/certs/ca-bundle.crt"), QSsl::Pem)); // Fedora, Mandriva
-    systemCerts.append(QSslCertificate::fromPath(QLatin1String("/usr/local/share/certs/ca-root-nss.crt"), QSsl::Pem)); // FreeBSD's ca_root_nss
+    directories = unixRootCertDirectories();
+    nameFilters << QLatin1String("*.pem") << QLatin1String("*.crt");
+    platformEncodingFormat = QSsl::Pem;
+# else
+    // Q_OS_ANDROID
+    QByteArray ministroPath = qgetenv("MINISTRO_SSL_CERTS_PATH"); // Set by Ministro
+    directories << ministroPath;
+    nameFilters << QLatin1String("*.der");
+    platformEncodingFormat = QSsl::Der;
+#  ifndef Q_OS_ANDROID_NO_SDK
+    if (ministroPath.isEmpty()) {
+        QList<QByteArray> certificateData = fetchSslCertificateData();
+        for (int i = 0; i < certificateData.size(); ++i) {
+            systemCerts.append(QSslCertificate::fromData(certificateData.at(i), QSsl::Der));
+        }
+    } else
+#   endif //Q_OS_ANDROID_NO_SDK
+# endif //Q_OS_ANDROID
+    {
+        currentDir.setNameFilters(nameFilters);
+        for (int a = 0; a < directories.count(); a++) {
+            currentDir.setPath(QLatin1String(directories.at(a)));
+            QDirIterator it(currentDir);
+            while (it.hasNext()) {
+                it.next();
+                // use canonical path here to not load the same certificate twice if symlinked
+                certFiles.insert(it.fileInfo().canonicalFilePath());
+            }
+        }
+        QSetIterator<QString> it(certFiles);
+        while (it.hasNext())
+            systemCerts.append(QSslCertificate::fromPath(it.next(), platformEncodingFormat));
+# ifndef Q_OS_ANDROID
+        systemCerts.append(QSslCertificate::fromPath(QLatin1String("/etc/pki/tls/certs/ca-bundle.crt"), QSsl::Pem)); // Fedora, Mandriva
+        systemCerts.append(QSslCertificate::fromPath(QLatin1String("/usr/local/share/certs/ca-root-nss.crt"), QSsl::Pem)); // FreeBSD's ca_root_nss
 # endif
+    }
 #endif
 #ifdef QSSLSOCKET_DEBUG
     qDebug() << "systemCaCertificates retrieval time " << timer.elapsed() << "ms";

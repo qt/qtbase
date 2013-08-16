@@ -1178,6 +1178,9 @@ void UnixMakefileGenerator::init2()
                     soname += project->first("TARGET");
             } else if(!project->isEmpty("QMAKE_BUNDLE")) {
                 soname += project->first("TARGET_x.y");
+            } else if(project->isActiveConfig("unversioned_soname")) {
+                soname = "lib" + project->first("QMAKE_ORIG_TARGET")
+                    + "." + project->first("QMAKE_EXTENSION_SHLIB");
             } else if(!project->values("TARGET_x").isEmpty()) {
                 soname += project->first("TARGET_x");
             }

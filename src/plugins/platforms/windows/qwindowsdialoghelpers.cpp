@@ -2098,7 +2098,7 @@ QPlatformDialogHelper *createHelper(QPlatformTheme::DialogType type)
             || QSysInfo::windowsVersion() <= QSysInfo::WV_2003) {
             return new QWindowsXpFileDialogHelper();
         }
-        if (QSysInfo::windowsVersion() > QSysInfo::WV_XP)
+        if (QSysInfo::windowsVersion() > QSysInfo::WV_2003)
             return new QWindowsFileDialogHelper();
 #else
         return new QWindowsFileDialogHelper();

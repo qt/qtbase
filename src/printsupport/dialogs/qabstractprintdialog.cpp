@@ -460,6 +460,10 @@ void QAbstractPrintDialog::setOptionTabs(const QList<QWidget*> &tabs)
   is shown with exec(), done() causes the local event loop to finish,
   and exec() to return \a result.
 
+  \note This function does not apply to the Native Print Dialog on the Mac
+  OS X and Windows platforms, because the dialog is required to be modal
+  and only the user can close it.
+
   \sa QDialog::done()
 */
 void QPrintDialog::done(int result)

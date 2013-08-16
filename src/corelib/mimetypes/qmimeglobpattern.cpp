@@ -77,9 +77,11 @@ void QMimeGlobMatchResult::addMatch(const QString &mimeType, int weight, const Q
         m_matchingPatternLength = pattern.length();
         m_weight = weight;
     }
-    m_matchingMimeTypes.append(mimeType);
-    if (pattern.startsWith(QLatin1String("*.")))
-        m_foundSuffix = pattern.mid(2);
+    if (!m_matchingMimeTypes.contains(mimeType)) {
+        m_matchingMimeTypes.append(mimeType);
+        if (pattern.startsWith(QLatin1String("*.")))
+            m_foundSuffix = pattern.mid(2);
+    }
 }
 
 /*!

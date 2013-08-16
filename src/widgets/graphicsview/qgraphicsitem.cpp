@@ -4199,9 +4199,14 @@ QTransform QGraphicsItem::deviceTransform(const QTransform &viewportTransform) c
         return QTransform();
     }
 
-    // First translate the base untransformable item.
-    untransformedAncestor->d_ptr->ensureSceneTransform();
-    QPointF mappedPoint = (untransformedAncestor->d_ptr->sceneTransform * viewportTransform).map(QPointF(0, 0));
+    // Determine the inherited origin. Find the parent of the topmost untransformable.
+    // Use its scene transform to map the position of the untransformable. Then use
+    // that viewport position as the anchoring point for the untransformable subtree.
+    QGraphicsItem *parentOfUntransformedAncestor = untransformedAncestor->parentItem();
+    QTransform inheritedMatrix;
+    if (parentOfUntransformedAncestor)
+        inheritedMatrix = parentOfUntransformedAncestor->sceneTransform();
+    QPointF mappedPoint = (inheritedMatrix * viewportTransform).map(untransformedAncestor->pos());
 
     // COMBINE
     QTransform matrix = QTransform::fromTranslate(mappedPoint.x(), mappedPoint.y());
@@ -7355,7 +7360,6 @@ void QGraphicsItem::updateMicroFocus()
                     if (qApp)
                         qApp->inputMethod()->update(Qt::ImQueryAll);
                     break;
-                    }
                 }
             }
         }

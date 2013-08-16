@@ -92,6 +92,7 @@ protected:
 private:
     Q_DISABLE_COPY(QDesktopWidget)
     Q_DECLARE_PRIVATE(QDesktopWidget)
+    Q_PRIVATE_SLOT(d_func(), void _q_updateScreens())
 
     friend class QApplication;
     friend class QApplicationPrivate;
