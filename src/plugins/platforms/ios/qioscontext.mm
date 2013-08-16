@@ -151,17 +151,17 @@ GLuint QIOSContext::defaultFramebufferObject(QPlatformSurface *surface) const
         connect(window, SIGNAL(destroyed(QObject*)), this, SLOT(windowDestroyed(QObject*)));
     }
 
-    // Ensure that the FBO's buffers match the size of the window
+    // Ensure that the FBO's buffers match the size of the layer
     QIOSWindow *platformWindow = static_cast<QIOSWindow *>(surface);
-    if (framebufferObject.renderbufferWidth != platformWindow->effectiveWidth() ||
-        framebufferObject.renderbufferHeight != platformWindow->effectiveHeight()) {
+    UIView *view = reinterpret_cast<UIView *>(platformWindow->winId());
+    CAEAGLLayer *layer = static_cast<CAEAGLLayer *>(view.layer);
+    if (framebufferObject.renderbufferWidth != (layer.frame.size.width * layer.contentsScale) ||
+        framebufferObject.renderbufferHeight != (layer.frame.size.height * layer.contentsScale)) {
 
         [EAGLContext setCurrentContext:m_eaglContext];
         glBindFramebuffer(GL_FRAMEBUFFER, framebufferObject.handle);
 
         glBindRenderbuffer(GL_RENDERBUFFER, framebufferObject.colorRenderbuffer);
-        UIView *view = reinterpret_cast<UIView *>(platformWindow->winId());
-        CAEAGLLayer *layer = static_cast<CAEAGLLayer *>(view.layer);
         [m_eaglContext renderbufferStorage:GL_RENDERBUFFER fromDrawable:layer];
 
         glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &framebufferObject.renderbufferWidth);
