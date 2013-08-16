@@ -638,7 +638,7 @@ static const struct {
     { Qt::Key_Hangul_Special,  QT_TRANSLATE_NOOP("QShortcut", "Hangul Special") },
 
     // --------------------------------------------------------------
-    // Miscellaenous keys
+    // Miscellaneous keys
     { Qt::Key_Cancel,  QT_TRANSLATE_NOOP("QShortcut", "Cancel") },
     { Qt::Key_Printer,  QT_TRANSLATE_NOOP("QShortcut", "Printer") },
     { Qt::Key_Execute,  QT_TRANSLATE_NOOP("QShortcut", "Execute") },
