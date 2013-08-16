@@ -95,11 +95,11 @@ private:
 class QJNIObject
 {
 public:
-    QJNIObject(const char *className) : d(new QJNIObjectPrivate(className)) { }
+    explicit QJNIObject(const char *className) : d(new QJNIObjectPrivate(className)) { }
     QJNIObject(const char *className, const char *sig, ...);
-    QJNIObject(jclass clazz) : d(new QJNIObjectPrivate(clazz)) { }
+    explicit QJNIObject(jclass clazz) : d(new QJNIObjectPrivate(clazz)) { }
     QJNIObject(jclass clazz, const char *sig, ...);
-    QJNIObject(jobject obj) : d(new QJNIObjectPrivate(obj)) { }
+    explicit QJNIObject(jobject obj) : d(new QJNIObjectPrivate(obj)) { }
 
     virtual ~QJNIObject() { }
 
