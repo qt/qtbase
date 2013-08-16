@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef QPUSHBUTTON_P_H
+#define QPUSHBUTTON_P_H
+
 #include "private/qabstractbutton_p.h"
 
 //
@@ -88,3 +91,5 @@ public:
 };
 
 QT_END_NAMESPACE
+
+#endif // QPUSHBUTTON_P_H
