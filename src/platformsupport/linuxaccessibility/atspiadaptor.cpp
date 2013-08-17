@@ -2230,16 +2230,21 @@ bool AtSpiAdaptor::tableInterface(QAccessibleInterface *interface, const QString
         int index = message.arguments().at(0).toInt();
         bool success = false;
 
-        int row, col, rowExtents, colExtents;
-        bool isSelected;
+        int row = -1;
+        int col = -1;
+        int rowExtents = -1;
+        int colExtents = -1;
+        bool isSelected = false;
 
         int cols = interface->tableInterface()->columnCount();
-        row = index/cols;
-        col = index%cols;
-        QAccessibleTableCellInterface *cell = interface->tableInterface()->cellAt(row, col)->tableCellInterface();
-        if (cell) {
-            cell->rowColumnExtents(&row, &col, &rowExtents, &colExtents, &isSelected);
-            success = true;
+        if (cols > 0) {
+            row = index / cols;
+            col = index % cols;
+            QAccessibleTableCellInterface *cell = interface->tableInterface()->cellAt(row, col)->tableCellInterface();
+            if (cell) {
+                cell->rowColumnExtents(&row, &col, &rowExtents, &colExtents, &isSelected);
+                success = true;
+            }
         }
 
         QVariantList list;
