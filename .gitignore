@@ -73,7 +73,6 @@ bin/linguist*
 bin/lrelease*
 bin/lupdate*
 bin/lconvert*
-bin/mkv8snapshot*
 bin/moc*
 bin/makeqpf*
 bin/pixeltool*

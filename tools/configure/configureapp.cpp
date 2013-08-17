@@ -178,7 +178,6 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "AUDIO_BACKEND" ]   = "auto";
     dictionary[ "WMF_BACKEND" ]     = "auto";
     dictionary[ "WMSDK" ]           = "auto";
-    dictionary[ "V8SNAPSHOT" ]      = "auto";
     dictionary[ "QML_DEBUG" ]       = "yes";
     dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
     dictionary[ "DIRECTWRITE" ]     = "no";
@@ -2132,8 +2131,6 @@ bool Configure::checkAvailability(const QString &part)
                     && !QStandardPaths::findExecutable(QStringLiteral("xgConsole.exe")).isEmpty();
     } else if (part == "WMSDK") {
         available = findFile("wmsdk.h");
-    } else if (part == "V8SNAPSHOT") {
-        available = true;
     } else if (part == "AUDIO_BACKEND") {
         available = true;
     } else if (part == "WMF_BACKEND") {
@@ -2251,8 +2248,6 @@ void Configure::autoDetection()
         dictionary["OPENSSL"] = checkAvailability("OPENSSL") ? "yes" : "no";
     if (dictionary["DBUS"] == "auto")
         dictionary["DBUS"] = checkAvailability("DBUS") ? "yes" : "no";
-    if (dictionary["V8SNAPSHOT"] == "auto")
-        dictionary["V8SNAPSHOT"] = (dictionary["V8"] == "yes") && checkAvailability("V8SNAPSHOT") ? "yes" : "no";
     if (dictionary["QML_DEBUG"] == "auto")
         dictionary["QML_DEBUG"] = dictionary["QML"] == "yes" ? "yes" : "no";
     if (dictionary["AUDIO_BACKEND"] == "auto")
@@ -2671,10 +2666,6 @@ void Configure::generateOutputVars()
 
     // We currently have no switch for QtConcurrent, so add it unconditionally.
     qtConfig += "concurrent";
-
-    // ### Vestige
-    if (dictionary[ "V8SNAPSHOT" ] == "yes")
-        qtConfig += "v8snapshot";
 
     if (dictionary[ "SYSTEM_PROXIES" ] == "yes")
         qtConfig += "system-proxies";

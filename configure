@@ -891,7 +891,6 @@ CFG_SKIP_MODULES=""
 CFG_COMPILE_EXAMPLES=yes
 CFG_RELEASE_QMAKE=no
 CFG_AUDIO_BACKEND=auto
-CFG_V8SNAPSHOT=auto
 CFG_QML_DEBUG=yes
 CFG_JAVASCRIPTCORE_JIT=auto
 CFG_PKGCONFIG=auto
@@ -6040,7 +6039,6 @@ fi
 # supported and on which compilers.
 #
 canBuildQtConcurrent="yes"
-canUseV8Snapshot="yes"
 
 case "$XPLATFORM" in
     hpux-g++*)
@@ -6173,33 +6171,6 @@ fi
 # ### Vestige
 if [ "$CFG_WEBKIT" = "debug" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG webkit-debug"
-fi
-
-# ### Vestige
-QT_CONFIG="$QT_CONFIG v8"
-# Detect snapshot support
-if [ "$CFG_ARCH" != "$CFG_HOST_ARCH" ]; then
-    case "$CFG_HOST_ARCH,$CFG_ARCH" in
-        i386,arm)
-        ;;
-    *) canUseV8Snapshot="no"
-        ;;
-    esac
-else
-    if [ -n "$_SBOX_DIR" -a "$CFG_ARCH" = "arm" ]; then
-        # QEMU crashes when building inside Scratchbox with an ARM target
-        canUseV8Snapshot="no"
-    fi
-fi
-if [ "$CFG_V8SNAPSHOT" = "auto" ]; then
-    CFG_V8SNAPSHOT="$canUseV8Snapshot"
-fi
-if [ "$CFG_V8SNAPSHOT" = "yes" -a "$canUseV8Snapshot" = "no" ]; then
-    echo "Error: V8 snapshot was requested, but is not supported on this platform."
-    exit 1
-fi
-if [ "$CFG_V8SNAPSHOT" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG v8snapshot"
 fi
 
 # ### Vestige
