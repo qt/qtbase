@@ -496,22 +496,22 @@ namespace QtPrivate {
     template<typename Func> struct FunctionPointer { enum {ArgumentCount = -1}; };
 
     template <typename, typename, typename, typename> struct FunctorCall;
-    template <int... I, typename... SignalArgs, typename R, typename Function>
-    struct FunctorCall<IndexesList<I...>, List<SignalArgs...>, R, Function> {
+    template <int... II, typename... SignalArgs, typename R, typename Function>
+    struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, Function> {
         static void call(Function f, void **arg) {
-            f((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[I+1]))...), ApplyReturnValue<R>(arg[0]);
+            f((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[II+1]))...), ApplyReturnValue<R>(arg[0]);
         }
     };
-    template <int... I, typename... SignalArgs, typename R, typename... SlotArgs, typename SlotRet, class Obj>
-    struct FunctorCall<IndexesList<I...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...)> {
+    template <int... II, typename... SignalArgs, typename R, typename... SlotArgs, typename SlotRet, class Obj>
+    struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...)> {
         static void call(SlotRet (Obj::*f)(SlotArgs...), Obj *o, void **arg) {
-            (o->*f)((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[I+1]))...), ApplyReturnValue<R>(arg[0]);
+            (o->*f)((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[II+1]))...), ApplyReturnValue<R>(arg[0]);
         }
     };
-    template <int... I, typename... SignalArgs, typename R, typename... SlotArgs, typename SlotRet, class Obj>
-    struct FunctorCall<IndexesList<I...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...) const> {
+    template <int... II, typename... SignalArgs, typename R, typename... SlotArgs, typename SlotRet, class Obj>
+    struct FunctorCall<IndexesList<II...>, List<SignalArgs...>, R, SlotRet (Obj::*)(SlotArgs...) const> {
         static void call(SlotRet (Obj::*f)(SlotArgs...) const, Obj *o, void **arg) {
-            (o->*f)((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[I+1]))...), ApplyReturnValue<R>(arg[0]);
+            (o->*f)((*reinterpret_cast<typename RemoveRef<SignalArgs>::Type *>(arg[II+1]))...), ApplyReturnValue<R>(arg[0]);
         }
     };
 
