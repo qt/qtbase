@@ -6040,11 +6040,13 @@ void tst_QNetworkReply::sslSessionSharingFromPersistentSession()
     QByteArray sslSession = warmupReply->sslConfiguration().session();
     QCOMPARE(!sslSession.isEmpty(), sessionPersistenceEnabled);
 
-    // test server sends a life time hint of 0, which is not common
-    // practice; however it is good enough because the default is -1
-    int expectedSessionTicketLifeTimeHint = sessionPersistenceEnabled ? 0 : -1;
-    QCOMPARE(warmupReply->sslConfiguration().sessionTicketLifeTimeHint(),
-             expectedSessionTicketLifeTimeHint);
+    // test server sends a life time hint of 0 (old server) or 300 (new server),
+    // without session ticket we get -1
+    QList<int> expectedSessionTicketLifeTimeHint = sessionPersistenceEnabled
+            ? QList<int>() << 0 << 300 : QList<int>() << -1;
+    QVERIFY2(expectedSessionTicketLifeTimeHint.contains(
+                 warmupReply->sslConfiguration().sessionTicketLifeTimeHint()),
+             "server did not send expected session life time hint");
 
     warmupReply->deleteLater();
 
