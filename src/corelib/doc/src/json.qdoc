@@ -99,6 +99,8 @@
     A valid JSON document is either an array or an object, so a document always starts
     with a square or curly bracket.
 
+    \sa {JSON Save Game Example}
+
 
     \section1 The JSON Classes
 

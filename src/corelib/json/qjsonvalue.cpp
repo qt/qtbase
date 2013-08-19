@@ -81,6 +81,8 @@ QT_BEGIN_NAMESPACE
     Values are strictly typed internally and contrary to QVariant will not attempt to do any implicit type
     conversions. This implies that converting to a type that is not stored in the value will return a default
     constructed return value.
+
+    \sa {JSON Support in Qt}, {JSON Save Game Example}
 */
 
 /*!
