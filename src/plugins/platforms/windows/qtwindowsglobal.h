@@ -88,6 +88,7 @@ enum WindowsEventType // Simplify event types
     CursorEvent = MouseEventFlag + 3,
     TouchEvent = TouchEventFlag + 1,
     NonClientMouseEvent = NonClientEventFlag + MouseEventFlag + 1,
+    NonClientHitTest = NonClientEventFlag + 2,
     KeyEvent = KeyEventFlag + 1,
     KeyDownEvent = KeyEventFlag + KeyDownEventFlag + 1,
     InputMethodKeyEvent = InputMethodEventFlag + KeyEventFlag + 1,
@@ -142,6 +143,10 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
         return QtWindows::ResizeEvent;
     case WM_NCCALCSIZE:
         return QtWindows::CalculateSize;
+#ifndef Q_OS_WINCE
+    case WM_NCHITTEST:
+        return QtWindows::NonClientHitTest;
+#endif // !Q_OS_WINCE
     case WM_GETMINMAXINFO:
         return QtWindows::QuerySizeHints;
     case WM_KEYDOWN:                        // keyboard event

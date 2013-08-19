@@ -234,7 +234,8 @@ public:
     void releaseDC();
 #ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_GETMINMAXINFO
     void getSizeHints(MINMAXINFO *mmi) const;
-#endif
+    bool handleNonClientHitTest(const QPoint &globalPos, LRESULT *result) const;
+#endif // !Q_OS_WINCE
 
 #ifndef QT_NO_CURSOR
     QWindowsWindowCursor cursor() const { return m_cursor; }

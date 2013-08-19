@@ -819,7 +819,9 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return true;// maybe available on some SDKs revisit WM_NCCALCSIZE
     case QtWindows::CalculateSize:
         return QWindowsGeometryHint::handleCalculateSize(platformWindow->customMargins(), msg, result);
-#endif
+    case QtWindows::NonClientHitTest:
+        return platformWindow->handleNonClientHitTest(QPoint(msg.pt.x, msg.pt.y), result);
+#endif // !Q_OS_WINCE
     case QtWindows::ExposeEvent:
         return platformWindow->handleWmPaint(hwnd, message, wParam, lParam);
     case QtWindows::NonClientMouseEvent:
