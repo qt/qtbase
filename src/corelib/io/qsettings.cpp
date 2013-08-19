@@ -3443,7 +3443,7 @@ void QSettings::setUserIniPath(const QString &dir)
     \c XDG_CONFIG_HOME environment variable. The default SystemScope
     paths on Unix and Mac OS X (\c /etc/xdg) can be overridden when
     building the Qt library using the \c configure script's \c
-    --sysconfdir flag (see QLibraryInfo for details).
+    -sysconfdir flag (see QLibraryInfo for details).
 
     Setting the NativeFormat paths on Windows and Mac OS X has no
     effect.
