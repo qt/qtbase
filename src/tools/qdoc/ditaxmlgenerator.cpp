@@ -3698,7 +3698,7 @@ QString DitaXmlGenerator::guidForNode(const Node* node)
   Constructs a file name appropriate for the \a node and returns
   it. If the \a node is not a fake node, or if it is a fake node but
   it is neither an external page node nor an image node or a ditamap,
-  call the PageGenerator::fileName() function.
+  call the Generator::fileName() function.
  */
 QString DitaXmlGenerator::fileName(const Node* node)
 {

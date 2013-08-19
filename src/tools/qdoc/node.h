@@ -193,6 +193,8 @@ public:
     void markNotSeen() { seen_ = false; }
 
     virtual bool isInnerNode() const = 0;
+    virtual bool isExample() const { return false; }
+    virtual bool isExampleFile() const { return false; }
     virtual bool isLeaf() const { return false; }
     virtual bool isReimp() const { return false; }
     virtual bool isFunction() const { return false; }
@@ -510,6 +512,8 @@ public:
     virtual QString nameForLists() const { return title(); }
     virtual void setImageFileName(const QString& ) { }
     virtual bool isGroup() const { return (subType() == Node::Group); }
+    virtual bool isExample() const { return (subType() == Node::Example); }
+    virtual bool isExampleFile() const { return (parent() && parent()->isExample()); }
 
 protected:
     SubType nodeSubtype_;

@@ -358,6 +358,11 @@ QString Generator::fileBase(const Node *node) const
         if (node->subType() == Node::Module) {
             base.append("-module");
         }
+        if (node->isExample() || node->isExampleFile())
+            base.prepend(project.toLower() + QLatin1Char('-'));
+        if (node->isExample())
+            base.append(QLatin1String("-example"));
+
     }
 
     // the code below is effectively equivalent to:
