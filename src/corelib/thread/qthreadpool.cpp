@@ -223,8 +223,6 @@ void QThreadPoolPrivate::enqueueTask(QRunnable *runnable, int priority)
 
 int QThreadPoolPrivate::activeThreadCount() const
 {
-    // To improve scalability this function is called without holding
-    // the mutex lock -- keep it thread-safe.
     return (allThreads.count()
             - expiredThreads.count()
             - waitingThreads
@@ -485,12 +483,11 @@ bool QThreadPool::tryStart(QRunnable *runnable)
 
     Q_D(QThreadPool);
 
-    // To improve scalability perform a check on the thread count
-    // before locking the mutex.
+    QMutexLocker locker(&d->mutex);
+
     if (d->allThreads.isEmpty() == false && d->activeThreadCount() >= d->maxThreadCount)
         return false;
 
-    QMutexLocker locker(&d->mutex);
     return d->tryStart(runnable);
 }
 
@@ -564,6 +561,7 @@ void QThreadPool::setMaxThreadCount(int maxThreadCount)
 int QThreadPool::activeThreadCount() const
 {
     Q_D(const QThreadPool);
+    QMutexLocker locker(&d->mutex);
     return d->activeThreadCount();
 }
 
