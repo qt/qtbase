@@ -11,12 +11,6 @@
 
 load(cmake_functions)
 
-CMAKE_MODULE_NAME = $$cmakeModuleName($${MODULE})
-
-CMAKE_MODULE_DEPS = $$cmakeModuleList($$sort_depends(QT.$${MODULE}.depends, QT.))
-CMAKE_PARTIAL_MODULE_DEPS = $$replace(CMAKE_MODULE_DEPS, ";", ";Qt5::")
-!isEmpty(CMAKE_PARTIAL_MODULE_DEPS):CMAKE_QT5_MODULE_DEPS = "Qt5::$${CMAKE_PARTIAL_MODULE_DEPS}"
-
 # Several distros (ArchLinux, Fedora) have in the past installed libraries
 # in /lib(64)?, but are now moving to install libraries in /usr/lib(64)?/.
 # The /lib paths are made symlinks to the /usr/lib paths. If someone searching
@@ -74,9 +68,36 @@ contains(CMAKE_HOST_DATA_DIR, "^\\.\\./.*") {
 
 static|staticlib:CMAKE_STATIC_TYPE = true
 
+CMAKE_DEBUG_TYPE =
+CMAKE_RELEASE_TYPE =
+
+# Requirements:
+# * If Qt is configured with -debug, we're creating debug libraries and not
+#   release libraries, regardless of whether we're on a platform where
+#   debug_and_release is true.
+# * If Qt is configured with -release, we're creating release libraries and not
+#   debug libraries, regardless of whether we're on a platform where
+#   debug_and_release is true.
+# * If Qt is configured with neither -debug nor -release, and we are on a
+#   platform where debug_and_release is true, we're creating both
+#   debug and release libraries.
+# * If Qt is configured with -debug on a platform where debug_and_release is
+#   true, and 'make release' is subsequently invoked, CMake is only aware of
+#   the debug libraries at build time.
+
+equals(QMAKE_HOST.os, Windows): CMAKE_BIN_SUFFIX = ".exe"
+if(build_all|CONFIG(debug, debug|release)): CMAKE_DEBUG_TYPE = debug
+if(build_all|CONFIG(release, debug|release)): CMAKE_RELEASE_TYPE = release
+
 unix:contains(QT_CONFIG, reduce_relocations):CMAKE_ADD_FPIE_FLAGS = "true"
 
 CMAKE_MKSPEC = $$[QMAKE_XSPEC]
+
+CMAKE_MODULE_NAME = $$cmakeModuleName($${MODULE})
+
+CMAKE_MODULE_DEPS = $$cmakeModuleList($$sort_depends(QT.$${MODULE}.depends, QT.))
+CMAKE_PARTIAL_MODULE_DEPS = $$replace(CMAKE_MODULE_DEPS, ";", ";Qt5::")
+!isEmpty(CMAKE_PARTIAL_MODULE_DEPS):CMAKE_QT5_MODULE_DEPS = "Qt5::$${CMAKE_PARTIAL_MODULE_DEPS}"
 
 CMAKE_QT_STEM = Qt$$eval(QT.$${MODULE}.MAJOR_VERSION)$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}
 
@@ -147,27 +168,6 @@ mac {
         CMAKE_LIB_SONAME = lib$${CMAKE_QT_STEM}.so.$$eval(QT.$${MODULE}.MAJOR_VERSION)
     }
 }
-
-CMAKE_DEBUG_TYPE =
-CMAKE_RELEASE_TYPE =
-
-# Requirements:
-# * If Qt is configured with -debug, we're creating debug libraries and not
-#   release libraries, regardless of whether we're on a platform where
-#   debug_and_release is true.
-# * If Qt is configured with -release, we're creating release libraries and not
-#   debug libraries, regardless of whether we're on a platform where
-#   debug_and_release is true.
-# * If Qt is configured with neither -debug nor -release, and we are on a
-#   platform where debug_and_release is true, we're creating both
-#   debug and release libraries.
-# * If Qt is configured with -debug on a platform where debug_and_release is
-#   true, and 'make release' is subsequently invoked, CMake is only aware of
-#   the debug libraries at build time.
-
-equals(QMAKE_HOST.os, Windows): CMAKE_BIN_SUFFIX = ".exe"
-if (build_all|CONFIG(debug, debug|release)):CMAKE_DEBUG_TYPE = debug
-if (build_all|CONFIG(release, debug|release)):CMAKE_RELEASE_TYPE = release
 
 INSTALLS += cmake_qt5_module_files
 
