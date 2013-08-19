@@ -31,6 +31,7 @@
             <!-- Splash screen -->
         </activity>
     </application>
+    <uses-sdk android:targetSdkVersion="14" android:minSdkVersion="9"/>
     <supports-screens android:largeScreens="true" android:normalScreens="true" android:anyDensity="true" android:smallScreens="true"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
