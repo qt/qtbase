@@ -24,15 +24,16 @@ warnings_are_errors:warning_clean {
     # This setting is compiler-dependent anyway because it depends on the version of the
     # compiler.
     clang {
-        # Apple clang 4.0+ or clang 3.1+
-        greaterThan(QT_CLANG_MAJOR_VERSION, 3) | \
-        if(equals(QT_CLANG_MAJOR_VERSION, 3):greaterThan(QT_CLANG_MINOR_VERSION, 1)) | \
-        greaterThan(QT_APPLE_CLANG_MAJOR_VERSION, 3) {
+        # Apple clang 4.0-4.2
+        # Regular clang is not tested
+        ver = $${QT_APPLE_CLANG_MAJOR_VERSION}.$${QT_APPLE_CLANG_MINOR_VERSION}
+        contains(ver, "4\\.[012]") {
             QMAKE_CXXFLAGS += -Werror -Wno-error=\\$${LITERAL_HASH}warnings $$WERROR
         }
-    } else:intel_icc {
-        # Intel CC 13.0+ (a.k.a. Intel Composer XE 2013)
-        greaterThan(QT_ICC_MAJOR_VERSION, 12) {
+    } else:intel_icc:linux {
+        # Intel CC 13.0 - 14.0, on Linux only
+        ver = $${QT_ICC_MAJOR_VERSION}.$${QT_ICC_MINOR_VERSION}
+        linux:contains(ver, "(13\\.|14\\.0)") {
             # 177: function "entity" was declared but never referenced
             #      (too aggressive; ICC reports even for functions created due to template instantiation)
             # 1224: #warning directive
@@ -40,10 +41,10 @@ warnings_are_errors:warning_clean {
             #      (NULL in C++ is usually a literal 0)
             QMAKE_CXXFLAGS += -Werror -ww177,1224,1881 $$WERROR
         }
-    } else:gcc {
-        # GCC 4.6+
-        # note: there was no GCC 3.6 and this assumes no one is crazy enough to compile Qt with GCC 2.7
-        greaterThan(QT_GCC_MAJOR_VERSION, 4)|greaterThan(QT_GCC_MINOR_VERSION, 5) {
+    } else:gcc:!clang:!intel_icc {
+        # GCC 4.6-4.8
+        ver = $${QT_GCC_MAJOR_VERSION}.$${QT_GCC_MINOR_VERSION}
+        contains(ver, "4\\.[678]") {
             QMAKE_CXXFLAGS += -Werror -Wno-error=cpp $$WERROR
 
             # GCC prints this bogus warning, after it has inlined a lot of code
@@ -51,4 +52,5 @@ warnings_are_errors:warning_clean {
             QMAKE_CXXFLAGS += -Wno-error=strict-overflow
         }
     }
+    unset(ver)
 }
