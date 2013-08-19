@@ -307,10 +307,25 @@ static qint64 qt_mktime(QDate *date, QTime *time, QDateTimePrivate::DaylightStat
     local.tm_wday = 0;
     local.tm_yday = 0;
     local.tm_isdst = -1;
-    const time_t secsSinceEpoch = mktime(&local);
+#if defined(Q_OS_WIN)
+    int hh = local.tm_hour;
+#endif // Q_OS_WIN
+    time_t secsSinceEpoch = mktime(&local);
     if (secsSinceEpoch != time_t(-1)) {
         *date = QDate(local.tm_year + 1900, local.tm_mon + 1, local.tm_mday);
         *time = QTime(local.tm_hour, local.tm_min, local.tm_sec, msec);
+#if defined(Q_OS_WIN)
+        // Windows mktime for the missing hour subtracts 1 hour from the time
+        // instead of adding 1 hour.  If time differs and is standard time then
+        // this has happened, so add 2 hours to the time and 1 hour to the msecs
+        if (local.tm_isdst == 0 && local.tm_hour != hh) {
+            if (time->hour() >= 22)
+                *date = date->addDays(1);
+            *time = time->addSecs(2 * SECS_PER_HOUR);
+            secsSinceEpoch += SECS_PER_HOUR;
+            local.tm_isdst = 1;
+        }
+#endif // Q_OS_WIN
         if (local.tm_isdst >= 1) {
             if (daylightStatus)
                 *daylightStatus = QDateTimePrivate::DaylightTime;
@@ -2502,6 +2517,8 @@ static qint64 localMSecsToEpochMSecs(qint64 localMsecs, QDate *localDate = 0, QT
 
 void QDateTimePrivate::setTimeSpec(Qt::TimeSpec spec, int offsetSeconds)
 {
+    clearValidDateTime();
+
     switch (spec) {
     case Qt::OffsetFromUTC:
         if (offsetSeconds == 0) {
@@ -2550,6 +2567,9 @@ void QDateTimePrivate::setDateTime(const QDate &date, const QTime &time)
 
     // Set msecs serial value
     m_msecs = (days * MSECS_PER_DAY) + ds;
+
+    // Set if date and time are valid
+    checkValidDateTime();
 }
 
 void QDateTimePrivate::getDateTime(QDate *date, QTime *time) const
@@ -2561,6 +2581,58 @@ void QDateTimePrivate::getDateTime(QDate *date, QTime *time) const
 
     if (isNullTime())
         *time = QTime();
+}
+
+// Check the UTC / offsetFromUTC validity
+void QDateTimePrivate::checkValidDateTime()
+{
+    switch (m_spec) {
+    case Qt::OffsetFromUTC:
+    case Qt::UTC:
+        if (isValidDate() && isValidTime())
+            setValidDateTime();
+        else
+            clearValidDateTime();
+        break;
+    case Qt::LocalTime:
+        // Defer checking until required as can be expensive
+        clearValidDateTime();
+        m_offsetFromUtc = 0;
+        break;
+    }
+}
+
+// Refresh the LocalTime validity and offset
+void QDateTimePrivate::refreshDateTime()
+{
+    // Always set by setDateTime so just return
+    if (m_spec == Qt::UTC || m_spec == Qt::OffsetFromUTC)
+        return;
+
+    // If not valid date and time then is invalid
+    if (!isValidDate() || !isValidTime()) {
+        clearValidDateTime();
+        m_offsetFromUtc = 0;
+        return;
+    }
+
+    // We have a valid date and time and a Qt::LocalTime that needs calculating
+    QDate date;
+    QTime time;
+    getDateTime(&date, &time);
+    // LocalTime and TimeZone might fall into "missing" DaylightTime transition hour
+    // Calling toEpochMSecs will adjust the returned date/time if it does
+    QDate testDate;
+    QTime testTime;
+    qint64 epochMSecs = localMSecsToEpochMSecs(m_msecs, &testDate, &testTime);
+    if (testDate == date && testTime == time) {
+        setValidDateTime();
+        // Cache the offset to use in toMSecsSinceEpoch()
+        m_offsetFromUtc = (m_msecs - epochMSecs) / 1000;
+    } else {
+        clearValidDateTime();
+        m_offsetFromUtc = 0;
+    }
 }
 
 /*****************************************************************************
@@ -2658,6 +2730,12 @@ void QDateTimePrivate::getDateTime(QDate *date, QTime *time) const
     means QDateTime doesn't take into account changes in a locale's
     time zone before 1970, even if the system's time zone database
     supports that information.
+
+    QDateTime takes into consideration the Standard Time to Daylight Time
+    transition.  For example if the transition is at 2am and the clock goes
+    forward to 3am, then there is a "missing" hour from 02:00:00 to 02:59:59.999
+    which QDateTime considers to be invalid.  Any date maths performed
+    will take this missing hour into account and return a valid result.
 
     \section2 Offset From UTC
 
@@ -2800,15 +2878,21 @@ bool QDateTime::isNull() const
 }
 
 /*!
-    Returns true if both the date and the time are valid; otherwise
-    returns false.
+    Returns true if both the date and the time are valid and they are valid in
+    the current Qt::TimeSpec, otherwise returns false.
+
+    If the timeSpec() is Qt::LocalTime then the date and time are
+    checked to see if they fall in the Standard Time to Daylight Time transition
+    hour, i.e. if the transition is at 2am and the clock goes forward to 3am
+    then the time from 02:00:00 to 02:59:59.999 is considered to be invalid.
 
     \sa QDate::isValid(), QTime::isValid()
 */
 
 bool QDateTime::isValid() const
 {
-    return d->isValidDate() && d->isValidTime();
+    d->refreshDateTime();
+    return (d->isValidDateTime());
 }
 
 /*!
@@ -2867,16 +2951,8 @@ Qt::TimeSpec QDateTime::timeSpec() const
 
 int QDateTime::offsetFromUtc() const
 {
-    switch (d->m_spec) {
-    case Qt::OffsetFromUTC:
-        return d->m_offsetFromUtc;
-    case Qt::UTC:
-        return 0;
-    case Qt::LocalTime:
-        if (isValid())
-            return (d->m_msecs - toMSecsSinceEpoch()) / 1000;
-    }
-    return 0;
+    d->refreshDateTime();
+    return d->m_offsetFromUtc;
 }
 
 /*!
@@ -2958,6 +3034,7 @@ void QDateTime::setTimeSpec(Qt::TimeSpec spec)
 {
     detach();
     d->setTimeSpec(spec, 0);
+    d->checkValidDateTime();
 }
 
 /*!
@@ -2979,6 +3056,7 @@ void QDateTime::setOffsetFromUtc(int offsetSeconds)
 {
     detach();
     d->setTimeSpec(Qt::OffsetFromUTC, offsetSeconds);
+    d->checkValidDateTime();
 }
 
 /*!
@@ -2998,15 +3076,8 @@ void QDateTime::setOffsetFromUtc(int offsetSeconds)
 */
 qint64 QDateTime::toMSecsSinceEpoch() const
 {
-    switch (d->m_spec) {
-    case Qt::UTC:
-        return d->m_msecs;
-    case Qt::OffsetFromUTC:
-        return d->m_msecs - (d->m_offsetFromUtc * 1000);
-    case Qt::LocalTime:
-        return localMSecsToEpochMSecs(d->m_msecs);
-    }
-    return 0;
+    d->refreshDateTime();
+    return d->toMSecsSinceEpoch();
 }
 
 /*!
@@ -3033,7 +3104,9 @@ qint64 QDateTime::toMSecsSinceEpoch() const
 
 uint QDateTime::toTime_t() const
 {
-    qint64 retval = toMSecsSinceEpoch() / 1000;
+    if (!isValid())
+        return uint(-1);
+    qint64 retval = d->toMSecsSinceEpoch() / 1000;
     if (quint64(retval) >= Q_UINT64_C(0xFFFFFFFF))
         return uint(-1);
     return uint(retval);
@@ -3061,11 +3134,17 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
     switch (d->m_spec) {
     case Qt::UTC:
         d->m_msecs = msecs;
-        d->m_status = d->m_status | QDateTimePrivate::ValidDate | QDateTimePrivate::ValidTime;
+        d->m_status = d->m_status
+                    | QDateTimePrivate::ValidDate
+                    | QDateTimePrivate::ValidTime
+                    | QDateTimePrivate::ValidDateTime;
         break;
     case Qt::OffsetFromUTC:
         d->m_msecs = msecs + (d->m_offsetFromUtc * 1000);
-        d->m_status = d->m_status | QDateTimePrivate::ValidDate | QDateTimePrivate::ValidTime;
+        d->m_status = d->m_status
+                    | QDateTimePrivate::ValidDate
+                    | QDateTimePrivate::ValidTime
+                    | QDateTimePrivate::ValidDateTime;
         break;
     case Qt::LocalTime: {
         QDate dt;
@@ -3311,6 +3390,12 @@ QString QDateTime::toString(const QString& format) const
     later than the datetime of this object (or earlier if \a ndays is
     negative).
 
+    If the timeSpec() is Qt::LocalTime and the resulting
+    date and time fall in the Standard Time to Daylight Time transition
+    hour then the result will be adjusted accordingly, i.e. if the transition
+    is at 2am and the clock goes forward to 3am and the result falls between
+    2am and 3am then the result will be adjusted to fall after 3am.
+
     \sa daysTo(), addMonths(), addYears(), addSecs()
 */
 
@@ -3321,7 +3406,12 @@ QDateTime QDateTime::addDays(qint64 ndays) const
     QDate date;
     QTime time;
     d->getDateTime(&date, &time);
-    dt.d->setDateTime(date.addDays(ndays), time);
+    date = date.addDays(ndays);
+    // Result might fall into "missing" DaylightTime transition hour,
+    // so call conversion and use the adjusted returned time
+    if (d->m_spec == Qt::LocalTime)
+        localMSecsToEpochMSecs(timeToMSecs(date, time), &date, &time);
+    dt.d->setDateTime(date, time);
     return dt;
 }
 
@@ -3329,6 +3419,12 @@ QDateTime QDateTime::addDays(qint64 ndays) const
     Returns a QDateTime object containing a datetime \a nmonths months
     later than the datetime of this object (or earlier if \a nmonths
     is negative).
+
+    If the timeSpec() is Qt::LocalTime and the resulting
+    date and time fall in the Standard Time to Daylight Time transition
+    hour then the result will be adjusted accordingly, i.e. if the transition
+    is at 2am and the clock goes forward to 3am and the result falls between
+    2am and 3am then the result will be adjusted to fall after 3am.
 
     \sa daysTo(), addDays(), addYears(), addSecs()
 */
@@ -3340,7 +3436,12 @@ QDateTime QDateTime::addMonths(int nmonths) const
     QDate date;
     QTime time;
     d->getDateTime(&date, &time);
-    dt.d->setDateTime(date.addMonths(nmonths), time);
+    date = date.addMonths(nmonths);
+    // Result might fall into "missing" DaylightTime transition hour,
+    // so call conversion and use the adjusted returned time
+    if (d->m_spec == Qt::LocalTime)
+        localMSecsToEpochMSecs(timeToMSecs(date, time), &date, &time);
+    dt.d->setDateTime(date, time);
     return dt;
 }
 
@@ -3348,6 +3449,12 @@ QDateTime QDateTime::addMonths(int nmonths) const
     Returns a QDateTime object containing a datetime \a nyears years
     later than the datetime of this object (or earlier if \a nyears is
     negative).
+
+    If the timeSpec() is Qt::LocalTime and the resulting
+    date and time fall in the Standard Time to Daylight Time transition
+    hour then the result will be adjusted accordingly, i.e. if the transition
+    is at 2am and the clock goes forward to 3am and the result falls between
+    2am and 3am then the result will be adjusted to fall after 3am.
 
     \sa daysTo(), addDays(), addMonths(), addSecs()
 */
@@ -3359,7 +3466,12 @@ QDateTime QDateTime::addYears(int nyears) const
     QDate date;
     QTime time;
     d->getDateTime(&date, &time);
-    dt.d->setDateTime(date.addYears(nyears), time);
+    date = date.addYears(nyears);
+    // Result might fall into "missing" DaylightTime transition hour,
+    // so call conversion and use the adjusted returned time
+    if (d->m_spec == Qt::LocalTime)
+        localMSecsToEpochMSecs(timeToMSecs(date, time), &date, &time);
+    dt.d->setDateTime(date, time);
     return dt;
 }
 
@@ -3396,7 +3508,7 @@ QDateTime QDateTime::addMSecs(qint64 msecs) const
     dt.detach();
     if (d->m_spec == Qt::LocalTime)
         // Convert to real UTC first in case crosses daylight transition
-        dt.setMSecsSinceEpoch(toMSecsSinceEpoch() + msecs);
+        dt.setMSecsSinceEpoch(d->toMSecsSinceEpoch() + msecs);
     else
         // No need to convert, just add on
         dt.d->m_msecs = dt.d->m_msecs + msecs;
@@ -3465,7 +3577,7 @@ qint64 QDateTime::msecsTo(const QDateTime &other) const
     if (!isValid() || !other.isValid())
         return 0;
 
-    return other.toMSecsSinceEpoch() - toMSecsSinceEpoch();
+    return other.d->toMSecsSinceEpoch() - d->toMSecsSinceEpoch();
 }
 
 /*!

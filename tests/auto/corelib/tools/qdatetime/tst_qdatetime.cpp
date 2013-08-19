@@ -1024,7 +1024,6 @@ void tst_QDateTime::addSecs()
     QFETCH(QDateTime, dt);
     QFETCH(int, nsecs);
     QFETCH(QDateTime, result);
-
 #ifdef Q_OS_IRIX
     QEXPECT_FAIL("cet4", "IRIX databases say 1970 had DST", Abort);
 #endif
@@ -2342,7 +2341,6 @@ void tst_QDateTime::daylightTransitions() const
         QCOMPARE(before.toMSecsSinceEpoch(), daylight2012 - 1);
 
         QDateTime missing(QDate(2012, 3, 25), QTime(2, 0, 0));
-        QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
         QVERIFY(!missing.isValid());
         QCOMPARE(missing.date(), QDate(2012, 3, 25));
         QCOMPARE(missing.time(), QTime(2, 0, 0));
@@ -2374,7 +2372,6 @@ void tst_QDateTime::daylightTransitions() const
         QCOMPARE(utc.date(), QDate(2012, 3, 25));
         QCOMPARE(utc.time(), QTime(2, 0, 0));
         utc.setTimeSpec(Qt::LocalTime);
-        QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
         QVERIFY(!utc.isValid());
         QCOMPARE(utc.date(), QDate(2012, 3, 25));
         QCOMPARE(utc.time(), QTime(2, 0, 0));
@@ -2390,7 +2387,6 @@ void tst_QDateTime::daylightTransitions() const
         test = test.addYears(1);
         QVERIFY(test.isValid());
         QCOMPARE(test.date(), QDate(2012, 3, 25));
-        QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
         QCOMPARE(test.time(), QTime(3, 0, 0));
 
         test = QDateTime(QDate(2012, 2, 25), QTime(2, 0, 0));
@@ -2398,7 +2394,6 @@ void tst_QDateTime::daylightTransitions() const
         test = test.addMonths(1);
         QVERIFY(test.isValid());
         QCOMPARE(test.date(), QDate(2012, 3, 25));
-        QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
         QCOMPARE(test.time(), QTime(3, 0, 0));
 
         test = QDateTime(QDate(2012, 3, 24), QTime(2, 0, 0));
@@ -2406,7 +2401,6 @@ void tst_QDateTime::daylightTransitions() const
         test = test.addDays(1);
         QVERIFY(test.isValid());
         QCOMPARE(test.date(), QDate(2012, 3, 25));
-        QEXPECT_FAIL("", "QDateTime doesn't properly support Daylight Transitions", Continue);
         QCOMPARE(test.time(), QTime(3, 0, 0));
 
         test = QDateTime(QDate(2012, 3, 25), QTime(1, 0, 0));

@@ -86,6 +86,7 @@ public:
         NullTime            = 0x02,
         ValidDate           = 0x04,
         ValidTime           = 0x08,
+        ValidDateTime       = 0x10
     };
     Q_DECLARE_FLAGS(StatusFlags, StatusFlag)
 
@@ -114,11 +115,20 @@ public:
     void setDateTime(const QDate &date, const QTime &time);
     void getDateTime(QDate *date, QTime *time) const;
 
+    // Returns msecs since epoch, assumes offset value is current
+    inline qint64 toMSecsSinceEpoch() const { return (m_msecs - (m_offsetFromUtc * 1000)); }
+
+    void checkValidDateTime();
+    void refreshDateTime();
+
     // Get/set date and time status
     inline bool isNullDate() const { return (m_status & NullDate) == NullDate; }
     inline bool isNullTime() const { return (m_status & NullTime) == NullTime; }
     inline bool isValidDate() const { return (m_status & ValidDate) == ValidDate; }
     inline bool isValidTime() const { return (m_status & ValidTime) == ValidTime; }
+    inline bool isValidDateTime() const { return (m_status & ValidDateTime) == ValidDateTime; }
+    inline void setValidDateTime() { m_status = m_status | ValidDateTime; }
+    inline void clearValidDateTime() { m_status = m_status & ~ValidDateTime; }
 
     static inline qint64 minJd() { return QDate::minJd(); }
     static inline qint64 maxJd() { return QDate::maxJd(); }
