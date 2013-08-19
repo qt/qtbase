@@ -135,6 +135,11 @@ QStringList QGenericUnixTheme::xdgIconThemePaths()
         if (xdgIconsDir.isDir())
             paths.append(xdgIconsDir.absoluteFilePath());
     }
+
+    const QFileInfo pixmapsIconsDir(QStringLiteral("/usr/share/pixmaps"));
+    if (pixmapsIconsDir.isDir())
+        paths.append(pixmapsIconsDir.absoluteFilePath());
+
     return paths;
 }
 
