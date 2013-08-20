@@ -911,7 +911,8 @@ void QCocoaWindow::clearNSWindow(NSWindow *window)
     [window setContentView:nil];
     [window setDelegate:nil];
     [window clearPlatformWindow];
-    [[NSNotificationCenter defaultCenter] removeObserver:m_contentView];
+    [[NSNotificationCenter defaultCenter] removeObserver:m_contentView
+                                          name:nil object:window];
 }
 
 // Returns the current global screen geometry for the nswindow associated with this window.
@@ -1023,7 +1024,7 @@ qreal QCocoaWindow::devicePixelRatio() const
 
 void QCocoaWindow::exposeWindow()
 {
-    if (!m_isExposed) {
+    if (!m_isExposed && ![[m_contentView superview] isHidden]) {
         m_isExposed = true;
         QWindowSystemInterface::handleExposeEvent(window(), QRegion(geometry()));
     }
