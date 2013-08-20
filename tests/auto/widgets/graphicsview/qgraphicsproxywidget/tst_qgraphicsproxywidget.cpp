@@ -808,6 +808,8 @@ void tst_QGraphicsProxyWidget::focusNextPrevChild()
 
     if (!hasScene)
         delete proxy;
+    if (!hasWidget)
+        delete widget;
 }
 
 void tst_QGraphicsProxyWidget::focusOutEvent_data()
@@ -1393,6 +1395,9 @@ void tst_QGraphicsProxyWidget::sizePolicy()
             QCOMPARE(proxy.sizePolicy(), proxyPol);
         else
             QCOMPARE(proxy.sizePolicy(), widgetPol);
+
+        if (!hasWidget)
+            delete widget;
     }
 }
 
