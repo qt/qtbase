@@ -4384,7 +4384,18 @@ QDataStream &operator<<(QDataStream &out, const QDateTime &dateTime)
 {
     QDate dt;
     QTime tm;
-    if (out.version() == QDataStream::Qt_5_0) {
+
+    if (out.version() >= QDataStream::Qt_5_2) {
+
+        // In 5.2 we switched to using Qt::TimeSpec and added offset support
+        dateTime.d->getDateTime(&dt, &tm);
+        out << dt << tm << qint8(dateTime.timeSpec());
+        if (dateTime.timeSpec() == Qt::OffsetFromUTC)
+            out << qint32(dateTime.offsetFromUtc());
+
+    } else if (out.version() == QDataStream::Qt_5_0) {
+
+        // In Qt 5.0 we incorrectly serialised all datetimes as UTC.
         // This approach is wrong and should not be used again; it breaks
         // the guarantee that a deserialised local datetime is the same time
         // of day, regardless of which timezone it was serialised in.
@@ -4392,12 +4403,15 @@ QDataStream &operator<<(QDataStream &out, const QDateTime &dateTime)
             dateTime.toUTC().d->getDateTime(&dt, &tm);
         else
             dateTime.d->getDateTime(&dt, &tm);
-        out << dt << tm << (qint8)dateTime.timeSpec();
-    } else {
+        out << dt << tm << qint8(dateTime.timeSpec());
+
+    } else if (out.version() >= QDataStream::Qt_4_0) {
+
+        // From 4.0 to 5.1 (except 5.0) we used QDateTimePrivate::Spec
         dateTime.d->getDateTime(&dt, &tm);
         out << dt << tm;
         if (out.version() >= QDataStream::Qt_4_0) {
-            switch (dateTime.d->m_spec) {
+            switch (dateTime.timeSpec()) {
             case Qt::UTC:
                 out << (qint8)QDateTimePrivate::UTC;
                 break;
@@ -4409,11 +4423,15 @@ QDataStream &operator<<(QDataStream &out, const QDateTime &dateTime)
                 break;
             }
         }
-        if (out.version() >= QDataStream::Qt_5_2
-            && dateTime.d->m_spec == Qt::OffsetFromUTC) {
-            out << qint32(dateTime.offsetFromUtc());
-        }
+
+    } else { // version < QDataStream::Qt_4_0
+
+        // Before 4.0 there was no TimeSpec, only Qt::LocalTime was supported
+        dateTime.d->getDateTime(&dt, &tm);
+        out << dt << tm;
+
     }
+
     return out;
 }
 
@@ -4431,37 +4449,52 @@ QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)
 
     QDate dt;
     QTime tm;
-    in >> dt >> tm;
+    qint8 ts = 0;
+    Qt::TimeSpec spec = Qt::LocalTime;
+    qint32 offset = 0;
 
-    if (in.version() == QDataStream::Qt_5_0) {
-        qint8 ts = 0;
-        in >> ts;
-        // We incorrectly stored the datetime as UTC in Qt_5_0.
-        dateTime.setTimeSpec(Qt::UTC);
-        dateTime.d->setDateTime(dt, tm);
-        dateTime = dateTime.toTimeSpec(static_cast<Qt::TimeSpec>(ts));
-    } else {
-        qint8 ts = (qint8)QDateTimePrivate::LocalUnknown;
-        if (in.version() >= QDataStream::Qt_4_0)
-            in >> ts;
-        qint32 offset = 0;
-        if (in.version() >= QDataStream::Qt_5_2 && ts == qint8(QDateTimePrivate::OffsetFromUTC))
+    if (in.version() >= QDataStream::Qt_5_2) {
+
+        // In 5.2 we switched to using Qt::TimeSpec and added offset support
+        in >> dt >> tm >> ts;
+        spec = static_cast<Qt::TimeSpec>(ts);
+        if (spec == Qt::OffsetFromUTC)
             in >> offset;
+        dateTime = QDateTime(dt, tm, spec, offset);
+
+    } else if (in.version() == QDataStream::Qt_5_0) {
+
+        // In Qt 5.0 we incorrectly serialised all datetimes as UTC
+        in >> dt >> tm >> ts;
+        spec = static_cast<Qt::TimeSpec>(ts);
+        dateTime = QDateTime(dt, tm, Qt::UTC);
+        dateTime = dateTime.toTimeSpec(spec);
+
+    } else if (in.version() >= QDataStream::Qt_4_0) {
+
+        // From 4.0 to 5.1 (except 5.0) we used QDateTimePrivate::Spec
+        in >> dt >> tm >> ts;
         switch ((QDateTimePrivate::Spec)ts) {
         case QDateTimePrivate::UTC:
-            dateTime.d->m_spec = Qt::UTC;
+            spec = Qt::UTC;
             break;
         case QDateTimePrivate::OffsetFromUTC:
-            dateTime.d->m_spec = Qt::OffsetFromUTC;
+            spec = Qt::OffsetFromUTC;
             break;
         case QDateTimePrivate::LocalUnknown:
         case QDateTimePrivate::LocalStandard:
         case QDateTimePrivate::LocalDST:
-            dateTime.d->m_spec = Qt::LocalTime;
+            spec = Qt::LocalTime;
             break;
         }
-        dateTime.d->m_offsetFromUtc = offset;
-        dateTime.d->setDateTime(dt, tm);
+        dateTime = QDateTime(dt, tm, spec, offset);
+
+    } else { // version < QDataStream::Qt_4_0
+
+        // Before 4.0 there was no TimeSpec, only Qt::LocalTime was supported
+        in >> dt >> tm;
+        dateTime = QDateTime(dt, tm, spec, offset);
+
     }
 
     return in;
