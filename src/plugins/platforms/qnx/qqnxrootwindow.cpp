@@ -188,35 +188,8 @@ void QQnxRootWindow::makeTranslucent()
     int result;
 
     errno = 0;
-    result = screen_destroy_window_buffers(m_window);
-    if (result != 0) {
-        qFatal("QQnxRootWindow: failed to destroy window buffer, errno=%d", errno);
-    }
-
-    QRect geometry = m_screen->geometry();
-    errno = 0;
-    int val[2];
-    val[0] = geometry.width();
-    val[1] = geometry.height();
-    result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_BUFFER_SIZE, val);
-    if (result != 0) {
-        qFatal("QQnxRootWindow: failed to set window buffer size, errno=%d", errno);
-    }
-
-    errno = 0;
-    result = screen_create_window_buffers(m_window, 1);
-    if (result != 0) {
-        qFatal("QQNX: failed to create window buffer, errno=%d", errno);
-    }
-
-    // Install an alpha channel on the root window.
-    //
-    // This is necessary in order to avoid interfering with any particular
-    // toplevel widget's QQnxWindow window instance from showing transparent
-    // if it desires.
-    errno = 0;
-    val[0] = SCREEN_TRANSPARENCY_SOURCE_OVER;
-    result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_TRANSPARENCY, val);
+    const int val = SCREEN_TRANSPARENCY_DISCARD;
+    result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_TRANSPARENCY, &val);
     if (result != 0) {
         qFatal("QQnxRootWindow: failed to set window transparency, errno=%d", errno);
     }
