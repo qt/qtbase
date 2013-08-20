@@ -3185,6 +3185,9 @@ void tst_QGraphicsProxyWidget::bypassGraphicsProxyWidget_data()
 
 void tst_QGraphicsProxyWidget::bypassGraphicsProxyWidget()
 {
+#if defined(Q_OS_MAC) || defined(Q_OS_WIN)
+    QSKIP("Test case unstable on this platform, QTBUG-33067");
+#endif
     QFETCH(bool, bypass);
 
     QWidget *widget = new QWidget;
