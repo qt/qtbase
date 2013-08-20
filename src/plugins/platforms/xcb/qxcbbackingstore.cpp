@@ -306,6 +306,10 @@ void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
     Q_XCB_NOOP(connection());
 
     QXcbWindow *platformWindow = static_cast<QXcbWindow *>(window->handle());
+    if (!platformWindow) {
+        qWarning("QXcbBackingStore::flush: QWindow has no platform window (QTBUG-32681)");
+        return;
+    }
 
     QVector<QRect> rects = clipped.rects();
     for (int i = 0; i < rects.size(); ++i)
