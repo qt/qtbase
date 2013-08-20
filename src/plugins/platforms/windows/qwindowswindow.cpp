@@ -485,6 +485,18 @@ QWindowsWindow::WindowData
             qDebug().nospace() << "Created desktop window " << w << result.hwnd;
         return result;
     }
+    if ((flags & Qt::WindowType_Mask) == Qt::ForeignWindow) {
+        result.hwnd = reinterpret_cast<HWND>(w->winId());
+        Q_ASSERT(result.hwnd);
+        const LONG_PTR style = GetWindowLongPtr(result.hwnd, GWL_STYLE);
+        const LONG_PTR exStyle = GetWindowLongPtr(result.hwnd, GWL_EXSTYLE);
+        result.geometry = frameGeometry(result.hwnd, !GetParent(result.hwnd));
+        result.frame = QWindowsGeometryHint::frame(style, exStyle);
+        result.embedded = false;
+        if (QWindowsContext::verboseWindows)
+            qDebug() << "Foreign window: " << w << result.hwnd << result.geometry << result.frame;
+        return result;
+    }
 
     const HINSTANCE appinst = (HINSTANCE)GetModuleHandle(0);
 
@@ -894,7 +906,7 @@ void QWindowsWindow::destroyWindow()
             }
         }
 #endif // !Q_OS_WINCE
-        if (m_data.hwnd != GetDesktopWindow())
+        if (m_data.hwnd != GetDesktopWindow() && window()->type() != Qt::ForeignWindow)
             DestroyWindow(m_data.hwnd);
         context->removeWindow(m_data.hwnd);
         m_data.hwnd = 0;
