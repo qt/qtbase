@@ -513,15 +513,10 @@ private:
     bool isValidIterator(const iterator &it) const
     {
 #if defined(QT_DEBUG) && !defined(Q_HASH_NO_ITERATOR_DEBUG)
-        union {
-            QHashData *iteratorHashData;
-            QHashData::Node *node;
-        };
-        node = it.i;
+        QHashData::Node *node = it.i;
         while (node->next)
             node = node->next;
-
-        return (iteratorHashData == d);
+        return (static_cast<void *>(node) == d);
 #else
         Q_UNUSED(it);
         return true;
