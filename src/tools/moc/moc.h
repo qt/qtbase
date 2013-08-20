@@ -47,6 +47,8 @@
 #include <qmap.h>
 #include <qpair.h>
 #include <qjsondocument.h>
+#include <qjsonarray.h>
+#include <qjsonobject.h>
 #include <stdio.h>
 #include <ctype.h>
 
@@ -171,6 +173,7 @@ struct ClassDef {
 
     struct PluginData {
         QByteArray iid;
+        QMap<QString, QJsonArray> metaArgs;
         QJsonDocument metaData;
     } pluginData;
 
@@ -213,6 +216,7 @@ public:
     QMap<QByteArray, QByteArray> interface2IdMap;
     QList<QByteArray> metaTypes;
     QSet<QByteArray> knownQObjectClasses;
+    QMap<QString, QJsonArray> metaArgs;
 
     void parse();
     void generate(FILE *out);

@@ -1462,6 +1462,10 @@ void Generator::generatePluginMetaData()
     data.insert(debugKey, QJsonValue(false));
     data.insert(QStringLiteral("MetaData"), cdef->pluginData.metaData.object());
 
+    // Add -M args from the command line:
+    foreach (const QString &key, cdef->pluginData.metaArgs.keys())
+        data.insert(key, cdef->pluginData.metaArgs.value(key));
+
     fputs("\nQT_PLUGIN_METADATA_SECTION const uint qt_section_alignment_dummy = 42;\n\n"
           "#ifdef QT_NO_DEBUG\n", out);
     writePluginMetaData(out, data);

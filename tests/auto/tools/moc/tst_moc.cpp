@@ -531,6 +531,7 @@ private slots:
     void frameworkSearchPath();
     void cstyleEnums();
     void defineMacroViaCmdline();
+    void specifyMetaTagsFromCmdline();
     void invokable();
     void singleFunctionKeywordSignalAndSlot();
     void templateGtGt();
@@ -1168,6 +1169,37 @@ void tst_Moc::defineMacroViaCmdline()
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
+}
+
+// tst_Moc::specifyMetaTagsFromCmdline()
+// plugin_metadata.h contains a plugin which we register here. Since we're not building this
+// application as a plugin, we need top copy some of the initializer code found in qplugin.h:
+extern "C" QObject *qt_plugin_instance();
+extern "C" const char *qt_plugin_query_metadata();
+class StaticPluginInstance{
+public:
+    StaticPluginInstance() {
+        QStaticPlugin plugin = { &qt_plugin_instance, &qt_plugin_query_metadata };
+        qRegisterStaticPluginFunction(plugin);
+    }
+};
+static StaticPluginInstance staticInstance;
+
+void tst_Moc::specifyMetaTagsFromCmdline() {
+    foreach (const QStaticPlugin &plugin, QPluginLoader::staticPlugins()) {
+        const QString iid = plugin.metaData().value(QLatin1String("IID")).toString();
+        if (iid == QLatin1String("test.meta.tags")) {
+            const QJsonArray metaTagsUriList = plugin.metaData().value("uri").toArray();
+            QCOMPARE(metaTagsUriList.size(), 2);
+
+            // The following uri-s are set in the pro file using
+            // -Muri=com.company.app -Muri=com.company.app.private
+            QCOMPARE(metaTagsUriList[0].toString(), QLatin1String("com.company.app"));
+            QCOMPARE(metaTagsUriList[1].toString(), QLatin1String("com.company.app.private"));
+            return;
+        }
+    }
+    QFAIL("Could not find plugin with IID 'test.meta.tags'");
 }
 
 void tst_Moc::invokable()

@@ -242,6 +242,11 @@ int runMoc(int argc, char **argv)
     undefineOption.setValueName(QStringLiteral("macro"));
     parser.addOption(undefineOption);
 
+    QCommandLineOption metadataOption(QStringLiteral("M"));
+    metadataOption.setDescription(QStringLiteral("Add key/value pair to plugin meta data"));
+    metadataOption.setValueName(QStringLiteral("key=value"));
+    parser.addOption(metadataOption);
+
     QCommandLineOption noIncludeOption(QStringLiteral("i"));
     noIncludeOption.setDescription(QStringLiteral("Do not generate an #include statement."));
     parser.addOption(noIncludeOption);
@@ -383,6 +388,24 @@ int runMoc(int argc, char **argv)
             return 1;
         }
         moc.filename = filename.toLocal8Bit();
+    }
+
+    foreach (const QString &md, parser.values(metadataOption)) {
+        int split = md.indexOf(QLatin1Char('='));
+        QString key = md.left(split);
+        QString value = md.mid(split + 1);
+
+        if (split == -1 || key.isEmpty() || value.isEmpty()) {
+            error("missing key or value for option '-M'");
+        } else if (key.indexOf(QLatin1Char('.')) != -1) {
+            // Don't allow keys with '.' for now, since we might need this
+            // format later for more advanced meta data API
+            error("A key cannot contain the letter '.' for option '-M'");
+        } else {
+            QJsonArray array = moc.metaArgs.value(key);
+            array.append(value);
+            moc.metaArgs.insert(key, array);
+        }
     }
 
     moc.currentFilenames.push(filename.toLocal8Bit());
