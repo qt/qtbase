@@ -125,6 +125,7 @@ enum {
     CMD_INCLUDE,
     CMD_INLINEIMAGE,
     CMD_INDEX,
+    CMD_INPUT,
     CMD_KEYWORD,
     CMD_L,
     CMD_LEGALESE,
@@ -242,6 +243,7 @@ static struct {
     { "include", CMD_INCLUDE, 0 },
     { "inlineimage", CMD_INLINEIMAGE, 0 },
     { "index", CMD_INDEX, 0 }, // ### don't document for now
+    { "input", CMD_INPUT, 0 },
     { "keyword", CMD_KEYWORD, 0 },
     { "l", CMD_L, 0 },
     { "legalese", CMD_LEGALESE, 0 },
@@ -923,6 +925,7 @@ void DocParser::parse(const QString& source,
                     enterPara(Atom::ImportantLeft, Atom::ImportantRight);
                     break;
                 case CMD_INCLUDE:
+                case CMD_INPUT:
                 {
                     QString fileName = getArgument();
                     QString identifier = getRestOfLine();
@@ -1681,16 +1684,17 @@ void DocParser::insertTarget(const QString &target, bool keyword)
 void DocParser::include(const QString& fileName, const QString& identifier)
 {
     if (location().depth() > 16)
-        location().fatal(tr("Too many nested '\\%1's")
-                         .arg(cmdName(CMD_INCLUDE)));
+        location().fatal(tr("Too many nested '\\%1's").arg(cmdName(CMD_INCLUDE)));
 
     QString userFriendlyFilePath;
-    // ### use current directory?
+    QString filePath = Doc::config()->getIncludeFilePath(fileName);
+#if 0
     QString filePath = Config::findFile(location(),
                                         sourceFiles,
                                         sourceDirs,
                                         fileName,
                                         userFriendlyFilePath);
+#endif
     if (filePath.isEmpty()) {
         location().warning(tr("Cannot find qdoc include file '%1'").arg(fileName));
     }
@@ -3043,6 +3047,8 @@ const QStringMultiMap &Doc::metaTagMap() const
     return priv && priv->extra ? priv->extra->metaMap : *null_QStringMultiMap();
 }
 
+const Config* Doc::config_ = 0;
+
 void Doc::initialize(const Config& config)
 {
     DocParser::tabSize = config.getInt(CONFIG_TABSIZE);
@@ -3053,8 +3059,8 @@ void Doc::initialize(const Config& config)
     DocParser::quoting = config.getBool(CONFIG_QUOTINGINFORMATION);
 
     QmlClassNode::qmlOnly = config.getBool(CONFIG_QMLONLY);
-
     QStringMap reverseAliasMap;
+    config_ = &config;
 
     QSet<QString> commands = config.subVars(CONFIG_ALIAS);
     QSet<QString>::ConstIterator c = commands.constBegin();

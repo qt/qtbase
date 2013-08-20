@@ -112,6 +112,7 @@ public:
                             const QString& dirsVar,
                             const QSet<QString> &excludedDirs = QSet<QString>(),
                             const QSet<QString> &excludedFiles = QSet<QString>());
+    QString getIncludeFilePath(const QString& fileName) const;
     QStringList getExampleQdocFiles(const QSet<QString> &excludedDirs, const QSet<QString> &excludedFiles);
     QStringList getExampleImageFiles(const QSet<QString> &excludedDirs, const QSet<QString> &excludedFiles);
 
@@ -160,6 +161,7 @@ private:
     static QMap<QString, QString> extractedDirs;
     static int numInstances;
     static QStack<QString> workingDirs_;
+    static QMap<QString, QStringList> includeFilesMap_;
 };
 
 #define CONFIG_ALIAS                    "alias"

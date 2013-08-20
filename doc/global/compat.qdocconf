@@ -1,5 +1,3 @@
-alias.include                   = input
-
 macro.0                         = "\\\\0"
 macro.n                         = "\\\\n"
 macro.r                         = "\\\\r"

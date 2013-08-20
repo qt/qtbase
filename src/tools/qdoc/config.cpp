@@ -181,6 +181,7 @@ QSet<QString> Config::overrideOutputFormats;
 QMap<QString, QString> Config::extractedDirs;
 int Config::numInstances;
 QStack<QString> Config::workingDirs_;
+QMap<QString, QStringList> Config::includeFilesMap_;
 
 /*!
   \class Config
@@ -201,6 +202,7 @@ Config::Config(const QString& programName)
     lastLocation_ = Location::null;
     configVars_.clear();
     numInstances++;
+    includeFilesMap_.clear();
 }
 
 /*!
@@ -208,6 +210,7 @@ Config::Config(const QString& programName)
  */
 Config::~Config()
 {
+    includeFilesMap_.clear();
 }
 
 /*!
@@ -586,6 +589,33 @@ void Config::subVarsAndValues(const QString& var, ConfigVarMultimap& t) const
         }
         ++v;
     }
+}
+
+/*!
+  Get all .qdocinc files.
+ */
+QString Config::getIncludeFilePath(const QString& fileName) const
+{
+    QString ext = fileName.mid(fileName.lastIndexOf('.'));
+    ext.prepend('*');
+
+    if (!includeFilesMap_.contains(ext)) {
+        QSet<QString> t;
+        QStringList result;
+        QStringList dirs = getCanonicalPathList(CONFIG_SOURCEDIRS);
+        QStringList::ConstIterator d = dirs.constBegin();
+        while (d != dirs.constEnd()) {
+            result += getFilesHere(*d, ext, location(), t, t);
+            ++d;
+        }
+        includeFilesMap_.insert(ext, result);
+    }
+    const QStringList& paths = (*includeFilesMap_.find(ext));
+    for (int i=0; i<paths.size(); ++i) {
+        if (paths[i].endsWith(fileName))
+            return paths[i];
+    }
+    return QString();
 }
 
 /*!

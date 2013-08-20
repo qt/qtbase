@@ -189,10 +189,12 @@ public:
                                      Quoter &quoter,
                                      const QString &fileName);
     static QString canonicalTitle(const QString &title);
+    static const Config* config() { return config_; }
 
 private:
     void detach();
     DocPrivate *priv;
+    static const Config* config_;
 };
 typedef QList<Doc> DocList;
 
