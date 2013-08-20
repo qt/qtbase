@@ -1068,7 +1068,10 @@ void QGuiApplicationPrivate::init()
     bool doGrabUnderDebugger = false;
     QList<QByteArray> pluginList;
     // Get command line params
-
+#ifndef QT_NO_SESSIONMANAGER
+    QString session_id;
+    QString session_key;
+#endif
     int j = argc ? 1 : 0;
     for (int i=1; i<argc; i++) {
         if (argv[i] && *argv[i] != '-') {
@@ -2767,13 +2770,13 @@ bool QGuiApplication::isSessionRestored() const
 QString QGuiApplication::sessionId() const
 {
     Q_D(const QGuiApplication);
-    return d->session_id;
+    return d->session_manager->sessionId();
 }
 
 QString QGuiApplication::sessionKey() const
 {
     Q_D(const QGuiApplication);
-    return d->session_key;
+    return d->session_manager->sessionKey();
 }
 
 bool QGuiApplication::isSavingSession() const
@@ -2782,12 +2785,12 @@ bool QGuiApplication::isSavingSession() const
     return d->is_saving_session;
 }
 
-void QGuiApplicationPrivate::commitData(QSessionManager& manager)
+void QGuiApplicationPrivate::commitData()
 {
     Q_Q(QGuiApplication);
     is_saving_session = true;
-    emit q->commitDataRequest(manager);
-    if (manager.allowsInteraction()) {
+    emit q->commitDataRequest(*session_manager);
+    if (session_manager->allowsInteraction()) {
         QWindowList done;
         QWindowList list = QGuiApplication::topLevelWindows();
         bool cancelled = false;
@@ -2802,17 +2805,17 @@ void QGuiApplicationPrivate::commitData(QSessionManager& manager)
             }
         }
         if (cancelled)
-            manager.cancel();
+            session_manager->cancel();
     }
     is_saving_session = false;
 }
 
 
-void QGuiApplicationPrivate::saveState(QSessionManager &manager)
+void QGuiApplicationPrivate::saveState()
 {
     Q_Q(QGuiApplication);
     is_saving_session = true;
-    emit q->saveStateRequest(manager);
+    emit q->saveStateRequest(*session_manager);
     is_saving_session = false;
 }
 #endif //QT_NO_SESSIONMANAGER

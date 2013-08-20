@@ -234,12 +234,10 @@ public:
 
 #ifndef QT_NO_SESSIONMANAGER
     QSessionManager *session_manager;
-    QString session_id;
-    QString session_key;
     bool is_session_restored;
     bool is_saving_session;
-    void commitData(QSessionManager& sm);
-    void saveState(QSessionManager& sm);
+    void commitData();
+    void saveState();
 #endif
 
     struct ActiveTouchPointsKey {

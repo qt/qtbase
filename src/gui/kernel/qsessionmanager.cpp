@@ -41,8 +41,12 @@
 
 #include <qsessionmanager.h>
 #include <qguiapplication.h>
+#include <qpa/qplatformsessionmanager.h>
+#include <qpa/qplatformintegration.h>
 
 #include <private/qobject_p.h>
+#include <private/qguiapplication_p.h>
+#include <private/qsessionmanager_p.h>
 
 #ifndef QT_NO_SESSIONMANAGER
 
@@ -117,32 +121,24 @@ QT_BEGIN_NAMESPACE
     The default hint is \c RestartIfRunning.
 */
 
-
-class QSessionManagerPrivate : public QObjectPrivate
-{
-public:
-    QSessionManagerPrivate(QSessionManager *m, const QString &id,
-                           const QString &key);
-
-    QStringList restartCommand;
-    QStringList discardCommand;
-    const QString sessionId;
-    const QString sessionKey;
-    QSessionManager::RestartHint restartHint;
-};
-
-QSessionManagerPrivate::QSessionManagerPrivate(QSessionManager*,
-                                               const QString &id,
+QSessionManagerPrivate::QSessionManagerPrivate(const QString &id,
                                                const QString &key)
-    : QObjectPrivate(), sessionId(id), sessionKey(key)
+    : QObjectPrivate()
 {
+    platformSessionManager = QGuiApplicationPrivate::platformIntegration()->createPlatformSessionManager(id, key);
+    Q_ASSERT_X(platformSessionManager, "Platform session management",
+               "No platform session management, should use the default implementation");
+}
+
+QSessionManagerPrivate::~QSessionManagerPrivate()
+{
+    delete platformSessionManager;
+    platformSessionManager = 0;
 }
 
 QSessionManager::QSessionManager(QGuiApplication *app, QString &id, QString &key)
-    : QObject(*(new QSessionManagerPrivate(this, id, key)), app)
+    : QObject(*(new QSessionManagerPrivate(id, key)), app)
 {
-    Q_D(QSessionManager);
-    d->restartHint = RestartIfRunning;
 }
 
 QSessionManager::~QSessionManager()
@@ -160,7 +156,7 @@ QSessionManager::~QSessionManager()
 QString QSessionManager::sessionId() const
 {
     Q_D(const QSessionManager);
-    return d->sessionId;
+    return d->platformSessionManager->sessionId();
 }
 
 /*!
@@ -178,7 +174,7 @@ QString QSessionManager::sessionId() const
 QString QSessionManager::sessionKey() const
 {
     Q_D(const QSessionManager);
-    return d->sessionKey;
+    return d->platformSessionManager->sessionKey();
 }
 
 
@@ -213,7 +209,8 @@ QString QSessionManager::sessionKey() const
 */
 bool QSessionManager::allowsInteraction()
 {
-    return false;
+    Q_D(QSessionManager);
+    return d->platformSessionManager->allowsInteraction();
 }
 
 /*!
@@ -229,7 +226,8 @@ bool QSessionManager::allowsInteraction()
 */
 bool QSessionManager::allowsErrorInteraction()
 {
-    return false;
+    Q_D(QSessionManager);
+    return d->platformSessionManager->allowsErrorInteraction();
 }
 
 /*!
@@ -240,6 +238,8 @@ bool QSessionManager::allowsErrorInteraction()
 */
 void QSessionManager::release()
 {
+    Q_D(QSessionManager);
+    d->platformSessionManager->release();
 }
 
 /*!
@@ -250,6 +250,8 @@ void QSessionManager::release()
 */
 void QSessionManager::cancel()
 {
+    Q_D(QSessionManager);
+    d->platformSessionManager->cancel();
 }
 
 /*!
@@ -268,7 +270,7 @@ void QSessionManager::cancel()
 void QSessionManager::setRestartHint(QSessionManager::RestartHint hint)
 {
     Q_D(QSessionManager);
-    d->restartHint = hint;
+    d->platformSessionManager->setRestartHint(hint);
 }
 
 /*!
@@ -282,7 +284,7 @@ void QSessionManager::setRestartHint(QSessionManager::RestartHint hint)
 QSessionManager::RestartHint QSessionManager::restartHint() const
 {
     Q_D(const QSessionManager);
-    return d->restartHint;
+    return d->platformSessionManager->restartHint();
 }
 
 /*!
@@ -308,7 +310,7 @@ QSessionManager::RestartHint QSessionManager::restartHint() const
 void QSessionManager::setRestartCommand(const QStringList &command)
 {
     Q_D(QSessionManager);
-    d->restartCommand = command;
+    d->platformSessionManager->setRestartCommand(command);
 }
 
 /*!
@@ -323,7 +325,7 @@ void QSessionManager::setRestartCommand(const QStringList &command)
 QStringList QSessionManager::restartCommand() const
 {
     Q_D(const QSessionManager);
-    return d->restartCommand;
+    return d->platformSessionManager->restartCommand();
 }
 
 /*!
@@ -334,7 +336,7 @@ QStringList QSessionManager::restartCommand() const
 void QSessionManager::setDiscardCommand(const QStringList &command)
 {
     Q_D(QSessionManager);
-    d->discardCommand = command;
+    d->platformSessionManager->setDiscardCommand(command);
 }
 
 /*!
@@ -349,7 +351,7 @@ void QSessionManager::setDiscardCommand(const QStringList &command)
 QStringList QSessionManager::discardCommand() const
 {
     Q_D(const QSessionManager);
-    return d->discardCommand;
+    return d->platformSessionManager->discardCommand();
 }
 
 /*!
@@ -363,8 +365,7 @@ QStringList QSessionManager::discardCommand() const
 void QSessionManager::setManagerProperty(const QString &name,
                                          const QString &value)
 {
-    Q_UNUSED(name);
-    Q_UNUSED(value);
+    setManagerProperty(name, QStringList(value));
 }
 
 /*!
@@ -376,8 +377,8 @@ void QSessionManager::setManagerProperty(const QString &name,
 void QSessionManager::setManagerProperty(const QString &name,
                                          const QStringList &value)
 {
-    Q_UNUSED(name);
-    Q_UNUSED(value);
+    Q_D(QSessionManager);
+    d->platformSessionManager->setManagerProperty(name, value);
 }
 
 /*!
@@ -388,7 +389,8 @@ void QSessionManager::setManagerProperty(const QString &name,
 */
 bool QSessionManager::isPhase2() const
 {
-    return false;
+    Q_D(const QSessionManager);
+    return d->platformSessionManager->isPhase2();
 }
 
 /*!
@@ -409,6 +411,8 @@ bool QSessionManager::isPhase2() const
 */
 void QSessionManager::requestPhase2()
 {
+    Q_D(QSessionManager);
+    d->platformSessionManager->requestPhase2();
 }
 
 QT_END_NAMESPACE

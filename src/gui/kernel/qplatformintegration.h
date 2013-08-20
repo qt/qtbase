@@ -74,6 +74,7 @@ class QPlatformTheme;
 class QPlatformDialogHelper;
 class QPlatformSharedGraphicsCache;
 class QPlatformServices;
+class QPlatformSessionManager;
 class QKeyEvent;
 class QPlatformOffscreenSurface;
 class QOffscreenSurface;
@@ -156,6 +157,9 @@ public:
 
     virtual QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const;
 
+#ifndef QT_NO_SESSIONMANAGER
+    virtual QPlatformSessionManager *createPlatformSessionManager(const QString &id, const QString &key) const;
+#endif
 protected:
     void screenAdded(QPlatformScreen *screen);
 };

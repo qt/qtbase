@@ -51,6 +51,10 @@
 #include <private/qdnd_p.h>
 #include <private/qsimpledrag_p.h>
 
+#ifndef QT_NO_SESSIONMANAGER
+# include <qpa/qplatformsessionmanager.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -394,5 +398,18 @@ QPlatformOffscreenSurface *QPlatformIntegration::createPlatformOffscreenSurface(
     Q_UNUSED(surface)
     return 0;
 }
+
+#ifndef QT_NO_SESSIONMANAGER
+/*!
+   \since 5.2
+
+   Factory function for QPlatformSessionManager. The default QPlatformSessionManager provides the same
+   functionality as the QSessionManager.
+*/
+QPlatformSessionManager *QPlatformIntegration::createPlatformSessionManager(const QString &id, const QString &key) const
+{
+    return new QPlatformSessionManager(id, key);
+}
+#endif
 
 QT_END_NAMESPACE
