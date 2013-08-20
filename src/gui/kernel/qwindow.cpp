@@ -2290,24 +2290,22 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
     Q_Q(QWindow);
     // Attempt to close the application only if this has WA_QuitOnClose set and a non-visible parent
     bool quitOnClose = QGuiApplication::quitOnLastWindowClosed() && !q->parent();
-
-    if (quitOnClose) {
-        QWindowList list = QGuiApplication::topLevelWindows();
-        bool lastWindowClosed = true;
-        for (int i = 0; i < list.size(); ++i) {
-            QWindow *w = list.at(i);
-            if (!w->isVisible() || w->transientParent())
-                continue;
-            lastWindowClosed = false;
-            break;
-        }
-        if (lastWindowClosed) {
-            QGuiApplicationPrivate::emitLastWindowClosed();
+    QWindowList list = QGuiApplication::topLevelWindows();
+    bool lastWindowClosed = true;
+    for (int i = 0; i < list.size(); ++i) {
+        QWindow *w = list.at(i);
+        if (!w->isVisible() || w->transientParent())
+            continue;
+        lastWindowClosed = false;
+        break;
+    }
+    if (lastWindowClosed) {
+        QGuiApplicationPrivate::emitLastWindowClosed();
+        if (quitOnClose) {
             QCoreApplicationPrivate *applicationPrivate = static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(QCoreApplication::instance()));
             applicationPrivate->maybeQuit();
         }
     }
-
 }
 
 QWindow *QWindowPrivate::topLevelWindow() const

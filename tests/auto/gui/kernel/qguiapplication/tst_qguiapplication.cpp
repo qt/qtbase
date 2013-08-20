@@ -812,6 +812,33 @@ void tst_QGuiApplication::quitOnLastWindowClosed()
         QCOMPARE(spy.count(), 1);
         QVERIFY(spy2.count() > 15);      // Should be around 20 if closing did not cause the quit
     }
+    {
+        int argc = 0;
+        QGuiApplication app(argc, 0);
+        app.setQuitOnLastWindowClosed(false);
+
+        QTimer timer;
+        timer.setInterval(2000);
+        timer.setSingleShot(true);
+        QObject::connect(&timer, SIGNAL(timeout()), &app, SLOT(quit()));
+
+        QSignalSpy spy(&app, SIGNAL(lastWindowClosed()));
+        QSignalSpy spy2(&timer, SIGNAL(timeout()));
+
+        QPointer<QWindow> mainWindow = new QWindow;
+
+        mainWindow->show();
+
+        QTimer::singleShot(1000, mainWindow, SLOT(close())); // This should not quit the application
+        timer.start();
+
+        app.exec();
+
+        QCOMPARE(spy2.count(), 1); // quit timer fired
+        QCOMPARE(spy.count(), 1); // lastWindowClosed emitted
+
+        app.setQuitOnLastWindowClosed(true); // restore underlying static to default value
+   }
 }
 
 static Qt::ScreenOrientation testOrientationToSend = Qt::PrimaryOrientation;
