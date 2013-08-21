@@ -3033,5 +3033,10 @@ void tst_Moc::QTBUG32933_relatedObjectsDontIncludeItself()
 
 QTEST_MAIN(tst_Moc)
 
+// the generated code must compile with QT_NO_KEYWORDS
+#undef signals
+#undef slots
+#undef emit
+
 #include "tst_moc.moc"
 

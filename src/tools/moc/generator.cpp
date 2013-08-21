@@ -984,9 +984,9 @@ void Generator::generateMetacall()
                     if (!p.notify.isEmpty() && p.notifyId != -1) {
                         const FunctionDef &f = cdef->signalList.at(p.notifyId);
                         if (f.arguments.size() == 0)
-                            fprintf(out, "                emit %s();\n", p.notify.constData());
+                            fprintf(out, "                Q_EMIT %s();\n", p.notify.constData());
                         else if (f.arguments.size() == 1 && f.arguments.at(0).normalizedType == p.type)
-                            fprintf(out, "                emit %s(%s%s);\n",
+                            fprintf(out, "                Q_EMIT %s(%s%s);\n",
                                     p.notify.constData(), prefix.constData(), p.member.constData());
                     }
                     fprintf(out, "            }\n");
