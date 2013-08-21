@@ -1408,14 +1408,27 @@ void QWindowsWindow::handleWindowStateChange(Qt::WindowState state)
         handleHidden();
         QWindowSystemInterface::flushWindowSystemEvents(); // Tell QQuickWindow to stop rendering now.
         break;
-    case Qt::WindowNoState:
+    case Qt::WindowNoState: {
         // QTBUG-17548: We send expose events when receiving WM_Paint, but for
-        // layered windows, we won't receive any WM_Paint.
-        if (GetWindowLongPtr(m_data.hwnd, GWL_EXSTYLE) & WS_EX_LAYERED) {
-            fireExpose(QRegion(0, 0, window()->width(), window()->height()));
-            if (!QWindowsContext::instance()->asyncExpose())
-                QWindowSystemInterface::flushWindowSystemEvents();
+        // layered windows and transient children, we won't receive any WM_Paint.
+        QWindow *w = window();
+        bool exposeEventsSent = false;
+        if (isLayered()) {
+            fireExpose(QRegion(0, 0, w->width(), w->height()));
+            exposeEventsSent = true;
         }
+        foreach (QWindow *child, QGuiApplication::allWindows()) {
+            if (child != w && child->isVisible() && child->transientParent() == w) {
+                QWindowsWindow *platformWindow = QWindowsWindow::baseWindowOf(child);
+                if (platformWindow->isLayered()) {
+                    platformWindow->fireExpose(QRegion(0, 0, child->width(), child->height()));
+                    exposeEventsSent = true;
+                }
+            }
+        }
+        if (exposeEventsSent && !QWindowsContext::instance()->asyncExpose())
+            QWindowSystemInterface::flushWindowSystemEvents();
+    }
         break;
     default:
         break;
