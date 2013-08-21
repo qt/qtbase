@@ -1557,7 +1557,7 @@ void QGuiApplicationPrivate::processKeyEvent(QWindowSystemInterfacePrivate::KeyE
             ) {
         return;
     }
-    if (window->d_func()->blockedByModalWindow) {
+    if (window && window->d_func()->blockedByModalWindow) {
         // a modal window is blocking this window, don't allow key events through
         return;
     }
