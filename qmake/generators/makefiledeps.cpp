@@ -771,20 +771,15 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
         }
         if(Option::debug_level && qmake_endOfLine(*(buffer+x)))
             ++line_count;
-        if(((buffer_len > x+2 &&  *(buffer+x+1) == 'Q' && *(buffer+x+2) == '_')
-                   ||
-            (buffer_len > x+4 &&  *(buffer+x+1) == 'Q' && *(buffer+x+2) == 'O'
-                              &&  *(buffer+x+3) == 'M' && *(buffer+x+4) == '_'))
-                   &&
+        if (buffer_len > x + 2 && buffer[x + 1] == 'Q' && buffer[x + 2] == '_' &&
                   *(buffer + x) != '_' &&
                   (*(buffer + x) < 'a' || *(buffer + x) > 'z') &&
                   (*(buffer + x) < 'A' || *(buffer + x) > 'Z') &&
                   (*(buffer + x) < '0' || *(buffer + x) > '9')) {
             ++x;
             int match = 0;
-            static const char *interesting[] = { "OBJECT", "GADGET",
-                                                 "M_OBJECT" };
-            for(int interest = 0, m1, m2; interest < 3; ++interest) {
+            static const char *interesting[] = { "OBJECT", "GADGET" };
+            for (int interest = 0, m1, m2; interest < 2; ++interest) {
                 if(interest == 0 && ignore_qobject)
                     continue;
                 else if(interest == 1 && ignore_qgadget)
