@@ -487,14 +487,18 @@ static void drawPolygons(qint32 *bits, int width, int height, const QPoint *vert
     }
 }
 
-static QImage makeDistanceField(int imgWidth, int imgHeight, const QPainterPath &path, int dfScale, int offs)
+static void makeDistanceField(QDistanceFieldData *data, const QPainterPath &path, int dfScale, int offs)
 {
-    QImage image(imgWidth, imgHeight, QImage::Format_Indexed8);
+    if (!data || !data->data)
+        return;
 
     if (path.isEmpty()) {
-        image.fill(0);
-        return image;
+        memset(data->data, 0, data->nbytes);
+        return;
     }
+
+    int imgWidth = data->width;
+    int imgHeight = data->height;
 
     QTransform transform;
     transform.translate(offs, offs);
@@ -521,8 +525,8 @@ static QImage makeDistanceField(int imgWidth, int imgHeight, const QPainterPath 
     QVarLengthArray<bool> isConvex;
     QVarLengthArray<bool> needsClipping;
 
-    drawPolygons(bits.data(), imgWidth, imgHeight, pathVertices.data(), indices, pathIndices.size(),
-                 interiorColor);
+    drawPolygons(bits.data(), imgWidth, imgHeight, pathVertices.data(),
+                 indices, pathIndices.size(), interiorColor);
 
     int index = 0;
 
@@ -681,15 +685,11 @@ static QImage makeDistanceField(int imgWidth, int imgHeight, const QPainterPath 
     }
 
     const qint32 *inLine = bits.data();
-    uchar *outLine = image.bits();
-    int padding = image.bytesPerLine() - image.width();
+    uchar *outLine = data->data;
     for (int y = 0; y < imgHeight; ++y) {
         for (int x = 0; x < imgWidth; ++x, ++inLine, ++outLine)
             *outLine = uchar((0x7f80 - *inLine) >> 8);
-        outLine += padding;
     }
-
-    return image;
 }
 
 static bool imageHasNarrowOutlines(const QImage &im)
@@ -769,31 +769,96 @@ bool qt_fontHasNarrowOutlines(const QRawFont &f)
                                                         QRawFont::PixelAntialiasing));
 }
 
-static QImage renderDistanceFieldPath(const QPainterPath &path, bool doubleResolution)
+
+QDistanceFieldData::QDistanceFieldData(const QDistanceFieldData &other)
+    : QSharedData(other)
+    , glyph(other.glyph)
+    , width(other.width)
+    , height(other.height)
+    , nbytes(other.nbytes)
+{
+    if (nbytes && other.data)
+        data = (uchar *)memcpy(malloc(nbytes), other.data, nbytes);
+    else
+        data = 0;
+}
+
+QDistanceFieldData::~QDistanceFieldData()
+{
+    free(data);
+}
+
+QDistanceFieldData *QDistanceFieldData::create(const QSize &size)
+{
+    QDistanceFieldData *data = new QDistanceFieldData;
+
+    if (size.isValid()) {
+        data->width = size.width();
+        data->height = size.height();
+        // pixel data stored as a 1-byte alpha value
+        data->nbytes = data->width * data->height; // tightly packed
+        data->data = (uchar *)malloc(data->nbytes);
+    }
+
+    return data;
+}
+
+QDistanceFieldData *QDistanceFieldData::create(const QPainterPath &path, bool doubleResolution)
 {
     int dfMargin = QT_DISTANCEFIELD_RADIUS(doubleResolution) / QT_DISTANCEFIELD_SCALE(doubleResolution);
     int glyphWidth = qCeil(path.boundingRect().width() / QT_DISTANCEFIELD_SCALE(doubleResolution)) + dfMargin * 2;
 
-    QImage im = makeDistanceField(glyphWidth,
-                                  QT_DISTANCEFIELD_TILESIZE(doubleResolution),
-                                  path,
-                                  QT_DISTANCEFIELD_SCALE(doubleResolution),
-                                  QT_DISTANCEFIELD_RADIUS(doubleResolution) / QT_DISTANCEFIELD_SCALE(doubleResolution));
-    return im;
+    QDistanceFieldData *data = create(QSize(glyphWidth, QT_DISTANCEFIELD_TILESIZE(doubleResolution)));
+
+    makeDistanceField(data,
+                      path,
+                      QT_DISTANCEFIELD_SCALE(doubleResolution),
+                      QT_DISTANCEFIELD_RADIUS(doubleResolution) / QT_DISTANCEFIELD_SCALE(doubleResolution));
+    return data;
 }
 
-QImage qt_renderDistanceFieldGlyph(QFontEngine *fe, glyph_t glyph, bool doubleResolution)
+
+QDistanceField::QDistanceField()
+    : d(new QDistanceFieldData)
 {
-    QFixedPoint position;
-    QPainterPath path;
-    fe->addGlyphsToPath(&glyph, &position, 1, &path, 0);
-    path.translate(-path.boundingRect().topLeft());
-    path.setFillRule(Qt::WindingFill);
-
-    return renderDistanceFieldPath(path, doubleResolution);
 }
 
-QImage qt_renderDistanceFieldGlyph(const QRawFont &font, glyph_t glyph, bool doubleResolution)
+QDistanceField::QDistanceField(int width, int height)
+    : d(QDistanceFieldData::create(QSize(width, height)))
+{
+}
+
+QDistanceField::QDistanceField(const QDistanceField &other)
+{
+    d = other.d;
+}
+
+QDistanceField::QDistanceField(const QRawFont &font, glyph_t glyph, bool doubleResolution)
+{
+    setGlyph(font, glyph, doubleResolution);
+}
+
+QDistanceField::QDistanceField(QFontEngine *fontEngine, glyph_t glyph, bool doubleResolution)
+{
+    setGlyph(fontEngine, glyph, doubleResolution);
+}
+
+QDistanceField::QDistanceField(QDistanceFieldData *data)
+    : d(data)
+{
+}
+
+bool QDistanceField::isNull() const
+{
+    return !d->data;
+}
+
+glyph_t QDistanceField::glyph() const
+{
+    return d->glyph;
+}
+
+void QDistanceField::setGlyph(const QRawFont &font, glyph_t glyph, bool doubleResolution)
 {
     QRawFont renderFont = font;
     renderFont.setPixelSize(QT_DISTANCEFIELD_BASEFONTSIZE(doubleResolution) * QT_DISTANCEFIELD_SCALE(doubleResolution));
@@ -802,7 +867,158 @@ QImage qt_renderDistanceFieldGlyph(const QRawFont &font, glyph_t glyph, bool dou
     path.translate(-path.boundingRect().topLeft());
     path.setFillRule(Qt::WindingFill);
 
-    return renderDistanceFieldPath(path, doubleResolution);
+    d = QDistanceFieldData::create(path, doubleResolution);
+    d->glyph = glyph;
+}
+
+void QDistanceField::setGlyph(QFontEngine *fontEngine, glyph_t glyph, bool doubleResolution)
+{
+    QFixedPoint position;
+    QPainterPath path;
+    fontEngine->addGlyphsToPath(&glyph, &position, 1, &path, 0);
+    path.translate(-path.boundingRect().topLeft());
+    path.setFillRule(Qt::WindingFill);
+
+    d = QDistanceFieldData::create(path, doubleResolution);
+    d->glyph = glyph;
+}
+
+int QDistanceField::width() const
+{
+    return d->width;
+}
+
+int QDistanceField::height() const
+{
+    return d->height;
+}
+
+QDistanceField QDistanceField::copy(const QRect &r) const
+{
+    if (isNull())
+        return QDistanceField();
+
+    if (r.isNull())
+        return QDistanceField(new QDistanceFieldData(*d));
+
+    int x = r.x();
+    int y = r.y();
+    int w = r.width();
+    int h = r.height();
+
+    int dx = 0;
+    int dy = 0;
+    if (w <= 0 || h <= 0)
+        return QDistanceField();
+
+    QDistanceField df(w, h);
+    if (df.isNull())
+        return df;
+
+    if (x < 0 || y < 0 || x + w > d->width || y + h > d->height) {
+        memset(df.d->data, 0, df.d->nbytes);
+        if (x < 0) {
+            dx = -x;
+            x = 0;
+        }
+        if (y < 0) {
+            dy = -y;
+            y = 0;
+        }
+    }
+
+    int pixels_to_copy = qMax(w - dx, 0);
+    if (x > d->width)
+        pixels_to_copy = 0;
+    else if (pixels_to_copy > d->width - x)
+        pixels_to_copy = d->width - x;
+    int lines_to_copy = qMax(h - dy, 0);
+    if (y > d->height)
+        lines_to_copy = 0;
+    else if (lines_to_copy > d->height - y)
+        lines_to_copy = d->height - y;
+
+    const uchar *src = d->data + x + y * d->width;
+    uchar *dest = df.d->data + dx + dy * df.d->width;
+    for (int i = 0; i < lines_to_copy; ++i) {
+        memcpy(dest, src, pixels_to_copy);
+        src += d->width;
+        dest += df.d->width;
+    }
+
+    df.d->glyph = d->glyph;
+
+    return df;
+}
+
+uchar *QDistanceField::bits()
+{
+    return d->data;
+}
+
+const uchar *QDistanceField::bits() const
+{
+    return d->data;
+}
+
+const uchar *QDistanceField::constBits() const
+{
+    return d->data;
+}
+
+uchar *QDistanceField::scanLine(int i)
+{
+    if (isNull())
+        return 0;
+
+    Q_ASSERT(i >= 0 && i < d->height);
+    return d->data + i * d->width;
+}
+
+const uchar *QDistanceField::scanLine(int i) const
+{
+    if (isNull())
+        return 0;
+
+    Q_ASSERT(i >= 0 && i < d->height);
+    return d->data + i * d->width;
+}
+
+const uchar *QDistanceField::constScanLine(int i) const
+{
+    if (isNull())
+        return 0;
+
+    Q_ASSERT(i >= 0 && i < d->height);
+    return d->data + i * d->width;
+}
+
+QImage QDistanceField::toImage(QImage::Format format) const
+{
+    if (isNull())
+        return QImage();
+
+    QImage image(d->width, d->height, format == QImage::Format_Indexed8 ?
+                                      format : QImage::Format_ARGB32_Premultiplied);
+    if (image.isNull())
+        return image;
+
+    if (format == QImage::Format_Indexed8) {
+        for (int y = 0; y < d->height; ++y)
+            memcpy(image.scanLine(y), scanLine(y), d->width);
+    } else {
+        for (int y = 0; y < d->height; ++y) {
+            for (int x = 0; x < d->width; ++x) {
+                uint alpha = *(d->data + x + y * d->width);
+                image.setPixel(x, y, alpha << 24);
+            }
+        }
+
+        if (image.format() != format)
+            image = image.convertToFormat(format);
+    }
+
+    return image;
 }
 
 QT_END_NAMESPACE
