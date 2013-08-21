@@ -285,6 +285,10 @@ static QTouchDevice *touchDevice = 0;
         Qt::WindowState newState = notificationName == NSWindowDidMiniaturizeNotification ?
                     Qt::WindowMinimized : Qt::WindowNoState;
         [self notifyWindowStateChanged:newState];
+        // NSWindowDidOrderOnScreenAndFinishAnimatingNotification is private API, and not
+        // emitted in 10.6, so we bring back the old behavior for that case alone.
+        if (newState == Qt::WindowNoState && QSysInfo::QSysInfo::MacintoshVersion == QSysInfo::MV_10_6)
+            m_platformWindow->exposeWindow();
     } else if ([notificationName isEqualToString: @"NSWindowDidOrderOffScreenNotification"]) {
         m_platformWindow->obscureWindow();
     } else if ([notificationName isEqualToString: @"NSWindowDidOrderOnScreenAndFinishAnimatingNotification"]) {
