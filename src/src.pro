@@ -143,5 +143,9 @@ nacl: SUBDIRS -= src_network src_testlib
 
 android:!android-no-sdk: SUBDIRS += src_android
 
+TR_EXCLUDE = \
+    src_tools_bootstrap src_tools_moc src_tools_rcc src_tools_uic \
+    src_tools_bootstrap_dbus src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
+
 sub-tools.depends = $$TOOLS
 QMAKE_EXTRA_TARGETS = sub-tools

@@ -75,7 +75,7 @@ protected:
 
 private:
     QObject *m_focusObject;
-    QList<QComposeTableElement> m_composeTable;
+    QVector<QComposeTableElement> m_composeTable;
     uint m_composeBuffer[QT_KEYSEQUENCE_MAX_LEN + 1];
     TableGenerator::TableState m_tableState;
 };

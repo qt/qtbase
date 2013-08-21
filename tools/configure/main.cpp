@@ -81,6 +81,11 @@ int runConfigure( int argc, char** argv )
     if (!app.isOk())
         return 3;
 
+    // Generate qdevice.pri
+    app.generateQDevicePri();
+    if (!app.isOk())
+        return 3;
+
     // Prepare the config test build directory.
     app.prepareConfigTests();
     if (!app.isOk())

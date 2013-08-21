@@ -76,14 +76,6 @@ static void saveCoverageTool(const char * appname, bool testfailed, bool install
 #endif
 }
 
-//
-// declare deprecated API from qlogging.h locally
-// (we can't use qInstallMessageHandler because it would break
-// tests that (still) rely on qInstallMsgHandler.)
-//
-typedef void (*QtMsgHandler)(QtMsgType, const char *);
-Q_CORE_EXPORT QtMsgHandler qInstallMsgHandler(QtMsgHandler);
-
 namespace QTest {
 
     int fails = 0;
@@ -212,7 +204,7 @@ namespace QTest {
     static int maxWarnings = 2002;
     static bool installedTestCoverage = true;
 
-    static QtMsgHandler oldMessageHandler;
+    static QtMessageHandler oldMessageHandler;
 
     static bool handleIgnoredMessage(QtMsgType type, const char *msg)
     {
@@ -238,23 +230,17 @@ namespace QTest {
         return false;
     }
 
-// don't warn about qInstallMsgHandler
-#if defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406) && !defined(Q_CC_INTEL)
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
-    static void messageHandler(QtMsgType type, const char *msg)
+    static void messageHandler(QtMsgType type, const QMessageLogContext & /*context*/, const QString &message)
     {
         static QBasicAtomicInt counter = Q_BASIC_ATOMIC_INITIALIZER(QTest::maxWarnings);
 
-        if (!msg || QTest::TestLoggers::loggerCount() == 0) {
+        if (QTest::TestLoggers::loggerCount() == 0) {
             // if this goes wrong, something is seriously broken.
-            qInstallMsgHandler(oldMessageHandler);
-            QTEST_ASSERT(msg);
+            qInstallMessageHandler(oldMessageHandler);
             QTEST_ASSERT(QTest::TestLoggers::loggerCount() != 0);
         }
 
+        QByteArray msg = message.toLocal8Bit();
         if (handleIgnoredMessage(type, msg))
             // the message is expected, so just swallow it.
             return;
@@ -293,10 +279,6 @@ namespace QTest {
             break;
         }
     }
-
-#if defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406) && !defined(Q_CC_INTEL)
-# pragma GCC diagnostic pop
-#endif
 }
 
 void QTestLog::enterTestFunction(const char* function)
@@ -399,30 +381,20 @@ void QTestLog::addBenchmarkResult(const QBenchmarkResult &result)
     QTest::TestLoggers::addBenchmarkResult(result);
 }
 
-// don't warn about qInstallMsgHandler
-#if defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406) && !defined(Q_CC_INTEL)
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
 void QTestLog::startLogging()
 {
     QTest::TestLoggers::startLogging();
-    QTest::oldMessageHandler = qInstallMsgHandler(QTest::messageHandler);
+    QTest::oldMessageHandler = qInstallMessageHandler(QTest::messageHandler);
 }
 
 void QTestLog::stopLogging()
 {
-    qInstallMsgHandler(QTest::oldMessageHandler);
+    qInstallMessageHandler(QTest::oldMessageHandler);
     QTest::TestLoggers::stopLogging();
     QTest::TestLoggers::destroyLoggers();
     QTest::loggerUsingStdout = false;
     saveCoverageTool(QTestResult::currentAppname(), failCount() != 0, QTestLog::installedTestCoverage());
 }
-
-#if defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406) && !defined(Q_CC_INTEL)
-# pragma GCC diagnostic pop
-#endif
 
 void QTestLog::addLogger(LogMode mode, const char *filename)
 {

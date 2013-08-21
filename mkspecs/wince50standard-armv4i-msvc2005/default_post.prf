@@ -1,7 +1,0 @@
-# Visual Studio has some definitions set internally.
-# Thus we do not need to redefine these.
-equals(TEMPLATE, "vc.*") {
-    DEFINES -= _M_ARM
-    QMAKE_CXXFLAGS += -fp:precise
-}
-

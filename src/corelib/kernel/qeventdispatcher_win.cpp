@@ -52,8 +52,6 @@
 
 #include "qelapsedtimer.h"
 #include "qcoreapplication_p.h"
-#include "qsysinfo.h"
-
 #include <private/qthread_p.h>
 #include <private/qmutexpool_p.h>
 
@@ -307,14 +305,8 @@ static void resolveTimerAPI()
 #endif
         triedResolve = true;
 #if !defined(Q_OS_WINCE)
-#  if defined(_MSC_VER) && _MSC_VER >= 1700
-        if (QSysInfo::WindowsVersion >= QSysInfo::WV_WINDOWS8) { // QTBUG-27266, Disable when running MSVC2012-built code on pre-Windows 8
-#  else
-        {
-#  endif
         qtimeSetEvent = (ptimeSetEvent)QSystemLibrary::resolve(QLatin1String("winmm"), "timeSetEvent");
         qtimeKillEvent = (ptimeKillEvent)QSystemLibrary::resolve(QLatin1String("winmm"), "timeKillEvent");
-        }
 #else
         qtimeSetEvent = (ptimeSetEvent)QSystemLibrary::resolve(QLatin1String("Mmtimer"), "timeSetEvent");
         qtimeKillEvent = (ptimeKillEvent)QSystemLibrary::resolve(QLatin1String("Mmtimer"), "timeKillEvent");
@@ -438,6 +430,18 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
     return DefWindowProc(hwnd, message, wp, lp);
 }
 
+static inline UINT inputTimerMask()
+{
+    UINT result = QS_TIMER | QS_INPUT | QS_RAWINPUT;
+    // QTBUG 28513, QTBUG-29097, QTBUG-29435: QS_TOUCH, QS_POINTER became part of
+    // QS_INPUT in Windows Kit 8. They should not be used when running on pre-Windows 8.
+#if defined(_MSC_VER) && _MSC_VER >= 1700
+    if (QSysInfo::WindowsVersion < QSysInfo::WV_WINDOWS8)
+        result &= ~(QS_TOUCH | QS_POINTER);
+#endif //  _MSC_VER >= 1700
+    return result;
+}
+
 LRESULT QT_WIN_CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
 {
     if (wp == PM_REMOVE) {
@@ -447,7 +451,8 @@ LRESULT QT_WIN_CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
             MSG *msg = (MSG *) lp;
             QEventDispatcherWin32Private *d = q->d_func();
             const int localSerialNumber = d->serialNumber.load();
-            if (HIWORD(GetQueueStatus(QS_TIMER | QS_INPUT | QS_RAWINPUT)) == 0) {
+            static const UINT mask = inputTimerMask();
+            if (HIWORD(GetQueueStatus(mask)) == 0) {
                 // no more input or timer events in the message queue, we can allow posted events to be sent normally now
                 if (d->sendPostedEventsWindowsTimerId != 0) {
                     // stop the timer to send posted events, since we now allow the WM_QT_SENDPOSTEDEVENTS message

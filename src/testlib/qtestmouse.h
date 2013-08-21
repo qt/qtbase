@@ -61,6 +61,8 @@
 #include <QtWidgets/qwidget.h>
 #endif
 
+#include <QDebug>
+
 QT_BEGIN_NAMESPACE
 
 Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods = Qt::NoModifier);
@@ -84,8 +86,10 @@ namespace QTest
         QTEST_ASSERT(window);
         extern int Q_TESTLIB_EXPORT defaultMouseDelay();
 
-        if (!window->geometry().contains(pos))
+        // pos is in window local coordinates
+        if (window->geometry().width() <= pos.x() || window->geometry().height() <= pos.y()) {
             QTest::qWarn("Mouse event occurs outside of target window.");
+        }
 
          static Qt::MouseButton lastButton = Qt::NoButton;
 

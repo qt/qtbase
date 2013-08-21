@@ -41,7 +41,6 @@
 
 #include "qtablegenerator.h"
 
-#include <QtCore/QRegularExpression>
 #include <QtCore/QByteArray>
 #include <QtCore/QTextCodec>
 #include <QtCore/QDebug>
@@ -54,7 +53,8 @@
 #include <xkbcommon_workaround.h>
 #endif
 
-//#define DEBUG_GENERATOR
+#include <string.h> // strchr, strncmp, etc.
+#include <strings.h> // strncasecmp
 
 TableGenerator::TableGenerator() : m_state(NoErrors),
     m_systemComposeDir(QString())
@@ -111,11 +111,9 @@ void TableGenerator::findComposeFile()
 
     // check for the system provided compose files
     if (!found && cleanState()) {
-        readLocaleMappings();
+        QString table = readLocaleMappings(locale().toUpper().toUtf8());
 
         if (cleanState()) {
-
-            QString table = m_localeToTable.value(locale().toUpper());
             if (table.isEmpty())
                 // no table mappings for the system's locale in the compose.dir
                 m_state = UnsupportedLocale;
@@ -174,28 +172,49 @@ QString TableGenerator::locale() const
     return QLatin1String(name);
 }
 
-void TableGenerator::readLocaleMappings()
+QString TableGenerator::readLocaleMappings(const QByteArray &locale)
 {
     QFile mappings(systemComposeDir() + QLatin1String("/compose.dir"));
-    if (mappings.exists()) {
-        mappings.open(QIODevice::ReadOnly);
-        QTextStream in(&mappings);
+    QString file;
+    if (mappings.open(QIODevice::ReadOnly)) {
+        const int localeNameLength = locale.size();
+        const char * const localeData = locale.constData();
+
+        char l[1024];
         // formating of compose.dir has some inconsistencies
-        while (!in.atEnd()) {
-            QString line = in.readLine();
-            if (!line.startsWith("#") && line.size() != 0 &&
-                    line.at(0).isLower()) {
+        while (!mappings.atEnd()) {
+            int read = mappings.readLine(l, sizeof(l));
+            if (read <= 0)
+                break;
 
-                QStringList pair = line.split(QRegExp(QLatin1String("\\s+")));
-                QString table = pair.at(0);
-                if (table.endsWith(QLatin1String(":")))
-                    table.remove(table.size() - 1, 1);
+            char *line = l;
+            if (*line >= 'a' && *line <= 'z') {
+                // file name
+                while (*line && *line != ':' && *line != ' ' && *line != '\t')
+                    ++line;
+                if (!*line)
+                    continue;
+                const char * const composeFileNameEnd = line;
+                *line = '\0';
+                ++line;
 
-                m_localeToTable.insert(pair.at(1).toUpper(), table);
+                // locale name
+                while (*line && (*line == ' ' || *line == '\t'))
+                    ++line;
+                const char * const lc = line;
+                while (*line && *line != ' ' && *line != '\t' && *line != '\n')
+                    ++line;
+                *line = '\0';
+
+                if (localeNameLength == (line - lc) && !strncasecmp(lc, localeData, line - lc)) {
+                    file = QString::fromUtf8(l, composeFileNameEnd - l);
+                    break;
+                }
             }
         }
         mappings.close();
     }
+    return file;
 }
 
 bool TableGenerator::processFile(QString composeFileName)
@@ -215,7 +234,7 @@ TableGenerator::~TableGenerator()
 {
 }
 
-QList<QComposeTableElement> TableGenerator::composeTable() const
+QVector<QComposeTableElement> TableGenerator::composeTable() const
 {
     return m_composeTable;
 }
@@ -225,15 +244,14 @@ void TableGenerator::parseComposeFile(QFile *composeFile)
 #ifdef DEBUG_GENERATOR
     qDebug() << "TableGenerator::parseComposeFile: " << composeFile->fileName();
 #endif
-    QTextStream in(composeFile);
 
-    while (!in.atEnd()) {
-        QString line = in.readLine();
-        if (line.startsWith(QLatin1String("<"))) {
+    char line[1024];
+    while (!composeFile->atEnd()) {
+        composeFile->readLine(line, sizeof(line));
+        if (*line == '<')
             parseKeySequence(line);
-        } else if (line.startsWith(QLatin1String("include"))) {
-            parseIncludeInstruction(line);
-        }
+        else if (!strncmp(line, "include", 7))
+            parseIncludeInstruction(QString::fromUtf8(line));
     }
 
     composeFile->close();
@@ -290,79 +308,103 @@ ushort TableGenerator::keysymToUtf8(quint32 sym)
     return QString::fromUtf8(chars).at(0).unicode();
 }
 
-quint32 TableGenerator::stringToKeysym(QString keysymName)
+static inline int fromBase8(const char *s, const char *end)
 {
-    quint32 keysym;
-    QByteArray keysymArray = keysymName.toLatin1();
-    const char *name = keysymArray.constData();
-
-    if ((keysym = xkb_keysym_from_name(name, (xkb_keysym_flags)0)) == XKB_KEY_NoSymbol)
-        qWarning() << QString("Qt Warning - invalid keysym: %1").arg(keysymName);
-
-    return keysym;
+    int result = 0;
+    while (*s && s != end) {
+        if (*s <= '0' && *s >= '7')
+            return 0;
+        result *= 8;
+        result += *s - '0';
+        ++s;
+    }
+    return result;
 }
 
-void TableGenerator::parseKeySequence(QString line)
+static inline int fromBase16(const char *s, const char *end)
+{
+    int result = 0;
+    while (*s && s != end) {
+        result *= 16;
+        if (*s >= '0' && *s <= '9')
+            result += *s - '0';
+        else if (*s >= 'a' && *s <= 'f')
+            result += *s - 'a' + 10;
+        else if (*s >= 'A' && *s <= 'F')
+            result += *s - 'A' + 10;
+        else
+            return 0;
+        ++s;
+    }
+    return result;
+}
+
+void TableGenerator::parseKeySequence(char *line)
 {
     // we are interested in the lines with the following format:
     // <Multi_key> <numbersign> <S> : "♬"   U266c # BEAMED SIXTEENTH NOTE
-    int keysEnd = line.indexOf(QLatin1String(":"));
-    QString keys = line.left(keysEnd).trimmed();
-
-    // find the key sequence
-    QString regexp = QStringLiteral("<[^>]+>");
-    QRegularExpression reg(regexp);
-    QRegularExpressionMatchIterator i = reg.globalMatch(keys);
-    QStringList keyList;
-    while (i.hasNext()) {
-        QRegularExpressionMatch match = i.next();
-        QString word = match.captured(0);
-        keyList << word;
-    }
+    char *keysEnd = strchr(line, ':');
+    if (!keysEnd)
+        return;
 
     QComposeTableElement elem;
-    QString quote = QStringLiteral("\"");
     // find the composed value - strings may be direct text encoded in the locale
     // for which the compose file is to be used, or an escaped octal or hexadecimal
     // character code. Octal codes are specified as "\123" and hexadecimal codes as "\0x123a".
-    int composeValueIndex = line.indexOf(quote, keysEnd) + 1;
-    const QChar valueType(line.at(composeValueIndex));
+    char *composeValue = strchr(keysEnd, '"');
+    if (!composeValue)
+        return;
+    ++composeValue;
 
-    if (valueType == '\\' && line.at(composeValueIndex + 1).isDigit()) {
+    char *composeValueEnd = strchr(composeValue, '"');
+    if (!composeValueEnd)
+        return;
+
+    if (*composeValue == '\\' && composeValue[1] >= '0' && composeValue[1] <= '9') {
         // handle octal and hex code values
-        QChar detectBase(line.at(composeValueIndex + 2));
-        QString codeValue = line.mid(composeValueIndex + 1, line.lastIndexOf(quote) - composeValueIndex - 1);
+        char detectBase = composeValue[2];
         if (detectBase == 'x') {
             // hexadecimal character code
-            elem.value = keysymToUtf8(codeValue.toUInt(0, 16));
+            elem.value = keysymToUtf8(fromBase16(composeValue + 3, composeValueEnd));
         } else {
             // octal character code
-            QString hexStr = QString::number(codeValue.toUInt(0, 8), 16);
-            elem.value = keysymToUtf8(hexStr.toUInt(0, 16));
+            elem.value = keysymToUtf8(fromBase8(composeValue + 1, composeValueEnd));
         }
     } else {
         // handle direct text encoded in the locale
-        elem.value = valueType.unicode();
+        if (*composeValue == '\\')
+            ++composeValue;
+        elem.value = QString::fromUtf8(composeValue).at(0).unicode();
+        ++composeValue;
     }
 
+#ifdef DEBUG_GENERATOR
     // find the comment
-    int commnetIndex = line.lastIndexOf(quote) + 1;
-    elem.comment = line.mid(commnetIndex).trimmed();
+    elem.comment = QString::fromUtf8(composeValueEnd + 1).trimmed();
+#endif
 
-    // Convert to X11 keysym
-    int count = keyList.length();
+    // find the key sequence and convert to X11 keysym
+    char *k = line;
+    const char *kend = keysEnd;
+
     for (int i = 0; i < QT_KEYSEQUENCE_MAX_LEN; i++) {
-        if (i < count) {
-            QString keysym = keyList.at(i);
-            keysym.remove(keysym.length() - 1, 1);
-            keysym.remove(0, 1);
-
-            if (keysym == QLatin1String("dead_inverted_breve"))
-                keysym = QStringLiteral("dead_invertedbreve");
-            else if (keysym == QLatin1String("dead_double_grave"))
-                keysym = QStringLiteral("dead_doublegrave");
-
-            elem.keys[i] = stringToKeysym(keysym);
+        // find the next pair of angle brackets and get the contents within
+        while (k < kend && *k != '<')
+            ++k;
+        char *sym = ++k;
+        while (k < kend && *k != '>')
+            ++k;
+        *k = '\0';
+        if (k < kend) {
+            elem.keys[i] = xkb_keysym_from_name(sym, (xkb_keysym_flags)0);
+            if (elem.keys[i] == XKB_KEY_NoSymbol) {
+                if (!strcmp(sym, "dead_inverted_breve"))
+                    elem.keys[i] = XKB_KEY_dead_invertedbreve;
+                else if (!strcmp(sym, "dead_double_grave"))
+                    elem.keys[i] = XKB_KEY_dead_doublegrave;
+                else
+                    qWarning() << QString("Qt Warning - invalid keysym: %1").arg(sym);
+            }
         } else {
             elem.keys[i] = 0;
         }
@@ -372,6 +414,7 @@ void TableGenerator::parseKeySequence(QString line)
 
 void TableGenerator::printComposeTable() const
 {
+#ifdef DEBUG_GENERATOR
     if (composeTable().isEmpty())
         return;
 
@@ -393,8 +436,8 @@ void TableGenerator::printComposeTable() const
                       .arg(comma)
                       .arg(elem.comment));
     }
-
     qDebug() << "output: \n" << output;
+#endif
 }
 
 void TableGenerator::orderComposeTable()

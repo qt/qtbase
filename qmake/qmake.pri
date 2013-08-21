@@ -147,7 +147,7 @@ bootstrap { #Qt code
         CFLAGS += -fhonor-std
         LFLAGS += -lcpp
     }
-    DEFINES *= QT_NO_QOBJECT
+    DEFINES *= QT_NO_QOBJECT QT_CRYPTOGRAPHICHASH_ONLY_SHA1
 } else {
     CONFIG += qt
     QT = core

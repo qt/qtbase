@@ -105,3 +105,8 @@
     \externalpage http://qt-project.org/wiki/Qt-Localization
     \title external: Translating Qt Into Other Languages
 */
+
+/*!
+    \externalpage http://qt-project.org/wiki/BlackBerry
+    \title Qt for BlackBerry
+*/
