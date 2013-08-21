@@ -40,6 +40,7 @@ windowmodality \
 widgetgrab \
 xembed-raster \
 xembed-widgets \
+shortcuts \
 dialogs \
 windowtransparency \
 unc

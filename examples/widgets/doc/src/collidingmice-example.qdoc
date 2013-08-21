@@ -48,7 +48,7 @@
     application window.
 
     We will first review the \c Mouse class to see how to animate
-    items and detect item collision, and then we will review the \c
+    items and detect item collisions, and then we will review the \c
     main() function to see how to put the items into a scene and how to
     implement the corresponding view.
 
@@ -90,7 +90,7 @@
     calling the item's \l {QGraphicsItem::setRotation()}{setRotation()} function
     we alter the direction in which the mouse will start moving.
 
-    When the QGraphicsScene decides to advance the scene a frame it will
+    When the QGraphicsScene decides to advance the scene by a frame, it will
     call QGraphicsItem::advance() on each of the items. This enables us to
     animate our mouse using our reimplementation of the advance() function.
 
@@ -98,10 +98,10 @@
     \snippet graphicsview/collidingmice/mouse.cpp 5
     \snippet graphicsview/collidingmice/mouse.cpp 6
 
-    First, we don't bother doing any advance if the step is 0 since we want to our advance in
-    the actual advance (advance() is called twice, once with step == 0 indicating that items
-    are about to advance and with step == 1 for the actual advance). We also ensure that the
-    mice stays within a circle with a radius of 150 pixels.
+    First, we don't bother doing any advance if the step is \c 0. This is because
+    advance() is called twice: once with step == \c 0, indicating that items
+    are about to advance, and then with step == \c 1 for the actual advance.
+    We also ensure that the mouse stays within a circle with a radius of 150 pixels.
 
     Note the \l {QGraphicsItem::mapFromScene()}{mapFromScene()}
     function provided by QGraphicsItem. This function maps a position
@@ -126,7 +126,7 @@
     the parent's coordinate system. For items with no parent, the
     given position is interpreted as scene coordinates. QGraphicsItem
     also provides a \l {QGraphicsItem::}{mapToParent()} function to
-    map a position given in item coordinates, to the parent's
+    map a position given in item coordinates to the parent's
     coordinate system. If the item has no parent, the position will be
     mapped to the scene's coordinate system instead.
 
@@ -140,7 +140,7 @@
     defines the outer bounds of the item as a rectangle. Note that the
     Graphics View framework uses the bounding rectangle to determine
     whether the item requires redrawing, so all painting must be
-    restricted inside this rectangle.
+    done inside this rectangle.
 
     \snippet graphicsview/collidingmice/mouse.cpp 3
 
@@ -148,7 +148,7 @@
     {QGraphicsItem::paint()}{paint()} function to paint the contents
     of the item; the function paints the item in local coordinates.
 
-    Note the painting of the ears: Whenever a mouse item collides with
+    Note the painting of the ears: whenever a mouse item collides with
     other mice items its ears are filled with red; otherwise they are
     filled with dark yellow. We use the
     QGraphicsScene::collidingItems() function to check if there are
@@ -166,17 +166,15 @@
     {QGraphicsItem::collidesWithItem()}{collidesWithItem()} function
     to provide your own custom item and shape collision algorithm.
 
-    This completes the \c Mouse class implementation, it is now ready
+    This completes the \c Mouse class implementation; it is now ready
     for use. Let's take a look at the \c main() function to see how to
     implement a scene for the mice and a view for displaying the
     contents of the scene.
 
     \section1 The Main() Function
 
-    In this example we have chosen to let the \c main() function
-    provide the main application window, creating the items and the
-    scene, putting the items into the scene and creating a
-    corresponding view.
+    The \c main() function provides the main application window,
+    as well as creating the items, their scene, and a corresponding view.
 
     \snippet graphicsview/collidingmice/main.cpp 0
 
@@ -192,18 +190,18 @@
     The QGraphicsScene class serves as a container for
     QGraphicsItems. It also provides functionality that lets you
     efficiently determine the location of items as well as determining
-    which items that are visible within an arbitrary area on the
+    which items are visible within an arbitrary area on the
     scene.
 
     When creating a scene it is recommended to set the scene's
-    rectangle, i.e., the rectangle that defines the extent of the
+    rectangle; the rectangle that defines the extent of the
     scene. It is primarily used by QGraphicsView to determine the
     view's default scrollable area, and by QGraphicsScene to manage
     item indexing. If not explicitly set, the scene's default
     rectangle will be the largest bounding rectangle of all the items
-    on the scene since the scene was created (i.e., the rectangle will
-    grow when items are added or moved in the scene, but it will never
-    shrink).
+    on the scene since the scene was created. This means that the
+    rectangle will grow when items are added or moved in the scene,
+    but it will never shrink.
 
     \snippet graphicsview/collidingmice/main.cpp 2
 
@@ -213,8 +211,8 @@
     searched. Adding, moving and removing items, however, is done in
     constant time. This approach is ideal for dynamic scenes, where
     many items are added, moved or removed continuously.  The
-    alternative is \l {QGraphicsScene::BspTreeIndex}{BspTreeIndex}
-    which makes use of binary search resulting in item location
+    alternative is \l {QGraphicsScene::BspTreeIndex}{BspTreeIndex},
+    which makes use of a binary search to achieve item location
     algorithms that are of an order closer to logarithmic complexity.
 
     \snippet graphicsview/collidingmice/main.cpp 3
@@ -223,9 +221,9 @@
 
     \snippet graphicsview/collidingmice/main.cpp 4
 
-    To be able to view the scene we must also create a QGraphicsView
+    To be able to view the scene, we must also create a QGraphicsView
     widget. The QGraphicsView class visualizes the contents of a scene
-    in a scrollable viewport. We also ensure that the contents is
+    in a scrollable viewport. We also ensure that the contents are
     rendered using antialiasing, and we create the cheese background
     by setting the view's background brush.
 
@@ -240,14 +238,14 @@
     Then we set the cache mode; QGraphicsView can cache pre-rendered
     content in a pixmap, which is then drawn onto the viewport. The
     purpose of such caching is to speed up the total rendering time
-    for areas that are slow to render, e.g., texture, gradient and
+    for areas that are slow to render, for example: texture, gradient, and
     alpha blended backgrounds. The \l
     {QGraphicsView::CacheMode}{CacheMode} property holds which parts
-    of the view that are cached, and the \l
+    of the view are cached, and the \l
     {QGraphicsView::CacheBackground}{CacheBackground} flag enables
     caching of the view's background.
 
-    By setting the \l {QGraphicsView::dragMode}{dragMode} property we
+    By setting the \l {QGraphicsView::dragMode}{dragMode} property, we
     define what should happen when the user clicks on the scene
     background and drags the mouse. The \l
     {QGraphicsView::ScrollHandDrag}{ScrollHandDrag} flag makes the
@@ -264,9 +262,9 @@
     advance() slot of the scene. Every time the timer fires, the scene
     will advance one frame.
 
-    We then tell the timer to fire every 1000/33 millisecond. This will
+    We then tell the timer to fire every 1000/33 milliseconds. This will
     give us a frame rate of 30 frames a second, which is fast enough for most
-    animations. Doing the animation with a single timer connect to advance the
+    animations. Doing the animation with a single timer connection to advance the
     scene ensures that all the mice are moved at one point and, more
     importantly, only one update is sent to the screen after all the mice have
     moved.

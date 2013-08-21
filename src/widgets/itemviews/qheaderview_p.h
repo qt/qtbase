@@ -115,6 +115,8 @@ public:
     void _q_layoutChanged();
 
     bool isSectionSelected(int section) const;
+    bool isFirstVisibleSection(int section) const;
+    bool isLastVisibleSection(int section) const;
 
     inline bool rowIntersectsSelection(int row) const {
         return (selectionModel ? selectionModel->rowIntersectsSelection(row, root) : false);

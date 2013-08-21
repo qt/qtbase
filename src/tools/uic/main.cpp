@@ -42,7 +42,7 @@
 #include "uic.h"
 #include "option.h"
 #include "driver.h"
-#include "../../corelib/global/qconfig.cpp"
+
 #include <qfile.h>
 #include <qdir.h>
 #include <qtextstream.h>

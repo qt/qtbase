@@ -284,12 +284,12 @@ void tst_QPointF::division()
     {
         QPointF p(1e-14, 1e-14);
         p = p / sqrt(dot(p, p));
-        qFuzzyCompare(dot(p, p), 1);
+        QCOMPARE(dot(p, p), qreal(1.0));
     }
     {
         QPointF p(1e-14, 1e-14);
         p /= sqrt(dot(p, p));
-        qFuzzyCompare(dot(p, p), 1);
+        QCOMPARE(dot(p, p), qreal(1.0));
     }
 }
 

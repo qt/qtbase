@@ -44,7 +44,6 @@
 #include "meta.h"
 #include <qdir.h>
 #include <qregexp.h>
-#include <qcryptographichash.h>
 #include <qdebug.h>
 #include <stdlib.h>
 #include <time.h>

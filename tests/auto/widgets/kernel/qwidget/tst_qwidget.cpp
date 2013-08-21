@@ -4859,6 +4859,9 @@ void tst_QWidget::moveChild_data()
 
 void tst_QWidget::moveChild()
 {
+#if defined(UBUNTU_ONEIRIC)
+    QSKIP("QTBUG-30566 - Unstable auto-test");
+#endif
     QFETCH(QPoint, offset);
 
     ColorWidget parent;
@@ -4909,6 +4912,9 @@ void tst_QWidget::moveChild()
 
 void tst_QWidget::showAndMoveChild()
 {
+#if defined(UBUNTU_ONEIRIC)
+    QSKIP("QTBUG-30566 - Unstable auto-test");
+#endif
     QWidget parent(0, Qt::FramelessWindowHint);
     // prevent custom styles
     parent.setStyle(QStyleFactory::create(QLatin1String("Windows")));
@@ -7636,6 +7642,9 @@ void tst_QWidget::doubleRepaint()
 #if defined(Q_OS_MAC)
     if (!macHasAccessToWindowsServer())
         QSKIP("Not having window server access causes the wrong number of repaints to be issues");
+#endif
+#if defined(UBUNTU_ONEIRIC)
+    QSKIP("QTBUG-30566 - Unstable auto-test");
 #endif
    UpdateWidget widget;
    widget.setFocusPolicy(Qt::StrongFocus);

@@ -2043,7 +2043,7 @@ void QMdiArea::setBackground(const QBrush &brush)
     if (d->background != brush) {
         d->background = brush;
         d->viewport->setAttribute(Qt::WA_OpaquePaintEvent, brush.isOpaque());
-        update();
+        d->viewport->update();
     }
 }
 

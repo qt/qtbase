@@ -4423,10 +4423,13 @@ void tst_QGraphicsItem::defaultItemTest_QGraphicsEllipseItem()
     QCOMPARE(item.boundingRect(), QRectF(0, 0, 100, 100));
 
     item.setSpanAngle(90 * 16);
-    qFuzzyCompare(item.boundingRect().left(), qreal(50.0));
-    qFuzzyCompare(item.boundingRect().top(), qreal(0.0));
-    qFuzzyCompare(item.boundingRect().width(), qreal(50.0));
-    qFuzzyCompare(item.boundingRect().height(), qreal(50.0));
+    // for some reason, the bounding rect has very few significant digits
+    // (i.e. it's likely that floats are being used inside it), so we
+    // must force the conversion from qreals to float or these tests will fail
+    QCOMPARE(float(item.boundingRect().left()), 50.0f);
+    QVERIFY(qFuzzyIsNull(float(item.boundingRect().top())));
+    QCOMPARE(float(item.boundingRect().width()), 50.0f);
+    QCOMPARE(float(item.boundingRect().height()), 50.0f);
 
     item.setPen(QPen(Qt::black, 1));
     QCOMPARE(item.boundingRect(), QRectF(49.5, -0.5, 51, 51));

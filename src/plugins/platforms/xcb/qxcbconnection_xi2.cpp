@@ -419,8 +419,6 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
                         touchPoint.state = Qt::TouchPointMoved;
                         dev->pointPressedPosition[touchPoint.id] = QPointF(x, y);
                     }
-                    else
-                        touchPoint.state = Qt::TouchPointStationary;
                     break;
                 case XI_TouchEnd:
                     touchPoint.state = Qt::TouchPointReleased;
@@ -442,9 +440,13 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
                     " area " << touchPoint.area << " pressure " << touchPoint.pressure;
 #endif
                 QWindowSystemInterface::handleTouchEvent(platformWindow->window(), xiEvent->time, dev->qtTouchDevice, m_touchPoints.values());
-                // If a touchpoint was released, we can forget it, because the ID won't be reused.
                 if (touchPoint.state == Qt::TouchPointReleased)
+                    // If a touchpoint was released, we can forget it, because the ID won't be reused.
                     m_touchPoints.remove(touchPoint.id);
+                else
+                    // Make sure that we don't send TouchPointPressed/Moved in more than one QTouchEvent
+                    // with this touch point if the next XI2 event is about a different touch point.
+                    touchPoint.state = Qt::TouchPointStationary;
             }
         }
 #endif // XCB_USE_XINPUT22

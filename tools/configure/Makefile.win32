@@ -67,7 +67,6 @@ OBJECTS = \
     qxmlstream.obj \
     qxmlutils.obj \
     quuid.obj \
-    qcryptographichash.obj \
     registry.obj \
     configure_pch.obj
 
@@ -142,7 +141,6 @@ qmalloc.obj: $(CORESRC)\global\qmalloc.cpp $(PCH)
 qxmlstream.obj: $(CORESRC)\xml\qxmlstream.cpp $(PCH)
 qxmlutils.obj: $(CORESRC)\xml\qxmlutils.cpp $(PCH)
 quuid.obj: $(CORESRC)\plugin\quuid.cpp $(PCH)
-qcryptographichash.obj: $(CORESRC)\tools\qcryptographichash.cpp $(PCH)
 
 {$(CONFSRC)}.cpp{}.obj::
 	$(CXX) -c $(CXXFLAGS) $<

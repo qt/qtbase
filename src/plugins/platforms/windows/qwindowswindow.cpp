@@ -1796,6 +1796,47 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
     if (QWindowsContext::verboseWindows)
         qDebug() << __FUNCTION__ << window() << *mmi;
 }
+
+bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *result) const
+{
+    // QTBUG-32663, suppress resize cursor for fixed size windows.
+    const QWindow *w = window();
+    if (!w->isTopLevel() // Task 105852, minimized windows need to respond to user input.
+        || (m_windowState != Qt::WindowNoState && m_windowState != Qt::WindowActive)
+        || (m_data.flags & Qt::FramelessWindowHint)) {
+        return false;
+    }
+    const QSize minimumSize = w->minimumSize();
+    if (minimumSize.isEmpty())
+        return false;
+    const QSize maximumSize = w->maximumSize();
+    const bool fixedWidth = minimumSize.width() == maximumSize.width();
+    const bool fixedHeight = minimumSize.height() == maximumSize.height();
+    if (!fixedWidth && !fixedHeight)
+        return false;
+    const QPoint localPos = w->mapFromGlobal(globalPos);
+    const QSize size = w->size();
+    if (fixedHeight) {
+        if (localPos.y() >= size.height()) {
+            *result = HTBORDER; // Unspecified border, no resize cursor.
+            return true;
+        }
+        if (localPos.y() < 0) {
+            const QMargins margins = frameMargins();
+            const int topResizeBarPos = margins.left() - margins.top();
+            if (localPos.y() < topResizeBarPos) {
+                *result = HTCAPTION; // Extend caption over top resize bar, let's user move the window.
+                return true;
+            }
+        }
+    }
+    if (fixedWidth && (localPos.x() < 0 || localPos.x() >= size.width())) {
+        *result = HTBORDER; // Unspecified border, no resize cursor.
+        return true;
+    }
+    return false;
+}
+
 #endif // !Q_OS_WINCE
 
 #ifndef QT_NO_CURSOR

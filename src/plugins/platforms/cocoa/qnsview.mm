@@ -1034,7 +1034,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     if ([theEvent respondsToSelector:@selector(scrollingDeltaX)]) {
         NSEventPhase phase = [theEvent phase];
-        if (phase == NSEventPhaseBegan) {
+        if (phase == NSEventPhaseBegan || phase == NSEventPhaseNone) {
             currentWheelModifiers = [QNSView convertKeyModifiers:[theEvent modifierFlags]];
         }
 
@@ -1056,7 +1056,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
         QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_screenPoint, pixelDelta, angleDelta, currentWheelModifiers, ph);
 
-        if (phase == NSEventPhaseEnded || phase == NSEventPhaseCancelled) {
+        if (phase == NSEventPhaseEnded || phase == NSEventPhaseCancelled || phase == NSEventPhaseNone) {
             currentWheelModifiers = Qt::NoModifier;
         }
     } else
@@ -1142,7 +1142,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
     if (m_sendKeyEvent && m_composingText.isEmpty())
         QWindowSystemInterface::handleExtendedKeyEvent(m_window, timestamp, QEvent::Type(eventType), keyCode, modifiers,
-                                                       nativeScanCode, nativeVirtualKey, nativeModifiers, text);
+                                                       nativeScanCode, nativeVirtualKey, nativeModifiers, text, [nsevent isARepeat]);
 
     m_sendKeyEvent = false;
 }
