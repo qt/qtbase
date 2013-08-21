@@ -184,6 +184,18 @@ bool Generator::registerableMetaType(const QByteArray &propertyType)
     return false;
 }
 
+/* returns true if name and qualifiedName refers to the same name.
+ * If qualified name is "A::B::C", it returns true for "C", "B::C" or "A::B::C" */
+static bool qualifiedNameEquals(const QByteArray &qualifiedName, const QByteArray &name)
+{
+    if (qualifiedName == name)
+        return true;
+    int index = qualifiedName.indexOf("::");
+    if (index == -1)
+        return false;
+    return qualifiedNameEquals(qualifiedName.mid(index+2), name);
+}
+
 void Generator::generateCode()
 {
     bool isQt = (cdef->classname == "Qt");
@@ -431,7 +443,7 @@ void Generator::generateCode()
             int s = p.type.lastIndexOf("::");
             if (s > 0) {
                 QByteArray scope = p.type.left(s);
-                if (scope != "Qt" && scope != cdef->classname && !extraList.contains(scope))
+                if (scope != "Qt" && !qualifiedNameEquals(cdef->qualified, scope)  && !extraList.contains(scope))
                     extraList += scope;
             }
         }
@@ -446,7 +458,7 @@ void Generator::generateCode()
         int s = enumKey.lastIndexOf("::");
         if (s > 0) {
             QByteArray scope = enumKey.left(s);
-            if (scope != "Qt" && scope != cdef->classname && !extraList.contains(scope))
+            if (scope != "Qt" && !qualifiedNameEquals(cdef->qualified, scope) && !extraList.contains(scope))
                 extraList += scope;
         }
     }

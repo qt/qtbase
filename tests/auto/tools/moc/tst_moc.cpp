@@ -565,6 +565,7 @@ private slots:
     void parseDefines();
     void preprocessorOnly();
     void unterminatedFunctionMacro();
+    void QTBUG32933_relatedObjectsDontIncludeItself();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -3003,6 +3004,31 @@ void tst_Moc::unterminatedFunctionMacro()
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
+}
+
+namespace QTBUG32933_relatedObjectsDontIncludeItself {
+    namespace NS {
+        class Obj : QObject {
+            Q_OBJECT
+            Q_PROPERTY(MyEnum p1 MEMBER member)
+            Q_PROPERTY(Obj::MyEnum p2 MEMBER member)
+            Q_PROPERTY(NS::Obj::MyEnum p3 MEMBER member)
+            Q_PROPERTY(QTBUG32933_relatedObjectsDontIncludeItself::NS::Obj::MyEnum p4 MEMBER member)
+            Q_ENUMS(MyEnum);
+        public:
+            enum MyEnum { Something, SomethingElse };
+            MyEnum member;
+        };
+    }
+}
+
+void tst_Moc::QTBUG32933_relatedObjectsDontIncludeItself()
+{
+    const QMetaObject *mo = &QTBUG32933_relatedObjectsDontIncludeItself::NS::Obj::staticMetaObject;
+    const QMetaObject **objects = mo->d.relatedMetaObjects;
+    // the related objects should be empty because the enums is in the same object.
+    QVERIFY(!objects);
+
 }
 
 QTEST_MAIN(tst_Moc)
