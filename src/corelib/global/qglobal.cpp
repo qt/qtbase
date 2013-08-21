@@ -1166,6 +1166,13 @@ bool qSharedBuild() Q_DECL_NOTHROW
 */
 
 /*!
+    \macro Q_OS_ANDROID
+    \relates <QtGlobal>
+
+    Defined on Android.
+*/
+
+/*!
     \macro Q_OS_FREEBSD
     \relates <QtGlobal>
 
