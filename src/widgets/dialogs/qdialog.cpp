@@ -767,8 +767,10 @@ void QDialog::setVisible(bool visible)
         if (d->eventLoop)
             d->eventLoop->exit();
     }
+
+    const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme();
     if (d->mainDef && isActiveWindow()
-        && d->styleHint(QPlatformDialogHelper::SnapToDefaultButton).toBool())
+        && theme->themeHint(QPlatformTheme::DialogSnapToDefaultButton).toBool())
         QCursor::setPos(d->mainDef->mapToGlobal(d->mainDef->rect().center()));
 }
 

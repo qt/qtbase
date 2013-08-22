@@ -357,6 +357,8 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
         sizes << 16 << 32;
         return QVariant::fromValue(sizes);
     }
+    case DialogSnapToDefaultButton:
+        return QVariant(booleanSystemParametersInfo(SPI_GETSNAPTODEFBUTTON, false));
     default:
         break;
     }

@@ -78,7 +78,6 @@ class Q_GUI_EXPORT QPlatformDialogHelper : public QObject
     Q_OBJECT
 public:
     enum StyleHint {
-        SnapToDefaultButton
     };
     enum DialogCode { Rejected, Accepted };
 

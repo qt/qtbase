@@ -72,7 +72,6 @@ public:
                           Qt::WindowModality windowModality,
                           QWindow *parent);
     virtual void hide();
-    virtual QVariant styleHint(QPlatformDialogHelper::StyleHint) const;
 
     virtual bool supportsNonModalDialog(const QWindow * /* parent */ = 0) const { return true; }
 

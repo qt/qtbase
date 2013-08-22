@@ -60,18 +60,6 @@ QT_BEGIN_NAMESPACE
 
 */
 
-/*!
-    \enum QPlatformDialogHelper::StyleHint
-
-    This enum type specifies platform-specific style hints.
-
-    \value SnapToDefaultButton Snap the mouse to the center of the default
-                               button. There is corresponding system
-                               setting on Windows.
-
-    \sa styleHint()
-*/
-
 QPlatformDialogHelper::QPlatformDialogHelper()
 {
 }
@@ -87,10 +75,7 @@ QVariant QPlatformDialogHelper::styleHint(StyleHint hint) const
 
 QVariant  QPlatformDialogHelper::defaultStyleHint(QPlatformDialogHelper::StyleHint hint)
 {
-    switch (hint) {
-    case QPlatformDialogHelper::SnapToDefaultButton:
-        return QVariant(false);
-    }
+    Q_UNUSED(hint);
     return QVariant();
 }
 

@@ -105,7 +105,8 @@ public:
         SpellCheckUnderlineStyle,
         TabAllWidgets,
         IconPixmapSizes,
-        PasswordMaskCharacter
+        PasswordMaskCharacter,
+        DialogSnapToDefaultButton
     };
 
     enum DialogType {

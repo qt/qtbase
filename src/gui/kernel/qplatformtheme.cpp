@@ -138,6 +138,9 @@ QT_BEGIN_NAMESPACE
     \value TabAllWidgets (bool) Whether tab navigation should go through all the widgets or components,
                          or just through text boxes and list views. This is mostly a Mac feature.
 
+    \value DialogSnapToDefaultButton (bool) Whether the mouse should snap to the default button when a dialog
+                                     becomes visible.
+
     \sa themeHint(), QStyle::pixelMetric()
 */
 
@@ -455,6 +458,8 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
         return QVariant(true);
     case IconPixmapSizes:
         return QVariant::fromValue(QList<int>());
+    case DialogSnapToDefaultButton:
+        return QVariant(false);
     }
     return QVariant();
 }

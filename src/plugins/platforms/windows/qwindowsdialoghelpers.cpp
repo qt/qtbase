@@ -615,24 +615,6 @@ void QWindowsDialogHelperBase<BaseClass>::exec()
     }
 }
 
-static inline bool snapToDefaultButtonHint()
-{
-    BOOL snapToDefault = false;
-    if (SystemParametersInfo(SPI_GETSNAPTODEFBUTTON, 0, &snapToDefault, 0))
-        return snapToDefault;
-    return false;
-}
-
-template <class BaseClass>
-QVariant QWindowsDialogHelperBase<BaseClass>::styleHint(QPlatformDialogHelper::StyleHint hint) const
-{
-    switch (hint) {
-    case QPlatformDialogHelper::SnapToDefaultButton:
-        return QVariant(snapToDefaultButtonHint());
-    }
-    return BaseClass::styleHint(hint);
-}
-
 /*!
     \class QWindowsFileDialogSharedData
     \brief Explicitly shared file dialog parameters that are not in QFileDialogOptions.
