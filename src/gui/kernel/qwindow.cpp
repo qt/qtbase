@@ -348,8 +348,9 @@ void QWindowPrivate::updateVisibility()
 void QWindowPrivate::setScreen(QScreen *newScreen, bool recreate)
 {
     Q_Q(QWindow);
-    if (newScreen != q->screen()) {
-        const bool shouldRecreate = recreate && platformWindow != 0;
+    if (newScreen != screen) {
+        const bool shouldRecreate = recreate && platformWindow != 0
+            && !(screen && screen->virtualSiblings().contains(newScreen));
         if (shouldRecreate)
             q->destroy();
         if (screen)
