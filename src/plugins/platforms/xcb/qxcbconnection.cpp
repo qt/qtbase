@@ -989,8 +989,11 @@ void QXcbEventReader::run()
         emit eventPending();
     }
 
+    m_mutex.lock();
     for (int i = 0; i < m_events.size(); ++i)
         free(m_events.at(i));
+    m_events.clear();
+    m_mutex.unlock();
 }
 
 void QXcbEventReader::addEvent(xcb_generic_event_t *event)
