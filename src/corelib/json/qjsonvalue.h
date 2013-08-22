@@ -103,6 +103,7 @@ public:
     inline bool isUndefined() const { return type() == Undefined; }
 
     bool toBool(bool defaultValue = false) const;
+    int toInt(int defaultValue = 0) const;
     double toDouble(double defaultValue = 0) const;
     QString toString(const QString &defaultValue = QString()) const;
     QJsonArray toArray() const;
@@ -158,6 +159,7 @@ public:
     inline bool isUndefined() const { return type() == QJsonValue::Undefined; }
 
     inline bool toBool() const { return toValue().toBool(); }
+    inline int toInt() const { return toValue().toInt(); }
     inline double toDouble() const { return toValue().toDouble(); }
     inline QString toString() const { return toValue().toString(); }
     QJsonArray toArray() const;

@@ -449,6 +449,19 @@ bool QJsonValue::toBool(bool defaultValue) const
 }
 
 /*!
+    Converts the value to an int and returns it.
+
+    If type() is not Double or the value is not a whole number,
+    the \a defaultValue will be returned.
+ */
+int QJsonValue::toInt(int defaultValue) const
+{
+    if (t == Double && int(dbl) == dbl)
+        return dbl;
+    return defaultValue;
+}
+
+/*!
     Converts the value to a double and returns it.
 
     If type() is not Double, the \a defaultValue will be returned.

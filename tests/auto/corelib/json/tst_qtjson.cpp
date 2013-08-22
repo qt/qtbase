@@ -449,13 +449,13 @@ void tst_QtJson::testObjectSimple()
 void tst_QtJson::testObjectSmallKeys()
 {
     QJsonObject data1;
-    data1.insert(QStringLiteral("1"), 123);
+    data1.insert(QStringLiteral("1"), 123.);
     QVERIFY(data1.contains(QStringLiteral("1")));
     QCOMPARE(data1.value(QStringLiteral("1")).toDouble(), (double)123);
-    data1.insert(QStringLiteral("12"), 133);
+    data1.insert(QStringLiteral("12"), 133.);
     QCOMPARE(data1.value(QStringLiteral("12")).toDouble(), (double)133);
     QVERIFY(data1.contains(QStringLiteral("12")));
-    data1.insert(QStringLiteral("123"), 323);
+    data1.insert(QStringLiteral("123"), 323.);
     QCOMPARE(data1.value(QStringLiteral("12")).toDouble(), (double)133);
     QVERIFY(data1.contains(QStringLiteral("123")));
     QCOMPARE(data1.value(QStringLiteral("123")).type(), QJsonValue::Double);
@@ -670,11 +670,15 @@ void tst_QtJson::testValueRef()
     array.append(1.);
     array.append(2.);
     array.append(3.);
+    array.append(4);
+    array.append(4.1);
     array[1] = false;
 
-    QCOMPARE(array.size(), 3);
+    QCOMPARE(array.size(), 5);
     QCOMPARE(array.at(0).toDouble(), 1.);
     QCOMPARE(array.at(2).toDouble(), 3.);
+    QCOMPARE(array.at(3).toInt(), 4);
+    QCOMPARE(array.at(4).toInt(), 0);
     QCOMPARE(array.at(1).type(), QJsonValue::Bool);
     QCOMPARE(array.at(1).toBool(), false);
 
@@ -2169,6 +2173,16 @@ void tst_QtJson::valueEquals()
     QVERIFY(QJsonValue(true) != QJsonValue(1.));
     QVERIFY(QJsonValue(true) != QJsonValue(QJsonArray()));
     QVERIFY(QJsonValue(true) != QJsonValue(QJsonObject()));
+
+    QVERIFY(QJsonValue(1) == QJsonValue(1));
+    QVERIFY(QJsonValue(1) != QJsonValue(2));
+    QVERIFY(QJsonValue(1) == QJsonValue(1.));
+    QVERIFY(QJsonValue(1) != QJsonValue(1.1));
+    QVERIFY(QJsonValue(1) != QJsonValue(QJsonValue::Undefined));
+    QVERIFY(QJsonValue(1) != QJsonValue());
+    QVERIFY(QJsonValue(1) != QJsonValue(true));
+    QVERIFY(QJsonValue(1) != QJsonValue(QJsonArray()));
+    QVERIFY(QJsonValue(1) != QJsonValue(QJsonObject()));
 
     QVERIFY(QJsonValue(1.) == QJsonValue(1.));
     QVERIFY(QJsonValue(1.) != QJsonValue(2.));
