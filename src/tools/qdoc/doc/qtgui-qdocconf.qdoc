@@ -83,6 +83,8 @@ every statement in the qdocconf file.
    sourcedirs  += .. \
                   ../../../examples/gui/doc/src
 
+   excludedirs  = ../../../examples/gui/doc/src/tmp
+
    exampledirs += ../../../examples/gui \
                   snippets
 
@@ -273,13 +275,29 @@ Add the specified directories to the list of directories containing the \e .cpp 
 \e .qdoc files used in the documentation.
 
 \code
+   excludedirs  = ../../../examples/gui/doc/src/tmp
+\endcode
+
+The \c excludedirs variable is for listing directories that should not be processed
+by qdoc, even if the same directories are included by the \c sourcedirs or \c headerdirs
+variables.
+
+When executed, QDoc will ignore the directories listed.
+\sa excludefiles
+
+\code
    exampledirs += ../../../examples/gui \
                   snippets
 \endcode
+\sa examples
 \sa examplesinstallpath
 
 Add the two directories specified to the list of directories containing the source
 code of the example files.
+
+If QDoc encounters both \c exampledirs and \c examples, it will look first in the
+\c examples directory.  QDoc will accept the first matching file it finds. QDoc will
+search in the directories specified, not in their subdirectories.
 
 \code
    imagedirs   += images \
