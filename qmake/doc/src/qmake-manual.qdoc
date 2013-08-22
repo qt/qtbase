@@ -4005,8 +4005,10 @@
     include the precompiled header file in \c HEADERS, as
     qmake will do this if the configuration supports precompiled headers.
 
-    All platforms that support precompiled headers have the configuration
-    option \c precompile_header set. Using this option, you may trigger
+    The MSVC and g++ specs targeting Windows (and Windows CE) enable
+    \c precompile_header by default.
+
+    Using this option, you may trigger
     conditional blocks in your project file to add settings when using
     precompiled headers.
     For example:
