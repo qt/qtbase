@@ -54,6 +54,7 @@ Cpp.ignoretokens        += \
                           Q_INTERNAL_WIN_NO_THROW \
                           Q_INVOKABLE \
                           Q_LOCATION_EXPORT \
+                          Q_POSITIONING_EXPORT \
                           Q_MULTIMEDIA_EXPORT \
                           Q_NETWORK_EXPORT \
                           Q_NORETURN \
