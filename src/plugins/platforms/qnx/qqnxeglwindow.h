@@ -43,8 +43,6 @@
 #define QQNXEGLWINDOW_H
 
 #include "qqnxwindow.h"
-#include "qqnxglcontext.h"
-
 #include <QtCore/QMutex>
 
 QT_BEGIN_NAMESPACE
@@ -54,7 +52,7 @@ class QQnxGLContext;
 class QQnxEglWindow : public QQnxWindow
 {
 public:
-    QQnxEglWindow(QWindow *window, screen_context_t context);
+    QQnxEglWindow(QWindow *window, screen_context_t context, bool needRootWindow);
     ~QQnxEglWindow();
 
     void createEGLSurface();
@@ -70,7 +68,7 @@ public:
     // Called by QQnxGLContext::createSurface()
     QSize requestedBufferSize() const;
 
-    WindowType windowType() const Q_DECL_OVERRIDE { return EGL; }
+    void adjustBufferSize();
 
 protected:
     int pixelFormat() const;

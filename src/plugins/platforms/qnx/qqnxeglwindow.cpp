@@ -42,6 +42,7 @@
 
 #include "qqnxeglwindow.h"
 #include "qqnxscreen.h"
+#include "qqnxglcontext.h"
 
 #include <QDebug>
 
@@ -55,8 +56,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QQnxEglWindow::QQnxEglWindow(QWindow *window, screen_context_t context) :
-    QQnxWindow(window, context),
+QQnxEglWindow::QQnxEglWindow(QWindow *window, screen_context_t context, bool needRootWindow) :
+    QQnxWindow(window, context, needRootWindow),
     m_requestedBufferSize(window->geometry().size()),
     m_platformOpenGLContext(0),
     m_newSurfaceRequested(true),
@@ -98,8 +99,6 @@ void QQnxEglWindow::createEGLSurface()
         QQnxGLContext::checkEGLError("eglCreateWindowSurface");
         qFatal("QQNX: failed to create EGL surface, err=%d", eglGetError());
     }
-
-    screen()->onWindowPost(0);
 }
 
 void QQnxEglWindow::destroyEGLSurface()
@@ -166,6 +165,13 @@ QSize QQnxEglWindow::requestedBufferSize() const
     return m_requestedBufferSize;
 }
 
+void QQnxEglWindow::adjustBufferSize()
+{
+    const QSize windowSize = window()->size();
+    if (windowSize != bufferSize())
+        setBufferSize(windowSize);
+}
+
 void QQnxEglWindow::setPlatformOpenGLContext(QQnxGLContext *platformOpenGLContext)
 {
     // This function does not take ownership of the platform gl context.
@@ -175,6 +181,9 @@ void QQnxEglWindow::setPlatformOpenGLContext(QQnxGLContext *platformOpenGLContex
 
 int QQnxEglWindow::pixelFormat() const
 {
+    if (!m_platformOpenGLContext) //The platform GL context was not set yet
+        return -1;
+
     const QSurfaceFormat format = m_platformOpenGLContext->format();
     // Extract size of color channels from window format
     const int redSize = format.redBufferSize();

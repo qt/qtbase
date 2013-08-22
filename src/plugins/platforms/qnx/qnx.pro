@@ -25,7 +25,6 @@ CONFIG += qqnx_pps
 #DEFINES += QQNXNAVIGATOREVENTNOTIFIER_DEBUG
 #DEFINES += QQNXNAVIGATOR_DEBUG
 #DEFINES += QQNXRASTERBACKINGSTORE_DEBUG
-#DEFINES += QQNXROOTWINDOW_DEBUG
 #DEFINES += QQNXSCREENEVENTTHREAD_DEBUG
 #DEFINES += QQNXSCREENEVENT_DEBUG
 #DEFINES += QQNXSCREEN_DEBUG
@@ -42,7 +41,6 @@ SOURCES =   main.cpp \
             qqnxscreen.cpp \
             qqnxwindow.cpp \
             qqnxrasterbackingstore.cpp \
-            qqnxrootwindow.cpp \
             qqnxscreeneventhandler.cpp \
             qqnxnativeinterface.cpp \
             qqnxnavigatoreventhandler.cpp \
@@ -59,7 +57,6 @@ HEADERS =   main.h \
             qqnxscreen.h \
             qqnxwindow.h \
             qqnxrasterbackingstore.h \
-            qqnxrootwindow.h \
             qqnxscreeneventhandler.h \
             qqnxnativeinterface.h \
             qqnxnavigatoreventhandler.h \

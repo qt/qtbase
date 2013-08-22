@@ -44,7 +44,7 @@
 
 #include <qpa/qplatformscreen.h>
 
-#include "qqnxrootwindow.h"
+#include "qqnxwindow.h"
 
 #include <QtCore/QObject>
 #include <QtCore/QScopedPointer>
@@ -91,10 +91,10 @@ public:
     void lowerWindow(QQnxWindow *window);
     void updateHierarchy();
 
-    void onWindowPost(QQnxWindow *window);
     void adjustOrientation();
 
-    QSharedPointer<QQnxRootWindow> rootWindow() const;
+    QQnxWindow *rootWindow() const;
+    void setRootWindow(QQnxWindow*);
 
     QPlatformCursor *cursor() const;
 
@@ -126,9 +126,8 @@ private:
 
     screen_context_t m_screenContext;
     screen_display_t m_display;
-    mutable QSharedPointer<QQnxRootWindow> m_rootWindow;
+    QQnxWindow *m_rootWindow;
     const bool m_primaryScreen;
-    bool m_posted;
 
     int m_initialRotation;
     int m_currentRotation;

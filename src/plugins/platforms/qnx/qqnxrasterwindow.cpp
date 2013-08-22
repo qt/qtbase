@@ -54,8 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QQnxRasterWindow::QQnxRasterWindow(QWindow *window, screen_context_t context) :
-    QQnxWindow(window, context),
+QQnxRasterWindow::QQnxRasterWindow(QWindow *window, screen_context_t context, bool needRootWindow) :
+    QQnxWindow(window, context, needRootWindow),
     m_currentBufferIndex(-1),
     m_previousBufferIndex(-1)
 {
@@ -115,9 +115,6 @@ void QQnxRasterWindow::post(const QRegion &dirty)
         // Save modified region and clear scrolled region
         m_previousDirty = dirty;
         m_scrolled = QRegion();
-        // Notify screen that window posted
-        if (screen() != 0)
-            screen()->onWindowPost(this);
 
         if (m_cover)
             m_cover->updateCover();
@@ -167,6 +164,15 @@ QQnxBuffer &QQnxRasterWindow::renderBuffer()
     }
 
     return m_buffers[m_currentBufferIndex];
+}
+
+void QQnxRasterWindow::adjustBufferSize()
+{
+    // When having a raster window we don't need any buffers, since
+    // Qt will draw to the parent TLW backing store.
+    const QSize windowSize = m_parentWindow ? QSize(1,1) : window()->size();
+    if (windowSize != bufferSize())
+        setBufferSize(windowSize);
 }
 
 int QQnxRasterWindow::pixelFormat() const
