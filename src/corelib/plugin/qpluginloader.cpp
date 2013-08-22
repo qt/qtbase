@@ -107,6 +107,33 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \class QStaticPlugin
+    \inmodule QtCore
+    \since 5.2
+
+    \brief QStaticPlugin is a struct containing a reference to a
+    static plugin instance together with its meta data.
+
+    \sa QPluginLoader, {How to Create Qt Plugins}
+*/
+
+/*!
+    \fn QObject *QStaticPlugin::instance()
+
+    Returns the plugin instance.
+
+    \sa QPluginLoader::staticInstances()
+*/
+
+/*!
+    \fn const char *QStaticPlugin::rawMetaData()
+
+    Returns the raw meta data for the plugin.
+
+    \sa metaData(), Q_PLUGIN_METADATA()
+*/
+
+/*!
     Constructs a plugin loader with the given \a parent.
 */
 QPluginLoader::QPluginLoader(QObject *parent)
@@ -407,6 +434,7 @@ void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin plugin)
 /*!
     Returns a list of static plugin instances (root components) held
     by the plugin loader.
+    \sa staticPlugins()
 */
 QObjectList QPluginLoader::staticInstances()
 {
@@ -419,13 +447,29 @@ QObjectList QPluginLoader::staticInstances()
     return instances;
 }
 
-
-QVector<QStaticPlugin> QLibraryPrivate::staticPlugins()
+/*!
+    Returns a list of QStaticPlugins held by the plugin
+    loader. The function is similar to \l staticInstances()
+    with the addition that a QStaticPlugin also contains
+    meta data information.
+    \sa staticInstances()
+*/
+QVector<QStaticPlugin> QPluginLoader::staticPlugins()
 {
     StaticPluginList *plugins = staticPluginList();
     if (plugins)
         return *plugins;
     return QVector<QStaticPlugin>();
+}
+
+/*!
+    Returns a the meta data for the plugin as a QJsonObject.
+
+    \sa rawMetaData()
+*/
+QJsonObject QStaticPlugin::metaData() const
+{
+    return QLibraryPrivate::fromRawMetaData(rawMetaData()).object();
 }
 
 QT_END_NAMESPACE

@@ -765,7 +765,7 @@ void tst_QGuiApplication::genericPluginsAndWindowSystemEvents()
 
     QStaticPlugin testPluginInfo;
     testPluginInfo.instance = qt_plugin_instance;
-    testPluginInfo.metaData = qt_plugin_query_metadata;
+    testPluginInfo.rawMetaData = qt_plugin_query_metadata;
     qRegisterStaticPluginFunction(testPluginInfo);
     int argc = 3;
     char *argv[] = { const_cast<char*>("tst_qguiapplication"), const_cast<char*>("-plugin"), const_cast<char*>("testplugin") };

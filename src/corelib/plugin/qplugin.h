@@ -44,6 +44,7 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qpointer.h>
+#include <QtCore/qjsonobject.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -59,11 +60,22 @@ QT_BEGIN_NAMESPACE
 typedef QObject *(*QtPluginInstanceFunction)();
 typedef const char *(*QtPluginMetaDataFunction)();
 
-struct QStaticPlugin
+struct Q_CORE_EXPORT QStaticPlugin
 {
+    // Note: This struct is initialized using an initializer list.
+    // As such, it cannot have any new constructors or variables.
+#ifndef Q_QDOC
     QtPluginInstanceFunction instance;
-    QtPluginMetaDataFunction metaData;
+    QtPluginMetaDataFunction rawMetaData;
+#else
+    // Since qdoc gets confused by the use of function
+    // pointers, we add these dummes for it to parse instead:
+    QObject *instance();
+    const char *rawMetaData();
+#endif
+    QJsonObject metaData() const;
 };
+Q_DECLARE_TYPEINFO(QStaticPlugin, Q_PRIMITIVE_TYPE);
 
 void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin staticPlugin);
 

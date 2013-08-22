@@ -43,6 +43,7 @@
 #define QPLUGINLOADER_H
 
 #include <QtCore/qlibrary.h>
+#include <QtCore/qplugin.h>
 
 #ifndef QT_NO_LIBRARY
 
@@ -65,6 +66,7 @@ public:
     QJsonObject metaData() const;
 
     static QObjectList staticInstances();
+    static QVector<QStaticPlugin> staticPlugins();
 
     bool load();
     bool unload();

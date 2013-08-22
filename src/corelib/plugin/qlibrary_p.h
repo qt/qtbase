@@ -98,9 +98,6 @@ public:
     static QStringList suffixes_sys(const QString &fullVersion);
     static QStringList prefixes_sys();
 
-    static QVector<QStaticPlugin> staticPlugins();
-
-
     QPointer<QObject> inst;
     QtPluginInstanceFunction instance;
     QJsonObject metaData;
