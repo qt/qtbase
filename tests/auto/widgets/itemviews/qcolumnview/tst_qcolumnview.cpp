@@ -419,12 +419,15 @@ void tst_QColumnView::scrollTo()
     QWidget w;
     w.show();
 
+    QCOMPARE(view.HorizontalOffset(), 0);
     if (giveFocus)
         view.setFocus(Qt::OtherFocusReason);
     else
         view.clearFocus();
 
+    QCOMPARE(view.HorizontalOffset(), 0);
     qApp->processEvents();
+    QCOMPARE(view.HorizontalOffset(), 0);
     QTRY_COMPARE(view.hasFocus(), giveFocus);
     // scroll to the right
     int level = 0;
