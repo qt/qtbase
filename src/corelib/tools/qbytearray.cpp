@@ -645,8 +645,6 @@ static inline char qToLower(char c)
     store raw binary data, and when memory conservation is critical
     (e.g., with Qt for Embedded Linux).
 
-    The maximum array size of a QByteArray is under 2^30.
-
     One way to initialize a QByteArray is simply to pass a \c{const
     char *} to its constructor. For example, the following code
     creates a byte array of size 5 containing the data "Hello":
