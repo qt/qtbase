@@ -103,10 +103,17 @@ QString QStandardPaths::writableLocation(StandardLocation type)
 
 QStringList QStandardPaths::standardLocations(StandardLocation type)
 {
+    QStringList dirs;
+
     if (type == FontsLocation)
         return QStringList(QLatin1String("/base/usr/fonts"));
 
-    return QStringList(writableLocation(type));
+    if (type == DataLocation)
+        dirs.append(QDir::homePath() + testModeInsert() + QLatin1String("native/assets"));
+
+    const QString localDir = writableLocation(type);
+    dirs.prepend(localDir);
+    return dirs;
 }
 
 QT_END_NAMESPACE

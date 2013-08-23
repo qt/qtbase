@@ -177,8 +177,8 @@ QT_BEGIN_NAMESPACE
          \li "~"
          \li "C:/Users/<USER>"
     \row \li DataLocation
-         \li "~/Library/Application Support/<APPNAME>", "/Library/Application Support/<APPNAME>"
-         \li "C:/Users/<USER>/AppData/Local/<APPNAME>", "C:/ProgramData/<APPNAME>"
+         \li "~/Library/Application Support/<APPNAME>", "/Library/Application Support/<APPNAME>". "<APPDIR>/../Resources"
+         \li "C:/Users/<USER>/AppData/Local/<APPNAME>", "C:/ProgramData/<APPNAME>", "<APPDIR>", "<APPDIR>/data"
     \row \li CacheLocation
          \li "~/Library/Caches/<APPNAME>", "/Library/Caches/<APPNAME>"
          \li "C:/Users/<USER>/AppData/Local/<APPNAME>/cache"
@@ -232,7 +232,7 @@ QT_BEGIN_NAMESPACE
          \li "<APPROOT>/data"
          \li "~"
     \row \li DataLocation
-         \li "<APPROOT>/data"
+         \li "<APPROOT>/data", "<APPROOT>/app/native/assets"
          \li "~/.local/share/<APPNAME>", "/usr/local/share/<APPNAME>", "/usr/share/<APPNAME>"
     \row \li CacheLocation
          \li "<APPROOT>/data/Cache"
@@ -260,7 +260,8 @@ QT_BEGIN_NAMESPACE
     In the table above, \c <APPNAME> is usually the organization name, the
     application name, or both, or a unique name generated at packaging.
     Similarly, <APPROOT> is the location where this application is installed
-    (often a sandbox).
+    (often a sandbox). <APPDIR> is the directory containing the application
+    executable.
 
     The paths above should not be relied upon, as they may change according to
     OS configuration, locale, or they may change in future Qt versions.
