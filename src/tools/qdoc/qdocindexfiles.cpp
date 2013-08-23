@@ -133,7 +133,8 @@ void QDocIndexFiles::readIndexFile(const QString& path)
         else {
             // Use a fake directory, since we will copy the output to a sub directory of
             // installDir when using "make install". This is just for a proper relative path.
-            QDir installDir(path.section('/', 0, -3) + "/outputdir");
+            //QDir installDir(path.section('/', 0, -3) + "/outputdir");
+            QDir installDir(path.section('/', 0, -3) + '/' + Generator::outputSubdir());
             indexUrl = installDir.relativeFilePath(path).section('/', 0, -2);
         }
         project_ = indexElement.attribute("project", QString());
