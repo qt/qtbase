@@ -54,21 +54,6 @@
 #include <errno.h>
 #include <asm/unistd.h>
 
-#if defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L
-// C++11 mode
-#  include <type_traits>
-
-static void checkElapsedTimerIsTrivial()
-{
-    Q_STATIC_ASSERT(std::has_trivial_default_constructor<QT_PREPEND_NAMESPACE(QElapsedTimer)>::value);
-}
-
-#else
-static void checkElapsedTimerIsTrivial()
-{
-}
-#endif
-
 #ifndef QT_LINUX_FUTEX
 # error "Qt build is broken: qmutex_linux.cpp is being built but futex support is not wanted"
 #endif
@@ -175,7 +160,7 @@ static inline QMutexData *dummyFutexValue()
 }
 
 template <bool IsTimed> static inline
-bool lockInternal_helper(QBasicAtomicPointer<QMutexData> &d_ptr, int timeout = -1) Q_DECL_NOTHROW
+bool lockInternal_helper(QBasicAtomicPointer<QMutexData> &d_ptr, int timeout = -1, QElapsedTimer *elapsedTimer = 0) Q_DECL_NOTHROW
 {
     if (!IsTimed)
         timeout = -1;
@@ -185,12 +170,9 @@ bool lockInternal_helper(QBasicAtomicPointer<QMutexData> &d_ptr, int timeout = -
         return false;
 
     struct timespec ts, *pts = 0;
-    QElapsedTimer elapsedTimer;
-    checkElapsedTimerIsTrivial();
     if (IsTimed && timeout > 0) {
         ts.tv_sec = timeout / 1000;
         ts.tv_nsec = (timeout % 1000) * 1000 * 1000;
-        elapsedTimer.start();
     }
 
     // the mutex is locked already, set a bit indicating we're waiting
@@ -198,7 +180,7 @@ bool lockInternal_helper(QBasicAtomicPointer<QMutexData> &d_ptr, int timeout = -
         if (IsTimed && pts == &ts) {
             // recalculate the timeout
             qint64 xtimeout = qint64(timeout) * 1000 * 1000;
-            xtimeout -= elapsedTimer.nsecsElapsed();
+            xtimeout -= elapsedTimer->nsecsElapsed();
             if (xtimeout <= 0) {
                 // timer expired after we returned
                 return false;
@@ -232,7 +214,9 @@ void QBasicMutex::lockInternal() Q_DECL_NOTHROW
 bool QBasicMutex::lockInternal(int timeout) Q_DECL_NOTHROW
 {
     Q_ASSERT(!isRecursive());
-    return lockInternal_helper<true>(d_ptr, timeout);
+    QElapsedTimer elapsedTimer;
+    elapsedTimer.start();
+    return lockInternal_helper<true>(d_ptr, timeout, &elapsedTimer);
 }
 
 void QBasicMutex::unlockInternal() Q_DECL_NOTHROW
