@@ -589,6 +589,8 @@ void QCoreApplicationPrivate::initLocale()
     Note that some arguments supplied by the user may have been
     processed and removed by QCoreApplication.
 
+    For more advanced command line option handling, create a QCommandLineParser.
+
     \section1 Locale Settings
 
     On Unix/Linux Qt is configured to use the system locale settings by
@@ -2060,7 +2062,7 @@ qint64 QCoreApplication::applicationPid()
     As a result of this, the string given by arguments().at(0) might not be
     the program name on Windows, depending on how the application was started.
 
-    \sa applicationFilePath()
+    \sa applicationFilePath(), QCommandLineParser
 */
 
 QStringList QCoreApplication::arguments()

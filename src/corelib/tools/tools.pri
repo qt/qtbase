@@ -12,6 +12,8 @@ HEADERS +=  \
         tools/qcache.h \
         tools/qchar.h \
         tools/qcollator_p.h \
+        tools/qcommandlineoption.h \
+        tools/qcommandlineparser.h \
         tools/qcontainerfwd.h \
         tools/qcryptographichash.h \
         tools/qdatetime.h \
@@ -69,6 +71,8 @@ SOURCES += \
         tools/qbytearray.cpp \
         tools/qbytearraymatcher.cpp \
         tools/qcollator.cpp \
+        tools/qcommandlineoption.cpp \
+        tools/qcommandlineparser.cpp \
         tools/qcryptographichash.cpp \
         tools/qdatetime.cpp \
         tools/qeasingcurve.cpp \
