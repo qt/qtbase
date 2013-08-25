@@ -105,6 +105,7 @@ enum WindowsEventType // Simplify event types
     InputMethodCloseCandidateWindowEvent = InputMethodEventFlag + 5,
     InputMethodRequest = InputMethodEventFlag + 6,
     ThemeChanged = ThemingEventFlag + 1,
+    CompositionSettingsChanged = ThemingEventFlag + 2,
     DisplayChangedEvent = 437,
     SettingChangedEvent = DisplayChangedEvent + 1,
     ContextMenu = 123,
@@ -201,6 +202,8 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
         return QtWindows::DisplayChangedEvent;
     case WM_THEMECHANGED:
         return QtWindows::ThemeChanged;
+    case WM_DWMCOMPOSITIONCHANGED:
+        return QtWindows::CompositionSettingsChanged;
 #ifndef QT_NO_CONTEXTMENU
     case WM_CONTEXTMENU:
         return QtWindows::ContextMenu;

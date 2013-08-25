@@ -884,6 +884,9 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
             theme->windowsThemeChanged(platformWindow->window());
         return true;
     }
+    case QtWindows::CompositionSettingsChanged:
+        platformWindow->handleCompositionSettingsChanged();
+        return true;
 #ifndef Q_OS_WINCE
     case QtWindows::ActivateWindowEvent:
 #ifndef QT_NO_TABLETEVENT

@@ -221,6 +221,7 @@ public:
     void handleMoved();
     void handleResized(int wParam);
     void handleHidden();
+    void handleCompositionSettingsChanged();
 
     static inline HWND handleOf(const QWindow *w);
     static inline QWindowsWindow *baseWindowOf(const QWindow *w);

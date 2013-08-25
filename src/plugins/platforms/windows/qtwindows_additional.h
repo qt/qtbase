@@ -49,6 +49,10 @@
 #    define WM_THEMECHANGED 0x031A
 #endif
 
+#ifndef WM_DWMCOMPOSITIONCHANGED
+#    define WM_DWMCOMPOSITIONCHANGED 0x31E
+#endif
+
 #ifndef GWL_HWNDPARENT
 #    define GWL_HWNDPARENT (-8)
 #endif

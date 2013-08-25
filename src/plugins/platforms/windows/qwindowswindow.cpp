@@ -56,6 +56,7 @@
 #include <QtGui/QScreen>
 #include <QtGui/QWindow>
 #include <QtGui/QRegion>
+#include <private/qsystemlibrary_p.h>
 #include <private/qwindow_p.h>
 #include <private/qguiapplication_p.h>
 #include <qpa/qwindowsysteminterface.h>
@@ -201,6 +202,69 @@ static inline QSize clientSize(HWND hwnd)
     RECT rect = { 0, 0, 0, 0 };
     GetClientRect(hwnd, &rect); // Always returns point 0,0, thus unusable for geometry.
     return qSizeOfRect(rect);
+}
+
+static bool applyBlurBehindWindow(HWND hwnd)
+{
+#ifdef Q_OS_WINCE
+    Q_UNUSED(hwnd);
+    return false;
+#else
+    enum { dwmBbEnable = 0x1, dwmBbBlurRegion = 0x2 };
+
+    struct DwmBlurBehind {
+        DWORD dwFlags;
+        BOOL  fEnable;
+        HRGN  hRgnBlur;
+        BOOL  fTransitionOnMaximized;
+    };
+
+    typedef HRESULT (WINAPI *PtrDwmEnableBlurBehindWindow)(HWND, const DwmBlurBehind*);
+    typedef HRESULT (WINAPI *PtrDwmIsCompositionEnabled)(BOOL *);
+
+    // DWM API is available only from Windows Vista
+    if (QSysInfo::windowsVersion() < QSysInfo::WV_VISTA)
+        return false;
+
+    static bool functionPointersResolved = false;
+    static PtrDwmEnableBlurBehindWindow dwmBlurBehind = 0;
+    static PtrDwmIsCompositionEnabled dwmIsCompositionEnabled = 0;
+
+    if (Q_UNLIKELY(!functionPointersResolved)) {
+        QSystemLibrary library(QStringLiteral("dwmapi"));
+        if (library.load()) {
+            dwmBlurBehind = (PtrDwmEnableBlurBehindWindow)(library.resolve("DwmEnableBlurBehindWindow"));
+            dwmIsCompositionEnabled = (PtrDwmIsCompositionEnabled)(library.resolve("DwmIsCompositionEnabled"));
+        }
+
+        functionPointersResolved = true;
+    }
+
+    if (Q_UNLIKELY(!dwmBlurBehind || !dwmIsCompositionEnabled))
+        return false;
+
+    BOOL compositionEnabled;
+    if (dwmIsCompositionEnabled(&compositionEnabled) != S_OK)
+        return false;
+
+    DwmBlurBehind blurBehind = {0, 0, 0, 0};
+
+    if (compositionEnabled) {
+        blurBehind.dwFlags = dwmBbEnable | dwmBbBlurRegion;
+        blurBehind.fEnable = TRUE;
+        blurBehind.hRgnBlur = CreateRectRgn(0, 0, -1, -1);
+    } else {
+        blurBehind.dwFlags = dwmBbEnable;
+        blurBehind.fEnable = FALSE;
+    }
+
+    const bool result = dwmBlurBehind(hwnd, &blurBehind) == S_OK;
+
+    if (blurBehind.hRgnBlur)
+        DeleteObject(blurBehind.hRgnBlur);
+
+    return result;
+#endif // Q_OS_WINCE
 }
 
 // from qwidget_win.cpp, pass flags separately in case they have been "autofixed".
@@ -531,6 +595,10 @@ QWindowsWindow::WindowData
     result.frame = context->margins;
     result.embedded = embedded;
     result.customMargins = context->customMargins;
+
+    if (isGL && hasAlpha)
+        applyBlurBehindWindow(result.hwnd);
+
     return result;
 }
 
@@ -1153,6 +1221,13 @@ void QWindowsWindow::setParent_sys(const QPlatformWindow *parent) const
 void QWindowsWindow::handleHidden()
 {
     fireExpose(QRegion());
+}
+
+void QWindowsWindow::handleCompositionSettingsChanged()
+{
+    const QWindow *w = window();
+    if (w->surfaceType() == QWindow::OpenGLSurface && w->format().hasAlpha())
+        applyBlurBehindWindow(handle());
 }
 
 void QWindowsWindow::setGeometry(const QRect &rectIn)
