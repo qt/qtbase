@@ -892,6 +892,7 @@ CFG_EGL=auto
 CFG_SSE=auto
 CFG_FONTCONFIG=auto
 CFG_LIBFREETYPE=auto
+CFG_HARFBUZZ=no
 CFG_SQL_AVAILABLE=
 QT_ALL_BUILD_PARTS=" libs tools examples tests "
 QT_DEFAULT_BUILD_PARTS="libs tools examples"
@@ -969,7 +970,6 @@ CFG_INOTIFY=auto
 CFG_EVENTFD=auto
 CFG_RPATH=yes
 CFG_FRAMEWORK=auto
-CFG_MAC_HARFBUZZ=no
 DEFINES=
 D_FLAGS=
 I_FLAGS=
@@ -1495,8 +1495,9 @@ while [ "$#" -gt 0 ]; do
         OPT_OBSOLETE_HOST_ARG=yes
         ;;
     harfbuzz)
-        if ([ "$BUILD_ON_MAC" = "yes" ] && [ "$VAL" = "yes" ]) || [ "$VAL" = "no" ]; then
-            CFG_MAC_HARFBUZZ="$VAL"
+        [ "$VAL" = "yes" ] && VAL=qt
+        if [ "$VAL" = "qt" ] || [ "$VAL" = "no" ] || [ "$VAL" = "system" ]; then
+            CFG_HARFBUZZ="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3534,6 +3535,14 @@ Third Party Libraries:
  +  -system-libjpeg .... Use libjpeg from the operating system.
                          See http://www.ijg.org
 
+ *  -no-harfbuzz ....... Do not compile HarfBuzz-NG support.
+    -qt-harfbuzz ....... (experimental) Use HarfBuzz-NG bundled with Qt
+                         to do text shaping. It can still be disabled
+                         by setting QT_HARFBUZZ environment variable to "old".
+    -system-harfbuzz ... (experimental) Use HarfBuzz-NG from the operating system
+                         to do text shaping. It can still be disabled
+                         by setting QT_HARFBUZZ environment variable to "old".
+
     -no-openssl ........ Do not compile support for OpenSSL.
  +  -openssl ........... Enable run-time OpenSSL support.
     -openssl-linked .... Enabled linked OpenSSL support.
@@ -3701,10 +3710,6 @@ Qt/Mac only:
 
     -sdk <sdk> ......... Build Qt using Apple provided SDK <sdk>. The argument should be
                          one of the available SDKs as listed by 'xcodebuild -showsdks'.
-
-    -harfbuzz .......... Use HarfBuzz to do text layout instead of Core Text when possible.
- *  -no-harfbuzz ....... Disable HarfBuzz on Mac. It can still be enabled by setting
-                         QT_ENABLE_HARFBUZZ environment variable.
 
 EOF
 fi
@@ -5588,6 +5593,16 @@ if [ "$CFG_LIBFREETYPE" = "auto" ]; then
     fi
 fi
 
+# harfbuzz support
+[ "$XPLATFORM_MINGW" = "yes" ] && [ "$CFG_HARFBUZZ" = "auto" ] && CFG_HARFBUZZ=no
+if [ "$CFG_HARFBUZZ" = "auto" ]; then
+    if compileTest unix/harfbuzz "HarfBuzz"; then
+        CFG_HARFBUZZ=system
+    else
+        CFG_HARFBUZZ=yes
+    fi
+fi
+
 if ! compileTest unix/stl "STL" &&
     [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
     echo "STL functionality check failed! Cannot build Qt with this STL library."
@@ -6002,6 +6017,14 @@ elif [ "$CFG_LIBFREETYPE" = "system" ]; then
 else
     QT_CONFIG="$QT_CONFIG freetype"
 fi
+if [ "$CFG_HARFBUZZ" = "no" ]; then
+    QT_CONFIG="$QT_CONFIG no-harfbuzz"
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_HARFBUZZ"
+elif [ "$CFG_HARFBUZZ" = "system" ]; then
+    QT_CONFIG="$QT_CONFIG system-harfbuzz"
+else
+    QT_CONFIG="$QT_CONFIG harfbuzz"
+fi
 if [ "$CFG_GUI" = "auto" ]; then
     CFG_GUI="yes"
 fi
@@ -6036,7 +6059,6 @@ fi
 [ "$CFG_DBUS" = "linked" ] && QT_CONFIG="$QT_CONFIG dbus dbus-linked"
 [ "$CFG_OPENSSL" = "yes" ] && QT_CONFIG="$QT_CONFIG openssl"
 [ "$CFG_OPENSSL" = "linked" ] && QT_CONFIG="$QT_CONFIG openssl-linked"
-[ "$CFG_MAC_HARFBUZZ" = "yes" ] && QT_CONFIG="$QT_CONFIG harfbuzz"
 [ "$CFG_XCB" != "no" ] && QT_CONFIG="$QT_CONFIG xcb"
 [ "$CFG_XINPUT2" = "yes" ] && QT_CONFIG="$QT_CONFIG xinput2"
 [ "$CFG_SYSTEM_PROXIES" = "yes" ] && QT_CONFIG="$QT_CONFIG system-proxies"
@@ -6849,6 +6871,8 @@ report_support "  CUPS ..................." "$CFG_CUPS"
     report_support "  DirectWrite ............" "$CFG_DIRECTWRITE"
 report_support "  FontConfig ............." "$CFG_FONTCONFIG"
 report_support "  FreeType ..............." "$CFG_FREETYPE"
+[ "$CFG_HARFBUZZ" != "no" ] && \
+    report_support "  HarfBuzz ..............." "$CFG_HARFBUZZ"
 report_support "  Iconv .................." "$CFG_ICONV"
 report_support "  ICU ...................." "$CFG_ICU"
 report_support "  Image formats:"

@@ -260,6 +260,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "LIBJPEG" ]         = "auto";
     dictionary[ "LIBPNG" ]          = "auto";
     dictionary[ "FREETYPE" ]        = "yes";
+    dictionary[ "HARFBUZZ" ]        = "no";
 
     dictionary[ "ACCESSIBILITY" ]   = "yes";
     dictionary[ "OPENGL" ]          = "yes";
@@ -565,6 +566,13 @@ void Configure::parseCmdLine()
             dictionary[ "FREETYPE" ] = "yes";
         else if (configCmdLine.at(i) == "-system-freetype")
             dictionary[ "FREETYPE" ] = "system";
+
+        else if (configCmdLine.at(i) == "-no-harfbuzz")
+            dictionary[ "HARFBUZZ" ] = "no";
+        else if (configCmdLine.at(i) == "-qt-harfbuzz")
+            dictionary[ "HARFBUZZ" ] = "yes";
+        else if (configCmdLine.at(i) == "-system-harfbuzz")
+            dictionary[ "HARFBUZZ" ] = "system";
 
         // CE- C runtime --------------------------------------------
         else if (configCmdLine.at(i) == "-crt") {
@@ -1821,6 +1829,14 @@ bool Configure::displayHelp()
         desc("FREETYPE", "yes",  "-qt-freetype",        "Use the libfreetype bundled with Qt.");
         desc("FREETYPE", "system","-system-freetype",   "Use the libfreetype provided by the system.");
 
+        desc("HARFBUZZ", "no",   "-no-harfbuzz",        "Do not compile in HarfBuzz-NG support.");
+        desc("HARFBUZZ", "yes",  "-qt-harfbuzz",        "(experimental) Use HarfBuzz-NG bundled with Qt\n"
+                                                        "to do text shaping. It can still be disabled\n"
+                                                        "by setting QT_HARFBUZZ environment variable to \"old\".");
+        desc("HARFBUZZ", "system","-system-harfbuzz",   "(experimental) Use HarfBuzz-NG from the operating system\n"
+                                                        "to do text shaping. It can still be disabled\n"
+                                                        "by setting QT_HARFBUZZ environment variable to \"old\".");
+
         if ((platform() == QNX) || (platform() == BLACKBERRY)) {
             desc("SLOG2", "yes",  "-slog2",             "Compile with slog2 support.");
             desc("SLOG2", "no",  "-no-slog2",           "Do not compile with slog2 support.");
@@ -2070,6 +2086,9 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "ANGLE") {
         available = checkAngleAvailability();
     }
+
+    else if (part == "HARFBUZZ")
+        available = tryCompileProject("unix/harfbuzz");
 
     else if (part == "LIBJPEG")
         available = findFile("jpeglib.h");
@@ -2486,6 +2505,11 @@ void Configure::generateOutputVars()
         qtConfig += "freetype";
     else if (dictionary[ "FREETYPE" ] == "system")
         qtConfig += "system-freetype";
+
+    if (dictionary[ "HARFBUZZ" ] == "yes")
+        qtConfig += "harfbuzz";
+    else if (dictionary[ "HARFBUZZ" ] == "system")
+        qtConfig += "system-harfbuzz";
 
     // Styles -------------------------------------------------------
     if (dictionary[ "STYLE_WINDOWS" ] == "yes")
@@ -3319,6 +3343,7 @@ void Configure::generateConfigfiles()
         if (dictionary["DBUS"] == "no")              qconfigList += "QT_NO_DBUS";
         if (dictionary["QML_DEBUG"] == "no")         qconfigList += "QT_QML_NO_DEBUGGER";
         if (dictionary["FREETYPE"] == "no")          qconfigList += "QT_NO_FREETYPE";
+        if (dictionary["HARFBUZZ"] == "no")          qconfigList += "QT_NO_HARFBUZZ";
         if (dictionary["NATIVE_GESTURES"] == "no")   qconfigList += "QT_NO_NATIVE_GESTURES";
 
         if (dictionary["OPENGL_ES_CM"] == "yes" ||
@@ -3488,6 +3513,7 @@ void Configure::displayConfig()
     sout << "    JPEG support............" << dictionary[ "JPEG" ] << endl;
     sout << "    PNG support............." << dictionary[ "PNG" ] << endl;
     sout << "    FreeType support........" << dictionary[ "FREETYPE" ] << endl;
+    sout << "    HarfBuzz-NG support....." << dictionary[ "HARFBUZZ" ] << endl;
     sout << "    PCRE support............" << dictionary[ "PCRE" ] << endl;
     sout << "    ICU support............." << dictionary[ "ICU" ] << endl;
     if ((platform() == QNX) || (platform() == BLACKBERRY))
