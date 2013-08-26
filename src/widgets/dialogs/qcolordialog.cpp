@@ -2166,6 +2166,8 @@ void QColorDialog::keyPressEvent(QKeyEvent *e)
         }
         e->accept();
         return;
+    } else if (d->nativeDialogInUse && d->platformColorDialogHelper()->event(e)) {
+        return;
     }
     QDialog::keyPressEvent(e);
 }

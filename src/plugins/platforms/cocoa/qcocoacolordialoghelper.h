@@ -59,6 +59,8 @@ public:
 
     void setCurrentColor(const QColor&);
     QColor currentColor() const;
+
+    bool event(QEvent *);
 };
 
 QT_END_NAMESPACE

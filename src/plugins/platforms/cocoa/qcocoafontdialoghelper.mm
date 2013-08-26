@@ -203,6 +203,10 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
 
 - (void)closePanel
 {
+    if (mDialogIsExecuting) {
+        mDialogIsExecuting = false;
+        [NSApp stopModal];
+    }
     [mFontPanel close];
 }
 
