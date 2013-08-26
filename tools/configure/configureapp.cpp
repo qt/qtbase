@@ -1802,7 +1802,7 @@ bool Configure::displayHelp()
         desc("ZLIB", "system",  "-system-zlib",         "Use zlib from the operating system.\nSee http://www.gzip.org/zlib\n");
 
         desc("PCRE", "qt",       "-qt-pcre",            "Use the PCRE library bundled with Qt.");
-        desc("PCRE", "qt",       "-system-pcre",        "Use the PCRE library from the operating system.\nSee http://pcre.org/\n");
+        desc("PCRE", "system",   "-system-pcre",        "Use the PCRE library from the operating system.\nSee http://pcre.org/\n");
 
         desc("ICU", "yes",       "-icu",                "Use the ICU library.");
         desc("ICU", "no",        "-no-icu",             "Do not use the ICU library.\nSee http://site.icu-project.org/\n");
@@ -1819,7 +1819,7 @@ bool Configure::displayHelp()
 
         desc("FREETYPE", "no",   "-no-freetype",        "Do not compile in Freetype2 support.");
         desc("FREETYPE", "yes",  "-qt-freetype",        "Use the libfreetype bundled with Qt.");
-        desc("FREETYPE", "yes",  "-system-freetype",    "Use the libfreetype provided by the system.");
+        desc("FREETYPE", "system","-system-freetype",   "Use the libfreetype provided by the system.");
 
         if ((platform() == QNX) || (platform() == BLACKBERRY)) {
             desc("SLOG2", "yes",  "-slog2",             "Compile with slog2 support.");
