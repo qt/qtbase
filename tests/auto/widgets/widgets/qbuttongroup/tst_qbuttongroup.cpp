@@ -359,6 +359,26 @@ void tst_QButtonGroup::testSignals()
     QCOMPARE(releasedSpy.count(), 1);
     QCOMPARE(releasedIdSpy.count(), 1);
     QVERIFY(releasedIdSpy.takeFirst().at(0).toInt() == 23);
+
+
+    QSignalSpy toggledSpy(&buttons, SIGNAL(buttonToggled(QAbstractButton*, bool)));
+    QSignalSpy toggledIdSpy(&buttons, SIGNAL(buttonToggled(int, bool)));
+
+    pb1.setCheckable(true);
+    pb2.setCheckable(true);
+    pb1.toggle();
+    QCOMPARE(toggledSpy.count(), 1);
+    QCOMPARE(toggledIdSpy.count(), 1);
+
+    pb2.toggle();
+    QCOMPARE(toggledSpy.count(), 3);     // equals 3 since pb1 and pb2 are both toggled
+    QCOMPARE(toggledIdSpy.count(), 3);
+
+    pb1.setCheckable(false);
+    pb2.setCheckable(false);
+    pb1.toggle();
+    QCOMPARE(toggledSpy.count(), 3);
+    QCOMPARE(toggledIdSpy.count(), 3);
 }
 
 void tst_QButtonGroup::task106609()

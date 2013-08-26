@@ -575,6 +575,20 @@ void QAbstractButtonPrivate::emitReleased()
 #endif
 }
 
+void QAbstractButtonPrivate::emitToggled(bool checked)
+{
+    Q_Q(QAbstractButton);
+    QPointer<QAbstractButton> guard(q);
+    emit q->toggled(checked);
+#ifndef QT_NO_BUTTONGROUP
+    if (guard && group) {
+        emit group->buttonToggled(group->id(q), checked);
+        if (guard && group)
+            emit group->buttonToggled(q, checked);
+    }
+#endif
+}
+
 /*!
     Constructs an abstract button with a \a parent.
 */
@@ -758,7 +772,7 @@ void QAbstractButton::setChecked(bool checked)
     if (guard && checked)
         d->notifyChecked();
     if (guard)
-        emit toggled(checked);
+        d->emitToggled(checked);
 
 
 #ifndef QT_NO_ACCESSIBILITY

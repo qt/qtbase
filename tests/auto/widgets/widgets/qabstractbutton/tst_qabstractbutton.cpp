@@ -490,6 +490,12 @@ void tst_QAbstractButton::toggled()
 
     QTest::mouseRelease( testWidget, Qt::LeftButton );
     QVERIFY( click_count == 1 );
+
+    testWidget->setCheckable(true);
+    testWidget->toggle();
+    testWidget->toggle();
+    QCOMPARE(int(toggle_count), 2);
+    testWidget->setCheckable(false);
 }
 
 void tst_QAbstractButton::setShortcut()

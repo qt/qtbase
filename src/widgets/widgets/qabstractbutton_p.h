@@ -103,6 +103,7 @@ public:
     void emitPressed();
     void emitReleased();
     void emitClicked();
+    void emitToggled(bool checked);
 };
 
 QT_END_NAMESPACE

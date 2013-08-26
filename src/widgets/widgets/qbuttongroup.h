@@ -85,7 +85,8 @@ Q_SIGNALS:
     void buttonPressed(int);
     void buttonReleased(QAbstractButton *);
     void buttonReleased(int);
-
+    void buttonToggled(QAbstractButton *, bool);
+    void buttonToggled(int, bool);
 
 private:
     Q_DISABLE_COPY(QButtonGroup)

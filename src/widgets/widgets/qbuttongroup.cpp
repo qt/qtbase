@@ -174,6 +174,27 @@
 */
 
 /*!
+    \fn void QButtonGroup::buttonToggled(QAbstractButton *button, bool checked)
+    \since 5.2
+
+    This signal is emitted when the given \a button is toggled.
+    \a checked is true if the button is checked, or false if the button is unchecked.
+
+    \sa QAbstractButton::toggled()
+*/
+
+/*!
+    \fn void QButtonGroup::buttonToggled(int id, bool checked)
+    \since 5.2
+
+    This signal is emitted when a button with the given \a id is toggled.
+    \a checked is true if the button is checked, or false if the button is unchecked.
+
+    \sa QAbstractButton::toggled()
+*/
+
+
+/*!
     \fn void QButtonGroup::addButton(QAbstractButton *button, int id = -1);
 
     Adds the given \a button to the button group. If \a id is -1,
