@@ -2226,19 +2226,23 @@
     \target SUBDIRS
     \section1 SUBDIRS
 
-    This variable, when used with the \l{#TEMPLATE}{\c subdirs template}
-    Specifies the names of all subdirectories or project files that contain
-    parts of the project that need be built. Each subdirectory specified
+    This variable, when used with the \c subdirs \l{#TEMPLATE}{template}
+    specifies the names of all subdirectories or project files that contain
+    parts of the project that need to be built. Each subdirectory specified
     using this variable must contain its own project file.
+
+    It is recommended that the project file in each subdirectory has the same
+    base name as the subdirectory itself, because that makes it possible to omit
+    the file name. For example, if the subdirectory is called \c myapp, the
+    project file in that directory should be called \c myapp.pro.
+
+    Alternatively, you can specify a relative path to a .pro file in any
+    directory. It is strongly recommended that you specify only paths in the
+    current project's parent directory or its subdirectories.
 
     For example:
 
     \snippet snippets/code/doc_src_qmake-manual.pro 50
-
-    It is essential that the project file in each subdirectory has the same
-    name as the subdirectory itself, so that qmake
-    can find it. For example, if the subdirectory is called \c myapp then the
-    project file in that directory should be called \c myapp.pro.
 
     If you need to ensure that the subdirectories are built in the order in
     which they are specified, update the \l{#CONFIG}{CONFIG} variable to
