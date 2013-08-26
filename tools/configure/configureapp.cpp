@@ -3424,7 +3424,8 @@ void Configure::displayConfig()
         sout << "Licensee...................." << (l1.isNull() ? "" : l1) << endl;
         sout << "License ID.................." << (l2.isNull() ? "" : l2) << endl;
         sout << "Product license............." << (l3.isNull() ? "" : l3) << endl;
-        sout << "Expiry Date................." << (l4.isNull() ? "" : l4) << endl << endl;
+        sout << "Expiry Date................." << (l4.isNull() ? "" : l4) << endl;
+        sout << endl;
     }
 
     sout << "Configuration:" << endl;
@@ -3478,19 +3479,21 @@ void Configure::displayConfig()
     sout << "Qt GUI module support......." << dictionary[ "GUI" ] << endl;
     sout << "QML debugging..............." << dictionary[ "QML_DEBUG" ] << endl;
     sout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl;
-    sout << "Use system proxies.........." << dictionary[ "SYSTEM_PROXIES" ] << endl << endl;
+    sout << "Use system proxies.........." << dictionary[ "SYSTEM_PROXIES" ] << endl;
+    sout << endl;
 
     sout << "Third Party Libraries:" << endl;
     sout << "    ZLIB support............" << dictionary[ "ZLIB" ] << endl;
     sout << "    GIF support............." << dictionary[ "GIF" ] << endl;
     sout << "    JPEG support............" << dictionary[ "JPEG" ] << endl;
     sout << "    PNG support............." << dictionary[ "PNG" ] << endl;
-    sout << "    FreeType support........" << dictionary[ "FREETYPE" ] << endl << endl;
+    sout << "    FreeType support........" << dictionary[ "FREETYPE" ] << endl;
     sout << "    PCRE support............" << dictionary[ "PCRE" ] << endl;
     sout << "    ICU support............." << dictionary[ "ICU" ] << endl;
     if ((platform() == QNX) || (platform() == BLACKBERRY))
         sout << "    SLOG2 support..........." << dictionary[ "SLOG2" ] << endl;
     sout << "    ANGLE..................." << dictionary[ "ANGLE" ] << endl;
+    sout << endl;
 
     sout << "Styles:" << endl;
     sout << "    Windows................." << dictionary[ "STYLE_WINDOWS" ] << endl;
@@ -3498,7 +3501,8 @@ void Configure::displayConfig()
     sout << "    Windows Vista..........." << dictionary[ "STYLE_WINDOWSVISTA" ] << endl;
     sout << "    Fusion.................." << dictionary[ "STYLE_FUSION" ] << endl;
     sout << "    Windows CE.............." << dictionary[ "STYLE_WINDOWSCE" ] << endl;
-    sout << "    Windows Mobile.........." << dictionary[ "STYLE_WINDOWSMOBILE" ] << endl << endl;
+    sout << "    Windows Mobile.........." << dictionary[ "STYLE_WINDOWSMOBILE" ] << endl;
+    sout << endl;
 
     sout << "Sql Drivers:" << endl;
     sout << "    ODBC...................." << dictionary[ "SQL_ODBC" ] << endl;
@@ -3509,7 +3513,8 @@ void Configure::displayConfig()
     sout << "    DB2....................." << dictionary[ "SQL_DB2" ] << endl;
     sout << "    SQLite.................." << dictionary[ "SQL_SQLITE" ] << " (" << dictionary[ "SQL_SQLITE_LIB" ] << ")" << endl;
     sout << "    SQLite2................." << dictionary[ "SQL_SQLITE2" ] << endl;
-    sout << "    InterBase..............." << dictionary[ "SQL_IBASE" ] << endl << endl;
+    sout << "    InterBase..............." << dictionary[ "SQL_IBASE" ] << endl;
+    sout << endl;
 
     sout << "Sources are in.............." << QDir::toNativeSeparators(sourcePath) << endl;
     sout << "Build is done in............" << QDir::toNativeSeparators(buildPath) << endl;
@@ -3531,7 +3536,8 @@ void Configure::displayConfig()
     if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith(QLatin1String("wince"))) {
         sout << "Using c runtime detection..." << dictionary[ "CE_CRT" ] << endl;
         sout << "Cetest support.............." << dictionary[ "CETEST" ] << endl;
-        sout << "Signature..................." << dictionary[ "CE_SIGNATURE"] << endl << endl;
+        sout << "Signature..................." << dictionary[ "CE_SIGNATURE"] << endl;
+        sout << endl;
     }
 
     if (checkAvailability("INCREDIBUILD_XGE"))
