@@ -100,6 +100,7 @@ QWidgetWindow::QWidgetWindow(QWidget *widget)
         setSurfaceType(QSurface::RasterGLSurface);
     }
     connect(m_widget, &QObject::objectNameChanged, this, &QWidgetWindow::updateObjectName);
+    connect(this, SIGNAL(screenChanged(QScreen*)), this, SLOT(repaintWindow()));
 }
 
 QWidgetWindow::~QWidgetWindow()
@@ -558,6 +559,19 @@ void QWidgetWindow::updateGeometry()
     te->posIncludesFrame= false;
     te->frameStrut.setCoords(margins.left(), margins.top(), margins.right(), margins.bottom());
     m_widget->data->fstrut_dirty = false;
+}
+
+// Invalidates the backing store buffer and repaints immediately.
+// ### Qt 5.4: replace with QUpdateWindowRequestEvent.
+void QWidgetWindow::repaintWindow()
+{
+    if (!m_widget->isVisible() || !m_widget->updatesEnabled())
+        return;
+
+    QTLWExtra *tlwExtra = m_widget->window()->d_func()->maybeTopData();
+    if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
+        tlwExtra->backingStoreTracker->markDirty(m_widget->rect(), m_widget,
+                                                 QWidgetBackingStore::UpdateNow, QWidgetBackingStore::BufferInvalid);
 }
 
 Qt::WindowState effectiveState(Qt::WindowStates state);
