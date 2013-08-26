@@ -2721,6 +2721,20 @@ void tst_QHeaderView::resizeToContentTest()
     QVERIFY(view->sectionSize(1) > 1);
     QVERIFY(view->sectionSize(2) > 1);
 
+    // Check minimum section size
+    hh->setMinimumSectionSize(150);
+    model->setData(idx, QVariant("i"));
+    hh->resizeSections(QHeaderView::ResizeToContents);
+    QCOMPARE(hh->sectionSize(3), 150);
+    hh->setMinimumSectionSize(-1);
+
+    // Check maximumSection size
+    hh->setMaximumSectionSize(200);
+    model->setData(idx, QVariant("This is a even longer string that is expected to be more than 200 pixels"));
+    hh->resizeSections(QHeaderView::ResizeToContents);
+    QCOMPARE(hh->sectionSize(3), 200);
+    hh->setMaximumSectionSize(-1);
+
     view->setDefaultSectionSize(25); // To make sure our precalced data are correct. We do not know font height etc.
 
     const int precalced_results[] =  { -1523279360, -1523279360, -1347156568, 1, 1719705216, 1719705216, 12500 };

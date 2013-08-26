@@ -95,6 +95,7 @@ public:
           stretchSections(0),
           contentsSections(0),
           minimumSectionSize(-1),
+          maximumSectionSize(-1),
           lastSectionSize(0),
           sectionIndicatorOffset(0),
           sectionIndicator(0),
@@ -287,6 +288,7 @@ public:
     int contentsSections;
     int defaultSectionSize;
     int minimumSectionSize;
+    int maximumSectionSize;
     int lastSectionSize; // $$$
     int sectionIndicatorOffset;
     Qt::Alignment defaultAlignment;

@@ -81,6 +81,7 @@ QDataStream &operator>>(QDataStream &in, QHeaderViewPrivate::SectionItem &sectio
 #endif // QT_NO_DATASTREAM
 
 static const int maxSizeSection = 1048575; // since section size is in a bitfield (uint 20). See qheaderview_p.h
+                                           // if this is changed then the docs in maximumSectionSize should be changed.
 
 /*!
     \class QHeaderView
@@ -569,7 +570,7 @@ void QHeaderView::setVisible(bool v)
 /*!
     Returns a suitable size hint for the section specified by \a logicalIndex.
 
-    \sa sizeHint(), defaultSectionSize(), minimumSectionSize(),
+    \sa sizeHint(), defaultSectionSize(), minimumSectionSize(), maximumSectionSize()
     Qt::SizeHintRole
 */
 
@@ -587,7 +588,7 @@ int QHeaderView::sectionSizeHint(int logicalIndex) const
     else
         size = sectionSizeFromContents(logicalIndex);
     int hint = d->orientation == Qt::Horizontal ? size.width() : size.height();
-    return qMax(minimumSectionSize(), hint);
+    return qBound(minimumSectionSize(), hint, maximumSectionSize());
 }
 
 /*!
@@ -1606,7 +1607,47 @@ void QHeaderView::setMinimumSectionSize(int size)
     if (size < 0 || size > maxSizeSection)
         return;
     d->minimumSectionSize = size;
+    if (d->minimumSectionSize > maximumSectionSize())
+        d->maximumSectionSize = size;
 }
+
+/*!
+    \since 5.2
+    \property QHeaderView::maximumSectionSize
+    \brief the maximum size of the header sections.
+
+    The maximum section size is the largest section size allowed.
+    The default value for this property is 1048575, which is also the largest
+    possible size for a section. Setting maximum to -1 will reset the value to
+    the largest section size.
+
+    With exception of stretch this property is honored by all \l{ResizeMode}{resize modes}
+
+    \sa setSectionResizeMode(), defaultSectionSize
+*/
+int QHeaderView::maximumSectionSize() const
+{
+    Q_D(const QHeaderView);
+    if (d->maximumSectionSize == -1)
+        return maxSizeSection;
+    return d->maximumSectionSize;
+}
+
+void QHeaderView::setMaximumSectionSize(int size)
+{
+    Q_D(QHeaderView);
+    if (size == -1) {
+        d->maximumSectionSize = maxSizeSection;
+        return;
+    }
+    if (size < 0 || size > maxSizeSection)
+        return;
+    if (minimumSectionSize() > size)
+        d->minimumSectionSize = size;
+
+    d->maximumSectionSize = size;
+}
+
 
 /*!
     \since 4.1
@@ -2417,7 +2458,8 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
                 d->cascadingResize(visual, d->headerSectionSize(visual) + delta);
             } else {
                 int delta = d->reverse() ? d->firstPos - pos : pos - d->firstPos;
-                resizeSection(d->section, qMax(d->originalSize + delta, minimumSectionSize()));
+                int newsize = qBound(minimumSectionSize(), d->originalSize + delta, maximumSectionSize());
+                resizeSection(d->section, newsize);
             }
             d->lastPos = pos;
             return;
@@ -3236,6 +3278,8 @@ void QHeaderViewPrivate::resizeSections(QHeaderView::ResizeMode globalMode, bool
             int logicalIndex = q->logicalIndex(i);
             sectionSize = qMax(viewSectionSizeHint(logicalIndex),
                                q->sectionSizeHint(logicalIndex));
+            if (sectionSize > q->maximumSectionSize())
+                sectionSize = q->maximumSectionSize();
         }
         section_sizes.append(sectionSize);
         lengthToStretch -= sectionSize;
