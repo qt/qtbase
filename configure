@@ -6848,6 +6848,7 @@ report_support "  CUPS ..................." "$CFG_CUPS"
 [ "$XPLATFORM_MINGW" = "yes" ] && \
     report_support "  DirectWrite ............" "$CFG_DIRECTWRITE"
 report_support "  FontConfig ............." "$CFG_FONTCONFIG"
+report_support "  FreeType ..............." "$CFG_FREETYPE"
 report_support "  Iconv .................." "$CFG_ICONV"
 report_support "  ICU ...................." "$CFG_ICU"
 report_support "  Image formats:"
