@@ -58,17 +58,8 @@ bool
 NmakeMakefileGenerator::writeMakefile(QTextStream &t)
 {
     writeHeader(t);
-    if(!project->values("QMAKE_FAILED_REQUIREMENTS").isEmpty()) {
-        const ProStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
-        for (ProStringList::ConstIterator it = qut.begin(); it != qut.end(); ++it)
-            t << *it << " ";
-        t << "all first clean:\n\t"
-          << "@echo \"Some of the required modules ("
-          << var("QMAKE_FAILED_REQUIREMENTS") << ") are not available.\"\n\t"
-          << "@echo \"Skipped.\"\n\n";
-        writeMakeQmake(t);
+    if (writeDummyMakefile(t))
         return true;
-    }
 
     if(project->first("TEMPLATE") == "app" ||
        project->first("TEMPLATE") == "lib" ||
