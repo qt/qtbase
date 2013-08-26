@@ -2179,10 +2179,10 @@ QModelIndex QTreeView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
     if (!current.isValid()) {
         int i = d->below(-1);
         int c = 0;
-        while (c < d->header->count() && d->header->isSectionHidden(c))
+        while (c < d->header->count() && d->header->isSectionHidden(d->header->logicalIndex(c)))
             ++c;
         if (i < d->viewItems.count() && c < d->header->count()) {
-            return d->modelIndex(i, c);
+            return d->modelIndex(i, d->header->logicalIndex(c));
         }
         return QModelIndex();
     }

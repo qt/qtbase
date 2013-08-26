@@ -115,13 +115,14 @@ public:
         // Developer no. could also have been social security number og some other id.
         itemInfo.append("Title");
         treeWidget->setHeaderLabels(itemInfo);
-        radioFirstName->setChecked(true);
+        radioLastName->setChecked(true);
 
         connect(radioFirstName, SIGNAL(toggled(bool)), this, SLOT(fixDataInTree(bool)));
         connect(radioLastName, SIGNAL(toggled(bool)), this, SLOT(fixDataInTree(bool)));
         connect(radioDeveloperNo, SIGNAL(toggled(bool)), this, SLOT(fixDataInTree(bool)));
         connect(radioTitle, SIGNAL(toggled(bool)), this, SLOT(fixDataInTree(bool)));
         treeWidget->setTreePosition(-1);
+        treeWidget->header()->swapSections(0, 1);
     }
 
     protected slots:

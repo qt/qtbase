@@ -259,6 +259,7 @@ private slots:
     void taskQTBUG_25333_adjustViewOptionsForIndex();
     void taskQTBUG_18539_emitLayoutChanged();
     void taskQTBUG_8176_emitOnExpandAll();
+    void testInitialFocus();
 };
 
 class QtTestModel: public QAbstractItemModel
@@ -4237,6 +4238,20 @@ void tst_QTreeView::taskQTBUG_8176_emitOnExpandAll()
 
     QCOMPARE(spy.size(), 2); // item and item5 are expanded
     QCOMPARE(spy2.size(), 1); // item2 is collapsed
+}
+
+void tst_QTreeView::testInitialFocus()
+{
+    QTreeWidget treeWidget;
+    treeWidget.setColumnCount(5);
+    new QTreeWidgetItem(&treeWidget, QStringList(QString("1;2;3;4;5").split(";")));
+    treeWidget.setTreePosition(2);
+    treeWidget.header()->hideSection(0);      // make sure we skip hidden section(s)
+    treeWidget.header()->swapSections(1, 2);  // make sure that we look for first visual index (and not first logical)
+    treeWidget.show();
+    QTest::qWaitForWindowExposed(&treeWidget);
+    QApplication::processEvents();
+    QCOMPARE(treeWidget.currentIndex().column(), 2);
 }
 
 #ifndef QT_NO_ANIMATION
