@@ -1,0 +1,81 @@
+General fixes:
+=============
+
+- AAT 'morx' implementation.
+
+- Return "safe-to-break" bit from shaping.
+
+- Implement 'rand' feature.
+
+- mask propagation? (when ligation, "or" the masks).
+
+- Warn at compile time (and runtime with HB_DEBUG?) if no Unicode / font
+  funcs found / set.
+
+- Misc features:
+  * init/medi/fina/isol for non-cursive scripts
+
+
+API issues to fix before 1.0:
+============================
+
+- API to accept a list of languages?
+
+- Add init_func to font_funcs.  Adjust ft.
+
+- hb-ft load_flags issues.
+
+- Add pkg-config files for glue codes (harfbuzz-glib, etc)
+
+- 'const' for getter APIs? (use mutable internally)
+
+- Remove hb_ot_shape_glyphs_closure()?
+
+
+API additions
+=============
+
+- Language to/from script.
+
+- blob_from_file?
+
+- Add hb-cairo glue
+
+- Add sanitize API (and a cached version, that saves result on blob user-data)
+
+- Add glib GBoxedType stuff and introspection
+
+- BCP 47 language handling / API (language_matches?)
+
+- Add hb_font_create_linear()?
+
+- Add query / enumeration API for aalt-like features?
+
+- SFNT api? get_num_faces? get_table_tags? (there's something in stash)
+
+- Add segmentation API
+
+- Add hb-fribidi glue?
+
+
+hb-view / hb-shape enhancements:
+===============================
+
+- Add --width, --height, --auto-size, --align, etc?
+
+
+Tests to write:
+==============
+
+- ot-layout enumeration API (needs font)
+
+- Finish test-shape.c, grep for TODO
+
+- Finish test-unicode.c, grep for TODO
+
+- GObject, FreeType, etc
+
+- hb_cache_t and relatives
+
+- hb_feature_to/from_string
+- hb_buffer_[sg]et_contents
