@@ -206,6 +206,7 @@ defineTest(qtPrepareTool) {
             }
         }
     }
+    QT_TOOL_ENV += $$eval(QT_TOOL.$${2}.envvars)
     !isEmpty(3) {
         $$1$$3 = $$system_path($$eval($$1))
         qtAddTargetEnv($$1$$3, QT_TOOL.$${2}.depends, system)
