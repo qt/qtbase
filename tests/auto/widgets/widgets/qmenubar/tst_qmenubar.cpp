@@ -50,6 +50,7 @@
 #include <qdesktopwidget.h>
 #include <qaction.h>
 #include <qstyleoption.h>
+#include <qscreen.h>
 
 #include <qobject.h>
 
@@ -145,6 +146,7 @@ private slots:
     void taskQTBUG4965_escapeEaten();
 #endif
     void taskQTBUG11823_crashwithInvisibleActions();
+    void closeOnSecondClick();
 
 protected slots:
     void onActivated( QAction*);
@@ -1316,6 +1318,29 @@ void tst_QMenuBar::taskQTBUG11823_crashwithInvisibleActions()
     //it used to crash here because the action is invisible
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Right);
     QCOMPARE(menubar.activeAction(), m); //the active action shouldn't have changed
+}
+
+void tst_QMenuBar::closeOnSecondClick() // QTBUG-32807, menu should close on 2nd click.
+{
+    QMainWindow mainWindow;
+    mainWindow.resize(300, 200);
+    mainWindow.move(QGuiApplication::primaryScreen()->geometry().center() - QPoint(150, 100));
+#ifndef QT_NO_CURSOR
+    QCursor::setPos(mainWindow.geometry().topLeft() - QPoint(100, 0));
+#endif
+    QMenuBar *menuBar = mainWindow.menuBar();
+    menuBar->setNativeMenuBar(false);
+    QMenu *fileMenu = menuBar->addMenu(QStringLiteral("closeOnSecondClick"));
+    fileMenu->addAction(QStringLiteral("Quit"));
+    mainWindow.show();
+    QApplication::setActiveWindow(&mainWindow);
+    QVERIFY(QTest::qWaitForWindowActive(&mainWindow));
+    const QPoint center = menuBar->actionGeometry(fileMenu->menuAction()).center();
+    QTest::mouseMove(menuBar, center);
+    QTest::mouseClick(menuBar, Qt::LeftButton, 0, center);
+    QTRY_VERIFY(fileMenu->isVisible());
+    QTest::mouseClick(menuBar, Qt::LeftButton, 0, center);
+    QTRY_VERIFY(!fileMenu->isVisible());
 }
 
 QTEST_MAIN(tst_QMenuBar)
