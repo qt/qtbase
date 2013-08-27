@@ -148,8 +148,7 @@ void tst_QEventDispatcher::registerTimer()
     // process events, waiting for the next event... this should only fire the precise timer
     receivedEventType = -1;
     timerIdFromEvent = -1;
-    QVERIFY(eventDispatcher->processEvents(QEventLoop::WaitForMoreEvents));
-    QCOMPARE(receivedEventType, int(QEvent::Timer));
+    QTRY_COMPARE_WITH_TIMEOUT(receivedEventType, int(QEvent::Timer), PreciseTimerInterval * 2);
     QCOMPARE(timerIdFromEvent, preciseTimerId);
     // now unregister it and make sure it's gone
     eventDispatcher->unregisterTimer(preciseTimerId);
@@ -161,8 +160,7 @@ void tst_QEventDispatcher::registerTimer()
     // do the same again for the coarse timer
     receivedEventType = -1;
     timerIdFromEvent = -1;
-    QVERIFY(eventDispatcher->processEvents(QEventLoop::WaitForMoreEvents));
-    QCOMPARE(receivedEventType, int(QEvent::Timer));
+    QTRY_COMPARE_WITH_TIMEOUT(receivedEventType, int(QEvent::Timer), CoarseTimerInterval * 2);
     QCOMPARE(timerIdFromEvent, coarseTimerId);
     // now unregister it and make sure it's gone
     eventDispatcher->unregisterTimer(coarseTimerId);
