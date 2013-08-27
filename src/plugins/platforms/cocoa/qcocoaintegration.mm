@@ -343,6 +343,14 @@ void QCocoaIntegration::updateScreens()
         screen->setVirtualSiblings(siblings);
 }
 
+QCocoaScreen *QCocoaIntegration::screenAtIndex(int index)
+{
+    if (index >= mScreens.count())
+        updateScreens();
+
+    return mScreens.at(index);
+}
+
 bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
