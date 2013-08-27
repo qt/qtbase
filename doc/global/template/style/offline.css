@@ -3,7 +3,7 @@ body {
     margin-top: 85px;
     font-family: Arial, Helvetica;
     color: #313131;
-    text-align: justify;
+    text-align: left;
     margin-left: 5px;
     margin-right: 5px;
 }
@@ -38,7 +38,7 @@ img {
     margin-top: 35px;
     /*max-width: 75%;*/
     margin-left: 5px;
-    text-align: justify;
+    text-align: left;
     vertical-align: top;
 }
 
