@@ -265,6 +265,9 @@ public:
     void setNameFilters(const QStringList &filters);
     QStringList nameFilters() const;
 
+    void setMimeTypeFilters(const QStringList &filters);
+    QStringList mimeTypeFilters() const;
+
     void setDefaultSuffix(const QString &suffix);
     QString defaultSuffix() const;
 

@@ -124,6 +124,10 @@ public:
     void selectNameFilter(const QString &filter);
     QString selectedNameFilter() const;
 
+    void setMimeTypeFilters(const QStringList &filters);
+    QStringList mimeTypeFilters() const;
+    void selectMimeTypeFilter(const QString &filter);
+
     QDir::Filters filter() const;
     void setFilter(QDir::Filters filters);
 

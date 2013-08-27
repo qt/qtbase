@@ -57,6 +57,7 @@
 #include <stdlib.h>
 #include <qsettings.h>
 #include <qdebug.h>
+#include <qmimedatabase.h>
 #include <qapplication.h>
 #include <qstylepainter.h>
 #if !defined(Q_OS_WINCE)
@@ -1439,6 +1440,75 @@ void QFileDialog::setFilter(QDir::Filters filters)
     }
 
     d->showHiddenAction->setChecked((filters & QDir::Hidden));
+}
+
+static QString nameFilterForMime(const QString &mimeType)
+{
+    QMimeDatabase db;
+    QMimeType mime(db.mimeTypeForName(mimeType));
+    if (mime.isValid()) {
+        if (mime.isDefault()) {
+            return QFileDialog::tr("All files (*)");
+        } else {
+            const QString patterns = mime.globPatterns().join(QLatin1Char(' '));
+            return mime.comment() + QStringLiteral(" (") + patterns + QLatin1Char(')');
+        }
+    }
+    return QString();
+}
+
+/*!
+    \since 5.2
+
+    Sets the \a filters used in the file dialog, from a list of MIME types.
+
+    Convenience method for setNameFilters().
+    Uses QMimeType to create a name filter from the glob patterns and description
+    defined in each MIME type.
+
+    Use application/octet-stream for the "All files (*)" filter, since that
+    is the base MIME type for all files.
+
+    Calling setMimeTypeFilters overrides any previously set name filters,
+    and changes the return value of nameFilters().
+
+    \snippet code/src_gui_dialogs_qfiledialog.cpp 13
+*/
+void QFileDialog::setMimeTypeFilters(const QStringList &filters)
+{
+    Q_D(QFileDialog);
+    QStringList nameFilters;
+    foreach (const QString &mimeType, filters) {
+        const QString text = nameFilterForMime(mimeType);
+        if (!text.isEmpty())
+            nameFilters.append(text);
+    }
+    setNameFilters(nameFilters);
+    d->options->setMimeTypeFilters(filters);
+}
+
+/*!
+    \since 5.2
+
+    Returns the MIME type filters that are in operation on this file
+    dialog.
+*/
+QStringList QFileDialog::mimeTypeFilters() const
+{
+    return d_func()->options->mimeTypeFilters();
+}
+
+/*!
+    \since 5.2
+
+    Sets the current MIME type \a filter.
+
+*/
+void QFileDialog::selectMimeTypeFilter(const QString &filter)
+{
+    const QString text = nameFilterForMime(filter);
+    if (!text.isEmpty())
+        selectNameFilter(text);
 }
 
 /*!

@@ -129,3 +129,14 @@ QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
                                                 QFileDialog::ShowDirsOnly
                                                 | QFileDialog::DontResolveSymlinks);
 //! [12]
+
+//! [13]
+QStringList mimeTypeFilters;
+mimeTypeFilters << "image/jpeg" // will show "JPEG image (*.jpeg *.jpg *.jpe)
+            << "image/png"  // will show "PNG image (*.png)"
+            << "application/octet-stream"; // will show "All files (*)"
+
+QFileDialog dialog(this);
+dialog.setMimeTypeFilters(mimeTypeFilters);
+dialog.exec();
+//! [13]

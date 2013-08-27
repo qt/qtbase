@@ -52,6 +52,7 @@ class QCheckBox;
 class QComboBox;
 class QLineEdit;
 class QPlainTextEdit;
+class QFormLayout;
 QT_END_NAMESPACE
 class LabelLineEdit;
 
@@ -82,6 +83,7 @@ public slots:
 private slots:
     void enableDeleteNonModalDialogButton();
     void enableDeleteModalDialogButton();
+    void useMimeTypeFilters(bool);
 
 private:
     QString filterString() const;
@@ -89,6 +91,7 @@ private:
     QStringList allowedSchemes() const;
     void applySettings(QFileDialog *d) const;
 
+    QFormLayout *filesLayout;
     QCheckBox *m_readOnly;
     QCheckBox *m_confirmOverWrite;
     QCheckBox *m_nameFilterDetailsVisible;
@@ -103,6 +106,7 @@ private:
     QLineEdit *m_directory;
     QLineEdit *m_selectedFileName;
     QList<LabelLineEdit *> m_labelLineEdits;
+    QCheckBox *m_useMimeTypeFilters;
     QPlainTextEdit *m_nameFilters;
     QLineEdit *m_selectedNameFilter;
     QPushButton *m_deleteNonModalDialogButton;

@@ -359,6 +359,7 @@ public:
     QDir::Filters filters;
     QList<QUrl> sidebarUrls;
     QStringList nameFilters;
+    QStringList mimeTypeFilters;
     QString defaultSuffix;
     QStringList history;
     QUrl initialDirectory;
@@ -475,6 +476,16 @@ void QFileDialogOptions::setNameFilters(const QStringList &filters)
 QStringList QFileDialogOptions::nameFilters() const
 {
     return d->nameFilters;
+}
+
+void QFileDialogOptions::setMimeTypeFilters(const QStringList &filters)
+{
+    d->mimeTypeFilters = filters;
+}
+
+QStringList QFileDialogOptions::mimeTypeFilters() const
+{
+    return d->mimeTypeFilters;
 }
 
 void QFileDialogOptions::setDefaultSuffix(const QString &suffix)

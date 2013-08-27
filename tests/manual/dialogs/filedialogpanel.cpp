@@ -162,6 +162,7 @@ FileDialogPanel::FileDialogPanel(QWidget *parent)
     , m_defaultSuffix(new QLineEdit(this))
     , m_directory(new QLineEdit(this))
     , m_selectedFileName(new QLineEdit(this))
+    , m_useMimeTypeFilters(new QCheckBox(this))
     , m_nameFilters(new QPlainTextEdit)
     , m_selectedNameFilter(new QLineEdit(this))
     , m_deleteNonModalDialogButton(0)
@@ -183,10 +184,11 @@ FileDialogPanel::FileDialogPanel(QWidget *parent)
 
     // Files
     QGroupBox *filesGroupBox = new QGroupBox(tr("Files / Filters"));
-    QFormLayout *filesLayout = new QFormLayout(filesGroupBox);
+    filesLayout = new QFormLayout(filesGroupBox);
     filesLayout->addRow(tr("Default Suffix:"), m_defaultSuffix);
     filesLayout->addRow(tr("Directory:"), m_directory);
     filesLayout->addRow(tr("Selected file:"), m_selectedFileName);
+    filesLayout->addRow(tr("Use mime type filters:"), m_useMimeTypeFilters);
     m_nameFilters->setMaximumHeight(80);
     filesLayout->addRow(tr("Name filters:"), m_nameFilters);
     filesLayout->addRow(tr("Selected name filter:"), m_selectedNameFilter);
@@ -235,6 +237,8 @@ FileDialogPanel::FileDialogPanel(QWidget *parent)
     gridLayout->addWidget(filesGroupBox, 0, 1);
     gridLayout->addWidget(labelsGroupBox, 1, 0);
     gridLayout->addWidget(buttonsGroupBox, 1, 1);
+
+    connect(m_useMimeTypeFilters, SIGNAL(toggled(bool)), this, SLOT(useMimeTypeFilters(bool)));
 
     enableDeleteModalDialogButton();
     enableDeleteNonModalDialogButton();
@@ -461,7 +465,8 @@ void FileDialogPanel::restoreDefaults()
     m_customDirIcons->setChecked(d.testOption(QFileDialog::DontUseCustomDirectoryIcons));
     m_directory->setText(QDir::homePath());
     m_defaultSuffix->setText(QLatin1String("txt"));
-    m_nameFilters->setPlainText(QLatin1String("Any files (*)\nImage files (*.png *.xpm *.jpg)\nText files (*.txt)"));
+    m_useMimeTypeFilters->setChecked(false);
+    useMimeTypeFilters(false);
     m_selectedFileName->setText(QString());
     m_selectedNameFilter->setText(QString());
     foreach (LabelLineEdit *l, m_labelLineEdits)
@@ -481,12 +486,34 @@ void FileDialogPanel::applySettings(QFileDialog *d) const
     const QString file = m_selectedFileName->text().trimmed();
     if (!file.isEmpty())
        d->selectFile(file);
-    d->setNameFilters(m_nameFilters->toPlainText().trimmed().split(QLatin1Char('\n'), QString::SkipEmptyParts));
     const QString filter = m_selectedNameFilter->text().trimmed();
-    if (!filter.isEmpty())
-        d->selectNameFilter(filter);
+    const QStringList filters = m_nameFilters->toPlainText().trimmed().split(QLatin1Char('\n'), QString::SkipEmptyParts);
+    if (!m_useMimeTypeFilters->isChecked()) {
+        d->setNameFilters(filters);
+        if (!filter.isEmpty())
+            d->selectNameFilter(filter);
+    } else {
+        d->setMimeTypeFilters(filters);
+        if (!filter.isEmpty())
+            d->selectMimeTypeFilter(filter);
+    }
     foreach (LabelLineEdit *l, m_labelLineEdits)
         l->apply(d);
+}
+
+void FileDialogPanel::useMimeTypeFilters(bool b)
+{
+    QWidget *textEdit = filesLayout->labelForField(m_nameFilters);
+    if (QLabel *label = qobject_cast<QLabel *>(textEdit))
+        label->setText(b ? tr("Mime type filters:") : tr("Name filters:"));
+    QWidget *w = filesLayout->labelForField(m_selectedNameFilter);
+    if (QLabel *label = qobject_cast<QLabel *>(w))
+        label->setText(b ? tr("Selected mime type filter:") : tr("Selected name filter:"));
+
+    if (b)
+        m_nameFilters->setPlainText(QLatin1String("image/jpeg\nimage/png\ntext/plain\napplication/octet-stream"));
+    else
+        m_nameFilters->setPlainText(QLatin1String("Any files (*)\nImage files (*.png *.xpm *.jpg)\nText files (*.txt)"));
 }
 
 void FileDialogPanel::accepted()
