@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 
 qtHaveModule(dbus) {
-!mac:!win32:SUBDIRS += ibus maliit
+!mac:!win32:SUBDIRS += ibus
 }
 
 unix:!macx:!contains(DEFINES, QT_NO_XKBCOMMON): {
