@@ -203,11 +203,7 @@ typedef quint64 qulonglong;
 QT_BEGIN_INCLUDE_NAMESPACE
 typedef unsigned char uchar;
 typedef unsigned short ushort;
-#if defined(Q_QDOC) || !defined(Q_OS_ANDROID)
 typedef unsigned int uint;
-#else
-# include <sys/types.h>
-#endif
 typedef unsigned long ulong;
 QT_END_INCLUDE_NAMESPACE
 
