@@ -395,6 +395,8 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
         return true;
     case MultipleWindows:
         return true;
+    case ForeignWindows:
+        return true;
     default:
         return QPlatformIntegration::hasCapability(cap);
     }

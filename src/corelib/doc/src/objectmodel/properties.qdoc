@@ -67,7 +67,7 @@
     \li A \c READ accessor function is required if no \c MEMBER variable was
     specified. It is for reading the property value. Ideally, a const function
     is used for this purpose, and it must return either the property's type or a
-    pointer or reference to that type. e.g., QWidget::focus is a read-only
+    const reference to that type. e.g., QWidget::focus is a read-only
     property with \c READ function, QWidget::hasFocus().
 
     \li A \c WRITE accessor function is optional. It is for setting the

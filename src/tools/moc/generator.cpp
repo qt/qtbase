@@ -184,6 +184,18 @@ bool Generator::registerableMetaType(const QByteArray &propertyType)
     return false;
 }
 
+/* returns true if name and qualifiedName refers to the same name.
+ * If qualified name is "A::B::C", it returns true for "C", "B::C" or "A::B::C" */
+static bool qualifiedNameEquals(const QByteArray &qualifiedName, const QByteArray &name)
+{
+    if (qualifiedName == name)
+        return true;
+    int index = qualifiedName.indexOf("::");
+    if (index == -1)
+        return false;
+    return qualifiedNameEquals(qualifiedName.mid(index+2), name);
+}
+
 void Generator::generateCode()
 {
     bool isQt = (cdef->classname == "Qt");
@@ -431,7 +443,7 @@ void Generator::generateCode()
             int s = p.type.lastIndexOf("::");
             if (s > 0) {
                 QByteArray scope = p.type.left(s);
-                if (scope != "Qt" && scope != cdef->classname && !extraList.contains(scope))
+                if (scope != "Qt" && !qualifiedNameEquals(cdef->qualified, scope)  && !extraList.contains(scope))
                     extraList += scope;
             }
         }
@@ -446,7 +458,7 @@ void Generator::generateCode()
         int s = enumKey.lastIndexOf("::");
         if (s > 0) {
             QByteArray scope = enumKey.left(s);
-            if (scope != "Qt" && scope != cdef->classname && !extraList.contains(scope))
+            if (scope != "Qt" && !qualifiedNameEquals(cdef->qualified, scope) && !extraList.contains(scope))
                 extraList += scope;
         }
     }
@@ -972,9 +984,9 @@ void Generator::generateMetacall()
                     if (!p.notify.isEmpty() && p.notifyId != -1) {
                         const FunctionDef &f = cdef->signalList.at(p.notifyId);
                         if (f.arguments.size() == 0)
-                            fprintf(out, "                emit %s();\n", p.notify.constData());
+                            fprintf(out, "                Q_EMIT %s();\n", p.notify.constData());
                         else if (f.arguments.size() == 1 && f.arguments.at(0).normalizedType == p.type)
-                            fprintf(out, "                emit %s(%s%s);\n",
+                            fprintf(out, "                Q_EMIT %s(%s%s);\n",
                                     p.notify.constData(), prefix.constData(), p.member.constData());
                     }
                     fprintf(out, "            }\n");

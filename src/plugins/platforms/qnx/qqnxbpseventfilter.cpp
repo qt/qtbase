@@ -226,9 +226,14 @@ bool QQnxBpsEventFilter::handleNavigatorEvent(bps_event_t *event)
             break;
         case NAVIGATOR_WINDOW_THUMBNAIL:
             m_navigatorEventHandler->handleWindowGroupStateChanged(id, Qt::WindowMinimized);
+#if defined(Q_OS_BLACKBERRY_TABLET)
+            m_navigatorEventHandler->handleWindowGroupActivated(id);
+#endif
             break;
         case NAVIGATOR_WINDOW_INVISIBLE:
+#if defined(Q_OS_BLACKBERRY_TABLET)
             m_navigatorEventHandler->handleWindowGroupDeactivated(id);
+#endif
             break;
         }
 

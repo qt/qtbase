@@ -3,7 +3,6 @@ TARGET = tst_qdom
 SOURCES  += tst_qdom.cpp
 
 QT = core xml testlib
-QT -= gui
 
 wince* {
    wince*|qt_not_deployed {

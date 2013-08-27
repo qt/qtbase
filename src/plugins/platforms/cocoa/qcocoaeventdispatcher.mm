@@ -594,6 +594,7 @@ void QCocoaEventDispatcherPrivate::temporarilyStopAllModalSessions()
         if (info.session) {
             [NSApp endModalSession:info.session];
             info.session = 0;
+            [(NSWindow*) info.nswindow release];
         }
     }
     currentModalSessionCached = 0;

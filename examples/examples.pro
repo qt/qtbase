@@ -7,6 +7,7 @@ SUBDIRS = \
     gestures \
     gui \
     ipc \
+    json \
     network \
     opengl \
     qpa \

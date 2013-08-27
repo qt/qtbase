@@ -2,8 +2,7 @@ CONFIG += testcase
 
 SOURCES += tst_qsslsocket.cpp
 !wince*:win32:LIBS += -lws2_32
-QT += core-private network-private testlib
-QT -= gui
+QT = core core-private network-private testlib
 
 TARGET = tst_qsslsocket
 

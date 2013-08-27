@@ -240,7 +240,7 @@ static ISC_TIMESTAMP toTimeStamp(const QDateTime &dt)
 static QDateTime fromTimeStamp(char *buffer)
 {
     static const QDate bd(1858, 11, 17);
-    QTime t;
+    QTime t(0, 0);
     QDate d;
 
     // have to demangle the structure ourselves because isc_decode_time

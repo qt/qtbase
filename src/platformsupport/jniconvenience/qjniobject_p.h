@@ -43,6 +43,7 @@
 #define QJNIOBJECT_H
 
 #include <qglobal.h>
+#include <qsharedpointer.h>
 #include <jni.h>
 
 QT_BEGIN_NAMESPACE
@@ -72,20 +73,40 @@ class QJNILocalRef;
  *    someObject.setField<jint>("fieldName", 10);
  *    someObject.callMethod<void>("doStuff");
  */
+
+class QJNIObjectPrivate
+{
+public:
+    QJNIObjectPrivate(const char *className);
+    QJNIObjectPrivate(const char *className, const char *sig, va_list args);
+    QJNIObjectPrivate(jclass clazz);
+    QJNIObjectPrivate(jclass clazz, const char *sig, va_list args);
+    QJNIObjectPrivate(jobject obj);
+    ~QJNIObjectPrivate();
+
+private:
+    Q_DISABLE_COPY(QJNIObjectPrivate)
+    friend class QJNIObject;
+    jobject m_jobject;
+    jclass m_jclass;
+    bool m_own_jclass;
+};
+
 class QJNIObject
 {
 public:
-    QJNIObject(const char *className);
+    explicit QJNIObject(const char *className) : d(new QJNIObjectPrivate(className)) { }
     QJNIObject(const char *className, const char *sig, ...);
-    QJNIObject(jclass clazz);
+    explicit QJNIObject(jclass clazz) : d(new QJNIObjectPrivate(clazz)) { }
     QJNIObject(jclass clazz, const char *sig, ...);
-    QJNIObject(jobject obj);
-    virtual ~QJNIObject();
+    explicit QJNIObject(jobject obj) : d(new QJNIObjectPrivate(obj)) { }
+
+    virtual ~QJNIObject() { }
 
     static bool isClassAvailable(const char *className);
 
-    bool isValid() const { return m_jobject != 0; }
-    jobject object() const { return m_jobject; }
+    bool isValid() const { return d->m_jobject != 0; }
+    jobject object() const { return d->m_jobject; }
 
     template <typename T>
     T callMethod(const char *methodName);
@@ -158,10 +179,8 @@ public:
     template <typename T>
     static void setStaticField(jclass clazz, const char *fieldName, T value);
 
-protected:
-    jobject m_jobject;
-    jclass m_jclass;
-    bool m_own_jclass;
+private:
+    QSharedPointer<QJNIObjectPrivate> d;
 };
 
 QT_END_NAMESPACE

@@ -71,6 +71,8 @@ QT_BEGIN_NAMESPACE
     it has been created from as long as it is not being modified.
 
     You can convert the array to and from text based JSON through QJsonDocument.
+
+    \sa {JSON Support in Qt}, {JSON Save Game Example}
 */
 
 /*!

@@ -98,35 +98,39 @@ BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM 
     WindowsScreenDataList *result = reinterpret_cast<WindowsScreenDataList *>(p);
     QWindowsScreenData data;
     data.geometry = QRect(QPoint(info.rcMonitor.left, info.rcMonitor.top), QPoint(info.rcMonitor.right - 1, info.rcMonitor.bottom - 1));
-#ifdef Q_OS_WINCE
-    //Windows CE, just supports one Display and expects to get only DISPLAY,
-    //instead of DISPLAY0 and so on, which are passed by info.szDevice
-    HDC hdc = CreateDC(TEXT("DISPLAY"), NULL, NULL, NULL);
-#else
-    HDC hdc = CreateDC(info.szDevice, NULL, NULL, NULL);
-#endif
-    if (hdc) {
-        data.dpi = deviceDPI(hdc);
-        data.depth = GetDeviceCaps(hdc, BITSPIXEL);
-        data.format = data.depth == 16 ? QImage::Format_RGB16 : QImage::Format_RGB32;
-        data.physicalSizeMM = QSizeF(GetDeviceCaps(hdc, HORZSIZE), GetDeviceCaps(hdc, VERTSIZE));
-        const int refreshRate = GetDeviceCaps(hdc, VREFRESH);
-        if (refreshRate > 1) // 0,1 means heardware default.
-            data.refreshRateHz = refreshRate;
-        DeleteDC(hdc);
+    data.name = QString::fromWCharArray(info.szDevice);
+    if (data.name == QLatin1String("WinDisc")) {
+        data.flags |= QWindowsScreenData::LockScreen;
     } else {
-        qWarning("%s: Unable to obtain handle for monitor '%s', defaulting to %g DPI.",
-                 __FUNCTION__, qPrintable(QString::fromWCharArray(info.szDevice)),
-                 data.dpi.first);
-    }
+#ifdef Q_OS_WINCE
+        //Windows CE, just supports one Display and expects to get only DISPLAY,
+        //instead of DISPLAY0 and so on, which are passed by info.szDevice
+        HDC hdc = CreateDC(TEXT("DISPLAY"), NULL, NULL, NULL);
+#else
+        HDC hdc = CreateDC(info.szDevice, NULL, NULL, NULL);
+#endif
+        if (hdc) {
+            data.dpi = deviceDPI(hdc);
+            data.depth = GetDeviceCaps(hdc, BITSPIXEL);
+            data.format = data.depth == 16 ? QImage::Format_RGB16 : QImage::Format_RGB32;
+            data.physicalSizeMM = QSizeF(GetDeviceCaps(hdc, HORZSIZE), GetDeviceCaps(hdc, VERTSIZE));
+            const int refreshRate = GetDeviceCaps(hdc, VREFRESH);
+            if (refreshRate > 1) // 0,1 means hardware default.
+                data.refreshRateHz = refreshRate;
+            DeleteDC(hdc);
+        } else {
+            qWarning("%s: Unable to obtain handle for monitor '%s', defaulting to %g DPI.",
+                     __FUNCTION__, qPrintable(QString::fromWCharArray(info.szDevice)),
+                     data.dpi.first);
+        } // CreateDC() failed
+    } // not lock screen
     data.geometry = QRect(QPoint(info.rcMonitor.left, info.rcMonitor.top), QPoint(info.rcMonitor.right - 1, info.rcMonitor.bottom - 1));
     data.availableGeometry = QRect(QPoint(info.rcWork.left, info.rcWork.top), QPoint(info.rcWork.right - 1, info.rcWork.bottom - 1));
     data.orientation = data.geometry.height() > data.geometry.width() ?
                        Qt::PortraitOrientation : Qt::LandscapeOrientation;
     // EnumDisplayMonitors (as opposed to EnumDisplayDevices) enumerates only
     // virtual desktop screens.
-    data.name = QString::fromWCharArray(info.szDevice);
-    data.flags = QWindowsScreenData::VirtualDesktop;
+    data.flags |= QWindowsScreenData::VirtualDesktop;
     if (info.dwFlags & MONITORINFOF_PRIMARY) {
         data.flags |= QWindowsScreenData::PrimaryScreen;
         // QPlatformIntegration::screenAdded() documentation specifies that first
@@ -162,6 +166,8 @@ static QDebug operator<<(QDebug dbg, const QWindowsScreenData &d)
         nospace << " primary";
     if (d.flags & QWindowsScreenData::VirtualDesktop)
         nospace << " virtual desktop";
+    if (d.flags & QWindowsScreenData::LockScreen)
+        nospace << " lock screen";
     return dbg;
 }
 
@@ -392,7 +398,8 @@ static inline int indexOfMonitor(const QList<QWindowsScreenData> &screenData,
 bool QWindowsScreenManager::handleScreenChanges()
 {
     // Look for changed monitors, add new ones
-    const WindowsScreenDataList newDataList = monitorData();
+    WindowsScreenDataList newDataList = monitorData();
+    const bool lockScreen = newDataList.size() == 1 && (newDataList.front().flags & QWindowsScreenData::LockScreen);
     foreach (const QWindowsScreenData &newData, newDataList) {
         const int existingIndex = indexOfMonitor(m_screens, newData.name);
         if (existingIndex != -1) {
@@ -405,14 +412,17 @@ bool QWindowsScreenManager::handleScreenChanges()
                 qDebug() << "New Monitor: " << newData;
         }    // exists
     }        // for new screens.
-    // Remove deleted ones.
-    for (int i = m_screens.size() - 1; i >= 0; --i) {
-        if (indexOfMonitor(newDataList, m_screens.at(i)->data().name) == -1) {
-            if (QWindowsContext::verboseWindows)
-                qDebug() << "Removing Monitor: " << m_screens.at(i) ->data();
-            delete m_screens.takeAt(i);
-        } // not found
-    }     // for existing screens
+    // Remove deleted ones but keep main monitors if we get only the
+    // temporary lock screen to avoid window recreation (QTBUG-33062).
+    if (!lockScreen) {
+        for (int i = m_screens.size() - 1; i >= 0; --i) {
+            if (indexOfMonitor(newDataList, m_screens.at(i)->data().name) == -1) {
+                if (QWindowsContext::verboseWindows)
+                    qDebug() << "Removing Monitor: " << m_screens.at(i) ->data();
+                delete m_screens.takeAt(i);
+            } // not found
+        }     // for existing screens
+    }     // not lock screen
     return true;
 }
 

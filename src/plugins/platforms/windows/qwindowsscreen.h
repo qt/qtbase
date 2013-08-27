@@ -59,7 +59,8 @@ struct QWindowsScreenData
     enum Flags
     {
         PrimaryScreen = 0x1,
-        VirtualDesktop = 0x2
+        VirtualDesktop = 0x2,
+        LockScreen = 0x4 // Temporary screen existing during user change, etc.
     };
 
     QWindowsScreenData();

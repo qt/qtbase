@@ -97,6 +97,11 @@ void QBackingStore::flush(const QRegion &region, QWindow *win, const QPoint &off
 {
     if (!win)
         win = window();
+    if (!win->handle()) {
+        qWarning() << "QBackingStore::flush() called for "
+            << win << " which does not have a handle.";
+        return;
+    }
 
 #ifdef QBACKINGSTORE_DEBUG
     if (win && win->isTopLevel() && !qt_window_private(win)->receivedExpose) {
