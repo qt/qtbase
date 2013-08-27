@@ -160,6 +160,12 @@ public class QtActivityDelegate
     private final int ImhEmailCharactersOnly = 0x200000;
     private final int ImhUrlCharactersOnly = 0x400000;
 
+    // application state
+    private final int ApplicationSuspended = 0x0;
+    private final int ApplicationHidden = 0x1;
+    private final int ApplicationInactive = 0x2;
+    private final int ApplicationActive = 0x4;
+
     public void resetSoftwareKeyboard()
     {
         if (m_imm == null)
@@ -621,6 +627,11 @@ public class QtActivityDelegate
             m_surface.applicationStarted(true);
     }
 
+    public void onPause()
+    {
+        QtNative.updateApplicationState(ApplicationInactive);
+    }
+
     public void onResume()
     {
         // fire all lostActions
@@ -631,10 +642,16 @@ public class QtActivityDelegate
                 m_activity.runOnUiThread(itr.next());
 
             if (m_started) {
+                QtNative.updateApplicationState(ApplicationActive);
                 QtNative.clearLostActions();
                 QtNative.updateWindow();
             }
         }
+    }
+
+    public void onStop()
+    {
+        QtNative.updateApplicationState(ApplicationSuspended);
     }
 
     public Object onRetainNonConfigurationInstance()

@@ -121,6 +121,12 @@ void QAndroidOpenGLPlatformWindow::raise()
 void QAndroidOpenGLPlatformWindow::setVisible(bool visible)
 {
     QEglFSWindow::setVisible(visible);
+
+    // The Android Activity is activated before Qt is initialized, causing the application state to
+    // never be set to 'active'. We explicitly set this state when the first window becomes visible.
+    if (visible)
+        QtAndroid::setApplicationActive();
+
     QWindowSystemInterface::handleExposeEvent(window(), QRegion(geometry())); // Expose event
     QWindowSystemInterface::flushWindowSystemEvents();
 }

@@ -89,6 +89,9 @@ static AAssetManager *m_assetManager = NULL;
 static jobject m_resourcesObj;
 static jobject m_activityObject = NULL;
 
+static bool m_activityActive = true; // defaults to true because when the platform plugin is
+                                     // initialized, QtActivity::onResume() has already been called
+
 static jclass m_bitmapClass  = 0;
 static jmethodID m_createBitmapMethodID = 0;
 static jobject m_ARGB_8888_BitmapConfigValue = 0;
@@ -318,6 +321,12 @@ namespace QtAndroid
     jobject activity()
     {
         return m_activityObject;
+    }
+
+    void setApplicationActive()
+    {
+        if (m_activityActive)
+            QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationActive);
     }
 
     jobject createBitmap(QImage img, JNIEnv *env)
@@ -652,6 +661,16 @@ static void updateWindow(JNIEnv */*env*/, jobject /*thiz*/)
 #endif
 }
 
+static void updateApplicationState(JNIEnv */*env*/, jobject /*thiz*/, jint state)
+{
+    m_activityActive = (state == Qt::ApplicationActive);
+
+    if (!m_androidPlatformIntegration)
+        return;
+
+    QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState(state));
+}
+
 static void handleOrientationChanged(JNIEnv */*env*/, jobject /*thiz*/, jint newOrientation)
 {
     if (m_androidPlatformIntegration == 0)
@@ -678,6 +697,7 @@ static JNINativeMethod methods[] = {
     {"lockSurface", "()V", (void *)lockSurface},
     {"unlockSurface", "()V", (void *)unlockSurface},
     {"updateWindow", "()V", (void *)updateWindow},
+    {"updateApplicationState", "(I)V", (void *)updateApplicationState},
     {"handleOrientationChanged", "(I)V", (void *)handleOrientationChanged}
 };
 

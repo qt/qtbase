@@ -88,6 +88,8 @@ namespace QtAndroid
     jclass applicationClass();
     jobject activity();
 
+    void setApplicationActive();
+
     jobject createBitmap(QImage img, JNIEnv *env = 0);
     jobject createBitmapDrawable(jobject bitmap, JNIEnv *env = 0);
 

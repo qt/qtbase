@@ -582,6 +582,9 @@ public class QtNative
     public static native void updateWindow();
     // window methods
 
+    // application methods
+    public static native void updateApplicationState(int state);
+
     // menu methods
     public static native boolean onPrepareOptionsMenu(Menu menu);
     public static native boolean onOptionsItemSelected(int itemId, boolean checked);

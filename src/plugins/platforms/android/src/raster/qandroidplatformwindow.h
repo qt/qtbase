@@ -52,6 +52,8 @@ public:
 
     void propagateSizeHints();
 
+    void setVisible(bool visible);
+
 public slots:
     void setGeometry(const QRect &rect);
 

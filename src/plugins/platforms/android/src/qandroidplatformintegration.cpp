@@ -121,6 +121,7 @@ bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
 {
     switch (cap) {
         case ThreadedPixmaps: return true;
+        case ApplicationState: return true;
         case NonFullScreenWindows: return false;
         case NativeWidgets: return false;
         default:

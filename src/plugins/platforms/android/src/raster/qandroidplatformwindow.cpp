@@ -41,6 +41,9 @@
 
 #include "qandroidplatformwindow.h"
 
+#include "androidjnimain.h"
+#include <qpa/qwindowsysteminterface.h>
+
 QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window) : QFbWindow(window)
 {
 }
@@ -53,4 +56,14 @@ void QAndroidPlatformWindow::setGeometry(const QRect &rect)
 void QAndroidPlatformWindow::propagateSizeHints()
 {
     //shut up warning from default implementation
+}
+
+void QAndroidPlatformWindow::setVisible(bool visible)
+{
+    QFbWindow::setVisible(visible);
+
+    // The Android Activity is activated before Qt is initialized, causing the application state to
+    // never be set to 'active'. We explicitly set this state when the first window becomes visible.
+    if (visible)
+        QtAndroid::setApplicationActive();
 }
