@@ -74,6 +74,9 @@ private slots:
     void setGeometry();
     void setStyleShouldChangeSpacing();
 
+    void testLayoutEngine_data();
+    void testLayoutEngine();
+
     void taskQTBUG_7103_minMaxWidthNotRespected();
     void taskQTBUG_27420_takeAtShouldUnparentLayout();
 };
@@ -323,6 +326,158 @@ void tst_QBoxLayout::taskQTBUG_27420_takeAtShouldUnparentLayout()
         delete item; // success: a taken item/layout should not be deleted when the old parent is deleted
     else
         QVERIFY(!inner.isNull());
+}
+
+
+struct Descr
+{
+    Descr(int min, int sh, int max = -1, bool exp= false, int _stretch = 0, bool _empty = false)
+        :minimumSize(min), sizeHint(sh), maximumSize(max < 0 ? QLAYOUTSIZE_MAX : max),
+         expanding(exp), stretch(_stretch), empty(_empty)
+        {}
+
+    int minimumSize;
+    int sizeHint;
+    int maximumSize;
+    bool expanding;
+
+    int stretch;
+
+    bool empty;
+};
+
+
+typedef QList<Descr> DescrList;
+Q_DECLARE_METATYPE(DescrList);
+
+typedef QList<int> SizeList;
+typedef QList<int> PosList;
+
+
+
+class LayoutItem : public QLayoutItem
+{
+public:
+    LayoutItem(const Descr &descr) :m_descr(descr) {}
+
+    QSize sizeHint() const { return QSize(m_descr.sizeHint, 100); }
+    QSize minimumSize() const { return QSize(m_descr.minimumSize, 0); }
+    QSize maximumSize() const { return QSize(m_descr.maximumSize, QLAYOUTSIZE_MAX); }
+    Qt::Orientations expandingDirections() const
+        { return m_descr.expanding ? Qt::Horizontal :  Qt::Orientations(0); }
+    void setGeometry(const QRect &r) { m_pos = r.x(); m_size = r.width();}
+    QRect geometry() const { return QRect(m_pos, 0, m_size, 100); }
+    bool isEmpty() const { return m_descr.empty; }
+
+private:
+    Descr m_descr;
+    int m_pos;
+    int m_size;
+};
+
+void tst_QBoxLayout::testLayoutEngine_data()
+{
+    // (int min, int sh, int max = -1, bool exp= false, int _stretch = 0, bool _empty = false)
+    QTest::addColumn<DescrList>("itemDescriptions");
+    QTest::addColumn<int>("size");
+    QTest::addColumn<int>("spacing");
+    QTest::addColumn<PosList>("expectedPositions");
+    QTest::addColumn<SizeList>("expectedSizes");
+
+    QTest::newRow("Just one")
+        << (DescrList() << Descr(0, 100))
+        << 200
+        << 0
+        << (PosList() << 0)
+        << (SizeList() << 200);
+
+    QTest::newRow("Two non-exp")
+        << (DescrList() << Descr(0, 100) << Descr(0,100))
+        << 400
+        << 0
+        << (PosList() << 0 << 200)
+        << (SizeList() << 200 << 200);
+
+    QTest::newRow("Exp + non-exp")
+        << (DescrList() << Descr(0, 100, -1, true) << Descr(0,100))
+        << 400
+        << 0
+        << (PosList() << 0 << 300)
+        << (SizeList() << 300 << 100);
+
+
+    QTest::newRow("Stretch")
+        << (DescrList() << Descr(0, 100, -1, false, 1) << Descr(0,100, -1, false, 2))
+        << 300
+        << 0
+        << (PosList() << 0 << 100)
+        << (SizeList() << 100 << 200);
+
+
+    QTest::newRow("Spacing")
+        << (DescrList() << Descr(0, 100) << Descr(0,100))
+        << 400
+        << 10
+        << (PosList() << 0 << 205)
+        << (SizeList() << 195 << 195);
+
+
+    QTest::newRow("Less than minimum")
+        << (DescrList() << Descr(100, 100, 100, false) << Descr(50, 100, 100, false))
+        << 100
+        << 0
+        << (PosList() << 0 << 50)
+        << (SizeList() << 50 << 50);
+
+
+    QTest::newRow("Less than sizehint")
+        << (DescrList() << Descr(100, 200, 100, false) << Descr(50, 200, 100, false))
+        << 200
+        << 0
+        << (PosList() << 0 << 100)
+        << (SizeList() << 100 << 100);
+
+    QTest::newRow("Too much space")
+        << (DescrList() << Descr(0, 100, 100, false) << Descr(0, 100, 100, false))
+        << 500
+        << 0
+        << (PosList() << 100 << 300)
+        << (SizeList() << 100 << 100);
+
+    QTest::newRow("Empty")
+        << (DescrList() << Descr(0, 100, 100) << Descr(0,0,-1, false, 0, true) << Descr(0, 100, 100) )
+        << 500
+        << 0
+        << (PosList() << 100 << 300 << 300)
+        << (SizeList() << 100 << 0 << 100);
+
+}
+
+void tst_QBoxLayout::testLayoutEngine()
+{
+    QFETCH(DescrList, itemDescriptions);
+    QFETCH(int, size);
+    QFETCH(int, spacing);
+    QFETCH(PosList, expectedPositions);
+    QFETCH(SizeList, expectedSizes);
+
+    QHBoxLayout box;
+    box.setSpacing(spacing);
+    int i;
+    for (i = 0; i < itemDescriptions.count(); ++i) {
+         Descr descr = itemDescriptions.at(i);
+         LayoutItem *li = new LayoutItem(descr);
+         box.addItem(li);
+         box.setStretch(i, descr.stretch);
+    }
+    box.setGeometry(QRect(0,0,size,100));
+    for (i = 0; i < expectedSizes.count(); ++i) {
+        int xSize = expectedSizes.at(i);
+        int xPos = expectedPositions.at(i);
+        QLayoutItem *item = box.itemAt(i);
+        QCOMPARE(item->geometry().width(), xSize);
+        QCOMPARE(item->geometry().x(), xPos);
+    }
 }
 
 QTEST_MAIN(tst_QBoxLayout)
