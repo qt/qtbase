@@ -209,6 +209,8 @@ public:
 
     static QStringList systemEnvironment();
 
+    static QString nullDevice();
+
 public Q_SLOTS:
     void terminate();
     void kill();

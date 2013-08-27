@@ -122,6 +122,7 @@ private slots:
     void setStandardInputFile();
     void setStandardOutputFile_data();
     void setStandardOutputFile();
+    void setStandardOutputFile2();
     void setStandardOutputProcess_data();
     void setStandardOutputProcess();
     void removeFileWhileProcessIsRunning();
@@ -1868,6 +1869,13 @@ void tst_QProcess::setStandardInputFile()
         QByteArray all = process.readAll();
     QCOMPARE(all.size(), int(sizeof data) - 1); // testProcessEcho drops the ending \0
     QVERIFY(all == data);
+
+    QProcess process2;
+    process2.setStandardInputFile(QProcess::nullDevice());
+    process2.start("testProcessEcho/testProcessEcho");
+    QPROCESS_VERIFY(process2, waitForFinished());
+    all = process2.readAll();
+    QCOMPARE(all.size(), 0);
 }
 #endif
 
@@ -1901,6 +1909,23 @@ void tst_QProcess::setStandardOutputFile_data()
                                    << int(QProcess::MergedChannels)
                                    << true;
 }
+
+//-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+void tst_QProcess::setStandardOutputFile2()
+{
+    static const char testdata[] = "Test data.";
+
+    QProcess process;
+    process.setStandardOutputFile(QProcess::nullDevice());
+    process.start("testProcessEcho2/testProcessEcho2");
+    process.write(testdata, sizeof testdata);
+    QPROCESS_VERIFY(process,waitForFinished());
+    QVERIFY(!process.bytesAvailable());
+
+    QVERIFY(!QFileInfo(QProcess::nullDevice()).isFile());
+}
+#endif
 
 void tst_QProcess::setStandardOutputFile()
 {

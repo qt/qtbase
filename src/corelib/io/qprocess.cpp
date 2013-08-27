@@ -1317,6 +1317,10 @@ void QProcess::closeWriteChannel()
     object will be in read-only mode (calling write() will result in
     error).
 
+    To make the process read EOF right away, pass nullDevice() here.
+    This is cleaner than using closeWriteChannel() before writing any
+    data, because it can be set up prior to starting the process.
+
     If the file \a fileName does not exist at the moment start() is
     called or is not readable, starting the process will fail.
 
@@ -1339,6 +1343,10 @@ void QProcess::setStandardInputFile(const QString &fileName)
     fileName. When the redirection is in place, the standard output
     read channel is closed: reading from it using read() will always
     fail, as will readAllStandardOutput().
+
+    To discard all standard output from the process, pass nullDevice()
+    here. This is more efficient than simply never reading the standard
+    output, as no QProcess buffers are filled.
 
     If the file \a fileName doesn't exist at the moment start() is
     called, it will be created. If it cannot be created, the starting
@@ -2438,6 +2446,25 @@ QStringList QProcess::systemEnvironment()
 
     \sa QProcess::systemEnvironment()
 */
+
+/*!
+    \since 5.2
+
+    \brief The null device of the operating system.
+
+    The returned file path uses native directory separators.
+
+    \sa QProcess::setStandardInputFile(), QProcess::setStandardOutputFile(),
+        QProcess::setStandardErrorFile()
+*/
+QString QProcess::nullDevice()
+{
+#ifdef Q_OS_WIN
+    return QStringLiteral("\\\\.\\NUL");
+#else
+    return QStringLiteral("/dev/null");
+#endif
+}
 
 /*!
     \typedef Q_PID
