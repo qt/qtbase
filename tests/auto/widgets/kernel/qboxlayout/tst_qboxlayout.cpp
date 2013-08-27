@@ -451,6 +451,33 @@ void tst_QBoxLayout::testLayoutEngine_data()
         << (PosList() << 100 << 300 << 300)
         << (SizeList() << 100 << 0 << 100);
 
+    QTest::newRow("QTBUG-33104")
+        << (DescrList() << Descr(11, 75, 75, true) << Descr(75, 75))
+        << 200
+        << 0
+        << (PosList() << 0 << 75)
+        << (SizeList() << 75 << 125);
+
+    QTest::newRow("Expanding with maximumSize")
+        << (DescrList() << Descr(11, 75, 100, true) << Descr(75, 75))
+        << 200
+        << 0
+        << (PosList() << 0 << 100)
+        << (SizeList() << 100 << 100);
+
+    QTest::newRow("Stretch with maximumSize")
+        << (DescrList() << Descr(11, 75, 100, false, 1) << Descr(75, 75))
+        << 200
+        << 0
+        << (PosList() << 0 << 100)
+        << (SizeList() << 100 << 100);
+
+    QTest::newRow("Stretch with maximumSize last")
+        << (DescrList()  << Descr(75, 75) << Descr(11, 75, 100, false, 1))
+        << 200
+        << 0
+        << (PosList() << 0 << 100)
+        << (SizeList() << 100 << 100);
 }
 
 void tst_QBoxLayout::testLayoutEngine()
