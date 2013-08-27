@@ -2552,8 +2552,10 @@ void QMessageBox::setDetailedText(const QString &text)
             d->detailsText = new QMessageBoxDetailsText(this);
             d->detailsText->hide();
         }
-        if (!d->detailsButton)
+        if (!d->detailsButton) {
             d->detailsButton = new DetailButton(this);
+            addButton(d->detailsButton, QMessageBox::ActionRole);
+        }
         d->detailsText->setText(text);
     }
     d->setupLayout();
