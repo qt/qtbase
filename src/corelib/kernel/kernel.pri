@@ -154,3 +154,10 @@ blackberry {
                 kernel/qeventdispatcher_blackberry_p.h
 }
 
+android:!android-no-sdk {
+        SOURCES += \
+                   kernel/qjnionload.cpp \
+                   kernel/qjnihelpers.cpp
+        HEADERS += \
+                   kernel/qjnihelpers_p.h
+}
