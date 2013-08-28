@@ -142,6 +142,8 @@ public:
     static void setQuitOnLastWindowClosed(bool quit);
     static bool quitOnLastWindowClosed();
 
+    static Qt::ApplicationState applicationState();
+
     static int exec();
     bool notify(QObject *, QEvent *);
 
@@ -159,6 +161,7 @@ Q_SIGNALS:
     void lastWindowClosed();
     void focusObjectChanged(QObject *focusObject);
     void focusWindowChanged(QWindow *focusWindow);
+    void applicationStateChanged(Qt::ApplicationState state);
 #ifndef QT_NO_SESSIONMANAGER
     void commitDataRequest(QSessionManager &sessionManager);
     void saveStateRequest(QSessionManager &sessionManager);

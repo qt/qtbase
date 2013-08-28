@@ -1418,7 +1418,7 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
         QGuiApplicationPrivate::processWindowScreenChangedEvent(static_cast<QWindowSystemInterfacePrivate::WindowScreenChangedEvent *>(e));
         break;
     case QWindowSystemInterfacePrivate::ApplicationStateChanged:
-            QGuiApplicationPrivate::processApplicationStateChangedEvent(static_cast<QWindowSystemInterfacePrivate::ApplicationStateChangedEvent *>(e));
+        QGuiApplicationPrivate::setApplicationState(static_cast<QWindowSystemInterfacePrivate::ApplicationStateChangedEvent *>(e)->newState);
         break;
     case QWindowSystemInterfacePrivate::FlushEvents:
         QWindowSystemInterface::deferredFlushWindowSystemEvents();
@@ -1748,10 +1748,7 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
         QObject::disconnect(previous, SIGNAL(focusObjectChanged(QObject*)),
                             qApp, SLOT(_q_updateFocusObject(QObject*)));
     } else if (!platformIntegration()->hasCapability(QPlatformIntegration::ApplicationState)) {
-        QEvent appActivate(QEvent::ApplicationActivate);
-        qApp->sendSpontaneousEvent(qApp, &appActivate);
-        QApplicationStateChangeEvent appState(Qt::ApplicationActive);
-        qApp->sendSpontaneousEvent(qApp, &appState);
+        setApplicationState(Qt::ApplicationActive);
     }
 
     if (QGuiApplicationPrivate::focus_window) {
@@ -1760,10 +1757,7 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
         QObject::connect(QGuiApplicationPrivate::focus_window, SIGNAL(focusObjectChanged(QObject*)),
                          qApp, SLOT(_q_updateFocusObject(QObject*)));
     } else if (!platformIntegration()->hasCapability(QPlatformIntegration::ApplicationState)) {
-        QEvent appActivate(QEvent::ApplicationDeactivate);
-        qApp->sendSpontaneousEvent(qApp, &appActivate);
-        QApplicationStateChangeEvent appState(Qt::ApplicationInactive);
-        qApp->sendSpontaneousEvent(qApp, &appState);
+        setApplicationState(Qt::ApplicationInactive);
     }
 
     if (self) {
@@ -1797,29 +1791,6 @@ void QGuiApplicationPrivate::processWindowScreenChangedEvent(QWindowSystemInterf
         else // Fall back to default behavior, and try to find some appropriate screen
             window->setScreen(0);
     }
-}
-
-void QGuiApplicationPrivate::processApplicationStateChangedEvent(QWindowSystemInterfacePrivate::ApplicationStateChangedEvent *e)
-{
-    if (e->newState == applicationState)
-        return;
-    applicationState = e->newState;
-
-    switch (e->newState) {
-    case Qt::ApplicationActive: {
-        QEvent appActivate(QEvent::ApplicationActivate);
-        qApp->sendSpontaneousEvent(qApp, &appActivate);
-        break; }
-    case Qt::ApplicationInactive: {
-        QEvent appDeactivate(QEvent::ApplicationDeactivate);
-        qApp->sendSpontaneousEvent(qApp, &appDeactivate);
-        break; }
-    default:
-        break;
-    }
-
-    QApplicationStateChangeEvent event(applicationState);
-    qApp->sendSpontaneousEvent(qApp, &event);
 }
 
 void QGuiApplicationPrivate::processThemeChanged(QWindowSystemInterfacePrivate::ThemeChangeEvent *tce)
@@ -2629,6 +2600,58 @@ bool QGuiApplicationPrivate::shouldQuitInternal(const QWindowList &processedWind
             return false;
     }
     return true;
+}
+
+/*!
+    \since 5.2
+    \fn Qt::ApplicationState QGuiApplication::applicationState()
+
+
+    Returns the current state of the application.
+
+    You can react to application state changes to perform actions such as
+    stopping/resuming CPU-intensive tasks, freeing/loading resources or
+    saving/restoring application data.
+ */
+
+Qt::ApplicationState QGuiApplication::applicationState()
+{
+    return QGuiApplicationPrivate::applicationState;
+}
+
+/*!
+    \since 5.2
+    \fn void QGuiApplication::applicationStateChanged(Qt::ApplicationState state)
+
+    This signal is emitted when the \a state of the application changes.
+
+    \sa applicationState()
+*/
+
+void QGuiApplicationPrivate::setApplicationState(Qt::ApplicationState state)
+{
+    if (applicationState == state)
+        return;
+
+    applicationState = state;
+
+    switch (state) {
+    case Qt::ApplicationActive: {
+        QEvent appActivate(QEvent::ApplicationActivate);
+        QCoreApplication::sendSpontaneousEvent(qApp, &appActivate);
+        break; }
+    case Qt::ApplicationInactive: {
+        QEvent appDeactivate(QEvent::ApplicationDeactivate);
+        QCoreApplication::sendSpontaneousEvent(qApp, &appDeactivate);
+        break; }
+    default:
+        break;
+    }
+
+    QApplicationStateChangeEvent event(applicationState);
+    QCoreApplication::sendSpontaneousEvent(qApp, &event);
+
+    emit qApp->applicationStateChanged(applicationState);
 }
 
 /*!

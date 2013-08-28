@@ -89,6 +89,7 @@ Qt {
     Q_ENUMS(ScreenOrientation)
     Q_FLAGS(ScreenOrientations)
     Q_ENUMS(ConnectionType)
+    Q_ENUMS(ApplicationState)
 #ifndef QT_NO_GESTURES
     Q_ENUMS(GestureState)
     Q_ENUMS(GestureType)

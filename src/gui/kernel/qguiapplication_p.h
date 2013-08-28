@@ -130,8 +130,6 @@ public:
     static void processWindowStateChangedEvent(QWindowSystemInterfacePrivate::WindowStateChangedEvent *e);
     static void processWindowScreenChangedEvent(QWindowSystemInterfacePrivate::WindowScreenChangedEvent *e);
 
-    static void processApplicationStateChangedEvent(QWindowSystemInterfacePrivate::ApplicationStateChangedEvent *e);
-
     static void processWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e);
 
     static void updateFilteredScreenOrientation(QScreen *screen);
@@ -276,6 +274,8 @@ public:
     virtual QPixmap applyQIconStyleHelper(QIcon::Mode, const QPixmap &basePixmap) const { return basePixmap; }
 
     static QRect applyWindowGeometrySpecification(const QRect &windowGeometry, const QWindow *window);
+
+    static void setApplicationState(Qt::ApplicationState state);
 
 protected:
     virtual void notifyThemeChanged();
