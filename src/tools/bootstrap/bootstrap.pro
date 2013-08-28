@@ -84,6 +84,8 @@ SOURCES += \
            ../../corelib/tools/qbytearray.cpp \
            ../../corelib/tools/qarraydata.cpp \
            ../../corelib/tools/qbytearraymatcher.cpp \
+           ../../corelib/tools/qcommandlineparser.cpp \
+           ../../corelib/tools/qcommandlineoption.cpp \
            ../../corelib/tools/qcryptographichash.cpp \
            ../../corelib/tools/qdatetime.cpp \
            ../../corelib/tools/qhash.cpp \
