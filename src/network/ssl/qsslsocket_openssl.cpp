@@ -1486,6 +1486,15 @@ void QSslSocketBackendPrivate::continueHandshake()
         }
     }
 
+#if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_TLSEXT) && !defined(OPENSSL_NO_NEXTPROTONEG)
+    const unsigned char *proto;
+    unsigned int proto_len;
+    q_SSL_get0_next_proto_negotiated(ssl, &proto, &proto_len);
+    QByteArray nextProtocol(reinterpret_cast<const char *>(proto), proto_len);
+    configuration.nextNegotiatedProtocol = nextProtocol;
+    configuration.nextProtocolNegotiationStatus = sslContextPointer->npnContext().status;
+#endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
+
     connectionEncrypted = true;
     emit q->encrypted();
     if (autoStartHandshake && pendingClose) {

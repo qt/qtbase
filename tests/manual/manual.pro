@@ -25,6 +25,7 @@ qnetworkreply \
 qpainfo \
 qscreen \
 qssloptions \
+qsslsocket \
 qtabletevent \
 qtexteditlist \
 qtbug-8933 \

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -472,6 +473,20 @@ long q_SSLeay();
 const char *q_SSLeay_version(int type);
 int q_i2d_SSL_SESSION(SSL_SESSION *in, unsigned char **pp);
 SSL_SESSION *q_d2i_SSL_SESSION(SSL_SESSION **a, const unsigned char **pp, long length);
+
+#if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_TLSEXT) && !defined(OPENSSL_NO_NEXTPROTONEG)
+int q_SSL_select_next_proto(unsigned char **out, unsigned char *outlen,
+                            const unsigned char *in, unsigned int inlen,
+                            const unsigned char *client, unsigned int client_len);
+void q_SSL_CTX_set_next_proto_select_cb(SSL_CTX *s,
+                                        int (*cb) (SSL *ssl, unsigned char **out,
+                                                   unsigned char *outlen,
+                                                   const unsigned char *in,
+                                                   unsigned int inlen, void *arg),
+                                        void *arg);
+void q_SSL_get0_next_proto_negotiated(const SSL *s, const unsigned char **data,
+                                      unsigned *len);
+#endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
 
 // Helper function
 class QDateTime;
