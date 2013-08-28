@@ -1198,6 +1198,57 @@ void tst_QItemDelegate::editorEvent_data()
         << (int)(Qt::LeftButton)
         << true
         << (int)(Qt::Unchecked);
+
+    QTest::newRow("unchecked, tristate, release")
+        << QRect(0, 0, 20, 20)
+        << QString("foo")
+        << (int)(Qt::Unchecked)
+        << (int)(Qt::ItemIsEditable
+            |Qt::ItemIsSelectable
+            |Qt::ItemIsUserCheckable
+            |Qt::ItemIsTristate
+            |Qt::ItemIsEnabled
+            |Qt::ItemIsDragEnabled
+            |Qt::ItemIsDropEnabled)
+        << true
+        << (int)(QEvent::MouseButtonRelease)
+        << (int)(Qt::LeftButton)
+        << true
+        << (int)(Qt::PartiallyChecked);
+
+    QTest::newRow("partially checked, tristate, release")
+        << QRect(0, 0, 20, 20)
+        << QString("foo")
+        << (int)(Qt::PartiallyChecked)
+        << (int)(Qt::ItemIsEditable
+            |Qt::ItemIsSelectable
+            |Qt::ItemIsUserCheckable
+            |Qt::ItemIsTristate
+            |Qt::ItemIsEnabled
+            |Qt::ItemIsDragEnabled
+            |Qt::ItemIsDropEnabled)
+        << true
+        << (int)(QEvent::MouseButtonRelease)
+        << (int)(Qt::LeftButton)
+        << true
+        << (int)(Qt::Checked);
+
+    QTest::newRow("checked, tristate, release")
+        << QRect(0, 0, 20, 20)
+        << QString("foo")
+        << (int)(Qt::Checked)
+        << (int)(Qt::ItemIsEditable
+            |Qt::ItemIsSelectable
+            |Qt::ItemIsUserCheckable
+            |Qt::ItemIsTristate
+            |Qt::ItemIsEnabled
+            |Qt::ItemIsDragEnabled
+            |Qt::ItemIsDropEnabled)
+        << true
+        << (int)(QEvent::MouseButtonRelease)
+        << (int)(Qt::LeftButton)
+        << true
+        << (int)(Qt::Unchecked);
 }
 
 void tst_QItemDelegate::editorEvent()

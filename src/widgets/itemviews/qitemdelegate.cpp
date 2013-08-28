@@ -1295,8 +1295,11 @@ bool QItemDelegate::editorEvent(QEvent *event,
         return false;
     }
 
-    Qt::CheckState state = (static_cast<Qt::CheckState>(value.toInt()) == Qt::Checked
-                            ? Qt::Unchecked : Qt::Checked);
+    Qt::CheckState state = static_cast<Qt::CheckState>(value.toInt());
+    if (flags & Qt::ItemIsTristate)
+        state = ((Qt::CheckState)((state + 1) % 3));
+    else
+        state = (state == Qt::Checked) ? Qt::Unchecked : Qt::Checked;
     return model->setData(index, state, Qt::CheckStateRole);
 }
 
