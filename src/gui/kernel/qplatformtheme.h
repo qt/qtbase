@@ -112,7 +112,8 @@ public:
     enum DialogType {
         FileDialog,
         ColorDialog,
-        FontDialog
+        FontDialog,
+        MessageDialog
     };
 
     enum Palette {

@@ -95,7 +95,7 @@ public:
     };
 
     enum StandardButton {
-        // keep this in sync with QDialogButtonBox::StandardButton
+        // keep this in sync with QDialogButtonBox::StandardButton and QMessageDialogOptions::StandardButton
         NoButton           = 0x00000000,
         Ok                 = 0x00000400,
         Save               = 0x00000800,

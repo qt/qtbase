@@ -596,4 +596,121 @@ QStringList QPlatformFileDialogHelper::cleanFilterList(const QString &filter)
     return f.split(QLatin1Char(' '), QString::SkipEmptyParts);
 }
 
+// Message dialog
+
+class QMessageDialogOptionsPrivate : public QSharedData
+{
+public:
+    QMessageDialogOptionsPrivate() :
+        icon(QMessageDialogOptions::NoIcon),
+        buttons(QMessageDialogOptions::Ok)
+    {}
+
+    QString windowTitle;
+    QMessageDialogOptions::Icon icon;
+    QString text;
+    QString informativeText;
+    QString detailedText;
+    QMessageDialogOptions::StandardButtons buttons;
+};
+
+QMessageDialogOptions::QMessageDialogOptions() : d(new QMessageDialogOptionsPrivate)
+{
+}
+
+QMessageDialogOptions::QMessageDialogOptions(const QMessageDialogOptions &rhs) : d(rhs.d)
+{
+}
+
+QMessageDialogOptions &QMessageDialogOptions::operator=(const QMessageDialogOptions &rhs)
+{
+    if (this != &rhs)
+        d = rhs.d;
+    return *this;
+}
+
+QMessageDialogOptions::~QMessageDialogOptions()
+{
+}
+
+QString QMessageDialogOptions::windowTitle() const
+{
+    return d->windowTitle;
+}
+
+void QMessageDialogOptions::setWindowTitle(const QString &title)
+{
+    d->windowTitle = title;
+}
+
+QMessageDialogOptions::Icon QMessageDialogOptions::icon() const
+{
+    return d->icon;
+}
+
+void QMessageDialogOptions::setIcon(Icon icon)
+{
+    d->icon = icon;
+}
+
+QString QMessageDialogOptions::text() const
+{
+    return d->text;
+}
+
+void QMessageDialogOptions::setText(const QString &text)
+{
+    d->text = text;
+}
+
+QString QMessageDialogOptions::informativeText() const
+{
+    return d->informativeText;
+}
+
+void QMessageDialogOptions::setInformativeText(const QString &informativeText)
+{
+    d->informativeText = informativeText;
+}
+
+QString QMessageDialogOptions::detailedText() const
+{
+    return d->detailedText;
+}
+
+void QMessageDialogOptions::setDetailedText(const QString &detailedText)
+{
+    d->detailedText = detailedText;
+}
+
+void QMessageDialogOptions::setStandardButtons(StandardButtons buttons)
+{
+    d->buttons = buttons;
+}
+
+QMessageDialogOptions::StandardButtons QMessageDialogOptions::standardButtons() const
+{
+    return d->buttons;
+}
+
+
+/*!
+    \class QPlatformMessageDialogHelper
+    \since 5.0
+    \internal
+    \ingroup qpa
+
+    \brief The QPlatformMessageDialogHelper class allows for platform-specific customization of Message dialogs.
+
+*/
+const QSharedPointer<QMessageDialogOptions> &QPlatformMessageDialogHelper::options() const
+{
+    return m_options;
+}
+
+void QPlatformMessageDialogHelper::setOptions(const QSharedPointer<QMessageDialogOptions> &options)
+{
+    m_options = options;
+}
+
 QT_END_NAMESPACE

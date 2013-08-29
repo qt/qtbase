@@ -72,6 +72,7 @@ class QUrl;
 class QColorDialogOptionsPrivate;
 class QFontDialogOptionsPrivate;
 class QFileDialogOptionsPrivate;
+class QMessageDialogOptionsPrivate;
 
 class Q_GUI_EXPORT QPlatformDialogHelper : public QObject
 {
@@ -323,6 +324,86 @@ Q_SIGNALS:
 
 private:
     QSharedPointer<QFileDialogOptions> m_options;
+};
+
+class Q_GUI_EXPORT QMessageDialogOptions
+{
+public:
+    // Keep in sync with QMessageBox::Icon
+    enum Icon { NoIcon, Information, Warning, Critical, Question };
+
+    enum StandardButton {
+        // keep this in sync with QDialogButtonBox::StandardButton and QMessageBox::StandardButton
+        NoButton           = 0x00000000,
+        Ok                 = 0x00000400,
+        Save               = 0x00000800,
+        SaveAll            = 0x00001000,
+        Open               = 0x00002000,
+        Yes                = 0x00004000,
+        YesToAll           = 0x00008000,
+        No                 = 0x00010000,
+        NoToAll            = 0x00020000,
+        Abort              = 0x00040000,
+        Retry              = 0x00080000,
+        Ignore             = 0x00100000,
+        Close              = 0x00200000,
+        Cancel             = 0x00400000,
+        Discard            = 0x00800000,
+        Help               = 0x01000000,
+        Apply              = 0x02000000,
+        Reset              = 0x04000000,
+        RestoreDefaults    = 0x08000000,
+
+
+        FirstButton        = Ok,                // internal
+        LastButton         = RestoreDefaults    // internal
+    };
+
+    Q_DECLARE_FLAGS(StandardButtons, StandardButton)
+
+    QMessageDialogOptions();
+    QMessageDialogOptions(const QMessageDialogOptions &rhs);
+    QMessageDialogOptions &operator=(const QMessageDialogOptions &rhs);
+    ~QMessageDialogOptions();
+
+    void swap(QMessageDialogOptions &other) { qSwap(d, other.d); }
+
+    QString windowTitle() const;
+    void setWindowTitle(const QString &);
+
+    void setIcon(Icon icon);
+    Icon icon() const;
+
+    void setText(const QString &text);
+    QString text() const;
+
+    void setInformativeText(const QString &text);
+    QString informativeText() const;
+
+    void setDetailedText(const QString &text);
+    QString detailedText() const;
+
+    void setStandardButtons(StandardButtons buttons);
+    StandardButtons standardButtons() const;
+
+private:
+    QSharedDataPointer<QMessageDialogOptionsPrivate> d;
+};
+
+Q_DECLARE_SHARED(QMessageDialogOptions)
+
+class Q_GUI_EXPORT QPlatformMessageDialogHelper : public QPlatformDialogHelper
+{
+    Q_OBJECT
+public:
+    const QSharedPointer<QMessageDialogOptions> &options() const;
+    void setOptions(const QSharedPointer<QMessageDialogOptions> &options);
+
+Q_SIGNALS:
+    void clicked(QMessageDialogOptions::StandardButton button);
+
+private:
+    QSharedPointer<QMessageDialogOptions> m_options;
 };
 
 QT_END_NAMESPACE
