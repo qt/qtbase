@@ -133,7 +133,6 @@ QT_BEGIN_NAMESPACE
     Constructs this QScopedPointer instance and sets its pointer to \a p.
 */
 
-#ifndef Q_QDOC // QTBUG-32675, qdoc can't parse rvalue refs
 /*!
     \fn QScopedPointer::QScopedPointer(QScopedPointer<T, Cleanup> &&other)
 
@@ -154,11 +153,10 @@ QT_BEGIN_NAMESPACE
 
     Otherwise, this instance is set to point to the object \a other
     is pointing to, and \a other is set to point to \c{NULL}.
-    If this instance was pointing to an object, that object is destroyed,
+    If this instance was pointing to an object, that object is destroyed.
 
     \since 5.2
 */
-#endif
 
 /*!
     \fn QScopedPointer::~QScopedPointer()
