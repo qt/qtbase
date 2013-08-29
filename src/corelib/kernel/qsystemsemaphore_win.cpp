@@ -87,7 +87,11 @@ HANDLE QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode)
 
     // Create it if it doesn't already exists.
     if (semaphore == 0) {
+#if defined(Q_OS_WINRT)
+        semaphore = CreateSemaphoreEx(0, initialValue, MAXLONG, (wchar_t*)fileName.utf16(), 0, SEMAPHORE_ALL_ACCESS);
+#else
         semaphore = CreateSemaphore(0, initialValue, MAXLONG, (wchar_t*)fileName.utf16());
+#endif
         if (semaphore == NULL)
             setErrorString(QLatin1String("QSystemSemaphore::handle"));
     }
@@ -119,7 +123,11 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
             return false;
         }
     } else {
+#if defined(Q_OS_WINRT)
+        if (WAIT_OBJECT_0 != WaitForSingleObjectEx(semaphore, INFINITE, FALSE)) {
+#else
         if (WAIT_OBJECT_0 != WaitForSingleObject(semaphore, INFINITE)) {
+#endif
             setErrorString(QLatin1String("QSystemSemaphore::modifySemaphore"));
 #if defined QSYSTEMSEMAPHORE_DEBUG
             qDebug() << QLatin1String("QSystemSemaphore::modifySemaphore WaitForSingleObject failed");
