@@ -117,6 +117,20 @@ QT_BEGIN_NAMESPACE
     \sa isEmpty()
 */
 
+/*
+ * QBitArray construction note:
+ *
+ * We overallocate the byte array by 1 byte. The first user bit is at
+ * d.data()[1]. On the extra first byte, we store the difference between the
+ * number of bits in the byte array (including this byte) and the number of
+ * bits in the bit array. Therefore, it's always a number between 8 and 15.
+ *
+ * This allows for fast calculation of the bit array size:
+ *    inline int size() const { return (d.size() << 3) - *d.constData(); }
+ *
+ * Note: for an array of zero size, *d.constData() is the QByteArray implicit NUL.
+ */
+
 /*!
     Constructs a bit array containing \a size bits. The bits are
     initialized with \a value, which defaults to false (0).
