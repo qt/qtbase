@@ -6,6 +6,8 @@
 #define HB_NO_MT
 #define HB_NO_UNICODE_FUNCS
 
+#define HB_DISABLE_DEPRECATED
+
 #include <QtCore/qglobal.h>
 
 #ifndef HB_INTERNAL

@@ -8,6 +8,7 @@ contains(QT_CONFIG, harfbuzz) {
         $$QT_HARFBUZZ_DIR/src/hb-buffer.cc \
         $$QT_HARFBUZZ_DIR/src/hb-buffer-serialize.cc \
         $$QT_HARFBUZZ_DIR/src/hb-common.cc \
+        $$QT_HARFBUZZ_DIR/src/hb-face.cc \
         $$QT_HARFBUZZ_DIR/src/hb-fallback-shape.cc \
         $$QT_HARFBUZZ_DIR/src/hb-font.cc \
         $$QT_HARFBUZZ_DIR/src/hb-ot-tag.cc \
@@ -24,6 +25,7 @@ contains(QT_CONFIG, harfbuzz) {
         $$QT_HARFBUZZ_DIR/src/hb-buffer-deserialize-json.hh \
         $$QT_HARFBUZZ_DIR/src/hb-buffer-deserialize-text.hh \
         $$QT_HARFBUZZ_DIR/src/hb-cache-private.hh \
+        $$QT_HARFBUZZ_DIR/src/hb-face-private.hh \
         $$QT_HARFBUZZ_DIR/src/hb-font-private.hh \
         $$QT_HARFBUZZ_DIR/src/hb-mutex-private.hh \
         $$QT_HARFBUZZ_DIR/src/hb-object-private.hh \
@@ -48,6 +50,7 @@ contains(QT_CONFIG, harfbuzz) {
         $$QT_HARFBUZZ_DIR/src/hb-blob.h \
         $$QT_HARFBUZZ_DIR/src/hb-buffer.h \
         $$QT_HARFBUZZ_DIR/src/hb-common.h \
+        $$QT_HARFBUZZ_DIR/src/hb-face.h \
         $$QT_HARFBUZZ_DIR/src/hb-font.h \
         $$QT_HARFBUZZ_DIR/src/hb-set.h \
         $$QT_HARFBUZZ_DIR/src/hb-shape.h \
