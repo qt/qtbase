@@ -237,7 +237,11 @@ int Tokenizer::getToken()
                 return getTokenAfterPreprocessor();
             case '&':
                 yyCh = getChar();
-                if (yyCh == '&' || yyCh == '=') {
+                /*
+                  Removed check for '&&', only interpret '&=' as an operator.
+                  '&&' is also used for an rvalue reference. QTBUG-32675
+                 */
+                if (yyCh == '=') {
                     yyCh = getChar();
                     return Tok_SomeOperator;
                 }

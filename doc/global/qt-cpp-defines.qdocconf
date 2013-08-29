@@ -14,7 +14,8 @@ defines                 += Q_QDOC \
                           QT_DEPRECATED_* \
                           Q_NO_USING_KEYWORD \
                           __cplusplus \
-                          Q_COMPILER_INITIALIZER_LISTS
+                          Q_COMPILER_INITIALIZER_LISTS \
+                          Q_COMPILER_RVALUE_REFS
 
 Cpp.ignoretokens        += \
                           PHONON_EXPORT \
