@@ -203,10 +203,6 @@ void QEglFSBackingStore::beginPaint(const QRegion &rgn)
     m_dirty = m_dirty | rgn;
 }
 
-void QEglFSBackingStore::endPaint()
-{
-}
-
 void QEglFSBackingStore::resize(const QSize &size, const QRegion &staticContents)
 {
     Q_UNUSED(staticContents);

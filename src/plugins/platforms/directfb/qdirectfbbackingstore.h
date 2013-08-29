@@ -61,9 +61,6 @@ public:
     void resize (const QSize &size, const QRegion &staticContents);
     bool scroll(const QRegion &area, int dx, int dy);
 
-    void beginPaint(const QRegion &region);
-    void endPaint(const QRegion &region);
-
 private:
     void lockSurfaceToImage();
 

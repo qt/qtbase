@@ -283,10 +283,6 @@ void QXcbBackingStore::beginPaint(const QRegion &region)
     }
 }
 
-void QXcbBackingStore::endPaint(const QRegion &)
-{
-}
-
 void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
     if (!m_image || m_image->size().isEmpty())

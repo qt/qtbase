@@ -59,9 +59,6 @@ public:
     virtual QPaintDevice *paintDevice() { return &mImage; }
     virtual void flush(QWindow *window, const QRegion &region, const QPoint &offset);
 
-    virtual void beginPaint(const QRegion &region);
-    virtual void endPaint();
-
     virtual void resize(const QSize &size, const QRegion &region);
 
     const QImage image() { return mImage; }

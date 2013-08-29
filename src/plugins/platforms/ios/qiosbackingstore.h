@@ -55,7 +55,6 @@ public:
     QPaintDevice *paintDevice();
 
     void beginPaint(const QRegion &);
-    void endPaint();
 
     void flush(QWindow *window, const QRegion &region, const QPoint &offset);
     void resize(const QSize &size, const QRegion &staticContents);

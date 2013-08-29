@@ -169,9 +169,8 @@ void QQnxRasterBackingStore::beginPaint(const QRegion &region)
     platformWindow()->adjustBufferSize();
 }
 
-void QQnxRasterBackingStore::endPaint(const QRegion &region)
+void QQnxRasterBackingStore::endPaint()
 {
-    Q_UNUSED(region);
     qRasterBackingStoreDebug() << Q_FUNC_INFO << "w =" << window();
 }
 

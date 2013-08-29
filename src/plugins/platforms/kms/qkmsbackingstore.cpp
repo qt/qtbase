@@ -78,10 +78,6 @@ void QKmsBackingStore::beginPaint(const QRegion &rgn)
     m_dirty |= rgn;
 }
 
-void QKmsBackingStore::endPaint()
-{
-}
-
 void QKmsBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
     Q_UNUSED(region)

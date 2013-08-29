@@ -77,14 +77,5 @@ void QFbBackingStore::resize(const QSize &size, const QRegion &staticContents)
         mImage = QImage(size, window()->screen()->handle()->format());
 }
 
-void QFbBackingStore::beginPaint(const QRegion &region)
-{
-    Q_UNUSED(region);
-}
-
-void QFbBackingStore::endPaint()
-{
-}
-
 QT_END_NAMESPACE
 

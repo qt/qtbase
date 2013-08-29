@@ -119,14 +119,4 @@ bool QDirectFbBackingStore::scroll(const QRegion &area, int dx, int dy)
     return true;
 }
 
-void QDirectFbBackingStore::beginPaint(const QRegion &region)
-{
-    Q_UNUSED(region);
-}
-
-void QDirectFbBackingStore::endPaint(const QRegion &region)
-{
-    Q_UNUSED(region);
-}
-
 QT_END_NAMESPACE

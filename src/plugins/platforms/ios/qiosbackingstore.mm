@@ -105,12 +105,6 @@ void QIOSBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
     m_context->swapBuffers(window);
 }
 
-void QIOSBackingStore::endPaint()
-{
-    // Calling makeDone() on the context here would be an option,
-    // but is not needed, and would actually add some overhead.
-}
-
 void QIOSBackingStore::resize(const QSize &size, const QRegion &staticContents)
 {
     Q_UNUSED(staticContents);
