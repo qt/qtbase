@@ -136,15 +136,14 @@ QT_BEGIN_NAMESPACE
     initialized with \a value, which defaults to false (0).
 */
 QBitArray::QBitArray(int size, bool value)
+    : d(size <= 0 ? 0 : 1 + (size + 7)/8, Qt::Uninitialized)
 {
     Q_ASSERT_X(size >= 0, "QBitArray::QBitArray", "Size must be greater than or equal to 0.");
-    if (size <= 0) {
-        d.resize(0);
+    if (size <= 0)
         return;
-    }
-    d.resize(1 + (size+7)/8);
+
     uchar* c = reinterpret_cast<uchar*>(d.data());
-    memset(c, value ? 0xff : 0, d.size());
+    memset(c + 1, value ? 0xff : 0, d.size() - 1);
     *c = d.size()*8 - size;
     if (value && size && size % 8)
         *(c+1+size/8) &= (1 << (size%8)) - 1;
