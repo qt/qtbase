@@ -75,11 +75,12 @@ class QFontEngineFTRawFont;
 class QFontconfigDatabase;
 
 /*
- * This struct represents one font file on disk (like Arial.ttf) and is shared between all the font engines
+ * This class represents one font file on disk (like Arial.ttf) and is shared between all the font engines
  * that show this font file (at different pixel sizes).
  */
-struct QFreetypeFace
+class QFreetypeFace
 {
+public:
     void computeSize(const QFontDef &fontDef, int *xsize, int *ysize, bool *outline_drawing);
     QFontEngine::Properties properties() const;
     bool getSfntTable(uint tag, uchar *buffer, uint *length) const;
