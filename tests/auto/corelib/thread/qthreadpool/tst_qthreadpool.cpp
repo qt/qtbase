@@ -638,6 +638,7 @@ void tst_QThreadPool::reserveAndStart() // QTBUG-21051
     public:
         QAtomicInt count;
         QSemaphore waitForStarted;
+        QSemaphore waitBeforeDone;
 
         WaitingTask() { setAutoDelete(false); }
 
@@ -645,6 +646,7 @@ void tst_QThreadPool::reserveAndStart() // QTBUG-21051
         {
             count.ref();
             waitForStarted.release();
+            waitBeforeDone.acquire();
         }
     };
 
@@ -663,6 +665,7 @@ void tst_QThreadPool::reserveAndStart() // QTBUG-21051
     threadpool->start(task);
     QCOMPARE(threadpool->activeThreadCount(), 2);
     task->waitForStarted.acquire();
+    task->waitBeforeDone.release();
     QTRY_COMPARE(task->count.load(), 1);
     QTRY_COMPARE(threadpool->activeThreadCount(), 1);
 
@@ -675,6 +678,7 @@ void tst_QThreadPool::reserveAndStart() // QTBUG-21051
     threadpool->start(task);
     QTRY_COMPARE(threadpool->activeThreadCount(), 2);
     task->waitForStarted.acquire();
+    task->waitBeforeDone.release();
     QTRY_COMPARE(task->count.load(), 2);
     QTRY_COMPARE(threadpool->activeThreadCount(), 1);
 
