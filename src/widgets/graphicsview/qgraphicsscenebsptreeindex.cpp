@@ -567,10 +567,7 @@ QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::items(Qt::SortOrder order) co
                 itemList << item;
         }
     }
-    if (order != -1) {
-        //We sort descending order
-        d->sortItems(&itemList, order, d->sortCacheEnabled);
-    }
+    d->sortItems(&itemList, order, d->sortCacheEnabled);
     return itemList;
 }
 
