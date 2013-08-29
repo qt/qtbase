@@ -562,8 +562,10 @@ void QQnxScreen::addUnderlayWindow(screen_window_t window)
 void QQnxScreen::removeOverlayOrUnderlayWindow(screen_window_t window)
 {
     const int numRemoved = m_overlays.removeAll(window) + m_underlays.removeAll(window);
-    if (numRemoved > 0)
+    if (numRemoved > 0) {
         updateHierarchy();
+        Q_EMIT foreignWindowClosed(window);
+    }
 }
 
 void QQnxScreen::newWindowCreated(void *window)
@@ -597,6 +599,7 @@ void QQnxScreen::newWindowCreated(void *window)
                 addUnderlayWindow(windowHandle);
             else
                 addOverlayWindow(windowHandle);
+            Q_EMIT foreignWindowCreated(windowHandle);
         }
     }
 }
