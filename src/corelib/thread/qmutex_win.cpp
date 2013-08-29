@@ -48,7 +48,12 @@ QT_BEGIN_NAMESPACE
 
 QMutexPrivate::QMutexPrivate()
 {
+#ifndef Q_OS_WINRT
     event = CreateEvent(0, FALSE, FALSE, 0);
+#else
+    event = CreateEventEx(0, NULL, 0, EVENT_ALL_ACCESS);
+#endif
+
     if (!event)
         qWarning("QMutexData::QMutexData: Cannot create event");
 }
@@ -58,7 +63,11 @@ QMutexPrivate::~QMutexPrivate()
 
 bool QMutexPrivate::wait(int timeout)
 {
+#ifndef Q_OS_WINRT
     return (WaitForSingleObject(event, timeout < 0 ? INFINITE : timeout) ==  WAIT_OBJECT_0);
+#else
+    return (WaitForSingleObjectEx(event, timeout < 0 ? INFINITE : timeout, FALSE) == WAIT_OBJECT_0);
+#endif
 }
 
 void QMutexPrivate::wakeUp() Q_DECL_NOTHROW

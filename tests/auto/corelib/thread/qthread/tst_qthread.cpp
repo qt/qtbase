@@ -55,6 +55,8 @@
 #endif
 #if defined(Q_OS_WINCE)
 #include <windows.h>
+#elif defined(Q_OS_WINRT)
+#include <thread>
 #elif defined(Q_OS_WIN)
 #include <process.h>
 #include <windows.h>
@@ -460,6 +462,10 @@ void tst_QThread::start()
         QVERIFY(!thread.isFinished());
         QVERIFY(!thread.isRunning());
         QMutexLocker locker(&thread.mutex);
+#ifdef Q_OS_WINRT
+        if (priorities[i] != QThread::NormalPriority && priorities[i] != QThread::InheritPriority)
+            QTest::ignoreMessage(QtWarningMsg, "QThread::start: Failed to set thread priority (not implemented)");
+#endif
         thread.start(priorities[i]);
         QVERIFY(thread.isRunning());
         QVERIFY(!thread.isFinished());
@@ -630,6 +636,8 @@ void noop(void*) { }
 
 #if defined Q_OS_UNIX
     typedef pthread_t ThreadHandle;
+#elif defined Q_OS_WINRT
+    typedef std::thread ThreadHandle;
 #elif defined Q_OS_WIN
     typedef HANDLE ThreadHandle;
 #endif
@@ -671,6 +679,8 @@ void NativeThreadWrapper::start(FunctionPointer functionPointer, void *data)
 #if defined Q_OS_UNIX
     const int state = pthread_create(&nativeThreadHandle, 0, NativeThreadWrapper::runUnix, this);
     Q_UNUSED(state);
+#elif defined(Q_OS_WINRT)
+    nativeThreadHandle = std::thread(NativeThreadWrapper::runWin, this);
 #elif defined(Q_OS_WINCE)
         nativeThreadHandle = CreateThread(NULL, 0 , (LPTHREAD_START_ROUTINE)NativeThreadWrapper::runWin , this, 0, NULL);
 #elif defined Q_OS_WIN
@@ -690,6 +700,8 @@ void NativeThreadWrapper::join()
 {
 #if defined Q_OS_UNIX
     pthread_join(nativeThreadHandle, 0);
+#elif defined Q_OS_WINRT
+    nativeThreadHandle.join();
 #elif defined Q_OS_WIN
     WaitForSingleObject(nativeThreadHandle, INFINITE);
     CloseHandle(nativeThreadHandle);

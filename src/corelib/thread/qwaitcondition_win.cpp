@@ -64,7 +64,11 @@ class QWaitConditionEvent
 public:
     inline QWaitConditionEvent() : priority(0), wokenUp(false)
     {
+#ifndef Q_OS_WINRT
         event = CreateEvent(NULL, TRUE, FALSE, NULL);
+#else
+        event = CreateEventEx(NULL, NULL, CREATE_EVENT_MANUAL_RESET, EVENT_ALL_ACCESS);
+#endif
     }
     inline ~QWaitConditionEvent() { CloseHandle(event); }
     int priority;
@@ -91,7 +95,9 @@ QWaitConditionEvent *QWaitConditionPrivate::pre()
     mtx.lock();
     QWaitConditionEvent *wce =
         freeQueue.isEmpty() ? new QWaitConditionEvent : freeQueue.takeFirst();
+#ifndef Q_OS_WINRT
     wce->priority = GetThreadPriority(GetCurrentThread());
+#endif
     wce->wokenUp = false;
 
     // insert 'wce' into the queue (sorted by priority)
@@ -111,7 +117,12 @@ bool QWaitConditionPrivate::wait(QWaitConditionEvent *wce, unsigned long time)
 {
     // wait for the event
     bool ret = false;
+#ifndef Q_OS_WINRT
     switch (WaitForSingleObject(wce->event, time)) {
+#else
+    switch (WaitForSingleObjectEx(wce->event, time, FALSE)) {
+#endif
+
     default: break;
 
     case WAIT_OBJECT_0:
