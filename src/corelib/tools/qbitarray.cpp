@@ -174,10 +174,10 @@ int QBitArray::count(bool on) const
         bits += 3;
         numBits += int(qPopulationCount(v));
     }
-    while (len >= 0) {
-        if (bits[len / 8] & (1 << ((len - 1) & 7)))
-            ++numBits;
+    while (len > 0) {
         --len;
+        if (bits[len / 8] & (1 << (len & 7)))
+            ++numBits;
     }
 #endif
     return on ? numBits : size() - numBits;
