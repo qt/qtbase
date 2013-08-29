@@ -780,8 +780,8 @@ void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
         complexXform = !s->matrix.isAffine();
     }
 
-    const bool brushXform = (!s->brush.transform().type() == QTransform::TxNone);
-    const bool penXform = (!s->pen.brush().transform().type() == QTransform::TxNone);
+    const bool brushXform = (s->brush.transform().type() != QTransform::TxNone);
+    const bool penXform = (s->pen.brush().transform().type() != QTransform::TxNone);
 
     const bool patternXform = patternBrush && (xform || brushXform || penXform);
 
