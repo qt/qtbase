@@ -62,4 +62,12 @@ void *QQnxNativeInterface::nativeResourceForWindow(const QByteArray &resource, Q
     return 0;
 }
 
+void *QQnxNativeInterface::nativeResourceForScreen(const QByteArray &resource, QScreen *screen)
+{
+    if (resource == "QObject*" && screen)
+        return static_cast<QObject*>(static_cast<QQnxScreen*>(screen->handle()));
+
+    return 0;
+}
+
 QT_END_NAMESPACE
