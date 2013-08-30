@@ -98,7 +98,7 @@ void tst_QCommandLineParser::testInvalidOptions()
 {
     QCoreApplication app(empty_argc, empty_argv);
     QCommandLineParser parser;
-    QTest::ignoreMessage(QtWarningMsg, "Option names cannot start with a '-'");
+    QTest::ignoreMessage(QtWarningMsg, "QCommandLineOption: Option names cannot start with a '-'");
     parser.addOption(QCommandLineOption(QStringLiteral("-v"), QStringLiteral("Displays version information.")));
 }
 

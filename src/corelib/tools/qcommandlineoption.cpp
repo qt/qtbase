@@ -193,16 +193,16 @@ void QCommandLineOptionPrivate::setNames(const QStringList &nameList)
 {
     names.clear();
     if (nameList.isEmpty())
-        qWarning("Options must have at least one name");
+        qWarning("QCommandLineOption: Options must have at least one name");
     foreach (const QString &name, nameList) {
         if (name.isEmpty())
-            qWarning("Option names cannot be empty");
+            qWarning("QCommandLineOption: Option names cannot be empty");
         else if (name.startsWith(QLatin1Char('-')))
-            qWarning("Option names cannot start with a '-'");
+            qWarning("QCommandLineOption: Option names cannot start with a '-'");
         else if (name.startsWith(QLatin1Char('/')))
-            qWarning("Option names cannot start with a '/'");
+            qWarning("QCommandLineOption: Option names cannot start with a '/'");
         else if (name.contains(QLatin1Char('=')))
-            qWarning("Option names cannot contain a '='");
+            qWarning("QCommandLineOption: Option names cannot contain a '='");
         else
             names.append(name);
     }
