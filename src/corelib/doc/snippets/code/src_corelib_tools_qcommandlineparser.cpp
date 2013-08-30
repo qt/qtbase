@@ -38,11 +38,32 @@
 **
 ****************************************************************************/
 
+#include <qcommandlineparser.h>
+
+int main(int argc, char **argv)
+{
+
+{
+QCommandLineParser parser;
 //! [0]
 bool verbose = parser.isSet("verbose");
 //! [0]
+}
 
+{
 //! [1]
+QCoreApplication app(argc, argv);
+QCommandLineParser parser;
+QCommandLineOption verboseOption("verbose");
+parser.addOption(verboseOption);
+parser.process(app);
+bool verbose = parser.isSet(verboseOption);
+//! [1]
+}
+
+{
+QCommandLineParser parser;
+//! [2]
 // Usage: image-editor file
 //
 // Arguments:
@@ -62,9 +83,14 @@ parser.addPositionalArgument("urls", QCoreApplication::translate("main", "URLs t
 //   destination           Destination directory.
 parser.addPositionalArgument("source", QCoreApplication::translate("main", "Source file to copy."));
 parser.addPositionalArgument("destination", QCoreApplication::translate("main", "Destination directory."));
-//! [1]
-
 //! [2]
+}
+
+{
+//! [3]
+QCoreApplication app(argc, argv);
+QCommandLineParser parser;
+
 parser.addPositionalArgument("command", "The command to execute.");
 
 // Call parse() to find out the positional arguments.
@@ -80,6 +106,7 @@ if (command == "resize") {
     // ...
 }
 
+/*
 This code results in context-dependent help:
 
 $ tool --help
@@ -96,46 +123,16 @@ Options:
 
 Arguments:
   resize         Resize the object to a new size.
-
-//! [2]
-
+*/
 //! [3]
-int main(int argc, char *argv[])
-{
-    QCoreApplication app(argc, argv);
-    app.setApplicationName("my-copy-program");
-    app.setApplicationVersion("1.0");
-
-    QCommandLineParser parser;
-    parser.addHelpOption("Test helper");
-    parser.addVersionOption();
-    parser.addRemainingArgument("source", QCoreApplication::translate("main", "Source file to copy."));
-    parser.addRemainingArgument("destination", QCoreApplication::translate("main", "Destination directory."));
-
-    // A boolean option with a single name (-p)
-    QCommandLineOption showProgressOption("p", QCoreApplication::translate("main", "Show progress during copy"));
-    parser.addOption(showProgressOption);
-
-    // A boolean option with multiple names (-f, --force)
-    QCommandLineOption forceOption(QStringList() << "f" << "force", "Overwrite existing files.");
-    parser.addOption(forceOption);
-
-    // An option with a value
-    QCommandLineOption targetDirectoryOption(QStringList() << "t" << "target-directory",
-            QCoreApplication::translate("main", "Copy all source files into <directory>."),
-            QCoreApplication::translate("main", "directory"));
-    parser.addOption(targetDirectoryOption);
-
-    // Process the actual command line arguments given by the user
-    parser.process(app);
-
-    const QStringList args = parser.remainingArguments();
-    // source is args.at(0), destination is args.at(1)
-
-    bool showProgress = parser.isSet(showProgressOption);
-    bool force = parser.isSet(forceOption);
-    QString targetDir = parser.value(targetDirectoryOption);
-    // ...
 }
 
-//! [3]
+{
+//! [4]
+QCommandLineParser parser;
+parser.setApplicationDescription(QCoreApplication::translate("main", "The best application in the world"));
+parser.addHelpOption();
+//! [4]
+}
+
+}

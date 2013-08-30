@@ -160,7 +160,7 @@ QStringList QCommandLineParserPrivate::aliases(const QString &optionName) const
     passing \c{-v} on the command line. In the default parsing mode, short options
     can be written in a compact form, for instance \c{-abc} is equivalent to \c{-a -b -c}.
     The parsing mode for can be set to ParseAsLongOptions, in which case \c{-abc}
-    will be parsed as the long option \a{abc}.
+    will be parsed as the long option \c{abc}.
 
     Long options are more than one letter long and cannot be compacted together.
     The long option \c{verbose} would be passed as \c{--verbose} or \c{-verbose}.
@@ -180,7 +180,7 @@ QStringList QCommandLineParserPrivate::aliases(const QString &optionName) const
     as one of its names, and handling the option explicitly.
 
     Example:
-    \snippet code/src_corelib_tools_qcommandlineparser.cpp 3
+    \snippet code/src_corelib_tools_qcommandlineparser_main.cpp 0
 
     Known limitation: the parsing of Qt options inside QCoreApplication and subclasses
     happens before QCommandLineParser exists, so it can't take it into account. This
@@ -297,10 +297,7 @@ QCommandLineOption QCommandLineParser::addVersionOption()
     which will be displayed when this option is used.
 
     Example:
-    \code
-        setApplicationDescription(QCoreApplication::translate("main", "The best application in the world"));
-        addHelpOption();
-    \endcode
+    \snippet code/src_corelib_tools_qcommandlineparser_main.cpp 0
 
     Returns the option instance, which can be used to call isSet().
 */
@@ -319,8 +316,6 @@ QCommandLineOption QCommandLineParser::addHelpOption()
 
 /*!
     Sets the application \a description shown by helpText().
-    Most applications don't need to call this directly, addHelpOption()
-    also sets the application description.
 */
 void QCommandLineParser::setApplicationDescription(const QString &description)
 {
@@ -328,8 +323,7 @@ void QCommandLineParser::setApplicationDescription(const QString &description)
 }
 
 /*!
-    Returns the application description set in setApplicationDescription()
-    or addHelpOption().
+    Returns the application description set in setApplicationDescription().
 */
 QString QCommandLineParser::applicationDescription() const
 {
@@ -344,7 +338,7 @@ QString QCommandLineParser::applicationDescription() const
     the \a name will be appended.
 
     Example:
-    \snippet code/src_corelib_tools_qcommandlineparser.cpp 1
+    \snippet code/src_corelib_tools_qcommandlineparser.cpp 2
 
     \sa addHelpOption(), helpText()
 */
@@ -366,7 +360,7 @@ void QCommandLineParser::addPositionalArgument(const QString &name, const QStrin
     accordingly.
 
     Example:
-    \snippet code/src_corelib_tools_qcommandlineparser.cpp 2
+    \snippet code/src_corelib_tools_qcommandlineparser.cpp 3
 */
 void QCommandLineParser::clearPositionalArguments()
 {
@@ -376,7 +370,7 @@ void QCommandLineParser::clearPositionalArguments()
 /*!
     Parses the command line \a arguments.
 
-    Most programs don't need to call this, a simple call to process(app) is enough.
+    Most programs don't need to call this, a simple call to process() is enough.
 
     parse() is more low-level, and only does the parsing. The application will have to
     take care of the error handling, using errorText() if parse() returns false.
@@ -388,7 +382,7 @@ void QCommandLineParser::clearPositionalArguments()
 
     Don't forget that \a arguments must start with the name of the executable (ignored, though).
 
-    Return false in case of a parse error (unknown option or missing value); returns true otherwise.
+    Returns false in case of a parse error (unknown option or missing value); returns true otherwise.
 
     \sa process()
 */
@@ -415,10 +409,13 @@ QString QCommandLineParser::errorText() const
 /*!
     Processes the command line \a arguments.
 
-    This means both parsing them, and handling the builtin options,
-    \c{--version} if addVersionOption was called, \c{--help} if addHelpOption was called,
-    as well as giving an error on unknown option names.
-    In each of these three cases, the current process will then stop, using the exit() function.
+    In addition to parsing the options (like parse()), this function also handles the builtin
+    options and handles errors.
+
+    The builtin options are \c{--version} if addVersionOption was called and \c{--help} if addHelpOption was called.
+
+    When invoking one of these options, or when an error happens (for instance an unknown option was
+    passed), the current process will then stop, using the exit() function.
 
     \sa QCoreApplication::arguments(), parse()
  */
@@ -517,17 +514,13 @@ bool QCommandLineParserPrivate::parseOptionValue(const QString &optionName, cons
 /*!
     \internal
 
-    Parse the list of arguments \a arguments.
+    Parse the list of arguments \a args, and fills in
+    optionNames, optionValuesHash, unknownOptionNames, positionalArguments, and errorText.
 
     Any results from a previous parse operation are removed.
+
     The parser will not look for further options once it encounters the option
     \c{--}; this does not include when \c{--} follows an option that requires a value.
-
-    Options that were successfully recognized, and their values, are
-    removed from the input list. If \c m_bRemoveUnknownLongNames is
-    \c true, unrecognized options are removed and placed into a list of
-    unknown option names. Anything left over is placed into a list of
-    leftover arguments.
  */
 bool QCommandLineParserPrivate::parse(const QStringList &args)
 {
@@ -632,8 +625,6 @@ bool QCommandLineParserPrivate::parse(const QStringList &args)
 
     Returns true if the option \a name was set, false otherwise.
 
-    This is the recommended way to check for options with no values.
-
     The name provided can be any long or short name of any option that was
     added with \c addOption(). All the options names are treated as being
     equivalent. If the name is not recognized or that option was not present,
@@ -671,7 +662,7 @@ bool QCommandLineParser::isSet(const QString &name) const
 
     An empty string is returned if the option does not take a value.
 
-    \sa values()
+    \sa values(), QCommandLineOption::setDefaultValue(), QCommandLineOption::setDefaultValues()
  */
 
 QString QCommandLineParser::value(const QString &optionName) const
@@ -700,7 +691,7 @@ QString QCommandLineParser::value(const QString &optionName) const
 
     An empty list is returned if the option does not take a value.
 
-    \sa value()
+    \sa value(), QCommandLineOption::setDefaultValue(), QCommandLineOption::setDefaultValues()
  */
 
 QStringList QCommandLineParser::values(const QString &optionName) const
@@ -720,7 +711,14 @@ QStringList QCommandLineParser::values(const QString &optionName) const
 
 /*!
     \overload
+    Checks whether the \a option was passed to the application.
+
     Returns true if the \a option was set, false otherwise.
+
+    This is the recommended way to check for options with no values.
+
+    Example:
+    \snippet code/src_corelib_tools_qcommandlineparser.cpp 1
 */
 bool QCommandLineParser::isSet(const QCommandLineOption &option) const
 {
@@ -731,6 +729,14 @@ bool QCommandLineParser::isSet(const QCommandLineOption &option) const
     \overload
     Returns the option value found for the given \a option, or
     an empty string if not found.
+
+    For options found by the parser, the last value found for
+    that option is returned. If the option wasn't specified on the command line,
+    the default value is returned.
+
+    An empty string is returned if the option does not take a value.
+
+    \sa values(), QCommandLineOption::setDefaultValue(), QCommandLineOption::setDefaultValues()
 */
 QString QCommandLineParser::value(const QCommandLineOption &option) const
 {
@@ -741,6 +747,14 @@ QString QCommandLineParser::value(const QCommandLineOption &option) const
     \overload
     Returns a list of option values found for the given \a option,
     or an empty list if not found.
+
+    For options found by the parser, the list will contain an entry for
+    each time the option was encountered by the parser. If the option wasn't
+    specified on the command line, the default values are returned.
+
+    An empty list is returned if the option does not take a value.
+
+    \sa value(), QCommandLineOption::setDefaultValue(), QCommandLineOption::setDefaultValues()
 */
 QStringList QCommandLineParser::values(const QCommandLineOption &option) const
 {
