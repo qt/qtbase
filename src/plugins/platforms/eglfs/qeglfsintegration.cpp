@@ -207,7 +207,7 @@ void *QEglFSIntegration::nativeResourceForWindow(const QByteArray &resource, QWi
     QByteArray lowerCaseResource = resource.toLower();
 
     if (lowerCaseResource == "egldisplay") {
-        if (window)
+        if (window && window->handle())
             return static_cast<QEglFSScreen *>(window->handle()->screen())->display();
         else
             return static_cast<QEglFSScreen *>(mScreen)->display();
