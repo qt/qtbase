@@ -52,9 +52,6 @@ QT_BEGIN_NAMESPACE
 
 typedef QHash<QString, int> NameHash_t;
 
-// Special value for "not found" when doing hash lookups.
-static const NameHash_t::mapped_type optionNotFound = ~0;
-
 class QCommandLineParserPrivate
 {
 public:
@@ -122,12 +119,12 @@ public:
 
 QStringList QCommandLineParserPrivate::aliases(const QString &optionName) const
 {
-    const NameHash_t::mapped_type optionOffset = nameHash.value(optionName, optionNotFound);
-    if (optionOffset == optionNotFound) {
+    const NameHash_t::const_iterator it = nameHash.find(optionName);
+    if (it == nameHash.end()) {
         qWarning("QCommandLineParser: option not defined: \"%s\"", qPrintable(optionName));
         return QStringList();
     }
-    return commandLineOptionList.at(optionOffset).names();
+    return commandLineOptionList.at(*it).names();
 }
 
 /*!
@@ -423,16 +420,16 @@ void QCommandLineParser::process(const QStringList &arguments)
 {
     if (!d->parse(arguments)) {
         fprintf(stderr, "%s\n", qPrintable(errorText()));
-        ::exit(1);
+        ::exit(EXIT_FAILURE);
     }
 
     if (d->builtinVersionOption && isSet(QStringLiteral("version"))) {
         printf("%s %s\n", qPrintable(QCoreApplication::applicationName()), qPrintable(QCoreApplication::applicationVersion()));
-        ::exit(0);
+        ::exit(EXIT_SUCCESS);
     }
 
     if (d->builtinHelpOption && isSet(QStringLiteral("help")))
-        showHelp(0);
+        showHelp(EXIT_SUCCESS);
 }
 
 /*!
@@ -697,8 +694,9 @@ QString QCommandLineParser::value(const QString &optionName) const
 QStringList QCommandLineParser::values(const QString &optionName) const
 {
     d->checkParsed("values");
-    const NameHash_t::mapped_type optionOffset = d->nameHash.value(optionName, optionNotFound);
-    if (optionOffset != optionNotFound) {
+    const NameHash_t::const_iterator it = d->nameHash.find(optionName);
+    if (it != d->nameHash.end()) {
+        const int optionOffset = *it;
         QStringList values = d->optionValuesHash.value(optionOffset);
         if (values.isEmpty())
             values = d->commandLineOptionList.at(optionOffset).defaultValues();
