@@ -28,7 +28,7 @@ warnings_are_errors:warning_clean {
         # Regular clang is not tested
         ver = $${QT_APPLE_CLANG_MAJOR_VERSION}.$${QT_APPLE_CLANG_MINOR_VERSION}
         contains(ver, "4\\.[012]") {
-            QMAKE_CXXFLAGS += -Werror -Wno-error=\\$${LITERAL_HASH}warnings -Wno-error=deprecated $$WERROR
+            QMAKE_CXXFLAGS += -Werror -Wno-error=\\$${LITERAL_HASH}warnings -Wno-error=deprecated-declarations $$WERROR
         }
     } else:intel_icc:linux {
         # Intel CC 13.0 - 14.0, on Linux only
@@ -46,7 +46,7 @@ warnings_are_errors:warning_clean {
         # GCC 4.6-4.8
         ver = $${QT_GCC_MAJOR_VERSION}.$${QT_GCC_MINOR_VERSION}
         contains(ver, "4\\.[678]") {
-            QMAKE_CXXFLAGS += -Werror -Wno-error=cpp -Wno-error=deprecated $$WERROR
+            QMAKE_CXXFLAGS += -Werror -Wno-error=cpp -Wno-error=deprecated-declarations $$WERROR
 
             # GCC prints this bogus warning, after it has inlined a lot of code
             # error: assuming signed overflow does not occur when assuming that (X + c) < X is always false
