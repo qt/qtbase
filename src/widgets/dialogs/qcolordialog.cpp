@@ -1527,7 +1527,9 @@ void QColorDialogPrivate::_q_pickScreenColor()
      * the cursor, and therefore I have to change it manually.
      */
     q->grabMouse();
+#ifndef QT_NO_CURSOR
     q->setCursor(Qt::CrossCursor);
+#endif
     q->grabKeyboard();
     /* With setMouseTracking(true) the desired color can be more precisedly picked up,
      * and continuously pushing the mouse button is not necessary.
@@ -1551,7 +1553,9 @@ void QColorDialogPrivate::releaseColorPicking()
     screenColorPicking = false;
     q->releaseMouse();
     q->releaseKeyboard();
+#ifndef QT_NO_CURSOR
     q->setCursor(Qt::ArrowCursor);
+#endif
     q->setMouseTracking(false);
     lblScreenColorInfo->setText(QLatin1String("\n"));
     addCusBt->setDisabled(false);
