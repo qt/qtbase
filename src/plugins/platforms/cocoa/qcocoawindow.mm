@@ -792,6 +792,7 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         QRect rect = window()->geometry();
         NSRect frame = NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height());
         [m_contentView setFrame:frame];
+        [m_contentView setHidden: YES];
     }
 
     const qreal opacity = qt_window_private(window())->opacity;
