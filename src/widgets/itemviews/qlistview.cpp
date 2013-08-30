@@ -1833,7 +1833,7 @@ void QCommonListViewBase::removeHiddenRow(int row)
     dd->hiddenRows.remove(dd->model->index(row, 0, qq->rootIndex()));
 }
 
-void QCommonListViewBase::updateHorizontalScrollBar(const QSize &step)
+void QCommonListViewBase::updateHorizontalScrollBar(const QSize & /*step*/)
 {
     horizontalScrollBar()->setPageStep(viewport()->width());
     horizontalScrollBar()->setRange(0, contentsSize.width() - viewport()->width());
