@@ -1818,8 +1818,8 @@ void QWindowsXpNativeFileDialog::populateOpenFileName(OPENFILENAME *ofn, HWND ow
         QString defaultSuffix = m_options->defaultSuffix();
         if (defaultSuffix.startsWith(QLatin1Char('.')))
             defaultSuffix.remove(0, 1);
-        if (!defaultSuffix.isEmpty())
-            ofn->lpstrDefExt = qStringToWCharArray(defaultSuffix);
+        // QTBUG-33156, also create empty strings to trigger the appending mechanism.
+        ofn->lpstrDefExt = qStringToWCharArray(defaultSuffix);
     }
     // Flags.
     ofn->Flags = (OFN_NOCHANGEDIR | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_PATHMUSTEXIST);
