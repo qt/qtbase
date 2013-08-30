@@ -138,7 +138,6 @@ Fraction fraction(unsigned int n, unsigned int d) {
 
 struct Rational
 {
-    bool isValid() const { return fraction.isValid(); }
     int integer;
     Fraction fraction;
 };

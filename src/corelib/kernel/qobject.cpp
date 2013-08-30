@@ -2346,6 +2346,7 @@ void QMetaObjectPrivate::memberIndexes(const QObject *obj,
     }
 }
 
+#ifndef QT_NO_DEBUG
 static inline void check_and_warn_compat(const QMetaObject *sender, const QMetaMethod &signal,
                                          const QMetaObject *receiver, const QMetaMethod &method)
 {
@@ -2360,6 +2361,7 @@ static inline void check_and_warn_compat(const QMetaObject *sender, const QMetaM
                  receiver->className(), method.methodSignature().constData());
     }
 }
+#endif
 
 /*!
     \threadsafe

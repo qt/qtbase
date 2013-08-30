@@ -2581,7 +2581,6 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
 
 namespace {
 struct QScriptItemComparator {
-    bool operator()(const QScriptItem &a, const QScriptItem &b) { return a.position < b.position; }
     bool operator()(int p, const QScriptItem &b) { return p < b.position; }
 #if defined(Q_CC_MSVC) && _MSC_VER < 1600
 //The STL implementation of MSVC 2008 requires the definition
