@@ -763,7 +763,7 @@ public:
 
     QWindowsNativeFileDialogEventHandler(QWindowsNativeFileDialogBase *nativeFileDialog) :
         m_ref(1), m_nativeFileDialog(nativeFileDialog) {}
-    ~QWindowsNativeFileDialogEventHandler() {}
+    virtual ~QWindowsNativeFileDialogEventHandler() {}
 
 private:
     long m_ref;
