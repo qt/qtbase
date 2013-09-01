@@ -275,6 +275,8 @@ void QApplicationPrivate::initializeWidgetPaletteHash()
     QPlatformTheme *platformTheme = QGuiApplicationPrivate::platformTheme();
     if (!platformTheme)
         return;
+    qt_app_palettes_hash()->clear();
+
     setPossiblePalette(platformTheme->palette(QPlatformTheme::ToolButtonPalette), "QToolButton");
     setPossiblePalette(platformTheme->palette(QPlatformTheme::ButtonPalette), "QAbstractButton");
     setPossiblePalette(platformTheme->palette(QPlatformTheme::CheckBoxPalette), "QCheckBox");
@@ -298,6 +300,8 @@ void QApplicationPrivate::initializeWidgetFontHash()
     if (!theme)
         return;
     FontHash *fontHash = qt_app_fonts_hash();
+    fontHash->clear();
+
     if (const QFont *font = theme->font(QPlatformTheme::MenuFont))
         fontHash->insert(QByteArrayLiteral("QMenu"), *font);
     if (const QFont *font = theme->font(QPlatformTheme::MenuBarFont))
