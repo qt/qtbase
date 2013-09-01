@@ -551,6 +551,39 @@ void QTextDocument::setDefaultTextOption(const QTextOption &option)
 }
 
 /*!
+    \property QTextDocument::baseUrl
+    \since 5.3
+    \brief the base URL used to resolve relative resource URLs within the document.
+
+    Resource URLs are resolved to be within the same directory as the target of the base
+    URL meaning any portion of the path after the last '/' will be ignored.
+
+    \table
+    \header \li Base URL \li Relative URL \li Resolved URL
+    \row \li file:///path/to/content \li images/logo.png \li file:///path/to/images/logo.png
+    \row \li file:///path/to/content/ \li images/logo.png \li file:///path/to/content/images/logo.png
+    \row \li file:///path/to/content/index.html \li images/logo.png \li file:///path/to/content/images/logo.png
+    \row \li file:///path/to/content/images/ \li ../images/logo.png \li file:///path/to/content/images/logo.png
+    \endtable
+*/
+QUrl QTextDocument::baseUrl() const
+{
+    Q_D(const QTextDocument);
+    return d->baseUrl;
+}
+
+void QTextDocument::setBaseUrl(const QUrl &url)
+{
+    Q_D(QTextDocument);
+    if (d->baseUrl != url) {
+        d->baseUrl = url;
+        if (d->lout)
+            d->lout->documentChanged(0, 0, d->length());
+        emit baseUrlChanged(url);
+    }
+}
+
+/*!
     \since 4.8
 
     The default cursor movement style is used by all QTextCursor objects
@@ -1849,11 +1882,12 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
 QVariant QTextDocument::resource(int type, const QUrl &name) const
 {
     Q_D(const QTextDocument);
-    QVariant r = d->resources.value(name);
+    const QUrl url = d->baseUrl.resolved(name);
+    QVariant r = d->resources.value(url);
     if (!r.isValid()) {
-        r = d->cachedResources.value(name);
+        r = d->cachedResources.value(url);
         if (!r.isValid())
-            r = const_cast<QTextDocument *>(this)->loadResource(type, name);
+            r = const_cast<QTextDocument *>(this)->loadResource(type, url);
     }
     return r;
 }
@@ -1924,27 +1958,29 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
     }
 
     // if resource was not loaded try to load it here
-    if (!qobject_cast<QTextDocument *>(p) && r.isNull() && name.isRelative()) {
-        QUrl currentURL = d->url;
+    if (!qobject_cast<QTextDocument *>(p) && r.isNull()) {
         QUrl resourceUrl = name;
 
-        // For the second case QUrl can merge "#someanchor" with "foo.html"
-        // correctly to "foo.html#someanchor"
-        if (!(currentURL.isRelative()
-              || (currentURL.scheme() == QLatin1String("file")
-                  && !QFileInfo(currentURL.toLocalFile()).isAbsolute()))
-            || (name.hasFragment() && name.path().isEmpty())) {
-            resourceUrl =  currentURL.resolved(name);
-        } else {
-            // this is our last resort when current url and new url are both relative
-            // we try to resolve against the current working directory in the local
-            // file system.
-            QFileInfo fi(currentURL.toLocalFile());
-            if (fi.exists()) {
-                resourceUrl =
-                    QUrl::fromLocalFile(fi.absolutePath() + QDir::separator()).resolved(name);
-            } else if (currentURL.isEmpty()) {
-                resourceUrl.setScheme(QLatin1String("file"));
+        if (name.isRelative()) {
+            QUrl currentURL = d->url;
+            // For the second case QUrl can merge "#someanchor" with "foo.html"
+            // correctly to "foo.html#someanchor"
+            if (!(currentURL.isRelative()
+                  || (currentURL.scheme() == QLatin1String("file")
+                      && !QFileInfo(currentURL.toLocalFile()).isAbsolute()))
+                || (name.hasFragment() && name.path().isEmpty())) {
+                resourceUrl =  currentURL.resolved(name);
+            } else {
+                // this is our last resort when current url and new url are both relative
+                // we try to resolve against the current working directory in the local
+                // file system.
+                QFileInfo fi(currentURL.toLocalFile());
+                if (fi.exists()) {
+                    resourceUrl =
+                        QUrl::fromLocalFile(fi.absolutePath() + QDir::separator()).resolved(name);
+                } else if (currentURL.isEmpty()) {
+                    resourceUrl.setScheme(QLatin1String("file"));
+                }
             }
         }
 

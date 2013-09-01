@@ -355,6 +355,7 @@ public:
     QString url;
     qreal indentWidth;
     qreal documentMargin;
+    QUrl baseUrl;
 
     void mergeCachedResources(const QTextDocumentPrivate *priv);
 

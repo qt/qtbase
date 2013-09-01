@@ -189,6 +189,9 @@ private slots:
     void QTBUG27354_spaceAndSoftSpace();
     void cssInheritance();
 
+    void baseUrl_data();
+    void baseUrl();
+
     void QTBUG28998_linkColor();
 
 private:
@@ -2976,6 +2979,53 @@ void tst_QTextDocument::cssInheritance()
         QVERIFY(fmt.lineHeightType() == QTextBlockFormat::ProportionalHeight);
         QVERIFY(fmt.lineHeight() == 300);
     }
+}
+
+class BaseDocument : public QTextDocument
+{
+public:
+    QUrl loadedResource() const { return resourceUrl; }
+
+    QVariant loadResource(int type, const QUrl &name)
+    {
+        resourceUrl = name;
+        return QTextDocument::loadResource(type, name);
+    }
+
+private:
+    QUrl resourceUrl;
+};
+
+void tst_QTextDocument::baseUrl_data()
+{
+    QTest::addColumn<QUrl>("base");
+    QTest::addColumn<QUrl>("resource");
+    QTest::addColumn<QUrl>("loaded");
+
+    QTest::newRow("1") << QUrl() << QUrl("images/logo.png") << QUrl("images/logo.png");
+    QTest::newRow("2") << QUrl("file:///path/to/content") << QUrl("images/logo.png") << QUrl("file:///path/to/images/logo.png");
+    QTest::newRow("3") << QUrl("file:///path/to/content/") << QUrl("images/logo.png") << QUrl("file:///path/to/content/images/logo.png");
+    QTest::newRow("4") << QUrl("file:///path/to/content/images") << QUrl("images/logo.png") << QUrl("file:///path/to/content/images/logo.png");
+    QTest::newRow("5") << QUrl("file:///path/to/content/images/") << QUrl("images/logo.png") << QUrl("file:///path/to/content/images/images/logo.png");
+    QTest::newRow("6") << QUrl("file:///path/to/content/images") << QUrl("../images/logo.png") << QUrl("file:///path/to/images/logo.png");
+    QTest::newRow("7") << QUrl("file:///path/to/content/images/") << QUrl("../images/logo.png") << QUrl("file:///path/to/content/images/logo.png");
+    QTest::newRow("8") << QUrl("file:///path/to/content/index.html") << QUrl("images/logo.png") << QUrl("file:///path/to/content/images/logo.png");
+}
+
+void tst_QTextDocument::baseUrl()
+{
+    QFETCH(QUrl, base);
+    QFETCH(QUrl, resource);
+    QFETCH(QUrl, loaded);
+
+    BaseDocument document;
+    QVERIFY(!document.baseUrl().isValid());
+    document.setBaseUrl(base);
+    QCOMPARE(document.baseUrl(), base);
+
+    document.setHtml(QString("<img src='%1'/>").arg(resource.toString()));
+    document.resource(QTextDocument::ImageResource, resource);
+    QCOMPARE(document.loadedResource(), loaded);
 }
 
 void tst_QTextDocument::QTBUG28998_linkColor()
