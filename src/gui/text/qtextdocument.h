@@ -260,7 +260,7 @@ public:
     void setDefaultCursorMoveStyle(Qt::CursorMoveStyle style);
 
 Q_SIGNALS:
-    void contentsChange(int from, int charsRemoves, int charsAdded);
+    void contentsChange(int from, int charsRemoved, int charsAdded);
     void contentsChanged();
     void undoAvailable(bool);
     void redoAvailable(bool);
