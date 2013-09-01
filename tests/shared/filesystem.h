@@ -92,7 +92,7 @@ public:
         return file.isNull() ? qint64(-1) : file->write(relativeFileName.toUtf8());
     }
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     static void createNtfsJunction(QString target, QString linkName)
     {
         typedef struct {

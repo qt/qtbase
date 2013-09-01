@@ -31,6 +31,6 @@ SUBDIRS=\
     qsharedmemory
 
 # This test is only applicable on Windows
-!win32*:SUBDIRS -= qwineventnotifier
+!win32*|winrt: SUBDIRS -= qwineventnotifier
 
 android|qnx: SUBDIRS -= qsharedmemory qsystemsemaphore

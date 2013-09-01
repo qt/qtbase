@@ -116,7 +116,7 @@ private slots:
     void convertFromImageDetach();
     void convertFromImageCacheKey();
 
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     void toWinHBITMAP_data();
     void toWinHBITMAP();
     void fromWinHBITMAP_data();
@@ -805,7 +805,7 @@ void tst_QPixmap::convertFromImageCacheKey()
     QCOMPARE(copy.cacheKey(), pix.cacheKey());
 }
 
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 
 QT_BEGIN_NAMESPACE
 Q_GUI_EXPORT HBITMAP qt_createIconMask(const QBitmap &bitmap);
@@ -1024,7 +1024,7 @@ void tst_QPixmap::fromWinHICON()
 #endif // Q_OS_WINCE
 }
 
-#endif // Q_OS_WIN
+#endif // Q_OS_WIN && !Q_OS_WINRT
 
 void tst_QPixmap::onlyNullPixmapsOutsideGuiThread()
 {

@@ -133,7 +133,7 @@ public:
 private slots:
     void initTestCase();
     void cleanupTestCase();
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     void windowsDefaultLocale();
 #endif
 #ifdef Q_OS_MAC
@@ -1472,7 +1472,7 @@ void tst_QLocale::macDefaultLocale()
 }
 #endif // Q_OS_MAC
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 #include <qt_windows.h>
 
 static QString getWinLocaleInfo(LCTYPE type)
@@ -1526,7 +1526,7 @@ public:
 
 #endif // Q_OS_WIN
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 void tst_QLocale::windowsDefaultLocale()
 {
     RestoreLocaleHelper systemLocale;

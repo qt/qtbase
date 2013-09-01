@@ -116,11 +116,13 @@ static bool qt_wince_is_platform(const QString &platformString) {
 }
 static inline bool qt_wince_is_smartphone() { return qt_wince_is_platform(QString::fromLatin1("Smartphone")); }
 #    endif // Q_OS_WINCE_WM
-#  else //  Q_OS_WINCE
+#  elif !defined(Q_OS_WINRT) //  Q_OS_WINCE
 #    define Q_CHECK_PAINTEVENTS \
     if (::SwitchDesktop(::GetThreadDesktop(::GetCurrentThreadId())) == 0) \
         QSKIP("desktop is not visible, this test would fail");
-#  endif //  !Q_OS_WINCE
+#  else //  !Q_OS_WINCE && !Q_OS_WINRT
+#    define Q_CHECK_PAINTEVENTS
+#  endif // Q_OS_WINRT
 #else // Q_OS_WIN
 #  define Q_CHECK_PAINTEVENTS
 #endif // else Q_OS_WIN
@@ -285,7 +287,7 @@ private slots:
     void subtractOpaqueSiblings();
 #endif
 
-#if defined (Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined (Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     void setGeometry_win();
 #endif
 
@@ -355,7 +357,7 @@ private slots:
     void quitOnCloseAttribute();
     void moveRect();
 
-#if defined (Q_OS_WIN)
+#if defined (Q_OS_WIN) && !defined(Q_OS_WINRT)
     void gdiPainting();
     void paintOnScreenPossible();
 #endif
@@ -572,7 +574,7 @@ void tst_QWidget::getSetCheck()
     QCOMPARE(true, obj1.autoFillBackground());
 
     var1.reset();
-#if defined (Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined (Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     obj1.setWindowFlags(Qt::FramelessWindowHint | Qt::WindowSystemMenuHint);
     const HWND handle = reinterpret_cast<HWND>(obj1.winId());   // explicitly create window handle
     QVERIFY(GetWindowLong(handle, GWL_STYLE) & WS_POPUP);
@@ -1257,7 +1259,7 @@ void tst_QWidget::visible_setWindowOpacity()
     testWidget->hide();
     QVERIFY( !testWidget->isVisible() );
     testWidget->setWindowOpacity(0.5);
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     QVERIFY(!::IsWindowVisible(winHandleOf(testWidget)));
 #endif
     testWidget->setWindowOpacity(1.0);
@@ -3597,7 +3599,7 @@ void tst_QWidget::optimizedResize_topLevel()
     topLevel.partial = false;
     topLevel.paintedRegion = QRegion();
 
-#ifndef Q_OS_WIN
+#if !defined(Q_OS_WIN32) && !defined(Q_OS_WINCE)
     topLevel.resize(topLevel.size() + QSize(10, 10));
 #else
     // Static contents does not work when programmatically resizing
@@ -4529,7 +4531,7 @@ void tst_QWidget::setWindowGeometry()
     }
 }
 
-#if defined (Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined (Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
 void tst_QWidget::setGeometry_win()
 {
     QWidget widget;
@@ -4548,7 +4550,7 @@ void tst_QWidget::setGeometry_win()
     QEXPECT_FAIL("", "QTBUG-26424", Continue);
     QVERIFY(rt.top <= 0);
 }
-#endif // defined (Q_OS_WIN) && !defined(Q_OS_WINCE)
+#endif // defined (Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
 
 // Since X11 WindowManager operation are all async, and we have no way to know if the window
 // manager has finished playing with the window geometry, this test can't be reliable on X11.
@@ -8047,7 +8049,7 @@ void tst_QWidget::moveRect()
     child.move(10, 10); // Don't crash.
 }
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 class GDIWidget : public QDialog
 {
     Q_OBJECT
@@ -8114,7 +8116,7 @@ void tst_QWidget::paintOnScreenPossible()
     w2.setAttribute(Qt::WA_PaintOnScreen);
     QVERIFY(w2.testAttribute(Qt::WA_PaintOnScreen));
 }
-#endif // Q_OS_WIN
+#endif // Q_OS_WIN && !Q_OS_WINRT
 
 void tst_QWidget::reparentStaticWidget()
 {

@@ -1891,7 +1891,7 @@ void tst_QApplication::windowsCommandLine_data()
 
 void tst_QApplication::windowsCommandLine()
 {
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     QFETCH(QString, args);
     QFETCH(QString, expected);
 

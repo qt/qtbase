@@ -232,7 +232,7 @@ void tst_QThreadStorage::adoptedThreads()
         const int state = pthread_create(&thread, 0, testAdoptedThreadStorageUnix, &pointers);
         QCOMPARE(state, 0);
         pthread_join(thread, 0);
-#elif defined Q_OS_WIN
+#elif defined Q_OS_WIN && !defined(Q_OS_WINRT)
         HANDLE thread;
 #if defined(Q_OS_WINCE)
         thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)testAdoptedThreadStorageWin, &pointers, 0, NULL);

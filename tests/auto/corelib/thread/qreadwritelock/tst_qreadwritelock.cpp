@@ -52,6 +52,8 @@
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
 #include <windows.h>
 #define sleep(X) Sleep(X)
+#elif defined(Q_OS_WINRT)
+#define sleep(X) WaitForSingleObjectEx(GetCurrentThread(), X, FALSE);
 #endif
 
 //on solaris, threads that loop on the release bool variable

@@ -49,6 +49,9 @@
 
 #ifdef Q_OS_WIN
 # include <windows.h>
+#  if defined(Q_OS_WINRT)
+#    define tzset()
+#  endif
 #endif
 
 class tst_QDateTime : public QObject
@@ -173,7 +176,7 @@ void tst_QDateTime::init()
 {
 #if defined(Q_OS_WINCE)
     SetUserDefaultLCID(MAKELCID(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), SORT_DEFAULT));
-#elif defined(Q_OS_WIN)
+#elif defined(Q_OS_WIN32)
     SetThreadLocale(MAKELCID(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), SORT_DEFAULT));
 #endif
 }

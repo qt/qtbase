@@ -52,3 +52,9 @@ SUBDIRS=\
 
 win32:!contains(QT_CONFIG, private_tests): SUBDIRS -= \
     qfilesystementry
+
+winrt: SUBDIRS -= \
+    qprocess \
+    qprocess-noapplication \
+    qprocessenvironment \
+    qwinoverlappedionotifier

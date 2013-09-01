@@ -13,5 +13,5 @@ TESTDATA += ../dosfile.txt ../noendofline.txt ../testfile.txt \
             ../Makefile ../forCopying.txt ../forRenaming.txt \
             ../resources/file1.ext1
 
-win32: LIBS+=-lole32 -luuid
+win32:!winrt: LIBS+=-lole32 -luuid
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
