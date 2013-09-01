@@ -98,6 +98,7 @@ public:
     QTextDocument *document() const;
 
     void registerHandler(int objectType, QObject *component);
+    void unregisterHandler(int objectType, QObject *component = 0);
     QTextObjectInterface *handlerForObject(int objectType) const;
 
 Q_SIGNALS:
