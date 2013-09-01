@@ -24,3 +24,6 @@ SUBDIRS=\
 !qtHaveModule(widgets): SUBDIRS -= \
    qmouseevent_modal \
    qtouchevent
+
+!qtHaveModule(network): SUBDIRS -= \
+   qguieventloop
