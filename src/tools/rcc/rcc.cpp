@@ -52,6 +52,8 @@
 #include <qstack.h>
 #include <qxmlstream.h>
 
+#include <algorithm>
+
 // Note: A copy of this file is used in Qt Designer (qttools/src/designer/src/lib/shared/rcc.cpp)
 
 QT_BEGIN_NAMESPACE
@@ -905,7 +907,7 @@ bool RCCResourceLibrary::writeDataStructure()
 
         //sort by hash value for binary lookup
         QList<RCCFileInfo*> m_children = file->m_children.values();
-        qSort(m_children.begin(), m_children.end(), qt_rcc_compare_hash);
+        std::sort(m_children.begin(), m_children.end(), qt_rcc_compare_hash);
 
         //write out the actual data now
         for (int i = 0; i < m_children.size(); ++i) {
@@ -924,7 +926,7 @@ bool RCCResourceLibrary::writeDataStructure()
 
         //sort by hash value for binary lookup
         QList<RCCFileInfo*> m_children = file->m_children.values();
-        qSort(m_children.begin(), m_children.end(), qt_rcc_compare_hash);
+        std::sort(m_children.begin(), m_children.end(), qt_rcc_compare_hash);
 
         //write out the actual data now
         for (int i = 0; i < m_children.size(); ++i) {
