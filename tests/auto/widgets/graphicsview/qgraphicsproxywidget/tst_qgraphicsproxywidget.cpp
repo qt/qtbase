@@ -2502,6 +2502,9 @@ void tst_QGraphicsProxyWidget::popup_basic()
 
 void tst_QGraphicsProxyWidget::popup_subwidget()
 {
+#ifdef Q_OS_WIN
+    QSKIP("This test crashes on Windows, QTBUG-33213");
+#endif
     QGroupBox *groupBox = new QGroupBox;
     groupBox->setTitle("GroupBox");
     groupBox->setCheckable(true);
