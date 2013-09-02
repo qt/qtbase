@@ -143,6 +143,7 @@ private slots:
     void roundtripGermanLocale() const;
     void utcOffsetLessThan() const;
 
+    void isDaylightTime() const;
     void daylightTransitions() const;
 
 private:
@@ -2314,6 +2315,28 @@ void tst_QDateTime::utcOffsetLessThan() const
     QVERIFY(!(dt1 == dt2));
     QVERIFY(dt1 < dt2);
     QVERIFY(!(dt2 < dt1));
+}
+
+void tst_QDateTime::isDaylightTime() const
+{
+    QDateTime utc1(QDate(2012, 1, 1), QTime(0, 0, 0), Qt::UTC);
+    QVERIFY(!utc1.isDaylightTime());
+    QDateTime utc2(QDate(2012, 6, 1), QTime(0, 0, 0), Qt::UTC);
+    QVERIFY(!utc2.isDaylightTime());
+
+    QDateTime offset1(QDate(2012, 1, 1), QTime(0, 0, 0), Qt::OffsetFromUTC, 1 * 60 * 60);
+    QVERIFY(!offset1.isDaylightTime());
+    QDateTime offset2(QDate(2012, 6, 1), QTime(0, 0, 0), Qt::OffsetFromUTC, 1 * 60 * 60);
+    QVERIFY(!offset2.isDaylightTime());
+
+    if (europeanTimeZone) {
+        QDateTime cet1(QDate(2012, 1, 1), QTime(0, 0, 0));
+        QVERIFY(!cet1.isDaylightTime());
+        QDateTime cet2(QDate(2012, 6, 1), QTime(0, 0, 0));
+        QVERIFY(cet2.isDaylightTime());
+    } else {
+        QSKIP("You must test using Central European (CET/CEST) time zone, e.g. TZ=Europe/Oslo");
+    }
 }
 
 void tst_QDateTime::daylightTransitions() const

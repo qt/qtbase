@@ -2993,6 +2993,32 @@ QString QDateTime::timeZoneAbbreviation() const
 }
 
 /*!
+    \since 5.2
+
+    Returns if this datetime falls in Daylight Savings Time.
+
+    If the Qt::TimeSpec is not Qt::LocalTime then will always
+    return false.
+
+    \sa timeSpec()
+*/
+
+bool QDateTime::isDaylightTime() const
+{
+    switch (d->m_spec) {
+    case Qt::UTC:
+    case Qt::OffsetFromUTC:
+        return false;
+    case Qt::LocalTime: {
+        QDateTimePrivate::DaylightStatus status;
+        localMSecsToEpochMSecs(d->m_msecs, 0, 0, &status, 0);
+        return (status == QDateTimePrivate::DaylightTime);
+        }
+    }
+    return false;
+}
+
+/*!
     Sets the date part of this datetime to \a date.
     If no time is set, it is set to midnight.
 
