@@ -48,6 +48,8 @@
 #include <iterator>
 #include <list>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 
@@ -404,7 +406,7 @@ template <typename T>
 bool QLinkedList<T>::removeOne(const T &_t)
 {
     detach();
-    iterator it = qFind(begin(), end(), _t);
+    iterator it = std::find(begin(), end(), _t);
     if (it != end()) {
         erase(it);
         return true;
