@@ -69,8 +69,17 @@ int main(int argc, char *argv[])
 
     // An option with a longer description, to test wrapping
     QCommandLineOption noImplicitIncludesOption(QStringList() << QStringLiteral("n") << QStringLiteral("no-implicit-includes"));
-    noImplicitIncludesOption.setDescription(QStringLiteral("Disable automatic generation of implicit #include-directives."));
+    noImplicitIncludesOption.setDescription(QStringLiteral("Disable magic generation of implicit #include-directives."));
     parser.addOption(noImplicitIncludesOption);
+
+    QCommandLineOption newlineOption(QStringList() << QStringLiteral("newline"));
+    newlineOption.setDescription(QString::fromLatin1("This is an option with a rather long\n"
+                "description using explicit newline characters "
+                "(but testing automatic wrapping too). In addition, "
+                "here, we test breaking after a comma. Testing -option. "
+                "Long URL: http://qt-project.org/wiki/How_to_create_a_library_with_Qt_and_use_it_in_an_application "
+                "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"));
+    parser.addOption(newlineOption);
 
     // This program supports different options depending on the "command" (first argument).
     // Call parse() to find out the positional arguments.

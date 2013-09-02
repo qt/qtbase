@@ -459,27 +459,40 @@ void tst_QCommandLineParser::testVersionOption()
 #endif // !QT_NO_PROCESS
 }
 
-void tst_QCommandLineParser::testHelpOption_data()
-{
-    QTest::addColumn<QCommandLineParser::SingleDashWordOptionMode>("parsingMode");
-    QTest::addColumn<QString>("expectedHelpOutput");
-
-    QString expectedOutput =
-        "Usage: testhelper/qcommandlineparser_test_helper [options] parsingMode command\n"
-        "Test helper\n"
-        "\n"
+static const char expectedOptionsHelp[] =
         "Options:\n"
         "  -h, --help                  Displays this help.\n"
         "  -v, --version               Displays version information.\n"
         "  --load <url>                Load file from URL.\n"
         "  -o, --output <file>         Set output file.\n"
         "  -D <key=value>              Define macro.\n"
-        "  -n, --no-implicit-includes  Disable automatic generation of implicit #include\n"
-        "                              -directives.\n"
+        "  -n, --no-implicit-includes  Disable magic generation of implicit\n"
+        "                              #include-directives.\n"
+        "  --newline                   This is an option with a rather long\n"
+        "                              description using explicit newline characters (but\n"
+        "                              testing automatic wrapping too). In addition,\n"
+        "                              here, we test breaking after a comma. Testing\n"
+        "                              -option. Long URL:\n"
+        "                              http://qt-project.org/wiki/How_to_create_a_library\n"
+        "                              _with_Qt_and_use_it_in_an_application\n"
+        "                              abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx\n"
+        "                              yzabcdefghijklmnopqrstuvwxyz\n";
+
+void tst_QCommandLineParser::testHelpOption_data()
+{
+    QTest::addColumn<QCommandLineParser::SingleDashWordOptionMode>("parsingMode");
+    QTest::addColumn<QString>("expectedHelpOutput");
+
+    QString expectedOutput = QString::fromLatin1(
+        "Usage: testhelper/qcommandlineparser_test_helper [options] parsingMode command\n"
+        "Test helper\n"
+        "\n")
+        + QString::fromLatin1(expectedOptionsHelp) +
+        QString::fromLatin1(
         "\n"
         "Arguments:\n"
         "  parsingMode                 The parsing mode to test.\n"
-        "  command                     The command to execute.\n";
+        "  command                     The command to execute.\n");
 #ifdef Q_OS_WIN
     expectedOutput.replace("  -h, --help                  Displays this help.\n",
                            "  -?, -h, --help              Displays this help.\n");
@@ -510,6 +523,7 @@ void tst_QCommandLineParser::testHelpOption()
 #ifdef Q_OS_WIN
     output.replace(QStringLiteral("\r\n"), QStringLiteral("\n"));
 #endif
+    QCOMPARE(output.split('\n'), expectedHelpOutput.split('\n')); // easier to debug than the next line, on failure
     QCOMPARE(output, expectedHelpOutput);
 
     process.start("testhelper/qcommandlineparser_test_helper", QStringList() << "0" << "resize" << "--help");
@@ -519,18 +533,11 @@ void tst_QCommandLineParser::testHelpOption()
 #ifdef Q_OS_WIN
     output.replace(QStringLiteral("\r\n"), QStringLiteral("\n"));
 #endif
-    QByteArray expectedResizeHelp =
+    QByteArray expectedResizeHelp = QByteArrayLiteral(
         "Usage: testhelper/qcommandlineparser_test_helper [options] resize [resize_options]\n"
         "Test helper\n"
-        "\n"
-        "Options:\n"
-        "  -h, --help                  Displays this help.\n"
-        "  -v, --version               Displays version information.\n"
-        "  --load <url>                Load file from URL.\n"
-        "  -o, --output <file>         Set output file.\n"
-        "  -D <key=value>              Define macro.\n"
-        "  -n, --no-implicit-includes  Disable automatic generation of implicit #include\n"
-        "                              -directives.\n"
+        "\n")
+        + expectedOptionsHelp +
         "  --size <size>               New size.\n"
         "\n"
         "Arguments:\n"

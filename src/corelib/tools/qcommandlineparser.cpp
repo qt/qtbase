@@ -845,11 +845,50 @@ static QString wrapText(const QString &names, int longestOptionNameString, const
 {
     const QLatin1Char nl('\n');
     QString text = QStringLiteral("  ") + names.leftJustified(longestOptionNameString) + QLatin1Char(' ');
-    const int leftColumnWidth = text.length();
-    const int rightColumnWidth = 79 - leftColumnWidth;
-    text += description.left(rightColumnWidth) + nl;
-    for (int n = rightColumnWidth; n < description.length(); n += rightColumnWidth)
-        text += QStringLiteral(" ").repeated(leftColumnWidth) + description.mid(n, rightColumnWidth) + nl;
+    const int indent = text.length();
+    int lineStart = 0;
+    int lastBreakable = -1;
+    const int max = 79 - indent;
+    int x = 0;
+    const int len = description.length();
+
+    for (int i = 0; i < len; ++i) {
+        ++x;
+        const QChar c = description.at(i);
+        if (c.isSpace())
+            lastBreakable = i;
+
+        int breakAt = -1;
+        int nextLineStart = -1;
+        if (x > max && lastBreakable != -1) {
+            // time to break and we know where
+            breakAt = lastBreakable;
+            nextLineStart = lastBreakable + 1;
+        } else if ((x > max - 1 && lastBreakable == -1) || i == len - 1) {
+            // time to break but found nowhere [-> break here], or end of last line
+            breakAt = i + 1;
+            nextLineStart = breakAt;
+        } else if (c == nl) {
+            // forced break
+            breakAt = i;
+            nextLineStart = i + 1;
+        }
+
+        if (breakAt != -1) {
+            const int numChars = breakAt - lineStart;
+            //qDebug() << "breakAt=" << description.at(breakAt) << "breakAtSpace=" << breakAtSpace << lineStart << "to" << breakAt << description.mid(lineStart, numChars);
+            if (lineStart > 0)
+                text += QString(indent, QLatin1Char(' '));
+            text += description.midRef(lineStart, numChars) + nl;
+            x = 0;
+            lastBreakable = -1;
+            lineStart = nextLineStart;
+            if (lineStart < len && description.at(lineStart).isSpace())
+                ++lineStart; // don't start a line with a space
+            i = lineStart;
+        }
+    }
+
     return text;
 }
 
