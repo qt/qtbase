@@ -41,7 +41,8 @@ CONFIG(blackberry) {
 #DEFINES += QQNXWINDOW_DEBUG
 #DEFINES += QQNXCURSOR_DEBUG
 #DEFINES += QQNXFILEPICKER_DEBUG
-
+#DEFINES += QQNXEGLWINDOW_DEBUG
+#DEFINES += QQNXRASTERWINDOW_DEBUG
 
 SOURCES =   main.cpp \
             qqnxbuffer.cpp \
@@ -56,7 +57,8 @@ SOURCES =   main.cpp \
             qqnxabstractnavigator.cpp \
             qqnxabstractvirtualkeyboard.cpp \
             qqnxservices.cpp \
-            qqnxcursor.cpp
+            qqnxcursor.cpp \
+            qqnxrasterwindow.cpp
 
 HEADERS =   main.h \
             qqnxbuffer.h \
@@ -72,7 +74,8 @@ HEADERS =   main.h \
             qqnxabstractnavigator.h \
             qqnxabstractvirtualkeyboard.h \
             qqnxservices.h \
-            qqnxcursor.h
+            qqnxcursor.h \
+            qqnxrasterwindow.h
 
 CONFIG(qqnx_screeneventthread) {
     DEFINES += QQNX_SCREENEVENTTHREAD
@@ -83,9 +86,11 @@ CONFIG(qqnx_screeneventthread) {
 LIBS += -lscreen
 
 contains(QT_CONFIG, opengles2) {
-    SOURCES += qqnxglcontext.cpp
+    SOURCES += qqnxglcontext.cpp \
+               qqnxeglwindow.cpp
 
-    HEADERS += qqnxglcontext.h
+    HEADERS += qqnxglcontext.h \
+               qqnxeglwindow.h
 
     LIBS += -lEGL
 }

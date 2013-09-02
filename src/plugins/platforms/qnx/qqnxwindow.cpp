@@ -70,19 +70,11 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
     : QPlatformWindow(window),
       m_screenContext(context),
       m_window(0),
-      m_currentBufferIndex(-1),
-      m_previousBufferIndex(-1),
       m_screen(0),
       m_parentWindow(0),
       m_visible(false),
       m_exposed(true),
-      m_windowState(Qt::WindowNoState),
-#if !defined(QT_NO_OPENGL)
-      m_platformOpenGLContext(0),
-      m_newSurfaceRequested(true),
-      m_eglSurface(EGL_NO_SURFACE),
-#endif
-      m_requestedBufferSize(window->geometry().size())
+      m_windowState(Qt::WindowNoState)
 {
     qWindowDebug() << Q_FUNC_INFO << "window =" << window << ", size =" << window->size();
     int result;
@@ -96,70 +88,6 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
     }
     if (result != 0)
         qFatal("QQnxWindow: failed to create window, errno=%d", errno);
-
-    // Set window buffer usage based on rendering API
-    int val;
-    QSurface::SurfaceType surfaceType = window->surfaceType();
-    switch (surfaceType) {
-    case QSurface::RasterSurface:
-        val = SCREEN_USAGE_NATIVE | SCREEN_USAGE_READ | SCREEN_USAGE_WRITE;
-        break;
-    case QSurface::OpenGLSurface:
-        val = SCREEN_USAGE_OPENGL_ES2;
-        break;
-    default:
-        qFatal("QQnxWindow: unsupported window API");
-        break;
-    }
-
-    errno = 0;
-    result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_USAGE, &val);
-    if (result != 0)
-        qFatal("QQnxWindow: failed to set window buffer usage, errno=%d", errno);
-
-    // Alpha channel is always pre-multiplied if present
-    errno = 0;
-    val = SCREEN_PRE_MULTIPLIED_ALPHA;
-    result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_ALPHA_MODE, &val);
-    if (result != 0)
-        qFatal("QQnxWindow: failed to set window alpha mode, errno=%d", errno);
-
-    // Blend the window with Source Over Porter-Duff behavior onto whatever's
-    // behind it.
-    //
-    // If the desired use-case is opaque, the Widget painting framework will
-    // already fill in the alpha channel with full opacity.
-    errno = 0;
-    val = SCREEN_TRANSPARENCY_SOURCE_OVER;
-    result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_TRANSPARENCY, &val);
-    if (result != 0)
-        qFatal("QQnxWindow: failed to set window transparency, errno=%d", errno);
-
-    // Set the window swap interval
-    errno = 0;
-    val = 1;
-    result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_SWAP_INTERVAL, &val);
-    if (result != 0)
-        qFatal("QQnxWindow: failed to set window swap interval, errno=%d", errno);
-
-    if (window->flags() & Qt::WindowDoesNotAcceptFocus) {
-        errno = 0;
-        val = SCREEN_SENSITIVITY_NO_FOCUS;
-        result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_SENSITIVITY, &val);
-        if (result != 0)
-            qFatal("QQnxWindow: failed to set window sensitivity, errno=%d", errno);
-    }
-
-    setScreen(static_cast<QQnxScreen *>(window->screen()->handle()));
-
-    // Add window to plugin's window mapper
-    QQnxIntegration::addWindow(m_window, window);
-
-    // Qt never calls these setters after creating the window, so we need to do that ourselves here
-    setWindowState(window->windowState());
-    if (window->parent() && window->parent()->handle())
-        setParent(window->parent()->handle());
-    setGeometryHelper(window->geometry());
 }
 
 QQnxWindow::~QQnxWindow()
@@ -179,31 +107,11 @@ QQnxWindow::~QQnxWindow()
 
     // Cleanup QNX window and its buffers
     screen_destroy_window(m_window);
-
-#if !defined(QT_NO_OPENGL)
-    // Cleanup EGL surface if it exists
-    destroyEGLSurface();
-#endif
 }
 
 void QQnxWindow::setGeometry(const QRect &rect)
 {
     const QRect oldGeometry = setGeometryHelper(rect);
-
-#if !defined(QT_NO_OPENGL)
-    // If this is an OpenGL window we need to request that the GL context updates
-    // the EGLsurface on which it is rendering.
-    {
-        // We want the setting of the atomic bool in the GL context to be atomic with
-        // setting m_requestedBufferSize and therefore extended the scope to include
-        // that test.
-        const QMutexLocker locker(&m_mutex);
-        m_requestedBufferSize = rect.size();
-        if (m_platformOpenGLContext != 0 && bufferSize() != rect.size()) {
-            m_newSurfaceRequested.testAndSetRelease(false, true);
-        }
-    }
-#endif
 
     // Send a geometry change event to Qt (triggers resizeEvent() in QWindow/QWidget).
 
@@ -350,12 +258,6 @@ bool QQnxWindow::isExposed() const
     return m_visible && m_exposed;
 }
 
-QSize QQnxWindow::requestedBufferSize() const
-{
-    const QMutexLocker locker(&m_mutex);
-    return m_requestedBufferSize;
-}
-
 void QQnxWindow::adjustBufferSize()
 {
     if (m_parentWindow)
@@ -383,13 +285,7 @@ void QQnxWindow::setBufferSize(const QSize &size)
 
     // Create window buffers if they do not exist
     if (m_bufferSize.isEmpty()) {
-        val[0] = m_screen->nativeFormat();
-#if !defined(QT_NO_OPENGL)
-        // Get pixel format from EGL config if using OpenGL;
-        // otherwise inherit pixel format of window's screen
-        if (m_platformOpenGLContext != 0)
-            val[0] = platformWindowFormatToNativeFormat(m_platformOpenGLContext->format());
-#endif
+        val[0] = pixelFormat();
 
         errno = 0;
         result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_FORMAT, val);
@@ -424,119 +320,7 @@ void QQnxWindow::setBufferSize(const QSize &size)
 
     // Cache new buffer size
     m_bufferSize = nonEmptySize;
-
-    // Buffers were destroyed; reacquire them
-    m_currentBufferIndex = -1;
-    m_previousDirty = QRegion();
-    m_scrolled = QRegion();
-
-    const QMutexLocker locker(&m_mutex);
-    m_requestedBufferSize = QSize();
-}
-
-QQnxBuffer &QQnxWindow::renderBuffer()
-{
-    qWindowDebug() << Q_FUNC_INFO << "window =" << window();
-
-    // Check if render buffer is invalid
-    if (m_currentBufferIndex == -1) {
-        // Get all buffers available for rendering
-        errno = 0;
-        screen_buffer_t buffers[MAX_BUFFER_COUNT];
-        int result = screen_get_window_property_pv(m_window, SCREEN_PROPERTY_RENDER_BUFFERS, (void **)buffers);
-        if (result != 0)
-            qFatal("QQnxWindow: failed to query window buffers, errno=%d", errno);
-
-        // Wrap each buffer and clear
-        for (int i = 0; i < MAX_BUFFER_COUNT; ++i) {
-            m_buffers[i] = QQnxBuffer(buffers[i]);
-
-            // Clear Buffer
-            errno = 0;
-            int bg[] = { SCREEN_BLIT_COLOR, 0x00000000, SCREEN_BLIT_END };
-            result = screen_fill(m_screen->nativeContext(), buffers[i], bg);
-            if (result != 0)
-                qFatal("QQnxWindow: failed to clear window buffer, errno=%d", errno);
-        }
-
-        errno = 0;
-        result = screen_flush_blits(m_screen->nativeContext(), 0);
-        if (result != 0)
-            qFatal("QQnxWindow: failed to flush blits, errno=%d", errno);
-
-        // Use the first available render buffer
-        m_currentBufferIndex = 0;
-        m_previousBufferIndex = -1;
-    }
-
-    return m_buffers[m_currentBufferIndex];
-}
-
-void QQnxWindow::scroll(const QRegion &region, int dx, int dy, bool flush)
-{
-    qWindowDebug() << Q_FUNC_INFO << "window =" << window();
-    blitPreviousToCurrent(region, dx, dy, flush);
-    m_scrolled += region;
-}
-
-void QQnxWindow::post(const QRegion &dirty)
-{
-    // How double-buffering works
-    // --------------------------
-    //
-    // The are two buffers, the previous one and the current one.
-    // The previous buffer always contains the complete, full image of the whole window when it
-    // was last posted.
-    // The current buffer starts with the complete, full image of the second to last posting
-    // of the window.
-    //
-    // During painting, Qt paints on the current buffer. Thus, when Qt has finished painting, the
-    // current buffer contains the second to last image plus the newly painted regions.
-    // Since the second to last image is too old, we copy over the image from the previous buffer, but
-    // only for those regions that Qt didn't paint (because that would overwrite what Qt has just
-    // painted). This is the copyPreviousToCurrent() call below.
-    //
-    // After the call to copyPreviousToCurrent(), the current buffer contains the complete, full image of the
-    // whole window in its current state, and we call screen_post_window() to make the new buffer
-    // available to libscreen (called "posting"). There, only the regions that Qt painted on are
-    // posted, as nothing else has changed.
-    //
-    // After that, the previous and the current buffers are swapped, and the whole cycle starts anew.
-
-    // Check if render buffer exists and something was rendered
-    if (m_currentBufferIndex != -1 && !dirty.isEmpty()) {
-        qWindowDebug() << Q_FUNC_INFO << "window =" << window();
-        QQnxBuffer &currentBuffer = m_buffers[m_currentBufferIndex];
-
-        // Copy unmodified region from old render buffer to new render buffer;
-        // required to allow partial updates
-        QRegion preserve = m_previousDirty - dirty - m_scrolled;
-        blitPreviousToCurrent(preserve, 0, 0);
-
-        // Calculate region that changed
-        QRegion modified = preserve + dirty + m_scrolled;
-        QRect rect = modified.boundingRect();
-        int dirtyRect[4] = { rect.x(), rect.y(), rect.x() + rect.width(), rect.y() + rect.height() };
-
-        // Update the display with contents of render buffer
-        errno = 0;
-        int result = screen_post_window(m_window, currentBuffer.nativeBuffer(), 1, dirtyRect, 0);
-        if (result != 0)
-            qFatal("QQnxWindow: failed to post window buffer, errno=%d", errno);
-
-        // Advance to next nender buffer
-        m_previousBufferIndex = m_currentBufferIndex++;
-        if (m_currentBufferIndex >= MAX_BUFFER_COUNT)
-            m_currentBufferIndex = 0;
-
-        // Save modified region and clear scrolled region
-        m_previousDirty = dirty;
-        m_scrolled = QRegion();
-
-        // Notify screen that window posted
-        if (m_screen != 0)
-            m_screen->onWindowPost(this);
-    }
+    resetBuffers();
 }
 
 void QQnxWindow::setScreen(QQnxScreen *platformScreen)
@@ -702,15 +486,6 @@ void QQnxWindow::gainedFocus()
     QWindowSystemInterface::handleWindowActivated(window());
 }
 
-#if !defined(QT_NO_OPENGL)
-void QQnxWindow::setPlatformOpenGLContext(QQnxGLContext *platformOpenGLContext)
-{
-    // This function does not take ownership of the platform gl context.
-    // It is owned by the frontend QOpenGLContext
-    m_platformOpenGLContext = platformOpenGLContext;
-}
-#endif
-
 QQnxWindow *QQnxWindow::findWindow(screen_window_t windowHandle)
 {
     if (m_window == windowHandle)
@@ -723,19 +498,6 @@ QQnxWindow *QQnxWindow::findWindow(screen_window_t windowHandle)
     }
 
     return 0;
-}
-
-void QQnxWindow::blitFrom(QQnxWindow *sourceWindow, const QPoint &sourceOffset, const QRegion &targetRegion)
-{
-    if (!sourceWindow || sourceWindow->m_previousBufferIndex == -1 || targetRegion.isEmpty())
-        return;
-
-    qWindowDebug() << Q_FUNC_INFO << window() << sourceWindow->window() << sourceOffset << targetRegion;
-
-    QQnxBuffer &sourceBuffer = sourceWindow->m_buffers[sourceWindow->m_previousBufferIndex];
-    QQnxBuffer &targetBuffer = renderBuffer();
-
-    blitHelper(sourceBuffer, targetBuffer, sourceOffset, QPoint(0, 0), targetRegion, true);
 }
 
 void QQnxWindow::minimize()
@@ -759,78 +521,53 @@ void QQnxWindow::minimize()
 #endif
 }
 
-#if !defined(QT_NO_OPENGL)
-void QQnxWindow::createEGLSurface()
+void QQnxWindow::initWindow()
 {
-    // Fetch the surface size from the window and update
-    // the window's buffers before we create the EGL surface
-    const QSize surfaceSize = requestedBufferSize();
-    if (!surfaceSize.isValid()) {
-        qFatal("QQNX: Trying to create 0 size EGL surface. "
-               "Please set a valid window size before calling QOpenGLContext::makeCurrent()");
-    }
-    setBufferSize(surfaceSize);
+    // Alpha channel is always pre-multiplied if present
+    errno = 0;
+    int val = SCREEN_PRE_MULTIPLIED_ALPHA;
+    int result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_ALPHA_MODE, &val);
+    if (result != 0)
+        qFatal("QQnxWindow: failed to set window alpha mode, errno=%d", errno);
 
-    // Post root window, in case it hasn't been posted yet, to make it appear.
-    screen()->onWindowPost(0);
+    // Blend the window with Source Over Porter-Duff behavior onto whatever's
+    // behind it.
+    //
+    // If the desired use-case is opaque, the Widget painting framework will
+    // already fill in the alpha channel with full opacity.
+    errno = 0;
+    val = SCREEN_TRANSPARENCY_SOURCE_OVER;
+    result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_TRANSPARENCY, &val);
+    if (result != 0)
+        qFatal("QQnxWindow: failed to set window transparency, errno=%d", errno);
 
-    const EGLint eglSurfaceAttrs[] =
-    {
-        EGL_RENDER_BUFFER, EGL_BACK_BUFFER,
-        EGL_NONE
-    };
+    // Set the window swap interval
+    errno = 0;
+    val = 1;
+    result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_SWAP_INTERVAL, &val);
+    if (result != 0)
+        qFatal("QQnxWindow: failed to set window swap interval, errno=%d", errno);
 
-    qWindowDebug() << "Creating EGL surface" << platformOpenGLContext()->getEglDisplay()
-                   << platformOpenGLContext()->getEglConfig();
-    // Create EGL surface
-    m_eglSurface = eglCreateWindowSurface(platformOpenGLContext()->getEglDisplay()
-                                          , platformOpenGLContext()->getEglConfig(),
-                                          (EGLNativeWindowType) m_window, eglSurfaceAttrs);
-    if (m_eglSurface == EGL_NO_SURFACE) {
-        QQnxGLContext::checkEGLError("eglCreateWindowSurface");
-        qFatal("QQNX: failed to create EGL surface, err=%d", eglGetError());
-    }
-}
-
-void QQnxWindow::destroyEGLSurface()
-{
-    // Destroy EGL surface if it exists
-    if (m_eglSurface != EGL_NO_SURFACE) {
-        EGLBoolean eglResult = eglDestroySurface(platformOpenGLContext()->getEglDisplay(), m_eglSurface);
-        if (eglResult != EGL_TRUE)
-            qFatal("QQNX: failed to destroy EGL surface, err=%d", eglGetError());
+    if (window()->flags() & Qt::WindowDoesNotAcceptFocus) {
+        errno = 0;
+        val = SCREEN_SENSITIVITY_NO_FOCUS;
+        result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_SENSITIVITY, &val);
+        if (result != 0)
+            qFatal("QQnxWindow: failed to set window sensitivity, errno=%d", errno);
     }
 
-    m_eglSurface = EGL_NO_SURFACE;
+    setScreen(static_cast<QQnxScreen *>(window()->screen()->handle()));
+
+    // Add window to plugin's window mapper
+    QQnxIntegration::addWindow(m_window, window());
+
+    // Qt never calls these setters after creating the window, so we need to do that ourselves here
+    setWindowState(window()->windowState());
+    if (window()->parent() && window()->parent()->handle())
+        setParent(window()->parent()->handle());
+    setGeometryHelper(window()->geometry());
 }
 
-void QQnxWindow::swapEGLBuffers()
-{
-    qWindowDebug() << Q_FUNC_INFO;
-    // Set current rendering API
-    EGLBoolean eglResult = eglBindAPI(EGL_OPENGL_ES_API);
-    if (eglResult != EGL_TRUE)
-        qFatal("QQNX: failed to set EGL API, err=%d", eglGetError());
-
-    // Post EGL surface to window
-    eglResult = eglSwapBuffers(m_platformOpenGLContext->getEglDisplay(), m_eglSurface);
-    if (eglResult != EGL_TRUE)
-        qFatal("QQNX: failed to swap EGL buffers, err=%d", eglGetError());
-}
-
-EGLSurface QQnxWindow::getSurface()
-{
-    if (m_newSurfaceRequested.testAndSetOrdered(true, false)) {
-        if (m_eglSurface != EGL_NO_SURFACE) {
-            platformOpenGLContext()->doneCurrent();
-            destroyEGLSurface();
-        }
-        createEGLSurface();
-    }
-
-    return m_eglSurface;
-}
-#endif
 
 void QQnxWindow::updateZorder(int &topZorder)
 {
@@ -876,89 +613,5 @@ void QQnxWindow::applyWindowState()
     }
 }
 
-void QQnxWindow::blitHelper(QQnxBuffer &source, QQnxBuffer &target, const QPoint &sourceOffset,
-                            const QPoint &targetOffset, const QRegion &region, bool flush)
-{
-    // Break down region into non-overlapping rectangles
-    const QVector<QRect> rects = region.rects();
-    for (int i = rects.size() - 1; i >= 0; i--) {
-        // Clip rectangle to bounds of target
-        const QRect rect = rects[i].intersected(target.rect());
-
-        if (rect.isEmpty())
-            continue;
-
-        // Setup blit operation
-        int attribs[] = { SCREEN_BLIT_SOURCE_X, rect.x() + sourceOffset.x(),
-                          SCREEN_BLIT_SOURCE_Y, rect.y() + sourceOffset.y(),
-                          SCREEN_BLIT_SOURCE_WIDTH, rect.width(),
-                          SCREEN_BLIT_SOURCE_HEIGHT, rect.height(),
-                          SCREEN_BLIT_DESTINATION_X, rect.x() + targetOffset.x(),
-                          SCREEN_BLIT_DESTINATION_Y, rect.y() + targetOffset.y(),
-                          SCREEN_BLIT_DESTINATION_WIDTH, rect.width(),
-                          SCREEN_BLIT_DESTINATION_HEIGHT, rect.height(),
-                          SCREEN_BLIT_END };
-
-        // Queue blit operation
-        errno = 0;
-        const int result = screen_blit(m_screenContext, target.nativeBuffer(),
-                                       source.nativeBuffer(), attribs);
-        if (result != 0)
-            qFatal("QQnxWindow: failed to blit buffers, errno=%d", errno);
-    }
-
-    // Check if flush requested
-    if (flush) {
-        // Wait for all blits to complete
-        errno = 0;
-        const int result = screen_flush_blits(m_screenContext, SCREEN_WAIT_IDLE);
-        if (result != 0)
-            qFatal("QQnxWindow: failed to flush blits, errno=%d", errno);
-
-        // Buffer was modified outside the CPU
-        target.invalidateInCache();
-    }
-}
-
-void QQnxWindow::blitPreviousToCurrent(const QRegion &region, int dx, int dy, bool flush)
-{
-    qWindowDebug() << Q_FUNC_INFO << "window =" << window();
-
-    // Abort if previous buffer is invalid or if nothing to copy
-    if (m_previousBufferIndex == -1 || region.isEmpty())
-        return;
-
-    QQnxBuffer &currentBuffer = m_buffers[m_currentBufferIndex];
-    QQnxBuffer &previousBuffer = m_buffers[m_previousBufferIndex];
-
-    blitHelper(previousBuffer, currentBuffer, QPoint(0, 0), QPoint(dx, dy), region, flush);
-}
-
-int QQnxWindow::platformWindowFormatToNativeFormat(const QSurfaceFormat &format)
-{
-    qWindowDebug() << Q_FUNC_INFO;
-    // Extract size of colour channels from window format
-    int redSize = format.redBufferSize();
-    if (redSize == -1)
-        qFatal("QQnxWindow: red size not defined");
-
-    int greenSize = format.greenBufferSize();
-    if (greenSize == -1)
-        qFatal("QQnxWindow: green size not defined");
-
-    int blueSize = format.blueBufferSize();
-    if (blueSize == -1)
-        qFatal("QQnxWindow: blue size not defined");
-
-    // select matching native format
-    if (redSize == 5 && greenSize == 6 && blueSize == 5) {
-        return SCREEN_FORMAT_RGB565;
-    } else if (redSize == 8 && greenSize == 8 && blueSize == 8) {
-        return SCREEN_FORMAT_RGBA8888;
-    } else {
-        qFatal("QQnxWindow: unsupported pixel format");
-        return 0;
-    }
-}
 
 QT_END_NAMESPACE

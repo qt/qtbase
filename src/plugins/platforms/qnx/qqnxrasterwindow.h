@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2013 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,46 +39,44 @@
 **
 ****************************************************************************/
 
-#ifndef QQNXRASTERWINDOWSURFACE_H
-#define QQNXRASTERWINDOWSURFACE_H
+#ifndef QQNXRASTERWINDOW_H
+#define QQNXRASTERWINDOW_H
 
-#include <qpa/qplatformbackingstore.h>
-
-#include <screen/screen.h>
+#include "qqnxwindow.h"
+#include "qqnxbuffer.h"
 
 QT_BEGIN_NAMESPACE
 
-class QQnxRasterWindow;
-
-class QQnxRasterBackingStore : public QPlatformBackingStore
+class QQnxRasterWindow : public QQnxWindow
 {
 public:
-    QQnxRasterBackingStore(QWindow *window);
-    ~QQnxRasterBackingStore();
+    QQnxRasterWindow(QWindow *window, screen_context_t context);
 
-    QPaintDevice *paintDevice();
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
-    void resize(const QSize &size, const QRegion &staticContents);
-    bool scroll(const QRegion &area, int dx, int dy);
-    void beginPaint(const QRegion &region);
-    void endPaint();
+    void post(const QRegion &dirty);
+
+    void scroll(const QRegion &region, int dx, int dy, bool flush=false);
+
+    QQnxBuffer &renderBuffer();
+
+    bool hasBuffers() const { return !bufferSize().isEmpty(); }
+
+    WindowType windowType() const Q_DECL_OVERRIDE { return Raster; }
+
+protected:
+    int pixelFormat() const;
+    void resetBuffers();
+
+    // Copies content from the previous buffer (back buffer) to the current buffer (front buffer)
+    void blitPreviousToCurrent(const QRegion &region, int dx, int dy, bool flush=false);
 
 private:
-    class ScrollOp {
-    public:
-        ScrollOp(const QRegion &a, int x, int y) : totalArea(a), dx(x), dy(y) {}
-        QRegion totalArea;
-        int dx;
-        int dy;
-    };
-
-    QQnxRasterWindow *platformWindow() const;
-
-    QWindow *m_window;
-    QList<ScrollOp> m_scrollOpList;
-    bool m_hasUnflushedPaintOperations;
+    QRegion m_previousDirty;
+    QRegion m_scrolled;
+    int m_currentBufferIndex;
+    int m_previousBufferIndex;
+    QQnxBuffer m_buffers[MAX_BUFFER_COUNT];
 };
 
 QT_END_NAMESPACE
 
-#endif // QQNXRASTERWINDOWSURFACE_H
+#endif // QQNXRASTERWINDOW_H

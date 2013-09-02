@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2011 - 2013 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qqnxrasterbackingstore.h"
-#include "qqnxwindow.h"
+#include "qqnxrasterwindow.h"
 
 #include <QtCore/QDebug>
 
@@ -70,15 +70,16 @@ QQnxRasterBackingStore::~QQnxRasterBackingStore()
 
 QPaintDevice *QQnxRasterBackingStore::paintDevice()
 {
-    QQnxWindow *platformWindow = this->platformWindow();
-    if (platformWindow->hasBuffers())
-        return platformWindow->renderBuffer().image();
+    if (platformWindow() && platformWindow()->hasBuffers())
+        return platformWindow()->renderBuffer().image();
 
     return 0;
 }
 
 void QQnxRasterBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
+    Q_UNUSED(offset)
+
     qRasterBackingStoreDebug() << Q_FUNC_INFO << "w =" << this->window();
 
     // Sometimes this method is called even though there is nothing to be
@@ -96,8 +97,7 @@ void QQnxRasterBackingStore::flush(QWindow *window, const QRegion &region, const
     // child windows, are performed; conceptually ,child windows have no buffers
     // (actually they do have a 1x1 placeholder buffer due to libscreen limitations),
     // since Qt will only draw to the backing store of the top-level window.
-    QQnxWindow *platformWindow = this->platformWindow();
-    if (!targetWindow || targetWindow == platformWindow) {
+    if (!targetWindow || targetWindow == platformWindow()) {
 
         // visit all pending scroll operations
         for (int i = m_scrollOpList.size() - 1; i >= 0; i--) {
@@ -105,14 +105,14 @@ void QQnxRasterBackingStore::flush(QWindow *window, const QRegion &region, const
             // do the scroll operation
             ScrollOp &op = m_scrollOpList[i];
             QRegion srcArea = op.totalArea.intersected( op.totalArea.translated(-op.dx, -op.dy) );
-            platformWindow->scroll(srcArea, op.dx, op.dy);
+            platformWindow()->scroll(srcArea, op.dx, op.dy);
         }
 
         // clear all pending scroll operations
         m_scrollOpList.clear();
 
         // update the display with newly rendered content
-        platformWindow->post(region);
+        platformWindow()->post(region);
     }
 
     m_hasUnflushedPaintOperations = false;
@@ -174,10 +174,10 @@ void QQnxRasterBackingStore::endPaint()
     qRasterBackingStoreDebug() << Q_FUNC_INFO << "w =" << window();
 }
 
-QQnxWindow *QQnxRasterBackingStore::platformWindow() const
+QQnxRasterWindow *QQnxRasterBackingStore::platformWindow() const
 {
   Q_ASSERT(m_window->handle());
-  return static_cast<QQnxWindow*>(m_window->handle());
+  return static_cast<QQnxRasterWindow*>(m_window->handle());
 }
 
 QT_END_NAMESPACE

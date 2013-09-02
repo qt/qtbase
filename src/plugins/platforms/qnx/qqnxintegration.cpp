@@ -53,6 +53,11 @@
 #include "qqnxabstractvirtualkeyboard.h"
 #include "qqnxservices.h"
 
+#include "qqnxrasterwindow.h"
+#if !defined(QT_NO_OPENGL)
+#include "qqnxeglwindow.h"
+#endif
+
 #if defined(Q_OS_BLACKBERRY)
 #include "qqnxbpseventfilter.h"
 #include "qqnxnavigatorbps.h"
@@ -331,7 +336,18 @@ bool QQnxIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 QPlatformWindow *QQnxIntegration::createPlatformWindow(QWindow *window) const
 {
     qIntegrationDebug() << Q_FUNC_INFO;
-    return new QQnxWindow(window, m_screenContext);
+    QSurface::SurfaceType surfaceType = window->surfaceType();
+    switch (surfaceType) {
+    case QSurface::RasterSurface:
+        return new QQnxRasterWindow(window, m_screenContext);
+#if !defined(QT_NO_OPENGL)
+    case QSurface::OpenGLSurface:
+        return new QQnxEglWindow(window, m_screenContext);
+#endif
+    default:
+        qFatal("QQnxWindow: unsupported window API");
+    }
+    return 0;
 }
 
 QPlatformBackingStore *QQnxIntegration::createPlatformBackingStore(QWindow *window) const

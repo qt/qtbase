@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2013 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,46 +39,59 @@
 **
 ****************************************************************************/
 
-#ifndef QQNXRASTERWINDOWSURFACE_H
-#define QQNXRASTERWINDOWSURFACE_H
+#ifndef QQNXEGLWINDOW_H
+#define QQNXEGLWINDOW_H
 
-#include <qpa/qplatformbackingstore.h>
+#include "qqnxwindow.h"
+#include "qqnxglcontext.h"
 
-#include <screen/screen.h>
+#include <QtCore/QMutex>
 
 QT_BEGIN_NAMESPACE
 
-class QQnxRasterWindow;
+class QQnxGLContext;
 
-class QQnxRasterBackingStore : public QPlatformBackingStore
+class QQnxEglWindow : public QQnxWindow
 {
 public:
-    QQnxRasterBackingStore(QWindow *window);
-    ~QQnxRasterBackingStore();
+    QQnxEglWindow(QWindow *window, screen_context_t context);
+    ~QQnxEglWindow();
 
-    QPaintDevice *paintDevice();
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
-    void resize(const QSize &size, const QRegion &staticContents);
-    bool scroll(const QRegion &area, int dx, int dy);
-    void beginPaint(const QRegion &region);
-    void endPaint();
+    void createEGLSurface();
+    void destroyEGLSurface();
+    void swapEGLBuffers();
+    EGLSurface getSurface();
+
+    void setPlatformOpenGLContext(QQnxGLContext *platformOpenGLContext);
+    QQnxGLContext *platformOpenGLContext() const { return m_platformOpenGLContext; }
+
+    void setGeometry(const QRect &rect);
+
+    // Called by QQnxGLContext::createSurface()
+    QSize requestedBufferSize() const;
+
+    WindowType windowType() const Q_DECL_OVERRIDE { return EGL; }
+
+protected:
+    int pixelFormat() const;
+    void resetBuffers();
 
 private:
-    class ScrollOp {
-    public:
-        ScrollOp(const QRegion &a, int x, int y) : totalArea(a), dx(x), dy(y) {}
-        QRegion totalArea;
-        int dx;
-        int dy;
-    };
+    QSize m_requestedBufferSize;
 
-    QQnxRasterWindow *platformWindow() const;
+    // This mutex is used to protect access to the m_requestedBufferSize
+    // member. This member is used in conjunction with QQnxGLContext::requestNewSurface()
+    // to coordinate recreating the EGL surface which involves destroying any
+    // existing EGL surface; resizing the native window buffers; and creating a new
+    // EGL surface. All of this has to be done from the thread that is calling
+    // QQnxGLContext::makeCurrent()
+    mutable QMutex m_mutex;
 
-    QWindow *m_window;
-    QList<ScrollOp> m_scrollOpList;
-    bool m_hasUnflushedPaintOperations;
+    QQnxGLContext *m_platformOpenGLContext;
+    QAtomicInt m_newSurfaceRequested;
+    EGLSurface m_eglSurface;
 };
 
 QT_END_NAMESPACE
 
-#endif // QQNXRASTERWINDOWSURFACE_H
+#endif // QQNXEGLWINDOW_H

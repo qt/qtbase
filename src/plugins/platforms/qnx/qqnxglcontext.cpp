@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2011 - 2013 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -40,9 +40,8 @@
 ****************************************************************************/
 
 #include "qqnxglcontext.h"
-#include "qqnxrootwindow.h"
 #include "qqnxscreen.h"
-#include "qqnxwindow.h"
+#include "qqnxeglwindow.h"
 
 #include "private/qeglconvenience_p.h"
 
@@ -206,7 +205,7 @@ bool QQnxGLContext::makeCurrent(QPlatformSurface *surface)
     if (eglResult != EGL_TRUE)
         qFatal("QQnxGLContext: failed to set EGL API, err=%d", eglGetError());
 
-    QQnxWindow *platformWindow = dynamic_cast<QQnxWindow*>(surface);
+    QQnxEglWindow *platformWindow = dynamic_cast<QQnxEglWindow*>(surface);
     if (!platformWindow)
         return false;
 
@@ -243,7 +242,7 @@ void QQnxGLContext::doneCurrent()
 void QQnxGLContext::swapBuffers(QPlatformSurface *surface)
 {
     qGLContextDebug() << Q_FUNC_INFO;
-    QQnxWindow *platformWindow = dynamic_cast<QQnxWindow*>(surface);
+    QQnxEglWindow *platformWindow = dynamic_cast<QQnxEglWindow*>(surface);
     if (!platformWindow)
         return;
 
