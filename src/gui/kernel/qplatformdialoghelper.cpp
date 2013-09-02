@@ -48,6 +48,8 @@
 #include <QtCore/QUrl>
 #include <QtGui/QColor>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -183,7 +185,7 @@ QColorDialogStaticData::QColorDialogStaticData() : customSet(false)
         for (int r = 0;  r < 4; ++r)
             for (int b = 0; b < 3; ++b)
                 standardRgb[i++] = qRgb(r * 255 / 3, g * 255 / 3, b * 255 / 2);
-    qFill(customRgb, customRgb + CustomColorCount, 0xffffffff);
+    std::fill(customRgb, customRgb + CustomColorCount, 0xffffffff);
     readSettings();
 }
 

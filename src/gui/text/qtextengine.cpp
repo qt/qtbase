@@ -2770,10 +2770,10 @@ void QTextEngine::resolveAdditionalFormats() const
             addFormatSortedByStart.append(i);
     }
     QVarLengthArray<int, 64> addFormatSortedByEnd = addFormatSortedByStart;
-    qSort(addFormatSortedByStart.begin(), addFormatSortedByStart.end(),
-          FormatRangeComparatorByStart(specialData->addFormats));
-    qSort(addFormatSortedByEnd.begin(), addFormatSortedByEnd.end(),
-          FormatRangeComparatorByEnd(specialData->addFormats));
+    std::sort(addFormatSortedByStart.begin(), addFormatSortedByStart.end(),
+              FormatRangeComparatorByStart(specialData->addFormats));
+    std::sort(addFormatSortedByEnd.begin(), addFormatSortedByEnd.end(),
+              FormatRangeComparatorByEnd(specialData->addFormats));
 
     QVarLengthArray<int, 16>  currentFormats;
     const int *startIt = addFormatSortedByStart.constBegin();

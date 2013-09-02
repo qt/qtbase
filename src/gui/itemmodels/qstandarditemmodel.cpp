@@ -55,6 +55,7 @@
 
 #include <private/qstandarditemmodel_p.h>
 #include <qdebug.h>
+#include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
@@ -254,10 +255,10 @@ void QStandardItemPrivate::sortChildren(int column, Qt::SortOrder order)
 
     if (order == Qt::AscendingOrder) {
         QStandardItemModelLessThan lt;
-        qStableSort(sortable.begin(), sortable.end(), lt);
+        std::stable_sort(sortable.begin(), sortable.end(), lt);
     } else {
         QStandardItemModelGreaterThan gt;
-        qStableSort(sortable.begin(), sortable.end(), gt);
+        std::stable_sort(sortable.begin(), sortable.end(), gt);
     }
 
     QModelIndexList changedPersistentIndexesFrom, changedPersistentIndexesTo;

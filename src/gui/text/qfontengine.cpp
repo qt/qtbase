@@ -50,6 +50,8 @@
 #include <qendian.h>
 #include <private/qharfbuzz_p.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 static inline bool qtransform_equals_no_translate(const QTransform &a, const QTransform &b)
@@ -969,7 +971,7 @@ void QFontEngine::loadKerningPairs(QFixed scalingFactor)
         }
     }
 end:
-    qSort(kerning_pairs);
+    std::sort(kerning_pairs.begin(), kerning_pairs.end());
 //    for (int i = 0; i < kerning_pairs.count(); ++i)
 //        qDebug() << 'i' << i << "left_right" << hex << kerning_pairs.at(i).left_right;
 }

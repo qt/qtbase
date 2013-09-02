@@ -52,6 +52,8 @@
 #include "qtextdocumentfragment_p.h"
 #include "qtextodfwriter_p.h"
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 class QTextDocumentWriterPrivate
@@ -366,7 +368,7 @@ QList<QByteArray> QTextDocumentWriter::supportedDocumentFormats()
     answer << "ODF";
 #endif // QT_NO_TEXTODFWRITER
 
-    qSort(answer);
+    std::sort(answer.begin(), answer.end());
     return answer;
 }
 

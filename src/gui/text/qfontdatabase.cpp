@@ -57,6 +57,7 @@
 
 #include <stdlib.h>
 #include <limits.h>
+#include <algorithm>
 
 
 // #define QFONTDATABASE_DEBUG
@@ -1119,7 +1120,7 @@ QList<QFontDatabase::WritingSystem> QFontDatabase::writingSystems() const
                 list.append(writingSystem);
         }
     }
-    qSort(list);
+    std::sort(list.begin(), list.end());
     return list;
 }
 
@@ -1411,7 +1412,7 @@ QList<int> QFontDatabase::pointSizes(const QString &family,
     if (smoothScalable)
         return standardSizes();
 
-    qSort(sizes);
+    std::sort(sizes.begin(), sizes.end());
     return sizes;
 }
 
@@ -1514,7 +1515,7 @@ QList<int> QFontDatabase::smoothSizes(const QString &family,
     if (smoothScalable)
         return QFontDatabase::standardSizes();
 
-    qSort(sizes);
+    std::sort(sizes.begin(), sizes.end());
     return sizes;
 }
 
