@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtWidgets module of the Qt Toolkit.
+** This file is part of the QtMacExtras module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,30 +39,29 @@
 **
 ****************************************************************************/
 
-#ifndef QCOCOAVIEWCONTAINER_H
-#define QCOCOAVIEWCONTAINER_H
+#include <QtWidgets>
+#include <Cocoa/Cocoa.h>
+#include <QMacCocoaViewContainer>
 
-#include <QtWidgets/QWidget>
-
-Q_FORWARD_DECLARE_OBJC_CLASS(NSView);
-
-QT_BEGIN_NAMESPACE
-
-class QMacCocoaViewContainerPrivate;
-class Q_WIDGETS_EXPORT QMacCocoaViewContainer : public QWidget
+class WindowWidget : public QWidget
 {
-    Q_OBJECT
 public:
-    QMacCocoaViewContainer(NSView *cocoaViewToWrap, QWidget *parent = 0);
-    virtual ~QMacCocoaViewContainer();
-
-    void setCocoaView(NSView *view);
-    NSView *cocoaView() const;
-
-private:
-    Q_DECLARE_PRIVATE(QMacCocoaViewContainer)
+    WindowWidget()
+    {
+        QMacCocoaViewContainer *cocoaViewContainer = new QMacCocoaViewContainer(0, this);
+        cocoaViewContainer->move(100, 100);
+        cocoaViewContainer->resize(300, 300);
+        NSTextView *text = [[NSTextView alloc] initWithFrame : NSMakeRect(0, 0, 300, 300)];
+        cocoaViewContainer->setCocoaView(text);
+    }
 };
 
-QT_END_NAMESPACE
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
 
-#endif // QCOCOAVIEWCONTAINER_H
+    WindowWidget widget;
+    widget.show();
+
+    return app.exec();
+}

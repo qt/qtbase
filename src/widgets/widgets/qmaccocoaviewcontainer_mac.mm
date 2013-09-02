@@ -40,9 +40,12 @@
 ****************************************************************************/
 
 #import <Cocoa/Cocoa.h>
-#include <private/qwidget_p.h>
 #include "qmaccocoaviewcontainer_mac.h"
-#include <private/qt_mac_p.h>
+
+#include <QtCore/QDebug>
+#include <QtGui/QWindow>
+#include <qpa/qplatformnativeinterface.h>
+#include <private/qwidget_p.h>
 
 /*!
     \class QMacCocoaViewContainer
@@ -91,6 +94,20 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace {
+// TODO use QtMacExtras copy of this function when available.
+inline QPlatformNativeInterface::NativeResourceForIntegrationFunction resolvePlatformFunction(const QByteArray &functionName)
+{
+    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
+    QPlatformNativeInterface::NativeResourceForIntegrationFunction function =
+        nativeInterface->nativeResourceFunctionForIntegration(functionName);
+    if (!function)
+         qWarning() << "Qt could not resolve function" << functionName
+                    << "from QGuiApplication::platformNativeInterface()->nativeResourceFunctionForIntegration()";
+    return function;
+}
+} //namespsace
+
 class QMacCocoaViewContainerPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QMacCocoaViewContainer)
@@ -111,20 +128,22 @@ QMacCocoaViewContainerPrivate::~QMacCocoaViewContainerPrivate()
 }
 
 /*!
-    \fn QMacCocoaViewContainer::QMacCocoaViewContainer(void *cocoaViewToWrap, QWidget *parent)
+    \fn QMacCocoaViewContainer::QMacCocoaViewContainer(NSView *cocoaViewToWrap, QWidget *parent)
 
     Create a new QMacCocoaViewContainer using the NSView pointer in \a
     cocoaViewToWrap with parent, \a parent. QMacCocoaViewContainer will
     retain \a cocoaViewToWrap.
 
-    \a cocoaViewToWrap is a void pointer that allows the header to be included
-    with C++ source.
 */
-QMacCocoaViewContainer::QMacCocoaViewContainer(void *cocoaViewToWrap, QWidget *parent)
+QMacCocoaViewContainer::QMacCocoaViewContainer(NSView *view, QWidget *parent)
    : QWidget(*new QMacCocoaViewContainerPrivate, parent, 0)
 {
-    if (cocoaViewToWrap)
-        setCocoaView(cocoaViewToWrap);
+
+    if (view)
+        setCocoaView(view);
+
+    // QMacCocoaViewContainer requires a native window handle.
+    setAttribute(Qt::WA_NativeWindow);
 }
 
 /*!
@@ -132,33 +151,37 @@ QMacCocoaViewContainer::QMacCocoaViewContainer(void *cocoaViewToWrap, QWidget *p
 */
 QMacCocoaViewContainer::~QMacCocoaViewContainer()
 {
+
 }
 
 /*!
-    Returns the NSView that has been set on this container.  The returned view
-    has been autoreleased, so you will need to retain it if you want to make
-    use of it.
+    Returns the NSView that has been set on this container.
 */
-void *QMacCocoaViewContainer::cocoaView() const
+NSView *QMacCocoaViewContainer::cocoaView() const
 {
     Q_D(const QMacCocoaViewContainer);
-    return [[d->nsview retain] autorelease];
+    return d->nsview;
 }
 
 /*!
     Sets the NSView to contain to be \a cocoaViewToWrap and retains it. If this
     container already had a view set, it will release the previously set view.
 */
-void QMacCocoaViewContainer::setCocoaView(void *cocoaViewToWrap)
+void QMacCocoaViewContainer::setCocoaView(NSView *view)
 {
     Q_D(QMacCocoaViewContainer);
-    QMacCocoaAutoReleasePool pool;
-    NSView *view = static_cast<NSView *>(cocoaViewToWrap);
     NSView *oldView = d->nsview;
-    destroy(true, true);
     [view retain];
     d->nsview = view;
-    create(WId(d->nsview), false, true);
+
+    // Create window and platformwindow
+    winId();
+    QPlatformWindow *platformWindow = this->windowHandle()->handle();
+
+    // Set the new view as the content view for the window.
+    typedef void (*SetWindowContentViewFunction)(QPlatformWindow *window, NSView *nsview);
+    reinterpret_cast<SetWindowContentViewFunction>(resolvePlatformFunction("setwindowcontentview"))(platformWindow, view);
+
     [oldView release];
 }
 
