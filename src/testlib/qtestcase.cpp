@@ -65,6 +65,7 @@
 #include <QtTest/private/cycle_p.h>
 
 #include <numeric>
+#include <algorithm>
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -1631,7 +1632,7 @@ QBenchmarkResult qMedian(const QList<QBenchmarkResult> &container)
         return container.at(0);
 
     QList<QBenchmarkResult> containerCopy = container;
-    qSort(containerCopy);
+    std::sort(containerCopy.begin(), containerCopy.end());
 
     const int middle = count / 2;
 
