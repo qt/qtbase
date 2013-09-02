@@ -489,6 +489,8 @@ void tst_Selftests::runSubTest_data()
     }
 }
 
+#ifndef QT_NO_PROCESS
+
 static void insertEnvironmentVariable(QString const& name, QProcessEnvironment &result)
 {
     const QProcessEnvironment systemEnvironment = QProcessEnvironment::systemEnvironment();
@@ -688,13 +690,19 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
     }
 }
 
+#endif // !QT_NO_PROCESS
+
 void tst_Selftests::runSubTest()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("This test requires QProcess support");
+#else
     QFETCH(QString, subdir);
     QFETCH(QStringList, loggers);
     QFETCH(QStringList, arguments);
 
     doRunSubTest(subdir, loggers, arguments);
+#endif // !QT_NO_PROCESS
 }
 
 // attribute must contain ="

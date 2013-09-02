@@ -79,6 +79,7 @@ static QString makespec()
 
 QT_BEGIN_NAMESPACE
 namespace QTest {
+#ifndef QT_NO_PROCESS
     class QExternalProcess: public QProcess
     {
     protected:
@@ -99,6 +100,7 @@ namespace QTest {
         }
 #endif
     };
+#endif // !QT_NO_PROCESS
 
     class QExternalTestPrivate
     {
@@ -565,6 +567,7 @@ namespace QTest {
 
     bool QExternalTestPrivate::runQmake()
     {
+#ifndef QT_NO_PROCESS
         if (temporaryDirPath.isEmpty())
             qWarning() << "Temporary directory is expected to be non-empty";
 
@@ -607,10 +610,16 @@ namespace QTest {
         }
 
         return ok && exitCode == 0;
+#else // QT_NO_PROCESS
+        return false;
+#endif // QT_NO_PROCESS
     }
 
     bool QExternalTestPrivate::runMake(Target target)
     {
+#ifdef QT_NO_PROCESS
+        return false;
+#else
         if (temporaryDirPath.isEmpty())
             qWarning() << "Temporary directory is expected to be non-empty";
 
@@ -666,6 +675,7 @@ namespace QTest {
         std_err += make.readAllStandardError();
 
         return ok;
+#endif // !QT_NO_PROCESS
     }
 
     bool QExternalTestPrivate::commonSetup(const QByteArray &body)

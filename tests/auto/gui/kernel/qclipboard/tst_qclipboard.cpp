@@ -196,6 +196,7 @@ void tst_QClipboard::testSignals()
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(Q_OS_QNX)
 static bool runHelper(const QString &program, const QStringList &arguments, QByteArray *errorMessage)
 {
+#ifndef QT_NO_PROCESS
     QProcess process;
     process.setReadChannelMode(QProcess::ForwardedChannels);
     process.start(program, arguments);
@@ -231,6 +232,12 @@ static bool runHelper(const QString &program, const QStringList &arguments, QByt
         return false;
     }
     return true;
+#else // QT_NO_PROCESS
+    Q_UNUSED(program)
+    Q_UNUSED(arguments)
+    Q_UNUSED(errorMessage)
+    return false;
+#endif // QT_NO_PROCESS
 }
 
 // Test that pasted text remains on the clipboard after a Qt application exits.

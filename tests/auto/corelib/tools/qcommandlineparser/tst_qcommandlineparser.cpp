@@ -430,6 +430,9 @@ void tst_QCommandLineParser::testSingleDashWordOptionModes()
 
 void tst_QCommandLineParser::testVersionOption()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("This test requires QProcess support");
+#else
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE");
 #endif
@@ -443,6 +446,7 @@ void tst_QCommandLineParser::testVersionOption()
     output.replace(QStringLiteral("\r\n"), QStringLiteral("\n"));
 #endif
     QCOMPARE(output, QString("qcommandlineparser_test_helper 1.0\n"));
+#endif // !QT_NO_PROCESS
 }
 
 void tst_QCommandLineParser::testHelpOption_data()
@@ -478,6 +482,9 @@ void tst_QCommandLineParser::testHelpOption_data()
 
 void tst_QCommandLineParser::testHelpOption()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("This test requires QProcess support");
+#else
 #ifdef Q_OS_WINCE
     QSKIP("Reading and writing to a process is not supported on Qt/CE");
 #endif
@@ -524,6 +531,7 @@ void tst_QCommandLineParser::testHelpOption()
     expectedResizeHelp.replace("testhelper/", "testhelper\\");
 #endif
     QCOMPARE(output, QString(expectedResizeHelp));
+#endif // !QT_NO_PROCESS
 }
 
 QTEST_APPLESS_MAIN(tst_QCommandLineParser)

@@ -77,7 +77,7 @@ void tst_QLockFile::initTestCase()
     QString testdata_dir = QFileInfo(QFINDTESTDATA("qlockfiletesthelper")).absolutePath();
     QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));
     m_helperApp = "qlockfiletesthelper/qlockfile_test_helper";
-#endif
+#endif // !QT_NO_PROCESS
 }
 
 void tst_QLockFile::lockUnlock()
@@ -111,6 +111,9 @@ void tst_QLockFile::lockUnlock()
 
 void tst_QLockFile::lockOutOtherProcess()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("This test requires QProcess support");
+#else
     // Lock
     const QString fileName = dir.path() + "/lockOtherProcess";
     QLockFile lockFile(fileName);
@@ -132,6 +135,7 @@ void tst_QLockFile::lockOutOtherProcess()
     QCOMPARE(ret, int(QLockFile::NoError));
     // Lock doesn't survive process though (on clean exit)
     QVERIFY(!QFile::exists(fileName));
+#endif // !QT_NO_PROCESS
 }
 
 static QLockFile::LockError tryLockFromThread(const QString &fileName)
@@ -228,6 +232,9 @@ void tst_QLockFile::staleLockFromCrashedProcess_data()
 
 void tst_QLockFile::staleLockFromCrashedProcess()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("This test requires QProcess support");
+#else
     QFETCH(int, staleLockTime);
     const QString fileName = dir.path() + "/staleLockFromCrashedProcess";
 
@@ -245,10 +252,14 @@ void tst_QLockFile::staleLockFromCrashedProcess()
     QVERIFY(secondLock.tryLock());
 #endif
     QCOMPARE(int(secondLock.error()), int(QLockFile::NoError));
+#endif // !QT_NO_PROCESS
 }
 
 void tst_QLockFile::staleShortLockFromBusyProcess()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("This test requires QProcess support");
+#else
     const QString fileName = dir.path() + "/staleLockFromBusyProcess";
 
     QProcess proc;
@@ -274,10 +285,14 @@ void tst_QLockFile::staleShortLockFromBusyProcess()
 
     proc.waitForFinished();
     QVERIFY(secondLock.tryLock());
+#endif // !QT_NO_PROCESS
 }
 
 void tst_QLockFile::staleLongLockFromBusyProcess()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("This test requires QProcess support");
+#else
     const QString fileName = dir.path() + "/staleLockFromBusyProcess";
 
     QProcess proc;
@@ -297,6 +312,7 @@ void tst_QLockFile::staleLongLockFromBusyProcess()
     QVERIFY(!secondLock.removeStaleLockFile());
 
     proc.waitForFinished();
+#endif // !QT_NO_PROCESS
 }
 
 static QString tryStaleLockFromThread(const QString &fileName)
@@ -326,6 +342,9 @@ static QString tryStaleLockFromThread(const QString &fileName)
 
 void tst_QLockFile::staleLockRace()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("This test requires QProcess support");
+#else
     // Multiple threads notice a stale lock at the same time
     // Only one thread should delete it, otherwise a race will ensue
     const QString fileName = dir.path() + "/sharedFile";
@@ -341,6 +360,7 @@ void tst_QLockFile::staleLockRace()
     synchronizer.waitForFinished();
     foreach (const QFuture<QString> &future, synchronizer.futures())
         QVERIFY2(future.result().isEmpty(), qPrintable(future.result()));
+#endif // !QT_NO_PROCESS
 }
 
 void tst_QLockFile::noPermissions()

@@ -139,6 +139,9 @@ void addClientProperty(const QString& key, const QString& value)
 */
 void fetchCustomClientProperties()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("This test requires QProcess support");
+#else
     QString script = "hostinfo.sh";  //### TBD: Windows implementation (hostinfo.bat)
 
     QProcess runScript;
@@ -161,6 +164,7 @@ void fetchCustomClientProperties()
         else
             qDebug() << "Unparseable script output ignored:" << line;
     }
+#endif // !QT_NO_PROCESS
 }
 
 

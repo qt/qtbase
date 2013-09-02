@@ -101,6 +101,7 @@ void tst_qmessagehandler::initTestCase()
     QVERIFY2(!m_appDir.isEmpty(), qPrintable(
         QString::fromLatin1("Couldn't find helper app dir starting from %1.").arg(QDir::currentPath())));
 
+#ifndef QT_NO_PROCESS
     m_baseEnvironment = QProcess::systemEnvironment();
     for (int i = 0; i < m_baseEnvironment.count(); ++i) {
         if (m_baseEnvironment.at(i).startsWith("QT_MESSAGE_PATTERN=")) {
@@ -108,6 +109,7 @@ void tst_qmessagehandler::initTestCase()
             break;
         }
     }
+#endif // !QT_NO_PROCESS
 }
 
 void tst_qmessagehandler::cleanup()
@@ -641,6 +643,9 @@ void tst_qmessagehandler::cleanupFuncinfo()
 
 void tst_qmessagehandler::qMessagePattern()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("This test requires QProcess support");
+#else
     QProcess process;
     const QString appExe = m_appDir + "/app";
 
@@ -710,10 +715,14 @@ void tst_qmessagehandler::qMessagePattern()
     output.replace("\r\n", "\n");
 #endif
     QCOMPARE(QString::fromLatin1(output), QString::fromLatin1(expected));
+#endif // !QT_NO_PROCESS
 }
 
 void tst_qmessagehandler::qMessagePatternIf()
 {
+#ifdef QT_NO_PROCESS
+    QSKIP("This test requires QProcess support");
+#else
     QProcess process;
     const QString appExe = m_appDir + "/app";
 
@@ -773,6 +782,7 @@ void tst_qmessagehandler::qMessagePatternIf()
     QVERIFY(output.contains("QT_MESSAGE_PATTERN: %{if-*} cannot be nested"));
     QVERIFY(output.contains("A DEBUG qDebug"));
     QVERIFY(output.contains("A  qWarning"));
+#endif // !QT_NO_PROCESS
 }
 
 QTEST_MAIN(tst_qmessagehandler)
