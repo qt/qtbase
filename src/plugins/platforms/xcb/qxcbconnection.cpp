@@ -53,11 +53,12 @@
 #include "qxcbintegration.h"
 #include "qxcbsystemtraytracker.h"
 
-#include <QtAlgorithms>
 #include <QSocketNotifier>
 #include <QAbstractEventDispatcher>
 #include <QTimer>
 #include <QByteArray>
+
+#include <algorithm>
 
 #include <dlfcn.h>
 #include <stdio.h>
@@ -1421,7 +1422,7 @@ static const char * xcb_atomnames = {
 
 QXcbAtom::Atom QXcbConnection::qatom(xcb_atom_t xatom) const
 {
-    return static_cast<QXcbAtom::Atom>(qFind(m_allAtoms, m_allAtoms + QXcbAtom::NAtoms, xatom) - m_allAtoms);
+    return static_cast<QXcbAtom::Atom>(std::find(m_allAtoms, m_allAtoms + QXcbAtom::NAtoms, xatom) - m_allAtoms);
 }
 
 void QXcbConnection::initializeAllAtoms() {

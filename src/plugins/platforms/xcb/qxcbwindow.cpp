@@ -57,6 +57,8 @@
 
 #include <qpa/qplatformintegration.h>
 
+#include <algorithm>
+
 // FIXME This workaround can be removed for xcb-icccm > 3.8
 #define class class_name
 #include <xcb/xcb_icccm.h>
@@ -779,21 +781,21 @@ QXcbWindow::NetWmStates QXcbWindow::netWmStates()
     if (reply && reply->format == 32 && reply->type == XCB_ATOM_ATOM) {
         const xcb_atom_t *states = static_cast<const xcb_atom_t *>(xcb_get_property_value(reply));
         const xcb_atom_t *statesEnd = states + reply->length;
-        if (statesEnd != qFind(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_ABOVE)))
+        if (statesEnd != std::find(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_ABOVE)))
             result |= NetWmStateAbove;
-        if (statesEnd != qFind(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_BELOW)))
+        if (statesEnd != std::find(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_BELOW)))
             result |= NetWmStateBelow;
-        if (statesEnd != qFind(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_FULLSCREEN)))
+        if (statesEnd != std::find(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_FULLSCREEN)))
             result |= NetWmStateFullScreen;
-        if (statesEnd != qFind(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_HORZ)))
+        if (statesEnd != std::find(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_HORZ)))
             result |= NetWmStateMaximizedHorz;
-        if (statesEnd != qFind(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_VERT)))
+        if (statesEnd != std::find(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_MAXIMIZED_VERT)))
             result |= NetWmStateMaximizedVert;
-        if (statesEnd != qFind(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_MODAL)))
+        if (statesEnd != std::find(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_MODAL)))
             result |= NetWmStateModal;
-        if (statesEnd != qFind(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_STAYS_ON_TOP)))
+        if (statesEnd != std::find(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_STAYS_ON_TOP)))
             result |= NetWmStateStaysOnTop;
-        if (statesEnd != qFind(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_DEMANDS_ATTENTION)))
+        if (statesEnd != std::find(states, statesEnd, atom(QXcbAtom::_NET_WM_STATE_DEMANDS_ATTENTION)))
             result |= NetWmStateDemandsAttention;
         free(reply);
     } else {
