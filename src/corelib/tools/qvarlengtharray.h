@@ -49,6 +49,7 @@
 #include <new>
 #include <string.h>
 #include <stdlib.h>
+#include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
@@ -396,7 +397,7 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
     int l = int(aend - ptr);
     int n = l - f;
     if (QTypeInfo<T>::isComplex) {
-        qCopy(ptr + l, ptr + s, ptr + f);
+        std::copy(ptr + l, ptr + s, ptr + f);
         T *i = ptr + s;
         T *b = ptr + s - n;
         while (i != b) {
