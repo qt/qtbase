@@ -2874,7 +2874,7 @@ if [ "$XPLATFORM_IOS" = "yes" ]; then
     CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS examples tests"
     CFG_SHARED="no" # iOS builds should be static to be able to submit to the App Store
     CFG_CXX11="no" # C++11 support disabled for now
-    CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtquickcontrols qtwebkit qtgraphicaleffects qtdoc qtmultimedia qtwebkit-examples qttools"
+    CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtquickcontrols qtwebkit qtgraphicaleffects qtdoc qtmultimedia qtwebkit-examples qttools qtserialport"
 fi
 
 # disable GTK style support auto-detection on Mac
