@@ -69,7 +69,6 @@ void QAndroidOpenGLPlatformWindow::invalidateSurface()
 {
     QWindowSystemInterface::handleExposeEvent(window(), QRegion()); // Obscure event
     QWindowSystemInterface::flushWindowSystemEvents();
-    QEglFSWindow::invalidateSurface();
 
     m_window = 0;
     m_surface = 0;

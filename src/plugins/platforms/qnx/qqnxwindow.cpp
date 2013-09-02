@@ -432,14 +432,26 @@ QQnxBuffer &QQnxWindow::renderBuffer()
         // Get all buffers available for rendering
         errno = 0;
         screen_buffer_t buffers[MAX_BUFFER_COUNT];
-        const int result = screen_get_window_property_pv(m_window, SCREEN_PROPERTY_RENDER_BUFFERS, (void **)buffers);
+        int result = screen_get_window_property_pv(m_window, SCREEN_PROPERTY_RENDER_BUFFERS, (void **)buffers);
         if (result != 0)
             qFatal("QQnxWindow: failed to query window buffers, errno=%d", errno);
 
-        // Wrap each buffer
+        // Wrap each buffer and clear
         for (int i = 0; i < MAX_BUFFER_COUNT; ++i) {
             m_buffers[i] = QQnxBuffer(buffers[i]);
+
+            // Clear Buffer
+            errno = 0;
+            int bg[] = { SCREEN_BLIT_COLOR, 0x00000000, SCREEN_BLIT_END };
+            result = screen_fill(m_screen->nativeContext(), buffers[i], bg);
+            if (result != 0)
+                qFatal("QQnxWindow: failed to clear window buffer, errno=%d", errno);
         }
+
+        errno = 0;
+        result = screen_flush_blits(m_screen->nativeContext(), 0);
+        if (result != 0)
+            qFatal("QQnxWindow: failed to flush blits, errno=%d", errno);
 
         // Use the first available render buffer
         m_currentBufferIndex = 0;

@@ -900,6 +900,8 @@ void QWidgetPrivate::createTLSysExtra()
             extra->topextra->window->setMinimumSize(QSize(extra->minw, extra->minh));
         if (extra->maxw != QWIDGETSIZE_MAX || extra->maxh != QWIDGETSIZE_MAX)
             extra->topextra->window->setMaximumSize(QSize(extra->maxw, extra->maxh));
+        if (extra->topextra->opacity != 255 && q->isWindow())
+            extra->topextra->window->setOpacity(qreal(extra->topextra->opacity) / qreal(255));
 #ifdef Q_OS_WIN
         // Pass on native parent handle for Widget embedded into Active X.
         const QVariant activeXNativeParentHandle = q->property(activeXNativeParentHandleProperty);

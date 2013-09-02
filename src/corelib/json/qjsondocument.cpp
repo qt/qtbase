@@ -76,6 +76,8 @@ QT_BEGIN_NAMESPACE
 
     A document can also be created from a stored binary representation using fromBinaryData() or
     fromRawData().
+
+    \sa {JSON Support in Qt}, {JSON Save Game Example}
 */
 
 /*!

@@ -369,4 +369,6 @@
             \li The items (T)
             \endlist
     \endtable
+
+    \sa {JSON Support in Qt}
 */

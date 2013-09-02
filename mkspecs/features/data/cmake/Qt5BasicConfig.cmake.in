@@ -57,11 +57,13 @@ macro(_populate_$${CMAKE_MODULE_NAME}_target_properties Configuration LIB_LOCATI
 !!ENDIF
     _qt5_$${CMAKE_MODULE_NAME}_check_file_exists(${imported_location})
     set_target_properties(Qt5::$${CMAKE_MODULE_NAME} PROPERTIES
-        \"IMPORTED_LINK_INTERFACE_LIBRARIES_${Configuration}\" \"${_Qt5$${CMAKE_MODULE_NAME}_LIB_DEPENDENCIES}\"
+        \"INTERFACE_LINK_LIBRARIES\" \"${_Qt5$${CMAKE_MODULE_NAME}_LIB_DEPENDENCIES}\"
         \"IMPORTED_LOCATION_${Configuration}\" ${imported_location}
 !!IF !isEmpty(CMAKE_LIB_SONAME)
         \"IMPORTED_SONAME_${Configuration}\" \"$${CMAKE_LIB_SONAME}\"
 !!ENDIF
+        # For backward compatibility with CMake < 2.8.12
+        \"IMPORTED_LINK_INTERFACE_LIBRARIES_${Configuration}\" \"${_Qt5$${CMAKE_MODULE_NAME}_LIB_DEPENDENCIES}\"
     )
 
 !!IF !isEmpty(CMAKE_WINDOWS_BUILD)

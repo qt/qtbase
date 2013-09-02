@@ -566,6 +566,7 @@ private slots:
     void parseDefines();
     void preprocessorOnly();
     void unterminatedFunctionMacro();
+    void QTBUG32933_relatedObjectsDontIncludeItself();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -1759,6 +1760,14 @@ void tst_Moc::warnings_data()
         << 1
         << QString()
         << QString("standard input:1: Error: Class contains Q_OBJECT macro but does not inherit from QObject");
+
+    QTest::newRow("Warning on invalid macro")
+        << QByteArray("#define Foo(a, b)\n class X : public QObject { Q_OBJECT  }; \n Foo(a) \n Foo(a,b,c) \n")
+        << QStringList()
+        << 0
+        << QString("IGNORE_ALL_STDOUT")
+        << QString(":3: Warning: Macro argument mismatch.\n:4: Warning: Macro argument mismatch.");
+
 }
 
 void tst_Moc::warnings()
@@ -1800,7 +1809,7 @@ void tst_Moc::warnings()
     // magic value "IGNORE_ALL_STDOUT" ignores stdout
     if (expectedStdOut != "IGNORE_ALL_STDOUT")
         QCOMPARE(QString::fromLocal8Bit(proc.readAllStandardOutput()).trimmed(), expectedStdOut);
-    QCOMPARE(QString::fromLocal8Bit(proc.readAllStandardError()).trimmed(), expectedStdErr);
+    QCOMPARE(QString::fromLocal8Bit(proc.readAllStandardError()).trimmed().remove('\r'), expectedStdErr);
 }
 
 class tst_Moc::PrivateClass : public QObject {
@@ -3038,7 +3047,37 @@ void tst_Moc::unterminatedFunctionMacro()
 #endif
 }
 
+namespace QTBUG32933_relatedObjectsDontIncludeItself {
+    namespace NS {
+        class Obj : QObject {
+            Q_OBJECT
+            Q_PROPERTY(MyEnum p1 MEMBER member)
+            Q_PROPERTY(Obj::MyEnum p2 MEMBER member)
+            Q_PROPERTY(NS::Obj::MyEnum p3 MEMBER member)
+            Q_PROPERTY(QTBUG32933_relatedObjectsDontIncludeItself::NS::Obj::MyEnum p4 MEMBER member)
+            Q_ENUMS(MyEnum);
+        public:
+            enum MyEnum { Something, SomethingElse };
+            MyEnum member;
+        };
+    }
+}
+
+void tst_Moc::QTBUG32933_relatedObjectsDontIncludeItself()
+{
+    const QMetaObject *mo = &QTBUG32933_relatedObjectsDontIncludeItself::NS::Obj::staticMetaObject;
+    const QMetaObject **objects = mo->d.relatedMetaObjects;
+    // the related objects should be empty because the enums is in the same object.
+    QVERIFY(!objects);
+
+}
+
 QTEST_MAIN(tst_Moc)
+
+// the generated code must compile with QT_NO_KEYWORDS
+#undef signals
+#undef slots
+#undef emit
 
 #include "tst_moc.moc"
 

@@ -1830,29 +1830,31 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
                     int gw = size.cx, gh = size.cy;
 
 
-                    QRect gripperBounds;
-                    if (flags & State_Horizontal && ((swidth - contentsMargin.cxLeftWidth - contentsMargin.cxRightWidth) > gw)) {
-                        gripperBounds.setLeft(theme.rect.left() + swidth/2 - gw/2);
-                        gripperBounds.setTop(theme.rect.top() + sheight/2 - gh/2);
-                        gripperBounds.setWidth(gw);
-                        gripperBounds.setHeight(gh);
-                    } else if ((sheight - contentsMargin.cyTopHeight - contentsMargin.cyBottomHeight) > gh) {
-                        gripperBounds.setLeft(theme.rect.left() + swidth/2 - gw/2);
-                        gripperBounds.setTop(theme.rect.top() + sheight/2 - gh/2);
-                        gripperBounds.setWidth(gw);
-                        gripperBounds.setHeight(gh);
-                    }
+                    if (QSysInfo::WindowsVersion < QSysInfo::WV_WINDOWS8) {
+                        QRect gripperBounds;
+                        if (flags & State_Horizontal && ((swidth - contentsMargin.cxLeftWidth - contentsMargin.cxRightWidth) > gw)) {
+                            gripperBounds.setLeft(theme.rect.left() + swidth/2 - gw/2);
+                            gripperBounds.setTop(theme.rect.top() + sheight/2 - gh/2);
+                            gripperBounds.setWidth(gw);
+                            gripperBounds.setHeight(gh);
+                        } else if ((sheight - contentsMargin.cyTopHeight - contentsMargin.cyBottomHeight) > gh) {
+                            gripperBounds.setLeft(theme.rect.left() + swidth/2 - gw/2);
+                            gripperBounds.setTop(theme.rect.top() + sheight/2 - gh/2);
+                            gripperBounds.setWidth(gw);
+                            gripperBounds.setHeight(gh);
+                        }
 
-                    // Draw gripper if there is enough space
-                    if (!gripperBounds.isEmpty() && flags & State_Enabled) {
-                        painter->save();
-                        XPThemeData grippBackground = theme;
-                        grippBackground.partId = flags & State_Horizontal ? SBP_LOWERTRACKHORZ : SBP_LOWERTRACKVERT;
-                        theme.rect = gripperBounds;
-                        painter->setClipRegion(d->region(theme));// Only change inside the region of the gripper
-                        d->drawBackground(grippBackground);// The gutter is the grippers background
-                        d->drawBackground(theme);          // Transparent gripper ontop of background
-                        painter->restore();
+                        // Draw gripper if there is enough space
+                        if (!gripperBounds.isEmpty() && flags & State_Enabled) {
+                            painter->save();
+                            XPThemeData grippBackground = theme;
+                            grippBackground.partId = flags & State_Horizontal ? SBP_LOWERTRACKHORZ : SBP_LOWERTRACKVERT;
+                            theme.rect = gripperBounds;
+                            painter->setClipRegion(d->region(theme));// Only change inside the region of the gripper
+                            d->drawBackground(grippBackground);// The gutter is the grippers background
+                            d->drawBackground(theme);          // Transparent gripper ontop of background
+                            painter->restore();
+                        }
                     }
                 }
             }

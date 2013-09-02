@@ -315,9 +315,6 @@ struct  QtFontFamily
     QtFontFamily(const QString &n)
         :
         fixedPitch(false),
-#if !defined(QWS) && defined(Q_OS_MAC)
-        fixedPitchComputed(false),
-#endif
         name(n), count(0), foundries(0)
         , bogusWritingSystems(false)
         , askedForFallback(false)
@@ -331,9 +328,6 @@ struct  QtFontFamily
     }
 
     bool fixedPitch : 1;
-#if !defined(QWS) && defined(Q_OS_MAC)
-    bool fixedPitchComputed : 1;
-#endif
 
     QString name;
     QStringList aliases;
@@ -348,18 +342,6 @@ struct  QtFontFamily
     bool matchesFamilyName(const QString &familyName) const;
     QtFontFoundry *foundry(const QString &f, bool = false);
 };
-
-#if !defined(QWS) && defined(Q_OS_MAC)
-inline static void qt_mac_get_fixed_pitch(QtFontFamily *f)
-{
-    if(f && !f->fixedPitchComputed) {
-        QFontMetrics fm(f->name);
-        f->fixedPitch = fm.width(QLatin1Char('i')) == fm.width(QLatin1Char('m'));
-        f->fixedPitchComputed = true;
-    }
-}
-#endif
-
 
 QtFontFoundry *QtFontFamily::foundry(const QString &f, bool create)
 {
@@ -824,9 +806,6 @@ unsigned int bestFoundry(int script, unsigned int score, int styleStrategy,
             EncodingMismatch    = 0x0002
         };
         if (pitch != '*') {
-#if !defined(QWS) && defined(Q_OS_MAC)
-            qt_mac_get_fixed_pitch(const_cast<QtFontFamily*>(family));
-#endif
             if ((pitch == 'm' && !family->fixedPitch)
                 || (pitch == 'p' && family->fixedPitch))
                 this_score += PitchMismatch;
@@ -1275,9 +1254,6 @@ bool QFontDatabase::isFixedPitch(const QString &family,
     QT_PREPEND_NAMESPACE(load)(familyName);
 
     QtFontFamily *f = d->family(familyName);
-#if !defined(QWS) && defined(Q_OS_MAC)
-    qt_mac_get_fixed_pitch(f);
-#endif
     return (f && f->fixedPitch);
 }
 

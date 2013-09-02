@@ -55,6 +55,7 @@
 
 #include <qrawfont.h>
 #include <private/qfontengine_p.h>
+#include <QtCore/qshareddata.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -78,9 +79,69 @@ QT_BEGIN_NAMESPACE
                          QT_DISTANCEFIELD_DEFAULT_RADIUS)
 
 bool Q_GUI_EXPORT qt_fontHasNarrowOutlines(const QRawFont &f);
-QImage Q_GUI_EXPORT qt_renderDistanceFieldGlyph(const QRawFont &font, glyph_t glyph, bool doubleResolution);
 bool Q_GUI_EXPORT qt_fontHasNarrowOutlines(QFontEngine *fontEngine);
-QImage Q_GUI_EXPORT qt_renderDistanceFieldGlyph(QFontEngine *fontEngine, glyph_t glyph, bool doubleResolution);
+
+class Q_GUI_EXPORT QDistanceFieldData : public QSharedData
+{
+public:
+    QDistanceFieldData() : glyph(0), width(0), height(0), nbytes(0), data(0) {}
+    QDistanceFieldData(const QDistanceFieldData &other);
+    ~QDistanceFieldData();
+
+    static QDistanceFieldData *create(const QSize &size);
+    static QDistanceFieldData *create(const QPainterPath &path, bool doubleResolution);
+
+    glyph_t glyph;
+    int width;
+    int height;
+    int nbytes;
+    uchar *data;
+};
+
+class Q_GUI_EXPORT QDistanceField
+{
+public:
+    QDistanceField();
+    QDistanceField(int width, int height);
+    QDistanceField(const QRawFont &font, glyph_t glyph, bool doubleResolution = false);
+    QDistanceField(QFontEngine *fontEngine, glyph_t glyph, bool doubleResolution = false);
+    QDistanceField(const QDistanceField &other);
+
+    bool isNull() const;
+
+    glyph_t glyph() const;
+    void setGlyph(const QRawFont &font, glyph_t glyph, bool doubleResolution = false);
+    void setGlyph(QFontEngine *fontEngine, glyph_t glyph, bool doubleResolution = false);
+
+    int width() const;
+    int height() const;
+
+    QDistanceField copy(const QRect &rect = QRect()) const;
+    inline QDistanceField copy(int x, int y, int w, int h) const
+        { return copy(QRect(x, y, w, h)); }
+
+    uchar *bits();
+    const uchar *bits() const;
+    const uchar *constBits() const;
+
+    uchar *scanLine(int);
+    const uchar *scanLine(int) const;
+    const uchar *constScanLine(int) const;
+
+    QImage toImage(QImage::Format format = QImage::Format_ARGB32_Premultiplied) const;
+
+private:
+    QDistanceField(QDistanceFieldData *data);
+    QSharedDataPointer<QDistanceFieldData> d;
+
+    friend class QDistanceFieldData;
+};
+
+
+inline QImage Q_GUI_EXPORT qt_renderDistanceFieldGlyph(const QRawFont &f, glyph_t g, bool d)
+{ return QDistanceField(f, g, d).toImage(QImage::Format_Indexed8); }
+inline QImage Q_GUI_EXPORT qt_renderDistanceFieldGlyph(QFontEngine *fe, glyph_t g, bool d)
+{ return QDistanceField(fe, g, d).toImage(QImage::Format_Indexed8); }
 
 QT_END_NAMESPACE
 

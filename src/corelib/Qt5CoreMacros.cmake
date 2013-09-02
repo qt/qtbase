@@ -94,34 +94,45 @@ endmacro()
 
 
 # helper macro to set up a moc rule
-macro(QT5_CREATE_MOC_COMMAND infile outfile moc_flags moc_options)
-    # For Windows, create a parameters file to work around command line length limit
-    if(WIN32)
-        # Pass the parameters in a file.  Set the working directory to
-        # be that containing the parameters file and reference it by
-        # just the file name.  This is necessary because the moc tool on
-        # MinGW builds does not seem to handle spaces in the path to the
-        # file given with the @ syntax.
-        get_filename_component(_moc_outfile_name "${outfile}" NAME)
-        get_filename_component(_moc_outfile_dir "${outfile}" PATH)
-        if(_moc_outfile_dir)
-          set(_moc_working_dir WORKING_DIRECTORY ${_moc_outfile_dir})
-        endif()
-        set(_moc_parameters_file ${outfile}_parameters)
-        set(_moc_parameters ${moc_flags} ${moc_options} -o "${outfile}" "${infile}")
-        string(REPLACE ";" "\n" _moc_parameters "${_moc_parameters}")
-        file(WRITE ${_moc_parameters_file} "${_moc_parameters}")
-        add_custom_command(OUTPUT ${outfile}
-                           COMMAND ${Qt5Core_MOC_EXECUTABLE} @${_moc_outfile_name}_parameters
-                           DEPENDS ${infile}
-                           ${_moc_working_dir}
-                           VERBATIM)
-    else()
-        add_custom_command(OUTPUT ${outfile}
-                           COMMAND ${Qt5Core_MOC_EXECUTABLE}
-                           ARGS ${moc_flags} ${moc_options} -o ${outfile} ${infile}
-                           DEPENDS ${infile} VERBATIM)
+macro(QT5_CREATE_MOC_COMMAND infile outfile moc_flags moc_options moc_target)
+    # Pass the parameters in a file.  Set the working directory to
+    # be that containing the parameters file and reference it by
+    # just the file name.  This is necessary because the moc tool on
+    # MinGW builds does not seem to handle spaces in the path to the
+    # file given with the @ syntax.
+    get_filename_component(_moc_outfile_name "${outfile}" NAME)
+    get_filename_component(_moc_outfile_dir "${outfile}" PATH)
+    if(_moc_outfile_dir)
+        set(_moc_working_dir WORKING_DIRECTORY ${_moc_outfile_dir})
     endif()
+    set (_moc_parameters_file ${outfile}_parameters)
+    set (_moc_parameters ${moc_flags} ${moc_options} -o "${outfile}" "${infile}")
+    string (REPLACE ";" "\n" _moc_parameters "${_moc_parameters}")
+
+    if(moc_target)
+        set(targetincludes "$<TARGET_PROPERTY:${moc_target},INCLUDE_DIRECTORIES>")
+        set(targetdefines "$<TARGET_PROPERTY:${moc_target},COMPILE_DEFINITIONS>")
+
+        set(targetincludes "$<$<BOOL:${targetincludes}>:-I$<JOIN:${targetincludes},\n-I>\n>")
+        set(targetdefines "$<$<BOOL:${targetdefines}>:-D$<JOIN:${targetdefines},\n-D>\n>")
+
+        file (GENERATE
+            OUTPUT ${_moc_parameters_file}
+            CONTENT "${targetdefines}${targetincludes}${_moc_parameters}\n"
+        )
+
+        set(targetincludes)
+        set(targetdefines)
+    else()
+        file(WRITE ${_moc_parameters_file} "${_moc_parameters}\n")
+    endif()
+
+    set(_moc_extra_parameters_file @${_moc_parameters_file})
+    add_custom_command(OUTPUT ${outfile}
+                       COMMAND ${Qt5Core_MOC_EXECUTABLE} ${_moc_extra_parameters_file}
+                       DEPENDS ${infile}
+                       ${_moc_working_dir}
+                       VERBATIM)
 endmacro()
 
 
@@ -133,7 +144,13 @@ function(QT5_GENERATE_MOC infile outfile )
     if(NOT IS_ABSOLUTE "${outfile}")
         set(_outfile "${CMAKE_CURRENT_BINARY_DIR}/${outfile}")
     endif()
-    qt5_create_moc_command(${abs_infile} ${_outfile} "${moc_flags}" "")
+    if ("x${ARGV2}" STREQUAL "xTARGET")
+        if (CMAKE_VERSION VERSION_LESS 2.8.12)
+            message(FATAL_ERROR "The TARGET parameter to qt5_generate_moc is only available when using CMake 2.8.12 or later.")
+        endif()
+        set(moc_target ${ARGV3})
+    endif()
+    qt5_create_moc_command(${abs_infile} ${_outfile} "${moc_flags}" "" "${moc_target}")
     set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC TRUE)  # dont run automoc on this file
 endfunction()
 
@@ -145,17 +162,22 @@ function(QT5_WRAP_CPP outfiles )
     qt5_get_moc_flags(moc_flags)
 
     set(options)
-    set(oneValueArgs)
+    set(oneValueArgs TARGET)
     set(multiValueArgs OPTIONS)
 
     cmake_parse_arguments(_WRAP_CPP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     set(moc_files ${_WRAP_CPP_UNPARSED_ARGUMENTS})
     set(moc_options ${_WRAP_CPP_OPTIONS})
+    set(moc_target ${_WRAP_CPP_TARGET})
+
+    if (moc_target AND CMAKE_VERSION VERSION_LESS 2.8.12)
+        message(FATAL_ERROR "The TARGET parameter to qt5_wrap_cpp is only available when using CMake 2.8.12 or later.")
+    endif()
     foreach(it ${moc_files})
         get_filename_component(it ${it} ABSOLUTE)
         qt5_make_output_file(${it} moc_ cpp outfile)
-        qt5_create_moc_command(${it} ${outfile} "${moc_flags}" "${moc_options}")
+        qt5_create_moc_command(${it} ${outfile} "${moc_flags}" "${moc_options}" "${moc_target}")
         list(APPEND ${outfiles} ${outfile})
     endforeach()
     set(${outfiles} ${${outfiles}} PARENT_SCOPE)

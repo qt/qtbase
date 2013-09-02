@@ -44,7 +44,7 @@
 
 #include <QtCore/qglobal.h>
 
-#if defined(QT_OPENGL_ES_2)
+#if defined(QT_OPENGL_ES_2) || defined(Q_QDOC)
 
 #include <QtGui/QOpenGLVersionFunctions>
 #include <QtGui/qopenglcontext.h>
