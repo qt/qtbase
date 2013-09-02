@@ -432,6 +432,15 @@ public:
                       int row, int column, const QModelIndex &parent);
 
     Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
+
+#ifdef Q_NO_USING_KEYWORD
+#ifndef Q_QDOC
+    inline QObject *parent() const { return QAbstractItemModel::parent(); }
+#endif
+#else
+    using QObject::parent;
+#endif
+
 protected:
     QAbstractTableModel(QAbstractItemModelPrivate &dd, QObject *parent);
 
@@ -454,6 +463,15 @@ public:
                       int row, int column, const QModelIndex &parent);
 
     Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
+
+#ifdef Q_NO_USING_KEYWORD
+#ifndef Q_QDOC
+    inline QObject *parent() const { return QAbstractItemModel::parent(); }
+#endif
+#else
+    using QObject::parent;
+#endif
+
 protected:
     QAbstractListModel(QAbstractItemModelPrivate &dd, QObject *parent);
 
