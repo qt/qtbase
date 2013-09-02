@@ -108,6 +108,9 @@ public:
     static void wceCommands(uint command);
     static void wceRefresh();
 #endif
+#ifdef Q_OS_OSX
+    NSMenu* toNSMenu();
+#endif
 
     bool isNativeMenuBar() const;
     void setNativeMenuBar(bool nativeMenuBar);

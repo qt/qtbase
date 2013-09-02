@@ -50,6 +50,9 @@
 #ifdef Q_OS_WINCE
 #include <windef.h> // for HMENU
 #endif
+#ifdef Q_OS_OSX
+Q_FORWARD_DECLARE_OBJC_CLASS(NSMenu);
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -141,6 +144,10 @@ public:
 #ifdef Q_OS_WINCE
     HMENU wceMenu();
 #endif
+#ifdef Q_OS_OSX
+    NSMenu* toNSMenu();
+    void setAsDockMenu();
+#endif
 
     bool separatorsCollapsible() const;
     void setSeparatorsCollapsible(bool collapse);
@@ -203,6 +210,11 @@ private:
     friend void qt_mac_emit_menuSignals(QMenu *menu, bool show);
     friend void qt_mac_menu_emit_hovered(QMenu *menu, QAction *action);
 };
+
+#ifdef Q_OS_OSX
+// ### Qt 4 compatibility; remove in Qt 6
+inline QT_DEPRECATED void qt_mac_set_dock_menu(QMenu *menu) { menu->setAsDockMenu(); }
+#endif
 
 #endif // QT_NO_MENU
 

@@ -141,6 +141,11 @@ SOURCES += \
         widgets/qtoolbararealayout.cpp \
         widgets/qplaintextedit.cpp
 
+macx {
+    OBJECTIVE_SOURCES += \
+        widgets/qmenu_mac.mm
+}
+
 # TODO
 false:mac {
     HEADERS += widgets/qmacnativewidget_mac.h \
