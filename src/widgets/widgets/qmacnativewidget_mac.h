@@ -44,20 +44,23 @@
 
 #include <QtWidgets/QWidget>
 
-QT_BEGIN_NAMESPACE
+Q_FORWARD_DECLARE_OBJC_CLASS(NSView);
 
+QT_BEGIN_NAMESPACE
 
 class QMacNativeWidgetPrivate;
 class Q_WIDGETS_EXPORT QMacNativeWidget : public QWidget
 {
     Q_OBJECT
 public:
-    QMacNativeWidget(void *parentRef = 0);
+    QMacNativeWidget(NSView *parentView = 0);
     ~QMacNativeWidget();
 
     QSize sizeHint() const;
+    NSView *nativeView() const;
 
 protected:
+    void init(NSView *parentView);
     bool event(QEvent *ev);
 
 private:

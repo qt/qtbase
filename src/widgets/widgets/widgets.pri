@@ -142,20 +142,23 @@ SOURCES += \
         widgets/qplaintextedit.cpp
 
 macx {
+    HEADERS += \
+        widgets/qmacnativewidget_mac.h
+
     OBJECTIVE_SOURCES += \
-        widgets/qmenu_mac.mm
+        widgets/qmenu_mac.mm \
+        widgets/qmacnativewidget_mac.mm
 }
 
 # TODO
 false:mac {
-    HEADERS += widgets/qmacnativewidget_mac.h \
-               widgets/qmaccocoaviewcontainer_mac.h
+    HEADERS += widgets/qmaccocoaviewcontainer_mac.h
     OBJECTIVE_HEADERS += widgets/qcocoatoolbardelegate_mac_p.h \
                          widgets/qcocoamenu_mac_p.h
     OBJECTIVE_SOURCES += widgets/qmaccocoaviewcontainer_mac.mm \
                          widgets/qcocoatoolbardelegate_mac.mm \
                          widgets/qmainwindowlayout_mac.mm \
-                         widgets/qmacnativewidget_mac.mm \
+
 }
 
 wince*: {

@@ -40,15 +40,18 @@
 ****************************************************************************/
 
 #import <Cocoa/Cocoa.h>
-#import <private/qcocoaview_mac_p.h>
 #include "qmacnativewidget_mac.h"
-#include <private/qwidget_p.h>
+
+#include <QtCore/qdebug.h>
+#include <QtGui/qwindow.h>
+#include <QtGui/qguiapplication.h>
+#include <qpa/qplatformnativeinterface.h>
 
 /*!
     \class QMacNativeWidget
     \since 4.5
-    \brief The QMacNativeWidget class provides a widget for Mac OS X that provides a way to put Qt widgets into Carbon
-    or Cocoa hierarchies depending on how Qt was configured.
+    \brief The QMacNativeWidget class provides a widget for Mac OS X that provides
+    a way to put Qt widgets into Cocoa hierarchies.
 
     \ingroup advanced
     \inmodule QtWidgets
@@ -80,26 +83,47 @@
 
 QT_BEGIN_NAMESPACE
 
-class QMacNativeWidgetPrivate : public QWidgetPrivate
+namespace {
+// TODO use QtMacExtras copy of this function when available.
+inline QPlatformNativeInterface::NativeResourceForIntegrationFunction resolvePlatformFunction(const QByteArray &functionName)
 {
-};
+    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
+    QPlatformNativeInterface::NativeResourceForIntegrationFunction function =
+        nativeInterface->nativeResourceFunctionForIntegration(functionName);
+    if (!function)
+         qWarning() << "Qt could not resolve function" << functionName
+                    << "from QGuiApplication::platformNativeInterface()->nativeResourceFunctionForIntegration()";
+    return function;
+}
+} //namespsace
 
-extern OSViewRef qt_mac_create_widget(QWidget *widget, QWidgetPrivate *widgetPrivate, OSViewRef parent);
+NSView *getEmbeddableView(QWindow *qtWindow)
+{
+    // Make sure the platform window is created
+    qtWindow->create();
 
+    // Inform the window that it's a subwindow of a non-Qt window. This must be
+    // done after create() because we need to have a QPlatformWindow instance.
+    // The corresponding NSWindow will not be shown and can be deleted later.
+    typedef void (*SetEmbeddedInForeignViewFunction)(QPlatformWindow *window, bool embedded);
+    reinterpret_cast<SetEmbeddedInForeignViewFunction>(resolvePlatformFunction("setEmbeddedInForeignView"))(qtWindow->handle(), true);
+
+    // Get the Qt content NSView for the QWindow from the Qt platform plugin
+    QPlatformNativeInterface *platformNativeInterface = QGuiApplication::platformNativeInterface();
+    NSView *qtView = (NSView *)platformNativeInterface->nativeResourceForWindow("nsview", qtWindow);
+    return qtView; // qtView is ready for use.
+}
 
 /*!
     Create a QMacNativeWidget with \a parentView as its "superview" (i.e.,
-    parent). The \a parentView is either an HIViewRef if Qt is using Carbon or
-    a NSView pointer if Qt is using Cocoa.
+    parent). The \a parentView is  a NSView pointer.
 */
-QMacNativeWidget::QMacNativeWidget(void *parentView)
-    : QWidget(*new QMacNativeWidgetPrivate, 0, Qt::Window)
+QMacNativeWidget::QMacNativeWidget(NSView *parentView)
+    : QWidget(0)
 {
-    Q_D(QMacNativeWidget);
-    OSViewRef myView = qt_mac_create_widget(this, d, OSViewRef(parentView));
+    Q_UNUSED(parentView);
 
-    d->topData()->embedded = true;
-    create(WId(myView), false, false);
+    //d_func()->topData()->embedded = true;
     setPalette(QPalette(Qt::transparent));
     setAttribute(Qt::WA_SetPalette, false);
     setAttribute(Qt::WA_LayoutUsesWidgetRect);
@@ -117,8 +141,19 @@ QMacNativeWidget::~QMacNativeWidget()
 */
 QSize QMacNativeWidget::sizeHint() const
 {
-    return QSize(200, 200);
+    // QMacNativeWidget really does not have any other choice
+    // than to fill its designated area.
+    if (windowHandle())
+        return windowHandle()->size();
+    return QWidget::sizeHint();
 }
+
+NSView *QMacNativeWidget::nativeView() const
+{
+    winId();
+    return getEmbeddableView(windowHandle());
+}
+
 /*!
     \reimp
 */
