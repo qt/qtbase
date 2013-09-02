@@ -80,7 +80,7 @@ static int resourceType(const QByteArray &key)
         QByteArrayLiteral("glxcontext"), QByteArrayLiteral("apptime"),
         QByteArrayLiteral("appusertime"), QByteArrayLiteral("hintstyle"),
         QByteArrayLiteral("startupid"), QByteArrayLiteral("traywindow"),
-        QByteArrayLiteral("gettimestamp")
+        QByteArrayLiteral("gettimestamp"), QByteArrayLiteral("x11screen")
     };
     const QByteArray *end = names + sizeof(names) / sizeof(names[0]);
     const QByteArray *result = std::find(names, end, key);
@@ -138,6 +138,9 @@ void *QXcbNativeInterface::nativeResourceForIntegration(const QByteArray &resour
     switch (resourceType(resourceString)) {
     case StartupId:
         result = startupId();
+        break;
+    case X11Screen:
+        result = x11Screen();
         break;
     default:
         break;
@@ -249,6 +252,15 @@ void *QXcbNativeInterface::startupId()
     QXcbConnection *defaultConnection = integration->defaultConnection();
     if (defaultConnection)
         return reinterpret_cast<void *>(const_cast<char *>(defaultConnection->startupId().constData()));
+    return 0;
+}
+
+void *QXcbNativeInterface::x11Screen()
+{
+    QXcbIntegration *integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QXcbConnection *defaultConnection = integration->defaultConnection();
+    if (defaultConnection)
+        return reinterpret_cast<void *>(defaultConnection->primaryScreen());
     return 0;
 }
 
