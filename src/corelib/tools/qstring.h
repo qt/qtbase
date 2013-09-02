@@ -64,8 +64,12 @@ namespace std
 #error qstring.h must be included before any header file that defines truncate
 #endif
 
-QT_BEGIN_NAMESPACE
+#ifdef Q_OS_MAC
+Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
+Q_FORWARD_DECLARE_CF_TYPE(CFString);
+#endif
 
+QT_BEGIN_NAMESPACE
 
 class QCharRef;
 class QRegExp;
@@ -674,6 +678,12 @@ public:
     static inline QString fromStdWString(const std::wstring &s);
     inline std::wstring toStdWString() const;
 
+#if defined(Q_OS_MAC) || defined(Q_QDOC)
+    static QString fromCFString(CFStringRef string);
+    CFStringRef toCFString() const Q_DECL_CF_RETURNS_RETAINED;
+    static QString fromNSString(const NSString *string);
+    NSString *toNSString() const Q_DECL_NS_RETURNS_AUTORELEASED;
+#endif
     // compatibility
     struct Null { };
     static const Null null;

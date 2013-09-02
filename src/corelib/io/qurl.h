@@ -50,6 +50,11 @@
 #include <QtCore/qpair.h>
 #include <QtCore/qglobal.h>
 
+#ifdef Q_OS_MAC
+Q_FORWARD_DECLARE_OBJC_CLASS(NSURL);
+Q_FORWARD_DECLARE_CF_TYPE(CFURL);
+#endif
+
 QT_BEGIN_NAMESPACE
 
 
@@ -257,6 +262,13 @@ public:
     static QByteArray toPercentEncoding(const QString &,
                                         const QByteArray &exclude = QByteArray(),
                                         const QByteArray &include = QByteArray());
+#if defined(Q_OS_MAC) || defined(Q_QDOC)
+    static QUrl fromCFURL(CFURLRef url);
+    CFURLRef toCFURL() const Q_DECL_CF_RETURNS_RETAINED;
+    static QUrl fromNSURL(const NSURL *url);
+    NSURL *toNSURL() const Q_DECL_NS_RETURNS_AUTORELEASED;
+#endif
+
 #if QT_DEPRECATED_SINCE(5,0)
     QT_DEPRECATED static QString fromPunycode(const QByteArray &punycode)
     { return fromAce(punycode); }

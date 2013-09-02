@@ -3319,6 +3319,33 @@ QByteArray QUrl::toPercentEncoding(const QString &input, const QByteArray &exclu
     return input.toUtf8().toPercentEncoding(exclude, include);
 }
 
+/*! \fn QUrl QUrl::fromCFURL(CFURLRef url)
+    \since 5.2
+
+    Constructs a QUrl containing a copy of the CFURL \a url.
+*/
+
+/*! \fn CFURLRef QUrl::toCFURL() const
+    \since 5.2
+
+    Creates a CFURL from a QUrl. The caller owns the CFURL and is
+    responsible for releasing it.
+*/
+
+/*!
+    \fn QUrl QUrl::fromNSURL(const NSURL *url)
+    \since 5.2
+
+    Constructs a QUrl containing a copy of the NSURL \a url.
+*/
+
+/*!
+    \fn NSURL* QUrl::toNSURL() const
+    \since 5.2
+
+    Creates a NSURL from a QUrl. The NSURL is autoreleased.
+*/
+
 /*!
     \internal
     \since 5.0

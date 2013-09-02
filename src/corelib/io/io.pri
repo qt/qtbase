@@ -130,6 +130,7 @@ win32 {
 
         !nacl:mac: {
             SOURCES += io/qsettings_mac.cpp
+            OBJECTIVE_SOURCES += io/qurl_mac.mm
         }
         mac {
             macx {

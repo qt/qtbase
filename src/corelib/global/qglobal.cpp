@@ -3361,4 +3361,36 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     \sa Q_DECL_OVERRIDE
 */
 
+/*!
+    \macro Q_FORWARD_DECLARE_OBJC_CLASS(classname)
+    \since 5.2
+    \relates <QtGlobal>
+
+    Forward-declares an Objective-C \a classname in a manner such that it can be
+    compiled as either Objective-C or C++.
+
+    This is primarily intended for use in header files that may be included by
+    both Objective-C and C++ source files.
+*/
+
+/*!
+    \macro Q_FORWARD_DECLARE_CF_TYPE(type)
+    \since 5.2
+    \relates <QtGlobal>
+
+    Forward-declares a Core Foundation \a type. This includes the actual
+    type and the ref type. For example, Q_FORWARD_DECLARE_CF_TYPE(CFString)
+    declares __CFString and CFStringRef.
+*/
+
+/*!
+    \macro Q_FORWARD_DECLARE_MUTABLE_CF_TYPE(type)
+    \since 5.2
+    \relates <QtGlobal>
+
+    Forward-declares a mutable Core Foundation \a type. This includes the actual
+    type and the ref type. For example, Q_FORWARD_DECLARE_CF_TYPE(CFString)
+    declares __CFMutableString and CFMutableStringRef.
+*/
+
 QT_END_NAMESPACE

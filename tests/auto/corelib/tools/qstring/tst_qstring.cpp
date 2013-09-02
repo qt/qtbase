@@ -170,6 +170,7 @@ private slots:
     void constructorQByteArray_data();
     void constructorQByteArray();
     void STL();
+    void macTypes();
     void isEmpty();
     void isNull();
     void acc_01();
@@ -937,6 +938,16 @@ void tst_QString::STL()
 
     QCOMPARE(s, QString::fromLatin1("hello"));
     QCOMPARE(stlStr, s.toStdWString());
+}
+
+void tst_QString::macTypes()
+{
+#ifndef Q_OS_MAC
+    QSKIP("This is a Mac-only test");
+#else
+    extern void tst_QString_macTypes(); // in qstring_mac.mm
+    tst_QString_macTypes();
+#endif
 }
 
 void tst_QString::truncate()

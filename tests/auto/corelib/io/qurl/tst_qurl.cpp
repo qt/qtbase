@@ -87,6 +87,7 @@ private slots:
     void toLocalFile();
     void fromLocalFile_data();
     void fromLocalFile();
+    void macTypes();
     void relative();
     void compat_legacy();
     void compat_constructor_01_data();
@@ -1235,6 +1236,16 @@ void tst_QUrl::fromLocalFile()
 
     QCOMPARE(url.toString(QUrl::DecodeReserved), theUrl);
     QCOMPARE(url.path(), thePath);
+}
+
+void tst_QUrl::macTypes()
+{
+#ifndef Q_OS_MAC
+    QSKIP("This is a Mac-only test");
+#else
+    extern void tst_QUrl_mactypes(); // in tst_qurl_mac.mm
+    void tst_QUrl_mactypes();
+#endif
 }
 
 void tst_QUrl::compat_legacy()
