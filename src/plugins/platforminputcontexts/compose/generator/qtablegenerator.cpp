@@ -47,6 +47,8 @@
 #include <QtCore/QStringList>
 #include <QtCore/QString>
 
+#include <algorithm>
+
 #include <xkbcommon/xkbcommon.h>
 
 #ifdef XKBCOMMON_0_2_0
@@ -445,6 +447,6 @@ void TableGenerator::orderComposeTable()
     // Stable-sorting to ensure that the item that appeared before the other in the
     // original container will still appear first after the sort. This property is
     // needed to handle the cases when user re-defines already defined key sequence
-    qStableSort(m_composeTable.begin(), m_composeTable.end(), Compare());
+    std::stable_sort(m_composeTable.begin(), m_composeTable.end(), Compare());
 }
 

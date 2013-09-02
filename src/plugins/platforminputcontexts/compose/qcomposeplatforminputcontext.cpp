@@ -45,6 +45,8 @@
 #include <QtGui/QKeyEvent>
 #include <QtCore/QDebug>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 //#define DEBUG_COMPOSING
@@ -170,7 +172,7 @@ static bool isDuplicate(const QComposeTableElement &lhs, const QComposeTableElem
 bool QComposeInputContext::checkComposeTable()
 {
     QVector<QComposeTableElement>::const_iterator it =
-            qLowerBound(m_composeTable.constBegin(), m_composeTable.constEnd(), m_composeBuffer, Compare());
+            std::lower_bound(m_composeTable.constBegin(), m_composeTable.constEnd(), m_composeBuffer, Compare());
 
     // prevent dereferencing an 'end' iterator, which would result in a crash
     if (it == m_composeTable.constEnd())
