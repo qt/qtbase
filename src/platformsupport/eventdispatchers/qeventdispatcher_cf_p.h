@@ -84,6 +84,12 @@
 #include <QtPlatformSupport/private/qcfsocketnotifier_p.h>
 #include <CoreFoundation/CoreFoundation.h>
 
+#ifdef __OBJC__
+@class RunLoopModeTracker;
+#else
+typedef struct objc_object RunLoopModeTracker;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QEventDispatcherCoreFoundation;
@@ -205,6 +211,8 @@ public:
 private:
     RunLoopSource<> m_postedEventsRunLoopSource;
     RunLoopObserver<> m_runLoopActivityObserver;
+
+    RunLoopModeTracker *m_runLoopModeTracker;
 
     QTimerInfoList m_timerInfoList;
     CFRunLoopTimerRef m_runLoopTimer;

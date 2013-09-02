@@ -55,6 +55,71 @@
 
 #include <UIKit/UIApplication.h>
 
+@interface RunLoopModeTracker : NSObject {
+    QStack<CFStringRef> m_runLoopModes;
+}
+@end
+
+@implementation RunLoopModeTracker
+
+- (id) init
+{
+    if (self = [super init]) {
+        m_runLoopModes.push(kCFRunLoopDefaultMode);
+
+        [[NSNotificationCenter defaultCenter]
+            addObserver:self
+            selector:@selector(receivedNotification:)
+            name:nil
+            object:[UIApplication sharedApplication]];
+    }
+
+    return self;
+}
+
+- (void) dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+
+    [super dealloc];
+}
+
+static CFStringRef runLoopMode(NSDictionary *dictionary)
+{
+    for (NSString *key in dictionary) {
+        if (CFStringHasSuffix((CFStringRef)key, CFSTR("RunLoopMode")))
+            return (CFStringRef)[dictionary objectForKey: key];
+    }
+
+    return nil;
+}
+
+- (void) receivedNotification:(NSNotification *) notification
+{
+     if (CFStringHasSuffix((CFStringRef)notification.name, CFSTR("RunLoopModePushNotification"))) {
+        if (CFStringRef mode = runLoopMode(notification.userInfo))
+            m_runLoopModes.push(mode);
+        else
+            qWarning("Encountered run loop push notification without run loop mode!");
+
+     } else if (CFStringHasSuffix((CFStringRef)notification.name, CFSTR("RunLoopModePopNotification"))) {
+        CFStringRef mode = runLoopMode(notification.userInfo);
+        if (CFStringCompare(mode, [self currentMode], 0) == kCFCompareEqualTo)
+            m_runLoopModes.pop();
+        else
+            qWarning("Tried to pop run loop mode '%s' that was never pushed!", qPrintable(QCFString::toQString(mode)));
+
+        Q_ASSERT(m_runLoopModes.size() >= 1);
+     }
+}
+
+- (CFStringRef) currentMode
+{
+    return m_runLoopModes.top();
+}
+
+@end
+
 QT_BEGIN_NAMESPACE
 QT_USE_NAMESPACE
 
@@ -120,6 +185,7 @@ QEventDispatcherCoreFoundation::QEventDispatcherCoreFoundation(QObject *parent)
         kCFRunLoopBeforeWaiting | kCFRunLoopAfterWaiting
 #endif
     )
+    , m_runLoopModeTracker([[RunLoopModeTracker alloc] init])
     , m_runLoopTimer(0)
     , m_blockedRunLoopTimer(0)
     , m_overdueTimerScheduled(false)
@@ -195,11 +261,11 @@ bool QEventDispatcherCoreFoundation::processEvents(QEventLoop::ProcessEventsFlag
     ProcessEventsState previousState = m_processEvents;
     m_processEvents = ProcessEventsState(flags);
 
-    CFStringRef mode = kCFRunLoopDefaultMode;
-
     bool returnAfterSingleSourceHandled = !(m_processEvents.flags & QEventLoop::EventLoopExec);
 
     Q_FOREVER {
+        CFStringRef mode = [m_runLoopModeTracker currentMode];
+
         CFTimeInterval duration = (m_processEvents.flags & QEventLoop::WaitForMoreEvents) ?
             kCFTimeIntervalDistantFuture : kCFTimeIntervalMinimum;
 
@@ -552,5 +618,6 @@ void QEventDispatcherCoreFoundation::invalidateTimer()
 }
 
 #include "qeventdispatcher_cf.moc"
+#include "moc_qeventdispatcher_cf_p.cpp"
 
 QT_END_NAMESPACE
