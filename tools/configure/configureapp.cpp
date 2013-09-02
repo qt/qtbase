@@ -69,6 +69,7 @@ QT_BEGIN_NAMESPACE
 enum Platforms {
     WINDOWS,
     WINDOWS_CE,
+    WINDOWS_RT,
     QNX,
     BLACKBERRY,
     ANDROID
@@ -1587,7 +1588,27 @@ void Configure::applySpecSpecifics()
         nobuildParts << "tools";
     }
 
-    if (dictionary.value("XQMAKESPEC").startsWith("wince")) {
+    if (dictionary.value("XQMAKESPEC").startsWith("winphone") || dictionary.value("XQMAKESPEC").startsWith("winrt")) {
+        dictionary[ "STYLE_WINDOWSXP" ]     = "no";
+        dictionary[ "STYLE_WINDOWSVISTA" ]  = "no";
+        dictionary[ "GIF" ]                 = "qt";
+        dictionary[ "JPEG" ]                = "qt";
+        dictionary[ "LIBJPEG" ]             = "qt";
+        dictionary[ "LIBPNG" ]              = "qt";
+        dictionary[ "FREETYPE" ]            = "yes";
+        dictionary[ "ACCESSIBILITY" ]       = "no";
+        dictionary[ "OPENGL" ]              = "no";
+        dictionary[ "OPENGL_ES_2" ]         = "no";
+        dictionary[ "OPENVG" ]              = "no";
+        dictionary[ "OPENSSL" ]             = "auto";
+        dictionary[ "DBUS" ]                = "no";
+        dictionary[ "ZLIB" ]                = "qt";
+        dictionary[ "PCRE" ]                = "qt";
+        dictionary[ "ICU" ]                 = "qt";
+        dictionary[ "CE_CRT" ]              = "yes";
+        dictionary[ "LARGE_FILE" ]          = "no";
+        dictionary[ "ANGLE" ]               = "no";
+    } else if (dictionary.value("XQMAKESPEC").startsWith("wince")) {
         dictionary[ "STYLE_WINDOWSXP" ]     = "no";
         dictionary[ "STYLE_WINDOWSVISTA" ]  = "no";
         dictionary[ "STYLE_FUSION" ]        = "no";
@@ -2180,7 +2201,7 @@ bool Configure::checkAvailability(const QString &part)
     } else if (part == "QT_EVENTFD") {
         available = tryCompileProject("unix/eventfd");
     } else if (part == "CUPS") {
-        available = (platform() != WINDOWS) && (platform() != WINDOWS_CE) && tryCompileProject("unix/cups");
+        available = (platform() != WINDOWS) && (platform() != WINDOWS_CE) && (platform() != WINDOWS_RT) && tryCompileProject("unix/cups");
     } else if (part == "STACK_PROTECTOR_STRONG") {
         available = (platform() == QNX || platform() == BLACKBERRY) && compilerSupportsFlag("qcc -fstack-protector-strong");
     } else if (part == "SLOG2") {
@@ -3813,7 +3834,7 @@ void Configure::generateQConfigCpp()
                   << "#endif" << endl
                   << "};" << endl;
 
-        if ((platform() != WINDOWS) && (platform() != WINDOWS_CE))
+        if ((platform() != WINDOWS) && (platform() != WINDOWS_CE) && (platform() != WINDOWS_RT))
             tmpStream << "static const char qt_configure_settings_path_str [256 + 12] = \"qt_stngpath=" << formatPath(dictionary["QT_INSTALL_SETTINGS"]) << "\";" << endl;
 
         tmpStream << endl
@@ -3824,7 +3845,7 @@ void Configure::generateQConfigCpp()
                   << "#define QT_CONFIGURE_LICENSEE qt_configure_licensee_str + 12;" << endl
                   << "#define QT_CONFIGURE_LICENSED_PRODUCTS qt_configure_licensed_products_str + 12;" << endl;
 
-        if ((platform() != WINDOWS) && (platform() != WINDOWS_CE))
+        if ((platform() != WINDOWS) && (platform() != WINDOWS_CE) && (platform() != WINDOWS_RT))
             tmpStream << "#define QT_CONFIGURE_SETTINGS_PATH qt_configure_settings_path_str + 12;" << endl;
 
         if (!tmpStream.flush())
@@ -3997,7 +4018,7 @@ void Configure::generateMakefiles()
 {
     if (dictionary[ "PROCESS" ] != "no") {
         QString spec = dictionary.contains("XQMAKESPEC") ? dictionary[ "XQMAKESPEC" ] : dictionary[ "QMAKESPEC" ];
-        if (spec != "win32-msvc.net" && !spec.startsWith("win32-msvc2") && !spec.startsWith(QLatin1String("wince")))
+        if (spec != "win32-msvc.net" && !spec.startsWith("win32-msvc2") && !spec.startsWith(QLatin1String("wince")) && !spec.startsWith("winphone") && !spec.startsWith("winrt") )
             dictionary[ "VCPROJFILES" ] = "no";
 
         QString pwd = QDir::currentPath();
@@ -4278,6 +4299,8 @@ QString Configure::platformName() const
         return QStringLiteral("Qt for Windows");
     case WINDOWS_CE:
         return QStringLiteral("Qt for Windows CE");
+    case WINDOWS_RT:
+        return QStringLiteral("Qt for Windows Runtime");
     case QNX:
         return QStringLiteral("Qt for QNX");
     case BLACKBERRY:
@@ -4294,6 +4317,8 @@ QString Configure::qpaPlatformName() const
     case WINDOWS:
     case WINDOWS_CE:
         return QStringLiteral("windows");
+    case WINDOWS_RT:
+        return QStringLiteral("winrt");
     case QNX:
         return QStringLiteral("qnx");
     case BLACKBERRY:
@@ -4307,6 +4332,9 @@ int Configure::platform() const
 {
     const QString qMakeSpec = dictionary.value("QMAKESPEC");
     const QString xQMakeSpec = dictionary.value("XQMAKESPEC");
+
+    if ((xQMakeSpec.startsWith("winphone") || xQMakeSpec.startsWith("winrt")))
+        return WINDOWS_RT;
 
     if ((qMakeSpec.startsWith("wince") || xQMakeSpec.startsWith("wince")))
         return WINDOWS_CE;
