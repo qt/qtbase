@@ -64,6 +64,8 @@
 #  include "qcoreapplication.h"
 #endif
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 /*
@@ -220,7 +222,7 @@ static void loadIndexFiles(Config& config)
                             foundIndices.append(tempFileInfo);
                     }
                 }
-                qSort(foundIndices.begin(), foundIndices.end(), creationTimeBefore);
+                std::sort(foundIndices.begin(), foundIndices.end(), creationTimeBefore);
                 if (foundIndices.size() > 1) {
                     /*
                         QDoc should always use the last entry in the multimap when there are

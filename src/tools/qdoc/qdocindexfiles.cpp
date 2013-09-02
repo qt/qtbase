@@ -50,6 +50,8 @@
 #include "generator.h"
 #include <qdebug.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -1202,7 +1204,7 @@ void QDocIndexFiles::generateIndexSections(QXmlStreamWriter& writer,
             const InnerNode* inner = static_cast<const InnerNode*>(node);
 
             NodeList cnodes = inner->childNodes();
-            qSort(cnodes.begin(), cnodes.end(), compareNodes);
+            std::sort(cnodes.begin(), cnodes.end(), compareNodes);
 
             foreach (Node* child, cnodes) {
                 /*
