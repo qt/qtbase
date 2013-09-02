@@ -37,6 +37,9 @@ QtWidgets
 
 - QSizePolicy got a retainSizeWhenHidden attribute.
 
+- [QTBUG-31602] QSpinBox size calculation will now be fixed when stylesheets are
+  used.
+
 QtCore
 ------
 - [QTBUG-30250] QTime, QDateTime:

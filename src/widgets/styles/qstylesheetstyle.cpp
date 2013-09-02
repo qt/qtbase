@@ -4810,10 +4810,22 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
 
     switch (ct) {
     case CT_SpinBox: // ### hopelessly broken QAbstractSpinBox (part 1)
-        if (rule.hasBox() || !rule.hasNativeBorder())
-            return csz;
-        return rule.baseStyleCanDraw() ? baseStyle()->sizeFromContents(ct, opt, sz, w)
-                                       : QWindowsStyle::sizeFromContents(ct, opt, sz, w);
+        if (const QStyleOptionSpinBox *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
+            // Add some space for the up/down buttons
+            QRenderRule subRule = renderRule(w, opt, PseudoElement_SpinBoxUpButton);
+            if (subRule.hasDrawable()) {
+                QRect r = positionRect(w, rule, subRule, PseudoElement_SpinBoxUpButton,
+                                       opt->rect, opt->direction);
+                sz += QSize(r.width(), 0);
+            } else {
+                QSize defaultUpSize = defaultSize(w, subRule.size(), spinbox->rect, PseudoElement_SpinBoxUpButton);
+                sz += QSize(defaultUpSize.width(), 0);
+            }
+            if (rule.hasBox() || !rule.hasNativeBorder())
+                sz = rule.boxSize(sz);
+            return sz;
+        }
+        break;
     case CT_ToolButton:
         if (rule.hasBox() || !rule.hasNativeBorder() || !rule.baseStyleCanDraw())
             sz += QSize(3, 3); // ### broken QToolButton
@@ -4858,14 +4870,8 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
     case CT_GroupBox:
     case CT_LineEdit:
 #ifndef QT_NO_SPINBOX
-        // ### hopelessly broken QAbstractSpinBox (part 2)
-        if (QAbstractSpinBox *spinBox = qobject_cast<QAbstractSpinBox *>(w ? w->parentWidget() : 0)) {
-            QRenderRule rule = renderRule(spinBox, opt);
-            if (rule.hasBox() || !rule.hasNativeBorder())
-                return csz;
-            return rule.baseStyleCanDraw() ? baseStyle()->sizeFromContents(ct, opt, sz, w)
-                                           : QWindowsStyle::sizeFromContents(ct, opt, sz, w);
-        }
+        if (qobject_cast<QAbstractSpinBox *>(w ? w->parentWidget() : 0))
+            return csz; // we only care about the size hint of the line edit
 #endif
         if (rule.hasBox() || !rule.hasNativeBorder()) {
             return rule.boxSize(sz);
