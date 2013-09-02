@@ -53,6 +53,8 @@
 #include <QtWidgets/QWidget>
 #endif
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 //
@@ -320,7 +322,7 @@ QChar qt_mac_qtKey2CocoaKey(Qt::Key key)
         mustInit = false;
         for (int i=0; i<NumEntries; ++i)
             rev_entries[i] = entries[i];
-        qSort(rev_entries.begin(), rev_entries.end(), qtKey2CocoaKeySortLessThan);
+        std::sort(rev_entries.begin(), rev_entries.end(), qtKey2CocoaKeySortLessThan);
     }
     const QVector<KeyPair>::iterator i
             = qBinaryFind(rev_entries.begin(), rev_entries.end(), key);
