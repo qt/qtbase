@@ -1669,7 +1669,7 @@ void QFileSystemModelPrivate::_q_directoryChanged(const QString &directory, cons
         return;
     QStringList toRemove;
     QStringList newFiles = files;
-    qSort(newFiles.begin(), newFiles.end());
+    std::sort(newFiles.begin(), newFiles.end());
     QHash<QString, QFileSystemNode*>::const_iterator i = parentNode->children.constBegin();
     while (i != parentNode->children.constEnd()) {
         QStringList::iterator iterator;
@@ -1874,7 +1874,7 @@ void QFileSystemModelPrivate::_q_fileSystemChanged(const QString &path, const QL
     }
 
     // bundle up all of the changed signals into as few as possible.
-    qSort(rowsToUpdate.begin(), rowsToUpdate.end());
+    std::sort(rowsToUpdate.begin(), rowsToUpdate.end());
     QString min;
     QString max;
     for (int i = 0; i < rowsToUpdate.count(); ++i) {

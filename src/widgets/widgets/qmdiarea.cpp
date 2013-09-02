@@ -178,6 +178,8 @@
 #include <qmath.h>
 #include <private/qlayoutengine_p.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 using namespace QMdi;
@@ -465,9 +467,9 @@ void MinOverlapPlacer::getCandidatePlacements(const QSize &size, const QList<QRe
     }
 
     QList<int> xlist = xset.values();
-    qSort(xlist.begin(), xlist.end());
+    std::sort(xlist.begin(), xlist.end());
     QList<int> ylist = yset.values();
-    qSort(ylist.begin(), ylist.end());
+    std::sort(ylist.begin(), ylist.end());
 
     foreach (int y, ylist)
         foreach (int x, xlist)

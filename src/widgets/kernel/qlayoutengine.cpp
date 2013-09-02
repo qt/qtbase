@@ -46,9 +46,9 @@
 #include "qwidget.h"
 
 #include <qlist.h>
-#include <qalgorithms.h>
-
 #include <qdebug.h>
+
+#include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
@@ -134,7 +134,7 @@ void qGeomCalc(QVector<QLayoutStruct> &chain, int start, int count,
         for (i = start; i < start + count; i++)
             list << chain.at(i).minimumSize;
 
-        qSort(list);
+        std::sort(list.begin(), list.end());
 
         int space_left = space - sumSpacing;
 
