@@ -161,10 +161,6 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSColorPanelDelegate);
 
 - (void)closePanel
 {
-    if (mDialogIsExecuting) {
-        mDialogIsExecuting = false;
-        [NSApp stopModal];
-    }
     [mColorPanel close];
 }
 
@@ -490,22 +486,6 @@ void QCocoaColorDialogHelper::setCurrentColor(const QColor &color)
 QColor QCocoaColorDialogHelper::currentColor() const
 {
     return sharedColorPanel()->currentColor();
-}
-
-bool QCocoaColorDialogHelper::event(QEvent *e)
-{
-    if (e->type() == QEvent::KeyPress) {
-        QKeyEvent *ke = static_cast<QKeyEvent *>(e);
-        if (ke->key() == Qt::Key_Enter || ke->key() == Qt::Key_Return) {
-            emit accept();
-            return true;
-        } else if (ke->key() == Qt::Key_Escape) {
-            emit reject();
-            return true;
-        }
-    }
-
-    return false;
 }
 
 QT_END_NAMESPACE

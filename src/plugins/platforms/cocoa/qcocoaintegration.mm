@@ -232,7 +232,7 @@ QCocoaIntegration::QCocoaIntegration()
 
     qApp->setAttribute(Qt::AA_DontUseNativeMenuBar, false);
 
-    NSApplication *cocoaApplication = NSApp;
+    NSApplication *cocoaApplication = [QNSApplication sharedApplication];
     qt_redirectNSApplicationSendEvent();
 
     if (qEnvironmentVariableIsEmpty("QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM")) {
@@ -280,8 +280,9 @@ QCocoaIntegration::~QCocoaIntegration()
     if (!QCoreApplication::testAttribute(Qt::AA_MacPluginApplication)) {
         // remove the apple event handlers installed by QCocoaApplicationDelegate
         QCocoaApplicationDelegate *delegate = [QCocoaApplicationDelegate sharedDelegate];
+        [delegate removeAppleEventHandlers];
         // reset the application delegate
-        [[NSApplication sharedApplication] setDelegate:[delegate reflectionDelegate]];
+        [[NSApplication sharedApplication] setDelegate: 0];
     }
 
     // Delete the clipboard integration and destroy mime type converters.

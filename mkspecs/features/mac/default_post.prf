@@ -1,20 +1,6 @@
 load(default_post)
 !no_objective_c:CONFIG += objective_c
 
-
-equals(TEMPLATE, app):qt: {
-    deps = $$replace(QT, -private$, )
-    deps = $$resolve_depends(deps, "QT.", ".depends" ".private_depends" ".run_depends")
-    contains(deps, gui): {
-        DEFINES += QT_NEEDS_QMAIN
-        CONFIG += link_prl
-        # When CI'ing Qt we still need to link against libqtcocoamain.a, even before deployment.
-        # Hence the /get variable, suffix which looks for the libraries location effective path.
-        QMAKE_LIBDIR += $$[QT_INSTALL_LIBS/get]
-        QMAKE_LIBS += -lqtcocoamain
-    }
-}
-
 qt:!isEmpty(QT_CONFIG) {
     # Pick a suitable default architecture for qmake-based applications.
     # If the Qt package contains one of x86 and x86_64, pick that one. If it

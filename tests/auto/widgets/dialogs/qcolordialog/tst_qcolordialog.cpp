@@ -144,10 +144,13 @@ void tst_QColorDialog::postKeyReturn() {
 
 void tst_QColorDialog::testGetRgba()
 {
-    QColorDialog cd;
-    cd.show();
-    QTimer::singleShot(0, this, SLOT(postKeyReturn()));
-    QTRY_COMPARE(cd.result(), int(QDialog::Accepted));
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "Sending QTest::keyClick to OSX color dialog helper fails, see QTBUG-24320", Continue);
+#endif
+    bool ok = false;
+    QTimer::singleShot(500, this, SLOT(postKeyReturn()));
+    QColorDialog::getRgba(0xffffffff, &ok);
+    QVERIFY(ok);
 }
 
 void tst_QColorDialog::defaultOkButton()

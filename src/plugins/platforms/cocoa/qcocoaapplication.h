@@ -102,9 +102,13 @@
 
 - (void)qt_sendPostedMessage:(NSEvent *)event;
 - (BOOL)qt_filterEvent:(NSEvent *)event;
-- (BOOL)qt_filterOrSendEvent:(NSEvent *)event;
 @end
 
+@interface QT_MANGLE_NAMESPACE(QNSApplication) : NSApplication {
+}
+@end
+
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSApplication);
 
 QT_BEGIN_NAMESPACE
 

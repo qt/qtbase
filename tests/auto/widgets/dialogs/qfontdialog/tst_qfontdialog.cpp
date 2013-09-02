@@ -64,7 +64,7 @@ public:
 
 public slots:
     void postKeyReturn();
-    void testDefaultOkButton();
+    void testGetFont();
     void testSetFont();
 
 public slots:
@@ -116,12 +116,15 @@ void tst_QFontDialog::postKeyReturn() {
     }
 }
 
-void tst_QFontDialog::testDefaultOkButton()
+void tst_QFontDialog::testGetFont()
 {
-    QFontDialog fd;
-    fd.show();
-    QTimer::singleShot(0, this, SLOT(postKeyReturn()));
-    QTRY_COMPARE(fd.result(), int(QDialog::Accepted));
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "Sending QTest::keyClick to OSX font dialog helper fails, see QTBUG-24321", Continue);
+#endif
+    bool ok = false;
+    QTimer::singleShot(2000, this, SLOT(postKeyReturn()));
+    QFontDialog::getFont(&ok);
+    QVERIFY(ok);
 }
 
 void tst_QFontDialog::runSlotWithFailsafeTimer(const char *member)
@@ -141,7 +144,7 @@ void tst_QFontDialog::runSlotWithFailsafeTimer(const char *member)
 
 void tst_QFontDialog::defaultOkButton()
 {
-    runSlotWithFailsafeTimer(SLOT(testDefaultOkButton()));
+    runSlotWithFailsafeTimer(SLOT(testGetFont()));
 }
 
 void tst_QFontDialog::testSetFont()
