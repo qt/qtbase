@@ -58,20 +58,22 @@
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformservices.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 ResourceHelper::ResourceHelper()
 {
-    qFill(palettes, palettes + QPlatformTheme::NPalettes, static_cast<QPalette *>(0));
-    qFill(fonts, fonts + QPlatformTheme::NFonts, static_cast<QFont *>(0));
+    std::fill(palettes, palettes + QPlatformTheme::NPalettes, static_cast<QPalette *>(0));
+    std::fill(fonts, fonts + QPlatformTheme::NFonts, static_cast<QFont *>(0));
 }
 
 void ResourceHelper::clear()
 {
     qDeleteAll(palettes, palettes + QPlatformTheme::NPalettes);
     qDeleteAll(fonts, fonts + QPlatformTheme::NFonts);
-    qFill(palettes, palettes + QPlatformTheme::NPalettes, static_cast<QPalette *>(0));
-    qFill(fonts, fonts + QPlatformTheme::NFonts, static_cast<QFont *>(0));
+    std::fill(palettes, palettes + QPlatformTheme::NPalettes, static_cast<QPalette *>(0));
+    std::fill(fonts, fonts + QPlatformTheme::NFonts, static_cast<QFont *>(0));
 }
 
 /*!
