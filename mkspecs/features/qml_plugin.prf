@@ -25,6 +25,11 @@ if(win32|mac):!macx-xcode {
 }
 isEmpty(TARGETPATH): TARGETPATH = $$eval(QT.$${CXX_MODULE}.name)
 
+# Insert the plugins URI into its meta data to enable usage
+# of static plugins in QtDeclarative:
+URI = $$replace(TARGETPATH, "/", ".")
+QMAKE_MOC_OPTIONS += -Muri=$$URI
+
 QMLTYPEFILE = $$_PRO_FILE_PWD_/plugins.qmltypes
 exists($$QMLTYPEFILE): QML_FILES += $$QMLTYPEFILE
 
