@@ -39,10 +39,12 @@
 **
 ****************************************************************************/
 
-#if _WIN32_WINNT < 0x0500
-#undef _WIN32_WINNT
-#define _WIN32_WINNT 0x0500
-#endif
+#if !defined(WINAPI_FAMILY)
+#  if _WIN32_WINNT < 0x0500
+#    undef _WIN32_WINNT
+#    define _WIN32_WINNT 0x0500
+#  endif // _WIN32_WINNT < 0x500
+#endif // !WINAPI_FAMILY
 
 #include "qfilesystemiterator_p.h"
 #include "qfilesystemengine_p.h"
@@ -73,6 +75,10 @@ QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Fi
     if (!nativePath.endsWith(QLatin1Char('\\')))
         nativePath.append(QLatin1Char('\\'));
     nativePath.append(QLatin1Char('*'));
+#ifdef Q_OS_WINRT
+    if (nativePath.startsWith(QLatin1Char('\\')))
+        nativePath.remove(0, 1);
+#endif
     if (!dirPath.endsWith(QLatin1Char('/')))
         dirPath.append(QLatin1Char('/'));
     if ((filters & (QDir::Dirs|QDir::Drives)) && (!(filters & (QDir::Files))))
