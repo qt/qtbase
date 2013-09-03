@@ -49,6 +49,8 @@
 #include <QtGui/QGuiApplication>
 #include <qpa/qplatformnativeinterface.h>
 
+#include <algorithm>
+
 #include <wingdi.h>
 #include <GL/gl.h>
 
@@ -377,7 +379,7 @@ static int choosePixelFormat(HDC hdc,
         return 0;
 
     int iAttributes[attribSize];
-    qFill(iAttributes, iAttributes + attribSize, int(0));
+    std::fill(iAttributes, iAttributes + attribSize, int(0));
     int i = 0;
     iAttributes[i++] = WGL_ACCELERATION_ARB;
     iAttributes[i++] = testFlag(additional.formatFlags, QWindowsGLDirectRendering) ?
@@ -505,8 +507,8 @@ static QSurfaceFormat
         return result;
     int iAttributes[attribSize];
     int iValues[attribSize];
-    qFill(iAttributes, iAttributes + attribSize, int(0));
-    qFill(iValues, iValues + attribSize, int(0));
+    std::fill(iAttributes, iAttributes + attribSize, int(0));
+    std::fill(iValues, iValues + attribSize, int(0));
 
     int i = 0;
     const bool hasSampleBuffers = testFlag(staticContext.extensions, QOpenGLStaticContext::SampleBuffers);
@@ -567,7 +569,7 @@ static HGLRC createContext(const QOpenGLStaticContext &staticContext,
         return 0;
     int attributes[attribSize];
     int attribIndex = 0;
-    qFill(attributes, attributes + attribSize, int(0));
+    std::fill(attributes, attributes + attribSize, int(0));
 
     // We limit the requested version by the version of the static context as
     // wglCreateContextAttribsARB fails and returns NULL if the requested context

@@ -63,6 +63,8 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <private/qsystemlibrary_p.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 static inline QTextStream& operator<<(QTextStream &str, const QColor &c)
@@ -284,8 +286,8 @@ QWindowsTheme *QWindowsTheme::m_instance = 0;
 QWindowsTheme::QWindowsTheme()
 {
     m_instance = this;
-    qFill(m_fonts, m_fonts + NFonts, static_cast<QFont *>(0));
-    qFill(m_palettes, m_palettes + NPalettes, static_cast<QPalette *>(0));
+    std::fill(m_fonts, m_fonts + NFonts, static_cast<QFont *>(0));
+    std::fill(m_palettes, m_palettes + NPalettes, static_cast<QPalette *>(0));
     refresh();
 }
 
@@ -368,7 +370,7 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
 void QWindowsTheme::clearPalettes()
 {
     qDeleteAll(m_palettes, m_palettes + NPalettes);
-    qFill(m_palettes, m_palettes + NPalettes, static_cast<QPalette *>(0));
+    std::fill(m_palettes, m_palettes + NPalettes, static_cast<QPalette *>(0));
 }
 
 void QWindowsTheme::refreshPalettes()
@@ -389,7 +391,7 @@ void QWindowsTheme::refreshPalettes()
 void QWindowsTheme::clearFonts()
 {
     qDeleteAll(m_fonts, m_fonts + NFonts);
-    qFill(m_fonts, m_fonts + NFonts, static_cast<QFont *>(0));
+    std::fill(m_fonts, m_fonts + NFonts, static_cast<QFont *>(0));
 }
 
 void QWindowsTheme::refreshFonts()

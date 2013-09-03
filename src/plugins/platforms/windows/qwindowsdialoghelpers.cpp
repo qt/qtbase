@@ -66,6 +66,8 @@
 #include <QtCore/QMutexLocker>
 #include <QtCore/private/qsystemlibrary_p.h>
 
+#include <algorithm>
+
 #include "qtwindows_additional.h"
 
 #define STRICT_TYPED_ITEMIDS
@@ -1961,7 +1963,7 @@ private:
 QWindowsNativeColorDialog::QWindowsNativeColorDialog(const SharedPointerColor &color) :
     m_code(QPlatformDialogHelper::Rejected), m_color(color)
 {
-    qFill(m_customColors, m_customColors + 16, COLORREF(0));
+    std::fill(m_customColors, m_customColors + 16, COLORREF(0));
 }
 
 void QWindowsNativeColorDialog::exec(HWND owner)
