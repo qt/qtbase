@@ -57,12 +57,12 @@ int main()
     if (process.write("forwarded\n") != 10)
         return -1;
 
-    process.waitForReadyRead(250);
-    if (process.bytesAvailable() != 0)
+    process.closeWriteChannel();
+    if (!process.waitForFinished(5000))
         return -1;
 
-    process.closeWriteChannel();
-    process.waitForFinished(5000);
+    if (process.bytesAvailable() != 0)
+        return -1;
 #endif
     return 0;
 }
