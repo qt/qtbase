@@ -1935,15 +1935,16 @@ void HtmlGenerator::generateRequisites(InnerNode *inner, CodeMarker *marker)
         }
 
         //add the QT variable to the map
-        DocNode * moduleNode = qdb_->findModule(classe->moduleName());
-        if (moduleNode && !moduleNode->qtVariable().isEmpty()) {
-            text.clear();
-            text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_TELETYPE)
-                 << "QT += " + moduleNode->qtVariable()
-                 << Atom(Atom::FormattingRight, ATOM_FORMATTING_TELETYPE);
-            requisites.insert(qtVariableText, text);
+        if (!classe->moduleName().isEmpty()) {
+            DocNode * moduleNode = qdb_->findModule(classe->moduleName());
+            if (moduleNode && !moduleNode->qtVariable().isEmpty()) {
+                text.clear();
+                text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_TELETYPE)
+                     << "QT += " + moduleNode->qtVariable()
+                     << Atom(Atom::FormattingRight, ATOM_FORMATTING_TELETYPE);
+                requisites.insert(qtVariableText, text);
+            }
         }
-
     }
 
     if (!requisites.isEmpty()) {
