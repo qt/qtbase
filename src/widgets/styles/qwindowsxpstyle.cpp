@@ -279,7 +279,7 @@ void QWindowsXPStylePrivate::init(bool force)
         ref.ref();
 
     useXP(true);
-    qFill(m_themes, m_themes + NThemes, HTHEME(0));
+    std::fill(m_themes, m_themes + NThemes, HTHEME(0));
 }
 
 /* \internal
