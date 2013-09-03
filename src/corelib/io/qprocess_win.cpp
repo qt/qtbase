@@ -479,9 +479,12 @@ void QProcessPrivate::startProcess()
     qDebug("   pass environment : %s", environment.isEmpty() ? "no" : "yes");
 #endif
 
-    // Forwarded channels must not set the CREATE_NO_WINDOW flag because this
-    // will render the stdout/stderr handles we're passing useless.
-    DWORD dwCreationFlags = (processChannelMode == QProcess::ForwardedChannels ? 0 : CREATE_NO_WINDOW);
+    // We cannot unconditionally set the CREATE_NO_WINDOW flag, because this
+    // will render the stdout/stderr handles connected to a console useless
+    // (this typically affects ForwardedChannels mode).
+    // However, we also do not want console tools launched from a GUI app to
+    // create new console windows (behavior consistent with UNIX).
+    DWORD dwCreationFlags = (GetConsoleWindow() ? 0 : CREATE_NO_WINDOW);
     dwCreationFlags |= CREATE_UNICODE_ENVIRONMENT;
     STARTUPINFOW startupInfo = { sizeof( STARTUPINFO ), 0, 0, 0,
                                  (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
