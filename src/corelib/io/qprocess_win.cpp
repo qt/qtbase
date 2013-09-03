@@ -663,9 +663,8 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
         if (pipeWriter && pipeWriter->waitForWrite(0))
             timer.resetIncrements();
 
-        if (processChannelMode != QProcess::ForwardedChannels
-                && ((stdoutReader && stdoutReader->waitForReadyRead(0))
-                    || (stderrReader && stderrReader->waitForReadyRead(0))))
+        if ((stdoutReader && stdoutReader->waitForReadyRead(0))
+            || (stderrReader && stderrReader->waitForReadyRead(0)))
             return true;
 
         if (!pid)
