@@ -221,9 +221,9 @@ public:
     typedef qptrdiff difference_type;
 
     static inline QLinkedList<T> fromStdList(const std::list<T> &list)
-    { QLinkedList<T> tmp; qCopy(list.begin(), list.end(), std::back_inserter(tmp)); return tmp; }
+    { QLinkedList<T> tmp; std::copy(list.begin(), list.end(), std::back_inserter(tmp)); return tmp; }
     inline std::list<T> toStdList() const
-    { std::list<T> tmp; qCopy(constBegin(), constEnd(), std::back_inserter(tmp)); return tmp; }
+    { std::list<T> tmp; std::copy(constBegin(), constEnd(), std::back_inserter(tmp)); return tmp; }
 
     // comfort
     QLinkedList<T> &operator+=(const QLinkedList<T> &l);

@@ -56,6 +56,8 @@
 #include <initializer_list>
 #endif
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 class QRegion;
@@ -227,9 +229,9 @@ public:
     static QVector<T> fromList(const QList<T> &list);
 
     static inline QVector<T> fromStdVector(const std::vector<T> &vector)
-    { QVector<T> tmp; tmp.reserve(int(vector.size())); qCopy(vector.begin(), vector.end(), std::back_inserter(tmp)); return tmp; }
+    { QVector<T> tmp; tmp.reserve(int(vector.size())); std::copy(vector.begin(), vector.end(), std::back_inserter(tmp)); return tmp; }
     inline std::vector<T> toStdVector() const
-    { std::vector<T> tmp; tmp.reserve(size()); qCopy(constBegin(), constEnd(), std::back_inserter(tmp)); return tmp; }
+    { std::vector<T> tmp; tmp.reserve(size()); std::copy(constBegin(), constEnd(), std::back_inserter(tmp)); return tmp; }
 private:
     friend class QRegion; // Optimization for QRegion::rects()
 
