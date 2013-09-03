@@ -56,6 +56,8 @@
 #include <QtGui/QPalette>
 #include <QtGui/QGuiApplication>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 static inline QByteArray debugComposition(int lParam)
@@ -583,8 +585,8 @@ int QWindowsInputContext::reconvertString(RECONVERTSTRING *reconv)
     reconv->dwTargetStrLen = reconv->dwCompStrLen;
     reconv->dwTargetStrOffset = reconv->dwCompStrOffset;
     ushort *pastReconv = reinterpret_cast<ushort *>(reconv + 1);
-    qCopy(surroundingText.utf16(), surroundingText.utf16() + surroundingText.size(),
-          pastReconv);
+    std::copy(surroundingText.utf16(), surroundingText.utf16() + surroundingText.size(),
+              pastReconv);
     return memSize;
 }
 

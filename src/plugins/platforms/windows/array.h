@@ -42,7 +42,8 @@
 #ifndef ARRAY_H
 #define ARRAY_H
 
-#include <QtCore/QtAlgorithms>
+#include <QtCore/QtGlobal>
+#include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
@@ -86,7 +87,7 @@ public:
             const T *oldData = data;
             data = new T[capacity];
             if (oldData) {
-                qCopy(oldData, oldData + m_size, data);
+                std::copy(oldData, oldData + m_size, data);
                 delete [] oldData;
             }
             m_capacity = capacity;
