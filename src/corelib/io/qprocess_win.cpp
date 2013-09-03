@@ -160,7 +160,8 @@ bool QProcessPrivate::createChannel(Channel &channel)
         } else {
             QWindowsPipeReader *pipeReader = 0;
             if (&channel == &stdoutChannel) {
-                if (processChannelMode != QProcess::ForwardedChannels) {
+                if (processChannelMode != QProcess::ForwardedChannels
+                        && processChannelMode != QProcess::ForwardedOutputChannel) {
                     if (!stdoutReader) {
                         stdoutReader = new QWindowsPipeReader(q);
                         q->connect(stdoutReader, SIGNAL(readyRead()), SLOT(_q_canReadStandardOutput()));
@@ -170,7 +171,8 @@ bool QProcessPrivate::createChannel(Channel &channel)
                     duplicateStdWriteChannel(channel.pipe, STD_OUTPUT_HANDLE);
                 }
             } else /* if (&channel == &stderrChannel) */ {
-                if (processChannelMode != QProcess::ForwardedChannels) {
+                if (processChannelMode != QProcess::ForwardedChannels
+                        && processChannelMode != QProcess::ForwardedErrorChannel) {
                     if (!stderrReader) {
                         stderrReader = new QWindowsPipeReader(q);
                         q->connect(stderrReader, SIGNAL(readyRead()), SLOT(_q_canReadStandardError()));

@@ -124,7 +124,9 @@ public:
     enum ProcessChannelMode {
         SeparateChannels,
         MergedChannels,
-        ForwardedChannels
+        ForwardedChannels,
+        ForwardedOutputChannel,
+        ForwardedErrorChannel
     };
     enum ExitStatus {
         NormalExit,

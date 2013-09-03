@@ -533,7 +533,11 @@ void QProcessPrivate::Channel::clear()
     MergedChannels before starting the process to activative
     this feature. You also have the option of forwarding the output of
     the running process to the calling, main process, by passing
-    ForwardedChannels as the argument.
+    ForwardedChannels as the argument. It is also possible to forward
+    only one of the output channels - typically one would use
+    ForwardedErrorChannel, but ForwardedOutputChannel also exists.
+    Note that using channel forwarding is typically a bad idea in GUI
+    applications - you should present errors graphically instead.
 
     Certain processes need special environment settings in order to
     operate. You can set environment variables for your process by
@@ -624,6 +628,17 @@ void QProcessPrivate::Channel::clear()
     running process onto the main process. Anything the child process
     writes to its standard output and standard error will be written
     to the standard output and standard error of the main process.
+
+    \value ForwardedErrorChannel QProcess manages the standard output
+    of the running process, but forwards its standard error onto the
+    main process. This reflects the typical use of command line tools
+    as filters, where the standard output is redirected to another
+    process or a file, while standard error is printed to the console
+    for diagnostic purposes.
+    (This value was introduced in Qt 5.2.)
+
+    \value ForwardedOutputChannel Complementary to ForwardedErrorChannel.
+    (This value was introduced in Qt 5.2.)
 
     \note Windows intentionally suppresses output from GUI-only
     applications to inherited consoles.

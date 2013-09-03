@@ -107,6 +107,7 @@ private slots:
     void softExitInSlots_data();
     void softExitInSlots();
     void mergedChannels();
+    void forwardedChannels_data();
     void forwardedChannels();
     void atEnd();
     void atEnd2();
@@ -1089,10 +1090,31 @@ void tst_QProcess::mergedChannels()
 //-----------------------------------------------------------------------------
 #ifndef Q_OS_WINCE
 // Reading and writing to a process is not supported on Qt/CE
+
+void tst_QProcess::forwardedChannels_data()
+{
+    QTest::addColumn<int>("mode");
+    QTest::addColumn<QByteArray>("outdata");
+    QTest::addColumn<QByteArray>("errdata");
+
+    QTest::newRow("separate") << int(QProcess::SeparateChannels)
+                              << QByteArray() << QByteArray();
+    QTest::newRow("forwarded") << int(QProcess::ForwardedChannels)
+                               << QByteArray("forwarded") << QByteArray("forwarded");
+    QTest::newRow("stdout") << int(QProcess::ForwardedOutputChannel)
+                            << QByteArray("forwarded") << QByteArray();
+    QTest::newRow("stderr") << int(QProcess::ForwardedErrorChannel)
+                            << QByteArray() << QByteArray("forwarded");
+}
+
 void tst_QProcess::forwardedChannels()
 {
+    QFETCH(int, mode);
+    QFETCH(QByteArray, outdata);
+    QFETCH(QByteArray, errdata);
+
     QProcess process;
-    process.start("testForwarding/testForwarding");
+    process.start("testForwarding/testForwarding", QStringList() << QString::number(mode));
     QVERIFY(process.waitForStarted(5000));
     QVERIFY(process.waitForFinished(5000));
     const char *err;
@@ -1103,12 +1125,13 @@ void tst_QProcess::forwardedChannels()
     case 3: err = "failed to write"; break;
     case 4: err = "did not finish"; break;
     case 5: err = "unexpected stdout"; break;
+    case 6: err = "unexpected stderr"; break;
+    case 13: err = "parameter error"; break;
     default: err = "unknown exit code"; break;
     }
     QVERIFY2(!process.exitCode(), err);
-    QByteArray data = process.readAll();
-    QVERIFY(!data.isEmpty());
-    QVERIFY(data.contains("forwarded"));
+    QCOMPARE(process.readAllStandardOutput(), outdata);
+    QCOMPARE(process.readAllStandardError(), errdata);
 }
 #endif
 

@@ -42,30 +42,41 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QProcess>
 
+#include <stdlib.h>
+
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
 
+    if (argc < 2)
+        return 13;
+
 #ifndef QT_NO_PROCESS
     QProcess process;
-    process.setProcessChannelMode(QProcess::ForwardedChannels);
-    if (process.processChannelMode() != QProcess::ForwardedChannels)
+
+    QProcess::ProcessChannelMode mode = (QProcess::ProcessChannelMode)atoi(argv[1]);
+    process.setProcessChannelMode(mode);
+    if (process.processChannelMode() != mode)
         return 1;
 
-    process.start("testProcessEcho/testProcessEcho");
+    process.start("testProcessEcho2/testProcessEcho2");
 
     if (!process.waitForStarted(5000))
         return 2;
 
-    if (process.write("forwarded\n") != 10)
+    if (process.write("forwarded") != 9)
         return 3;
 
     process.closeWriteChannel();
     if (!process.waitForFinished(5000))
         return 4;
 
-    if (process.bytesAvailable() != 0)
+    if ((mode == QProcess::ForwardedOutputChannel || mode == QProcess::ForwardedChannels)
+            && !process.readAllStandardOutput().isEmpty())
         return 5;
+    if ((mode == QProcess::ForwardedErrorChannel || mode == QProcess::ForwardedChannels)
+            && !process.readAllStandardError().isEmpty())
+        return 6;
 #endif
     return 0;
 }

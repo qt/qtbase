@@ -813,6 +813,16 @@ pid_t QProcessPrivate::spawnChild(const char *workingDir, char **argv, char **en
         fd_map[1] = QT_FILENO(stdout);
         fd_map[2] = QT_FILENO(stderr);
         break;
+    case QProcess::ForwardedOutputChannel:
+        fd_map[0] = stdinChannel.pipe[0];
+        fd_map[1] = QT_FILENO(stdout);
+        fd_map[2] = stderrChannel.pipe[1];
+        break;
+    case QProcess::ForwardedErrorChannel:
+        fd_map[0] = stdinChannel.pipe[0];
+        fd_map[1] = stdoutChannel.pipe[1];
+        fd_map[2] = QT_FILENO(stderr);
+        break;
     case QProcess::MergedChannels:
         fd_map[0] = stdinChannel.pipe[0];
         fd_map[1] = stdoutChannel.pipe[1];
@@ -850,12 +860,13 @@ void QProcessPrivate::execChild(const char *workingDir, char **path, char **argv
 
     // copy the stdout and stderr if asked to
     if (processChannelMode != QProcess::ForwardedChannels) {
-        qt_safe_dup2(stdoutChannel.pipe[1], fileno(stdout), 0);
+        if (processChannelMode != QProcess::ForwardedOutputChannel)
+            qt_safe_dup2(stdoutChannel.pipe[1], fileno(stdout), 0);
 
         // merge stdout and stderr if asked to
         if (processChannelMode == QProcess::MergedChannels) {
             qt_safe_dup2(fileno(stdout), fileno(stderr), 0);
-        } else {
+        } else if (processChannelMode != QProcess::ForwardedErrorChannel) {
             qt_safe_dup2(stderrChannel.pipe[1], fileno(stderr), 0);
         }
     }
