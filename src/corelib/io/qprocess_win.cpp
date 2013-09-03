@@ -155,28 +155,33 @@ bool QProcessPrivate::createChannel(Channel &channel)
 
     if (channel.type == Channel::Normal) {
         // we're piping this channel to our own process
-        const bool isStdInChannel = (&channel == &stdinChannel);
-        if (isStdInChannel || processChannelMode != QProcess::ForwardedChannels)
-            qt_create_pipe(channel.pipe, isStdInChannel);
-        else
-            duplicateStdWriteChannel(channel.pipe, (&channel == &stdoutChannel) ? STD_OUTPUT_HANDLE : STD_ERROR_HANDLE);
-
-        if (processChannelMode != QProcess::ForwardedChannels) {
+        if (&channel == &stdinChannel) {
+            qt_create_pipe(channel.pipe, true);
+        } else {
             QWindowsPipeReader *pipeReader = 0;
             if (&channel == &stdoutChannel) {
-                if (!stdoutReader) {
-                    stdoutReader = new QWindowsPipeReader(q);
-                    q->connect(stdoutReader, SIGNAL(readyRead()), SLOT(_q_canReadStandardOutput()));
+                if (processChannelMode != QProcess::ForwardedChannels) {
+                    if (!stdoutReader) {
+                        stdoutReader = new QWindowsPipeReader(q);
+                        q->connect(stdoutReader, SIGNAL(readyRead()), SLOT(_q_canReadStandardOutput()));
+                    }
+                    pipeReader = stdoutReader;
+                } else {
+                    duplicateStdWriteChannel(channel.pipe, STD_OUTPUT_HANDLE);
                 }
-                pipeReader = stdoutReader;
-            } else if (&channel == &stderrChannel) {
-                if (!stderrReader) {
-                    stderrReader = new QWindowsPipeReader(q);
-                    q->connect(stderrReader, SIGNAL(readyRead()), SLOT(_q_canReadStandardError()));
+            } else /* if (&channel == &stderrChannel) */ {
+                if (processChannelMode != QProcess::ForwardedChannels) {
+                    if (!stderrReader) {
+                        stderrReader = new QWindowsPipeReader(q);
+                        q->connect(stderrReader, SIGNAL(readyRead()), SLOT(_q_canReadStandardError()));
+                    }
+                    pipeReader = stderrReader;
+                } else {
+                    duplicateStdWriteChannel(channel.pipe, STD_ERROR_HANDLE);
                 }
-                pipeReader = stderrReader;
             }
             if (pipeReader) {
+                qt_create_pipe(channel.pipe, false);
                 pipeReader->setHandle(channel.pipe[0]);
                 pipeReader->startAsyncRead();
             }
