@@ -1116,7 +1116,17 @@ void tst_QProcess::forwardedChannelsOutput()
     process.start("testForwarding/testForwarding");
     QVERIFY(process.waitForStarted(5000));
     QVERIFY(process.waitForFinished(5000));
-    QVERIFY(!process.exitCode());
+    const char *err;
+    switch (process.exitCode()) {
+    case 0: err = "ok"; break;
+    case 1: err = "processChannelMode is wrong"; break;
+    case 2: err = "failed to start"; break;
+    case 3: err = "failed to write"; break;
+    case 4: err = "did not finish"; break;
+    case 5: err = "unexpected stdout"; break;
+    default: err = "unknown exit code"; break;
+    }
+    QVERIFY2(!process.exitCode(), err);
     QByteArray data = process.readAll();
     QVERIFY(!data.isEmpty());
     QVERIFY(data.contains("forwarded"));

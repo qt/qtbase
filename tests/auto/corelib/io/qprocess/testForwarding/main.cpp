@@ -47,22 +47,22 @@ int main()
     QProcess process;
     process.setProcessChannelMode(QProcess::ForwardedChannels);
     if (process.processChannelMode() != QProcess::ForwardedChannels)
-        return -1;
+        return 1;
 
     process.start("testProcessEcho/testProcessEcho");
 
     if (!process.waitForStarted(5000))
-        return -1;
+        return 2;
 
     if (process.write("forwarded\n") != 10)
-        return -1;
+        return 3;
 
     process.closeWriteChannel();
     if (!process.waitForFinished(5000))
-        return -1;
+        return 4;
 
     if (process.bytesAvailable() != 0)
-        return -1;
+        return 5;
 #endif
     return 0;
 }
