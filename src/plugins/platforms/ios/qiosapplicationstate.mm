@@ -39,10 +39,12 @@
 **
 ****************************************************************************/
 
-#import <UIKit/UIKit.h>
+#include "qiosapplicationstate.h"
 
 #include <qpa/qwindowsysteminterface.h>
-#include "qiosapplicationstate.h"
+#include <QtCore/qcoreapplication.h>
+
+#import <UIKit/UIKit.h>
 
 @interface QIOSApplicationStateListener : NSObject
 @end
@@ -71,6 +73,12 @@
             selector:@selector(applicationDidEnterBackground)
             name:UIApplicationDidEnterBackgroundNotification
             object:nil];
+
+        // Update the current state now, since we have missed all the updates
+        // posted from AppKit so far. But let QPA finish initialization first.
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self handleApplicationStateChanged:[UIApplication sharedApplication].applicationState];
+        });
     }
     return self;
 }
@@ -112,6 +120,12 @@
 
 - (void) handleApplicationStateChanged:(UIApplicationState) uiApplicationState
 {
+    // We may receive application state changes after QCoreApplication has
+    // gone down, as the block we schedule on the main queue keeps the
+    // listener alive. In that case we just ignore the notification.
+    if (!qApp)
+        return;
+
     Qt::ApplicationState state;
     switch (uiApplicationState) {
     case UIApplicationStateActive:
@@ -145,12 +159,6 @@ QT_BEGIN_NAMESPACE
 QIOSApplicationState::QIOSApplicationState()
     : m_listener([[QIOSApplicationStateListener alloc] init])
 {
-    // Update the current state now, since we have missed all the updates
-    // posted from AppKit so far. But let QPA finish initialization first:
-    dispatch_async(dispatch_get_main_queue(), ^{
-        UIApplicationState state = [UIApplication sharedApplication].applicationState;
-        [m_listener handleApplicationStateChanged:state];
-    });
 }
 
 QIOSApplicationState::~QIOSApplicationState()

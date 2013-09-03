@@ -42,6 +42,8 @@
 #ifndef QIOSAPPLICATIONSTATE_H
 #define QIOSAPPLICATIONSTATE_H
 
+#include <QtCore/qglobal.h>
+
 QT_BEGIN_NAMESPACE
 
 @class QIOSApplicationStateListener;
