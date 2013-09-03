@@ -108,7 +108,6 @@ private slots:
     void softExitInSlots();
     void mergedChannels();
     void forwardedChannels();
-    void forwardedChannelsOutput();
     void atEnd();
     void atEnd2();
     void waitForFinishedWithTimeout();
@@ -1091,26 +1090,6 @@ void tst_QProcess::mergedChannels()
 #ifndef Q_OS_WINCE
 // Reading and writing to a process is not supported on Qt/CE
 void tst_QProcess::forwardedChannels()
-{
-    QProcess process;
-    process.setReadChannelMode(QProcess::ForwardedChannels);
-    QCOMPARE(process.readChannelMode(), QProcess::ForwardedChannels);
-
-    process.start("testProcessEcho2/testProcessEcho2");
-
-    QVERIFY(process.waitForStarted(5000));
-    QCOMPARE(process.write("forwarded\n"), qlonglong(10));
-    QVERIFY(!process.waitForReadyRead(250));
-    QCOMPARE(process.bytesAvailable(), qlonglong(0));
-
-    process.closeWriteChannel();
-    QVERIFY(process.waitForFinished(5000));
-}
-#endif
-
-#ifndef Q_OS_WINCE
-// Reading and writing to a process is not supported on Qt/CE
-void tst_QProcess::forwardedChannelsOutput()
 {
     QProcess process;
     process.start("testForwarding/testForwarding");
