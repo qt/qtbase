@@ -156,7 +156,15 @@ bool QProcessPrivate::createChannel(Channel &channel)
     if (channel.type == Channel::Normal) {
         // we're piping this channel to our own process
         if (&channel == &stdinChannel) {
-            qt_create_pipe(channel.pipe, true);
+            if (inputChannelMode != QProcess::ForwardedInputChannel) {
+                qt_create_pipe(channel.pipe, true);
+            } else {
+                channel.pipe[1] = INVALID_Q_PIPE;
+                HANDLE hStdReadChannel = GetStdHandle(STD_INPUT_HANDLE);
+                HANDLE hCurrentProcess = GetCurrentProcess();
+                DuplicateHandle(hCurrentProcess, hStdReadChannel, hCurrentProcess,
+                                &channel.pipe[0], 0, TRUE, DUPLICATE_SAME_ACCESS);
+            }
         } else {
             QWindowsPipeReader *pipeReader = 0;
             if (&channel == &stdoutChannel) {

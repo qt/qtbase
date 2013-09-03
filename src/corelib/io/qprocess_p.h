@@ -302,6 +302,7 @@ public:
 
     QProcess::ProcessChannel processChannel;
     QProcess::ProcessChannelMode processChannelMode;
+    QProcess::InputChannelMode inputChannelMode;
     QProcess::ProcessError processError;
     QProcess::ProcessState processState;
     QString workingDirectory;

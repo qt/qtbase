@@ -128,6 +128,10 @@ public:
         ForwardedOutputChannel,
         ForwardedErrorChannel
     };
+    enum InputChannelMode {
+        ManagedInputChannel,
+        ForwardedInputChannel
+    };
     enum ExitStatus {
         NormalExit,
         CrashExit
@@ -151,6 +155,8 @@ public:
     void setReadChannelMode(ProcessChannelMode mode);
     ProcessChannelMode processChannelMode() const;
     void setProcessChannelMode(ProcessChannelMode mode);
+    InputChannelMode inputChannelMode() const;
+    void setInputChannelMode(InputChannelMode mode);
 
     ProcessChannel readChannel() const;
     void setReadChannel(ProcessChannel channel);

@@ -608,8 +608,8 @@ void QProcessPrivate::Channel::clear()
 /*!
     \enum QProcess::ProcessChannelMode
 
-    This enum describes the process channel modes of QProcess. Pass
-    one of these values to setProcessChannelMode() to set the
+    This enum describes the process output channel modes of QProcess.
+    Pass one of these values to setProcessChannelMode() to set the
     current read channel mode.
 
     \value SeparateChannels QProcess manages the output of the
@@ -649,6 +649,26 @@ void QProcessPrivate::Channel::clear()
     output channels.
 
     \sa setProcessChannelMode()
+*/
+
+/*!
+    \enum QProcess::InputChannelMode
+    \since 5.2
+
+    This enum describes the process input channel modes of QProcess.
+    Pass one of these values to setInputChannelMode() to set the
+    current write channel mode.
+
+    \value ManagedInputChannel QProcess manages the input of the running
+    process. This is the default input channel mode of QProcess.
+
+    \value ForwardedInputChannel QProcess forwards the input of the main
+    process onto the running process. The child process reads its standard
+    input from the same source as the main process.
+    Note that the main process must not try to read its standard input
+    while the child process is running.
+
+    \sa setInputChannelMode()
 */
 
 /*!
@@ -779,6 +799,7 @@ QProcessPrivate::QProcessPrivate()
 {
     processChannel = QProcess::StandardOutput;
     processChannelMode = QProcess::SeparateChannels;
+    inputChannelMode = QProcess::ManagedInputChannel;
     processError = QProcess::UnknownError;
     processState = QProcess::NotRunning;
     pid = 0;
@@ -1241,6 +1262,34 @@ void QProcess::setProcessChannelMode(ProcessChannelMode mode)
 {
     Q_D(QProcess);
     d->processChannelMode = mode;
+}
+
+/*!
+    \since 5.2
+
+    Returns the channel mode of the QProcess standard input channel.
+
+    \sa setInputChannelMode(), InputChannelMode
+*/
+QProcess::InputChannelMode QProcess::inputChannelMode() const
+{
+    Q_D(const QProcess);
+    return d->inputChannelMode;
+}
+
+/*!
+    \since 5.2
+
+    Sets the channel mode of the QProcess standard intput
+    channel to the \a mode specified.
+    This mode will be used the next time start() is called.
+
+    \sa inputChannelMode(), InputChannelMode
+*/
+void QProcess::setInputChannelMode(InputChannelMode mode)
+{
+    Q_D(QProcess);
+    d->inputChannelMode = mode;
 }
 
 /*!

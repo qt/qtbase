@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
 
-    if (argc < 2)
+    if (argc < 3)
         return 13;
 
 #ifndef QT_NO_PROCESS
@@ -59,12 +59,17 @@ int main(int argc, char **argv)
     if (process.processChannelMode() != mode)
         return 1;
 
+    QProcess::InputChannelMode inmode = (QProcess::InputChannelMode)atoi(argv[2]);
+    process.setInputChannelMode(inmode);
+    if (process.inputChannelMode() != inmode)
+        return 11;
+
     process.start("testProcessEcho2/testProcessEcho2");
 
     if (!process.waitForStarted(5000))
         return 2;
 
-    if (process.write("forwarded") != 9)
+    if (inmode == QProcess::ManagedInputChannel && process.write("forwarded") != 9)
         return 3;
 
     process.closeWriteChannel();

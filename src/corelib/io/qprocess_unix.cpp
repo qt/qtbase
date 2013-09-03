@@ -807,29 +807,29 @@ pid_t QProcessPrivate::spawnChild(const char *workingDir, char **argv, char **en
                   ? i : SPAWN_FDCLOSED;
     }
 
+    if (inputChannelMode == QProcess::ManagedInputChannel)
+        fd_map[0] = stdinChannel.pipe[0];
+    else
+        fd_map[0] = QT_FILENO(stdin);
+
     switch (processChannelMode) {
     case QProcess::ForwardedChannels:
-        fd_map[0] = stdinChannel.pipe[0];
         fd_map[1] = QT_FILENO(stdout);
         fd_map[2] = QT_FILENO(stderr);
         break;
     case QProcess::ForwardedOutputChannel:
-        fd_map[0] = stdinChannel.pipe[0];
         fd_map[1] = QT_FILENO(stdout);
         fd_map[2] = stderrChannel.pipe[1];
         break;
     case QProcess::ForwardedErrorChannel:
-        fd_map[0] = stdinChannel.pipe[0];
         fd_map[1] = stdoutChannel.pipe[1];
         fd_map[2] = QT_FILENO(stderr);
         break;
     case QProcess::MergedChannels:
-        fd_map[0] = stdinChannel.pipe[0];
         fd_map[1] = stdoutChannel.pipe[1];
         fd_map[2] = stdoutChannel.pipe[1];
         break;
     case QProcess::SeparateChannels:
-        fd_map[0] = stdinChannel.pipe[0];
         fd_map[1] = stdoutChannel.pipe[1];
         fd_map[2] = stderrChannel.pipe[1];
         break;
@@ -855,8 +855,9 @@ void QProcessPrivate::execChild(const char *workingDir, char **path, char **argv
 
     Q_Q(QProcess);
 
-    // copy the stdin socket (without closing on exec)
-    qt_safe_dup2(stdinChannel.pipe[0], fileno(stdin), 0);
+    // copy the stdin socket if asked to (without closing on exec)
+    if (inputChannelMode != QProcess::ForwardedInputChannel)
+        qt_safe_dup2(stdinChannel.pipe[0], fileno(stdin), 0);
 
     // copy the stdout and stderr if asked to
     if (processChannelMode != QProcess::ForwardedChannels) {

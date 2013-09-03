@@ -1094,33 +1094,40 @@ void tst_QProcess::mergedChannels()
 void tst_QProcess::forwardedChannels_data()
 {
     QTest::addColumn<int>("mode");
+    QTest::addColumn<int>("inmode");
     QTest::addColumn<QByteArray>("outdata");
     QTest::addColumn<QByteArray>("errdata");
 
-    QTest::newRow("separate") << int(QProcess::SeparateChannels)
+    QTest::newRow("separate") << int(QProcess::SeparateChannels) << int(QProcess::ManagedInputChannel)
                               << QByteArray() << QByteArray();
-    QTest::newRow("forwarded") << int(QProcess::ForwardedChannels)
+    QTest::newRow("forwarded") << int(QProcess::ForwardedChannels) << int(QProcess::ManagedInputChannel)
                                << QByteArray("forwarded") << QByteArray("forwarded");
-    QTest::newRow("stdout") << int(QProcess::ForwardedOutputChannel)
+    QTest::newRow("stdout") << int(QProcess::ForwardedOutputChannel) << int(QProcess::ManagedInputChannel)
                             << QByteArray("forwarded") << QByteArray();
-    QTest::newRow("stderr") << int(QProcess::ForwardedErrorChannel)
+    QTest::newRow("stderr") << int(QProcess::ForwardedErrorChannel) << int(QProcess::ManagedInputChannel)
                             << QByteArray() << QByteArray("forwarded");
+    QTest::newRow("fwdinput") << int(QProcess::ForwardedErrorChannel) << int(QProcess::ForwardedInputChannel)
+                            << QByteArray() << QByteArray("input");
 }
 
 void tst_QProcess::forwardedChannels()
 {
     QFETCH(int, mode);
+    QFETCH(int, inmode);
     QFETCH(QByteArray, outdata);
     QFETCH(QByteArray, errdata);
 
     QProcess process;
-    process.start("testForwarding/testForwarding", QStringList() << QString::number(mode));
+    process.start("testForwarding/testForwarding", QStringList() << QString::number(mode) << QString::number(inmode));
     QVERIFY(process.waitForStarted(5000));
+    QCOMPARE(process.write("input"), 5);
+    process.closeWriteChannel();
     QVERIFY(process.waitForFinished(5000));
     const char *err;
     switch (process.exitCode()) {
     case 0: err = "ok"; break;
     case 1: err = "processChannelMode is wrong"; break;
+    case 11: err = "inputChannelMode is wrong"; break;
     case 2: err = "failed to start"; break;
     case 3: err = "failed to write"; break;
     case 4: err = "did not finish"; break;
