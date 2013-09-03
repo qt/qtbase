@@ -257,6 +257,17 @@ static QStringList xdgDataDirs()
         dirs.append(QString::fromLatin1("/usr/share"));
     } else {
         dirs = xdgDataDirsEnv.split(QLatin1Char(':'));
+        // Normalize paths
+        for (int i = 0; i < dirs.count(); i++)
+            dirs[i] = QDir::cleanPath(dirs.at(i));
+
+        // Remove duplicates from the list, there's no use for duplicated
+        // paths in XDG_DATA_DIRS - if it's not found in the given
+        // directory the first time, it won't be there the second time.
+        // Plus duplicate paths causes problems for example for mimetypes,
+        // where duplicate paths here lead to duplicated mime types returned
+        // for a file, eg "text/plain,text/plain" instead of "text/plain"
+        dirs.removeDuplicates();
     }
     return dirs;
 }
