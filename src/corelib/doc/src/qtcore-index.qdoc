@@ -37,6 +37,8 @@
 
     \snippet code/doc_src_qtcore.cpp 0
 
+    If you use \l qmake to build your projects, Qt Core is included by default.
+
     \section1 Core Functionalities
 
     Qt adds these features to C++:
