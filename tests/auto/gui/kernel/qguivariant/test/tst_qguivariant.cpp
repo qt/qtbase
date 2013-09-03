@@ -636,7 +636,7 @@ void tst_QGuiVariant::implicitConstruction()
     // This is a compile-time test
     QVariant v;
 
-#define FOR_EACH_GUI_CLASS(F) \
+#define FOR_EACH_GUI_CLASS_BASE(F) \
     F(Font) \
     F(Pixmap) \
     F(Brush) \
@@ -647,7 +647,6 @@ void tst_QGuiVariant::implicitConstruction()
     F(Polygon) \
     F(Region) \
     F(Bitmap) \
-    F(Cursor) \
     F(KeySequence) \
     F(Pen) \
     F(TextLength) \
@@ -659,7 +658,16 @@ void tst_QGuiVariant::implicitConstruction()
     F(Vector3D) \
     F(Vector4D) \
     F(Quaternion) \
-    F(PolygonF) \
+    F(PolygonF)
+
+#ifndef QTEST_NO_CURSOR
+#  define FOR_EACH_GUI_CLASS(F) \
+    FOR_EACH_GUI_CLASS_BASE(F) \
+    F(Cursor)
+#else // !QTEST_NO_CURSOR
+#  define FOR_EACH_GUI_CLASS(F) \
+    FOR_EACH_GUI_CLASS_BASE(F)
+#endif // QTEST_NO_CURSOR
 
 #define CONSTRUCT(TYPE) \
     { \
