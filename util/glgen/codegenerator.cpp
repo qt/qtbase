@@ -593,8 +593,27 @@ void CodeGenerator::writePublicClassImplementation(const QString &baseFileName,
            << QStringLiteral("    \\class ") << className << endl
            << QStringLiteral("    \\inmodule QtGui") << endl
            << QStringLiteral("    \\since 5.1") << endl
+           << QStringLiteral("    \\wrapper") << endl
            << QStringLiteral("    \\brief The ") << className
-           << QStringLiteral(" class provides all functions for this version and profile of OpenGL.") << endl << endl
+           << QString(QStringLiteral(" class provides all functions for OpenGL %1.%2 "))
+                .arg(versionProfile.version.major)
+                .arg(versionProfile.version.minor);
+
+    if (!profileSuffix.isEmpty()) {
+        profileSuffix.remove(0, 1);
+        profileSuffix.append(QStringLiteral(" profile"));
+    } else {
+        profileSuffix = "specification";
+    }
+
+    stream << profileSuffix << QStringLiteral(".") << endl << endl
+           << QStringLiteral("    This class is a wrapper for functions from ")
+           << QString(QStringLiteral("OpenGL %1.%2 "))
+                .arg(versionProfile.version.major)
+                .arg(versionProfile.version.minor)
+           << profileSuffix << QStringLiteral(".") << endl
+           << QStringLiteral("    See reference pages on \\l {http://www.opengl.org/sdk/docs/}{opengl.org}") << endl
+           << QStringLiteral("    for function documentation.") << endl << endl
            << QStringLiteral("    \\sa QAbstractOpenGLFunctions") << endl
            << QStringLiteral("*/") << endl << endl;
 
