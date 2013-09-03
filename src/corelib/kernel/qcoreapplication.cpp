@@ -103,6 +103,8 @@
 #  include <taskLib.h>
 #endif
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_QOBJECT
@@ -397,7 +399,7 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
         argv = (char **)&empty;
     }
 #ifdef Q_OS_WIN
-    qCopy(argv, argv + argc, origArgv);
+    std::copy(argv, argv + argc, origArgv);
 #endif
 
 #ifndef QT_NO_QOBJECT
