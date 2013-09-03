@@ -39,10 +39,13 @@
 **
 ****************************************************************************/
 
+#include <QtCore/QCoreApplication>
 #include <QtCore/QProcess>
 
-int main()
+int main(int argc, char **argv)
 {
+    QCoreApplication app(argc, argv);
+
 #ifndef QT_NO_PROCESS
     QProcess process;
     process.setProcessChannelMode(QProcess::ForwardedChannels);
