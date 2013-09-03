@@ -352,7 +352,7 @@ public:
     const QList<QXcbScreen *> &screens() const { return m_screens; }
     int primaryScreen() const { return m_primaryScreen; }
 
-    xcb_atom_t atom(QXcbAtom::Atom atom) const;
+    inline xcb_atom_t atom(QXcbAtom::Atom atom) const { return m_allAtoms[atom]; }
     QXcbAtom::Atom qatom(xcb_atom_t atom) const;
     xcb_atom_t internAtom(const char *name);
     QByteArray atomName(xcb_atom_t atom);
