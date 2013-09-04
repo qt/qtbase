@@ -1133,6 +1133,8 @@ QWindowsNativeImage *QWindowsFontEngine::drawGDIGlyph(HFONT font, glyph_t glyph,
                    << "If you need them anyway, start your application with -platform windows:fontengine=freetype.";
    }
 #endif // wince
+
+    // The padding here needs to be kept in sync with the values in alphaMapBoundingBox.
     QWindowsNativeImage *ni = new QWindowsNativeImage(iw + 2 * margin + 4,
                                                       ih + 2 * margin + 4,
                                                       QWindowsNativeImage::systemFormat());
@@ -1165,6 +1167,17 @@ QWindowsNativeImage *QWindowsFontEngine::drawGDIGlyph(HFONT font, glyph_t glyph,
 
     SelectObject(hdc, old_font);
     return ni;
+}
+
+glyph_metrics_t QWindowsFontEngine::alphaMapBoundingBox(glyph_t glyph, QFixed pos, const QTransform &matrix, GlyphFormat format)
+{
+    int margin = 0;
+    if (format == QFontEngine::Format_A32 || format == QFontEngine::Format_ARGB)
+        margin = glyphMargin(QFontEngineGlyphCache::Raster_RGBMask);
+    glyph_metrics_t gm = boundingBox(glyph, matrix);
+    gm.width += margin * 2 + 4;
+    gm.height += margin * 2 + 4;
+    return gm;
 }
 
 QImage QWindowsFontEngine::alphaMapForGlyph(glyph_t glyph, const QTransform &xform)

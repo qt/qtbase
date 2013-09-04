@@ -444,18 +444,38 @@ void QCoreTextFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *position
     }
 }
 
-QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, bool aa, const QTransform &m)
+static void qcoretextfontengine_scaleMetrics(glyph_metrics_t &br, const QTransform &matrix)
 {
-    glyph_metrics_t br = boundingBox(glyph);
-
-    if (m.isScaling()) {
-        qreal hscale = m.m11();
-        qreal vscale = m.m22();
+    if (matrix.isScaling()) {
+        qreal hscale = matrix.m11();
+        qreal vscale = matrix.m22();
         br.width  = QFixed::fromReal(br.width.toReal() * hscale);
         br.height = QFixed::fromReal(br.height.toReal() * vscale);
         br.x      = QFixed::fromReal(br.x.toReal() * hscale);
         br.y      = QFixed::fromReal(br.y.toReal() * vscale);
     }
+}
+
+glyph_metrics_t QCoreTextFontEngine::alphaMapBoundingBox(glyph_t glyph, QFixed pos, const QTransform &matrix, GlyphFormat format)
+{
+    if (matrix.type() > QTransform::TxScale)
+        return QFontEngine::alphaMapBoundingBox(glyph, pos, matrix, format);
+
+    glyph_metrics_t br = boundingBox(glyph);
+    qcoretextfontengine_scaleMetrics(br, matrix);
+
+    br.width = qAbs(qRound(br.width)) + 2;
+    br.height = qAbs(qRound(br.height)) + 2;
+
+    return br;
+}
+
+
+QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, bool aa, const QTransform &m)
+{
+
+    glyph_metrics_t br = boundingBox(glyph);
+    qcoretextfontengine_scaleMetrics(br, m);
 
     bool isColorGlyph = glyphFormat == QFontEngineGlyphCache::Raster_ARGB;
     QImage::Format format = isColorGlyph ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;

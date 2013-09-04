@@ -108,7 +108,6 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
 #endif
 
     m_current_fontengine = fontEngine;
-    const int margin = m_current_fontengine->glyphMargin(m_type);
     const int padding = glyphPadding();
     const int paddingDoubled = padding * 2;
 
@@ -174,8 +173,6 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
             coords.insert(key, c);
             continue;
         }
-        glyph_width += margin * 2 + 4;
-        glyph_height += margin * 2 + 4;
         // align to 8-bit boundary
         if (m_type == QFontEngineGlyphCache::Raster_Mono)
             glyph_width = (glyph_width+7)&~7;
@@ -192,7 +189,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
     if (listItemCoordinates.isEmpty())
         return true;
 
-    rowHeight += margin * 2 + paddingDoubled;
+    rowHeight += paddingDoubled;
 
     if (m_w == 0) {
         if (fontEngine->maxCharWidth() <= QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH)
@@ -207,7 +204,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
     while (iter != listItemCoordinates.end()) {
         Coord c = iter.value();
 
-        m_currentRowHeight = qMax(m_currentRowHeight, c.h + margin * 2);
+        m_currentRowHeight = qMax(m_currentRowHeight, c.h);
 
         if (m_cx + c.w + padding > requiredWidth) {
             int new_width = requiredWidth*2;
@@ -219,7 +216,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
                 // no room on the current line, start new glyph strip
                 m_cx = padding;
                 m_cy += m_currentRowHeight + paddingDoubled;
-                m_currentRowHeight = c.h + margin * 2; // New row
+                m_currentRowHeight = c.h; // New row
             }
         }
 
