@@ -72,6 +72,6 @@ QRegion QAndroidPlatformScreen::doRedraw()
 
 QDpi QAndroidPlatformScreen::logicalDpi() const
 {
-    qreal lDpi = QtAndroid::scaledDensity() * 100;
+    qreal lDpi = QtAndroid::scaledDensity() * 72;
     return QDpi(lDpi, lDpi);
 }
