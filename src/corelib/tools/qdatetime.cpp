@@ -255,7 +255,7 @@ static time_t qt_mktime(QDate *date, QTime *time, QDateTimePrivate::Spec *spec,
     tzset();
 #endif // Q_OS_WIN
     const time_t secsSinceEpoch = mktime(&local);
-    if (secsSinceEpoch != (uint)-1) {
+    if (secsSinceEpoch != time_t(-1)) {
         *date = QDate(local.tm_year + 1900, local.tm_mon + 1, local.tm_mday);
         *time = QTime(local.tm_hour, local.tm_min, local.tm_sec, time->msec());
         if (local.tm_isdst == 1) {
