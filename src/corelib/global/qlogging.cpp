@@ -84,6 +84,33 @@ static bool isFatal(QtMsgType msgType)
     return false;
 }
 
+#ifdef Q_OS_WIN
+
+// Do we have stderr for QDebug? - Either there is a console or we are running
+// with redirected stderr.
+#  ifndef Q_OS_WINCE
+static inline bool hasStdErr()
+{
+    if (GetConsoleWindow())
+        return true;
+    STARTUPINFO info;
+    GetStartupInfo(&info);
+    return (info.dwFlags & STARTF_USESTDHANDLES) && info.hStdError
+        && info.hStdError != INVALID_HANDLE_VALUE;
+}
+#  endif // !Q_OS_WINCE
+
+bool qWinLogToStderr()
+{
+#  ifndef Q_OS_WINCE
+    static const bool result = hasStdErr();
+    return result;
+#  else
+    return false;
+#  endif
+}
+#endif // Q_OS_WIN
+
 /*!
     \class QMessageLogContext
     \inmodule QtCore
@@ -113,11 +140,6 @@ static bool isFatal(QtMsgType msgType)
 
     \sa QMessageLogContext, qDebug(), qWarning(), qCritical(), qFatal()
 */
-
-#if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
-// defined in qcoreapplication_win.cpp
-extern bool usingWinMain;
-#endif
 
 #ifdef Q_OS_WIN
 static inline void convert_to_wchar_t_elided(wchar_t *d, size_t space, const char *s) Q_DECL_NOEXCEPT
@@ -159,11 +181,11 @@ static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap) Q_DECL
     convert_to_wchar_t_elided(emergency_bufL, sizeof emergency_buf, emergency_buf);
     OutputDebugStringW(emergency_bufL);
 # else
-    if (usingWinMain) {
-        OutputDebugStringA(emergency_buf);
-    } else {
+    if (qWinLogToStderr()) {
         fprintf(stderr, "%s", emergency_buf);
         fflush(stderr);
+    } else {
+        OutputDebugStringA(emergency_buf);
     }
 # endif
 #else
@@ -683,7 +705,7 @@ void QMessagePattern::setPattern(const QString &pattern)
         OutputDebugString(reinterpret_cast<const wchar_t*>(error.utf16()));
         if (0)
 #elif defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
-        if (usingWinMain) {
+        if (!qWinLogToStderr()) {
             OutputDebugString(reinterpret_cast<const wchar_t*>(error.utf16()));
         } else
 #endif
@@ -865,10 +887,7 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
     QString logMessage = qMessageFormatString(type, context, buf);
 
 #if defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
-#if !defined(Q_OS_WINCE)
-    if (usingWinMain)
-#endif
-    {
+    if (!qWinLogToStderr()) {
         OutputDebugString(reinterpret_cast<const wchar_t *>(logMessage.utf16()));
         return;
     }

@@ -54,7 +54,6 @@
 
 QT_BEGIN_NAMESPACE
 
-bool usingWinMain = false;  // whether the qWinMain() is used or not
 int appCmdShow = 0;
 
 Q_CORE_EXPORT HINSTANCE qWinAppInst()                // get Windows app handle
@@ -147,7 +146,6 @@ void qWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmdParam,
         return;
     }
     already_called = true;
-    usingWinMain = true;
 
     // Create command line
     argv = qWinCmdLine<char>(cmdParam, int(strlen(cmdParam)), argc);
