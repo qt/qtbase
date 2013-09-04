@@ -804,7 +804,7 @@ bool QDBusConnection::registerObject(const QString &path, QObject *object, Regis
                 return false;
 
             if (options & QDBusConnectionPrivate::VirtualObject) {
-                if (options & SubPath && node->activeChildren)
+                if (options & SubPath && !node->children.isEmpty())
                     return false;
             } else {
                 if ((options & ExportChildObjects && !node->children.isEmpty()))
@@ -842,7 +842,6 @@ bool QDBusConnection::registerObject(const QString &path, QObject *object, Regis
             }
         } else {
             // add entry
-            ++node->activeChildren;
             node = node->children.insert(it, pathComponents.at(i));
         }
 
