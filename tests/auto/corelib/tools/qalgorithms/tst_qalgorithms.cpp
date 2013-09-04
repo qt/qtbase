@@ -44,6 +44,7 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <iterator>
 #include <algorithm>
 #include <qalgorithms.h>
 #include <QStringList>
@@ -846,6 +847,12 @@ void tst_QAlgorithms::qCountContainer() const
 class RAI
 {
   public:
+    typedef int difference_type;
+    typedef int value_type;
+    typedef std::random_access_iterator_tag iterator_category;
+    typedef int *pointer;
+    typedef int &reference;
+
     RAI(int searched = 5, int hidePos = 4, int len = 10)
         : curPos_(0)
         , length_(len)
