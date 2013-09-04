@@ -278,6 +278,7 @@ bool QPluginLoader::isLoaded() const
     return d && d->pHnd && d->instance;
 }
 
+#if defined(QT_SHARED)
 static QString locatePlugin(const QString& fileName)
 {
     QStringList prefixes = QLibraryPrivate::prefixes_sys();
@@ -309,6 +310,7 @@ static QString locatePlugin(const QString& fileName)
         qDebug() << fileName << "not found";
     return QString();
 }
+#endif
 
 /*!
     \property QPluginLoader::fileName
