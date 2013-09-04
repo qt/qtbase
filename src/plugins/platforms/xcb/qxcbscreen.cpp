@@ -149,7 +149,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
     if (!sync_reply || !sync_reply->present)
         m_syncRequestSupported = false;
     else
-        m_syncRequestSupported = m_windowManagerName != QLatin1String("KWin");
+        m_syncRequestSupported = true;
 
     m_clientLeader = xcb_generate_id(xcb_connection());
     Q_XCB_CALL2(xcb_create_window(xcb_connection(),
