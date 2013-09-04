@@ -279,6 +279,9 @@ Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat =
 
 Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &p)
 {
+    if (p.isNull())
+        return 0;
+
     QBitmap maskBitmap = p.mask();
     if (maskBitmap.isNull()) {
         maskBitmap = QBitmap(p.size());
