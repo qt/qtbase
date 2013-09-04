@@ -84,6 +84,7 @@ namespace {
 static QString windowsErrorString(int errorCode)
 {
     QString ret;
+#ifndef Q_OS_WINRT
     wchar_t *string = 0;
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
                   NULL,
@@ -94,6 +95,17 @@ static QString windowsErrorString(int errorCode)
                   NULL);
     ret = QString::fromWCharArray(string);
     LocalFree((HLOCAL)string);
+#else
+    wchar_t errorString[1024];
+    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,
+                  NULL,
+                  errorCode,
+                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                  (LPWSTR)&errorString,
+                  sizeof(errorString)/sizeof(wchar_t),
+                  NULL);
+    ret = QString::fromWCharArray(errorString);
+#endif  // Q_OS_WINRT
 
     if (ret.isEmpty() && errorCode == ERROR_MOD_NOT_FOUND)
         ret = QString::fromLatin1("The specified module could not be found.");
