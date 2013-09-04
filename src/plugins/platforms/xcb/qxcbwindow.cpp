@@ -152,7 +152,7 @@ enum QX11EmbedMessageType {
     XEMBED_ACTIVATE_ACCELERATOR = 14
 };
 
-static unsigned int XEMBED_VERSION = 0;
+const long XEMBED_VERSION = 0;
 
 // Returns true if we should set WM_TRANSIENT_FOR on \a w
 static inline bool isTransient(const QWindow *w)
