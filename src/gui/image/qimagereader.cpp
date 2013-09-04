@@ -199,7 +199,7 @@ static const _qt_BuiltInFormatStruct _qt_BuiltInFormats[] = {
 #endif
 #ifndef QT_NO_IMAGEFORMAT_JPEG
     {_qt_JpgFormat, "jpg", "image/jpeg"},
-    {_qt_JpegFormat, "jpeg"},
+    {_qt_JpegFormat, "jpeg", "image/jpeg"},
 #endif
 #ifdef QT_BUILTIN_GIF_READER
     {_qt_GifFormat, "gif", "image/gif"},
