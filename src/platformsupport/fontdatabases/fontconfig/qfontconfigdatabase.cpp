@@ -565,6 +565,14 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QChar::Script sc
             }
         }
 
+        if (antialias) {
+            // If antialiasing is not fully disabled, fontconfig may still disable it on a font match basis.
+            FcBool fc_antialias;
+            if (FcPatternGetBool(match, FC_ANTIALIAS,0, &fc_antialias) != FcResultMatch)
+                fc_antialias = true;
+            antialias = fc_antialias;
+        }
+
         if (f.hintingPreference == QFont::PreferDefaultHinting) {
             const QPlatformServices *services = QGuiApplicationPrivate::platformIntegration()->services();
             if (services && (services->desktopEnvironment() == "GNOME" || services->desktopEnvironment() == "UNITY")) {
