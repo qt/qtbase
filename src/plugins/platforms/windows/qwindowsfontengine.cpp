@@ -1169,7 +1169,7 @@ QWindowsNativeImage *QWindowsFontEngine::drawGDIGlyph(HFONT font, glyph_t glyph,
     return ni;
 }
 
-glyph_metrics_t QWindowsFontEngine::alphaMapBoundingBox(glyph_t glyph, QFixed pos, const QTransform &matrix, GlyphFormat format)
+glyph_metrics_t QWindowsFontEngine::alphaMapBoundingBox(glyph_t glyph, QFixed, const QTransform &matrix, GlyphFormat format)
 {
     int margin = 0;
     if (format == QFontEngine::Format_A32 || format == QFontEngine::Format_ARGB)
