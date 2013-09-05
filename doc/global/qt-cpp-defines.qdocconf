@@ -105,6 +105,7 @@ Cpp.ignoretokens        += \
                           QT_END_INCLUDE_NAMESPACE \
                           QT_END_NAMESPACE \
                           QT_FASTCALL \
+                          QT_MUTEX_LOCK_NOEXCEPT \
                           QT_WIDGET_PLUGIN_EXPORT \
                           QT_BEGIN_NAMESPACE_NFC \
                           QT_END_NAMESPACE_NFC \
