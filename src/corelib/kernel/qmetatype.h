@@ -1458,18 +1458,7 @@ namespace QtPrivate
     template<typename T>
     struct IsMetaTypePair<T, true>
     {
-        static bool registerConverter(int id)
-        {
-            const int toId = qMetaTypeId<QtMetaTypePrivate::QPairVariantInterfaceImpl>();
-            if (!QMetaType::hasRegisteredConverterFunction(id, toId)) {
-                static const QtMetaTypePrivate::QPairVariantInterfaceConvertFunctor<T> o;
-                static const QtPrivate::ConverterFunctor<T,
-                                            QtMetaTypePrivate::QPairVariantInterfaceImpl,
-                                            QtMetaTypePrivate::QPairVariantInterfaceConvertFunctor<T> > f(o);
-                return QMetaType::registerConverterFunction(&f, id, toId);
-            }
-            return true;
-        }
+        inline static bool registerConverter(int id);
     };
 
     template<typename T>
@@ -1977,6 +1966,21 @@ Q_DECLARE_METATYPE(QtMetaTypePrivate::QAssociativeIterableImpl)
 Q_DECLARE_METATYPE(QtMetaTypePrivate::QPairVariantInterfaceImpl)
 
 QT_BEGIN_NAMESPACE
+
+template <typename T>
+inline bool QtPrivate::IsMetaTypePair<T, true>::registerConverter(int id)
+{
+    const int toId = qMetaTypeId<QtMetaTypePrivate::QPairVariantInterfaceImpl>();
+    if (!QMetaType::hasRegisteredConverterFunction(id, toId)) {
+        static const QtMetaTypePrivate::QPairVariantInterfaceConvertFunctor<T> o;
+        static const QtPrivate::ConverterFunctor<T,
+                                    QtMetaTypePrivate::QPairVariantInterfaceImpl,
+                                    QtMetaTypePrivate::QPairVariantInterfaceConvertFunctor<T> > f(o);
+        return QMetaType::registerConverterFunction(&f, id, toId);
+    }
+    return true;
+}
+
 
 #ifndef Q_QDOC
 template<typename T>
