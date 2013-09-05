@@ -347,7 +347,8 @@ Option::init(int argc, char **argv)
                     continue;
                 QString candidate = currentDir.absoluteFilePath(*p + QLatin1Char('/') + argv0);
 #ifdef Q_OS_WIN
-                candidate += ".exe";
+                if (!candidate.endsWith(QLatin1String(".exe")))
+                    candidate += QLatin1String(".exe");
 #endif
                 if (QFile::exists(candidate)) {
                     globals->qmake_abslocation = candidate;
