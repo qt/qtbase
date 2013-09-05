@@ -2946,7 +2946,7 @@ bool QVariant::convert(int targetTypeId)
     if (oldValue.isNull())
         return false;
 
-    if ((QMetaType::typeFlags(d.type) & QMetaType::PointerToQObject) && (QMetaType::typeFlags(targetTypeId) & QMetaType::PointerToQObject)) {
+    if ((QMetaType::typeFlags(oldValue.userType()) & QMetaType::PointerToQObject) && (QMetaType::typeFlags(targetTypeId) & QMetaType::PointerToQObject)) {
         create(targetTypeId, &oldValue.d.data.o);
         return true;
     }
