@@ -1886,7 +1886,20 @@ void HtmlGenerator::generateRequisites(InnerNode *inner, CodeMarker *marker)
         requisites.insert(sinceText, text);
     }
 
-    //add the instantiated-by to the map if the class node is not internal
+    if (inner->type() == Node::Class || inner->type() == Node::Namespace) {
+        //add the QT variable to the map
+        if (!inner->moduleName().isEmpty()) {
+            DocNode * moduleNode = qdb_->findModule(inner->moduleName());
+            if (moduleNode && !moduleNode->qtVariable().isEmpty()) {
+                text.clear();
+                text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_TELETYPE)
+                     << "QT += " + moduleNode->qtVariable()
+                     << Atom(Atom::FormattingRight, ATOM_FORMATTING_TELETYPE);
+                requisites.insert(qtVariableText, text);
+            }
+        }
+    }
+
     if (inner->type() == Node::Class) {
         ClassNode* classe = static_cast<ClassNode*>(inner);
         if (classe->qmlElement() != 0 && classe->status() != Node::Internal) {
@@ -1932,18 +1945,6 @@ void HtmlGenerator::generateRequisites(InnerNode *inner, CodeMarker *marker)
             appendSortedNames(text, classe, classe->derivedClasses());
             text << Atom::ParaRight;
             requisites.insert(inheritedBytext, text);
-        }
-
-        //add the QT variable to the map
-        if (!classe->moduleName().isEmpty()) {
-            DocNode * moduleNode = qdb_->findModule(classe->moduleName());
-            if (moduleNode && !moduleNode->qtVariable().isEmpty()) {
-                text.clear();
-                text << Atom(Atom::FormattingLeft, ATOM_FORMATTING_TELETYPE)
-                     << "QT += " + moduleNode->qtVariable()
-                     << Atom(Atom::FormattingRight, ATOM_FORMATTING_TELETYPE);
-                requisites.insert(qtVariableText, text);
-            }
         }
     }
 
