@@ -397,7 +397,7 @@ void tst_QMetaObjectBuilder::signal()
     QCOMPARE(method1.parameterTypes(), QList<QByteArray>() << "QString" << "int");
     QVERIFY(method1.parameterNames().isEmpty());
     QVERIFY(method1.tag().isEmpty());
-    QVERIFY(method1.access() == QMetaMethod::Protected);
+    QVERIFY(method1.access() == QMetaMethod::Public);
     QCOMPARE(method1.attributes(), 0);
     QCOMPARE(method1.index(), 0);
     QCOMPARE(builder.methodCount(), 1);
@@ -410,7 +410,7 @@ void tst_QMetaObjectBuilder::signal()
     QCOMPARE(method2.parameterTypes(), QList<QByteArray>() << "QString");
     QVERIFY(method2.parameterNames().isEmpty());
     QVERIFY(method2.tag().isEmpty());
-    QVERIFY(method2.access() == QMetaMethod::Protected);
+    QVERIFY(method2.access() == QMetaMethod::Public);
     QCOMPARE(method2.attributes(), 0);
     QCOMPARE(method2.index(), 1);
     QCOMPARE(builder.methodCount(), 2);

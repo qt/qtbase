@@ -348,7 +348,7 @@ void QDBusMetaObjectGenerator::parseSignals()
             prototype.append(')');
 
         // meta method flags
-        mm.flags = AccessProtected | MethodSignal | MethodScriptable;
+        mm.flags = AccessPublic | MethodSignal | MethodScriptable;
 
         // add
         signals_.insert(QMetaObject::normalizedSignature(prototype), mm);

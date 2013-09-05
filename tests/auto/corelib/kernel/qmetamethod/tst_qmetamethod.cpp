@@ -205,7 +205,7 @@ void tst_QMetaMethod::method_data()
             << (QList<int>())
             << (QList<QByteArray>())
             << (QList<QByteArray>())
-            << QMetaMethod::Protected
+            << QMetaMethod::Public
             << QMetaMethod::Signal;
 
     QTest::newRow("voidInvokable")
@@ -241,7 +241,7 @@ void tst_QMetaMethod::method_data()
             << QList<int>()
             << QList<QByteArray>()
             << QList<QByteArray>()
-            << QMetaMethod::Protected
+            << QMetaMethod::Public
             << QMetaMethod::Signal;
 
     QTest::newRow("voidSignalInt")
@@ -250,7 +250,7 @@ void tst_QMetaMethod::method_data()
             << (QList<int>() << int(QMetaType::Int))
             << (QList<QByteArray>() << QByteArray("int"))
             << (QList<QByteArray>() << QByteArray("voidSignalIntArg"))
-            << QMetaMethod::Protected
+            << QMetaMethod::Public
             << QMetaMethod::Signal;
 
     QTest::newRow("voidInvokableInt")
@@ -286,7 +286,7 @@ void tst_QMetaMethod::method_data()
             << (QList<int>() << qMetaTypeId<qreal>())
             << (QList<QByteArray>() << QByteArray("qreal"))
             << (QList<QByteArray>() << QByteArray("voidSignalQRealArg"))
-            << QMetaMethod::Protected
+            << QMetaMethod::Public
             << QMetaMethod::Signal;
 
     QTest::newRow("voidInvokableQReal")
@@ -322,7 +322,7 @@ void tst_QMetaMethod::method_data()
             << (QList<int>() << int(QMetaType::QString))
             << (QList<QByteArray>() << QByteArray("QString"))
             << (QList<QByteArray>() << QByteArray("voidSignalQStringArg"))
-            << QMetaMethod::Protected
+            << QMetaMethod::Public
             << QMetaMethod::Signal;
 
     QTest::newRow("voidInvokableQString")
@@ -358,7 +358,7 @@ void tst_QMetaMethod::method_data()
             << (QList<int>() << qMetaTypeId<CustomType>())
             << (QList<QByteArray>() << QByteArray("CustomType"))
             << (QList<QByteArray>() << QByteArray("voidSignalCustomTypeArg"))
-            << QMetaMethod::Protected
+            << QMetaMethod::Public
             << QMetaMethod::Signal;
 
     QTest::newRow("voidInvokableCustomType")
@@ -394,7 +394,7 @@ void tst_QMetaMethod::method_data()
             << (QList<int>() << 0)
             << (QList<QByteArray>() << QByteArray("CustomUnregisteredType"))
             << (QList<QByteArray>() << QByteArray("voidSignalCustomUnregisteredTypeArg"))
-            << QMetaMethod::Protected
+            << QMetaMethod::Public
             << QMetaMethod::Signal;
 
     QTest::newRow("voidInvokableCustomUnregisteredType")
@@ -430,7 +430,7 @@ void tst_QMetaMethod::method_data()
             << (QList<int>())
             << (QList<QByteArray>())
             << (QList<QByteArray>())
-            << QMetaMethod::Protected
+            << QMetaMethod::Public
             << QMetaMethod::Signal;
 
     QTest::newRow("boolInvokable")
@@ -457,7 +457,7 @@ void tst_QMetaMethod::method_data()
             << (QList<int>())
             << (QList<QByteArray>())
             << (QList<QByteArray>())
-            << QMetaMethod::Protected
+            << QMetaMethod::Public
             << QMetaMethod::Signal;
 
     QTest::newRow("qrealInvokable")
@@ -484,7 +484,7 @@ void tst_QMetaMethod::method_data()
             << (QList<int>())
             << (QList<QByteArray>())
             << (QList<QByteArray>())
-            << QMetaMethod::Protected
+            << QMetaMethod::Public
             << QMetaMethod::Signal;
 
     QTest::newRow("qstringInvokable")
@@ -529,7 +529,7 @@ void tst_QMetaMethod::method_data()
                               "bool,int,uint,qlonglong,qulonglong,double,long,short,char,ulong,ushort,uchar,float)")
                 << int(QMetaType::QVariant) << QByteArray("QVariant")
                 << parameterTypes << parameterTypeNames << parameterNames
-                << QMetaMethod::Protected
+                << QMetaMethod::Public
                 << QMetaMethod::Signal;
 
         QTest::newRow("qvariantInvokableBoolIntUIntLonglongULonglongDoubleLongShortCharUlongUshortUcharFloat")
@@ -562,7 +562,7 @@ void tst_QMetaMethod::method_data()
             << (QList<int>() << int(QMetaType::Bool) << int(QMetaType::Int))
             << (QList<QByteArray>() << QByteArray("bool") << QByteArray("int"))
             << (QList<QByteArray>() << QByteArray("") << QByteArray(""))
-            << QMetaMethod::Protected
+            << QMetaMethod::Public
             << QMetaMethod::Signal;
 
     QTest::newRow("voidInvokableNoParameterNames")

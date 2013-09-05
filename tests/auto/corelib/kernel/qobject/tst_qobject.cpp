@@ -2062,7 +2062,7 @@ void tst_QObject::metamethod()
     m = mobj->method(mobj->indexOfMethod("signal5()"));
     QVERIFY(m.methodSignature() == "signal5()");
     QVERIFY(m.methodType() == QMetaMethod::Signal);
-    QVERIFY(m.access() == QMetaMethod::Protected);
+    QVERIFY(m.access() == QMetaMethod::Public);
     QVERIFY(!(m.attributes() & QMetaMethod::Scriptable));
     QVERIFY((m.attributes() & QMetaMethod::Compatibility));
 

@@ -988,7 +988,7 @@ void Moc::parseSignals(ClassDef *def)
             prev();
         }
         FunctionDef funcDef;
-        funcDef.access = FunctionDef::Protected;
+        funcDef.access = FunctionDef::Public;
         parseFunction(&funcDef);
         if (funcDef.isVirtual)
             warning("Signals cannot be declared virtual");
