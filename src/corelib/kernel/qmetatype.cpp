@@ -558,6 +558,8 @@ bool QMetaType::registerConverterFunction(const QtPrivate::AbstractConverterFunc
  */
 void QMetaType::unregisterConverterFunction(int from, int to)
 {
+    if (customTypesConversionRegistry.isDestroyed())
+        return;
     customTypesConversionRegistry()->remove(from, to);
 }
 

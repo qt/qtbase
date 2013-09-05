@@ -154,6 +154,7 @@ private slots:
     void qvariant_cast_QObject_data();
     void qvariant_cast_QObject();
     void qvariant_cast_QObject_derived();
+    void qvariant_cast_QObject_wrapper();
 
     void toLocale();
 
@@ -2233,6 +2234,41 @@ void tst_QVariant::qvariant_cast_QObject_derived()
         QCOMPARE(data.value<CustomQObjectDerived *>(), object);
         QCOMPARE(data.value<CustomQObject *>(), object);
     }
+}
+
+struct QObjectWrapper
+{
+    explicit QObjectWrapper(QObject *o = 0) : obj(o) {}
+
+    QObject* getObject() const {
+        return obj;
+    }
+private:
+    QObject *obj;
+};
+
+Q_DECLARE_METATYPE(QObjectWrapper)
+
+struct Converter
+{
+  Converter() {}
+
+  QObject* operator()(const QObjectWrapper &f) const
+  {
+      return f.getObject();
+  }
+};
+
+void tst_QVariant::qvariant_cast_QObject_wrapper()
+{
+    QMetaType::registerConverter<QObjectWrapper, QObject*>(&QObjectWrapper::getObject);
+
+    CustomQObjectDerived *object = new CustomQObjectDerived(this);
+    QObjectWrapper wrapper(object);
+    QVariant v = QVariant::fromValue(wrapper);
+    v.convert(qMetaTypeId<QObject*>());
+    QCOMPARE(v.value<QObject*>(), object);
+
 }
 
 void tst_QVariant::convertToQUint8() const
