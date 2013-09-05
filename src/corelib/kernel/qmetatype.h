@@ -1790,21 +1790,15 @@ struct QMetaTypeId< DOUBLE_ARG_TEMPLATE<T, U> > \
 };
 
 #define Q_DECLARE_SMART_POINTER_METATYPE(SMART_POINTER) \
-template <typename T, bool = QtPrivate::IsPointerToTypeDerivedFromQObject<T*>::Value> \
-struct QMetaTypeId_ ## SMART_POINTER ## _QObjectStar \
-{ \
-    enum { \
-        Defined = 0 \
-    }; \
-};\
- \
 template <typename T> \
-struct QMetaTypeId_ ## SMART_POINTER ## _QObjectStar<T, true> \
+struct QMetaTypeId< SMART_POINTER<T> > \
 { \
     enum { \
-        Defined = 1 \
+        Defined = QtPrivate::IsPointerToTypeDerivedFromQObject<T*>::Value \
     }; \
-    static int qt_metatype_id() \
+    static \
+    typename QtPrivate::QEnableIf<QtPrivate::IsPointerToTypeDerivedFromQObject<T*>::Value, int>::Type \
+    qt_metatype_id() \
     { \
         static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
         if (const int id = metatype_id.loadAcquire()) \
@@ -1820,12 +1814,7 @@ struct QMetaTypeId_ ## SMART_POINTER ## _QObjectStar<T, true> \
         metatype_id.storeRelease(newId); \
         return newId; \
     } \
-}; \
-\
-template <typename T> \
-struct QMetaTypeId< SMART_POINTER<T> > : public QMetaTypeId_ ## SMART_POINTER ## _QObjectStar<T> \
-{ \
-};
+};\
 
 #define QT_FOR_EACH_AUTOMATIC_TEMPLATE_SMART_POINTER(F) \
     F(QSharedPointer) \
