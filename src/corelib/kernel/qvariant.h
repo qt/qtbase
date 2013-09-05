@@ -756,7 +756,9 @@ namespace QtPrivate {
 #ifndef QT_NO_QOBJECT
         static T object(const QVariant &v)
         {
-            return qobject_cast<T>(QMetaType::typeFlags(v.userType()) & QMetaType::PointerToQObject ? v.d.data.o : 0);
+            return qobject_cast<T>(QMetaType::typeFlags(v.userType()) & QMetaType::PointerToQObject
+                ? v.d.data.o
+                : QVariantValueHelper::metaType(v));
         }
 #endif
     };

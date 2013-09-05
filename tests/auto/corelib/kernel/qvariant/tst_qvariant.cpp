@@ -2266,6 +2266,7 @@ void tst_QVariant::qvariant_cast_QObject_wrapper()
     CustomQObjectDerived *object = new CustomQObjectDerived(this);
     QObjectWrapper wrapper(object);
     QVariant v = QVariant::fromValue(wrapper);
+    QCOMPARE(v.value<QObject*>(), object);
     v.convert(qMetaTypeId<QObject*>());
     QCOMPARE(v.value<QObject*>(), object);
 
