@@ -52,6 +52,7 @@
 #include <qitemdelegate.h>
 #include <qscrollbar.h>
 #include <private/qcolumnview_p.h>
+#include <qscreen.h>
 
 #define ANIMATION_DELAY 300
 
@@ -387,6 +388,12 @@ void tst_QColumnView::scrollTo_data()
     QTest::newRow("reverse") << true << false;
 }
 
+static inline void centerOnScreen(QWidget *w)
+{
+    const QPoint offset = QPoint(w->width() / 2, w->height() / 2);
+    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
+}
+
 void tst_QColumnView::scrollTo()
 {
     QFETCH(bool, reverse);
@@ -397,6 +404,7 @@ void tst_QColumnView::scrollTo()
     ColumnView view(&topLevel);
     view.resize(200, 200);
     topLevel.show();
+    centerOnScreen(&topLevel);
     view.scrollTo(QModelIndex(), QAbstractItemView::EnsureVisible);
     QCOMPARE(view.HorizontalOffset(), 0);
 
