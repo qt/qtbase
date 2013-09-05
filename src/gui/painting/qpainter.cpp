@@ -115,12 +115,6 @@ static inline QGradient::CoordinateMode coordinateMode(const QBrush &brush)
     return QGradient::LogicalMode;
 }
 
-/* Returns true if the gradient requires stretch to device...*/
-static inline bool check_gradient(const QBrush &brush)
-{
-    return coordinateMode(brush) == QGradient::StretchToDeviceMode;
-}
-
 extern bool qHasPixmapTexture(const QBrush &);
 
 static inline bool is_brush_transparent(const QBrush &brush) {
