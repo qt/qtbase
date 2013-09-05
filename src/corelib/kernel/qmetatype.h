@@ -1789,16 +1789,32 @@ struct QMetaTypeId< DOUBLE_ARG_TEMPLATE<T, U> > \
     } \
 };
 
+namespace QtPrivate {
+
+template<typename T, bool /* isSharedPointerToQObjectDerived */ = false>
+struct SharedPointerMetaTypeIdHelper
+{
+    enum {
+        Defined = 0
+    };
+    static int qt_metatype_id()
+    {
+        return -1;
+    }
+};
+
+}
+
 #define Q_DECLARE_SMART_POINTER_METATYPE(SMART_POINTER) \
-template <typename T> \
-struct QMetaTypeId< SMART_POINTER<T> > \
+QT_BEGIN_NAMESPACE \
+namespace QtPrivate { \
+template<typename T> \
+struct SharedPointerMetaTypeIdHelper<SMART_POINTER<T>, true> \
 { \
     enum { \
-        Defined = QtPrivate::IsPointerToTypeDerivedFromQObject<T*>::Value \
+        Defined = 1 \
     }; \
-    static \
-    typename QtPrivate::QEnableIf<QtPrivate::IsPointerToTypeDerivedFromQObject<T*>::Value, int>::Type \
-    qt_metatype_id() \
+    static int qt_metatype_id() \
     { \
         static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0); \
         if (const int id = metatype_id.loadAcquire()) \
@@ -1814,7 +1830,15 @@ struct QMetaTypeId< SMART_POINTER<T> > \
         metatype_id.storeRelease(newId); \
         return newId; \
     } \
+}; \
+} \
+template <typename T> \
+struct QMetaTypeId< SMART_POINTER<T> > \
+    : QtPrivate::SharedPointerMetaTypeIdHelper< SMART_POINTER<T>, \
+                                                QtPrivate::IsPointerToTypeDerivedFromQObject<T*>::Value> \
+{ \
 };\
+QT_END_NAMESPACE \
 
 #define QT_FOR_EACH_AUTOMATIC_TEMPLATE_SMART_POINTER(F) \
     F(QSharedPointer) \
@@ -1846,7 +1870,11 @@ Q_DECLARE_METATYPE_TEMPLATE_2ARG(std::map)
 #define Q_DECLARE_METATYPE_TEMPLATE_SMART_POINTER_ITER(TEMPLATENAME) \
     Q_DECLARE_SMART_POINTER_METATYPE(TEMPLATENAME)
 
+QT_END_NAMESPACE
+
 QT_FOR_EACH_AUTOMATIC_TEMPLATE_SMART_POINTER(Q_DECLARE_METATYPE_TEMPLATE_SMART_POINTER_ITER)
+
+QT_BEGIN_NAMESPACE
 
 #undef Q_DECLARE_METATYPE_TEMPLATE_SMART_POINTER_ITER
 

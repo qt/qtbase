@@ -2259,6 +2259,28 @@ struct Converter
   }
 };
 
+namespace MyNS {
+
+template<typename T>
+class SmartPointer
+{
+    T* pointer;
+public:
+    typedef T element_type;
+    explicit SmartPointer(T *t = 0)
+      : pointer(t)
+    {
+    }
+
+    T* operator->() const { return pointer; }
+};
+
+}
+
+Q_DECLARE_SMART_POINTER_METATYPE(MyNS::SmartPointer)
+
+Q_DECLARE_METATYPE(MyNS::SmartPointer<int>)
+
 void tst_QVariant::qvariant_cast_QObject_wrapper()
 {
     QMetaType::registerConverter<QObjectWrapper, QObject*>(&QObjectWrapper::getObject);
@@ -2270,6 +2292,10 @@ void tst_QVariant::qvariant_cast_QObject_wrapper()
     v.convert(qMetaTypeId<QObject*>());
     QCOMPARE(v.value<QObject*>(), object);
 
+    // Compile tests:
+    qRegisterMetaType<MyNS::SmartPointer<int> >();
+    // Not declared as a metatype:
+    qRegisterMetaType<MyNS::SmartPointer<double> >("MyNS::SmartPointer<double>");
 }
 
 void tst_QVariant::convertToQUint8() const
