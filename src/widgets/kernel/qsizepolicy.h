@@ -144,17 +144,18 @@ private:
 #endif
     QSizePolicy(int i) : data(i) { }
 
+    struct Bits {
+        quint32 horStretch : 8;
+        quint32 verStretch : 8;
+        quint32 horPolicy : 4;
+        quint32 verPolicy : 4;
+        quint32 ctype : 5;
+        quint32 hfw : 1;
+        quint32 wfh : 1;
+        quint32 retainSizeWhenHidden : 1;
+    };
     union {
-        struct {
-            quint32 horStretch : 8;
-            quint32 verStretch : 8;
-            quint32 horPolicy : 4;
-            quint32 verPolicy : 4;
-            quint32 ctype : 5;
-            quint32 hfw : 1;
-            quint32 wfh : 1;
-            quint32 retainSizeWhenHidden : 1;
-        } bits;
+        Bits bits;
         quint32 data;
     };
 };

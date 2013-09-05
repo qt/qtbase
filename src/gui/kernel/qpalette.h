@@ -174,11 +174,12 @@ private:
     void detach();
 
     QPalettePrivate *d;
+    struct Data {
+        uint current_group : 4;
+        uint resolve_mask : 28;
+    };
     union {
-        struct {
-            uint current_group : 4;
-            uint resolve_mask : 28;
-        } data;
+        Data data;
         quint32 for_faster_swapping_dont_use;
     };
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &s, const QPalette &p);
