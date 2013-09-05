@@ -128,7 +128,6 @@ class Tree
     void addPropertyFunction(PropertyNode *property,
                              const QString &funcName,
                              PropertyNode::FunctionRole funcRole);
-    void addToQmlModule(Node* node);
     void resolveInheritance(NamespaceNode *rootNode = 0);
     void resolveProperties();
     void resolveCppToQmlLinks();
