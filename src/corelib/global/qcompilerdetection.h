@@ -151,7 +151,7 @@
 /* Intel C++ also masquerades as GCC */
 #    define Q_CC_INTEL
 #    define Q_ASSUME_IMPL(expr)  __assume(expr)
-#    define Q_UNREACHABLE_IMPL() __assume(0)
+#    define Q_UNREACHABLE_IMPL() __builtin_unreachable()
 #  elif defined(__clang__)
 /* Clang also masquerades as GCC */
 #    define Q_CC_CLANG
