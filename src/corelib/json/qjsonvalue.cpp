@@ -661,7 +661,7 @@ QJsonValue QJsonValueRef::toValue() const
     return o->valueAt(index);
 }
 
-#ifndef QT_NO_DEBUG_STREAM
+#if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 QDebug operator<<(QDebug dbg, const QJsonValue &o)
 {
     switch (o.t) {

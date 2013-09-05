@@ -1,0 +1,9 @@
+{
+    "array" : ["arrayItem1", "arrayItem2", "arrayItem3"],
+    "object" : { "key1" : "objectValue1", "key2" : "objectValue2" },
+    "string" : "test string",
+    "number" : 999,
+    "true" : true,
+    "false" :false,
+    "null" : null
+}

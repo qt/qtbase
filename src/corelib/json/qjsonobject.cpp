@@ -1036,7 +1036,7 @@ void QJsonObject::setValueAt(int i, const QJsonValue &val)
     insert(e->key(), val);
 }
 
-#ifndef QT_NO_DEBUG_STREAM
+#if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 QDebug operator<<(QDebug dbg, const QJsonObject &o)
 {
     if (!o.o) {

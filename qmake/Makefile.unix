@@ -19,6 +19,7 @@ QOBJS=qtextcodec.o qutfcodec.o qstring.o qstringbuilder.o qtextstream.o qiodevic
       qabstractfileengine.o qtemporaryfile.o qmap.o qmetatype.o qsettings.o qsystemerror.o qlibraryinfo.o \
       qvariant.o qvsnprintf.o qlocale.o qlocale_tools.o qlinkedlist.o qnumeric.o \
       qcryptographichash.o qxmlstream.o qxmlutils.o qlogging.o \
+      qjson.o qjsondocument.o qjsonparser.o qjsonarray.o qjsonobject.o qjsonvalue.o \
       $(QTOBJS)
 
 
@@ -80,6 +81,12 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/global/qlogging.cpp \
 	   $(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp \
 	   $(SOURCE_PATH)/tools/shared/windows/registry.cpp \
+	   $(SOURCE_PATH)/src/corelib/json/qjson.cpp \
+	   $(SOURCE_PATH)/src/corelib/json/qjsondocument.cpp \
+	   $(SOURCE_PATH)/src/corelib/json/qjsonparser.cpp \
+	   $(SOURCE_PATH)/src/corelib/json/qjsonarray.cpp \
+	   $(SOURCE_PATH)/src/corelib/json/qjsonobject.cpp \
+	   $(SOURCE_PATH)/src/corelib/json/qjsonvalue.cpp \
 	   $(QTSRCS)
 
 CPPFLAGS = -g $(EXTRA_CPPFLAGS) \
@@ -93,7 +100,7 @@ CPPFLAGS = -g $(EXTRA_CPPFLAGS) \
 	   -DQT_BUILD_QMAKE -DQT_BOOTSTRAPPED -DPROEVALUATOR_FULL \
 	   -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_NO_COMPONENT -DQT_NO_COMPRESS \
 	   -DQT_NO_THREAD -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -DQT_NO_DATASTREAM \
-	   -DQT_CRYPTOGRAPHICHASH_ONLY_SHA1
+	   -DQT_CRYPTOGRAPHICHASH_ONLY_SHA1 -DQT_JSON_READONLY
 
 CXXFLAGS = $(EXTRA_CXXFLAGS) $(CPPFLAGS)
 
@@ -384,5 +391,23 @@ qsystemlibrary.o: $(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp
 
 registry.o: $(SOURCE_PATH)/tools/shared/windows/registry.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/windows/registry.cpp
+
+qjson.o: $(SOURCE_PATH)/src/corelib/json/qjson.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/json/qjson.cpp
+
+qjsondocument.o: $(SOURCE_PATH)/src/corelib/json/qjsondocument.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/json/qjsondocument.cpp
+
+qjsonparser.o: $(SOURCE_PATH)/src/corelib/json/qjsonparser.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/json/qjsonparser.cpp
+
+qjsonarray.o: $(SOURCE_PATH)/src/corelib/json/qjsonarray.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/json/qjsonarray.cpp
+
+qjsonobject.o: $(SOURCE_PATH)/src/corelib/json/qjsonobject.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/json/qjsonobject.cpp
+
+qjsonvalue.o: $(SOURCE_PATH)/src/corelib/json/qjsonvalue.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/json/qjsonvalue.cpp
 
 # DO NOT DELETE THIS LINE -- make depend depends on it

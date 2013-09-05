@@ -117,7 +117,7 @@ public:
 
 #ifdef Q_QDOC
     QByteArray toJson(JsonFormat format = Indented) const;
-#else
+#elif !defined(QT_JSON_READONLY)
     QByteArray toJson() const; //### Merge in Qt6
     QByteArray toJson(JsonFormat format) const;
 #endif
@@ -148,7 +148,7 @@ private:
     QJsonPrivate::Data *d;
 };
 
-#ifndef QT_NO_DEBUG_STREAM
+#if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonDocument &);
 #endif
 

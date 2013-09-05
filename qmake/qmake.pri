@@ -83,7 +83,13 @@ bootstrap { #Qt code
         qvsnprintf.cpp \
         qxmlstream.cpp \
         qxmlutils.cpp \
-        qlogging.cpp
+        qlogging.cpp \
+        qjson.cpp \
+        qjsondocument.cpp \
+        qjsonparser.cpp \
+        qjsonarray.cpp \
+        qjsonobject.cpp \
+        qjsonvalue.cpp
 
    HEADERS+= \
         qbitarray.h \
@@ -126,7 +132,14 @@ bootstrap { #Qt code
         quuid.h \
         qvector.h \
         qxmlstream.h \
-        qxmlutils.h
+        qxmlutils.h \
+        qjson.h \
+        qjsondocument.h \
+        qjsonparser.h \
+        qjsonwriter.h \
+        qjsonarray.h \
+        qjsonobject.h \
+        qjsonvalue.h
 
     unix {
         SOURCES += qfilesystemengine_unix.cpp qfilesystemiterator_unix.cpp qfsfileengine_unix.cpp

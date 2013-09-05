@@ -92,6 +92,7 @@ private slots:
     void substitutes();
     void project();
     void proFileCache();
+    void json();
 
 private:
     TestCompiler test_compiler;
@@ -554,6 +555,34 @@ void tst_qmake::proFileCache()
 {
     QString workDir = base_path + "/testdata/pro_file_cache";
     QVERIFY( test_compiler.qmake( workDir, "pro_file_cache" ));
+}
+
+void tst_qmake::json()
+{
+    QString workDir = base_path + "/testdata/json";
+    QVERIFY( test_compiler.qmake( workDir, "json.pro" ));
+    QString output = test_compiler.commandOutput();
+
+    // all keys
+    QVERIFY(output.contains("json._KEYS_ array false null number object string true"));
+    // array
+    QVERIFY(output.contains("json.array._KEYS_ 0 1 2"));
+    QVERIFY(output.contains("json.array.0 arrayItem1"));
+    QVERIFY(output.contains("json.array.1 arrayItem2"));
+    QVERIFY(output.contains("json.array.2 arrayItem3"));
+    // object
+    QVERIFY(output.contains("json.object._KEYS_ key1 key2"));
+    QVERIFY(output.contains("json.object.key1 objectValue1"));
+    QVERIFY(output.contains("json.object.key1 objectValue1"));
+     // value types
+    QVERIFY(output.contains("json.string: test string"));
+    QVERIFY(output.contains("json.number: 999"));
+    QVERIFY(output.contains("json.true: true"));
+    QVERIFY(output.contains("json.false: false"));
+    QVERIFY(output.contains("json.null:"));
+    // functional booleans
+    QVERIFY(output.contains("json.true is true"));
+    QVERIFY(output.contains("json.false is false"));
 }
 
 QTEST_MAIN(tst_qmake)
