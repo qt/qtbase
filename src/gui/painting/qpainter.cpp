@@ -1653,7 +1653,7 @@ void QPainter::restore()
 
         //Since we've updated the clip region anyway, pretend that the clip path hasn't changed:
         d->state->dirtyFlags &= ~(QPaintEngine::DirtyClipPath | QPaintEngine::DirtyClipRegion);
-        tmp->changeFlags &= ~(QPaintEngine::DirtyClipPath | QPaintEngine::DirtyClipRegion);
+        tmp->changeFlags &= ~uint(QPaintEngine::DirtyClipPath | QPaintEngine::DirtyClipRegion);
         tmp->changeFlags |= QPaintEngine::DirtyTransform;
     }
 
