@@ -108,9 +108,11 @@ struct QWindowsShell32DLL
 
     typedef HRESULT (WINAPI *SHCreateItemFromParsingName)(PCWSTR, IBindCtx *, const GUID&, void **);
     typedef HRESULT (WINAPI *SHGetStockIconInfo)(int , int , _SHSTOCKICONINFO *);
+    typedef HRESULT (WINAPI *SHGetImageList)(int, REFIID , void **);
 
     SHCreateItemFromParsingName sHCreateItemFromParsingName;
     SHGetStockIconInfo sHGetStockIconInfo;
+    SHGetImageList sHGetImageList;
 };
 #endif // Q_OS_WINCE
 
