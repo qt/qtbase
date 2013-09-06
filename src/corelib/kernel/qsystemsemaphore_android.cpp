@@ -56,11 +56,13 @@ QSystemSemaphorePrivate::QSystemSemaphorePrivate() :
 
 void QSystemSemaphorePrivate::setErrorString(const QString &function)
 {
+    Q_UNUSED(function);
     qWarning() << Q_FUNC_INFO << "Not yet implemented on Android";
 }
 
 key_t QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
 {
+    Q_UNUSED(mode);
     qWarning() << Q_FUNC_INFO << "Not yet implemented on Android";
     return -1;
 }
@@ -72,6 +74,7 @@ void QSystemSemaphorePrivate::cleanHandle()
 
 bool QSystemSemaphorePrivate::modifySemaphore(int count)
 {
+    Q_UNUSED(count);
     qWarning() << Q_FUNC_INFO << "Not yet implemented on Android";
     return false;
 }

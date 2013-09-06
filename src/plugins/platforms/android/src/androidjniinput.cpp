@@ -222,23 +222,10 @@ namespace QtAndroidInput
         m_touchPoints.push_back(touchPoint);
     }
 
-    static void touchEnd(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint action)
+    static void touchEnd(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint /*action*/)
     {
         if (m_touchPoints.isEmpty())
             return;
-
-        QEvent::Type eventType = QEvent::None;
-        switch (action) {
-            case 0:
-                eventType = QEvent::TouchBegin;
-                break;
-            case 1:
-                eventType = QEvent::TouchUpdate;
-                break;
-            case 2:
-                eventType = QEvent::TouchEnd;
-                break;
-        }
 
         QAndroidPlatformIntegration *platformIntegration = QtAndroid::androidPlatformIntegration();
         QTouchDevice *touchDevice = platformIntegration->touchDevice();

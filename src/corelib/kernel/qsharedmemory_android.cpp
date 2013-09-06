@@ -57,6 +57,7 @@ QSharedMemoryPrivate::QSharedMemoryPrivate()
 
 void QSharedMemoryPrivate::setErrorString(const QString &function)
 {
+    Q_UNUSED(function);
     qWarning() << Q_FUNC_INFO << "Not yet implemented on Android";
 }
 
@@ -71,6 +72,7 @@ key_t QSharedMemoryPrivate::handle()
 #if !(defined(QT_NO_SHAREDMEMORY) && defined(QT_NO_SYSTEMSEMAPHORE))
 int QSharedMemoryPrivate::createUnixKeyFile(const QString &fileName)
 {
+    Q_UNUSED(fileName);
     qWarning() << Q_FUNC_INFO << "Not yet implemented on Android";
     return 0;
 }
@@ -86,12 +88,14 @@ bool QSharedMemoryPrivate::cleanHandle()
 
 bool QSharedMemoryPrivate::create(int size)
 {
+    Q_UNUSED(size);
     qWarning() << Q_FUNC_INFO << "Not yet implemented on Android";
     return false;
 }
 
 bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
 {
+    Q_UNUSED(mode);
     qWarning() << Q_FUNC_INFO << "Not yet implemented on Android";
     return false;
 }

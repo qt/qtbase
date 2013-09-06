@@ -98,6 +98,7 @@ QDpi QEglFSAndroidHooks::logicalDpi() const
 EGLNativeWindowType QEglFSAndroidHooks::createNativeWindow(const QSize &size, const QSurfaceFormat &format)
 {
     Q_UNUSED(size);
+    Q_UNUSED(format);
     ANativeWindow *window = QtAndroid::nativeWindow();
     if (window != 0)
         ANativeWindow_acquire(window);
