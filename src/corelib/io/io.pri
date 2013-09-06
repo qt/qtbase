@@ -101,12 +101,12 @@ win32 {
         HEADERS += io/qfilesystemwatcher_win_p.h
         SOURCES += io/qfilesystemengine_win.cpp
         SOURCES += io/qfilesystemiterator_win.cpp
-        SOURCES += io/qstandardpaths_win.cpp
 
     !winrt {
         SOURCES += io/qsettings_win.cpp
         HEADERS += io/qwindowspipewriter_p.h
         SOURCES += io/qwindowspipewriter.cpp
+        SOURCES += io/qstandardpaths_win.cpp
 
         wince* {
             SOURCES += io/qprocess_wince.cpp
@@ -119,6 +119,8 @@ win32 {
                 io/qwinoverlappedionotifier.cpp \
                 io/qwindowspipereader.cpp
         }
+    } else {
+        SOURCES += io/qstandardpaths_winrt.cpp
     }
 } else:unix|integrity {
         SOURCES += \
