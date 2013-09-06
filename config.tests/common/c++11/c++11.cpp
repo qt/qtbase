@@ -46,8 +46,12 @@
 #endif
 
 #include <utility>
-#if defined(__clang__) && !defined(_LIBCPP_VERSION)
-#  error "C++11 with clang requires libc++ runtime"
+#if defined(__clang__)
+#  if __has_feature(cxx_generalized_initializers)
+//   On Mac OS X, the libstdc++ headers don't include <initializer_list>
+//   This #include here forces a failure unless we're using libc++
+#    include <initializer_list>
+#  endif
 #endif
 
 int main(int, char **) { return 0; }
