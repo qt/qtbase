@@ -17,8 +17,60 @@ equals(TEMPLATE, app):contains(QT, gui(-private)?) {
     # need to generate an import for it.
     CONFIG -= import_qpa_plugin
 
-    # FIXME: Solve using 'ld -r -alias -unexported_symbol' instead
-    !no_main_wrapper: DEFINES += main=qt_user_main
+    !no_main_wrapper {
+        # Instead of messing with the user's main function we go the other
+        # way and change the application entry point to call our main wrapper.
+        # This entry point is the 'start' symbol, provided by crt1.o, so we
+        # make a copy of the file and rename the '_main' unresolved symbol
+        # to our wrapper function, '_qtmn', injecting ourselves into the app
+        # startup. Once Apple starts shipping the LLVM linker (lld) we may
+        # get rid of this step completely and just pass -e _qtmn to the
+        # linker, taking advantage of the new LC_MAIN load command.
+
+        # We use xcodebuild to resolve the location of the crt1 object file
+        # as we know that it lives in the same location as the c library.
+        c_library_path = $$system("/usr/bin/xcodebuild -sdk $$QMAKE_MAC_SDK -find-library c 2>/dev/null")
+
+        # We also know that iOS 3.1 and up uses crt1.3.1.o (technically not
+        # true for simulator, but the SDK has a symlink to the correct file).
+        original_crt_path = $$dirname(c_library_path)/crt1.3.1.o
+
+        xcode_objects_path = "$(OBJECT_FILE_DIR_$(CURRENT_VARIANT))/$(CURRENT_ARCH)"
+        custom_crt_filename = "crt1_qt.o"
+        custom_crt_path = "$$xcode_objects_path/$$custom_crt_filename"
+
+        EOC = $$escape_expand(\\n\\t)
+        create_custom_crt.commands = \
+            # Copy original crt1 to build directory
+            "$$QMAKE_COPY_FILE $$original_crt_path $$custom_crt_path $$EOC" \
+            # And rename all occurrences of _main to _qtmn
+            "strings -t d - $${custom_crt_path}" \
+                "| sed -n 's/^\\([0-9]\\{1,\\}\\) _main\$\$/\1/p'" \
+                "| while read offset; do" \
+                    "printf '_qtmn'" \
+                        "| dd of=$${custom_crt_path} bs=1 seek=\$\$offset conv=notrunc >/dev/null 2>&1" \
+                "; done"
+        create_custom_crt.depends = $$original_crt_path
+        create_custom_crt.target = $$custom_crt_path
+        preprocess.depends = create_custom_crt
+        QMAKE_EXTRA_TARGETS += create_custom_crt preprocess
+
+        clean_custom_crt.commands = "$$QMAKE_DEL_FILE $$custom_crt_path"
+        preprocess_clean.depends += clean_custom_crt
+        QMAKE_EXTRA_TARGETS += clean_custom_crt preprocess_clean
+
+        # Prevent usage of new LC_MAIN load command, which skips start/crt1
+        # and calls main from the loader. We rely on injecting into start.
+        QMAKE_LFLAGS += -Wl,-no_new_main
+
+        # Explicitly link against our modified crt1 object
+        QMAKE_LFLAGS += -nostartfiles -l$${custom_crt_filename}
+
+        # Workaround for QMAKE_PBX_LIBPATHS mangling the Xcode variables
+        lib_search_path.name = LIBRARY_SEARCH_PATHS
+        lib_search_path.value = $$xcode_objects_path
+        QMAKE_MAC_XCODE_SETTINGS += lib_search_path
+    }
 }
 
 load(qt)

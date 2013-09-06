@@ -10,7 +10,6 @@ LIBS += -framework Foundation -framework UIKit -framework QuartzCore
 OBJECTIVE_SOURCES = \
     plugin.mm \
     qiosmain_wrapper.mm \
-    qiosmain_dummy.mm \
     qiosintegration.mm \
     qioswindow.mm \
     qiosscreen.mm \

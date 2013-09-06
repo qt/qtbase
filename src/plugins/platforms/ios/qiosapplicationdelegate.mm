@@ -46,7 +46,7 @@
 
 #include <QtCore/QtCore>
 
-extern int qt_user_main(int argc, char *argv[]);
+extern "C" int main(int argc, char *argv[]);
 
 @implementation QIOSApplicationDelegate
 
@@ -87,7 +87,7 @@ extern int qt_user_main(int argc, char *argv[]);
         strcpy(argv[i], [arg cStringUsingEncoding:[NSString defaultCStringEncoding]]);
     }
 
-    qt_user_main(argc, argv);
+    main(argc, argv);
     delete[] argv;
 }
 

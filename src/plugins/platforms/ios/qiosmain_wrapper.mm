@@ -41,18 +41,7 @@
 
 #include "qiosapplicationdelegate.h"
 
-/*
-    This file provides a wrapper implementation of main() for the non-
-    hybrid use-case. The user's main is renamed to qt_user_main by the
-    build rules, and we'll call out to that main at the appropriate time.
-
-    This file purposly only exports a single symbol, _main, so that
-    when the linker considers the translation unit for inclusion it
-    will discard it when main has already been defined in the user's
-    application for the hybrid use-case.
-*/
-
-int main(int argc, char *argv[])
+extern "C" int qtmn(int argc, char *argv[])
 {
     @autoreleasepool {
         return UIApplicationMain(argc, argv, nil, NSStringFromClass([QIOSApplicationDelegate class]));
