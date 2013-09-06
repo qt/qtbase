@@ -151,8 +151,6 @@ public:
         // we ignore byteorder for now
         char byteOrder = xSettings.at(1);
         Q_UNUSED(byteOrder);
-        uint serial = *reinterpret_cast<const uint *>(xSettings.mid(4,4).constData());
-        serial = serial;
         uint number_of_settings = *reinterpret_cast<const uint *>(xSettings.mid(8,4).constData());
 
         const char *data = xSettings.constData() + 12;
@@ -203,7 +201,6 @@ public:
 
     QXcbScreen *screen;
     xcb_window_t x_settings_window;
-    int serial;
     QMap<QByteArray, QXcbXSettingsPropertyValue> settings;
 };
 
