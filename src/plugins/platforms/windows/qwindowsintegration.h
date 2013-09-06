@@ -58,7 +58,8 @@ public:
         FontDatabaseNative = 0x2,
         DisableArb = 0x4,
         NoNativeDialogs = 0x8,
-        XpNativeDialogs = 0x10
+        XpNativeDialogs = 0x10,
+        PassOsMouseEventsSynthesizedFromTouch = 0x20 // Pass OS-generated mouse events from touch.
     };
 
     explicit QWindowsIntegration(const QStringList &paramList);

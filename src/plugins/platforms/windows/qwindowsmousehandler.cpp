@@ -169,10 +169,13 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
 
 #ifndef Q_OS_WINCE
     // Check for events synthesized from touch. Lower byte is touch index, 0 means pen.
-    const quint64 extraInfo = GetMessageExtraInfo();
-    const bool fromTouch = (extraInfo & signatureMask) == miWpSignature && (extraInfo & 0xff);
-    if (fromTouch)
-        return false;
+    static const bool passSynthesizedMouseEvents = QWindowsIntegration::instance()->options() & QWindowsIntegration::PassOsMouseEventsSynthesizedFromTouch;
+    if (!passSynthesizedMouseEvents) {
+        const quint64 extraInfo = GetMessageExtraInfo();
+        const bool fromTouch = (extraInfo & signatureMask) == miWpSignature && (extraInfo & 0xff);
+        if (fromTouch)
+            return false;
+    }
 #endif // !Q_OS_WINCE
 
     const QPoint winEventPosition(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));

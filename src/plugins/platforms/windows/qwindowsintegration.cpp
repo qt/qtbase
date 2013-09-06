@@ -342,6 +342,8 @@ static inline unsigned parseOptions(const QStringList &paramList)
             }
         } else if (param == QLatin1String("gl=gdi")) {
             options |= QWindowsIntegration::DisableArb;
+        } else if (param == QLatin1String("mousefromtouch")) {
+            options |= QWindowsIntegration::PassOsMouseEventsSynthesizedFromTouch;
         }
     }
     return options;
@@ -557,13 +559,15 @@ QVariant QWindowsIntegration::styleHint(QPlatformIntegration::StyleHint hint) co
         break;
     case QPlatformIntegration::UseRtlExtensions:
         return QVariant(d->m_context.useRTLExtensions());
-#ifdef Q_OS_WINCE
     case QPlatformIntegration::SynthesizeMouseFromTouchEvents:
+#ifdef Q_OS_WINCE
         // We do not want Qt to synthesize mouse events as Windows also does that.
         // Alternatively, Windows-generated touch mouse events can be identified and
         // ignored by checking GetMessageExtraInfo() for MI_WP_SIGNATURE (0xFF515700).
        return false;
-#endif // Q_OS_WINCE
+#else // Q_OS_WINCE
+        return QVariant(!(d->m_options & PassOsMouseEventsSynthesizedFromTouch));
+#endif // !Q_OS_WINCE
     default:
         break;
     }
