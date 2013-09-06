@@ -671,7 +671,7 @@ QPixmap QWindowsTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &s
 
     static QCache<QString, FakePointer<int> > dirIconEntryCache(1000);
     static QMutex mx;
-    static int defaultFolderIIcon = 0;
+    static int defaultFolderIIcon = -1;
     const bool useDefaultFolderIcon = iconOptions & QPlatformTheme::DontUseCustomDirectoryIcons;
 
     QPixmap pixmap;
@@ -687,8 +687,8 @@ QPixmap QWindowsTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &s
     bool cacheableDirIcon = fileInfo.isDir() && !fileInfo.isRoot();
     if (cacheableDirIcon) {
         QMutexLocker locker(&mx);
-        int iIcon = (useDefaultFolderIcon && defaultFolderIIcon) ? defaultFolderIIcon
-                                                                 : **dirIconEntryCache.object(filePath);
+        int iIcon = (useDefaultFolderIcon && defaultFolderIIcon >= 0) ? defaultFolderIIcon
+                                                                      : **dirIconEntryCache.object(filePath);
         if (iIcon) {
             QPixmapCache::find(dirIconPixmapCacheKey(iIcon, iconSize, requestedImageListSize), pixmap);
             if (pixmap.isNull()) // Let's keep both caches in sync
@@ -720,7 +720,7 @@ QPixmap QWindowsTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &s
     if (val && info.hIcon) {
         QString key;
         if (cacheableDirIcon) {
-            if (useDefaultFolderIcon && !defaultFolderIIcon)
+            if (useDefaultFolderIcon && defaultFolderIIcon < 0)
                 defaultFolderIIcon = info.iIcon;
 
             //using the unique icon index provided by windows save us from duplicate keys
