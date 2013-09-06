@@ -56,6 +56,7 @@
 #include "QtCore/qstringlist.h"
 #include "QtCore/qpair.h"
 #include "QtPrintSupport/qprinter.h"
+#include "QtCore/qdatetime.h"
 
 #ifndef QT_NO_CUPS
 #include <QtCore/qlibrary.h>
@@ -90,6 +91,18 @@ public:
     QCUPSSupport();
     ~QCUPSSupport();
 
+    // Enum for values of job-hold-until option
+    enum JobHoldUntil {
+        NoHold = 0,  //CUPS Default
+        Indefinite,
+        DayTime,
+        Night,
+        SecondShift,
+        ThirdShift,
+        Weekend,
+        SpecificTime
+    };
+
     static bool isAvailable();
     static int cupsVersion() { return isAvailable() ? CUPS_VERSION_MAJOR*10000+CUPS_VERSION_MINOR*100+CUPS_VERSION_PATCH : 0; }
     int availablePrintersCount() const;
@@ -110,6 +123,14 @@ public:
     QRect pageRect(const char *choice) const;
 
     QStringList options() const;
+
+    static QStringList cupsOptionsList(QPrinter *printer);
+    static void setCupsOptions(QPrinter *printer, const QStringList &cupsOptions);
+    static void setCupsOption(QStringList &cupsOptions, const QString &option, const QString &value);
+
+    static void setJobHold(QPrinter *printer, const JobHoldUntil jobHold = NoHold, const QTime &holdUntilTime = QTime());
+    static void setJobBilling(QPrinter *printer, const QString &jobBilling = QString());
+    static void setJobPriority(QPrinter *printer, int priority = 50);
 
     static bool printerHasPPD(const char *printerName);
 
@@ -138,6 +159,8 @@ private:
 };
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QCUPSSupport::JobHoldUntil)
 
 #endif // QT_NO_CUPS
 

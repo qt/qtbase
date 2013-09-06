@@ -64,6 +64,7 @@
 
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
 #  include <private/qcups_p.h>
+#  include "qcupsjobwidget_p.h"
 #else
 #  include <QtCore/qlibrary.h>
 #  include <private/qprintengine_pdf_p.h>
@@ -127,6 +128,9 @@ protected:
 private:
     Ui::QPrintPropertiesWidget widget;
     QDialogButtonBox *m_buttons;
+#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+    QCupsJobWidget *m_jobOptions;
+#endif
 };
 
 class QUnixPrintWidgetPrivate;
@@ -237,6 +241,13 @@ QPrintPropertiesDialog::QPrintPropertiesDialog(QAbstractPrintDialog *parent)
 
     connect(m_buttons->button(QDialogButtonBox::Ok), SIGNAL(clicked()), this, SLOT(accept()));
     connect(m_buttons->button(QDialogButtonBox::Cancel), SIGNAL(clicked()), this, SLOT(reject()));
+
+#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+    if (QCUPSSupport::isAvailable()) {
+        m_jobOptions = new QCupsJobWidget();
+        widget.tabs->addTab(m_jobOptions, tr("Job Options"));
+    }
+#endif
 }
 
 QPrintPropertiesDialog::~QPrintPropertiesDialog()
@@ -246,11 +257,21 @@ QPrintPropertiesDialog::~QPrintPropertiesDialog()
 void QPrintPropertiesDialog::applyPrinterProperties(QPrinter *p)
 {
     widget.pageSetup->setPrinter(p);
+#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+    if (QCUPSSupport::isAvailable()) {
+        m_jobOptions->setPrinter(p);
+    }
+#endif
 }
 
 void QPrintPropertiesDialog::setupPrinter() const
 {
     widget.pageSetup->setupPrinter();
+#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
+    if (QCUPSSupport::isAvailable()) {
+        m_jobOptions->setupPrinter();
+    }
+#endif
 }
 
 void QPrintPropertiesDialog::selectPrinter()

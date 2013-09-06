@@ -342,6 +342,97 @@ QStringList QCUPSSupport::options() const
     return list;
 }
 
+QStringList QCUPSSupport::cupsOptionsList(QPrinter *printer)
+{
+    return printer->printEngine()->property(PPK_CupsOptions).toStringList();
+}
+
+void QCUPSSupport::setCupsOptions(QPrinter *printer, const QStringList &cupsOptions)
+{
+    printer->printEngine()->setProperty(PPK_CupsOptions, QVariant(cupsOptions));
+}
+
+void QCUPSSupport::setCupsOption(QStringList &cupsOptions, const QString &option, const QString &value)
+{
+    if (cupsOptions.contains(option)) {
+        cupsOptions.replace(cupsOptions.indexOf(option) + 1, value);
+    } else {
+        cupsOptions.append(option);
+        cupsOptions.append(value);
+    }
+}
+
+void QCUPSSupport::setJobHold(QPrinter *printer, const JobHoldUntil jobHold, const QTime &holdUntilTime)
+{
+    QStringList cupsOptions = cupsOptionsList(printer);
+
+    switch (jobHold) {
+    case NoHold: //default
+        break;
+    case Indefinite:
+        setCupsOption(cupsOptions,
+                      QStringLiteral("job-hold-until"),
+                      QStringLiteral("indefinite"));
+        break;
+    case DayTime:
+        setCupsOption(cupsOptions,
+                      QStringLiteral("job-hold-until"),
+                      QStringLiteral("day-time"));
+        break;
+    case Night:
+        setCupsOption(cupsOptions,
+                      QStringLiteral("job-hold-until"),
+                      QStringLiteral("night"));
+        break;
+    case SecondShift:
+        setCupsOption(cupsOptions,
+                      QStringLiteral("job-hold-until"),
+                      QStringLiteral("second-shift"));
+        break;
+    case ThirdShift:
+        setCupsOption(cupsOptions,
+                      QStringLiteral("job-hold-until"),
+                      QStringLiteral("third-shift"));
+        break;
+    case Weekend:
+        setCupsOption(cupsOptions,
+                      QStringLiteral("job-hold-until"),
+                      QStringLiteral("weekend"));
+        break;
+    case SpecificTime:
+        if (holdUntilTime.isNull()) {
+            setJobHold(printer, NoHold);
+            return;
+        }
+        // CUPS expects the time in UTC, user has entered in local time, so get the UTS equivalent
+        QDateTime localDateTime = QDateTime::currentDateTime();
+        // Check if time is for tomorrow in case of DST change overnight
+        if (holdUntilTime < localDateTime.time())
+            localDateTime.addDays(1);
+        localDateTime.setTime(holdUntilTime);
+        setCupsOption(cupsOptions,
+                      QStringLiteral("job-hold-until"),
+                      localDateTime.toUTC().time().toString(QStringLiteral("HH:mm")));
+        break;
+    }
+
+    setCupsOptions(printer, cupsOptions);
+}
+
+void QCUPSSupport::setJobBilling(QPrinter *printer, const QString &jobBilling)
+{
+    QStringList cupsOptions = cupsOptionsList(printer);
+    setCupsOption(cupsOptions, QStringLiteral("job-billing"), jobBilling);
+    setCupsOptions(printer, cupsOptions);
+}
+
+void QCUPSSupport::setJobPriority(QPrinter *printer, int priority)
+{
+    QStringList cupsOptions = cupsOptionsList(printer);
+    setCupsOption(cupsOptions, QStringLiteral("job-priority"), QString::number(priority));
+    setCupsOptions(printer, cupsOptions);
+}
+
 bool QCUPSSupport::printerHasPPD(const char *printerName)
 {
     if (!isAvailable())
@@ -510,7 +601,6 @@ QList<QPair<QString, QSizeF> > QCUPSSupport::getCupsPrinterPaperSizesWithNames(i
     }
     return result;
 }
-
 
 QT_END_NAMESPACE
 
