@@ -2300,7 +2300,7 @@ bool qunsetenv(const char *varName)
 #endif
 }
 
-#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && (_POSIX_THREAD_SAFE_FUNCTIONS - 0 > 0)
 
 #  if defined(Q_OS_INTEGRITY) && defined(__GHS_VERSION_NUMBER) && (__GHS_VERSION_NUMBER < 500)
 // older versions of INTEGRITY used a long instead of a uint for the seed.
