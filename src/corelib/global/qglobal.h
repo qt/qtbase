@@ -542,6 +542,7 @@ class QDataStream;
 
 #if defined(Q_OS_WINRT)
 #  define QT_NO_PROCESS
+#  define QT_NO_FILESYSTEMWATCHER
 #endif
 
 inline void qt_noop(void) {}
