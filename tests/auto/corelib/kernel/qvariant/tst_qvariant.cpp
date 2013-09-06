@@ -2275,9 +2275,25 @@ public:
     T* operator->() const { return pointer; }
 };
 
+template<typename T>
+struct SequentialContainer
+{
+  T t;
+};
+
+template<typename T, typename U>
+struct AssociativeContainer
+{
+  T t;
+  U u;
+};
+
 }
 
 Q_DECLARE_SMART_POINTER_METATYPE(MyNS::SmartPointer)
+
+Q_DECLARE_METATYPE_TEMPLATE_1ARG(MyNS::SequentialContainer)
+Q_DECLARE_METATYPE_TEMPLATE_2ARG(MyNS::AssociativeContainer)
 
 Q_DECLARE_METATYPE(MyNS::SmartPointer<int>)
 
@@ -2291,6 +2307,15 @@ void tst_QVariant::qvariant_cast_QObject_wrapper()
     QCOMPARE(v.value<QObject*>(), object);
     v.convert(qMetaTypeId<QObject*>());
     QCOMPARE(v.value<QObject*>(), object);
+
+    MyNS::SequentialContainer<int> sc;
+    sc.t = 47;
+    MyNS::AssociativeContainer<int, short> ac;
+    ac.t = 42;
+    ac.u = 5;
+
+    QVariant::fromValue(sc);
+    QVariant::fromValue(ac);
 
     // Compile tests:
     qRegisterMetaType<MyNS::SmartPointer<int> >();
