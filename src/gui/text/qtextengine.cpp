@@ -908,7 +908,7 @@ void QTextEngine::shapeText(int item) const
     }
 
     if (!ensureSpace(itemLength)) {
-        // ### report OOM error somehow
+        Q_UNREACHABLE(); // ### report OOM error somehow
         return;
     }
 
@@ -934,12 +934,12 @@ void QTextEngine::shapeText(int item) const
         if (!fontEngine->stringToCMap(reinterpret_cast<const QChar *>(string), itemLength, &initialGlyphs, &nGlyphs, shaperFlags)) {
             nGlyphs = qMax(nGlyphs, itemLength); // ### needed for QFontEngine::stringToCMap() to not fail twice
             if (!ensureSpace(nGlyphs)) {
-                // ### report OOM error somehow
+                Q_UNREACHABLE(); // ### report OOM error somehow
                 return;
             }
             initialGlyphs = availableGlyphs(&si);
             if (!fontEngine->stringToCMap(reinterpret_cast<const QChar *>(string), itemLength, &initialGlyphs, &nGlyphs, shaperFlags)) {
-                // ### if this happens there is a bug in the fontengine
+                Q_UNREACHABLE(); // ### if this happens there is a bug in the fontengine
                 return;
             }
         }
@@ -987,7 +987,7 @@ void QTextEngine::shapeText(int item) const
 
     si.num_glyphs = shapeTextWithHarfbuzz(si, string, itemLength, fontEngine, itemBoundaries, kerningEnabled);
     if (si.num_glyphs == 0) {
-        // ### report shaping errors somehow
+        Q_UNREACHABLE(); // ### report shaping errors somehow
         return;
     }
 
