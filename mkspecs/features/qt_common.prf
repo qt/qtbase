@@ -51,7 +51,11 @@ warnings_are_errors:warning_clean {
             # GCC prints this bogus warning, after it has inlined a lot of code
             # error: assuming signed overflow does not occur when assuming that (X + c) < X is always false
             QMAKE_CXXFLAGS += -Wno-error=strict-overflow
+
+            # Work-around for bug https://code.google.com/p/android/issues/detail?id=58135
+            android: QMAKE_CXXFLAGS += -Wno-error=literal-suffix
         }
     }
     unset(ver)
 }
+
