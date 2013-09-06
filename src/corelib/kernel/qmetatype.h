@@ -206,6 +206,11 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     F(QMap, class) \
     F(QPair, struct)
 
+#define QT_FOR_EACH_AUTOMATIC_TEMPLATE_SMART_POINTER(F) \
+    F(QSharedPointer) \
+    F(QWeakPointer) \
+    F(QPointer)
+
 class QDataStream;
 class QMetaTypeInterface;
 struct QMetaObject;
@@ -1234,9 +1239,11 @@ struct QPairVariantInterfaceConvertFunctor<std::pair<T, U> >
 
 class QObject;
 class QWidget;
-template <class T> class QSharedPointer;
-template <class T> class QWeakPointer;
-template <class T> class QPointer;
+
+#define QT_FORWARD_DECLARE_SHARED_POINTER_TYPES_ITER(Name) \
+    template <class T> class Name; \
+
+QT_FOR_EACH_AUTOMATIC_TEMPLATE_SMART_POINTER(QT_FORWARD_DECLARE_SHARED_POINTER_TYPES_ITER)
 
 namespace QtPrivate
 {
@@ -1843,11 +1850,6 @@ struct QMetaTypeId< SMART_POINTER<T> > \
 { \
 };\
 QT_END_NAMESPACE
-
-#define QT_FOR_EACH_AUTOMATIC_TEMPLATE_SMART_POINTER(F) \
-    F(QSharedPointer) \
-    F(QWeakPointer) \
-    F(QPointer)
 
 #define Q_DECLARE_METATYPE_TEMPLATE_1ARG_ITER(TEMPLATENAME) \
     QT_BEGIN_NAMESPACE \
