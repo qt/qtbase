@@ -741,7 +741,7 @@ QNetworkInterface QNativeSocketEnginePrivate::nativeMulticastInterface() const
     QT_SOCKOPTLEN_T sizeofv = sizeof(v);
     if (::getsockopt(socketDescriptor, IPPROTO_IP, IP_MULTICAST_IF, &v, &sizeofv) == -1)
         return QNetworkInterface();
-    if (v.s_addr != 0 && sizeofv >= sizeof(v)) {
+    if (v.s_addr != 0 && sizeofv >= QT_SOCKOPTLEN_T(sizeof(v))) {
         QHostAddress ipv4(ntohl(v.s_addr));
         QList<QNetworkInterface> ifaces = QNetworkInterface::allInterfaces();
         for (int i = 0; i < ifaces.count(); ++i) {
