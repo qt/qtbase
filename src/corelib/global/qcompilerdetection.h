@@ -491,6 +491,7 @@
 #      define Q_COMPILER_VARIADIC_TEMPLATES
 #    endif
 #    if __INTEL_COMPILER >= 1300
+#      define Q_COMPILER_ATOMICS
 //       constexpr support is only partial
 //#      define Q_COMPILER_CONSTEXPR
 #      define Q_COMPILER_INITIALIZER_LISTS
