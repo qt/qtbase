@@ -50,6 +50,13 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
     app.setApplicationVersion("1.0");
 
+    // Test for QCoreApplication::arguments()
+    const QStringList incomingArgs = QCoreApplication::arguments();
+    for (int i = 0; i < argc; ++i) {
+        if (incomingArgs.at(i) != QLatin1String(argv[i]))
+            qDebug() << "ERROR: arguments[" << i << "] was" << incomingArgs.at(i) << "expected" << argv[i];
+    }
+
     QCommandLineParser parser;
     parser.setApplicationDescription("Test helper");
     parser.addHelpOption();
@@ -87,6 +94,7 @@ int main(int argc, char *argv[])
     }
 
     printf("Positional arguments: %s\n", qPrintable(parser.positionalArguments().join(",")));
+    printf("Macros: %s\n", qPrintable(parser.values("D").join(",")));
 
     return 0;
 }

@@ -78,6 +78,7 @@ private slots:
     void testVersionOption();
     void testHelpOption_data();
     void testHelpOption();
+    void testQuoteEscaping();
 };
 
 static char *empty_argv[] = { const_cast<char*>("tst_qcommandlineparser") };
@@ -532,6 +533,25 @@ void tst_QCommandLineParser::testHelpOption()
 #endif
     QCOMPARE(output, QString(expectedResizeHelp));
 #endif // !QT_NO_PROCESS
+}
+
+void tst_QCommandLineParser::testQuoteEscaping()
+{
+    QCoreApplication app(empty_argc, empty_argv);
+    QProcess process;
+    process.start("testhelper/qcommandlineparser_test_helper", QStringList() <<
+            QString::number(QCommandLineParser::ParseAsCompactedShortOptions) <<
+            "-DKEY1=\"VALUE1\"" << "-DKEY2=\\\"VALUE2\\\"" <<
+            "-DQTBUG-15379=C:\\path\\'file.ext" <<
+            "-DQTBUG-30628=C:\\temp\\'file'.ext");
+    QVERIFY(process.waitForFinished(5000));
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QString output = process.readAll();
+    QVERIFY2(!output.contains("ERROR"), qPrintable(output));
+    QVERIFY2(output.contains("KEY1=\"VALUE1\""), qPrintable(output));
+    QVERIFY2(output.contains("KEY2=\\\"VALUE2\\\""), qPrintable(output));
+    QVERIFY2(output.contains("QTBUG-15379=C:\\path\\'file.ext"), qPrintable(output));
+    QVERIFY2(output.contains("QTBUG-30628=C:\\temp\\'file'.ext"), qPrintable(output));
 }
 
 QTEST_APPLESS_MAIN(tst_QCommandLineParser)
