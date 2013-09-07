@@ -48,6 +48,11 @@
 #include "qvarlengtharray.h"
 #include <qmath.h>
 #include <qendian.h>
+
+#ifdef QT_ENABLE_HARFBUZZ_NG
+#  include "qharfbuzzng_p.h"
+#  include <harfbuzz/hb-ot.h>
+#endif
 #include <private/qharfbuzz_p.h>
 
 #include <algorithm>
@@ -72,6 +77,10 @@ static inline bool qtransform_equals_no_translate(const QTransform &a, const QTr
 }
 
 // Harfbuzz helper functions
+
+#ifdef QT_ENABLE_HARFBUZZ_NG
+bool useHarfbuzzNG = qgetenv("QT_HARFBUZZ") != "old";
+#endif
 
 Q_STATIC_ASSERT(sizeof(HB_Glyph) == sizeof(glyph_t));
 Q_STATIC_ASSERT(sizeof(HB_Fixed) == sizeof(QFixed));
@@ -253,6 +262,10 @@ QFixed QFontEngine::underlinePosition() const
 
 void *QFontEngine::harfbuzzFont() const
 {
+#ifdef QT_ENABLE_HARFBUZZ_NG
+    if (useHarfbuzzNG)
+        qFatal("Called QFontEngine::harfbuzzFont() in Harfbuzz-NG mode!");
+#endif
     if (!font_) {
         HB_FontRec *hbFont = (HB_FontRec *) malloc(sizeof(HB_FontRec));
         Q_CHECK_PTR(hbFont);
@@ -277,6 +290,10 @@ void *QFontEngine::harfbuzzFont() const
 
 void *QFontEngine::harfbuzzFace() const
 {
+#ifdef QT_ENABLE_HARFBUZZ_NG
+    if (useHarfbuzzNG)
+        qFatal("Called QFontEngine::harfbuzzFace() in Harfbuzz-NG mode!");
+#endif
     if (!face_) {
         HB_Face hbFace = qHBNewFace(const_cast<QFontEngine *>(this), hb_getSFntTable);
         Q_CHECK_PTR(hbFace);
@@ -292,6 +309,26 @@ void *QFontEngine::harfbuzzFace() const
 
 bool QFontEngine::supportsScript(QChar::Script script) const
 {
+#ifdef QT_ENABLE_HARFBUZZ_NG
+    if (useHarfbuzzNG) {
+        bool ret = false;
+        if (hb_face_t *face = hb_qt_face_get_for_engine(const_cast<QFontEngine *>(this))) {
+            hb_tag_t script_tag_1, script_tag_2;
+            hb_ot_tags_from_script(hb_qt_script_to_script(script), &script_tag_1, &script_tag_2);
+
+            unsigned int script_index = -1;
+            ret = hb_ot_layout_table_find_script(face, HB_OT_TAG_GSUB, script_tag_1, &script_index);
+            if (!ret) {
+                ret = hb_ot_layout_table_find_script(face, HB_OT_TAG_GSUB, script_tag_2, &script_index);
+                if (!ret && script_tag_2 != HB_OT_TAG_DEFAULT_SCRIPT)
+                    ret = hb_ot_layout_table_find_script(face, HB_OT_TAG_GSUB, HB_OT_TAG_DEFAULT_SCRIPT, &script_index);
+            }
+
+            hb_face_destroy(face);
+        }
+        return ret;
+    }
+#endif
     HB_Face hbFace = (HB_Face)harfbuzzFace();
     return hbFace->supported_scripts[script_to_hbscript(script)];
 }

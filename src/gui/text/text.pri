@@ -84,3 +84,12 @@ SOURCES += \
 
 HEADERS += \
       text/qplatformfontdatabase.h
+
+contains(QT_CONFIG, harfbuzz)|contains(QT_CONFIG, system-harfbuzz) {
+    DEFINES += QT_ENABLE_HARFBUZZ_NG
+
+    include($$PWD/../../3rdparty/harfbuzz.pri)
+
+    SOURCES += text/qharfbuzzng.cpp
+    HEADERS += text/qharfbuzzng_p.h
+}
