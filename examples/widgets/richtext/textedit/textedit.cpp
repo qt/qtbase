@@ -436,8 +436,7 @@ bool TextEdit::maybeSave()
 {
     if (!textEdit->document()->isModified())
         return true;
-    if (fileName.startsWith(QLatin1String(":/")))
-        return true;
+
     QMessageBox::StandardButton ret;
     ret = QMessageBox::warning(this, tr("Application"),
                                tr("The document has been modified.\n"
@@ -484,6 +483,8 @@ void TextEdit::fileOpen()
 bool TextEdit::fileSave()
 {
     if (fileName.isEmpty())
+        return fileSaveAs();
+    if (fileName.startsWith(QStringLiteral(":/")))
         return fileSaveAs();
 
     QTextDocumentWriter writer(fileName);

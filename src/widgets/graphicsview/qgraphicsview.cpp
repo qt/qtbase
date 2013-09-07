@@ -3221,6 +3221,13 @@ void QGraphicsView::mouseDoubleClickEvent(QMouseEvent *event)
         qt_sendSpontaneousEvent(d->scene, &mouseEvent);
     else
         QApplication::sendEvent(d->scene, &mouseEvent);
+
+    // Update the original mouse event accepted state.
+    const bool isAccepted = mouseEvent.isAccepted();
+    event->setAccepted(isAccepted);
+
+    // Update the last mouse event accepted state.
+    d->lastMouseEvent.setAccepted(isAccepted);
 }
 
 /*!

@@ -114,14 +114,8 @@ bool MingwMakefileGenerator::findLibraries()
 bool MingwMakefileGenerator::writeMakefile(QTextStream &t)
 {
     writeHeader(t);
-    if(!project->values("QMAKE_FAILED_REQUIREMENTS").isEmpty()) {
-        t << "all clean:\n\t"
-          << "@echo \"Some of the required modules ("
-          << var("QMAKE_FAILED_REQUIREMENTS") << ") are not available.\"\n\t"
-          << "@echo \"Skipped.\"\n\n";
-        writeMakeQmake(t);
+    if (writeDummyMakefile(t))
         return true;
-    }
 
     if(project->first("TEMPLATE") == "app" ||
        project->first("TEMPLATE") == "lib" ||

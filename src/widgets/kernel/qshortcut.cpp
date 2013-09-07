@@ -158,7 +158,7 @@ static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidge
 
     if (context == Qt::WidgetWithChildrenShortcut) {
         const QWidget *tw = QApplication::focusWidget();
-        while (tw && tw != w && (tw->windowType() == Qt::Widget || tw->windowType() == Qt::Popup))
+        while (tw && tw != w && (tw->windowType() == Qt::Widget || tw->windowType() == Qt::Popup || tw->windowType() == Qt::SubWindow))
             tw = tw->parentWidget();
         return tw == w;
     }

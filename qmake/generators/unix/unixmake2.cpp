@@ -80,19 +80,8 @@ UnixMakefileGenerator::writeMakefile(QTextStream &t)
 {
 
     writeHeader(t);
-    if(!project->values("QMAKE_FAILED_REQUIREMENTS").isEmpty()) {
-        t << "QMAKE    = " << var("QMAKE_QMAKE") << endl;
-        const ProStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
-        for (ProStringList::ConstIterator it = qut.begin(); it != qut.end(); ++it)
-            t << *it << " ";
-        t << "first all clean install distclean uninstall qmake_all:\n\t"
-          << "@echo \"Some of the required modules ("
-          << var("QMAKE_FAILED_REQUIREMENTS") << ") are not available.\"\n\t"
-          << "@echo \"Skipped.\"\n\n";
-        writeMakeQmake(t);
-        t << "FORCE:\n\n";
+    if (writeDummyMakefile(t))
         return true;
-    }
 
     if (project->values("TEMPLATE").first() == "app" ||
         project->values("TEMPLATE").first() == "lib" ||

@@ -1578,7 +1578,7 @@ void tst_QTcpSocket::recursiveReadyRead()
 
     QSignalSpy spy(testSocket, SIGNAL(readyRead()));
 
-    testSocket->connectToHost(QtNetworkSettings::serverName(), 25);
+    testSocket->connectToHost(QtNetworkSettings::serverName(), 143);
     enterLoop(30);
     QVERIFY2(!timeout(),
             "Timed out when connecting to QtNetworkSettings::serverName().");

@@ -795,6 +795,7 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         QRect rect = window()->geometry();
         NSRect frame = NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height());
         [m_contentView setFrame:frame];
+        [m_contentView setHidden: YES];
     }
 
     const qreal opacity = qt_window_private(window())->opacity;
@@ -913,7 +914,8 @@ void QCocoaWindow::clearNSWindow(NSWindow *window)
     [window setContentView:nil];
     [window setDelegate:nil];
     [window clearPlatformWindow];
-    [[NSNotificationCenter defaultCenter] removeObserver:m_contentView];
+    [[NSNotificationCenter defaultCenter] removeObserver:m_contentView
+                                          name:nil object:window];
 }
 
 // Returns the current global screen geometry for the nswindow associated with this window.
@@ -1025,7 +1027,7 @@ qreal QCocoaWindow::devicePixelRatio() const
 
 void QCocoaWindow::exposeWindow()
 {
-    if (!m_isExposed) {
+    if (!m_isExposed && ![[m_contentView superview] isHidden]) {
         m_isExposed = true;
         QWindowSystemInterface::handleExposeEvent(window(), QRegion(geometry()));
     }

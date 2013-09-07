@@ -107,12 +107,9 @@ static QTouchDevice *touchDevice = 0;
     m_maskImage = 0;
     m_maskData = 0;
     m_window = 0;
-    if (m_subscribesForGlobalFrameNotifications) {
-        m_subscribesForGlobalFrameNotifications = false;
-        [[NSNotificationCenter defaultCenter] removeObserver:self
-             name:NSViewGlobalFrameDidChangeNotification
-             object:self];
-}
+    m_subscribesForGlobalFrameNotifications = false;
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+
     delete currentCustomDragTypes;
 
     [super dealloc];
@@ -603,6 +600,7 @@ static QTouchDevice *touchDevice = 0;
         QWindowSystemInterface::handleCloseEvent(m_platformWindow->m_activePopupWindow);
         QWindowSystemInterface::flushWindowSystemEvents();
         m_platformWindow->m_activePopupWindow = 0;
+        return;
     }
     if ([self hasMarkedText]) {
         NSInputManager* inputManager = [NSInputManager currentInputManager];

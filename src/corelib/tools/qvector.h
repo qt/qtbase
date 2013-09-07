@@ -642,7 +642,7 @@ typename QVector<T>::iterator QVector<T>::erase(iterator abegin, iterator aend)
             iterator moveEnd = d->end();
             while (moveBegin != moveEnd) {
                 if (QTypeInfo<T>::isComplex)
-                    abegin->~T();
+                    static_cast<T *>(abegin)->~T();
                 new (abegin++) T(*moveBegin++);
             }
             if (abegin < d->end()) {

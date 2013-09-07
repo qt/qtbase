@@ -4389,6 +4389,10 @@ void tst_QNetworkReply::ioPostToHttpFromSocket_data()
 
 void tst_QNetworkReply::ioPostToHttpFromSocket()
 {
+    if (QTest::currentDataTag() == QByteArray("128k+1+proxyauth")
+            || QTest::currentDataTag() == QByteArray("128k+1+auth+proxyauth"))
+        QSKIP("Squid cannot handle authentication with POST data >= 64K (QTBUG-33180)");
+
     QFETCH(QByteArray, data);
     QFETCH(QUrl, url);
     QFETCH(QNetworkProxy, proxy);

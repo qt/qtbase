@@ -2203,6 +2203,24 @@ MakefileGenerator::writeExtraVariables(QTextStream &t)
 }
 
 bool
+MakefileGenerator::writeDummyMakefile(QTextStream &t)
+{
+    if (project->values("QMAKE_FAILED_REQUIREMENTS").isEmpty())
+        return false;
+    t << "QMAKE    = " << var("QMAKE_QMAKE") << endl;
+    const ProStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
+    for (ProStringList::ConstIterator it = qut.begin(); it != qut.end(); ++it)
+        t << *it << " ";
+    t << "first all clean install distclean uninstall qmake_all:\n\t"
+      << "@echo \"Some of the required modules ("
+      << var("QMAKE_FAILED_REQUIREMENTS") << ") are not available.\"\n\t"
+      << "@echo \"Skipped.\"\n\n";
+    writeMakeQmake(t);
+    t << "FORCE:\n\n";
+    return true;
+}
+
+bool
 MakefileGenerator::writeStubMakefile(QTextStream &t)
 {
     t << "QMAKE    = " << var("QMAKE_QMAKE") << endl;

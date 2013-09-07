@@ -1054,6 +1054,7 @@ void QMenuBar::mousePressEvent(QMouseEvent *e)
         if(QMenu *menu = d->activeMenu) {
             d->activeMenu = 0;
             menu->hide();
+            d->closePopupMode = 1;
         }
     } else {
         d->setCurrentAction(action, true);

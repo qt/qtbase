@@ -328,6 +328,7 @@ public slots:
     QObject *sl11();
     const char *sl12();
     QList<QString> sl13(QList<QString> l1);
+    qint64 sl14();
     void testSender();
 
     void testReference(QString &str);
@@ -395,6 +396,9 @@ const char *QtTestObject::sl12()
 { slotResult = "sl12"; return "foo"; }
 QList<QString> QtTestObject::sl13(QList<QString> l1)
 { slotResult = "sl13"; return l1; }
+qint64 QtTestObject::sl14()
+{ slotResult = "sl14"; return Q_INT64_C(123456789)*123456789; }
+
 void QtTestObject::testReference(QString &str)
 { slotResult = "testReference:" + str; str = "gotcha"; }
 
@@ -512,6 +516,13 @@ void tst_QMetaObject::invokeMetaMember()
                                       Q_ARG(QList<QString>, argument)));
     QCOMPARE(returnValue, argument);
     QCOMPARE(obj.slotResult, QString("sl13"));
+
+    // return qint64
+    qint64 return64;
+    QVERIFY(QMetaObject::invokeMethod(&obj, "sl14",
+                                      Q_RETURN_ARG(qint64, return64)));
+    QCOMPARE(return64, Q_INT64_C(123456789)*123456789);
+    QCOMPARE(obj.slotResult, QString("sl14"));
 
     //test signals
     QVERIFY(QMetaObject::invokeMethod(&obj, "sig0"));

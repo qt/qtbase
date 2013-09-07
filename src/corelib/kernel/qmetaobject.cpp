@@ -42,6 +42,7 @@
 #include "qmetaobject.h"
 #include "qmetatype.h"
 #include "qobject.h"
+#include "qmetaobject_p.h"
 
 #include <qcoreapplication.h>
 #include <qcoreevent.h>
@@ -2098,8 +2099,12 @@ bool QMetaMethod::invoke(QObject *object,
         if (qstrcmp(returnValue.name(), retType) != 0) {
             // normalize the return value as well
             QByteArray normalized = QMetaObject::normalizedType(returnValue.name());
-            if (qstrcmp(normalized.constData(), retType) != 0)
-                return false;
+            if (qstrcmp(normalized.constData(), retType) != 0) {
+                // String comparison failed, try compare the metatype.
+                int t = returnType();
+                if (t == QMetaType::UnknownType || t != QMetaType::type(normalized))
+                    return false;
+            }
         }
     }
 

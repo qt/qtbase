@@ -333,8 +333,7 @@ void QLineEdit::setText(const QString& text)
     \brief the line edit's placeholder text
 
     Setting this property makes the line edit display a grayed-out
-    placeholder text as long as the text() is empty and the widget doesn't
-    have focus.
+    placeholder text as long as the text() is empty.
 
     By default, this property contains an empty string.
 
