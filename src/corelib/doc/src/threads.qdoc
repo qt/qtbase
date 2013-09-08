@@ -60,7 +60,6 @@
     \li \l{Recommended Reading}
     \li \l{The Threading Classes}
     \li \l{Multithreading Technologies in Qt}
-    \li \l{Starting Threads with QThread}
     \li \l{Synchronizing Threads}
     \li \l{Reentrancy and Thread-Safety}
     \li \l{Threads and QObjects}
@@ -122,7 +121,7 @@
 
     \contentspage Thread Support in Qt
     \previouspage Thread Support in Qt
-    \nextpage Starting Threads with QThread
+    \nextpage Synchronizing Threads
 
     Qt offers many classes and functions for working with threads. Below are
     three different approaches that Qt programmers can use to implement
@@ -285,60 +284,10 @@
 */
 
 /*!
-    \page threads-starting.html
-    \title Starting Threads with QThread
-
-    \contentspage Thread Support in Qt
-    \previouspage Multithreading Technologies in Qt
-    \nextpage Synchronizing Threads
-
-    A QThread instance represents a thread and provides the means to
-    \l{QThread::start()}{start()} a thread, which will then execute the
-    reimplementation of QThread::run(). The \c run() implementation is for a
-    thread what the \c main() entry point is for the application. All code
-    executed in a call stack that starts in the \c run() function is executed
-    by the new thread, and the thread finishes when the function returns.
-    QThread emits signals to indicate that the thread started or finished
-    executing.
-
-    \section1 Creating a Thread
-
-    To create a thread, subclass QThread and reimplement its
-    \l{QThread::run()}{run()} function. For example:
-
-    \snippet threads/threads.h 0
-    \codeline
-    \snippet threads/threads.cpp 0
-    \snippet threads/threads.cpp 1
-    \dots
-    \snippet threads/threads.cpp 2
-
-    \section1 Starting a Thread
-
-    Then, create an instance of the thread object and call
-    QThread::start(). Note that you must create the QApplication (or
-    QCoreApplication) object before you can create a QThread.
-
-    The function will return immediately and the
-    main thread will continue. The code that appears in the
-    \l{QThread::run()}{run()} reimplementation will then be executed
-    in a separate thread.
-
-    Creating threads is explained in more detail in the QThread
-    documentation.
-
-    Note that QCoreApplication::exec() must always be called from the
-    main thread (the thread that executes \c{main()}), not from a
-    QThread. In GUI applications, the main thread is also called the
-    GUI thread because it's the only thread that is allowed to
-    perform GUI-related operations.
-*/
-
-/*!
     \page threads-synchronizing.html
     \title Synchronizing Threads
 
-    \previouspage Starting Threads with QThread
+    \previouspage Multithreading Technologies in Qt
     \contentspage Thread Support in Qt
     \nextpage Reentrancy and Thread-Safety
 
