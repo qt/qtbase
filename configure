@@ -891,7 +891,7 @@ CFG_OPENVG_ON_OPENGL=auto
 CFG_EGL=auto
 CFG_SSE=auto
 CFG_FONTCONFIG=auto
-CFG_LIBFREETYPE=auto
+CFG_FREETYPE=auto
 CFG_HARFBUZZ=no
 CFG_SQL_AVAILABLE=
 QT_ALL_BUILD_PARTS=" libs tools examples tests "
@@ -5213,7 +5213,7 @@ if [ "$CFG_FONTCONFIG" != "no" ]; then
         QMakeVar set QMAKE_CFLAGS_FONTCONFIG "$QT_CFLAGS_FONTCONFIG"
         QMakeVar set QMAKE_LIBS_FONTCONFIG "$QT_LIBS_FONTCONFIG"
         CFG_FONTCONFIG=yes
-        CFG_LIBFREETYPE=system
+        CFG_FREETYPE=system
     else
         CFG_FONTCONFIG=no
     fi
@@ -5587,12 +5587,12 @@ fi
     fi
 
 # freetype support
-[ "$XPLATFORM_MINGW" = "yes" ] && [ "$CFG_LIBFREETYPE" = "auto" ] && CFG_LIBFREETYPE=no
-if [ "$CFG_LIBFREETYPE" = "auto" ]; then
+[ "$XPLATFORM_MINGW" = "yes" ] && [ "$CFG_FREETYPE" = "auto" ] && CFG_FREETYPE=no
+if [ "$CFG_FREETYPE" = "auto" ]; then
     if compileTest unix/freetype "FreeType"; then
-        CFG_LIBFREETYPE=system
+        CFG_FREETYPE=system
     else
-        CFG_LIBFREETYPE=yes
+        CFG_FREETYPE=yes
     fi
 fi
 
@@ -6012,10 +6012,10 @@ if [ "$CFG_GIF" = "no" ]; then
 elif [ "$CFG_GIF" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG gif"
 fi
-if [ "$CFG_LIBFREETYPE" = "no" ]; then
+if [ "$CFG_FREETYPE" = "no" ]; then
     QT_CONFIG="$QT_CONFIG no-freetype"
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_FREETYPE"
-elif [ "$CFG_LIBFREETYPE" = "system" ]; then
+elif [ "$CFG_FREETYPE" = "system" ]; then
     QT_CONFIG="$QT_CONFIG system-freetype"
 else
     QT_CONFIG="$QT_CONFIG freetype"
