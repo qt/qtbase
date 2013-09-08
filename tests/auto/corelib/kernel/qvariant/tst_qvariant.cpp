@@ -2278,23 +2278,26 @@ public:
 template<typename T>
 struct SequentialContainer
 {
+  typedef T value_type;
+  typedef const T* const_iterator;
   T t;
+  const_iterator begin() const { return &t; }
+  const_iterator end() const { return &t + 1; }
 };
 
 template<typename T, typename U>
-struct AssociativeContainer
+struct AssociativeContainer : public std::map<T, U>
 {
-  T t;
-  U u;
 };
 
 }
 
 Q_DECLARE_SMART_POINTER_METATYPE(MyNS::SmartPointer)
 
-Q_DECLARE_METATYPE_TEMPLATE_1ARG(MyNS::SequentialContainer)
-Q_DECLARE_METATYPE_TEMPLATE_2ARG(MyNS::AssociativeContainer)
+Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(MyNS::SequentialContainer)
+Q_DECLARE_ASSOCIATIVE_CONTAINER_METATYPE(MyNS::AssociativeContainer)
 
+// Test that explicit declaration does not degrade features.
 Q_DECLARE_METATYPE(MyNS::SmartPointer<int>)
 
 void tst_QVariant::qvariant_cast_QObject_wrapper()
@@ -2311,8 +2314,6 @@ void tst_QVariant::qvariant_cast_QObject_wrapper()
     MyNS::SequentialContainer<int> sc;
     sc.t = 47;
     MyNS::AssociativeContainer<int, short> ac;
-    ac.t = 42;
-    ac.u = 5;
 
     QVariant::fromValue(sc);
     QVariant::fromValue(ac);
@@ -3538,9 +3539,11 @@ struct ContainerAPI<Container, QString>
 
 #ifdef TEST_FORWARD_LIST
 #include <forward_list>
+
+Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(std::forward_list)
+
+// Test that explicit declaration does not degrade features.
 Q_DECLARE_METATYPE(std::forward_list<int>)
-Q_DECLARE_METATYPE(std::forward_list<QVariant>)
-Q_DECLARE_METATYPE(std::forward_list<QString>)
 
 template<typename Value_Type>
 struct ContainerAPI<std::forward_list<Value_Type> >
@@ -3624,6 +3627,9 @@ struct KeyGetter<std::map<T, U> >
 #ifdef TEST_UNORDERED_MAP
 #include <unordered_map>
 typedef std::unordered_map<int, bool> StdUnorderedMap_int_bool;
+
+Q_DECLARE_ASSOCIATIVE_CONTAINER_METATYPE(std::unordered_map)
+
 Q_DECLARE_METATYPE(StdUnorderedMap_int_bool)
 
 template<typename T, typename U>
@@ -3718,9 +3724,6 @@ void tst_QVariant::iterateContainerElements()
     TEST_SEQUENTIAL_ITERATION(std::list, QString)
 
 #ifdef TEST_FORWARD_LIST
-    qRegisterSequentialConverter<std::forward_list<int> >();
-    qRegisterSequentialConverter<std::forward_list<QVariant> >();
-    qRegisterSequentialConverter<std::forward_list<QString> >();
     TEST_SEQUENTIAL_ITERATION(std::forward_list, int)
     TEST_SEQUENTIAL_ITERATION(std::forward_list, QVariant)
     TEST_SEQUENTIAL_ITERATION(std::forward_list, QString)
@@ -3758,7 +3761,6 @@ void tst_QVariant::iterateContainerElements()
     TEST_ASSOCIATIVE_ITERATION(QMap, int, bool)
     TEST_ASSOCIATIVE_ITERATION(std::map, int, bool)
 #ifdef TEST_UNORDERED_MAP
-    qRegisterAssociativeConverter<StdUnorderedMap_int_bool>();
     TEST_ASSOCIATIVE_ITERATION(std::unordered_map, int, bool)
 #endif
 }

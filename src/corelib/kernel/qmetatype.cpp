@@ -141,6 +141,40 @@ struct DefinedTypesFilter {
 */
 
 /*!
+    \macro Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(Container)
+    \relates QMetaType
+
+    This macro makes the container \a Container known to QMetaType as a sequential
+    container. This makes it possible to put an instance of Container<T> into
+    a QVariant, if T itself is known to QMetaType.
+
+    Note that all of the Qt sequential containers already have built-in
+    support, and it is not necessary to use this macro with them. The
+    std::vector and std::list containers also have built-in support.
+
+    This example shows a typical use of Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE():
+
+    \snippet code/src_corelib_kernel_qmetatype.cpp 10
+*/
+
+/*!
+    \macro Q_DECLARE_ASSOCIATIVE_CONTAINER_METATYPE(Container)
+    \relates QMetaType
+
+    This macro makes the container \a Container known to QMetaType as an associative
+    container. This makes it possible to put an instance of Container<T, U> into
+    a QVariant, if T and U are themselves known to QMetaType.
+
+    Note that all of the Qt associative containers already have built-in
+    support, and it is not necessary to use this macro with them. The
+    std::map container also has built-in support.
+
+    This example shows a typical use of Q_DECLARE_ASSOCIATIVE_CONTAINER_METATYPE():
+
+    \snippet code/src_corelib_kernel_qmetatype.cpp 11
+*/
+
+/*!
     \enum QMetaType::Type
 
     These are the built-in types supported by QMetaType:
@@ -2083,37 +2117,6 @@ const QMetaObject *QMetaType::metaObjectForType(int type)
     type is not registered.
 
     \sa Q_DECLARE_METATYPE(), QMetaType::type()
-*/
-
-/*!
-    \fn bool qRegisterSequentialConverter()
-    \relates QMetaType
-    \since 5.2
-
-    Registers a sequential container so that it can be converted to
-    a QVariantList. If compilation fails, then you probably forgot to
-    Q_DECLARE_METATYPE the value type.
-
-    Note that it is not necessary to call this method for Qt containers (QList,
-    QVector etc) or for std::vector or std::list. Such containers are automatically
-    registered by Qt.
-
-    \sa QVariant::canConvert()
-*/
-
-/*!
-    \fn bool qRegisterAssociativeConverter()
-    \relates QMetaType
-    \since 5.2
-
-    Registers an associative container so that it can be converted to
-    a QVariantHash or QVariantMap. If the key_type and mapped_type of the container
-    was not declared with Q_DECLARE_METATYPE(), compilation will fail.
-
-    Note that it is not necessary to call this method for Qt containers (QHash,
-    QMap etc) or for std::map. Such containers are automatically registered by Qt.
-
-    \sa QVariant::canConvert()
 */
 
 namespace {

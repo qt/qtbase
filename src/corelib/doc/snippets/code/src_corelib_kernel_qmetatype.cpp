@@ -112,3 +112,34 @@ id = qMetaTypeId<MyStruct>();       // compile error if MyStruct not declared
 typedef QString CustomString;
 qRegisterMetaType<CustomString>("CustomString");
 //! [9]
+
+//! [10]
+
+#include <deque>
+
+Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(std::deque)
+
+void someFunc()
+{
+    std::deque<QFile*> container;
+    QVariant var = QVariant::fromValue(container);
+    // ...
+}
+
+//! [10]
+
+//! [11]
+
+#include <unordered_list>
+
+Q_DECLARE_ASSOCIATIVE_CONTAINER_METATYPE(std::unordered_map)
+
+void someFunc()
+{
+    std::unordered_map<int, bool> container;
+    QVariant var = QVariant::fromValue(container);
+    // ...
+}
+
+//! [11]
+

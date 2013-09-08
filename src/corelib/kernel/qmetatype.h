@@ -1331,32 +1331,11 @@ namespace QtPrivate
         enum { Value = false };
     };
 
-#define QT_DEFINE_SEQUENTIAL_CONTAINER_TYPE(CONTAINER) \
-    template<typename T> \
-    struct IsSequentialContainer<CONTAINER<T> > \
-    { \
-        enum { Value = true }; \
-    };
-    QT_FOR_EACH_AUTOMATIC_TEMPLATE_1ARG(QT_DEFINE_SEQUENTIAL_CONTAINER_TYPE)
-    QT_DEFINE_SEQUENTIAL_CONTAINER_TYPE(std::vector)
-    QT_DEFINE_SEQUENTIAL_CONTAINER_TYPE(std::list)
-
     template<typename T>
     struct IsAssociativeContainer
     {
         enum { Value = false };
     };
-
-#define QT_DEFINE_ASSOCIATIVE_CONTAINER_TYPE(CONTAINER) \
-    template<typename T, typename U> \
-    struct IsAssociativeContainer<CONTAINER<T, U> > \
-    { \
-        enum { Value = true }; \
-    };
-    QT_DEFINE_ASSOCIATIVE_CONTAINER_TYPE(QHash)
-    QT_DEFINE_ASSOCIATIVE_CONTAINER_TYPE(QMap)
-    QT_DEFINE_ASSOCIATIVE_CONTAINER_TYPE(std::map)
-
 
     template<typename T, bool = QtPrivate::IsSequentialContainer<T>::Value>
     struct SequentialContainerConverterHelper
@@ -1763,6 +1742,13 @@ struct QMetaTypeId< SINGLE_ARG_TEMPLATE<T> > \
         return newId; \
     } \
 }; \
+namespace QtPrivate { \
+template<typename T> \
+struct IsSequentialContainer<SINGLE_ARG_TEMPLATE<T> > \
+{ \
+    enum { Value = true }; \
+}; \
+} \
 QT_END_NAMESPACE
 
 #define Q_DECLARE_METATYPE_TEMPLATE_2ARG(DOUBLE_ARG_TEMPLATE) \
@@ -1851,7 +1837,7 @@ struct QMetaTypeId< SMART_POINTER<T> > \
 };\
 QT_END_NAMESPACE
 
-#define Q_DECLARE_METATYPE_TEMPLATE_1ARG_ITER(TEMPLATENAME) \
+#define Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE_ITER(TEMPLATENAME) \
     QT_BEGIN_NAMESPACE \
     template <class T> class TEMPLATENAME; \
     QT_END_NAMESPACE \
@@ -1859,25 +1845,42 @@ QT_END_NAMESPACE
 
 QT_END_NAMESPACE
 
-QT_FOR_EACH_AUTOMATIC_TEMPLATE_1ARG(Q_DECLARE_METATYPE_TEMPLATE_1ARG_ITER)
+QT_FOR_EACH_AUTOMATIC_TEMPLATE_1ARG(Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE_ITER)
 
-#undef Q_DECLARE_METATYPE_TEMPLATE_1ARG_ITER
+#undef Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE_ITER
 
-Q_DECLARE_METATYPE_TEMPLATE_1ARG(std::vector)
-Q_DECLARE_METATYPE_TEMPLATE_1ARG(std::list)
+#define Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE Q_DECLARE_METATYPE_TEMPLATE_1ARG
 
-#define Q_DECLARE_METATYPE_TEMPLATE_2ARG_ITER(TEMPLATENAME, CPPTYPE) \
+Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(std::vector)
+Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(std::list)
+
+#define Q_FORWARD_DECLARE_METATYPE_TEMPLATE_2ARG_ITER(TEMPLATENAME, CPPTYPE) \
     QT_BEGIN_NAMESPACE \
     template <class T1, class T2> CPPTYPE TEMPLATENAME; \
     QT_END_NAMESPACE \
-    Q_DECLARE_METATYPE_TEMPLATE_2ARG(TEMPLATENAME)
 
-QT_FOR_EACH_AUTOMATIC_TEMPLATE_2ARG(Q_DECLARE_METATYPE_TEMPLATE_2ARG_ITER)
+QT_FOR_EACH_AUTOMATIC_TEMPLATE_2ARG(Q_FORWARD_DECLARE_METATYPE_TEMPLATE_2ARG_ITER)
 
 #undef Q_DECLARE_METATYPE_TEMPLATE_2ARG_ITER
 
+#define Q_DECLARE_ASSOCIATIVE_CONTAINER_METATYPE(TEMPLATENAME) \
+    QT_BEGIN_NAMESPACE \
+    namespace QtPrivate { \
+    template<typename T, typename U> \
+    struct IsAssociativeContainer<TEMPLATENAME<T, U> > \
+    { \
+        enum { Value = true }; \
+    }; \
+    } \
+    QT_END_NAMESPACE \
+    Q_DECLARE_METATYPE_TEMPLATE_2ARG(TEMPLATENAME)
+
+Q_DECLARE_ASSOCIATIVE_CONTAINER_METATYPE(QHash)
+Q_DECLARE_ASSOCIATIVE_CONTAINER_METATYPE(QMap)
+Q_DECLARE_ASSOCIATIVE_CONTAINER_METATYPE(std::map)
+
+Q_DECLARE_METATYPE_TEMPLATE_2ARG(QPair)
 Q_DECLARE_METATYPE_TEMPLATE_2ARG(std::pair)
-Q_DECLARE_METATYPE_TEMPLATE_2ARG(std::map)
 
 #define Q_DECLARE_METATYPE_TEMPLATE_SMART_POINTER_ITER(TEMPLATENAME) \
     Q_DECLARE_SMART_POINTER_METATYPE(TEMPLATENAME)
@@ -2007,45 +2010,6 @@ inline bool QtPrivate::IsMetaTypePair<T, true>::registerConverter(int id)
         return QMetaType::registerConverterFunction(&f, id, toId);
     }
     return true;
-}
-
-
-#ifndef Q_QDOC
-template<typename T>
-#endif
-bool qRegisterSequentialConverter()
-{
-    Q_STATIC_ASSERT_X(QMetaTypeId2<typename T::value_type>::Defined,
-      "The value_type of a sequential container must itself be a metatype.");
-    const int id = qMetaTypeId<T>();
-    const int toId = qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>();
-    if (QMetaType::hasRegisteredConverterFunction(id, toId))
-        return true;
-
-    static const QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> o;
-    static const QtPrivate::ConverterFunctor<T,
-            QtMetaTypePrivate::QSequentialIterableImpl,
-            QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> > f(o);
-    return QMetaType::registerConverterFunction(&f, id, toId);
-}
-
-template<typename T>
-bool qRegisterAssociativeConverter()
-{
-    Q_STATIC_ASSERT_X(QMetaTypeId2<typename T::key_type>::Defined
-                   && QMetaTypeId2<typename T::mapped_type>::Defined,
-      "The key_type and mapped_type of an associative container must themselves be metatypes.");
-
-    const int id = qMetaTypeId<T>();
-    const int toId = qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>();
-    if (QMetaType::hasRegisteredConverterFunction(id, toId))
-        return true;
-    static const QtMetaTypePrivate::QAssociativeIterableConvertFunctor<T> o;
-    static const QtPrivate::ConverterFunctor<T,
-            QtMetaTypePrivate::QAssociativeIterableImpl,
-            QtMetaTypePrivate::QAssociativeIterableConvertFunctor<T> > f(o);
-
-    return QMetaType::registerConverterFunction(&f, id, toId);
 }
 
 QT_END_NAMESPACE
