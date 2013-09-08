@@ -51,7 +51,9 @@
 #else
 #  include <commctrl.h>
 #  include <objbase.h>
-#  include <commoncontrols.h>
+#  ifndef Q_CC_MINGW
+#    include <commoncontrols.h>
+#  endif
 #  include <shellapi.h>
 #endif
 
