@@ -175,6 +175,22 @@ struct DefinedTypesFilter {
 */
 
 /*!
+    \macro Q_DECLARE_SMART_POINTER_METATYPE(SmartPointer)
+    \relates QMetaType
+
+    This macro makes the smart pointer \a SmartPointer known to QMetaType as a
+    smart pointer. This makes it possible to put an instance of SmartPointer<T> into
+    a QVariant, if T is a type which inherits QObject.
+
+    Note that the QWeakPointer, QSharedPointer and QPointer already have built-in
+    support, and it is not necessary to use this macro with them.
+
+    This example shows a typical use of Q_DECLARE_SMART_POINTER_METATYPE():
+
+    \snippet code/src_corelib_kernel_qmetatype.cpp 13
+*/
+
+/*!
     \enum QMetaType::Type
 
     These are the built-in types supported by QMetaType:

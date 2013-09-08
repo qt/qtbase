@@ -2300,6 +2300,8 @@ Q_DECLARE_ASSOCIATIVE_CONTAINER_METATYPE(MyNS::AssociativeContainer)
 
 // Test that explicit declaration does not degrade features.
 Q_DECLARE_METATYPE(MyNS::SmartPointer<int>)
+Q_DECLARE_METATYPE(MyNS::SmartPointer<QIODevice>)
+Q_DECLARE_METATYPE(QSharedPointer<QIODevice>)
 
 void tst_QVariant::qvariant_cast_QObject_wrapper()
 {
@@ -2318,6 +2320,57 @@ void tst_QVariant::qvariant_cast_QObject_wrapper()
 
     QVariant::fromValue(sc);
     QVariant::fromValue(ac);
+
+    {
+        QFile *f = new QFile(this);
+        MyNS::SmartPointer<QFile> sp(f);
+        QVariant spVar = QVariant::fromValue(sp);
+        QVERIFY(spVar.canConvert<QObject*>());
+        QCOMPARE(f, spVar.value<QObject*>());
+    }
+    {
+        QFile *f = new QFile(this);
+        QPointer<QFile> sp(f);
+        QVariant spVar = QVariant::fromValue(sp);
+        QVERIFY(spVar.canConvert<QObject*>());
+        QCOMPARE(f, spVar.value<QObject*>());
+    }
+    {
+        QFile *f = new QFile(this);
+        QWeakPointer<QFile> sp(f);
+        QVariant spVar = QVariant::fromValue(sp);
+        QVERIFY(spVar.canConvert<QObject*>());
+        QCOMPARE(f, spVar.value<QObject*>());
+    }
+    {
+        QFile *f = new QFile(this);
+        QSharedPointer<QFile> sp(f);
+        QWeakPointer<QFile> wp = sp.toWeakRef();
+        QVariant wpVar = QVariant::fromValue(wp);
+        QVERIFY(wpVar.canConvert<QObject*>());
+        QCOMPARE(f, wpVar.value<QObject*>());
+    }
+    {
+        QFile *f = new QFile(this);
+        QSharedPointer<QFile> sp(f);
+        QVariant spVar = QVariant::fromValue(sp);
+        QVERIFY(spVar.canConvert<QObject*>());
+        QCOMPARE(f, spVar.value<QObject*>());
+    }
+    {
+        QIODevice *f = new QFile(this);
+        MyNS::SmartPointer<QIODevice> sp(f);
+        QVariant spVar = QVariant::fromValue(sp);
+        QVERIFY(spVar.canConvert<QObject*>());
+        QCOMPARE(f, spVar.value<QObject*>());
+    }
+    {
+        QIODevice *f = new QFile(this);
+        QSharedPointer<QIODevice> sp(f);
+        QVariant spVar = QVariant::fromValue(sp);
+        QVERIFY(spVar.canConvert<QObject*>());
+        QCOMPARE(f, spVar.value<QObject*>());
+    }
 
     // Compile tests:
     qRegisterMetaType<MyNS::SmartPointer<int> >();

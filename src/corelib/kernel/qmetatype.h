@@ -373,6 +373,8 @@ struct ConverterFunctor : public AbstractConverterFunction
     struct AssociativeValueTypeIsMetaType;
     template<typename T, bool>
     struct IsMetaTypePair;
+    template<typename, typename>
+    struct MetaTypeSmartPointerHelper;
 }
 
 class Q_CORE_EXPORT QMetaType {
@@ -656,6 +658,7 @@ private:
     friend bool qRegisterAssociativeConverter();
     template<typename, bool> friend struct QtPrivate::AssociativeValueTypeIsMetaType;
     template<typename, bool> friend struct QtPrivate::IsMetaTypePair;
+    template<typename, typename> friend struct QtPrivate::MetaTypeSmartPointerHelper;
 #endif
 #else
 public:
@@ -1463,6 +1466,12 @@ namespace QtPrivate
     template<typename T>
     struct MetaTypePairHelper : IsPair<T> {};
 
+    template<typename T, typename = void>
+    struct MetaTypeSmartPointerHelper
+    {
+        static bool registerConverter(int) { return false; }
+    };
+
     Q_CORE_EXPORT bool isBuiltinType(const QByteArray &type);
 } // namespace QtPrivate
 
@@ -1530,6 +1539,24 @@ namespace QtPrivate {
     {
         enum DefinedType { Defined = defined };
     };
+
+    template<typename SmartPointer>
+    struct QSmartPointerConvertFunctor
+    {
+        QObject* operator()(const SmartPointer &p) const
+        {
+            return p.operator->();
+        }
+    };
+
+    template<typename T>
+    struct QSmartPointerConvertFunctor<QWeakPointer<T> >
+    {
+        QObject* operator()(const QWeakPointer<T> &p) const
+        {
+            return p.data();
+        }
+    };
 }
 
 template <typename T>
@@ -1565,6 +1592,7 @@ int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normaliz
         QtPrivate::SequentialContainerConverterHelper<T>::registerConverter(id);
         QtPrivate::AssociativeContainerConverterHelper<T>::registerConverter(id);
         QtPrivate::MetaTypePairHelper<T>::registerConverter(id);
+        QtPrivate::MetaTypeSmartPointerHelper<T>::registerConverter(id);
     }
 
     return id;
@@ -1826,6 +1854,23 @@ struct SharedPointerMetaTypeIdHelper<SMART_POINTER<T>, true> \
                         reinterpret_cast< SMART_POINTER<T> *>(quintptr(-1))); \
         metatype_id.storeRelease(newId); \
         return newId; \
+    } \
+}; \
+template<typename T> \
+struct MetaTypeSmartPointerHelper<SMART_POINTER<T> , \
+        typename QEnableIf<IsPointerToTypeDerivedFromQObject<T*>::Value >::Type> \
+{ \
+    static bool registerConverter(int id) \
+    { \
+        const int toId = QMetaType::QObjectStar; \
+        if (!QMetaType::hasRegisteredConverterFunction(id, toId)) { \
+            QtPrivate::QSmartPointerConvertFunctor<SMART_POINTER<T> > o; \
+            static const QtPrivate::ConverterFunctor<SMART_POINTER<T>, \
+                                    QObject*, \
+                                    QSmartPointerConvertFunctor<SMART_POINTER<T> > > f(o); \
+            return QMetaType::registerConverterFunction(&f, id, toId); \
+        } \
+        return true; \
     } \
 }; \
 } \

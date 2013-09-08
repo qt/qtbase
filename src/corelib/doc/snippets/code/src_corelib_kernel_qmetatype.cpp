@@ -143,3 +143,31 @@ void someFunc()
 
 //! [11]
 
+//! [12]
+QPointer<QFile> fp(new QFile);
+QVariant var = QVariant::fromValue(fp);
+// ...
+if (var.canConvert<QObject*>()) {
+    QObject *sp = var.value<QObject*>();
+    qDebug() << sp->metaObject()->className(); // Prints 'QFile'.
+}
+//! [12]
+
+//! [13]
+
+#include <memory>
+
+Q_DECLARE_SMART_POINTER_METATYPE(std::shared_ptr)
+
+void someFunc()
+{
+    auto smart_ptr = std::make_shared<QFile>();
+    QVariant var = QVariant::fromValue(smart_ptr);
+    // ...
+    if (var.canConvert<QObject*>()) {
+        QObject *sp = var.value<QObject*>();
+        qDebug() << sp->metaObject()->className(); // Prints 'QFile'.
+    }
+}
+
+//! [13]
