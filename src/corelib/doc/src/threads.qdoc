@@ -178,7 +178,14 @@
     See the \l{Qt Concurrent} module documentation for details on the individual functions.
 
 
-    \section1 Comparison of Solutions
+    \section1 Choosing an Appropriate Approach
+
+    As demonstrated above, Qt provides different solutions for developing threaded
+    applications. The right solution for a given application depends on the purpose
+    of the new thread and the thread's lifetime. Below is a comparison of Qt's
+    threading technologies, followed by recommended solutions for some example use cases.
+
+    \section2 Comparison of Solutions
 
     \table
     \header
@@ -228,6 +235,53 @@
         \li Yes
     \endtable
     \sup{\e{*Except QtConcurrent::run(), which is like QRunnable}}
+
+
+    \section2 Example Use Cases
+
+    \table
+    \header
+        \li Lifetime of thread
+        \li Operation
+        \li Solution
+    \row
+        \li One call
+        \li Run a linear function within another thread, optionally with progress
+            updates during the run.
+        \li Qt provides different solutions:
+            \list
+              \li Place the function in a reimplementation of QThread::run() and
+                  start the QThread. Emit signals to update progress. OR
+              \li Place the function in a reimplementation of QRunnable::run() and
+                  add the QRunnable to a QThreadPool. Write to a \l{Synchronizing
+                  Threads}{thread-safe variable} to update progress. OR
+              \li Run the function using QtConcurrent::run(). Write to a \l{Synchronizing
+                  Threads}{thread-safe variable} to update progress.
+            \endlist
+    \row
+        \li One call
+        \li Perform an operation on all items of a container, using all available
+            cores. For example, producing thumbnails from a list of images.
+        \li Use Qt Concurrent's \l{QtConcurrent::}{filter()} function to select
+            container elements, and the \l{QtConcurrent::}{map()} function to apply
+            an operation to each element. To fold the output into a single result,
+            use \l{QtConcurrent::}{filterReduced()} and \l{QtConcurrent::}{mapReduced()}
+            instead.
+    \row
+        \li Permanent
+        \li Have an object living in another thread that can perform different
+            tasks upon request and/or can receive new data to work with.
+        \li Subclass a QObject to create a worker. Instantiate this worker object
+            and a QThread. Move the worker to the new thread. Send commands or
+            data to the worker object over queued signal-slot connections.
+    \row
+        \li Permanent
+        \li Repeatedly perform an expensive operation in another thread, where the
+            thread does not need to receive any signals or events.
+        \li Write the infinite loop directly within a reimplementation of QThread::run().
+            Start the thread without an event loop. Let the thread emit signals to
+            send data back to the GUI thread.
+    \endtable
 */
 
 /*!
