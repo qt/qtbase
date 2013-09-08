@@ -92,19 +92,19 @@ public:
     mutable QRect decorationRect, displayRect, checkRect;
     mutable QStyleOptionViewItem *cachedOption;
     bool isViewItemCached(const QStyleOptionViewItem &option) const {
-        return cachedOption && (option.rect == cachedOption->rect
-               && option.direction == cachedOption->direction
+        return cachedOption && (option.widget == cachedOption->widget
+               && option.index == cachedOption->index
                && option.state == cachedOption->state
+               && option.rect == cachedOption->rect
+               && option.text == cachedOption->text
+               && option.direction == cachedOption->direction
                && option.displayAlignment == cachedOption->displayAlignment
                && option.decorationAlignment == cachedOption->decorationAlignment
                && option.decorationPosition == cachedOption->decorationPosition
                && option.decorationSize == cachedOption->decorationSize
-               && option.font == cachedOption->font
                && option.features == cachedOption->features
-               && option.widget == cachedOption->widget
-               && option.index == cachedOption->index
                && option.icon.isNull() == cachedOption->icon.isNull()
-               && option.text == cachedOption->text
+               && option.font == cachedOption->font
                && option.viewItemPosition == cachedOption->viewItemPosition);
     }
 #endif
