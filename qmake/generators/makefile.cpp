@@ -3240,7 +3240,8 @@ MakefileGenerator::writePkgConfigFile()
                 }
             }
         }
-        t << var << "=" << val << endl;
+        if (!val.isEmpty())
+            t << var << "=" << val << endl;
     }
 
     t << endl;
