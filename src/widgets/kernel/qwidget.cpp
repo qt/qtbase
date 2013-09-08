@@ -5601,6 +5601,15 @@ void QWidgetPrivate::setWindowIconText_helper(const QString &title)
         setWindowIconText_sys(qt_setWindowTitle_helperHelper(title, q));
 }
 
+/*!
+    \fn void QWidget::windowIconTextChanged(const QString &iconText)
+
+    This signal is emitted when the window's icon text has changed, with the
+    new \a iconText as an argument.
+
+    \since 5.2
+*/
+
 void QWidget::setWindowIconText(const QString &iconText)
 {
     if (QWidget::windowIconText() == iconText)
@@ -5612,7 +5621,18 @@ void QWidget::setWindowIconText(const QString &iconText)
 
     QEvent e(QEvent::IconTextChange);
     QApplication::sendEvent(this, &e);
+
+    emit windowIconTextChanged(iconText);
 }
+
+/*!
+    \fn void QWidget::windowTitleChanged(const QString &title)
+
+    This signal is emitted when the window's title has changed, with the
+    new \a title as an argument.
+
+    \since 5.2
+*/
 
 void QWidget::setWindowTitle(const QString &title)
 {
@@ -5625,6 +5645,8 @@ void QWidget::setWindowTitle(const QString &title)
 
     QEvent e(QEvent::WindowTitleChange);
     QApplication::sendEvent(this, &e);
+
+    emit windowTitleChanged(title);
 }
 
 
@@ -5661,6 +5683,15 @@ void QWidgetPrivate::setWindowIcon_helper()
     }
 }
 
+/*!
+    \fn void QWidget::windowIconChanged(const QIcon &icon)
+
+    This signal is emitted when the window's icon has changed, with the
+    new \a icon as an argument.
+
+    \since 5.2
+*/
+
 void QWidget::setWindowIcon(const QIcon &icon)
 {
     Q_D(QWidget);
@@ -5674,6 +5705,8 @@ void QWidget::setWindowIcon(const QIcon &icon)
 
     d->setWindowIcon_sys();
     d->setWindowIcon_helper();
+
+    emit windowIconChanged(icon);
 }
 
 

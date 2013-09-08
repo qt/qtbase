@@ -171,9 +171,9 @@ class Q_WIDGETS_EXPORT QWidget : public QObject, public QPaintDevice
     Q_PROPERTY(QSize sizeHint READ sizeHint)
     Q_PROPERTY(QSize minimumSizeHint READ minimumSizeHint)
     Q_PROPERTY(bool acceptDrops READ acceptDrops WRITE setAcceptDrops)
-    Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle DESIGNABLE isWindow)
-    Q_PROPERTY(QIcon windowIcon READ windowIcon WRITE setWindowIcon DESIGNABLE isWindow)
-    Q_PROPERTY(QString windowIconText READ windowIconText WRITE setWindowIconText DESIGNABLE isWindow)
+    Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle NOTIFY windowTitleChanged DESIGNABLE isWindow)
+    Q_PROPERTY(QIcon windowIcon READ windowIcon WRITE setWindowIcon NOTIFY windowIconChanged DESIGNABLE isWindow)
+    Q_PROPERTY(QString windowIconText READ windowIconText WRITE setWindowIconText NOTIFY windowIconTextChanged DESIGNABLE isWindow)
     Q_PROPERTY(double windowOpacity READ windowOpacity WRITE setWindowOpacity DESIGNABLE isWindow)
     Q_PROPERTY(bool windowModified READ isWindowModified WRITE setWindowModified DESIGNABLE isWindow)
 #ifndef QT_NO_TOOLTIP
@@ -599,6 +599,9 @@ public:
     friend class QDesktopScreenWidget;
 
 Q_SIGNALS:
+    void windowTitleChanged(const QString &title);
+    void windowIconChanged(const QIcon &icon);
+    void windowIconTextChanged(const QString &iconText);
     void customContextMenuRequested(const QPoint &pos);
 
 protected:
