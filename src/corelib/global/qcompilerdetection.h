@@ -441,6 +441,7 @@
  *  N2346           Q_COMPILER_DEFAULT_MEMBERS
  *  N2346           Q_COMPILER_DELETE_MEMBERS
  *  N1986           Q_COMPILER_DELEGATING_CONSTRUCTORS
+ *  N2437           Q_COMPILER_EXPLICIT_CONVERSIONS
  *  N3206 N3272     Q_COMPILER_EXPLICIT_OVERRIDES   (v0.9 and above only)
  *  N1987           Q_COMPILER_EXTERN_TEMPLATES
  *  N2540           Q_COMPILER_INHERITING_CONSTRUCTORS
@@ -554,6 +555,9 @@
 #    if __has_feature(cxx_delegating_constructors)
 #      define Q_COMPILER_DELEGATING_CONSTRUCTORS
 #    endif
+#    if __has_feature(cxx_explicit_conversions)
+#      define Q_COMPILER_EXPLICIT_CONVERSIONS
+#    endif
 #    if __has_feature(cxx_override_control)
 #      define Q_COMPILER_EXPLICIT_OVERRIDES
 #    endif
@@ -639,6 +643,7 @@
 #    endif
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
        /* C++11 features supported in GCC 4.5: */
+#      define Q_COMPILER_EXPLICIT_CONVERSIONS
 #      define Q_COMPILER_LAMBDA
 #      define Q_COMPILER_RAW_STRINGS
 #    endif
