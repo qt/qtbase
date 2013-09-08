@@ -2386,6 +2386,7 @@ void QUrl::setPath(const QString &path, ParsingMode mode)
         mode = TolerantMode;
     }
 
+    data = qt_normalizePathSegments(data, false);
     d->setPath(data, 0, data.length());
 
     // optimized out, since there is no path delimiter
@@ -3251,9 +3252,10 @@ QUrl QUrl::adjusted(QUrl::FormattingOptions options) const
     if (options & RemovePath) {
         that.setPath(QString());
     } else if (options & (StripTrailingSlash | RemoveFilename | NormalizePathSegments)) {
+        that.detach();
         QString path;
         d->appendPath(path, options | FullyEncoded, QUrlPrivate::Path);
-        that.setPath(path, TolerantMode);
+        that.d->setPath(path, 0, path.length());
     }
     return that;
 }
