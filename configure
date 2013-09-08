@@ -1924,6 +1924,14 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    freetype)
+        [ "$VAL" = "yes" ] && VAL=qt
+        if [ "$VAL" = "qt" ] || [ "$VAL" = "no" ] || [ "$VAL" = "system" ]; then
+            CFG_FREETYPE="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     xkb)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_XKB="$VAL"
@@ -3534,6 +3542,11 @@ Third Party Libraries:
     -qt-libjpeg ........ Use the libjpeg bundled with Qt.
  +  -system-libjpeg .... Use libjpeg from the operating system.
                          See http://www.ijg.org
+
+    -no-freetype ....... Do not compile in Freetype2 support.
+    -qt-freetype ....... Use the libfreetype bundled with Qt.
+ +  -system-freetype.... Use the libfreetype provided by the system (enabled if -fontconfig is active).
+                         See http://www.freetype.org
 
  *  -no-harfbuzz ....... Do not compile HarfBuzz-NG support.
     -qt-harfbuzz ....... (experimental) Use HarfBuzz-NG bundled with Qt
