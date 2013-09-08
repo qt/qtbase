@@ -3607,6 +3607,9 @@ Additional options:
     -no-icu ............ Do not compile support for ICU libraries.
  +  -icu ............... Compile support for ICU libraries.
 
+    -no-fontconfig ..... Do not compile FontConfig support.
+ +  -fontconfig ........ Compile FontConfig support.
+
     -no-strip .......... Do not strip binaries and libraries of unneeded symbols.
  *  -strip ............. Strip binaries and libraries of unneeded symbols when installing.
 
