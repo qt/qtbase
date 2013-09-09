@@ -100,7 +100,6 @@ void TableGenerator::findComposeFile()
             qDebug() << "Using Compose file from: " << composeFile;
 #endif
     }
-
     // check if user’s home directory has a file named .XCompose
     if (!found && cleanState()) {
         QString composeFile = qgetenv("HOME") + QStringLiteral("/.XCompose");
@@ -111,10 +110,12 @@ void TableGenerator::findComposeFile()
             qDebug() << "Using Compose file from: " << composeFile;
 #endif
     }
-
     // check for the system provided compose files
     if (!found && cleanState()) {
-        QString table = readLocaleMappings(locale().toUpper().toUtf8());
+        QByteArray loc = locale().toUpper().toUtf8();
+        QString table = readLocaleMappings(loc);
+        if (table.isEmpty())
+            table = readLocaleMappings(readLocaleAliases(loc));
 
         if (cleanState()) {
             if (table.isEmpty())
@@ -177,8 +178,11 @@ QString TableGenerator::locale() const
 
 QString TableGenerator::readLocaleMappings(const QByteArray &locale)
 {
-    QFile mappings(systemComposeDir() + QLatin1String("/compose.dir"));
     QString file;
+    if (locale.isEmpty())
+        return file;
+
+    QFile mappings(systemComposeDir() + QLatin1String("/compose.dir"));
     if (mappings.open(QIODevice::ReadOnly)) {
         const int localeNameLength = locale.size();
         const char * const localeData = locale.constData();
@@ -208,9 +212,8 @@ QString TableGenerator::readLocaleMappings(const QByteArray &locale)
                 while (*line && *line != ' ' && *line != '\t' && *line != '\n')
                     ++line;
                 *line = '\0';
-
                 if (localeNameLength == (line - lc) && !strncasecmp(lc, localeData, line - lc)) {
-                    file = QString::fromUtf8(l, composeFileNameEnd - l);
+                    file = QString::fromLocal8Bit(l, composeFileNameEnd - l);
                     break;
                 }
             }
@@ -218,6 +221,47 @@ QString TableGenerator::readLocaleMappings(const QByteArray &locale)
         mappings.close();
     }
     return file;
+}
+
+QByteArray TableGenerator::readLocaleAliases(const QByteArray &locale)
+{
+    QFile aliases(systemComposeDir() + QLatin1String("/locale.alias"));
+    QByteArray fullLocaleName;
+    if (aliases.exists()) {
+        aliases.open(QIODevice::ReadOnly);
+        while (!aliases.atEnd()) {
+            char l[1024];
+            int read = aliases.readLine(l, sizeof(l));
+            char *line = l;
+            if (read && ((*line >= 'a' && *line <= 'z') ||
+                         (*line >= 'A' && *line <= 'Z'))) {
+                const char *alias = line;
+                while (*line && *line != ':' && *line != ' ' && *line != '\t')
+                    ++line;
+                if (!*line)
+                    continue;
+                *line = 0;
+                if (locale.size() == (line - alias)
+                        && !strncasecmp(alias, locale.constData(), line - alias)) {
+                    // found a match for alias, read the real locale name
+                    ++line;
+                    while (*line && (*line == ' ' || *line == '\t'))
+                        ++line;
+                    const char *fullName = line;
+                    while (*line && *line != ' ' && *line != '\t' && *line != '\n')
+                        ++line;
+                    *line = 0;
+                    fullLocaleName = fullName;
+#ifdef DEBUG_GENERATOR
+                    qDebug() << "Alias for: " << alias << "is: " << fullLocaleName;
+                    break;
+#endif
+                }
+            }
+        }
+        aliases.close();
+    }
+    return fullLocaleName;
 }
 
 bool TableGenerator::processFile(QString composeFileName)
@@ -254,7 +298,7 @@ void TableGenerator::parseComposeFile(QFile *composeFile)
         if (*line == '<')
             parseKeySequence(line);
         else if (!strncmp(line, "include", 7))
-            parseIncludeInstruction(QString::fromUtf8(line));
+            parseIncludeInstruction(QString::fromLocal8Bit(line));
     }
 
     composeFile->close();
@@ -308,7 +352,7 @@ ushort TableGenerator::keysymToUtf8(quint32 sym)
     qDebug() << QString("keysym - 0x%1 : utf8 - %2").arg(QString::number(sym, 16))
                                                     .arg(codec->toUnicode(chars));
 #endif
-    return QString::fromUtf8(chars).at(0).unicode();
+    return QString::fromLocal8Bit(chars).at(0).unicode();
 }
 
 static inline int fromBase8(const char *s, const char *end)
@@ -377,13 +421,13 @@ void TableGenerator::parseKeySequence(char *line)
         // handle direct text encoded in the locale
         if (*composeValue == '\\')
             ++composeValue;
-        elem.value = QString::fromUtf8(composeValue).at(0).unicode();
+        elem.value = QString::fromLocal8Bit(composeValue).at(0).unicode();
         ++composeValue;
     }
 
 #ifdef DEBUG_GENERATOR
     // find the comment
-    elem.comment = QString::fromUtf8(composeValueEnd + 1).trimmed();
+    elem.comment = QString::fromLocal8Bit(composeValueEnd + 1).trimmed();
 #endif
 
     // find the key sequence and convert to X11 keysym

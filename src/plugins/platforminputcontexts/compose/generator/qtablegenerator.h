@@ -122,6 +122,7 @@ protected:
     ushort keysymToUtf8(quint32 sym);
 
     QString readLocaleMappings(const QByteArray &locale);
+    QByteArray readLocaleAliases(const QByteArray &locale);
     void initPossibleLocations();
     bool cleanState() const { return ((m_state & NoErrors) == NoErrors); }
     QString locale() const;
