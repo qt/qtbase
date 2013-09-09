@@ -389,6 +389,16 @@ static inline QString guidToString(const GUID &g)
 inline QDebug operator<<(QDebug d, const GUID &g)
 { d.nospace() << guidToString(g); return d; }
 
+// Return an allocated wchar_t array from a QString, reserve more memory if desired.
+static wchar_t *qStringToWCharArray(const QString &s, size_t reserveSize = 0)
+{
+    const size_t stringSize = s.size();
+    wchar_t *result = new wchar_t[qMax(stringSize + 1, reserveSize)];
+    s.toWCharArray(result);
+    result[stringSize] = 0;
+    return result;
+}
+
 namespace QWindowsDialogs
 {
 /*!
@@ -601,6 +611,44 @@ void QWindowsDialogHelperBase<BaseClass>::stopTimer()
         m_timerId = 0;
     }
 }
+
+#ifndef Q_OS_WINCE
+// Find a file dialog window created by IFileDialog by process id, window
+// title and class, which starts with a hash '#'.
+
+struct FindDialogContext
+{
+    explicit FindDialogContext(const QString &titleIn)
+        : title(qStringToWCharArray(titleIn)), processId(GetCurrentProcessId()), hwnd(0) {}
+
+    const QScopedArrayPointer<wchar_t> title;
+    const DWORD processId;
+    HWND hwnd; // contains the HWND of the window found.
+};
+
+static BOOL CALLBACK findDialogEnumWindowsProc(HWND hwnd, LPARAM lParam)
+{
+    FindDialogContext *context = reinterpret_cast<FindDialogContext *>(lParam);
+    DWORD winPid = 0;
+    GetWindowThreadProcessId(hwnd, &winPid);
+    if (winPid != context->processId)
+        return TRUE;
+    wchar_t buf[256];
+    if (!RealGetWindowClass(hwnd, buf, sizeof(buf)/sizeof(wchar_t)) || buf[0] != L'#')
+        return TRUE;
+    if (!GetWindowTextW(hwnd, buf, sizeof(buf)/sizeof(wchar_t)) || wcscmp(buf, context->title.data()))
+        return TRUE;
+    context->hwnd = hwnd;
+    return FALSE;
+}
+
+static inline HWND findDialogWindow(const QString &title)
+{
+    FindDialogContext context(title);
+    EnumWindows(findDialogEnumWindowsProc, reinterpret_cast<LPARAM>(&context));
+    return context.hwnd;
+}
+#endif // !Q_OS_WINCE
 
 template <class BaseClass>
 void QWindowsDialogHelperBase<BaseClass>::hide()
@@ -844,7 +892,7 @@ signals:
     void filterSelected(const QString & filter);
 
 public slots:
-    virtual void close() { m_fileDialog->Close(S_OK); }
+    virtual void close();
 
 protected:
     explicit QWindowsNativeFileDialogBase(const QWindowsFileDialogSharedData &data);
@@ -868,6 +916,7 @@ private:
     bool m_hideFiltersDetails;
     bool m_hasDefaultSuffix;
     QWindowsFileDialogSharedData m_data;
+    QString m_title;
 };
 
 QWindowsNativeFileDialogBase::QWindowsNativeFileDialogBase(const QWindowsFileDialogSharedData &data) :
@@ -911,6 +960,7 @@ bool QWindowsNativeFileDialogBase::init(const CLSID &clsId, const IID &iid)
 
 void QWindowsNativeFileDialogBase::setWindowTitle(const QString &title)
 {
+    m_title = title;
     m_fileDialog->SetTitle(reinterpret_cast<const wchar_t *>(title.utf16()));
 }
 
@@ -1289,6 +1339,20 @@ bool QWindowsNativeFileDialogBase::onFileOk()
     // Store selected files as GetResults() returns invalid data after the dialog closes.
     m_data.setSelectedFiles(dialogResult());
     return true;
+}
+
+void QWindowsNativeFileDialogBase::close()
+{
+    m_fileDialog->Close(S_OK);
+#ifndef Q_OS_WINCE
+    // IFileDialog::Close() does not work unless invoked from a callback.
+    // Try to find the window and send it a WM_CLOSE in addition.
+    const HWND hwnd = findDialogWindow(m_title);
+    if (QWindowsContext::verboseDialogs)
+        qDebug() << __FUNCTION__ << "closing" << hwnd;
+    if (hwnd && IsWindowVisible(hwnd))
+        PostMessageW(hwnd, WM_CLOSE, 0, 0);
+#endif // !Q_OS_WINCE
 }
 
 HRESULT QWindowsNativeFileDialogEventHandler::OnFolderChanging(IFileDialog *, IShellItem *item)
@@ -1753,16 +1817,6 @@ QList<QUrl> QWindowsXpNativeFileDialog::execExistingDir(HWND owner)
         }
     }
     return selectedFiles;
-}
-
-// Return an allocated wchar_t array from a QString, reserve more memory if desired.
-static wchar_t *qStringToWCharArray(const QString &s, size_t reserveSize = 0)
-{
-    const size_t stringSize = s.size();
-    wchar_t *result = new wchar_t[qMax(stringSize + 1, reserveSize)];
-    s.toWCharArray(result);
-    result[stringSize] = 0;
-    return result;
 }
 
 // Open/Save files
