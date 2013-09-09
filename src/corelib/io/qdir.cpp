@@ -214,10 +214,10 @@ class QDirSortItemComparator
     int qt_cmp_si_sort_flags;
 public:
     QDirSortItemComparator(int flags) : qt_cmp_si_sort_flags(flags) {}
-    bool operator()(const QDirSortItem &, const QDirSortItem &);
+    bool operator()(const QDirSortItem &, const QDirSortItem &) const;
 };
 
-bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortItem &n2)
+bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortItem &n2) const
 {
     const QDirSortItem* f1 = &n1;
     const QDirSortItem* f2 = &n2;
