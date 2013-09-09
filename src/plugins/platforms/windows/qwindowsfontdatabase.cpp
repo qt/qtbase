@@ -1759,7 +1759,6 @@ QFontEngine *QWindowsFontDatabase::createEngine(int script, const QFontDef &requ
     QFontEngine *fe = 0;
     if (!useDirectWrite)  {
         QWindowsFontEngine *few = new QWindowsFontEngine(request.family, hfont, stockFont, lf, data);
-        few->setObjectName(QStringLiteral("QWindowsFontEngine_") + request.family);
         if (preferClearTypeAA)
             few->glyphFormat = QFontEngineGlyphCache::Raster_RGBMask;
 
@@ -1788,7 +1787,6 @@ QFontEngine *QWindowsFontDatabase::createEngine(int script, const QFontDef &requ
                                                                                     request.pixelSize,
                                                                                     data);
             fedw->initFontInfo(request, dpi, directWriteFont);
-            fedw->setObjectName(QStringLiteral("QWindowsFontEngineDirectWrite_") + request.family);
             fe = fedw;
         } else {
             qErrnoWarning("%s: CreateFontFace failed", __FUNCTION__);
@@ -1806,7 +1804,6 @@ QFontEngine *QWindowsFontDatabase::createEngine(int script, const QFontDef &requ
             QStringList list = family_list;
             list.append(extraFonts);
             QFontEngine *mfe = new QWindowsMultiFontEngine(fe, list);
-            mfe->setObjectName(QStringLiteral("QWindowsMultiFontEngine_") + request.family);
             mfe->fontDef = fe->fontDef;
             fe = mfe;
         }

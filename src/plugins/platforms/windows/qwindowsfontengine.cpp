@@ -336,6 +336,13 @@ QWindowsFontEngine::QWindowsFontEngine(const QString &name,
 
     if (!resolvedGetCharWidthI)
         resolveGetCharWidthI();
+
+    // ### Properties accessed by QWin32PrintEngine (QtPrintSupport)
+    QVariantMap userData;
+    userData.insert(QStringLiteral("logFont"), QVariant::fromValue(m_logfont));
+    userData.insert(QStringLiteral("hFont"), QVariant::fromValue(hfont));
+    userData.insert(QStringLiteral("trueType"), QVariant(bool(ttf)));
+    setUserData(userData);
 }
 
 QWindowsFontEngine::~QWindowsFontEngine()
@@ -1366,7 +1373,7 @@ void QWindowsMultiFontEngine::loadEngine(int at)
 #endif
     {
         QWindowsFontEngine *fe = static_cast<QWindowsFontEngine*>(fontEngine);
-        lf = fe->logFont();
+        lf = fe->m_logfont;
 
         data = fe->fontEngineData();
     }
@@ -1391,8 +1398,6 @@ void QWindowsMultiFontEngine::loadEngine(int at)
                 QWindowsFontEngineDirectWrite *fedw = new QWindowsFontEngineDirectWrite(directWriteFontFace,
                                                                                         fontEngine->fontDef.pixelSize,
                                                                                         data);
-                fedw->setObjectName(QStringLiteral("QWindowsFontEngineDirectWrite_") + fontEngine->fontDef.family);
-
                 fedw->fontDef = fontDef;
                 fedw->ref.ref();
                 engines[at] = fedw;

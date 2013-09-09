@@ -364,8 +364,9 @@ void QWin32PrintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem
                     || ti.fontEngine->type() != QFontEngine::Win;
 
     if (!fallBack) {
-        const QVariant hFontV = ti.fontEngine->property("hFont");
-        const QVariant logFontV = ti.fontEngine->property("logFont");
+        const QVariantMap userData = ti.fontEngine->userData().toMap();
+        const QVariant hFontV = userData.value(QStringLiteral("hFont"));
+        const QVariant logFontV = userData.value(QStringLiteral("logFont"));
         if (hFontV.canConvert<HFONT>() && logFontV.canConvert<LOGFONT>()) {
             const HFONT hfont = hFontV.value<HFONT>();
             const LOGFONT logFont = logFontV.value<LOGFONT>();
@@ -1806,8 +1807,9 @@ static void draw_text_item_win(const QPointF &pos, const QTextItemInt &ti, HDC h
     bool ttf = false;
 
     if (ti.fontEngine->type() == QFontEngine::Win) {
-        const QVariant hfontV = ti.fontEngine->property("hFont");
-        const QVariant ttfV = ti.fontEngine->property("trueType");
+        const QVariantMap userData = ti.fontEngine->userData().toMap();
+        const QVariant hfontV = userData.value(QStringLiteral("hFont"));
+        const QVariant ttfV = userData.value(QStringLiteral("trueType"));
         if (ttfV.type() == QVariant::Bool && hfontV.canConvert<HFONT>()) {
             hfont = hfontV.value<HFONT>();
             ttf = ttfV.toBool();

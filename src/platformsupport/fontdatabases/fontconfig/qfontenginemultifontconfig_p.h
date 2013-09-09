@@ -49,7 +49,6 @@ QT_BEGIN_NAMESPACE
 
 class QFontEngineMultiFontConfig : public QFontEngineMultiQPA
 {
-    Q_OBJECT
 public:
     explicit QFontEngineMultiFontConfig(QFontEngine *fe, int script);
 

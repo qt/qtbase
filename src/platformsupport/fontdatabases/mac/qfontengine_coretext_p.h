@@ -57,7 +57,6 @@ QT_BEGIN_NAMESPACE
 class QRawFontPrivate;
 class QCoreTextFontEngine : public QFontEngine
 {
-    Q_OBJECT
 public:
     QCoreTextFontEngine(CTFontRef font, const QFontDef &def);
     QCoreTextFontEngine(CGFontRef font, const QFontDef &def);

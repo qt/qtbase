@@ -86,9 +86,8 @@ enum HB_Compat_Error {
 
 typedef void (*qt_destroy_func_t) (void *user_data);
 
-class Q_GUI_EXPORT QFontEngine : public QObject
+class Q_GUI_EXPORT QFontEngine
 {
-    Q_OBJECT
 public:
     enum Type {
         Box,
@@ -300,8 +299,12 @@ public:
     QImage currentlyLockedAlphaMap;
     int m_subPixelPositionCount; // Number of positions within a single pixel for this cache
 
+    inline QVariant userData() const { return m_userData; }
+
 protected:
     QFixed lastRightBearing(const QGlyphLayout &glyphs, bool round = false);
+
+    inline void setUserData(const QVariant &userData) { m_userData = userData; }
 
 private:
     struct GlyphCacheEntry {
@@ -311,6 +314,9 @@ private:
     };
 
     mutable QLinkedList<GlyphCacheEntry> m_glyphCaches;
+
+private:
+    QVariant m_userData;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QFontEngine::ShaperFlags)
@@ -368,7 +374,6 @@ private:
 
 class Q_GUI_EXPORT QFontEngineMulti : public QFontEngine
 {
-    Q_OBJECT
 public:
     explicit QFontEngineMulti(int engineCount);
     ~QFontEngineMulti();

@@ -61,7 +61,6 @@ QT_BEGIN_NAMESPACE
 
 class QWindowsFontEngineDirectWrite : public QFontEngine
 {
-    Q_OBJECT
 public:
     explicit QWindowsFontEngineDirectWrite(IDWriteFontFace *directWriteFontFace,
                                     qreal pixelSize,

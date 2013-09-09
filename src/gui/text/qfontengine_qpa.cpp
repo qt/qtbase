@@ -687,7 +687,6 @@ void QFontEngineMultiQPA::init(QFontEngine *fe)
     engines[0] = fe;
     fe->ref.ref();
     fontDef = engines[0]->fontDef;
-    setObjectName(QStringLiteral("QFontEngineMultiQPA"));
     cache_cost = fe->cache_cost;
 }
 
@@ -754,7 +753,9 @@ QFontEngine* QFontEngineMultiQPA::createMultiFontEngine(QFontEngine *fe, int scr
     QFontCache::EngineCache::Iterator it = fc->engineCache.find(key),
             end = fc->engineCache.end();
     while (it != end && it.key() == key) {
-        QFontEngineMulti *cachedEngine = qobject_cast<QFontEngineMulti *>(it.value().data);
+        QFontEngineMulti *cachedEngine = 0;
+        if (it.value().data->type() == QFontEngine::Multi)
+            cachedEngine = static_cast<QFontEngineMulti *>(it.value().data);
         if (faceIsLocal || (cachedEngine && fe == cachedEngine->engine(0))) {
             engine = cachedEngine;
             fc->updateHitCountAndTimeStamp(it.value());
