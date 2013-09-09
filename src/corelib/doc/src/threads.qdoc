@@ -655,11 +655,6 @@
     separate QImages, but the two threads cannot paint onto the same
     QImage at the same time.
 
-    Note that on X11 systems without FontConfig support, Qt cannot
-    render text outside of the GUI thread. You can use the
-    QFontDatabase::supportsThreadedFontRendering() function to detect
-    whether or not font rendering can be used outside the GUI thread.
-
     \section1 Threads and Rich Text Processing
 
     The QTextDocument, QTextCursor, and \l{richtext.html}{all related classes} are reentrant.

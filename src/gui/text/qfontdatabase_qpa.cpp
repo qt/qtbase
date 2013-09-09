@@ -267,11 +267,6 @@ bool QFontDatabase::removeAllApplicationFonts()
     return true;
 }
 
-bool QFontDatabase::supportsThreadedFontRendering()
-{
-    return true;
-}
-
 /*!
     \internal
 */

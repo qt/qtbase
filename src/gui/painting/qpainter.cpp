@@ -6349,12 +6349,6 @@ void QPainterPrivate::drawTextItem(const QPointF &p, const QTextItem &_ti, QText
     if (!engine)
         return;
 
-#ifndef QT_NO_DEBUG
-    qt_painter_thread_test(device->devType(),
-                           "text and fonts",
-                           QFontDatabase::supportsThreadedFontRendering());
-#endif
-
     QTextItemInt &ti = const_cast<QTextItemInt &>(static_cast<const QTextItemInt &>(_ti));
 
     if (!extended && state->bgMode == Qt::OpaqueMode) {

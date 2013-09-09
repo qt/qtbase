@@ -4444,9 +4444,6 @@ void TextDrawerThread::run()
 
 void tst_QPainter::drawTextOutsideGuiThread()
 {
-    if (!QFontDatabase::supportsThreadedFontRendering())
-        QSKIP("No threaded font rendering");
-
     QImage referenceRendering(100, 100, QImage::Format_ARGB32_Premultiplied);
     referenceRendering.fill(0);
     QPainter p(&referenceRendering);
