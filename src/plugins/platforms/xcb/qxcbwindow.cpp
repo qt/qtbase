@@ -646,7 +646,6 @@ void QXcbWindow::show()
             if (!transientXcbParent)
                 transientXcbParent = static_cast<QXcbScreen *>(screen())->clientLeader();
             if (transientXcbParent) { // ICCCM 4.1.2.6
-                m_gravity = XCB_GRAVITY_CENTER;
                 Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
                                                XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 32,
                                                1, &transientXcbParent));
@@ -1302,9 +1301,6 @@ QRect QXcbWindow::windowToWmGeometry(QRect r) const
         r.translate(m_frameMargins.left(), m_frameMargins.top());
     } else if (!frameInclusive && m_gravity == XCB_GRAVITY_NORTH_WEST) {
         r.translate(-m_frameMargins.left(), -m_frameMargins.top());
-    } else if (!frameInclusive && m_gravity == XCB_GRAVITY_CENTER) {
-        r.translate(-(m_frameMargins.left() - m_frameMargins.right())/2,
-                    -(m_frameMargins.top() - m_frameMargins.bottom())/2);
     }
     return r;
 }
