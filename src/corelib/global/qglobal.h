@@ -196,6 +196,8 @@ typedef quint64 qulonglong;
 #   define QT_POINTER_SIZE 8
 #  elif defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
 #   define QT_POINTER_SIZE 4
+#  elif defined(Q_OS_ANDROID)
+#   define QT_POINTER_SIZE 4 // ### Add auto-detection to Windows configure
 #  endif
 #endif
 
