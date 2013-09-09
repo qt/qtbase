@@ -1204,7 +1204,7 @@ void QMessageLogContext::copy(const QMessageLogContext &logContext)
     \internal
 
     Constructs a QMessageLogContext with for file \a fileName at line
-    \a lineNumber, in function \a functionName, and category \a CategoryName.
+    \a lineNumber, in function \a functionName, and category \a categoryName.
 */
 
 QT_END_NAMESPACE
