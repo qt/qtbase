@@ -28,10 +28,14 @@ warnings_are_errors:warning_clean {
     # compiler.
     clang {
         # Apple clang 4.0-4.2
-        # Regular clang is not tested
-        ver = $${QT_APPLE_CLANG_MAJOR_VERSION}.$${QT_APPLE_CLANG_MINOR_VERSION}
-        contains(ver, "4\\.[012]") {
+        # Regular clang 3.3 & 3.4
+        apple_ver = $${QT_APPLE_CLANG_MAJOR_VERSION}.$${QT_APPLE_CLANG_MINOR_VERSION}
+        reg_ver = $${QT_CLANG_MAJOR_VERSION}.$${QT_CLANG_MINOR_VERSION}
+        contains(apple_ver, "4\\.[012]")|contains(reg_ver, "3\\.[34]") {
             QMAKE_CXXFLAGS += -Werror -Wno-error=\\$${LITERAL_HASH}warnings -Wno-error=deprecated-declarations $$WERROR
+
+            # glibc's bswap_XX macros use the "register" keyword
+            linux: QMAKE_CXXFLAGS += -Wno-error=deprecated-register
         }
     } else:intel_icc:linux {
         # Intel CC 13.0 - 14.0, on Linux only
