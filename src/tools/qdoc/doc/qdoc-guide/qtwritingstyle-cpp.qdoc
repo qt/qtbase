@@ -107,7 +107,7 @@ marked with the \l{c-command}{\\c} command in the case of boolean values.
 \section1 Properties
 
 The property documentation resides immediately above the read function's
-implementation. The \l{topic-commands}{topic command} for properties is
+implementation. The \l{writing-topic-commands}{topic command} for properties is
 \l{property-command}{\\property}.
 
 \snippet examples/cpp.qdoc.sample property
@@ -138,7 +138,7 @@ The values range from 0.0 (no blur) to maximumRadius (maximum blur). By default,
 \endquotation
 
 \section1 Signals, Notifiers, and Slots
-The \l{topic-commands}{topic command} for signals, notifiers, and slots
+The \l{writing-topic-commands}{topic command} for signals, notifiers, and slots
 is \l{fn-command}{\\fn}. Signal documentation state when they are triggered
 or emitted.
 
@@ -168,7 +168,7 @@ the notifier.
 
 \section1 Enums, Namespaces, and other Types
 
-Enums, namespaces, and macros have a \l{topic-command} for their documentation:
+Enums, namespaces, and macros have a \l{writing-topic-commands}{topic command} for their documentation:
 \list
 \li \l{enum-command}{\\enum}
 \li \l{typedef-command}{\\typedef}

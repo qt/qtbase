@@ -51,7 +51,7 @@
     documentation and an example of a QML type documentation.
 
     For specific QDoc information, consult the
-    \l{Table of Contents}{QDoc Manual}.
+    \l{QDoc Manual}.
     \section1 Chapters
 
     \list 1
@@ -62,7 +62,6 @@
         \li \l{C++ Documentation Style}
         \li \l{QML Documentation Style}
         \endlist
-    \li \l{Configuration File Example}
     \li \l{QML Documentation Example}
     \endlist
 
@@ -155,7 +154,7 @@
 
     \section2 Qt Help Framework Configuration
 
-    QDoc will also export a \l{Qt Help Project} file, in a \c qhp file.
+    QDoc will also export a \e {Qt Help Project} file, in a \c qhp file.
     The qhp file is then used by the \c qhelpgenerator to package the
     documentation into a \c qch file. Qt Creator and Qt Assistant reads the qch
     file to display the documentation.
@@ -268,6 +267,7 @@
     \nextpage Categories of Documentation
 
     \section1 QDoc Comments
+
     Documentation is contained within qdoc \e comments, delimited by
     \beginqdoc and \endqdoc comments. Note that these are valid comments
     in C++, QML, and JavaScript.
@@ -402,7 +402,7 @@
     \page qdoc-categories.html
     \title Categories of Documentation
     \previouspage Writing Documentation
-    \nextpage Configuration File Example
+    \nextpage QML Documentation Example
     \brief Describes the different types such as How-To's, Tutorials, Overviews,
     Examples, and Class Documentation.
 
@@ -532,7 +532,7 @@
 
     A QML type belongs to a \e module. The module
     may include all the related types for a platform or contain a certain
-    version of \l{Qt Quick}. For example, the Qt Quick 2 \l{QML Elements} belong
+    version of \l{Qt Quick}. For example, the Qt Quick 2 QML types belong
     to the Qt Quick 2 module while there is also a Qt Quick 1 module for the older
     types introduced in Qt 4.
 
@@ -624,87 +624,10 @@
     \l{Input and Output Directories}{exampledirs} variable to find the Qt
     Project (\c .pro) file to generate the example files. The generated HTML
     will have the filename, \c {declarative-ui-components-tabwidget.html}. QDoc
-    will also list all of the example code. For reference, view QDoc's generated
-    page for the \l{UI Components: Tab Widget Example}{Tab Widget} example.
+    will also list all of the example code.
 
     \note The example's project file must be the same as the
     directory name.
 */
 
-/*!
-    \example config
-    \title Configuration File Example
-    \previouspage Categories of Documentation
-    \brief configuration files for the QDoc Manual and QDoc Guide
-
-    The QDoc Manual uses these \c qdocconf files to generate the QDoc Guide and
-    the \l{Table of Contents}{QDoc Manual}.
-
-    \note The configuration files are similar to the Qt Reference Documentation
-    and the QDoc Manual do not use all of the variables. The variables are
-    included to demonstrate a full project scenario.
-
-    \section1 Macros and other Definitions
-    \list
-    \li \l{config/compat.qdocconf}
-    \li \l{config/macros.qdocconf}
-    \li \l{config/qt-cpp-ignore.qdocconf}
-    \li \l{config/qt-defines.qdocconf}
-    \endlist
-
-    QDoc allows macros to help with aliasing and for inputting special HTML
-    characters within the documentation. Macros are a form of workarounds if
-    QDoc is unable to resolve formatting issues such as when QDoc should
-    disregard QDoc comments in documentation paragraphs.
-
-    QDoc is also aware of the common C++ and Qt preprocessors and can decide
-    which documentation to generate according to the definitions in the
-    configuration files.
-
-    \section1 Project Information
-    \list
-    \li \l{config/qdoc-online.qdocconf}
-    \li \l{config/qdoc.qdocconf}
-    \li \l{config/qdoc-project.qdocconf}
-    \endlist
-
-    These configuration files dictate how QDoc will generate the project.
-    Depending which configuration file QDoc processes, the formatting and the
-    information about the project will be different. If QDoc processes
-    \c{qdoc-online.qdocconf}, QDoc will generate the HTML version of the manual
-    will have the style suitable for online viewing.
-
-    Additionally, the settings for creating the
-    \l{The Qt Help Framework}{Qt Help File} is in the configuration.
-
-    \note The project file uses variables used during Qt's
-    \l{Configuration Options for Qt}{configuration} step.
-
-    \section1 HTML Styles
-    \list
-    \li \l{config/qt-html-default-styles.qdocconf}
-    \li \l{config/qt-html-online-styles.qdocconf}
-    \li \l{config/qt-html-templates-online.qdocconf}
-    \li \l{config/qt-html-templates.qdocconf}
-    \endlist
-
-    These files indicate which styles QDoc should use for the HTML formats.
-    Typically, there are two templates, one for online viewing and one for
-    offline. Qt Creator is able to fit more content in a page with the offline
-    template. The templates store HTML information as strings and QDoc will copy
-    the template to each HTML page.
-
-    \section1 Project File
-    \list
-    \li \l{config/config.pro}
-    \endlist
-
-    Every example page (such as this one) needs a Qt project file. QDoc will
-    use the project file to determine which files are part of the example. QDoc
-    will then create a page listing all the files that are part of the example.
-
-    \note the directory name of the example and the name of the project file
-    must match. The example directory is found using the
-    \l{qdoc-input-output-dir}{exampledirs} variable.
-*/
 
