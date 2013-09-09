@@ -5052,7 +5052,7 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
         return;
 
 #ifndef QT_NO_DEBUG
-    qt_painter_thread_test(d->device->devType(), "drawPixmap()", true);
+    qt_painter_thread_test(d->device->devType(), "drawPixmap()");
 #endif
 
     if (d->extended) {
@@ -5123,7 +5123,7 @@ void QPainter::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
     if (!d->engine || pm.isNull())
         return;
 #ifndef QT_NO_DEBUG
-    qt_painter_thread_test(d->device->devType(), "drawPixmap()", true);
+    qt_painter_thread_test(d->device->devType(), "drawPixmap()");
 #endif
 
     qreal x = r.x();
@@ -6618,7 +6618,7 @@ void QPainter::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPo
         return;
 
 #ifndef QT_NO_DEBUG
-    qt_painter_thread_test(d->device->devType(), "drawTiledPixmap()", true);
+    qt_painter_thread_test(d->device->devType(), "drawTiledPixmap()");
 #endif
 
     qreal sw = pixmap.width();
