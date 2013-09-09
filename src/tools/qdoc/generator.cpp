@@ -314,34 +314,12 @@ QString Generator::fileBase(const Node *node) const
             return fileBase(ncn->currentChild());
     }
 
-    if (node->hasBaseName()) {
-        //qDebug() << "RETURNING:" << node->baseName();
+    if (node->hasBaseName())
         return node->baseName();
-    }
 
     QString base;
-    const Node *p = node;
-
-    forever {
-        const Node *pp = p->parent();
-        base.prepend(p->name());
-        if (!p->qmlModuleIdentifier().isEmpty())
-            base.prepend(p->qmlModuleIdentifier()+QChar('-'));
-        /*
-          To avoid file name conflicts in the html directory,
-          we prepend a prefix (by default, "qml-") to the file name of QML
-          element doc files.
-         */
-        if ((p->subType() == Node::QmlClass) ||
-                (p->subType() == Node::QmlBasicType)) {
-            base.prepend(outputPrefix(QLatin1String("QML")));
-        }
-        if (!pp || pp->name().isEmpty() || pp->type() == Node::Document)
-            break;
-        base.prepend(QLatin1Char('-'));
-        p = pp;
-    }
     if (node->type() == Node::Document) {
+        base = node->name();
         if (node->subType() == Node::Collision) {
             const NameCollisionNode* ncn = static_cast<const NameCollisionNode*>(node);
             if (ncn->currentChild())
@@ -352,17 +330,42 @@ QString Generator::fileBase(const Node *node) const
         if (base.endsWith(".html"))
             base.truncate(base.length() - 5);
 
-        if (node->subType() == Node::QmlModule) {
-            base.prepend("qmlmodule-");
+        if (node->isQmlNode()) {
+            if (!node->qmlModuleName().isEmpty()) {
+                base.prepend(node->qmlModuleName() + QLatin1Char('-'));
+                /*
+                  To avoid file name conflicts in the html directory,
+                  we prepend a prefix (by default, "qml-") to the file name of QML
+                  element doc files.
+                */
+                if ((node->subType() == Node::QmlClass) || (node->subType() == Node::QmlBasicType)) {
+                    base.prepend(outputPrefix(QLatin1String("QML")));
+                }
+            }
         }
-        if (node->subType() == Node::Module) {
+        else if (node->subType() == Node::QmlModule) {
+            base.append("-qmlmodule");
+        }
+        else if (node->subType() == Node::Module) {
             base.append("-module");
         }
-        if (node->isExample() || node->isExampleFile())
+        if (node->isExample() || node->isExampleFile()) {
             base.prepend(project.toLower() + QLatin1Char('-'));
-        if (node->isExample())
+        }
+        if (node->isExample()) {
             base.append(QLatin1String("-example"));
-
+        }
+    }
+    else {
+        const Node *p = node;
+        forever {
+            const Node *pp = p->parent();
+            base.prepend(p->name());
+            if (!pp || pp->name().isEmpty() || pp->type() == Node::Document)
+                break;
+            base.prepend(QLatin1Char('-'));
+            p = pp;
+        }
     }
 
     // the code below is effectively equivalent to:

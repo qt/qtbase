@@ -195,7 +195,8 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         qcn->setTitle(element.attribute("title"));
         QString qmlModuleName = element.attribute("qml-module-name");
         QString qmlModuleVersion = element.attribute("qml-module-version");
-        qdb_->addToQmlModule(qmlModuleName + " " + qmlModuleVersion, qcn);
+        if (!qmlModuleName.isEmpty())
+            qdb_->addToQmlModule(qmlModuleName + " " + qmlModuleVersion, qcn);
         QString qmlFullBaseName = element.attribute("qml-base-type");
         if (!qmlFullBaseName.isEmpty())
             qcn->setQmlBaseName(qmlFullBaseName);

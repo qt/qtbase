@@ -190,17 +190,19 @@ DocNode* QDocDatabase::findQmlModule(const QString& name)
     QStringList dotSplit;
     QStringList blankSplit = name.split(QLatin1Char(' '));
     QString qmid = blankSplit[0];
+    QString qmlModuleName = qmid;
     if (blankSplit.size() > 1) {
         dotSplit = blankSplit[1].split(QLatin1Char('.'));
         qmid += dotSplit[0];
     }
     DocNode* dn = 0;
-    if (qmlModules_.contains(qmid))
-        return qmlModules_.value(qmid);
-    dn = new DocNode(tree_->root(), name, Node::QmlModule, Node::OverviewPage);
+    if (qmlModules_.contains(qmlModuleName))
+        return qmlModules_.value(qmlModuleName);
+    dn = new DocNode(tree_->root(), qmlModuleName, Node::QmlModule, Node::OverviewPage);
     dn->markNotSeen();
     dn->setQmlModuleInfo(name);
-    qmlModules_.insert(qmid,dn);
+    qmlModules_.insert(qmlModuleName,dn);
+    masterMap_.insert(qmlModuleName,dn);
     masterMap_.insert(qmid,dn);
     masterMap_.insert(dn->name(),dn);
     return dn;
@@ -923,8 +925,10 @@ const DocNode* QDocDatabase::findDocNodeByTitle(const QString& title, const Node
         if (j != docNodesByTitle_.constEnd() && j.key() == i.key()) {
             QList<Location> internalLocations;
             while (j != docNodesByTitle_.constEnd()) {
-                if (j.key() == i.key() && j.value()->url().isEmpty())
+                if (j.key() == i.key() && j.value()->url().isEmpty()) {
                     internalLocations.append(j.value()->location());
+                    break; // Just report one duplicate for now.
+                }
                 ++j;
             }
             if (internalLocations.size() > 0) {
