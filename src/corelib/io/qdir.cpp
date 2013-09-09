@@ -284,8 +284,6 @@ bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortIt
             ? f1->filename_cache.localeAwareCompare(f2->filename_cache)
             : f1->filename_cache.compare(f2->filename_cache);
     }
-    if (r == 0) // Enforce an order - the order the items appear in the array
-        r = (&n1) - (&n2);
     if (qt_cmp_si_sort_flags & QDir::Reversed)
         return r > 0;
     return r < 0;
