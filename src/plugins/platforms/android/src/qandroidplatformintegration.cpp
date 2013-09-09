@@ -82,7 +82,10 @@ void *QAndroidPlatformNativeInterface::nativeResourceForIntegration(const QByteA
         return QtAndroid::javaVM();
     if (resource == "QtActivity")
         return QtAndroid::activity();
-
+    if (resource == "AndroidStylePalettes")
+        return &m_palettes;
+    if (resource == "AndroidStyleFonts")
+        return &m_fonts;
     return 0;
 }
 
@@ -245,7 +248,7 @@ QStringList QAndroidPlatformIntegration::themeNames() const
 QPlatformTheme *QAndroidPlatformIntegration::createPlatformTheme(const QString &name) const
 {
     if (androidThemeName == name)
-        return new QAndroidPlatformTheme;
+        return new QAndroidPlatformTheme(m_androidPlatformNativeInterface);
 
     return 0;
 }

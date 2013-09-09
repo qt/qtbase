@@ -82,7 +82,7 @@ import android.view.ActionMode.Callback;
 public class QtActivity extends Activity
 {
     private final static int MINISTRO_INSTALL_REQUEST_CODE = 0xf3ee; // request code used to know when Ministro instalation is finished
-    private static final int MINISTRO_API_LEVEL = 3; // Ministro api level (check IMinistro.aidl file)
+    private static final int MINISTRO_API_LEVEL = 4; // Ministro api level (check IMinistro.aidl file)
     private static final int NECESSITAS_API_LEVEL = 2; // Necessitas api level used by platform plugin
     private static final int QT_VERSION = 0x050100; // This app requires at least Qt version 5.1.0
 
@@ -119,7 +119,7 @@ public class QtActivity extends Activity
                                                                // and must be separated with "\t"
                                                                // e.g "-param1\t-param2=value2\t-param3\tvalue3"
 
-    private static final String ENVIRONMENT_VARIABLES = "QT_USE_ANDROID_NATIVE_STYLE=0\t";
+    private String ENVIRONMENT_VARIABLES = "QT_USE_ANDROID_NATIVE_STYLE=1\t";
                                                                // use this variable to add any environment variables to your application.
                                                                // the env vars must be separated with "\t"
                                                                // e.g. "ENV_VAR1=1\tENV_VAR2=2\t"
@@ -127,7 +127,14 @@ public class QtActivity extends Activity
                                                                // * QT_USE_ANDROID_NATIVE_STYLE - 1 to use the android widget style if available,
                                                                //   note that the android style plugin in Qt 5.1 is not fully functional.
 
+    private static final String QT_ANDROID_THEME = "light"; // sets the default theme to light. Possible values are:
+                                                            // * ""           - for the device default dark theme
+                                                            // * "light"      - for the device default light theme
+                                                            // * "holo"       - for the holo dark theme
+                                                            // * "holo_light" - for the holo light theme
+
     private static final int INCOMPATIBLE_MINISTRO_VERSION = 1; // Incompatible Ministro version. Ministro needs to be upgraded.
+    private static final String DISPLAY_DPI_KEY = "display.dpi";
     private static final int BUFFER_SIZE = 1024;
 
     private ActivityInfo m_activityInfo = null; // activity info object, used to access the libs and the strings
@@ -246,6 +253,7 @@ public class QtActivity extends Activity
                         parameters.putString(APPLICATION_PARAMETERS_KEY, APPLICATION_PARAMETERS);
                     parameters.putStringArray(SOURCES_KEY, m_sources);
                     parameters.putString(REPOSITORY_KEY, m_repository);
+                    parameters.putInt(DISPLAY_DPI_KEY, QtActivity.this.getResources().getDisplayMetrics().densityDpi);
                     m_service.requestLoader(m_ministroCallback, parameters);
                 }
             } catch (RemoteException e) {
@@ -671,7 +679,8 @@ public class QtActivity extends Activity
             QtApplication.invokeDelegateMethod(QtApplication.onCreate, savedInstanceState);
             return;
         }
-
+        ENVIRONMENT_VARIABLES += "\tQT_ANDROID_THEME=" + QT_ANDROID_THEME
+                              + "/\tQT_ANDROID_THEME_DISPLAY_DPI=" + getResources().getDisplayMetrics().densityDpi + "\t";
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         try {
             m_activityInfo = getPackageManager().getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);

@@ -43,14 +43,20 @@
 #define QANDROIDPLATFORMTHEME_H
 
 #include <qpa/qplatformtheme.h>
-
+class QAndroidPlatformNativeInterface;
 class QAndroidPlatformTheme: public QPlatformTheme
 {
 public:
+    QAndroidPlatformTheme(QAndroidPlatformNativeInterface * androidPlatformNativeInterface);
     virtual QPlatformMenuBar *createPlatformMenuBar() const;
     virtual QPlatformMenu *createPlatformMenu() const;
     virtual QPlatformMenuItem *createPlatformMenuItem() const;
+    virtual const QPalette *palette(Palette type = SystemPalette) const;
+    virtual const QFont *font(Font type = SystemFont) const;
     virtual QVariant themeHint(ThemeHint hint) const;
+
+private:
+    QAndroidPlatformNativeInterface * m_androidPlatformNativeInterface;
 };
 
 #endif // QANDROIDPLATFORMTHEME_H

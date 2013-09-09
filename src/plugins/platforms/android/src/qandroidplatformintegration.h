@@ -71,6 +71,8 @@ class QAndroidPlatformNativeInterface: public QPlatformNativeInterface
 {
 public:
     void *nativeResourceForIntegration(const QByteArray &resource);
+    QHash<int, QPalette> m_palettes;
+    QHash<int, QFont> m_fonts;
 };
 
 class QAndroidPlatformIntegration

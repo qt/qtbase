@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 BogDan Vatra <bogdan@kde.org>
+** Copyright (C) 2013 BogDan Vatra <bogdan@kde.org>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -55,15 +55,15 @@
 
 #include <QtCore/QList>
 #include <QtCore/QMargins>
-#include <QtWidgets/QCommonStyle>
 #include <QtCore/QHash>
 #include <QtCore/QVariantMap>
+#include "qfusionstyle_p.h"
 
 QT_BEGIN_NAMESPACE
 
 #if !defined(QT_NO_STYLE_ANDROID)
 
-class Q_WIDGETS_EXPORT QAndroidStyle : public QCommonStyle
+class Q_WIDGETS_EXPORT QAndroidStyle : public QFusionStyle
 {
     Q_OBJECT
 
@@ -86,7 +86,7 @@ public:
         QC_TabButton,
         QC_RatingIndicator,
         QC_SearchBox,
-        QC_CustomCOntrol=0xf00,
+        QC_CustomControl=0xf00,
         QC_ControlMask=0xfff
     };
 
@@ -131,6 +131,7 @@ public:
         virtual QSize size() const;
         static AndroidDrawable *fromMap(const QVariantMap &drawable, ItemType itemType);
         static QMargins extractMargins(const QVariantMap &value);
+        virtual void setPaddingLeftToSizeWidth();
     protected:
         ItemType m_itemType;
         QMargins m_padding;
@@ -226,6 +227,7 @@ public:
         virtual void draw(QPainter *painter, const QStyleOption *opt) const;
         inline const AndroidDrawable *bestAndroidStateMatch(const QStyleOption *opt) const;
         static int extractState(const QVariantMap &value);
+        virtual void setPaddingLeftToSizeWidth();
 
     private:
         typedef QPair<int, const AndroidDrawable *> StateType;
@@ -238,12 +240,16 @@ public:
         AndroidLayerDrawable(const QVariantMap &drawable, QAndroidStyle::ItemType itemType);
         ~AndroidLayerDrawable();
         virtual AndroidDrawableType type() const;
+        virtual void setFactor(int id, double factor, Qt::Orientation orientation);
         virtual void draw(QPainter *painter, const QStyleOption *opt) const;
         AndroidDrawable *layer(int id) const;
         QSize size() const;
     private:
         typedef QPair<int, AndroidDrawable *> LayerType;
         QList<LayerType> m_layers;
+        int m_id;
+        double m_factor;
+        Qt::Orientation m_orientation;
     };
 
     class AndroidControl
@@ -263,6 +269,7 @@ public:
                                        const QWidget *w) const;
         virtual QMargins padding();
     protected:
+        virtual const AndroidDrawable * backgroundDrawable() const;
         const AndroidDrawable *m_background;
         QSize m_minSize;
         QSize m_maxSize;
@@ -276,6 +283,7 @@ public:
         virtual void drawControl(const QStyleOption *opt, QPainter *p, const QWidget *w);
 
     protected:
+        virtual const AndroidDrawable * backgroundDrawable() const;
         const AndroidDrawable *m_button;
     };
 
@@ -356,7 +364,13 @@ public:
     virtual QPixmap generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap,
                                         const QStyleOption *opt) const;
 
+    int styleHint(StyleHint hint, const QStyleOption *option = 0, const QWidget *widget = 0,
+                  QStyleHintReturn *returnData = 0) const;
+
     virtual QPalette standardPalette() const;
+    void polish(QWidget *widget);
+    void unpolish(QWidget *widget);
+
 private:
     Q_DISABLE_COPY(QAndroidStyle)
     static ItemType qtControl(QStyle::ComplexControl control);

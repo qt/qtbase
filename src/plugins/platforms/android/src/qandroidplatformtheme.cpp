@@ -45,6 +45,12 @@
 #include "qandroidplatformmenuitem.h"
 #include <QVariant>
 #include <QFileInfo>
+#include <qandroidplatformintegration.h>
+
+QAndroidPlatformTheme::QAndroidPlatformTheme(QAndroidPlatformNativeInterface *androidPlatformNativeInterface)
+{
+    m_androidPlatformNativeInterface = androidPlatformNativeInterface;
+}
 
 QPlatformMenuBar *QAndroidPlatformTheme::createPlatformMenuBar() const
 {
@@ -61,13 +67,76 @@ QPlatformMenuItem *QAndroidPlatformTheme::createPlatformMenuItem() const
     return new QAndroidPlatformMenuItem;
 }
 
+static inline int paletteType(QPlatformTheme::Palette type)
+{
+    switch (type) {
+    case QPlatformTheme::ToolButtonPalette:
+    case QPlatformTheme::ButtonPalette:
+        return QPlatformTheme::ButtonPalette;
+
+    case QPlatformTheme::CheckBoxPalette:
+        return QPlatformTheme::CheckBoxPalette;
+
+    case QPlatformTheme::RadioButtonPalette:
+        return QPlatformTheme::RadioButtonPalette;
+
+    case QPlatformTheme::ComboBoxPalette:
+        return QPlatformTheme::ComboBoxPalette;
+
+    case QPlatformTheme::TextEditPalette:
+    case QPlatformTheme::TextLineEditPalette:
+        return QPlatformTheme::TextLineEditPalette;
+
+    case QPlatformTheme::ItemViewPalette:
+        return QPlatformTheme::ItemViewPalette;
+
+    default:
+        return QPlatformTheme::SystemPalette;
+    }
+}
+
+const QPalette *QAndroidPlatformTheme::palette(Palette type) const
+{
+    QHash<int, QPalette>::const_iterator it = m_androidPlatformNativeInterface->m_palettes.find(paletteType(type));
+    if (it != m_androidPlatformNativeInterface->m_palettes.end())
+        return &(it.value());
+    return 0;
+}
+
+static inline int fontType(QPlatformTheme::Font type)
+{
+    switch (type) {
+    case QPlatformTheme::LabelFont:
+        return QPlatformTheme::SystemFont;
+
+    case QPlatformTheme::ToolButtonFont:
+        return QPlatformTheme::PushButtonFont;
+
+    default:
+        return type;
+    }
+}
+
+const QFont *QAndroidPlatformTheme::font(Font type) const
+{
+    QHash<int, QFont>::const_iterator it = m_androidPlatformNativeInterface->m_fonts.find(fontType(type));
+    if (it != m_androidPlatformNativeInterface->m_fonts.end())
+        return &(it.value());
+    return 0;
+}
+
+static const QLatin1String STYLES_PATH("/data/data/org.kde.necessitas.ministro/files/dl/style/");
+static const QLatin1String STYLE_FILE("/style.json");
+
 QVariant QAndroidPlatformTheme::themeHint(ThemeHint hint) const
 {
     switch (hint) {
     case StyleNames:
         if (qgetenv("QT_USE_ANDROID_NATIVE_STYLE").toInt()
                 && (!qgetenv("MINISTRO_ANDROID_STYLE_PATH").isEmpty()
-                    || QFileInfo("/data/data/org.kde.necessitas.ministro/files/qt/style/style.json").exists())) {
+                    || QFileInfo(STYLES_PATH
+                                 + QLatin1String(qgetenv("QT_ANDROID_THEME_DISPLAY_DPI"))
+                                 + STYLE_FILE).exists())) {
             return QStringList("android");
         }
         return QStringList("fusion");

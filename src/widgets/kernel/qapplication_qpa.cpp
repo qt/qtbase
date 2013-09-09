@@ -277,6 +277,8 @@ void QApplicationPrivate::initializeWidgetPaletteHash()
         return;
     setPossiblePalette(platformTheme->palette(QPlatformTheme::ToolButtonPalette), "QToolButton");
     setPossiblePalette(platformTheme->palette(QPlatformTheme::ButtonPalette), "QAbstractButton");
+    setPossiblePalette(platformTheme->palette(QPlatformTheme::CheckBoxPalette), "QCheckBox");
+    setPossiblePalette(platformTheme->palette(QPlatformTheme::RadioButtonPalette), "QRadioButton");
     setPossiblePalette(platformTheme->palette(QPlatformTheme::HeaderPalette), "QHeaderView");
     setPossiblePalette(platformTheme->palette(QPlatformTheme::ItemViewPalette), "QAbstractItemView");
     setPossiblePalette(platformTheme->palette(QPlatformTheme::MessageBoxLabelPelette), "QMessageBoxLabel");
@@ -318,6 +320,10 @@ void QApplicationPrivate::initializeWidgetFontHash()
         fontHash->insert(QByteArrayLiteral("QDockWidgetTitle"), *font);
     if (const QFont *font = theme->font(QPlatformTheme::PushButtonFont))
         fontHash->insert(QByteArrayLiteral("QPushButton"), *font);
+    if (const QFont *font = theme->font(QPlatformTheme::CheckBoxFont))
+        fontHash->insert(QByteArrayLiteral("QCheckBox"), *font);
+    if (const QFont *font = theme->font(QPlatformTheme::RadioButtonFont))
+        fontHash->insert(QByteArrayLiteral("QRadioButton"), *font);
     if (const QFont *font = theme->font(QPlatformTheme::ToolButtonFont))
         fontHash->insert(QByteArrayLiteral("QToolButton"), *font);
     if (const QFont *font = theme->font(QPlatformTheme::ItemViewFont))
