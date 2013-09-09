@@ -83,6 +83,10 @@ public:
 
     QByteArray getDataInFormat(xcb_atom_t modeAtom, xcb_atom_t fmtatom);
 
+    void setProcessIncr(bool process) { m_incr_active = process; }
+    bool processIncr() { return m_incr_active; }
+    void incrTransactionPeeker(xcb_generic_event_t *ge, bool &accepted);
+
     xcb_window_t getSelectionOwner(xcb_atom_t atom) const;
     QByteArray getSelection(xcb_atom_t selection, xcb_atom_t target, xcb_atom_t property, xcb_timestamp_t t = 0);
 
@@ -107,6 +111,8 @@ private:
 
     static const int clipboard_timeout;
 
+    bool m_incr_active;
+    bool m_clipboard_closing;
 };
 
 #endif // QT_NO_CLIPBOARD

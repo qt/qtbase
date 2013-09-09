@@ -1154,6 +1154,12 @@ void QXcbConnection::processXcbEvents()
                     continue;
             }
 
+            bool accepted = false;
+            if (clipboard()->processIncr())
+                clipboard()->incrTransactionPeeker(event, accepted);
+            if (accepted)
+                continue;
+
             QVector<PeekFunc>::iterator it = m_peekFuncs.begin();
             while (it != m_peekFuncs.end()) {
                 // These callbacks return true if the event is what they were
