@@ -63,10 +63,6 @@
 #include <unistd.h>
 #endif
 
-#ifndef QT_NO_FONTCONFIG
-#include <fontconfig/fontconfig.h>
-#endif
-
 #include <qmutex.h>
 
 QT_BEGIN_NAMESPACE
