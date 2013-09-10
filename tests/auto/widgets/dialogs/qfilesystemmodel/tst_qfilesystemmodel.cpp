@@ -921,10 +921,8 @@ void tst_QFileSystemModel::mkdir()
     int oldRow = idx.row();
     QTest::qWait(WAITTIME);
     idx = model->index(newFolderPath);
-    QDir cleanup(tmp);
-    QVERIFY(cleanup.rmdir(QLatin1String("NewFoldermkdirtest3")));
-    QVERIFY(cleanup.rmdir(QLatin1String("NewFoldermkdirtest5")));
-    bestatic.rmdir(newFolderPath);
+    QVERIFY(model->remove(idx));
+    QVERIFY(!bestatic.exists());
     QVERIFY(0 != idx.row());
     QCOMPARE(oldRow, idx.row());
 }

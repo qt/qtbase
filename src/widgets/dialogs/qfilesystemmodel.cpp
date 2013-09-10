@@ -199,32 +199,10 @@ QT_BEGIN_NAMESPACE
 
 bool QFileSystemModel::remove(const QModelIndex &aindex)
 {
-    //### TODO optim
-    QString path = filePath(aindex);
+    const QString path = filePath(aindex);
     QFileSystemModelPrivate * d = const_cast<QFileSystemModelPrivate*>(d_func());
     d->fileInfoGatherer.removePath(path);
-    QDirIterator it(path,
-            QDir::AllDirs | QDir:: Files | QDir::NoDotAndDotDot,
-            QDirIterator::Subdirectories);
-    QStringList children;
-    while (it.hasNext())
-        children.prepend(it.next());
-    children.append(path);
-
-    bool error = false;
-    for (int i = 0; i < children.count(); ++i) {
-        QFileInfo info(children.at(i));
-        QModelIndex modelIndex = index(children.at(i));
-        if (info.isDir()) {
-            QDir dir;
-            if (children.at(i) != path)
-                error |= remove(modelIndex);
-            error |= rmdir(modelIndex);
-        } else {
-            error |= QFile::remove(filePath(modelIndex));
-        }
-    }
-    return error;
+    return QDir(path).removeRecursively();
 }
 
 /*!
