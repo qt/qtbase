@@ -61,7 +61,8 @@ int main(int argc, char *argv[])
 
     QSurfaceFormat format;
     format.setDepthBufferSize(16);
-    format.setSamples(4);
+    if (QGuiApplication::arguments().contains(QStringLiteral("--multisample")))
+        format.setSamples(4);
 
     QPoint center = QPoint(screenGeometry.center().x(), screenGeometry.top() + 80);
     QSize windowSize(400, 320);
