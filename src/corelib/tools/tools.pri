@@ -132,7 +132,8 @@ contains(QT_CONFIG, zlib) {
 }
 
 contains(QT_CONFIG,icu) {
-    SOURCES += tools/qlocale_icu.cpp
+    SOURCES += tools/qlocale_icu.cpp \
+               tools/qcollator_icu.cpp
     DEFINES += QT_USE_ICU
     win32 {
         CONFIG(static, static|shared) {
@@ -147,6 +148,12 @@ contains(QT_CONFIG,icu) {
     } else {
         LIBS_PRIVATE += -licui18n -licuuc
     }
+} else: win32 {
+    SOURCES += tools/qcollator_win.cpp
+} else: mac {
+    SOURCES += tools/qcollator_mac.cpp
+} else {
+    SOURCES += tools/qcollator_posix.cpp
 }
 
 pcre {

@@ -40,76 +40,82 @@
 **
 ****************************************************************************/
 
-#ifndef QCOLLATOR_H
-#define QCOLLATOR_H
+#ifndef QCOLLATOR_P_H
+#define QCOLLATOR_P_H
 
-#include <QtCore/qstring.h>
-#include <QtCore/qstringlist.h>
-#include <QtCore/qlocale.h>
+#include "qcollator.h"
+#include <QVector>
+#ifdef QT_USE_ICU
+#include <unicode/ucol.h>
+#elif defined(Q_OS_DARWIN)
+#include <CoreServices/CoreServices.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
-class QCollatorPrivate;
-class QCollatorSortKeyPrivate;
+#ifdef QT_USE_ICU
+typedef UCollator *CollatorType;
+typedef QByteArray CollatorKeyType;
 
-class Q_CORE_EXPORT QCollatorSortKey
+#elif defined(Q_OS_DARWIN)
+typedef QVector<UCCollationValue> CollatorKeyType;
+
+struct CollatorType {
+    CollatorType(int opt) : collator(NULL), options(opt) {}
+
+    CollatorRef collator;
+    UInt32 options;
+};
+#elif defined(Q_OS_WIN)
+typedef QString CollatorKeyType;
+typedef int CollatorType;
+#else //posix
+typedef QVector<wchar_t> CollatorKeyType;
+typedef int CollatorType;
+#endif
+
+class Q_CORE_EXPORT QCollatorPrivate
+{
+public:
+    QAtomicInt ref;
+    QLocale locale;
+
+    CollatorType collator;
+
+    void clear() {
+        cleanup();
+        collator = 0;
+    }
+
+    void init();
+    void cleanup();
+
+    QCollatorPrivate()
+        : ref(1), collator(0)
+    { cleanup(); }
+
+    ~QCollatorPrivate() { cleanup(); }
+
+private:
+    Q_DISABLE_COPY(QCollatorPrivate)
+};
+
+class Q_CORE_EXPORT QCollatorSortKeyPrivate : public QSharedData
 {
     friend class QCollator;
 public:
-    QCollatorSortKey(const QCollatorSortKey &other);
-    ~QCollatorSortKey();
-    QCollatorSortKey &operator=(const QCollatorSortKey &other);
-#ifdef Q_COMPILER_RVALUE_REFS
-    inline QCollatorSortKey &operator=(QCollatorSortKey &&other)
-    { qSwap(d, other.d); return *this; }
-#endif
+    QCollatorSortKeyPrivate(const CollatorKeyType &key)
+        : QSharedData()
+        , m_key(key)
+    {
+    }
 
-    bool operator<(const QCollatorSortKey &key) const;
-    int compare(const QCollatorSortKey &key) const;
-
-protected:
-    QCollatorSortKey(QCollatorSortKeyPrivate*);
-
-    QSharedDataPointer<QCollatorSortKeyPrivate> d;
+    CollatorKeyType m_key;
 
 private:
-    QCollatorSortKey();
+    Q_DISABLE_COPY(QCollatorSortKeyPrivate)
 };
 
-class Q_CORE_EXPORT QCollator
-{
-public:
-    QCollator(const QLocale &locale = QLocale());
-    QCollator(const QCollator &);
-    ~QCollator();
-    QCollator &operator=(const QCollator &);
-
-    void setLocale(const QLocale &locale);
-    QLocale locale() const;
-
-    Qt::CaseSensitivity caseSensitivity() const;
-    void setCaseSensitivity(Qt::CaseSensitivity cs);
-
-    void setNumericMode(bool on);
-    bool numericMode() const;
-
-    void setIgnorePunctuation(bool on);
-    bool ignorePunctuation() const;
-
-    int compare(const QString &s1, const QString &s2) const;
-    int compare(const QStringRef &s1, const QStringRef &s2) const;
-    int compare(const QChar *s1, int len1, const QChar *s2, int len2) const;
-
-    bool operator()(const QString &s1, const QString &s2) const
-    { return compare(s1, s2) < 0; }
-
-    QCollatorSortKey sortKey(const QString &string) const;
-
-private:
-    QCollatorPrivate *d;
-
-    void detach();
-};
 
 QT_END_NAMESPACE
 
