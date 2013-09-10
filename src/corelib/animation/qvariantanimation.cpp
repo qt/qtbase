@@ -101,6 +101,7 @@ QT_BEGIN_NAMESPACE
 
     \list
         \li \l{QMetaType::}{Int}
+        \li \l{QMetaType::}{UInt}
         \li \l{QMetaType::}{Double}
         \li \l{QMetaType::}{Float}
         \li \l{QMetaType::}{QLine}
@@ -470,6 +471,8 @@ QVariantAnimation::Interpolator QVariantAnimationPrivate::getInterpolator(int in
     {
     case QMetaType::Int:
         return castToInterpolator(_q_interpolateVariant<int>);
+    case QMetaType::UInt:
+        return castToInterpolator(_q_interpolateVariant<uint>);
     case QMetaType::Double:
         return castToInterpolator(_q_interpolateVariant<double>);
     case QMetaType::Float:
