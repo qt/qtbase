@@ -91,12 +91,6 @@ typedef struct {
     quint16 stringOffset;
 } NAME_RECORD;
 
-static inline bool scriptRequiresOpenType(int script)
-{
-    return ((script >= QChar::Script_Syriac && script <= QChar::Script_Sinhala)
-            || script == QChar::Script_Khmer || script == QChar::Script_Nko);
-}
-
 void QBasicFontDatabase::populateFontDatabase()
 {
     QString fontpath = fontDir();
@@ -137,11 +131,9 @@ QFontEngine *QBasicFontDatabase::fontEngine(const QFontDef &fontDef, QChar::Scri
     if (engine->invalid()) {
         delete engine;
         engine = 0;
-    } else if (scriptRequiresOpenType(script)) {
-        if (!engine->supportsScript(script)) {
-            delete engine;
-            engine = 0;
-        }
+    } else if (!engine->supportsScript(script)) {
+        delete engine;
+        engine = 0;
     }
 
     return engine;

@@ -1407,12 +1407,6 @@ HFONT QWindowsFontDatabase::systemFont()
 
 // Creation functions
 
-static inline bool scriptRequiresOpenType(int script)
-{
-    return ((script >= QChar::Script_Syriac && script <= QChar::Script_Sinhala)
-            || script == QChar::Script_Khmer || script == QChar::Script_Nko);
-}
-
 static const char *other_tryFonts[] = {
     "Arial",
     "MS UI Gothic",
@@ -1763,15 +1757,10 @@ QFontEngine *QWindowsFontDatabase::createEngine(int script, const QFontDef &requ
             few->glyphFormat = QFontEngineGlyphCache::Raster_RGBMask;
 
         // Also check for OpenType tables when using complex scripts
-        // ### TODO: This only works for scripts that require OpenType. More generally
-        // for scripts that do not require OpenType we should just look at the list of
-        // supported writing systems in the font's OS/2 table.
-        if (scriptRequiresOpenType(script)) {
-            if (!few->supportsScript(QChar::Script(script))) {
-                qWarning("  OpenType support missing for script\n");
-                delete few;
-                return 0;
-            }
+        if (!few->supportsScript(QChar::Script(script))) {
+            qWarning("  OpenType support missing for script\n");
+            delete few;
+            return 0;
         }
 
         few->initFontInfo(request, fontHdc, dpi);

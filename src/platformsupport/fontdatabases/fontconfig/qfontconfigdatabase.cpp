@@ -69,12 +69,6 @@ static inline bool requiresOpenType(int writingSystem)
             || writingSystem == QFontDatabase::Khmer || writingSystem == QFontDatabase::Nko);
 }
 
-static inline bool scriptRequiresOpenType(int script)
-{
-    return ((script >= QChar::Script_Syriac && script <= QChar::Script_Sinhala)
-            || script == QChar::Script_Khmer || script == QChar::Script_Nko);
-}
-
 static int getFCWeight(int fc_weight)
 {
     int qtweight = QFont::Black;
@@ -602,11 +596,9 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QChar::Script sc
     if (engine->invalid()) {
         delete engine;
         engine = 0;
-    } else if (scriptRequiresOpenType(script)) {
-        if (!engine->supportsScript(script)) {
-            delete engine;
-            engine = 0;
-        }
+    } else if (!engine->supportsScript(script)) {
+        delete engine;
+        engine = 0;
     }
 
     return engine;

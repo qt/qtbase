@@ -309,6 +309,14 @@ void *QFontEngine::harfbuzzFace() const
 
 bool QFontEngine::supportsScript(QChar::Script script) const
 {
+    // ### TODO: This only works for scripts that require OpenType. More generally
+    // for scripts that do not require OpenType we should just look at the list of
+    // supported writing systems in the font's OS/2 table.
+    if (!((script >= QChar::Script_Syriac && script <= QChar::Script_Sinhala)
+          || script == QChar::Script_Khmer || script == QChar::Script_Nko)) {
+        return true;
+    }
+
 #ifdef QT_ENABLE_HARFBUZZ_NG
     if (useHarfbuzzNG) {
         bool ret = false;
