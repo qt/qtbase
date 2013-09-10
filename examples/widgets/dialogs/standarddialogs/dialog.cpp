@@ -47,6 +47,9 @@
                "and any number of buttons, each with standard or custom texts." \
                "<p>Click a button to close the message box. Pressing the Esc button " \
                "will activate the detected escape button (if any).")
+#define MESSAGE_DETAILS \
+    Dialog::tr("If a message box has detailed text, the user can reveal it " \
+               "by pressing the Show Details... button.")
 
 
 class DialogOptionsWidget : public QGroupBox
@@ -448,6 +451,7 @@ void Dialog::warningMessage()
 {
     QMessageBox msgBox(QMessageBox::Warning, tr("QMessageBox::warning()"),
                        MESSAGE, 0, this);
+    msgBox.setDetailedText(MESSAGE_DETAILS);
     msgBox.addButton(tr("Save &Again"), QMessageBox::AcceptRole);
     msgBox.addButton(tr("&Continue"), QMessageBox::RejectRole);
     if (msgBox.exec() == QMessageBox::AcceptRole)
