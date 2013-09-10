@@ -132,6 +132,7 @@ QFontEngine *QBasicFontDatabase::fontEngine(const QFontDef &fontDef, QChar::Scri
         delete engine;
         engine = 0;
     } else if (!engine->supportsScript(script)) {
+        qWarning("  OpenType support missing for script %d", int(script));
         delete engine;
         engine = 0;
     }

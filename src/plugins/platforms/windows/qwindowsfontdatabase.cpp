@@ -1758,7 +1758,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(int script, const QFontDef &requ
 
         // Also check for OpenType tables when using complex scripts
         if (!few->supportsScript(QChar::Script(script))) {
-            qWarning("  OpenType support missing for script\n");
+            qWarning("  OpenType support missing for script %d", int(script));
             delete few;
             return 0;
         }

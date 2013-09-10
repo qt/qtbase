@@ -597,6 +597,7 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QChar::Script sc
         delete engine;
         engine = 0;
     } else if (!engine->supportsScript(script)) {
+        qWarning("  OpenType support missing for script %d", int(script));
         delete engine;
         engine = 0;
     }
