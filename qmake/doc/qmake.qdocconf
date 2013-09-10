@@ -34,6 +34,7 @@ depends += \
     qtcontacts \
     qtcore \
     qtdbus \
+    qtdoc \
     qtdesigner \
     qtfeedback \
     qtgraphicaleffects \
