@@ -43,8 +43,6 @@
 #include "qfontenginemultifontconfig_p.h"
 
 #include <QtCore/QList>
-#include <QtGui/private/qfont_p.h>
-
 #include <QtCore/QElapsedTimer>
 
 #include <qpa/qplatformnativeinterface.h>
@@ -53,26 +51,15 @@
 #include <qpa/qplatformservices.h>
 
 #include <QtGui/private/qfontengine_ft_p.h>
-#include <QtGui/private/qfontengine_p.h>
 #include <QtGui/private/qfontengine_qpa_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 
 #include <QtGui/qguiapplication.h>
 
-#include <ft2build.h>
-#include FT_TRUETYPE_TABLES_H
-
 #include <fontconfig/fontconfig.h>
-#include FT_FREETYPE_H
-
 #if FC_VERSION >= 20402
 #include <fontconfig/fcfreetype.h>
 #endif
-
-#define SimplifiedChineseCsbBit 18
-#define TraditionalChineseCsbBit 20
-#define JapaneseCsbBit 17
-#define KoreanCsbBit 21
 
 QT_BEGIN_NAMESPACE
 
@@ -208,7 +195,7 @@ static const char *specialLanguages[] = {
     "srb", // SoraSompeng
     "doi"  // Takri
 };
-enum { SpecialLanguageCount = sizeof(specialLanguages) / sizeof(const char *) };
+Q_STATIC_ASSERT(sizeof(specialLanguages) / sizeof(const char *) == QChar::ScriptCount);
 
 // this could become a list of all languages used for each writing
 // system, instead of using the single most common language.
@@ -248,9 +235,9 @@ static const char *languageForWritingSystem[] = {
     "non", // Runic
     "man" // N'Ko
 };
-enum { LanguageCount = sizeof(languageForWritingSystem) / sizeof(const char *) };
+Q_STATIC_ASSERT(sizeof(languageForWritingSystem) / sizeof(const char *) == QFontDatabase::WritingSystemsCount);
 
-
+#if FC_VERSION >= 20297
 // Newer FontConfig let's us sort out fonts that contain certain glyphs, but no
 // open type tables for is directly. Do this so we don't pick some strange
 // pseudo unicode font
@@ -290,6 +277,8 @@ static const char *openType[] = {
     0, // Runic
     "nko " // N'Ko
 };
+Q_STATIC_ASSERT(sizeof(openType) / sizeof(const char *) == QFontDatabase::WritingSystemsCount);
+#endif
 
 static const char *getFcFamilyForStyleHint(const QFont::StyleHint style)
 {
@@ -393,12 +382,12 @@ void QFontconfigDatabase::populateFontDatabase()
         FcResult res = FcPatternGetLangSet(fonts->fonts[i], FC_LANG, 0, &langset);
         if (res == FcResultMatch) {
             bool hasLang = false;
-            for (int i = 1; i < LanguageCount; ++i) {
-                const FcChar8 *lang = (const FcChar8*) languageForWritingSystem[i];
+            for (int j = 1; j < QFontDatabase::WritingSystemsCount; ++j) {
+                const FcChar8 *lang = (const FcChar8*) languageForWritingSystem[j];
                 if (lang) {
                     FcLangResult langRes = FcLangSetHasLang(langset, lang);
                     if (langRes != FcLangDifferentLang) {
-                        writingSystems.setSupported(QFontDatabase::WritingSystem(i));
+                        writingSystems.setSupported(QFontDatabase::WritingSystem(j));
                         hasLang = true;
                     }
                 }
@@ -413,9 +402,8 @@ void QFontconfigDatabase::populateFontDatabase()
             writingSystems.setSupported(QFontDatabase::Other);
         }
 
-
 #if FC_VERSION >= 20297
-        for (int j = 1; j < LanguageCount; ++j) {
+        for (int j = 1; j < QFontDatabase::WritingSystemsCount; ++j) {
             if (writingSystems.supported(QFontDatabase::WritingSystem(j))
                 && requiresOpenType(j) && openType[j]) {
                 FcChar8 *cap;
@@ -644,7 +632,7 @@ QStringList QFontconfigDatabase::fallbacksForFamily(const QString &family, QFont
         slant_value = FC_SLANT_OBLIQUE;
     FcPatternAddInteger(pattern, FC_SLANT, slant_value);
 
-    Q_ASSERT(uint(script) < SpecialLanguageCount);
+    Q_ASSERT(uint(script) < QChar::ScriptCount);
     if (*specialLanguages[script] != '\0') {
         FcLangSet *ls = FcLangSetCreate();
         FcLangSetAdd(ls, (const FcChar8*)specialLanguages[script]);
