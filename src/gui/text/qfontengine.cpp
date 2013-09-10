@@ -264,7 +264,7 @@ void *QFontEngine::harfbuzzFont() const
 {
 #ifdef QT_ENABLE_HARFBUZZ_NG
     if (useHarfbuzzNG)
-        qFatal("Called QFontEngine::harfbuzzFont() in Harfbuzz-NG mode!");
+        return hb_qt_font_get_for_engine(const_cast<QFontEngine *>(this));
 #endif
     if (!font_) {
         HB_FontRec *hbFont = (HB_FontRec *) malloc(sizeof(HB_FontRec));
@@ -292,7 +292,7 @@ void *QFontEngine::harfbuzzFace() const
 {
 #ifdef QT_ENABLE_HARFBUZZ_NG
     if (useHarfbuzzNG)
-        qFatal("Called QFontEngine::harfbuzzFace() in Harfbuzz-NG mode!");
+        return hb_qt_face_get_for_engine(const_cast<QFontEngine *>(this));
 #endif
     if (!face_) {
         HB_Face hbFace = qHBNewFace(const_cast<QFontEngine *>(this), hb_getSFntTable);
