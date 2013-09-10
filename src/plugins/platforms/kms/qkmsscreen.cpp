@@ -131,7 +131,7 @@ void QKmsScreen::initializeScreenMode()
         }
     }
     if (!mode)
-        mode = mode = &builtin_1024x768;
+        mode = &builtin_1024x768;
 
     drmModeEncoder *encoder = drmModeGetEncoder(m_device->fd(), connector->encoders[0]);
     if (encoder == 0)
