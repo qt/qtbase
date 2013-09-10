@@ -143,6 +143,11 @@ public:
 #endif
     }
 
+    void selectAll()
+    {
+        textEdit->selectAll();
+    }
+
 private slots:
     void textCopyAvailable(bool available)
     {
@@ -1396,6 +1401,10 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
                 e->setAccepted(true);
                 return;
             }
+        } else if (e == QKeySequence::SelectAll && d->detailsText && d->detailsText->isVisible()) {
+            d->detailsText->selectAll();
+            e->setAccepted(true);
+            return;
         }
 #endif // !QT_NO_TEXTEDIT
 
