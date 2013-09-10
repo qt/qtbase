@@ -2864,8 +2864,15 @@ void QMenu::mouseMoveEvent(QMouseEvent *e)
         d->mouseDown = this;
     }
     if (d->sloppyRegion.contains(e->pos())) {
-        d->sloppyAction = action;
-        QMenuPrivate::sloppyDelayTimer = startTimer(style()->styleHint(QStyle::SH_Menu_SubMenuPopupDelay, 0, this)*6);
+        // If the timer is already running then don't start a new one unless the action is the same
+        if (d->sloppyAction != action && QMenuPrivate::sloppyDelayTimer != 0) {
+            killTimer(QMenuPrivate::sloppyDelayTimer);
+            QMenuPrivate::sloppyDelayTimer = 0;
+        }
+        if (QMenuPrivate::sloppyDelayTimer == 0) {
+            d->sloppyAction = action;
+            QMenuPrivate::sloppyDelayTimer = startTimer(style()->styleHint(QStyle::SH_Menu_SubMenuPopupDelay, 0, this) * 6);
+        }
     } else if (action != d->currentAction) {
         d->setCurrentAction(action, style()->styleHint(QStyle::SH_Menu_SubMenuPopupDelay, 0, this));
     }

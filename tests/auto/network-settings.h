@@ -103,20 +103,9 @@ public:
 
     static bool compareReplyFtp(QByteArray const& actual)
     {
-        QList<QByteArray> expected;
-
-        // A few different vsFTPd versions.
-        // Feel free to add more as needed
-        expected << QByteArray( "220 (vsFTPd 2.0.5)\r\n221 Goodbye.\r\n" );
-        expected << QByteArray( "220 (vsFTPd 2.2.2)\r\n221 Goodbye.\r\n" );
-
-        Q_FOREACH (QByteArray const& ba, expected) {
-            if (ba == actual) {
-                return true;
-            }
-        }
-
-        return false;
+        // output would be e.g. "220 (vsFTPd 2.3.5)\r\n221 Goodbye.\r\n"
+        QRegExp ftpVersion(QStringLiteral("220 \\(vsFTPd \\d+\\.\\d+.\\d+\\)\\r\\n221 Goodbye.\\r\\n"));
+        return ftpVersion.exactMatch(actual);
     }
 
     static bool hasIPv6()

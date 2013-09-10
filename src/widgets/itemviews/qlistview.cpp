@@ -1456,7 +1456,7 @@ void QListView::doItemsLayout()
 void QListView::updateGeometries()
 {
     Q_D(QListView);
-    if (d->model->rowCount(d->root) <= 0 || d->model->columnCount(d->root) <= 0) {
+    if (geometry().isEmpty() || d->model->rowCount(d->root) <= 0 || d->model->columnCount(d->root) <= 0) {
         horizontalScrollBar()->setRange(0, 0);
         verticalScrollBar()->setRange(0, 0);
     } else {
@@ -1471,15 +1471,15 @@ void QListView::updateGeometries()
 
     // if the scroll bars are turned off, we resize the contents to the viewport
     if (d->movement == Static && !d->isWrapping()) {
-        const QSize maxSize = maximumViewportSize();
+        d->layoutChildren(); // we need the viewport size to be updated
         if (d->flow == TopToBottom) {
             if (horizontalScrollBarPolicy() == Qt::ScrollBarAlwaysOff) {
-                d->setContentsSize(maxSize.width(), contentsSize().height());
+                d->setContentsSize(viewport()->width(), contentsSize().height());
                 horizontalScrollBar()->setRange(0, 0); // we see all the contents anyway
             }
         } else { // LeftToRight
             if (verticalScrollBarPolicy() == Qt::ScrollBarAlwaysOff) {
-                d->setContentsSize(contentsSize().width(), maxSize.height());
+                d->setContentsSize(contentsSize().width(), viewport()->height());
                 verticalScrollBar()->setRange(0, 0); // we see all the contents anyway
             }
         }

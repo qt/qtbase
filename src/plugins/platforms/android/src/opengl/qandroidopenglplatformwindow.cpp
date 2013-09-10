@@ -84,9 +84,19 @@ void QAndroidOpenGLPlatformWindow::invalidateSurface()
     }
 }
 
+void QAndroidOpenGLPlatformWindow::updateStaticNativeWindow()
+{
+    QWriteLocker locker(&m_staticSurfaceLock);
+    m_staticNativeWindow = QtAndroid::nativeWindow(false);
+}
+
 void QAndroidOpenGLPlatformWindow::resetSurface()
 {
-    m_referenceCount.ref();
+    // Only add a reference if we're not already holding one, otherwise we're just updating
+    // the native window pointer
+    if (m_window == 0)
+        m_referenceCount.ref();
+
     if (m_staticSurface == 0) {
         QWriteLocker locker(&m_staticSurfaceLock);
         QEglFSWindow::resetSurface();
@@ -94,12 +104,17 @@ void QAndroidOpenGLPlatformWindow::resetSurface()
         m_staticNativeWindow = m_window;
     } else {
         QReadLocker locker(&m_staticSurfaceLock);
-        Q_ASSERT(m_staticSurface != m_surface);
         m_window = m_staticNativeWindow;
         m_surface = m_staticSurface;
     }
 
-    QWindowSystemInterface::handleExposeEvent(window(), QRegion(geometry())); // Expose event
+    {
+        lock();
+        scheduleResize(QtAndroid::nativeWindowSize());
+        QWindowSystemInterface::handleExposeEvent(window(), QRegion(geometry())); // Expose event
+        unlock();
+    }
+
     QWindowSystemInterface::flushWindowSystemEvents();
 }
 

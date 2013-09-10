@@ -221,6 +221,9 @@ private slots:
     void scrollBarRanges_data();
     void scrollBarRanges();
     void acceptMousePressEvent();
+    void acceptMouseDoubleClickEvent();
+    void forwardMousePress();
+    void forwardMouseDoubleClick();
     void replayMouseMove();
     void itemsUnderMouse();
     void embeddedViews();
@@ -2832,16 +2835,22 @@ class TestView : public QGraphicsView
 {
 public:
     TestView(QGraphicsScene *scene)
-        : QGraphicsView(scene), accepted(false)
+        : QGraphicsView(scene), pressAccepted(false), doubleClickAccepted(false)
     { }
 
-    bool accepted;
+    bool pressAccepted;
+    bool doubleClickAccepted;
 
 protected:
     void mousePressEvent(QMouseEvent *event)
     {
         QGraphicsView::mousePressEvent(event);
-        accepted = event->isAccepted();
+        pressAccepted = event->isAccepted();
+    }
+    void mouseDoubleClickEvent(QMouseEvent *event)
+    {
+        QGraphicsView::mouseDoubleClickEvent(event);
+        doubleClickAccepted = event->isAccepted();
     }
 };
 
@@ -2859,14 +2868,109 @@ void tst_QGraphicsView::acceptMousePressEvent()
                       Qt::LeftButton, 0, 0);
     event.setAccepted(false);
     QApplication::sendEvent(view.viewport(), &event);
-    QVERIFY(!view.accepted);
+    QVERIFY(!view.pressAccepted);
 
     scene.addRect(0, 0, 2000, 2000)->setFlag(QGraphicsItem::ItemIsMovable);
 
     qApp->processEvents(); // ensure scene rect is updated
 
     QApplication::sendEvent(view.viewport(), &event);
-    QVERIFY(view.accepted);
+    QVERIFY(view.pressAccepted);
+}
+
+void tst_QGraphicsView::acceptMouseDoubleClickEvent()
+{
+    QGraphicsScene scene;
+
+    TestView view(&scene);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    QMouseEvent event(QEvent::MouseButtonDblClick,
+                      view.viewport()->rect().center(),
+                      view.viewport()->mapToGlobal(view.viewport()->rect().center()),
+                      Qt::LeftButton, 0, 0);
+    event.setAccepted(false);
+    QApplication::sendEvent(view.viewport(), &event);
+    QVERIFY(!view.doubleClickAccepted);
+
+    scene.addRect(0, 0, 2000, 2000)->setFlag(QGraphicsItem::ItemIsMovable);
+
+    qApp->processEvents(); // ensure scene rect is updated
+
+    QApplication::sendEvent(view.viewport(), &event);
+    QVERIFY(view.doubleClickAccepted);
+}
+
+class TestWidget : public QWidget
+{
+public:
+    TestWidget()
+        : QWidget(), pressForwarded(false), doubleClickForwarded(false)
+    { }
+
+    bool pressForwarded;
+    bool doubleClickForwarded;
+
+protected:
+    void mousePressEvent(QMouseEvent *event)
+    {
+        QWidget::mousePressEvent(event);
+        pressForwarded = true;
+    }
+    void mouseDoubleClickEvent(QMouseEvent *event)
+    {
+        QWidget::mouseDoubleClickEvent(event);
+        doubleClickForwarded = true;
+    }
+};
+
+void tst_QGraphicsView::forwardMousePress()
+{
+    TestWidget widget;
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    QHBoxLayout layout;
+    widget.setLayout(&layout);
+    layout.addWidget(&view);
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+
+    widget.pressForwarded = false;
+    QTest::mouseClick(view.viewport(), Qt::LeftButton);
+    QVERIFY(widget.pressForwarded);
+
+    scene.addRect(0, 0, 2000, 2000);
+
+    qApp->processEvents(); // ensure scene rect is updated
+
+    widget.pressForwarded = false;
+    QTest::mouseClick(view.viewport(), Qt::LeftButton);
+    QVERIFY(widget.pressForwarded);
+}
+
+void tst_QGraphicsView::forwardMouseDoubleClick()
+{
+    TestWidget widget;
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    QHBoxLayout layout;
+    widget.setLayout(&layout);
+    layout.addWidget(&view);
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+
+    widget.doubleClickForwarded = false;
+    QTest::mouseDClick(view.viewport(), Qt::LeftButton);
+    QVERIFY(widget.doubleClickForwarded);
+
+    scene.addRect(0, 0, 2000, 2000);
+
+    qApp->processEvents(); // ensure scene rect is updated
+
+    widget.doubleClickForwarded = false;
+    QTest::mouseDClick(view.viewport(), Qt::LeftButton);
+    QVERIFY(widget.doubleClickForwarded);
 }
 
 void tst_QGraphicsView::replayMouseMove()

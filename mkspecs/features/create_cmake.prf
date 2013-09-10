@@ -24,6 +24,19 @@ load(cmake_functions)
 CMAKE_INSTALL_LIBS_DIR = $$cmakeTargetPath($$[QT_INSTALL_LIBS])
 contains(CMAKE_INSTALL_LIBS_DIR, ^(/usr)?/lib(64)?.*): CMAKE_USR_MOVE_WORKAROUND = $$CMAKE_INSTALL_LIBS_DIR
 
+CMAKE_MODULE_NAME = $$cmakeModuleName($${MODULE})
+
+split_incpath {
+    CMAKE_ADD_SOURCE_INCLUDE_DIRS = true
+    CMAKE_NO_PRIVATE_INCLUDES = true # Don't add private includes in the build dir which don't exist
+    CMAKE_SOURCE_INCLUDES = \
+        $$cmakeTargetPath($$QT_MODULE_INCLUDE_BASE) \
+        $$cmakeTargetPath($$QT_MODULE_INCLUDE_BASE/Qt$${CMAKE_MODULE_NAME})
+    CMAKE_SOURCE_PRIVATE_INCLUDES = \
+        $$cmakeTargetPath($$QT_MODULE_INCLUDE_BASE/Qt$${CMAKE_MODULE_NAME}/$$eval(QT.$${MODULE}.VERSION)) \
+        $$cmakeTargetPath($$QT_MODULE_INCLUDE_BASE/Qt$${CMAKE_MODULE_NAME}/$$eval(QT.$${MODULE}.VERSION)/Qt$${CMAKE_MODULE_NAME})
+}
+
 CMAKE_INCLUDE_DIR = $$cmakeRelativePath($$[QT_INSTALL_HEADERS], $$[QT_INSTALL_PREFIX])
 contains(CMAKE_INCLUDE_DIR, "^\\.\\./.*") {
     CMAKE_INCLUDE_DIR = $$[QT_INSTALL_HEADERS]/
@@ -37,10 +50,10 @@ contains(CMAKE_LIB_DIR,"^\\.\\./.*") {
     CMAKE_LIB_DIR = $$[QT_INSTALL_LIBS]/
     CMAKE_LIB_DIR_IS_ABSOLUTE = True
 } else {
-    CMAKE_RELATIVE_INSTALL_DIR = $$cmakeRelativePath($$[QT_INSTALL_PREFIX], $$[QT_INSTALL_LIBS])
+    CMAKE_RELATIVE_INSTALL_LIBS_DIR = $$cmakeRelativePath($$[QT_INSTALL_PREFIX], $$[QT_INSTALL_LIBS])
     # We need to go up another two levels because the CMake files are
     # installed in $${CMAKE_LIB_DIR}/cmake/Qt5$${CMAKE_MODULE_NAME}
-    CMAKE_RELATIVE_INSTALL_DIR = "$${CMAKE_RELATIVE_INSTALL_DIR}../../"
+    CMAKE_RELATIVE_INSTALL_DIR = "$${CMAKE_RELATIVE_INSTALL_LIBS_DIR}../../"
 }
 
 CMAKE_BIN_DIR = $$cmakeRelativePath($$[QT_HOST_BINS], $$[QT_INSTALL_PREFIX])
@@ -134,8 +147,6 @@ contains($$list(network sql widgets gui), $$MODULE): CMAKE_LOAD_PLUGINS = true
 unix:contains(QT_CONFIG, reduce_relocations):CMAKE_ADD_FPIE_FLAGS = "true"
 
 CMAKE_MKSPEC = $$[QMAKE_XSPEC]
-
-CMAKE_MODULE_NAME = $$cmakeModuleName($${MODULE})
 
 CMAKE_MODULE_DEPS = $$cmakeModuleList($$sort_depends(QT.$${MODULE}.depends, QT.))
 CMAKE_PARTIAL_MODULE_DEPS = $$replace(CMAKE_MODULE_DEPS, ";", ";Qt5::")

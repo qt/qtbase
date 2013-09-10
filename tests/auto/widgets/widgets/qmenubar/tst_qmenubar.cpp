@@ -50,6 +50,7 @@
 #include <qdesktopwidget.h>
 #include <qaction.h>
 #include <qstyleoption.h>
+#include <qscreen.h>
 
 #include <qobject.h>
 
@@ -57,23 +58,6 @@ QT_FORWARD_DECLARE_CLASS(QMainWindow)
 
 #include <qmenubar.h>
 
-class QtTestSlot : public QObject
-{
-    Q_OBJECT
-
-public:
-    QtTestSlot( QObject* parent = 0 ): QObject( parent ) { clear(); };
-    virtual ~QtTestSlot() {};
-
-    void clear() { sel_count = 0; };
-    uint selCount() { return sel_count; };
-
-public slots:
-    void selected() { sel_count++; };
-
-private:
-    uint sel_count;
-};
 
 class Menu : public QMenu
 {
@@ -87,20 +71,24 @@ class Menu : public QMenu
             }
 };
 
+static inline void centerOnScreen(QWidget *w)
+{
+    const QPoint offset = QPoint(w->width() / 2, w->height() / 2);
+    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
+}
+
+struct TestMenu
+{
+    QList<QMenu *> menus;
+    QList<QAction *> actions;
+};
+
 class tst_QMenuBar : public QObject
 {
     Q_OBJECT
 public:
     tst_QMenuBar();
-    virtual ~tst_QMenuBar();
 
-    void initSimpleMenubar();
-    void initComplexMenubar();
-
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void init();
 private slots:
     void getSetCheck();
 
@@ -145,39 +133,23 @@ private slots:
     void taskQTBUG4965_escapeEaten();
 #endif
     void taskQTBUG11823_crashwithInvisibleActions();
+    void closeOnSecondClick();
 
 protected slots:
-    void onActivated( QAction*);
+    void onSimpleActivated( QAction*);
+    void onComplexActionTriggered();
 
 private:
-    QtTestSlot *menu1;
-    QtTestSlot *menu2;
-    QtTestSlot *menu3;
-    QtTestSlot *menu4;
+    TestMenu initSimpleMenuBar(QMenuBar *mb);
+    TestMenu initWindowWithSimpleMenuBar(QMainWindow &w);
+    QAction *createCharacterAction(QMenu *menu, char lowerAscii);
+    QMenu *addNumberedMenu(QMenuBar *mb, int n);
+    TestMenu initComplexMenuBar(QMenuBar *mb);
+    TestMenu initWindowWithComplexMenuBar(QMainWindow &w);
 
-    QtTestSlot *item1_A;
-    QtTestSlot *item1_B;
-    QtTestSlot *item2_C;
-    QtTestSlot *item2_D;
-    QtTestSlot *item2_E;
-    QtTestSlot *item2_F;
-    QtTestSlot *item2_G;
-    QtTestSlot *item2_H;
-
-    void resetSlots();
-    void resetCount();
-
-    void reset() { resetSlots(); resetCount(); };
-
-    QAction* last_accel_id;
-    int activated_count;
-
-    QAction *action;
-    QAction *action1;
-    QMainWindow *mw;
-    QMenuBar *mb;
-    QMenu *pm1;
-    QMenu *pm2;
+    QAction* m_lastSimpleAcceleratorId;
+    int m_simpleActivatedCount;
+    int m_complexTriggerCount['k'];
 };
 
 // Testing get/set functions
@@ -220,116 +192,119 @@ const int RESET = 0;
 
 */
 
-tst_QMenuBar::tst_QMenuBar()
-
+tst_QMenuBar::tst_QMenuBar() : m_lastSimpleAcceleratorId(0), m_simpleActivatedCount(0)
 {
     QApplication::setEffectEnabled(Qt::UI_AnimateMenu, false);
-
-
-    activated_count = 0;
-    mb = 0;
-    pm1 = 0;
-    pm2 = 0;
-    last_accel_id = 0;
 }
 
-tst_QMenuBar::~tst_QMenuBar()
+void tst_QMenuBar::onSimpleActivated( QAction* action )
 {
-    //delete mw; //#### cannot do that AFTER qapplication was destroyed!
-    mw = 0;
+    m_lastSimpleAcceleratorId = action;
+    m_simpleActivatedCount++;
 }
 
-void tst_QMenuBar::initTestCase()
+// Create a simple menu bar and connect its actions to onSimpleActivated().
+
+TestMenu tst_QMenuBar::initSimpleMenuBar(QMenuBar *mb)
 {
-    // create a default mainwindow
-    // If you run a widget test, this will be replaced in the testcase by the
-    // widget under test
-    mw = new QMainWindow(0, Qt::X11BypassWindowManagerHint);
-    mb = new QMenuBar( mw );
-    connect( mb, SIGNAL(triggered(QAction*)), this, SLOT(onActivated(QAction*)) );
+    TestMenu result;
+    connect(mb, SIGNAL(triggered(QAction*)), this, SLOT(onSimpleActivated(QAction*)));
+    QMenu *menu = mb->addMenu(QStringLiteral("&accel"));
+    QAction *action = menu->addAction(QStringLiteral("menu1") );
+    action->setShortcut(QKeySequence(Qt::ALT + Qt::Key_A));
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_A));
+    connect(menu, SIGNAL(triggered(QAction*)), this, SLOT(onSimpleActivated(QAction*)));
+    result.menus << menu;
+    result.actions << action;
 
-    initSimpleMenubar();
-    mw->show();
-    mw->activateWindow();
-    QVERIFY(QTest::qWaitForWindowActive(mw));
+    menu = mb->addMenu(QStringLiteral("accel1"));
+    action = menu->addAction(QStringLiteral("&Open...") );
+    action->setShortcut(Qt::Key_O);
+    result.menus << menu;
+    connect(menu, SIGNAL(triggered(QAction*)), this, SLOT(onSimpleActivated(QAction*)));
+    result.actions << action;
 
-    menu1 = new QtTestSlot( mw );
-    menu2 = new QtTestSlot( mw );
-    menu3 = new QtTestSlot( mw );
-    menu4 = new QtTestSlot( mw );
-    item1_A = new QtTestSlot( mw );
-    item1_B = new QtTestSlot( mw );
-    item2_C = new QtTestSlot( mw );
-    item2_D = new QtTestSlot( mw );
-    item2_E = new QtTestSlot( mw );
-    item2_F = new QtTestSlot( mw );
-    item2_G = new QtTestSlot( mw );
-    item2_H = new QtTestSlot( mw );
+    m_lastSimpleAcceleratorId = 0;
+    m_simpleActivatedCount = 0;
+
+    return result;
 }
 
-
-void tst_QMenuBar::cleanupTestCase()
+inline TestMenu tst_QMenuBar::initWindowWithSimpleMenuBar(QMainWindow &w)
 {
-    delete mw;
+    w.resize(200, 200);
+    centerOnScreen(&w);
+    return initSimpleMenuBar(w.menuBar());
 }
 
-void tst_QMenuBar::initSimpleMenubar()
+// add a menu with number n, set number as data.
+QMenu *tst_QMenuBar::addNumberedMenu(QMenuBar *mb, int n)
 {
-    mb->hide();
-    mb->clear();
-
-    delete pm1;
-    pm1  = mb->addMenu("&accel");
-    action = pm1->addAction( "menu1" );
-    action->setShortcut(QKeySequence("ALT+A"));
-    action->setShortcut(QKeySequence("CTRL+A"));
-
-    connect( pm1, SIGNAL(triggered(QAction*)), this, SLOT(onActivated(QAction*)));
-
-    delete pm2;
-    pm2  = mb->addMenu("accel1");
-
-    action1 = pm2->addAction( "&Open..." );
-    action1->setShortcut(Qt::Key_O);
-    connect(pm2, SIGNAL(triggered(QAction*)), this, SLOT(onActivated(QAction*)));
-
-    mb->show();
-    qApp->processEvents();
+    const QString text = QStringLiteral("Menu &") + QString::number(n);
+    QMenu *menu = mb->addMenu(text);
+    menu->setObjectName(text);
+    QAction *action = menu->menuAction();
+    action->setObjectName(text + QStringLiteral("Action"));
+    action->setData(QVariant(n));
+    connect(action, SIGNAL(triggered()), this, SLOT(onComplexActionTriggered()));
+    return menu;
 }
 
-void tst_QMenuBar::init()
+// Create an action triggering on Ctrl+character, set number as data.
+QAction *tst_QMenuBar::createCharacterAction(QMenu *menu, char lowerAscii)
 {
-    resetSlots();
-    resetCount();
+    const QString text = QStringLiteral("Item ") + QChar(QLatin1Char(lowerAscii)).toUpper();
+    QAction *action = menu->addAction(text);
+    action->setObjectName(text);
+    action->setData(QVariant(int(lowerAscii)));
+    action->setShortcut(Qt::CTRL + (lowerAscii - 'a' + Qt::Key_A));
+    connect(action, SIGNAL(triggered()), this, SLOT(onComplexActionTriggered()));
+    return action;
 }
 
-void tst_QMenuBar::resetSlots()
+void tst_QMenuBar::onComplexActionTriggered()
 {
-    menu1->clear();
-    menu2->clear();
-    menu3->clear();
-    menu4->clear();
-    item1_A->clear();
-    item1_B->clear();
-    item2_C->clear();
-    item2_D->clear();
-    item2_E->clear();
-    item2_F->clear();
-    item2_G->clear();
-    item2_H->clear();
+    if (QAction *a = qobject_cast<QAction *>(sender()))
+        m_complexTriggerCount[a->data().toInt()]++;
 }
 
-void tst_QMenuBar::resetCount()
+// Create a complex menu bar and connect its actions to onComplexActionTriggered()
+// for their invocations to be counted in m_complexTriggerCount. The index is the
+// menu number (1..n) for the menu bar actions and the ASCII-code of the shortcut
+// character for the actions in the menus.
+TestMenu tst_QMenuBar::initComplexMenuBar(QMenuBar *mb)
 {
-    last_accel_id = 0;
-    activated_count = 0;
+    TestMenu result;
+    QMenu *menu = addNumberedMenu(mb, 1);
+    result.menus << menu;
+    for (char c = 'a'; c < 'c'; ++c)
+        result.actions << createCharacterAction(menu, c);
+
+    menu = addNumberedMenu(mb, 2);
+    menu->menuAction()->setData(QVariant(2));
+    result.menus << menu;
+    for (char c = 'c'; c < 'g'; ++c)
+        result.actions << createCharacterAction(menu, c);
+    menu->addSeparator();
+    for (char c = 'g'; c < 'i'; ++c)
+        result.actions << createCharacterAction(menu, c);
+
+    QAction *action = mb->addAction(QStringLiteral("M&enu 3"));
+    action->setData(QVariant(3));
+    action->setShortcut(Qt::ALT + Qt::Key_J);
+    connect(action, SIGNAL(triggered()), this, SLOT(onComplexActionTriggered()));
+    result.actions << action;
+
+    qFill(m_complexTriggerCount, m_complexTriggerCount + sizeof(m_complexTriggerCount) / sizeof(int), 0);
+
+    return result;
 }
 
-void tst_QMenuBar::onActivated( QAction* action )
+inline TestMenu tst_QMenuBar::initWindowWithComplexMenuBar(QMainWindow &w)
 {
-    last_accel_id = action;
-    activated_count++;
-//     printf( QString("acceleratorId: %1, count: %1\n").arg( i ).arg(activated_count) );
+    w.resize(400, 200);
+    centerOnScreen(&w);
+    return initComplexMenuBar(w.menuBar());
 }
 
 // On Mac/WinCE, native key events are needed to test menu action activation
@@ -337,15 +312,16 @@ void tst_QMenuBar::onActivated( QAction* action )
 void tst_QMenuBar::accel()
 {
     // create a popup menu with menu items set the accelerators later...
-    initSimpleMenubar();
-
+    QMainWindow w;
+    const TestMenu menu = initWindowWithSimpleMenuBar(w);
+    w.show();
+    QApplication::setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
     // shortcuts won't work unless the window is active
-    QTRY_VERIFY( QApplication::activeWindow() );
-//    QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_A, AltKey );
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_A, Qt::ControlModifier );
     QTest::qWait(300);
 
-    QCOMPARE( last_accel_id, action );
+    QCOMPARE( m_lastSimpleAcceleratorId, menu.actions.front() );
 }
 #endif
 
@@ -354,40 +330,45 @@ void tst_QMenuBar::accel()
 void tst_QMenuBar::activatedCount()
 {
     // create a popup menu with menu items set the accelerators later...
-    initSimpleMenubar();
+    QMainWindow w;
+    initWindowWithSimpleMenuBar(w);
+    w.show();
+    QApplication::setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
 
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_A, Qt::ControlModifier );
 //wait(5000);
-    QCOMPARE( activated_count, 2 ); //1 from the popupmenu and 1 from the menubar
+    QCOMPARE( m_simpleActivatedCount, 2 ); //1 from the popupmenu and 1 from the menubar
 }
 #endif
 
 void tst_QMenuBar::clear()
 {
-    mb->clear();
-    QVERIFY( (uint) mb->actions().size() == 0 );
+    QMenuBar menuBar;
+    initSimpleMenuBar(&menuBar);
+    menuBar.clear();
+    QCOMPARE( menuBar.actions().size(), 0 );
 
-    mb->clear();
-    for (uint i=0; i<10; i++) {
-        QMenu *menu = mb->addMenu( QString("Menu %1"));
-	for (uint k=0; k<i; k++)
-	    menu->addAction( QString("Item %1"));
-	QCOMPARE( (uint) mb->actions().size(), (uint)i+1 );
+    menuBar.clear();
+    for (int i = 0; i < 10; i++) {
+        QMenu *menu = menuBar.addMenu( QStringLiteral("Menu ") + QString::number(i));
+        for (int k = 0; k < i; k++)
+            menu->addAction( QStringLiteral("Item ") + QString::number(k));
+        QCOMPARE( menuBar.actions().size(), i + 1 );
     }
-    QCOMPARE( (uint) mb->actions().size(), 10u );
-
-    mb->clear();
-    QVERIFY( (uint) mb->actions().size() == 0 );
+    QCOMPARE( menuBar.actions().size(), 10 );
+    menuBar.clear();
+    QCOMPARE( menuBar.actions().size(), 0 );
 }
 
 void tst_QMenuBar::count()
 {
-    mb->clear();
-    QVERIFY( mb->actions().size() == 0 );
+    QMenuBar menuBar;
+    QCOMPARE( menuBar.actions().size(), 0 );
 
-    for (uint i=0; i<10; i++) {
-	mb->addAction( QString("Menu %1"));
-	QCOMPARE( (uint) mb->actions().size(), (uint) i+1 );
+    for (int i = 0; i < 10; i++) {
+        menuBar.addAction( QStringLiteral("Menu ") + QString::number(i));
+        QCOMPARE( menuBar.actions().size(), i + 1 );
     }
 }
 
@@ -402,27 +383,26 @@ void tst_QMenuBar::removeItem_data()
 // Basically the same test as removeItemAt, except that we remember and remove id's.
 void tst_QMenuBar::removeItem()
 {
-    mb->clear();
+    QMenuBar menuBar;
 
-    QMenu *pm;
-    pm = new QMenu( "stuff", mb );
+    QMenu *pm = new QMenu( "stuff", &menuBar );
     pm->setTitle("Menu 1");
     pm->addAction( QString("Item 10") );
-    QAction* action1 = mb->addMenu( pm );
+    QAction* action1 = menuBar.addMenu( pm );
 
-    pm = new QMenu( mb );
+    pm = new QMenu( &menuBar );
     pm->setTitle("Menu 2");
     pm->addAction( QString("Item 20") );
     pm->addAction( QString("Item 21") );
-    QAction *action2 = mb->addMenu( pm );
+    QAction *action2 = menuBar.addMenu( pm );
 
-    pm = new QMenu( "Menu 3", mb );
+    pm = new QMenu( "Menu 3", &menuBar );
     pm->addAction( QString("Item 30") );
     pm->addAction( QString("Item 31") );
     pm->addAction( QString("Item 32") );
-    QAction *action3 = mb->addMenu( pm );
+    QAction *action3 = menuBar.addMenu( pm );
 
-    QList<QAction *> menuBarActions = mb->actions();
+    const QList<QAction *> menuBarActions = menuBar.actions();
 
     QCOMPARE( action1->text(), QString("Menu 1") );
     QCOMPARE( action2->text(), QString("Menu 2") );
@@ -437,28 +417,28 @@ void tst_QMenuBar::removeItem()
     switch (removeIndex )
     {
     case 0: {
-            mb->removeAction(action1);
-            QList<QAction *> menuBarActions2 = mb->actions();
+            menuBar.removeAction(action1);
+            const QList<QAction *> menuBarActions2 = menuBar.actions();
             QCOMPARE( menuBarActions2.at(0)->text(), QString("Menu 2") );
             QCOMPARE( menuBarActions2.at(1)->text(), QString("Menu 3") );
         }
         break;
     case 1: {
-            mb->removeAction(action2);
-            QList<QAction *> menuBarActions2 = mb->actions();
+            menuBar.removeAction(action2);
+            const QList<QAction *> menuBarActions2 = menuBar.actions();
             QCOMPARE( menuBarActions2.at(0)->text(), QString("Menu 1") );
             QCOMPARE( menuBarActions2.at(1)->text(), QString("Menu 3") );
         }
         break;
     case 2: {
-            mb->removeAction(action3);
-            QList<QAction *> menuBarActions2 = mb->actions();
+            menuBar.removeAction(action3);
+            const QList<QAction *> menuBarActions2 = menuBar.actions();
             QCOMPARE( menuBarActions2.at(0)->text(), QString("Menu 1") );
             QCOMPARE( menuBarActions2.at(1)->text(), QString("Menu 2") );
         }
         break;
     }
-    QList<QAction *> menuBarActions2 = mb->actions();
+    QList<QAction *> menuBarActions2 = menuBar.actions();
     QVERIFY( menuBarActions2.size() == 2 );
 }
 
@@ -472,25 +452,23 @@ void tst_QMenuBar::removeItemAt_data()
 
 void tst_QMenuBar::removeItemAt()
 {
-    mb->clear();
-
-    QMenu *pm;
-    pm = new QMenu("Menu 1", mb);
+    QMenuBar menuBar;
+    QMenu *pm = new QMenu("Menu 1", &menuBar);
     pm->addAction( QString("Item 10") );
-    mb->addMenu( pm );
+    menuBar.addMenu( pm );
 
-    pm = new QMenu( "Menu 2", mb );
+    pm = new QMenu( "Menu 2", &menuBar);
     pm->addAction( QString("Item 20") );
     pm->addAction( QString("Item 21") );
-    mb->addMenu( pm );
+    menuBar.addMenu( pm );
 
-    pm = new QMenu( "Menu 3", mb );
+    pm = new QMenu( "Menu 3", &menuBar);
     pm->addAction( QString("Item 30") );
     pm->addAction( QString("Item 31") );
     pm->addAction( QString("Item 32") );
-    mb->addMenu( pm );
+    menuBar.addMenu( pm );
 
-    QList<QAction *> menuBarActions = mb->actions();
+    QList<QAction *> menuBarActions = menuBar.actions();
 
     QCOMPARE( menuBarActions.at(0)->text(), QString("Menu 1") );
     QCOMPARE( menuBarActions.at(1)->text(), QString("Menu 2") );
@@ -498,8 +476,8 @@ void tst_QMenuBar::removeItemAt()
 
     // Ok, now that we know we have created the menu we expect, lets remove an item...
     QFETCH( int, removeIndex );
-    mb->removeAction(menuBarActions.at(removeIndex));
-    QList<QAction *> menuBarActions2 = mb->actions();
+    menuBar.removeAction(menuBarActions.at(removeIndex));
+    const QList<QAction *> menuBarActions2 = menuBar.actions();
     switch (removeIndex )
     {
     case 0:
@@ -519,32 +497,6 @@ void tst_QMenuBar::removeItemAt()
     QVERIFY( menuBarActions2.size() == 2 );
 }
 
-void tst_QMenuBar::initComplexMenubar() // well, complex....
-{
-    mb->hide();
-    mb->clear();
-
-    delete pm1;
-    pm1 = mb->addMenu("Menu &1");
-    pm1->addAction( QString("Item A"), item1_A, SLOT(selected()), Qt::CTRL+Qt::Key_A );
-    pm1->addAction( QString("Item B"), item1_B, SLOT(selected()), Qt::CTRL+Qt::Key_B );
-
-    delete pm2;
-    pm2 = mb->addMenu("Menu &2");
-    pm2->addAction( QString("Item C"), item2_C, SLOT(selected()), Qt::CTRL+Qt::Key_C );
-    pm2->addAction( QString("Item D"), item2_D, SLOT(selected()), Qt::CTRL+Qt::Key_D );
-    pm2->addAction( QString("Item E"), item2_E, SLOT(selected()), Qt::CTRL+Qt::Key_E );
-    pm2->addAction( QString("Item F"), item2_F, SLOT(selected()), Qt::CTRL+Qt::Key_F );
-    pm2->addSeparator();
-    pm2->addAction( QString("Item G"), item2_G, SLOT(selected()), Qt::CTRL+Qt::Key_G );
-    pm2->addAction( QString("Item H"), item2_H, SLOT(selected()), Qt::CTRL+Qt::Key_H );
-
-    QAction *ac = mb->addAction( QString("M&enu 3"), menu3, SLOT(selected()));
-    ac->setShortcut(Qt::ALT+Qt::Key_J);
-    mb->show();
-}
-
-
 /*
     Check the insert functions that create menu items.
     For the moment i only check the strings and pixmaps. The rest are special cases which are
@@ -553,9 +505,10 @@ void tst_QMenuBar::initComplexMenubar() // well, complex....
 
 void tst_QMenuBar::insertItem_QString_QObject()
 {
-    initComplexMenubar();
+    QMenuBar menuBar;
+    initComplexMenuBar(&menuBar);
 
-    QList<QAction *> actions = mb->actions();
+    const QList<QAction *> actions = menuBar.actions();
 
     QCOMPARE(actions.at(0)->text(), QString("Menu &1") );
     QCOMPARE(actions.at(1)->text(), QString("Menu &2") );
@@ -567,68 +520,72 @@ void tst_QMenuBar::insertItem_QString_QObject()
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
 void tst_QMenuBar::check_accelKeys()
 {
-    initComplexMenubar();
+    QMainWindow w;
+    initWindowWithComplexMenuBar(w);
+    w.show();
+    QApplication::setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
 
     // start with a bogus key that shouldn't trigger anything
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_I, Qt::ControlModifier);
-    QCOMPARE(menu1->selCount(), 0u);
-    QCOMPARE(menu2->selCount(), 0u);
-    QCOMPARE(menu3->selCount(), 0u);
-    QCOMPARE(menu4->selCount(), 0u);
-    QCOMPARE(item1_A->selCount(), 0u);
-    QCOMPARE(item1_B->selCount(), 0u);
-    QCOMPARE(item2_C->selCount(), 0u);
-    QCOMPARE(item2_D->selCount(), 0u);
+    QCOMPARE(m_complexTriggerCount[1], 0);
+    QCOMPARE(m_complexTriggerCount[2], 0);
+    QCOMPARE(m_complexTriggerCount[3], 0);
+    QCOMPARE(m_complexTriggerCount[4], 0);
+    QCOMPARE(m_complexTriggerCount['a'], 0);
+    QCOMPARE(m_complexTriggerCount['b'], 0);
+    QCOMPARE(m_complexTriggerCount['c'], 0);
+    QCOMPARE(m_complexTriggerCount['d'], 0);
 
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_A, Qt::ControlModifier);
-    QCOMPARE(menu1->selCount(), 0u);
-    QCOMPARE(menu2->selCount(), 0u);
-    QCOMPARE(menu3->selCount(), 0u);
-    QCOMPARE(menu4->selCount(), 0u);
-    QCOMPARE(item1_A->selCount(), 1u);
-    QCOMPARE(item1_B->selCount(), 0u);
-    QCOMPARE(item2_C->selCount(), 0u);
-    QCOMPARE(item2_D->selCount(), 0u);
+    QCOMPARE(m_complexTriggerCount[1], 0);
+    QCOMPARE(m_complexTriggerCount[2], 0);
+    QCOMPARE(m_complexTriggerCount[3], 0);
+    QCOMPARE(m_complexTriggerCount[4], 0);
+    QCOMPARE(m_complexTriggerCount['a'], 1);
+    QCOMPARE(m_complexTriggerCount['b'], 0);
+    QCOMPARE(m_complexTriggerCount['c'], 0);
+    QCOMPARE(m_complexTriggerCount['d'], 0);
 
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_C, Qt::ControlModifier);
-    QCOMPARE(menu1->selCount(), 0u);
-    QCOMPARE(menu2->selCount(), 0u);
-    QCOMPARE(menu3->selCount(), 0u);
-    QCOMPARE(menu4->selCount(), 0u);
-    QCOMPARE(item1_A->selCount(), 1u);
-    QCOMPARE(item1_B->selCount(), 0u);
-    QCOMPARE(item2_C->selCount(), 1u);
-    QCOMPARE(item2_D->selCount(), 0u);
+    QCOMPARE(m_complexTriggerCount[1], 0);
+    QCOMPARE(m_complexTriggerCount[2], 0);
+    QCOMPARE(m_complexTriggerCount[3], 0);
+    QCOMPARE(m_complexTriggerCount[4], 0);
+    QCOMPARE(m_complexTriggerCount['a'], 1);
+    QCOMPARE(m_complexTriggerCount['b'], 0);
+    QCOMPARE(m_complexTriggerCount['c'], 1);
+    QCOMPARE(m_complexTriggerCount['d'], 0);
 
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_B, Qt::ControlModifier);
-    QCOMPARE(menu1->selCount(), 0u);
-    QCOMPARE(menu2->selCount(), 0u);
-    QCOMPARE(menu3->selCount(), 0u);
-    QCOMPARE(menu4->selCount(), 0u);
-    QCOMPARE(item1_A->selCount(), 1u);
-    QCOMPARE(item1_B->selCount(), 1u);
-    QCOMPARE(item2_C->selCount(), 1u);
-    QCOMPARE(item2_D->selCount(), 0u);
+    QCOMPARE(m_complexTriggerCount[1], 0);
+    QCOMPARE(m_complexTriggerCount[2], 0);
+    QCOMPARE(m_complexTriggerCount[3], 0);
+    QCOMPARE(m_complexTriggerCount[4], 0);
+    QCOMPARE(m_complexTriggerCount['a'], 1);
+    QCOMPARE(m_complexTriggerCount['b'], 1);
+    QCOMPARE(m_complexTriggerCount['c'], 1);
+    QCOMPARE(m_complexTriggerCount['d'], 0);
 
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_D, Qt::ControlModifier);
-    QCOMPARE(menu1->selCount(), 0u);
-    QCOMPARE(menu2->selCount(), 0u);
-    QCOMPARE(menu3->selCount(), 0u);
-    QCOMPARE(menu4->selCount(), 0u);
-    QCOMPARE(item1_A->selCount(), 1u);
-    QCOMPARE(item1_B->selCount(), 1u);
-    QCOMPARE(item2_C->selCount(), 1u);
-    QCOMPARE(item2_D->selCount(), 1u);
+    QCOMPARE(m_complexTriggerCount[1], 0);
+    QCOMPARE(m_complexTriggerCount[2], 0);
+    QCOMPARE(m_complexTriggerCount[3], 0);
+    QCOMPARE(m_complexTriggerCount[4], 0);
+    QCOMPARE(m_complexTriggerCount['a'], 1);
+    QCOMPARE(m_complexTriggerCount['b'], 1);
+    QCOMPARE(m_complexTriggerCount['c'], 1);
+    QCOMPARE(m_complexTriggerCount['d'], 1);
 
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_J, Qt::AltModifier);
-    QCOMPARE(menu1->selCount(), 0u);
-    QCOMPARE(menu2->selCount(), 0u);
-    QCOMPARE(menu3->selCount(), 1u);
-    QCOMPARE(menu4->selCount(), 0u);
-    QCOMPARE(item1_A->selCount(), 1u);
-    QCOMPARE(item1_B->selCount(), 1u);
-    QCOMPARE(item2_C->selCount(), 1u);
-    QCOMPARE(item2_D->selCount(), 1u);
+    QCOMPARE(m_complexTriggerCount[1], 0);
+    QCOMPARE(m_complexTriggerCount[2], 0);
+    QCOMPARE(m_complexTriggerCount[3], 1);
+    QCOMPARE(m_complexTriggerCount[4], 0);
+    QCOMPARE(m_complexTriggerCount['a'], 1);
+    QCOMPARE(m_complexTriggerCount['b'], 1);
+    QCOMPARE(m_complexTriggerCount['c'], 1);
+    QCOMPARE(m_complexTriggerCount['d'], 1);
 }
 #endif
 
@@ -636,29 +593,33 @@ void tst_QMenuBar::check_accelKeys()
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
 void tst_QMenuBar::check_cursorKeys1()
 {
-    initComplexMenubar();
+    QMainWindow w;
+    initWindowWithComplexMenuBar(w);
+    w.show();
+    QApplication::setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
 
     // start with a ALT + 1 that activates the first popupmenu
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_1, Qt::AltModifier );
     // the Popupmenu should be visible now
-    QCOMPARE(menu3->selCount(), 0u);
-    QCOMPARE(menu4->selCount(), 0u);
-    QCOMPARE(item1_A->selCount(), 0u);
-    QCOMPARE(item1_B->selCount(), 0u);
-    QCOMPARE(item2_C->selCount(), 0u);
-    QCOMPARE(item2_D->selCount(), 0u);
+    QCOMPARE(m_complexTriggerCount[3], 0);
+    QCOMPARE(m_complexTriggerCount[4], 0);
+    QCOMPARE(m_complexTriggerCount['a'], 0);
+    QCOMPARE(m_complexTriggerCount['b'], 0);
+    QCOMPARE(m_complexTriggerCount['c'], 0);
+    QCOMPARE(m_complexTriggerCount['d'], 0);
 
     // Simulate a cursor key down click
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Down );
     // and an Enter key
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Enter );
     // Let's see if the correct slot is called...
-    QCOMPARE(menu3->selCount(), 0u);
-    QCOMPARE(menu4->selCount(), 0u);
-    QCOMPARE(item1_A->selCount(), 0u); // this shouldn't have been called
-    QCOMPARE(item1_B->selCount(), 1u); // and this should have been called by a signal now
-    QCOMPARE(item2_C->selCount(), 0u);
-    QCOMPARE(item2_D->selCount(), 0u);
+    QCOMPARE(m_complexTriggerCount[3], 0);
+    QCOMPARE(m_complexTriggerCount[4], 0);
+    QCOMPARE(m_complexTriggerCount['a'], 0); // this shouldn't have been called
+    QCOMPARE(m_complexTriggerCount['b'], 1); // and this should have been called by a signal now
+    QCOMPARE(m_complexTriggerCount['c'], 0);
+    QCOMPARE(m_complexTriggerCount['d'], 0);
 }
 #endif
 
@@ -666,7 +627,11 @@ void tst_QMenuBar::check_cursorKeys1()
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
 void tst_QMenuBar::check_cursorKeys2()
 {
-    initComplexMenubar();
+    QMainWindow w;
+    initWindowWithComplexMenuBar(w);
+    w.show();
+    QApplication::setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
 
     // select popupmenu2
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_2, Qt::AltModifier );
@@ -679,12 +644,12 @@ void tst_QMenuBar::check_cursorKeys2()
     // and an Enter key
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Enter );
     // Let's see if the correct slot is called...
-    QCOMPARE(menu3->selCount(), 0u);
-    QCOMPARE(menu4->selCount(), 0u);
-    QCOMPARE(item1_A->selCount(), 0u); // this shouldn't have been caled
-    QCOMPARE(item1_B->selCount(), 0u); // and this should have been called by a signal ow
-    QCOMPARE(item2_C->selCount(), 0u);
-    QCOMPARE(item2_D->selCount(), 1u);
+    QCOMPARE(m_complexTriggerCount[3], 0);
+    QCOMPARE(m_complexTriggerCount[4], 0);
+    QCOMPARE(m_complexTriggerCount['a'], 0); // this shouldn't have been caled
+    QCOMPARE(m_complexTriggerCount['b'], 0); // and this should have been called by a signal ow
+    QCOMPARE(m_complexTriggerCount['c'], 0);
+    QCOMPARE(m_complexTriggerCount['d'], 1);
 }
 #endif
 
@@ -695,7 +660,11 @@ void tst_QMenuBar::check_cursorKeys2()
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
 void tst_QMenuBar::check_cursorKeys3()
 {
-    initComplexMenubar();
+    QMainWindow w;
+    initWindowWithComplexMenuBar(w);
+    w.show();
+    QApplication::setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
 
     // select Popupmenu 2
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_2, Qt::AltModifier );
@@ -706,12 +675,12 @@ void tst_QMenuBar::check_cursorKeys3()
     // and press ENTER
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Enter );
     // Let's see if the correct slot is called...
-    QCOMPARE(menu3->selCount(), 0u);
-    QCOMPARE(menu4->selCount(), 0u);
-    QCOMPARE(item1_A->selCount(), 0u); // this shouldn't have been called
-    QCOMPARE(item1_B->selCount(), 1u); // and this should have been called by a signal now
-    QCOMPARE(item2_C->selCount(), 0u);
-    QCOMPARE(item2_D->selCount(), 0u);
+    QCOMPARE(m_complexTriggerCount[3], 0);
+    QCOMPARE(m_complexTriggerCount[4], 0);
+    QCOMPARE(m_complexTriggerCount['a'], 0); // this shouldn't have been called
+    QCOMPARE(m_complexTriggerCount['b'], 1); // and this should have been called by a signal now
+    QCOMPARE(m_complexTriggerCount['c'], 0);
+    QCOMPARE(m_complexTriggerCount['d'], 0);
 }
 #endif
 
@@ -727,7 +696,11 @@ void tst_QMenuBar::check_homeKey()
 
     QEXPECT_FAIL( "0", "Popupmenu should respond to a Home key", Abort );
 
-    initComplexMenubar();
+    QMainWindow w;
+    initWindowWithComplexMenuBar(w);
+    w.show();
+    QApplication::setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
 
     // select Popupmenu 2
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_2, Qt::AltModifier );
@@ -740,17 +713,17 @@ void tst_QMenuBar::check_homeKey()
     // and press ENTER
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Enter );
     // Let's see if the correct slot is called...
-//    QVERIFY2( item2_C->selCount() == 1, "Popupmenu should respond to a Home key" );
-    QCOMPARE(item2_C->selCount(), 1u);
-    QCOMPARE(menu3->selCount(), 0u);
-    QCOMPARE(menu4->selCount(), 0u);
-    QCOMPARE(item1_A->selCount(), 0u);
-    QCOMPARE(item1_B->selCount(), 0u);
-    QCOMPARE(item2_D->selCount(), 0u);
-    QCOMPARE(item2_E->selCount(), 0u);
-    QCOMPARE(item2_F->selCount(), 0u);
-    QCOMPARE(item2_G->selCount(), 0u);
-    QCOMPARE(item2_H->selCount(), 0u);
+//    QVERIFY2( m_complexActionTriggerCount['c'] == 1, "Popupmenu should respond to a Home key" );
+    QCOMPARE(m_complexTriggerCount['c'], 1);
+    QCOMPARE(m_complexTriggerCount[3], 0);
+    QCOMPARE(m_complexTriggerCount[4], 0);
+    QCOMPARE(m_complexTriggerCount['a'], 0);
+    QCOMPARE(m_complexTriggerCount['b'], 0);
+    QCOMPARE(m_complexTriggerCount['d'], 0);
+    QCOMPARE(m_complexTriggerCount['e'], 0);
+    QCOMPARE(m_complexTriggerCount['f'], 0);
+    QCOMPARE(m_complexTriggerCount['g'], 0);
+    QCOMPARE(m_complexTriggerCount['h'], 0);
 }
 
 /*!
@@ -765,7 +738,11 @@ void tst_QMenuBar::check_endKey()
 
     QEXPECT_FAIL( "0", "Popupmenu should respond to an End key", Abort );
 
-    initComplexMenubar();
+    QMainWindow w;
+    initWindowWithComplexMenuBar(w);
+    w.show();
+    QApplication::setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
 
     // select Popupmenu 2
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_2, Qt::AltModifier );
@@ -775,17 +752,17 @@ void tst_QMenuBar::check_endKey()
     // and press ENTER
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Enter );
     // Let's see if the correct slot is called...
-//    QVERIFY2( item2_H->selCount() == 1, "Popupmenu should respond to an End key" );
-    QCOMPARE(item2_H->selCount(), 1u);//, "Popupmenu should respond to an End key");
-    QCOMPARE(menu3->selCount(), 0u);
-    QCOMPARE(menu4->selCount(), 0u);
-    QCOMPARE(item1_A->selCount(), 0u);
-    QCOMPARE(item1_B->selCount(), 0u);
-    QCOMPARE(item2_C->selCount(), 0u);
-    QCOMPARE(item2_D->selCount(), 0u);
-    QCOMPARE(item2_E->selCount(), 0u);
-    QCOMPARE(item2_F->selCount(), 0u);
-    QCOMPARE(item2_G->selCount(), 0u);
+//    QVERIFY2( m_complexActionTriggerCount['h'] == 1, "Popupmenu should respond to an End key" );
+    QCOMPARE(m_complexTriggerCount['h'], 1);//, "Popupmenu should respond to an End key");
+    QCOMPARE(m_complexTriggerCount[3], 0);
+    QCOMPARE(m_complexTriggerCount[4], 0);
+    QCOMPARE(m_complexTriggerCount['a'], 0);
+    QCOMPARE(m_complexTriggerCount['b'], 0);
+    QCOMPARE(m_complexTriggerCount['c'], 0);
+    QCOMPARE(m_complexTriggerCount['d'], 0);
+    QCOMPARE(m_complexTriggerCount['e'], 0);
+    QCOMPARE(m_complexTriggerCount['f'], 0);
+    QCOMPARE(m_complexTriggerCount['g'], 0);
 }
 
 /*!
@@ -798,33 +775,38 @@ void tst_QMenuBar::check_endKey()
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
 void tst_QMenuBar::check_escKey()
 {
-    initComplexMenubar();
+    QMainWindow w;
+    const TestMenu menu = initWindowWithComplexMenuBar(w);
+    w.show();
+    w.setFocus();
+    QApplication::setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
 
-    QVERIFY( !pm1->isActiveWindow() );
-    QVERIFY( !pm2->isActiveWindow() );
+    QVERIFY( !menu.menus.at(0)->isActiveWindow() );
+    QVERIFY( !menu.menus.at(1)->isActiveWindow() );
 
     // select Popupmenu 2
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_2, Qt::AltModifier );
-    QVERIFY( !pm1->isActiveWindow() );
-    QVERIFY( pm2->isActiveWindow() );
+    QVERIFY( !menu.menus.at(0)->isActiveWindow() );
+    QVERIFY( menu.menus.at(1)->isActiveWindow() );
 
     // If we press ESC, the popup should disappear
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Escape );
-    QVERIFY( !pm1->isActiveWindow() );
-    QVERIFY( !pm2->isActiveWindow() );
+    QVERIFY( !menu.menus.at(0)->isActiveWindow() );
+    QVERIFY( !menu.menus.at(1)->isActiveWindow() );
 
     if (!QApplication::style()->inherits("QWindowsStyle"))
         return;
 
     // If we press Down the popupmenu should be active again
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Down );
-    QVERIFY( !pm1->isActiveWindow() );
-    QVERIFY( pm2->isActiveWindow() );
+    QVERIFY( !menu.menus.at(0)->isActiveWindow() );
+    QVERIFY( menu.menus.at(1)->isActiveWindow() );
 
     // and press ENTER
-    QTest::keyClick( pm2, Qt::Key_Enter );
+    QTest::keyClick( menu.menus.at(1), Qt::Key_Enter );
     // Let's see if the correct slot is called...
-    QVERIFY2( item2_C->selCount() == 1, "Expected item 2C to be selected" );
+    QVERIFY2( m_complexTriggerCount['c'] == 1, "Expected item 2C to be selected" );
 }
 #endif
 
@@ -850,7 +832,7 @@ void tst_QMenuBar::check_escKey()
 //     QFETCH( int, itemA_count );
 //     QFETCH( int, itemB_count );
 
-//     initComplexMenubar();
+// //    initComplexMenubar();
 //     QVERIFY( !pm1->isActiveWindow() );
 //     QVERIFY( !pm2->isActiveWindow() );
 
@@ -864,15 +846,15 @@ void tst_QMenuBar::check_escKey()
 //     QTest::qWait(1000);
 //     mouse.mouseEvent( QtTestMouse::MouseClick, pm1, popup_item, Qt::LeftButton );
 
-//     QCOMPARE(menu3->selCount(), 0u);
-//     QCOMPARE(menu4->selCount(), 0u);
-//     QCOMPARE(item1_A->selCount(), (uint)itemA_count); // this option should have fired
-//     QCOMPARE(item1_B->selCount(), (uint)itemB_count);
-//     QCOMPARE(item2_C->selCount(), 0u);
-//     QCOMPARE(item2_D->selCount(), 0u);
-//     QCOMPARE(item2_E->selCount(), 0u);
-//     QCOMPARE(item2_F->selCount(), 0u);
-//     QCOMPARE(item2_G->selCount(), 0u);
+//     QCOMPARE(m_complexActionTriggerCount[3], 0);
+//     QCOMPARE(m_complexActionTriggerCount[4], 0);
+//     QCOMPARE(m_complexActionTriggerCount['a'], (uint)itemA_count); // this option should have fired
+//     QCOMPARE(m_complexActionTriggerCount['b'], (uint)itemB_count);
+//     QCOMPARE(m_complexActionTriggerCount['c'], 0);
+//     QCOMPARE(m_complexActionTriggerCount['d'], 0);
+//     QCOMPARE(m_complexActionTriggerCount['e'], 0);
+//     QCOMPARE(m_complexActionTriggerCount['f'], 0);
+//     QCOMPARE(m_complexActionTriggerCount['g'], 0);
 // }
 
 // void tst_QMenuBar::check_mouse2_data()
@@ -918,28 +900,27 @@ void tst_QMenuBar::check_escKey()
 //     QFETCH( int, itemH_count );
 //     QFETCH( int, menu3_count );
 
-//     initComplexMenubar();
+// //    initComplexMenubar();
 //     QtTestMouse mouse;
 //     mouse.click( QtTestMouse::Menu, label, Qt::LeftButton );
 
 //     // check if the correct signals have fired
-//     QCOMPARE(menu3->selCount(), (uint)menu3_count);
-//     QCOMPARE(menu4->selCount(), 0u);
-//     QCOMPARE(item1_A->selCount(), (uint)itemA_count);
-//     QCOMPARE(item1_B->selCount(), (uint)itemB_count);
-//     QCOMPARE(item2_C->selCount(), (uint)itemC_count);
-//     QCOMPARE(item2_D->selCount(), (uint)itemD_count);
-//     QCOMPARE(item2_E->selCount(), (uint)itemE_count);
-//     QCOMPARE(item2_F->selCount(), (uint)itemF_count);
-//     QCOMPARE(item2_G->selCount(), (uint)itemG_count);
-//     QCOMPARE(item2_H->selCount(), (uint)itemH_count);
+//     QCOMPARE(m_complexActionTriggerCount[3], (uint)menu3_count);
+//     QCOMPARE(m_complexActionTriggerCount[4], 0);
+//     QCOMPARE(m_complexActionTriggerCount['a'], (uint)itemA_count);
+//     QCOMPARE(m_complexActionTriggerCount['b'], (uint)itemB_count);
+//     QCOMPARE(m_complexActionTriggerCount['c'], (uint)itemC_count);
+//     QCOMPARE(m_complexActionTriggerCount['d'], (uint)itemD_count);
+//     QCOMPARE(m_complexActionTriggerCount['e'], (uint)itemE_count);
+//     QCOMPARE(m_complexActionTriggerCount['f'], (uint)itemF_count);
+//     QCOMPARE(m_complexActionTriggerCount['g'], (uint)itemG_count);
+//     QCOMPARE(m_complexActionTriggerCount['h'], (uint)itemH_count);
 // }
 
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
 void tst_QMenuBar::allowActiveAndDisabled()
 {
-    mb->hide();
-    mb->clear();
+    QMenuBar menuBar;
 
      // Task 241043 : check that second menu is activated if only
     // disabled menu items are added
@@ -950,31 +931,30 @@ void tst_QMenuBar::allowActiveAndDisabled()
     QAction *act = fileMenu.addAction("Disabled");
     act->setEnabled(false);
 
-    mb->addMenu(&fileMenu);
+    menuBar.addMenu(&fileMenu);
     QMenu disabledMenu("Disabled");
     disabledMenu.setEnabled(false);
     QMenu activeMenu("Active");
-    mb->addMenu(&disabledMenu);
-    mb->addMenu(&activeMenu);
-    mb->show();
-
+    menuBar.addMenu(&disabledMenu);
+    menuBar.addMenu(&activeMenu);
+    centerOnScreen(&menuBar);
+    menuBar.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&menuBar));
 
     // Here we verify that AllowActiveAndDisabled correctly skips
     // the disabled menu entry
-    QTest::keyClick(mb, Qt::Key_F, Qt::AltModifier );
+    QTest::keyClick(&menuBar, Qt::Key_F, Qt::AltModifier );
     QTest::keyClick(&fileMenu, (Qt::Key_Right));
     if (qApp->style()->styleHint(QStyle::SH_Menu_AllowActiveAndDisabled))
-        QCOMPARE(mb->activeAction()->text(), disabledMenu.title());
+        QCOMPARE(menuBar.activeAction()->text(), disabledMenu.title());
     else
-        QCOMPARE(mb->activeAction()->text(), activeMenu.title());
+        QCOMPARE(menuBar.activeAction()->text(), activeMenu.title());
 
-    QTest::keyClick(mb, (Qt::Key_Left));
+    QTest::keyClick(&menuBar, (Qt::Key_Left));
     if (qApp->style()->styleHint(QStyle::SH_Menu_AllowActiveAndDisabled))
-        QCOMPARE(mb->activeAction()->text(), fileMenu.title());
+        QCOMPARE(menuBar.activeAction()->text(), fileMenu.title());
     else
-        QCOMPARE(mb->activeAction()->text(), fileMenu.title());
-
-    mb->hide();
+        QCOMPARE(menuBar.activeAction()->text(), fileMenu.title());
 }
 #endif
 
@@ -985,33 +965,38 @@ void tst_QMenuBar::check_altPress()
 	      arg( qApp->style()->objectName() ).toLatin1());
     }
 
-    initSimpleMenubar();
+    QMainWindow w;
+    initWindowWithSimpleMenuBar(w);
+    w.show();
+    w.setFocus();
+    QApplication::setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
 
-    qApp->setActiveWindow(mw);
-    mw->setFocus();
-
-    QTest::keyClick( mw, Qt::Key_Alt );
-
-    QVERIFY( ::qobject_cast<QMenuBar *>(qApp->focusWidget()) );
+    QTest::keyClick( &w, Qt::Key_Alt );
+    QTRY_VERIFY( ::qobject_cast<QMenuBar *>(qApp->focusWidget()) );
 }
 
 // Qt/Mac,WinCE does not use the native popups/menubar
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
 void tst_QMenuBar::check_shortcutPress()
 {
-    initComplexMenubar();
+    QMainWindow w;
+    const TestMenu menu = initWindowWithComplexMenuBar(w);
+    w.show();
+    w.setFocus();
+    QApplication::setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
 
-    qApp->setActiveWindow(mw);
-    QCOMPARE(menu3->selCount(), 0u);
-    QTest::keyClick(mw, Qt::Key_E, Qt::AltModifier);
+    QCOMPARE(m_complexTriggerCount[3], 0);
+    QTest::keyClick(&w, Qt::Key_E, Qt::AltModifier);
     QTest::qWait(200);
-    QCOMPARE(menu3->selCount(), 1u);
-    QVERIFY(!mb->activeAction());
+    QCOMPARE(m_complexTriggerCount[3], 1);
+    QVERIFY(!w.menuBar()->activeAction());
 
-    QTest::keyClick(mw, Qt::Key_1, Qt::AltModifier );
-    QVERIFY(pm1->isActiveWindow());
-    QTest::keyClick(mb, Qt::Key_2);
-    QVERIFY(pm1->isActiveWindow());
+    QTest::keyClick(&w, Qt::Key_1, Qt::AltModifier );
+    QVERIFY(menu.menus.at(0)->isActiveWindow());
+    QTest::keyClick(&w, Qt::Key_2);
+    QVERIFY(menu.menus.at(0)->isActiveWindow());
 }
 #endif
 
@@ -1038,27 +1023,29 @@ private:
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WINCE)
 void tst_QMenuBar::check_menuPosition()
 {
+    QMainWindow w;
+
     Menu menu;
-    initComplexMenubar();
     menu.setTitle("&menu");
-    QRect availRect = QApplication::desktop()->availableGeometry(mw);
-    QRect screenRect = QApplication::desktop()->screenGeometry(mw);
+    QRect availRect = QApplication::desktop()->availableGeometry(&w);
+    QRect screenRect = QApplication::desktop()->screenGeometry(&w);
 
     while(menu.sizeHint().height() < (screenRect.height()*2/3)) {
         menu.addAction("item");
     }
 
-    QAction *menu_action = mw->menuBar()->addMenu(&menu);
-
-    qApp->setActiveWindow(mw);
-    qApp->processEvents();
+    QAction *menu_action = w.menuBar()->addMenu(&menu);
+    centerOnScreen(&w);
+    w.show();
+    qApp->setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
 
     //the menu should be below the menubar item
     {
-        mw->move(availRect.topLeft());
-        QRect mbItemRect = mw->menuBar()->actionGeometry(menu_action);
-        mbItemRect.moveTo(mw->menuBar()->mapToGlobal(mbItemRect.topLeft()));
-        QTest::keyClick(mw, Qt::Key_M, Qt::AltModifier );
+        w.move(availRect.topLeft());
+        QRect mbItemRect = w.menuBar()->actionGeometry(menu_action);
+        mbItemRect.moveTo(w.menuBar()->mapToGlobal(mbItemRect.topLeft()));
+        QTest::keyClick(&w, Qt::Key_M, Qt::AltModifier );
         QVERIFY(menu.isActiveWindow());
         QCOMPARE(menu.pos(), QPoint(mbItemRect.x(), mbItemRect.bottom() + 1));
         menu.close();
@@ -1066,10 +1053,10 @@ void tst_QMenuBar::check_menuPosition()
 
     //the menu should be above the menubar item
     {
-        mw->move(0,screenRect.bottom() - screenRect.height()/4); //just leave some place for the menubar
-        QRect mbItemRect = mw->menuBar()->actionGeometry(menu_action);
-        mbItemRect.moveTo(mw->menuBar()->mapToGlobal(mbItemRect.topLeft()));
-        QTest::keyClick(mw, Qt::Key_M, Qt::AltModifier );
+        w.move(0,screenRect.bottom() - screenRect.height()/4); //just leave some place for the menubar
+        QRect mbItemRect = w.menuBar()->actionGeometry(menu_action);
+        mbItemRect.moveTo(w.menuBar()->mapToGlobal(mbItemRect.topLeft()));
+        QTest::keyClick(&w, Qt::Key_M, Qt::AltModifier );
         QVERIFY(menu.isActiveWindow());
         QCOMPARE(menu.pos(), QPoint(mbItemRect.x(), mbItemRect.top() - menu.height()));
         menu.close();
@@ -1077,10 +1064,10 @@ void tst_QMenuBar::check_menuPosition()
 
     //the menu should be on the side of the menubar item and should be "stuck" to the bottom of the screen
     {
-        mw->move(0,screenRect.y() + screenRect.height()/2); //put it in the middle
-        QRect mbItemRect = mw->menuBar()->actionGeometry(menu_action);
-        mbItemRect.moveTo(mw->menuBar()->mapToGlobal(mbItemRect.topLeft()));
-        QTest::keyClick(mw, Qt::Key_M, Qt::AltModifier );
+        w.move(0,screenRect.y() + screenRect.height()/2); //put it in the middle
+        QRect mbItemRect = w.menuBar()->actionGeometry(menu_action);
+        mbItemRect.moveTo(w.menuBar()->mapToGlobal(mbItemRect.topLeft()));
+        QTest::keyClick(&w, Qt::Key_M, Qt::AltModifier );
         QVERIFY(menu.isActiveWindow());
         QPoint firstPoint = QPoint(mbItemRect.right()+1, screenRect.bottom() - menu.height() + 1);
         QPoint secondPoint = QPoint(mbItemRect.right()+1, availRect.bottom() - menu.height() + 1);
@@ -1093,9 +1080,9 @@ void tst_QMenuBar::check_menuPosition()
         LayoutDirectionSaver directionSaver(Qt::RightToLeft);
         menu.clear();
         QObject::connect(&menu, SIGNAL(aboutToShow()), &menu, SLOT(addActions()));
-        QRect mbItemRect = mw->menuBar()->actionGeometry(menu_action);
-        mbItemRect.moveTo(mw->menuBar()->mapToGlobal(mbItemRect.topLeft()));
-        QTest::keyClick(mw, Qt::Key_M, Qt::AltModifier );
+        QRect mbItemRect = w.menuBar()->actionGeometry(menu_action);
+        mbItemRect.moveTo(w.menuBar()->mapToGlobal(mbItemRect.topLeft()));
+        QTest::keyClick(&w, Qt::Key_M, Qt::AltModifier );
         QVERIFY(menu.isActiveWindow());
         QCOMPARE(menu.geometry().right(), mbItemRect.right());
         menu.close();
@@ -1104,9 +1091,9 @@ void tst_QMenuBar::check_menuPosition()
 #  ifndef QTEST_NO_CURSOR
     // QTBUG-28031: Click at bottom-right corner.
     {
-        mw->move(400, 200);
+        w.move(400, 200);
         LayoutDirectionSaver directionSaver(Qt::RightToLeft);
-        QMenuBar *mb = mw->menuBar();
+        QMenuBar *mb = w.menuBar();
         const QPoint localPos = mb->actionGeometry(menu.menuAction()).bottomRight() - QPoint(1, 1);
         const QPoint globalPos = mb->mapToGlobal(localPos);
         QCursor::setPos(globalPos);
@@ -1123,6 +1110,7 @@ void tst_QMenuBar::task223138_triggered()
 {
     //we create a window with submenus and we check that both menubar and menus get the triggered signal
     QMainWindow win;
+    centerOnScreen(&win);
     QMenu *menu = win.menuBar()->addMenu("test");
     QAction *top = menu->addAction("toplevelaction");
     QMenu *submenu = menu->addMenu("nested menu");
@@ -1162,8 +1150,10 @@ void tst_QMenuBar::task256322_highlight()
     file2->setText("file2");
     QAction *nothing = win.menuBar()->addAction("nothing");
 
+    centerOnScreen(&win);
     win.show();
-    QTest::qWait(200);
+    QApplication::setActiveWindow(&win);
+    QVERIFY(QTest::qWaitForWindowActive(&win));
 
     QTest::mousePress(win.menuBar(), Qt::LeftButton, 0, win.menuBar()->actionGeometry(file).center());
     QTest::mouseMove(win.menuBar(), win.menuBar()->actionGeometry(file).center());
@@ -1184,12 +1174,11 @@ void tst_QMenuBar::task256322_highlight()
     QTest::mouseMove(win.menuBar(), nothingCenter);
     QTRY_VERIFY(!menu2.isVisible());
     QVERIFY(!menu.isVisible());
-    QAction *activeAction = win.menuBar()->activeAction();
 #ifdef Q_OS_MAC
-    if ((QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) && (activeAction != nothing))
+    if ((QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) && (win.menuBar()->activeAction() != nothing))
         QEXPECT_FAIL("", "QTBUG-30565: Unstable test", Continue);
 #endif
-    QCOMPARE(activeAction, nothing);
+    QTRY_COMPARE(win.menuBar()->activeAction(), nothing);
     QTest::mouseRelease(win.menuBar(), Qt::LeftButton, 0, nothingCenter);
 }
 
@@ -1232,6 +1221,7 @@ void tst_QMenuBar::menubarSizeHint()
     const int vmargin = style.pixelMetric(QStyle::PM_MenuBarVMargin);
     const int spacing = style.pixelMetric(QStyle::PM_MenuBarItemSpacing);
 
+    centerOnScreen(&mb);
     mb.show();
     QRect result;
     foreach(QAction *action, mb.actions()) {
@@ -1272,6 +1262,7 @@ void tst_QMenuBar::taskQTBUG4965_escapeEaten()
     QMenu menu("menu1");
     QAction *first = menubar.addMenu(&menu);
     menu.addAction("quit", &menubar, SLOT(close()), QKeySequence("ESC"));
+    centerOnScreen(&menubar);
     menubar.show();
     QApplication::setActiveWindow(&menubar);
     QVERIFY(QTest::qWaitForWindowExposed(&menubar));
@@ -1299,6 +1290,7 @@ void tst_QMenuBar::taskQTBUG11823_crashwithInvisibleActions()
     QAction * m = menubar.addAction( "&m" );
     QAction * a = menubar.addAction( "&a" );
 
+    centerOnScreen(&menubar);
     menubar.show();
     QApplication::setActiveWindow(&menubar);
     QVERIFY(QTest::qWaitForWindowActive(&menubar));
@@ -1316,6 +1308,29 @@ void tst_QMenuBar::taskQTBUG11823_crashwithInvisibleActions()
     //it used to crash here because the action is invisible
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Right);
     QCOMPARE(menubar.activeAction(), m); //the active action shouldn't have changed
+}
+
+void tst_QMenuBar::closeOnSecondClick() // QTBUG-32807, menu should close on 2nd click.
+{
+    QMainWindow mainWindow;
+    mainWindow.resize(300, 200);
+    centerOnScreen(&mainWindow);
+#ifndef QT_NO_CURSOR
+    QCursor::setPos(mainWindow.geometry().topLeft() - QPoint(100, 0));
+#endif
+    QMenuBar *menuBar = mainWindow.menuBar();
+    menuBar->setNativeMenuBar(false);
+    QMenu *fileMenu = menuBar->addMenu(QStringLiteral("closeOnSecondClick"));
+    fileMenu->addAction(QStringLiteral("Quit"));
+    mainWindow.show();
+    QApplication::setActiveWindow(&mainWindow);
+    QVERIFY(QTest::qWaitForWindowActive(&mainWindow));
+    const QPoint center = menuBar->actionGeometry(fileMenu->menuAction()).center();
+    QTest::mouseMove(menuBar, center);
+    QTest::mouseClick(menuBar, Qt::LeftButton, 0, center);
+    QTRY_VERIFY(fileMenu->isVisible());
+    QTest::mouseClick(menuBar, Qt::LeftButton, 0, center);
+    QTRY_VERIFY(!fileMenu->isVisible());
 }
 
 QTEST_MAIN(tst_QMenuBar)

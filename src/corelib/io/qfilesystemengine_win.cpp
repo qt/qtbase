@@ -573,9 +573,12 @@ typedef enum { Q_FileIdInfo = 18 } Q_FILE_INFO_BY_HANDLE_CLASS;
 
 #  if defined(Q_CC_MINGW) || (defined(Q_CC_MSVC) && _MSC_VER < 1700)
 
+// MinGW-64 defines FILE_ID_128 as of gcc-4.8.1 along with FILE_SUPPORTS_INTEGRITY_STREAMS
+#    if !(defined(Q_CC_MINGW) && defined(FILE_SUPPORTS_INTEGRITY_STREAMS))
 typedef struct _FILE_ID_128 {
     BYTE  Identifier[16];
 } FILE_ID_128, *PFILE_ID_128;
+#    endif // !(Q_CC_MINGW && FILE_SUPPORTS_INTEGRITY_STREAMS)
 
 typedef struct _FILE_ID_INFO {
     ULONGLONG VolumeSerialNumber;
@@ -614,7 +617,8 @@ QByteArray fileIdWin8(HANDLE handle)
                                          &infoEx, sizeof(FILE_ID_INFO))) {
             result = QByteArray::number(infoEx.VolumeSerialNumber, 16);
             result += ':';
-            result += QByteArray((char *)infoEx.FileId.Identifier, sizeof(infoEx.FileId.Identifier)).toHex();
+            // Note: MinGW-64's definition of FILE_ID_128 differs from the MSVC one.
+            result += QByteArray((char *)&infoEx.FileId, sizeof(infoEx.FileId)).toHex();
         }
     }
     return result;

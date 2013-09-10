@@ -164,6 +164,12 @@ static inline void setFrameless(QWidget *w)
     w->setWindowFlags(flags);
 }
 
+static inline void centerOnScreen(QWidget *w)
+{
+    const QPoint offset = QPoint(w->width() / 2, w->height() / 2);
+    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
+}
+
 class tst_QWidget : public QObject
 {
     Q_OBJECT
@@ -4004,7 +4010,8 @@ void tst_QWidget::update()
     Q_CHECK_PAINTEVENTS
 
     UpdateWidget w;
-    w.setGeometry(50, 50, 100, 100);
+    w.resize(100, 100);
+    centerOnScreen(&w);
     w.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w));
 
@@ -7647,6 +7654,7 @@ void tst_QWidget::doubleRepaint()
     QSKIP("QTBUG-30566 - Unstable auto-test");
 #endif
    UpdateWidget widget;
+   centerOnScreen(&widget);
    widget.setFocusPolicy(Qt::StrongFocus);
    // Filter out activation change and focus events to avoid update() calls in QWidget.
    widget.updateOnActivationChangeAndFocusIn = false;
@@ -7774,6 +7782,7 @@ void tst_QWidget::setMaskInResizeEvent()
     UpdateWidget w;
     w.reset();
     w.resize(200, 200);
+    centerOnScreen(&w);
     w.setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     w.raise();
 
@@ -7851,6 +7860,7 @@ void tst_QWidget::immediateRepaintAfterShow()
         QSKIP("We don't support immediate repaint right after show on other platforms.");
 
     UpdateWidget widget;
+    centerOnScreen(&widget);
     widget.show();
     qApp->processEvents();
     // On X11 in particular, we are now waiting for a MapNotify event before
@@ -7867,6 +7877,7 @@ void tst_QWidget::immediateRepaintAfterInvalidateBuffer()
         QSKIP("We don't support immediate repaint right after show on other platforms.");
 
     QScopedPointer<UpdateWidget> widget(new UpdateWidget);
+    centerOnScreen(widget.data());
     widget->show();
     QVERIFY(QTest::qWaitForWindowExposed(widget.data()));
     QTest::qWait(200);
@@ -8282,6 +8293,7 @@ void tst_QWidget::setClearAndResizeMask()
 {
     UpdateWidget topLevel;
     topLevel.resize(160, 160);
+    centerOnScreen(&topLevel);
     topLevel.show();
     qApp->setActiveWindow(&topLevel);
     QVERIFY(QTest::qWaitForWindowActive(&topLevel));
@@ -8434,6 +8446,7 @@ void tst_QWidget::maskedUpdate()
 {
     UpdateWidget topLevel;
     topLevel.resize(200, 200);
+    centerOnScreen(&topLevel);
     const QRegion topLevelMask(50, 50, 70, 70);
     topLevel.setMask(topLevelMask);
 
@@ -8859,6 +8872,7 @@ void tst_QWidget::focusWidget_task254563()
 void tst_QWidget::destroyBackingStore()
 {
     UpdateWidget w;
+    centerOnScreen(&w);
     w.reset();
     w.show();
 

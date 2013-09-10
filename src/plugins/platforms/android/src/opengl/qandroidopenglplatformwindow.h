@@ -71,6 +71,8 @@ public:
 
     void destroy();
 
+    static void updateStaticNativeWindow();
+
 private:
     QSize m_scheduledResize;
     QMutex m_lock;
