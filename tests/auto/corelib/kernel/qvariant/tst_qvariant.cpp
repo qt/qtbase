@@ -155,6 +155,7 @@ private slots:
     void qvariant_cast_QObject();
     void qvariant_cast_QObject_derived();
     void qvariant_cast_QObject_wrapper();
+    void qvariant_cast_QSharedPointerQObject();
 
     void toLocale();
 
@@ -2322,6 +2323,41 @@ void tst_QVariant::qvariant_cast_QObject_wrapper()
     qRegisterMetaType<MyNS::SmartPointer<int> >();
     // Not declared as a metatype:
     qRegisterMetaType<MyNS::SmartPointer<double> >("MyNS::SmartPointer<double>");
+}
+
+void tst_QVariant::qvariant_cast_QSharedPointerQObject()
+{
+    // ensure no problems between this form and the auto-registering in QVariant::fromValue
+    qRegisterMetaType<QSharedPointer<QObject> >("QSharedPointer<QObject>");
+
+    QObject *rawptr = new QObject;
+    QSharedPointer<QObject> strong(rawptr);
+    QWeakPointer<QObject> weak(strong);
+    QPointer<QObject> qptr(rawptr);
+
+    QVariant v = QVariant::fromValue(strong);
+    QCOMPARE(v.value<QSharedPointer<QObject> >(), strong);
+
+    // clear our QSP; the copy inside the variant should keep the object alive
+    strong.clear();
+
+    // check that the object didn't get deleted
+    QVERIFY(!weak.isNull());
+    QVERIFY(!qptr.isNull());
+
+    strong = qvariant_cast<QSharedPointer<QObject> >(v);
+    QCOMPARE(strong.data(), rawptr);
+    QVERIFY(strong == weak);
+
+    // now really delete the object and verify
+    strong.clear();
+    v.clear();
+    QVERIFY(weak.isNull());
+    QVERIFY(qptr.isNull());
+
+    // compile test:
+    // QVariant::fromValue has already called this function
+    qRegisterMetaType<QSharedPointer<QObject> >();
 }
 
 void tst_QVariant::convertToQUint8() const
