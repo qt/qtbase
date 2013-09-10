@@ -160,11 +160,7 @@ static boolean qt_fill_input_buffer(j_decompress_ptr cinfo)
     } else {
         src->bytes_in_buffer = num_read;
     }
-#if defined(Q_OS_UNIXWARE)
-    return B_TRUE;
-#else
-    return true;
-#endif
+    return TRUE;
 }
 
 static void qt_skip_input_data(j_decompress_ptr cinfo, long num_bytes)
@@ -363,7 +359,7 @@ static bool read_jpeg_image(QImage *outImage,
         // If high quality not required, use fast decompression
         if( quality < HIGH_QUALITY_THRESHOLD ) {
             info->dct_method = JDCT_IFAST;
-            info->do_fancy_upsampling = false;
+            info->do_fancy_upsampling = FALSE;
         }
 
         (void) jpeg_calc_output_dimensions(info);
@@ -496,11 +492,7 @@ static boolean qt_empty_output_buffer(j_compress_ptr cinfo)
     dest->next_output_byte = dest->buffer;
     dest->free_in_buffer = max_buf;
 
-#if defined(Q_OS_UNIXWARE)
-    return B_TRUE;
-#else
-    return true;
-#endif
+    return TRUE;
 }
 
 static void qt_term_destination(j_compress_ptr cinfo)
@@ -625,13 +617,8 @@ static bool write_jpeg_image(const QImage &image, QIODevice *device, volatile in
 
 
         int quality = sourceQuality >= 0 ? qMin(int(sourceQuality),100) : 75;
-#if defined(Q_OS_UNIXWARE)
-        jpeg_set_quality(&cinfo, quality, B_TRUE /* limit to baseline-JPEG values */);
-        jpeg_start_compress(&cinfo, B_TRUE);
-#else
-        jpeg_set_quality(&cinfo, quality, true /* limit to baseline-JPEG values */);
-        jpeg_start_compress(&cinfo, true);
-#endif
+        jpeg_set_quality(&cinfo, quality, TRUE /* limit to baseline-JPEG values */);
+        jpeg_start_compress(&cinfo, TRUE);
 
         set_text(image, &cinfo, description);
 
@@ -801,11 +788,7 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
         if (!setjmp(err.setjmp_buffer)) {
             jpeg_save_markers(&info, JPEG_COM, 0xFFFF);
 
-    #if defined(Q_OS_UNIXWARE)
-            (void) jpeg_read_header(&info, B_TRUE);
-    #else
-            (void) jpeg_read_header(&info, true);
-    #endif
+            (void) jpeg_read_header(&info, TRUE);
 
             int width = 0;
             int height = 0;
