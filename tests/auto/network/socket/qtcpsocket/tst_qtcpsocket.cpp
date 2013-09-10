@@ -189,6 +189,7 @@ private slots:
     void connectToMultiIP();
     void moveToThread0();
     void increaseReadBufferSize();
+    void increaseReadBufferSizeFromSlot();
     void taskQtBug5799ConnectionErrorWaitForConnected();
     void taskQtBug5799ConnectionErrorEventLoop();
     void taskQtBug7054TimeoutErrorResetting();
@@ -225,6 +226,7 @@ protected slots:
 #endif
     void earlySocketBytesSent(qint64 bytes);
     void earlySocketReadyRead();
+    void slotIncreaseReadBufferSizeReadyRead();
 
 private:
     QByteArray expectedReplyIMAP();
@@ -2457,6 +2459,57 @@ void tst_QTcpSocket::increaseReadBufferSize()
     QCOMPARE(active->readAll(), data);
 
     delete active;
+}
+
+void tst_QTcpSocket::increaseReadBufferSizeFromSlot() // like KIO's socketconnectionbackend
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return; //proxy not useful for localhost test case
+    QTcpServer server;
+    QTcpSocket *active = newSocket();
+    connect(active, SIGNAL(readyRead()), SLOT(slotIncreaseReadBufferSizeReadyRead()));
+
+    // connect two sockets to each other:
+    QVERIFY(server.listen(QHostAddress::LocalHost));
+    active->connectToHost("127.0.0.1", server.serverPort());
+    QVERIFY(active->waitForConnected(5000));
+    QVERIFY(server.waitForNewConnection(5000));
+
+    QTcpSocket *passive = server.nextPendingConnection();
+    QVERIFY(passive);
+
+    // now write 512 bytes of data on one end
+    QByteArray data(512, 'a');
+    passive->write(data);
+    QVERIFY2(passive->waitForBytesWritten(5000), "Network timeout");
+
+    // set the read buffer size to less than what was written,
+    // and increase it from the slot, first to 384 then to 1024.
+    active->setReadBufferSize(256);
+    enterLoop(10);
+    QVERIFY2(!timeout(), "Network timeout");
+    QCOMPARE(active->bytesAvailable(), qint64(data.size()));
+
+    // drain it and compare
+    QCOMPARE(active->readAll(), data);
+
+    delete active;
+}
+
+void tst_QTcpSocket::slotIncreaseReadBufferSizeReadyRead()
+{
+    QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
+    const int currentBufferSize = socket->readBufferSize();
+    QCOMPARE(currentBufferSize, socket->bytesAvailable());
+    if (currentBufferSize == 256)
+        socket->setReadBufferSize(384);
+    else if (currentBufferSize == 384)
+        socket->setReadBufferSize(512);
+    else if (currentBufferSize == 512)
+        exitLoopSlot();
+    else // should not happen
+        qFatal("buffer size was %d", currentBufferSize);
 }
 
 void tst_QTcpSocket::taskQtBug5799ConnectionErrorWaitForConnected()
