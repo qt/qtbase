@@ -179,42 +179,9 @@
 
     \section1 Qt Thread Basics
 
-    QThread is a very convenient cross platform abstraction of native platform
-    threads. Starting a thread is very simple. Let us look at a short piece of
-    code that generates another thread which says hello in that thread and then
-    exits.
-
-    \snippet ../widgets/tutorials/threads/hellothread/hellothread.h 1
-
-    We derive a class from QThread and reimplement the \l{QThread::}{run()}
-    method.
-
-    \snippet ../widgets/tutorials/threads/hellothread/hellothread.cpp 1
-
-    The run method contains the code that will be run in a separate thread. In
-    this example, a message containing the thread ID will be printed.
-    QThread::start() will call the method in another thread.
-
-    \snippet ../widgets/tutorials/threads/hellothread/main.cpp 1
-
-    To start the thread, our thread object needs to be instantiated. The
-    \l{QThread::}{start()} method creates a new thread and calls the
-    reimplemented \l{QThread::}{run()} method in this new thread. Right after
-    \l{QThread::}{start()} is called, two program counters walk through the
-    program code. The main function starts with only the GUI thread running and
-    it should terminate with only the GUI thread running. Exiting the program
-    when another thread is still busy is a programming error, and therefore,
-    wait is called which blocks the calling thread until the
-    \l{QThread::}{run()} method has completed.
-
-    This is the result of running the code:
-
-    \code
-    //bad code
-    hello from GUI thread  3079423696
-    hello from worker thread  3076111216
-    \endcode
-
+    The following sections describe how QObjects interact with threads, how
+    programs can safely access data from multiple threads, and how asynchronous
+    execution produces results without blocking a thread.
 
     \section2 QObject and Threads
 

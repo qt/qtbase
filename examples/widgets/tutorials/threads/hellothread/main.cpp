@@ -41,7 +41,6 @@
 #include <QtCore>
 #include "hellothread.h"
 
-//! [1]
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
@@ -51,4 +50,3 @@ int main(int argc, char *argv[])
     thread.wait();  // do not exit before the thread is completed!
     return 0;
 }
-//! [1]

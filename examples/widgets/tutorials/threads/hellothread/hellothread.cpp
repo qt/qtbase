@@ -44,10 +44,7 @@
  * demonstrates use of QThread, says hello in another thread and terminates
  */
 
-//! [1]
-// hellothread/hellothread.cpp
 void HelloThread::run()
 {
      qDebug() << "hello from worker thread " << thread()->currentThreadId();
 }
-//! [1]
