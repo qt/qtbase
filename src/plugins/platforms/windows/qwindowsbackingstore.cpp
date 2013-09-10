@@ -88,8 +88,10 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
     QWindowsWindow *rw = QWindowsWindow::baseWindowOf(window);
 
 #ifndef Q_OS_WINCE
+    const bool hasAlpha = rw->format().hasAlpha();
     const Qt::WindowFlags flags = window->flags();
-    if ((flags & Qt::FramelessWindowHint) && QWindowsWindow::setWindowLayered(rw->handle(), flags, rw->format().hasAlpha(), rw->opacity())) {
+    if ((flags & Qt::FramelessWindowHint) && QWindowsWindow::setWindowLayered(rw->handle(), flags, hasAlpha, rw->opacity()) && hasAlpha) {
+        // Windows with alpha: Use blend function to update.
         QRect r = window->frameGeometry();
         QPoint frameOffset(window->frameMargins().left(), window->frameMargins().top());
         QRect dirtyRect = br.translated(offset + frameOffset);

@@ -250,7 +250,8 @@ static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, qr
     Q_UNUSED(level);
 #else
     if (QWindowsWindow::setWindowLayered(hwnd, flags, hasAlpha, level)) {
-        if (flags & Qt::FramelessWindowHint) {
+        if (hasAlpha && (flags & Qt::FramelessWindowHint)) {
+            // Windows with alpha: Use blend function to update.
             BLENDFUNCTION blend = {AC_SRC_OVER, 0, (BYTE)(255.0 * level), AC_SRC_ALPHA};
             QWindowsContext::user32dll.updateLayeredWindow(hwnd, NULL, NULL, NULL, NULL, NULL, 0, &blend, ULW_ALPHA);
         } else {
