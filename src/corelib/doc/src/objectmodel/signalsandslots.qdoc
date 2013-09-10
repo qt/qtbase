@@ -79,7 +79,9 @@
     signal must match the signature of the receiving slot. (In fact a
     slot may have a shorter signature than the signal it receives
     because it can ignore extra arguments.) Since the signatures are
-    compatible, the compiler can help us detect type mismatches.
+    compatible, the compiler can help us detect type mismatches when
+    using the function pointer-based syntax. The string-based SIGNAL
+    and SLOT syntax will detect type mismatches at runtime.
     Signals and slots are loosely coupled: A class which emits a
     signal neither knows nor cares which slots receive the signal.
     Qt's signals and slots mechanism ensures that if you connect a
