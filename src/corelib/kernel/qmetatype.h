@@ -995,8 +995,6 @@ public:
 template<typename From>
 struct QSequentialIterableConvertFunctor
 {
-    QSequentialIterableConvertFunctor() {}
-
     QSequentialIterableImpl operator()(const From &f) const
     {
         return QSequentialIterableImpl(&f);
@@ -1162,8 +1160,6 @@ public:
 template<typename From>
 struct QAssociativeIterableConvertFunctor
 {
-    QAssociativeIterableConvertFunctor() {}
-
     QAssociativeIterableImpl operator()(const From& f) const
     {
         return QAssociativeIterableImpl(&f);
@@ -1219,8 +1215,6 @@ struct QPairVariantInterfaceConvertFunctor;
 template<typename T, typename U>
 struct QPairVariantInterfaceConvertFunctor<QPair<T, U> >
 {
-    QPairVariantInterfaceConvertFunctor() {}
-
     QPairVariantInterfaceImpl operator()(const QPair<T, U>& f) const
     {
         return QPairVariantInterfaceImpl(&f);
@@ -1230,8 +1224,6 @@ struct QPairVariantInterfaceConvertFunctor<QPair<T, U> >
 template<typename T, typename U>
 struct QPairVariantInterfaceConvertFunctor<std::pair<T, U> >
 {
-    QPairVariantInterfaceConvertFunctor() {}
-
     QPairVariantInterfaceImpl operator()(const std::pair<T, U>& f) const
     {
         return QPairVariantInterfaceImpl(&f);
@@ -2014,7 +2006,7 @@ inline bool QtPrivate::IsMetaTypePair<T, true>::registerConverter(int id)
 {
     const int toId = qMetaTypeId<QtMetaTypePrivate::QPairVariantInterfaceImpl>();
     if (!QMetaType::hasRegisteredConverterFunction(id, toId)) {
-        static const QtMetaTypePrivate::QPairVariantInterfaceConvertFunctor<T> o;
+        QtMetaTypePrivate::QPairVariantInterfaceConvertFunctor<T> o;
         static const QtPrivate::ConverterFunctor<T,
                                     QtMetaTypePrivate::QPairVariantInterfaceImpl,
                                     QtMetaTypePrivate::QPairVariantInterfaceConvertFunctor<T> > f(o);
@@ -2031,7 +2023,7 @@ namespace QtPrivate {
         {
             const int toId = qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>();
             if (!QMetaType::hasRegisteredConverterFunction(id, toId)) {
-                static const QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> o;
+                QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> o;
                 static const QtPrivate::ConverterFunctor<T,
                         QtMetaTypePrivate::QSequentialIterableImpl,
                 QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> > f(o);
@@ -2048,7 +2040,7 @@ namespace QtPrivate {
         {
             const int toId = qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>();
             if (!QMetaType::hasRegisteredConverterFunction(id, toId)) {
-                static const QtMetaTypePrivate::QAssociativeIterableConvertFunctor<T> o;
+                QtMetaTypePrivate::QAssociativeIterableConvertFunctor<T> o;
                 static const QtPrivate::ConverterFunctor<T,
                                             QtMetaTypePrivate::QAssociativeIterableImpl,
                                             QtMetaTypePrivate::QAssociativeIterableConvertFunctor<T> > f(o);
