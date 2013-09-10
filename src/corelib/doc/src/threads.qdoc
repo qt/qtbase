@@ -41,7 +41,7 @@
 
     \ingroup frameworks-technologies
 
-    \nextpage Starting Threads with QThread
+    \nextpage Multithreading Technologies in Qt
 
     Qt provides thread support in the form of platform-independent
     threading classes, a thread-safe way of posting events, and
@@ -59,6 +59,7 @@
     \list
     \li \l{Recommended Reading}
     \li \l{The Threading Classes}
+    \li \l{Multithreading Technologies in Qt}
     \li \l{Starting Threads with QThread}
     \li \l{Synchronizing Threads}
     \li \l{Reentrancy and Thread-Safety}
@@ -112,10 +113,129 @@
 */
 
 /*!
+    \page threads-technologies.html
+    \title Multithreading Technologies in Qt
+    \ingroup qt-basic-concepts
+    \brief An overview and comparison of different ways to use threads in Qt.
+
+    \ingroup frameworks-technologies
+
+    \contentspage Thread Support in Qt
+    \previouspage Thread Support in Qt
+    \nextpage Starting Threads with QThread
+
+    Qt offers many classes and functions for working with threads. Below are
+    three different approaches that Qt programmers can use to implement
+    multithreaded applications.
+
+
+    \section1 QThread: Low-Level API with Optional Event Loops
+
+    QThread is the foundation of all thread control in Qt. Each QThread
+    instance represents and controls one thread.
+
+    QThread can either be instantiated directly or subclassed. Instantiating a
+    QThread provides a parallel event loop, allowing QObject slots to be invoked
+    in a secondary thread. Subclassing a QThread allows the application to initialize
+    the new thread before starting its event loop, or to run parallel code
+    without an event loop.
+
+    See the \l{QThread}{QThread class reference} and the \l{Threading and
+    Concurrent Programming Examples}{threading examples} for demonstrations on
+    how to use QThread.
+
+
+    \section1 QThreadPool and QRunnable: Reusing Threads
+
+    Creating and destroying threads frequently can be expensive. To reduce this
+    overhead, existing threads can be reused for new tasks. QThreadPool is a
+    collection of reuseable QThreads.
+
+    To run code in one of a QThreadPool's threads, reimplement QRunnable::run()
+    and instantiate the subclassed QRunnable. Use QThreadPool::start() to put
+    the QRunnable in the QThreadPool's run queue. When a thread becomes available,
+    the code within QRunnable::run() will execute in that thread.
+
+    Each Qt application has a global thread pool, which is accessible through
+    QThreadPool::globalInstance(). This global thread pool automatically maintains
+    an optimal number of threads based on the number of cores in the CPU. However,
+    a separate QThreadPool can be created and managed explicitly.
+
+
+    \section1 Qt Concurrent: Using a High-level API
+
+    The \l{Qt Concurrent} module provides high-level functions that deal with some
+    common parallel computation patterns: map, filter, and reduce. Unlike QThread
+    and QRunnable, these functions do not require the use of low-level threading
+    primitives such as mutexes or semaphores. \l {Qt Concurrent} will automatically
+    adjust the number of threads used according to the number of processor cores
+    available, so applications written today will continue to scale when deployed
+    later on a system with more cores.
+
+    This module also provides the QtConcurrent::run() function, which can run
+    any function in a thread managed by the global QThreadPool.
+
+    See the \l{Qt Concurrent} module documentation for details on the individual functions.
+
+
+    \section1 Comparison of Solutions
+
+    \table
+    \header
+        \li Feature/Characteristic
+        \li QThread
+        \li QRunnable
+        \li Qt Concurrent\sup{*}
+    \row
+        \li Supports different thread priorities
+        \li Yes
+        \li
+        \li
+    \row
+        \li Supports an event loop
+        \li Yes
+        \li
+        \li
+    \row
+        \li Supports transferring data to the thread using signals
+        \li Yes (received by a worker QObject)
+        \li
+        \li
+    \row
+        \li Supports controlling the thread using signals
+        \li Yes (received by QThread)
+        \li
+        \li Yes (received by QFutureWatcher)
+    \row
+        \li Supports thread reuse
+        \li
+        \li Yes
+        \li Yes
+    \row
+        \li Task-oriented
+        \li
+        \li Yes
+        \li Yes
+    \row
+        \li High level API
+        \li
+        \li
+        \li Yes
+    \row
+        \li Supports pausing/resuming/canceling
+        \li
+        \li
+        \li Yes
+    \endtable
+    \sup{\e{*Except QtConcurrent::run(), which is like QRunnable}}
+*/
+
+/*!
     \page threads-starting.html
     \title Starting Threads with QThread
 
     \contentspage Thread Support in Qt
+    \previouspage Multithreading Technologies in Qt
     \nextpage Synchronizing Threads
 
     A QThread instance represents a thread and provides the means to
