@@ -51,7 +51,7 @@ class Tools
 {
 public:
     static void checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString> &licenseInfo,
-                             const QString &path);
+                             const QString &path, const QString &sourcePath);
 };
 
 #endif // _TOOLS_H_

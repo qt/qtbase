@@ -4187,7 +4187,7 @@ void Configure::readLicense()
     }
 #ifdef COMMERCIAL_VERSION
     else {
-        Tools::checkLicense(dictionary, licenseInfo, firstLicensePath());
+        Tools::checkLicense(dictionary, licenseInfo, firstLicensePath(), sourcePath);
         if (dictionary["DONE"] != "error") {
             // give the user some feedback, and prompt for license acceptance
             cout << endl << "This is the " << dictionary["PLATFORM NAME"] << " " << dictionary["EDITION"] << " Edition."<< endl << endl;
