@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Aleix Pol Gonzalez <aleixpol@kde.org>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -39,36 +40,46 @@
 **
 ****************************************************************************/
 
-#ifndef QCOLLATOR_P_H
-#define QCOLLATOR_P_H
+#ifndef QCOLLATOR_H
+#define QCOLLATOR_H
 
 #include <QtCore/qstring.h>
+#include <QtCore/qstringlist.h>
 #include <QtCore/qlocale.h>
 
 QT_BEGIN_NAMESPACE
 
 class QCollatorPrivate;
+class QCollatorSortKeyPrivate;
+
+class Q_CORE_EXPORT QCollatorSortKey
+{
+    friend class QCollator;
+public:
+    QCollatorSortKey(const QCollatorSortKey &other);
+    ~QCollatorSortKey();
+    QCollatorSortKey &operator=(const QCollatorSortKey &other);
+#ifdef Q_COMPILER_RVALUE_REFS
+    QCollatorSortKey &operator=(QCollatorSortKey &&other)
+    { qSwap(d, other.d); return *this; }
+#endif
+
+    bool operator<(const QCollatorSortKey &key) const;
+    int compare(const QCollatorSortKey &key) const;
+
+protected:
+    QCollatorSortKey(QCollatorSortKeyPrivate*);
+
+    QSharedDataPointer<QCollatorSortKeyPrivate> d;
+
+private:
+    QCollatorSortKey();
+};
 
 class Q_CORE_EXPORT QCollator
 {
 public:
-    enum Collation {
-        Default,
-        Big5Han,
-        Dictionary,
-        Direct,
-        GB2312Han,
-        PhoneBook,
-        Pinyin,
-        Phonetic,
-        Reformed,
-        Standard,
-        Stroke,
-        Traditional,
-        UniHan
-    };
-
-    QCollator(const QLocale &locale = QLocale(), QCollator::Collation collation = QCollator::Default);
+    QCollator(const QLocale &locale = QLocale());
     QCollator(const QCollator &);
     ~QCollator();
     QCollator &operator=(const QCollator &);
@@ -76,20 +87,8 @@ public:
     void setLocale(const QLocale &locale);
     QLocale locale() const;
 
-    void setCollation(Collation collation);
-    Collation collation() const;
-
-    QString identifier() const;
-    static QCollator fromIdentifier(const QString &identifier);
-
-    enum CasePreference {
-        CasePreferenceOff = 0x0,
-        CasePreferenceUpper  = 0x1,
-        CasePreferenceLower  = 0x2
-    };
-
-    CasePreference casePreference() const;
-    void setCasePreference(CasePreference preference);
+    Qt::CaseSensitivity caseSensitivity() const;
+    void setCaseSensitivity(Qt::CaseSensitivity cs);
 
     void setNumericMode(bool on);
     bool numericMode() const;
@@ -104,15 +103,12 @@ public:
     bool operator()(const QString &s1, const QString &s2) const
     { return compare(s1, s2) < 0; }
 
-    QByteArray sortKey(const QString &string) const;
-
-    QStringList indexCharacters() const;
+    QCollatorSortKey sortKey(const QString &string) const;
 
 private:
     QCollatorPrivate *d;
 
     void detach();
-    void init();
 };
 
 QT_END_NAMESPACE

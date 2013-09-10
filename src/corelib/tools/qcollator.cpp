@@ -50,8 +50,6 @@
 #include <unicode/ures.h>
 #endif
 
-#include "qdebug.h"
-
 QT_BEGIN_NAMESPACE
 
 
@@ -60,7 +58,6 @@ class QCollatorPrivate
 public:
     QAtomicInt ref;
     QLocale locale;
-    QCollator::Collation collation;
 
 #ifdef QT_USE_ICU
     UCollator *collator;
@@ -68,49 +65,47 @@ public:
     void *collator;
 #endif
 
-    QStringList indexCharacters;
-
     void clear() {
 #ifdef QT_USE_ICU
         if (collator)
             ucol_close(collator);
 #endif
         collator = 0;
-        indexCharacters.clear();
     }
 
     QCollatorPrivate()
-        : collation(QCollator::Default),
+        : ref(1),
           collator(0)
-    { ref.store(1); }
+    {
+    }
     ~QCollatorPrivate();
+
+    void init();
 
 private:
     Q_DISABLE_COPY(QCollatorPrivate)
 };
 
+class QCollatorSortKeyPrivate : public QSharedData
+{
+    friend class QCollator;
+public:
+    QCollatorSortKeyPrivate(const QByteArray &key) :
+        QSharedData(),
+        m_key(key)
+    {
+    }
+
+    QByteArray m_key;
+
+private:
+    Q_DISABLE_COPY(QCollatorSortKeyPrivate)
+};
 
 QCollatorPrivate::~QCollatorPrivate()
 {
     clear();
 }
-
-static const int collationStringsCount = 13;
-static const char * const collationStrings[collationStringsCount] = {
-    "default",
-    "big5han",
-    "dictionary",
-    "direct",
-    "gb2312han",
-    "phonebook",
-    "pinyin",
-    "phonetic",
-    "reformed",
-    "standard",
-    "stroke",
-    "traditional",
-    "unihan"
-};
 
 /*!
     \class QCollator
@@ -138,20 +133,16 @@ static const char * const collationStrings[collationStringsCount] = {
 */
 
 /*!
-    Constructs a QCollator from \a locale and \a collation. If \a collation is not
-    specified the default collation algorithm for the locale is being used. If
-    \a locale is not specified QLocale::default() is being used.
+    Constructs a QCollator from \a locale. If \a locale is not specified QLocale::default()
+    is being used.
 
-    \sa setLocale(), setCollation()
+    \sa setLocale()
  */
-QCollator::QCollator(const QLocale &locale, QCollator::Collation collation)
+QCollator::QCollator(const QLocale &locale)
     : d(new QCollatorPrivate)
 {
     d->locale = locale;
-    if ((int)collation >= 0 && (int)collation < collationStringsCount)
-        d->collation = collation;
-
-    init();
+    d->init();
 }
 
 /*!
@@ -190,19 +181,17 @@ QCollator &QCollator::operator=(const QCollator &other)
 /*!
     \internal
  */
-void QCollator::init()
+void QCollatorPrivate::init()
 {
-    Q_ASSERT((int)d->collation < collationStringsCount);
 #ifdef QT_USE_ICU
-    const char *collationString = collationStrings[(int)d->collation];
     UErrorCode status = U_ZERO_ERROR;
-    QByteArray name = (d->locale.bcp47Name().replace(QLatin1Char('-'), QLatin1Char('_')) + QLatin1String("@collation=") + QLatin1String(collationString)).toLatin1();
-    d->collator = ucol_open(name.constData(), &status);
+    QByteArray name = locale.bcp47Name().replace(QLatin1Char('-'), QLatin1Char('_')).toLocal8Bit();
+    collator = ucol_open(name.constData(), &status);
     if (U_FAILURE(status))
         qWarning("Could not create collator: %d", status);
 
     // enable normalization by default
-    ucol_setAttribute(d->collator, UCOL_NORMALIZATION_MODE, UCOL_ON, &status);
+    ucol_setAttribute(collator, UCOL_NORMALIZATION_MODE, UCOL_ON, &status);
 #endif
 }
 
@@ -215,8 +204,6 @@ void QCollator::detach()
         QCollatorPrivate *x = new QCollatorPrivate;
         x->ref.store(1);
         x->locale = d->locale;
-        x->collation = d->collation;
-        x->collator = 0;
         if (!d->ref.deref())
             delete d;
         d = x;
@@ -233,7 +220,7 @@ void QCollator::setLocale(const QLocale &locale)
     d->clear();
     d->locale = locale;
 
-    init();
+    d->init();
 }
 
 /*!
@@ -245,159 +232,36 @@ QLocale QCollator::locale() const
 }
 
 /*!
-    \enum QCollator::Collation
-
-    This enum can be used to specify an alternate collation algorithm to be used instead
-    of the default algorithm for the locale.
-
-    Possible values are:
-
-    \value Default Use the default algorithm for the locale
-    \value Big5Han
-    \value Dictionary
-    \value Direct
-    \value GB2312Han
-    \value PhoneBook
-    \value Pinyin
-    \value Phonetic
-    \value Reformed
-    \value Standard
-    \value Stroke
-    \value Traditional
-    \value UniHan
-*/
-
-/*!
-    Sets the \a collation algorithm to be used.
-
-    \sa QCollator::Collation
+    Sets the case \a cs of the collator.
  */
-void QCollator::setCollation(QCollator::Collation collation)
-{
-    if ((int)collation < 0 || (int)collation >= collationStringsCount)
-        return;
-
-    if (d->ref.load() != 1)
-        detach();
-    d->clear();
-    d->collation = collation;
-
-    init();
-}
-/*!
-    Returns the currently used collation algorithm.
-
-    \sa QCollator::Collation
- */
-QCollator::Collation QCollator::collation() const
-{
-    return d->collation;
-}
-
-/*!
-    Returns a unique identifer for this collation object.
-
-    This method is helpful to save and restore defined collation
-    objects.
-
-    \sa fromIdentifier()
- */
-QString QCollator::identifier() const
-{
-    QString id = d->locale.bcp47Name();
-    if (d->collation != QCollator::Default) {
-        id += QLatin1String("@collation=");
-        id += QLatin1String(collationStrings[d->collation]);
-    }
-    // this ensures the ID is compatible with ICU
-    id.replace('-', '_');
-    return id;
-}
-
-/*!
-    Creates a QCollator from a unique \a identifier and returns it.
-
-    \sa identifier()
- */
-QCollator QCollator::fromIdentifier(const QString &identifier)
-{
-    QString localeString = identifier;
-    QString collationString;
-    int at = identifier.indexOf(QLatin1Char('@'));
-    if (at >= 0) {
-        localeString = identifier.left(at);
-        collationString = identifier.mid(at + strlen("@collation="));
-    }
-
-    QLocale locale(localeString);
-    Collation collation = Default;
-    if (!collationString.isEmpty()) {
-        for (int i = 0; i < collationStringsCount; ++i) {
-            if (QLatin1String(collationStrings[i]) == collationString) {
-                collation = Collation(i);
-                break;
-            }
-        }
-    }
-    return QCollator(locale, collation);
-}
-
-/*!
-     \enum QCollator::CasePreference
-
-    This enum can be used to tailor the case preference during collation.
-
-    \value CasePreferenceOff No case preference, use what is the standard for the locale
-    \value CasePreferenceUpper Sort upper case characters before lower case
-    \value CasePreferenceLower Sort lower case characters before upper case
-*/
-
-/*!
-    Sets the case \a preference of the collator.
-
-    \sa QCollator::CasePreference
- */
-void QCollator::setCasePreference(CasePreference preference)
+void QCollator::setCaseSensitivity(Qt::CaseSensitivity cs)
 {
     if (d->ref.load() != 1)
         detach();
 
 #ifdef QT_USE_ICU
-    UColAttributeValue val = UCOL_OFF;
-    if (preference == QCollator::CasePreferenceUpper)
-        val = UCOL_UPPER_FIRST;
-    else if (preference == QCollator::CasePreferenceLower)
-        val = UCOL_LOWER_FIRST;
+    UColAttributeValue val = (cs == Qt::CaseSensitive) ? UCOL_UPPER_FIRST : UCOL_OFF;
 
     UErrorCode status = U_ZERO_ERROR;
     ucol_setAttribute(d->collator, UCOL_CASE_FIRST, val, &status);
     if (U_FAILURE(status))
         qWarning("ucol_setAttribute: Case First failed: %d", status);
 #else
-    Q_UNUSED(preference);
+    Q_UNUSED(cs);
 #endif
 }
 
 /*!
     Returns case preference of the collator.
-
-    \sa QCollator::CasePreference
  */
-QCollator::CasePreference QCollator::casePreference() const
+Qt::CaseSensitivity QCollator::caseSensitivity() const
 {
 #ifdef QT_USE_ICU
     UErrorCode status = U_ZERO_ERROR;
-    switch (ucol_getAttribute(d->collator, UCOL_CASE_FIRST, &status)) {
-    case UCOL_UPPER_FIRST:
-        return QCollator::CasePreferenceUpper;
-    case UCOL_LOWER_FIRST:
-        return QCollator::CasePreferenceLower;
-    case UCOL_OFF:
-    default:
-        break;
-    }
+    UColAttributeValue attribute = ucol_getAttribute(d->collator, UCOL_CASE_FIRST, &status);
+    return (attribute == UCOL_OFF) ? Qt::CaseInsensitive : Qt::CaseSensitive;
 #endif
-    return QCollator::CasePreferenceOff;
+    return Qt::CaseSensitive;
 }
 
 /*!
@@ -512,16 +376,16 @@ int QCollator::compare(const QChar *s1, int len1, const QChar *s2, int len2) con
 }
 
 /*!
-    Returns a sortKey for \a string. The sortkey can be used as a placeholder
-    for the string that can be then sorted using regular strcmp based sorting.
+    Returns a sortKey for \a string.
 
-    Creating the sort key is usually somewhat slower, then using the compare()
+    Creating the sort key is usually somewhat slower, than using the compare()
     methods directly. But if the string is compared repeatedly (e.g. when sorting
     a whole list of strings), it's usually faster to create the sort keys for each
     string and then sort using the keys.
  */
-QByteArray QCollator::sortKey(const QString &string) const
+QCollatorSortKey QCollator::sortKey(const QString &string) const
 {
+    QByteArray key;
 #ifdef QT_USE_ICU
     QByteArray result(16 + string.size() + (string.size() >> 2), Qt::Uninitialized);
     int size = ucol_getSortKey(d->collator, (const UChar *)string.constData(),
@@ -532,63 +396,91 @@ QByteArray QCollator::sortKey(const QString &string) const
                                string.size(), (uint8_t *)result.data(), result.size());
     }
     result.truncate(size);
-    return result;
+    key = result;
 #else
-    return string.toLower().toUtf8();
+    key = string.toLatin1();
 #endif
-}
-
-static QStringList englishIndexCharacters()
-{
-    QString chars = QString::fromLatin1("A B C D E F G H I J K L M N O P Q R S T U V W X Y Z");
-    return chars.split(QLatin1Char(' '), QString::SkipEmptyParts);
-}
-
-/*!
-    Returns a string list of primary index characters. This is useful when presenting the
-    sorted list in a user interface with section headers.
-*/
-QStringList QCollator::indexCharacters() const
-{
-    if (!d->indexCharacters.isEmpty())
-        return d->indexCharacters;
-
-#ifdef QT_USE_ICU
-    QByteArray id = identifier().toLatin1();
-
-    UErrorCode status = U_ZERO_ERROR;
-    UResourceBundle *res = ures_open(NULL, id, &status);
-
-    if (U_FAILURE(status)) {
-        d->indexCharacters = englishIndexCharacters();
-    } else {
-
-        qint32 len = 0;
-        status = U_ZERO_ERROR;
-        const UChar *val = ures_getStringByKey(res, "ExemplarCharactersIndex", &len, &status);
-        if (U_FAILURE(status)) {
-            d->indexCharacters = englishIndexCharacters();
-        } else {
-            QString chars(reinterpret_cast<const QChar *>(val), len);
-            chars.remove('[');
-            chars.remove(']');
-            chars.remove('{');
-            chars.remove('}');
-            d->indexCharacters = chars.split(QLatin1Char(' '), QString::SkipEmptyParts);
-        }
-    }
-
-    ures_close(res);
-#else
-    d->indexCharacters = englishIndexCharacters();
-#endif
-
-    return d->indexCharacters;
+    return QCollatorSortKey(new QCollatorSortKeyPrivate(key));
 }
 
 /*!
     \fn bool QCollator::operator()(const QString &s1, const QString &s2) const
     \internal
 */
+
+/*!
+    \class QCollatorSortKey
+    \inmodule QtCore
+    \brief The QCollatorSortKey class can be used to speed up string collation.
+
+    \since 5.2
+
+    The QCollatorSortKey class is always created by QCollator::sortKey()
+    and is used for fast strings collation, for example when collating many strings.
+
+    \reentrant
+    \ingroup i18n
+    \ingroup string-processing
+    \ingroup shared
+
+    \sa QCollator, QCollator::sortKey()
+*/
+
+/*!
+    \internal
+ */
+QCollatorSortKey::QCollatorSortKey(QCollatorSortKeyPrivate *d)
+    : d(d)
+{
+}
+
+/*!
+    Constructs a copy of the \a other collator sorting key.
+ */
+QCollatorSortKey::QCollatorSortKey(const QCollatorSortKey& other)
+    : d(other.d)
+{
+}
+
+/*!
+    Destroys the collator key.
+ */
+QCollatorSortKey::~QCollatorSortKey()
+{
+}
+
+/*!
+    Assigns \a other to this collator key.
+ */
+QCollatorSortKey& QCollatorSortKey::operator=(const QCollatorSortKey &other)
+{
+    if (this != &other) {
+        d = other.d;
+    }
+    return *this;
+}
+
+/*!
+    According to the QCollator that created the key, returns true if the
+    key should be sorted before than \a otherKey; otherwise returns false.
+
+    \sa compare()
+ */
+bool QCollatorSortKey::operator<(const QCollatorSortKey &otherKey) const
+{
+    return d->m_key < otherKey.d->m_key;
+}
+
+/*!
+    Compares the key to \a otherKey. Returns a negative value if the key
+    is less than \a otherKey, 0 if the key is equal to \a otherKey or a
+    positive value if the key is greater than \a otherKey.
+
+    \sa operator<()
+ */
+int QCollatorSortKey::compare(const QCollatorSortKey &otherKey) const
+{
+    return qstrcmp(d->m_key, otherKey.d->m_key);
+}
 
 QT_END_NAMESPACE
