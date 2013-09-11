@@ -1631,13 +1631,14 @@ QBenchmarkResult qMedian(const QList<QBenchmarkResult> &container)
     if (count == 1)
         return container.at(0);
 
-    QList<QBenchmarkResult> containerCopy = container;
-    std::sort(containerCopy.begin(), containerCopy.end());
-
     const int middle = count / 2;
 
+    QList<QBenchmarkResult> containerCopy = container;
+    const QList<QBenchmarkResult>::iterator begin = containerCopy.begin(), mid = begin + middle, end = containerCopy.end();
+    std::nth_element(begin, mid, end);
+
     // ### handle even-sized containers here by doing an aritmetic mean of the two middle items.
-    return containerCopy.at(middle);
+    return *mid;
 }
 
 struct QTestDataSetter
