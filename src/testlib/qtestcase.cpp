@@ -1629,7 +1629,7 @@ QBenchmarkResult qMedian(const QList<QBenchmarkResult> &container)
         return QBenchmarkResult();
 
     if (count == 1)
-        return container.at(0);
+        return container.front();
 
     const int middle = count / 2;
 
