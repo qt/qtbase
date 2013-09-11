@@ -114,7 +114,7 @@ void QEglFSWindow::resetSurface()
 {
     EGLDisplay display = static_cast<QEglFSScreen *>(screen())->display();
 
-    m_window = QEglFSHooks::hooks()->createNativeWindow(QEglFSHooks::hooks()->screenSize(), m_format);
+    m_window = QEglFSHooks::hooks()->createNativeWindow(this, QEglFSHooks::hooks()->screenSize(), m_format);
     has_window = true;
     m_surface = eglCreateWindowSurface(display, m_config, m_window, NULL);
 

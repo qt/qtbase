@@ -42,6 +42,7 @@
 #include "qeglfshooks.h"
 
 #include <qpa/qwindowsysteminterface.h>
+#include <qpa/qplatformwindow.h>
 #include <QThread>
 
 #include <X11/Xlib.h>
@@ -50,44 +51,64 @@
 
 QT_BEGIN_NAMESPACE
 
+class QEglFSX11Hooks;
+
 class EventReader : public QThread
 {
 public:
-    EventReader(xcb_connection_t *connection)
-        : m_connection(connection)
-    {
-    }
+    EventReader(QEglFSX11Hooks *hooks)
+        : m_hooks(hooks) { }
 
     void run();
 
-    xcb_connection_t *connection() { return m_connection; }
-
 private:
-    xcb_connection_t *m_connection;
+    QEglFSX11Hooks *m_hooks;
 };
+
+namespace Atoms {
+    enum {
+        _NET_WM_NAME = 0,
+        UTF8_STRING,
+        WM_PROTOCOLS,
+        WM_DELETE_WINDOW,
+        _NET_WM_STATE,
+        _NET_WM_STATE_FULLSCREEN,
+
+        N_ATOMS
+    };
+}
 
 class QEglFSX11Hooks : public QEglFSHooks
 {
 public:
-    QEglFSX11Hooks() : m_eventReader(0) {}
+    QEglFSX11Hooks() : m_connection(0), m_window(0), m_eventReader(0) {}
 
     virtual void platformInit();
     virtual void platformDestroy();
     virtual EGLNativeDisplayType platformDisplay() const;
     virtual QSize screenSize() const;
-    virtual EGLNativeWindowType createNativeWindow(const QSize &size, const QSurfaceFormat &format);
+    virtual EGLNativeWindowType createNativeWindow(QPlatformWindow *window,
+                                                   const QSize &size,
+                                                   const QSurfaceFormat &format);
     virtual void destroyNativeWindow(EGLNativeWindowType window);
     virtual bool hasCapability(QPlatformIntegration::Capability cap) const;
+
+    xcb_connection_t *connection() { return m_connection; }
+    const xcb_atom_t *atoms() const { return m_atoms; }
+    QPlatformWindow *platformWindow() { return m_platformWindow; }
 
 private:
     void sendConnectionEvent(xcb_atom_t a);
 
-    EventReader *m_eventReader;
+    Display *m_display;
     xcb_connection_t *m_connection;
+    xcb_atom_t m_atoms[Atoms::N_ATOMS];
+    xcb_window_t m_window;
+    EventReader *m_eventReader;
     xcb_window_t m_connectionEventListener;
+    QPlatformWindow *m_platformWindow;
+    mutable QSize m_screenSize;
 };
-
-static Display *display = 0;
 
 QAtomicInt running;
 
@@ -143,7 +164,7 @@ void EventReader::run()
     Qt::MouseButtons buttons;
 
     xcb_generic_event_t *event;
-    while (running.load() && (event = xcb_wait_for_event(m_connection))) {
+    while (running.load() && (event = xcb_wait_for_event(m_hooks->connection()))) {
         uint response_type = event->response_type & ~0x80;
         switch (response_type) {
         case XCB_BUTTON_PRESS: {
@@ -166,6 +187,15 @@ void EventReader::run()
             xcb_motion_notify_event_t *motion = (xcb_motion_notify_event_t *)event;
             QPoint p(motion->event_x, motion->event_y);
             QWindowSystemInterface::handleMouseEvent(0, motion->time, p, p, buttons);
+            break;
+            }
+        case XCB_CLIENT_MESSAGE: {
+            xcb_client_message_event_t *client = (xcb_client_message_event_t *) event;
+            const xcb_atom_t *atoms = m_hooks->atoms();
+            if (client->format == 32
+                && client->type == atoms[Atoms::WM_PROTOCOLS]
+                && client->data.data32[0] == atoms[Atoms::WM_DELETE_WINDOW])
+                QWindowSystemInterface::handleCloseEvent(m_hooks->platformWindow()->window());
             break;
             }
         default:
@@ -191,14 +221,14 @@ void QEglFSX11Hooks::sendConnectionEvent(xcb_atom_t a)
 
 void QEglFSX11Hooks::platformInit()
 {
-    display = XOpenDisplay(NULL);
-    if (!display)
+    m_display = XOpenDisplay(0);
+    if (!m_display)
         qFatal("Could not open display");
-    XSetEventQueueOwner(display, XCBOwnsEventQueue);
+
+    XSetEventQueueOwner(m_display, XCBOwnsEventQueue);
+    m_connection = XGetXCBConnection(m_display);
 
     running.ref();
-
-    m_connection = XGetXCBConnection(display);
 
     xcb_screen_iterator_t it = xcb_setup_roots_iterator(xcb_get_setup(m_connection));
 
@@ -208,7 +238,7 @@ void QEglFSX11Hooks::platformInit()
                       0, 0, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY,
                       it.data->root_visual, 0, 0);
 
-    m_eventReader = new EventReader(m_connection);
+    m_eventReader = new EventReader(this);
     m_eventReader->start();
 }
 
@@ -218,45 +248,91 @@ void QEglFSX11Hooks::platformDestroy()
 
     sendConnectionEvent(XCB_ATOM_NONE);
 
-    XCloseDisplay(display);
-
     m_eventReader->wait();
     delete m_eventReader;
     m_eventReader = 0;
+
+    XCloseDisplay(m_display);
+    m_display = 0;
+    m_connection = 0;
 }
 
 EGLNativeDisplayType QEglFSX11Hooks::platformDisplay() const
 {
-    return display;
+    return m_display;
 }
 
 QSize QEglFSX11Hooks::screenSize() const
 {
-    QList<QByteArray> env = qgetenv("EGLFS_X11_SIZE").split('x');
-    if (env.length() != 2)
-        return QSize(640, 480);
-    return QSize(env.at(0).toInt(), env.at(1).toInt());
+    if (m_screenSize.isEmpty()) {
+        QList<QByteArray> env = qgetenv("EGLFS_X11_SIZE").split('x');
+        if (env.length() == 2) {
+            m_screenSize = QSize(env.at(0).toInt(), env.at(1).toInt());
+        } else {
+            m_screenSize = QSize(640, 480);
+            qDebug("EGLFS_X11_SIZE not set, falling back to 640x480");
+        }
+    }
+    return m_screenSize;
 }
 
-EGLNativeWindowType QEglFSX11Hooks::createNativeWindow(const QSize &size, const QSurfaceFormat &format)
+EGLNativeWindowType QEglFSX11Hooks::createNativeWindow(QPlatformWindow *platformWindow,
+                                                       const QSize &size,
+                                                       const QSurfaceFormat &format)
 {
     Q_UNUSED(format);
 
-    Window root = DefaultRootWindow(display);
-    XSetWindowAttributes swa;
-    memset(&swa, 0, sizeof(swa));
-    swa.event_mask = ButtonPressMask | ButtonReleaseMask | PointerMotionMask | ButtonMotionMask;
-    Window win = XCreateWindow(display, root, 0, 0, size.width(), size.height(), 0, CopyFromParent,
-                               InputOutput, CopyFromParent, CWEventMask, &swa);
-    XMapWindow(display, win);
-    XStoreName(display, win, "EGLFS");
+    m_platformWindow = platformWindow;
 
-    return win;
+    xcb_screen_iterator_t it = xcb_setup_roots_iterator(xcb_get_setup(m_connection));
+    m_window = xcb_generate_id(m_connection);
+    xcb_create_window(m_connection, XCB_COPY_FROM_PARENT, m_window, it.data->root,
+                      0, 0, size.width(), size.height(), 0,
+                      XCB_WINDOW_CLASS_INPUT_OUTPUT, it.data->root_visual,
+                      0, 0);
+
+    xcb_map_window(m_connection, m_window);
+
+    xcb_intern_atom_cookie_t cookies[Atoms::N_ATOMS];
+    static const char *atomNames[Atoms::N_ATOMS] = {
+        "_NET_WM_NAME",
+        "UTF8_STRING",
+        "WM_PROTOCOLS",
+        "WM_DELETE_WINDOW",
+        "_NET_WM_STATE",
+        "_NET_WM_STATE_FULLSCREEN"
+    };
+
+    for (int i = 0; i < Atoms::N_ATOMS; ++i) {
+        cookies[i] = xcb_intern_atom(m_connection, false, strlen(atomNames[i]), atomNames[i]);
+        xcb_intern_atom_reply_t *reply = xcb_intern_atom_reply(m_connection, cookies[i], 0);
+        m_atoms[i] = reply->atom;
+        free(reply);
+    }
+
+    // Set window title
+    xcb_change_property(m_connection, XCB_PROP_MODE_REPLACE, m_window,
+                        m_atoms[Atoms::_NET_WM_NAME], m_atoms[Atoms::UTF8_STRING], 8, 5, "EGLFS");
+
+    // Enable WM_DELETE_WINDOW
+    xcb_change_property(m_connection, XCB_PROP_MODE_REPLACE, m_window,
+                        m_atoms[Atoms::WM_PROTOCOLS], XCB_ATOM_ATOM, 32, 1, &m_atoms[Atoms::WM_DELETE_WINDOW]);
+
+    if (qgetenv("EGLFS_X11_FULLSCREEN").toInt()) {
+        // Go fullscreen. The QScreen and QWindow size is controlled by EGLFS_X11_SIZE regardless,
+        // this is just the native window.
+        xcb_change_property(m_connection, XCB_PROP_MODE_REPLACE, m_window,
+                            m_atoms[Atoms::_NET_WM_STATE], XCB_ATOM_ATOM, 32, 1, &m_atoms[Atoms::_NET_WM_STATE_FULLSCREEN]);
+    }
+
+    xcb_flush(m_connection);
+
+    return m_window;
 }
 
 void QEglFSX11Hooks::destroyNativeWindow(EGLNativeWindowType window)
 {
-    XDestroyWindow(display, window);
+    xcb_destroy_window(m_connection, window);
 }
 
 bool QEglFSX11Hooks::hasCapability(QPlatformIntegration::Capability cap) const

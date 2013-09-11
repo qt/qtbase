@@ -234,8 +234,11 @@ bool QEglFSHooks::filterConfig(EGLDisplay, EGLConfig) const
     return true;
 }
 
-EGLNativeWindowType QEglFSHooks::createNativeWindow(const QSize &size, const QSurfaceFormat &format)
+EGLNativeWindowType QEglFSHooks::createNativeWindow(QPlatformWindow *platformWindow,
+                                                    const QSize &size,
+                                                    const QSurfaceFormat &format)
 {
+    Q_UNUSED(platformWindow);
     Q_UNUSED(size);
     Q_UNUSED(format);
     return 0;
