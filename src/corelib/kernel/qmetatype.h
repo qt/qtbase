@@ -892,6 +892,7 @@ public:
     typedef VariantData (*getFunc)( void * const *p, int metaTypeId, uint flags);
     typedef void (*destroyIterFunc)(void **p);
     typedef bool (*equalIterFunc)(void * const *p, void * const *other);
+    typedef void (*copyIterFunc)(void **, void * const *);
 
     sizeFunc _size;
     atFunc _at;
@@ -901,6 +902,7 @@ public:
     getFunc _get;
     destroyIterFunc _destroyIter;
     equalIterFunc _equalIter;
+    copyIterFunc _copyIter;
 
     template<class T>
     static int sizeImpl(const void *p)
@@ -938,6 +940,10 @@ public:
     static VariantData getImpl(void * const *iterator, int metaTypeId, uint flags)
     { return VariantData(metaTypeId, IteratorOwner<typename T::const_iterator>::getData(iterator), flags); }
 
+    template<class T>
+    static void copyIterImpl(void **dest, void * const * src)
+    { IteratorOwner<typename T::const_iterator>::assign(dest, *static_cast<typename T::const_iterator*>(*src)); }
+
 public:
     template<class T> QSequentialIterableImpl(const T*p)
       : _iterable(p)
@@ -953,6 +959,7 @@ public:
       , _get(getImpl<T>)
       , _destroyIter(destroyIterImpl<T>)
       , _equalIter(equalIterImpl<T>)
+      , _copyIter(copyIterImpl<T>)
     {
     }
 
@@ -970,6 +977,7 @@ public:
       , _get(0)
       , _destroyIter(0)
       , _equalIter(0)
+      , _copyIter(0)
     {
     }
 
@@ -990,6 +998,12 @@ public:
     int size() const { Q_ASSERT(_iterable); return _size(_iterable); }
 
     inline void destroyIter() { _destroyIter(&_iterator); }
+
+    void copy(const QSequentialIterableImpl &other)
+    {
+      *this = other;
+      _copyIter(&_iterator, &other._iterator);
+    }
 };
 
 template<typename From>
@@ -1055,6 +1069,7 @@ public:
     typedef VariantData (*getFunc)(void * const *p, int metaTypeId, uint flags);
     typedef void (*destroyIterFunc)(void **p);
     typedef bool (*equalIterFunc)(void * const *p, void * const *other);
+    typedef void (*copyIterFunc)(void **, void * const *);
 
     sizeFunc _size;
     findFunc _find;
@@ -1065,6 +1080,7 @@ public:
     getFunc _getValue;
     destroyIterFunc _destroyIter;
     equalIterFunc _equalIter;
+    copyIterFunc _copyIter;
 
     template<class T>
     static int sizeImpl(const void *p)
@@ -1104,6 +1120,10 @@ public:
     static bool equalIterImpl(void * const *iterator, void * const *other)
     { return *static_cast<typename T::const_iterator*>(*iterator) == *static_cast<typename T::const_iterator*>(*other); }
 
+    template<class T>
+    static void copyIterImpl(void **dest, void * const * src)
+    { IteratorOwner<typename T::const_iterator>::assign(dest, *static_cast<typename T::const_iterator*>(*src)); }
+
 public:
     template<class T> QAssociativeIterableImpl(const T*p)
       : _iterable(p)
@@ -1120,6 +1140,7 @@ public:
       , _getValue(getValueImpl<T>)
       , _destroyIter(destroyIterImpl<T>)
       , _equalIter(equalIterImpl<T>)
+      , _copyIter(copyIterImpl<T>)
     {
     }
 
@@ -1138,6 +1159,7 @@ public:
       , _getValue(0)
       , _destroyIter(0)
       , _equalIter(0)
+      , _copyIter(0)
     {
     }
 
@@ -1155,6 +1177,12 @@ public:
     { _find(_iterable, key.data, &_iterator); }
 
     int size() const { Q_ASSERT(_iterable); return _size(_iterable); }
+
+    void copy(const QAssociativeIterableImpl &other)
+    {
+      *this = other;
+      _copyIter(&_iterator, &other._iterator);
+    }
 };
 
 template<typename From>

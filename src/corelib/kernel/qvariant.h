@@ -615,8 +615,8 @@ public:
         inline const_iterator operator--(int) { QtMetaTypePrivate::QSequentialIterableImpl impl = m_impl; m_impl.advance(-1); return const_iterator(impl, this->ref); }
         inline const_iterator &operator+=(int j) { m_impl.advance(j); return *this; }
         inline const_iterator &operator-=(int j) { m_impl.advance(-j); return *this; }
-        inline const_iterator operator+(int j) const { QtMetaTypePrivate::QSequentialIterableImpl impl = m_impl; impl.advance(j); return const_iterator(impl, this->ref);  }
-        inline const_iterator operator-(int j) const { QtMetaTypePrivate::QSequentialIterableImpl impl = m_impl; impl.advance(-j); return const_iterator(impl, this->ref);  }
+        inline const_iterator operator+(int j) const { QtMetaTypePrivate::QSequentialIterableImpl impl; impl.copy(m_impl); impl.advance(j); return const_iterator(impl, new QAtomicInt(0));  }
+        inline const_iterator operator-(int j) const { QtMetaTypePrivate::QSequentialIterableImpl impl; impl.copy(m_impl); impl.advance(-j); return const_iterator(impl, new QAtomicInt(0));  }
     };
 
     friend struct const_iterator;
@@ -700,8 +700,8 @@ public:
         inline const_iterator operator--(int) { QtMetaTypePrivate::QAssociativeIterableImpl impl = m_impl; m_impl.advance(-1); return const_iterator(impl, this->ref); }
         inline const_iterator &operator+=(int j) { m_impl.advance(j); return *this; }
         inline const_iterator &operator-=(int j) { m_impl.advance(-j); return *this; }
-        inline const_iterator operator+(int j) const { QtMetaTypePrivate::QAssociativeIterableImpl impl = m_impl; impl.advance(j); return const_iterator(impl, this->ref);  }
-        inline const_iterator operator-(int j) const { QtMetaTypePrivate::QAssociativeIterableImpl impl = m_impl; impl.advance(-j); return const_iterator(impl, this->ref);  }
+        inline const_iterator operator+(int j) const { QtMetaTypePrivate::QAssociativeIterableImpl impl; impl.copy(m_impl); impl.advance(j); return const_iterator(impl, new QAtomicInt(0));  }
+        inline const_iterator operator-(int j) const { QtMetaTypePrivate::QAssociativeIterableImpl impl; impl.copy(m_impl); impl.advance(-j); return const_iterator(impl, new QAtomicInt(0));  }
     };
 
     friend struct const_iterator;

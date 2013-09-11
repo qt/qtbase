@@ -3818,6 +3818,20 @@ void tst_QVariant::iterateContainerElements()
     TEST_SEQUENTIAL_ITERATION(std::forward_list, QString)
 #endif
 
+    {
+        QVariantList ints;
+        ints << 1 << 2 << 3;
+        QVariant var = QVariant::fromValue(ints);
+        QSequentialIterable iter = var.value<QSequentialIterable>();
+        QSequentialIterable::const_iterator it = iter.begin();
+        QSequentialIterable::const_iterator end = iter.end();
+        QCOMPARE(ints.at(1), *(it + 1));
+        int i = 0;
+        for ( ; it != end; ++it, ++i) {
+            QCOMPARE(ints.at(i), *it);
+        }
+    }
+
 #define TEST_ASSOCIATIVE_ITERATION(CONTAINER, KEY_TYPE, MAPPED_TYPE) \
     { \
         int numSeen = 0; \
@@ -3852,6 +3866,22 @@ void tst_QVariant::iterateContainerElements()
 #ifdef TEST_UNORDERED_MAP
     TEST_ASSOCIATIVE_ITERATION(std::unordered_map, int, bool)
 #endif
+
+    {
+        QMap<int, QString> mapping;
+        mapping.insert(1, "one");
+        mapping.insert(2, "two");
+        mapping.insert(3, "three");
+        QVariant var = QVariant::fromValue(mapping);
+        QAssociativeIterable iter = var.value<QAssociativeIterable>();
+        QAssociativeIterable::const_iterator it = iter.begin();
+        QAssociativeIterable::const_iterator end = iter.end();
+        QCOMPARE(*(mapping.begin() + 1), (*(it + 1)).toString());
+        int i = 0;
+        for ( ; it != end; ++it, ++i) {
+            QCOMPARE(*(mapping.begin() + i), (*it).toString());
+        }
+    }
 }
 
 void tst_QVariant::pairElements()
