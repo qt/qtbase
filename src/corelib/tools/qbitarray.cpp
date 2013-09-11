@@ -161,6 +161,25 @@ QBitArray::QBitArray(int size, bool value)
     Same as size().
 */
 
+template <typename T> T qUnalignedLoad(const uchar *ptr)
+{
+    /*
+     * Testing with different compilers shows that they all optimize the memcpy
+     * call away and replace with direct loads whenever possible. On x86 and PPC,
+     * GCC does direct unaligned loads; on MIPS, it generates a pair of load-left
+     * and load-right instructions. ICC and Clang do the same on x86. This is both
+     * 32- and 64-bit.
+     *
+     * On ARM cores without unaligned loads, the compiler leaves a call to
+     * memcpy.
+     */
+
+    T u;
+    memcpy(&u, ptr, sizeof(u));
+    return u;
+}
+
+
 /*!
     If \a on is true, this function returns the number of
     1-bits stored in the bit array; otherwise the number
@@ -176,12 +195,12 @@ int QBitArray::count(bool on) const
     const quint8 *const end = reinterpret_cast<const quint8 *>(d.end());
 
     while (bits + 3 <= end) {
-        quint32 v = quint32(bits[0]) | (quint32(bits[1]) << 8) | (quint32(bits[2]) << 16) | (quint32(bits[3]) << 24);
+        quint32 v = qUnalignedLoad<quint32>(bits);
         bits += 4;
         numBits += int(qPopulationCount(v));
     }
     if (bits + 1 < end) {
-        quint16 v = quint16(bits[0]) | (quint16(bits[1]) << 8);
+        quint16 v = qUnalignedLoad<quint16>(bits);
         bits += 2;
         numBits += int(qPopulationCount(v));
     }
