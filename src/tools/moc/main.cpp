@@ -152,12 +152,12 @@ QByteArray composePreprocessorOutput(const Symbols &symbols) {
 
 static QStringList argumentsFromCommandLineAndFile(const QStringList &arguments)
 {
-    QStringList allArguments = arguments;
-    int n = 0;
-    while (n < allArguments.count()) {
+    QStringList allArguments;
+    allArguments.reserve(arguments.size());
+    foreach (const QString &argument, arguments) {
         // "@file" doesn't start with a '-' so we can't use QCommandLineParser for it
-        if (arguments.at(n).startsWith(QLatin1Char('@'))) {
-            QString optionsFile = arguments.at(n);
+        if (argument.startsWith(QLatin1Char('@'))) {
+            QString optionsFile = argument;
             optionsFile.remove(0, 1);
             if (optionsFile.isEmpty()) {
                 error("The @ option requires an input file");
@@ -168,14 +168,13 @@ static QStringList argumentsFromCommandLineAndFile(const QStringList &arguments)
                 error("Cannot open options file specified with @");
                 return QStringList();
             }
-            allArguments.removeAt(n);
             while (!f.atEnd()) {
                 QString line = QString::fromLocal8Bit(f.readLine().trimmed());
                 if (!line.isEmpty())
-                    allArguments.insert(n++, line);
+                    allArguments << line;
             }
         } else {
-            ++n;
+            allArguments << argument;
         }
     }
     return allArguments;
