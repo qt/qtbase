@@ -3546,7 +3546,7 @@ float QByteArray::toFloat(bool *ok) const
 QByteArray QByteArray::toBase64() const
 {
     const char alphabet[] = "ABCDEFGH" "IJKLMNOP" "QRSTUVWX" "YZabcdef"
-		            "ghijklmn" "opqrstuv" "wxyz0123" "456789+/";
+                            "ghijklmn" "opqrstuv" "wxyz0123" "456789+/";
     const char padchar = '=';
     int padlen = 0;
 
@@ -3555,26 +3555,34 @@ QByteArray QByteArray::toBase64() const
     int i = 0;
     char *out = tmp.data();
     while (i < d->size) {
-	int chunk = 0;
+        // encode 3 bytes at a time
+        int chunk = 0;
         chunk |= int(uchar(d->data()[i++])) << 16;
-	if (i == d->size) {
-	    padlen = 2;
-	} else {
+        if (i == d->size) {
+            padlen = 2;
+        } else {
             chunk |= int(uchar(d->data()[i++])) << 8;
-	    if (i == d->size) padlen = 1;
-            else chunk |= int(uchar(d->data()[i++]));
-	}
+            if (i == d->size)
+                padlen = 1;
+            else
+                chunk |= int(uchar(data()[i++]));
+        }
 
-	int j = (chunk & 0x00fc0000) >> 18;
-	int k = (chunk & 0x0003f000) >> 12;
-	int l = (chunk & 0x00000fc0) >> 6;
-	int m = (chunk & 0x0000003f);
-	*out++ = alphabet[j];
-	*out++ = alphabet[k];
-	if (padlen > 1) *out++ = padchar;
-	else *out++ = alphabet[l];
-	if (padlen > 0) *out++ = padchar;
-	else *out++ = alphabet[m];
+        int j = (chunk & 0x00fc0000) >> 18;
+        int k = (chunk & 0x0003f000) >> 12;
+        int l = (chunk & 0x00000fc0) >> 6;
+        int m = (chunk & 0x0000003f);
+        *out++ = alphabet[j];
+        *out++ = alphabet[k];
+
+        if (padlen > 1)
+            *out++ = padchar;
+        else
+            *out++ = alphabet[l];
+        if (padlen > 0)
+            *out++ = padchar;
+        else
+            *out++ = alphabet[m];
     }
 
     tmp.truncate(out - tmp.data());
@@ -3945,31 +3953,31 @@ QByteArray QByteArray::fromBase64(const QByteArray &base64)
 
     int offset = 0;
     for (int i = 0; i < base64.size(); ++i) {
-	int ch = base64.at(i);
-	int d;
+        int ch = base64.at(i);
+        int d;
 
-	if (ch >= 'A' && ch <= 'Z')
-	    d = ch - 'A';
-	else if (ch >= 'a' && ch <= 'z')
-	    d = ch - 'a' + 26;
-	else if (ch >= '0' && ch <= '9')
-	    d = ch - '0' + 52;
-	else if (ch == '+')
-	    d = 62;
-	else if (ch == '/')
-	    d = 63;
-	else
-	    d = -1;
+        if (ch >= 'A' && ch <= 'Z')
+            d = ch - 'A';
+        else if (ch >= 'a' && ch <= 'z')
+            d = ch - 'a' + 26;
+        else if (ch >= '0' && ch <= '9')
+            d = ch - '0' + 52;
+        else if (ch == '+')
+            d = 62;
+        else if (ch == '/')
+            d = 63;
+        else
+            d = -1;
 
-	if (d != -1) {
-	    buf = (buf << 6) | d;
-	    nbits += 6;
-	    if (nbits >= 8) {
-		nbits -= 8;
-		tmp[offset++] = buf >> nbits;
-		buf &= (1 << nbits) - 1;
-	    }
-	}
+        if (d != -1) {
+            buf = (buf << 6) | d;
+            nbits += 6;
+            if (nbits >= 8) {
+                nbits -= 8;
+                tmp[offset++] = buf >> nbits;
+                buf &= (1 << nbits) - 1;
+            }
+        }
     }
 
     tmp.truncate(offset);
