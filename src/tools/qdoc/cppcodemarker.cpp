@@ -1229,8 +1229,14 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
                   If the QML type is abstract, do not create
                   a new entry in the list for it. Instead,
                   add its members to the current entry.
+
+                  However, if the first class is abstract,
+                  there is no current entry. In that case,
+                  create a new entry in the list anyway.
+                  I'm not sure that is correct, but it at
+                  least can prevent a crash.
                  */
-                if (!current->isAbstract()) {
+                if (!current->isAbstract() || !classMap) {
                     classMap = new ClassMap;
                     classMap->first = current;
                     all.classMapList_.append(classMap);
