@@ -328,7 +328,7 @@ void QEglFSCursor::draw(const QRectF &r)
     glVertexAttribPointer(m_vertexCoordEntry, 2, GL_FLOAT, GL_FALSE, 0, cursorCoordinates);
     glVertexAttribPointer(m_textureCoordEntry, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinates);
 
-    glUniform1f(m_textureEntry, 0);
+    glUniform1i(m_textureEntry, 0);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
