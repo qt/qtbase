@@ -538,7 +538,7 @@ void QVector<T>::reallocData(const int asize, const int aalloc, QArrayData::Allo
 template<typename T>
 Q_OUTOFLINE_TEMPLATE T QVector<T>::value(int i) const
 {
-    if (i < 0 || i >= d->size) {
+    if (uint(i) >= uint(d->size)) {
         return T();
     }
     return d->begin()[i];
@@ -546,7 +546,7 @@ Q_OUTOFLINE_TEMPLATE T QVector<T>::value(int i) const
 template<typename T>
 Q_OUTOFLINE_TEMPLATE T QVector<T>::value(int i, const T &defaultValue) const
 {
-    return ((i < 0 || i >= d->size) ? defaultValue : d->begin()[i]);
+    return uint(i) >= uint(d->size) ? defaultValue : d->begin()[i];
 }
 
 template <typename T>

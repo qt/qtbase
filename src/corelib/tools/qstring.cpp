@@ -1680,7 +1680,7 @@ QString &QString::remove(int pos, int len)
 {
     if (pos < 0)  // count from end of string
         pos += d->size;
-    if (pos < 0 || pos >= d->size) {
+    if (uint(pos) >= uint(d->size)) {
         // range problems
     } else if (len >= d->size - pos) {
         resize(pos); // truncate
@@ -1804,7 +1804,7 @@ QString &QString::replace(int pos, int len, const QString &after)
 */
 QString &QString::replace(int pos, int len, const QChar *unicode, int size)
 {
-    if (pos < 0 || pos > d->size)
+    if (uint(pos) > uint(d->size))
         return *this;
     if (len > d->size - pos)
         len = d->size - pos;
@@ -2691,7 +2691,7 @@ int QString::lastIndexOf(const QString &str, int from, Qt::CaseSensitivity cs) c
     int delta = l-sl;
     if (from == l && sl == 0)
         return from;
-    if (from < 0 || from >= l || delta < 0)
+    if (uint(from) >= uint(l) || delta < 0)
         return -1;
     if (from > delta)
         from = delta;
@@ -2730,7 +2730,7 @@ int QString::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) co
     int delta = l-sl;
     if (from == l && sl == 0)
         return from;
-    if (from < 0 || from >= l || delta < 0)
+    if (uint(from) >= uint(l) || delta < 0)
         return -1;
     if (from > delta)
         from = delta;
@@ -2780,7 +2780,7 @@ int QString::lastIndexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs
     int delta = l - sl;
     if (from == l && sl == 0)
         return from;
-    if (from < 0 || from >= l || delta < 0)
+    if (uint(from) >= uint(l) || delta < 0)
     return -1;
     if (from > delta)
         from = delta;
@@ -3696,7 +3696,7 @@ QString QString::section(const QRegularExpression &re, int start, int end, Secti
 */
 QString QString::left(int n)  const
 {
-    if (n >= d->size || n < 0)
+    if (uint(n) >= uint(d->size))
         return *this;
     return QString((const QChar*) d->data(), n);
 }
@@ -3714,7 +3714,7 @@ QString QString::left(int n)  const
 */
 QString QString::right(int n) const
 {
-    if (n >= d->size || n < 0)
+    if (uint(n) >= uint(d->size))
         return *this;
     return QString((const QChar*) d->data() + d->size - n, n);
 }
@@ -3748,7 +3748,7 @@ QString QString::mid(int position, int n) const
 
         n += position;
         position = 0;
-    } else if (n < 0 || n > d->size - position)
+    } else if (uint(n) > uint(d->size - position))
         n = d->size - position;
     if (position == 0 && n == d->size)
         return *this;
@@ -8490,7 +8490,7 @@ QString &QString::append(const QStringRef &str)
 */
 QStringRef QStringRef::left(int n) const
 {
-    if (n >= m_size || n < 0)
+    if (uint(n) >= uint(m_size))
         return *this;
     return QStringRef(m_string, m_position, n);
 }
@@ -8510,7 +8510,7 @@ QStringRef QStringRef::left(int n) const
 */
 QStringRef QString::leftRef(int n)  const
 {
-    if (n >= d->size || n < 0)
+    if (uint(n) >= uint(d->size))
         n = d->size;
     return QStringRef(this, 0, n);
 }
@@ -8529,7 +8529,7 @@ QStringRef QString::leftRef(int n)  const
 */
 QStringRef QStringRef::right(int n) const
 {
-    if (n >= m_size || n < 0)
+    if (uint(n) >= uint(m_size))
         return *this;
     return QStringRef(m_string, n + m_position, m_size - n);
 }
@@ -8549,7 +8549,7 @@ QStringRef QStringRef::right(int n) const
 */
 QStringRef QString::rightRef(int n) const
 {
-    if (n >= d->size || n < 0)
+    if (uint(n) >= uint(d->size))
         n = d->size;
     return QStringRef(this, d->size - n, n);
 }
@@ -8582,7 +8582,7 @@ QStringRef QStringRef::mid(int pos, int n) const
             return QStringRef();
         n += pos;
         pos = 0;
-    } else if (n < 0 || n > m_size - pos) {
+    } else if (uint(n) > uint(m_size - pos)) {
         n = m_size - pos;
     }
     return QStringRef(m_string, pos + m_position, n);
@@ -8620,7 +8620,7 @@ QStringRef QString::midRef(int position, int n) const
 
         n += position;
         position = 0;
-    } else if (n < 0 || n > d->size - position)
+    } else if (uint(n) > uint(d->size - position))
         n = d->size - position;
     return QStringRef(this, position, n);
 }
@@ -8725,7 +8725,7 @@ int QStringRef::lastIndexOf(const QString &str, int from, Qt::CaseSensitivity cs
     int delta = l - sl;
     if (from == l && sl == 0)
         return from;
-    if (from < 0 || from >= l || delta < 0)
+    if (uint(from) >= uint(l) || delta < 0)
         return -1;
     if (from > delta)
         from = delta;
@@ -8775,7 +8775,7 @@ int QStringRef::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs)
     int delta = l - sl;
     if (from == l && sl == 0)
         return from;
-    if (from < 0 || from >= l || delta < 0)
+    if (uint(from) >= uint(l) || delta < 0)
         return -1;
     if (from > delta)
         from = delta;
@@ -8814,7 +8814,7 @@ int QStringRef::lastIndexOf(const QStringRef &str, int from, Qt::CaseSensitivity
     int delta = l - sl;
     if (from == l && sl == 0)
         return from;
-    if (from < 0 || from >= l || delta < 0)
+    if (uint(from) >= uint(l) || delta < 0)
         return -1;
     if (from > delta)
         from = delta;
@@ -9055,7 +9055,7 @@ static inline int qt_last_index_of(const QChar *haystack, int haystackLen, QChar
     ushort c = needle.unicode();
     if (from < 0)
         from += haystackLen;
-    if (from < 0 || from >= haystackLen)
+    if (uint(from) >= uint(haystackLen))
         return -1;
     if (from >= 0) {
         const ushort *b = reinterpret_cast<const ushort*>(haystack);
