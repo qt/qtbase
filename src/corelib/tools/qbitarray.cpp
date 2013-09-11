@@ -169,30 +169,25 @@ QBitArray::QBitArray(int size, bool value)
 int QBitArray::count(bool on) const
 {
     int numBits = 0;
-    int len = size();
-#if 0
-    for (int i = 0; i < len; ++i)
-        numBits += testBit(i);
-#else
     const quint8 *bits = reinterpret_cast<const quint8 *>(d.data()) + 1;
-    while (len >= 32) {
+
+    // the loops below will try to read from *end
+    // it's the QByteArray implicit NUL, so it will not change the bit count
+    const quint8 *const end = reinterpret_cast<const quint8 *>(d.end());
+
+    while (bits + 3 <= end) {
         quint32 v = quint32(bits[0]) | (quint32(bits[1]) << 8) | (quint32(bits[2]) << 16) | (quint32(bits[3]) << 24);
-        len -= 32;
         bits += 4;
         numBits += int(qPopulationCount(v));
     }
-    while (len >= 24) {
-        quint32 v = quint32(bits[0]) | (quint32(bits[1]) << 8) | (quint32(bits[2]) << 16);
-        len -= 24;
-        bits += 3;
+    if (bits + 1 < end) {
+        quint16 v = quint16(bits[0]) | (quint16(bits[1]) << 8);
+        bits += 2;
         numBits += int(qPopulationCount(v));
     }
-    while (len > 0) {
-        --len;
-        if (bits[len / 8] & (1 << (len & 7)))
-            ++numBits;
-    }
-#endif
+    if (bits < end)
+        numBits += int(qPopulationCount(bits[0]));
+
     return on ? numBits : size() - numBits;
 }
 
