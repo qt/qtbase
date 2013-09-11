@@ -87,8 +87,10 @@ void QEglFSWindow::create()
         return;
     }
 
-    if (!supportsMultipleWindows() && screen()->primarySurface())
+    if (!supportsMultipleWindows() && screen()->primarySurface()) {
+        qFatal("EGLFS: Multiple windows are not supported");
         return;
+    }
 
     EGLDisplay display = (static_cast<QEglFSScreen *>(window()->screen()->handle()))->display();
     QSurfaceFormat platformFormat = QEglFSHooks::hooks()->surfaceFormatFor(window()->requestedFormat());
@@ -161,6 +163,10 @@ void QEglFSWindow::setWindowState(Qt::WindowState)
 
 WId QEglFSWindow::winId() const
 {
+    // Return a fake WId for desktop windows.
+    if (window()->type() == Qt::Desktop)
+        return std::numeric_limits<WId>::max();
+
     return WId(m_window);
 }
 
