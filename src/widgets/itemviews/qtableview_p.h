@@ -170,8 +170,9 @@ public:
     }
 
     inline int accessibleTable2Index(const QModelIndex &index) const {
-        return (index.row() + (horizontalHeader ? 1 : 0)) * (index.model()->columnCount() + (verticalHeader ? 1 : 0))
-            + index.column() + (verticalHeader ? 1 : 0) + 1;
+        const int vHeader = verticalHeader ? 1 : 0;
+        return (index.row() + (horizontalHeader ? 1 : 0)) * (index.model()->columnCount() + vHeader)
+            + index.column() + vHeader;
     }
 
     int sectionSpanEndLogical(const QHeaderView *header, int logical, int span) const;

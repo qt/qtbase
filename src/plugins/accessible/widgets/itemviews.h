@@ -239,6 +239,8 @@ public:
     QAccessibleInterface *child(int index) const;
 
 private:
+    QHeaderView *headerView() const;
+
     QPointer<QAbstractItemView> view;
     int index;
     Qt::Orientation orientation;

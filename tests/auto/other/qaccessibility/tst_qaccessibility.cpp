@@ -2600,11 +2600,23 @@ void tst_QAccessibility::treeTest()
     QCOMPARE(iface->indexOfChild(child2), 4);
     QCOMPARE(child2->text(QAccessible::Name), QString("Austria"));
 
-    treeView->setHeaderHidden(true);
-    QAccessibleInterface *accSpain = iface->child(0);
-    QCOMPARE(accSpain->role(), QAccessible::TreeItem);
-    QCOMPARE(iface->indexOfChild(accSpain), 0);
-    treeView->setHeaderHidden(false);
+    bool headerHidden = true;
+    do {
+        treeView->setHeaderHidden(headerHidden);
+        header1 = iface->child(0);
+        QCOMPARE(header1->role(), QAccessible::ColumnHeader);
+        QCOMPARE(!!header1->state().invisible, headerHidden);
+        QCOMPARE(header1->text(QAccessible::Name), QStringLiteral("Artist"));
+        header1 = iface->child(1);
+        QCOMPARE(header1->role(), QAccessible::ColumnHeader);
+        QCOMPARE(!!header1->state().invisible, headerHidden);
+        QCOMPARE(header1->text(QAccessible::Name), QStringLiteral("Work"));
+
+        QAccessibleInterface *accSpain = iface->child(2);
+        QCOMPARE(accSpain->role(), QAccessible::TreeItem);
+        QCOMPARE(iface->indexOfChild(accSpain), 2);
+        headerHidden = !headerHidden;
+    } while (!headerHidden);
 
     QTestAccessibility::clearEvents();
 
@@ -2931,8 +2943,25 @@ void tst_QAccessibility::tableTest()
     cell30_new = table2->cellAt(3, 0);
     QCOMPARE(cell30_new, cell20);
     QCOMPARE(iface->indexOfChild(cell30_new), 21);
-    delete tableView;
 
+
+    {
+        QTestAccessibility::clearEvents();
+        QModelIndex index00 = tableView->model()->index(1, 1, tableView->rootIndex());
+        tableView->setSelectionBehavior(QAbstractItemView::SelectItems);
+        tableView->setSelectionMode(QAbstractItemView::SingleSelection);
+        tableView->selectionModel()->select(index00, QItemSelectionModel::ClearAndSelect);
+        QAccessibleEvent event(tableView, QAccessible::Selection);
+        event.setChild(12);
+        QCOMPARE(QTestAccessibility::containsEvent(&event), true);
+        QTestAccessibility::clearEvents();
+        tableView->setSelectionBehavior(QAbstractItemView::SelectItems);
+        tableView->setSelectionMode(QAbstractItemView::SingleSelection);
+        tableView->selectionModel()->select(index00, QItemSelectionModel::ClearAndSelect);
+        tableView->horizontalHeader()->setVisible(false);
+
+    }
+    delete tableView;
     QVERIFY(!QAccessible::accessibleInterface(id00));
     QTestAccessibility::clearEvents();
 }
