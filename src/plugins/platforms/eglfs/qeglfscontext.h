@@ -55,6 +55,9 @@ public:
     bool makeCurrent(QPlatformSurface *surface);
     EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface);
     void swapBuffers(QPlatformSurface *surface);
+
+private:
+    bool m_swapIntervalSet;
 };
 
 QT_END_NAMESPACE

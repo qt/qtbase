@@ -107,16 +107,6 @@ QEglFSIntegration::QEglFSIntegration()
         qFatal("EGL error");
     }
 
-    int swapInterval = 1;
-    QByteArray swapIntervalString = qgetenv("QT_QPA_EGLFS_SWAPINTERVAL");
-    if (!swapIntervalString.isEmpty()) {
-        bool ok;
-        swapInterval = swapIntervalString.toInt(&ok);
-        if (!ok)
-            swapInterval = 1;
-    }
-    eglSwapInterval(mDisplay, swapInterval);
-
     mScreen = new QEglFSScreen(mDisplay);
     screenAdded(mScreen);
 

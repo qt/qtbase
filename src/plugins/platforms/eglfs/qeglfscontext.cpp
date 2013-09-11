@@ -53,13 +53,30 @@ QT_BEGIN_NAMESPACE
 
 QEglFSContext::QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share,
                              EGLDisplay display, EGLenum eglApi)
-    : QEGLPlatformContext(QEglFSHooks::hooks()->surfaceFormatFor(format), share, display, QEglFSIntegration::chooseConfig(display, QEglFSHooks::hooks()->surfaceFormatFor(format)), eglApi)
+    : QEGLPlatformContext(QEglFSHooks::hooks()->surfaceFormatFor(format), share, display,
+                          QEglFSIntegration::chooseConfig(display, QEglFSHooks::hooks()->surfaceFormatFor(format)), eglApi),
+      m_swapIntervalSet(false)
 {
 }
 
 bool QEglFSContext::makeCurrent(QPlatformSurface *surface)
 {
-    return QEGLPlatformContext::makeCurrent(surface);
+    bool success = QEGLPlatformContext::makeCurrent(surface);
+
+    if (success && !m_swapIntervalSet) {
+        m_swapIntervalSet = true;
+        int swapInterval = 1;
+        QByteArray swapIntervalString = qgetenv("QT_QPA_EGLFS_SWAPINTERVAL");
+        if (!swapIntervalString.isEmpty()) {
+            bool ok;
+            swapInterval = swapIntervalString.toInt(&ok);
+            if (!ok)
+                swapInterval = 1;
+        }
+        eglSwapInterval(eglDisplay(), swapInterval);
+    }
+
+    return success;
 }
 
 EGLSurface QEglFSContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)
