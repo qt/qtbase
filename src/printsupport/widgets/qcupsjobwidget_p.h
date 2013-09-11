@@ -89,9 +89,16 @@ private:
     void setJobPriority(int priority = 50);
     int jobPriority() const;
 
+    void setStartBannerPage(const QCUPSSupport::BannerPage bannerPage = QCUPSSupport::NoBanner);
+    QCUPSSupport::BannerPage startBannerPage() const;
+
+    void setEndBannerPage(const QCUPSSupport::BannerPage bannerPage = QCUPSSupport::NoBanner);
+    QCUPSSupport::BannerPage endBannerPage() const;
+
     void initJobHold();
     void initJobBilling();
     void initJobPriority();
+    void initBannerPages();
 
     QPrinter *m_printer;
     Ui::QCupsJobWidget m_ui;

@@ -103,6 +103,17 @@ public:
         SpecificTime
     };
 
+    // Enum for valid banner pages
+    enum BannerPage {
+        NoBanner = 0,  //CUPS Default 'none'
+        Standard,
+        Unclassified,
+        Confidential,
+        Classified,
+        Secret,
+        TopSecret
+    };
+
     static bool isAvailable();
     static int cupsVersion() { return isAvailable() ? CUPS_VERSION_MAJOR*10000+CUPS_VERSION_MINOR*100+CUPS_VERSION_PATCH : 0; }
     int availablePrintersCount() const;
@@ -131,6 +142,7 @@ public:
     static void setJobHold(QPrinter *printer, const JobHoldUntil jobHold = NoHold, const QTime &holdUntilTime = QTime());
     static void setJobBilling(QPrinter *printer, const QString &jobBilling = QString());
     static void setJobPriority(QPrinter *printer, int priority = 50);
+    static void setBannerPages(QPrinter *printer, const BannerPage startBannerPage, const BannerPage endBannerPage);
 
     static bool printerHasPPD(const char *printerName);
 
@@ -161,6 +173,7 @@ private:
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QCUPSSupport::JobHoldUntil)
+Q_DECLARE_METATYPE(QCUPSSupport::BannerPage)
 
 #endif // QT_NO_CUPS
 
