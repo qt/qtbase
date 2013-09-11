@@ -365,7 +365,8 @@ QStringList QSessionManager::discardCommand() const
 void QSessionManager::setManagerProperty(const QString &name,
                                          const QString &value)
 {
-    setManagerProperty(name, QStringList(value));
+    Q_D(QSessionManager);
+    d->platformSessionManager->setManagerProperty(name, value);
 }
 
 /*!

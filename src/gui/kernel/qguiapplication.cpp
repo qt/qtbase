@@ -1162,9 +1162,9 @@ void QGuiApplicationPrivate::init()
     init_plugins(pluginList);
     QWindowSystemInterface::flushWindowSystemEvents();
 
+#ifndef QT_NO_SESSIONMANAGER
     Q_Q(QGuiApplication);
 
-#ifndef QT_NO_SESSIONMANAGER
     // connect to the session manager
     session_manager = new QSessionManager(q, session_id, session_key);
 #endif

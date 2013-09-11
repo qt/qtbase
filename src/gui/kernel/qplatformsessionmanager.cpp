@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Samuel Gaist <samuel.gaist@edeltech.ch>
+** Copyright (C) 2013 Teo Mrnjavac <teo@kde.org>
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
@@ -41,6 +42,10 @@
 ****************************************************************************/
 
 #include "qplatformsessionmanager.h"
+
+#include "qguiapplication_p.h"
+
+#ifndef QT_NO_SESSIONMANAGER
 
 QT_BEGIN_NAMESPACE
 
@@ -113,6 +118,12 @@ QStringList QPlatformSessionManager::discardCommand() const
     return m_discardCommand;
 }
 
+void QPlatformSessionManager::setManagerProperty(const QString &name, const QString &value)
+{
+    Q_UNUSED(name)
+    Q_UNUSED(value)
+}
+
 void QPlatformSessionManager::setManagerProperty(const QString &name, const QStringList &value)
 {
     Q_UNUSED(name)
@@ -128,4 +139,16 @@ void QPlatformSessionManager::requestPhase2()
 {
 }
 
+void QPlatformSessionManager::appCommitData()
+{
+    qGuiApp->d_func()->commitData();
+}
+
+void QPlatformSessionManager::appSaveState()
+{
+    qGuiApp->d_func()->saveState();
+}
+
 QT_END_NAMESPACE
+
+#endif // QT_NO_SESSIONMANAGER

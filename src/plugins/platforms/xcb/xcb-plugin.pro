@@ -72,6 +72,13 @@ contains(QT_CONFIG, xcb-render) {
     LIBS += -lxcb-render -lxcb-render-util -lXrender
 }
 
+# build with session management support
+contains(QT_CONFIG, xcb-sm) {
+    LIBS += -lSM -lICE
+    SOURCES += qxcbsessionmanager.cpp
+    HEADERS += qxcbsessionmanager.h
+}
+
 contains(QT_CONFIG, opengl) {
     contains(QT_CONFIG, opengles2) {
         DEFINES += XCB_USE_EGL

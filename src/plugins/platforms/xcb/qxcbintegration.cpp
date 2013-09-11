@@ -50,6 +50,10 @@
 #include "qxcbclipboard.h"
 #include "qxcbdrag.h"
 
+#ifndef QT_NO_SESSIONMANAGER
+#include "qxcbsessionmanager.h"
+#endif
+
 #include <xcb/xcb.h>
 
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
@@ -438,5 +442,12 @@ QByteArray QXcbIntegration::wmClass() const
     }
     return m_wmClass;
 }
+
+#ifndef QT_NO_SESSIONMANAGER
+QPlatformSessionManager *QXcbIntegration::createPlatformSessionManager(const QString &id, const QString &key) const
+{
+    return new QXcbSessionManager(id, key);
+}
+#endif
 
 QT_END_NAMESPACE

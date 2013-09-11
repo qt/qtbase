@@ -101,6 +101,10 @@ public:
 
     QByteArray wmClass() const;
 
+#ifndef QT_NO_SESSIONMANAGER
+    QPlatformSessionManager *createPlatformSessionManager(const QString &id, const QString &key) const Q_DECL_OVERRIDE;
+#endif
+
 private:
     QList<QXcbConnection *> m_connections;
 

@@ -5348,6 +5348,12 @@ if [ "$CFG_XCB" != "no" ]; then
             QT_CONFIG="$QT_CONFIG xcb-xlib"
         fi
 
+        if [ "$CFG_SM" != "no" ] && [ -n "$PKG_CONFIG" ]; then
+            if $PKG_CONFIG --exists "sm" 2>/dev/null && $PKG_CONFIG --exists "ice" 2>/dev/null; then
+                QT_CONFIG="$QT_CONFIG xcb-sm"
+            fi
+        fi
+
         # auto-detect Xrender support
         if [ "$CFG_XRENDER" != "no" ]; then
             if compileTest x11/xrender "Xrender"; then

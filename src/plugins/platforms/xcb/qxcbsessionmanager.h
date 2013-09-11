@@ -1,11 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Samuel Gaist <samuel.gaist@edeltech.ch>
 ** Copyright (C) 2013 Teo Mrnjavac <teo@kde.org>
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -41,73 +40,49 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMSESSIONMANAGER_H
-#define QPLATFORMSESSIONMANAGER_H
+#ifndef QXCBSESSIONMANAGER_H
+#define QXCBSESSIONMANAGER_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is part of the QPA API and is not meant to be used
-// in applications. Usage of this API may make your code
-// source and binary incompatible with future versions of Qt.
-//
-
-#include <QtCore/qmetatype.h>
-#include <QtCore/qnamespace.h>
-
-#include <QtGui/qsessionmanager.h>
-
-#ifndef QT_NO_SESSIONMANAGER
+#include <qpa/qplatformsessionmanager.h>
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QPlatformSessionManager
+class QEventLoop;
+
+class QXcbSessionManager : public QPlatformSessionManager
 {
 public:
-    explicit QPlatformSessionManager(const QString &id, const QString &key);
-    virtual ~QPlatformSessionManager();
+    QXcbSessionManager(const QString &id, const QString &key);
+    virtual ~QXcbSessionManager();
 
-    virtual QString sessionId() const;
-    virtual QString sessionKey() const;
+    void *handle() const;
 
-    virtual bool allowsInteraction();
-    virtual bool allowsErrorInteraction();
-    virtual void release();
+    void setSessionId(const QString &id);
+    void setSessionKey(const QString &key);
 
-    virtual void cancel();
+    bool allowsInteraction() Q_DECL_OVERRIDE;
+    bool allowsErrorInteraction() Q_DECL_OVERRIDE;
+    void release() Q_DECL_OVERRIDE;
 
-    virtual void setRestartHint(QSessionManager::RestartHint restartHint);
-    virtual QSessionManager::RestartHint restartHint() const;
+    void cancel() Q_DECL_OVERRIDE;
 
-    virtual void setRestartCommand(const QStringList &command);
-    virtual QStringList restartCommand() const;
-    virtual void setDiscardCommand(const QStringList &command);
-    virtual QStringList discardCommand() const;
+    void setManagerProperty(const QString &name, const QString &value) Q_DECL_OVERRIDE;
+    void setManagerProperty(const QString &name, const QStringList &value) Q_DECL_OVERRIDE;
 
-    virtual void setManagerProperty(const QString &name, const QString &value);
-    virtual void setManagerProperty(const QString &name, const QStringList &value);
+    bool isPhase2() const Q_DECL_OVERRIDE;
+    void requestPhase2() Q_DECL_OVERRIDE;
 
-    virtual bool isPhase2() const;
-    virtual void requestPhase2();
+    void appCommitData() Q_DECL_OVERRIDE;
+    void appSaveState() Q_DECL_OVERRIDE;
 
-protected:
-    virtual void appCommitData();
-    virtual void appSaveState();
-
-    QString m_sessionId;
-    QString m_sessionKey;
+    void exitEventLoop();
 
 private:
-    QStringList m_restartCommand;
-    QStringList m_discardCommand;
-    QSessionManager::RestartHint m_restartHint;
+    QEventLoop *m_eventLoop;
 
-    Q_DISABLE_COPY(QPlatformSessionManager)
+    Q_DISABLE_COPY(QXcbSessionManager)
 };
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_SESSIONMANAGER
-
-#endif // QPLATFORMSESSIONMANAGER_H
+#endif //QXCBSESSIONMANAGER_H

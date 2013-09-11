@@ -184,6 +184,9 @@ private:
 #endif
     friend class QFontDatabasePrivate;
     friend class QPlatformIntegration;
+#ifndef QT_NO_SESSIONMANAGER
+    friend class QPlatformSessionManager;
+#endif
 };
 
 QT_END_NAMESPACE
