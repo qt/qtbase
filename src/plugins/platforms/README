@@ -14,12 +14,10 @@ classes. There are two "root" classes: QPlatformIntegration for
 window system integration and QPlatformTheme for deeper platform
 theming and integration. QStyle is not a part of QPA.
 
-The APIs provided by QPlatformIntegration are at this point (5.0 Alpha)
-mostly stable. QPlatformTheme still has ongoing development. There
-are no source or binary compatibility guarantees for the QPA classes,
-meaning that a platform plugin is only guaranteed to work with the Qt
-version it was developed against. API changes will however only be
-made in minor releases. (5.1, 5.2, and so on.)
+There are no source or binary compatibility guarantees for the QPA
+classes, meaning that a platform plugin is only guaranteed to work
+with the Qt version it was developed against. API changes will
+however only be made in minor releases. (5.1, 5.2, and so on.)
 
 Class Overview:
 
