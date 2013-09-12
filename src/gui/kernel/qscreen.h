@@ -85,6 +85,7 @@ class Q_GUI_EXPORT QScreen : public QObject
     Q_PROPERTY(qreal logicalDotsPerInch READ logicalDotsPerInch NOTIFY logicalDotsPerInchChanged)
     Q_PROPERTY(Qt::ScreenOrientation primaryOrientation READ primaryOrientation NOTIFY primaryOrientationChanged)
     Q_PROPERTY(Qt::ScreenOrientation orientation READ orientation NOTIFY orientationChanged)
+    Q_PROPERTY(Qt::ScreenOrientation nativeOrientation READ nativeOrientation)
     Q_PROPERTY(qreal refreshRate READ refreshRate NOTIFY refreshRateChanged)
 
 public:
@@ -122,6 +123,7 @@ public:
 
     Qt::ScreenOrientation primaryOrientation() const;
     Qt::ScreenOrientation orientation() const;
+    Qt::ScreenOrientation nativeOrientation() const;
 
     Qt::ScreenOrientations orientationUpdateMask() const;
     void setOrientationUpdateMask(Qt::ScreenOrientations mask);

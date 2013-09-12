@@ -443,6 +443,23 @@ Qt::ScreenOrientation QScreen::primaryOrientation() const
     return d->primaryOrientation;
 }
 
+/*!
+    \property QScreen::nativeOrientation
+    \brief the native screen orientation
+    \since 5.2
+
+    The native orientation of the screen is the orientation where the logo
+    sticker of the device appears the right way up, or Qt::PrimaryOrientation
+    if the platform does not support this functionality.
+
+    The native orientation is a property of the hardware, and does not change.
+*/
+Qt::ScreenOrientation QScreen::nativeOrientation() const
+{
+    Q_D(const QScreen);
+    return d->platformScreen->nativeOrientation();
+}
+
 // i must be power of two
 static int log2(uint i)
 {
