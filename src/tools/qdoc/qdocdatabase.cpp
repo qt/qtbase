@@ -1035,7 +1035,21 @@ void QDocDatabase::resolveTargets(InnerNode* root)
             DocNode* node = static_cast<DocNode*>(child);
             if (!node->title().isEmpty()) {
                 QString key = Doc::canonicalTitle(node->title());
-                docNodesByTitle_.insert(key, node);
+                QList<DocNode*> nodes = docNodesByTitle_.values(key);
+                bool alreadyThere = false;
+                if (!nodes.empty()) {
+                    for (int i=0; i< nodes.size(); ++i) {
+                        if (nodes[i]->subType() == Node::ExternalPage) {
+                            if (node->name() == nodes[i]->name()) {
+                                alreadyThere = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!alreadyThere) {
+                    docNodesByTitle_.insert(key, node);
+                }
             }
             if (node->subType() == Node::Collision) {
                 resolveTargets(node);
