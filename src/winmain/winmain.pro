@@ -16,7 +16,12 @@ win32-msvc*:QMAKE_CFLAGS_DEBUG *= -Z7
 win32-msvc*:QMAKE_CXXFLAGS_DEBUG *= -Z7
 win32-g++*: DEFINES += QT_NEEDS_QMAIN
 
-SOURCES = qtmain_win.cpp
+winrt {
+    QMAKE_LFLAGS += /ENTRY:wmainCRTStartup
+    SOURCES = qtmain_winrt.cpp
+} else {
+    SOURCES = qtmain_win.cpp
+}
 
 load(qt_installs)
 
