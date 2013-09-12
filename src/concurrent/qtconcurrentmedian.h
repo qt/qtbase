@@ -90,7 +90,7 @@ public:
             dirty = true;
         }
 
-        values[currentIndex] = value;
+        values[currentIndex] = qMove(value);
     }
 
     bool isMedianValid() const
@@ -105,7 +105,7 @@ public:
             QVector<T> copy = values;
             typename QVector<T>::iterator begin = copy.begin(), mid = copy.begin() + bufferSize/2, end = copy.end();
             std::nth_element(begin, mid, end);
-            currentMedian = *mid;
+            currentMedian = qMove(*mid);
         }
         return currentMedian;
     }
