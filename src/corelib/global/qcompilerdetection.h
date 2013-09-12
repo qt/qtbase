@@ -190,7 +190,6 @@
 #  define Q_REQUIRED_RESULT __attribute__ ((__warn_unused_result__))
 #  if !defined(QT_MOC_CPP)
 #    define Q_PACKED __attribute__ ((__packed__))
-#    define Q_NO_PACKED_REFERENCE
 #    ifndef __ARM_EABI__
 #      define QT_NO_ARM_EABI
 #    endif
@@ -808,7 +807,6 @@
 #endif
 #ifndef Q_PACKED
 #  define Q_PACKED
-#  undef Q_NO_PACKED_REFERENCE
 #endif
 #ifndef Q_LIKELY
 #  define Q_LIKELY(x) (x)
