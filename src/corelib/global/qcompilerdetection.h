@@ -805,9 +805,6 @@
 #ifndef Q_NORETURN
 # define Q_NORETURN
 #endif
-#ifndef Q_PACKED
-#  define Q_PACKED
-#endif
 #ifndef Q_LIKELY
 #  define Q_LIKELY(x) (x)
 #endif
