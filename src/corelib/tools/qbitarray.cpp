@@ -194,7 +194,12 @@ int QBitArray::count(bool on) const
     // it's the QByteArray implicit NUL, so it will not change the bit count
     const quint8 *const end = reinterpret_cast<const quint8 *>(d.end());
 
-    while (bits + 3 <= end) {
+    while (bits + 7 <= end) {
+        quint64 v = qUnalignedLoad<quint64>(bits);
+        bits += 8;
+        numBits += int(qPopulationCount(v));
+    }
+    if (bits + 3 <= end) {
         quint32 v = qUnalignedLoad<quint32>(bits);
         bits += 4;
         numBits += int(qPopulationCount(v));
