@@ -1359,23 +1359,6 @@ namespace QtPrivate
     };
 
     template<typename T>
-    struct ValueTypeIsMetaType<T, true>
-    {
-        static bool registerConverter(int id)
-        {
-            const int toId = qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>();
-            if (!QMetaType::hasRegisteredConverterFunction(id, toId)) {
-                static const QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> o;
-                static const QtPrivate::ConverterFunctor<T,
-                                                  QtMetaTypePrivate::QSequentialIterableImpl,
-                    QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> > f(o);
-                return QMetaType::registerConverterFunction(&f, id, toId);
-            }
-            return true;
-        }
-    };
-
-    template<typename T>
     struct SequentialContainerConverterHelper<T, true> : ValueTypeIsMetaType<T>
     {
     };
@@ -1395,23 +1378,6 @@ namespace QtPrivate
         static bool registerConverter(int)
         {
             return false;
-        }
-    };
-
-    template<typename T>
-    struct AssociativeValueTypeIsMetaType<T, true>
-    {
-        static bool registerConverter(int id)
-        {
-            const int toId = qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>();
-            if (!QMetaType::hasRegisteredConverterFunction(id, toId)) {
-                static const QtMetaTypePrivate::QAssociativeIterableConvertFunctor<T> o;
-                static const QtPrivate::ConverterFunctor<T,
-                                            QtMetaTypePrivate::QAssociativeIterableImpl,
-                                            QtMetaTypePrivate::QAssociativeIterableConvertFunctor<T> > f(o);
-                return QMetaType::registerConverterFunction(&f, id, toId);
-            }
-            return true;
         }
     };
 
@@ -2055,6 +2021,42 @@ inline bool QtPrivate::IsMetaTypePair<T, true>::registerConverter(int id)
         return QMetaType::registerConverterFunction(&f, id, toId);
     }
     return true;
+}
+
+namespace QtPrivate {
+    template<typename T>
+    struct ValueTypeIsMetaType<T, true>
+    {
+        static bool registerConverter(int id)
+        {
+            const int toId = qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>();
+            if (!QMetaType::hasRegisteredConverterFunction(id, toId)) {
+                static const QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> o;
+                static const QtPrivate::ConverterFunctor<T,
+                        QtMetaTypePrivate::QSequentialIterableImpl,
+                QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> > f(o);
+                return QMetaType::registerConverterFunction(&f, id, toId);
+            }
+            return true;
+        }
+    };
+
+    template<typename T>
+    struct AssociativeValueTypeIsMetaType<T, true>
+    {
+        static bool registerConverter(int id)
+        {
+            const int toId = qMetaTypeId<QtMetaTypePrivate::QAssociativeIterableImpl>();
+            if (!QMetaType::hasRegisteredConverterFunction(id, toId)) {
+                static const QtMetaTypePrivate::QAssociativeIterableConvertFunctor<T> o;
+                static const QtPrivate::ConverterFunctor<T,
+                                            QtMetaTypePrivate::QAssociativeIterableImpl,
+                                            QtMetaTypePrivate::QAssociativeIterableConvertFunctor<T> > f(o);
+                return QMetaType::registerConverterFunction(&f, id, toId);
+            }
+            return true;
+        }
+    };
 }
 
 QT_END_NAMESPACE
