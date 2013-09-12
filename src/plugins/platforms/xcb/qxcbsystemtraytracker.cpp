@@ -122,7 +122,7 @@ xcb_window_t QXcbSystemTrayTracker::trayWindow()
             m_connection->addWindowEventListener(m_trayWindow, this);
             const quint32 mask = XCB_CW_EVENT_MASK;
             const quint32 value = XCB_EVENT_MASK_STRUCTURE_NOTIFY;
-            Q_XCB_CALL(xcb_change_window_attributes(m_connection->xcb_connection(), m_trayWindow, mask, &value));
+            Q_XCB_CALL2(xcb_change_window_attributes(m_connection->xcb_connection(), m_trayWindow, mask, &value), m_connection);
         }
     }
     return m_trayWindow;
