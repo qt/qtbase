@@ -103,7 +103,7 @@ public:
             dirty = false;
             QVector<T> sorted = values;
             qSort(sorted);
-            currentMedian = sorted.at(bufferSize / 2 + 1);
+            currentMedian = sorted.at(bufferSize / 2);
         }
         return currentMedian;
     }
