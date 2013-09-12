@@ -1558,11 +1558,6 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     if (!window)
         return;
 
-    if (window->d_func()->blockedByModalWindow) {
-        // a modal window is blocking this window, don't allow mouse events through
-        return;
-    }
-
     QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, buttons, e->modifiers);
     ev.setTimestamp(e->timestamp);
 #ifndef QT_NO_CURSOR
@@ -1570,6 +1565,12 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         if (QPlatformCursor *cursor = screen->handle()->cursor())
             cursor->pointerEvent(ev);
 #endif
+
+    if (window->d_func()->blockedByModalWindow) {
+        // a modal window is blocking this window, don't allow mouse events through
+        return;
+    }
+
     QGuiApplication::sendSpontaneousEvent(window, &ev);
     if (!e->synthetic && !ev.isAccepted()
         && !frameStrut
