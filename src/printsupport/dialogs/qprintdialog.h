@@ -107,6 +107,7 @@ Q_SIGNALS:
 private:
 #if defined (Q_OS_UNIX) && !defined(Q_OS_MAC)
     Q_PRIVATE_SLOT(d_func(), void _q_chbPrintLastFirstToggled(bool))
+    Q_PRIVATE_SLOT(d_func(), void _q_togglePageSetCombo(bool))
     Q_PRIVATE_SLOT(d_func(), void _q_collapseOrExpandDialog())
 # if !defined(QT_NO_MESSAGEBOX)
     Q_PRIVATE_SLOT(d_func(), void _q_checkFields())

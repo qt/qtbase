@@ -490,6 +490,27 @@ void QCUPSSupport::setBannerPages(QPrinter *printer, const BannerPage startBanne
     setCupsOptions(printer, cupsOptions);
 }
 
+void QCUPSSupport::setPageSet(QPrinter *printer, const PageSet pageSet)
+{
+    QStringList cupsOptions = cupsOptionsList(printer);
+    QString pageSetString;
+
+    switch (pageSet) {
+    case OddPages:
+        pageSetString = QStringLiteral("odd");
+        break;
+    case EvenPages:
+        pageSetString = QStringLiteral("even");
+        break;
+    case AllPages:
+        pageSetString = QStringLiteral("all");
+        break;
+    }
+
+    setCupsOption(cupsOptions, QStringLiteral("page-set"), pageSetString);
+    setCupsOptions(printer, cupsOptions);
+}
+
 bool QCUPSSupport::printerHasPPD(const char *printerName)
 {
     if (!isAvailable())

@@ -114,6 +114,13 @@ public:
         TopSecret
     };
 
+    // Enum for valid page set
+    enum PageSet {
+        AllPages = 0,  //CUPS Default
+        OddPages,
+        EvenPages
+    };
+
     static bool isAvailable();
     static int cupsVersion() { return isAvailable() ? CUPS_VERSION_MAJOR*10000+CUPS_VERSION_MINOR*100+CUPS_VERSION_PATCH : 0; }
     int availablePrintersCount() const;
@@ -143,6 +150,7 @@ public:
     static void setJobBilling(QPrinter *printer, const QString &jobBilling = QString());
     static void setJobPriority(QPrinter *printer, int priority = 50);
     static void setBannerPages(QPrinter *printer, const BannerPage startBannerPage, const BannerPage endBannerPage);
+    static void setPageSet(QPrinter *printer, const PageSet pageSet);
 
     static bool printerHasPPD(const char *printerName);
 
@@ -174,6 +182,7 @@ QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QCUPSSupport::JobHoldUntil)
 Q_DECLARE_METATYPE(QCUPSSupport::BannerPage)
+Q_DECLARE_METATYPE(QCUPSSupport::PageSet)
 
 #endif // QT_NO_CUPS
 
