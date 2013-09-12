@@ -131,7 +131,7 @@ public:
         GlyphBlock
     };
 
-    struct Q_PACKED Header
+    struct Header
     {
         char magic[4]; // 'QPF2'
         quint32 lock;  // values: 0 = unlocked, 0xffffffff = read-only, otherwise qws client id of locking process
@@ -140,14 +140,14 @@ public:
         quint16 dataSize;
     };
 
-    struct Q_PACKED Block
+    struct Block
     {
         quint16 tag;
         quint16 pad;
         quint32 dataSize;
     };
 
-    struct Q_PACKED Glyph
+    struct Glyph
     {
         quint8 width;
         quint8 height;

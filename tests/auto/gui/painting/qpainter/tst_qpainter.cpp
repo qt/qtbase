@@ -2561,7 +2561,7 @@ public:
     }
 
     uchar data[3];
-} Q_PACKED;
+};
 
 void tst_QPainter::drawhelper_blend_color()
 {

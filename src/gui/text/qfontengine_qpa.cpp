@@ -169,6 +169,7 @@ const QFontEngineQPA::Glyph *QFontEngineQPA::findGlyph(glyph_t g) const
 
 bool QFontEngineQPA::verifyHeader(const uchar *data, int size)
 {
+    VERIFY(quintptr(data) % Q_ALIGNOF(Header) == 0);
     VERIFY(size >= int(sizeof(Header)));
     const Header *header = reinterpret_cast<const Header *>(data);
     if (header->magic[0] != 'Q'

@@ -702,7 +702,7 @@ struct quint24 {
     quint24(uint value);
     operator uint() const;
     uchar data[3];
-} Q_PACKED;
+};
 
 inline quint24::quint24(uint value)
 {

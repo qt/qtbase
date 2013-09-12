@@ -57,7 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-struct Q_PACKED QCharAttributes
+struct QCharAttributes
 {
     uchar graphemeBoundary : 1;
     uchar wordBreak        : 1;
