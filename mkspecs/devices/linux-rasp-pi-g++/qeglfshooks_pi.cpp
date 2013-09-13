@@ -88,12 +88,6 @@ static EGLNativeWindowType createDispmanxLayer(const QPoint &pos, const QSize &s
     return eglWindow;
 }
 
-// this function is not part of debian squeeze headers
-extern "C" int VCHPOST_ vc_dispmanx_element_change_attributes(DISPMANX_UPDATE_HANDLE_T update,
-    DISPMANX_ELEMENT_HANDLE_T element, uint32_t change_flags, int32_t layer,
-    uint8_t opacity, const VC_RECT_T *dest_rect, const VC_RECT_T *src_rect,
-    DISPMANX_RESOURCE_HANDLE_T mask, VC_IMAGE_TRANSFORM_T transform);
-
 // these constants are not in any headers (yet)
 #define ELEMENT_CHANGE_LAYER          (1<<0)
 #define ELEMENT_CHANGE_OPACITY        (1<<1)
@@ -128,7 +122,7 @@ static void moveDispmanxLayer(EGLNativeWindowType window, const QPoint &pos)
                                           &dst_rect,
                                           NULL,
                                           0,
-                                          (VC_IMAGE_TRANSFORM_T)0);
+                                          (DISPMANX_TRANSFORM_T)0);
 
     vc_dispmanx_update_submit_sync(dispman_update);
 }
