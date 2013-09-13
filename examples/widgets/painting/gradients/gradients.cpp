@@ -42,6 +42,8 @@
 #include "gradients.h"
 #include "hoverpoints.h"
 
+#include <algorithm>
+
 ShadeWidget::ShadeWidget(ShadeType type, QWidget *parent)
     : QWidget(parent), m_shade_type(type), m_alpha_gradient(QLinearGradient(0, 0, 0, 0))
 {
@@ -204,7 +206,7 @@ void GradientEditor::pointsUpdated()
     points += m_blue_shade->points();
     points += m_alpha_shade->points();
 
-    qSort(points.begin(), points.end(), x_less_than);
+    std::sort(points.begin(), points.end(), x_less_than);
 
     for (int i = 0; i < points.size(); ++i) {
         qreal x = int(points.at(i).x());

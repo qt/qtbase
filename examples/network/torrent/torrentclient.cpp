@@ -50,6 +50,8 @@
 #include <QtCore>
 #include <QNetworkInterface>
 
+#include <algorithm>
+
 // These constants could also be configurable by the user.
 static const int ServerMinPort = 6881;
 static const int ServerMaxPort = /* 6889 */ 7000;
@@ -747,7 +749,7 @@ QList<TorrentPeer *> TorrentClient::weighedFreePeers() const
         }
         points << QPair<int, TorrentPeer *>(tmp, peer);
     }
-    qSort(points);
+    std::sort(points.begin(), points.end());
 
     // Minimize the list so the point difference is never more than 1.
     typedef QPair<int,TorrentPeer*> PointPair;
