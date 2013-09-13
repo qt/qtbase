@@ -118,15 +118,24 @@ contains(CONFIG, plugin) {
     CMAKE_PLUGIN_NAME = $$PLUGIN_CLASS_NAME
 
     win32 {
-        CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/$${TARGET}.dll
-        CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/$${TARGET}d.dll
+        isEmpty(CMAKE_STATIC_TYPE): CMAKE_PlUGIN_EXT = .dll
+        else: CMAKE_PlUGIN_EXT = .lib
+
+        CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/$${TARGET}$${CMAKE_PlUGIN_EXT}
+        CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/$${TARGET}d$${CMAKE_PlUGIN_EXT}
     } else {
         mac {
-            CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/lib$${TARGET}.dylib
-            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/lib$${TARGET}.dylib
+            isEmpty(CMAKE_STATIC_TYPE): CMAKE_PlUGIN_EXT = .dylib
+            else: CMAKE_PlUGIN_EXT = .a
+
+            CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/lib$${TARGET}$${CMAKE_PlUGIN_EXT}
+            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/lib$${TARGET}$${CMAKE_PlUGIN_EXT}
         } else {
-            CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/lib$${TARGET}.so
-            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/lib$${TARGET}.so
+            isEmpty(CMAKE_STATIC_TYPE): CMAKE_PlUGIN_EXT = .so
+            else: CMAKE_PlUGIN_EXT = .a
+
+            CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/lib$${TARGET}$${CMAKE_PlUGIN_EXT}
+            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/lib$${TARGET}$${CMAKE_PlUGIN_EXT}
         }
     }
     cmake_target_file.input = $$PWD/data/cmake/Qt5PluginTarget.cmake.in
