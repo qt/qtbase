@@ -586,7 +586,7 @@ void hb_qt_font_set_use_design_metrics(hb_font_t *font, uint value)
 
 uint hb_qt_font_get_use_design_metrics(hb_font_t *font)
 {
-    return uint(hb_font_get_user_data(font, &_useDesignMetricsKey));
+    return quintptr(hb_font_get_user_data(font, &_useDesignMetricsKey));
 }
 
 
