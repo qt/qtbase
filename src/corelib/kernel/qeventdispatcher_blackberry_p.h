@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Research In Motion
+** Copyright (C) 2012 - 2013 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -95,6 +95,8 @@ public:
     int processThreadWakeUp(int nsel);
 
     int bps_channel;
+    int holding_channel;
+    int loop_level;
     QScopedPointer<bpsIOHandlerData> ioData;
 };
 
