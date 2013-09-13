@@ -8,15 +8,15 @@ version          = $QT_VERSION
 sourcedirs = ..
 
 exampledirs = .. \
-              ../examples \
-              ../../../../examples \
-              config
+              ../examples
 
-imagedirs = ../../../doc/src/templates/images \
-            ../images \
-            ../../../../widgets/doc/images \
+imagedirs = ../images \
+            ../../../../widgets/doc/images
+#            ../../../doc/src/templates/images
 
 tagfile = ../html/qdoc.tags
+
+examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp *.qml *.css *.qdoc *.qdocinc *.sample"
 
 qhp.projects            = QDoc
 

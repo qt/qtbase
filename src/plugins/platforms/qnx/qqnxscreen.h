@@ -98,6 +98,10 @@ public:
 
     QPlatformCursor *cursor() const;
 
+Q_SIGNALS:
+    void foreignWindowCreated(void *window);
+    void foreignWindowClosed(void *window);
+
 public Q_SLOTS:
     void setRotation(int rotation);
     void newWindowCreated(void *window);

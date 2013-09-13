@@ -502,10 +502,7 @@ WId QWindow::winId() const
     if(!d->platformWindow)
         const_cast<QWindow *>(this)->create();
 
-    WId id = d->platformWindow->winId();
-    // See the QPlatformWindow::winId() documentation
-    Q_ASSERT(id != WId(0));
-    return id;
+    return d->platformWindow->winId();
 }
 
 /*!

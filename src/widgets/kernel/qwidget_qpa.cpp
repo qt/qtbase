@@ -153,7 +153,10 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     }
 
     setWindowModified_helper();
-    setWinId(win->winId());
+    WId id = win->winId();
+    // See the QPlatformWindow::winId() documentation
+    Q_ASSERT(id != WId(0));
+    setWinId(id);
 
     // Check children and create windows for them if necessary
     q_createNativeChildrenAndSetParent(q);

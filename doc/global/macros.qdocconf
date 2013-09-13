@@ -29,6 +29,8 @@ macro.endcomment        = "\\c{*/}"
 macro.uuml.HTML         = "&uuml;"
 macro.mdash.HTML        = "&mdash;"
 macro.pi.HTML         = "&Pi;"
+macro.beginqdoc.HTML    = "/*!"
+macro.endqdoc.HTML      = "*/"
 
 macro.beginfloatleft.HTML   = "<div style=\"float: left; margin-right: 2em\">"
 macro.beginfloatright.HTML  = "<div style=\"float: right; margin-left: 2em\">"

@@ -26,7 +26,8 @@
 ****************************************************************************/
 /*!
 \page qdoc-minimum-qdocconf.html
-\title A minimal qdocconf file with Comments
+\target minimal-qdocconf
+\title A minimal qdocconf file
 
 \brief Describes a minimal .qdocconf file
 

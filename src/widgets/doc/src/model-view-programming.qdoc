@@ -2033,14 +2033,14 @@
          \li Used to remove rows and the items of data they contain from all types of model.
             Implementations must call
             \l{QAbstractItemModel::beginRemoveRows()}{beginRemoveRows()}
-            \e before inserting new columns into any underlying data structures, and call
+            \e before rows are removed from any underlying data structures, and call
             \l{QAbstractItemModel::endRemoveRows()}{endRemoveRows()}
             \e{immediately afterwards}.
     \row \li \l{QAbstractItemModel::insertColumns()}{insertColumns()}
          \li Used to add new columns and items of data to table models and hierarchical models.
             Implementations must call
             \l{QAbstractItemModel::beginInsertColumns()}{beginInsertColumns()} \e before
-            rows are removed from any underlying data structures, and call
+            inserting new columns into any underlying data structures, and call
             \l{QAbstractItemModel::endInsertColumns()}{endInsertColumns()}
             \e{immediately afterwards}.
     \row \li \l{QAbstractItemModel::removeColumns()}{removeColumns()}

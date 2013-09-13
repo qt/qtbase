@@ -289,7 +289,7 @@ When executed, QDoc will ignore the directories listed.
    exampledirs += ../../../examples/gui \
                   snippets
 \endcode
-\sa examples
+\sa {examples-variable}{examples}
 \sa examplesinstallpath
 
 Add the two directories specified to the list of directories containing the source

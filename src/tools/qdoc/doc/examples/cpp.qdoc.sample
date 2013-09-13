@@ -123,4 +123,4 @@ setValue() will emit valueChanged() if the new value is different
 from the old one. The \l{QSpinBox::}{value} property has a second notifier
 signal which includes the spin box's prefix and suffix.
 */
-//! [overloaded notifier]
+//! [overloaded notifier]

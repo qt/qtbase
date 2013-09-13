@@ -143,6 +143,11 @@ public:
 #endif
     }
 
+    void selectAll()
+    {
+        textEdit->selectAll();
+    }
+
 private slots:
     void textCopyAvailable(bool available)
     {
@@ -1410,6 +1415,10 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
                 e->setAccepted(true);
                 return;
             }
+        } else if (e == QKeySequence::SelectAll && d->detailsText && d->detailsText->isVisible()) {
+            d->detailsText->selectAll();
+            e->setAccepted(true);
+            return;
         }
 #endif // !QT_NO_TEXTEDIT
 
@@ -1442,7 +1451,7 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
 #endif // !QT_NO_CLIPBOARD && !QT_NO_SHORTCUT
 
 #ifndef QT_NO_SHORTCUT
-    if (!(e->modifiers() & Qt::AltModifier)) {
+    if (!(e->modifiers() & (Qt::AltModifier | Qt::ControlModifier | Qt::MetaModifier))) {
         int key = e->key() & ~Qt::MODIFIER_MASK;
         if (key) {
             const QList<QAbstractButton *> buttons = d->buttonBox->buttons();
