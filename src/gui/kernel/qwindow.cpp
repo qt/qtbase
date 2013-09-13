@@ -1782,7 +1782,7 @@ void QWindow::exposeEvent(QExposeEvent *ev)
 }
 
 /*!
-    Override this to handle mouse events (\a ev).
+    Override this to handle window move events (\a ev).
 */
 void QWindow::moveEvent(QMoveEvent *ev)
 {
