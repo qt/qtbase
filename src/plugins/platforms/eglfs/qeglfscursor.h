@@ -69,6 +69,8 @@ public:
 
     virtual void paintOnScreen();
 
+    void resetResources();
+
 protected:
 #ifndef QT_NO_CURSOR
     bool setCurrentCursor(QCursor *cursor);
@@ -80,7 +82,7 @@ protected:
 
     // current cursor information
     struct Cursor {
-        Cursor() : texture(0), shape(Qt::BlankCursor), customCursorTexture(0) { }
+        Cursor() : texture(0), shape(Qt::BlankCursor), customCursorTexture(0), customCursorPending(false) { }
         uint texture; // a texture from 'image' or the atlas
         Qt::CursorShape shape;
         QRectF textureRect; // normalized rect inside texture
@@ -89,6 +91,7 @@ protected:
         QImage customCursorImage;
         QPoint pos; // current cursor position
         uint customCursorTexture;
+        bool customCursorPending;
     } m_cursor;
 
 private:

@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
 
 QEglFSScreen::QEglFSScreen(EGLDisplay dpy)
     : m_dpy(dpy)
-    , m_surface(0)
+    , m_surface(EGL_NO_SURFACE)
     , m_cursor(0)
 {
 #ifdef QEGL_EXTRA_DEBUG
@@ -108,6 +108,26 @@ QPlatformCursor *QEglFSScreen::cursor() const
 void QEglFSScreen::setPrimarySurface(EGLSurface surface)
 {
     m_surface = surface;
+}
+
+void QEglFSScreen::addWindow(QEglFSWindow *window)
+{
+    if (!m_windows.contains(window))
+        m_windows.append(window);
+}
+
+void QEglFSScreen::removeWindow(QEglFSWindow *window)
+{
+    m_windows.removeOne(window);
+}
+
+QEglFSWindow *QEglFSScreen::rootWindow()
+{
+    Q_FOREACH (QEglFSWindow *window, m_windows) {
+        if (window->isRasterRoot())
+            return window;
+    }
+    return 0;
 }
 
 QT_END_NAMESPACE

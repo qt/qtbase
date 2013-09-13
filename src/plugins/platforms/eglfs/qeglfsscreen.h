@@ -52,8 +52,9 @@ QT_BEGIN_NAMESPACE
 
 class QPlatformOpenGLContext;
 class QEglFSCursor;
+class QEglFSWindow;
 
-class QEglFSScreen : public QPlatformScreen //huh: FullScreenScreen ;) just to follow namespace
+class QEglFSScreen : public QPlatformScreen
 {
 public:
     QEglFSScreen(EGLDisplay display);
@@ -73,6 +74,11 @@ public:
     EGLDisplay display() const { return m_dpy; }
     EGLSurface primarySurface() const { return m_surface; }
 
+    QList<QEglFSWindow *> windows() const { return m_windows; }
+    void addWindow(QEglFSWindow *window);
+    void removeWindow(QEglFSWindow *window);
+    QEglFSWindow *rootWindow();
+
 protected:
     void setPrimarySurface(EGLSurface surface);
 
@@ -82,6 +88,7 @@ private:
     EGLDisplay m_dpy;
     EGLSurface m_surface;
     QEglFSCursor *m_cursor;
+    QList<QEglFSWindow *> m_windows;
 };
 
 QT_END_NAMESPACE

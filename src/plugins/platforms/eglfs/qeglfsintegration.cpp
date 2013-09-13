@@ -49,6 +49,7 @@
 
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtPlatformSupport/private/qgenericunixservices_p.h>
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
 #include <QtPlatformSupport/private/qeglpbuffer_p.h>
@@ -77,7 +78,9 @@ QT_BEGIN_NAMESPACE
 static void *eglContextForContext(QOpenGLContext *context);
 
 QEglFSIntegration::QEglFSIntegration()
-    : mEventDispatcher(createUnixEventDispatcher()), mFontDb(new QGenericUnixFontDatabase())
+    : mEventDispatcher(createUnixEventDispatcher()),
+      mFontDb(new QGenericUnixFontDatabase),
+      mServices(new QGenericUnixServices)
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(mEventDispatcher);
 
@@ -161,7 +164,7 @@ QPlatformOffscreenSurface *QEglFSIntegration::createPlatformOffscreenSurface(QOf
 
 QPlatformFontDatabase *QEglFSIntegration::fontDatabase() const
 {
-    return mFontDb;
+    return mFontDb.data();
 }
 
 QAbstractEventDispatcher *QEglFSIntegration::guiThreadEventDispatcher() const
@@ -171,10 +174,18 @@ QAbstractEventDispatcher *QEglFSIntegration::guiThreadEventDispatcher() const
 
 QVariant QEglFSIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
 {
-    if (hint == QPlatformIntegration::ShowIsFullScreen)
-        return true;
+    switch (hint)
+    {
+    case QPlatformIntegration::ShowIsFullScreen:
+        return mScreen->rootWindow() == 0;
+    default:
+        return QPlatformIntegration::styleHint(hint);
+    }
+}
 
-    return QPlatformIntegration::styleHint(hint);
+QPlatformServices *QEglFSIntegration::services() const
+{
+    return mServices.data();
 }
 
 QPlatformNativeInterface *QEglFSIntegration::nativeInterface() const
@@ -187,7 +198,7 @@ void *QEglFSIntegration::nativeResourceForIntegration(const QByteArray &resource
     QByteArray lowerCaseResource = resource.toLower();
 
     if (lowerCaseResource == "egldisplay")
-        return static_cast<QEglFSScreen *>(mScreen)->display();
+        return mScreen->display();
 
     return 0;
 }
@@ -200,7 +211,7 @@ void *QEglFSIntegration::nativeResourceForWindow(const QByteArray &resource, QWi
         if (window && window->handle())
             return static_cast<QEglFSScreen *>(window->handle()->screen())->display();
         else
-            return static_cast<QEglFSScreen *>(mScreen)->display();
+            return mScreen->display();
     }
 
     return 0;

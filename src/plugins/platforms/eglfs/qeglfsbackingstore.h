@@ -46,12 +46,35 @@
 
 #include <QImage>
 #include <QRegion>
+#include <QTimer>
 
 QT_BEGIN_NAMESPACE
 
 class QOpenGLContext;
 class QOpenGLPaintDevice;
 class QOpenGLShaderProgram;
+class QEglFSWindow;
+
+class QEglFSCompositor : public QObject
+{
+    Q_OBJECT
+
+public:
+    QEglFSCompositor();
+
+    void schedule(QEglFSWindow *rootWindow);
+
+    static QEglFSCompositor *instance();
+
+private slots:
+    void renderAll();
+
+private:
+    void render(QEglFSWindow *window, QEglFSWindow *rootWindow);
+
+    QEglFSWindow *m_rootWindow;
+    QTimer m_updateTimer;
+};
 
 class QEglFSBackingStore : public QPlatformBackingStore
 {
@@ -68,7 +91,10 @@ public:
 
 private:
     void makeCurrent();
+    static QOpenGLContext *makeRootCurrent(QEglFSWindow *rootWin);
+    void updateTexture();
 
+    QEglFSWindow *m_window;
     QOpenGLContext *m_context;
     QImage m_image;
     uint m_texture;
@@ -76,6 +102,8 @@ private:
     QOpenGLShaderProgram *m_program;
     int m_vertexCoordEntry;
     int m_textureCoordEntry;
+
+    friend class QEglFSCompositor;
 };
 
 QT_END_NAMESPACE

@@ -65,6 +65,7 @@ public:
     QPlatformNativeInterface *nativeInterface() const;
 
     QPlatformFontDatabase *fontDatabase() const;
+    QPlatformServices *services() const;
 
     QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 
@@ -87,8 +88,9 @@ public:
 private:
     EGLDisplay mDisplay;
     QAbstractEventDispatcher *mEventDispatcher;
-    QPlatformFontDatabase *mFontDb;
-    QPlatformScreen *mScreen;
+    QScopedPointer<QPlatformFontDatabase> mFontDb;
+    QScopedPointer<QPlatformServices> mServices;
+    QEglFSScreen *mScreen;
     QPlatformInputContext *mInputContext;
 };
 

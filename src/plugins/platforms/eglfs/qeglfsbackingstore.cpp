@@ -51,15 +51,101 @@
 
 QT_BEGIN_NAMESPACE
 
+QEglFSCompositor::QEglFSCompositor()
+    : m_rootWindow(0)
+{
+    m_updateTimer.setSingleShot(true);
+    m_updateTimer.setInterval(0);
+    connect(&m_updateTimer, SIGNAL(timeout()), SLOT(renderAll()));
+}
+
+void QEglFSCompositor::schedule(QEglFSWindow *rootWindow)
+{
+    m_rootWindow = rootWindow;
+    if (!m_updateTimer.isActive())
+        m_updateTimer.start();
+}
+
+void QEglFSCompositor::renderAll()
+{
+    Q_ASSERT(m_rootWindow);
+    QOpenGLContext *context = QEglFSBackingStore::makeRootCurrent(m_rootWindow);
+
+    QEglFSScreen *screen = m_rootWindow->screen();
+    QList<QEglFSWindow *> windows = screen->windows();
+    for (int i = 0; i < windows.size(); ++i) {
+        if (windows.at(i)->backingStore())
+            render(windows.at(i), m_rootWindow);
+    }
+
+    context->swapBuffers(m_rootWindow->window());
+    context->doneCurrent();
+}
+
+void QEglFSCompositor::render(QEglFSWindow *window, QEglFSWindow *rootWindow)
+{
+    QEglFSBackingStore *rootBackingStore = rootWindow->backingStore();
+    rootBackingStore->m_program->bind();
+
+    const GLfloat textureCoordinates[] = {
+        0, 0,
+        1, 0,
+        1, 1,
+        0, 1
+    };
+
+    QRectF sr = window->screen()->geometry();
+    QRect r = window->window()->geometry();
+    QPoint tl = r.topLeft();
+    QPoint br = r.bottomRight();
+
+    GLfloat x1 = (tl.x() / sr.width()) * 2 - 1;
+    GLfloat x2 = (br.x() / sr.width()) * 2 - 1;
+    GLfloat y1 = ((sr.height() - tl.y()) / sr.height()) * 2 - 1;
+    GLfloat y2 = ((sr.height() - br.y()) / sr.height()) * 2 - 1;
+
+    const GLfloat vertexCoordinates[] = {
+        x1, y1,
+        x2, y1,
+        x2, y2,
+        x1, y2
+    };
+
+    glViewport(0, 0, sr.width(), sr.height());
+
+    glEnableVertexAttribArray(rootBackingStore->m_vertexCoordEntry);
+    glEnableVertexAttribArray(rootBackingStore->m_textureCoordEntry);
+
+    glVertexAttribPointer(rootBackingStore->m_vertexCoordEntry, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinates);
+    glVertexAttribPointer(rootBackingStore->m_textureCoordEntry, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinates);
+
+    glBindTexture(GL_TEXTURE_2D, window->backingStore()->m_texture);
+
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    rootBackingStore->m_program->release();
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisableVertexAttribArray(rootBackingStore->m_vertexCoordEntry);
+    glDisableVertexAttribArray(rootBackingStore->m_textureCoordEntry);
+}
+
+static QEglFSCompositor *compositor = 0;
+
+QEglFSCompositor *QEglFSCompositor::instance()
+{
+    if (!compositor)
+        compositor = new QEglFSCompositor;
+    return compositor;
+}
+
 QEglFSBackingStore::QEglFSBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
-    , m_context(new QOpenGLContext)
+    , m_window(static_cast<QEglFSWindow *>(window->handle()))
+    , m_context(0)
     , m_texture(0)
     , m_program(0)
 {
-    m_context->setFormat(window->requestedFormat());
-    m_context->setScreen(window->screen());
-    m_context->create();
+    m_window->setBackingStore(this);
 }
 
 QEglFSBackingStore::~QEglFSBackingStore()
@@ -73,82 +159,15 @@ QPaintDevice *QEglFSBackingStore::paintDevice()
     return &m_image;
 }
 
-void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
+void QEglFSBackingStore::updateTexture()
 {
-    Q_UNUSED(region);
-    Q_UNUSED(offset);
-
-    makeCurrent();
-
-    QRectF sr = window->screen()->geometry();
-    glViewport(0, 0, sr.width(), sr.height());
-
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglBackingStore::flush %p", window);
-#endif
-
-    if (!m_program) {
-        static const char *textureVertexProgram =
-            "attribute highp vec2 vertexCoordEntry;\n"
-            "attribute highp vec2 textureCoordEntry;\n"
-            "varying highp vec2 textureCoord;\n"
-            "void main() {\n"
-            "   textureCoord = textureCoordEntry;\n"
-            "   gl_Position = vec4(vertexCoordEntry, 0.0, 1.0);\n"
-            "}\n";
-
-        static const char *textureFragmentProgram =
-            "uniform sampler2D texture;\n"
-            "varying highp vec2 textureCoord;\n"
-            "void main() {\n"
-            "   gl_FragColor = texture2D(texture, textureCoord).bgra;\n"
-            "}\n";
-
-        m_program = new QOpenGLShaderProgram;
-
-        m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, textureVertexProgram);
-        m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, textureFragmentProgram);
-        m_program->link();
-
-        m_vertexCoordEntry = m_program->attributeLocation("vertexCoordEntry");
-        m_textureCoordEntry = m_program->attributeLocation("textureCoordEntry");
-    }
-
-    m_program->bind();
-
-    const GLfloat textureCoordinates[] = {
-        0, 1,
-        1, 1,
-        1, 0,
-        0, 0
-    };
-
-    QRectF r = window->geometry();
-
-    GLfloat x1 = (r.left() / sr.width()) * 2 - 1;
-    GLfloat x2 = (r.right() / sr.width()) * 2 - 1;
-    GLfloat y1 = (r.top() / sr.height()) * 2 - 1;
-    GLfloat y2 = (r.bottom() / sr.height()) * 2 - 1;
-
-    const GLfloat vertexCoordinates[] = {
-        x1, y1,
-        x2, y1,
-        x2, y2,
-        x1, y2
-    };
-
-    glEnableVertexAttribArray(m_vertexCoordEntry);
-    glEnableVertexAttribArray(m_textureCoordEntry);
-
-    glVertexAttribPointer(m_vertexCoordEntry, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinates);
-    glVertexAttribPointer(m_textureCoordEntry, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinates);
-
     glBindTexture(GL_TEXTURE_2D, m_texture);
 
     if (!m_dirty.isNull()) {
-        QRect imageRect = m_image.rect();
-
         QRegion fixed;
+        QRect imageRect = m_image.rect();
+        m_dirty |= imageRect;
+
         foreach (const QRect &rect, m_dirty.rects()) {
             // intersect with image rect to be sure
             QRect r = imageRect & rect;
@@ -176,32 +195,80 @@ void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPo
 
         m_dirty = QRegion();
     }
+}
 
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
+{
+    Q_UNUSED(window);
+    Q_UNUSED(region);
+    Q_UNUSED(offset);
 
-    m_program->release();
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glDisableVertexAttribArray(m_vertexCoordEntry);
-    glDisableVertexAttribArray(m_textureCoordEntry);
+#ifdef QEGL_EXTRA_DEBUG
+    qWarning("QEglBackingStore::flush %p", window);
+#endif
 
-    // draw the cursor
-    if (QEglFSCursor *cursor = static_cast<QEglFSCursor *>(window->screen()->handle()->cursor()))
-        cursor->paintOnScreen();
-
-    m_context->swapBuffers(window);
-
-    m_context->doneCurrent();
+    m_window->create();
+    QEglFSWindow *rootWin = m_window->screen()->rootWindow();
+    if (rootWin) {
+        makeRootCurrent(rootWin);
+        updateTexture();
+        QEglFSCompositor::instance()->schedule(rootWin);
+    }
 }
 
 void QEglFSBackingStore::makeCurrent()
 {
-    (static_cast<QEglFSWindow *>(window()->handle()))->create();
-    m_context->makeCurrent(window());
+    Q_ASSERT(m_window->hasNativeWindow());
+
+    QWindow *wnd = window();
+    if (!m_context) {
+        m_context = new QOpenGLContext;
+        m_context->setFormat(wnd->requestedFormat());
+        m_context->setScreen(wnd->screen());
+        m_context->create();
+    }
+
+    m_context->makeCurrent(wnd);
+}
+
+QOpenGLContext *QEglFSBackingStore::makeRootCurrent(QEglFSWindow *rootWin)
+{
+    Q_ASSERT(rootWin->hasNativeWindow() && rootWin->isRasterRoot());
+
+    QEglFSBackingStore *rootBackingStore = rootWin->backingStore();
+    rootBackingStore->makeCurrent();
+    if (!rootBackingStore->m_program) {
+        static const char *textureVertexProgram =
+            "attribute highp vec2 vertexCoordEntry;\n"
+            "attribute highp vec2 textureCoordEntry;\n"
+            "varying highp vec2 textureCoord;\n"
+            "void main() {\n"
+            "   textureCoord = textureCoordEntry;\n"
+            "   gl_Position = vec4(vertexCoordEntry, 0.0, 1.0);\n"
+            "}\n";
+
+        static const char *textureFragmentProgram =
+            "uniform sampler2D texture;\n"
+            "varying highp vec2 textureCoord;\n"
+            "void main() {\n"
+            "   gl_FragColor = texture2D(texture, textureCoord).bgra;\n"
+            "}\n";
+
+        rootBackingStore->m_program = new QOpenGLShaderProgram;
+
+        rootBackingStore->m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, textureVertexProgram);
+        rootBackingStore->m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, textureFragmentProgram);
+        rootBackingStore->m_program->link();
+
+        rootBackingStore->m_vertexCoordEntry = rootBackingStore->m_program->attributeLocation("vertexCoordEntry");
+        rootBackingStore->m_textureCoordEntry = rootBackingStore->m_program->attributeLocation("textureCoordEntry");
+    }
+    return rootBackingStore->m_context;
 }
 
 void QEglFSBackingStore::beginPaint(const QRegion &rgn)
 {
-    m_dirty = m_dirty | rgn;
+    m_dirty |= rgn;
 }
 
 void QEglFSBackingStore::resize(const QSize &size, const QRegion &staticContents)
@@ -209,9 +276,12 @@ void QEglFSBackingStore::resize(const QSize &size, const QRegion &staticContents
     Q_UNUSED(staticContents);
 
     m_image = QImage(size, QImage::Format_RGB32);
-    makeCurrent();
+    m_window->create();
+    makeRootCurrent(m_window->screen()->rootWindow());
+
     if (m_texture)
         glDeleteTextures(1, &m_texture);
+
     glGenTextures(1, &m_texture);
     glBindTexture(GL_TEXTURE_2D, m_texture);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

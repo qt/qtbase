@@ -194,8 +194,11 @@ void EventReader::run()
             const xcb_atom_t *atoms = m_hooks->atoms();
             if (client->format == 32
                 && client->type == atoms[Atoms::WM_PROTOCOLS]
-                && client->data.data32[0] == atoms[Atoms::WM_DELETE_WINDOW])
-                QWindowSystemInterface::handleCloseEvent(m_hooks->platformWindow()->window());
+                && client->data.data32[0] == atoms[Atoms::WM_DELETE_WINDOW]) {
+                QWindow *window = m_hooks->platformWindow() ? m_hooks->platformWindow()->window() : 0;
+                if (window)
+                    QWindowSystemInterface::handleCloseEvent(window);
+            }
             break;
             }
         default:

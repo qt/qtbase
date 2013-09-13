@@ -2,12 +2,13 @@ QT += core-private gui-private platformsupport-private
 
 #DEFINES += QEGL_EXTRA_DEBUG
 
-#Avoid X11 header collision
+# Avoid X11 header collision
 DEFINES += MESA_EGL_NO_X11_HEADERS
 
-#To test the hooks on x11 (xlib), comment the above define too
-#EGLFS_PLATFORM_HOOKS_SOURCES += qeglfshooks_x11.cpp
-#LIBS += -lX11 -lX11-xcb -lxcb
+# Uncomment these to enable the X hooks, allowing to test the platform
+# plugin in a regular X11 environment (as long as EGL is available).
+# EGLFS_PLATFORM_HOOKS_SOURCES += qeglfshooks_x11.cpp
+# LIBS += -lX11 -lX11-xcb -lxcb
 
 SOURCES +=  $$PWD/qeglfsintegration.cpp \
             $$PWD/qeglfswindow.cpp \

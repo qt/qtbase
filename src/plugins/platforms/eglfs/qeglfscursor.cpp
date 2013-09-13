@@ -63,11 +63,20 @@ QEglFSCursor::QEglFSCursor(QEglFSScreen *screen)
 
 QEglFSCursor::~QEglFSCursor()
 {
+    resetResources();
+}
+
+void QEglFSCursor::resetResources()
+{
     if (QOpenGLContext::currentContext()) {
         glDeleteProgram(m_program);
         glDeleteTextures(1, &m_cursor.customCursorTexture);
         glDeleteTextures(1, &m_cursorAtlas.texture);
     }
+    m_program = 0;
+    m_cursor.customCursorTexture = 0;
+    m_cursor.customCursorPending = !m_cursor.customCursorImage.isNull();
+    m_cursorAtlas.texture = 0;
 }
 
 static GLuint createShader(GLenum shaderType, const char *program)
@@ -201,9 +210,9 @@ bool QEglFSCursor::setCurrentCursor(QCursor *cursor)
         return false;
 
     if (m_cursor.shape == Qt::BitmapCursor) {
-        m_cursor.customCursorImage = QImage(); // in case render() never uploaded it
+        m_cursor.customCursorImage = QImage();
+        m_cursor.customCursorPending = false;
     }
-
     m_cursor.shape = newShape;
     if (newShape != Qt::BitmapCursor) { // standard cursor
         const float ws = (float)m_cursorAtlas.cursorWidth / m_cursorAtlas.width,
@@ -221,6 +230,7 @@ bool QEglFSCursor::setCurrentCursor(QCursor *cursor)
         m_cursor.texture = 0; // will get updated in the next render()
         m_cursor.size = image.size();
         m_cursor.customCursorImage = image;
+        m_cursor.customCursorPending = true;
     }
 
     return true;
@@ -255,7 +265,7 @@ void QEglFSCursor::pointerEvent(const QMouseEvent &event)
     if (event.type() != QEvent::MouseMove)
         return;
     const QRect oldCursorRect = cursorRect();
-    m_cursor.pos = event.pos();
+    m_cursor.pos = event.screenPos().toPoint();
     update(oldCursorRect | cursorRect());
 }
 
@@ -280,18 +290,17 @@ void QEglFSCursor::draw(const QRectF &r)
 
         if (!m_cursorAtlas.texture) {
             createCursorTexture(&m_cursorAtlas.texture, m_cursorAtlas.image);
-            m_cursorAtlas.image = QImage();
 
             if (m_cursor.shape != Qt::BitmapCursor)
                 m_cursor.texture = m_cursorAtlas.texture;
         }
     }
 
-    if (m_cursor.shape == Qt::BitmapCursor && !m_cursor.customCursorImage.isNull()) {
+    if (m_cursor.shape == Qt::BitmapCursor && m_cursor.customCursorPending) {
         // upload the custom cursor
         createCursorTexture(&m_cursor.customCursorTexture, m_cursor.customCursorImage);
         m_cursor.texture = m_cursor.customCursorTexture;
-        m_cursor.customCursorImage = QImage();
+        m_cursor.customCursorPending = false;
     }
 
     Q_ASSERT(m_cursor.texture);
