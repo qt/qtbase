@@ -675,17 +675,37 @@ static void updateApplicationState(JNIEnv */*env*/, jobject /*thiz*/, jint state
     QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState(state));
 }
 
-static void handleOrientationChanged(JNIEnv */*env*/, jobject /*thiz*/, jint newOrientation)
+static void handleOrientationChanged(JNIEnv */*env*/, jobject /*thiz*/, jint newRotation, jint nativeOrientation)
 {
-    if (m_androidPlatformIntegration == 0)
-        return;
+    // Array of orientations rotated in 90 degree increments, counterclockwise
+    // (same direction as Android measures angles)
+    static const Qt::ScreenOrientation orientations[] = {
+        Qt::PortraitOrientation,
+        Qt::LandscapeOrientation,
+        Qt::InvertedPortraitOrientation,
+        Qt::InvertedLandscapeOrientation
+    };
 
-    Qt::ScreenOrientation screenOrientation = newOrientation == 1
-                                              ? Qt::PortraitOrientation
-                                              : Qt::LandscapeOrientation;
-    QPlatformScreen *screen = m_androidPlatformIntegration->screen();
-    QWindowSystemInterface::handleScreenOrientationChange(screen->screen(),
-                                                          screenOrientation);
+    // The Android API defines the following constants:
+    // ROTATION_0 :   0
+    // ROTATION_90 :  1
+    // ROTATION_180 : 2
+    // ROTATION_270 : 3
+    // ORIENTATION_PORTRAIT :  1
+    // ORIENTATION_LANDSCAPE : 2
+
+    // and newRotation is how much the current orientation is rotated relative to nativeOrientation
+
+    // which means that we can be really clever here :)
+    Qt::ScreenOrientation screenOrientation = orientations[(nativeOrientation - 1 + newRotation) % 4];
+    Qt::ScreenOrientation native = orientations[nativeOrientation - 1];
+
+    QAndroidPlatformIntegration::setScreenOrientation(screenOrientation, native);
+    if (m_androidPlatformIntegration) {
+        QPlatformScreen *screen = m_androidPlatformIntegration->screen();
+        QWindowSystemInterface::handleScreenOrientationChange(screen->screen(),
+                                                              screenOrientation);
+    }
 }
 
 static JNINativeMethod methods[] = {
@@ -702,7 +722,7 @@ static JNINativeMethod methods[] = {
     {"unlockSurface", "()V", (void *)unlockSurface},
     {"updateWindow", "()V", (void *)updateWindow},
     {"updateApplicationState", "(I)V", (void *)updateApplicationState},
-    {"handleOrientationChanged", "(I)V", (void *)handleOrientationChanged}
+    {"handleOrientationChanged", "(II)V", (void *)handleOrientationChanged}
 };
 
 #define FIND_AND_CHECK_CLASS(CLASS_NAME) \

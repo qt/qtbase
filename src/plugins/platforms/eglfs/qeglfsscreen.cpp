@@ -90,6 +90,15 @@ QDpi QEglFSScreen::logicalDpi() const
     return QEglFSHooks::hooks()->logicalDpi();
 }
 
+Qt::ScreenOrientation QEglFSScreen::nativeOrientation() const
+{
+    return QEglFSHooks::hooks()->nativeOrientation();
+}
+
+Qt::ScreenOrientation QEglFSScreen::orientation() const
+{
+    return QEglFSHooks::hooks()->orientation();
+}
 
 QPlatformCursor *QEglFSScreen::cursor() const
 {

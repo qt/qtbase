@@ -75,3 +75,13 @@ QDpi QAndroidPlatformScreen::logicalDpi() const
     qreal lDpi = QtAndroid::scaledDensity() * 72;
     return QDpi(lDpi, lDpi);
 }
+
+Qt::ScreenOrientation QAndroidPlatformScreen::orientation() const
+{
+    return QAndroidPlatformIntegration::m_orientation;
+}
+
+Qt::ScreenOrientation QAndroidPlatformScreen::nativeOrientation() const
+{
+    return QAndroidPlatformIntegration::m_nativeOrientation;
+}

@@ -129,6 +129,8 @@ public:
     void resumeApp();
     static void setDefaultDisplayMetrics(int gw, int gh, int sw, int sh);
     static void setDefaultDesktopSize(int gw, int gh);
+    static void setScreenOrientation(Qt::ScreenOrientation currentOrientation,
+                                     Qt::ScreenOrientation nativeOrientation);
 
     static QSize defaultDesktopSize()
     {
@@ -155,6 +157,9 @@ private:
     static int m_defaultGeometryHeight;
     static int m_defaultPhysicalSizeWidth;
     static int m_defaultPhysicalSizeHeight;
+
+    static Qt::ScreenOrientation m_orientation;
+    static Qt::ScreenOrientation m_nativeOrientation;
 
     QPlatformFontDatabase *m_androidFDB;
     QImage *m_FbScreenImage;

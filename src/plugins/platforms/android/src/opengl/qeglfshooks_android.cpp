@@ -57,6 +57,8 @@ public:
     QSize screenSize() const;
     QSizeF physicalScreenSize() const;
     QDpi logicalDpi() const;
+    Qt::ScreenOrientation orientation() const;
+    Qt::ScreenOrientation nativeOrientation() const;
     int screenDepth() const;
     QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &inputFormat) const;
     EGLNativeWindowType createNativeWindow(const QSize &size, const QSurfaceFormat &format);
@@ -94,6 +96,15 @@ QDpi QEglFSAndroidHooks::logicalDpi() const
     return QDpi(lDpi, lDpi);
 }
 
+Qt::ScreenOrientation QEglFSAndroidHooks::orientation() const
+{
+    return QAndroidPlatformIntegration::m_orientation;
+}
+
+Qt::ScreenOrientation QEglFSAndroidHooks::nativeOrientation() const
+{
+    return QAndroidPlatformIntegration::m_nativeOrientation;
+}
 
 EGLNativeWindowType QEglFSAndroidHooks::createNativeWindow(const QSize &size, const QSurfaceFormat &format)
 {

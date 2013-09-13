@@ -51,6 +51,8 @@ public:
     QAndroidPlatformScreen();
     void topWindowChanged(QWindow *w);
     QDpi logicalDpi() const;
+    Qt::ScreenOrientation orientation() const;
+    Qt::ScreenOrientation nativeOrientation() const;
 
 public slots:
     QRegion doRedraw();

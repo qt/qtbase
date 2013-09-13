@@ -70,6 +70,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.view.Surface;
 
 public class QtActivityDelegate
 {
@@ -93,7 +94,8 @@ public class QtActivityDelegate
     private static String m_environmentVariables = null;
     private static String m_applicationParameters = null;
 
-    private int m_currentOrientation = Configuration.ORIENTATION_UNDEFINED;
+    private int m_currentRotation = -1; // undefined
+    private int m_nativeOrientation = Configuration.ORIENTATION_UNDEFINED;
 
     private String m_mainLib;
     private long m_metaState;
@@ -587,7 +589,17 @@ public class QtActivityDelegate
         m_layout.bringChildToFront(m_surface);
         m_activity.registerForContextMenu(m_layout);
 
-        m_currentOrientation = m_activity.getResources().getConfiguration().orientation;
+        int orientation = m_activity.getResources().getConfiguration().orientation;
+        int rotation = m_activity.getWindowManager().getDefaultDisplay().getRotation();
+        boolean rot90 = (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270);
+        boolean currentlyLandscape = (orientation == Configuration.ORIENTATION_LANDSCAPE);
+        if ((currentlyLandscape && !rot90) || (!currentlyLandscape && rot90))
+            m_nativeOrientation = Configuration.ORIENTATION_LANDSCAPE;
+        else
+            m_nativeOrientation = Configuration.ORIENTATION_PORTRAIT;
+
+        QtNative.handleOrientationChanged(rotation, m_nativeOrientation);
+        m_currentRotation = rotation;
     }
 
     public void onConfigurationChanged(Configuration configuration)
@@ -597,13 +609,12 @@ public class QtActivityDelegate
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        if (configuration.orientation != m_currentOrientation
-            && m_currentOrientation != Configuration.ORIENTATION_UNDEFINED) {
-            QtNative.handleOrientationChanged(configuration.orientation);
+        int rotation = m_activity.getWindowManager().getDefaultDisplay().getRotation();
+        if (rotation != m_currentRotation) {
+            QtNative.handleOrientationChanged(rotation, m_nativeOrientation);
         }
 
-        m_currentOrientation = configuration.orientation;
+        m_currentRotation = rotation;
     }
 
     public void onDestroy()

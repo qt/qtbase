@@ -76,6 +76,9 @@ int QAndroidPlatformIntegration::m_defaultGeometryHeight = 455;
 int QAndroidPlatformIntegration::m_defaultPhysicalSizeWidth = 50;
 int QAndroidPlatformIntegration::m_defaultPhysicalSizeHeight = 71;
 
+Qt::ScreenOrientation QAndroidPlatformIntegration::m_orientation = Qt::PrimaryOrientation;
+Qt::ScreenOrientation QAndroidPlatformIntegration::m_nativeOrientation = Qt::PrimaryOrientation;
+
 void *QAndroidPlatformNativeInterface::nativeResourceForIntegration(const QByteArray &resource)
 {
     if (resource=="JavaVM")
@@ -266,6 +269,13 @@ void QAndroidPlatformIntegration::setDefaultDesktopSize(int gw, int gh)
 {
     m_defaultGeometryWidth = gw;
     m_defaultGeometryHeight = gh;
+}
+
+void QAndroidPlatformIntegration::setScreenOrientation(Qt::ScreenOrientation currentOrientation,
+                                                       Qt::ScreenOrientation nativeOrientation)
+{
+    m_orientation = currentOrientation;
+    m_nativeOrientation = nativeOrientation;
 }
 
 #ifndef QT_NO_ACCESSIBILITY

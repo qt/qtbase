@@ -65,6 +65,8 @@ public:
 
     QSizeF physicalSize() const;
     QDpi logicalDpi() const;
+    Qt::ScreenOrientation nativeOrientation() const;
+    Qt::ScreenOrientation orientation() const;
 
     QPlatformCursor *cursor() const;
 

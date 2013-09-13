@@ -192,6 +192,16 @@ QDpi QEglFSHooks::logicalDpi() const
                 25.4 * s.height() / ps.height());
 }
 
+Qt::ScreenOrientation QEglFSHooks::nativeOrientation() const
+{
+    return Qt::PrimaryOrientation;
+}
+
+Qt::ScreenOrientation QEglFSHooks::orientation() const
+{
+    return Qt::PrimaryOrientation;
+}
+
 int QEglFSHooks::screenDepth() const
 {
     static int depth = qgetenv("QT_QPA_EGLFS_DEPTH").toInt();

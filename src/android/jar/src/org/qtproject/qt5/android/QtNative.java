@@ -553,7 +553,7 @@ public class QtNative
                                                 double XDpi,
                                                 double YDpi,
                                                 double scaledDensity);
-    public static native void handleOrientationChanged(int newOrientation);
+    public static native void handleOrientationChanged(int newRotation, int nativeOrientation);
     // screen methods
 
     // pointer methods
