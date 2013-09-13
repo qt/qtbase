@@ -36,7 +36,7 @@
     and their public interfaces. The types are grouped into a module, the
     \l{UI Components} module.
 
-    The \l{componentset/uicomponents.qdoc}{uicomponents.qdoc} file generates
+    The \l{componentset/uicomponents.qdoc.sample}{uicomponents.qdoc} file generates
     the overview page for the \l{UI Components} module page.
 
     The generated documentation is available in the \l{UI Components} module.
@@ -81,4 +81,18 @@
     files, but the regular \l{qml-documentation}{QML commands} may be placed
     inside C++ classes to define the public API of the QML type.
 
+*/
+
+
+/*!
+    \qmlmodule UIComponents 1.0
+    \title UI Components
+    \brief Basic set of UI components
+
+    This is a listing of a list of UI components implemented by QML types. These
+
+    files are available for general import and they are based off the \l{Qt
+    Quick Code Samples}.
+
+    This module is part of the \l{componentset}{UIComponents} example.
 */

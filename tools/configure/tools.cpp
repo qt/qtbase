@@ -56,16 +56,16 @@ std::ostream &operator<<(std::ostream &s, const QString &val); // defined in con
 using namespace std;
 
 void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString> &licenseInfo,
-                         const QString &path)
+                         const QString &path, const QString &sourcePath)
 {
-    QString tpLicense = dictionary["QT_SOURCE_TREE"] + "/LICENSE.PREVIEW.OPENSOURCE";
+    QString tpLicense = sourcePath + "/LICENSE.PREVIEW.OPENSOURCE";
     if (QFile::exists(tpLicense)) {
         dictionary["EDITION"] = "Preview";
         dictionary["LICENSE FILE"] = tpLicense;
         dictionary["QT_EDITION"] = "QT_EDITION_OPENSOURCE";
         return; // No license key checking in Tech Preview
     }
-    tpLicense = dictionary["QT_SOURCE_TREE"] + "/LICENSE.PREVIEW.COMMERCIAL";
+    tpLicense = sourcePath + "/LICENSE.PREVIEW.COMMERCIAL";
     if (QFile::exists(tpLicense)) {
         dictionary["EDITION"] = "Preview";
         dictionary["LICENSE FILE"] = tpLicense;
@@ -204,7 +204,7 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
     if (dictionary["EDITION"] == "Evaluation")
         dictionary["LICENSE_EXTENSION"] = "-EVALUATION";
 
-    if (QFile::exists(dictionary["QT_SOURCE_TREE"] + "/.LICENSE")) {
+    if (QFile::exists(sourcePath + "/.LICENSE")) {
         // Generic, no-suffix license
         dictionary["LICENSE_EXTENSION"].clear();
     } else if (dictionary["LICENSE_EXTENSION"].isEmpty()) {
@@ -220,8 +220,8 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
     }
 
     // copy one of .LICENSE-*(-US) to LICENSE
-    QString toLicenseFile   = dictionary["QT_SOURCE_TREE"] + "/LICENSE";
-    QString fromLicenseFile = dictionary["QT_SOURCE_TREE"] + "/.LICENSE" + dictionary["LICENSE_EXTENSION"];
+    QString toLicenseFile   = sourcePath + "/LICENSE";
+    QString fromLicenseFile = sourcePath + "/.LICENSE" + dictionary["LICENSE_EXTENSION"];
     if (licenseFeatures == 'B' || licenseFeatures == 'G'
         || licenseFeatures == 'L' || licenseFeatures == 'Y')
         fromLicenseFile += "-US";

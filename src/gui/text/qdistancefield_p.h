@@ -137,12 +137,6 @@ private:
     friend class QDistanceFieldData;
 };
 
-
-inline QImage Q_GUI_EXPORT qt_renderDistanceFieldGlyph(const QRawFont &f, glyph_t g, bool d)
-{ return QDistanceField(f, g, d).toImage(QImage::Format_Indexed8); }
-inline QImage Q_GUI_EXPORT qt_renderDistanceFieldGlyph(QFontEngine *fe, glyph_t g, bool d)
-{ return QDistanceField(fe, g, d).toImage(QImage::Format_Indexed8); }
-
 QT_END_NAMESPACE
 
 #endif // QDISTANCEFIELD_H

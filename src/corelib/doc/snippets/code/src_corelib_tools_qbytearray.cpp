@@ -427,7 +427,7 @@ ba2.constData();                // Returns "ca\0" with terminating \0.
 
 QByteArray ba3("ca\0r\0t", 4);
 ba3.size();                     // Returns 4.
-ba2.constData();                // Returns "ca\0r" with terminating \0.
+ba3.constData();                // Returns "ca\0r" with terminating \0.
 
 const char cart[] = {'c', 'a', '\0', 'r', '\0', 't'};
 QByteArray ba4(QByteArray::fromRawData(cart, 6));

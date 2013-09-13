@@ -1303,12 +1303,12 @@ void QAbstractItemModel::resetInternalData()
 */
 
 /*!
-    \fn bool QAbstractItemModel::moveRow(const QModelIndex &sourceParent, int sourceColumn, const QModelIndex &destinationParent, int destinationChild)
+    \fn bool QAbstractItemModel::moveRow(const QModelIndex &sourceParent, int sourceRow, const QModelIndex &destinationParent, int destinationChild)
 
-    On models that support this, moves \a sourceColumn from \a sourceParent to \a destinationChild under
+    On models that support this, moves \a sourceRow from \a sourceParent to \a destinationChild under
     \a destinationParent.
 
-    Returns \c{true} if the columns were successfully moved; otherwise returns
+    Returns \c{true} if the rows were successfully moved; otherwise returns
     \c{false}.
 
     \sa moveRows(), moveColumn()

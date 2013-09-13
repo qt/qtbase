@@ -87,6 +87,7 @@ static QTouchDevice *touchDevice = 0;
         m_sendKeyEvent = false;
         m_subscribesForGlobalFrameNotifications = false;
         m_glContext = 0;
+        m_drawRectHasBeenCalled = false;
         m_shouldSetGLContextinDrawRect = false;
         currentCustomDragTypes = 0;
         m_sendUpAsRightButton = false;
@@ -153,9 +154,9 @@ static QTouchDevice *touchDevice = 0;
 - (void) setQCocoaGLContext:(QCocoaGLContext *)context
 {
     m_glContext = context;
-    [m_glContext->nsOpenGLContext() setView:self];
-    if (![m_glContext->nsOpenGLContext() view]) {
-        //was unable to set view
+    if (m_drawRectHasBeenCalled) {
+        [m_glContext->nsOpenGLContext() setView:self];
+    } else {
         m_shouldSetGLContextinDrawRect = true;
     }
 
@@ -391,6 +392,8 @@ static QTouchDevice *touchDevice = 0;
         [m_glContext->nsOpenGLContext() setView:self];
         m_shouldSetGLContextinDrawRect = false;
     }
+
+    m_drawRectHasBeenCalled = true;
 
     if (!m_backingStore)
         return;
