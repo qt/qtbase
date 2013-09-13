@@ -325,7 +325,9 @@ public:
     QStringMultiMap     metaMap;
 
     DocPrivateExtra()
-        : granularity(Doc::Part) { }
+        : granularity(Doc::Part)
+        , section(Doc::NoSection)
+    { }
 };
 
 struct Shared // ### get rid of
