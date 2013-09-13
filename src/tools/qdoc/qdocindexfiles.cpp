@@ -1135,7 +1135,7 @@ bool compareNodes(const Node* n1, const Node* n2)
     // Private nodes can occur in any order since they won't normally be
     // written to the index.
     if (n1->access() == Node::Private && n2->access() == Node::Private)
-        return true;
+        return false;
 
     if (n1->location().filePath() < n2->location().filePath())
         return true;
