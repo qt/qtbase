@@ -1525,7 +1525,10 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
 
                 QRect aligned = alignedRect(header->direction, QFlag(header->iconAlignment), pixmap.size() / pixmap.devicePixelRatio(), rect);
                 QRect inter = aligned.intersected(rect);
-                p->drawPixmap(inter.x(), inter.y(), pixmap, inter.x() - aligned.x(), inter.y() - aligned.y(), inter.width(), inter.height());
+                p->drawPixmap(inter.x(), inter.y(), pixmap,
+                              inter.x() - aligned.x(), inter.y() - aligned.y(),
+                              aligned.width() * pixmap.devicePixelRatio(),
+                              pixmap.height() * pixmap.devicePixelRatio());
 
                 if (header->direction == Qt::LeftToRight)
                     rect.setLeft(rect.left() + pixw + 2);
