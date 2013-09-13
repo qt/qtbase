@@ -429,7 +429,7 @@ QFile::exists() const
 bool
 QFile::exists(const QString &fileName)
 {
-    return QFileInfo(fileName).exists();
+    return QFileInfo::exists(fileName);
 }
 
 /*!

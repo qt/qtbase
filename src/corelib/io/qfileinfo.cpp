@@ -667,6 +667,28 @@ bool QFileInfo::exists() const
 }
 
 /*!
+    Returns true if the \a file exists; otherwise returns false.
+
+    \note If \a file is a symlink that points to a non-existing
+    file, false is returned.
+
+    \note Using this function is faster for than using
+    \c QFileInfo(file).exists() for file system access.
+*/
+bool QFileInfo::exists(const QString &file)
+{
+    QFileSystemEntry entry(file);
+    QFileSystemMetaData data;
+    QAbstractFileEngine *engine =
+        QFileSystemEngine::resolveEntryAndCreateLegacyEngine(entry, data);
+    // Expensive fallback to non-QFileSystemEngine implementation
+    if (engine)
+        return QFileInfo(file).exists();
+    QFileSystemEngine::fillMetaData(entry, data, QFileSystemMetaData::ExistsAttribute);
+    return data.exists();
+}
+
+/*!
     Refreshes the information about the file, i.e. reads in information
     from the file system the next time a cached property is fetched.
 

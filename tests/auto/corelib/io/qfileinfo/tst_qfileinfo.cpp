@@ -438,6 +438,7 @@ void tst_QFileInfo::exists()
 
     QFileInfo fi(path);
     QCOMPARE(fi.exists(), expected);
+    QCOMPARE(QFileInfo::exists(path), expected);
 }
 
 void tst_QFileInfo::absolutePath_data()

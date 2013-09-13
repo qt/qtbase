@@ -84,6 +84,7 @@ public:
     void setFile(const QFile &file);
     void setFile(const QDir &dir, const QString &file);
     bool exists() const;
+    static bool exists(const QString &file);
     void refresh();
 
     QString filePath() const;
