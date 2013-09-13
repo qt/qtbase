@@ -328,11 +328,7 @@ void QFileSelectorPrivate::updateSelectors()
     if (!sharedData->staticSelectors.isEmpty())
         return; //Already loaded
 
-#if defined(Q_OS_WIN)
-    QLatin1Char pathSep(';');
-#else
-    QLatin1Char pathSep(':');
-#endif
+    QLatin1Char pathSep(',');
     QStringList envSelectors = QString::fromLatin1(qgetenv("QT_FILE_SELECTORS"))
                                 .split(pathSep, QString::SkipEmptyParts);
     if (envSelectors.count())
