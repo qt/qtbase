@@ -2028,7 +2028,7 @@ QString QCoreApplication::applicationFilePath()
 */
 qint64 QCoreApplication::applicationPid()
 {
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN)
     return GetCurrentProcessId();
 #elif defined(Q_OS_VXWORKS)
     return (pid_t) taskIdCurrent;
@@ -2079,7 +2079,7 @@ QStringList QCoreApplication::arguments()
     char ** const av = self->d_func()->argv;
     list.reserve(ac);
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     // On Windows, it is possible to pass Unicode arguments on
     // the command line. To restore those, we split the command line
     // and filter out arguments that were deleted by derived application

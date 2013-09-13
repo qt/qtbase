@@ -52,7 +52,7 @@ SOURCES += \
         image/qiconengineplugin.cpp \
 
 
-win32: SOURCES += image/qpixmap_win.cpp
+win32:!winrt: SOURCES += image/qpixmap_win.cpp
 
 # Built-in image format support
 HEADERS += \

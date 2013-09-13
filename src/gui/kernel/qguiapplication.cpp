@@ -907,12 +907,12 @@ static void init_platform(const QString &pluginArgument, const QString &platform
                         keys.join(QStringLiteral(", ")));
         }
         fatalMessage += QStringLiteral("Reinstalling the application may fix this problem.");
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
         // Windows: Display message box unless it is a console application
         // or debug build showing an assert box.
         if (!QLibraryInfo::isDebugBuild() && !GetConsoleWindow())
             MessageBox(0, (LPCTSTR)fatalMessage.utf16(), (LPCTSTR)(QCoreApplication::applicationName().utf16()), MB_OK | MB_ICONERROR);
-#endif // Q_OS_WIN && !Q_OS_WINCE
+#endif // Q_OS_WIN && !Q_OS_WINCE && !Q_OS_WINRT
         qFatal("%s", qPrintable(fatalMessage));
         return;
     }

@@ -56,6 +56,20 @@ QT_BEGIN_NAMESPACE
 
 int appCmdShow = 0;
 
+#if defined(Q_OS_WINRT)
+
+Q_CORE_EXPORT QString qAppFileName()
+{
+    return QFileInfo(QCoreApplication::arguments().first()).filePath();
+}
+
+QString QCoreApplicationPrivate::appName() const
+{
+    return QFileInfo(QCoreApplication::arguments().first()).baseName();
+}
+
+#else
+
 Q_CORE_EXPORT HINSTANCE qWinAppInst()                // get Windows app handle
 {
     return GetModuleHandle(0);
@@ -999,5 +1013,7 @@ QDebug operator<<(QDebug dbg, const MSG &msg)
 #endif
 
 #endif // QT_NO_QOBJECT
+
+#endif // !defined(Q_OS_WINRT)
 
 QT_END_NAMESPACE

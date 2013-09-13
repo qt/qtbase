@@ -1133,6 +1133,21 @@ bool qSharedBuild() Q_DECL_NOTHROW
 */
 
 /*!
+    \macro Q_OS_WINRT
+    \relates <QtGlobal>
+
+    Defined for Windows Runtime (Windows Store apps) on Windows 8, Windows RT,
+    and Windows Phone 8.
+*/
+
+/*!
+    \macro Q_OS_WINPHONE
+    \relates <QtGlobal>
+
+    Defined on Windows Phone 8.
+*/
+
+/*!
     \macro Q_OS_CYGWIN
     \relates <QtGlobal>
 
@@ -1715,7 +1730,7 @@ QSysInfo::MacVersion QSysInfo::macVersion()
 }
 const QSysInfo::MacVersion QSysInfo::MacintoshVersion = QSysInfo::macVersion();
 
-#elif defined(Q_OS_WIN) || defined(Q_OS_CYGWIN) || defined(Q_OS_WINCE)
+#elif defined(Q_OS_WIN) || defined(Q_OS_CYGWIN) || defined(Q_OS_WINCE) || defined(Q_OS_WINRT)
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "qt_windows.h"
@@ -1739,6 +1754,9 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
     static QSysInfo::WinVersion winver;
     if (winver)
         return winver;
+#ifdef Q_OS_WINRT
+    winver = QSysInfo::WV_WINDOWS8;
+#else
     winver = QSysInfo::WV_NT;
     OSVERSIONINFO osver;
     osver.dwOSVersionInfoSize = sizeof(osver);
@@ -1823,6 +1841,7 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
             winver = QSysInfo::WV_WINDOWS8;
     }
 #endif
+#endif // !Q_OS_WINRT
 
     return winver;
 }

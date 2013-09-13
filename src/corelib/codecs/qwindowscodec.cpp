@@ -159,7 +159,7 @@ QString QWindowsLocalCodec::convertToUnicodeCharByChar(const char *chars, int le
         state->remainingChars = 0;
     }
     const char *mb = mbcs;
-#ifndef Q_OS_WINCE
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     const char *next = 0;
     QString s;
     while ((next = CharNextExA(CP_ACP, mb, 0)) != mb) {

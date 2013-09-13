@@ -2079,7 +2079,7 @@ FatalSignalHandler::~FatalSignalHandler()
 
 } // namespace
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
 static LONG WINAPI windowsFaultHandler(struct _EXCEPTION_POINTERS *exInfo)
 {
     char appName[MAX_PATH];
@@ -2089,7 +2089,7 @@ static LONG WINAPI windowsFaultHandler(struct _EXCEPTION_POINTERS *exInfo)
             appName, exInfo->ExceptionRecord->ExceptionCode);
     return EXCEPTION_EXECUTE_HANDLER;
 }
-#endif // Q_OS_WIN) && !Q_OS_WINCE
+#endif // Q_OS_WIN) && !Q_OS_WINCE && !Q_OS_WINRT
 
 /*!
     Executes tests declared in \a testObject. In addition, the private slots
@@ -2171,7 +2171,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 
     qtest_qParseArgs(argc, argv, false);
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     if (!noCrashHandler) {
 # ifndef Q_CC_MINGW
         _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
@@ -2179,7 +2179,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
         SetErrorMode(SetErrorMode(0) | SEM_NOGPFAULTERRORBOX);
         SetUnhandledExceptionFilter(windowsFaultHandler);
     } // !noCrashHandler
-#endif // Q_OS_WIN) && !Q_OS_WINCE
+#endif // Q_OS_WIN) && !Q_OS_WINCE && !Q_OS_WINRT
 
 #ifdef QTESTLIB_USE_VALGRIND
     if (QBenchmarkGlobalData::current->mode() == QBenchmarkGlobalData::CallgrindParentProcess) {
@@ -2570,7 +2570,9 @@ void QTest::qSleep(int ms)
 {
     QTEST_ASSERT(ms > 0);
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WINRT)
+    WaitForSingleObjectEx(GetCurrentThread(), ms, true);
+#elif defined(Q_OS_WIN)
     Sleep(uint(ms));
 #else
     struct timespec ts = { ms / 1000, (ms % 1000) * 1000 * 1000 };

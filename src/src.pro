@@ -131,7 +131,7 @@ contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
             SUBDIRS += src_opengl
             src_plugins.depends += src_opengl
         }
-        !wince* {
+        !wince*:!winrt {
             SUBDIRS += src_printsupport
             src_plugins.depends += src_printsupport
         }

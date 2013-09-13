@@ -58,7 +58,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #  include "QtCore/qvector.h"
@@ -149,7 +149,7 @@ static inline QStringList qCmdLineArgs(int argc, char *argv[])
     return qWinCmdArgs(cmdLine);
 }
 
-#else  // !Q_OS_WIN
+#else  // Q_OS_WIN && !Q_OS_WINRT
 
 static inline QStringList qCmdLineArgs(int argc, char *argv[])
 {
@@ -159,7 +159,7 @@ static inline QStringList qCmdLineArgs(int argc, char *argv[])
     return args;
 }
 
-#endif // Q_OS_WIN
+#endif // !Q_OS_WIN || Q_OS_WINRT
 
 QT_END_NAMESPACE
 
