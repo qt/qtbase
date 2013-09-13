@@ -110,7 +110,8 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     win->setFlags(data.window_flags);
     fixPosIncludesFrame();
-    if (q->testAttribute(Qt::WA_Moved))
+    if (q->testAttribute(Qt::WA_Moved)
+        || !QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowManagement))
         win->setGeometry(q->geometry());
     else
         win->resize(q->size());
@@ -530,7 +531,8 @@ void QWidgetPrivate::show_sys()
         }
         const QRect windowRect = window->geometry();
         if (windowRect != geomRect) {
-            if (q->testAttribute(Qt::WA_Moved))
+            if (q->testAttribute(Qt::WA_Moved)
+                || !QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowManagement))
                 window->setGeometry(geomRect);
             else
                 window->resize(geomRect.size());

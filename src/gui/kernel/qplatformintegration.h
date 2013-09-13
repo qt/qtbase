@@ -93,7 +93,8 @@ public:
         ApplicationState,
         ForeignWindows,
         NonFullScreenWindows,
-        NativeWidgets
+        NativeWidgets,
+        WindowManagement
     };
 
     virtual ~QPlatformIntegration() { }

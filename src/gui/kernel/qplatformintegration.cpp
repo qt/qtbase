@@ -224,6 +224,11 @@ QPlatformServices *QPlatformIntegration::services() const
     fill the screen. The default implementation returns true. Returning false for
     this will cause all windows, including dialogs and popups, to be resized to fill the
     screen.
+
+    \value WindowManagement The platform is based on a system that performs window
+    management.  This includes the typical desktop platforms. Can be set to false on
+    platforms where no window management is available, meaning for example that windows
+    are never repositioned by the window manager. The default implementation returns true.
  */
 
 
@@ -241,7 +246,7 @@ QPlatformServices *QPlatformIntegration::services() const
 
 bool QPlatformIntegration::hasCapability(Capability cap) const
 {
-    return cap == NonFullScreenWindows || cap == NativeWidgets;
+    return cap == NonFullScreenWindows || cap == NativeWidgets || cap == WindowManagement;
 }
 
 QPlatformPixmap *QPlatformIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
