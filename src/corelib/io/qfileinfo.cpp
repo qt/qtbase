@@ -650,8 +650,8 @@ bool QFileInfo::makeAbsolute()
 /*!
     Returns true if the file exists; otherwise returns false.
 
-    \note If the file is a symlink that points to a non existing
-     file, false is returned.
+    \note If the file is a symlink that points to a non-existing
+    file, false is returned.
 */
 bool QFileInfo::exists() const
 {
