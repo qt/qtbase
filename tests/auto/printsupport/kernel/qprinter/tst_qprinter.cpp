@@ -590,6 +590,7 @@ void tst_QPrinter::setGetPaperSize()
     QSizeF size(500, 10);
     p.setPaperSize(size, QPrinter::Millimeter);
     QCOMPARE(p.paperSize(QPrinter::Millimeter), size);
+    QCOMPARE(p.pageSizeMM(), size);
     QSizeF ptSize = p.paperSize(QPrinter::Point);
     //qDebug() << ptSize;
     QVERIFY(qAbs(ptSize.width() - size.width() * (72/25.4)) < 1E-4);
