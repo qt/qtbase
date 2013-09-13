@@ -61,6 +61,9 @@
 #  ifdef Q_OS_WINCE
 #    include "qfunctions_wince.h"
 #  endif
+#  ifdef Q_OS_WINRT
+#    include "qfunctions_winrt.h"
+#  endif
 #endif
 
 #if defined(Q_OS_MAC)

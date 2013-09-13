@@ -5093,7 +5093,11 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
         return ucstrcmp(data1, length1, data2, length2);
 
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
+#ifndef Q_OS_WINRT
     int res = CompareString(GetUserDefaultLCID(), 0, (wchar_t*)data1, length1, (wchar_t*)data2, length2);
+#else
+    int res = CompareStringEx(LOCALE_NAME_USER_DEFAULT, 0, (LPCWSTR)data1, length1, (LPCWSTR)data2, length2, NULL, NULL, 0);
+#endif
 
     switch (res) {
     case CSTR_LESS_THAN:
