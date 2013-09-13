@@ -251,7 +251,9 @@ inline static bool waitForWindowExposed(QWindow *window, int timeout = 1000)
             break;
         QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
         QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WINRT)
+        WaitForSingleObjectEx(GetCurrentThread(), TimeOutMs, false);
+#elif defined(Q_OS_WIN)
         Sleep(uint(TimeOutMs));
 #else
         struct timespec ts = { TimeOutMs / 1000, (TimeOutMs % 1000) * 1000 * 1000 };

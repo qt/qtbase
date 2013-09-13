@@ -120,7 +120,7 @@ static inline void qt_flush(QWidget *widget, const QRegion &region, QBackingStor
 }
 
 #ifndef QT_NO_PAINT_DEBUG
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 
 static void showYellowThing_win(QWidget *widget, const QRegion &region, int msec)
 {
@@ -160,7 +160,7 @@ static void showYellowThing_win(QWidget *widget, const QRegion &region, int msec
     QGuiApplication::platformNativeInterface()->nativeResourceForWindow(QByteArrayLiteral("releaseDC"), nativeWindow);
     ::Sleep(msec);
 }
-#endif //  Q_OS_WIN
+#endif //  defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 
 void QWidgetBackingStore::showYellowThing(QWidget *widget, const QRegion &toBePainted, int msec, bool unclipped)
 {
@@ -175,7 +175,7 @@ void QWidgetBackingStore::showYellowThing(QWidget *widget, const QRegion &toBePa
         widget = nativeParent;
     }
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     Q_UNUSED(unclipped);
     showYellowThing_win(widget, paintRegion, msec);
 #else
