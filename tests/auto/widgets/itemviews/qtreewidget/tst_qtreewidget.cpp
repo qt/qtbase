@@ -165,6 +165,7 @@ private slots:
     void setChildIndicatorPolicy();
 
     void task20345_sortChildren();
+    void taskQTBUG13522_checkItemVisibilityBeforeItemShow();
 
 public slots:
     void itemSelectionChanged();
@@ -3371,6 +3372,39 @@ void tst_QTreeWidget::task20345_sortChildren()
     QVERIFY(1);
 }
 
+void tst_QTreeWidget::taskQTBUG13522_checkItemVisibilityBeforeItemShow()
+{
+    class TreeView : public QTreeWidget
+    {
+    public:
+        explicit TreeView(QWidget *parent = 0) : QTreeWidget(parent)
+            , item1_visibility(false), item2_visibility(false) {}
+        void showEvent(QShowEvent * /*event*/) Q_DECL_OVERRIDE
+        {
+            item1_visibility = !item1->isVisible();
+            item2_visibility = item2->isVisible();
+        }
+        QWidget *item1;
+        QWidget *item2;
+        bool item1_visibility;
+        bool item2_visibility;
+
+    } tw;
+    tw.item1 = new QWidget(&tw);
+    tw.item2 = new QWidget(&tw);
+    QTreeWidgetItem *widget_item = new QTreeWidgetItem();
+    widget_item->setText(0, "example text");
+    tw.addTopLevelItem(widget_item);
+    tw.setItemWidget(widget_item, 0, tw.item1);
+    widget_item = new QTreeWidgetItem();
+    tw.setItemWidget(widget_item, 0, tw.item2);
+    //set visible must after setItemWidget or setItemWidget will reset the visibility
+    tw.item1->setVisible(false);
+    tw.item2->setVisible(true);
+    tw.show();
+    QTRY_VERIFY(tw.item1_visibility);
+    QTRY_VERIFY(tw.item2_visibility);
+}
 
 QTEST_MAIN(tst_QTreeWidget)
 #include "tst_qtreewidget.moc"

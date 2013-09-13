@@ -2637,7 +2637,8 @@ void QAbstractItemView::updateEditorGeometries()
         if (index.isValid() && editor) {
             option.rect = visualRect(index);
             if (option.rect.isValid()) {
-                editor->show();
+                if (!editor->isHidden())
+                    editor->show();
                 QAbstractItemDelegate *delegate = d->delegateForIndex(index);
                 if (delegate)
                     delegate->updateEditorGeometry(editor, option, index);
