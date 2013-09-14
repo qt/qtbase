@@ -62,7 +62,6 @@ static const int RateControlTimerDelay = 1000;
 static const int MinimumTimeBeforeRevisit = 30;
 static const int MaxUploads = 4;
 static const int UploadScheduleInterval = 10000;
-static const int EndGamePieces = 5;
 
 class TorrentPiece {
 public:

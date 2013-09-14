@@ -49,7 +49,6 @@ static const int ConnectTimeout = 60 * 1000;
 static const int KeepAliveInterval = 30 * 1000;
 static const int RateControlTimerDelay = 2000;
 static const int MinimalHeaderSize = 48;
-static const int FullHeaderSize = 68;
 static const char ProtocolId[] = "BitTorrent protocol";
 static const char ProtocolIdSize = 19;
 
