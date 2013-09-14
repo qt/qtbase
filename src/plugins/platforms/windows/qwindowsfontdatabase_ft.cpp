@@ -590,12 +590,6 @@ HFONT QWindowsFontDatabaseFT::systemFont()
 
 // Creation functions
 
-static inline bool scriptRequiresOpenType(int script)
-{
-    return ((script >= QChar::Script_Syriac && script <= QChar::Script_Sinhala)
-            || script == QChar::Script_Khmer || script == QChar::Script_Nko);
-}
-
 static inline int verticalDPI()
 {
     return GetDeviceCaps(QWindowsContext::instance()->displayContext(), LOGPIXELSY);
