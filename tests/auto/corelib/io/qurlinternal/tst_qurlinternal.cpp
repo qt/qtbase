@@ -56,10 +56,11 @@
 #define STRINGPREP_BIDI_LEADTRAIL_NOT_RAL 5
 
 struct ushortarray {
-    ushortarray(unsigned short *array = 0)
+    ushortarray() {}
+    template <size_t N>
+    ushortarray(unsigned short (&array)[N])
     {
-        if (array)
-            memcpy(points, array, sizeof(points));
+        memcpy(points, array, N*sizeof(unsigned short));
     }
 
     unsigned short points[100];
