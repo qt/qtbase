@@ -52,11 +52,11 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GUI_EXPORT  void qt_registerFont(const QString &familyName, const QString &stylename,
-                                   const QString &foundryname, int weight,
-                                   QFont::Style style, int stretch, bool antialiased,
-                                   bool scalable, int pixelSize, bool fixedPitch,
-                                   const QSupportedWritingSystems &writingSystems, void *handle)
+void qt_registerFont(const QString &familyName, const QString &stylename,
+                     const QString &foundryname, int weight,
+                     QFont::Style style, int stretch, bool antialiased,
+                     bool scalable, int pixelSize, bool fixedPitch,
+                     const QSupportedWritingSystems &writingSystems, void *handle)
 {
     QFontDatabasePrivate *d = privateDb();
 //    qDebug() << "Adding font" << familyName << weight << style << pixelSize << antialiased;
