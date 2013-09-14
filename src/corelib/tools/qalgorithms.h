@@ -43,7 +43,6 @@
 #define QALGORITHMS_H
 
 #include <QtCore/qglobal.h>
-#include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
@@ -293,7 +292,7 @@ template <typename RandomAccessIterator, typename T>
 Q_OUTOFLINE_TEMPLATE RandomAccessIterator qBinaryFind(RandomAccessIterator begin, RandomAccessIterator end, const T &value)
 {
     // Implementation is duplicated from QAlgorithmsPrivate.
-    RandomAccessIterator it = std::lower_bound(begin, end, value);
+    RandomAccessIterator it = qLowerBound(begin, end, value);
 
     if (it == end || value < *it)
         return end;
@@ -507,7 +506,7 @@ Q_OUTOFLINE_TEMPLATE RandomAccessIterator qUpperBoundHelper(RandomAccessIterator
 template <typename RandomAccessIterator, typename T, typename LessThan>
 Q_OUTOFLINE_TEMPLATE RandomAccessIterator qBinaryFindHelper(RandomAccessIterator begin, RandomAccessIterator end, const T &value, LessThan lessThan)
 {
-    RandomAccessIterator it = std::lower_bound(begin, end, value, lessThan);
+    RandomAccessIterator it = qLowerBoundHelper(begin, end, value, lessThan);
 
     if (it == end || lessThan(value, *it))
         return end;
