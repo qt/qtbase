@@ -1623,7 +1623,8 @@ QStringList QWindowsFontDatabase::fallbacksForFamily(const QString &family, QFon
             result << QString::fromLatin1("Arial");
     }
 
-    result.append(extraTryFontsForFamily(family));
+    if (script == QChar::Script_Common || script == QChar::Script_Han)
+        result.append(extraTryFontsForFamily(family));
 
     if (QWindowsContext::verboseFonts)
         qDebug() << __FUNCTION__ << family << style << styleHint
