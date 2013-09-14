@@ -73,10 +73,18 @@ class QPlatformDropQtResponse;
 class Q_GUI_EXPORT QWindowSystemInterface
 {
 public:
-    static void handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods = Qt::NoModifier);
-    static void handleMouseEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods = Qt::NoModifier);
-    static void handleFrameStrutMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods = Qt::NoModifier);
-    static void handleFrameStrutMouseEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods = Qt::NoModifier);
+    static void handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
+                                 Qt::KeyboardModifiers mods = Qt::NoModifier,
+                                 Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
+    static void handleMouseEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
+                                 Qt::KeyboardModifiers mods = Qt::NoModifier,
+                                 Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
+    static void handleFrameStrutMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
+                                           Qt::KeyboardModifiers mods = Qt::NoModifier,
+                                           Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
+    static void handleFrameStrutMouseEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
+                                           Qt::KeyboardModifiers mods = Qt::NoModifier,
+                                           Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
 
     static bool tryHandleShortcutEvent(QWindow *w, int k, Qt::KeyboardModifiers mods,
                                                   const QString & text = QString(), bool autorep = false, ushort count = 1);

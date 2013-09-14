@@ -167,6 +167,8 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     if (et == QtWindows::MouseWheelEvent)
         return translateMouseWheelEvent(window, hwnd, msg, result);
 
+    Qt::MouseEventSource source = Qt::MouseEventNotSynthesized;
+
 #ifndef Q_OS_WINCE
     static const bool passSynthesizedMouseEvents = QWindowsIntegration::instance()->options() & QWindowsIntegration::PassOsMouseEventsSynthesizedFromTouch;
     if (!passSynthesizedMouseEvents) {
@@ -177,6 +179,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         const bool fromTouch = (extraInfo & signatureMask) == miWpSignature && (extraInfo & 0x80);
         if (fromTouch)
             return false;
+        source = Qt::MouseEventSynthesizedBySystem;
     }
 #endif // !Q_OS_WINCE
 
@@ -187,7 +190,8 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         const Qt::MouseButtons buttons = QWindowsMouseHandler::queryMouseButtons();
         QWindowSystemInterface::handleFrameStrutMouseEvent(window, clientPosition,
                                                            globalPosition, buttons,
-                                                           QWindowsKeyMapper::queryKeyboardModifiers());
+                                                           QWindowsKeyMapper::queryKeyboardModifiers(),
+                                                           source);
         return false; // Allow further event processing (dragging of windows).
     }
 
@@ -335,7 +339,8 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     }
 
     QWindowSystemInterface::handleMouseEvent(window, winEventPosition, globalPosition, buttons,
-                                             QWindowsKeyMapper::queryKeyboardModifiers());
+                                             QWindowsKeyMapper::queryKeyboardModifiers(),
+                                             source);
     m_previousCaptureWindow = hasCapture ? window : 0;
     return true;
 }

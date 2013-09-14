@@ -161,31 +161,35 @@ void QWindowSystemInterface::handleCloseEvent(QWindow *tlw, bool *accepted)
 \a w == 0 means that the event is in global coords only, \a local will be ignored in this case
 
 */
-void QWindowSystemInterface::handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods)
+void QWindowSystemInterface::handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
+                                              Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
 {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleMouseEvent(w, time, local, global, b, mods);
+    handleMouseEvent(w, time, local, global, b, mods, source);
 }
 
-void QWindowSystemInterface::handleMouseEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods)
+void QWindowSystemInterface::handleMouseEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
+                                              Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
 {
     QWindowSystemInterfacePrivate::MouseEvent * e =
-            new QWindowSystemInterfacePrivate::MouseEvent(w, timestamp, local, global, b, mods);
+        new QWindowSystemInterfacePrivate::MouseEvent(w, timestamp, local, global, b, mods, source);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods)
+void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
+                                                        Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
 {
     const unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleFrameStrutMouseEvent(w, time, local, global, b, mods);
+    handleFrameStrutMouseEvent(w, time, local, global, b, mods, source);
 }
 
-void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods)
+void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b,
+                                                        Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
 {
     QWindowSystemInterfacePrivate::MouseEvent * e =
             new QWindowSystemInterfacePrivate::MouseEvent(w, timestamp,
                                                           QWindowSystemInterfacePrivate::FrameStrutMouse,
-                                                          local, global, b, mods);
+                                                          local, global, b, mods, source);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 

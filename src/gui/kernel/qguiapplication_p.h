@@ -264,7 +264,9 @@ public:
     static int mouseEventCaps(QMouseEvent *event);
     static QVector2D mouseEventVelocity(QMouseEvent *event);
     static void setMouseEventCapsAndVelocity(QMouseEvent *event, int caps, const QVector2D &velocity);
-    static void setMouseEventCapsAndVelocity(QMouseEvent *event, QMouseEvent *other);
+
+    static Qt::MouseEventSource mouseEventSource(const QMouseEvent *event);
+    static void setMouseEventSource(QMouseEvent *event, Qt::MouseEventSource source);
 
     const QDrawHelperGammaTables *gammaTables();
 

@@ -274,6 +274,24 @@ QMouseEvent::~QMouseEvent()
 {
 }
 
+/*!
+  \since 5.3
+
+  Returns information about the mouse event source.
+
+  The mouse event source can be used to distinguish between genuine
+  and artificial mouse events. The latter are events that are
+  synthesized from touch events by the operating system or Qt itself.
+
+  \note Many platforms provide no such information. On such platforms
+  \l Qt::MouseEventNotSynthesized is returned always.
+
+  \sa Qt::MouseEventSource
+ */
+Qt::MouseEventSource QMouseEvent::source() const
+{
+    return QGuiApplicationPrivate::mouseEventSource(this);
+}
 
 /*!
     \fn QPointF QMouseEvent::localPos() const

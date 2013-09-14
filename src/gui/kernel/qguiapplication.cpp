@@ -1560,6 +1560,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
 
     QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, buttons, e->modifiers);
     ev.setTimestamp(e->timestamp);
+    setMouseEventSource(&ev, e->source);
 #ifndef QT_NO_CURSOR
     if (const QScreen *screen = window->screen())
         if (QPlatformCursor *cursor = screen->handle()->cursor())
@@ -1612,6 +1613,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         QMouseEvent dblClickEvent(doubleClickType, localPoint, localPoint, globalPoint,
                                   button, buttons, e->modifiers);
         dblClickEvent.setTimestamp(e->timestamp);
+        setMouseEventSource(&dblClickEvent, e->source);
         QGuiApplication::sendSpontaneousEvent(window, &dblClickEvent);
     }
 }
@@ -2024,7 +2026,8 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                                                                synthIt->pos,
                                                                synthIt->screenPos,
                                                                Qt::NoButton,
-                                                               e->modifiers);
+                                                               e->modifiers,
+                                                               Qt::MouseEventSynthesizedByQt);
                 fake.synthetic = true;
                 processMouseEvent(&fake);
             }
@@ -3103,9 +3106,16 @@ void QGuiApplicationPrivate::_q_updateFocusObject(QObject *object)
     emit q->focusObjectChanged(object);
 }
 
+enum {
+    MouseCapsMask = 0xFF,
+    MouseSourceMaskDst = 0xFF00,
+    MouseSourceMaskSrc = MouseCapsMask,
+    MouseSourceShift = 8,
+};
+
 int QGuiApplicationPrivate::mouseEventCaps(QMouseEvent *event)
 {
-    return event->caps;
+    return event->caps & MouseCapsMask;
 }
 
 QVector2D QGuiApplicationPrivate::mouseEventVelocity(QMouseEvent *event)
@@ -3115,16 +3125,26 @@ QVector2D QGuiApplicationPrivate::mouseEventVelocity(QMouseEvent *event)
 
 void QGuiApplicationPrivate::setMouseEventCapsAndVelocity(QMouseEvent *event, int caps, const QVector2D &velocity)
 {
-    event->caps = caps;
+    Q_ASSERT(caps <= MouseCapsMask);
+    event->caps &= ~MouseCapsMask;
+    event->caps |= caps & MouseCapsMask;
     event->velocity = velocity;
 }
 
-void QGuiApplicationPrivate::setMouseEventCapsAndVelocity(QMouseEvent *event, QMouseEvent *other)
+Qt::MouseEventSource QGuiApplicationPrivate::mouseEventSource(const QMouseEvent *event)
 {
-    event->caps = other->caps;
-    event->velocity = other->velocity;
+    return Qt::MouseEventSource((event->caps & MouseSourceMaskDst) >> MouseSourceShift);
 }
 
+void QGuiApplicationPrivate::setMouseEventSource(QMouseEvent *event, Qt::MouseEventSource source)
+{
+    // Mouse event synthesization status is encoded in the caps field because
+    // QTouchDevice::CapabilityFlag uses only 6 bits from it.
+    int value = source;
+    Q_ASSERT(value <= MouseSourceMaskSrc);
+    event->caps &= ~MouseSourceMaskDst;
+    event->caps |= (value & MouseSourceMaskSrc) << MouseSourceShift;
+}
 
 #include "moc_qguiapplication.cpp"
 

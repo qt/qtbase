@@ -2895,3 +2895,25 @@
     \value ScrollEnd Scrolling has ended, but the scrolling distance
     did not change anymore.
 */
+
+/*!
+    \enum Qt::MouseEventSource
+    \since 5.3
+
+    This enum describes the source of a mouse event and can be useful
+    to determine if the event is an artificial mouse event originating
+    from another device such as a touchscreen.
+
+    \value MouseEventNotSynthesized The most common value. On
+    platforms where such information is available this value indicates
+    that the event was generated in response to a genuine mouse event
+    in the system.
+
+    \value MouseEventSynthesizedBySystem Indicates that the mouse
+    event was synthesized from a touch event by the platform.
+
+    \value MouseEventSynthesizedByQt Indicates that the mouse event was
+    synthesized from an unhandled touch event by Qt.
+
+    \sa Qt::AA_SynthesizeMouseForUnhandledTouchEvents
+*/
