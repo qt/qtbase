@@ -148,8 +148,8 @@ public:
     static inline QMetaMethod fromSignal(Func signal)
     {
         typedef QtPrivate::FunctionPointer<Func> SignalType;
-        reinterpret_cast<typename SignalType::Object *>(0)->qt_check_for_QOBJECT_macro(
-                    *reinterpret_cast<typename SignalType::Object *>(0));
+        Q_STATIC_ASSERT_X(QtPrivate::HasQ_OBJECT_Macro<typename SignalType::Object>::Value,
+                          "No Q_OBJECT in the class with the signal");
         return fromSignalImpl(&SignalType::Object::staticMetaObject,
                               reinterpret_cast<void **>(&signal));
     }

@@ -204,7 +204,6 @@ namespace QtPrivate {
     public:
         explicit QFunctorSlotObject(const Func &f) : QSlotObjectBase(&impl), function(f) {}
     };
-
 }
 
 

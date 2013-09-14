@@ -480,6 +480,16 @@ public:
 inline const QMetaObject *QMetaObject::superClass() const
 { return d.superdata; }
 
+namespace QtPrivate {
+    /* Trait that tells is a the Object has a Q_OBJECT macro */
+    template <typename Object> struct HasQ_OBJECT_Macro {
+        template <typename T>
+        static char test(int (T::*)(QMetaObject::Call, int, void **));
+        static int test(int (Object::*)(QMetaObject::Call, int, void **));
+        enum { Value =  sizeof(test(&Object::qt_metacall)) == sizeof(int) };
+    };
+}
+
 QT_END_NAMESPACE
 
 #endif // QOBJECTDEFS_H

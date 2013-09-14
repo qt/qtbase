@@ -5931,5 +5931,9 @@ void tst_QObject::qmlConnect()
 #endif
 }
 
+// Test for QtPrivate::HasQ_OBJECT_Macro
+Q_STATIC_ASSERT(QtPrivate::HasQ_OBJECT_Macro<tst_QObject>::Value);
+Q_STATIC_ASSERT(!QtPrivate::HasQ_OBJECT_Macro<SiblingDeleter>::Value);
+
 QTEST_MAIN(tst_QObject)
 #include "tst_qobject.moc"
