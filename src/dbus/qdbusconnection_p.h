@@ -148,6 +148,14 @@ public:
             { return name < other; }
         inline bool operator<(const QStringRef &other) const
             { return QStringRef(&name) < other; }
+#if defined(Q_CC_MSVC) && _MSC_VER < 1600
+        inline bool operator<(const ObjectTreeNode &other) const
+            { return name < other.name; }
+        friend inline bool operator<(const QString &str, const ObjectTreeNode &obj)
+            { return str < obj.name; }
+        friend inline bool operator<(const QStringRef &str, const ObjectTreeNode &obj)
+            { return str < QStringRef(&obj.name); }
+#endif
         inline bool isActive() const
         { return obj || !children.isEmpty(); }
 
