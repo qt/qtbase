@@ -2467,7 +2467,7 @@ void tst_QSettings::testEscapes()
         QString s = QSettingsPrivate::variantToString(v); \
         QCOMPARE(s, escStr); \
         QCOMPARE(QVariant(QSettingsPrivate::stringToVariant(escStr)), v); \
-        QVERIFY(val == v.func()); \
+        QVERIFY((val) == v.func());                                     \
     }
 
 #define testBadEscape(escStr, vStr) \
