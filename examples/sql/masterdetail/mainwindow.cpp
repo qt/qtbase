@@ -142,7 +142,7 @@ void MainWindow::showAlbumDetails(QModelIndex index)
             break;
         }
     }
-    if (!trackList->count() == 0)
+    if (trackList->count() != 0)
         trackList->show();
 }
 
