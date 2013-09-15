@@ -1054,7 +1054,7 @@ Q_OUTOFLINE_TEMPLATE QList<T> QMap<Key, T>::values(const Key &akey) const
 template <class Key, class T>
 Q_INLINE_TEMPLATE typename QMap<Key, T>::const_iterator QMap<Key, T>::lowerBound(const Key &akey) const
 {
-    Node *lb = d->root()->lowerBound(akey);
+    Node *lb = d->root() ? d->root()->lowerBound(akey) : 0;
     if (!lb)
         lb = d->end();
     return const_iterator(lb);
@@ -1064,7 +1064,7 @@ template <class Key, class T>
 Q_INLINE_TEMPLATE typename QMap<Key, T>::iterator QMap<Key, T>::lowerBound(const Key &akey)
 {
     detach();
-    Node *lb = d->root()->lowerBound(akey);
+    Node *lb = d->root() ? d->root()->lowerBound(akey) : 0;
     if (!lb)
         lb = d->end();
     return iterator(lb);
@@ -1074,7 +1074,7 @@ template <class Key, class T>
 Q_INLINE_TEMPLATE typename QMap<Key, T>::const_iterator
 QMap<Key, T>::upperBound(const Key &akey) const
 {
-    Node *ub = d->root()->upperBound(akey);
+    Node *ub = d->root() ? d->root()->upperBound(akey) : 0;
     if (!ub)
         ub = d->end();
     return const_iterator(ub);
@@ -1084,7 +1084,7 @@ template <class Key, class T>
 Q_INLINE_TEMPLATE typename QMap<Key, T>::iterator QMap<Key, T>::upperBound(const Key &akey)
 {
     detach();
-    Node *ub = d->root()->upperBound(akey);
+    Node *ub = d->root() ? d->root()->upperBound(akey) : 0;
     if (!ub)
         ub = d->end();
     return iterator(ub);
