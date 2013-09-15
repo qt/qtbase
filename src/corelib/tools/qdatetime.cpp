@@ -3228,12 +3228,12 @@ bool QDateTime::operator<(const QDateTime &other) const
     \sa currentDateTime(), currentDateTimeUtc(), toTime_t(), toTimeSpec()
 */
 
+#if defined(Q_OS_WIN)
 static inline uint msecsFromDecomposed(int hour, int minute, int sec, int msec = 0)
 {
     return MSECS_PER_HOUR * hour + MSECS_PER_MIN * minute + 1000 * sec + msec;
 }
 
-#if defined(Q_OS_WIN)
 QDate QDate::currentDate()
 {
     QDate d;
