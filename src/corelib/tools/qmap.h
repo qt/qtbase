@@ -288,9 +288,11 @@ void QMapData<Key, T>::deleteNode(QMapNode<Key, T> *z)
 template <class Key, class T>
 QMapNode<Key, T> *QMapData<Key, T>::findNode(const Key &akey) const
 {
-    Node *lb = root()->lowerBound(akey);
-    if (lb && !qMapLessThanKey(akey, lb->key))
-        return lb;
+    if (Node *r = root()) {
+        Node *lb = r->lowerBound(akey);
+        if (lb && !qMapLessThanKey(akey, lb->key))
+            return lb;
+    }
     return 0;
 }
 
@@ -307,10 +309,10 @@ void QMapData<Key, T>::nodeRange(const Key &akey, QMapNode<Key, T> **firstNode, 
         } else if (qMapLessThanKey(n->key, akey)) {
             n = n->rightNode();
         } else {
-            *firstNode = n->leftNode()->lowerBound(akey);
+            *firstNode = n->leftNode() ? n->leftNode()->lowerBound(akey) : 0;
             if (!*firstNode)
                 *firstNode = n;
-            *lastNode = n->rightNode()->upperBound(akey);
+            *lastNode = n->rightNode() ? n->rightNode()->upperBound(akey) : 0;
             if (!*lastNode)
                 *lastNode = l;
             return;
