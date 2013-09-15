@@ -489,7 +489,7 @@ inline T qobject_cast(QObject *object)
 {
     typedef typename QtPrivate::remove_cv<typename QtPrivate::remove_pointer<T>::type>::type ObjType;
     Q_STATIC_ASSERT_X(QtPrivate::HasQ_OBJECT_Macro<ObjType>::Value,
-                    "qobject_cast require the type to have a Q_OBJECT macro");
+                    "qobject_cast requires the type to have a Q_OBJECT macro");
     return static_cast<T>(reinterpret_cast<T>(object)->staticMetaObject.cast(object));
 }
 
@@ -498,7 +498,7 @@ inline T qobject_cast(const QObject *object)
 {
     typedef typename QtPrivate::remove_cv<typename QtPrivate::remove_pointer<T>::type>::type ObjType;
     Q_STATIC_ASSERT_X(QtPrivate::HasQ_OBJECT_Macro<ObjType>::Value,
-                      "qobject_cast require the type to have a Q_OBJECT macro");
+                      "qobject_cast requires the type to have a Q_OBJECT macro");
     return static_cast<T>(reinterpret_cast<T>(object)->staticMetaObject.cast(object));
 }
 
