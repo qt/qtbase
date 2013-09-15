@@ -66,7 +66,7 @@
     You can query the status of the cancel-on-wait feature using the
     cancelOnWait() function.
 
-    \sa QFuture, QFutureWatcher, {Concurrent Programming}{Qt Concurrent}
+    \sa QFuture, QFutureWatcher, {Qt Concurrent}
 */
 
 /*!
