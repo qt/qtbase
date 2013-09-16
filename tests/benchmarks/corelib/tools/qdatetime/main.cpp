@@ -75,28 +75,22 @@ private Q_SLOTS:
     void toMSecsSinceEpochTz();
     void toMSecsSinceEpoch1950Tz();
     void toMSecsSinceEpoch2050Tz();
-    void toTime_t();
     void setDate();
     void setTime();
     void setTimeSpec();
     void setOffsetFromUtc();
     void setMSecsSinceEpoch();
     void setMSecsSinceEpochTz();
-    void setTime_t();
     void toString();
     void toStringTextFormat();
     void toStringIsoFormat();
     void addDays();
     void addDaysTz();
-    void addMonths();
-    void addYears();
-    void addSecs();
     void addMSecs();
     void addMSecsTz();
     void toTimeSpec();
     void toOffsetFromUtc();
     void daysTo();
-    void secsTo();
     void msecsTo();
     void equivalent();
     void equivalentUtc();
@@ -110,7 +104,6 @@ private Q_SLOTS:
     void fromString();
     void fromStringText();
     void fromStringIso();
-    void fromTime_t();
     void fromMSecsSinceEpoch();
     void fromMSecsSinceEpochUtc();
     void fromMSecsSinceEpochTz();
@@ -272,17 +265,6 @@ void tst_QDateTime::toMSecsSinceEpoch2050Tz()
     }
 }
 
-void tst_QDateTime::toTime_t()
-{
-    QList<QDateTime> list;
-    for (int jd = JULIAN_DAY_2010; jd < JULIAN_DAY_2020; ++jd)
-        list.append(QDateTime(QDate::fromJulianDay(jd), QTime::fromMSecsSinceStartOfDay(0)));
-    QBENCHMARK {
-        foreach (const QDateTime &test, list)
-            test.toTime_t();
-    }
-}
-
 void tst_QDateTime::setDate()
 {
     QList<QDateTime> list;
@@ -351,18 +333,6 @@ void tst_QDateTime::setMSecsSinceEpochTz()
     }
 }
 
-void tst_QDateTime::setTime_t()
-{
-    time_t secs = time_t(JULIAN_DAY_2010 + 180) * SECS_PER_DAY;
-    QList<QDateTime> list;
-    for (int jd = JULIAN_DAY_2010; jd < JULIAN_DAY_2020; ++jd)
-        list.append(QDateTime(QDate::fromJulianDay(jd), QTime::fromMSecsSinceStartOfDay(0)));
-    QBENCHMARK {
-        foreach (QDateTime test, list)
-            test.setTime_t(secs);
-    }
-}
-
 void tst_QDateTime::toString()
 {
     QList<QDateTime> list;
@@ -416,39 +386,6 @@ void tst_QDateTime::addDaysTz()
     QBENCHMARK {
         foreach (const QDateTime &test, list)
             QDateTime result = test.addDays(1);
-    }
-}
-
-void tst_QDateTime::addMonths()
-{
-    QList<QDateTime> list;
-    for (int jd = JULIAN_DAY_2010; jd < JULIAN_DAY_2020; ++jd)
-        list.append(QDateTime(QDate::fromJulianDay(jd), QTime::fromMSecsSinceStartOfDay(0)));
-    QBENCHMARK {
-        foreach (const QDateTime &test, list)
-            test.addMonths(1);
-    }
-}
-
-void tst_QDateTime::addYears()
-{
-    QList<QDateTime> list;
-    for (int jd = JULIAN_DAY_2010; jd < JULIAN_DAY_2020; ++jd)
-        list.append(QDateTime(QDate::fromJulianDay(jd), QTime::fromMSecsSinceStartOfDay(0)));
-    QBENCHMARK {
-        foreach (const QDateTime &test, list)
-            test.addYears(1);
-    }
-}
-
-void tst_QDateTime::addSecs()
-{
-    QList<QDateTime> list;
-    for (int jd = JULIAN_DAY_2010; jd < JULIAN_DAY_2020; ++jd)
-        list.append(QDateTime(QDate::fromJulianDay(jd), QTime::fromMSecsSinceStartOfDay(0)));
-    QBENCHMARK {
-        foreach (const QDateTime &test, list)
-            test.addSecs(1);
     }
 }
 
@@ -506,18 +443,6 @@ void tst_QDateTime::daysTo()
     QBENCHMARK {
         foreach (const QDateTime &test, list)
             test.daysTo(other);
-    }
-}
-
-void tst_QDateTime::secsTo()
-{
-    QDateTime other = QDateTime::fromMSecsSinceEpoch(qint64(JULIAN_DAY_2010) * MSECS_PER_DAY);
-    QList<QDateTime> list;
-    for (int jd = JULIAN_DAY_2010; jd < JULIAN_DAY_2020; ++jd)
-        list.append(QDateTime(QDate::fromJulianDay(jd), QTime::fromMSecsSinceStartOfDay(0)));
-    QBENCHMARK {
-        foreach (const QDateTime &test, list)
-            test.secsTo(other);
     }
 }
 
@@ -654,14 +579,6 @@ void tst_QDateTime::fromStringIso()
     QBENCHMARK {
         for (int i = 0; i < 1000; ++i)
             QDateTime::fromString(input, Qt::ISODate);
-    }
-}
-
-void tst_QDateTime::fromTime_t()
-{
-    QBENCHMARK {
-        for (int jd = JULIAN_DAY_2010; jd < JULIAN_DAY_2020; ++jd)
-            QDateTime::fromTime_t(jd * SECS_PER_DAY, Qt::LocalTime);
     }
 }
 
