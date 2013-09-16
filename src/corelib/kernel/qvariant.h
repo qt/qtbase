@@ -602,6 +602,16 @@ public:
             ref->ref();
         }
 
+        inline const_iterator& operator=(const const_iterator &other)
+        {
+            if (!m_impl.equal(other.m_impl)) {
+                m_impl = other.m_impl;
+                ref = other.ref;
+            }
+            ref->ref();
+            return *this;
+        }
+
         inline const QVariant operator*() const {
             const QtMetaTypePrivate::VariantData d = m_impl.getCurrent();
             if (d.metaTypeId == qMetaTypeId<QVariant>())
@@ -669,6 +679,16 @@ public:
         }
         inline const_iterator(const const_iterator &other) : m_impl(other.m_impl), ref(other.ref)  {
             ref->ref();
+        }
+
+        inline const_iterator& operator=(const const_iterator &other)
+        {
+            if (!m_impl.equal(other.m_impl)) {
+                m_impl = other.m_impl;
+                ref = other.ref;
+            }
+            ref->ref();
+            return *this;
         }
 
         inline const QVariant key() const {

@@ -3508,6 +3508,10 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     Creates a copy of \a other.
 */
 
+/*! \fn QSequentialIterable::const_iterator::const_iterator& QSequentialIterable::const_iterator::operator=(const const_iterator &other)
+    Assigns \a other to this.
+*/
+
 /*! \fn QVariant QSequentialIterable::const_iterator::operator*() const
 
     Returns the current item, converted to a QVariant.
@@ -3682,6 +3686,10 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 /*! \fn QAssociativeIterable::const_iterator::const_iterator(const const_iterator &other)
 
     Creates a copy of \a other.
+*/
+
+/*! \fn QAssociativeIterable::const_iterator::const_iterator& QAssociativeIterable::const_iterator::operator=(const const_iterator &other)
+    Assigns \a other to this.
 */
 
 /*! \fn QVariant QAssociativeIterable::const_iterator::operator*() const
