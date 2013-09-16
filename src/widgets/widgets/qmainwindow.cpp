@@ -629,6 +629,22 @@ void QMainWindow::setCentralWidget(QWidget *widget)
     d->layout->setCentralWidget(widget);
 }
 
+/*!
+    Removes the central widget from this main window.
+
+    The ownership of the removed widget is passed to the caller.
+
+    \since Qt 5.2
+*/
+QWidget *QMainWindow::takeCentralWidget()
+{
+    Q_D(QMainWindow);
+    QWidget *oldcentralwidget = d->layout->centralWidget();
+    oldcentralwidget->setParent(0);
+    d->layout->setCentralWidget(0);
+    return oldcentralwidget;
+}
+
 #ifndef QT_NO_DOCKWIDGET
 /*!
     Sets the given dock widget \a area to occupy the specified \a

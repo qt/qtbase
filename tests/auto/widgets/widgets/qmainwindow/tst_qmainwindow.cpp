@@ -118,6 +118,7 @@ private slots:
     void toolButtonStyle();
     void menuBar();
     void centralWidget();
+    void takeCentralWidget();
     void corner();
     void addToolBarBreak();
     void insertToolBarBreak();
@@ -189,6 +190,14 @@ void tst_QMainWindow::getSetCheck()
     obj1.setCentralWidget((QWidget *)0);
     QCOMPARE((QWidget *)0, obj1.centralWidget());
     // delete var3; // No delete, since QMainWindow takes ownership
+
+    QWidget *var4 = new QWidget;
+    QPointer<QWidget> oldcentralwidget(var4);
+    obj1.setCentralWidget(var4);
+    obj1.setCentralWidget(new QWidget);
+    QCoreApplication::sendPostedEvents(var4, QEvent::DeferredDelete);
+    QVERIFY(oldcentralwidget.isNull());
+    QVERIFY(obj1.centralWidget()->parent());
 }
 
 tst_QMainWindow::tst_QMainWindow()
@@ -806,6 +815,52 @@ void tst_QMainWindow::centralWidget()
         QVERIFY(w1 == 0);
         QVERIFY(w2 == 0);
     }
+
+}
+
+void tst_QMainWindow::takeCentralWidget() {
+    // test if takeCentralWidget works
+    QMainWindow mw;
+
+    QPointer<QWidget> w1 = new QWidget;
+
+    QVERIFY(mw.centralWidget() == 0);
+
+    mw.setCentralWidget(w1);
+
+    QWidget *oldCentralWidget = mw.takeCentralWidget();
+    QVERIFY(oldCentralWidget == w1.data());
+
+    // ensure that takeCentralWidget doesn't end up calling deleteLater
+    // on the central widget
+    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    QVERIFY(mw.centralWidget() == 0);
+    QVERIFY(!w1.isNull());
+    QVERIFY(w1->parent() == 0);
+
+    mw.setCentralWidget(w1);
+    // ensure that the deleteLater called by setCentralWidget
+    // gets executed
+    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    QVERIFY(mw.centralWidget() == w1.data());
+
+    QPointer<QWidget> w2 = new QWidget;
+
+    mw.setCentralWidget(w2);
+    // ensure w2 gets deleted
+    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    QVERIFY(w1.isNull());
+
+    QVERIFY(mw.centralWidget() == w2.data());
+
+    QWidget *hopefullyW2 = mw.takeCentralWidget();
+    QVERIFY(mw.centralWidget() == 0);
+    // ensure that takeCentralWidget doesn't end up calling deleteLater
+    // on the central widget
+    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+
+    QVERIFY(!w2.isNull());
+    QCOMPARE(w2.data(), hopefullyW2);
 }
 
 void tst_QMainWindow::corner()

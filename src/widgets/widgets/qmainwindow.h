@@ -137,6 +137,8 @@ public:
     QWidget *centralWidget() const;
     void setCentralWidget(QWidget *widget);
 
+    QWidget *takeCentralWidget();
+
 #ifndef QT_NO_DOCKWIDGET
     void setCorner(Qt::Corner corner, Qt::DockWidgetArea area);
     Qt::DockWidgetArea corner(Qt::Corner corner) const;
