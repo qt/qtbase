@@ -3571,7 +3571,7 @@ QByteArray QByteArray::toBase64(Base64Options options) const
     const char padchar = '=';
     int padlen = 0;
 
-    QByteArray tmp((d->size * 4) / 3 + 3, Qt::Uninitialized);
+    QByteArray tmp((d->size + 2) / 3 * 4, Qt::Uninitialized);
 
     int i = 0;
     char *out = tmp.data();
@@ -3609,8 +3609,9 @@ QByteArray QByteArray::toBase64(Base64Options options) const
             *out++ = alphabet[m];
         }
     }
-
-    tmp.truncate(out - tmp.data());
+    Q_ASSERT((options & OmitTrailingEquals) || (out == tmp.size() + tmp.data()));
+    if (options & OmitTrailingEquals)
+        tmp.truncate(out - tmp.data());
     return tmp;
 }
 
