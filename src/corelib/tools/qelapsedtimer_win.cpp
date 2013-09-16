@@ -114,6 +114,7 @@ static quint64 getTickCount()
         }
     }
 
+#ifndef Q_OS_WINRT
     if (ptrGetTickCount64)
         return ptrGetTickCount64();
 
@@ -124,6 +125,10 @@ static quint64 getTickCount()
         ++highdword;
     lastval = val;
     return val | (quint64(highdword) << 32);
+#else // !Q_OS_WINRT
+    // ptrGetTickCount64 is always set on WinRT but GetTickCount is not available
+    return ptrGetTickCount64();
+#endif // Q_OS_WINRT
 }
 
 int qt_msectime()
