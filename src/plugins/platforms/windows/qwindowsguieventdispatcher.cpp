@@ -44,6 +44,7 @@
 
 #include <qpa/qwindowsysteminterface.h>
 
+#include <QtCore/QCoreApplication>
 #include <QtCore/QStack>
 #include <QtCore/QDebug>
 
@@ -83,6 +84,7 @@ bool QWindowsGuiEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags fl
 
 void QWindowsGuiEventDispatcher::sendPostedEvents()
 {
+    QCoreApplication::sendPostedEvents();
     QWindowSystemInterface::sendWindowSystemEvents(m_flags);
 }
 

@@ -78,6 +78,7 @@ private slots:
     /* void registerEventNotifiier(); */ // Not implemented here, see tst_QWinEventNotifier instead
     void sendPostedEvents_data();
     void sendPostedEvents();
+    void processEventsOnlySendsQueuedEvents();
 };
 
 bool tst_QEventDispatcher::event(QEvent *e)
@@ -205,6 +206,50 @@ void tst_QEventDispatcher::sendPostedEvents()
         // event shouldn't be delivered as a result of posting
         QCOMPARE(receivedEventType, int(QEvent::User));
     }
+}
+
+class ProcessEventsOnlySendsQueuedEvents : public QObject
+{
+    Q_OBJECT
+public:
+    int eventsReceived;
+
+    inline ProcessEventsOnlySendsQueuedEvents() : eventsReceived(0) {}
+
+    bool event(QEvent *event)
+    {
+        ++eventsReceived;
+
+        if (event->type() == QEvent::User)
+             QCoreApplication::postEvent(this, new QEvent(QEvent::Type(QEvent::User + 1)));
+
+        return QObject::event(event);
+    }
+public slots:
+    void timerFired()
+    {
+        QCoreApplication::postEvent(this, new QEvent(QEvent::Type(QEvent::User + 1)));
+    }
+};
+
+void tst_QEventDispatcher::processEventsOnlySendsQueuedEvents()
+{
+    ProcessEventsOnlySendsQueuedEvents object;
+
+    // Posted events during event processing should be handled on
+    // the next processEvents iteration.
+    QCoreApplication::postEvent(&object, new QEvent(QEvent::User));
+    QCoreApplication::processEvents();
+    QCOMPARE(object.eventsReceived, 1);
+    QCoreApplication::processEvents();
+    QCOMPARE(object.eventsReceived, 2);
+
+    // The same goes for posted events during timer processing
+    QTimer::singleShot(0, &object, SLOT(timerFired()));
+    QCoreApplication::processEvents();
+    QCOMPARE(object.eventsReceived, 3);
+    QCoreApplication::processEvents();
+    QCOMPARE(object.eventsReceived, 4);
 }
 
 QTEST_MAIN(tst_QEventDispatcher)

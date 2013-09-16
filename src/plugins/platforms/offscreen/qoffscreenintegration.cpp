@@ -73,9 +73,9 @@ public:
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags)
     {
-        bool didSendEvents = QWindowSystemInterface::sendWindowSystemEvents(flags);
+        bool didSendEvents = BaseEventDispatcher::processEvents(flags);
 
-        return BaseEventDispatcher::processEvents(flags) || didSendEvents;
+        return QWindowSystemInterface::sendWindowSystemEvents(flags) || didSendEvents;
     }
 
     bool hasPendingEvents()

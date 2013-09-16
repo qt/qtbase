@@ -58,12 +58,8 @@ QQnxEventDispatcherBlackberry::~QQnxEventDispatcherBlackberry()
 
 bool QQnxEventDispatcherBlackberry::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
-    const bool didSendEvents = QWindowSystemInterface::sendWindowSystemEvents(flags);
-
-    if (QEventDispatcherBlackberry::processEvents(flags))
-        return true;
-
-    return didSendEvents;
+    const bool didSendEvents = QEventDispatcherBlackberry::processEvents(flags);
+    return QWindowSystemInterface::sendWindowSystemEvents(flags) || didSendEvents;
 }
 
 bool QQnxEventDispatcherBlackberry::hasPendingEvents()

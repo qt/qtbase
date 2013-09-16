@@ -553,22 +553,11 @@ void QWindowSystemInterface::flushWindowSystemEvents()
         QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
         QWindowSystemInterfacePrivate::eventsFlushed.wait(&QWindowSystemInterfacePrivate::flushEventMutex);
     } else {
-        sendWindowSystemEventsImplementation(QEventLoop::AllEvents);
+        sendWindowSystemEvents(QEventLoop::AllEvents);
     }
 }
 
 bool QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
-{
-    QCoreApplication::sendPostedEvents(); // handle gui and posted events
-    return sendWindowSystemEventsImplementation(flags);
-}
-
-void QWindowSystemInterface::setSynchronousWindowsSystemEvents(bool enable)
-{
-    QWindowSystemInterfacePrivate::synchronousWindowsSystemEvents = enable;
-}
-
-bool QWindowSystemInterface::sendWindowSystemEventsImplementation(QEventLoop::ProcessEventsFlags flags)
 {
     int nevents = 0;
 
@@ -585,6 +574,11 @@ bool QWindowSystemInterface::sendWindowSystemEventsImplementation(QEventLoop::Pr
     }
 
     return (nevents > 0);
+}
+
+void QWindowSystemInterface::setSynchronousWindowsSystemEvents(bool enable)
+{
+    QWindowSystemInterfacePrivate::synchronousWindowsSystemEvents = enable;
 }
 
 int QWindowSystemInterface::windowSystemEventsQueued()

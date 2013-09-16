@@ -193,9 +193,6 @@ public:
     static void flushWindowSystemEvents();
     static void deferredFlushWindowSystemEvents();
     static int windowSystemEventsQueued();
-
-private:
-    static bool sendWindowSystemEventsImplementation(QEventLoop::ProcessEventsFlags flags);
 };
 
 #ifndef QT_NO_DEBUG_STREAM

@@ -388,6 +388,10 @@ void QEventDispatcherCoreFoundation::processPostedEvents()
 
     m_processEvents.processedPostedEvents = true;
 
+    qEventDispatcherDebug() << "Sending posted events for " << m_processEvents.flags; qIndent();
+    QCoreApplication::sendPostedEvents();
+    qUnIndent();
+
     qEventDispatcherDebug() << "Sending window system events for " << m_processEvents.flags; qIndent();
     QWindowSystemInterface::sendWindowSystemEvents(m_processEvents.flags);
     qUnIndent();

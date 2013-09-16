@@ -67,13 +67,8 @@ QUnixEventDispatcherQPA::~QUnixEventDispatcherQPA()
 
 bool QUnixEventDispatcherQPA::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
-    const bool didSendEvents = QWindowSystemInterface::sendWindowSystemEvents(flags);
-
-    if (QEventDispatcherUNIX::processEvents(flags)) {
-        return true;
-    }
-
-    return didSendEvents;
+    const bool didSendEvents = QEventDispatcherUNIX::processEvents(flags);
+    return QWindowSystemInterface::sendWindowSystemEvents(flags) || didSendEvents;
 }
 
 bool QUnixEventDispatcherQPA::hasPendingEvents()
