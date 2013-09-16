@@ -150,8 +150,8 @@ contains(QT_CONFIG,icu) {
     }
 } else: win32 {
     SOURCES += tools/qcollator_win.cpp
-} else: mac {
-    SOURCES += tools/qcollator_mac.cpp
+} else: macx {
+    SOURCES += tools/qcollator_macx.cpp
 } else {
     SOURCES += tools/qcollator_posix.cpp
 }

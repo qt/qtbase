@@ -47,7 +47,7 @@
 #include <QVector>
 #ifdef QT_USE_ICU
 #include <unicode/ucol.h>
-#elif defined(Q_OS_DARWIN)
+#elif defined(Q_OS_OSX)
 #include <CoreServices/CoreServices.h>
 #endif
 
@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 typedef UCollator *CollatorType;
 typedef QByteArray CollatorKeyType;
 
-#elif defined(Q_OS_DARWIN)
+#elif defined(Q_OS_OSX)
 typedef QVector<UCCollationValue> CollatorKeyType;
 
 struct CollatorType {
