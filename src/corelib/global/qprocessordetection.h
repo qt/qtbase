@@ -90,14 +90,24 @@
 // Q_BYTE_ORDER not defined, use endianness auto-detection
 
 /*
-    ARM family, known revisions: V5, V6, and V7
+    ARM family, known revisions: V5, V6, V7, V8
 
     ARM is bi-endian, detect using __ARMEL__ or __ARMEB__, falling back to
     auto-detection implemented below.
 */
-#if defined(__arm__) || defined(__TARGET_ARCH_ARM) || defined(_M_ARM)
+#if defined(__arm__) || defined(__TARGET_ARCH_ARM) || defined(_M_ARM) || defined(__arm64__)
 #  define Q_PROCESSOR_ARM
-#  if defined(__ARM_ARCH_7__) \
+#  if defined(__arm64__)
+#    define Q_PROCESSOR_ARM_64
+#  else
+#    define Q_PROCESSOR_ARM_32
+#  endif
+#  if defined(__ARM64_ARCH_8__)
+#    define Q_PROCESSOR_ARM_V8
+#    define Q_PROCESSOR_ARM_V7
+#    define Q_PROCESSOR_ARM_V6
+#    define Q_PROCESSOR_ARM_V5
+#  elif defined(__ARM_ARCH_7__) \
       || defined(__ARM_ARCH_7A__) \
       || defined(__ARM_ARCH_7R__) \
       || defined(__ARM_ARCH_7M__) \
