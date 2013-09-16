@@ -631,25 +631,22 @@ void tst_QDateTime::toString_isoDate_data()
 
     QTest::newRow("localtime")
             << QDateTime(QDate(1978, 11, 9), QTime(13, 28, 34))
-            << QString("1978-11-09T13:28:34.000");
+            << QString("1978-11-09T13:28:34");
     QTest::newRow("UTC")
             << QDateTime(QDate(1978, 11, 9), QTime(13, 28, 34), Qt::UTC)
-            << QString("1978-11-09T13:28:34.000Z");
+            << QString("1978-11-09T13:28:34Z");
     QDateTime dt(QDate(1978, 11, 9), QTime(13, 28, 34));
     dt.setOffsetFromUtc(19800);
     QTest::newRow("positive OffsetFromUTC")
             << dt
-            << QString("1978-11-09T13:28:34.000+05:30");
+            << QString("1978-11-09T13:28:34+05:30");
     dt.setUtcOffset(-7200);
     QTest::newRow("negative OffsetFromUTC")
             << dt
-            << QString("1978-11-09T13:28:34.000-02:00");
+            << QString("1978-11-09T13:28:34-02:00");
     QTest::newRow("invalid")
             << QDateTime(QDate(-1, 11, 9), QTime(13, 28, 34), Qt::UTC)
             << QString();
-    QTest::newRow("999 milliseconds UTC")
-            << QDateTime(QDate(2000, 1, 1), QTime(13, 28, 34, 999), Qt::UTC)
-            << QString("2000-01-01T13:28:34.999Z");
 }
 
 void tst_QDateTime::toString_isoDate()
@@ -684,15 +681,15 @@ void tst_QDateTime::toString_textDate_data()
     QTest::addColumn<QString>("expected");
 
     QTest::newRow("localtime")  << QDateTime(QDate(2013, 1, 2), QTime(1, 2, 3), Qt::LocalTime)
-                                << QString("Wed Jan 2 01:02:03.000 2013");
+                                << QString("Wed Jan 2 01:02:03 2013");
     QTest::newRow("utc")        << QDateTime(QDate(2013, 1, 2), QTime(1, 2, 3), Qt::UTC)
-                                << QString("Wed Jan 2 01:02:03.000 2013 GMT");
+                                << QString("Wed Jan 2 01:02:03 2013 GMT");
     QTest::newRow("offset+")    << QDateTime(QDate(2013, 1, 2), QTime(1, 2, 3), Qt::OffsetFromUTC,
                                              10 * 60 * 60)
-                                << QString("Wed Jan 2 01:02:03.000 2013 GMT+1000");
+                                << QString("Wed Jan 2 01:02:03 2013 GMT+1000");
     QTest::newRow("offset-")    << QDateTime(QDate(2013, 1, 2), QTime(1, 2, 3), Qt::OffsetFromUTC,
                                              -10 * 60 * 60)
-                                << QString("Wed Jan 2 01:02:03.000 2013 GMT-1000");
+                                << QString("Wed Jan 2 01:02:03 2013 GMT-1000");
     QTest::newRow("invalid")    << QDateTime()
                                 << QString("");
 }
@@ -765,7 +762,7 @@ void tst_QDateTime::toString_enumformat()
     QVERIFY(!str1.isEmpty()); // It's locale dependent everywhere
 
     QString str2 = dt1.toString(Qt::ISODate);
-    QCOMPARE(str2, QString("1995-05-20T12:34:56.000"));
+    QCOMPARE(str2, QString("1995-05-20T12:34:56"));
 
     QString str3 = dt1.toString(Qt::LocalDate);
     QVERIFY(!str3.isEmpty());
