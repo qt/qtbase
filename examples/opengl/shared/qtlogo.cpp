@@ -49,10 +49,7 @@
 static const qreal tee_height = 0.311126;
 static const qreal cross_width = 0.25;
 static const qreal bar_thickness = 0.113137;
-static const qreal inside_diam = 0.20;
-static const qreal outside_diam = 0.30;
 static const qreal logo_depth = 0.10;
-static const int num_divisions = 32;
 
 //! [0]
 struct Geometry

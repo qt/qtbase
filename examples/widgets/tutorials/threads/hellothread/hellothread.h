@@ -42,13 +42,12 @@
 #define HELLOTHREAD_H
 
 #include <QThread>
-//! [1]
-// hellothread/hellothread.h
+
 class HelloThread : public QThread
 {
     Q_OBJECT
 private:
     void run();
 };
-//! [1]
+
 #endif // HELLOTHREAD_H

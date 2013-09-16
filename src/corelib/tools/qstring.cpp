@@ -805,8 +805,7 @@ const QString::Null QString::null = { };
 
 /*! \typedef QString::const_iterator
 
-    The QString::const_iterator typedef provides an STL-style const
-    iterator for QString.
+    This typedef provides an STL-style const iterator for QString.
 
     \sa QString::iterator
 */
@@ -834,13 +833,12 @@ const QString::Null QString::null = { };
 /*!
     \typedef QString::const_reference
 
-    The QString::const_reference typedef provides an STL-style
-    const reference for a QString element (QChar).
+    This typedef provides an STL-style const reference for a QString element (QChar).
 */
 /*!
     \typedef QString::reference
 
-    The QString::reference typedef provides an STL-style
+    This typedef provides an STL-style
     reference for a QString element (QChar).
 */
 
@@ -860,8 +858,7 @@ const QString::Null QString::null = { };
 /*!
     \typedef QString::value_type
 
-    The QString::const_reference typedef provides an STL-style
-    value type for QString.
+    This typedef provides an STL-style value type for QString.
 */
 
 /*! \fn QString::iterator QString::begin()

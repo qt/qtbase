@@ -42,16 +42,6 @@
 #include <QMutex>
 #include <QThreadStorage>
 
-#include "threads.h"
-
-//! [0]
-void MyThread::run()
-//! [0] //! [1]
-{
-//! [1] //! [2]
-}
-//! [2]
-
 #define Counter ReentrantCounter
 
 //! [3]
