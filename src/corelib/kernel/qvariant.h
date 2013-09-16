@@ -610,9 +610,9 @@ public:
         inline bool operator==(const const_iterator &o) const { return m_impl.equal(o.m_impl); }
         inline bool operator!=(const const_iterator &o) const { return !m_impl.equal(o.m_impl); }
         inline const_iterator &operator++() { m_impl.advance(1); return *this; }
-        inline const_iterator operator++(int) { QtMetaTypePrivate::QSequentialIterableImpl impl = m_impl; m_impl.advance(1); return const_iterator(impl, this->ref); }
+        inline const_iterator operator++(int) { QtMetaTypePrivate::QSequentialIterableImpl impl; impl.copy(m_impl); m_impl.advance(1); return const_iterator(impl, new QAtomicInt(0)); }
         inline const_iterator &operator--() { m_impl.advance(-1); return *this; }
-        inline const_iterator operator--(int) { QtMetaTypePrivate::QSequentialIterableImpl impl = m_impl; m_impl.advance(-1); return const_iterator(impl, this->ref); }
+        inline const_iterator operator--(int) { QtMetaTypePrivate::QSequentialIterableImpl impl; impl.copy(m_impl); m_impl.advance(-1); return const_iterator(impl, new QAtomicInt(0)); }
         inline const_iterator &operator+=(int j) { m_impl.advance(j); return *this; }
         inline const_iterator &operator-=(int j) { m_impl.advance(-j); return *this; }
         inline const_iterator operator+(int j) const { QtMetaTypePrivate::QSequentialIterableImpl impl; impl.copy(m_impl); impl.advance(j); return const_iterator(impl, new QAtomicInt(0));  }
@@ -695,9 +695,9 @@ public:
         inline bool operator==(const const_iterator &o) const { return m_impl.equal(o.m_impl); }
         inline bool operator!=(const const_iterator &o) const { return !m_impl.equal(o.m_impl); }
         inline const_iterator &operator++() { m_impl.advance(1); return *this; }
-        inline const_iterator operator++(int) { QtMetaTypePrivate::QAssociativeIterableImpl impl = m_impl; m_impl.advance(1); return const_iterator(impl, this->ref); }
+        inline const_iterator operator++(int) { QtMetaTypePrivate::QAssociativeIterableImpl impl; impl.copy(m_impl); m_impl.advance(1); return const_iterator(impl, new QAtomicInt(0)); }
         inline const_iterator &operator--() { m_impl.advance(-1); return *this; }
-        inline const_iterator operator--(int) { QtMetaTypePrivate::QAssociativeIterableImpl impl = m_impl; m_impl.advance(-1); return const_iterator(impl, this->ref); }
+        inline const_iterator operator--(int) { QtMetaTypePrivate::QAssociativeIterableImpl impl; impl.copy(m_impl); m_impl.advance(-1); return const_iterator(impl, new QAtomicInt(0)); }
         inline const_iterator &operator+=(int j) { m_impl.advance(j); return *this; }
         inline const_iterator &operator-=(int j) { m_impl.advance(-j); return *this; }
         inline const_iterator operator+(int j) const { QtMetaTypePrivate::QAssociativeIterableImpl impl; impl.copy(m_impl); impl.advance(j); return const_iterator(impl, new QAtomicInt(0));  }

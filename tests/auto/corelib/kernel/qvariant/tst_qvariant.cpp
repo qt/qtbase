@@ -3831,6 +3831,19 @@ void tst_QVariant::iterateContainerElements()
             QCOMPARE(ints.at(i), *it);
         }
     }
+    {
+        QVariantList ints;
+        ints << 1 << 2 << 3;
+        QVariant var = QVariant::fromValue(ints);
+        QSequentialIterable iter = var.value<QSequentialIterable>();
+        QSequentialIterable::const_iterator it = iter.begin();
+
+        QVariantList intsCopy;
+        intsCopy << *(it++);
+        intsCopy << *(it++);
+        intsCopy << *(it++);
+        QCOMPARE(ints, intsCopy);
+    }
 
 #define TEST_ASSOCIATIVE_ITERATION(CONTAINER, KEY_TYPE, MAPPED_TYPE) \
     { \
@@ -3881,6 +3894,23 @@ void tst_QVariant::iterateContainerElements()
         for ( ; it != end; ++it, ++i) {
             QCOMPARE(*(mapping.begin() + i), (*it).toString());
         }
+    }
+    {
+        QVariantList nums;
+        nums << "one" << "two" << "three";
+        QMap<int, QString> mapping;
+        mapping.insert(1, "one");
+        mapping.insert(2, "two");
+        mapping.insert(3, "three");
+        QVariant var = QVariant::fromValue(mapping);
+        QAssociativeIterable iter = var.value<QAssociativeIterable>();
+        QAssociativeIterable::const_iterator it = iter.begin();
+
+        QVariantList numsCopy;
+        numsCopy << *(it++);
+        numsCopy << *(it++);
+        numsCopy << *(it++);
+        QCOMPARE(nums, numsCopy);
     }
 }
 
