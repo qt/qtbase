@@ -956,11 +956,9 @@ void QWindow::reportContentOrientationChange(Qt::ScreenOrientation orientation)
     Q_D(QWindow);
     if (d->contentOrientation == orientation)
         return;
-    if (!d->platformWindow)
-        create();
-    Q_ASSERT(d->platformWindow);
+    if (d->platformWindow)
+        d->platformWindow->handleContentOrientationChange(orientation);
     d->contentOrientation = orientation;
-    d->platformWindow->handleContentOrientationChange(orientation);
     emit contentOrientationChanged(orientation);
 }
 
