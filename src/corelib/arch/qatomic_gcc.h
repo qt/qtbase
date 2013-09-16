@@ -75,16 +75,17 @@ template<> struct QAtomicIntegerTraits<char32_t> { enum { IsInteger = 1 }; };
 #define Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_SOMETIMES_NATIVE
 #define Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_SOMETIMES_NATIVE
 
-template <typename T> struct QAtomicOps: QGenericAtomicOps<QAtomicOps<T> >
+template <typename X> struct QAtomicOps: QGenericAtomicOps<QAtomicOps<X> >
 {
     // The GCC intrinsics all have fully-ordered memory semantics, so we define
     // only the xxxRelaxed functions. The exception is __sync_lock_and_test,
     // which has acquire semantics, so we need to define the Release and
     // Ordered versions too.
 
-    typedef T Type;
+    typedef X Type;
 
 #ifndef __ia64__
+    template <typename T>
     static T loadAcquire(const T &_q_value) Q_DECL_NOTHROW
     {
         T tmp = _q_value;
@@ -92,6 +93,7 @@ template <typename T> struct QAtomicOps: QGenericAtomicOps<QAtomicOps<T> >
         return tmp;
     }
 
+    template <typename T>
     static void storeRelease(T &_q_value, T newValue) Q_DECL_NOTHROW
     {
         __sync_synchronize();
@@ -101,28 +103,32 @@ template <typename T> struct QAtomicOps: QGenericAtomicOps<QAtomicOps<T> >
 
     static Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return false; }
     static Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
+    template <typename T>
     static bool testAndSetRelaxed(T &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
     {
         return __sync_bool_compare_and_swap(&_q_value, expectedValue, newValue);
     }
 
+    template <typename T>
     static T fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
     {
         return __sync_lock_test_and_set(&_q_value, newValue);
     }
 
+    template <typename T>
     static T fetchAndStoreRelease(T &_q_value, T newValue) Q_DECL_NOTHROW
     {
         __sync_synchronize();
         return __sync_lock_test_and_set(&_q_value, newValue);
     }
 
+    template <typename T>
     static T fetchAndStoreOrdered(T &_q_value, T newValue) Q_DECL_NOTHROW
     {
         return fetchAndStoreRelease(_q_value, newValue);
     }
 
-    static
+    template <typename T> static
     T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
     {
         return __sync_fetch_and_add(&_q_value, valueToAdd * QAtomicAdditiveType<T>::AddScale);

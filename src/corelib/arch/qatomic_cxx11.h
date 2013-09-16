@@ -105,56 +105,56 @@ template<> struct QAtomicIntegerTraits<char32_t> { enum { IsInteger = 1 }; };
 #define Q_ATOMIC_INT64_FETCH_AND_STORE_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_INT64_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 
-template <typename T> struct QAtomicOps
+template <typename X> struct QAtomicOps
 {
-    typedef std::atomic<T> Type;
-    typedef typename QAtomicAdditiveType<T>::AdditiveT _AdditiveType;
-    static const int AddScale = QAtomicAdditiveType<T>::AddScale;
+    typedef std::atomic<X> Type;
 
-    static inline
-    T load(const Type &_q_value) Q_DECL_NOTHROW
+    template <typename T> static inline
+    T load(const std::atomic<T> &_q_value) Q_DECL_NOTHROW
     {
         return _q_value.load(std::memory_order_relaxed);
     }
 
-    static inline
-    T load(const volatile Type &_q_value) Q_DECL_NOTHROW
+    template <typename T> static inline
+    T load(const volatile std::atomic<T> &_q_value) Q_DECL_NOTHROW
     {
         return _q_value.load(std::memory_order_relaxed);
     }
 
-    static inline
-    T loadAcquire(const Type &_q_value) Q_DECL_NOTHROW
+    template <typename T> static inline
+    T loadAcquire(const std::atomic<T> &_q_value) Q_DECL_NOTHROW
     {
         return _q_value.load(std::memory_order_acquire);
     }
 
-    static inline
-    T loadAcquire(const volatile Type &_q_value) Q_DECL_NOTHROW
+    template <typename T> static inline
+    T loadAcquire(const volatile std::atomic<T> &_q_value) Q_DECL_NOTHROW
     {
         return _q_value.load(std::memory_order_acquire);
     }
 
-    static inline
-    void store(Type &_q_value, T newValue) Q_DECL_NOTHROW
+    template <typename T> static inline
+    void store(std::atomic<T> &_q_value, T newValue) Q_DECL_NOTHROW
     {
         _q_value.store(newValue, std::memory_order_relaxed);
     }
 
-    static inline
-    void storeRelease(Type &_q_value, T newValue) Q_DECL_NOTHROW
+    template <typename T> static inline
+    void storeRelease(std::atomic<T> &_q_value, T newValue) Q_DECL_NOTHROW
     {
         _q_value.store(newValue, std::memory_order_release);
     }
 
     static inline Q_DECL_CONSTEXPR bool isReferenceCountingNative() Q_DECL_NOTHROW { return true; }
     static inline Q_DECL_CONSTEXPR bool isReferenceCountingWaitFree() Q_DECL_NOTHROW { return false; }
-    static inline bool ref(Type &_q_value)
+    template <typename T>
+    static inline bool ref(std::atomic<T> &_q_value)
     {
         return ++_q_value != 0;
     }
 
-    static inline bool deref(Type &_q_value) Q_DECL_NOTHROW
+    template <typename T>
+    static inline bool deref(std::atomic<T> &_q_value) Q_DECL_NOTHROW
     {
         return --_q_value != 0;
     }
@@ -162,22 +162,25 @@ template <typename T> struct QAtomicOps
     static inline Q_DECL_CONSTEXPR bool isTestAndSetNative() Q_DECL_NOTHROW { return false; }
     static inline Q_DECL_CONSTEXPR bool isTestAndSetWaitFree() Q_DECL_NOTHROW { return false; }
 
-    static
+    template <typename T> static
     bool testAndSetRelaxed(Type &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
     {
         return _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_relaxed);
     }
 
+    template <typename T>
     static bool testAndSetAcquire(Type &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
     {
         return _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_acquire);
     }
 
+    template <typename T>
     static bool testAndSetRelease(Type &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
     {
         return _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_release);
     }
 
+    template <typename T>
     static bool testAndSetOrdered(Type &_q_value, T expectedValue, T newValue) Q_DECL_NOTHROW
     {
         return _q_value.compare_exchange_strong(expectedValue, newValue, std::memory_order_acq_rel);
@@ -186,22 +189,26 @@ template <typename T> struct QAtomicOps
     static inline Q_DECL_CONSTEXPR bool isFetchAndStoreNative() Q_DECL_NOTHROW { return false; }
     static inline Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return false; }
 
-    static T fetchAndStoreRelaxed(Type &_q_value, T newValue) Q_DECL_NOTHROW
+    template <typename T>
+    static T fetchAndStoreRelaxed(std::atomic<T> &_q_value, T newValue) Q_DECL_NOTHROW
     {
         return _q_value.exchange(newValue, std::memory_order_relaxed);
     }
 
-    static T fetchAndStoreAcquire(Type &_q_value, T newValue) Q_DECL_NOTHROW
+    template <typename T>
+    static T fetchAndStoreAcquire(std::atomic<T> &_q_value, T newValue) Q_DECL_NOTHROW
     {
         return _q_value.exchange(newValue, std::memory_order_acquire);
     }
 
-    static T fetchAndStoreRelease(Type &_q_value, T newValue) Q_DECL_NOTHROW
+    template <typename T>
+    static T fetchAndStoreRelease(std::atomic<T> &_q_value, T newValue) Q_DECL_NOTHROW
     {
         return _q_value.exchange(newValue, std::memory_order_release);
     }
 
-    static T fetchAndStoreOrdered(Type &_q_value, T newValue) Q_DECL_NOTHROW
+    template <typename T>
+    static T fetchAndStoreOrdered(std::atomic<T> &_q_value, T newValue) Q_DECL_NOTHROW
     {
         return _q_value.exchange(newValue, std::memory_order_acq_rel);
     }
@@ -209,31 +216,31 @@ template <typename T> struct QAtomicOps
     static inline Q_DECL_CONSTEXPR bool isFetchAndAddNative() Q_DECL_NOTHROW { return false; }
     static inline Q_DECL_CONSTEXPR bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return false; }
 
-    static
-    T fetchAndAddRelaxed(Type &_q_value, _AdditiveType valueToAdd) Q_DECL_NOTHROW
+    template <typename T> static inline
+    T fetchAndAddRelaxed(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
     {
-        return _q_value.fetch_add(valueToAdd * AddScale,
+        return _q_value.fetch_add(valueToAdd * QAtomicAdditiveType<T>::AddScale,
                                   std::memory_order_relaxed);
     }
 
-    static
-    T fetchAndAddAcquire(Type &_q_value, _AdditiveType valueToAdd) Q_DECL_NOTHROW
+    template <typename T> static inline
+    T fetchAndAddAcquire(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
     {
-        return _q_value.fetch_add(valueToAdd * AddScale,
+        return _q_value.fetch_add(valueToAdd * QAtomicAdditiveType<T>::AddScale,
                                   std::memory_order_acquire);
     }
 
-    static
-    T fetchAndAddRelease(Type &_q_value, _AdditiveType valueToAdd) Q_DECL_NOTHROW
+    template <typename T> static inline
+    T fetchAndAddRelease(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
     {
-        return _q_value.fetch_add(valueToAdd * AddScale,
+        return _q_value.fetch_add(valueToAdd * QAtomicAdditiveType<T>::AddScale,
                                   std::memory_order_release);
     }
 
-    static
-    T fetchAndAddOrdered(Type &_q_value, _AdditiveType valueToAdd) Q_DECL_NOTHROW
+    template <typename T> static inline
+    T fetchAndAddOrdered(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
     {
-        return _q_value.fetch_add(valueToAdd * AddScale,
+        return _q_value.fetch_add(valueToAdd * QAtomicAdditiveType<T>::AddScale,
                                   std::memory_order_acq_rel);
     }
 };
