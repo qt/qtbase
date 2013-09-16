@@ -111,14 +111,14 @@ public:
 
     Q_DECL_CONSTEXPR  inline operator Int() const { return i; }
 
-    Q_DECL_CONSTEXPR inline QFlags operator|(QFlags f) const { return QFlags(Enum(i | f.i)); }
-    Q_DECL_CONSTEXPR inline QFlags operator|(Enum f) const { return QFlags(Enum(i | Int(f))); }
-    Q_DECL_CONSTEXPR inline QFlags operator^(QFlags f) const { return QFlags(Enum(i ^ f.i)); }
-    Q_DECL_CONSTEXPR inline QFlags operator^(Enum f) const { return QFlags(Enum(i ^ Int(f))); }
-    Q_DECL_CONSTEXPR inline QFlags operator&(int mask) const { return QFlags(Enum(i & mask)); }
-    Q_DECL_CONSTEXPR inline QFlags operator&(uint mask) const { return QFlags(Enum(i & mask)); }
-    Q_DECL_CONSTEXPR inline QFlags operator&(Enum f) const { return QFlags(Enum(i & Int(f))); }
-    Q_DECL_CONSTEXPR inline QFlags operator~() const { return QFlags(Enum(~i)); }
+    Q_DECL_CONSTEXPR inline QFlags operator|(QFlags f) const { return QFlags(QFlag(i | f.i)); }
+    Q_DECL_CONSTEXPR inline QFlags operator|(Enum f) const { return QFlags(QFlag(i | Int(f))); }
+    Q_DECL_CONSTEXPR inline QFlags operator^(QFlags f) const { return QFlags(QFlag(i ^ f.i)); }
+    Q_DECL_CONSTEXPR inline QFlags operator^(Enum f) const { return QFlags(QFlag(i ^ Int(f))); }
+    Q_DECL_CONSTEXPR inline QFlags operator&(int mask) const { return QFlags(QFlag(i & mask)); }
+    Q_DECL_CONSTEXPR inline QFlags operator&(uint mask) const { return QFlags(QFlag(i & mask)); }
+    Q_DECL_CONSTEXPR inline QFlags operator&(Enum f) const { return QFlags(QFlag(i & Int(f))); }
+    Q_DECL_CONSTEXPR inline QFlags operator~() const { return QFlags(QFlag(~i)); }
 
     Q_DECL_CONSTEXPR inline bool operator!() const { return !i; }
 
