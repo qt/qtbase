@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2013 Samuel Gaist <samuel.gaist@edeltech.ch>
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
@@ -406,14 +407,14 @@ static void read_image_scaled(QImage *outImage, png_structp png_ptr, png_infop i
                               QPngHandlerPrivate::AllocatedMemoryPointers &amp, QSize scaledSize)
 {
 
-    png_uint_32 width;
-    png_uint_32 height;
-    png_int_32 offset_x;
-    png_int_32 offset_y;
+    png_uint_32 width = 0;
+    png_uint_32 height = 0;
+    png_int_32 offset_x = 0;
+    png_int_32 offset_y = 0;
 
-    int bit_depth;
-    int color_type;
-    int unit_type;
+    int bit_depth = 0;
+    int color_type = 0;
+    int unit_type = PNG_OFFSET_PIXEL;
     png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, 0, 0, 0);
     png_get_oFFs(png_ptr, info_ptr, &offset_x, &offset_y, &unit_type);
     uchar *data = outImage->bits();
