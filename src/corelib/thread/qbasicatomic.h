@@ -60,11 +60,11 @@
 // Processor dependent implementation
 #elif defined(Q_PROCESSOR_ALPHA)
 #  include "QtCore/qatomic_alpha.h"
-#elif defined(Q_PROCESSOR_ARM_V7)
+#elif defined(Q_PROCESSOR_ARM_V7) && defined(Q_PROCESSOR_ARM_32)
 # include "QtCore/qatomic_armv7.h"
-#elif defined(Q_PROCESSOR_ARM_V6)
+#elif defined(Q_PROCESSOR_ARM_V6) && defined(Q_PROCESSOR_ARM_32)
 # include "QtCore/qatomic_armv6.h"
-#elif defined(Q_PROCESSOR_ARM_V5)
+#elif defined(Q_PROCESSOR_ARM_V5) && defined(Q_PROCESSOR_ARM_32)
 # include "QtCore/qatomic_armv5.h"
 #elif defined(Q_PROCESSOR_BFIN)
 #  include "QtCore/qatomic_bfin.h"
