@@ -169,7 +169,7 @@ public:
 
     void setBaseName(const QString& bn) { baseName_ = bn; }
     void setAccess(Access access) { access_ = access; }
-    void setLocation(const Location& location) { loc = location; }
+    void setLocation(const Location& location) { loc_ = location; }
     void setDoc(const Doc& doc, bool replace = false);
     void setStatus(Status status) {
         if (status_ == Obsolete && status == Deprecated)
@@ -241,7 +241,7 @@ public:
 
     Access access() const { return access_; }
     QString accessString() const;
-    const Location& location() const { return loc; }
+    const Location& location() const { return loc_; }
     const Doc& doc() const { return doc_; }
     Status status() const { return status_; }
     Status inheritedStatus() const;
@@ -304,7 +304,7 @@ private:
     InnerNode* parent_;
     InnerNode* relatesTo_;
     QString name_;
-    Location loc;
+    Location loc_;
     Doc doc_;
     QMap<LinkType, QPair<QString, QString> > linkMap_;
     QString baseName_;

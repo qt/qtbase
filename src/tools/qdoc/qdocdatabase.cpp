@@ -932,7 +932,7 @@ const DocNode* QDocDatabase::findDocNodeByTitle(const QString& title, const Node
                 ++j;
             }
             if (internalLocations.size() > 0) {
-                i.value()->location().warning(tr("This page exists in more than one file: \"%1\"").arg(title));
+                i.value()->location().warning(tr("This page title exists in more than one file: \"%1\"").arg(title));
                 foreach (const Location &location, internalLocations)
                     location.warning(tr("[It also exists here]"));
             }

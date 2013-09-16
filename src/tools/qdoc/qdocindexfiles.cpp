@@ -172,6 +172,12 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
     Node* node;
     Location location;
 
+    QString filePath;
+    int lineNo = 0;
+    if (element.hasAttribute("filepath")) {
+        filePath = element.attribute("filepath", QString());
+        lineNo = element.attribute("lineno", QString()).toInt();
+    }
     if (element.nodeName() == "namespace") {
         node = new NamespaceNode(parent, name);
 
@@ -519,6 +525,12 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
 
     // Create some content for the node.
     QSet<QString> emptySet;
+    Location t(filePath);
+    if (!filePath.isEmpty()) {
+        t.setLineNo(lineNo);
+        node->setLocation(t);
+        location = t;
+    }
     Doc doc(location, location, " ", emptySet, emptySet); // placeholder
     node->setDoc(doc);
     node->setIndexNodeFlag();
@@ -774,8 +786,12 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
         href.append(QLatin1Char('/'));
     href.append(gen_->fullDocumentLocation(node));
     writer.writeAttribute("href", href);
-    if ((node->type() != Node::Document) && (!node->isQmlNode()))
-        writer.writeAttribute("location", node->location().fileName());
+
+    writer.writeAttribute("location", node->location().fileName());
+    if (!node->location().filePath().isEmpty()) {
+        writer.writeAttribute("filepath", node->location().filePath());
+        writer.writeAttribute("lineno", QString("%1").arg(node->location().lineNo()));
+    }
 
     if (!node->since().isEmpty()) {
         writer.writeAttribute("since", node->since());
@@ -870,7 +886,6 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             writer.writeAttribute("title", docNode->title());
             writer.writeAttribute("fulltitle", docNode->fullTitle());
             writer.writeAttribute("subtitle", docNode->subTitle());
-            writer.writeAttribute("location", docNode->doc().location().fileName());
             if (!node->moduleName().isEmpty() && writeModuleName) {
                 writer.writeAttribute("module", node->moduleName());
             }
