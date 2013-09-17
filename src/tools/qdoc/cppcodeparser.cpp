@@ -833,17 +833,15 @@ void CppCodeParser::processQmlProperties(const Doc& doc, NodeList& nodes, DocLis
             if (qmlClass) {
                 qpgn = new QmlPropertyGroupNode(qmlClass, property);
                 qpgn->setLocation(doc.startLocation());
+                nodes.append(qpgn);
+                docs.append(doc);
             }
-        }
-        if (topics.size() == 1) {
-            nodes.append(qpgn);
-            docs.append(doc);
-            return;
         }
     }
     for (int i=0; i<topics.size(); ++i) {
-        if (topics.at(i).topic == COMMAND_QMLPROPERTYGROUP)
-            continue;
+        if (topics.at(i).topic == COMMAND_QMLPROPERTYGROUP) {
+             continue;
+        }
         topic = topics.at(i).topic;
         arg = topics.at(i).args;
         if ((topic == COMMAND_QMLPROPERTY) || (topic == COMMAND_QMLATTACHEDPROPERTY)) {
@@ -2172,7 +2170,6 @@ bool CppCodeParser::matchDocsAndStuff()
                     isQmlPropertyTopic = true;
                 }
             }
-            // if (isQmlPropertyTopic && doc.location().fileName().endsWith("qquickitem.cpp")) {
             NodeList nodes;
             DocList docs;
 
