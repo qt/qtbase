@@ -114,6 +114,7 @@ public:
     int findClosestContact(const QHash<int, Contact> &contacts, int x, int y, int *dist);
     void reportPoints();
     void registerDevice();
+    void addTouchPoint(const Contact &contact, Qt::TouchPointStates *combinedStates);
 
     int hw_range_x_min;
     int hw_range_x_max;
@@ -342,6 +343,31 @@ void QEvdevTouchScreenHandler::readData()
         d->processInputEvent(&buffer[i]);
 }
 
+void QEvdevTouchScreenData::addTouchPoint(const Contact &contact, Qt::TouchPointStates *combinedStates)
+{
+    QWindowSystemInterface::TouchPoint tp;
+    tp.id = contact.trackingId;
+    tp.flags = contact.flags;
+    tp.state = contact.state;
+    *combinedStates |= tp.state;
+
+    // Store the HW coordinates for now, will be updated later.
+    tp.area = QRectF(0, 0, contact.maj, contact.maj);
+    tp.area.moveCenter(QPoint(contact.x, contact.y));
+    tp.pressure = contact.pressure;
+
+    // Get a normalized position in range 0..1.
+    tp.normalPosition = QPointF((contact.x - hw_range_x_min) / qreal(hw_range_x_max - hw_range_x_min),
+                                (contact.y - hw_range_y_min) / qreal(hw_range_y_max - hw_range_y_min));
+
+    if (!m_rotate.isIdentity())
+        tp.normalPosition = m_rotate.map(tp.normalPosition);
+
+    tp.rawPositions.append(QPointF(contact.x, contact.y));
+
+    m_touchPoints.append(tp);
+}
+
 void QEvdevTouchScreenData::processInputEvent(input_event *data)
 {
     if (data->type == EV_ABS) {
@@ -398,13 +424,11 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
 
         m_touchPoints.clear();
         Qt::TouchPointStates combinedStates;
+
         QMutableHashIterator<int, Contact> it(m_contacts);
         while (it.hasNext()) {
             it.next();
-            QWindowSystemInterface::TouchPoint tp;
             Contact &contact(it.value());
-            tp.id = contact.trackingId;
-            tp.flags = contact.flags;
 
             int key = m_typeB ? it.key() : contact.trackingId;
             if (m_lastContacts.contains(key)) {
@@ -427,27 +451,22 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
                 continue;
             }
 
-            tp.state = contact.state;
-            combinedStates |= tp.state;
-
-            // Store the HW coordinates for now, will be updated later.
-            tp.area = QRectF(0, 0, contact.maj, contact.maj);
-            tp.area.moveCenter(QPoint(contact.x, contact.y));
-            tp.pressure = contact.pressure;
-
-            // Get a normalized position in range 0..1.
-            tp.normalPosition = QPointF((contact.x - hw_range_x_min) / qreal(hw_range_x_max - hw_range_x_min),
-                                        (contact.y - hw_range_y_min) / qreal(hw_range_y_max - hw_range_y_min));
-
-            if (!m_rotate.isIdentity())
-                tp.normalPosition = m_rotate.map(tp.normalPosition);
-
-            tp.rawPositions.append(QPointF(contact.x, contact.y));
-
-            m_touchPoints.append(tp);
+            addTouchPoint(contact, &combinedStates);
 
             if (contact.state == Qt::TouchPointReleased)
                 it.remove();
+        }
+
+        // Now look for contacts that have disappeared since the last sync.
+        it = m_lastContacts;
+        while (it.hasNext()) {
+            it.next();
+            Contact &contact(it.value());
+            int key = m_typeB ? it.key() : contact.trackingId;
+            if (!m_contacts.contains(key)) {
+                contact.state = Qt::TouchPointReleased;
+                addTouchPoint(contact, &combinedStates);
+            }
         }
 
         m_lastContacts = m_contacts;
