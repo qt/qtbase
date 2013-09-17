@@ -32,7 +32,7 @@
 # manifestmeta.global.names           = *
 # manifestmeta.global.tags            = qt5
 
-manifestmeta.filters                =   highlighted webkit1 webkit2 android
+manifestmeta.filters                =   highlighted webkit1 webkit2 android thumbnail
 
 manifestmeta.highlighted.names      =   "QtQuick/Qt Quick Demo - Same Game" \
                                         "QtQuick/Qt Quick Demo - Photo Surface" \
@@ -168,3 +168,28 @@ manifestmeta.android.names          =  "QtQuick/Qt Quick Demo - Maroon*" \
                                        "QtWidgets/Address Book Example"
 
 manifestmeta.android.tags              =   android
+
+# add a generic thumbnail image to examples that do not have any images in their documentation
+manifestmeta.thumbnail.attributes  = "imageUrl:qthelp\://org.qt-project.qtdoc.$QT_VERSION_TAG/qtdoc/images/qt-codesample.png"
+
+manifestmeta.thumbnail.names    =      "QtConcurrent/Map Example" \
+                                       "QtConcurrent/QtConcurrent Word Count Example" \
+                                       "QtConcurrent/Run Function Example" \
+                                       "QtGui/Raster Window Example" \
+                                       "QtNetwork/Network Download*" \
+                                       "QtWidgets/Dynamic Layouts Example" \
+                                       "QtWidgets/Event Transitions Example" \
+                                       "QtWidgets/Plug & Paint Basic Tools Example" \
+                                       "QtWidgets/Plug & Paint Extra Filters Example" \
+                                       "QtWidgets/Two-way Button Example" \
+                                       "QtWidgets/Validators Example" \
+                                       "ActiveQt/*"  \
+                                       "QtDbus/*" \
+                                       "QtHelp/*" \
+                                       "QtMultimedia/AudioEngine Example" \
+                                       "QtMultimedia/Declarative Radio Example" \
+                                       "QtMultimedia/Media Player Example" \
+                                       "QtQml/Extending QML*" \
+                                       "QtQuick/Qt Quick Examples - Accessibility" \
+                                       "QtSensors/Qt Sensors - SensorGesture QML Type example" \
+                                       "QtWinExtras/Icon Extractor"
