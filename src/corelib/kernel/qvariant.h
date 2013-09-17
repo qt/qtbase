@@ -594,6 +594,7 @@ public:
         inline ~const_iterator() {
             if (!ref->deref()) {
                 m_impl.destroyIter();
+                delete ref;
             }
         }
 
@@ -663,6 +664,7 @@ public:
         inline ~const_iterator() {
             if (!ref->deref()) {
                 m_impl.destroyIter();
+                delete ref;
             }
         }
         inline const_iterator(const const_iterator &other) : m_impl(other.m_impl), ref(other.ref)  {
