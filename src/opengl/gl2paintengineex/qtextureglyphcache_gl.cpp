@@ -85,6 +85,8 @@ QGLTextureGlyphCache::~QGLTextureGlyphCache()
     qDebug(" -> ~QGLTextureGlyphCache() %p.", this);
 #endif
     delete m_blitProgram;
+    if (m_textureResource)
+        m_textureResource->free();
 }
 
 void QGLTextureGlyphCache::createTextureData(int width, int height)
