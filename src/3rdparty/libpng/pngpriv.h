@@ -362,6 +362,9 @@ typedef PNG_CONST png_uint_16p FAR * png_const_uint_16pp;
 #if defined(WIN32) || defined(_Windows) || defined(_WINDOWS) || \
     defined(_WIN32) || defined(__WIN32__)
 #  include <windows.h>  /* defines _WINDOWS_ macro */
+#  if defined(WINAPI_FAMILY) && ((WINAPI_FAMILY & WINAPI_FAMILY_DESKTOP_APP) == WINAPI_PARTITION_APP)
+#    define _WINRT_ /* Define a macro for Windows Runtime builds */
+#  endif
 #endif
 
 /* Moved here around 1.5.0beta36 from pngconf.h */
@@ -371,7 +374,7 @@ typedef PNG_CONST png_uint_16p FAR * png_const_uint_16pp;
 
 /* Memory model/platform independent fns */
 #ifndef PNG_ABORT
-#  if defined(_WINDOWS_) || defined(_WIN32_WCE)
+#  if (defined(_WINDOWS_) || defined(_WIN32_WCE)) && !defined(_WINRT_)
 #    define PNG_ABORT() ExitProcess(0)
 #  else
 #    define PNG_ABORT() abort()
@@ -389,7 +392,7 @@ typedef PNG_CONST png_uint_16p FAR * png_const_uint_16pp;
 #  define png_memcpy  _fmemcpy
 #  define png_memset  _fmemset
 #else
-#  ifdef _WINDOWS_  /* Favor Windows over C runtime fns */
+#  if defined(_WINDOWS_) && !defined(_WINRT_)  /* Favor Windows over C runtime fns */
 #    define CVT_PTR(ptr)         (ptr)
 #    define CVT_PTR_NOCHECK(ptr) (ptr)
 #    define png_strlen  lstrlenA
