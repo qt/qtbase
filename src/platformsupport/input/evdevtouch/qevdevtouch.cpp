@@ -126,6 +126,7 @@ public:
     QTouchDevice *m_device;
     bool m_typeB;
     QTransform m_rotate;
+    bool m_singleTouch;
 };
 
 QEvdevTouchScreenData::QEvdevTouchScreenData(QEvdevTouchScreenHandler *q_ptr, const QStringList &args)
@@ -135,7 +136,7 @@ QEvdevTouchScreenData::QEvdevTouchScreenData(QEvdevTouchScreenHandler *q_ptr, co
       hw_range_x_min(0), hw_range_x_max(0),
       hw_range_y_min(0), hw_range_y_max(0),
       hw_pressure_min(0), hw_pressure_max(0),
-      m_device(0), m_typeB(false)
+      m_device(0), m_typeB(false), m_singleTouch(false)
 {
     m_forceToActiveWindow = args.contains(QLatin1String("force_window"));
 }
@@ -237,14 +238,27 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &specification,
 
     d = new QEvdevTouchScreenData(this, args);
 
+#ifdef USE_MTDEV
+    const char *mtdevStr = "(mtdev)";
+    d->m_typeB = true;
+#else
+    const char *mtdevStr = "";
+    long absbits[NUM_LONGS(ABS_CNT)];
+    if (ioctl(m_fd, EVIOCGBIT(EV_ABS, sizeof(absbits)), absbits) >= 0) {
+        d->m_typeB = testBit(ABS_MT_SLOT, absbits);
+        d->m_singleTouch = !testBit(ABS_MT_POSITION_X, absbits);
+    }
+#endif
+    qDebug("Protocol type %c %s (%s)", d->m_typeB ? 'B' : 'A', mtdevStr, d->m_singleTouch ? "single" : "multi");
+
     input_absinfo absInfo;
     memset(&absInfo, 0, sizeof(input_absinfo));
-    if (ioctl(m_fd, EVIOCGABS(ABS_MT_POSITION_X), &absInfo) >= 0) {
+    if (ioctl(m_fd, EVIOCGABS(d->m_singleTouch ? ABS_X : ABS_MT_POSITION_X), &absInfo) >= 0) {
         qDebug("min X: %d max X: %d", absInfo.minimum, absInfo.maximum);
         d->hw_range_x_min = absInfo.minimum;
         d->hw_range_x_max = absInfo.maximum;
     }
-    if (ioctl(m_fd, EVIOCGABS(ABS_MT_POSITION_Y), &absInfo) >= 0) {
+    if (ioctl(m_fd, EVIOCGABS(d->m_singleTouch ? ABS_Y : ABS_MT_POSITION_Y), &absInfo) >= 0) {
         qDebug("min Y: %d max Y: %d", absInfo.minimum, absInfo.maximum);
         d->hw_range_y_min = absInfo.minimum;
         d->hw_range_y_max = absInfo.maximum;
@@ -267,18 +281,6 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &specification,
         ioctl(m_fd, EVIOCGRAB, (void *) 0);
     else
         qWarning("ERROR: The device is grabbed by another process. No events will be read.");
-
-#ifdef USE_MTDEV
-    const char *mtdevStr = "(mtdev)";
-    d->m_typeB = true;
-#else
-    const char *mtdevStr = "";
-    d->m_typeB = false;
-    long absbits[NUM_LONGS(ABS_CNT)];
-    if (ioctl(m_fd, EVIOCGBIT(EV_ABS, sizeof(absbits)), absbits) >= 0)
-        d->m_typeB = testBit(ABS_MT_SLOT, absbits);
-#endif
-    qDebug("Protocol type %c %s", d->m_typeB ? 'B' : 'A', mtdevStr);
 
     if (rotationAngle)
         d->m_rotate = QTransform::fromTranslate(0.5, 0.5).rotate(rotationAngle).translate(-0.5, -0.5);
@@ -344,13 +346,13 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
 {
     if (data->type == EV_ABS) {
 
-        if (data->code == ABS_MT_POSITION_X) {
+        if (data->code == ABS_MT_POSITION_X || (m_singleTouch && data->code == ABS_X)) {
             m_currentData.x = qBound(hw_range_x_min, data->value, hw_range_x_max);
-            if (m_typeB)
+            if (m_typeB || m_singleTouch)
                 m_contacts[m_currentSlot].x = m_currentData.x;
-        } else if (data->code == ABS_MT_POSITION_Y) {
+        } else if (data->code == ABS_MT_POSITION_Y || (m_singleTouch && data->code == ABS_Y)) {
             m_currentData.y = qBound(hw_range_y_min, data->value, hw_range_y_max);
-            if (m_typeB)
+            if (m_typeB || m_singleTouch)
                 m_contacts[m_currentSlot].y = m_currentData.y;
         } else if (data->code == ABS_MT_TRACKING_ID) {
             m_currentData.trackingId = data->value;
@@ -368,7 +370,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
                 m_contacts[m_currentSlot].maj = m_currentData.maj;
         } else if (data->code == ABS_PRESSURE) {
             m_currentData.pressure = qBound(hw_pressure_min, data->value, hw_pressure_max);
-            if (m_typeB)
+            if (m_typeB || m_singleTouch)
                 m_contacts[m_currentSlot].pressure = m_currentData.pressure;
         } else if (data->code == ABS_MT_SLOT) {
             m_currentSlot = data->value;
@@ -376,9 +378,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
 
     } else if (data->type == EV_KEY && !m_typeB) {
         if (data->code == BTN_TOUCH && data->value == 0)
-          {
             m_contacts[m_currentSlot].state = Qt::TouchPointReleased;
-          }
     } else if (data->type == EV_SYN && data->code == SYN_MT_REPORT && m_lastEventType != EV_SYN) {
 
         // If there is no tracking id, one will be generated later.
@@ -451,7 +451,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
         }
 
         m_lastContacts = m_contacts;
-        if (!m_typeB)
+        if (!m_typeB && !m_singleTouch)
             m_contacts.clear();
 
         if (!m_touchPoints.isEmpty() && combinedStates != Qt::TouchPointStationary)
