@@ -3445,10 +3445,35 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     \sa QVariant
 */
 
-/*! \fn QSequentialIterable::QSequentialIterable(QtMetaTypePrivate::QSequentialIterableImpl)
-
+/*!
     \internal
 */
+QSequentialIterable::QSequentialIterable(QtMetaTypePrivate::QSequentialIterableImpl impl)
+  : m_impl(impl)
+{
+}
+
+QSequentialIterable::const_iterator::const_iterator(const QSequentialIterable &iter, QAtomicInt *ref_)
+  : m_impl(iter.m_impl), ref(ref_)
+{
+    ref->ref();
+}
+
+QSequentialIterable::const_iterator::const_iterator(const QtMetaTypePrivate::QSequentialIterableImpl &impl, QAtomicInt *ref_)
+  : m_impl(impl), ref(ref_)
+{
+    ref->ref();
+}
+
+void QSequentialIterable::const_iterator::begin()
+{
+    m_impl.moveToBegin();
+}
+
+void QSequentialIterable::const_iterator::end()
+{
+    m_impl.moveToEnd();
+}
 
 /*! \fn QSequentialIterable::const_iterator QSequentialIterable::begin() const
 
@@ -3457,31 +3482,54 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
     \sa end()
 */
+QSequentialIterable::const_iterator QSequentialIterable::begin() const
+{
+    const_iterator it(*this, new QAtomicInt(0));
+    it.begin();
+    return it;
+}
 
-/*! \fn QSequentialIterable::const_iterator QSequentialIterable::end() const
-
+/*!
     Returns a QSequentialIterable::const_iterator for the end of the container. This
     can be used in stl-style iteration.
 
     \sa begin()
 */
+QSequentialIterable::const_iterator QSequentialIterable::end() const
+{
+    const_iterator it(*this, new QAtomicInt(0));
+    it.end();
+    return it;
+}
 
-/*! \fn QVariant QSequentialIterable::at(int idx) const
-
+/*!
     Returns the element at position \a idx in the container.
 */
+QVariant QSequentialIterable::at(int idx) const
+{
+    const QtMetaTypePrivate::VariantData d = m_impl.at(idx);
+    if (d.metaTypeId == qMetaTypeId<QVariant>())
+        return *reinterpret_cast<const QVariant*>(d.data);
+    return QVariant(d.metaTypeId, d.data, d.flags);
+}
 
-/*! \fn int QSequentialIterable::size() const
-
+/*!
     Returns the number of elements in the container.
 */
+int QSequentialIterable::size() const
+{
+    return m_impl.size();
+}
 
-/*! \fn bool QSequentialIterable::canReverseIterate() const
-
+/*!
     Returns whether it is possible to iterate over the container in reverse. This
     corresponds to the std::bidirectional_iterator_tag iterator trait of the
     const_iterator of the container.
 */
+bool QSequentialIterable::canReverseIterate() const
+{
+    return m_impl._iteratorCapabilities & QtMetaTypePrivate::BiDirectionalCapability;
+}
 
 /*!
     \class QSequentialIterable::const_iterator
@@ -3498,43 +3546,73 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 */
 
 
-/*! \fn QSequentialIterable::const_iterator::~const_iterator()
-
+/*!
     Destroys the QSequentialIterable::const_iterator.
 */
+QSequentialIterable::const_iterator::~const_iterator() {
+    if (!ref->deref()) {
+        m_impl.destroyIter();
+        delete ref;
+    }
+}
 
-/*! \fn QSequentialIterable::const_iterator::const_iterator(const const_iterator &other)
-
+/*!
     Creates a copy of \a other.
 */
+QSequentialIterable::const_iterator::const_iterator(const const_iterator &other)
+  : m_impl(other.m_impl), ref(other.ref)
+{
+    ref->ref();
+}
 
-/*! \fn QSequentialIterable::const_iterator::const_iterator& QSequentialIterable::const_iterator::operator=(const const_iterator &other)
+/*!
     Assigns \a other to this.
 */
+QSequentialIterable::const_iterator&
+QSequentialIterable::const_iterator::operator=(const const_iterator &other)
+{
+    if (!m_impl.equal(other.m_impl)) {
+        m_impl = other.m_impl;
+        ref = other.ref;
+    }
+    ref->ref();
+    return *this;
+}
 
-/*! \fn QVariant QSequentialIterable::const_iterator::operator*() const
-
+/*!
     Returns the current item, converted to a QVariant.
 */
+const QVariant QSequentialIterable::const_iterator::operator*() const
+{
+    const QtMetaTypePrivate::VariantData d = m_impl.getCurrent();
+    if (d.metaTypeId == qMetaTypeId<QVariant>())
+        return *reinterpret_cast<const QVariant*>(d.data);
+    return QVariant(d.metaTypeId, d.data, d.flags);
+}
 
-/*! \fn bool QSequentialIterable::const_iterator::operator==(const const_iterator &other) const
-
+/*!
     Returns true if \a other points to the same item as this
     iterator; otherwise returns false.
 
     \sa operator!=()
 */
+bool QSequentialIterable::const_iterator::operator==(const const_iterator &other) const
+{
+    return m_impl.equal(other.m_impl);
+}
 
-/*! \fn bool QSequentialIterable::const_iterator::operator!=(const const_iterator &other) const
-
+/*!
     Returns true if \a other points to a different item than this
     iterator; otherwise returns false.
 
     \sa operator==()
 */
+bool QSequentialIterable::const_iterator::operator!=(const const_iterator &other) const
+{
+    return !m_impl.equal(other.m_impl);
+}
 
-/*! \fn QSequentialIterable::const_iterator &QSequentialIterable::const_iterator::operator++()
-
+/*!
     The prefix ++ operator (\c{++it}) advances the iterator to the
     next item in the container and returns an iterator to the new current
     item.
@@ -3543,18 +3621,28 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
     \sa operator--()
 */
+QSequentialIterable::const_iterator &QSequentialIterable::const_iterator::operator++()
+{
+    m_impl.advance(1);
+    return *this;
+}
 
-/*! \fn QSequentialIterable::const_iterator QSequentialIterable::const_iterator::operator++(int)
-
+/*!
     \overload
 
     The postfix ++ operator (\c{it++}) advances the iterator to the
     next item in the container and returns an iterator to the previously
     current item.
 */
+QSequentialIterable::const_iterator QSequentialIterable::const_iterator::operator++(int)
+{
+    QtMetaTypePrivate::QSequentialIterableImpl impl;
+    impl.copy(m_impl);
+    m_impl.advance(1);
+    return const_iterator(impl, new QAtomicInt(0));
+}
 
-/*! \fn QSequentialIterable::const_iterator &QSequentialIterable::const_iterator::operator--()
-
+/*!
     The prefix -- operator (\c{--it}) makes the preceding item
     current and returns an iterator to the new current item.
 
@@ -3565,9 +3653,13 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
     \sa operator++(), canReverseIterate()
 */
+QSequentialIterable::const_iterator &QSequentialIterable::const_iterator::operator--()
+{
+    m_impl.advance(-1);
+    return *this;
+}
 
-/*! \fn QSequentialIterable::const_iterator QSequentialIterable::const_iterator::operator--(int)
-
+/*!
     \overload
 
     The postfix -- operator (\c{it--}) makes the preceding item
@@ -3578,16 +3670,26 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
     \sa canReverseIterate()
 */
+QSequentialIterable::const_iterator QSequentialIterable::const_iterator::operator--(int)
+{
+    QtMetaTypePrivate::QSequentialIterableImpl impl;
+    impl.copy(m_impl);
+    m_impl.advance(-1);
+    return const_iterator(impl, new QAtomicInt(0));
+}
 
-/*! \fn QSequentialIterable::const_iterator &QSequentialIterable::const_iterator::operator+=(int j)
-
+/*!
     Advances the iterator by \a j items.
 
     \sa operator-=(), operator+()
 */
+QSequentialIterable::const_iterator &QSequentialIterable::const_iterator::operator+=(int j)
+{
+    m_impl.advance(j);
+    return *this;
+}
 
-/*! \fn QSequentialIterable::const_iterator &QSequentialIterable::const_iterator::operator-=(int j)
-
+/*!
     Makes the iterator go back by \a j items.
 
     If the container in the QVariant does not support bi-directional iteration, calling this function
@@ -3595,17 +3697,27 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
     \sa operator+=(), operator-(), canReverseIterate()
 */
+QSequentialIterable::const_iterator &QSequentialIterable::const_iterator::operator-=(int j)
+{
+    m_impl.advance(-j);
+    return *this;
+}
 
-/*! \fn QSequentialIterable::const_iterator QSequentialIterable::const_iterator::operator+(int j) const
-
+/*!
     Returns an iterator to the item at \a j positions forward from
     this iterator.
 
     \sa operator-(), operator+=()
 */
+QSequentialIterable::const_iterator QSequentialIterable::const_iterator::operator+(int j) const
+{
+    QtMetaTypePrivate::QSequentialIterableImpl impl;
+    impl.copy(m_impl);
+    impl.advance(j);
+    return const_iterator(impl, new QAtomicInt(0));
+}
 
-/*! \fn QSequentialIterable::const_iterator QSequentialIterable::const_iterator::operator-(int j) const
-
+/*!
     Returns an iterator to the item at \a j positions backward from
     this iterator.
 
@@ -3614,6 +3726,13 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
     \sa operator+(), operator-=(), canReverseIterate()
 */
+QSequentialIterable::const_iterator QSequentialIterable::const_iterator::operator-(int j) const
+{
+    QtMetaTypePrivate::QSequentialIterableImpl impl;
+    impl.copy(m_impl);
+    impl.advance(-j);
+    return const_iterator(impl, new QAtomicInt(0));
+}
 
 /*!
     \class QAssociativeIterable
@@ -3632,36 +3751,93 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     \sa QVariant
 */
 
-/*! \fn QAssociativeIterable::QAssociativeIterable(QtMetaTypePrivate::QAssociativeIterableImpl)
-
+/*!
     \internal
 */
+QAssociativeIterable::QAssociativeIterable(QtMetaTypePrivate::QAssociativeIterableImpl impl)
+  : m_impl(impl)
+{
+}
 
-/*! \fn QAssociativeIterable::const_iterator QAssociativeIterable::begin() const
+QAssociativeIterable::const_iterator::const_iterator(const QAssociativeIterable &iter, QAtomicInt *ref_)
+  : m_impl(iter.m_impl), ref(ref_)
+{
+    ref->ref();
+}
 
+QAssociativeIterable::const_iterator::const_iterator(const QtMetaTypePrivate::QAssociativeIterableImpl &impl, QAtomicInt *ref_)
+  : m_impl(impl), ref(ref_)
+{
+    ref->ref();
+}
+
+void QAssociativeIterable::const_iterator::begin()
+{
+    m_impl.begin();
+}
+
+void QAssociativeIterable::const_iterator::end()
+{
+    m_impl.end();
+}
+
+/*!
     Returns a QAssociativeIterable::const_iterator for the beginning of the container. This
     can be used in stl-style iteration.
 
     \sa end()
 */
+QAssociativeIterable::const_iterator QAssociativeIterable::begin() const
+{
+    const_iterator it(*this, new QAtomicInt(0));
+    it.begin();
+    return it;
+}
 
-/*! \fn QAssociativeIterable::const_iterator QAssociativeIterable::end() const
-
+/*!
     Returns a QAssociativeIterable::const_iterator for the end of the container. This
     can be used in stl-style iteration.
 
     \sa begin()
 */
+QAssociativeIterable::const_iterator QAssociativeIterable::end() const
+{
+    const_iterator it(*this, new QAtomicInt(0));
+    it.end();
+    return it;
+}
 
-/*! \fn QVariant QAssociativeIterable::value(const QVariant &key) const
-
+/*!
     Returns the value for the given \a key in the container, if the types are convertible.
 */
+QVariant QAssociativeIterable::value(const QVariant &key) const
+{
+    QVariant key_ = key;
+    if (!key_.canConvert(m_impl._metaType_id_key))
+        return QVariant();
+    if (!key_.convert(m_impl._metaType_id_key))
+        return QVariant();
+    const QtMetaTypePrivate::VariantData dkey(key_.userType(), key_.constData(), 0 /*key.flags()*/);
+    QtMetaTypePrivate::QAssociativeIterableImpl impl = m_impl;
+    impl.find(dkey);
+    QtMetaTypePrivate::QAssociativeIterableImpl endIt = m_impl;
+    endIt.end();
+    if (impl.equal(endIt))
+        return QVariant();
+    const QtMetaTypePrivate::VariantData d = impl.getCurrentValue();
+    QVariant v(d.metaTypeId, d.data, d.flags);
+    if (d.metaTypeId == qMetaTypeId<QVariant>())
+        return *reinterpret_cast<const QVariant*>(d.data);
+    return v;
+}
 
-/*! \fn int QAssociativeIterable::size() const
-
+/*!
     Returns the number of elements in the container.
 */
+int QAssociativeIterable::size() const
+{
+    return m_impl.size();
+}
 
 /*!
     \class QAssociativeIterable::const_iterator
@@ -3678,53 +3854,99 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 */
 
 
-/*! \fn QAssociativeIterable::const_iterator::~const_iterator()
-
+/*!
     Destroys the QAssociativeIterable::const_iterator.
 */
+QAssociativeIterable::const_iterator::~const_iterator()
+{
+    if (!ref->deref()) {
+        m_impl.destroyIter();
+        delete ref;
+    }
+}
 
-/*! \fn QAssociativeIterable::const_iterator::const_iterator(const const_iterator &other)
-
+/*!
     Creates a copy of \a other.
 */
+QAssociativeIterable::const_iterator::const_iterator(const const_iterator &other)
+  : m_impl(other.m_impl), ref(other.ref)
+{
+    ref->ref();
+}
 
-/*! \fn QAssociativeIterable::const_iterator::const_iterator& QAssociativeIterable::const_iterator::operator=(const const_iterator &other)
+/*!
     Assigns \a other to this.
 */
+QAssociativeIterable::const_iterator&
+QAssociativeIterable::const_iterator::operator=(const const_iterator &other)
+{
+    if (!m_impl.equal(other.m_impl)) {
+        m_impl = other.m_impl;
+        ref = other.ref;
+    }
+    ref->ref();
+    return *this;
+}
 
-/*! \fn QVariant QAssociativeIterable::const_iterator::operator*() const
-
+/*!
     Returns the current value, converted to a QVariant.
 */
+const QVariant QAssociativeIterable::const_iterator::operator*() const
+{
+    const QtMetaTypePrivate::VariantData d = m_impl.getCurrentValue();
+    QVariant v(d.metaTypeId, d.data, d.flags);
+    if (d.metaTypeId == qMetaTypeId<QVariant>())
+        return *reinterpret_cast<const QVariant*>(d.data);
+    return v;
+}
 
-/*! \fn QVariant QAssociativeIterable::const_iterator::key() const
-
+/*!
     Returns the current key, converted to a QVariant.
 */
+const QVariant QAssociativeIterable::const_iterator::key() const
+{
+    const QtMetaTypePrivate::VariantData d = m_impl.getCurrentKey();
+    QVariant v(d.metaTypeId, d.data, d.flags);
+    if (d.metaTypeId == qMetaTypeId<QVariant>())
+        return *reinterpret_cast<const QVariant*>(d.data);
+    return v;
+}
 
-/*! \fn QVariant QAssociativeIterable::const_iterator::value() const
-
+/*!
     Returns the current value, converted to a QVariant.
 */
+const QVariant QAssociativeIterable::const_iterator::value() const
+{
+    const QtMetaTypePrivate::VariantData d = m_impl.getCurrentValue();
+    QVariant v(d.metaTypeId, d.data, d.flags);
+    if (d.metaTypeId == qMetaTypeId<QVariant>())
+        return *reinterpret_cast<const QVariant*>(d.data);
+    return v;
+}
 
-/*! \fn bool QAssociativeIterable::const_iterator::operator==(const const_iterator &other) const
-
+/*!
     Returns true if \a other points to the same item as this
     iterator; otherwise returns false.
 
     \sa operator!=()
 */
+bool QAssociativeIterable::const_iterator::operator==(const const_iterator &other) const
+{
+    return m_impl.equal(other.m_impl);
+}
 
-/*! \fn bool QAssociativeIterable::const_iterator::operator!=(const const_iterator &other) const
-
+/*!
     Returns true if \a other points to a different item than this
     iterator; otherwise returns false.
 
     \sa operator==()
 */
+bool QAssociativeIterable::const_iterator::operator!=(const const_iterator &other) const
+{
+    return !m_impl.equal(other.m_impl);
+}
 
-/*! \fn QAssociativeIterable::const_iterator &QAssociativeIterable::const_iterator::operator++()
-
+/*!
     The prefix ++ operator (\c{++it}) advances the iterator to the
     next item in the container and returns an iterator to the new current
     item.
@@ -3733,18 +3955,28 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
     \sa operator--()
 */
+QAssociativeIterable::const_iterator &QAssociativeIterable::const_iterator::operator++()
+{
+    m_impl.advance(1);
+    return *this;
+}
 
-/*! \fn QAssociativeIterable::const_iterator QAssociativeIterable::const_iterator::operator++(int)
-
+/*!
     \overload
 
     The postfix ++ operator (\c{it++}) advances the iterator to the
     next item in the container and returns an iterator to the previously
     current item.
 */
+QAssociativeIterable::const_iterator QAssociativeIterable::const_iterator::operator++(int)
+{
+    QtMetaTypePrivate::QAssociativeIterableImpl impl;
+    impl.copy(m_impl);
+    m_impl.advance(1);
+    return const_iterator(impl, new QAtomicInt(0));
+}
 
-/*! \fn QAssociativeIterable::const_iterator &QAssociativeIterable::const_iterator::operator--()
-
+/*!
     The prefix -- operator (\c{--it}) makes the preceding item
     current and returns an iterator to the new current item.
 
@@ -3752,43 +3984,74 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
     \sa operator++()
 */
+QAssociativeIterable::const_iterator &QAssociativeIterable::const_iterator::operator--()
+{
+    m_impl.advance(-1);
+    return *this;
+}
 
-/*! \fn QAssociativeIterable::const_iterator QAssociativeIterable::const_iterator::operator--(int)
-
+/*!
     \overload
 
     The postfix -- operator (\c{it--}) makes the preceding item
     current and returns an iterator to the previously current item.
 */
+QAssociativeIterable::const_iterator QAssociativeIterable::const_iterator::operator--(int)
+{
+    QtMetaTypePrivate::QAssociativeIterableImpl impl;
+    impl.copy(m_impl);
+    m_impl.advance(-1);
+    return const_iterator(impl, new QAtomicInt(0));
+}
 
-/*! \fn QAssociativeIterable::const_iterator &QAssociativeIterable::const_iterator::operator+=(int j)
-
+/*!
     Advances the iterator by \a j items.
 
     \sa operator-=(), operator+()
 */
+QAssociativeIterable::const_iterator &QAssociativeIterable::const_iterator::operator+=(int j)
+{
+    m_impl.advance(j);
+    return *this;
+}
 
-/*! \fn QAssociativeIterable::const_iterator &QAssociativeIterable::const_iterator::operator-=(int j)
-
+/*!
     Makes the iterator go back by \a j items.
 
     \sa operator+=(), operator-()
 */
+QAssociativeIterable::const_iterator &QAssociativeIterable::const_iterator::operator-=(int j)
+{
+    m_impl.advance(-j);
+    return *this;
+}
 
-/*! \fn QAssociativeIterable::const_iterator QAssociativeIterable::const_iterator::operator+(int j) const
-
+/*!
     Returns an iterator to the item at \a j positions forward from
     this iterator.
 
     \sa operator-(), operator+=()
 */
+QAssociativeIterable::const_iterator QAssociativeIterable::const_iterator::operator+(int j) const
+{
+    QtMetaTypePrivate::QAssociativeIterableImpl impl;
+    impl.copy(m_impl);
+    impl.advance(j);
+    return const_iterator(impl, new QAtomicInt(0));
+}
 
-/*! \fn QAssociativeIterable::const_iterator QAssociativeIterable::const_iterator::operator-(int j) const
-
+/*!
     Returns an iterator to the item at \a j positions backward from
     this iterator.
 
     \sa operator+(), operator-=()
 */
+QAssociativeIterable::const_iterator QAssociativeIterable::const_iterator::operator-(int j) const
+{
+    QtMetaTypePrivate::QAssociativeIterableImpl impl;
+    impl.copy(m_impl);
+    impl.advance(-j);
+    return const_iterator(impl, new QAtomicInt(0));
+}
 
 QT_END_NAMESPACE

@@ -572,192 +572,104 @@ inline bool operator!=(const QVariant &v1, const QVariantComparisonHelper &v2)
 }
 #endif
 
-class QSequentialIterable
+class Q_CORE_EXPORT QSequentialIterable
 {
     QtMetaTypePrivate::QSequentialIterableImpl m_impl;
 public:
-    struct const_iterator
+    struct Q_CORE_EXPORT const_iterator
     {
     private:
         QtMetaTypePrivate::QSequentialIterableImpl m_impl;
         QAtomicInt *ref;
         friend class QSequentialIterable;
-        inline explicit const_iterator(const QSequentialIterable &iter, QAtomicInt *ref_)
-          : m_impl(iter.m_impl), ref(ref_) { ref->ref(); }
+        explicit const_iterator(const QSequentialIterable &iter, QAtomicInt *ref_);
 
-        inline explicit const_iterator(const QtMetaTypePrivate::QSequentialIterableImpl &impl, QAtomicInt *ref_)
-          : m_impl(impl), ref(ref_) { ref->ref(); }
+        explicit const_iterator(const QtMetaTypePrivate::QSequentialIterableImpl &impl, QAtomicInt *ref_);
 
-        inline void begin() { m_impl.moveToBegin(); }
-        inline void end() { m_impl.moveToEnd(); }
+        void begin();
+        void end();
     public:
-        inline ~const_iterator() {
-            if (!ref->deref()) {
-                m_impl.destroyIter();
-                delete ref;
-            }
-        }
+        ~const_iterator();
 
-        inline const_iterator(const const_iterator &other) : m_impl(other.m_impl), ref(other.ref)  {
-            ref->ref();
-        }
+        const_iterator(const const_iterator &other);
 
-        inline const_iterator& operator=(const const_iterator &other)
-        {
-            if (!m_impl.equal(other.m_impl)) {
-                m_impl = other.m_impl;
-                ref = other.ref;
-            }
-            ref->ref();
-            return *this;
-        }
+        const_iterator& operator=(const const_iterator &other);
 
-        inline const QVariant operator*() const {
-            const QtMetaTypePrivate::VariantData d = m_impl.getCurrent();
-            if (d.metaTypeId == qMetaTypeId<QVariant>())
-                return *reinterpret_cast<const QVariant*>(d.data);
-            return QVariant(d.metaTypeId, d.data, d.flags);
-        }
-        inline bool operator==(const const_iterator &o) const { return m_impl.equal(o.m_impl); }
-        inline bool operator!=(const const_iterator &o) const { return !m_impl.equal(o.m_impl); }
-        inline const_iterator &operator++() { m_impl.advance(1); return *this; }
-        inline const_iterator operator++(int) { QtMetaTypePrivate::QSequentialIterableImpl impl; impl.copy(m_impl); m_impl.advance(1); return const_iterator(impl, new QAtomicInt(0)); }
-        inline const_iterator &operator--() { m_impl.advance(-1); return *this; }
-        inline const_iterator operator--(int) { QtMetaTypePrivate::QSequentialIterableImpl impl; impl.copy(m_impl); m_impl.advance(-1); return const_iterator(impl, new QAtomicInt(0)); }
-        inline const_iterator &operator+=(int j) { m_impl.advance(j); return *this; }
-        inline const_iterator &operator-=(int j) { m_impl.advance(-j); return *this; }
-        inline const_iterator operator+(int j) const { QtMetaTypePrivate::QSequentialIterableImpl impl; impl.copy(m_impl); impl.advance(j); return const_iterator(impl, new QAtomicInt(0));  }
-        inline const_iterator operator-(int j) const { QtMetaTypePrivate::QSequentialIterableImpl impl; impl.copy(m_impl); impl.advance(-j); return const_iterator(impl, new QAtomicInt(0));  }
+        const QVariant operator*() const;
+        bool operator==(const const_iterator &o) const;
+        bool operator!=(const const_iterator &o) const;
+        const_iterator &operator++();
+        const_iterator operator++(int);
+        const_iterator &operator--();
+        const_iterator operator--(int);
+        const_iterator &operator+=(int j);
+        const_iterator &operator-=(int j);
+        const_iterator operator+(int j) const;
+        const_iterator operator-(int j) const;
     };
 
     friend struct const_iterator;
 
-    explicit QSequentialIterable(QtMetaTypePrivate::QSequentialIterableImpl impl)
-      : m_impl(impl)
-    {
-    }
+    explicit QSequentialIterable(QtMetaTypePrivate::QSequentialIterableImpl impl);
 
-    const_iterator begin() const { const_iterator it(*this, new QAtomicInt(0)); it.begin(); return it; }
-    const_iterator end() const { const_iterator it(*this, new QAtomicInt(0)); it.end(); return it; }
+    const_iterator begin() const;
+    const_iterator end() const;
 
-    QVariant at(int idx) const {
-        const QtMetaTypePrivate::VariantData d = m_impl.at(idx);
-        if (d.metaTypeId == qMetaTypeId<QVariant>())
-            return *reinterpret_cast<const QVariant*>(d.data);
-        return QVariant(d.metaTypeId, d.data, d.flags);
-    }
-    int size() const { return m_impl.size(); }
+    QVariant at(int idx) const;
+    int size() const;
 
-    bool canReverseIterate() const
-    { return m_impl._iteratorCapabilities & QtMetaTypePrivate::BiDirectionalCapability; }
+    bool canReverseIterate() const;
 };
 
-class QAssociativeIterable
+class Q_CORE_EXPORT QAssociativeIterable
 {
     QtMetaTypePrivate::QAssociativeIterableImpl m_impl;
 public:
-    struct const_iterator
+    struct Q_CORE_EXPORT const_iterator
     {
     private:
         QtMetaTypePrivate::QAssociativeIterableImpl m_impl;
         QAtomicInt *ref;
         friend class QAssociativeIterable;
-        inline explicit const_iterator(const QAssociativeIterable &iter, QAtomicInt *ref_)
-          : m_impl(iter.m_impl), ref(ref_) { ref->ref(); }
+        explicit const_iterator(const QAssociativeIterable &iter, QAtomicInt *ref_);
 
-        inline explicit const_iterator(const QtMetaTypePrivate::QAssociativeIterableImpl &impl, QAtomicInt *ref_)
-          : m_impl(impl), ref(ref_) { ref->ref(); }
+        explicit const_iterator(const QtMetaTypePrivate::QAssociativeIterableImpl &impl, QAtomicInt *ref_);
 
-        inline void begin() { m_impl.begin(); }
-        inline void end() { m_impl.end(); }
+        void begin();
+        void end();
     public:
-        inline ~const_iterator() {
-            if (!ref->deref()) {
-                m_impl.destroyIter();
-                delete ref;
-            }
-        }
-        inline const_iterator(const const_iterator &other) : m_impl(other.m_impl), ref(other.ref)  {
-            ref->ref();
-        }
+        ~const_iterator();
+        const_iterator(const const_iterator &other);
 
-        inline const_iterator& operator=(const const_iterator &other)
-        {
-            if (!m_impl.equal(other.m_impl)) {
-                m_impl = other.m_impl;
-                ref = other.ref;
-            }
-            ref->ref();
-            return *this;
-        }
+        const_iterator& operator=(const const_iterator &other);
 
-        inline const QVariant key() const {
-            const QtMetaTypePrivate::VariantData d = m_impl.getCurrentKey();
-            QVariant v(d.metaTypeId, d.data, d.flags);
-            if (d.metaTypeId == qMetaTypeId<QVariant>())
-                return *reinterpret_cast<const QVariant*>(d.data);
-            return v;
-        }
+        const QVariant key() const;
 
-        inline const QVariant value() const {
-            const QtMetaTypePrivate::VariantData d = m_impl.getCurrentValue();
-            QVariant v(d.metaTypeId, d.data, d.flags);
-            if (d.metaTypeId == qMetaTypeId<QVariant>())
-                return *reinterpret_cast<const QVariant*>(d.data);
-            return v;
-        }
+        const QVariant value() const;
 
-        inline const QVariant operator*() const {
-            const QtMetaTypePrivate::VariantData d = m_impl.getCurrentValue();
-            QVariant v(d.metaTypeId, d.data, d.flags);
-            if (d.metaTypeId == qMetaTypeId<QVariant>())
-                return *reinterpret_cast<const QVariant*>(d.data);
-            return v;
-        }
-        inline bool operator==(const const_iterator &o) const { return m_impl.equal(o.m_impl); }
-        inline bool operator!=(const const_iterator &o) const { return !m_impl.equal(o.m_impl); }
-        inline const_iterator &operator++() { m_impl.advance(1); return *this; }
-        inline const_iterator operator++(int) { QtMetaTypePrivate::QAssociativeIterableImpl impl; impl.copy(m_impl); m_impl.advance(1); return const_iterator(impl, new QAtomicInt(0)); }
-        inline const_iterator &operator--() { m_impl.advance(-1); return *this; }
-        inline const_iterator operator--(int) { QtMetaTypePrivate::QAssociativeIterableImpl impl; impl.copy(m_impl); m_impl.advance(-1); return const_iterator(impl, new QAtomicInt(0)); }
-        inline const_iterator &operator+=(int j) { m_impl.advance(j); return *this; }
-        inline const_iterator &operator-=(int j) { m_impl.advance(-j); return *this; }
-        inline const_iterator operator+(int j) const { QtMetaTypePrivate::QAssociativeIterableImpl impl; impl.copy(m_impl); impl.advance(j); return const_iterator(impl, new QAtomicInt(0));  }
-        inline const_iterator operator-(int j) const { QtMetaTypePrivate::QAssociativeIterableImpl impl; impl.copy(m_impl); impl.advance(-j); return const_iterator(impl, new QAtomicInt(0));  }
+        const QVariant operator*() const;
+        bool operator==(const const_iterator &o) const;
+        bool operator!=(const const_iterator &o) const;
+        const_iterator &operator++();
+        const_iterator operator++(int);
+        const_iterator &operator--();
+        const_iterator operator--(int);
+        const_iterator &operator+=(int j);
+        const_iterator &operator-=(int j);
+        const_iterator operator+(int j) const;
+        const_iterator operator-(int j) const;
     };
 
     friend struct const_iterator;
 
-    explicit QAssociativeIterable(QtMetaTypePrivate::QAssociativeIterableImpl impl)
-      : m_impl(impl)
-    {
-    }
+    explicit QAssociativeIterable(QtMetaTypePrivate::QAssociativeIterableImpl impl);
 
-    const_iterator begin() const { const_iterator it(*this, new QAtomicInt(0)); it.begin(); return it; }
-    const_iterator end() const { const_iterator it(*this, new QAtomicInt(0)); it.end(); return it; }
+    const_iterator begin() const;
+    const_iterator end() const;
 
-    QVariant value(const QVariant &key) const
-    {
-        QVariant key_ = key;
-        if (!key_.canConvert(m_impl._metaType_id_key))
-            return QVariant();
-        if (!key_.convert(m_impl._metaType_id_key))
-            return QVariant();
-        const QtMetaTypePrivate::VariantData dkey(key_.userType(), key_.constData(), 0 /*key.flags()*/);
-        QtMetaTypePrivate::QAssociativeIterableImpl impl = m_impl;
-        impl.find(dkey);
-        QtMetaTypePrivate::QAssociativeIterableImpl endIt = m_impl;
-        endIt.end();
-        if (impl.equal(endIt))
-            return QVariant();
-        const QtMetaTypePrivate::VariantData d = impl.getCurrentValue();
-        QVariant v(d.metaTypeId, d.data, d.flags);
-        if (d.metaTypeId == qMetaTypeId<QVariant>())
-            return *reinterpret_cast<const QVariant*>(d.data);
-        return v;
-    }
+    QVariant value(const QVariant &key) const;
 
-    int size() const { return m_impl.size(); }
+    int size() const;
 };
 
 #ifndef QT_MOC
