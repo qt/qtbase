@@ -269,6 +269,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , isScrolled(0)
       , isMoved(0)
       , usesDoubleBufferedGLContext(0)
+      , mustHaveWindowHandle(0)
 #ifndef QT_NO_IM
       , inheritsInputMethodHints(0)
 #endif
@@ -1148,9 +1149,10 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     data.in_destructor = false;
 
     // Widgets with Qt::MSWindowsOwnDC (typically QGLWidget) must have a window handle.
-    if (f & Qt::MSWindowsOwnDC)
+    if (f & Qt::MSWindowsOwnDC) {
+        mustHaveWindowHandle = 1;
         q->setAttribute(Qt::WA_NativeWindow);
-
+    }
 //#ifdef Q_WS_MAC
 //    q->setAttribute(Qt::WA_NativeWindow);
 //#endif
@@ -10072,8 +10074,8 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
     }
 #endif
 
-    // Don't set WA_NativeWindow on platforms that don't support it
-    if (attribute == Qt::WA_NativeWindow) {
+    // Don't set WA_NativeWindow on platforms that don't support it -- except for QGLWidget, which depends on it
+    if (attribute == Qt::WA_NativeWindow && !d->mustHaveWindowHandle) {
         QPlatformIntegration *platformIntegration = QGuiApplicationPrivate::platformIntegration();
         if (!platformIntegration->hasCapability(QPlatformIntegration::NativeWidgets))
             return;

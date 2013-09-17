@@ -693,6 +693,7 @@ public:
     uint isScrolled : 1;
     uint isMoved : 1;
     uint usesDoubleBufferedGLContext : 1;
+    uint mustHaveWindowHandle : 1;
 #ifndef QT_NO_IM
     uint inheritsInputMethodHints : 1;
 #endif
