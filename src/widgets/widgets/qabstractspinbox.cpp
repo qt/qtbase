@@ -396,6 +396,30 @@ bool QAbstractSpinBox::isAccelerated() const
 }
 
 /*!
+     \property QAbstractSpinBox::showGroupSeparator
+     \since 5.3
+
+
+     This property holds whether a thousands separator is enabled. By default this
+     property is false.
+*/
+bool QAbstractSpinBox::isGroupSeparatorShown() const
+{
+    Q_D(const QAbstractSpinBox);
+    return d->showGroupSeparator;
+}
+
+void QAbstractSpinBox::setGroupSeparatorShown(bool shown)
+{
+    Q_D(QAbstractSpinBox);
+    if (d->showGroupSeparator == shown)
+        return;
+    d->showGroupSeparator = shown;
+    d->setValue(d->value, EmitIfChanged);
+    updateGeometry();
+}
+
+/*!
     \enum QAbstractSpinBox::CorrectionMode
 
     This enum type describes the mode the spinbox will use to correct
@@ -1316,7 +1340,8 @@ QAbstractSpinBoxPrivate::QAbstractSpinBoxPrivate()
       cachedState(QValidator::Invalid), pendingEmit(false), readOnly(false), wrapping(false),
       ignoreCursorPositionChanged(false), frame(true), accelerate(false), keyboardTracking(true),
       cleared(false), ignoreUpdateEdit(false), correctionMode(QAbstractSpinBox::CorrectToPreviousValue),
-      acceleration(0), hoverControl(QStyle::SC_None), buttonSymbols(QAbstractSpinBox::UpDownArrows), validator(0)
+      acceleration(0), hoverControl(QStyle::SC_None), buttonSymbols(QAbstractSpinBox::UpDownArrows), validator(0),
+      showGroupSeparator(0)
 {
 }
 

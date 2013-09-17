@@ -45,6 +45,7 @@
 
 QT_BEGIN_NAMESPACE
 class QDateTimeEdit;
+class QSpinBox;
 class QDoubleSpinBox;
 class QGroupBox;
 class QLabel;
@@ -75,6 +76,8 @@ private:
     QGroupBox *editsGroup;
     QGroupBox *doubleSpinBoxesGroup;
     QLabel *meetingLabel;
+    QSpinBox *groupSeparatorSpinBox;
+    QDoubleSpinBox *groupSeparatorSpinBox_d;
 };
 //! [0]
 

@@ -72,6 +72,7 @@ class Q_WIDGETS_EXPORT QAbstractSpinBox : public QWidget
     Q_PROPERTY(CorrectionMode correctionMode READ correctionMode WRITE setCorrectionMode)
     Q_PROPERTY(bool acceptableInput READ hasAcceptableInput)
     Q_PROPERTY(bool keyboardTracking READ keyboardTracking WRITE setKeyboardTracking)
+    Q_PROPERTY(bool showGroupSeparator READ isGroupSeparatorShown WRITE setGroupSeparatorShown)
 public:
     explicit QAbstractSpinBox(QWidget *parent = 0);
     ~QAbstractSpinBox();
@@ -113,6 +114,9 @@ public:
 
     void setAccelerated(bool on);
     bool isAccelerated() const;
+
+    void setGroupSeparatorShown(bool shown);
+    bool isGroupSeparatorShown() const;
 
     QSize sizeHint() const;
     QSize minimumSizeHint() const;

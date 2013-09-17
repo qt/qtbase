@@ -142,6 +142,10 @@ private slots:
 
     void taskQTBUG_5008_textFromValueAndValidate();
     void lineEditReturnPressed();
+
+    void setGroupSeparatorShown_data();
+    void setGroupSeparatorShown();
+
 public slots:
     void valueChangedHelper(const QString &);
     void valueChangedHelper(int);
@@ -151,6 +155,9 @@ private:
 };
 
 typedef QList<int> IntList;
+
+Q_DECLARE_METATYPE(QLocale::Language)
+Q_DECLARE_METATYPE(QLocale::Country)
 
 // Testing get/set functions
 void tst_QSpinBox::getSetCheck()
@@ -1109,6 +1116,48 @@ void tst_QSpinBox::lineEditReturnPressed()
     spinBox.show();
     QTest::keyClick(&spinBox, Qt::Key_Return);
     QCOMPARE(spyCurrentChanged.count(), 1);
+}
+
+void tst_QSpinBox::setGroupSeparatorShown_data()
+{
+    QTest::addColumn<QLocale::Language>("lang");
+    QTest::addColumn<QLocale::Country>("country");
+
+    QTest::newRow("data0") << QLocale::English << QLocale::UnitedStates;
+    QTest::newRow("data1") << QLocale::Swedish << QLocale::Sweden;
+    QTest::newRow("data2") << QLocale::German << QLocale::Germany;
+    QTest::newRow("data3") << QLocale::Georgian << QLocale::Georgia;
+    QTest::newRow("data3") << QLocale::Macedonian << QLocale::Macedonia;
+}
+
+void tst_QSpinBox::setGroupSeparatorShown()
+{
+    QFETCH(QLocale::Language, lang);
+    QFETCH(QLocale::Country, country);
+
+    QLocale loc(lang, country);
+    QLocale::setDefault(loc);
+    SpinBox spinBox;
+    spinBox.setMaximum(99999);
+    spinBox.setValue(13000);
+    spinBox.setGroupSeparatorShown(true);
+    QCOMPARE(spinBox.lineEdit()->text(), spinBox.locale().toString(13000));
+    QCOMPARE(spinBox.isGroupSeparatorShown(), true);
+    QCOMPARE(spinBox.textFromValue(23421),spinBox.locale().toString(23421));
+
+    spinBox.setGroupSeparatorShown(false);
+    QCOMPARE(spinBox.lineEdit()->text(), QStringLiteral("13000"));
+    QCOMPARE(spinBox.isGroupSeparatorShown(), false);
+
+    spinBox.setMaximum(72000);
+    spinBox.lineEdit()->setText(spinBox.locale().toString(32000));
+    QCOMPARE(spinBox.value()+1000, 33000);
+
+    spinBox.lineEdit()->setText(QStringLiteral("32000"));
+    QCOMPARE(spinBox.value()+1000, 33000);
+
+    spinBox.lineEdit()->setText(QStringLiteral("32,000"));
+    QCOMPARE(spinBox.value()+1000, 33000);
 }
 
 QTEST_MAIN(tst_QSpinBox)

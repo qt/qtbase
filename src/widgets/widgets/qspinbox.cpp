@@ -463,8 +463,8 @@ void QSpinBox::setDisplayIntegerBase(int base)
     display the given \a value. The default implementation returns a
     string containing \a value printed in the standard way using
     QWidget::locale().toString(), but with the thousand separator
-    removed. Reimplementations may return anything. (See the example
-    in the detailed description.)
+    removed unless setGroupSeparatorShown() is set. Reimplementations may
+    return anything. (See the example in the detailed description.)
 
     Note: QSpinBox does not call this function for specialValueText()
     and that neither prefix() nor suffix() should be included in the
@@ -487,7 +487,7 @@ QString QSpinBox::textFromValue(int value) const
             str.prepend('-');
     } else {
         str = locale().toString(value);
-        if (qAbs(value) >= 1000 || value == INT_MIN) {
+        if (!d->showGroupSeparator && (qAbs(value) >= 1000 || value == INT_MIN)) {
             str.remove(locale().groupSeparator());
         }
     }
@@ -538,7 +538,8 @@ QValidator::State QSpinBox::validate(QString &text, int &pos) const
 */
 void QSpinBox::fixup(QString &input) const
 {
-    input.remove(locale().groupSeparator());
+    if (!isGroupSeparatorShown())
+        input.remove(locale().groupSeparator());
 }
 
 
@@ -891,7 +892,8 @@ void QDoubleSpinBox::setDecimals(int decimals)
     display the given \a value. The default implementation returns a string
     containing \a value printed using QWidget::locale().toString(\a value,
     QLatin1Char('f'), decimals()) and will remove the thousand
-    separator. Reimplementations may return anything.
+    separator unless setGroupSeparatorShown() is set. Reimplementations may
+    return anything.
 
     Note: QDoubleSpinBox does not call this function for
     specialValueText() and that neither prefix() nor suffix() should
@@ -908,9 +910,9 @@ QString QDoubleSpinBox::textFromValue(double value) const
 {
     Q_D(const QDoubleSpinBox);
     QString str = locale().toString(value, 'f', d->decimals);
-    if (qAbs(value) >= 1000.0) {
+    if (!d->showGroupSeparator && qAbs(value) >= 1000.0)
         str.remove(locale().groupSeparator());
-    }
+
     return str;
 }
 
