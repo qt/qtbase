@@ -281,6 +281,15 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
             image.setColorCount(2);
             image.setColor(1, qRgb(0,0,0));
             image.setColor(0, qRgb(255,255,255));
+            if (png_get_tRNS(png_ptr, info_ptr, &trans_alpha, &num_trans, &trans_color_p) && trans_color_p) {
+                const int g = trans_color_p->gray;
+                // the image has white in the first position of the color table,
+                // black in the second. g is 0 for black, 1 for white.
+                if (g == 0)
+                    image.setColor(1, qRgba(0, 0, 0, 0));
+                else if (g == 1)
+                    image.setColor(0, qRgba(255, 255, 255, 0));
+            }
         } else if (bit_depth == 16 && png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
             png_set_expand(png_ptr);
             png_set_strip_16(png_ptr);
