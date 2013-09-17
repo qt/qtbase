@@ -74,6 +74,7 @@ private slots:
     void task194017_hiddenWidget();
     void QTBUG4334_hiddenOnMaximizedWindow();
     void QTBUG25492_msgtimeout();
+    void messageChangedSignal();
 
 private:
     QStatusBar *testWidget;
@@ -95,6 +96,8 @@ void tst_QStatusBar::init()
 
     QWidget *item1 = new QWidget(testWidget);
     testWidget->addWidget(item1);
+    // currentMessage needs to be null as the code relies on this
+    currentMessage = QString();
 }
 
 void tst_QStatusBar::cleanup()
@@ -316,6 +319,30 @@ void tst_QStatusBar::QTBUG25492_msgtimeout()
     QCOMPARE(testWidget->currentMessage(), currentMessage);
 }
 
+void tst_QStatusBar::messageChangedSignal()
+{
+    QVERIFY(testWidget->currentMessage().isNull());
+    QVERIFY(currentMessage.isNull());
+    testWidget->show();
+
+    QSignalSpy spy(testWidget, SIGNAL(messageChanged(QString)));
+    testWidget->showMessage("Ready", 0);
+    QCOMPARE(testWidget->currentMessage(), QString("Ready"));
+    QCOMPARE(testWidget->currentMessage(), currentMessage);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().at(0).toString(), currentMessage);
+    testWidget->clearMessage();
+    QCOMPARE(testWidget->currentMessage(), QString());
+    QCOMPARE(testWidget->currentMessage(), currentMessage);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().at(0).toString(), currentMessage);
+    testWidget->showMessage("Ready", 0);
+    testWidget->showMessage("Ready", 0);
+    QCOMPARE(testWidget->currentMessage(), QString("Ready"));
+    QCOMPARE(testWidget->currentMessage(), currentMessage);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().at(0).toString(), currentMessage);
+}
 
 QTEST_MAIN(tst_QStatusBar)
 #include "tst_qstatusbar.moc"

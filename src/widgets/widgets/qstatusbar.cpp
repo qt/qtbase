@@ -551,8 +551,6 @@ void QStatusBar::showMessage(const QString &message, int timeout)
 {
     Q_D(QStatusBar);
 
-    d->tempItem = message;
-
     if (timeout > 0) {
         if (!d->timer) {
             d->timer = new QTimer(this);
@@ -563,6 +561,9 @@ void QStatusBar::showMessage(const QString &message, int timeout)
         delete d->timer;
         d->timer = 0;
     }
+    if (d->tempItem == message)
+        return;
+    d->tempItem = message;
 
     hideOrShow();
 }
