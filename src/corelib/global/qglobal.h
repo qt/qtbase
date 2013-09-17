@@ -540,6 +540,10 @@ class QDataStream;
 #  define QT_NO_SYSTEMSEMAPHORE  // not needed at all in a flat address space
 #endif
 
+#if defined(Q_OS_WINRT)
+#  define QT_NO_PROCESS
+#endif
+
 inline void qt_noop(void) {}
 
 /* These wrap try/catch so we can switch off exceptions later.

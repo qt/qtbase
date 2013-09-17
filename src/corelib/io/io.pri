@@ -95,22 +95,25 @@ win32 {
 
         SOURCES += io/qfilesystemwatcher_win.cpp
         HEADERS += io/qfilesystemwatcher_win_p.h
-        HEADERS += io/qwindowspipewriter_p.h
-        SOURCES += io/qwindowspipewriter.cpp
         SOURCES += io/qfilesystemengine_win.cpp
         SOURCES += io/qfilesystemiterator_win.cpp
         SOURCES += io/qstandardpaths_win.cpp
 
-    wince* {
-        SOURCES += io/qprocess_wince.cpp
-    } else {
-        HEADERS += \
-            io/qwinoverlappedionotifier_p.h \
-            io/qwindowspipereader_p.h
-        SOURCES += \
-            io/qprocess_win.cpp \
-            io/qwinoverlappedionotifier.cpp \
-            io/qwindowspipereader.cpp
+    !winrt {
+        HEADERS += io/qwindowspipewriter_p.h
+        SOURCES += io/qwindowspipewriter.cpp
+
+        wince* {
+            SOURCES += io/qprocess_wince.cpp
+        } else {
+            HEADERS += \
+                io/qwinoverlappedionotifier_p.h \
+                io/qwindowspipereader_p.h
+            SOURCES += \
+                io/qprocess_win.cpp \
+                io/qwinoverlappedionotifier.cpp \
+                io/qwindowspipereader.cpp
+        }
     }
 } else:unix|integrity {
         SOURCES += \
