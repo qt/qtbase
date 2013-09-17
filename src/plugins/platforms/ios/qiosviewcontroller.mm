@@ -58,14 +58,9 @@
 
 -(BOOL)shouldAutorotate
 {
-    // For now we assume that if the application doesn't listen to orientation
-    // updates it means it would like to enable auto-rotation, and vice versa.
-    if (QGuiApplication *guiApp = qobject_cast<QGuiApplication *>(qApp))
-        return !guiApp->primaryScreen()->orientationUpdateMask();
-    else
-        return YES; // Startup case: QGuiApplication is not ready yet.
-
-    // FIXME: Investigate a proper Qt API for auto-rotation and orientation locking
+    // Until a proper orientation and rotation API is in place, we always auto rotate.
+    // If auto rotation is not wanted, you would need to switch it off manually from Info.plist.
+    return YES;
 }
 
 -(NSUInteger)supportedInterfaceOrientations
