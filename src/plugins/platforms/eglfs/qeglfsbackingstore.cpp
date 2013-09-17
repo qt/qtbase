@@ -64,6 +64,7 @@ QEglFSBackingStore::QEglFSBackingStore(QWindow *window)
 
 QEglFSBackingStore::~QEglFSBackingStore()
 {
+    delete m_program;
     delete m_context;
 }
 
