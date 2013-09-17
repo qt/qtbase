@@ -50,8 +50,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QAccessiblePlugin
-    \brief The QAccessiblePlugin class provides an abstract base for
-    accessibility plugins.
+    \brief The QAccessiblePlugin class provides an abstract base class
+    for plugins provinding accessibility information for user interface elements.
 
     \ingroup plugins
     \ingroup accessibility
@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
     base class, reimplementing the pure virtual function create(),
     and exporting the class with the Q_PLUGIN_METADATA() macro.
 
-    \sa QAccessibleBridgePlugin, {How to Create Qt Plugins}
+    \sa {How to Create Qt Plugins}
 */
 
 /*!

@@ -2437,7 +2437,7 @@ QWizardPage *QWizard::currentPage() const
     By default, this property has a value of -1, indicating that no page is
     currently shown.
 
-    \sa currentIdChanged(), currentPage()
+    \sa currentPage()
 */
 int QWizard::currentId() const
 {

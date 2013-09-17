@@ -660,7 +660,7 @@ qreal QPixmap::devicePixelRatio() const
     Sets the the device pixel ratio for the pixmap. This is the
     ratio between image pixels and device-independent pixels.
 
-    The default value is 1.0. Setting it to something else has
+    The default \a scaleFactor is 1.0. Setting it to something else has
     two effects:
 
     QPainters that are opened on the pixmap will be scaled. For

@@ -1742,7 +1742,7 @@ QByteArray QPictureIO::pictureFormat(const QString &fileName)
     Make sure that \a d is at the right position in the device (for
     example, at the beginning of the file).
 
-    \sa QIODevice::at()
+    \sa QIODevice::pos()
 */
 
 QByteArray QPictureIO::pictureFormat(QIODevice *d)

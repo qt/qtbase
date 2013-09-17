@@ -285,7 +285,7 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     \row \li \b{\\W}
          \li Matches a non-word character.
     \row \li \b{\\\e{n}}
-         \li The \e{n}-th \l backreference, e.g. \\1, \\2, etc.
+         \li The \e{n}-th backreference, e.g. \\1, \\2, etc.
     \endtable
 
     \b{Note:} The C++ compiler transforms backslashes in strings.

@@ -48,7 +48,7 @@
     with QImageReader.
 
     This class is used to show simple animations without sound. If you want
-    to display video and media content, use the \l{Phonon Module}{Phonon}
+    to display video and media content, use the \l{Qt Multimedia}
     multimedia framework instead.
 
     First, create a QMovie object by passing either the name of a file or a

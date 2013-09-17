@@ -506,6 +506,7 @@ QT_BEGIN_NAMESPACE
     \value CarriageReturn
     \value Space
     \value Nbsp Non-breaking space.
+    \value SoftHyphen
     \value ReplacementCharacter The character shown when a font has no glyph
            for a certain codepoint. A special question mark character is often
            used. Codecs use this codepoint when input data cannot be

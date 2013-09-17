@@ -2203,7 +2203,7 @@ QString QCoreApplication::organizationDomain()
 
     If not set, the application name defaults to the executable name (since 5.0).
 
-    \sa organizationName, organizationDomain, applicationVersion, applicationFilePath
+    \sa organizationName, organizationDomain, applicationVersion, applicationFilePath()
 */
 /*!
   \fn void QCoreApplication::applicationNameChanged()

@@ -84,7 +84,7 @@ public:
     QBackingStore might be used by an application that wants to use QPainter
     without OpenGL acceleration and without the extra overhead of using the
     QWidget or QGraphicsView UI stacks. For an example of how to use
-    QBackingStore see the \l{gui/rasterwindow}{Raster Window} example.
+    QBackingStore see the \l{Raster Window Example}.
 */
 
 /*!

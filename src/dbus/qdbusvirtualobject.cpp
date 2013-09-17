@@ -70,7 +70,7 @@ QT_END_NAMESPACE
 
     This function needs to handle all messages to the path of the
     virtual object, when the SubPath option is specified.
-    The service, path, interface and methos are all part of the message.
+    The service, path, interface and methos are all part of the \a message.
     Must return true when the message is handled, otherwise false (will generate dbus error message).
 */
 
@@ -79,7 +79,7 @@ QT_END_NAMESPACE
     \fn QString QDBusVirtualObject::introspect(const QString &path) const
 
     This function needs to handle the introspection of the
-    virtual object. It must return xml of the form:
+    virtual object on \a path. It must return xml of the form:
 
     \code
 <interface name="org.qtproject.QtDBus.MyObject" >

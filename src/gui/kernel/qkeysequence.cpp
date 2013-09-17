@@ -888,8 +888,6 @@ bool QKeySequence::isEmpty() const
     in English. At the time of writing, Microsoft and Open Group do
     not appear to have issued equivalent recommendations for other
     languages.
-
-    \sa qt_set_sequence_auto_mnemonic()
 */
 QKeySequence QKeySequence::mnemonic(const QString &text)
 {

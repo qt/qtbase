@@ -239,8 +239,6 @@
     \brief the number of screens currently available on the system.
 
     \since 4.6
-
-    \sa screenCountChanged()
 */
 
 /*!

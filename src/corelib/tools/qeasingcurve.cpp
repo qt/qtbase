@@ -290,7 +290,7 @@
     \value BezierSpline Allows defining a custom easing curve using a cubic bezier spline
                         \sa addCubicBezierSegment()
     \value TCBSpline    Allows defining a custom easing curve using a TCB spline
-                        \sa addTCBSegment
+                        \sa addTCBSegment()
     \value Custom       This is returned if the user specified a custom curve type with
                         setCustomType(). Note that you cannot call setType() with this value,
                         but type() can return it.

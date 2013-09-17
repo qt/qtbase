@@ -384,7 +384,7 @@ QDebugStateSaver::QDebugStateSaver(QDebug &dbg)
 
 /*!
     Destroyes a QDebugStateSaver instance, which restores the settings
-    used by \a dbg when the QDebugStateSaver instance was created.
+    used when the QDebugStateSaver instance was created.
 
     \sa QDebug::setAutoInsertSpaces(), QDebug::autoInsertSpaces()
 */

@@ -162,7 +162,7 @@ QPagedPaintDevice::~QPagedPaintDevice()
 /*!
   Sets the size of the a page to \a size.
 
-  \sa setPageSizeMM
+  \sa setPageSizeMM()
   */
 void QPagedPaintDevice::setPageSize(PageSize size)
 {
@@ -205,7 +205,7 @@ QSizeF QPagedPaintDevice::pageSizeMM() const
   The margins are purely a hint to the drawing method. They don't affect the
   coordinate system or clipping.
 
-  \sa margins
+  \sa margins()
   */
 void QPagedPaintDevice::setMargins(const Margins &margins)
 {
@@ -215,7 +215,7 @@ void QPagedPaintDevice::setMargins(const Margins &margins)
 /*!
   returns the current margins of the paint device. The default is 0.
 
-  \sa setMargins
+  \sa setMargins()
   */
 QPagedPaintDevice::Margins QPagedPaintDevice::margins() const
 {

@@ -354,7 +354,7 @@ struct DefinedTypesFilter {
     This function is typically used together with construct()
     to perform low-level management of the memory used by a type.
 
-    \sa QMetaType::construct(void *where, const void *copy), QMetaType::sizeOf(int)
+    \sa QMetaType::construct(), QMetaType::sizeOf()
 */
 
 /*!
@@ -363,7 +363,7 @@ struct DefinedTypesFilter {
 
     Returns flags of the type for which this QMetaType instance was constructed.
 
-    \sa QMetaType::TypeFlags, QMetaType::typeFlags(int type)
+    \sa QMetaType::TypeFlags, QMetaType::typeFlags()
 */
 
 /*!
@@ -380,7 +380,7 @@ struct DefinedTypesFilter {
     QMetaType instance was created for. If \a copy is null, creates
     a default constructed instance.
 
-    \sa QMetaType::destroy(void*)
+    \sa QMetaType::destroy()
 */
 
 /*!
@@ -390,7 +390,7 @@ struct DefinedTypesFilter {
     Destroys the \a data, assuming it is of the type that this
     QMetaType instance was created for.
 
-    \sa QMetaType::create(const void *)
+    \sa QMetaType::create()
 */
 
 /*!
