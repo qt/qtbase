@@ -120,7 +120,7 @@ static QString deviceModelIdentifier()
 
 QIOSScreen::QIOSScreen(unsigned int screenIndex)
     : QPlatformScreen()
-    , m_uiScreen([[UIScreen screens] objectAtIndex:qMin(screenIndex, [[UIScreen screens] count] - 1)])
+    , m_uiScreen([[UIScreen screens] objectAtIndex:qMin(NSUInteger(screenIndex), [[UIScreen screens] count] - 1)])
     , m_orientationListener(0)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
