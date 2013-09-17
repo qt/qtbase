@@ -50,6 +50,7 @@
 #include "qelapsedtimer.h"
 #include "qthread.h"
 #include "qmutex_p.h"
+#include "qtypetraits.h"
 
 #ifndef QT_LINUX_FUTEX
 #include "private/qfreelist_p.h"
@@ -75,8 +76,14 @@ class QRecursiveMutexPrivate : public QMutexData
 public:
     QRecursiveMutexPrivate()
         : QMutexData(QMutex::Recursive), owner(0), count(0) {}
-    Qt::HANDLE owner;
+
+    // written to by the thread that first owns 'mutex';
+    // read during attempts to acquire ownership of 'mutex' from any other thread:
+    QAtomicPointer<QtPrivate::remove_pointer<Qt::HANDLE>::type> owner;
+
+    // only ever accessed from the thread that owns 'mutex':
     uint count;
+
     QMutex mutex;
 
     bool lock(int timeout) QT_MUTEX_LOCK_NOEXCEPT;
@@ -611,7 +618,7 @@ void QMutexPrivate::derefWaiters(int value) Q_DECL_NOTHROW
 inline bool QRecursiveMutexPrivate::lock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
 {
     Qt::HANDLE self = QThread::currentThreadId();
-    if (owner == self) {
+    if (owner.load() == self) {
         ++count;
         Q_ASSERT_X(count != 0, "QMutex::lock", "Overflow in recursion counter");
         return true;
@@ -624,7 +631,7 @@ inline bool QRecursiveMutexPrivate::lock(int timeout) QT_MUTEX_LOCK_NOEXCEPT
     }
 
     if (success)
-        owner = self;
+        owner.store(self);
     return success;
 }
 
@@ -636,7 +643,7 @@ inline void QRecursiveMutexPrivate::unlock() Q_DECL_NOTHROW
     if (count > 0) {
         count--;
     } else {
-        owner = 0;
+        owner.store(0);
         mutex.QBasicMutex::unlock();
     }
 }
