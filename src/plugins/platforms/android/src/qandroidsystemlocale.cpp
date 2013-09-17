@@ -41,8 +41,7 @@
 
 #include "qandroidsystemlocale.h"
 #include "androidjnimain.h"
-#include "private/qjniobject_p.h"
-#include "private/qjnihelpers_p.h"
+#include <QtCore/private/qjni_p.h>
 #include "qdatetime.h"
 #include "qstringlist.h"
 #include "qvariant.h"
@@ -57,20 +56,19 @@ void QAndroidSystemLocale::getLocaleFromJava() const
 {
     QWriteLocker locker(&m_lock);
 
-    QJNILocalRef<jobject> javaLocaleRef;
-    QJNIObject javaActivity(QtAndroid::activity());
+    QJNIObjectPrivate javaLocaleObject;
+    QJNIObjectPrivate javaActivity(QtAndroid::activity());
     if (javaActivity.isValid()) {
-        QJNIObject resources(javaActivity.callObjectMethod<jobject>("getResources", "()Landroid/content/res/Resources;").object());
-        QJNIObject configuration(resources.callObjectMethod<jobject>("getConfiguration", "()Landroid/content/res/Configuration;").object());
+        QJNIObjectPrivate resources = javaActivity.callObjectMethod("getResources", "()Landroid/content/res/Resources;");
+        QJNIObjectPrivate configuration = resources.callObjectMethod("getConfiguration", "()Landroid/content/res/Configuration;");
 
-        javaLocaleRef = configuration.getObjectField<jobject>("locale", "Ljava/util/Locale;");
+        javaLocaleObject = configuration.getObjectField("locale", "Ljava/util/Locale;");
     } else {
-        javaLocaleRef = QJNIObject::callStaticObjectMethod<jobject>("java/util/Locale", "getDefault", "()Ljava/util/Locale;");
+        javaLocaleObject = QJNIObjectPrivate::callStaticObjectMethod("java/util/Locale", "getDefault", "()Ljava/util/Locale;");
     }
 
-    QJNIObject javaLocaleObject(javaLocaleRef.object());
-    QString languageCode = qt_convertJString(javaLocaleObject.callObjectMethod<jstring>("getLanguage", "()Ljava/lang/String;").object());
-    QString countryCode = qt_convertJString(javaLocaleObject.callObjectMethod<jstring>("getCountry", "()Ljava/lang/String;").object());
+    QString languageCode = javaLocaleObject.callObjectMethod("getLanguage", "()Ljava/lang/String;").toString();
+    QString countryCode = javaLocaleObject.callObjectMethod("getCountry", "()Ljava/lang/String;").toString();
 
     m_locale = QLocale(languageCode + QLatin1Char('_') + countryCode);
 }
