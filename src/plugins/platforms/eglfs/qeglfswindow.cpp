@@ -238,6 +238,11 @@ QSurfaceFormat QEglFSWindow::format() const
     return m_format;
 }
 
+EGLNativeWindowType QEglFSWindow::eglWindow() const
+{
+    return m_window;
+}
+
 QEglFSScreen *QEglFSWindow::screen() const
 {
     return static_cast<QEglFSScreen *>(QPlatformWindow::screen());

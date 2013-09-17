@@ -64,6 +64,7 @@ public:
 
     EGLSurface surface() const;
     QSurfaceFormat format() const;
+    EGLNativeWindowType eglWindow() const;
 
     QEglFSScreen *screen() const;
 

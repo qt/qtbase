@@ -194,43 +194,77 @@ QPlatformNativeInterface *QEglFSIntegration::nativeInterface() const
     return const_cast<QEglFSIntegration *>(this);
 }
 
+enum ResourceType {
+    EglDisplay,
+    EglWindow,
+    EglContext
+};
+
+static int resourceType(const QByteArray &key)
+{
+    static const QByteArray names[] = { // match ResourceType
+        QByteArrayLiteral("egldisplay"),
+        QByteArrayLiteral("eglwindow"),
+        QByteArrayLiteral("eglcontext")
+    };
+    const QByteArray *end = names + sizeof(names) / sizeof(names[0]);
+    const QByteArray *result = std::find(names, end, key);
+    if (result == end)
+        result = std::find(names, end, key.toLower());
+    return int(result - names);
+}
+
 void *QEglFSIntegration::nativeResourceForIntegration(const QByteArray &resource)
 {
-    QByteArray lowerCaseResource = resource.toLower();
+    void *result = 0;
 
-    if (lowerCaseResource == "egldisplay")
-        return mScreen->display();
+    switch (resourceType(resource)) {
+    case EglDisplay:
+        result = mScreen->display();
+        break;
+    default:
+        break;
+    }
 
-    return 0;
+    return result;
 }
 
 void *QEglFSIntegration::nativeResourceForWindow(const QByteArray &resource, QWindow *window)
 {
-    QByteArray lowerCaseResource = resource.toLower();
+    void *result = 0;
 
-    if (lowerCaseResource == "egldisplay") {
+    switch (resourceType(resource)) {
+    case EglDisplay:
         if (window && window->handle())
-            return static_cast<QEglFSScreen *>(window->handle()->screen())->display();
+            result = static_cast<QEglFSScreen *>(window->handle()->screen())->display();
         else
-            return mScreen->display();
+            result = mScreen->display();
+        break;
+    case EglWindow:
+        if (window && window->handle())
+            result = reinterpret_cast<void*>(static_cast<QEglFSWindow *>(window->handle())->eglWindow());
+        break;
+    default:
+        break;
     }
 
-    return 0;
+    return result;
 }
 
 void *QEglFSIntegration::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context)
 {
-    QByteArray lowerCaseResource = resource.toLower();
+    void *result = 0;
 
-    QEGLPlatformContext *handle = static_cast<QEGLPlatformContext *>(context->handle());
+    switch (resourceType(resource)) {
+    case EglContext:
+        if (context->handle())
+            result = static_cast<QEGLPlatformContext *>(context->handle())->eglContext();
+        break;
+    default:
+        break;
+    }
 
-    if (!handle)
-        return 0;
-
-    if (lowerCaseResource == "eglcontext")
-        return handle->eglContext();
-
-    return 0;
+    return result;
 }
 
 QPlatformNativeInterface::NativeResourceForContextFunction QEglFSIntegration::nativeResourceFunctionForContext(const QByteArray &resource)
