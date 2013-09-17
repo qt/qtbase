@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the qmake spec of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -38,5 +38,68 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifdef Q_OS_WINRT
 
-#include "../common/winrt_winphone/qplatformdefs.h"
+#include "qfunctions_winrt.h"
+#include "qstring.h"
+#include "qbytearray.h"
+#include "qhash.h"
+
+QT_USE_NAMESPACE
+
+// Environment ------------------------------------------------------
+inline QHash<QByteArray, QByteArray> &qt_app_environment()
+{
+    static QHash<QByteArray, QByteArray> internalEnvironment;
+    return internalEnvironment;
+}
+
+errno_t qt_winrt_getenv_s(size_t* sizeNeeded, char* buffer, size_t bufferSize, const char* varName)
+{
+    if (!sizeNeeded)
+        return EINVAL;
+
+    if (!qt_app_environment().contains(varName)) {
+        if (buffer)
+            buffer[0] = '\0';
+        return ENOENT;
+    }
+
+    QByteArray value = qt_app_environment().value(varName);
+    if (!value.endsWith('\0')) // win32 guarantees terminated string
+        value.append('\0');
+
+    if (bufferSize < (size_t)value.size()) {
+        *sizeNeeded = value.size();
+        return 0;
+    }
+
+    strcpy(buffer, value.constData());
+    return 0;
+}
+
+errno_t qt_winrt__putenv_s(const char* varName, const char* value)
+{
+    QByteArray input = value;
+    if (input.isEmpty()) {
+        if (qt_app_environment().contains(varName))
+            qt_app_environment().remove(varName);
+    } else {
+        // win32 on winrt guarantees terminated string
+        if (!input.endsWith('\0'))
+            input.append('\0');
+        qt_app_environment()[varName] = input;
+    }
+
+    return 0;
+}
+
+void qt_winrt_tzset()
+{
+}
+
+void qt_winrt__tzset()
+{
+}
+
+#endif // Q_OS_WINRT

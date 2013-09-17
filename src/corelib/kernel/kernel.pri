@@ -91,6 +91,13 @@ wince*: {
                 kernel/qfunctions_wince.h
 }
 
+winrt {
+        SOURCES += \
+                kernel/qfunctions_winrt.cpp
+        HEADERS += \
+                kernel/qfunctions_winrt.h
+}
+
 mac {
     SOURCES += \
         kernel/qcoreapplication_mac.cpp
