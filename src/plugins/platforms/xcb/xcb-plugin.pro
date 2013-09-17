@@ -82,7 +82,7 @@ contains(QT_CONFIG, xcb-sm) {
 contains(QT_CONFIG, opengl) {
     contains(QT_CONFIG, opengles2) {
         DEFINES += XCB_USE_EGL
-        LIBS += -lEGL
+        CONFIG += egl
         HEADERS += qxcbeglsurface.h
 
         # EGL on MeeGo 1.2 Harmattan needs this macro to map EGLNativeDisplayType
