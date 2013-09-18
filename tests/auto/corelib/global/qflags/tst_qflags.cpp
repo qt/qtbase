@@ -99,7 +99,7 @@ void tst_QFlags::testFlagMultiBits() const
     }
 }
 
-template <int N, typename T> bool verifyConstExpr(T n) { return n == N; }
+template <unsigned int N, typename T> bool verifyConstExpr(T n) { return n == N; }
 
 void tst_QFlags::constExpr()
 {
