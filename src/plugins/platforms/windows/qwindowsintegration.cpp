@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2013 Samuel Gaist <samuel.gaist@edeltech.ch>
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
@@ -65,12 +66,15 @@
 #endif
 #include "qwindowsinputcontext.h"
 #include "qwindowskeymapper.h"
-#  ifndef QT_NO_ACCESSIBILITY
-#include "accessible/qwindowsaccessibility.h"
+#ifndef QT_NO_ACCESSIBILITY
+#  include "accessible/qwindowsaccessibility.h"
 #endif
 
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qwindowsysteminterface.h>
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
+#  include "qwindowssessionmanager.h"
+#endif
 #include <QtGui/QBackingStore>
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -623,6 +627,13 @@ unsigned QWindowsIntegration::options() const
 {
     return d->m_options;
 }
+
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
+QPlatformSessionManager *QWindowsIntegration::createPlatformSessionManager(const QString &id, const QString &key) const
+{
+    return new QWindowsSessionManager(id, key);
+}
+#endif
 
 QAbstractEventDispatcher * QWindowsIntegration::guiThreadEventDispatcher() const
 {

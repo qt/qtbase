@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2013 Samuel Gaist <samuel.gaist@edeltech.ch>
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
@@ -989,6 +990,24 @@ QString decodeMSG(const MSG& msg)
                 parameters.sprintf("x,y(%4d,%4d) w,h(%4d,%4d) flags(%s) hwndAfter(%s)", winPos->x, winPos->y, winPos->cx, winPos->cy, flags.toLatin1().data(), hwndAfter.toLatin1().data());
             }
             break;
+#endif
+#ifdef WM_QUERYENDSESSION
+#ifndef ENDSESSION_CLOSEAPP
+#define ENDSESSION_CLOSEAPP 0x00000001
+#endif
+#ifndef ENDSESSION_CRITICAL
+#define ENDSESSION_CRITICAL 0x40000000
+#endif
+        case WM_QUERYENDSESSION:
+            {
+                QString logoffOption = valueCheck(wParam,
+                                                  FLAG_STRING(ENDSESSION_CLOSEAPP, "Close application"),
+                                                  FLAG_STRING(ENDSESSION_CRITICAL, "Force application end"),
+                                                  FLAG_STRING(ENDSESSION_LOGOFF,   "User logoff"),
+                                                  FLAG_STRING());
+                parameters.sprintf("End session: %s", logoffOption.toLatin1().data());
+            }
+           break;
 #endif
         default:
             parameters.sprintf("wParam(0x%p) lParam(0x%p)", (void *)wParam, (void *)lParam);

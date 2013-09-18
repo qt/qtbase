@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2013 Samuel Gaist <samuel.gaist@edeltech.ch>
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
@@ -99,6 +100,10 @@ public:
     inline void emitScreenAdded(QPlatformScreen *s) { screenAdded(s); }
 
     unsigned options() const;
+
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
+    virtual QPlatformSessionManager *createPlatformSessionManager(const QString &id, const QString &key) const;
+#endif
 
 private:
     QScopedPointer<QWindowsIntegrationPrivate> d;

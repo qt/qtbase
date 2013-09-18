@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2013 Samuel Gaist <samuel.gaist@edeltech.ch>
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
@@ -98,6 +99,8 @@ enum WindowsEventType // Simplify event types
     ActivateApplicationEvent = ApplicationEventFlag + 1,
     DeactivateApplicationEvent = ApplicationEventFlag + 2,
     AccessibleObjectFromWindowRequest = ApplicationEventFlag + 3,
+    QueryEndSessionApplicationEvent = ApplicationEventFlag + 4,
+    EndSessionApplicationEvent = ApplicationEventFlag + 5,
     InputMethodStartCompositionEvent = InputMethodEventFlag + 1,
     InputMethodCompositionEvent = InputMethodEventFlag + 2,
     InputMethodEndCompositionEvent = InputMethodEventFlag + 3,
@@ -214,6 +217,12 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
             return QtWindows::WhatsThisEvent;
 #endif
         break;
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
+    case WM_QUERYENDSESSION:
+        return QtWindows::QueryEndSessionApplicationEvent;
+    case WM_ENDSESSION:
+        return QtWindows::EndSessionApplicationEvent;
+#endif
     default:
         break;
     }

@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2013 Samuel Gaist <samuel.gaist@edeltech.ch>
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
@@ -49,7 +50,12 @@
 #include "qwindowsinputcontext.h"
 #include "qwindowstabletsupport.h"
 #ifndef QT_NO_ACCESSIBILITY
-#include "accessible/qwindowsaccessibility.h"
+# include "accessible/qwindowsaccessibility.h"
+#endif
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
+# include <private/qguiapplication_p.h>
+# include <private/qsessionmanager_p.h>
+# include "qwindowssessionmanager.h"
 #endif
 #include "qwindowsscreen.h"
 #include "qwindowstheme.h"
@@ -150,6 +156,14 @@ static inline bool useRTL_Extensions(QSysInfo::WinVersion ver)
     return false;
 #endif
 }
+
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
+static inline QWindowsSessionManager *platformSessionManager() {
+    QGuiApplicationPrivate *guiPrivate = static_cast<QGuiApplicationPrivate*>(QObjectPrivate::get(qApp));
+    QSessionManagerPrivate *managerPrivate = static_cast<QSessionManagerPrivate*>(QObjectPrivate::get(guiPrivate->session_manager));
+    return static_cast<QWindowsSessionManager *>(managerPrivate->platformSessionManager);
+}
+#endif
 
 /*!
     \class QWindowsUser32DLL
@@ -828,7 +842,11 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::KeyEvent:
     case QtWindows::InputMethodKeyEvent:
     case QtWindows::InputMethodKeyDownEvent:
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
+        return platformSessionManager()->isInterractionBlocked() ? true : d->m_keyMapper.translateKeyEvent(platformWindow->window(), hwnd, msg, result);
+#else
         return d->m_keyMapper.translateKeyEvent(platformWindow->window(), hwnd, msg, result);
+#endif
     case QtWindows::MoveEvent:
         platformWindow->handleMoved();
         return true;
@@ -848,7 +866,11 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return platformWindow->handleWmPaint(hwnd, message, wParam, lParam);
     case QtWindows::NonClientMouseEvent:
         if (platformWindow->frameStrutEventsEnabled())
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
+            return platformSessionManager()->isInterractionBlocked() ? true : d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
+#else
             return d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
+#endif
         break;
 /* the mouse tracking on windows already handles the reset of the cursor
  * and does not like somebody else handling it.
@@ -864,9 +886,17 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::MouseWheelEvent:
     case QtWindows::MouseEvent:
     case QtWindows::LeaveEvent:
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
+        return platformSessionManager()->isInterractionBlocked() ? true : d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
+#else
         return d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
+#endif
     case QtWindows::TouchEvent:
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
+        return platformSessionManager()->isInterractionBlocked() ? true : d->m_mouseHandler.translateTouchEvent(platformWindow->window(), hwnd, et, msg, result);
+#else
         return d->m_mouseHandler.translateTouchEvent(platformWindow->window(), hwnd, et, msg, result);
+#endif
     case QtWindows::FocusInEvent: // see QWindowsWindow::requestActivateWindow().
     case QtWindows::FocusOutEvent:
         handleFocusEvent(et, platformWindow);
@@ -910,6 +940,44 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return true;
 #endif
     }   break;
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
+    case QtWindows::QueryEndSessionApplicationEvent: {
+        QWindowsSessionManager *sessionManager = platformSessionManager();
+        if (sessionManager->isActive()) // bogus message from windows
+            return true;
+
+        sessionManager->setActive(true);
+        sessionManager->blocksInteraction();
+        sessionManager->clearCancellation();
+
+        QGuiApplicationPrivate *qGuiAppPriv = static_cast<QGuiApplicationPrivate*>(QObjectPrivate::get(qApp));
+        qGuiAppPriv->commitData();
+
+        if (lParam & ENDSESSION_LOGOFF)
+            _flushall();
+
+        return !sessionManager->wasCanceled();
+    }
+    case QtWindows::EndSessionApplicationEvent: {
+        QWindowsSessionManager *sessionManager = platformSessionManager();
+
+        sessionManager->setActive(false);
+        sessionManager->allowsInteraction();
+        bool endsession = (bool) wParam;
+
+        // we receive the message for each toplevel window included internal hidden ones,
+        // but the aboutToQuit signal should be emitted only once.
+        QGuiApplicationPrivate *qGuiAppPriv = static_cast<QGuiApplicationPrivate*>(QObjectPrivate::get(qApp));
+        if (endsession && !qGuiAppPriv->aboutToQuitEmitted) {
+            qGuiAppPriv->aboutToQuitEmitted = true;
+            int index = QGuiApplication::staticMetaObject.indexOfSignal("aboutToQuit()");
+            qApp->qt_metacall(QMetaObject::InvokeMetaMethod, index,0);
+            // since the process will be killed immediately quit() has no real effect
+            QGuiApplication::quit();
+        }
+        return true;
+    }
+#endif // !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
     default:
         break;
     }
