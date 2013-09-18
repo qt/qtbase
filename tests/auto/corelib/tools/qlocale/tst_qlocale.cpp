@@ -1407,10 +1407,7 @@ void tst_QLocale::macDefaultLocale()
     QCOMPARE(locale.decimalPoint(), QChar('.'));
     QCOMPARE(locale.groupSeparator(), QChar(','));
     QCOMPARE(locale.dateFormat(QLocale::ShortFormat), QString("M/d/yy"));
-    if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_6)
-        QCOMPARE(locale.dateFormat(QLocale::LongFormat), QString("MMMM d, y"));
-    else
-        QCOMPARE(locale.dateFormat(QLocale::LongFormat), QString("MMMM d, yyyy"));
+    QCOMPARE(locale.dateFormat(QLocale::LongFormat), QString("MMMM d, yyyy"));
     QCOMPARE(locale.timeFormat(QLocale::ShortFormat), QString("h:mm AP"));
     QCOMPARE(locale.timeFormat(QLocale::LongFormat), QString("h:mm:ss AP t"));
 
