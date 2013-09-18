@@ -2,17 +2,17 @@ TEMPLATE = lib
 android {
     isEmpty(SDK_ROOT): SDK_ROOT = $$(ANDROID_SDK_ROOT)
     isEmpty(SDK_ROOT): SDK_ROOT = $$DEFAULT_ANDROID_SDK_ROOT
-    isEmpty(API_VERSION) {
-        API_VERSION = $$(ANDROID_API_VERSION)
-        isEmpty(API_VERSION): API_VERSION = android-10
-    }
+
+    API_VERSION_TO_USE = $$(ANDROID_API_VERSION)
+    isEmpty(API_VERSION_TO_USE): API_VERSION_TO_USE = $$API_VERSION
+    isEmpty(API_VERSION_TO_USE): API_VERSION_TO_USE = android-10
 
     isEmpty(BUILD_TOOLS_REVISION) {
         BUILD_TOOLS_REVISION = $$(ANDROID_BUILD_TOOLS_REVISION)
         isEmpty(BUILD_TOOLS_REVISION): BUILD_TOOLS_REVISION = 17.0.0
     }
 
-    ANDROID_JAR_FILE = $$SDK_ROOT/platforms/$$API_VERSION/android.jar
+    ANDROID_JAR_FILE = $$SDK_ROOT/platforms/$$API_VERSION_TO_USE/android.jar
     !exists($$ANDROID_JAR_FILE) {
         error("The Path $$ANDROID_JAR_FILE does not exist. Make sure the ANDROID_SDK_ROOT and ANDROID_API_VERSION environment variables are correctly set.")
     }
