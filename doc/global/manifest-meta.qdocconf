@@ -125,8 +125,8 @@ manifestmeta.android.names          =  "QtQuick/Qt Quick Demo - Maroon*" \
                                        "QtLinguist/Arrow Pad Example" \
                                        "QtGui/Raster Window Example" \
                                        "QtGui/Analog Clock Window Example" \
-                                       "QtMultimedia/Video Widget Example" \
-                                       "QtMultimedia/Media Player Example" \
+                                       "QtMultimediaWidgets/Video Widget Example" \
+                                       "QtMultimediaWidgets/Media Player Example" \
                                        "QtSVG/Text Object Example" \
                                        "QtQML/Qt Quick Examples - XMLHttpRequest" \
                                        "QtQuick/Qt Quick Particles Examples - *" \
@@ -188,7 +188,7 @@ manifestmeta.thumbnail.names    =      "QtConcurrent/Map Example" \
                                        "QtHelp/*" \
                                        "QtMultimedia/AudioEngine Example" \
                                        "QtMultimedia/Declarative Radio Example" \
-                                       "QtMultimedia/Media Player Example" \
+                                       "QtMultimediaWidgets/Media Player Example" \
                                        "QtQml/Extending QML*" \
                                        "QtQuick/Qt Quick Examples - Accessibility" \
                                        "QtSensors/Qt Sensors - SensorGesture QML Type example" \
