@@ -425,6 +425,17 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
     if (!funcs.hasOpenGLFeature(QOpenGLFunctions::Framebuffers))
         return;
 
+
+    // Fall back to using a normal non-msaa FBO if we don't have support for MSAA
+    if (!funcs.hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample)
+            || !funcs.hasOpenGLExtension(QOpenGLExtensions::FramebufferBlit)) {
+        samples = 0;
+    }
+
+    GLint maxSamples;
+    glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
+    samples = qBound(0, int(samples), int(maxSamples));
+
     size = sz;
     target = texture_target;
     // texture dimensions
@@ -473,25 +484,11 @@ void QOpenGLFramebufferObjectPrivate::init(QOpenGLFramebufferObject *, const QSi
         color_buffer = 0;
     } else {
         mipmap = false;
-        GLint maxSamples;
-        glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
-
-        samples = qBound(0, int(samples), int(maxSamples));
-
         funcs.glGenRenderbuffers(1, &color_buffer);
         funcs.glBindRenderbuffer(GL_RENDERBUFFER, color_buffer);
-        if (funcs.hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample) && samples > 0) {
-            funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
-                internal_format, size.width(), size.height());
-        } else {
-            samples = 0;
-            funcs.glRenderbufferStorage(GL_RENDERBUFFER, internal_format,
-                size.width(), size.height());
-        }
-
+        funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, internal_format, size.width(), size.height());
         funcs.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                              GL_RENDERBUFFER, color_buffer);
-
         QT_CHECK_GLERROR();
         valid = checkFramebufferStatus(ctx);
 
