@@ -121,6 +121,28 @@ public:
         EvenPages
     };
 
+    // Enum for valid number of pages per sheet
+    enum PagesPerSheet {
+        OnePagePerSheet = 0,
+        TwoPagesPerSheet,
+        FourPagesPerSheet,
+        SixPagesPerSheet,
+        NinePagesPerSheet,
+        SixteenPagesPerSheet
+    };
+
+    // Enum for valid layouts of pages per sheet
+    enum PagesPerSheetLayout {
+        LeftToRightTopToBottom = 0,
+        LeftToRightBottomToTop,
+        RightToLeftTopToBottom,
+        RightToLeftBottomToTop,
+        BottomToTopLeftToRight,
+        BottomToTopRightToLeft,
+        TopToBottomLeftToRight,
+        TopToBottomRightToLeft
+    };
+
     static bool isAvailable();
     static int cupsVersion() { return isAvailable() ? CUPS_VERSION_MAJOR*10000+CUPS_VERSION_MINOR*100+CUPS_VERSION_PATCH : 0; }
     int availablePrintersCount() const;
@@ -151,6 +173,8 @@ public:
     static void setJobPriority(QPrinter *printer, int priority = 50);
     static void setBannerPages(QPrinter *printer, const BannerPage startBannerPage, const BannerPage endBannerPage);
     static void setPageSet(QPrinter *printer, const PageSet pageSet);
+    static void setPagesPerSheetLayout(QPrinter *printer, const PagesPerSheet pagesPerSheet,
+                                       const PagesPerSheetLayout pagesPerSheetLayout);
 
     static bool printerHasPPD(const char *printerName);
 
@@ -183,6 +207,8 @@ QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QCUPSSupport::JobHoldUntil)
 Q_DECLARE_METATYPE(QCUPSSupport::BannerPage)
 Q_DECLARE_METATYPE(QCUPSSupport::PageSet)
+Q_DECLARE_METATYPE(QCUPSSupport::PagesPerSheetLayout)
+Q_DECLARE_METATYPE(QCUPSSupport::PagesPerSheet)
 
 #endif // QT_NO_CUPS
 

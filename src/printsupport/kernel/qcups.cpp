@@ -511,6 +511,17 @@ void QCUPSSupport::setPageSet(QPrinter *printer, const PageSet pageSet)
     setCupsOptions(printer, cupsOptions);
 }
 
+void QCUPSSupport::setPagesPerSheetLayout(QPrinter *printer,  const PagesPerSheet pagesPerSheet,
+                                          const PagesPerSheetLayout pagesPerSheetLayout)
+{
+    QStringList cupsOptions = cupsOptionsList(printer);
+    static const char *pagesPerSheetData[] = { "1", "2", "4", "6", "9", "16", 0 };
+    static const char *pageLayoutData[] = {"lrtb", "lrbt", "rlbt", "rltb", "btlr", "btrl", "tblr", "tbrl", 0};
+    setCupsOption(cupsOptions, QStringLiteral("number-up"), pagesPerSheetData[pagesPerSheet]);
+    setCupsOption(cupsOptions, QStringLiteral("number-up-layout"), pageLayoutData[pagesPerSheetLayout]);
+    setCupsOptions(printer, cupsOptions);
+}
+
 bool QCUPSSupport::printerHasPPD(const char *printerName)
 {
     if (!isAvailable())
