@@ -1,13 +1,14 @@
 //
-// Copyright (c) 2002-2012 The ANGLE Project Authors. All rights reserved.
+// Copyright (c) 2002-2013 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
 
 #include "compiler/BuiltInFunctionEmulator.h"
-#include "compiler/DetectRecursion.h"
+#include "compiler/DetectCallDepth.h"
 #include "compiler/ForLoopUnroll.h"
 #include "compiler/Initialize.h"
+#include "compiler/InitializeGLPosition.h"
 #include "compiler/InitializeParseContext.h"
 #include "compiler/MapLongVariableNames.h"
 #include "compiler/ParseHelper.h"
@@ -27,66 +28,34 @@ bool isWebGLBasedSpec(ShShaderSpec spec)
 }
 
 namespace {
-bool InitializeSymbolTable(
-    const TBuiltInStrings& builtInStrings,
-    ShShaderType type, ShShaderSpec spec, const ShBuiltInResources& resources,
-    TInfoSink& infoSink, TSymbolTable& symbolTable)
-{
-    TIntermediate intermediate(infoSink);
-    TExtensionBehavior extBehavior;
-    InitExtensionBehavior(resources, extBehavior);
-    // The builtins deliberately don't specify precisions for the function
-    // arguments and return types. For that reason we don't try to check them.
-    TParseContext parseContext(symbolTable, extBehavior, intermediate, type, spec, 0, false, NULL, infoSink);
-    parseContext.fragmentPrecisionHigh = resources.FragmentPrecisionHigh == 1;
-
-    GlobalParseContext = &parseContext;
-
-    assert(symbolTable.isEmpty());       
-    //
-    // Parse the built-ins.  This should only happen once per
-    // language symbol table.
-    //
-    // Push the symbol table to give it an initial scope.  This
-    // push should not have a corresponding pop, so that built-ins
-    // are preserved, and the test for an empty table fails.
-    //
-    symbolTable.push();
-
-    for (TBuiltInStrings::const_iterator i = builtInStrings.begin(); i != builtInStrings.end(); ++i)
-    {
-        const char* builtInShaders = i->c_str();
-        int builtInLengths = static_cast<int>(i->size());
-        if (builtInLengths <= 0)
-          continue;
-
-        if (PaParseStrings(1, &builtInShaders, &builtInLengths, &parseContext) != 0)
-        {
-            infoSink.info.message(EPrefixInternalError, "Unable to parse built-ins");
-            return false;
-        }
-    }
-
-    IdentifyBuiltIns(type, spec, resources, symbolTable);
-
-    return true;
-}
-
 class TScopedPoolAllocator {
 public:
-    TScopedPoolAllocator(TPoolAllocator* allocator, bool pushPop)
-        : mAllocator(allocator), mPushPopAllocator(pushPop) {
-        if (mPushPopAllocator) mAllocator->push();
+    TScopedPoolAllocator(TPoolAllocator* allocator) : mAllocator(allocator) {
+        mAllocator->push();
         SetGlobalPoolAllocator(mAllocator);
     }
     ~TScopedPoolAllocator() {
         SetGlobalPoolAllocator(NULL);
-        if (mPushPopAllocator) mAllocator->pop();
+        mAllocator->pop();
     }
 
 private:
     TPoolAllocator* mAllocator;
-    bool mPushPopAllocator;
+};
+
+class TScopedSymbolTableLevel {
+public:
+    TScopedSymbolTableLevel(TSymbolTable* table) : mTable(table) {
+        ASSERT(mTable->atBuiltInLevel());
+        mTable->push();
+    }
+    ~TScopedSymbolTableLevel() {
+        while (!mTable->atBuiltInLevel())
+            mTable->pop();
+    }
+
+private:
+    TSymbolTable* mTable;
 };
 }  // namespace
 
@@ -103,6 +72,9 @@ TShHandleBase::~TShHandleBase() {
 TCompiler::TCompiler(ShShaderType type, ShShaderSpec spec)
     : shaderType(type),
       shaderSpec(spec),
+      maxUniformVectors(0),
+      maxExpressionComplexity(0),
+      maxCallStackDepth(0),
       fragmentPrecisionHigh(false),
       clampingStrategy(SH_CLAMP_WITH_CLAMP_INTRINSIC),
       builtInFunctionEmulator(type)
@@ -121,7 +93,10 @@ bool TCompiler::Init(const ShBuiltInResources& resources)
     maxUniformVectors = (shaderType == SH_VERTEX_SHADER) ?
         resources.MaxVertexUniformVectors :
         resources.MaxFragmentUniformVectors;
-    TScopedPoolAllocator scopedAlloc(&allocator, false);
+    maxExpressionComplexity = resources.MaxExpressionComplexity;
+    maxCallStackDepth = resources.MaxCallStackDepth;
+
+    SetGlobalPoolAllocator(&allocator);
 
     // Generate built-in symbol table.
     if (!InitBuiltInSymbolTable(resources))
@@ -141,7 +116,7 @@ bool TCompiler::compile(const char* const shaderStrings[],
                         size_t numStrings,
                         int compileOptions)
 {
-    TScopedPoolAllocator scopedAlloc(&allocator, true);
+    TScopedPoolAllocator scopedAlloc(&allocator);
     clearResults();
 
     if (numStrings == 0)
@@ -165,13 +140,11 @@ bool TCompiler::compile(const char* const shaderStrings[],
                                shaderType, shaderSpec, compileOptions, true,
                                sourcePath, infoSink);
     parseContext.fragmentPrecisionHigh = fragmentPrecisionHigh;
-    GlobalParseContext = &parseContext;
+    SetGlobalParseContext(&parseContext);
 
     // We preserve symbols at the built-in level from compile-to-compile.
     // Start pushing the user-defined symbols at global level.
-    symbolTable.push();
-    if (!symbolTable.atGlobalLevel())
-        infoSink.info.message(EPrefixInternalError, "Wrong symbol table level");
+    TScopedSymbolTableLevel scopedSymbolLevel(&symbolTable);
 
     // Parse shader.
     bool success =
@@ -182,7 +155,7 @@ bool TCompiler::compile(const char* const shaderStrings[],
         success = intermediate.postProcess(root);
 
         if (success)
-            success = detectRecursion(root);
+            success = detectCallDepth(root, infoSink, (compileOptions & SH_LIMIT_CALL_STACK_DEPTH) != 0);
 
         if (success && (compileOptions & SH_VALIDATE_LOOP_INDEXING))
             success = validateLimitations(root);
@@ -205,6 +178,10 @@ bool TCompiler::compile(const char* const shaderStrings[],
         if (success && (compileOptions & SH_CLAMP_INDIRECT_ARRAY_BOUNDS))
             arrayBoundsClamper.MarkIndirectArrayBoundsForClamping(root);
 
+        // Disallow expressions deemed too complex.
+        if (success && (compileOptions & SH_LIMIT_EXPRESSION_COMPLEXITY))
+            success = limitExpressionComplexity(root);
+
         // Call mapLongVariableNames() before collectAttribsUniforms() so in
         // collectAttribsUniforms() we already have the mapped symbol names and
         // we could composite mapped and original variable names.
@@ -212,12 +189,18 @@ bool TCompiler::compile(const char* const shaderStrings[],
         if (success && (compileOptions & SH_MAP_LONG_VARIABLE_NAMES) && hashFunction == NULL)
             mapLongVariableNames(root);
 
-        if (success && (compileOptions & SH_ATTRIBUTES_UNIFORMS)) {
-            collectAttribsUniforms(root);
+        if (success && shaderType == SH_VERTEX_SHADER && (compileOptions & SH_INIT_GL_POSITION)) {
+            InitializeGLPosition initGLPosition;
+            root->traverse(&initGLPosition);
+        }
+
+        if (success && (compileOptions & SH_VARIABLES)) {
+            collectVariables(root);
             if (compileOptions & SH_ENFORCE_PACKING_RESTRICTIONS) {
                 success = enforcePackingRestrictions();
                 if (!success) {
-                    infoSink.info.message(EPrefixError, "too many uniforms");
+                    infoSink.info.prefix(EPrefixError);
+                    infoSink.info << "too many uniforms";
                 }
             }
         }
@@ -231,22 +214,58 @@ bool TCompiler::compile(const char* const shaderStrings[],
 
     // Cleanup memory.
     intermediate.remove(parseContext.treeRoot);
-    // Ensure symbol table is returned to the built-in level,
-    // throwing away all but the built-ins.
-    while (!symbolTable.atBuiltInLevel())
-        symbolTable.pop();
 
     return success;
 }
 
-bool TCompiler::InitBuiltInSymbolTable(const ShBuiltInResources& resources)
+bool TCompiler::InitBuiltInSymbolTable(const ShBuiltInResources &resources)
 {
-    TBuiltIns builtIns;
-
     compileResources = resources;
-    builtIns.initialize(shaderType, shaderSpec, resources);
-    return InitializeSymbolTable(builtIns.getBuiltInStrings(),
-        shaderType, shaderSpec, resources, infoSink, symbolTable);
+
+    assert(symbolTable.isEmpty());
+    symbolTable.push();
+
+    TPublicType integer;
+    integer.type = EbtInt;
+    integer.size = 1;
+    integer.matrix = false;
+    integer.array = false;
+
+    TPublicType floatingPoint;
+    floatingPoint.type = EbtFloat;
+    floatingPoint.size = 1;
+    floatingPoint.matrix = false;
+    floatingPoint.array = false;
+
+    TPublicType sampler;
+    sampler.size = 1;
+    sampler.matrix = false;
+    sampler.array = false;
+
+    switch(shaderType)
+    {
+      case SH_FRAGMENT_SHADER:
+        symbolTable.setDefaultPrecision(integer, EbpMedium);
+        break;
+      case SH_VERTEX_SHADER:
+        symbolTable.setDefaultPrecision(integer, EbpHigh);
+        symbolTable.setDefaultPrecision(floatingPoint, EbpHigh);
+        break;
+      default: assert(false && "Language not supported");
+    }
+    // We set defaults for all the sampler types, even those that are
+    // only available if an extension exists.
+    for (int samplerType = EbtGuardSamplerBegin + 1;
+         samplerType < EbtGuardSamplerEnd; ++samplerType) {
+        sampler.type = static_cast<TBasicType>(samplerType);
+        symbolTable.setDefaultPrecision(sampler, EbpLow);
+    }
+
+    InsertBuiltInFunctions(shaderType, shaderSpec, resources, symbolTable);
+
+    IdentifyBuiltIns(shaderType, shaderSpec, resources, symbolTable);
+
+    return true;
 }
 
 void TCompiler::clearResults()
@@ -258,24 +277,31 @@ void TCompiler::clearResults()
 
     attribs.clear();
     uniforms.clear();
+    varyings.clear();
 
     builtInFunctionEmulator.Cleanup();
 
     nameMap.clear();
 }
 
-bool TCompiler::detectRecursion(TIntermNode* root)
+bool TCompiler::detectCallDepth(TIntermNode* root, TInfoSink& infoSink, bool limitCallStackDepth)
 {
-    DetectRecursion detect;
+    DetectCallDepth detect(infoSink, limitCallStackDepth, maxCallStackDepth);
     root->traverse(&detect);
-    switch (detect.detectRecursion()) {
-        case DetectRecursion::kErrorNone:
+    switch (detect.detectCallDepth()) {
+        case DetectCallDepth::kErrorNone:
             return true;
-        case DetectRecursion::kErrorMissingMain:
-            infoSink.info.message(EPrefixError, "Missing main()");
+        case DetectCallDepth::kErrorMissingMain:
+            infoSink.info.prefix(EPrefixError);
+            infoSink.info << "Missing main()";
             return false;
-        case DetectRecursion::kErrorRecursion:
-            infoSink.info.message(EPrefixError, "Function recursion detected");
+        case DetectCallDepth::kErrorRecursion:
+            infoSink.info.prefix(EPrefixError);
+            infoSink.info << "Function recursion detected";
+            return false;
+        case DetectCallDepth::kErrorMaxDepthExceeded:
+            infoSink.info.prefix(EPrefixError);
+            infoSink.info << "Function call stack too deep";
             return false;
         default:
             UNREACHABLE();
@@ -321,6 +347,28 @@ bool TCompiler::enforceTimingRestrictions(TIntermNode* root, bool outputGraph)
     }
 }
 
+bool TCompiler::limitExpressionComplexity(TIntermNode* root)
+{
+    TIntermTraverser traverser;
+    root->traverse(&traverser);
+    TDependencyGraph graph(root);
+
+    for (TFunctionCallVector::const_iterator iter = graph.beginUserDefinedFunctionCalls();
+         iter != graph.endUserDefinedFunctionCalls();
+         ++iter)
+    {
+        TGraphFunctionCall* samplerSymbol = *iter;
+        TDependencyGraphTraverser graphTraverser;
+        samplerSymbol->traverse(&graphTraverser);
+    }
+
+    if (traverser.getMaxDepth() > maxExpressionComplexity) {
+        infoSink.info << "Expression too complex.";
+        return false;
+    }
+    return true;
+}
+
 bool TCompiler::enforceFragmentShaderTimingRestrictions(const TDependencyGraph& graph)
 {
     RestrictFragmentShaderTiming restrictor(infoSink.info);
@@ -335,9 +383,9 @@ bool TCompiler::enforceVertexShaderTimingRestrictions(TIntermNode* root)
     return restrictor.numErrors() == 0;
 }
 
-void TCompiler::collectAttribsUniforms(TIntermNode* root)
+void TCompiler::collectVariables(TIntermNode* root)
 {
-    CollectAttribsUniforms collect(attribs, uniforms, hashFunction);
+    CollectVariables collect(attribs, uniforms, varyings, hashFunction);
     root->traverse(&collect);
 }
 

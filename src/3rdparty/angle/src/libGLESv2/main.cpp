@@ -71,30 +71,27 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
     return TRUE;
 }
 
-static gl::Current *current()
-{
-    return (gl::Current*)TlsGetValue(currentTLS);
-}
-
-#else // !QT_OPENGL_ES_2_ANGLE_STATIC
-
-static inline gl::Current *current()
-{
-    // No precautions for thread safety taken as ANGLE is used single-threaded in Qt.
-    static gl::Current curr = { 0, 0 };
-    return &curr;
-}
-
-#endif // QT_OPENGL_ES_2_ANGLE_STATIC
+#endif // !QT_OPENGL_ES_2_ANGLE_STATIC
 
 namespace gl
 {
+Current *getCurrent()
+{
+#ifndef QT_OPENGL_ES_2_ANGLE_STATIC
+    return (Current*)TlsGetValue(currentTLS);
+#else
+    // No precautions for thread safety taken as ANGLE is used single-threaded in Qt.
+    static gl::Current curr = { 0, 0 };
+    return &curr;
+#endif
+}
+
 void makeCurrent(Context *context, egl::Display *display, egl::Surface *surface)
 {
-    Current *curr = current();
+    Current *current = getCurrent();
 
-    curr->context = context;
-    curr->display = display;
+    current->context = context;
+    current->display = display;
 
     if (context && display && surface)
     {
@@ -104,7 +101,9 @@ void makeCurrent(Context *context, egl::Display *display, egl::Surface *surface)
 
 Context *getContext()
 {
-    return current()->context;
+    Current *current = getCurrent();
+
+    return current->context;
 }
 
 Context *getNonLostContext()
@@ -128,7 +127,9 @@ Context *getNonLostContext()
 
 egl::Display *getDisplay()
 {
-    return current()->display;
+    Current *current = getCurrent();
+
+    return current->display;
 }
 
 // Records an error code

@@ -32,11 +32,11 @@
 #include <unordered_map>
 #include <vector>
 
-#if defined(ANGLE_ENABLE_D3D11)
-# include <D3D11.h>
-# include <dxgi.h>
+#ifndef ANGLE_ENABLE_D3D11
+#include <d3d9.h>
 #else
-# include <d3d9.h>
+#include <D3D11.h>
+#include <dxgi.h>
 #endif
 #include <D3Dcompiler.h>
 

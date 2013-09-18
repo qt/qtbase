@@ -14,10 +14,10 @@
 #include "libGLESv2/main.h"
 #include "libGLESv2/mathutil.h"
 #include "libGLESv2/utilities.h"
-#if defined(ANGLE_ENABLE_D3D11)
-# define D3DFMT_UNKNOWN DXGI_FORMAT_UNKNOWN
+#ifndef ANGLE_ENABLE_D3D11
+#  include "libGLESv2/renderer/Blit.h"
 #else
-# include "libGLESv2/renderer/Blit.h"
+#  define D3DFMT_UNKNOWN DXGI_FORMAT_UNKNOWN
 #endif
 #include "libGLESv2/Renderbuffer.h"
 #include "libGLESv2/renderer/Image.h"

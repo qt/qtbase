@@ -4,6 +4,9 @@ TARGET = $$qtLibraryTarget(translator_common)
 
 include(../config.pri)
 
+# Mingw 4.7 chokes on implicit move semantics, so disable C++11 here
+win32-g++*: CONFIG -= c++11
+
 INCLUDEPATH += \
     $$ANGLE_DIR/src \
     $$ANGLE_DIR/include
@@ -20,6 +23,7 @@ HEADERS += \
     $$ANGLE_DIR/src/compiler/ConstantUnion.h \
     $$ANGLE_DIR/src/compiler/debug.h \
     $$ANGLE_DIR/src/compiler/DetectRecursion.h \
+    $$ANGLE_DIR/src/compiler/DetectCallDepth.h \
     $$ANGLE_DIR/src/compiler/Diagnostics.h \
     $$ANGLE_DIR/src/compiler/DirectiveHandler.h \
     $$ANGLE_DIR/src/compiler/ForLoopUnroll.h \
@@ -27,6 +31,7 @@ HEADERS += \
     $$ANGLE_DIR/src/compiler/Initialize.h \
     $$ANGLE_DIR/src/compiler/InitializeDll.h \
     $$ANGLE_DIR/src/compiler/InitializeGlobals.h \
+    $$ANGLE_DIR/src/compiler/InitializeGLPosition.h \
     $$ANGLE_DIR/src/compiler/InitializeParseContext.h \
     $$ANGLE_DIR/src/compiler/intermediate.h \
     $$ANGLE_DIR/src/compiler/localintermediate.h \
@@ -59,6 +64,7 @@ SOURCES += \
     $$ANGLE_DIR/src/compiler/BuiltInFunctionEmulator.cpp \
     $$ANGLE_DIR/src/compiler/Compiler.cpp \
     $$ANGLE_DIR/src/compiler/debug.cpp \
+    $$ANGLE_DIR/src/compiler/DetectCallDepth.cpp \
     $$ANGLE_DIR/src/compiler/DetectRecursion.cpp \
     $$ANGLE_DIR/src/compiler/Diagnostics.cpp \
     $$ANGLE_DIR/src/compiler/DirectiveHandler.cpp \
@@ -66,6 +72,7 @@ SOURCES += \
     $$ANGLE_DIR/src/compiler/InfoSink.cpp \
     $$ANGLE_DIR/src/compiler/Initialize.cpp \
     $$ANGLE_DIR/src/compiler/InitializeDll.cpp \
+    $$ANGLE_DIR/src/compiler/InitializeGLPosition.cpp \
     $$ANGLE_DIR/src/compiler/InitializeParseContext.cpp \
     $$ANGLE_DIR/src/compiler/Intermediate.cpp \
     $$ANGLE_DIR/src/compiler/intermOut.cpp \

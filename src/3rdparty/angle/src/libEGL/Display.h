@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2002-2012 The ANGLE Project Authors. All rights reserved.
+// Copyright (c) 2002-2013 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -60,11 +60,12 @@ class Display
     virtual void recreateSwapChains();
 
     const char *getExtensionString() const;
+    const char *getVendorString() const;
 
   private:
     DISALLOW_COPY_AND_ASSIGN(Display);
 
-    Display(EGLNativeDisplayType displayId, HDC deviceContext, bool software);
+    Display(EGLNativeDisplayType displayId, HDC deviceContext);
 
     bool restoreLostDevice();
 
@@ -84,7 +85,9 @@ class Display
     rx::Renderer *mRenderer;
 
     void initExtensionString();
+    void initVendorString();
     std::string mExtensionString;
+    std::string mVendorString;
 };
 }
 

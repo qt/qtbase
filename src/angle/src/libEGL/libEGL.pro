@@ -3,10 +3,6 @@ TARGET = $$qtLibraryTarget(libEGL)
 
 include(../common/common.pri)
 
-# Note: ANGLE is patched to dynamically resolve DwmIsCompositionEnabled DwmSetPresentParameters
-# in Surface.cpp, which would otherwise require -ldwmapi, which does not exist on Windows XP
-# (QTBUG-27741).
-
 angle_d3d11 {
     LIBS += -ld3d11
 } else {

@@ -4,6 +4,9 @@ TARGET = $$qtLibraryTarget(translator_hlsl)
 
 include(../config.pri)
 
+# Mingw 4.7 chokes on implicit move semantics, so disable C++11 here
+win32-g++*: CONFIG -= c++11
+
 INCLUDEPATH +=  $$ANGLE_DIR/src \
                 $$ANGLE_DIR/include
 

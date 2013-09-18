@@ -35,7 +35,8 @@
 #include "libGLESv2/renderer/shaders/compiled/passthroughlumalpha11ps.h"
 
 #include "libGLESv2/renderer/shaders/compiled/clear11vs.h"
-#include "libGLESv2/renderer/shaders/compiled/clear11ps.h"
+#include "libGLESv2/renderer/shaders/compiled/clearsingle11ps.h"
+#include "libGLESv2/renderer/shaders/compiled/clearmultiple11ps.h"
 
 #include "libEGL/Display.h"
 
@@ -87,7 +88,8 @@ Renderer11::Renderer11(egl::Display *display, HDC hDc) : Renderer(display), mDc(
     mClearVB = NULL;
     mClearIL = NULL;
     mClearVS = NULL;
-    mClearPS = NULL;
+    mClearSinglePS = NULL;
+    mClearMultiplePS = NULL;
     mClearScissorRS = NULL;
     mClearNoScissorRS = NULL;
 
@@ -161,25 +163,44 @@ EGLint Renderer11::initialize()
         D3D_FEATURE_LEVEL_10_0,
     };
 
-    HRESULT result = D3D11CreateDevice(NULL,
-                                       D3D_DRIVER_TYPE_HARDWARE,
-                                       NULL,
-                                       #if defined(_DEBUG)
-                                       D3D11_CREATE_DEVICE_DEBUG,
-                                       #else
-                                       0,
-                                       #endif
-                                       featureLevels,
-                                       ArraySize(featureLevels),
-                                       D3D11_SDK_VERSION,
-                                       &mDevice,
-                                       &mFeatureLevel,
-                                       &mDeviceContext);
+    HRESULT result = S_OK;
+
+#ifdef _DEBUG
+    result = D3D11CreateDevice(NULL,
+                               D3D_DRIVER_TYPE_HARDWARE,
+                               NULL,
+                               D3D11_CREATE_DEVICE_DEBUG,
+                               featureLevels,
+                               ArraySize(featureLevels),
+                               D3D11_SDK_VERSION,
+                               &mDevice,
+                               &mFeatureLevel,
+                               &mDeviceContext);
 
     if (!mDevice || FAILED(result))
     {
-        ERR("Could not create D3D11 device - aborting!\n");
-        return EGL_NOT_INITIALIZED;   // Cleanup done by destructor through glDestroyRenderer
+        ERR("Failed creating Debug D3D11 device - falling back to release runtime.\n");
+    }
+
+    if (!mDevice || FAILED(result))
+#endif
+    {
+        result = D3D11CreateDevice(NULL,
+                                   D3D_DRIVER_TYPE_HARDWARE,
+                                   NULL,
+                                   0,
+                                   featureLevels,
+                                   ArraySize(featureLevels),
+                                   D3D11_SDK_VERSION,
+                                   &mDevice,
+                                   &mFeatureLevel,
+                                   &mDeviceContext);
+
+        if (!mDevice || FAILED(result))
+        {
+            ERR("Could not create D3D11 device - aborting!\n");
+            return EGL_NOT_INITIALIZED;   // Cleanup done by destructor through glDestroyRenderer
+        }
     }
 
     IDXGIDevice *dxgiDevice = NULL;
@@ -301,7 +322,6 @@ EGLint Renderer11::initialize()
     {
         DXGI_FORMAT_R32_FLOAT,
         DXGI_FORMAT_R32G32_FLOAT,
-        DXGI_FORMAT_R32G32B32_FLOAT,
         DXGI_FORMAT_R32G32B32A32_FLOAT,
     };
 
@@ -655,7 +675,23 @@ void Renderer11::setBlendState(const gl::BlendState &blendState, const gl::Color
                 "blend state.");
         }
 
-        const float blendColors[] = { blendColor.red, blendColor.green, blendColor.blue, blendColor.alpha };
+        float blendColors[4] = {0.0f};
+        if (blendState.sourceBlendRGB != GL_CONSTANT_ALPHA && blendState.sourceBlendRGB != GL_ONE_MINUS_CONSTANT_ALPHA &&
+            blendState.destBlendRGB != GL_CONSTANT_ALPHA && blendState.destBlendRGB != GL_ONE_MINUS_CONSTANT_ALPHA)
+        {
+            blendColors[0] = blendColor.red;
+            blendColors[1] = blendColor.green;
+            blendColors[2] = blendColor.blue;
+            blendColors[3] = blendColor.alpha;
+        }
+        else
+        {
+            blendColors[0] = blendColor.alpha;
+            blendColors[1] = blendColor.alpha;
+            blendColors[2] = blendColor.alpha;
+            blendColors[3] = blendColor.alpha;
+        }
+
         mDeviceContext->OMSetBlendState(dxBlendState, blendColors, sampleMask);
 
         mCurBlendState = blendState;
@@ -798,23 +834,29 @@ bool Renderer11::applyPrimitiveType(GLenum mode, GLsizei count)
 {
     D3D11_PRIMITIVE_TOPOLOGY primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
 
+    GLsizei minCount = 0;
+
     switch (mode)
     {
-      case GL_POINTS:         primitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;   break;
-      case GL_LINES:          primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST;      break;
-      case GL_LINE_LOOP:      primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;     break;
-      case GL_LINE_STRIP:     primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;     break;
-      case GL_TRIANGLES:      primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;  break;
-      case GL_TRIANGLE_STRIP: primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP; break;
+      case GL_POINTS:         primitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;   minCount = 1; break;
+      case GL_LINES:          primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST;      minCount = 2; break;
+      case GL_LINE_LOOP:      primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;     minCount = 2; break;
+      case GL_LINE_STRIP:     primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;     minCount = 2; break;
+      case GL_TRIANGLES:      primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;  minCount = 3; break;
+      case GL_TRIANGLE_STRIP: primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP; minCount = 3; break;
           // emulate fans via rewriting index buffer
-      case GL_TRIANGLE_FAN:   primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;	break;
+      case GL_TRIANGLE_FAN:   primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;  minCount = 3; break;
       default:
         return gl::error(GL_INVALID_ENUM, false);
     }
 
-    mDeviceContext->IASetPrimitiveTopology(primitiveTopology);
+    if (primitiveTopology != mCurrentPrimitiveTopology)
+    {
+        mDeviceContext->IASetPrimitiveTopology(primitiveTopology);
+        mCurrentPrimitiveTopology = primitiveTopology;
+    }
 
-    return count > 0;
+    return count >= minCount;
 }
 
 bool Renderer11::applyRenderTarget(gl::Framebuffer *framebuffer)
@@ -976,9 +1018,6 @@ bool Renderer11::applyRenderTarget(gl::Framebuffer *framebuffer)
         mDepthStencilInitialized = true;
     }
 
-    SafeRelease(framebufferRTVs);
-    SafeRelease(framebufferDSV);
-
     return true;
 }
 
@@ -1093,7 +1132,16 @@ void Renderer11::drawLineLoop(GLsizei count, GLenum type, const GLvoid *indices,
         }
     }
 
-    const int spaceNeeded = (count + 1) * sizeof(unsigned int);
+    // Checked by Renderer11::applyPrimitiveType
+    ASSERT(count >= 0);
+
+    if (static_cast<unsigned int>(count) + 1 > (std::numeric_limits<unsigned int>::max() / sizeof(unsigned int)))
+    {
+        ERR("Could not create a 32-bit looping index buffer for GL_LINE_LOOP, too many indices required.");
+        return gl::error(GL_OUT_OF_MEMORY);
+    }
+
+    const unsigned int spaceNeeded = (static_cast<unsigned int>(count) + 1) * sizeof(unsigned int);
     if (!mLineLoopIB->reserveBufferSpace(spaceNeeded, GL_UNSIGNED_INT))
     {
         ERR("Could not reserve enough space in looping index buffer for GL_LINE_LOOP.");
@@ -1101,15 +1149,15 @@ void Renderer11::drawLineLoop(GLsizei count, GLenum type, const GLvoid *indices,
     }
 
     void* mappedMemory = NULL;
-    int offset = mLineLoopIB->mapBuffer(spaceNeeded, &mappedMemory);
-    if (offset == -1 || mappedMemory == NULL)
+    unsigned int offset;
+    if (!mLineLoopIB->mapBuffer(spaceNeeded, &mappedMemory, &offset))
     {
         ERR("Could not map index buffer for GL_LINE_LOOP.");
         return gl::error(GL_OUT_OF_MEMORY);
     }
 
     unsigned int *data = reinterpret_cast<unsigned int*>(mappedMemory);
-    unsigned int indexBufferOffset = static_cast<unsigned int>(offset);
+    unsigned int indexBufferOffset = offset;
 
     switch (type)
     {
@@ -1187,8 +1235,18 @@ void Renderer11::drawTriangleFan(GLsizei count, GLenum type, const GLvoid *indic
         }
     }
 
-    const int numTris = count - 2;
-    const int spaceNeeded = (numTris * 3) * sizeof(unsigned int);
+    // Checked by Renderer11::applyPrimitiveType
+    ASSERT(count >= 3);
+
+    const unsigned int numTris = count - 2;
+
+    if (numTris > (std::numeric_limits<unsigned int>::max() / (sizeof(unsigned int) * 3)))
+    {
+        ERR("Could not create a scratch index buffer for GL_TRIANGLE_FAN, too many indices required.");
+        return gl::error(GL_OUT_OF_MEMORY);
+    }
+
+    const unsigned int spaceNeeded = (numTris * 3) * sizeof(unsigned int);
     if (!mTriangleFanIB->reserveBufferSpace(spaceNeeded, GL_UNSIGNED_INT))
     {
         ERR("Could not reserve enough space in scratch index buffer for GL_TRIANGLE_FAN.");
@@ -1196,20 +1254,20 @@ void Renderer11::drawTriangleFan(GLsizei count, GLenum type, const GLvoid *indic
     }
 
     void* mappedMemory = NULL;
-    int offset = mTriangleFanIB->mapBuffer(spaceNeeded, &mappedMemory);
-    if (offset == -1 || mappedMemory == NULL)
+    unsigned int offset;
+    if (!mTriangleFanIB->mapBuffer(spaceNeeded, &mappedMemory, &offset))
     {
         ERR("Could not map scratch index buffer for GL_TRIANGLE_FAN.");
         return gl::error(GL_OUT_OF_MEMORY);
     }
 
     unsigned int *data = reinterpret_cast<unsigned int*>(mappedMemory);
-    unsigned int indexBufferOffset = static_cast<unsigned int>(offset);
+    unsigned int indexBufferOffset = offset;
 
     switch (type)
     {
       case GL_NONE:   // Non-indexed draw
-        for (int i = 0; i < numTris; i++)
+        for (unsigned int i = 0; i < numTris; i++)
         {
             data[i*3 + 0] = 0;
             data[i*3 + 1] = i + 1;
@@ -1217,7 +1275,7 @@ void Renderer11::drawTriangleFan(GLsizei count, GLenum type, const GLvoid *indic
         }
         break;
       case GL_UNSIGNED_BYTE:
-        for (int i = 0; i < numTris; i++)
+        for (unsigned int i = 0; i < numTris; i++)
         {
             data[i*3 + 0] = static_cast<const GLubyte*>(indices)[0];
             data[i*3 + 1] = static_cast<const GLubyte*>(indices)[i + 1];
@@ -1225,7 +1283,7 @@ void Renderer11::drawTriangleFan(GLsizei count, GLenum type, const GLvoid *indic
         }
         break;
       case GL_UNSIGNED_SHORT:
-        for (int i = 0; i < numTris; i++)
+        for (unsigned int i = 0; i < numTris; i++)
         {
             data[i*3 + 0] = static_cast<const GLushort*>(indices)[0];
             data[i*3 + 1] = static_cast<const GLushort*>(indices)[i + 1];
@@ -1233,7 +1291,7 @@ void Renderer11::drawTriangleFan(GLsizei count, GLenum type, const GLvoid *indic
         }
         break;
       case GL_UNSIGNED_INT:
-        for (int i = 0; i < numTris; i++)
+        for (unsigned int i = 0; i < numTris; i++)
         {
             data[i*3 + 0] = static_cast<const GLuint*>(indices)[0];
             data[i*3 + 1] = static_cast<const GLuint*>(indices)[i + 1];
@@ -1347,21 +1405,21 @@ void Renderer11::applyUniforms(gl::ProgramBinary *programBinary, gl::UniformArra
     float (*mapVS)[4] = NULL;
     float (*mapPS)[4] = NULL;
 
-	if (totalRegisterCountVS > 0 && vertexUniformsDirty)
-	{
-		D3D11_MAPPED_SUBRESOURCE map = {0};
-		HRESULT result = mDeviceContext->Map(vertexConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
-		ASSERT(SUCCEEDED(result));
-		mapVS = (float(*)[4])map.pData;
-	}
+    if (totalRegisterCountVS > 0 && vertexUniformsDirty)
+    {
+        D3D11_MAPPED_SUBRESOURCE map = {0};
+        HRESULT result = mDeviceContext->Map(vertexConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
+        ASSERT(SUCCEEDED(result));
+        mapVS = (float(*)[4])map.pData;
+    }
 
-	if (totalRegisterCountPS > 0 && pixelUniformsDirty)
-	{
-		D3D11_MAPPED_SUBRESOURCE map = {0};
-		HRESULT result = mDeviceContext->Map(pixelConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
-		ASSERT(SUCCEEDED(result));
-		mapPS = (float(*)[4])map.pData;
-	}
+    if (totalRegisterCountPS > 0 && pixelUniformsDirty)
+    {
+        D3D11_MAPPED_SUBRESOURCE map = {0};
+        HRESULT result = mDeviceContext->Map(pixelConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
+        ASSERT(SUCCEEDED(result));
+        mapPS = (float(*)[4])map.pData;
+    }
 
     for (gl::UniformArray::iterator uniform_iterator = uniformArray->begin(); uniform_iterator != uniformArray->end(); uniform_iterator++)
     {
@@ -1392,9 +1450,18 @@ void Renderer11::applyUniforms(gl::ProgramBinary *programBinary, gl::UniformArra
     {
         mDeviceContext->Unmap(pixelConstantBuffer, 0);
     }
-    
-    mDeviceContext->VSSetConstantBuffers(0, 1, &vertexConstantBuffer);
-    mDeviceContext->PSSetConstantBuffers(0, 1, &pixelConstantBuffer);
+
+    if (mCurrentVertexConstantBuffer != vertexConstantBuffer)
+    {
+        mDeviceContext->VSSetConstantBuffers(0, 1, &vertexConstantBuffer);
+        mCurrentVertexConstantBuffer = vertexConstantBuffer;
+    }
+
+    if (mCurrentPixelConstantBuffer != pixelConstantBuffer)
+    {
+        mDeviceContext->PSSetConstantBuffers(0, 1, &pixelConstantBuffer);
+        mCurrentPixelConstantBuffer = pixelConstantBuffer;
+    }
 
     // Driver uniforms
     if (!mDriverConstantBufferVS)
@@ -1442,7 +1509,11 @@ void Renderer11::applyUniforms(gl::ProgramBinary *programBinary, gl::UniformArra
     }
 
     // needed for the point sprite geometry shader
-    mDeviceContext->GSSetConstantBuffers(0, 1, &mDriverConstantBufferPS);
+    if (mCurrentGeometryConstantBuffer != mDriverConstantBufferPS)
+    {
+        mDeviceContext->GSSetConstantBuffers(0, 1, &mDriverConstantBufferPS);
+        mCurrentGeometryConstantBuffer = mDriverConstantBufferPS;
+    }
 }
 
 void Renderer11::clear(const gl::ClearParameters &clearParams, gl::Framebuffer *frameBuffer)
@@ -1467,7 +1538,7 @@ void Renderer11::clear(const gl::ClearParameters &clearParams, gl::Framebuffer *
 
      if (needMaskedColorClear || needMaskedStencilClear || needScissoredClear)
      {
-         maskedClear(clearParams);
+         maskedClear(clearParams, frameBuffer->usingExtendedDrawBuffers());
      }
      else
      {
@@ -1499,8 +1570,6 @@ void Renderer11::clear(const gl::ClearParameters &clearParams, gl::Framebuffer *
                                                        clearParams.colorClearValue.blue,
                                                        clearParams.colorClearValue.alpha };
                         mDeviceContext->ClearRenderTargetView(framebufferRTV, clearValues);
-
-                        framebufferRTV->Release();
                     }
                  }
              }
@@ -1538,20 +1607,18 @@ void Renderer11::clear(const gl::ClearParameters &clearParams, gl::Framebuffer *
                 UINT8 stencilClear = clearParams.stencilClearValue & 0x000000FF;
 
                 mDeviceContext->ClearDepthStencilView(framebufferDSV, clearFlags, depthClear, stencilClear);
-
-                framebufferDSV->Release();
             }
         }
     }
 }
 
-void Renderer11::maskedClear(const gl::ClearParameters &clearParams)
+void Renderer11::maskedClear(const gl::ClearParameters &clearParams, bool usingExtendedDrawBuffers)
 {
     HRESULT result;
 
     if (!mClearResourcesInitialized)
     {
-        ASSERT(!mClearVB && !mClearVS && !mClearPS && !mClearScissorRS && !mClearNoScissorRS);
+        ASSERT(!mClearVB && !mClearVS && !mClearSinglePS && !mClearMultiplePS && !mClearScissorRS && !mClearNoScissorRS);
 
         D3D11_BUFFER_DESC vbDesc;
         vbDesc.ByteWidth = sizeof(d3d11::PositionDepthColorVertex) * 4;
@@ -1579,9 +1646,13 @@ void Renderer11::maskedClear(const gl::ClearParameters &clearParams)
         ASSERT(SUCCEEDED(result));
         d3d11::SetDebugName(mClearVS, "Renderer11 masked clear vertex shader");
 
-        result = mDevice->CreatePixelShader(g_PS_Clear, sizeof(g_PS_Clear), NULL, &mClearPS);
+        result = mDevice->CreatePixelShader(g_PS_ClearSingle, sizeof(g_PS_ClearSingle), NULL, &mClearSinglePS);
         ASSERT(SUCCEEDED(result));
-        d3d11::SetDebugName(mClearPS, "Renderer11 masked clear pixel shader");
+        d3d11::SetDebugName(mClearSinglePS, "Renderer11 masked clear pixel shader (1 RT)");
+
+        result = mDevice->CreatePixelShader(g_PS_ClearMultiple, sizeof(g_PS_ClearMultiple), NULL, &mClearMultiplePS);
+        ASSERT(SUCCEEDED(result));
+        d3d11::SetDebugName(mClearMultiplePS, "Renderer11 masked clear pixel shader (MRT)");
 
         D3D11_RASTERIZER_DESC rsScissorDesc;
         rsScissorDesc.FillMode = D3D11_FILL_SOLID;
@@ -1688,9 +1759,11 @@ void Renderer11::maskedClear(const gl::ClearParameters &clearParams)
     mDeviceContext->RSSetState(mScissorEnabled ? mClearScissorRS : mClearNoScissorRS);
 
     // Apply shaders
+    ID3D11PixelShader *pixelShader = usingExtendedDrawBuffers ? mClearMultiplePS : mClearSinglePS;
+
     mDeviceContext->IASetInputLayout(mClearIL);
     mDeviceContext->VSSetShader(mClearVS, NULL, 0);
-    mDeviceContext->PSSetShader(mClearPS, NULL, 0);
+    mDeviceContext->PSSetShader(pixelShader, NULL, 0);
     mDeviceContext->GSSetShader(NULL, NULL, 0);
 
     // Apply vertex buffer
@@ -1741,6 +1814,14 @@ void Renderer11::markAllStateDirty()
     mAppliedProgramBinarySerial = 0;
     memset(&mAppliedVertexConstants, 0, sizeof(dx_VertexConstants));
     memset(&mAppliedPixelConstants, 0, sizeof(dx_PixelConstants));
+
+    mInputLayoutCache.markDirty();
+
+    mCurrentVertexConstantBuffer = NULL;
+    mCurrentPixelConstantBuffer = NULL;
+    mCurrentGeometryConstantBuffer = NULL;
+
+    mCurrentPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
 }
 
 void Renderer11::releaseDeviceResources()
@@ -1760,111 +1841,31 @@ void Renderer11::releaseDeviceResources()
     delete mTriangleFanIB;
     mTriangleFanIB = NULL;
 
-    if (mCopyVB)
-    {
-        mCopyVB->Release();
-        mCopyVB = NULL;
-    }
-
-    if (mCopySampler)
-    {
-        mCopySampler->Release();
-        mCopySampler = NULL;
-    }
-
-    if (mCopyIL)
-    {
-        mCopyIL->Release();
-        mCopyIL = NULL;
-    }
-
-    if (mCopyVS)
-    {
-        mCopyVS->Release();
-        mCopyVS = NULL;
-    }
-
-    if (mCopyRGBAPS)
-    {
-        mCopyRGBAPS->Release();
-        mCopyRGBAPS = NULL;
-    }
-
-    if (mCopyRGBPS)
-    {
-        mCopyRGBPS->Release();
-        mCopyRGBPS = NULL;
-    }
-
-    if (mCopyLumPS)
-    {
-        mCopyLumPS->Release();
-        mCopyLumPS = NULL;
-    }
-
-    if (mCopyLumAlphaPS)
-    {
-        mCopyLumAlphaPS->Release();
-        mCopyLumAlphaPS = NULL;
-    }
+    SafeRelease(mCopyVB);
+    SafeRelease(mCopySampler);
+    SafeRelease(mCopyIL);
+    SafeRelease(mCopyIL);
+    SafeRelease(mCopyVS);
+    SafeRelease(mCopyRGBAPS);
+    SafeRelease(mCopyRGBPS);
+    SafeRelease(mCopyLumPS);
+    SafeRelease(mCopyLumAlphaPS);
 
     mCopyResourcesInitialized = false;
 
-    if (mClearVB)
-    {
-        mClearVB->Release();
-        mClearVB = NULL;
-    }
-
-    if (mClearIL)
-    {
-        mClearIL->Release();
-        mClearIL = NULL;
-    }
-
-    if (mClearVS)
-    {
-        mClearVS->Release();
-        mClearVS = NULL;
-    }
-
-    if (mClearPS)
-    {
-        mClearPS->Release();
-        mClearPS = NULL;
-    }
-
-    if (mClearScissorRS)
-    {
-        mClearScissorRS->Release();
-        mClearScissorRS = NULL;
-    }
-
-    if (mClearNoScissorRS)
-    {
-        mClearNoScissorRS->Release();
-        mClearNoScissorRS = NULL;
-    }
+    SafeRelease(mClearVB);
+    SafeRelease(mClearIL);
+    SafeRelease(mClearVS);
+    SafeRelease(mClearSinglePS);
+    SafeRelease(mClearMultiplePS);
+    SafeRelease(mClearScissorRS);
+    SafeRelease(mClearNoScissorRS);
 
     mClearResourcesInitialized = false;
 
-    if (mDriverConstantBufferVS)
-    {
-        mDriverConstantBufferVS->Release();
-        mDriverConstantBufferVS = NULL;
-    }
-
-    if (mDriverConstantBufferPS)
-    {
-        mDriverConstantBufferPS->Release();
-        mDriverConstantBufferPS = NULL;
-    }
-
-    if (mSyncQuery)
-    {
-        mSyncQuery->Release();
-        mSyncQuery = NULL;
-    }
+    SafeRelease(mDriverConstantBufferVS);
+    SafeRelease(mDriverConstantBufferPS);
+    SafeRelease(mSyncQuery);
 }
 
 void Renderer11::notifyDeviceLost()
@@ -2153,12 +2154,12 @@ unsigned int Renderer11::getMaxCombinedTextureImageUnits() const
 
 unsigned int Renderer11::getReservedVertexUniformVectors() const
 {
-	return 0;   // Driver uniforms are stored in a separate constant buffer
+    return 0;   // Driver uniforms are stored in a separate constant buffer
 }
 
 unsigned int Renderer11::getReservedFragmentUniformVectors() const
 {
-	return 0;   // Driver uniforms are stored in a separate constant buffer
+    return 0;   // Driver uniforms are stored in a separate constant buffer
 }
 
 unsigned int Renderer11::getMaxVertexUniformVectors() const
@@ -2448,7 +2449,6 @@ bool Renderer11::copyImage(gl::Framebuffer *framebuffer, const gl::Rectangle &so
     TextureStorage11_2D *storage11 = TextureStorage11_2D::makeTextureStorage11_2D(storage->getStorageInstance());
     if (!storage11)
     {
-        source->Release();
         ERR("Failed to retrieve the texture storage from the destination.");
         return gl::error(GL_OUT_OF_MEMORY, false);
     }
@@ -2456,7 +2456,6 @@ bool Renderer11::copyImage(gl::Framebuffer *framebuffer, const gl::Rectangle &so
     RenderTarget11 *destRenderTarget = RenderTarget11::makeRenderTarget11(storage11->getRenderTarget(level));
     if (!destRenderTarget)
     {
-        source->Release();
         ERR("Failed to retrieve the render target from the destination storage.");
         return gl::error(GL_OUT_OF_MEMORY, false);
     }
@@ -2464,7 +2463,6 @@ bool Renderer11::copyImage(gl::Framebuffer *framebuffer, const gl::Rectangle &so
     ID3D11RenderTargetView *dest = destRenderTarget->getRenderTargetView();
     if (!dest)
     {
-        source->Release();
         ERR("Failed to retrieve the render target view from the destination render target.");
         return gl::error(GL_OUT_OF_MEMORY, false);
     }
@@ -2477,9 +2475,6 @@ bool Renderer11::copyImage(gl::Framebuffer *framebuffer, const gl::Rectangle &so
 
     bool ret = copyTexture(source, sourceRect, sourceRenderTarget->getWidth(), sourceRenderTarget->getHeight(),
                            dest, destRect, destRenderTarget->getWidth(), destRenderTarget->getHeight(), destFormat);
-
-    source->Release();
-    dest->Release();
 
     return ret;
 }
@@ -2511,7 +2506,6 @@ bool Renderer11::copyImage(gl::Framebuffer *framebuffer, const gl::Rectangle &so
     TextureStorage11_Cube *storage11 = TextureStorage11_Cube::makeTextureStorage11_Cube(storage->getStorageInstance());
     if (!storage11)
     {
-        source->Release();
         ERR("Failed to retrieve the texture storage from the destination.");
         return gl::error(GL_OUT_OF_MEMORY, false);
     }
@@ -2519,7 +2513,6 @@ bool Renderer11::copyImage(gl::Framebuffer *framebuffer, const gl::Rectangle &so
     RenderTarget11 *destRenderTarget = RenderTarget11::makeRenderTarget11(storage11->getRenderTarget(target, level));
     if (!destRenderTarget)
     {
-        source->Release();
         ERR("Failed to retrieve the render target from the destination storage.");
         return gl::error(GL_OUT_OF_MEMORY, false);
     }
@@ -2527,7 +2520,6 @@ bool Renderer11::copyImage(gl::Framebuffer *framebuffer, const gl::Rectangle &so
     ID3D11RenderTargetView *dest = destRenderTarget->getRenderTargetView();
     if (!dest)
     {
-        source->Release();
         ERR("Failed to retrieve the render target view from the destination render target.");
         return gl::error(GL_OUT_OF_MEMORY, false);
     }
@@ -2540,9 +2532,6 @@ bool Renderer11::copyImage(gl::Framebuffer *framebuffer, const gl::Rectangle &so
 
     bool ret = copyTexture(source, sourceRect, sourceRenderTarget->getWidth(), sourceRenderTarget->getHeight(),
                            dest, destRect, destRenderTarget->getWidth(), destRenderTarget->getHeight(), destFormat);
-
-    source->Release();
-    dest->Release();
 
     return ret;
 }
@@ -2893,7 +2882,6 @@ bool Renderer11::getRenderTargetResource(gl::Renderbuffer *colorbuffer, unsigned
         {
             ID3D11Resource *textureResource = NULL;
             colorBufferRTV->GetResource(&textureResource);
-            colorBufferRTV->Release();
 
             if (textureResource)
             {
@@ -3428,6 +3416,16 @@ bool Renderer11::blitRenderbufferRect(const gl::Rectangle &readRect, const gl::R
 {
     ASSERT(readRect.width == drawRect.width && readRect.height == drawRect.height);
 
+    RenderTarget11 *drawRenderTarget11 = RenderTarget11::makeRenderTarget11(drawRenderTarget);
+    if (!drawRenderTarget)
+    {
+        ERR("Failed to retrieve the draw render target from the draw framebuffer.");
+        return gl::error(GL_OUT_OF_MEMORY, false);
+    }
+
+    ID3D11Texture2D *drawTexture = drawRenderTarget11->getTexture();
+    unsigned int drawSubresource = drawRenderTarget11->getSubresourceIndex();
+
     RenderTarget11 *readRenderTarget11 = RenderTarget11::makeRenderTarget11(readRenderTarget);
     if (!readRenderTarget)
     {
@@ -3439,16 +3437,13 @@ bool Renderer11::blitRenderbufferRect(const gl::Rectangle &readRect, const gl::R
     unsigned int readSubresource = 0;
     if (readRenderTarget->getSamples() > 0)
     {
-        ID3D11Texture2D *unresolvedTexture = readRenderTarget11->getTexture();
-
-        readTexture = resolveMultisampledTexture(unresolvedTexture, readRenderTarget11->getSubresourceIndex());
+        readTexture = resolveMultisampledTexture(readRenderTarget11->getTexture(), readRenderTarget11->getSubresourceIndex());
         readSubresource = 0;
-
-        unresolvedTexture->Release();
     }
     else
     {
         readTexture = readRenderTarget11->getTexture();
+        readTexture->AddRef();
         readSubresource = readRenderTarget11->getSubresourceIndex();
     }
 
@@ -3457,17 +3452,6 @@ bool Renderer11::blitRenderbufferRect(const gl::Rectangle &readRect, const gl::R
         ERR("Failed to retrieve the read render target view from the read render target.");
         return gl::error(GL_OUT_OF_MEMORY, false);
     }
-
-    RenderTarget11 *drawRenderTarget11 = RenderTarget11::makeRenderTarget11(drawRenderTarget);
-    if (!drawRenderTarget)
-    {
-        readTexture->Release();
-        ERR("Failed to retrieve the draw render target from the draw framebuffer.");
-        return gl::error(GL_OUT_OF_MEMORY, false);
-    }
-
-    ID3D11Texture2D *drawTexture = drawRenderTarget11->getTexture();
-    unsigned int drawSubresource = drawRenderTarget11->getSubresourceIndex();
 
     D3D11_BOX readBox;
     readBox.left = readRect.x;
@@ -3484,8 +3468,7 @@ bool Renderer11::blitRenderbufferRect(const gl::Rectangle &readRect, const gl::R
     mDeviceContext->CopySubresourceRegion(drawTexture, drawSubresource, drawRect.x, drawRect.y, 0,
                                           readTexture, readSubresource, pSrcBox);
 
-    readTexture->Release();
-    drawTexture->Release();
+    SafeRelease(readTexture);
 
     return true;
 }
@@ -3526,6 +3509,26 @@ ID3D11Texture2D *Renderer11::resolveMultisampledTexture(ID3D11Texture2D *source,
         source->AddRef();
         return source;
     }
+}
+
+bool Renderer11::getLUID(LUID *adapterLuid) const
+{
+    adapterLuid->HighPart = 0;
+    adapterLuid->LowPart = 0;
+
+    if (!mDxgiAdapter)
+    {
+        return false;
+    }
+
+    DXGI_ADAPTER_DESC adapterDesc;
+    if (FAILED(mDxgiAdapter->GetDesc(&adapterDesc)))
+    {
+        return false;
+    }
+
+    *adapterLuid = adapterDesc.AdapterLuid;
+    return true;
 }
 
 }

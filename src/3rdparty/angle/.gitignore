@@ -36,7 +36,8 @@ src/libGLESv2/renderer/shaders/compiled/PassthroughRGB11ps.h
 src/libGLESv2/renderer/shaders/compiled/PassthroughLumAlpha11ps.h
 src/libGLESv2/renderer/shaders/compiled/PassthroughLum11ps.h
 src/libGLESv2/renderer/shaders/compiled/Passthrough11vs.h
-src/libGLESv2/renderer/shaders/compiled/Clear11ps.h
-src/libGLESv2/renderer/shaders/compiled/Clear11vs.h
+src/libGLESv2/renderer/shaders/compiled/clear11vs.h
+src/libGLESv2/renderer/shaders/compiled/clearmultiple11ps.h
+src/libGLESv2/renderer/shaders/compiled/clearsingle11ps.h
 
 

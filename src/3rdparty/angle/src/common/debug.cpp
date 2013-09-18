@@ -8,10 +8,10 @@
 
 #include "common/debug.h"
 #include "common/system.h"
-#ifdef ANGLE_ENABLE_D3D11
-typedef DWORD D3DCOLOR;
-#else
+#ifndef ANGLE_ENABLE_D3D11
 #include <d3d9.h>
+#else
+typedef DWORD D3DCOLOR;
 #endif
 
 namespace gl

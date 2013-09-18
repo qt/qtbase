@@ -180,9 +180,9 @@ const char *__stdcall eglQueryString(EGLDisplay dpy, EGLint name)
           case EGL_CLIENT_APIS:
             return egl::success("OpenGL_ES");
           case EGL_EXTENSIONS:
-            return display->getExtensionString();
+            return egl::success(display->getExtensionString());
           case EGL_VENDOR:
-            return egl::success("Google Inc.");
+            return egl::success(display->getVendorString());
           case EGL_VERSION:
             return egl::success("1.4 (ANGLE " VERSION_STRING ")");
         }
@@ -888,15 +888,18 @@ EGLBoolean __stdcall eglMakeCurrent(EGLDisplay dpy, EGLSurface draw, EGLSurface 
             return EGL_FALSE;
         }
 
-        rx::Renderer *renderer = display->getRenderer();
-        if (renderer->testDeviceLost(true))
+        if (dpy != EGL_NO_DISPLAY)
         {
-            return EGL_FALSE;
-        }
+            rx::Renderer *renderer = display->getRenderer();
+            if (renderer->testDeviceLost(true))
+            {
+                return EGL_FALSE;
+            }
 
-        if (renderer->isDeviceLost())
-        {
-            return egl::error(EGL_CONTEXT_LOST, EGL_FALSE);
+            if (renderer->isDeviceLost())
+            {
+                return egl::error(EGL_CONTEXT_LOST, EGL_FALSE);
+            }
         }
 
         if ((draw != EGL_NO_SURFACE && !validateSurface(display, static_cast<egl::Surface*>(draw))) ||

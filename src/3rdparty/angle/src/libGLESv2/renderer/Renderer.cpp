@@ -7,19 +7,25 @@
 
 // Renderer.cpp: Implements EGL dependencies for creating and destroying Renderer instances.
 
+#include <EGL/eglext.h>
 #include "libGLESv2/main.h"
 #include "libGLESv2/Program.h"
 #include "libGLESv2/renderer/Renderer.h"
-#if defined(ANGLE_ENABLE_D3D11)
-# include "libGLESv2/renderer/Renderer11.h"
-# define D3DERR_OUTOFVIDEOMEMORY MAKE_HRESULT( 1, 0x876, 380 )
+#ifndef ANGLE_ENABLE_D3D11
+#include "libGLESv2/renderer/Renderer9.h"
 #else
-# include "libGLESv2/renderer/Renderer9.h"
+#include "libGLESv2/renderer/Renderer11.h"
 #endif
 #include "libGLESv2/utilities.h"
+#include "third_party/trace_event/trace_event.h"
 
-#if !defined(ANGLE_COMPILE_OPTIMIZATION_LEVEL)
-#define ANGLE_COMPILE_OPTIMIZATION_LEVEL D3DCOMPILE_OPTIMIZATION_LEVEL3
+#if !defined(ANGLE_ENABLE_D3D11)
+// Enables use of the Direct3D 11 API for a default display, when available
+#define ANGLE_ENABLE_D3D11 0
+#endif
+
+#ifndef D3DERR_OUTOFVIDEOMEMORY
+#define D3DERR_OUTOFVIDEOMEMORY MAKE_HRESULT(1, 0x876, 380)
 #endif
 
 #ifdef __MINGW32__
@@ -61,6 +67,7 @@ Renderer::~Renderer()
 
 bool Renderer::initializeCompiler()
 {
+    TRACE_EVENT0("gpu", "initializeCompiler");
 #if defined(ANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES)
     // Find a D3DCompiler module that had already been loaded based on a predefined list of versions.
     static TCHAR* d3dCompilerNames[] = ANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES;
@@ -188,14 +195,15 @@ ShaderBlob *Renderer::compileToBinary(gl::InfoLog &infoLog, const char *hlsl, co
 extern "C"
 {
 
-rx::Renderer *glCreateRenderer(egl::Display *display, HDC hDc, bool softwareDevice)
+rx::Renderer *glCreateRenderer(egl::Display *display, HDC hDc, EGLNativeDisplayType displayId)
 {
     rx::Renderer *renderer = NULL;
     EGLint status = EGL_BAD_ALLOC;
 
-#if defined(ANGLE_ENABLE_D3D11)
+#if ANGLE_ENABLE_D3D11
     renderer = new rx::Renderer11(display, hDc);
 #else
+    bool softwareDevice = (displayId == EGL_SOFTWARE_DISPLAY_ANGLE);
     renderer = new rx::Renderer9(display, hDc, softwareDevice);
 #endif
 

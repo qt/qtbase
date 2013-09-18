@@ -182,6 +182,8 @@ class Renderer11 : public Renderer
     void unapplyRenderTargets();
     void setOneTimeRenderTarget(ID3D11RenderTargetView *renderTargetView);
 
+    virtual bool getLUID(LUID *adapterLuid) const;
+
   private:
     DISALLOW_COPY_AND_ASSIGN(Renderer11);
 
@@ -192,7 +194,7 @@ class Renderer11 : public Renderer
                          GLenum format, GLenum type, GLsizei outputPitch, bool packReverseRowOrder,
                          GLint packAlignment, void *pixels);
 
-    void maskedClear(const gl::ClearParameters &clearParams);
+    void maskedClear(const gl::ClearParameters &clearParams, bool usingExtendedDrawBuffers);
     rx::Range getViewportBounds() const;
 
     bool blitRenderbufferRect(const gl::Rectangle &readRect, const gl::Rectangle &drawRect, RenderTarget *readRenderTarget, 
@@ -286,6 +288,9 @@ class Renderer11 : public Renderer
     float mCurNear;
     float mCurFar;
 
+    // Currently applied primitive topology
+    D3D11_PRIMITIVE_TOPOLOGY mCurrentPrimitiveTopology;
+
     unsigned int mAppliedIBSerial;
     unsigned int mAppliedStorageIBSerial;
     unsigned int mAppliedIBOffset;
@@ -296,10 +301,14 @@ class Renderer11 : public Renderer
     dx_VertexConstants mVertexConstants;
     dx_VertexConstants mAppliedVertexConstants;
     ID3D11Buffer *mDriverConstantBufferVS;
+    ID3D11Buffer *mCurrentVertexConstantBuffer;
 
     dx_PixelConstants mPixelConstants;
     dx_PixelConstants mAppliedPixelConstants;
     ID3D11Buffer *mDriverConstantBufferPS;
+    ID3D11Buffer *mCurrentPixelConstantBuffer;
+
+    ID3D11Buffer *mCurrentGeometryConstantBuffer;
 
     // Vertex, index and input layouts
     VertexDataManager *mVertexDataManager;
@@ -325,7 +334,8 @@ class Renderer11 : public Renderer
     ID3D11Buffer *mClearVB;
     ID3D11InputLayout *mClearIL;
     ID3D11VertexShader *mClearVS;
-    ID3D11PixelShader *mClearPS;
+    ID3D11PixelShader *mClearSinglePS;
+    ID3D11PixelShader *mClearMultiplePS;
     ID3D11RasterizerState *mClearScissorRS;
     ID3D11RasterizerState *mClearNoScissorRS;
 

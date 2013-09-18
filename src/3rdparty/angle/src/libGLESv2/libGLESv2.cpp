@@ -4893,6 +4893,7 @@ void __stdcall glRenderbufferStorageMultisampleANGLE(GLenum target, GLsizei samp
               case GL_RGB565:
               case GL_RGB8_OES:
               case GL_RGBA8_OES:
+              case GL_BGRA8_EXT:
               case GL_STENCIL_INDEX8:
               case GL_DEPTH24_STENCIL8_OES:
                 context->setRenderbufferStorage(width, height, internalformat, samples);
@@ -6977,17 +6978,14 @@ void __stdcall glDrawBuffersEXT(GLsizei n, const GLenum *bufs)
 
             if (context->getDrawFramebufferHandle() == 0)
             {
-                if (n > 1)
+                if (n != 1)
                 {
                     return gl::error(GL_INVALID_OPERATION);
                 }
 
-                if (n == 1)
+                if (bufs[0] != GL_NONE && bufs[0] != GL_BACK)
                 {
-                    if (bufs[0] != GL_NONE && bufs[0] != GL_BACK)
-                    {
-                        return gl::error(GL_INVALID_OPERATION);
-                    }
+                    return gl::error(GL_INVALID_OPERATION);
                 }
             }
             else
@@ -7007,6 +7005,11 @@ void __stdcall glDrawBuffersEXT(GLsizei n, const GLenum *bufs)
             for (int colorAttachment = 0; colorAttachment < n; colorAttachment++)
             {
                 framebuffer->setDrawBufferState(colorAttachment, bufs[colorAttachment]);
+            }
+
+            for (int colorAttachment = n; colorAttachment < (int)context->getMaximumRenderTargets(); colorAttachment++)
+            {
+                framebuffer->setDrawBufferState(colorAttachment, GL_NONE);
             }
         }
     }

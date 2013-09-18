@@ -97,7 +97,6 @@
  *-------------------------------------------------------------------------
  * This precedes the return type of the function in the function prototype.
  */
-
 #if defined(_WIN32) && !defined(__SCITECH_SNAP__) && !defined(QT_OPENGL_ES_2_ANGLE_STATIC)
 #   define KHRONOS_APICALL __declspec(dllimport)
 #elif defined (__SYMBIAN32__)

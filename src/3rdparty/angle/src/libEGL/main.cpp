@@ -88,72 +88,89 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
     return TRUE;
 }
 
-static inline egl::Current *current()
-{
-    return (egl::Current*)TlsGetValue(currentTLS);
-}
-
-#else // !QT_OPENGL_ES_2_ANGLE_STATIC
-
-static egl::Current *current()
-{
-    // No precautions for thread safety taken as ANGLE is used single-threaded in Qt.
-    static egl::Current curr = { EGL_SUCCESS, EGL_OPENGL_ES_API, EGL_NO_DISPLAY, EGL_NO_SURFACE, EGL_NO_SURFACE };
-    return &curr;
-}
-
-#endif // QT_OPENGL_ES_2_ANGLE_STATIC
+#endif // !QT_OPENGL_ES_2_ANGLE_STATIC
 
 namespace egl
 {
+Current *getCurrent()
+{
+#ifndef QT_OPENGL_ES_2_ANGLE_STATIC
+    return (Current*)TlsGetValue(currentTLS);
+#else
+    // No precautions for thread safety taken as ANGLE is used single-threaded in Qt.
+    static Current curr = { EGL_SUCCESS, EGL_OPENGL_ES_API, EGL_NO_DISPLAY, EGL_NO_SURFACE, EGL_NO_SURFACE };
+    return &curr;
+#endif
+}
+
 void setCurrentError(EGLint error)
 {
-    current()->error = error;
+    Current *current = getCurrent();
+
+    current->error = error;
 }
 
 EGLint getCurrentError()
 {
-    return current()->error;
+    Current *current = getCurrent();
+
+    return current->error;
 }
 
 void setCurrentAPI(EGLenum API)
 {
-    current()->API = API;
+    Current *current = getCurrent();
+
+    current->API = API;
 }
 
 EGLenum getCurrentAPI()
 {
-    return current()->API;
+    Current *current = getCurrent();
+
+    return current->API;
 }
 
 void setCurrentDisplay(EGLDisplay dpy)
 {
-    current()->display = dpy;
+    Current *current = getCurrent();
+
+    current->display = dpy;
 }
 
 EGLDisplay getCurrentDisplay()
 {
-    return current()->display;
+    Current *current = getCurrent();
+
+    return current->display;
 }
 
 void setCurrentDrawSurface(EGLSurface surface)
 {
-    current()->drawSurface = surface;
+    Current *current = getCurrent();
+
+    current->drawSurface = surface;
 }
 
 EGLSurface getCurrentDrawSurface()
 {
-    return current()->drawSurface;
+    Current *current = getCurrent();
+
+    return current->drawSurface;
 }
 
 void setCurrentReadSurface(EGLSurface surface)
 {
-    current()->readSurface = surface;
+    Current *current = getCurrent();
+
+    current->readSurface = surface;
 }
 
 EGLSurface getCurrentReadSurface()
 {
-    return current()->readSurface;
+    Current *current = getCurrent();
+
+    return current->readSurface;
 }
 
 void error(EGLint errorCode)

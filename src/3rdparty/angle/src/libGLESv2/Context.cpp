@@ -60,6 +60,7 @@ Context::Context(const gl::Context *shareContext, rx::Renderer *renderer, bool n
     mState.rasterizer.polygonOffsetFactor = 0.0f;
     mState.rasterizer.polygonOffsetUnits = 0.0f;
     mState.rasterizer.pointDrawMode = false;
+    mState.rasterizer.multiSample = false;
     mState.scissorTest = false;
     mState.scissor.x = 0;
     mState.scissor.y = 0;
@@ -1075,6 +1076,7 @@ void Context::setRenderbufferStorage(GLsizei width, GLsizei height, GLenum inter
       case GL_RGB565:
       case GL_RGB8_OES:
       case GL_RGBA8_OES:
+      case GL_BGRA8_EXT:
         renderbuffer = new gl::Colorbuffer(mRenderer,width, height, internalformat, samples);
         break;
       case GL_STENCIL_INDEX8:
@@ -1741,7 +1743,11 @@ bool Context::applyRenderTarget(GLenum drawMode, bool ignoreViewport)
 // Applies the fixed-function state (culling, depth test, alpha blending, stenciling, etc) to the Direct3D 9 device
 void Context::applyState(GLenum drawMode)
 {
+    Framebuffer *framebufferObject = getDrawFramebuffer();
+    int samples = framebufferObject->getSamples();
+
     mState.rasterizer.pointDrawMode = (drawMode == GL_POINTS);
+    mState.rasterizer.multiSample = (samples != 0);
     mRenderer->setRasterizerState(mState.rasterizer);
 
     unsigned int mask = 0;
@@ -1749,10 +1755,10 @@ void Context::applyState(GLenum drawMode)
     {
         if (mState.sampleCoverageValue != 0)
         {
-            Framebuffer *framebufferObject = getDrawFramebuffer();
+
             float threshold = 0.5f;
 
-            for (int i = 0; i < framebufferObject->getSamples(); ++i)
+            for (int i = 0; i < samples; ++i)
             {
                 mask <<= 1;
 
@@ -2582,6 +2588,7 @@ void Context::initExtensionString()
     }
 
     extensionString += "GL_EXT_texture_storage ";
+    extensionString += "GL_EXT_frag_depth ";
 
     // ANGLE-specific extensions
     if (supportsDepthTextures())

@@ -13,6 +13,10 @@
 #include "libGLESv2/Uniform.h"
 #include "libGLESv2/angletypes.h"
 
+#if !defined(ANGLE_COMPILE_OPTIMIZATION_LEVEL)
+#define ANGLE_COMPILE_OPTIMIZATION_LEVEL D3DCOMPILE_OPTIMIZATION_LEVEL3
+#endif
+
 const int versionWindowsVista = MAKEWORD(0x00, 0x06);
 const int versionWindows7 = MAKEWORD(0x01, 0x06);
 
@@ -220,6 +224,8 @@ class Renderer
     // Query and Fence creation
     virtual QueryImpl *createQuery(GLenum type) = 0;
     virtual FenceImpl *createFence() = 0;
+
+    virtual bool getLUID(LUID *adapterLuid) const = 0;
 
   protected:
     bool initializeCompiler();

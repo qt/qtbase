@@ -12,7 +12,7 @@ angle_d3d11 {
 } else {
     LIBS += -ld3d9
 }
-LIBS += -ldxguid -ld3dcompiler
+LIBS += -ldxguid
 STATICLIBS = translator_common translator_hlsl preprocessor
 
 for(libname, STATICLIBS) {
@@ -49,6 +49,7 @@ HEADERS += \
     $$ANGLE_DIR/src/libGLESv2/renderer/Image.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/IndexBuffer.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/IndexDataManager.h \
+    $$ANGLE_DIR/src/libGLESv2/renderer/IndexCacheRange.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/Renderer.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/RenderTarget.h \
     $$ANGLE_DIR/src/libGLESv2/renderer/ShaderExecutable.h \
@@ -82,6 +83,7 @@ SOURCES += \
     $$ANGLE_DIR/src/libGLESv2/renderer/Image.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/IndexBuffer.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/IndexDataManager.cpp \
+    $$ANGLE_DIR/src/libGLESv2/renderer/IndexRangeCache.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/Renderer.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/TextureStorage.cpp \
     $$ANGLE_DIR/src/libGLESv2/renderer/VertexBuffer.cpp \
@@ -165,22 +167,23 @@ float_converter.commands = python $$ANGLE_DIR/src/libGLESv2/Float16ToFloat32.py 
 QMAKE_EXTRA_TARGETS += float_converter
 
 # Generate the shader header files.
-PS_INPUT = $$ANGLE_DIR/src/libGLESv2/renderer/shaders/Blit.ps
-VS_INPUT = $$ANGLE_DIR/src/libGLESv2/renderer/shaders/Blit.vs
+PS_BLIT_INPUT = $$ANGLE_DIR/src/libGLESv2/renderer/shaders/Blit.ps
+VS_BLIT_INPUT = $$ANGLE_DIR/src/libGLESv2/renderer/shaders/Blit.vs
 PASSTHROUGH_INPUT = $$ANGLE_DIR/src/libGLESv2/renderer/shaders/Passthrough11.hlsl
 CLEAR_INPUT = $$ANGLE_DIR/src/libGLESv2/renderer/shaders/Clear11.hlsl
-PIXEL_SHADERS = passthroughps luminanceps componentmaskps
+PIXEL_SHADERS_BLIT = passthroughps luminanceps componentmaskps
 PIXEL_SHADERS_PASSTHROUGH = PassthroughRGBA PassthroughRGB \
                             PassthroughLum PassthroughLumAlpha
-VERTEX_SHADERS = standardvs flipyvs
+PIXEL_SHADERS_CLEAR = ClearSingle ClearMultiple
+VERTEX_SHADERS_BLIT = standardvs flipyvs
 VERTEX_SHADERS_PASSTHROUGH = Passthrough
-CLEAR_SHADERS = Clear
+VERTEX_SHADERS_CLEAR = Clear
 SHADER_DIR = $$OUT_PWD/renderer/shaders/compiled
 
-for (ps, PIXEL_SHADERS) {
+for (ps, PIXEL_SHADERS_BLIT) {
     fxc_ps_$${ps}.commands = $$FXC /nologo /E $$ps /T ps_2_0 /Fh ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
     fxc_ps_$${ps}.output = $$SHADER_DIR/$${ps}.h
-    fxc_ps_$${ps}.input = PS_INPUT
+    fxc_ps_$${ps}.input = PS_BLIT_INPUT
     fxc_ps_$${ps}.dependency_type = TYPE_C
     fxc_ps_$${ps}.variable_out = HEADERS
     fxc_ps_$${ps}.CONFIG += target_predeps
@@ -195,7 +198,7 @@ for (ps, PIXEL_SHADERS_PASSTHROUGH) {
     fxc_ps_$${ps}.CONFIG += target_predeps
     QMAKE_EXTRA_COMPILERS += fxc_ps_$${ps}
 }
-for (ps, CLEAR_SHADERS) {
+for (ps, PIXEL_SHADERS_CLEAR) {
     fxc_ps_$${ps}.commands = $$FXC /nologo /E PS_$$ps /T ps_4_0 /Fh ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
     fxc_ps_$${ps}.output = $$SHADER_DIR/$${ps}11ps.h
     fxc_ps_$${ps}.input = CLEAR_INPUT
@@ -204,10 +207,10 @@ for (ps, CLEAR_SHADERS) {
     fxc_ps_$${ps}.CONFIG += target_predeps
     QMAKE_EXTRA_COMPILERS += fxc_ps_$${ps}
 }
-for (vs, VERTEX_SHADERS) {
+for (vs, VERTEX_SHADERS_BLIT) {
     fxc_vs_$${vs}.commands = $$FXC /nologo /E $$vs /T vs_2_0 /Fh ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
     fxc_vs_$${vs}.output = $$SHADER_DIR/$${vs}.h
-    fxc_vs_$${vs}.input = VS_INPUT
+    fxc_vs_$${vs}.input = VS_BLIT_INPUT
     fxc_vs_$${vs}.dependency_type = TYPE_C
     fxc_vs_$${vs}.variable_out = HEADERS
     fxc_vs_$${vs}.CONFIG += target_predeps
@@ -222,7 +225,7 @@ for (vs, VERTEX_SHADERS_PASSTHROUGH) {
     fxc_vs_$${vs}.CONFIG += target_predeps
     QMAKE_EXTRA_COMPILERS += fxc_vs_$${vs}
 }
-for (vs, CLEAR_SHADERS) {
+for (vs, VERTEX_SHADERS_CLEAR) {
     fxc_vs_$${vs}.commands = $$FXC /nologo /E VS_$$vs /T vs_4_0 /Fh ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
     fxc_vs_$${vs}.output = $$SHADER_DIR/$${vs}11vs.h
     fxc_vs_$${vs}.input = CLEAR_INPUT

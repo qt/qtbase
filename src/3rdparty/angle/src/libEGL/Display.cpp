@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2002-2012 The ANGLE Project Authors. All rights reserved.
+// Copyright (c) 2002-2013 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -38,31 +38,16 @@ egl::Display *Display::getDisplay(EGLNativeDisplayType displayId)
         return displays[displayId];
     }
 
-    egl::Display *display = NULL;
+    // FIXME: Check if displayId is a valid display device context
 
-    if (displayId == EGL_DEFAULT_DISPLAY)
-    {
-        display = new egl::Display(displayId, (HDC)NULL, false);
-    }
-    else if (displayId == EGL_SOFTWARE_DISPLAY_ANGLE)
-    {
-        display = new egl::Display(displayId, (HDC)NULL, true);
-    }
-    else
-    {
-        // FIXME: Check if displayId is a valid display device context
-
-        display = new egl::Display(displayId, (HDC)displayId, false);
-    }
+    egl::Display *display = new egl::Display(displayId, (HDC)displayId);
 
     displays[displayId] = display;
     return display;
 }
 
-Display::Display(EGLNativeDisplayType displayId, HDC deviceContext, bool software) : mDc(deviceContext)
+Display::Display(EGLNativeDisplayType displayId, HDC deviceContext) : mDc(deviceContext)
 {
-
-    mSoftwareDevice = software;
     mDisplayId = displayId;
     mRenderer = NULL;
 }
@@ -86,7 +71,7 @@ bool Display::initialize()
         return true;
     }
 
-    mRenderer = glCreateRenderer(this, mDc, mSoftwareDevice);
+    mRenderer = glCreateRenderer(this, mDc, mDisplayId);
     
     if (!mRenderer)
     {
@@ -128,6 +113,7 @@ bool Display::initialize()
     }
 
     initExtensionString();
+    initVendorString();
 
     return true;
 }
@@ -528,5 +514,24 @@ const char *Display::getExtensionString() const
     return mExtensionString.c_str();
 }
 
+void Display::initVendorString()
+{
+    mVendorString = "Google Inc.";
+
+    LUID adapterLuid = {0};
+
+    if (mRenderer && mRenderer->getLUID(&adapterLuid))
+    {
+        char adapterLuidString[64];
+        sprintf_s(adapterLuidString, sizeof(adapterLuidString), " (adapter LUID: %08x%08x)", adapterLuid.HighPart, adapterLuid.LowPart);
+
+        mVendorString += adapterLuidString;
+    }
+}
+
+const char *Display::getVendorString() const
+{
+    return mVendorString.c_str();
+}
 
 }
