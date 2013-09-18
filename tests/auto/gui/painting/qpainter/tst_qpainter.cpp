@@ -79,6 +79,7 @@
 
 Q_DECLARE_METATYPE(QGradientStops)
 Q_DECLARE_METATYPE(QPainterPath)
+Q_DECLARE_METATYPE(QImage::Format)
 
 class tst_QPainter : public QObject
 {
@@ -1505,8 +1506,6 @@ void tst_QPainter::drawRoundRect()
         QCOMPARE(painted.height(), rect.height() + increment);
     }
 }
-
-Q_DECLARE_METATYPE(QImage::Format)
 
 void tst_QPainter::qimageFormats_data()
 {
