@@ -61,7 +61,7 @@ public:
     Qt::ScreenOrientation nativeOrientation() const;
     int screenDepth() const;
     QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &inputFormat) const;
-    EGLNativeWindowType createNativeWindow(const QSize &size, const QSurfaceFormat &format);
+    EGLNativeWindowType createNativeWindow(QPlatformWindow *platformWindow, const QSize &size, const QSurfaceFormat &format);
     void destroyNativeWindow(EGLNativeWindowType window);
     bool hasCapability(QPlatformIntegration::Capability cap) const;
     QEglFSCursor *createCursor(QEglFSScreen *screen) const;
@@ -106,8 +106,9 @@ Qt::ScreenOrientation QEglFSAndroidHooks::nativeOrientation() const
     return QAndroidPlatformIntegration::m_nativeOrientation;
 }
 
-EGLNativeWindowType QEglFSAndroidHooks::createNativeWindow(const QSize &size, const QSurfaceFormat &format)
+EGLNativeWindowType QEglFSAndroidHooks::createNativeWindow(QPlatformWindow *platformWindow, const QSize &size, const QSurfaceFormat &format)
 {
+    Q_UNUSED(platformWindow);
     Q_UNUSED(size);
     Q_UNUSED(format);
     ANativeWindow *window = QtAndroid::nativeWindow();
