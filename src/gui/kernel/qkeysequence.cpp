@@ -270,7 +270,7 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     \row    \li MoveToNextPage       \li PgDown                           \li PgDown, Alt+PgDown, Meta+Down, Meta+PgDown\li PgDown \li PgDown
     \row    \li MoveToPreviousPage   \li PgUp                             \li PgUp, Alt+PgUp, Meta+Up, Meta+PgUp        \li PgUp   \li PgUp
     \row    \li MoveToStartOfLine    \li Home                             \li Ctrl+Left, Meta+Left   \li Home            \li Home
-    \row    \li MoveToEndOfLine      \li End                              \li Ctrl+Right, Meta+Right \li End             \li End
+    \row    \li MoveToEndOfLine      \li End                              \li Ctrl+Right, Meta+Right \li End, Ctrl+E     \li End, Ctrl+E
     \row    \li MoveToStartOfBlock   \li (none)                           \li Alt+Up, Meta+A         \li (none)          \li (none)
     \row    \li MoveToEndOfBlock     \li (none)                           \li Alt+Down, Meta+E       \li (none)          \li (none)
     \row    \li MoveToStartOfDocument\li Ctrl+Home                        \li Ctrl+Up, Home          \li Ctrl+Home       \li Ctrl+Home
@@ -292,6 +292,7 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     \row    \li DeleteStartOfWord    \li Ctrl+Backspace                   \li Alt+Backspace          \li Ctrl+Backspace \li Ctrl+Backspace
     \row    \li DeleteEndOfWord      \li Ctrl+Del                         \li (none)                 \li Ctrl+Del       \li Ctrl+Del
     \row    \li DeleteEndOfLine      \li (none)                           \li (none)                 \li Ctrl+K         \li Ctrl+K
+    \row    \li DeleteCompleteLine   \li (none)                           \li (none)                 \li Ctrl+U         \li Ctrl+U
     \row    \li InsertParagraphSeparator     \li Enter                    \li Enter                  \li Enter          \li Enter
     \row    \li InsertLineSeparator          \li Shift+Enter              \li Meta+Enter             \li Shift+Enter    \li Shift+Enter
     \endtable
@@ -668,6 +669,7 @@ static const struct {
     \value DeleteEndOfLine          Delete end of line.
     \value DeleteEndOfWord          Delete word from the end of the cursor.
     \value DeleteStartOfWord        Delete the beginning of a word up to the cursor.
+    \value DeleteCompleteLine       Delete the entire line.
     \value Find             Find in document.
     \value FindNext         Find next result.
     \value FindPrevious     Find previous result.

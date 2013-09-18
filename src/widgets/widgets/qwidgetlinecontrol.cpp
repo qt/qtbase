@@ -1773,6 +1773,14 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
             cursorWordBackward(true);
             del();
         }
+    } else if (event == QKeySequence::DeleteCompleteLine) {
+        if (!isReadOnly()) {
+            setSelection(0, text().size());
+#ifndef QT_NO_CLIPBOARD
+            copy();
+#endif
+            del();
+        }
     }
 #endif // QT_NO_SHORTCUT
     else {
@@ -1810,20 +1818,6 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
                 complete(event->key());
                 break;
 #endif
-            case Qt::Key_E:
-                if (m_keyboardScheme == QPlatformTheme::X11KeyboardScheme)
-                    end(0);
-                break;
-
-            case Qt::Key_U:
-                if (m_keyboardScheme == QPlatformTheme::X11KeyboardScheme && !isReadOnly()) {
-                    setSelection(0, text().size());
-#ifndef QT_NO_CLIPBOARD
-                    copy();
-#endif
-                    del();
-                }
-            break;
             default:
                 if (!handled)
                     unknown = true;
