@@ -219,29 +219,25 @@ template <typename X> struct QAtomicOps
     template <typename T> static inline
     T fetchAndAddRelaxed(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
     {
-        return _q_value.fetch_add(valueToAdd * QAtomicAdditiveType<T>::AddScale,
-                                  std::memory_order_relaxed);
+        return _q_value.fetch_add(valueToAdd, std::memory_order_relaxed);
     }
 
     template <typename T> static inline
     T fetchAndAddAcquire(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
     {
-        return _q_value.fetch_add(valueToAdd * QAtomicAdditiveType<T>::AddScale,
-                                  std::memory_order_acquire);
+        return _q_value.fetch_add(valueToAdd, std::memory_order_acquire);
     }
 
     template <typename T> static inline
     T fetchAndAddRelease(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
     {
-        return _q_value.fetch_add(valueToAdd * QAtomicAdditiveType<T>::AddScale,
-                                  std::memory_order_release);
+        return _q_value.fetch_add(valueToAdd, std::memory_order_release);
     }
 
     template <typename T> static inline
     T fetchAndAddOrdered(std::atomic<T> &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
     {
-        return _q_value.fetch_add(valueToAdd * QAtomicAdditiveType<T>::AddScale,
-                                  std::memory_order_acq_rel);
+        return _q_value.fetch_add(valueToAdd, std::memory_order_acq_rel);
     }
 };
 
