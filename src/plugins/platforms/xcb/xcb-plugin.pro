@@ -74,6 +74,7 @@ contains(QT_CONFIG, xcb-render) {
 
 # build with session management support
 contains(QT_CONFIG, xcb-sm) {
+    DEFINES += XCB_USE_SM
     LIBS += -lSM -lICE
     SOURCES += qxcbsessionmanager.cpp
     HEADERS += qxcbsessionmanager.h

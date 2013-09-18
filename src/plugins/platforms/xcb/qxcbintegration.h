@@ -101,7 +101,7 @@ public:
 
     QByteArray wmClass() const;
 
-#ifndef QT_NO_SESSIONMANAGER
+#if !defined(QT_NO_SESSIONMANAGER) && defined(XCB_USE_SM)
     QPlatformSessionManager *createPlatformSessionManager(const QString &id, const QString &key) const Q_DECL_OVERRIDE;
 #endif
 

@@ -443,7 +443,7 @@ QByteArray QXcbIntegration::wmClass() const
     return m_wmClass;
 }
 
-#ifndef QT_NO_SESSIONMANAGER
+#if !defined(QT_NO_SESSIONMANAGER) && defined(XCB_USE_SM)
 QPlatformSessionManager *QXcbIntegration::createPlatformSessionManager(const QString &id, const QString &key) const
 {
     return new QXcbSessionManager(id, key);
