@@ -51,12 +51,15 @@
 
 #include <QtCore/QDebug>
 
-#include <errno.h>
-
 #if defined(Q_OS_BLACKBERRY)
+#if !defined(Q_OS_BLACKBERRY_TABLET)
+#include "qqnxnavigatorcover.h"
+#endif
 #include <sys/pps.h>
 #include <bps/navigator.h>
 #endif
+
+#include <errno.h>
 
 #if defined(QQNXWINDOW_DEBUG)
 #define qWindowDebug qDebug
@@ -81,7 +84,8 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
 
     // Create child QNX window
     errno = 0;
-    if (static_cast<QQnxScreen *>(window->screen()->handle())->isPrimaryScreen()) {
+    if (static_cast<QQnxScreen *>(window->screen()->handle())->isPrimaryScreen()
+        && window->type() != Qt::CoverWindow) {
         result = screen_create_window_type(&m_window, m_screenContext, SCREEN_CHILD_WINDOW);
     } else {
         result = screen_create_window(&m_window, m_screenContext);
@@ -352,7 +356,7 @@ void QQnxWindow::setScreen(QQnxScreen *platformScreen)
         qFatal("QQnxWindow: failed to set window display, errno=%d", errno);
 
 
-    if (m_screen->isPrimaryScreen()) {
+    if (m_screen->isPrimaryScreen() && window()->type() != Qt::CoverWindow) {
         // Add window to display's window group
         errno = 0;
         result = screen_join_window_group(m_window, platformScreen->windowGroupName());
@@ -361,8 +365,7 @@ void QQnxWindow::setScreen(QQnxScreen *platformScreen)
 
         Q_FOREACH (QQnxWindow *childWindow, m_childWindows) {
             // Only subwindows and tooltips need necessarily be moved to another display with the window.
-            if ((window()->type() & Qt::WindowType_Mask) == Qt::SubWindow ||
-                (window()->type() & Qt::WindowType_Mask) == Qt::ToolTip)
+            if (window()->type() == Qt::SubWindow || window()->type() == Qt::ToolTip)
                 childWindow->setScreen(platformScreen);
         }
     }
@@ -557,6 +560,17 @@ void QQnxWindow::initWindow()
     }
 
     setScreen(static_cast<QQnxScreen *>(window()->screen()->handle()));
+
+    if (window()->type() == Qt::CoverWindow) {
+#if !defined(Q_OS_BLACKBERRY_TABLET)
+        screen_set_window_property_pv(m_screen->rootWindow()->nativeHandle(),
+                                      SCREEN_PROPERTY_ALTERNATE_WINDOW, (void**)&m_window);
+#if defined(Q_OS_BLACKBERRY)
+        m_cover.reset(new QQnxNavigatorCover);
+#endif
+#endif // Q_OS_BLACKBERRY_TABLET
+        m_exposed = false;
+    }
 
     // Add window to plugin's window mapper
     QQnxIntegration::addWindow(m_window, window());

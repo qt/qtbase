@@ -139,6 +139,7 @@ private:
     QRect m_currentGeometry;
 
     QList<QQnxWindow *> m_childWindows;
+    QQnxWindow *m_coverWindow;
     QList<screen_window_t> m_overlays;
     QList<screen_window_t> m_underlays;
 

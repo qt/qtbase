@@ -73,6 +73,7 @@ HEADERS =   main.h \
             qqnxnavigatoreventhandler.h \
             qqnxabstractnavigator.h \
             qqnxabstractvirtualkeyboard.h \
+            qqnxabstractcover.h \
             qqnxservices.h \
             qqnxcursor.h \
             qqnxrasterwindow.h
@@ -119,9 +120,11 @@ CONFIG(blackberry-playbook) {
 } else {
     CONFIG(blackberry) {
         SOURCES += qqnxfiledialoghelper_bb10.cpp \
-                   qqnxfilepicker.cpp
+                   qqnxfilepicker.cpp \
+                   qqnxnavigatorcover.cpp
 
-        HEADERS += qqnxfilepicker.h
+        HEADERS += qqnxfilepicker.h \
+                   qqnxnavigatorcover.h
     }
 }
 

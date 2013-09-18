@@ -118,6 +118,9 @@ void QQnxRasterWindow::post(const QRegion &dirty)
         // Notify screen that window posted
         if (screen() != 0)
             screen()->onWindowPost(this);
+
+        if (m_cover)
+            m_cover->updateCover();
     }
 }
 

@@ -296,6 +296,7 @@ public:
         Desktop = 0x00000010 | Window,
         SubWindow = 0x00000012,
         ForeignWindow = 0x00000020 | Window,
+        CoverWindow = 0x00000040 | Window,
 
         WindowType_Mask = 0x000000ff,
         MSWindowsFixedSizeDialogHint = 0x00000100,

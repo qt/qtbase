@@ -1997,6 +1997,10 @@
                          representing a native platform window created by
                          another process or by manually using native code.
 
+    \value CoverWindow Indicates that the window represents a cover window,
+                       which is shown when the application is minimized
+                       on the BlackBerry platform for instance.
+
     There are also a number of flags which you can use to customize
     the appearance of top-level windows. These have no effect on other
     windows:

@@ -126,6 +126,9 @@ void QQnxEglWindow::swapEGLBuffers()
     eglResult = eglSwapBuffers(m_platformOpenGLContext->getEglDisplay(), m_eglSurface);
     if (eglResult != EGL_TRUE)
         qFatal("QQNX: failed to swap EGL buffers, err=%d", eglGetError());
+
+    if (m_cover)
+        m_cover->updateCover();
 }
 
 EGLSurface QQnxEglWindow::getSurface()

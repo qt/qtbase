@@ -126,6 +126,7 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
       m_posted(false),
       m_keyboardHeight(0),
       m_nativeOrientation(Qt::PrimaryOrientation),
+      m_coverWindow(0),
       m_cursor(new QQnxCursor())
 {
     qScreenDebug() << Q_FUNC_INFO;
@@ -431,45 +432,59 @@ void QQnxScreen::addWindow(QQnxWindow *window)
     if (m_childWindows.contains(window))
         return;
 
-    // Ensure that the desktop window is at the bottom of the zorder.
-    // If we do not do this then we may end up activating the desktop
-    // when the navigator service gets an event that our window group
-    // has been activated (see QQnxScreen::activateWindowGroup()).
-    // Such a situation would strangely break focus handling due to the
-    // invisible desktop widget window being layered on top of normal
-    // windows
-    if (window->window()->type() == Qt::Desktop)
-        m_childWindows.push_front(window);
-    else
-        m_childWindows.push_back(window);
-    updateHierarchy();
+    if (window->window()->type() != Qt::CoverWindow) {
+        // Ensure that the desktop window is at the bottom of the zorder.
+        // If we do not do this then we may end up activating the desktop
+        // when the navigator service gets an event that our window group
+        // has been activated (see QQnxScreen::activateWindowGroup()).
+        // Such a situation would strangely break focus handling due to the
+        // invisible desktop widget window being layered on top of normal
+        // windows
+        if (window->window()->type() == Qt::Desktop)
+            m_childWindows.push_front(window);
+        else
+            m_childWindows.push_back(window);
+        updateHierarchy();
+    } else {
+#if !defined(Q_OS_BLACKBERRY_TABLET)
+        m_coverWindow = window;
+#endif
+    }
 }
 
 void QQnxScreen::removeWindow(QQnxWindow *window)
 {
     qScreenDebug() << Q_FUNC_INFO << "window =" << window;
 
-    const int numWindowsRemoved = m_childWindows.removeAll(window);
-    if (numWindowsRemoved > 0)
-        updateHierarchy();
+    if (window != m_coverWindow) {
+        const int numWindowsRemoved = m_childWindows.removeAll(window);
+        if (numWindowsRemoved > 0)
+            updateHierarchy();
+    } else {
+        m_coverWindow = 0;
+    }
 }
 
 void QQnxScreen::raiseWindow(QQnxWindow *window)
 {
     qScreenDebug() << Q_FUNC_INFO << "window =" << window;
 
-    removeWindow(window);
-    m_childWindows.push_back(window);
-    updateHierarchy();
+    if (window != m_coverWindow) {
+        removeWindow(window);
+        m_childWindows.push_back(window);
+        updateHierarchy();
+    }
 }
 
 void QQnxScreen::lowerWindow(QQnxWindow *window)
 {
     qScreenDebug() << Q_FUNC_INFO << "window =" << window;
 
-    removeWindow(window);
-    m_childWindows.push_front(window);
-    updateHierarchy();
+    if (window != m_coverWindow) {
+        removeWindow(window);
+        m_childWindows.push_front(window);
+        updateHierarchy();
+    }
 }
 
 void QQnxScreen::updateHierarchy()
@@ -652,6 +667,9 @@ void QQnxScreen::activateWindowGroup(const QByteArray &id)
     Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
         childWindow->setExposed(true);
 
+    if (m_coverWindow)
+        m_coverWindow->setExposed(false);
+
     QWindowSystemInterface::handleWindowActivated(window);
 }
 
@@ -661,6 +679,9 @@ void QQnxScreen::deactivateWindowGroup(const QByteArray &id)
 
     if (!rootWindow() || id != rootWindow()->groupName())
         return;
+
+    if (m_coverWindow)
+        m_coverWindow->setExposed(true);
 
     Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
         childWindow->setExposed(false);

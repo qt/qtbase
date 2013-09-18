@@ -43,6 +43,9 @@
 #define QQNXWINDOW_H
 
 #include <qpa/qplatformwindow.h>
+#include "qqnxabstractcover.h"
+
+#include <QtCore/QScopedPointer>
 
 #if !defined(QT_NO_OPENGL)
 #include <EGL/egl.h>
@@ -112,6 +115,7 @@ protected:
     void initWindow();
 
     screen_context_t m_screenContext;
+    QScopedPointer<QQnxAbstractCover> m_cover;
 
 private:
     QRect setGeometryHelper(const QRect &rect);
