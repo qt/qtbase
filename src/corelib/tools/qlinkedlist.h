@@ -50,6 +50,10 @@
 
 #include <algorithm>
 
+#if defined(Q_COMPILER_INITIALIZER_LISTS)
+# include <initializer_list>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 
@@ -80,6 +84,13 @@ class QLinkedList
 public:
     inline QLinkedList() : d(const_cast<QLinkedListData *>(&QLinkedListData::shared_null)) { }
     inline QLinkedList(const QLinkedList<T> &l) : d(l.d) { d->ref.ref(); if (!d->sharable) detach(); }
+#if defined(Q_COMPILER_INITIALIZER_LISTS)
+    inline QLinkedList(std::initializer_list<T> list)
+        : d(const_cast<QLinkedListData *>(&QLinkedListData::shared_null))
+    {
+        std::copy(list.begin(), list.end(), std::back_inserter(*this));
+    }
+#endif
     ~QLinkedList();
     QLinkedList<T> &operator=(const QLinkedList<T> &);
 #ifdef Q_COMPILER_RVALUE_REFS

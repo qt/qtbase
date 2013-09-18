@@ -137,6 +137,15 @@ const QLinkedListData QLinkedListData::shared_null = {
     \sa operator=()
 */
 
+/*! \fn QLinkedList::QLinkedList(std::initializer_list<T> list)
+    \since 5.2
+
+    Constructs a list from the std::initializer_list specified by \a list.
+
+    This constructor is only enabled if the compiler supports C++11
+    initializer lists.
+*/
+
 /*! \fn QLinkedList::~QLinkedList()
 
     Destroys the list. References to the values in the list, and all
