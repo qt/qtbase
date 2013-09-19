@@ -8,3 +8,5 @@ QT += core-private gui testlib
 
 SOURCES		+= tst_qfilesystemmodel.cpp
 TARGET		= tst_qfilesystemmodel
+
+CONFIG += insignificant_test  # QTBUG-29403
