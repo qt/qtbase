@@ -236,7 +236,7 @@ DECLARE_INTERFACE_(IShellItemFilter, IUnknown)
 };
 #endif
 
-#ifndef __IShellEnumItems_INTERFACE_DEFINED__
+#ifndef __IEnumShellItems_INTERFACE_DEFINED__
 DECLARE_INTERFACE_(IEnumShellItems, IUnknown)
 {
     STDMETHOD(Next)(THIS_ ULONG celt, IShellItem **rgelt, ULONG *pceltFetched) PURE;
