@@ -140,7 +140,7 @@ QFileSelectorPrivate::QFileSelectorPrivate()
 
     Selectors normally available are
     \list
-    \li platform, one of: android, blackberry, ios, windows, mac, linux, generic_unix or unknown.
+    \li platform, one of: android, blackberry, ios, windows, osx, linux, generic_unix or unknown.
     \li locale, same as QLocale::system().name().
     \endlist
 
@@ -360,8 +360,8 @@ QStringList QFileSelectorPrivate::platformSelectors()
     ret << QStringLiteral("windows");
 #elif defined(Q_OS_LINUX)
     ret << QStringLiteral("linux");
-#elif defined(Q_OS_MAC)
-    ret << QStringLiteral("mac");
+#elif defined(Q_OS_OSX)
+    ret << QStringLiteral("osx");
 #elif defined(Q_OS_UNIX)
     ret << QStringLiteral("generic_unix");
 #endif

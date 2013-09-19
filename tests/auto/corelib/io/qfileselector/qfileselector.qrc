@@ -14,7 +14,7 @@
    <file>platforms/+android/test</file>
    <file>platforms/+blackberry/test</file>
    <file>platforms/+ios/test</file>
-   <file>platforms/+mac/test</file>
+   <file>platforms/+osx/test</file>
    <file>platforms/+wince/test</file>
    <file>platforms/+windows/test</file>
    <file>platforms/+linux/test</file>
