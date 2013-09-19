@@ -432,7 +432,7 @@ bool QFutureInterfaceBase::derefT() const
 
 QFutureInterfaceBasePrivate::QFutureInterfaceBasePrivate(QFutureInterfaceBase::State initialState)
     : refCount(1), m_progressValue(0), m_progressMinimum(0), m_progressMaximum(0),
-      state(initialState), pendingResults(0),
+      state(initialState),
       manualProgress(false), m_expectedResultCount(0), runnable(0)
 {
     progressTime.invalidate();

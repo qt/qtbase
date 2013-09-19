@@ -163,7 +163,6 @@ public:
     QFutureInterfaceBase::State state;
     QElapsedTimer progressTime;
     QWaitCondition pausedWaitCondition;
-    int pendingResults;
     QtPrivate::ResultStoreBase m_results;
     bool manualProgress;
     int m_expectedResultCount;
