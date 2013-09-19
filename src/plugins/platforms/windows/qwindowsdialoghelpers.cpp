@@ -41,6 +41,8 @@
 
 #define QT_NO_URL_CAST_FROM_STRING 1
 
+#define _WIN32_WINNT 0x0600
+
 #include "qwindowsdialoghelpers.h"
 
 #include "qwindowscontext.h"
