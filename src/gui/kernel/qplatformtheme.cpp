@@ -547,7 +547,7 @@ QList<QKeySequence> QPlatformTheme::keyBindings(QKeySequence::StandardKey key) c
         else {
             //We may have several equal values for different platforms, so we must search in both directions
             //search forward including current location
-            for (unsigned int i = mid; i < N - 1 ; ++i) {
+            for (unsigned int i = mid; i < N ; ++i) {
                 QKeyBinding current = QPlatformThemePrivate::keyBindings[i];
                 if (current.standardKey != key)
                     break;
