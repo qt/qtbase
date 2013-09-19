@@ -175,6 +175,7 @@ public:
     static void setPageSet(QPrinter *printer, const PageSet pageSet);
     static void setPagesPerSheetLayout(QPrinter *printer, const PagesPerSheet pagesPerSheet,
                                        const PagesPerSheetLayout pagesPerSheetLayout);
+    static void setPageRange(QPrinter *printer, int pageFrom, int pageTo);
 
     static bool printerHasPPD(const char *printerName);
 

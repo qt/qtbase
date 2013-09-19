@@ -435,23 +435,41 @@ void QPrintDialogPrivate::setupPrinter()
         p->setPrintRange(QPrinter::CurrentPage);
         p->setFromTo(0,0);
     } else if (options.printRange->isChecked()) {
-        p->setPrintRange(QPrinter::PageRange);
-        p->setFromTo(options.from->value(), qMax(options.from->value(), options.to->value()));
+        if (q->isOptionEnabled(QPrintDialog::PrintPageRange)) {
+            p->setPrintRange(QPrinter::PageRange);
+            p->setFromTo(options.from->value(), qMax(options.from->value(), options.to->value()));
+        } else {
+            // This case happens when CUPS server-side page range is enabled
+            // Setting the range to the printer occurs below
+            p->setPrintRange(QPrinter::AllPages);
+            p->setFromTo(0,0);
+        }
     }
 
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     // page set
-    if (QCUPSSupport::isAvailable() && (p->printRange() == QPrinter::AllPages || p->printRange() == QPrinter::PageRange)) {
-        //If the application is selecting pages and the first page number is even then need to adjust the odd-even accordingly
-        QCUPSSupport::PageSet pageSet = options.pageSetCombo->itemData(options.pageSetCombo->currentIndex()).value<QCUPSSupport::PageSet>();
-        if (p->printRange() == QPrinter::PageRange && (q->fromPage() % 2 == 0)) {
-            if (pageSet == QCUPSSupport::OddPages)
-                QCUPSSupport::setPageSet(p, QCUPSSupport::EvenPages);
-            else if (pageSet == QCUPSSupport::EvenPages)
-                QCUPSSupport::setPageSet(p, QCUPSSupport::OddPages);
-        } else if (pageSet != QCUPSSupport::AllPages) {
-            QCUPSSupport::setPageSet(p, pageSet);
+    if (QCUPSSupport::isAvailable()) {
+        if (p->printRange() == QPrinter::AllPages || p->printRange() == QPrinter::PageRange) {
+            //If the application is selecting pages and the first page number is even then need to adjust the odd-even accordingly
+            QCUPSSupport::PageSet pageSet = options.pageSetCombo->itemData(options.pageSetCombo->currentIndex()).value<QCUPSSupport::PageSet>();
+            if (q->isOptionEnabled(QPrintDialog::PrintPageRange)
+                && p->printRange() == QPrinter::PageRange
+                && (q->fromPage() % 2 == 0)) {
+
+                if (pageSet == QCUPSSupport::OddPages)
+                    QCUPSSupport::setPageSet(p, QCUPSSupport::EvenPages);
+                else if (pageSet == QCUPSSupport::EvenPages)
+                    QCUPSSupport::setPageSet(p, QCUPSSupport::OddPages);
+            } else if (pageSet != QCUPSSupport::AllPages) {
+                QCUPSSupport::setPageSet(p, pageSet);
+            }
+
         }
+
+        // server-side page range, since we set the page range on the printer to 0-0/AllPages above,
+        // we need to take the values directly from the widget as q->fromPage() will return 0
+        if (!q->isOptionEnabled(QPrintDialog::PrintPageRange) && options.printRange->isChecked())
+            QCUPSSupport::setPageRange(p, options.from->value(), qMax(options.from->value(), options.to->value()));
     }
 #endif
 
@@ -531,6 +549,13 @@ void QPrintDialogPrivate::updateWidgets()
         } else {
             options.pageSetCombo->setVisible(true);
             options.pageSetLabel->setVisible(true);
+        }
+
+        if (!q->isOptionEnabled(QPrintDialog::PrintPageRange)) {
+            // If we can do CUPS server side pages selection,
+            // display the page range widgets
+            options.gbPrintRange->setVisible(true);
+            options.printRange->setEnabled(true);
         }
     }
 #endif
