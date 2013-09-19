@@ -83,6 +83,7 @@ struct QMakeStatics {
     QString strfalse;
     ProKey strCONFIG;
     ProKey strARGS;
+    ProKey strARGC;
     QString strDot;
     QString strDotDot;
     QString strever;

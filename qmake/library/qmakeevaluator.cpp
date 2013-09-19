@@ -121,6 +121,7 @@ void QMakeEvaluator::initStatics()
     statics.strfalse = QLatin1String("false");
     statics.strCONFIG = ProKey("CONFIG");
     statics.strARGS = ProKey("ARGS");
+    statics.strARGC = ProKey("ARGC");
     statics.strDot = QLatin1String(".");
     statics.strDotDot = QLatin1String("..");
     statics.strever = QLatin1String("ever");
@@ -1642,6 +1643,7 @@ ProStringList QMakeEvaluator::evaluateFunction(
             m_valuemapStack.top()[ProKey(QString::number(i+1))] = argumentsList[i];
         }
         m_valuemapStack.top()[statics.strARGS] = args;
+        m_valuemapStack.top()[statics.strARGC] = ProStringList(ProString(QString::number(argumentsList.count())));
         vr = visitProBlock(func.pro(), func.tokPtr());
         if (vr == ReturnReturn)
             vr = ReturnTrue;
