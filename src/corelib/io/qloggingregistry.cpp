@@ -86,6 +86,9 @@ int QLoggingRule::pass(const QString &categoryName, QtMsgType msgType) const
     case QtCriticalMsg:
         fullCategory += QLatin1String(".critical");
         break;
+    case QtTraceMsg:
+        fullCategory += QLatin1String(".trace");
+        break;
     default:
         break;
     }
@@ -288,6 +291,7 @@ void QLoggingRegistry::defaultCategoryFilter(QLoggingCategory *cat)
     bool debug = (cat->categoryName() == qtDefaultCategoryName);
     bool warning = true;
     bool critical = true;
+    bool trace = true;
 
     QString categoryName = QLatin1String(cat->categoryName());
     QLoggingRegistry *reg = QLoggingRegistry::instance();
@@ -301,11 +305,15 @@ void QLoggingRegistry::defaultCategoryFilter(QLoggingCategory *cat)
         filterpass = item.pass(categoryName, QtCriticalMsg);
         if (filterpass != 0)
             critical = (filterpass > 0);
+        filterpass = item.pass(categoryName, QtTraceMsg);
+        if (filterpass != 0)
+            trace = (filterpass > 0);
     }
 
     cat->setEnabled(QtDebugMsg, debug);
     cat->setEnabled(QtWarningMsg, warning);
     cat->setEnabled(QtCriticalMsg, critical);
+    cat->setEnabled(QtTraceMsg, trace);
 }
 
 

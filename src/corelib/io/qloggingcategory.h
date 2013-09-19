@@ -44,8 +44,12 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qvector.h>
 
 QT_BEGIN_NAMESPACE
+
+class QTracer;
+class QTraceGuard;
 
 class Q_CORE_EXPORT QLoggingCategory
 {
@@ -76,13 +80,18 @@ public:
     static void setFilterRules(const QString &rules);
 
 private:
+    friend class QLoggingRegistry;
+    friend class QTraceGuard;
+    friend class QTracer;
+
     const char *name;
 
     bool enabledDebug;
     bool enabledWarning;
     bool enabledCritical;
-
-    friend class QLoggingRegistry;
+    bool enabledTrace;
+    typedef QVector<QTracer *> Tracers;
+    Tracers tracers;
 };
 
 template <>
@@ -102,6 +111,56 @@ inline bool QLoggingCategory::isEnabled<QtCriticalMsg>() const
 {
     return enabledCritical;
 }
+
+template <>
+inline bool QLoggingCategory::isEnabled<QtTraceMsg>() const
+{
+    return enabledTrace;
+}
+
+class Q_CORE_EXPORT QTracer
+{
+    Q_DISABLE_COPY(QTracer)
+public:
+    QTracer() {}
+    virtual ~QTracer() {}
+
+    void addToCategory(QLoggingCategory &category);
+
+    virtual void start() {}
+    virtual void end() {}
+    virtual void record(int) {}
+    virtual void record(const char *) {}
+    virtual void record(const QVariant &) {}
+};
+
+class Q_CORE_EXPORT QTraceGuard
+{
+    Q_DISABLE_COPY(QTraceGuard)
+public:
+    QTraceGuard(QLoggingCategory &category)
+    {
+        target = category.isEnabled<QtTraceMsg>() ? &category : 0;
+        if (target)
+            start();
+    }
+
+    ~QTraceGuard()
+    {
+        if (target)
+            end();
+    }
+
+    QTraceGuard &operator<<(int msg);
+    QTraceGuard &operator<<(const char *msg);
+    QTraceGuard &operator<<(const QVariant &msg);
+
+private:
+    void start();
+    void end();
+
+    QLoggingCategory *target;
+};
 
 #define Q_DECLARE_LOGGING_CATEGORY(name) \
     extern QLoggingCategory &name();
@@ -123,6 +182,17 @@ inline bool QLoggingCategory::isEnabled<QtCriticalMsg>() const
 #define qCCritical(category) \
     for (bool enabled = category().isEnabled<QtCriticalMsg>(); enabled; enabled = false) \
         QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, category().categoryName()).critical()
+#define qCTrace(category) \
+    for (bool enabled = category.isEnabled<QtTraceMsg>(); enabled; enabled = false) \
+        QTraceGuard(category)
+
+
+#define Q_TRACE_GUARD_NAME_HELPER(line) qTraceGuard ## line
+#define Q_TRACE_GUARD_NAME(line) Q_TRACE_GUARD_NAME_HELPER(line)
+
+#define qCTraceGuard(category) \
+    QTraceGuard Q_TRACE_GUARD_NAME(__LINE__)(category);
+
 
 #if defined(QT_NO_DEBUG_OUTPUT)
 #  undef qCDebug

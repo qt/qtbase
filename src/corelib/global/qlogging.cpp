@@ -814,6 +814,7 @@ Q_CORE_EXPORT QString qMessageFormatString(QtMsgType type, const QMessageLogCont
             case QtWarningMsg: message.append(QLatin1String("warning")); break;
             case QtCriticalMsg:message.append(QLatin1String("critical")); break;
             case QtFatalMsg:   message.append(QLatin1String("fatal")); break;
+            case QtTraceMsg:   message.append(QLatin1String("trace")); break;
             }
         } else if (token == fileTokenC) {
             if (context.file)
