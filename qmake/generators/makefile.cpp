@@ -234,7 +234,7 @@ MakefileGenerator::initOutPaths()
                 pathRef += Option::dir_sep;
         }
 
-        if(noIO())
+        if (noIO() || (project->first("TEMPLATE") == "subdirs"))
             continue;
 
         QString path = project->first(dkey).toQString(); //not to be changed any further
