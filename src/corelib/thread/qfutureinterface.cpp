@@ -57,6 +57,19 @@ enum {
     MaxProgressEmitsPerSecond = 25
 };
 
+namespace {
+class ThreadPoolThreadReleaser {
+    QThreadPool *m_pool;
+public:
+    explicit ThreadPoolThreadReleaser(QThreadPool *pool)
+        : m_pool(pool)
+    { if (pool) pool->releaseThread(); }
+    ~ThreadPoolThreadReleaser()
+    { if (m_pool) m_pool->reserveThread(); }
+};
+} // unnamed namespace
+
+
 QFutureInterfaceBase::QFutureInterfaceBase(State initialState)
     : d(new QFutureInterfaceBasePrivate(initialState))
 { }
@@ -182,11 +195,9 @@ void QFutureInterfaceBase::waitForResume()
         return;
 
     // decrease active thread count since this thread will wait.
-    QThreadPool::globalInstance()->releaseThread();
+    const ThreadPoolThreadReleaser releaser(QThreadPool::globalInstance());
 
     d->pausedWaitCondition.wait(&d->m_mutex);
-
-    QThreadPool::globalInstance()->reserveThread();
 }
 
 int QFutureInterfaceBase::progressValue() const
