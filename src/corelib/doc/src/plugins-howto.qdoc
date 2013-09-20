@@ -296,7 +296,7 @@
     associated \l{tools/plugandpaintplugins/basictools}{Basic Tools}
     plugin for details on how to do this.
 
-    \note If you are not using qmake to build your application you need
+    \note If you are not using qmake to build your plugin you need
     to make sure that the \c{QT_STATICPLUGIN} preprocessor macro is
     defined.
 
