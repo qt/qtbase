@@ -65,10 +65,10 @@ Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_ssse3(quint32 *dst, con
     }
 
     // Mask the 4 first colors of the RGB888 vector
-    const __m128i shuffleMask = _mm_set_epi8(0xff, 9, 10, 11, 0xff, 6, 7, 8, 0xff, 3, 4, 5, 0xff, 0, 1, 2);
+    const __m128i shuffleMask = _mm_set_epi8(char(0xff), 9, 10, 11, char(0xff), 6, 7, 8, char(0xff), 3, 4, 5, char(0xff), 0, 1, 2);
 
     // Mask the 4 last colors of a RGB888 vector with an offset of 1 (so the last 3 bytes are RGB)
-    const __m128i shuffleMaskEnd = _mm_set_epi8(0xff, 13, 14, 15, 0xff, 10, 11, 12, 0xff, 7, 8, 9, 0xff, 4, 5, 6);
+    const __m128i shuffleMaskEnd = _mm_set_epi8(char(0xff), 13, 14, 15, char(0xff), 10, 11, 12, char(0xff), 7, 8, 9, char(0xff), 4, 5, 6);
 
     // Mask to have alpha = 0xff
     const __m128i alphaMask = _mm_set1_epi32(0xff000000);
