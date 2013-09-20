@@ -549,6 +549,7 @@ static const char functionTokenC[] = "%{function}";
 static const char pidTokenC[] = "%{pid}";
 static const char appnameTokenC[] = "%{appname}";
 static const char threadidTokenC[] = "%{threadid}";
+static const char ifCategoryTokenC[] = "%{if-category}";
 static const char ifDebugTokenC[] = "%{if-debug}";
 static const char ifWarningTokenC[] = "%{if-warning}";
 static const char ifCriticalTokenC[] = "%{if-critical}";
@@ -556,7 +557,7 @@ static const char ifFatalTokenC[] = "%{if-fatal}";
 static const char endifTokenC[] = "%{endif}";
 static const char emptyTokenC[] = "";
 
-static const char defaultPattern[] = "%{message}";
+static const char defaultPattern[] = "%{if-category}%{category}: %{endif}%{message}";
 
 
 struct QMessagePattern {
@@ -675,6 +676,7 @@ void QMessagePattern::setPattern(const QString &pattern)
                 tokens[i] = LEVEL; \
                 inIf = true; \
             }
+            IF_TOKEN(ifCategoryTokenC)
             IF_TOKEN(ifDebugTokenC)
             IF_TOKEN(ifWarningTokenC)
             IF_TOKEN(ifCriticalTokenC)
@@ -837,6 +839,9 @@ Q_CORE_EXPORT QString qMessageFormatString(QtMsgType type, const QMessageLogCont
             message.append(QLatin1String("0x"));
             message.append(QString::number(qlonglong(QThread::currentThread()->currentThread()), 16));
 #endif
+        } else if (token == ifCategoryTokenC) {
+            if (!context.category || (strcmp(context.category, "default") == 0))
+                skip = true;
 #define HANDLE_IF_TOKEN(LEVEL)  \
         } else if (token == if##LEVEL##TokenC) { \
             skip = type != Qt##LEVEL##Msg;

@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <QCoreApplication>
+#include <QLoggingCategory>
 
 struct T {
     T() { qDebug("static constructor"); }
@@ -56,6 +57,9 @@ int main(int argc, char **argv)
     qDebug("qDebug");
     qWarning("qWarning");
     qCritical("qCritical");
+
+    QLoggingCategory cat("category");
+    qCWarning(cat) << "qDebug with category";
 
     qSetMessagePattern(QString());
 
