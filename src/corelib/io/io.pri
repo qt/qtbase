@@ -94,7 +94,6 @@ SOURCES += \
         io/qloggingregistry.cpp
 
 win32 {
-        SOURCES += io/qsettings_win.cpp
         SOURCES += io/qfsfileengine_win.cpp
         SOURCES += io/qlockfile_win.cpp
 
@@ -105,6 +104,7 @@ win32 {
         SOURCES += io/qstandardpaths_win.cpp
 
     !winrt {
+        SOURCES += io/qsettings_win.cpp
         HEADERS += io/qwindowspipewriter_p.h
         SOURCES += io/qwindowspipewriter.cpp
 

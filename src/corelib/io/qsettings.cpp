@@ -80,6 +80,16 @@
 #  include <qt_windows.h>
 #endif
 
+#ifdef Q_OS_WINRT
+#include <wrl.h>
+#include <windows.foundation.h>
+#include <windows.storage.h>
+using namespace Microsoft::WRL;
+using namespace Microsoft::WRL::Wrappers;
+using namespace ABI::Windows::Foundation;
+using namespace ABI::Windows::Storage;
+#endif
+
 #ifndef CSIDL_COMMON_APPDATA
 #define CSIDL_COMMON_APPDATA	0x0023  // All Users\Application Data
 #endif
@@ -365,7 +375,7 @@ after_loop:
 
 // see also qsettings_win.cpp and qsettings_mac.cpp
 
-#if !defined(Q_OS_WIN) && !defined(Q_OS_MAC)
+#if defined(Q_OS_WINRT) || (!defined(Q_OS_WIN) && !defined(Q_OS_MAC))
 QSettingsPrivate *QSettingsPrivate::create(QSettings::Format format, QSettings::Scope scope,
                                            const QString &organization, const QString &application)
 {
@@ -373,7 +383,7 @@ QSettingsPrivate *QSettingsPrivate::create(QSettings::Format format, QSettings::
 }
 #endif
 
-#if !defined(Q_OS_WIN)
+#if defined(Q_OS_WINRT) || !defined(Q_OS_WIN)
 QSettingsPrivate *QSettingsPrivate::create(const QString &fileName, QSettings::Format format)
 {
     return new QConfFileSettingsPrivate(fileName, format);
@@ -1019,7 +1029,7 @@ void QConfFileSettingsPrivate::initAccess()
     sync();       // loads the files the first time
 }
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 static QString windowsConfigPath(int type)
 {
     QString result;
@@ -1061,7 +1071,40 @@ static QString windowsConfigPath(int type)
 
     return result;
 }
-#endif // Q_OS_WIN
+#elif defined(Q_OS_WINRT) // Q_OS_WIN && !Q_OS_WINRT
+static QString windowsConfigPath(int type)
+{
+    static QString result;
+    while (result.isEmpty()) {
+        ComPtr<IApplicationDataStatics> applicationDataStatics;
+        if (FAILED(GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Storage_ApplicationData).Get(), &applicationDataStatics)))
+            return result;
+        ComPtr<IApplicationData> applicationData;
+        if (FAILED(applicationDataStatics->get_Current(&applicationData)))
+            return result;
+        ComPtr<IStorageFolder> localFolder;
+        if (FAILED(applicationData->get_LocalFolder(&localFolder)))
+            return result;
+        ComPtr<IStorageItem> localFolderItem;
+        if (FAILED(localFolder.As(&localFolderItem)))
+            return result;
+        HSTRING path;
+        if (FAILED(localFolderItem->get_Path(&path)))
+            return result;
+        result = QString::fromWCharArray(WindowsGetStringRawBuffer(path, nullptr));
+    }
+
+    switch (type) {
+    case CSIDL_COMMON_APPDATA:
+        return result + QLatin1String("\\qt-common");
+    case CSIDL_APPDATA:
+        return result + QLatin1String("\\qt-user");
+    default:
+        break;
+    }
+    return result;
+}
+#endif // Q_OS_WINRT
 
 static inline int pathHashKey(QSettings::Format format, QSettings::Scope scope)
 {
@@ -1447,10 +1490,18 @@ void QConfFileSettingsPrivate::syncConfFile(int confFileNo)
             QString writeSemName = QLatin1String("QSettingsWriteSem ");
             writeSemName.append(file.fileName());
 
+#ifndef Q_OS_WINRT
             writeSemaphore = CreateSemaphore(0, 1, 1, reinterpret_cast<const wchar_t *>(writeSemName.utf16()));
+#else
+            writeSemaphore = CreateSemaphoreEx(0, 1, 1, reinterpret_cast<const wchar_t *>(writeSemName.utf16()), 0, SEMAPHORE_ALL_ACCESS);
+#endif
 
             if (writeSemaphore) {
+#ifndef Q_OS_WINRT
                 WaitForSingleObject(writeSemaphore, INFINITE);
+#else
+                WaitForSingleObjectEx(writeSemaphore, INFINITE, FALSE);
+#endif
             } else {
                 setStatus(QSettings::AccessError);
                 return;
@@ -1463,11 +1514,19 @@ void QConfFileSettingsPrivate::syncConfFile(int confFileNo)
         QString readSemName(QLatin1String("QSettingsReadSem "));
         readSemName.append(file.fileName());
 
+#ifndef Q_OS_WINRT
         readSemaphore = CreateSemaphore(0, FileLockSemMax, FileLockSemMax, reinterpret_cast<const wchar_t *>(readSemName.utf16()));
+#else
+        readSemaphore = CreateSemaphoreEx(0, FileLockSemMax, FileLockSemMax, reinterpret_cast<const wchar_t *>(readSemName.utf16()), 0, SEMAPHORE_ALL_ACCESS);
+#endif
 
         if (readSemaphore) {
             for (int i = 0; i < numReadLocks; ++i)
+#ifndef Q_OS_WINRT
                 WaitForSingleObject(readSemaphore, INFINITE);
+#else
+                WaitForSingleObjectEx(readSemaphore, INFINITE, FALSE);
+#endif
         } else {
             setStatus(QSettings::AccessError);
             if (writeSemaphore != 0) {
