@@ -77,13 +77,33 @@ QFutureInterfaceBase::~QFutureInterfaceBase()
         delete d;
 }
 
+static inline int switch_on(QAtomicInt &a, int which)
+{
+    return a.fetchAndOrRelaxed(which) | which;
+}
+
+static inline int switch_off(QAtomicInt &a, int which)
+{
+    return a.fetchAndAndRelaxed(~which) & ~which;
+}
+
+static inline int switch_from_to(QAtomicInt &a, int from, int to)
+{
+    int newValue;
+    int expected = a.load();
+    do {
+        newValue = (expected & ~from) | to;
+    } while (!a.testAndSetRelaxed(expected, newValue, expected));
+    return newValue;
+}
+
 void QFutureInterfaceBase::cancel()
 {
     QMutexLocker locker(&d->m_mutex);
-    if (d->state & Canceled)
+    if (d->state.load() & Canceled)
         return;
 
-    d->state = State((d->state & ~Paused) | Canceled);
+    switch_from_to(d->state, Paused, Canceled);
     d->waitCondition.wakeAll();
     d->pausedWaitCondition.wakeAll();
     d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Canceled));
@@ -93,10 +113,10 @@ void QFutureInterfaceBase::setPaused(bool paused)
 {
     QMutexLocker locker(&d->m_mutex);
     if (paused) {
-        d->state = State(d->state | Paused);
+        switch_on(d->state, Paused);
         d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Paused));
     } else {
-        d->state = State(d->state & ~Paused);
+        switch_off(d->state, Paused);
         d->pausedWaitCondition.wakeAll();
         d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Resumed));
     }
@@ -105,29 +125,24 @@ void QFutureInterfaceBase::setPaused(bool paused)
 void QFutureInterfaceBase::togglePaused()
 {
     QMutexLocker locker(&d->m_mutex);
-    if (d->state & Paused) {
-        d->state = State(d->state & ~Paused);
+    if (d->state.load() & Paused) {
+        switch_off(d->state, Paused);
         d->pausedWaitCondition.wakeAll();
         d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Resumed));
     } else {
-        d->state = State(d->state | Paused);
+        switch_on(d->state, Paused);
         d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Paused));
     }
 }
 
 void QFutureInterfaceBase::setThrottled(bool enable)
 {
-    // bail out if we are not changing the state
-    if ((enable && (d->state & Throttled)) || (!enable && !(d->state & Throttled)))
-        return;
-
-    // lock and change the state
     QMutexLocker lock(&d->m_mutex);
     if (enable) {
-        d->state  = State(d->state | Throttled);
+        switch_on(d->state, Throttled);
     } else {
-        d->state  = State(d->state & ~Throttled);
-        if (!(d->state & Paused))
+        switch_off(d->state, Throttled);
+        if (!(d->state.load() & Paused))
             d->pausedWaitCondition.wakeAll();
     }
 }
@@ -178,11 +193,15 @@ bool QFutureInterfaceBase::waitForNextResult()
 void QFutureInterfaceBase::waitForResume()
 {
     // return early if possible to avoid taking the mutex lock.
-    if ((d->state & Paused) == false || (d->state & Canceled))
-        return;
+    {
+        const int state = d->state.load();
+        if (!(state & Paused) || (state & Canceled))
+            return;
+    }
 
     QMutexLocker lock(&d->m_mutex);
-    if ((d->state & Paused) == false || (d->state & Canceled))
+    const int state = d->state.load();
+    if (!(state & Paused) || (state & Canceled))
         return;
 
     // decrease active thread count since this thread will wait.
@@ -230,7 +249,7 @@ bool QFutureInterfaceBase::isProgressUpdateNeeded() const
 void QFutureInterfaceBase::reportStarted()
 {
     QMutexLocker locker(&d->m_mutex);
-    if ((d->state & Started) || (d->state & Canceled) || (d->state & Finished))
+    if (d->state.load() & (Started|Canceled|Finished))
         return;
 
     d->setState(State(Started | Running));
@@ -246,11 +265,11 @@ void QFutureInterfaceBase::reportCanceled()
 void QFutureInterfaceBase::reportException(const QException &exception)
 {
     QMutexLocker locker(&d->m_mutex);
-    if ((d->state & Canceled) || (d->state & Finished))
+    if (d->state.load() & (Canceled|Finished))
         return;
 
     d->m_exceptionStore.setException(exception);
-    d->state = State(d->state | Canceled);
+    switch_on(d->state, Canceled);
     d->waitCondition.wakeAll();
     d->pausedWaitCondition.wakeAll();
     d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Canceled));
@@ -260,8 +279,8 @@ void QFutureInterfaceBase::reportException(const QException &exception)
 void QFutureInterfaceBase::reportFinished()
 {
     QMutexLocker locker(&d->m_mutex);
-    if (!(d->state & Finished)) {
-        d->state = State((d->state & ~Running) | Finished);
+    if (!isFinished()) {
+        switch_from_to(d->state, Running, Finished);
         d->waitCondition.wakeAll();
         d->sendCallOut(QFutureCallOutEvent(QFutureCallOutEvent::Finished));
     }
@@ -281,7 +300,7 @@ int QFutureInterfaceBase::expectedResultCount()
 
 bool QFutureInterfaceBase::queryState(State state) const
 {
-    return (d->state & state);
+    return d->state.load() & state;
 }
 
 void QFutureInterfaceBase::waitForResult(int resultIndex)
@@ -289,7 +308,7 @@ void QFutureInterfaceBase::waitForResult(int resultIndex)
     d->m_exceptionStore.throwPossibleException();
 
     QMutexLocker lock(&d->m_mutex);
-    if (!(d->state & Running))
+    if (!isRunning())
         return;
     lock.unlock();
 
@@ -299,11 +318,9 @@ void QFutureInterfaceBase::waitForResult(int resultIndex)
 
     lock.relock();
 
-    if (d->state & Running) {
-        const int waitIndex = (resultIndex == -1) ? INT_MAX : resultIndex;
-        while ((d->state & Running) && d->internal_isResultReadyAt(waitIndex) == false)
-            d->waitCondition.wait(&d->m_mutex);
-    }
+    const int waitIndex = (resultIndex == -1) ? INT_MAX : resultIndex;
+    while (isRunning() && !d->internal_isResultReadyAt(waitIndex))
+        d->waitCondition.wait(&d->m_mutex);
 
     d->m_exceptionStore.throwPossibleException();
 }
@@ -311,7 +328,7 @@ void QFutureInterfaceBase::waitForResult(int resultIndex)
 void QFutureInterfaceBase::waitForFinished()
 {
     QMutexLocker lock(&d->m_mutex);
-    const bool alreadyFinished = !(d->state & Running);
+    const bool alreadyFinished = !isRunning();
     lock.unlock();
 
     if (!alreadyFinished) {
@@ -319,7 +336,7 @@ void QFutureInterfaceBase::waitForFinished()
 
         lock.relock();
 
-        while (d->state & Running)
+        while (isRunning())
             d->waitCondition.wait(&d->m_mutex);
     }
 
@@ -328,7 +345,7 @@ void QFutureInterfaceBase::waitForFinished()
 
 void QFutureInterfaceBase::reportResultsReady(int beginIndex, int endIndex)
 {
-    if ((d->state & Canceled) || (d->state & Finished) || beginIndex == endIndex)
+    if (beginIndex == endIndex || (d->state.load() & (Canceled|Finished)))
         return;
 
     d->waitCondition.wakeAll();
@@ -390,7 +407,7 @@ void QFutureInterfaceBase::setProgressValueAndText(int progressValue,
     if (d->m_progressValue >= progressValue)
         return;
 
-    if ((d->state & Canceled) || (d->state & Finished))
+    if (d->state.load() & (Canceled|Finished))
         return;
 
     if (d->internal_updateProgress(progressValue, progressText)) {
@@ -462,10 +479,10 @@ bool QFutureInterfaceBasePrivate::internal_waitForNextResult()
     if (m_results.hasNextResult())
         return true;
 
-    while ((state & QFutureInterfaceBase::Running) && m_results.hasNextResult() == false)
+    while ((state.load() & QFutureInterfaceBase::Running) && m_results.hasNextResult() == false)
         waitCondition.wait(&m_mutex);
 
-    return (!(state & QFutureInterfaceBase::Canceled) && m_results.hasNextResult());
+    return !(state.load() & QFutureInterfaceBase::Canceled) && m_results.hasNextResult();
 }
 
 bool QFutureInterfaceBasePrivate::internal_updateProgress(int progress,
@@ -488,16 +505,16 @@ bool QFutureInterfaceBasePrivate::internal_updateProgress(int progress,
 void QFutureInterfaceBasePrivate::internal_setThrottled(bool enable)
 {
     // bail out if we are not changing the state
-    if ((enable && (state & QFutureInterfaceBase::Throttled))
-        || (!enable && !(state & QFutureInterfaceBase::Throttled)))
+    if ((enable && (state.load() & QFutureInterfaceBase::Throttled))
+        || (!enable && !(state.load() & QFutureInterfaceBase::Throttled)))
         return;
 
     // change the state
     if (enable) {
-        state  = QFutureInterfaceBase::State(state | QFutureInterfaceBase::Throttled);
+        switch_on(state, QFutureInterfaceBase::Throttled);
     } else {
-        state  = QFutureInterfaceBase::State(state & ~QFutureInterfaceBase::Throttled);
-        if (!(state & QFutureInterfaceBase::Paused))
+        switch_off(state, QFutureInterfaceBase::Throttled);
+        if (!(state.load() & QFutureInterfaceBase::Paused))
             pausedWaitCondition.wakeAll();
     }
 }
@@ -532,7 +549,7 @@ void QFutureInterfaceBasePrivate::connectOutputInterface(QFutureCallOutInterface
 {
     QMutexLocker locker(&m_mutex);
 
-    if (state & QFutureInterfaceBase::Started) {
+    if (state.load() & QFutureInterfaceBase::Started) {
         interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Started));
         interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::ProgressRange,
                                                         m_progressMinimum,
@@ -552,13 +569,13 @@ void QFutureInterfaceBasePrivate::connectOutputInterface(QFutureCallOutInterface
         it.batchedAdvance();
     }
 
-    if (state & QFutureInterfaceBase::Paused)
+    if (state.load() & QFutureInterfaceBase::Paused)
         interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Paused));
 
-    if (state & QFutureInterfaceBase::Canceled)
+    if (state.load() & QFutureInterfaceBase::Canceled)
         interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Canceled));
 
-    if (state & QFutureInterfaceBase::Finished)
+    if (state.load() & QFutureInterfaceBase::Finished)
         interface->postCallOutEvent(QFutureCallOutEvent(QFutureCallOutEvent::Finished));
 
     outputConnections.append(interface);
@@ -577,7 +594,7 @@ void QFutureInterfaceBasePrivate::disconnectOutputInterface(QFutureCallOutInterf
 
 void QFutureInterfaceBasePrivate::setState(QFutureInterfaceBase::State newState)
 {
-    state = newState;
+    state.store(newState);
 }
 
 QT_END_NAMESPACE

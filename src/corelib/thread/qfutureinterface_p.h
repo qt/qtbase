@@ -155,7 +155,7 @@ public:
     int m_progressValue; // TQ
     int m_progressMinimum; // TQ
     int m_progressMaximum; // TQ
-    QFutureInterfaceBase::State state;
+    QAtomicInt state; // reads and writes can happen unprotected, both must be atomic
     QElapsedTimer progressTime;
     QWaitCondition pausedWaitCondition;
     QtPrivate::ResultStoreBase m_results;
