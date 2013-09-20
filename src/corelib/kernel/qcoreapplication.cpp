@@ -2101,7 +2101,7 @@ QStringList QCoreApplication::arguments()
     const QStringList allArguments = qWinCmdArgs(cmdline);
     Q_ASSERT(allArguments.size() == origArgc);
     for (int i = 0; i < origArgc; ++i)
-        if (qFind(av, avEnd, origArgv[i]) != avEnd)
+        if (std::find(av, avEnd, origArgv[i]) != avEnd)
             list.push_back(allArguments.at(i));
 
 #else
