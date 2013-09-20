@@ -55,6 +55,8 @@
 #include "qfont_p.h"
 #include "private/qfunctions_p.h"
 
+#include <algorithm>
+
 #ifndef QT_NO_TEXTHTMLPARSER
 
 QT_BEGIN_NAMESPACE
@@ -336,8 +338,8 @@ static QChar resolveEntity(const QString &entity)
 {
     const QTextHtmlEntity *start = &entities[0];
     const QTextHtmlEntity *end = &entities[MAX_ENTITY];
-    const QTextHtmlEntity *e = qBinaryFind(start, end, entity);
-    if (e == end)
+    const QTextHtmlEntity *e = std::lower_bound(start, end, entity);
+    if (e == end || (entity < *e))
         return QChar();
     return e->code;
 }
@@ -456,8 +458,8 @@ static const QTextHtmlElement *lookupElementHelper(const QString &element)
 {
     const QTextHtmlElement *start = &elements[0];
     const QTextHtmlElement *end = &elements[Html_NumElements];
-    const QTextHtmlElement *e = qBinaryFind(start, end, element);
-    if (e == end)
+    const QTextHtmlElement *e = std::lower_bound(start, end, element);
+    if ((e == end) || (element < *e))
         return 0;
     return e;
 }

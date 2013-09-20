@@ -393,10 +393,10 @@ int QTextTablePrivate::findCellIndex(int fragment) const
 {
     QFragmentFindHelper helper(pieceTable->fragmentMap().position(fragment),
                               pieceTable->fragmentMap());
-    QList<int>::ConstIterator it = qBinaryFind(cells.begin(), cells.end(), helper);
-    if (it == cells.end())
+    QList<int>::ConstIterator it = std::lower_bound(cells.constBegin(), cells.constEnd(), helper);
+    if ((it == cells.constEnd()) || (helper < *it))
         return -1;
-    return it - cells.begin();
+    return it - cells.constBegin();
 }
 
 void QTextTablePrivate::fragmentAdded(QChar type, uint fragment)
@@ -1048,8 +1048,9 @@ void QTextTable::mergeCells(int row, int column, int numRows, int numCols)
 
     // find the position at which to insert the contents of the merged cells
     QFragmentFindHelper helper(origCellPosition, p->fragmentMap());
-    QList<int>::Iterator it = qBinaryFind(d->cells.begin(), d->cells.end(), helper);
+    QList<int>::Iterator it = std::lower_bound(d->cells.begin(), d->cells.end(), helper);
     Q_ASSERT(it != d->cells.end());
+    Q_ASSERT(!(helper < *it));
     Q_ASSERT(*it == cellFragment);
     const int insertCellIndex = it - d->cells.begin();
     int insertFragment = d->cells.value(insertCellIndex + 1, d->fragment_end);
@@ -1080,8 +1081,9 @@ void QTextTable::mergeCells(int row, int column, int numRows, int numCols)
 
             if (firstCellIndex == -1) {
                 QFragmentFindHelper helper(pos, p->fragmentMap());
-                QList<int>::Iterator it = qBinaryFind(d->cells.begin(), d->cells.end(), helper);
+                QList<int>::Iterator it = std::lower_bound(d->cells.begin(), d->cells.end(), helper);
                 Q_ASSERT(it != d->cells.end());
+                Q_ASSERT(!(helper < *it));
                 Q_ASSERT(*it == fragment);
                 firstCellIndex = cellIndex = it - d->cells.begin();
             }

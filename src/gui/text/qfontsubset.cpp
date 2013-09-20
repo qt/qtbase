@@ -101,8 +101,8 @@ QByteArray QFontSubset::glyphName(unsigned short unicode, bool symbol)
         // map from latin1 to symbol
         unicode = symbol_map[unicode];
 
-    const AGLEntry *r = qBinaryFind(unicode_to_agl_map, unicode_to_agl_map + unicode_to_agl_map_size, unicode);
-    if (r != unicode_to_agl_map + unicode_to_agl_map_size)
+    const AGLEntry *r = std::lower_bound(unicode_to_agl_map, unicode_to_agl_map + unicode_to_agl_map_size, unicode);
+    if ((r != unicode_to_agl_map + unicode_to_agl_map_size) && !(unicode < *r))
         return glyph_names + r->index;
 
     char buffer[8];
