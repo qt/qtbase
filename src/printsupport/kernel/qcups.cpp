@@ -50,6 +50,8 @@
 #endif
 #include <qtextcodec.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 extern double qt_multiplierForUnit(QPrinter::Unit unit, int resolution);
@@ -659,8 +661,8 @@ inline bool operator<(const NamedPaperSize &data, const char *name)
 
 static inline QPrinter::PaperSize string2PaperSize(const char *name)
 {
-    const NamedPaperSize *r = qBinaryFind(named_sizes_map, named_sizes_map + QPrinter::NPageSize, name);
-    if (r - named_sizes_map != QPrinter::NPageSize)
+    const NamedPaperSize *r = std::lower_bound(named_sizes_map, named_sizes_map + QPrinter::NPageSize, name);
+    if ((r != named_sizes_map + QPrinter::NPageSize) && !(name < *r))
         return r->size;
     return QPrinter::Custom;
 }
