@@ -56,6 +56,7 @@
 #include "private/qfunctions_p.h"
 
 #include <limits.h>
+#include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
@@ -1537,7 +1538,7 @@ void QRegExpEngine::addPlusTransitions(const QVector<int> &from, const QVector<i
             for (int j = 0; j < to.size(); j++) {
                 // ### st.reenter.contains(to.at(j)) check looks suspicious
                 if (!st.reenter.contains(to.at(j)) &&
-                     qBinaryFind(oldOuts.constBegin(), oldOuts.constEnd(), to.at(j)) == oldOuts.end())
+                     !std::binary_search(oldOuts.constBegin(), oldOuts.constEnd(), to.at(j)))
                     st.reenter.insert(to.at(j), atom);
             }
         }
@@ -3245,8 +3246,9 @@ int QRegExpEngine::getEscape()
                 }
             } else if (catlen > 2 && category.at(0) == 'I' && category.at(1) == 's') {
                 static const int N = sizeof(categoriesRangeMap) / sizeof(categoriesRangeMap[0]);
-                const CategoriesRangeMapEntry *r = qBinaryFind(categoriesRangeMap, categoriesRangeMap + N, category.constData() + 2);
-                if (r != categoriesRangeMap + N)
+                const char * const categoryFamily = category.constData() + 2;
+                const CategoriesRangeMapEntry *r = std::lower_bound(categoriesRangeMap, categoriesRangeMap + N, categoryFamily);
+                if (r != categoriesRangeMap + N && qstrcmp(r->name, categoryFamily) == 0)
                     yyCharClass->addRange(r->first, r->second);
                 else
                     error(RXERR_CATEGORY);

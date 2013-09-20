@@ -54,6 +54,8 @@
 #include "qunicodetables_p.h"
 #include "qunicodetables.cpp"
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 #define FLAG(x) (1 << (x))
@@ -1719,13 +1721,13 @@ static uint inline ligatureHelper(uint u1, uint u2)
     ushort length = *ligatures++;
     if (QChar::requiresSurrogates(u1)) {
         const UCS2SurrogatePair *data = reinterpret_cast<const UCS2SurrogatePair *>(ligatures);
-        const UCS2SurrogatePair *r = qBinaryFind(data, data + length, u1);
-        if (r != data + length)
+        const UCS2SurrogatePair *r = std::lower_bound(data, data + length, u1);
+        if (r != data + length && QChar::surrogateToUcs4(r->p1.u1, r->p1.u2) == u1)
             return QChar::surrogateToUcs4(r->p2.u1, r->p2.u2);
     } else {
         const UCS2Pair *data = reinterpret_cast<const UCS2Pair *>(ligatures);
-        const UCS2Pair *r = qBinaryFind(data, data + length, ushort(u1));
-        if (r != data + length)
+        const UCS2Pair *r = std::lower_bound(data, data + length, ushort(u1));
+        if (r != data + length && r->u1 == ushort(u1))
             return r->u2;
     }
 
