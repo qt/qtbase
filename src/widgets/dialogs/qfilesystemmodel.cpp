@@ -1689,12 +1689,10 @@ void QFileSystemModelPrivate::_q_directoryChanged(const QString &directory, cons
     std::sort(newFiles.begin(), newFiles.end());
     QHash<QString, QFileSystemNode*>::const_iterator i = parentNode->children.constBegin();
     while (i != parentNode->children.constEnd()) {
-        QStringList::iterator iterator;
-        iterator = qBinaryFind(newFiles.begin(), newFiles.end(),
-                    i.value()->fileName);
-        if (iterator == newFiles.end()) {
+        QStringList::iterator iterator = std::lower_bound(newFiles.begin(), newFiles.end(), i.value()->fileName);
+        if ((iterator == newFiles.end()) || (i.value()->fileName < *iterator))
             toRemove.append(i.value()->fileName);
-        }
+
         ++i;
     }
     for (int i = 0 ; i < toRemove.count() ; ++i )

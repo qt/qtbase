@@ -176,8 +176,8 @@ void QGraphicsItemAnimationPrivate::insertUniquePair(qreal step, qreal value, QL
 
     Pair pair(step, value);
 
-    QList<Pair>::iterator result = qBinaryFind(binList->begin(), binList->end(), pair);
-    if (result != binList->end())
+    QList<Pair>::iterator result = std::lower_bound(binList->begin(), binList->end(), pair);
+    if ((result != binList->end()) && !(pair < *result))
         result->value = value;
     else {
         *binList << pair;
