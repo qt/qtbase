@@ -47,6 +47,8 @@
 
 #include <qdebug.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 // Create default time zone using appropriate backend
@@ -781,7 +783,7 @@ QList<QByteArray> QTimeZone::availableTimeZoneIds()
     QSet<QByteArray> set = QUtcTimeZonePrivate().availableTimeZoneIds()
                            + global_tz->backend->availableTimeZoneIds();
     QList<QByteArray> list = set.toList();
-    qSort(list);
+    std::sort(list.begin(), list.end());
     return list;
 }
 
@@ -801,7 +803,7 @@ QList<QByteArray> QTimeZone::availableTimeZoneIds(QLocale::Country country)
     QSet<QByteArray> set = QUtcTimeZonePrivate().availableTimeZoneIds(country)
                            + global_tz->backend->availableTimeZoneIds(country);
     QList<QByteArray> list = set.toList();
-    qSort(list);
+    std::sort(list.begin(), list.end());
     return list;
 }
 
@@ -817,7 +819,7 @@ QList<QByteArray> QTimeZone::availableTimeZoneIds(int offsetSeconds)
     QSet<QByteArray> set = QUtcTimeZonePrivate().availableTimeZoneIds(offsetSeconds)
                            + global_tz->backend->availableTimeZoneIds(offsetSeconds);
     QList<QByteArray> list = set.toList();
-    qSort(list);
+    std::sort(list.begin(), list.end());
     return list;
 }
 
