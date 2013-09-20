@@ -49,6 +49,8 @@
 #include <qtextstream.h>
 #include <qvariant.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 static quint64 xpmHash(const QString &str)
@@ -747,8 +749,8 @@ inline bool operator<(const XPMRGBData &data, const char *name)
 
 static inline bool qt_get_named_xpm_rgb(const char *name_no_space, QRgb *rgb)
 {
-    const XPMRGBData *r = qBinaryFind(xpmRgbTbl, xpmRgbTbl + xpmRgbTblSize, name_no_space);
-    if (r != xpmRgbTbl + xpmRgbTblSize) {
+    const XPMRGBData *r = std::lower_bound(xpmRgbTbl, xpmRgbTbl + xpmRgbTblSize, name_no_space);
+    if ((r != xpmRgbTbl + xpmRgbTblSize) && !(name_no_space < *r)) {
         *rgb = r->value;
         return true;
     } else {
