@@ -138,9 +138,12 @@ public:
         return QStringList();
     }
 
+    int index() const { return m_index; }
+
 private:
     QPointer<QTabBar> m_parent;
     int m_index;
+
 };
 
 /*!
@@ -190,12 +193,17 @@ QAccessibleInterface* QAccessibleTabBar::child(int index) const
 
 int QAccessibleTabBar::indexOfChild(const QAccessibleInterface *child) const
 {
-    // FIXME this looks broken
-
     if (child->object() && child->object() == tabBar()->d_func()->leftB)
         return tabBar()->count();
     if (child->object() && child->object() == tabBar()->d_func()->rightB)
         return tabBar()->count() + 1;
+    if (child->role() == QAccessible::PageTab) {
+        QAccessibleInterface *parent = child->parent();
+        if (parent == this) {
+            const QAccessibleTabButton *tabButton = static_cast<const QAccessibleTabButton *>(child);
+            return tabButton->index();
+        }
+    }
     return -1;
 }
 

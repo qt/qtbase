@@ -1243,6 +1243,7 @@ void tst_QAccessibility::tabWidgetTest()
     QAccessibleInterface* tabBarInterface = 0;
     // there is no special logic to sort the children, so the contents will be 1, the tab bar 2
     tabBarInterface = interface->child(1);
+    QCOMPARE(verifyHierarchy(tabBarInterface), 0);
     QVERIFY(tabBarInterface);
     QCOMPARE(tabBarInterface->childCount(), 4);
     QCOMPARE(tabBarInterface->role(), QAccessible::PageTabList);
