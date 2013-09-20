@@ -499,9 +499,10 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
     QString moduleName = element.attribute("module");
     if (!moduleName.isEmpty())
         node->setModuleName(moduleName);
-    if (!indexUrl.isEmpty()) {
+    if (node->isExternalPage())
+        node->setUrl(href);
+    else if (!indexUrl.isEmpty())
         node->setUrl(indexUrl + QLatin1Char('/') + href);
-    }
 
     QString since = element.attribute("since");
     if (!since.isEmpty()) {
@@ -776,15 +777,20 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
         if (!qmlFullBaseName.isEmpty())
             writer.writeAttribute("qml-base-type", qmlFullBaseName);
     }
-    QString fullName = node->fullDocumentName();
-    if (fullName != objName)
-        writer.writeAttribute("fullname", fullName);
+
     QString href;
-    if (Generator::useOutputSubdirs())
-        href = node->outputSubdirectory();
-    if (!href.isEmpty())
-        href.append(QLatin1Char('/'));
-    href.append(gen_->fullDocumentLocation(node));
+    if (!node->isExternalPage()) {
+        QString fullName = node->fullDocumentName();
+        if (fullName != objName)
+            writer.writeAttribute("fullname", fullName);
+        if (Generator::useOutputSubdirs())
+            href = node->outputSubdirectory();
+        if (!href.isEmpty())
+            href.append(QLatin1Char('/'));
+        href.append(gen_->fullDocumentLocation(node));
+    }
+    else
+        href = node->name();
     writer.writeAttribute("href", href);
 
     writer.writeAttribute("location", node->location().fileName());

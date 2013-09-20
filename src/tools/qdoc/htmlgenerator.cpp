@@ -3605,8 +3605,10 @@ QString HtmlGenerator::linkForNode(const Node *node, const Node *relative)
       back down into the other subdirectory.
      */
     if (node && relative && (node != relative)) {
-        if (useOutputSubdirs() && node->outputSubdirectory() != relative->outputSubdirectory())
+        if (useOutputSubdirs() && !node->isExternalPage() &&
+               node->outputSubdirectory() != relative->outputSubdirectory()) {
             link.prepend(QString("../" + node->outputSubdirectory() + QLatin1Char('/')));
+        }
     }
     return link;
 }
