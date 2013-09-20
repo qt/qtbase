@@ -170,7 +170,9 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     Qt::MouseEventSource source = Qt::MouseEventNotSynthesized;
 
 #ifndef Q_OS_WINCE
-    static const bool passSynthesizedMouseEvents = QWindowsIntegration::instance()->options() & QWindowsIntegration::PassOsMouseEventsSynthesizedFromTouch;
+    // Check for events synthesized from touch. Lower byte is touch index, 0 means pen.
+    static const bool passSynthesizedMouseEvents =
+            !(QWindowsIntegration::instance()->options() & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch);
     if (!passSynthesizedMouseEvents) {
         // Check for events synthesized from touch. Lower 7 bits are touch/pen index, bit 8 indicates touch.
         // However, when tablet support is active, extraInfo is a packet serial number. This is not a problem
