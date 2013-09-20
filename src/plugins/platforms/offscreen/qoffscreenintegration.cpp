@@ -52,7 +52,11 @@
 #endif
 #elif defined(Q_OS_WIN)
 #include <QtPlatformSupport/private/qbasicfontdatabase_p.h>
+#ifndef Q_OS_WINRT
 #include <QtCore/private/qeventdispatcher_win_p.h>
+#else
+#include <QtCore/private/qeventdispatcher_winrt_p.h>
+#endif
 #endif
 
 #include <QtGui/private/qpixmap_raster_p.h>
@@ -102,7 +106,11 @@ QOffscreenIntegration::QOffscreenIntegration()
     m_fontDatabase.reset(new QGenericUnixFontDatabase());
 #endif
 #elif defined(Q_OS_WIN)
+#ifndef Q_OS_WINRT
     m_eventDispatcher = new QOffscreenEventDispatcher<QEventDispatcherWin32>();
+#else
+    m_eventDispatcher = new QOffscreenEventDispatcher<QEventDispatcherWinRT>();
+#endif
     m_fontDatabase.reset(new QBasicFontDatabase());
 #endif
 

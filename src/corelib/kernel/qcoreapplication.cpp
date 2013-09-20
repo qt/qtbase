@@ -84,7 +84,11 @@
 #  endif
 #endif
 #ifdef Q_OS_WIN
+# ifdef Q_OS_WINRT
+#  include "qeventdispatcher_winrt_p.h"
+# else
 #  include "qeventdispatcher_win_p.h"
+# endif
 #endif
 #endif // QT_NO_QOBJECT
 
@@ -466,6 +470,8 @@ void QCoreApplicationPrivate::createEventDispatcher()
 #  endif
         eventDispatcher = new QEventDispatcherUNIX(q);
 #  endif
+#elif defined(Q_OS_WINRT)
+    eventDispatcher = new QEventDispatcherWinRT(q);
 #elif defined(Q_OS_WIN)
     eventDispatcher = new QEventDispatcherWin32(q);
 #else

@@ -41,20 +41,25 @@
 
 #include "qminimalintegration.h"
 #include "qminimalbackingstore.h"
-#ifndef Q_OS_WIN
-#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
-#else
-#include <QtCore/private/qeventdispatcher_win_p.h>
-#endif
 
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformwindow.h>
 
+#if !defined(Q_OS_WIN)
+#include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+#elif defined(Q_OS_WINRT)
+#include <QtCore/private/qeventdispatcher_winrt_p.h>
+#else
+#include <QtCore/private/qeventdispatcher_win_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QMinimalIntegration::QMinimalIntegration() :
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WINRT)
+    m_eventDispatcher(new QEventDispatcherWinRT())
+#elif defined(Q_OS_WIN)
     m_eventDispatcher(new QEventDispatcherWin32())
 #else
     m_eventDispatcher(createUnixEventDispatcher())

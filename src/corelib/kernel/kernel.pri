@@ -68,16 +68,21 @@ SOURCES += \
 
 win32 {
         SOURCES += \
-                kernel/qeventdispatcher_win.cpp \
                 kernel/qcoreapplication_win.cpp \
                 kernel/qwineventnotifier.cpp \
                 kernel/qsharedmemory_win.cpp \
                 kernel/qsystemsemaphore_win.cpp
         HEADERS += \
-                kernel/qeventdispatcher_win_p.h \
                 kernel/qwineventnotifier.h
-}
 
+        winrt {
+            SOURCES += kernel/qeventdispatcher_winrt.cpp
+            HEADERS += kernel/qeventdispatcher_winrt_p.h
+        } else {
+            SOURCES += kernel/qeventdispatcher_win.cpp
+            HEADERS += kernel/qeventdispatcher_win_p.h
+        }
+}
 
 wince*: {
         SOURCES += \
