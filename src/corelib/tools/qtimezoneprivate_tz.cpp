@@ -149,11 +149,13 @@ static QTzHeader parseTzHeader(QDataStream &ds, bool *ok)
     if (memcmp(hdr.tzh_magic, TZ_MAGIC, 4) != 0 || ds.status() != QDataStream::Ok)
         return hdr;
 
-    // Parse Version, 1 byte, before 2005 was '\0', since 2005 a '2'
+    // Parse Version, 1 byte, before 2005 was '\0', since 2005 a '2', since 2013 a '3'
     ds >> ch;
     hdr.tzh_version = ch;
-    if (ds.status() != QDataStream::Ok || (hdr.tzh_version != '2' && hdr.tzh_version != '\0'))
+    if (ds.status() != QDataStream::Ok
+        || (hdr.tzh_version != '2' && hdr.tzh_version != '\0' && hdr.tzh_version != '3')) {
         return hdr;
+    }
 
     // Parse reserved space, 15 bytes
     ds.readRawData(hdr.tzh_reserved, 15);
@@ -238,30 +240,31 @@ static QList<QTzType> parseTzTypes(QDataStream &ds, int tzh_typecnt)
     return typeList;
 }
 
-static QMap<int, QByteArray> parseTzAbbreviations(QDataStream &ds, int tzh_charcnt)
+static QMap<int, QByteArray> parseTzAbbreviations(QDataStream &ds, int tzh_charcnt, QList<QTzType> typeList)
 {
     // Parse the abbreviation list which is tzh_charcnt long with '\0' separated strings. The
-    // tz_abbrind index points to the first char of the abbreviation in the array, not the
-    // occurrence in the list. By parsing char at a time we can track the char index and convert
-    // to an occurrence index. By using a map with tz_abbrind as ordered key we get both index
+    // QTzType.tz_abbrind index points to the first char of the abbreviation in the array, not the
+    // occurrence in the list. It can also point to a partial string so we need to use the actual typeList
+    // index values when parsing.  By using a map with tz_abbrind as ordered key we get both index
     // methods in one data structure and can convert the types afterwards.
     QMap<int, QByteArray> map;
     quint8 ch;
-    QByteArray abbrev;
-    // Track the start position of each abbreviation
-    int tz_abbrind = 0;
+    QByteArray input;
+    // First parse the full abbrev string
     for (int i = 0; i < tzh_charcnt && ds.status() == QDataStream::Ok; ++i) {
         ds >> ch;
-        if (ds.status() == QDataStream::Ok) {
-            if (ch == '\0') {
-                // Have reached end of an abbreviation, so add to map
-                map[tz_abbrind] = abbrev;
-                tz_abbrind = i + 1;
-                abbrev.clear();
-            } else {
-                abbrev.append((char)ch);
-            }
-        }
+        if (ds.status() == QDataStream::Ok)
+            input.append(char(ch));
+        else
+            return map;
+    }
+    // Then extract all the substrings pointed to by typeList
+    foreach (const QTzType type, typeList) {
+        QByteArray abbrev;
+        for (int i = type.tz_abbrind; input.at(i) != '\0'; ++i)
+            abbrev.append(input.at(i));
+        // Have reached end of an abbreviation, so add to map
+        map[type.tz_abbrind] = abbrev;
     }
     return map;
 }
@@ -371,7 +374,7 @@ static QDate calculatePosixDate(const QByteArray dateRule, int year)
     }
 }
 
-static QTime parsePosixTime(const QByteArray timeRule)
+static QTime parsePosixTime(const QByteArray &timeRule)
 {
     // Format "HH:mm:ss", put check parts count just in case
     QList<QByteArray> parts = timeRule.split(':');
@@ -385,7 +388,7 @@ static QTime parsePosixTime(const QByteArray timeRule)
     return QTime(2, 0, 0);
 }
 
-static int parsePosixOffset(const QByteArray timeRule)
+static int parsePosixOffset(const QByteArray &timeRule)
 {
     // Format "[+|-]hh[:mm[:ss]]"
     QList<QByteArray> parts = timeRule.split(':');
@@ -399,7 +402,9 @@ static int parsePosixOffset(const QByteArray timeRule)
     return 0;
 }
 
-static QList<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArray &posixRule, int startYear, int endYear)
+static QList<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArray &posixRule,
+                                                               int startYear, int endYear,
+                                                               int lastTranMSecs)
 {
     QList<QTimeZonePrivate::Data> list;
 
@@ -443,11 +448,13 @@ static QList<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArray 
     // If only the name part then no transitions
     if (parts.count() == 1) {
         QTimeZonePrivate::Data data;
-        data.atMSecsSinceEpoch = 0;
+        data.atMSecsSinceEpoch = lastTranMSecs;
         data.offsetFromUtc = utcOffset;
         data.standardTimeOffset = utcOffset;
         data.daylightTimeOffset = 0;
         data.abbreviation = stdName;
+        list << data;
+        return list;
     }
 
     // If not populated the total dst offset is 1 hour
@@ -572,7 +579,7 @@ void QTzTimeZonePrivate::init(const QByteArray &olsenId)
     QList<QTzType> typeList = parseTzTypes(ds, hdr.tzh_typecnt);
     if (ds.status() != QDataStream::Ok)
         return;
-    QMap<int, QByteArray> abbrevMap = parseTzAbbreviations(ds, hdr.tzh_charcnt);
+    QMap<int, QByteArray> abbrevMap = parseTzAbbreviations(ds, hdr.tzh_charcnt, typeList);
     if (ds.status() != QDataStream::Ok)
         return;
     parseTzLeapSeconds(ds, hdr.tzh_leapcnt, false);
@@ -583,7 +590,7 @@ void QTzTimeZonePrivate::init(const QByteArray &olsenId)
         return;
 
     // If version 2 then parse the second block of data
-    if (hdr.tzh_version == '2') {
+    if (hdr.tzh_version == '2' || hdr.tzh_version == '3') {
         ok = false;
         QTzHeader hdr2 = parseTzHeader(ds, &ok);
         if (!ok || ds.status() != QDataStream::Ok)
@@ -594,7 +601,7 @@ void QTzTimeZonePrivate::init(const QByteArray &olsenId)
         typeList = parseTzTypes(ds, hdr2.tzh_typecnt);
         if (ds.status() != QDataStream::Ok)
             return;
-        abbrevMap = parseTzAbbreviations(ds, hdr2.tzh_charcnt);
+        abbrevMap = parseTzAbbreviations(ds, hdr2.tzh_charcnt, typeList);
         if (ds.status() != QDataStream::Ok)
             return;
         parseTzLeapSeconds(ds, hdr2.tzh_leapcnt, true);
@@ -682,12 +689,14 @@ QString QTzTimeZonePrivate::displayName(qint64 atMSecsSinceEpoch,
     if (!m_icu)
         m_icu = new QIcuTimeZonePrivate(m_id);
     // TODO small risk may not match if tran times differ due to outdated files
-    return m_icu->displayName(atMSecsSinceEpoch, nameType, locale);
+    // TODO Some valid TZ names are not valid ICU names, use translation table?
+    if (m_icu->isValid())
+        return m_icu->displayName(atMSecsSinceEpoch, nameType, locale);
 #else
     Q_UNUSED(nameType)
     Q_UNUSED(locale)
-    return abbreviation(atMSecsSinceEpoch);
 #endif // QT_USE_ICU
+    return abbreviation(atMSecsSinceEpoch);
 }
 
 QString QTzTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
@@ -698,19 +707,59 @@ QString QTzTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
     if (!m_icu)
         m_icu = new QIcuTimeZonePrivate(m_id);
     // TODO small risk may not match if tran times differ due to outdated files
-    return m_icu->displayName(timeType, nameType, locale);
+    // TODO Some valid TZ names are not valid ICU names, use translation table?
+    if (m_icu->isValid())
+        return m_icu->displayName(timeType, nameType, locale);
 #else
     Q_UNUSED(timeType)
     Q_UNUSED(nameType)
     Q_UNUSED(locale)
-    const int atMSecsSinceEpoch = QDateTime::currentMSecsSinceEpoch();
-    QTimeZonePrivate::Data tran = data(atMSecsSinceEpoch);
-    while ((timeType == QTimeZone::StandardTime && tran.daylightTimeOffset != 0)
-           || (timeType == QTimeZone::DaylightTime && tran.daylightTimeOffset == 0)) {
-        tran = nextTransition(tran.atMSecsSinceEpoch);
-    }
-    return tran.abbreviation;
 #endif // QT_USE_ICU
+    // If no ICU available then have to use abbreviations instead
+    // Abbreviations don't have GenericTime
+    if (timeType == QTimeZone::GenericTime)
+        timeType = QTimeZone::StandardTime;
+
+    // Get current tran, if valid and is what we want, then use it
+    const qint64 currentMSecs = QDateTime::currentMSecsSinceEpoch();
+    QTimeZonePrivate::Data tran = data(currentMSecs);
+    if (tran.atMSecsSinceEpoch != invalidMSecs()
+        && ((timeType == QTimeZone::DaylightTime && tran.daylightTimeOffset != 0)
+        || (timeType == QTimeZone::StandardTime && tran.daylightTimeOffset == 0))) {
+        return tran.abbreviation;
+    }
+
+    // Otherwise get next tran and if valid and is what we want, then use it
+    tran = nextTransition(currentMSecs);
+    if (tran.atMSecsSinceEpoch != invalidMSecs()
+        && ((timeType == QTimeZone::DaylightTime && tran.daylightTimeOffset != 0)
+        || (timeType == QTimeZone::StandardTime && tran.daylightTimeOffset == 0))) {
+        return tran.abbreviation;
+    }
+
+    // Otherwise get prev tran and if valid and is what we want, then use it
+    tran = previousTransition(currentMSecs);
+    if (tran.atMSecsSinceEpoch != invalidMSecs())
+        tran = previousTransition(tran.atMSecsSinceEpoch);
+    if (tran.atMSecsSinceEpoch != invalidMSecs()
+        && ((timeType == QTimeZone::DaylightTime && tran.daylightTimeOffset != 0)
+        || (timeType == QTimeZone::StandardTime && tran.daylightTimeOffset == 0))) {
+        return tran.abbreviation;
+    }
+
+    // Otherwise is strange sequence, so work backwards through trans looking for first match, if any
+    for (int i = m_tranTimes.size() - 1; i >= 0; --i) {
+        if (m_tranTimes.at(i).atMSecsSinceEpoch <= currentMSecs) {
+            tran = dataForTzTransition(m_tranTimes.at(i));
+            if ((timeType == QTimeZone::DaylightTime && tran.daylightTimeOffset != 0)
+                || (timeType == QTimeZone::StandardTime && tran.daylightTimeOffset == 0)) {
+                return tran.abbreviation;
+            }
+        }
+    }
+
+    // Otherwise if no match use current data
+    return data(currentMSecs).abbreviation;
 }
 
 QString QTzTimeZonePrivate::abbreviation(qint64 atMSecsSinceEpoch) const
@@ -749,35 +798,55 @@ bool QTzTimeZonePrivate::isDaylightTime(qint64 atMSecsSinceEpoch) const
     return (daylightTimeOffset(atMSecsSinceEpoch) != 0);
 }
 
+QTimeZonePrivate::Data QTzTimeZonePrivate::dataForTzTransition(QTzTransitionTime tran) const
+{
+    QTimeZonePrivate::Data data;
+    data.atMSecsSinceEpoch = tran.atMSecsSinceEpoch;
+    QTzTransitionRule rule = m_tranRules.at(tran.ruleIndex);
+    data.standardTimeOffset = rule.stdOffset;
+    data.daylightTimeOffset = rule.dstOffset;
+    data.offsetFromUtc = rule.stdOffset + rule.dstOffset;
+    data.abbreviation = QString::fromUtf8(m_abbreviations.at(rule.abbreviationIndex));
+    return data;
+}
+
 QTimeZonePrivate::Data QTzTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 {
-    QTimeZonePrivate::Data data = invalidData();
-    int lastTran = m_tranTimes.size() - 1;
-    int tran;
-    for (tran = lastTran; tran > 0; --tran) {
-        if (m_tranTimes.at(tran).atMSecsSinceEpoch <= forMSecsSinceEpoch)
-            break;
-    }
-    // If after the last transition time then we need to use the posix rule if available
-    if (tran >= lastTran && !m_posixRule.isEmpty()) {
-        QDateTime dt = QDateTime::fromMSecsSinceEpoch(forMSecsSinceEpoch);
-        int year = dt.date().year();
-        QList<QTimeZonePrivate::Data> posixTrans = calculatePosixTransitions(m_posixRule, year - 1, year + 1);
-        for (int i = posixTrans.size() - 1; i > 0; --i) {
+    // If the required time is after the last transition and we have a POSIX rule then use it
+    if (m_tranTimes.size() > 0 && m_tranTimes.last().atMSecsSinceEpoch < forMSecsSinceEpoch
+        &&!m_posixRule.isEmpty() && forMSecsSinceEpoch >= 0) {
+        const int year = QDateTime::fromMSecsSinceEpoch(forMSecsSinceEpoch, Qt::UTC).date().year();
+        const int lastMSecs = (m_tranTimes.size() > 0) ? m_tranTimes.last().atMSecsSinceEpoch : 0;
+        QList<QTimeZonePrivate::Data> posixTrans = calculatePosixTransitions(m_posixRule, year - 1,
+                                                                             year + 1, lastMSecs);
+        for (int i = posixTrans.size() - 1; i >= 0; --i) {
             if (posixTrans.at(i).atMSecsSinceEpoch <= forMSecsSinceEpoch) {
+                QTimeZonePrivate::Data data;
                 data = posixTrans.at(i);
                 data.atMSecsSinceEpoch = forMSecsSinceEpoch;
                 return data;
             }
         }
     }
-    data.atMSecsSinceEpoch = forMSecsSinceEpoch;
-    QTzTransitionRule rule = m_tranRules.at(m_tranTimes.at(tran).ruleIndex);
-    data.standardTimeOffset = rule.stdOffset;
-    data.daylightTimeOffset = rule.dstOffset;
-    data.offsetFromUtc = rule.stdOffset + rule.dstOffset;
-    data.abbreviation = QString::fromUtf8(m_abbreviations.at(rule.abbreviationIndex));
-    return data;
+
+    // Otherwise if we can find a valid tran then use its rule
+    for (int i = m_tranTimes.size() - 1; i >= 0; --i) {
+        if (m_tranTimes.at(i).atMSecsSinceEpoch <= forMSecsSinceEpoch) {
+            Data data = dataForTzTransition(m_tranTimes.at(i));
+            data.atMSecsSinceEpoch = forMSecsSinceEpoch;
+            return data;
+        }
+    }
+
+    // Otherwise use the earliest transition we have
+    if (m_tranTimes.size() > 0) {
+        Data data = dataForTzTransition(m_tranTimes.at(0));
+        data.atMSecsSinceEpoch = forMSecsSinceEpoch;
+        return data;
+    }
+
+    // Otherwise we have no rules, so probably an invalid tz, so return invalid data
+    return invalidData();
 }
 
 bool QTzTimeZonePrivate::hasTransitions() const
@@ -787,60 +856,54 @@ bool QTzTimeZonePrivate::hasTransitions() const
 
 QTimeZonePrivate::Data QTzTimeZonePrivate::nextTransition(qint64 afterMSecsSinceEpoch) const
 {
-    int lastTran = m_tranTimes.size() - 1;
-    int tran;
-    for (tran = 0; tran < lastTran; ++tran) {
-        if (m_tranTimes.at(tran).atMSecsSinceEpoch > afterMSecsSinceEpoch)
-            break;
-    }
-    // If after the last transition time then we need to use the posix rule if available
-    if (tran >= lastTran && !m_posixRule.isEmpty()) {
-        QDateTime dt = QDateTime::fromMSecsSinceEpoch(afterMSecsSinceEpoch);
-        int year = dt.date().year();
-        QList<QTimeZonePrivate::Data> posixTrans = calculatePosixTransitions(m_posixRule, year - 1, year + 1);
-        for (int i = 0; i < posixTrans.size() - 1; ++i) {
+    // If the required time is after the last transition and we have a POSIX rule then use it
+    if (m_tranTimes.size() > 0 && m_tranTimes.last().atMSecsSinceEpoch < afterMSecsSinceEpoch
+        &&!m_posixRule.isEmpty() && afterMSecsSinceEpoch >= 0) {
+        const int year = QDateTime::fromMSecsSinceEpoch(afterMSecsSinceEpoch, Qt::UTC).date().year();
+        const int lastMSecs = (m_tranTimes.size() > 0) ? m_tranTimes.last().atMSecsSinceEpoch : 0;
+        QList<QTimeZonePrivate::Data> posixTrans = calculatePosixTransitions(m_posixRule, year - 1,
+                                                                             year + 1, lastMSecs);
+        for (int i = 0; i < posixTrans.size(); ++i) {
             if (posixTrans.at(i).atMSecsSinceEpoch > afterMSecsSinceEpoch)
                 return posixTrans.at(i);
         }
     }
-    // Otherwise use the transition we found
-    QTimeZonePrivate::Data data;
-    data.atMSecsSinceEpoch = m_tranTimes.at(tran).atMSecsSinceEpoch;
-    QTzTransitionRule rule = m_tranRules.at(m_tranTimes.at(tran).ruleIndex);
-    data.standardTimeOffset = rule.stdOffset;
-    data.daylightTimeOffset = rule.dstOffset;
-    data.offsetFromUtc = rule.stdOffset + rule.dstOffset;
-    data.abbreviation = QString::fromUtf8(m_abbreviations.at(rule.abbreviationIndex));
-    return data;
+
+    // Otherwise if we can find a valid tran then use its rule
+    for (int i = 0; i < m_tranTimes.size(); ++i) {
+        if (m_tranTimes.at(i).atMSecsSinceEpoch > afterMSecsSinceEpoch) {
+            return dataForTzTransition(m_tranTimes.at(i));
+        }
+    }
+
+    // Otherwise we have no rule, or there is no next transition, so return invalid data
+    return invalidData();
 }
 
 QTimeZonePrivate::Data QTzTimeZonePrivate::previousTransition(qint64 beforeMSecsSinceEpoch) const
 {
-    int lastTran = m_tranTimes.size() - 1;
-    int tran;
-    for (tran = lastTran; tran > 0; --tran) {
-        if (m_tranTimes.at(tran).atMSecsSinceEpoch < beforeMSecsSinceEpoch)
-            break;
-    }
-    // If after the last transition time then we need to use the posix rule if available
-    if (tran >= lastTran && !m_posixRule.isEmpty()) {
-        QDateTime dt = QDateTime::fromMSecsSinceEpoch(beforeMSecsSinceEpoch);
-        int year = dt.date().year();
-        QList<QTimeZonePrivate::Data> posixTrans = calculatePosixTransitions(m_posixRule, year - 1, year + 1);
-        for (int i = posixTrans.size() - 1; i > 0; --i) {
+    // If the required time is after the last transition and we have a POSIX rule then use it
+    if (m_tranTimes.size() > 0 && m_tranTimes.last().atMSecsSinceEpoch < beforeMSecsSinceEpoch
+        &&!m_posixRule.isEmpty() && beforeMSecsSinceEpoch > 0) {
+        const int year = QDateTime::fromMSecsSinceEpoch(beforeMSecsSinceEpoch, Qt::UTC).date().year();
+        const int lastMSecs = (m_tranTimes.size() > 0) ? m_tranTimes.last().atMSecsSinceEpoch : 0;
+        QList<QTimeZonePrivate::Data> posixTrans = calculatePosixTransitions(m_posixRule, year - 1,
+                                                                             year + 1, lastMSecs);
+        for (int i = posixTrans.size() - 1; i >= 0; --i) {
             if (posixTrans.at(i).atMSecsSinceEpoch < beforeMSecsSinceEpoch)
                 return posixTrans.at(i);
         }
     }
-    // Otherwise use the transition we found
-    QTimeZonePrivate::Data data;
-    data.atMSecsSinceEpoch = m_tranTimes.at(tran).atMSecsSinceEpoch;
-    QTzTransitionRule rule = m_tranRules.at(m_tranTimes.at(tran).ruleIndex);
-    data.standardTimeOffset = rule.stdOffset;
-    data.daylightTimeOffset = rule.dstOffset;
-    data.offsetFromUtc = rule.stdOffset + rule.dstOffset;
-    data.abbreviation = QString::fromUtf8(m_abbreviations.at(rule.abbreviationIndex));
-    return data;
+
+    // Otherwise if we can find a valid tran then use its rule
+    for (int i = m_tranTimes.size() - 1; i >= 0; --i) {
+        if (m_tranTimes.at(i).atMSecsSinceEpoch < beforeMSecsSinceEpoch) {
+            return dataForTzTransition(m_tranTimes.at(i));
+        }
+    }
+
+    // Otherwise we have no rule, so return invalid data
+    return invalidData();
 }
 
 // TODO Could cache the value and monitor the required files for any changes

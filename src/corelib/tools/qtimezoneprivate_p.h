@@ -309,6 +309,7 @@ private:
         bool operator==(const QTzTransitionRule &other) { return (stdOffset == other.stdOffset
         && dstOffset == other.dstOffset && abbreviationIndex == other.abbreviationIndex); }
     };
+    Data dataForTzTransition(QTzTransitionTime tran) const;
     QList<QTzTransitionTime> m_tranTimes;
     QList<QTzTransitionRule> m_tranRules;
     QList<QByteArray> m_abbreviations;

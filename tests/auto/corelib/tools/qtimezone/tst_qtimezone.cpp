@@ -57,6 +57,7 @@ private slots:
     void nullTest();
     void dataStreamTest();
     void availableTimeZoneIds();
+    void stressTest();
     void windowsId();
     // Backend tests
     void utcTest();
@@ -75,7 +76,7 @@ private:
 
 tst_QTimeZone::tst_QTimeZone()
 {
-    // Set to true to print debug output
+    // Set to true to print debug output, test Display Names and run long stress tests
     debug = false;
 }
 
@@ -367,6 +368,50 @@ void tst_QTimeZone::availableTimeZoneIds()
     }
 }
 
+void tst_QTimeZone::stressTest()
+{
+    QList<QByteArray> idList = QTimeZone::availableTimeZoneIds();
+    foreach (const QByteArray &id, idList) {
+        QTimeZone testZone = QTimeZone(id);
+        QCOMPARE(testZone.isValid(), true);
+        QCOMPARE(testZone.id(), id);
+        QDateTime testDate = QDateTime(QDate(2015, 1, 1), QTime(0, 0, 0), Qt::UTC);
+        testZone.country();
+        testZone.comment();
+        testZone.displayName(testDate);
+        testZone.displayName(QTimeZone::DaylightTime);
+        testZone.displayName(QTimeZone::StandardTime);
+        testZone.abbreviation(testDate);
+        testZone.offsetFromUtc(testDate);
+        testZone.standardTimeOffset(testDate);
+        testZone.daylightTimeOffset(testDate);
+        testZone.hasDaylightTime();
+        testZone.isDaylightTime(testDate);
+        testZone.offsetData(testDate);
+        testZone.hasTransitions();
+        testZone.nextTransition(testDate);
+        testZone.previousTransition(testDate);
+        // Dates known to be outside possible tz file pre-calculated rules range
+        QDateTime lowDate1 = QDateTime(QDate(1800, 1, 1), QTime(0, 0, 0), Qt::UTC);
+        QDateTime lowDate2 = QDateTime(QDate(1800, 6, 1), QTime(0, 0, 0), Qt::UTC);
+        QDateTime highDate1 = QDateTime(QDate(2200, 1, 1), QTime(0, 0, 0), Qt::UTC);
+        QDateTime highDate2 = QDateTime(QDate(2200, 6, 1), QTime(0, 0, 0), Qt::UTC);
+        testZone.nextTransition(lowDate1);
+        testZone.nextTransition(lowDate2);
+        testZone.previousTransition(lowDate2);
+        testZone.previousTransition(lowDate2);
+        testZone.nextTransition(highDate1);
+        testZone.nextTransition(highDate2);
+        testZone.previousTransition(highDate1);
+        testZone.previousTransition(highDate2);
+        if (debug) {
+            // This could take a long time, depending on platform and database
+            qDebug() << "Stress test calculating transistions for" << testZone.id();
+            testZone.transitions(lowDate1, highDate1);
+        }
+    }
+}
+
 void tst_QTimeZone::windowsId()
 {
 /*
@@ -639,10 +684,11 @@ void tst_QTimeZone::tzTest()
     QCOMPARE(dat.standardTimeOffset, 3600);
     QCOMPARE(dat.daylightTimeOffset, 0);
 
+    // Test previous to low value is invalid
     dat = tzp.previousTransition(-9999999999999);
-    QCOMPARE(dat.atMSecsSinceEpoch, (qint64)-2422054408000);
-    QCOMPARE(dat.standardTimeOffset, 3600);
-    QCOMPARE(dat.daylightTimeOffset, 0);
+    QCOMPARE(dat.atMSecsSinceEpoch, std::numeric_limits<qint64>::min());
+    QCOMPARE(dat.standardTimeOffset, std::numeric_limits<int>::min());
+    QCOMPARE(dat.daylightTimeOffset, std::numeric_limits<int>::min());
 
     dat = tzp.nextTransition(-9999999999999);
     QCOMPARE(dat.atMSecsSinceEpoch, (qint64)-2422054408000);

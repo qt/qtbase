@@ -708,6 +708,9 @@ bool QTimeZone::hasTransitions() const
     This is most useful when you have a Transition time and wish to find the
     Transition after it.
 
+    If there is no transition after the given \a afterDateTime then an invalid
+    OffsetData will be returned with an invalid QDateTime.
+
     The given \a afterDateTime is exclusive.
 
     \sa hasTransitions(), previousTransition(), transitions()
@@ -725,6 +728,9 @@ QTimeZone::OffsetData QTimeZone::nextTransition(const QDateTime &afterDateTime) 
     Returns the first time zone Transition before the given \a beforeDateTime.
     This is most useful when you have a Transition time and wish to find the
     Transition before it.
+
+    If there is no transition before the given \a beforeDateTime then an invalid
+    OffsetData will be returned with an invalid QDateTime.
 
     The given \a beforeDateTime is exclusive.
 

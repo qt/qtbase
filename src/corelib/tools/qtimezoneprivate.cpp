@@ -328,10 +328,11 @@ QTimeZonePrivate::DataList QTimeZonePrivate::transitions(qint64 fromMSecsSinceEp
                                                          qint64 toMSecsSinceEpoch) const
 {
     DataList list;
-    if (toMSecsSinceEpoch > fromMSecsSinceEpoch) {
+    if (toMSecsSinceEpoch >= fromMSecsSinceEpoch) {
         // fromMSecsSinceEpoch is inclusive but nextTransitionTime() is exclusive so go back 1 msec
         Data next = nextTransition(fromMSecsSinceEpoch - 1);
-        while (next.atMSecsSinceEpoch <= toMSecsSinceEpoch) {
+        while (next.atMSecsSinceEpoch != invalidMSecs()
+               && next.atMSecsSinceEpoch <= toMSecsSinceEpoch) {
             list.append(next);
             next = nextTransition(next.atMSecsSinceEpoch);
         }
