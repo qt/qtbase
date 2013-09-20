@@ -42,6 +42,7 @@
 #include "qurl_p.h"
 
 #include <QtCore/qstringlist.h>
+#include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
@@ -1461,10 +1462,10 @@ static void mapToLowerCase(QString *str, int from)
                     ++i;
                 }
             }
-            const NameprepCaseFoldingEntry *entry = qBinaryFind(NameprepCaseFolding,
-                                                                NameprepCaseFolding + N,
-                                                                uc);
-            if ((entry - NameprepCaseFolding) != N) {
+            const NameprepCaseFoldingEntry *entry = std::lower_bound(NameprepCaseFolding,
+                                                                     NameprepCaseFolding + N,
+                                                                     uc);
+            if ((entry != NameprepCaseFolding + N) && !(uc < *entry)) {
                 int l = 1;
                 while (l < 4 && entry->mapping[l])
                     ++l;
