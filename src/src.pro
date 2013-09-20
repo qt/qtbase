@@ -141,6 +141,12 @@ SUBDIRS += src_plugins src_tools_qdoc
 
 nacl: SUBDIRS -= src_network src_testlib
 
+winrt {
+    src_platformsupport.depends -= src_network
+    src_plugins.depends -= src_network
+    SUBDIRS -= src_network
+}
+
 android:!android-no-sdk: SUBDIRS += src_android
 
 TR_EXCLUDE = \
