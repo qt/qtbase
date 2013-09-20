@@ -39,8 +39,6 @@
 **
 ****************************************************************************/
 
-#ifndef QT_NO_PRINTDIALOG
-
 #include <Cocoa/Cocoa.h>
 
 #include "qprintdialog.h"
@@ -51,6 +49,8 @@
 #include <QtWidgets/private/qapplication_p.h>
 #include <QtPrintSupport/qprinter.h>
 #include <QtPrintSupport/qprintengine.h>
+
+#ifndef QT_NO_PRINTDIALOG
 
 QT_BEGIN_NAMESPACE
 
