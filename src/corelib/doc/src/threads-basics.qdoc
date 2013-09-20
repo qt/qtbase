@@ -172,109 +172,16 @@
 
     \section2 Which Qt Thread Technology Should You Use?
 
-    Sometimes you want to do more than just running a method in the context of
-    another thread. You may want to have an object which lives in another
-    thread that provides a service to the GUI thread. Maybe you want another
-    thread to stay alive forever to poll hardware ports and send a signal to
-    the GUI thread when something noteworthy has happened. Qt provides
-    different solutions for developing threaded applications. The right
-    solution depends on the purpose of the new thread as well as on the
-    thread's lifetime.
-
-    \table
-    \header
-        \li Lifetime of thread
-        \li Development task
-        \li Solution
-    \row
-        \li One call
-        \li Run one method within another thread and quit the thread when the
-           method is finished.
-        \li Qt provides different solutions:
-           \list
-              \li Write a function and run it with QtConcurrent::run()
-              \li Derive a class from QRunnable and run it in the global thread
-                 pool with QThreadPool::globalInstance()->start()
-              \li Derive a class from QThread, reimplement the QThread::run()
-                 method and use QThread::start() to run it.
-           \endlist
-
-    \row
-        \li One call
-        \li Operations are to be performed on all items of a container.
-           Processing should be performed using all available cores. A common
-           example is to produce thumbnails from a list of images.
-        \li QtConcurrent provides the \l{QtConcurrent::}{map()} function for
-           applying operations on every container element,
-           \l{QtConcurrent::}{filter()} for selecting container elements, and
-           the option of specifying a reduce function for combining the
-           remaining elements.
-    \row
-        \li One call
-        \li A long running operation has to be put in another thread. During the
-           course of processing, status information should be sent to the GUI
-           thread.
-        \li Use QThread, reimplement run and emit signals as needed. Connect the
-           signals to the GUI thread's slots using queued signal/slot
-           connections.
-
-    \row
-        \li Permanent
-        \li Have an object living in another thread and let it perform different
-           tasks upon request.
-           This means communication to and from the worker thread is required.
-        \li Derive a class from QObject and implement the necessary slots and
-           signals, move the object to a thread with a running event loop and
-           communicate with the object over queued signal/slot connections.
-    \row
-        \li Permanent
-        \li Have an object living in another thread, let the object perform
-           repeated tasks such as polling a port and enable communication with
-           the GUI thread.
-        \li Same as above but also use a timer in the worker thread to implement
-           polling. However, the best solution for polling is to avoid it
-           completely. Sometimes using QSocketNotifier is an alternative.
-    \endtable
+    See the \l{Multithreading Technologies in Qt} page for an introduction to the
+    different approaches to multithreading to Qt, and for guidelines on how to
+    choose among them.
 
 
     \section1 Qt Thread Basics
 
-    QThread is a very convenient cross platform abstraction of native platform
-    threads. Starting a thread is very simple. Let us look at a short piece of
-    code that generates another thread which says hello in that thread and then
-    exits.
-
-    \snippet ../widgets/tutorials/threads/hellothread/hellothread.h 1
-
-    We derive a class from QThread and reimplement the \l{QThread::}{run()}
-    method.
-
-    \snippet ../widgets/tutorials/threads/hellothread/hellothread.cpp 1
-
-    The run method contains the code that will be run in a separate thread. In
-    this example, a message containing the thread ID will be printed.
-    QThread::start() will call the method in another thread.
-
-    \snippet ../widgets/tutorials/threads/hellothread/main.cpp 1
-
-    To start the thread, our thread object needs to be instantiated. The
-    \l{QThread::}{start()} method creates a new thread and calls the
-    reimplemented \l{QThread::}{run()} method in this new thread. Right after
-    \l{QThread::}{start()} is called, two program counters walk through the
-    program code. The main function starts with only the GUI thread running and
-    it should terminate with only the GUI thread running. Exiting the program
-    when another thread is still busy is a programming error, and therefore,
-    wait is called which blocks the calling thread until the
-    \l{QThread::}{run()} method has completed.
-
-    This is the result of running the code:
-
-    \code
-    //bad code
-    hello from GUI thread  3079423696
-    hello from worker thread  3076111216
-    \endcode
-
+    The following sections describe how QObjects interact with threads, how
+    programs can safely access data from multiple threads, and how asynchronous
+    execution produces results without blocking a thread.
 
     \section2 QObject and Threads
 

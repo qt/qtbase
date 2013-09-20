@@ -84,7 +84,7 @@ protected:
     virtual QString escapeFilePath(const QString &path) const;
     ProString escapeFilePath(const ProString &path) const { return MakefileGenerator::escapeFilePath(path); }
     bool doPrecompiledHeaders() const { return false; }
-    virtual bool doDepends() const { return false; } //never necesary
+    virtual bool doDepends() const { return writingUnixMakefileGenerator && UnixMakefileGenerator::doDepends(); }
 };
 
 inline ProjectBuilderMakefileGenerator::~ProjectBuilderMakefileGenerator()

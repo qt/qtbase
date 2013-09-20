@@ -587,46 +587,22 @@ bool QDBusConnectionPrivate::handleMessage(const QDBusMessage &amsg)
     return false;
 }
 
-static void garbageCollectChildren(QDBusConnectionPrivate::ObjectTreeNode &node)
-{
-    int size = node.children.count();
-    if (node.activeChildren == 0) {
-        // easy case
-        node.children.clear();
-    } else if (size > node.activeChildren * 3 || (size > 20 && size * 2 > node.activeChildren * 3)) {
-        // rewrite the vector, keeping only the active children
-        // if the vector is large (> 20 items) and has one third of inactives
-        // or if the vector is small and has two thirds of inactives.
-        QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator end = node.children.end();
-        QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator it = node.children.begin();
-        QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator tgt = it;
-        for ( ; it != end; ++it) {
-            if (it->isActive())
-                *tgt++ = qMove(*it);
-        }
-        ++tgt;
-        node.children.erase(tgt, end);
-    }
-}
-
 static void huntAndDestroy(QObject *needle, QDBusConnectionPrivate::ObjectTreeNode &haystack)
 {
     QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator it = haystack.children.begin();
-    QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator end = haystack.children.end();
-    for ( ; it != end; ++it) {
-        if (!it->isActive())
-            continue;
+
+    while (it != haystack.children.end()) {
         huntAndDestroy(needle, *it);
         if (!it->isActive())
-            --haystack.activeChildren;
+            it = haystack.children.erase(it);
+        else
+            it++;
     }
 
     if (needle == haystack.obj) {
         haystack.obj = 0;
         haystack.flags = 0;
     }
-
-    garbageCollectChildren(haystack);
 }
 
 static void huntAndUnregister(const QStringList &pathComponents, int i, QDBusConnection::UnregisterMode mode,
@@ -639,7 +615,6 @@ static void huntAndUnregister(const QStringList &pathComponents, int i, QDBusCon
 
         if (mode == QDBusConnection::UnregisterTree) {
             // clear the sub-tree as well
-            node->activeChildren = 0;
             node->children.clear();  // can't disconnect the objects because we really don't know if they can
                             // be found somewhere else in the path too
         }
@@ -648,14 +623,12 @@ static void huntAndUnregister(const QStringList &pathComponents, int i, QDBusCon
         QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator end = node->children.end();
         QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator it =
             std::lower_bound(node->children.begin(), end, pathComponents.at(i));
-        if (it == end || it->name != pathComponents.at(i) || !it->isActive())
+        if (it == end || it->name != pathComponents.at(i))
             return;              // node not found
 
         huntAndUnregister(pathComponents, i + 1, mode, it);
         if (!it->isActive())
-            --node->activeChildren;
-
-        garbageCollectChildren(*node);
+            node->children.erase(it);
     }
 }
 

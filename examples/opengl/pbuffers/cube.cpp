@@ -44,8 +44,6 @@
 #include <QtGui/QImage>
 #include <QtCore/QPropertyAnimation>
 
-static const qreal FACE_SIZE = 0.4;
-
 static const qreal speeds[] = { 3.8f, 4.4f, 5.6f };
 static const qreal amplitudes[] = { 2.0f, 2.5f, 3.0f };
 
