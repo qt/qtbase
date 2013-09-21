@@ -77,6 +77,7 @@ private slots:
     void cancelLongTimer();
     void singleShotStaticFunctionZeroTimeout();
     void recurseOnTimeoutAndStopTimer();
+    void singleShotToFunctors();
 
     void dontBlockEvents();
     void postedEventsShouldNotStarveTimers();
@@ -586,6 +587,14 @@ void tst_QTimer::singleShotStaticFunctionZeroTimeout()
     QCOMPARE(helper.count, 1);
     QTest::qWait(500);
     QCOMPARE(helper.count, 1);
+
+    TimerHelper nhelper;
+
+    QTimer::singleShot(0, &nhelper, &TimerHelper::timeout);
+    QCoreApplication::processEvents();
+    QCOMPARE(nhelper.count, 1);
+    QCoreApplication::processEvents();
+    QCOMPARE(nhelper.count, 1);
 }
 
 class RecursOnTimeoutAndStopTimerTimer : public QObject
@@ -631,6 +640,96 @@ void tst_QTimer::recurseOnTimeoutAndStopTimer()
     QVERIFY(!t.two->isActive());
 }
 
+struct CountedStruct
+{
+    CountedStruct(int *count, QThread *t = Q_NULLPTR) : count(count), thread(t) { }
+    ~CountedStruct() { }
+    void operator()() const { ++(*count); if (thread) QCOMPARE(QThread::currentThread(), thread); }
+
+    int *count;
+    QThread *thread;
+};
+
+static QEventLoop _e;
+static QThread *_t = Q_NULLPTR;
+
+class StaticEventLoop
+{
+public:
+    static void quitEventLoop() { _e.quit(); if (_t) QCOMPARE(QThread::currentThread(), _t); }
+};
+
+void tst_QTimer::singleShotToFunctors()
+{
+    int count = 0;
+    QEventLoop e;
+
+    QTimer::singleShot(0, CountedStruct(&count));
+    QCoreApplication::processEvents();
+    QCOMPARE(count, 1);
+
+    QTimer::singleShot(0, &StaticEventLoop::quitEventLoop);
+    QCOMPARE(_e.exec(), 0);
+
+    QThread t1;
+    QObject c1;
+    c1.moveToThread(&t1);
+
+    QObject::connect(&t1, SIGNAL(started()), &e, SLOT(quit()));
+    t1.start();
+    QCOMPARE(e.exec(), 0);
+
+    QTimer::singleShot(0, &c1, CountedStruct(&count, &t1));
+    QTest::qWait(500);
+    QCOMPARE(count, 2);
+
+    t1.quit();
+    t1.wait();
+
+    _t = new QThread;
+    QObject c2;
+    c2.moveToThread(_t);
+
+    QObject::connect(_t, SIGNAL(started()), &e, SLOT(quit()));
+    _t->start();
+    QCOMPARE(e.exec(), 0);
+
+    QTimer::singleShot(0, &c2, &StaticEventLoop::quitEventLoop);
+    QCOMPARE(_e.exec(), 0);
+
+    _t->quit();
+    _t->wait();
+    _t->deleteLater();
+    _t = Q_NULLPTR;
+
+    {
+        QObject c3;
+        QTimer::singleShot(500, &c3, CountedStruct(&count));
+    }
+    QTest::qWait(800);
+    QCOMPARE(count, 2);
+
+#if defined(Q_COMPILER_LAMBDA)
+    QTimer::singleShot(0, [&count] { ++count; });
+    QCoreApplication::processEvents();
+    QCOMPARE(count, 3);
+
+    QObject context;
+    QThread thread;
+
+    context.moveToThread(&thread);
+    QObject::connect(&thread, SIGNAL(started()), &e, SLOT(quit()));
+    thread.start();
+    QCOMPARE(e.exec(), 0);
+
+    QTimer::singleShot(0, &context, [&count, &thread] { ++count; QCOMPARE(QThread::currentThread(), &thread); });
+    QTest::qWait(500);
+    QCOMPARE(count, 4);
+
+    thread.quit();
+    thread.wait();
+#endif
+}
 
 
 class DontBlockEvents : public QObject
