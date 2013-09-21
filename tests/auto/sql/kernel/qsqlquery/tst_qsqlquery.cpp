@@ -1393,6 +1393,9 @@ void tst_QSqlQuery::isNull()
     QVERIFY( q.next() );
     QVERIFY( !q.isNull( 0 ) );
     QVERIFY( !q.isNull( 1 ) );
+
+    // For a non existent field, it should be returning true.
+    QVERIFY(q.isNull(2));
 }
 
 /*! TDS specific BIT field test */
