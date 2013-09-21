@@ -610,14 +610,13 @@ void tst_QMutex::tryLockNegative()
 
     QMutex mutex;
     TrylockThread thr(mutex, timeout);
-    QSignalSpy spy(&thr, SIGNAL(started()));
     mutex.lock();
     thr.start();
 
     // the thread should have stopped in tryLock(), waiting for us to unlock
     // the mutex. The following test can be falsely positive due to timing:
     // tryLock may still fail but hasn't failed yet. But it certainly cannot be
-    // a false negative: if wait() returns, tryLock failed.
+    // a false negative: if wait() returns true, tryLock failed.
     QVERIFY(!thr.wait(200));
 
     // after we unlock the mutex, the thread should succeed in locking, then
@@ -625,7 +624,6 @@ void tst_QMutex::tryLockNegative()
     // ~QThread waiting forever on a thread that won't exit.
     mutex.unlock();
 
-    QCOMPARE(spy.count(), 1);
     QVERIFY(thr.wait());
     QCOMPARE(thr.tryLockResult, 1);
 }
