@@ -52,12 +52,12 @@ if (v.isValid() && qstrcmp(v.typeName(), "sqlite3*")==0) {
 
 
 //! [1]
-if (v.typeName() == "PGconn*") {
+if (qstrcmp(v.typeName(), "PGconn*")) {
     PGconn *handle = *static_cast<PGconn **>(v.data());
     if (handle != 0) ...
 }
 
-if (v.typeName() == "MYSQL*") {
+if (qstrcmp(v.typeName(), "MYSQL*")) {
     MYSQL *handle = *static_cast<MYSQL **>(v.data());
     if (handle != 0) ...
 }

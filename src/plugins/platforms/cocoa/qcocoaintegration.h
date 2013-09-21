@@ -125,7 +125,7 @@ public:
     QList<int> possibleKeys(const QKeyEvent *event) const;
 
     void updateScreens();
-    QCocoaScreen *screenAtIndex(int index) const { return mScreens.at(index); }
+    QCocoaScreen *screenAtIndex(int index);
 
 private:
 

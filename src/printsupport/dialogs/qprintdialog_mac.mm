@@ -197,7 +197,7 @@ void QPrintDialogPrivate::openCocoaPrintPanel(Qt::WindowModality modality)
     // close down during the cleanup (QTBUG-17913):
     qApp->processEvents(QEventLoop::ExcludeUserInputEvents, QEventLoop::ExcludeSocketNotifiers);
 
-    QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate) *delegate = [[QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate) alloc] init];
+    QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate) *delegate = [[QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate) alloc] initWithNSPrintInfo:printInfo];
     if (modality == Qt::ApplicationModal || !q->parentWidget()) {
         if (modality == Qt::NonModal)
             qWarning("QPrintDialog is required to be modal on OS X");

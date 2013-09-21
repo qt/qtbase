@@ -157,12 +157,122 @@ private:
     QByteArray format_atoms;
 };
 
+class INCRTransaction;
+typedef QMap<xcb_window_t,INCRTransaction*> TransactionMap;
+static TransactionMap *transactions = 0;
+
+//#define INCR_DEBUG
+
+class INCRTransaction : public QObject
+{
+    Q_OBJECT
+public:
+    INCRTransaction(QXcbConnection *c, xcb_window_t w, xcb_atom_t p,
+                    QByteArray d, uint i, xcb_atom_t t, int f, int to) :
+        conn(c), win(w), property(p), data(d), increment(i),
+        target(t), format(f), timeout(to), offset(0)
+    {
+        const quint32 values[] = { XCB_EVENT_MASK_PROPERTY_CHANGE };
+        xcb_change_window_attributes(conn->xcb_connection(), win,
+                                     XCB_CW_EVENT_MASK, values);
+        if (!transactions) {
+#ifdef INCR_DEBUG
+            qDebug("INCRTransaction: creating the TransactionMap");
+#endif
+            transactions = new TransactionMap;
+            conn->clipboard()->setProcessIncr(true);
+        }
+        transactions->insert(win, this);
+        abort_timer = startTimer(timeout);
+    }
+
+    ~INCRTransaction()
+    {
+        if (abort_timer)
+            killTimer(abort_timer);
+        abort_timer = 0;
+        transactions->remove(win);
+        if (transactions->isEmpty()) {
+#ifdef INCR_DEBUG
+            qDebug("INCRTransaction: no more INCR transactions left in the TransactionMap");
+#endif
+            delete transactions;
+            transactions = 0;
+            conn->clipboard()->setProcessIncr(false);
+        }
+    }
+
+    void updateIncrProperty(xcb_property_notify_event_t *event, bool &accepted)
+    {
+        xcb_connection_t *c = conn->xcb_connection();
+        if (event->atom == property && event->state == XCB_PROPERTY_DELETE) {
+            accepted = true;
+            // restart the timer
+            if (abort_timer)
+                killTimer(abort_timer);
+            abort_timer = startTimer(timeout);
+
+            unsigned int bytes_left = data.size() - offset;
+            if (bytes_left > 0) {
+                unsigned int bytes_to_send = qMin(increment, bytes_left);
+#ifdef INCR_DEBUG
+                qDebug("INCRTransaction: sending %d bytes, %d remaining (INCR transaction %p)",
+                       bytes_to_send, bytes_left - bytes_to_send, this);
+#endif
+                int dataSize = bytes_to_send / (format / 8);
+                xcb_change_property(c, XCB_PROP_MODE_REPLACE, win, property,
+                                    target, format, dataSize, data.constData() + offset);
+                offset += bytes_to_send;
+            } else {
+#ifdef INCR_DEBUG
+                qDebug("INCRTransaction: INCR transaction %p completed", this);
+#endif
+                xcb_change_property(c, XCB_PROP_MODE_REPLACE, win, property,
+                                    target, format, 0, (const void *)0);
+                const quint32 values[] = { XCB_EVENT_MASK_NO_EVENT };
+                xcb_change_window_attributes(conn->xcb_connection(), win,
+                                             XCB_CW_EVENT_MASK, values);
+                // self destroy
+                delete this;
+            }
+        }
+    }
+
+protected:
+    void timerEvent(QTimerEvent *ev)
+    {
+        if (ev->timerId() == abort_timer) {
+            // this can happen when the X client we are sending data
+            // to decides to exit (normally or abnormally)
+#ifdef INCR_DEBUG
+            qDebug("INCRTransaction: Timed out while sending data to %p", this);
+#endif
+            delete this;
+        }
+    }
+
+private:
+    QXcbConnection *conn;
+    xcb_window_t win;
+    xcb_atom_t property;
+    QByteArray data;
+    uint increment;
+    xcb_atom_t target;
+    int format;
+    int timeout;
+    uint offset;
+    int abort_timer;
+};
+
 const int QXcbClipboard::clipboard_timeout = 5000;
 
 QXcbClipboard::QXcbClipboard(QXcbConnection *c)
     : QXcbObject(c), QPlatformClipboard()
     , m_requestor(XCB_NONE)
     , m_owner(XCB_NONE)
+    , m_incr_active(false)
+    , m_clipboard_closing(false)
+    , m_incr_receive_time(0)
 {
     Q_ASSERT(QClipboard::Clipboard == 0);
     Q_ASSERT(QClipboard::Selection == 1);
@@ -200,6 +310,7 @@ QXcbClipboard::QXcbClipboard(QXcbConnection *c)
 
 QXcbClipboard::~QXcbClipboard()
 {
+    m_clipboard_closing = true;
     // Transfer the clipboard content to the clipboard manager if we own a selection
     if (m_timestamp[QClipboard::Clipboard] != XCB_CURRENT_TIME ||
             m_timestamp[QClipboard::Selection] != XCB_CURRENT_TIME) {
@@ -224,6 +335,17 @@ QXcbClipboard::~QXcbClipboard()
     }
 }
 
+void QXcbClipboard::incrTransactionPeeker(xcb_generic_event_t *ge, bool &accepted)
+{
+    uint response_type = ge->response_type & ~0x80;
+    if (response_type == XCB_PROPERTY_NOTIFY) {
+        xcb_property_notify_event_t *event = (xcb_property_notify_event_t *)ge;
+        TransactionMap::Iterator it = transactions->find(event->window);
+        if (it != transactions->end()) {
+            (*it)->updateIncrProperty(event, accepted);
+        }
+    }
+}
 
 xcb_window_t QXcbClipboard::getSelectionOwner(xcb_atom_t atom) const
 {
@@ -415,16 +537,17 @@ xcb_atom_t QXcbClipboard::sendSelection(QMimeData *d, xcb_atom_t target, xcb_win
         // Motif clients (since Motif doesn't support INCR)
         static xcb_atom_t motif_clip_temporary = atom(QXcbAtom::CLIP_TEMPORARY);
         bool allow_incr = property != motif_clip_temporary;
-
+        // This 'bool' can be removed once there is a proper fix for QTBUG-32853
+        if (m_clipboard_closing)
+            allow_incr = false;
         // X_ChangeProperty protocol request is 24 bytes
         const int increment = (xcb_get_maximum_request_length(xcb_connection()) * 4) - 24;
         if (data.size() > increment && allow_incr) {
             long bytes = data.size();
             xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, window, property,
                                 atom(QXcbAtom::INCR), 32, 1, (const void *)&bytes);
-
-//            (void)new QClipboardINCRTransaction(window, property, atomFormat, dataFormat, data, increment);
-            qWarning("QXcbClipboard: INCR is unimplemented");
+            new INCRTransaction(connection(), window, property, data, increment,
+                                atomFormat, dataFormat, clipboard_timeout);
             return property;
         }
 
@@ -611,7 +734,7 @@ static inline int maxSelectionIncr(xcb_connection_t *c)
     return (l > 65536 ? 65536*4 : l*4) - 100;
 }
 
-bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property, bool deleteProperty, QByteArray *buffer, int *size, xcb_atom_t *type, int *format) const
+bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property, bool deleteProperty, QByteArray *buffer, int *size, xcb_atom_t *type, int *format)
 {
     int    maxsize = maxSelectionIncr(xcb_connection());
     ulong  bytes_left; // bytes_after
@@ -687,7 +810,8 @@ bool QXcbClipboard::clipboardReadProperty(xcb_window_t win, xcb_atom_t property,
     // correct size, not 0-term.
     if (size)
         *size = buffer_offset;
-
+    if (*type == atom(QXcbAtom::INCR))
+        m_incr_receive_time = connection()->getTimestamp();
     if (deleteProperty)
         xcb_delete_property(xcb_connection(), win, property);
 
@@ -791,6 +915,7 @@ QByteArray QXcbClipboard::clipboardReadIncrementalProperty(xcb_window_t win, xcb
     bool alloc_error = false;
     int  length;
     int  offset = 0;
+    xcb_timestamp_t prev_time = m_incr_receive_time;
 
     if (nbytes > 0) {
         // Reserve buffer + zero-terminator (for text data)
@@ -805,10 +930,14 @@ QByteArray QXcbClipboard::clipboardReadIncrementalProperty(xcb_window_t win, xcb
         xcb_generic_event_t *ge = waitForClipboardEvent(win, XCB_PROPERTY_NOTIFY, clipboard_timeout);
         if (!ge)
             break;
-
         xcb_property_notify_event_t *event = (xcb_property_notify_event_t *)ge;
-        if (event->atom != property || event->state != XCB_PROPERTY_NEW_VALUE)
+
+        if (event->atom != property
+                || event->state != XCB_PROPERTY_NEW_VALUE
+                    || event->time < prev_time)
             continue;
+        prev_time = event->time;
+
         if (clipboardReadProperty(win, property, true, &tmp_buf, &length, 0, 0)) {
             if (length == 0) {                // no more data, we're done
                 if (nullterm) {

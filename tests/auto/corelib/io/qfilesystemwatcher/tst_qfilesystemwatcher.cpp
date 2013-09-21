@@ -79,6 +79,8 @@ private slots:
     void QTBUG2331();
     void QTBUG2331_data() { basicTest_data(); }
 
+    void signalsEmittedAfterFileMoved();
+
 private:
     QString m_tempDirPattern;
 };
@@ -594,6 +596,85 @@ void tst_QFileSystemWatcher::QTBUG2331()
     QVERIFY(temporaryDirectory.remove());
     QTRY_COMPARE(changedSpy.count(), 1);
     QCOMPARE(watcher.directories(), QStringList());
+}
+
+class SignalReceiver : public QObject
+{
+    Q_OBJECT
+public:
+    SignalReceiver(const QDir &moveSrcDir,
+                   const QString &moveDestination,
+                   QFileSystemWatcher *watcher,
+                   QObject *parent = 0)
+        : QObject(parent),
+          added(false),
+          moveSrcDir(moveSrcDir),
+          moveDestination(QDir(moveDestination)),
+          watcher(watcher)
+    {}
+
+public slots:
+    void fileChanged(const QString &path)
+    {
+        QFileInfo finfo(path);
+
+        QCOMPARE(finfo.absolutePath(), moveSrcDir.absolutePath());
+
+        if (!added) {
+            foreach (const QFileInfo &fi, moveDestination.entryInfoList(QDir::Files | QDir::NoSymLinks))
+                watcher->addPath(fi.absoluteFilePath());
+            added = true;
+        }
+    }
+
+private:
+    bool added;
+    QDir moveSrcDir;
+    QDir moveDestination;
+    QFileSystemWatcher *watcher;
+};
+
+// regression test for QTBUG-33211.
+// using inotify backend if a file is moved and then added to the watcher
+// before all the fileChanged signals are emitted the remaining signals are
+// emitted with the destination path instead of the starting path
+void tst_QFileSystemWatcher::signalsEmittedAfterFileMoved()
+{
+    QTemporaryDir temporaryDirectory(m_tempDirPattern);
+    QVERIFY(temporaryDirectory.isValid());
+    QDir testDir(temporaryDirectory.path());
+    QVERIFY(testDir.mkdir("movehere"));
+    QString movePath = testDir.filePath("movehere");
+
+    for (int i = 0; i < 10; i++) {
+        QFile f(testDir.filePath(QString("test%1.txt").arg(i)));
+        QVERIFY(f.open(QIODevice::WriteOnly));
+        f.write(QByteArray("i am " + i));
+        f.close();
+    }
+
+    QFileSystemWatcher watcher;
+    QVERIFY(watcher.addPath(testDir.path()));
+    QVERIFY(watcher.addPath(movePath));
+
+    // add files to watcher
+    QFileInfoList files = testDir.entryInfoList(QDir::Files | QDir::NoSymLinks);
+    foreach (const QFileInfo &finfo, files)
+        QVERIFY(watcher.addPath(finfo.absoluteFilePath()));
+
+    // create the signal receiver
+    SignalReceiver signalReceiver(testDir, movePath, &watcher);
+    connect(&watcher, SIGNAL(fileChanged(QString)), &signalReceiver, SLOT(fileChanged(QString)));
+
+    // watch signals
+    QSignalSpy changedSpy(&watcher, SIGNAL(fileChanged(QString)));
+    QVERIFY(changedSpy.isValid());
+
+    // move files to second directory
+    foreach (const QFileInfo &finfo, files)
+        QVERIFY(testDir.rename(finfo.fileName(), QString("movehere/%2").arg(finfo.fileName())));
+
+    QTRY_COMPARE(changedSpy.count(), 10);
 }
 
 QTEST_MAIN(tst_QFileSystemWatcher)

@@ -47,7 +47,7 @@
     \brief The <QtConcurrentFilter> header provides concurrent Filter and
     Filter-Reduce.
 
-    These functions are a part of the \l {Concurrent Programming}{Qt Concurrent} framework.
+    These functions are a part of the \l {Qt Concurrent} framework.
 
     The QtConcurrent::filter(), QtConcurrent::filtered() and
     QtConcurrent::filteredReduced() functions filter items in a sequence such

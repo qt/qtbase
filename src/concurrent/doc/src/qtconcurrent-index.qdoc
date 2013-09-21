@@ -117,8 +117,8 @@
     Random access iterators can be faster in cases where Qt Concurrent is iterating
     over a large number of lightweight items, since they allow skipping to any point
     in the container. In addition, using random access iterators allows Qt Concurrent
-    to provide progress information trough QFuture::progressValue() and QFutureWatcher::
-    progressValueChanged().
+    to provide progress information trough QFuture::progressValue() and
+    QFutureWatcher::progressValueChanged().
 
     The non in-place modifying functions such as mapped() and filtered() makes a
     copy of the container when called. If you are using STL containers this copy operation
