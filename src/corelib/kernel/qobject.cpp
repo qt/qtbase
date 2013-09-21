@@ -2029,14 +2029,9 @@ void QObject::deleteLater()
  *****************************************************************************/
 
 
-const int flagged_locations_count = 2;
-static const char* flagged_locations[flagged_locations_count] = {0};
-
 const char *qFlagLocation(const char *method)
 {
-    static int idx = 0;
-    flagged_locations[idx] = method;
-    idx = (idx+1) % flagged_locations_count;
+    QThreadData::current()->flaggedSignatures.store(method);
     return method;
 }
 
@@ -2048,14 +2043,11 @@ static int extract_code(const char *member)
 
 static const char * extract_location(const char *member)
 {
-    for (int i = 0; i < flagged_locations_count; ++i) {
-        if (member == flagged_locations[i]) {
-            // signature includes location information after the first null-terminator
-            const char *location = member + qstrlen(member) + 1;
-            if (*location != '\0')
-                return location;
-            return 0;
-        }
+    if (QThreadData::current()->flaggedSignatures.contains(member)) {
+        // signature includes location information after the first null-terminator
+        const char *location = member + qstrlen(member) + 1;
+        if (*location != '\0')
+            return location;
     }
     return 0;
 }

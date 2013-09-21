@@ -242,6 +242,26 @@ public:
         return canWait;
     }
 
+    // This class provides per-thread (by way of being a QThreadData
+    // member) storage for qFlagLocation()
+    class FlaggedDebugSignatures
+    {
+        static const uint Count = 2;
+
+        uint idx;
+        const char* locations[Count];
+
+    public:
+        FlaggedDebugSignatures() : idx(0)
+        { std::fill_n(locations, Count, static_cast<char*>(0)); }
+
+        void store(const char* method)
+        { locations[idx++ % Count] = method; }
+
+        bool contains(const char *method) const
+        { return std::find(locations, locations + Count, method) != locations + Count; }
+    };
+
     QThread *thread;
     Qt::HANDLE threadId;
     bool quitNow;
@@ -252,6 +272,7 @@ public:
     bool canWait;
     QVector<void *> tls;
     bool isAdopted;
+    FlaggedDebugSignatures flaggedSignatures;
 };
 
 class QScopedLoopLevelCounter
