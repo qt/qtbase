@@ -54,7 +54,7 @@
 #define sleep(X) Sleep(X)
 #endif
 
-//on solaris, threads that loop one the release bool variable
+//on solaris, threads that loop on the release bool variable
 //needs to sleep more than 1 usec.
 #ifdef Q_OS_SOLARIS
 # define RWTESTSLEEP usleep(10);
@@ -416,7 +416,7 @@ void tst_QReadWriteLock::tryWriteLock()
 }
 
 bool threadDone;
-volatile bool release;
+QAtomicInt release;
 
 /*
     write-lock
@@ -466,7 +466,7 @@ public:
     void run()
     {
         testRwlock.lockForWrite();
-        while(release==false) {
+        while(release.load()==false) {
             RWTESTSLEEP
         }
         testRwlock.unlock();
@@ -486,7 +486,7 @@ public:
     void run()
     {
         testRwlock.lockForRead();
-        while(release==false) {
+        while(release.load()==false) {
             RWTESTSLEEP
         }
         testRwlock.unlock();
@@ -685,7 +685,7 @@ void tst_QReadWriteLock::multipleReadersBlockRelease()
 {
 
     QReadWriteLock testLock;
-    release=false;
+    release.store(false);
     threadDone=false;
     ReadLockReleasableThread rlt1(testLock);
     ReadLockReleasableThread rlt2(testLock);
@@ -695,7 +695,7 @@ void tst_QReadWriteLock::multipleReadersBlockRelease()
     WriteLockThread wlt(testLock);
     wlt.start();
     sleep(1);
-    release=true;
+    release.store(true);
     wlt.wait();
     rlt1.wait();
     rlt2.wait();
