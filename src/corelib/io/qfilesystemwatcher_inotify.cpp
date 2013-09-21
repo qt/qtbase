@@ -365,11 +365,11 @@ void QInotifyFileSystemWatcherEngine::readFromInotify()
         // qDebug() << "inotify event, wd" << event.wd << "mask" << hex << event.mask;
 
         int id = event.wd;
-        QString path = idToPath.value(id);
+        QString path = getPathFromID(id);
         if (path.isEmpty()) {
             // perhaps a directory?
             id = -id;
-            path = idToPath.value(id);
+            path = getPathFromID(id);
             if (path.isEmpty())
                 continue;
         }
@@ -378,8 +378,9 @@ void QInotifyFileSystemWatcherEngine::readFromInotify()
 
         if ((event.mask & (IN_DELETE_SELF | IN_MOVE_SELF | IN_UNMOUNT)) != 0) {
             pathToID.remove(path);
-            idToPath.remove(id);
-            inotify_rm_watch(inotifyFd, event.wd);
+            idToPath.remove(id, getPathFromID(id));
+            if (!idToPath.contains(id))
+                inotify_rm_watch(inotifyFd, event.wd);
 
             if (id < 0)
                 emit directoryChanged(path, true);
@@ -392,6 +393,18 @@ void QInotifyFileSystemWatcherEngine::readFromInotify()
                 emit fileChanged(path, false);
         }
     }
+}
+
+QString QInotifyFileSystemWatcherEngine::getPathFromID(int id) const
+{
+    QHash<int, QString>::const_iterator i = idToPath.find(id);
+    while (i != idToPath.constEnd() && i.key() == id) {
+        if ((i + 1) == idToPath.constEnd() || (i + 1).key() != id) {
+            return i.value();
+        }
+        ++i;
+    }
+    return QString();
 }
 
 QT_END_NAMESPACE

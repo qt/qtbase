@@ -114,6 +114,7 @@ private slots:
     void about();
     void detailsText();
     void detailsButtonText();
+    void expandDetails_QTBUG_32473();
 
 #ifndef Q_OS_MAC
     void shortcut();
@@ -135,6 +136,19 @@ private slots:
 private:
     int keyToSend;
     QTimer keySendTimer;
+};
+
+class tst_ResizingMessageBox : public QMessageBox
+{
+public:
+    tst_ResizingMessageBox() : QMessageBox(), resized(false) { }
+    bool resized;
+
+protected:
+    void resizeEvent ( QResizeEvent * event ) {
+        resized = true;
+        QMessageBox::resizeEvent(event);
+    }
 };
 
 tst_QMessageBox::tst_QMessageBox() : keyToSend(-1)
@@ -601,6 +615,37 @@ void tst_QMessageBox::detailsButtonText()
             }
         }
     }
+}
+
+void tst_QMessageBox::expandDetails_QTBUG_32473()
+{
+    tst_ResizingMessageBox box;
+    box.setDetailedText("bla");
+    box.show();
+    QApplication::postEvent(&box, new QEvent(QEvent::LanguageChange));
+    QApplication::processEvents();
+    QDialogButtonBox* bb = box.findChild<QDialogButtonBox*>("qt_msgbox_buttonbox");
+    QVERIFY(bb);
+
+    QList<QAbstractButton *> list = bb->buttons();
+    QAbstractButton* moreButton = NULL;
+    foreach (QAbstractButton* btn, list)
+        if (btn && bb->buttonRole(btn) == QDialogButtonBox::ActionRole)
+            moreButton = btn;
+    QVERIFY(moreButton);
+    QVERIFY(QTest::qWaitForWindowExposed(&box));
+    QRect geom = box.geometry();
+    box.resized = false;
+    moreButton->click();
+    QTRY_VERIFY(box.resized);
+    // After we receive the expose event for a second widget, it's likely
+    // that the window manager is also done manipulating the first QMessageBox.
+    QWidget fleece;
+    fleece.show();
+    QTest::qWaitForWindowExposed(&fleece);
+    if (geom.topLeft() == box.geometry().topLeft())
+        QTest::qWait(500);
+    QCOMPARE(geom.topLeft(), box.geometry().topLeft());
 }
 
 void tst_QMessageBox::incorrectDefaultButton()

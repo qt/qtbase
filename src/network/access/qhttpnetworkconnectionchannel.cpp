@@ -236,8 +236,8 @@ bool QHttpNetworkConnectionChannel::sendRequest()
             QAuthenticator &auth = authenticator;
             if (url.userName() != auth.user()
                 || (!url.password().isEmpty() && url.password() != auth.password())) {
-                auth.setUser(url.userName());
-                auth.setPassword(url.password());
+                auth.setUser(url.userName(QUrl::FullyDecoded));
+                auth.setPassword(url.password(QUrl::FullyDecoded));
                 connection->d_func()->copyCredentials(connection->d_func()->indexOf(socket), &auth, false);
             }
             // clear the userinfo,  since we use the same request for resending

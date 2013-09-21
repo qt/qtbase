@@ -98,7 +98,7 @@ QT_BEGIN_NAMESPACE
     QFutureWatcher<void> as well. This is useful if only status or progress
     information is needed; not the actual result data.
 
-    \sa QFuture, {Concurrent Programming}{Qt Concurrent}
+    \sa QFuture, {Qt Concurrent}
 */
 
 /*! \fn QFutureWatcher::QFutureWatcher(QObject *parent)

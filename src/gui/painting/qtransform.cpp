@@ -2293,13 +2293,30 @@ bool qt_scaleForTransform(const QTransform &transform, qreal *scale)
         return qFuzzyCompare(xScale, yScale);
     }
 
-    const qreal xScale = transform.m11() * transform.m11()
+    // rotate then scale: compare columns
+    const qreal xScale1 = transform.m11() * transform.m11()
                          + transform.m21() * transform.m21();
-    const qreal yScale = transform.m12() * transform.m12()
+    const qreal yScale1 = transform.m12() * transform.m12()
                          + transform.m22() * transform.m22();
-    if (scale)
-        *scale = qSqrt(qMax(xScale, yScale));
-    return type == QTransform::TxRotate && qFuzzyCompare(xScale, yScale);
+
+    // scale then rotate: compare rows
+    const qreal xScale2 = transform.m11() * transform.m11()
+                         + transform.m12() * transform.m12();
+    const qreal yScale2 = transform.m21() * transform.m21()
+                         + transform.m22() * transform.m22();
+
+    // decide the order of rotate and scale operations
+    if (qAbs(xScale1 - yScale1) > qAbs(xScale2 - yScale2)) {
+        if (scale)
+            *scale = qSqrt(qMax(xScale1, yScale1));
+
+        return type == QTransform::TxRotate && qFuzzyCompare(xScale1, yScale1);
+    } else {
+        if (scale)
+            *scale = qSqrt(qMax(xScale2, yScale2));
+
+        return type == QTransform::TxRotate && qFuzzyCompare(xScale2, yScale2);
+    }
 }
 
 QT_END_NAMESPACE

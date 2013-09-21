@@ -79,10 +79,13 @@ private Q_SLOTS:
     void readFromInotify();
 
 private:
+    QString getPathFromID(int id) const;
+
+private:
     QInotifyFileSystemWatcherEngine(int fd, QObject *parent);
     int inotifyFd;
     QHash<QString, int> pathToID;
-    QHash<int, QString> idToPath;
+    QMultiHash<int, QString> idToPath;
     QSocketNotifier notifier;
 };
 

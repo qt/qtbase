@@ -47,8 +47,8 @@
     possible to write multi-threaded programs without using low-level
     threading primitives.
 
-    See the \l {Concurrent Programming}{Qt Concurrent} chapter in
-    the \l{threads.html}{threading} documentation.
+    See the \l {Qt Concurrent} module documentation for an overview of available
+    functions, or see below for detailed information on each function.
 
     \inheaderfile QtConcurrent
     \ingroup thread
@@ -74,7 +74,7 @@
 
     \brief The <QtConcurrentMap> header provides concurrent Map and MapReduce.
 
-    These functions are a part of the \l {Concurrent Programming}{Qt Concurrent} framework.
+    These functions are a part of the \l {Qt Concurrent} framework.
 
     The QtConcurrent::map(), QtConcurrent::mapped() and
     QtConcurrent::mappedReduced() functions run computations in parallel on

@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2013 Samuel Gaist <samuel.gaist@edeltech.ch>
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
@@ -280,6 +281,15 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
             image.setColorCount(2);
             image.setColor(1, qRgb(0,0,0));
             image.setColor(0, qRgb(255,255,255));
+            if (png_get_tRNS(png_ptr, info_ptr, &trans_alpha, &num_trans, &trans_color_p) && trans_color_p) {
+                const int g = trans_color_p->gray;
+                // the image has white in the first position of the color table,
+                // black in the second. g is 0 for black, 1 for white.
+                if (g == 0)
+                    image.setColor(1, qRgba(0, 0, 0, 0));
+                else if (g == 1)
+                    image.setColor(0, qRgba(255, 255, 255, 0));
+            }
         } else if (bit_depth == 16 && png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
             png_set_expand(png_ptr);
             png_set_strip_16(png_ptr);
@@ -406,14 +416,14 @@ static void read_image_scaled(QImage *outImage, png_structp png_ptr, png_infop i
                               QPngHandlerPrivate::AllocatedMemoryPointers &amp, QSize scaledSize)
 {
 
-    png_uint_32 width;
-    png_uint_32 height;
-    png_int_32 offset_x;
-    png_int_32 offset_y;
+    png_uint_32 width = 0;
+    png_uint_32 height = 0;
+    png_int_32 offset_x = 0;
+    png_int_32 offset_y = 0;
 
-    int bit_depth;
-    int color_type;
-    int unit_type;
+    int bit_depth = 0;
+    int color_type = 0;
+    int unit_type = PNG_OFFSET_PIXEL;
     png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, 0, 0, 0);
     png_get_oFFs(png_ptr, info_ptr, &offset_x, &offset_y, &unit_type);
     uchar *data = outImage->bits();

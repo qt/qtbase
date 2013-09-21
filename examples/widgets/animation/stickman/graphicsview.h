@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 #ifndef GRAPHICSVIEW_H
-#define GRAPHICSVIEW
+#define GRAPHICSVIEW_H
 
 #include <QtWidgets/QGraphicsView>
 

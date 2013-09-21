@@ -47,8 +47,7 @@
 
     \ingroup thread
 
-    To start a computation, use one of the APIs in the
-    \l {Concurrent Programming}{Qt Concurrent} framework.
+    To start a computation, use one of the APIs in the \l {Qt Concurrent} framework.
 
     QFuture allows threads to be synchronized against one or more results
     which will be ready at a later point in time. The result can be of any type
@@ -93,7 +92,7 @@
 
     To interact with running tasks using signals and slots, use QFutureWatcher.
 
-    \sa QFutureWatcher, {Concurrent Programming}{Qt Concurrent}
+    \sa QFutureWatcher, {Qt Concurrent}
 */
 
 /*! \fn QFuture::QFuture()

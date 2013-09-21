@@ -48,7 +48,7 @@
 
     \ingroup thread
 
-    This function is a part of the \l {Concurrent Programming}{Qt Concurrent} framework.
+    This function is a part of the \l {Qt Concurrent} framework.
 
     The QtConcurrent::run() function runs a function in a separate thread.
     The return value of the function is made available through the QFuture API.
