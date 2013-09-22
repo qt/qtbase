@@ -290,6 +290,11 @@ void tst_QGlobal::qstaticassert()
     Q_UNUSED(tmp1);
     Q_UNUSED(tmp2);
     Q_UNUSED(tmp3);
+#ifdef __COUNTER__
+    // if the compiler supports __COUNTER__, multiple
+    // Q_STATIC_ASSERT's on a single line should compile:
+    Q_STATIC_ASSERT(true); Q_STATIC_ASSERT_X(!false, "");
+#endif // __COUNTER__
     QVERIFY(true); // if the test compiles it has passed.
 }
 
