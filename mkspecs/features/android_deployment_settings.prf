@@ -45,10 +45,10 @@ contains(TEMPLATE, ".*app"):!build_pass:!android-no-sdk {
         FILE_CONTENT += "    \"android-package\": \"$$ANDROID_PACKAGE\","
 
     !isEmpty(ANDROID_MINIMUM_VERSION): \
-        FILE_CONTENT += "    \"android-minimum-version\": \"$$ANDROID_MINIMUM_VERSION\","
+        FILE_CONTENT += "    \"android-minimum-version\": $$ANDROID_MINIMUM_VERSION,"
 
     !isEmpty(ANDROID_TARGET_VERSION): \
-        FILE_CONTENT += "    \"android-target-version\": \"$$ANDROID_TARGET_VERSION\","
+        FILE_CONTENT += "    \"android-target-version\": $$ANDROID_TARGET_VERSION,"
 
     !isEmpty(ANDROID_APP_NAME): \
         FILE_CONTENT += "    \"android-app-name\": \"$$ANDROID_APP_NAME\","
