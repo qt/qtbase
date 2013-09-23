@@ -204,9 +204,9 @@ public class QtNative
                               m_displayMetricsXDpi,
                               m_displayMetricsYDpi,
                               m_displayMetricsScaledDensity);
-            if (params.length() > 0)
+            if (params.length() > 0 && !params.startsWith("\t"))
                 params = "\t" + params;
-            startQtApplication(f.getAbsolutePath() + "\t" + params, environment);
+            startQtApplication(f.getAbsolutePath() + params, environment);
             m_started = true;
         }
         return res;
