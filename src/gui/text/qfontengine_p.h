@@ -434,8 +434,8 @@ protected:
 class QTestFontEngine : public QFontEngineBox
 {
 public:
-    QTestFontEngine(int size) : QFontEngineBox(size) {}
-    virtual Type type() const { return TestFontEngine; }
+    QTestFontEngine(int size);
+    virtual Type type() const;
 };
 
 QT_END_NAMESPACE

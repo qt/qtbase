@@ -1880,4 +1880,13 @@ QImage QFontEngineMulti::alphaRGBMapForGlyph(glyph_t glyph, QFixed subPixelPosit
     return engine(which)->alphaRGBMapForGlyph(stripped(glyph), subPixelPosition, t);
 }
 
+QTestFontEngine::QTestFontEngine(int size)
+    : QFontEngineBox(size)
+{}
+
+QFontEngine::Type QTestFontEngine::type() const
+{
+    return TestFontEngine;
+}
+
 QT_END_NAMESPACE
