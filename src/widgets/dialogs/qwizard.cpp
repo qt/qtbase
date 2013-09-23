@@ -1704,6 +1704,10 @@ void QWizardPrivate::_q_updateButtonStates()
     btn.finish->setVisible(buttonLayoutContains(QWizard::FinishButton)
                            && (canFinish || (opts & QWizard::HaveFinishButtonOnEarlyPages)));
 
+    if (!(opts & QWizard::NoCancelButton))
+        btn.cancel->setVisible(buttonLayoutContains(QWizard::CancelButton)
+                               && (canContinue || !(opts & QWizard::NoCancelButtonOnLastPage)));
+
     bool useDefault = !(opts & QWizard::NoDefaultButton);
     if (QPushButton *nextPush = qobject_cast<QPushButton *>(btn.next))
         nextPush->setDefault(canContinue && useDefault && !commitPage);
@@ -2188,6 +2192,7 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
     \value HaveCustomButton1  Show the first user-defined button (CustomButton1).
     \value HaveCustomButton2  Show the second user-defined button (CustomButton2).
     \value HaveCustomButton3  Show the third user-defined button (CustomButton3).
+    \value NoCancelButtonOnLastPage   Don't show the \uicontrol Cancel button on the last page.
 
     \sa setOptions(), setOption(), testOption()
 */
@@ -2642,7 +2647,7 @@ void QWizard::setOptions(WizardOptions options)
         d->updateButtonLayout();
     } else if (changed & (NoBackButtonOnStartPage | NoBackButtonOnLastPage
                           | HaveNextButtonOnLastPage | HaveFinishButtonOnEarlyPages
-                          | DisabledBackButtonOnLastPage)) {
+                          | DisabledBackButtonOnLastPage | NoCancelButtonOnLastPage)) {
         d->_q_updateButtonStates();
     }
 

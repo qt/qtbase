@@ -115,7 +115,8 @@ public:
         HelpButtonOnRight               = 0x00001000,
         HaveCustomButton1               = 0x00002000,
         HaveCustomButton2               = 0x00004000,
-        HaveCustomButton3               = 0x00008000
+        HaveCustomButton3               = 0x00008000,
+        NoCancelButtonOnLastPage        = 0x00010000
     };
 
     Q_DECLARE_FLAGS(WizardOptions, WizardOption)
