@@ -1,4 +1,4 @@
-CONFIG -= qt
+CONFIG -= qt android_install
 
 javaresources.files = \
     $$PWD/AndroidManifest.xml \
