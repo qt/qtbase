@@ -4898,7 +4898,7 @@ QDebug operator<<(QDebug dbg, const QDateTime &date)
         break;
     case Qt::TimeZone:
 #ifndef QT_BOOTSTRAPPED
-        spec = QStringLiteral(" Qt::TimeZone ") + date.timeZone().id();
+        spec = QStringLiteral(" Qt::TimeZone ") + QString::fromLatin1(date.timeZone().id());
         break;
 #endif // QT_BOOTSTRAPPED
     case Qt::LocalTime:
