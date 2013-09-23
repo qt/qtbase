@@ -199,6 +199,7 @@ int runMoc(int argc, char **argv)
     dummyVariadicFunctionMacro.isVariadic = true;
     dummyVariadicFunctionMacro.arguments += Symbol(0, PP_IDENTIFIER, "__VA_ARGS__");
     pp.macros["__attribute__"] = dummyVariadicFunctionMacro;
+    pp.macros["__declspec"] = dummyVariadicFunctionMacro;
 
     QString filename;
     QString output;
