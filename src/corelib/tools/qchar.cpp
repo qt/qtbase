@@ -1680,6 +1680,8 @@ struct UCS2Pair {
     ushort u2;
 };
 
+inline bool operator<(const UCS2Pair &ligature1, const UCS2Pair &ligature2)
+{ return ligature1.u1 < ligature2.u1; }
 inline bool operator<(ushort u1, const UCS2Pair &ligature)
 { return u1 < ligature.u1; }
 inline bool operator<(const UCS2Pair &ligature, ushort u1)
@@ -1690,6 +1692,8 @@ struct UCS2SurrogatePair {
     UCS2Pair p2;
 };
 
+inline bool operator<(const UCS2SurrogatePair &ligature1, const UCS2SurrogatePair &ligature2)
+{ return QChar::surrogateToUcs4(ligature1.p1.u1, ligature1.p1.u2) < QChar::surrogateToUcs4(ligature2.p1.u1, ligature2.p1.u2); }
 inline bool operator<(uint u1, const UCS2SurrogatePair &ligature)
 { return u1 < QChar::surrogateToUcs4(ligature.p1.u1, ligature.p1.u2); }
 inline bool operator<(const UCS2SurrogatePair &ligature, uint u1)
