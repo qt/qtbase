@@ -1998,10 +1998,16 @@ void HtmlGenerator::generateQmlRequisites(QmlClassNode *qcn, CodeMarker *marker)
                    << inheritedBytext;
 
     //add the module name and version to the map
+    QString qmlModuleVersion;
+    DocNode* dn = qdb_->findQmlModule(qcn->qmlModuleName());
+    if (dn)
+        qmlModuleVersion = dn->qmlModuleVersion();
+    else
+        qmlModuleVersion = qcn->qmlModuleVersion();
     text.clear();
     text << formattingRightMap()[ATOM_FORMATTING_BOLD]
          << formattingLeftMap()[ATOM_FORMATTING_TELETYPE]
-         << "import " + qcn->qmlModuleName() + " " + qcn->qmlModuleVersion()
+         << "import " + qcn->qmlModuleName() + " " + qmlModuleVersion
          << formattingRightMap()[ATOM_FORMATTING_TELETYPE];
     requisites.insert(importText, text);
 
