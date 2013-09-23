@@ -955,7 +955,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_rowDescription(long row, BS
 
     *description = 0;
     if (QAccessibleTableInterface *tableIface = tableInterface()) {
-        const QString qtDesc = tableIface->columnDescription(row);
+        const QString qtDesc = tableIface->rowDescription(row);
         if (!qtDesc.isEmpty())
             *description = QStringToBSTR(qtDesc);
     }
