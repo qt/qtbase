@@ -271,6 +271,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &specification,
             d->hw_pressure_max = absInfo.maximum;
         }
     }
+
     char name[1024];
     if (ioctl(m_fd, EVIOCGNAME(sizeof(name) - 1), name) >= 0) {
         d->hw_name = QString::fromLocal8Bit(name);
@@ -452,9 +453,6 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             }
 
             addTouchPoint(contact, &combinedStates);
-
-            if (contact.state == Qt::TouchPointReleased)
-                it.remove();
         }
 
         // Now look for contacts that have disappeared since the last sync.
@@ -467,6 +465,15 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
                 contact.state = Qt::TouchPointReleased;
                 addTouchPoint(contact, &combinedStates);
             }
+        }
+
+        // Remove contacts that have just been reported as released.
+        it = m_contacts;
+        while (it.hasNext()) {
+            it.next();
+            Contact &contact(it.value());
+            if (contact.state == Qt::TouchPointReleased)
+                it.remove();
         }
 
         m_lastContacts = m_contacts;
