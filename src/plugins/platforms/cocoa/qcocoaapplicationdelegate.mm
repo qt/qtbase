@@ -210,9 +210,10 @@ static void cleanupCocoaApplicationDelegate()
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
     // The reflection delegate gets precedence
-    if (reflectionDelegate
-        && [reflectionDelegate respondsToSelector:@selector(applicationShouldTerminate:)]) {
-        return [reflectionDelegate applicationShouldTerminate:sender];
+    if (reflectionDelegate) {
+        if ([reflectionDelegate respondsToSelector:@selector(applicationShouldTerminate:)])
+            return [reflectionDelegate applicationShouldTerminate:sender];
+        return NSTerminateNow;
     }
 
     if ([self canQuit]) {
@@ -327,12 +328,11 @@ static void cleanupCocoaApplicationDelegate()
 
 - (void)applicationDidBecomeActive:(NSNotification *)notification
 {
-    Q_UNUSED(notification);
-/*
     if (reflectionDelegate
         && [reflectionDelegate respondsToSelector:@selector(applicationDidBecomeActive:)])
         [reflectionDelegate applicationDidBecomeActive:notification];
 
+/*
     onApplicationChangedActivation(true);
 
     if (!QWidget::mouseGrabber()){
@@ -351,12 +351,11 @@ static void cleanupCocoaApplicationDelegate()
 
 - (void)applicationDidResignActive:(NSNotification *)notification
 {
-    Q_UNUSED(notification);
-/*
     if (reflectionDelegate
         && [reflectionDelegate respondsToSelector:@selector(applicationDidResignActive:)])
         [reflectionDelegate applicationDidResignActive:notification];
 
+/*
     onApplicationChangedActivation(false);
 
     if (!QWidget::mouseGrabber())
