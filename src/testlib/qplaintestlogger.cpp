@@ -62,6 +62,10 @@
 #include <QtCore/QByteArray>
 #include <QtCore/qmath.h>
 
+#ifdef Q_OS_ANDROID
+#  include <android/log.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 namespace QTest {
@@ -206,6 +210,8 @@ void QPlainTestLogger::outputMessage(const char *str)
     if (stream != stdout)
 #elif defined(Q_OS_WIN)
     OutputDebugStringA(str);
+#elif defined(Q_OS_ANDROID)
+    __android_log_print(ANDROID_LOG_INFO, "QTestLib", str);
 #endif
     outputString(str);
 }
