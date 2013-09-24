@@ -254,16 +254,25 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &specification,
 
     input_absinfo absInfo;
     memset(&absInfo, 0, sizeof(input_absinfo));
-    if (ioctl(m_fd, EVIOCGABS(d->m_singleTouch ? ABS_X : ABS_MT_POSITION_X), &absInfo) >= 0) {
+    bool has_x_range = false, has_y_range = false;
+
+    if (ioctl(m_fd, EVIOCGABS((d->m_singleTouch ? ABS_X : ABS_MT_POSITION_X)), &absInfo) >= 0) {
         qDebug("min X: %d max X: %d", absInfo.minimum, absInfo.maximum);
         d->hw_range_x_min = absInfo.minimum;
         d->hw_range_x_max = absInfo.maximum;
+        has_x_range = true;
     }
-    if (ioctl(m_fd, EVIOCGABS(d->m_singleTouch ? ABS_Y : ABS_MT_POSITION_Y), &absInfo) >= 0) {
+
+    if (ioctl(m_fd, EVIOCGABS((d->m_singleTouch ? ABS_Y : ABS_MT_POSITION_Y)), &absInfo) >= 0) {
         qDebug("min Y: %d max Y: %d", absInfo.minimum, absInfo.maximum);
         d->hw_range_y_min = absInfo.minimum;
         d->hw_range_y_max = absInfo.maximum;
+        has_y_range = true;
     }
+
+    if (!has_x_range || !has_y_range)
+        qWarning("evdevtouch: Invalid ABS limits, behavior unspecified");
+
     if (ioctl(m_fd, EVIOCGABS(ABS_PRESSURE), &absInfo) >= 0) {
         qDebug("min pressure: %d max pressure: %d", absInfo.minimum, absInfo.maximum);
         if (absInfo.maximum > absInfo.minimum) {
