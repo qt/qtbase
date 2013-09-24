@@ -363,6 +363,25 @@ void QDnsLookup::setType(Type type)
 }
 
 /*!
+    \property QDnsLookup::nameserver
+    \brief the nameserver to use for DNS lookup.
+*/
+
+QHostAddress QDnsLookup::nameserver() const
+{
+    return d_func()->nameserver;
+}
+
+void QDnsLookup::setNameserver(const QHostAddress &nameserver)
+{
+    Q_D(QDnsLookup);
+    if (nameserver != d->nameserver) {
+        d->nameserver = nameserver;
+        emit nameserverChanged(nameserver);
+    }
+}
+
+/*!
     Returns the list of canonical name records associated with this lookup.
 */
 

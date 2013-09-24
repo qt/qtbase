@@ -100,6 +100,7 @@ public:
     bool isFinished;
     QString name;
     QDnsLookup::Type type;
+    QHostAddress nameserver;
     QDnsLookupReply reply;
     QDnsLookupRunnable *runnable;
 
