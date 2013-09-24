@@ -533,10 +533,18 @@
     This problem doesn't occur with functions that return a const or
     non-const reference to a container.
 
+    \section3 Implicit sharing iterator problem
+
     \l{Implicit sharing} has another consequence on STL-style
-    iterators: You must not take a copy of a container while
-    non-const iterators are active on that container. Java-style
-    iterators don't suffer from that limitation.
+    iterators: you should avoid copying a container while
+    iterators are active on that container. The iterators
+    point to an internal structure, and if you copy a container
+    you should be very careful with your iterators. E.g:
+
+    \snippet code/doc_src_containers.cpp 24
+
+     The above example only shows a problem with QVector, but
+     the problem exists for all the implicitly shared Qt containers.
 
     \keyword foreach
     \section1 The foreach Keyword

@@ -1215,6 +1215,11 @@ void QMapDataBase::freeData(QMapDataBase *d)
     items from the map, iterators that point to the removed items
     will become dangling iterators.
 
+    \warning Iterators on implicitly shared containers do not work
+    exactly like STL-iterators. You should avoid copying a container
+    while iterators are active on that container. For more information,
+    read \l{Implicit sharing iterator problem}.
+
     \sa QMap::const_iterator, QMutableMapIterator
 */
 
@@ -1432,6 +1437,11 @@ void QMapDataBase::freeData(QMapDataBase *d)
     to the map, existing iterators will remain valid. If you remove
     items from the map, iterators that point to the removed items
     will become dangling iterators.
+
+    \warning Iterators on implicitly shared containers do not work
+    exactly like STL-iterators. You should avoid copying a container
+    while iterators are active on that container. For more information,
+    read \l{Implicit sharing iterator problem}.
 
     \sa QMap::iterator, QMapIterator
 */

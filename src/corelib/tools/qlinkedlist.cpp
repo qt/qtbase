@@ -691,9 +691,12 @@ const QLinkedListData QLinkedListData::shared_null = {
     Multiple iterators can be used on the same list. If you add items
     to the list, existing iterators will remain valid. If you remove
     items from the list, iterators that point to the removed items
-    will become dangling iterators. However, because of how \l{implicit
-    sharing} works, you must not take a copy of a container while
-    iterators are active on that container.
+    will become dangling iterators.
+
+    \warning Iterators on implicitly shared containers do not work
+    exactly like STL-iterators. You should avoid copying a container
+    while iterators are active on that container. For more information,
+    read \l{Implicit sharing iterator problem}.
 
     \sa QLinkedList::const_iterator, QMutableLinkedListIterator
 */
@@ -909,6 +912,11 @@ const QLinkedListData QLinkedListData::shared_null = {
     to the list, existing iterators will remain valid. If you remove
     items from the list, iterators that point to the removed items
     will become dangling iterators.
+
+    \warning Iterators on implicitly shared containers do not work
+    exactly like STL-iterators. You should avoid copying a container
+    while iterators are active on that container. For more information,
+    read \l{Implicit sharing iterator problem}.
 
     \sa QLinkedList::iterator, QLinkedListIterator
 */

@@ -1292,6 +1292,11 @@ void **QListData::erase(void **xi)
     iterators over a long period of time, we recommend that you use
     QLinkedList rather than QList.
 
+    \warning Iterators on implicitly shared containers do not work
+    exactly like STL-iterators. You should avoid copying a container
+    while iterators are active on that container. For more information,
+    read \l{Implicit sharing iterator problem}.
+
     \sa QList::const_iterator, QMutableListIterator
 */
 
@@ -1541,6 +1546,11 @@ void **QListData::erase(void **xi)
     will render all existing iterators undefined. If you need to keep
     iterators over a long period of time, we recommend that you use
     QLinkedList rather than QList.
+
+    \warning Iterators on implicitly shared containers do not work
+    exactly like STL-iterators. You should avoid copying a container
+    while iterators are active on that container. For more information,
+    read \l{Implicit sharing iterator problem}.
 
     \sa QList::iterator, QListIterator
 */

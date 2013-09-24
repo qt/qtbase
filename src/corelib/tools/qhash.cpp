@@ -1594,6 +1594,11 @@ void QHashData::checkSanity()
     need to keep iterators over a long period of time, we recommend
     that you use QMap rather than QHash.
 
+    \warning Iterators on implicitly shared containers do not work
+    exactly like STL-iterators. You should avoid copying a container
+    while iterators are active on that container. For more information,
+    read \l{Implicit sharing iterator problem}.
+
     \sa QHash::const_iterator, QMutableHashIterator
 */
 
@@ -1790,6 +1795,11 @@ void QHashData::checkSanity()
     are stored in the hash, as they might cause QHash to rehash its
     internal data structure. If you need to keep iterators over a long
     period of time, we recommend that you use QMap rather than QHash.
+
+    \warning Iterators on implicitly shared containers do not work
+    exactly like STL-iterators. You should avoid copying a container
+    while iterators are active on that container. For more information,
+    read \l{Implicit sharing iterator problem}.
 
     \sa QHash::iterator, QHashIterator
 */

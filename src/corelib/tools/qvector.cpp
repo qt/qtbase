@@ -957,6 +957,11 @@
     iterators}. The STL-style non-const iterator is simply a typedef
     for "T *" (pointer to T).
 
+    \warning Iterators on implicitly shared containers do not work
+    exactly like STL-iterators. You should avoid copying a container
+    while iterators are active on that container. For more information,
+    read \l{Implicit sharing iterator problem}.
+
     \sa QVector::begin(), QVector::end(), QVector::const_iterator, QMutableVectorIterator
 */
 
@@ -968,6 +973,11 @@
     QVector provides both \l{STL-style iterators} and \l{Java-style
     iterators}. The STL-style const iterator is simply a typedef for
     "const T *" (pointer to const T).
+
+    \warning Iterators on implicitly shared containers do not work
+    exactly like STL-iterators. You should avoid copying a container
+    while iterators are active on that container. For more information,
+    read \l{Implicit sharing iterator problem}.
 
     \sa QVector::constBegin(), QVector::constEnd(), QVector::iterator, QVectorIterator
 */

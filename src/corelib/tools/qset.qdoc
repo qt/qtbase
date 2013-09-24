@@ -643,8 +643,12 @@
 
     \snippet code/doc_src_qset.cpp 10
 
-    Multiple iterators can be used on the same set. However, you may
-    not attempt to modify the container while iterating on it.
+    Multiple iterators can be used on the same set.
+
+    \warning Iterators on implicitly shared containers do not work
+    exactly like STL-iterators. You should avoid copying a container
+    while iterators are active on that container. For more information,
+    read \l{Implicit sharing iterator problem}.
 
     \sa QSet::const_iterator, QMutableSetIterator
 */
@@ -682,8 +686,10 @@
 
     \snippet code/doc_src_qset.cpp 12
 
-    Multiple iterators can be used on the same set. However, you may
-    not attempt to modify the container while iterating on it.
+    \warning Iterators on implicitly shared containers do not work
+    exactly like STL-iterators. You should avoid copying a container
+    while iterators are active on that container. For more information,
+    read \l{Implicit sharing iterator problem}.
 
     \sa QSet::iterator, QSetIterator
 */
