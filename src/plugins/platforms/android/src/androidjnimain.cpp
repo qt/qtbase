@@ -455,7 +455,7 @@ static jboolean startQtApplication(JNIEnv *env, jobject /*object*/, jstring para
     env->ReleaseStringUTFChars(environmentString, nativeString);
     m_applicationParams=string.split('\t');
     foreach (string, m_applicationParams) {
-        if (putenv(string.constData()))
+        if (!string.isEmpty() && putenv(string.constData()))
             qWarning() << "Can't set environment" << string;
     }
 
