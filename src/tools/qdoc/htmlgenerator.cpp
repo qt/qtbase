@@ -1868,18 +1868,11 @@ void HtmlGenerator::generateRequisites(InnerNode *inner, CodeMarker *marker)
         text.clear();
         QStringList since = inner->since().split(QLatin1Char(' '));
         if (since.count() == 1) {
-            // Handle legacy use of \since <version>.
-            if (project.isEmpty())
-                text << "version";
-            else
-                text << Atom(Atom::Link, project)
-                     << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
-                     << Atom(Atom::String, project)
-                     << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
-            text << " " << since[0];
+            // If there is only one argument, assume it is the Qt version number.
+            text << " Qt " << since[0];
         }
         else {
-                // Reconstruct the <project> <version> string.
+                //Otherwise, reconstruct the <project> <version> string.
                 text << " " << since.join(' ');
         }
         text << Atom::ParaRight;
@@ -2016,19 +2009,11 @@ void HtmlGenerator::generateQmlRequisites(QmlClassNode *qcn, CodeMarker *marker)
         text.clear();
         QStringList since = qcn->since().split(QLatin1Char(' '));
         if (since.count() == 1) {
-            // Handle legacy use of \since <version>.
-            if (project.isEmpty())
-                text << "version";
-            else
-                text << Atom(Atom::Link, project)
-                     << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
-                     << Atom(Atom::String, project)
-                     << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
-
-            text << " " << since[0];
+            // If there is only one argument, assume it is the Qt version number.
+            text << " Qt " << since[0];
         }
         else {
-                // Reconstruct the <project> <version> string.
+                //Otherwise, reconstruct the <project> <version> string.
                 text << " " << since.join(' ');
         }
         text << Atom::ParaRight;
