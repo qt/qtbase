@@ -160,10 +160,12 @@ QJNIEnvironmentPrivate::QJNIEnvironmentPrivate()
     : jniEnv(0)
 {
     JavaVM *vm = QtAndroidPrivate::javaVM();
-    if (vm->GetEnv((void**)&jniEnv, JNI_VERSION_1_6) != JNI_EDETACHED)
-        return;
+    if (vm->GetEnv((void**)&jniEnv, JNI_VERSION_1_6) == JNI_EDETACHED) {
+        if (vm->AttachCurrentThread(&jniEnv, 0) < 0)
+            return;
+    }
 
-    if (vm->AttachCurrentThread(&jniEnv, 0) < 0)
+    if (!jniEnv)
         return;
 
     if (!refCount->hasLocalData())
