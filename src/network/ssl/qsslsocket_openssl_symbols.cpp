@@ -528,8 +528,6 @@ static QPair<QSystemLibrary*, QSystemLibrary*> loadOpenSslWin32()
 static QPair<QLibrary*, QLibrary*> loadOpenSsl()
 {
     QPair<QLibrary*,QLibrary*> pair;
-    pair.first = 0;
-    pair.second = 0;
 
 # if defined(Q_OS_UNIX)
     QLibrary *&libssl = pair.first;
