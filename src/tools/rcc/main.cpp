@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include <rcc.h>
-#include "../../corelib/kernel/qcorecmdlineargs_p.h"
 
 #include <qdebug.h>
 #include <qdir.h>
