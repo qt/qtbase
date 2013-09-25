@@ -214,7 +214,6 @@ public:
 
     static int enabledAnimations; // Combination of QPlatformTheme::UiEffect
     static bool widgetCount; // Coupled with -widgetcount switch
-    static bool load_testability; // Coupled with -testability switch
 
     static void setSystemPalette(const QPalette &pal);
     static void setPalette_helper(const QPalette &palette, const char* className, bool clearWidgetPaletteHash);
