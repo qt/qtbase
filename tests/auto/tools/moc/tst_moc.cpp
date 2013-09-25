@@ -3037,6 +3037,9 @@ void tst_Moc::parseDefines()
 
     index = mo->indexOfSlot("PD_DEFINE_ITSELF_SUFFIX(int)");
     QVERIFY(index != -1);
+
+    index = mo->indexOfSignal("cmdlineSignal(QMap<int,int>)");
+    QVERIFY(index != -1);
 }
 
 void tst_Moc::preprocessorOnly()

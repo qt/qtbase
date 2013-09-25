@@ -343,7 +343,8 @@ int runMoc(int argc, char **argv)
             parser.showHelp(1);
         }
         Macro macro;
-        macro.symbols += Symbol(0, PP_IDENTIFIER, value);
+        macro.symbols = Preprocessor::tokenize(value, 1, Preprocessor::TokenizeDefine);
+        macro.symbols.removeLast(); // remove the EOF symbol
         pp.macros.insert(name, macro);
     }
     foreach (const QString &arg, parser.values(undefineOption)) {

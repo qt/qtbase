@@ -42,3 +42,6 @@ DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
 # Ensure that plugin_metadata.h are moc-ed with some extra -M arguments:
 QMAKE_MOC_OPTIONS += -Muri=com.company.app -Muri=com.company.app.private
 
+# Define macro on the command lines used in  parse-defines.h
+QMAKE_MOC_OPTIONS += "-DDEFINE_CMDLINE_EMPTY="  "\"-DDEFINE_CMDLINE_SIGNAL=void cmdlineSignal(const QMap<int, int> &i)\""
+
