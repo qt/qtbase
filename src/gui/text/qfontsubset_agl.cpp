@@ -125,6 +125,11 @@ struct AGLEntry {
     unsigned short index;
 };
 
+#if defined(Q_CC_MSVC) && _MSC_VER < 1600
+inline bool operator<(AGLEntry entry1, AGLEntry entry2)
+{ return entry1.uc < entry2.uc; }
+#endif
+
 inline bool operator<(unsigned short uc, AGLEntry entry)
 { return uc < entry.uc; }
 inline bool operator<(AGLEntry entry, unsigned short uc)
