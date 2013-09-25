@@ -119,6 +119,11 @@ void qsslSocketUnresolvedSymbolWarning(const char *functionName)
 {
     qWarning("QSslSocket: cannot call unresolved function %s", functionName);
 }
+
+void qsslSocketCannotResolveSymbolWarning(const char *functionName)
+{
+    qWarning("QSslSocket: cannot resolve %s", functionName);
+}
 }
 
 #ifdef SSLEAY_MACROS
@@ -345,7 +350,7 @@ DEFINEFUNC3(SSL_SESSION *, d2i_SSL_SESSION, SSL_SESSION **a, a, const unsigned c
 #define RESOLVEFUNC(func) \
     if (!(_q_##func = _q_PTR_##func(libs.first->resolve(#func)))     \
         && !(_q_##func = _q_PTR_##func(libs.second->resolve(#func)))) \
-        qWarning("QSslSocket: cannot resolve "#func);
+        qsslSocketCannotResolveSymbolWarning(#func);
 
 #if !defined QT_LINKED_OPENSSL
 
