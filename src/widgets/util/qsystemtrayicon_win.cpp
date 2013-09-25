@@ -242,7 +242,7 @@ void QSystemTrayIconSys::setIconContents(NOTIFYICONDATA &tnd)
     tnd.hIcon = hIcon;
     const QString tip = q->toolTip();
     if (!tip.isNull())
-        qStringToLimitedWCharArray(tip, tnd.szTip, 64);
+        qStringToLimitedWCharArray(tip, tnd.szTip, sizeof(tnd.szTip)/sizeof(wchar_t));
 }
 
 static int iconFlag( QSystemTrayIcon::MessageIcon icon )

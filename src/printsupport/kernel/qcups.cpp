@@ -50,6 +50,8 @@
 #endif
 #include <qtextcodec.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 extern double qt_multiplierForUnit(QPrinter::Unit unit, int resolution);
@@ -517,15 +519,15 @@ void QCUPSSupport::setPagesPerSheetLayout(QPrinter *printer,  const PagesPerShee
     QStringList cupsOptions = cupsOptionsList(printer);
     static const char *pagesPerSheetData[] = { "1", "2", "4", "6", "9", "16", 0 };
     static const char *pageLayoutData[] = {"lrtb", "lrbt", "rlbt", "rltb", "btlr", "btrl", "tblr", "tbrl", 0};
-    setCupsOption(cupsOptions, QStringLiteral("number-up"), pagesPerSheetData[pagesPerSheet]);
-    setCupsOption(cupsOptions, QStringLiteral("number-up-layout"), pageLayoutData[pagesPerSheetLayout]);
+    setCupsOption(cupsOptions, QStringLiteral("number-up"), QLatin1String(pagesPerSheetData[pagesPerSheet]));
+    setCupsOption(cupsOptions, QStringLiteral("number-up-layout"), QLatin1String(pageLayoutData[pagesPerSheetLayout]));
     setCupsOptions(printer, cupsOptions);
 }
 
 void QCUPSSupport::setPageRange(QPrinter *printer, int pageFrom, int pageTo)
 {
     QStringList cupsOptions = cupsOptionsList(printer);
-    setCupsOption(cupsOptions, QStringLiteral("page-ranges"), QString("%1-%2").arg(pageFrom).arg(pageTo));
+    setCupsOption(cupsOptions, QStringLiteral("page-ranges"), QStringLiteral("%1-%2").arg(pageFrom).arg(pageTo));
     setCupsOptions(printer, cupsOptions);
 }
 
@@ -659,8 +661,8 @@ inline bool operator<(const NamedPaperSize &data, const char *name)
 
 static inline QPrinter::PaperSize string2PaperSize(const char *name)
 {
-    const NamedPaperSize *r = qBinaryFind(named_sizes_map, named_sizes_map + QPrinter::NPageSize, name);
-    if (r - named_sizes_map != QPrinter::NPageSize)
+    const NamedPaperSize *r = std::lower_bound(named_sizes_map, named_sizes_map + QPrinter::NPageSize, name);
+    if ((r != named_sizes_map + QPrinter::NPageSize) && !(name < *r))
         return r->size;
     return QPrinter::Custom;
 }

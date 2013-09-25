@@ -325,16 +325,16 @@ QChar qt_mac_qtKey2CocoaKey(Qt::Key key)
         std::sort(rev_entries.begin(), rev_entries.end(), qtKey2CocoaKeySortLessThan);
     }
     const QVector<KeyPair>::iterator i
-            = qBinaryFind(rev_entries.begin(), rev_entries.end(), key);
-    if (i == rev_entries.end())
+            = std::lower_bound(rev_entries.begin(), rev_entries.end(), key);
+    if ((i == rev_entries.end()) || (key < *i))
         return QChar();
     return i->cocoaKey;
 }
 
 Qt::Key qt_mac_cocoaKey2QtKey(QChar keyCode)
 {
-    const KeyPair *i = qBinaryFind(entries, end, keyCode);
-    if (i == end)
+    const KeyPair *i = std::lower_bound(entries, end, keyCode);
+    if ((i == end) || (keyCode < *i))
         return Qt::Key(keyCode.toUpper().unicode());
     return i->qtKey;
 }

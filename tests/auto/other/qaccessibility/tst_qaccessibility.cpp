@@ -3481,8 +3481,13 @@ void tst_QAccessibility::bridgeTest()
         BSTR bstrDescription;
         hr = ia2Table->get_columnDescription(0, &bstrDescription);
         QVERIFY(SUCCEEDED(hr));
-        const QString description((QChar*)bstrDescription);
-        QCOMPARE(description, QLatin1String("h1"));
+        QCOMPARE(QString::fromWCharArray(bstrDescription), QLatin1String("h1"));
+        ::SysFreeString(bstrDescription);
+
+        hr = ia2Table->get_rowDescription(1, &bstrDescription);
+        QVERIFY(SUCCEEDED(hr));
+        QCOMPARE(QString::fromWCharArray(bstrDescription), QLatin1String("v2"));
+        ::SysFreeString(bstrDescription);
 
         IAccessible *accTableCell = 0;
         hr = ia2Table->get_cellAt(1, 2, (IUnknown**)&accTableCell);

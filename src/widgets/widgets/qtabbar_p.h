@@ -126,11 +126,9 @@ public:
             TabBarAnimation(Tab *t, QTabBarPrivate *_priv) : tab(t), priv(_priv)
             { setEasingCurve(QEasingCurve::InOutQuad); }
 
-            void updateCurrentValue(const QVariant &current)
-            { priv->moveTab(priv->tabList.indexOf(*tab), current.toInt()); }
+            void updateCurrentValue(const QVariant &current);
 
-            void updateState(State, State newState)
-            { if (newState == Stopped) priv->moveTabFinished(priv->tabList.indexOf(*tab)); }
+            void updateState(State, State newState);
         private:
             //these are needed for the callbacks
             Tab *tab;

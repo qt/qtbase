@@ -17,6 +17,7 @@ SUBDIRS=\
    qfocusframe \
    qfontcombobox \
    qgroupbox \
+   qkeysequenceedit \
    qlabel \
    qlcdnumber \
    qlineedit \

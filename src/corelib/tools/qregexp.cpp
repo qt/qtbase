@@ -2883,6 +2883,8 @@ static const struct CategoriesRangeMapEntry {
     { "YijingHexagramSymbols",                0x4DC0, 0x4DFF }
 };
 
+inline bool operator<(const CategoriesRangeMapEntry &entry1, const CategoriesRangeMapEntry &entry2)
+{ return qstrcmp(entry1.name, entry2.name) < 0; }
 inline bool operator<(const char *name, const CategoriesRangeMapEntry &entry)
 { return qstrcmp(name, entry.name) < 0; }
 inline bool operator<(const CategoriesRangeMapEntry &entry, const char *name)

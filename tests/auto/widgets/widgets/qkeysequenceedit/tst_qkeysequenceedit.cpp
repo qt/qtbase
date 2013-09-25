@@ -38,27 +38,67 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <qobject.h>
 
-// test support for gcc attributes with functions
 
-#if defined(Q_CC_GNU) || defined(Q_MOC_RUN)
-#define DEPRECATED1 __attribute__ ((__deprecated__))
-#else
-#define DEPRECATED1
-#endif
+#include <QtTest/QtTest>
 
-#if defined(Q_CC_MSVC) || defined(Q_MOC_RUN)
-#define DEPRECATED2 __declspec(deprecated)
-#else
-#define DEPRECATED2
-#endif
+#include <QKeySequenceEdit>
 
-class FunctionWithAttributes : public QObject
+Q_DECLARE_METATYPE(Qt::Key)
+Q_DECLARE_METATYPE(Qt::KeyboardModifiers)
+
+class tst_QKeySequenceEdit : public QObject
 {
     Q_OBJECT
-public slots:
-    DEPRECATED1 void test1() {}
-    DEPRECATED2 void test2() {}
 
+private slots:
+    void testSetters();
+    void testKeys_data();
+    void testKeys();
 };
+
+void tst_QKeySequenceEdit::testSetters()
+{
+    QKeySequenceEdit edit;
+    QSignalSpy spy(&edit, SIGNAL(keySequenceChanged(QKeySequence)));
+    QCOMPARE(edit.keySequence(), QKeySequence());
+
+    edit.setKeySequence(QKeySequence::New);
+    QCOMPARE(edit.keySequence(), QKeySequence(QKeySequence::New));
+
+    edit.clear();
+    QCOMPARE(edit.keySequence(), QKeySequence());
+
+    QCOMPARE(spy.count(), 2);
+}
+
+void tst_QKeySequenceEdit::testKeys_data()
+{
+    QTest::addColumn<Qt::Key>("key");
+    QTest::addColumn<Qt::KeyboardModifiers>("modifiers");
+    QTest::addColumn<QKeySequence>("keySequence");
+
+    QTest::newRow("1") << Qt::Key_N << Qt::KeyboardModifiers(Qt::ControlModifier) << QKeySequence("Ctrl+N");
+    QTest::newRow("2") << Qt::Key_N << Qt::KeyboardModifiers(Qt::AltModifier) << QKeySequence("Alt+N");
+    QTest::newRow("3") << Qt::Key_N << Qt::KeyboardModifiers(Qt::ShiftModifier) << QKeySequence("Shift+N");
+    QTest::newRow("4") << Qt::Key_N << Qt::KeyboardModifiers(Qt::ControlModifier  | Qt::ShiftModifier) << QKeySequence("Ctrl+Shift+N");
+}
+
+void tst_QKeySequenceEdit::testKeys()
+{
+    QFETCH(Qt::Key, key);
+    QFETCH(Qt::KeyboardModifiers, modifiers);
+    QFETCH(QKeySequence, keySequence);
+    QKeySequenceEdit edit;
+
+    QSignalSpy spy(&edit, SIGNAL(editingFinished()));
+    QTest::keyPress(&edit, key, modifiers);
+    QTest::keyRelease(&edit, key, modifiers);
+
+    QCOMPARE(spy.count(), 0);
+    QCOMPARE(edit.keySequence(), keySequence);
+    QTRY_COMPARE(spy.count(), 1);
+}
+
+QTEST_MAIN(tst_QKeySequenceEdit)
+#include "tst_qkeysequenceedit.moc"

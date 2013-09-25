@@ -70,6 +70,8 @@
 #include "qeuckrcodec_p.h"
 #include "cp949codetbl_p.h"
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_BIG_CODECS
@@ -3383,8 +3385,8 @@ QByteArray QCP949Codec::convertFromUnicode(const QChar *uc, int len, ConverterSt
             *cursor++ = (j >> 8)   | 0x80;
             *cursor++ = (j & 0xff) | 0x80;
         } else {
-            const unsigned short *ptr = qBinaryFind(cp949_icode_to_unicode, cp949_icode_to_unicode + 8822, ch);
-            if (ptr == cp949_icode_to_unicode + 8822) {
+            const unsigned short *ptr = std::lower_bound(cp949_icode_to_unicode, cp949_icode_to_unicode + 8822, ch);
+            if (ptr == cp949_icode_to_unicode + 8822 || ch < *ptr) {
                 // Error
                 *cursor++ = replacement;
                 ++invalid;

@@ -1804,7 +1804,10 @@ ProjectBuilderMakefileGenerator::writeSettings(const QString &var, const ProStri
     for(int i = 0; i < indent_level; ++i)
         newline += "\t";
 
-    ret += var + " = ";
+    static QRegExp allowedVariableCharacters("^[a-zA-Z0-9_]*$");
+    ret += var.contains(allowedVariableCharacters) ? var : quotedStringLiteral(var);
+
+    ret += " = ";
 
     if(flags & SettingsAsList) {
         ret += "(" + newline;

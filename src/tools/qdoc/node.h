@@ -211,6 +211,7 @@ public:
     virtual bool isWrapper() const;
     virtual bool isReadOnly() const { return false; }
     virtual bool isDefault() const { return false; }
+    virtual bool isExternalPage() const { return false; }
     virtual void addMember(Node* ) { }
     virtual bool hasMembers() const { return false; }
     virtual bool hasNamespaces() const { return false; }
@@ -514,6 +515,7 @@ public:
     virtual bool isGroup() const { return (subType() == Node::Group); }
     virtual bool isExample() const { return (subType() == Node::Example); }
     virtual bool isExampleFile() const { return (parent() && parent()->isExample()); }
+    virtual bool isExternalPage() const { return nodeSubtype_ == ExternalPage; }
 
 protected:
     SubType nodeSubtype_;

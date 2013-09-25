@@ -200,6 +200,7 @@ public: // for QNSView
     bool m_frameStrutEventsEnabled;
     bool m_isExposed;
     int m_registerTouchCount;
+    bool m_resizableTransientParent;
 
     static const int NoAlertRequest;
     NSInteger m_alertRequest;

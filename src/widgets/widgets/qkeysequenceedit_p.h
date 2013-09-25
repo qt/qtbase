@@ -1,9 +1,10 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Ivan Komissarov.
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -38,27 +39,43 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <qobject.h>
 
-// test support for gcc attributes with functions
+#ifndef QKEYSEQUENCEEDIT_P_H
+#define QKEYSEQUENCEEDIT_P_H
 
-#if defined(Q_CC_GNU) || defined(Q_MOC_RUN)
-#define DEPRECATED1 __attribute__ ((__deprecated__))
-#else
-#define DEPRECATED1
-#endif
+#include "qkeysequenceedit.h"
 
-#if defined(Q_CC_MSVC) || defined(Q_MOC_RUN)
-#define DEPRECATED2 __declspec(deprecated)
-#else
-#define DEPRECATED2
-#endif
+#include <private/qwidget_p.h>
 
-class FunctionWithAttributes : public QObject
+QT_BEGIN_NAMESPACE
+
+#ifndef QT_NO_KEYSEQUENCEEDIT
+
+class QLineEdit;
+class QVBoxLayout;
+
+class QKeySequenceEditPrivate : public QWidgetPrivate
 {
-    Q_OBJECT
-public slots:
-    DEPRECATED1 void test1() {}
-    DEPRECATED2 void test2() {}
+    Q_DECLARE_PUBLIC(QKeySequenceEdit)
+public:
+    enum { MaxKeyCount = 4 };
 
+    void init();
+    int translateModifiers(Qt::KeyboardModifiers state, const QString &text);
+    void resetState();
+    void finishEditing();
+
+    QLineEdit *lineEdit;
+    QVBoxLayout *layout;
+    QKeySequence keySequence;
+    int keyNum;
+    int key[MaxKeyCount];
+    int prevKey;
+    int releaseTimer;
 };
+
+#endif // QT_NO_KEYSEQUENCEEDIT
+
+QT_END_NAMESPACE
+
+#endif // QKEYSEQUENCEEDIT_P_H

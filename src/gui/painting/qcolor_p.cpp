@@ -40,14 +40,10 @@
 ****************************************************************************/
 
 #include "qglobal.h"
-
-#if defined(Q_CC_BOR)
-// needed for qsort() because of a std namespace problem on Borland
-#include "qplatformdefs.h"
-#endif
-
 #include "qrgb.h"
 #include "qstringlist.h"
+
+#include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
@@ -301,8 +297,8 @@ inline bool operator<(const RGBData &data, const char *name)
 static bool get_named_rgb(const char *name_no_space, QRgb *rgb)
 {
     QByteArray name = QByteArray(name_no_space).toLower();
-    const RGBData *r = qBinaryFind(rgbTbl, rgbTbl + rgbTblSize, name.constData());
-    if (r != rgbTbl + rgbTblSize) {
+    const RGBData *r = std::lower_bound(rgbTbl, rgbTbl + rgbTblSize, name.constData());
+    if ((r != rgbTbl + rgbTblSize) && !(name.constData() < *r)) {
         *rgb = r->value;
         return true;
     }

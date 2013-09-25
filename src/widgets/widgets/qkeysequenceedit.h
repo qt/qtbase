@@ -1,9 +1,10 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Ivan Komissarov.
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -38,27 +39,52 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <qobject.h>
 
-// test support for gcc attributes with functions
+#ifndef QKEYSEQUENCEEDIT_H
+#define QKEYSEQUENCEEDIT_H
 
-#if defined(Q_CC_GNU) || defined(Q_MOC_RUN)
-#define DEPRECATED1 __attribute__ ((__deprecated__))
-#else
-#define DEPRECATED1
-#endif
+#include <QtWidgets/qwidget.h>
 
-#if defined(Q_CC_MSVC) || defined(Q_MOC_RUN)
-#define DEPRECATED2 __declspec(deprecated)
-#else
-#define DEPRECATED2
-#endif
+QT_BEGIN_NAMESPACE
 
-class FunctionWithAttributes : public QObject
+#ifndef QT_NO_KEYSEQUENCEEDIT
+
+class QKeySequenceEditPrivate;
+class Q_WIDGETS_EXPORT QKeySequenceEdit : public QWidget
 {
     Q_OBJECT
-public slots:
-    DEPRECATED1 void test1() {}
-    DEPRECATED2 void test2() {}
+    Q_PROPERTY(QKeySequence keySequence READ keySequence WRITE setKeySequence RESET clear NOTIFY keySequenceChanged USER true)
 
+public:
+    explicit QKeySequenceEdit(QWidget *parent = 0);
+    explicit QKeySequenceEdit(const QKeySequence &keySequence, QWidget *parent = 0);
+    ~QKeySequenceEdit();
+
+    QKeySequence keySequence() const;
+    void setKeySequence(const QKeySequence &keySequence);
+
+public Q_SLOTS:
+    void clear();
+
+Q_SIGNALS:
+    void editingFinished();
+    void keySequenceChanged(const QKeySequence &keySequence);
+
+protected:
+    QKeySequenceEdit(QKeySequenceEditPrivate &d, QWidget *parent, Qt::WindowFlags f);
+
+    bool event(QEvent *) Q_DECL_OVERRIDE;
+    void keyPressEvent(QKeyEvent *) Q_DECL_OVERRIDE;
+    void keyReleaseEvent(QKeyEvent *) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE;
+
+private:
+    Q_DISABLE_COPY(QKeySequenceEdit)
+    Q_DECLARE_PRIVATE(QKeySequenceEdit)
 };
+
+#endif // QT_NO_KEYSEQUENCEEDIT
+
+QT_END_NAMESPACE
+
+#endif // QKEYSEQUENCEEDIT_H

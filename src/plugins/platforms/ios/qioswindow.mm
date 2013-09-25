@@ -150,9 +150,9 @@
 
 - (void)updateTouchList:(NSSet *)touches withState:(Qt::TouchPointState)state
 {
-    QPlatformScreen *screen = QGuiApplication::primaryScreen()->handle();
-    QRect applicationRect = fromPortraitToPrimary(fromCGRect(self.window.screen.applicationFrame), screen);
-
+    // We deliver touch events with global coordinates. But global in this respect means
+    // the coordinate system where this QWindow lives. And that is our superview.
+    CGSize parentSize = self.superview.frame.size;
     foreach (UITouch *uiTouch, m_activeTouches.keys()) {
         QWindowSystemInterface::TouchPoint &touchPoint = m_activeTouches[uiTouch];
         if (![touches containsObject:uiTouch]) {
@@ -160,15 +160,9 @@
         } else {
             touchPoint.state = state;
             touchPoint.pressure = (state == Qt::TouchPointReleased) ? 0.0 : 1.0;
-
-            // Find the touch position relative to the window. Then calculate the screen
-            // position by subtracting the position of the applicationRect (since UIWindow
-            // does not take that into account when reporting its own frame):
-            QRect touchInWindow = QRect(fromCGPoint([uiTouch locationInView:nil]), QSize(0, 0));
-            QRect touchInScreen = fromPortraitToPrimary(touchInWindow, screen);
-            QPoint touchPos = touchInScreen.topLeft() - applicationRect.topLeft();
+            QPoint touchPos = fromCGPoint([uiTouch locationInView:self.superview]);
             touchPoint.area = QRectF(touchPos, QSize(0, 0));
-            touchPoint.normalPosition = QPointF(touchPos.x() / applicationRect.width(), touchPos.y() / applicationRect.height());
+            touchPoint.normalPosition = QPointF(touchPos.x() / parentSize.width, touchPos.y() / parentSize.height);
         }
     }
 }

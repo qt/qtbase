@@ -127,6 +127,28 @@ Q_PRINTSUPPORT_EXPORT double qt_multiplierForUnit(QPrinter::Unit unit, int resol
     return 1.0;
 }
 
+/// return the QSize from the specified in unit as millimeters
+Q_PRINTSUPPORT_EXPORT QSizeF qt_SizeFromUnitToMillimeter(const QSizeF &size, QPrinter::Unit unit, double resolution)
+{
+    switch (unit) {
+    case QPrinter::Millimeter:
+        return size;
+    case QPrinter::Point:
+        return size * 0.352777778;
+    case QPrinter::Inch:
+        return size * 25.4;
+    case QPrinter::Pica:
+        return size * 4.23333333334;
+    case QPrinter::Didot:
+        return size * 0.377;
+    case QPrinter::Cicero:
+        return size * 4.511666667;
+    case QPrinter::DevicePixel:
+        return size * (0.352777778 * 72.0 / resolution);
+    }
+    return size;
+}
+
 // not static: it's needed in qpagesetupdialog_unix.cpp
 Q_PRINTSUPPORT_EXPORT QSizeF qt_printerPaperSize(QPrinter::Orientation orientation,
                            QPrinter::PaperSize paperSize,
@@ -983,9 +1005,7 @@ void QPrinter::setPaperSize(const QSizeF &paperSize, QPrinter::Unit unit)
     Q_D(QPrinter);
     if (d->paintEngine->type() != QPaintEngine::Pdf)
         ABORT_IF_ACTIVE("QPrinter::setPaperSize");
-    const qreal multiplier = qt_multiplierForUnit(unit, resolution());
-    QSizeF size(paperSize.width() * multiplier * 25.4/72., paperSize.height() * multiplier * 25.4/72.);
-    setPageSizeMM(size);
+    setPageSizeMM(qt_SizeFromUnitToMillimeter(paperSize, unit, resolution()));
 }
 
 /*!

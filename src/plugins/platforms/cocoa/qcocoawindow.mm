@@ -211,6 +211,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_frameStrutEventsEnabled(false)
     , m_isExposed(false)
     , m_registerTouchCount(0)
+    , m_resizableTransientParent(false)
     , m_alertRequest(NoAlertRequest)
 {
 #ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
@@ -317,12 +318,14 @@ void QCocoaWindow::setVisible(bool visible)
                 parentCocoaWindow->m_activePopupWindow = window();
                 // QTBUG-30266: a window should not be resizable while a transient popup is open
                 // Since this isn't a native popup, the window manager doesn't close the popup when you click outside
+                NSUInteger parentStyleMask = [parentCocoaWindow->m_nsWindow styleMask];
+                if ((m_resizableTransientParent = (parentStyleMask & NSResizableWindowMask))
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-                if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7
-                    && !([parentCocoaWindow->m_nsWindow styleMask] & NSFullScreenWindowMask))
+                    && QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7
+                    && !([parentCocoaWindow->m_nsWindow styleMask] & NSFullScreenWindowMask)
 #endif
-                [parentCocoaWindow->m_nsWindow setStyleMask:
-                    (parentCocoaWindow->windowStyleMask(parentCocoaWindow->m_windowFlags) & ~NSResizableWindowMask)];
+                    )
+                    [parentCocoaWindow->m_nsWindow setStyleMask:parentStyleMask & ~NSResizableWindowMask];
             }
 
         }
@@ -398,13 +401,14 @@ void QCocoaWindow::setVisible(bool visible)
             [m_contentView setHidden:YES];
         }
         if (parentCocoaWindow && window()->type() == Qt::Popup
+            && m_resizableTransientParent
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
             && QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7
             && !([parentCocoaWindow->m_nsWindow styleMask] & NSFullScreenWindowMask)
 #endif
            )
             // QTBUG-30266: a window should not be resizable while a transient popup is open
-            [parentCocoaWindow->m_nsWindow setStyleMask:parentCocoaWindow->windowStyleMask(parentCocoaWindow->m_windowFlags)];
+            [parentCocoaWindow->m_nsWindow setStyleMask:[parentCocoaWindow->m_nsWindow styleMask] | NSResizableWindowMask];
     }
 }
 
