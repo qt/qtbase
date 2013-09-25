@@ -114,6 +114,13 @@ QT_BEGIN_NAMESPACE
     possibly with a different version of OpenSSL.
 */
 
+namespace {
+void qsslSocketUnresolvedSymbolWarning(const char *functionName)
+{
+    qWarning("QSslSocket: cannot call unresolved function %s", functionName);
+}
+}
+
 #ifdef SSLEAY_MACROS
 DEFINEFUNC3(void *, ASN1_dup, i2d_of_void *a, a, d2i_of_void *b, b, char *c, c, return 0, return)
 #endif
