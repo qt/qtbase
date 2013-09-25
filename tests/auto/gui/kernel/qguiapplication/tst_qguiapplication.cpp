@@ -768,7 +768,7 @@ void tst_QGuiApplication::genericPluginsAndWindowSystemEvents()
     testPluginInfo.rawMetaData = qt_plugin_query_metadata;
     qRegisterStaticPluginFunction(testPluginInfo);
     int argc = 3;
-    char *argv[] = { const_cast<char*>("tst_qguiapplication"), const_cast<char*>("-plugin"), const_cast<char*>("testplugin") };
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()), const_cast<char*>("-plugin"), const_cast<char*>("testplugin") };
     QGuiApplication app(argc, argv);
 
     QVERIFY(QGuiApplication::primaryScreen());

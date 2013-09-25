@@ -70,8 +70,7 @@ void tst_QProcessNoApplication::initializationDeadlock()
         }
     };
 
-    static char argv0[] = "tst_QProcessNoApplication";
-    char *argv[] = { argv0, 0 };
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()), 0 };
     int argc = 1;
     QCoreApplication app(argc, argv);
     MyThread thread;

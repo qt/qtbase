@@ -394,7 +394,7 @@ void QTestLog::stopLogging()
     QTest::TestLoggers::stopLogging();
     QTest::TestLoggers::destroyLoggers();
     QTest::loggerUsingStdout = false;
-    saveCoverageTool(QTestResult::currentAppname(), failCount() != 0, QTestLog::installedTestCoverage());
+    saveCoverageTool(QTestResult::currentAppName(), failCount() != 0, QTestLog::installedTestCoverage());
 }
 
 void QTestLog::addLogger(LogMode mode, const char *filename)

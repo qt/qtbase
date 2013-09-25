@@ -48,6 +48,9 @@ class tst_QCommandLineParser : public QObject
 {
     Q_OBJECT
 
+public slots:
+    void initTestCase();
+
 private slots:
     void parsingModes_data();
 
@@ -81,8 +84,14 @@ private slots:
     void testQuoteEscaping();
 };
 
-static char *empty_argv[] = { const_cast<char*>("tst_qcommandlineparser") };
+static char *empty_argv[] = { 0 };
 static int empty_argc = 1;
+
+void tst_QCommandLineParser::initTestCase()
+{
+    Q_ASSERT(!empty_argv[0]);
+    empty_argv[0] = const_cast<char*>(QTest::currentAppName());
+}
 
 Q_DECLARE_METATYPE(QCommandLineParser::SingleDashWordOptionMode)
 
