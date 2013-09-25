@@ -331,8 +331,20 @@ private:
     {
         wchar_t *constRelationString = 0;
         switch (relation) {
+        case QAccessible::Label:
+            constRelationString = IA2_RELATION_LABEL_FOR;
+            break;
+        case QAccessible::Labelled:
+            constRelationString = IA2_RELATION_LABELLED_BY;
+            break;
+        case QAccessible::Controller:
+            constRelationString = IA2_RELATION_CONTROLLER_FOR;
+            break;
         case QAccessible::Controlled:
             constRelationString = IA2_RELATION_CONTROLLED_BY;
+            break;
+        case QAccessible::AllRelations:
+            constRelationString = ( L"AllRelations" );
             break;
         }
 
