@@ -50,6 +50,7 @@
 
 #include <qbytearray.h>
 #include <qwindow.h>
+#include <qpixmap.h>
 #include <qpa/qplatformwindow.h>
 #include "qsurfaceformat.h"
 #include <qpa/qplatformopenglcontext.h>
@@ -152,6 +153,31 @@ void *QCocoaNativeInterface::NSPrintInfoForPrintEngine(QPrintEngine *printEngine
     qFatal("Printing is not supported when Qt is configured with -no-widgets");
     return 0;
 #endif
+}
+
+QPixmap QCocoaNativeInterface::defaultBackgroundPixmapForQWizard()
+{
+    QCFType<CFURLRef> url;
+    const int ExpectedImageWidth = 242;
+    const int ExpectedImageHeight = 414;
+    if (LSFindApplicationForInfo(kLSUnknownCreator, CFSTR("com.apple.KeyboardSetupAssistant"),
+                                 0, 0, &url) == noErr) {
+        QCFType<CFBundleRef> bundle = CFBundleCreate(kCFAllocatorDefault, url);
+        if (bundle) {
+            url = CFBundleCopyResourceURL(bundle, CFSTR("Background"), CFSTR("png"), 0);
+            if (url) {
+                QCFType<CGImageSourceRef> imageSource = CGImageSourceCreateWithURL(url, 0);
+                QCFType<CGImageRef> image = CGImageSourceCreateImageAtIndex(imageSource, 0, 0);
+                if (image) {
+                    int width = CGImageGetWidth(image);
+                    int height = CGImageGetHeight(image);
+                    if (width == ExpectedImageWidth && height == ExpectedImageHeight)
+                        return QPixmap::fromImage(qt_mac_toQImage(image));
+                }
+            }
+        }
+    }
+    return QPixmap();
 }
 
 void QCocoaNativeInterface::onAppFocusWindowChanged(QWindow *window)
