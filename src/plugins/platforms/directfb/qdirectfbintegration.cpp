@@ -61,9 +61,7 @@ QT_BEGIN_NAMESPACE
 
 QDirectFbIntegration::QDirectFbIntegration()
     : m_fontDb(new QGenericUnixFontDatabase())
-    , m_eventDispatcher(createUnixEventDispatcher())
 {
-    QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
 }
 
 void QDirectFbIntegration::initialize()
@@ -129,9 +127,9 @@ QPlatformWindow *QDirectFbIntegration::createPlatformWindow(QWindow *window) con
     return dfbWindow;
 }
 
-QAbstractEventDispatcher *QDirectFbIntegration::guiThreadEventDispatcher() const
+QAbstractEventDispatcher *QDirectFbIntegration::createEventDispatcher() const
 {
-    return m_eventDispatcher;
+    return createUnixEventDispatcher();
 }
 
 QPlatformBackingStore *QDirectFbIntegration::createPlatformBackingStore(QWindow *window) const

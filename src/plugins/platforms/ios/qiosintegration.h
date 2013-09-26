@@ -70,7 +70,7 @@ public:
     QStringList themeNames() const;
     QPlatformTheme *createPlatformTheme(const QString &name) const;
 
-    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
+    QAbstractEventDispatcher *createEventDispatcher() const;
     QPlatformNativeInterface *nativeInterface() const;
 
     void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);

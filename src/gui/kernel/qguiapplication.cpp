@@ -1029,27 +1029,23 @@ void QGuiApplicationPrivate::createPlatformIntegration()
 
 }
 
+/*!
+    Called from QCoreApplication::init()
+
+    Responsible for creating an event dispatcher when QCoreApplication
+    decides that it needs one (because a custom one has not been set).
+*/
 void QGuiApplicationPrivate::createEventDispatcher()
 {
+    Q_ASSERT(!eventDispatcher);
+
     if (platform_integration == 0)
         createPlatformIntegration();
 
-    if (!eventDispatcher) {
-        QAbstractEventDispatcher *eventDispatcher = platform_integration->guiThreadEventDispatcher();
-        setEventDispatcher(eventDispatcher);
-    }
-}
+    // The platform integration should not mess with the event dispatcher
+    Q_ASSERT(!eventDispatcher);
 
-void QGuiApplicationPrivate::setEventDispatcher(QAbstractEventDispatcher *eventDispatcher)
-{
-    Q_Q(QGuiApplication);
-
-    if (!QCoreApplicationPrivate::eventDispatcher) {
-        QCoreApplicationPrivate::eventDispatcher = eventDispatcher;
-        QCoreApplicationPrivate::eventDispatcher->setParent(q);
-        threadData->eventDispatcher = eventDispatcher;
-    }
-
+    eventDispatcher = platform_integration->createEventDispatcher();
 }
 
 #if defined(QT_DEBUG) && defined(Q_OS_LINUX)

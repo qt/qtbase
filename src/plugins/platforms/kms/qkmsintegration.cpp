@@ -65,10 +65,8 @@ QT_BEGIN_NAMESPACE
 QKmsIntegration::QKmsIntegration()
     : QPlatformIntegration(),
       m_fontDatabase(new QGenericUnixFontDatabase()),
-      m_eventDispatcher(createUnixEventDispatcher()),
       m_nativeInterface(new QKmsNativeInterface)
 {
-    QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
     setenv("EGL_PLATFORM", "drm",1);
     m_vtHandler = new QKmsVTHandler;
 
@@ -152,9 +150,9 @@ void QKmsIntegration::addScreen(QKmsScreen *screen)
     screenAdded(screen);
 }
 
-QAbstractEventDispatcher *QKmsIntegration::guiThreadEventDispatcher() const
+QAbstractEventDispatcher *QKmsIntegration::createEventDispatcher() const
 {
-    return m_eventDispatcher;
+    return createUnixEventDispatcher();
 }
 
 QPlatformNativeInterface *QKmsIntegration::nativeInterface() const

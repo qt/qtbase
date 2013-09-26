@@ -100,10 +100,6 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
 {
     Q_UNUSED(paramList);
 
-#ifndef ANDROID_PLUGIN_OPENGL
-    m_eventDispatcher = createUnixEventDispatcher();
-#endif
-
     m_androidPlatformNativeInterface = new QAndroidPlatformNativeInterface();
 
 #ifndef ANDROID_PLUGIN_OPENGL
@@ -150,9 +146,9 @@ QPlatformWindow *QAndroidPlatformIntegration::createPlatformWindow(QWindow *wind
     return new QAndroidPlatformWindow(window);
 }
 
-QAbstractEventDispatcher *QAndroidPlatformIntegration::guiThreadEventDispatcher() const
+QAbstractEventDispatcher *QAndroidPlatformIntegration::createEventDispatcher() const
 {
-    return m_eventDispatcher;
+    return createUnixEventDispatcher();
 }
 #else // !ANDROID_PLUGIN_OPENGL
 QPlatformWindow *QAndroidPlatformIntegration::createPlatformWindow(QWindow *window) const

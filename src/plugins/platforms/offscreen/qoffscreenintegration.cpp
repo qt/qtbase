@@ -95,14 +95,12 @@ public:
 QOffscreenIntegration::QOffscreenIntegration()
 {
 #if defined(Q_OS_UNIX)
-    m_eventDispatcher = createUnixEventDispatcher();
 #if defined(Q_OS_MAC)
     m_fontDatabase.reset(new QPlatformFontDatabase());
 #else
     m_fontDatabase.reset(new QGenericUnixFontDatabase());
 #endif
 #elif defined(Q_OS_WIN)
-    m_eventDispatcher = new QOffscreenEventDispatcher<QEventDispatcherWin32>();
     m_fontDatabase.reset(new QBasicFontDatabase());
 #endif
 
@@ -111,7 +109,6 @@ QOffscreenIntegration::QOffscreenIntegration()
 #endif
     m_services.reset(new QPlatformServices);
 
-    QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
     screenAdded(new QOffscreenScreen);
 }
 
@@ -141,9 +138,15 @@ QPlatformBackingStore *QOffscreenIntegration::createPlatformBackingStore(QWindow
     return new QOffscreenBackingStore(window);
 }
 
-QAbstractEventDispatcher *QOffscreenIntegration::guiThreadEventDispatcher() const
+QAbstractEventDispatcher *QOffscreenIntegration::createEventDispatcher() const
 {
-    return m_eventDispatcher;
+#if defined(Q_OS_UNIX)
+    return createUnixEventDispatcher();
+#elif defined(Q_OS_WIN)
+    return new QOffscreenEventDispatcher<QEventDispatcherWin32>();
+#else
+    return 0;
+#endif
 }
 
 QPlatformFontDatabase *QOffscreenIntegration::fontDatabase() const

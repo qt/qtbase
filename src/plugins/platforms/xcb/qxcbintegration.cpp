@@ -124,12 +124,9 @@ static bool runningUnderDebugger()
 #endif
 
 QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char **argv)
-    : m_eventDispatcher(createUnixEventDispatcher())
-    ,  m_services(new QGenericUnixServices)
+    : m_services(new QGenericUnixServices)
     , m_instanceName(0)
 {
-    QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
-
 #ifdef XCB_USE_XLIB
     XInitThreads();
 #endif
@@ -293,9 +290,9 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     }
 }
 
-QAbstractEventDispatcher *QXcbIntegration::guiThreadEventDispatcher() const
+QAbstractEventDispatcher *QXcbIntegration::createEventDispatcher() const
 {
-    return m_eventDispatcher;
+    return createUnixEventDispatcher();
 }
 
 void QXcbIntegration::moveToScreen(QWindow *window, int screen)

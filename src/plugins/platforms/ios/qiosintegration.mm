@@ -113,7 +113,7 @@ QPlatformOpenGLContext *QIOSIntegration::createPlatformOpenGLContext(QOpenGLCont
     return new QIOSContext(context);
 }
 
-QAbstractEventDispatcher *QIOSIntegration::guiThreadEventDispatcher() const
+QAbstractEventDispatcher *QIOSIntegration::createEventDispatcher() const
 {
     if (isQtApplication())
         return new QIOSEventDispatcher;

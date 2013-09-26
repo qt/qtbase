@@ -111,7 +111,7 @@ public:
     virtual QPaintEngine *createImagePaintEngine(QPaintDevice *paintDevice) const;
 
 // Event dispatcher:
-    virtual QAbstractEventDispatcher *guiThreadEventDispatcher() const = 0;
+    virtual QAbstractEventDispatcher *createEventDispatcher() const = 0;
 
 //Deeper window system integrations
     virtual QPlatformFontDatabase *fontDatabase() const;

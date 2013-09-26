@@ -67,7 +67,7 @@ public:
     QPlatformFontDatabase *fontDatabase() const;
     QPlatformServices *services() const;
 
-    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
+    QAbstractEventDispatcher *createEventDispatcher() const;
 
     QVariant styleHint(QPlatformIntegration::StyleHint hint) const;
 
@@ -87,7 +87,6 @@ public:
 
 private:
     EGLDisplay mDisplay;
-    QAbstractEventDispatcher *mEventDispatcher;
     QScopedPointer<QPlatformFontDatabase> mFontDb;
     QScopedPointer<QPlatformServices> mServices;
     QEglFSScreen *mScreen;

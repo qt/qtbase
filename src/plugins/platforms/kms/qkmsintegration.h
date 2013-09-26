@@ -67,7 +67,7 @@ public:
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
 
     QPlatformFontDatabase *fontDatabase() const;
-    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
+    QAbstractEventDispatcher *createEventDispatcher() const;
 
     QPlatformNativeInterface *nativeInterface() const;
 
@@ -84,7 +84,6 @@ private:
     QList<QPlatformScreen *> m_screens;
     QList<QKmsDevice *> m_devices;
     QPlatformFontDatabase *m_fontDatabase;
-    QAbstractEventDispatcher *m_eventDispatcher;
     QPlatformNativeInterface *m_nativeInterface;
     QKmsVTHandler *m_vtHandler;
     QDeviceDiscovery *m_deviceDiscovery;

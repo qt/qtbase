@@ -54,11 +54,8 @@
 QT_BEGIN_NAMESPACE
 
 QLinuxFbIntegration::QLinuxFbIntegration(const QStringList &paramList)
-    : m_fontDb(new QGenericUnixFontDatabase()),
-      m_eventDispatcher(createUnixEventDispatcher())
+    : m_fontDb(new QGenericUnixFontDatabase())
 {
-    QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
-
     m_primaryScreen = new QLinuxFbScreen;
     if (m_primaryScreen->initialize(paramList))
         screenAdded(m_primaryScreen);
@@ -92,9 +89,9 @@ QPlatformWindow *QLinuxFbIntegration::createPlatformWindow(QWindow *window) cons
     return new QFbWindow(window);
 }
 
-QAbstractEventDispatcher *QLinuxFbIntegration::guiThreadEventDispatcher() const
+QAbstractEventDispatcher *QLinuxFbIntegration::createEventDispatcher() const
 {
-    return m_eventDispatcher;
+    return createUnixEventDispatcher();
 }
 
 QList<QPlatformScreen *> QLinuxFbIntegration::screens() const

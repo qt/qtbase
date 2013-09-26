@@ -110,7 +110,7 @@ QPlatformFontDatabase *QMinimalEglIntegration::fontDatabase() const
     return mFontDb;
 }
 
-QAbstractEventDispatcher *QMinimalEglIntegration::guiThreadEventDispatcher() const
+QAbstractEventDispatcher *QMinimalEglIntegration::createEventDispatcher() const
 {
     return createUnixEventDispatcher();
 }
