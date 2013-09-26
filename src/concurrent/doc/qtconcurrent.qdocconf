@@ -27,7 +27,7 @@ qhp.QtConcurrent.subprojects.classes.sortPages = true
 
 tagfile                 = ../../../doc/qtconcurrent/qtconcurrent.tags
 
-depends                 += qtcore
+depends                 += qtcore qtdoc
 
 headerdirs  += ..
 
