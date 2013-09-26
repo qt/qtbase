@@ -1066,6 +1066,15 @@ static QEasingCurveFunction *curveToFunctionObject(QEasingCurve::Type type)
 }
 
 /*!
+    \fn QEasingCurve::QEasingCurve(QEasingCurve &&other)
+
+    Move-constructs a QEasingCurve instance, making it point at the same
+    object that \a other was pointing to.
+
+    \since 5.2
+*/
+
+/*!
     Constructs an easing curve of the given \a type.
  */
 QEasingCurve::QEasingCurve(Type type)
@@ -1096,6 +1105,14 @@ QEasingCurve::~QEasingCurve()
     \fn QEasingCurve &QEasingCurve::operator=(const QEasingCurve &other)
     Copy \a other.
  */
+
+/*!
+    \fn QEasingCurve &QEasingCurve::operator=(QEasingCurve &&other)
+
+    Move-assigns \a other to this QEasingCurve instance.
+
+    \since 5.2
+*/
 
 /*!
     \fn void QEasingCurve::swap(QEasingCurve &other)

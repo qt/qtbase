@@ -515,6 +515,14 @@ inline void QDirPrivate::initFileEngine()
 */
 
 /*!
+    \fn QDir &QDir::operator=(QDir &&other)
+
+    Move-assigns \a other to this QDir instance.
+
+    \since 5.2
+*/
+
+/*!
     \internal
 */
 QDir::QDir(QDirPrivate &p) : d_ptr(&p)

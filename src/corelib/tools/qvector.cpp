@@ -195,6 +195,15 @@
     \sa resize()
 */
 
+/*!
+    \fn QVector::QVector(QVector<T> &&other)
+
+    Move-constructs a QVector instance, making it point at the same
+    object that \a other was pointing to.
+
+    \since 5.2
+*/
+
 /*! \fn QVector::QVector(int size)
 
     Constructs a vector with an initial size of \a size elements.
@@ -244,6 +253,14 @@
 
     Assigns \a other to this vector and returns a reference to this
     vector.
+*/
+
+/*!
+    \fn QVector<T> &QVector::operator=(QVector<T> &&other)
+
+    Move-assigns \a other to this QVector instance.
+
+    \since 5.2
 */
 
 /*! \fn void QVector::swap(QVector<T> &other)

@@ -480,6 +480,15 @@ void **QListData::erase(void **xi)
 */
 
 /*!
+    \fn QList::QList(QList<T> &&other)
+
+    Move-constructs a QList instance, making it point at the same
+    object that \a other was pointing to.
+
+    \since 5.2
+*/
+
+/*!
     \fn QList<T> QList<T>::mid(int pos, int length) const
 
     Returns a list whose elements are copied from this list,
@@ -525,6 +534,14 @@ void **QListData::erase(void **xi)
 
     Assigns \a other to this list and returns a reference to this
     list.
+*/
+
+/*!
+    \fn QList &QList::operator=(QList<T> &&other)
+
+    Move-assigns \a other to this QList instance.
+
+    \since 5.2
 */
 
 /*! \fn void QList::swap(QList<T> &other)

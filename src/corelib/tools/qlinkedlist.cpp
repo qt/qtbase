@@ -125,6 +125,15 @@ const QLinkedListData QLinkedListData::shared_null = {
     Constructs an empty list.
 */
 
+/*!
+    \fn QLinkedList::QLinkedList(QLinkedList<T> &&other)
+
+    Move-constructs a QLinkedList instance, making it point at the same
+    object that \a other was pointing to.
+
+    \since 5.2
+*/
+
 /*! \fn QLinkedList::QLinkedList(const QLinkedList<T> &other)
 
     Constructs a copy of \a other.
@@ -738,6 +747,14 @@ const QLinkedListData QLinkedListData::shared_null = {
 /*! \fn QLinkedList::iterator &QLinkedList::iterator::operator=(const iterator &other)
 
     Assigns \a other to this iterator.
+*/
+
+/*!
+    \fn QLinkedList<T> &QLinkedList::operator=(QLinkedList<T> &&other)
+
+    Move-assigns \a other to this QLinkedList instance.
+
+    \since 5.2
 */
 
 /*! \fn T &QLinkedList::iterator::operator*() const
