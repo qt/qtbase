@@ -89,12 +89,6 @@
 
 #include <QDebug>
 
-// ####TODO Properly #ifdef this class to use #define symbols actually defined
-// by OpenGL/ES includes
-#ifndef GL_FRAMEBUFFER_SRGB
-#define GL_FRAMEBUFFER_SRGB 0x8DB9
-#endif
-
 QT_BEGIN_NAMESPACE
 
 
@@ -1860,25 +1854,12 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type 
         }
     }
 
-    bool srgbFrameBufferEnabled = false;
-    if (funcs.hasOpenGLExtension(QOpenGLExtensions::SRGBFrameBuffer)) {
-        if (false)
-        {
-            glEnable(GL_FRAMEBUFFER_SRGB);
-            srgbFrameBufferEnabled = true;
-        }
-    }
-
 #if defined(QT_OPENGL_DRAWCACHEDGLYPHS_INDEX_ARRAY_VBO)
     glDrawElements(GL_TRIANGLE_STRIP, 6 * numGlyphs, GL_UNSIGNED_SHORT, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 #else
     glDrawElements(GL_TRIANGLE_STRIP, 6 * numGlyphs, GL_UNSIGNED_SHORT, elementIndices.data());
 #endif
-
-    if (srgbFrameBufferEnabled)
-        glDisable(GL_FRAMEBUFFER_SRGB);
-
 }
 
 void QOpenGL2PaintEngineEx::drawPixmapFragments(const QPainter::PixmapFragment *fragments, int fragmentCount, const QPixmap &pixmap,
