@@ -2682,10 +2682,10 @@ void QDateTimePrivate::getDateTime(QDate *date, QTime *time) const
 {
     msecsToTime(m_msecs, date, time);
 
-    if (isNullDate())
+    if (date && isNullDate())
         *date = QDate();
 
-    if (isNullTime())
+    if (time && isNullTime())
         *time = QTime();
 }
 
@@ -3094,9 +3094,10 @@ bool QDateTime::isValid() const
 
 QDate QDateTime::date() const
 {
+    if (d->isNullDate())
+        return QDate();
     QDate dt;
-    QTime tm;
-    d->getDateTime(&dt, &tm);
+    msecsToTime(d->m_msecs, &dt, 0);
     return dt;
 }
 
@@ -3108,9 +3109,10 @@ QDate QDateTime::date() const
 
 QTime QDateTime::time() const
 {
-    QDate dt;
+    if (d->isNullTime())
+        return QTime();
     QTime tm;
-    d->getDateTime(&dt, &tm);
+    msecsToTime(d->m_msecs, 0, &tm);
     return tm;
 }
 
