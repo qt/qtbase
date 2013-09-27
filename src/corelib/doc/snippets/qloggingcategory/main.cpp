@@ -73,7 +73,7 @@ void main(int argc, char *argv[])
 
 //![2]
     // don't run the expensive code if the string won't print
-    if (QT_DRIVER_USB().isEnabled<QtDebugMsg>()) {
+    if (QT_DRIVER_USB().isDebugEnabled()) {
         QStringList items;
         foreach (const UsbEntry &entry, usbEntries())
             items << QString("%1 (%2)").arg(entry.id, entry.classtype);
