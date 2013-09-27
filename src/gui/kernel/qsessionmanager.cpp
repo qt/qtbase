@@ -74,10 +74,11 @@ QT_BEGIN_NAMESPACE
     QSessionManager provides an interface between the application and the
     session manager so that the program can work well with the session manager.
     In Qt, session management requests for action are handled by the two
-    virtual functions QApplication::commitData() and QApplication::saveState().
-    Both provide a reference to a session manager object as argument, to allow
-    the application to communicate with the session manager. The session
-    manager can only be accessed through these functions.
+    signals QGuiApplication::commitDataRequest() and
+    QGuiApplication::saveStateRequest(). Both provide a reference to a session
+    manager object as argument, to allow the application to communicate with
+    the session manager. The session manager can only be accessed through these
+    functions.
 
     No user interaction is possible \e unless the application gets explicit
     permission from the session manager. You ask for permission by calling
@@ -94,7 +95,7 @@ QT_BEGIN_NAMESPACE
     setRestartHint(), setProperty(), requestPhase2(). See the respective
     function descriptions for further details.
 
-    \sa QApplication, {Session Management}
+    \sa QGuiApplication, {Session Management}
 */
 
 
@@ -151,7 +152,7 @@ QSessionManager::~QSessionManager()
     If the application has been restored from an earlier session, this
     identifier is the same as it was in the earlier session.
 
-    \sa sessionKey(), QApplication::sessionId()
+    \sa sessionKey(), QGuiApplication::sessionId()
 */
 QString QSessionManager::sessionId() const
 {
@@ -169,7 +170,7 @@ QString QSessionManager::sessionId() const
 
     The session key changes with every call of commitData() or saveState().
 
-    \sa sessionId(), QApplication::sessionKey()
+    \sa sessionId(), QGuiApplication::sessionKey()
 */
 QString QSessionManager::sessionKey() const
 {
@@ -197,15 +198,15 @@ QString QSessionManager::sessionKey() const
     phase, you must tell the session manager that this has happened by calling
     cancel().
 
-    Here's an example of how an application's QApplication::commitData() might
-    be implemented:
+    Here's an example of how an application's QGuiApplication::commitDataRequest()
+    might be implemented:
 
-    \snippet code/src_gui_kernel_qapplication.cpp 8
+    \snippet code/src_gui_kernel_qguiapplication.cpp 8
 
     If an error occurred within the application while saving its data, you may
     want to try allowsErrorInteraction() instead.
 
-    \sa QApplication::commitData(), release(), cancel()
+    \sa QGuiApplication::commitDataRequest(), release(), cancel()
 */
 bool QSessionManager::allowsInteraction()
 {
@@ -261,8 +262,9 @@ void QSessionManager::cancel()
     \note These flags are only hints, a session manager may or may not respect
     them.
 
-    We recommend setting the restart hint in QApplication::saveState() because
-    most session managers perform a checkpoint shortly after an application's
+    We recommend setting the restart hint in QGuiApplication::saveStateRequest()
+    because most session managers perform a checkpoint shortly after an
+    application's
     startup.
 
     \sa restartHint()
@@ -291,12 +293,13 @@ QSessionManager::RestartHint QSessionManager::restartHint() const
     If the session manager is capable of restoring sessions it will execute
     \a command in order to restore the application. The command defaults to
 
-    \snippet code/src_gui_kernel_qapplication.cpp 9
+    \snippet code/src_gui_kernel_qguiapplication.cpp 9
 
-    The \c -session option is mandatory; otherwise QApplication cannot tell
-    whether it has been restored or what the current session identifier is.
-    See QApplication::isSessionRestored() and QApplication::sessionId() for
-    details.
+    The \c -session option is mandatory; otherwise QGuiApplication cannot
+    tell whether it has been restored or what the current session identifier
+    is.
+    See QGuiApplication::isSessionRestored() and
+    QGuiApplication::sessionId() for details.
 
     If your application is very simple, it may be possible to store the entire
     application state in additional command line options. This is usually a
@@ -318,7 +321,7 @@ void QSessionManager::setRestartCommand(const QStringList &command)
 
     To iterate over the list, you can use the \l foreach pseudo-keyword:
 
-    \snippet code/src_gui_kernel_qapplication.cpp 10
+    \snippet code/src_gui_kernel_qguiapplication.cpp 10
 
     \sa setRestartCommand(), restartHint()
 */
@@ -344,7 +347,7 @@ void QSessionManager::setDiscardCommand(const QStringList &command)
 
     To iterate over the list, you can use the \l foreach pseudo-keyword:
 
-    \snippet code/src_gui_kernel_qapplication.cpp 11
+    \snippet code/src_gui_kernel_qguiapplication.cpp 11
 
     \sa setDiscardCommand(), restartCommand(), setRestartCommand()
 */
@@ -396,9 +399,10 @@ bool QSessionManager::isPhase2() const
 
 /*!
     Requests a second session management phase for the application. The
-    application may then return immediately from the QApplication::commitData()
-    or QApplication::saveState() function, and they will be called again once
-    most or all other applications have finished their session management.
+    application may then return immediately from the
+    QGuiApplication::commitDataRequest() or QApplication::saveStateRequest()
+    function, and they will be called again once most or all other
+    applications have finished their session management.
 
     The two phases are useful for applications such as the X11 window manager
     that need to store information about another application's windows and
