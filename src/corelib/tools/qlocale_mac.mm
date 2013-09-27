@@ -193,7 +193,7 @@ static QString macToQtFormat(const QString &sys_fmt)
             // Qt does not support the following options
             case 'G': // Era (1..5): 4 = long, 1..3 = short, 5 = narrow
             case 'Y': // Year of Week (1..n): 1..n = padded number
-            case 'U': // Cyclic Yar Name (1..5): 4 = long, 1..3 = short, 5 = narrow
+            case 'U': // Cyclic Year Name (1..5): 4 = long, 1..3 = short, 5 = narrow
             case 'Q': // Quarter (1..4): 4 = long, 3 = short, 1..2 = padded number
             case 'q': // Standalone Quarter (1..4): 4 = long, 3 = short, 1..2 = padded number
             case 'w': // Week of Year (1..2): 1..2 = padded number
@@ -257,7 +257,7 @@ static QString macToQtFormat(const QString &sys_fmt)
             case 's': // Seconds (1..2): 1..2 = padded number
                 result += QString(repeat, c);
                 break;
-            case 'S': // Fractional second (1..n): 1..n = tuncates to decimal places
+            case 'S': // Fractional second (1..n): 1..n = truncates to decimal places
                 // Qt uses msecs either unpadded or padded to 3 places
                 if (repeat < 3)
                     result += QLatin1Char('z');
