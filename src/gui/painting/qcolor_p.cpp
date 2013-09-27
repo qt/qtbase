@@ -289,6 +289,11 @@ static const int rgbTblSize = sizeof(rgbTbl) / sizeof(RGBData);
 
 #undef rgb
 
+#if defined(Q_CC_MSVC) && _MSC_VER < 1600
+inline bool operator<(const RGBData &data1, const RGBData &data2)
+{ return qstrcmp(data1.name, data2.name) < 0; }
+#endif
+
 inline bool operator<(const char *name, const RGBData &data)
 { return qstrcmp(name, data.name) < 0; }
 inline bool operator<(const RGBData &data, const char *name)

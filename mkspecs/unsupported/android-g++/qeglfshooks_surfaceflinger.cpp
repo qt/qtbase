@@ -62,7 +62,7 @@ class QEglFSPandaHooks : public QEglFSHooks
 {
 public:
     QEglFSPandaHooks();
-    virtual EGLNativeWindowType createNativeWindow(const QSize &size, const QSurfaceFormat &format);
+    virtual EGLNativeWindowType createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format);
     virtual bool filterConfig(EGLDisplay display, EGLConfig config) const;
     virtual const char *fbDeviceName() const { return "/dev/graphics/fb0"; }
 
@@ -103,8 +103,9 @@ void QEglFSPandaHooks::ensureFramebufferNativeWindowCreated()
     window->query(window, NATIVE_WINDOW_FORMAT, &mFramebufferVisualId);
 }
 
-EGLNativeWindowType QEglFSPandaHooks::createNativeWindow(const QSize &size, const QSurfaceFormat &format)
+EGLNativeWindowType QEglFSPandaHooks::createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format)
 {
+    Q_UNUSED(window)
     return mUseFramebuffer ? createNativeWindowFramebuffer(size, format) : createNativeWindowSurfaceFlinger(size, format);
 }
 

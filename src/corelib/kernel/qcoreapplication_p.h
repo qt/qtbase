@@ -83,6 +83,7 @@ public:
     ~QCoreApplicationPrivate();
 
     QString appName() const;
+    mutable QString applicationName;
 
 #ifdef Q_OS_MAC
     static QString macMenuBarName();

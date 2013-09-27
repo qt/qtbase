@@ -49,7 +49,7 @@ class QEglFSImx6Hooks : public QEglFSHooks
 public:
     QEglFSImx6Hooks();
     virtual QSize screenSize() const;
-    virtual EGLNativeWindowType createNativeWindow(const QSize &size, const QSurfaceFormat &format);
+    virtual EGLNativeWindowType createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format);
     virtual void destroyNativeWindow(EGLNativeWindowType window);
     virtual EGLNativeDisplayType platformDisplay() const;
 
@@ -78,9 +78,10 @@ EGLNativeDisplayType QEglFSImx6Hooks::platformDisplay() const
     return mNativeDisplay;
 }
 
-EGLNativeWindowType QEglFSImx6Hooks::createNativeWindow(const QSize &size, const QSurfaceFormat &format)
+EGLNativeWindowType QEglFSImx6Hooks::createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format)
 {
-    Q_UNUSED(format);
+    Q_UNUSED(window)
+    Q_UNUSED(format)
 
     EGLNativeWindowType eglWindow = fbCreateWindow(mNativeDisplay, 0, 0, size.width(), size.height());
     return eglWindow;

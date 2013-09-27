@@ -324,7 +324,7 @@ void tst_QGlobal::qCoreAppStartupFunction()
 {
     QCOMPARE(qStartupFunctionValue, 0);
     int argc = 1;
-    char *argv[] = { const_cast<char*>("tst_qglobal") };
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
     QCoreApplication app(argc, argv);
     QCOMPARE(qStartupFunctionValue, 124);
 }

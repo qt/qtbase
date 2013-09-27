@@ -59,9 +59,10 @@
 #include "qset.h"
 #include "qstyle.h"
 #include "qvarlengtharray.h"
-#if defined(Q_WS_MAC)
-#include "private/qt_mac_p.h"
-#include "qlibrary.h"
+#if defined(Q_OS_MACX)
+#include <QtCore/QMetaMethod>
+#include <QtGui/QGuiApplication>
+#include <qpa/qplatformnativeinterface.h>
 #elif !defined(QT_NO_STYLE_WINDOWSVISTA)
 #include "qwizard_win_p.h"
 #include "qtimer.h"
@@ -604,7 +605,7 @@ public:
     void _q_updateButtonStates();
     void _q_handleFieldObjectDestroyed(QObject *);
     void setStyle(QStyle *style);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MACX
     static QPixmap findDefaultBackgroundPixmap();
 #endif
 
@@ -1368,7 +1369,7 @@ bool QWizardPrivate::ensureButton(QWizard::WizardButton which) const
         }
             break;
         }
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MACX
         pushButton->setAutoDefault(false);
 #endif
         pushButton->hide();
@@ -1706,32 +1707,22 @@ void QWizardPrivate::setStyle(QStyle *style)
         it.value()->setStyle(style);
 }
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MACX
 
 QPixmap QWizardPrivate::findDefaultBackgroundPixmap()
 {
-    QCFType<CFURLRef> url;
-    const int ExpectedImageWidth = 242;
-    const int ExpectedImageHeight = 414;
-    if (LSFindApplicationForInfo(kLSUnknownCreator, CFSTR("com.apple.KeyboardSetupAssistant"),
-                                 0, 0, &url) == noErr) {
-        QCFType<CFBundleRef> bundle = CFBundleCreate(kCFAllocatorDefault, url);
-        if (bundle) {
-            url = CFBundleCopyResourceURL(bundle, CFSTR("Background"), CFSTR("tif"), 0);
-            if (url) {
-                QCFType<CGImageSourceRef> imageSource = CGImageSourceCreateWithURL(url, 0);
-                QCFType<CGImageRef> image = CGImageSourceCreateImageAtIndex(imageSource, 0, 0);
-                if (image) {
-                    int width = CGImageGetWidth(image);
-                    int height = CGImageGetHeight(image);
-                    if (width == ExpectedImageWidth && height == ExpectedImageHeight)
-                        return QPixmap::fromMacCGImageRef(image);
-                }
-            }
-        }
-    }
-    return QPixmap();
-
+    QGuiApplication *app = qobject_cast<QGuiApplication *>(QCoreApplication::instance());
+    if (!app)
+        return QPixmap();
+    QPlatformNativeInterface *platformNativeInterface = app->platformNativeInterface();
+    int at = platformNativeInterface->metaObject()->indexOfMethod("defaultBackgroundPixmapForQWizard()");
+    if (at == -1)
+        return QPixmap();
+    QMetaMethod defaultBackgroundPixmapForQWizard = platformNativeInterface->metaObject()->method(at);
+    QPixmap result;
+    if (!defaultBackgroundPixmapForQWizard.invoke(platformNativeInterface, Q_RETURN_ARG(QPixmap, result)))
+        return QPixmap();
+    return result;
 }
 
 #endif
@@ -2842,7 +2833,7 @@ QPixmap QWizard::pixmap(WizardPixmap which) const
 {
     Q_D(const QWizard);
     Q_ASSERT(uint(which) < NPixmaps);
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MACX
     if (which == BackgroundPixmap && d->defaultPixmaps[BackgroundPixmap].isNull())
         d->defaultPixmaps[BackgroundPixmap] = d->findDefaultBackgroundPixmap();
 #endif

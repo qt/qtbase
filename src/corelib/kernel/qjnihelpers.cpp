@@ -45,6 +45,7 @@ QT_BEGIN_NAMESPACE
 
 static JavaVM *g_javaVM = Q_NULLPTR;
 static jobject g_jActivity = Q_NULLPTR;
+static jobject g_jClassLoader = Q_NULLPTR;
 
 static inline bool exceptionCheck(JNIEnv *env)
 {
@@ -79,6 +80,20 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
     if (exceptionCheck(env))
         return JNI_ERR;
 
+
+
+    jmethodID classLoaderMethodID = env->GetStaticMethodID(jQtNative,
+                                                           "classLoader",
+                                                           "()Ljava/lang/ClassLoader;");
+
+    if (exceptionCheck(env))
+        return JNI_ERR;
+
+    jobject classLoader = env->CallStaticObjectMethod(jQtNative, classLoaderMethodID);
+    if (exceptionCheck(env))
+        return JNI_ERR;
+
+    g_jClassLoader = env->NewGlobalRef(classLoader);
     g_jActivity = env->NewGlobalRef(activity);
     g_javaVM = vm;
 
@@ -94,6 +109,11 @@ jobject QtAndroidPrivate::activity()
 JavaVM *QtAndroidPrivate::javaVM()
 {
     return g_javaVM;
+}
+
+jobject QtAndroidPrivate::classLoader()
+{
+    return g_jClassLoader;
 }
 
 QT_END_NAMESPACE

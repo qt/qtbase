@@ -52,7 +52,6 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_KEYSEQUENCEEDIT
 
 class QLineEdit;
-class QVBoxLayout;
 
 class QKeySequenceEditPrivate : public QWidgetPrivate
 {
@@ -66,7 +65,6 @@ public:
     void finishEditing();
 
     QLineEdit *lineEdit;
-    QVBoxLayout *layout;
     QKeySequence keySequence;
     int keyNum;
     int key[MaxKeyCount];

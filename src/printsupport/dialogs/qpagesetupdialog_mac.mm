@@ -39,11 +39,12 @@
 **
 ****************************************************************************/
 
-#ifndef QT_NO_PRINTDIALOG
 
 #include <Cocoa/Cocoa.h>
 
 #include "qpagesetupdialog.h"
+
+#ifndef QT_NO_PRINTDIALOG
 #include "qpagesetupdialog_p.h"
 
 #include <qpa/qplatformnativeinterface.h>

@@ -347,7 +347,7 @@ int Environment::execute(QStringList arguments, const QStringList &additionalEnv
     if (envStrings) {
         int strLen = 0;
         for (LPWSTR envString = envStrings; *(envString); envString += strLen + 1) {
-            strLen = wcslen(envString);
+            strLen = int(wcslen(envString));
             QString str = QString((const QChar*)envString, strLen);
             if (!str.startsWith("=")) { // These are added by the system
                 int sepIndex = str.indexOf('=');

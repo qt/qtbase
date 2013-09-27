@@ -117,8 +117,10 @@ static void qt_mac_clip_cg(CGContextRef hd, const QRegion &rgn, CGAffineTransfor
 QMacCGContext::QMacCGContext(QPainter *p)
 {
     QPaintEngine *pe = p->paintEngine();
+#ifndef QT_NO_PRINTER
     if (pe->type() == QPaintEngine::MacPrinter)
         pe = static_cast<QMacPrintEngine*>(pe)->paintEngine();
+#endif
     pe->syncState();
     context = 0;
     if (pe->type() == QPaintEngine::CoreGraphics)

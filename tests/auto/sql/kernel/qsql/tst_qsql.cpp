@@ -114,8 +114,8 @@ void tst_QSql::cleanup()
 void tst_QSql::basicDriverTest()
 {
     int argc = 1;
-    const char *argv[] = {"test"};
-    QGuiApplication app(argc, const_cast<char **>(argv), false);
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+    QGuiApplication app(argc, argv, false);
     tst_Databases dbs;
     dbs.open();
 
@@ -155,10 +155,10 @@ void tst_QSql::open()
 {
     int i;
     int argc = 1;
-    const char *argv[] = {"test"};
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
     int count = -1;
     for (i = 0; i < 10; ++i) {
-        QGuiApplication app(argc, const_cast<char **>(argv), false);
+        QGuiApplication app(argc, argv, false);
         tst_Databases dbs;
 
         dbs.open();
@@ -184,8 +184,8 @@ void tst_QSql::openInvalid()
 void tst_QSql::concurrentAccess()
 {
     int argc = 1;
-    const char *argv[] = {"test"};
-    QGuiApplication app(argc, const_cast<char **>(argv), false);
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+    QGuiApplication app(argc, argv, false);
     tst_Databases dbs;
 
     dbs.open();
@@ -213,8 +213,8 @@ void tst_QSql::concurrentAccess()
 void tst_QSql::openErrorRecovery()
 {
     int argc = 1;
-    const char *argv[] = {"test"};
-    QGuiApplication app(argc, const_cast<char **>(argv), false);
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+    QGuiApplication app(argc, argv, false);
     tst_Databases dbs;
 
     dbs.addDbs();
@@ -261,8 +261,8 @@ void tst_QSql::openErrorRecovery()
 void tst_QSql::registerSqlDriver()
 {
     int argc = 1;
-    const char *argv[] = {"test"};
-    QGuiApplication app(argc, const_cast<char **>(argv), false);
+    char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+    QGuiApplication app(argc, argv, false);
 
     QSqlDatabase::registerSqlDriver("QSQLTESTDRIVER", new QSqlDriverCreator<QSqlNullDriver>);
     QVERIFY(QSqlDatabase::drivers().contains("QSQLTESTDRIVER"));

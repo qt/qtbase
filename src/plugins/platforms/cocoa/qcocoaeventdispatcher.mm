@@ -118,7 +118,7 @@ static Boolean runLoopSourceEqualCallback(const void *info1, const void *info2)
 void QCocoaEventDispatcherPrivate::runLoopTimerCallback(CFRunLoopTimerRef, void *info)
 {
     QCocoaEventDispatcherPrivate *d = static_cast<QCocoaEventDispatcherPrivate *>(info);
-    if ((d->processEventsFlags & QEventLoop::EventLoopExec) == 0) {
+    if (d->processEventsCalled && (d->processEventsFlags & QEventLoop::EventLoopExec) == 0) {
         // processEvents() was called "manually," ignore this source for now
         d->maybeCancelWaitForMoreEvents();
         return;
@@ -364,6 +364,12 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
 
     uint oldflags = d->processEventsFlags;
     d->processEventsFlags = flags;
+
+    // Used to determine whether any eventloop has been exec'ed, and allow posted
+    // and timer events to be processed even if this function has never been called
+    // instead of being kept on hold for the next run of processEvents().
+    ++d->processEventsCalled;
+
     bool excludeUserEvents = d->processEventsFlags & QEventLoop::ExcludeUserInputEvents;
     bool retVal = false;
     forever {
@@ -517,6 +523,7 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
     }
 
     d->processEventsFlags = oldflags;
+    --d->processEventsCalled;
 
     // If we're interrupted, we need to interrupt the _current_
     // recursion as well to check if it is  still supposed to be
@@ -770,6 +777,7 @@ QCocoaEventDispatcherPrivate::QCocoaEventDispatcherPrivate()
       currentExecIsNSAppRun(false),
       nsAppRunCalledByQt(false),
       cleanupModalSessionsNeeded(false),
+      processEventsCalled(0),
       currentModalSessionCached(0),
       lastSerial(-1),
       interrupt(false)
@@ -893,7 +901,7 @@ void QCocoaEventDispatcherPrivate::firstLoopEntry(CFRunLoopObserverRef ref,
 void QCocoaEventDispatcherPrivate::postedEventsSourceCallback(void *info)
 {
     QCocoaEventDispatcherPrivate *d = static_cast<QCocoaEventDispatcherPrivate *>(info);
-    if ((d->processEventsFlags & QEventLoop::EventLoopExec) == 0) {
+    if (d->processEventsCalled && (d->processEventsFlags & QEventLoop::EventLoopExec) == 0) {
         // processEvents() was called "manually," ignore this source for now
         d->maybeCancelWaitForMoreEvents();
         return;

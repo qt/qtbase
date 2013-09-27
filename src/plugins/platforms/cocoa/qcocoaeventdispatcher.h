@@ -165,6 +165,7 @@ public:
     bool currentExecIsNSAppRun;
     bool nsAppRunCalledByQt;
     bool cleanupModalSessionsNeeded;
+    uint processEventsCalled;
     NSModalSession currentModalSessionCached;
     NSModalSession currentModalSession();
     void updateChildrenWorksWhenModal();

@@ -324,6 +324,13 @@ static const struct QTextHtmlEntity { const char *name; quint16 code; } entities
     { "zwnj", 0x200c }
 };
 
+#if defined(Q_CC_MSVC) && _MSC_VER < 1600
+bool operator<(const QTextHtmlEntity &entity1, const QTextHtmlEntity &entity2)
+{
+    return QLatin1String(entity1.name) < QLatin1String(entity2.name);
+}
+#endif
+
 Q_STATIC_GLOBAL_OPERATOR bool operator<(const QString &entityStr, const QTextHtmlEntity &entity)
 {
     return entityStr < QLatin1String(entity.name);
@@ -443,6 +450,12 @@ static const QTextHtmlElement elements[Html_NumElements]= {
     { "var",        Html_var,        QTextHtmlElement::DisplayInline },
 };
 
+#if defined(Q_CC_MSVC) && _MSC_VER < 1600
+Q_STATIC_GLOBAL_OPERATOR bool operator<(const QTextHtmlElement &e1, const QTextHtmlElement &e2)
+{
+    return QLatin1String(e1.name) < QLatin1String(e2.name);
+}
+#endif
 
 Q_STATIC_GLOBAL_OPERATOR bool operator<(const QString &str, const QTextHtmlElement &e)
 {

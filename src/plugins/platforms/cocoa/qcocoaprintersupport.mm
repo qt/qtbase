@@ -40,6 +40,8 @@
 ****************************************************************************/
 
 #include "qcocoaprintersupport.h"
+
+#ifndef QT_NO_PRINTER
 #include "qprintengine_mac_p.h"
 
 #include <QtPrintSupport/QPrinter>
@@ -169,3 +171,5 @@ QList<QPair<QString, QSizeF> > QCocoaPrinterSupport::supportedSizesWithNames(con
     PMRelease(printer);
     return returnValue;
 }
+
+#endif  //QT_NO_PRINTER

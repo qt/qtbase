@@ -61,6 +61,11 @@ struct NameprepCaseFoldingEntry {
     ushort mapping[4];
 };
 
+#if defined(Q_CC_MSVC) && _MSC_VER < 1600
+inline bool operator<(const NameprepCaseFoldingEntry &one, const NameprepCaseFoldingEntry &other)
+{ return one.uc < other.uc; }
+#endif
+
 inline bool operator<(uint one, const NameprepCaseFoldingEntry &other)
 { return one < other.uc; }
 

@@ -200,6 +200,8 @@ namespace QTest
     Q_TESTLIB_EXPORT void *qElementData(const char *elementName, int metaTypeId);
     Q_TESTLIB_EXPORT QObject *testObject();
 
+    Q_TESTLIB_EXPORT const char *currentAppName();
+
     Q_TESTLIB_EXPORT const char *currentTestFunction();
     Q_TESTLIB_EXPORT const char *currentDataTag();
     Q_TESTLIB_EXPORT bool currentTestFailed();

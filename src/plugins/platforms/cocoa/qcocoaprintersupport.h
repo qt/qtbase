@@ -43,6 +43,7 @@
 #define QCOCOAPRINTERSUPPORT_H
 
 #include <qpa/qplatformprintersupport.h>
+#ifndef QT_NO_PRINTER
 
 #include "qt_mac_p.h"
 
@@ -64,4 +65,5 @@ private:
     QPrinterInfo printerInfoFromPMPrinter(const PMPrinter &printer);
 };
 
+#endif // QT_NO_PRINTER
 #endif // QCOCOAPRINTERSUPPORT_H

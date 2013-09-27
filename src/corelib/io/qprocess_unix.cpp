@@ -141,7 +141,8 @@ static void qt_sa_sigchld_sigaction(int signum, siginfo_t *info, void *context)
     if (qt_sa_old_sigchld_handler.sa_flags & SA_SIGINFO) {
         void (*oldAction)(int, siginfo_t *, void *) = vsa->sa_sigaction;
 
-        oldAction(signum, info, context);
+        if (oldAction)
+            oldAction(signum, info, context);
     } else {
         void (*oldAction)(int) = vsa->sa_handler;
 
