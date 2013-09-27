@@ -254,16 +254,25 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &specification,
 
     input_absinfo absInfo;
     memset(&absInfo, 0, sizeof(input_absinfo));
-    if (ioctl(m_fd, EVIOCGABS(d->m_singleTouch ? ABS_X : ABS_MT_POSITION_X), &absInfo) >= 0) {
+    bool has_x_range = false, has_y_range = false;
+
+    if (ioctl(m_fd, EVIOCGABS((d->m_singleTouch ? ABS_X : ABS_MT_POSITION_X)), &absInfo) >= 0) {
         qDebug("min X: %d max X: %d", absInfo.minimum, absInfo.maximum);
         d->hw_range_x_min = absInfo.minimum;
         d->hw_range_x_max = absInfo.maximum;
+        has_x_range = true;
     }
-    if (ioctl(m_fd, EVIOCGABS(d->m_singleTouch ? ABS_Y : ABS_MT_POSITION_Y), &absInfo) >= 0) {
+
+    if (ioctl(m_fd, EVIOCGABS((d->m_singleTouch ? ABS_Y : ABS_MT_POSITION_Y)), &absInfo) >= 0) {
         qDebug("min Y: %d max Y: %d", absInfo.minimum, absInfo.maximum);
         d->hw_range_y_min = absInfo.minimum;
         d->hw_range_y_max = absInfo.maximum;
+        has_y_range = true;
     }
+
+    if (!has_x_range || !has_y_range)
+        qWarning("evdevtouch: Invalid ABS limits, behavior unspecified");
+
     if (ioctl(m_fd, EVIOCGABS(ABS_PRESSURE), &absInfo) >= 0) {
         qDebug("min pressure: %d max pressure: %d", absInfo.minimum, absInfo.maximum);
         if (absInfo.maximum > absInfo.minimum) {
@@ -271,6 +280,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &specification,
             d->hw_pressure_max = absInfo.maximum;
         }
     }
+
     char name[1024];
     if (ioctl(m_fd, EVIOCGNAME(sizeof(name) - 1), name) >= 0) {
         d->hw_name = QString::fromLocal8Bit(name);
@@ -452,9 +462,6 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             }
 
             addTouchPoint(contact, &combinedStates);
-
-            if (contact.state == Qt::TouchPointReleased)
-                it.remove();
         }
 
         // Now look for contacts that have disappeared since the last sync.
@@ -467,6 +474,15 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
                 contact.state = Qt::TouchPointReleased;
                 addTouchPoint(contact, &combinedStates);
             }
+        }
+
+        // Remove contacts that have just been reported as released.
+        it = m_contacts;
+        while (it.hasNext()) {
+            it.next();
+            Contact &contact(it.value());
+            if (contact.state == Qt::TouchPointReleased)
+                it.remove();
         }
 
         m_lastContacts = m_contacts;

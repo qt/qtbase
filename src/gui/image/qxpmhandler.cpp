@@ -742,6 +742,11 @@ static const struct XPMRGBData {
   { QRGB(139,139,  0),  "yellow4" },
   { QRGB(154,205, 50),  "yellowgreen" } };
 
+#if defined(Q_CC_MSVC) && _MSC_VER < 1600
+inline bool operator<(const XPMRGBData &data1, const XPMRGBData &data2)
+{ return qstrcmp(data1.name, data2.name) < 0; }
+#endif
+
 inline bool operator<(const char *name, const XPMRGBData &data)
 { return qstrcmp(name, data.name) < 0; }
 inline bool operator<(const XPMRGBData &data, const char *name)

@@ -511,7 +511,14 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
             if (slash) {
                 const QByteArray chunk = QFile::encodeName(dirName.left(slash));
                 if (QT_MKDIR(chunk.constData(), 0777) != 0) {
-                    if (errno == EEXIST) {
+                    if (errno == EEXIST
+#if defined(Q_OS_QNX)
+                        // On QNX the QNet (VFS paths of other hosts mounted under a directory
+                        // such as /net) mountpoint returns ENOENT, despite existing. stat()
+                        // on the QNet mountpoint returns successfully and reports S_IFDIR.
+                        || errno == ENOENT
+#endif
+                    ) {
                         QT_STATBUF st;
                         if (QT_STAT(chunk.constData(), &st) == 0 && (st.st_mode & S_IFMT) == S_IFDIR)
                             continue;

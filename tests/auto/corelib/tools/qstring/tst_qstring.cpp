@@ -5240,6 +5240,18 @@ void tst_QString::resizeAfterReserve()
     s += "hello world";
     s.resize(0);
     QVERIFY(s.capacity() == 100);
+
+    // reserve() can't be used to truncate data
+    s.fill('x', 100);
+    s.reserve(50);
+    QVERIFY(s.capacity() == 100);
+    QVERIFY(s.size() == 100);
+
+    // even with increased ref count truncation isn't allowed
+    QString t = s;
+    s.reserve(50);
+    QVERIFY(s.capacity() == 100);
+    QVERIFY(s.size() == 100);
 }
 
 void tst_QString::resizeWithNegative() const

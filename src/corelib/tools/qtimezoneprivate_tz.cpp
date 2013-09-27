@@ -618,7 +618,7 @@ void QTzTimeZonePrivate::init(const QByteArray &olsenId)
 
     // Offsets are stored as total offset, want to know separate UTC and DST offsets
     // so find the first non-dst transition to use as base UTC Offset
-    int utcOffset;
+    int utcOffset = 0;
     foreach (const QTzTransition &tran, tranList) {
         if (!typeList.at(tran.tz_typeind).tz_isdst) {
             utcOffset = typeList.at(tran.tz_typeind).tz_gmtoff;

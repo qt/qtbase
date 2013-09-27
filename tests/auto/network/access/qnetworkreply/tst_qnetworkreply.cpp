@@ -1416,7 +1416,8 @@ void tst_QNetworkReply::initTestCase()
 void tst_QNetworkReply::cleanupTestCase()
 {
 #if !defined Q_OS_WIN
-    QFile::remove(wronlyFileName);
+    if (!wronlyFileName.isNull())
+        QFile::remove(wronlyFileName);
 #endif
 #ifndef QT_NO_BEARERMANAGEMENT
     if (networkSession && networkSession->isOpen()) {

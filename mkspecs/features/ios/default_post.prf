@@ -19,7 +19,7 @@ equals(TEMPLATE, app) {
 
         # We use xcodebuild to do the actual build, but filter out the verbose
         # output that shows all environment variables for each build step.
-        xcodebuild_build.commands = "@xcodebuild build | grep -v setenv"
+        xcodebuild_build.commands = "@bash -o pipefail -c 'xcodebuild | grep -v setenv'"
         QMAKE_EXTRA_TARGETS += xcodebuild_build
         all.depends = xcodebuild_build
         QMAKE_EXTRA_TARGETS += all

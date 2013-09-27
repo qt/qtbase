@@ -79,12 +79,14 @@ char **qtArgv;
 QApplication *qtApp = 0;
 }
 
-@interface WindowCreator : NSObject {}
-- (void)createWindow;
+@interface WindowCreator : NSObject <NSApplicationDelegate>
 @end
 
 @implementation WindowCreator
-- (void)createWindow {
+
+- (void)applicationDidFinishLaunching:(NSNotification *)notification
+{
+    Q_UNUSED(notification)
     // Qt widgets rely on a QApplication being alive somewhere
     qtApp = new QApplication(qtArgc, qtArgv);
 
@@ -120,18 +122,25 @@ QApplication *qtApp = 0;
     // Show the NSWindow
     [window makeKeyAndOrderFront:NSApp];
 }
+
+- (void)applicationWillTerminate:(NSNotification *)notification
+{
+    Q_UNUSED(notification)
+
+    delete qtApp;
+}
+
 @end
 
 int main(int argc, char *argv[])
 {
     NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+    Q_UNUSED(pool);
 
-    // Normally, we would use the application delegate.
-    // We resort to the notification mechanism for conciseness.
+    // Normally, we would use let the main bundle instanciate and set
+    // the application delegate, but we set it manually for conciseness.
     WindowCreator *windowCreator= [WindowCreator alloc];
-    [[NSNotificationCenter defaultCenter]
-            addObserver:windowCreator selector:@selector(createWindow)
-            name:NSApplicationDidFinishLaunchingNotification object:nil];
+    [[NSApplication sharedApplication] setDelegate:windowCreator];
 
     // Save these for QApplication
     qtArgc = argc;

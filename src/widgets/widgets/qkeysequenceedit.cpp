@@ -59,7 +59,7 @@ void QKeySequenceEditPrivate::init()
     prevKey = -1;
     releaseTimer = 0;
 
-    layout = new QVBoxLayout(q);
+    QVBoxLayout *layout = new QVBoxLayout(q);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(lineEdit);
 

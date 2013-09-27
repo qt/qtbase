@@ -204,9 +204,9 @@ static QTouchDevice *touchDevice = 0;
                                               selector:@selector(windowNotification:)
                                               name:nil // Get all notifications
                                               object:newWindow];
-    } else {
-        [[NSNotificationCenter defaultCenter] removeObserver:self name:nil object:[self window]];
     }
+    if ([self window])
+        [[NSNotificationCenter defaultCenter] removeObserver:self name:nil object:[self window]];
 }
 - (void)updateGeometry
 {

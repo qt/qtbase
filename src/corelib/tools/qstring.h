@@ -934,8 +934,8 @@ inline QString::~QString() { if (!d->ref.deref()) Data::deallocate(d); }
 
 inline void QString::reserve(int asize)
 {
-    if (d->ref.isShared() || uint(asize) + 1u > d->alloc)
-        reallocData(uint(asize) + 1u);
+    if (d->ref.isShared() || uint(asize) >= d->alloc)
+        reallocData(qMax(asize, d->size) + 1u);
 
     if (!d->capacityReserved) {
         // cannot set unconditionally, since d could be the shared_null/shared_empty (which is const)

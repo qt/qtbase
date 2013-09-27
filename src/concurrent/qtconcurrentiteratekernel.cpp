@@ -90,10 +90,13 @@ static qint64 getticks()
 
 #  if (_POSIX_THREAD_CPUTIME-0 == 0)
     // detect availablility of CLOCK_THREAD_CPUTIME_ID
-    static long useThreadCpuTime = -2;
+    static QBasicAtomicInt sUseThreadCpuTime = Q_BASIC_ATOMIC_INITIALIZER(-2);
+    int useThreadCpuTime = sUseThreadCpuTime.load();
     if (useThreadCpuTime == -2) {
-        // sysconf() will return either -1 or _POSIX_VERSION (don't care about thread races here)
-        useThreadCpuTime = sysconf(_SC_THREAD_CPUTIME);
+        // sysconf() will return either -1L or _POSIX_VERSION
+        // (don't care about sysconf's exact return value)
+        useThreadCpuTime = sysconf(_SC_THREAD_CPUTIME) == -1L ? -1 : 0 ;
+        sUseThreadCpuTime.store(useThreadCpuTime); // might happen multiple times, but doesn't matter
     }
     if (useThreadCpuTime != -1)
         clockId = CLOCK_THREAD_CPUTIME_ID;

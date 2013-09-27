@@ -70,16 +70,24 @@ static jclass getCachedClass(JNIEnv *env, const char *className)
     QString key = QLatin1String(className);
     QHash<QString, jclass>::iterator it = cachedClasses->find(key);
     if (it == cachedClasses->end()) {
-        jclass c = env->FindClass(className);
+        QJNIObjectPrivate classLoader = QtAndroidPrivate::classLoader();
+        if (!classLoader.isValid())
+            return 0;
+
+        QJNIObjectPrivate stringName = QJNIObjectPrivate::fromString(QLatin1String(className));
+        QJNIObjectPrivate classObject = classLoader.callObjectMethod("loadClass",
+                                                                     "(Ljava/lang/String;)Ljava/lang/Class;",
+                                                                     stringName.object());
         if (env->ExceptionCheck()) {
-            c = 0;
 #ifdef QT_DEBUG
             env->ExceptionDescribe();
 #endif // QT_DEBUG
             env->ExceptionClear();
         }
-        if (c)
-            clazz = static_cast<jclass>(env->NewGlobalRef(c));
+
+        if (classObject.isValid())
+            clazz = static_cast<jclass>(env->NewGlobalRef(classObject.object()));
+
         cachedClasses->insert(key, clazz);
     } else {
         clazz = it.value();
@@ -160,10 +168,12 @@ QJNIEnvironmentPrivate::QJNIEnvironmentPrivate()
     : jniEnv(0)
 {
     JavaVM *vm = QtAndroidPrivate::javaVM();
-    if (vm->GetEnv((void**)&jniEnv, JNI_VERSION_1_6) != JNI_EDETACHED)
-        return;
+    if (vm->GetEnv((void**)&jniEnv, JNI_VERSION_1_6) == JNI_EDETACHED) {
+        if (vm->AttachCurrentThread(&jniEnv, 0) < 0)
+            return;
+    }
 
-    if (vm->AttachCurrentThread(&jniEnv, 0) < 0)
+    if (!jniEnv)
         return;
 
     if (!refCount->hasLocalData())

@@ -1543,7 +1543,7 @@ void Configure::desc(const char *option, const char *description, bool skipInden
     if (!skipIndent)
         printf("%*s", optionIndent, "");
 
-    int remaining  = descIndent - optionIndent - strlen(option);
+    int remaining  = descIndent - optionIndent - int(strlen(option));
     int wrapIndent = descIndent + qMax(0, 1 - remaining);
     printf("%s", option);
 

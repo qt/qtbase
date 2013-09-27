@@ -226,7 +226,7 @@ public:
     virtual void platformDestroy();
     virtual EGLNativeDisplayType platformDisplay() const;
     virtual QSize screenSize() const;
-    virtual EGLNativeWindowType createNativeWindow(const QSize &size, const QSurfaceFormat &format);
+    virtual EGLNativeWindowType createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format);
     virtual void destroyNativeWindow(EGLNativeWindowType window);
     virtual bool hasCapability(QPlatformIntegration::Capability cap) const;
 
@@ -258,8 +258,9 @@ QSize QEglFSPiHooks::screenSize() const
     return QSize(width, height);
 }
 
-EGLNativeWindowType QEglFSPiHooks::createNativeWindow(const QSize &size, const QSurfaceFormat &format)
+EGLNativeWindowType QEglFSPiHooks::createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format)
 {
+    Q_UNUSED(window)
     return createDispmanxLayer(QPoint(0, 0), size, 1, format.hasAlpha() ? DISPMANX_FLAGS_ALPHA_FROM_SOURCE : DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS);
 }
 

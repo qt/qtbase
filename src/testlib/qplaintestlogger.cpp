@@ -211,7 +211,7 @@ void QPlainTestLogger::outputMessage(const char *str)
 #elif defined(Q_OS_WIN)
     OutputDebugStringA(str);
 #elif defined(Q_OS_ANDROID)
-    __android_log_print(ANDROID_LOG_INFO, "QTestLib", str);
+    __android_log_write(ANDROID_LOG_INFO, "QTestLib", str);
 #endif
     outputString(str);
 }

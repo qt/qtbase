@@ -91,7 +91,7 @@ QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
 
     // Allocate additional space if array is growing
     if (options & Grow)
-        capacity = qAllocMore(objectSize * capacity, headerSize) / int(objectSize);
+        capacity = qAllocMore(int(objectSize * capacity), int(headerSize)) / int(objectSize);
 
     size_t allocSize = headerSize + objectSize * capacity;
 
