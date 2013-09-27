@@ -424,6 +424,10 @@ private:
     int     stringValueLen;
     QString emptyStr;
 
+    // The limit to the amount of times the DTD parsing functions can be called
+    // for the DTD currently being parsed.
+    int dtdRecursionLimit;
+
     const QString &string();
     void stringClear();
     void stringAddC(QChar);
@@ -492,6 +496,8 @@ private:
     void unexpectedEof(ParseFunction where, int state);
     void parseFailed(ParseFunction where, int state);
     void pushParseState(ParseFunction function, int state);
+
+    bool isPartiallyExpandedEntityValueTooLarge(QString *errorMessage);
 
     Q_DECLARE_PUBLIC(QXmlSimpleReader)
     QXmlSimpleReader *q_ptr;
@@ -2757,6 +2763,8 @@ QXmlSimpleReaderPrivate::QXmlSimpleReaderPrivate(QXmlSimpleReader *reader)
     useNamespacePrefixes = false;
     reportWhitespaceCharData = true;
     reportEntities = false;
+
+    dtdRecursionLimit = 2;
 }
 
 QXmlSimpleReaderPrivate::~QXmlSimpleReaderPrivate()
@@ -5035,6 +5043,11 @@ bool QXmlSimpleReaderPrivate::parseDoctype()
                 }
                 break;
             case Mup:
+                if (dtdRecursionLimit > 0 && parameterEntities.size() > dtdRecursionLimit) {
+                    reportParseError(QString::fromLatin1(
+                        "DTD parsing exceeded recursion limit of %1.").arg(dtdRecursionLimit));
+                    return false;
+                }
                 if (!parseMarkupdecl()) {
                     parseFailed(&QXmlSimpleReaderPrivate::parseDoctype, state);
                     return false;
@@ -6644,6 +6657,37 @@ bool QXmlSimpleReaderPrivate::parseChoiceSeq()
     return false;
 }
 
+bool QXmlSimpleReaderPrivate::isPartiallyExpandedEntityValueTooLarge(QString *errorMessage)
+{
+    const QString value = string();
+    QMap<QString, int> referencedEntityCounts;
+    foreach (QString entityName, entities.keys()) {
+        for (int i = 0; i < value.size() && i != -1; ) {
+            i = value.indexOf(entityName, i);
+            if (i != -1) {
+                // The entityName we're currently trying to find
+                // was matched in this string; increase our count.
+                ++referencedEntityCounts[entityName];
+                i += entityName.size();
+            }
+        }
+    }
+
+    foreach (QString entityName, referencedEntityCounts.keys()) {
+        const int timesReferenced = referencedEntityCounts[entityName];
+        const QString entityValue = entities[entityName];
+        if (entityValue.size() * timesReferenced > 1024) {
+            if (errorMessage) {
+                *errorMessage = QString::fromLatin1("The XML entity \"%1\""
+                    "expands too a string that is too large to process when "
+                    "referencing \"%2\" %3 times.").arg(entityName).arg(entityName).arg(timesReferenced);
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
 /*
   Parse a EntityDecl [70].
 
@@ -6738,6 +6782,15 @@ bool QXmlSimpleReaderPrivate::parseEntityDecl()
         switch (state) {
             case EValue:
                 if ( !entityExist(name())) {
+                    QString errorMessage;
+                    if (isPartiallyExpandedEntityValueTooLarge(&errorMessage)) {
+                        // The entity at entityName is entityValue.size() characters
+                        // long in its unexpanded form, and was mentioned timesReferenced times,
+                        // resulting in a string that would be greater than 1024 characters.
+                        reportParseError(errorMessage);
+                        return false;
+                    }
+
                     entities.insert(name(), string());
                     if (declHnd) {
                         if (!declHnd->internalEntityDecl(name(), string())) {
