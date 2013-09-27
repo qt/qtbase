@@ -1026,20 +1026,21 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     NSTimeInterval timestamp = [theEvent timestamp];
     ulong qt_timestamp = timestamp * 1000;
 
-    // Set keyboard modifiers depending on event phase. A two-finger trackpad flick
-    // generates a stream of scroll events. We want the keyboard modifier state to
-    // be the state at the beginning of the flick in order to avoid changing the
-    // interpretation of the events mid-stream. One example of this happening would
-    // be when pressing cmd after scrolling in Qt Creator: not taking the phase into
-    // account causes the end of the event stream to be interpreted as font size changes.
-
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     if ([theEvent respondsToSelector:@selector(scrollingDeltaX)]) {
-        NSEventPhase phase = [theEvent phase];
-        if (phase == NSEventPhaseBegan || phase == NSEventPhaseNone) {
+        // Prevent keyboard modifier state from changing during scroll event streams.
+        // A two-finger trackpad flick generates a stream of scroll events. We want
+        // the keyboard modifier state to be the state at the beginning of the
+        // flick in order to avoid changing the interpretation of the events
+        // mid-stream. One example of this happening would be when pressing cmd
+        // after scrolling in Qt Creator: not taking the phase into account causes
+        // the end of the event stream to be interpreted as font size changes.
+        NSEventPhase momentumPhase = [theEvent momentumPhase];
+        if (momentumPhase == NSEventPhaseNone) {
             currentWheelModifiers = [QNSView convertKeyModifiers:[theEvent modifierFlags]];
         }
 
+        NSEventPhase phase = [theEvent phase];
         Qt::ScrollPhase ph = Qt::ScrollUpdate;
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8
         if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_8) {
@@ -1058,7 +1059,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
         QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_screenPoint, pixelDelta, angleDelta, currentWheelModifiers, ph);
 
-        if (phase == NSEventPhaseEnded || phase == NSEventPhaseCancelled || phase == NSEventPhaseNone) {
+        if (momentumPhase == NSEventPhaseEnded || momentumPhase == NSEventPhaseCancelled || momentumPhase == NSEventPhaseNone) {
             currentWheelModifiers = Qt::NoModifier;
         }
     } else
