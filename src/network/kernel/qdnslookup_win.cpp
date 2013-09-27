@@ -48,15 +48,33 @@
 
 #include <qt_windows.h>
 #include <windns.h>
+#include <memory.h>
 
 QT_BEGIN_NAMESPACE
 
-void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestName, QDnsLookupReply *reply)
+void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestName, const QHostAddress &nameserver, QDnsLookupReply *reply)
 {
     // Perform DNS query.
     PDNS_RECORD dns_records = 0;
     const QString requestNameUtf16 = QString::fromUtf8(requestName.data(), requestName.size());
-    const DNS_STATUS status = DnsQuery_W(reinterpret_cast<const wchar_t*>(requestNameUtf16.utf16()), requestType, DNS_QUERY_STANDARD, NULL, &dns_records, NULL);
+    IP4_ARRAY srvList;
+    memset(&srvList, 0, sizeof(IP4_ARRAY));
+    if (!nameserver.isNull()) {
+        if (nameserver.protocol() == QAbstractSocket::IPv4Protocol) {
+            // The below code is referenced from: http://support.microsoft.com/kb/831226
+            srvList.AddrCount = 1;
+            srvList.AddrArray[0] = htonl(nameserver.toIPv4Address());
+        } else if (nameserver.protocol() == QAbstractSocket::IPv6Protocol) {
+            // For supoprting IPv6 nameserver addresses, we'll need to switch
+            // from DnsQuey() to DnsQueryEx() as it supports passing an IPv6
+            // address in the nameserver list
+            qWarning() << Q_FUNC_INFO << "IPv6 addresses for nameservers is currently not supported";
+            reply->error = QDnsLookup::ResolverError;
+            reply->errorString = tr("IPv6 addresses for nameservers is currently not supported");
+            return;
+        }
+    }
+    const DNS_STATUS status = DnsQuery_W(reinterpret_cast<const wchar_t*>(requestNameUtf16.utf16()), requestType, DNS_QUERY_STANDARD, &srvList, &dns_records, NULL);
     switch (status) {
     case ERROR_SUCCESS:
         break;

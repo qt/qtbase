@@ -42,6 +42,7 @@
 #include "qdnslookup_p.h"
 
 #include <qurl.h>
+#include <qdebug.h>
 
 #include <wrl.h>
 #include <windows.foundation.h>
@@ -59,8 +60,12 @@ using namespace ABI::Windows::Networking::Sockets;
 
 QT_BEGIN_NAMESPACE
 
-void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestName, QDnsLookupReply *reply)
+void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestName, const QHostAddress &nameserver, QDnsLookupReply *reply)
 {
+    // TODO: Add nameserver support for winRT
+    if (!nameserver.isNull())
+        qWarning() << "Ignoring nameserver as its currently not supported on WinRT";
+
     // TODO: is there any way to do "proper" dns lookup?
     if (requestType != QDnsLookup::A && requestType != QDnsLookup::AAAA
             && requestType != QDnsLookup::ANY) {

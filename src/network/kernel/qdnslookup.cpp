@@ -482,7 +482,7 @@ void QDnsLookup::lookup()
     Q_D(QDnsLookup);
     d->isFinished = false;
     d->reply = QDnsLookupReply();
-    d->runnable = new QDnsLookupRunnable(d->type, QUrl::toAce(d->name));
+    d->runnable = new QDnsLookupRunnable(d->type, QUrl::toAce(d->name), d->nameserver);
     connect(d->runnable, SIGNAL(finished(QDnsLookupReply)),
             this, SLOT(_q_lookupFinished(QDnsLookupReply)),
             Qt::BlockingQueuedConnection);
@@ -990,7 +990,7 @@ void QDnsLookupRunnable::run()
     }
 
     // Perform request.
-    query(requestType, requestName, &reply);
+    query(requestType, requestName, nameserver, &reply);
 
     // Sort results.
     if (!theDnsLookupSeedStorage()->hasLocalData()) {
