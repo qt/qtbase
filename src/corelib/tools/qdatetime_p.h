@@ -77,10 +77,10 @@ public:
 
     // Daylight Time Status
     enum DaylightStatus {
-        NoDaylightTime,
-        UnknownDaylightTime,
-        StandardTime,
-        DaylightTime
+        NoDaylightTime = -2,
+        UnknownDaylightTime = -1,
+        StandardTime = 0,
+        DaylightTime = 1
     };
 
     // Status of date/time
@@ -90,7 +90,9 @@ public:
         ValidDate           = 0x04,
         ValidTime           = 0x08,
         ValidDateTime       = 0x10,
-        TimeZoneCached      = 0x20
+        TimeZoneCached      = 0x20,
+        SetToStandardTime   = 0x40,
+        SetToDaylightTime   = 0x80
     };
     Q_DECLARE_FLAGS(StatusFlags, StatusFlag)
 
@@ -129,6 +131,9 @@ public:
     void setDateTime(const QDate &date, const QTime &time);
     void getDateTime(QDate *date, QTime *time) const;
 
+    void setDaylightStatus(DaylightStatus status);
+    DaylightStatus daylightStatus() const;
+
     // Returns msecs since epoch, assumes offset value is current
     inline qint64 toMSecsSinceEpoch() const { return (m_msecs - (m_offsetFromUtc * 1000)); }
 
@@ -146,6 +151,7 @@ public:
     inline bool isTimeZoneCached() const { return (m_status & TimeZoneCached) == TimeZoneCached; }
     inline void setTimeZoneCached() { m_status = m_status | TimeZoneCached; }
     inline void clearTimeZoneCached() { m_status = m_status & ~TimeZoneCached; }
+    inline void clearSetToDaylightStatus() { m_status = m_status & ~SetToStandardTime & ~SetToDaylightTime; }
 
 #ifndef QT_BOOTSTRAPPED
     static qint64 zoneMSecsToEpochMSecs(qint64 msecs, const QTimeZone &zone,
