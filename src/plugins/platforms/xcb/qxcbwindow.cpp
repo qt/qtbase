@@ -1144,6 +1144,17 @@ void QXcbWindow::updateNetWmUserTime(xcb_timestamp_t timestamp)
             xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window, atom(QXcbAtom::_NET_WM_USER_TIME_WINDOW),
                                 XCB_ATOM_WINDOW, 32, 1, &m_netWmUserTimeWindow);
             xcb_delete_property(xcb_connection(), m_window, atom(QXcbAtom::_NET_WM_USER_TIME));
+#ifndef QT_NO_DEBUG
+            QByteArray ba("Qt NET_WM user time window");
+            Q_XCB_CALL(xcb_change_property(xcb_connection(),
+                                           XCB_PROP_MODE_REPLACE,
+                                           m_window,
+                                           atom(QXcbAtom::_NET_WM_NAME),
+                                           atom(QXcbAtom::UTF8_STRING),
+                                           8,
+                                           ba.length(),
+                                           ba.constData()));
+#endif
         } else if (!isSupportedByWM) {
             // WM no longer supports it, then we should remove the
             // _NET_WM_USER_TIME_WINDOW atom.

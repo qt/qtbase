@@ -95,6 +95,9 @@ static Window createDummyWindow(QXcbScreen *screen, XVisualInfo *visualInfo)
                                   0, 0, 100, 100,
                                   0, visualInfo->depth, InputOutput, visualInfo->visual,
                                   CWBackPixel|CWBorderPixel|CWColormap, &a);
+#ifndef QT_NO_DEBUG
+    XStoreName(DISPLAY_FROM_XCB(screen), window, "Qt GLX dummy window");
+#endif
     XFreeColormap(DISPLAY_FROM_XCB(screen), cmap);
     return window;
 }

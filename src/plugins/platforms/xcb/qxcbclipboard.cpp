@@ -298,6 +298,17 @@ QXcbClipboard::QXcbClipboard(QXcbConnection *c)
                                  m_screen->screen()->root_visual, // visual
                                  0,                               // value mask
                                  0));                             // value list
+#ifndef QT_NO_DEBUG
+    QByteArray ba("Qt clipboard window");
+    Q_XCB_CALL(xcb_change_property(xcb_connection(),
+                                   XCB_PROP_MODE_REPLACE,
+                                   m_owner,
+                                   atom(QXcbAtom::_NET_WM_NAME),
+                                   atom(QXcbAtom::UTF8_STRING),
+                                   8,
+                                   ba.length(),
+                                   ba.constData()));
+#endif
 
     if (connection()->hasXFixes()) {
         const uint32_t mask = XCB_XFIXES_SELECTION_EVENT_MASK_SET_SELECTION_OWNER |
@@ -475,6 +486,17 @@ xcb_window_t QXcbClipboard::requestor() const
                                      m_screen->screen()->root_visual, // visual
                                      0,                               // value mask
                                      0));                             // value list
+#ifndef QT_NO_DEBUG
+        QByteArray ba("Qt clipboard requestor window");
+        Q_XCB_CALL(xcb_change_property(xcb_connection(),
+                                       XCB_PROP_MODE_REPLACE,
+                                       window,
+                                       atom(QXcbAtom::_NET_WM_NAME),
+                                       atom(QXcbAtom::UTF8_STRING),
+                                       8,
+                                       ba.length(),
+                                       ba.constData()));
+#endif
 
         uint32_t mask = XCB_EVENT_MASK_PROPERTY_CHANGE;
         xcb_change_window_attributes(xcb_connection(), window, XCB_CW_EVENT_MASK, &mask);
