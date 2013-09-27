@@ -160,6 +160,7 @@ class tst_QXmlSimpleReader : public QObject
         void reportNamespace() const;
         void reportNamespace_data() const;
         void roundtripWithNamespaces() const;
+        void dtdRecursionLimit();
 
     private:
         static QDomDocument fromByteArray(const QString &title, const QByteArray &ba, bool *ok);
@@ -767,6 +768,63 @@ void tst_QXmlSimpleReader::roundtripWithNamespaces() const
         QCOMPARE(expected, one.toByteArray().constData());
         QCOMPARE(one.toByteArray(2).constData(), two.toByteArray(2).constData());
         QCOMPARE(two.toByteArray(2).constData(), two.toByteArray(2).constData());
+    }
+}
+
+class TestHandler : public QXmlDefaultHandler
+{
+public:
+    TestHandler() :
+        recursionCount(0)
+    {
+    }
+
+    bool internalEntityDecl(const QString &name, const QString &value)
+    {
+        ++recursionCount;
+        return QXmlDefaultHandler::internalEntityDecl(name, value);
+    }
+
+    int recursionCount;
+};
+
+void tst_QXmlSimpleReader::dtdRecursionLimit()
+{
+    QFile file("xmldocs/2-levels-nested-dtd.xml");
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    QXmlSimpleReader xmlReader;
+    {
+        QXmlInputSource *source = new QXmlInputSource(&file);
+        TestHandler handler;
+        xmlReader.setDeclHandler(&handler);
+        xmlReader.setErrorHandler(&handler);
+        QVERIFY(!xmlReader.parse(source));
+    }
+
+    file.close();
+    file.setFileName("xmldocs/1-levels-nested-dtd.xml");
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    {
+        QXmlInputSource *source = new QXmlInputSource(&file);
+        TestHandler handler;
+        xmlReader.setDeclHandler(&handler);
+        xmlReader.setErrorHandler(&handler);
+        QVERIFY(!xmlReader.parse(source));
+        // The error wasn't because of the recursion limit being reached,
+        // it was because the document is not valid.
+        QVERIFY(handler.recursionCount < 2);
+    }
+
+    file.close();
+    file.setFileName("xmldocs/internal-entity-polynomial-attribute.xml");
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    {
+        QXmlInputSource *source = new QXmlInputSource(&file);
+        TestHandler handler;
+        xmlReader.setDeclHandler(&handler);
+        xmlReader.setErrorHandler(&handler);
+        QVERIFY(!xmlReader.parse(source));
+        QCOMPARE(handler.recursionCount, 2);
     }
 }
 
