@@ -202,7 +202,7 @@ SeeAlso: ???
 Feature: FILESYSTEMMODEL
 Description: Provides a data model for the local filesystem.
 Section: File I/O
-Requires: FILESYSTEMWATCHER
+Requires:
 Name: QFileSystemModel
 SeeAlso: ???
 

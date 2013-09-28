@@ -279,11 +279,6 @@
 #define QT_NO_DRAGANDDROP
 #endif
 
-// QFileSystemModel
-#if !defined(QT_NO_FILESYSTEMMODEL) && (defined(QT_NO_FILESYSTEMWATCHER))
-#define QT_NO_FILESYSTEMMODEL
-#endif
-
 // File Transfer Protocol
 #if !defined(QT_NO_FTP) && (defined(QT_NO_TEXTDATE))
 #define QT_NO_FTP
