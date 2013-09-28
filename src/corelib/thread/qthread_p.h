@@ -219,8 +219,6 @@ public:
 
 class QThreadData
 {
-    QAtomicInt _ref;
-
 public:
     QThreadData(int initialRefCount = 1);
     ~QThreadData();
@@ -262,17 +260,23 @@ public:
         { return std::find(locations, locations + Count, method) != locations + Count; }
     };
 
-    QThread *thread;
-    Qt::HANDLE threadId;
-    bool quitNow;
+private:
+    QAtomicInt _ref;
+
+public:
     int loopLevel;
-    QAtomicPointer<QAbstractEventDispatcher> eventDispatcher;
+
     QStack<QEventLoop *> eventLoops;
     QPostEventList postEventList;
-    bool canWait;
+    QThread *thread;
+    Qt::HANDLE threadId;
+    QAtomicPointer<QAbstractEventDispatcher> eventDispatcher;
     QVector<void *> tls;
-    bool isAdopted;
     FlaggedDebugSignatures flaggedSignatures;
+
+    bool quitNow;
+    bool canWait;
+    bool isAdopted;
 };
 
 class QScopedLoopLevelCounter
