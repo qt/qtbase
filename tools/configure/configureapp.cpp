@@ -1597,8 +1597,8 @@ void Configure::applySpecSpecifics()
         dictionary[ "LIBPNG" ]              = "qt";
         dictionary[ "FREETYPE" ]            = "yes";
         dictionary[ "ACCESSIBILITY" ]       = "no";
-        dictionary[ "OPENGL" ]              = "no";
-        dictionary[ "OPENGL_ES_2" ]         = "no";
+        dictionary[ "OPENGL" ]              = "yes";
+        dictionary[ "OPENGL_ES_2" ]         = "yes";
         dictionary[ "OPENVG" ]              = "no";
         dictionary[ "OPENSSL" ]             = "auto";
         dictionary[ "DBUS" ]                = "no";
@@ -1607,7 +1607,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "ICU" ]                 = "qt";
         dictionary[ "CE_CRT" ]              = "yes";
         dictionary[ "LARGE_FILE" ]          = "no";
-        dictionary[ "ANGLE" ]               = "no";
+        dictionary[ "ANGLE" ]               = "d3d11";
         if (dictionary.value("XQMAKESPEC").startsWith("winphone"))
             dictionary[ "SQL_SQLITE" ] = "no";
     } else if (dictionary.value("XQMAKESPEC").startsWith("wince")) {
