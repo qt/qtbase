@@ -175,7 +175,7 @@ bool QOpenGLTexturePrivate::create()
 
 void QOpenGLTexturePrivate::destroy()
 {
-    if (QOpenGLContext::currentContext() == context) {
+    if (QOpenGLContext::currentContext() != context) {
         qWarning("Requires a valid current OpenGL context.\n"
                  "Texture has not been destroyed");
         return;
