@@ -228,8 +228,8 @@ void tst_Lancelot::runTestSuite(GraphicsEngine engine, QImage::Format format)
         fmt.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
         fmt.setSamples(4);
         QOpenGLContext ctx;
-        ctx.create();
-        ctx.makeCurrent(&win);
+        QVERIFY(ctx.create());
+        QVERIFY(ctx.makeCurrent(&win));
         QOpenGLFramebufferObject fbo(800, 800, fmt);
         fbo.bind();
         QOpenGLPaintDevice pdv(800, 800);

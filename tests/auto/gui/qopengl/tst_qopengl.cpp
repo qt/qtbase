@@ -171,8 +171,8 @@ void tst_QOpenGL::sharedResourceCleanup()
     QScopedPointer<QSurface> surface(createSurface(surfaceClass));
 
     QOpenGLContext *ctx = new QOpenGLContext;
-    ctx->create();
-    ctx->makeCurrent(surface.data());
+    QVERIFY(ctx->create());
+    QVERIFY(ctx->makeCurrent(surface.data()));
 
     SharedResourceTracker tracker;
     SharedResource *resource = new SharedResource(&tracker);
@@ -188,7 +188,7 @@ void tst_QOpenGL::sharedResourceCleanup()
 
     QOpenGLContext *ctx2 = new QOpenGLContext;
     ctx2->setShareContext(ctx);
-    ctx2->create();
+    QVERIFY(ctx2->create());
 
     delete ctx;
 
@@ -238,7 +238,7 @@ void tst_QOpenGL::multiGroupSharedResourceCleanup()
 
     for (int i = 0; i < 10; ++i) {
         QOpenGLContext *gl = new QOpenGLContext();
-        gl->create();
+        QVERIFY(gl->create());
         gl->makeCurrent(surface.data());
         {
             // Cause QOpenGLMultiGroupSharedResource instantiation.
@@ -262,8 +262,8 @@ void tst_QOpenGL::multiGroupSharedResourceCleanupCustom()
     QScopedPointer<QSurface> surface(createSurface(surfaceClass));
 
     QOpenGLContext *ctx = new QOpenGLContext();
-    ctx->create();
-    ctx->makeCurrent(surface.data());
+    QVERIFY(ctx->create());
+    QVERIFY(ctx->makeCurrent(surface.data()));
 
     QOpenGLMultiGroupSharedResource multiGroupSharedResource;
     SharedResource *resource = multiGroupSharedResource.value<SharedResource>(ctx);
@@ -401,7 +401,7 @@ void tst_QOpenGL::fboSimpleRendering()
     QScopedPointer<QSurface> surface(createSurface(surfaceClass));
 
     QOpenGLContext ctx;
-    ctx.create();
+    QVERIFY(ctx.create());
 
     ctx.makeCurrent(surface.data());
 
@@ -449,7 +449,7 @@ void tst_QOpenGL::fboRendering()
     QScopedPointer<QSurface> surface(createSurface(surfaceClass));
 
     QOpenGLContext ctx;
-    ctx.create();
+    QVERIFY(ctx.create());
 
     ctx.makeCurrent(surface.data());
 
@@ -493,7 +493,7 @@ void tst_QOpenGL::fboHandleNulledAfterContextDestroyed()
 
     {
         QOpenGLContext ctx;
-        ctx.create();
+        QVERIFY(ctx.create());
 
         ctx.makeCurrent(&window);
 
@@ -523,7 +523,7 @@ void tst_QOpenGL::openGLPaintDevice()
     QScopedPointer<QSurface> surface(createSurface(surfaceClass));
 
     QOpenGLContext ctx;
-    ctx.create();
+    QVERIFY(ctx.create());
 
     QSurfaceFormat format = ctx.format();
     if (format.majorVersion() < 2)
@@ -576,8 +576,8 @@ void tst_QOpenGL::aboutToBeDestroyed()
     QOpenGLContext *context = new QOpenGLContext;
     QSignalSpy spy(context, SIGNAL(aboutToBeDestroyed()));
 
-    context->create();
-    context->makeCurrent(&window);
+    QVERIFY(context->create());
+    QVERIFY(context->makeCurrent(&window));
 
     QCOMPARE(spy.size(), 0);
 
@@ -598,8 +598,8 @@ void tst_QOpenGL::QTBUG15621_triangulatingStrokerDivZero()
     window.create();
 
     QOpenGLContext ctx;
-    ctx.create();
-    ctx.makeCurrent(&window);
+    QVERIFY(ctx.create());
+    QVERIFY(ctx.makeCurrent(&window));
 
     if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects())
         QSKIP("QOpenGLFramebufferObject not supported on this platform");
