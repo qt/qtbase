@@ -887,9 +887,28 @@ void QWizardPrivate::switchToPage(int newId, Direction direction)
 }
 
 // keep in sync with QWizard::WizardButton
-static const char * const buttonSlots[QWizard::NStandardButtons] = {
-    SLOT(back()), SLOT(next()), SLOT(next()), SLOT(accept()), SLOT(reject()),
-    SIGNAL(helpRequested())
+static const char * buttonSlots(QWizard::WizardButton which)
+{
+    switch (which) {
+    case QWizard::BackButton:
+        return SLOT(back());
+    case QWizard::NextButton:
+    case QWizard::CommitButton:
+        return SLOT(next());
+    case QWizard::FinishButton:
+        return SLOT(accept());
+    case QWizard::CancelButton:
+        return SLOT(reject());
+    case QWizard::HelpButton:
+        return SIGNAL(helpRequested());
+    case QWizard::CustomButton1:
+    case QWizard::CustomButton2:
+    case QWizard::CustomButton3:
+    case QWizard::Stretch:
+    case QWizard::NoButton:
+        Q_UNREACHABLE();
+    };
+    return 0;
 };
 
 QWizardLayoutInfo QWizardPrivate::layoutInfoForCurrentPage()
@@ -1405,7 +1424,7 @@ void QWizardPrivate::connectButton(QWizard::WizardButton which) const
 {
     Q_Q(const QWizard);
     if (which < QWizard::NStandardButtons) {
-        QObject::connect(btns[which], SIGNAL(clicked()), q, buttonSlots[which]);
+        QObject::connect(btns[which], SIGNAL(clicked()), q, buttonSlots(which));
     } else {
         QObject::connect(btns[which], SIGNAL(clicked()), q, SLOT(_q_emitCustomButtonClicked()));
     }
@@ -1576,7 +1595,7 @@ bool QWizardPrivate::handleAeroStyleChange()
         if (isWindow)
             vistaHelper->setTitleBarIconAndCaptionVisible(false);
         QObject::connect(
-            vistaHelper->backButton(), SIGNAL(clicked()), q, buttonSlots[QWizard::BackButton]);
+            vistaHelper->backButton(), SIGNAL(clicked()), q, buttonSlots(QWizard::BackButton));
         vistaHelper->backButton()->show();
     } else {
         q->setMouseTracking(true); // ### original value possibly different
