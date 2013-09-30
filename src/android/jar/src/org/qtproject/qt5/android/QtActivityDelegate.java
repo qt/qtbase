@@ -141,26 +141,31 @@ public class QtActivityDelegate
         }
     }
 
-    // case status
-    private final int ImhNoAutoUppercase = 0x2;
-    private final int ImhPreferUppercase = 0x8;
-    @SuppressWarnings("unused")
-    private final int ImhPreferLowercase = 0x10;
-    private final int ImhUppercaseOnly = 0x40000;
-    private final int ImhLowercaseOnly = 0x80000;
 
-    // options
-    private final int ImhNoPredictiveText = 0x20;
-
-    // layout
+    // input method hints - must be kept in sync with QTDIR/src/corelib/global/qnamespace.h
     private final int ImhHiddenText = 0x1;
-    private final int ImhPreferNumbers = 0x4;
+    private final int ImhSensitiveData = 0x2;
+    private final int ImhNoAutoUppercase = 0x4;
+    private final int ImhPreferNumbers = 0x8;
+    private final int ImhPreferUppercase = 0x10;
+    private final int ImhPreferLowercase = 0x20;
+    private final int ImhNoPredictiveText = 0x40;
+
+    private final int ImhDate = 0x80;
+    private final int ImhTime = 0x100;
+
+    private final int ImhPreferLatin = 0x200;
+
     private final int ImhMultiLine = 0x400;
+
     private final int ImhDigitsOnly = 0x10000;
     private final int ImhFormattedNumbersOnly = 0x20000;
+    private final int ImhUppercaseOnly = 0x40000;
+    private final int ImhLowercaseOnly = 0x80000;
     private final int ImhDialableCharactersOnly = 0x100000;
     private final int ImhEmailCharactersOnly = 0x200000;
     private final int ImhUrlCharactersOnly = 0x400000;
+    private final int ImhLatinOnly = 0x800000;
 
     // application state
     private final int ApplicationSuspended = 0x0;
