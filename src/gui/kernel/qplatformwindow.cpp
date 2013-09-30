@@ -509,7 +509,8 @@ QRect QPlatformWindow::initialGeometry(const QWindow *w,
             rect.setHeight(defaultHeight);
         }
     }
-    if (w->isTopLevel() && qt_window_private(const_cast<QWindow*>(w))->positionAutomatic) {
+    if (w->isTopLevel() && qt_window_private(const_cast<QWindow*>(w))->positionAutomatic
+        && w->type() != Qt::Popup) {
         if (const QPlatformScreen *platformScreen = QPlatformScreen::platformScreenForWindow(w)) {
             const QRect availableGeometry = platformScreen->availableGeometry();
             // Center unless the geometry ( + unknown window frame) is too large for the screen).
