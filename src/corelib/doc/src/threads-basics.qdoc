@@ -246,26 +246,6 @@
     }
     \endcode
 
-    What happens if one thread does not unlock a mutex? The result can be a
-    frozen application. In the example above, an exception might be thrown and
-    \c{mutex.unlock()} will never be reached. To prevent problems like this,
-    QMutexLocker should be used.
-
-    \code
-    void Worker::work()
-    {
-        QMutexLocker locker(&mutex);  // Locks the mutex and unlocks when locker exits the scope
-        doWork();
-    }
-    \endcode
-
-    This looks easy, but mutexes introduce a new class of problems: deadlocks.
-    A deadlock happens when a thread waits for a mutex to become unlocked, but
-    the mutex remains locked because the owning thread is waiting for the first
-    thread to unlock it. The result is a frozen application. Mutexes can be
-    used to make a method thread safe. Most Qt methods aren't thread safe
-    because there is always a performance penalty when using mutexes.
-
     \section2 Dealing with Asynchronous Execution
 
     One way to obtain a worker thread's result is by waiting for the thread
