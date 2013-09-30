@@ -85,10 +85,10 @@ static QString driveSpec(const QString &path)
 //************* QDirPrivate
 QDirPrivate::QDirPrivate(const QString &path, const QStringList &nameFilters_, QDir::SortFlags sort_, QDir::Filters filters_)
     : QSharedData()
+    , fileListsInitialized(false)
     , nameFilters(nameFilters_)
     , sort(sort_)
     , filters(filters_)
-    , fileListsInitialized(false)
 {
     setPath(path.isEmpty() ? QString::fromLatin1(".") : path);
 
@@ -108,10 +108,10 @@ QDirPrivate::QDirPrivate(const QString &path, const QStringList &nameFilters_, Q
 
 QDirPrivate::QDirPrivate(const QDirPrivate &copy)
     : QSharedData(copy)
+    , fileListsInitialized(false)
     , nameFilters(copy.nameFilters)
     , sort(copy.sort)
     , filters(copy.filters)
-    , fileListsInitialized(false)
     , dirEntry(copy.dirEntry)
     , metaData(copy.metaData)
 {

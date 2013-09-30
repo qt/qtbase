@@ -813,8 +813,9 @@ struct QRegularExpressionPrivate : QSharedData
 
     int captureIndexForName(const QString &name) const;
 
-    QString pattern;
+    // sizeof(QSharedData) == 4, so start our members with an enum
     QRegularExpression::PatternOptions patternOptions;
+    QString pattern;
 
     // *All* of the following members are set managed while holding this mutex,
     // except for isDirty which is set to true by QRegularExpression setters
@@ -889,7 +890,7 @@ QRegularExpression::QRegularExpression(QRegularExpressionPrivate &dd)
     \internal
 */
 QRegularExpressionPrivate::QRegularExpressionPrivate()
-    : pattern(), patternOptions(0),
+    : patternOptions(0), pattern(),
       mutex(),
       compiledPattern(0), studyData(0),
       errorString(0), errorOffset(-1),
@@ -919,7 +920,7 @@ QRegularExpressionPrivate::~QRegularExpressionPrivate()
 */
 QRegularExpressionPrivate::QRegularExpressionPrivate(const QRegularExpressionPrivate &other)
     : QSharedData(other),
-      pattern(other.pattern), patternOptions(other.patternOptions),
+      patternOptions(other.patternOptions), pattern(other.pattern),
       mutex(),
       compiledPattern(0), studyData(0),
       errorString(0),

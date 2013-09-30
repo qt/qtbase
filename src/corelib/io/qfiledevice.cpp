@@ -53,9 +53,9 @@ QT_BEGIN_NAMESPACE
 static const int QFILE_WRITEBUFFER_SIZE = 16384;
 
 QFileDevicePrivate::QFileDevicePrivate()
-    : fileEngine(0), lastWasWrite(false),
-      writeBuffer(QFILE_WRITEBUFFER_SIZE), error(QFile::NoError),
-      cachedSize(0)
+    : fileEngine(0),
+      writeBuffer(QFILE_WRITEBUFFER_SIZE), cachedSize(0),
+      error(QFile::NoError), lastWasWrite(false)
 {
 }
 

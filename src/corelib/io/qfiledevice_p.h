@@ -70,21 +70,22 @@ protected:
 
     virtual QAbstractFileEngine *engine() const;
 
-    QFileDevice::FileHandleFlags handleFlags;
-
-    mutable QAbstractFileEngine *fileEngine;
-    bool lastWasWrite;
-    QRingBuffer writeBuffer;
     inline bool ensureFlushed() const;
 
     bool putCharHelper(char c);
 
-    QFileDevice::FileError error;
     void setError(QFileDevice::FileError err);
     void setError(QFileDevice::FileError err, const QString &errorString);
     void setError(QFileDevice::FileError err, int errNum);
 
+    mutable QAbstractFileEngine *fileEngine;
+    QRingBuffer writeBuffer;
     mutable qint64 cachedSize;
+
+    QFileDevice::FileHandleFlags handleFlags;
+    QFileDevice::FileError error;
+
+    bool lastWasWrite;
 };
 
 inline bool QFileDevicePrivate::ensureFlushed() const
