@@ -73,13 +73,21 @@ private slots:
     void transactionalWriteErrorRenaming();
 };
 
+static inline QByteArray msgCannotOpen(const QFileDevice &f)
+{
+    QString result = QStringLiteral("Cannot open ") + QDir::toNativeSeparators(f.fileName())
+        + QStringLiteral(": ") + f.errorString();
+    return result.toLocal8Bit();
+}
+
 void tst_QSaveFile::transactionalWrite()
 {
     QTemporaryDir dir;
+    QVERIFY(dir.isValid());
     const QString targetFile = dir.path() + QString::fromLatin1("/outfile");
     QFile::remove(targetFile);
     QSaveFile file(targetFile);
-    QVERIFY(file.open(QIODevice::WriteOnly));
+    QVERIFY2(file.open(QIODevice::WriteOnly), msgCannotOpen(file).constData());
     QVERIFY(file.isOpen());
     QCOMPARE(file.fileName(), targetFile);
     QVERIFY(!QFile::exists(targetFile));
@@ -102,27 +110,29 @@ void tst_QSaveFile::saveTwice()
     // Check that we can reuse a QSaveFile object
     // (and test the case of an existing target file)
     QTemporaryDir dir;
+    QVERIFY(dir.isValid());
     const QString targetFile = dir.path() + QString::fromLatin1("/outfile");
     QSaveFile file(targetFile);
-    QVERIFY(file.open(QIODevice::WriteOnly));
+    QVERIFY2(file.open(QIODevice::WriteOnly), msgCannotOpen(file).constData());
     QCOMPARE(file.write("Hello"), Q_INT64_C(5));
     QVERIFY2(file.commit(), qPrintable(file.errorString()));
 
-    QVERIFY(file.open(QIODevice::WriteOnly));
+    QVERIFY2(file.open(QIODevice::WriteOnly), msgCannotOpen(file).constData());
     QCOMPARE(file.write("World"), Q_INT64_C(5));
     QVERIFY2(file.commit(), qPrintable(file.errorString()));
 
     QFile reader(targetFile);
-    QVERIFY(reader.open(QIODevice::ReadOnly));
+    QVERIFY2(reader.open(QIODevice::ReadOnly), msgCannotOpen(reader).constData());
     QCOMPARE(QString::fromLatin1(reader.readAll()), QString::fromLatin1("World"));
 }
 
 void tst_QSaveFile::textStreamManualFlush()
 {
     QTemporaryDir dir;
+    QVERIFY(dir.isValid());
     const QString targetFile = dir.path() + QString::fromLatin1("/outfile");
     QSaveFile file(targetFile);
-    QVERIFY(file.open(QIODevice::WriteOnly));
+    QVERIFY2(file.open(QIODevice::WriteOnly), msgCannotOpen(file).constData());
 
     QTextStream ts(&file);
     ts << "Manual flush";
@@ -140,9 +150,10 @@ void tst_QSaveFile::textStreamManualFlush()
 void tst_QSaveFile::textStreamAutoFlush()
 {
     QTemporaryDir dir;
+    QVERIFY(dir.isValid());
     const QString targetFile = dir.path() + QString::fromLatin1("/outfile");
     QSaveFile file(targetFile);
-    QVERIFY(file.open(QIODevice::WriteOnly));
+    QVERIFY2(file.open(QIODevice::WriteOnly), msgCannotOpen(file).constData());
 
     QTextStream ts(&file);
     ts << "Auto-flush.";
@@ -188,6 +199,7 @@ void tst_QSaveFile::transactionalWriteNoPermissionsOnDir()
 
 
     QTemporaryDir dir;
+    QVERIFY(dir.isValid());
     QVERIFY(QFile(dir.path()).setPermissions(QFile::ReadOwner | QFile::ExeOwner));
     PermissionRestorer permissionRestorer(dir.path());
 
@@ -212,7 +224,7 @@ void tst_QSaveFile::transactionalWriteNoPermissionsOnDir()
     file.setDirectWriteFallback(directWriteFallback);
     QCOMPARE(file.directWriteFallback(), directWriteFallback);
     if (directWriteFallback) {
-        QVERIFY(file.open(QIODevice::WriteOnly));
+        QVERIFY2(file.open(QIODevice::WriteOnly), msgCannotOpen(file).constData());
         QCOMPARE((int)file.error(), (int)QFile::NoError);
         QCOMPARE(file.write("World"), Q_INT64_C(5));
         QVERIFY(file.commit());
@@ -222,7 +234,7 @@ void tst_QSaveFile::transactionalWriteNoPermissionsOnDir()
         QCOMPARE(QString::fromLatin1(reader.readAll()), QString::fromLatin1("World"));
         reader.close();
 
-        QVERIFY(file.open(QIODevice::WriteOnly));
+        QVERIFY2(file.open(QIODevice::WriteOnly), msgCannotOpen(file).constData());
         QCOMPARE((int)file.error(), (int)QFile::NoError);
         QCOMPARE(file.write("W"), Q_INT64_C(1));
         file.cancelWriting(); // no effect, as per the documentation
@@ -241,9 +253,10 @@ void tst_QSaveFile::transactionalWriteNoPermissionsOnFile()
 {
     // Setup an existing but readonly file
     QTemporaryDir dir;
+    QVERIFY(dir.isValid());
     const QString targetFile = dir.path() + QString::fromLatin1("/outfile");
     QFile file(targetFile);
-    QVERIFY(file.open(QIODevice::WriteOnly));
+    QVERIFY2(file.open(QIODevice::WriteOnly), msgCannotOpen(file).constData());
     QCOMPARE(file.write("Hello"), Q_INT64_C(5));
     file.close();
     file.setPermissions(QFile::ReadOwner);
@@ -260,10 +273,11 @@ void tst_QSaveFile::transactionalWriteNoPermissionsOnFile()
 void tst_QSaveFile::transactionalWriteCanceled()
 {
     QTemporaryDir dir;
+    QVERIFY(dir.isValid());
     const QString targetFile = dir.path() + QString::fromLatin1("/outfile");
     QFile::remove(targetFile);
     QSaveFile file(targetFile);
-    QVERIFY(file.open(QIODevice::WriteOnly));
+    QVERIFY2(file.open(QIODevice::WriteOnly), msgCannotOpen(file).constData());
 
     QTextStream ts(&file);
     ts << "This writing operation will soon be canceled.\n";
@@ -283,9 +297,10 @@ void tst_QSaveFile::transactionalWriteCanceled()
 void tst_QSaveFile::transactionalWriteErrorRenaming()
 {
     QTemporaryDir dir;
+    QVERIFY(dir.isValid());
     const QString targetFile = dir.path() + QString::fromLatin1("/outfile");
     QSaveFile file(targetFile);
-    QVERIFY(file.open(QIODevice::WriteOnly));
+    QVERIFY2(file.open(QIODevice::WriteOnly), msgCannotOpen(file).constData());
     QCOMPARE(file.write("Hello"), qint64(5));
     QVERIFY(!QFile::exists(targetFile));
 
@@ -320,7 +335,7 @@ void tst_QSaveFile::transactionalWriteErrorRenaming()
 #else
     // Windows: Make rename() fail for lack of permissions on an existing target file
     QFile existingTargetFile(targetFile);
-    QVERIFY(existingTargetFile.open(QIODevice::WriteOnly));
+    QVERIFY2(existingTargetFile.open(QIODevice::WriteOnly), msgCannotOpen(existingTargetFile).constData());
     QCOMPARE(file.write("Target"), qint64(6));
     existingTargetFile.close();
     QVERIFY(existingTargetFile.setPermissions(QFile::ReadOwner));
