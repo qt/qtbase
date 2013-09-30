@@ -298,10 +298,13 @@ public:
     QXcbEventArray *lock();
     void unlock();
 
-    bool startThread();
+    void start();
 
 signals:
     void eventPending();
+
+private slots:
+    void registerForEvents();
 
 private:
     void addEvent(xcb_generic_event_t *event);
@@ -574,6 +577,8 @@ private:
 
     QByteArray m_startupId;
     QXcbSystemTrayTracker *m_systemTrayTracker;
+
+    friend class QXcbEventReader;
 };
 
 #define DISPLAY_FROM_XCB(object) ((Display *)(object->connection()->xlib_display()))

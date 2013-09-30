@@ -290,16 +290,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
         qFatal("QXcbConnection: Could not connect to display %s", m_displayName.constData());
 
     m_reader = new QXcbEventReader(this);
-    connect(m_reader, SIGNAL(eventPending()), this, SLOT(processXcbEvents()), Qt::QueuedConnection);
-    connect(m_reader, SIGNAL(finished()), this, SLOT(processXcbEvents()));
-    if (!m_reader->startThread()) {
-        QSocketNotifier *notifier = new QSocketNotifier(xcb_get_file_descriptor(xcb_connection()), QSocketNotifier::Read, this);
-        connect(notifier, SIGNAL(activated(int)), this, SLOT(processXcbEvents()));
-
-        QAbstractEventDispatcher *dispatcher = QGuiApplicationPrivate::eventDispatcher;
-        connect(dispatcher, SIGNAL(aboutToBlock()), this, SLOT(processXcbEvents()));
-        connect(dispatcher, SIGNAL(awake()), this, SLOT(processXcbEvents()));
-    }
+    m_reader->start();
 
     xcb_extension_t *extensions[] = {
         &xcb_shm_id, &xcb_xfixes_id, &xcb_randr_id, &xcb_shape_id, &xcb_sync_id,
@@ -977,14 +968,27 @@ QXcbEventReader::QXcbEventReader(QXcbConnection *connection)
 #endif
 }
 
-bool QXcbEventReader::startThread()
+void QXcbEventReader::start()
 {
     if (m_xcb_poll_for_queued_event) {
+        connect(this, SIGNAL(eventPending()), m_connection, SLOT(processXcbEvents()), Qt::QueuedConnection);
+        connect(this, SIGNAL(finished()), m_connection, SLOT(processXcbEvents()));
         QThread::start();
-        return true;
+    } else {
+        // Must be done after we have an event-dispatcher. By posting a method invocation
+        // we are sure that by the time the method is called we have an event-dispatcher.
+        QMetaObject::invokeMethod(this, "registerForEvents", Qt::QueuedConnection);
     }
+}
 
-    return false;
+void QXcbEventReader::registerForEvents()
+{
+    QSocketNotifier *notifier = new QSocketNotifier(xcb_get_file_descriptor(m_connection->xcb_connection()), QSocketNotifier::Read, this);
+    connect(notifier, SIGNAL(activated(int)), m_connection, SLOT(processXcbEvents()));
+
+    QAbstractEventDispatcher *dispatcher = QGuiApplicationPrivate::eventDispatcher;
+    connect(dispatcher, SIGNAL(aboutToBlock()), m_connection, SLOT(processXcbEvents()));
+    connect(dispatcher, SIGNAL(awake()), m_connection, SLOT(processXcbEvents()));
 }
 
 void QXcbEventReader::run()
