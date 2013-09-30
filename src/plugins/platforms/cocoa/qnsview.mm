@@ -208,6 +208,22 @@ static QTouchDevice *touchDevice = 0;
     if ([self window])
         [[NSNotificationCenter defaultCenter] removeObserver:self name:nil object:[self window]];
 }
+
+- (QWindow *)topLevelWindow
+{
+    QWindow *focusWindow = m_window;
+
+    // For widgets we need to do a bit of trickery as the window
+    // to activate is the window of the top-level widget.
+    if (m_window->metaObject()->className() == QStringLiteral("QWidgetWindow")) {
+        while (focusWindow->parent()) {
+            focusWindow = focusWindow->parent();
+        }
+    }
+
+    return focusWindow;
+}
+
 - (void)updateGeometry
 {
     QRect geometry;
@@ -457,16 +473,7 @@ static QTouchDevice *touchDevice = 0;
 {
     if (m_window->flags() & Qt::WindowTransparentForInput)
         return NO;
-    QWindow *focusWindow = m_window;
-
-    // For widgets we need to do a bit of trickery as the window
-    // to activate is the window of the top-level widget.
-    if (m_window->metaObject()->className() == QStringLiteral("QWidgetWindow")) {
-        while (focusWindow->parent()) {
-            focusWindow = focusWindow->parent();
-        }
-    }
-    QWindowSystemInterface::handleWindowActivated(focusWindow);
+    QWindowSystemInterface::handleWindowActivated([self topLevelWindow]);
     return YES;
 }
 
@@ -1124,10 +1131,12 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     if (ch.unicode() < 0xf700 || ch.unicode() > 0xf8ff)
         text = QCFString::toQString(characters);
 
+    QWindow *focusWindow = [self topLevelWindow];
+
     if (eventType == QEvent::KeyPress) {
 
         if (m_composingText.isEmpty())
-            m_sendKeyEvent = !QWindowSystemInterface::tryHandleShortcutEvent(m_window, timestamp, keyCode, modifiers, text);
+            m_sendKeyEvent = !QWindowSystemInterface::tryHandleShortcutEvent(focusWindow, timestamp, keyCode, modifiers, text);
 
         QObject *fo = QGuiApplication::focusObject();
         if (m_sendKeyEvent && fo) {
@@ -1144,7 +1153,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     }
 
     if (m_sendKeyEvent && m_composingText.isEmpty())
-        QWindowSystemInterface::handleExtendedKeyEvent(m_window, timestamp, QEvent::Type(eventType), keyCode, modifiers,
+        QWindowSystemInterface::handleExtendedKeyEvent(focusWindow, timestamp, QEvent::Type(eventType), keyCode, modifiers,
                                                        nativeScanCode, nativeVirtualKey, nativeModifiers, text, [nsevent isARepeat]);
 
     m_sendKeyEvent = false;
