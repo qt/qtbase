@@ -129,22 +129,41 @@ static bool objectInheritsXAndXIsCloserThanY(const QObject *object, const QByteA
     return false;
 }
 
-const int NFallbackDefaultProperties = 7;
-
 const struct {
-    const char *className;
-    const char *property;
-    const char *changedSignal;
-} fallbackProperties[NFallbackDefaultProperties] = {
+    const char className[16];
+    const char property[13];
+} fallbackProperties[] = {
     // If you modify this list, make sure to update the documentation (and the auto test)
-    { "QAbstractButton", "checked", SIGNAL(toggled(bool)) },
-    { "QAbstractSlider", "value", SIGNAL(valueChanged(int)) },
-    { "QComboBox", "currentIndex", SIGNAL(currentIndexChanged(int)) },
-    { "QDateTimeEdit", "dateTime", SIGNAL(dateTimeChanged(QDateTime)) },
-    { "QLineEdit", "text", SIGNAL(textChanged(QString)) },
-    { "QListWidget", "currentRow", SIGNAL(currentRowChanged(int)) },
-    { "QSpinBox", "value", SIGNAL(valueChanged(int)) }
+    { "QAbstractButton", "checked" },
+    { "QAbstractSlider", "value" },
+    { "QComboBox", "currentIndex" },
+    { "QDateTimeEdit", "dateTime" },
+    { "QLineEdit", "text" },
+    { "QListWidget", "currentRow" },
+    { "QSpinBox", "value" },
 };
+const size_t NFallbackDefaultProperties = sizeof fallbackProperties / sizeof *fallbackProperties;
+
+static const char *changed_signal(int which)
+{
+    // since it might expand to a runtime function call (to
+    // qFlagLocations()), we cannot store the result of SIGNAL() in a
+    // character array and expect it to be statically initialized. To
+    // avoid the relocations caused by a char pointer table, use a
+    // switch statement:
+    switch (which) {
+    case 0: return SIGNAL(toggled(bool));
+    case 1: return SIGNAL(valueChanged(int));
+    case 2: return SIGNAL(currentIndexChanged(int));
+    case 3: return SIGNAL(dateTimeChanged(QDateTime));
+    case 4: return SIGNAL(textChanged(QString));
+    case 5: return SIGNAL(currentRowChanged(int));
+    case 6: return SIGNAL(valueChanged(int));
+    };
+    Q_STATIC_ASSERT(7 == NFallbackDefaultProperties);
+    Q_UNREACHABLE();
+    return 0;
+}
 
 class QWizardDefaultProperty
 {
@@ -737,10 +756,10 @@ void QWizardPrivate::init()
 
     updateButtonLayout();
 
-    for (int i = 0; i < NFallbackDefaultProperties; ++i)
+    for (uint i = 0; i < NFallbackDefaultProperties; ++i)
         defaultPropertyTable.append(QWizardDefaultProperty(fallbackProperties[i].className,
                                                            fallbackProperties[i].property,
-                                                           fallbackProperties[i].changedSignal));
+                                                           changed_signal(i)));
 }
 
 void QWizardPrivate::reset()
