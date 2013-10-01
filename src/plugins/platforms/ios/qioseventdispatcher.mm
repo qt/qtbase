@@ -244,7 +244,7 @@ enum SetJumpResult
 {
     kJumpPointSetSuccessfully = 0,
     kJumpedFromEventDispatcherProcessEvents,
-    kJumpedFromQApplicationExecInterrupt,
+    kJumpedFromEventLoopExecInterrupt,
     kJumpedFromUserMainTrampoline,
 };
 
@@ -395,9 +395,9 @@ static const char kApplicationWillTerminateExitCode = SIGTERM | 0x80;
 
         // The runloop will not exit when the application is about to terminate,
         // so we'll never see the exit activity and have a chance to return from
-        // QApplication::exec(). We initiate the return manually as a workaround.
-        qEventDispatcherDebug() << "Manually triggering return from QApp exec";
-        static_cast<QIOSEventDispatcher *>(qApp->eventDispatcher())->interruptQApplicationExec();
+        // QEventLoop::exec(). We initiate the return manually as a workaround.
+        qEventDispatcherDebug() << "Manually triggering return from event loop exec";
+        static_cast<QIOSEventDispatcher *>(qApp->eventDispatcher())->interruptEventLoopExec();
         break;
     case kJumpedFromUserMainTrampoline:
         // The user's main has returned, so we're ready to let iOS terminate the application
@@ -415,7 +415,7 @@ QT_USE_NAMESPACE
 
 QIOSEventDispatcher::QIOSEventDispatcher(QObject *parent)
     : QEventDispatcherCoreFoundation(parent)
-    , m_processEventCallsAfterAppExec(0)
+    , m_processEventCallsAfterExec(0)
     , m_runLoopExitObserver(this, &QIOSEventDispatcher::handleRunLoopExit, kCFRunLoopExit)
 {
 }
@@ -432,27 +432,22 @@ bool __attribute__((returns_twice)) QIOSEventDispatcher::processEvents(QEventLoo
         return false;
     }
 
-    QCoreApplicationPrivate *qApplication = static_cast<QCoreApplicationPrivate *>(QObjectPrivate::get(qApp));
-    if (!m_processEventCallsAfterAppExec && qApplication->in_exec) {
-        Q_ASSERT(flags & QEventLoop::EventLoopExec);
+    if (!m_processEventCallsAfterExec && (flags & QEventLoop::EventLoopExec)) {
+        ++m_processEventCallsAfterExec;
 
-        // We know that app->in_exec is set just before executing the main event loop,
-        // so the first processEvents call after that will be the main event loop.
-        ++m_processEventCallsAfterAppExec;
-
-        // We set a new jump point here that we can return to when the Qt application
-        // is asked to exit, so that we can return from QCoreApplication::exec().
+        // We set a new jump point here that we can return to when the event loop
+        // is asked to exit, so that we can return from QEventLoop::exec().
         switch (setjmp(processEventExitJumpPoint)) {
         case kJumpPointSetSuccessfully:
-            qEventDispatcherDebug() << "QApplication exec detected, jumping back to native runloop";
+            qEventDispatcherDebug() << "QEventLoop exec detected, jumping back to native runloop";
             longjmp(processEventEnterJumpPoint, kJumpedFromEventDispatcherProcessEvents);
             break;
-        case kJumpedFromQApplicationExecInterrupt:
-            // QCoreApplication has quit (either by the hand of the user, or the iOS termination
+        case kJumpedFromEventLoopExecInterrupt:
+            // The event loop has exited (either by the hand of the user, or the iOS termination
             // signal), and we jumped back though processEventExitJumpPoint. We return from processEvents,
-            // which will emit aboutToQuit and then return to the user's main, which can do
-            // whatever it wants, including calling exec() on the application again.
-            qEventDispatcherDebug() << "kJumpedFromQApplicationExecInterrupt, returning with eventsProcessed = true";
+            // which will emit aboutToQuit if it's QApplication's event loop, and then return to the user's
+            // main, which can do whatever it wants, including calling exec() on the application again.
+            qEventDispatcherDebug() << "kJumpedFromEventLoopExecInterrupt, returning with eventsProcessed = true";
             return true;
         default:
             qFatal("Unexpected jump result in event loop integration");
@@ -461,19 +456,19 @@ bool __attribute__((returns_twice)) QIOSEventDispatcher::processEvents(QEventLoo
         Q_UNREACHABLE();
     }
 
-    if (m_processEventCallsAfterAppExec)
-        ++m_processEventCallsAfterAppExec;
+    if (m_processEventCallsAfterExec)
+        ++m_processEventCallsAfterExec;
 
     bool processedEvents = QEventDispatcherCoreFoundation::processEvents(flags);
 
-    if (m_processEventCallsAfterAppExec)
-        --m_processEventCallsAfterAppExec;
+    if (m_processEventCallsAfterExec)
+        --m_processEventCallsAfterExec;
 
     // If we're running with nested event loops and the application is quit,
     // then the forwarded interrupt call will happen while our processEvent
     // counter is still 2, and we won't detect that we're about to fall down
     // to the root iOS run-loop. We do an extra check here to catch that case.
-    checkIfApplicationShouldQuit();
+    checkIfEventLoopShouldExit();
 
     return processedEvents;
 }
@@ -488,12 +483,12 @@ void QIOSEventDispatcher::interrupt()
     // If an interrupt happens as part of a non-nested event loop, that is,
     // by processing an event or timer in the root iOS run-loop, we'll be
     // able to detect it here.
-    checkIfApplicationShouldQuit();
+    checkIfEventLoopShouldExit();
 }
 
-void QIOSEventDispatcher::checkIfApplicationShouldQuit()
+void QIOSEventDispatcher::checkIfEventLoopShouldExit()
 {
-    if (QThreadData::current()->quitNow && m_processEventCallsAfterAppExec == 1) {
+    if (m_processEventCallsAfterExec == 1) {
         qEventDispatcherDebug() << "Hit root runloop level, watching for runloop exit";
         m_runLoopExitObserver.addToMode(kCFRunLoopCommonModes);
     }
@@ -505,26 +500,25 @@ void QIOSEventDispatcher::handleRunLoopExit(CFRunLoopActivity activity)
 
     m_runLoopExitObserver.removeFromMode(kCFRunLoopCommonModes);
 
-    interruptQApplicationExec();
+    interruptEventLoopExec();
 }
 
-void QIOSEventDispatcher::interruptQApplicationExec()
+void QIOSEventDispatcher::interruptEventLoopExec()
 {
-    Q_ASSERT(QThreadData::current()->quitNow);
-    Q_ASSERT(m_processEventCallsAfterAppExec == 1);
+    Q_ASSERT(m_processEventCallsAfterExec == 1);
 
-    --m_processEventCallsAfterAppExec;
+    --m_processEventCallsAfterExec;
 
     // We re-set applicationProcessEventsReturnPoint here so that future
-    // calls to QApplication::exec() will end up back here after entering
+    // calls to QEventLoop::exec() will end up back here after entering
     // processEvents, instead of back in didFinishLaunchingWithOptions.
     switch (setjmp(processEventEnterJumpPoint)) {
     case kJumpPointSetSuccessfully:
         qEventDispatcherDebug() << "Jumping back to processEvents";
-        longjmp(processEventExitJumpPoint, kJumpedFromQApplicationExecInterrupt);
+        longjmp(processEventExitJumpPoint, kJumpedFromEventLoopExecInterrupt);
         break;
     case kJumpedFromEventDispatcherProcessEvents:
-        // QCoreApplication was re-executed
+        // QEventLoop was re-executed
         qEventDispatcherDebug() << "kJumpedFromEventDispatcherProcessEvents";
         break;
     default:

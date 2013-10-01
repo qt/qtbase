@@ -58,11 +58,11 @@ public:
 
     void handleRunLoopExit(CFRunLoopActivity activity);
 
-    void checkIfApplicationShouldQuit();
-    void interruptQApplicationExec();
+    void checkIfEventLoopShouldExit();
+    void interruptEventLoopExec();
 
 private:
-    uint m_processEventCallsAfterAppExec;
+    uint m_processEventCallsAfterExec;
     RunLoopObserver<QIOSEventDispatcher> m_runLoopExitObserver;
 };
 
