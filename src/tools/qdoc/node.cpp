@@ -2122,6 +2122,7 @@ QmlClassNode::QmlClassNode(InnerNode *parent, const QString& name)
       cnodeRequired_(false),
       wrapper_(false),
       cnode_(0),
+      qmlModule_(0),
       baseNode_(0)
 {
     int i = 0;
@@ -2171,45 +2172,27 @@ void QmlClassNode::subclasses(const QString& base, NodeList& subs)
     }
 }
 
-/*! \fn QString QmlClassNode::qmlModuleIdentifier() const
-  This function is called to get a string that is used either
-  as a prefix for the file name to use for QML element or
-  component reference page, or as a qualifier to prefix a
-  reference to a QML element or comnponent. The string that
-  is returned is the concatenation of the QML module name
-  and its version number. e.g., if an element or component
-  is defined to be in the QML module QtQuick 1, its module
-  identifier is "QtQuick1". See setQmlModuleInfo().
- */
-
 /*!
   This function splits \a arg on the blank character to get a
-  QML module name and version number. It then spilts the version
-  number on the '.' character to get a major version number and
-  a minor vrsion number. Both major the major and minor version
-  numbers should be present, but the minor version number is not
+  QML module name and version number. If the version number is
+  present, it spilts the version number on the '.' character to
+  get a major version number and a minor vrsion number. If the
+  version number is present, both the major and minor version
+  numbers should be there, but the minor version number is not
   absolutely necessary.
-
-  It stores the three components separately in this node. If all
-  three are found, true is returned. If any of the three is not
-  found or is not in the correct format, false is returned.
  */
-bool Node::setQmlModuleInfo(const QString& arg)
+void QmlModuleNode::setQmlModuleInfo(const QString& arg)
 {
-    QStringList dotSplit;
     QStringList blankSplit = arg.split(QLatin1Char(' '));
     qmlModuleName_ = blankSplit[0];
-    qmlModuleVersionMajor_ = "1";
-    qmlModuleVersionMinor_ = "0";
     if (blankSplit.size() > 1) {
-        dotSplit = blankSplit[1].split(QLatin1Char('.'));
+        QStringList dotSplit = blankSplit[1].split(QLatin1Char('.'));
         qmlModuleVersionMajor_ = dotSplit[0];
-        if (dotSplit.size() > 1) {
+        if (dotSplit.size() > 1)
             qmlModuleVersionMinor_ = dotSplit[1];
-            return true;
-        }
+        else
+            qmlModuleVersionMinor_ = "0";
     }
-    return false;
 }
 
 /*!
@@ -2256,6 +2239,36 @@ void QmlClassNode::clearCurrentChild()
         if (n->subType() == Node::Collision)
             n->clearCurrentChild();
     }
+}
+
+/*!
+  If the QML type's QML module pointer is set, return the QML
+  module name from the QML module node. Otherwise, return the
+  empty string.
+ */
+QString QmlClassNode::qmlModuleName() const
+{
+    return (qmlModule_ ? qmlModule_->qmlModuleName() : QString());
+}
+
+/*!
+  If the QML type's QML module pointer is set, return the QML
+  module version from the QML module node. Otherwise, return
+  the empty string.
+ */
+QString QmlClassNode::qmlModuleVersion() const
+{
+    return (qmlModule_ ? qmlModule_->qmlModuleVersion() : QString());
+}
+
+/*!
+  If the QML type's QML module pointer is set, return the QML
+  module identifier from the QML module node. Otherwise, return
+  the empty string.
+ */
+QString QmlClassNode::qmlModuleIdentifier() const
+{
+    return (qmlModule_ ? qmlModule_->qmlModuleIdentifier() : QString());
 }
 
 /*!
@@ -2526,7 +2539,7 @@ QString Node::fullDocumentName() const
 
         if (n->type() == Node::Document) {
             if ((n->subType() == Node::QmlClass) && !n->qmlModuleName().isEmpty())
-                pieces.insert(0, n->qmlModuleIdentifier());
+                pieces.insert(0, n->qmlModuleName());
             break;
         }
 
