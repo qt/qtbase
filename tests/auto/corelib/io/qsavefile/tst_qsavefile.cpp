@@ -56,6 +56,29 @@
 # include <windows.h>
 #endif
 
+// Restore permissions so that the QTemporaryDir cleanup can happen
+class PermissionRestorer
+{
+    Q_DISABLE_COPY(PermissionRestorer)
+public:
+    explicit PermissionRestorer(const QString& path) : m_path(path) {}
+    ~PermissionRestorer()  { restore(); }
+
+    inline void restore()
+    {
+        QFile file(m_path);
+#ifdef Q_OS_UNIX
+        file.setPermissions(QFile::Permissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner));
+#else
+        file.setPermissions(QFile::WriteOwner);
+        file.remove();
+#endif
+    }
+
+private:
+    const QString m_path;
+};
+
 class tst_QSaveFile : public QObject
 {
     Q_OBJECT
@@ -177,27 +200,6 @@ void tst_QSaveFile::transactionalWriteNoPermissionsOnDir()
 {
 #ifdef Q_OS_UNIX
     QFETCH(bool, directWriteFallback);
-    // Restore permissions so that the QTemporaryDir cleanup can happen
-    class PermissionRestorer
-    {
-        QString m_path;
-    public:
-        PermissionRestorer(const QString& path)
-            : m_path(path)
-        {}
-
-        ~PermissionRestorer()
-        {
-            restore();
-        }
-        void restore()
-        {
-            QFile file(m_path);
-            file.setPermissions(QFile::Permissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner));
-        }
-    };
-
-
     QTemporaryDir dir;
     QVERIFY(dir.isValid());
     QVERIFY(QFile(dir.path()).setPermissions(QFile::ReadOwner | QFile::ExeOwner));
@@ -256,6 +258,7 @@ void tst_QSaveFile::transactionalWriteNoPermissionsOnFile()
     QVERIFY(dir.isValid());
     const QString targetFile = dir.path() + QString::fromLatin1("/outfile");
     QFile file(targetFile);
+    PermissionRestorer permissionRestorer(targetFile);
     QVERIFY2(file.open(QIODevice::WriteOnly), msgCannotOpen(file).constData());
     QCOMPARE(file.write("Hello"), Q_INT64_C(5));
     file.close();
@@ -303,30 +306,6 @@ void tst_QSaveFile::transactionalWriteErrorRenaming()
     QVERIFY2(file.open(QIODevice::WriteOnly), msgCannotOpen(file).constData());
     QCOMPARE(file.write("Hello"), qint64(5));
     QVERIFY(!QFile::exists(targetFile));
-
-    // Restore permissions so that the QTemporaryDir cleanup can happen
-    class PermissionRestorer
-    {
-    public:
-        PermissionRestorer(const QString& path)
-            : m_path(path)
-        {}
-
-        ~PermissionRestorer()
-        {
-            QFile file(m_path);
-#ifdef Q_OS_UNIX
-            file.setPermissions(QFile::Permissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner));
-#else
-            file.setPermissions(QFile::WriteOwner);
-            file.remove();
-#endif
-        }
-
-    private:
-        QString m_path;
-    };
-
 #ifdef Q_OS_UNIX
     // Make rename() fail for lack of permissions in the directory
     QFile dirAsFile(dir.path()); // yay, I have to use QFile to change a dir's permissions...
