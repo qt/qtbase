@@ -362,7 +362,7 @@ typedef PNG_CONST png_uint_16p FAR * png_const_uint_16pp;
 #if defined(WIN32) || defined(_Windows) || defined(_WINDOWS) || \
     defined(_WIN32) || defined(__WIN32__)
 #  include <windows.h>  /* defines _WINDOWS_ macro */
-#  if defined(WINAPI_FAMILY) && ((WINAPI_FAMILY & WINAPI_FAMILY_DESKTOP_APP) == WINAPI_PARTITION_APP)
+#  if defined(WINAPI_FAMILY) && (WINAPI_FAMILY==WINAPI_FAMILY_APP || WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP)
 #    define _WINRT_ /* Define a macro for Windows Runtime builds */
 #  endif
 #endif
