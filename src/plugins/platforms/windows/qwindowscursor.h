@@ -52,6 +52,27 @@ QT_BEGIN_NAMESPACE
 
 class QWindowsWindowCursorData;
 
+struct QWindowsCursorCacheKey
+{
+    explicit QWindowsCursorCacheKey(const QCursor &c);
+    explicit QWindowsCursorCacheKey(Qt::CursorShape s) : shape(s), bitmapCacheKey(0), maskCacheKey(0) {}
+    QWindowsCursorCacheKey() : shape(Qt::CustomCursor), bitmapCacheKey(0), maskCacheKey(0) {}
+
+    Qt::CursorShape shape;
+    qint64 bitmapCacheKey;
+    qint64 maskCacheKey;
+};
+
+inline bool operator==(const QWindowsCursorCacheKey &k1, const QWindowsCursorCacheKey &k2)
+{
+    return k1.shape == k2.shape && k1.bitmapCacheKey == k2.bitmapCacheKey && k1.maskCacheKey == k2.maskCacheKey;
+}
+
+inline uint qHash(const QWindowsCursorCacheKey &k, uint seed) Q_DECL_NOTHROW
+{
+    return (uint(k.shape) + uint(k.bitmapCacheKey) + uint(k.maskCacheKey)) ^ seed;
+}
+
 class QWindowsWindowCursor
 {
 public:
@@ -86,11 +107,9 @@ public:
     QWindowsWindowCursor pixmapWindowCursor(const QCursor &c);
 
 private:
-    typedef QHash<Qt::CursorShape, QWindowsWindowCursor> StandardCursorCache;
-    typedef QHash<qint64, QWindowsWindowCursor> PixmapCursorCache;
+    typedef QHash<QWindowsCursorCacheKey, QWindowsWindowCursor>  CursorCache;
 
-    StandardCursorCache m_standardCursorCache;
-    PixmapCursorCache m_pixmapCursorCache;
+    CursorCache m_cursorCache;
 };
 
 QT_END_NAMESPACE

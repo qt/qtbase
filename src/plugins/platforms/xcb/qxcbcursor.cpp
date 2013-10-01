@@ -272,6 +272,26 @@ static const char * const cursorNames[] = {
     "link"
 };
 
+#ifndef QT_NO_CURSOR
+
+QXcbCursorCacheKey::QXcbCursorCacheKey(const QCursor &c)
+    : shape(c.shape()), bitmapCacheKey(0), maskCacheKey(0)
+{
+    if (shape == Qt::BitmapCursor) {
+        const qint64 pixmapCacheKey = c.pixmap().cacheKey();
+        if (pixmapCacheKey) {
+            bitmapCacheKey = pixmapCacheKey;
+        } else {
+            Q_ASSERT(c.bitmap());
+            Q_ASSERT(c.mask());
+            bitmapCacheKey = c.bitmap()->cacheKey();
+            maskCacheKey = c.mask()->cacheKey();
+        }
+    }
+}
+
+#endif // !QT_NO_CURSOR
+
 QXcbCursor::QXcbCursor(QXcbConnection *conn, QXcbScreen *screen)
     : QXcbObject(conn), m_screen(screen), m_gtkCursorThemeInitialized(false)
 {
@@ -318,9 +338,7 @@ QXcbCursor::~QXcbCursor()
     if (!--cursorCount)
         xcb_close_font(conn, cursorFont);
 
-    foreach (xcb_cursor_t cursor, m_bitmapCursorMap)
-        xcb_free_cursor(conn, cursor);
-    foreach (xcb_cursor_t cursor, m_shapeCursorMap)
+    foreach (xcb_cursor_t cursor, m_cursorHash)
         xcb_free_cursor(conn, cursor);
 }
 
@@ -336,17 +354,13 @@ void QXcbCursor::changeCursor(QCursor *cursor, QWindow *widget)
 
     xcb_cursor_t c = XCB_CURSOR_NONE;
     if (cursor) {
-        if (cursor->shape() == Qt::BitmapCursor) {
-            qint64 id = cursor->pixmap().cacheKey();
-            if (!m_bitmapCursorMap.contains(id))
-                m_bitmapCursorMap.insert(id, createBitmapCursor(cursor));
-            c = m_bitmapCursorMap.value(id);
-        } else {
-            int id = cursor->shape();
-            if (!m_shapeCursorMap.contains(id))
-                m_shapeCursorMap.insert(id, createFontCursor(cursor->shape()));
-            c = m_shapeCursorMap.value(id);
+        const QXcbCursorCacheKey key(*cursor);
+        CursorHash::iterator it = m_cursorHash.find(key);
+        if (it == m_cursorHash.end()) {
+            const Qt::CursorShape shape = cursor->shape();
+            it = m_cursorHash.insert(key, shape == Qt::BitmapCursor ? createBitmapCursor(cursor) : createFontCursor(shape));
         }
+        c = it.value();
     }
 
     w->setCursor(c);
