@@ -855,7 +855,7 @@ void QProcessPrivate::cleanup()
     }
     if (processFinishedNotifier) {
         processFinishedNotifier->setEnabled(false);
-        qDeleteInEventHandler(processFinishedNotifier);
+        delete processFinishedNotifier;
         processFinishedNotifier = 0;
     }
 
@@ -866,32 +866,32 @@ void QProcessPrivate::cleanup()
 
     if (stdoutChannel.notifier) {
         stdoutChannel.notifier->setEnabled(false);
-        qDeleteInEventHandler(stdoutChannel.notifier);
+        delete stdoutChannel.notifier;
         stdoutChannel.notifier = 0;
     }
     if (stderrChannel.notifier) {
         stderrChannel.notifier->setEnabled(false);
-        qDeleteInEventHandler(stderrChannel.notifier);
+        delete stderrChannel.notifier;
         stderrChannel.notifier = 0;
     }
     if (stdinChannel.notifier) {
         stdinChannel.notifier->setEnabled(false);
-        qDeleteInEventHandler(stdinChannel.notifier);
+        delete stdinChannel.notifier;
         stdinChannel.notifier = 0;
     }
     if (startupSocketNotifier) {
         startupSocketNotifier->setEnabled(false);
-        qDeleteInEventHandler(startupSocketNotifier);
+        delete startupSocketNotifier;
         startupSocketNotifier = 0;
     }
     if (deathNotifier) {
         deathNotifier->setEnabled(false);
-        qDeleteInEventHandler(deathNotifier);
+        delete deathNotifier;
         deathNotifier = 0;
     }
 #ifdef Q_OS_WIN
     if (notifier) {
-        qDeleteInEventHandler(notifier);
+        delete notifier;
         notifier = 0;
     }
 #endif
@@ -1161,10 +1161,9 @@ void QProcessPrivate::closeWriteChannel()
     qDebug("QProcessPrivate::closeWriteChannel()");
 #endif
     if (stdinChannel.notifier) {
-        extern void qDeleteInEventHandler(QObject *o);
         stdinChannel.notifier->setEnabled(false);
         if (stdinChannel.notifier) {
-            qDeleteInEventHandler(stdinChannel.notifier);
+            delete stdinChannel.notifier;
             stdinChannel.notifier = 0;
         }
     }
