@@ -724,6 +724,22 @@ int QHeaderView::sectionViewportPosition(int logicalIndex) const
     \sa sectionPosition()
 */
 
+template<typename Container>
+static void qMoveRange(Container& c,
+               typename Container::size_type rangeStart,
+               typename Container::size_type rangeEnd,
+               typename Container::size_type targetPosition)
+{
+    Q_ASSERT(targetPosition <= c.size());
+    Q_ASSERT(targetPosition < rangeStart || targetPosition >= rangeEnd);
+
+    const bool forwardMove = targetPosition > rangeStart;
+    typename Container::size_type first = std::min(rangeStart, targetPosition);
+    typename Container::size_type mid = forwardMove ? rangeEnd : rangeStart;
+    typename Container::size_type last = forwardMove ? targetPosition + 1 : rangeEnd;
+    std::rotate(c.begin() + first, c.begin() + mid, c.begin() + last);
+}
+
 /*!
     Moves the section at visual index \a from to occupy visual index \a to.
 
@@ -748,71 +764,32 @@ void QHeaderView::moveSection(int from, int to)
     if (stretchLastSection() &&  to == d->lastVisibleVisualIndex())
         d->lastSectionSize = sectionSize(from);
 
-    //int oldHeaderLength = length(); // ### for debugging; remove later
     d->initializeIndexMapping();
 
-    QBitArray sectionHidden = d->sectionsHiddenToBitVector();
     int *visualIndices = d->visualIndices.data();
     int *logicalIndices = d->logicalIndices.data();
     int logical = logicalIndices[from];
     int visual = from;
 
-    int affected_count = qAbs(to - from) + 1;
-    QVarLengthArray<int> sizes(affected_count);
-    QVarLengthArray<ResizeMode> modes(affected_count);
-
-    // move sections and indices
     if (to > from) {
-        sizes[to - from] = d->headerSectionSize(from);
-        modes[to - from] = d->headerSectionResizeMode(from);
         while (visual < to) {
-            sizes[visual - from] = d->headerSectionSize(visual + 1);
-            modes[visual - from] = d->headerSectionResizeMode(visual + 1);
-            if (!sectionHidden.isEmpty())
-                sectionHidden.setBit(visual, sectionHidden.testBit(visual + 1));
             visualIndices[logicalIndices[visual + 1]] = visual;
             logicalIndices[visual] = logicalIndices[visual + 1];
             ++visual;
         }
     } else {
-        sizes[0] = d->headerSectionSize(from);
-        modes[0] = d->headerSectionResizeMode(from);
         while (visual > to) {
-            sizes[visual - to] = d->headerSectionSize(visual - 1);
-            modes[visual - to] = d->headerSectionResizeMode(visual - 1);
-            if (!sectionHidden.isEmpty())
-                sectionHidden.setBit(visual, sectionHidden.testBit(visual - 1));
             visualIndices[logicalIndices[visual - 1]] = visual;
             logicalIndices[visual] = logicalIndices[visual - 1];
             --visual;
         }
     }
-    if (!sectionHidden.isEmpty()) {
-        sectionHidden.setBit(to, d->isVisualIndexHidden(from));
-        d->setHiddenSectionsFromBitVector(sectionHidden);
-    }
     visualIndices[logical] = to;
     logicalIndices[to] = logical;
 
-    //Q_ASSERT(oldHeaderLength == length());
-    // move sizes
-    // ### check for items of section sizes here
-    if (to > from) {
-        for (visual = from; visual <= to; ++visual) {
-            int size = sizes[visual - from];
-            ResizeMode mode = modes[visual - from];
-            d->createSectionItems(visual, visual, size, mode);
-        }
-    } else {
-        for (visual = to; visual <= from; ++visual) {
-            int size = sizes[visual - to];
-            ResizeMode mode = modes[visual - to];
-            d->createSectionItems(visual, visual, size, mode);
-        }
-    }
-    //Q_ASSERT(d->headerLength() == length());
-    //Q_ASSERT(oldHeaderLength == length());
-    //Q_ASSERT(d->logicalIndices.count() == d->sectionCount);
+    qMoveRange(d->sectionItems, from, from + 1, to);
+
+    d->sectionStartposRecalc = true;
 
     if (d->hasAutoResizeSections())
         d->doDelayedResizeSections();
