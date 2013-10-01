@@ -1006,6 +1006,7 @@ QPA_PLATFORM_GUARD=yes
 CFG_CXX11=auto
 CFG_DIRECTWRITE=no
 CFG_WERROR=auto
+CFG_QREAL=double
 OPT_MAC_SDK=
 
 # initalize variables used for installation
@@ -1168,6 +1169,7 @@ while [ "$#" -gt 0 ]; do
     -mysql_config| \
     -qpa| \
     -qconfig| \
+    -qreal| \
     -android-sdk| \
     -android-ndk| \
     -android-ndk-platform| \
@@ -1418,6 +1420,9 @@ while [ "$#" -gt 0 ]; do
         ;;
     qconfig)
         CFG_QCONFIG="$VAL"
+        ;;
+    qreal)
+        CFG_QREAL="$VAL"
         ;;
     sysroot)
         CFG_SYSROOT="$VAL"
@@ -3698,6 +3703,9 @@ Additional options:
 
     -qconfig local ...... Use src/corelib/global/qconfig-local.h rather than the
                           default ($CFG_QCONFIG).
+
+    -qreal [double|float] typedef qreal to the specified type. The default is double.
+                          Note that changing this flag affects binary compatibility.
 
     -no-opengl .......... Do not support OpenGL.
     -opengl <api> ....... Enable OpenGL support
@@ -6356,6 +6364,10 @@ if [ "$CFG_LARGEFILE" = "yes" ] && [ "$XPLATFORM_MINGW" != "yes" ]; then
     echo "#define QT_LARGEFILE_SUPPORT 64" >>"$outpath/src/corelib/global/qconfig.h.new"
 fi
 
+if [ "$CFG_QREAL" != double ]; then
+    echo "#define QT_COORD_TYPE $CFG_QREAL" >>"$outpath/src/corelib/global/qconfig.h.new"
+fi
+
 if [ "$CFG_FRAMEWORK" = "yes" ]; then
     echo "#define QT_MAC_FRAMEWORK_BUILD" >>"$outpath/src/corelib/global/qconfig.h.new"
 fi
@@ -6959,6 +6971,10 @@ fi
 if [ "$ORIG_CFG_XKBCOMMON" != qt ] && [ "$CFG_XKBCOMMON" = qt ]; then
     echo "NOTE: libxkbcommon 0.2.0 (or higher) not found on the system, will use "
     echo "the bundled version from 3rd party directory."
+fi
+if [ "$CFG_QREAL" = double ] && [ "$CFG_ARCH" = arm ]; then
+    echo "NOTE: Qt is using double for qreal on this system. This is binary incompatible against Qt 5.1."
+    echo "Configure with '-qreal float' to create a build that is binary compatible with 5.1."
 fi
 
 exec 1>&3 3>&- # restore stdout

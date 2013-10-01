@@ -16,8 +16,19 @@ Each of these identifiers can be entered in the bug tracker to obtain more
 information about a particular change.
 
 ****************************************************************************
+*                     Architecture Specific Changes                        *
+****************************************************************************
+
+Qt is now compiled with qreal typedef'ed to double on all platforms. qreal
+was a float on ARM chipsets before. This guarantees more consistent behavior
+between all platforms Qt supports, but is binary incompatible to Qt 5.1
+on ARM. The old behavior can be restored by passing -qreal float to
+configure.
+
+****************************************************************************
 *                          Library                                         *
 ****************************************************************************
+
 
 QtWidgets
 ---------

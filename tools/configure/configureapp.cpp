@@ -196,6 +196,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "SLOG2" ]           = "no";
     dictionary[ "SYSTEM_PROXIES" ]  = "no";
     dictionary[ "WERROR" ]          = "auto";
+    dictionary[ "QREAL" ]           = "double";
 
     //Only used when cross compiling.
     dictionary[ "QT_INSTALL_SETTINGS" ] = "/etc/xdg";
@@ -417,6 +418,12 @@ void Configure::parseCmdLine()
             if (i == argCount)
                 break;
             dictionary[ "QCONFIG" ] = configCmdLine.at(i);
+        }
+        else if (configCmdLine.at(i) == "-qreal") {
+            ++i;
+            if (i == argCount)
+                break;
+            dictionary[ "QREAL" ] = configCmdLine.at(i);
         }
 
         else if (configCmdLine.at(i) == "-release") {
@@ -1876,6 +1883,9 @@ bool Configure::displayHelp()
         desc("PROCESS", "full", "-fully-process",       "Generate Makefiles/Project files for the entire Qt\ntree.");
         desc("PROCESS", "no", "-dont-process",          "Do not generate Makefiles/Project files.\n");
 
+        desc(                  "-qreal [double|float]", "typedef qreal to the specified type. The default is double.\n"
+                                                        "Note that changing this flag affects binary compatibility.\n");
+
         desc("RTTI", "no",      "-no-rtti",             "Do not compile runtime type information.");
         desc("RTTI", "yes",     "-rtti",                "Compile runtime type information.");
         desc("STRIP", "no",     "-no-strip",            "Do not strip libraries and executables of debug info when installing.");
@@ -3298,6 +3308,8 @@ void Configure::generateConfigfiles()
         if (dictionary[ "NEON" ] == "yes")
             tmpStream << "#define QT_COMPILER_SUPPORTS_NEON" << endl;
 
+        if (dictionary["QREAL"] != "double")
+            tmpStream << "#define QT_COORD_TYPE " << dictionary["QREAL"] << endl;
 
         tmpStream << endl << "// Compile time features" << endl;
 

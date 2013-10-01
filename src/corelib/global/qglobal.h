@@ -213,11 +213,8 @@ typedef unsigned int uint;
 typedef unsigned long ulong;
 QT_END_INCLUDE_NAMESPACE
 
-// This logic must match the one in qmetatype.h
 #if defined(QT_COORD_TYPE)
 typedef QT_COORD_TYPE qreal;
-#elif defined(QT_NO_FPU) || defined(Q_PROCESSOR_ARM) || defined(Q_OS_WINCE)
-typedef float qreal;
 #else
 typedef double qreal;
 #endif
