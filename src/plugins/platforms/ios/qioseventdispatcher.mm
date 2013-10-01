@@ -365,6 +365,11 @@ static bool rootLevelRunLoopIntegration()
     }
 }
 
+// We treat applicationWillTerminate as SIGTERM, even if it can't be ignored,
+// and follow the bash convention of encoding the signal number in the upper
+// four bits of the exit code (exit(3) will only pass on the lower 8 bits).
+static const char kApplicationWillTerminateExitCode = SIGTERM | 0x80;
+
 + (void) applicationWillTerminate
 {
     if (!isQtApplication())
@@ -386,8 +391,7 @@ static bool rootLevelRunLoopIntegration()
     switch (setjmp(applicationWillTerminateJumpPoint)) {
     case kJumpPointSetSuccessfully:
         qEventDispatcherDebug() << "Exiting qApp with SIGTERM exit code"; qIndent();
-        // We treat applicationWillTerminate as SIGTERM, even if it can't be ignored
-        qApp->exit(128 + SIGTERM);
+        qApp->exit(kApplicationWillTerminateExitCode);
 
         // The runloop will not exit when the application is about to terminate,
         // so we'll never see the exit activity and have a chance to return from
@@ -420,6 +424,13 @@ bool __attribute__((returns_twice)) QIOSEventDispatcher::processEvents(QEventLoo
 {
     if (!rootLevelRunLoopIntegration())
         return QEventDispatcherCoreFoundation::processEvents(flags);
+
+    if (applicationAboutToTerminate) {
+        qEventDispatcherDebug() << "Detected QEventLoop exec after application termination";
+        // Re-issue exit, and return immediately
+        qApp->exit(kApplicationWillTerminateExitCode);
+        return false;
+    }
 
     QCoreApplicationPrivate *qApplication = static_cast<QCoreApplicationPrivate *>(QObjectPrivate::get(qApp));
     if (!m_processEventCallsAfterAppExec && qApplication->in_exec) {
