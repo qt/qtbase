@@ -114,7 +114,7 @@ private:
     QScopedPointer<QPlatformInputContext> m_inputContext;
 
 #ifndef QT_NO_ACCESSIBILITY
-    QScopedPointer<QPlatformAccessibility> m_accessibility;
+    mutable QScopedPointer<QPlatformAccessibility> m_accessibility;
 #endif
 
     QScopedPointer<QPlatformServices> m_services;

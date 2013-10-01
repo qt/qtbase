@@ -173,9 +173,6 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
 
     m_fontDatabase.reset(new QGenericUnixFontDatabase());
     m_inputContext.reset(QPlatformInputContextFactory::create());
-#if !defined(QT_NO_ACCESSIBILITY) && !defined(QT_NO_ACCESSIBILITY_ATSPI_BRIDGE)
-    m_accessibility.reset(new QSpiAccessibleBridge());
-#endif
 }
 
 QXcbIntegration::~QXcbIntegration()
@@ -333,6 +330,14 @@ QPlatformInputContext *QXcbIntegration::inputContext() const
 #ifndef QT_NO_ACCESSIBILITY
 QPlatformAccessibility *QXcbIntegration::accessibility() const
 {
+#if !defined(QT_NO_ACCESSIBILITY_ATSPI_BRIDGE)
+    if (!m_accessibility) {
+        Q_ASSERT_X(QCoreApplication::eventDispatcher(), "QXcbIntegration",
+            "Initializing accessibility without event-dispatcher!");
+        m_accessibility.reset(new QSpiAccessibleBridge());
+    }
+#endif
+
     return m_accessibility.data();
 }
 #endif
