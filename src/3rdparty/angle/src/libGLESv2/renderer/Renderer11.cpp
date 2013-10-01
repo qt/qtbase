@@ -137,6 +137,7 @@ EGLint Renderer11::initialize()
         return EGL_NOT_INITIALIZED;
     }
 
+#if !defined(ANGLE_OS_WINRT)
     mDxgiModule = LoadLibrary(TEXT("dxgi.dll"));
     mD3d11Module = LoadLibrary(TEXT("d3d11.dll"));
 
@@ -155,6 +156,7 @@ EGLint Renderer11::initialize()
         ERR("Could not retrieve D3D11CreateDevice address - aborting!\n");
         return EGL_NOT_INITIALIZED;
     }
+#endif
 
     D3D_FEATURE_LEVEL featureLevels[] =
     {
@@ -203,8 +205,12 @@ EGLint Renderer11::initialize()
         }
     }
 
+#if !defined(ANGLE_OS_WINRT)
     IDXGIDevice *dxgiDevice = NULL;
-    result = mDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)&dxgiDevice);
+#else
+    IDXGIDevice1 *dxgiDevice = NULL;
+#endif
+    result = mDevice->QueryInterface(IID_PPV_ARGS(&dxgiDevice));
 
     if (FAILED(result))
     {
@@ -524,7 +530,7 @@ void Renderer11::sync(bool block)
     }
 }
 
-SwapChain *Renderer11::createSwapChain(HWND window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat)
+SwapChain *Renderer11::createSwapChain(EGLNativeWindowType window, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat)
 {
     return new rx::SwapChain11(this, window, shareHandle, backBufferFormat, depthBufferFormat);
 }

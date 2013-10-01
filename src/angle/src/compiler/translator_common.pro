@@ -78,7 +78,6 @@ SOURCES += \
     $$ANGLE_DIR/src/compiler/intermOut.cpp \
     $$ANGLE_DIR/src/compiler/IntermTraverse.cpp \
     $$ANGLE_DIR/src/compiler/MapLongVariableNames.cpp \
-    $$ANGLE_DIR/src/compiler/ossource_win.cpp \
     $$ANGLE_DIR/src/compiler/parseConst.cpp \
     $$ANGLE_DIR/src/compiler/ParseHelper.cpp \
     $$ANGLE_DIR/src/compiler/PoolAlloc.cpp \
@@ -97,6 +96,12 @@ SOURCES += \
     $$ANGLE_DIR/src/compiler/timing/RestrictFragmentShaderTiming.cpp \
     $$ANGLE_DIR/src/compiler/timing/RestrictVertexShaderTiming.cpp \
     $$ANGLE_DIR/src/third_party/compiler/ArrayBoundsClamper.cpp
+
+winrt {
+    SOURCES += $$ANGLE_DIR/src/compiler/ossource_winrt.cpp
+} else {
+    SOURCES += $$ANGLE_DIR/src/compiler/ossource_win.cpp
+}
 
 # NOTE: 'win_flex' and 'bison' can be found in qt5/gnuwin32/bin
 flex.commands = $$addGnuPath(win_flex) --noline --nounistd --outfile=${QMAKE_FILE_BASE}_lex.cpp ${QMAKE_FILE_NAME}

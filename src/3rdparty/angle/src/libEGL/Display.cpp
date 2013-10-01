@@ -186,7 +186,7 @@ bool Display::getConfigAttrib(EGLConfig config, EGLint attribute, EGLint *value)
 
 
 
-EGLSurface Display::createWindowSurface(HWND window, EGLConfig config, const EGLint *attribList)
+EGLSurface Display::createWindowSurface(EGLNativeWindowType window, EGLConfig config, const EGLint *attribList)
 {
     const Config *configuration = mConfigSet.get(config);
     EGLint postSubBufferSupported = EGL_FALSE;
@@ -456,7 +456,7 @@ bool Display::isValidSurface(egl::Surface *surface)
     return mSurfaceSet.find(surface) != mSurfaceSet.end();
 }
 
-bool Display::hasExistingWindowSurface(HWND window)
+bool Display::hasExistingWindowSurface(EGLNativeWindowType window)
 {
     for (SurfaceSet::iterator surface = mSurfaceSet.begin(); surface != mSurfaceSet.end(); surface++)
     {
@@ -471,7 +471,6 @@ bool Display::hasExistingWindowSurface(HWND window)
 
 void Display::initExtensionString()
 {
-    HMODULE swiftShader = GetModuleHandle(TEXT("swiftshader_d3d9.dll"));
     bool shareHandleSupported = mRenderer->getShareHandleSupport();
 
     mExtensionString = "";
@@ -487,10 +486,13 @@ void Display::initExtensionString()
 
     mExtensionString += "EGL_ANGLE_query_surface_pointer ";
 
+#if !defined(ANGLE_OS_WINRT)
+    HMODULE swiftShader = GetModuleHandle(TEXT("swiftshader_d3d9.dll"));
     if (swiftShader)
     {
         mExtensionString += "EGL_ANGLE_software_display ";
     }
+#endif
 
     if (shareHandleSupported)
     {

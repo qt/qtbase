@@ -10,6 +10,14 @@
 #include "libGLESv2/utilities.h"
 #include "libGLESv2/mathutil.h"
 
+#if defined(ANGLE_OS_WINRT)
+#include <locale>
+#include <codecvt>
+#include <wrl.h>
+#include <windows.storage.h>
+using namespace ABI::Windows::Storage;
+#endif
+
 namespace gl
 {
 
@@ -737,7 +745,50 @@ bool IsTriangleMode(GLenum drawMode)
 
 std::string getTempPath()
 {
+#if defined(ANGLE_OS_WINRT)
+
+    static std::string path;
+
+    while (path.empty()) {
+        IApplicationDataStatics *applicationDataFactory;
+        HRESULT result = RoGetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Windows_Storage_ApplicationData).Get(),
+                                                IID_PPV_ARGS(&applicationDataFactory));
+        if (FAILED(result))
+            break;
+
+        IApplicationData *applicationData;
+        result = applicationDataFactory->get_Current(&applicationData);
+        if (FAILED(result))
+            break;
+
+        IStorageFolder *storageFolder;
+        result = applicationData->get_LocalFolder(&storageFolder);
+        if (FAILED(result))
+            break;
+
+        IStorageItem *localFolder;
+        result = storageFolder->QueryInterface(IID_PPV_ARGS(&localFolder));
+        if (FAILED(result))
+            break;
+
+        HSTRING localFolderPath;
+        result = localFolder->get_Path(&localFolderPath);
+        if (FAILED(result))
+            break;
+
+        std::wstring_convert< std::codecvt_utf8<wchar_t> > converter;
+        path = converter.to_bytes(WindowsGetStringRawBuffer(localFolderPath, NULL));
+        if (path.empty())
+        {
+            UNREACHABLE();
+            break;
+        }
+    }
+
+#else
+
     char path[MAX_PATH];
+
     DWORD pathLen = GetTempPathA(sizeof(path) / sizeof(path[0]), path);
     if (pathLen == 0)
     {
@@ -751,6 +802,8 @@ std::string getTempPath()
         UNREACHABLE();
         return std::string();
     }
+
+#endif
     
     return path;
 }

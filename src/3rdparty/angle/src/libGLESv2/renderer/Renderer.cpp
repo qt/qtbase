@@ -28,13 +28,18 @@
 #define D3DERR_OUTOFVIDEOMEMORY MAKE_HRESULT(1, 0x876, 380)
 #endif
 
-#ifdef __MINGW32__
-
 #ifndef D3DCOMPILER_DLL
+#ifndef ANGLE_OS_WINPHONE
+#define D3DCOMPILER_DLL L"d3dcompiler_43.dll" // Lowest common denominator
+#else
+#define D3DCOMPILER_DLL L"qtd3dcompiler.dll" // Placeholder DLL for phone
+#endif // ANGLE_OS_WINPHONE
+#endif // D3DCOMPILER_DLL
+
+#if defined(__MINGW32__) || defined(ANGLE_OS_WINPHONE)
 
 //Add define + typedefs for older MinGW-w64 headers (pre 5783)
-
-#define D3DCOMPILER_DLL L"d3dcompiler_43.dll"
+//Also define these on Windows Phone, which doesn't have a shader compiler
 
 HRESULT WINAPI D3DCompile(const void *data, SIZE_T data_size, const char *filename,
         const D3D_SHADER_MACRO *defines, ID3DInclude *include, const char *entrypoint,
@@ -43,9 +48,7 @@ typedef HRESULT (WINAPI *pD3DCompile)(const void *data, SIZE_T data_size, const 
         const D3D_SHADER_MACRO *defines, ID3DInclude *include, const char *entrypoint,
         const char *target, UINT sflags, UINT eflags, ID3DBlob **shader, ID3DBlob **error_messages);
 
-#endif // D3DCOMPILER_DLL
-
-#endif // __MINGW32__
+#endif // __MINGW32__ || ANGLE_OS_WINPHONE
 
 namespace rx
 {
@@ -81,7 +84,11 @@ bool Renderer::initializeCompiler()
     }
 #else
     // Load the version of the D3DCompiler DLL associated with the Direct3D version ANGLE was built with.
+#if !defined(ANGLE_OS_WINRT)
     mD3dCompilerModule = LoadLibrary(D3DCOMPILER_DLL);
+#else
+    mD3dCompilerModule = LoadPackagedLibrary(D3DCOMPILER_DLL, NULL);
+#endif
 #endif  // ANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES
 
     if (!mD3dCompilerModule)

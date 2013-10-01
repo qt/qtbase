@@ -32,13 +32,28 @@
 #include <unordered_map>
 #include <vector>
 
+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY==WINAPI_FAMILY_APP || WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP)
+#define ANGLE_OS_WINRT
+#if WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP
+#define ANGLE_OS_WINPHONE
+#endif
+#endif
+
 #ifndef ANGLE_ENABLE_D3D11
 #include <d3d9.h>
 #else
+#if !defined(ANGLE_OS_WINRT)
 #include <D3D11.h>
+#else
+#include <d3d11_1.h>
+#define Sleep(x) WaitForSingleObjectEx(GetCurrentThread(), x, FALSE)
+#define GetVersion() WINVER
+#endif
 #include <dxgi.h>
 #endif
+#ifndef ANGLE_OS_WINPHONE
 #include <D3Dcompiler.h>
+#endif
 
 #ifdef _MSC_VER
 #include <hash_map>
