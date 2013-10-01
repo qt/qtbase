@@ -442,14 +442,26 @@ QWinSettingsPrivate::QWinSettingsPrivate(QString rPath)
     if (rPath.startsWith(QLatin1String("HKEY_CURRENT_USER"))) {
         keyLength = 17;
         keyName = HKEY_CURRENT_USER;
+    } else if (rPath.startsWith(QLatin1String("HKCU"))) {
+        keyLength = 4;
+        keyName = HKEY_CURRENT_USER;
     } else if (rPath.startsWith(QLatin1String("HKEY_LOCAL_MACHINE"))) {
         keyLength = 18;
+        keyName = HKEY_LOCAL_MACHINE;
+    } else if (rPath.startsWith(QLatin1String("HKLM"))) {
+        keyLength = 4;
         keyName = HKEY_LOCAL_MACHINE;
     } else if (rPath.startsWith(QLatin1String("HKEY_CLASSES_ROOT"))) {
         keyLength = 17;
         keyName = HKEY_CLASSES_ROOT;
+    } else if (rPath.startsWith(QLatin1String("HKCR"))) {
+        keyLength = 4;
+        keyName = HKEY_CLASSES_ROOT;
     } else if (rPath.startsWith(QLatin1String("HKEY_USERS"))) {
         keyLength = 10;
+        keyName = HKEY_USERS;
+    } else if (rPath.startsWith(QLatin1String("HKU"))) {
+        keyLength = 3;
         keyName = HKEY_USERS;
     } else {
         return;
