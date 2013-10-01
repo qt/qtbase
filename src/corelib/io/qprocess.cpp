@@ -854,7 +854,6 @@ void QProcessPrivate::cleanup()
         pid = 0;
     }
     if (processFinishedNotifier) {
-        processFinishedNotifier->setEnabled(false);
         delete processFinishedNotifier;
         processFinishedNotifier = 0;
     }
@@ -865,27 +864,22 @@ void QProcessPrivate::cleanup()
     dying = false;
 
     if (stdoutChannel.notifier) {
-        stdoutChannel.notifier->setEnabled(false);
         delete stdoutChannel.notifier;
         stdoutChannel.notifier = 0;
     }
     if (stderrChannel.notifier) {
-        stderrChannel.notifier->setEnabled(false);
         delete stderrChannel.notifier;
         stderrChannel.notifier = 0;
     }
     if (stdinChannel.notifier) {
-        stdinChannel.notifier->setEnabled(false);
         delete stdinChannel.notifier;
         stdinChannel.notifier = 0;
     }
     if (startupSocketNotifier) {
-        startupSocketNotifier->setEnabled(false);
         delete startupSocketNotifier;
         startupSocketNotifier = 0;
     }
     if (deathNotifier) {
-        deathNotifier->setEnabled(false);
         delete deathNotifier;
         deathNotifier = 0;
     }
@@ -1161,11 +1155,8 @@ void QProcessPrivate::closeWriteChannel()
     qDebug("QProcessPrivate::closeWriteChannel()");
 #endif
     if (stdinChannel.notifier) {
-        stdinChannel.notifier->setEnabled(false);
-        if (stdinChannel.notifier) {
-            delete stdinChannel.notifier;
-            stdinChannel.notifier = 0;
-        }
+        delete stdinChannel.notifier;
+        stdinChannel.notifier = 0;
     }
 #ifdef Q_OS_WIN
     // ### Find a better fix, feeding the process little by little
