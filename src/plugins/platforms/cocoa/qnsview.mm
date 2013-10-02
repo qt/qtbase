@@ -975,6 +975,102 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, touchDevice, points);
 }
 
+#ifndef QT_NO_GESTURES
+//#define QT_COCOA_ENABLE_GESTURE_DEBUG
+- (void)magnifyWithEvent:(NSEvent *)event
+{
+#ifdef QT_COCOA_ENABLE_GESTURE_DEBUG
+    qDebug() << "magnifyWithEvent" << [event magnification];
+#endif
+    const NSTimeInterval timestamp = [event timestamp];
+    QPointF windowPoint;
+    QPointF screenPoint;
+    [self convertFromEvent:event toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    QWindowSystemInterface::handleGestureEventWithRealValue(m_window, timestamp, Qt::ZoomNativeGesture,
+                                                            [event magnification], windowPoint, screenPoint);
+}
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8
+- (void)smartMagnifyWithEvent:(NSEvent *)event
+{
+    static bool zoomIn = true;
+#ifdef QT_COCOA_ENABLE_GESTURE_DEBUG
+    qDebug() << "smartMagnifyWithEvent" << zoomIn;
+#endif
+    const NSTimeInterval timestamp = [event timestamp];
+    QPointF windowPoint;
+    QPointF screenPoint;
+    [self convertFromEvent:event toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    QWindowSystemInterface::handleGestureEventWithRealValue(m_window, timestamp, Qt::SmartZoomNativeGesture,
+                                                            zoomIn ? 1.0f : 0.0f, windowPoint, screenPoint);
+    zoomIn = !zoomIn;
+}
+#endif
+
+- (void)rotateWithEvent:(NSEvent *)event
+{
+#ifdef QT_COCOA_ENABLE_GESTURE_DEBUG
+    qDebug() << "rotateWithEvent" << [event rotation];
+#endif
+    const NSTimeInterval timestamp = [event timestamp];
+    QPointF windowPoint;
+    QPointF screenPoint;
+    [self convertFromEvent:event toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    QWindowSystemInterface::handleGestureEventWithRealValue(m_window, timestamp, Qt::RotateNativeGesture,
+                                                            -[event rotation], windowPoint, screenPoint);
+}
+
+- (void)swipeWithEvent:(NSEvent *)event
+{
+#ifdef QT_COCOA_ENABLE_GESTURE_DEBUG
+    qDebug() << "swipeWithEvent" << [event deltaX] << [event deltaY];
+#endif
+    const NSTimeInterval timestamp = [event timestamp];
+    QPointF windowPoint;
+    QPointF screenPoint;
+    [self convertFromEvent:event toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+
+    qreal angle = 0.0f;
+    if ([event deltaX] == 1)
+        angle = 180.0f;
+    else if ([event deltaX] == -1)
+        angle = 0.0f;
+    else if ([event deltaY] == 1)
+        angle = 90.0f;
+    else if ([event deltaY] == -1)
+        angle = 270.0f;
+
+    QWindowSystemInterface::handleGestureEventWithRealValue(m_window, timestamp, Qt::SwipeNativeGesture,
+                                                            angle, windowPoint, screenPoint);
+}
+
+- (void)beginGestureWithEvent:(NSEvent *)event
+{
+#ifdef QT_COCOA_ENABLE_GESTURE_DEBUG
+    qDebug() << "beginGestureWithEvent";
+#endif
+    const NSTimeInterval timestamp = [event timestamp];
+    QPointF windowPoint;
+    QPointF screenPoint;
+    [self convertFromEvent:event toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    QWindowSystemInterface::handleGestureEvent(m_window, timestamp, Qt::BeginNativeGesture,
+                                               windowPoint, screenPoint);
+}
+
+- (void)endGestureWithEvent:(NSEvent *)event
+{
+#ifdef QT_COCOA_ENABLE_GESTURE_DEBUG
+    qDebug() << "endGestureWithEvent";
+#endif
+    const NSTimeInterval timestamp = [event timestamp];
+    QPointF windowPoint;
+    QPointF screenPoint;
+    [self convertFromEvent:event toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    QWindowSystemInterface::handleGestureEvent(m_window, timestamp, Qt::EndNativeGesture,
+                                               windowPoint, screenPoint);
+}
+#endif // QT_NO_GESTURES
+
 #ifndef QT_NO_WHEELEVENT
 - (void)scrollWheel:(NSEvent *)theEvent
 {

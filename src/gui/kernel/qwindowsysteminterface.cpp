@@ -669,6 +669,35 @@ void QWindowSystemInterface::handleTabletLeaveProximityEvent(int device, int poi
     handleTabletLeaveProximityEvent(time, device, pointerType, uid);
 }
 
+#ifndef QT_NO_GESTURES
+void QWindowSystemInterface::handleGestureEvent(QWindow *window, ulong timestamp, Qt::NativeGestureType type,
+                                                QPointF &local, QPointF &global)
+{
+    QWindowSystemInterfacePrivate::GestureEvent *e =
+        new QWindowSystemInterfacePrivate::GestureEvent(window, timestamp, type, local, global);
+       QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+}
+
+void QWindowSystemInterface::handleGestureEventWithRealValue(QWindow *window, ulong timestamp, Qt::NativeGestureType type,
+                                                                qreal value, QPointF &local, QPointF &global)
+{
+    QWindowSystemInterfacePrivate::GestureEvent *e =
+        new QWindowSystemInterfacePrivate::GestureEvent(window, timestamp, type, local, global);
+    e->realValue = value;
+    QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+}
+
+void QWindowSystemInterface::handleGestureEventWithSequenceIdAndValue(QWindow *window, ulong timestamp, Qt::NativeGestureType type,
+                                                                         ulong sequenceId, quint64 value, QPointF &local, QPointF &global)
+{
+    QWindowSystemInterfacePrivate::GestureEvent *e =
+        new QWindowSystemInterfacePrivate::GestureEvent(window, timestamp, type, local, global);
+    e->sequenceId = sequenceId;
+    e->intValue = value;
+    QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+}
+#endif // QT_NO_GESTURES
+
 void QWindowSystemInterface::handlePlatformPanelEvent(QWindow *w)
 {
     QWindowSystemInterfacePrivate::PlatformPanelEvent *e =

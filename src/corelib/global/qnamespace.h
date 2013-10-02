@@ -1557,6 +1557,18 @@ public:
         IgnoredGesturesPropagateToParent = 0x04
     };
     Q_DECLARE_FLAGS(GestureFlags, GestureFlag)
+
+    enum NativeGestureType
+    {
+        BeginNativeGesture,
+        EndNativeGesture,
+        PanNativeGesture,
+        ZoomNativeGesture,
+        SmartZoomNativeGesture,
+        RotateNativeGesture,
+        SwipeNativeGesture
+    };
+
 #endif // QT_NO_GESTURES
 
     enum NavigationMode

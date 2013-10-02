@@ -39,84 +39,64 @@
 **
 ****************************************************************************/
 
-#ifndef QWIDGETWINDOW_QPA_P_H
-#define QWIDGETWINDOW_QPA_P_H
+#ifndef QMACSWIPEGESTURERECOGNIZER_MAC_P_H
+#define QMACSWIPEGESTURERECOGNIZER_MAC_P_H
 
-#include <QtGui/qwindow.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of other Qt classes.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include <QtCore/private/qobject_p.h>
-#include <QtGui/private/qevent_p.h>
+#include "qtimer.h"
+#include "qpoint.h"
+#include "qgesturerecognizer.h"
+
+#ifndef QT_NO_GESTURES
 
 QT_BEGIN_NAMESPACE
 
-
-class QCloseEvent;
-class QMoveEvent;
-
-class QWidgetWindow : public QWindow
+class QMacSwipeGestureRecognizer : public QGestureRecognizer
 {
-    Q_OBJECT
 public:
-    QWidgetWindow(QWidget *widget);
+    QMacSwipeGestureRecognizer();
 
-    QWidget *widget() const { return m_widget; }
-#ifndef QT_NO_ACCESSIBILITY
-    QAccessibleInterface *accessibleRoot() const;
-#endif
+    QGesture *create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *gesture, QObject *watched, QEvent *event);
+    void reset(QGesture *gesture);
+};
 
-    QObject *focusObject() const;
-protected:
-    bool event(QEvent *);
+class QMacPinchGestureRecognizer : public QGestureRecognizer
+{
+public:
+    QMacPinchGestureRecognizer();
 
-    void handleCloseEvent(QCloseEvent *);
-    void handleEnterLeaveEvent(QEvent *);
-    void handleFocusInEvent(QFocusEvent *);
-    void handleKeyEvent(QKeyEvent *);
-    void handleMouseEvent(QMouseEvent *);
-    void handleNonClientAreaMouseEvent(QMouseEvent *);
-    void handleTouchEvent(QTouchEvent *);
-    void handleMoveEvent(QMoveEvent *);
-    void handleResizeEvent(QResizeEvent *);
-#ifndef QT_NO_WHEELEVENT
-    void handleWheelEvent(QWheelEvent *);
-#endif
-#ifndef QT_NO_DRAGANDDROP
-    void handleDragEnterMoveEvent(QDragMoveEvent *);
-    void handleDragLeaveEvent(QDragLeaveEvent *);
-    void handleDropEvent(QDropEvent *);
-#endif
-    void handleExposeEvent(QExposeEvent *);
-    void handleWindowStateChangedEvent(QWindowStateChangeEvent *event);
-    bool nativeEvent(const QByteArray &eventType, void *message, long *result);
-#ifndef QT_NO_TABLETEVENT
-    void handleTabletEvent(QTabletEvent *);
-#endif
-#ifndef QT_NO_GESTURES
-    void handleGestureEvent(QNativeGestureEvent *);
-#endif
-#ifndef QT_NO_CONTEXTMENU
-    void handleContextMenuEvent(QContextMenuEvent *);
-#endif
+    QGesture *create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *gesture, QObject *watched, QEvent *event);
+    void reset(QGesture *gesture);
+};
 
-private slots:
-    void updateObjectName();
+class QMacPanGestureRecognizer : public QObject, public QGestureRecognizer
+{
+public:
+    QMacPanGestureRecognizer();
 
+    QGesture *create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *gesture, QObject *watched, QEvent *event);
+    void reset(QGesture *gesture);
 private:
-    void updateGeometry();
-
-    enum FocusWidgets {
-        FirstFocusWidget,
-        LastFocusWidget
-    };
-    QWidget *getFocusWidget(FocusWidgets fw);
-
-    QWidget *m_widget;
-    QPointer<QWidget> m_implicit_mouse_grabber;
-#ifndef QT_NO_DRAGANDDROP
-    QPointer<QWidget> m_dragTarget;
-#endif
+    QPointF _startPos;
+    QBasicTimer _panTimer;
+    bool _panCanceled;
 };
 
 QT_END_NAMESPACE
 
-#endif // QWIDGETWINDOW_QPA_P_H
+#endif // QT_NO_GESTURES
+
+#endif // QMACSWIPEGESTURERECOGNIZER_MAC_P_H
