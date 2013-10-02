@@ -171,7 +171,7 @@ const Node* Tree::findNode(const QStringList& path,
                     || ((FunctionNode*)node)->metaness() == FunctionNode::MacroWithoutParams)) {
             if ((node != self) && (node->type() != Node::QmlPropertyGroup)) {
                 if (node->subType() == Node::Collision) {
-                    node = node->applyModuleIdentifier(start);
+                    node = node->applyModuleName(start);
                 }
                 return node;
             }

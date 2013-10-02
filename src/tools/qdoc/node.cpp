@@ -130,8 +130,8 @@ QString Node::fullName(const Node* relative) const
     if (type() == Node::Document) {
         const DocNode* dn = static_cast<const DocNode*>(this);
         // Only print modulename::type on collision pages.
-        if (!dn->qmlModuleIdentifier().isEmpty() && relative != 0 && relative->isCollisionNode())
-            return dn->qmlModuleIdentifier() + "::" + dn->title();
+        if (!dn->qmlModuleName().isEmpty() && relative != 0 && relative->isCollisionNode())
+            return dn->qmlModuleName() + "::" + dn->title();
         return dn->title();
     }
     else if (type() == Node::Class) {
@@ -2204,7 +2204,7 @@ QString QmlClassNode::qmlFullBaseName() const
 {
     QString result;
     if (baseNode_) {
-        result = baseNode_->qmlModuleIdentifier() + "::" + baseNode_->name();
+        result = baseNode_->qmlModuleName() + "::" + baseNode_->name();
     }
     return result;
 }
@@ -2356,13 +2356,13 @@ bool QmlPropertyNode::isWritable(QDocDatabase* qdb)
                     location().warning(tr("No Q_PROPERTY for QML property %1::%2::%3 "
                                           "in C++ class documented as QML type: "
                                           "(property not found in the C++ class or its base classes)")
-                                       .arg(qmlModuleIdentifier()).arg(qmlTypeName()).arg(name()));
+                                       .arg(qmlModuleName()).arg(qmlTypeName()).arg(name()));
             }
             else
                 location().warning(tr("No Q_PROPERTY for QML property %1::%2::%3 "
                                       "in C++ class documented as QML type: "
                                       "(C++ class not specified or not found).")
-                                   .arg(qmlModuleIdentifier()).arg(qmlTypeName()).arg(name()));
+                                   .arg(qmlModuleName()).arg(qmlTypeName()).arg(name()));
         }
     }
     return true;
@@ -2505,18 +2505,18 @@ InnerNode* NameCollisionNode::findAny(Node::Type t, Node::SubType st)
 
 /*!
   This node is a name collision node. Find a child of this node
-  such that the child's QML module identifier matches origin's
-  QML module identifier. Return the matching node, or return this
-  node if there is no matching node.
+  such that the child's QML module name matches origin's QML module
+  Name. Return the matching node, or return this node if there is
+  no matching node.
  */
-const Node* NameCollisionNode::applyModuleIdentifier(const Node* origin) const
+const Node* NameCollisionNode::applyModuleName(const Node* origin) const
 {
-    if (origin && !origin->qmlModuleIdentifier().isEmpty()) {
+    if (origin && !origin->qmlModuleName().isEmpty()) {
         const NodeList& cn = childNodes();
         NodeList::ConstIterator i = cn.constBegin();
         while (i != cn.constEnd()) {
             if ((*i)->type() == Node::Document && (*i)->subType() == Node::QmlClass) {
-                if (origin->qmlModuleIdentifier() == (*i)->qmlModuleIdentifier())
+                if (origin->qmlModuleName() == (*i)->qmlModuleName())
                     return (*i);
             }
             ++i;

@@ -1350,8 +1350,8 @@ void HtmlGenerator::generateCollisionPages()
         for (int i=0; i<collisions.size(); ++i) {
             Node* n = collisions.at(i);
             QString t;
-            if (!n->qmlModuleIdentifier().isEmpty())
-                t = n->qmlModuleIdentifier() + "::";
+            if (!n->qmlModuleName().isEmpty())
+                t = n->qmlModuleName() + "::";
             t += protectEnc(fullTitle);
             nm.insertMulti(t,n);
         }
@@ -1387,8 +1387,8 @@ void HtmlGenerator::generateCollisionPages()
                     if (p) {
                         QString link = linkForNode(p,0);
                         QString label;
-                        if (!n->qmlModuleIdentifier().isEmpty())
-                            label = n->qmlModuleIdentifier() + "::";
+                        if (!n->qmlModuleName().isEmpty())
+                            label = n->qmlModuleName() + "::";
                         label += n->name() + "::" + p->name();
                         out() << "<li>";
                         out() << "<a href=\"" << link << "\">";

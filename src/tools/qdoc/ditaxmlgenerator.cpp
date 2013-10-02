@@ -6109,8 +6109,8 @@ void DitaXmlGenerator::generateCollisionPages()
         for (int i=0; i<collisions.size(); ++i) {
             Node* n = collisions.at(i);
             QString t;
-            if (!n->qmlModuleIdentifier().isEmpty())
-                t = n->qmlModuleIdentifier() + QLatin1Char(' ');
+            if (!n->qmlModuleName().isEmpty())
+                t = n->qmlModuleName() + QLatin1Char(' ');
             t += protectEnc(fullTitle);
             nm.insertMulti(t,n);
         }
@@ -6149,8 +6149,8 @@ void DitaXmlGenerator::generateCollisionPages()
                     if (p) {
                         QString link = linkForNode(p,0);
                         QString label;
-                        if (!n->qmlModuleIdentifier().isEmpty())
-                            label = n->qmlModuleIdentifier() + "::";
+                        if (!n->qmlModuleName().isEmpty())
+                            label = n->qmlModuleName() + "::";
                         label += n->name() + "::" + p->name();
                         writeStartTag(DT_li);
                         writeStartTag(DT_xref);
