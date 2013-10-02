@@ -1663,6 +1663,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "REDUCE_RELOCATIONS" ]  = "yes";
         dictionary[ "QT_GETIFADDRS" ]       = "no";
         dictionary[ "QT_XKBCOMMON" ]        = "no";
+        dictionary[ "JAVASCRIPTCORE_JIT" ]  = "no";
     }
 }
 
@@ -2647,6 +2648,12 @@ void Configure::generateOutputVars()
 
     if (!dictionary["QT_LFLAGS_SQLITE"].isEmpty())
         qmakeVars += "QT_LFLAGS_SQLITE += " + formatPath(dictionary["QT_LFLAGS_SQLITE"]);
+
+    if (dictionary["JAVASCRIPTCORE_JIT"] == "no")
+        qmakeVars += "JAVASCRIPTCORE_JIT = no";
+    else if (dictionary["JAVASCRIPTCORE_JIT"] == "yes")
+        qmakeVars += "JAVASCRIPTCORE_JIT = yes";
+    // else let JavaScriptCore decide
 
     if (dictionary[ "OPENGL" ] == "yes")
         qtConfig += "opengl";
