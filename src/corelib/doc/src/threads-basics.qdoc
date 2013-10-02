@@ -277,26 +277,26 @@
 
     \section2 Using the Event Loop to Prevent Data Corruption
 
-    The event loops of Qt are a very valuable tool for inter-thread
-    communication. Every thread may have its own event loop. A safe way of
-    calling a slot in another thread is by placing that call in another
-    thread's event loop. This ensures that the target object finishes the
-    method that is currently running before another method is started.
+    Qt's \l{The Event System}{event system} is very useful for inter-thread
+    communication. Every thread may have its own event loop. To call a slot (or
+    any \l{Q_INVOKABLE}{invokable} method) in another thread, place that call in
+    the target thread's event loop. This lets the target thread finish its current
+    task before the slot starts running, while the original thread continues
+    running in parallel.
 
-    So how is it possible to put a method invocation in an event loop? Qt has
-    two ways of doing this. One way is via queued signal-slot connections; the
-    other way is to post an event with QCoreApplication::postEvent(). A queued
-    signal-slot connection is a signal slot connection that is executed
-    asynchronously. The internal implementation is based on posted events. The
-    arguments of the signal are put into the event loop and the signal method
-    returns immediately.
+    To place an invocation in an event loop, make a queued \l{Signals & Slots}
+    {signal-slot} connection. Whenever the signal is emitted, its arguments will
+    be recorded by the event system. The thread that the signal receiver
+    \l{QObject#Thread Affinity}{lives in} will then run the slot. Alternatively,
+    call QMetaObject::invokeMethod() to achieve the same effect without signals.
+    In both cases, a \l{Qt::QueuedConnection}{queued connection} must be used
+    because a \l{Qt::DirectConnection}{direct connection} bypasses the event
+    system and runs the method immediately in the current thread.
 
-    The connected slot will be executed at a time which depends on what else is
-    in the event loop.
+    There is no risk of deadlocks when using the event system for thread
+    synchronization, unlike using low-level primitives.
 
-    Communication via the event loop eliminates the deadlock problem we face
-    when using mutexes. This is why we recommend using the event loop rather
-    than locking an object using a mutex.
+    \sa QThread::exec(), {Threads and QObjects}
 
     \section2 Dealing with Asynchronous Execution
 
