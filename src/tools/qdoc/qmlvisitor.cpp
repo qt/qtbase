@@ -374,9 +374,6 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
             }
             else if (command == COMMAND_INQMLMODULE) {
                 qdb->addToQmlModule(args[0].first,node);
-                if (node->name() == QString("workerscript"))
-                    qDebug() << "INQMLMODULE workerscript:" << node << node->qmlModule()
-                             << node->qmlModule()->isIndexNode() << node->name() << args[0].first;
             }
             else if (command == COMMAND_QMLINHERITS) {
                 if (node->name() == args[0].first)
