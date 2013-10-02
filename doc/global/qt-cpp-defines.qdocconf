@@ -72,6 +72,7 @@ Cpp.ignoretokens        += \
                           Q_TESTLIB_EXPORT \
                           Q_TYPENAME \
                           Q_WIDGETS_EXPORT \
+                          Q_WINEXTRAS_EXPORT \
                           Q_XML_EXPORT \
                           Q_XMLPATTERNS_EXPORT \
                           Q_XMLSTREAM_EXPORT \
