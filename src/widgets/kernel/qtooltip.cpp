@@ -107,7 +107,7 @@ QT_BEGIN_NAMESPACE
 
     The default tool tip color and font can be customized with
     setPalette() and setFont(). When a tooltip is currently on
-    display, isVisible() returns true and text() the currently visible
+    display, isVisible() returns \c true and text() the currently visible
     text.
 
     \note Tool tips use the inactive color group of QPalette, because tool
@@ -526,7 +526,7 @@ void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w)
 /*!
   \since 4.4
 
-  Returns true if this tooltip is currently shown.
+  Returns \c true if this tooltip is currently shown.
 
   \sa showText()
  */

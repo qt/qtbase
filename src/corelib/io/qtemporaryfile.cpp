@@ -587,7 +587,7 @@ QTemporaryFile::~QTemporaryFile()
 */
 
 /*!
-   Returns true if the QTemporaryFile is in auto remove
+   Returns \c true if the QTemporaryFile is in auto remove
    mode. Auto-remove mode will automatically delete the filename from
    disk upon destruction. This makes it very easy to create your
    QTemporaryFile object on the stack, fill it with data, read from

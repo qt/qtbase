@@ -158,8 +158,8 @@ Qt::Orientation QSplitterHandle::orientation() const
 
 
 /*!
-    Returns true if widgets are resized dynamically (opaquely), otherwise
-    returns false. This value is controlled by the QSplitter.
+    Returns \c true if widgets are resized dynamically (opaquely), otherwise
+    returns \c false. This value is controlled by the QSplitter.
 
     \sa QSplitter::opaqueResize()
 
@@ -1070,7 +1070,7 @@ void QSplitter::setCollapsible(int index, bool collapse)
 }
 
 /*!
-    Returns true if the widget at \a index is collapsible, otherwise returns false.
+    Returns \c true if the widget at \a index is collapsible, otherwise returns \c false.
 */
 bool QSplitter::isCollapsible(int index) const
 {
@@ -1616,7 +1616,7 @@ QByteArray QSplitter::saveState() const
 
 /*!
     Restores the splitter's layout to the \a state specified.
-    Returns true if the state is restored; otherwise returns false.
+    Returns \c true if the state is restored; otherwise returns \c false.
 
     Typically this is used in conjunction with QSettings to restore the size
     from a past session. Here is an example:

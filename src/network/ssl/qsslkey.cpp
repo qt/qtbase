@@ -322,7 +322,7 @@ QSslKey &QSslKey::operator=(const QSslKey &other)
 */
 
 /*!
-    Returns true if this is a null key; otherwise false.
+    Returns \c true if this is a null key; otherwise false.
 
     \sa clear()
 */
@@ -463,7 +463,7 @@ Qt::HANDLE QSslKey::handle() const
 }
 
 /*!
-    Returns true if this key is equal to \a other; otherwise returns false.
+    Returns \c true if this key is equal to \a other; otherwise returns \c false.
 */
 bool QSslKey::operator==(const QSslKey &other) const
 {
@@ -484,8 +484,8 @@ bool QSslKey::operator==(const QSslKey &other) const
 
 /*! \fn bool QSslKey::operator!=(const QSslKey &other) const
 
-  Returns true if this key is not equal to key \a other; otherwise
-  returns false.
+  Returns \c true if this key is not equal to key \a other; otherwise
+  returns \c false.
 */
 
 #ifndef QT_NO_DEBUG_STREAM

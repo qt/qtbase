@@ -74,8 +74,8 @@ QT_BEGIN_NAMESPACE
 Q_CORE_EXPORT unsigned int qt_int_sqrt(unsigned int n);
 
 /*!
-    Returns true if the string \a text is likely to be rich text;
-    otherwise returns false.
+    Returns \c true if the string \a text is likely to be rich text;
+    otherwise returns \c false.
 
     This function uses a fast and therefore simple heuristic. It
     mainly checks whether there is something that looks like a tag
@@ -356,7 +356,7 @@ QTextDocument *QTextDocument::clone(QObject *parent) const
 }
 
 /*!
-    Returns true if the document is empty; otherwise returns false.
+    Returns \c true if the document is empty; otherwise returns \c false.
 */
 bool QTextDocument::isEmpty() const
 {
@@ -605,7 +605,7 @@ void QTextDocument::markContentsDirty(int from, int length)
     and pixel-rounding. This means that WYSIWYG text layout becomes possible because the width
     scales much more linearly based on paintdevice metrics than it would otherwise.
 
-    By default, this property is false.
+    By default, this property is \c false.
 */
 
 void QTextDocument::setUseDesignMetrics(bool b)
@@ -987,7 +987,7 @@ QString QTextDocument::defaultStyleSheet() const
 
 
 /*!
-    Returns true if undo is available; otherwise returns false.
+    Returns \c true if undo is available; otherwise returns \c false.
 
     \sa isRedoAvailable(), availableUndoSteps()
 */
@@ -998,7 +998,7 @@ bool QTextDocument::isUndoAvailable() const
 }
 
 /*!
-    Returns true if redo is available; otherwise returns false.
+    Returns \c true if redo is available; otherwise returns \c false.
 
     \sa isUndoAvailable(), availableRedoSteps()
 */
@@ -1612,7 +1612,7 @@ QFont QTextDocument::defaultFont() const
     \property QTextDocument::modified
     \brief whether the document has been modified by the user
 
-    By default, this property is false.
+    By default, this property is \c false.
 
     \sa modificationChanged()
 */

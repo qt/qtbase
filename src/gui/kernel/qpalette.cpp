@@ -763,8 +763,8 @@ void QPalette::setBrush(ColorGroup cg, ColorRole cr, const QBrush &b)
 /*!
     \since 4.2
 
-    Returns true if the ColorGroup \a cg and ColorRole \a cr has been
-    set previously on this palette; otherwise returns false.
+    Returns \c true if the ColorGroup \a cg and ColorRole \a cr has been
+    set previously on this palette; otherwise returns \c false.
 
     \sa setBrush()
 */
@@ -795,8 +795,8 @@ void QPalette::detach()
 /*!
     \fn bool QPalette::operator!=(const QPalette &p) const
 
-    Returns true (slowly) if this palette is different from \a p;
-    otherwise returns false (usually quickly).
+    Returns \c true (slowly) if this palette is different from \a p;
+    otherwise returns \c false (usually quickly).
 
     \note The current ColorGroup is not taken into account when
     comparing palettes
@@ -805,8 +805,8 @@ void QPalette::detach()
 */
 
 /*!
-    Returns true (usually quickly) if this palette is equal to \a p;
-    otherwise returns false (slowly).
+    Returns \c true (usually quickly) if this palette is equal to \a p;
+    otherwise returns \c false (slowly).
 
     \note The current ColorGroup is not taken into account when
     comparing palettes
@@ -829,8 +829,8 @@ bool QPalette::operator==(const QPalette &p) const
 /*!
     \fn bool QPalette::isEqual(ColorGroup cg1, ColorGroup cg2) const
 
-    Returns true (usually quickly) if color group \a cg1 is equal to
-    \a cg2; otherwise returns false.
+    Returns \c true (usually quickly) if color group \a cg1 is equal to
+    \a cg2; otherwise returns \c false.
 */
 bool QPalette::isEqual(QPalette::ColorGroup group1, QPalette::ColorGroup group2) const
 {
@@ -1010,9 +1010,9 @@ QDataStream &operator>>(QDataStream &s, QPalette &p)
 #endif //QT_NO_DATASTREAM
 
 /*!
-    Returns true if this palette and \a p are copies of each other,
+    Returns \c true if this palette and \a p are copies of each other,
     i.e. one of them was created as a copy of the other and neither
-    was subsequently modified; otherwise returns false. This is much
+    was subsequently modified; otherwise returns \c false. This is much
     stricter than equality.
 
     \sa operator=(), operator==()

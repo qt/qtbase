@@ -795,7 +795,7 @@ bool QAbstractButton::isChecked() const
   \property QAbstractButton::down
   \brief whether the button is pressed down
 
-  If this property is true, the button is pressed down. The signals
+  If this property is \c true, the button is pressed down. The signals
   pressed() and clicked() are not emitted if you set this property
   to true. The default is false.
 */
@@ -1038,8 +1038,8 @@ void QAbstractButton::nextCheckState()
 }
 
 /*!
-Returns true if \a pos is inside the clickable button rectangle;
-otherwise returns false.
+Returns \c true if \a pos is inside the clickable button rectangle;
+otherwise returns \c false.
 
 By default, the clickable area is the entire widget. Subclasses
 may reimplement this function to provide support for clickable

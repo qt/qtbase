@@ -133,16 +133,16 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QQuaternion::isNull() const
 
-    Returns true if the x, y, z, and scalar components of this
-    quaternion are set to 0.0; otherwise returns false.
+    Returns \c true if the x, y, z, and scalar components of this
+    quaternion are set to 0.0; otherwise returns \c false.
 */
 
 /*!
     \fn bool QQuaternion::isIdentity() const
 
-    Returns true if the x, y, and z components of this
+    Returns \c true if the x, y, and z components of this
     quaternion are set to 0.0, and the scalar component is set
-    to 1.0; otherwise returns false.
+    to 1.0; otherwise returns \c false.
 */
 
 /*!
@@ -394,7 +394,7 @@ QQuaternion QQuaternion::fromAxisAndAngle
     \fn bool operator==(const QQuaternion &q1, const QQuaternion &q2)
     \relates QQuaternion
 
-    Returns true if \a q1 is equal to \a q2; otherwise returns false.
+    Returns \c true if \a q1 is equal to \a q2; otherwise returns \c false.
     This operator uses an exact floating-point comparison.
 */
 
@@ -402,7 +402,7 @@ QQuaternion QQuaternion::fromAxisAndAngle
     \fn bool operator!=(const QQuaternion &q1, const QQuaternion &q2)
     \relates QQuaternion
 
-    Returns true if \a q1 is not equal to \a q2; otherwise returns false.
+    Returns \c true if \a q1 is not equal to \a q2; otherwise returns \c false.
     This operator uses an exact floating-point comparison.
 */
 
@@ -482,7 +482,7 @@ QQuaternion QQuaternion::fromAxisAndAngle
     \fn bool qFuzzyCompare(const QQuaternion& q1, const QQuaternion& q2)
     \relates QQuaternion
 
-    Returns true if \a q1 and \a q2 are equal, allowing for a small
+    Returns \c true if \a q1 and \a q2 are equal, allowing for a small
     fuzziness factor for floating-point comparisons; false otherwise.
 */
 

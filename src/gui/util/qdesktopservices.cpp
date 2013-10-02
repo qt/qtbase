@@ -151,7 +151,7 @@ void QOpenUrlHandlerRegistry::handlerDestroyed(QObject *handler)
 
 /*!
     Opens the given \a url in the appropriate Web browser for the user's desktop
-    environment, and returns true if successful; otherwise returns false.
+    environment, and returns \c true if successful; otherwise returns \c false.
 
     If the URL is a reference to a local file (i.e., the URL scheme is "file") then
     it will be opened with a suitable application instead of a Web browser.

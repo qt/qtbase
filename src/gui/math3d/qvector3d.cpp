@@ -144,8 +144,8 @@ QVector3D::QVector3D(const QVector4D& vector)
 /*!
     \fn bool QVector3D::isNull() const
 
-    Returns true if the x, y, and z coordinates are set to 0.0,
-    otherwise returns false.
+    Returns \c true if the x, y, and z coordinates are set to 0.0,
+    otherwise returns \c false.
 */
 
 /*!
@@ -438,7 +438,7 @@ float QVector3D::distanceToLine
     \fn bool operator==(const QVector3D &v1, const QVector3D &v2)
     \relates QVector3D
 
-    Returns true if \a v1 is equal to \a v2; otherwise returns false.
+    Returns \c true if \a v1 is equal to \a v2; otherwise returns \c false.
     This operator uses an exact floating-point comparison.
 */
 
@@ -446,7 +446,7 @@ float QVector3D::distanceToLine
     \fn bool operator!=(const QVector3D &v1, const QVector3D &v2)
     \relates QVector3D
 
-    Returns true if \a v1 is not equal to \a v2; otherwise returns false.
+    Returns \c true if \a v1 is not equal to \a v2; otherwise returns \c false.
     This operator uses an exact floating-point comparison.
 */
 
@@ -524,7 +524,7 @@ float QVector3D::distanceToLine
     \fn bool qFuzzyCompare(const QVector3D& v1, const QVector3D& v2)
     \relates QVector3D
 
-    Returns true if \a v1 and \a v2 are equal, allowing for a small
+    Returns \c true if \a v1 and \a v2 are equal, allowing for a small
     fuzziness factor for floating-point comparisons; false otherwise.
 */
 

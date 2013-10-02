@@ -366,8 +366,8 @@ QWidget *QWidgetItem::widget()
 }
 
 /*!
-    Returns true if this layout's preferred height depends on its
-    width; otherwise returns false. The default implementation returns
+    Returns \c true if this layout's preferred height depends on its
+    width; otherwise returns \c false. The default implementation returns
     false.
 
     Reimplement this function in layout managers that support height
@@ -668,7 +668,7 @@ QSize QWidgetItem::sizeHint() const
 }
 
 /*!
-    Returns true.
+    Returns \c true.
 */
 bool QSpacerItem::isEmpty() const
 {
@@ -676,7 +676,7 @@ bool QSpacerItem::isEmpty() const
 }
 
 /*!
-    Returns true if the widget is hidden; otherwise returns false.
+    Returns \c true if the widget is hidden; otherwise returns \c false.
 
     \sa QWidget::isHidden()
 */

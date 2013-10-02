@@ -646,7 +646,7 @@ void QToolBox::setItemToolTip(int index, const QString &toolTip)
 #endif // QT_NO_TOOLTIP
 
 /*!
-    Returns true if the item at position \a index is enabled; otherwise returns false.
+    Returns \c true if the item at position \a index is enabled; otherwise returns \c false.
 */
 
 bool QToolBox::isItemEnabled(int index) const

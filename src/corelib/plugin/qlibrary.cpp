@@ -223,7 +223,7 @@ static long qt_find_pattern(const char *s, ulong s_len,
   we can get the verification data without have to actually load the library.
   This lets us detect mismatches more safely.
 
-  Returns false if version information is not present, or if the
+  Returns \c false if version information is not present, or if the
                 information could not be read.
   Returns  true if version information is present and successfully read.
 */
@@ -560,8 +560,8 @@ bool QLibraryPrivate::loadPlugin()
 }
 
 /*!
-    Returns true if \a fileName has a valid suffix for a loadable
-    library; otherwise returns false.
+    Returns \c true if \a fileName has a valid suffix for a loadable
+    library; otherwise returns \c false.
 
     \table
     \header \li Platform \li Valid suffixes
@@ -736,8 +736,8 @@ void QLibraryPrivate::updatePluginState()
 }
 
 /*!
-    Loads the library and returns true if the library was loaded
-    successfully; otherwise returns false. Since resolve() always
+    Loads the library and returns \c true if the library was loaded
+    successfully; otherwise returns \c false. Since resolve() always
     calls this function before resolving any symbols it is not
     necessary to call it explicitly. In some situations you might want
     the library loaded in advance, in which case you would use this
@@ -756,8 +756,8 @@ bool QLibrary::load()
 }
 
 /*!
-    Unloads the library and returns true if the library could be
-    unloaded; otherwise returns false.
+    Unloads the library and returns \c true if the library could be
+    unloaded; otherwise returns \c false.
 
     This happens automatically on application termination, so you
     shouldn't normally need to call this function.
@@ -780,7 +780,7 @@ bool QLibrary::unload()
 }
 
 /*!
-    Returns true if the library is loaded; otherwise returns false.
+    Returns \c true if the library is loaded; otherwise returns \c false.
 
     \sa load()
  */

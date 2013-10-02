@@ -579,8 +579,8 @@ QRect QScreen::mapBetween(Qt::ScreenOrientation a, Qt::ScreenOrientation b, cons
 }
 
 /*!
-    Convenience function that returns true if \a o is either portrait or inverted portrait;
-    otherwise returns false.
+    Convenience function that returns \c true if \a o is either portrait or inverted portrait;
+    otherwise returns \c false.
 
     Qt::PrimaryOrientation is interpreted as the screen's primaryOrientation().
 */
@@ -591,8 +591,8 @@ bool QScreen::isPortrait(Qt::ScreenOrientation o) const
 }
 
 /*!
-    Convenience function that returns true if \a o is either landscape or inverted landscape;
-    otherwise returns false.
+    Convenience function that returns \c true if \a o is either landscape or inverted landscape;
+    otherwise returns \c false.
 
     Qt::PrimaryOrientation is interpreted as the screen's primaryOrientation().
 */

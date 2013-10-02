@@ -148,8 +148,8 @@ static QChar firstNonWhiteSpace( const QString& t )
 }
 
 /*
-    Returns true if string t is made only of white space; otherwise
-    returns false.
+    Returns \c true if string t is made only of white space; otherwise
+    returns \c false.
 */
 static bool isOnlyWhiteSpace( const QString& t )
 {
@@ -283,8 +283,8 @@ static inline QChar lastParen( const QString& t )
 }
 
 /*
-    Returns true if typedIn the same as okayCh or is null; otherwise
-    returns false.
+    Returns \c true if typedIn the same as okayCh or is null; otherwise
+    returns \c false.
 */
 static inline bool okay( QChar typedIn, QChar okayCh )
 {
@@ -456,9 +456,9 @@ static void startLinizer()
 }
 
 /*
-    Returns true if the start of the bottom line of yyProgram (and
+    Returns \c true if the start of the bottom line of yyProgram (and
     potentially the whole line) is part of a C-style comment;
-    otherwise returns false.
+    otherwise returns \c false.
 */
 static bool bottomLineStartsInCComment()
 {
@@ -526,15 +526,15 @@ static int indentWhenBottomLineStartsInCComment()
 
 /*
     A function called match...() modifies the linizer state. If it
-    returns true, yyLine is the top line of the matched construct;
+    returns \c true, yyLine is the top line of the matched construct;
     otherwise, the linizer is left in an unknown state.
 
     A function called is...() keeps the linizer state intact.
 */
 
 /*
-    Returns true if the current line (and upwards) forms a braceless
-    control statement; otherwise returns false.
+    Returns \c true if the current line (and upwards) forms a braceless
+    control statement; otherwise returns \c false.
 
     The first line of the following example is a "braceless control
     statement":
@@ -614,7 +614,7 @@ static bool matchBracelessControlStatement()
 }
 
 /*
-    Returns true if yyLine is an unfinished line; otherwise returns
+    Returns \c true if yyLine is an unfinished line; otherwise returns
     false.
 
     In many places we'll use the terms "standalone line", "unfinished
@@ -669,7 +669,7 @@ static bool isUnfinishedLine()
 }
 
 /*
-    Returns true if yyLine is a continuation line; otherwise returns
+    Returns \c true if yyLine is a continuation line; otherwise returns
     false.
 */
 static bool isContinuationLine()

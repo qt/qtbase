@@ -379,15 +379,15 @@ QFileInfo::~QFileInfo()
 /*!
     \fn bool QFileInfo::operator!=(const QFileInfo &fileinfo) const
 
-    Returns true if this QFileInfo object refers to a different file
-    than the one specified by \a fileinfo; otherwise returns false.
+    Returns \c true if this QFileInfo object refers to a different file
+    than the one specified by \a fileinfo; otherwise returns \c false.
 
     \sa operator==()
 */
 
 /*!
-    Returns true if this QFileInfo object refers to a file in the same
-    location as \a fileinfo; otherwise returns false.
+    Returns \c true if this QFileInfo object refers to a file in the same
+    location as \a fileinfo; otherwise returns \c false.
 
     Note that the result of comparing two empty QFileInfo objects,
     containing no file references (file paths that do not exist or
@@ -615,14 +615,14 @@ QString QFileInfo::path() const
 /*!
     \fn bool QFileInfo::isAbsolute() const
 
-    Returns true if the file path name is absolute, otherwise returns
+    Returns \c true if the file path name is absolute, otherwise returns
     false if the path is relative.
 
     \sa isRelative()
 */
 
 /*!
-    Returns true if the file path name is relative, otherwise returns
+    Returns \c true if the file path name is relative, otherwise returns
     false if the path is absolute (e.g. under Unix a path is absolute
     if it begins with a "/").
 
@@ -640,7 +640,7 @@ bool QFileInfo::isRelative() const
 
 /*!
     Converts the file's path to an absolute path if it is not already in that form.
-    Returns true to indicate that the path was converted; otherwise returns false
+    Returns \c true to indicate that the path was converted; otherwise returns \c false
     to indicate that the path was already absolute.
 
     \sa filePath(), isRelative()
@@ -656,7 +656,7 @@ bool QFileInfo::makeAbsolute()
 }
 
 /*!
-    Returns true if the file exists; otherwise returns false.
+    Returns \c true if the file exists; otherwise returns \c false.
 
     \note If the file is a symlink that points to a non-existing
     file, false is returned.
@@ -675,7 +675,7 @@ bool QFileInfo::exists() const
 }
 
 /*!
-    Returns true if the \a file exists; otherwise returns false.
+    Returns \c true if the \a file exists; otherwise returns \c false.
 
     \note If \a file is a symlink that points to a non-existing
     file, false is returned.
@@ -884,7 +884,7 @@ QDir QFileInfo::absoluteDir() const
 }
 
 /*!
-    Returns true if the user can read the file; otherwise returns false.
+    Returns \c true if the user can read the file; otherwise returns \c false.
 
     \sa isWritable(), isExecutable(), permission()
 */
@@ -902,7 +902,7 @@ bool QFileInfo::isReadable() const
 }
 
 /*!
-    Returns true if the user can write to the file; otherwise returns false.
+    Returns \c true if the user can write to the file; otherwise returns \c false.
 
     \sa isReadable(), isExecutable(), permission()
 */
@@ -920,7 +920,7 @@ bool QFileInfo::isWritable() const
 }
 
 /*!
-    Returns true if the file is executable; otherwise returns false.
+    Returns \c true if the file is executable; otherwise returns \c false.
 
     \sa isReadable(), isWritable(), permission()
 */
@@ -938,9 +938,9 @@ bool QFileInfo::isExecutable() const
 }
 
 /*!
-    Returns true if this is a `hidden' file; otherwise returns false.
+    Returns \c true if this is a `hidden' file; otherwise returns \c false.
 
-    \b{Note:} This function returns true for the special entries
+    \b{Note:} This function returns \c true for the special entries
     "." and ".." on Unix, even though QDir::entryList threats them as shown.
 */
 bool QFileInfo::isHidden() const
@@ -958,8 +958,8 @@ bool QFileInfo::isHidden() const
 
 /*!
     \since 5.0
-    Returns true if the file path can be used directly with native APIs.
-    Returns false if the file is otherwise supported by a virtual file system
+    Returns \c true if the file path can be used directly with native APIs.
+    Returns \c false if the file is otherwise supported by a virtual file system
     inside Qt, such as \l{the Qt Resource System}.
 
     \b{Note:} Native paths may still require conversion of path separators
@@ -980,8 +980,8 @@ bool QFileInfo::isNativePath() const
 }
 
 /*!
-    Returns true if this object points to a file or to a symbolic
-    link to a file. Returns false if the
+    Returns \c true if this object points to a file or to a symbolic
+    link to a file. Returns \c false if the
     object points to something which isn't a file, such as a directory.
 
     \sa isDir(), isSymLink(), isBundle()
@@ -1000,8 +1000,8 @@ bool QFileInfo::isFile() const
 }
 
 /*!
-    Returns true if this object points to a directory or to a symbolic
-    link to a directory; otherwise returns false.
+    Returns \c true if this object points to a directory or to a symbolic
+    link to a directory; otherwise returns \c false.
 
     \sa isFile(), isSymLink(), isBundle()
 */
@@ -1021,8 +1021,8 @@ bool QFileInfo::isDir() const
 
 /*!
     \since 4.3
-    Returns true if this object points to a bundle or to a symbolic
-    link to a bundle on Mac OS X; otherwise returns false.
+    Returns \c true if this object points to a bundle or to a symbolic
+    link to a bundle on Mac OS X; otherwise returns \c false.
 
     \sa isDir(), isSymLink(), isFile()
 */
@@ -1040,8 +1040,8 @@ bool QFileInfo::isBundle() const
 }
 
 /*!
-    Returns true if this object points to a symbolic link (or to a
-    shortcut on Windows); otherwise returns false.
+    Returns \c true if this object points to a symbolic link (or to a
+    shortcut on Windows); otherwise returns \c false.
 
     On Unix (including Mac OS X), opening a symlink effectively opens
     the \l{symLinkTarget()}{link's target}. On Windows, it opens the \c
@@ -1070,9 +1070,9 @@ bool QFileInfo::isSymLink() const
 }
 
 /*!
-    Returns true if the object points to a directory or to a symbolic
+    Returns \c true if the object points to a directory or to a symbolic
     link to a directory, and that directory is the root directory; otherwise
-    returns false.
+    returns \c false.
 */
 bool QFileInfo::isRoot() const
 {
@@ -1105,7 +1105,7 @@ bool QFileInfo::isRoot() const
     link.
 
     This name may not represent an existing file; it is only a string.
-    QFileInfo::exists() returns true if the symlink points to an
+    QFileInfo::exists() returns \c true if the symlink points to an
     existing file.
 
     \sa exists(), isSymLink(), isDir(), isFile()
@@ -1208,7 +1208,7 @@ uint QFileInfo::groupId() const
     for permission combinations.
 
     On systems where files do not have permissions this function
-    always returns true.
+    always returns \c true.
 
     Example:
     \snippet code/src_corelib_io_qfileinfo.cpp 10
@@ -1348,7 +1348,7 @@ QFileInfoPrivate* QFileInfo::d_func()
 }
 
 /*!
-    Returns true if caching is enabled; otherwise returns false.
+    Returns \c true if caching is enabled; otherwise returns \c false.
 
     \sa setCaching(), refresh()
 */

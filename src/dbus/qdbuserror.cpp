@@ -382,7 +382,7 @@ QString QDBusError::message() const
 }
 
 /*!
-    Returns true if this is a valid error condition (i.e., if there was an error),
+    Returns \c true if this is a valid error condition (i.e., if there was an error),
     otherwise false.
 */
 

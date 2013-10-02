@@ -314,7 +314,7 @@ void QNetworkSession::open()
 
 /*!
     Waits until the session has been opened, up to \a msecs milliseconds. If the session has been opened, this
-    function returns true; otherwise it returns false. In the case where it returns false, you can call error()
+    function returns \c true; otherwise it returns \c false. In the case where it returns \c false, you can call error()
     to determine the cause of the error.
 
     The following example waits up to one second for the session to be opened:
@@ -415,7 +415,7 @@ QNetworkInterface QNetworkSession::interface() const
 #endif
 
 /*!
-    Returns true if this session is open. If the number of all open sessions is greater than
+    Returns \c true if this session is open. If the number of all open sessions is greater than
     zero the underlying network interface will remain connected/up.
 
     The session can be controlled via open() and close().

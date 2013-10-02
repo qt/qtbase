@@ -74,7 +74,7 @@
 
 /*! \fn QSignalSpy::isValid() const
 
-    Returns true if the signal spy listens to a valid signal, otherwise false.
+    Returns \c true if the signal spy listens to a valid signal, otherwise false.
 */
 
 /*! \fn QSignalSpy::signal() const
@@ -93,7 +93,7 @@
     Starts an event loop that runs until the given signal is received.
     Optionally the event loop can return earlier on a \a timeout (in milliseconds).
 
-    Returns true if the signal was emitted at least once in \a timeout milliseconds, otherwise returns false.
+    Returns \c true if the signal was emitted at least once in \a timeout milliseconds, otherwise returns \c false.
 
     Example:
     \snippet code/doc_src_qsignalspy.cpp 5

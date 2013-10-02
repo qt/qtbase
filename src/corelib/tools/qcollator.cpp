@@ -184,7 +184,7 @@ QLocale QCollator::locale() const
 /*!
     \fn bool QCollator::numericMode() const
 
-    Returns true if numeric sorting is enabled, false otherwise.
+    Returns \c true if numeric sorting is enabled, false otherwise.
 
     \sa setNumericMode()
  */
@@ -202,7 +202,7 @@ QLocale QCollator::locale() const
 /*!
     \fn bool QCollator::ignorePunctuation() const
 
-    Returns true if punctuation characters and symbols are ignored when determining sort order.
+    Returns \c true if punctuation characters and symbols are ignored when determining sort order.
 
     \sa setIgnorePunctuation()
  */
@@ -303,8 +303,8 @@ QCollatorSortKey& QCollatorSortKey::operator=(const QCollatorSortKey &other)
 /*!
     \fn bool QCollatorSortKey::operator<(const QCollatorSortKey &otherKey) const
 
-    According to the QCollator that created the key, returns true if the
-    key should be sorted before than \a otherKey; otherwise returns false.
+    According to the QCollator that created the key, returns \c true if the
+    key should be sorted before than \a otherKey; otherwise returns \c false.
 
     \sa compare()
  */

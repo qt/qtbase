@@ -2149,7 +2149,7 @@ void QAbstractItemModel::fetchMore(const QModelIndex &)
 
     The default implementation always returns \c{false}.
 
-    If canFetchMore() returns true, the fetchMore() function should
+    If canFetchMore() returns \c true, the fetchMore() function should
     be called. This is the behavior of QAbstractItemView, for example.
 
     \sa fetchMore()

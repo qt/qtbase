@@ -5342,7 +5342,7 @@ DitaXmlGenerator::generateInnerNode(InnerNode* node)
 }
 
 /*!
-  Returns true if \a format is "DITAXML" or "HTML" .
+  Returns \c true if \a format is "DITAXML" or "HTML" .
  */
 bool DitaXmlGenerator::canHandleFormat(const QString& format)
 {
@@ -5751,7 +5751,7 @@ void DitaXmlGenerator::writeTopicrefs(NodeMultiMap* nmm, const QString& navtitle
   found value. Otherwise if \a force is set, an empty
   element is written using the tag.
 
-  Returns true or false depending on whether it writes
+  Returns \c true or false depending on whether it writes
   an element using the tag \a t.
 
   \note If \a t is found in the metadata map, it is erased.
@@ -5779,7 +5779,7 @@ bool DitaXmlGenerator::writeMetadataElement(const InnerNode* inner,
   value sfor the tag are found, the elements are written.
   Otherwise nothing is written.
 
-  Returns true or false depending on whether it writes
+  Returns \c true or false depending on whether it writes
   at least one element using the tag \a t.
 
   \note If \a t is found in the metadata map, it is erased.

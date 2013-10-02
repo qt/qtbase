@@ -106,7 +106,7 @@ public:
     \fn bool QTextList::isEmpty() const
     \obsolete
 
-    Returns true if the list has no items; otherwise returns false.
+    Returns \c true if the list has no items; otherwise returns \c false.
 
     \b{Note:} Empty lists are automatically deleted by the QTextDocument that owns
     them.

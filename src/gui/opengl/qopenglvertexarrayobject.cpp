@@ -371,7 +371,7 @@ QOpenGLVertexArrayObject::~QOpenGLVertexArrayObject()
     Creates the underlying OpenGL vertex array object. There must be a valid OpenGL context
     that supports vertex array objects current for this function to succeed.
 
-    Returns true if the OpenGL vertex array object was successfully created.
+    Returns \c true if the OpenGL vertex array object was successfully created.
 */
 bool QOpenGLVertexArrayObject::create()
 {
@@ -390,8 +390,8 @@ void QOpenGLVertexArrayObject::destroy()
 }
 
 /*!
-    Returns true is the underlying OpenGL vertex array object has been created. If this
-    returns true and the associated OpenGL context is current, then you are able to bind()
+    Returns \c true is the underlying OpenGL vertex array object has been created. If this
+    returns \c true and the associated OpenGL context is current, then you are able to bind()
     this object.
 */
 bool QOpenGLVertexArrayObject::isCreated() const

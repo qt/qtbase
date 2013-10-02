@@ -553,7 +553,7 @@ void **QListData::erase(void **xi)
 
 /*! \fn bool QList::operator==(const QList<T> &other) const
 
-    Returns true if \a other is equal to this list; otherwise returns
+    Returns \c true if \a other is equal to this list; otherwise returns
     false.
 
     Two lists are considered equal if they contain the same values in
@@ -567,8 +567,8 @@ void **QListData::erase(void **xi)
 
 /*! \fn bool QList::operator!=(const QList<T> &other) const
 
-    Returns true if \a other is not equal to this list; otherwise
-    returns false.
+    Returns \c true if \a other is not equal to this list; otherwise
+    returns \c false.
 
     Two lists are considered equal if they contain the same values in
     the same order.
@@ -618,7 +618,7 @@ void **QListData::erase(void **xi)
 
 /*! \fn bool QList::isEmpty() const
 
-    Returns true if the list contains no items; otherwise returns
+    Returns \c true if the list contains no items; otherwise returns
     false.
 
     \sa size()
@@ -767,7 +767,7 @@ void **QListData::erase(void **xi)
     \since 4.4
 
     Removes the first occurrence of \a value in the list and returns
-    true on success; otherwise returns false.
+    true on success; otherwise returns \c false.
 
     Example:
     \snippet code/src_corelib_tools_qlistdata.cpp 10
@@ -894,8 +894,8 @@ void **QListData::erase(void **xi)
 
 /*! \fn bool QList::contains(const T &value) const
 
-    Returns true if the list contains an occurrence of \a value;
-    otherwise returns false.
+    Returns \c true if the list contains an occurrence of \a value;
+    otherwise returns \c false.
 
     This function requires the value type to have an implementation of
     \c operator==().
@@ -916,8 +916,8 @@ void **QListData::erase(void **xi)
 /*! \fn bool QList::startsWith(const T &value) const
     \since 4.5
 
-    Returns true if this list is not empty and its first
-    item is equal to \a value; otherwise returns false.
+    Returns \c true if this list is not empty and its first
+    item is equal to \a value; otherwise returns \c false.
 
     \sa isEmpty(), contains()
 */
@@ -925,8 +925,8 @@ void **QListData::erase(void **xi)
 /*! \fn bool QList::endsWith(const T &value) const
     \since 4.5
 
-    Returns true if this list is not empty and its last
-    item is equal to \a value; otherwise returns false.
+    Returns \c true if this list is not empty and its last
+    item is equal to \a value; otherwise returns \c false.
 
     \sa isEmpty(), contains()
 */
@@ -1196,7 +1196,7 @@ void **QListData::erase(void **xi)
 /*! \fn bool QList::empty() const
 
     This function is provided for STL compatibility. It is equivalent
-    to isEmpty() and returns true if the list is empty.
+    to isEmpty() and returns \c true if the list is empty.
 */
 
 /*! \fn QList<T> &QList::operator+=(const QList<T> &other)
@@ -1372,8 +1372,8 @@ void **QListData::erase(void **xi)
     \fn bool QList::iterator::operator==(const iterator &other) const
     \fn bool QList::iterator::operator==(const const_iterator &other) const
 
-    Returns true if \a other points to the same item as this
-    iterator; otherwise returns false.
+    Returns \c true if \a other points to the same item as this
+    iterator; otherwise returns \c false.
 
     \sa operator!=()
 */
@@ -1382,8 +1382,8 @@ void **QListData::erase(void **xi)
     \fn bool QList::iterator::operator!=(const iterator &other) const
     \fn bool QList::iterator::operator!=(const const_iterator &other) const
 
-    Returns true if \a other points to a different item than this
-    iterator; otherwise returns false.
+    Returns \c true if \a other points to a different item than this
+    iterator; otherwise returns \c false.
 
     \sa operator==()
 */
@@ -1392,7 +1392,7 @@ void **QListData::erase(void **xi)
     \fn bool QList::iterator::operator<(const iterator& other) const
     \fn bool QList::iterator::operator<(const const_iterator& other) const
 
-    Returns true if the item pointed to by this iterator is less than
+    Returns \c true if the item pointed to by this iterator is less than
     the item pointed to by the \a other iterator.
 */
 
@@ -1400,7 +1400,7 @@ void **QListData::erase(void **xi)
     \fn bool QList::iterator::operator<=(const iterator& other) const
     \fn bool QList::iterator::operator<=(const const_iterator& other) const
 
-    Returns true if the item pointed to by this iterator is less than
+    Returns \c true if the item pointed to by this iterator is less than
     or equal to the item pointed to by the \a other iterator.
 */
 
@@ -1408,7 +1408,7 @@ void **QListData::erase(void **xi)
     \fn bool QList::iterator::operator>(const iterator& other) const
     \fn bool QList::iterator::operator>(const const_iterator& other) const
 
-    Returns true if the item pointed to by this iterator is greater
+    Returns \c true if the item pointed to by this iterator is greater
     than the item pointed to by the \a other iterator.
 */
 
@@ -1416,7 +1416,7 @@ void **QListData::erase(void **xi)
     \fn bool QList::iterator::operator>=(const iterator& other) const
     \fn bool QList::iterator::operator>=(const const_iterator& other) const
 
-    Returns true if the item pointed to by this iterator is greater
+    Returns \c true if the item pointed to by this iterator is greater
     than or equal to the item pointed to by the \a other iterator.
 */
 
@@ -1619,16 +1619,16 @@ void **QListData::erase(void **xi)
 
 /*! \fn bool QList::const_iterator::operator==(const const_iterator &other) const
 
-    Returns true if \a other points to the same item as this
-    iterator; otherwise returns false.
+    Returns \c true if \a other points to the same item as this
+    iterator; otherwise returns \c false.
 
     \sa operator!=()
 */
 
 /*! \fn bool QList::const_iterator::operator!=(const const_iterator &other) const
 
-    Returns true if \a other points to a different item than this
-    iterator; otherwise returns false.
+    Returns \c true if \a other points to a different item than this
+    iterator; otherwise returns \c false.
 
     \sa operator==()
 */
@@ -1636,28 +1636,28 @@ void **QListData::erase(void **xi)
 /*!
     \fn bool QList::const_iterator::operator<(const const_iterator& other) const
 
-    Returns true if the item pointed to by this iterator is less than
+    Returns \c true if the item pointed to by this iterator is less than
     the item pointed to by the \a other iterator.
 */
 
 /*!
     \fn bool QList::const_iterator::operator<=(const const_iterator& other) const
 
-    Returns true if the item pointed to by this iterator is less than
+    Returns \c true if the item pointed to by this iterator is less than
     or equal to the item pointed to by the \a other iterator.
 */
 
 /*!
     \fn bool QList::const_iterator::operator>(const const_iterator& other) const
 
-    Returns true if the item pointed to by this iterator is greater
+    Returns \c true if the item pointed to by this iterator is greater
     than the item pointed to by the \a other iterator.
 */
 
 /*!
     \fn bool QList::const_iterator::operator>=(const const_iterator& other) const
 
-    Returns true if the item pointed to by this iterator is greater
+    Returns \c true if the item pointed to by this iterator is greater
     than or equal to the item pointed to by the \a other iterator.
 */
 

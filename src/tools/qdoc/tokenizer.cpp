@@ -715,7 +715,7 @@ bool Tokenizer::popSkipping()
 }
 
 /*
-  Returns true if the condition evaluates as true, otherwise false.  The
+  Returns \c true if the condition evaluates as true, otherwise false.  The
   condition is represented by a string.  Unsophisticated parsing techniques are
   used.  The preprocessing method could be named StriNg-Oriented PreProcessing,
   as SNOBOL stands for StriNg-Oriented symBOlic Language.

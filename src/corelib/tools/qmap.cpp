@@ -600,7 +600,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
 /*! \fn bool QMap::operator==(const QMap<Key, T> &other) const
 
-    Returns true if \a other is equal to this map; otherwise returns
+    Returns \c true if \a other is equal to this map; otherwise returns
     false.
 
     Two maps are considered equal if they contain the same (key,
@@ -614,8 +614,8 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
 /*! \fn bool QMap::operator!=(const QMap<Key, T> &other) const
 
-    Returns true if \a other is not equal to this map; otherwise
-    returns false.
+    Returns \c true if \a other is not equal to this map; otherwise
+    returns \c false.
 
     Two maps are considered equal if they contain the same (key,
     value) pairs.
@@ -636,7 +636,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 /*!
     \fn bool QMap::isEmpty() const
 
-    Returns true if the map contains no items; otherwise returns
+    Returns \c true if the map contains no items; otherwise returns
     false.
 
     \sa size()
@@ -656,8 +656,8 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
     \internal
 
-    Returns true if the map's internal data isn't shared with any
-    other map object; otherwise returns false.
+    Returns \c true if the map's internal data isn't shared with any
+    other map object; otherwise returns \c false.
 
     \sa detach()
 */
@@ -706,8 +706,8 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
 /*! \fn bool QMap::contains(const Key &key) const
 
-    Returns true if the map contains an item with key \a key;
-    otherwise returns false.
+    Returns \c true if the map contains an item with key \a key;
+    otherwise returns \c false.
 
     \sa count(), QMultiMap::contains()
 */
@@ -1303,8 +1303,8 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \fn bool QMap::iterator::operator==(const iterator &other) const
     \fn bool QMap::iterator::operator==(const const_iterator &other) const
 
-    Returns true if \a other points to the same item as this
-    iterator; otherwise returns false.
+    Returns \c true if \a other points to the same item as this
+    iterator; otherwise returns \c false.
 
     \sa operator!=()
 */
@@ -1313,8 +1313,8 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \fn bool QMap::iterator::operator!=(const iterator &other) const
     \fn bool QMap::iterator::operator!=(const const_iterator &other) const
 
-    Returns true if \a other points to a different item than this
-    iterator; otherwise returns false.
+    Returns \c true if \a other points to a different item than this
+    iterator; otherwise returns \c false.
 
     \sa operator==()
 */
@@ -1515,16 +1515,16 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
 /*! \fn bool QMap::const_iterator::operator==(const const_iterator &other) const
 
-    Returns true if \a other points to the same item as this
-    iterator; otherwise returns false.
+    Returns \c true if \a other points to the same item as this
+    iterator; otherwise returns \c false.
 
     \sa operator!=()
 */
 
 /*! \fn bool QMap::const_iterator::operator!=(const const_iterator &other) const
 
-    Returns true if \a other points to a different item than this
-    iterator; otherwise returns false.
+    Returns \c true if \a other points to a different item than this
+    iterator; otherwise returns \c false.
 
     \sa operator==()
 */
@@ -1772,8 +1772,8 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \fn bool QMultiMap::contains(const Key &key, const T &value) const
     \since 4.3
 
-    Returns true if the map contains an item with key \a key and
-    value \a value; otherwise returns false.
+    Returns \c true if the map contains an item with key \a key and
+    value \a value; otherwise returns \c false.
 
     \sa QMap::contains()
 */

@@ -66,7 +66,7 @@ JsCodeMarker::~JsCodeMarker()
 }
 
 /*!
-  Returns true if the \a code is recognized by the parser.
+  Returns \c true if the \a code is recognized by the parser.
  */
 bool JsCodeMarker::recognizeCode(const QString &code)
 {
@@ -82,7 +82,7 @@ bool JsCodeMarker::recognizeCode(const QString &code)
 }
 
 /*!
-  Returns true if \a ext is any of a list of file extensions
+  Returns \c true if \a ext is any of a list of file extensions
   for the QML language.
  */
 bool JsCodeMarker::recognizeExtension(const QString &ext)
@@ -91,7 +91,7 @@ bool JsCodeMarker::recognizeExtension(const QString &ext)
 }
 
 /*!
-  Returns true if the \a language is recognized. We recognize JavaScript,
+  Returns \c true if the \a language is recognized. We recognize JavaScript,
   ECMAScript and JSON.
  */
 bool JsCodeMarker::recognizeLanguage(const QString &language)

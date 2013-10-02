@@ -222,7 +222,7 @@
           transformations for you. This makes it very easy to implement custom
           items. For example, if you receive a mouse press or a drag enter
           event, the event position is given in item coordinates. The
-          QGraphicsItem::contains() virtual function, which returns true if a
+          QGraphicsItem::contains() virtual function, which returns \c true if a
           certain point is inside your item, and false otherwise, takes a
           point argument in item coordinates. Similarly, an item's bounding
           rect and shape are in item coordinates.

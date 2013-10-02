@@ -512,15 +512,15 @@ QUuid QUuid::fromRfc4122(const QByteArray &bytes)
 /*!
     \fn bool QUuid::operator==(const QUuid &other) const
 
-    Returns true if this QUuid and the \a other QUuid are identical;
-    otherwise returns false.
+    Returns \c true if this QUuid and the \a other QUuid are identical;
+    otherwise returns \c false.
 */
 
 /*!
     \fn bool QUuid::operator!=(const QUuid &other) const
 
-    Returns true if this QUuid and the \a other QUuid are different;
-    otherwise returns false.
+    Returns \c true if this QUuid and the \a other QUuid are different;
+    otherwise returns \c false.
 */
 
 /*!
@@ -735,8 +735,8 @@ QDataStream &operator>>(QDataStream &s, QUuid &id)
 #endif // QT_NO_DATASTREAM
 
 /*!
-    Returns true if this is the null UUID
-    {00000000-0000-0000-0000-000000000000}; otherwise returns false.
+    Returns \c true if this is the null UUID
+    {00000000-0000-0000-0000-000000000000}; otherwise returns \c false.
 */
 bool QUuid::isNull() const
 {
@@ -823,7 +823,7 @@ QUuid::Version QUuid::version() const
 /*!
     \fn bool QUuid::operator<(const QUuid &other) const
 
-    Returns true if this QUuid has the same \l{Variant field}
+    Returns \c true if this QUuid has the same \l{Variant field}
     {variant field} as the \a other QUuid and is lexicographically
     \e{before} the \a other QUuid. If the \a other QUuid has a
     different variant field, the return value is determined by
@@ -849,7 +849,7 @@ bool QUuid::operator<(const QUuid &other) const
 /*!
     \fn bool QUuid::operator>(const QUuid &other) const
 
-    Returns true if this QUuid has the same \l{Variant field}
+    Returns \c true if this QUuid has the same \l{Variant field}
     {variant field} as the \a other QUuid and is lexicographically
     \e{after} the \a other QUuid. If the \a other QUuid has a
     different variant field, the return value is determined by
@@ -992,15 +992,15 @@ QUuid QUuid::createUuid()
 /*!
     \fn bool QUuid::operator==(const GUID &guid) const
 
-    Returns true if this UUID is equal to the Windows GUID \a guid;
-    otherwise returns false.
+    Returns \c true if this UUID is equal to the Windows GUID \a guid;
+    otherwise returns \c false.
 */
 
 /*!
     \fn bool QUuid::operator!=(const GUID &guid) const
 
-    Returns true if this UUID is not equal to the Windows GUID \a
-    guid; otherwise returns false.
+    Returns \c true if this UUID is not equal to the Windows GUID \a
+    guid; otherwise returns \c false.
 */
 
 #ifndef QT_NO_DEBUG_STREAM

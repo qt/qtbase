@@ -2238,7 +2238,7 @@ Q_WIDGETS_EXPORT bool qt_tryModalHelper(QWidget *widget, QWidget **rettop)
 }
 
 /*! \internal
-    Returns true if \a widget is blocked by a modal window.
+    Returns \c true if \a widget is blocked by a modal window.
  */
 bool QApplicationPrivate::isBlockedByModal(QWidget *widget)
 {
@@ -2367,7 +2367,7 @@ bool QApplicationPrivate::isWindowBlocked(QWindow *window, QWindow **blockingWin
 
 /*!\internal
 
-  Called from qapplication_\e{platform}.cpp, returns true
+  Called from qapplication_\e{platform}.cpp, returns \c true
   if the widget should accept the event.
  */
 bool QApplicationPrivate::tryModalHelper(QWidget *widget, QWidget **rettop)
@@ -3539,7 +3539,7 @@ void QApplication::setKeypadNavigationEnabled(bool enable)
 }
 
 /*!
-    Returns true if Qt is set to use keypad navigation; otherwise returns
+    Returns \c true if Qt is set to use keypad navigation; otherwise returns
     false.  The default value is false.
 
     This feature is available in Qt for Embedded Linux, and Windows CE only.
@@ -3686,7 +3686,7 @@ int QApplication::keyboardInputInterval()
 /*!
     \fn bool QApplication::isEffectEnabled(Qt::UIEffect effect)
 
-    Returns true if \a effect is enabled; otherwise returns false.
+    Returns \c true if \a effect is enabled; otherwise returns \c false.
 
     By default, Qt will try to use the desktop settings. To prevent this, call
     setDesktopSettingsAware(false).

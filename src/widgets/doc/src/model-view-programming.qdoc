@@ -2279,7 +2279,7 @@
     \section2 Performance optimization for large amounts of data
 
     The \l{QAbstractItemModel::}{canFetchMore()} function checks if the parent
-    has more data available and returns true or false accordingly. The
+    has more data available and returns \c true or false accordingly. The
     \l{QAbstractItemModel::}{fetchMore()} function fetches data based on the
     parent specified. Both these functions can be combined, for example, in a
     database query involving incremental data to populate a QAbstractItemModel.

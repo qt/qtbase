@@ -642,7 +642,7 @@ QPolygonF QPolygonF::translated(const QPointF &offset) const
 /*!
     \fn bool QPolygonF::isClosed() const
 
-    Returns true if the polygon is closed; otherwise returns false.
+    Returns \c true if the polygon is closed; otherwise returns \c false.
 
     A polygon is said to be closed if its start point and end point are equal.
 
@@ -824,8 +824,8 @@ QDebug operator<<(QDebug dbg, const QPolygonF &a)
 
     \fn bool QPolygonF::containsPoint(const QPointF &point, Qt::FillRule fillRule) const
 
-    Returns true if the given \a point is inside the polygon according to
-    the specified \a fillRule; otherwise returns false.
+    Returns \c true if the given \a point is inside the polygon according to
+    the specified \a fillRule; otherwise returns \c false.
 */
 bool QPolygonF::containsPoint(const QPointF &pt, Qt::FillRule fillRule) const
 {
@@ -855,8 +855,8 @@ bool QPolygonF::containsPoint(const QPointF &pt, Qt::FillRule fillRule) const
     \since 4.3
 
     \fn bool QPolygon::containsPoint(const QPoint &point, Qt::FillRule fillRule) const
-    Returns true if the given \a point is inside the polygon according to
-    the specified \a fillRule; otherwise returns false.
+    Returns \c true if the given \a point is inside the polygon according to
+    the specified \a fillRule; otherwise returns \c false.
 */
 bool QPolygon::containsPoint(const QPoint &pt, Qt::FillRule fillRule) const
 {

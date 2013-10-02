@@ -326,7 +326,7 @@ void QCryptographicHash::addData(const QByteArray &data)
 
 /*!
   Reads the data from the open QIODevice \a device until it ends
-  and hashes it. Returns true if reading was successful.
+  and hashes it. Returns \c true if reading was successful.
   \since 5.0
  */
 bool QCryptographicHash::addData(QIODevice* device)

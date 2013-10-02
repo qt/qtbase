@@ -333,7 +333,7 @@ QDBusAbstractInterface::~QDBusAbstractInterface()
 }
 
 /*!
-    Returns true if this is a valid reference to a remote object. It returns false if
+    Returns \c true if this is a valid reference to a remote object. It returns \c false if
     there was an error during the creation of this interface (for instance, if the remote
     application does not exist).
 
@@ -517,10 +517,10 @@ QDBusPendingCall QDBusAbstractInterface::asyncCallWithArgumentList(const QString
     object \a receiver. If an error occurs, the \a errorMethod
     on object \a receiver is called instead.
 
-    This function returns true if the queueing succeeds. It does
+    This function returns \c true if the queueing succeeds. It does
     not indicate that the executed call succeeded. If it fails,
     the \a errorMethod is called. If the queueing failed, this
-    function returns false and no slot will be called.
+    function returns \c false and no slot will be called.
 
     The \a returnMethod must have as its parameters the types returned
     by the function call. Optionally, it may have a QDBusMessage
@@ -567,7 +567,7 @@ bool QDBusAbstractInterface::callWithCallback(const QString &method,
     the remote function or any errors emitted by it are delivered
     to the \a slot slot on object \a receiver.
 
-    This function returns true if the queueing succeeded: it does
+    This function returns \c true if the queueing succeeded: it does
     not indicate that the call succeeded. If it failed, the slot
     will be called with an error message. lastError() will not be
     set under those circumstances.

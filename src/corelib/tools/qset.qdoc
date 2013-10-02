@@ -143,8 +143,8 @@
 /*!
     \fn bool QSet::operator==(const QSet<T> &other) const
 
-    Returns true if the \a other set is equal to this set; otherwise
-    returns false.
+    Returns \c true if the \a other set is equal to this set; otherwise
+    returns \c false.
 
     Two sets are considered equal if they contain the same elements.
 
@@ -156,8 +156,8 @@
 /*!
     \fn bool QSet::operator!=(const QSet<T> &other) const
 
-    Returns true if the \a other set is not equal to this set; otherwise
-    returns false.
+    Returns \c true if the \a other set is not equal to this set; otherwise
+    returns \c false.
 
     Two sets are considered equal if they contain the same elements.
 
@@ -177,7 +177,7 @@
 /*!
     \fn bool QSet::isEmpty() const
 
-    Returns true if the set contains no elements; otherwise returns
+    Returns \c true if the set contains no elements; otherwise returns
     false.
 
     \sa size()
@@ -248,8 +248,8 @@
 
     \internal
 
-    Returns true if the set's internal data isn't shared with any
-    other set object; otherwise returns false.
+    Returns \c true if the set's internal data isn't shared with any
+    other set object; otherwise returns \c false.
 
     \sa detach()
 */
@@ -271,7 +271,7 @@
     \fn bool QSet::remove(const T &value)
 
     Removes any occurrence of item \a value from the set. Returns
-    true if an item was actually removed; otherwise returns false.
+    true if an item was actually removed; otherwise returns \c false.
 
     \sa contains(), insert()
 */
@@ -322,7 +322,7 @@
 /*!
     \fn bool QSet::contains(const T &value) const
 
-    Returns true if the set contains item \a value; otherwise returns
+    Returns \c true if the set contains item \a value; otherwise returns
     false.
 
     \sa insert(), remove(), find()
@@ -332,8 +332,8 @@
     \fn bool QSet::contains(const QSet<T> &other) const
     \since 4.6
 
-    Returns true if the set contains all items from the \a other set;
-    otherwise returns false.
+    Returns \c true if the set contains all items from the \a other set;
+    otherwise returns \c false.
 
     \sa insert(), remove(), find()
 */
@@ -505,7 +505,7 @@
 /*!
     \fn bool QSet::empty() const
 
-    Returns true if the set is empty. This function is provided
+    Returns \c true if the set is empty. This function is provided
     for STL compatibility. It is equivalent to isEmpty().
 */
 
@@ -788,8 +788,8 @@
     \fn bool QSet::iterator::operator==(const iterator &other) const
     \fn bool QSet::const_iterator::operator==(const const_iterator &other) const
 
-    Returns true if \a other points to the same item as this
-    iterator; otherwise returns false.
+    Returns \c true if \a other points to the same item as this
+    iterator; otherwise returns \c false.
 
     \sa operator!=()
 */
@@ -805,8 +805,8 @@
     \fn bool QSet::iterator::operator!=(const iterator &other) const
     \fn bool QSet::const_iterator::operator!=(const const_iterator &other) const
 
-    Returns true if \a other points to a different item than this
-    iterator; otherwise returns false.
+    Returns \c true if \a other points to a different item than this
+    iterator; otherwise returns \c false.
 
     \sa operator==()
 */

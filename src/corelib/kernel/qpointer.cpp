@@ -153,7 +153,7 @@
     \fn bool QPointer::isNull() const
 
     Returns \c true if the referenced object has been destroyed or if
-    there is no referenced object; otherwise returns false.
+    there is no referenced object; otherwise returns \c false.
 */
 
 /*!
@@ -191,45 +191,45 @@
     \fn bool operator==(const T *o, const QPointer<T> &p)
     \relates QPointer
 
-    Equality operator. Returns true if \a o and the guarded
+    Equality operator. Returns \c true if \a o and the guarded
     pointer \a p are pointing to the same object, otherwise
-    returns false.
+    returns \c false.
 
 */
 /*!
     \fn bool operator==(const QPointer<T> &p, const T *o)
     \relates QPointer
 
-    Equality operator. Returns true if \a o and the guarded
+    Equality operator. Returns \c true if \a o and the guarded
     pointer \a p are pointing to the same object, otherwise
-    returns false.
+    returns \c false.
 
 */
 /*!
     \fn bool operator==(T *o, const QPointer<T> &p)
     \relates QPointer
 
-    Equality operator. Returns true if \a o and the guarded
+    Equality operator. Returns \c true if \a o and the guarded
     pointer \a p are pointing to the same object, otherwise
-    returns false.
+    returns \c false.
 
 */
 /*!
     \fn bool operator==(const QPointer<T> &p, T *o)
     \relates QPointer
 
-    Equality operator. Returns true if \a o and the guarded
+    Equality operator. Returns \c true if \a o and the guarded
     pointer \a p are pointing to the same object, otherwise
-    returns false.
+    returns \c false.
 
 */
 /*!
     \fn bool operator==(const QPointer<T> &p1, const QPointer<T> &p2)
     \relates QPointer
 
-    Equality operator. Returns true if the guarded pointers \a p1 and \a p2
+    Equality operator. Returns \c true if the guarded pointers \a p1 and \a p2
     are pointing to the same object, otherwise
-    returns false.
+    returns \c false.
 
 */
 
@@ -238,41 +238,41 @@
     \fn bool operator!=(const T *o, const QPointer<T> &p)
     \relates QPointer
 
-    Inequality operator. Returns true if \a o and the guarded
+    Inequality operator. Returns \c true if \a o and the guarded
     pointer \a p are not pointing to the same object, otherwise
-    returns false.
+    returns \c false.
 */
 /*!
     \fn bool operator!=(const QPointer<T> &p, const T *o)
     \relates QPointer
 
-    Inequality operator. Returns true if \a o and the guarded
+    Inequality operator. Returns \c true if \a o and the guarded
     pointer \a p are not pointing to the same object, otherwise
-    returns false.
+    returns \c false.
 */
 /*!
     \fn bool operator!=(T *o, const QPointer<T> &p)
     \relates QPointer
 
-    Inequality operator. Returns true if \a o and the guarded
+    Inequality operator. Returns \c true if \a o and the guarded
     pointer \a p are not pointing to the same object, otherwise
-    returns false.
+    returns \c false.
 */
 /*!
     \fn bool operator!=(const QPointer<T> &p, T *o)
     \relates QPointer
 
-    Inequality operator. Returns true if \a o and the guarded
+    Inequality operator. Returns \c true if \a o and the guarded
     pointer \a p are not pointing to the same object, otherwise
-    returns false.
+    returns \c false.
 */
 /*!
     \fn bool operator!=(const QPointer<T> &p1, const QPointer<T> &p2)
     \relates QPointer
 
-    Inequality operator. Returns true if  the guarded pointers \a p1 and
+    Inequality operator. Returns \c true if  the guarded pointers \a p1 and
     \a p2 are not pointing to the same object, otherwise
-    returns false.
+    returns \c false.
 */
 /*!
     \fn QPointer<T> qPointerFromVariant(const QVariant &variant)

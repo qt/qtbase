@@ -530,15 +530,15 @@ QHostAddress &QHostAddress::operator=(const QString &address)
     \fn bool QHostAddress::operator!=(const QHostAddress &other) const
     \since 4.2
 
-    Returns true if this host address is not the same as the \a other
-    address given; otherwise returns false.
+    Returns \c true if this host address is not the same as the \a other
+    address given; otherwise returns \c false.
 */
 
 /*!
     \fn bool QHostAddress::operator!=(SpecialAddress other) const
 
-    Returns true if this host address is not the same as the \a other
-    address given; otherwise returns false.
+    Returns \c true if this host address is not the same as the \a other
+    address given; otherwise returns \c false.
 */
 
 /*!
@@ -585,8 +585,8 @@ void QHostAddress::setAddress(const Q_IPV6ADDR &ip6Addr)
 
     Sets the IPv4 or IPv6 address specified by the string
     representation specified by \a address (e.g. "127.0.0.1").
-    Returns true and sets the address if the address was successfully
-    parsed; otherwise returns false.
+    Returns \c true and sets the address if the address was successfully
+    parsed; otherwise returns \c false.
 */
 bool QHostAddress::setAddress(const QString &address)
 {
@@ -599,8 +599,8 @@ bool QHostAddress::setAddress(const QString &address)
     \overload
 
     Sets the IPv4 or IPv6 address specified by the native structure \a
-    sockaddr.  Returns true and sets the address if the address was
-    successfully parsed; otherwise returns false.
+    sockaddr.  Returns \c true and sets the address if the address was
+    successfully parsed; otherwise returns \c false.
 */
 void QHostAddress::setAddress(const struct sockaddr *sockaddr)
 {
@@ -754,8 +754,8 @@ void QHostAddress::setScopeId(const QString &id)
 }
 
 /*!
-    Returns true if this host address is the same as the \a other address
-    given; otherwise returns false.
+    Returns \c true if this host address is the same as the \a other address
+    given; otherwise returns \c false.
 */
 bool QHostAddress::operator==(const QHostAddress &other) const
 {
@@ -772,8 +772,8 @@ bool QHostAddress::operator==(const QHostAddress &other) const
 }
 
 /*!
-    Returns true if this host address is the same as the \a other
-    address given; otherwise returns false.
+    Returns \c true if this host address is the same as the \a other
+    address given; otherwise returns \c false.
 */
 bool QHostAddress::operator ==(SpecialAddress other) const
 {
@@ -793,7 +793,7 @@ bool QHostAddress::operator ==(SpecialAddress other) const
 }
 
 /*!
-    Returns true if this host address is null (INADDR_ANY or in6addr_any).
+    Returns \c true if this host address is null (INADDR_ANY or in6addr_any).
     The default constructor creates a null address, and that address is
     not valid for any host or interface.
 */
@@ -806,7 +806,7 @@ bool QHostAddress::isNull() const
 /*!
     \since 4.5
 
-    Returns true if this IP is in the subnet described by the network
+    Returns \c true if this IP is in the subnet described by the network
     prefix \a subnet and netmask \a netmask.
 
     An IP is considered to belong to a subnet if it is contained
@@ -866,7 +866,7 @@ bool QHostAddress::isInSubnet(const QHostAddress &subnet, int netmask) const
     \since 4.5
     \overload
 
-    Returns true if this IP is in the subnet described by \a
+    Returns \c true if this IP is in the subnet described by \a
     subnet. The QHostAddress member of \a subnet contains the network
     prefix and the int (second) member contains the netmask (prefix
     length).
@@ -1002,7 +1002,7 @@ QPair<QHostAddress, int> QHostAddress::parseSubnet(const QString &subnet)
 /*!
     \since 5.0
 
-    returns true if the address is the IPv6 loopback address, or any
+    returns \c true if the address is the IPv6 loopback address, or any
     of the IPv4 loopback addresses.
 */
 bool QHostAddress::isLoopback() const

@@ -625,7 +625,7 @@ ClassNode* Node::declarativeCppNode()
 }
 
 /*!
-  Returns true if the node's status is Internal, or if its
+  Returns \c true if the node's status is Internal, or if its
   parent is a class with internal status.
  */
 bool Node::isInternal() const
@@ -654,7 +654,7 @@ InnerNode::~InnerNode()
 }
 
 /*!
-  Returns true if this node's members coolection is not empty.
+  Returns \c true if this node's members coolection is not empty.
  */
 bool InnerNode::hasMembers() const
 {
@@ -672,7 +672,7 @@ void InnerNode::addMember(Node* node)
 }
 
 /*!
-  Returns true if this node's members collection contains at
+  Returns \c true if this node's members collection contains at
   least one namespace node.
  */
 bool InnerNode::hasNamespaces() const
@@ -689,7 +689,7 @@ bool InnerNode::hasNamespaces() const
 }
 
 /*!
-  Returns true if this node's members collection contains at
+  Returns \c true if this node's members collection contains at
   least one class node.
  */
 bool InnerNode::hasClasses() const
@@ -816,8 +816,8 @@ void InnerNode::findNodes(const QString& name, QList<Node*>& n)
   not a recearsive search.
 
   If \a qml is true, only match a node for which node->isQmlNode()
-  returns true. If \a qml is false, only match a node for which
-  node->isQmlNode() returns false.
+  returns \c true. If \a qml is false, only match a node for which
+  node->isQmlNode() returns \c false.
  */
 Node* InnerNode::findChildNodeByName(const QString& name, bool qml)
 {
@@ -1078,11 +1078,11 @@ void InnerNode::deleteChildren()
 }
 
 /*! \fn bool InnerNode::isInnerNode() const
-  Returns true because this is an inner node.
+  Returns \c true because this is an inner node.
  */
 
 /*!
-  Returns true if the node is a class node or a QML type node
+  Returns \c true if the node is a class node or a QML type node
   that is marked as being a wrapper class or QML type, or if
   it is a member of a wrapper class or type.
  */
@@ -1101,8 +1101,8 @@ const Node *InnerNode::findChildNodeByName(const QString& name) const
 
 /*!
   If \a qml is true, only match a node for which node->isQmlNode()
-  returns true. If \a qml is false, only match a node for which
-  node->isQmlNode() returns false.
+  returns \c true. If \a qml is false, only match a node for which
+  node->isQmlNode() returns \c false.
  */
 const Node* InnerNode::findChildNodeByName(const QString& name, bool qml) const
 {
@@ -1395,7 +1395,7 @@ QmlPropertyNode* InnerNode::hasQmlProperty(const QString& n) const
  */
 
 /*! \fn bool LeafNode::isInnerNode() const
-  Returns false because this is a LeafNode.
+  Returns \c false because this is a LeafNode.
  */
 
 /*!
@@ -2329,7 +2329,7 @@ QmlPropertyNode::QmlPropertyNode(InnerNode* parent,
 }
 
 /*!
-  Returns true if a QML property or attached property is
+  Returns \c true if a QML property or attached property is
   not read-only. The algorithm for figuring this out is long
   amd tedious and almost certainly will break. It currently
   doesn't work for the qmlproperty:
@@ -2474,7 +2474,7 @@ NameCollisionNode::~NameCollisionNode()
  */
 
 /*!
-  Returns true if this collision node's current node is a QML node.
+  Returns \c true if this collision node's current node is a QML node.
  */
 bool NameCollisionNode::isQmlNode() const
 {

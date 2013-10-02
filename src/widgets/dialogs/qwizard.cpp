@@ -1963,7 +1963,7 @@ void QWizardAntiFlickerWidget::paintEvent(QPaintEvent *)
     Another way is to reimplement validateCurrentPage() (or
     QWizardPage::validatePage()) to perform some last-minute
     validation (and show an error message if the user has entered
-    incomplete or invalid information). If the function returns true,
+    incomplete or invalid information). If the function returns \c true,
     the next page is shown (or the wizard finishes); otherwise, the
     current page stays up.
 
@@ -2331,8 +2331,8 @@ QWizardPage *QWizard::page(int theid) const
 /*!
     \fn bool QWizard::hasVisitedPage(int id) const
 
-    Returns true if the page history contains page \a id; otherwise,
-    returns false.
+    Returns \c true if the page history contains page \a id; otherwise,
+    returns \c false.
 
     Pressing \uicontrol Back marks the current page as "unvisited" again.
 
@@ -2544,7 +2544,7 @@ void QWizard::setOption(WizardOption option, bool on)
 }
 
 /*!
-    Returns true if the given \a option is enabled; otherwise, returns
+    Returns \c true if the given \a option is enabled; otherwise, returns
     false.
 
     \sa options, setOption(), setWizardStyle()
@@ -3276,7 +3276,7 @@ void QWizard::cleanupPage(int theid)
 /*!
     This virtual function is called by QWizard when the user clicks
     \uicontrol Next or \uicontrol Finish to perform some last-minute validation.
-    If it returns true, the next page is shown (or the wizard
+    If it returns \c true, the next page is shown (or the wizard
     finishes); otherwise, the current page stays up.
 
     The default implementation calls QWizardPage::validatePage() on
@@ -3363,7 +3363,7 @@ int QWizard::nextId() const
     \endlist
 
     Normally, the \uicontrol Next button and the \uicontrol Finish button of a
-    wizard are mutually exclusive. If isFinalPage() returns true, \uicontrol
+    wizard are mutually exclusive. If isFinalPage() returns \c true, \uicontrol
     Finish is available; otherwise, \uicontrol Next is available. By
     default, isFinalPage() is true only when nextId() returns -1. If
     you want to show \uicontrol Next and \uicontrol Final simultaneously for a
@@ -3566,10 +3566,10 @@ void QWizardPage::cleanupPage()
 /*!
     This virtual function is called by QWizard::validateCurrentPage()
     when the user clicks \uicontrol Next or \uicontrol Finish to perform some
-    last-minute validation. If it returns true, the next page is shown
+    last-minute validation. If it returns \c true, the next page is shown
     (or the wizard finishes); otherwise, the current page stays up.
 
-    The default implementation returns true.
+    The default implementation returns \c true.
 
     When possible, it is usually better style to disable the \uicontrol
     Next or \uicontrol Finish button (by specifying \l{mandatory fields} or
@@ -3587,8 +3587,8 @@ bool QWizardPage::validatePage()
     the \uicontrol Next or \uicontrol Finish button should be enabled or
     disabled.
 
-    The default implementation returns true if all \l{mandatory
-    fields} are filled; otherwise, it returns false.
+    The default implementation returns \c true if all \l{mandatory
+    fields} are filled; otherwise, it returns \c false.
 
     If you reimplement this function, make sure to emit completeChanged(),
     from the rest of your implementation, whenever the value of isComplete()
@@ -3634,12 +3634,12 @@ bool QWizardPage::isComplete() const
 /*!
     Explicitly sets this page to be final if \a finalPage is true.
 
-    After calling setFinalPage(true), isFinalPage() returns true and the \uicontrol
+    After calling setFinalPage(true), isFinalPage() returns \c true and the \uicontrol
     Finish button is visible (and enabled if isComplete() returns
     true).
 
-    After calling setFinalPage(false), isFinalPage() returns true if
-    nextId() returns -1; otherwise, it returns false.
+    After calling setFinalPage(false), isFinalPage() returns \c true if
+    nextId() returns -1; otherwise, it returns \c false.
 
     \sa isComplete(), QWizard::HaveFinishButtonOnEarlyPages
 */
@@ -3656,8 +3656,8 @@ void QWizardPage::setFinalPage(bool finalPage)
     This function is called by QWizard to determine whether the \uicontrol
     Finish button should be shown for this page or not.
 
-    By default, it returns true if there is no next page
-    (i.e., nextId() returns -1); otherwise, it returns false.
+    By default, it returns \c true if there is no next page
+    (i.e., nextId() returns -1); otherwise, it returns \c false.
 
     By explicitly calling setFinalPage(true), you can let the user perform an
     "early finish".
@@ -3703,7 +3703,7 @@ void QWizardPage::setCommitPage(bool commitPage)
 }
 
 /*!
-    Returns true if this page is a commit page; otherwise returns false.
+    Returns \c true if this page is a commit page; otherwise returns \c false.
 
     \sa setCommitPage()
 */

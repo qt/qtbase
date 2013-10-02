@@ -89,7 +89,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn virtual bool QNonContiguousByteDevice::atEnd()
 
-     Returns true if everything has been read and the read
+     Returns \c true if everything has been read and the read
      pointer cannot be advanced anymore.
 
     \sa readPointer(), advanceReadPointer(), reset()
@@ -100,7 +100,7 @@ QT_BEGIN_NAMESPACE
     \fn virtual bool QNonContiguousByteDevice::reset()
 
     Moves the internal read pointer back to the beginning.
-    Returns false if this was not possible.
+    Returns \c false if this was not possible.
 
     \sa atEnd(), disableReset()
 

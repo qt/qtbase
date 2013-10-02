@@ -1146,8 +1146,8 @@ QRect QItemDelegate::textRectangle(QPainter * /*painter*/, const QRect &rect,
 /*!
     \fn bool QItemDelegate::eventFilter(QObject *editor, QEvent *event)
 
-    Returns true if the given \a editor is a valid QWidget and the
-    given \a event is handled; otherwise returns false. The following
+    Returns \c true if the given \a editor is a valid QWidget and the
+    given \a event is handled; otherwise returns \c false. The following
     key press events are handled by default:
 
     \list

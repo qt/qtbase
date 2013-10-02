@@ -101,8 +101,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QLine::isNull() const
 
-    Returns true if the line is not set up with valid start and end point;
-    otherwise returns false.
+    Returns \c true if the line is not set up with valid start and end point;
+    otherwise returns \c false.
 */
 
 /*!
@@ -172,7 +172,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QLine::operator!=(const QLine &line) const
 
-    Returns true if the given \a line is not the same as \e this line.
+    Returns \c true if the given \a line is not the same as \e this line.
 
     A line is different from another line if any of their start or
     end points differ, or the internal order of the points is different.
@@ -181,7 +181,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QLine::operator==(const QLine &line) const
 
-    Returns true if the given \a line is the same as \e this line.
+    Returns \c true if the given \a line is the same as \e this line.
 
     A line is identical to another line if the start and end points
     are identical, and the internal order of the points is the same.
@@ -416,8 +416,8 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 /*!
     \fn bool QLineF::isNull() const
 
-    Returns true if the line is not set up with valid start and end point;
-    otherwise returns false.
+    Returns \c true if the line is not set up with valid start and end point;
+    otherwise returns \c false.
 */
 
 /*!
@@ -520,7 +520,7 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 /*!
     \fn bool QLineF::operator!=(const QLineF &line) const
 
-    Returns true if the given \a line is not the same as \e this line.
+    Returns \c true if the given \a line is not the same as \e this line.
 
     A line is different from another line if their start or end points
     differ, or the internal order of the points is different.
@@ -529,7 +529,7 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 /*!
     \fn bool QLineF::operator==(const QLineF &line) const
 
-    Returns true if the given \a line is the same as this line.
+    Returns \c true if the given \a line is the same as this line.
 
     A line is identical to another line if the start and end points
     are identical, and the internal order of the points is the same.

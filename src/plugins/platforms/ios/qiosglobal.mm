@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
 
 bool isQtApplication()
 {
-    // Returns true if the plugin is in full control of the whole application. This means
+    // Returns \c true if the plugin is in full control of the whole application. This means
     // that we control the application delegate and the top view controller, and can take
     // actions that impacts all parts of the application. The opposite means that we are
     // embedded inside a native iOS application, and should be more focused on playing along

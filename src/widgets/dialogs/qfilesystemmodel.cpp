@@ -482,8 +482,8 @@ void QFileSystemModel::timerEvent(QTimerEvent *event)
 }
 
 /*!
-    Returns true if the model item \a index represents a directory;
-    otherwise returns false.
+    Returns \c true if the model item \a index represents a directory;
+    otherwise returns \c false.
 */
 bool QFileSystemModel::isDir(const QModelIndex &index) const
 {
@@ -1531,7 +1531,7 @@ QDir::Filters QFileSystemModel::filter() const
 
     This is only relevant on Windows.
 
-    By default, this property is true.
+    By default, this property is \c true.
 */
 void QFileSystemModel::setResolveSymlinks(bool enable)
 {
@@ -1558,7 +1558,7 @@ bool QFileSystemModel::resolveSymlinks() const
     If this property is set to false, the directory model will allow renaming, copying
     and deleting of files and directories.
 
-    This property is true by default
+    This property is \c true by default
 */
 void QFileSystemModel::setReadOnly(bool enable)
 {
@@ -1576,7 +1576,7 @@ bool QFileSystemModel::isReadOnly() const
     \property QFileSystemModel::nameFilterDisables
     \brief Whether files that don't pass the name filter are hidden or disabled
 
-    This property is true by default
+    This property is \c true by default
 */
 void QFileSystemModel::setNameFilterDisables(bool enable)
 {
@@ -1971,7 +1971,7 @@ void QFileSystemModelPrivate::init()
 /*!
     \internal
 
-    Returns false if node doesn't pass the filters otherwise true
+    Returns \c false if node doesn't pass the filters otherwise true
 
     QDir::Modified is not supported
     QDir::Drives is not supported
@@ -2020,7 +2020,7 @@ bool QFileSystemModelPrivate::filtersAcceptsNode(const QFileSystemNode *node) co
 /*
     \internal
 
-    Returns true if node passes the name filters and should be visible.
+    Returns \c true if node passes the name filters and should be visible.
  */
 bool QFileSystemModelPrivate::passNameFilters(const QFileSystemNode *node) const
 {

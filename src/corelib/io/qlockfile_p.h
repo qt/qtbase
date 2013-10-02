@@ -80,7 +80,7 @@ public:
     QLockFile::LockError tryLock_sys();
     bool removeStaleLock();
     bool getLockInfo(qint64 *pid, QString *hostname, QString *appname) const;
-    // Returns true if the lock belongs to dead PID, or is old.
+    // Returns \c true if the lock belongs to dead PID, or is old.
     // The attempt to delete it will tell us if it was really stale or not, though.
     bool isApparentlyStale() const;
 

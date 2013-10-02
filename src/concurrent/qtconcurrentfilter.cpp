@@ -75,7 +75,7 @@
 
     \snippet code/src_concurrent_qtconcurrentfilter.cpp 0
 
-    T must match the type stored in the sequence. The function returns true if
+    T must match the type stored in the sequence. The function returns \c true if
     the item should be kept, false if it should be discarded.
 
     This example shows how to keep strings that are all lower-case from a
@@ -193,7 +193,7 @@
     \relates <QtConcurrentFilter>
 
     Calls \a filterFunction once for each item in \a sequence. If
-    \a filterFunction returns true, the item is kept in \a sequence;
+    \a filterFunction returns \c true, the item is kept in \a sequence;
     otherwise, the item is removed from \a sequence.
 */
 
@@ -202,7 +202,7 @@
     \relates <QtConcurrentFilter>
 
     Calls \a filterFunction once for each item in \a sequence and returns a
-    new Sequence of kept items. If \a filterFunction returns true, a copy of
+    new Sequence of kept items. If \a filterFunction returns \c true, a copy of
     the item is put in the new Sequence. Otherwise, the item will \e not
     appear in the new Sequence.
 */
@@ -212,7 +212,7 @@
     \relates <QtConcurrentFilter>
 
     Calls \a filterFunction once for each item from \a begin to \a end and
-    returns a new Sequence of kept items. If \a filterFunction returns true, a
+    returns a new Sequence of kept items. If \a filterFunction returns \c true, a
     copy of the item is put in the new Sequence. Otherwise, the item will
     \e not appear in the new Sequence.
 */
@@ -222,9 +222,9 @@
     \relates <QtConcurrentFilter>
 
     Calls \a filterFunction once for each item in \a sequence. If
-    \a filterFunction returns true for an item, that item is then passed to
+    \a filterFunction returns \c true for an item, that item is then passed to
     \a reduceFunction. In other words, the return value is the result of
-    \a reduceFunction for each item where \a filterFunction returns true.
+    \a reduceFunction for each item where \a filterFunction returns \c true.
 
     Note that while \a filterFunction is called concurrently, only one thread
     at a time will call \a reduceFunction. The order in which \a reduceFunction
@@ -239,9 +239,9 @@
     \relates <QtConcurrentFilter>
 
     Calls \a filterFunction once for each item from \a begin to \a end. If
-    \a filterFunction returns true for an item, that item is then passed to
+    \a filterFunction returns \c true for an item, that item is then passed to
     \a reduceFunction. In other words, the return value is the result of
-    \a reduceFunction for each item where \a filterFunction returns true.
+    \a reduceFunction for each item where \a filterFunction returns \c true.
 
     Note that while \a filterFunction is called concurrently, only one thread
     at a time will call \a reduceFunction. The order in which
@@ -255,7 +255,7 @@
   \fn void QtConcurrent::blockingFilter(Sequence &sequence, FilterFunction filterFunction)
 
   Calls \a filterFunction once for each item in \a sequence. If
-  \a filterFunction returns true, the item is kept in \a sequence;
+  \a filterFunction returns \c true, the item is kept in \a sequence;
   otherwise, the item is removed from \a sequence.
 
   \note This function will block until all items in the sequence have been processed.
@@ -265,7 +265,7 @@
   \fn Sequence QtConcurrent::blockingFiltered(const Sequence &sequence, FilterFunction filterFunction)
 
   Calls \a filterFunction once for each item in \a sequence and returns a
-  new Sequence of kept items. If \a filterFunction returns true, a copy of
+  new Sequence of kept items. If \a filterFunction returns \c true, a copy of
   the item is put in the new Sequence. Otherwise, the item will \e not
   appear in the new Sequence.
 
@@ -278,7 +278,7 @@
   \fn Sequence QtConcurrent::blockingFiltered(ConstIterator begin, ConstIterator end, FilterFunction filterFunction)
 
   Calls \a filterFunction once for each item from \a begin to \a end and
-  returns a new Sequence of kept items. If \a filterFunction returns true, a
+  returns a new Sequence of kept items. If \a filterFunction returns \c true, a
   copy of the item is put in the new Sequence. Otherwise, the item will
   \e not appear in the new Sequence.
 
@@ -292,9 +292,9 @@
   \fn T QtConcurrent::blockingFilteredReduced(const Sequence &sequence, FilterFunction filterFunction, ReduceFunction reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
 
   Calls \a filterFunction once for each item in \a sequence. If
-  \a filterFunction returns true for an item, that item is then passed to
+  \a filterFunction returns \c true for an item, that item is then passed to
   \a reduceFunction. In other words, the return value is the result of
-  \a reduceFunction for each item where \a filterFunction returns true.
+  \a reduceFunction for each item where \a filterFunction returns \c true.
 
   Note that while \a filterFunction is called concurrently, only one thread
   at a time will call \a reduceFunction. The order in which \a reduceFunction
@@ -312,9 +312,9 @@
   \fn T QtConcurrent::blockingFilteredReduced(ConstIterator begin, ConstIterator end, FilterFunction filterFunction, ReduceFunction reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
 
   Calls \a filterFunction once for each item from \a begin to \a end. If
-  \a filterFunction returns true for an item, that item is then passed to
+  \a filterFunction returns \c true for an item, that item is then passed to
   \a reduceFunction. In other words, the return value is the result of
-  \a reduceFunction for each item where \a filterFunction returns true.
+  \a reduceFunction for each item where \a filterFunction returns \c true.
 
   Note that while \a filterFunction is called concurrently, only one thread
   at a time will call \a reduceFunction. The order in which

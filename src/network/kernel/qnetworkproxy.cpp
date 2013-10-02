@@ -499,7 +499,7 @@ QNetworkProxy::~QNetworkProxy()
 /*!
     \since 4.4
 
-    Compares the value of this network proxy to \a other and returns true
+    Compares the value of this network proxy to \a other and returns \c true
     if they are equal (same proxy type, server as well as username and password)
 */
 bool QNetworkProxy::operator==(const QNetworkProxy &other) const
@@ -511,7 +511,7 @@ bool QNetworkProxy::operator==(const QNetworkProxy &other) const
     \fn bool QNetworkProxy::operator!=(const QNetworkProxy &other) const
     \since 4.4
 
-    Compares the value of this network proxy to \a other and returns true
+    Compares the value of this network proxy to \a other and returns \c true
     if they differ.
 \*/
 
@@ -588,7 +588,7 @@ QNetworkProxy::Capabilities QNetworkProxy::capabilities() const
 /*!
     \since 4.4
 
-    Returns true if this proxy supports the
+    Returns \c true if this proxy supports the
     QNetworkProxy::CachingCapability capability.
 
     In Qt 4.4, the capability was tied to the proxy type, but since Qt
@@ -605,7 +605,7 @@ bool QNetworkProxy::isCachingProxy() const
 /*!
     \since 4.4
 
-    Returns true if this proxy supports transparent tunneling of TCP
+    Returns \c true if this proxy supports transparent tunneling of TCP
     connections. This matches the QNetworkProxy::TunnelingCapability
     capability.
 
@@ -775,8 +775,8 @@ void QNetworkProxy::setHeader(QNetworkRequest::KnownHeaders header, const QVaria
 
 /*!
     \since 5.0
-    Returns true if the raw header \a headerName is in use for this
-    proxy. Returns false if the proxy is not of type HttpProxy or
+    Returns \c true if the raw header \a headerName is in use for this
+    proxy. Returns \c false if the proxy is not of type HttpProxy or
     HttpCachingProxy.
 
     \sa rawHeader(), setRawHeader()
@@ -1165,7 +1165,7 @@ QNetworkProxyQuery &QNetworkProxyQuery::operator=(const QNetworkProxyQuery &othe
 */
 
 /*!
-    Returns true if this QNetworkProxyQuery object contains the same
+    Returns \c true if this QNetworkProxyQuery object contains the same
     data as \a other.
 */
 bool QNetworkProxyQuery::operator==(const QNetworkProxyQuery &other) const
@@ -1176,7 +1176,7 @@ bool QNetworkProxyQuery::operator==(const QNetworkProxyQuery &other) const
 /*!
     \fn bool QNetworkProxyQuery::operator!=(const QNetworkProxyQuery &other) const
 
-    Returns true if this QNetworkProxyQuery object does not contain
+    Returns \c true if this QNetworkProxyQuery object does not contain
     the same data as \a other.
 */
 

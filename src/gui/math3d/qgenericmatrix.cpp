@@ -101,7 +101,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QGenericMatrix::isIdentity() const
 
-    Returns true if this matrix is the identity; false otherwise.
+    Returns \c true if this matrix is the identity; false otherwise.
 
     \sa setToIdentity()
 */
@@ -153,13 +153,13 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QGenericMatrix::operator==(const QGenericMatrix<N, M, T>& other) const
 
-    Returns true if this matrix is identical to \a other; false otherwise.
+    Returns \c true if this matrix is identical to \a other; false otherwise.
 */
 
 /*!
     \fn bool QGenericMatrix::operator!=(const QGenericMatrix<N, M, T>& other) const
 
-    Returns true if this matrix is not identical to \a other; false otherwise.
+    Returns \c true if this matrix is not identical to \a other; false otherwise.
 */
 
 /*!

@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
     QMargin defines a set of four margins; left, top, right and bottom,
     that describe the size of the borders surrounding a rectangle.
 
-    The isNull() function returns true only if all margins are set to zero.
+    The isNull() function returns \c true only if all margins are set to zero.
 
     QMargin objects can be streamed as well as compared.
 */
@@ -85,7 +85,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QMargins::isNull() const
 
-    Returns true if all margins are is 0; otherwise returns
+    Returns \c true if all margins are is 0; otherwise returns
     false.
 */
 
@@ -147,14 +147,14 @@ QT_BEGIN_NAMESPACE
     \fn bool operator==(const QMargins &m1, const QMargins &m2)
     \relates QMargins
 
-    Returns true if \a m1 and \a m2 are equal; otherwise returns false.
+    Returns \c true if \a m1 and \a m2 are equal; otherwise returns \c false.
 */
 
 /*!
     \fn bool operator!=(const QMargins &m1, const QMargins &m2)
     \relates QMargins
 
-    Returns true if \a m1 and \a m2 are different; otherwise returns false.
+    Returns \c true if \a m1 and \a m2 are different; otherwise returns \c false.
 */
 
 /*!

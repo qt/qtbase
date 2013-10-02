@@ -321,8 +321,8 @@ QNetworkConfiguration QNetworkConfigurationManager::configurationFromIdentifier(
 }
 
 /*!
-    Returns true if the system is considered to be connected to another device via an active
-    network interface; otherwise returns false.
+    Returns \c true if the system is considered to be connected to another device via an active
+    network interface; otherwise returns \c false.
 
     This is equivalent to the following code snippet:
 

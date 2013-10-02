@@ -294,7 +294,7 @@ void QUndoGroup::redo()
     Returns the value of the active stack's QUndoStack::canUndo().
 
     If none of the stacks are active, or if the group is empty, this function
-    returns false.
+    returns \c false.
 
     \sa canRedo(), setActiveStack()
 */
@@ -309,7 +309,7 @@ bool QUndoGroup::canUndo() const
     Returns the value of the active stack's QUndoStack::canRedo().
 
     If none of the stacks are active, or if the group is empty, this function
-    returns false.
+    returns \c false.
 
     \sa canUndo(), setActiveStack()
 */
@@ -354,7 +354,7 @@ QString QUndoGroup::redoText() const
     Returns the value of the active stack's QUndoStack::isClean().
 
     If none of the stacks are active, or if the group is empty, this function
-    returns true.
+    returns \c true.
 
     \sa setActiveStack()
 */

@@ -52,8 +52,8 @@
 QT_BEGIN_NAMESPACE
 
 /*
-    Returns true if the \a widget can be added to the \a layout;
-    otherwise returns false.
+    Returns \c true if the \a widget can be added to the \a layout;
+    otherwise returns \c false.
 */
 static bool checkWidget(QLayout *layout, QWidget *widget)
 {
@@ -1112,7 +1112,7 @@ void QBoxLayout::addStrut(int size)
 /*!
     Sets the stretch factor for \a widget to \a stretch and returns
     true if \a widget is found in this layout (not including child
-    layouts); otherwise returns false.
+    layouts); otherwise returns \c false.
 
     \sa setAlignment()
 */
@@ -1136,8 +1136,8 @@ bool QBoxLayout::setStretchFactor(QWidget *widget, int stretch)
     \overload
 
     Sets the stretch factor for the layout \a layout to \a stretch and
-    returns true if \a layout is found in this layout (not including
-    child layouts); otherwise returns false.
+    returns \c true if \a layout is found in this layout (not including
+    child layouts); otherwise returns \c false.
 */
 bool QBoxLayout::setStretchFactor(QLayout *layout, int stretch)
 {

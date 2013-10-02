@@ -224,8 +224,8 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode)
 }
 
 /*!
-    Opens the file handle \a fh in \a openMode mode. Returns true on
-    success; otherwise returns false.
+    Opens the file handle \a fh in \a openMode mode. Returns \c true on
+    success; otherwise returns \c false.
 */
 bool QFSFileEngine::open(QIODevice::OpenMode openMode, FILE *fh)
 {
@@ -285,8 +285,8 @@ bool QFSFileEnginePrivate::openFh(QIODevice::OpenMode openMode, FILE *fh)
 }
 
 /*!
-    Opens the file descriptor \a fd in \a openMode mode. Returns true
-    on success; otherwise returns false.
+    Opens the file descriptor \a fd in \a openMode mode. Returns \c true
+    on success; otherwise returns \c false.
 */
 bool QFSFileEngine::open(QIODevice::OpenMode openMode, int fd)
 {
@@ -837,7 +837,7 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
 }
 
 /*! \fn bool QFSFileEngine::caseSensitive() const
-  Returns true for Windows, false for Unix.
+  Returns \c true for Windows, false for Unix.
 */
 
 /*! \fn bool QFSFileEngine::copy(const QString &copyName)
@@ -892,7 +892,7 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
   Creates a link from the file currently specified by fileName() to
   \a newName. What a link is depends on the underlying filesystem
   (be it a shortcut on Windows or a symbolic link on Unix). Returns
-  true if successful; otherwise returns false.
+  true if successful; otherwise returns \c false.
 */
 
 /*! \fn bool QFSFileEngine::mkdir(const QString &name, bool createParentDirectories) const
@@ -935,8 +935,8 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
 */
 
 /*! \fn bool QFSFileEngine::setCurrentPath(const QString &path)
-  Sets the current path (e.g., for QDir), to \a path. Returns true if the
-  new path exists; otherwise this function does nothing, and returns false.
+  Sets the current path (e.g., for QDir), to \a path. Returns \c true if the
+  new path exists; otherwise this function does nothing, and returns \c false.
 
   \sa currentPath()
 */

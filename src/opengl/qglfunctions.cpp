@@ -323,7 +323,7 @@ QGLFunctions::OpenGLFeatures QGLFunctions::openGLFeatures() const
 }
 
 /*!
-    Returns true if \a feature is present on this system's OpenGL
+    Returns \c true if \a feature is present on this system's OpenGL
     implementation; false otherwise.
 
     It is assumed that the QGLContext associated with this function

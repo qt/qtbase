@@ -355,8 +355,8 @@ QString QSqlTableModel::tableName() const
 
 /*!
     Populates the model with data from the table that was set via setTable(), using the
-    specified filter and sort condition, and returns true if successful; otherwise
-    returns false.
+    specified filter and sort condition, and returns \c true if successful; otherwise
+    returns \c false.
 
     \note Calling select() will revert any unsubmitted changes and remove any inserted columns.
 
@@ -393,7 +393,7 @@ bool QSqlTableModel::select()
     on primary key values. Without a primary key, all column values must match. If
     no matching row is found, the model will show an empty row.
 
-    Returns true if successful; otherwise returns false.
+    Returns \c true if successful; otherwise returns \c false.
 
     \sa select()
 */
@@ -500,7 +500,7 @@ QVariant QSqlTableModel::headerData(int section, Qt::Orientation orientation, in
     \overload
     \since 5.0
 
-    Returns true if the model contains modified values that have not been
+    Returns \c true if the model contains modified values that have not been
     committed to the datase, otherwise false.
 */
 bool QSqlTableModel::isDirty() const
@@ -515,7 +515,7 @@ bool QSqlTableModel::isDirty() const
 }
 
 /*!
-    Returns true if the value at the index \a index is dirty, otherwise false.
+    Returns \c true if the value at the index \a index is dirty, otherwise false.
     Dirty values are values that were modified in the model
     but not yet written into the database.
 
@@ -551,10 +551,10 @@ bool QSqlTableModel::isDirty(const QModelIndex &index) const
     For OnRowChange, an index may receive a change only if no other
     row has a cached change. Changes are not submitted automatically.
 
-    Returns true if \a value is equal to the current value. However,
+    Returns \c true if \a value is equal to the current value. However,
     the value will not be submitted to the database.
 
-    Returns true if the value could be set or false on error, for
+    Returns \c true if the value could be set or false on error, for
     example if \a index is out of bounds.
 
     \sa editStrategy(), data(), submit(), submitAll(), revertRow()
@@ -609,8 +609,8 @@ void QSqlTableModel::setQuery(const QSqlQuery &query)
 
 /*!
     Updates the given \a row in the currently active database table
-    with the specified \a values. Returns true if successful; otherwise
-    returns false.
+    with the specified \a values. Returns \c true if successful; otherwise
+    returns \c false.
 
     This is a low-level method that operates directly on the database
     and should not be called directly. Use setData() to update values.
@@ -654,7 +654,7 @@ bool QSqlTableModel::updateRowInTable(int row, const QSqlRecord &values)
     to insert values. The model will decide depending on its edit strategy
     when to modify the database.
 
-    Returns true if the values could be inserted, otherwise false.
+    Returns \c true if the values could be inserted, otherwise false.
     Error information can be retrieved with \l lastError().
 
     \sa lastError(), insertRow(), insertRows()
@@ -686,7 +686,7 @@ bool QSqlTableModel::insertRowIntoTable(const QSqlRecord &values)
     to delete values. The model will decide depending on its edit strategy
     when to modify the database.
 
-    Returns true if the row was deleted; otherwise returns false.
+    Returns \c true if the row was deleted; otherwise returns \c false.
 
     \sa removeRow(), removeRows()
 */
@@ -716,8 +716,8 @@ bool QSqlTableModel::deleteRowFromTable(int row)
 }
 
 /*!
-    Submits all pending changes and returns true on success.
-    Returns false on error, detailed error information can be
+    Submits all pending changes and returns \c true on success.
+    Returns \c false on error, detailed error information can be
     obtained with lastError().
 
     In OnManualSubmit, on success the model will be repopulated.
@@ -795,7 +795,7 @@ bool QSqlTableModel::submitAll()
     Use submitAll() to submit all pending changes for the
     OnManualSubmit strategy.
 
-    Returns true on success; otherwise returns false. Use lastError()
+    Returns \c true on success; otherwise returns \c false. Use lastError()
     to query detailed error information.
 
     Does not automatically repopulate the model. Submitted rows are
@@ -1034,7 +1034,7 @@ QString QSqlTableModel::selectStatement() const
     index \a column.
 
     Returns if the columns were successfully removed; otherwise
-    returns false.
+    returns \c false.
 
     \sa removeRows()
 */
@@ -1073,8 +1073,8 @@ bool QSqlTableModel::removeColumns(int column, int count, const QModelIndex &par
     signal is emitted.
 
     If row < 0 or row + count > rowCount(), no action is taken and
-    false is returned. Returns true if all rows could be removed;
-    otherwise returns false. Detailed database error information
+    false is returned. Returns \c true if all rows could be removed;
+    otherwise returns \c false. Detailed database error information
     can be retrieved using lastError().
 
     \sa removeColumns(), insertRows()
@@ -1131,8 +1131,8 @@ bool QSqlTableModel::removeRows(int row, int count, const QModelIndex &parent)
 
     Does not submit rows, regardless of edit strategy.
 
-    Returns false if the parameters are out of bounds or the row cannot be
-    inserted; otherwise returns true.
+    Returns \c false if the parameters are out of bounds or the row cannot be
+    inserted; otherwise returns \c true.
 
     \sa primeInsert(), insertRecord()
 */
@@ -1178,7 +1178,7 @@ bool QSqlTableModel::insertRows(int row, int count, const QModelIndex &parent)
     the record will be appended to the end. Calls insertRows() and
     setRecord() internally.
 
-    Returns true if the record could be inserted, otherwise false.
+    Returns \c true if the record could be inserted, otherwise false.
 
     Changes are submitted immediately for OnFieldChange and
     OnRowChange. Failure does not leave a new row in the model.
@@ -1360,7 +1360,7 @@ QSqlRecord QSqlTableModel::record(int row) const
     Changes are submitted immediately. Submitted changes are not
     reverted upon failure.
 
-    Returns true if all the values could be set; otherwise returns
+    Returns \c true if all the values could be set; otherwise returns
     false.
 
     \sa record(), editStrategy()

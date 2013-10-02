@@ -213,7 +213,7 @@ QGLPixelBuffer::~QGLPixelBuffer()
 /*! \fn bool QGLPixelBuffer::makeCurrent()
 
     Makes this pbuffer the current OpenGL rendering context. Returns
-    true on success; otherwise returns false.
+    true on success; otherwise returns \c false.
 
     \sa QGLContext::makeCurrent(), doneCurrent()
 */
@@ -242,8 +242,8 @@ bool QGLPixelBuffer::makeCurrent()
 
 /*! \fn bool QGLPixelBuffer::doneCurrent()
 
-    Makes no context the current OpenGL context. Returns true on
-    success; otherwise returns false.
+    Makes no context the current OpenGL context. Returns \c true on
+    success; otherwise returns \c false.
 */
 
 bool QGLPixelBuffer::doneCurrent()
@@ -278,7 +278,7 @@ QGLContext *QGLPixelBuffer::context() const
 /*! \fn bool QGLPixelBuffer::bindToDynamicTexture(GLuint texture_id)
 
     Binds the texture specified by \a texture_id to this pbuffer.
-    Returns true on success; otherwise returns false.
+    Returns \c true on success; otherwise returns \c false.
 
     The texture must be of the same size and format as the pbuffer.
 
@@ -312,8 +312,8 @@ QGLContext *QGLPixelBuffer::context() const
 
 /*! \fn bool QGLPixelBuffer::hasOpenGLPbuffers()
 
-    Returns true if the OpenGL \c pbuffer extension is present on
-    this system; otherwise returns false.
+    Returns \c true if the OpenGL \c pbuffer extension is present on
+    this system; otherwise returns \c false.
 */
 
 /*!
@@ -406,7 +406,7 @@ Qt::HANDLE QGLPixelBuffer::handle() const
 }
 
 /*!
-    Returns true if this pbuffer is valid; otherwise returns false.
+    Returns \c true if this pbuffer is valid; otherwise returns \c false.
 */
 bool QGLPixelBuffer::isValid() const
 {

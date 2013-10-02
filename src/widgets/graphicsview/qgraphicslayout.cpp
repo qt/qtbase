@@ -291,8 +291,8 @@ void QGraphicsLayout::activate()
 }
 
 /*!
-    Returns true if the layout is currently being activated; otherwise,
-    returns false. If the layout is being activated, this means that it is
+    Returns \c true if the layout is currently being activated; otherwise,
+    returns \c false. If the layout is being activated, this means that it is
     currently in the process of rearranging its items (i.e., the activate()
     function has been called, and has not yet returned).
 
@@ -515,7 +515,7 @@ void QGraphicsLayout::setInstantInvalidatePropagation(bool enable)
     \since 4.8
     \sa setInstantInvalidatePropagation()
 
-    returns true if the complete widget/layout hierarchy is rearranged in one go.
+    returns \c true if the complete widget/layout hierarchy is rearranged in one go.
 */
 bool QGraphicsLayout::instantInvalidatePropagation()
 {

@@ -160,7 +160,7 @@ QSslConfiguration &QSslConfiguration::operator=(const QSslConfiguration &other)
 */
 
 /*!
-    Returns true if this QSslConfiguration object is equal to \a
+    Returns \c true if this QSslConfiguration object is equal to \a
     other.
 
     Two QSslConfiguration objects are considered equal if they have
@@ -191,7 +191,7 @@ bool QSslConfiguration::operator==(const QSslConfiguration &other) const
 /*!
     \fn QSslConfiguration::operator!=(const QSslConfiguration &other) const
 
-    Returns true if this QSslConfiguration differs from \a other. Two
+    Returns \c true if this QSslConfiguration differs from \a other. Two
     QSslConfiguration objects are considered different if any state or
     setting is different.
 
@@ -199,7 +199,7 @@ bool QSslConfiguration::operator==(const QSslConfiguration &other) const
 */
 
 /*!
-    Returns true if this is a null QSslConfiguration object.
+    Returns \c true if this is a null QSslConfiguration object.
 
     A QSslConfiguration object is null if it has been
     default-constructed and no setter methods have been called.
@@ -589,7 +589,7 @@ void QSslConfiguration::setSslOption(QSsl::SslOption option, bool on)
 /*!
   \since 4.8
 
-  Returns true if the specified SSL compatibility \a option is enabled.
+  Returns \c true if the specified SSL compatibility \a option is enabled.
 
   \sa setSslOption()
 */

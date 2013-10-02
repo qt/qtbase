@@ -469,7 +469,7 @@ int QWindowsMime::registerMimeType(const QString &mime)
 /*!
 \fn bool QWindowsMime::canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
 
-  Returns true if the converter can convert from the \a mimeData to
+  Returns \c true if the converter can convert from the \a mimeData to
   the format specified in \a formatetc.
 
   All subclasses must reimplement this pure virtual function.
@@ -478,7 +478,7 @@ int QWindowsMime::registerMimeType(const QString &mime)
 /*!
   \fn bool QWindowsMime::canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const
 
-  Returns true if the converter can convert to the \a mimeType from
+  Returns \c true if the converter can convert to the \a mimeType from
   the available formats in \a pDataObj.
 
   All subclasses must reimplement this pure virtual function.

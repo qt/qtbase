@@ -267,7 +267,7 @@ namespace {
 }
 
 /*!
-    Creates the buffer object in the GL server.  Returns true if
+    Creates the buffer object in the GL server.  Returns \c true if
     the object was created; false otherwise.
 
     This function must be called with a current QGLContext.
@@ -307,7 +307,7 @@ bool QGLBuffer::create()
 #define ctx QGLContext::currentContext()
 
 /*!
-    Returns true if this buffer has been created; false otherwise.
+    Returns \c true if this buffer has been created; false otherwise.
 
     \sa create(), destroy()
 */
@@ -333,7 +333,7 @@ void QGLBuffer::destroy()
 
 /*!
     Reads the \a count bytes in this buffer starting at \a offset
-    into \a data.  Returns true on success; false if reading from
+    into \a data.  Returns \c true on success; false if reading from
     the buffer is not supported.  Buffer reading is not supported
     under OpenGL/ES.
 
@@ -414,7 +414,7 @@ void QGLBuffer::allocate(const void *data, int count)
 
 /*!
     Binds the buffer associated with this object to the current
-    GL context.  Returns false if binding was not possible, usually because
+    GL context.  Returns \c false if binding was not possible, usually because
     type() is not supported on this GL implementation.
 
     The buffer must be bound to the same QGLContext current when create()
@@ -551,7 +551,7 @@ void *QGLBuffer::map(QGLBuffer::Access access)
 
 /*!
     Unmaps the buffer after it was mapped into the application's
-    memory space with a previous call to map().  Returns true if
+    memory space with a previous call to map().  Returns \c true if
     the unmap succeeded; false otherwise.
 
     It is assumed that this buffer has been bound to the current context,

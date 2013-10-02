@@ -904,8 +904,8 @@ void QMainWindow::setAnimated(bool enabled)
     \brief whether docks can be nested
     \since 4.2
 
-    If this property is false, dock areas can only contain a single row
-    (horizontal or vertical) of dock widgets. If this property is true,
+    If this property is \c false, dock areas can only contain a single row
+    (horizontal or vertical) of dock widgets. If this property is \c true,
     the area occupied by a dock widget can be split in either direction to contain
     more dock widgets.
 
@@ -1092,8 +1092,8 @@ void QMainWindow::addDockWidget(Qt::DockWidgetArea area, QDockWidget *dockwidget
 
 /*!
     Restores the state of \a dockwidget if it is created after the call
-    to restoreState(). Returns true if the state was restored; otherwise
-    returns false.
+    to restoreState(). Returns \c true if the state was restored; otherwise
+    returns \c false.
 
     \sa restoreState(), saveState()
 */

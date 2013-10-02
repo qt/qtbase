@@ -1085,8 +1085,8 @@ void QTextStream::flush()
 }
 
 /*!
-    Seeks to the position \a pos in the device. Returns true on
-    success; otherwise returns false.
+    Seeks to the position \a pos in the device. Returns \c true on
+    success; otherwise returns \c false.
 */
 bool QTextStream::seek(qint64 pos)
 {
@@ -1185,7 +1185,7 @@ qint64 QTextStream::pos() const
     character.
 
     Whitespace characters are all characters for which
-    QChar::isSpace() returns true.
+    QChar::isSpace() returns \c true.
 
     \sa operator>>()
 */
@@ -1517,8 +1517,8 @@ void QTextStream::setStatus(Status status)
 }
 
 /*!
-    Returns true if there is no more data to be read from the
-    QTextStream; otherwise returns false. This is similar to, but not
+    Returns \c true if there is no more data to be read from the
+    QTextStream; otherwise returns \c false. This is similar to, but not
     the same as calling QIODevice::atEnd(), as QTextStream also takes
     into account its internal Unicode buffer.
 */
@@ -2091,7 +2091,7 @@ QTextStream &QTextStream::operator>>(double &f)
 /*!
     Reads a word from the stream and stores it in \a str, then returns
     a reference to the stream. Words are separated by whitespace
-    (i.e., all characters for which QChar::isSpace() returns true).
+    (i.e., all characters for which QChar::isSpace() returns \c true).
 
     Leading whitespace is skipped.
 */
@@ -2943,8 +2943,8 @@ void QTextStream::setAutoDetectUnicode(bool enabled)
 }
 
 /*!
-    Returns true if automatic Unicode detection is enabled, otherwise
-    returns false. Automatic Unicode detection is enabled by default.
+    Returns \c true if automatic Unicode detection is enabled, otherwise
+    returns \c false. Automatic Unicode detection is enabled by default.
 
     \sa setAutoDetectUnicode(), setCodec()
 */
@@ -2974,8 +2974,8 @@ void QTextStream::setGenerateByteOrderMark(bool generate)
 }
 
 /*!
-    Returns true if QTextStream is set to generate the UTF BOM (Byte Order
-    Mark) when using a UTF codec; otherwise returns false. UTF BOM generation is
+    Returns \c true if QTextStream is set to generate the UTF BOM (Byte Order
+    Mark) when using a UTF codec; otherwise returns \c false. UTF BOM generation is
     set to false by default.
 
     \sa setGenerateByteOrderMark()

@@ -476,7 +476,7 @@ void QDBusConnection::disconnectFromPeer(const QString &name)
     reply. This is suitable for errors, signals, and return values as
     well as calls whose return values are not necessary.
 
-    Returns true if the message was queued successfully, false otherwise.
+    Returns \c true if the message was queued successfully, false otherwise.
 */
 bool QDBusConnection::send(const QDBusMessage &message) const
 {
@@ -506,7 +506,7 @@ bool QDBusConnection::send(const QDBusMessage &message) const
     that the slot will be called exactly once with the reply, as long
     as the parameter types match and no error occurs.
 
-    Returns true if the message was sent, or false if the message could
+    Returns \c true if the message was sent, or false if the message could
     not be sent.
 */
 bool QDBusConnection::callWithCallback(const QDBusMessage &message, QObject *receiver,
@@ -537,7 +537,7 @@ bool QDBusConnection::callWithCallback(const QDBusMessage &message, QObject *rec
     This function is dangerous because it cannot report errors, including
     the expiration of the timeout.
 
-    Returns true if the message was sent, or false if the message could
+    Returns \c true if the message was sent, or false if the message could
     not be sent.
 */
 bool QDBusConnection::callWithCallback(const QDBusMessage &message, QObject *receiver,
@@ -622,7 +622,7 @@ QDBusPendingCall QDBusConnection::asyncCall(const QDBusMessage &message, int tim
     denoting a connection to any signal of the (\a interface, \a name) pair, from any remote
     application.
 
-    Returns true if the connection was successful.
+    Returns \c true if the connection was successful.
 
     \warning The signal will only be delivered to the slot if the parameters match. This verification
              can be done only when the signal is received, not at connection time.
@@ -643,7 +643,7 @@ bool QDBusConnection::connect(const QString &service, const QString &path, const
     that this signature can be delivered to the slot specified by \a
     slot and return false otherwise.
 
-    Returns true if the connection was successful.
+    Returns \c true if the connection was successful.
 
     \note This function verifies that the signal signature matches the
           slot's parameters, but it does not verify that the actual
@@ -673,7 +673,7 @@ bool QDBusConnection::connect(const QString &service, const QString &path, const
     pass a QString that is empty but not null (i.e., QString("")). A null
     QString skips matching at that position.
 
-    Returns true if the connection was successful.
+    Returns \c true if the connection was successful.
 
     \note This function verifies that the signal signature matches the
           slot's parameters, but it does not verify that the actual
@@ -717,7 +717,7 @@ bool QDBusConnection::connect(const QString &service, const QString &path, const
     and \a name parameters from the slot \a slot in object \a receiver. The
     arguments must be the same as passed to the connect() function.
 
-    Returns true if the disconnection was successful.
+    Returns \c true if the disconnection was successful.
 */
 bool QDBusConnection::disconnect(const QString &service, const QString &path, const QString &interface,
                                  const QString &name, QObject *receiver, const char *slot)
@@ -733,7 +733,7 @@ bool QDBusConnection::disconnect(const QString &service, const QString &path, co
     object \a receiver. The arguments must be the same as passed to the
     connect() function.
 
-    Returns true if the disconnection was successful.
+    Returns \c true if the disconnection was successful.
 */
 bool QDBusConnection::disconnect(const QString &service, const QString &path, const QString& interface,
                                  const QString &name, const QString &signature,
@@ -751,7 +751,7 @@ bool QDBusConnection::disconnect(const QString &service, const QString &path, co
     the slot \a slot in object \a receiver. The arguments must be the same as
     passed to the connect() function.
 
-    Returns true if the disconnection was successful.
+    Returns \c true if the disconnection was successful.
 */
 bool QDBusConnection::disconnect(const QString &service, const QString &path, const QString& interface,
                                  const QString &name, const QStringList &argumentMatch, const QString &signature,
@@ -769,7 +769,7 @@ bool QDBusConnection::disconnect(const QString &service, const QString &path, co
 }
 
 /*!
-    Registers the object \a object at path \a path and returns true if
+    Registers the object \a object at path \a path and returns \c true if
     the registration was successful. The \a options parameter
     specifies how much of the object \a object will be exposed through
     D-Bus.
@@ -949,7 +949,7 @@ void *QDBusConnection::internalPointer() const
 }
 
 /*!
-    Returns true if this QDBusConnection object is connected.
+    Returns \c true if this QDBusConnection object is connected.
 */
 bool QDBusConnection::isConnected() const
 {
@@ -1021,7 +1021,7 @@ QDBusConnection::ConnectionCapabilities QDBusConnection::connectionCapabilities(
 
 /*!
     Attempts to register the \a serviceName on the D-Bus server and
-    returns true if the registration succeeded. The registration will
+    returns \c true if the registration succeeded. The registration will
     fail if the name is already registered by another application.
 
     \sa unregisterService(), QDBusConnectionInterface::registerService()
@@ -1037,7 +1037,7 @@ bool QDBusConnection::registerService(const QString &serviceName)
 
 /*!
     Unregisters the service \a serviceName that was previously
-    registered with registerService() and returns true if it
+    registered with registerService() and returns \c true if it
     succeeded.
 
     \sa registerService(), QDBusConnectionInterface::unregisterService()

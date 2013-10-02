@@ -402,9 +402,9 @@ void QDataStream::unsetDevice()
 /*!
     \fn bool QDataStream::atEnd() const
 
-    Returns true if the I/O device has reached the end position (end of
+    Returns \c true if the I/O device has reached the end position (end of
     the stream or file) or if there is no I/O device set; otherwise
-    returns false.
+    returns \c false.
 
     \sa QIODevice::atEnd()
 */

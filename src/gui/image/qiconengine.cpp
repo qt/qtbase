@@ -205,7 +205,7 @@ QString QIconEngine::key() const
 
 /*!
     Reads icon engine contents from the QDataStream \a in. Returns
-    true if the contents were read; otherwise returns false.
+    true if the contents were read; otherwise returns \c false.
 
     QIconEngine's default implementation always return false.
  */
@@ -216,7 +216,7 @@ bool QIconEngine::read(QDataStream &)
 
 /*!
     Writes the contents of this engine to the QDataStream \a out.
-    Returns true if the contents were written; otherwise returns false.
+    Returns \c true if the contents were written; otherwise returns \c false.
 
     QIconEngine's default implementation always return false.
  */

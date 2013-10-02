@@ -706,8 +706,8 @@ void QAction::setSeparator(bool b)
 }
 
 /*!
-  Returns true if this action is a separator action; otherwise it
-  returns false.
+  Returns \c true if this action is a separator action; otherwise it
+  returns \c false.
 
   \sa QAction::setSeparator()
 */
@@ -931,7 +931,7 @@ QAction::Priority QAction::priority() const
     in a word processor, a Bold toolbar button may be either on or
     off. An action which is not a toggle action is a command action;
     a command action is simply executed, e.g. file save.
-    By default, this property is false.
+    By default, this property is \c false.
 
     In some situations, the state of one toggle action should depend
     on the state of others. For example, "Left Align", "Center" and
@@ -1024,7 +1024,7 @@ bool QAction::isChecked() const
     action is disabled, it is not possible to trigger it through its
     shortcut.
 
-    By default, this property is true (actions are enabled).
+    By default, this property is \c true (actions are enabled).
 
     \sa text
 */
@@ -1061,7 +1061,7 @@ bool QAction::isEnabled() const
     Actions which are not visible are \e not grayed out; they do not
     appear at all.
 
-    By default, this property is true (actions are visible).
+    By default, this property is \c true (actions are visible).
 */
 void QAction::setVisible(bool b)
 {
@@ -1137,8 +1137,8 @@ QAction::setData(const QVariant &data)
 
 /*!
   Updates the relevant status bar for the \a widget specified by sending a
-  QStatusTipEvent to its parent widget. Returns true if an event was sent;
-  otherwise returns false.
+  QStatusTipEvent to its parent widget. Returns \c true if an event was sent;
+  otherwise returns \c false.
 
   If a null widget is specified, the event is sent to the action's parent.
 

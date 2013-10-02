@@ -229,8 +229,8 @@ QColor QGLColormap::entryColor(int idx) const
 }
 
 /*!
-    Returns true if the colormap is empty or it is not in use
-    by a QGLWidget; otherwise returns false.
+    Returns \c true if the colormap is empty or it is not in use
+    by a QGLWidget; otherwise returns \c false.
 
     A colormap with no color values set is considered to be empty.
     For historical reasons, a colormap that has color values set

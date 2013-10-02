@@ -135,7 +135,7 @@ void QPlatformBackingStore::endPaint()
     Scrolls the given \a area \a dx pixels to the right and \a dy
     downward; both \a dx and \a dy may be negative.
 
-    Returns true if the area was scrolled successfully; false otherwise.
+    Returns \c true if the area was scrolled successfully; false otherwise.
 */
 bool QPlatformBackingStore::scroll(const QRegion &area, int dx, int dy)
 {

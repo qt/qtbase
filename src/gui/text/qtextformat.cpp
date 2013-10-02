@@ -116,14 +116,14 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QTextLength::operator==(const QTextLength &other) const
 
-    Returns true if this text length is the same as the \a other text
+    Returns \c true if this text length is the same as the \a other text
     length.
 */
 
 /*!
     \fn bool QTextLength::operator!=(const QTextLength &other) const
 
-    Returns true if this text length is different from the \a other text
+    Returns \c true if this text length is different from the \a other text
     length.
 */
 
@@ -701,55 +701,55 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
 /*!
     \fn bool QTextFormat::isValid() const
 
-    Returns true if the format is valid (i.e. is not
-    InvalidFormat); otherwise returns false.
+    Returns \c true if the format is valid (i.e. is not
+    InvalidFormat); otherwise returns \c false.
 */
 
 /*!
     \fn bool QTextFormat::isCharFormat() const
 
-    Returns true if this text format is a \c CharFormat; otherwise
-    returns false.
+    Returns \c true if this text format is a \c CharFormat; otherwise
+    returns \c false.
 */
 
 
 /*!
     \fn bool QTextFormat::isBlockFormat() const
 
-    Returns true if this text format is a \c BlockFormat; otherwise
-    returns false.
+    Returns \c true if this text format is a \c BlockFormat; otherwise
+    returns \c false.
 */
 
 
 /*!
     \fn bool QTextFormat::isListFormat() const
 
-    Returns true if this text format is a \c ListFormat; otherwise
-    returns false.
+    Returns \c true if this text format is a \c ListFormat; otherwise
+    returns \c false.
 */
 
 
 /*!
     \fn bool QTextFormat::isTableFormat() const
 
-    Returns true if this text format is a \c TableFormat; otherwise
-    returns false.
+    Returns \c true if this text format is a \c TableFormat; otherwise
+    returns \c false.
 */
 
 
 /*!
     \fn bool QTextFormat::isFrameFormat() const
 
-    Returns true if this text format is a \c FrameFormat; otherwise
-    returns false.
+    Returns \c true if this text format is a \c FrameFormat; otherwise
+    returns \c false.
 */
 
 
 /*!
     \fn bool QTextFormat::isImageFormat() const
 
-    Returns true if this text format is an image format; otherwise
-    returns false.
+    Returns \c true if this text format is an image format; otherwise
+    returns \c false.
 */
 
 
@@ -757,8 +757,8 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     \fn bool QTextFormat::isTableCellFormat() const
     \since 4.4
 
-    Returns true if this text format is a \c TableCellFormat; otherwise
-    returns false.
+    Returns \c true if this text format is a \c TableCellFormat; otherwise
+    returns \c false.
 */
 
 
@@ -1200,8 +1200,8 @@ void QTextFormat::setObjectIndex(int o)
 }
 
 /*!
-    Returns true if the text format has a property with the given \a
-    propertyId; otherwise returns false.
+    Returns \c true if the text format has a property with the given \a
+    propertyId; otherwise returns \c false.
 
     \sa properties(), Property
 */
@@ -1241,7 +1241,7 @@ int QTextFormat::propertyCount() const
 /*!
     \fn bool QTextFormat::operator!=(const QTextFormat &other) const
 
-    Returns true if this text format is different from the \a other text
+    Returns \c true if this text format is different from the \a other text
     format.
 */
 
@@ -1249,7 +1249,7 @@ int QTextFormat::propertyCount() const
 /*!
     \fn bool QTextFormat::operator==(const QTextFormat &other) const
 
-    Returns true if this text format is the same as the \a other text
+    Returns \c true if this text format is the same as the \a other text
     format.
 */
 bool QTextFormat::operator==(const QTextFormat &rhs) const
@@ -1365,7 +1365,7 @@ QTextCharFormat::QTextCharFormat(const QTextFormat &fmt)
 /*!
     \fn bool QTextCharFormat::isValid() const
 
-    Returns true if this character format is valid; otherwise returns
+    Returns \c true if this character format is valid; otherwise returns
     false.
 */
 
@@ -1437,8 +1437,8 @@ QTextCharFormat::QTextCharFormat(const QTextFormat &fmt)
 /*!
     \fn bool QTextCharFormat::fontItalic() const
 
-    Returns true if the text format's font is italic; otherwise
-    returns false.
+    Returns \c true if the text format's font is italic; otherwise
+    returns \c false.
 
     \sa font()
 */
@@ -1457,8 +1457,8 @@ QTextCharFormat::QTextCharFormat(const QTextFormat &fmt)
 /*!
     \fn bool QTextCharFormat::fontUnderline() const
 
-    Returns true if the text format's font is underlined; otherwise
-    returns false.
+    Returns \c true if the text format's font is underlined; otherwise
+    returns \c false.
 
     \sa font()
 */
@@ -1502,8 +1502,8 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
 /*!
     \fn bool QTextCharFormat::fontOverline() const
 
-    Returns true if the text format's font is overlined; otherwise
-    returns false.
+    Returns \c true if the text format's font is overlined; otherwise
+    returns \c false.
 
     \sa font()
 */
@@ -1523,8 +1523,8 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
 /*!
     \fn bool QTextCharFormat::fontStrikeOut() const
 
-    Returns true if the text format's font is struck out (has a horizontal line
-    drawn through it); otherwise returns false.
+    Returns \c true if the text format's font is struck out (has a horizontal line
+    drawn through it); otherwise returns \c false.
 
     \sa font()
 */
@@ -1591,7 +1591,7 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
 /*!
     \since 4.5
     \fn  bool QTextCharFormat::fontKerning() const
-    Returns true if the font kerning is enabled.
+    Returns \c true if the font kerning is enabled.
 
     \sa setFontKerning()
     \sa font()
@@ -1611,8 +1611,8 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
 /*!
     \fn bool QTextCharFormat::fontFixedPitch() const
 
-    Returns true if the text format's font is fixed pitch; otherwise
-    returns false.
+    Returns \c true if the text format's font is fixed pitch; otherwise
+    returns \c false.
 
     \sa font()
 */
@@ -1712,8 +1712,8 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
 /*!
     \fn bool QTextCharFormat::isAnchor() const
 
-    Returns true if the text is formatted as an anchor; otherwise
-    returns false.
+    Returns \c true if the text is formatted as an anchor; otherwise
+    returns \c false.
 
     \sa setAnchor(), setAnchorHref(), setAnchorNames()
 */
@@ -2031,7 +2031,7 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
 /*!
     \fn QTextBlockFormat::isValid() const
 
-    Returns true if this block format is valid; otherwise returns
+    Returns \c true if this block format is valid; otherwise returns
     false.
 */
 
@@ -2249,8 +2249,8 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
 /*!
     \fn bool QTextBlockFormat::nonBreakableLines() const
 
-    Returns true if the lines in the paragraph are non-breakable;
-    otherwise returns false.
+    Returns \c true if the lines in the paragraph are non-breakable;
+    otherwise returns \c false.
 
     \sa setNonBreakableLines()
 */
@@ -2350,8 +2350,8 @@ QTextListFormat::QTextListFormat(const QTextFormat &fmt)
 /*!
     \fn bool QTextListFormat::isValid() const
 
-    Returns true if this list format is valid; otherwise
-    returns false.
+    Returns \c true if this list format is valid; otherwise
+    returns \c false.
 */
 
 /*!
@@ -2530,7 +2530,7 @@ QTextFrameFormat::QTextFrameFormat(const QTextFormat &fmt)
 /*!
     \fn QTextFrameFormat::isValid() const
 
-    Returns true if the format description is valid; otherwise returns false.
+    Returns \c true if the format description is valid; otherwise returns \c false.
 */
 
 /*!
@@ -2837,8 +2837,8 @@ QTextTableFormat::QTextTableFormat(const QTextFormat &fmt)
 /*!
     \fn bool QTextTableFormat::isValid() const
 
-    Returns true if this table format is valid; otherwise
-    returns false.
+    Returns \c true if this table format is valid; otherwise
+    returns \c false.
 */
 
 
@@ -3018,7 +3018,7 @@ QTextImageFormat::QTextImageFormat(const QTextFormat &fmt)
 /*!
     \fn bool QTextImageFormat::isValid() const
 
-    Returns true if this image format is valid; otherwise returns false.
+    Returns \c true if this image format is valid; otherwise returns \c false.
 */
 
 
@@ -3264,7 +3264,7 @@ QTextImageFormat::QTextImageFormat(const QTextFormat &fmt)
     \fn bool QTextTableCellFormat::isValid() const
     \since 4.4
 
-    Returns true if this table cell format is valid; otherwise returns false.
+    Returns \c true if this table cell format is valid; otherwise returns \c false.
 */
 
 /*!

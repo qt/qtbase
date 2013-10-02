@@ -549,7 +549,7 @@ void QAbstractSlider::setValue(int value)
     \property QAbstractSlider::invertedAppearance
     \brief whether or not a slider shows its values inverted.
 
-    If this property is false (the default), the minimum and maximum will
+    If this property is \c false (the default), the minimum and maximum will
     be shown in its classic position for the inherited widget. If the
     value is true, the minimum and maximum appear at their opposite location.
 
@@ -577,7 +577,7 @@ void QAbstractSlider::setInvertedAppearance(bool invert)
     \property QAbstractSlider::invertedControls
     \brief whether or not the slider inverts its wheel and key events.
 
-    If this property is false, scrolling the mouse wheel "up" and using keys
+    If this property is \c false, scrolling the mouse wheel "up" and using keys
     like page up will increase the slider's value towards its maximum. Otherwise
     pressing page up will move value towards the slider's minimum.
 */

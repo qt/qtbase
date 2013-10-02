@@ -82,9 +82,9 @@ QT_BEGIN_NAMESPACE
     transformed into a \e polygon (mapped to the coordinate system
     defined by \e this matrix), using the mapToPolygon() function.
 
-    QMatrix provides the isIdentity() function which returns true if
+    QMatrix provides the isIdentity() function which returns \c true if
     the matrix is the identity matrix, and the isInvertible() function
-    which returns true if the matrix is non-singular (i.e. AB = BA =
+    which returns \c true if the matrix is non-singular (i.e. AB = BA =
     I). The inverted() function returns an inverted copy of \e this
     matrix if it is invertible (otherwise it returns the identity
     matrix). In addition, QMatrix provides the determinant() function
@@ -817,8 +817,8 @@ void QMatrix::reset()
 /*!
     \fn bool QMatrix::isIdentity() const
 
-    Returns true if the matrix is the identity matrix, otherwise
-    returns false.
+    Returns \c true if the matrix is the identity matrix, otherwise
+    returns \c false.
 
     \sa reset()
 */
@@ -919,7 +919,7 @@ QMatrix &QMatrix::rotate(qreal a)
 /*!
     \fn bool QMatrix::isInvertible() const
 
-    Returns true if the matrix is invertible, otherwise returns false.
+    Returns \c true if the matrix is invertible, otherwise returns \c false.
 
     \sa inverted()
 */
@@ -966,8 +966,8 @@ QMatrix QMatrix::inverted(bool *invertible) const
 /*!
     \fn bool QMatrix::operator==(const QMatrix &matrix) const
 
-    Returns true if this matrix is equal to the given \a matrix,
-    otherwise returns false.
+    Returns \c true if this matrix is equal to the given \a matrix,
+    otherwise returns \c false.
 */
 
 bool QMatrix::operator==(const QMatrix &m) const
@@ -983,8 +983,8 @@ bool QMatrix::operator==(const QMatrix &m) const
 /*!
     \fn bool QMatrix::operator!=(const QMatrix &matrix) const
 
-    Returns true if this matrix is not equal to the given \a matrix,
-    otherwise returns false.
+    Returns \c true if this matrix is not equal to the given \a matrix,
+    otherwise returns \c false.
 */
 
 bool QMatrix::operator!=(const QMatrix &m) const
@@ -1159,7 +1159,7 @@ QDebug operator<<(QDebug dbg, const QMatrix &m)
     \brief The qFuzzyCompare function is for comparing two matrices
     using a fuzziness factor.
 
-    Returns true if \a m1 and \a m2 are equal, allowing for a small
+    Returns \c true if \a m1 and \a m2 are equal, allowing for a small
     fuzziness factor for floating-point comparisons; false otherwise.
 */
 

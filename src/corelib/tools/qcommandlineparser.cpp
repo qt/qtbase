@@ -242,7 +242,7 @@ void QCommandLineParser::setSingleDashWordOptionMode(QCommandLineParser::SingleD
 /*!
     Adds the option \a option to look for while parsing.
 
-    Returns true if adding the option was successful; otherwise returns false.
+    Returns \c true if adding the option was successful; otherwise returns \c false.
 
     Adding the option fails if there is no name attached to the option, or
     the option has a name that clashes with an option name added before.
@@ -370,7 +370,7 @@ void QCommandLineParser::clearPositionalArguments()
     Most programs don't need to call this, a simple call to process() is enough.
 
     parse() is more low-level, and only does the parsing. The application will have to
-    take care of the error handling, using errorText() if parse() returns false.
+    take care of the error handling, using errorText() if parse() returns \c false.
     This can be useful for instance to show a graphical error message in graphical programs.
 
     Calling parse() instead of process() can also be useful in order to ignore unknown
@@ -379,7 +379,7 @@ void QCommandLineParser::clearPositionalArguments()
 
     Don't forget that \a arguments must start with the name of the executable (ignored, though).
 
-    Returns false in case of a parse error (unknown option or missing value); returns true otherwise.
+    Returns \c false in case of a parse error (unknown option or missing value); returns \c true otherwise.
 
     \sa process()
 */
@@ -390,7 +390,7 @@ bool QCommandLineParser::parse(const QStringList &arguments)
 
 /*!
     Returns a translated error text for the user.
-    This should only be called when parse() returns false.
+    This should only be called when parse() returns \c false.
 */
 QString QCommandLineParser::errorText() const
 {
@@ -453,7 +453,7 @@ void QCommandLineParserPrivate::checkParsed(const char *method)
 /*!
     \internal
     Looks up the option \a optionName (found on the command line) and register it as found.
-    Returns true on success.
+    Returns \c true on success.
  */
 bool QCommandLineParserPrivate::registerFoundOption(const QString &optionName)
 {
@@ -476,7 +476,7 @@ bool QCommandLineParserPrivate::registerFoundOption(const QString &optionName)
     \param argument the argument from the command line currently parsed. Only used for -k=value parsing.
     \param argumentIterator iterator to the currently parsed argument. Incremented if the next argument contains the value.
     \param argsEnd args.end(), to check if ++argumentIterator goes out of bounds
-    Returns true on success.
+    Returns \c true on success.
  */
 bool QCommandLineParserPrivate::parseOptionValue(const QString &optionName, const QString &argument,
                                                  QStringList::const_iterator *argumentIterator, QStringList::const_iterator argsEnd)
@@ -620,7 +620,7 @@ bool QCommandLineParserPrivate::parse(const QStringList &args)
 /*!
     Checks whether the option \a name was passed to the application.
 
-    Returns true if the option \a name was set, false otherwise.
+    Returns \c true if the option \a name was set, false otherwise.
 
     The name provided can be any long or short name of any option that was
     added with \c addOption(). All the options names are treated as being
@@ -711,7 +711,7 @@ QStringList QCommandLineParser::values(const QString &optionName) const
     \overload
     Checks whether the \a option was passed to the application.
 
-    Returns true if the \a option was set, false otherwise.
+    Returns \c true if the \a option was set, false otherwise.
 
     This is the recommended way to check for options with no values.
 

@@ -156,7 +156,7 @@ enum QX11EmbedMessageType {
 
 const long XEMBED_VERSION = 0;
 
-// Returns true if we should set WM_TRANSIENT_FOR on \a w
+// Returns \c true if we should set WM_TRANSIENT_FOR on \a w
 static inline bool isTransient(const QWindow *w)
 {
     return w->type() == Qt::Dialog

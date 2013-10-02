@@ -1043,7 +1043,7 @@ void QGraphicsWidget::setPalette(const QPalette &palette)
     In addition, Windows are always filled with QPalette::Window, unless the
     WA_OpaquePaintEvent or WA_NoSystemBackground attributes are set.
 
-    By default, this property is false.
+    By default, this property is \c false.
 
     \sa Qt::WA_OpaquePaintEvent, Qt::WA_NoSystemBackground,
 */
@@ -1239,8 +1239,8 @@ bool QGraphicsWidget::sceneEvent(QEvent *event)
     You can reimplement this handler in a subclass of QGraphicsWidget to
     provide your own custom window frame interaction support.
 
-    Returns true if \a event has been recognized and processed; otherwise,
-    returns false.
+    Returns \c true if \a event has been recognized and processed; otherwise,
+    returns \c false.
 
     \sa event()
 */
@@ -1524,7 +1524,7 @@ void QGraphicsWidget::focusInEvent(QFocusEvent *event)
 
 /*!
     Finds a new widget to give the keyboard focus to, as appropriate for Tab
-    and Shift+Tab, and returns true if it can find a new widget; returns false
+    and Shift+Tab, and returns \c true if it can find a new widget; returns \c false
     otherwise. If \a next is true, this function searches forward; if \a next
     is false, it searches backward.
 
@@ -1782,7 +1782,7 @@ void QGraphicsWidget::setWindowFlags(Qt::WindowFlags wFlags)
 }
 
 /*!
-    Returns true if this widget's window is in the active window, or if the
+    Returns \c true if this widget's window is in the active window, or if the
     widget does not have a window but is in an active scene (i.e., a scene
     that currently has focus).
 
@@ -2193,8 +2193,8 @@ void QGraphicsWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
 }
 
 /*!
-    Returns true if \a attribute is enabled for this widget; otherwise,
-    returns false.
+    Returns \c true if \a attribute is enabled for this widget; otherwise,
+    returns \c false.
 
     \sa setAttribute()
 */
@@ -2364,7 +2364,7 @@ QPainterPath QGraphicsWidget::shape() const
 /*!
     Call this function to close the widget.
 
-    Returns true if the widget was closed; otherwise returns false.
+    Returns \c true if the widget was closed; otherwise returns \c false.
     This slot will first send a QCloseEvent to the widget, which may or may
     not accept the event. If the event was ignored, nothing happens. If the
     event was accepted, it will hide() the widget.

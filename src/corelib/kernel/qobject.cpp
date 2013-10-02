@@ -1005,9 +1005,9 @@ QObjectPrivate::Connection::~Connection()
 /*!
     \fn bool QObject::inherits(const char *className) const
 
-    Returns true if this object is an instance of a class that
+    Returns \c true if this object is an instance of a class that
     inherits \a className or a QObject subclass that inherits \a
-    className; otherwise returns false.
+    className; otherwise returns \c false.
 
     A class is considered to inherit itself.
 
@@ -1068,7 +1068,7 @@ void QObject::setObjectName(const QString &name)
 /*!
     \fn bool QObject::isWidgetType() const
 
-    Returns true if the object is a widget; otherwise returns false.
+    Returns \c true if the object is a widget; otherwise returns \c false.
 
     Calling this function is equivalent to calling
     \c{inherits("QWidget")}, except that it is much faster.
@@ -1077,7 +1077,7 @@ void QObject::setObjectName(const QString &name)
 /*!
     \fn bool QObject::isWindowType() const
 
-    Returns true if the object is a window; otherwise returns false.
+    Returns \c true if the object is a window; otherwise returns \c false.
 
     Calling this function is equivalent to calling
     \c{inherits("QWindow")}, except that it is much faster.
@@ -1172,7 +1172,7 @@ void QObject::timerEvent(QTimerEvent *)
     QEvent::ChildAdded and QEvent::ChildRemoved events are sent to
     objects when children are added or removed. In both cases you can
     only rely on the child being a QObject, or if isWidgetType()
-    returns true, a QWidget. (This is because, in the
+    returns \c true, a QWidget. (This is because, in the
     \l{QEvent::ChildAdded}{ChildAdded} case, the child is not yet
     fully constructed, and in the \l{QEvent::ChildRemoved}{ChildRemoved}
     case it might have been destructed already).
@@ -1249,7 +1249,7 @@ bool QObject::eventFilter(QObject * /* watched */, QEvent * /* event */)
 /*!
     \fn bool QObject::signalsBlocked() const
 
-    Returns true if signals are blocked; otherwise returns false.
+    Returns \c true if signals are blocked; otherwise returns \c false.
 
     Signals are not blocked by default.
 
@@ -2279,8 +2279,8 @@ int QObject::receivers(const char *signal) const
 
 /*!
     \since 5.0
-    Returns true if the \a signal is connected to at least one receiver,
-    otherwise returns false.
+    Returns \c true if the \a signal is connected to at least one receiver,
+    otherwise returns \c false.
 
     \a signal must be a signal member of this object, otherwise the behaviour
     is undefined.
@@ -2682,8 +2682,8 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
     \threadsafe
 
     Disconnects \a signal in object \a sender from \a method in object
-    \a receiver. Returns true if the connection is successfully broken;
-    otherwise returns false.
+    \a receiver. Returns \c true if the connection is successfully broken;
+    otherwise returns \c false.
 
     A signal-slot connection is removed when either of the objects
     involved are destroyed.
@@ -2848,8 +2848,8 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
     \since 4.8
 
     Disconnects \a signal in object \a sender from \a method in object
-    \a receiver. Returns true if the connection is successfully broken;
-    otherwise returns false.
+    \a receiver. Returns \c true if the connection is successfully broken;
+    otherwise returns \c false.
 
     This function provides the same possibilities like
     disconnect(const QObject *sender, const char *signal, const QObject *receiver, const char *method)
@@ -2998,7 +2998,7 @@ void QObject::connectNotify(const QMetaMethod &signal)
     If all signals were disconnected from this object (e.g., the
     signal argument to disconnect() was 0), disconnectNotify()
     is only called once, and the \a signal will be an invalid
-    QMetaMethod (QMetaMethod::isValid() returns false).
+    QMetaMethod (QMetaMethod::isValid() returns \c false).
 
     \warning This function violates the object-oriented principle of
     modularity. However, it might be useful for optimizing access to
@@ -4506,8 +4506,8 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
     \threadsafe
 
     Disconnects \a signal in object \a sender from \a method in object
-    \a receiver. Returns true if the connection is successfully broken;
-    otherwise returns false.
+    \a receiver. Returns \c true if the connection is successfully broken;
+    otherwise returns \c false.
 
     A signal-slot connection is removed when either of the objects
     involved are destroyed.
@@ -4657,7 +4657,7 @@ QMetaObject::Connection::~Connection()
 /*!
     \fn QMetaObject::Connection::operator bool() const
 
-    Returns true if the connection is valid.
+    Returns \c true if the connection is valid.
 
     The connection is valid if the call to QObject::connect succeeded.
     The connection is invalid if QObject::connect was not able to find

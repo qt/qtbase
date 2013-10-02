@@ -727,7 +727,7 @@ QAccessibleInterface *QAccessible::accessibleInterface(Id id)
 
 
 /*!
-    Returns true if the platform requested accessibility information.
+    Returns \c true if the platform requested accessibility information.
 
     This function will return false until a tool such as a screen reader
     accessed the accessibility framework. It is still possible to use
@@ -992,9 +992,9 @@ QPair< int, int > QAccessible::qAccessibleTextBoundaryHelper(const QTextCursor &
 /*!
     \fn bool QAccessibleInterface::isValid() const
 
-    Returns true if all the data necessary to use this interface
+    Returns \c true if all the data necessary to use this interface
     implementation is valid (e.g. all pointers are non-null);
-    otherwise returns false.
+    otherwise returns \c false.
 
     \sa object()
 */
@@ -2297,25 +2297,25 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible::TextBoun
 /*!
     \fn virtual bool QAccessibleTableInterface::selectRow(int row)
     Selects \a row. This function might unselect all previously selected rows.
-    Returns true if the selection was successful.
+    Returns \c true if the selection was successful.
 */
 
 /*!
     \fn virtual bool QAccessibleTableInterface::selectColumn(int column)
     Selects \a column. This function might unselect all previously selected columns.
-    Returns true if the selection was successful.
+    Returns \c true if the selection was successful.
 */
 
 /*!
     \fn virtual bool QAccessibleTableInterface::unselectRow(int row)
     Unselects \a row, leaving other selected rows selected (if any).
-    Returns true if the selection was successful.
+    Returns \c true if the selection was successful.
 */
 
 /*!
     \fn virtual bool QAccessibleTableInterface::unselectColumn(int column)
     Unselects \a column, leaving other selected columns selected (if any).
-    Returns true if the selection was successful.
+    Returns \c true if the selection was successful.
 */
 
 /*!

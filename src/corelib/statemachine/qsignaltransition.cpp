@@ -212,9 +212,9 @@ void QSignalTransition::setSignal(const QByteArray &signal)
 /*!
   \reimp
 
-  The default implementation returns true if the \a event is a
+  The default implementation returns \c true if the \a event is a
   QStateMachine::SignalEvent object and the event's sender and signal index
-  match this transition, and returns false otherwise.
+  match this transition, and returns \c false otherwise.
 */
 bool QSignalTransition::eventTest(QEvent *event)
 {

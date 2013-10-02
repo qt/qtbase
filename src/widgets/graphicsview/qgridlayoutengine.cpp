@@ -570,7 +570,7 @@ QSizePolicy::Policy QGridLayoutItem::sizePolicy(Qt::Orientation orientation) con
 }
 
 /*
-  returns true if the size policy returns true for either hasHeightForWidth()
+  returns \c true if the size policy returns \c true for either hasHeightForWidth()
   or hasWidthForHeight()
  */
 bool QGridLayoutItem::hasDynamicConstraint() const
@@ -1657,7 +1657,7 @@ void QGridLayoutEngine::ensureColumnAndRowData(QGridLayoutRowData *rowData, QGri
 }
 
 /**
-   returns false if the layout has contradicting constraints (i.e. some items with a horizontal
+   returns \c false if the layout has contradicting constraints (i.e. some items with a horizontal
    constraint and other items with a vertical constraint)
  */
 bool QGridLayoutEngine::ensureDynamicConstraint() const
@@ -1691,7 +1691,7 @@ bool QGridLayoutEngine::hasDynamicConstraint() const
 }
 
 /*
- * return value is only valid if hasConstraint() returns true
+ * return value is only valid if hasConstraint() returns \c true
  */
 Qt::Orientation QGridLayoutEngine::constraintOrientation() const
 {

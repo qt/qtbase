@@ -383,7 +383,7 @@ void CodeParser::setLink(Node* node, Node::LinkType linkType, const QString& arg
 }
 
 /*!
-  Returns true if the file being parsed is a .h file.
+  Returns \c true if the file being parsed is a .h file.
  */
 bool CodeParser::isParsingH() const
 {
@@ -391,7 +391,7 @@ bool CodeParser::isParsingH() const
 }
 
 /*!
-  Returns true if the file being parsed is a .cpp file.
+  Returns \c true if the file being parsed is a .cpp file.
  */
 bool CodeParser::isParsingCpp() const
 {
@@ -399,7 +399,7 @@ bool CodeParser::isParsingCpp() const
 }
 
 /*!
-  Returns true if the file being parsed is a .qdoc file.
+  Returns \c true if the file being parsed is a .qdoc file.
  */
 bool CodeParser::isParsingQdoc() const
 {

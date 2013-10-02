@@ -389,7 +389,7 @@ int QSharedMemory::size() const
   identified by the key that was passed to the constructor or to a
   call to setKey() or setNativeKey(). The access \a mode is \l {QSharedMemory::}
   {ReadWrite} by default. It can also be \l {QSharedMemory::}
-  {ReadOnly}. Returns true if the attach operation is successful. If
+  {ReadOnly}. Returns \c true if the attach operation is successful. If
   false is returned, call error() to determine which error occurred.
   After attaching the shared memory segment, a pointer to the shared
   memory can be obtained by calling data().
@@ -415,7 +415,7 @@ bool QSharedMemory::attach(AccessMode mode)
 }
 
 /*!
-  Returns true if this process is attached to the shared memory
+  Returns \c true if this process is attached to the shared memory
   segment.
 
   \sa attach(), detach()
@@ -430,8 +430,8 @@ bool QSharedMemory::isAttached() const
   Detaches the process from the shared memory segment. If this was the
   last process attached to the shared memory segment, then the shared
   memory segment is released by the system, i.e., the contents are
-  destroyed. The function returns true if it detaches the shared
-  memory segment. If it returns false, it usually means the segment
+  destroyed. The function returns \c true if it detaches the shared
+  memory segment. If it returns \c false, it usually means the segment
   either isn't attached, or it is locked by another process.
 
   \sa attach(), isAttached()
@@ -493,9 +493,9 @@ const void *QSharedMemory::data() const
 #ifndef QT_NO_SYSTEMSEMAPHORE
 /*!
   This is a semaphore that locks the shared memory segment for access
-  by this process and returns true. If another process has locked the
+  by this process and returns \c true. If another process has locked the
   segment, this function blocks until the lock is released. Then it
-  acquires the lock and returns true. If this function returns false,
+  acquires the lock and returns \c true. If this function returns \c false,
   it means that you have ignored a false return from create() or attach(),
   that you have set the key with setNativeKey() or that
   QSystemSemaphore::acquire() failed due to an unknown system error.
@@ -520,7 +520,7 @@ bool QSharedMemory::lock()
 }
 
 /*!
-  Releases the lock on the shared memory segment and returns true, if
+  Releases the lock on the shared memory segment and returns \c true, if
   the lock is currently held by this process. If the segment is not
   locked, or if the lock is held by another process, nothing happens
   and false is returned.

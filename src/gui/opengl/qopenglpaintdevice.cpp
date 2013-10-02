@@ -348,7 +348,7 @@ void QOpenGLPaintDevice::setPaintFlipped(bool flipped)
 }
 
 /*!
-    Returns true if painting is flipped around the Y-axis.
+    Returns \c true if painting is flipped around the Y-axis.
 
     \sa setPaintFlipped()
 */

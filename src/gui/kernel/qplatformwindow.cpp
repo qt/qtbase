@@ -167,7 +167,7 @@ bool QPlatformWindow::isExposed() const
 }
 
 /*!
-    Returns true if the window should appear active from a style perspective.
+    Returns \c true if the window should appear active from a style perspective.
 
     This function can make platform-specific isActive checks, such as checking
     if the QWindow is embedded in an active native window.
@@ -178,7 +178,7 @@ bool QPlatformWindow::isActive() const
 }
 
 /*!
-    Returns true if the window is a descendant of an embedded non-Qt window.
+    Returns \c true if the window is a descendant of an embedded non-Qt window.
     Example of an embedded non-Qt window is the parent window of an in-process QAxServer.
 
     If \a parentWindow is nonzero, only check if the window is embedded in the

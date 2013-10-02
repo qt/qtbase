@@ -135,12 +135,12 @@ QPlatformSystemTrayIcon::~QPlatformSystemTrayIcon()
 
 /*!
     \fn bool QPlatformSystemTrayIcon::isSystemTrayAvailable() const
-    Returns true if the system tray is available on the platform.
+    Returns \c true if the system tray is available on the platform.
 */
 
 /*!
     \fn bool QPlatformSystemTrayIcon::supportsMessages() const
-    Returns true if the system tray supports messages on the platform.
+    Returns \c true if the system tray supports messages on the platform.
 */
 
 /*!

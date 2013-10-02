@@ -418,7 +418,7 @@ QPixmap::operator QVariant() const
 /*!
     \fn bool QPixmap::operator!() const
 
-    Returns true if this is a null pixmap; otherwise returns false.
+    Returns \c true if this is a null pixmap; otherwise returns \c false.
 
     \sa isNull()
 */
@@ -484,7 +484,7 @@ QMatrix QPixmap::trueMatrix(const QMatrix &m, int w, int h)
 /*!
     \fn bool QPixmap::isQBitmap() const
 
-    Returns true if this is a QBitmap; otherwise returns false.
+    Returns \c true if this is a QBitmap; otherwise returns \c false.
 */
 
 bool QPixmap::isQBitmap() const
@@ -495,7 +495,7 @@ bool QPixmap::isQBitmap() const
 /*!
     \fn bool QPixmap::isNull() const
 
-    Returns true if this is a null pixmap; otherwise returns false.
+    Returns \c true if this is a null pixmap; otherwise returns \c false.
 
     A null pixmap has zero width, zero height and no contents. You
     cannot draw in a null pixmap.
@@ -740,7 +740,7 @@ QBitmap QPixmap::createMaskFromColor(const QColor &maskColor, Qt::MaskMode mode)
 /*!
     Loads a pixmap from the file with the given \a fileName. Returns
     true if the pixmap was successfully loaded; otherwise invalidates
-    the pixmap and returns false.
+    the pixmap and returns \c false.
 
     The loader attempts to read the pixmap using the specified \a
     format. If the \a format is not specified (which is the default),
@@ -806,8 +806,8 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
     \fn bool QPixmap::loadFromData(const uchar *data, uint len, const char *format, Qt::ImageConversionFlags flags)
 
     Loads a pixmap from the \a len first bytes of the given binary \a
-    data.  Returns true if the pixmap was loaded successfully;
-    otherwise invalidates the pixmap and returns false.
+    data.  Returns \c true if the pixmap was loaded successfully;
+    otherwise invalidates the pixmap and returns \c false.
 
     The loader attempts to read the pixmap using the specified \a
     format. If the \a format is not specified (which is the default),
@@ -850,8 +850,8 @@ bool QPixmap::loadFromData(const uchar *buf, uint len, const char *format, Qt::I
 
 /*!
     Saves the pixmap to the file with the given \a fileName using the
-    specified image file \a format and \a quality factor. Returns true
-    if successful; otherwise returns false.
+    specified image file \a format and \a quality factor. Returns \c true
+    if successful; otherwise returns \c false.
 
     The \a quality factor must be in the range [0,100] or -1. Specify
     0 to obtain small compressed files, 100 for large uncompressed
@@ -1086,7 +1086,7 @@ bool QPixmap::isDetached() const
     Replaces this pixmap's data with the given \a image using the
     specified \a flags to control the conversion.  The \a flags
     argument is a bitwise-OR of the \l{Qt::ImageConversionFlags}.
-    Passing 0 for \a flags sets all the default options. Returns true
+    Passing 0 for \a flags sets all the default options. Returns \c true
     if the result is that this pixmap is not null.
 
     Note: this function was part of Qt 3 support in Qt 4.6 and earlier.
@@ -1292,8 +1292,8 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     and for direct pixel access and manipulation, while QPixmap is
     designed and optimized for showing images on screen. QBitmap is
     only a convenience class that inherits QPixmap, ensuring a depth
-    of 1. The isQBitmap() function returns true if a QPixmap object is
-    really a bitmap, otherwise returns false. Finally, the QPicture class
+    of 1. The isQBitmap() function returns \c true if a QPixmap object is
+    really a bitmap, otherwise returns \c false. Finally, the QPicture class
     is a paint device that records and replays QPainter commands.
 
     A QPixmap can easily be displayed on the screen using QLabel or
@@ -1378,8 +1378,8 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     \li Alpha component
     \li
 
-    The hasAlphaChannel() returns true if the pixmap has a format that
-    respects the alpha channel, otherwise returns false. The hasAlpha(),
+    The hasAlphaChannel() returns \c true if the pixmap has a format that
+    respects the alpha channel, otherwise returns \c false. The hasAlpha(),
     setMask() and mask() functions are legacy and should not be used.
     They are potentially very slow.
 
@@ -1457,8 +1457,8 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
 */
 
 /*!
-    Returns true if this pixmap has an alpha channel, \e or has a
-    mask, otherwise returns false.
+    Returns \c true if this pixmap has an alpha channel, \e or has a
+    mask, otherwise returns \c false.
 
     \sa hasAlphaChannel(), mask()
 */
@@ -1468,8 +1468,8 @@ bool QPixmap::hasAlpha() const
 }
 
 /*!
-    Returns true if the pixmap has a format that respects the alpha
-    channel, otherwise returns false.
+    Returns \c true if the pixmap has a format that respects the alpha
+    channel, otherwise returns \c false.
 
     \sa hasAlpha()
 */

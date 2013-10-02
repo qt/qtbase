@@ -115,7 +115,7 @@ QT_BEGIN_NAMESPACE
     operating on the full range of Unicode characters, not just for the ASCII
     range. They all return true if the character is a certain type of character;
     otherwise they return false. These classification functions are
-    isNull() (returns true if the character is '\\0'), isPrint()
+    isNull() (returns \c true if the character is '\\0'), isPrint()
     (true if the character is any sort of printable character,
     including whitespace), isPunct() (any sort of punctation),
     isMark() (Unicode Mark), isLetter() (a letter), isNumber() (any
@@ -123,7 +123,7 @@ QT_BEGIN_NAMESPACE
     isDigit() (decimal digits). All of these are wrappers around
     category() which return the Unicode-defined category of each
     character. Some of these also calculate the derived properties
-    (for example isSpace() returns true if the character is of category
+    (for example isSpace() returns \c true if the character is of category
     Separator_* or an exceptional code point from Other_Control category).
 
     QChar also provides direction(), which indicates the "natural"
@@ -597,8 +597,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QChar::isNull() const
 
-    Returns true if the character is the Unicode character 0x0000
-    ('\\0'); otherwise returns false.
+    Returns \c true if the character is the Unicode character 0x0000
+    ('\\0'); otherwise returns \c false.
 */
 
 /*!
@@ -620,8 +620,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QChar::isPrint() const
 
-    Returns true if the character is a printable character; otherwise
-    returns false. This is any character not of category Other_*.
+    Returns \c true if the character is a printable character; otherwise
+    returns \c false. This is any character not of category Other_*.
 
     Note that this gives no indication of whether the character is
     available in a particular font.
@@ -631,8 +631,8 @@ QT_BEGIN_NAMESPACE
     \overload
     \since 5.0
 
-    Returns true if the UCS-4-encoded character specified by \a ucs4 is
-    a printable character; otherwise returns false.
+    Returns \c true if the UCS-4-encoded character specified by \a ucs4 is
+    a printable character; otherwise returns \c false.
     This is any character not of category Other_*.
 
     Note that this gives no indication of whether the character is
@@ -653,9 +653,9 @@ bool QChar::isPrint(uint ucs4)
 /*!
     \fn bool QChar::isSpace() const
 
-    Returns true if the character is a separator character
+    Returns \c true if the character is a separator character
     (Separator_* categories or certain code points from Other_Control category);
-    otherwise returns false.
+    otherwise returns \c false.
 */
 
 /*!
@@ -663,9 +663,9 @@ bool QChar::isPrint(uint ucs4)
     \overload
     \since 5.0
 
-    Returns true if the UCS-4-encoded character specified by \a ucs4 is
+    Returns \c true if the UCS-4-encoded character specified by \a ucs4 is
     a separator character (Separator_* categories or certain code points
-    from Other_Control category); otherwise returns false.
+    from Other_Control category); otherwise returns \c false.
 */
 
 /*!
@@ -684,8 +684,8 @@ bool QT_FASTCALL QChar::isSpace_helper(uint ucs4)
 /*!
     \fn bool QChar::isMark() const
 
-    Returns true if the character is a mark (Mark_* categories);
-    otherwise returns false.
+    Returns \c true if the character is a mark (Mark_* categories);
+    otherwise returns \c false.
 
     See QChar::Category for more information regarding marks.
 */
@@ -694,8 +694,8 @@ bool QT_FASTCALL QChar::isSpace_helper(uint ucs4)
     \overload
     \since 5.0
 
-    Returns true if the UCS-4-encoded character specified by \a ucs4 is
-    a mark (Mark_* categories); otherwise returns false.
+    Returns \c true if the UCS-4-encoded character specified by \a ucs4 is
+    a mark (Mark_* categories); otherwise returns \c false.
 */
 bool QChar::isMark(uint ucs4)
 {
@@ -710,16 +710,16 @@ bool QChar::isMark(uint ucs4)
 /*!
     \fn bool QChar::isPunct() const
 
-    Returns true if the character is a punctuation mark (Punctuation_*
-    categories); otherwise returns false.
+    Returns \c true if the character is a punctuation mark (Punctuation_*
+    categories); otherwise returns \c false.
 */
 
 /*!
     \overload
     \since 5.0
 
-    Returns true if the UCS-4-encoded character specified by \a ucs4 is
-    a punctuation mark (Punctuation_* categories); otherwise returns false.
+    Returns \c true if the UCS-4-encoded character specified by \a ucs4 is
+    a punctuation mark (Punctuation_* categories); otherwise returns \c false.
 */
 bool QChar::isPunct(uint ucs4)
 {
@@ -738,16 +738,16 @@ bool QChar::isPunct(uint ucs4)
 /*!
     \fn bool QChar::isSymbol() const
 
-    Returns true if the character is a symbol (Symbol_* categories);
-    otherwise returns false.
+    Returns \c true if the character is a symbol (Symbol_* categories);
+    otherwise returns \c false.
 */
 
 /*!
     \overload
     \since 5.0
 
-    Returns true if the UCS-4-encoded character specified by \a ucs4 is
-    a symbol (Symbol_* categories); otherwise returns false.
+    Returns \c true if the UCS-4-encoded character specified by \a ucs4 is
+    a symbol (Symbol_* categories); otherwise returns \c false.
 */
 bool QChar::isSymbol(uint ucs4)
 {
@@ -763,8 +763,8 @@ bool QChar::isSymbol(uint ucs4)
 /*!
     \fn bool QChar::isLetter() const
 
-    Returns true if the character is a letter (Letter_* categories);
-    otherwise returns false.
+    Returns \c true if the character is a letter (Letter_* categories);
+    otherwise returns \c false.
 */
 
 /*!
@@ -772,8 +772,8 @@ bool QChar::isSymbol(uint ucs4)
     \overload
     \since 5.0
 
-    Returns true if the UCS-4-encoded character specified by \a ucs4 is
-    a letter (Letter_* categories); otherwise returns false.
+    Returns \c true if the UCS-4-encoded character specified by \a ucs4 is
+    a letter (Letter_* categories); otherwise returns \c false.
 */
 
 /*!
@@ -794,8 +794,8 @@ bool QT_FASTCALL QChar::isLetter_helper(uint ucs4)
 /*!
     \fn bool QChar::isNumber() const
 
-    Returns true if the character is a number (Number_* categories,
-    not just 0-9); otherwise returns false.
+    Returns \c true if the character is a number (Number_* categories,
+    not just 0-9); otherwise returns \c false.
 
     \sa isDigit()
 */
@@ -805,8 +805,8 @@ bool QT_FASTCALL QChar::isLetter_helper(uint ucs4)
     \overload
     \since 5.0
 
-    Returns true if the UCS-4-encoded character specified by \a ucs4 is
-    a number (Number_* categories, not just 0-9); otherwise returns false.
+    Returns \c true if the UCS-4-encoded character specified by \a ucs4 is
+    a number (Number_* categories, not just 0-9); otherwise returns \c false.
 
     \sa isDigit()
 */
@@ -827,8 +827,8 @@ bool QT_FASTCALL QChar::isNumber_helper(uint ucs4)
 /*!
     \fn bool QChar::isLetterOrNumber() const
 
-    Returns true if the character is a letter or number (Letter_* or
-    Number_* categories); otherwise returns false.
+    Returns \c true if the character is a letter or number (Letter_* or
+    Number_* categories); otherwise returns \c false.
 */
 
 /*!
@@ -836,8 +836,8 @@ bool QT_FASTCALL QChar::isNumber_helper(uint ucs4)
     \overload
     \since 5.0
 
-    Returns true if the UCS-4-encoded character specified by \a ucs4 is
-    a letter or number (Letter_* or Number_* categories); otherwise returns false.
+    Returns \c true if the UCS-4-encoded character specified by \a ucs4 is
+    a letter or number (Letter_* or Number_* categories); otherwise returns \c false.
 */
 
 /*!
@@ -861,8 +861,8 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
 /*!
     \fn bool QChar::isDigit() const
 
-    Returns true if the character is a decimal digit
-    (Number_DecimalDigit); otherwise returns false.
+    Returns \c true if the character is a decimal digit
+    (Number_DecimalDigit); otherwise returns \c false.
 
     \sa isNumber()
 */
@@ -872,8 +872,8 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
     \overload
     \since 5.0
 
-    Returns true if the UCS-4-encoded character specified by \a ucs4 is
-    a decimal digit (Number_DecimalDigit); otherwise returns false.
+    Returns \c true if the UCS-4-encoded character specified by \a ucs4 is
+    a decimal digit (Number_DecimalDigit); otherwise returns \c false.
 
     \sa isNumber()
 */
@@ -882,7 +882,7 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
     \fn bool QChar::isNonCharacter() const
     \since 5.0
 
-    Returns true if the QChar is a non-character; false otherwise.
+    Returns \c true if the QChar is a non-character; false otherwise.
 
     Unicode has a certain number of code points that are classified
     as "non-characters:" that is, they can be used for internal purposes
@@ -894,14 +894,14 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
 /*!
     \fn bool QChar::isHighSurrogate() const
 
-    Returns true if the QChar is the high part of a UTF16 surrogate
+    Returns \c true if the QChar is the high part of a UTF16 surrogate
     (for example if its code point is in range [0xd800..0xdbff]); false otherwise.
 */
 
 /*!
     \fn bool QChar::isLowSurrogate() const
 
-    Returns true if the QChar is the low part of a UTF16 surrogate
+    Returns \c true if the QChar is the low part of a UTF16 surrogate
     (for example if its code point is in range [0xdc00..0xdfff]); false otherwise.
 */
 
@@ -909,7 +909,7 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
     \fn bool QChar::isSurrogate() const
     \since 5.0
 
-    Returns true if the QChar contains a code point that is in either
+    Returns \c true if the QChar contains a code point that is in either
     the high or the low part of the UTF-16 surrogate range
     (for example if its code point is in range [0xd800..0xdfff]); false otherwise.
 */
@@ -919,7 +919,7 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
     \overload
     \since 5.0
 
-    Returns true if the UCS-4-encoded character specified by \a ucs4
+    Returns \c true if the UCS-4-encoded character specified by \a ucs4
     is a non-character; false otherwise.
 
     Unicode has a certain number of code points that are classified
@@ -933,7 +933,7 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
     \fn static bool QChar::isHighSurrogate(uint ucs4)
     \overload
 
-    Returns true if the UCS-4-encoded character specified by \a ucs4
+    Returns \c true if the UCS-4-encoded character specified by \a ucs4
     is the high part of a UTF16 surrogate
     (for example if its code point is in range [0xd800..0xdbff]); false otherwise.
 */
@@ -942,7 +942,7 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
     \fn static bool QChar::isLowSurrogate(uint ucs4)
     \overload
 
-    Returns true if the UCS-4-encoded character specified by \a ucs4
+    Returns \c true if the UCS-4-encoded character specified by \a ucs4
     is the low part of a UTF16 surrogate
     (for example if its code point is in range [0xdc00..0xdfff]); false otherwise.
 */
@@ -952,7 +952,7 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
     \overload
     \since 5.0
 
-    Returns true if the UCS-4-encoded character specified by \a ucs4
+    Returns \c true if the UCS-4-encoded character specified by \a ucs4
     contains a code point that is in either the high or the low part of the
     UTF-16 surrogate range (for example if its code point is in range [0xd800..0xdfff]);
     false otherwise.
@@ -961,7 +961,7 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
 /*!
     \fn static bool QChar::requiresSurrogates(uint ucs4)
 
-    Returns true if the UCS-4-encoded character specified by \a ucs4
+    Returns \c true if the UCS-4-encoded character specified by \a ucs4
     can be split into the high and low parts of a UTF16 surrogate
     (for example if its code point is greater than or equals to 0x10000);
     false otherwise.
@@ -1069,8 +1069,8 @@ QChar::Joining QChar::joining(uint ucs4)
 /*!
     \fn bool QChar::hasMirrored() const
 
-    Returns true if the character should be reversed if the text
-    direction is reversed; otherwise returns false.
+    Returns \c true if the character should be reversed if the text
+    direction is reversed; otherwise returns \c false.
 
     A bit faster equivalent of (ch.mirroredChar() != ch).
 
@@ -1081,8 +1081,8 @@ QChar::Joining QChar::joining(uint ucs4)
     \overload
     \since 5.0
 
-    Returns true if the UCS-4-encoded character specified by \a ucs4
-    should be reversed if the text direction is reversed; otherwise returns false.
+    Returns \c true if the UCS-4-encoded character specified by \a ucs4
+    should be reversed if the text direction is reversed; otherwise returns \c false.
 
     A bit faster equivalent of (QChar::mirroredChar(ucs4) != ucs4).
 
@@ -1098,7 +1098,7 @@ bool QChar::hasMirrored(uint ucs4)
 /*!
     \fn bool QChar::isLower() const
 
-    Returns true if the character is a lowercase letter, for example
+    Returns \c true if the character is a lowercase letter, for example
     category() is Letter_Lowercase.
 
     \sa isUpper(), toLower(), toUpper()
@@ -1109,7 +1109,7 @@ bool QChar::hasMirrored(uint ucs4)
     \overload
     \since 5.0
 
-    Returns true if the UCS-4-encoded character specified by \a ucs4
+    Returns \c true if the UCS-4-encoded character specified by \a ucs4
     is a lowercase letter, for example category() is Letter_Lowercase.
 
     \sa isUpper(), toLower(), toUpper()
@@ -1118,7 +1118,7 @@ bool QChar::hasMirrored(uint ucs4)
 /*!
     \fn bool QChar::isUpper() const
 
-    Returns true if the character is an uppercase letter, for example
+    Returns \c true if the character is an uppercase letter, for example
     category() is Letter_Uppercase.
 
     \sa isLower(), toUpper(), toLower()
@@ -1129,7 +1129,7 @@ bool QChar::hasMirrored(uint ucs4)
     \overload
     \since 5.0
 
-    Returns true if the UCS-4-encoded character specified by \a ucs4
+    Returns \c true if the UCS-4-encoded character specified by \a ucs4
     is an uppercase letter, for example category() is Letter_Uppercase.
 
     \sa isLower(), toUpper(), toLower()
@@ -1138,7 +1138,7 @@ bool QChar::hasMirrored(uint ucs4)
 /*!
     \fn bool QChar::isTitleCase() const
 
-    Returns true if the character is a titlecase letter, for example
+    Returns \c true if the character is a titlecase letter, for example
     category() is Letter_Titlecase.
 
     \sa isLower(), toUpper(), toLower(), toTitleCase()
@@ -1149,7 +1149,7 @@ bool QChar::hasMirrored(uint ucs4)
     \overload
     \since 5.0
 
-    Returns true if the UCS-4-encoded character specified by \a ucs4
+    Returns \c true if the UCS-4-encoded character specified by \a ucs4
     is a titlecase letter, for example category() is Letter_Titlecase.
 
     \sa isLower(), toUpper(), toLower(), toTitleCase()
@@ -1586,8 +1586,8 @@ QDataStream &operator>>(QDataStream &in, QChar &chr)
 
     \relates QChar
 
-    Returns true if \a c1 and \a c2 are the same Unicode character;
-    otherwise returns false.
+    Returns \c true if \a c1 and \a c2 are the same Unicode character;
+    otherwise returns \c false.
 */
 
 /*!
@@ -1595,8 +1595,8 @@ QDataStream &operator>>(QDataStream &in, QChar &chr)
 
     \relates QChar
 
-    Returns true if \a c1 and \a c2 are not the same Unicode
-    character; otherwise returns false.
+    Returns \c true if \a c1 and \a c2 are not the same Unicode
+    character; otherwise returns \c false.
 */
 
 /*!
@@ -1604,8 +1604,8 @@ QDataStream &operator>>(QDataStream &in, QChar &chr)
 
     \relates QChar
 
-    Returns true if the numeric Unicode value of \a c1 is less than
-    or equal to that of \a c2; otherwise returns false.
+    Returns \c true if the numeric Unicode value of \a c1 is less than
+    or equal to that of \a c2; otherwise returns \c false.
 */
 
 /*!
@@ -1613,8 +1613,8 @@ QDataStream &operator>>(QDataStream &in, QChar &chr)
 
     \relates QChar
 
-    Returns true if the numeric Unicode value of \a c1 is greater than
-    or equal to that of \a c2; otherwise returns false.
+    Returns \c true if the numeric Unicode value of \a c1 is greater than
+    or equal to that of \a c2; otherwise returns \c false.
 */
 
 /*!
@@ -1622,8 +1622,8 @@ QDataStream &operator>>(QDataStream &in, QChar &chr)
 
     \relates QChar
 
-    Returns true if the numeric Unicode value of \a c1 is less than
-    that of \a c2; otherwise returns false.
+    Returns \c true if the numeric Unicode value of \a c1 is less than
+    that of \a c2; otherwise returns \c false.
 */
 
 /*!
@@ -1631,8 +1631,8 @@ QDataStream &operator>>(QDataStream &in, QChar &chr)
 
     \relates QChar
 
-    Returns true if the numeric Unicode value of \a c1 is greater than
-    that of \a c2; otherwise returns false.
+    Returns \c true if the numeric Unicode value of \a c1 is greater than
+    that of \a c2; otherwise returns \c false.
 */
 
 

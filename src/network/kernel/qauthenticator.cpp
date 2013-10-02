@@ -197,8 +197,8 @@ QAuthenticator &QAuthenticator::operator=(const QAuthenticator &other)
 }
 
 /*!
-    Returns true if this authenticator is identical to \a other; otherwise
-    returns false.
+    Returns \c true if this authenticator is identical to \a other; otherwise
+    returns \c false.
 */
 bool QAuthenticator::operator==(const QAuthenticator &other) const
 {
@@ -214,8 +214,8 @@ bool QAuthenticator::operator==(const QAuthenticator &other) const
 /*!
     \fn bool QAuthenticator::operator!=(const QAuthenticator &other) const
 
-    Returns true if this authenticator is different from \a other; otherwise
-    returns false.
+    Returns \c true if this authenticator is different from \a other; otherwise
+    returns \c false.
 */
 
 /*!
@@ -320,7 +320,7 @@ void QAuthenticator::setOption(const QString &opt, const QVariant &value)
 
 
 /*!
-    Returns true if the authenticator is null.
+    Returns \c true if the authenticator is null.
 */
 bool QAuthenticator::isNull() const
 {

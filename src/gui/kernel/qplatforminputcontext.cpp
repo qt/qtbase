@@ -165,7 +165,7 @@ void QPlatformInputContext::emitKeyboardRectChanged()
 
 /*!
     This function can be reimplemented to return true whenever input method is animating
-    shown or hidden. Default implementation returns false.
+    shown or hidden. Default implementation returns \c false.
  */
 bool QPlatformInputContext::isAnimating() const
 {
@@ -197,7 +197,7 @@ void QPlatformInputContext::hideInputPanel()
 }
 
 /*!
-    Returns input panel visibility status. Default implementation returns false.
+    Returns input panel visibility status. Default implementation returns \c false.
  */
 bool QPlatformInputContext::isInputPanelVisible() const
 {
@@ -244,7 +244,7 @@ void QPlatformInputContext::setFocusObject(QObject *object)
 }
 
 /*!
-    Returns true if current focus object supports input method events.
+    Returns \c true if current focus object supports input method events.
  */
 bool QPlatformInputContext::inputMethodAccepted() const
 {

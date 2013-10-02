@@ -1028,8 +1028,8 @@ Qt::KeyboardModifiers QKeyEvent::modifiers() const
     \fn bool QKeyEvent::matches(QKeySequence::StandardKey key) const
     \since 4.2
 
-    Returns true if the key event matches the given standard \a key;
-    otherwise returns false.
+    Returns \c true if the key event matches the given standard \a key;
+    otherwise returns \c false.
 */
 bool QKeyEvent::matches(QKeySequence::StandardKey matchKey) const
 {
@@ -1045,8 +1045,8 @@ bool QKeyEvent::matches(QKeySequence::StandardKey matchKey) const
 /*!
     \fn bool QKeyEvent::isAutoRepeat() const
 
-    Returns true if this event comes from an auto-repeating key;
-    returns false if it comes from an initial key press.
+    Returns \c true if this event comes from an auto-repeating key;
+    returns \c false if it comes from an initial key press.
 
     Note that if the event is a multiple-key compressed event that is
     partly due to auto-repeat, this function could return either true
@@ -1113,14 +1113,14 @@ Qt::FocusReason QFocusEvent::reason() const
 /*!
     \fn bool QFocusEvent::gotFocus() const
 
-    Returns true if type() is QEvent::FocusIn; otherwise returns
+    Returns \c true if type() is QEvent::FocusIn; otherwise returns
     false.
 */
 
 /*!
     \fn bool QFocusEvent::lostFocus() const
 
-    Returns true if type() is QEvent::FocusOut; otherwise returns
+    Returns \c true if type() is QEvent::FocusOut; otherwise returns
     false.
 */
 
@@ -1359,7 +1359,7 @@ QResizeEvent::~QResizeEvent()
     If the last top-level window is closed, the
     QApplication::lastWindowClosed() signal is emitted.
 
-    The isAccepted() function returns true if the event's receiver has
+    The isAccepted() function returns \c true if the event's receiver has
     agreed to close the widget; call accept() to agree to close the
     widget and call ignore() if the receiver of this event does not
     want the widget to be closed.
@@ -2875,7 +2875,7 @@ QActionEvent::~QActionEvent()
     window manager controls, either by iconifying the window or by
     switching to another virtual desktop where the window isn't
     visible. The window will become hidden but not withdrawn. If the
-    window was iconified, QWidget::isMinimized() returns true.
+    window was iconified, QWidget::isMinimized() returns \c true.
 
     \sa QShowEvent
 */
@@ -2988,7 +2988,7 @@ QFileOpenEvent::~QFileOpenEvent()
     \fn bool QFileOpenEvent::openFile(QFile &file, QIODevice::OpenMode flags) const
 
     Opens a QFile on the \a file referenced by this event in the mode specified
-    by \a flags. Returns true if successful; otherwise returns false.
+    by \a flags. Returns \c true if successful; otherwise returns \c false.
 
     This is necessary as some files cannot be opened by name, but require specific
     information stored in this event.
@@ -3428,7 +3428,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
 /*!
     \fn bool QShortcutEvent::isAmbiguous() const
 
-    Returns true if the key sequence that triggered the event is
+    Returns \c true if the key sequence that triggered the event is
     ambiguous.
 
     \sa QShortcut::activatedAmbiguously()

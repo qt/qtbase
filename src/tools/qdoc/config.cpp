@@ -932,7 +932,7 @@ bool Config::removeDirContents(const QString& dir)
 }
 
 /*!
-  Returns true if \a ch is a letter, number, '_', '.',
+  Returns \c true if \a ch is a letter, number, '_', '.',
   '{', '}', or ','.
  */
 bool Config::isMetaKeyChar(QChar ch)

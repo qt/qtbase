@@ -227,7 +227,7 @@ void QMessageAuthenticationCode::addData(const QByteArray &data)
 
 /*!
     Reads the data from the open QIODevice \a device until it ends
-    and adds it to message. Returns true if reading was successful.
+    and adds it to message. Returns \c true if reading was successful.
 
     \note \a device must be already opened.
  */

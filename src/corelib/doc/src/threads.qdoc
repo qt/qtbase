@@ -671,7 +671,7 @@
        it does not duplicate an existing connection. i.e., if the same
        signal is already connected to the same slot for the same pair
        of objects, then the connection is not made and connect()
-       returns false.
+       returns \c false.
 
     \endlist
 

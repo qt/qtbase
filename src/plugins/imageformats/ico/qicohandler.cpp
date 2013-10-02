@@ -629,8 +629,8 @@ QList<QImage> ICOReader::read(QIODevice * device)
 
 /*!
     Writes all the QImages in the \a images list to the given \a
-    device. Returns true if the images are written successfully;
-    otherwise returns false.
+    device. Returns \c true if the images are written successfully;
+    otherwise returns \c false.
 
     The first image in the list is stored as the first icon in the
     device, and is therefore used as the default icon by applications.

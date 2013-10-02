@@ -460,7 +460,7 @@ Qt::Alignment QLabel::alignment() const
     \property QLabel::wordWrap
     \brief the label's word-wrapping policy
 
-    If this property is true then label text is wrapped where
+    If this property is \c true then label text is wrapped where
     necessary at word-breaks; otherwise it is not wrapped at all.
 
     By default, word wrap is disabled.
@@ -749,10 +749,10 @@ void QLabel::setSelection(int start, int length)
     \property QLabel::hasSelectedText
     \brief whether there is any text selected
 
-    hasSelectedText() returns true if some or all of the text has been
-    selected by the user; otherwise returns false.
+    hasSelectedText() returns \c true if some or all of the text has been
+    selected by the user; otherwise returns \c false.
 
-    By default, this property is false.
+    By default, this property is \c false.
 
     \sa selectedText()
 

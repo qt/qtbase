@@ -645,7 +645,7 @@ void QGuiApplicationPrivate::hideModalWindow(QWindow *window)
 }
 
 /*
-    Returns true if \a window is blocked by a modal window. If \a
+    Returns \c true if \a window is blocked by a modal window. If \a
     blockingWindow is non-zero, *blockingWindow will be set to the blocking
     window (or to zero if \a window is not blocked).
 */
@@ -2520,8 +2520,8 @@ void QGuiApplication::setFont(const QFont &font)
 /*!
     \fn bool QGuiApplication::isRightToLeft()
 
-    Returns true if the application's layout direction is
-    Qt::RightToLeft; otherwise returns false.
+    Returns \c true if the application's layout direction is
+    Qt::RightToLeft; otherwise returns \c false.
 
     \sa layoutDirection(), isLeftToRight()
 */
@@ -2529,8 +2529,8 @@ void QGuiApplication::setFont(const QFont &font)
 /*!
     \fn bool QGuiApplication::isLeftToRight()
 
-    Returns true if the application's layout direction is
-    Qt::LeftToRight; otherwise returns false.
+    Returns \c true if the application's layout direction is
+    Qt::LeftToRight; otherwise returns \c false.
 
     \sa layoutDirection(), isRightToLeft()
 */
@@ -2552,7 +2552,7 @@ void QGuiApplicationPrivate::notifyActiveWindowChange(QWindow *)
 
     The default is true.
 
-    If this property is true, the applications quits when the last visible
+    If this property is \c true, the applications quits when the last visible
     primary window (i.e. window with no parent) is closed.
 
     \sa quit(), QWindow::close()
@@ -2720,8 +2720,8 @@ void QGuiApplicationPrivate::setApplicationState(Qt::ApplicationState state)
 /*!
     \fn bool QGuiApplication::isSessionRestored() const
 
-    Returns true if the application has been restored from an earlier
-    \l{Session Management}{session}; otherwise returns false.
+    Returns \c true if the application has been restored from an earlier
+    \l{Session Management}{session}; otherwise returns \c false.
 
     \sa sessionId(), commitDataRequest(), saveStateRequest()
 */
@@ -2730,8 +2730,8 @@ void QGuiApplicationPrivate::setApplicationState(Qt::ApplicationState state)
     \since 5.0
     \fn bool QGuiApplication::isSavingSession() const
 
-    Returns true if the application is currently saving the
-    \l{Session Management}{session}; otherwise returns false.
+    Returns \c true if the application is currently saving the
+    \l{Session Management}{session}; otherwise returns \c false.
 
     This is true when commitDataRequest() and saveStateRequest() are emitted,
     but also when the windows are closed afterwards by session management.
@@ -3013,8 +3013,8 @@ void QGuiApplication::setDesktopSettingsAware(bool on)
 }
 
 /*!
-    Returns true if Qt is set to use the system's standard colors, fonts, etc.;
-    otherwise returns false. The default is true.
+    Returns \c true if Qt is set to use the system's standard colors, fonts, etc.;
+    otherwise returns \c false. The default is true.
 
     \sa setDesktopSettingsAware()
 */

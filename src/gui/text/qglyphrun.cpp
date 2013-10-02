@@ -162,8 +162,8 @@ QGlyphRun &QGlyphRun::operator=(const QGlyphRun &other)
 */
 
 /*!
-    Compares \a other to this QGlyphRun object. Returns true if the list of glyph indexes,
-    the list of positions and the font are all equal, otherwise returns false.
+    Compares \a other to this QGlyphRun object. Returns \c true if the list of glyph indexes,
+    the list of positions and the font are all equal, otherwise returns \c false.
 */
 bool QGlyphRun::operator==(const QGlyphRun &other) const
 {
@@ -194,8 +194,8 @@ bool QGlyphRun::operator==(const QGlyphRun &other) const
 /*!
     \fn bool QGlyphRun::operator!=(const QGlyphRun &other) const
 
-    Compares \a other to this QGlyphRun object. Returns true if any of the list of glyph
-    indexes, the list of positions or the font are different, otherwise returns false.
+    Compares \a other to this QGlyphRun object. Returns \c true if any of the list of glyph
+    indexes, the list of positions or the font are different, otherwise returns \c false.
 */
 
 /*!
@@ -309,7 +309,7 @@ void QGlyphRun::setRawData(const quint32 *glyphIndexArray, const QPointF *glyphP
 }
 
 /*!
-   Returns true if this QGlyphRun should be painted with an overline decoration.
+   Returns \c true if this QGlyphRun should be painted with an overline decoration.
 
    \sa setOverline(), flags()
 */
@@ -330,7 +330,7 @@ void QGlyphRun::setOverline(bool overline)
 }
 
 /*!
-   Returns true if this QGlyphRun should be painted with an underline decoration.
+   Returns \c true if this QGlyphRun should be painted with an underline decoration.
 
    \sa setUnderline(), flags()
 */
@@ -351,7 +351,7 @@ void QGlyphRun::setUnderline(bool underline)
 }
 
 /*!
-   Returns true if this QGlyphRun should be painted with a strike out decoration.
+   Returns \c true if this QGlyphRun should be painted with a strike out decoration.
 
    \sa setStrikeOut(), flags()
 */
@@ -372,7 +372,7 @@ void QGlyphRun::setStrikeOut(bool strikeOut)
 }
 
 /*!
-  Returns true if this QGlyphRun contains glyphs that are painted from the right to the left.
+  Returns \c true if this QGlyphRun contains glyphs that are painted from the right to the left.
 
   \since 5.0
   \sa setRightToLeft(), flags()
@@ -501,7 +501,7 @@ QRectF QGlyphRun::boundingRect() const
 }
 
 /*!
-  Returns true if the QGlyphRun does not contain any glyphs.
+  Returns \c true if the QGlyphRun does not contain any glyphs.
 
   \since 5.0
 */

@@ -778,7 +778,7 @@ void QPen::setBrush(const QBrush &brush)
 
 
 /*!
-    Returns true if the pen has a solid fill, otherwise false.
+    Returns \c true if the pen has a solid fill, otherwise false.
 
     \sa style(), dashPattern()
 */
@@ -789,7 +789,7 @@ bool QPen::isSolid() const
 
 
 /*!
-    Returns true if the pen is cosmetic; otherwise returns false.
+    Returns \c true if the pen is cosmetic; otherwise returns \c false.
 
     Cosmetic pens are used to draw strokes that have a constant width
     regardless of any transformations applied to the QPainter they are
@@ -827,7 +827,7 @@ void QPen::setCosmetic(bool cosmetic)
 /*!
     \fn bool QPen::operator!=(const QPen &pen) const
 
-    Returns true if the pen is different from the given \a pen;
+    Returns \c true if the pen is different from the given \a pen;
     otherwise false. Two pens are different if they have different
     styles, widths or colors.
 
@@ -837,7 +837,7 @@ void QPen::setCosmetic(bool cosmetic)
 /*!
     \fn bool QPen::operator==(const QPen &pen) const
 
-    Returns true if the pen is equal to the given \a pen; otherwise
+    Returns \c true if the pen is equal to the given \a pen; otherwise
     false. Two pens are equal if they have equal styles, widths and
     colors.
 

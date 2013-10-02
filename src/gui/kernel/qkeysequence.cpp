@@ -879,7 +879,7 @@ int QKeySequence::count() const
 
 
 /*!
-    Returns true if the key sequence is empty; otherwise returns
+    Returns \c true if the key sequence is empty; otherwise returns
     false.
 */
 bool QKeySequence::isEmpty() const
@@ -1372,14 +1372,14 @@ QKeySequence &QKeySequence::operator=(const QKeySequence &other)
 /*!
     \fn bool QKeySequence::operator!=(const QKeySequence &other) const
 
-    Returns true if this key sequence is not equal to the \a other
-    key sequence; otherwise returns false.
+    Returns \c true if this key sequence is not equal to the \a other
+    key sequence; otherwise returns \c false.
 */
 
 
 /*!
-    Returns true if this key sequence is equal to the \a other
-    key sequence; otherwise returns false.
+    Returns \c true if this key sequence is equal to the \a other
+    key sequence; otherwise returns \c false.
  */
 bool QKeySequence::operator==(const QKeySequence &other) const
 {
@@ -1393,7 +1393,7 @@ bool QKeySequence::operator==(const QKeySequence &other) const
 /*!
     Provides an arbitrary comparison of this key sequence and
     \a other key sequence. All that is guaranteed is that the
-    operator returns false if both key sequences are equal and
+    operator returns \c false if both key sequences are equal and
     that (ks1 \< ks2) == !( ks2 \< ks1) if the key sequences
     are not equal.
 
@@ -1413,8 +1413,8 @@ bool QKeySequence::operator< (const QKeySequence &other) const
 /*!
     \fn bool QKeySequence::operator> (const QKeySequence &other) const
 
-    Returns true if this key sequence is larger than the \a other key
-    sequence; otherwise returns false.
+    Returns \c true if this key sequence is larger than the \a other key
+    sequence; otherwise returns \c false.
 
     \sa operator==(), operator!=(), operator<(), operator<=(), operator>=()
 */
@@ -1422,8 +1422,8 @@ bool QKeySequence::operator< (const QKeySequence &other) const
 /*!
     \fn bool QKeySequence::operator<= (const QKeySequence &other) const
 
-    Returns true if this key sequence is smaller or equal to the
-    \a other key sequence; otherwise returns false.
+    Returns \c true if this key sequence is smaller or equal to the
+    \a other key sequence; otherwise returns \c false.
 
     \sa operator==(), operator!=(), operator<(), operator>(), operator>=()
 */
@@ -1431,8 +1431,8 @@ bool QKeySequence::operator< (const QKeySequence &other) const
 /*!
     \fn bool QKeySequence::operator>= (const QKeySequence &other) const
 
-    Returns true if this key sequence is larger or equal to the
-    \a other key sequence; otherwise returns false.
+    Returns \c true if this key sequence is larger or equal to the
+    \a other key sequence; otherwise returns \c false.
 
     \sa operator==(), operator!=(), operator<(), operator>(), operator<=()
 */

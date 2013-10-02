@@ -52,7 +52,7 @@
 
     Call setDevice() to assign a device to the handler, and
     setFormat() to assign a format to it. One QImageIOHandler may
-    support more than one image format. canRead() returns true if an
+    support more than one image format. canRead() returns \c true if an
     image can be read from the device, and read() and write() return
     true if reading or writing an image was completed successfully.
 
@@ -342,7 +342,7 @@ QByteArray QImageIOHandler::format() const
     \fn bool QImageIOHandler::read(QImage *image)
 
     Read an image from the device, and stores it in \a image.
-    Returns true if the image is successfully read; otherwise returns
+    Returns \c true if the image is successfully read; otherwise returns
     false.
 
     For image formats that support incremental loading, and for animation
@@ -355,10 +355,10 @@ QByteArray QImageIOHandler::format() const
 /*!
     \fn bool QImageIOHandler::canRead() const
 
-    Returns true if an image can be read from the device (i.e., the
+    Returns \c true if an image can be read from the device (i.e., the
     image format is supported, the device can be read from and the
     initial header information suggests that the image can be read);
-    otherwise returns false.
+    otherwise returns \c false.
 
     When reimplementing canRead(), make sure that the I/O device
     (device()) is left in its original state (e.g., by using peek()
@@ -379,10 +379,10 @@ QByteArray QImageIOHandler::name() const
 }
 
 /*!
-    Writes the image \a image to the assigned device. Returns true on
-    success; otherwise returns false.
+    Writes the image \a image to the assigned device. Returns \c true on
+    success; otherwise returns \c false.
 
-    The default implementation does nothing, and simply returns false.
+    The default implementation does nothing, and simply returns \c false.
 */
 bool QImageIOHandler::write(const QImage &image)
 {
@@ -415,8 +415,8 @@ QVariant QImageIOHandler::option(ImageOption option) const
 }
 
 /*!
-    Returns true if the QImageIOHandler supports the option \a option;
-    otherwise returns false. For example, if the QImageIOHandler
+    Returns \c true if the QImageIOHandler supports the option \a option;
+    otherwise returns \c false. For example, if the QImageIOHandler
     supports the \l Size option, supportsOption(Size) must return
     true.
 
@@ -461,7 +461,7 @@ QRect QImageIOHandler::currentImageRect() const
     not support animation, or if it is unable to determine the number
     of images, 0 is returned.
 
-    The default implementation returns 1 if canRead() returns true;
+    The default implementation returns 1 if canRead() returns \c true;
     otherwise 0 is returned.
 */
 int QImageIOHandler::imageCount() const
@@ -473,7 +473,7 @@ int QImageIOHandler::imageCount() const
    For image formats that support animation, this function jumps to the
    next image.
 
-   The default implementation does nothing, and returns false.
+   The default implementation does nothing, and returns \c false.
 */
 bool QImageIOHandler::jumpToNextImage()
 {
@@ -485,7 +485,7 @@ bool QImageIOHandler::jumpToNextImage()
    whose sequence number is \a imageNumber. The next call to read() will
    attempt to read this image.
 
-   The default implementation does nothing, and returns false.
+   The default implementation does nothing, and returns \c false.
 */
 bool QImageIOHandler::jumpToImage(int imageNumber)
 {

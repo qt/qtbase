@@ -346,15 +346,15 @@ Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
 /*!
     \fn bool QFlags::operator!() const
 
-    Returns true if no flag is set (i.e., if the value stored by the
-    QFlags object is 0); otherwise returns false.
+    Returns \c true if no flag is set (i.e., if the value stored by the
+    QFlags object is 0); otherwise returns \c false.
 */
 
 /*!
     \fn bool QFlags::testFlag(Enum flag) const
     \since 4.2
 
-    Returns true if the \a flag is set, otherwise false.
+    Returns \c true if the \a flag is set, otherwise false.
 */
 
 /*!
@@ -2295,7 +2295,7 @@ bool qputenv(const char *varName, const QByteArray& value)
 
     This function deletes the variable \a varName from the environment.
 
-    Returns true on success.
+    Returns \c true on success.
 
     \since 5.1
 

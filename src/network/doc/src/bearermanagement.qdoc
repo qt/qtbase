@@ -177,7 +177,7 @@ and an \l{QNetworkSession::isOpen()}{isOpen()} condition.
 The state() attribute enables developers to detect whether the system
 currently maintains a global network session for the given
 QNetworkConfiguration. If \l {QNetworkSession::isOpen()}{isOpen()}
-returns true the QNetworkSession instance at hand was at least one of the
+returns \c true the QNetworkSession instance at hand was at least one of the
 entities requesting the global network session. This distinction is
 required to support the notion of session registrations. For as long as
 there are one or more open QNetworkSession instances the underlying

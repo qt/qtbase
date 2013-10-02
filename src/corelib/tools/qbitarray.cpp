@@ -262,7 +262,7 @@ void QBitArray::resize(int size)
 
 /*! \fn bool QBitArray::isEmpty() const
 
-    Returns true if this bit array has size 0; otherwise returns
+    Returns \c true if this bit array has size 0; otherwise returns
     false.
 
     \sa size()
@@ -270,7 +270,7 @@ void QBitArray::resize(int size)
 
 /*! \fn bool QBitArray::isNull() const
 
-    Returns true if this bit array is null; otherwise returns false.
+    Returns \c true if this bit array is null; otherwise returns \c false.
 
     Example:
     \snippet code/src_corelib_tools_qbitarray.cpp 5
@@ -286,7 +286,7 @@ void QBitArray::resize(int size)
 /*! \fn bool QBitArray::fill(bool value, int size = -1)
 
     Sets every bit in the bit array to \a value, returning true if successful;
-    otherwise returns false. If \a size is different from -1 (the default),
+    otherwise returns \c false. If \a size is different from -1 (the default),
     the bit array is resized to \a size beforehand.
 
     Example:
@@ -363,8 +363,8 @@ void QBitArray::fill(bool value, int begin, int end)
 
 /*! \fn bool QBitArray::testBit(int i) const
 
-    Returns true if the bit at index position \a i is 1; otherwise
-    returns false.
+    Returns \c true if the bit at index position \a i is 1; otherwise
+    returns \c false.
 
     \a i must be a valid index position in the bit array (i.e., 0 <=
     \a i < size()).
@@ -478,16 +478,16 @@ void QBitArray::fill(bool value, int begin, int end)
 
 /*! \fn bool QBitArray::operator==(const QBitArray &other) const
 
-    Returns true if \a other is equal to this bit array; otherwise
-    returns false.
+    Returns \c true if \a other is equal to this bit array; otherwise
+    returns \c false.
 
     \sa operator!=()
 */
 
 /*! \fn bool QBitArray::operator!=(const QBitArray &other) const
 
-    Returns true if \a other is not equal to this bit array;
-    otherwise returns false.
+    Returns \c true if \a other is not equal to this bit array;
+    otherwise returns \c false.
 
     \sa operator==()
 */

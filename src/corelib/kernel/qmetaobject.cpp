@@ -548,9 +548,9 @@ int QMetaObject::classInfoCount() const
     return n;
 }
 
-// Returns true if the method defined by the given meta-object&handle
+// Returns \c true if the method defined by the given meta-object&handle
 // matches the given name, argument count and argument types, otherwise
-// returns false.
+// returns \c false.
 static bool methodMatch(const QMetaObject *m, int handle,
                         const QByteArray &name, int argc,
                         const QArgumentType *types)
@@ -886,8 +886,8 @@ QMetaMethod QMetaObjectPrivate::signal(const QMetaObject *m, int signal_index)
 /*!
     \internal
 
-    Returns true if the \a signalTypes and \a methodTypes are
-    compatible; otherwise returns false.
+    Returns \c true if the \a signalTypes and \a methodTypes are
+    compatible; otherwise returns \c false.
 */
 bool QMetaObjectPrivate::checkConnectArgs(int signalArgc, const QArgumentType *signalTypes,
                                           int methodArgc, const QArgumentType *methodTypes)
@@ -904,8 +904,8 @@ bool QMetaObjectPrivate::checkConnectArgs(int signalArgc, const QArgumentType *s
 /*!
     \internal
 
-    Returns true if the \a signal and \a method arguments are
-    compatible; otherwise returns false.
+    Returns \c true if the \a signal and \a method arguments are
+    compatible; otherwise returns \c false.
 */
 bool QMetaObjectPrivate::checkConnectArgs(const QMetaMethodPrivate *signal,
                                           const QMetaMethodPrivate *method)
@@ -1191,8 +1191,8 @@ QMetaClassInfo QMetaObject::classInfo(int index) const
 }
 
 /*!
-    Returns true if the \a signal and \a method arguments are
-    compatible; otherwise returns false.
+    Returns \c true if the \a signal and \a method arguments are
+    compatible; otherwise returns \c false.
 
     Both \a signal and \a method are expected to be normalized.
 
@@ -1217,8 +1217,8 @@ bool QMetaObject::checkConnectArgs(const char *signal, const char *method)
     \since 5.0
     \overload
 
-    Returns true if the \a signal and \a method arguments are
-    compatible; otherwise returns false.
+    Returns \c true if the \a signal and \a method arguments are
+    compatible; otherwise returns \c false.
 */
 bool QMetaObject::checkConnectArgs(const QMetaMethod &signal,
                                    const QMetaMethod &method)
@@ -1340,7 +1340,7 @@ enum { MaximumParamCount = 11 }; // up to 10 arguments + 1 return value
 
 /*!
     Invokes the \a member (a signal or a slot name) on the object \a
-    obj. Returns true if the member could be invoked. Returns false
+    obj. Returns \c true if the member could be invoked. Returns \c false
     if there is no such member or the parameters did not match.
 
     The invocation can be either synchronous or asynchronous,
@@ -1549,8 +1549,8 @@ bool QMetaObject::invokeMethod(QObject *obj,
     \fn bool QMetaMethod::isValid() const
     \since 5.0
 
-    Returns true if this method is valid (can be introspected and
-    invoked), otherwise returns false.
+    Returns \c true if this method is valid (can be introspected and
+    invoked), otherwise returns \c false.
 */
 
 /*! \fn bool operator==(const QMetaMethod &m1, const QMetaMethod &m2)
@@ -1558,8 +1558,8 @@ bool QMetaObject::invokeMethod(QObject *obj,
     \relates QMetaMethod
     \overload
 
-    Returns true if method \a m1 is equal to method \a m2,
-    otherwise returns false.
+    Returns \c true if method \a m1 is equal to method \a m2,
+    otherwise returns \c false.
 */
 
 /*! \fn bool operator!=(const QMetaMethod &m1, const QMetaMethod &m2)
@@ -1567,8 +1567,8 @@ bool QMetaObject::invokeMethod(QObject *obj,
     \relates QMetaMethod
     \overload
 
-    Returns true if method \a m1 is not equal to method \a m2,
-    otherwise returns false.
+    Returns \c true if method \a m1 is not equal to method \a m2,
+    otherwise returns \c false.
 */
 
 /*!
@@ -2007,8 +2007,8 @@ QMetaMethod QMetaMethod::fromSignalImpl(const QMetaObject *metaObject, void **si
 }
 
 /*!
-    Invokes this method on the object \a object. Returns true if the member could be invoked.
-    Returns false if there is no such member or the parameters did not match.
+    Invokes this method on the object \a object. Returns \c true if the member could be invoked.
+    Returns \c false if there is no such member or the parameters did not match.
 
     The invocation can be either synchronous or asynchronous, depending on the
     \a connectionType:
@@ -2308,7 +2308,7 @@ bool QMetaMethod::invoke(QObject *object,
 /*!
     \fn bool QMetaEnum::isValid() const
 
-    Returns true if this enum is valid (has a name); otherwise returns
+    Returns \c true if this enum is valid (has a name); otherwise returns
     false.
 
     \sa name()
@@ -2388,7 +2388,7 @@ int QMetaEnum::value(int index) const
 
 
 /*!
-    Returns true if this enumerator is used as a flag; otherwise returns
+    Returns \c true if this enumerator is used as a flag; otherwise returns
     false.
 
     When used as flags, enumerators can be combined using the OR
@@ -2575,7 +2575,7 @@ static QByteArray qualifiedName(const QMetaEnum &e)
     attributes that specify its behavior: isReadable(), isWritable(),
     isDesignable(), isScriptable(), revision(), and isStored().
 
-    If the property is an enumeration, isEnumType() returns true; if the
+    If the property is an enumeration, isEnumType() returns \c true; if the
     property is an enumeration that is also a flag (i.e. its values
     can be combined using the OR operator), isEnumType() and
     isFlagType() both return true. The enumerator for these types is
@@ -2597,8 +2597,8 @@ static QByteArray qualifiedName(const QMetaEnum &e)
 /*!
     \fn bool QMetaProperty::isValid() const
 
-    Returns true if this property is valid (readable); otherwise
-    returns false.
+    Returns \c true if this property is valid (readable); otherwise
+    returns \c false.
 
     \sa isReadable()
 */
@@ -2722,8 +2722,8 @@ int QMetaProperty::propertyIndex() const
 }
 
 /*!
-    Returns true if the property's type is an enumeration value that
-    is used as a flag; otherwise returns false.
+    Returns \c true if the property's type is an enumeration value that
+    is used as a flag; otherwise returns \c false.
 
     Flags can be combined using the OR operator. A flag type is
     implicitly also an enum type.
@@ -2737,8 +2737,8 @@ bool QMetaProperty::isFlagType() const
 }
 
 /*!
-    Returns true if the property's type is an enumeration value;
-    otherwise returns false.
+    Returns \c true if the property's type is an enumeration value;
+    otherwise returns \c false.
 
     \sa enumerator(), isFlagType()
 */
@@ -2754,7 +2754,7 @@ bool QMetaProperty::isEnumType() const
 /*!
     \internal
 
-    Returns true if the property has a C++ setter function that
+    Returns \c true if the property has a C++ setter function that
     follows Qt's standard "name" / "setName" pattern. Designer and uic
     query hasStdCppSet() in order to avoid expensive
     QObject::setProperty() calls. All properties in Qt [should] follow
@@ -2853,7 +2853,7 @@ QVariant QMetaProperty::read(const QObject *object) const
 
 /*!
     Writes \a value as the property's value to the given \a object. Returns
-    true if the write succeeded; otherwise returns false.
+    true if the write succeeded; otherwise returns \c false.
 
     \sa read(), reset(), isWritable()
 */
@@ -2925,7 +2925,7 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
 
 /*!
     Resets the property for the given \a object with a reset method.
-    Returns true if the reset worked; otherwise returns false.
+    Returns \c true if the reset worked; otherwise returns \c false.
 
     Reset methods are optional; only a few properties support them.
 
@@ -2941,8 +2941,8 @@ bool QMetaProperty::reset(QObject *object) const
 }
 
 /*!
-    Returns true if this property can be reset to a default value; otherwise
-    returns false.
+    Returns \c true if this property can be reset to a default value; otherwise
+    returns \c false.
 
     \sa reset()
 */
@@ -2955,7 +2955,7 @@ bool QMetaProperty::isResettable() const
 }
 
 /*!
-    Returns true if this property is readable; otherwise returns false.
+    Returns \c true if this property is readable; otherwise returns \c false.
 
     \sa isWritable(), read(), isValid()
  */
@@ -2968,8 +2968,8 @@ bool QMetaProperty::isReadable() const
 }
 
 /*!
-    Returns true if this property has a corresponding change notify signal;
-    otherwise returns false.
+    Returns \c true if this property has a corresponding change notify signal;
+    otherwise returns \c false.
 
     \sa notifySignal()
  */
@@ -3048,7 +3048,7 @@ int QMetaProperty::revision() const
 }
 
 /*!
-    Returns true if this property is writable; otherwise returns
+    Returns \c true if this property is writable; otherwise returns
     false.
 
     \sa isReadable(), write()
@@ -3063,12 +3063,12 @@ bool QMetaProperty::isWritable() const
 
 
 /*!
-    Returns true if this property is designable for the given \a object;
-    otherwise returns false.
+    Returns \c true if this property is designable for the given \a object;
+    otherwise returns \c false.
 
-    If no \a object is given, the function returns false if the
+    If no \a object is given, the function returns \c false if the
     \c{Q_PROPERTY()}'s \c DESIGNABLE attribute is false; otherwise
-    returns true (if the attribute is true or is a function or expression).
+    returns \c true (if the attribute is true or is a function or expression).
 
     \sa isScriptable(), isStored()
 */
@@ -3089,10 +3089,10 @@ bool QMetaProperty::isDesignable(const QObject *object) const
 }
 
 /*!
-    Returns true if the property is scriptable for the given \a object;
-    otherwise returns false.
+    Returns \c true if the property is scriptable for the given \a object;
+    otherwise returns \c false.
 
-    If no \a object is given, the function returns false if the
+    If no \a object is given, the function returns \c false if the
     \c{Q_PROPERTY()}'s \c SCRIPTABLE attribute is false; otherwise returns
     true (if the attribute is true or is a function or expression).
 
@@ -3113,10 +3113,10 @@ bool QMetaProperty::isScriptable(const QObject *object) const
 }
 
 /*!
-    Returns true if the property is stored for \a object; otherwise returns
+    Returns \c true if the property is stored for \a object; otherwise returns
     false.
 
-    If no \a object is given, the function returns false if the
+    If no \a object is given, the function returns \c false if the
     \c{Q_PROPERTY()}'s \c STORED attribute is false; otherwise returns
     true (if the attribute is true or is a function or expression).
 
@@ -3137,13 +3137,13 @@ bool QMetaProperty::isStored(const QObject *object) const
 }
 
 /*!
-    Returns true if this property is designated as the \c USER
+    Returns \c true if this property is designated as the \c USER
     property, i.e., the one that the user can edit for \a object or
     that is significant in some other way.  Otherwise it returns
     false. e.g., the \c text property is the \c USER editable property
     of a QLineEdit.
 
-    If \a object is null, the function returns false if the \c
+    If \a object is null, the function returns \c false if the \c
     {Q_PROPERTY()}'s \c USER attribute is false. Otherwise it returns
     true.
 
@@ -3165,7 +3165,7 @@ bool QMetaProperty::isUser(const QObject *object) const
 
 /*!
     \since 4.6
-    Returns true if the property is constant; otherwise returns false.
+    Returns \c true if the property is constant; otherwise returns \c false.
 
     A property is constant if the \c{Q_PROPERTY()}'s \c CONSTANT attribute
     is set.
@@ -3180,7 +3180,7 @@ bool QMetaProperty::isConstant() const
 
 /*!
     \since 4.6
-    Returns true if the property is final; otherwise returns false.
+    Returns \c true if the property is final; otherwise returns \c false.
 
     A property is final if the \c{Q_PROPERTY()}'s \c FINAL attribute
     is set.
@@ -3196,10 +3196,10 @@ bool QMetaProperty::isFinal() const
 /*!
     \obsolete
 
-    Returns true if the property is editable for the given \a object;
-    otherwise returns false.
+    Returns \c true if the property is editable for the given \a object;
+    otherwise returns \c false.
 
-    If no \a object is given, the function returns false if the
+    If no \a object is given, the function returns \c false if the
     \c{Q_PROPERTY()}'s \c EDITABLE attribute is false; otherwise returns
     true (if the attribute is true or is a function or expression).
 

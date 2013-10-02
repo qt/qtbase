@@ -134,7 +134,7 @@ QHttpPart &QHttpPart::operator=(const QHttpPart &other)
 */
 
 /*!
-    Returns true if this object is the same as \a other (i.e., if they
+    Returns \c true if this object is the same as \a other (i.e., if they
     have the same headers and body).
 
     \sa operator!=()
@@ -147,7 +147,7 @@ bool QHttpPart::operator==(const QHttpPart &other) const
 /*!
     \fn bool QHttpPart::operator!=(const QHttpPart &other) const
 
-    Returns true if this object is not the same as \a other.
+    Returns \c true if this object is not the same as \a other.
 
     \sa operator==()
 */

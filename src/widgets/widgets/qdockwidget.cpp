@@ -1247,7 +1247,7 @@ QDockWidget::DockWidgetFeatures QDockWidget::features() const
     window "on top" of its parent QMainWindow, instead of being
     docked in the QMainWindow.
 
-    By default, this property is true.
+    By default, this property is \c true.
 
     \sa isWindow()
 */
@@ -1301,8 +1301,8 @@ Qt::DockWidgetAreas QDockWidget::allowedAreas() const
 /*!
     \fn bool QDockWidget::isAreaAllowed(Qt::DockWidgetArea area) const
 
-    Returns true if this dock widget can be placed in the given \a area;
-    otherwise returns false.
+    Returns \c true if this dock widget can be placed in the given \a area;
+    otherwise returns \c false.
 */
 
 /*! \reimp */

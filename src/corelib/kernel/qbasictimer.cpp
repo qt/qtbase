@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
     function with a timeout interval and with a pointer to a QObject
     subclass. When the timer times out it will send a timer event to
     the QObject subclass. The timer can be stopped at any time using
-    stop(). isActive() returns true for a timer that is running;
+    stop(). isActive() returns \c true for a timer that is running;
     i.e. it has been started, has not reached the timeout time, and
     has not been stopped. The timer's ID can be retrieved using
     timerId().
@@ -90,8 +90,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QBasicTimer::isActive() const
 
-    Returns true if the timer is running and has not been stopped; otherwise
-    returns false.
+    Returns \c true if the timer is running and has not been stopped; otherwise
+    returns \c false.
 
     \sa start(), stop()
 */

@@ -1580,7 +1580,7 @@ QStringList QRegularExpression::namedCaptureGroups() const
 }
 
 /*!
-    Returns true if the regular expression is a valid regular expression (that
+    Returns \c true if the regular expression is a valid regular expression (that
     is, it contains no syntax errors, etc.), or false otherwise. Use
     errorString() to obtain a textual description of the error.
 
@@ -1666,7 +1666,7 @@ QRegularExpressionMatchIterator QRegularExpression::globalMatch(const QString &s
 }
 
 /*!
-    Returns true if the regular expression is equal to \a re, or false
+    Returns \c true if the regular expression is equal to \a re, or false
     otherwise. Two QRegularExpression objects are equal if they have
     the same pattern string and the same pattern options.
 
@@ -1681,7 +1681,7 @@ bool QRegularExpression::operator==(const QRegularExpression &re) const
 /*!
     \fn bool QRegularExpression::operator!=(const QRegularExpression &re) const
 
-    Returns true if the regular expression is different from \a re, or
+    Returns \c true if the regular expression is different from \a re, or
     false otherwise.
 
     \sa operator==()
@@ -2058,7 +2058,7 @@ int QRegularExpressionMatch::capturedEnd(const QString &name) const
 }
 
 /*!
-    Returns true if the regular expression matched against the subject string,
+    Returns \c true if the regular expression matched against the subject string,
     or false otherwise.
 
     \sa QRegularExpression::match(), hasPartialMatch()
@@ -2069,7 +2069,7 @@ bool QRegularExpressionMatch::hasMatch() const
 }
 
 /*!
-    Returns true if the regular expression partially matched against the
+    Returns \c true if the regular expression partially matched against the
     subject string, or false otherwise.
 
     \note Only a match that explicitly used the one of the partial match types
@@ -2084,9 +2084,9 @@ bool QRegularExpressionMatch::hasPartialMatch() const
 }
 
 /*!
-    Returns true if the match object was obtained as a result from the
+    Returns \c true if the match object was obtained as a result from the
     QRegularExpression::match() function invoked on a valid QRegularExpression
-    object; returns false if the QRegularExpression was invalid.
+    object; returns \c false if the QRegularExpression was invalid.
 
     \sa QRegularExpression::match(), QRegularExpression::isValid()
 */
@@ -2159,9 +2159,9 @@ QRegularExpressionMatchIterator &QRegularExpressionMatchIterator::operator=(cons
 */
 
 /*!
-    Returns true if the iterator object was obtained as a result from the
+    Returns \c true if the iterator object was obtained as a result from the
     QRegularExpression::globalMatch() function invoked on a valid
-    QRegularExpression object; returns false if the QRegularExpression was
+    QRegularExpression object; returns \c false if the QRegularExpression was
     invalid.
 
     \sa QRegularExpression::globalMatch(), QRegularExpression::isValid()
@@ -2172,8 +2172,8 @@ bool QRegularExpressionMatchIterator::isValid() const
 }
 
 /*!
-    Returns true if there is at least one match result ahead of the iterator;
-    otherwise it returns false.
+    Returns \c true if there is at least one match result ahead of the iterator;
+    otherwise it returns \c false.
 
     \sa next()
 */

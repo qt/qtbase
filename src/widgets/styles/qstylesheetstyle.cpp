@@ -2379,7 +2379,7 @@ static QWidget *containerWidget(const QWidget *w)
 }
 
 /** \internal
-    returns true if the widget can NOT be styled directly
+    returns \c true if the widget can NOT be styled directly
  */
 static bool unstylable(const QWidget *w)
 {
@@ -5840,7 +5840,7 @@ void QStyleSheetStyle::clearWidgetFont(QWidget* w) const
 // Polish palette that should be used for a particular widget, with particular states
 // (eg. :focus, :hover, ...)
 // this is called by widgets that paint themself in their paint event
-// Returns true if there is a new palette in pal.
+// Returns \c true if there is a new palette in pal.
 bool QStyleSheetStyle::styleSheetPalette(const QWidget* w, const QStyleOption* opt, QPalette* pal)
 {
     if (!w || !opt || !pal)

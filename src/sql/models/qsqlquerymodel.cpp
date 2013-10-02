@@ -200,7 +200,7 @@ void QSqlQueryModel::fetchMore(const QModelIndex &parent)
 /*!
     \since 4.1
 
-    Returns true if it is possible to read more rows from the database.
+    Returns \c true if it is possible to read more rows from the database.
     This only affects databases that don't report back the size of a query
     (see QSqlDriver::hasFeature()).
 
@@ -493,7 +493,7 @@ void QSqlQueryModel::clear()
     \a value. This is useful if the model is used to
     display data in a view (e.g., QTableView).
 
-    Returns true if \a orientation is Qt::Horizontal and
+    Returns \c true if \a orientation is Qt::Horizontal and
     the \a section refers to a valid section; otherwise returns
     false.
 
@@ -594,7 +594,7 @@ QSqlRecord QSqlQueryModel::record() const
     \a parent parameter must always be an invalid QModelIndex, since
     the model does not support parent-child relationships.
 
-    Returns true if \a column is within bounds; otherwise returns false.
+    Returns \c true if \a column is within bounds; otherwise returns \c false.
 
     By default, inserted columns are empty. To fill them with data,
     reimplement data() and handle any inserted column separately:
@@ -636,7 +636,7 @@ bool QSqlQueryModel::insertColumns(int column, int count, const QModelIndex &par
     Removing columns effectively hides them. It does not affect the
     underlying QSqlQuery.
 
-    Returns true if the columns were removed; otherwise returns false.
+    Returns \c true if the columns were removed; otherwise returns \c false.
  */
 bool QSqlQueryModel::removeColumns(int column, int count, const QModelIndex &parent)
 {

@@ -53,7 +53,7 @@
 
 QT_BEGIN_NAMESPACE
 
-// Returns true iff a sufficiently recent valgrind is available.
+// Returns \c true iff a sufficiently recent valgrind is available.
 bool QBenchmarkValgrindUtils::haveValgrind()
 {
 #ifdef NVALGRIND
@@ -84,7 +84,7 @@ bool QBenchmarkValgrindUtils::haveValgrind()
 }
 
 // Reruns this program through callgrind.
-// Returns true upon success, otherwise false.
+// Returns \c true upon success, otherwise false.
 bool QBenchmarkValgrindUtils::rerunThroughCallgrind(const QStringList &origAppArgs, int &exitCode)
 {
     if (!QBenchmarkValgrindUtils::runCallgrindSubProcess(origAppArgs, exitCode)) {
@@ -187,7 +187,7 @@ QString QBenchmarkValgrindUtils::outFileBase(qint64 pid)
 
 // Reruns this program through callgrind, storing callgrind result files in the
 // current directory.
-// Returns true upon success, otherwise false.
+// Returns \c true upon success, otherwise false.
 bool QBenchmarkValgrindUtils::runCallgrindSubProcess(const QStringList &origAppArgs, int &exitCode)
 {
     const QString execFile(origAppArgs.at(0));
