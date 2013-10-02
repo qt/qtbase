@@ -189,6 +189,9 @@ public:
 private:
     friend class QJNIObject;
 
+    QJNIObjectPrivate(const char *className, const char *sig, va_list args);
+    QJNIObjectPrivate(jclass clazz, const char *sig, va_list args);
+
     template <typename T>
     T callMethod(const char *methodName,
                  const char *sig,
