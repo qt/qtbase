@@ -369,9 +369,12 @@ void QCocoaWindow::setVisible(bool visible)
                     [(NSPanel *)m_nsWindow setWorksWhenModal:YES];
                 }
             }
-        } else {
-            [m_contentView setHidden:NO];
         }
+        // In some cases, e.g. QDockWidget, the content view is hidden before moving to its own
+        // Cocoa window, and then shown again. Therefore, we test for the view being hidden even
+        // if it's attached to an NSWindow.
+        if ([m_contentView isHidden])
+            [m_contentView setHidden:NO];
     } else {
         // qDebug() << "close" << this;
         if (m_nsWindow) {
