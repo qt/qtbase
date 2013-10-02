@@ -751,7 +751,7 @@ void QHeaderView::moveSection(int from, int to)
     //int oldHeaderLength = length(); // ### for debugging; remove later
     d->initializeIndexMapping();
 
-    QBitArray sectionHidden = d->sectionHidden;
+    QBitArray sectionHidden = d->sectionsHiddenToBitVector();
     int *visualIndices = d->visualIndices.data();
     int *logicalIndices = d->logicalIndices.data();
     int logical = logicalIndices[from];
@@ -788,8 +788,8 @@ void QHeaderView::moveSection(int from, int to)
         }
     }
     if (!sectionHidden.isEmpty()) {
-        sectionHidden.setBit(to, d->sectionHidden.testBit(from));
-        d->sectionHidden = sectionHidden;
+        sectionHidden.setBit(to, d->isVisualIndexHidden(from));
+        d->setHiddenSectionsFromBitVector(sectionHidden);
     }
     visualIndices[logical] = to;
     logicalIndices[to] = logical;
@@ -860,11 +860,11 @@ void QHeaderView::swapSections(int first, int second)
     d->visualIndices[secondLogical] = first;
     d->logicalIndices[first] = secondLogical;
 
-    if (!d->sectionHidden.isEmpty()) {
-        bool firstHidden = d->sectionHidden.testBit(first);
-        bool secondHidden = d->sectionHidden.testBit(second);
-        d->sectionHidden.setBit(first, secondHidden);
-        d->sectionHidden.setBit(second, firstHidden);
+    if (!d->hiddenSectionSize.isEmpty()) {
+        bool firstHidden = d->isVisualIndexHidden(first);
+        bool secondHidden = d->isVisualIndexHidden(second);
+        d->setVisualIndexHidden(first, secondHidden);
+        d->setVisualIndexHidden(second, firstHidden);
     }
 
     d->viewport->update();
@@ -992,11 +992,11 @@ bool QHeaderView::isSectionHidden(int logicalIndex) const
 {
     Q_D(const QHeaderView);
     d->executePostedLayout();
-    if (logicalIndex >= d->sectionHidden.count() || logicalIndex < 0 || logicalIndex >= d->sectionCount())
+    if (d->hiddenSectionSize.isEmpty() || logicalIndex < 0 || logicalIndex >= d->sectionCount())
         return false;
     int visual = visualIndex(logicalIndex);
     Q_ASSERT(visual != -1);
-    return d->sectionHidden.testBit(visual);
+    return d->isVisualIndexHidden(visual);
 }
 
 /*!
@@ -1035,20 +1035,13 @@ void QHeaderView::setSectionHidden(int logicalIndex, bool hide)
         if (!d->hasAutoResizeSections())
             resizeSection(logicalIndex, 0);
         d->hiddenSectionSize.insert(logicalIndex, size);
-        if (d->sectionHidden.count() < count())
-            d->sectionHidden.resize(count());
-        d->sectionHidden.setBit(visual, true);
+        d->setVisualIndexHidden(visual, true);
         if (d->hasAutoResizeSections())
             d->doDelayedResizeSections();
     } else {
         int size = d->hiddenSectionSize.value(logicalIndex, d->defaultSectionSize);
         d->hiddenSectionSize.remove(logicalIndex);
-        if (d->hiddenSectionSize.isEmpty()) {
-            d->sectionHidden.clear();
-        } else {
-            Q_ASSERT(visual <= d->sectionHidden.count());
-            d->sectionHidden.setBit(visual, false);
-        }
+        d->setVisualIndexHidden(visual, false);
         resizeSection(logicalIndex, size);
     }
 }
@@ -1901,17 +1894,6 @@ void QHeaderView::sectionsInserted(const QModelIndex &parent,
         }
     }
 
-    // insert sections into sectionsHidden
-    if (!d->sectionHidden.isEmpty()) {
-        QBitArray sectionHidden(d->sectionHidden);
-        sectionHidden.resize(sectionHidden.count() + insertCount);
-        sectionHidden.fill(false, logicalFirst, logicalLast + 1);
-        for (int j = logicalLast + 1; j < sectionHidden.count(); ++j)
-            //here we simply copy the old sectionHidden
-            sectionHidden.setBit(j, d->sectionHidden.testBit(j - insertCount));
-        d->sectionHidden = sectionHidden;
-    }
-
     // insert sections into hiddenSectionSize
     QHash<int, int> newHiddenSectionSize; // from logical index to section size
     for (int i = 0; i < logicalFirst; ++i)
@@ -1960,19 +1942,6 @@ void QHeaderViewPrivate::updateHiddenSections(int logicalFirst, int logicalLast)
         if (q->isSectionHidden(j))
             newHiddenSectionSize[j - changeCount] = hiddenSectionSize[j];
     hiddenSectionSize = newHiddenSectionSize;
-
-    // remove sections from sectionsHidden
-    if (!sectionHidden.isEmpty()) {
-        const int newsize = qMin(sectionCount() - changeCount, sectionHidden.size());
-        QBitArray newSectionHidden(newsize);
-        for (int j = 0, k = 0; j < sectionHidden.size(); ++j) {
-            const int logical = logicalIndex(j);
-            if (logical < logicalFirst || logical > logicalLast) {
-                newSectionHidden[k++] = sectionHidden[j];
-            }
-        }
-        sectionHidden = newSectionHidden;
-    }
 }
 
 void QHeaderViewPrivate::_q_sectionsRemoved(const QModelIndex &parent,
@@ -2061,8 +2030,11 @@ void QHeaderViewPrivate::_q_layoutAboutToBeChanged()
         || model->columnCount(root) == 0)
         return;
 
-    for (int i = 0; i < sectionHidden.count(); ++i)
-        if (sectionHidden.testBit(i)) // ### note that we are using column or row 0
+    if (hiddenSectionSize.count() == 0)
+        return;
+
+    for (int i = 0; i < sectionItems.count(); ++i)
+        if (isVisualIndexHidden(i)) // ### note that we are using column or row 0
             persistentHiddenSections.append(orientation == Qt::Horizontal
                                             ? model->index(0, logicalIndex(i), root)
                                             : model->index(logicalIndex(i), 0, root));
@@ -2079,7 +2051,8 @@ void QHeaderViewPrivate::_q_layoutChanged()
         return;
     }
 
-    QBitArray oldSectionHidden = sectionHidden;
+    QBitArray oldSectionHidden = sectionsHiddenToBitVector();
+    oldSectionHidden.resize(sectionItems.size());
     bool sectionCountChanged = false;
 
     for (int i = 0; i < persistentHiddenSections.count(); ++i) {
@@ -2193,8 +2166,6 @@ void QHeaderView::initializeSections(int start, int end)
         d->stretchSections = newSectionCount;
     else if (d->globalResizeMode == ResizeToContents)
          d->contentsSections = newSectionCount;
-    if (!d->sectionHidden.isEmpty())
-        d->sectionHidden.resize(newSectionCount);
 
     if (newSectionCount > oldCount)
         d->createSectionItems(start, end, (end - start + 1) * d->defaultSectionSize, d->globalResizeMode);
@@ -3385,7 +3356,6 @@ void QHeaderViewPrivate::clear()
     visualIndices.clear();
     logicalIndices.clear();
     sectionSelected.clear();
-    sectionHidden.clear();
     hiddenSectionSize.clear();
     sectionItems.clear();
     invalidateCachedSizeHint();
@@ -3526,7 +3496,7 @@ void QHeaderViewPrivate::setDefaultSectionSize(int size)
         preventCursorChangeInSetOffset = true;
     for (int i = 0; i < sectionItems.count(); ++i) {
         QHeaderViewPrivate::SectionItem &section = sectionItems[i];
-        if (sectionHidden.isEmpty() || !sectionHidden.testBit(i)) { // resize on not hidden.
+        if (hiddenSectionSize.isEmpty() || !isVisualIndexHidden(i)) { // resize on not hidden.
             const int newSize = size;
             if (newSize != section.size) {
                 length += newSize - section.size; //the whole length is changed
@@ -3629,11 +3599,11 @@ int QHeaderViewPrivate::viewSectionSizeHint(int logical) const
 
 int QHeaderViewPrivate::adjustedVisualIndex(int visualIndex) const
 {
-    if (!sectionHidden.isEmpty()) {
+    if (!hiddenSectionSize.isEmpty()) {
         int adjustedVisualIndex = visualIndex;
         int currentVisualIndex = 0;
         for (int i = 0; i < sectionItems.count(); ++i) {
-            if (sectionHidden.testBit(i))
+            if (isVisualIndexHidden(i))
                 ++adjustedVisualIndex;
             else
                 ++currentVisualIndex;
@@ -3669,7 +3639,7 @@ void QHeaderViewPrivate::write(QDataStream &out) const
     out << visualIndices;
     out << logicalIndices;
 
-    out << sectionHidden;
+    out << sectionsHiddenToBitVector();
     out << hiddenSectionSize;
 
     out << length;
@@ -3706,6 +3676,7 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     in >> visualIndices;
     in >> logicalIndices;
 
+    QBitArray sectionHidden;
     in >> sectionHidden;
     in >> hiddenSectionSize;
 
@@ -3739,6 +3710,7 @@ bool QHeaderViewPrivate::read(QDataStream &in)
             newSectionItems.append(sectionItems[u]);
     }
     sectionItems = newSectionItems;
+    setHiddenSectionsFromBitVector(sectionHidden);
     recalcSectionStartPos();
 
     int tmpint;

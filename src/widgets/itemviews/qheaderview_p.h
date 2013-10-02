@@ -171,11 +171,11 @@ public:
     }
 
     inline bool isVisualIndexHidden(int visual) const {
-        return !sectionHidden.isEmpty() && sectionHidden.at(visual);
+        return sectionItems.at(visual).isHidden;
     }
 
     inline void setVisualIndexHidden(int visual, bool hidden) {
-        if (!sectionHidden.isEmpty()) sectionHidden.setBit(visual, hidden);
+        sectionItems[visual].isHidden = hidden;
     }
 
     inline bool hasAutoResizeSections() const {
@@ -258,7 +258,6 @@ public:
     mutable QVector<int> visualIndices; // visualIndex = visualIndices.at(logicalIndex)
     mutable QVector<int> logicalIndices; // logicalIndex = row or column in the model
     mutable QBitArray sectionSelected; // from logical index to bit
-    mutable QBitArray sectionHidden; // from visual index to bit
     mutable QHash<int, int> hiddenSectionSize; // from logical index to section size
     mutable QHash<int, int> cascadingSectionSize; // from visual index to section size
     mutable QSize cachedSizeHint;
@@ -301,7 +300,7 @@ public:
 
     struct SectionItem {
         uint size : 20;
-        uint reservedForIsHidden : 1;
+        uint isHidden : 1;
         uint resizeMode : 5;  // (holding QHeaderView::ResizeMode)
         uint currentlyUnusedPadding : 6;
 
@@ -311,9 +310,9 @@ public:
             int tmpDataStreamSectionCount; // recalcSectionStartPos() or set sectionStartposRecalc to true
         };                                 // to ensure that calculated_startpos will be calculated afterwards.
 
-        inline SectionItem() : size(0), resizeMode(QHeaderView::Interactive) {}
+        inline SectionItem() : size(0), isHidden(0), resizeMode(QHeaderView::Interactive) {}
         inline SectionItem(int length, QHeaderView::ResizeMode mode)
-            : size(length), resizeMode(mode), calculated_startpos(-1) {}
+            : size(length), isHidden(0), resizeMode(mode), calculated_startpos(-1) {}
         inline int sectionSize() const { return size; }
         inline int calculatedEndPos() const { return calculated_startpos + size; }
 #ifndef QT_NO_DATASTREAM
@@ -337,6 +336,23 @@ public:
         for (int i = 0; i < sectionItems.count(); ++i)
             len += sectionItems.at(i).size;
         return len;
+    }
+
+    QBitArray sectionsHiddenToBitVector() const
+    {
+        QBitArray sectionHidden;
+        if (!hiddenSectionSize.isEmpty()) {
+            sectionHidden.resize(sectionItems.size());
+            for (int u = 0; u < sectionItems.size(); ++u)
+                sectionHidden[u] = sectionItems.at(u).isHidden;
+        }
+        return sectionHidden;
+    }
+
+    void setHiddenSectionsFromBitVector(const QBitArray &sectionHidden) {
+        SectionItem *sectionData = sectionItems.data();
+        for (int i = 0; i < sectionHidden.count(); ++i)
+            sectionData[i].isHidden = sectionHidden.at(i);
     }
 
     int headerSectionSize(int visual) const;
