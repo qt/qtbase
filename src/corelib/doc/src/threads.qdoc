@@ -290,51 +290,46 @@
     \contentspage Thread Support in Qt
     \nextpage Reentrancy and Thread-Safety
 
-    While the main idea
-    with threads is that they should be as concurrent as possible,
-    there are points where threads must stop and wait for other
-    threads. For example, if two threads try to access the same
-    global variable simultaneously, the results are usually
-    undefined.
+    While the purpose of threads is to allow code to run in parallel,
+    there are times where threads must stop and wait for other
+    threads. For example, if two threads try to write to the same
+    variable simultaneously, the result is undefined. The principle of
+    forcing threads to wait for one another is called \e{mutual exclusion}.
+    It is a common technique for protecting shared resources such as data.
 
     Qt provides low-level primitives as well as high-level mechanisms
     for synchronizing threads.
 
     \section1 Low-Level Synchronization Primitives
 
-    QMutex provides a mutually exclusive lock, or mutex. At most one
-    thread can hold the mutex at any time. If a thread tries to
-    acquire the mutex while the mutex is already locked, the thread will
-    be put to sleep until the thread that currently holds the mutex
-    unlocks it. Mutexes are often used to protect accesses to shared
-    data (i.e., data that can be accessed from multiple threads
-    simultaneously). In the \l{Reentrancy and Thread-Safety} section
-    below, we will use it to make a class thread-safe.
+    QMutex is the basic class for enforcing mutual exclusion. A thread
+    locks a mutex in order to gain access to a shared resource. If a second
+    thread tries to lock the mutex while it is already locked, the second
+    thread will be put to sleep until the first thread completes its task
+    and unlocks the mutex.
 
     QReadWriteLock is similar to QMutex, except that it distinguishes
-    between "read" and "write" access to shared data and allows
-    multiple readers to access the data simultaneously. Using
-    QReadWriteLock instead of QMutex when it is possible can make
-    multithreaded programs more concurrent.
+    between "read" and "write" access. When a piece of data is not being
+    written to, it is safe for multiple threads to read from it simultaneously.
+    A QMutex forces multiple readers to take turns to read shared data, but a
+    QReadWriteLock allows simultaneous reading, thus improving parallelism.
 
     QSemaphore is a generalization of QMutex that protects a certain
-    number of identical resources. In contrast, a mutex protects
-    exactly one resource. The \l{threads/semaphores}{Semaphores}
-    example shows a typical application of semaphores: synchronizing
-    access to a circular buffer between a producer and a consumer.
+    number of identical resources. In contrast, a QMutex protects
+    exactly one resource. The \l{Semaphores Example} shows a typical application
+    of semaphores: synchronizing access to a circular buffer between a producer
+    and a consumer.
 
-    QWaitCondition allows a thread to wake up other threads when some
-    condition has been met. One or many threads can block waiting for
-    a QWaitCondition to set a condition with
-    \l{QWaitCondition::wakeOne()}{wakeOne()} or
-    \l{QWaitCondition::wakeAll()}{wakeAll()}. Use
-    \l{QWaitCondition::wakeOne()}{wakeOne()} to wake one randomly
-    selected event or \l{QWaitCondition::wakeAll()}{wakeAll()} to
-    wake them all. The \l{threads/waitconditions}{Wait Conditions}
-    example shows how to solve the producer-consumer problem using
-    QWaitCondition instead of QSemaphore.
+    QWaitCondition synchronizes threads not by enforcing mutual exclusion but by
+    providing a \e{condition variable}. While the other primitives make threads
+    wait until a resource is unlocked, QWaitCondition makes threads wait until a
+    particular condition has been met. To allow the waiting threads to proceed,
+    call \l{QWaitCondition::wakeOne()}{wakeOne()} to wake one randomly
+    selected thread or \l{QWaitCondition::wakeAll()}{wakeAll()} to wake them all
+    simultaneously. The \l{Wait Conditions Example} shows how to solve the
+    producer-consumer problem using QWaitCondition instead of QSemaphore.
 
-    Note that Qt's synchronization classes rely on the use of properly
+    \note Qt's synchronization classes rely on the use of properly
     aligned pointers. For instance, you cannot use packed classes with
     MSVC.
 
@@ -381,7 +376,14 @@
     system and runs the method immediately in the current thread.
 
     There is no risk of deadlocks when using the event system for thread
-    synchronization, unlike using low-level primitives.
+    synchronization, unlike using low-level primitives. However, the event system
+    does not enforce mutual exclusion. If invokable methods access shared data,
+    they must still be protected with low-level primitives.
+
+    Having said that, Qt's event system, along with \l{Implicit Sharing}{implicitly
+    shared} data structures, offers an alternative to traditional thread locking.
+    If signals and slots are used exclusively and no variables are shared between
+    threads, a multithreaded program can do without low-level primitives altogether.
 
     \sa QThread::exec(), {Threads and QObjects}
 */

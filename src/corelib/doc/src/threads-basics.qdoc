@@ -224,27 +224,11 @@
        has terminated.
     \endlist
 
-    \section2 Using a Mutex to Protect the Integrity of Data
+    \section2 Protecting the Integrity of Data
 
-    A mutex is an object that has \l{QMutex::}{lock()} and \l{QMutex::}{unlock()}
-    methods and remembers if it is already locked. A mutex is designed to be
-    called from multiple threads. \l{QMutex::}{lock()} returns immediately if
-    the mutex is not locked. The next call from another thread will find the
-    mutex in a locked state and then \l{QMutex::}{lock()} will block the thread
-    until the other thread calls \l{QMutex::}{unlock()}. This functionality can
-    make sure that a code section will be executed by only one thread at a time.
-
-    The following line sketches how a mutex can be used to make a method
-    thread-safe:
-
-    \code
-    void Worker::work()
-    {
-        this->mutex.lock();  // first thread can pass, other threads will be blocked here
-        doWork();
-        this->mutex.unlock();
-    }
-    \endcode
+    When writing a multithread application, extra care must be taken to avoid
+    data corruption. See \l{Synchronizing Threads} for a discussion on how to
+    use threads safely.
 
     \section2 Dealing with Asynchronous Execution
 
