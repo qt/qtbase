@@ -75,3 +75,12 @@ QtCore
     - qUpperBound (std::upper_bound)
     - qLess (std::less)
     - qGreater (std::greater)
+
+QtGui
+-----
+- [QTBUG-28228] Session Management:
+  The new QPlatformSessionManager class brings back the session management
+  functionality. It allows the implementation of platform specific behavior
+  related to session management. For platform that don't support this
+  feature the default behavior has not changed.
+  Both X11 and Windows session management are supported.
