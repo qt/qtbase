@@ -57,6 +57,7 @@
 
 #include <string.h> // strchr, strncmp, etc.
 #include <strings.h> // strncasecmp
+#include <clocale> // LC_CTYPE
 
 TableGenerator::TableGenerator() : m_state(NoErrors),
     m_systemComposeDir(QString())

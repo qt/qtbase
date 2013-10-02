@@ -49,6 +49,7 @@
 #include <qsocketnotifier.h>
 #include <X11/SM/SMlib.h>
 
+#include <cerrno> // ERANGE
 
 class QSmSocketReceiver : public QObject
 {
