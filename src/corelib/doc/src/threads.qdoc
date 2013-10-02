@@ -290,13 +290,17 @@
     \contentspage Thread Support in Qt
     \nextpage Reentrancy and Thread-Safety
 
-    The QMutex, QReadWriteLock, QSemaphore, and QWaitCondition
-    classes provide means to synchronize threads. While the main idea
+    While the main idea
     with threads is that they should be as concurrent as possible,
     there are points where threads must stop and wait for other
     threads. For example, if two threads try to access the same
     global variable simultaneously, the results are usually
     undefined.
+
+    Qt provides low-level primitives as well as high-level mechanisms
+    for synchronizing threads.
+
+    \section1 Low-Level Synchronization Primitives
 
     QMutex provides a mutually exclusive lock, or mutex. At most one
     thread can hold the mutex at any time. If a thread tries to
@@ -333,6 +337,29 @@
     Note that Qt's synchronization classes rely on the use of properly
     aligned pointers. For instance, you cannot use packed classes with
     MSVC.
+
+    \section1 High-Level Event Queues
+
+    Qt's \l{The Event System}{event system} is very useful for inter-thread
+    communication. Every thread may have its own event loop. To call a slot (or
+    any \l{Q_INVOKABLE}{invokable} method) in another thread, place that call in
+    the target thread's event loop. This lets the target thread finish its current
+    task before the slot starts running, while the original thread continues
+    running in parallel.
+
+    To place an invocation in an event loop, make a queued \l{Signals & Slots}
+    {signal-slot} connection. Whenever the signal is emitted, its arguments will
+    be recorded by the event system. The thread that the signal receiver
+    \l{QObject#Thread Affinity}{lives in} will then run the slot. Alternatively,
+    call QMetaObject::invokeMethod() to achieve the same effect without signals.
+    In both cases, a \l{Qt::QueuedConnection}{queued connection} must be used
+    because a \l{Qt::DirectConnection}{direct connection} bypasses the event
+    system and runs the method immediately in the current thread.
+
+    There is no risk of deadlocks when using the event system for thread
+    synchronization, unlike using low-level primitives.
+
+    \sa QThread::exec(), {Threads and QObjects}
 */
 
 /*!
