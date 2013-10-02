@@ -185,19 +185,9 @@
 
     \section2 QObject and Threads
 
-    A QObject is said to have a \e{thread affinity} or, in other words, that it
-    lives in a certain thread. This means that, at creation time, QObject saves
-    a pointer to the current thread. This information becomes relevant when an
-    event is posted with \l{QCoreApplication::}{postEvent()}. The event will be
-    put in the corresponding thread's event loop. If the thread where the
-    QObject lives doesn't have an event loop, the event will never be delivered.
-
-    To start an event loop, \l{QThread::}{exec()} must be called inside
-    \l{QThread::}{run()}. Thread affinity can be changed using
-    \l{QObject::}{moveToThread()}.
-
     As mentioned above, developers must always be careful when calling objects'
-    methods from other threads. Thread affinity does not change this situation.
+    methods from other threads. \l{QObject#Thread Affinity}{Thread affinity}
+    does not change this situation.
     Qt documentation marks several methods as thread-safe.
     \l{QCoreApplication::}{postEvent()} is a noteworthy example. A thread-safe
     method may be called from different threads simultaneously.
@@ -233,18 +223,6 @@
        thread before it is started as well as for collecting the result once it
        has terminated.
     \endlist
-
-    A QObject's parent must always be in the same thread. This has a surprising
-    consequence for objects generated within the \l{QThread::}{run()} method:
-
-    \code
-    void HelloThread::run()
-    {
-         QObject *object1 = new QObject(this);  //error, parent must be in the same thread
-         QObject object2;  // OK
-         QSharedPointer <QObject> object3(new QObject); // OK
-    }
-    \endcode
 
     \section2 Using a Mutex to Protect the Integrity of Data
 
