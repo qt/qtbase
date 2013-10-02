@@ -80,13 +80,8 @@ static void *eglContextForContext(QOpenGLContext *context);
 QEglFSIntegration::QEglFSIntegration()
     : mFontDb(new QGenericUnixFontDatabase)
     , mServices(new QGenericUnixServices)
+    , mInputContext(0)
 {
-#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
-    new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString() /* spec */, this);
-    new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
-    new QEvdevTouchScreenHandlerThread(QString() /* spec */, this);
-#endif
-
     QEglFSHooks::hooks()->platformInit();
 
     EGLint major, minor;
@@ -109,8 +104,6 @@ QEglFSIntegration::QEglFSIntegration()
 
     mScreen = new QEglFSScreen(mDisplay);
     screenAdded(mScreen);
-
-    mInputContext = QPlatformInputContextFactory::create();
 }
 
 QEglFSIntegration::~QEglFSIntegration()
@@ -168,6 +161,12 @@ QPlatformFontDatabase *QEglFSIntegration::fontDatabase() const
 QAbstractEventDispatcher *QEglFSIntegration::createEventDispatcher() const
 {
     return createUnixEventDispatcher();
+}
+
+void QEglFSIntegration::initialize()
+{
+    mInputContext = QPlatformInputContextFactory::create();
+    createInputHandlers();
 }
 
 QVariant QEglFSIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
@@ -307,6 +306,15 @@ EGLConfig QEglFSIntegration::chooseConfig(EGLDisplay display, const QSurfaceForm
     Chooser chooser(display, QEglFSHooks::hooks());
     chooser.setSurfaceFormat(format);
     return chooser.chooseConfig();
+}
+
+void QEglFSIntegration::createInputHandlers()
+{
+#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
+    new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString() /* spec */, this);
+    new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
+    new QEvdevTouchScreenHandlerThread(QString() /* spec */, this);
+#endif
 }
 
 QT_END_NAMESPACE

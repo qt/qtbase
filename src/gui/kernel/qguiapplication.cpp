@@ -1048,6 +1048,14 @@ void QGuiApplicationPrivate::createEventDispatcher()
     eventDispatcher = platform_integration->createEventDispatcher();
 }
 
+void QGuiApplicationPrivate::eventDispatcherReady()
+{
+    if (platform_integration == 0)
+        createPlatformIntegration();
+
+    platform_integration->initialize();
+}
+
 #if defined(QT_DEBUG) && defined(Q_OS_LINUX)
 // Find out if our parent process is gdb by looking at the 'exe' symlink under /proc.
 static bool runningUnderDebugger()

@@ -291,6 +291,18 @@ QPaintEngine *QPlatformIntegration::createImagePaintEngine(QPaintDevice *paintDe
 }
 
 /*!
+  Performs initialization steps that depend on having an event dispatcher
+  available. Called after the event dispatcher has been created.
+
+  Tasks that require an event dispatcher, for example creating socket notifiers, cannot be
+  performed in the constructor. Instead, they should be performed here. The default
+  implementation does nothing.
+*/
+void QPlatformIntegration::initialize()
+{
+}
+
+/*!
   Returns the platforms input context.
 
   The default implementation returns 0, implying no input method support.

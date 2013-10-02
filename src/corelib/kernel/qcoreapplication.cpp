@@ -479,6 +479,10 @@ void QCoreApplicationPrivate::createEventDispatcher()
 #endif
 }
 
+void QCoreApplicationPrivate::eventDispatcherReady()
+{
+}
+
 QThread *QCoreApplicationPrivate::theMainThread = 0;
 QThread *QCoreApplicationPrivate::mainThread()
 {
@@ -714,6 +718,7 @@ void QCoreApplication::init()
     }
 
     d->threadData->eventDispatcher = QCoreApplicationPrivate::eventDispatcher;
+    d->eventDispatcherReady();
 #endif
 
 #ifndef QT_NO_LIBRARY

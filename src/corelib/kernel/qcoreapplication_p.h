@@ -99,6 +99,7 @@ public:
     bool notify_helper(QObject *, QEvent *);
 
     virtual void createEventDispatcher();
+    virtual void eventDispatcherReady();
     static void removePostedEvent(QEvent *);
 #ifdef Q_OS_WIN
     static void removePostedTimerEvent(QObject *object, int timerId);
