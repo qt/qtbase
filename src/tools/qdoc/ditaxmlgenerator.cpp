@@ -1022,10 +1022,10 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             generateAnnotatedList(relative, marker, qdb_->getCppClasses());
         }
         else if (atom->string() == "classes") {
-            generateCompactList(Generic, relative, qdb_->getCppClasses(), true);
+            generateCompactList(Generic, relative, qdb_->getCppClasses(), true, QStringLiteral("Q"));
         }
         else if (atom->string() == "qmlclasses") {
-            generateCompactList(Generic, relative, qdb_->getQmlTypes(), true);
+            generateCompactList(Generic, relative, qdb_->getQmlTypes(), true, QStringLiteral(""));
         }
         else if (atom->string().contains("classesbymodule")) {
             QString arg = atom->string().trimmed();
@@ -1044,19 +1044,21 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             generateClassHierarchy(relative, qdb_->getCppClasses());
         }
         else if (atom->string() == "compatclasses") {
-            generateCompactList(Generic, relative, qdb_->getCompatibilityClasses(), false);
+            // "compatclasses" is no longer used. Delete this at some point.
+            // mws 03/10/2013
+            generateCompactList(Generic, relative, qdb_->getCompatibilityClasses(), false, QStringLiteral("Q"));
         }
         else if (atom->string() == "obsoleteclasses") {
-            generateCompactList(Generic, relative, qdb_->getObsoleteClasses(), false);
+            generateCompactList(Generic, relative, qdb_->getObsoleteClasses(), false, QStringLiteral("Q"));
         }
         else if (atom->string() == "obsoleteqmltypes") {
-            generateCompactList(Generic, relative, qdb_->getObsoleteQmlTypes(), false);
+            generateCompactList(Generic, relative, qdb_->getObsoleteQmlTypes(), false, QStringLiteral(""));
         }
         else if (atom->string() == "obsoletecppmembers") {
-            generateCompactList(Obsolete, relative, qdb_->getClassesWithObsoleteMembers(), false);
+            generateCompactList(Obsolete, relative, qdb_->getClassesWithObsoleteMembers(), false, QStringLiteral("Q"));
         }
         else if (atom->string() == "obsoleteqmlmembers") {
-            generateCompactList(Obsolete, relative, qdb_->getQmlTypesWithObsoleteMembers(), false);
+            generateCompactList(Obsolete, relative, qdb_->getQmlTypesWithObsoleteMembers(), false, QStringLiteral(""));
         }
         else if (atom->string() == "functionindex") {
             generateFunctionIndex(relative);
@@ -1065,10 +1067,14 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             generateLegaleseList(relative, marker);
         }
         else if (atom->string() == "mainclasses") {
-            generateCompactList(Generic, relative, qdb_->getMainClasses(), true);
+            // "mainclasses" is no longer used. Delete this at some point.
+            // mws 03/10/2013
+            generateCompactList(Generic, relative, qdb_->getMainClasses(), true, QStringLiteral("Q"));
         }
         else if (atom->string() == "services") {
-            generateCompactList(Generic, relative, qdb_->getServiceClasses(), false);
+            // "services" is no longer used. Delete this at some point.
+            // mws 03/10/2013
+            generateCompactList(Generic, relative, qdb_->getServiceClasses(), false, QStringLiteral("Q"));
         }
         else if (atom->string() == "overviews") {
             generateOverviewList(relative);
