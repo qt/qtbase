@@ -81,6 +81,18 @@ QIOSIntegration::QIOSIntegration()
     QWindowSystemInterface::registerTouchDevice(m_touchDevice);
 }
 
+QIOSIntegration::~QIOSIntegration()
+{
+    delete m_fontDatabase;
+    m_fontDatabase = 0;
+
+    delete m_inputContext;
+    m_inputContext = 0;
+
+    delete m_screen;
+    m_screen = 0;
+}
+
 bool QIOSIntegration::hasCapability(Capability cap) const
 {
     switch (cap) {
