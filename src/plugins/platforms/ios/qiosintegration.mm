@@ -126,7 +126,6 @@ QPlatformBackingStore *QIOSIntegration::createPlatformBackingStore(QWindow *wind
 // Used when the QWindow's surface type is set by the client to QSurface::OpenGLSurface
 QPlatformOpenGLContext *QIOSIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    Q_UNUSED(context);
     return new QIOSContext(context);
 }
 
