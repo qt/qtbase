@@ -148,8 +148,10 @@ namespace
             // Add memory guard at the end of the reserved stack, so that any stack
             // overflow during the user's main will trigger an exception at that point,
             // and not when we return and find that the current stack has been smashed.
+            // We allow read though, so that garbage-collection can pass through our
+            // stack in its mark phase without triggering access violations.
             uintptr_t memoryGuardStart = qAlignUp(memoryStart, kPageSize);
-            if (mprotect((void*)memoryGuardStart, kPageSize, PROT_NONE))
+            if (mprotect((void*)memoryGuardStart, kPageSize, PROT_READ))
                 qWarning() << "Failed to add memory guard:" << strerror(errno);
 
             // We don't consider the memory guard part of the usable stack space
