@@ -39,57 +39,19 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_UIKIT_H
-#define QPLATFORMINTEGRATION_UIKIT_H
-
-#include <qpa/qplatformintegration.h>
-#include <qpa/qplatformnativeinterface.h>
-#include <qpa/qwindowsysteminterface.h>
-
-#include "qiosapplicationstate.h"
+#ifndef QIOSSERVICES_H
+#define QIOSSERVICES_H
+#include <qpa/qplatformservices.h>
 
 QT_BEGIN_NAMESPACE
 
-class QIOSServices;
-
-class QIOSIntegration : public QPlatformIntegration, public QPlatformNativeInterface
+class QIOSServices : public QPlatformServices
 {
 public:
-    QIOSIntegration();
-    ~QIOSIntegration();
-
-    bool hasCapability(Capability cap) const;
-
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-
-    QPlatformFontDatabase *fontDatabase() const;
-    QPlatformInputContext *inputContext() const;
-    QPlatformServices *services() const Q_DECL_OVERRIDE;
-
-    QVariant styleHint(StyleHint hint) const;
-
-    QStringList themeNames() const;
-    QPlatformTheme *createPlatformTheme(const QString &name) const;
-
-    QAbstractEventDispatcher *createEventDispatcher() const;
-    QPlatformNativeInterface *nativeInterface() const;
-
-    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
-
-    QTouchDevice *touchDevice();
-private:
-    QPlatformFontDatabase *m_fontDatabase;
-    QPlatformInputContext *m_inputContext;
-    QPlatformScreen *m_screen;
-    QTouchDevice *m_touchDevice;
-    QIOSApplicationState m_applicationState;
-    QIOSServices *m_platformServices;
+    bool openUrl(const QUrl &url);
+    bool openDocument(const QUrl &url);
 };
 
 QT_END_NAMESPACE
 
-#endif
-
+#endif // QIOSSERVICES_H

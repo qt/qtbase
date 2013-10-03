@@ -39,57 +39,31 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_UIKIT_H
-#define QPLATFORMINTEGRATION_UIKIT_H
+#include "qiosservices.h"
 
-#include <qpa/qplatformintegration.h>
-#include <qpa/qplatformnativeinterface.h>
-#include <qpa/qwindowsysteminterface.h>
+#include <QtCore/qurl.h>
 
-#include "qiosapplicationstate.h"
+#import <UIKit/UIApplication.h>
 
 QT_BEGIN_NAMESPACE
 
-class QIOSServices;
-
-class QIOSIntegration : public QPlatformIntegration, public QPlatformNativeInterface
+bool QIOSServices::openUrl(const QUrl &url)
 {
-public:
-    QIOSIntegration();
-    ~QIOSIntegration();
+    if (url.scheme().isEmpty())
+        return openDocument(url);
 
-    bool hasCapability(Capability cap) const;
+    NSURL *nsUrl = url.toNSURL();
 
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+    if (![[UIApplication sharedApplication] canOpenURL:nsUrl])
+        return false;
 
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
+    return [[UIApplication sharedApplication] openURL:nsUrl];
+}
 
-    QPlatformFontDatabase *fontDatabase() const;
-    QPlatformInputContext *inputContext() const;
-    QPlatformServices *services() const Q_DECL_OVERRIDE;
-
-    QVariant styleHint(StyleHint hint) const;
-
-    QStringList themeNames() const;
-    QPlatformTheme *createPlatformTheme(const QString &name) const;
-
-    QAbstractEventDispatcher *createEventDispatcher() const;
-    QPlatformNativeInterface *nativeInterface() const;
-
-    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
-
-    QTouchDevice *touchDevice();
-private:
-    QPlatformFontDatabase *m_fontDatabase;
-    QPlatformInputContext *m_inputContext;
-    QPlatformScreen *m_screen;
-    QTouchDevice *m_touchDevice;
-    QIOSApplicationState m_applicationState;
-    QIOSServices *m_platformServices;
-};
+bool QIOSServices::openDocument(const QUrl &url)
+{
+    // FIXME: Implement using UIDocumentInteractionController
+    return QPlatformServices::openDocument(url);
+}
 
 QT_END_NAMESPACE
-
-#endif
-

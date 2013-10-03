@@ -48,6 +48,7 @@
 #include "qioscontext.h"
 #include "qiosinputcontext.h"
 #include "qiostheme.h"
+#include "qiosservices.h"
 
 #include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
 #include <QDir>
@@ -60,6 +61,7 @@ QIOSIntegration::QIOSIntegration()
     : m_fontDatabase(new QCoreTextFontDatabase)
     , m_inputContext(new QIOSInputContext)
     , m_screen(new QIOSScreen(QIOSScreen::MainScreen))
+    , m_platformServices(new QIOSServices)
 {
     if (![UIApplication sharedApplication]) {
         qWarning()
@@ -91,6 +93,9 @@ QIOSIntegration::~QIOSIntegration()
 
     delete m_screen;
     m_screen = 0;
+
+    delete m_platformServices;
+    m_platformServices = 0;
 }
 
 bool QIOSIntegration::hasCapability(Capability cap) const
@@ -141,6 +146,11 @@ QPlatformFontDatabase * QIOSIntegration::fontDatabase() const
 QPlatformInputContext *QIOSIntegration::inputContext() const
 {
     return m_inputContext;
+}
+
+QPlatformServices *QIOSIntegration::services() const
+{
+    return m_platformServices;
 }
 
 QVariant QIOSIntegration::styleHint(StyleHint hint) const
