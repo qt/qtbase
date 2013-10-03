@@ -69,7 +69,7 @@ typedef ITypedEventHandler<Core::CoreApplicationView *, Activation::IActivatedEv
 class AppContainer : public Microsoft::WRL::RuntimeClass<Core::IFrameworkView>
 {
 public:
-    AppContainer(int argc, wchar_t **argv) : m_argc(argc)
+    AppContainer(int argc, wchar_t **argv) : m_argc(argc), m_debugWait(false)
     {
         m_argv.reserve(argc);
         for (int i = 0; i < argc; ++i) {
@@ -95,6 +95,11 @@ public:
     HRESULT __stdcall Load(HSTRING) { return S_OK; }
     HRESULT __stdcall Run()
     {
+        // Wait for debugger before continuing
+        if (m_debugWait) {
+            while (!IsDebuggerPresent())
+                WaitForSingleObjectEx(GetCurrentThread(), 1, true);
+        }
         return main(m_argv.count(), m_argv.data());
     }
     HRESULT __stdcall Uninitialize() { return S_OK; }
@@ -113,6 +118,8 @@ private:
             foreach (const QByteArray &arg, QString::fromWCharArray(
                          WindowsGetStringRawBuffer(arguments, nullptr)).toLocal8Bit().split(' ')) {
                 m_argv.append(qstrdup(arg.constData()));
+                if (arg == "-qdebug")
+                    m_debugWait = true;
             }
         }
         return S_OK;
@@ -120,6 +127,7 @@ private:
 
     int m_argc;
     QVector<char *> m_argv;
+    bool m_debugWait;
     EventRegistrationToken m_activationToken;
 };
 
