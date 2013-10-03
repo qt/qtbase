@@ -106,17 +106,6 @@ static QDate msecsToDate(qint64 msecs)
     return QDate::fromJulianDay(jd);
 }
 
-static SYSTEMTIME msecsToSystemtime(qint64 forMSecsSinceEpoch)
-{
-    FILETIME utcFileTime;
-    ULONGLONG nsecs = (forMSecsSinceEpoch * 10000 ) + FILETIME_UNIX_EPOCH;
-    utcFileTime.dwLowDateTime  = (DWORD) (nsecs & 0xFFFFFFFF);
-    utcFileTime.dwHighDateTime = (DWORD) (nsecs >> 32);
-    SYSTEMTIME utcTime;
-    FileTimeToSystemTime(&utcFileTime, &utcTime);
-    return utcTime;
-}
-
 static qint64 systemtimeToMsecs(const SYSTEMTIME &systemtime)
 {
     FILETIME utcFileTime;

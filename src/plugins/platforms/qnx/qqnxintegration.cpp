@@ -294,6 +294,9 @@ QQnxIntegration::~QQnxIntegration()
     delete m_bpsEventFilter;
 #endif
 
+    // In case the event-dispatcher was never transferred to QCoreApplication
+    delete m_eventDispatcher;
+
     delete m_screenEventHandler;
 
     // Destroy all displays
@@ -386,10 +389,15 @@ void QQnxIntegration::moveToScreen(QWindow *window, int screen)
     platformWindow->setScreen(platformScreen);
 }
 
-QAbstractEventDispatcher *QQnxIntegration::guiThreadEventDispatcher() const
+QAbstractEventDispatcher *QQnxIntegration::createEventDispatcher() const
 {
     qIntegrationDebug() << Q_FUNC_INFO;
-    return m_eventDispatcher;
+
+    // We transfer ownersip of the event-dispatcher to QtCoreApplication
+    QAbstractEventDispatcher *eventDispatcher = m_eventDispatcher;
+    m_eventDispatcher = 0;
+
+    return eventDispatcher;
 }
 
 QPlatformNativeInterface *QQnxIntegration::nativeInterface() const

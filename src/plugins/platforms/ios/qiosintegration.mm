@@ -48,6 +48,7 @@
 #include "qioscontext.h"
 #include "qiosinputcontext.h"
 #include "qiostheme.h"
+#include "qiosservices.h"
 
 #include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
 #include <QDir>
@@ -60,6 +61,7 @@ QIOSIntegration::QIOSIntegration()
     : m_fontDatabase(new QCoreTextFontDatabase)
     , m_inputContext(new QIOSInputContext)
     , m_screen(new QIOSScreen(QIOSScreen::MainScreen))
+    , m_platformServices(new QIOSServices)
 {
     if (![UIApplication sharedApplication]) {
         qWarning()
@@ -79,6 +81,21 @@ QIOSIntegration::QIOSIntegration()
     m_touchDevice->setType(QTouchDevice::TouchScreen);
     m_touchDevice->setCapabilities(QTouchDevice::Position | QTouchDevice::NormalizedPosition);
     QWindowSystemInterface::registerTouchDevice(m_touchDevice);
+}
+
+QIOSIntegration::~QIOSIntegration()
+{
+    delete m_fontDatabase;
+    m_fontDatabase = 0;
+
+    delete m_inputContext;
+    m_inputContext = 0;
+
+    delete m_screen;
+    m_screen = 0;
+
+    delete m_platformServices;
+    m_platformServices = 0;
 }
 
 bool QIOSIntegration::hasCapability(Capability cap) const
@@ -113,7 +130,7 @@ QPlatformOpenGLContext *QIOSIntegration::createPlatformOpenGLContext(QOpenGLCont
     return new QIOSContext(context);
 }
 
-QAbstractEventDispatcher *QIOSIntegration::guiThreadEventDispatcher() const
+QAbstractEventDispatcher *QIOSIntegration::createEventDispatcher() const
 {
     if (isQtApplication())
         return new QIOSEventDispatcher;
@@ -129,6 +146,11 @@ QPlatformFontDatabase * QIOSIntegration::fontDatabase() const
 QPlatformInputContext *QIOSIntegration::inputContext() const
 {
     return m_inputContext;
+}
+
+QPlatformServices *QIOSIntegration::services() const
+{
+    return m_platformServices;
 }
 
 QVariant QIOSIntegration::styleHint(StyleHint hint) const

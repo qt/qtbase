@@ -202,6 +202,14 @@ MyRecord record(int row) const
     Assigns \a other to this cache and returns a reference to this cache.
 */
 
+/*!
+    \fn QContiguousCache<T> &QContiguousCache::operator=(QContiguousCache<T> &&other)
+
+    Move-assigns \a other to this QContiguousCache instance.
+
+    \since 5.2
+*/
+
 /*! \fn void QContiguousCache::swap(QContiguousCache<T> &other)
     \since 4.8
 

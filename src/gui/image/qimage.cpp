@@ -602,6 +602,23 @@ bool QImageData::checkForAlphaPixels() const
 */
 
 /*!
+    \fn QImage::QImage(QImage &&other)
+
+    Move-constructs a QImage instance, making it point at the same
+    object that \a other was pointing to.
+
+    \since 5.2
+*/
+
+/*!
+    \fn QImage &operator=(QImage &&other)
+
+    Move-assigns \a other to this QImage instance.
+
+    \since 5.2
+*/
+
+/*!
     \typedef QImageCleanupFunction
     \relates QImage
     \since 5.0

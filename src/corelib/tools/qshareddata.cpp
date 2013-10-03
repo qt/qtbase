@@ -306,6 +306,14 @@ QT_BEGIN_NAMESPACE
   data pointer in \a other.
  */
 
+/*!
+    \fn QSharedDataPointer<T> &QSharedDataPointer::operator=(QSharedDataPointer<T> &&other)
+
+    Move-assigns \a other to this QSharedDataPointer instance.
+
+    \since 5.2
+*/
+
 /*! \fn bool QSharedDataPointer::operator==(const QSharedDataPointer<T>& other) const
     Returns true if \a other and \e this have the same \e{d pointer}.
     This function does \e not call detach().
@@ -318,6 +326,15 @@ QT_BEGIN_NAMESPACE
 
 /*! \fn QSharedDataPointer::QSharedDataPointer()
     Constructs a QSharedDataPointer initialized with a null \e{d pointer}.
+*/
+
+/*!
+    \fn QSharedDataPointer::QSharedDataPointer(QSharedDataPointer &&o)
+
+    Move-constructs a QSharedDataPointer instance, making it point at the same
+    object that \a o was pointing to.
+
+    \since 5.2
 */
 
 /*! \fn QSharedDataPointer::~QSharedDataPointer()
@@ -465,6 +482,14 @@ QT_BEGIN_NAMESPACE
     Returns true if \a other and \e this have the same \e{d pointer}.
 */
 
+/*!
+    \fn QExplicitlySharedDataPointer<T> &QExplicitlySharedDataPointer::operator=(QExplicitlySharedDataPointer<T> &&other)
+
+    Move-assigns \a other to this QExplicitlySharedDataPointer instance.
+
+    \since 5.2
+*/
+
 /*! \fn bool QExplicitlySharedDataPointer::operator==(const T* ptr) const
     Returns true if the \e{d pointer} of \e this is \a ptr.
  */
@@ -487,6 +512,15 @@ QT_BEGIN_NAMESPACE
     Decrements the reference count of the shared data object.
     If the reference count becomes 0, the shared data object
     is deleted. \e This is then destroyed.
+*/
+
+/*!
+    \fn QExplicitlySharedDataPointer::QExplicitlySharedDataPointer(QExplicitlySharedDataPointer &&o)
+
+    Move-constructs a QExplicitlySharedDataPointer instance, making it point at the same
+    object that \a o was pointing to.
+
+    \since 5.2
 */
 
 /*! \fn QExplicitlySharedDataPointer::QExplicitlySharedDataPointer(T* sharedData)

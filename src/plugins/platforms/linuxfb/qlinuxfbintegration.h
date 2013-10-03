@@ -61,14 +61,13 @@ public:
     QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
+    QAbstractEventDispatcher *createEventDispatcher() const;
     QList<QPlatformScreen *> screens() const;
     QPlatformFontDatabase *fontDatabase() const;
 
 private:
     QLinuxFbScreen *m_primaryScreen;
     QPlatformFontDatabase *m_fontDb;
-    QAbstractEventDispatcher *m_eventDispatcher;
 };
 
 QT_END_NAMESPACE

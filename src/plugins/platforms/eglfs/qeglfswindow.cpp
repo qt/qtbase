@@ -114,8 +114,9 @@ void QEglFSWindow::create()
     }
 
     window()->setSurfaceType(QSurface::OpenGLSurface);
-    setGeometry(screen()->availableGeometry());
-    QWindowSystemInterface::handleExposeEvent(window(), QRegion(screen()->availableGeometry()));
+    m_flags |= HasNativeWindow;
+    setGeometry(QRect()); // will become fullscreen
+    QWindowSystemInterface::handleExposeEvent(window(), geometry());
 
     EGLDisplay display = static_cast<QEglFSScreen *>(screen())->display();
     QSurfaceFormat platformFormat = QEglFSHooks::hooks()->surfaceFormatFor(window()->requestedFormat());
@@ -124,7 +125,6 @@ void QEglFSWindow::create()
 
     resetSurface();
 
-    m_flags |= HasNativeWindow;
     if (screen()->primarySurface() == EGL_NO_SURFACE) {
         screen()->setPrimarySurface(m_surface);
         m_flags |= IsRasterRoot;
@@ -210,6 +210,17 @@ void QEglFSWindow::setGeometry(const QRect &r)
 
     if (rect != r)
         QWindowSystemInterface::handleGeometryChange(window(), rect);
+}
+
+QRect QEglFSWindow::geometry() const
+{
+    // For yet-to-become-fullscreen windows report the geometry covering the entire
+    // screen. This is particularly important for Quick where the root object may get
+    // sized to some geometry queried before calling create().
+    if (!m_flags.testFlag(Created) && screen()->primarySurface() == EGL_NO_SURFACE)
+        return screen()->availableGeometry();
+
+    return QPlatformWindow::geometry();
 }
 
 WId QEglFSWindow::winId() const

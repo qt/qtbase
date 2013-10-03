@@ -1260,11 +1260,11 @@ void QWindowsWindow::setGeometry(const QRect &rectIn)
         const QWindowsGeometryHint hint(window(), m_data.customMargins);
         if (!hint.validSize(newSize)) {
             qWarning("%s: Attempt to set a size (%dx%d) violating the constraints"
-                     "(%dx%d - %dx%d) on window '%s'.", __FUNCTION__,
+                     "(%dx%d - %dx%d) on window %s/'%s'.", __FUNCTION__,
                      newSize.width(), newSize.height(),
                      hint.minimumSize.width(), hint.minimumSize.height(),
                      hint.maximumSize.width(), hint.maximumSize.height(),
-                     qPrintable(window()->objectName()));
+                     window()->metaObject()->className(), qPrintable(window()->objectName()));
         }
     }
     if (m_data.hwnd) {
@@ -1273,13 +1273,13 @@ void QWindowsWindow::setGeometry(const QRect &rectIn)
         // notify and warn.
         setGeometry_sys(rect);
         if (m_data.geometry != rect) {
-            qWarning("%s: Unable to set geometry %dx%d+%d+%d on '%s'."
+            qWarning("%s: Unable to set geometry %dx%d+%d+%d on %s/'%s'."
                      " Resulting geometry:  %dx%d+%d+%d "
                      "(frame: %d, %d, %d, %d, custom margin: %d, %d, %d, %d"
                      ", minimum size: %dx%d, maximum size: %dx%d).",
                      __FUNCTION__,
                      rect.width(), rect.height(), rect.x(), rect.y(),
-                     qPrintable(window()->objectName()),
+                     window()->metaObject()->className(), qPrintable(window()->objectName()),
                      m_data.geometry.width(), m_data.geometry.height(),
                      m_data.geometry.x(), m_data.geometry.y(),
                      m_data.frame.left(), m_data.frame.top(),
@@ -1838,8 +1838,9 @@ bool QWindowsWindow::setMouseGrabEnabled(bool grab)
         return false;
     }
     if (!isVisible() && grab) {
-        qWarning("%s: Not setting mouse grab for invisible window %s",
-                 __FUNCTION__, qPrintable(window()->objectName()));
+        qWarning("%s: Not setting mouse grab for invisible window %s/'%s'",
+                 __FUNCTION__, window()->metaObject()->className(),
+                 qPrintable(window()->objectName()));
         return false;
     }
     // release grab or an explicit grab overriding autocapture: Clear flag.
@@ -2091,8 +2092,10 @@ EGLSurface QWindowsWindow::ensureEglSurfaceHandle(const QWindowsWindow::QWindows
         m_staticEglContext = staticContext;
         m_eglSurface = eglCreateWindowSurface(staticContext->display(), config, (EGLNativeWindowType)m_data.hwnd, NULL);
         if (m_eglSurface == EGL_NO_SURFACE)
-            qWarning("%s: Could not create the egl surface (eglCreateWindowSurface failed): error = 0x%x\n",
-                     Q_FUNC_INFO, eglGetError());
+            qWarning("%s: Could not create the egl surface for %s/'%s' (eglCreateWindowSurface failed): error = 0x%x\n",
+                     Q_FUNC_INFO, window()->metaObject()->className(),
+                     qPrintable(window()->objectName()), eglGetError());
+
         if (QWindowsContext::verboseGL)
             qDebug("%s: Created EGL surface %p, this = %p",
                    __FUNCTION__, m_eglSurface, this);

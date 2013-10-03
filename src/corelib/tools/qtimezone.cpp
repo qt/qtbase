@@ -425,6 +425,15 @@ QTimeZone &QTimeZone::operator=(const QTimeZone &other)
 }
 
 /*!
+    \fn QTimeZone &QTimeZone::operator=(QTimeZone &&other)
+
+    Move-assigns \a other to this QTimeZone instance, transferring the
+    ownership of the managed pointer to this instance.
+
+    \since 5.2
+*/
+
+/*!
     Returns true if this time zone is equal to the \a other time zone.
 */
 

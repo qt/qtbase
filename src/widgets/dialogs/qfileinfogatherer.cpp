@@ -94,7 +94,9 @@ QFileInfoGatherer::QFileInfoGatherer(QObject *parent)
 QFileInfoGatherer::~QFileInfoGatherer()
 {
     abort.store(true);
+    QMutexLocker locker(&mutex);
     condition.wakeAll();
+    locker.unlock();
     wait();
 }
 

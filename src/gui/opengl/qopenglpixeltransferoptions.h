@@ -46,7 +46,7 @@
 
 #if !defined(QT_NO_OPENGL)
 
-#include <QSharedDataPointer>
+#include <QtCore/QSharedDataPointer>
 
 QT_BEGIN_NAMESPACE
 

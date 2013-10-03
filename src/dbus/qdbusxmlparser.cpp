@@ -103,7 +103,7 @@ static bool parseAnnotation(const QXmlStreamReader &xml, QDBusIntrospection::Ann
     annotations.insert(name, value);
     if (!interfaceAnnotation)
         ifaceData->introspection += QLatin1String("  ");
-    ifaceData->introspection += QLatin1String("    <annotation value=\"") + value + QLatin1String("\" name=\"") + name + QLatin1String("\"/>\n");
+    ifaceData->introspection += QLatin1String("    <annotation value=\"") + value.toHtmlEscaped() + QLatin1String("\" name=\"") + name + QLatin1String("\"/>\n");
     return true;
 }
 

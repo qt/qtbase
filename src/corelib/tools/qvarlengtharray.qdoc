@@ -70,8 +70,8 @@
     structure. The main differences between the two classes are:
 
     \list
-    \li QVarLengthArray's API is much more low-level. It provides no
-       iterators and lacks much of QVector's functionality.
+    \li QVarLengthArray's API is much more low-level and it lacks
+        some of QVector's functionality.
 
     \li QVarLengthArray doesn't initialize the memory if the value is
        a basic type. (QVector always does.)

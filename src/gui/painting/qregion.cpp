@@ -361,6 +361,14 @@ void QRegion::exec(const QByteArray &buffer, int ver, QDataStream::ByteOrder byt
 */
 
 /*!
+    \fn QRegion &QRegion::operator=(QRegion &&other)
+
+    Move-assigns \a other to this QRegion instance.
+
+    \since 5.2
+*/
+
+/*!
     \fn void QRegion::swap(QRegion &other)
     \since 4.8
 

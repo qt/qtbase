@@ -39,56 +39,19 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_KMS_H
-#define QPLATFORMINTEGRATION_KMS_H
-
-#include <qpa/qplatformintegration.h>
-#include <qpa/qplatformnativeinterface.h>
-#include <QtPlatformSupport/private/qdevicediscovery_p.h>
+#ifndef QIOSSERVICES_H
+#define QIOSSERVICES_H
+#include <qpa/qplatformservices.h>
 
 QT_BEGIN_NAMESPACE
 
-class QKmsScreen;
-class QKmsDevice;
-class QKmsVTHandler;
-
-class QKmsIntegration : public QObject, public QPlatformIntegration
+class QIOSServices : public QPlatformServices
 {
-    Q_OBJECT
-
 public:
-    QKmsIntegration();
-    ~QKmsIntegration();
-
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-
-    QPlatformFontDatabase *fontDatabase() const;
-    QAbstractEventDispatcher *createEventDispatcher() const;
-
-    QPlatformNativeInterface *nativeInterface() const;
-
-    void addScreen(QKmsScreen *screen);
-    QObject *createDevice(const char *);
-
-private slots:
-    void addDevice(const QString &deviceNode);
-    void removeDevice(const QString &deviceNode);
-
-private:
-    QStringList findDrmDevices();
-
-    QList<QPlatformScreen *> m_screens;
-    QList<QKmsDevice *> m_devices;
-    QPlatformFontDatabase *m_fontDatabase;
-    QPlatformNativeInterface *m_nativeInterface;
-    QKmsVTHandler *m_vtHandler;
-    QDeviceDiscovery *m_deviceDiscovery;
+    bool openUrl(const QUrl &url);
+    bool openDocument(const QUrl &url);
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QIOSSERVICES_H

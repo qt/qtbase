@@ -733,6 +733,14 @@ static const struct {
 */
 
 /*!
+    \fn QKeySequence &QKeySequence::operator=(QKeySequence &&other)
+
+    Move-assigns \a other to this QKeySequence instance.
+
+    \since 5.2
+*/
+
+/*!
     \since 4.2
 
     Constructs a QKeySequence object for the given \a key.

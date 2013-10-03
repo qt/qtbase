@@ -109,6 +109,14 @@ void QMimeTypePrivate::addGlobPattern(const QString &pattern)
  */
 
 /*!
+    \fn QMimeType &QMimeType::operator=(QMimeType &&other)
+
+    Move-assigns \a other to this QMimeType instance.
+
+    \since 5.2
+*/
+
+/*!
     \fn QMimeType::QMimeType();
     Constructs this QMimeType object initialized with default property values that indicate an invalid MIME type.
  */

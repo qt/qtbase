@@ -516,6 +516,15 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa clear()
 */
 
+/*!
+    \fn QMap::QMap(QMap<Key, T> &&other)
+
+    Move-constructs a QMap instance, making it point at the same
+    object that \a other was pointing to.
+
+    \since 5.2
+*/
+
 /*! \fn QMap::QMap(const QMap<Key, T> &other)
 
     Constructs a copy of \a other.
@@ -565,6 +574,14 @@ void QMapDataBase::freeData(QMapDataBase *d)
 /*! \fn QMap<Key, T> &QMap::operator=(const QMap<Key, T> &other)
 
     Assigns \a other to this map and returns a reference to this map.
+*/
+
+/*!
+    \fn QMap<Key, T> &QMap::operator=(QMap<Key, T> &&other)
+
+    Move-assigns \a other to this QMap instance.
+
+    \since 5.2
 */
 
 /*! \fn void QMap::swap(QMap<Key, T> &other)

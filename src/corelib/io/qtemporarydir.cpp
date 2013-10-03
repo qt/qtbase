@@ -299,7 +299,13 @@ bool QTemporaryDir::remove()
     Q_ASSERT(!path().isEmpty());
     Q_ASSERT(path() != QLatin1String("."));
 
-    return QDir(path()).removeRecursively();
+    const bool result = QDir(path()).removeRecursively();
+    if (!result) {
+        qWarning() << "QTemporaryDir: Unable to remove"
+                   << QDir::toNativeSeparators(path())
+                   << "most likely due to the presence of read-only files.";
+    }
+    return result;
 }
 
 QT_END_NAMESPACE

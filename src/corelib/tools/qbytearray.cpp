@@ -910,6 +910,15 @@ static inline char qToLower(char c)
     \sa operator=()
 */
 
+/*!
+    \fn QByteArray::QByteArray(QByteArray &&other)
+
+    Move-constructs a QByteArray instance, making it point at the same
+    object that \a other was pointing to.
+
+    \since 5.2
+*/
+
 /*! \fn QByteArray::QByteArray(QByteArrayDataPtr dd)
 
     \internal
@@ -964,6 +973,14 @@ QByteArray &QByteArray::operator=(const char *str)
     d = x;
     return *this;
 }
+
+/*!
+    \fn QByteArray &QByteArray::operator=(QByteArray &&other)
+
+    Move-assigns \a other to this QByteArray instance.
+
+    \since 5.2
+*/
 
 /*! \fn void QByteArray::swap(QByteArray &other)
     \since 4.8

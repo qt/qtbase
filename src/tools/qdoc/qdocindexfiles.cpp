@@ -202,9 +202,8 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         QmlClassNode* qcn = new QmlClassNode(parent, name);
         qcn->setTitle(element.attribute("title"));
         QString qmlModuleName = element.attribute("qml-module-name");
-        QString qmlModuleVersion = element.attribute("qml-module-version");
         if (!qmlModuleName.isEmpty())
-            qdb_->addToQmlModule(qmlModuleName + " " + qmlModuleVersion, qcn);
+            qdb_->addToQmlModule(qmlModuleName, qcn);
         QString qmlFullBaseName = element.attribute("qml-base-type");
         if (!qmlFullBaseName.isEmpty())
             qcn->setQmlBaseName(qmlFullBaseName);
@@ -273,50 +272,58 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
     else if (element.nodeName() == "page") {
         Node::SubType subtype;
         Node::PageType ptype = Node::NoPageType;
-        if (element.attribute("subtype") == "example") {
+        QString attr = element.attribute("subtype");
+        if (attr == "example") {
             subtype = Node::Example;
             ptype = Node::ExamplePage;
         }
-        else if (element.attribute("subtype") == "header") {
+        else if (attr == "header") {
             subtype = Node::HeaderFile;
             ptype = Node::ApiPage;
         }
-        else if (element.attribute("subtype") == "file") {
+        else if (attr == "file") {
             subtype = Node::File;
             ptype = Node::NoPageType;
         }
-        else if (element.attribute("subtype") == "group") {
+        else if (attr == "group") {
             subtype = Node::Group;
             ptype = Node::OverviewPage;
         }
-        else if (element.attribute("subtype") == "module") {
+        else if (attr == "module") {
             subtype = Node::Module;
             ptype = Node::OverviewPage;
         }
-        else if (element.attribute("subtype") == "qmlmodule") {
+        else if (attr == "qmlmodule") {
             subtype = Node::QmlModule;
             ptype = Node::OverviewPage;
         }
-        else if (element.attribute("subtype") == "page") {
+        else if (attr == "page") {
             subtype = Node::Page;
             ptype = Node::ArticlePage;
         }
-        else if (element.attribute("subtype") == "externalpage") {
+        else if (attr == "externalpage") {
             subtype = Node::ExternalPage;
             ptype = Node::ArticlePage;
         }
-        else if (element.attribute("subtype") == "qmlclass") {
+        else if (attr == "qmlclass") {
             subtype = Node::QmlClass;
             ptype = Node::ApiPage;
         }
-        else if (element.attribute("subtype") == "qmlbasictype") {
+        else if (attr == "qmlbasictype") {
             subtype = Node::QmlBasicType;
             ptype = Node::ApiPage;
         }
         else
             return;
 
-        DocNode* docNode = new DocNode(parent, name, subtype, ptype);
+        DocNode* docNode = 0;
+        if (subtype == Node::QmlModule) {
+            QString t = element.attribute("qml-module-name") + " " +
+                element.attribute("qml-module-version");
+            docNode = qdb_->addQmlModule(t);
+        }
+        else
+            docNode = new DocNode(parent, name, subtype, ptype);
         docNode->setTitle(element.attribute("title"));
 
         if (element.hasAttribute("location"))
@@ -650,8 +657,9 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
         nodeName = "page";
         if (node->subType() == Node::QmlClass) {
             nodeName = "qmlclass";
-            qmlModuleName = node->qmlModuleName();
-            qmlModuleVersion = node->qmlModuleVersion();
+            QmlModuleNode* qmn = node->qmlModule();
+            if (qmn)
+                qmlModuleName = qmn->qmlModuleName();
             qmlFullBaseName = node->qmlFullBaseName();
         }
         else if (node->subType() == Node::QmlBasicType)
@@ -771,9 +779,14 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     writer.writeAttribute("status", status);
 
     writer.writeAttribute("name", objName);
+    if (node->isQmlModule()) {
+        qmlModuleName = node->qmlModuleName();
+        qmlModuleVersion = node->qmlModuleVersion();
+    }
     if (!qmlModuleName.isEmpty()) {
         writer.writeAttribute("qml-module-name", qmlModuleName);
-        writer.writeAttribute("qml-module-version", qmlModuleVersion);
+        if (node->isQmlModule())
+            writer.writeAttribute("qml-module-version", qmlModuleVersion);
         if (!qmlFullBaseName.isEmpty())
             writer.writeAttribute("qml-base-type", qmlFullBaseName);
     }

@@ -39,56 +39,31 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_KMS_H
-#define QPLATFORMINTEGRATION_KMS_H
+#include "qiosservices.h"
 
-#include <qpa/qplatformintegration.h>
-#include <qpa/qplatformnativeinterface.h>
-#include <QtPlatformSupport/private/qdevicediscovery_p.h>
+#include <QtCore/qurl.h>
+
+#import <UIKit/UIApplication.h>
 
 QT_BEGIN_NAMESPACE
 
-class QKmsScreen;
-class QKmsDevice;
-class QKmsVTHandler;
-
-class QKmsIntegration : public QObject, public QPlatformIntegration
+bool QIOSServices::openUrl(const QUrl &url)
 {
-    Q_OBJECT
+    if (url.scheme().isEmpty())
+        return openDocument(url);
 
-public:
-    QKmsIntegration();
-    ~QKmsIntegration();
+    NSURL *nsUrl = url.toNSURL();
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
+    if (![[UIApplication sharedApplication] canOpenURL:nsUrl])
+        return false;
 
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+    return [[UIApplication sharedApplication] openURL:nsUrl];
+}
 
-    QPlatformFontDatabase *fontDatabase() const;
-    QAbstractEventDispatcher *createEventDispatcher() const;
-
-    QPlatformNativeInterface *nativeInterface() const;
-
-    void addScreen(QKmsScreen *screen);
-    QObject *createDevice(const char *);
-
-private slots:
-    void addDevice(const QString &deviceNode);
-    void removeDevice(const QString &deviceNode);
-
-private:
-    QStringList findDrmDevices();
-
-    QList<QPlatformScreen *> m_screens;
-    QList<QKmsDevice *> m_devices;
-    QPlatformFontDatabase *m_fontDatabase;
-    QPlatformNativeInterface *m_nativeInterface;
-    QKmsVTHandler *m_vtHandler;
-    QDeviceDiscovery *m_deviceDiscovery;
-};
+bool QIOSServices::openDocument(const QUrl &url)
+{
+    // FIXME: Implement using UIDocumentInteractionController
+    return QPlatformServices::openDocument(url);
+}
 
 QT_END_NAMESPACE
-
-#endif

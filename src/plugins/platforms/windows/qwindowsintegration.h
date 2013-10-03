@@ -74,7 +74,7 @@ public:
 #ifndef QT_NO_OPENGL
     virtual QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
 #endif
-    virtual QAbstractEventDispatcher *guiThreadEventDispatcher() const;
+    virtual QAbstractEventDispatcher *createEventDispatcher() const;
 #ifndef QT_NO_CLIPBOARD
     virtual QPlatformClipboard *clipboard() const;
 #  ifndef QT_NO_DRAGANDDROP

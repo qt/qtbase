@@ -4013,6 +4013,14 @@ QRegExp &QRegExp::operator=(const QRegExp &rx)
 }
 
 /*!
+    \fn QRegExp &QRegExp::operator=(QRegExp &&other)
+
+    Move-assigns \a other to this QRegExp instance.
+
+    \since 5.2
+*/
+
+/*!
     \fn void QRegExp::swap(QRegExp &other)
     \since 4.8
 

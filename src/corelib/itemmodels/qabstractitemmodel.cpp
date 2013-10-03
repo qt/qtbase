@@ -107,6 +107,23 @@ void QPersistentModelIndexData::destroy(QPersistentModelIndexData *data)
   \sa {Model/View Programming}, QModelIndex, QAbstractItemModel
 */
 
+/*!
+    \fn QPersistentModelIndex::QPersistentModelIndex(QPersistentModelIndex &&other)
+
+    Move-constructs a QPersistentModelIndex instance, making it point at the same
+    object that \a other was pointing to.
+
+    \since 5.2
+*/
+
+/*!
+    \fn QPersistentModelIndex &QPersistentModelIndex::operator=(QPersistentModelIndex &&other)
+
+    Move-assigns \a other to this QPersistentModelIndex instance.
+
+    \since 5.2
+*/
+
 
 /*!
   \fn QPersistentModelIndex::QPersistentModelIndex()

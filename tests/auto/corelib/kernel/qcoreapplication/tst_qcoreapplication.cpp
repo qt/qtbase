@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include "tst_qcoreapplication.h"
+
 #include <QtCore/QtCore>
 #include <QtTest/QtTest>
 
@@ -46,31 +48,12 @@
 #include <private/qeventloop_p.h>
 #include <private/qthread_p.h>
 
-class tst_QCoreApplication: public QObject
-{
-    Q_OBJECT
-private slots:
-    void sendEventsOnProcessEvents(); // this must be the first test
-    void getSetCheck();
-    void qAppName();
-#ifndef Q_OS_WIN
-    void argc();
+#ifdef QT_GUI_LIB
+#include <QtGui/QGuiApplication>
+typedef QGuiApplication TestApplication;
+#else
+typedef QCoreApplication TestApplication;
 #endif
-    void postEvent();
-    void removePostedEvents();
-#ifndef QT_NO_THREAD
-    void deliverInDefinedOrder();
-#endif
-    void applicationPid();
-    void globalPostedEventsCount();
-    void processEventsAlwaysSendsPostedEvents();
-    void reexec();
-    void execAfterExit();
-    void eventLoopExecAfterExit();
-    void customEventDispatcher();
-    void testQuitLock();
-    void QTBUG31606_QEventDestructorDeadLock();
-};
 
 class EventSpy : public QObject
 {
@@ -89,7 +72,7 @@ void tst_QCoreApplication::sendEventsOnProcessEvents()
 {
     int argc = 1;
     char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
-    QCoreApplication app(argc, argv);
+    TestApplication app(argc, argv);
 
     EventSpy spy;
     app.installEventFilter(&spy);
@@ -111,7 +94,7 @@ void tst_QCoreApplication::getSetCheck()
     {
         int argc = 1;
         char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
-        QCoreApplication app(argc, argv);
+        TestApplication app(argc, argv);
         QCOMPARE(app.property("applicationVersion").toString(), v);
     }
     v = QString();
@@ -121,11 +104,17 @@ void tst_QCoreApplication::getSetCheck()
 
 void tst_QCoreApplication::qAppName()
 {
+#ifdef QT_GUI_LIB
+    const char* appName = "tst_qguiapplication";
+#else
+    const char* appName = "tst_qcoreapplication";
+#endif
+
     int argc = 1;
-    char *argv[] = { const_cast<char*>("tst_qcoreapplication") };
-    QCoreApplication app(argc, argv);
-    QCOMPARE(::qAppName(), QString::fromLatin1("tst_qcoreapplication"));
-    QCOMPARE(QCoreApplication::applicationName(), QString::fromLatin1("tst_qcoreapplication"));
+    char *argv[] = { const_cast<char*>(appName) };
+    TestApplication app(argc, argv);
+    QCOMPARE(::qAppName(), QString::fromLatin1(appName));
+    QCOMPARE(QCoreApplication::applicationName(), QString::fromLatin1(appName));
 }
 
 // "QCoreApplication::arguments() always parses arguments from actual command line on Windows
@@ -136,7 +125,7 @@ void tst_QCoreApplication::argc()
     {
         int argc = 1;
         char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
-        QCoreApplication app(argc, argv);
+        TestApplication app(argc, argv);
         QCOMPARE(argc, 1);
         QCOMPARE(app.arguments().count(), 1);
     }
@@ -147,7 +136,7 @@ void tst_QCoreApplication::argc()
                          const_cast<char*>("arg1"),
                          const_cast<char*>("arg2"),
                          const_cast<char*>("arg3") };
-        QCoreApplication app(argc, argv);
+        TestApplication app(argc, argv);
         QCOMPARE(argc, 4);
         QCOMPARE(app.arguments().count(), 4);
     }
@@ -155,7 +144,7 @@ void tst_QCoreApplication::argc()
     {
         int argc = 0;
         char **argv = 0;
-        QCoreApplication app(argc, argv);
+        TestApplication app(argc, argv);
         QCOMPARE(argc, 0);
         QCOMPARE(app.arguments().count(), 0);
     }
@@ -164,7 +153,7 @@ void tst_QCoreApplication::argc()
         int argc = 2;
         char *argv[] = { const_cast<char*>(QTest::currentAppName()),
                          const_cast<char*>("-qmljsdebugger=port:3768,block") };
-        QCoreApplication app(argc, argv);
+        TestApplication app(argc, argv);
         QCOMPARE(argc, 1);
         QCOMPARE(app.arguments().count(), 1);
     }
@@ -197,7 +186,7 @@ void tst_QCoreApplication::postEvent()
 {
     int argc = 1;
     char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
-    QCoreApplication app(argc, argv);
+    TestApplication app(argc, argv);
 
     EventSpy spy;
     EventGenerator odd, even;
@@ -282,7 +271,7 @@ void tst_QCoreApplication::removePostedEvents()
 {
     int argc = 1;
     char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
-    QCoreApplication app(argc, argv);
+    TestApplication app(argc, argv);
 
     EventSpy spy;
     QObject one, two;
@@ -461,7 +450,7 @@ void tst_QCoreApplication::deliverInDefinedOrder()
 {
     int argc = 1;
     char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
-    QCoreApplication app(argc, argv);
+    TestApplication app(argc, argv);
 
     DeliverInDefinedOrderObject obj(&app);
     // causes sendPostedEvents() to recurse twice
@@ -501,7 +490,7 @@ void tst_QCoreApplication::globalPostedEventsCount()
 {
     int argc = 1;
     char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
-    QCoreApplication app(argc, argv);
+    TestApplication app(argc, argv);
 
     QCoreApplication::sendPostedEvents();
     QCOMPARE(qGlobalPostedEventsCount(), 0u);
@@ -547,7 +536,7 @@ void tst_QCoreApplication::processEventsAlwaysSendsPostedEvents()
 {
     int argc = 1;
     char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
-    QCoreApplication app(argc, argv);
+    TestApplication app(argc, argv);
 
     ProcessEventsAlwaysSendsPostedEventsObject object;
     QTime t;
@@ -565,7 +554,7 @@ void tst_QCoreApplication::reexec()
 {
     int argc = 1;
     char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
-    QCoreApplication app(argc, argv);
+    TestApplication app(argc, argv);
 
     // exec once
     QMetaObject::invokeMethod(&app, "quit", Qt::QueuedConnection);
@@ -580,7 +569,7 @@ void tst_QCoreApplication::execAfterExit()
 {
     int argc = 1;
     char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
-    QCoreApplication app(argc, argv);
+    TestApplication app(argc, argv);
 
     app.exit(1);
     QMetaObject::invokeMethod(&app, "quit", Qt::QueuedConnection);
@@ -591,7 +580,7 @@ void tst_QCoreApplication::eventLoopExecAfterExit()
 {
     int argc = 1;
     char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
-    QCoreApplication app(argc, argv);
+    TestApplication app(argc, argv);
 
     // exec once and exit
     QMetaObject::invokeMethod(&app, "quit", Qt::QueuedConnection);
@@ -649,7 +638,7 @@ void tst_QCoreApplication::customEventDispatcher()
     {
         int argc = 1;
         char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
-        QCoreApplication app(argc, argv);
+        TestApplication app(argc, argv);
         // instantiating app should not overwrite the ED
         QCOMPARE(QCoreApplication::eventDispatcher(), ed);
         QMetaObject::invokeMethod(&app, "quit", Qt::QueuedConnection);
@@ -764,7 +753,7 @@ void tst_QCoreApplication::testQuitLock()
 {
     int argc = 1;
     char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
-    QCoreApplication app(argc, argv);
+    TestApplication app(argc, argv);
 
     QuitTester tester;
     app.exec();
@@ -783,7 +772,7 @@ void tst_QCoreApplication::QTBUG31606_QEventDestructorDeadLock()
 
     int argc = 1;
     char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
-    QCoreApplication app(argc, argv);
+    TestApplication app(argc, argv);
 
     EventSpy spy;
     app.installEventFilter(&spy);
@@ -810,5 +799,8 @@ static void createQObjectOnDestruction()
 }
 Q_DESTRUCTOR_FUNCTION(createQObjectOnDestruction)
 
+#ifndef QT_GUI_LIB
 QTEST_APPLESS_MAIN(tst_QCoreApplication)
+#endif
+
 #include "tst_qcoreapplication.moc"

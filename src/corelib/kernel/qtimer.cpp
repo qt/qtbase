@@ -103,18 +103,23 @@ QT_BEGIN_NAMESPACE
 
     \section1 Accuracy and Timer Resolution
 
-    Timers will never time out earlier than the specified timeout value
-    and they are not guaranteed to time out at the exact value specified.
-    In many situations, they may time out late by a period of time that
-    depends on the accuracy of the system timers.
-
     The accuracy of timers depends on the underlying operating system
     and hardware. Most platforms support a resolution of 1 millisecond,
     though the accuracy of the timer will not equal this resolution
     in many real-world situations.
 
-    If Qt is unable to deliver the requested number of timer clicks,
-    it will silently discard some.
+    The accuracy also depends on the \l{Qt::TimerType}{timer type}. For
+    Qt::PreciseTimer, QTimer will try to keep the accurance at 1 millisecond.
+    Precise timers will also never time out earlier than expected.
+
+    For Qt::CoarseTimer and Qt::VeryCoarseTimer types, QTimer may wake up
+    earlier than expected, within the margins for those types: 5% of the
+    interval for Qt::CoarseTimer and 500 ms for Qt::VeryCoarseTimer.
+
+    All timer types may time out later than expected if the system is busy or
+    unable to provide the requested accuracy. In such a case of timeout
+    overrun, Qt will emit activated() only once, even if multiple timeouts have
+    expired, and then will resume the original interval.
 
     \section1 Alternatives to QTimer
 

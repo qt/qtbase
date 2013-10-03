@@ -216,7 +216,6 @@ QPixmap QCocoaScreen::grabWindow(WId window, int x, int y, int width, int height
 
 QCocoaIntegration::QCocoaIntegration()
     : mFontDb(new QCoreTextFontDatabase())
-    , mEventDispatcher(new QCocoaEventDispatcher())
     , mInputContext(new QCocoaInputContext)
 #ifndef QT_NO_ACCESSIBILITY
     , mAccessibility(new QCocoaAccessibility)
@@ -384,9 +383,9 @@ QPlatformBackingStore *QCocoaIntegration::createPlatformBackingStore(QWindow *wi
     return new QCocoaBackingStore(window);
 }
 
-QAbstractEventDispatcher *QCocoaIntegration::guiThreadEventDispatcher() const
+QAbstractEventDispatcher *QCocoaIntegration::createEventDispatcher() const
 {
-    return mEventDispatcher;
+    return new QCocoaEventDispatcher;
 }
 
 QPlatformFontDatabase *QCocoaIntegration::fontDatabase() const

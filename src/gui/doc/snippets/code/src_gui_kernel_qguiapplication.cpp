@@ -39,88 +39,64 @@
 ****************************************************************************/
 
 //! [0]
-QCoreApplication* createApplication(int &argc, char *argv[])
+int main(int argc, char *argv[])
 {
-    for (int i = 1; i < argc; ++i)
-        if (!qstrcmp(argv[i], "-no-gui"))
-            return new QCoreApplication(argc, argv);
-    return new QApplication(argc, argv);
-}
-
-int main(int argc, char* argv[])
-{
-    QScopedPointer<QCoreApplication> app(createApplication(argc, argv));
-
-    if (qobject_cast<QApplication *>(app.data())) {
-       // start GUI version...
-    } else {
-       // start non-GUI version...
-    }
-
-    return app->exec();
+    QApplication::setDesktopSettingsAware(false);
+    QApplication app(argc, argv);
+    ...
+    return app.exec();
 }
 //! [0]
 
 
 //! [1]
-QApplication::setStyle(QStyleFactory::create("fusion"));
+MyMainWidget::MyMainWidget(QWidget *parent)
+    :QWidget(parent)
+{
+    connect(qApp, SIGNAL(commitDataRequest(QSessionManager)), SLOT(commitData(QSessionManager)));
+}
+
+void MyMainWidget::commitData(QSessionManager& manager)
+{
+    if (manager.allowsInteraction()) {
+        int ret = QMessageBox::warning(
+                    mainWindow,
+                    tr("My Application"),
+                    tr("Save changes to document?"),
+                    QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+
+        switch (ret) {
+        case QMessageBox::Save:
+            manager.release();
+            if (!saveDocument())
+                manager.cancel();
+            break;
+        case QMessageBox::Discard:
+            break;
+        case QMessageBox::Cancel:
+        default:
+            manager.cancel();
+        }
+    } else {
+        // we did not get permission to interact, then
+        // do something reasonable instead
+    }
+}
 //! [1]
 
 
 //! [2]
-int main(int argc, char *argv[])
-{
-    QApplication::setColorSpec(QApplication::ManyColor);
-    QApplication app(argc, argv);
-    ...
-    return app.exec();
-}
+appname -session id
 //! [2]
 
 
 //! [3]
-QSize MyWidget::sizeHint() const
-{
-    return QSize(80, 25).expandedTo(QApplication::globalStrut());
-}
+foreach (const QString &command, mySession.restartCommand())
+    do_something(command);
 //! [3]
 
 
 //! [4]
-void showAllHiddenTopLevelWidgets()
-{
-    foreach (QWidget *widget, QApplication::topLevelWidgets()) {
-        if (widget->isHidden())
-            widget->show();
-    }
-}
+foreach (const QString &command, mySession.discardCommand())
+    do_something(command);
 //! [4]
-
-
-//! [5]
-void updateAllWidgets()
-{
-    foreach (QWidget *widget, QApplication::allWidgets())
-        widget->update();
-}
-//! [5]
-
-
-//! [6]
-if ((startPos - currentPos).manhattanLength() >=
-        QApplication::startDragDistance())
-    startTheDrag();
-//! [6]
-
-//! [7]
-QWidget *widget = qApp->widgetAt(x, y);
-if (widget)
-    widget = widget->window();
-//! [7]
-
-
-//! [8]
-QWidget *widget = qApp->widgetAt(point);
-if (widget)
-    widget = widget->window();
-//! [8]

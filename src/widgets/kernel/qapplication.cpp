@@ -2647,7 +2647,7 @@ void QApplication::setStartDragDistance(int l)
     and the current position (e.g. in the mouse move event) is \c currentPos,
     you can find out if a drag should be started with code like this:
 
-    \snippet code/src_gui_kernel_qapplication.cpp 7
+    \snippet code/src_gui_kernel_qapplication.cpp 6
 
     Qt uses this value internally, e.g. in QFileDialog.
 

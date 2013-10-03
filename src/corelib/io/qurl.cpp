@@ -363,6 +363,23 @@
     \sa QUrl::FormattingOptions
 */
 
+/*!
+    \fn QUrl::QUrl(QUrl &&other)
+
+    Move-constructs a QUrl instance, making it point at the same
+    object that \a other was pointing to.
+
+    \since 5.2
+*/
+
+/*!
+    \fn QUrl &QUrl::operator=(QUrl &&other)
+
+    Move-assigns \a other to this QUrl instance.
+
+    \since 5.2
+*/
+
 #include "qurl.h"
 #include "qurl_p.h"
 #include "qplatformdefs.h"

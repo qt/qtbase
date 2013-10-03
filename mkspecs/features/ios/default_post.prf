@@ -1,6 +1,15 @@
 
 equals(TEMPLATE, app) {
-    qt:app_bundle:!macx-xcode {
+
+    # If the application uses Qt, it needs to be an application bundle
+    # to be able to deploy and run on iOS. The only exception to this
+    # is if you're working with a jailbroken device and can run the
+    # resulting binary from the console/over SSH, but that's not a
+    # use-case we care about, so no need to complicate the logic.
+    qt: CONFIG *= app_bundle
+
+    # Application bundles require building through Xcode
+    app_bundle:!macx-xcode {
         # For Qt applications we want Xcode project files as the generated output,
         # but since qmake doesn't handle the transition between makefiles and Xcode
         # project files (which happens when using subdirs), we create a wrapper

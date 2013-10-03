@@ -90,6 +90,14 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 }
 
 /*!
+    \fn QPalette &QPalette::operator=(QPalette &&other)
+
+    Move-assigns \a other to this QPalette instance.
+
+    \since 5.2
+*/
+
+/*!
    \fn const QColor &QPalette::color(ColorRole role) const
 
    \overload

@@ -644,6 +644,14 @@ QIcon &QIcon::operator=(const QIcon &other)
 }
 
 /*!
+    \fn QIcon &QIcon::operator=(QIcon &&other)
+
+    Move-assigns \a other to this QIcon instance.
+
+    \since 5.2
+*/
+
+/*!
     \fn void QIcon::swap(QIcon &other)
     \since 4.8
 

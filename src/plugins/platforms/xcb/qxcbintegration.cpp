@@ -124,12 +124,9 @@ static bool runningUnderDebugger()
 #endif
 
 QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char **argv)
-    : m_eventDispatcher(createUnixEventDispatcher())
-    ,  m_services(new QGenericUnixServices)
+    : m_services(new QGenericUnixServices)
     , m_instanceName(0)
 {
-    QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
-
 #ifdef XCB_USE_XLIB
     XInitThreads();
 #endif
@@ -176,9 +173,6 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
 
     m_fontDatabase.reset(new QGenericUnixFontDatabase());
     m_inputContext.reset(QPlatformInputContextFactory::create());
-#if !defined(QT_NO_ACCESSIBILITY) && !defined(QT_NO_ACCESSIBILITY_ATSPI_BRIDGE)
-    m_accessibility.reset(new QSpiAccessibleBridge());
-#endif
 }
 
 QXcbIntegration::~QXcbIntegration()
@@ -293,9 +287,9 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     }
 }
 
-QAbstractEventDispatcher *QXcbIntegration::guiThreadEventDispatcher() const
+QAbstractEventDispatcher *QXcbIntegration::createEventDispatcher() const
 {
-    return m_eventDispatcher;
+    return createUnixEventDispatcher();
 }
 
 void QXcbIntegration::moveToScreen(QWindow *window, int screen)
@@ -336,6 +330,14 @@ QPlatformInputContext *QXcbIntegration::inputContext() const
 #ifndef QT_NO_ACCESSIBILITY
 QPlatformAccessibility *QXcbIntegration::accessibility() const
 {
+#if !defined(QT_NO_ACCESSIBILITY_ATSPI_BRIDGE)
+    if (!m_accessibility) {
+        Q_ASSERT_X(QCoreApplication::eventDispatcher(), "QXcbIntegration",
+            "Initializing accessibility without event-dispatcher!");
+        m_accessibility.reset(new QSpiAccessibleBridge());
+    }
+#endif
+
     return m_accessibility.data();
 }
 #endif

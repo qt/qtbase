@@ -203,13 +203,12 @@ void QWindowsClipboard::propagateClipboardMessage(UINT message, WPARAM wParam, L
         qWarning("%s: Cowardly refusing to send clipboard message to hung application...", Q_FUNC_INFO);
         return;
     }
-    // Also refuse if the process is being debugged, specifically, if it is
+    // Do not block if the process is being debugged, specifically, if it is
     // displaying a runtime assert, which is not caught by isHungAppWindow().
-    if (isProcessBeingDebugged(m_nextClipboardViewer)) {
-        qWarning("%s: Cowardly refusing to send clipboard message to application under debugger...", Q_FUNC_INFO);
-        return;
-    }
-    SendMessage(m_nextClipboardViewer, message, wParam, lParam);
+    if (isProcessBeingDebugged(m_nextClipboardViewer))
+        PostMessage(m_nextClipboardViewer, message, wParam, lParam);
+    else
+        SendMessage(m_nextClipboardViewer, message, wParam, lParam);
 }
 
 /*!

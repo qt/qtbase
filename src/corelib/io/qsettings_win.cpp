@@ -450,7 +450,7 @@ QWinSettingsPrivate::QWinSettingsPrivate(QString rPath)
         regList.append(RegistryKey(HKEY_CLASSES_ROOT, QString(), false));
     else if (rPath.startsWith(QLatin1String("HKEY_USERS\\")))
         regList.append(RegistryKey(HKEY_USERS, rPath.mid(11), false));
-    else if (rPath == QLatin1String(QLatin1String("HKEY_USERS")))
+    else if (rPath == QLatin1String("HKEY_USERS"))
         regList.append(RegistryKey(HKEY_USERS, QString(), false));
     else
         regList.append(RegistryKey(HKEY_LOCAL_MACHINE, rPath, false));

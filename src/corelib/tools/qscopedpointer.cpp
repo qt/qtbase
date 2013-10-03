@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
     QScopedPointer guarantees that the object pointed to will get deleted when
     the current scope disappears.
 
-    Consider this function which does heap allocations, and have various exit points:
+    Consider this function which does heap allocations, and has various exit points:
 
     \snippet code/src_corelib_tools_qscopedpointer.cpp 0
 

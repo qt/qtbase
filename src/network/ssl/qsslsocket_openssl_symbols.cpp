@@ -114,6 +114,18 @@ QT_BEGIN_NAMESPACE
     possibly with a different version of OpenSSL.
 */
 
+namespace {
+void qsslSocketUnresolvedSymbolWarning(const char *functionName)
+{
+    qWarning("QSslSocket: cannot call unresolved function %s", functionName);
+}
+
+void qsslSocketCannotResolveSymbolWarning(const char *functionName)
+{
+    qWarning("QSslSocket: cannot resolve %s", functionName);
+}
+}
+
 #ifdef SSLEAY_MACROS
 DEFINEFUNC3(void *, ASN1_dup, i2d_of_void *a, a, d2i_of_void *b, b, char *c, c, return 0, return)
 #endif
@@ -338,7 +350,7 @@ DEFINEFUNC3(SSL_SESSION *, d2i_SSL_SESSION, SSL_SESSION **a, a, const unsigned c
 #define RESOLVEFUNC(func) \
     if (!(_q_##func = _q_PTR_##func(libs.first->resolve(#func)))     \
         && !(_q_##func = _q_PTR_##func(libs.second->resolve(#func)))) \
-        qWarning("QSslSocket: cannot resolve "#func);
+        qsslSocketCannotResolveSymbolWarning(#func);
 
 #if !defined QT_LINKED_OPENSSL
 
@@ -516,8 +528,6 @@ static QPair<QSystemLibrary*, QSystemLibrary*> loadOpenSslWin32()
 static QPair<QLibrary*, QLibrary*> loadOpenSsl()
 {
     QPair<QLibrary*,QLibrary*> pair;
-    pair.first = 0;
-    pair.second = 0;
 
 # if defined(Q_OS_UNIX)
     QLibrary *&libssl = pair.first;

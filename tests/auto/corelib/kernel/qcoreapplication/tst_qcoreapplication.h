@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,56 +39,35 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_KMS_H
-#define QPLATFORMINTEGRATION_KMS_H
+#ifndef TST_QCOREAPPLICATION_H
+#define TST_QCOREAPPLICATION_H
 
-#include <qpa/qplatformintegration.h>
-#include <qpa/qplatformnativeinterface.h>
-#include <QtPlatformSupport/private/qdevicediscovery_p.h>
+#include <QtCore/QtCore>
 
-QT_BEGIN_NAMESPACE
-
-class QKmsScreen;
-class QKmsDevice;
-class QKmsVTHandler;
-
-class QKmsIntegration : public QObject, public QPlatformIntegration
+class tst_QCoreApplication: public QObject
 {
     Q_OBJECT
-
-public:
-    QKmsIntegration();
-    ~QKmsIntegration();
-
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-
-    QPlatformFontDatabase *fontDatabase() const;
-    QAbstractEventDispatcher *createEventDispatcher() const;
-
-    QPlatformNativeInterface *nativeInterface() const;
-
-    void addScreen(QKmsScreen *screen);
-    QObject *createDevice(const char *);
-
 private slots:
-    void addDevice(const QString &deviceNode);
-    void removeDevice(const QString &deviceNode);
-
-private:
-    QStringList findDrmDevices();
-
-    QList<QPlatformScreen *> m_screens;
-    QList<QKmsDevice *> m_devices;
-    QPlatformFontDatabase *m_fontDatabase;
-    QPlatformNativeInterface *m_nativeInterface;
-    QKmsVTHandler *m_vtHandler;
-    QDeviceDiscovery *m_deviceDiscovery;
+    void sendEventsOnProcessEvents(); // this must be the first test
+    void getSetCheck();
+    void qAppName();
+#ifndef Q_OS_WIN
+    void argc();
+#endif
+    void postEvent();
+    void removePostedEvents();
+#ifndef QT_NO_THREAD
+    void deliverInDefinedOrder();
+#endif
+    void applicationPid();
+    void globalPostedEventsCount();
+    void processEventsAlwaysSendsPostedEvents();
+    void reexec();
+    void execAfterExit();
+    void eventLoopExecAfterExit();
+    void customEventDispatcher();
+    void testQuitLock();
+    void QTBUG31606_QEventDestructorDeadLock();
 };
 
-QT_END_NAMESPACE
-
-#endif
+#endif // TST_QCOREAPPLICATION_H

@@ -109,6 +109,14 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
     \sa QMovie
 */
 
+/*!
+    \fn QPicture &QPicture::operator=(QPicture &&other)
+
+    Move-assigns \a other to this QPicture instance.
+
+    \since 5.2
+*/
+
 const char  *qt_mfhdr_tag = "QPIC"; // header tag
 static const quint16 mfhdr_maj = 11; // major version #
 static const quint16 mfhdr_min = 0; // minor version #

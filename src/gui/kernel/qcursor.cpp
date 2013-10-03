@@ -154,6 +154,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QCursor &QCursor::operator=(QCursor &&other)
+
+    Move-assigns \a other to this QCursor instance.
+
+    \since 5.2
+*/
+
+/*!
     \fn QPoint QCursor::pos(const QScreen *screen)
 
     Returns the position of the cursor (hot spot) of the \a screen

@@ -308,13 +308,16 @@ void tst_qstandardpaths::testDataLocation()
 
 #ifndef Q_OS_WIN
 // Find "sh" on Unix.
+// It may exist twice, in /bin/sh and /usr/bin/sh, in that case use the PATH order.
 static inline QFileInfo findSh()
 {
-    const char *shPaths[] = {"/bin/sh", "/usr/bin/sh", 0};
-    for (const char **shPath = shPaths; *shPath; ++shPath) {
-        const QFileInfo fi = QFileInfo(QLatin1String(*shPath));
-        if (fi.exists())
-            return fi;
+    QLatin1String sh("/sh");
+    QByteArray pEnv = qgetenv("PATH");
+    const QLatin1Char pathSep(':');
+    const QStringList rawPaths = QString::fromLocal8Bit(pEnv.constData()).split(pathSep, QString::SkipEmptyParts);
+    foreach (const QString &path, rawPaths) {
+        if (QFile::exists(path + sh))
+            return path + sh;
     }
     return QFileInfo();
 }
