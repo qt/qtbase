@@ -517,8 +517,9 @@ QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData
             CFRelease(font);
             return families;
         }
-    } else {
-#else
+    } else
+#endif
+    {
     ATSFontContainerRef fontContainer;
     OSStatus e;
 
@@ -557,10 +558,7 @@ QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData
         m_applicationFonts.append(fontContainer);
         return families;
     }
-#endif
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8
     }
-#endif
 
     return QStringList();
 }
@@ -600,13 +598,14 @@ void QCoreTextFontDatabase::removeApplicationFonts()
         for (int i = 0; i < m_applicationURLFonts.count(); ++i)
             CTFontManagerUnregisterFontsForURL(m_applicationURLFonts[i], kCTFontManagerScopeProcess, &error);
         m_applicationURLFonts.clear();
-    }
-#else
+    } else
+#endif
+    {
     for (int i = 0; i < m_applicationFonts.count(); ++i)
         ATSFontDeactivate(m_applicationFonts[i], 0, kATSOptionFlagsDoNotNotify);
     m_applicationFonts.clear();
     ATSFontNotify(kATSFontNotifyActionFontsChanged, 0);
-#endif
+    }
 #endif
 }
 

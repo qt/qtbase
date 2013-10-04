@@ -82,9 +82,8 @@ private:
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8
     QVector<QCFType<CGFontRef> > m_applicationGraphicsFonts;
     QVector<QCFType<CFURLRef> > m_applicationURLFonts;
-#else
-    QVector<ATSFontContainerRef> m_applicationFonts;
 #endif
+    QVector<ATSFontContainerRef> m_applicationFonts;
 #endif
 };
 
