@@ -169,7 +169,7 @@
 #include <QResizeEvent>
 #include <QScrollBar>
 #include <QtAlgorithms>
-#include <QMutableListIterator>
+#include <QMutableVectorIterator>
 #include <QPainter>
 #include <QFontMetrics>
 #include <QStyleOption>
@@ -413,7 +413,7 @@ void IconTiler::rearrange(QList<QWidget *> &widgets, const QRect &domain) const
     \internal
     Calculates the accumulated overlap (intersection area) between 'source' and 'rects'.
 */
-int MinOverlapPlacer::accumulatedOverlap(const QRect &source, const QList<QRect> &rects)
+int MinOverlapPlacer::accumulatedOverlap(const QRect &source, const QVector<QRect> &rects)
 {
     int accOverlap = 0;
     foreach (const QRect &rect, rects) {
@@ -429,7 +429,7 @@ int MinOverlapPlacer::accumulatedOverlap(const QRect &source, const QList<QRect>
     Finds among 'source' the rectangle with the minimum accumulated overlap with the
     rectangles in 'rects'.
 */
-QRect MinOverlapPlacer::findMinOverlapRect(const QList<QRect> &source, const QList<QRect> &rects)
+QRect MinOverlapPlacer::findMinOverlapRect(const QVector<QRect> &source, const QVector<QRect> &rects)
 {
     int minAccOverlap = -1;
     QRect minAccOverlapRect;
@@ -447,8 +447,8 @@ QRect MinOverlapPlacer::findMinOverlapRect(const QList<QRect> &source, const QLi
     \internal
     Gets candidates for the final placement.
 */
-void MinOverlapPlacer::getCandidatePlacements(const QSize &size, const QList<QRect> &rects,
-                                              const QRect &domain,QList<QRect> &candidates)
+void MinOverlapPlacer::getCandidatePlacements(const QSize &size, const QVector<QRect> &rects,
+                                              const QRect &domain,QVector<QRect> &candidates)
 {
     QSet<int> xset;
     QSet<int> yset;
@@ -476,10 +476,10 @@ void MinOverlapPlacer::getCandidatePlacements(const QSize &size, const QList<QRe
     Finds all rectangles in 'source' not completely inside 'domain'. The result is stored
     in 'result' and also removed from 'source'.
 */
-void MinOverlapPlacer::findNonInsiders(const QRect &domain, QList<QRect> &source,
-                                       QList<QRect> &result)
+void MinOverlapPlacer::findNonInsiders(const QRect &domain, QVector<QRect> &source,
+                                       QVector<QRect> &result)
 {
-    QMutableListIterator<QRect> it(source);
+    QMutableVectorIterator<QRect> it(source);
     while (it.hasNext()) {
         const QRect srcRect = it.next();
         if (!domain.contains(srcRect)) {
@@ -494,8 +494,8 @@ void MinOverlapPlacer::findNonInsiders(const QRect &domain, QList<QRect> &source
     Finds all rectangles in 'source' that overlaps 'domain' by the maximum overlap area
     between 'domain' and any rectangle in 'source'. The result is stored in 'result'.
 */
-void MinOverlapPlacer::findMaxOverlappers(const QRect &domain, const QList<QRect> &source,
-                                          QList<QRect> &result)
+void MinOverlapPlacer::findMaxOverlappers(const QRect &domain, const QVector<QRect> &source,
+                                          QVector<QRect> &result)
 {
     int maxOverlap = -1;
     foreach (const QRect &srcRect, source) {
@@ -517,16 +517,16 @@ void MinOverlapPlacer::findMaxOverlappers(const QRect &domain, const QList<QRect
     placement that overlaps the rectangles in 'rects' as little as possible while at the
     same time being as much as possible inside 'domain'.
 */
-QPoint MinOverlapPlacer::findBestPlacement(const QRect &domain, const QList<QRect> &rects,
-                                           QList<QRect> &source)
+QPoint MinOverlapPlacer::findBestPlacement(const QRect &domain, const QVector<QRect> &rects,
+                                           QVector<QRect> &source)
 {
-    QList<QRect> nonInsiders;
+    QVector<QRect> nonInsiders;
     findNonInsiders(domain, source, nonInsiders);
 
     if (!source.empty())
         return findMinOverlapRect(source, rects).topLeft();
 
-    QList<QRect> maxOverlappers;
+    QVector<QRect> maxOverlappers;
     findMaxOverlappers(domain, nonInsiders, maxOverlappers);
     return findMinOverlapRect(maxOverlappers, rects).topLeft();
 }
@@ -538,7 +538,7 @@ QPoint MinOverlapPlacer::findBestPlacement(const QRect &domain, const QList<QRec
     overlaps 'rects' as little as possible and 'domain' as much as possible.
     Returns the position of the resulting rectangle.
 */
-QPoint MinOverlapPlacer::place(const QSize &size, const QList<QRect> &rects,
+QPoint MinOverlapPlacer::place(const QSize &size, const QVector<QRect> &rects,
                                const QRect &domain) const
 {
     if (size.isEmpty() || !domain.isValid())
@@ -548,7 +548,7 @@ QPoint MinOverlapPlacer::place(const QSize &size, const QList<QRect> &rects,
             return QPoint();
     }
 
-    QList<QRect> candidates;
+    QVector<QRect> candidates;
     getCandidatePlacements(size, rects, domain, candidates);
     return findBestPlacement(domain, rects, candidates);
 }
@@ -882,7 +882,8 @@ void QMdiAreaPrivate::place(Placer *placer, QMdiSubWindow *child)
         return;
     }
 
-    QList<QRect> rects;
+    QVector<QRect> rects;
+    rects.reserve(childWindows.size());
     QRect parentRect = q->rect();
     foreach (QMdiSubWindow *window, childWindows) {
         if (!sanityCheck(window, "QMdiArea::place") || window == child || !window->isVisibleTo(q)
