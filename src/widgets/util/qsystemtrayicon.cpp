@@ -380,6 +380,8 @@ bool QSystemTrayIcon::supportsMessages()
     On Mac OS X, the Growl notification system must be installed for this function to
     display messages.
 
+    Has been turned into a slot in Qt 5.2.
+
     \sa show(), supportsMessages()
   */
 void QSystemTrayIcon::showMessage(const QString& title, const QString& msg,
