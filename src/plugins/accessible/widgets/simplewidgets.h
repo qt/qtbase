@@ -110,7 +110,7 @@ public:
     // QAccessibleImageInterface
     QString imageDescription() const Q_DECL_OVERRIDE;
     QSize imageSize() const Q_DECL_OVERRIDE;
-    QRect imagePosition() const Q_DECL_OVERRIDE;
+    QPoint imagePosition() const Q_DECL_OVERRIDE;
 };
 
 #ifndef QT_NO_GROUPBOX

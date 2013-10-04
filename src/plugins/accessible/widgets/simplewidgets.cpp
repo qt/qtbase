@@ -474,16 +474,16 @@ QSize QAccessibleDisplay::imageSize() const
 }
 
 /*! \internal */
-QRect QAccessibleDisplay::imagePosition() const
+QPoint QAccessibleDisplay::imagePosition() const
 {
     QLabel *label = qobject_cast<QLabel *>(widget());
     if (!label)
-        return QRect();
+        return QPoint();
     const QPixmap *pixmap = label->pixmap();
     if (!pixmap)
-        return QRect();
+        return QPoint();
 
-    return QRect(label->mapToGlobal(label->pos()), label->size());
+    return QPoint(label->mapToGlobal(label->pos()));
 }
 
 #ifndef QT_NO_GROUPBOX

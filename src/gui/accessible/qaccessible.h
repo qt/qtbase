@@ -589,7 +589,7 @@ public:
 
     virtual QString imageDescription() const = 0;
     virtual QSize imageSize() const = 0;
-    virtual QRect imagePosition() const = 0;
+    virtual QPoint imagePosition() const = 0;
 };
 
 

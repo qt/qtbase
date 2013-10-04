@@ -3295,7 +3295,7 @@ void tst_QAccessibility::labelTest()
     QCOMPARE(imageInterface->imageSize(), testPixmap.size());
     QCOMPARE(imageInterface->imageDescription(), QString::fromLatin1("Test Description"));
     const QPoint labelPos = imageLabel.mapToGlobal(QPoint(0,0));
-    QCOMPARE(imageInterface->imagePosition().topLeft(), labelPos);
+    QCOMPARE(imageInterface->imagePosition(), labelPos);
 
     QTestAccessibility::clearEvents();
 }
