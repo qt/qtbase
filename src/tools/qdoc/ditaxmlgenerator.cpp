@@ -682,7 +682,8 @@ void DitaXmlGenerator::generateTree()
         qdb_->generateIndex(outputDir() + QLatin1Char('/') + fileBase + ".index",
                             projectUrl,
                             projectDescription,
-                            this);
+                            this,
+                            true);
     }
 
     if (!runPrepareOnly()) {

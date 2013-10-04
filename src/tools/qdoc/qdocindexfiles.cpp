@@ -196,6 +196,10 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
             location = Location(indexUrl + QLatin1Char('/') + name.toLower() + ".html");
         else if (!indexUrl.isNull())
             location = Location(name.toLower() + ".html");
+        bool abstract = false;
+        if (element.attribute("abstract") == "true")
+            abstract = true;
+        node->setAbstract(abstract);
     }
     else if ((element.nodeName() == "qmlclass") ||
              ((element.nodeName() == "page") && (element.attribute("subtype") == "qmlclass"))) {
@@ -204,6 +208,10 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         QString qmlModuleName = element.attribute("qml-module-name");
         if (!qmlModuleName.isEmpty())
             qdb_->addToQmlModule(qmlModuleName, qcn);
+        bool abstract = false;
+        if (element.attribute("abstract") == "true")
+            abstract = true;
+        qcn->setAbstract(abstract);
         QString qmlFullBaseName = element.attribute("qml-base-type");
         if (!qmlFullBaseName.isEmpty())
             qcn->setQmlBaseName(qmlFullBaseName);
@@ -729,7 +737,6 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     writer.writeStartElement(nodeName);
 
     QXmlStreamAttributes attributes;
-    writer.writeAttribute("access", access);
 
     if (node->type() != Node::Document) {
         QString threadSafety;
@@ -776,7 +783,6 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
         status = "main";
         break;
     }
-    writer.writeAttribute("status", status);
 
     writer.writeAttribute("name", objName);
     if (node->isQmlModule()) {
@@ -806,6 +812,10 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
         href = node->name();
     writer.writeAttribute("href", href);
 
+    writer.writeAttribute("access", access);
+    writer.writeAttribute("status", status);
+    if (node->isAbstract())
+        writer.writeAttribute("abstract", "true");
     writer.writeAttribute("location", node->location().fileName());
     if (!node->location().filePath().isEmpty()) {
         writer.writeAttribute("filepath", node->location().filePath());
