@@ -126,15 +126,10 @@ class MinOverlapPlacer : public Placer
     QPoint place(const QSize &size, const QVector<QRect> &rects, const QRect &domain) const;
     static int accumulatedOverlap(const QRect &source, const QVector<QRect> &rects);
     static QRect findMinOverlapRect(const QVector<QRect> &source, const QVector<QRect> &rects);
-    static void getCandidatePlacements(
-        const QSize &size, const QVector<QRect> &rects, const QRect &domain,
-        QVector<QRect> &candidates);
-    static QPoint findBestPlacement(
-        const QRect &domain, const QVector<QRect> &rects, QVector<QRect> &source);
-    static void findNonInsiders(
-        const QRect &domain, QVector<QRect> &source, QVector<QRect> &result);
-    static void findMaxOverlappers(
-        const QRect &domain, const QVector<QRect> &source, QVector<QRect> &result);
+    static QVector<QRect> getCandidatePlacements(const QSize &size, const QVector<QRect> &rects, const QRect &domain);
+    static QPoint findBestPlacement(const QRect &domain, const QVector<QRect> &rects, QVector<QRect> &source);
+    static QVector<QRect> findNonInsiders(const QRect &domain, QVector<QRect> &source);
+    static QVector<QRect> findMaxOverlappers(const QRect &domain, const QVector<QRect> &source);
 };
 } // namespace QMdi
 

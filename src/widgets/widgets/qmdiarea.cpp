@@ -447,9 +447,11 @@ QRect MinOverlapPlacer::findMinOverlapRect(const QVector<QRect> &source, const Q
     \internal
     Gets candidates for the final placement.
 */
-void MinOverlapPlacer::getCandidatePlacements(const QSize &size, const QVector<QRect> &rects,
-                                              const QRect &domain,QVector<QRect> &candidates)
+QVector<QRect> MinOverlapPlacer::getCandidatePlacements(const QSize &size, const QVector<QRect> &rects,
+                                                        const QRect &domain)
 {
+    QVector<QRect> result;
+
     QVector<int> xlist;
     xlist.reserve(2 + rects.size());
     xlist << domain.left() << domain.right() - size.width() + 1;
@@ -471,10 +473,11 @@ void MinOverlapPlacer::getCandidatePlacements(const QSize &size, const QVector<Q
     std::sort(ylist.begin(), ylist.end());
     ylist.erase(std::unique(ylist.begin(), ylist.end()), ylist.end());
 
-    candidates.reserve(candidates.size() + ylist.size() * xlist.size());
+    result.reserve(ylist.size() * xlist.size());
     foreach (int y, ylist)
         foreach (int x, xlist)
-            candidates << QRect(QPoint(x, y), size);
+            result << QRect(QPoint(x, y), size);
+    return result;
 }
 
 /*!
@@ -482,9 +485,11 @@ void MinOverlapPlacer::getCandidatePlacements(const QSize &size, const QVector<Q
     Finds all rectangles in 'source' not completely inside 'domain'. The result is stored
     in 'result' and also removed from 'source'.
 */
-void MinOverlapPlacer::findNonInsiders(const QRect &domain, QVector<QRect> &source,
-                                       QVector<QRect> &result)
+QVector<QRect> MinOverlapPlacer::findNonInsiders(const QRect &domain, QVector<QRect> &source)
 {
+    QVector<QRect> result;
+    result.reserve(source.size());
+
     QMutableVectorIterator<QRect> it(source);
     while (it.hasNext()) {
         const QRect srcRect = it.next();
@@ -493,6 +498,8 @@ void MinOverlapPlacer::findNonInsiders(const QRect &domain, QVector<QRect> &sour
             it.remove();
         }
     }
+
+    return result;
 }
 
 /*!
@@ -500,9 +507,11 @@ void MinOverlapPlacer::findNonInsiders(const QRect &domain, QVector<QRect> &sour
     Finds all rectangles in 'source' that overlaps 'domain' by the maximum overlap area
     between 'domain' and any rectangle in 'source'. The result is stored in 'result'.
 */
-void MinOverlapPlacer::findMaxOverlappers(const QRect &domain, const QVector<QRect> &source,
-                                          QVector<QRect> &result)
+QVector<QRect> MinOverlapPlacer::findMaxOverlappers(const QRect &domain, const QVector<QRect> &source)
 {
+    QVector<QRect> result;
+    result.reserve(source.size());
+
     int maxOverlap = -1;
     foreach (const QRect &srcRect, source) {
         QRect intersection = domain.intersected(srcRect);
@@ -515,6 +524,8 @@ void MinOverlapPlacer::findMaxOverlappers(const QRect &domain, const QVector<QRe
             result << srcRect;
         }
     }
+
+    return result;
 }
 
 /*!
@@ -526,14 +537,12 @@ void MinOverlapPlacer::findMaxOverlappers(const QRect &domain, const QVector<QRe
 QPoint MinOverlapPlacer::findBestPlacement(const QRect &domain, const QVector<QRect> &rects,
                                            QVector<QRect> &source)
 {
-    QVector<QRect> nonInsiders;
-    findNonInsiders(domain, source, nonInsiders);
+    const QVector<QRect> nonInsiders = findNonInsiders(domain, source);
 
     if (!source.empty())
         return findMinOverlapRect(source, rects).topLeft();
 
-    QVector<QRect> maxOverlappers;
-    findMaxOverlappers(domain, nonInsiders, maxOverlappers);
+    QVector<QRect> maxOverlappers = findMaxOverlappers(domain, nonInsiders);
     return findMinOverlapRect(maxOverlappers, rects).topLeft();
 }
 
@@ -554,8 +563,7 @@ QPoint MinOverlapPlacer::place(const QSize &size, const QVector<QRect> &rects,
             return QPoint();
     }
 
-    QVector<QRect> candidates;
-    getCandidatePlacements(size, rects, domain, candidates);
+    QVector<QRect> candidates = getCandidatePlacements(size, rects, domain);
     return findBestPlacement(domain, rects, candidates);
 }
 
