@@ -63,6 +63,10 @@
 #  include <resolv.h>
 #endif
 
+#ifdef __GNU_LIBRARY__
+#  include <gnu/lib-names.h>
+#endif
+
 #if defined (QT_NO_GETADDRINFO)
 static QBasicMutex getHostByNameMutex;
 #endif
@@ -93,9 +97,16 @@ static res_state_ptr local_res = 0;
 static void resolveLibrary()
 {
 #if !defined(QT_NO_LIBRARY) && !defined(Q_OS_QNX)
-    QLibrary lib(QLatin1String("resolv"));
+    QLibrary lib;
+#ifdef LIBRESOLV_SO
+    lib.setFileName(QStringLiteral(LIBRESOLV_SO));
     if (!lib.load())
-        return;
+#endif
+    {
+        lib.setFileName(QLatin1String("resolv"));
+        if (!lib.load())
+            return;
+    }
 
     local_res_init = res_init_proto(lib.resolve("__res_init"));
     if (!local_res_init)

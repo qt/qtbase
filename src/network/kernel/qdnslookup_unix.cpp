@@ -52,6 +52,10 @@
 #include <arpa/nameser_compat.h>
 #include <resolv.h>
 
+#ifdef __GNU_LIBRARY__
+#  include <gnu/lib-names.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_LIBRARY
@@ -77,9 +81,16 @@ struct QDnsLookupStateDeleter
 
 static void resolveLibrary()
 {
-    QLibrary lib(QLatin1String("resolv"));
+    QLibrary lib;
+#ifdef LIBRESOLV_SO
+    lib.setFileName(QStringLiteral(LIBRESOLV_SO));
     if (!lib.load())
-        return;
+#endif
+    {
+        lib.setFileName(QLatin1String("resolv"));
+        if (!lib.load())
+            return;
+    }
 
     local_dn_expand = dn_expand_proto(lib.resolve("__dn_expand"));
     if (!local_dn_expand)
