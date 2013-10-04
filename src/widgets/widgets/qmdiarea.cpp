@@ -450,22 +450,28 @@ QRect MinOverlapPlacer::findMinOverlapRect(const QVector<QRect> &source, const Q
 void MinOverlapPlacer::getCandidatePlacements(const QSize &size, const QVector<QRect> &rects,
                                               const QRect &domain,QVector<QRect> &candidates)
 {
-    QSet<int> xset;
-    QSet<int> yset;
-    xset << domain.left() << domain.right() - size.width() + 1;
-    yset << domain.top();
+    QVector<int> xlist;
+    xlist.reserve(2 + rects.size());
+    xlist << domain.left() << domain.right() - size.width() + 1;
+
+    QVector<int> ylist;
+    ylist.reserve(2 + rects.size());
+    ylist << domain.top();
     if (domain.bottom() - size.height() + 1 >= 0)
-        yset << domain.bottom() - size.height() + 1;
+        ylist << domain.bottom() - size.height() + 1;
+
     foreach (const QRect &rect, rects) {
-        xset << rect.right() + 1;
-        yset << rect.bottom() + 1;
+        xlist << rect.right() + 1;
+        ylist << rect.bottom() + 1;
     }
 
-    QList<int> xlist = xset.values();
     std::sort(xlist.begin(), xlist.end());
-    QList<int> ylist = yset.values();
-    std::sort(ylist.begin(), ylist.end());
+    xlist.erase(std::unique(xlist.begin(), xlist.end()), xlist.end());
 
+    std::sort(ylist.begin(), ylist.end());
+    ylist.erase(std::unique(ylist.begin(), ylist.end()), ylist.end());
+
+    candidates.reserve(candidates.size() + ylist.size() * xlist.size());
     foreach (int y, ylist)
         foreach (int x, xlist)
             candidates << QRect(QPoint(x, y), size);
