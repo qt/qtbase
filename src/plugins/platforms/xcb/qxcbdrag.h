@@ -46,7 +46,6 @@
 #include <private/qsimpledrag_p.h>
 #include <qxcbobject.h>
 #include <xcb/xcb.h>
-#include <qlist.h>
 #include <qpoint.h>
 #include <qrect.h>
 #include <qsharedpointer.h>
@@ -160,7 +159,7 @@ private:
         QDrag *drag;
         QTime time;
     };
-    QList<Transaction> transactions;
+    QVector<Transaction> transactions;
 
     int transaction_expiry_timer;
     void restartDropExpiryTimer();
