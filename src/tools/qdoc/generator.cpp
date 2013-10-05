@@ -1478,7 +1478,76 @@ void Generator::generateThreadSafeness(const Node *node, CodeMarker *marker)
 }
 
 /*!
-  Traverses the current tree to generate all the documentation.
+    If the node is an overloaded signal, and a node with an example on how to connect to it
+ */
+void Generator::generateOverloadedSignal(const Node* node, CodeMarker* marker)
+{
+    if (node->type() != Node::Function)
+        return;
+    const FunctionNode *func = static_cast<const FunctionNode *>(node);
+    if (func->metaness() != FunctionNode::Signal)
+        return;
+    if (node->parent()->overloads(node->name()).count() <= 1)
+        return;
+
+
+    // Compute a friendly name for the object of that instance.
+    // e.g:  "QAbstractSocket" -> "abstractSocket"
+    QString objectName = node->parent()->name();
+    if (objectName.size() >= 2) {
+        if (objectName[0] == 'Q')
+            objectName = objectName.mid(1);
+        objectName[0] = objectName[0].toLower();
+    }
+
+
+    // We have an overloaded signal, show an example
+    QString code = "connect(" + objectName + ", static_cast<" + func->returnType()
+        + "(" + func->parent()->name() + "::*)(";
+    for (int i = 0; i < func->parameters().size(); ++i) {
+        if (i != 0)
+            code += ", ";
+        const Parameter &p = func->parameters().at(i);
+        code += p.leftType() + p.rightType();
+    }
+
+    code += ")";
+    if (func->isConst())
+        code += " const";
+    code += ">(&" +  func->parent()->name() + "::" + func->name() + "),\n    [=](";
+
+    for (int i = 0; i < func->parameters().size(); ++i) {
+        if (i != 0)
+            code += ", ";
+        const Parameter &p = func->parameters().at(i);
+        code += p.leftType();
+        if (code[code.size()-1].isLetterOrNumber())
+            code += " ";
+        code += p.name()  + p.rightType();
+    }
+
+    code += "){ /* ... */ });";
+
+    Text text;
+    text << Atom::ParaLeft
+         << Atom(Atom::FormattingLeft,ATOM_FORMATTING_BOLD)
+         << "Note:"
+         << Atom(Atom::FormattingRight,ATOM_FORMATTING_BOLD)
+         << "Signal "
+         << Atom(Atom::FormattingLeft,ATOM_FORMATTING_ITALIC)
+         << node->name()
+         << Atom(Atom::FormattingRight,ATOM_FORMATTING_ITALIC)
+         << " is overloaded in this class. "
+            "To connect to this one using the function pointer syntax, you must "
+            "specify the signal type in a static cast, as shown in this example:"
+          << Atom(Atom::Code, marker->markedUpCode(code, node, func->location()));
+
+    generateText(text, node, marker);
+}
+
+
+/*!
+  Traverses the database recursivly to generate all the documentation.
  */
 void Generator::generateDocs()
 {

@@ -161,6 +161,7 @@ protected:
     void generateThreadSafeness(const Node *node, CodeMarker *marker);
     QString getMetadataElement(const Aggregate* inner, const QString& t);
     QStringList getMetadataElements(const Aggregate* inner, const QString& t);
+    void generateOverloadedSignal(const Node *node, CodeMarker *marker);
     QString indent(int level, const QString& markedCode);
     QTextStream& out();
     QString outFileName();

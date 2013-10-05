@@ -3957,6 +3957,7 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
 
     generateStatus(node, marker);
     generateBody(node, marker);
+    generateOverloadedSignal(node, marker);
     generateThreadSafeness(node, marker);
     generateSince(node, marker);
 
