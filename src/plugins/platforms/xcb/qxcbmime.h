@@ -59,14 +59,14 @@ public:
     QXcbMime();
     ~QXcbMime();
 
-    static QList<xcb_atom_t> mimeAtomsForFormat(QXcbConnection *connection, const QString &format);
+    static QVector<xcb_atom_t> mimeAtomsForFormat(QXcbConnection *connection, const QString &format);
     static QString mimeAtomToString(QXcbConnection *connection, xcb_atom_t a);
     static bool mimeDataForAtom(QXcbConnection *connection, xcb_atom_t a, QMimeData *mimeData, QByteArray *data,
                                 xcb_atom_t *atomFormat, int *dataFormat);
     static QVariant mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a, const QByteArray &data, const QString &format,
                                         QVariant::Type requestedType, const QByteArray &encoding);
     static xcb_atom_t mimeAtomForFormat(QXcbConnection *connection, const QString &format, QVariant::Type requestedType,
-                                        const QList<xcb_atom_t> &atoms, QByteArray *requestedEncoding);
+                                        const QVector<xcb_atom_t> &atoms, QByteArray *requestedEncoding);
 };
 
 #endif // !(defined(QT_NO_DRAGANDDROP) && defined(QT_NO_CLIPBOARD))

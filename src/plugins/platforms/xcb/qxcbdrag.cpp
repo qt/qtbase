@@ -183,7 +183,7 @@ void QXcbDrag::startDrag()
 
     QStringList fmts = QXcbMime::formatsHelper(drag()->mimeData());
     for (int i = 0; i < fmts.size(); ++i) {
-        QList<xcb_atom_t> atoms = QXcbMime::mimeAtomsForFormat(connection(), fmts.at(i));
+        QVector<xcb_atom_t> atoms = QXcbMime::mimeAtomsForFormat(connection(), fmts.at(i));
         for (int j = 0; j < atoms.size(); ++j) {
             if (!drag_types.contains(atoms.at(j)))
                 drag_types.append(atoms.at(j));
@@ -1211,7 +1211,7 @@ QVariant QXcbDropData::xdndObtainData(const QByteArray &format, QVariant::Type r
         return result;
     }
 
-    QList<xcb_atom_t> atoms = drag->xdnd_types;
+    QVector<xcb_atom_t> atoms = drag->xdnd_types;
     QByteArray encoding;
     xcb_atom_t a = mimeAtomForFormat(c, QLatin1String(format), requestedType, atoms, &encoding);
     if (a == XCB_NONE)

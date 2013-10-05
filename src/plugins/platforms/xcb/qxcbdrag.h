@@ -126,7 +126,7 @@ private:
 
     // the types in this drop. 100 is no good, but at least it's big.
     enum { xdnd_max_type = 100 };
-    QList<xcb_atom_t> xdnd_types;
+    QVector<xcb_atom_t> xdnd_types;
 
     // timestamp from XdndPosition and XdndDroptime for retrieving the data
     xcb_timestamp_t target_time;
