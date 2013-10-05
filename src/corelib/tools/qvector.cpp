@@ -562,6 +562,44 @@
     \sa insert(), replace(), fill()
 */
 
+/*! \fn void QVector::removeAt(int i)
+    \since 5.2
+
+    Equivalent to
+    \code
+    remove(i);
+    \endcode
+
+    Provided for compatibility with QList.
+
+    \sa remove(int), QList::removeAt(int)
+*/
+
+/*! \fn int QVector::length() const
+    \since 5.2
+
+    Same as size() and count().
+
+    Provided for compatibility with QList.
+
+    \sa size(), count(), QList::length()
+*/
+
+/*! \fn T QVector::takeAt(int i)
+    \since 5.2
+
+    Equivalent to
+    \code
+    T t = at(i);
+    remove(i);
+    return t;
+    \endcode
+
+    Provided for compatibility with QList.
+
+    \sa takeFirst(), takeLast(), QList::takeAt(int)
+*/
+
 /*! \fn void QVector::removeFirst()
     \since 5.1
     Removes the first item in the vector. Calling this function is
