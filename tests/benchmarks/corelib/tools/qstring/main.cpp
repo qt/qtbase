@@ -1980,16 +1980,15 @@ int fromUtf8_qt47(ushort *dst, const char *chars, int len)
                 --need;
                 if (!need) {
                     // utf-8 bom composes into 0xfeff code point
-                    bool nonCharacter;
                     if (!headerdone && uc == 0xfeff) {
                         // don't do anything, just skip the BOM
-                    } else if (!(nonCharacter = QChar::isNonCharacter(uc)) && QChar::requiresSurrogates(uc) && uc <= QChar::LastValidCodePoint) {
+                    } else if (QChar::requiresSurrogates(uc) && uc <= QChar::LastValidCodePoint) {
                         // surrogate pair
                         //Q_ASSERT((qch - (ushort*)result.unicode()) + 2 < result.length());
                         *qch++ = QChar::highSurrogate(uc);
                         *qch++ = QChar::lowSurrogate(uc);
-                    } else if ((uc < min_uc) || QChar::isSurrogate(uc) || nonCharacter || uc > QChar::LastValidCodePoint) {
-                        // error: overlong sequence, UTF16 surrogate or non-character
+                    } else if ((uc < min_uc) || QChar::isSurrogate(uc) || uc > QChar::LastValidCodePoint) {
+                        // error: overlong sequence or UTF16 surrogate
                         *qch++ = replacement;
                         ++invalid;
                     } else {
@@ -2086,16 +2085,15 @@ int fromUtf8_qt47_stateless(ushort *dst, const char *chars, int len)
                 --need;
                 if (!need) {
                     // utf-8 bom composes into 0xfeff code point
-                    bool nonCharacter;
                     if (!headerdone && uc == 0xfeff) {
                         // don't do anything, just skip the BOM
-                    } else if (!(nonCharacter = QChar::isNonCharacter(uc)) && QChar::requiresSurrogates(uc) && uc <= QChar::LastValidCodePoint) {
+                    } else if (QChar::requiresSurrogates(uc) && uc <= QChar::LastValidCodePoint) {
                         // surrogate pair
                         //Q_ASSERT((qch - (ushort*)result.unicode()) + 2 < result.length());
                         *qch++ = QChar::highSurrogate(uc);
                         *qch++ = QChar::lowSurrogate(uc);
-                    } else if ((uc < min_uc) || QChar::isSurrogate(uc) || nonCharacter || uc > QChar::LastValidCodePoint) {
-                        // error: overlong sequence, UTF16 surrogate or non-character
+                    } else if ((uc < min_uc) || QChar::isSurrogate(uc) || uc > QChar::LastValidCodePoint) {
+                        // error: overlong sequence or UTF16 surrogate
                         *qch++ = replacement;
                         ++invalid;
                     } else {
@@ -2214,7 +2212,7 @@ static inline void extract_utf8_multibyte(ushort *&dst, const char *&chars, qptr
         chars += 2;
         len -= 2;
         if (!trusted &&
-            (ucs < 0x800 || QChar::isNonCharacter(ucs) || QChar::isSurrogate(ucs)))
+            (ucs < 0x800 || QChar::isSurrogate(ucs)))
             dst[counter] = QChar::ReplacementCharacter;
         else
             dst[counter] = ucs;
@@ -2245,7 +2243,7 @@ static inline void extract_utf8_multibyte(ushort *&dst, const char *&chars, qptr
         // dst[counter] will correspond to chars[counter..counter+2], so adjust
         chars += 3;
         len -= 3;
-        if (trusted || (QChar::requiresSurrogates(ucs) && ucs <= QChar::LastValidCodePoint && !QChar::isNonCharacter(ucs))) {
+        if (trusted || (QChar::requiresSurrogates(ucs) && ucs <= QChar::LastValidCodePoint)) {
             dst[counter + 0] = QChar::highSurrogate(ucs);
             dst[counter + 1] = QChar::lowSurrogate(ucs);
             counter += 2;

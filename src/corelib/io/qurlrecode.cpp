@@ -304,7 +304,7 @@ static bool encodedUtf8ToUtf16(QString &result, ushort *&output, const ushort *b
     // we've decoded something; safety-check it
     if (uc < min_uc)
         return false;
-    if (QChar::isSurrogate(uc) || QChar::isNonCharacter(uc) || uc > QChar::LastValidCodePoint)
+    if (QChar::isSurrogate(uc) || uc > QChar::LastValidCodePoint)
         return false;
 
     if (!QChar::requiresSurrogates(uc)) {

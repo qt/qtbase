@@ -315,8 +315,6 @@ void tst_QXmlSimpleReader::testGoodXmlFile()
     QVERIFY(file.open(QIODevice::ReadOnly));
     Parser parser;
 
-//    static int i = 0;
-//    qWarning("Test nr: " + QString::number(i)); ++i;
     QEXPECT_FAIL("xmldocs/valid/sa/089.xml", "", Continue);
     QVERIFY(parser.parseFile(&file));
 
@@ -326,7 +324,6 @@ void tst_QXmlSimpleReader::testGoodXmlFile()
     ref_stream.setCodec("UTF-8");
     QString ref_file_contents = ref_stream.readAll();
 
-    QEXPECT_FAIL("xmldocs/valid/sa/089.xml", "", Continue);
     QCOMPARE(parser.result(), ref_file_contents);
 }
 
@@ -355,8 +352,6 @@ void tst_QXmlSimpleReader::testBadXmlFile()
     QVERIFY(file.open(QIODevice::ReadOnly));
     Parser parser;
 
-//    static int i = 0;
-//    qWarning("Test nr: " + QString::number(++i));
     QEXPECT_FAIL("xmldocs/not-wf/sa/030.xml", "", Continue);
     QEXPECT_FAIL("xmldocs/not-wf/sa/031.xml", "", Continue);
     QEXPECT_FAIL("xmldocs/not-wf/sa/032.xml", "", Continue);
@@ -381,22 +376,17 @@ void tst_QXmlSimpleReader::testBadXmlFile()
     QEXPECT_FAIL("xmldocs/not-wf/sa/132.xml", "", Continue);
     QEXPECT_FAIL("xmldocs/not-wf/sa/142.xml", "", Continue);
     QEXPECT_FAIL("xmldocs/not-wf/sa/143.xml", "", Continue);
+
     QEXPECT_FAIL("xmldocs/not-wf/sa/144.xml", "", Continue);
     QEXPECT_FAIL("xmldocs/not-wf/sa/145.xml", "", Continue);
     QEXPECT_FAIL("xmldocs/not-wf/sa/146.xml", "", Abort);
     QEXPECT_FAIL("xmldocs/not-wf/sa/160.xml", "", Continue);
     QEXPECT_FAIL("xmldocs/not-wf/sa/162.xml", "", Continue);
-    QEXPECT_FAIL("xmldocs/not-wf/sa/166.xml", "", Continue);
-    QEXPECT_FAIL("xmldocs/not-wf/sa/167.xml", "", Continue);
+
     QEXPECT_FAIL("xmldocs/not-wf/sa/168.xml", "", Continue);
     QEXPECT_FAIL("xmldocs/not-wf/sa/169.xml", "", Continue);
     QEXPECT_FAIL("xmldocs/not-wf/sa/170.xml", "", Continue);
-    QEXPECT_FAIL("xmldocs/not-wf/sa/171.xml", "", Abort);
-    QEXPECT_FAIL("xmldocs/not-wf/sa/172.xml", "", Abort);
-    QEXPECT_FAIL("xmldocs/not-wf/sa/173.xml", "", Abort);
-    QEXPECT_FAIL("xmldocs/not-wf/sa/174.xml", "", Abort);
-    QEXPECT_FAIL("xmldocs/not-wf/sa/175.xml", "", Abort);
-    QEXPECT_FAIL("xmldocs/not-wf/sa/177.xml", "", Abort);
+
     QEXPECT_FAIL("xmldocs/not-wf/sa/180.xml", "", Continue);
     QEXPECT_FAIL("xmldocs/not-wf/sa/181.xml", "", Continue);
     QEXPECT_FAIL("xmldocs/not-wf/sa/182.xml", "", Continue);
@@ -411,12 +401,7 @@ void tst_QXmlSimpleReader::testBadXmlFile()
     ref_stream.setCodec("UTF-8");
     QString ref_file_contents = ref_stream.readAll();
 
-    QEXPECT_FAIL("xmldocs/not-wf/sa/144.xml", "", Continue);
     QEXPECT_FAIL("xmldocs/not-wf/sa/145.xml", "", Continue);
-    QEXPECT_FAIL("xmldocs/not-wf/sa/146.xml", "", Continue);
-    QEXPECT_FAIL("xmldocs/not-wf/sa/167.xml", "", Continue);
-    QEXPECT_FAIL("xmldocs/not-wf/sa/166.xml", "", Continue);
-    QEXPECT_FAIL("xmldocs/not-wf/sa/170.xml", "", Continue);
 
     QCOMPARE(parser.result(), ref_file_contents);
 }

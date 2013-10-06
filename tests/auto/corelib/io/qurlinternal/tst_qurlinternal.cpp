@@ -964,8 +964,10 @@ void tst_QUrlInternal::encodingRecode_data()
     addUtf8Data("utf8-string-2", "\xDF\xBF\xE0\xA0\x80""A");
     addUtf8Data("utf8-string-3", "\xE0\xA0\x80\xDF\xBF...");
 
+    QTest::newRow("encode-unicode-noncharacter") << QString(QChar(0xffff)) << F(QUrl::FullyEncoded) << "%EF%BF%BF";
+    QTest::newRow("decode-unicode-noncharacter") << QString(QChar(0xffff)) << F(QUrl::PrettyDecoded) << QString::fromUtf8("\xEF\xBF\xBF");
+
     // special cases: stuff we can encode, but not decode
-    QTest::newRow("unicode-noncharacter") << QString(QChar(0xffff)) << F(QUrl::FullyEncoded) << "%EF%BF%BF";
     QTest::newRow("unicode-lo-surrogate") << QString(QChar(0xD800)) << F(QUrl::FullyEncoded) << "%ED%A0%80";
     QTest::newRow("unicode-hi-surrogate") << QString(QChar(0xDC00)) << F(QUrl::FullyEncoded) << "%ED%B0%80";
 
@@ -1010,9 +1012,6 @@ void tst_QUrlInternal::encodingRecodeInvalidUtf8_data()
 
     extern void loadInvalidUtf8Rows();
     loadInvalidUtf8Rows();
-
-    extern void loadNonCharactersRows();
-    loadNonCharactersRows();
 
     QTest::newRow("utf8-mix-4") << QByteArray("\xE0.A2\x80");
     QTest::newRow("utf8-mix-5") << QByteArray("\xE0\xA2.80");
