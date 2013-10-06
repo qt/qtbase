@@ -105,6 +105,7 @@ public:
 
     Qt::ScreenOrientation nativeOrientation() const;
     Qt::ScreenOrientation orientation() const;
+    void setOrientationUpdateMask(Qt::ScreenOrientations mask);
 
     QWindow *topWindow() const;
     void addWindow(QWindow *window);

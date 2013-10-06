@@ -84,21 +84,32 @@ typedef ITypedEventHandler<CoreWindow*, AutomationProviderRequestedEventArgs*> A
 
 QT_BEGIN_NAMESPACE
 
-static inline Qt::ScreenOrientation qOrientationFromNative(DisplayOrientations orientation)
+static inline Qt::ScreenOrientations qtOrientationsFromNative(DisplayOrientations native)
 {
-    switch (orientation) {
-    default:
-    case DisplayOrientations_None:
-        return Qt::PrimaryOrientation;
-    case DisplayOrientations_Landscape:
-        return Qt::LandscapeOrientation;
-    case DisplayOrientations_LandscapeFlipped:
-        return Qt::InvertedLandscapeOrientation;
-    case DisplayOrientations_Portrait:
-        return Qt::PortraitOrientation;
-    case DisplayOrientations_PortraitFlipped:
-        return Qt::InvertedPortraitOrientation;
-    }
+    Qt::ScreenOrientations orientations = Qt::PrimaryOrientation;
+    if (native & DisplayOrientations_Portrait)
+        orientations |= Qt::PortraitOrientation;
+    if (native & DisplayOrientations_PortraitFlipped)
+        orientations |= Qt::InvertedPortraitOrientation;
+    if (native & DisplayOrientations_Landscape)
+        orientations |= Qt::LandscapeOrientation;
+    if (native & DisplayOrientations_LandscapeFlipped)
+        orientations |= Qt::InvertedLandscapeOrientation;
+    return orientations;
+}
+
+static inline DisplayOrientations nativeOrientationsFromQt(Qt::ScreenOrientations orientation)
+{
+    DisplayOrientations native = DisplayOrientations_None;
+    if (orientation & Qt::PortraitOrientation)
+        native |= DisplayOrientations_Portrait;
+    if (orientation & Qt::InvertedPortraitOrientation)
+        native |= DisplayOrientations_PortraitFlipped;
+    if (orientation & Qt::LandscapeOrientation)
+        native |= DisplayOrientations_Landscape;
+    if (orientation & Qt::InvertedLandscapeOrientation)
+        native |= DisplayOrientations_LandscapeFlipped;
+    return native;
 }
 
 static inline Qt::KeyboardModifiers qKeyModifiers(ICoreWindow *window)
@@ -533,7 +544,7 @@ QWinRTScreen::QWinRTScreen(ICoreWindow *window)
         // Set native orientation
         DisplayOrientations displayOrientation;
         m_displayProperties->get_NativeOrientation(&displayOrientation);
-        m_nativeOrientation = qOrientationFromNative(displayOrientation);
+        m_nativeOrientation = static_cast<Qt::ScreenOrientation>(static_cast<int>(qtOrientationsFromNative(displayOrientation)));
 
         // Set initial orientation
         onOrientationChanged(0);
@@ -586,6 +597,11 @@ Qt::ScreenOrientation QWinRTScreen::nativeOrientation() const
 Qt::ScreenOrientation QWinRTScreen::orientation() const
 {
     return m_orientation;
+}
+
+void QWinRTScreen::setOrientationUpdateMask(Qt::ScreenOrientations mask)
+{
+    m_displayProperties->put_AutoRotationPreferences(nativeOrientationsFromQt(mask));
 }
 
 ICoreWindow *QWinRTScreen::coreWindow() const
@@ -1004,7 +1020,7 @@ HRESULT QWinRTScreen::onOrientationChanged(IInspectable *)
 {
     DisplayOrientations displayOrientation;
     m_displayProperties->get_CurrentOrientation(&displayOrientation);
-    Qt::ScreenOrientation newOrientation = qOrientationFromNative(displayOrientation);
+    Qt::ScreenOrientation newOrientation = static_cast<Qt::ScreenOrientation>(static_cast<int>(qtOrientationsFromNative(displayOrientation)));
     if (m_orientation != newOrientation) {
         m_orientation = newOrientation;
         QWindowSystemInterface::handleScreenOrientationChange(screen(), m_orientation);
