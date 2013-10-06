@@ -324,7 +324,7 @@ public:
         QString file;
         const QFileSystemNode *node;
     };
-    QList<Fetching> toFetch;
+    QVector<Fetching> toFetch;
 
 };
 Q_DECLARE_TYPEINFO(QFileSystemModelPrivate::Fetching, Q_MOVABLE_TYPE);

@@ -472,11 +472,8 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
                 p->bypassFilters[node] = 1;
             QString dir = q->filePath(this->index(parent));
             if (!node->hasInformation() && fetch) {
-                Fetching f;
-                f.dir = dir;
-                f.file = element;
-                f.node = node;
-                p->toFetch.append(f);
+                Fetching f = { std::move(dir), std::move(element), node };
+                p->toFetch.append(std::move(f));
                 p->fetchingTimer.start(0, const_cast<QFileSystemModel*>(q));
             }
         }
