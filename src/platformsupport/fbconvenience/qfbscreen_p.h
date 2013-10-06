@@ -108,7 +108,7 @@ private:
     void generateRects();
 
     QPainter *mCompositePainter;
-    QList<QPair<QRect, int> > mCachedRects;
+    QVector<QPair<QRect, int> > mCachedRects;
     QList <QFbBackingStore*> mBackingStores;
 
     friend class QFbWindow;
