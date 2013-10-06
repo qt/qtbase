@@ -3777,8 +3777,8 @@ QRect QTreeViewPrivate::itemDecorationRect(const QModelIndex &index) const
     return q->style()->subElementRect(QStyle::SE_TreeViewDisclosureItem, &opt, q);
 }
 
-QList<QPair<int, int> > QTreeViewPrivate::columnRanges(const QModelIndex &topIndex,
-                                                          const QModelIndex &bottomIndex) const
+QVector<QPair<int, int> > QTreeViewPrivate::columnRanges(const QModelIndex &topIndex,
+                                                         const QModelIndex &bottomIndex) const
 {
     const int topVisual = header->visualIndex(topIndex.column()),
         bottomVisual = header->visualIndex(bottomIndex.column());
@@ -3798,7 +3798,7 @@ QList<QPair<int, int> > QTreeViewPrivate::columnRanges(const QModelIndex &topInd
     //let's sort the list
     std::sort(logicalIndexes.begin(), logicalIndexes.end());
 
-    QList<QPair<int, int> > ret;
+    QVector<QPair<int, int> > ret;
     QPair<int, int> current;
     current.first = -2; // -1 is not enough because -1+1 = 0
     current.second = -2;
@@ -3832,8 +3832,8 @@ void QTreeViewPrivate::select(const QModelIndex &topIndex, const QModelIndex &bo
     const int top = viewIndex(topIndex),
         bottom = viewIndex(bottomIndex);
 
-    const QList< QPair<int, int> > colRanges = columnRanges(topIndex, bottomIndex);
-    QList< QPair<int, int> >::const_iterator it;
+    const QVector<QPair<int, int> > colRanges = columnRanges(topIndex, bottomIndex);
+    QVector<QPair<int, int> >::const_iterator it;
     for (it = colRanges.begin(); it != colRanges.end(); ++it) {
         const int left = (*it).first,
             right = (*it).second;

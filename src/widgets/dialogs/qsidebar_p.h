@@ -55,6 +55,7 @@
 #include <qstandarditemmodel.h>
 #include <qstyleditemdelegate.h>
 #include <qurl.h>
+#include <qvector.h>
 
 #ifndef QT_NO_FILEDIALOG
 
@@ -106,7 +107,7 @@ private:
     void changed(const QString &path);
     void addIndexToWatch(const QString &path, const QModelIndex &index);
     QFileSystemModel *fileSystemModel;
-    QList<QPair<QModelIndex, QString> > watching;
+    QVector<QPair<QModelIndex, QString> > watching;
     QList<QUrl> invalidUrls;
 };
 

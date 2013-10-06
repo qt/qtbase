@@ -211,8 +211,8 @@ public:
         return setOfVertices;
     }
 
-    QList<QPair<Vertex*, Vertex*> > connections() const {
-        QList<QPair<Vertex*, Vertex*> > conns;
+    QVector<QPair<Vertex*, Vertex*> > connections() const {
+        QVector<QPair<Vertex*, Vertex*> > conns;
         for (const_iterator it = constBegin(); it != constEnd(); ++it) {
             Vertex *from = it.from();
             Vertex *to = it.to();

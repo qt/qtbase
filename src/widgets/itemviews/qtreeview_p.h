@@ -54,6 +54,7 @@
 #include "private/qabstractitemview_p.h"
 #include <QtCore/qvariantanimation.h>
 #include <QtCore/qabstractitemmodel.h>
+#include <QtCore/qvector.h>
 
 #ifndef QT_NO_TREEVIEW
 
@@ -164,7 +165,7 @@ public:
     QRect itemDecorationRect(const QModelIndex &index) const;
 
 
-    QList<QPair<int, int> > columnRanges(const QModelIndex &topIndex, const QModelIndex &bottomIndex) const;
+    QVector<QPair<int, int> > columnRanges(const QModelIndex &topIndex, const QModelIndex &bottomIndex) const;
     void select(const QModelIndex &start, const QModelIndex &stop, QItemSelectionModel::SelectionFlags command);
 
     QPair<int,int> startAndEndColumns(const QRect &rect) const;

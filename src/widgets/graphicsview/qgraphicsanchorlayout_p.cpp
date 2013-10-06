@@ -1266,7 +1266,7 @@ void QGraphicsAnchorLayoutPrivate::restoreSimplifiedGraph(Orientation orientatio
 
     // Restore anchor simplification
     Graph<AnchorVertex, AnchorData> &g = graph[orientation];
-    QList<QPair<AnchorVertex*, AnchorVertex*> > connections = g.connections();
+    QVector<QPair<AnchorVertex*, AnchorVertex*> > connections = g.connections();
     for (int i = 0; i < connections.count(); ++i) {
         AnchorVertex *v1 = connections.at(i).first;
         AnchorVertex *v2 = connections.at(i).second;
@@ -2295,7 +2295,7 @@ bool QGraphicsAnchorLayoutPrivate::calculateNonTrunk(const QList<QSimplexConstra
 void QGraphicsAnchorLayoutPrivate::refreshAllSizeHints(Orientation orientation)
 {
     Graph<AnchorVertex, AnchorData> &g = graph[orientation];
-    QList<QPair<AnchorVertex *, AnchorVertex *> > vertices = g.connections();
+    QVector<QPair<AnchorVertex *, AnchorVertex *> > vertices = g.connections();
 
     QLayoutStyleInfo styleInf = styleInfo();
     for (int i = 0; i < vertices.count(); ++i) {
@@ -2388,7 +2388,7 @@ void QGraphicsAnchorLayoutPrivate::constraintsFromPaths(Orientation orientation)
 void QGraphicsAnchorLayoutPrivate::updateAnchorSizes(Orientation orientation)
 {
     Graph<AnchorVertex, AnchorData> &g = graph[orientation];
-    const QList<QPair<AnchorVertex *, AnchorVertex *> > &vertices = g.connections();
+    const QVector<QPair<AnchorVertex *, AnchorVertex *> > &vertices = g.connections();
 
     for (int i = 0; i < vertices.count(); ++i) {
         AnchorData *ad = g.edgeData(vertices.at(i).first, vertices.at(i).second);
