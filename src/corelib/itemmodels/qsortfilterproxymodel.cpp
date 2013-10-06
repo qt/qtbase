@@ -54,7 +54,7 @@
 
 QT_BEGIN_NAMESPACE
 
-typedef QList<QPair<QModelIndex, QPersistentModelIndex> > QModelIndexPairList;
+typedef QVector<QPair<QModelIndex, QPersistentModelIndex> > QModelIndexPairList;
 
 static inline QSet<int> qVectorToSet(const QVector<int> &vector)
 {

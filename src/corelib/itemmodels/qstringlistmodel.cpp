@@ -262,7 +262,7 @@ void QStringListModel::sort(int, Qt::SortOrder order)
 {
     emit layoutAboutToBeChanged(QList<QPersistentModelIndex>(), VerticalSortHint);
 
-    QList<QPair<QString, int> > list;
+    QVector<QPair<QString, int> > list;
     const int lstCount = lst.count();
     list.reserve(lstCount);
     for (int i = 0; i < lstCount; ++i)
