@@ -225,7 +225,9 @@ private slots:
     void fromListCustom() const;
     void fromStdVector() const;
     void indexOf() const;
-    void insert() const;
+    void insertInt() const;
+    void insertMovable() const;
+    void insertCustom() const;
     void isEmpty() const;
     void last() const;
     void lastIndexOf() const;
@@ -293,6 +295,7 @@ private:
     template<typename T> void eraseReserved() const;
     template<typename T> void fill() const;
     template<typename T> void fromList() const;
+    template<typename T> void insert() const;
     template<typename T> void prepend() const;
     template<typename T> void remove() const;
     template<typename T> void size() const;
@@ -1210,32 +1213,87 @@ void tst_QVector::indexOf() const
     QVERIFY(myvec.indexOf("A", 4) == -1);
 }
 
+template <typename T>
 void tst_QVector::insert() const
 {
-    QVector<QString> myvec;
-    myvec << "A" << "B" << "C";
+    QVector<T> myvec;
+    const T
+        tA = SimpleValue<T>::at(0),
+        tB = SimpleValue<T>::at(1),
+        tC = SimpleValue<T>::at(2),
+        tX = SimpleValue<T>::at(3),
+        tZ = SimpleValue<T>::at(4),
+        tT = SimpleValue<T>::at(5),
+        ti = SimpleValue<T>::at(6);
+    myvec << tA << tB << tC;
+    QVector<T> myvec2 = myvec;
 
     // first position
-    QCOMPARE(myvec.at(0), QLatin1String("A"));
-    myvec.insert(0, QLatin1String("X"));
-    QCOMPARE(myvec.at(0), QLatin1String("X"));
-    QCOMPARE(myvec.at(1), QLatin1String("A"));
+    QCOMPARE(myvec.at(0), tA);
+    myvec.insert(0, tX);
+    QCOMPARE(myvec.at(0), tX);
+    QCOMPARE(myvec.at(1), tA);
+
+    QCOMPARE(myvec2.at(0), tA);
+    myvec2.insert(myvec2.begin(), tX);
+    QCOMPARE(myvec2.at(0), tX);
+    QCOMPARE(myvec2.at(1), tA);
 
     // middle
-    myvec.insert(1, QLatin1String("Z"));
-    QCOMPARE(myvec.at(0), QLatin1String("X"));
-    QCOMPARE(myvec.at(1), QLatin1String("Z"));
-    QCOMPARE(myvec.at(2), QLatin1String("A"));
+    myvec.insert(1, tZ);
+    QCOMPARE(myvec.at(0), tX);
+    QCOMPARE(myvec.at(1), tZ);
+    QCOMPARE(myvec.at(2), tA);
+
+    myvec2.insert(myvec2.begin() + 1, tZ);
+    QCOMPARE(myvec2.at(0), tX);
+    QCOMPARE(myvec2.at(1), tZ);
+    QCOMPARE(myvec2.at(2), tA);
 
     // end
-    myvec.insert(5, QLatin1String("T"));
-    QCOMPARE(myvec.at(5), QLatin1String("T"));
-    QCOMPARE(myvec.at(4), QLatin1String("C"));
+    myvec.insert(5, tT);
+    QCOMPARE(myvec.at(5), tT);
+    QCOMPARE(myvec.at(4), tC);
+
+    myvec2.insert(myvec2.end(), tT);
+    QCOMPARE(myvec2.at(5), tT);
+    QCOMPARE(myvec2.at(4), tC);
 
     // insert a lot of garbage in the middle
-    myvec.insert(2, 2, QLatin1String("infinity"));
-    QCOMPARE(myvec, QVector<QString>() << "X" << "Z" << "infinity" << "infinity"
-             << "A" << "B" << "C" << "T");
+    myvec.insert(2, 2, ti);
+    QCOMPARE(myvec, QVector<T>() << tX << tZ << ti << ti
+             << tA << tB << tC << tT);
+
+    myvec2.insert(myvec2.begin() + 2, 2, ti);
+    QCOMPARE(myvec2, myvec);
+
+    // insert from references to the same container:
+    myvec.insert(0, 1, myvec[5]);   // inserts tB
+    myvec2.insert(0, 1, myvec2[5]); // inserts tB
+    QCOMPARE(myvec, QVector<T>() << tB << tX << tZ << ti << ti
+             << tA << tB << tC << tT);
+    QCOMPARE(myvec2, myvec);
+
+    myvec.insert(0, 1, const_cast<const QVector<T>&>(myvec)[0]);   // inserts tB
+    myvec2.insert(0, 1, const_cast<const QVector<T>&>(myvec2)[0]); // inserts tB
+    QCOMPARE(myvec, QVector<T>() << tB << tB << tX << tZ << ti << ti
+             << tA << tB << tC << tT);
+    QCOMPARE(myvec2, myvec);
+}
+
+void tst_QVector::insertInt() const
+{
+    insert<int>();
+}
+
+void tst_QVector::insertMovable() const
+{
+    insert<Movable>();
+}
+
+void tst_QVector::insertCustom() const
+{
+    insert<Custom>();
 }
 
 void tst_QVector::isEmpty() const
