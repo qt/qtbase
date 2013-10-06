@@ -866,7 +866,11 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *window, IPointerEventArgs *a
         QHash<quint32, QWindowSystemInterface::TouchPoint>::iterator it = m_touchPoints.find(id);
         if (it != m_touchPoints.end()) {
             boolean isPressed;
+#ifndef Q_OS_WINPHONE
             pointerPoint->get_IsInContact(&isPressed);
+#else
+            properties->get_IsLeftButtonPressed(&isPressed); // IsInContact not reliable on phone
+#endif
             it.value().state = isPressed ? Qt::TouchPointMoved : Qt::TouchPointReleased;
         } else {
             it = m_touchPoints.insert(id, QWindowSystemInterface::TouchPoint());
