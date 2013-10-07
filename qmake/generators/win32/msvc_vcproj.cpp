@@ -449,7 +449,7 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                 if (!qmake_setpwd(dir))
                     fprintf(stderr, "Cannot find directory: %s", dir.toLatin1().constData());
             }
-            Option::output_dir = Option::globals->shadowedPath(QDir::cleanPath(fi.absoluteFilePath()));
+            Option::output_dir = Option::globals->shadowedPath(QDir::cleanPath(dir));
             if (tmp_proj.read(fn)) {
                 // Check if all requirements are fulfilled
                 if (!tmp_proj.isEmpty("QMAKE_FAILED_REQUIREMENTS")) {
