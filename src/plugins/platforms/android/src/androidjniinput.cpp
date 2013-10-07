@@ -485,7 +485,7 @@ namespace QtAndroidInput
                                                mapAndroidKey(key),
                                                modifiers,
                                                QChar(unicode),
-                                               true);
+                                               false);
     }
 
     static void keyUp(JNIEnv */*env*/, jobject /*thiz*/, jint key, jint unicode, jint modifier)
@@ -505,7 +505,7 @@ namespace QtAndroidInput
                                                mapAndroidKey(key),
                                                modifiers,
                                                QChar(unicode),
-                                               true);
+                                               false);
     }
 
 
