@@ -5501,6 +5501,7 @@ elif [ "$CFG_EGL" != "no" ]; then
         QMAKE_CFLAGS_EGL=`$PKG_CONFIG --cflags egl 2>/dev/null`
         QMakeVar set QMAKE_INCDIR_EGL "$QMAKE_INCDIR_EGL"
         QMakeVar set QMAKE_LIBS_EGL "$QMAKE_LIBS_EGL"
+        QMakeVar set QMAKE_CFLAGS_EGL "`echo " $QMAKE_CFLAGS_EGL " | sed -e 's, -I[^ ]* , ,g;s,^ ,,;s, $,,'`"
     fi       # detect EGL support
     if compileTest qpa/egl "EGL" $QMAKE_CFLAGS_EGL $QMAKE_LIBS_EGL; then
         CFG_EGL=yes
