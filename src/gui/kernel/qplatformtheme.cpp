@@ -48,8 +48,8 @@
 #include <QtCore/qfileinfo.h>
 #include <qpalette.h>
 #include <qtextformat.h>
-#include <qiconloader_p.h>
-#include "private/qguiapplication_p.h"
+#include <private/qiconloader_p.h>
+#include <private/qguiapplication_p.h>
 
 
 QT_BEGIN_NAMESPACE
