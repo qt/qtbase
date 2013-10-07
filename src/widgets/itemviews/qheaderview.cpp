@@ -3693,8 +3693,7 @@ void QHeaderViewPrivate::write(QDataStream &out) const
     out << int(globalResizeMode);
 
     out << sectionItems;
-    if (out.version() >= QDataStream::Qt_5_2)
-        out << resizeContentsPrecision;
+    out << resizeContentsPrecision;
 }
 
 bool QHeaderViewPrivate::read(QDataStream &in)
@@ -3747,8 +3746,10 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     sectionItems = newSectionItems;
     recalcSectionStartPos();
 
-    if (in.version() >= QDataStream::Qt_5_2)
-        in >> resizeContentsPrecision;
+    int tmpint;
+    in >> tmpint;
+    if (in.status() == QDataStream::Ok)  // we haven't read past end
+        resizeContentsPrecision = tmpint;
 
     return true;
 }
