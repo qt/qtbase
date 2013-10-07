@@ -208,7 +208,6 @@ bool QLoggingCategory::isEnabled(QtMsgType msgtype) const
     case QtCriticalMsg: return enabledCritical;
     case QtTraceMsg: return enabledTrace;
     case QtFatalMsg: return true;
-    default: break;
     }
     return false;
 }
@@ -232,8 +231,7 @@ void QLoggingCategory::setEnabled(QtMsgType type, bool enable)
     case QtWarningMsg: enabledWarning = enable; break;
     case QtCriticalMsg: enabledCritical = enable; break;
     case QtTraceMsg: enabledTrace = enable; break;
-    case QtFatalMsg:
-    default: break;
+    case QtFatalMsg: break;
     }
 }
 
