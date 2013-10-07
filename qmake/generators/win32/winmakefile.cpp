@@ -274,20 +274,6 @@ Win32MakefileGenerator::processPrlFiles()
 
 void Win32MakefileGenerator::processVars()
 {
-    //If the TARGET looks like a path split it into DESTDIR and the resulting TARGET
-    if(!project->isEmpty("TARGET")) {
-        ProString targ = project->first("TARGET");
-        int slsh = qMax(targ.lastIndexOf('/'), targ.lastIndexOf(Option::dir_sep));
-        if(slsh != -1) {
-            if(project->isEmpty("DESTDIR"))
-                project->values("DESTDIR").append("");
-            else if(project->first("DESTDIR").right(1) != Option::dir_sep)
-                project->values("DESTDIR") = ProStringList(project->first("DESTDIR") + Option::dir_sep);
-            project->values("DESTDIR") = ProStringList(project->first("DESTDIR") + targ.left(slsh+1));
-            project->values("TARGET") = ProStringList(targ.mid(slsh+1));
-        }
-    }
-
     project->values("QMAKE_ORIG_TARGET") = project->values("TARGET");
     if (project->isEmpty("QMAKE_PROJECT_NAME"))
         project->values("QMAKE_PROJECT_NAME") = project->values("QMAKE_ORIG_TARGET");
