@@ -45,8 +45,6 @@
 #include <QGuiApplication>
 #include <qtconcurrentmap.h>
 
-#ifndef QT_NO_CONCURRENT
-
 QImage scale(const QImage &image)
 {
     qDebug() << "Scaling image in thread" << QThread::currentThread();
@@ -70,23 +68,3 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-
-#else
-
-#include <QLabel>
-
-int main(int argc, char *argv[])
-{
-    QApplication app(argc, argv);
-    QString text("Qt Concurrent is not yet supported on this platform");
-
-    QLabel *label = new QLabel(text);
-    label->setWordWrap(true);
-
-    label->show();
-    qDebug() << text;
-
-    app.exec();
-}
-
-#endif
