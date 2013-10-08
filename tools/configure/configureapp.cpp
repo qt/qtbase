@@ -2613,7 +2613,6 @@ void Configure::generateOutputVars()
     if (dictionary[ "FORCEDEBUGINFO" ] == "yes")
         qmakeConfig += "force_debug_info";
     qmakeConfig += dictionary[ "BUILD" ];
-    dictionary[ "QMAKE_OUTDIR" ] = dictionary[ "BUILD" ];
 
     if (buildParts.isEmpty()) {
         buildParts = defaultBuildParts;
@@ -2638,9 +2637,6 @@ void Configure::generateOutputVars()
             qmakeVars += "QMAKE_QT_VERSION_OVERRIDE = " + version.left(version.indexOf('.'));
             version.remove(QLatin1Char('.'));
         }
-        dictionary[ "QMAKE_OUTDIR" ] += "_shared";
-    } else {
-        dictionary[ "QMAKE_OUTDIR" ] += "_static";
     }
 
     if (dictionary[ "ACCESSIBILITY" ] == "yes")
@@ -2770,10 +2766,6 @@ void Configure::generateOutputVars()
 
     if (dictionary.contains("XQMAKESPEC") && dictionary[ "XQMAKESPEC" ].startsWith("linux"))
         qtConfig += "rpath";
-
-    qmakeVars += QString("OBJECTS_DIR     = ") + formatPath(".obj/" + dictionary["QMAKE_OUTDIR"]);
-    qmakeVars += QString("MOC_DIR         = ") + formatPath(".moc/" + dictionary["QMAKE_OUTDIR"]);
-    qmakeVars += QString("RCC_DIR         = ") + formatPath(".rcc/" + dictionary["QMAKE_OUTDIR"]);
 
     if (!qmakeDefines.isEmpty())
         qmakeVars += QString("DEFINES        += ") + qmakeDefines.join(' ');

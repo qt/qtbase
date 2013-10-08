@@ -5895,18 +5895,10 @@ if [ "$CFG_OPENGL" = "es2" ]; then
     QT_CONFIG="$QT_CONFIG opengles2"
 fi
 
-# build up the variables for output
-if [ "$CFG_DEBUG" = "yes" ]; then
-    QMAKE_OUTDIR="${QMAKE_OUTDIR}debug"
-elif [ "$CFG_DEBUG" = "no" ]; then
-    QMAKE_OUTDIR="${QMAKE_OUTDIR}release"
-fi
 if [ "$CFG_SHARED" = "yes" ]; then
-    QMAKE_OUTDIR="${QMAKE_OUTDIR}-shared"
     QT_CONFIG="$QT_CONFIG shared"
     QTCONFIG_CONFIG="$QTCONFIG_CONFIG shared"
 elif [ "$CFG_SHARED" = "no" ]; then
-    QMAKE_OUTDIR="${QMAKE_OUTDIR}-static"
     QT_CONFIG="$QT_CONFIG static"
     QTCONFIG_CONFIG="$QTCONFIG_CONFIG static"
 fi
@@ -5916,15 +5908,6 @@ QMAKE_CONFIG="$QMAKE_CONFIG qpa"
 QT_CONFIG="$QT_CONFIG qpa"
 QTCONFIG_CONFIG="$QTCONFIG_CONFIG qpa"
 
-if [ "$XPLATFORM_MINGW" != "yes" ]; then
-    # Do not set this here for Windows. Let qmake do it so
-    # debug and release precompiled headers are kept separate.
-    QMakeVar set PRECOMPILED_DIR ".pch/$QMAKE_OUTDIR"
-fi
-QMakeVar set OBJECTS_DIR ".obj/$QMAKE_OUTDIR"
-QMakeVar set MOC_DIR ".moc/$QMAKE_OUTDIR"
-QMakeVar set RCC_DIR ".rcc/$QMAKE_OUTDIR"
-QMakeVar set UI_DIR ".uic/$QMAKE_OUTDIR"
 if [ "$CFG_LARGEFILE" = "yes" ] && [ "$XPLATFORM_MINGW" != "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG largefile"
 fi
