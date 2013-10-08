@@ -42,8 +42,10 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtTest/QtTest>
+#ifdef QT_GUI_LIB
 #include <QtGui/QImage>
 #include <QtGui/QPixmap>
+#endif
 
 /* XPM test data for QPixmap, QImage tests (use drag cursors as example) */
 
@@ -138,10 +140,12 @@ private slots:
     void compareQStringLists_data();
     void compareQListInt();
     void compareQListDouble();
+#ifdef QT_GUI_LIB
     void compareQPixmaps();
     void compareQPixmaps_data();
     void compareQImages();
     void compareQImages_data();
+#endif
 };
 
 static bool boolfunc() { return true; }
@@ -323,6 +327,7 @@ void tst_Cmptest::compareQListDouble()
     QCOMPARE(double1, double2);
 }
 
+#ifdef QT_GUI_LIB
 void tst_Cmptest::compareQPixmaps_data()
 {
     QTest::addColumn<QPixmap>("opA");
@@ -374,6 +379,7 @@ void tst_Cmptest::compareQImages()
 
     QCOMPARE(opA, opB);
 }
+#endif
 
 QTEST_MAIN(tst_Cmptest)
 #include "tst_cmptest.moc"
