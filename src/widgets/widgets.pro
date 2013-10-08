@@ -44,7 +44,3 @@ QMAKE_DYNAMIC_LIST_FILE = $$PWD/QtWidgets.dynlist
 testcocoon {
     load(testcocoon)
 }
-
-win32:!contains(QT_CONFIG, directwrite) {
-    DEFINES += QT_NO_DIRECTWRITE
-}
