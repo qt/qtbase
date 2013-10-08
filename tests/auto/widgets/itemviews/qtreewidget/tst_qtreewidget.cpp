@@ -1758,9 +1758,7 @@ void tst_QTreeWidget::setData()
                     QCOMPARE(qvariant_cast<QTreeWidgetItem*>(args.at(0)), item);
                     QCOMPARE(qvariant_cast<int>(args.at(1)), j);
                     item->setIcon(j, icon);
-                    // #### shouldn't cause dataChanged()
-                    QCOMPARE(itemChangedSpy.count(), 1);
-                    itemChangedSpy.clear();
+                    QCOMPARE(itemChangedSpy.count(), 0);
 
                     QString toolTip = QString("toolTip %0").arg(i);
                     item->setToolTip(j, toolTip);
