@@ -41,7 +41,7 @@
 
 
 #include <QtTest/QtTest>
-#include <qguiapplication.h>
+#include <qcoreapplication.h>
 #include <qsqldatabase.h>
 #include <qsqlerror.h>
 #include <qsqlquery.h>
@@ -115,7 +115,7 @@ void tst_QSql::basicDriverTest()
 {
     int argc = 1;
     char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
-    QGuiApplication app(argc, argv, false);
+    QCoreApplication app(argc, argv, false);
     tst_Databases dbs;
     dbs.open();
 
@@ -150,7 +150,7 @@ void tst_QSql::basicDriverTest()
 }
 
 // make sure that the static stuff will be deleted
-// when using multiple QGuiApplication objects
+// when using multiple QCoreApplication objects
 void tst_QSql::open()
 {
     int i;
@@ -158,7 +158,7 @@ void tst_QSql::open()
     char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
     int count = -1;
     for (i = 0; i < 10; ++i) {
-        QGuiApplication app(argc, argv, false);
+        QCoreApplication app(argc, argv, false);
         tst_Databases dbs;
 
         dbs.open();
@@ -185,7 +185,7 @@ void tst_QSql::concurrentAccess()
 {
     int argc = 1;
     char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
-    QGuiApplication app(argc, argv, false);
+    QCoreApplication app(argc, argv, false);
     tst_Databases dbs;
 
     dbs.open();
@@ -214,7 +214,7 @@ void tst_QSql::openErrorRecovery()
 {
     int argc = 1;
     char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
-    QGuiApplication app(argc, argv, false);
+    QCoreApplication app(argc, argv, false);
     tst_Databases dbs;
 
     dbs.addDbs();
@@ -262,7 +262,7 @@ void tst_QSql::registerSqlDriver()
 {
     int argc = 1;
     char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
-    QGuiApplication app(argc, argv, false);
+    QCoreApplication app(argc, argv, false);
 
     QSqlDatabase::registerSqlDriver("QSQLTESTDRIVER", new QSqlDriverCreator<QSqlNullDriver>);
     QVERIFY(QSqlDatabase::drivers().contains("QSQLTESTDRIVER"));
