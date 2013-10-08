@@ -1,6 +1,6 @@
 CONFIG += testcase
 CONFIG += parallel_test
-QT += testlib
+QT = core testlib
 SOURCES = ../tst_qtextcodec.cpp
 
 TARGET = ../tst_qtextcodec

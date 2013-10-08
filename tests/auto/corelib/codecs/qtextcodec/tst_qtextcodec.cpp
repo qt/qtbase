@@ -44,7 +44,6 @@
 
 #include <qtextcodec.h>
 #include <qfile.h>
-#include <qtextdocument.h>
 #include <time.h>
 #include <qprocess.h>
 #include <QThreadPool>
@@ -288,7 +287,7 @@ void tst_QTextCodec::toUnicode_codecForHtml()
     QVERIFY(file.open(QFile::ReadOnly));
 
     QByteArray data = file.readAll();
-    QTextCodec *codec = Qt::codecForHtml(data);
+    QTextCodec *codec = QTextCodec::codecForHtml(data);
     codec->toUnicode(data); // this line crashes
 }
 
