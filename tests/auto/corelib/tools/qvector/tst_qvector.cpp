@@ -1423,13 +1423,28 @@ void tst_QVector::remove() const
     T val1 = SimpleValue<T>::at(1);
     T val2 = SimpleValue<T>::at(2);
     T val3 = SimpleValue<T>::at(3);
+    T val4 = SimpleValue<T>::at(4);
+    myvec << val1 << val2 << val3;
+    myvec << val1 << val2 << val3;
     myvec << val1 << val2 << val3;
     // remove middle
     myvec.remove(1);
-    QCOMPARE(myvec, QVector<T>() << val1 << val3);
+    QCOMPARE(myvec, QVector<T>() << val1 << val3  << val1 << val2 << val3  << val1 << val2 << val3);
+
+    // removeOne()
+    QVERIFY(!myvec.removeOne(val4));
+    QVERIFY(myvec.removeOne(val2));
+    QCOMPARE(myvec, QVector<T>() << val1 << val3  << val1 << val3  << val1 << val2 << val3);
+
+    // removeAll()
+    QCOMPARE(myvec.removeAll(val4), 0);
+    QCOMPARE(myvec.removeAll(val1), 3);
+    QCOMPARE(myvec, QVector<T>() << val3  << val3  << val2 << val3);
+    QCOMPARE(myvec.removeAll(val2), 1);
+    QCOMPARE(myvec, QVector<T>() << val3  << val3  << val3);
 
     // remove rest
-    myvec.remove(0, 2);
+    myvec.remove(0, 3);
     QCOMPARE(myvec, QVector<T>());
 }
 

@@ -154,6 +154,24 @@ public:
 
     // QList compatibility
     void removeAt(int i) { remove(i); }
+    int removeAll(const T &t)
+    {
+        const const_iterator ce = this->cend(), cit = std::find(this->cbegin(), ce, t);
+        if (cit == ce)
+            return 0;
+        const iterator e = end(), it = std::remove(c2m(cit), e, t);
+        const int result = std::distance(it, e);
+        erase(it, e);
+        return result;
+    }
+    bool removeOne(const T &t)
+    {
+        const int i = indexOf(t);
+        if (i < 0)
+            return false;
+        remove(i);
+        return true;
+    }
     int length() const { return size(); }
     T takeAt(int i) { T t = at(i); remove(i); return t; }
 
@@ -250,6 +268,7 @@ private:
     {
         return (i <= d->end()) && (d->begin() <= i);
     }
+    iterator c2m(const_iterator it) { return begin() + (it - cbegin()); }
     class AlignmentDummy { Data header; T array[1]; };
 };
 

@@ -576,6 +576,28 @@
     \sa remove(), QList::removeAt()
 */
 
+/*! \fn int QVector::removeAll(const T &t)
+    \since 5.4
+
+    Removes all elements that compare equal to \a t from the
+    vector. Returns the number of elements removed, if any.
+
+    Provided for compatibility with QList.
+
+    \sa removeOne(), QList::removeAll()
+*/
+
+/*! \fn bool QVector::removeOne(const T &t)
+    \since 5.4
+
+    Removes the first element that compares equal to \a t from the
+    vector. Returns whether an element was, in fact, removed.
+
+    Provided for compatibility with QList.
+
+    \sa removeAll(), QList::removeOne()
+*/
+
 /*! \fn int QVector::length() const
     \since 5.2
 
