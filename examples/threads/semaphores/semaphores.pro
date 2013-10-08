@@ -1,5 +1,5 @@
 SOURCES += semaphores.cpp
-QT = core gui
+QT = core
 
 CONFIG -= app_bundle
 CONFIG += console

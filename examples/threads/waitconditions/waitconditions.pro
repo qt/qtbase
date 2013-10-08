@@ -1,4 +1,4 @@
-QT = core gui
+QT = core
 CONFIG -= moc app_bundle
 CONFIG += console
 

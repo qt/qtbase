@@ -1,4 +1,5 @@
 TEMPLATE      = lib
+QT            = core
 CONFIG       += plugin
 HEADERS       = plugin2.h
 SOURCES       = plugin2.cpp

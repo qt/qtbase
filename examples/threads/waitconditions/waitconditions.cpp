@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtCore>
 
 #include <stdio.h>
 #include <stdlib.h>

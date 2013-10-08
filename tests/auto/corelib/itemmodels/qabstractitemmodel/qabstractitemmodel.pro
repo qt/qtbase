@@ -1,7 +1,7 @@
 CONFIG += testcase
 CONFIG += parallel_test
 TARGET = tst_qabstractitemmodel
-QT += testlib
+QT = core testlib
 
 mtdir = ../../../other/modeltest
 INCLUDEPATH += $$PWD/$${mtdir}
