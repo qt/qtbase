@@ -170,6 +170,7 @@ public:
     void initFrom(const QMakeEvaluator &other);
     void setupProject();
     void evaluateCommand(const QString &cmds, const QString &where);
+    void applyExtraConfigs();
     VisitReturn visitProFile(ProFile *pro, QMakeHandler::EvalFileType type,
                              LoadFlags flags);
     VisitReturn visitProBlock(ProFile *pro, const ushort *tokPtr);
