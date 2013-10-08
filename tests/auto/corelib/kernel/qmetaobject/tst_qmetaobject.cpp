@@ -43,7 +43,7 @@
 
 #include <qobject.h>
 #include <qmetaobject.h>
-#include <qwindow.h>
+#include <qabstractproxymodel.h>
 #include <private/qmetaobject_p.h>
 
 Q_DECLARE_METATYPE(const QMetaObject *)
@@ -746,13 +746,13 @@ void tst_QMetaObject::invokeBlockingQueuedMetaMember()
 void tst_QMetaObject::qtMetaObjectInheritance()
 {
     QVERIFY(QObject::staticMetaObject.superClass() == 0);
-    QCOMPARE(QWindow::staticMetaObject.indexOfEnumerator("Qt::ScreenOrientation"), -1);
-    QCOMPARE(QWindow::staticMetaObject.indexOfEnumerator("ScreenOrientation"), -1);
-    int indexOfContentOrientation = QWindow::staticMetaObject.indexOfProperty("contentOrientation");
-    QVERIFY(indexOfContentOrientation != -1);
-    QMetaProperty contentOrientation = QWindow::staticMetaObject.property(indexOfContentOrientation);
-    QVERIFY(contentOrientation.isValid());
-    QCOMPARE(contentOrientation.enumerator().name(), "ScreenOrientation");
+    QCOMPARE(QSortFilterProxyModel::staticMetaObject.indexOfEnumerator("Qt::CaseSensitivity"), -1);
+    QCOMPARE(QSortFilterProxyModel::staticMetaObject.indexOfEnumerator("CaseSensitivity"), -1);
+    int indexOfSortCaseSensitivity = QSortFilterProxyModel::staticMetaObject.indexOfProperty("sortCaseSensitivity");
+    QVERIFY(indexOfSortCaseSensitivity != -1);
+    QMetaProperty sortCaseSensitivity = QSortFilterProxyModel::staticMetaObject.property(indexOfSortCaseSensitivity);
+    QVERIFY(sortCaseSensitivity.isValid());
+    QCOMPARE(sortCaseSensitivity.enumerator().name(), "CaseSensitivity");
 }
 
 struct MyType
