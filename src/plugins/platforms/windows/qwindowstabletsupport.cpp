@@ -395,8 +395,19 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
     const int currentDevice = m_devices.at(m_currentDevice).currentDevice;
     const int currentPointer = m_devices.at(m_currentDevice).currentPointerType;
 
-    // When entering proximity, the tablet driver snaps the mouse pointer to the
-    // tablet position scaled to the virtual desktop and keeps it in sync.
+    // The tablet can be used in 2 different modes, depending on it settings:
+    // 1) Absolute (pen) mode:
+    //    The coordinates are scaled to the virtual desktop (by default). The user
+    //    can also choose to scale to the monitor or a region of the screen.
+    //    When entering proximity, the tablet driver snaps the mouse pointer to the
+    //    tablet position scaled to that area and keeps it in sync.
+    // 2) Relative (mouse) mode:
+    //    The pen follows the mouse. The constant 'absoluteRange' specifies the
+    //    manhattanLength difference for detecting if a tablet input device is in this mode,
+    //    in which case we snap the position to the mouse position.
+    // It seems there is no way to find out the mode programmatically, the LOGCONTEXT orgX/Y/Ext
+    // area is always the virtual desktop.
+    enum { absoluteRange = 20 };
     const QRect virtualDesktopArea = QGuiApplication::primaryScreen()->virtualGeometry();
 
     if (QWindowsContext::verboseTablet)
@@ -409,10 +420,24 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
         const PACKET &packet = localPacketBuf[i];
 
         const int z = currentDevice == QTabletEvent::FourDMouse ? int(packet.pkZ) : 0;
-        const QPointF globalPosF = m_devices.at(m_currentDevice).scaleCoordinates(packet.pkX, packet.pkY, virtualDesktopArea);
+
+        // This code is to delay the tablet data one cycle to sync with the mouse location.
+        QPointF globalPosF = m_oldGlobalPosF;
+        m_oldGlobalPosF = m_devices.at(m_currentDevice).scaleCoordinates(packet.pkX, packet.pkY, virtualDesktopArea);
 
         QWindow *target = QGuiApplicationPrivate::tabletPressTarget; // Pass to window that grabbed it.
-        const QPoint globalPos = globalPosF.toPoint();
+        QPoint globalPos = globalPosF.toPoint();
+
+        // Get Mouse Position and compare to tablet info
+        const QPoint mouseLocation = QWindowsCursor::mousePosition();
+
+        // Positions should be almost the same if we are in absolute
+        // mode. If they are not, use the mouse location.
+        if ((mouseLocation - globalPos).manhattanLength() > absoluteRange) {
+            globalPos = mouseLocation;
+            globalPosF = globalPos;
+        }
+
         if (!target)
             if (QPlatformWindow *pw = QWindowsContext::instance()->findPlatformWindowAt(GetDesktopWindow(), globalPos, CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT))
                 target = pw->window();

@@ -134,6 +134,7 @@ private:
     bool m_tiltSupport;
     QVector<QWindowsTabletDeviceData> m_devices;
     int m_currentDevice;
+    QPointF m_oldGlobalPosF;
 };
 
 QT_END_NAMESPACE
