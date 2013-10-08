@@ -147,17 +147,13 @@ QString QCoreApplicationPrivate::macMenuBarName()
 #endif
 QString QCoreApplicationPrivate::appName() const
 {
-    static QBasicMutex applicationNameMutex;
-    QMutexLocker locker(&applicationNameMutex);
-
-    if (applicationName.isNull()) {
+    QString applicationName;
 #ifdef Q_OS_MAC
-        applicationName = macMenuBarName();
+    applicationName = macMenuBarName();
 #endif
-        if (applicationName.isEmpty() && argv[0]) {
-            char *p = strrchr(argv[0], '/');
-            applicationName = QString::fromLocal8Bit(p ? p + 1 : argv[0]);
-        }
+    if (applicationName.isEmpty() && argv[0]) {
+        char *p = strrchr(argv[0], '/');
+        applicationName = QString::fromLocal8Bit(p ? p + 1 : argv[0]);
     }
 
     return applicationName;
