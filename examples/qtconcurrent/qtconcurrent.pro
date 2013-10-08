@@ -10,6 +10,11 @@ SUBDIRS       = imagescaling \
     SUBDIRS += progressdialog
 }
 
+!qtHaveModule(gui) {
+    SUBDIRS -= \
+        map
+}
+
 !qtHaveModule(widgets) {
     SUBDIRS -= \
         imagescaling \
