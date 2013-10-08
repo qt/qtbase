@@ -7,5 +7,3 @@ SOURCES += car.cpp main.cpp
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/dbus/remotecontrolledcar/car
 INSTALLS += target
-
-simulator: warning(This example does not work on Simulator platform)
