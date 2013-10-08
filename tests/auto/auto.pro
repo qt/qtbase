@@ -23,6 +23,7 @@ wince*:                                     SUBDIRS -= printsupport
 cross_compile:                              SUBDIRS -= tools
 !qtHaveModule(opengl):                      SUBDIRS -= opengl
 !unix|embedded|!qtHaveModule(dbus):         SUBDIRS -= dbus
+!qtHaveModule(gui):                         SUBDIRS -= gui cmake
 !qtHaveModule(widgets):                     SUBDIRS -= widgets
 !qtHaveModule(printsupport):                SUBDIRS -= printsupport
 !qtHaveModule(concurrent):                  SUBDIRS -= concurrent

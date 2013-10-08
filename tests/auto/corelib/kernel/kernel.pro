@@ -21,6 +21,9 @@ SUBDIRS=\
     qvariant \
     qwineventnotifier
 
+!qtHaveModule(gui): SUBDIRS -= \
+    qmimedata
+
 !qtHaveModule(network): SUBDIRS -= \
     qeventloop \
     qobject \
