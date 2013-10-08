@@ -39,42 +39,45 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSBACKINGSTORE_H
-#define QEGLFSBACKINGSTORE_H
+#ifndef QEGLFSCOMPOSITOR_H
+#define QEGLFSCOMPOSITOR_H
 
-#include <qpa/qplatformbackingstore.h>
-
-#include <QImage>
-#include <QRegion>
+#include <QTimer>
 
 QT_BEGIN_NAMESPACE
 
-class QOpenGLPaintDevice;
+class QEglFSScreen;
 class QEglFSWindow;
+class QOpenGLShaderProgram;
 
-class QEglFSBackingStore : public QPlatformBackingStore
+class QEglFSCompositor : public QObject
 {
+    Q_OBJECT
+
 public:
-    QEglFSBackingStore(QWindow *window);
+    void schedule(QEglFSScreen *screen);
 
-    QPaintDevice *paintDevice();
+    static QEglFSCompositor *instance();
+    static void destroy();
 
-    void beginPaint(const QRegion &);
-
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
-    void resize(const QSize &size, const QRegion &staticContents);
-
-    uint texture() const { return m_texture; }
+private slots:
+    void renderAll();
 
 private:
-    void updateTexture();
+    QEglFSCompositor();
+    ~QEglFSCompositor();
 
-    QEglFSWindow *m_window;
-    QImage m_image;
-    uint m_texture;
-    QRegion m_dirty;
+    void render(QEglFSWindow *window, uint texture, bool raster);
+    void ensureProgram();
+
+    QEglFSScreen *m_screen;
+    QTimer m_updateTimer;
+    QOpenGLShaderProgram *m_program;
+    int m_vertexCoordEntry;
+    int m_textureCoordEntry;
+    int m_isRasterEntry;
 };
 
 QT_END_NAMESPACE
 
-#endif // QEGLFSBACKINGSTORE_H
+#endif // QEGLFSCOMPOSITOR_H

@@ -62,6 +62,8 @@ public:
     WId winId() const;
     void setVisible(bool visible);
     void requestActivateWindow();
+    void raise();
+    void lower();
 
     EGLSurface surface() const;
     QSurfaceFormat format() const;
@@ -73,10 +75,12 @@ public:
     void destroy();
 
     bool hasNativeWindow() const { return m_flags.testFlag(HasNativeWindow); }
-    bool isRasterRoot() const { return m_flags.testFlag(IsRasterRoot); }
+    bool isRaster() const { return m_flags.testFlag(IsRaster); }
 
     QEglFSBackingStore *backingStore() { return m_backingStore; }
     void setBackingStore(QEglFSBackingStore *backingStore) { m_backingStore = backingStore; }
+
+    uint texture() const;
 
     virtual void invalidateSurface();
     virtual void resetSurface();
@@ -93,9 +97,8 @@ private:
 
     enum Flag {
         Created = 0x01,
-        HasNativeWindow = 0x02,
-        IsRaster = 0x04,
-        IsRasterRoot = 0x08
+        IsRaster = 0x02,
+        HasNativeWindow = 0x04
     };
     Q_DECLARE_FLAGS(Flags, Flag);
     Flags m_flags;

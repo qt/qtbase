@@ -47,9 +47,10 @@
 QT_BEGIN_NAMESPACE
 
 QEglFSScreen::QEglFSScreen(EGLDisplay dpy)
-    : m_dpy(dpy)
-    , m_surface(EGL_NO_SURFACE)
-    , m_cursor(0)
+    : m_dpy(dpy),
+      m_surface(EGL_NO_SURFACE),
+      m_cursor(0),
+      m_rootContext(0)
 {
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglScreen %p\n", this);
@@ -121,10 +122,23 @@ void QEglFSScreen::removeWindow(QEglFSWindow *window)
     m_windows.removeOne(window);
 }
 
+void QEglFSScreen::moveToTop(QEglFSWindow *window)
+{
+    m_windows.removeOne(window);
+    m_windows.append(window);
+}
+
+void QEglFSScreen::changeWindowIndex(QEglFSWindow *window, int newIdx)
+{
+    int idx = m_windows.indexOf(window);
+    if (idx != -1 && idx != newIdx)
+        m_windows.move(idx, newIdx);
+}
+
 QEglFSWindow *QEglFSScreen::rootWindow()
 {
     Q_FOREACH (QEglFSWindow *window, m_windows) {
-        if (window->isRasterRoot())
+        if (window->hasNativeWindow())
             return window;
     }
     return 0;

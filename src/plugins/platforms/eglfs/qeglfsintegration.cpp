@@ -43,6 +43,7 @@
 
 #include "qeglfswindow.h"
 #include "qeglfsbackingstore.h"
+#include "qeglfscompositor.h"
 #include "qeglfshooks.h"
 
 #include <QtGui/private/qguiapplication_p.h>
@@ -75,8 +76,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static void *eglContextForContext(QOpenGLContext *context);
-
 QEglFSIntegration::QEglFSIntegration()
     : mFontDb(new QGenericUnixFontDatabase)
     , mServices(new QGenericUnixServices)
@@ -108,8 +107,8 @@ QEglFSIntegration::QEglFSIntegration()
 
 QEglFSIntegration::~QEglFSIntegration()
 {
+    QEglFSCompositor::destroy();
     delete mScreen;
-
     eglTerminate(mDisplay);
     QEglFSHooks::hooks()->platformDestroy();
 }
@@ -131,9 +130,11 @@ bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
 
 QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWindow *window) const
 {
+    QWindowSystemInterface::flushWindowSystemEvents();
     QEglFSWindow *w = new QEglFSWindow(window);
     w->create();
-    w->requestActivateWindow();
+    if (window->type() != Qt::ToolTip)
+        w->requestActivateWindow();
     return w;
 }
 
@@ -263,15 +264,6 @@ void *QEglFSIntegration::nativeResourceForContext(const QByteArray &resource, QO
     return result;
 }
 
-QPlatformNativeInterface::NativeResourceForContextFunction QEglFSIntegration::nativeResourceFunctionForContext(const QByteArray &resource)
-{
-    QByteArray lowerCaseResource = resource.toLower();
-    if (lowerCaseResource == "get_egl_context")
-        return NativeResourceForContextFunction(eglContextForContext);
-
-    return 0;
-}
-
 static void *eglContextForContext(QOpenGLContext *context)
 {
     Q_ASSERT(context);
@@ -281,6 +273,15 @@ static void *eglContextForContext(QOpenGLContext *context)
         return 0;
 
     return handle->eglContext();
+}
+
+QPlatformNativeInterface::NativeResourceForContextFunction QEglFSIntegration::nativeResourceFunctionForContext(const QByteArray &resource)
+{
+    QByteArray lowerCaseResource = resource.toLower();
+    if (lowerCaseResource == "get_egl_context")
+        return NativeResourceForContextFunction(eglContextForContext);
+
+    return 0;
 }
 
 EGLConfig QEglFSIntegration::chooseConfig(EGLDisplay display, const QSurfaceFormat &format)
