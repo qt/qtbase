@@ -1788,6 +1788,9 @@ void QTextLine::layout_helper(int maxGlyphs)
             if (!line.length && !lbh.tmpData.length)
                 line.setDefaultHeight(eng);
             if (eng->option.flags() & QTextOption::ShowLineAndParagraphSeparators) {
+                if (lbh.checkFullOtherwiseExtend(line))
+                    goto found;
+
                 addNextCluster(lbh.currentPosition, end, lbh.tmpData, lbh.glyphCount,
                                current, lbh.logClusters, lbh.glyphs);
             } else {
