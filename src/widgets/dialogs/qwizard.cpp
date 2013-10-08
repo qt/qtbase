@@ -1345,6 +1345,21 @@ void QWizardPrivate::updateCurrentPage()
     updateButtonTexts();
 }
 
+static QString object_name_for_button(QWizard::WizardButton which)
+{
+    switch (which) {
+    case QWizard::CommitButton:
+        return QLatin1String("qt_wizard_") + QLatin1String("commit");
+    case QWizard::FinishButton:
+        return QLatin1String("qt_wizard_") + QLatin1String("finish");
+    case QWizard::CancelButton:
+        return QLatin1String("qt_wizard_") + QLatin1String("cancel");
+    default:
+        // Make navigation buttons detectable as passive interactor in designer
+        return QLatin1String("__qt__passive_wizardbutton") + QString::number(which);
+    }
+}
+
 bool QWizardPrivate::ensureButton(QWizard::WizardButton which) const
 {
     Q_Q(const QWizard);
@@ -1356,19 +1371,7 @@ bool QWizardPrivate::ensureButton(QWizard::WizardButton which) const
         QStyle *style = q->style();
         if (style != QApplication::style()) // Propagate style
             pushButton->setStyle(style);
-        // Make navigation buttons detectable as passive interactor in designer
-        switch (which) {
-            case QWizard::CommitButton:
-            case QWizard::FinishButton:
-            case QWizard::CancelButton:
-            break;
-        default: {
-            QString objectName = QLatin1String("__qt__passive_wizardbutton");
-            objectName += QString::number(which);
-            pushButton->setObjectName(objectName);
-        }
-            break;
-        }
+        pushButton->setObjectName(object_name_for_button(which));
 #ifdef Q_OS_MACX
         pushButton->setAutoDefault(false);
 #endif
