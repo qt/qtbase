@@ -179,8 +179,6 @@ manifestmeta.thumbnail.names    =      "QtConcurrent/Map Example" \
                                        "QtNetwork/Network Download*" \
                                        "QtWidgets/Dynamic Layouts Example" \
                                        "QtWidgets/Event Transitions Example" \
-                                       "QtWidgets/Plug & Paint Basic Tools Example" \
-                                       "QtWidgets/Plug & Paint Extra Filters Example" \
                                        "QtWidgets/Two-way Button Example" \
                                        "QtWidgets/Validators Example" \
                                        "ActiveQt/*"  \
