@@ -60,25 +60,40 @@
 
 QT_USE_NAMESPACE
 
+enum CandidateSignal {
+    TextValueSelectedSignal,
+    IntValueSelectedSignal,
+    DoubleValueSelectedSignal,
+    AcceptedSignal,
+
+    NumCandidateSignals
+};
+
+static const char *candidateSignal(int which)
+{
+    switch (CandidateSignal(which)) {
+    case TextValueSelectedSignal:   return SIGNAL(textValueSelected(QString));
+    case IntValueSelectedSignal:    return SIGNAL(intValueSelected(int));
+    case DoubleValueSelectedSignal: return SIGNAL(doubleValueSelected(double));
+    case AcceptedSignal:            return SIGNAL(accepted());
+
+    case NumCandidateSignals:       ; // fall through
+    };
+    Q_UNREACHABLE();
+    return Q_NULLPTR;
+}
+
 static const char *signalForMember(const char *member)
 {
-    static const int NumCandidates = 4;
-    static const char * const candidateSignals[NumCandidates] = {
-        SIGNAL(textValueSelected(QString)),
-        SIGNAL(intValueSelected(int)),
-        SIGNAL(doubleValueSelected(double)),
-        SIGNAL(accepted())
-    };
-
     QByteArray normalizedMember(QMetaObject::normalizedSignature(member));
 
     int i = 0;
-    while (i < NumCandidates - 1) { // sic
-        if (QMetaObject::checkConnectArgs(candidateSignals[i], normalizedMember))
+    while (i < NumCandidateSignals - 1) { // sic
+        if (QMetaObject::checkConnectArgs(candidateSignal(i), normalizedMember))
             break;
         ++i;
     }
-    return candidateSignals[i];
+    return candidateSignal(i);
 }
 
 QT_BEGIN_NAMESPACE
