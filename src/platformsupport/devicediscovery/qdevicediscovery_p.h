@@ -79,7 +79,7 @@ public:
     };
     Q_DECLARE_FLAGS(QDeviceTypes, QDeviceType)
 
-    static QDeviceDiscovery *create(QDeviceTypes type, QObject *parent);
+    static QDeviceDiscovery *create(QDeviceTypes type, QObject *parent = 0);
     ~QDeviceDiscovery();
 
     QStringList scanConnectedDevices();

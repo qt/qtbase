@@ -44,6 +44,10 @@
 #include "qeglfswindow.h"
 #include "qeglfshooks.h"
 
+#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
+#include <QtPlatformSupport/private/qdevicediscovery_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QEglFSScreen::QEglFSScreen(EGLDisplay dpy)
@@ -56,7 +60,16 @@ QEglFSScreen::QEglFSScreen(EGLDisplay dpy)
     qWarning("QEglScreen %p\n", this);
 #endif
 
-    static int hideCursor = qgetenv("QT_QPA_EGLFS_HIDECURSOR").toInt();
+    QByteArray hideCursorVal = qgetenv("QT_QPA_EGLFS_HIDECURSOR");
+    bool hideCursor = false;
+    if (hideCursorVal.isEmpty()) {
+#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
+        QScopedPointer<QDeviceDiscovery> dis(QDeviceDiscovery::create(QDeviceDiscovery::Device_Mouse));
+        hideCursor = dis->scanConnectedDevices().isEmpty();
+#endif
+    } else {
+        hideCursor = hideCursorVal.toInt() != 0;
+    }
     if (!hideCursor)
         m_cursor = QEglFSHooks::hooks()->createCursor(this);
 }
