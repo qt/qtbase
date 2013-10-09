@@ -315,7 +315,6 @@ struct QWindowsIntegrationPrivate
     QWindowsDrag m_drag;
 #  endif
 #endif
-    QWindowsGuiEventDispatcher *m_eventDispatcher;
 #if defined(QT_OPENGL_ES_2)
     QEGLStaticContextPtr m_staticEGLContext;
 #elif !defined(QT_NO_OPENGL)
@@ -356,7 +355,6 @@ static inline unsigned parseOptions(const QStringList &paramList)
 QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramList)
     : m_options(parseOptions(paramList))
     , m_fontDatabase(0)
-    , m_eventDispatcher(new QWindowsGuiEventDispatcher)
 {
 }
 
@@ -369,7 +367,6 @@ QWindowsIntegrationPrivate::~QWindowsIntegrationPrivate()
 QWindowsIntegration::QWindowsIntegration(const QStringList &paramList) :
     d(new QWindowsIntegrationPrivate(paramList))
 {
-    QGuiApplicationPrivate::instance()->setEventDispatcher(d->m_eventDispatcher);
 #ifndef QT_NO_CLIPBOARD
     d->m_clipboard.registerViewer();
 #endif
@@ -633,9 +630,9 @@ QPlatformSessionManager *QWindowsIntegration::createPlatformSessionManager(const
 }
 #endif
 
-QAbstractEventDispatcher * QWindowsIntegration::guiThreadEventDispatcher() const
+QAbstractEventDispatcher * QWindowsIntegration::createEventDispatcher() const
 {
-    return d->m_eventDispatcher;
+    return new QWindowsGuiEventDispatcher;
 }
 
 QStringList QWindowsIntegration::themeNames() const

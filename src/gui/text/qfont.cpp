@@ -537,6 +537,14 @@ QFontEngineData::~QFontEngineData()
 */
 
 /*!
+    \fn QFont &QFont::operator=(QFont &&other)
+
+    Move-assigns \a other to this QFont instance.
+
+    \since 5.2
+*/
+
+/*!
     \fn QString QFont::rawName() const
 
     Returns the name of the font within the underlying window system.

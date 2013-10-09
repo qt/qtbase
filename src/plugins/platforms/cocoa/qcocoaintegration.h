@@ -108,7 +108,7 @@ public:
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *widget) const;
 
-    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
+    QAbstractEventDispatcher *createEventDispatcher() const;
     QPlatformFontDatabase *fontDatabase() const;
 
     QPlatformNativeInterface *nativeInterface() const;
@@ -130,7 +130,6 @@ public:
 private:
 
     QScopedPointer<QPlatformFontDatabase> mFontDb;
-    QAbstractEventDispatcher *mEventDispatcher;
 
     QScopedPointer<QPlatformInputContext> mInputContext;
 #ifndef QT_NO_ACCESSIBILITY

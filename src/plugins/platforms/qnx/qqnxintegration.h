@@ -107,7 +107,7 @@ public:
 
     bool supportsNavigatorEvents() const;
 
-    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
+    QAbstractEventDispatcher *createEventDispatcher() const;
 
     QPlatformFontDatabase *fontDatabase() const { return m_fontDatabase; }
 
@@ -158,7 +158,7 @@ private:
 #endif
     QQnxServices *m_services;
     QPlatformFontDatabase *m_fontDatabase;
-    QAbstractEventDispatcher *m_eventDispatcher;
+    mutable QAbstractEventDispatcher *m_eventDispatcher;
 #if defined(Q_OS_BLACKBERRY)
     QQnxBpsEventFilter *m_bpsEventFilter;
 #endif

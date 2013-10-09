@@ -531,8 +531,14 @@ QString Generator::fullDocumentLocation(const Node *node, bool useSubdir)
         anchorRef = QLatin1Char('#') + node->name() + "-enum";
         break;
     case Node::Typedef:
+    {
+        const TypedefNode *tdef = static_cast<const TypedefNode *>(node);
+        if (tdef->associatedEnum()) {
+            return fullDocumentLocation(tdef->associatedEnum());
+        }
         anchorRef = QLatin1Char('#') + node->name() + "-typedef";
         break;
+    }
     case Node::Property:
         anchorRef = QLatin1Char('#') + node->name() + "-prop";
         break;

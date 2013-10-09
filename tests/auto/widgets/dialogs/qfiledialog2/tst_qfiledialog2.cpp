@@ -1199,10 +1199,9 @@ void tst_QFileDialog2::task259105_filtersCornerCases()
 void tst_QFileDialog2::QTBUG4419_lineEditSelectAll()
 {
     QString tempPath = tempDir.path();
-    QTemporaryFile *t;
-    t = new QTemporaryFile(tempPath + "/tst_qfiledialog2_lineEditSelectAll.XXXXXX");
-    t->open();
-    QNonNativeFileDialog fd(0, "TestFileDialog", t->fileName());
+    QTemporaryFile temporaryFile(tempPath + "/tst_qfiledialog2_lineEditSelectAll.XXXXXX");
+    QVERIFY(temporaryFile.open());
+    QNonNativeFileDialog fd(0, "TestFileDialog", temporaryFile.fileName());
 
     fd.setDirectory(tempPath);
     fd.setViewMode(QFileDialog::List);
@@ -1218,8 +1217,8 @@ void tst_QFileDialog2::QTBUG4419_lineEditSelectAll()
     QLineEdit *lineEdit = fd.findChild<QLineEdit*>("fileNameEdit");
     QVERIFY(lineEdit);
 
-    QTRY_COMPARE(tempPath + QChar('/') + lineEdit->text(), t->fileName());
-    QCOMPARE(tempPath + QChar('/') + lineEdit->selectedText(), t->fileName());
+    QTRY_COMPARE(tempPath + QChar('/') + lineEdit->text(), temporaryFile.fileName());
+    QCOMPARE(tempPath + QChar('/') + lineEdit->selectedText(), temporaryFile.fileName());
 }
 
 void tst_QFileDialog2::QTBUG6558_showDirsOnly()

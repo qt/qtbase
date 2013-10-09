@@ -50,9 +50,11 @@
 
 #include <QDebug>
 
+#include "tst_qcoreapplication.h"
+
 enum { spacing  = 50, windowSize = 200 };
 
-class tst_QGuiApplication: public QObject
+class tst_QGuiApplication: public tst_QCoreApplication
 {
     Q_OBJECT
 

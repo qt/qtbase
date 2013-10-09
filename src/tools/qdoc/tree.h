@@ -85,7 +85,6 @@ class Tree
     ClassNode* findClassNode(const QStringList& path, Node* start = 0) const;
     QmlClassNode* findQmlTypeNode(const QStringList& path);
     NamespaceNode* findNamespaceNode(const QStringList& path) const;
-    DocNode* findQmlModuleNode(const QStringList& path, Node* start = 0);
 
     Node* findNodeByNameAndType(const QStringList& path,
                                 Node::Type type,

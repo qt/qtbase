@@ -185,27 +185,17 @@ DocNode* QDocDatabase::findModule(const QString& name)
   If a new QML module node is added, its parent is the tree root,
   and the new QML module node is marked \e{not seen}.
  */
-DocNode* QDocDatabase::findQmlModule(const QString& name)
+QmlModuleNode* QDocDatabase::findQmlModule(const QString& name)
 {
-    QStringList dotSplit;
-    QStringList blankSplit = name.split(QLatin1Char(' '));
-    QString qmid = blankSplit[0];
-    QString qmlModuleName = qmid;
-    if (blankSplit.size() > 1) {
-        dotSplit = blankSplit[1].split(QLatin1Char('.'));
-        qmid += dotSplit[0];
-    }
-    DocNode* dn = 0;
-    if (qmlModules_.contains(qmlModuleName))
-        return qmlModules_.value(qmlModuleName);
-    dn = new DocNode(tree_->root(), qmlModuleName, Node::QmlModule, Node::OverviewPage);
-    dn->markNotSeen();
-    dn->setQmlModuleInfo(name);
-    qmlModules_.insert(qmlModuleName,dn);
-    masterMap_.insert(qmlModuleName,dn);
-    masterMap_.insert(qmid,dn);
-    masterMap_.insert(dn->name(),dn);
-    return dn;
+    if (qmlModules_.contains(name))
+        return static_cast<QmlModuleNode*>(qmlModules_.value(name));
+
+    QmlModuleNode* qmn = new QmlModuleNode(tree_->root(), name);
+    qmn->markNotSeen();
+    qmn->setQmlModuleInfo(name);
+    qmlModules_.insert(name, qmn);
+    masterMap_.insert(name, qmn);
+    return qmn;
 }
 
 /*!
@@ -246,11 +236,14 @@ DocNode* QDocDatabase::addModule(const QString& name)
   to that node is returned. The QML module node is marked \e{seen}
   in either case.
  */
-DocNode* QDocDatabase::addQmlModule(const QString& name)
+QmlModuleNode* QDocDatabase::addQmlModule(const QString& name)
 {
-    DocNode* qmlModule = findQmlModule(name);
-    qmlModule->markSeen();
-    return qmlModule;
+    QStringList blankSplit = name.split(QLatin1Char(' '));
+    QmlModuleNode* qmn = findQmlModule(blankSplit[0]);
+    qmn->setQmlModuleInfo(name);
+    qmn->markSeen();
+    masterMap_.insert(qmn->qmlModuleIdentifier(),qmn);
+    return qmn;
 }
 
 /*!
@@ -289,9 +282,8 @@ DocNode* QDocDatabase::addToModule(const QString& name, Node* node)
   Looks up the QML module named \a name. If it isn't there,
   create it. Then append \a node to the QML module's member
   list. The parent of \a node is not changed by this function.
-  Returns a pointer to the QML module node.
  */
-DocNode* QDocDatabase::addToQmlModule(const QString& name, Node* node)
+void QDocDatabase::addToQmlModule(const QString& name, Node* node)
 {
     QStringList qmid;
     QStringList dotSplit;
@@ -302,9 +294,11 @@ DocNode* QDocDatabase::addToQmlModule(const QString& name, Node* node)
         dotSplit = blankSplit[1].split(QLatin1Char('.'));
         qmid.append(blankSplit[0] + dotSplit[0]);
     }
-    DocNode* dn = findQmlModule(name);
-    dn->addMember(node);
-    node->setQmlModuleInfo(name);
+
+    QmlModuleNode* qmn = findQmlModule(blankSplit[0]);
+    qmn->addMember(node);
+    node->setQmlModule(qmn);
+
     if (node->subType() == Node::QmlClass) {
         QmlClassNode* n = static_cast<QmlClassNode*>(node);
         for (int i=0; i<qmid.size(); ++i) {
@@ -317,7 +311,6 @@ DocNode* QDocDatabase::addToQmlModule(const QString& name, Node* node)
         if (!masterMap_.contains(node->name(),node))
             masterMap_.insert(node->name(),node);
     }
-    return dn;
 }
 
 /*!

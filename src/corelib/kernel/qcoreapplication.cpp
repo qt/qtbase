@@ -54,6 +54,7 @@
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qhash.h>
+#include <qmutex.h>
 #include <private/qprocess_p.h>
 #include <qstandardpaths.h>
 #include <qtextcodec.h>

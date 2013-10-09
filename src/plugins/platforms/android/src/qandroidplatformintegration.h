@@ -93,7 +93,7 @@ public:
 #ifndef ANDROID_PLUGIN_OPENGL
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
+    QAbstractEventDispatcher *createEventDispatcher() const;
     QAndroidPlatformScreen *screen() { return m_primaryScreen; }
 #else
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
@@ -147,7 +147,6 @@ private:
     QTouchDevice *m_touchDevice;
 
 #ifndef ANDROID_PLUGIN_OPENGL
-    QAbstractEventDispatcher *m_eventDispatcher;
     QAndroidPlatformScreen *m_primaryScreen;
 #endif
 

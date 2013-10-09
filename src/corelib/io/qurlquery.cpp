@@ -139,6 +139,14 @@ QT_BEGIN_NAMESPACE
   \sa QUrl
 */
 
+/*!
+    \fn QUrlQuery &QUrlQuery::operator=(QUrlQuery &&other)
+
+    Move-assigns \a other to this QUrlQuery instance.
+
+    \since 5.2
+*/
+
 typedef QList<QPair<QString, QString> > Map;
 
 class QUrlQueryPrivate : public QSharedData

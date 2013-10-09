@@ -912,9 +912,10 @@ static inline QString toString(debugOption option)
 {
     switch (option) {
     case debugUnknown:
-    case debugDisabled:
     case debugLineInfoOnly:
         break;
+    case debugDisabled:
+        return "None";
     case debugOldStyleInfo:
         return "OldStyle";
     case debugEditAndContinue:

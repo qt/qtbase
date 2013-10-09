@@ -78,12 +78,9 @@ QT_BEGIN_NAMESPACE
 static void *eglContextForContext(QOpenGLContext *context);
 
 QEglFSIntegration::QEglFSIntegration()
-    : mEventDispatcher(createUnixEventDispatcher()),
-      mFontDb(new QGenericUnixFontDatabase),
-      mServices(new QGenericUnixServices)
+    : mFontDb(new QGenericUnixFontDatabase)
+    , mServices(new QGenericUnixServices)
 {
-    QGuiApplicationPrivate::instance()->setEventDispatcher(mEventDispatcher);
-
 #if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
     new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString() /* spec */, this);
     new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
@@ -168,9 +165,9 @@ QPlatformFontDatabase *QEglFSIntegration::fontDatabase() const
     return mFontDb.data();
 }
 
-QAbstractEventDispatcher *QEglFSIntegration::guiThreadEventDispatcher() const
+QAbstractEventDispatcher *QEglFSIntegration::createEventDispatcher() const
 {
-    return mEventDispatcher;
+    return createUnixEventDispatcher();
 }
 
 QVariant QEglFSIntegration::styleHint(QPlatformIntegration::StyleHint hint) const

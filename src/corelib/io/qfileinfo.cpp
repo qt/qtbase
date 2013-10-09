@@ -294,6 +294,14 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
 */
 
 /*!
+    \fn QFileInfo &QFileInfo::operator=(QFileInfo &&other)
+
+    Move-assigns \a other to this QFileInfo instance.
+
+    \since 5.2
+*/
+
+/*!
     \internal
 */
 QFileInfo::QFileInfo(QFileInfoPrivate *p) : d_ptr(p)

@@ -66,12 +66,11 @@ public:
     QPlatformServices *services() const;
 
     QPlatformFontDatabase *fontDatabase() const;
-    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
+    QAbstractEventDispatcher *createEventDispatcher() const;
 
     static QOffscreenIntegration *createOffscreenIntegration();
 
 private:
-    QAbstractEventDispatcher *m_eventDispatcher;
     QScopedPointer<QPlatformFontDatabase> m_fontDatabase;
 #ifndef QT_NO_DRAGANDDROP
     QScopedPointer<QPlatformDrag> m_drag;

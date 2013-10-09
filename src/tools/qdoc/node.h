@@ -60,6 +60,7 @@ class InnerNode;
 class ExampleNode;
 class QmlClassNode;
 class QDocDatabase;
+class QmlModuleNode;
 class QmlPropertyNode;
 
 typedef QList<Node*> NodeList;
@@ -193,6 +194,7 @@ public:
     void markNotSeen() { seen_ = false; }
 
     virtual bool isInnerNode() const = 0;
+    virtual bool isQmlModule() const { return false; }
     virtual bool isExample() const { return false; }
     virtual bool isExampleFile() const { return false; }
     virtual bool isLeaf() const { return false; }
@@ -263,10 +265,12 @@ public:
     QString extractClassName(const QString &string) const;
     virtual QString qmlTypeName() const { return name_; }
     virtual QString qmlFullBaseName() const { return QString(); }
-    virtual QString qmlModuleName() const { return qmlModuleName_; }
-    virtual QString qmlModuleVersion() const { return qmlModuleVersionMajor_ + "." + qmlModuleVersionMinor_; }
-    virtual QString qmlModuleIdentifier() const { return qmlModuleName_ + qmlModuleVersionMajor_; }
-    virtual bool setQmlModuleInfo(const QString& );
+    virtual QString qmlModuleName() const { return QString(); }
+    virtual QString qmlModuleVersion() const { return QString(); }
+    virtual QString qmlModuleIdentifier() const { return QString(); }
+    virtual void setQmlModuleInfo(const QString& ) { }
+    virtual QmlModuleNode* qmlModule() const { return 0; }
+    virtual void setQmlModule(QmlModuleNode* ) { }
     virtual ClassNode* classNode() { return 0; }
     virtual void setClassNode(ClassNode* ) { }
     virtual void clearCurrentChild() { }
@@ -316,9 +320,6 @@ private:
     QString reconstitutedBrief_;
     mutable QString uuid_;
     QString outSubDir_;
-    QString qmlModuleName_;
-    QString qmlModuleVersionMajor_;
-    QString qmlModuleVersionMinor_;
     static QStringMap operators_;
     static int propertyGroupCount_;
 };
@@ -526,6 +527,25 @@ private:
     QString qtVariable_;
 };
 
+class QmlModuleNode : public DocNode
+{
+ public:
+    QmlModuleNode(InnerNode* parent, const QString& name)
+        : DocNode(parent, name, Node::QmlModule, Node::OverviewPage) { }
+    virtual ~QmlModuleNode() { }
+
+    virtual bool isQmlModule() const { return true; }
+    virtual QString qmlModuleName() const { return qmlModuleName_; }
+    virtual QString qmlModuleVersion() const { return qmlModuleVersionMajor_ + "." + qmlModuleVersionMinor_; }
+    virtual QString qmlModuleIdentifier() const { return qmlModuleName_ + qmlModuleVersionMajor_; }
+    virtual void setQmlModuleInfo(const QString& );
+
+ private:
+    QString     qmlModuleName_;
+    QString     qmlModuleVersionMajor_;
+    QString     qmlModuleVersionMinor_;
+};
+
 class NameCollisionNode : public DocNode
 {
 public:
@@ -603,6 +623,11 @@ public:
     virtual QString qmlFullBaseName() const;
     virtual QString obsoleteLink() const { return obsoleteLink_; }
     virtual void setObsoleteLink(const QString& t) { obsoleteLink_ = t; };
+    virtual QString qmlModuleName() const;
+    virtual QString qmlModuleVersion() const;
+    virtual QString qmlModuleIdentifier() const;
+    virtual QmlModuleNode* qmlModule() const { return qmlModule_; }
+    virtual void setQmlModule(QmlModuleNode* t) { qmlModule_ = t; }
     const ImportList& importList() const { return importList_; }
     void setImportList(const ImportList& il) { importList_ = il; }
     const QString& qmlBaseName() const { return baseName_; }
@@ -626,6 +651,7 @@ private:
     ClassNode*    cnode_;
     QString      baseName_;
     QString             obsoleteLink_;
+    QmlModuleNode*      qmlModule_;
     QmlClassNode*       baseNode_;
     ImportList          importList_;
 };

@@ -58,6 +58,7 @@ public:
     ~QEglFSWindow();
 
     void setGeometry(const QRect &);
+    QRect geometry() const;
     WId winId() const;
     void setVisible(bool visible);
     void requestActivateWindow();

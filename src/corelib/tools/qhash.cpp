@@ -941,6 +941,15 @@ void QHashData::checkSanity()
     \sa clear()
 */
 
+/*!
+    \fn QHash::QHash(QHash<Key, T> &&other)
+
+    Move-constructs a QHash instance, making it point at the same
+    object that \a other was pointing to.
+
+    \since 5.2
+*/
+
 /*! \fn QHash::QHash(std::initializer_list<std::pair<Key,T> > list)
     \since 5.1
 
@@ -972,6 +981,14 @@ void QHashData::checkSanity()
 /*! \fn QHash<Key, T> &QHash::operator=(const QHash<Key, T> &other)
 
     Assigns \a other to this hash and returns a reference to this hash.
+*/
+
+/*!
+    \fn QHash<Key, T> &QHash::operator=(QHash<Key, T> &&other)
+
+    Move-assigns \a other to this QHash instance.
+
+    \since 5.2
 */
 
 /*! \fn void QHash::swap(QHash<Key, T> &other)

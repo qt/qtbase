@@ -929,6 +929,15 @@ const QString::Null QString::null = { };
     \sa isEmpty()
 */
 
+/*!
+    \fn QString::QString(QString &&other)
+
+    Move-constructs a QString instance, making it point at the same
+    object that \a other was pointing to.
+
+    \since 5.2
+*/
+
 /*! \fn QString::QString(const char *str)
 
     Constructs a string initialized with the 8-bit string \a str. The
@@ -1349,6 +1358,13 @@ QString &QString::operator=(const QString &other)
     return *this;
 }
 
+/*!
+    \fn QString &QString::operator=(QString &&other)
+
+    Move-assigns \a other to this QString instance.
+
+    \since 5.2
+*/
 
 /*! \fn QString &QString::operator=(QLatin1String str)
 

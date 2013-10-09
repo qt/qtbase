@@ -45,7 +45,7 @@
 #include "qwindowswindow.h"
 #include "qwindowsscreen.h"
 
-#include <QtGui/QPixmap>
+#include <QtGui/QBitmap>
 #include <QtGui/QImage>
 #include <QtGui/QBitmap>
 #include <QtGui/QGuiApplication>
@@ -59,6 +59,30 @@ QT_BEGIN_NAMESPACE
 
 Q_GUI_EXPORT HBITMAP qt_pixmapToWinHBITMAP(const QPixmap &p, int hbitmapFormat = 0);
 Q_GUI_EXPORT HBITMAP qt_createIconMask(const QBitmap &bitmap);
+
+/*!
+    \class QWindowsCursorCacheKey
+    \brief Cache key for storing values in a QHash with a QCursor as key.
+
+    \internal
+    \ingroup qt-lighthouse-win
+*/
+
+QWindowsCursorCacheKey::QWindowsCursorCacheKey(const QCursor &c)
+    : shape(c.shape()), bitmapCacheKey(0), maskCacheKey(0)
+{
+    if (shape == Qt::BitmapCursor) {
+        const qint64 pixmapCacheKey = c.pixmap().cacheKey();
+        if (pixmapCacheKey) {
+            bitmapCacheKey = pixmapCacheKey;
+        } else {
+            Q_ASSERT(c.bitmap());
+            Q_ASSERT(c.mask());
+            bitmapCacheKey = c.bitmap()->cacheKey();
+            maskCacheKey = c.mask()->cacheKey();
+        }
+    }
+}
 
 /*!
     \class QWindowsCursor
@@ -388,9 +412,10 @@ HCURSOR QWindowsCursor::createSystemCursor(const QCursor &c)
 
 QWindowsWindowCursor QWindowsCursor::standardWindowCursor(Qt::CursorShape shape)
 {
-    StandardCursorCache::iterator it = m_standardCursorCache.find(shape);
-    if (it == m_standardCursorCache.end())
-        it = m_standardCursorCache.insert(shape, QWindowsWindowCursor(QCursor(shape)));
+    const QWindowsCursorCacheKey key(shape);
+    CursorCache::iterator it = m_cursorCache.find(key);
+    if (it == m_cursorCache.end())
+        it = m_cursorCache.insert(key, QWindowsWindowCursor(QCursor(shape)));
     return it.value();
 }
 
@@ -400,10 +425,10 @@ QWindowsWindowCursor QWindowsCursor::standardWindowCursor(Qt::CursorShape shape)
 
 QWindowsWindowCursor QWindowsCursor::pixmapWindowCursor(const QCursor &c)
 {
-    const qint64 cacheKey = c.pixmap().cacheKey();
-    PixmapCursorCache::iterator it = m_pixmapCursorCache.find(cacheKey);
-    if (it == m_pixmapCursorCache.end())
-        it = m_pixmapCursorCache.insert(cacheKey, QWindowsWindowCursor(c));
+    const  QWindowsCursorCacheKey cacheKey(c);
+    CursorCache::iterator it = m_cursorCache.find(cacheKey);
+    if (it == m_cursorCache.end())
+        it = m_cursorCache.insert(cacheKey, QWindowsWindowCursor(c));
     return it.value();
 }
 

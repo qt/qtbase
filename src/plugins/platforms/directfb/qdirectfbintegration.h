@@ -65,7 +65,7 @@ public:
     QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
+    QAbstractEventDispatcher *createEventDispatcher() const;
 
     QPlatformFontDatabase *fontDatabase() const;
 
@@ -80,7 +80,6 @@ protected:
     QScopedPointer<QDirectFbInput> m_input;
     QScopedPointer<QThread> m_inputRunner;
     QScopedPointer<QPlatformFontDatabase> m_fontDb;
-    QAbstractEventDispatcher *m_eventDispatcher;
 };
 
 QT_END_NAMESPACE

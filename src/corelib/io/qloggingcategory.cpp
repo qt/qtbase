@@ -98,13 +98,28 @@ Q_GLOBAL_STATIC_WITH_ARGS(QLoggingCategory, qtDefaultCategory,
 */
 
 /*!
+  \internal
+*/
+typedef QVector<QTracer *> Tracers;
+
+/*!
+  \internal
+*/
+class QLoggingCategoryPrivate
+{
+public:
+    Tracers tracers;
+};
+
+/*!
     Constructs a QLoggingCategory object with the provided \a category name.
     The object becomes the local identifier for the category.
 
     If \a category is \c{0}, the category name is changed to \c{"default"}.
 */
 QLoggingCategory::QLoggingCategory(const char *category)
-    : name(0),
+    : d(new QLoggingCategoryPrivate),
+      name(0),
       enabledDebug(false),
       enabledWarning(true),
       enabledCritical(true),
@@ -133,6 +148,7 @@ QLoggingCategory::~QLoggingCategory()
 {
     if (QLoggingRegistry *reg = QLoggingRegistry::instance())
         reg->unregisterCategory(this);
+    delete d;
 }
 
 /*!
@@ -459,7 +475,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 
 void QTracer::addToCategory(QLoggingCategory &category)
 {
-    category.tracers.append(this);
+    category.d->tracers.append(this);
 }
 
 /*!
@@ -571,7 +587,7 @@ void QTracer::addToCategory(QLoggingCategory &category)
 
 void QTraceGuard::start()
 {
-    QLoggingCategory::Tracers &tracers = target->tracers;
+    const Tracers &tracers = target->d->tracers;
     for (int i = tracers.size(); --i >= 0; )
         tracers.at(i)->start();
 }
@@ -584,7 +600,7 @@ void QTraceGuard::start()
 
 void QTraceGuard::end()
 {
-    QLoggingCategory::Tracers &tracers = target->tracers;
+    const Tracers &tracers = target->d->tracers;
     for (int i = tracers.size(); --i >= 0; )
         tracers.at(i)->end();
 }
@@ -599,7 +615,7 @@ void QTraceGuard::end()
 
 QTraceGuard &QTraceGuard::operator<<(int msg)
 {
-    QLoggingCategory::Tracers &tracers = target->tracers;
+    const Tracers &tracers = target->d->tracers;
     for (int i = tracers.size(); --i >= 0; )
         tracers.at(i)->record(msg);
     return *this;
@@ -614,7 +630,7 @@ QTraceGuard &QTraceGuard::operator<<(int msg)
 
 QTraceGuard &QTraceGuard::operator<<(const char *msg)
 {
-    QLoggingCategory::Tracers &tracers = target->tracers;
+    const Tracers &tracers = target->d->tracers;
     for (int i = tracers.size(); --i >= 0; )
         tracers.at(i)->record(msg);
     return *this;
@@ -630,7 +646,7 @@ QTraceGuard &QTraceGuard::operator<<(const char *msg)
 
 QTraceGuard &QTraceGuard::operator<<(const QVariant &msg)
 {
-    QLoggingCategory::Tracers &tracers = target->tracers;
+    const Tracers &tracers = target->d->tracers;
     for (int i = tracers.size(); --i >= 0; )
         tracers.at(i)->record(msg);
     return *this;

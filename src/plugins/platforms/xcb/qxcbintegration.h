@@ -67,7 +67,7 @@ public:
     QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const;
 
     bool hasCapability(Capability cap) const;
-    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
+    QAbstractEventDispatcher *createEventDispatcher() const;
 
     void moveToScreen(QWindow *window, int screen);
 
@@ -112,10 +112,9 @@ private:
     QScopedPointer<QXcbNativeInterface> m_nativeInterface;
 
     QScopedPointer<QPlatformInputContext> m_inputContext;
-    QAbstractEventDispatcher *m_eventDispatcher;
 
 #ifndef QT_NO_ACCESSIBILITY
-    QScopedPointer<QPlatformAccessibility> m_accessibility;
+    mutable QScopedPointer<QPlatformAccessibility> m_accessibility;
 #endif
 
     QScopedPointer<QPlatformServices> m_services;

@@ -560,7 +560,7 @@ QHttpNetworkReply* QHttpNetworkConnectionPrivate::queueRequest(const QHttpNetwor
     // untill we have started the first connection attempt. So no
     // request will be started untill we know if IPv4 or IPv6
     // should be used.
-    if (networkLayerState == Unknown) {
+    if (networkLayerState == Unknown || networkLayerState == InProgress) {
         startHostInfoLookup();
     } else if ( networkLayerState == IPv4 || networkLayerState == IPv6 ) {
         // this used to be called via invokeMethod and a QueuedConnection

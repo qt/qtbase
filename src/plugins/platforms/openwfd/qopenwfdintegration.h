@@ -62,7 +62,7 @@ public:
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
 
     //This should not be a factory interface, but rather a accessor
-    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
+    QAbstractEventDispatcher *createEventDispatcher() const;
 
     QPlatformFontDatabase *fontDatabase() const;
 
@@ -78,7 +78,6 @@ private:
     QPlatformFontDatabase *mFontDatabase;
     QPlatformNativeInterface *mNativeInterface;
     QPlatformPrinterSupport *mPrinterSupport;
-    QAbstractEventDispatcher *mEventDispatcher;
 };
 
 QT_END_NAMESPACE

@@ -88,6 +88,14 @@ public:
 */
 
 /*!
+    \fn QCommandLineOption &QCommandLineOption::operator=(QCommandLineOption &&other)
+
+    Move-assigns \a other to this QCommandLineOption instance.
+
+    \since 5.2
+*/
+
+/*!
     Constructs a command line option object with the given arguments.
 
     The name of the option is set to \a name.

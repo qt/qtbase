@@ -494,7 +494,7 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
             generateCompactList(Generic, relative, qdb_->getCppClasses(), true);
         }
         else if (atom->string() == "qmltypes") {
-            generateCompactList(Generic, relative, qdb_->getQmlTypes(), true);
+            generateCompactList(Generic, relative, qdb_->getQmlTypes(), true, QStringLiteral(""));
         }
         else if (atom->string().contains("classesbymodule")) {
             QString arg = atom->string().trimmed();
@@ -519,13 +519,13 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
             generateCompactList(Generic, relative, qdb_->getObsoleteClasses(), false);
         }
         else if (atom->string() == "obsoleteqmltypes") {
-            generateCompactList(Generic, relative, qdb_->getObsoleteQmlTypes(), false);
+            generateCompactList(Generic, relative, qdb_->getObsoleteQmlTypes(), false, QStringLiteral(""));
         }
         else if (atom->string() == "obsoletecppmembers") {
             generateCompactList(Obsolete, relative, qdb_->getClassesWithObsoleteMembers(), false);
         }
         else if (atom->string() == "obsoleteqmlmembers") {
-            generateCompactList(Obsolete, relative, qdb_->getQmlTypesWithObsoleteMembers(), false);
+            generateCompactList(Obsolete, relative, qdb_->getQmlTypesWithObsoleteMembers(), false, QStringLiteral(""));
         }
         else if (atom->string() == "functionindex") {
             generateFunctionIndex(relative);
@@ -670,9 +670,9 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
                           << "\"></a>\n";
                     out() << "<h3>" << protectEnc((*s).name) << "</h3>\n";
                     if (idx == Class)
-                        generateCompactList(Generic, 0, ncmap, false, QString("Q"));
+                        generateCompactList(Generic, 0, ncmap, false, QStringLiteral("Q"));
                     else if (idx == QmlClass)
-                        generateCompactList(Generic, 0, nqcmap, false, QString("Q"));
+                        generateCompactList(Generic, 0, nqcmap, false, QStringLiteral(""));
                     else if (idx == MemberFunction) {
                         ParentMaps parentmaps;
                         ParentMaps::iterator pmap;
@@ -2543,13 +2543,13 @@ void HtmlGenerator::generateCompactList(ListType listType,
     /*
       If commonPrefix is not empty, then the caller knows what
       the common prefix is and has passed it in, so just use that
-      one. But if the commonPrefix is empty (it normally is), then
+      one. But if commonPrefix is a null string (default value), then
       compute a common prefix using this simple algorithm. Note we
       assume the prefix length is 1, i.e. we will have a single
       character as the common prefix.
      */
     int commonPrefixLen = commonPrefix.length();
-    if (commonPrefixLen == 0) {
+    if (commonPrefix.isNull()) {
         QVector<int> count(26);
         for (int i=0; i<26; ++i)
             count[i] = 0;
@@ -2594,7 +2594,7 @@ void HtmlGenerator::generateCompactList(ListType listType,
         QStringList pieces = c.key().split("::");
         QString key;
         int idx = commonPrefixLen;
-        if (!pieces.last().startsWith(commonPrefix))
+        if (idx > 0 && !pieces.last().startsWith(commonPrefix))
             idx = 0;
         if (pieces.size() == 1)
             key = pieces.last().mid(idx).toLower();

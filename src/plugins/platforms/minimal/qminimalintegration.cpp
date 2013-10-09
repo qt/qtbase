@@ -56,16 +56,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QMinimalIntegration::QMinimalIntegration() :
-#if defined(Q_OS_WINRT)
-    m_eventDispatcher(new QEventDispatcherWinRT())
-#elif defined(Q_OS_WIN)
-    m_eventDispatcher(new QEventDispatcherWin32())
-#else
-    m_eventDispatcher(createUnixEventDispatcher())
-#endif
+QMinimalIntegration::QMinimalIntegration()
 {
-    QGuiApplicationPrivate::instance()->setEventDispatcher(m_eventDispatcher);
     QMinimalScreen *mPrimaryScreen = new QMinimalScreen();
 
     mPrimaryScreen->mGeometry = QRect(0, 0, 240, 320);
@@ -97,9 +89,17 @@ QPlatformBackingStore *QMinimalIntegration::createPlatformBackingStore(QWindow *
     return new QMinimalBackingStore(window);
 }
 
-QAbstractEventDispatcher *QMinimalIntegration::guiThreadEventDispatcher() const
+QAbstractEventDispatcher *QMinimalIntegration::createEventDispatcher() const
 {
-    return m_eventDispatcher;
+#ifdef Q_OS_WIN
+#ifndef Q_OS_WINRT
+    return new QEventDispatcherWin32;
+#else // !Q_OS_WINRT
+    return new QEventDispatcherWinRT;
+#endif // Q_OS_WINRT
+#else
+    return createUnixEventDispatcher();
+#endif
 }
 
 QT_END_NAMESPACE

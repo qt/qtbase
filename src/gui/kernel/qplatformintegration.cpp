@@ -231,17 +231,23 @@ QPlatformServices *QPlatformIntegration::services() const
     are never repositioned by the window manager. The default implementation returns true.
  */
 
-
 /*!
 
-    \fn QAbstractEventDispatcher *QPlatformIntegration::guiThreadEventDispatcher() const = 0
+    \fn QAbstractEventDispatcher *QPlatformIntegration::createEventDispatcher() const = 0
 
-    Accessor function for the event dispatcher. The platform plugin should create
-    an instance of the QAbstractEventDispatcher in its constructor and set it
-    on the application using QGuiApplicationPrivate::instance()->setEventDispatcher().
-    The event dispatcher is owned by QGuiApplication, the accessor should return
-    a flat pointer.
-    \sa QGuiApplicationPrivate
+    Factory function for the GUI event dispatcher. The platform plugin should create
+    and return a QAbstractEventDispatcher subclass when this function is called.
+
+    If the platform plugin for some reason creates the event dispatcher outside of
+    this function (for example in the constructor), it needs to handle the case
+    where this function is never called, ensuring that the event dispatcher is
+    still deleted at some point (typically in the destructor).
+
+    Note that the platform plugin should never explicitly set the event dispatcher
+    itself, using QCoreApplication::setEventDispatcher(), but let QCoreApplication
+    decide when and which event dispatcher to create.
+
+    \since 5.2
 */
 
 bool QPlatformIntegration::hasCapability(Capability cap) const

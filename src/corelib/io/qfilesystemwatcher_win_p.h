@@ -168,8 +168,8 @@ Q_SIGNALS:
     void directoryChanged(const QString &path, bool removed);
 };
 
-#endif // QT_NO_FILESYSTEMWATCHER
-
 QT_END_NAMESPACE
+
+#endif // QT_NO_FILESYSTEMWATCHER
 
 #endif // QFILESYSTEMWATCHER_WIN_P_H

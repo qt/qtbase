@@ -636,6 +636,13 @@ QBrush &QBrush::operator=(const QBrush &b)
     return *this;
 }
 
+/*!
+    \fn QBrush &QBrush::operator=(QBrush &&other)
+
+    Move-assigns \a other to this QBrush instance.
+
+    \since 5.2
+*/
 
 /*!
     \fn void QBrush::swap(QBrush &other)

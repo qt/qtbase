@@ -608,6 +608,14 @@ QPainterPath &QPainterPath::operator=(const QPainterPath &other)
 }
 
 /*!
+    \fn QPainterPath &QPainterPath::operator=(QPainterPath &&other)
+
+    Move-assigns \a other to this QPainterPath instance.
+
+    \since 5.2
+*/
+
+/*!
     \fn void QPainterPath::swap(QPainterPath &other)
     \since 4.8
 

@@ -392,6 +392,14 @@ QPixmap &QPixmap::operator=(const QPixmap &pixmap)
 }
 
 /*!
+    \fn QPixmap &QPixmap::operator=(QPixmap &&other)
+
+    Move-assigns \a other to this QPixmap instance.
+
+    \since 5.2
+*/
+
+/*!
     \fn void QPixmap::swap(QPixmap &other)
     \since 4.8
 

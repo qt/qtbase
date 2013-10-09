@@ -83,8 +83,7 @@ public:
     ~QGuiApplicationPrivate();
 
     void createPlatformIntegration();
-    void createEventDispatcher();
-    void setEventDispatcher(QAbstractEventDispatcher *eventDispatcher);
+    void createEventDispatcher() Q_DECL_OVERRIDE;
 
     virtual void notifyLayoutDirectionChange();
     virtual void notifyActiveWindowChange(QWindow *previous);

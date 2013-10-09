@@ -1105,6 +1105,23 @@ Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names 
 */
 
 /*!
+    \fn QVariant::QVariant(QVariant &&other)
+
+    Move-constructs a QVariant instance, making it point at the same
+    object that \a other was pointing to.
+
+    \since 5.2
+*/
+
+/*!
+    \fn QVariant &QVariant::operator=(QVariant &&other)
+
+    Move-assigns \a other to this QVariant instance.
+
+    \since 5.2
+*/
+
+/*!
     \fn QVariant::QVariant()
 
     Constructs an invalid variant.

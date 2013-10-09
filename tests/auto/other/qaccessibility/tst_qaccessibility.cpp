@@ -3181,11 +3181,16 @@ void tst_QAccessibility::comboBoxTest()
 
 void tst_QAccessibility::labelTest()
 {
+    QWidget *window = new QWidget;
     QString text = "Hello World";
-    QLabel *label = new QLabel(text);
+    QLabel *label = new QLabel(text, window);
     setFrameless(label);
-    label->show();
+    QLineEdit *buddy = new QLineEdit(window);
+    label->setBuddy(buddy);
+    window->resize(320, 200);
+    window->show();
 
+    QTest::qWaitForWindowExposed(window);
 #if defined(Q_OS_UNIX)
     QCoreApplication::processEvents();
 #endif
@@ -3196,7 +3201,15 @@ void tst_QAccessibility::labelTest()
 
     QCOMPARE(acc_label->text(QAccessible::Name), text);
 
-    delete label;
+    QVector<QPair<QAccessibleInterface *, QAccessible::Relation> > rels =  acc_label->relations();
+    QCOMPARE(rels.count(), 1);
+    QAccessibleInterface *iface = rels.first().first;
+    QAccessible::Relation rel = rels.first().second;
+
+    QCOMPARE(rel, QAccessible::Labelled);
+    QCOMPARE(iface->role(), QAccessible::EditableText);
+
+    delete window;
     QTestAccessibility::clearEvents();
 
     QPixmap testPixmap(50, 50);
@@ -3313,9 +3326,13 @@ void tst_QAccessibility::bridgeTest()
 
     tableWidget->setFixedSize(600, 600);
 
+    QLabel *label = new QLabel(tr("Push my buddy"));
+    label->setBuddy(button);
+
     lay->addWidget(button);
     lay->addWidget(te);
     lay->addWidget(tableWidget);
+    lay->addWidget(label);
 
     window->show();
     QVERIFY(QTest::qWaitForWindowExposed(window));
@@ -3387,9 +3404,47 @@ void tst_QAccessibility::bridgeTest()
         BSTR actionName;
         ia2Action->get_name(0, &actionName);
         QString name((QChar*)actionName);
+        ::SysFreeString(actionName);
         QCOMPARE(name, QAccessibleActionInterface::pressAction());
         ia2Action->Release();
 
+        /***** Test IAccessibleRelation *****/
+        long nRelations = 0;
+        hr = ia2Button->get_nRelations(&nRelations);
+        QVERIFY(SUCCEEDED(hr));
+        QCOMPARE(nRelations, (long)1);
+
+        IAccessibleRelation **relations = (IAccessibleRelation **)::CoTaskMemAlloc(sizeof(IAccessibleRelation *) * 4);
+        hr = ia2Button->get_relations(4, relations, &nRelations);
+        QVERIFY(SUCCEEDED(hr));
+        QCOMPARE(nRelations, (long)1);
+
+        IAccessibleRelation *relation = relations[0];
+        BSTR relType;
+        hr = relation->get_relationType(&relType);
+        QCOMPARE(QString::fromWCharArray(relType), QLatin1String("labelFor"));
+        ::SysFreeString(relType);
+
+        long nTargets;
+        relation->get_nTargets(&nTargets);
+        QCOMPARE(nTargets, (long)1);
+        IAccessible *target;    // target is the label
+        hr = relation->get_target(0, (IUnknown**)&target);
+        QVERIFY(SUCCEEDED(hr));
+
+        VARIANT varRole;
+        hr = target->get_accRole(varSELF, &varRole);
+        QVERIFY(SUCCEEDED(hr));
+        Q_ASSERT(varRole.vt == (VARTYPE)VT_I4);
+        QCOMPARE(varRole.lVal, (LONG)ROLE_SYSTEM_STATICTEXT);
+
+        BSTR buttonName;
+        hr = target->get_accName(varSELF, &buttonName);
+        QVERIFY(SUCCEEDED(hr));
+
+        QCOMPARE(QString::fromWCharArray(buttonName), QLatin1String("Push my buddy"));
+        ::SysFreeString(buttonName);
+        ::CoTaskMemFree(relations);
 
         // Done testing
         ia2Button->Release();
@@ -3416,7 +3471,7 @@ void tst_QAccessibility::bridgeTest()
     long nChildren;
     hr = iaccWindow->get_accChildCount(&nChildren);
     QVERIFY(SUCCEEDED(hr));
-    QCOMPARE(nChildren, (long)3);
+    QCOMPARE(nChildren, (long)4);
 
     /**************************************************
      *   QTextEdit

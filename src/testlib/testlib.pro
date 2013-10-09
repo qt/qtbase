@@ -69,10 +69,8 @@ wince*::LIBS += libcmt.lib \
     winsock.lib
 
 mac {
-    LIBS += -framework IOKit -framework Security
-    !ios {
-      LIBS += -framework ApplicationServices
-    }
+    LIBS += -framework Security
+    osx: LIBS += -framework ApplicationServices -framework IOKit
 }
 
 load(qt_module)

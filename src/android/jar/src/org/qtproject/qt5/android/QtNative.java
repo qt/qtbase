@@ -297,8 +297,8 @@ public class QtNative
         if (action == MotionEvent.ACTION_MOVE) {
             int hsz = event.getHistorySize();
             if (hsz > 0) {
-                if (Math.abs(event.getX(index) - event.getHistoricalX(index, hsz-1)) > 1
-                        || Math.abs(event.getY(index) - event.getHistoricalY(index, hsz-1)) > 1) {
+                if (event.getX(index) != event.getHistoricalX(index, hsz-1)
+                    || event.getY(index) != event.getHistoricalY(index, hsz-1)) {
                     return 1;
                 } else {
                     return 2;

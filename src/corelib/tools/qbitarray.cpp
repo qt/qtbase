@@ -110,6 +110,23 @@ QT_BEGIN_NAMESPACE
     \sa QByteArray, QVector
 */
 
+/*!
+    \fn QBitArray::QBitArray(QBitArray &&other)
+
+    Move-constructs a QBitArray instance, making it point at the same
+    object that \a other was pointing to.
+
+    \since 5.2
+*/
+
+/*!
+    \fn QBitArray &QBitArray::operator=(QBitArray &&other)
+
+    Move-assigns \a other to this QBitArray instance.
+
+    \since 5.2
+*/
+
 /*! \fn QBitArray::QBitArray()
 
     Constructs an empty bit array.

@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 
 class QTracer;
 class QTraceGuard;
+class QLoggingCategoryPrivate;
 
 class Q_CORE_EXPORT QLoggingCategory
 {
@@ -80,18 +81,18 @@ public:
     static void setFilterRules(const QString &rules);
 
 private:
+    friend class QLoggingCategoryPrivate;
     friend class QLoggingRegistry;
     friend class QTraceGuard;
     friend class QTracer;
 
+    QLoggingCategoryPrivate *d;
     const char *name;
 
     bool enabledDebug;
     bool enabledWarning;
     bool enabledCritical;
     bool enabledTrace;
-    typedef QVector<QTracer *> Tracers;
-    Tracers tracers;
 };
 
 template <>

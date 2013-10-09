@@ -400,15 +400,17 @@ void QCocoaWindow::setVisible(bool visible)
         } else {
             [m_contentView setHidden:YES];
         }
-        if (parentCocoaWindow && window()->type() == Qt::Popup
-            && m_resizableTransientParent
+        if (parentCocoaWindow && window()->type() == Qt::Popup) {
+            parentCocoaWindow->m_activePopupWindow = 0;
+            if (m_resizableTransientParent
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-            && QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7
-            && !([parentCocoaWindow->m_nsWindow styleMask] & NSFullScreenWindowMask)
+                && QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7
+                && !([parentCocoaWindow->m_nsWindow styleMask] & NSFullScreenWindowMask)
 #endif
-           )
-            // QTBUG-30266: a window should not be resizable while a transient popup is open
-            [parentCocoaWindow->m_nsWindow setStyleMask:[parentCocoaWindow->m_nsWindow styleMask] | NSResizableWindowMask];
+                )
+                // QTBUG-30266: a window should not be resizable while a transient popup is open
+                [parentCocoaWindow->m_nsWindow setStyleMask:[parentCocoaWindow->m_nsWindow styleMask] | NSResizableWindowMask];
+        }
     }
 }
 
