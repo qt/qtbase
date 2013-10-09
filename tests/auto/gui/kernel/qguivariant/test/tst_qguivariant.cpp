@@ -114,6 +114,7 @@ private slots:
 
     void writeToReadFromDataStream_data();
     void writeToReadFromDataStream();
+    void writeToReadFromOldDataStream();
 
     void colorInteger();
     void invalidQColor();
@@ -525,6 +526,7 @@ void tst_QGuiVariant::writeToReadFromDataStream_data()
     QTest::newRow( "pointarray_valid" ) << QVariant::fromValue( QPolygon( QRect( 10, 10, 20, 20 ) ) ) << false;
     QTest::newRow( "region_invalid" ) << QVariant::fromValue( QRegion() ) << true;
     QTest::newRow( "region_valid" ) << QVariant::fromValue( QRegion( 10, 10, 20, 20 ) ) << false;
+    QTest::newRow("polygonf_valid") << QVariant::fromValue(QPolygonF(QRectF(10, 10, 20, 20))) << false;
 }
 
 void tst_QGuiVariant::invalidQColor()
@@ -606,6 +608,46 @@ void tst_QGuiVariant::writeToReadFromDataStream()
             }
             break;
         }
+    }
+}
+
+void tst_QGuiVariant::writeToReadFromOldDataStream()
+{
+    QPolygonF polyF(QRectF(10, 10, 50, 50));
+    QVariant testVariant(polyF);
+    {
+        // Read into a variant and compare
+        QFile file(":/data/qpolygonf.bin");
+        QVERIFY(file.open(QIODevice::ReadOnly));
+        QDataStream dataFileStream(&file);
+        dataFileStream.setVersion(QDataStream::Qt_4_9);
+        QVariant readVariant;
+        dataFileStream >> readVariant;
+        QVERIFY(readVariant.type() == QMetaType::QPolygonF);
+        QCOMPARE(testVariant, readVariant);
+        file.close();
+    }
+    {
+        QByteArray variantData;
+        {
+            QDataStream varDataStream(&variantData, QIODevice::WriteOnly);
+            varDataStream << testVariant;
+        }
+        // Read into a bytearray and compare
+        QFile file(":/data/qpolygonf.bin");
+        QVERIFY(file.open(QIODevice::ReadOnly));
+        QDataStream dataFileStream(&file);
+        dataFileStream.setVersion(QDataStream::Qt_4_9);
+        int dummy;
+        dataFileStream >> dummy;
+        QByteArray polyData49;
+        dataFileStream >> polyData49;
+        file.close();
+        QByteArray polyData50;
+        QDataStream readVarData(variantData);
+        readVarData >> dummy;
+        readVarData >> polyData50;
+        QVERIFY(polyData49 == polyData50);
     }
 }
 

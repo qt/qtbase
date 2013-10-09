@@ -1892,6 +1892,7 @@ void QVariant::load(QDataStream &s)
 void QVariant::save(QDataStream &s) const
 {
     quint32 typeId = type();
+    bool fakeUserType = false;
     if (s.version() < QDataStream::Qt_4_0) {
         int i;
         for (i = 0; i <= MapFromThreeCount - 1; ++i) {
@@ -1916,12 +1917,16 @@ void QVariant::save(QDataStream &s) const
         } else if (typeId >= QMetaType::QKeySequence && typeId <= QMetaType::QQuaternion) {
             // and as a result these types received lower ids too
             typeId +=1;
+        } else if (typeId == QMetaType::QPolygonF) {
+            // This existed in Qt 4 only as a custom type
+            typeId = 127;
+            fakeUserType = true;
         }
     }
     s << typeId;
     if (s.version() >= QDataStream::Qt_4_2)
         s << qint8(d.is_null);
-    if (d.type >= QVariant::UserType) {
+    if (d.type >= QVariant::UserType || fakeUserType) {
         s << QMetaType::typeName(userType());
     }
 
