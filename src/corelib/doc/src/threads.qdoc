@@ -123,7 +123,7 @@
     \nextpage Synchronizing Threads
 
     Qt offers many classes and functions for working with threads. Below are
-    three different approaches that Qt programmers can use to implement
+    four different approaches that Qt programmers can use to implement
     multithreaded applications.
 
 
@@ -163,17 +163,45 @@
     \section1 Qt Concurrent: Using a High-level API
 
     The \l{Qt Concurrent} module provides high-level functions that deal with some
-    common parallel computation patterns: map, filter, and reduce. Unlike QThread
-    and QRunnable, these functions do not require the use of low-level threading
-    primitives such as mutexes or semaphores. \l {Qt Concurrent} will automatically
-    adjust the number of threads used according to the number of processor cores
-    available, so applications written today will continue to scale when deployed
-    later on a system with more cores.
+    common parallel computation patterns: map, filter, and reduce. Unlike using
+    QThread and QRunnable, these functions never require the use of \l{Synchronizing
+    Threads#Low-Level Synchronization Primitives}{low-level threading primitives}
+    such as mutexes or semaphores. Instead, they return a QFuture object which can
+    be used to retrieve the functions' results when they are ready. QFuture can
+    also be used to query computation progress and to pause/resume/cancel the
+    computation. For convenience, QFutureWatcher enables interactions with
+    \l{QFuture}s via signals and slots.
 
-    This module also provides the QtConcurrent::run() function, which can run
-    any function in a thread managed by the global QThreadPool.
+    \l{Qt Concurrent}'s map, filter and reduce algorithms automatically distribute
+    computation across all available processor cores, so applications written today
+    will continue to scale when deployed later on a system with more cores.
+
+    This module also provides the QtConcurrent::run() function, which can run any
+    function in another thread. However, QtConcurrent::run() only supports a subset
+    of features available to the map, filter and reduce functions. The QFuture
+    can be used to retrieve the function's return value and to check if the thread
+    is running. However, a call to QtConcurrent::run() uses one thread only, cannot
+    be paused/resumed/canceled, and cannot be queried for progress.
 
     See the \l{Qt Concurrent} module documentation for details on the individual functions.
+
+
+    \section1 WorkerScript: Threading in QML
+
+    The WorkerScript QML type lets JavaScript code run in parallel with the GUI
+    thread.
+
+    Each WorkerScript instance can have one \c{.js} script attached to it. When
+    WorkerScript::sendMessage() is called, the script will run in a separate thread
+    (and a separate \l{QQmlContext}{QML context}). When the script finishes
+    running, it can send a reply back to the GUI thread which will invoke the
+    WorkerScript::onMessage() signal handler.
+
+    Using a WorkerScript is similar to using a worker QObject that has been moved
+    to another thread. Data is transferred between threads via signals.
+
+    See the WorkerScript documentation for details on how to implement the script,
+    and for a list of data types that can be passed between threads.
 
 
     \section1 Choosing an Appropriate Approach
@@ -187,52 +215,62 @@
 
     \table
     \header
-        \li Feature/Characteristic
+        \li Feature
         \li QThread
-        \li QRunnable
-        \li Qt Concurrent\sup{*}
+        \li QRunnable and QThreadPool
+        \li QtConcurrent::run()
+        \li Qt Concurrent (Map, Filter, Reduce)
+        \li WorkerScript
     \row
-        \li Supports different thread priorities
+        \li API
+        \li C++
+        \li C++
+        \li C++
+        \li C++
+        \li QML
+    \row
+        \li Thread priority can be specified
+        \li Yes
         \li Yes
         \li
         \li
+        \li
     \row
-        \li Supports an event loop
+        \li Thread can run an event loop
         \li Yes
         \li
         \li
+        \li
+        \li
     \row
-        \li Supports transferring data to the thread using signals
+        \li Thread can receive data updates through signals
         \li Yes (received by a worker QObject)
         \li
         \li
+        \li
+        \li Yes (received by WorkerScript)
     \row
-        \li Supports controlling the thread using signals
+        \li Thread can be controlled using signals
         \li Yes (received by QThread)
         \li
+        \li
         \li Yes (received by QFutureWatcher)
+        \li
     \row
-        \li Supports thread reuse
+        \li Thread can be monitored through a QFuture
         \li
+        \li
+        \li Partially
         \li Yes
-        \li Yes
+        \li
     \row
-        \li Task-oriented
+        \li Built-in ability to pause/resume/cancel
         \li
-        \li Yes
-        \li Yes
-    \row
-        \li High level API
         \li
         \li
         \li Yes
-    \row
-        \li Supports pausing/resuming/canceling
         \li
-        \li
-        \li Yes
     \endtable
-    \sup{\e{*Except QtConcurrent::run(), which is like QRunnable}}
 
 
     \section2 Example Use Cases
@@ -244,7 +282,7 @@
         \li Solution
     \row
         \li One call
-        \li Run a linear function within another thread, optionally with progress
+        \li Run a new linear function within another thread, optionally with progress
             updates during the run.
         \li Qt provides different solutions:
             \list
@@ -258,13 +296,29 @@
             \endlist
     \row
         \li One call
+        \li Run an existing function within another thread and get its return value.
+        \li Run the function using QtConcurrent::run(). Have a QFutureWatcher emit
+            the \l{QFutureWatcher::}{finished()} signal when the function has
+            returned, and call QFutureWatcher::result() to get the function's return
+            value.
+    \row
+        \li One call
         \li Perform an operation on all items of a container, using all available
             cores. For example, producing thumbnails from a list of images.
         \li Use Qt Concurrent's \l{QtConcurrent::}{filter()} function to select
             container elements, and the \l{QtConcurrent::}{map()} function to apply
             an operation to each element. To fold the output into a single result,
-            use \l{QtConcurrent::}{filterReduced()} and \l{QtConcurrent::}{mapReduced()}
-            instead.
+            use \l{QtConcurrent::}{filteredReduced()} and
+            \l{QtConcurrent::}{mappedReduced()} instead.
+    \row
+        \li One call/Permanent
+        \li Perfrom a long computation in a pure QML application, and update the GUI
+            when the results are ready.
+        \li Place the computation code in a \c{.js} script and attach it to a
+            WorkerScript instance. Call \l{WorkerScript::}{sendMessage()} to start the
+            computation in a new thread. Let the script call WorkerScript::sendMessage()
+            too, to pass the result back to the GUI thread. Handle the result in
+            \l{WorkerScript::}{onMessage} and update the GUI there.
     \row
         \li Permanent
         \li Have an object living in another thread that can perform different
