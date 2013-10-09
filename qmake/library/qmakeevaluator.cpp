@@ -1365,10 +1365,6 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::visitProFile(
             loadDefaults();
     }
 
-    for (ProValueMap::ConstIterator it = m_extraVars.constBegin();
-         it != m_extraVars.constEnd(); ++it)
-        m_valuemapStack.first().insert(it.key(), it.value());
-
     VisitReturn vr;
 
     m_handler->aboutToEval(currentProFile(), pro, type);
@@ -1376,6 +1372,10 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::visitProFile(
     valuesRef(ProKey("PWD")) = ProStringList(ProString(currentDirectory()));
     if (flags & LoadPreFiles) {
         setupProject();
+
+        for (ProValueMap::ConstIterator it = m_extraVars.constBegin();
+             it != m_extraVars.constEnd(); ++it)
+            m_valuemapStack.first().insert(it.key(), it.value());
 
         if ((vr = evaluateFeatureFile(QLatin1String("default_pre.prf"))) == ReturnError)
             goto failed;
