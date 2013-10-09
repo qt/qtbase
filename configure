@@ -6890,7 +6890,7 @@ report_support "  FreeType ..............." "$CFG_FREETYPE"
 report_support "  Iconv .................." "$CFG_ICONV"
 report_support "  ICU ...................." "$CFG_ICU"
 report_support "  Image formats:"
-report_support_plugin "    GIF .................." "$CFG_GIF" system QtGui
+report_support_plugin "    GIF .................." "$CFG_GIF" qt QtGui
 report_support_plugin "    JPEG ................." "$CFG_JPEG" "$CFG_LIBJPEG" QtGui
 report_support_plugin "    PNG .................." "$CFG_PNG" "$CFG_LIBPNG" QtGui
 report_support "  Glib ..................." "$CFG_GLIB"
