@@ -48,6 +48,7 @@
 #include <qplatformdefs.h>
 #include <qsocketnotifier.h>
 #include <X11/SM/SMlib.h>
+#include <errno.h> // ERANGE
 
 
 class QSmSocketReceiver : public QObject
