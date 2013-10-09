@@ -57,11 +57,16 @@ enum GuardValues {
 };
 }
 
-#if defined(QT_NO_THREAD) || defined(Q_CC_GNU)
+#if defined(QT_NO_THREAD) || (defined(Q_CC_GNU) && !defined(Q_OS_MAC))
 // some compilers support thread-safe statics
 // The IA-64 C++ ABI requires this, so we know that all GCC versions since 3.4
 // support it. C++11 also requires this behavior.
-// Clang and Intel CC masquerade as GCC when compiling on Linux and Mac OS X.
+// Clang and Intel CC masquerade as GCC when compiling on Linux.
+//
+// Apple's libc++abi however uses a global lock for initializing local statics,
+// which will block other threads also trying to initialize a local static
+// until the constructor returns ...
+// We better avoid these kind of problems by using our own locked implementation.
 
 #define Q_GLOBAL_STATIC_INTERNAL(ARGS)                          \
     Q_DECL_HIDDEN inline Type *innerFunction()                  \
