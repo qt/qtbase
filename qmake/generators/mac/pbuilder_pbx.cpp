@@ -301,6 +301,8 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
     QString defaultConfig;
     for(int as_release = 0; as_release < 2; as_release++)
     {
+        QString configName = (as_release ? "Release" : "Debug");
+
         QMap<QString, QString> settings;
         settings.insert("COPY_PHASE_STRIP", (as_release ? "YES" : "NO"));
         if(as_release)
@@ -311,6 +313,12 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
             const ProStringList &l = project->values("QMAKE_MAC_XCODE_SETTINGS");
             for(int i = 0; i < l.size(); ++i) {
                 ProString name = l.at(i);
+                const ProKey buildKey(name + ".build");
+                if (!project->isEmpty(buildKey)) {
+                    const QString build = project->values(buildKey).first().toQString();
+                    if (build.toLower() != configName.toLower())
+                        continue;
+                }
                 const ProKey nkey(name + ".name");
                 if (!project->isEmpty(nkey))
                     name = project->first(nkey);
@@ -319,10 +327,9 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
             }
         }
 
-        QString name = (as_release ? "Release" : "Debug");
         if (project->isActiveConfig("debug") != (bool)as_release)
-            defaultConfig = name;
-        QString key = keyFor("QMAKE_SUBDIR_PBX_BUILDCONFIG_" + name);
+            defaultConfig = configName;
+        QString key = keyFor("QMAKE_SUBDIR_PBX_BUILDCONFIG_" + configName);
         project->values("QMAKE_SUBDIR_PBX_BUILDCONFIGS").append(key);
         t << "\t\t" << key << " = {\n"
         << "\t\t\t" << writeSettings("isa", "XCBuildConfiguration", SettingsNoQuote) << ";\n"
@@ -330,7 +337,7 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
         for (QMap<QString, QString>::Iterator set_it = settings.begin(); set_it != settings.end(); ++set_it)
             t << "\t\t\t\t" << writeSettings(set_it.key(), set_it.value()) << ";\n";
         t << "\t\t\t};\n"
-          << "\t\t\t" << writeSettings("name", name) << ";\n"
+          << "\t\t\t" << writeSettings("name", configName) << ";\n"
           << "\t\t};\n";
     }
     t << "\t\t" << keyFor("QMAKE_SUBDIR_PBX_BUILDCONFIG_LIST") << " = {\n"
@@ -1244,6 +1251,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
     QString defaultConfig;
     for(int as_release = 0; as_release < 2; as_release++)
     {
+        QString configName = (as_release ? "Release" : "Debug");
+
         QMap<QString, QString> settings;
         settings.insert("COPY_PHASE_STRIP", (as_release ? "YES" : "NO"));
         settings.insert("GCC_GENERATE_DEBUGGING_SYMBOLS", as_release ? "NO" : "YES");
@@ -1255,6 +1264,12 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             const ProStringList &l = project->values("QMAKE_MAC_XCODE_SETTINGS");
             for(int i = 0; i < l.size(); ++i) {
                 ProString name = l.at(i);
+                const ProKey buildKey(name + ".build");
+                if (!project->isEmpty(buildKey)) {
+                    const QString build = project->values(buildKey).first().toQString();
+                    if (build.toLower() != configName.toLower())
+                        continue;
+                }
                 const QString value = project->values(ProKey(name + ".value")).join(QString(Option::field_sep));
                 const ProKey nkey(name + ".name");
                 if (!project->isEmpty(nkey))
@@ -1271,11 +1286,10 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             settings.insert("PRODUCT_NAME", escapeFilePath(lib.toQString()));
         }
 
-        QString name = (as_release ? "Release" : "Debug");
         if (project->isActiveConfig("debug") != (bool)as_release)
-            defaultConfig = name;
+            defaultConfig = configName;
         for (int i = 0; i < buildConfigGroups.size(); i++) {
-            QString key = keyFor("QMAKE_PBX_BUILDCONFIG_" + name + buildConfigGroups.at(i));
+            QString key = keyFor("QMAKE_PBX_BUILDCONFIG_" + configName + buildConfigGroups.at(i));
             project->values(ProKey("QMAKE_PBX_BUILDCONFIGS_" + buildConfigGroups.at(i))).append(key);
             t << "\t\t" << key << " = {\n"
               << "\t\t\t" << writeSettings("isa", "XCBuildConfiguration", SettingsNoQuote) << ";\n"
@@ -1429,7 +1443,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                 }
             }
             t << "\t\t\t};\n"
-              << "\t\t\t" << writeSettings("name", name) << ";\n"
+              << "\t\t\t" << writeSettings("name", configName) << ";\n"
               << "\t\t};\n";
         }
     }
