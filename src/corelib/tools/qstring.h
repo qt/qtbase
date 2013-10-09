@@ -477,9 +477,24 @@ public:
 
     const ushort *utf16() const;
 
+#if defined(Q_COMPILER_REF_QUALIFIERS) && !defined(QT_COMPILING_QSTRING_COMPAT_CPP)
+    QByteArray toLatin1() const & Q_REQUIRED_RESULT
+    { return toLatin1_helper(*this); }
+    QByteArray toLatin1() && Q_REQUIRED_RESULT
+    { return toLatin1_helper(reinterpret_cast<const ushort *>(constData()), size()); }
+    QByteArray toUtf8() const & Q_REQUIRED_RESULT
+    { return toUtf8_helper(*this); }
+    QByteArray toUtf8() && Q_REQUIRED_RESULT
+    { return toUtf8_helper(*this); }
+    QByteArray toLocal8Bit() const & Q_REQUIRED_RESULT
+    { return toLocal8Bit_helper(constData(), size()); }
+    QByteArray toLocal8Bit() && Q_REQUIRED_RESULT
+    { return toLocal8Bit_helper(constData(), size()); }
+#else
     QByteArray toLatin1() const Q_REQUIRED_RESULT;
     QByteArray toUtf8() const Q_REQUIRED_RESULT;
     QByteArray toLocal8Bit() const Q_REQUIRED_RESULT;
+#endif
     QVector<uint> toUcs4() const Q_REQUIRED_RESULT;
 
     // note - this are all inline so we can benefit from strlen() compile time optimizations
@@ -734,6 +749,10 @@ private:
     static Data *fromAscii_helper(const char *str, int size = -1);
     static QString fromUtf8_helper(const char *str, int size);
     static QString fromLocal8Bit_helper(const char *, int size);
+    static QByteArray toLatin1_helper(const QString &);
+    static QByteArray toLatin1_helper(const QChar *data, int size);
+    static QByteArray toUtf8_helper(const QString &);
+    static QByteArray toLocal8Bit_helper(const QChar *data, int size);
     static int toUcs4_helper(const ushort *uc, int length, uint *out);
     void replace_helper(uint *indices, int nIndices, int blen, const QChar *after, int alen);
     friend class QCharRef;

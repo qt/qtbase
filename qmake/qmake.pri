@@ -67,6 +67,7 @@ bootstrap { #Qt code
         qtextcodec.cpp \
         qutfcodec.cpp \
         qstring.cpp \
+        qstring_compat.cpp \
         qstringlist.cpp \
         qtemporaryfile.cpp \
         qtextstream.cpp \

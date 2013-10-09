@@ -4006,7 +4006,22 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
     return ba;
 }
 
+QByteArray QString::toLatin1_helper(const QString &string)
+{
+    if (Q_UNLIKELY(string.isNull()))
+        return QByteArray();
+
+    return toLatin1_helper(string.constData(), string.length());
+}
+
+QByteArray QString::toLatin1_helper(const QChar *data, int length)
+{
+    return QT_PREPEND_NAMESPACE(toLatin1_helper)(data, length);
+}
+
 /*!
+    \fn QByteArray QString::toLatin1() const
+
     Returns a Latin-1 representation of the string as a QByteArray.
 
     The returned byte array is undefined if the string contains non-Latin1
@@ -4015,10 +4030,6 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
 
     \sa fromLatin1(), toUtf8(), toLocal8Bit(), QTextCodec
 */
-QByteArray QString::toLatin1() const
-{
-    return toLatin1_helper(unicode(), length());
-}
 
 /*!
     \fn QByteArray QString::toAscii() const
@@ -4033,19 +4044,9 @@ QByteArray QString::toLatin1() const
     \sa fromAscii(), toLatin1(), toUtf8(), toLocal8Bit(), QTextCodec
 */
 
-#if !defined(Q_OS_MAC) && defined(Q_OS_UNIX) && !defined(QT_USE_ICU)
-static QByteArray toLocal8Bit_helper(const QChar *data, int length)
-{
-#ifndef QT_NO_TEXTCODEC
-    QTextCodec *localeCodec = QTextCodec::codecForLocale();
-    if (localeCodec)
-        return localeCodec->fromUnicode(data, length);
-#endif // QT_NO_TEXTCODEC
-    return toLatin1_helper(data, length);
-}
-#endif
-
 /*!
+    \fn QByteArray QString::toLocal8Bit() const
+
     Returns the local 8-bit representation of the string as a
     QByteArray. The returned byte array is undefined if the string
     contains characters not supported by the local 8-bit encoding.
@@ -4060,17 +4061,21 @@ static QByteArray toLocal8Bit_helper(const QChar *data, int length)
 
     \sa fromLocal8Bit(), toLatin1(), toUtf8(), QTextCodec
 */
-QByteArray QString::toLocal8Bit() const
+
+QByteArray QString::toLocal8Bit_helper(const QChar *data, int size)
 {
 #ifndef QT_NO_TEXTCODEC
     QTextCodec *localeCodec = QTextCodec::codecForLocale();
     if (localeCodec)
-        return localeCodec->fromUnicode(*this);
+        return localeCodec->fromUnicode(data, size);
 #endif // QT_NO_TEXTCODEC
-    return toLatin1();
+    return toLatin1_helper(data, size);
 }
 
+
 /*!
+    \fn QByteArray QString::toUtf8() const
+
     Returns a UTF-8 representation of the string as a QByteArray.
 
     UTF-8 is a Unicode codec and can represent all characters in a Unicode
@@ -4086,12 +4091,13 @@ QByteArray QString::toLocal8Bit() const
 
     \sa fromUtf8(), toLatin1(), toLocal8Bit(), QTextCodec
 */
-QByteArray QString::toUtf8() const
+
+QByteArray QString::toUtf8_helper(const QString &str)
 {
-    if (isNull())
+    if (str.isNull())
         return QByteArray();
 
-    return QUtf8::convertFromUnicode(constData(), length(), 0);
+    return QUtf8::convertFromUnicode(str.constData(), str.length(), 0);
 }
 
 /*!
@@ -9292,7 +9298,7 @@ static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
 */
 QByteArray QStringRef::toLatin1() const
 {
-    return toLatin1_helper(unicode(), length());
+    return QString::toLatin1_helper(unicode(), length());
 }
 
 /*!

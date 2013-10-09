@@ -60,6 +60,7 @@ OBJECTS = \
     qmap.o \
     qregexp.o \
     qstring.o \
+    qstring_compat.o \
     qstringlist.o \
     qvsnprintf.o \
     qvariant.o \

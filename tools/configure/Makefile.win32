@@ -58,6 +58,7 @@ OBJECTS = \
     qmap.obj \
     qregexp.obj \
     qstring.obj \
+    qstring_compat.obj \
     qstringlist.obj \
     qvsnprintf.obj \
     qvariant.obj \

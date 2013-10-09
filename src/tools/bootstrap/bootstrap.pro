@@ -100,6 +100,7 @@ SOURCES += \
            ../../corelib/tools/qsize.cpp \
            ../../corelib/tools/qline.cpp \
            ../../corelib/tools/qstring.cpp \
+           ../../corelib/tools/qstring_compat.cpp \
            ../../corelib/tools/qstringlist.cpp \
            ../../corelib/tools/qvector.cpp \
            ../../corelib/tools/qvsnprintf.cpp \

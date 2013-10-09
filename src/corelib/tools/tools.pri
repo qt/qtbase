@@ -114,6 +114,9 @@ SOURCES += \
         tools/qvector.cpp \
         tools/qvsnprintf.cpp
 
+NO_PCH_SOURCES = tools/qstring_compat.cpp
+false: SOURCES += $$NO_PCH_SOURCES
+
 !nacl:mac: {
     SOURCES += tools/qelapsedtimer_mac.cpp
     OBJECTIVE_SOURCES += tools/qlocale_mac.mm \
@@ -195,3 +198,14 @@ INCLUDEPATH += ../3rdparty/md5 \
 !macx-icc:!vxworks:unix:LIBS_PRIVATE += -lm
 
 TR_EXCLUDE += ../3rdparty/*
+
+no_pch_compiler.commands = $$QMAKE_CXX -c $(CXXFLAGS) $(INCPATH) ${QMAKE_FILE_IN}
+win32:!gcc:no_pch_compiler.commands += -Fo${QMAKE_FILE_OUT}
+else:no_pch_compiler.commands += -o ${QMAKE_FILE_OUT}
+no_pch_compiler.dependency_type = TYPE_C
+no_pch_compiler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
+no_pch_compiler.input = NO_PCH_SOURCES
+no_pch_compiler.variable_out = OBJECTS
+no_pch_compiler.name = compiling[no_pch] ${QMAKE_FILE_IN}
+silent:no_pch_compiler.commands = @echo compiling[no_pch] ${QMAKE_FILE_IN} && $$no_pch_compiler.commands
+QMAKE_EXTRA_COMPILERS += no_pch_compiler

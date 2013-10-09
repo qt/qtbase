@@ -119,6 +119,7 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qmap.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qregexp.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qstring.cpp \
+           $$QT_SOURCE_TREE/src/corelib/tools/qstring_compat.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qstringlist.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qvsnprintf.cpp \
            $$QT_SOURCE_TREE/src/corelib/kernel/qvariant.cpp \
