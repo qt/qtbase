@@ -526,6 +526,7 @@ void tst_QGuiVariant::writeToReadFromDataStream_data()
     QTest::newRow( "pointarray_valid" ) << QVariant::fromValue( QPolygon( QRect( 10, 10, 20, 20 ) ) ) << false;
     QTest::newRow( "region_invalid" ) << QVariant::fromValue( QRegion() ) << true;
     QTest::newRow( "region_valid" ) << QVariant::fromValue( QRegion( 10, 10, 20, 20 ) ) << false;
+    QTest::newRow("polygonf_invalid") << QVariant::fromValue(QPolygonF()) << true;
     QTest::newRow("polygonf_valid") << QVariant::fromValue(QPolygonF(QRectF(10, 10, 20, 20))) << false;
 }
 
