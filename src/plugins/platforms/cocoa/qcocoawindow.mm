@@ -206,9 +206,11 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_nsWindowDelegate(0)
     , m_synchedWindowState(Qt::WindowActive)
     , m_windowModality(Qt::NonModal)
+    , m_windowUnderMouse(false)
     , m_inConstructor(true)
     , m_glContext(0)
     , m_menubar(0)
+    , m_windowCursor(0)
     , m_hasModalSession(false)
     , m_frameStrutEventsEnabled(false)
     , m_isExposed(false)
@@ -1028,6 +1030,23 @@ void QCocoaWindow::setMenubar(QCocoaMenuBar *mb)
 QCocoaMenuBar *QCocoaWindow::menubar() const
 {
     return m_menubar;
+}
+
+void QCocoaWindow::setWindowCursor(NSCursor *cursor)
+{
+    // This function is called (via QCocoaCursor) by Qt to set
+    // the cursor for this window. It can be called for a window
+    // that is not currenly under the mouse pointer (for example
+    // for a popup window.) Qt expects the set cursor to "stick":
+    // it should be accociated with the window until a different
+    // cursor is set.
+
+    // Cocoa has different abstractions. We can set the cursor *now*:
+    if (m_windowUnderMouse)
+        [cursor set];
+    // or we can set the cursor on mouse enter/leave using tracking
+    // areas. This is done in QNSView, save the cursor:
+    m_windowCursor = cursor;
 }
 
 void QCocoaWindow::registerTouch(bool enable)

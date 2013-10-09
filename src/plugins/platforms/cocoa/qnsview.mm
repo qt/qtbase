@@ -671,13 +671,20 @@ static QTouchDevice *touchDevice = 0;
     // mouse moves delivered to it (Apple recommends keeping it OFF because there
     // is a performance hit). So it goes.
     NSUInteger trackingOptions = NSTrackingMouseEnteredAndExited | NSTrackingActiveInActiveApp
-                                 | NSTrackingInVisibleRect | NSTrackingMouseMoved;
+                                 | NSTrackingInVisibleRect | NSTrackingMouseMoved | NSTrackingCursorUpdate;
     NSTrackingArea *ta = [[[NSTrackingArea alloc] initWithRect:[self frame]
                                                       options:trackingOptions
                                                         owner:self
                                                      userInfo:nil]
                                                                 autorelease];
     [self addTrackingArea:ta];
+}
+
+-(void)cursorUpdate:(NSEvent *)theEvent
+{
+    Q_UNUSED(theEvent)
+    if (m_platformWindow->m_windowCursor)
+        [m_platformWindow->m_windowCursor set];
 }
 
 - (void)mouseMoved:(NSEvent *)theEvent
@@ -696,9 +703,9 @@ static QTouchDevice *touchDevice = 0;
     // handling mouseEnter and mouseLeave envents, since they are sent
     // individually to different views.
     if (m_platformWindow->m_nsWindow && childWindow) {
-        if (childWindow != m_platformWindow->m_underMouseWindow) {
-            QWindowSystemInterface::handleEnterLeaveEvent(childWindow, m_platformWindow->m_underMouseWindow, windowPoint, screenPoint);
-            m_platformWindow->m_underMouseWindow = childWindow;
+        if (childWindow != m_platformWindow->m_enterLeaveTargetWindow) {
+            QWindowSystemInterface::handleEnterLeaveEvent(childWindow, m_platformWindow->m_enterLeaveTargetWindow, windowPoint, screenPoint);
+            m_platformWindow->m_enterLeaveTargetWindow = childWindow;
         }
     }
 
@@ -712,6 +719,8 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)mouseEntered:(NSEvent *)theEvent
 {
+    m_platformWindow->m_windowUnderMouse = true;
+
     if (m_window->flags() & Qt::WindowTransparentForInput)
         return [super mouseEntered:theEvent];
 
@@ -722,12 +731,14 @@ static QTouchDevice *touchDevice = 0;
     QPointF windowPoint;
     QPointF screenPoint;
     [self convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
-    m_platformWindow->m_underMouseWindow = m_platformWindow->childWindowAt(windowPoint.toPoint());
-    QWindowSystemInterface::handleEnterEvent(m_platformWindow->m_underMouseWindow, windowPoint, screenPoint);
+    m_platformWindow->m_enterLeaveTargetWindow = m_platformWindow->childWindowAt(windowPoint.toPoint());
+    QWindowSystemInterface::handleEnterEvent(m_platformWindow->m_enterLeaveTargetWindow, windowPoint, screenPoint);
 }
 
 - (void)mouseExited:(NSEvent *)theEvent
 {
+    m_platformWindow->m_windowUnderMouse = false;
+
     if (m_window->flags() & Qt::WindowTransparentForInput)
         return [super mouseExited:theEvent];
     Q_UNUSED(theEvent);
@@ -736,8 +747,8 @@ static QTouchDevice *touchDevice = 0;
     if (!m_platformWindow->m_nsWindow)
         return;
 
-    QWindowSystemInterface::handleLeaveEvent(m_platformWindow->m_underMouseWindow);
-    m_platformWindow->m_underMouseWindow = 0;
+    QWindowSystemInterface::handleLeaveEvent(m_platformWindow->m_enterLeaveTargetWindow);
+    m_platformWindow->m_enterLeaveTargetWindow = 0;
 }
 
 - (void)rightMouseDown:(NSEvent *)theEvent
