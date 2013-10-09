@@ -123,7 +123,10 @@ QLoggingCategory::QLoggingCategory(const char *category)
       enabledDebug(false),
       enabledWarning(true),
       enabledCritical(true),
-      enabledTrace(false)
+      enabledTrace(false),
+      placeholder1(false),
+      placeholder2(false),
+      placeholder3(false)
 {
     bool isDefaultCategory
             = (category == 0) || (strcmp(category, qtDefaultCategoryName) == 0);
