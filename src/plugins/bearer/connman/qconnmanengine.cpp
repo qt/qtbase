@@ -150,20 +150,7 @@ void QConnmanEngine::connectToId(const QString &id)
     if(!serv.isValid()) {
         emit connectionError(id, QBearerEngineImpl::InterfaceLookupError);
     } else {
-        if(serv.getType() != "cellular") {
-
-            serv.connect();
-        } else {
-            QOfonoManagerInterface ofonoManager(0);
-            QString modemPath = ofonoManager.currentModem().path();
-            QOfonoDataConnectionManagerInterface dc(modemPath,0);
-            foreach (const QDBusObjectPath &dcPath,dc.getPrimaryContexts()) {
-                if(dcPath.path().contains(servicePath.section("_",-1))) {
-                    QOfonoConnectionContextInterface primaryContext(dcPath.path(),0);
-                    primaryContext.setActive(true);
-                }
-            }
-        }
+        serv.connect();
     }
 }
 
@@ -175,19 +162,7 @@ void QConnmanEngine::disconnectFromId(const QString &id)
     if(!serv.isValid()) {
         emit connectionError(id, DisconnectionError);
     } else {
-        if(serv.getType() != "cellular") {
-            serv.disconnect();
-        } else {
-            QOfonoManagerInterface ofonoManager(0);
-            QString modemPath = ofonoManager.currentModem().path();
-            QOfonoDataConnectionManagerInterface dc(modemPath,0);
-            foreach (const QDBusObjectPath &dcPath,dc.getPrimaryContexts()) {
-                if(dcPath.path().contains(servicePath.section("_",-1))) {
-                    QOfonoConnectionContextInterface primaryContext(dcPath.path(),0);
-                    primaryContext.setActive(false);
-                }
-            }
-        }
+        serv.disconnect();
     }
 }
 
