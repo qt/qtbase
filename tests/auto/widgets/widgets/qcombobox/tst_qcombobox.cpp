@@ -2587,6 +2587,18 @@ void tst_QComboBox::resetModel()
 
 }
 
+static inline void centerCursor(const QWidget *w)
+{
+#ifndef QT_NO_CURSOR
+    // Force cursor movement to prevent QCursor::setPos() from returning prematurely on QPA:
+    const QPoint target(w->mapToGlobal(w->rect().center()));
+    QCursor::setPos(QPoint(target.x() + 1, target.y()));
+    QCursor::setPos(target);
+#else // !QT_NO_CURSOR
+    Q_UNUSED(w)
+#endif
+}
+
 void tst_QComboBox::keyBoardNavigationWithMouse()
 {
     QComboBox combo;
@@ -2597,6 +2609,7 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
         combo.addItem( QString::number(i));
 
     combo.show();
+    centerCursor(&combo); // QTBUG-33973, cursor needs to be within view from start on Mac.
     QApplication::setActiveWindow(&combo);
     QVERIFY(QTest::qWaitForWindowActive(&combo));
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&combo));
@@ -2617,10 +2630,7 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
     // When calling cursor function, Windows CE responds with: This function is not supported on this system.
 #ifndef Q_OS_WINCE
     // Force cursor movement to prevent QCursor::setPos() from returning prematurely on QPA:
-    const QPoint target(combo.view()->mapToGlobal(combo.view()->rect().center()));
-    QCursor::setPos(QPoint(target.x() + 1, target.y()));
-    QCursor::setPos(target);
-
+    centerCursor(combo.view());
     QTest::qWait(200);
 
 #define GET_SELECTION(SEL) \
@@ -2632,7 +2642,7 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
     GET_SELECTION(selection);
 
     //since we moved the mouse is in the middle it should even be around 5;
-    QVERIFY(selection > 3);
+    QVERIFY2(selection > 3, (QByteArrayLiteral("selection=") + QByteArray::number(selection)).constData());
 
     static const int final = 40;
     for (int i = selection + 1;  i <= final; i++)
