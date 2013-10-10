@@ -127,7 +127,23 @@ void QConnmanManagerInterface::connectNotify(const QMetaMethod &signal)
         QObject::connect(helper,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)),
                 this,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)), Qt::UniqueConnection);
     }
+    static const QMetaMethod servicesChangedSignal = QMetaMethod::fromSignal(&QConnmanManagerInterface::servicesChanged);
+    if (signal == servicesChangedSignal) {
+        if (!connection().connect(QLatin1String(CONNMAN_SERVICE),
+                               QLatin1String(CONNMAN_MANAGER_PATH),
+                               QLatin1String(CONNMAN_MANAGER_INTERFACE),
+                               QLatin1String("ServicesChanged"),
+                               this,SLOT(onServicesChanged(ConnmanMapList, QList<QDBusObjectPath>)))) {
+            qWarning() << "servicesChanged not connected";
+        }
+    }
 }
+
+void QConnmanManagerInterface::onServicesChanged(const ConnmanMapList &changed, const QList<QDBusObjectPath> &removed)
+{
+    emit servicesChanged(changed, removed);
+}
+
 
 void QConnmanManagerInterface::disconnectNotify(const QMetaMethod &signal)
 {

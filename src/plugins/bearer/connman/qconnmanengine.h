@@ -105,6 +105,7 @@ private Q_SLOTS:
     void servicePropertyChangedContext(const QString &,const QString &,const QDBusVariant &);
     void propertyChangedContext(const QString &,const QString &,const QDBusVariant &);
     void technologyPropertyChangedContext(const QString &,const QString &, const QDBusVariant &);
+    void updateServices(const ConnmanMapList &changed, const QList<QDBusObjectPath> &removed);
 
 private:
     QConnmanManagerInterface *connmanManager;

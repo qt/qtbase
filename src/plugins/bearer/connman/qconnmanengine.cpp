@@ -65,6 +65,9 @@ QConnmanEngine::QConnmanEngine(QObject *parent)
 :   QBearerEngineImpl(parent),
     connmanManager(new QConnmanManagerInterface(this))
 {
+    qDBusRegisterMetaType<ConnmanMap>();
+    qDBusRegisterMetaType<ConnmanMapList>();
+    qRegisterMetaType<ConnmanMapList>("ConnmanMapList");
 }
 
 QConnmanEngine::~QConnmanEngine()
@@ -81,6 +84,9 @@ void QConnmanEngine::initialize()
 {
     connect(connmanManager,SIGNAL(propertyChangedContext(QString,QString,QDBusVariant)),
             this,SLOT(propertyChangedContext(QString,QString,QDBusVariant)));
+
+    connect(connmanManager,SIGNAL(servicesChanged(ConnmanMapList, QList<QDBusObjectPath>)),
+            this, SLOT(updateServices(ConnmanMapList, QList<QDBusObjectPath>)));
 
     foreach (const QString &techPath, connmanManager->getTechnologies()) {
         QConnmanTechnologyInterface *tech;
@@ -170,6 +176,22 @@ void QConnmanEngine::requestUpdate()
 {
     QMutexLocker locker(&mutex);
     QTimer::singleShot(0, this, SLOT(doRequestUpdate()));
+}
+
+void QConnmanEngine::updateServices(const ConnmanMapList &changed, const QList<QDBusObjectPath> &removed)
+{
+    foreach (const QDBusObjectPath &objectPath, removed) {
+        removeConfiguration(QString::number(qHash(objectPath.path())));
+    }
+
+    foreach (const ConnmanMap &connmanMap, changed) {
+        const QString id = QString::number(qHash(connmanMap.objectPath.path()));
+        if (accessPointConfigurations.contains(id)) {
+            configurationChange(id);
+        } else {
+            addServiceConfiguration(connmanMap.objectPath.path());
+        }
+    }
 }
 
 QString QConnmanEngine::serviceFromId(const QString &id)
