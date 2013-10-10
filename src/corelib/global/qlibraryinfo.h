@@ -47,6 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QStringList;
+
 class Q_CORE_EXPORT QLibraryInfo
 {
 public:
@@ -95,6 +97,8 @@ public:
     enum PathGroup { FinalPaths, EffectivePaths, EffectiveSourcePaths };
     static QString rawLocation(LibraryLocation, PathGroup);
 #endif
+
+    static QStringList platformPluginArguments(const QString &platformName);
 
 private:
     QLibraryInfo();

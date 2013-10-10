@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qdir.h"
+#include "qstringlist.h"
 #include "qfile.h"
 #include "qsettings.h"
 #include "qlibraryinfo.h"
@@ -113,6 +114,8 @@ public:
     }
 };
 
+static const char platformsSection[] = "Platforms";
+
 QLibrarySettings::QLibrarySettings()
     : settings(QLibraryInfoPrivate::findConfiguration())
 {
@@ -132,7 +135,8 @@ QLibrarySettings::QLibrarySettings()
         haveEffectivePaths = children.contains(QLatin1String("EffectivePaths"));
 #endif
         // Backwards compat: an existing but empty file is claimed to contain the Paths section.
-        havePaths = !haveEffectivePaths || children.contains(QLatin1String("Paths"));
+        havePaths = (!haveEffectivePaths && !children.contains(QLatin1String(platformsSection)))
+                    || children.contains(QLatin1String("Paths"));
 #ifndef QT_BOOTSTRAPPED
         if (!havePaths)
             settings.reset(0);
@@ -459,6 +463,33 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
         ret = QDir::cleanPath(baseDir + QLatin1Char('/') + ret);
     }
     return ret;
+}
+
+/*!
+  Returns additional arguments to the platform plugin matching
+  \a platformName which can be specified as a string list using
+  the key \c Arguments in a group called \c Platforms of the
+  \c qt.conf  file.
+
+  sa {Using qt.conf}
+
+  \internal
+
+  \since 5.3
+*/
+
+QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
+{
+#ifndef QT_BOOTSTRAPPED
+    if (const QSettings *settings = QLibraryInfoPrivate::findConfiguration()) {
+        QString key = QLatin1String(platformsSection);
+        key += QLatin1Char('/');
+        key += platformName;
+        key += QLatin1String("Arguments");
+        return settings->value(key).toStringList();
+    }
+#endif // !QT_BOOTSTRAPPED
+    return QStringList();
 }
 
 /*!

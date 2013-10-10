@@ -59,6 +59,7 @@
 #include <QtCore/qmutex.h>
 #include <QtCore/private/qthread_p.h>
 #include <QtCore/qdir.h>
+#include <QtCore/qlibraryinfo.h>
 #include <QtDebug>
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
@@ -892,6 +893,9 @@ static void init_platform(const QString &pluginArgument, const QString &platform
     // Split into platform name and arguments
     QStringList arguments = pluginArgument.split(QLatin1Char(':'));
     const QString name = arguments.takeFirst().toLower();
+    QString argumentsKey = name;
+    argumentsKey[0] = argumentsKey.at(0).toUpper();
+    arguments.append(QLibraryInfo::platformPluginArguments(argumentsKey));
 
    // Create the platform integration.
     QGuiApplicationPrivate::platform_integration = QPlatformIntegrationFactory::create(name, arguments, argc, argv, platformPluginPath);
