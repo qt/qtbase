@@ -347,7 +347,7 @@ public:
 
     QModelIndexList selectedDraggableIndexes() const;
 
-    QStyleOptionViewItem viewOptions() const;
+    QStyleOptionViewItem viewOptionsV1() const;
 
     void doDelayedReset()
     {
