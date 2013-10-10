@@ -3032,6 +3032,21 @@ unset tty
 
 eval `LC_ALL=C $TEST_COMPILER $SYSROOT_FLAG $TEST_COMPILER_CXXFLAGS -xc++ -E -v - < /dev/null 2>&1 > /dev/null | $AWK '
 BEGIN { ORS = ""; FS = "="; incs = 0; libs = 0; }
+
+function normalize(dir)
+{
+    do {
+        odir = dir
+        gsub(/\\/[^/]+\\/\\.\\./, "", dir)
+    } while (dir != odir);
+    do {
+        odir = dir
+        gsub(/\\/\\./, "", dir)
+    } while (dir != odir);
+    sub("/$", "", dir);
+    return dir;
+}
+
 function quote(s)
 {
     # We only handle spaces
@@ -3047,14 +3062,16 @@ function quote(s)
 /^\#include </ { yup=1; print "DEFAULT_INCDIRS=\""; next }
 /^End of search/ { yup=0; print "\"\n" }
 / \(framework directory\)$/ { next }
-yup { print quote(substr($0, 2)) " "; ++incs }
+yup { print quote(normalize(substr($0, 2))) " "; ++incs }
 
 # extract from one line like LIBRARY_PATH=/one/path:/another/path:...
 $1 == "LIBRARY_PATH" {
     libs = split($2, library_paths, ":");
     print "DEFAULT_LIBDIRS=\"";
-    for (lib in library_paths)
-        print quote(library_paths[lib]) " ";
+    for (lib in library_paths) {
+        dir = normalize(library_paths[lib]);
+        print quote(dir) " ";
+    }
     print "\"\n"
 }
 
