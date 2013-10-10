@@ -1566,9 +1566,11 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, buttons, e->modifiers);
     ev.setTimestamp(e->timestamp);
 #ifndef QT_NO_CURSOR
-    if (const QScreen *screen = window->screen())
-        if (QPlatformCursor *cursor = screen->handle()->cursor())
-            cursor->pointerEvent(ev);
+    if (!e->synthetic) {
+        if (const QScreen *screen = window->screen())
+            if (QPlatformCursor *cursor = screen->handle()->cursor())
+                cursor->pointerEvent(ev);
+    }
 #endif
 
     if (window->d_func()->blockedByModalWindow) {
