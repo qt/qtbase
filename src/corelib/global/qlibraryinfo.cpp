@@ -442,7 +442,11 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
                     QCFType<CFURLRef> urlRef = CFBundleCopyBundleURL(bundleRef);
                     if (urlRef) {
                         QCFString path = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
+#ifdef Q_OS_MACX
                         return QDir::cleanPath(QString(path) + QLatin1String("/Contents/") + ret);
+#else
+                        return QDir::cleanPath(QString(path) + QLatin1Char('/') + ret); // iOS
+#endif
                     }
                 }
 #endif
