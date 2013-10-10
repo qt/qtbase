@@ -72,7 +72,7 @@ public:
     // allows usage of both factory method and variable in qCX macros
     QLoggingCategory &operator()() { return *this; }
 
-    static QLoggingCategory &defaultCategory();
+    static QLoggingCategory *defaultCategory();
 
     typedef void (*CategoryFilter)(QLoggingCategory*);
     static CategoryFilter installFilter(CategoryFilter);

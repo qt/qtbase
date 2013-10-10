@@ -226,7 +226,7 @@ private slots:
     void QLoggingCategory_categoryName()
     {
         logMessage.clear();
-        QCOMPARE(QString::fromLatin1(QLoggingCategory::defaultCategory().categoryName()),
+        QCOMPARE(QString::fromLatin1(QLoggingCategory::defaultCategory()->categoryName()),
                  QStringLiteral("default"));
 
         QLoggingCategory defaultCategory("default");
@@ -237,7 +237,7 @@ private slots:
         QCOMPARE(QByteArray(nullCategory.categoryName()), QByteArray("default"));
 
         // we rely on the same pointer for any "default" category
-        QCOMPARE(QLoggingCategory::defaultCategory().categoryName(),
+        QCOMPARE(QLoggingCategory::defaultCategory()->categoryName(),
                  defaultCategory.categoryName());
         QCOMPARE(defaultCategory.categoryName(),
                  nullCategory.categoryName());
@@ -256,12 +256,12 @@ private slots:
     {
         logMessage.clear();
 
-        QCOMPARE(QLoggingCategory::defaultCategory().isDebugEnabled(), true);
-        QCOMPARE(QLoggingCategory::defaultCategory().isEnabled(QtDebugMsg), true);
-        QCOMPARE(QLoggingCategory::defaultCategory().isWarningEnabled(), true);
-        QCOMPARE(QLoggingCategory::defaultCategory().isEnabled(QtWarningMsg), true);
-        QCOMPARE(QLoggingCategory::defaultCategory().isCriticalEnabled(), true);
-        QCOMPARE(QLoggingCategory::defaultCategory().isEnabled(QtCriticalMsg), true);
+        QCOMPARE(QLoggingCategory::defaultCategory()->isDebugEnabled(), true);
+        QCOMPARE(QLoggingCategory::defaultCategory()->isEnabled(QtDebugMsg), true);
+        QCOMPARE(QLoggingCategory::defaultCategory()->isWarningEnabled(), true);
+        QCOMPARE(QLoggingCategory::defaultCategory()->isEnabled(QtWarningMsg), true);
+        QCOMPARE(QLoggingCategory::defaultCategory()->isCriticalEnabled(), true);
+        QCOMPARE(QLoggingCategory::defaultCategory()->isEnabled(QtCriticalMsg), true);
 
         QLoggingCategory defaultCategory("default");
         QCOMPARE(defaultCategory.isDebugEnabled(), true);
@@ -287,11 +287,11 @@ private slots:
     {
         logMessage.clear();
 
-        QCOMPARE(QLoggingCategory::defaultCategory().isDebugEnabled(), true);
+        QCOMPARE(QLoggingCategory::defaultCategory()->isDebugEnabled(), true);
 
-        QLoggingCategory::defaultCategory().setEnabled(QtDebugMsg, false);
-        QCOMPARE(QLoggingCategory::defaultCategory().isDebugEnabled(), false);
-        QLoggingCategory::defaultCategory().setEnabled(QtDebugMsg, true);
+        QLoggingCategory::defaultCategory()->setEnabled(QtDebugMsg, false);
+        QCOMPARE(QLoggingCategory::defaultCategory()->isDebugEnabled(), false);
+        QLoggingCategory::defaultCategory()->setEnabled(QtDebugMsg, true);
 
         // make sure nothing has printed warnings
         QVERIFY(logMessage.isEmpty());
@@ -300,13 +300,13 @@ private slots:
 
     void QLoggingCategory_installFilter()
     {
-        QVERIFY(QLoggingCategory::defaultCategory().isDebugEnabled());
+        QVERIFY(QLoggingCategory::defaultCategory()->isDebugEnabled());
 
         QLoggingCategory::CategoryFilter defaultFilter =
                 QLoggingCategory::installFilter(customCategoryFilter);
         QVERIFY(defaultFilter);
         customCategoryFilterArgs.clear();
-        QVERIFY(!QLoggingCategory::defaultCategory().isDebugEnabled());
+        QVERIFY(!QLoggingCategory::defaultCategory()->isDebugEnabled());
 
         QLoggingCategory cat("custom");
         QCOMPARE(customCategoryFilterArgs, QStringList() << "custom");
@@ -319,7 +319,7 @@ private slots:
         QCOMPARE((void*)currentFilter, (void*)customCategoryFilter);
         QCOMPARE(customCategoryFilterArgs.size(), 0);
 
-        QVERIFY(QLoggingCategory::defaultCategory().isDebugEnabled());
+        QVERIFY(QLoggingCategory::defaultCategory()->isDebugEnabled());
         QVERIFY(!cat.isDebugEnabled());
 
         // install default filter
@@ -328,7 +328,7 @@ private slots:
         QCOMPARE((void*)defaultFilter, (void*)currentFilter);
         QCOMPARE(customCategoryFilterArgs.size(), 0);
 
-        QVERIFY(QLoggingCategory::defaultCategory().isDebugEnabled());
+        QVERIFY(QLoggingCategory::defaultCategory()->isDebugEnabled());
         QVERIFY(!cat.isDebugEnabled());
     }
 

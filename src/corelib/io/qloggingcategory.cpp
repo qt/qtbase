@@ -244,12 +244,19 @@ void QLoggingCategory::setEnabled(QtMsgType type, bool enable)
  */
 
 /*!
-    Returns the category \c "default" that is used e.g. by qDebug(), qWarning(),
-    qCritical(), qFatal().
+    Returns a pointer to the global category \c "default" that
+    is used e.g. by qDebug(), qWarning(), qCritical(), qFatal().
+
+    \note The returned pointer may be null during destruction of
+    static objects.
+
+    \note Ownership of the category is not transferred, do not
+    \c delete the returned pointer.
+
  */
-QLoggingCategory &QLoggingCategory::defaultCategory()
+QLoggingCategory *QLoggingCategory::defaultCategory()
 {
-    return *qtDefaultCategory();
+    return qtDefaultCategory();
 }
 
 /*!
