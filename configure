@@ -3070,7 +3070,10 @@ $1 == "LIBRARY_PATH" {
     print "DEFAULT_LIBDIRS=\"";
     for (lib in library_paths) {
         dir = normalize(library_paths[lib]);
-        print quote(dir) " ";
+        if (!(dir in dirs)) {
+            print quote(dir) " ";
+            dirs[dir] = 1;
+        }
     }
     print "\"\n"
 }
