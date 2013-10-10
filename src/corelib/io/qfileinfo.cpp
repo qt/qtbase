@@ -691,7 +691,8 @@ bool QFileInfo::exists(const QString &file)
         QFileSystemEngine::resolveEntryAndCreateLegacyEngine(entry, data);
     // Expensive fallback to non-QFileSystemEngine implementation
     if (engine)
-        return QFileInfo(file).exists();
+        return QFileInfo(new QFileInfoPrivate(entry, data, engine)).exists();
+
     QFileSystemEngine::fillMetaData(entry, data, QFileSystemMetaData::ExistsAttribute);
     return data.exists();
 }
