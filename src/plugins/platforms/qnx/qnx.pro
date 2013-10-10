@@ -76,7 +76,8 @@ HEADERS =   main.h \
             qqnxabstractcover.h \
             qqnxservices.h \
             qqnxcursor.h \
-            qqnxrasterwindow.h
+            qqnxrasterwindow.h \
+            qqnxscreeneventfilter.h
 
 CONFIG(qqnx_screeneventthread) {
     DEFINES += QQNX_SCREENEVENTTHREAD

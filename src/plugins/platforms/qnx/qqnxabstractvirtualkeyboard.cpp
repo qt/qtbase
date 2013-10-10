@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2013 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -62,23 +62,19 @@ void QQnxAbstractVirtualKeyboard::setKeyboardMode(KeyboardMode mode)
     applyKeyboardMode(mode);
 }
 
-void QQnxAbstractVirtualKeyboard::setInputHintsFromObject(QObject *focusObject)
+void QQnxAbstractVirtualKeyboard::setInputHints(int inputHints)
 {
-    if (focusObject) {
-        const Qt::InputMethodHints hints = static_cast<Qt::InputMethodHints>(
-                    focusObject->property("inputMethodHints").toInt());
-        if (hints & Qt::ImhEmailCharactersOnly) {
-            setKeyboardMode(QQnxAbstractVirtualKeyboard::Email);
-        } else if (hints & Qt::ImhDialableCharactersOnly) {
-            setKeyboardMode(QQnxAbstractVirtualKeyboard::Phone);
-        } else if (hints & Qt::ImhUrlCharactersOnly) {
-            setKeyboardMode(QQnxAbstractVirtualKeyboard::Web);
-        } else if (hints & Qt::ImhFormattedNumbersOnly || hints & Qt::ImhDigitsOnly ||
-                   hints & Qt::ImhDate || hints & Qt::ImhTime) {
-            setKeyboardMode(QQnxAbstractVirtualKeyboard::NumPunc);
-        } else {
-            setKeyboardMode(QQnxAbstractVirtualKeyboard::Default);
-        }
+    if (inputHints & Qt::ImhEmailCharactersOnly) {
+        setKeyboardMode(QQnxAbstractVirtualKeyboard::Email);
+    } else if (inputHints & Qt::ImhDialableCharactersOnly) {
+        setKeyboardMode(QQnxAbstractVirtualKeyboard::Phone);
+    } else if (inputHints & Qt::ImhUrlCharactersOnly) {
+        setKeyboardMode(QQnxAbstractVirtualKeyboard::Web);
+    } else if (inputHints & Qt::ImhFormattedNumbersOnly || inputHints & Qt::ImhDigitsOnly ||
+               inputHints & Qt::ImhDate || inputHints & Qt::ImhTime) {
+        setKeyboardMode(QQnxAbstractVirtualKeyboard::NumPunc);
+    } else if (inputHints & Qt::ImhHiddenText) {
+        setKeyboardMode(QQnxAbstractVirtualKeyboard::Password);
     } else {
         setKeyboardMode(QQnxAbstractVirtualKeyboard::Default);
     }

@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2012 Research In Motion
+** Copyright (C) 2013 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -133,6 +133,10 @@ void QQnxVirtualKeyboardBps::applyKeyboardMode(KeyboardMode mode)
 
     case Pin:
         layout = VIRTUALKEYBOARD_LAYOUT_PIN;
+        break;
+
+    case Password:
+        layout = VIRTUALKEYBOARD_LAYOUT_PASSWORD;
         break;
 
     case Default: // fall through

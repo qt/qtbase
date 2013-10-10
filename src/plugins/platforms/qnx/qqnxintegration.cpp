@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2013 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -240,6 +240,9 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
 #if defined(QQNX_PPS)
         // Set up the input context
         m_inputContext = new QQnxInputContext(this, *m_virtualKeyboard);
+#if defined(QQNX_IMF)
+        m_screenEventHandler->addScreenEventFilter(m_inputContext);
+#endif
 #endif
     }
 
@@ -259,17 +262,6 @@ QQnxIntegration::~QQnxIntegration()
     // Destroy the drag object
     delete m_drag;
 #endif
-
-#if defined(QQNX_PPS)
-    // Destroy the hardware button notifier
-    delete m_buttonsNotifier;
-
-    // Destroy input context
-    delete m_inputContext;
-#endif
-
-    // Destroy the keyboard class.
-    delete m_virtualKeyboard;
 
 #if !defined(QT_NO_CLIPBOARD)
     // Delete the clipboard
@@ -309,6 +301,17 @@ QQnxIntegration::~QQnxIntegration()
     // Cleanup global OpenGL resources
     QQnxGLContext::shutdown();
 #endif
+
+#if defined(QQNX_PPS)
+    // Destroy the hardware button notifier
+    delete m_buttonsNotifier;
+
+    // Destroy input context
+    delete m_inputContext;
+#endif
+
+    // Destroy the keyboard class.
+    delete m_virtualKeyboard;
 
     // Destroy services class
     delete m_services;

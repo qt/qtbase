@@ -39,64 +39,20 @@
 **
 ****************************************************************************/
 
-#ifndef QQNXABSTRACTVIRTUALKEYBOARD_H
-#define QQNXABSTRACTVIRTUALKEYBOARD_H
-
-#include <QLocale>
-#include <QObject>
+#ifndef QQNXSCREENEVENTFILTER_H
+#define QQNXSCREENEVENTFILTER_H
 
 QT_BEGIN_NAMESPACE
 
-class QQnxAbstractVirtualKeyboard : public QObject
+class QQnxScreenEventFilter
 {
-    Q_OBJECT
-public:
-    // NOTE:  Not all the following keyboard modes are currently used.
-    // Default - Regular Keyboard
-    // Url/Email - Enhanced keys for each types.
-    // Web - Regular keyboard with two blank keys, currently unused.
-    // NumPunc - Numbers & Punctionation, alternate to Symbol
-    // Symbol - All symbols, alternate to NumPunc, currently unused.
-    // Phone - Phone enhanced keyboard - currently unused as no alternate keyboard available to access a-zA-Z
-    // Pin - Keyboard for entering Pins (Hex values) currently unused.
-    // Password - Keyboard for entering passwords.
-    //
-    // SPECIAL NOTE: Usage of NumPunc may have to be removed, ABC button is non-functional.
-    //
-    enum KeyboardMode { Default, Url, Email, Web, NumPunc, Symbol, Phone, Pin, Password };
-
-    explicit QQnxAbstractVirtualKeyboard(QObject *parent = 0);
-
-    virtual bool showKeyboard() = 0;
-    virtual bool hideKeyboard() = 0;
-
-    int  height() { return m_visible ? m_height : 0; }
-    bool isVisible() const { return m_visible; }
-    QLocale locale() const { return m_locale; }
-
-    void setKeyboardMode(KeyboardMode mode);
-    void setInputHints(int inputHints);
-    KeyboardMode keyboardMode() const { return m_keyboardMode; }
-
-Q_SIGNALS:
-    void heightChanged(int height);
-    void visibilityChanged(bool visible);
-    void localeChanged(const QLocale &locale);
-
 protected:
-    virtual void applyKeyboardMode(KeyboardMode mode) = 0;
+    ~QQnxScreenEventFilter() {}
 
-    void setHeight(int height);
-    void setVisible(bool visible);
-    void setLocale(const QLocale &locale);
-
-private:
-    int m_height;
-    bool m_visible;
-    QLocale m_locale;
-    KeyboardMode m_keyboardMode;
+public:
+    virtual bool handleKeyboardEvent(int flags, int sym, int mod, int scan, int cap, int sequenceId) = 0;
 };
 
 QT_END_NAMESPACE
 
-#endif // QQNXABSTRACTVIRTUALKEYBOARD_H
+#endif

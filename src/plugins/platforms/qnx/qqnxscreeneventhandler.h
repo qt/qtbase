@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2013 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -49,12 +49,16 @@
 QT_BEGIN_NAMESPACE
 
 class QQnxIntegration;
+class QQnxScreenEventFilter;
 
 class QQnxScreenEventHandler : public QObject
 {
     Q_OBJECT
 public:
     explicit QQnxScreenEventHandler(QQnxIntegration *integration);
+
+    void addScreenEventFilter(QQnxScreenEventFilter *filter);
+    void removeScreenEventFilter(QQnxScreenEventFilter *filter);
 
     bool handleEvent(screen_event_t event);
     bool handleEvent(screen_event_t event, int qnxType);
@@ -85,6 +89,7 @@ private:
     screen_window_t m_lastMouseWindow;
     QTouchDevice *m_touchDevice;
     QWindowSystemInterface::TouchPoint m_touchPoints[MaximumTouchPoints];
+    QList<QQnxScreenEventFilter*> m_eventFilters;
 };
 
 QT_END_NAMESPACE

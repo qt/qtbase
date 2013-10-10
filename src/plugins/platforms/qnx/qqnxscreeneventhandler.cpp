@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2013 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -43,6 +43,7 @@
 #include "qqnxintegration.h"
 #include "qqnxkeytranslator.h"
 #include "qqnxscreen.h"
+#include "qqnxscreeneventfilter.h"
 
 #include <QDebug>
 #include <QGuiApplication>
@@ -82,6 +83,16 @@ QQnxScreenEventHandler::QQnxScreenEventHandler(QQnxIntegration *integration)
         // nothing touching
         m_touchPoints[i].state = Qt::TouchPointReleased;
     }
+}
+
+void QQnxScreenEventHandler::addScreenEventFilter(QQnxScreenEventFilter *filter)
+{
+    m_eventFilters.append(filter);
+}
+
+void QQnxScreenEventHandler::removeScreenEventFilter(QQnxScreenEventFilter *filter)
+{
+    m_eventFilters.removeOne(filter);
 }
 
 bool QQnxScreenEventHandler::handleEvent(screen_event_t event)
@@ -209,7 +220,23 @@ void QQnxScreenEventHandler::handleKeyboardEvent(screen_event_t event)
     if (result)
         qFatal("QQNX: failed to query event cap, errno=%d", errno);
 
-    injectKeyboardEvent(flags, sym, modifiers, scan, cap);
+    int sequenceId = 0;
+#if defined(Q_OS_BLACKBERRY)
+    result = screen_get_event_property_iv(event, SCREEN_PROPERTY_SEQUENCE_ID, &sequenceId);
+    if (result)
+        qFatal("QQNX: failed to query event seqId, errno=%d", errno);
+#endif
+
+    bool inject = true;
+    Q_FOREACH (QQnxScreenEventFilter *filter, m_eventFilters) {
+        if (filter->handleKeyboardEvent(flags, sym, modifiers, scan, cap, sequenceId)) {
+            inject = false;
+            break;
+        }
+    }
+
+    if (inject)
+        injectKeyboardEvent(flags, sym, modifiers, scan, cap);
 }
 
 void QQnxScreenEventHandler::handlePointerEvent(screen_event_t event)
