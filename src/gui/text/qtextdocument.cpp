@@ -2160,13 +2160,21 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
         html += QLatin1String("pt;");
         attributesEmitted = true;
     } else if (format.hasProperty(QTextFormat::FontSizeAdjustment)) {
-        static const char * const sizeNames[] = {
-            "small", "medium", "large", "x-large", "xx-large"
+        static const char sizeNameData[] =
+            "small" "\0"
+            "medium" "\0"
+            "xx-large" ;
+        static const quint8 sizeNameOffsets[] = {
+            0,                                         // "small"
+            sizeof("small"),                           // "medium"
+            sizeof("small") + sizeof("medium") + 3,    // "large"    )
+            sizeof("small") + sizeof("medium") + 1,    // "x-large"  )> compressed into "xx-large"
+            sizeof("small") + sizeof("medium"),        // "xx-large" )
         };
         const char *name = 0;
         const int idx = format.intProperty(QTextFormat::FontSizeAdjustment) + 1;
         if (idx >= 0 && idx <= 4) {
-            name = sizeNames[idx];
+            name = sizeNameData + sizeNameOffsets[idx];
         }
         if (name) {
             html += QLatin1String(" font-size:");
