@@ -207,7 +207,7 @@ void QTextInlineObject::setAscent(qreal a)
 }
 
 /*!
-    Sets the inline object's decent to \a d.
+    Sets the inline object's descent to \a d.
 
     \sa descent(), setAscent(), width(), rect()
 */
@@ -1288,7 +1288,7 @@ void QTextLayout::drawCursor(QPainter *p, const QPointF &pos, int cursorPosition
     After being created, the line can be filled using the setLineWidth()
     or setNumColumns() functions. A line has a number of attributes including the
     rectangle it occupies, rect(), its coordinates, x() and y(), its
-    textLength(), width() and naturalTextWidth(), and its ascent() and decent()
+    textLength(), width() and naturalTextWidth(), and its ascent() and descent()
     relative to the text. The position of the cursor in terms of the
     line is available from cursorToX() and its inverse from
     xToCursor(). A line can be moved with setPosition().
