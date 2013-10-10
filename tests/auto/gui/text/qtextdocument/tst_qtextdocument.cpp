@@ -113,6 +113,7 @@ private slots:
     void toHtmlBodyBgColorRgba();
     void toHtmlBodyBgColorTransparent();
     void toHtmlRootFrameProperties();
+    void toHtmlLineHeightProperties();
     void capitalizationHtmlInExport();
     void wordspacingHtmlExport();
 
@@ -1851,6 +1852,25 @@ void tst_QTextDocument::toHtmlRootFrameProperties()
 
     expectedOutput.prepend(htmlHead);
     expectedOutput.replace("DEFAULTBLOCKSTYLE", "style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"");
+    expectedOutput.append(htmlTail);
+
+    QCOMPARE(doc.toHtml(), expectedOutput);
+}
+
+void tst_QTextDocument::toHtmlLineHeightProperties()
+{
+    CREATE_DOC_AND_CURSOR();
+
+    QTextBlock block = doc.firstBlock();
+    QTextBlockFormat blockFormat = block.blockFormat();
+    blockFormat.setLineHeight(200, QTextBlockFormat::ProportionalHeight);
+    cursor.setBlockFormat(blockFormat);
+
+    cursor.insertText("Blah");
+    QString expectedOutput("<p DEFAULTBLOCKSTYLE line-height:200%;\">Blah</p>");
+
+    expectedOutput.prepend(htmlHead);
+    expectedOutput.replace("DEFAULTBLOCKSTYLE", "style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;");
     expectedOutput.append(htmlTail);
 
     QCOMPARE(doc.toHtml(), expectedOutput);
