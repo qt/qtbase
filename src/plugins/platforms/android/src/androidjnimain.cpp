@@ -419,14 +419,11 @@ static jboolean startQtAndroidPlugin(JNIEnv* /*env*/, jobject /*object*//*, jobj
 
 static void *startMainMethod(void */*data*/)
 {
-    char const **params;
-    params = static_cast<char const **>(malloc(m_applicationParams.length() * sizeof(char *)));
+    QVarLengthArray<const char *> params(m_applicationParams.size());
     for (int i = 0; i < m_applicationParams.size(); i++)
         params[i] = static_cast<const char *>(m_applicationParams[i].constData());
 
-    int ret = m_main(m_applicationParams.length(), const_cast<char **>(params));
-
-    free(params);
+    int ret = m_main(m_applicationParams.length(), const_cast<char **>(params.data()));
     Q_UNUSED(ret);
 
     if (m_mainLibraryHnd) {
