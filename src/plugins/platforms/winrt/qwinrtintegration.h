@@ -68,7 +68,7 @@ public:
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
+    QAbstractEventDispatcher *createEventDispatcher() const;
     QPlatformFontDatabase *fontDatabase() const;
     QPlatformInputContext *inputContext() const;
     QPlatformServices *services() const;
@@ -76,7 +76,6 @@ public:
 private:
     bool m_success;
     QWinRTScreen *m_screen;
-    QAbstractEventDispatcher *m_eventDispatcher;
     QPlatformFontDatabase *m_fontDatabase;
     QPlatformServices *m_services;
 };

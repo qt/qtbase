@@ -103,12 +103,6 @@ QWinRTIntegration::QWinRTIntegration()
     m_screen = new QWinRTScreen(window);
     screenAdded(m_screen);
 
-    // Get event dispatcher
-    ICoreDispatcher *dispatcher;
-    if (FAILED(window->get_Dispatcher(&dispatcher)))
-        qCritical("Could not capture UI Dispatcher");
-    m_eventDispatcher = new QWinRTEventDispatcher(dispatcher);
-
     m_success = true;
 }
 
@@ -117,9 +111,12 @@ QWinRTIntegration::~QWinRTIntegration()
     Windows::Foundation::Uninitialize();
 }
 
-QAbstractEventDispatcher *QWinRTIntegration::guiThreadEventDispatcher() const
+QAbstractEventDispatcher *QWinRTIntegration::createEventDispatcher() const
 {
-    return m_eventDispatcher;
+    ICoreDispatcher *dispatcher;
+    if (FAILED(m_screen->coreWindow()->get_Dispatcher(&dispatcher)))
+        qCritical("Could not capture UI Dispatcher");
+    return new QWinRTEventDispatcher(dispatcher);
 }
 
 bool QWinRTIntegration::hasCapability(QPlatformIntegration::Capability cap) const
