@@ -120,6 +120,7 @@ void QDocIndexFiles::readIndexFile(const QString& path)
 {
     QFile file(path);
     if (file.open(QFile::ReadOnly)) {
+        //qDebug() << "READING:" << path;
         QDomDocument document;
         document.setContent(&file);
         file.close();
@@ -472,7 +473,7 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         node->setAccess(Node::Public);
     else if (access == "protected")
         node->setAccess(Node::Protected);
-    else if (access == "private")
+    else if ((access == "private") || (access == "internal"))
         node->setAccess(Node::Private);
     else
         node->setAccess(Node::Public);
