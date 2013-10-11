@@ -4147,8 +4147,9 @@ void QGraphicsScene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent)
                                                             wheelEvent->widget()));
         wheelEvent->accept();
         bool isPanel = item->isPanel();
-        d->sendEvent(item, wheelEvent);
-        if (isPanel || wheelEvent->isAccepted())
+        bool ret = d->sendEvent(item, wheelEvent);
+
+        if (ret && (isPanel || wheelEvent->isAccepted()))
             break;
     }
 }
