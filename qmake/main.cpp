@@ -57,6 +57,128 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifdef Q_OS_WIN
+
+struct SedSubst {
+    QRegExp from;
+    QString to;
+};
+Q_DECLARE_TYPEINFO(SedSubst, Q_MOVABLE_TYPE);
+
+static int doSed(int argc, char **argv)
+{
+    QVector<SedSubst> substs;
+    QList<const char *> inFiles;
+    for (int i = 0; i < argc; i++) {
+        if (!strcmp(argv[i], "-e")) {
+            if (++i == argc) {
+                fprintf(stderr, "Error: sed option -e requires an argument\n");
+                return 3;
+            }
+            QString cmd = QString::fromLocal8Bit(argv[i]);
+            for (int j = 0; j < cmd.length(); j++) {
+                QChar c = cmd.at(j);
+                if (c.isSpace())
+                    continue;
+                if (c != QLatin1Char('s')) {
+                    fprintf(stderr, "Error: unrecognized sed command '%c'\n", c.toLatin1());
+                    return 3;
+                }
+                QChar sep = ++j < cmd.length() ? cmd.at(j) : QChar();
+                bool escaped = false;
+                int phase = 1;
+                QStringList phases;
+                QString curr;
+                while (++j < cmd.length()) {
+                    c = cmd.at(j);
+                    if (!escaped) {
+                        if (c == QLatin1Char(';'))
+                            break;
+                        if (c == QLatin1Char('\\')) {
+                            escaped = true;
+                            continue;
+                        }
+                        if (c == sep) {
+                            phase++;
+                            phases << curr;
+                            curr.clear();
+                            continue;
+                        }
+                    }
+                    if (phase == 1
+                        && (c == QLatin1Char('+') || c == QLatin1Char('?')
+                            || c == QLatin1Char('{') || c == QLatin1Char('}')
+                            || c == QLatin1Char('(') || c == QLatin1Char(')'))) {
+                        // translate sed rx to QRegExp
+                        escaped ^= 1;
+                    }
+                    if (escaped) {
+                        escaped = false;
+                        curr += QLatin1Char('\\');
+                    }
+                    curr += c;
+                }
+                if (escaped) {
+                    fprintf(stderr, "Error: unterminated escape sequence in sed s command\n");
+                    return 3;
+                }
+                if (phase != 3) {
+                    fprintf(stderr, "Error: sed s command requires three arguments (%d, %c, %s)\n", phase, sep.toLatin1(), qPrintable(curr));
+                    return 3;
+                }
+                if (curr != QLatin1String("g")) {
+                    fprintf(stderr, "Error: sed s command must be used with the g option (only)\n");
+                    return 3;
+                }
+                SedSubst subst;
+                subst.from = QRegExp(phases.at(0));
+                subst.to = phases.at(1);
+                substs << subst;
+            }
+        } else if (argv[i][0] == '-' && argv[i][1] != 0) {
+            fprintf(stderr, "Error: unrecognized sed option '%s'\n", argv[i]);
+            return 3;
+        } else {
+            inFiles << argv[i];
+        }
+    }
+    if (inFiles.isEmpty())
+        inFiles << "-";
+    foreach (const char *inFile, inFiles) {
+        FILE *f;
+        if (!strcmp(inFile, "-")) {
+            f = stdin;
+        } else if (!(f = fopen(inFile, "r"))) {
+            perror(inFile);
+            return 1;
+        }
+        QTextStream is(f);
+        while (!is.atEnd()) {
+            QString line = is.readLine();
+            for (int i = 0; i < substs.size(); i++)
+                line.replace(substs.at(i).from, substs.at(i).to);
+            puts(qPrintable(line));
+        }
+        if (f != stdin)
+            fclose(f);
+    }
+    return 0;
+}
+
+static int doInstall(int argc, char **argv)
+{
+    if (!argc) {
+        fprintf(stderr, "Error: -install requires further arguments\n");
+        return 3;
+    }
+    if (!strcmp(argv[0], "sed"))
+        return doSed(argc - 1, argv + 1);
+    fprintf(stderr, "Error: unrecognized -install subcommand '%s'\n", argv[0]);
+    return 3;
+}
+
+#endif // Q_OS_WIN
+
 /* This is to work around lame implementation on Darwin. It has been noted that the getpwd(3) function
    is much too slow, and called much too often inside of Qt (every fileFixify). With this we use a locally
    cached copy because I can control all the times it is set (because Qt never sets the pwd under me).
@@ -84,6 +206,12 @@ int runQMake(int argc, char **argv)
     // appear out of sync, so force stdout to be unbuffered as well.
     // This is particularly important for things like QtCreator and scripted builds.
     setvbuf(stdout, (char *)NULL, _IONBF, 0);
+
+#ifdef Q_OS_WIN
+    // Workaround for inferior/missing command line tools on Windows: make our own!
+    if (argc >= 2 && !strcmp(argv[1], "-install"))
+        return doInstall(argc - 2, argv + 2);
+#endif
 
     QMakeVfs vfs;
     Option::vfs = &vfs;
