@@ -1883,11 +1883,12 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
                 scaledEngine = feCache.prevScaledFontEngine;
             } else {
                 QFontEngine *scEngine = rawFont.d->fontEngine->cloneWithSize(smallCapsFraction * rawFont.pixelSize());
+                scEngine->ref.ref();
                 scaledEngine = QFontEngineMultiQPA::createMultiFontEngine(scEngine, script);
                 scaledEngine->ref.ref();
                 feCache.prevScaledFontEngine = scaledEngine;
                 // If scEngine is not ref'ed by scaledEngine, make sure it is deallocated and not leaked.
-                if (!scEngine->ref.load())
+                if (!scEngine->ref.deref())
                     delete scEngine;
 
             }
