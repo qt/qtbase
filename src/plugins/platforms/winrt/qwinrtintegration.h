@@ -72,6 +72,7 @@ public:
     QPlatformFontDatabase *fontDatabase() const;
     QPlatformInputContext *inputContext() const;
     QPlatformServices *services() const;
+    Qt::KeyboardModifiers queryKeyboardModifiers() const;
 
 private:
     bool m_success;

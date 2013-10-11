@@ -102,6 +102,7 @@ public:
     QSurfaceFormat surfaceFormat() const;
     QWinRTInputContext *inputContext() const;
     QPlatformCursor *cursor() const;
+    Qt::KeyboardModifiers keyboardModifiers() const;
 
     Qt::ScreenOrientation nativeOrientation() const;
     Qt::ScreenOrientation orientation() const;
@@ -123,7 +124,8 @@ private:
     // Event handlers
     QHash<QEvent::Type, EventRegistrationToken> m_tokens;
 
-    HRESULT onKey(ABI::Windows::UI::Core::ICoreWindow *window, ABI::Windows::UI::Core::IKeyEventArgs *args);
+    HRESULT onKeyDown(ABI::Windows::UI::Core::ICoreWindow *window, ABI::Windows::UI::Core::IKeyEventArgs *args);
+    HRESULT onKeyUp(ABI::Windows::UI::Core::ICoreWindow *window, ABI::Windows::UI::Core::IKeyEventArgs *args);
     HRESULT onCharacterReceived(ABI::Windows::UI::Core::ICoreWindow *window, ABI::Windows::UI::Core::ICharacterReceivedEventArgs *args);
     HRESULT onPointerEntered(ABI::Windows::UI::Core::ICoreWindow *window, ABI::Windows::UI::Core::IPointerEventArgs *args);
     HRESULT onPointerExited(ABI::Windows::UI::Core::ICoreWindow *window, ABI::Windows::UI::Core::IPointerEventArgs *args);
@@ -154,7 +156,9 @@ private:
     Qt::ScreenOrientation m_nativeOrientation;
     Qt::ScreenOrientation m_orientation;
 
-    QHash<quint32, QString> m_activeKeys;
+#ifndef Q_OS_WINPHONE
+    QHash<quint32, QPair<Qt::Key, QString> > m_activeKeys;
+#endif
     QHash<quint32, Pointer> m_pointers;
     QHash<quint32, QWindowSystemInterface::TouchPoint> m_touchPoints;
 };

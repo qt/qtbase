@@ -186,4 +186,9 @@ QPlatformServices *QWinRTIntegration::services() const
     return m_services;
 }
 
+Qt::KeyboardModifiers QWinRTIntegration::queryKeyboardModifiers() const
+{
+    return m_screen->keyboardModifiers();
+}
+
 QT_END_NAMESPACE
