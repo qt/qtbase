@@ -1638,6 +1638,7 @@ QGLContext* QGLContext::currentCtx = 0;
 
 static void convertFromGLImage(QImage &img, int w, int h, bool alpha_format, bool include_alpha)
 {
+    Q_ASSERT(!img.isNull());
     if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
         // OpenGL gives RGBA; Qt wants ARGB
         uint *p = (uint*)img.bits();
@@ -1682,6 +1683,8 @@ QImage qt_gl_read_frame_buffer(const QSize &size, bool alpha_format, bool includ
 {
     QImage img(size, (alpha_format && include_alpha) ? QImage::Format_ARGB32_Premultiplied
                                                      : QImage::Format_RGB32);
+    if (img.isNull())
+        return QImage();
     int w = size.width();
     int h = size.height();
     glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
@@ -1692,6 +1695,8 @@ QImage qt_gl_read_frame_buffer(const QSize &size, bool alpha_format, bool includ
 QImage qt_gl_read_texture(const QSize &size, bool alpha_format, bool include_alpha)
 {
     QImage img(size, alpha_format ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32);
+    if (img.isNull())
+        return QImage();
     int w = size.width();
     int h = size.height();
 #if !defined(QT_OPENGL_ES_2)
