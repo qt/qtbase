@@ -380,6 +380,10 @@ void tst_Selftests::runSubTest_data()
         << "subtest"
         << "verbose1"
         << "verbose2"
+#ifndef QT_NO_EXCEPTIONS
+        // this test will test nothing if the exceptions are disabled
+        << "verifyexceptionthrown"
+#endif //!QT_NO_EXCEPTIONS
         << "warnings"
         << "xunit"
     ;

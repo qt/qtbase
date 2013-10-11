@@ -51,6 +51,11 @@
 
 #include <string.h>
 
+#ifndef QT_NO_EXCEPTIONS
+#  include <exception>
+#endif // QT_NO_EXCEPTIONS
+
+
 QT_BEGIN_NAMESPACE
 
 class QRegularExpression;
@@ -83,6 +88,46 @@ do {\
     if (!QTest::qCompare(actual, expected, #actual, #expected, __FILE__, __LINE__))\
         return;\
 } while (0)
+
+
+#ifndef QT_NO_EXCEPTIONS
+
+#  define QVERIFY_EXCEPTION_THROWN(expression, exceptiontype) \
+    do {\
+        QT_TRY {\
+            QT_TRY {\
+                expression;\
+                QTest::qFail("Expected exception of type " #exceptiontype " to be thrown" \
+                             " but no exception caught", __FILE__, __LINE__);\
+                return;\
+            } QT_CATCH (const exceptiontype &) {\
+            }\
+        } QT_CATCH (const std::exception &e) {\
+            QByteArray msg = QByteArray() + "Expected exception of type " #exceptiontype \
+                             " to be thrown but std::exception caught with message: " + e.what(); \
+            QTest::qFail(msg.constData(), __FILE__, __LINE__);\
+            return;\
+        } QT_CATCH (...) {\
+            QTest::qFail("Expected exception of type " #exceptiontype " to be thrown" \
+                         " but unknown exception caught", __FILE__, __LINE__);\
+            return;\
+        }\
+    } while (0)
+
+#else // QT_NO_EXCEPTIONS
+
+/*
+ * The expression passed to the macro should throw an exception and we can't
+ * catch it because Qt has been compiled without exception support. We can't
+ * skip the expression because it may have side effects and must be executed.
+ * So, users must use Qt with exception support enabled if they use exceptions
+ * in their code.
+ */
+#  define QVERIFY_EXCEPTION_THROWN(expression, exceptiontype) \
+    Q_STATIC_ASSERT_X(false, "Support of exceptions is disabled")
+
+#endif // !QT_NO_EXCEPTIONS
+
 
 // Will try to wait for the expression to become true while allowing event processing
 #define QTRY_VERIFY_WITH_TIMEOUT(__expr, __timeout) \

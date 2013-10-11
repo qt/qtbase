@@ -165,6 +165,25 @@ QT_BEGIN_NAMESPACE
    \sa QVERIFY(), QTRY_COMPARE(), QTest::toString()
 */
 
+/*! \macro QVERIFY_EXCEPTION_THROWN(expression, exceptiontype)
+   \since 5.3
+
+   \relates QTest
+
+   The QVERIFY_EXCEPTION_THROWN macro executes an \a expression and tries
+   to catch an exception thrown from the \a expression. If the \a expression
+   throws an exception and its type is the same as \a exceptiontype
+   or \a exceptiontype is substitutable with the type of thrown exception
+   (i.e. usually the type of thrown exception is publically derived
+   from \a exceptiontype) then execution will be continued. If not-substitutable
+   type of exception is thrown or the \a expression doesn't throw an exception
+   at all, then a failure will be recorded in the test log and
+   the test won't be executed further.
+
+   \note This macro can only be used in a test function that is invoked
+   by the test framework.
+*/
+
 /*! \macro QTRY_VERIFY_WITH_TIMEOUT(condition, timeout)
    \since 5.0
 

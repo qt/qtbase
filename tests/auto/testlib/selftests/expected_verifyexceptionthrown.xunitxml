@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="6" tests="11" name="tst_VerifyExceptionThrown">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="pass" name="testCorrectStdTypes"/>
+  <testcase result="pass" name="testCorrectStdExceptions"/>
+  <testcase result="pass" name="testCorrectMyExceptions"/>
+  <testcase result="fail" name="testFailInt">
+    <failure message="Expected exception of type double to be thrown but unknown exception caught" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="testFailStdString">
+    <failure message="Expected exception of type char* to be thrown but unknown exception caught" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="testFailStdRuntimeError">
+    <failure message="Expected exception of type std::runtime_error to be thrown but std::exception caught with message: logic error" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="testFailMyException">
+    <failure message="Expected exception of type MyBaseException to be thrown but std::exception caught with message: logic error" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="testFailMyDerivedException">
+    <failure message="Expected exception of type std::runtime_error to be thrown but std::exception caught with message: MyDerivedException" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="testFailNoException">
+    <failure message="Expected exception of type std::exception to be thrown but no exception caught" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err/>
+</testsuite>

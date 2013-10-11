@@ -41,5 +41,6 @@ SUBPROGRAMS = \
      subtest \
      verbose1 \
      verbose2 \
+     verifyexceptionthrown \
      warnings \
      xunit

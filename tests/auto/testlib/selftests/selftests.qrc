@@ -134,6 +134,10 @@
         <file>expected_verbose2.txt</file>
         <file>expected_verbose2.xml</file>
         <file>expected_verbose2.xunitxml</file>
+        <file>expected_verifyexceptionthrown.lightxml</file>
+        <file>expected_verifyexceptionthrown.txt</file>
+        <file>expected_verifyexceptionthrown.xml</file>
+        <file>expected_verifyexceptionthrown.xunitxml</file>
         <file>expected_warnings.lightxml</file>
         <file>expected_warnings.txt</file>
         <file>expected_warnings.xml</file>
