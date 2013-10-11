@@ -4020,6 +4020,36 @@ QByteArray QString::toLatin1_helper(const QChar *data, int length)
     return ba;
 }
 
+QByteArray QString::toLatin1_helper_inplace(QString &s)
+{
+    if (!s.isDetached())
+        return s.toLatin1();
+
+    // We can return our own buffer to the caller.
+    // Conversion to Latin-1 always shrinks the buffer by half.
+    const ushort *data = reinterpret_cast<const ushort *>(s.constData());
+    uint length = s.size();
+
+    // Swap the d pointers.
+    // Kids, avert your eyes. Don't try this at home.
+    QArrayData *ba_d = s.d;
+
+    // multiply the allocated capacity by sizeof(ushort)
+    ba_d->alloc *= sizeof(ushort);
+
+    // reset ourselves to QString()
+    s.d = QString().d;
+
+    // do the in-place conversion
+    uchar *dst = reinterpret_cast<uchar *>(ba_d->data());
+    QT_PREPEND_NAMESPACE(toLatin1_helper)(dst, data, length);
+    dst[length] = '\0';
+
+    QByteArrayDataPtr badptr = { ba_d };
+    return QByteArray(badptr);
+}
+
+
 /*!
     \fn QByteArray QString::toLatin1() const
 

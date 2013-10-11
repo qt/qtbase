@@ -481,7 +481,7 @@ public:
     QByteArray toLatin1() const & Q_REQUIRED_RESULT
     { return toLatin1_helper(*this); }
     QByteArray toLatin1() && Q_REQUIRED_RESULT
-    { return toLatin1_helper(reinterpret_cast<const ushort *>(constData()), size()); }
+    { return toLatin1_helper_inplace(*this); }
     QByteArray toUtf8() const & Q_REQUIRED_RESULT
     { return toUtf8_helper(*this); }
     QByteArray toUtf8() && Q_REQUIRED_RESULT
@@ -751,6 +751,7 @@ private:
     static QString fromLocal8Bit_helper(const char *, int size);
     static QByteArray toLatin1_helper(const QString &);
     static QByteArray toLatin1_helper(const QChar *data, int size);
+    static QByteArray toLatin1_helper_inplace(QString &);
     static QByteArray toUtf8_helper(const QString &);
     static QByteArray toLocal8Bit_helper(const QChar *data, int size);
     static int toUcs4_helper(const ushort *uc, int length, uint *out);

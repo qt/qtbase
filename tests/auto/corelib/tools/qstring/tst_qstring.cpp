@@ -3882,6 +3882,14 @@ void tst_QString::toLatin1Roundtrip()
     // and back:
     QCOMPARE(QString::fromLatin1(latin1, latin1.length()).length(), unicodedst.length());
     QCOMPARE(QString::fromLatin1(latin1, latin1.length()), unicodedst);
+
+    // try the rvalue version of toLatin1()
+    QString s = unicodesrc;
+    QCOMPARE(qMove(s).toLatin1(), latin1);
+
+    // and verify that the moved-from object can still be used
+    s = "foo";
+    s.clear();
 }
 
 void tst_QString::stringRef_toLatin1Roundtrip_data()
