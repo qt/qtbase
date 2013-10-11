@@ -1489,6 +1489,7 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
 #endif
     case QWindowSystemInterfacePrivate::EnterWhatsThisMode:
         QGuiApplication::postEvent(QGuiApplication::instance(), new QEvent(QEvent::EnterWhatsThisMode));
+        break;
     default:
         qWarning() << "Unknown user input event type:" << e->type;
         break;
