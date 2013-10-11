@@ -562,13 +562,11 @@ void QQnxWindow::initWindow()
     setScreen(static_cast<QQnxScreen *>(window()->screen()->handle()));
 
     if (window()->type() == Qt::CoverWindow) {
-#if !defined(Q_OS_BLACKBERRY_TABLET)
+#if defined(Q_OS_BLACKBERRY) && !defined(Q_OS_BLACKBERRY_TABLET)
         screen_set_window_property_pv(m_screen->rootWindow()->nativeHandle(),
                                       SCREEN_PROPERTY_ALTERNATE_WINDOW, (void**)&m_window);
-#if defined(Q_OS_BLACKBERRY)
         m_cover.reset(new QQnxNavigatorCover);
 #endif
-#endif // Q_OS_BLACKBERRY_TABLET
         m_exposed = false;
     }
 
