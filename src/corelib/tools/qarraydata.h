@@ -122,6 +122,12 @@ struct Q_CORE_EXPORT QArrayData
 
     static const QArrayData shared_null[2];
     static QArrayData *sharedNull() noexcept { return const_cast<QArrayData*>(shared_null); }
+    static void *sharedNullData()
+    {
+        QArrayData *const null = const_cast<QArrayData *>(&shared_null[1]);
+        Q_ASSERT(sharedNull()->data() == null);
+        return null;
+    }
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QArrayData::AllocationOptions)
@@ -272,6 +278,12 @@ struct QTypedArrayData
     {
         Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
         return allocate(/* capacity */ 0);
+    }
+
+    static T *sharedNullData()
+    {
+        Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
+        return static_cast<T *>(QArrayData::sharedNullData());
     }
 };
 
