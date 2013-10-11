@@ -341,8 +341,15 @@ bool QLinuxFbScreen::initialize(const QStringList &args)
             userMmSize = QSize(mmSizeRx.cap(1).toInt(), mmSizeRx.cap(2).toInt());
     }
 
-    if (fbDevice.isEmpty())
-        fbDevice = QLatin1String("/dev/fb0"); // ## auto-detect
+    if (fbDevice.isEmpty()) {
+        fbDevice = QLatin1String("/dev/fb0");
+        if (!QFile::exists(fbDevice))
+            fbDevice = QLatin1String("/dev/graphics/fb0");
+        if (!QFile::exists(fbDevice)) {
+            qWarning("Unable to figure out framebuffer device. Specify it manually.");
+            return false;
+        }
+    }
 
     // Open the device
     mFbFd = openFramebufferDevice(fbDevice);
