@@ -496,7 +496,7 @@ static QTouchDevice *touchDevice = 0;
     return YES;
 }
 
-- (void)convertFromEvent:(NSEvent *)event toWindowPoint:(QPointF *)qtWindowPoint andScreenPoint:(QPointF *)qtScreenPoint
+- (void)convertFromScreen:(NSPoint)mouseLocation toWindowPoint:(QPointF *)qtWindowPoint andScreenPoint:(QPointF *)qtScreenPoint
 {
     // Calculate the mouse position in the QWindow and Qt screen coordinate system,
     // starting from coordinates in the NSWindow coordinate system.
@@ -516,23 +516,22 @@ static QTouchDevice *touchDevice = 0;
     // NSView and QWindow are equal coordinate systems: the QWindow covers the
     // entire NSView, and we've set the NSView's isFlipped property to true.
 
-    NSPoint nsWindowPoint = [event locationInWindow];                    // NSWindow coordinates
-
-    NSPoint nsViewPoint = [self convertPoint: nsWindowPoint fromView: nil]; // NSView/QWindow coordinates
-    *qtWindowPoint = QPointF(nsViewPoint.x, nsViewPoint.y);                     // NSView/QWindow coordinates
-
     NSWindow *window = [self window];
+    NSPoint nsWindowPoint;
     // Use convertRectToScreen if available (added in 10.7).
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-    if ([window respondsToSelector:@selector(convertRectToScreen:)]) {
-        NSRect screenRect = [window convertRectToScreen : NSMakeRect(nsWindowPoint.x, nsWindowPoint.y, 0, 0)]; // OS X screen coordinates
-        *qtScreenPoint = QPointF(screenRect.origin.x, qt_mac_flipYCoordinate(screenRect.origin.y));              // Qt screen coordinates
+    if ([window respondsToSelector:@selector(convertRectFromScreen:)]) {
+        NSRect windowRect = [window convertRectFromScreen:NSMakeRect(mouseLocation.x, mouseLocation.y, 1, 1)];
+        nsWindowPoint = windowRect.origin;                    // NSWindow coordinates
     } else
 #endif
     {
-        NSPoint screenPoint = [window convertBaseToScreen : NSMakePoint(nsWindowPoint.x, nsWindowPoint.y)];
-        *qtScreenPoint = QPointF(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
+        nsWindowPoint = [window convertScreenToBase:mouseLocation];                    // NSWindow coordinates
     }
+    NSPoint nsViewPoint = [self convertPoint: nsWindowPoint fromView: nil]; // NSView/QWindow coordinates
+    *qtWindowPoint = QPointF(nsViewPoint.x, nsViewPoint.y);                     // NSView/QWindow coordinates
+
+    *qtScreenPoint = QPointF(mouseLocation.x, qt_mac_flipYCoordinate(mouseLocation.y)); // Qt screen coordinates
 }
 
 - (void)resetMouseButtons
@@ -546,7 +545,7 @@ static QTouchDevice *touchDevice = 0;
 
     QPointF qtWindowPoint;
     QPointF qtScreenPoint;
-    [self convertFromEvent:theEvent toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
+    [self convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
     ulong timestamp = [theEvent timestamp] * 1000;
 
     QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
@@ -688,7 +687,7 @@ static QTouchDevice *touchDevice = 0;
 
     QPointF windowPoint;
     QPointF screenPoint;
-    [self convertFromEvent:theEvent toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    [self convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
     QWindow *childWindow = m_platformWindow->childWindowAt(windowPoint.toPoint());
 
     // Top-level windows generate enter-leave events for sub-windows.
@@ -722,7 +721,7 @@ static QTouchDevice *touchDevice = 0;
 
     QPointF windowPoint;
     QPointF screenPoint;
-    [self convertFromEvent:theEvent toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    [self convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
     m_platformWindow->m_underMouseWindow = m_platformWindow->childWindowAt(windowPoint.toPoint());
     QWindowSystemInterface::handleEnterEvent(m_platformWindow->m_underMouseWindow, windowPoint, screenPoint);
 }
@@ -812,7 +811,7 @@ Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
 
     QPointF windowPoint;
     QPointF screenPoint;
-    [self convertFromEvent: theEvent toWindowPoint: &windowPoint andScreenPoint: &screenPoint];
+    [self convertFromScreen:[NSEvent mouseLocation] toWindowPoint: &windowPoint andScreenPoint: &screenPoint];
 
     uint deviceId = [theEvent deviceID];
     if (!tabletDeviceDataHash->contains(deviceId)) {
@@ -985,7 +984,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
     QPointF screenPoint;
-    [self convertFromEvent:event toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    [self convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
     QWindowSystemInterface::handleGestureEventWithRealValue(m_window, timestamp, Qt::ZoomNativeGesture,
                                                             [event magnification], windowPoint, screenPoint);
 }
@@ -1000,7 +999,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
     QPointF screenPoint;
-    [self convertFromEvent:event toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    [self convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
     QWindowSystemInterface::handleGestureEventWithRealValue(m_window, timestamp, Qt::SmartZoomNativeGesture,
                                                             zoomIn ? 1.0f : 0.0f, windowPoint, screenPoint);
     zoomIn = !zoomIn;
@@ -1015,7 +1014,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
     QPointF screenPoint;
-    [self convertFromEvent:event toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    [self convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
     QWindowSystemInterface::handleGestureEventWithRealValue(m_window, timestamp, Qt::RotateNativeGesture,
                                                             -[event rotation], windowPoint, screenPoint);
 }
@@ -1028,7 +1027,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
     QPointF screenPoint;
-    [self convertFromEvent:event toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    [self convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
 
     qreal angle = 0.0f;
     if ([event deltaX] == 1)
@@ -1052,7 +1051,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
     QPointF screenPoint;
-    [self convertFromEvent:event toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    [self convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
     QWindowSystemInterface::handleGestureEvent(m_window, timestamp, Qt::BeginNativeGesture,
                                                windowPoint, screenPoint);
 }
@@ -1065,7 +1064,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
     QPointF screenPoint;
-    [self convertFromEvent:event toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    [self convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
     QWindowSystemInterface::handleGestureEvent(m_window, timestamp, Qt::EndNativeGesture,
                                                windowPoint, screenPoint);
 }
@@ -1125,7 +1124,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
     QPointF qt_windowPoint;
     QPointF qt_screenPoint;
-    [self convertFromEvent:theEvent toWindowPoint:&qt_windowPoint andScreenPoint:&qt_screenPoint];
+    [self convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&qt_windowPoint andScreenPoint:&qt_screenPoint];
     NSTimeInterval timestamp = [theEvent timestamp];
     ulong qt_timestamp = timestamp * 1000;
 
