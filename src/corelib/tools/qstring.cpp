@@ -3946,13 +3946,9 @@ static inline __m128i mergeQuestionMarks(__m128i chunk)
 }
 #endif
 
-static QByteArray toLatin1_helper(const QChar *data, int length)
+static void toLatin1_helper(uchar *dst, const ushort *src, int length)
 {
-    QByteArray ba;
     if (length) {
-        ba.resize(length);
-        const ushort *src = reinterpret_cast<const ushort *>(data);
-        uchar *dst = (uchar*) ba.data();
 #if defined(__SSE2__)
         if (length >= 16) {
             const int chunkCount = length >> 4; // divided by 16
@@ -4003,7 +3999,6 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
             ++src;
         }
     }
-    return ba;
 }
 
 QByteArray QString::toLatin1_helper(const QString &string)
@@ -4016,7 +4011,13 @@ QByteArray QString::toLatin1_helper(const QString &string)
 
 QByteArray QString::toLatin1_helper(const QChar *data, int length)
 {
-    return QT_PREPEND_NAMESPACE(toLatin1_helper)(data, length);
+    QByteArray ba(length, Qt::Uninitialized);
+
+    // since we own the only copy, we're going to const_cast the constData;
+    // that avoids an unnecessary call to detach() and expansion code that will never get used
+    QT_PREPEND_NAMESPACE(toLatin1_helper)(reinterpret_cast<uchar *>(const_cast<char *>(ba.constData())),
+                                          reinterpret_cast<const ushort *>(data), length);
+    return ba;
 }
 
 /*!
