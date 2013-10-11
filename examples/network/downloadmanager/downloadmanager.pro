@@ -16,5 +16,3 @@ OTHER_FILES += \
     debian/copyright \
     debian/README \
     debian/rules
-
-simulator: warning(This example might not fully work on Simulator platform)

@@ -242,7 +242,7 @@ QmlModuleNode* QDocDatabase::addQmlModule(const QString& name)
     QmlModuleNode* qmn = findQmlModule(blankSplit[0]);
     qmn->setQmlModuleInfo(name);
     qmn->markSeen();
-    masterMap_.insert(qmn->qmlModuleIdentifier(),qmn);
+    //masterMap_.insert(qmn->qmlModuleIdentifier(),qmn);
     return qmn;
 }
 
@@ -561,7 +561,7 @@ void QDocDatabase::findAllObsoleteThings(const InnerNode* node)
                 else if ((*c)->type() == Node::Document && (*c)->subType() == Node::QmlClass) {
                     if (name.startsWith(QLatin1String("QML:")))
                         name = name.mid(4);
-                    name = (*c)->qmlModuleIdentifier() + "::" + name;
+                    name = (*c)->qmlModuleName() + "::" + name;
                     obsoleteQmlTypes_.insert(name,*c);
                 }
             }
@@ -862,10 +862,10 @@ QDocDatabase::findUnambiguousTarget(const QString& target, QString& ref, const N
             return bestTarget.node_;
         }
         else if (bestTargetList.size() > 1) {
-            if (relative && !relative->qmlModuleIdentifier().isEmpty()) {
+            if (relative && !relative->qmlModuleName().isEmpty()) {
                 for (int i=0; i<bestTargetList.size(); ++i) {
                     const Node* n = bestTargetList.at(i).node_;
-                    if (n && relative->qmlModuleIdentifier() == n->qmlModuleIdentifier()) {
+                    if (n && relative->qmlModuleName() == n->qmlModuleName()) {
                         ref = bestTargetList.at(i).ref_;
                         return n;
                     }
@@ -887,19 +887,20 @@ const DocNode* QDocDatabase::findDocNodeByTitle(const QString& title, const Node
     QString key = Doc::canonicalTitle(title);
     DocNodeMultiMap::const_iterator i = docNodesByTitle_.constFind(key);
     if (i != docNodesByTitle_.constEnd()) {
-        if (relative && !relative->qmlModuleIdentifier().isEmpty()) {
+        if (relative && !relative->qmlModuleName().isEmpty()) {
             const DocNode* dn = i.value();
             InnerNode* parent = dn->parent();
             if (parent && parent->type() == Node::Document && parent->subType() == Node::Collision) {
                 const NodeList& nl = parent->childNodes();
                 NodeList::ConstIterator it = nl.constBegin();
                 while (it != nl.constEnd()) {
-                    if ((*it)->qmlModuleIdentifier() == relative->qmlModuleIdentifier()) {
+                    if ((*it)->qmlModuleName() == relative->qmlModuleName()) {
                         /*
-                          By returning here, we avoid printing all the duplicate
-                          header warnings, which are not really duplicates now,
-                          because of the QML module identifier being used as a
-                          namespace qualifier.
+                          By returning here, we avoid printing
+                          all the duplicate header warnings,
+                          which are not really duplicates now,
+                          because of the QML module name being
+                          used as a namespace qualifier.
                         */
                         dn = static_cast<const DocNode*>(*it);
                         return dn;

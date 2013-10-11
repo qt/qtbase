@@ -272,8 +272,8 @@
 
 /*! \fn bool QVector::operator==(const QVector<T> &other) const
 
-    Returns true if \a other is equal to this vector; otherwise
-    returns false.
+    Returns \c true if \a other is equal to this vector; otherwise
+    returns \c false.
 
     Two vectors are considered equal if they contain the same values
     in the same order.
@@ -286,8 +286,8 @@
 
 /*! \fn bool QVector::operator!=(const QVector<T> &other) const
 
-    Returns true if \a other is not equal to this vector; otherwise
-    returns false.
+    Returns \c true if \a other is not equal to this vector; otherwise
+    returns \c false.
 
     Two vectors are considered equal if they contain the same values
     in the same order.
@@ -307,7 +307,7 @@
 
 /*! \fn bool QVector::isEmpty() const
 
-    Returns true if the vector has size 0; otherwise returns false.
+    Returns \c true if the vector has size 0; otherwise returns \c false.
 
     \sa size(), resize()
 */
@@ -649,8 +649,8 @@
 
 /*! \fn bool QVector::contains(const T &value) const
 
-    Returns true if the vector contains an occurrence of \a value;
-    otherwise returns false.
+    Returns \c true if the vector contains an occurrence of \a value;
+    otherwise returns \c false.
 
     This function requires the value type to have an implementation of
     \c operator==().
@@ -661,8 +661,8 @@
 /*! \fn bool QVector::startsWith(const T &value) const
     \since 4.5
 
-    Returns true if this vector is not empty and its first
-    item is equal to \a value; otherwise returns false.
+    Returns \c true if this vector is not empty and its first
+    item is equal to \a value; otherwise returns \c false.
 
     \sa isEmpty(), first()
 */
@@ -670,8 +670,8 @@
 /*! \fn bool QVector::endsWith(const T &value) const
     \since 4.5
 
-    Returns true if this vector is not empty and its last
-    item is equal to \a value; otherwise returns false.
+    Returns \c true if this vector is not empty and its last
+    item is equal to \a value; otherwise returns \c false.
 
     \sa isEmpty(), last()
 */
@@ -868,7 +868,7 @@
 
     This function is provided for STL compatibility. It is equivalent
     to isEmpty(), returning true if the vector is empty; otherwise
-    returns false.
+    returns \c false.
 */
 
 /*! \fn QVector<T> &QVector::operator+=(const QVector<T> &other)

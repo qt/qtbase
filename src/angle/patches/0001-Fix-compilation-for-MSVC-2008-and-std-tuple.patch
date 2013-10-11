@@ -1,0 +1,32 @@
+From d4776adddb971642164de54141e015abde881740 Mon Sep 17 00:00:00 2001
+From: Thomas Hartmann <Thomas.Hartmann@digia.com>
+Date: Tue, 8 Oct 2013 09:46:54 +0200
+Subject: [PATCH] Fix compilation for MSVC 2008 and std::tuple
+
+For MSVC 2008 make_tuple is in the tr1 namespace.
+
+Change-Id: I4a51f6cabdf068993869b404b12ed1484a21a9d4
+---
+ .../src/libGLESv2/renderer/IndexRangeCache.cpp     |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/IndexRangeCache.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/IndexRangeCache.cpp
+index 610a5ef..95a6961 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/IndexRangeCache.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/IndexRangeCache.cpp
+@@ -81,7 +81,11 @@ IndexRangeCache::IndexRange::IndexRange(GLenum typ, intptr_t off, GLsizei c)
+ 
+ bool IndexRangeCache::IndexRange::operator<(const IndexRange& rhs) const
+ {
+-    return std::make_tuple(type, offset, count) < std::make_tuple(rhs.type, rhs.offset, rhs.count);
++#if defined(_MSC_VER) && _MSC_VER < 1600
++    return std::tr1::make_tuple(type, offset, count) < std::tr1::make_tuple(rhs.type, rhs.offset, rhs.count);
++#else
++    return std::make_tuple(type, offset, count) < std::tr1::make_tuple(rhs.type, rhs.offset, rhs.count);
++#endif
+ }
+ 
+ IndexRangeCache::IndexBounds::IndexBounds()
+-- 
+1.7.6.msysgit.0
+

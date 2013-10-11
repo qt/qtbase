@@ -219,8 +219,8 @@ QJsonObject QPluginLoader::metaData() const
 }
 
 /*!
-    Loads the plugin and returns true if the plugin was loaded
-    successfully; otherwise returns false. Since instance() always
+    Loads the plugin and returns \c true if the plugin was loaded
+    successfully; otherwise returns \c false. Since instance() always
     calls this function before resolving any symbols it is not
     necessary to call it explicitly. In some situations you might want
     the plugin loaded in advance, in which case you would use this
@@ -242,8 +242,8 @@ bool QPluginLoader::load()
 
 
 /*!
-    Unloads the plugin and returns true if the plugin could be
-    unloaded; otherwise returns false.
+    Unloads the plugin and returns \c true if the plugin could be
+    unloaded; otherwise returns \c false.
 
     This happens automatically on application termination, so you
     shouldn't normally need to call this function.
@@ -269,7 +269,7 @@ bool QPluginLoader::unload()
 }
 
 /*!
-    Returns true if the plugin is loaded; otherwise returns false.
+    Returns \c true if the plugin is loaded; otherwise returns \c false.
 
     \sa load()
  */

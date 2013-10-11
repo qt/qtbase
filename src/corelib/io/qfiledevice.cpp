@@ -232,8 +232,8 @@ QFileDevice::~QFileDevice()
 }
 
 /*!
-    Returns true if the file can only be manipulated sequentially;
-    otherwise returns false.
+    Returns \c true if the file can only be manipulated sequentially;
+    otherwise returns \c false.
 
     Most files support random-access, but some special files may not.
 
@@ -286,8 +286,8 @@ static inline qint64 _qfile_writeData(QAbstractFileEngine *engine, QRingBuffer *
 }
 
 /*!
-    Flushes any buffered data to the file. Returns true if successful;
-    otherwise returns false.
+    Flushes any buffered data to the file. Returns \c true if successful;
+    otherwise returns \c false.
 */
 bool QFileDevice::flush()
 {
@@ -351,11 +351,11 @@ qint64 QFileDevice::pos() const
 }
 
 /*!
-  Returns true if the end of the file has been reached; otherwise returns
+  Returns \c true if the end of the file has been reached; otherwise returns
   false.
 
   For regular empty files on Unix (e.g. those in \c /proc), this function
-  returns true, since the file system reports that the size of such a file is
+  returns \c true, since the file system reports that the size of such a file is
   0. Therefore, you should not depend on atEnd() when reading data from such a
   file, but rather call read() until no more data can be read.
 */
@@ -578,7 +578,7 @@ qint64 QFileDevice::writeData(const char *data, qint64 len)
     Returns the file error status.
 
     The I/O device status returns an error code. For example, if open()
-    returns false, or a read/write operation returns -1, this function can
+    returns \c false, or a read/write operation returns -1, this function can
     be called to find out the reason why the operation failed.
 
     \sa unsetError()
@@ -617,7 +617,7 @@ qint64 QFileDevice::size() const
 }
 
 /*!
-    Sets the file size (in bytes) \a sz. Returns true if the file if the
+    Sets the file size (in bytes) \a sz. Returns \c true if the file if the
     resize succeeds; false otherwise. If \a sz is larger than the file
     currently is the new bytes will be set to 0, if \a sz is smaller the
     file is simply truncated.
@@ -657,7 +657,7 @@ QFile::Permissions QFileDevice::permissions() const
 
 /*!
     Sets the permissions for the file to the \a permissions specified.
-    Returns true if successful, or false if the permissions cannot be
+    Returns \c true if successful, or false if the permissions cannot be
     modified.
 
     \sa permissions()
@@ -715,7 +715,7 @@ uchar *QFileDevice::map(qint64 offset, qint64 size, MemoryMapFlags flags)
 /*!
     Unmaps the memory \a address.
 
-    Returns true if the unmap succeeds; false otherwise.
+    Returns \c true if the unmap succeeds; false otherwise.
 
     \sa map()
  */

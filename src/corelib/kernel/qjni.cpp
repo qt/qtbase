@@ -269,6 +269,24 @@ QJNIObjectPrivate::QJNIObjectPrivate(const char *className, const char *sig, ...
     }
 }
 
+QJNIObjectPrivate::QJNIObjectPrivate(const char *className, const char *sig, va_list args)
+    : d(new QJNIObjectData())
+{
+    QJNIEnvironmentPrivate env;
+    d->m_jclass = getCachedClass(env, className);
+    d->m_own_jclass = false;
+    if (d->m_jclass) {
+        jmethodID constructorId = getCachedMethodID(env, d->m_jclass, "<init>", sig);
+        if (constructorId) {
+            jobject obj = env->NewObjectV(d->m_jclass, constructorId, args);
+            if (obj) {
+                d->m_jobject = env->NewGlobalRef(obj);
+                env->DeleteLocalRef(obj);
+            }
+        }
+    }
+}
+
 QJNIObjectPrivate::QJNIObjectPrivate(jclass clazz)
     : d(new QJNIObjectData())
 {
@@ -300,6 +318,25 @@ QJNIObjectPrivate::QJNIObjectPrivate(jclass clazz, const char *sig, ...)
                 va_start(args, sig);
                 jobject obj = env->NewObjectV(d->m_jclass, constructorId, args);
                 va_end(args);
+                if (obj) {
+                    d->m_jobject = env->NewGlobalRef(obj);
+                    env->DeleteLocalRef(obj);
+                }
+            }
+        }
+    }
+}
+
+QJNIObjectPrivate::QJNIObjectPrivate(jclass clazz, const char *sig, va_list args)
+    : d(new QJNIObjectData())
+{
+    QJNIEnvironmentPrivate env;
+    if (clazz) {
+        d->m_jclass = static_cast<jclass>(env->NewGlobalRef(clazz));
+        if (d->m_jclass) {
+            jmethodID constructorId = getCachedMethodID(env, d->m_jclass, "<init>", sig);
+            if (constructorId) {
+                jobject obj = env->NewObjectV(d->m_jclass, constructorId, args);
                 if (obj) {
                     d->m_jobject = env->NewGlobalRef(obj);
                     env->DeleteLocalRef(obj);

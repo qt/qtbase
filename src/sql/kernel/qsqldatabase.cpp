@@ -454,7 +454,7 @@ void QSqlDatabasePrivate::disable()
     The database connection is referred to by \a connectionName. The
     newly added database connection is returned.
 
-    If \a type is not available or could not be loaded, isValid() returns false.
+    If \a type is not available or could not be loaded, isValid() returns \c false.
 
     If \a connectionName is not specified, the new connection becomes
     the default connection for the application, and subsequent calls
@@ -620,8 +620,8 @@ void QSqlDatabase::registerSqlDriver(const QString& name, QSqlDriverCreatorBase 
 /*!
     \threadsafe
 
-    Returns true if the list of database connections contains \a
-    connectionName; otherwise returns false.
+    Returns \c true if the list of database connections contains \a
+    connectionName; otherwise returns \c false.
 
     \sa connectionNames(), database(), {Threads and the SQL Module}
 */
@@ -826,7 +826,7 @@ QSqlQuery QSqlDatabase::exec(const QString & query) const
 
 /*!
     Opens the database connection using the current connection
-    values. Returns true on success; otherwise returns false. Error
+    values. Returns \c true on success; otherwise returns \c false. Error
     information can be retrieved using lastError().
 
     \sa lastError(), setDatabaseName(), setUserName(), setPassword(),
@@ -843,7 +843,7 @@ bool QSqlDatabase::open()
     \overload
 
     Opens the database connection using the given \a user name and \a
-    password. Returns true on success; otherwise returns false. Error
+    password. Returns \c true on success; otherwise returns \c false. Error
     information can be retrieved using the lastError() function.
 
     This function does not store the password it is given. Instead,
@@ -876,8 +876,8 @@ void QSqlDatabase::close()
 }
 
 /*!
-    Returns true if the database connection is currently open;
-    otherwise returns false.
+    Returns \c true if the database connection is currently open;
+    otherwise returns \c false.
 */
 
 bool QSqlDatabase::isOpen() const
@@ -886,8 +886,8 @@ bool QSqlDatabase::isOpen() const
 }
 
 /*!
-    Returns true if there was an error opening the database
-    connection; otherwise returns false. Error information can be
+    Returns \c true if there was an error opening the database
+    connection; otherwise returns \c false. Error information can be
     retrieved using the lastError() function.
 */
 
@@ -1302,8 +1302,8 @@ QString QSqlDatabase::connectOptions() const
 }
 
 /*!
-    Returns true if a driver called \a name is available; otherwise
-    returns false.
+    Returns \c true if a driver called \a name is available; otherwise
+    returns \c false.
 
     \sa drivers()
 */
@@ -1418,7 +1418,7 @@ QSqlDatabase QSqlDatabase::addDatabase(QSqlDriver* driver, const QString& connec
 }
 
 /*!
-    Returns true if the QSqlDatabase has a valid driver.
+    Returns \c true if the QSqlDatabase has a valid driver.
 
     Example:
     \snippet code/src_sql_kernel_qsqldatabase.cpp 8

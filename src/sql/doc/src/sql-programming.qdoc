@@ -152,7 +152,7 @@
 
     After these connections have been initialized, \l{QSqlDatabase::}
     {open()} for each one to establish the live connections. If the
-    \l{QSqlDatabase::} {open()} fails, it returns false. In that case,
+    \l{QSqlDatabase::} {open()} fails, it returns \c false. In that case,
     call QSqlDatabase::lastError() to get error information.
 
     Once a connection is established, we can call the static function
@@ -199,7 +199,7 @@
     above, we don't specify any connection, so the default connection
     is used.
 
-    If an error occurs, \l{QSqlQuery::exec()}{exec()} returns false.
+    If an error occurs, \l{QSqlQuery::exec()}{exec()} returns \c false.
     The error is then available as QSqlQuery::lastError().
 
     \section2 Navigating the Result Set
@@ -209,7 +209,7 @@
     internal pointer is located one position \e{before} the first
     record. We must call QSqlQuery::next() once to advance to the
     first record, then \l{QSqlQuery::next()}{next()} again repeatedly
-    to access the other records, until it returns false. Here's a
+    to access the other records, until it returns \c false. Here's a
     typical loop that iterates over all the records in order:
 
     \snippet sqldatabase/sqldatabase.cpp 32

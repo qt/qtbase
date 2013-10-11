@@ -744,8 +744,8 @@ QDBusMessage::MessageType QDBusMessage::type() const
     for errors, signals, and return values as well as calls whose
     return values are not necessary.
 
-    Returns true if the message was queued successfully;
-    otherwise returns false.
+    Returns \c true if the message was queued successfully;
+    otherwise returns \c false.
 
     \sa QDBusConnection::send()
 */

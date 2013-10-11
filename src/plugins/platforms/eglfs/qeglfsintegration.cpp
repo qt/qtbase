@@ -43,6 +43,7 @@
 
 #include "qeglfswindow.h"
 #include "qeglfsbackingstore.h"
+#include "qeglfscompositor.h"
 #include "qeglfshooks.h"
 
 #include <QtGui/private/qguiapplication_p.h>
@@ -75,18 +76,11 @@
 
 QT_BEGIN_NAMESPACE
 
-static void *eglContextForContext(QOpenGLContext *context);
-
 QEglFSIntegration::QEglFSIntegration()
     : mFontDb(new QGenericUnixFontDatabase)
     , mServices(new QGenericUnixServices)
+    , mInputContext(0)
 {
-#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
-    new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString() /* spec */, this);
-    new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
-    new QEvdevTouchScreenHandlerThread(QString() /* spec */, this);
-#endif
-
     QEglFSHooks::hooks()->platformInit();
 
     EGLint major, minor;
@@ -109,14 +103,12 @@ QEglFSIntegration::QEglFSIntegration()
 
     mScreen = new QEglFSScreen(mDisplay);
     screenAdded(mScreen);
-
-    mInputContext = QPlatformInputContextFactory::create();
 }
 
 QEglFSIntegration::~QEglFSIntegration()
 {
+    QEglFSCompositor::destroy();
     delete mScreen;
-
     eglTerminate(mDisplay);
     QEglFSHooks::hooks()->platformDestroy();
 }
@@ -138,9 +130,11 @@ bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
 
 QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWindow *window) const
 {
+    QWindowSystemInterface::flushWindowSystemEvents();
     QEglFSWindow *w = new QEglFSWindow(window);
     w->create();
-    w->requestActivateWindow();
+    if (window->type() != Qt::ToolTip)
+        w->requestActivateWindow();
     return w;
 }
 
@@ -168,6 +162,12 @@ QPlatformFontDatabase *QEglFSIntegration::fontDatabase() const
 QAbstractEventDispatcher *QEglFSIntegration::createEventDispatcher() const
 {
     return createUnixEventDispatcher();
+}
+
+void QEglFSIntegration::initialize()
+{
+    mInputContext = QPlatformInputContextFactory::create();
+    createInputHandlers();
 }
 
 QVariant QEglFSIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
@@ -264,15 +264,6 @@ void *QEglFSIntegration::nativeResourceForContext(const QByteArray &resource, QO
     return result;
 }
 
-QPlatformNativeInterface::NativeResourceForContextFunction QEglFSIntegration::nativeResourceFunctionForContext(const QByteArray &resource)
-{
-    QByteArray lowerCaseResource = resource.toLower();
-    if (lowerCaseResource == "get_egl_context")
-        return NativeResourceForContextFunction(eglContextForContext);
-
-    return 0;
-}
-
 static void *eglContextForContext(QOpenGLContext *context)
 {
     Q_ASSERT(context);
@@ -282,6 +273,15 @@ static void *eglContextForContext(QOpenGLContext *context)
         return 0;
 
     return handle->eglContext();
+}
+
+QPlatformNativeInterface::NativeResourceForContextFunction QEglFSIntegration::nativeResourceFunctionForContext(const QByteArray &resource)
+{
+    QByteArray lowerCaseResource = resource.toLower();
+    if (lowerCaseResource == "get_egl_context")
+        return NativeResourceForContextFunction(eglContextForContext);
+
+    return 0;
 }
 
 EGLConfig QEglFSIntegration::chooseConfig(EGLDisplay display, const QSurfaceFormat &format)
@@ -307,6 +307,15 @@ EGLConfig QEglFSIntegration::chooseConfig(EGLDisplay display, const QSurfaceForm
     Chooser chooser(display, QEglFSHooks::hooks());
     chooser.setSurfaceFormat(format);
     return chooser.chooseConfig();
+}
+
+void QEglFSIntegration::createInputHandlers()
+{
+#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
+    new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString() /* spec */, this);
+    new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
+    new QEvdevTouchScreenHandlerThread(QString() /* spec */, this);
+#endif
 }
 
 QT_END_NAMESPACE

@@ -159,7 +159,7 @@ QSqlDriver::~QSqlDriver()
 */
 
 /*!
-    Returns true if the database connection is open; otherwise returns
+    Returns \c true if the database connection is open; otherwise returns
     false.
 */
 
@@ -169,8 +169,8 @@ bool QSqlDriver::isOpen() const
 }
 
 /*!
-    Returns true if the there was an error opening the database
-    connection; otherwise returns false.
+    Returns \c true if the there was an error opening the database
+    connection; otherwise returns \c false.
 */
 
 bool QSqlDriver::isOpenError() const
@@ -247,8 +247,8 @@ bool QSqlDriver::isOpenError() const
 /*!
     \fn bool QSqlDriver::hasFeature(DriverFeature feature) const
 
-    Returns true if the driver supports feature \a feature; otherwise
-    returns false.
+    Returns \c true if the driver supports feature \a feature; otherwise
+    returns \c false.
 
     Note that some databases need to be open() before this can be
     determined.
@@ -273,7 +273,7 @@ void QSqlDriver::setOpen(bool open)
     This function sets the open error state of the database to \a
     error. Derived classes can use this function to report the status
     of open(). Note that if \a error is true the open state of the
-    database is set to closed (i.e., isOpen() returns false).
+    database is set to closed (i.e., isOpen() returns \c false).
 
     \sa open(), setOpen()
 */
@@ -288,7 +288,7 @@ void QSqlDriver::setOpenError(bool error)
 /*!
     This function is called to begin a transaction. If successful,
     return true, otherwise return false. The default implementation
-    does nothing and returns false.
+    does nothing and returns \c false.
 
     \sa commitTransaction(), rollbackTransaction()
 */
@@ -301,7 +301,7 @@ bool QSqlDriver::beginTransaction()
 /*!
     This function is called to commit a transaction. If successful,
     return true, otherwise return false. The default implementation
-    does nothing and returns false.
+    does nothing and returns \c false.
 
     \sa beginTransaction(), rollbackTransaction()
 */
@@ -314,7 +314,7 @@ bool QSqlDriver::commitTransaction()
 /*!
     This function is called to rollback a transaction. If successful,
     return true, otherwise return false. The default implementation
-    does nothing and returns false.
+    does nothing and returns \c false.
 
     \sa beginTransaction(), commitTransaction()
 */
@@ -779,7 +779,7 @@ QSql::NumericalPrecisionPolicy QSqlDriver::numericalPrecisionPolicy() const
     \internal
 
     Tries to cancel the running query, if the underlying driver has the
-    capability to cancel queries. Returns true on success, otherwise false.
+    capability to cancel queries. Returns \c true on success, otherwise false.
 
     This function can be called from a different thread.
 

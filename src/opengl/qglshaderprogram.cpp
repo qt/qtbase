@@ -399,7 +399,7 @@ static const char redefineHighp[] =
 
 /*!
     Sets the \a source code for this shader and compiles it.
-    Returns true if the source was successfully compiled, false otherwise.
+    Returns \c true if the source was successfully compiled, false otherwise.
 
     \sa compileSourceFile()
 */
@@ -450,7 +450,7 @@ bool QGLShader::compileSourceCode(const char *source)
     \overload
 
     Sets the \a source code for this shader and compiles it.
-    Returns true if the source was successfully compiled, false otherwise.
+    Returns \c true if the source was successfully compiled, false otherwise.
 
     \sa compileSourceFile()
 */
@@ -463,7 +463,7 @@ bool QGLShader::compileSourceCode(const QByteArray& source)
     \overload
 
     Sets the \a source code for this shader and compiles it.
-    Returns true if the source was successfully compiled, false otherwise.
+    Returns \c true if the source was successfully compiled, false otherwise.
 
     \sa compileSourceFile()
 */
@@ -474,7 +474,7 @@ bool QGLShader::compileSourceCode(const QString& source)
 
 /*!
     Sets the source code for this shader to the contents of \a fileName
-    and compiles it.  Returns true if the file could be opened and the
+    and compiles it.  Returns \c true if the file could be opened and the
     source compiled, false otherwise.
 
     \sa compileSourceCode()
@@ -515,7 +515,7 @@ QByteArray QGLShader::sourceCode() const
 }
 
 /*!
-    Returns true if this shader has been compiled; false otherwise.
+    Returns \c true if this shader has been compiled; false otherwise.
 
     \sa compileSourceCode(), compileSourceFile()
 */
@@ -698,7 +698,7 @@ bool QGLShaderProgram::init()
 }
 
 /*!
-    Adds a compiled \a shader to this shader program.  Returns true
+    Adds a compiled \a shader to this shader program.  Returns \c true
     if the shader could be added, or false otherwise.
 
     Ownership of the \a shader object remains with the caller.
@@ -735,7 +735,7 @@ bool QGLShaderProgram::addShader(QGLShader *shader)
 
 /*!
     Compiles \a source as a shader of the specified \a type and
-    adds it to this shader program.  Returns true if compilation
+    adds it to this shader program.  Returns \c true if compilation
     was successful, false otherwise.  The compilation errors
     and warnings will be made available via log().
 
@@ -765,7 +765,7 @@ bool QGLShaderProgram::addShaderFromSourceCode(QGLShader::ShaderType type, const
     \overload
 
     Compiles \a source as a shader of the specified \a type and
-    adds it to this shader program.  Returns true if compilation
+    adds it to this shader program.  Returns \c true if compilation
     was successful, false otherwise.  The compilation errors
     and warnings will be made available via log().
 
@@ -785,7 +785,7 @@ bool QGLShaderProgram::addShaderFromSourceCode(QGLShader::ShaderType type, const
     \overload
 
     Compiles \a source as a shader of the specified \a type and
-    adds it to this shader program.  Returns true if compilation
+    adds it to this shader program.  Returns \c true if compilation
     was successful, false otherwise.  The compilation errors
     and warnings will be made available via log().
 
@@ -803,7 +803,7 @@ bool QGLShaderProgram::addShaderFromSourceCode(QGLShader::ShaderType type, const
 
 /*!
     Compiles the contents of \a fileName as a shader of the specified
-    \a type and adds it to this shader program.  Returns true if
+    \a type and adds it to this shader program.  Returns \c true if
     compilation was successful, false otherwise.  The compilation errors
     and warnings will be made available via log().
 
@@ -895,7 +895,7 @@ void QGLShaderProgram::removeAllShaders()
 
 /*!
     Links together the shaders that were added to this program with
-    addShader().  Returns true if the link was successful or
+    addShader().  Returns \c true if the link was successful or
     false otherwise.  If the link failed, the error messages can
     be retrieved with log().
 
@@ -969,7 +969,7 @@ bool QGLShaderProgram::link()
 }
 
 /*!
-    Returns true if this shader program has been linked; false otherwise.
+    Returns \c true if this shader program has been linked; false otherwise.
 
     \sa link()
 */
@@ -995,7 +995,7 @@ QString QGLShaderProgram::log() const
     Binds this shader program to the active QGLContext and makes
     it the current shader program.  Any previously bound shader program
     is released.  This is equivalent to calling \c{glUseProgram()} on
-    programId().  Returns true if the program was successfully bound;
+    programId().  Returns \c true if the program was successfully bound;
     false otherwise.  If the shader program has not yet been linked,
     or it needs to be re-linked, this function will call link().
 
@@ -3153,7 +3153,7 @@ GLenum QGLShaderProgram::geometryOutputType() const
 
 
 /*!
-    Returns true if shader programs written in the OpenGL Shading
+    Returns \c true if shader programs written in the OpenGL Shading
     Language (GLSL) are supported on this system; false otherwise.
 
     The \a context is used to resolve the GLSL extensions.
@@ -3191,7 +3191,7 @@ void QGLShaderProgram::shaderDestroyed()
 #undef context
 
 /*!
-    Returns true if shader programs of type \a type are supported on
+    Returns \c true if shader programs of type \a type are supported on
     this system; false otherwise.
 
     The \a context is used to resolve the GLSL extensions.

@@ -664,7 +664,7 @@ int QTextEdit::fontWeight() const
 }
 
 /*!
-    Returns true if the font of the current format is underlined; otherwise returns
+    Returns \c true if the font of the current format is underlined; otherwise returns
     false.
 
     \sa setFontUnderline()
@@ -676,7 +676,7 @@ bool QTextEdit::fontUnderline() const
 }
 
 /*!
-    Returns true if the font of the current format is italic; otherwise returns
+    Returns \c true if the font of the current format is italic; otherwise returns
     false.
 
     \sa setFontItalic()
@@ -1906,11 +1906,11 @@ QString QTextEdit::anchorAt(const QPoint& pos) const
    As with many text editors, the text editor widget can be configured
    to insert or overwrite existing text with new text entered by the user.
 
-   If this property is true, existing text is overwritten, character-for-character
+   If this property is \c true, existing text is overwritten, character-for-character
    by new text; otherwise, text is inserted at the cursor position, displacing
    existing text.
 
-   By default, this property is false (new text does not overwrite existing text).
+   By default, this property is \c false (new text does not overwrite existing text).
 */
 
 bool QTextEdit::overwriteMode() const
@@ -2054,7 +2054,7 @@ QMimeData *QTextEdit::createMimeDataFromSelection() const
 }
 
 /*!
-    This function returns true if the contents of the MIME data object, specified
+    This function returns \c true if the contents of the MIME data object, specified
     by \a source, can be decoded and inserted into the document. It is called
     for example when during a drag operation the mouse enters this widget and it
     is necessary to determine whether it is possible to accept the drag and drop
@@ -2445,8 +2445,8 @@ void QTextEdit::setWordWrapMode(QTextOption::WrapMode mode)
 
 /*!
     Finds the next occurrence of the string, \a exp, using the given
-    \a options. Returns true if \a exp was found and changes the
-    cursor to select the match; otherwise returns false.
+    \a options. Returns \c true if \a exp was found and changes the
+    cursor to select the match; otherwise returns \c false.
 */
 bool QTextEdit::find(const QString &exp, QTextDocument::FindFlags options)
 {

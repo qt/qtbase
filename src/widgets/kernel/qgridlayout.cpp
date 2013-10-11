@@ -1431,8 +1431,8 @@ void QGridLayout::addItem(QLayoutItem *item, int row, int column, int rowSpan, i
 }
 
 /*
-  Returns true if the widget \a w can be added to the layout \a l;
-  otherwise returns false.
+  Returns \c true if the widget \a w can be added to the layout \a l;
+  otherwise returns \c false.
 */
 static bool checkWidget(QLayout *l, QWidget *w)
 {

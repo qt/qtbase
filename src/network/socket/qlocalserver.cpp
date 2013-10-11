@@ -218,8 +218,8 @@ QString QLocalServer::errorString() const
 }
 
 /*!
-    Returns true if the server has a pending connection; otherwise
-    returns false.
+    Returns \c true if the server has a pending connection; otherwise
+    returns \c false.
 
     \sa nextPendingConnection(), setMaxPendingConnections()
  */
@@ -254,7 +254,7 @@ void QLocalServer::incomingConnection(quintptr socketDescriptor)
 }
 
 /*!
-    Returns true if the server is listening for incoming connections
+    Returns \c true if the server is listening for incoming connections
     otherwise false.
 
     \sa listen(), close()
@@ -399,7 +399,7 @@ QLocalSocket *QLocalServer::nextPendingConnection()
     \since 4.5
 
     Removes any server instance that might cause a call to listen() to fail
-    and returns true if successful; otherwise returns false.
+    and returns \c true if successful; otherwise returns \c false.
     This function is meant to recover from a crash, when the previous server
     instance has not been cleaned up.
 
@@ -470,8 +470,8 @@ void QLocalServer::setMaxPendingConnections(int numConnections)
 
 /*!
     Waits for at most \a msec milliseconds or until an incoming connection
-    is available.  Returns true if a connection is available; otherwise
-    returns false.  If the operation timed out and \a timedOut is not 0,
+    is available.  Returns \c true if a connection is available; otherwise
+    returns \c false.  If the operation timed out and \a timedOut is not 0,
     *timedOut will be set to true.
 
     This is a blocking function call. Its use is ill-advised in a

@@ -141,8 +141,8 @@ void QSqlIndex::append(const QSqlField& field, bool desc)
 
 
 /*!
-    Returns true if field \a i in the index is sorted in descending
-    order; otherwise returns false.
+    Returns \c true if field \a i in the index is sorted in descending
+    order; otherwise returns \c false.
 */
 
 bool QSqlIndex::isDescending(int i) const

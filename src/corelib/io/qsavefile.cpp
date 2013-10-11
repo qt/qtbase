@@ -253,8 +253,8 @@ void QSaveFile::close()
   It is mandatory to call this at the end of the saving operation, otherwise the file will be
   discarded.
 
-  If an error happened during writing, deletes the temporary file and returns false.
-  Otherwise, renames it to the final fileName and returns true on success.
+  If an error happened during writing, deletes the temporary file and returns \c false.
+  Otherwise, renames it to the final fileName and returns \c true on success.
   Finally, closes the device.
 
   \sa cancelWriting()
@@ -372,7 +372,7 @@ void QSaveFile::setDirectWriteFallback(bool enabled)
 }
 
 /*!
-  Returns true if the fallback solution for saving files in read-only
+  Returns \c true if the fallback solution for saving files in read-only
   directories is enabled.
 
   \sa setDirectWriteFallback()

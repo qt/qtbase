@@ -777,8 +777,8 @@ QImage QMovie::currentImage() const
 }
 
 /*!
-    Returns true if the movie is valid (e.g., the image data is readable and
-    the image format is supported); otherwise returns false.
+    Returns \c true if the movie is valid (e.g., the image data is readable and
+    the image format is supported); otherwise returns \c false.
 */
 bool QMovie::isValid() const
 {
@@ -819,7 +819,7 @@ int QMovie::currentFrameNumber() const
 }
 
 /*!
-    Jumps to the next frame. Returns true on success; otherwise returns false.
+    Jumps to the next frame. Returns \c true on success; otherwise returns \c false.
 */
 bool QMovie::jumpToNextFrame()
 {
@@ -828,8 +828,8 @@ bool QMovie::jumpToNextFrame()
 }
 
 /*!
-    Jumps to frame number \a frameNumber. Returns true on success; otherwise
-    returns false.
+    Jumps to frame number \a frameNumber. Returns \c true on success; otherwise
+    returns \c false.
 */
 bool QMovie::jumpToFrame(int frameNumber)
 {

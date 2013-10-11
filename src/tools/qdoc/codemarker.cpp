@@ -459,7 +459,7 @@ void CodeMarker::insert(FastSection &fastSection,
 }
 
 /*!
-  Returns true if \a node represents a reimplemented member
+  Returns \c true if \a node represents a reimplemented member
   function in the class of the FastSection \a fs. If it is
   a reimplemented function, then it is inserted into the
   reimplemented member map in \a fs. The test is performed

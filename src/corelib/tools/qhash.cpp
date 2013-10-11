@@ -1007,7 +1007,7 @@ void QHashData::checkSanity()
 
 /*! \fn bool QHash::operator==(const QHash<Key, T> &other) const
 
-    Returns true if \a other is equal to this hash; otherwise returns
+    Returns \c true if \a other is equal to this hash; otherwise returns
     false.
 
     Two hashes are considered equal if they contain the same (key,
@@ -1020,8 +1020,8 @@ void QHashData::checkSanity()
 
 /*! \fn bool QHash::operator!=(const QHash<Key, T> &other) const
 
-    Returns true if \a other is not equal to this hash; otherwise
-    returns false.
+    Returns \c true if \a other is not equal to this hash; otherwise
+    returns \c false.
 
     Two hashes are considered equal if they contain the same (key,
     value) pairs.
@@ -1040,7 +1040,7 @@ void QHashData::checkSanity()
 
 /*! \fn bool QHash::isEmpty() const
 
-    Returns true if the hash contains no items; otherwise returns
+    Returns \c true if the hash contains no items; otherwise returns
     false.
 
     \sa size()
@@ -1107,8 +1107,8 @@ void QHashData::checkSanity()
 
     \internal
 
-    Returns true if the hash's internal data isn't shared with any
-    other hash object; otherwise returns false.
+    Returns \c true if the hash's internal data isn't shared with any
+    other hash object; otherwise returns \c false.
 
     \sa detach()
 */
@@ -1157,8 +1157,8 @@ void QHashData::checkSanity()
 
 /*! \fn bool QHash::contains(const Key &key) const
 
-    Returns true if the hash contains an item with the \a key;
-    otherwise returns false.
+    Returns \c true if the hash contains an item with the \a key;
+    otherwise returns \c false.
 
     \sa count(), QMultiHash::contains()
 */
@@ -1453,7 +1453,7 @@ void QHashData::checkSanity()
 
     This function is provided for STL compatibility. It is equivalent
     to isEmpty(), returning true if the hash is empty; otherwise
-    returns false.
+    returns \c false.
 */
 
 /*! \typedef QHash::ConstIterator
@@ -1656,8 +1656,8 @@ void QHashData::checkSanity()
     \fn bool QHash::iterator::operator==(const iterator &other) const
     \fn bool QHash::iterator::operator==(const const_iterator &other) const
 
-    Returns true if \a other points to the same item as this
-    iterator; otherwise returns false.
+    Returns \c true if \a other points to the same item as this
+    iterator; otherwise returns \c false.
 
     \sa operator!=()
 */
@@ -1666,8 +1666,8 @@ void QHashData::checkSanity()
     \fn bool QHash::iterator::operator!=(const iterator &other) const
     \fn bool QHash::iterator::operator!=(const const_iterator &other) const
 
-    Returns true if \a other points to a different item than this
-    iterator; otherwise returns false.
+    Returns \c true if \a other points to a different item than this
+    iterator; otherwise returns \c false.
 
     \sa operator==()
 */
@@ -1847,16 +1847,16 @@ void QHashData::checkSanity()
 
 /*! \fn bool QHash::const_iterator::operator==(const const_iterator &other) const
 
-    Returns true if \a other points to the same item as this
-    iterator; otherwise returns false.
+    Returns \c true if \a other points to the same item as this
+    iterator; otherwise returns \c false.
 
     \sa operator!=()
 */
 
 /*! \fn bool QHash::const_iterator::operator!=(const const_iterator &other) const
 
-    Returns true if \a other points to a different item than this
-    iterator; otherwise returns false.
+    Returns \c true if \a other points to a different item than this
+    iterator; otherwise returns \c false.
 
     \sa operator==()
 */
@@ -2089,8 +2089,8 @@ void QHashData::checkSanity()
     \fn bool QMultiHash::contains(const Key &key, const T &value) const
     \since 4.3
 
-    Returns true if the hash contains an item with the \a key and
-    \a value; otherwise returns false.
+    Returns \c true if the hash contains an item with the \a key and
+    \a value; otherwise returns \c false.
 
     \sa QHash::contains()
 */

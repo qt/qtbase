@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
     someone else it will automatically be removed from the cleanup
     handler. You can delete all the objects in the cleanup handler
     with clear(), or by destroying the cleanup handler. isEmpty()
-    returns true if the QObjectCleanupHandler has no objects to keep
+    returns \c true if the QObjectCleanupHandler has no objects to keep
     track of.
 
     \sa QPointer
@@ -119,7 +119,7 @@ void QObjectCleanupHandler::remove(QObject *object)
 }
 
 /*!
-    Returns true if this cleanup handler is empty or if all objects in
+    Returns \c true if this cleanup handler is empty or if all objects in
     this cleanup handler have been destroyed; otherwise return false.
 
     \sa add(), remove(), clear()

@@ -907,15 +907,15 @@
 /*!
     \fn bool QLocale::operator==(const QLocale &other) const
 
-    Returns true if the QLocale object is the same as the \a other
-    locale specified; otherwise returns false.
+    Returns \c true if the QLocale object is the same as the \a other
+    locale specified; otherwise returns \c false.
 */
 
 /*!
     \fn bool QLocale::operator!=(const QLocale &other) const
 
-    Returns true if the QLocale object is not the same as the \a other
-    locale specified; otherwise returns false.
+    Returns \c true if the QLocale object is not the same as the \a other
+    locale specified; otherwise returns \c false.
 */
 
 /*!

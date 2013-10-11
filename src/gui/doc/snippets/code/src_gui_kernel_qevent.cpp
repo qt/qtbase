@@ -41,11 +41,11 @@
 //! [0]
 void MyWidget::wheelEvent(QWheelEvent *event)
 {
-    QPoint numPixels = envent->pixelDelta();
-    QPoint numDegrees = envent->angleDelta() / 8;
+    QPoint numPixels = event->pixelDelta();
+    QPoint numDegrees = event->angleDelta() / 8;
 
     if (!numPixels.isNull()) {
-        scrollWithPixels(numpixels);
+        scrollWithPixels(numPixels);
     } else if (!numDegrees.isNull()) {
         QPoint numSteps = numDegrees / 15;
         scrollWithDegrees(numSteps);

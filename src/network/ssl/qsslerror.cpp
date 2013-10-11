@@ -184,7 +184,7 @@ QSslError &QSslError::operator=(const QSslError &other)
 /*!
     \since 4.4
 
-    Returns true if this error is equal to \a other; otherwise returns false.
+    Returns \c true if this error is equal to \a other; otherwise returns \c false.
 */
 bool QSslError::operator==(const QSslError &other) const
 {
@@ -196,7 +196,7 @@ bool QSslError::operator==(const QSslError &other) const
     \fn bool QSslError::operator!=(const QSslError &other) const
     \since 4.4
 
-    Returns true if this error is not equal to \a other; otherwise returns
+    Returns \c true if this error is not equal to \a other; otherwise returns
     false.
 */
 

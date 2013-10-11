@@ -3,7 +3,7 @@ CONFIG += parallel_test
 TARGET = tst_qsql
 SOURCES  += tst_qsql.cpp
 
-QT += sql sql-private gui testlib core-private
+QT = core-private sql-private testlib
 
 wince*: {
    DEPLOYMENT_PLUGIN += qsqlite

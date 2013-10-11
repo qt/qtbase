@@ -226,7 +226,7 @@ void QDBusMetaType::registerMarshallOperators(int id, MarshallFunction mf,
 /*!
     \internal
     Executes the marshalling of type \a id (whose data is contained in
-    \a data) to the D-Bus marshalling argument \a arg. Returns true if
+    \a data) to the D-Bus marshalling argument \a arg. Returns \c true if
     the marshalling succeeded, or false if an error occurred.
 */
 bool QDBusMetaType::marshall(QDBusArgument &arg, int id, const void *data)
@@ -255,7 +255,7 @@ bool QDBusMetaType::marshall(QDBusArgument &arg, int id, const void *data)
 /*!
     \internal
     Executes the demarshalling of type \a id (whose data will be placed in
-    \a data) from the D-Bus marshalling argument \a arg. Returns true if
+    \a data) from the D-Bus marshalling argument \a arg. Returns \c true if
     the demarshalling succeeded, or false if an error occurred.
 */
 bool QDBusMetaType::demarshall(const QDBusArgument &arg, int id, void *data)

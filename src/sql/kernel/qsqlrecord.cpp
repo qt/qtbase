@@ -167,15 +167,15 @@ QSqlRecord::~QSqlRecord()
 /*!
     \fn bool QSqlRecord::operator!=(const QSqlRecord &other) const
 
-    Returns true if this object is not identical to \a other;
-    otherwise returns false.
+    Returns \c true if this object is not identical to \a other;
+    otherwise returns \c false.
 
     \sa operator==()
 */
 
 /*!
-    Returns true if this object is identical to \a other (i.e., has
-    the same fields in the same order); otherwise returns false.
+    Returns \c true if this object is identical to \a other (i.e., has
+    the same fields in the same order); otherwise returns \c false.
 
     \sa operator!=()
 */
@@ -329,8 +329,8 @@ void QSqlRecord::clear()
 }
 
 /*!
-    Returns true if there are no fields in the record; otherwise
-    returns false.
+    Returns \c true if there are no fields in the record; otherwise
+    returns \c false.
 
     \sa append(), insert(), clear()
 */
@@ -342,8 +342,8 @@ bool QSqlRecord::isEmpty() const
 
 
 /*!
-    Returns true if there is a field in the record called \a name;
-    otherwise returns false.
+    Returns \c true if there is a field in the record called \a name;
+    otherwise returns \c false.
 */
 
 bool QSqlRecord::contains(const QString& name) const
@@ -399,8 +399,8 @@ void QSqlRecord::setGenerated(int index, bool generated)
 /*!
     \overload
 
-    Returns true if the field \a index is null or if there is no field at
-    position \a index; otherwise returns false.
+    Returns \c true if the field \a index is null or if there is no field at
+    position \a index; otherwise returns \c false.
 */
 bool QSqlRecord::isNull(int index) const
 {
@@ -408,8 +408,8 @@ bool QSqlRecord::isNull(int index) const
 }
 
 /*!
-    Returns true if the field called \a name is null or if there is no
-    field called \a name; otherwise returns false.
+    Returns \c true if the field called \a name is null or if there is no
+    field called \a name; otherwise returns \c false.
 
     \sa setNull()
 */
@@ -445,8 +445,8 @@ void QSqlRecord::setNull(const QString& name)
 
 
 /*!
-    Returns true if the record has a field called \a name and this
-    field is to be generated (the default); otherwise returns false.
+    Returns \c true if the record has a field called \a name and this
+    field is to be generated (the default); otherwise returns \c false.
 
     \sa setGenerated()
 */
@@ -457,8 +457,8 @@ bool QSqlRecord::isGenerated(const QString& name) const
 
 /*! \overload
 
-    Returns true if the record has a field at position \a index and this
-    field is to be generated (the default); otherwise returns false.
+    Returns \c true if the record has a field at position \a index and this
+    field is to be generated (the default); otherwise returns \c false.
 
     \sa setGenerated()
 */

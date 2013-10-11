@@ -386,7 +386,7 @@ static int fromOffsetString(const QString &offsetString, bool *valid)
     Constructs a date with year \a y, month \a m and day \a d.
 
     If the specified date is invalid, the date is not set and
-    isValid() returns false.
+    isValid() returns \c false.
 
     \warning Years 1 to 99 are interpreted as is. Year 0 is invalid.
 
@@ -402,7 +402,7 @@ QDate::QDate(int y, int m, int d)
 /*!
     \fn bool QDate::isNull() const
 
-    Returns true if the date is null; otherwise returns false. A null
+    Returns \c true if the date is null; otherwise returns \c false. A null
     date is invalid.
 
     \note The behavior of this function is equivalent to isValid().
@@ -414,7 +414,7 @@ QDate::QDate(int y, int m, int d)
 /*!
     \fn bool QDate::isValid() const
 
-    Returns true if this date is valid; otherwise returns false.
+    Returns \c true if this date is valid; otherwise returns \c false.
 
     \sa isNull()
 */
@@ -986,8 +986,8 @@ QString QDate::toString(const QString& format) const
 /*!
     \since 4.2
 
-    Sets the date's \a year, \a month, and \a day. Returns true if
-    the date is valid; otherwise returns false.
+    Sets the date's \a year, \a month, and \a day. Returns \c true if
+    the date is valid; otherwise returns \c false.
 
     If the specified date is invalid, the QDate object is set to be
     invalid.
@@ -1165,7 +1165,7 @@ qint64 QDate::daysTo(const QDate &d) const
 /*!
     \fn bool QDate::operator==(const QDate &d) const
 
-    Returns true if this date is equal to \a d; otherwise returns
+    Returns \c true if this date is equal to \a d; otherwise returns
     false.
 
 */
@@ -1173,36 +1173,36 @@ qint64 QDate::daysTo(const QDate &d) const
 /*!
     \fn bool QDate::operator!=(const QDate &d) const
 
-    Returns true if this date is different from \a d; otherwise
-    returns false.
+    Returns \c true if this date is different from \a d; otherwise
+    returns \c false.
 */
 
 /*!
     \fn bool QDate::operator<(const QDate &d) const
 
-    Returns true if this date is earlier than \a d; otherwise returns
+    Returns \c true if this date is earlier than \a d; otherwise returns
     false.
 */
 
 /*!
     \fn bool QDate::operator<=(const QDate &d) const
 
-    Returns true if this date is earlier than or equal to \a d;
-    otherwise returns false.
+    Returns \c true if this date is earlier than or equal to \a d;
+    otherwise returns \c false.
 */
 
 /*!
     \fn bool QDate::operator>(const QDate &d) const
 
-    Returns true if this date is later than \a d; otherwise returns
+    Returns \c true if this date is later than \a d; otherwise returns
     false.
 */
 
 /*!
     \fn bool QDate::operator>=(const QDate &d) const
 
-    Returns true if this date is later than or equal to \a d;
-    otherwise returns false.
+    Returns \c true if this date is later than or equal to \a d;
+    otherwise returns \c false.
 */
 
 /*!
@@ -1376,8 +1376,8 @@ QDate QDate::fromString(const QString &string, const QString &format)
 /*!
     \overload
 
-    Returns true if the specified date (\a year, \a month, and \a
-    day) is valid; otherwise returns false.
+    Returns \c true if the specified date (\a year, \a month, and \a
+    day) is valid; otherwise returns \c false.
 
     Example:
     \snippet code/src_corelib_tools_qdatetime.cpp 4
@@ -1398,8 +1398,8 @@ bool QDate::isValid(int year, int month, int day)
 /*!
     \fn bool QDate::isLeapYear(int year)
 
-    Returns true if the specified \a year is a leap year; otherwise
-    returns false.
+    Returns \c true if the specified \a year is a leap year; otherwise
+    returns \c false.
 */
 
 bool QDate::isLeapYear(int y)
@@ -1478,8 +1478,8 @@ bool QDate::isLeapYear(int y)
     \fn QTime::QTime()
 
     Constructs a null time object. A null time can be a QTime(0, 0, 0, 0)
-    (i.e., midnight) object, except that isNull() returns true and isValid()
-    returns false.
+    (i.e., midnight) object, except that isNull() returns \c true and isValid()
+    returns \c false.
 
     \sa isNull(), isValid()
 */
@@ -1503,7 +1503,7 @@ QTime::QTime(int h, int m, int s, int ms)
 /*!
     \fn bool QTime::isNull() const
 
-    Returns true if the time is null (i.e., the QTime object was
+    Returns \c true if the time is null (i.e., the QTime object was
     constructed using the default constructor); otherwise returns
     false. A null time is also an invalid time.
 
@@ -1511,7 +1511,7 @@ QTime::QTime(int h, int m, int s, int ms)
 */
 
 /*!
-    Returns true if the time is valid; otherwise returns false. For example,
+    Returns \c true if the time is valid; otherwise returns \c false. For example,
     the time 23:30:55.746 is valid, but 24:12:30 is invalid.
 
     \sa isNull()
@@ -1712,7 +1712,7 @@ QString QTime::toString(const QString& format) const
 
     \a h must be in the range 0 to 23, \a m and \a s must be in the
     range 0 to 59, and \a ms must be in the range 0 to 999.
-    Returns true if the set time is valid; otherwise returns false.
+    Returns \c true if the set time is valid; otherwise returns \c false.
 
     \sa isValid()
 */
@@ -1838,39 +1838,39 @@ int QTime::msecsTo(const QTime &t) const
 /*!
     \fn bool QTime::operator==(const QTime &t) const
 
-    Returns true if this time is equal to \a t; otherwise returns false.
+    Returns \c true if this time is equal to \a t; otherwise returns \c false.
 */
 
 /*!
     \fn bool QTime::operator!=(const QTime &t) const
 
-    Returns true if this time is different from \a t; otherwise returns false.
+    Returns \c true if this time is different from \a t; otherwise returns \c false.
 */
 
 /*!
     \fn bool QTime::operator<(const QTime &t) const
 
-    Returns true if this time is earlier than \a t; otherwise returns false.
+    Returns \c true if this time is earlier than \a t; otherwise returns \c false.
 */
 
 /*!
     \fn bool QTime::operator<=(const QTime &t) const
 
-    Returns true if this time is earlier than or equal to \a t;
-    otherwise returns false.
+    Returns \c true if this time is earlier than or equal to \a t;
+    otherwise returns \c false.
 */
 
 /*!
     \fn bool QTime::operator>(const QTime &t) const
 
-    Returns true if this time is later than \a t; otherwise returns false.
+    Returns \c true if this time is later than \a t; otherwise returns \c false.
 */
 
 /*!
     \fn bool QTime::operator>=(const QTime &t) const
 
-    Returns true if this time is later than or equal to \a t;
-    otherwise returns false.
+    Returns \c true if this time is later than or equal to \a t;
+    otherwise returns \c false.
 */
 
 /*!
@@ -2077,7 +2077,7 @@ QTime QTime::fromString(const QString &string, const QString &format)
 /*!
     \overload
 
-    Returns true if the specified time is valid; otherwise returns
+    Returns \c true if the specified time is valid; otherwise returns
     false.
 
     The time is valid if \a h is in the range 0 to 23, \a m and
@@ -3063,8 +3063,8 @@ QDateTime &QDateTime::operator=(const QDateTime &other)
 */
 
 /*!
-    Returns true if both the date and the time are null; otherwise
-    returns false. A null datetime is invalid.
+    Returns \c true if both the date and the time are null; otherwise
+    returns \c false. A null datetime is invalid.
 
     \sa QDate::isNull(), QTime::isNull(), isValid()
 */
@@ -3075,8 +3075,8 @@ bool QDateTime::isNull() const
 }
 
 /*!
-    Returns true if both the date and the time are valid and they are valid in
-    the current Qt::TimeSpec, otherwise returns false.
+    Returns \c true if both the date and the time are valid and they are valid in
+    the current Qt::TimeSpec, otherwise returns \c false.
 
     If the timeSpec() is Qt::LocalTime or Qt::TimeZone then the date and time are
     checked to see if they fall in the Standard Time to Daylight Time transition
@@ -3961,8 +3961,8 @@ QDateTime QDateTime::toTimeZone(const QTimeZone &timeZone) const
 #endif // QT_BOOTSTRAPPED
 
 /*!
-    Returns true if this datetime is equal to the \a other datetime;
-    otherwise returns false.
+    Returns \c true if this datetime is equal to the \a other datetime;
+    otherwise returns \c false.
 
     \sa operator!=()
 */
@@ -3981,8 +3981,8 @@ bool QDateTime::operator==(const QDateTime &other) const
 /*!
     \fn bool QDateTime::operator!=(const QDateTime &other) const
 
-    Returns true if this datetime is different from the \a other
-    datetime; otherwise returns false.
+    Returns \c true if this datetime is different from the \a other
+    datetime; otherwise returns \c false.
 
     Two datetimes are different if either the date, the time, or the
     time zone components are different.
@@ -3991,8 +3991,8 @@ bool QDateTime::operator==(const QDateTime &other) const
 */
 
 /*!
-    Returns true if this datetime is earlier than the \a other
-    datetime; otherwise returns false.
+    Returns \c true if this datetime is earlier than the \a other
+    datetime; otherwise returns \c false.
 */
 
 bool QDateTime::operator<(const QDateTime &other) const
@@ -4009,22 +4009,22 @@ bool QDateTime::operator<(const QDateTime &other) const
 /*!
     \fn bool QDateTime::operator<=(const QDateTime &other) const
 
-    Returns true if this datetime is earlier than or equal to the
-    \a other datetime; otherwise returns false.
+    Returns \c true if this datetime is earlier than or equal to the
+    \a other datetime; otherwise returns \c false.
 */
 
 /*!
     \fn bool QDateTime::operator>(const QDateTime &other) const
 
-    Returns true if this datetime is later than the \a other datetime;
-    otherwise returns false.
+    Returns \c true if this datetime is later than the \a other datetime;
+    otherwise returns \c false.
 */
 
 /*!
     \fn bool QDateTime::operator>=(const QDateTime &other) const
 
-    Returns true if this datetime is later than or equal to the
-    \a other datetime; otherwise returns false.
+    Returns \c true if this datetime is later than or equal to the
+    \a other datetime; otherwise returns \c false.
 */
 
 /*!

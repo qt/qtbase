@@ -245,8 +245,8 @@ QString QFutureWatcherBase::progressText() const
 
 /*! \fn bool QFutureWatcher::isStarted() const
 
-    Returns true if the asynchronous computation represented by the future()
-    has been started; otherwise returns false.
+    Returns \c true if the asynchronous computation represented by the future()
+    has been started; otherwise returns \c false.
 */
 bool QFutureWatcherBase::isStarted() const
 {
@@ -255,8 +255,8 @@ bool QFutureWatcherBase::isStarted() const
 
 /*! \fn bool QFutureWatcher::isFinished() const
 
-    Returns true if the asynchronous computation represented by the future()
-    has finished; otherwise returns false.
+    Returns \c true if the asynchronous computation represented by the future()
+    has finished; otherwise returns \c false.
 */
 bool QFutureWatcherBase::isFinished() const
 {
@@ -266,8 +266,8 @@ bool QFutureWatcherBase::isFinished() const
 
 /*! \fn bool QFutureWatcher::isRunning() const
 
-    Returns true if the asynchronous computation represented by the future()
-    is currently running; otherwise returns false.
+    Returns \c true if the asynchronous computation represented by the future()
+    is currently running; otherwise returns \c false.
 */
 bool QFutureWatcherBase::isRunning() const
 {
@@ -276,11 +276,11 @@ bool QFutureWatcherBase::isRunning() const
 
 /*! \fn bool QFutureWatcher::isCanceled() const
 
-    Returns true if the asynchronous computation has been canceled with the
-    cancel() function; otherwise returns false.
+    Returns \c true if the asynchronous computation has been canceled with the
+    cancel() function; otherwise returns \c false.
 
     Be aware that the computation may still be running even though this
-    function returns true. See cancel() for more details.
+    function returns \c true. See cancel() for more details.
 */
 bool QFutureWatcherBase::isCanceled() const
 {
@@ -289,11 +289,11 @@ bool QFutureWatcherBase::isCanceled() const
 
 /*! \fn bool QFutureWatcher::isPaused() const
 
-    Returns true if the asynchronous computation has been paused with the
-    pause() function; otherwise returns false.
+    Returns \c true if the asynchronous computation has been paused with the
+    pause() function; otherwise returns \c false.
 
     Be aware that the computation may still be running even though this
-    function returns true. See setPaused() for more details.
+    function returns \c true. See setPaused() for more details.
 
     \sa setPaused(), togglePaused()
 */

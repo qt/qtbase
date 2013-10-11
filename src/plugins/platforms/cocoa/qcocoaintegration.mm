@@ -199,6 +199,7 @@ QPixmap QCocoaScreen::grabWindow(WId window, int x, int y, int width, int height
         int w = (width < 0 ? bounds.size.width : width) * devicePixelRatio();
         int h = (height < 0 ? bounds.size.height : height) * devicePixelRatio();
         QRect displayRect = QRect(x, y, w, h);
+        displayRect = displayRect.translated(qRound(-bounds.origin.x), qRound(-bounds.origin.y));
         QCFType<CGImageRef> image = CGDisplayCreateImageForRect(displays[i],
             CGRectMake(displayRect.x(), displayRect.y(), displayRect.width(), displayRect.height()));
         QPixmap pix(w, h);
@@ -209,7 +210,7 @@ QPixmap QCocoaScreen::grabWindow(WId window, int x, int y, int width, int height
         CGContextRelease(ctx);
 
         QPainter painter(&windowPixmap);
-        painter.drawPixmap(bounds.origin.x, bounds.origin.y, pix);
+        painter.drawPixmap(0, 0, pix);
     }
     return windowPixmap;
 }

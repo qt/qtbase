@@ -128,7 +128,7 @@ QSqlDatabase db;
 qDebug() << db.isValid();    // Returns false
 
 db = QSqlDatabase::database("sales");
-qDebug() << db.isValid();    // Returns true if "sales" connection exists
+qDebug() << db.isValid();    // Returns \c true if "sales" connection exists
 
 QSqlDatabase::removeDatabase("sales");
 qDebug() << db.isValid();    // Returns false

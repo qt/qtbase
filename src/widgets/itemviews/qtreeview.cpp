@@ -397,7 +397,7 @@ void QTreeView::setIndentation(int i)
   false, these controls are not shown for top-level items. This can be used to
   make a single level tree structure appear like a simple list of items.
 
-  By default, this property is true.
+  By default, this property is \c true.
 */
 bool QTreeView::rootIsDecorated() const
 {
@@ -425,7 +425,7 @@ void QTreeView::setRootIsDecorated(bool show)
   The height is obtained from the first item in the view.  It is updated
   when the data changes on that item.
 
-  By default, this property is false.
+  By default, this property is \c false.
 */
 bool QTreeView::uniformRowHeights() const
 {
@@ -446,7 +446,7 @@ void QTreeView::setUniformRowHeights(bool uniform)
   This property holds whether the user can expand and collapse items
   interactively.
 
-  By default, this property is true.
+  By default, this property is \c true.
 
 */
 bool QTreeView::itemsExpandable() const
@@ -527,7 +527,7 @@ int QTreeView::columnAt(int x) const
 }
 
 /*!
-    Returns true if the \a column is hidden; otherwise returns false.
+    Returns \c true if the \a column is hidden; otherwise returns \c false.
 
     \sa hideColumn(), isRowHidden()
 */
@@ -555,7 +555,7 @@ void QTreeView::setColumnHidden(int column, bool hide)
   \brief whether the header is shown or not.
   \since 4.4
 
-  If this property is true, the header is not shown otherwise it is.
+  If this property is \c true, the header is not shown otherwise it is.
   The default value is false.
 
   \sa header()
@@ -573,8 +573,8 @@ void QTreeView::setHeaderHidden(bool hide)
 }
 
 /*!
-    Returns true if the item in the given \a row of the \a parent is hidden;
-    otherwise returns false.
+    Returns \c true if the item in the given \a row of the \a parent is hidden;
+    otherwise returns \c false.
 
     \sa setRowHidden(), isColumnHidden()
 */
@@ -612,8 +612,8 @@ void QTreeView::setRowHidden(int row, const QModelIndex &parent, bool hide)
 /*!
   \since 4.3
 
-  Returns true if the item in first column in the given \a row
-  of the \a parent is spanning all the columns; otherwise returns false.
+  Returns \c true if the item in first column in the given \a row
+  of the \a parent is spanning all the columns; otherwise returns \c false.
 
   \sa setFirstColumnSpanned()
 */
@@ -810,7 +810,7 @@ void QTreeView::collapse(const QModelIndex &index)
 /*!
   \fn bool QTreeView::isExpanded(const QModelIndex &index) const
 
-  Returns true if the model item \a index is expanded; otherwise returns
+  Returns \c true if the model item \a index is expanded; otherwise returns
   false.
 
   \sa expand(), expanded(), setExpanded()
@@ -840,7 +840,7 @@ void QTreeView::setExpanded(const QModelIndex &index, bool expanded)
     \property QTreeView::sortingEnabled
     \brief whether sorting is enabled
 
-    If this property is true, sorting is enabled for the tree; if the property
+    If this property is \c true, sorting is enabled for the tree; if the property
     is false, sorting is not enabled. The default value is false.
 
     \note In order to avoid performance issues, it is recommended that
@@ -880,12 +880,12 @@ bool QTreeView::isSortingEnabled() const
     \property QTreeView::animated
     \brief whether animations are enabled
 
-    If this property is true the treeview will animate expansion
-    and collapsing of branches. If this property is false, the treeview
+    If this property is \c true the treeview will animate expansion
+    and collapsing of branches. If this property is \c false, the treeview
     will expand or collapse branches immediately without showing
     the animation.
 
-    By default, this property is false.
+    By default, this property is \c false.
 */
 
 void QTreeView::setAnimated(bool animate)
@@ -905,7 +905,7 @@ bool QTreeView::isAnimated() const
     \property QTreeView::allColumnsShowFocus
     \brief whether items should show keyboard focus using all columns
 
-    If this property is true all columns will show focus, otherwise only
+    If this property is \c true all columns will show focus, otherwise only
     one column will show focus.
 
     The default is false.
@@ -931,9 +931,9 @@ bool QTreeView::allColumnsShowFocus() const
     \brief the item text word-wrapping policy
     \since 4.3
 
-    If this property is true then the item text is wrapped where
+    If this property is \c true then the item text is wrapped where
     necessary at word-breaks; otherwise it is not wrapped at all.
-    This property is false by default.
+    This property is \c false by default.
 
     Note that even if wrapping is enabled, the cell will not be
     expanded to fit all text. Ellipsis will be inserted according to

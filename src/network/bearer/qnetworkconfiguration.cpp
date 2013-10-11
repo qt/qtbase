@@ -331,8 +331,8 @@ QNetworkConfiguration &QNetworkConfiguration::operator=(const QNetworkConfigurat
 */
 
 /*!
-    Returns true, if this configuration is the same as the \a other
-    configuration given; otherwise returns false.
+    Returns \c true, if this configuration is the same as the \a other
+    configuration given; otherwise returns \c false.
 */
 bool QNetworkConfiguration::operator==(const QNetworkConfiguration &other) const
 {
@@ -342,8 +342,8 @@ bool QNetworkConfiguration::operator==(const QNetworkConfiguration &other) const
 /*!
     \fn bool QNetworkConfiguration::operator!=(const QNetworkConfiguration &other) const
 
-    Returns true if this configuration is not the same as the \a other
-    configuration given; otherwise returns false.
+    Returns \c true if this configuration is not the same as the \a other
+    configuration given; otherwise returns \c false.
 */
 
 /*!
@@ -392,7 +392,7 @@ QNetworkConfiguration::Type QNetworkConfiguration::type() const
 }
 
 /*!
-    Returns true if this QNetworkConfiguration object is valid.
+    Returns \c true if this QNetworkConfiguration object is valid.
     A configuration may become invalid if the user deletes the configuration or
     the configuration was default-constructed.
 
@@ -439,7 +439,7 @@ QNetworkConfiguration::Purpose QNetworkConfiguration::purpose() const
 }
 
 /*!
-    Returns true if this configuration supports roaming; otherwise false.
+    Returns \c true if this configuration supports roaming; otherwise false.
 */
 bool QNetworkConfiguration::isRoamingAvailable() const
 {

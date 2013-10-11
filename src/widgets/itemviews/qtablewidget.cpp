@@ -1041,7 +1041,7 @@ QTableWidgetSelectionRange::~QTableWidgetSelectionRange()
   \fn bool QTableWidgetItem::isSelected() const
   \since 4.2
 
-  Returns true if the item is selected, otherwise returns false.
+  Returns \c true if the item is selected, otherwise returns \c false.
 
   \sa setSelected()
 */
@@ -1395,7 +1395,7 @@ QVariant QTableWidgetItem::data(int role) const
 }
 
 /*!
-    Returns true if the item is less than the \a other item; otherwise returns
+    Returns \c true if the item is less than the \a other item; otherwise returns
     false.
 */
 bool QTableWidgetItem::operator<(const QTableWidgetItem &other) const
@@ -2280,7 +2280,7 @@ void QTableWidget::setCellWidget(int row, int column, QWidget *widget)
 }
 
 /*!
-  Returns true if the \a item is selected, otherwise returns false.
+  Returns \c true if the \a item is selected, otherwise returns \c false.
 
   \obsolete
 
@@ -2567,8 +2567,8 @@ QMimeData *QTableWidget::mimeData(const QList<QTableWidgetItem*>) const
 /*!
     Handles the \a data supplied by a drag and drop operation that ended with
     the given \a action in the given \a row and \a column.
-    Returns true if the data and action can be handled by the model;
-    otherwise returns false.
+    Returns \c true if the data and action can be handled by the model;
+    otherwise returns \c false.
 
     \sa supportedDropActions()
 */

@@ -200,8 +200,8 @@ QSslCertificate &QSslCertificate::operator=(const QSslCertificate &other)
 */
 
 /*!
-    Returns true if this certificate is the same as \a other; otherwise
-    returns false.
+    Returns \c true if this certificate is the same as \a other; otherwise
+    returns \c false.
 */
 bool QSslCertificate::operator==(const QSslCertificate &other) const
 {
@@ -217,13 +217,13 @@ bool QSslCertificate::operator==(const QSslCertificate &other) const
 /*!
     \fn bool QSslCertificate::operator!=(const QSslCertificate &other) const
 
-    Returns true if this certificate is not the same as \a other; otherwise
-    returns false.
+    Returns \c true if this certificate is not the same as \a other; otherwise
+    returns \c false.
 */
 
 /*!
-    Returns true if this is a null certificate (i.e., a certificate
-    with no contents); otherwise returns false.
+    Returns \c true if this is a null certificate (i.e., a certificate
+    with no contents); otherwise returns \c false.
 
     By default, QSslCertificate constructs a null certificate.
 
@@ -254,8 +254,8 @@ bool QSslCertificate::isNull() const
 #endif
 
 /*!
-    Returns true if this certificate is blacklisted; otherwise
-    returns false.
+    Returns \c true if this certificate is blacklisted; otherwise
+    returns \c false.
 
     \sa isNull()
 */

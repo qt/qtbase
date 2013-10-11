@@ -155,15 +155,15 @@ QNetworkCookie &QNetworkCookie::operator=(const QNetworkCookie &other)
 /*!
     \fn bool QNetworkCookie::operator!=(const QNetworkCookie &other) const
 
-    Returns true if this cookie is not equal to \a other.
+    Returns \c true if this cookie is not equal to \a other.
 
     \sa operator==()
 */
 
 /*!
     \since 5.0
-    Returns true if this cookie is equal to \a other. This function
-    only returns true if all fields of the cookie are the same.
+    Returns \c true if this cookie is equal to \a other. This function
+    only returns \c true if all fields of the cookie are the same.
 
     However, in some contexts, two cookies of the same name could be
     considered equal.
@@ -184,7 +184,7 @@ bool QNetworkCookie::operator==(const QNetworkCookie &other) const
 }
 
 /*!
-    Returns true if this cookie has the same identifier tuple as \a other.
+    Returns \c true if this cookie has the same identifier tuple as \a other.
     The identifier tuple is composed of the name, domain and path.
 
     \sa operator==()
@@ -195,7 +195,7 @@ bool QNetworkCookie::hasSameIdentifier(const QNetworkCookie &other) const
 }
 
 /*!
-    Returns true if the "secure" option was specified in the cookie
+    Returns \c true if the "secure" option was specified in the cookie
     string, false otherwise.
 
     Secure cookies may contain private information and should not be
@@ -224,7 +224,7 @@ void QNetworkCookie::setSecure(bool enable)
 /*!
     \since 4.5
 
-    Returns true if the "HttpOnly" flag is enabled for this cookie.
+    Returns \c true if the "HttpOnly" flag is enabled for this cookie.
 
     A cookie that is "HttpOnly" is only set and retrieved by the
     network requests and replies; i.e., the HTTP protocol. It is not
@@ -248,7 +248,7 @@ void QNetworkCookie::setHttpOnly(bool enable)
 }
 
 /*!
-    Returns true if this cookie is a session cookie. A session cookie
+    Returns \c true if this cookie is a session cookie. A session cookie
     is a cookie which has no expiration date, which means it should be
     discarded when the application's concept of session is over
     (usually, when the application exits).

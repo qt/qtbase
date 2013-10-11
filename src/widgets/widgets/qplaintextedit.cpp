@@ -1211,7 +1211,7 @@ void QPlainTextEditPrivate::ensureViewportLayouted()
     Users are only able to undo or redo actions if this property is
     true, and if there is an action that can be undone (or redone).
 
-    By default, this property is true.
+    By default, this property is \c true.
 */
 
 /*!
@@ -2332,11 +2332,11 @@ QRect QPlainTextEdit::cursorRect() const
    As with many text editors, the plain text editor widget can be configured
    to insert or overwrite existing text with new text entered by the user.
 
-   If this property is true, existing text is overwritten, character-for-character
+   If this property is \c true, existing text is overwritten, character-for-character
    by new text; otherwise, text is inserted at the cursor position, displacing
    existing text.
 
-   By default, this property is false (new text does not overwrite existing text).
+   By default, this property is \c false (new text does not overwrite existing text).
 */
 
 bool QPlainTextEdit::overwriteMode() const
@@ -2435,7 +2435,7 @@ QMimeData *QPlainTextEdit::createMimeDataFromSelection() const
 }
 
 /*!
-    This function returns true if the contents of the MIME data object, specified
+    This function returns \c true if the contents of the MIME data object, specified
     by \a source, can be decoded and inserted into the document. It is called
     for example when during a drag operation the mouse enters this widget and it
     is necessary to determine whether it is possible to accept the drag.
@@ -2747,8 +2747,8 @@ void QPlainTextEdit::setCenterOnScroll(bool enabled)
 
 /*!
     Finds the next occurrence of the string, \a exp, using the given
-    \a options. Returns true if \a exp was found and changes the
-    cursor to select the match; otherwise returns false.
+    \a options. Returns \c true if \a exp was found and changes the
+    cursor to select the match; otherwise returns \c false.
 */
 bool QPlainTextEdit::find(const QString &exp, QTextDocument::FindFlags options)
 {

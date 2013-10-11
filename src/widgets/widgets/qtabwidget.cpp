@@ -523,7 +523,7 @@ QIcon QTabWidget::tabIcon(int index) const
 }
 
 /*!
-    Returns true if the page at position \a index is enabled; otherwise returns false.
+    Returns \c true if the page at position \a index is enabled; otherwise returns \c false.
 
     \sa setTabEnabled(), QWidget::isEnabled()
 */
@@ -1020,7 +1020,7 @@ void QTabWidget::setTabsClosable(bool closeable)
 
     \since 4.5
 
-    By default, this property is false;
+    By default, this property is \c false;
 */
 
 bool QTabWidget::isMovable() const

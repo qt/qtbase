@@ -654,7 +654,7 @@ void tst_QFileSystemWatcher::signalsEmittedAfterFileMoved()
     for (int i = 0; i < 10; i++) {
         QFile f(testDir.filePath(QString("test%1.txt").arg(i)));
         QVERIFY(f.open(QIODevice::WriteOnly));
-        f.write(QByteArray("i am " + i));
+        f.write(QByteArray("i am ") + QByteArray::number(i));
         f.close();
     }
 

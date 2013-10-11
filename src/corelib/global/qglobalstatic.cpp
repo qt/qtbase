@@ -270,8 +270,8 @@
     earlier versions. They could be used again in the future.
 
     The QGlobalStatic::exists() and QGlobalStatic::isDestroyed() functions
-    operate solely on the guard variable: the former returns true if the guard
-    is negative, whereas the latter returns true only if it is -2.
+    operate solely on the guard variable: the former returns \c true if the guard
+    is negative, whereas the latter returns \c true only if it is -2.
 
     The Q_GLOBAL_STATIC_INTERNAL macro implements the actual construction and
     destruction. There are two implementations of it: one for compilers that
@@ -374,9 +374,9 @@
 /*!
     \fn bool QGlobalStatic::isDestroyed() const
 
-    This function returns true if the global static object has already
+    This function returns \c true if the global static object has already
     completed destruction (that is, if the destructor for the type has already
-    returned). In specific, note that this function returns false if
+    returned). In specific, note that this function returns \c false if
     the destruction is still in progress.
 
     Once this function has returned true once, it will never return
@@ -404,9 +404,9 @@
 /*!
     \fn bool QGlobalStatic::exists() const
 
-    This function returns true if the global static object has already
+    This function returns \c true if the global static object has already
     completed initialization (that is, if the constructor for the type has
-    already returned). In specific, note that this function returns false if
+    already returned). In specific, note that this function returns \c false if
     the initialization is still in progress.
 
     Once this function has returned true once, it will never return false again

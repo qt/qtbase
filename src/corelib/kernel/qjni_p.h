@@ -68,7 +68,7 @@ public:
     operator JNIEnv*() const;
 
 private:
-    friend class QJNIEnvironment;
+    friend class QAndroidJniEnvironment;
     Q_DISABLE_COPY(QJNIEnvironmentPrivate)
     JNIEnv *jniEnv;
 };
@@ -187,7 +187,10 @@ public:
     }
 
 private:
-    friend class QJNIObject;
+    friend class QAndroidJniObject;
+
+    QJNIObjectPrivate(const char *className, const char *sig, va_list args);
+    QJNIObjectPrivate(jclass clazz, const char *sig, va_list args);
 
     template <typename T>
     T callMethod(const char *methodName,

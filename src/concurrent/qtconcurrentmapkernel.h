@@ -75,10 +75,10 @@ public:
     bool runIterations(Iterator sequenceBeginIterator, int beginIndex, int endIndex, void *)
     {
         Iterator it = sequenceBeginIterator;
-        advance(it, beginIndex);
+        std::advance(it, beginIndex);
         for (int i = beginIndex; i < endIndex; ++i) {
             runIteration(it, i, 0);
-            advance(it, 1);
+            std::advance(it, 1);
         }
 
         return false;
@@ -129,10 +129,10 @@ public:
         results.vector.reserve(end - begin);
 
         Iterator it = sequenceBeginIterator;
-        advance(it, begin);
+        std::advance(it, begin);
         for (int i = begin; i < end; ++i) {
             results.vector.append(map(*(it)));
-            advance(it, 1);
+            std::advance(it, 1);
         }
 
         reducer.runReduce(reduce, reducedResult, results);
@@ -183,10 +183,10 @@ public:
     {
 
         Iterator it = sequenceBeginIterator;
-        advance(it, begin);
+        std::advance(it, begin);
         for (int i = begin; i < end; ++i) {
             runIteration(it, i, results + (i - begin));
-            advance(it, 1);
+            std::advance(it, 1);
         }
 
         return true;

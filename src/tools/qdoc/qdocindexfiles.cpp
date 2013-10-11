@@ -1162,7 +1162,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
 }
 
 /*!
-  Returns true if the node \a n1 is less than node \a n2. The
+  Returns \c true if the node \a n1 is less than node \a n2. The
   comparison is performed by comparing properties of the nodes
   in order of increasing complexity.
 */

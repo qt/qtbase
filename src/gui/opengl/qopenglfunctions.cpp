@@ -403,7 +403,7 @@ QOpenGLFunctions::OpenGLFeatures QOpenGLFunctions::openGLFeatures() const
 }
 
 /*!
-    Returns true if \a feature is present on this system's OpenGL
+    Returns \c true if \a feature is present on this system's OpenGL
     implementation; false otherwise.
 
     It is assumed that the QOpenGLContext associated with this function
@@ -441,7 +441,7 @@ QOpenGLExtensions::OpenGLExtensions QOpenGLExtensions::openGLExtensions()
 }
 
 /*!
-    Returns true if \a extension is present on this system's OpenGL
+    Returns \c true if \a extension is present on this system's OpenGL
     implementation; false otherwise.
 
     It is assumed that the QOpenGLContext associated with this extension

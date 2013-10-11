@@ -169,7 +169,7 @@ QT_BEGIN_NAMESPACE
 
     \brief whether animations are enabled
 
-    The default value of this property is true.
+    The default value of this property is \c true.
 
     \sa QAbstractTransition::addAnimation()
 */
@@ -862,8 +862,8 @@ bool QStateMachinePrivate::isInFinalState(QAbstractState* s) const
 
 /*!
   \internal
-  Returns true if the given state has saved the value of the given property,
-  otherwise returns false.
+  Returns \c true if the given state has saved the value of the given property,
+  otherwise returns \c false.
 */
 bool QStateMachinePrivate::hasRestorable(QAbstractState *state, QObject *object,
                                          const QByteArray &propertyName) const
@@ -2264,8 +2264,8 @@ int QStateMachine::postDelayedEvent(QEvent *event, int delay)
   \threadsafe
 
   Cancels the delayed event identified by the given \a id. The id should be a
-  value returned by a call to postDelayedEvent(). Returns true if the event
-  was successfully cancelled, otherwise returns false.
+  value returned by a call to postDelayedEvent(). Returns \c true if the event
+  was successfully cancelled, otherwise returns \c false.
 
   \sa postDelayedEvent()
 */

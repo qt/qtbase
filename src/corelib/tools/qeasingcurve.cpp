@@ -1123,7 +1123,7 @@ QEasingCurve::~QEasingCurve()
 */
 
 /*!
-    Compare this easing curve with \a other and returns true if they are
+    Compare this easing curve with \a other and returns \c true if they are
     equal. It will also compare the properties of a curve.
  */
 bool QEasingCurve::operator==(const QEasingCurve &other) const
@@ -1147,7 +1147,7 @@ bool QEasingCurve::operator==(const QEasingCurve &other) const
 
 /*!
     \fn bool QEasingCurve::operator!=(const QEasingCurve &other) const
-    Compare this easing curve with \a other and returns true if they are not equal.
+    Compare this easing curve with \a other and returns \c true if they are not equal.
     It will also compare the properties of a curve.
 
     \sa operator==()

@@ -369,7 +369,7 @@ void QDial::setWrapping(bool enable)
     into the space at the bottom of the dial, it will be clamped to the closest
     end of the valid range of values.
 
-    By default this property is false.
+    By default this property is \c false.
 */
 
 bool QDial::wrapping() const
@@ -450,7 +450,7 @@ void QDial::setNotchesVisible(bool visible)
     \property QDial::notchesVisible
     \brief whether the notches are shown
 
-    If the property is true, a series of notches are drawn around the dial
+    If the property is \c true, a series of notches are drawn around the dial
     to indicate the range of values available; otherwise no notches are
     shown.
 

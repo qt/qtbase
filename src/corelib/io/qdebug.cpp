@@ -169,7 +169,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QDebug::autoInsertSpaces() const
 
-    Returns true if this QDebug instance will automatically insert spaces
+    Returns \c true if this QDebug instance will automatically insert spaces
     between writes.
 
     \since 5.0

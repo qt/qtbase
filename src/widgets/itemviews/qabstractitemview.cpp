@@ -566,8 +566,8 @@ void QAbstractItemViewPrivate::_q_scrollerStateChanged()
 /*!
     \fn bool QAbstractItemView::isIndexHidden(const QModelIndex &index) const
 
-    Returns true if the item referred to by the given \a index is hidden in the view,
-    otherwise returns false.
+    Returns \c true if the item referred to by the given \a index is hidden in the view,
+    otherwise returns \c false.
 
     Hiding is a view specific feature.  For example in TableView a column can be marked
     as hidden or a row in the TreeView.
@@ -1495,11 +1495,11 @@ Qt::DropAction QAbstractItemView::defaultDropAction() const
     \property QAbstractItemView::alternatingRowColors
     \brief whether to draw the background using alternating colors
 
-    If this property is true, the item background will be drawn using
+    If this property is \c true, the item background will be drawn using
     QPalette::Base and QPalette::AlternateBase; otherwise the background
     will be drawn using the QPalette::Base color.
 
-    By default, this property is false.
+    By default, this property is \c false.
 */
 void QAbstractItemView::setAlternatingRowColors(bool enable)
 {
@@ -2061,7 +2061,7 @@ void QAbstractItemView::dropEvent(QDropEvent *event)
     else
         // place at row, col in drop index
 
-    If it returns true a drop can be done, and dropRow, dropCol and dropIndex reflects the position of the drop.
+    If it returns \c true a drop can be done, and dropRow, dropCol and dropIndex reflects the position of the drop.
     \internal
   */
 bool QAbstractItemViewPrivate::dropOn(QDropEvent *event, int *dropRow, int *dropCol, QModelIndex *dropIndex)
@@ -2547,8 +2547,8 @@ QModelIndexList QAbstractItemView::selectedIndexes() const
 
 /*!
     Starts editing the item at \a index, creating an editor if
-    necessary, and returns true if the view's \l{State} is now
-    EditingState; otherwise returns false.
+    necessary, and returns \c true if the view's \l{State} is now
+    EditingState; otherwise returns \c false.
 
     The action that caused the editing process is described by
     \a trigger, and the associated event is specified by \a event.

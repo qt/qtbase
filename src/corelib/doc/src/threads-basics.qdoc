@@ -185,19 +185,9 @@
 
     \section2 QObject and Threads
 
-    A QObject is said to have a \e{thread affinity} or, in other words, that it
-    lives in a certain thread. This means that, at creation time, QObject saves
-    a pointer to the current thread. This information becomes relevant when an
-    event is posted with \l{QCoreApplication::}{postEvent()}. The event will be
-    put in the corresponding thread's event loop. If the thread where the
-    QObject lives doesn't have an event loop, the event will never be delivered.
-
-    To start an event loop, \l{QThread::}{exec()} must be called inside
-    \l{QThread::}{run()}. Thread affinity can be changed using
-    \l{QObject::}{moveToThread()}.
-
     As mentioned above, developers must always be careful when calling objects'
-    methods from other threads. Thread affinity does not change this situation.
+    methods from other threads. \l{QObject#Thread Affinity}{Thread affinity}
+    does not change this situation.
     Qt documentation marks several methods as thread-safe.
     \l{QCoreApplication::}{postEvent()} is a noteworthy example. A thread-safe
     method may be called from different threads simultaneously.
@@ -234,91 +224,11 @@
        has terminated.
     \endlist
 
-    A QObject's parent must always be in the same thread. This has a surprising
-    consequence for objects generated within the \l{QThread::}{run()} method:
+    \section2 Protecting the Integrity of Data
 
-    \code
-    void HelloThread::run()
-    {
-         QObject *object1 = new QObject(this);  //error, parent must be in the same thread
-         QObject object2;  // OK
-         QSharedPointer <QObject> object3(new QObject); // OK
-    }
-    \endcode
-
-    \section2 Using a Mutex to Protect the Integrity of Data
-
-    A mutex is an object that has \l{QMutex::}{lock()} and \l{QMutex::}{unlock()}
-    methods and remembers if it is already locked. A mutex is designed to be
-    called from multiple threads. \l{QMutex::}{lock()} returns immediately if
-    the mutex is not locked. The next call from another thread will find the
-    mutex in a locked state and then \l{QMutex::}{lock()} will block the thread
-    until the other thread calls \l{QMutex::}{unlock()}. This functionality can
-    make sure that a code section will be executed by only one thread at a time.
-
-    The following line sketches how a mutex can be used to make a method
-    thread-safe:
-
-    \code
-    void Worker::work()
-    {
-        this->mutex.lock();  // first thread can pass, other threads will be blocked here
-        doWork();
-        this->mutex.unlock();
-    }
-    \endcode
-
-    What happens if one thread does not unlock a mutex? The result can be a
-    frozen application. In the example above, an exception might be thrown and
-    \c{mutex.unlock()} will never be reached. To prevent problems like this,
-    QMutexLocker should be used.
-
-    \code
-    void Worker::work()
-    {
-        QMutexLocker locker(&mutex);  // Locks the mutex and unlocks when locker exits the scope
-        doWork();
-    }
-    \endcode
-
-    This looks easy, but mutexes introduce a new class of problems: deadlocks.
-    A deadlock happens when a thread waits for a mutex to become unlocked, but
-    the mutex remains locked because the owning thread is waiting for the first
-    thread to unlock it. The result is a frozen application. Mutexes can be
-    used to make a method thread safe. Most Qt methods aren't thread safe
-    because there is always a performance penalty when using mutexes.
-
-    It isn't always possible to lock and unlock a mutex in a method. Sometimes
-    the need to lock spans several calls. For example, modifying a container
-    with an iterator requires a sequence of several calls which should not be
-    interrupted by other threads. In such a scenario, locking can be achieved
-    with a mutex that is kept outside of the object to be manipulated. With an
-    external mutex, the duration of locking can be adjusted to the needs of the
-    operation. One disadvantage is that external mutexes aid locking, but do
-    not enforce it because users of the object may forget to use it.
-
-    \section2 Using the Event Loop to Prevent Data Corruption
-
-    The event loops of Qt are a very valuable tool for inter-thread
-    communication. Every thread may have its own event loop. A safe way of
-    calling a slot in another thread is by placing that call in another
-    thread's event loop. This ensures that the target object finishes the
-    method that is currently running before another method is started.
-
-    So how is it possible to put a method invocation in an event loop? Qt has
-    two ways of doing this. One way is via queued signal-slot connections; the
-    other way is to post an event with QCoreApplication::postEvent(). A queued
-    signal-slot connection is a signal slot connection that is executed
-    asynchronously. The internal implementation is based on posted events. The
-    arguments of the signal are put into the event loop and the signal method
-    returns immediately.
-
-    The connected slot will be executed at a time which depends on what else is
-    in the event loop.
-
-    Communication via the event loop eliminates the deadlock problem we face
-    when using mutexes. This is why we recommend using the event loop rather
-    than locking an object using a mutex.
+    When writing a multithread application, extra care must be taken to avoid
+    data corruption. See \l{Synchronizing Threads} for a discussion on how to
+    use threads safely.
 
     \section2 Dealing with Asynchronous Execution
 

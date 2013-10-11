@@ -2116,8 +2116,9 @@ QString VCXProjectWriter::platformToolSetVersion(const DotNET version, bool winp
         return winphoneBuild ? "v110_wp80" : "v110";
     case NET2013:
         return "v120";
+    default:
+        return QString();
     }
-    return QString();
 }
 
 QT_END_NAMESPACE

@@ -997,7 +997,7 @@ QOpenGLDebugMessage QOpenGLDebugMessage::createThirdPartyMessage(const QString &
 }
 
 /*!
-    Returns true if this debug message is equal to \a debugMessage, or false
+    Returns \c true if this debug message is equal to \a debugMessage, or false
     otherwise. Two debugging messages are equal if they have the same textual
     message, the same id, the same source, the same type and the same severity.
 
@@ -1016,7 +1016,7 @@ bool QOpenGLDebugMessage::operator==(const QOpenGLDebugMessage &debugMessage) co
 /*!
     \fn bool QOpenGLDebugMessage::operator!=(const QOpenGLDebugMessage &debugMessage) const
 
-    Returns true if this message is different from \a debugMessage, or false
+    Returns \c true if this message is different from \a debugMessage, or false
     otherwise.
 
     \sa operator==()
@@ -1317,7 +1317,7 @@ QOpenGLDebugLogger::~QOpenGLDebugLogger()
     initialized object; note that in this case the object must not be logging
     when you call this function.
 
-    Returns true if the logger is successfully initialized; false otherwise.
+    Returns \c true if the logger is successfully initialized; false otherwise.
 
     \sa QOpenGLContext
 */
@@ -1383,7 +1383,7 @@ bool QOpenGLDebugLogger::initialize()
 }
 
 /*!
-    Returns true if this object is currently logging, false otherwise.
+    Returns \c true if this object is currently logging, false otherwise.
 
     \sa startLogging()
 */

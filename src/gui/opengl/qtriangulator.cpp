@@ -347,7 +347,7 @@ bool QIntersectionPoint::operator == (const QIntersectionPoint &other) const
     return upperLeft == other.upperLeft && xOffset == other.xOffset && yOffset == other.yOffset;
 }
 
-// Returns true if this point is on the infinite line passing through 'u' and 'v'.
+// Returns \c true if this point is on the infinite line passing through 'u' and 'v'.
 bool QIntersectionPoint::isOnLine(const QPodPoint &u, const QPodPoint &v) const
 {
     // TODO: Make code path for coordinates with more than 21 bits.

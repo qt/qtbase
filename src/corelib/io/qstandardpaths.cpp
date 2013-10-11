@@ -390,7 +390,7 @@ void QStandardPaths::setTestModeEnabled(bool testMode)
 
   \internal
 
-  Returns true if test mode is enabled in QStandardPaths; otherwise returns false.
+  Returns \c true if test mode is enabled in QStandardPaths; otherwise returns \c false.
 */
 
 bool QStandardPaths::isTestModeEnabled()

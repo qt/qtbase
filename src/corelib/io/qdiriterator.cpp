@@ -308,7 +308,7 @@ void QDirIteratorPrivate::checkAndPushDirectory(const QFileInfo &fileInfo)
     This convenience function implements the iterator's filtering logics and
     applies then to the current directory entry.
 
-    It returns true if the current entry matches the filters (i.e., the
+    It returns \c true if the current entry matches the filters (i.e., the
     current entry will be returned as part of the directory iteration);
     otherwise, false is returned.
 */
@@ -476,7 +476,7 @@ QDirIterator::~QDirIterator()
 
 /*!
     Advances the iterator to the next entry, and returns the file path of this
-    new entry. If hasNext() returns false, this function does nothing, and
+    new entry. If hasNext() returns \c false, this function does nothing, and
     returns a null QString.
 
     You can call fileName() or filePath() to get the current entry file name
@@ -491,7 +491,7 @@ QString QDirIterator::next()
 }
 
 /*!
-    Returns true if there is at least one more entry in the directory;
+    Returns \c true if there is at least one more entry in the directory;
     otherwise, false is returned.
 
     \sa next(), fileName(), filePath(), fileInfo()

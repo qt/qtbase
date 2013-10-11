@@ -187,7 +187,7 @@ HANDLE  QWinEventNotifier::handle() const
 }
 
 /*!
-    Returns true if the notifier is enabled; otherwise returns false.
+    Returns \c true if the notifier is enabled; otherwise returns \c false.
 
     \sa setEnabled()
 */

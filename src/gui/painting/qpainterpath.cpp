@@ -395,8 +395,8 @@ static void qt_debug_path(const QPainterPath &path)
     \fn bool QPainterPath::Element::operator==(const Element &other) const
     \since 4.2
 
-    Returns true if this element is equal to \a other;
-    otherwise returns false.
+    Returns \c true if this element is equal to \a other;
+    otherwise returns \c false.
 
     \sa operator!=()
 */
@@ -405,8 +405,8 @@ static void qt_debug_path(const QPainterPath &path)
     \fn bool QPainterPath::Element::operator!=(const Element &other) const
     \since 4.2
 
-    Returns true if this element is not equal to \a other;
-    otherwise returns false.
+    Returns \c true if this element is not equal to \a other;
+    otherwise returns \c false.
 
     \sa operator==()
 */
@@ -414,7 +414,7 @@ static void qt_debug_path(const QPainterPath &path)
 /*!
     \fn bool QPainterPath::Element::isCurveTo () const
 
-    Returns true if the element is a curve, otherwise returns false.
+    Returns \c true if the element is a curve, otherwise returns \c false.
 
     \sa type, QPainterPath::CurveToElement
 */
@@ -422,7 +422,7 @@ static void qt_debug_path(const QPainterPath &path)
 /*!
     \fn bool QPainterPath::Element::isLineTo () const
 
-    Returns true if the element is a line, otherwise returns false.
+    Returns \c true if the element is a line, otherwise returns \c false.
 
     \sa type, QPainterPath::LineToElement
 */
@@ -430,8 +430,8 @@ static void qt_debug_path(const QPainterPath &path)
 /*!
     \fn bool QPainterPath::Element::isMoveTo () const
 
-    Returns true if the element is moving the current position,
-    otherwise returns false.
+    Returns \c true if the element is moving the current position,
+    otherwise returns \c false.
 
     \sa type, QPainterPath::MoveToElement
 */
@@ -1485,8 +1485,8 @@ QRectF QPainterPath::controlPointRect() const
 /*!
     \fn bool QPainterPath::isEmpty() const
 
-    Returns true if either there are no elements in this path, or if the only
-    element is a MoveToElement; otherwise returns false.
+    Returns \c true if either there are no elements in this path, or if the only
+    element is a MoveToElement; otherwise returns \c false.
 
     \sa elementCount()
 */
@@ -1806,8 +1806,8 @@ static void qt_painterpath_isect_curve(const QBezier &bezier, const QPointF &pt,
 /*!
     \fn bool QPainterPath::contains(const QPointF &point) const
 
-    Returns true if the given \a point is inside the path, otherwise
-    returns false.
+    Returns \c true if the given \a point is inside the path, otherwise
+    returns \c false.
 
     \sa intersects()
 */
@@ -1982,7 +1982,7 @@ static bool qt_isect_curve_vertical(const QBezier &bezier, qreal x, qreal y1, qr
 }
 
 /*
-    Returns true if any lines or curves cross the four edges in of rect
+    Returns \c true if any lines or curves cross the four edges in of rect
 */
 static bool qt_painterpath_check_crossing(const QPainterPath *path, const QRectF &rect)
 {
@@ -2040,8 +2040,8 @@ static bool qt_painterpath_check_crossing(const QPainterPath *path, const QRectF
 /*!
     \fn bool QPainterPath::intersects(const QRectF &rectangle) const
 
-    Returns true if any point in the given \a rectangle intersects the
-    path; otherwise returns false.
+    Returns \c true if any point in the given \a rectangle intersects the
+    path; otherwise returns \c false.
 
     There is an intersection if any of the lines making up the
     rectangle crosses a part of the path or if any part of the
@@ -2149,8 +2149,8 @@ QPainterPath QPainterPath::translated(qreal dx, qreal dy) const
 /*!
     \fn bool QPainterPath::contains(const QRectF &rectangle) const
 
-    Returns true if the given \a rectangle is inside the path,
-    otherwise returns false.
+    Returns \c true if the given \a rectangle is inside the path,
+    otherwise returns \c false.
 */
 bool QPainterPath::contains(const QRectF &rect) const
 {
@@ -2233,7 +2233,7 @@ static inline bool epsilonCompare(const QPointF &a, const QPointF &b, const QSiz
 }
 
 /*!
-    Returns true if this painterpath is equal to the given \a path.
+    Returns \c true if this painterpath is equal to the given \a path.
 
     Note that comparing paths may involve a per element comparison
     which can be slow for complex paths.
@@ -2268,7 +2268,7 @@ bool QPainterPath::operator==(const QPainterPath &path) const
 }
 
 /*!
-    Returns true if this painter path differs from the given \a path.
+    Returns \c true if this painter path differs from the given \a path.
 
     Note that comparing paths may involve a per element comparison
     which can be slow for complex paths.
@@ -3330,8 +3330,8 @@ QPainterPath QPainterPath::simplified() const
 /*!
   \since 4.3
 
-  Returns true if the current path intersects at any point the given path \a p.
-  Also returns true if the current path contains or is contained by any part of \a p.
+  Returns \c true if the current path intersects at any point the given path \a p.
+  Also returns \c true if the current path contains or is contained by any part of \a p.
 
   Set operations on paths will treat the paths as areas. Non-closed
   paths will be treated as implicitly closed.
@@ -3351,8 +3351,8 @@ bool QPainterPath::intersects(const QPainterPath &p) const
 /*!
   \since 4.3
 
-  Returns true if the given path \a p is contained within
-  the current path. Returns false if any edges of the current path and
+  Returns \c true if the given path \a p is contained within
+  the current path. Returns \c false if any edges of the current path and
   \a p intersect.
 
   Set operations on paths will treat the paths as areas. Non-closed

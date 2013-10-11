@@ -247,7 +247,7 @@ void QWindowsPipeReader::startAsyncRead()
 /*!
     \internal
     Sets the correct size of the read buffer after a read operation.
-    Returns false, if an error occurred or the connection dropped.
+    Returns \c false, if an error occurred or the connection dropped.
  */
 bool QWindowsPipeReader::completeAsyncRead(DWORD bytesRead, DWORD errorCode)
 {
@@ -297,7 +297,7 @@ DWORD QWindowsPipeReader::checkPipeState()
 
 /*!
     Waits for the completion of the asynchronous read operation.
-    Returns true, if we've emitted the readyRead signal.
+    Returns \c true, if we've emitted the readyRead signal.
  */
 bool QWindowsPipeReader::waitForReadyRead(int msecs)
 {

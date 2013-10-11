@@ -489,7 +489,7 @@ QColor::QColor(Spec spec)
 /*!
     \fn bool QColor::isValid() const
 
-    Returns true if the color is valid; otherwise returns false.
+    Returns \c true if the color is valid; otherwise returns \c false.
 */
 
 /*!
@@ -557,7 +557,7 @@ void QColor::setNamedColor(const QString &name)
 /*!
    \since 4.7
 
-   Returns true if the \a name is a valid color name and can
+   Returns \c true if the \a name is a valid color name and can
    be used to construct a valid QColor object, otherwise returns
    false.
 
@@ -2338,8 +2338,8 @@ QColor &QColor::operator=(Qt::GlobalColor color)
 }
 
 /*!
-    Returns true if this color has the same RGB and alpha values as \a color;
-    otherwise returns false.
+    Returns \c true if this color has the same RGB and alpha values as \a color;
+    otherwise returns \c false.
 */
 bool QColor::operator==(const QColor &color) const
 {
@@ -2366,8 +2366,8 @@ bool QColor::operator==(const QColor &color) const
 }
 
 /*!
-    Returns true if this color has a different RGB and alpha values from
-    \a color; otherwise returns false.
+    Returns \c true if this color has a different RGB and alpha values from
+    \a color; otherwise returns \c false.
 */
 bool QColor::operator!=(const QColor &color) const
 { return !operator==(color); }

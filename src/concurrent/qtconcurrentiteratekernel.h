@@ -59,8 +59,6 @@ QT_BEGIN_NAMESPACE
 
 namespace QtConcurrent {
 
-    using std::advance;
-
 /*
     The BlockSizeManager class manages how many iterations a thread should
     reserve and process at a time. This is done by measuring the time spent

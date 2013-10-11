@@ -26,5 +26,3 @@ wince*: {
     }
     DEPLOYMENT += imageFiles
 }
-
-simulator: warning(This example might not fully work on Simulator platform)

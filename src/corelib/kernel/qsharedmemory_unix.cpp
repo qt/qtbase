@@ -143,7 +143,7 @@ key_t QSharedMemoryPrivate::handle()
 /*!
     \internal
     Creates the unix file if needed.
-    returns true if the unix file was created.
+    returns \c true if the unix file was created.
 
     -1 error
      0 already existed

@@ -223,7 +223,7 @@ void Generator::appendSortedQmlNames(Text& text, const Node* base, const NodeLis
     for (int i = 0; i < subs.size(); ++i) {
         Text t;
         if (!base->isQtQuickNode() || !subs[i]->isQtQuickNode() ||
-                (base->qmlModuleIdentifier() == subs[i]->qmlModuleIdentifier())) {
+                (base->qmlModuleName() == subs[i]->qmlModuleName())) {
             appendFullName(t, subs[i], base);
             classMap[t.toString().toLower()] = t;
         }
@@ -470,7 +470,7 @@ QString Generator::fullDocumentLocation(const Node *node, bool useSubdir)
             else {
                 QString mq;
                 if (!node->qmlModuleName().isEmpty()) {
-                    mq = node->qmlModuleIdentifier().replace(QChar('.'),QChar('-'));
+                    mq = node->qmlModuleName().replace(QChar('.'),QChar('-'));
                     mq = mq.toLower() + QLatin1Char('-');
                 }
                 return fdl+ Generator::outputPrefix(QLatin1String("QML")) + mq +

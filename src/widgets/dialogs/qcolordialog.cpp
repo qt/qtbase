@@ -1889,7 +1889,7 @@ void QColorDialog::setOption(ColorDialogOption option, bool on)
 /*!
     \since 4.5
 
-    Returns true if the given \a option is enabled; otherwise, returns
+    Returns \c true if the given \a option is enabled; otherwise, returns
     false.
 
     \sa options, setOption()

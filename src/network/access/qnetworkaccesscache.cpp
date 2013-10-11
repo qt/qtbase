@@ -165,7 +165,7 @@ void QNetworkAccessCache::linkEntry(const QByteArray &key)
 
 /*!
     Removes the entry pointed by \a key from the linked list.
-    Returns true if the entry removed was the oldest one.
+    Returns \c true if the entry removed was the oldest one.
  */
 bool QNetworkAccessCache::unlinkEntry(const QByteArray &key)
 {

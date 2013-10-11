@@ -591,8 +591,8 @@ QRegion& QRegion::operator^=(const QRegion &r)
 /*!
     \fn bool QRegion::operator!=(const QRegion &other) const
 
-    Returns true if this region is different from the \a other region;
-    otherwise returns false.
+    Returns \c true if this region is different from the \a other region;
+    otherwise returns \c false.
 */
 
 /*!
@@ -606,7 +606,7 @@ QRegion::operator QVariant() const
 /*!
     \fn bool QRegion::operator==(const QRegion &r) const
 
-    Returns true if the region is equal to \a r; otherwise returns
+    Returns \c true if the region is equal to \a r; otherwise returns
     false.
 */
 
@@ -659,8 +659,8 @@ inline bool rect_intersects(const QRect &r1, const QRect &r2)
 /*!
     \since 4.2
 
-    Returns true if this region intersects with \a region, otherwise
-    returns false.
+    Returns \c true if this region intersects with \a region, otherwise
+    returns \c false.
 */
 bool QRegion::intersects(const QRegion &region) const
 {
@@ -686,8 +686,8 @@ bool QRegion::intersects(const QRegion &region) const
     \fn bool QRegion::intersects(const QRect &rect) const
     \since 4.2
 
-    Returns true if this region intersects with \a rect, otherwise
-    returns false.
+    Returns \c true if this region intersects with \a rect, otherwise
+    returns \c false.
 */
 
 
@@ -712,7 +712,7 @@ QRegion QRegion::intersect(const QRect &r) const
 /*!
     \fn bool QRegion::isEmpty() const
 
-    Returns true if the region is empty; otherwise returns false. An
+    Returns \c true if the region is empty; otherwise returns \c false. An
     empty region is a region that contains no points.
 
     Example:
@@ -723,7 +723,7 @@ QRegion QRegion::intersect(const QRect &r) const
     \fn bool QRegion::isNull() const
     \since 5.0
 
-    Returns true if the region is empty; otherwise returns false. An
+    Returns \c true if the region is empty; otherwise returns \c false. An
     empty region is a region that contains no points. This function is
     the same as isEmpty
 
@@ -733,16 +733,16 @@ QRegion QRegion::intersect(const QRect &r) const
 /*!
     \fn bool QRegion::contains(const QPoint &p) const
 
-    Returns true if the region contains the point \a p; otherwise
-    returns false.
+    Returns \c true if the region contains the point \a p; otherwise
+    returns \c false.
 */
 
 /*!
     \fn bool QRegion::contains(const QRect &r) const
     \overload
 
-    Returns true if the region overlaps the rectangle \a r; otherwise
-    returns false.
+    Returns \c true if the region overlaps the rectangle \a r; otherwise
+    returns \c false.
 */
 
 /*!
@@ -1099,7 +1099,7 @@ struct QRegionPrivate {
     void intersect(const QRect &r);
 
     /*
-     * Returns true if r is guaranteed to be fully contained in this region.
+     * Returns \c true if r is guaranteed to be fully contained in this region.
      * A false return value does not guarantee the opposite.
      */
     inline bool contains(const QRegionPrivate &r) const {
@@ -1113,7 +1113,7 @@ struct QRegionPrivate {
     }
 
     /*
-     * Returns true if this region is guaranteed to be fully contained in r.
+     * Returns \c true if this region is guaranteed to be fully contained in r.
      */
     inline bool within(const QRect &r1) const {
         const QRect &r2 = extents;
@@ -4167,7 +4167,7 @@ QRect QRegion::boundingRect() const
 }
 
 /*! \internal
-    Returns true if \a rect is guaranteed to be fully contained in \a region.
+    Returns \c true if \a rect is guaranteed to be fully contained in \a region.
     A false return value does not guarantee the opposite.
 */
 Q_GUI_EXPORT

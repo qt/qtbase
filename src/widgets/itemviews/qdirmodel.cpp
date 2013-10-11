@@ -395,8 +395,8 @@ QVariant QDirModel::data(const QModelIndex &index, int role) const
 
 /*!
   Sets the data for the model item \a index with the given \a role to
-  the data referenced by the \a value. Returns true if successful;
-  otherwise returns false.
+  the data referenced by the \a value. Returns \c true if successful;
+  otherwise returns \c false.
 
   \sa Qt::ItemDataRole
 */
@@ -456,8 +456,8 @@ QVariant QDirModel::headerData(int section, Qt::Orientation orientation, int rol
 }
 
 /*!
-  Returns true if the \a parent model item has children; otherwise
-  returns false.
+  Returns \c true if the \a parent model item has children; otherwise
+  returns \c false.
 */
 
 bool QDirModel::hasChildren(const QModelIndex &parent) const
@@ -566,7 +566,7 @@ QMimeData *QDirModel::mimeData(const QModelIndexList &indexes) const
     the given \a action over the row in the model specified by the \a row and
     \a column and by the \a parent index.
 
-    Returns true if the drop was successful, and false otherwise.
+    Returns \c true if the drop was successful, and false otherwise.
 
     \sa supportedDropActions()
 */
@@ -771,7 +771,7 @@ bool QDirModel::resolveSymlinks() const
   If this property is set to false, the directory model will allow renaming, copying
   and deleting of files and directories.
 
-  This property is true by default
+  This property is \c true by default
 */
 
 void QDirModel::setReadOnly(bool enable)
@@ -796,7 +796,7 @@ bool QDirModel::isReadOnly() const
   Otherwise the directory model will report that an item has children if the item
   is a directory.
 
-  This property is false by default
+  This property is \c false by default
 */
 
 void QDirModel::setLazyChildCount(bool enable)
@@ -966,8 +966,8 @@ QModelIndex QDirModel::index(const QString &path, int column) const
 }
 
 /*!
-  Returns true if the model item \a index represents a directory;
-  otherwise returns false.
+  Returns \c true if the model item \a index represents a directory;
+  otherwise returns \c false.
 */
 
 bool QDirModel::isDir(const QModelIndex &index) const

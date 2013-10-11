@@ -130,7 +130,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QTextInlineObject::isValid() const
 
-    Returns true if this inline object is valid; otherwise returns
+    Returns \c true if this inline object is valid; otherwise returns
     false.
 */
 
@@ -543,8 +543,8 @@ void QTextLayout::setCacheEnabled(bool enable)
 }
 
 /*!
-    Returns true if the complete layout information is cached; otherwise
-    returns false.
+    Returns \c true if the complete layout information is cached; otherwise
+    returns \c false.
 
     \sa setCacheEnabled()
 */
@@ -728,7 +728,7 @@ int QTextLayout::leftCursorPosition(int oldPos) const
 }
 
 /*!/
-    Returns true if position \a pos is a valid cursor position.
+    Returns \c true if position \a pos is a valid cursor position.
 
     In a Unicode context some positions in the text are not valid
     cursor positions, because the position is inside a Unicode
@@ -1325,7 +1325,7 @@ void QTextLayout::drawCursor(QPainter *p, const QPointF &pos, int cursorPosition
 /*!
     \fn bool QTextLine::isValid() const
 
-    Returns true if this text line is valid; otherwise returns false.
+    Returns \c true if this text line is valid; otherwise returns \c false.
 */
 
 /*!
@@ -1459,8 +1459,8 @@ void QTextLine::setLeadingIncluded(bool included)
 /*!
     \since 4.6
 
-    Returns true if positive leading is included into the line's height;
-    otherwise returns false.
+    Returns \c true if positive leading is included into the line's height;
+    otherwise returns \c false.
 
     By default, leading is not included.
 
@@ -1788,6 +1788,9 @@ void QTextLine::layout_helper(int maxGlyphs)
             if (!line.length && !lbh.tmpData.length)
                 line.setDefaultHeight(eng);
             if (eng->option.flags() & QTextOption::ShowLineAndParagraphSeparators) {
+                if (lbh.checkFullOtherwiseExtend(line))
+                    goto found;
+
                 addNextCluster(lbh.currentPosition, end, lbh.tmpData, lbh.glyphCount,
                                current, lbh.logClusters, lbh.glyphs);
             } else {

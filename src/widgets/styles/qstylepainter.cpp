@@ -100,7 +100,7 @@ QT_BEGIN_NAMESPACE
     \fn bool QStylePainter::begin(QWidget *widget)
 
     Begin painting operations on the specified \a widget.
-    Returns true if the painter is ready to use; otherwise returns false.
+    Returns \c true if the painter is ready to use; otherwise returns \c false.
 
     This is automatically called by the constructor that takes a QWidget.
 */

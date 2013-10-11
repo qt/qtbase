@@ -323,13 +323,13 @@
     \row    \li \l{QListIterator::toBack()}{toBack()}
             \li Moves the iterator to the back of the list (after the last item)
     \row    \li \l{QListIterator::hasNext()}{hasNext()}
-            \li Returns true if the iterator isn't at the back of the list
+            \li Returns \c true if the iterator isn't at the back of the list
     \row    \li \l{QListIterator::next()}{next()}
             \li Returns the next item and advances the iterator by one position
     \row    \li \l{QListIterator::peekNext()}{peekNext()}
             \li Returns the next item without moving the iterator
     \row    \li \l{QListIterator::hasPrevious()}{hasPrevious()}
-            \li Returns true if the iterator isn't at the front of the list
+            \li Returns \c true if the iterator isn't at the front of the list
     \row    \li \l{QListIterator::previous()}{previous()}
             \li Returns the previous item and moves the iterator back by one position
     \row    \li \l{QListIterator::peekPrevious()}{peekPrevious()}

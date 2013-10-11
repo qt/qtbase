@@ -68,6 +68,7 @@ public:
 
     bool hasCapability(Capability cap) const;
     QAbstractEventDispatcher *createEventDispatcher() const;
+    void initialize();
 
     void moveToScreen(QWindow *window, int screen);
 

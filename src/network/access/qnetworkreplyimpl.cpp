@@ -1079,7 +1079,7 @@ bool QNetworkReplyImpl::event(QEvent *e)
 
 /*
     Migrates the backend of the QNetworkReply to a new network connection if required.  Returns
-    true if the reply is migrated or it is not required; otherwise returns false.
+    true if the reply is migrated or it is not required; otherwise returns \c false.
 */
 bool QNetworkReplyImplPrivate::migrateBackend()
 {

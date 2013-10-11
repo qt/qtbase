@@ -369,7 +369,7 @@ void QWidgetPrivate::updateWidgetTransform()
 QPointer<QWidget> QWidgetPrivate::editingWidget;
 
 /*!
-    Returns true if this widget currently has edit focus; otherwise false.
+    Returns \c true if this widget currently has edit focus; otherwise false.
 
     This feature is only available in Qt for Embedded Linux.
 
@@ -445,7 +445,7 @@ void QWidget::setEditFocus(bool on)
     \l{Qt Style Sheets}. When a widget has a style sheet with a valid
     background or a border-image, this property is automatically disabled.
 
-    By default, this property is false.
+    By default, this property is \c false.
 
     \sa Qt::WA_OpaquePaintEvent, Qt::WA_NoSystemBackground,
     {QWidget#Transparency and Double Buffering}{Transparency and Double Buffering}
@@ -1634,7 +1634,7 @@ void QWidgetPrivate::deleteExtra()
 }
 
 /*
-  Returns true if there are widgets above this which overlap with
+  Returns \c true if there are widgets above this which overlap with
   \a rect, which is in parent's coordinate system (same as crect).
 */
 
@@ -2583,8 +2583,8 @@ void QWidgetPrivate::inheritStyle()
 /*!
     \fn bool QWidget::isWindow() const
 
-    Returns true if the widget is an independent window, otherwise
-    returns false.
+    Returns \c true if the widget is an independent window, otherwise
+    returns \c false.
 
     A window is a widget that isn't visually the child of any other
     widget and that usually has a frame and a
@@ -2610,7 +2610,7 @@ void QWidgetPrivate::inheritStyle()
     This property only makes sense for windows. A modal widget
     prevents widgets in all other windows from getting any input.
 
-    By default, this property is false.
+    By default, this property is \c false.
 
     \sa isWindow(), windowModality, QDialog
 */
@@ -2647,8 +2647,8 @@ void QWidget::setWindowModality(Qt::WindowModality windowModality)
 /*!
     \fn bool QWidget::underMouse() const
 
-    Returns true if the widget is under the mouse cursor; otherwise
-    returns false.
+    Returns \c true if the widget is under the mouse cursor; otherwise
+    returns \c false.
 
     This value is not updated properly during drag and drop
     operations.
@@ -2662,7 +2662,7 @@ void QWidget::setWindowModality(Qt::WindowModality windowModality)
 
     This property is only relevant for windows.
 
-    By default, this property is false.
+    By default, this property is \c false.
 
     \sa showMinimized(), visible, show(), hide(), showNormal(), maximized
 */
@@ -2702,7 +2702,7 @@ void QWidget::showMinimized()
     from any other resize). This is expected to improve as window manager
     protocols evolve.
 
-    By default, this property is false.
+    By default, this property is \c false.
 
     \sa windowState(), showMaximized(), visible, show(), hide(), showNormal(), minimized
 */
@@ -2744,7 +2744,7 @@ void QWidget::overrideWindowState(Qt::WindowStates newstate)
     combination of Qt::WindowState: Qt::WindowMinimized,
     Qt::WindowMaximized, Qt::WindowFullScreen, and Qt::WindowActive.
 
-    If the window is not visible (i.e. isVisible() returns false), the
+    If the window is not visible (i.e. isVisible() returns \c false), the
     window state will take effect when show() is called. For visible
     windows, the change is immediate. For example, to toggle between
     full-screen and normal mode, use the following code:
@@ -2775,7 +2775,7 @@ void QWidget::overrideWindowState(Qt::WindowStates newstate)
     A widget in full screen mode occupies the whole screen area and does not
     display window decorations, such as a title bar.
 
-    By default, this property is false.
+    By default, this property is \c false.
 
     \sa windowState(), minimized, maximized
 */
@@ -2891,8 +2891,8 @@ void QWidget::showNormal()
 }
 
 /*!
-    Returns true if this widget would become enabled if \a ancestor is
-    enabled; otherwise returns false.
+    Returns \c true if this widget would become enabled if \a ancestor is
+    enabled; otherwise returns \c false.
 
 
 
@@ -3052,7 +3052,7 @@ QList<QAction*> QWidget::actions() const
     explicitly disabled. It it not possible to explicitly enable a child
     widget which is not a window while its parent widget remains disabled.
 
-    By default, this property is true.
+    By default, this property is \c true.
 
     \sa isEnabledTo(), QKeyEvent, QMouseEvent, changeEvent()
 */
@@ -3135,7 +3135,7 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
 
     \warning Do not modify this property in a drag and drop event handler.
 
-    By default, this property is false.
+    By default, this property is \c false.
 
     \sa {Drag and Drop}
 */
@@ -5513,7 +5513,7 @@ void QWidget::unsetLocale()
     contain a "[*]" placeholder, which indicates where the '*' should
     appear. Normally, it should appear right after the file name
     (e.g., "document1.txt[*] - Text Editor"). If the \l
-    windowModified property is false (the default), the placeholder
+    windowModified property is \c false (the default), the placeholder
     is simply removed.
 
     On some desktop platforms (including Windows and Unix), the application name
@@ -5879,7 +5879,7 @@ QWidget * QWidget::focusProxy() const
     \brief whether this widget (or its focus proxy) has the keyboard
     input focus
 
-    By default, this property is false.
+    By default, this property is \c false.
 
     \note Obtaining the value of this property for a widget is effectively equivalent
     to checking whether QApplication::focusWidget() refers to the widget.
@@ -6132,7 +6132,7 @@ void QWidget::clearFocus()
     \fn bool QWidget::focusNextChild()
 
     Finds a new widget to give the keyboard focus to, as appropriate
-    for \uicontrol Tab, and returns true if it can find a new widget, or
+    for \uicontrol Tab, and returns \c true if it can find a new widget, or
     false if it can't.
 
     \sa focusPreviousChild()
@@ -6142,7 +6142,7 @@ void QWidget::clearFocus()
     \fn bool QWidget::focusPreviousChild()
 
     Finds a new widget to give the keyboard focus to, as appropriate
-    for \uicontrol Shift+Tab, and returns true if it can find a new widget,
+    for \uicontrol Shift+Tab, and returns \c true if it can find a new widget,
     or false if it can't.
 
     \sa focusNextChild()
@@ -6150,7 +6150,7 @@ void QWidget::clearFocus()
 
 /*!
     Finds a new widget to give the keyboard focus to, as appropriate
-    for Tab and Shift+Tab, and returns true if it can find a new
+    for Tab and Shift+Tab, and returns \c true if it can find a new
     widget, or false if it can't.
 
     If \a next is true, this function searches forward, if \a next
@@ -6257,10 +6257,10 @@ QWidget *QWidget::previousInFocusChain() const
     keyboard focus (The window may still have focus if it has no
     widgets or none of its widgets accepts keyboard focus).
 
-    When popup windows are visible, this property is true for both the
+    When popup windows are visible, this property is \c true for both the
     active window \e and for the popup.
 
-    By default, this property is false.
+    By default, this property is \c false.
 
     \sa activateWindow(), QApplication::activeWindow()
 */
@@ -6640,8 +6640,8 @@ QByteArray QWidget::saveGeometry() const
     \since 4.2
 
     Restores the geometry and state top-level widgets stored in the
-    byte array \a geometry. Returns true on success; otherwise
-    returns false.
+    byte array \a geometry. Returns \c true on success; otherwise
+    returns \c false.
 
     If the restored geometry is off-screen, it will be modified to be
     inside the available screen geometry.
@@ -6965,7 +6965,7 @@ void QWidget::setFocusPolicy(Qt::FocusPolicy policy)
     calling update() and repaint() has no effect if updates are
     disabled.
 
-    By default, this property is true.
+    By default, this property is \c true.
 
     setUpdatesEnabled() is normally used to disable updates for a
     short period of time, for instance to avoid screen flicker during
@@ -7261,7 +7261,7 @@ void QWidgetPrivate::hide_helper()
 /*!
     \fn bool QWidget::isHidden() const
 
-    Returns true if the widget is hidden, otherwise returns false.
+    Returns \c true if the widget is hidden, otherwise returns \c false.
 
     A hidden widget will only become visible when show() is called on
     it. It will not be automatically shown when the parent is shown.
@@ -7567,8 +7567,8 @@ bool QWidgetPrivate::close_helper(CloseMode mode)
 
 
 /*!
-    Closes this widget. Returns true if the widget was closed;
-    otherwise returns false.
+    Closes this widget. Returns \c true if the widget was closed;
+    otherwise returns \c false.
 
     First it sends the widget a QCloseEvent. The widget is
     \l{hide()}{hidden} if it \l{QCloseEvent::accept()}{accepts}
@@ -7636,8 +7636,8 @@ bool QWidget::close()
 
 
 /*!
-    Returns true if this widget would become visible if \a ancestor is
-    shown; otherwise returns false.
+    Returns \c true if this widget would become visible if \a ancestor is
+    shown; otherwise returns \c false.
 
     The true case occurs if neither the widget itself nor any parent
     up to but excluding \a ancestor has been explicitly hidden.
@@ -7827,9 +7827,9 @@ QSize QWidget::minimumSizeHint() const
 
 
 /*!
-    Returns true if this widget is a parent, (or grandparent and so on
+    Returns \c true if this widget is a parent, (or grandparent and so on
     to any level), of the given \a child, and both widgets are within
-    the same window; otherwise returns false.
+    the same window; otherwise returns \c false.
 */
 
 bool QWidget::isAncestorOf(const QWidget *child) const
@@ -7884,8 +7884,8 @@ inline void setDisabledStyle(QWidget *w, bool setStyle)
     handlers such as mousePressEvent(); otherwise it will discard the
     event.
 
-    This function returns true if the event was recognized, otherwise
-    it returns false.  If the recognized event was accepted (see \l
+    This function returns \c true if the event was recognized, otherwise
+    it returns \c false.  If the recognized event was accepted (see \l
     QEvent::accepted), any further processing such as event
     propagation to the parent widget stops.
 
@@ -9349,7 +9349,7 @@ int QWidget::heightForWidth(int w) const
 /*!
     \since 5.0
 
-    Returns true if the widget's preferred height depends on its width; otherwise returns false.
+    Returns \c true if the widget's preferred height depends on its width; otherwise returns \c false.
 */
 bool QWidget::hasHeightForWidth() const
 {
@@ -10324,8 +10324,8 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
 
 /*! \fn bool QWidget::testAttribute(Qt::WidgetAttribute attribute) const
 
-  Returns true if attribute \a attribute is set on this widget;
-  otherwise returns false.
+  Returns \c true if attribute \a attribute is set on this widget;
+  otherwise returns \c false.
 
   \sa setAttribute()
  */
@@ -10888,7 +10888,7 @@ QRect QWidgetPrivate::frameStrut() const
     Changes the focus  from the current focusWidget to a widget in
     the \a direction.
 
-    Returns true, if there was a widget in that direction
+    Returns \c true, if there was a widget in that direction
 */
 bool QWidgetPrivate::navigateToDirection(Direction direction)
 {
@@ -11249,7 +11249,7 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
     button is released.
 
     \note Only visible widgets can grab mouse input. If isVisible()
-    returns false for a widget, that widget cannot call grabMouse().
+    returns \c false for a widget, that widget cannot call grabMouse().
 
     \note \b{(Mac OS X developers)} For \e Cocoa, calling
     grabMouse() on a widget only works when the mouse is inside the

@@ -132,7 +132,7 @@ QPixmapCache::Key::~Key()
 /*!
     \internal
 
-    Returns true if this key is the same as the given \a key; otherwise returns
+    Returns \c true if this key is the same as the given \a key; otherwise returns
     false.
 */
 bool QPixmapCache::Key::operator ==(const Key &key) const
@@ -234,7 +234,7 @@ QPMCache::~QPMCache()
   the timer is not restarted when the pixmap becomes unused, but it does
   restart once something else is added (i.e. the cache space is actually needed).
 
-  Returns true if any were removed.
+  Returns \c true if any were removed.
 */
 bool QPMCache::flushDetachedPixmaps(bool nt)
 {
@@ -493,7 +493,7 @@ bool QPixmapCache::find(const QString &key, QPixmap& pixmap)
 /*!
     Looks for a cached pixmap associated with the given \a key in the cache.
     If the pixmap is found, the function sets \a pixmap to that pixmap and
-    returns true; otherwise it leaves \a pixmap alone and returns false.
+    returns \c true; otherwise it leaves \a pixmap alone and returns \c false.
 
     \since 4.6
 
@@ -512,7 +512,7 @@ bool QPixmapCache::find(const QString &key, QPixmap* pixmap)
 /*!
     Looks for a cached pixmap associated with the given \a key in the cache.
     If the pixmap is found, the function sets \a pixmap to that pixmap and
-    returns true; otherwise it leaves \a pixmap alone and returns false. If
+    returns \c true; otherwise it leaves \a pixmap alone and returns \c false. If
     the pixmap is not found, it means that the \a key is no longer valid,
     so it will be released for the next insertion.
 
@@ -543,8 +543,8 @@ bool QPixmapCache::find(const Key &key, QPixmap* pixmap)
     The oldest pixmaps (least recently accessed in the cache) are
     deleted when more space is needed.
 
-    The function returns true if the object was inserted into the
-    cache; otherwise it returns false.
+    The function returns \c true if the object was inserted into the
+    cache; otherwise it returns \c false.
 
     \sa setCacheLimit()
 */
@@ -576,8 +576,8 @@ QPixmapCache::Key QPixmapCache::insert(const QPixmap &pixmap)
 
 /*!
     Replaces the pixmap associated with the given \a key with the \a pixmap
-    specified. Returns true if the \a pixmap has been correctly inserted into
-    the cache; otherwise returns false.
+    specified. Returns \c true if the \a pixmap has been correctly inserted into
+    the cache; otherwise returns \c false.
 
     \sa setCacheLimit(), insert()
 

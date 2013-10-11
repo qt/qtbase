@@ -2234,7 +2234,7 @@
         of rich text.
 
     \value AutoText The text string is interpreted as for
-        Qt::RichText if Qt::mightBeRichText() returns true, otherwise
+        Qt::RichText if Qt::mightBeRichText() returns \c true, otherwise
         as Qt::PlainText.
 */
 

@@ -271,7 +271,7 @@ QTcpServer::~QTcpServer()
     automatically. If \a address is QHostAddress::Any, the server
     will listen on all network interfaces.
 
-    Returns true on success; otherwise returns false.
+    Returns \c true on success; otherwise returns \c false.
 
     \sa isListening()
 */
@@ -351,8 +351,8 @@ bool QTcpServer::listen(const QHostAddress &address, quint16 port)
 }
 
 /*!
-    Returns true if the server is currently listening for incoming
-    connections; otherwise returns false.
+    Returns \c true if the server is currently listening for incoming
+    connections; otherwise returns \c false.
 
     \sa listen()
 */
@@ -408,8 +408,8 @@ qintptr QTcpServer::socketDescriptor() const
 
 /*!
     Sets the socket descriptor this server should use when listening
-    for incoming connections to \a socketDescriptor. Returns true if
-    the socket is set successfully; otherwise returns false.
+    for incoming connections to \a socketDescriptor. Returns \c true if
+    the socket is set successfully; otherwise returns \c false.
 
     The socket is assumed to be in listening state.
 
@@ -486,8 +486,8 @@ QHostAddress QTcpServer::serverAddress() const
 
 /*!
     Waits for at most \a msec milliseconds or until an incoming
-    connection is available. Returns true if a connection is
-    available; otherwise returns false. If the operation timed out
+    connection is available. Returns \c true if a connection is
+    available; otherwise returns \c false. If the operation timed out
     and \a timedOut is not 0, *\a timedOut will be set to true.
 
     This is a blocking function call. Its use is disadvised in a
@@ -524,8 +524,8 @@ bool QTcpServer::waitForNewConnection(int msec, bool *timedOut)
 }
 
 /*!
-    Returns true if the server has a pending connection; otherwise
-    returns false.
+    Returns \c true if the server has a pending connection; otherwise
+    returns \c false.
 
     \sa nextPendingConnection(), setMaxPendingConnections()
 */

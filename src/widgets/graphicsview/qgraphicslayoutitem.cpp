@@ -374,7 +374,7 @@ bool QGraphicsLayoutItemPrivate::hasWidthForHeight() const
     parentLayoutItem() function returns a pointer to the item's layoutItem
     parent. If the item's parent is 0 or if the parent does not inherit
     from QGraphicsItem, the parentLayoutItem() function then returns 0.
-    isLayout() returns true if the QGraphicsLayoutItem subclass is itself a
+    isLayout() returns \c true if the QGraphicsLayoutItem subclass is itself a
     layout, or false otherwise.
 
     Qt uses QGraphicsLayoutItem to provide layout functionality in the
@@ -853,9 +853,9 @@ void QGraphicsLayoutItem::setParentLayoutItem(QGraphicsLayoutItem *parent)
 }
 
 /*!
-    Returns true if this QGraphicsLayoutItem is a layout (e.g., is inherited
+    Returns \c true if this QGraphicsLayoutItem is a layout (e.g., is inherited
     by an object that arranges other QGraphicsLayoutItem objects); otherwise
-    returns false.
+    returns \c false.
 
     \sa QGraphicsLayout
 */

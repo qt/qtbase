@@ -181,7 +181,7 @@ QString QSessionManager::sessionKey() const
 
 /*!
     Asks the session manager for permission to interact with the user. Returns
-    true if interaction is permitted; otherwise returns false.
+    true if interaction is permitted; otherwise returns \c false.
 
     The rationale behind this mechanism is to make it possible to synchronize
     user interaction during a shutdown. Advanced session managers may ask all
@@ -215,7 +215,7 @@ bool QSessionManager::allowsInteraction()
 }
 
 /*!
-    Returns true if error interaction is permitted; otherwise returns false.
+    Returns \c true if error interaction is permitted; otherwise returns \c false.
 
     This is similar to allowsInteraction(), but also enables the application to
     tell the user about any errors that occur. Session managers may give error
@@ -386,8 +386,8 @@ void QSessionManager::setManagerProperty(const QString &name,
 }
 
 /*!
-    Returns true if the session manager is currently performing a second
-    session management phase; otherwise returns false.
+    Returns \c true if the session manager is currently performing a second
+    session management phase; otherwise returns \c false.
 
     \sa requestPhase2()
 */

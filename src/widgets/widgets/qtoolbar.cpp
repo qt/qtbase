@@ -446,8 +446,8 @@ void QToolBarPrivate::plug(const QRect &r)
 /*!
     \fn bool QToolBar::isAreaAllowed(Qt::ToolBarArea area) const
 
-    Returns true if this toolbar is dockable in the given \a area;
-    otherwise returns false.
+    Returns \c true if this toolbar is dockable in the given \a area;
+    otherwise returns \c false.
 */
 
 /*!
@@ -585,7 +585,7 @@ QToolBar::~QToolBar()
     \brief whether the user can move the toolbar within the toolbar area,
     or between toolbar areas.
 
-    By default, this property is true.
+    By default, this property is \c true.
 
     This property only makes sense if the toolbar is in a
     QMainWindow.
@@ -631,7 +631,7 @@ void QToolBar::setFloatable(bool floatable)
     \property QToolBar::floating
     \brief whether the toolbar is an independent window.
 
-    By default, this property is true.
+    By default, this property is \c true.
 
     \sa QWidget::isWindow()
 */

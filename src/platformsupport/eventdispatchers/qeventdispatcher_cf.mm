@@ -207,8 +207,8 @@ QEventDispatcherCoreFoundation::~QEventDispatcherCoreFoundation()
 
 /*!
     Processes all pending events that match \a flags until there are no
-    more events to process. Returns true if pending events were handled;
-    otherwise returns false.
+    more events to process. Returns \c true if pending events were handled;
+    otherwise returns \c false.
 
     Note:
 

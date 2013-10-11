@@ -372,7 +372,7 @@ QJsonDocument QJsonDocument::fromJson(const QByteArray &json, QJsonParseError *e
 }
 
 /*!
-    Returns true if the document doesn't contain any data.
+    Returns \c true if the document doesn't contain any data.
  */
 bool QJsonDocument::isEmpty() const
 {
@@ -403,7 +403,7 @@ QByteArray QJsonDocument::toBinaryData() const
 }
 
 /*!
-    Returns true if the document contains an array.
+    Returns \c true if the document contains an array.
 
     \sa array(), isObject()
  */
@@ -417,7 +417,7 @@ bool QJsonDocument::isArray() const
 }
 
 /*!
-    Returns true if the document contains an object.
+    Returns \c true if the document contains an object.
 
     \sa object(), isArray()
  */
@@ -549,7 +549,7 @@ bool QJsonDocument::operator==(const QJsonDocument &other) const
  */
 
 /*!
-    returns true if this document is null.
+    returns \c true if this document is null.
 
     Null documents are documents created through the default constructor.
 

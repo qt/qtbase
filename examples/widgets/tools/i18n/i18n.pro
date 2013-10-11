@@ -24,5 +24,3 @@ TRANSLATIONS += translations/i18n_ar.ts \
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tools/i18n
 INSTALLS += target
-
-simulator: warning(This example might not fully work on Simulator platform)

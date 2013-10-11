@@ -117,8 +117,8 @@ QEventLoop::~QEventLoop()
 
 /*!
     Processes pending events that match \a flags until there are no
-    more events to process. Returns true if pending events were handled;
-    otherwise returns false.
+    more events to process. Returns \c true if pending events were handled;
+    otherwise returns \c false.
 
     This function is especially useful if you have a long running
     operation and want to show its progress without allowing user
@@ -272,7 +272,7 @@ void QEventLoop::exit(int returnCode)
 }
 
 /*!
-    Returns true if the event loop is running; otherwise returns
+    Returns \c true if the event loop is running; otherwise returns
     false. The event loop is considered running from the time when
     exec() is called until exit() is called.
 

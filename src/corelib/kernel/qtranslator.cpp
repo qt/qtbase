@@ -431,8 +431,8 @@ QTranslator::~QTranslator()
 
     Loads \a filename + \a suffix (".qm" if the \a suffix is not
     specified), which may be an absolute file name or relative to \a
-    directory. Returns true if the translation is successfully loaded;
-    otherwise returns false.
+    directory. Returns \c true if the translation is successfully loaded;
+    otherwise returns \c false.
 
     If \a directory is not specified, the directory of the
     application's executable is used (i.e., as
@@ -708,8 +708,8 @@ static QString find_translation(const QLocale & locale,
 
     Loads \a filename + \a prefix + \l{QLocale::uiLanguages()}{ui language
     name} + \a suffix (".qm" if the \a suffix is not specified), which may be
-    an absolute file name or relative to \a directory. Returns true if the
-    translation is successfully loaded; otherwise returns false.
+    an absolute file name or relative to \a directory. Returns \c true if the
+    translation is successfully loaded; otherwise returns \c false.
 
     The previous contents of this translator object are discarded.
 
@@ -1104,7 +1104,7 @@ QString QTranslator::translate(const char *context, const char *sourceText, cons
 }
 
 /*!
-    Returns true if this translator is empty, otherwise returns false.
+    Returns \c true if this translator is empty, otherwise returns \c false.
     This function works with stripped and unstripped translation files.
 */
 bool QTranslator::isEmpty() const

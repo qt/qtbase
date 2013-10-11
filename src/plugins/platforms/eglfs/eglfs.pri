@@ -16,7 +16,8 @@ SOURCES +=  $$PWD/qeglfsintegration.cpp \
             $$PWD/qeglfsscreen.cpp \
             $$PWD/qeglfshooks_stub.cpp \
             $$PWD/qeglfscursor.cpp \
-            $$PWD/qeglfscontext.cpp
+            $$PWD/qeglfscontext.cpp \
+            $$PWD/qeglfscompositor.cpp
 
 HEADERS +=  $$PWD/qeglfsintegration.h \
             $$PWD/qeglfswindow.h \
@@ -24,7 +25,8 @@ HEADERS +=  $$PWD/qeglfsintegration.h \
             $$PWD/qeglfsscreen.h \
             $$PWD/qeglfscursor.h \
             $$PWD/qeglfshooks.h \
-            $$PWD/qeglfscontext.h
+            $$PWD/qeglfscontext.h \
+            $$PWD/qeglfscompositor.h
 
 QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 

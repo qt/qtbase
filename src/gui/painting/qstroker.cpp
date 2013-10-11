@@ -627,7 +627,7 @@ void QStroker::joinPoints(qfixed focal_x, qfixed focal_y, const QLineF &nextLine
 
 /*
    Strokes a subpath side using the \a it as source. Results are put into
-   \a stroke. The function returns true if the subpath side was closed.
+   \a stroke. The function returns \c true if the subpath side was closed.
    If \a capFirst is true, we will use capPoints instead of joinPoints to
    connect the first segment, other segments will be joined using joinPoints.
    This is to put capping in order...

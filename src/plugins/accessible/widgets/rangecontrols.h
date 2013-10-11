@@ -62,15 +62,15 @@ class QAccessibleAbstractSpinBox: public QAccessibleWidget, public QAccessibleVa
 public:
     explicit QAccessibleAbstractSpinBox(QWidget *w);
 
-    QString text(QAccessible::Text t) const;
-    void *interface_cast(QAccessible::InterfaceType t);
+    QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
+    void *interface_cast(QAccessible::InterfaceType t) Q_DECL_OVERRIDE;
 
     // QAccessibleValueInterface
-    QVariant currentValue() const;
-    void setCurrentValue(const QVariant &value);
-    QVariant maximumValue() const;
-    QVariant minimumValue() const;
-    QVariant minimumStepSize() const;
+    QVariant currentValue() const Q_DECL_OVERRIDE;
+    void setCurrentValue(const QVariant &value) Q_DECL_OVERRIDE;
+    QVariant maximumValue() const Q_DECL_OVERRIDE;
+    QVariant minimumValue() const Q_DECL_OVERRIDE;
+    QVariant minimumStepSize() const Q_DECL_OVERRIDE;
 
     // FIXME Action interface
 
@@ -92,7 +92,7 @@ class QAccessibleDoubleSpinBox : public QAccessibleAbstractSpinBox
 public:
     explicit QAccessibleDoubleSpinBox(QWidget *widget);
 
-    QString text(QAccessible::Text t) const;
+    QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
 
 protected:
     QDoubleSpinBox *doubleSpinBox() const;
@@ -103,14 +103,14 @@ class QAccessibleAbstractSlider: public QAccessibleWidget, public QAccessibleVal
 {
 public:
     explicit QAccessibleAbstractSlider(QWidget *w, QAccessible::Role r = QAccessible::Slider);
-    void *interface_cast(QAccessible::InterfaceType t);
+    void *interface_cast(QAccessible::InterfaceType t) Q_DECL_OVERRIDE;
 
     // QAccessibleValueInterface
-    QVariant currentValue() const;
-    void setCurrentValue(const QVariant &value);
-    QVariant maximumValue() const;
-    QVariant minimumValue() const;
-    QVariant minimumStepSize() const;
+    QVariant currentValue() const Q_DECL_OVERRIDE;
+    void setCurrentValue(const QVariant &value) Q_DECL_OVERRIDE;
+    QVariant maximumValue() const Q_DECL_OVERRIDE;
+    QVariant minimumValue() const Q_DECL_OVERRIDE;
+    QVariant minimumStepSize() const Q_DECL_OVERRIDE;
 
 protected:
     QAbstractSlider *abstractSlider() const;
@@ -121,7 +121,7 @@ class QAccessibleScrollBar : public QAccessibleAbstractSlider
 {
 public:
     explicit QAccessibleScrollBar(QWidget *w);
-    QString text(QAccessible::Text t) const;
+    QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
 
 protected:
     QScrollBar *scrollBar() const;
@@ -133,7 +133,7 @@ class QAccessibleSlider : public QAccessibleAbstractSlider
 {
 public:
     explicit QAccessibleSlider(QWidget *w);
-    QString text(QAccessible::Text t) const;
+    QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
 
 protected:
     QSlider *slider() const;
@@ -146,7 +146,7 @@ class QAccessibleDial : public QAccessibleAbstractSlider
 public:
     explicit QAccessibleDial(QWidget *w);
 
-    QString text(QAccessible::Text textType) const;
+    QString text(QAccessible::Text textType) const Q_DECL_OVERRIDE;
 
 protected:
     QDial *dial() const;

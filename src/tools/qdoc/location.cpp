@@ -204,7 +204,7 @@ void Location::pop()
 
 /*! \fn bool Location::isEmpty() const
 
-  Returns true if there is no file name set yet; returns false
+  Returns \c true if there is no file name set yet; returns \c false
   otherwise. The functions filePath(), lineNo() and columnNo()
   must not be called on an empty Location object.
  */

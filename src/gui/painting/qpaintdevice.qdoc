@@ -149,9 +149,9 @@
 /*!
     \fn bool QPaintDevice::paintingActive() const
 
-    Returns true if the device is currently being painted on, i.e. someone has
+    Returns \c true if the device is currently being painted on, i.e. someone has
     called QPainter::begin() but not yet called QPainter::end() for
-    this device; otherwise returns false.
+    this device; otherwise returns \c false.
 
     \sa QPainter::isActive()
 */

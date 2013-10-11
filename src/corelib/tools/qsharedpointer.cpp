@@ -506,14 +506,14 @@
 /*!
     \fn bool QSharedPointer::isNull() const
 
-    Returns true if this object is holding a reference to a null
+    Returns \c true if this object is holding a reference to a null
     pointer.
 */
 
 /*!
     \fn QSharedPointer::operator bool() const
 
-    Returns true if this object is not null. This function is suitable
+    Returns \c true if this object is not null. This function is suitable
     for use in \tt if-constructs, like:
 
     \code
@@ -526,7 +526,7 @@
 /*!
     \fn bool QSharedPointer::operator !() const
 
-    Returns true if this object is null. This function is suitable
+    Returns \c true if this object is null. This function is suitable
     for use in \tt if-constructs, like:
 
     \code
@@ -765,7 +765,7 @@
 /*!
     \fn bool QWeakPointer::isNull() const
 
-    Returns true if this object is holding a reference to a null
+    Returns \c true if this object is holding a reference to a null
     pointer.
 
     Note that, due to the nature of weak references, the pointer that
@@ -777,7 +777,7 @@
 /*!
     \fn QWeakPointer::operator bool() const
 
-    Returns true if this object is not null. This function is suitable
+    Returns \c true if this object is not null. This function is suitable
     for use in \tt if-constructs, like:
 
     \code
@@ -795,7 +795,7 @@
 /*!
     \fn bool QWeakPointer::operator !() const
 
-    Returns true if this object is null. This function is suitable
+    Returns \c true if this object is null. This function is suitable
     for use in \tt if-constructs, like:
 
     \code
@@ -896,7 +896,7 @@
     \fn bool operator==(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
     \relates QSharedPointer
 
-    Returns true if the pointer referenced by \a ptr1 is the
+    Returns \c true if the pointer referenced by \a ptr1 is the
     same pointer as that referenced by \a ptr2.
 
     If \a ptr2's template parameter is different from \a ptr1's,
@@ -910,7 +910,7 @@
     \fn bool operator!=(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
     \relates QSharedPointer
 
-    Returns true if the pointer referenced by \a ptr1 is not the
+    Returns \c true if the pointer referenced by \a ptr1 is not the
     same pointer as that referenced by \a ptr2.
 
     If \a ptr2's template parameter is different from \a ptr1's,
@@ -924,7 +924,7 @@
     \fn bool operator==(const QSharedPointer<T> &ptr1, const X *ptr2)
     \relates QSharedPointer
 
-    Returns true if the pointer referenced by \a ptr1 is the
+    Returns \c true if the pointer referenced by \a ptr1 is the
     same pointer as \a ptr2.
 
     If \a ptr2's type is different from \a ptr1's,
@@ -938,7 +938,7 @@
     \fn bool operator!=(const QSharedPointer<T> &ptr1, const X *ptr2)
     \relates QSharedPointer
 
-    Returns true if the pointer referenced by \a ptr1 is not the
+    Returns \c true if the pointer referenced by \a ptr1 is not the
     same pointer as \a ptr2.
 
     If \a ptr2's type is different from \a ptr1's,
@@ -952,7 +952,7 @@
     \fn bool operator==(const T *ptr1, const QSharedPointer<X> &ptr2)
     \relates QSharedPointer
 
-    Returns true if the pointer \a ptr1 is the
+    Returns \c true if the pointer \a ptr1 is the
     same pointer as that referenced by \a ptr2.
 
     If \a ptr2's template parameter is different from \a ptr1's type,
@@ -966,7 +966,7 @@
     \fn bool operator!=(const T *ptr1, const QSharedPointer<X> &ptr2)
     \relates QSharedPointer
 
-    Returns true if the pointer \a ptr1 is not the
+    Returns \c true if the pointer \a ptr1 is not the
     same pointer as that referenced by \a ptr2.
 
     If \a ptr2's template parameter is different from \a ptr1's type,
@@ -980,7 +980,7 @@
     \fn bool operator==(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2)
     \relates QWeakPointer
 
-    Returns true if the pointer referenced by \a ptr1 is the
+    Returns \c true if the pointer referenced by \a ptr1 is the
     same pointer as that referenced by \a ptr2.
 
     If \a ptr2's template parameter is different from \a ptr1's,
@@ -994,7 +994,7 @@
     \fn bool operator!=(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2)
     \relates QWeakPointer
 
-    Returns true if the pointer referenced by \a ptr1 is not the
+    Returns \c true if the pointer referenced by \a ptr1 is not the
     same pointer as that referenced by \a ptr2.
 
     If \a ptr2's template parameter is different from \a ptr1's,
@@ -1008,7 +1008,7 @@
     \fn bool operator==(const QWeakPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
     \relates QWeakPointer
 
-    Returns true if the pointer referenced by \a ptr1 is the
+    Returns \c true if the pointer referenced by \a ptr1 is the
     same pointer as that referenced by \a ptr2.
 
     If \a ptr2's template parameter is different from \a ptr1's,
@@ -1022,7 +1022,7 @@
     \fn bool operator!=(const QWeakPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
     \relates QWeakPointer
 
-    Returns true if the pointer referenced by \a ptr1 is not the
+    Returns \c true if the pointer referenced by \a ptr1 is not the
     same pointer as that referenced by \a ptr2.
 
     If \a ptr2's template parameter is different from \a ptr1's,

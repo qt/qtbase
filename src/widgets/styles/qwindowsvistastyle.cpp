@@ -2502,7 +2502,7 @@ bool QWindowsVistaStylePrivate::transitionsEnabled() const
 }
 
 /*! \internal
-    Returns true if all the necessary theme engine symbols were
+    Returns \c true if all the necessary theme engine symbols were
     resolved.
 */
 bool QWindowsVistaStylePrivate::resolveSymbols()

@@ -343,7 +343,7 @@ void QTextBoundaryFinder::setPosition(int position)
 
 /*! \fn bool QTextBoundaryFinder::isValid() const
 
-   Returns true if the text boundary finder is valid; otherwise returns false.
+   Returns \c true if the text boundary finder is valid; otherwise returns \c false.
    A default QTextBoundaryFinder is invalid.
 */
 
@@ -429,7 +429,7 @@ int QTextBoundaryFinder::toPreviousBoundary()
 }
 
 /*!
-  Returns true if the object's position() is currently at a valid text boundary.
+  Returns \c true if the object's position() is currently at a valid text boundary.
 */
 bool QTextBoundaryFinder::isAtBoundary() const
 {

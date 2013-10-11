@@ -9,7 +9,13 @@ android {
 
     isEmpty(BUILD_TOOLS_REVISION) {
         BUILD_TOOLS_REVISION = $$(ANDROID_BUILD_TOOLS_REVISION)
-        isEmpty(BUILD_TOOLS_REVISION): BUILD_TOOLS_REVISION = 17.0.0
+        isEmpty(BUILD_TOOLS_REVISION) {
+            BUILD_TOOLS_REVISIONS = $$files($$SDK_ROOT/build-tools/*)
+            for (REVISION, BUILD_TOOLS_REVISIONS) {
+                BASENAME = $$basename(REVISION)
+                greaterThan(BASENAME, $$BUILD_TOOLS_REVISION): BUILD_TOOLS_REVISION = $$BASENAME
+            }
+        }
     }
 
     ANDROID_JAR_FILE = $$SDK_ROOT/platforms/$$API_VERSION_TO_USE/android.jar

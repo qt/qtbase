@@ -256,18 +256,18 @@
 
 /*! \fn bool QAtomicInt::isReferenceCountingNative()
 
-    Returns true if reference counting is implemented using atomic
+    Returns \c true if reference counting is implemented using atomic
     processor instructions, false otherwise.
 */
 
 /*! \fn bool QAtomicInt::isReferenceCountingWaitFree()
 
-    Returns true if atomic reference counting is wait-free, false
+    Returns \c true if atomic reference counting is wait-free, false
     otherwise.
 */
 
 /*! \fn bool QAtomicInt::ref()
-    Atomically increments the value of this QAtomicInt. Returns true
+    Atomically increments the value of this QAtomicInt. Returns \c true
     if the new value is non-zero, false otherwise.
 
     This function uses \e ordered \l {QAtomicInt#Memory
@@ -279,7 +279,7 @@
 */
 
 /*! \fn bool QAtomicInt::deref()
-    Atomically decrements the value of this QAtomicInt. Returns true
+    Atomically decrements the value of this QAtomicInt. Returns \c true
     if the new value is non-zero, false otherwise.
 
     This function uses \e ordered \l {QAtomicInt#Memory
@@ -292,13 +292,13 @@
 
 /*! \fn bool QAtomicInt::isTestAndSetNative()
 
-    Returns true if test-and-set is implemented using atomic processor
+    Returns \c true if test-and-set is implemented using atomic processor
     instructions, false otherwise.
 */
 
 /*! \fn bool QAtomicInt::isTestAndSetWaitFree()
 
-    Returns true if atomic test-and-set is wait-free, false otherwise.
+    Returns \c true if atomic test-and-set is wait-free, false otherwise.
 */
 
 /*! \fn bool QAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
@@ -308,7 +308,7 @@
     If the current value of this QAtomicInt is the \a expectedValue,
     the test-and-set functions assign the \a newValue to this
     QAtomicInt and return true. If the values are \e not the same,
-    this function does nothing and returns false.
+    this function does nothing and returns \c false.
 
     This function uses \e relaxed \l {QAtomicInt#Memory
     ordering}{memory ordering} semantics, leaving the compiler and
@@ -322,7 +322,7 @@
     If the current value of this QAtomicInt is the \a expectedValue,
     the test-and-set functions assign the \a newValue to this
     QAtomicInt and return true. If the values are \e not the same,
-    this function does nothing and returns false.
+    this function does nothing and returns \c false.
 
     This function uses \e acquire \l {QAtomicInt#Memory
     ordering}{memory ordering} semantics, which ensures that memory
@@ -337,7 +337,7 @@
     If the current value of this QAtomicInt is the \a expectedValue,
     the test-and-set functions assign the \a newValue to this
     QAtomicInt and return true. If the values are \e not the same,
-    this function does nothing and returns false.
+    this function does nothing and returns \c false.
 
     This function uses \e release \l {QAtomicInt#Memory
     ordering}{memory ordering} semantics, which ensures that memory
@@ -352,7 +352,7 @@
     If the current value of this QAtomicInt is the \a expectedValue,
     the test-and-set functions assign the \a newValue to this
     QAtomicInt and return true. If the values are \e not the same,
-    this function does nothing and returns false.
+    this function does nothing and returns \c false.
 
     This function uses \e ordered \l {QAtomicInt#Memory
     ordering}{memory ordering} semantics, which ensures that memory
@@ -362,13 +362,13 @@
 
 /*! \fn bool QAtomicInt::isFetchAndStoreNative()
 
-    Returns true if fetch-and-store is implemented using atomic
+    Returns \c true if fetch-and-store is implemented using atomic
     processor instructions, false otherwise.
 */
 
 /*! \fn bool QAtomicInt::isFetchAndStoreWaitFree()
 
-    Returns true if atomic fetch-and-store is wait-free, false
+    Returns \c true if atomic fetch-and-store is wait-free, false
     otherwise.
 */
 
@@ -425,13 +425,13 @@
 
 /*! \fn bool QAtomicInt::isFetchAndAddNative()
 
-    Returns true if fetch-and-add is implemented using atomic
+    Returns \c true if fetch-and-add is implemented using atomic
     processor instructions, false otherwise.
 */
 
 /*! \fn bool QAtomicInt::isFetchAndAddWaitFree()
 
-    Returns true if atomic fetch-and-add is wait-free, false
+    Returns \c true if atomic fetch-and-add is wait-free, false
     otherwise.
 */
 
@@ -828,13 +828,13 @@
 
 /*! \fn bool QAtomicPointer::isTestAndSetNative()
 
-    Returns true if test-and-set is implemented using atomic processor
+    Returns \c true if test-and-set is implemented using atomic processor
     instructions, false otherwise.
 */
 
 /*! \fn bool QAtomicPointer::isTestAndSetWaitFree()
 
-    Returns true if atomic test-and-set is wait-free, false otherwise.
+    Returns \c true if atomic test-and-set is wait-free, false otherwise.
 */
 
 /*! \fn bool QAtomicPointer::testAndSetRelaxed(T *expectedValue, T *newValue)
@@ -844,7 +844,7 @@
     If the current value of this QAtomicPointer is the \a expectedValue,
     the test-and-set functions assign the \a newValue to this
     QAtomicPointer and return true. If the values are \e not the same,
-    this function does nothing and returns false.
+    this function does nothing and returns \c false.
 
     This function uses \e relaxed \l {QAtomicPointer#Memory
     ordering}{memory ordering} semantics, leaving the compiler and
@@ -858,7 +858,7 @@
     If the current value of this QAtomicPointer is the \a expectedValue,
     the test-and-set functions assign the \a newValue to this
     QAtomicPointer and return true. If the values are \e not the same,
-    this function does nothing and returns false.
+    this function does nothing and returns \c false.
 
     This function uses \e acquire \l {QAtomicPointer#Memory
     ordering}{memory ordering} semantics, which ensures that memory
@@ -873,7 +873,7 @@
     If the current value of this QAtomicPointer is the \a expectedValue,
     the test-and-set functions assign the \a newValue to this
     QAtomicPointer and return true. If the values are \e not the same,
-    this function does nothing and returns false.
+    this function does nothing and returns \c false.
 
     This function uses \e release \l {QAtomicPointer#Memory
     ordering}{memory ordering} semantics, which ensures that memory
@@ -888,7 +888,7 @@
     If the current value of this QAtomicPointer is the \a expectedValue,
     the test-and-set functions assign the \a newValue to this
     QAtomicPointer and return true. If the values are \e not the same,
-    this function does nothing and returns false.
+    this function does nothing and returns \c false.
 
     This function uses \e ordered \l {QAtomicPointer#Memory
     ordering}{memory ordering} semantics, which ensures that memory
@@ -898,13 +898,13 @@
 
 /*! \fn bool QAtomicPointer::isFetchAndStoreNative()
 
-    Returns true if fetch-and-store is implemented using atomic
+    Returns \c true if fetch-and-store is implemented using atomic
     processor instructions, false otherwise.
 */
 
 /*! \fn bool QAtomicPointer::isFetchAndStoreWaitFree()
 
-    Returns true if atomic fetch-and-store is wait-free, false
+    Returns \c true if atomic fetch-and-store is wait-free, false
     otherwise.
 */
 
@@ -961,13 +961,13 @@
 
 /*! \fn bool QAtomicPointer::isFetchAndAddNative()
 
-    Returns true if fetch-and-add is implemented using atomic
+    Returns \c true if fetch-and-add is implemented using atomic
     processor instructions, false otherwise.
 */
 
 /*! \fn bool QAtomicPointer::isFetchAndAddWaitFree()
 
-    Returns true if atomic fetch-and-add is wait-free, false
+    Returns \c true if atomic fetch-and-add is wait-free, false
     otherwise.
 */
 

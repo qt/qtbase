@@ -335,8 +335,8 @@ QNativeSocketEngine::~QNativeSocketEngine()
 
 /*!
     Initializes a QNativeSocketEngine by creating a new socket of type \a
-    socketType and network layer protocol \a protocol. Returns true on
-    success; otherwise returns false.
+    socketType and network layer protocol \a protocol. Returns \c true on
+    success; otherwise returns \c false.
 
     If the socket was already initialized, this function closes the
     socket before reeinitializing it.
@@ -461,7 +461,7 @@ bool QNativeSocketEngine::initialize(qintptr socketDescriptor, QAbstractSocket::
 }
 
 /*!
-    Returns true if the socket is valid; otherwise returns false. A
+    Returns \c true if the socket is valid; otherwise returns \c false. A
     socket is valid if it has not been successfully initialized, or if
     it has been closed.
 */
@@ -483,7 +483,7 @@ qintptr QNativeSocketEngine::socketDescriptor() const
 
 /*!
     Connects to the IP address and port specified by \a address and \a
-    port. If the connection is established, this function returns true
+    port. If the connection is established, this function returns \c true
     and the socket enters ConnectedState. Otherwise, false is
     returned.
 
@@ -559,7 +559,7 @@ bool QNativeSocketEngine::connectToHostByName(const QString &name, quint16 port)
 
 /*!
     Binds the socket to the address \a address and port \a
-    port. Returns true on success; otherwise false is returned. The
+    port. Returns \c true on success; otherwise false is returned. The
     port may be 0, in which case an arbitrary unused port is assigned
     automatically by the operating system.
 
@@ -708,7 +708,7 @@ qint64 QNativeSocketEngine::bytesAvailable() const
 }
 
 /*!
-    Returns true if there is at least one datagram pending. This
+    Returns \c true if there is at least one datagram pending. This
     function is only called by UDP sockets, where a datagram can have
     a size of 0. TCP sockets call bytesAvailable().
 */
@@ -880,7 +880,7 @@ void QNativeSocketEngine::close()
     reading. If \a timedOut is not 0 and \a msecs milliseconds have
     passed, the value of \a timedOut is set to true.
 
-    Returns true if data is available for reading; otherwise returns
+    Returns \c true if data is available for reading; otherwise returns
     false.
 
     This is a blocking function call; its use is disadvised in a
@@ -920,7 +920,7 @@ bool QNativeSocketEngine::waitForRead(int msecs, bool *timedOut)
     writing. If \a timedOut is not 0 and \a msecs milliseconds have
     passed, the value of \a timedOut is set to true.
 
-    Returns true if data is available for writing; otherwise returns
+    Returns \c true if data is available for writing; otherwise returns
     false.
 
     This is a blocking function call; its use is disadvised in a

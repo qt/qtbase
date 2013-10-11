@@ -50,9 +50,9 @@
 
 QT_BEGIN_NAMESPACE
 
-class QPlatformOpenGLContext;
 class QEglFSCursor;
 class QEglFSWindow;
+class QOpenGLContext;
 
 class QEglFSScreen : public QPlatformScreen
 {
@@ -77,7 +77,11 @@ public:
     QList<QEglFSWindow *> windows() const { return m_windows; }
     void addWindow(QEglFSWindow *window);
     void removeWindow(QEglFSWindow *window);
+    void moveToTop(QEglFSWindow *window);
+    void changeWindowIndex(QEglFSWindow *window, int newIdx);
     QEglFSWindow *rootWindow();
+    QOpenGLContext *rootContext() { return m_rootContext; }
+    void setRootContext(QOpenGLContext *context) { m_rootContext = context; }
 
 protected:
     void setPrimarySurface(EGLSurface surface);
@@ -89,6 +93,7 @@ private:
     EGLSurface m_surface;
     QEglFSCursor *m_cursor;
     QList<QEglFSWindow *> m_windows;
+    QOpenGLContext *m_rootContext;
 };
 
 QT_END_NAMESPACE

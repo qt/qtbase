@@ -227,8 +227,8 @@ void QMutex::lock() QT_MUTEX_LOCK_NOEXCEPT
 
 /*! \fn bool QMutex::tryLock(int timeout)
 
-    Attempts to lock the mutex. This function returns true if the lock
-    was obtained; otherwise it returns false. If another thread has
+    Attempts to lock the mutex. This function returns \c true if the lock
+    was obtained; otherwise it returns \c false. If another thread has
     locked the mutex, this function will wait for at most \a timeout
     milliseconds for the mutex to become available.
 
@@ -281,7 +281,7 @@ void QMutex::unlock() Q_DECL_NOTHROW
     \fn void QMutex::isRecursive()
     \since 5.0
 
-    Returns true if the mutex is recursive
+    Returns \c true if the mutex is recursive
 
 */
 bool QBasicMutex::isRecursive()

@@ -201,7 +201,7 @@ QDBusReply<QStringList> QDBusConnectionInterface::registeredServiceNames() const
 }
 
 /*!
-    Returns true if the service name \a serviceName has is currently
+    Returns \c true if the service name \a serviceName has is currently
     registered.
 */
 QDBusReply<bool> QDBusConnectionInterface::isServiceRegistered(const QString &serviceName) const

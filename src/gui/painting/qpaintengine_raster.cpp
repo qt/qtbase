@@ -2887,7 +2887,7 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
 
 
 /*!
- * Returns true if the rectangle is completely within the current clip
+ * Returns \c true if the rectangle is completely within the current clip
  * state of the paint engine.
  */
 bool QRasterPaintEnginePrivate::isUnclipped_normalized(const QRect &r) const

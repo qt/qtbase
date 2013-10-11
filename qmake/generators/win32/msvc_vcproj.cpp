@@ -203,14 +203,14 @@ const char _slnProjectMid[]     = "\") = ";
 const char _slnProjectEnd[]     = "\nEndProject";
 const char _slnGlobalBeg[]      = "\nGlobal";
 const char _slnGlobalEnd[]      = "\nEndGlobal";
-const char _slnSolutionConf[]   = "\n\tGlobalSection(SolutionConfiguration) = preSolution"
-                                  "\n\t\tConfigName.0 = Debug|Win32"
-                                  "\n\t\tConfigName.1 = Release|Win32"
+const char _slnSolutionConf[]   = "\n\tGlobalSection(SolutionConfigurationPlatforms) = preSolution"
+                                  "\n\t\tDebug|Win32 = Debug|Win32"
+                                  "\n\t\tRelease|Win32 = Release|Win32"
                                   "\n\tEndGlobalSection";
 
 const char _slnProjDepBeg[]     = "\n\tProjectSection(ProjectDependencies) = postProject";
 const char _slnProjDepEnd[]     = "\n\tEndProjectSection";
-const char _slnProjConfBeg[]    = "\n\tGlobalSection(ProjectConfiguration) = postSolution";
+const char _slnProjConfBeg[]    = "\n\tGlobalSection(ProjectConfigurationPlatforms) = postSolution";
 const char _slnProjRelConfTag1[]= ".Release|%1.ActiveCfg = Release|";
 const char _slnProjRelConfTag2[]= ".Release|%1.Build.0 = Release|";
 const char _slnProjDbgConfTag1[]= ".Debug|%1.ActiveCfg = Debug|";
@@ -1019,7 +1019,7 @@ void VcprojGenerator::initConfiguration()
     initPreBuildEventTools();
     initPostBuildEventTools();
     // Only deploy for CE and WinRT projects
-    if (!project->isHostBuild() && !project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH")
+    if ((!project->isHostBuild() && !project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH"))
             || conf.WinRT)
         initDeploymentTool();
     initPreLinkEventTools();

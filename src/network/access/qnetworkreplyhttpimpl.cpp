@@ -1521,7 +1521,7 @@ void QNetworkReplyHttpImplPrivate::setResumeOffset(quint64 offset)
 }
 
 /*!
-    Starts the backend.  Returns true if the backend is started.  Returns false if the backend
+    Starts the backend.  Returns \c true if the backend is started.  Returns \c false if the backend
     could not be started due to an unopened or roaming session.  The caller should recall this
     function once the session has been opened or the roaming process has finished.
 */
@@ -1961,7 +1961,7 @@ void QNetworkReplyHttpImplPrivate::metaDataChanged()
 
 /*
     Migrates the backend of the QNetworkReply to a new network connection if required.  Returns
-    true if the reply is migrated or it is not required; otherwise returns false.
+    true if the reply is migrated or it is not required; otherwise returns \c false.
 */
 bool QNetworkReplyHttpImplPrivate::migrateBackend()
 {

@@ -67,7 +67,7 @@ QmlCodeMarker::~QmlCodeMarker()
 }
 
 /*!
-  Returns true if the \a code is recognized by the parser.
+  Returns \c true if the \a code is recognized by the parser.
  */
 bool QmlCodeMarker::recognizeCode(const QString &code)
 {
@@ -83,7 +83,7 @@ bool QmlCodeMarker::recognizeCode(const QString &code)
 }
 
 /*!
-  Returns true if \a ext is any of a list of file extensions
+  Returns \c true if \a ext is any of a list of file extensions
   for the QML language.
  */
 bool QmlCodeMarker::recognizeExtension(const QString &ext)
@@ -92,7 +92,7 @@ bool QmlCodeMarker::recognizeExtension(const QString &ext)
 }
 
 /*!
-  Returns true if the \a language is recognized. Only "QML" is
+  Returns \c true if the \a language is recognized. Only "QML" is
   recognized by this marker.
  */
 bool QmlCodeMarker::recognizeLanguage(const QString &language)

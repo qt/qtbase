@@ -243,7 +243,7 @@ QT_BEGIN_NAMESPACE
 /*!
    \fn bool QPlatformSharedGraphicsCache::requestBatchStarted() const
 
-   Returns true if a request batch has previously been started using beginRequestBatch()
+   Returns \c true if a request batch has previously been started using beginRequestBatch()
    and not yet stopped using endRequestBatch().
 
    \sa beginRequestBatch(), endRequestBatch()
@@ -278,7 +278,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QPlatformSharedGraphicsCache::dereferenceBuffer(void *bufferId)
 
-    Removed a previously registered reference to the buffer \a bufferId. Returns true if there
+    Removed a previously registered reference to the buffer \a bufferId. Returns \c true if there
     are still more references to the buffer in question, or false if this was the last reference
     (in which case the buffer may have been deleted in the cache.)
 

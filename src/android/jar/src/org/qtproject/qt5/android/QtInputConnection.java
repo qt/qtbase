@@ -73,6 +73,7 @@ class QtNativeInputConnection
     static native String getTextAfterCursor(int length, int flags);
     static native String getTextBeforeCursor(int length, int flags);
     static native boolean setComposingText(String text, int newCursorPosition);
+    static native boolean setComposingRegion(int start, int end);
     static native boolean setSelection(int start, int end);
     static native boolean selectAll();
     static native boolean cut();
@@ -234,6 +235,12 @@ public class QtInputConnection extends BaseInputConnection
     public boolean setComposingText(CharSequence text, int newCursorPosition)
     {
         return QtNativeInputConnection.setComposingText(text.toString(), newCursorPosition);
+    }
+
+    @Override
+    public boolean setComposingRegion(int start, int end)
+    {
+        return QtNativeInputConnection.setComposingRegion(start, end);
     }
 
     @Override

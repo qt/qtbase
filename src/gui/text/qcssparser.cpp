@@ -1141,7 +1141,7 @@ static bool setFontWeightFromValue(const QCss::Value &value, QFont *font)
 /** \internal
  * parse the font family from the values (starting from index \a start)
  * and set it the \a font
- * The function returns true if a family was extracted.
+ * The function returns \c true if a family was extracted.
  */
 static bool setFontFamilyFromValues(const QVector<QCss::Value> &values, QFont *font, int start = 0)
 {

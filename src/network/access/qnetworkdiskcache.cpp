@@ -685,7 +685,7 @@ void QCacheItem::writeCompressedData(QFile *device) const
 }
 
 /*!
-    Returns false if the file is a cache file,
+    Returns \c false if the file is a cache file,
     but is an older version and should be removed otherwise true.
  */
 bool QCacheItem::read(QFile *device, bool readData)

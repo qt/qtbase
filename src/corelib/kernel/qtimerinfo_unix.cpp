@@ -108,7 +108,7 @@ timespec qAbsTimespec(const timespec &t)
 }
 
 /*
-  Returns true if the real time clock has changed by more than 10%
+  Returns \c true if the real time clock has changed by more than 10%
   relative to the processor time since the last time this function was
   called. This presumably means that the system time has been changed.
 

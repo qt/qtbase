@@ -118,11 +118,11 @@ QDBusContext::~QDBusContext()
 }
 
 /*!
-    Returns true if we are processing a D-Bus call. If this function
-    returns true, the rest of the functions in this class are
+    Returns \c true if we are processing a D-Bus call. If this function
+    returns \c true, the rest of the functions in this class are
     available.
 
-    Accessing those functions when this function returns false is
+    Accessing those functions when this function returns \c false is
     undefined and may lead to crashes.
 */
 bool QDBusContext::calledFromDBus() const
@@ -147,7 +147,7 @@ const QDBusMessage &QDBusContext::message() const
 }
 
 /*!
-    Returns true if this call will have a delayed reply.
+    Returns \c true if this call will have a delayed reply.
 
     \sa setDelayedReply()
 */

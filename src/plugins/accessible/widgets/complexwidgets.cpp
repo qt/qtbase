@@ -226,8 +226,8 @@ QString QAccessibleTabBar::text(QAccessible::Text t) const
     unselects it. If \a extend is true and the selection mode is not
     \c Single and there is an existing selection, the selection is
     extended to include all the items from the existing selection up
-    to and including the item with index \a child. Returns true if a
-    selection was made or extended; otherwise returns false.
+    to and including the item with index \a child. Returns \c true if a
+    selection was made or extended; otherwise returns \c false.
 
     \sa selection(), clearSelection()
 */

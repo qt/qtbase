@@ -217,7 +217,7 @@ int QTextTableCell::columnSpan() const
 /*!
     \fn bool QTextTableCell::isValid() const
 
-    Returns true if this is a valid table cell; otherwise returns
+    Returns \c true if this is a valid table cell; otherwise returns
     false.
 */
 
@@ -303,15 +303,15 @@ QTextFrame::iterator QTextTableCell::end() const
 /*!
     \fn QTextCursor QTextTableCell::operator==(const QTextTableCell &other) const
 
-    Returns true if this cell object and the \a other cell object
-    describe the same cell; otherwise returns false.
+    Returns \c true if this cell object and the \a other cell object
+    describe the same cell; otherwise returns \c false.
 */
 
 /*!
     \fn QTextCursor QTextTableCell::operator!=(const QTextTableCell &other) const
 
-    Returns true if this cell object and the \a other cell object
-    describe different cells; otherwise returns false.
+    Returns \c true if this cell object and the \a other cell object
+    describe different cells; otherwise returns \c false.
 */
 
 /*!

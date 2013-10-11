@@ -58,7 +58,7 @@
     object.  Pass either a file name or a device pointer, and the
     image format to QImageWriter's constructor. You can then set
     several options, such as the gamma level (by calling setGamma())
-    and quality (by calling setQuality()). canWrite() returns true if
+    and quality (by calling setQuality()). canWrite() returns \c true if
     QImageWriter can write the image (i.e., the image format is
     supported and the device is open for writing). Call write() to
     write the image to the device.
@@ -554,7 +554,7 @@ void QImageWriter::setText(const QString &key, const QString &text)
 }
 
 /*!
-    Returns true if QImageWriter can write the image; i.e., the image
+    Returns \c true if QImageWriter can write the image; i.e., the image
     format is supported and the assigned device is open for reading.
 
     \sa write(), setDevice(), setFormat()
@@ -580,7 +580,7 @@ bool QImageWriter::canWrite() const
 
 /*!
     Writes the image \a image to the assigned device or file
-    name. Returns true on success; otherwise returns false. If the
+    name. Returns \c true on success; otherwise returns \c false. If the
     operation fails, you can call error() to find the type of error
     that occurred, or errorString() to get a human readable
     description of the error.
@@ -631,7 +631,7 @@ QString QImageWriter::errorString() const
 /*!
     \since 4.2
 
-    Returns true if the writer supports \a option; otherwise returns
+    Returns \c true if the writer supports \a option; otherwise returns
     false.
 
     Different image formats support different options. Call this function to

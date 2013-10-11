@@ -938,8 +938,8 @@ QDomImplementation& QDomImplementation::operator=(const QDomImplementation &x)
 }
 
 /*!
-    Returns true if \a x and this DOM implementation object were
-    created from the same QDomDocument; otherwise returns false.
+    Returns \c true if \a x and this DOM implementation object were
+    created from the same QDomDocument; otherwise returns \c false.
 */
 bool QDomImplementation::operator==(const QDomImplementation &x) const
 {
@@ -947,8 +947,8 @@ bool QDomImplementation::operator==(const QDomImplementation &x) const
 }
 
 /*!
-    Returns true if \a x and this DOM implementation object were
-    created from different QDomDocuments; otherwise returns false.
+    Returns \c true if \a x and this DOM implementation object were
+    created from different QDomDocuments; otherwise returns \c false.
 */
 bool QDomImplementation::operator!=(const QDomImplementation &x) const
 {
@@ -965,8 +965,8 @@ QDomImplementation::~QDomImplementation()
 }
 
 /*!
-    The function returns true if QDom implements the requested \a
-    version of a \a feature; otherwise returns false.
+    The function returns \c true if QDom implements the requested \a
+    version of a \a feature; otherwise returns \c false.
 
     The currently supported features and their versions:
     \table
@@ -1061,8 +1061,8 @@ QDomDocument QDomImplementation::createDocument(const QString& nsURI, const QStr
 }
 
 /*!
-    Returns false if the object was created by
-    QDomDocument::implementation(); otherwise returns true.
+    Returns \c false if the object was created by
+    QDomDocument::implementation(); otherwise returns \c true.
 */
 bool QDomImplementation::isNull()
 {
@@ -1334,8 +1334,8 @@ QDomNodeList& QDomNodeList::operator=(const QDomNodeList &n)
 }
 
 /*!
-    Returns true if the node list \a n and this node list are equal;
-    otherwise returns false.
+    Returns \c true if the node list \a n and this node list are equal;
+    otherwise returns \c false.
 */
 bool QDomNodeList::operator==(const QDomNodeList &n) const
 {
@@ -1347,8 +1347,8 @@ bool QDomNodeList::operator==(const QDomNodeList &n) const
 }
 
 /*!
-    Returns true the node list \a n and this node list are not equal;
-    otherwise returns false.
+    Returns \c true the node list \a n and this node list are not equal;
+    otherwise returns \c false.
 */
 bool QDomNodeList::operator!=(const QDomNodeList &n) const
 {
@@ -1394,7 +1394,7 @@ int QDomNodeList::length() const
 /*!
     \fn bool QDomNodeList::isEmpty() const
 
-    Returns true if the list contains no items; otherwise returns false.
+    Returns \c true if the list contains no items; otherwise returns \c false.
     This function is provided for Qt API consistency.
 */
 
@@ -2051,8 +2051,8 @@ QDomNode& QDomNode::operator=(const QDomNode &n)
 }
 
 /*!
-    Returns true if \a n and this DOM node are equal; otherwise
-    returns false.
+    Returns \c true if \a n and this DOM node are equal; otherwise
+    returns \c false.
 
     Any instance of QDomNode acts as a reference to an underlying data
     structure in QDomDocument. The test for equality checks if the two
@@ -2076,8 +2076,8 @@ bool QDomNode::operator== (const QDomNode& n) const
 }
 
 /*!
-    Returns true if \a n and this DOM node are not equal; otherwise
-    returns false.
+    Returns \c true if \a n and this DOM node are not equal; otherwise
+    returns \c false.
 */
 bool QDomNode::operator!= (const QDomNode& n) const
 {
@@ -2206,7 +2206,7 @@ QDomNode::NodeType QDomNode::nodeType() const
 
 /*!
     Returns the parent node. If this node has no parent, a null node
-    is returned (i.e. a node for which isNull() returns true).
+    is returned (i.e. a node for which isNull() returns \c true).
 */
 QDomNode QDomNode::parentNode() const
 {
@@ -2364,9 +2364,9 @@ void QDomNode::normalize()
 }
 
 /*!
-    Returns true if the DOM implementation implements the feature \a
+    Returns \c true if the DOM implementation implements the feature \a
     feature and this feature is supported by this node in the version
-    \a version; otherwise returns false.
+    \a version; otherwise returns \c false.
 
     \sa QDomImplementation::hasFeature()
 */
@@ -2466,7 +2466,7 @@ QString QDomNode::localName() const
 }
 
 /*!
-    Returns true if the node has attributes; otherwise returns false.
+    Returns \c true if the node has attributes; otherwise returns \c false.
 
     \sa attributes()
 */
@@ -2608,8 +2608,8 @@ QDomNode QDomNode::appendChild(const QDomNode& newChild)
 }
 
 /*!
-    Returns true if the node has one or more children; otherwise
-    returns false.
+    Returns \c true if the node has one or more children; otherwise
+    returns \c false.
 */
 bool QDomNode::hasChildNodes() const
 {
@@ -2619,8 +2619,8 @@ bool QDomNode::hasChildNodes() const
 }
 
 /*!
-    Returns true if this node is null (i.e. if it has no type or
-    contents); otherwise returns false.
+    Returns \c true if this node is null (i.e. if it has no type or
+    contents); otherwise returns \c false.
 */
 bool QDomNode::isNull() const
 {
@@ -2706,9 +2706,9 @@ QTextStream& operator<<(QTextStream& str, const QDomNode& node)
 }
 
 /*!
-    Returns true if the node is an attribute; otherwise returns false.
+    Returns \c true if the node is an attribute; otherwise returns \c false.
 
-    If this function returns true, it does not imply that this object
+    If this function returns \c true, it does not imply that this object
     is a QDomAttribute; you can get the QDomAttribute with
     toAttribute().
 
@@ -2722,10 +2722,10 @@ bool QDomNode::isAttr() const
 }
 
 /*!
-    Returns true if the node is a CDATA section; otherwise returns
+    Returns \c true if the node is a CDATA section; otherwise returns
     false.
 
-    If this function returns true, it does not imply that this object
+    If this function returns \c true, it does not imply that this object
     is a QDomCDATASection; you can get the QDomCDATASection with
     toCDATASection().
 
@@ -2739,10 +2739,10 @@ bool QDomNode::isCDATASection() const
 }
 
 /*!
-    Returns true if the node is a document fragment; otherwise returns
+    Returns \c true if the node is a document fragment; otherwise returns
     false.
 
-    If this function returns true, it does not imply that this object
+    If this function returns \c true, it does not imply that this object
     is a QDomDocumentFragment; you can get the QDomDocumentFragment
     with toDocumentFragment().
 
@@ -2756,9 +2756,9 @@ bool QDomNode::isDocumentFragment() const
 }
 
 /*!
-    Returns true if the node is a document; otherwise returns false.
+    Returns \c true if the node is a document; otherwise returns \c false.
 
-    If this function returns true, it does not imply that this object
+    If this function returns \c true, it does not imply that this object
     is a QDomDocument; you can get the QDomDocument with toDocument().
 
     \sa toDocument()
@@ -2771,10 +2771,10 @@ bool QDomNode::isDocument() const
 }
 
 /*!
-    Returns true if the node is a document type; otherwise returns
+    Returns \c true if the node is a document type; otherwise returns
     false.
 
-    If this function returns true, it does not imply that this object
+    If this function returns \c true, it does not imply that this object
     is a QDomDocumentType; you can get the QDomDocumentType with
     toDocumentType().
 
@@ -2788,9 +2788,9 @@ bool QDomNode::isDocumentType() const
 }
 
 /*!
-    Returns true if the node is an element; otherwise returns false.
+    Returns \c true if the node is an element; otherwise returns \c false.
 
-    If this function returns true, it does not imply that this object
+    If this function returns \c true, it does not imply that this object
     is a QDomElement; you can get the QDomElement with toElement().
 
     \sa toElement()
@@ -2803,10 +2803,10 @@ bool QDomNode::isElement() const
 }
 
 /*!
-    Returns true if the node is an entity reference; otherwise returns
+    Returns \c true if the node is an entity reference; otherwise returns
     false.
 
-    If this function returns true, it does not imply that this object
+    If this function returns \c true, it does not imply that this object
     is a QDomEntityReference; you can get the QDomEntityReference with
     toEntityReference().
 
@@ -2820,9 +2820,9 @@ bool QDomNode::isEntityReference() const
 }
 
 /*!
-    Returns true if the node is a text node; otherwise returns false.
+    Returns \c true if the node is a text node; otherwise returns \c false.
 
-    If this function returns true, it does not imply that this object
+    If this function returns \c true, it does not imply that this object
     is a QDomText; you can get the QDomText with toText().
 
     \sa toText()
@@ -2835,9 +2835,9 @@ bool QDomNode::isText() const
 }
 
 /*!
-    Returns true if the node is an entity; otherwise returns false.
+    Returns \c true if the node is an entity; otherwise returns \c false.
 
-    If this function returns true, it does not imply that this object
+    If this function returns \c true, it does not imply that this object
     is a QDomEntity; you can get the QDomEntity with toEntity().
 
     \sa toEntity()
@@ -2850,9 +2850,9 @@ bool QDomNode::isEntity() const
 }
 
 /*!
-    Returns true if the node is a notation; otherwise returns false.
+    Returns \c true if the node is a notation; otherwise returns \c false.
 
-    If this function returns true, it does not imply that this object
+    If this function returns \c true, it does not imply that this object
     is a QDomNotation; you can get the QDomNotation with toNotation().
 
     \sa toNotation()
@@ -2865,10 +2865,10 @@ bool QDomNode::isNotation() const
 }
 
 /*!
-    Returns true if the node is a processing instruction; otherwise
-    returns false.
+    Returns \c true if the node is a processing instruction; otherwise
+    returns \c false.
 
-    If this function returns true, it does not imply that this object
+    If this function returns \c true, it does not imply that this object
     is a QDomProcessingInstruction; you can get the
     QProcessingInstruction with toProcessingInstruction().
 
@@ -2882,10 +2882,10 @@ bool QDomNode::isProcessingInstruction() const
 }
 
 /*!
-    Returns true if the node is a character data node; otherwise
-    returns false.
+    Returns \c true if the node is a character data node; otherwise
+    returns \c false.
 
-    If this function returns true, it does not imply that this object
+    If this function returns \c true, it does not imply that this object
     is a QDomCharacterData; you can get the QDomCharacterData with
     toCharacterData().
 
@@ -2899,9 +2899,9 @@ bool QDomNode::isCharacterData() const
 }
 
 /*!
-    Returns true if the node is a comment; otherwise returns false.
+    Returns \c true if the node is a comment; otherwise returns \c false.
 
-    If this function returns true, it does not imply that this object
+    If this function returns \c true, it does not imply that this object
     is a QDomComment; you can get the QDomComment with toComment().
 
     \sa toComment()
@@ -3253,8 +3253,8 @@ QDomNamedNodeMap& QDomNamedNodeMap::operator=(const QDomNamedNodeMap &n)
 }
 
 /*!
-    Returns true if \a n and this named node map are equal; otherwise
-    returns false.
+    Returns \c true if \a n and this named node map are equal; otherwise
+    returns \c false.
 */
 bool QDomNamedNodeMap::operator== (const QDomNamedNodeMap& n) const
 {
@@ -3262,8 +3262,8 @@ bool QDomNamedNodeMap::operator== (const QDomNamedNodeMap& n) const
 }
 
 /*!
-    Returns true if \a n and this named node map are not equal;
-    otherwise returns false.
+    Returns \c true if \a n and this named node map are not equal;
+    otherwise returns \c false.
 */
 bool QDomNamedNodeMap::operator!= (const QDomNamedNodeMap& n) const
 {
@@ -3410,7 +3410,7 @@ int QDomNamedNodeMap::length() const
 /*!
     \fn bool QDomNamedNodeMap::isEmpty() const
 
-    Returns true if the map is empty; otherwise returns false. This function is
+    Returns \c true if the map is empty; otherwise returns \c false. This function is
     provided for Qt API consistency.
 */
 
@@ -3427,8 +3427,8 @@ int QDomNamedNodeMap::length() const
 */
 
 /*!
-    Returns true if the map contains a node called \a name; otherwise
-    returns false.
+    Returns \c true if the map contains a node called \a name; otherwise
+    returns \c false.
 
     \b{Note:} This function does not take the presence of namespaces into account.
     Use namedItemNS() to test whether the map contains a node with a specific namespace
@@ -4324,8 +4324,8 @@ QString QDomAttr::name() const
 }
 
 /*!
-    Returns true if the attribute has been set by the user with setValue().
-    Returns false if the value hasn't been specified or set.
+    Returns \c true if the attribute has been set by the user with setValue().
+    Returns \c false if the value hasn't been specified or set.
 
     \sa setValue()
 */
@@ -4955,8 +4955,8 @@ QDomNodeList QDomElement::elementsByTagName(const QString& tagname) const
 }
 
 /*!
-  Returns true if this element has an attribute called \a name;
-  otherwise returns false.
+  Returns \c true if this element has an attribute called \a name;
+  otherwise returns \c false.
 
   \b{Note:} This function does not take the presence of namespaces
   into account.  As a result, the specified name will be tested
@@ -5117,7 +5117,7 @@ QDomNodeList QDomElement::elementsByTagNameNS(const QString& nsURI, const QStrin
 }
 
 /*!
-    Returns true if this element has an attribute with the local name
+    Returns \c true if this element has an attribute with the local name
     \a localName and the namespace URI \a nsURI; otherwise returns
     false.
 */
@@ -6652,7 +6652,7 @@ QDomDocument::~QDomDocument()
     \overload
 
     This function reads the XML document from the string \a text, returning
-    true if the content was successfully parsed; otherwise returns false.
+    true if the content was successfully parsed; otherwise returns \c false.
     Since \a text is already a Unicode string, no encoding detection
     is done.
 */
@@ -6679,11 +6679,11 @@ bool QDomDocument::setContent(const QString& text, bool namespaceProcessing, QSt
     is false, the parser does no namespace processing when it reads
     the XML file.
 
-    If a parse error occurs, this function returns false and the error
+    If a parse error occurs, this function returns \c false and the error
     message is placed in \c{*}\a{errorMsg}, the line number in
     \c{*}\a{errorLine} and the column number in \c{*}\a{errorColumn}
     (unless the associated pointer is set to 0); otherwise this
-    function returns true. The various error messages are described in
+    function returns \c true. The various error messages are described in
     the QXmlParseException class documentation. Note that, if you
     want to display these error messages to your application's users,
     they will be displayed in English unless they are explicitly
@@ -6734,7 +6734,7 @@ bool QDomDocument::setContent(const QByteArray &data, bool namespaceProcessing, 
     \overload
 
     This function reads the XML document from the IO device \a dev, returning
-    true if the content was successfully parsed; otherwise returns false.
+    true if the content was successfully parsed; otherwise returns \c false.
 */
 bool QDomDocument::setContent(QIODevice* dev, bool namespaceProcessing, QString *errorMsg, int *errorLine, int *errorColumn)
 {
@@ -6749,7 +6749,7 @@ bool QDomDocument::setContent(QIODevice* dev, bool namespaceProcessing, QString 
     \since 4.5
 
     This function reads the XML document from the QXmlInputSource \a source,
-    returning true if the content was successfully parsed; otherwise returns false.
+    returning true if the content was successfully parsed; otherwise returns \c false.
 
 */
 bool QDomDocument::setContent(QXmlInputSource *source, bool namespaceProcessing, QString *errorMsg, int *errorLine, int *errorColumn )
@@ -6765,7 +6765,7 @@ bool QDomDocument::setContent(QXmlInputSource *source, bool namespaceProcessing,
     \overload
 
     This function reads the XML document from the string \a text, returning
-    true if the content was successfully parsed; otherwise returns false.
+    true if the content was successfully parsed; otherwise returns \c false.
     Since \a text is already a Unicode string, no encoding detection
     is performed.
 
@@ -6794,7 +6794,7 @@ bool QDomDocument::setContent(const QByteArray& buffer, QString *errorMsg, int *
     \overload
 
     This function reads the XML document from the IO device \a dev, returning
-    true if the content was successfully parsed; otherwise returns false.
+    true if the content was successfully parsed; otherwise returns \c false.
 
     No namespace processing is performed.
 */
@@ -6808,7 +6808,7 @@ bool QDomDocument::setContent(QIODevice* dev, QString *errorMsg, int *errorLine,
 
     This function reads the XML document from the QXmlInputSource \a source and
     parses it with the QXmlReader \a reader, returning true if the content was
-    successfully parsed; otherwise returns false.
+    successfully parsed; otherwise returns \c false.
 
     This function doesn't change the features of the \a reader. If you want to
     use certain features for parsing you can use this function to set up the

@@ -58,8 +58,8 @@ QT_BEGIN_NAMESPACE
 */
 
 QThreadData::QThreadData(int initialRefCount)
-    : _ref(initialRefCount), thread(0), threadId(0),
-      quitNow(false), loopLevel(0), eventDispatcher(0), canWait(true), isAdopted(false)
+    : _ref(initialRefCount), loopLevel(0), thread(0), threadId(0),
+      eventDispatcher(0), quitNow(false), canWait(true), isAdopted(false)
 {
     // fprintf(stderr, "QThreadData %p created\n", this);
 }
@@ -407,7 +407,7 @@ QThread::QThread(QThreadPrivate &dd, QObject *parent)
 
     Note that deleting a QThread object will not stop the execution
     of the thread it manages. Deleting a running QThread (i.e.
-    isFinished() returns false) will probably result in a program
+    isFinished() returns \c false) will probably result in a program
     crash. Wait for the finished() signal before deleting the
     QThread.
 */
@@ -429,7 +429,7 @@ QThread::~QThread()
 }
 
 /*!
-    Returns true if the thread is finished; otherwise returns false.
+    Returns \c true if the thread is finished; otherwise returns \c false.
 
     \sa isRunning()
 */
@@ -441,7 +441,7 @@ bool QThread::isFinished() const
 }
 
 /*!
-    Returns true if the thread is running; otherwise returns false.
+    Returns \c true if the thread is running; otherwise returns \c false.
 
     \sa isFinished()
 */

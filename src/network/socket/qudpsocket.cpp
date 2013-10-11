@@ -66,7 +66,7 @@
     you don't need to call bind().
 
     The readyRead() signal is emitted whenever datagrams arrive. In
-    that case, hasPendingDatagrams() returns true. Call
+    that case, hasPendingDatagrams() returns \c true. Call
     pendingDatagramSize() to obtain the size of the first pending
     datagram, and readDatagram() to read it.
 
@@ -182,7 +182,7 @@ QUdpSocket::~QUdpSocket()
     be bound using IPv6 (or in dual mode, using QHostAddress::Any). You must use
     QHostAddress::AnyIPv4 instead.
 
-    This function returns true if successful; otherwise it returns false
+    This function returns \c true if successful; otherwise it returns \c false
     and sets the socket error accordingly.
 
     \sa leaveMulticastGroup()
@@ -216,7 +216,7 @@ bool QUdpSocket::joinMulticastGroup(const QHostAddress &groupAddress,
     interface chosen by the operating system. The socket must be in BoundState,
     otherwise an error occurs.
 
-   This function returns true if successful; otherwise it returns false and
+   This function returns \c true if successful; otherwise it returns \c false and
    sets the socket error accordingly.
 
    \sa joinMulticastGroup()
@@ -284,8 +284,8 @@ void QUdpSocket::setMulticastInterface(const QNetworkInterface &iface)
 #endif // QT_NO_NETWORKINTERFACE
 
 /*!
-    Returns true if at least one datagram is waiting to be read;
-    otherwise returns false.
+    Returns \c true if at least one datagram is waiting to be read;
+    otherwise returns \c false.
 
     \sa pendingDatagramSize(), readDatagram()
 */

@@ -238,7 +238,7 @@ void QOpenGLFramebufferObjectFormat::setMipmap(bool enabled)
 }
 
 /*!
-    Returns true if mipmapping is enabled.
+    Returns \c true if mipmapping is enabled.
 
     \sa setMipmap()
 */
@@ -320,8 +320,8 @@ GLenum QOpenGLFramebufferObjectFormat::internalTextureFormat() const
 }
 
 /*!
-    Returns true if all the options of this framebuffer object format
-    are the same as \a other; otherwise returns false.
+    Returns \c true if all the options of this framebuffer object format
+    are the same as \a other; otherwise returns \c false.
 */
 bool QOpenGLFramebufferObjectFormat::operator==(const QOpenGLFramebufferObjectFormat& other) const
 {
@@ -332,8 +332,8 @@ bool QOpenGLFramebufferObjectFormat::operator==(const QOpenGLFramebufferObjectFo
 }
 
 /*!
-    Returns false if all the options of this framebuffer object format
-    are the same as \a other; otherwise returns true.
+    Returns \c false if all the options of this framebuffer object format
+    are the same as \a other; otherwise returns \c true.
 */
 bool QOpenGLFramebufferObjectFormat::operator!=(const QOpenGLFramebufferObjectFormat& other) const
 {
@@ -877,7 +877,7 @@ QOpenGLFramebufferObject::~QOpenGLFramebufferObject()
 /*!
     \fn bool QOpenGLFramebufferObject::isValid() const
 
-    Returns true if the framebuffer object is valid.
+    Returns \c true if the framebuffer object is valid.
 
     The framebuffer can become invalid if the initialization process
     fails, the user attaches an invalid buffer to the framebuffer
@@ -903,7 +903,7 @@ bool QOpenGLFramebufferObject::isValid() const
 
     Switches rendering from the default, windowing system provided
     framebuffer to this framebuffer object.
-    Returns true upon success, false otherwise.
+    Returns \c true upon success, false otherwise.
 
     \sa release()
 */
@@ -931,7 +931,7 @@ bool QOpenGLFramebufferObject::bind()
 
     Switches rendering back to the default, windowing system provided
     framebuffer.
-    Returns true upon success, false otherwise.
+    Returns \c true upon success, false otherwise.
 
     \sa bind()
 */
@@ -1069,7 +1069,7 @@ QImage QOpenGLFramebufferObject::toImage() const
 
     Switches rendering back to the default, windowing system provided
     framebuffer.
-    Returns true upon success, false otherwise.
+    Returns \c true upon success, false otherwise.
 
     \sa bind(), release()
 */
@@ -1093,8 +1093,8 @@ bool QOpenGLFramebufferObject::bindDefault()
 /*!
     \fn bool QOpenGLFramebufferObject::hasOpenGLFramebufferObjects()
 
-    Returns true if the OpenGL \c{GL_EXT_framebuffer_object} extension
-    is present on this system; otherwise returns false.
+    Returns \c true if the OpenGL \c{GL_EXT_framebuffer_object} extension
+    is present on this system; otherwise returns \c false.
 */
 bool QOpenGLFramebufferObject::hasOpenGLFramebufferObjects()
 {
@@ -1154,7 +1154,7 @@ void QOpenGLFramebufferObject::setAttachment(QOpenGLFramebufferObject::Attachmen
 }
 
 /*!
-    Returns true if the framebuffer object is currently bound to a context,
+    Returns \c true if the framebuffer object is currently bound to a context,
     otherwise false is returned.
 */
 
@@ -1168,8 +1168,8 @@ bool QOpenGLFramebufferObject::isBound() const
 /*!
     \fn bool QOpenGLFramebufferObject::hasOpenGLFramebufferBlit()
 
-    Returns true if the OpenGL \c{GL_EXT_framebuffer_blit} extension
-    is present on this system; otherwise returns false.
+    Returns \c true if the OpenGL \c{GL_EXT_framebuffer_blit} extension
+    is present on this system; otherwise returns \c false.
 
     \sa blitFramebuffer()
 */

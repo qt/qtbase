@@ -217,8 +217,8 @@ void QSupportedWritingSystems::setSupported(QFontDatabase::WritingSystem writing
 }
 
 /*!
-    Returns true if the writing system specified by \a writingSystem is
-    supported; otherwise returns false.
+    Returns \c true if the writing system specified by \a writingSystem is
+    supported; otherwise returns \c false.
 */
 bool QSupportedWritingSystems::supported(QFontDatabase::WritingSystem writingSystem) const
 {

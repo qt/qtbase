@@ -59,14 +59,13 @@ public:
     explicit QLoggingCategory(const char *category);
     ~QLoggingCategory();
 
-    template <QtMsgType T>
-    bool isEnabled() const
-    {
-        return isEnabled(T);
-    }
-
     bool isEnabled(QtMsgType type) const;
     void setEnabled(QtMsgType type, bool enable);
+
+    bool isDebugEnabled() const { return enabledDebug; }
+    bool isWarningEnabled() const { return enabledWarning; }
+    bool isCriticalEnabled() const { return enabledCritical; }
+    bool isTraceEnabled() const { return enabledTrace; }
 
     const char *categoryName() const { return name; }
 
@@ -95,30 +94,6 @@ private:
     bool enabledTrace;
 };
 
-template <>
-inline bool QLoggingCategory::isEnabled<QtDebugMsg>() const
-{
-    return enabledDebug;
-}
-
-template <>
-inline bool QLoggingCategory::isEnabled<QtWarningMsg>() const
-{
-    return enabledWarning;
-}
-
-template <>
-inline bool QLoggingCategory::isEnabled<QtCriticalMsg>() const
-{
-    return enabledCritical;
-}
-
-template <>
-inline bool QLoggingCategory::isEnabled<QtTraceMsg>() const
-{
-    return enabledTrace;
-}
-
 class Q_CORE_EXPORT QTracer
 {
     Q_DISABLE_COPY(QTracer)
@@ -141,7 +116,7 @@ class Q_CORE_EXPORT QTraceGuard
 public:
     QTraceGuard(QLoggingCategory &category)
     {
-        target = category.isEnabled<QtTraceMsg>() ? &category : 0;
+        target = category.isTraceEnabled() ? &category : 0;
         if (target)
             start();
     }
@@ -175,16 +150,16 @@ private:
     }
 
 #define qCDebug(category) \
-    for (bool enabled = category().isEnabled<QtDebugMsg>(); enabled; enabled = false) \
+    for (bool enabled = category().isDebugEnabled(); enabled; enabled = false) \
         QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, category().categoryName()).debug()
 #define qCWarning(category) \
-    for (bool enabled = category().isEnabled<QtWarningMsg>(); enabled; enabled = false) \
+    for (bool enabled = category().isWarningEnabled(); enabled; enabled = false) \
         QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, category().categoryName()).warning()
 #define qCCritical(category) \
-    for (bool enabled = category().isEnabled<QtCriticalMsg>(); enabled; enabled = false) \
+    for (bool enabled = category().isCriticalEnabled(); enabled; enabled = false) \
         QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, category().categoryName()).critical()
 #define qCTrace(category) \
-    for (bool enabled = category.isEnabled<QtTraceMsg>(); enabled; enabled = false) \
+    for (bool enabled = category.isTraceEnabled(); enabled; enabled = false) \
         QTraceGuard(category)
 
 

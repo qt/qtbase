@@ -81,7 +81,11 @@ IndexRangeCache::IndexRange::IndexRange(GLenum typ, intptr_t off, GLsizei c)
 
 bool IndexRangeCache::IndexRange::operator<(const IndexRange& rhs) const
 {
-    return std::make_tuple(type, offset, count) < std::make_tuple(rhs.type, rhs.offset, rhs.count);
+#if defined(_MSC_VER) && _MSC_VER < 1600
+    return std::tr1::make_tuple(type, offset, count) < std::tr1::make_tuple(rhs.type, rhs.offset, rhs.count);
+#else
+    return std::make_tuple(type, offset, count) < std::tr1::make_tuple(rhs.type, rhs.offset, rhs.count);
+#endif
 }
 
 IndexRangeCache::IndexBounds::IndexBounds()

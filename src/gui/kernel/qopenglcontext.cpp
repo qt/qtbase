@@ -184,7 +184,7 @@ void QOpenGLVersionProfile::setProfile(QSurfaceFormat::OpenGLContextProfile prof
 }
 
 /*!
-    Returns true if profiles are supported by the OpenGL version returned by version(). Only
+    Returns \c true if profiles are supported by the OpenGL version returned by version(). Only
     OpenGL versions >= 3.2 support profiles.
 
     \sa profile(), version()
@@ -196,7 +196,7 @@ bool QOpenGLVersionProfile::hasProfiles() const
 }
 
 /*!
-    Returns true is the OpenGL version returned by version() contains deprecated functions
+    Returns \c true is the OpenGL version returned by version() contains deprecated functions
     and does not support profiles i.e. if the OpenGL version is <= 3.1.
 */
 bool QOpenGLVersionProfile::isLegacyVersion() const
@@ -205,7 +205,7 @@ bool QOpenGLVersionProfile::isLegacyVersion() const
 }
 
 /*!
-    Returns true if the version number is valid. Note that for a default constructed
+    Returns \c true if the version number is valid. Note that for a default constructed
     QOpenGLVersionProfile object this function will return false.
 
     \sa setVersion(), version()
@@ -380,7 +380,7 @@ QOpenGLContext* QOpenGLContext::currentContext()
 }
 
 /*!
-    Returns true if the \a first and \a second contexts are sharing OpenGL resources.
+    Returns \c true if the \a first and \a second contexts are sharing OpenGL resources.
 */
 bool QOpenGLContext::areSharing(QOpenGLContext *first, QOpenGLContext *second)
 {
@@ -472,7 +472,7 @@ void QOpenGLContext::setScreen(QScreen *screen)
     and/or hardware only supports version 3.2 Core profile contexts then you will
     get a 3.2 Core profile context.
 
-    Returns true if the native context was successfully created and is ready to
+    Returns \c true if the native context was successfully created and is ready to
     be used with makeCurrent(), swapBuffers(), etc.
 
     \sa makeCurrent(), destroy(), format()
@@ -698,7 +698,7 @@ QSet<QByteArray> QOpenGLContext::extensions() const
 }
 
 /*!
-    Returns true if this OpenGL context supports the specified OpenGL
+    Returns \c true if this OpenGL context supports the specified OpenGL
     \a extension, false otherwise.
 
     The context or a sharing context must be current.
@@ -737,7 +737,7 @@ GLuint QOpenGLContext::defaultFramebufferObject() const
 
 /*!
     Makes the context current in the current thread, against the given
-    \a surface. Returns true if successful.
+    \a surface. Returns \c true if successful.
 
     If \a surface is 0 this is equivalent to calling doneCurrent().
 

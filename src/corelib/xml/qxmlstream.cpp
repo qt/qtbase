@@ -92,8 +92,8 @@ QT_BEGIN_NAMESPACE
     \value StartDocument The reader reports the XML version number in
     documentVersion(), and the encoding as specified in the XML
     document in documentEncoding().  If the document is declared
-    standalone, isStandaloneDocument() returns true; otherwise it
-    returns false.
+    standalone, isStandaloneDocument() returns \c true; otherwise it
+    returns \c false.
 
     \value EndDocument The reader reports the end of the document.
 
@@ -109,8 +109,8 @@ QT_BEGIN_NAMESPACE
     namespaceUri() and name().
 
     \value Characters The reader reports characters in text(). If the
-    characters are all white-space, isWhitespace() returns true. If
-    the characters stem from a CDATA section, isCDATA() returns true.
+    characters are all white-space, isWhitespace() returns \c true. If
+    the characters stem from a CDATA section, isCDATA() returns \c true.
 
     \value Comment The reader reports a comment in text().
 
@@ -553,9 +553,9 @@ void QXmlStreamReader::clear()
 }
 
 /*!
-    Returns true if the reader has read until the end of the XML
+    Returns \c true if the reader has read until the end of the XML
     document, or if an error() has occurred and reading has been
-    aborted. Otherwise, it returns false.
+    aborted. Otherwise, it returns \c false.
 
     When atEnd() and hasError() return true and error() returns
     PrematureEndOfDocumentError, it means the XML has been well-formed
@@ -587,7 +587,7 @@ bool QXmlStreamReader::atEnd() const
 
   With one exception, once an error() is reported by readNext(),
   further reading of the XML stream is not possible. Then atEnd()
-  returns true, hasError() returns true, and this function returns
+  returns \c true, hasError() returns \c true, and this function returns
   QXmlStreamReader::Invalid.
 
   The exception is when error() returns PrematureEndOfDocumentError.
@@ -640,7 +640,7 @@ QXmlStreamReader::TokenType QXmlStreamReader::tokenType() const
 }
 
 /*!
-  Reads until the next start element within the current element. Returns true
+  Reads until the next start element within the current element. Returns \c true
   when a start element was reached. When the end element was reached, or when
   an error occurred, false is returned.
 
@@ -1758,8 +1758,8 @@ void QXmlStreamReaderPrivate::checkPublicLiteral(const QStringRef &publicId)
 
 /*
   Checks whether the document starts with an xml declaration. If it
-  does, this function returns true; otherwise it sets up everything
-  for a synthetic start document event and returns false.
+  does, this function returns \c true; otherwise it sets up everything
+  for a synthetic start document event and returns \c false.
  */
 bool QXmlStreamReaderPrivate::checkStartDocument()
 {
@@ -2347,19 +2347,19 @@ QXmlStreamAttribute::QXmlStreamAttribute(const QString &qualifiedName, const QSt
 
 /*! \fn bool QXmlStreamAttribute::isDefault() const
 
-   Returns true if the parser added this attribute with a default
+   Returns \c true if the parser added this attribute with a default
    value following an ATTLIST declaration in the DTD; otherwise
-   returns false.
+   returns \c false.
 */
 /*! \fn bool QXmlStreamAttribute::operator==(const QXmlStreamAttribute &other) const
 
-    Compares this attribute with \a other and returns true if they are
-    equal; otherwise returns false.
+    Compares this attribute with \a other and returns \c true if they are
+    equal; otherwise returns \c false.
  */
 /*! \fn bool QXmlStreamAttribute::operator!=(const QXmlStreamAttribute &other) const
 
-    Compares this attribute with \a other and returns true if they are
-    not equal; otherwise returns false.
+    Compares this attribute with \a other and returns \c true if they are
+    not equal; otherwise returns \c false.
  */
 
 
@@ -2483,13 +2483,13 @@ Returns the public identifier.
 
 /*! \fn inline bool QXmlStreamNotationDeclaration::operator==(const QXmlStreamNotationDeclaration &other) const
 
-    Compares this notation declaration with \a other and returns true
-    if they are equal; otherwise returns false.
+    Compares this notation declaration with \a other and returns \c true
+    if they are equal; otherwise returns \c false.
  */
 /*! \fn inline bool QXmlStreamNotationDeclaration::operator!=(const QXmlStreamNotationDeclaration &other) const
 
-    Compares this notation declaration with \a other and returns true
-    if they are not equal; otherwise returns false.
+    Compares this notation declaration with \a other and returns \c true
+    if they are not equal; otherwise returns \c false.
  */
 
 /*!
@@ -2512,13 +2512,13 @@ Returns the public identifier.
 */
 /*! \fn inline bool QXmlStreamNamespaceDeclaration::operator==(const QXmlStreamNamespaceDeclaration &other) const
 
-    Compares this namespace declaration with \a other and returns true
-    if they are equal; otherwise returns false.
+    Compares this namespace declaration with \a other and returns \c true
+    if they are equal; otherwise returns \c false.
  */
 /*! \fn inline bool QXmlStreamNamespaceDeclaration::operator!=(const QXmlStreamNamespaceDeclaration &other) const
 
-    Compares this namespace declaration with \a other and returns true
-    if they are not equal; otherwise returns false.
+    Compares this namespace declaration with \a other and returns \c true
+    if they are not equal; otherwise returns \c false.
  */
 
 /*!
@@ -2660,13 +2660,13 @@ Returns the entity's value.
 
 /*! \fn bool QXmlStreamEntityDeclaration::operator==(const QXmlStreamEntityDeclaration &other) const
 
-    Compares this entity declaration with \a other and returns true if
-    they are equal; otherwise returns false.
+    Compares this entity declaration with \a other and returns \c true if
+    they are equal; otherwise returns \c false.
  */
 /*! \fn bool QXmlStreamEntityDeclaration::operator!=(const QXmlStreamEntityDeclaration &other) const
 
-    Compares this entity declaration with \a other and returns true if
-    they are not equal; otherwise returns false.
+    Compares this entity declaration with \a other and returns \c true if
+    they are not equal; otherwise returns \c false.
  */
 
 /*!  Returns the value of the attribute \a name in the namespace
@@ -2778,37 +2778,37 @@ void QXmlStreamAttributes::append(const QString &qualifiedName, const QString &v
 #ifndef QT_NO_XMLSTREAMREADER
 
 /*! \fn bool QXmlStreamReader::isStartDocument() const
-  Returns true if tokenType() equals \l StartDocument; otherwise returns false.
+  Returns \c true if tokenType() equals \l StartDocument; otherwise returns \c false.
 */
 /*! \fn bool QXmlStreamReader::isEndDocument() const
-  Returns true if tokenType() equals \l EndDocument; otherwise returns false.
+  Returns \c true if tokenType() equals \l EndDocument; otherwise returns \c false.
 */
 /*! \fn bool QXmlStreamReader::isStartElement() const
-  Returns true if tokenType() equals \l StartElement; otherwise returns false.
+  Returns \c true if tokenType() equals \l StartElement; otherwise returns \c false.
 */
 /*! \fn bool QXmlStreamReader::isEndElement() const
-  Returns true if tokenType() equals \l EndElement; otherwise returns false.
+  Returns \c true if tokenType() equals \l EndElement; otherwise returns \c false.
 */
 /*! \fn bool QXmlStreamReader::isCharacters() const
-  Returns true if tokenType() equals \l Characters; otherwise returns false.
+  Returns \c true if tokenType() equals \l Characters; otherwise returns \c false.
 
   \sa isWhitespace(), isCDATA()
 */
 /*! \fn bool QXmlStreamReader::isComment() const
-  Returns true if tokenType() equals \l Comment; otherwise returns false.
+  Returns \c true if tokenType() equals \l Comment; otherwise returns \c false.
 */
 /*! \fn bool QXmlStreamReader::isDTD() const
-  Returns true if tokenType() equals \l DTD; otherwise returns false.
+  Returns \c true if tokenType() equals \l DTD; otherwise returns \c false.
 */
 /*! \fn bool QXmlStreamReader::isEntityReference() const
-  Returns true if tokenType() equals \l EntityReference; otherwise returns false.
+  Returns \c true if tokenType() equals \l EntityReference; otherwise returns \c false.
 */
 /*! \fn bool QXmlStreamReader::isProcessingInstruction() const
-  Returns true if tokenType() equals \l ProcessingInstruction; otherwise returns false.
+  Returns \c true if tokenType() equals \l ProcessingInstruction; otherwise returns \c false.
 */
 
-/*!  Returns true if the reader reports characters that only consist
-  of white-space; otherwise returns false.
+/*!  Returns \c true if the reader reports characters that only consist
+  of white-space; otherwise returns \c false.
 
   \sa isCharacters(), text()
 */
@@ -2818,8 +2818,8 @@ bool QXmlStreamReader::isWhitespace() const
     return d->type == QXmlStreamReader::Characters && d->isWhitespace;
 }
 
-/*!  Returns true if the reader reports characters that stem from a
-  CDATA section; otherwise returns false.
+/*!  Returns \c true if the reader reports characters that stem from a
+  CDATA section; otherwise returns \c false.
 
   \sa isCharacters(), text()
 */
@@ -2832,10 +2832,10 @@ bool QXmlStreamReader::isCDATA() const
 
 
 /*!
-  Returns true if this document has been declared standalone in the
-  XML declaration; otherwise returns false.
+  Returns \c true if this document has been declared standalone in the
+  XML declaration; otherwise returns \c false.
 
-  If no XML declaration has been parsed, this function returns false.
+  If no XML declaration has been parsed, this function returns \c false.
  */
 bool QXmlStreamReader::isStandaloneDocument() const
 {
@@ -3937,8 +3937,8 @@ void QXmlStreamWriter::writeCurrentToken(const QXmlStreamReader &reader)
  \fn bool QXmlStreamAttributes::hasAttribute(const QString &qualifiedName) const
  \since 4.5
 
- Returns true if this QXmlStreamAttributes has an attribute whose
- qualified name is \a qualifiedName; otherwise returns false.
+ Returns \c true if this QXmlStreamAttributes has an attribute whose
+ qualified name is \a qualifiedName; otherwise returns \c false.
 
  Note that this is not namespace aware. For instance, if this
  QXmlStreamAttributes contains an attribute whose lexical name is "xlink:href"
@@ -3960,9 +3960,9 @@ void QXmlStreamWriter::writeCurrentToken(const QXmlStreamReader &reader)
  \overload
  \since 4.5
 
- Returns true if this QXmlStreamAttributes has an attribute whose
+ Returns \c true if this QXmlStreamAttributes has an attribute whose
  namespace URI and name correspond to \a namespaceUri and \a name;
- otherwise returns false.
+ otherwise returns \c false.
 */
 
 #endif // QT_NO_XMLSTREAMREADER

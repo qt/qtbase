@@ -204,13 +204,13 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QElapsedTimer::operator ==(const QElapsedTimer &other) const
 
-    Returns true if this object and \a other contain the same time.
+    Returns \c true if this object and \a other contain the same time.
 */
 
 /*!
     \fn bool QElapsedTimer::operator !=(const QElapsedTimer &other) const
 
-    Returns true if this object and \a other contain different times.
+    Returns \c true if this object and \a other contain different times.
 */
 
 static const qint64 invalidData = Q_INT64_C(0x8000000000000000);
@@ -230,7 +230,7 @@ void QElapsedTimer::invalidate() Q_DECL_NOTHROW
 }
 
 /*!
-    Returns false if this object was invalidated by a call to invalidate() and
+    Returns \c false if this object was invalidated by a call to invalidate() and
     has not been restarted since.
 
     \sa invalidate(), start(), restart()
@@ -241,7 +241,7 @@ bool QElapsedTimer::isValid() const Q_DECL_NOTHROW
 }
 
 /*!
-    Returns true if this QElapsedTimer has already expired by \a timeout
+    Returns \c true if this QElapsedTimer has already expired by \a timeout
     milliseconds (that is, more than \a timeout milliseconds have elapsed).
     The value of \a timeout can be -1 to indicate that this timer does not
     expire, in which case this function will always return false.

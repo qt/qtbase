@@ -55,7 +55,8 @@ Q_GLOBAL_STATIC_WITH_ARGS(QLoggingCategory, qtDefaultCategory,
     \inmodule QtCore
     \since 5.2
 
-    \brief A category, or 'area' in the logging infrastructure.
+    \brief The QLoggingCategory class represents a category, or 'area' in the
+    logging infrastructure.
 
     QLoggingCategory represents a certain logging category - identified
     by a string - at runtime. Whether a category should be actually logged or
@@ -63,30 +64,29 @@ Q_GLOBAL_STATIC_WITH_ARGS(QLoggingCategory, qtDefaultCategory,
 
     \section1 Creating category objects
 
-    Qt provides the \l Q_LOGGING_CATEGORY(), Q_DECLARE_LOGGING_CATEGORY() macros
-    to conveniently create static QLoggingCategory objects on the heap:
+    The Q_LOGGING_CATEGORY() and the Q_DECLARE_LOGGING_CATEGORY() macros
+    conveniently declare and create QLoggingCategory objects:
 
     \snippet qloggingcategory/main.cpp 1
 
     \section1 Checking category configuration
 
-    QLoggingCategory provides two isEnabled methods, a template one and a
-    non-template one, for checking whether the current category is enabled.
-    The template version checks for the most common case that no special rules
-    are applied in inline code, and should be preferred:
+    QLoggingCategory provides a generic \l isEnabled() and message
+    type dependent \l isDebugEnabled(), \l isWarningEnabled(),
+    \l isCriticalEnabled() and \l isTraceEnabled()
+    methods for checking whether the current category is enabled.
 
-    \snippet qloggingcategory/main.cpp 2
-
-    Note that qCDebug() prevents arguments from being evaluated
-    if the string won't print, so calling isEnabled explicitly is not needed:
-    \l isEnabled().
+    \note The qCDebug(), qCWarning(), qCCritical(), qCTrace() and
+    qCTraceGuard() macros prevent arguments from being evaluated if the
+    respective message types are not enabled for the category, so explicit
+    checking is not needed:
 
     \snippet qloggingcategory/main.cpp 3
 
     \section1 Default configuration
 
-    In the default configuration \l isEnabled() will return true for all
-    \l QtMsgType types except QtDebugMsg: QtDebugMsg is only active by default
+    In the default configuration \l isWarningEnabled() and \l isCriticalEnabled()
+    will return \c true. By default, \l isDebugEnabled() will return \c true only
     for the \c "default" category.
 
     \section1 Changing configuration
@@ -97,14 +97,8 @@ Q_GLOBAL_STATIC_WITH_ARGS(QLoggingCategory, qtDefaultCategory,
     configure categories globally.
 */
 
-/*!
-  \internal
-*/
 typedef QVector<QTracer *> Tracers;
 
-/*!
-  \internal
-*/
 class QLoggingCategoryPrivate
 {
 public:
@@ -115,7 +109,7 @@ public:
     Constructs a QLoggingCategory object with the provided \a category name.
     The object becomes the local identifier for the category.
 
-    If \a category is \c{0}, the category name is changed to \c{"default"}.
+    If \a category is \c{0}, the category name is changed to \c "default".
 */
 QLoggingCategory::QLoggingCategory(const char *category)
     : d(new QLoggingCategoryPrivate),
@@ -142,7 +136,7 @@ QLoggingCategory::QLoggingCategory(const char *category)
 }
 
 /*!
-    Destructs a QLoggingCategory object
+    Destructs a QLoggingCategory object.
 */
 QLoggingCategory::~QLoggingCategory()
 {
@@ -158,23 +152,53 @@ QLoggingCategory::~QLoggingCategory()
 */
 
 /*!
-    \fn bool QLoggingCategory::isEnabled() const
+    \fn bool QLoggingCategory::isDebugEnabled() const
 
-    Returns true if a message of the template \c QtMsgType argument should be
-    shown. Returns false otherwise.
+    Returns \c true if debug messages should be shown for this category.
+    Returns \c false otherwise.
 
-    \note The qCDebug, qCWarning, qCCritical macros already do this check before
-    executing any code. However, calling this method may be useful to avoid
+    \note The \l qCDebug() macro already does this check before executing any
+    code. However, calling this method may be useful to avoid
     expensive generation of data that is only used for debug output.
 */
 
 /*!
-    Returns true if a message of type \a msgtype for the category should be
-    shown. Returns false otherwise.
+    \fn bool QLoggingCategory::isWarningEnabled() const
 
-    \note The templated, inline version of this method, \l isEnabled(), is
-    optimized for the common case that no configuration is set, and should
-    generally be preferred.
+    Returns \c true if warning messages should be shown for this category.
+    Returns \c false otherwise.
+
+    \note The \l qCWarning() macro already does this check before executing any
+    code. However, calling this method may be useful to avoid
+    expensive generation of data that is only used for debug output.
+*/
+
+/*!
+    \fn bool QLoggingCategory::isCriticalEnabled() const
+
+    Returns \c true if critical messages should be shown for this category.
+    Returns \c false otherwise.
+
+    \note The \l qCCritical() macro already does this check before executing any
+    code. However, calling this method may be useful to avoid
+    expensive generation of data that is only used for debug output.
+*/
+
+/*!
+    \fn bool QLoggingCategory::isTraceEnabled() const
+
+    Returns \c true if the tracers associated with this category should
+    receive messages. Returns \c false otherwise.
+
+    \note The \l qCTrace() and \l qCTraceGuard() macros already do this check
+    before executing any
+    code. However, calling this method may be useful to avoid
+    expensive generation of data that is only used for debug output.
+*/
+
+/*!
+    Returns \c true if a message of type \a msgtype for the category should be
+    shown. Returns \c false otherwise.
 */
 bool QLoggingCategory::isEnabled(QtMsgType msgtype) const
 {
@@ -184,18 +208,17 @@ bool QLoggingCategory::isEnabled(QtMsgType msgtype) const
     case QtCriticalMsg: return enabledCritical;
     case QtTraceMsg: return enabledTrace;
     case QtFatalMsg: return true;
-    default: break;
     }
     return false;
 }
 
 /*!
-    Changes the type \a type for the category to \a enable.
+    Changes the message type \a type for the category to \a enable.
 
     Changes only affect the current QLoggingCategory object, and won't
     change e.g. the settings of another objects for the same category name.
 
-    \note QtFatalMsg cannot be changed. It will always return true.
+    \note \c QtFatalMsg cannot be changed. It will always return \c true.
 
     Example:
 
@@ -208,8 +231,7 @@ void QLoggingCategory::setEnabled(QtMsgType type, bool enable)
     case QtWarningMsg: enabledWarning = enable; break;
     case QtCriticalMsg: enabledCritical = enable; break;
     case QtTraceMsg: enabledTrace = enable; break;
-    case QtFatalMsg:
-    default: break;
+    case QtFatalMsg: break;
     }
 }
 
@@ -217,12 +239,12 @@ void QLoggingCategory::setEnabled(QtMsgType type, bool enable)
     \fn QLoggingCategory &QLoggingCategory::operator()()
 
     Returns the object itself. This allows both a QLoggingCategory variable, and
-    a factory method returning a QLoggingCategory, to be used in qCDebug(),
-    qCWarning(), qCCritial() macros.
+    a factory method returning a QLoggingCategory, to be used in \l qCDebug(),
+    \l qCWarning(), \l qCCritical() macros.
  */
 
 /*!
-    Returns the category "default" that is used e.g. by qDebug(), qWarning(),
+    Returns the category \c "default" that is used e.g. by qDebug(), qWarning(),
     qCritical(), qFatal().
  */
 QLoggingCategory &QLoggingCategory::defaultCategory()
@@ -272,7 +294,7 @@ QLoggingCategory::installFilter(QLoggingCategory::CategoryFilter filter)
 
     where \c <category> is the name of the category, potentially with \c{*} as a
     wildcard symbol at the start and/or the end. The optional \c <type> must
-    be either \c debug, \c warning, or \c critical.
+    be either \c debug, \c warning, \c critical, or \c trace.
 
     The rules might be ignored if a custom category filter is installed with
     \l installFilter().
@@ -290,8 +312,8 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     Returns an output stream for debug messages in the logging category
     \a category.
 
-    The macro expands to code that first checks whether
-    \l QLoggingCategory::isEnabled() evaluates for debug output to \c{true}.
+    The macro expands to code that checks whether
+    \l QLoggingCategory::isDebugEnabled() evaluates to \c true.
     If so, the stream arguments are processed and sent to the message handler.
 
     Example:
@@ -312,8 +334,8 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     Returns an output stream for warning messages in the logging category
     \a category.
 
-    The macro expands to code that first checks whether
-    \l QLoggingCategory::isEnabled() evaluates for warning output to \c{true}.
+    The macro expands to code that checks whether
+    \l QLoggingCategory::isWarningEnabled() evaluates to \c true.
     If so, the stream arguments are processed and sent to the message handler.
 
     Example:
@@ -334,8 +356,8 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     Returns an output stream for critical messages in the logging category
     \a category.
 
-    The macro expands to code that first checks whether
-    \l QLoggingCategory::isEnabled() evaluates for critical output to \c{true}.
+    The macro expands to code that checks whether
+    \l QLoggingCategory::isCriticalEnabled() evaluates to \c true.
     If so, the stream arguments are processed and sent to the message handler.
 
     Example:
@@ -356,8 +378,8 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     Returns an output stream for trace messages in the logging category
     \a category.
 
-    The macro expands to code that first checks whether
-    \l QLoggingCategory::isEnabled() evaluates for trace output to \c{true}.
+    The macro expands to code that checks whether
+    \l QLoggingCategory::isTraceEnabled() evaluates to \c true.
     If so, the stream arguments are processed and sent to the tracers
     registered with the category.
 
@@ -378,7 +400,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 
     The macro expands to code that creates a guard object with automatic
     storage. The guard constructor checks whether
-    \l QLoggingCategory::isEnabled() evaluates for trace output to \c{true}.
+    \l QLoggingCategory::isTraceEnabled() evaluates to \c true.
     If so, the stream arguments are processed and the \c{start()}
     functions of the tracers registered with the \a category are called.
 

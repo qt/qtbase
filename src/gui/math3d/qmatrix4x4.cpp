@@ -300,7 +300,7 @@ QMatrix4x4::QMatrix4x4(const QTransform& transform)
 /*!
     \fn bool QMatrix4x4::isIdentity() const
 
-    Returns true if this matrix is the identity; false otherwise.
+    Returns \c true if this matrix is the identity; false otherwise.
 
     \sa setToIdentity()
 */
@@ -634,14 +634,14 @@ QMatrix4x4& QMatrix4x4::operator/=(float divisor)
 /*!
     \fn bool QMatrix4x4::operator==(const QMatrix4x4& other) const
 
-    Returns true if this matrix is identical to \a other; false otherwise.
+    Returns \c true if this matrix is identical to \a other; false otherwise.
     This operator uses an exact floating-point comparison.
 */
 
 /*!
     \fn bool QMatrix4x4::operator!=(const QMatrix4x4& other) const
 
-    Returns true if this matrix is not identical to \a other; false otherwise.
+    Returns \c true if this matrix is not identical to \a other; false otherwise.
     This operator uses an exact floating-point comparison.
 */
 
@@ -792,7 +792,7 @@ QMatrix4x4 operator/(const QMatrix4x4& matrix, float divisor)
     \fn bool qFuzzyCompare(const QMatrix4x4& m1, const QMatrix4x4& m2)
     \relates QMatrix4x4
 
-    Returns true if \a m1 and \a m2 are equal, allowing for a small
+    Returns \c true if \a m1 and \a m2 are equal, allowing for a small
     fuzziness factor for floating-point comparisons; false otherwise.
 */
 

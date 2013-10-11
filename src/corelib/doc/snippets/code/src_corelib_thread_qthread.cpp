@@ -68,7 +68,6 @@ void MyObject::startWorkInAThread()
 class Worker : public QObject
 {
     Q_OBJECT
-    QThread workerThread;
 
 public slots:
     void doWork(const QString &parameter) {

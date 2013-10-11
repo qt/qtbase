@@ -237,7 +237,7 @@ public:
 
 /*! \internal
 
-  Returns true if the signal with index \a signal_index from object \a sender is connected.
+  Returns \c true if the signal with index \a signal_index from object \a sender is connected.
   Signals with indices above a certain range are always considered connected (see connectedSignals
   in QObjectPrivate). If a signal spy is installed, all signals are considered connected.
 

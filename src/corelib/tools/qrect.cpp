@@ -92,7 +92,7 @@ QT_BEGIN_NAMESPACE
     setRight().
 
     The contains() function tells whether a given point is inside the
-    rectangle or not, and the intersects() function returns true if
+    rectangle or not, and the intersects() function returns \c true if
     this rectangle intersects with a given rectangle. The QRect class
     also provides the intersected() function which returns the
     intersection rectangle, and the united() function which returns the
@@ -107,9 +107,9 @@ QT_BEGIN_NAMESPACE
     \li united()
     \endtable
 
-    The isEmpty() function returns true if left() > right() or top() >
+    The isEmpty() function returns \c true if left() > right() or top() >
     bottom(). Note that an empty rectangle is not valid: The isValid()
-    function returns true if left() <= right() \e and top() <=
+    function returns \c true if left() <= right() \e and top() <=
     bottom(). A null rectangle (isNull() == true) on the other hand,
     has both width and height set to 0.
 
@@ -254,8 +254,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QRect::isNull() const
 
-    Returns true if the rectangle is a null rectangle, otherwise
-    returns false.
+    Returns \c true if the rectangle is a null rectangle, otherwise
+    returns \c false.
 
     A null rectangle has both the width and the height set to 0 (i.e.,
     right() == left() - 1 and bottom() == top() - 1). A null rectangle
@@ -267,7 +267,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QRect::isEmpty() const
 
-    Returns true if the rectangle is empty, otherwise returns false.
+    Returns \c true if the rectangle is empty, otherwise returns \c false.
 
     An empty rectangle has a left() > right() or top() > bottom(). An
     empty rectangle is not valid (i.e., isEmpty() == !isValid()).
@@ -281,7 +281,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QRect::isValid() const
 
-    Returns true if the rectangle is valid, otherwise returns false.
+    Returns \c true if the rectangle is valid, otherwise returns \c false.
 
     A valid rectangle has a left() < right() and top() <
     bottom(). Note that non-trivial operations like intersections are
@@ -803,9 +803,9 @@ QRect QRect::normalized() const
 /*!
     \fn bool QRect::contains(const QPoint &point, bool proper) const
 
-    Returns true if the given \a point is inside or on the edge of
-    the rectangle, otherwise returns false. If \a proper is true, this
-    function only returns true if the given \a point is \e inside the
+    Returns \c true if the given \a point is inside or on the edge of
+    the rectangle, otherwise returns \c false. If \a proper is true, this
+    function only returns \c true if the given \a point is \e inside the
     rectangle (i.e., not on the edge).
 
     \sa intersects()
@@ -851,9 +851,9 @@ bool QRect::contains(const QPoint &p, bool proper) const
     \fn bool QRect::contains(int x, int y, bool proper) const
     \overload
 
-    Returns true if the point (\a x, \a y) is inside or on the edge of
-    the rectangle, otherwise returns false. If \a proper is true, this
-    function only returns true if the point is entirely inside the
+    Returns \c true if the point (\a x, \a y) is inside or on the edge of
+    the rectangle, otherwise returns \c false. If \a proper is true, this
+    function only returns \c true if the point is entirely inside the
     rectangle(not on the edge).
 */
 
@@ -861,17 +861,17 @@ bool QRect::contains(const QPoint &p, bool proper) const
     \fn bool QRect::contains(int x, int y) const
     \overload
 
-    Returns true if the point (\a x, \a y) is inside this rectangle,
-    otherwise returns false.
+    Returns \c true if the point (\a x, \a y) is inside this rectangle,
+    otherwise returns \c false.
 */
 
 /*!
     \fn bool QRect::contains(const QRect &rectangle, bool proper) const
     \overload
 
-    Returns true if the given \a rectangle is inside this rectangle.
-    otherwise returns false. If \a proper is true, this function only
-    returns true if the \a rectangle is entirely inside this
+    Returns \c true if the given \a rectangle is inside this rectangle.
+    otherwise returns \c false. If \a proper is true, this function only
+    returns \c true if the \a rectangle is entirely inside this
     rectangle (not on the edge).
 */
 
@@ -1093,9 +1093,9 @@ QRect QRect::operator&(const QRect &r) const
 /*!
     \fn bool QRect::intersects(const QRect &rectangle) const
 
-    Returns true if this rectangle intersects with the given \a
+    Returns \c true if this rectangle intersects with the given \a
     rectangle (i.e., there is at least one pixel that is within both
-    rectangles), otherwise returns false.
+    rectangles), otherwise returns \c false.
 
     The intersection rectangle can be retrieved using the intersected()
     function.
@@ -1149,8 +1149,8 @@ bool QRect::intersects(const QRect &r) const
     \fn bool operator==(const QRect &r1, const QRect &r2)
     \relates QRect
 
-    Returns true if the rectangles \a r1 and \a r2 are equal,
-    otherwise returns false.
+    Returns \c true if the rectangles \a r1 and \a r2 are equal,
+    otherwise returns \c false.
 */
 
 
@@ -1158,8 +1158,8 @@ bool QRect::intersects(const QRect &r) const
     \fn bool operator!=(const QRect &r1, const QRect &r2)
     \relates QRect
 
-    Returns true if the rectangles \a r1 and \a r2 are different, otherwise
-    returns false.
+    Returns \c true if the rectangles \a r1 and \a r2 are different, otherwise
+    returns \c false.
 */
 
 
@@ -1267,7 +1267,7 @@ QDebug operator<<(QDebug dbg, const QRect &r) {
     setRight().
 
     The contains() function tells whether a given point is inside the
-    rectangle or not, and the intersects() function returns true if
+    rectangle or not, and the intersects() function returns \c true if
     this rectangle intersects with a given rectangle (otherwise
     false). The QRectF class also provides the intersected() function
     which returns the intersection rectangle, and the united() function
@@ -1283,9 +1283,9 @@ QDebug operator<<(QDebug dbg, const QRect &r) {
     \li united()
     \endtable
 
-    The isEmpty() function returns true if the rectangle's width or
+    The isEmpty() function returns \c true if the rectangle's width or
     height is less than, or equal to, 0. Note that an empty rectangle
-    is not valid: The isValid() function returns true if both width
+    is not valid: The isValid() function returns \c true if both width
     and height is larger than 0. A null rectangle (isNull() == true)
     on the other hand, has both width and height set to 0.
 
@@ -1412,7 +1412,7 @@ QDebug operator<<(QDebug dbg, const QRect &r) {
 /*!
     \fn bool QRectF::isNull() const
 
-    Returns true if the rectangle is a null rectangle, otherwise returns false.
+    Returns \c true if the rectangle is a null rectangle, otherwise returns \c false.
 
     A null rectangle has both the width and the height set to 0. A
     null rectangle is also empty, and hence not valid.
@@ -1423,7 +1423,7 @@ QDebug operator<<(QDebug dbg, const QRect &r) {
 /*!
     \fn bool QRectF::isEmpty() const
 
-    Returns true if the rectangle is empty, otherwise returns false.
+    Returns \c true if the rectangle is empty, otherwise returns \c false.
 
     An empty rectangle has width() <= 0 or height() <= 0.  An empty
     rectangle is not valid (i.e., isEmpty() == !isValid()).
@@ -1437,7 +1437,7 @@ QDebug operator<<(QDebug dbg, const QRect &r) {
 /*!
     \fn bool QRectF::isValid() const
 
-    Returns true if the rectangle is valid, otherwise returns false.
+    Returns \c true if the rectangle is valid, otherwise returns \c false.
 
     A valid rectangle has a width() > 0 and height() > 0. Note that
     non-trivial operations like intersections are not defined for
@@ -1865,8 +1865,8 @@ QRectF QRectF::normalized() const
 /*!
     \fn bool QRectF::contains(const QPointF &point) const
 
-    Returns true if the given \a point is inside or on the edge of the
-    rectangle; otherwise returns false.
+    Returns \c true if the given \a point is inside or on the edge of the
+    rectangle; otherwise returns \c false.
 
     \sa intersects()
 */
@@ -1905,16 +1905,16 @@ bool QRectF::contains(const QPointF &p) const
     \fn bool QRectF::contains(qreal x, qreal y) const
     \overload
 
-    Returns true if the point (\a x, \a y) is inside or on the edge of
-    the rectangle; otherwise returns false.
+    Returns \c true if the point (\a x, \a y) is inside or on the edge of
+    the rectangle; otherwise returns \c false.
 */
 
 /*!
     \fn bool QRectF::contains(const QRectF &rectangle) const
     \overload
 
-    Returns true if the given \a rectangle is inside this rectangle;
-    otherwise returns false.
+    Returns \c true if the given \a rectangle is inside this rectangle;
+    otherwise returns \c false.
 */
 
 bool QRectF::contains(const QRectF &r) const
@@ -2199,9 +2199,9 @@ QRectF QRectF::operator&(const QRectF &r) const
 /*!
     \fn bool QRectF::intersects(const QRectF &rectangle) const
 
-    Returns true if this rectangle intersects with the given \a
+    Returns \c true if this rectangle intersects with the given \a
     rectangle (i.e. there is a non-empty area of overlap between
-    them), otherwise returns false.
+    them), otherwise returns \c false.
 
     The intersection rectangle can be retrieved using the intersected()
     function.
@@ -2298,8 +2298,8 @@ QRect QRectF::toAlignedRect() const
     \fn bool operator==(const QRectF &r1, const QRectF &r2)
     \relates QRectF
 
-    Returns true if the rectangles \a r1 and \a r2 are equal,
-    otherwise returns false.
+    Returns \c true if the rectangles \a r1 and \a r2 are equal,
+    otherwise returns \c false.
 */
 
 
@@ -2307,8 +2307,8 @@ QRect QRectF::toAlignedRect() const
     \fn bool operator!=(const QRectF &r1, const QRectF &r2)
     \relates QRectF
 
-    Returns true if the rectangles \a r1 and \a r2 are different, otherwise
-    returns false.
+    Returns \c true if the rectangles \a r1 and \a r2 are different, otherwise
+    returns \c false.
 */
 
 /*****************************************************************************

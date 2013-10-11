@@ -1663,6 +1663,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "REDUCE_RELOCATIONS" ]  = "yes";
         dictionary[ "QT_GETIFADDRS" ]       = "no";
         dictionary[ "QT_XKBCOMMON" ]        = "no";
+        dictionary[ "JAVASCRIPTCORE_JIT" ]  = "no";
     }
 }
 
@@ -2648,6 +2649,12 @@ void Configure::generateOutputVars()
     if (!dictionary["QT_LFLAGS_SQLITE"].isEmpty())
         qmakeVars += "QT_LFLAGS_SQLITE += " + formatPath(dictionary["QT_LFLAGS_SQLITE"]);
 
+    if (dictionary["JAVASCRIPTCORE_JIT"] == "no")
+        qmakeVars += "JAVASCRIPTCORE_JIT = no";
+    else if (dictionary["JAVASCRIPTCORE_JIT"] == "yes")
+        qmakeVars += "JAVASCRIPTCORE_JIT = yes";
+    // else let JavaScriptCore decide
+
     if (dictionary[ "OPENGL" ] == "yes")
         qtConfig += "opengl";
 
@@ -3143,7 +3150,7 @@ void Configure::generateQDevicePri()
                   : QString("armeabi-v7a"));
         QString android_tc_vers(dictionary.contains("ANDROID_NDK_TOOLCHAIN_VERSION")
                   ? dictionary["ANDROID_NDK_TOOLCHAIN_VERSION"]
-                  : QString("4.7"));
+                  : QString("4.8"));
         deviceStream << "    DEFAULT_ANDROID_TARGET_ARCH = " << android_arch << endl;
         deviceStream << "    DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION = " << android_tc_vers << endl;
         deviceStream << "}" << endl;

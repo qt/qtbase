@@ -316,7 +316,7 @@ void QAbstractItemDelegate::updateEditorGeometry(QWidget *,
     to open a context menu when the right mouse button is pressed on
     an item.
 
-    The base implementation returns false (indicating that it has not
+    The base implementation returns \c false (indicating that it has not
     handled the event).
 */
 bool QAbstractItemDelegate::editorEvent(QEvent *,
@@ -354,7 +354,7 @@ QString QAbstractItemDelegate::elidedText(const QFontMetrics &fontMetrics, int w
     \a view \a option and the \a index that corresponds to the item where the
     event occurs.
 
-    Returns true if the delegate can handle the event; otherwise returns false.
+    Returns \c true if the delegate can handle the event; otherwise returns \c false.
     A return value of true indicates that the data obtained using the index had
     the required role.
 

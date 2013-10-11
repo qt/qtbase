@@ -355,7 +355,7 @@ QFontEngineData::~QFontEngineData()
     attributes, or if no matching font exists, Qt will use the closest
     matching installed font. The attributes of the font that is
     actually used are retrievable from a QFontInfo object. If the
-    window system provides an exact match exactMatch() returns true.
+    window system provides an exact match exactMatch() returns \c true.
     Use QFontMetrics to get measurements, e.g. the pixel length of a
     string using QFontMetrics::width().
 
@@ -1049,7 +1049,7 @@ int QFont::pixelSize() const
 /*!
   \fn bool QFont::italic() const
 
-    Returns true if the style() of the font is not QFont::StyleNormal
+    Returns \c true if the style() of the font is not QFont::StyleNormal
 
     \sa setItalic(), style()
 */
@@ -1139,8 +1139,8 @@ void QFont::setWeight(int weight)
 /*!
     \fn bool QFont::bold() const
 
-    Returns true if weight() is a value greater than
-   \l{Weight}{QFont::Normal}; otherwise returns false.
+    Returns \c true if weight() is a value greater than
+   \l{Weight}{QFont::Normal}; otherwise returns \c false.
 
     \sa weight(), setBold(), QFontInfo::bold()
 */
@@ -1158,7 +1158,7 @@ void QFont::setWeight(int weight)
 */
 
 /*!
-    Returns true if underline has been set; otherwise returns false.
+    Returns \c true if underline has been set; otherwise returns \c false.
 
     \sa setUnderline()
 */
@@ -1185,7 +1185,7 @@ void QFont::setUnderline(bool enable)
 }
 
 /*!
-    Returns true if overline has been set; otherwise returns false.
+    Returns \c true if overline has been set; otherwise returns \c false.
 
     \sa setOverline()
 */
@@ -1211,7 +1211,7 @@ void QFont::setOverline(bool enable)
 }
 
 /*!
-    Returns true if strikeout has been set; otherwise returns false.
+    Returns \c true if strikeout has been set; otherwise returns \c false.
 
     \sa setStrikeOut()
 */
@@ -1238,7 +1238,7 @@ void QFont::setStrikeOut(bool enable)
 }
 
 /*!
-    Returns true if fixed pitch has been set; otherwise returns false.
+    Returns \c true if fixed pitch has been set; otherwise returns \c false.
 
     \sa setFixedPitch(), QFontInfo::fixedPitch()
 */
@@ -1266,7 +1266,7 @@ void QFont::setFixedPitch(bool enable)
 }
 
 /*!
-  Returns true if kerning should be used when drawing text with this font.
+  Returns \c true if kerning should be used when drawing text with this font.
 
   \sa setKerning()
 */
@@ -1671,7 +1671,7 @@ void QFont::setRawMode(bool enable)
 }
 
 /*!
-    Returns true if a window system font exactly matching the settings
+    Returns \c true if a window system font exactly matching the settings
     of this font is available.
 
     \sa QFontInfo
@@ -1686,7 +1686,7 @@ bool QFont::exactMatch() const
 }
 
 /*!
-    Returns true if this font is equal to \a f; otherwise returns
+    Returns \c true if this font is equal to \a f; otherwise returns
     false.
 
     Two QFonts are considered equal if their font attributes are
@@ -1714,7 +1714,7 @@ bool QFont::operator==(const QFont &f) const
 
 /*!
     Provides an arbitrary comparison of this font and font \a f.
-    All that is guaranteed is that the operator returns false if both
+    All that is guaranteed is that the operator returns \c false if both
     fonts are equal and that (f1 \< f2) == !(f2 \< f1) if the fonts
     are not equal.
 
@@ -1750,8 +1750,8 @@ bool QFont::operator<(const QFont &f) const
 
 
 /*!
-    Returns true if this font is different from \a f; otherwise
-    returns false.
+    Returns \c true if this font is different from \a f; otherwise
+    returns \c false.
 
     Two QFonts are considered to be different if their font attributes
     are different. If rawMode() is enabled for both fonts, only the
@@ -1773,7 +1773,7 @@ QFont::operator QVariant() const
 }
 
 /*!
-    Returns true if this font and \a f are copies of each other, i.e.
+    Returns \c true if this font and \a f are copies of each other, i.e.
     one of them was created as a copy of the other and neither has
     been modified since. This is much stricter than equality.
 
@@ -1785,8 +1785,8 @@ bool QFont::isCopyOf(const QFont & f) const
 }
 
 /*!
-    Returns true if raw mode is used for font name matching; otherwise
-    returns false.
+    Returns \c true if raw mode is used for font name matching; otherwise
+    returns \c false.
 
     \sa setRawMode(), rawName()
 */
@@ -2470,8 +2470,8 @@ int QFontInfo::weight() const
 /*!
     \fn bool QFontInfo::bold() const
 
-    Returns true if weight() would return a value greater than
-    QFont::Normal; otherwise returns false.
+    Returns \c true if weight() would return a value greater than
+    QFont::Normal; otherwise returns \c false.
 
     \sa weight(), QFont::bold()
 */
@@ -2556,7 +2556,7 @@ QFont::StyleHint QFontInfo::styleHint() const
 }
 
 /*!
-    Returns true if the font is a raw mode font; otherwise returns
+    Returns \c true if the font is a raw mode font; otherwise returns
     false.
 
     If it is a raw mode font, all other functions in QFontInfo will
@@ -2571,8 +2571,8 @@ bool QFontInfo::rawMode() const
 }
 
 /*!
-    Returns true if the matched window system font is exactly the same
-    as the one specified by the font; otherwise returns false.
+    Returns \c true if the matched window system font is exactly the same
+    as the one specified by the font; otherwise returns \c false.
 
     \sa QFont::exactMatch()
 */

@@ -407,7 +407,7 @@ QUrlQuery::~QUrlQuery()
 }
 
 /*!
-    Returns true if this object and the \a other object contain the same
+    Returns \c true if this object and the \a other object contain the same
     contents, in the same order, and use the same query delimiters.
 */
 bool QUrlQuery::operator ==(const QUrlQuery &other) const
@@ -422,7 +422,7 @@ bool QUrlQuery::operator ==(const QUrlQuery &other) const
 }
 
 /*!
-    Returns true if this QUrlQUery object contains no key-value pairs, such as
+    Returns \c true if this QUrlQUery object contains no key-value pairs, such as
     after being default-constructed or after parsing an empty query string.
 
     \sa setQuery(), clear()
@@ -636,7 +636,7 @@ QList<QPair<QString, QString> > QUrlQuery::queryItems(QUrl::ComponentFormattingO
 }
 
 /*!
-    Returns true if there is a query string pair whose key is equal
+    Returns \c true if there is a query string pair whose key is equal
     to \a key from the URL.
 
     \sa addQueryItem(), queryItemValue()
@@ -781,7 +781,7 @@ void QUrlQuery::removeAllQueryItems(const QString &key)
 /*!
     \fn bool QUrlQuery::operator!=(const QUrlQuery &other) const
 
-    Returns true if \a other is not equal to this QUrlQuery. Otherwise, returns false.
+    Returns \c true if \a other is not equal to this QUrlQuery. Otherwise, returns \c false.
 
     \sa operator==()
 */

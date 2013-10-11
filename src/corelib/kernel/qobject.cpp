@@ -522,13 +522,6 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
     details. A convenience handler, childEvent(), can be reimplemented
     to catch child events.
 
-    Events are delivered in the thread in which the object was
-    created; see \l{Thread Support in Qt} and thread() for details.
-    Note that event processing is not done at all for QObjects with no
-    thread affinity (thread() returns zero). Use the moveToThread()
-    function to change the thread affinity for an object and its
-    children (the object cannot be moved if it has a parent).
-
     Last but not least, QObject provides the basic timer support in
     Qt; see QTimer for high-level support for timers.
 
@@ -548,6 +541,41 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
 
     Some QObject functions, e.g. children(), return a QObjectList.
     QObjectList is a typedef for QList<QObject *>.
+
+    \section1 Thread Affinity
+
+    A QObject instance is said to have a \e{thread affinity}, or that
+    it \e{lives} in a certain thread. When a QObject receives a
+    \l{Qt::QueuedConnection}{queued signal} or a \l{The Event
+    System#Sending Events}{posted event}, the slot or event handler
+    will run in the thread that the object lives in.
+
+    \note If a QObject has no thread affinity (that is, if thread()
+    returns zero), or if it lives in a thread that has no running event
+    loop, then it cannot receive queued signals or posted events.
+
+    By default, a QObject lives in the thread in which it is created.
+    An object's thread affinity can be queried using thread() and
+    changed using moveToThread().
+
+    All QObjects must live in the same thread as their parent. Consequently:
+
+    \list
+    \li setParent() will fail if the two QObjects involved live in
+        different threads.
+    \li When a QObject is moved to another thread, all its children
+        will be automatically moved too.
+    \li moveToThread() will fail if the QObject has a parent.
+    \li If \l{QObject}s are created within QThread::run(), they cannot
+        become children of the QThread object because the QThread does
+        not live in the thread that calls QThread::run().
+    \endlist
+
+    \note A QObject's member variables \e{do not} automatically become
+    its children. The parent-child relationship must be set by either
+    passing a pointer to the child's \l{QObject()}{constructor}, or by
+    calling setParent(). Without this step, the object's member variables
+    will remain in the old thread when moveToThread() is called.
 
     \target No copy constructor
     \section1 No copy constructor or assignment operator
@@ -977,9 +1005,9 @@ QObjectPrivate::Connection::~Connection()
 /*!
     \fn bool QObject::inherits(const char *className) const
 
-    Returns true if this object is an instance of a class that
+    Returns \c true if this object is an instance of a class that
     inherits \a className or a QObject subclass that inherits \a
-    className; otherwise returns false.
+    className; otherwise returns \c false.
 
     A class is considered to inherit itself.
 
@@ -1040,7 +1068,7 @@ void QObject::setObjectName(const QString &name)
 /*!
     \fn bool QObject::isWidgetType() const
 
-    Returns true if the object is a widget; otherwise returns false.
+    Returns \c true if the object is a widget; otherwise returns \c false.
 
     Calling this function is equivalent to calling
     \c{inherits("QWidget")}, except that it is much faster.
@@ -1049,7 +1077,7 @@ void QObject::setObjectName(const QString &name)
 /*!
     \fn bool QObject::isWindowType() const
 
-    Returns true if the object is a window; otherwise returns false.
+    Returns \c true if the object is a window; otherwise returns \c false.
 
     Calling this function is equivalent to calling
     \c{inherits("QWindow")}, except that it is much faster.
@@ -1144,7 +1172,7 @@ void QObject::timerEvent(QTimerEvent *)
     QEvent::ChildAdded and QEvent::ChildRemoved events are sent to
     objects when children are added or removed. In both cases you can
     only rely on the child being a QObject, or if isWidgetType()
-    returns true, a QWidget. (This is because, in the
+    returns \c true, a QWidget. (This is because, in the
     \l{QEvent::ChildAdded}{ChildAdded} case, the child is not yet
     fully constructed, and in the \l{QEvent::ChildRemoved}{ChildRemoved}
     case it might have been destructed already).
@@ -1221,7 +1249,7 @@ bool QObject::eventFilter(QObject * /* watched */, QEvent * /* event */)
 /*!
     \fn bool QObject::signalsBlocked() const
 
-    Returns true if signals are blocked; otherwise returns false.
+    Returns \c true if signals are blocked; otherwise returns \c false.
 
     Signals are not blocked by default.
 
@@ -2029,14 +2057,9 @@ void QObject::deleteLater()
  *****************************************************************************/
 
 
-const int flagged_locations_count = 2;
-static const char* flagged_locations[flagged_locations_count] = {0};
-
 const char *qFlagLocation(const char *method)
 {
-    static int idx = 0;
-    flagged_locations[idx] = method;
-    idx = (idx+1) % flagged_locations_count;
+    QThreadData::current()->flaggedSignatures.store(method);
     return method;
 }
 
@@ -2048,14 +2071,11 @@ static int extract_code(const char *member)
 
 static const char * extract_location(const char *member)
 {
-    for (int i = 0; i < flagged_locations_count; ++i) {
-        if (member == flagged_locations[i]) {
-            // signature includes location information after the first null-terminator
-            const char *location = member + qstrlen(member) + 1;
-            if (*location != '\0')
-                return location;
-            return 0;
-        }
+    if (QThreadData::current()->flaggedSignatures.contains(member)) {
+        // signature includes location information after the first null-terminator
+        const char *location = member + qstrlen(member) + 1;
+        if (*location != '\0')
+            return location;
     }
     return 0;
 }
@@ -2259,8 +2279,8 @@ int QObject::receivers(const char *signal) const
 
 /*!
     \since 5.0
-    Returns true if the \a signal is connected to at least one receiver,
-    otherwise returns false.
+    Returns \c true if the \a signal is connected to at least one receiver,
+    otherwise returns \c false.
 
     \a signal must be a signal member of this object, otherwise the behaviour
     is undefined.
@@ -2662,8 +2682,8 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
     \threadsafe
 
     Disconnects \a signal in object \a sender from \a method in object
-    \a receiver. Returns true if the connection is successfully broken;
-    otherwise returns false.
+    \a receiver. Returns \c true if the connection is successfully broken;
+    otherwise returns \c false.
 
     A signal-slot connection is removed when either of the objects
     involved are destroyed.
@@ -2828,8 +2848,8 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
     \since 4.8
 
     Disconnects \a signal in object \a sender from \a method in object
-    \a receiver. Returns true if the connection is successfully broken;
-    otherwise returns false.
+    \a receiver. Returns \c true if the connection is successfully broken;
+    otherwise returns \c false.
 
     This function provides the same possibilities like
     disconnect(const QObject *sender, const char *signal, const QObject *receiver, const char *method)
@@ -2978,7 +2998,7 @@ void QObject::connectNotify(const QMetaMethod &signal)
     If all signals were disconnected from this object (e.g., the
     signal argument to disconnect() was 0), disconnectNotify()
     is only called once, and the \a signal will be an invalid
-    QMetaMethod (QMetaMethod::isValid() returns false).
+    QMetaMethod (QMetaMethod::isValid() returns \c false).
 
     \warning This function violates the object-oriented principle of
     modularity. However, it might be useful for optimizing access to
@@ -4486,8 +4506,8 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
     \threadsafe
 
     Disconnects \a signal in object \a sender from \a method in object
-    \a receiver. Returns true if the connection is successfully broken;
-    otherwise returns false.
+    \a receiver. Returns \c true if the connection is successfully broken;
+    otherwise returns \c false.
 
     A signal-slot connection is removed when either of the objects
     involved are destroyed.
@@ -4637,7 +4657,7 @@ QMetaObject::Connection::~Connection()
 /*!
     \fn QMetaObject::Connection::operator bool() const
 
-    Returns true if the connection is valid.
+    Returns \c true if the connection is valid.
 
     The connection is valid if the call to QObject::connect succeeded.
     The connection is invalid if QObject::connect was not able to find

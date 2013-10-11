@@ -1988,8 +1988,8 @@ QDataStream& operator<<(QDataStream &s, const QVariant::Type p)
 /*!
     \fn bool QVariant::isValid() const
 
-    Returns true if the storage type of this variant is not
-    QVariant::Invalid; otherwise returns false.
+    Returns \c true if the storage type of this variant is not
+    QVariant::Invalid; otherwise returns \c false.
 */
 
 template <typename T>
@@ -2521,12 +2521,12 @@ qulonglong QVariant::toULongLong(bool *ok) const
 /*!
     Returns the variant as a bool if the variant has userType() Bool.
 
-    Returns true if the variant has userType() \l QMetaType::Bool,
+    Returns \c true if the variant has userType() \l QMetaType::Bool,
     \l QMetaType::QChar, \l QMetaType::Double, \l QMetaType::Int,
     \l QMetaType::LongLong, \l QMetaType::UInt, or \l QMetaType::ULongLong and
     the value is non-zero, or if the variant has type \l QMetaType::QString or
     \l QMetaType::QByteArray and its lower-case content is not one of the
-    following: empty, "0" or "false"; otherwise returns false.
+    following: empty, "0" or "false"; otherwise returns \c false.
 
     \sa canConvert(), convert()
 */
@@ -2694,7 +2694,7 @@ static const quint32 qCanConvertMatrix[QVariant::LastCoreType + 1] =
 
 #ifndef QT_BOOTSTRAPPED
 /*!
-    Returns true if from inherits to.
+    Returns \c true if from inherits to.
 */
 static bool canConvertMetaObject(const QMetaObject *from, const QMetaObject *to)
 {
@@ -2730,7 +2730,7 @@ static bool canConvertMetaObject(int fromId, int toId, QObject *fromObject)
 
 
 /*!
-    Returns true if the variant's type can be cast to the requested
+    Returns \c true if the variant's type can be cast to the requested
     type, \a targetTypeId. Such casting is done automatically when calling the
     toInt(), toBool(), ... methods.
 
@@ -2933,8 +2933,8 @@ bool QVariant::canConvert(int targetTypeId) const
 
 /*!
     Casts the variant to the requested type, \a targetTypeId. If the cast cannot be
-    done, the variant is cleared. Returns true if the current type of
-    the variant was successfully cast; otherwise returns false.
+    done, the variant is cleared. Returns \c true if the current type of
+    the variant was successfully cast; otherwise returns \c false.
 
     A QVariant containing a pointer to a type derived from QObject will also convert
     and return true for this function if a qobject_cast to the type described
@@ -2991,7 +2991,7 @@ bool QVariant::convert(const int type, void *ptr) const
 
     \relates QVariant
 
-    Returns true if \a v1 and \a v2 are equal; otherwise returns false.
+    Returns \c true if \a v1 and \a v2 are equal; otherwise returns \c false.
 
     If \a v1 and \a v2 have the same \l{QVariant::}{type()}, the
     type's equality operator is used for comparison. If not, it is
@@ -3012,7 +3012,7 @@ bool QVariant::convert(const int type, void *ptr) const
 
     \relates QVariant
 
-    Returns false if \a v1 and \a v2 are equal; otherwise returns true.
+    Returns \c false if \a v1 and \a v2 are equal; otherwise returns \c true.
 
     \warning To make this function work with a custom type registered with
     qRegisterMetaType(), its comparison operator must be registered using
@@ -3021,8 +3021,8 @@ bool QVariant::convert(const int type, void *ptr) const
 
 /*! \fn bool QVariant::operator==(const QVariant &v) const
 
-    Compares this QVariant with \a v and returns true if they are
-    equal; otherwise returns false.
+    Compares this QVariant with \a v and returns \c true if they are
+    equal; otherwise returns \c false.
 
     QVariant uses the equality operator of the type() it contains to
     check for equality. QVariant will try to convert() \a v if its
@@ -3037,8 +3037,8 @@ bool QVariant::convert(const int type, void *ptr) const
 /*!
     \fn bool QVariant::operator!=(const QVariant &v) const
 
-    Compares this QVariant with \a v and returns true if they are not
-    equal; otherwise returns false.
+    Compares this QVariant with \a v and returns \c true if they are not
+    equal; otherwise returns \c false.
 
     \warning To make this function work with a custom type registered with
     qRegisterMetaType(), its comparison operator must be registered using
@@ -3048,7 +3048,7 @@ bool QVariant::convert(const int type, void *ptr) const
 /*!
     \fn bool QVariant::operator<(const QVariant &v) const
 
-    Compares this QVariant with \a v and returns true if this is less than \a v.
+    Compares this QVariant with \a v and returns \c true if this is less than \a v.
 
     \note Comparability might not be availabe for the type stored in this QVariant
     or in \a v.
@@ -3061,7 +3061,7 @@ bool QVariant::convert(const int type, void *ptr) const
 /*!
     \fn bool QVariant::operator<=(const QVariant &v) const
 
-    Compares this QVariant with \a v and returns true if this is less or equal than \a v.
+    Compares this QVariant with \a v and returns \c true if this is less or equal than \a v.
 
     \note Comparability might not be available for the type stored in this QVariant
     or in \a v.
@@ -3074,7 +3074,7 @@ bool QVariant::convert(const int type, void *ptr) const
 /*!
     \fn bool QVariant::operator>(const QVariant &v) const
 
-    Compares this QVariant with \a v and returns true if this is larger than \a v.
+    Compares this QVariant with \a v and returns \c true if this is larger than \a v.
 
     \note Comparability might not be available for the type stored in this QVariant
     or in \a v.
@@ -3087,7 +3087,7 @@ bool QVariant::convert(const int type, void *ptr) const
 /*!
     \fn bool QVariant::operator>=(const QVariant &v) const
 
-    Compares this QVariant with \a v and returns true if this is larger or equal than \a v.
+    Compares this QVariant with \a v and returns \c true if this is larger or equal than \a v.
 
     \note Comparability might not be available for the type stored in this QVariant
     or in \a v.
@@ -3207,7 +3207,7 @@ void* QVariant::data()
 
 
 /*!
-    Returns true if this is a null variant, false otherwise. A variant is
+    Returns \c true if this is a null variant, false otherwise. A variant is
     considered null if it contains a default constructed value or a built-in
     type instance that has an isNull method, in which case the result
     would be the same as calling isNull on the wrapped object.
@@ -3298,7 +3298,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
 /*! \fn bool QVariant::canConvert() const
 
-    Returns true if the variant can be converted to the template type \c{T},
+    Returns \c true if the variant can be converted to the template type \c{T},
     otherwise false.
 
     Example:
@@ -3396,8 +3396,8 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     \relates QVariant
     \obsolete
 
-    Returns true if the given \a value can be converted to the
-    template type specified; otherwise returns false.
+    Returns \c true if the given \a value can be converted to the
+    template type specified; otherwise returns \c false.
 
     This function is equivalent to QVariant::canConvert(\a value).
 
@@ -3608,8 +3608,8 @@ const QVariant QSequentialIterable::const_iterator::operator*() const
 }
 
 /*!
-    Returns true if \a other points to the same item as this
-    iterator; otherwise returns false.
+    Returns \c true if \a other points to the same item as this
+    iterator; otherwise returns \c false.
 
     \sa operator!=()
 */
@@ -3619,8 +3619,8 @@ bool QSequentialIterable::const_iterator::operator==(const const_iterator &other
 }
 
 /*!
-    Returns true if \a other points to a different item than this
-    iterator; otherwise returns false.
+    Returns \c true if \a other points to a different item than this
+    iterator; otherwise returns \c false.
 
     \sa operator==()
 */
@@ -3942,8 +3942,8 @@ const QVariant QAssociativeIterable::const_iterator::value() const
 }
 
 /*!
-    Returns true if \a other points to the same item as this
-    iterator; otherwise returns false.
+    Returns \c true if \a other points to the same item as this
+    iterator; otherwise returns \c false.
 
     \sa operator!=()
 */
@@ -3953,8 +3953,8 @@ bool QAssociativeIterable::const_iterator::operator==(const const_iterator &othe
 }
 
 /*!
-    Returns true if \a other points to a different item than this
-    iterator; otherwise returns false.
+    Returns \c true if \a other points to a different item than this
+    iterator; otherwise returns \c false.
 
     \sa operator==()
 */

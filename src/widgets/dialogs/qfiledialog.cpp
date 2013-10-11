@@ -490,7 +490,7 @@ QByteArray QFileDialog::saveState() const
     Typically this is used in conjunction with QSettings to restore the size
     from a past session.
 
-    Returns false if there are errors
+    Returns \c false if there are errors
 */
 bool QFileDialog::restoreState(const QByteArray &state)
 {
@@ -751,7 +751,7 @@ void QFileDialog::setOption(Option option, bool on)
 /*!
     \since 4.5
 
-    Returns true if the given \a option is enabled; otherwise, returns
+    Returns \c true if the given \a option is enabled; otherwise, returns
     false.
 
     \sa options, setOption()
@@ -1287,7 +1287,7 @@ void QFileDialog::setNameFilter(const QString &filter)
     \brief This property holds whether the filter details is shown or not.
     \since 4.4
 
-    When this property is true (the default), the filter details are shown
+    When this property is \c true (the default), the filter details are shown
     in the combo box.  When the property is set to false, these are hidden.
 
     Use setOption(HideNameFilterDetails, !\e enabled) or
@@ -3567,7 +3567,7 @@ void QFileDialogPrivate::_q_nativeEnterDirectory(const QUrl &directory)
 
     For the list and tree view watch keys to goto parent and back in the history
 
-    returns true if handled
+    returns \c true if handled
 */
 bool QFileDialogPrivate::itemViewKeyboardEvent(QKeyEvent *event) {
 

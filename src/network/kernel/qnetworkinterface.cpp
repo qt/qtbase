@@ -201,7 +201,7 @@ QNetworkAddressEntry::~QNetworkAddressEntry()
 }
 
 /*!
-    Returns true if this network address entry is the same as \a
+    Returns \c true if this network address entry is the same as \a
     other.
 */
 bool QNetworkAddressEntry::operator==(const QNetworkAddressEntry &other) const
@@ -216,7 +216,7 @@ bool QNetworkAddressEntry::operator==(const QNetworkAddressEntry &other) const
 /*!
     \fn bool QNetworkAddressEntry::operator!=(const QNetworkAddressEntry &other) const
 
-    Returns true if this network address entry is different from \a
+    Returns \c true if this network address entry is different from \a
     other.
 */
 
@@ -435,7 +435,7 @@ QNetworkInterface &QNetworkInterface::operator=(const QNetworkInterface &other)
 */
 
 /*!
-    Returns true if this QNetworkInterface object contains valid
+    Returns \c true if this QNetworkInterface object contains valid
     information about a network interface.
 */
 bool QNetworkInterface::isValid() const

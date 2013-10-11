@@ -545,7 +545,7 @@ QDateTime QUrlInfo::lastRead() const
 }
 
 /*!
-    Returns true if the URL is a directory; otherwise returns false.
+    Returns \c true if the URL is a directory; otherwise returns \c false.
 
     \sa isValid()
 */
@@ -558,7 +558,7 @@ bool QUrlInfo::isDir() const
 }
 
 /*!
-    Returns true if the URL is a file; otherwise returns false.
+    Returns \c true if the URL is a file; otherwise returns \c false.
 
     \sa isValid()
 */
@@ -571,7 +571,7 @@ bool QUrlInfo::isFile() const
 }
 
 /*!
-    Returns true if the URL is a symbolic link; otherwise returns false.
+    Returns \c true if the URL is a symbolic link; otherwise returns \c false.
 
     \sa isValid()
 */
@@ -584,7 +584,7 @@ bool QUrlInfo::isSymLink() const
 }
 
 /*!
-    Returns true if the URL is writable; otherwise returns false.
+    Returns \c true if the URL is writable; otherwise returns \c false.
 
     \sa isValid()
 */
@@ -597,7 +597,7 @@ bool QUrlInfo::isWritable() const
 }
 
 /*!
-    Returns true if the URL is readable; otherwise returns false.
+    Returns \c true if the URL is readable; otherwise returns \c false.
 
     \sa isValid()
 */
@@ -610,7 +610,7 @@ bool QUrlInfo::isReadable() const
 }
 
 /*!
-    Returns true if the URL is executable; otherwise returns false.
+    Returns \c true if the URL is executable; otherwise returns \c false.
 
     \sa isValid()
 */
@@ -623,7 +623,7 @@ bool QUrlInfo::isExecutable() const
 }
 
 /*!
-    Returns true if \a i1 is greater than \a i2; otherwise returns
+    Returns \c true if \a i1 is greater than \a i2; otherwise returns
     false. The objects are compared by the value, which is specified
     by \a sortBy. This must be one of QDir::Name, QDir::Time or
     QDir::Size.
@@ -645,7 +645,7 @@ bool QUrlInfo::greaterThan(const QUrlInfo &i1, const QUrlInfo &i2,
 }
 
 /*!
-    Returns true if \a i1 is less than \a i2; otherwise returns false.
+    Returns \c true if \a i1 is less than \a i2; otherwise returns \c false.
     The objects are compared by the value, which is specified by \a
     sortBy. This must be one of QDir::Name, QDir::Time or QDir::Size.
 */
@@ -657,7 +657,7 @@ bool QUrlInfo::lessThan(const QUrlInfo &i1, const QUrlInfo &i2,
 }
 
 /*!
-    Returns true if \a i1 equals to \a i2; otherwise returns false.
+    Returns \c true if \a i1 equals to \a i2; otherwise returns \c false.
     The objects are compared by the value, which is specified by \a
     sortBy. This must be one of QDir::Name, QDir::Time or QDir::Size.
 */
@@ -678,8 +678,8 @@ bool QUrlInfo::equal(const QUrlInfo &i1, const QUrlInfo &i2,
 }
 
 /*!
-    Returns true if this QUrlInfo is equal to \a other; otherwise
-    returns false.
+    Returns \c true if this QUrlInfo is equal to \a other; otherwise
+    returns \c false.
 
     \sa lessThan(), equal()
 */
@@ -710,14 +710,14 @@ bool QUrlInfo::operator==(const QUrlInfo &other) const
     \fn bool QUrlInfo::operator!=(const QUrlInfo &other) const
     \since 4.2
 
-    Returns true if this QUrlInfo is not equal to \a other; otherwise
-    returns false.
+    Returns \c true if this QUrlInfo is not equal to \a other; otherwise
+    returns \c false.
 
     \sa lessThan(), equal()
 */
 
 /*!
-    Returns true if the URL info is valid; otherwise returns false.
+    Returns \c true if the URL info is valid; otherwise returns \c false.
     Valid means that the QUrlInfo contains real information.
 
     You should always check if the URL info is valid before relying on

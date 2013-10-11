@@ -55,32 +55,32 @@ class Q_WIDGETS_EXPORT QAccessibleWidget : public QAccessibleObject, public QAcc
 {
 public:
     explicit QAccessibleWidget(QWidget *o, QAccessible::Role r = QAccessible::Client, const QString& name = QString());
-    bool isValid() const;
+    bool isValid() const Q_DECL_OVERRIDE;
 
-    QWindow *window() const;
-    int childCount() const;
-    int indexOfChild(const QAccessibleInterface *child) const;
-    QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > relations(QAccessible::Relation match = QAccessible::AllRelations) const;
-    QAccessibleInterface *focusChild() const;
+    QWindow *window() const Q_DECL_OVERRIDE;
+    int childCount() const Q_DECL_OVERRIDE;
+    int indexOfChild(const QAccessibleInterface *child) const Q_DECL_OVERRIDE;
+    QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > relations(QAccessible::Relation match = QAccessible::AllRelations) const Q_DECL_OVERRIDE;
+    QAccessibleInterface *focusChild() const Q_DECL_OVERRIDE;
 
-    QRect rect() const;
+    QRect rect() const Q_DECL_OVERRIDE;
 
-    QAccessibleInterface *parent() const;
-    QAccessibleInterface *child(int index) const;
+    QAccessibleInterface *parent() const Q_DECL_OVERRIDE;
+    QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
 
-    QString text(QAccessible::Text t) const;
-    QAccessible::Role role() const;
-    QAccessible::State state() const;
+    QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
+    QAccessible::Role role() const Q_DECL_OVERRIDE;
+    QAccessible::State state() const Q_DECL_OVERRIDE;
 
-    QColor foregroundColor() const;
-    QColor backgroundColor() const;
+    QColor foregroundColor() const Q_DECL_OVERRIDE;
+    QColor backgroundColor() const Q_DECL_OVERRIDE;
 
-    void *interface_cast(QAccessible::InterfaceType t);
+    void *interface_cast(QAccessible::InterfaceType t) Q_DECL_OVERRIDE;
 
     // QAccessibleActionInterface
-    QStringList actionNames() const;
-    void doAction(const QString &actionName);
-    QStringList keyBindingsForAction(const QString &actionName) const;
+    QStringList actionNames() const Q_DECL_OVERRIDE;
+    void doAction(const QString &actionName) Q_DECL_OVERRIDE;
+    QStringList keyBindingsForAction(const QString &actionName) const Q_DECL_OVERRIDE;
 protected:
     ~QAccessibleWidget();
     QWidget *widget() const;

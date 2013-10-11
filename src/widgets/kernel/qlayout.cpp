@@ -234,7 +234,7 @@ void QLayout::addWidget(QWidget *w)
 /*!
     Sets the alignment for widget \a w to \a alignment and returns
     true if \a w is found in this layout (not including child
-    layouts); otherwise returns false.
+    layouts); otherwise returns \c false.
 */
 bool QLayout::setAlignment(QWidget *w, Qt::Alignment alignment)
 {
@@ -256,8 +256,8 @@ bool QLayout::setAlignment(QWidget *w, Qt::Alignment alignment)
   \overload
 
   Sets the alignment for the layout \a l to \a alignment and
-  returns true if \a l is found in this layout (not including child
-  layouts); otherwise returns false.
+  returns \c true if \a l is found in this layout (not including child
+  layouts); otherwise returns \c false.
 */
 bool QLayout::setAlignment(QLayout *l, Qt::Alignment alignment)
 {
@@ -1386,7 +1386,7 @@ void QLayout::setEnabled(bool enable)
 }
 
 /*!
-    Returns true if the layout is enabled; otherwise returns false.
+    Returns \c true if the layout is enabled; otherwise returns \c false.
 
     \sa setEnabled()
 */
