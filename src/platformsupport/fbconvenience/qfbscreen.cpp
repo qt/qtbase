@@ -149,9 +149,13 @@ void QFbScreen::setDirty(const QRect &rect)
     QRect intersection = rect.intersected(mGeometry);
     QPoint screenOffset = mGeometry.topLeft();
     mRepaintRegion += intersection.translated(-screenOffset);    // global to local translation
-    if (!mRedrawTimer.isActive()) {
+    scheduleUpdate();
+}
+
+void QFbScreen::scheduleUpdate()
+{
+    if (!mRedrawTimer.isActive())
         mRedrawTimer.start();
-    }
 }
 
 void QFbScreen::setPhysicalSize(const QSize &size)

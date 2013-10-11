@@ -63,7 +63,7 @@ public:
     virtual void changeCursor(QCursor *widgetCursor, QWindow *window);
 #endif
 
-    virtual void setDirty() { mDirty = true; /* screen->setDirty(QRect()); */ }
+    virtual void setDirty();
     virtual bool isDirty() const { return mDirty; }
     virtual bool isOnScreen() const { return mOnScreen; }
     virtual QRect lastPainted() const { return mPrevRect; }

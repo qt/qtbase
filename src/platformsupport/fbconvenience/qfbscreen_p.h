@@ -45,6 +45,7 @@
 #include <qpa/qplatformscreen.h>
 #include <QtCore/QTimer>
 #include <QtCore/QSize>
+#include "qfbcursor_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -60,13 +61,14 @@ public:
     QFbScreen();
     ~QFbScreen();
 
-    virtual QRect geometry() const { return mGeometry; }
-    virtual int depth() const { return mDepth; }
-    virtual QImage::Format format() const { return mFormat; }
-    virtual QSizeF physicalSize() const { return mPhysicalSize; }
+    QRect geometry() const Q_DECL_OVERRIDE { return mGeometry; }
+    int depth() const Q_DECL_OVERRIDE { return mDepth; }
+    QImage::Format format() const Q_DECL_OVERRIDE { return mFormat; }
+    QSizeF physicalSize() const Q_DECL_OVERRIDE { return mPhysicalSize; }
+    QPlatformCursor *cursor() const Q_DECL_OVERRIDE { return mCursor; }
 
     QWindow *topWindow() const;
-    virtual QWindow *topLevelAt(const QPoint & p) const;
+    QWindow *topLevelAt(const QPoint & p) const Q_DECL_OVERRIDE;
 
     // compositor api
     virtual void addWindow(QFbWindow *window);
@@ -76,6 +78,8 @@ public:
     virtual void topWindowChanged(QWindow *) {}
 
     void addBackingStore(QFbBackingStore *bs) {mBackingStores << bs;}
+
+    void scheduleUpdate();
 
 public slots:
     virtual void setDirty(const QRect &rect);
@@ -114,4 +118,3 @@ private:
 QT_END_NAMESPACE
 
 #endif // QFBSCREEN_P_H
-
