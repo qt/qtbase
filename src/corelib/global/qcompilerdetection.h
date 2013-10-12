@@ -98,6 +98,7 @@
 #  define Q_UNREACHABLE_IMPL() __assume(0)
 #  define Q_NORETURN __declspec(noreturn)
 #  define Q_DECL_DEPRECATED __declspec(deprecated)
+#  define Q_DECL_DEPRECATED_X(text) __declspec(deprecated(text))
 #  define Q_DECL_EXPORT __declspec(dllexport)
 #  define Q_DECL_IMPORT __declspec(dllimport)
 /* Intel C++ disguising as Visual C++: the `using' keyword avoids warnings */
@@ -182,6 +183,7 @@
 #  define Q_ALIGNOF(type)   __alignof__(type)
 #  define Q_TYPEOF(expr)    __typeof__(expr)
 #  define Q_DECL_DEPRECATED __attribute__ ((__deprecated__))
+#  define Q_DECL_DEPRECATED_X(text) __attribute__ ((__deprecated__(text)))
 #  define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
 #  define Q_DECL_UNUSED     __attribute__((__unused__))
 #  define Q_LIKELY(expr)    __builtin_expect(!!(expr), true)
@@ -837,6 +839,9 @@
 #endif
 #ifndef Q_DECL_VARIABLE_DEPRECATED
 #  define Q_DECL_VARIABLE_DEPRECATED Q_DECL_DEPRECATED
+#endif
+#ifndef Q_DECL_DEPRECATED_X
+#  define Q_DECL_DEPRECATED_X(text) Q_DECL_DEPRECATED
 #endif
 #ifndef Q_DECL_EXPORT
 #  define Q_DECL_EXPORT
