@@ -741,7 +741,7 @@ void QMetaObjectBuilder::addMetaObject
 
     if ((members & RelatedMetaObjects) != 0) {
         Q_ASSERT(priv(prototype->d.data)->revision >= 2);
-        const QMetaObject **objects = prototype->d.relatedMetaObjects;
+        const QMetaObject * const *objects = prototype->d.relatedMetaObjects;
         if (objects) {
             while (*objects != 0) {
                 addRelatedMetaObject(*objects);

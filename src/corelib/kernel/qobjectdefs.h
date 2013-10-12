@@ -447,7 +447,7 @@ struct Q_CORE_EXPORT QMetaObject
         const uint *data;
         typedef void (*StaticMetacallFunction)(QObject *, QMetaObject::Call, int, void **);
         StaticMetacallFunction static_metacall;
-        const QMetaObject **relatedMetaObjects;
+        const QMetaObject * const *relatedMetaObjects;
         void *extradata; //reserved for future use
     } d;
 };

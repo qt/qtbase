@@ -884,7 +884,7 @@ void tst_Moc::testExtraDataForEnum()
     const QMetaObject *mobjUser = &EnumUserClass::staticMetaObject;
     QCOMPARE(mobjUser->enumeratorCount(), 0);
 
-    const QMetaObject **objects = mobjUser->d.relatedMetaObjects;
+    const QMetaObject * const *objects = mobjUser->d.relatedMetaObjects;
     QVERIFY(objects);
     QVERIFY(objects[0] == mobjSource);
     QVERIFY(objects[1] == 0);
@@ -3098,7 +3098,7 @@ namespace QTBUG32933_relatedObjectsDontIncludeItself {
 void tst_Moc::QTBUG32933_relatedObjectsDontIncludeItself()
 {
     const QMetaObject *mo = &QTBUG32933_relatedObjectsDontIncludeItself::NS::Obj::staticMetaObject;
-    const QMetaObject **objects = mo->d.relatedMetaObjects;
+    const QMetaObject * const *objects = mo->d.relatedMetaObjects;
     // the related objects should be empty because the enums is in the same object.
     QVERIFY(!objects);
 

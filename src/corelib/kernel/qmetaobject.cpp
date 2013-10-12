@@ -942,7 +942,7 @@ static const QMetaObject *QMetaObject_findMetaObject(const QMetaObject *self, co
             return self;
         if (self->d.relatedMetaObjects) {
             Q_ASSERT(priv(self->d.data)->revision >= 2);
-            const QMetaObject **e = self->d.relatedMetaObjects;
+            const QMetaObject * const *e = self->d.relatedMetaObjects;
             if (e) {
                 while (*e) {
                     if (const QMetaObject *m =QMetaObject_findMetaObject((*e), name))

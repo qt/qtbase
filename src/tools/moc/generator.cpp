@@ -464,7 +464,7 @@ void Generator::generateCode()
     }
 
     if (!extraList.isEmpty()) {
-        fprintf(out, "static const QMetaObject *qt_meta_extradata_%s[] = {\n    ", qualifiedClassNameIdentifier.constData());
+        fprintf(out, "static const QMetaObject * const qt_meta_extradata_%s[] = {\n    ", qualifiedClassNameIdentifier.constData());
         for (int i = 0; i < extraList.count(); ++i) {
             fprintf(out, "    &%s::staticMetaObject,\n", extraList.at(i).constData());
         }
