@@ -152,7 +152,7 @@ class QSimplex
     Q_DISABLE_COPY(QSimplex)
 public:
     QSimplex();
-    virtual ~QSimplex();
+    ~QSimplex();
 
     qreal solveMin();
     qreal solveMax();
