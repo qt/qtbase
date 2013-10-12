@@ -675,6 +675,8 @@ bool QFileInfo::exists() const
 }
 
 /*!
+    \since 5.2
+
     Returns \c true if the \a file exists; otherwise returns \c false.
 
     \note If \a file is a symlink that points to a non-existing
