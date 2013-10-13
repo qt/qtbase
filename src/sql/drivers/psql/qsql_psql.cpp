@@ -1253,8 +1253,8 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
                 QTime tm = field.value().toDateTime().time();
                 // msecs need to be right aligned otherwise psql interprets them wrong
                 r = QLatin1Char('\'') + QString::number(dt.year()) + QLatin1Char('-')
-                          + QString::number(dt.month()) + QLatin1Char('-')
-                          + QString::number(dt.day()) + QLatin1Char(' ')
+                          + QString::number(dt.month()).rightJustified(2, QLatin1Char('0')) + QLatin1Char('-')
+                          + QString::number(dt.day()).rightJustified(2, QLatin1Char('0')) + QLatin1Char(' ')
                           + tm.toString() + QLatin1Char('.')
                           + QString::number(tm.msec()).rightJustified(3, QLatin1Char('0'))
                           + QLatin1Char('\'');
