@@ -125,7 +125,6 @@
 #include <qimageiohandler.h>
 #include <qlist.h>
 #include <qrect.h>
-#include <qset.h>
 #include <qsize.h>
 #include <qcolor.h>
 #include <qvariant.h>
@@ -1444,11 +1443,11 @@ QByteArray QImageReader::imageFormat(QIODevice *device)
 #ifndef QT_NO_IMAGEFORMATPLUGIN
 void supportedImageHandlerFormats(QFactoryLoader *loader,
                                   QImageIOPlugin::Capability cap,
-                                  QSet<QByteArray> *result);
+                                  QList<QByteArray> *result);
 
 void supportedImageHandlerMimeTypes(QFactoryLoader *loader,
                                   QImageIOPlugin::Capability cap,
-                                  QSet<QByteArray> *result);
+                                  QList<QByteArray> *result);
 #endif
 
 /*!
@@ -1481,7 +1480,7 @@ void supportedImageHandlerMimeTypes(QFactoryLoader *loader,
 
 QList<QByteArray> QImageReader::supportedImageFormats()
 {
-    QSet<QByteArray> formats;
+    QList<QByteArray> formats;
     for (int i = 0; i < _qt_NumFormats; ++i)
         formats << _qt_BuiltInFormats[i].extension;
 
@@ -1489,12 +1488,9 @@ QList<QByteArray> QImageReader::supportedImageFormats()
     supportedImageHandlerFormats(loader(), QImageIOPlugin::CanRead, &formats);
 #endif // QT_NO_IMAGEFORMATPLUGIN
 
-    QList<QByteArray> sortedFormats;
-    for (QSet<QByteArray>::ConstIterator it = formats.constBegin(); it != formats.constEnd(); ++it)
-        sortedFormats << *it;
-
-    std::sort(sortedFormats.begin(), sortedFormats.end());
-    return sortedFormats;
+    std::sort(formats.begin(), formats.end());
+    formats.erase(std::unique(formats.begin(), formats.end()), formats.end());
+    return formats;
 }
 
 /*!
@@ -1508,7 +1504,7 @@ QList<QByteArray> QImageReader::supportedImageFormats()
 
 QList<QByteArray> QImageReader::supportedMimeTypes()
 {
-    QSet<QByteArray> mimeTypes;
+    QList<QByteArray> mimeTypes;
     for (int i = 0; i < _qt_NumFormats; ++i)
         mimeTypes << _qt_BuiltInFormats[i].mimeType;
 
@@ -1516,12 +1512,9 @@ QList<QByteArray> QImageReader::supportedMimeTypes()
     supportedImageHandlerMimeTypes(loader(), QImageIOPlugin::CanRead, &mimeTypes);
 #endif // QT_NO_IMAGEFORMATPLUGIN
 
-    QList<QByteArray> sortedMimeTypes;
-    for (QSet<QByteArray>::ConstIterator it = mimeTypes.constBegin(); it != mimeTypes.constEnd(); ++it)
-        sortedMimeTypes << *it;
-
-    std::sort(sortedMimeTypes.begin(), sortedMimeTypes.end());
-    return sortedMimeTypes;
+    std::sort(mimeTypes.begin(), mimeTypes.end());
+    mimeTypes.erase(std::unique(mimeTypes.begin(), mimeTypes.end()), mimeTypes.end());
+    return mimeTypes;
 }
 
 QT_END_NAMESPACE

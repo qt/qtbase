@@ -678,7 +678,7 @@ bool QImageWriter::supportsOption(QImageIOHandler::ImageOption option) const
 #ifndef QT_NO_IMAGEFORMATPLUGIN
 void supportedImageHandlerFormats(QFactoryLoader *loader,
                                   QImageIOPlugin::Capability cap,
-                                  QSet<QByteArray> *result)
+                                  QList<QByteArray> *result)
 {
     typedef QMultiMap<int, QString> PluginKeyMap;
     typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
@@ -687,6 +687,7 @@ void supportedImageHandlerFormats(QFactoryLoader *loader,
     const PluginKeyMapConstIterator cend = keyMap.constEnd();
     int i = -1;
     QImageIOPlugin *plugin = 0;
+    result->reserve(result->size() + keyMap.size());
     for (PluginKeyMapConstIterator it = keyMap.constBegin(); it != cend; ++it) {
         if (it.key() != i) {
             i = it.key();
@@ -694,13 +695,13 @@ void supportedImageHandlerFormats(QFactoryLoader *loader,
         }
         const QByteArray key = it.value().toLatin1();
         if (plugin && (plugin->capabilities(0, key) & cap) != 0)
-            result->insert(key);
+            result->append(key);
     }
 }
 
 void supportedImageHandlerMimeTypes(QFactoryLoader *loader,
                                     QImageIOPlugin::Capability cap,
-                                    QSet<QByteArray> *result)
+                                    QList<QByteArray> *result)
 {
     QList<QJsonObject> metaDataList = loader->metaData();
 
@@ -713,7 +714,7 @@ void supportedImageHandlerMimeTypes(QFactoryLoader *loader,
         const int keyCount = keys.size();
         for (int k = 0; k < keyCount; ++k) {
             if (plugin && (plugin->capabilities(0, keys.at(k).toString().toLatin1()) & cap) != 0)
-                result->insert(mimeTypes.at(k).toString().toLatin1());
+                result->append(mimeTypes.at(k).toString().toLatin1());
         }
     }
 }
@@ -746,7 +747,7 @@ void supportedImageHandlerMimeTypes(QFactoryLoader *loader,
 */
 QList<QByteArray> QImageWriter::supportedImageFormats()
 {
-    QSet<QByteArray> formats;
+    QList<QByteArray> formats;
 #ifndef QT_NO_IMAGEFORMAT_BMP
     formats << "bmp";
 #endif
@@ -770,12 +771,9 @@ QList<QByteArray> QImageWriter::supportedImageFormats()
     supportedImageHandlerFormats(loader(), QImageIOPlugin::CanWrite, &formats);
 #endif // QT_NO_IMAGEFORMATPLUGIN
 
-    QList<QByteArray> sortedFormats;
-    for (QSet<QByteArray>::ConstIterator it = formats.constBegin(); it != formats.constEnd(); ++it)
-        sortedFormats << *it;
-
-    std::sort(sortedFormats.begin(), sortedFormats.end());
-    return sortedFormats;
+    std::sort(formats.begin(), formats.end());
+    formats.erase(std::unique(formats.begin(), formats.end()), formats.end());
+    return formats;
 }
 
 /*!
@@ -788,7 +786,7 @@ QList<QByteArray> QImageWriter::supportedImageFormats()
 */
 QList<QByteArray> QImageWriter::supportedMimeTypes()
 {
-    QSet<QByteArray> mimeTypes;
+    QList<QByteArray> mimeTypes;
 #ifndef QT_NO_IMAGEFORMAT_BMP
     mimeTypes << "image/bmp";
 #endif
@@ -814,12 +812,9 @@ QList<QByteArray> QImageWriter::supportedMimeTypes()
     supportedImageHandlerMimeTypes(loader(), QImageIOPlugin::CanWrite, &mimeTypes);
 #endif // QT_NO_IMAGEFORMATPLUGIN
 
-    QList<QByteArray> sortedMimeTypes;
-    for (QSet<QByteArray>::ConstIterator it = mimeTypes.constBegin(); it != mimeTypes.constEnd(); ++it)
-        sortedMimeTypes << *it;
-
-    std::sort(sortedMimeTypes.begin(), sortedMimeTypes.end());
-    return sortedMimeTypes;
+    std::sort(mimeTypes.begin(), mimeTypes.end());
+    mimeTypes.erase(std::unique(mimeTypes.begin(), mimeTypes.end()), mimeTypes.end());
+    return mimeTypes;
 }
 
 QT_END_NAMESPACE
