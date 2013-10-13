@@ -772,7 +772,9 @@ QList<QByteArray> QImageWriter::supportedImageFormats()
 QList<QByteArray> QImageWriter::supportedMimeTypes()
 {
     QSet<QByteArray> mimeTypes;
+#ifndef QT_NO_IMAGEFORMAT_BMP
     mimeTypes << "image/bmp";
+#endif
 #ifndef QT_NO_IMAGEFORMAT_PPM
     mimeTypes << "image/x-portable-bitmap";
     mimeTypes << "image/x-portable-graymap";
