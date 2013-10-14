@@ -891,6 +891,16 @@ QByteArray QFontEngine::getSfntTable(uint tag) const
     return table;
 }
 
+void QFontEngine::clearGlyphCache(const void *key)
+{
+    for (QLinkedList<GlyphCacheEntry>::iterator it = m_glyphCaches.begin(), end = m_glyphCaches.end(); it != end; ) {
+        if (it->context == key)
+            it = m_glyphCaches.erase(it);
+        else
+            ++it;
+    }
+}
+
 void QFontEngine::setGlyphCache(const void *key, QFontEngineGlyphCache *data)
 {
     Q_ASSERT(data);

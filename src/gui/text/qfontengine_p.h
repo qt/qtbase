@@ -256,6 +256,7 @@ public:
 
     virtual int getPointInOutline(glyph_t glyph, int flags, quint32 point, QFixed *xpos, QFixed *ypos, quint32 *nPoints);
 
+    void clearGlyphCache(const void *key);
     void setGlyphCache(const void *key, QFontEngineGlyphCache *data);
     QFontEngineGlyphCache *glyphCache(const void *key, QFontEngineGlyphCache::Type type, const QTransform &transform) const;
 
