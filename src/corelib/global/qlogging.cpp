@@ -1108,6 +1108,7 @@ void qErrnoWarning(int code, const char *msg, ...)
     \table
     \header \li Placeholder \li Description
     \row \li \c %{appname} \li QCoreApplication::applicationName()
+    \row \li \c %{category} \li Logging category
     \row \li \c %{file} \li Path to source file
     \row \li \c %{function} \li Function
     \row \li \c %{line} \li Line in source file
