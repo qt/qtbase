@@ -180,7 +180,7 @@ static const signed char charLookupTable[256]={
 /*
   This function strips the TextDecl [77] ("<?xml ...?>") from the string \a
   str. The stripped version is stored in \a str. If this function finds an
-  invalid TextDecl, it returns false, otherwise true.
+  invalid TextDecl, it returns \c false, otherwise true.
 
   This function is used for external entities since those can include an
   TextDecl that must be stripped before inserting the entity.
@@ -1734,7 +1734,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
     to setDocumentLocator(), and before any other functions in this
     class or in the QXmlDTDHandler class are called.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 
@@ -1749,7 +1749,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
     is called after the reader has read all input or has abandoned
     parsing because of a fatal error.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 
@@ -1774,7 +1774,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
     The argument \a prefix is the namespace prefix being declared and
     the argument \a uri is the namespace URI the prefix is mapped to.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 
@@ -1787,7 +1787,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
     The reader calls this function to signal the end of a prefix
     mapping for the prefix \a prefix.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 
@@ -1819,7 +1819,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
     the attributes attached to the element. If there are no
     attributes, \a atts is an empty attributes object.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 
@@ -1833,7 +1833,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
     tag with the qualified name \a qName, the local name \a localName
     and the namespace URI \a namespaceURI.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 
@@ -1857,7 +1857,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
     one chunk; e.g. a reader might want to report "a\<b" in three
     characters() events ("a ", "\<" and " b").
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 */
@@ -1868,7 +1868,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
     Some readers may use this function to report each chunk of
     whitespace in element content. The whitespace is reported in \a ch.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 */
@@ -1882,7 +1882,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
     \a target is the target name of the processing instruction and \a
     data is the data in the processing instruction.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 */
@@ -1895,7 +1895,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
     do so they report that they skipped the entity called \a name by
     calling this function.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 */
@@ -1904,7 +1904,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
     \fn QString QXmlContentHandler::errorString() const
 
     The reader calls this function to get an error string, e.g. if any
-    of the handler functions returns false.
+    of the handler functions returns \c false.
 */
 
 
@@ -1943,7 +1943,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
     XML 1.0 specification. Details of the warning are stored in \a
     exception.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 */
@@ -1959,7 +1959,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
     The reader must continue to provide normal parsing events after
     invoking this function.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 */
@@ -1970,7 +1970,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
 A reader must use this function to report a non-recoverable error.
 Details of the error are stored in \a exception.
 
-If this function returns true the reader might try to go on
+If this function returns \c true the reader might try to go on
 parsing and reporting further errors, but no regular parsing
 events are reported.
 */
@@ -1979,7 +1979,7 @@ events are reported.
     \fn QString QXmlErrorHandler::errorString() const
 
     The reader calls this function to get an error string if any of
-    the handler functions returns false.
+    the handler functions returns \c false.
 */
 
 
@@ -2021,7 +2021,7 @@ events are reported.
     notation's public identifier and \a systemId is the notation's
     system identifier.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 */
@@ -2037,7 +2037,7 @@ events are reported.
     identifier and \a notationName is the name of the associated
     notation.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 */
@@ -2046,7 +2046,7 @@ events are reported.
     \fn QString QXmlDTDHandler::errorString() const
 
     The reader calls this function to get an error string if any of
-    the handler functions returns false.
+    the handler functions returns \c false.
 */
 
 
@@ -2093,7 +2093,7 @@ events are reported.
     non-zero it must point to an input source which the reader uses
     instead.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 */
@@ -2102,7 +2102,7 @@ events are reported.
     \fn QString QXmlEntityResolver::errorString() const
 
     The reader calls this function to get an error string if any of
-    the handler functions returns false.
+    the handler functions returns \c false.
 */
 
 
@@ -2156,7 +2156,7 @@ events are reported.
     All declarations reported through QXmlDTDHandler or
     QXmlDeclHandler appear between the startDTD() and endDTD() calls.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 
@@ -2169,7 +2169,7 @@ events are reported.
     The reader calls this function to report the end of a DTD
     declaration, if any.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 
@@ -2186,7 +2186,7 @@ events are reported.
     QXmlContentHandler::skippedEntity() and not through this
     function.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 
@@ -2203,7 +2203,7 @@ events are reported.
     call. The calls to startEntity() and endEntity() are properly
     nested.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 
@@ -2218,7 +2218,7 @@ events are reported.
     QXmlContentHandler::characters() function. This function is
     intended only to report the boundary.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 
@@ -2231,7 +2231,7 @@ events are reported.
     The reader calls this function to report the end of a CDATA
     section.
 
-    If this function returns false the reader stops parsing and reports
+    If this function returns \c false the reader stops parsing and reports
     an error. The reader uses the function errorString() to get the error
     message.
 
@@ -2244,7 +2244,7 @@ events are reported.
     The reader calls this function to report an XML comment anywhere
     in the document. It reports the text of the comment in \a ch.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 */
@@ -2253,7 +2253,7 @@ events are reported.
     \fn QString QXmlLexicalHandler::errorString() const
 
     The reader calls this function to get an error string if any of
-    the handler functions returns false.
+    the handler functions returns \c false.
 */
 
 
@@ -2300,7 +2300,7 @@ events are reported.
     default value in \a value. If no default value is specified in the
     XML file, \a value is an empty string.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 */
@@ -2314,7 +2314,7 @@ events are reported.
     The reader passes the name of the entity in \a name and the value
     of the entity in \a value.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 */
@@ -2331,7 +2331,7 @@ events are reported.
     systemId. If there is no public identifier specified, it passes
     an empty string in \a publicId.
 
-    If this function returns false the reader stops parsing and
+    If this function returns \c false the reader stops parsing and
     reports an error. The reader uses the function errorString() to
     get the error message.
 */
@@ -2340,7 +2340,7 @@ events are reported.
     \fn QString QXmlDeclHandler::errorString() const
 
     The reader calls this function to get an error string if any of
-    the handler functions returns false.
+    the handler functions returns \c false.
 */
 
 
@@ -2383,7 +2383,7 @@ events are reported.
 
     \snippet rsslisting/handler.cpp 0
 
-    The above function returns false, which tells the reader to stop
+    The above function returns \c false, which tells the reader to stop
     parsing. To continue to use the same reader,
     it is necessary to create a new handler instance, and set up the
     reader to use it in the manner described above.
@@ -2854,7 +2854,7 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
     \fn bool QXmlReader::hasFeature(const QString& name) const
 
     Returns \c true if the reader has the feature called \a name;
-    otherwise returns false.
+    otherwise returns \c false.
 
     \sa feature(), setFeature()
 */
@@ -2883,8 +2883,8 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
 /*!
     \fn bool QXmlReader::hasProperty(const QString& name) const
 
-    Returns true if the reader has the property \a name; otherwise
-    returns false.
+    Returns \c true if the reader has the property \a name; otherwise
+    returns \c false.
 
     \sa property(), setProperty()
 */
@@ -2997,8 +2997,8 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
 /*!
     \fn bool QXmlReader::parse(const QXmlInputSource *input)
 
-    Reads an XML document from \a input and parses it. Returns true if
-    the parsing was successful; otherwise returns false.
+    Reads an XML document from \a input and parses it. Returns \c true if
+    the parsing was successful; otherwise returns \c false.
 */
 
 
@@ -3400,7 +3400,7 @@ bool QXmlSimpleReader::parse(const QXmlInputSource& input)
 
 /*!
     Reads an XML document from \a input and parses it in one pass (non-incrementally).
-    Returns true if the parsing was successful; otherwise returns false.
+    Returns \c true if the parsing was successful; otherwise returns \c false.
 */
 bool QXmlSimpleReader::parse(const QXmlInputSource* input)
 {
@@ -3408,8 +3408,8 @@ bool QXmlSimpleReader::parse(const QXmlInputSource* input)
 }
 
 /*!
-    Reads an XML document from \a input and parses it. Returns true
-    if the parsing is completed successfully; otherwise returns false,
+    Reads an XML document from \a input and parses it. Returns \c true
+    if the parsing is completed successfully; otherwise returns \c false,
     indicating that an error occurred.
 
     If \a incremental is false, this function will return false if the XML
@@ -3463,7 +3463,7 @@ bool QXmlSimpleReader::parse(const QXmlInputSource *input, bool incremental)
     call to parse(). To use this function, you \e must have called
     parse() with the incremental argument set to true.
 
-    Returns false if a parsing error occurs; otherwise returns true,
+    Returns \c false if a parsing error occurs; otherwise returns \c true,
     even if the end of the XML file has not been reached. You can
     continue parsing at a later stage by calling this function again
     when there is more data available to parse.
@@ -7894,7 +7894,7 @@ bool QXmlSimpleReaderPrivate::parseString()
   name. If \a inLiteral is true, the entity is IncludedInLiteral (i.e., " and '
   must be quoted. Otherwise they are not quoted.
 
-  This function returns false on error.
+  This function returns \c false on error.
 */
 bool QXmlSimpleReaderPrivate::insertXmlRef(const QString &data, const QString &name, bool inLiteral)
 {
@@ -7961,7 +7961,7 @@ void QXmlSimpleReaderPrivate::next()
   This function does not move the cursor if the actual cursor position is a
   non-whitespace charcter.
 
-  Returns false when you use incremental parsing and this function reaches EOF
+  Returns \c false when you use incremental parsing and this function reaches EOF
   with reading only whitespace characters. In this case it also poplulates the
   parseStack with useful information. In all other cases, this function returns
   true.
@@ -8025,8 +8025,8 @@ void QXmlSimpleReaderPrivate::initData()
 }
 
 /*
-  Returns true if a entity with the name \a e exists,
-  otherwise returns false.
+  Returns \c true if a entity with the name \a e exists,
+  otherwise returns \c false.
 */
 bool QXmlSimpleReaderPrivate::entityExist(const QString& e) const
 {

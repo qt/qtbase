@@ -555,7 +555,7 @@ Qt::DropActions QListModel::supportedDropActions() const
     \fn bool QListWidgetItem::isSelected() const
     \since 4.2
 
-    Returns true if the item is selected; otherwise returns false.
+    Returns \c true if the item is selected; otherwise returns \c false.
 
     \sa setSelected()
 */
@@ -573,7 +573,7 @@ Qt::DropActions QListModel::supportedDropActions() const
     \fn bool QListWidgetItem::isHidden() const
     \since 4.2
 
-    Returns true if the item is hidden; otherwise returns false.
+    Returns \c true if the item is hidden; otherwise returns \c false.
 
     \sa setHidden()
 */
@@ -725,8 +725,8 @@ QVariant QListWidgetItem::data(int role) const
 }
 
 /*!
-    Returns true if this item's text is less then \a other item's text;
-    otherwise returns false.
+    Returns \c true if this item's text is less then \a other item's text;
+    otherwise returns \c false.
 */
 bool QListWidgetItem::operator<(const QListWidgetItem &other) const
 {
@@ -1555,7 +1555,7 @@ void QListWidget::sortItems(Qt::SortOrder order)
     \property QListWidget::sortingEnabled
     \brief whether sorting is enabled
 
-    If this property is true, sorting is enabled for the list; if the property
+    If this property is \c true, sorting is enabled for the list; if the property
     is false, sorting is not enabled.
 
     The default value is false.
@@ -1648,7 +1648,7 @@ void QListWidget::setItemWidget(QListWidgetItem *item, QWidget *widget)
 }
 
 /*!
-    Returns true if \a item is selected; otherwise returns false.
+    Returns \c true if \a item is selected; otherwise returns \c false.
 
     \obsolete
 
@@ -1717,7 +1717,7 @@ QList<QListWidgetItem*> QListWidget::findItems(const QString &text, Qt::MatchFla
 }
 
 /*!
-    Returns true if the \a item is explicitly hidden; otherwise returns false.
+    Returns \c true if the \a item is explicitly hidden; otherwise returns \c false.
 
     \obsolete
 
@@ -1792,8 +1792,8 @@ QMimeData *QListWidget::mimeData(const QList<QListWidgetItem*>) const
 #ifndef QT_NO_DRAGANDDROP
 /*!
     Handles \a data supplied by an external drag and drop operation that ended
-    with the given \a action in the given \a index. Returns true if \a data and
-    \a action can be handled by the model; otherwise returns false.
+    with the given \a action in the given \a index. Returns \c true if \a data and
+    \a action can be handled by the model; otherwise returns \c false.
 
     \sa supportedDropActions()
 */

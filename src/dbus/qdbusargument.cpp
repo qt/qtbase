@@ -1067,7 +1067,7 @@ void QDBusArgument::endMapEntry() const
 }
 
 /*!
-    Returns true if there are no more elements to be extracted from
+    Returns \c true if there are no more elements to be extracted from
     this QDBusArgument. This function is usually used in QDBusArgument
     objects returned from beginMap() and beginArray().
 */

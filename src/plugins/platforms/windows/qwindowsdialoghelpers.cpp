@@ -41,6 +41,8 @@
 
 #define QT_NO_URL_CAST_FROM_STRING 1
 
+#define _WIN32_WINNT 0x0600
+
 #include "qwindowsdialoghelpers.h"
 
 #include "qwindowscontext.h"
@@ -236,7 +238,7 @@ DECLARE_INTERFACE_(IShellItemFilter, IUnknown)
 };
 #endif
 
-#ifndef __IShellEnumItems_INTERFACE_DEFINED__
+#ifndef __IEnumShellItems_INTERFACE_DEFINED__
 DECLARE_INTERFACE_(IEnumShellItems, IUnknown)
 {
     STDMETHOD(Next)(THIS_ ULONG celt, IShellItem **rgelt, ULONG *pceltFetched) PURE;

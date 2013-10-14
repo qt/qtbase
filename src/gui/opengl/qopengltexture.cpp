@@ -1449,7 +1449,7 @@ void QOpenGLTexture::destroy()
 }
 
 /*!
-    Returns true if the underlying OpenGL texture object has been created.
+    Returns \c true if the underlying OpenGL texture object has been created.
 
     \sa create(), destroy(), textureId()
 */
@@ -1532,7 +1532,7 @@ void QOpenGLTexture::release(uint unit, TextureUnitReset reset)
 }
 
 /*!
-    Returns true if this texture is bound to the corresponding target
+    Returns \c true if this texture is bound to the corresponding target
     of the currently active texture unit.
 
     \sa bind(), release()
@@ -1545,7 +1545,7 @@ bool QOpenGLTexture::isBound() const
 }
 
 /*!
-    Returns true if this texture is bound to the corresponding target
+    Returns \c true if this texture is bound to the corresponding target
     of texture unit \a unit.
 
     \sa bind(), release()
@@ -2012,7 +2012,7 @@ void QOpenGLTexture::allocateStorage()
 }
 
 /*!
-    Returns true if server-side storage for this texture as been
+    Returns \c true if server-side storage for this texture as been
     allocated.
 
     The texture format, dimensions, mipmap levels and array layers
@@ -2076,7 +2076,7 @@ QOpenGLTexture *QOpenGLTexture::createTextureView(Target target,
 }
 
 /*!
-    Returns true if this texture object is actually a view onto another
+    Returns \c true if this texture object is actually a view onto another
     texture object.
 
     \sa createTextureView()
@@ -2227,7 +2227,7 @@ void QOpenGLTexture::setCompressedData(int dataSize, void *data,
 }
 
 /*!
-    Returns true if your OpenGL implementation and version supports the texture
+    Returns \c true if your OpenGL implementation and version supports the texture
     feature \a feature.
 */
 bool QOpenGLTexture::hasFeature(Feature feature)

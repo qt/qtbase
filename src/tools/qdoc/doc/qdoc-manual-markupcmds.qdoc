@@ -2908,7 +2908,7 @@
                The active window is the window that contains the widget that
                has keyboard focus.
 
-               When popup windows are visible, this property is true
+               When popup windows are visible, this property is \c true
                for both the active window \e and the popup.
 
                \sa activateWindow(), QApplication::activeWindow()

@@ -154,8 +154,8 @@ int QLockFile::staleLockTime() const
 }
 
 /*!
-    Returns true if the lock was acquired by this QLockFile instance,
-    otherwise returns false.
+    Returns \c true if the lock was acquired by this QLockFile instance,
+    otherwise returns \c false.
 
     \sa lock(), unlock(), tryLock()
 */
@@ -175,7 +175,7 @@ bool QLockFile::isLocked() const
     thread without unlocking first is not allowed. This function will
     \e dead-lock when the file is locked recursively.
 
-    Returns true if the lock was acquired, false if it could not be acquired
+    Returns \c true if the lock was acquired, false if it could not be acquired
     due to an unrecoverable error, such as no permissions in the parent directory.
 
     \sa unlock(), tryLock()
@@ -186,8 +186,8 @@ bool QLockFile::lock()
 }
 
 /*!
-    Attempts to create the lock file. This function returns true if the
-    lock was obtained; otherwise it returns false. If another process (or
+    Attempts to create the lock file. This function returns \c true if the
+    lock was obtained; otherwise it returns \c false. If another process (or
     another thread) has created the lock file already, this function will
     wait for at most \a timeout milliseconds for the lock file to become
     available.
@@ -255,7 +255,7 @@ bool QLockFile::tryLock(int timeout)
 /*!
     Retrieves information about the current owner of the lock file.
 
-    If tryLock() returns false, and error() returns LockFailedError,
+    If tryLock() returns \c false, and error() returns LockFailedError,
     this function can be called to find out more information about the existing
     lock file:
     \list
@@ -272,7 +272,7 @@ bool QLockFile::tryLock(int timeout)
     the choice to delete it. After removing the file using removeStaleLockFile(),
     the application can call tryLock() again.
 
-    This function returns true if the information could be successfully retrieved, false
+    This function returns \c true if the information could be successfully retrieved, false
     if the lock file doesn't exist or doesn't contain the expected data.
     This can happen if the lock file was deleted between the time where tryLock() failed
     and the call to this function. Simply call tryLock() again if this happens.
@@ -318,7 +318,7 @@ bool QLockFilePrivate::getLockInfo(qint64 *pid, QString *hostname, QString *appn
     with staleLockTime(0), and after tryLock() returned LockFailedError, and the user
     agreed on removing the lock file.
 
-    Returns true on success, false if the lock file couldn't be removed. This happens
+    Returns \c true on success, false if the lock file couldn't be removed. This happens
     on Windows, when the application owning the lock is still running.
 */
 bool QLockFile::removeStaleLockFile()
@@ -334,7 +334,7 @@ bool QLockFile::removeStaleLockFile()
 /*!
     Returns the lock file error status.
 
-    If tryLock() returns false, this function can be called to find out
+    If tryLock() returns \c false, this function can be called to find out
     the reason why the locking failed.
 */
 QLockFile::LockError QLockFile::error() const

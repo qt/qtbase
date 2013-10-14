@@ -441,10 +441,10 @@ QThreadPool *QThreadPool::globalInstance()
     be used to control the run queue's order of execution.
 
     Note that the thread pool takes ownership of the \a runnable if
-    \l{QRunnable::autoDelete()}{runnable->autoDelete()} returns true,
+    \l{QRunnable::autoDelete()}{runnable->autoDelete()} returns \c true,
     and the \a runnable will be deleted automatically by the thread
     pool after the \l{QRunnable::run()}{runnable->run()} returns. If
-    \l{QRunnable::autoDelete()}{runnable->autoDelete()} returns false,
+    \l{QRunnable::autoDelete()}{runnable->autoDelete()} returns \c false,
     ownership of \a runnable remains with the caller. Note that
     changing the auto-deletion on \a runnable after calling this
     functions results in undefined behavior.
@@ -470,14 +470,14 @@ void QThreadPool::start(QRunnable *runnable, int priority)
     Attempts to reserve a thread to run \a runnable.
 
     If no threads are available at the time of calling, then this function
-    does nothing and returns false.  Otherwise, \a runnable is run immediately
-    using one available thread and this function returns true.
+    does nothing and returns \c false.  Otherwise, \a runnable is run immediately
+    using one available thread and this function returns \c true.
 
     Note that the thread pool takes ownership of the \a runnable if
-    \l{QRunnable::autoDelete()}{runnable->autoDelete()} returns true,
+    \l{QRunnable::autoDelete()}{runnable->autoDelete()} returns \c true,
     and the \a runnable will be deleted automatically by the thread
     pool after the \l{QRunnable::run()}{runnable->run()} returns. If
-    \l{QRunnable::autoDelete()}{runnable->autoDelete()} returns false,
+    \l{QRunnable::autoDelete()}{runnable->autoDelete()} returns \c false,
     ownership of \a runnable remains with the caller. Note that
     changing the auto-deletion on \a runnable after calling this
     function results in undefined behavior.
@@ -612,8 +612,8 @@ void QThreadPool::releaseThread()
 
 /*!
     Waits up to \a msecs milliseconds for all threads to exit and removes all
-    threads from the thread pool. Returns true if all threads were removed;
-    otherwise it returns false. If \a msecs is -1 (the default), the timeout
+    threads from the thread pool. Returns \c true if all threads were removed;
+    otherwise it returns \c false. If \a msecs is -1 (the default), the timeout
     is ignored (waits for the last thread to exit).
 */
 bool QThreadPool::waitForDone(int msecs)
@@ -630,7 +630,7 @@ bool QThreadPool::waitForDone(int msecs)
 
     Removes the runnables that are not yet started from the queue.
     The runnables for which \l{QRunnable::autoDelete()}{runnable->autoDelete()}
-    returns true are deleted.
+    returns \c true are deleted.
 
     \sa start()
 */

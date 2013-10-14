@@ -84,6 +84,7 @@ public:
 
     void createPlatformIntegration();
     void createEventDispatcher() Q_DECL_OVERRIDE;
+    void eventDispatcherReady() Q_DECL_OVERRIDE;
 
     virtual void notifyLayoutDirectionChange();
     virtual void notifyActiveWindowChange(QWindow *previous);

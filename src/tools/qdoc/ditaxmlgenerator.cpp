@@ -1022,10 +1022,10 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             generateAnnotatedList(relative, marker, qdb_->getCppClasses());
         }
         else if (atom->string() == "classes") {
-            generateCompactList(Generic, relative, qdb_->getCppClasses(), true);
+            generateCompactList(Generic, relative, qdb_->getCppClasses(), true, QStringLiteral("Q"));
         }
         else if (atom->string() == "qmlclasses") {
-            generateCompactList(Generic, relative, qdb_->getQmlTypes(), true);
+            generateCompactList(Generic, relative, qdb_->getQmlTypes(), true, QStringLiteral(""));
         }
         else if (atom->string().contains("classesbymodule")) {
             QString arg = atom->string().trimmed();
@@ -1044,19 +1044,21 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             generateClassHierarchy(relative, qdb_->getCppClasses());
         }
         else if (atom->string() == "compatclasses") {
-            generateCompactList(Generic, relative, qdb_->getCompatibilityClasses(), false);
+            // "compatclasses" is no longer used. Delete this at some point.
+            // mws 03/10/2013
+            generateCompactList(Generic, relative, qdb_->getCompatibilityClasses(), false, QStringLiteral("Q"));
         }
         else if (atom->string() == "obsoleteclasses") {
-            generateCompactList(Generic, relative, qdb_->getObsoleteClasses(), false);
+            generateCompactList(Generic, relative, qdb_->getObsoleteClasses(), false, QStringLiteral("Q"));
         }
         else if (atom->string() == "obsoleteqmltypes") {
-            generateCompactList(Generic, relative, qdb_->getObsoleteQmlTypes(), false);
+            generateCompactList(Generic, relative, qdb_->getObsoleteQmlTypes(), false, QStringLiteral(""));
         }
         else if (atom->string() == "obsoletecppmembers") {
-            generateCompactList(Obsolete, relative, qdb_->getClassesWithObsoleteMembers(), false);
+            generateCompactList(Obsolete, relative, qdb_->getClassesWithObsoleteMembers(), false, QStringLiteral("Q"));
         }
         else if (atom->string() == "obsoleteqmlmembers") {
-            generateCompactList(Obsolete, relative, qdb_->getQmlTypesWithObsoleteMembers(), false);
+            generateCompactList(Obsolete, relative, qdb_->getQmlTypesWithObsoleteMembers(), false, QStringLiteral(""));
         }
         else if (atom->string() == "functionindex") {
             generateFunctionIndex(relative);
@@ -1065,10 +1067,14 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             generateLegaleseList(relative, marker);
         }
         else if (atom->string() == "mainclasses") {
-            generateCompactList(Generic, relative, qdb_->getMainClasses(), true);
+            // "mainclasses" is no longer used. Delete this at some point.
+            // mws 03/10/2013
+            generateCompactList(Generic, relative, qdb_->getMainClasses(), true, QStringLiteral("Q"));
         }
         else if (atom->string() == "services") {
-            generateCompactList(Generic, relative, qdb_->getServiceClasses(), false);
+            // "services" is no longer used. Delete this at some point.
+            // mws 03/10/2013
+            generateCompactList(Generic, relative, qdb_->getServiceClasses(), false, QStringLiteral("Q"));
         }
         else if (atom->string() == "overviews") {
             generateOverviewList(relative);
@@ -5336,7 +5342,7 @@ DitaXmlGenerator::generateInnerNode(InnerNode* node)
 }
 
 /*!
-  Returns true if \a format is "DITAXML" or "HTML" .
+  Returns \c true if \a format is "DITAXML" or "HTML" .
  */
 bool DitaXmlGenerator::canHandleFormat(const QString& format)
 {
@@ -5745,7 +5751,7 @@ void DitaXmlGenerator::writeTopicrefs(NodeMultiMap* nmm, const QString& navtitle
   found value. Otherwise if \a force is set, an empty
   element is written using the tag.
 
-  Returns true or false depending on whether it writes
+  Returns \c true or false depending on whether it writes
   an element using the tag \a t.
 
   \note If \a t is found in the metadata map, it is erased.
@@ -5773,7 +5779,7 @@ bool DitaXmlGenerator::writeMetadataElement(const InnerNode* inner,
   value sfor the tag are found, the elements are written.
   Otherwise nothing is written.
 
-  Returns true or false depending on whether it writes
+  Returns \c true or false depending on whether it writes
   at least one element using the tag \a t.
 
   \note If \a t is found in the metadata map, it is erased.
@@ -6109,8 +6115,8 @@ void DitaXmlGenerator::generateCollisionPages()
         for (int i=0; i<collisions.size(); ++i) {
             Node* n = collisions.at(i);
             QString t;
-            if (!n->qmlModuleIdentifier().isEmpty())
-                t = n->qmlModuleIdentifier() + QLatin1Char(' ');
+            if (!n->qmlModuleName().isEmpty())
+                t = n->qmlModuleName() + QLatin1Char(' ');
             t += protectEnc(fullTitle);
             nm.insertMulti(t,n);
         }
@@ -6149,8 +6155,8 @@ void DitaXmlGenerator::generateCollisionPages()
                     if (p) {
                         QString link = linkForNode(p,0);
                         QString label;
-                        if (!n->qmlModuleIdentifier().isEmpty())
-                            label = n->qmlModuleIdentifier() + "::";
+                        if (!n->qmlModuleName().isEmpty())
+                            label = n->qmlModuleName() + "::";
                         label += n->name() + "::" + p->name();
                         writeStartTag(DT_li);
                         writeStartTag(DT_xref);

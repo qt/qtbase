@@ -74,7 +74,7 @@
 #define OFONO_MODEM_INTERFACE                    "org.ofono.Modem"
 #define OFONO_NETWORK_REGISTRATION_INTERFACE     "org.ofono.NetworkRegistration"
 #define OFONO_NETWORK_OPERATOR_INTERFACE         "org.ofono.NetworkOperator"
-#define OFONO_DATA_CONNECTION_MANAGER_INTERFACE  "org.ofono.DataConnectionManager"
+#define OFONO_DATA_CONNECTION_MANAGER_INTERFACE  "org.ofono.ConnectionManager"
 #define OFONO_SIM_MANAGER_INTERFACE              "org.ofono.SimManager"
 #define OFONO_DATA_CONTEXT_INTERFACE             "org.ofono.ConnectionContext"
 

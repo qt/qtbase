@@ -190,8 +190,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QItemSelectionRange::contains(const QModelIndex &index) const
 
-    Returns true if the model item specified by the \a index lies within the
-    range of selected items; otherwise returns false.
+    Returns \c true if the model item specified by the \a index lies within the
+    range of selected items; otherwise returns \c false.
 */
 
 /*!
@@ -199,16 +199,16 @@ QT_BEGIN_NAMESPACE
                                            const QModelIndex &parentIndex) const
     \overload
 
-    Returns true if the model item specified by (\a row, \a column)
+    Returns \c true if the model item specified by (\a row, \a column)
     and with \a parentIndex as the parent item lies within the range
-    of selected items; otherwise returns false.
+    of selected items; otherwise returns \c false.
 */
 
 /*!
     \fn bool QItemSelectionRange::intersects(const QItemSelectionRange &other) const
 
-    Returns true if this selection range intersects (overlaps with) the \a other
-    range given; otherwise returns false.
+    Returns \c true if this selection range intersects (overlaps with) the \a other
+    range given; otherwise returns \c false.
 
 */
 bool QItemSelectionRange::intersects(const QItemSelectionRange &other) const
@@ -254,24 +254,24 @@ QItemSelectionRange QItemSelectionRange::intersected(const QItemSelectionRange &
 /*!
     \fn bool QItemSelectionRange::operator==(const QItemSelectionRange &other) const
 
-    Returns true if the selection range is exactly the same as the \a other
-    range given; otherwise returns false.
+    Returns \c true if the selection range is exactly the same as the \a other
+    range given; otherwise returns \c false.
 
 */
 
 /*!
     \fn bool QItemSelectionRange::operator!=(const QItemSelectionRange &other) const
 
-    Returns true if the selection range differs from the \a other range given;
-    otherwise returns false.
+    Returns \c true if the selection range differs from the \a other range given;
+    otherwise returns \c false.
 
 */
 
 /*!
     \fn bool QItemSelectionRange::operator<(const QItemSelectionRange &other) const
 
-    Returns true if the selection range is less than the \a other
-    range given; otherwise returns false.
+    Returns \c true if the selection range is less than the \a other
+    range given; otherwise returns \c false.
 
     The less than calculation is not directly useful to developers - the way that ranges
     with different parents compare is not defined. This operator only exists so that the
@@ -282,7 +282,7 @@ QItemSelectionRange QItemSelectionRange::intersected(const QItemSelectionRange &
 /*!
     \fn bool QItemSelectionRange::isValid() const
 
-    Returns true if the selection range is valid; otherwise returns false.
+    Returns \c true if the selection range is valid; otherwise returns \c false.
 
 */
 
@@ -322,7 +322,7 @@ static void indexesFromRange(const QItemSelectionRange &range, ModelIndexContain
 }
 
 /*!
-    Returns true if the selection range contains no selectable item
+    Returns \c true if the selection range contains no selectable item
     \since 4.7
 */
 
@@ -442,8 +442,8 @@ void QItemSelection::select(const QModelIndex &topLeft, const QModelIndex &botto
 }
 
 /*!
-    Returns true if the selection contains the given \a index; otherwise
-    returns false.
+    Returns \c true if the selection contains the given \a index; otherwise
+    returns \c false.
 */
 
 bool QItemSelection::contains(const QModelIndex &index) const
@@ -1331,7 +1331,7 @@ QModelIndex QItemSelectionModel::currentIndex() const
 }
 
 /*!
-    Returns true if the given model item \a index is selected.
+    Returns \c true if the given model item \a index is selected.
 */
 bool QItemSelectionModel::isSelected(const QModelIndex &index) const
 {
@@ -1368,7 +1368,7 @@ bool QItemSelectionModel::isSelected(const QModelIndex &index) const
 }
 
 /*!
-    Returns true if all items are selected in the \a row with the given
+    Returns \c true if all items are selected in the \a row with the given
     \a parent.
 
     Note that this function is usually faster than calling isSelected()
@@ -1428,7 +1428,7 @@ bool QItemSelectionModel::isRowSelected(int row, const QModelIndex &parent) cons
 }
 
 /*!
-    Returns true if all items are selected in the \a column with the given
+    Returns \c true if all items are selected in the \a column with the given
     \a parent.
 
     Note that this function is usually faster than calling isSelected()
@@ -1488,7 +1488,7 @@ bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent
 }
 
 /*!
-    Returns true if there are any items selected in the \a row with the given
+    Returns \c true if there are any items selected in the \a row with the given
     \a parent.
 */
 bool QItemSelectionModel::rowIntersectsSelection(int row, const QModelIndex &parent) const
@@ -1520,7 +1520,7 @@ bool QItemSelectionModel::rowIntersectsSelection(int row, const QModelIndex &par
 }
 
 /*!
-    Returns true if there are any items selected in the \a column with the given
+    Returns \c true if there are any items selected in the \a column with the given
     \a parent.
 */
 bool QItemSelectionModel::columnIntersectsSelection(int column, const QModelIndex &parent) const
@@ -1551,8 +1551,8 @@ bool QItemSelectionModel::columnIntersectsSelection(int column, const QModelInde
 /*!
     \since 4.2
 
-    Returns true if the selection model contains any selection ranges;
-    otherwise returns false.
+    Returns \c true if the selection model contains any selection ranges;
+    otherwise returns \c false.
 */
 bool QItemSelectionModel::hasSelection() const
 {

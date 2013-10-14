@@ -987,7 +987,7 @@ void QGestureEvent::ignore(QGesture *gesture)
 }
 
 /*!
-    Returns true if the \a gesture is accepted; otherwise returns false.
+    Returns \c true if the \a gesture is accepted; otherwise returns \c false.
 */
 bool QGestureEvent::isAccepted(QGesture *gesture) const
 {
@@ -1044,8 +1044,8 @@ void QGestureEvent::ignore(Qt::GestureType gestureType)
 }
 
 /*!
-    Returns true if the gesture of type \a gestureType is accepted; otherwise
-    returns false.
+    Returns \c true if the gesture of type \a gestureType is accepted; otherwise
+    returns \c false.
 */
 bool QGestureEvent::isAccepted(Qt::GestureType gestureType) const
 {
@@ -1114,7 +1114,7 @@ QPointF QGestureEvent::mapToGraphicsScene(const QPointF &gesturePoint) const
 /*!
     \fn bool QGestureEvent::isAccepted() const
 
-    Returns true is the event has been accepted; otherwise returns false.
+    Returns \c true is the event has been accepted; otherwise returns \c false.
 
     \sa QEvent::accepted
 */

@@ -68,6 +68,7 @@ public:
     QPlatformServices *services() const;
 
     QAbstractEventDispatcher *createEventDispatcher() const;
+    void initialize();
 
     QVariant styleHint(QPlatformIntegration::StyleHint hint) const;
 
@@ -86,6 +87,8 @@ public:
     QPlatformInputContext *inputContext() const { return mInputContext; }
 
 private:
+    void createInputHandlers();
+
     EGLDisplay mDisplay;
     QScopedPointer<QPlatformFontDatabase> mFontDb;
     QScopedPointer<QPlatformServices> mServices;

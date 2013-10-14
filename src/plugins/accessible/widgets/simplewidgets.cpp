@@ -235,7 +235,7 @@ QToolButton *QAccessibleToolButton::toolButton() const
 }
 
 /*!
-    Returns true if this tool button is a split button.
+    Returns \c true if this tool button is a split button.
 */
 bool QAccessibleToolButton::isSplitButton() const
 {

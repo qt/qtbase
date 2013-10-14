@@ -719,8 +719,8 @@ void QPrinter::setPrinterName(const QString &name)
 /*!
   \since 4.4
 
-  Returns true if the printer currently selected is a valid printer
-  in the system, or a pure PDF printer; otherwise returns false.
+  Returns \c true if the printer currently selected is a valid printer
+  in the system, or a pure PDF printer; otherwise returns \c false.
 
   To detect other failures check the output of QPainter::begin() or QPrinter::newPage().
 
@@ -1245,7 +1245,7 @@ int QPrinter::copyCount() const
 /*!
     \since 4.7
 
-    Returns true if the printer supports printing multiple copies of the same
+    Returns \c true if the printer supports printing multiple copies of the same
     document in one job; otherwise false is returned.
 
     On most systems this function will return true. However, on X11 systems
@@ -1265,8 +1265,8 @@ bool QPrinter::supportsMultipleCopies() const
 /*!
     \since 4.1
 
-    Returns true if collation is turned on when multiple copies is selected.
-    Returns false if it is turned off when multiple copies is selected.
+    Returns \c true if collation is turned on when multiple copies is selected.
+    Returns \c false if it is turned off when multiple copies is selected.
     When collating is turned off the printing of each individual page will be repeated
     the numCopies() amount before the next page is started. With collating turned on
     all pages are printed before the next copy of those pages is started.
@@ -1330,7 +1330,7 @@ void QPrinter::setFullPage(bool fp)
 
 
 /*!
-  Returns true if the origin of the printer's coordinate system is
+  Returns \c true if the origin of the printer's coordinate system is
   at the corner of the page and false if it is at the edge of the
   printable area.
 
@@ -1427,7 +1427,7 @@ void QPrinter::setFontEmbeddingEnabled(bool enable)
 /*!
   \since 4.1
 
-  Returns true if font embedding is enabled.
+  Returns \c true if font embedding is enabled.
 
   Currently this option is only supported on X11.
 
@@ -1473,7 +1473,7 @@ void QPrinter::setDoubleSidedPrinting(bool doubleSided)
 /*!
   \since 4.2
 
-  Returns true if double side printing is enabled.
+  Returns \c true if double side printing is enabled.
 
   Currently this option is only supported on X11.
 */
@@ -1733,8 +1733,8 @@ QList<int> QPrinter::supportedResolutions() const
 
 /*!
     Tells the printer to eject the current page and to continue
-    printing on a new page. Returns true if this was successful;
-    otherwise returns false.
+    printing on a new page. Returns \c true if this was successful;
+    otherwise returns \c false.
 
     Calling newPage() on an inactive QPrinter object will always
     fail.
@@ -1748,9 +1748,9 @@ bool QPrinter::newPage()
 }
 
 /*!
-    Aborts the current print run. Returns true if the print run was
+    Aborts the current print run. Returns \c true if the print run was
     successfully aborted and printerState() will return QPrinter::Aborted; otherwise
-    returns false.
+    returns \c false.
 
     It is not always possible to abort a print job. For example,
     all the data has gone to the printer but the printer cannot or
@@ -2073,15 +2073,15 @@ QPrinter::PrintRange QPrinter::printRange() const
 /*!
     \fn bool QPrintEngine::newPage()
 
-    Instructs the print engine to start a new page. Returns true if
-    the printer was able to create the new page; otherwise returns false.
+    Instructs the print engine to start a new page. Returns \c true if
+    the printer was able to create the new page; otherwise returns \c false.
 */
 
 /*!
     \fn bool QPrintEngine::abort()
 
     Instructs the print engine to abort the printing process. Returns
-    true if successful; otherwise returns false.
+    true if successful; otherwise returns \c false.
 */
 
 /*!

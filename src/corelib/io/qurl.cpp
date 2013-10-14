@@ -77,7 +77,7 @@
     password at once.
 
     Call isValid() to check if the URL is valid. This can be done at any point
-    during the constructing of a URL. If isValid() returns false, you should
+    during the constructing of a URL. If isValid() returns \c false, you should
     clear() the URL before proceeding, or start over by parsing a new URL with
     setUrl().
 
@@ -1749,7 +1749,7 @@ QUrl::~QUrl()
 }
 
 /*!
-    Returns true if the URL is non-empty and valid; otherwise returns false.
+    Returns \c true if the URL is non-empty and valid; otherwise returns \c false.
 
     The URL is run through a conformance test. Every part of the URL
     must conform to the standard encoding rules of the URI standard
@@ -1767,7 +1767,7 @@ bool QUrl::isValid() const
 }
 
 /*!
-    Returns true if the URL has no data; otherwise returns false.
+    Returns \c true if the URL has no data; otherwise returns \c false.
 
     \sa clear()
 */
@@ -2507,7 +2507,7 @@ QString QUrl::fileName(ComponentFormattingOptions options) const
 /*!
     \since 4.2
 
-    Returns true if this URL contains a Query (i.e., if ? was seen on it).
+    Returns \c true if this URL contains a Query (i.e., if ? was seen on it).
 
     \sa setQuery(), query(), hasFragment()
 */
@@ -2714,7 +2714,7 @@ void QUrl::setQuery(const QUrlQuery &query)
     \fn bool QUrl::hasQueryItem(const QString &key) const
     \deprecated
 
-    Returns true if there is a query string pair whose key is equal
+    Returns \c true if there is a query string pair whose key is equal
     to \a key from the URL.
 
     \obsolete Use QUrlQuery.
@@ -2727,7 +2727,7 @@ void QUrl::setQuery(const QUrlQuery &query)
     \deprecated
     \since 4.4
 
-    Returns true if there is a query string pair whose key is equal
+    Returns \c true if there is a query string pair whose key is equal
     to \a key from the URL.
 
     \obsolete Use QUrlQuery.
@@ -2998,7 +2998,7 @@ QString QUrl::fragment(ComponentFormattingOptions options) const
 /*!
     \since 4.2
 
-    Returns true if this URL contains a fragment (i.e., if # was seen on it).
+    Returns \c true if this URL contains a fragment (i.e., if # was seen on it).
 
     \sa fragment(), setFragment()
 */
@@ -3114,7 +3114,7 @@ QUrl QUrl::resolved(const QUrl &relative) const
 }
 
 /*!
-    Returns true if the URL is relative; otherwise returns false. A URL is
+    Returns \c true if the URL is relative; otherwise returns \c false. A URL is
     relative reference if its scheme is undefined; this function is therefore
     equivalent to calling scheme().isEmpty().
 
@@ -3441,7 +3441,7 @@ QByteArray QUrl::toAce(const QString &domain)
 /*!
     \internal
 
-    Returns true if this URL is "less than" the given \a url. This
+    Returns \c true if this URL is "less than" the given \a url. This
     provides a means of ordering URLs.
 */
 bool QUrl::operator <(const QUrl &url) const
@@ -3493,8 +3493,8 @@ bool QUrl::operator <(const QUrl &url) const
 }
 
 /*!
-    Returns true if this URL and the given \a url are equal;
-    otherwise returns false.
+    Returns \c true if this URL and the given \a url are equal;
+    otherwise returns \c false.
 */
 bool QUrl::operator ==(const QUrl &url) const
 {
@@ -3522,8 +3522,8 @@ bool QUrl::operator ==(const QUrl &url) const
 /*!
     \since 5.2
 
-    Returns true if this URL and the given \a url are equal after
-    applying \a options to both; otherwise returns false.
+    Returns \c true if this URL and the given \a url are equal after
+    applying \a options to both; otherwise returns \c false.
 
     This is equivalent to calling adjusted(options) on both URLs
     and comparing the resulting urls, but faster.
@@ -3589,8 +3589,8 @@ bool QUrl::matches(const QUrl &url, FormattingOptions options) const
 }
 
 /*!
-    Returns true if this URL and the given \a url are not equal;
-    otherwise returns false.
+    Returns \c true if this URL and the given \a url are not equal;
+    otherwise returns \c false.
 */
 bool QUrl::operator !=(const QUrl &url) const
 {
@@ -3735,7 +3735,7 @@ QString QUrl::toLocalFile() const
 
 /*!
     \since 4.8
-    Returns true if this URL is pointing to a local file path. A URL is a
+    Returns \c true if this URL is pointing to a local file path. A URL is a
     local file path if the scheme is "file".
 
     Note that this function considers URLs with hostnames to be local file
@@ -3754,7 +3754,7 @@ bool QUrl::isLocalFile() const
 }
 
 /*!
-    Returns true if this URL is a parent of \a childUrl. \a childUrl is a child
+    Returns \c true if this URL is a parent of \a childUrl. \a childUrl is a child
     of this URL if the two URLs share the same scheme and authority,
     and this URL's path is a parent of the path of \a childUrl.
 */
@@ -3905,7 +3905,7 @@ static inline void appendComponentIfPresent(QString &msg, bool present, const ch
 
     Returns an error message if the last operation that modified this QUrl
     object ran into a parsing error. If no error was detected, this function
-    returns an empty string and isValid() returns true.
+    returns an empty string and isValid() returns \c true.
 
     The error message returned by this function is technical in nature and may
     not be understood by end users. It is mostly useful to developers trying to

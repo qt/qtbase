@@ -62,8 +62,8 @@ QT_BEGIN_NAMESPACE
 
     The isValid() function determines if a size is valid (a valid size
     has both width and height greater than zero). The isEmpty()
-    function returns true if either of the width and height is less
-    than, or equal to, zero, while the isNull() function returns true
+    function returns \c true if either of the width and height is less
+    than, or equal to, zero, while the isNull() function returns \c true
     only if both the width and the height is zero.
 
     Use the expandedTo() function to retrieve a size which holds the
@@ -86,7 +86,7 @@ QT_BEGIN_NAMESPACE
     \fn QSize::QSize()
 
     Constructs a size with an invalid width and height (i.e., isValid()
-    returns false).
+    returns \c false).
 
     \sa isValid()
 */
@@ -102,7 +102,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QSize::isNull() const
 
-    Returns true if both the width and height is 0; otherwise returns
+    Returns \c true if both the width and height is 0; otherwise returns
     false.
 
     \sa isValid(), isEmpty()
@@ -111,8 +111,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QSize::isEmpty() const
 
-    Returns true if either of the width and height is less than or
-    equal to 0; otherwise returns false.
+    Returns \c true if either of the width and height is less than or
+    equal to 0; otherwise returns \c false.
 
     \sa isNull(), isValid()
 */
@@ -120,8 +120,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QSize::isValid() const
 
-    Returns true if both the width and height is equal to or greater
-    than 0; otherwise returns false.
+    Returns \c true if both the width and height is equal to or greater
+    than 0; otherwise returns \c false.
 
     \sa isNull(), isEmpty()
 */
@@ -308,14 +308,14 @@ QSize QSize::scaled(const QSize &s, Qt::AspectRatioMode mode) const
     \fn bool operator==(const QSize &s1, const QSize &s2)
     \relates QSize
 
-    Returns true if \a s1 and \a s2 are equal; otherwise returns false.
+    Returns \c true if \a s1 and \a s2 are equal; otherwise returns \c false.
 */
 
 /*!
     \fn bool operator!=(const QSize &s1, const QSize &s2)
     \relates QSize
 
-    Returns true if \a s1 and \a s2 are different; otherwise returns false.
+    Returns \c true if \a s1 and \a s2 are different; otherwise returns \c false.
 */
 
 /*!
@@ -470,9 +470,9 @@ QDebug operator<<(QDebug dbg, const QSize &s) {
 
     The isValid() function determines if a size is valid. A valid size
     has both width and height greater than or equal to zero. The
-    isEmpty() function returns true if either of the width and height
+    isEmpty() function returns \c true if either of the width and height
     is \e less than (or equal to) zero, while the isNull() function
-    returns true only if both the width and the height is zero.
+    returns \c true only if both the width and the height is zero.
 
     Use the expandedTo() function to retrieve a size which holds the
     maximum height and width of this size and a given
@@ -519,7 +519,7 @@ QDebug operator<<(QDebug dbg, const QSize &s) {
 /*!
     \fn bool QSizeF::isNull() const
 
-    Returns true if both the width and height are +0.0; otherwise returns
+    Returns \c true if both the width and height are +0.0; otherwise returns
     false.
 
     \note Since this function treats +0.0 and -0.0 differently, sizes with
@@ -532,8 +532,8 @@ QDebug operator<<(QDebug dbg, const QSize &s) {
 /*!
     \fn bool QSizeF::isEmpty() const
 
-    Returns true if either of the width and height is less than or
-    equal to 0; otherwise returns false.
+    Returns \c true if either of the width and height is less than or
+    equal to 0; otherwise returns \c false.
 
     \sa isNull(), isValid()
 */
@@ -541,8 +541,8 @@ QDebug operator<<(QDebug dbg, const QSize &s) {
 /*!
     \fn bool QSizeF::isValid() const
 
-    Returns true if both the width and height is equal to or greater
-    than 0; otherwise returns false.
+    Returns \c true if both the width and height is equal to or greater
+    than 0; otherwise returns \c false.
 
     \sa isNull(), isEmpty()
 */
@@ -737,7 +737,7 @@ QSizeF QSizeF::scaled(const QSizeF &s, Qt::AspectRatioMode mode) const
     \fn bool operator==(const QSizeF &s1, const QSizeF &s2)
     \relates QSizeF
 
-    Returns true if \a s1 and \a s2 are equal; otherwise returns
+    Returns \c true if \a s1 and \a s2 are equal; otherwise returns
     false.
 */
 
@@ -745,7 +745,7 @@ QSizeF QSizeF::scaled(const QSizeF &s, Qt::AspectRatioMode mode) const
     \fn bool operator!=(const QSizeF &s1, const QSizeF &s2)
     \relates QSizeF
 
-    Returns true if \a s1 and \a s2 are different; otherwise returns false.
+    Returns \c true if \a s1 and \a s2 are different; otherwise returns \c false.
 */
 
 /*!

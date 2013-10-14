@@ -125,9 +125,9 @@ QT_BEGIN_NAMESPACE
     transformed into a \e polygon (mapped to the coordinate system
     defined by \e this matrix), using the mapToPolygon() function.
 
-    QTransform provides the isIdentity() function which returns true if
+    QTransform provides the isIdentity() function which returns \c true if
     the matrix is the identity matrix, and the isInvertible() function
-    which returns true if the matrix is non-singular (i.e. AB = BA =
+    which returns \c true if the matrix is non-singular (i.e. AB = BA =
     I). The inverted() function returns an inverted copy of \e this
     matrix if it is invertible (otherwise it returns the identity
     matrix), and adjoint() returns the matrix's classical adjoint.
@@ -763,8 +763,8 @@ QTransform & QTransform::rotateRadians(qreal a, Qt::Axis axis)
 
 /*!
     \fn bool QTransform::operator==(const QTransform &matrix) const
-    Returns true if this matrix is equal to the given \a matrix,
-    otherwise returns false.
+    Returns \c true if this matrix is equal to the given \a matrix,
+    otherwise returns \c false.
 */
 bool QTransform::operator==(const QTransform &o) const
 {
@@ -781,8 +781,8 @@ bool QTransform::operator==(const QTransform &o) const
 
 /*!
     \fn bool QTransform::operator!=(const QTransform &matrix) const
-    Returns true if this matrix is not equal to the given \a matrix,
-    otherwise returns false.
+    Returns \c true if this matrix is not equal to the given \a matrix,
+    otherwise returns \c false.
 */
 bool QTransform::operator!=(const QTransform &o) const
 {
@@ -1718,7 +1718,7 @@ QPolygon QTransform::mapToPolygon(const QRect &rect) const
 
 /*!
     Creates a transformation matrix, \a trans, that maps a unit square
-    to a four-sided polygon, \a quad. Returns true if the transformation
+    to a four-sided polygon, \a quad. Returns \c true if the transformation
     is constructed or false if such a transformation does not exist.
 
     \sa quadToSquare(), quadToQuad()
@@ -1783,7 +1783,7 @@ bool QTransform::squareToQuad(const QPolygonF &quad, QTransform &trans)
     \fn bool QTransform::quadToSquare(const QPolygonF &quad, QTransform &trans)
 
     Creates a transformation matrix, \a trans, that maps a four-sided polygon,
-    \a quad, to a unit square. Returns true if the transformation is constructed
+    \a quad, to a unit square. Returns \c true if the transformation is constructed
     or false if such a transformation does not exist.
 
     \sa squareToQuad(), quadToQuad()
@@ -1802,7 +1802,7 @@ bool QTransform::quadToSquare(const QPolygonF &quad, QTransform &trans)
 /*!
     Creates a transformation matrix, \a trans, that maps a four-sided
     polygon, \a one, to another four-sided polygon, \a two.
-    Returns true if the transformation is possible; otherwise returns
+    Returns \c true if the transformation is possible; otherwise returns
     false.
 
     This is a convenience method combining quadToSquare() and
@@ -2098,7 +2098,7 @@ QTransform::operator QVariant() const
 /*!
     \fn bool QTransform::isInvertible() const
 
-    Returns true if the matrix is invertible, otherwise returns false.
+    Returns \c true if the matrix is invertible, otherwise returns \c false.
 
     \sa inverted()
 */
@@ -2221,8 +2221,8 @@ QTransform::operator QVariant() const
 /*!
     \fn bool QTransform::isIdentity() const
 
-    Returns true if the matrix is the identity matrix, otherwise
-    returns false.
+    Returns \c true if the matrix is the identity matrix, otherwise
+    returns \c false.
 
     \sa reset()
 */
@@ -2230,15 +2230,15 @@ QTransform::operator QVariant() const
 /*!
     \fn bool QTransform::isAffine() const
 
-    Returns true if the matrix represent an affine transformation,
-    otherwise returns false.
+    Returns \c true if the matrix represent an affine transformation,
+    otherwise returns \c false.
 */
 
 /*!
     \fn bool QTransform::isScaling() const
 
-    Returns true if the matrix represents a scaling
-    transformation, otherwise returns false.
+    Returns \c true if the matrix represents a scaling
+    transformation, otherwise returns \c false.
 
     \sa reset()
 */
@@ -2246,8 +2246,8 @@ QTransform::operator QVariant() const
 /*!
     \fn bool QTransform::isRotating() const
 
-    Returns true if the matrix represents some kind of a
-    rotating transformation, otherwise returns false.
+    Returns \c true if the matrix represents some kind of a
+    rotating transformation, otherwise returns \c false.
 
     \note A rotation transformation of 180 degrees and/or 360 degrees is treated as a scaling transformation.
 
@@ -2257,8 +2257,8 @@ QTransform::operator QVariant() const
 /*!
     \fn bool QTransform::isTranslating() const
 
-    Returns true if the matrix represents a translating
-    transformation, otherwise returns false.
+    Returns \c true if the matrix represents a translating
+    transformation, otherwise returns \c false.
 
     \sa reset()
 */
@@ -2269,7 +2269,7 @@ QTransform::operator QVariant() const
     \relates QTransform
     \since 4.6
 
-    Returns true if \a t1 and \a t2 are equal, allowing for a small
+    Returns \c true if \a t1 and \a t2 are equal, allowing for a small
     fuzziness factor for floating-point comparisons; false otherwise.
 */
 

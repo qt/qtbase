@@ -363,8 +363,8 @@ void QMimeData::setUrls(const QList<QUrl> &urls)
 }
 
 /*!
-    Returns true if the object can return a list of urls; otherwise
-    returns false.
+    Returns \c true if the object can return a list of urls; otherwise
+    returns \c false.
 
     URLs correspond to the MIME type \c text/uri-list.
 
@@ -402,8 +402,8 @@ void QMimeData::setText(const QString &text)
 }
 
 /*!
-    Returns true if the object can return plain text (MIME type \c
-    text/plain); otherwise returns false.
+    Returns \c true if the object can return plain text (MIME type \c
+    text/plain); otherwise returns \c false.
 
     \sa setText(), text(), hasHtml(), hasFormat()
 */
@@ -438,8 +438,8 @@ void QMimeData::setHtml(const QString &html)
 }
 
 /*!
-    Returns true if the object can return HTML (MIME type \c
-    text/html); otherwise returns false.
+    Returns \c true if the object can return HTML (MIME type \c
+    text/html); otherwise returns \c false.
 
     \sa setHtml(), html(), hasFormat()
 */
@@ -484,7 +484,7 @@ void QMimeData::setImageData(const QVariant &image)
 }
 
 /*!
-    Returns true if the object can return an image; otherwise returns
+    Returns \c true if the object can return an image; otherwise returns
     false.
 
     \sa setImageData(), imageData(), hasFormat()
@@ -528,8 +528,8 @@ void QMimeData::setColorData(const QVariant &color)
 
 
 /*!
-    Returns true if the object can return a color (MIME type \c
-    application/x-color); otherwise returns false.
+    Returns \c true if the object can return a color (MIME type \c
+    application/x-color); otherwise returns \c false.
 
     \sa setColorData(), colorData(), hasFormat()
 */
@@ -572,8 +572,8 @@ void QMimeData::setData(const QString &mimeType, const QByteArray &data)
 }
 
 /*!
-    Returns true if the object can return data for the MIME type
-    specified by \a mimeType; otherwise returns false.
+    Returns \c true if the object can return data for the MIME type
+    specified by \a mimeType; otherwise returns \c false.
 
     For the most common types of data, you can call the higher-level
     functions hasText(), hasHtml(), hasUrls(), hasImage(), and

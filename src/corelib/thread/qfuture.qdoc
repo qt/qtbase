@@ -127,12 +127,12 @@
 
 /*! \fn bool QFuture::operator==(const QFuture &other) const
 
-    Returns true if \a other is a copy of this future; otherwise returns false.
+    Returns \c true if \a other is a copy of this future; otherwise returns \c false.
 */
 
 /*! \fn bool QFuture::operator!=(const QFuture &other) const
 
-    Returns true if \a other is \e not a copy of this future; otherwise returns
+    Returns \c true if \a other is \e not a copy of this future; otherwise returns
     false.
 */
 
@@ -154,11 +154,11 @@
 
 /*! \fn bool QFuture::isCanceled() const
 
-    Returns true if the asynchronous computation has been canceled with the
-    cancel() function; otherwise returns false.
+    Returns \c true if the asynchronous computation has been canceled with the
+    cancel() function; otherwise returns \c false.
 
     Be aware that the computation may still be running even though this
-    function returns true. See cancel() for more details.
+    function returns \c true. See cancel() for more details.
 */
 
 /*! \fn void QFuture::setPaused(bool paused)
@@ -182,11 +182,11 @@
 
 /*! \fn bool QFuture::isPaused() const
 
-    Returns true if the asynchronous computation has been paused with the
-    pause() function; otherwise returns false.
+    Returns \c true if the asynchronous computation has been paused with the
+    pause() function; otherwise returns \c false.
 
     Be aware that the computation may still be running even though this
-    function returns true. See setPaused() for more details.
+    function returns \c true. See setPaused() for more details.
 
     \sa setPaused(), togglePaused()
 */
@@ -219,20 +219,20 @@
 
 /*! \fn bool QFuture::isStarted() const
 
-    Returns true if the asynchronous computation represented by this future
-    has been started; otherwise returns false.
+    Returns \c true if the asynchronous computation represented by this future
+    has been started; otherwise returns \c false.
 */
 
 /*! \fn bool QFuture::isFinished() const
 
-    Returns true if the asynchronous computation represented by this future
-    has finished; otherwise returns false.
+    Returns \c true if the asynchronous computation represented by this future
+    has finished; otherwise returns \c false.
 */
 
 /*! \fn bool QFuture::isRunning() const
 
-    Returns true if the asynchronous computation represented by this future is
-    currently running; otherwise returns false.
+    Returns \c true if the asynchronous computation represented by this future is
+    currently running; otherwise returns \c false.
 */
 
 /*! \fn int QFuture::resultCount() const
@@ -301,8 +301,8 @@
 
 /*! \fn bool QFuture::isResultReadyAt(int index) const
 
-    Returns true if the result at \a index is immediately available; otherwise
-    returns false.
+    Returns \c true if the result at \a index is immediately available; otherwise
+    returns \c false.
 
     \sa resultAt(), resultCount()
 */
@@ -441,16 +441,16 @@
 
 /*! \fn bool QFuture::const_iterator::operator!=(const const_iterator &other) const
 
-    Returns true if \a other points to a different result than this iterator;
-    otherwise returns false.
+    Returns \c true if \a other points to a different result than this iterator;
+    otherwise returns \c false.
 
     \sa operator==()
 */
 
 /*! \fn bool QFuture::const_iterator::operator==(const const_iterator &other) const
 
-    Returns true if \a other points to the same result as this iterator;
-    otherwise returns false.
+    Returns \c true if \a other points to the same result as this iterator;
+    otherwise returns \c false.
 
     \sa operator!=()
 */
@@ -616,7 +616,7 @@
 
 /*! \fn bool QFutureIterator::hasNext() const
 
-    Returns true if there is at least one result ahead of the iterator, e.g.,
+    Returns \c true if there is at least one result ahead of the iterator, e.g.,
     the iterator is \e not at the back of the result list; otherwise returns
     false.
 
@@ -645,7 +645,7 @@
 
 /*! \fn bool QFutureIterator::hasPrevious() const
 
-    Returns true if there is at least one result ahead of the iterator, e.g.,
+    Returns \c true if there is at least one result ahead of the iterator, e.g.,
     the iterator is \e not at the front of the result list; otherwise returns
     false.
 
@@ -675,7 +675,7 @@
 /*! \fn bool QFutureIterator::findNext(const T &value)
 
     Searches for \a value starting from the current iterator position forward.
-    Returns true if \a value is found; otherwise returns false.
+    Returns \c true if \a value is found; otherwise returns \c false.
 
     After the call, if \a value was found, the iterator is positioned just
     after the matching result; otherwise, the iterator is positioned at the
@@ -687,7 +687,7 @@
 /*! \fn bool QFutureIterator::findPrevious(const T &value)
 
     Searches for \a value starting from the current iterator position
-    backward. Returns true if \a value is found; otherwise returns false.
+    backward. Returns \c true if \a value is found; otherwise returns \c false.
 
     After the call, if \a value was found, the iterator is positioned just
     before the matching result; otherwise, the iterator is positioned at the

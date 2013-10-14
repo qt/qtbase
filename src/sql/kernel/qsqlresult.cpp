@@ -289,9 +289,9 @@ int QSqlResult::at() const
 
 
 /*!
-    Returns true if the result is positioned on a valid record (that
+    Returns \c true if the result is positioned on a valid record (that
     is, the result is not positioned before the first or after the
-    last record); otherwise returns false.
+    last record); otherwise returns \c false.
 
     \sa at()
 */
@@ -305,13 +305,13 @@ bool QSqlResult::isValid() const
 /*!
     \fn bool QSqlResult::isNull(int index)
 
-    Returns true if the field at position \a index in the current row
-    is null; otherwise returns false.
+    Returns \c true if the field at position \a index in the current row
+    is null; otherwise returns \c false.
 */
 
 /*!
-    Returns true if the result has records to be retrieved; otherwise
-    returns false.
+    Returns \c true if the result has records to be retrieved; otherwise
+    returns \c false.
 */
 
 bool QSqlResult::isActive() const
@@ -350,8 +350,8 @@ void QSqlResult::setSelect(bool select)
 }
 
 /*!
-    Returns true if the current result is from a \c SELECT statement;
-    otherwise returns false.
+    Returns \c true if the current result is from a \c SELECT statement;
+    otherwise returns \c false.
 
     \sa setSelect()
 */
@@ -538,8 +538,8 @@ bool QSqlResult::fetchPrevious()
 }
 
 /*!
-    Returns true if you can only scroll forward through the result
-    set; otherwise returns false.
+    Returns \c true if you can only scroll forward through the result
+    set; otherwise returns \c false.
 
     \sa setForwardOnly()
 */
@@ -573,8 +573,8 @@ void QSqlResult::setForwardOnly(bool forward)
 
 /*!
     Prepares the given \a query, using the underlying database
-    functionality where possible. Returns true if the query is
-    prepared successfully; otherwise returns false.
+    functionality where possible. Returns \c true if the query is
+    prepared successfully; otherwise returns \c false.
 
     Note: This method should have been called "safePrepare()".
 
@@ -602,7 +602,7 @@ bool QSqlResult::savePrepare(const QString& query)
 /*!
     Prepares the given \a query for execution; the query will normally
     use placeholders so that it can be executed repeatedly. Returns
-    true if the query is prepared successfully; otherwise returns false.
+    true if the query is prepared successfully; otherwise returns \c false.
 
     \sa exec()
 */
@@ -860,8 +860,8 @@ QString QSqlResult::boundValueName(int index) const
 }
 
 /*!
-    Returns true if at least one of the query's bound values is a \c
-    QSql::Out or a QSql::InOut; otherwise returns false.
+    Returns \c true if at least one of the query's bound values is a \c
+    QSql::Out or a QSql::InOut; otherwise returns \c false.
 
     \sa bindValueType()
 */

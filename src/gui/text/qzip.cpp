@@ -899,7 +899,7 @@ QIODevice* QZipReader::device() const
 }
 
 /*!
-    Returns true if the user can read the file; otherwise returns false.
+    Returns \c true if the user can read the file; otherwise returns \c false.
 */
 bool QZipReader::isReadable() const
 {
@@ -907,7 +907,7 @@ bool QZipReader::isReadable() const
 }
 
 /*!
-    Returns true if the file exists; otherwise returns false.
+    Returns \c true if the file exists; otherwise returns \c false.
 */
 bool QZipReader::exists() const
 {
@@ -1194,7 +1194,7 @@ QIODevice* QZipWriter::device() const
 }
 
 /*!
-    Returns true if the user can write to the archive; otherwise returns false.
+    Returns \c true if the user can write to the archive; otherwise returns \c false.
 */
 bool QZipWriter::isWritable() const
 {
@@ -1202,7 +1202,7 @@ bool QZipWriter::isWritable() const
 }
 
 /*!
-    Returns true if the file exists; otherwise returns false.
+    Returns \c true if the file exists; otherwise returns \c false.
 */
 bool QZipWriter::exists() const
 {

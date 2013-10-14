@@ -249,13 +249,13 @@ QProcessEnvironment &QProcessEnvironment::operator=(const QProcessEnvironment &o
 /*!
     \fn bool QProcessEnvironment::operator !=(const QProcessEnvironment &other) const
 
-    Returns true if this and the \a other QProcessEnvironment objects are different.
+    Returns \c true if this and the \a other QProcessEnvironment objects are different.
 
     \sa operator==()
 */
 
 /*!
-    Returns true if this and the \a other QProcessEnvironment objects are equal.
+    Returns \c true if this and the \a other QProcessEnvironment objects are equal.
 
     Two QProcessEnvironment objects are considered equal if they have the same
     set of key=value pairs. The comparison of keys is done case-sensitive on
@@ -275,7 +275,7 @@ bool QProcessEnvironment::operator==(const QProcessEnvironment &other) const
 }
 
 /*!
-    Returns true if this QProcessEnvironment object is empty: that is
+    Returns \c true if this QProcessEnvironment object is empty: that is
     there are no key=value pairs set.
 
     \sa clear(), systemEnvironment(), insert()
@@ -301,7 +301,7 @@ void QProcessEnvironment::clear()
 }
 
 /*!
-    Returns true if the environment variable of name \a name is found in
+    Returns \c true if the environment variable of name \a name is found in
     this QProcessEnvironment object.
 
 
@@ -1587,8 +1587,8 @@ void QProcess::close()
 
 /*! \reimp
 
-   Returns true if the process is not running, and no more data is available
-   for reading; otherwise returns false.
+   Returns \c true if the process is not running, and no more data is available
+   for reading; otherwise returns \c false.
 */
 bool QProcess::atEnd() const
 {
@@ -1735,8 +1735,8 @@ QProcessEnvironment QProcess::processEnvironment() const
     Blocks until the process has started and the started() signal has
     been emitted, or until \a msecs milliseconds have passed.
 
-    Returns true if the process was started successfully; otherwise
-    returns false (if the operation timed out or if an error
+    Returns \c true if the process was started successfully; otherwise
+    returns \c false (if the operation timed out or if an error
     occurred).
 
     This function can operate without an event loop. It is
@@ -1798,7 +1798,7 @@ bool QProcess::waitForBytesWritten(int msecs)
     Blocks until the process has finished and the finished() signal
     has been emitted, or until \a msecs milliseconds have passed.
 
-    Returns true if the process finished; otherwise returns false (if
+    Returns \c true if the process finished; otherwise returns \c false (if
     the operation timed out, if an error occurred, or if this QProcess
     is already finished).
 
@@ -2366,8 +2366,8 @@ int QProcess::execute(const QString &program)
 
 /*!
     Starts the program \a program with the arguments \a arguments in a
-    new process, and detaches from it. Returns true on success;
-    otherwise returns false. If the calling process exits, the
+    new process, and detaches from it. Returns \c true on success;
+    otherwise returns \c false. If the calling process exits, the
     detached process will continue to live.
 
     Note that arguments that contain spaces are not passed to the
@@ -2400,8 +2400,8 @@ bool QProcess::startDetached(const QString &program,
 
 /*!
     Starts the program \a program with the given \a arguments in a
-    new process, and detaches from it. Returns true on success;
-    otherwise returns false. If the calling process exits, the
+    new process, and detaches from it. Returns \c true on success;
+    otherwise returns \c false. If the calling process exits, the
     detached process will continue to live.
 
     \note Arguments that contain spaces are not passed to the

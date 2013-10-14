@@ -70,7 +70,7 @@ CppCodeMarker::~CppCodeMarker()
 }
 
 /*!
-  Returns true.
+  Returns \c true.
  */
 bool CppCodeMarker::recognizeCode(const QString & /* code */)
 {
@@ -78,7 +78,7 @@ bool CppCodeMarker::recognizeCode(const QString & /* code */)
 }
 
 /*!
-  Returns true if \a ext is any of a list of file extensions
+  Returns \c true if \a ext is any of a list of file extensions
   for the C++ language.
  */
 bool CppCodeMarker::recognizeExtension(const QString& extension)
@@ -101,7 +101,7 @@ bool CppCodeMarker::recognizeExtension(const QString& extension)
 }
 
 /*!
-  Returns true if \a lang is either "C" or "Cpp".
+  Returns \c true if \a lang is either "C" or "Cpp".
  */
 bool CppCodeMarker::recognizeLanguage(const QString &lang)
 {

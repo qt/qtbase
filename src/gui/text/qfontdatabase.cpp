@@ -1238,8 +1238,8 @@ QStringList QFontDatabase::styles(const QString &family) const
 }
 
 /*!
-    Returns true if the font that has family \a family and style \a
-    style is fixed pitch; otherwise returns false.
+    Returns \c true if the font that has family \a family and style \a
+    style is fixed pitch; otherwise returns \c false.
 */
 
 bool QFontDatabase::isFixedPitch(const QString &family,
@@ -1259,8 +1259,8 @@ bool QFontDatabase::isFixedPitch(const QString &family,
 }
 
 /*!
-    Returns true if the font that has family \a family and style \a
-    style is a scalable bitmap font; otherwise returns false. Scaling
+    Returns \c true if the font that has family \a family and style \a
+    style is a scalable bitmap font; otherwise returns \c false. Scaling
     a bitmap font usually produces an unattractive hardly readable
     result, because the pixels of the font are scaled. If you need to
     scale a bitmap font it is better to scale it to one of the fixed
@@ -1303,9 +1303,9 @@ bool QFontDatabase::isBitmapScalable(const QString &family,
 
 
 /*!
-    Returns true if the font that has family \a family and style \a
-    style is smoothly scalable; otherwise returns false. If this
-    function returns true, it's safe to scale this font to any size,
+    Returns \c true if the font that has family \a family and style \a
+    style is smoothly scalable; otherwise returns \c false. If this
+    function returns \c true, it's safe to scale this font to any size,
     and the result will always look attractive.
 
     \sa isScalable(), isBitmapScalable()
@@ -1342,8 +1342,8 @@ bool QFontDatabase::isSmoothlyScalable(const QString &family, const QString &sty
 }
 
 /*!
-    Returns true if the font that has family \a family and style \a
-    style is scalable; otherwise returns false.
+    Returns \c true if the font that has family \a family and style \a
+    style is scalable; otherwise returns \c false.
 
     \sa isBitmapScalable(), isSmoothlyScalable()
 */
@@ -1532,8 +1532,8 @@ QList<int> QFontDatabase::standardSizes()
 
 
 /*!
-    Returns true if the font that has family \a family and style \a
-    style is italic; otherwise returns false.
+    Returns \c true if the font that has family \a family and style \a
+    style is italic; otherwise returns \c false.
 
     \sa weight(), bold()
 */
@@ -1565,8 +1565,8 @@ bool QFontDatabase::italic(const QString &family, const QString &style) const
 
 
 /*!
-    Returns true if the font that has family \a family and style \a
-    style is bold; otherwise returns false.
+    Returns \c true if the font that has family \a family and style \a
+    style is bold; otherwise returns \c false.
 
     \sa italic(), weight()
 */
@@ -2144,8 +2144,8 @@ QFont QFontDatabase::systemFont(QFontDatabase::SystemFont type)
     \since 4.2
 
     Removes the previously loaded application font identified by \a
-    id. Returns true if unloading of the font succeeded; otherwise
-    returns false.
+    id. Returns \c true if unloading of the font succeeded; otherwise
+    returns \c false.
 
     \sa removeAllApplicationFonts(), addApplicationFont(),
         addApplicationFontFromData()
@@ -2158,8 +2158,8 @@ QFont QFontDatabase::systemFont(QFontDatabase::SystemFont type)
     Removes all application-local fonts previously added using addApplicationFont()
     and addApplicationFontFromData().
 
-    Returns true if unloading of the fonts succeeded; otherwise
-    returns false.
+    Returns \c true if unloading of the fonts succeeded; otherwise
+    returns \c false.
 
     \sa removeApplicationFont(), addApplicationFont(), addApplicationFontFromData()
 */
@@ -2169,12 +2169,12 @@ QFont QFontDatabase::systemFont(QFontDatabase::SystemFont type)
     \since 4.4
     \deprecated
 
-    Returns true if font rendering is supported outside the GUI
+    Returns \c true if font rendering is supported outside the GUI
     thread, false otherwise. In other words, a return value of false
     means that all QPainter::drawText() calls outside the GUI thread
     will not produce readable output.
 
-    As of 5.0, always returns true.
+    As of 5.0, always returns \c true.
 
     \sa {Thread-Support in Qt Modules#Painting In Threads}{Painting In Threads}
 */

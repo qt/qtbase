@@ -169,7 +169,7 @@ static inline bool isParentDomain(QString domain, QString reference)
     Adds the cookies in the list \a cookieList to this cookie
     jar. Before being inserted cookies are normalized.
 
-    Returns true if one or more cookies are set for \a url,
+    Returns \c true if one or more cookies are set for \a url,
     otherwise false.
 
     If a cookie already exists in the cookie jar, it will be
@@ -265,7 +265,7 @@ QList<QNetworkCookie> QNetworkCookieJar::cookiesForUrl(const QUrl &url) const
     \since 5.0
     Adds \a cookie to this cookie jar.
 
-    Returns true if \a cookie was added, false otherwise.
+    Returns \c true if \a cookie was added, false otherwise.
 
     If a cookie with the same identifier already exists in the
     cookie jar, it will be overridden.
@@ -291,7 +291,7 @@ bool QNetworkCookieJar::insertCookie(const QNetworkCookie &cookie)
     If a cookie with the same identifier as \a cookie exists in this cookie jar
     it will be updated. This function uses insertCookie().
 
-    Returns true if \a cookie was updated, false if no cookie in the jar matches
+    Returns \c true if \a cookie was updated, false if no cookie in the jar matches
     the identifier of \a cookie.
 
     \sa QNetworkCookie::hasSameIdentifier()
@@ -307,7 +307,7 @@ bool QNetworkCookieJar::updateCookie(const QNetworkCookie &cookie)
     \since 5.0
     Deletes from cookie jar the cookie found to have the same identifier as \a cookie.
 
-    Returns true if a cookie was deleted, false otherwise.
+    Returns \c true if a cookie was deleted, false otherwise.
 
     \sa QNetworkCookie::hasSameIdentifier()
 */
@@ -325,7 +325,7 @@ bool QNetworkCookieJar::deleteCookie(const QNetworkCookie &cookie)
 
 /*!
     \since 5.0
-    Returns true if the domain and path of \a cookie are valid, false otherwise.
+    Returns \c true if the domain and path of \a cookie are valid, false otherwise.
     The \a url parameter is used to determine if the domain specified in the cookie
     is allowed.
 */

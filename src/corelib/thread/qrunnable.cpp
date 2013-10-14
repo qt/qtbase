@@ -53,7 +53,7 @@
 
     You can use QThreadPool to execute your code in a separate
     thread. QThreadPool deletes the QRunnable automatically if
-    autoDelete() returns true (the default). Use setAutoDelete() to
+    autoDelete() returns \c true (the default). Use setAutoDelete() to
     change the auto-deletion flag.
 
     QThreadPool supports executing the same QRunnable more than once
@@ -82,7 +82,7 @@
 
 /*! \fn bool QRunnable::autoDelete() const
 
-    Returns true is auto-deletion is enabled; false otherwise.
+    Returns \c true is auto-deletion is enabled; false otherwise.
 
     If auto-deletion is enabled, QThreadPool will automatically delete
     this runnable after calling run(); otherwise, ownership remains

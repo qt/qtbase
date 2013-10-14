@@ -908,6 +908,9 @@
             default is used.
     \row    \li thread \li Thread support is enabled. This is enabled when CONFIG
             includes \c qt, which is the default.
+    \row    \li c++11 \li C++11 support is enabled. This option has no effect if
+            the compiler does not support C++11.
+            By default, support is disabled.
     \endtable
 
     Since the \c debug option overrides the \c release option when both are

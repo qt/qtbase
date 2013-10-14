@@ -65,7 +65,7 @@ uint nameToBuiltinType(const QByteArray &name)
 }
 
 /*
-  Returns true if the type is a built-in type.
+  Returns \c true if the type is a built-in type.
 */
 bool isBuiltinType(const QByteArray &type)
  {
@@ -184,8 +184,8 @@ bool Generator::registerableMetaType(const QByteArray &propertyType)
     return false;
 }
 
-/* returns true if name and qualifiedName refers to the same name.
- * If qualified name is "A::B::C", it returns true for "C", "B::C" or "A::B::C" */
+/* returns \c true if name and qualifiedName refers to the same name.
+ * If qualified name is "A::B::C", it returns \c true for "C", "B::C" or "A::B::C" */
 static bool qualifiedNameEquals(const QByteArray &qualifiedName, const QByteArray &name)
 {
     if (qualifiedName == name)

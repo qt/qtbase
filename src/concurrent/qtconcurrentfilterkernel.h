@@ -120,11 +120,11 @@ public:
 
 
         typename Sequence::const_iterator it = sequenceBeginIterator;
-        advance(it, begin);
+        std::advance(it, begin);
         for (int i = begin; i < end; ++i) {
             if (keep(*it))
                 results.vector.append(*it);
-            advance(it, 1);
+            std::advance(it, 1);
         }
 
         reducer.runReduce(reduce, reducedResult, results);
@@ -206,11 +206,11 @@ public:
         results.vector.reserve(end - begin);
 
         Iterator it = sequenceBeginIterator;
-        advance(it, begin);
+        std::advance(it, begin);
         for (int i = begin; i < end; ++i) {
             if (keep(*it))
                 results.vector.append(*it);
-            advance(it, 1);
+            std::advance(it, 1);
         }
 
         reducer.runReduce(reduce, reducedResult, results);
@@ -282,11 +282,11 @@ public:
         results.vector.reserve(count);
 
         Iterator it = sequenceBeginIterator;
-        advance(it, begin);
+        std::advance(it, begin);
         for (int i = begin; i < end; ++i) {
             if (keep(*it))
                 results.vector.append(*it);
-            advance(it, 1);
+            std::advance(it, 1);
         }
 
         this->reportResults(results.vector, begin, count);

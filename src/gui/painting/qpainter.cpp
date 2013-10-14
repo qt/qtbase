@@ -241,7 +241,7 @@ QTransform QPainterPrivate::hidpiScaleTransform() const
 
 /*
    \internal
-   Returns true if using a shared painter; otherwise false.
+   Returns \c true if using a shared painter; otherwise false.
 */
 bool QPainterPrivate::attachPainterPrivate(QPainter *q, QPaintDevice *pdev)
 {
@@ -1510,8 +1510,8 @@ QPaintDevice *QPainter::device() const
 }
 
 /*!
-    Returns true if begin() has been called and end() has not yet been
-    called; otherwise returns false.
+    Returns \c true if begin() has been called and end() has not yet been
+    called; otherwise returns \c false.
 
     \sa begin(), QPaintDevice::paintingActive()
 */
@@ -1660,8 +1660,8 @@ void QPainter::restore()
 
     \fn bool QPainter::begin(QPaintDevice *device)
 
-    Begins painting the paint \a device and returns true if
-    successful; otherwise returns false.
+    Begins painting the paint \a device and returns \c true if
+    successful; otherwise returns \c false.
 
     Notice that all painter settings (setPen(), setBrush() etc.) are reset
     to default values when begin() is called.
@@ -1856,7 +1856,7 @@ bool QPainter::begin(QPaintDevice *pd)
     don't normally need to call this since it is called by the
     destructor.
 
-    Returns true if the painter is no longer active; otherwise returns false.
+    Returns \c true if the painter is no longer active; otherwise returns \c false.
 
     \sa begin(), isActive()
 */
@@ -2420,7 +2420,7 @@ const QBrush &QPainter::background() const
 
 
 /*!
-    Returns true if clipping has been set; otherwise returns false.
+    Returns \c true if clipping has been set; otherwise returns \c false.
 
     \sa setClipping(), {QPainter#Clipping}{Clipping}
 */
@@ -3058,7 +3058,7 @@ void QPainter::setWorldMatrixEnabled(bool enable)
 /*!
     \since 4.2
 
-    Returns true if world transformation is enabled; otherwise returns
+    Returns \c true if world transformation is enabled; otherwise returns
     false.
 
     \sa setWorldMatrixEnabled(), worldTransform(), {Coordinate System}
@@ -7078,13 +7078,13 @@ QPainter::RenderHints QPainter::renderHints() const
     \fn bool QPainter::testRenderHint(RenderHint hint) const
     \since 4.3
 
-    Returns true if \a hint is set; otherwise returns false.
+    Returns \c true if \a hint is set; otherwise returns \c false.
 
     \sa renderHints(), setRenderHint()
 */
 
 /*!
-    Returns true if view transformation is enabled; otherwise returns
+    Returns \c true if view transformation is enabled; otherwise returns
     false.
 
     \sa setViewTransformEnabled(), worldTransform()

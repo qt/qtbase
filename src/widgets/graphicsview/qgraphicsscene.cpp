@@ -1215,9 +1215,9 @@ bool QGraphicsScenePrivate::filterEvent(QGraphicsItem *item, QEvent *event)
     \internal
 
     This is the final dispatch point for any events from the scene to the
-    item. It filters the event first - if the filter returns true, the event
+    item. It filters the event first - if the filter returns \c true, the event
     is considered to have been eaten by the filter, and is therefore stopped
-    (the default filter returns false). Then/otherwise, if the item is
+    (the default filter returns \c false). Then/otherwise, if the item is
     enabled, the event is sent; otherwise it is stopped.
 */
 bool QGraphicsScenePrivate::sendEvent(QGraphicsItem *item, QEvent *event)
@@ -1988,7 +1988,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(Qt::SortOrder order) const
     \brief Returns all visible items that, depending on \a mode, are
     either inside or intersect with the rectangle defined by \a x, \a y,
     \a w and \a h, in a list sorted using \a order. In this case, "visible" defines items for which:
-    isVisible() returns true, effectiveOpacity() returns a value greater than 0.0
+    isVisible() returns \c true, effectiveOpacity() returns a value greater than 0.0
     (which is fully transparent) and the parent item does not clip it.
 
     \a deviceTransform is the transformation that applies to the view, and needs to
@@ -2001,7 +2001,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(Qt::SortOrder order) const
 
     \brief Returns all visible items that, depending on \a mode, are at
     the specified \a pos in a list sorted using \a order. In this case, "visible" defines items for which:
-    isVisible() returns true, effectiveOpacity() returns a value greater than 0.0
+    isVisible() returns \c true, effectiveOpacity() returns a value greater than 0.0
     (which is fully transparent) and the parent item does not clip it.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
@@ -2027,7 +2027,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos, Qt::ItemSelecti
     \brief Returns all visible items that, depending on \a mode, are
     either inside or intersect with the specified \a rect, in a
     list sorted using \a order. In this case, "visible" defines items for which:
-    isVisible() returns true, effectiveOpacity() returns a value greater than 0.0
+    isVisible() returns \c true, effectiveOpacity() returns a value greater than 0.0
     (which is fully transparent) and the parent item does not clip it.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
@@ -2053,7 +2053,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rect, Qt::ItemSelecti
     \brief Returns all visible items that, depending on \a mode, are
     either inside or intersect with the specified \a polygon, in
     a list sorted using \a order. In this case, "visible" defines items for which:
-    isVisible() returns true, effectiveOpacity() returns a value greater than 0.0
+    isVisible() returns \c true, effectiveOpacity() returns a value greater than 0.0
     (which is fully transparent) and the parent item does not clip it.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
@@ -2079,7 +2079,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemS
     \brief Returns all visible items that, depending on \a mode, are
     either inside or intersect with the specified \a path, in a
     list sorted using \a order. In this case, "visible" defines items for which:
-    isVisible() returns true, effectiveOpacity() returns a value greater than 0.0
+    isVisible() returns \c true, effectiveOpacity() returns a value greater than 0.0
     (which is fully transparent) and the parent item does not clip it.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
@@ -2626,7 +2626,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     Note that the item's geometry is provided in item coordinates, and its
     position is initialized to (0, 0).
 
-    If the item is visible (i.e., QGraphicsItem::isVisible() returns true),
+    If the item is visible (i.e., QGraphicsItem::isVisible() returns \c true),
     QGraphicsScene will emit changed() once control goes back to the event
     loop.
 
@@ -2658,7 +2658,7 @@ QGraphicsEllipseItem *QGraphicsScene::addEllipse(const QRectF &rect, const QPen 
     Note that the item's geometry is provided in item coordinates, and its
     position is initialized to (0, 0).
 
-    If the item is visible (i.e., QGraphicsItem::isVisible() returns true),
+    If the item is visible (i.e., QGraphicsItem::isVisible() returns \c true),
     QGraphicsScene will emit changed() once control goes back to the event
     loop.
 
@@ -2689,7 +2689,7 @@ QGraphicsLineItem *QGraphicsScene::addLine(const QLineF &line, const QPen &pen)
     Note that the item's geometry is provided in item coordinates, and its
     position is initialized to (0, 0).
 
-    If the item is visible (i.e., QGraphicsItem::isVisible() returns true),
+    If the item is visible (i.e., QGraphicsItem::isVisible() returns \c true),
     QGraphicsScene will emit changed() once control goes back to the event
     loop.
 
@@ -2712,7 +2712,7 @@ QGraphicsPathItem *QGraphicsScene::addPath(const QPainterPath &path, const QPen 
     Note that the item's geometry is provided in item coordinates, and its
     position is initialized to (0, 0).
 
-    If the item is visible (i.e., QGraphicsItem::isVisible() returns true),
+    If the item is visible (i.e., QGraphicsItem::isVisible() returns \c true),
     QGraphicsScene will emit changed() once control goes back to the event
     loop.
 
@@ -2734,7 +2734,7 @@ QGraphicsPixmapItem *QGraphicsScene::addPixmap(const QPixmap &pixmap)
     Note that the item's geometry is provided in item coordinates, and its
     position is initialized to (0, 0).
 
-    If the item is visible (i.e., QGraphicsItem::isVisible() returns true),
+    If the item is visible (i.e., QGraphicsItem::isVisible() returns \c true),
     QGraphicsScene will emit changed() once control goes back to the event
     loop.
 
@@ -2761,7 +2761,7 @@ QGraphicsPolygonItem *QGraphicsScene::addPolygon(const QPolygonF &polygon,
     100) is added, its top-left corner will be at (50, 50) relative to the
     origin in the items coordinate system.
 
-    If the item is visible (i.e., QGraphicsItem::isVisible() returns true),
+    If the item is visible (i.e., QGraphicsItem::isVisible() returns \c true),
     QGraphicsScene will emit changed() once control goes back to the event
     loop.
 
@@ -2792,7 +2792,7 @@ QGraphicsRectItem *QGraphicsScene::addRect(const QRectF &rect, const QPen &pen, 
 
     The item's position is initialized to (0, 0).
 
-    If the item is visible (i.e., QGraphicsItem::isVisible() returns true),
+    If the item is visible (i.e., QGraphicsItem::isVisible() returns \c true),
     QGraphicsScene will emit changed() once control goes back to the event
     loop.
 
@@ -2814,7 +2814,7 @@ QGraphicsTextItem *QGraphicsScene::addText(const QString &text, const QFont &fon
 
     The item's position is initialized to (0, 0).
 
-    If the item is visible (i.e., QGraphicsItem::isVisible() returns true),
+    If the item is visible (i.e., QGraphicsItem::isVisible() returns \c true),
     QGraphicsScene will emit changed() once control goes back to the event
     loop.
 
@@ -2836,7 +2836,7 @@ QGraphicsSimpleTextItem *QGraphicsScene::addSimpleText(const QString &text, cons
 
     The item's position is initialized to (0, 0).
 
-    If the item is visible (i.e., QGraphicsItem::isVisible() returns true),
+    If the item is visible (i.e., QGraphicsItem::isVisible() returns \c true),
     QGraphicsScene will emit changed() once control goes back to the event
     loop.
 
@@ -2923,7 +2923,7 @@ QGraphicsItem *QGraphicsScene::focusItem() const
     focusitem.
 
     If item is not 0, and the scene does not currently have focus (i.e.,
-    hasFocus() returns false), this function will call setFocus()
+    hasFocus() returns \c false), this function will call setFocus()
     automatically.
 
     \sa focusItem(), hasFocus(), setFocus()
@@ -2938,7 +2938,7 @@ void QGraphicsScene::setFocusItem(QGraphicsItem *item, Qt::FocusReason focusReas
 }
 
 /*!
-    Returns true if the scene has focus; otherwise returns false. If the scene
+    Returns \c true if the scene has focus; otherwise returns \c false. If the scene
     has focus, it will will forward key events from QKeyEvent to any item that
     has focus.
 
@@ -2998,7 +2998,7 @@ void QGraphicsScene::clearFocus()
     unchanged when the user clicks into the scene background or on an item
     that does not accept focus. Otherwise, focus will be cleared.
 
-    By default, this property is false.
+    By default, this property is \c false.
 
     Focus changes in response to a mouse press. You can reimplement
     mousePressEvent() in a subclass of QGraphicsScene to toggle this property
@@ -4311,7 +4311,7 @@ static void _q_paintIntoCache(QPixmap *pix, QGraphicsItem *item, const QRegion &
 }
 
 // Copied from qpaintengine_vg.cpp
-// Returns true for 90, 180, and 270 degree rotations.
+// Returns \c true for 90, 180, and 270 degree rotations.
 static inline bool transformIsSimple(const QTransform& transform)
 {
     QTransform::TransformationType type = transform.type();
@@ -5330,7 +5330,7 @@ void QGraphicsScene::drawItems(QPainter *painter,
     \since 4.4
 
     Finds a new widget to give the keyboard focus to, as appropriate for Tab
-    and Shift+Tab, and returns true if it can find a new widget, or false if
+    and Shift+Tab, and returns \c true if it can find a new widget, or false if
     it cannot. If \a next is true, this function searches forward; if \a next
     is false, it searches backward.
 
@@ -5603,8 +5603,8 @@ void QGraphicsScene::setPalette(const QPalette &palette)
 /*!
     \since 4.6
 
-    Returns true if the scene is active (e.g., it's viewed by
-    at least one QGraphicsView that is active); otherwise returns false.
+    Returns \c true if the scene is active (e.g., it's viewed by
+    at least one QGraphicsView that is active); otherwise returns \c false.
 
     \sa QGraphicsItem::isActive(), QWidget::isActiveWindow()
 */

@@ -112,7 +112,7 @@ QT_BEGIN_NAMESPACE
 
     For extra convenience, it is possible to apply formatting to the text using the HTML subset
     supported by QTextDocument. QStaticText will attempt to guess the format of the input text using
-    Qt::mightBeRichText(), and interpret it as rich text if this function returns true. To force
+    Qt::mightBeRichText(), and interpret it as rich text if this function returns \c true. To force
     QStaticText to display its contents as either plain text or rich text, use the function
     QStaticText::setTextFormat() and pass in, respectively, Qt::PlainText and Qt::RichText.
 
@@ -233,7 +233,7 @@ QStaticText &QStaticText::operator=(const QStaticText &other)
 */
 
 /*!
-    Compares \a other to this QStaticText. Returns true if the texts, fonts and text widths
+    Compares \a other to this QStaticText. Returns \c true if the texts, fonts and text widths
     are equal.
 */
 bool QStaticText::operator==(const QStaticText &other) const
@@ -245,7 +245,7 @@ bool QStaticText::operator==(const QStaticText &other) const
 }
 
 /*!
-    Compares \a other to this QStaticText. Returns true if the texts, fonts or maximum sizes
+    Compares \a other to this QStaticText. Returns \c true if the texts, fonts or maximum sizes
     are different.
 */
 bool QStaticText::operator!=(const QStaticText &other) const

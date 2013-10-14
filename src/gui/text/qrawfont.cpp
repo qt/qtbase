@@ -210,7 +210,7 @@ QRawFont &QRawFont::operator=(const QRawFont &other)
 */
 
 /*!
-   Returns true if the QRawFont is valid and false otherwise.
+   Returns \c true if the QRawFont is valid and false otherwise.
 */
 bool QRawFont::isValid() const
 {
@@ -300,7 +300,7 @@ QPainterPath QRawFont::pathForGlyph(quint32 glyphIndex) const
 }
 
 /*!
-   Returns true if this QRawFont is equal to \a other. Otherwise, returns false.
+   Returns \c true if this QRawFont is equal to \a other. Otherwise, returns \c false.
 */
 bool QRawFont::operator==(const QRawFont &other) const
 {
@@ -310,7 +310,7 @@ bool QRawFont::operator==(const QRawFont &other) const
 /*!
     \fn bool QRawFont::operator!=(const QRawFont &other) const
 
-    Returns true if this QRawFont is not equal to \a other. Otherwise, returns false.
+    Returns \c true if this QRawFont is not equal to \a other. Otherwise, returns \c false.
 */
 
 /*!
@@ -668,7 +668,7 @@ QList<QFontDatabase::WritingSystem> QRawFont::supportedWritingSystems() const
 }
 
 /*!
-    Returns true if the font has a glyph that corresponds to the given \a character.
+    Returns \c true if the font has a glyph that corresponds to the given \a character.
 
     \sa supportedWritingSystems()
 */
@@ -680,7 +680,7 @@ bool QRawFont::supportsCharacter(QChar character) const
 /*!
     \overload
 
-   Returns true if the font has a glyph that corresponds to the UCS-4 encoded character \a ucs4.
+   Returns \c true if the font has a glyph that corresponds to the UCS-4 encoded character \a ucs4.
 
    \sa supportedWritingSystems()
 */

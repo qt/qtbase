@@ -87,6 +87,8 @@ private:
     QSharedDataPointer<QCommandLineOptionPrivate> d;
 };
 
+Q_DECLARE_SHARED(QCommandLineOption)
+
 QT_END_NAMESPACE
 
 #endif // QCOMMANDLINEOPTION_H

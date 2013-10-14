@@ -392,8 +392,8 @@ void QPaintEngine::drawPolygon(const QPoint *points, int pointCount, PolygonDraw
 /*!
     \fn bool QPaintEngine::isActive() const
 
-    Returns true if the paint engine is actively drawing; otherwise
-    returns false.
+    Returns \c true if the paint engine is actively drawing; otherwise
+    returns \c false.
 
     \sa setActive()
 */
@@ -657,8 +657,8 @@ void QPaintEngine::drawImage(const QRectF &r, const QImage &image, const QRectF 
 /*!
     \fn bool QPaintEngine::hasFeature(PaintEngineFeatures feature) const
 
-    Returns true if the paint engine supports the specified \a
-    feature; otherwise returns false.
+    Returns \c true if the paint engine supports the specified \a
+    feature; otherwise returns \c false.
 */
 
 /*!
@@ -666,7 +666,7 @@ void QPaintEngine::drawImage(const QRectF &r, const QImage &image, const QRectF 
 
     \internal
 
-    Returns true if the paint engine is a QPaintEngineEx derivative.
+    Returns \c true if the paint engine is a QPaintEngineEx derivative.
 */
 
 /*!

@@ -83,7 +83,7 @@
 
     Whilst this class provides access to any type of extension, only
     some are guaranteed to be returned in a format that will remain
-    unchanged between releases. The isSupported() method returns true
+    unchanged between releases. The isSupported() method returns \c true
     for extensions where this is the case.
 
     The extensions currently supported, and the structure of the value

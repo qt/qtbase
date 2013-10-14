@@ -533,7 +533,7 @@ Qt::Orientation QProgressBar::orientation() const
     \property QProgressBar::invertedAppearance
     \brief whether or not a progress bar shows its progress inverted
 
-    If this property is false, the progress bar grows in the other
+    If this property is \c false, the progress bar grows in the other
     direction (e.g. from right to left). By default, the progress bar
     is not inverted.
 

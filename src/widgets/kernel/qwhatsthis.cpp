@@ -542,8 +542,8 @@ void QWhatsThis::enterWhatsThisMode()
  }
 
 /*!
-    Returns true if the user interface is in "What's This?" mode;
-    otherwise returns false.
+    Returns \c true if the user interface is in "What's This?" mode;
+    otherwise returns \c false.
 
     \sa enterWhatsThisMode()
 */

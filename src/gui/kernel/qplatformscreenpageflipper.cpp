@@ -110,7 +110,7 @@ QPlatformScreenPageFlipper::QPlatformScreenPageFlipper(QObject *parent)
     Implemented in subclasses to display \a buffer directly on the screen. Returns \c true
     if it is possible to display the buffer, and \c false if the buffer cannot be displayed.
 
-    If this function returns true, the buffer must not be modified or destroyed before the
+    If this function returns \c true, the buffer must not be modified or destroyed before the
     bufferReleased() signal is emitted.  The signal bufferDisplayed() is emitted when the buffer
     is displayed on the screen. The two signals may be emitted in either order.
 

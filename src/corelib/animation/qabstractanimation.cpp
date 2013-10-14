@@ -507,7 +507,7 @@ void QUnifiedTimer::uninstallAnimationDriver(QAnimationDriver *d)
 }
 
 /*!
-    Returns true if \a d is the currently installed animation driver
+    Returns \c true if \a d is the currently installed animation driver
     and is not the default animation driver (which can never be uninstalled).
 */
 bool QUnifiedTimer::canUninstallAnimationDriver(QAnimationDriver *d)

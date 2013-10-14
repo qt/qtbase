@@ -243,8 +243,8 @@
 /*!
     \fn bool QSizePolicy::hasHeightForWidth() const
 
-    Returns true if the widget's preferred height depends on its
-    width; otherwise returns false.
+    Returns \c true if the widget's preferred height depends on its
+    width; otherwise returns \c false.
 
     \sa setHeightForWidth()
 */
@@ -265,8 +265,8 @@
 /*!
     \fn bool QSizePolicy::hasWidthForHeight() const
 
-    Returns true if the widget's width depends on its
-    height; otherwise returns false.
+    Returns \c true if the widget's width depends on its
+    height; otherwise returns \c false.
 
     \sa setWidthForHeight()
 */
@@ -274,8 +274,8 @@
 /*!
     \fn bool QSizePolicy::operator==(const QSizePolicy &other) const
 
-    Returns true if this policy is equal to \a other; otherwise
-    returns false.
+    Returns \c true if this policy is equal to \a other; otherwise
+    returns \c false.
 
     \sa operator!=()
 */
@@ -283,8 +283,8 @@
 /*!
     \fn bool QSizePolicy::operator!=(const QSizePolicy &other) const
 
-    Returns true if this policy is different from \a other; otherwise
-    returns false.
+    Returns \c true if this policy is different from \a other; otherwise
+    returns \c false.
 
     \sa operator==()
 */

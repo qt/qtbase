@@ -149,7 +149,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QDBusReply::isValid() const
 
-    Returns true if no error occurred; otherwise, returns false.
+    Returns \c true if no error occurred; otherwise, returns \c false.
 
     \sa error()
 */

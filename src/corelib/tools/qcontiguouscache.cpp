@@ -219,7 +219,7 @@ MyRecord record(int row) const
 
 /*! \fn bool QContiguousCache::operator==(const QContiguousCache<T> &other) const
 
-    Returns true if \a other is equal to this cache; otherwise returns false.
+    Returns \c true if \a other is equal to this cache; otherwise returns \c false.
 
     Two caches are considered equal if they contain the same values at the same
     indexes.  This function requires the value type to implement the \c operator==().
@@ -229,8 +229,8 @@ MyRecord record(int row) const
 
 /*! \fn bool QContiguousCache::operator!=(const QContiguousCache<T> &other) const
 
-    Returns true if \a other is not equal to this cache; otherwise
-    returns false.
+    Returns \c true if \a other is not equal to this cache; otherwise
+    returns \c false.
 
     Two caches are considered equal if they contain the same values at the same
     indexes.  This function requires the value type to implement the \c operator==().
@@ -261,14 +261,14 @@ MyRecord record(int row) const
 
 /*! \fn bool QContiguousCache::isEmpty() const
 
-    Returns true if no items are stored within the cache.
+    Returns \c true if no items are stored within the cache.
 
     \sa size(), capacity()
 */
 
 /*! \fn bool QContiguousCache::isFull() const
 
-    Returns true if the number of items stored within the cache is equal
+    Returns \c true if the number of items stored within the cache is equal
     to the capacity of the cache.
 
     \sa size(), capacity()
@@ -373,7 +373,7 @@ MyRecord record(int row) const
 
 /*! \fn bool QContiguousCache::containsIndex(int i) const
 
-    Returns true if the cache's index range includes the given index \a i.
+    Returns \c true if the cache's index range includes the given index \a i.
 
     \sa firstIndex(), lastIndex()
 */

@@ -490,7 +490,7 @@ QNetworkReply::NetworkError QNetworkReply::error() const
 /*!
     \since 4.6
 
-    Returns true when the reply has finished or was aborted.
+    Returns \c true when the reply has finished or was aborted.
 
     \sa isRunning()
 */
@@ -502,7 +502,7 @@ bool QNetworkReply::isFinished() const
 /*!
     \since 4.6
 
-    Returns true when the request is still processing and the
+    Returns \c true when the request is still processing and the
     reply has not finished or was aborted yet.
 
     \sa isFinished()
@@ -536,7 +536,7 @@ QVariant QNetworkReply::header(QNetworkRequest::KnownHeaders header) const
 }
 
 /*!
-    Returns true if the raw header of name \a headerName was sent by
+    Returns \c true if the raw header of name \a headerName was sent by
     the remote server
 
     \sa rawHeader()

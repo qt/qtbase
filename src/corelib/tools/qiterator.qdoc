@@ -580,9 +580,9 @@
     \fn bool QMutableVectorIterator::hasNext() const
     \fn bool QMutableSetIterator::hasNext() const
 
-    Returns true if there is at least one item ahead of the iterator,
+    Returns \c true if there is at least one item ahead of the iterator,
     i.e. the iterator is \e not at the back of the container;
-    otherwise returns false.
+    otherwise returns \c false.
 
     \sa hasPrevious(), next()
 */
@@ -649,9 +649,9 @@
     \fn bool QMutableVectorIterator::hasPrevious() const
     \fn bool QMutableSetIterator::hasPrevious() const
 
-    Returns true if there is at least one item behind the iterator,
+    Returns \c true if there is at least one item behind the iterator,
     i.e. the iterator is \e not at the front of the container;
-    otherwise returns false.
+    otherwise returns \c false.
 
     \sa hasNext(), previous()
 */
@@ -720,7 +720,7 @@
     \fn bool QMutableSetIterator::findNext(const T &value)
 
     Searches for \a value starting from the current iterator position
-    forward. Returns true if \a value is found; otherwise returns false.
+    forward. Returns \c true if \a value is found; otherwise returns \c false.
 
     After the call, if \a value was found, the iterator is positioned
     just after the matching item; otherwise, the iterator is
@@ -739,7 +739,7 @@
     \fn bool QMutableSetIterator::findPrevious(const T &value)
 
     Searches for \a value starting from the current iterator position
-    backward. Returns true if \a value is found; otherwise returns
+    backward. Returns \c true if \a value is found; otherwise returns
     false.
 
     After the call, if \a value was found, the iterator is positioned
@@ -1175,9 +1175,9 @@
     \fn bool QMutableMapIterator::hasNext() const
     \fn bool QMutableHashIterator::hasNext() const
 
-    Returns true if there is at least one item ahead of the iterator,
+    Returns \c true if there is at least one item ahead of the iterator,
     i.e. the iterator is \e not at the back of the container;
-    otherwise returns false.
+    otherwise returns \c false.
 
     \sa hasPrevious(), next()
 */
@@ -1243,9 +1243,9 @@
     \fn bool QMutableMapIterator::hasPrevious() const
     \fn bool QMutableHashIterator::hasPrevious() const
 
-    Returns true if there is at least one item behind the iterator,
+    Returns \c true if there is at least one item behind the iterator,
     i.e. the iterator is \e not at the front of the container;
-    otherwise returns false.
+    otherwise returns \c false.
 
     \sa hasNext(), previous()
 */
@@ -1369,8 +1369,8 @@
     \fn bool QMutableHashIterator::findNext(const T &value)
 
     Searches for \a value starting from the current iterator position
-    forward. Returns true if a (key, value) pair with value \a value
-    is found; otherwise returns false.
+    forward. Returns \c true if a (key, value) pair with value \a value
+    is found; otherwise returns \c false.
 
     After the call, if \a value was found, the iterator is positioned
     just after the matching item; otherwise, the iterator is
@@ -1385,8 +1385,8 @@
     \fn bool QMutableHashIterator::findPrevious(const T &value)
 
     Searches for \a value starting from the current iterator position
-    backward. Returns true if a (key, value) pair with value \a value
-    is found; otherwise returns false.
+    backward. Returns \c true if a (key, value) pair with value \a value
+    is found; otherwise returns \c false.
 
     After the call, if \a value was found, the iterator is positioned
     just before the matching item; otherwise, the iterator is

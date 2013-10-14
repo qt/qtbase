@@ -914,8 +914,8 @@ QList<QMacPasteboardMime*> QMacPasteboardMime::all(uchar t)
 /*!
   \fn bool QMacPasteboardMime::canConvert(const QString &mime, QString flav)
 
-  Returns true if the convertor can convert (both ways) between
-  \a mime and \a flav; otherwise returns false.
+  Returns \c true if the convertor can convert (both ways) between
+  \a mime and \a flav; otherwise returns \c false.
 
   All subclasses must reimplement this pure virtual function.
 */

@@ -315,12 +315,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*! \fn bool QSharedDataPointer::operator==(const QSharedDataPointer<T>& other) const
-    Returns true if \a other and \e this have the same \e{d pointer}.
+    Returns \c true if \a other and \e this have the same \e{d pointer}.
     This function does \e not call detach().
 */
 
 /*! \fn bool QSharedDataPointer::operator!=(const QSharedDataPointer<T>& other) const
-    Returns true if \a other and \e this do \e not have the same
+    Returns \c true if \a other and \e this do \e not have the same
     \e{d pointer}. This function does \e not call detach().
 */
 
@@ -372,7 +372,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*! \fn bool QSharedDataPointer::operator!() const
-    Returns true if the \e{d pointer} of \e this is null.
+    Returns \c true if the \e{d pointer} of \e this is null.
 */
 
 /*! \fn void QSharedDataPointer::detach()
@@ -479,7 +479,7 @@ QT_BEGIN_NAMESPACE
  */
 
 /*! \fn bool QExplicitlySharedDataPointer::operator==(const QExplicitlySharedDataPointer<T>& other) const
-    Returns true if \a other and \e this have the same \e{d pointer}.
+    Returns \c true if \a other and \e this have the same \e{d pointer}.
 */
 
 /*!
@@ -491,16 +491,16 @@ QT_BEGIN_NAMESPACE
 */
 
 /*! \fn bool QExplicitlySharedDataPointer::operator==(const T* ptr) const
-    Returns true if the \e{d pointer} of \e this is \a ptr.
+    Returns \c true if the \e{d pointer} of \e this is \a ptr.
  */
 
 /*! \fn bool QExplicitlySharedDataPointer::operator!=(const QExplicitlySharedDataPointer<T>& other) const
-    Returns true if \a other and \e this do \e not have the same
+    Returns \c true if \a other and \e this do \e not have the same
     \e{d pointer}.
 */
 
 /*! \fn bool QExplicitlySharedDataPointer::operator!=(const T* ptr) const
-    Returns true if the \e{d pointer} of \e this is \e not \a ptr.
+    Returns \c true if the \e{d pointer} of \e this is \e not \a ptr.
  */
 
 /*! \fn QExplicitlySharedDataPointer::QExplicitlySharedDataPointer()
@@ -569,11 +569,11 @@ QT_BEGIN_NAMESPACE
  */
 
 /*! \fn QExplicitlySharedDataPointer::operator bool () const
-    Returns true if the \e{d pointer} of \e this is \e not null.
+    Returns \c true if the \e{d pointer} of \e this is \e not null.
  */
 
 /*! \fn bool QExplicitlySharedDataPointer::operator!() const
-    Returns true if the \e{d pointer} of \e this is null.
+    Returns \c true if the \e{d pointer} of \e this is null.
 */
 
 /*! \fn void QExplicitlySharedDataPointer::detach()

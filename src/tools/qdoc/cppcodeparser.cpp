@@ -688,7 +688,7 @@ bool CppCodeParser::splitQmlPropertyGroupArg(const QString& arg,
   Components. A <QML-module> is the QML equivalent of a
   C++ namespace. So this function splits \a arg on "::"
   and stores the parts in \a type, \a module, \a qmlType,
-  and \a name, and returns true. If any part other than
+  and \a name, and returns \c true. If any part other than
   \a module is not found, a qdoc warning is emitted and
   false is returned.
 

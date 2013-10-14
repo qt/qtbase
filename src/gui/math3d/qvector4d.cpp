@@ -157,8 +157,8 @@ QVector4D::QVector4D(const QVector3D& vector, float wpos)
 /*!
     \fn bool QVector4D::isNull() const
 
-    Returns true if the x, y, z, and w coordinates are set to 0.0,
-    otherwise returns false.
+    Returns \c true if the x, y, z, and w coordinates are set to 0.0,
+    otherwise returns \c false.
 */
 
 /*!
@@ -378,7 +378,7 @@ float QVector4D::dotProduct(const QVector4D& v1, const QVector4D& v2)
     \fn bool operator==(const QVector4D &v1, const QVector4D &v2)
     \relates QVector4D
 
-    Returns true if \a v1 is equal to \a v2; otherwise returns false.
+    Returns \c true if \a v1 is equal to \a v2; otherwise returns \c false.
     This operator uses an exact floating-point comparison.
 */
 
@@ -386,7 +386,7 @@ float QVector4D::dotProduct(const QVector4D& v1, const QVector4D& v2)
     \fn bool operator!=(const QVector4D &v1, const QVector4D &v2)
     \relates QVector4D
 
-    Returns true if \a v1 is not equal to \a v2; otherwise returns false.
+    Returns \c true if \a v1 is not equal to \a v2; otherwise returns \c false.
     This operator uses an exact floating-point comparison.
 */
 
@@ -463,7 +463,7 @@ float QVector4D::dotProduct(const QVector4D& v1, const QVector4D& v2)
     \fn bool qFuzzyCompare(const QVector4D& v1, const QVector4D& v2)
     \relates QVector4D
 
-    Returns true if \a v1 and \a v2 are equal, allowing for a small
+    Returns \c true if \a v1 and \a v2 are equal, allowing for a small
     fuzziness factor for floating-point comparisons; false otherwise.
 */
 

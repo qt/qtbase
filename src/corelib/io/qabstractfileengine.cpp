@@ -377,8 +377,8 @@ QAbstractFileEngine::~QAbstractFileEngine()
 /*!
     \fn bool QAbstractFileEngine::open(QIODevice::OpenMode mode)
 
-    Opens the file in the specified \a mode. Returns true if the file
-    was successfully opened; otherwise returns false.
+    Opens the file in the specified \a mode. Returns \c true if the file
+    was successfully opened; otherwise returns \c false.
 
     The \a mode is an OR combination of QIODevice::OpenMode and
     QIODevice::HandlingMode values.
@@ -390,9 +390,9 @@ bool QAbstractFileEngine::open(QIODevice::OpenMode openMode)
 }
 
 /*!
-    Closes the file, returning true if successful; otherwise returns false.
+    Closes the file, returning true if successful; otherwise returns \c false.
 
-    The default implementation always returns false.
+    The default implementation always returns \c false.
 */
 bool QAbstractFileEngine::close()
 {
@@ -404,8 +404,8 @@ bool QAbstractFileEngine::close()
 
     Flushes and syncs the file to disk.
 
-    Returns true if successful; otherwise returns false.
-    The default implementation always returns false.
+    Returns \c true if successful; otherwise returns \c false.
+    The default implementation always returns \c false.
 */
 bool QAbstractFileEngine::syncToDisk()
 {
@@ -416,7 +416,7 @@ bool QAbstractFileEngine::syncToDisk()
     Flushes the open file, returning true if successful; otherwise returns
     false.
 
-    The default implementation always returns false.
+    The default implementation always returns \c false.
 */
 bool QAbstractFileEngine::flush()
 {
@@ -444,8 +444,8 @@ qint64 QAbstractFileEngine::pos() const
 /*!
     \fn bool QAbstractFileEngine::seek(qint64 offset)
 
-    Sets the file position to the given \a offset. Returns true if
-    the position was successfully set; otherwise returns false.
+    Sets the file position to the given \a offset. Returns \c true if
+    the position was successfully set; otherwise returns \c false.
 
     The offset is from the beginning of the file, unless the
     file is sequential.
@@ -459,7 +459,7 @@ bool QAbstractFileEngine::seek(qint64 pos)
 }
 
 /*!
-    Returns true if the file is a sequential access device; returns
+    Returns \c true if the file is a sequential access device; returns
     false if the file is a direct access device.
 
     Operations involving size() and seek(int) are not valid on
@@ -485,7 +485,7 @@ bool QAbstractFileEngine::remove()
 
 /*!
     Copies the contents of this file to a file with the name \a newName.
-    Returns true on success; otherwise, false is returned.
+    Returns \c true on success; otherwise, false is returned.
 */
 bool QAbstractFileEngine::copy(const QString &newName)
 {
@@ -513,7 +513,7 @@ bool QAbstractFileEngine::rename(const QString &newName)
 
     Requests that the file be renamed to \a newName in the file
     system. If the new name already exists, it must be overwritten.
-    If the operation succeeds, returns true; otherwise returns
+    If the operation succeeds, returns \c true; otherwise returns
     false.
 
     This virtual function must be reimplemented by all subclasses.
@@ -530,7 +530,7 @@ bool QAbstractFileEngine::renameOverwrite(const QString &newName)
     Creates a link from the file currently specified by fileName() to
     \a newName. What a link is depends on the underlying filesystem
     (be it a shortcut on Windows or a symbolic link on Unix). Returns
-    true if successful; otherwise returns false.
+    true if successful; otherwise returns \c false.
 */
 bool QAbstractFileEngine::link(const QString &newName)
 {
@@ -772,8 +772,8 @@ int QAbstractFileEngine::handle() const
 /*!
     \since 4.3
 
-    Returns true if the current position is at the end of the file; otherwise,
-    returns false.
+    Returns \c true if the current position is at the end of the file; otherwise,
+    returns \c false.
 
     This function bases its behavior on calling extension() with
     AtEndExtension. If the engine does not support this extension, false is
@@ -790,7 +790,7 @@ bool QAbstractFileEngine::atEnd() const
     \since 4.4
 
     Maps \a size bytes of the file into memory starting at \a offset.
-    Returns a pointer to the memory if successful; otherwise returns false
+    Returns a pointer to the memory if successful; otherwise returns \c false
     if, for example, an error occurs.
 
     This function bases its behavior on calling extension() with
@@ -817,8 +817,8 @@ uchar *QAbstractFileEngine::map(qint64 offset, qint64 size, QFile::MemoryMapFlag
 /*!
     \since 4.4
 
-    Unmaps the memory \a address.  Returns true if the unmap succeeds; otherwise
-    returns false.
+    Unmaps the memory \a address.  Returns \c true if the unmap succeeds; otherwise
+    returns \c false.
 
     This function bases its behavior on calling extension() with
     UnMapExtensionOption. If the engine does not support this extension, false is
@@ -867,7 +867,7 @@ bool QAbstractFileEngine::unmap(uchar *address)
     You can call dirName() to get the directory name, nameFilters() to get a
     stringlist of name filters, and filters() to get the entry filters.
 
-    The pure virtual function hasNext() returns true if the current directory
+    The pure virtual function hasNext() returns \c true if the current directory
     has at least one more entry (i.e., the directory name is valid and
     accessible, and we have not reached the end of the entry list), and false
     otherwise. Reimplement next() to seek to the next entry.
@@ -1056,7 +1056,7 @@ QVariant QAbstractFileEngineIterator::entryInfo(EntryInfoType type) const
 /*!
     \fn virtual bool QAbstractFileEngineIterator::hasNext() const = 0
 
-    This pure virtual function returns true if there is at least one more
+    This pure virtual function returns \c true if there is at least one more
     entry in the current directory (i.e., the iterator path is valid and
     accessible, and the iterator has not reached the end of the entry list).
 
@@ -1147,14 +1147,14 @@ qint64 QAbstractFileEngine::readLine(char *data, qint64 maxlen)
    buffering to report end-of-file status without having to check the size of
    the file. It is also useful for sequential files, where the size of the
    file cannot be used to determine whether or not you have reached the end.
-   This extension returns true if the file is at the end; otherwise it returns
+   This extension returns \c true if the file is at the end; otherwise it returns
    false. The input and output arguments to extension() are ignored.
 
    \value FastReadLineExtension Whether the file engine provides a
    fast implementation for readLine() or not. If readLine() remains
    unimplemented in the file engine, QAbstractFileEngine will provide
    an implementation based on calling read() repeatedly. If
-   supportsExtension() returns false for this extension, however,
+   supportsExtension() returns \c false for this extension, however,
    QIODevice can provide a faster implementation by making use of its
    internal buffer. For engines that already provide a fast readLine()
    implementation, returning false for this extension can avoid
@@ -1201,7 +1201,7 @@ qint64 QAbstractFileEngine::readLine(char *data, qint64 maxlen)
     You can call supportsExtension() to check if an extension is supported by
     the file engine.
 
-    By default, no extensions are supported, and this function returns false.
+    By default, no extensions are supported, and this function returns \c false.
 
     \sa supportsExtension(), Extension
 */
@@ -1216,7 +1216,7 @@ bool QAbstractFileEngine::extension(Extension extension, const ExtensionOption *
 /*!
     \since 4.3
 
-    This virtual function returns true if the file engine supports \a
+    This virtual function returns \c true if the file engine supports \a
     extension; otherwise, false is returned. By default, no extensions are
     supported.
 

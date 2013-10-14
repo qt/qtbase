@@ -369,7 +369,7 @@ QNetworkRequest::~QNetworkRequest()
 }
 
 /*!
-    Returns true if this object is the same as \a other (i.e., if they
+    Returns \c true if this object is the same as \a other (i.e., if they
     have the same URL, same headers and same meta-data settings).
 
     \sa operator!=()
@@ -382,7 +382,7 @@ bool QNetworkRequest::operator==(const QNetworkRequest &other) const
 /*!
     \fn bool QNetworkRequest::operator!=(const QNetworkRequest &other) const
 
-    Returns false if this object is not the same as \a other.
+    Returns \c false if this object is not the same as \a other.
 
     \sa operator==()
 */
@@ -449,7 +449,7 @@ void QNetworkRequest::setHeader(KnownHeaders header, const QVariant &value)
 }
 
 /*!
-    Returns true if the raw header \a headerName is present in this
+    Returns \c true if the raw header \a headerName is present in this
     network request.
 
     \sa rawHeader(), setRawHeader()

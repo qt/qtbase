@@ -475,8 +475,8 @@ void QClipboard::setPixmap(const QPixmap &pixmap, Mode mode)
 
 
 /*!
-    Returns true if the clipboard supports mouse selection; otherwise
-    returns false.
+    Returns \c true if the clipboard supports mouse selection; otherwise
+    returns \c false.
 */
 bool QClipboard::supportsSelection() const
 {
@@ -484,8 +484,8 @@ bool QClipboard::supportsSelection() const
 }
 
 /*!
-    Returns true if the clipboard supports a separate search buffer; otherwise
-    returns false.
+    Returns \c true if the clipboard supports a separate search buffer; otherwise
+    returns \c false.
 */
 bool QClipboard::supportsFindBuffer() const
 {
@@ -493,8 +493,8 @@ bool QClipboard::supportsFindBuffer() const
 }
 
 /*!
-    Returns true if this clipboard object owns the clipboard data;
-    otherwise returns false.
+    Returns \c true if this clipboard object owns the clipboard data;
+    otherwise returns \c false.
 */
 bool QClipboard::ownsClipboard() const
 {
@@ -502,8 +502,8 @@ bool QClipboard::ownsClipboard() const
 }
 
 /*!
-    Returns true if this clipboard object owns the mouse selection
-    data; otherwise returns false.
+    Returns \c true if this clipboard object owns the mouse selection
+    data; otherwise returns \c false.
 */
 bool QClipboard::ownsSelection() const
 {
@@ -513,8 +513,8 @@ bool QClipboard::ownsSelection() const
 /*!
     \since 4.2
 
-    Returns true if this clipboard object owns the find buffer data;
-    otherwise returns false.
+    Returns \c true if this clipboard object owns the find buffer data;
+    otherwise returns \c false.
 */
 bool QClipboard::ownsFindBuffer() const
 {
@@ -524,15 +524,15 @@ bool QClipboard::ownsFindBuffer() const
 /*!
     \internal
     \fn bool QClipboard::supportsMode(Mode mode) const;
-    Returns true if the clipboard supports the clipboard mode speacified by \a mode;
-    otherwise returns false.
+    Returns \c true if the clipboard supports the clipboard mode speacified by \a mode;
+    otherwise returns \c false.
 */
 
 /*!
     \internal
     \fn bool QClipboard::ownsMode(Mode mode) const;
-    Returns true if the clipboard supports the clipboard data speacified by \a mode;
-    otherwise returns false.
+    Returns \c true if the clipboard supports the clipboard data speacified by \a mode;
+    otherwise returns \c false.
 */
 
 /*!

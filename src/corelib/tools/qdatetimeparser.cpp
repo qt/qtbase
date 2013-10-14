@@ -340,8 +340,8 @@ static QString unquote(const QString &str)
 /*!
   \internal
 
-  Parses the format \a newFormat. If successful, returns true and
-  sets up the format. Else keeps the old format and returns false.
+  Parses the format \a newFormat. If successful, returns \c true and
+  sets up the format. Else keeps the old format and returns \c false.
 
 */
 
@@ -1587,7 +1587,7 @@ QString QDateTimeParser::sectionFormat(Section s, int count) const
 /*!
   \internal
 
-  Returns true if str can be modified to represent a
+  Returns \c true if str can be modified to represent a
   number that is within min and max.
 */
 

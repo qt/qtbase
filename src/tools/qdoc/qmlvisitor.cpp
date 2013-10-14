@@ -311,7 +311,7 @@ bool QmlDocVisitor::applyDocumentation(QQmlJS::AST::SourceLocation location, Nod
   C++ namespace. So this function splits \a arg on "::"
   and stores the parts in the \e {type}, \e {module},
   \e {component}, and \a {name}, fields of \a qpa. If it
-  is successful, it returns true. If not enough parts
+  is successful, it returns \c true. If not enough parts
   are found, a qdoc warning is emitted and false is
   returned.
  */

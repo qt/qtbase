@@ -930,8 +930,8 @@ void QTabBar::removeTab(int index)
 
 
 /*!
-    Returns true if the tab at position \a index is enabled; otherwise
-    returns false.
+    Returns \c true if the tab at position \a index is enabled; otherwise
+    returns \c false.
 */
 bool QTabBar::isTabEnabled(int index) const
 {
@@ -2219,7 +2219,7 @@ void QTabBar::setExpanding(bool enabled)
 
     \since 4.5
 
-    By default, this property is false;
+    By default, this property is \c false;
 */
 
 bool QTabBar::isMovable() const

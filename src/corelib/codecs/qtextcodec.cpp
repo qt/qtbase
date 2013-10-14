@@ -828,8 +828,8 @@ QString QTextCodec::toUnicode(const QByteArray& a) const
 }
 
 /*!
-    Returns true if the Unicode character \a ch can be fully encoded
-    with this codec; otherwise returns false.
+    Returns \c true if the Unicode character \a ch can be fully encoded
+    with this codec; otherwise returns \c false.
 */
 bool QTextCodec::canEncode(QChar ch) const
 {

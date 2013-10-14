@@ -1264,7 +1264,7 @@ QImage QImage::copy(const QRect& r) const
 /*!
     \fn bool QImage::isNull() const
 
-    Returns true if it is a null image, otherwise returns false.
+    Returns \c true if it is a null image, otherwise returns \c false.
 
     A null image has all parameters set to zero and no allocated data.
 */
@@ -4140,8 +4140,8 @@ QImage QImage::convertToFormat(Format format, const QVector<QRgb> &colorTable, Q
 /*!
     \fn bool QImage::valid(const QPoint &pos) const
 
-    Returns true if \a pos is a valid coordinate pair within the
-    image; otherwise returns false.
+    Returns \c true if \a pos is a valid coordinate pair within the
+    image; otherwise returns \c false.
 
     \sa rect(), QRect::contains()
 */
@@ -4149,8 +4149,8 @@ QImage QImage::convertToFormat(Format format, const QVector<QRgb> &colorTable, Q
 /*!
     \overload
 
-    Returns true if QPoint(\a x, \a y) is a valid coordinate pair
-    within the image; otherwise returns false.
+    Returns \c true if QPoint(\a x, \a y) is a valid coordinate pair
+    within the image; otherwise returns \c false.
 */
 bool QImage::valid(int x, int y) const
 {
@@ -4343,7 +4343,7 @@ void QImage::setPixel(int x, int y, uint index_or_rgb)
 }
 
 /*!
-    Returns true if all the colors in the image are shades of gray
+    Returns \c true if all the colors in the image are shades of gray
     (i.e. their red, green and blue components are equal); otherwise
     false.
 
@@ -4418,9 +4418,9 @@ bool QImage::allGray() const
 /*!
     For 32-bit images, this function is equivalent to allGray().
 
-    For 8-bpp images, this function returns true if color(i) is
+    For 8-bpp images, this function returns \c true if color(i) is
     QRgb(i, i, i) for all indexes of the color table; otherwise
-    returns false.
+    returns \c false.
 
     \sa allGray(), {QImage#Image Formats}{Image Formats}
 */
@@ -5018,9 +5018,9 @@ QImage QImage::rgbSwapped() const
 }
 
 /*!
-    Loads an image from the file with the given \a fileName. Returns true if
+    Loads an image from the file with the given \a fileName. Returns \c true if
     the image was successfully loaded; otherwise invalidates the image
-    and returns false.
+    and returns \c false.
 
     The loader attempts to read the image using the specified \a format, e.g.,
     PNG or JPG. If \a format is not specified (which is the default), the
@@ -5060,8 +5060,8 @@ bool QImage::load(QIODevice* device, const char* format)
     \fn bool QImage::loadFromData(const uchar *data, int len, const char *format)
 
     Loads an image from the first \a len bytes of the given binary \a
-    data. Returns true if the image was successfully loaded; otherwise
-    invalidates the image and returns false.
+    data. Returns \c true if the image was successfully loaded; otherwise
+    invalidates the image and returns \c false.
 
     The loader attempts to read the image using the specified \a format, e.g.,
     PNG or JPG. If \a format is not specified (which is the default), the
@@ -5132,8 +5132,8 @@ QImage QImage::fromData(const uchar *data, int size, const char *format)
     0 to obtain small compressed files, 100 for large uncompressed
     files, and -1 (the default) to use the default settings.
 
-    Returns true if the image was successfully saved; otherwise
-    returns false.
+    Returns \c true if the image was successfully saved; otherwise
+    returns \c false.
 
     \sa {QImage#Reading and Writing Image Files}{Reading and Writing
     Image Files}
@@ -5238,8 +5238,8 @@ QDataStream &operator>>(QDataStream &s, QImage &image)
 /*!
     \fn bool QImage::operator==(const QImage & image) const
 
-    Returns true if this image and the given \a image have the same
-    contents; otherwise returns false.
+    Returns \c true if this image and the given \a image have the same
+    contents; otherwise returns \c false.
 
     The comparison can be slow, unless there is some obvious
     difference (e.g. different size or format), in which case the
@@ -5303,8 +5303,8 @@ bool QImage::operator==(const QImage & i) const
 /*!
     \fn bool QImage::operator!=(const QImage & image) const
 
-    Returns true if this image and the given \a image have different
-    contents; otherwise returns false.
+    Returns \c true if this image and the given \a image have different
+    contents; otherwise returns \c false.
 
     The comparison can be slow, unless there is some obvious
     difference, such as different widths, in which case the function
@@ -5835,7 +5835,7 @@ qint64 QImage::cacheKey() const
 /*!
     \internal
 
-    Returns true if the image is detached; otherwise returns false.
+    Returns \c true if the image is detached; otherwise returns \c false.
 
     \sa detach(), {Implicit Data Sharing}
 */
@@ -6021,8 +6021,8 @@ QImage QImage::alphaChannel() const
 }
 
 /*!
-    Returns true if the image has a format that respects the alpha
-    channel, otherwise returns false.
+    Returns \c true if the image has a format that respects the alpha
+    channel, otherwise returns \c false.
 
     \sa {QImage#Image Information}{Image Information}
 */

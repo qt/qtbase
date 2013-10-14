@@ -169,10 +169,10 @@ int QUndoCommand::id() const
 }
 
 /*!
-    Attempts to merge this command with \a command. Returns true on
-    success; otherwise returns false.
+    Attempts to merge this command with \a command. Returns \c true on
+    success; otherwise returns \c false.
 
-    If this function returns true, calling this command's redo() must have the same
+    If this function returns \c true, calling this command's redo() must have the same
     effect as redoing both this command and \a command.
     Similarly, calling this command's undo() must have the same effect as undoing
     \a command and this command.
@@ -180,7 +180,7 @@ int QUndoCommand::id() const
     QUndoStack will only try to merge two commands if they have the same id, and
     the id is not -1.
 
-    The default implementation returns false.
+    The default implementation returns \c false.
 
     \snippet code/src_gui_util_qundostack.cpp 3
 
@@ -461,7 +461,7 @@ void QUndoStackPrivate::setIndex(int idx, bool clean)
     If the number of commands on the stack exceedes the undo limit, deletes commands from
     the bottom of the stack.
 
-    Returns true if commands were deleted.
+    Returns \c true if commands were deleted.
 */
 
 bool QUndoStackPrivate::checkUndoLimit()
@@ -565,7 +565,7 @@ void QUndoStack::clear()
     If \a cmd's id is not -1, and if the id is the same as that of the
     most recently executed command, QUndoStack will attempt to merge the two
     commands by calling QUndoCommand::mergeWith() on the most recently executed
-    command. If QUndoCommand::mergeWith() returns true, \a cmd is deleted.
+    command. If QUndoCommand::mergeWith() returns \c true, \a cmd is deleted.
 
     In all other cases \a cmd is simply pushed on the stack.
 
@@ -650,7 +650,7 @@ void QUndoStack::setClean()
 }
 
 /*!
-    If the stack is in the clean state, returns true; otherwise returns false.
+    If the stack is in the clean state, returns \c true; otherwise returns \c false.
 
     \sa setClean(), cleanIndex()
 */
@@ -789,9 +789,9 @@ void QUndoStack::setIndex(int idx)
 }
 
 /*!
-    Returns true if there is a command available for undo; otherwise returns false.
+    Returns \c true if there is a command available for undo; otherwise returns \c false.
 
-    This function returns false if the stack is empty, or if the bottom command
+    This function returns \c false if the stack is empty, or if the bottom command
     on the stack has already been undone.
 
     Synonymous with index() == 0.
@@ -808,9 +808,9 @@ bool QUndoStack::canUndo() const
 }
 
 /*!
-    Returns true if there is a command available for redo; otherwise returns false.
+    Returns \c true if there is a command available for redo; otherwise returns \c false.
 
-    This function returns false if the stack is empty or if the top command
+    This function returns \c false if the stack is empty or if the top command
     on the stack has already been redone.
 
     Synonymous with index() == count().

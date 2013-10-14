@@ -13,5 +13,3 @@ EXAMPLE_FILES = *.png
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/ipc/sharedmemory
 INSTALLS += target
-
-simulator: warning(This example does not work on Simulator platform)

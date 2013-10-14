@@ -179,8 +179,8 @@ QAbstractEventDispatcher *QAbstractEventDispatcher::instance(QThread *thread)
     \fn bool QAbstractEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
 
     Processes pending events that match \a flags until there are no
-    more events to process. Returns true if an event was processed;
-    otherwise returns false.
+    more events to process. Returns \c true if an event was processed;
+    otherwise returns \c false.
 
     This function is especially useful if you have a long running
     operation and want to show its progress without allowing user
@@ -211,7 +211,7 @@ QAbstractEventDispatcher *QAbstractEventDispatcher::instance(QThread *thread)
 
 /*! \fn bool QAbstractEventDispatcher::hasPendingEvents()
 
-    Returns true if there is an event waiting; otherwise returns
+    Returns \c true if there is an event waiting; otherwise returns
     false.
 */
 
@@ -271,7 +271,7 @@ int QAbstractEventDispatcher::registerTimer(int interval, Qt::TimerType timerTyp
     \fn bool QAbstractEventDispatcher::unregisterTimer(int timerId)
 
     Unregisters the timer with the given \a timerId.
-    Returns true if successful; otherwise returns false.
+    Returns \c true if successful; otherwise returns \c false.
 
     \sa registerTimer(), unregisterTimers()
 */
@@ -280,7 +280,7 @@ int QAbstractEventDispatcher::registerTimer(int interval, Qt::TimerType timerTyp
     \fn bool QAbstractEventDispatcher::unregisterTimers(QObject *object)
 
     Unregisters all the timers associated with the given \a object.
-    Returns true if all timers were successful removed; otherwise returns false.
+    Returns \c true if all timers were successful removed; otherwise returns \c false.
 
     \sa unregisterTimer(), registeredTimers()
 */
@@ -435,8 +435,8 @@ void QAbstractEventDispatcher::removeNativeEventFilter(QAbstractNativeEventFilte
 
 /*!
     Sends \a message through the event filters that were set by
-    installNativeEventFilter().  This function returns true as soon as an
-    event filter returns true, and false otherwise to indicate that
+    installNativeEventFilter().  This function returns \c true as soon as an
+    event filter returns \c true, and false otherwise to indicate that
     the processing of the event should continue.
 
     Subclasses of QAbstractEventDispatcher \e must call this function
@@ -474,8 +474,8 @@ bool QAbstractEventDispatcher::filterNativeEvent(const QByteArray &eventType, vo
     \deprecated
 
     Calls filterNativeEvent() with an empty eventType and \a message.
-    This function returns true as soon as an
-    event filter returns true, and false otherwise to indicate that
+    This function returns \c true as soon as an
+    event filter returns \c true, and false otherwise to indicate that
     the processing of the event should continue.
 */
 

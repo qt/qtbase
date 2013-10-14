@@ -242,7 +242,7 @@ QTemporaryDir::~QTemporaryDir()
 }
 
 /*!
-   Returns true if the QTemporaryDir was created successfully.
+   Returns \c true if the QTemporaryDir was created successfully.
 */
 bool QTemporaryDir::isValid() const
 {
@@ -259,7 +259,7 @@ QString QTemporaryDir::path() const
 }
 
 /*!
-   Returns true if the QTemporaryDir is in auto remove
+   Returns \c true if the QTemporaryDir is in auto remove
    mode. Auto-remove mode will automatically delete the directory from
    disk upon destruction. This makes it very easy to create your
    QTemporaryDir object on the stack, fill it with files, do something with
@@ -290,7 +290,7 @@ void QTemporaryDir::setAutoRemove(bool b)
 /*!
     Removes the temporary directory, including all its contents.
 
-    Returns true if removing was successful.
+    Returns \c true if removing was successful.
 */
 bool QTemporaryDir::remove()
 {

@@ -475,8 +475,8 @@
     / *!
         \fn bool QToolBar::isAreaAllowed(Qt::ToolBarArea area) const
 
-        Returns true if this toolbar is dockable in the given
-        \a area; otherwise returns false.
+        Returns \c true if this toolbar is dockable in the given
+        \a area; otherwise returns \c false.
     * /
     \endcode
 
@@ -488,8 +488,8 @@
            </h3>
         \endraw
 
-        Returns true if this toolbar is dockable in the given
-        \a area; otherwise returns false.
+        Returns \c true if this toolbar is dockable in the given
+        \a area; otherwise returns \c false.
     \endquotation
 
     See also \l {overload-command} {\\overload}.
@@ -1093,7 +1093,7 @@
     \code
     / *!
         \qmlattachedproperty bool ListView::isCurrentItem
-        This attached property is true if this delegate is the current
+        This attached property is \c true if this delegate is the current
     item; otherwise false.
 
         It is attached to each instance of the delegate.

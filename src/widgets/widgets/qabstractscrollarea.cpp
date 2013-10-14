@@ -1146,8 +1146,8 @@ bool QAbstractScrollArea::event(QEvent *e)
   It handles the \a event specified, and can be called by subclasses to
   provide reasonable default behavior.
 
-  Returns true to indicate to the event system that the event has been
-  handled, and needs no further processing; otherwise returns false to
+  Returns \c true to indicate to the event system that the event has been
+  handled, and needs no further processing; otherwise returns \c false to
   indicate that the event should be propagated further.
 
   You can reimplement this function in a subclass, but we recommend

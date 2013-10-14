@@ -178,8 +178,8 @@ int QSemaphore::available() const
 
 /*!
     Tries to acquire \c n resources guarded by the semaphore and
-    returns true on success. If available() < \a n, this call
-    immediately returns false without acquiring any resources.
+    returns \c true on success. If available() < \a n, this call
+    immediately returns \c false without acquiring any resources.
 
     Example:
 
@@ -199,7 +199,7 @@ bool QSemaphore::tryAcquire(int n)
 
 /*!
     Tries to acquire \c n resources guarded by the semaphore and
-    returns true on success. If available() < \a n, this call will
+    returns \c true on success. If available() < \a n, this call will
     wait for at most \a timeout milliseconds for resources to become
     available.
 

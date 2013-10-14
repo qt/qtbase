@@ -61,9 +61,9 @@ QT_BEGIN_NAMESPACE
     QEvents, and sends the translated events to \l{QObject}s.
 
     In general, events come from the underlying window system
-    (spontaneous() returns true), but it is also possible to manually
+    (spontaneous() returns \c true), but it is also possible to manually
     send events using QCoreApplication::sendEvent() and
-    QCoreApplication::postEvent() (spontaneous() returns false).
+    QCoreApplication::postEvent() (spontaneous() returns \c false).
 
     QObjects receive events by having their QObject::event() function
     called. The function can be reimplemented in subclasses to
@@ -382,8 +382,8 @@ QEvent::~QEvent()
 /*!
     \fn bool QEvent::spontaneous() const
 
-    Returns true if the event originated outside the application (a
-    system event); otherwise returns false.
+    Returns \c true if the event originated outside the application (a
+    system event); otherwise returns \c false.
 
     The return value of this function is not defined for paint events.
 */
@@ -487,7 +487,7 @@ QTimerEvent::~QTimerEvent()
     added or removed.
 
     In both cases you can only rely on the child being a QObject (or,
-    if QObject::isWidgetType() returns true, a QWidget). This is
+    if QObject::isWidgetType() returns \c true, a QWidget). This is
     because in the QEvent::ChildAdded case the child is not yet fully
     constructed; in the QEvent::ChildRemoved case it might have
     already been destructed.
@@ -524,21 +524,21 @@ QChildEvent::~QChildEvent()
 /*!
     \fn bool QChildEvent::added() const
 
-    Returns true if type() is QEvent::ChildAdded; otherwise returns
+    Returns \c true if type() is QEvent::ChildAdded; otherwise returns
     false.
 */
 
 /*!
     \fn bool QChildEvent::removed() const
 
-    Returns true if type() is QEvent::ChildRemoved; otherwise returns
+    Returns \c true if type() is QEvent::ChildRemoved; otherwise returns
     false.
 */
 
 /*!
     \fn bool QChildEvent::polished() const
 
-    Returns true if type() is QEvent::ChildPolished; otherwise returns
+    Returns \c true if type() is QEvent::ChildPolished; otherwise returns
     false.
 */
 

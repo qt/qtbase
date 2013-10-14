@@ -267,12 +267,12 @@ void QGraphicsEffectSource::update()
 }
 
 /*!
-    Returns true if the source effectively is a pixmap, e.g., a
+    Returns \c true if the source effectively is a pixmap, e.g., a
     QGraphicsPixmapItem.
 
     This function is useful for optimization purposes. For instance, there's no
     point in drawing the source in device coordinates to avoid pixmap scaling
-    if this function returns true - the source pixmap will be scaled anyways.
+    if this function returns \c true - the source pixmap will be scaled anyways.
 */
 bool QGraphicsEffectSource::isPixmap() const
 {
@@ -280,12 +280,12 @@ bool QGraphicsEffectSource::isPixmap() const
 }
 
 /*!
-    Returns true if the source effectively is a pixmap, e.g., a
+    Returns \c true if the source effectively is a pixmap, e.g., a
     QGraphicsPixmapItem.
 
     This function is useful for optimization purposes. For instance, there's no
     point in drawing the source in device coordinates to avoid pixmap scaling
-    if this function returns true - the source pixmap will be scaled anyways.
+    if this function returns \c true - the source pixmap will be scaled anyways.
 */
 bool QGraphicsEffect::sourceIsPixmap() const
 {

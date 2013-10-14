@@ -1009,7 +1009,7 @@ QByteArray &QByteArray::operator=(const char *str)
 
 /*! \fn bool QByteArray::isEmpty() const
 
-    Returns true if the byte array has size 0; otherwise returns false.
+    Returns \c true if the byte array has size 0; otherwise returns \c false.
 
     Example:
     \snippet code/src_corelib_tools_qbytearray.cpp 7
@@ -1212,8 +1212,8 @@ QByteArray &QByteArray::operator=(const char *str)
 
 /*! \fn bool QByteArray::contains(const QByteArray &ba) const
 
-    Returns true if the byte array contains an occurrence of the byte
-    array \a ba; otherwise returns false.
+    Returns \c true if the byte array contains an occurrence of the byte
+    array \a ba; otherwise returns \c false.
 
     \sa indexOf(), count()
 */
@@ -1222,16 +1222,16 @@ QByteArray &QByteArray::operator=(const char *str)
 
     \overload
 
-    Returns true if the byte array contains the string \a str;
-    otherwise returns false.
+    Returns \c true if the byte array contains the string \a str;
+    otherwise returns \c false.
 */
 
 /*! \fn bool QByteArray::contains(char ch) const
 
     \overload
 
-    Returns true if the byte array contains the character \a ch;
-    otherwise returns false.
+    Returns \c true if the byte array contains the character \a ch;
+    otherwise returns \c false.
 */
 
 /*!
@@ -1334,7 +1334,7 @@ void QByteArray::chop(int n)
 
 /*! \fn bool QByteArray::isNull() const
 
-    Returns true if this byte array is null; otherwise returns false.
+    Returns \c true if this byte array is null; otherwise returns \c false.
 
     Example:
     \snippet code/src_corelib_tools_qbytearray.cpp 13
@@ -2534,8 +2534,8 @@ int QByteArray::count(char ch) const
 */
 
 /*!
-    Returns true if this byte array starts with byte array \a ba;
-    otherwise returns false.
+    Returns \c true if this byte array starts with byte array \a ba;
+    otherwise returns \c false.
 
     Example:
     \snippet code/src_corelib_tools_qbytearray.cpp 25
@@ -2553,8 +2553,8 @@ bool QByteArray::startsWith(const QByteArray &ba) const
 
 /*! \overload
 
-    Returns true if this byte array starts with string \a str;
-    otherwise returns false.
+    Returns \c true if this byte array starts with string \a str;
+    otherwise returns \c false.
 */
 bool QByteArray::startsWith(const char *str) const
 {
@@ -2568,8 +2568,8 @@ bool QByteArray::startsWith(const char *str) const
 
 /*! \overload
 
-    Returns true if this byte array starts with character \a ch;
-    otherwise returns false.
+    Returns \c true if this byte array starts with character \a ch;
+    otherwise returns \c false.
 */
 bool QByteArray::startsWith(char ch) const
 {
@@ -2579,8 +2579,8 @@ bool QByteArray::startsWith(char ch) const
 }
 
 /*!
-    Returns true if this byte array ends with byte array \a ba;
-    otherwise returns false.
+    Returns \c true if this byte array ends with byte array \a ba;
+    otherwise returns \c false.
 
     Example:
     \snippet code/src_corelib_tools_qbytearray.cpp 26
@@ -2598,8 +2598,8 @@ bool QByteArray::endsWith(const QByteArray &ba) const
 
 /*! \overload
 
-    Returns true if this byte array ends with string \a str; otherwise
-    returns false.
+    Returns \c true if this byte array ends with string \a str; otherwise
+    returns \c false.
 */
 bool QByteArray::endsWith(const char *str) const
 {
@@ -2613,8 +2613,8 @@ bool QByteArray::endsWith(const char *str) const
 
 /*! \overload
 
-    Returns true if this byte array ends with character \a ch;
-    otherwise returns false.
+    Returns \c true if this byte array ends with character \a ch;
+    otherwise returns \c false.
 */
 bool QByteArray::endsWith(char ch) const
 {
@@ -2812,8 +2812,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
 /*! \fn bool QByteArray::operator==(const QString &str) const
 
-    Returns true if this byte array is equal to string \a str;
-    otherwise returns false.
+    Returns \c true if this byte array is equal to string \a str;
+    otherwise returns \c false.
 
     The Unicode data is converted into 8-bit characters using
     QString::toUtf8().
@@ -2829,8 +2829,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
 /*! \fn bool QByteArray::operator!=(const QString &str) const
 
-    Returns true if this byte array is not equal to string \a str;
-    otherwise returns false.
+    Returns \c true if this byte array is not equal to string \a str;
+    otherwise returns \c false.
 
     The Unicode data is converted into 8-bit characters using
     QString::toUtf8().
@@ -2846,8 +2846,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
 /*! \fn bool QByteArray::operator<(const QString &str) const
 
-    Returns true if this byte array is lexically less than string \a
-    str; otherwise returns false.
+    Returns \c true if this byte array is lexically less than string \a
+    str; otherwise returns \c false.
 
     The Unicode data is converted into 8-bit characters using
     QString::toUtf8().
@@ -2863,8 +2863,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
 /*! \fn bool QByteArray::operator>(const QString &str) const
 
-    Returns true if this byte array is lexically greater than string
-    \a str; otherwise returns false.
+    Returns \c true if this byte array is lexically greater than string
+    \a str; otherwise returns \c false.
 
     The Unicode data is converted into 8-bit characters using
     QString::toUtf8().
@@ -2880,8 +2880,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
 /*! \fn bool QByteArray::operator<=(const QString &str) const
 
-    Returns true if this byte array is lexically less than or equal
-    to string \a str; otherwise returns false.
+    Returns \c true if this byte array is lexically less than or equal
+    to string \a str; otherwise returns \c false.
 
     The Unicode data is converted into 8-bit characters using
     QString::toUtf8().
@@ -2897,8 +2897,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
 /*! \fn bool QByteArray::operator>=(const QString &str) const
 
-    Returns true if this byte array is greater than or equal to string
-    \a str; otherwise returns false.
+    Returns \c true if this byte array is greater than or equal to string
+    \a str; otherwise returns \c false.
 
     The Unicode data is converted into 8-bit characters using
     QString::toUtf8().
@@ -2917,8 +2917,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns true if byte array \a a1 is equal to byte array \a a2;
-    otherwise returns false.
+    Returns \c true if byte array \a a1 is equal to byte array \a a2;
+    otherwise returns \c false.
 */
 
 /*! \fn bool operator==(const QByteArray &a1, const char *a2)
@@ -2926,8 +2926,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns true if byte array \a a1 is equal to string \a a2;
-    otherwise returns false.
+    Returns \c true if byte array \a a1 is equal to string \a a2;
+    otherwise returns \c false.
 */
 
 /*! \fn bool operator==(const char *a1, const QByteArray &a2)
@@ -2935,8 +2935,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns true if string \a a1 is equal to byte array \a a2;
-    otherwise returns false.
+    Returns \c true if string \a a1 is equal to byte array \a a2;
+    otherwise returns \c false.
 */
 
 /*! \fn bool operator!=(const QByteArray &a1, const QByteArray &a2)
@@ -2944,8 +2944,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns true if byte array \a a1 is not equal to byte array \a a2;
-    otherwise returns false.
+    Returns \c true if byte array \a a1 is not equal to byte array \a a2;
+    otherwise returns \c false.
 */
 
 /*! \fn bool operator!=(const QByteArray &a1, const char *a2)
@@ -2953,8 +2953,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns true if byte array \a a1 is not equal to string \a a2;
-    otherwise returns false.
+    Returns \c true if byte array \a a1 is not equal to string \a a2;
+    otherwise returns \c false.
 */
 
 /*! \fn bool operator!=(const char *a1, const QByteArray &a2)
@@ -2962,8 +2962,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns true if string \a a1 is not equal to byte array \a a2;
-    otherwise returns false.
+    Returns \c true if string \a a1 is not equal to byte array \a a2;
+    otherwise returns \c false.
 */
 
 /*! \fn bool operator<(const QByteArray &a1, const QByteArray &a2)
@@ -2971,8 +2971,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns true if byte array \a a1 is lexically less than byte array
-    \a a2; otherwise returns false.
+    Returns \c true if byte array \a a1 is lexically less than byte array
+    \a a2; otherwise returns \c false.
 */
 
 /*! \fn inline bool operator<(const QByteArray &a1, const char *a2)
@@ -2980,8 +2980,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns true if byte array \a a1 is lexically less than string
-    \a a2; otherwise returns false.
+    Returns \c true if byte array \a a1 is lexically less than string
+    \a a2; otherwise returns \c false.
 */
 
 /*! \fn bool operator<(const char *a1, const QByteArray &a2)
@@ -2989,8 +2989,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns true if string \a a1 is lexically less than byte array
-    \a a2; otherwise returns false.
+    Returns \c true if string \a a1 is lexically less than byte array
+    \a a2; otherwise returns \c false.
 */
 
 /*! \fn bool operator<=(const QByteArray &a1, const QByteArray &a2)
@@ -2998,8 +2998,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns true if byte array \a a1 is lexically less than or equal
-    to byte array \a a2; otherwise returns false.
+    Returns \c true if byte array \a a1 is lexically less than or equal
+    to byte array \a a2; otherwise returns \c false.
 */
 
 /*! \fn bool operator<=(const QByteArray &a1, const char *a2)
@@ -3007,8 +3007,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns true if byte array \a a1 is lexically less than or equal
-    to string \a a2; otherwise returns false.
+    Returns \c true if byte array \a a1 is lexically less than or equal
+    to string \a a2; otherwise returns \c false.
 */
 
 /*! \fn bool operator<=(const char *a1, const QByteArray &a2)
@@ -3016,8 +3016,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns true if string \a a1 is lexically less than or equal
-    to byte array \a a2; otherwise returns false.
+    Returns \c true if string \a a1 is lexically less than or equal
+    to byte array \a a2; otherwise returns \c false.
 */
 
 /*! \fn bool operator>(const QByteArray &a1, const QByteArray &a2)
@@ -3025,8 +3025,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns true if byte array \a a1 is lexically greater than byte
-    array \a a2; otherwise returns false.
+    Returns \c true if byte array \a a1 is lexically greater than byte
+    array \a a2; otherwise returns \c false.
 */
 
 /*! \fn bool operator>(const QByteArray &a1, const char *a2)
@@ -3034,8 +3034,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns true if byte array \a a1 is lexically greater than string
-    \a a2; otherwise returns false.
+    Returns \c true if byte array \a a1 is lexically greater than string
+    \a a2; otherwise returns \c false.
 */
 
 /*! \fn bool operator>(const char *a1, const QByteArray &a2)
@@ -3043,8 +3043,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns true if string \a a1 is lexically greater than byte array
-    \a a2; otherwise returns false.
+    Returns \c true if string \a a1 is lexically greater than byte array
+    \a a2; otherwise returns \c false.
 */
 
 /*! \fn bool operator>=(const QByteArray &a1, const QByteArray &a2)
@@ -3052,8 +3052,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns true if byte array \a a1 is lexically greater than or
-    equal to byte array \a a2; otherwise returns false.
+    Returns \c true if byte array \a a1 is lexically greater than or
+    equal to byte array \a a2; otherwise returns \c false.
 */
 
 /*! \fn bool operator>=(const QByteArray &a1, const char *a2)
@@ -3061,8 +3061,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns true if byte array \a a1 is lexically greater than or
-    equal to string \a a2; otherwise returns false.
+    Returns \c true if byte array \a a1 is lexically greater than or
+    equal to string \a a2; otherwise returns \c false.
 */
 
 /*! \fn bool operator>=(const char *a1, const QByteArray &a2)
@@ -3070,8 +3070,8 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
 
     \overload
 
-    Returns true if string \a a1 is lexically greater than or
-    equal to byte array \a a2; otherwise returns false.
+    Returns \c true if string \a a1 is lexically greater than or
+    equal to byte array \a a2; otherwise returns \c false.
 */
 
 /*! \fn const QByteArray operator+(const QByteArray &a1, const QByteArray &a2)
@@ -3125,7 +3125,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     replaced with a single space.
 
     Whitespace means any character for which the standard C++
-    isspace() function returns true. This includes the ASCII
+    isspace() function returns \c true. This includes the ASCII
     characters '\\t', '\\n', '\\v', '\\f', '\\r', and ' '.
 
     Example:
@@ -3163,7 +3163,7 @@ QByteArray QByteArray::simplified() const
     and the end.
 
     Whitespace means any character for which the standard C++
-    isspace() function returns true. This includes the ASCII
+    isspace() function returns \c true. This includes the ASCII
     characters '\\t', '\\n', '\\v', '\\f', '\\r', and ' '.
 
     Example:

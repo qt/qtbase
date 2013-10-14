@@ -2587,9 +2587,9 @@ void QSortFilterProxyModel::invalidateFilter()
 }
 
 /*!
-    Returns true if the value of the item referred to by the given
+    Returns \c true if the value of the item referred to by the given
     index \a left is less than the value of the item referred to by
-    the given index \a right, otherwise returns false.
+    the given index \a right, otherwise returns \c false.
 
     This function is used as the < operator when sorting, and handles
     the following QVariant types:
@@ -2661,11 +2661,11 @@ bool QSortFilterProxyModel::lessThan(const QModelIndex &left, const QModelIndex 
 }
 
 /*!
-    Returns true if the item in the row indicated by the given \a source_row
+    Returns \c true if the item in the row indicated by the given \a source_row
     and \a source_parent should be included in the model; otherwise returns
     false.
 
-    The default implementation returns true if the value held by the relevant item
+    The default implementation returns \c true if the value held by the relevant item
     matches the filter string, wildcard string or regular expression.
 
     \note By default, the Qt::DisplayRole is used to determine if the row
@@ -2697,10 +2697,10 @@ bool QSortFilterProxyModel::filterAcceptsRow(int source_row, const QModelIndex &
 }
 
 /*!
-    Returns true if the item in the column indicated by the given \a source_column
-    and \a source_parent should be included in the model; otherwise returns false.
+    Returns \c true if the item in the column indicated by the given \a source_column
+    and \a source_parent should be included in the model; otherwise returns \c false.
 
-    The default implementation returns true if the value held by the relevant item
+    The default implementation returns \c true if the value held by the relevant item
     matches the filter string, wildcard string or regular expression.
 
     \note By default, the Qt::DisplayRole is used to determine if the row

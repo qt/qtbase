@@ -369,14 +369,14 @@ QTextFrameLayoutData::~QTextFrameLayoutData()
     \fn bool QTextFrame::iterator::operator==(const iterator &other) const
 
     Retuns true if the iterator is the same as the \a other iterator;
-    otherwise returns false.
+    otherwise returns \c false.
 */
 
 /*!
     \fn bool QTextFrame::iterator::operator!=(const iterator &other) const
 
     Retuns true if the iterator is different from the \a other iterator;
-    otherwise returns false.
+    otherwise returns \c false.
 */
 
 /*!
@@ -617,7 +617,7 @@ void QTextFramePrivate::remove_me()
 /*!
     \fn bool QTextFrame::iterator::atEnd() const
 
-    Returns true if the current item is the last item in the text frame.
+    Returns \c true if the current item is the last item in the text frame.
 */
 
 /*!
@@ -896,7 +896,7 @@ QTextBlockUserData::~QTextBlockUserData()
 /*!
     \fn bool QTextBlock::isValid() const
 
-    Returns true if this text block is valid; otherwise returns false.
+    Returns \c true if this text block is valid; otherwise returns \c false.
 */
 
 bool QTextBlock::isValid() const
@@ -913,21 +913,21 @@ bool QTextBlock::isValid() const
 /*!
     \fn bool QTextBlock::operator==(const QTextBlock &other) const
 
-    Returns true if this text block is the same as the \a other text
+    Returns \c true if this text block is the same as the \a other text
     block.
 */
 
 /*!
     \fn bool QTextBlock::operator!=(const QTextBlock &other) const
 
-    Returns true if this text block is different from the \a other
+    Returns \c true if this text block is different from the \a other
     text block.
 */
 
 /*!
     \fn bool QTextBlock::operator<(const QTextBlock &other) const
 
-    Returns true if this text block occurs before the \a other text
+    Returns \c true if this text block occurs before the \a other text
     block in the document.
 */
 
@@ -975,21 +975,21 @@ bool QTextBlock::isValid() const
 /*!
     \fn bool QTextBlock::iterator::atEnd() const
 
-    Returns true if the current item is the last item in the text block.
+    Returns \c true if the current item is the last item in the text block.
 */
 
 /*!
     \fn bool QTextBlock::iterator::operator==(const iterator &other) const
 
     Retuns true if this iterator is the same as the \a other iterator;
-    otherwise returns false.
+    otherwise returns \c false.
 */
 
 /*!
     \fn bool QTextBlock::iterator::operator!=(const iterator &other) const
 
     Retuns true if this iterator is different from the \a other iterator;
-    otherwise returns false.
+    otherwise returns \c false.
 */
 
 /*!
@@ -1047,8 +1047,8 @@ int QTextBlock::length() const
 }
 
 /*!
-    Returns true if the given \a position is located within the text
-    block; otherwise returns false.
+    Returns \c true if the given \a position is located within the text
+    block; otherwise returns \c false.
  */
 bool QTextBlock::contains(int position) const
 {
@@ -1372,7 +1372,7 @@ void QTextBlock::setRevision(int rev)
 /*!
     \since 4.4
 
-    Returns true if the block is visible; otherwise returns false.
+    Returns \c true if the block is visible; otherwise returns \c false.
 
     \sa setVisible()
 */
@@ -1651,21 +1651,21 @@ QTextBlock::iterator &QTextBlock::iterator::operator--()
 /*!
     \fn bool QTextFragment::isValid() const
 
-    Returns true if this is a valid text fragment (i.e. has a valid
-    position in a document); otherwise returns false.
+    Returns \c true if this is a valid text fragment (i.e. has a valid
+    position in a document); otherwise returns \c false.
 */
 
 /*!
     \fn bool QTextFragment::operator==(const QTextFragment &other) const
 
-    Returns true if this text fragment is the same (at the same
-    position) as the \a other text fragment; otherwise returns false.
+    Returns \c true if this text fragment is the same (at the same
+    position) as the \a other text fragment; otherwise returns \c false.
 */
 
 /*!
     \fn bool QTextFragment::operator!=(const QTextFragment &other) const
 
-    Returns true if this text fragment is different (at a different
+    Returns \c true if this text fragment is different (at a different
     position) from the \a other text fragment; otherwise returns
     false.
 */
@@ -1673,8 +1673,8 @@ QTextBlock::iterator &QTextBlock::iterator::operator--()
 /*!
     \fn bool QTextFragment::operator<(const QTextFragment &other) const
 
-    Returns true if this text fragment appears earlier in the document
-    than the \a other text fragment; otherwise returns false.
+    Returns \c true if this text fragment appears earlier in the document
+    than the \a other text fragment; otherwise returns \c false.
 */
 
 /*!
@@ -1747,8 +1747,8 @@ int QTextFragment::length() const
 }
 
 /*!
-    Returns true if the text fragment contains the text at the given
-    \a position in the document; otherwise returns false.
+    Returns \c true if the text fragment contains the text at the given
+    \a position in the document; otherwise returns \c false.
 */
 bool QTextFragment::contains(int position) const
 {

@@ -120,7 +120,7 @@
 
     \relates QPair
 
-    Returns true if \a p1 is equal to \a p2; otherwise returns false.
+    Returns \c true if \a p1 is equal to \a p2; otherwise returns \c false.
     Two pairs compare equal if their \c first data members compare
     equal and if their \c second data members compare equal.
 
@@ -132,7 +132,7 @@
 
     \relates QPair
 
-    Returns true if \a p1 is not equal to \a p2; otherwise returns
+    Returns \c true if \a p1 is not equal to \a p2; otherwise returns
     false. Two pairs compare as not equal if their \c first data
     members are not equal or if their \c second data members are not
     equal.
@@ -145,7 +145,7 @@
 
     \relates QPair
 
-    Returns true if \a p1 is less than \a p2; otherwise returns
+    Returns \c true if \a p1 is less than \a p2; otherwise returns
     false. The comparison is done on the \c first members of \a p1
     and \a p2; if they compare equal, the \c second members are
     compared to break the tie.
@@ -158,7 +158,7 @@
 
     \relates QPair
 
-    Returns true if \a p1 is greater than \a p2; otherwise returns
+    Returns \c true if \a p1 is greater than \a p2; otherwise returns
     false. The comparison is done on the \c first members of \a p1
     and \a p2; if they compare equal, the \c second members are
     compared to break the tie.
@@ -171,8 +171,8 @@
 
     \relates QPair
 
-    Returns true if \a p1 is less than or equal to \a p2; otherwise
-    returns false. The comparison is done on the \c first members of
+    Returns \c true if \a p1 is less than or equal to \a p2; otherwise
+    returns \c false. The comparison is done on the \c first members of
     \a p1 and \a p2; if they compare equal, the \c second members are
     compared to break the tie.
 
@@ -184,8 +184,8 @@
 
     \relates QPair
 
-    Returns true if \a p1 is greater than or equal to \a p2;
-    otherwise returns false. The comparison is done on the \c first
+    Returns \c true if \a p1 is greater than or equal to \a p2;
+    otherwise returns \c false. The comparison is done on the \c first
     members of \a p1 and \a p2; if they compare equal, the \c second
     members are compared to break the tie.
 

@@ -176,7 +176,7 @@ const QLinkedListData QLinkedListData::shared_null = {
 
 /*! \fn bool QLinkedList::operator==(const QLinkedList<T> &other) const
 
-    Returns true if \a other is equal to this list; otherwise returns
+    Returns \c true if \a other is equal to this list; otherwise returns
     false.
 
     Two lists are considered equal if they contain the same values in
@@ -190,8 +190,8 @@ const QLinkedListData QLinkedListData::shared_null = {
 
 /*! \fn bool QLinkedList::operator!=(const QLinkedList<T> &other) const
 
-    Returns true if \a other is not equal to this list; otherwise
-    returns false.
+    Returns \c true if \a other is not equal to this list; otherwise
+    returns \c false.
 
     Two lists are considered equal if they contain the same values in
     the same order.
@@ -231,7 +231,7 @@ const QLinkedListData QLinkedListData::shared_null = {
 
 /*! \fn bool QLinkedList::isEmpty() const
 
-    Returns true if the list contains no items; otherwise returns
+    Returns \c true if the list contains no items; otherwise returns
     false.
 
     \sa size()
@@ -285,8 +285,8 @@ const QLinkedListData QLinkedListData::shared_null = {
     \fn bool QLinkedList::removeOne(const T &value)
     \since 4.4
 
-    Removes the first occurrences of \a value in the list. Returns true on
-    success; otherwise returns false.
+    Removes the first occurrences of \a value in the list. Returns \c true on
+    success; otherwise returns \c false.
 
     Example:
     \snippet code/src_corelib_tools_qlinkedlist.cpp 6
@@ -299,8 +299,8 @@ const QLinkedListData QLinkedListData::shared_null = {
 
 /*! \fn bool QLinkedList::contains(const T &value) const
 
-    Returns true if the list contains an occurrence of \a value;
-    otherwise returns false.
+    Returns \c true if the list contains an occurrence of \a value;
+    otherwise returns \c false.
 
     This function requires the value type to have an implementation of
     \c operator==().
@@ -321,8 +321,8 @@ const QLinkedListData QLinkedListData::shared_null = {
 /*! \fn bool QLinkedList::startsWith(const T &value) const
     \since 4.5
 
-    Returns true if the list is not empty and its first
-    item is equal to \a value; otherwise returns false.
+    Returns \c true if the list is not empty and its first
+    item is equal to \a value; otherwise returns \c false.
 
     \sa isEmpty(), first()
 */
@@ -330,8 +330,8 @@ const QLinkedListData QLinkedListData::shared_null = {
 /*! \fn bool QLinkedList::endsWith(const T &value) const
     \since 4.5
 
-    Returns true if the list is not empty and its last
-    item is equal to \a value; otherwise returns false.
+    Returns \c true if the list is not empty and its last
+    item is equal to \a value; otherwise returns \c false.
 
     \sa isEmpty(), last()
 */
@@ -589,7 +589,7 @@ const QLinkedListData QLinkedListData::shared_null = {
 /*! \fn bool QLinkedList::empty() const
 
     This function is provided for STL compatibility. It is equivalent
-    to isEmpty() and returns true if the list is empty.
+    to isEmpty() and returns \c true if the list is empty.
 */
 
 /*! \fn QLinkedList<T> &QLinkedList::operator+=(const QLinkedList<T> &other)
@@ -780,8 +780,8 @@ const QLinkedListData QLinkedListData::shared_null = {
     \fn bool QLinkedList::iterator::operator==(const iterator &other) const
     \fn bool QLinkedList::iterator::operator==(const const_iterator &other) const
 
-    Returns true if \a other points to the same item as this
-    iterator; otherwise returns false.
+    Returns \c true if \a other points to the same item as this
+    iterator; otherwise returns \c false.
 
     \sa operator!=()
 */
@@ -790,8 +790,8 @@ const QLinkedListData QLinkedListData::shared_null = {
     \fn bool QLinkedList::iterator::operator!=(const iterator &other) const
     \fn bool QLinkedList::iterator::operator!=(const const_iterator &other) const
 
-    Returns true if \a other points to a different item than this
-    iterator; otherwise returns false.
+    Returns \c true if \a other points to a different item than this
+    iterator; otherwise returns \c false.
 
     \sa operator==()
 */
@@ -986,16 +986,16 @@ const QLinkedListData QLinkedListData::shared_null = {
 
 /*! \fn bool QLinkedList::const_iterator::operator==(const const_iterator &other) const
 
-    Returns true if \a other points to the same item as this
-    iterator; otherwise returns false.
+    Returns \c true if \a other points to the same item as this
+    iterator; otherwise returns \c false.
 
     \sa operator!=()
 */
 
 /*! \fn bool QLinkedList::const_iterator::operator!=(const const_iterator &other) const
 
-    Returns true if \a other points to a different item than this
-    iterator; otherwise returns false.
+    Returns \c true if \a other points to a different item than this
+    iterator; otherwise returns \c false.
 
     \sa operator==()
 */

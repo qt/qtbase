@@ -2954,7 +2954,7 @@ void QCalendarWidget::updateCells()
 
     \since 4.3
 
-    When this property is true (the default), the next month,
+    When this property is \c true (the default), the next month,
     previous month, month selection, year selection controls are
     shown on top.
 

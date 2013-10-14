@@ -283,8 +283,8 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QString
 /*!
     \fn bool QStringList::contains(const QString &str, Qt::CaseSensitivity cs) const
 
-    Returns true if the list contains the string \a str; otherwise
-    returns false. The search is case insensitive if \a cs is
+    Returns \c true if the list contains the string \a str; otherwise
+    returns \c false. The search is case insensitive if \a cs is
     Qt::CaseInsensitive; the search is case sensitive by default.
 
     \sa indexOf(), lastIndexOf(), QString::contains()

@@ -114,8 +114,8 @@ QT_BEGIN_NAMESPACE
         LocalSocketState socketState, OpenMode openMode)
 
     Initializes QLocalSocket with the native socket descriptor
-    \a socketDescriptor. Returns true if socketDescriptor is accepted
-    as a valid socket descriptor; otherwise returns false. The socket is
+    \a socketDescriptor. Returns \c true if socketDescriptor is accepted
+    as a valid socket descriptor; otherwise returns \c false. The socket is
     opened in the mode specified by \a openMode, and enters the socket state
     specified by \a socketState.
 
@@ -187,7 +187,7 @@ QT_BEGIN_NAMESPACE
 
     This function writes as much as possible from the internal write buffer
     to the socket, without blocking.  If any data was written, this function
-    returns true; otherwise false is returned.
+    returns \c true; otherwise false is returned.
 
     Call this function if you need QLocalSocket to start sending buffered data
     immediately. The number of bytes successfully written depends on the
@@ -221,8 +221,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QLocalSocket::isValid() const
 
-    Returns true if the socket is valid and ready for use; otherwise
-    returns false.
+    Returns \c true if the socket is valid and ready for use; otherwise
+    returns \c false.
 
     \note The socket's state must be ConnectedState before reading
     and writing can occur.
@@ -263,8 +263,8 @@ QT_BEGIN_NAMESPACE
     \fn bool QLocalSocket::waitForConnected(int msecs)
 
     Waits until the socket is connected, up to \a msecs milliseconds. If the
-    connection has been established, this function returns true; otherwise
-    it returns false. In the case where it returns false, you can call
+    connection has been established, this function returns \c true; otherwise
+    it returns \c false. In the case where it returns \c false, you can call
     error() to determine the cause of the error.
 
     The following example waits up to one second for a connection
@@ -282,8 +282,8 @@ QT_BEGIN_NAMESPACE
 
     Waits until the socket has disconnected, up to \a msecs
     milliseconds. If the connection has been disconnected, this
-    function returns true; otherwise it returns false. In the case
-    where it returns false, you can call error() to determine
+    function returns \c true; otherwise it returns \c false. In the case
+    where it returns \c false, you can call error() to determine
     the cause of the error.
 
     The following example waits up to one second for a connection
@@ -304,8 +304,8 @@ QT_BEGIN_NAMESPACE
     will timeout after \a msecs milliseconds; the default timeout is
     30000 milliseconds.
 
-    The function returns true if data is available for reading;
-    otherwise it returns false (if an error occurred or the
+    The function returns \c true if data is available for reading;
+    otherwise it returns \c false (if an error occurred or the
     operation timed out).
 
     \sa waitForBytesWritten()

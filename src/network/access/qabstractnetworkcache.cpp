@@ -158,7 +158,7 @@ QNetworkCacheMetaData &QNetworkCacheMetaData::operator=(const QNetworkCacheMetaD
  */
 
 /*!
-    Returns true if this meta data is equal to the \a other meta data; otherwise returns false.
+    Returns \c true if this meta data is equal to the \a other meta data; otherwise returns \c false.
 
     \sa operator!=()
  */
@@ -174,13 +174,13 @@ bool QNetworkCacheMetaData::operator==(const QNetworkCacheMetaData &other) const
 /*!
     \fn bool QNetworkCacheMetaData::operator!=(const QNetworkCacheMetaData &other) const
 
-    Returns true if this meta data is not equal to the \a other meta data; otherwise returns false.
+    Returns \c true if this meta data is not equal to the \a other meta data; otherwise returns \c false.
 
     \sa operator==()
  */
 
 /*!
-    Returns true if this network cache meta data has attributes that have been set otherwise false.
+    Returns \c true if this network cache meta data has attributes that have been set otherwise false.
  */
 bool QNetworkCacheMetaData::isValid() const
 {

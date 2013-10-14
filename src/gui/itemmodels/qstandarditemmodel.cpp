@@ -1559,8 +1559,8 @@ void QStandardItem::insertColumns(int column, int count)
     \fn bool QStandardItemModel::insertRow(int row, const QModelIndex &parent)
 
     Inserts a single row before the given \a row in the child items of the
-    \a parent specified. Returns true if the row is inserted; otherwise
-    returns false.
+    \a parent specified. Returns \c true if the row is inserted; otherwise
+    returns \c false.
 
     \sa insertRows(), insertColumn(), removeRow()
 */
@@ -1569,8 +1569,8 @@ void QStandardItem::insertColumns(int column, int count)
     \fn bool QStandardItemModel::insertColumn(int column, const QModelIndex &parent)
 
     Inserts a single column before the given \a column in the child items of
-    the \a parent specified. Returns true if the column is inserted; otherwise
-    returns false.
+    the \a parent specified. Returns \c true if the column is inserted; otherwise
+    returns \c false.
 
     \sa insertColumns(), insertRow(), removeColumn()
 */
@@ -1672,7 +1672,7 @@ void QStandardItem::removeColumns(int column, int count)
 }
 
 /*!
-    Returns true if this item has any children; otherwise returns false.
+    Returns \c true if this item has any children; otherwise returns \c false.
 
     \sa rowCount(), columnCount(), child()
 */
@@ -1803,7 +1803,7 @@ QList<QStandardItem*> QStandardItem::takeColumn(int column)
 }
 
 /*!
-    Returns true if this item is less than \a other; otherwise returns false.
+    Returns \c true if this item is less than \a other; otherwise returns \c false.
 
     The default implementation uses the data for the item's sort role (see
     QStandardItemModel::sortRole) to perform the comparison if the item

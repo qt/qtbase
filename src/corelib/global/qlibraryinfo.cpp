@@ -253,7 +253,7 @@ QLibraryInfo::buildDate()
 
 /*!
     \since 5.0
-    Returns true if this build of Qt was built with debugging enabled, or
+    Returns \c true if this build of Qt was built with debugging enabled, or
     false if it was built in release mode.
 */
 bool

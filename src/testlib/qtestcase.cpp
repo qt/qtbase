@@ -864,7 +864,7 @@ QT_BEGIN_NAMESPACE
     \since 5.0
 
     Waits for \a timeout milliseconds or until the \a window is exposed.
-    Returns true if \c window is exposed within \a timeout milliseconds, otherwise returns false.
+    Returns \c true if \c window is exposed within \a timeout milliseconds, otherwise returns \c false.
 
     This is mainly useful for asynchronous systems like X11, where a window will be mapped to screen some
     time after being asked to show itself on the screen.
@@ -877,7 +877,7 @@ QT_BEGIN_NAMESPACE
 
     Waits for \a timeout milliseconds or until the \a window is active.
 
-    Returns true if \c window is active within \a timeout milliseconds, otherwise returns false.
+    Returns \c true if \c window is active within \a timeout milliseconds, otherwise returns \c false.
 
     \sa QTest::qWaitForWindowExposed(), QWindow::isActive()
 */
@@ -886,7 +886,7 @@ QT_BEGIN_NAMESPACE
     \since 5.0
 
     Waits for \a timeout milliseconds or until the \a widget's window is exposed.
-    Returns true if \c widget's window is exposed within \a timeout milliseconds, otherwise returns false.
+    Returns \c true if \c widget's window is exposed within \a timeout milliseconds, otherwise returns \c false.
 
     This is mainly useful for asynchronous systems like X11, where a window will be mapped to screen some
     time after being asked to show itself on the screen.
@@ -899,7 +899,7 @@ QT_BEGIN_NAMESPACE
 
     Waits for \a timeout milliseconds or until the \a widget's window is active.
 
-    Returns true if \c widget's window is active within \a timeout milliseconds, otherwise returns false.
+    Returns \c true if \c widget's window is active within \a timeout milliseconds, otherwise returns \c false.
 
     \sa QTest::qWaitForWindowExposed(), QWidget::isActiveWindow()
 */
@@ -909,7 +909,7 @@ QT_BEGIN_NAMESPACE
     \deprecated
 
     Waits for \a timeout milliseconds or until the \a widget's window is exposed.
-    Returns true if \c widget's window is exposed within \a timeout milliseconds, otherwise returns false.
+    Returns \c true if \c widget's window is exposed within \a timeout milliseconds, otherwise returns \c false.
 
     This function does the same as qWaitForWindowExposed().
 
@@ -2550,7 +2550,7 @@ const char *QTest::currentDataTag()
 }
 
 /*!
-    Returns true if the current test function failed, otherwise false.
+    Returns \c true if the current test function failed, otherwise false.
 */
 bool QTest::currentTestFailed()
 {

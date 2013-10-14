@@ -82,9 +82,9 @@ bool QBearerEngine::requiresPolling() const
 }
 
 /*
-    Returns true if configurations are in use; otherwise returns false.
+    Returns \c true if configurations are in use; otherwise returns \c false.
 
-    If configurations are in use and requiresPolling() returns true, polling will be enabled for
+    If configurations are in use and requiresPolling() returns \c true, polling will be enabled for
     this engine.
 */
 bool QBearerEngine::configurationsInUse() const

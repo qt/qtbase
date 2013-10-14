@@ -434,7 +434,7 @@ QTimeZone &QTimeZone::operator=(const QTimeZone &other)
 */
 
 /*!
-    Returns true if this time zone is equal to the \a other time zone.
+    Returns \c true if this time zone is equal to the \a other time zone.
 */
 
 bool QTimeZone::operator==(const QTimeZone &other) const
@@ -446,7 +446,7 @@ bool QTimeZone::operator==(const QTimeZone &other) const
 }
 
 /*!
-    Returns true if this time zone is not equal to the \a other time zone.
+    Returns \c true if this time zone is not equal to the \a other time zone.
 */
 
 bool QTimeZone::operator!=(const QTimeZone &other) const
@@ -458,7 +458,7 @@ bool QTimeZone::operator!=(const QTimeZone &other) const
 }
 
 /*!
-    Returns true if this time zone is valid.
+    Returns \c true if this time zone is valid.
 */
 
 bool QTimeZone::isValid() const
@@ -642,7 +642,7 @@ int QTimeZone::daylightTimeOffset(const QDateTime &atDateTime) const
 }
 
 /*!
-    Returns true if the time zone has observed daylight time at any time.
+    Returns \c true if the time zone has observed daylight time at any time.
 
     \sa isDaylightTime(), daylightTimeOffset()
 */
@@ -656,7 +656,7 @@ bool QTimeZone::hasDaylightTime() const
 }
 
 /*!
-    Returns true if the given \a atDateTime is in daylight time.
+    Returns \c true if the given \a atDateTime is in daylight time.
 
     \sa hasDaylightTime(), daylightTimeOffset()
 */
@@ -686,7 +686,7 @@ QTimeZone::OffsetData QTimeZone::offsetData(const QDateTime &forDateTime) const
 }
 
 /*!
-    Returns true if the system backend supports obtaining transitions.
+    Returns \c true if the system backend supports obtaining transitions.
 */
 
 bool QTimeZone::hasTransitions() const
@@ -771,7 +771,7 @@ QByteArray QTimeZone::systemTimeZoneId()
 }
 
 /*!
-    Returns true if a given time zone \a olsenId is available on this system.
+    Returns \c true if a given time zone \a olsenId is available on this system.
 
     \sa availableTimeZoneIds()
 */

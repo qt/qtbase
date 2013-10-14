@@ -274,7 +274,7 @@ public:
     virtual ClassNode* classNode() { return 0; }
     virtual void setClassNode(ClassNode* ) { }
     virtual void clearCurrentChild() { }
-    virtual const Node* applyModuleIdentifier(const Node* ) const { return 0; }
+    virtual const Node* applyModuleName(const Node* ) const { return 0; }
     virtual QString idNumber() { return "0"; }
     QmlClassNode* qmlClassNode();
     ClassNode* declarativeCppNode();
@@ -556,7 +556,7 @@ public:
     virtual void clearCurrentChild() { current = 0; }
     virtual bool isQmlNode() const;
     virtual bool isCollisionNode() const { return true; }
-    virtual const Node* applyModuleIdentifier(const Node* origin) const;
+    virtual const Node* applyModuleName(const Node* origin) const;
     InnerNode* findAny(Node::Type t, Node::SubType st);
     void addCollision(InnerNode* child);
     const QMap<QString,QString>& linkTargets() const { return targets; }

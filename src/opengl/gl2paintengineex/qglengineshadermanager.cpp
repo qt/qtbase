@@ -654,7 +654,7 @@ QGLShaderProgram* QGLEngineShaderManager::blitProgram()
 
 
 // Select & use the correct shader program using the current state.
-// Returns true if program needed changing.
+// Returns \c true if program needed changing.
 bool QGLEngineShaderManager::useCorrectShaderProg()
 {
     if (!shaderProgNeedsChanging)

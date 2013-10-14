@@ -55,7 +55,7 @@ QElapsedTimer::ClockType QElapsedTimer::clockType() Q_DECL_NOTHROW
 }
 
 /*!
-    Returns true if this is a monotonic clock, false otherwise. See the
+    Returns \c true if this is a monotonic clock, false otherwise. See the
     information on the different clock types to understand which ones are
     monotonic.
 
@@ -180,7 +180,7 @@ qint64 QElapsedTimer::secsTo(const QElapsedTimer &other) const Q_DECL_NOTHROW
 /*!
     \relates QElapsedTimer
 
-    Returns true if \a v1 was started before \a v2, false otherwise.
+    Returns \c true if \a v1 was started before \a v2, false otherwise.
 
     The returned value is undefined if one of the two parameters is invalid
     and the other isn't. However, two invalid timers are equal and thus this

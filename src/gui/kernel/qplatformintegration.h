@@ -112,6 +112,7 @@ public:
 
 // Event dispatcher:
     virtual QAbstractEventDispatcher *createEventDispatcher() const = 0;
+    virtual void initialize();
 
 //Deeper window system integrations
     virtual QPlatformFontDatabase *fontDatabase() const;

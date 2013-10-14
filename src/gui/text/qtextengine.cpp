@@ -1886,6 +1886,10 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
                 scaledEngine = QFontEngineMultiQPA::createMultiFontEngine(scEngine, script);
                 scaledEngine->ref.ref();
                 feCache.prevScaledFontEngine = scaledEngine;
+                // If scEngine is not ref'ed by scaledEngine, make sure it is deallocated and not leaked.
+                if (!scEngine->ref.load())
+                    delete scEngine;
+
             }
         }
     } else

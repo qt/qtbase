@@ -87,7 +87,7 @@
     connection has been established, it enters ConnectedState and
     emits connected(). If an error occurs at any stage, error() is
     emitted. Whenever the state changes, stateChanged() is emitted.
-    For convenience, isValid() returns true if the socket is ready for
+    For convenience, isValid() returns \c true if the socket is ready for
     reading and writing, but note that the socket's state must be
     ConnectedState before reading and writing can occur.
 
@@ -143,7 +143,7 @@
 
     \snippet network/tcpwait.cpp 0
 
-    If \l{QIODevice::}{waitForReadyRead()} returns false, the
+    If \l{QIODevice::}{waitForReadyRead()} returns \c false, the
     connection has been closed or an error has occurred.
 
     Programming with a blocking socket is radically different from
@@ -1464,8 +1464,8 @@ void QAbstractSocket::setPauseMode(PauseModes pauseMode)
     By default, the socket is bound using the DefaultForPlatform BindMode.
     If a port is not specified, a random port is chosen.
 
-    On success, the functions returns true and the socket enters
-    BoundState; otherwise it returns false.
+    On success, the functions returns \c true and the socket enters
+    BoundState; otherwise it returns \c false.
 
 */
 bool QAbstractSocket::bind(const QHostAddress &address, quint16 port, BindMode mode)
@@ -1537,8 +1537,8 @@ bool QAbstractSocket::bind(quint16 port, BindMode mode)
 }
 
 /*!
-    Returns true if the socket is valid and ready for use; otherwise
-    returns false.
+    Returns \c true if the socket is valid and ready for use; otherwise
+    returns \c false.
 
     \b{Note:} The socket's state must be ConnectedState before reading and
     writing can occur.
@@ -1782,8 +1782,8 @@ QString QAbstractSocket::peerName() const
 }
 
 /*!
-    Returns true if a line of data can be read from the socket;
-    otherwise returns false.
+    Returns \c true if a line of data can be read from the socket;
+    otherwise returns \c false.
 
     \sa readLine()
 */
@@ -1817,8 +1817,8 @@ qintptr QAbstractSocket::socketDescriptor() const
 
 /*!
     Initializes QAbstractSocket with the native socket descriptor \a
-    socketDescriptor. Returns true if \a socketDescriptor is accepted
-    as a valid socket descriptor; otherwise returns false.
+    socketDescriptor. Returns \c true if \a socketDescriptor is accepted
+    as a valid socket descriptor; otherwise returns \c false.
     The socket is opened in the mode specified by \a openMode, and
     enters the socket state specified by \a socketState.
 
@@ -1960,8 +1960,8 @@ static int qt_timeout_value(int msecs, int elapsed)
 /*!
     Waits until the socket is connected, up to \a msecs
     milliseconds. If the connection has been established, this
-    function returns true; otherwise it returns false. In the case
-    where it returns false, you can call error() to determine
+    function returns \c true; otherwise it returns \c false. In the case
+    where it returns \c false, you can call error() to determine
     the cause of the error.
 
     The following example waits up to one second for a connection
@@ -2072,8 +2072,8 @@ bool QAbstractSocket::waitForConnected(int msecs)
     will timeout after \a msecs milliseconds; the default timeout is
     30000 milliseconds.
 
-    The function returns true if the readyRead() signal is emitted and
-    there is new data available for reading; otherwise it returns false
+    The function returns \c true if the readyRead() signal is emitted and
+    there is new data available for reading; otherwise it returns \c false
     (if an error occurred or the operation timed out).
 
     \sa waitForBytesWritten()
@@ -2190,7 +2190,7 @@ bool QAbstractSocket::waitForBytesWritten(int msecs)
         if (readyToWrite) {
             if (d->canWriteNotification()) {
 #if defined (QABSTRACTSOCKET_DEBUG)
-                qDebug("QAbstractSocket::waitForBytesWritten returns true");
+                qDebug("QAbstractSocket::waitForBytesWritten returns \c true");
 #endif
                 return true;
             }
@@ -2205,8 +2205,8 @@ bool QAbstractSocket::waitForBytesWritten(int msecs)
 /*!
     Waits until the socket has disconnected, up to \a msecs
     milliseconds. If the connection has been disconnected, this
-    function returns true; otherwise it returns false. In the case
-    where it returns false, you can call error() to determine
+    function returns \c true; otherwise it returns \c false. In the case
+    where it returns \c false, you can call error() to determine
     the cause of the error.
 
     The following example waits up to one second for a connection
@@ -2309,8 +2309,8 @@ bool QAbstractSocket::isSequential() const
 
 /*! \reimp
 
-     Returns true if no more data is currently
-     available for reading; otherwise returns false.
+     Returns \c true if no more data is currently
+     available for reading; otherwise returns \c false.
 
      This function is most commonly used when reading data from the
      socket in a loop. For example:
@@ -2327,7 +2327,7 @@ bool QAbstractSocket::atEnd() const
 /*!
     This function writes as much as possible from the internal write buffer to
     the underlying network socket, without blocking. If any data was written,
-    this function returns true; otherwise false is returned.
+    this function returns \c true; otherwise false is returned.
 
     Call this function if you need QAbstractSocket to start sending buffered
     data immediately. The number of bytes successfully written depends on the

@@ -422,7 +422,7 @@ QGLFormat::~QGLFormat()
 /*!
     \fn bool QGLFormat::doubleBuffer() const
 
-    Returns true if double buffering is enabled; otherwise returns
+    Returns \c true if double buffering is enabled; otherwise returns
     false. Double buffering is enabled by default.
 
     \sa setDoubleBuffer()
@@ -456,7 +456,7 @@ void QGLFormat::setDoubleBuffer(bool enable)
 /*!
     \fn bool QGLFormat::depth() const
 
-    Returns true if the depth buffer is enabled; otherwise returns
+    Returns \c true if the depth buffer is enabled; otherwise returns
     false. The depth buffer is enabled by default.
 
     \sa setDepth(), setDepthBufferSize()
@@ -486,7 +486,7 @@ void QGLFormat::setDepth(bool enable)
 /*!
     \fn bool QGLFormat::rgba() const
 
-    Returns true if RGBA color mode is set. Returns false if color
+    Returns \c true if RGBA color mode is set. Returns \c false if color
     index mode is set. The default color mode is RGBA.
 
     \sa setRgba()
@@ -517,8 +517,8 @@ void QGLFormat::setRgba(bool enable)
 /*!
     \fn bool QGLFormat::alpha() const
 
-    Returns true if the alpha buffer in the framebuffer is enabled;
-    otherwise returns false. The alpha buffer is disabled by default.
+    Returns \c true if the alpha buffer in the framebuffer is enabled;
+    otherwise returns \c false. The alpha buffer is disabled by default.
 
     \sa setAlpha(), setAlphaBufferSize()
 */
@@ -545,8 +545,8 @@ void QGLFormat::setAlpha(bool enable)
 /*!
     \fn bool QGLFormat::accum() const
 
-    Returns true if the accumulation buffer is enabled; otherwise
-    returns false. The accumulation buffer is disabled by default.
+    Returns \c true if the accumulation buffer is enabled; otherwise
+    returns \c false. The accumulation buffer is disabled by default.
 
     \sa setAccum(), setAccumBufferSize()
 */
@@ -572,7 +572,7 @@ void QGLFormat::setAccum(bool enable)
 /*!
     \fn bool QGLFormat::stencil() const
 
-    Returns true if the stencil buffer is enabled; otherwise returns
+    Returns \c true if the stencil buffer is enabled; otherwise returns
     false. The stencil buffer is enabled by default.
 
     \sa setStencil(), setStencilBufferSize()
@@ -599,7 +599,7 @@ void QGLFormat::setStencil(bool enable)
 /*!
     \fn bool QGLFormat::stereo() const
 
-    Returns true if stereo buffering is enabled; otherwise returns
+    Returns \c true if stereo buffering is enabled; otherwise returns
     false. Stereo buffering is disabled by default.
 
     \sa setStereo()
@@ -626,7 +626,7 @@ void QGLFormat::setStereo(bool enable)
 /*!
     \fn bool QGLFormat::directRendering() const
 
-    Returns true if direct rendering is enabled; otherwise returns
+    Returns \c true if direct rendering is enabled; otherwise returns
     false.
 
     Direct rendering is enabled by default.
@@ -655,8 +655,8 @@ void QGLFormat::setDirectRendering(bool enable)
 /*!
     \fn bool QGLFormat::sampleBuffers() const
 
-    Returns true if multisample buffer support is enabled; otherwise
-    returns false.
+    Returns \c true if multisample buffer support is enabled; otherwise
+    returns \c false.
 
     The multisample buffer is disabled by default.
 
@@ -742,7 +742,7 @@ int QGLFormat::swapInterval() const
 /*!
     \fn bool QGLFormat::hasOverlay() const
 
-    Returns true if overlay plane is enabled; otherwise returns false.
+    Returns \c true if overlay plane is enabled; otherwise returns \c false.
 
     Overlay is disabled by default.
 
@@ -814,7 +814,7 @@ void QGLFormat::setOption(QGL::FormatOptions opt)
 
 
 /*!
-    Returns true if format option \a opt is set; otherwise returns false.
+    Returns \c true if format option \a opt is set; otherwise returns \c false.
 
     \sa setOption()
 */
@@ -1107,8 +1107,8 @@ QGLFormat::OpenGLContextProfile QGLFormat::profile() const
 /*!
     \fn bool QGLFormat::hasOpenGL()
 
-    Returns true if the window system has any OpenGL support;
-    otherwise returns false.
+    Returns \c true if the window system has any OpenGL support;
+    otherwise returns \c false.
 
     \warning This function must not be called until the QApplication
     object has been created.
@@ -1119,8 +1119,8 @@ QGLFormat::OpenGLContextProfile QGLFormat::profile() const
 /*!
     \fn bool QGLFormat::hasOpenGLOverlays()
 
-    Returns true if the window system supports OpenGL overlays;
-    otherwise returns false.
+    Returns \c true if the window system supports OpenGL overlays;
+    otherwise returns \c false.
 
     \warning This function must not be called until the QApplication
     object has been created.
@@ -1459,8 +1459,8 @@ void QGLFormat::setDefaultOverlayFormat(const QGLFormat &f)
 
 
 /*!
-    Returns true if all the options of the two QGLFormat objects
-    \a a and \a b are equal; otherwise returns false.
+    Returns \c true if all the options of the two QGLFormat objects
+    \a a and \a b are equal; otherwise returns \c false.
 
     \relates QGLFormat
 */
@@ -1511,8 +1511,8 @@ QDebug operator<<(QDebug dbg, const QGLFormat &f)
 
 
 /*!
-    Returns false if all the options of the two QGLFormat objects
-    \a a and \a b are equal; otherwise returns true.
+    Returns \c false if all the options of the two QGLFormat objects
+    \a a and \a b are equal; otherwise returns \c true.
 
     \relates QGLFormat
 */
@@ -2903,8 +2903,8 @@ void QGLContext::setDevice(QPaintDevice *pDev)
 /*!
     \fn bool QGLContext::isValid() const
 
-    Returns true if a GL rendering context has been successfully
-    created; otherwise returns false.
+    Returns \c true if a GL rendering context has been successfully
+    created; otherwise returns \c false.
 */
 
 /*!
@@ -2917,16 +2917,16 @@ void QGLContext::setDevice(QPaintDevice *pDev)
 /*!
     \fn bool QGLContext::isSharing() const
 
-    Returns true if this context is sharing its GL context with
+    Returns \c true if this context is sharing its GL context with
     another QGLContext, otherwise false is returned. Note that context
     sharing might not be supported between contexts with different
     formats.
 */
 
 /*!
-    Returns true if \a context1 and \a context2 are sharing their
+    Returns \c true if \a context1 and \a context2 are sharing their
     GL resources such as textures, shader programs, etc;
-    otherwise returns false.
+    otherwise returns \c false.
 
     \since 4.6
 */
@@ -2940,15 +2940,15 @@ bool QGLContext::areSharing(const QGLContext *context1, const QGLContext *contex
 /*!
     \fn bool QGLContext::deviceIsPixmap() const
 
-    Returns true if the paint device of this context is a pixmap;
-    otherwise returns false.
+    Returns \c true if the paint device of this context is a pixmap;
+    otherwise returns \c false.
 */
 
 /*!
     \fn bool QGLContext::windowCreated() const
 
-    Returns true if a window has been created for this context;
-    otherwise returns false.
+    Returns \c true if a window has been created for this context;
+    otherwise returns \c false.
 
     \sa setWindowCreated()
 */
@@ -2975,9 +2975,9 @@ bool QGLContext::areSharing(const QGLContext *context1, const QGLContext *contex
 /*!
     \fn bool QGLContext::initialized() const
 
-    Returns true if this context has been initialized, i.e. if
+    Returns \c true if this context has been initialized, i.e. if
     QGLWidget::initializeGL() has been performed on it; otherwise
-    returns false.
+    returns \c false.
 
     \sa setInitialized()
 */
@@ -3021,9 +3021,9 @@ bool QGLContext::areSharing(const QGLContext *context1, const QGLContext *contex
 
 
 /*!
-    Creates the GL context. Returns true if it was successful in
+    Creates the GL context. Returns \c true if it was successful in
     creating a valid GL rendering context on the paint device
-    specified in the constructor; otherwise returns false (i.e. the
+    specified in the constructor; otherwise returns \c false (i.e. the
     context is invalid).
 
     If the OpenGL implementation on your system does not support the requested
@@ -3627,8 +3627,8 @@ QGLWidget::~QGLWidget()
 /*!
     \fn bool QGLWidget::doubleBuffer() const
 
-    Returns true if the contained GL rendering context has double
-    buffering; otherwise returns false.
+    Returns \c true if the contained GL rendering context has double
+    buffering; otherwise returns \c false.
 
     \sa QGLFormat::doubleBuffer()
 */
@@ -3651,8 +3651,8 @@ QGLWidget::~QGLWidget()
 /*!
     \fn bool QGLWidget::autoBufferSwap() const
 
-    Returns true if the widget is doing automatic GL buffer swapping;
-    otherwise returns false.
+    Returns \c true if the widget is doing automatic GL buffer swapping;
+    otherwise returns \c false.
 
     \sa setAutoBufferSwap()
 */
@@ -3668,8 +3668,8 @@ QGLWidget::~QGLWidget()
 /*!
     \fn bool QGLWidget::isValid() const
 
-    Returns true if the widget has a valid GL rendering context;
-    otherwise returns false. A widget will be invalid if the system
+    Returns \c true if the widget has a valid GL rendering context;
+    otherwise returns \c false. A widget will be invalid if the system
     has no \l{QGLFormat::hasOpenGL()}{OpenGL support}.
 */
 
@@ -3682,7 +3682,7 @@ bool QGLWidget::isValid() const
 /*!
     \fn bool QGLWidget::isSharing() const
 
-    Returns true if this widget's GL context is shared with another GL
+    Returns \c true if this widget's GL context is shared with another GL
     context, otherwise false is returned. Context sharing might not be
     possible if the widgets use different formats.
 

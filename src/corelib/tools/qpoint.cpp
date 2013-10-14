@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 
     A point is specified by a x coordinate and an y coordinate which
     can be accessed using the x() and y() functions. The isNull()
-    function returns true if both x and y are set to 0. The
+    function returns \c true if both x and y are set to 0. The
     coordinates can be set (or altered) using the setX() and setY()
     functions, or alternatively the rx() and ry() functions which
     return references to the coordinates (allowing direct
@@ -102,8 +102,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn bool QPoint::isNull() const
 
-    Returns true if both the x and y coordinates are set to 0,
-    otherwise returns false.
+    Returns \c true if both the x and y coordinates are set to 0,
+    otherwise returns \c false.
 */
 
 /*!
@@ -235,7 +235,7 @@ QT_BEGIN_NAMESPACE
     \fn bool operator==(const QPoint &p1, const QPoint &p2)
     \relates QPoint
 
-    Returns true if \a p1 and \a p2 are equal; otherwise returns
+    Returns \c true if \a p1 and \a p2 are equal; otherwise returns
     false.
 */
 
@@ -243,7 +243,7 @@ QT_BEGIN_NAMESPACE
     \fn bool operator!=(const QPoint &p1, const QPoint &p2)
     \relates QPoint
 
-    Returns true if \a p1 and \a p2 are not equal; otherwise returns false.
+    Returns \c true if \a p1 and \a p2 are not equal; otherwise returns \c false.
 */
 
 /*!
@@ -474,7 +474,7 @@ QDebug operator<<(QDebug d, const QPointF &p)
     A point is specified by a x coordinate and an y coordinate which
     can be accessed using the x() and y() functions. The coordinates
     of the point are specified using floating point numbers for
-    accuracy. The isNull() function returns true if both x and y are
+    accuracy. The isNull() function returns \c true if both x and y are
     set to 0.0. The coordinates can be set (or altered) using the setX()
     and setY() functions, or alternatively the rx() and ry() functions which
     return references to the coordinates (allowing direct
@@ -524,8 +524,8 @@ QDebug operator<<(QDebug d, const QPointF &p)
 /*!
     \fn bool QPointF::isNull() const
 
-    Returns true if both the x and y coordinates are set to +0.0;
-    otherwise returns false.
+    Returns \c true if both the x and y coordinates are set to +0.0;
+    otherwise returns \c false.
 
     \note Since this function treats +0.0 and -0.0 differently, points
     with zero-valued coordinates where either or both values have a
@@ -733,14 +733,14 @@ QDebug operator<<(QDebug d, const QPointF &p)
     \fn bool operator==(const QPointF &p1, const QPointF &p2)
     \relates QPointF
 
-    Returns true if \a p1 is equal to \a p2; otherwise returns false.
+    Returns \c true if \a p1 is equal to \a p2; otherwise returns \c false.
 */
 
 /*!
     \fn bool operator!=(const QPointF &p1, const QPointF &p2);
     \relates QPointF
 
-    Returns true if \a p1 is not equal to \a p2; otherwise returns false.
+    Returns \c true if \a p1 is not equal to \a p2; otherwise returns \c false.
 */
 
 #ifndef QT_NO_DATASTREAM

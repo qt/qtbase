@@ -251,7 +251,7 @@ QListView::Movement QListView::movement() const
     \brief which direction the items layout should flow.
 
     If this property is \l LeftToRight, the items will be laid out left
-    to right. If the \l isWrapping property is true, the layout will wrap
+    to right. If the \l isWrapping property is \c true, the layout will wrap
     when it reaches the right side of the visible area. If this
     property is \l TopToBottom, the items will be laid out from the top
     of the visible area, wrapping when it reaches the bottom.
@@ -288,7 +288,7 @@ QListView::Flow QListView::flow() const
     Setting this property when the view is visible will cause the
     items to be laid out again.
 
-    By default, this property is false.
+    By default, this property is \c false.
 
     \sa viewMode
 */
@@ -527,7 +527,7 @@ void QListView::clearPropertyFlags()
 }
 
 /*!
-    Returns true if the \a row is hidden; otherwise returns false.
+    Returns \c true if the \a row is hidden; otherwise returns \c false.
 */
 bool QListView::isRowHidden(int row) const
 {
@@ -1529,7 +1529,7 @@ int QListView::modelColumn() const
     in the view have the same size. This enables the view to do some
     optimizations for performance purposes.
 
-    By default, this property is false.
+    By default, this property is \c false.
 */
 void QListView::setUniformItemSizes(bool enable)
 {
@@ -1548,9 +1548,9 @@ bool QListView::uniformItemSizes() const
     \brief the item text word-wrapping policy
     \since 4.2
 
-    If this property is true then the item text is wrapped where
+    If this property is \c true then the item text is wrapped where
     necessary at word-breaks; otherwise it is not wrapped at all.
-    This property is false by default.
+    This property is \c false by default.
 
     Please note that even if wrapping is enabled, the cell will not be
     expanded to make room for the text. It will print ellipsis for
@@ -1577,7 +1577,7 @@ bool QListView::wordWrap() const
     \brief if the selection rectangle should be visible
     \since 4.3
 
-    If this property is true then the selection rectangle is visible;
+    If this property is \c true then the selection rectangle is visible;
     otherwise it will be hidden.
 
     \note The selection rectangle will only be visible if the selection mode
@@ -1585,7 +1585,7 @@ bool QListView::wordWrap() const
     draw a selection rectangle if the selection mode is
     QAbstractItemView::SingleSelection.
 
-    By default, this property is false.
+    By default, this property is \c false.
 */
 void QListView::setSelectionRectVisible(bool show)
 {
@@ -2013,7 +2013,7 @@ void QListModeViewBase::dragMoveEvent(QDragMoveEvent *event)
     else
         // place at row, col in drop index
 
-    If it returns true a drop can be done, and dropRow, dropCol and dropIndex reflects the position of the drop.
+    If it returns \c true a drop can be done, and dropRow, dropCol and dropIndex reflects the position of the drop.
     \internal
   */
 bool QListModeViewBase::dropOn(QDropEvent *event, int *dropRow, int *dropCol, QModelIndex *dropIndex)

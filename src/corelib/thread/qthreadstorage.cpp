@@ -282,7 +282,7 @@ void QThreadStorageData::finish(void **p)
 /*!
     \fn bool QThreadStorage::hasLocalData() const
 
-    If T is a pointer type, returns true if the calling thread has
+    If T is a pointer type, returns \c true if the calling thread has
     non-zero data available.
 
     If T is a value type, returns whether the data has already been

@@ -73,11 +73,11 @@ public:
         Undefined
     };
 
-    QAccessibleInterface *child(int index) const;
-    int childCount() const;
-    int indexOfChild(const QAccessibleInterface *child) const;
-    bool isValid() const;
-    QAccessibleInterface *childAt(int x, int y) const;
+    QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
+    int childCount() const Q_DECL_OVERRIDE;
+    int indexOfChild(const QAccessibleInterface *child) const Q_DECL_OVERRIDE;
+    bool isValid() const Q_DECL_OVERRIDE;
+    QAccessibleInterface *childAt(int x, int y) const Q_DECL_OVERRIDE;
 
 //protected:
     QAbstractScrollArea *abstractScrollArea() const;
@@ -102,14 +102,14 @@ public:
     explicit QAccessibleTabBar(QWidget *w);
     ~QAccessibleTabBar();
 
-    int childCount() const;
-    QString text(QAccessible::Text t) const;
+    int childCount() const Q_DECL_OVERRIDE;
+    QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
 
     bool setSelected(int child, bool on, bool extend);
     QVector<int> selection() const;
 
-    QAccessibleInterface* child(int index) const;
-    int indexOfChild(const QAccessibleInterface *child) const;
+    QAccessibleInterface* child(int index) const Q_DECL_OVERRIDE;
+    int indexOfChild(const QAccessibleInterface *child) const Q_DECL_OVERRIDE;
 
 protected:
     QTabBar *tabBar() const;
@@ -123,18 +123,18 @@ class QAccessibleComboBox : public QAccessibleWidget
 public:
     explicit QAccessibleComboBox(QWidget *w);
 
-    int childCount() const;
-    QAccessibleInterface *childAt(int x, int y) const;
-    int indexOfChild(const QAccessibleInterface *child) const;
-    QAccessibleInterface* child(int index) const;
+    int childCount() const Q_DECL_OVERRIDE;
+    QAccessibleInterface *childAt(int x, int y) const Q_DECL_OVERRIDE;
+    int indexOfChild(const QAccessibleInterface *child) const Q_DECL_OVERRIDE;
+    QAccessibleInterface* child(int index) const Q_DECL_OVERRIDE;
 
-    QString text(QAccessible::Text t) const;
+    QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
 
     // QAccessibleActionInterface
-    QStringList actionNames() const;
-    QString localizedActionDescription(const QString &actionName) const;
-    void doAction(const QString &actionName);
-    QStringList keyBindingsForAction(const QString &actionName) const;
+    QStringList actionNames() const Q_DECL_OVERRIDE;
+    QString localizedActionDescription(const QString &actionName) const Q_DECL_OVERRIDE;
+    void doAction(const QString &actionName) Q_DECL_OVERRIDE;
+    QStringList keyBindingsForAction(const QString &actionName) const Q_DECL_OVERRIDE;
 
 protected:
     QComboBox *comboBox() const;

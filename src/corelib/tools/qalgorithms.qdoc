@@ -139,7 +139,7 @@
     \row \li \c{i - n} \li returns the iterator for the item \c n positions behind of iterator \c i
     \row \li \c{i - j} \li returns the number of items between iterators \c i and \c j
     \row \li \c{i[n]} \li same as \c{*(i + n)}
-    \row \li \c{i < j} \li returns true if iterator \c j comes after iterator \c i
+    \row \li \c{i < j} \li returns \c true if iterator \c j comes after iterator \c i
     \endtable
 
     QList and QVector's non-const iterator types are random access iterators.
@@ -273,8 +273,8 @@
     Use std::equal instead.
 
     Compares the items in the range [\a begin1, \a end1) with the
-    items in the range [\a begin2, ...). Returns true if all the
-    items compare equal; otherwise returns false.
+    items in the range [\a begin2, ...). Returns \c true if all the
+    items compare equal; otherwise returns \c false.
 
     Example:
     \snippet code/doc_src_qalgorithms.cpp 6

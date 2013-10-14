@@ -643,14 +643,14 @@ void QTextBrowserPrivate::restoreHistoryEntry(const HistoryEntry entry)
     \property QTextBrowser::readOnly
     \brief whether the text browser is read-only
 
-    By default, this property is true.
+    By default, this property is \c true.
 */
 
 /*!
     \property QTextBrowser::undoRedoEnabled
     \brief whether the text browser supports undo/redo operations
 
-    By default, this property is false.
+    By default, this property is \c false.
 */
 
 void QTextBrowserPrivate::init()
@@ -1103,7 +1103,7 @@ QVariant QTextBrowser::loadResource(int /*type*/, const QUrl &name)
 /*!
     \since 4.2
 
-    Returns true if the text browser can go backward in the document history
+    Returns \c true if the text browser can go backward in the document history
     using backward().
 
     \sa backwardAvailable(), backward()
@@ -1117,7 +1117,7 @@ bool QTextBrowser::isBackwardAvailable() const
 /*!
     \since 4.2
 
-    Returns true if the text browser can go forward in the document history
+    Returns \c true if the text browser can go forward in the document history
     using forward().
 
     \sa forwardAvailable(), forward()

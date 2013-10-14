@@ -69,6 +69,7 @@ QByteArray qMyMessageFormatString(QtMsgType type, const QMessageLogContext &cont
         case QtWarningMsg: message.append(".warning"); break;
         case QtCriticalMsg:message.append(".critical"); break;
         case QtFatalMsg:   message.append(".fatal"); break;
+        case QtTraceMsg:   message.append(".trace"); break;
         }
         message.append(": ");
         message.append(qPrintable(str));
@@ -255,27 +256,27 @@ private slots:
     {
         logMessage.clear();
 
-        QCOMPARE(QLoggingCategory::defaultCategory().isEnabled<QtDebugMsg>(), true);
+        QCOMPARE(QLoggingCategory::defaultCategory().isDebugEnabled(), true);
         QCOMPARE(QLoggingCategory::defaultCategory().isEnabled(QtDebugMsg), true);
-        QCOMPARE(QLoggingCategory::defaultCategory().isEnabled<QtWarningMsg>(), true);
+        QCOMPARE(QLoggingCategory::defaultCategory().isWarningEnabled(), true);
         QCOMPARE(QLoggingCategory::defaultCategory().isEnabled(QtWarningMsg), true);
-        QCOMPARE(QLoggingCategory::defaultCategory().isEnabled<QtCriticalMsg>(), true);
+        QCOMPARE(QLoggingCategory::defaultCategory().isCriticalEnabled(), true);
         QCOMPARE(QLoggingCategory::defaultCategory().isEnabled(QtCriticalMsg), true);
 
         QLoggingCategory defaultCategory("default");
-        QCOMPARE(defaultCategory.isEnabled<QtDebugMsg>(), true);
+        QCOMPARE(defaultCategory.isDebugEnabled(), true);
         QCOMPARE(defaultCategory.isEnabled(QtDebugMsg), true);
-        QCOMPARE(defaultCategory.isEnabled<QtWarningMsg>(), true);
+        QCOMPARE(defaultCategory.isWarningEnabled(), true);
         QCOMPARE(defaultCategory.isEnabled(QtWarningMsg), true);
-        QCOMPARE(defaultCategory.isEnabled<QtCriticalMsg>(), true);
+        QCOMPARE(defaultCategory.isCriticalEnabled(), true);
         QCOMPARE(defaultCategory.isEnabled(QtCriticalMsg), true);
 
         QLoggingCategory customCategory("custom");
-        QCOMPARE(customCategory.isEnabled<QtDebugMsg>(), false);
+        QCOMPARE(customCategory.isDebugEnabled(), false);
         QCOMPARE(customCategory.isEnabled(QtDebugMsg), false);
-        QCOMPARE(customCategory.isEnabled<QtWarningMsg>(), true);
+        QCOMPARE(customCategory.isWarningEnabled(), true);
         QCOMPARE(customCategory.isEnabled(QtWarningMsg), true);
-        QCOMPARE(customCategory.isEnabled<QtCriticalMsg>(), true);
+        QCOMPARE(customCategory.isCriticalEnabled(), true);
         QCOMPARE(customCategory.isEnabled(QtCriticalMsg), true);
 
         // make sure nothing has printed warnings
@@ -286,10 +287,10 @@ private slots:
     {
         logMessage.clear();
 
-        QCOMPARE(QLoggingCategory::defaultCategory().isEnabled<QtDebugMsg>(), true);
+        QCOMPARE(QLoggingCategory::defaultCategory().isDebugEnabled(), true);
 
         QLoggingCategory::defaultCategory().setEnabled(QtDebugMsg, false);
-        QCOMPARE(QLoggingCategory::defaultCategory().isEnabled<QtDebugMsg>(), false);
+        QCOMPARE(QLoggingCategory::defaultCategory().isDebugEnabled(), false);
         QLoggingCategory::defaultCategory().setEnabled(QtDebugMsg, true);
 
         // make sure nothing has printed warnings
@@ -299,17 +300,17 @@ private slots:
 
     void QLoggingCategory_installFilter()
     {
-        QVERIFY(QLoggingCategory::defaultCategory().isEnabled<QtDebugMsg>());
+        QVERIFY(QLoggingCategory::defaultCategory().isDebugEnabled());
 
         QLoggingCategory::CategoryFilter defaultFilter =
                 QLoggingCategory::installFilter(customCategoryFilter);
         QVERIFY(defaultFilter);
         customCategoryFilterArgs.clear();
-        QVERIFY(!QLoggingCategory::defaultCategory().isEnabled<QtDebugMsg>());
+        QVERIFY(!QLoggingCategory::defaultCategory().isDebugEnabled());
 
         QLoggingCategory cat("custom");
         QCOMPARE(customCategoryFilterArgs, QStringList() << "custom");
-        QVERIFY(cat.isEnabled<QtDebugMsg>());
+        QVERIFY(cat.isDebugEnabled());
         customCategoryFilterArgs.clear();
 
         // install default filter
@@ -318,8 +319,8 @@ private slots:
         QCOMPARE((void*)currentFilter, (void*)customCategoryFilter);
         QCOMPARE(customCategoryFilterArgs.size(), 0);
 
-        QVERIFY(QLoggingCategory::defaultCategory().isEnabled<QtDebugMsg>());
-        QVERIFY(!cat.isEnabled<QtDebugMsg>());
+        QVERIFY(QLoggingCategory::defaultCategory().isDebugEnabled());
+        QVERIFY(!cat.isDebugEnabled());
 
         // install default filter
         currentFilter =
@@ -327,8 +328,8 @@ private slots:
         QCOMPARE((void*)defaultFilter, (void*)currentFilter);
         QCOMPARE(customCategoryFilterArgs.size(), 0);
 
-        QVERIFY(QLoggingCategory::defaultCategory().isEnabled<QtDebugMsg>());
-        QVERIFY(!cat.isEnabled<QtDebugMsg>());
+        QVERIFY(QLoggingCategory::defaultCategory().isDebugEnabled());
+        QVERIFY(!cat.isDebugEnabled());
     }
 
     void qDebugMacros()
@@ -732,6 +733,7 @@ private slots:
             qCCritical(mycategoryobject) << "My Category Object";
             QCOMPARE(cleanLogLine(logMessage), cleanLogLine(buf));
         }
+        Q_UNUSED(pcategorybject);
     }
 
     void checkEmptyCategoryName()

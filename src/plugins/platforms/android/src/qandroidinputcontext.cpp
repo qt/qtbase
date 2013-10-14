@@ -54,6 +54,8 @@
 
 #include <QTextCharFormat>
 
+#include <QDebug>
+
 QT_BEGIN_NAMESPACE
 
 static QAndroidInputContext *m_androidInputContext = 0;
@@ -78,6 +80,9 @@ static jboolean commitText(JNIEnv *env, jobject /*thiz*/, jstring text, jint new
     QString str(reinterpret_cast<const QChar *>(jstr), env->GetStringLength(text));
     env->ReleaseStringChars(text, jstr);
 
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+    qDebug() << "@@@ COMMIT" << str;
+#endif
     return m_androidInputContext->commitText(str, newCursorPosition);
 }
 
@@ -86,6 +91,9 @@ static jboolean deleteSurroundingText(JNIEnv */*env*/, jobject /*thiz*/, jint le
     if (!m_androidInputContext)
         return JNI_FALSE;
 
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+    qDebug() << "@@@ DELETE" << leftLength << rightLength;
+#endif
     return m_androidInputContext->deleteSurroundingText(leftLength, rightLength);
 }
 
@@ -94,6 +102,9 @@ static jboolean finishComposingText(JNIEnv */*env*/, jobject /*thiz*/)
     if (!m_androidInputContext)
         return JNI_FALSE;
 
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+    qDebug() << "@@@ FINISH";
+#endif
     return m_androidInputContext->finishComposingText();
 }
 
@@ -110,6 +121,9 @@ static jobject getExtractedText(JNIEnv *env, jobject /*thiz*/, int hintMaxChars,
     if (!m_androidInputContext)
         return 0;
 
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+    qDebug() << "@@@ GETEX";
+#endif
     const QAndroidInputContext::ExtractedText &extractedText =
             m_androidInputContext->getExtractedText(hintMaxChars, hintMaxLines, flags);
 
@@ -133,6 +147,9 @@ static jstring getSelectedText(JNIEnv *env, jobject /*thiz*/, jint flags)
         return 0;
 
     const QString &text = m_androidInputContext->getSelectedText(flags);
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+    qDebug() << "@@@ GETSEL" << text;
+#endif
     return env->NewString(reinterpret_cast<const jchar *>(text.constData()), jsize(text.length()));
 }
 
@@ -142,6 +159,9 @@ static jstring getTextAfterCursor(JNIEnv *env, jobject /*thiz*/, jint length, ji
         return 0;
 
     const QString &text = m_androidInputContext->getTextAfterCursor(length, flags);
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+    qDebug() << "@@@ GET" << length << text;
+#endif
     return env->NewString(reinterpret_cast<const jchar *>(text.constData()), jsize(text.length()));
 }
 
@@ -151,6 +171,9 @@ static jstring getTextBeforeCursor(JNIEnv *env, jobject /*thiz*/, jint length, j
         return 0;
 
     const QString &text = m_androidInputContext->getTextBeforeCursor(length, flags);
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+    qDebug() << "@@@ GET" << length << text;
+#endif
     return env->NewString(reinterpret_cast<const jchar *>(text.constData()), jsize(text.length()));
 }
 
@@ -164,14 +187,32 @@ static jboolean setComposingText(JNIEnv *env, jobject /*thiz*/, jstring text, ji
     QString str(reinterpret_cast<const QChar *>(jstr), env->GetStringLength(text));
     env->ReleaseStringChars(text, jstr);
 
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+    qDebug() << "@@@ SET" << str;
+#endif
     return m_androidInputContext->setComposingText(str, newCursorPosition);
 }
+
+static jboolean setComposingRegion(JNIEnv */*env*/, jobject /*thiz*/, jint start, jint end)
+{
+    if (!m_androidInputContext)
+        return JNI_FALSE;
+
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+    qDebug() << "@@@ SETR" << start << end;
+#endif
+    return m_androidInputContext->setComposingRegion(start, end);
+}
+
 
 static jboolean setSelection(JNIEnv */*env*/, jobject /*thiz*/, jint start, jint end)
 {
     if (!m_androidInputContext)
         return JNI_FALSE;
 
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+    qDebug() << "@@@ SETSEL" << start << end;
+#endif
     return m_androidInputContext->setSelection(start, end);
 }
 
@@ -180,6 +221,9 @@ static jboolean selectAll(JNIEnv */*env*/, jobject /*thiz*/)
     if (!m_androidInputContext)
         return JNI_FALSE;
 
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+    qDebug() << "@@@ SELALL";
+#endif
     return m_androidInputContext->selectAll();
 }
 
@@ -188,6 +232,9 @@ static jboolean cut(JNIEnv */*env*/, jobject /*thiz*/)
     if (!m_androidInputContext)
         return JNI_FALSE;
 
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+    qDebug() << "@@@";
+#endif
     return m_androidInputContext->cut();
 }
 
@@ -196,6 +243,9 @@ static jboolean copy(JNIEnv */*env*/, jobject /*thiz*/)
     if (!m_androidInputContext)
         return JNI_FALSE;
 
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+    qDebug() << "@@@";
+#endif
     return m_androidInputContext->copy();
 }
 
@@ -204,6 +254,9 @@ static jboolean copyURL(JNIEnv */*env*/, jobject /*thiz*/)
     if (!m_androidInputContext)
         return JNI_FALSE;
 
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+    qDebug() << "@@@";
+#endif
     return m_androidInputContext->copyURL();
 }
 
@@ -212,6 +265,9 @@ static jboolean paste(JNIEnv */*env*/, jobject /*thiz*/)
     if (!m_androidInputContext)
         return JNI_FALSE;
 
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+    qDebug() << "@@@";
+#endif
     return m_androidInputContext->paste();
 }
 
@@ -226,6 +282,7 @@ static JNINativeMethod methods[] = {
     {"getTextAfterCursor", "(II)Ljava/lang/String;", (void *)getTextAfterCursor},
     {"getTextBeforeCursor", "(II)Ljava/lang/String;", (void *)getTextBeforeCursor},
     {"setComposingText", "(Ljava/lang/String;I)Z", (void *)setComposingText},
+    {"setComposingRegion", "(II)Z", (void *)setComposingRegion},
     {"setSelection", "(II)Z", (void *)setSelection},
     {"selectAll", "()Z", (void *)selectAll},
     {"cut", "()Z", (void *)cut},
@@ -235,7 +292,8 @@ static JNINativeMethod methods[] = {
 };
 
 
-QAndroidInputContext::QAndroidInputContext():QPlatformInputContext()
+QAndroidInputContext::QAndroidInputContext()
+    : QPlatformInputContext(), m_blockUpdateSelection(false)
 {
     QtAndroid::AttachedJNIEnv env;
     if (!env.jniEnv)
@@ -340,7 +398,7 @@ void QAndroidInputContext::commit()
 void QAndroidInputContext::updateCursorPosition()
 {
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
-    if (!query.isNull()) {
+    if (!query.isNull() && !m_blockUpdateSelection) {
         const int cursorPos = query->value(Qt::ImCursorPosition).toInt();
         QtAndroidInput::updateSelection(cursorPos, cursorPos, -1, -1); //selection empty and no pre-edit text
     }
@@ -557,12 +615,60 @@ jboolean QAndroidInputContext::setComposingText(const QString &text, jint newCur
     sendInputMethodEvent(&event);
 
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
-    if (!query.isNull()) {
+    if (!query.isNull() && !m_blockUpdateSelection) {
         int cursorPos = query->value(Qt::ImCursorPosition).toInt();
         int preeditLength = text.length();
         QtAndroidInput::updateSelection(cursorPos+preeditLength, cursorPos+preeditLength, cursorPos, cursorPos+preeditLength);
     }
 
+    return JNI_TRUE;
+}
+
+// Android docs say:
+// * start may be after end, same meaning as if swapped
+// * this function must not trigger updateSelection
+// * if start == end then we should stop composing
+jboolean QAndroidInputContext::setComposingRegion(jint start, jint end)
+{
+    QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
+    if (query.isNull())
+        return JNI_FALSE;
+
+    if (start > end)
+        qSwap(start, end);
+
+    /*
+      start and end are  cursor positions, not character positions,
+      i.e. selecting the first character is done by start == 0 and end == 1,
+      and start == end means no character selected
+
+      Therefore, the length of the region is end - start
+     */
+    int length = end - start;
+
+    bool updateSelectionWasBlocked = m_blockUpdateSelection;
+    m_blockUpdateSelection = true;
+
+    QString text = query->value(Qt::ImSurroundingText).toString();
+    m_composingText = text.mid(start, length);
+
+    //in the Qt text controls, cursor pos is the start of the preedit
+    int cursorPos = query->value(Qt::ImCursorPosition).toInt();
+    int relativeStart = start - cursorPos;
+
+    QList<QInputMethodEvent::Attribute> attributes;
+
+    // Show compose text underlined
+    QTextCharFormat underlined;
+    underlined.setFontUnderline(true);
+    attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat,0, length,
+                                                   QVariant(underlined)));
+
+    QInputMethodEvent event(m_composingText, attributes);
+    event.setCommitString(QString(), relativeStart, length);
+    sendInputMethodEvent(&event);
+
+    m_blockUpdateSelection = updateSelectionWasBlocked;
     return JNI_TRUE;
 }
 

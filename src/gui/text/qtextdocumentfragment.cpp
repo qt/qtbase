@@ -352,7 +352,7 @@ QTextDocumentFragment::~QTextDocumentFragment()
 }
 
 /*!
-    Returns true if the fragment is empty; otherwise returns false.
+    Returns \c true if the fragment is empty; otherwise returns \c false.
 */
 bool QTextDocumentFragment::isEmpty() const
 {

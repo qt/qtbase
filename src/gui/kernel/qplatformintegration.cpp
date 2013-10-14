@@ -221,14 +221,14 @@ QPlatformServices *QPlatformIntegration::services() const
     libraries.
 
     \value NonFullScreenWindows The platform supports top-level windows which do not
-    fill the screen. The default implementation returns true. Returning false for
+    fill the screen. The default implementation returns \c true. Returning false for
     this will cause all windows, including dialogs and popups, to be resized to fill the
     screen.
 
     \value WindowManagement The platform is based on a system that performs window
     management.  This includes the typical desktop platforms. Can be set to false on
     platforms where no window management is available, meaning for example that windows
-    are never repositioned by the window manager. The default implementation returns true.
+    are never repositioned by the window manager. The default implementation returns \c true.
  */
 
 /*!
@@ -288,6 +288,18 @@ QPaintEngine *QPlatformIntegration::createImagePaintEngine(QPaintDevice *paintDe
 {
     Q_UNUSED(paintDevice)
     return 0;
+}
+
+/*!
+  Performs initialization steps that depend on having an event dispatcher
+  available. Called after the event dispatcher has been created.
+
+  Tasks that require an event dispatcher, for example creating socket notifiers, cannot be
+  performed in the constructor. Instead, they should be performed here. The default
+  implementation does nothing.
+*/
+void QPlatformIntegration::initialize()
+{
 }
 
 /*!

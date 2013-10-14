@@ -1379,7 +1379,7 @@ int QComboBox::maxCount() const
 
     Use setCompleter() instead.
 
-    By default, this property is true.
+    By default, this property is \c true.
 
     \sa editable
 */
@@ -1473,7 +1473,7 @@ void QComboBox::setAutoCompletionCaseSensitivity(Qt::CaseSensitivity sensitivity
     Note that it is always possible to programmatically insert duplicate items into the
     combobox.
 
-    By default, this property is false (duplicates are not allowed).
+    By default, this property is \c false (duplicates are not allowed).
 */
 bool QComboBox::duplicatesEnabled() const
 {
@@ -1632,7 +1632,7 @@ void QComboBox::setIconSize(const QSize &size)
     \property QComboBox::editable
     \brief whether the combo box can be edited by the user
 
-    By default, this property is false. The effect of editing depends
+    By default, this property is \c false. The effect of editing depends
     on the insert policy.
 
     \sa InsertPolicy

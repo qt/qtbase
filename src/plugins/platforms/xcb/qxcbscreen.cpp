@@ -161,6 +161,18 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
                                   XCB_WINDOW_CLASS_INPUT_OUTPUT,
                                   screen()->root_visual,
                                   0, 0), connection);
+#ifndef QT_NO_DEBUG
+    QByteArray ba("Qt client leader window for screen ");
+    ba += m_outputName.toUtf8();
+    Q_XCB_CALL2(xcb_change_property(xcb_connection(),
+                                   XCB_PROP_MODE_REPLACE,
+                                   m_clientLeader,
+                                   atom(QXcbAtom::_NET_WM_NAME),
+                                   atom(QXcbAtom::UTF8_STRING),
+                                   8,
+                                   ba.length(),
+                                   ba.constData()), connection);
+#endif
 
     Q_XCB_CALL2(xcb_change_property(xcb_connection(),
                                     XCB_PROP_MODE_REPLACE,

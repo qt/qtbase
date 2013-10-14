@@ -172,7 +172,6 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
     }
 
     m_fontDatabase.reset(new QGenericUnixFontDatabase());
-    m_inputContext.reset(QPlatformInputContextFactory::create());
 }
 
 QXcbIntegration::~QXcbIntegration()
@@ -290,6 +289,13 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 QAbstractEventDispatcher *QXcbIntegration::createEventDispatcher() const
 {
     return createUnixEventDispatcher();
+}
+
+void QXcbIntegration::initialize()
+{
+    // Perform everything that may potentially need the event dispatcher (timers, socket
+    // notifiers) here instead of the constructor.
+    m_inputContext.reset(QPlatformInputContextFactory::create());
 }
 
 void QXcbIntegration::moveToScreen(QWindow *window, int screen)

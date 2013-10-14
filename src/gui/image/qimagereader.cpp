@@ -761,8 +761,8 @@ void QImageReader::setAutoDetectImageFormat(bool enabled)
 }
 
 /*!
-    Returns true if image format autodetection is enabled on this image
-    reader; otherwise returns false. By default, autodetection is enabled.
+    Returns \c true if image format autodetection is enabled on this image
+    reader; otherwise returns \c false. By default, autodetection is enabled.
 
     \sa setAutoDetectImageFormat()
 */
@@ -1089,7 +1089,7 @@ QColor QImageReader::backgroundColor() const
 /*!
     \since 4.1
 
-    Returns true if the image format supports animation;
+    Returns \c true if the image format supports animation;
     otherwise, false is returned.
 
     \sa QMovie::supportedFormats()
@@ -1104,15 +1104,15 @@ bool QImageReader::supportsAnimation() const
 }
 
 /*!
-    Returns true if an image can be read for the device (i.e., the
+    Returns \c true if an image can be read for the device (i.e., the
     image format is supported, and the device seems to contain valid
-    data); otherwise returns false.
+    data); otherwise returns \c false.
 
     canRead() is a lightweight function that only does a quick test to
     see if the image data is valid. read() may still return false
-    after canRead() returns true, if the image data is corrupt.
+    after canRead() returns \c true, if the image data is corrupt.
 
-    For images that support animation, canRead() returns false when
+    For images that support animation, canRead() returns \c false when
     all frames have been read.
 
     \sa read(), supportedImageFormats()
@@ -1149,7 +1149,7 @@ QImage QImageReader::read()
     \overload
 
     Reads an image from the device into \a image, which must point to a
-    QImage. Returns true on success; otherwise, returns false.
+    QImage. Returns \c true on success; otherwise, returns \c false.
 
     If \a image has same format and size as the image data that is about to be
     read, this function may not need to allocate a new image before
@@ -1393,7 +1393,7 @@ QString QImageReader::errorString() const
 /*!
     \since 4.2
 
-    Returns true if the reader supports \a option; otherwise returns
+    Returns \c true if the reader supports \a option; otherwise returns
     false.
 
     Different image formats support different options. Call this function to

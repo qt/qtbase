@@ -115,7 +115,7 @@ QDBusServer::~QDBusServer()
 }
 
 /*!
-    Returns true if this QDBusServer object is connected.
+    Returns \c true if this QDBusServer object is connected.
 
     If it isn't connected, you need to call the constructor again.
 */

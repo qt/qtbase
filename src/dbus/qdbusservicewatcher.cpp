@@ -322,7 +322,7 @@ void QDBusServiceWatcher::addWatchedService(const QString &newService)
     still be signals pending delivery about \a service. Those signals will
     still be emitted whenever the D-Bus messages are processed.
 
-    This function returns true if any services were removed.
+    This function returns \c true if any services were removed.
 */
 bool QDBusServiceWatcher::removeWatchedService(const QString &service)
 {

@@ -118,8 +118,8 @@ QTextOption::QTextOption(const QTextOption &o)
 /*!
     \fn QTextOption &QTextOption::operator=(const QTextOption &other)
 
-    Returns true if the text option is the same as the \a other text option;
-    otherwise returns false.
+    Returns \c true if the text option is the same as the \a other text option;
+    otherwise returns \c false.
 */
 QTextOption &QTextOption::operator=(const QTextOption &o)
 {
@@ -248,8 +248,8 @@ QList<QTextOption::Tab> QTextOption::tabs() const
 /*!
   \fn bool QTextOption::useDesignMetrics() const
 
-    Returns true if the layout uses design rather than device metrics;
-    otherwise returns false.
+    Returns \c true if the layout uses design rather than device metrics;
+    otherwise returns \c false.
 
     \sa setUseDesignMetrics()
 */
@@ -409,15 +409,15 @@ QList<QTextOption::Tab> QTextOption::tabs() const
 /*!
     \fn bool Tab::operator==(const Tab &other) const
 
-    Returns true if tab \a other is equal to this tab;
-    otherwise returns false.
+    Returns \c true if tab \a other is equal to this tab;
+    otherwise returns \c false.
 */
 
 /*!
     \fn bool Tab::operator!=(const Tab &other) const
 
-    Returns true if tab \a other is not equal to this tab;
-    otherwise returns false.
+    Returns \c true if tab \a other is not equal to this tab;
+    otherwise returns \c false.
 */
 
 /*!

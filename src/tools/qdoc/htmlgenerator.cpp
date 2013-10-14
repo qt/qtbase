@@ -491,7 +491,7 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
             generateAnnotatedList(relative, marker, qdb_->getCppClasses());
         }
         else if (atom->string() == "classes") {
-            generateCompactList(Generic, relative, qdb_->getCppClasses(), true);
+            generateCompactList(Generic, relative, qdb_->getCppClasses(), true, QStringLiteral("Q"));
         }
         else if (atom->string() == "qmltypes") {
             generateCompactList(Generic, relative, qdb_->getQmlTypes(), true, QStringLiteral(""));
@@ -513,16 +513,18 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
             generateClassHierarchy(relative, qdb_->getCppClasses());
         }
         else if (atom->string() == "compatclasses") {
-            generateCompactList(Generic, relative, qdb_->getCompatibilityClasses(), false);
+            // "compatclasses" is no longer used. Delete this at some point.
+            // mws 03/10/2013
+            generateCompactList(Generic, relative, qdb_->getCompatibilityClasses(), false, QStringLiteral("Q"));
         }
         else if (atom->string() == "obsoleteclasses") {
-            generateCompactList(Generic, relative, qdb_->getObsoleteClasses(), false);
+            generateCompactList(Generic, relative, qdb_->getObsoleteClasses(), false, QStringLiteral("Q"));
         }
         else if (atom->string() == "obsoleteqmltypes") {
             generateCompactList(Generic, relative, qdb_->getObsoleteQmlTypes(), false, QStringLiteral(""));
         }
         else if (atom->string() == "obsoletecppmembers") {
-            generateCompactList(Obsolete, relative, qdb_->getClassesWithObsoleteMembers(), false);
+            generateCompactList(Obsolete, relative, qdb_->getClassesWithObsoleteMembers(), false, QStringLiteral("Q"));
         }
         else if (atom->string() == "obsoleteqmlmembers") {
             generateCompactList(Obsolete, relative, qdb_->getQmlTypesWithObsoleteMembers(), false, QStringLiteral(""));
@@ -534,10 +536,14 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
             generateLegaleseList(relative, marker);
         }
         else if (atom->string() == "mainclasses") {
-            generateCompactList(Generic, relative, qdb_->getMainClasses(), true);
+            // "mainclasses" is no longer used. Delete this at some point.
+            // mws 03/10/2013
+            generateCompactList(Generic, relative, qdb_->getMainClasses(), true, QStringLiteral("Q"));
         }
         else if (atom->string() == "services") {
-            generateCompactList(Generic, relative, qdb_->getServiceClasses(), false);
+            // "services" is no longer used. Delete this at some point.
+            // mws 03/10/2013
+            generateCompactList(Generic, relative, qdb_->getServiceClasses(), false, QStringLiteral("Q"));
         }
         else if (atom->string() == "overviews") {
             generateOverviewList(relative);
@@ -1350,8 +1356,8 @@ void HtmlGenerator::generateCollisionPages()
         for (int i=0; i<collisions.size(); ++i) {
             Node* n = collisions.at(i);
             QString t;
-            if (!n->qmlModuleIdentifier().isEmpty())
-                t = n->qmlModuleIdentifier() + "::";
+            if (!n->qmlModuleName().isEmpty())
+                t = n->qmlModuleName() + "::";
             t += protectEnc(fullTitle);
             nm.insertMulti(t,n);
         }
@@ -1387,8 +1393,8 @@ void HtmlGenerator::generateCollisionPages()
                     if (p) {
                         QString link = linkForNode(p,0);
                         QString label;
-                        if (!n->qmlModuleIdentifier().isEmpty())
-                            label = n->qmlModuleIdentifier() + "::";
+                        if (!n->qmlModuleName().isEmpty())
+                            label = n->qmlModuleName() + "::";
                         label += n->name() + "::" + p->name();
                         out() << "<li>";
                         out() << "<a href=\"" << link << "\">";
@@ -2535,49 +2541,11 @@ void HtmlGenerator::generateCompactList(ListType listType,
                                         bool includeAlphabet,
                                         QString commonPrefix)
 {
-    const int NumParagraphs = 37; // '0' to '9', 'A' to 'Z', '_'
-
     if (classMap.isEmpty())
         return;
 
-    /*
-      If commonPrefix is not empty, then the caller knows what
-      the common prefix is and has passed it in, so just use that
-      one. But if commonPrefix is a null string (default value), then
-      compute a common prefix using this simple algorithm. Note we
-      assume the prefix length is 1, i.e. we will have a single
-      character as the common prefix.
-     */
+    const int NumParagraphs = 37; // '0' to '9', 'A' to 'Z', '_'
     int commonPrefixLen = commonPrefix.length();
-    if (commonPrefix.isNull()) {
-        QVector<int> count(26);
-        for (int i=0; i<26; ++i)
-            count[i] = 0;
-
-        NodeMap::const_iterator iter = classMap.constBegin();
-        while (iter != classMap.constEnd()) {
-            if (!iter.key().contains("::")) {
-                QChar c = iter.key()[0];
-                if ((c >= 'A') && (c <= 'Z')) {
-                    int idx = c.unicode() - QChar('A').unicode();
-                    ++count[idx];
-                }
-            }
-            ++iter;
-        }
-        int highest = 0;
-        int idx = -1;
-        for (int i=0; i<26; ++i) {
-            if (count[i] > highest) {
-                highest = count[i];
-                idx = i;
-            }
-        }
-        idx += QChar('A').unicode();
-        QChar common(idx);
-        commonPrefix = common;
-        commonPrefixLen = 1;
-    }
 
     /*
       Divide the data into 37 paragraphs: 0, ..., 9, A, ..., Z,

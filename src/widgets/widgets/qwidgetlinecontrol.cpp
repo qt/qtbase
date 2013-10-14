@@ -416,7 +416,7 @@ QRect QWidgetLineControl::cursorRect() const
 
     Fixes the current text so that it is valid given any set validators.
 
-    Returns true if the text was changed.  Otherwise returns false.
+    Returns \c true if the text was changed.  Otherwise returns \c false.
 */
 bool QWidgetLineControl::fixup() // this function assumes that validate currently returns != Acceptable
 {
@@ -1090,10 +1090,10 @@ bool QWidgetLineControl::isValidInput(QChar key, QChar mask) const
 /*!
     \internal
 
-    Returns true if the given text \a str is valid for any
+    Returns \c true if the given text \a str is valid for any
     validator or input mask set for the line control.
 
-    Otherwise returns false
+    Otherwise returns \c false
 */
 bool QWidgetLineControl::hasAcceptableInput(const QString &str) const
 {

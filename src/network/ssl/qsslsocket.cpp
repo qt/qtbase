@@ -464,8 +464,8 @@ void QSslSocket::connectToHostEncrypted(const QString &hostName, quint16 port,
 
 /*!
     Initializes QSslSocket with the native socket descriptor \a
-    socketDescriptor. Returns true if \a socketDescriptor is accepted
-    as a valid socket descriptor; otherwise returns false.
+    socketDescriptor. Returns \c true if \a socketDescriptor is accepted
+    as a valid socket descriptor; otherwise returns \c false.
     The socket is opened in the mode specified by \a openMode, and
     enters the socket state specified by \a state.
 
@@ -541,7 +541,7 @@ QSslSocket::SslMode QSslSocket::mode() const
 }
 
 /*!
-    Returns true if the socket is encrypted; otherwise, false is returned.
+    Returns \c true if the socket is encrypted; otherwise, false is returned.
 
     An encrypted socket encrypts all data that is written by calling write()
     or putChar() before the data is written to the network, and decrypts all
@@ -756,7 +756,7 @@ qint64 QSslSocket::encryptedBytesToWrite() const
 /*!
     \reimp
 
-    Returns true if you can read one while line (terminated by a single ASCII
+    Returns \c true if you can read one while line (terminated by a single ASCII
     '\\n' character) of decrypted characters; otherwise, false is returned.
 */
 bool QSslSocket::canReadLine() const
@@ -799,7 +799,7 @@ bool QSslSocket::atEnd() const
 /*!
     This function writes as much as possible from the internal write buffer to
     the underlying network socket, without blocking. If any data was written,
-    this function returns true; otherwise false is returned.
+    this function returns \c true; otherwise false is returned.
 
     Call this function if you need QSslSocket to start sending buffered data
     immediately. The number of bytes successfully written depends on the
@@ -1255,9 +1255,9 @@ QList<QSslCipher> QSslSocket::supportedCiphers()
   Searches all files in the \a path for certificates encoded in the
   specified \a format and adds them to this socket's CA certificate
   database. \a path can be explicit, or it can contain wildcards in
-  the format specified by \a syntax. Returns true if one or more
+  the format specified by \a syntax. Returns \c true if one or more
   certificates are added to the socket's CA certificate database;
-  otherwise returns false.
+  otherwise returns \c false.
 
   The CA certificate database is used by the socket during the
   handshake phase to validate the peer's certificate.
@@ -1349,7 +1349,7 @@ QList<QSslCertificate> QSslSocket::caCertificates() const
     Searches all files in the \a path for certificates with the
     specified \a encoding and adds them to the default CA certificate
     database. \a path can be an explicit file, or it can contain
-    wildcards in the format specified by \a syntax. Returns true if
+    wildcards in the format specified by \a syntax. Returns \c true if
     any CA certificates are added to the default database.
 
     Each SSL socket's CA certificate database is initialized to the
@@ -1442,7 +1442,7 @@ QList<QSslCertificate> QSslSocket::systemCaCertificates()
 /*!
     Waits until the socket is connected, or \a msecs milliseconds,
     whichever happens first. If the connection has been established,
-    this function returns true; otherwise it returns false.
+    this function returns \c true; otherwise it returns \c false.
 
     \sa QAbstractSocket::waitForConnected()
 */
@@ -1580,7 +1580,7 @@ bool QSslSocket::waitForBytesWritten(int msecs)
 /*!
     Waits until the socket has disconnected or \a msecs milliseconds,
     whichever comes first. If the connection has been disconnected,
-    this function returns true; otherwise it returns false.
+    this function returns \c true; otherwise it returns \c false.
 
     \sa QAbstractSocket::waitForDisconnected()
 */
@@ -1631,7 +1631,7 @@ QList<QSslError> QSslSocket::sslErrors() const
 }
 
 /*!
-    Returns true if this platform supports SSL; otherwise, returns
+    Returns \c true if this platform supports SSL; otherwise, returns
     false. If the platform doesn't support SSL, the socket will fail
     in the connection phase.
 */
@@ -2439,6 +2439,7 @@ QList<QByteArray> QSslSocketPrivate::unixRootCertDirectories()
                                << "/usr/local/ssl/" // Normal OpenSSL Tarball
                                << "/var/ssl/certs/" // AIX
                                << "/usr/local/ssl/certs/" // Solaris
+                               << "/var/certmgr/web/user_trusted/" // BlackBerry Playbook
                                << "/etc/openssl/certs/" // BlackBerry
                                << "/opt/openssl/certs/"; // HP-UX
 }

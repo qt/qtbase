@@ -294,7 +294,7 @@ static const int maxSizeSection = 1048575; // since section size is in a bitfiel
     \property QHeaderView::highlightSections
     \brief whether the sections containing selected items are highlighted
 
-    By default, this property is false.
+    By default, this property is \c false.
 */
 
 /*!
@@ -982,8 +982,8 @@ void QHeaderView::resizeSections(QHeaderView::ResizeMode mode)
 */
 
 /*!
-    Returns true if the section specified by \a logicalIndex is explicitly
-    hidden from the user; otherwise returns false.
+    Returns \c true if the section specified by \a logicalIndex is explicitly
+    hidden from the user; otherwise returns \c false.
 
     \sa hideSection(), showSection(), setSectionHidden(), hiddenSectionCount()
 */
@@ -1139,7 +1139,7 @@ void QHeaderView::setSectionsMovable(bool movable)
 /*!
     \since 5.0
 
-    Returns true if the header can be moved by the user; otherwise returns
+    Returns \c true if the header can be moved by the user; otherwise returns
     false.
 
     \sa setSectionsMovable()
@@ -1189,7 +1189,7 @@ void QHeaderView::setSectionsClickable(bool clickable)
 /*!
     \since 5.0
 
-    Returns true if the header is clickable; otherwise returns false. A
+    Returns \c true if the header is clickable; otherwise returns \c false. A
     clickable header could be set up to allow the user to change the
     representation of the data in the view related to the header.
 
@@ -1395,7 +1395,7 @@ int QHeaderView::stretchSectionCount() const
   \property QHeaderView::showSortIndicator
   \brief whether the sort indicator is shown
 
-  By default, this property is false.
+  By default, this property is \c false.
 
   \sa setSectionsClickable()
 */
@@ -1681,7 +1681,7 @@ void QHeaderView::doItemsLayout()
 }
 
 /*!
-    Returns true if sections in the header has been moved; otherwise returns
+    Returns \c true if sections in the header has been moved; otherwise returns
     false;
 
     \sa moveSection()
@@ -1695,7 +1695,7 @@ bool QHeaderView::sectionsMoved() const
 /*!
     \since 4.1
 
-    Returns true if sections in the header has been hidden; otherwise returns
+    Returns \c true if sections in the header has been hidden; otherwise returns
     false;
 
     \sa setSectionHidden()

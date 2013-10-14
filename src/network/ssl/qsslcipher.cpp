@@ -133,7 +133,7 @@ QSslCipher &QSslCipher::operator=(const QSslCipher &other)
 */
 
 /*!
-    Returns true if this cipher is the same as \a other; otherwise,
+    Returns \c true if this cipher is the same as \a other; otherwise,
     false is returned.
 */
 bool QSslCipher::operator==(const QSslCipher &other) const
@@ -144,12 +144,12 @@ bool QSslCipher::operator==(const QSslCipher &other) const
 /*!
     \fn bool QSslCipher::operator!=(const QSslCipher &other) const
 
-    Returns true if this cipher is not the same as \a other;
+    Returns \c true if this cipher is not the same as \a other;
     otherwise, false is returned.
 */
 
 /*!
-    Returns true if this is a null cipher; otherwise returns false.
+    Returns \c true if this is a null cipher; otherwise returns \c false.
 */
 bool QSslCipher::isNull() const
 {

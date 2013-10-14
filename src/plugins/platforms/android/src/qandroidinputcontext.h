@@ -105,6 +105,7 @@ public:
     QString getTextAfterCursor(jint length, jint flags);
     QString getTextBeforeCursor(jint length, jint flags);
     jboolean setComposingText(const QString &text, jint newCursorPosition);
+    jboolean setComposingRegion(jint start, jint end);
     jboolean setSelection(jint start, jint end);
     jboolean selectAll();
     jboolean cut();
@@ -125,6 +126,7 @@ private:
     ExtractedText m_extractedText;
     QString m_composingText;
     QMetaObject::Connection m_updateCursorPosConnection;
+    bool m_blockUpdateSelection;
 };
 
 QT_END_NAMESPACE

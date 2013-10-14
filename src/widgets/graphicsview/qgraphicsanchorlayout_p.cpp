@@ -819,7 +819,7 @@ static AnchorData *createSequence(Graph<AnchorVertex, AnchorData> *graph,
    3. Done
 
    When creating the parallel anchors, the algorithm might identify unfeasible situations. In this
-   case the simplification process stops and returns false. Otherwise returns true.
+   case the simplification process stops and returns \c false. Otherwise returns \c true.
 */
 bool QGraphicsAnchorLayoutPrivate::simplifyGraph(Orientation orientation)
 {
@@ -1014,7 +1014,7 @@ bool QGraphicsAnchorLayoutPrivate::simplifyVertices(Orientation orientation)
 /*!
     \internal
 
-    One iteration of the simplification algorithm. Returns true if another iteration is needed.
+    One iteration of the simplification algorithm. Returns \c true if another iteration is needed.
 
     The algorithm walks the graph in depth-first order, and only collects vertices that has two
     edges connected to it.  If the vertex does not have two edges or if it is a layout edge, it
@@ -2967,8 +2967,8 @@ bool QGraphicsAnchorLayoutPrivate::solvePreferred(const QList<QSimplexConstraint
 
 /*!
     \internal
-    Returns true if there are no arrangement that satisfies all constraints.
-    Otherwise returns false.
+    Returns \c true if there are no arrangement that satisfies all constraints.
+    Otherwise returns \c false.
 
     \sa addAnchor()
 */

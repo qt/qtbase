@@ -337,7 +337,7 @@ bool QSystemTrayIcon::event(QEvent *e)
 
 
 /*!
-    Returns true if the system tray is available; otherwise returns false.
+    Returns \c true if the system tray is available; otherwise returns \c false.
 
     If the system tray is currently unavailable but becomes available later,
     QSystemTrayIcon will automatically add an entry in the system tray if it
@@ -350,7 +350,7 @@ bool QSystemTrayIcon::isSystemTrayAvailable()
 }
 
 /*!
-    Returns true if the system tray supports balloon messages; otherwise returns false.
+    Returns \c true if the system tray supports balloon messages; otherwise returns \c false.
 
     \sa showMessage()
 */

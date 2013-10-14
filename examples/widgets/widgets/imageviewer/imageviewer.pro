@@ -13,5 +13,3 @@ INSTALLS += target
 wince*: {
    DEPLOYMENT_PLUGIN += qjpeg qgif
 }
-
-simulator: warning(This example might not fully work on Simulator platform)

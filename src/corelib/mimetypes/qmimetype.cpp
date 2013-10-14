@@ -177,7 +177,7 @@ QMimeType::~QMimeType()
 
 /*!
     \fn bool QMimeType::operator==(const QMimeType &other) const;
-    Returns true if \a other equals this QMimeType object, otherwise returns false.
+    Returns \c true if \a other equals this QMimeType object, otherwise returns \c false.
     The name is the unique identifier for a mimetype, so two mimetypes with
     the same name, are equal.
  */
@@ -188,12 +188,12 @@ bool QMimeType::operator==(const QMimeType &other) const
 
 /*!
     \fn bool QMimeType::operator!=(const QMimeType &other) const;
-    Returns true if \a other does not equal this QMimeType object, otherwise returns false.
+    Returns \c true if \a other does not equal this QMimeType object, otherwise returns \c false.
  */
 
 /*!
     \fn bool QMimeType::isValid() const;
-    Returns true if the QMimeType object contains valid data, otherwise returns false.
+    Returns \c true if the QMimeType object contains valid data, otherwise returns \c false.
     A valid MIME type has a non-empty name().
     The invalid MIME type is the default-constructed QMimeType.
  */
@@ -204,7 +204,7 @@ bool QMimeType::isValid() const
 
 /*!
     \fn bool QMimeType::isDefault() const;
-    Returns true if this MIME type is the default MIME type which
+    Returns \c true if this MIME type is the default MIME type which
     applies to all files: application/octet-stream.
  */
 bool QMimeType::isDefault() const
@@ -432,7 +432,7 @@ QString QMimeType::filterString() const
 
 /*!
     \fn bool QMimeType::inherits(const QString &mimeTypeName) const;
-    Returns true if this mimetype is \a mimeTypeName,
+    Returns \c true if this mimetype is \a mimeTypeName,
     or inherits \a mimeTypeName (see parentMimeTypes()),
     or \a mimeTypeName is an alias for this mimetype.
  */

@@ -1429,7 +1429,7 @@ void QScrollerPrivate::createScrollingSegments(const QPointF &v,
 
 /*! \internal
     Prepares scrolling by sending a QScrollPrepareEvent to the receiver widget.
-    Returns true if the scrolling was accepted and a target was returned.
+    Returns \c true if the scrolling was accepted and a target was returned.
 */
 bool QScrollerPrivate::prepareScrolling(const QPointF &position)
 {

@@ -468,8 +468,8 @@ int QLCDNumber::digitCount() const
 /*!
     \overload
 
-    Returns true if \a num is too big to be displayed in its entirety;
-    otherwise returns false.
+    Returns \c true if \a num is too big to be displayed in its entirety;
+    otherwise returns \c false.
 
     \sa display(), digitCount(), smallDecimalPoint()
 */
@@ -484,8 +484,8 @@ bool QLCDNumber::checkOverflow(int num) const
 
 
 /*!
-    Returns true if \a num is too big to be displayed in its entirety;
-    otherwise returns false.
+    Returns \c true if \a num is too big to be displayed in its entirety;
+    otherwise returns \c false.
 
     \sa display(), digitCount(), smallDecimalPoint()
 */

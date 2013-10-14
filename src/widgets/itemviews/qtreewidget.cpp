@@ -103,7 +103,7 @@ public:
     \fn bool QTreeWidgetItem::isDisabled() const
     \since 4.3
 
-    Returns true if the item is disabled; otherwise returns false.
+    Returns \c true if the item is disabled; otherwise returns \c false.
 
     \sa setFlags()
 */
@@ -380,7 +380,7 @@ QVariant QTreeModel::data(const QModelIndex &index, int role) const
   Sets the data for the item specified by the \a index and \a role
   to that referred to by the \a value.
 
-  Returns true if successful; otherwise returns false.
+  Returns \c true if successful; otherwise returns \c false.
 */
 
 bool QTreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
@@ -537,7 +537,7 @@ QVariant QTreeModel::headerData(int section, Qt::Orientation orientation, int ro
   Sets the header data for the item specified by the header \a section,
   \a orientation and data \a role to the given \a value.
 
-  Returns true if successful; otherwise returns false.
+  Returns \c true if successful; otherwise returns \c false.
 */
 
 bool QTreeModel::setHeaderData(int section, Qt::Orientation orientation,
@@ -681,7 +681,7 @@ void QTreeModel::ensureSorted(int column, Qt::SortOrder order,
 /*!
   \internal
 
-  Returns true if the value of the \a left item is
+  Returns \c true if the value of the \a left item is
   less than the value of the \a right item.
 
   Used by the sorting functions.
@@ -696,7 +696,7 @@ bool QTreeModel::itemLessThan(const QPair<QTreeWidgetItem*,int> &left,
 /*!
   \internal
 
-  Returns true if the value of the \a left item is
+  Returns \c true if the value of the \a left item is
   greater than the value of the \a right item.
 
   Used by the sorting functions.
@@ -1001,7 +1001,7 @@ void QTreeModel::timerEvent(QTimerEvent *ev)
   \fn bool QTreeWidgetItem::isSelected() const
   \since 4.2
 
-  Returns true if the item is selected, otherwise returns false.
+  Returns \c true if the item is selected, otherwise returns \c false.
 
   \sa setSelected()
 */
@@ -1019,7 +1019,7 @@ void QTreeModel::timerEvent(QTimerEvent *ev)
   \fn bool QTreeWidgetItem::isHidden() const
   \since 4.2
 
-  Returns true if the item is hidden, otherwise returns false.
+  Returns \c true if the item is hidden, otherwise returns \c false.
 
   \sa setHidden()
 */
@@ -1038,7 +1038,7 @@ void QTreeModel::timerEvent(QTimerEvent *ev)
   \fn bool QTreeWidgetItem::isExpanded() const
   \since 4.2
 
-  Returns true if the item is expanded, otherwise returns false.
+  Returns \c true if the item is expanded, otherwise returns \c false.
 
   \sa setExpanded()
 */
@@ -1057,7 +1057,7 @@ void QTreeModel::timerEvent(QTimerEvent *ev)
   \fn bool QTreeWidgetItem::isFirstColumnSpanned() const
   \since 4.3
 
-  Returns true if the item is spanning all the columns in a row; otherwise returns false.
+  Returns \c true if the item is spanning all the columns in a row; otherwise returns \c false.
 
   \sa setFirstColumnSpanned()
 */
@@ -1800,8 +1800,8 @@ QVariant QTreeWidgetItem::data(int column, int role) const
 }
 
 /*!
-  Returns true if the text in the item is less than the text in the
-  \a other item, otherwise returns false.
+  Returns \c true if the text in the item is less than the text in the
+  \a other item, otherwise returns \c false.
 */
 
 bool QTreeWidgetItem::operator<(const QTreeWidgetItem &other) const
@@ -2979,7 +2979,7 @@ void QTreeWidget::setItemWidget(QTreeWidgetItem *item, int column, QWidget *widg
 }
 
 /*!
-  Returns true if the \a item is selected; otherwise returns false.
+  Returns \c true if the \a item is selected; otherwise returns \c false.
 
   \sa itemSelectionChanged()
 
@@ -3055,7 +3055,7 @@ QList<QTreeWidgetItem*> QTreeWidget::findItems(const QString &text, Qt::MatchFla
 }
 
 /*!
-  Returns true if the \a item is explicitly hidden, otherwise returns false.
+  Returns \c true if the \a item is explicitly hidden, otherwise returns \c false.
 
   \obsolete
 
@@ -3093,7 +3093,7 @@ void QTreeWidget::setItemHidden(const QTreeWidgetItem *item, bool hide)
 }
 
 /*!
-  Returns true if the given \a item is open; otherwise returns false.
+  Returns \c true if the given \a item is open; otherwise returns \c false.
 
   \sa itemExpanded()
 
@@ -3128,8 +3128,8 @@ void QTreeWidget::setItemExpanded(const QTreeWidgetItem *item, bool expand)
 /*!
   \since 4.3
 
-  Returns true if the given \a item is set to show only one section over all columns;
-  otherwise returns false.
+  Returns \c true if the given \a item is set to show only one section over all columns;
+  otherwise returns \c false.
 
   \sa setFirstItemColumnSpanned()
 */
@@ -3294,9 +3294,9 @@ QMimeData *QTreeWidget::mimeData(const QList<QTreeWidgetItem*> items) const
     Handles the \a data supplied by a drag and drop operation that ended with
     the given \a action in the \a index in the given \a parent item.
 
-    The default implementation returns true if the drop was
+    The default implementation returns \c true if the drop was
     successfully handled by decoding the mime data and inserting it
-    into the model; otherwise it returns false.
+    into the model; otherwise it returns \c false.
 
     \sa supportedDropActions()
 */

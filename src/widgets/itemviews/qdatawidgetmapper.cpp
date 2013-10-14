@@ -610,7 +610,7 @@ void QDataWidgetMapper::revert()
     value from the widget and sets it in the model. Finally, the
     model's \l {QAbstractItemModel::}{submit()} method is invoked.
 
-    Returns true if all the values were submitted, otherwise false.
+    Returns \c true if all the values were submitted, otherwise false.
 
     Note: For database models, QSqlQueryModel::lastError() can be
     used to retrieve the last error.

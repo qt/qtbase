@@ -920,7 +920,7 @@ QTextLayout *QTextCursorPrivate::blockLayout(QTextBlock &block) const{
     hasSelection(), clearSelection(), and removeSelectedText().
 
     If the position() is at the start of a block atBlockStart()
-    returns true; and if it is at the end of a block atBlockEnd() returns
+    returns \c true; and if it is at the end of a block atBlockEnd() returns
     true. The format of the current character is returned by
     charFormat(), and the format of the current block is returned by
     blockFormat().
@@ -1134,7 +1134,7 @@ QTextCursor::~QTextCursor()
 }
 
 /*!
-    Returns true if the cursor is null; otherwise returns false. A null
+    Returns \c true if the cursor is null; otherwise returns \c false. A null
     cursor is created by the default constructor.
  */
 bool QTextCursor::isNull() const
@@ -1222,8 +1222,8 @@ int QTextCursor::anchor() const
     \fn bool QTextCursor::movePosition(MoveOperation operation, MoveMode mode, int n)
 
     Moves the cursor by performing the given \a operation \a n times, using the specified
-    \a mode, and returns true if all operations were completed successfully; otherwise
-    returns false.
+    \a mode, and returns \c true if all operations were completed successfully; otherwise
+    returns \c false.
 
     For example, if this function is repeatedly used to seek to the end of the next
     word, it will eventually fail when the end of the document is reached.
@@ -1280,8 +1280,8 @@ bool QTextCursor::movePosition(MoveOperation op, MoveMode mode, int n)
 /*!
   \since 4.4
 
-  Returns true if the cursor does visual navigation; otherwise
-  returns false.
+  Returns \c true if the cursor does visual navigation; otherwise
+  returns \c false.
 
   Visual navigation means skipping over hidden text paragraphs. The
   default is false.
@@ -1582,7 +1582,7 @@ void QTextCursor::select(SelectionType selection)
 }
 
 /*!
-    Returns true if the cursor contains a selection; otherwise returns false.
+    Returns \c true if the cursor contains a selection; otherwise returns \c false.
 */
 bool QTextCursor::hasSelection() const
 {
@@ -1591,8 +1591,8 @@ bool QTextCursor::hasSelection() const
 
 
 /*!
-    Returns true if the cursor contains a selection that is not simply a
-    range from selectionStart() to selectionEnd(); otherwise returns false.
+    Returns \c true if the cursor contains a selection that is not simply a
+    range from selectionStart() to selectionEnd(); otherwise returns \c false.
 
     Complex selections are ones that span at least two cells in a table;
     their extent is specified by selectedTableCells().
@@ -1946,8 +1946,8 @@ void QTextCursor::mergeCharFormat(const QTextCharFormat &modifier)
 }
 
 /*!
-    Returns true if the cursor is at the start of a block; otherwise
-    returns false.
+    Returns \c true if the cursor is at the start of a block; otherwise
+    returns \c false.
 
     \sa atBlockEnd(), atStart()
 */
@@ -1960,8 +1960,8 @@ bool QTextCursor::atBlockStart() const
 }
 
 /*!
-    Returns true if the cursor is at the end of a block; otherwise
-    returns false.
+    Returns \c true if the cursor is at the end of a block; otherwise
+    returns \c false.
 
     \sa atBlockStart(), atEnd()
 */
@@ -1974,8 +1974,8 @@ bool QTextCursor::atBlockEnd() const
 }
 
 /*!
-    Returns true if the cursor is at the start of the document;
-    otherwise returns false.
+    Returns \c true if the cursor is at the start of the document;
+    otherwise returns \c false.
 
     \sa atBlockStart(), atEnd()
 */
@@ -1990,8 +1990,8 @@ bool QTextCursor::atStart() const
 /*!
     \since 4.6
 
-    Returns true if the cursor is at the end of the document;
-    otherwise returns false.
+    Returns \c true if the cursor is at the end of the document;
+    otherwise returns \c false.
 
     \sa atStart(), atBlockEnd()
 */
@@ -2344,8 +2344,8 @@ void QTextCursor::insertImage(const QImage &image, const QString &name)
 /*!
     \fn bool QTextCursor::operator!=(const QTextCursor &other) const
 
-    Returns true if the \a other cursor is at a different position in
-    the document as this cursor; otherwise returns false.
+    Returns \c true if the \a other cursor is at a different position in
+    the document as this cursor; otherwise returns \c false.
 */
 bool QTextCursor::operator!=(const QTextCursor &rhs) const
 {
@@ -2355,8 +2355,8 @@ bool QTextCursor::operator!=(const QTextCursor &rhs) const
 /*!
     \fn bool QTextCursor::operator<(const QTextCursor &other) const
 
-    Returns true if the \a other cursor is positioned later in the
-    document than this cursor; otherwise returns false.
+    Returns \c true if the \a other cursor is positioned later in the
+    document than this cursor; otherwise returns \c false.
 */
 bool QTextCursor::operator<(const QTextCursor &rhs) const
 {
@@ -2374,7 +2374,7 @@ bool QTextCursor::operator<(const QTextCursor &rhs) const
 /*!
     \fn bool QTextCursor::operator<=(const QTextCursor &other) const
 
-    Returns true if the \a other cursor is positioned later or at the
+    Returns \c true if the \a other cursor is positioned later or at the
     same position in the document as this cursor; otherwise returns
     false.
 */
@@ -2394,8 +2394,8 @@ bool QTextCursor::operator<=(const QTextCursor &rhs) const
 /*!
     \fn bool QTextCursor::operator==(const QTextCursor &other) const
 
-    Returns true if the \a other cursor is at the same position in the
-    document as this cursor; otherwise returns false.
+    Returns \c true if the \a other cursor is at the same position in the
+    document as this cursor; otherwise returns \c false.
 */
 bool QTextCursor::operator==(const QTextCursor &rhs) const
 {
@@ -2411,7 +2411,7 @@ bool QTextCursor::operator==(const QTextCursor &rhs) const
 /*!
     \fn bool QTextCursor::operator>=(const QTextCursor &other) const
 
-    Returns true if the \a other cursor is positioned earlier or at the
+    Returns \c true if the \a other cursor is positioned earlier or at the
     same position in the document as this cursor; otherwise returns
     false.
 */
@@ -2431,8 +2431,8 @@ bool QTextCursor::operator>=(const QTextCursor &rhs) const
 /*!
     \fn bool QTextCursor::operator>(const QTextCursor &other) const
 
-    Returns true if the \a other cursor is positioned earlier in the
-    document than this cursor; otherwise returns false.
+    Returns \c true if the \a other cursor is positioned earlier in the
+    document than this cursor; otherwise returns \c false.
 */
 bool QTextCursor::operator>(const QTextCursor &rhs) const
 {
@@ -2514,7 +2514,7 @@ void QTextCursor::endEditBlock()
 }
 
 /*!
-    Returns true if this cursor and \a other are copies of each other, i.e.
+    Returns \c true if this cursor and \a other are copies of each other, i.e.
     one of them was created as a copy of the other and neither has moved since.
     This is much stricter than equality.
 

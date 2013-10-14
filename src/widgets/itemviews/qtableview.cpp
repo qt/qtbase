@@ -747,9 +747,9 @@ int QTableViewPrivate::sectionSpanSize(const QHeaderView *header, int logical, i
 
 /*!
   \internal
-  Returns true if the section at logical index \a logical is part of the span
+  Returns \c true if the section at logical index \a logical is part of the span
   starting at logical index \a spanLogical and spanning \a span sections;
-  otherwise, returns false.
+  otherwise, returns \c false.
 */
 bool QTableViewPrivate::spanContainsSection(const QHeaderView *header, int logical, int spanLogical, int span) const
 {
@@ -2482,7 +2482,7 @@ int QTableView::columnWidth(int column) const
 }
 
 /*!
-    Returns true if the given \a row is hidden; otherwise returns false.
+    Returns \c true if the given \a row is hidden; otherwise returns \c false.
 
     \sa isColumnHidden()
 */
@@ -2506,7 +2506,7 @@ void QTableView::setRowHidden(int row, bool hide)
 }
 
 /*!
-    Returns true if the given \a column is hidden; otherwise returns false.
+    Returns \c true if the given \a column is hidden; otherwise returns \c false.
 
     \sa isRowHidden()
 */
@@ -2535,8 +2535,8 @@ void QTableView::setColumnHidden(int column, bool hide)
     \property QTableView::sortingEnabled
     \brief whether sorting is enabled
 
-    If this property is true, sorting is enabled for the table.  If
-    this property is false, sorting is not enabled. The default value
+    If this property is \c true, sorting is enabled for the table.  If
+    this property is \c false, sorting is not enabled. The default value
     is false.
 
     \note. Setting the property to true with setSortingEnabled()
@@ -2585,8 +2585,8 @@ bool QTableView::isSortingEnabled() const
     \property QTableView::showGrid
     \brief whether the grid is shown
 
-    If this property is true a grid is drawn for the table; if the
-    property is false, no grid is drawn. The default value is true.
+    If this property is \c true a grid is drawn for the table; if the
+    property is \c false, no grid is drawn. The default value is true.
 */
 bool QTableView::showGrid() const
 {
@@ -2629,9 +2629,9 @@ void QTableView::setGridStyle(Qt::PenStyle style)
     \brief the item text word-wrapping policy
     \since 4.3
 
-    If this property is true then the item text is wrapped where
+    If this property is \c true then the item text is wrapped where
     necessary at word-breaks; otherwise it is not wrapped at all.
-    This property is true by default.
+    This property is \c true by default.
 
     Note that even of wrapping is enabled, the cell will not be
     expanded to fit all text. Ellipsis will be inserted according to
@@ -2659,11 +2659,11 @@ bool QTableView::wordWrap() const
     \brief whether the button in the top-left corner is enabled
     \since 4.3
 
-    If this property is true then button in the top-left corner
+    If this property is \c true then button in the top-left corner
     of the table view is enabled. Clicking on this button will
     select all the cells in the table view.
 
-    This property is true by default.
+    This property is \c true by default.
 */
 void QTableView::setCornerButtonEnabled(bool enable)
 {

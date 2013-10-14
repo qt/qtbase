@@ -139,7 +139,7 @@ QScrollerProperties::~QScrollerProperties()
 }
 
 /*!
-    Returns true if these scroller properties are equal to \a sp; otherwise returns false.
+    Returns \c true if these scroller properties are equal to \a sp; otherwise returns \c false.
 */
 bool QScrollerProperties::operator==(const QScrollerProperties &sp) const
 {
@@ -147,7 +147,7 @@ bool QScrollerProperties::operator==(const QScrollerProperties &sp) const
 }
 
 /*!
-    Returns true if these scroller properties are different from \a sp; otherwise returns false.
+    Returns \c true if these scroller properties are different from \a sp; otherwise returns \c false.
 */
 bool QScrollerProperties::operator!=(const QScrollerProperties &sp) const
 {

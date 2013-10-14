@@ -126,8 +126,8 @@ QT_BEGIN_NAMESPACE
     to a window with type QSurface::RasterSurface, and QOpenGLContext for
     rendering with OpenGL to a window with type QSurface::OpenGLSurface.
 
-    The application can start rendering as soon as isExposed() returns true,
-    and can keep rendering until it isExposed() returns false. To find out when
+    The application can start rendering as soon as isExposed() returns \c true,
+    and can keep rendering until it isExposed() returns \c false. To find out when
     isExposed() changes, reimplement exposeEvent(). The window will always get
     a resize event before the first expose event.
 
@@ -903,7 +903,7 @@ bool QWindow::isExposed() const
 */
 
 /*!
-    Returns true if the window should appear active from a style perspective.
+    Returns \c true if the window should appear active from a style perspective.
 
     This is the case for the window that has input focus as well as windows
     that are in the same parent / transient parent chain as the focus window.
@@ -1067,7 +1067,7 @@ QWindow *QWindow::transientParent() const
 */
 
 /*!
-    Returns true if the window is an ancestor of the given \a child. If \a mode
+    Returns \c true if the window is an ancestor of the given \a child. If \a mode
     is IncludeTransients, then transient parents are also considered ancestors.
 */
 bool QWindow::isAncestorOf(const QWindow *child, AncestorMode mode) const
@@ -1728,7 +1728,7 @@ void QWindow::showNormal()
     Close the window.
 
     This closes the window, effectively calling destroy(), and potentially
-    quitting the application. Returns true on success, false if it has a parent
+    quitting the application. Returns \c true on success, false if it has a parent
     window (in which case the top level window should be closed instead).
 
     \sa destroy(), QGuiApplication::quitOnLastWindowClosed()

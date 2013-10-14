@@ -271,13 +271,13 @@ QJsonValue &QJsonValue::operator =(const QJsonValue &other)
 /*!
     \fn bool QJsonValue::isNull() const
 
-    Returns true if the value is null.
+    Returns \c true if the value is null.
 */
 
 /*!
     \fn bool QJsonValue::isBool() const
 
-    Returns true if the value contains a boolean.
+    Returns \c true if the value contains a boolean.
 
     \sa toBool()
  */
@@ -285,7 +285,7 @@ QJsonValue &QJsonValue::operator =(const QJsonValue &other)
 /*!
     \fn bool QJsonValue::isDouble() const
 
-    Returns true if the value contains a double.
+    Returns \c true if the value contains a double.
 
     \sa toDouble()
  */
@@ -293,7 +293,7 @@ QJsonValue &QJsonValue::operator =(const QJsonValue &other)
 /*!
     \fn bool QJsonValue::isString() const
 
-    Returns true if the value contains a string.
+    Returns \c true if the value contains a string.
 
     \sa toString()
  */
@@ -301,7 +301,7 @@ QJsonValue &QJsonValue::operator =(const QJsonValue &other)
 /*!
     \fn bool QJsonValue::isArray() const
 
-    Returns true if the value contains an array.
+    Returns \c true if the value contains an array.
 
     \sa toArray()
  */
@@ -309,7 +309,7 @@ QJsonValue &QJsonValue::operator =(const QJsonValue &other)
 /*!
     \fn bool QJsonValue::isObject() const
 
-    Returns true if the value contains an object.
+    Returns \c true if the value contains an object.
 
     \sa toObject()
  */
@@ -317,7 +317,7 @@ QJsonValue &QJsonValue::operator =(const QJsonValue &other)
 /*!
     \fn bool QJsonValue::isUndefined() const
 
-    Returns true if the value is undefined. This can happen in certain
+    Returns \c true if the value is undefined. This can happen in certain
     error cases as e.g. accessing a non existing key in a QJsonObject.
  */
 
@@ -540,7 +540,7 @@ QJsonObject QJsonValue::toObject() const
 }
 
 /*!
-    Returns true if the value is equal to \a other.
+    Returns \c true if the value is equal to \a other.
  */
 bool QJsonValue::operator==(const QJsonValue &other) const
 {
@@ -576,7 +576,7 @@ bool QJsonValue::operator==(const QJsonValue &other) const
 }
 
 /*!
-    Returns true if the value is not equal to \a other.
+    Returns \c true if the value is not equal to \a other.
  */
 bool QJsonValue::operator!=(const QJsonValue &other) const
 {
