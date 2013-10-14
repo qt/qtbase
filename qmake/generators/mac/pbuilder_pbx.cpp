@@ -874,6 +874,20 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                                         debug_msg(1, "pbuilder: Found library (%s) via PRL %s (%s)",
                                                   opt.toLatin1().constData(), lib_file.toLatin1().constData(), library.toLatin1().constData());
                                         remove = true;
+
+                                        if (project->isActiveConfig("xcode_dynamic_library_suffix")) {
+                                            QString suffixSetting = project->first("QMAKE_XCODE_LIBRARY_SUFFIX_SETTING").toQString();
+                                            if (!suffixSetting.isEmpty()) {
+                                                QString librarySuffix = project->first("QMAKE_XCODE_LIBRARY_SUFFIX").toQString();
+                                                suffixSetting = "$(" + suffixSetting + ")";
+                                                if (!librarySuffix.isEmpty()) {
+                                                    library = library.replace(librarySuffix, suffixSetting);
+                                                    name = name.remove(librarySuffix);
+                                                } else {
+                                                    library = library.replace(name, name + suffixSetting);
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
