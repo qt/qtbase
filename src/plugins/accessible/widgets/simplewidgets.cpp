@@ -605,7 +605,7 @@ QString QAccessibleLineEdit::text(QAccessible::Text t) const
         break;
     }
     if (str.isEmpty())
-        str = QAccessibleWidget::text(t);;
+        str = QAccessibleWidget::text(t);
     return qt_accStripAmp(str);
 }
 
