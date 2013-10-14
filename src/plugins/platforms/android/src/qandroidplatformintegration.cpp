@@ -42,7 +42,6 @@
 #include "qandroidplatformintegration.h"
 #include "qabstracteventdispatcher.h"
 #include "androidjnimain.h"
-#include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/qguiapplication.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <QThread>
