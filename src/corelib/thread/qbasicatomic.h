@@ -137,11 +137,10 @@ public:
 
     typename Ops::Type _q_value;
 
-    // Non-atomic API
+    // Everything below is either implemented in ../arch/qatomic_XXX.h or (as fallback) in qgenericatomic.h
+
     T load() const Q_DECL_NOTHROW { return Ops::load(_q_value); }
     void store(T newValue) Q_DECL_NOTHROW { Ops::store(_q_value, newValue); }
-
-    // Atomic API, implemented in qatomic_XXX.h
 
     T loadAcquire() const Q_DECL_NOTHROW { return Ops::loadAcquire(_q_value); }
     void storeRelease(T newValue) Q_DECL_NOTHROW { Ops::storeRelease(_q_value, newValue); }
