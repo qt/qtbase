@@ -67,24 +67,45 @@ QList<UsbEntry> usbEntries() {
     return entries;
 }
 
-void main(int argc, char *argv[])
+//![20]
+void myCategoryFilter(QLoggingCategory *);
+//![20]
+
+//![21]
+QLoggingCategory::CategoryFilter oldCategoryFilter;
+
+void myCategoryFilter(QLoggingCategory *category)
+{
+    // configure qt.driver.usb category here, otherwise forward to to default filter.
+    if (qstrcmp(category->categoryName(), "qt.driver.usb") == 0)
+        category->setEnabled(QtDebugMsg, true);
+    else
+        oldCategoryFilter(category);
+}
+//![21]
+
+int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
 //![2]
-    // don't run the expensive code if the string won't print
-    if (QT_DRIVER_USB().isDebugEnabled()) {
-        QStringList items;
-        foreach (const UsbEntry &entry, usbEntries())
-            items << QString("%1 (%2)").arg(entry.id, entry.classtype);
-        qCDebug(QT_DRIVER_USB) << "devices: " << items;
-    }
+    QLoggingCategory::setFilterRules(QStringLiteral("qt.driver.usb.debug=true"));
 //![2]
 
+//![22]
+
+// ...
+oldCategoryFilter = QLoggingCategory::installFilter(myCategoryFilter);
+//![22]
+
 //![3]
+    qSetMessagePattern("%{category} %{message}");
+//![3]
+
+//![4]
     // usbEntries() will only be called if QT_DRIVER_USB category is enabled
     qCDebug(QT_DRIVER_USB) << "devices: " << usbEntries();
-//![3]
+//![4]
 
     {
 //![10]
@@ -106,8 +127,7 @@ void main(int argc, char *argv[])
     qCCritical(category) << "a critical message";
 //![12]
     }
+
+    return 0;
 }
 
-//![20]
-void myCategoryFilter(QLoggingCategory *);
-//![20]

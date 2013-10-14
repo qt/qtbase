@@ -71,30 +71,36 @@ Q_GLOBAL_STATIC_WITH_ARGS(QLoggingCategory, qtDefaultCategory,
 
     \section1 Checking category configuration
 
-    QLoggingCategory provides a generic \l isEnabled() and message
-    type dependent \l isDebugEnabled(), \l isWarningEnabled(),
-    \l isCriticalEnabled() and \l isTraceEnabled()
-    methods for checking whether the current category is enabled.
+    QLoggingCategory provides \l isDebugEnabled(), \l isWarningEnabled(),
+    \l isCriticalEnabled(), \l isTraceEnabled(), as well as \l isEnabled()
+    to check whether messages for the given message type should be logged.
 
     \note The qCDebug(), qCWarning(), qCCritical(), qCTrace() and
     qCTraceGuard() macros prevent arguments from being evaluated if the
     respective message types are not enabled for the category, so explicit
     checking is not needed:
 
-    \snippet qloggingcategory/main.cpp 3
+    \snippet qloggingcategory/main.cpp 4
 
-    \section1 Default configuration
+    \section1 Default category configuration
 
     In the default configuration \l isWarningEnabled() and \l isCriticalEnabled()
-    will return \c true. By default, \l isDebugEnabled() will return \c true only
+    will return \c true. \l isDebugEnabled() will return \c true only
     for the \c "default" category.
 
-    \section1 Changing configuration
+    \section1 Changing the configuration of a category
 
-    The default configuration can be changed by calling \l setEnabled(). However,
-    this only affects the current category object, not e.g. another object for the
-    same category name. Use either \l setFilterRules() or \l installFilter() to
-    configure categories globally.
+    Use either \l setFilterRules() or \l installFilter() to
+    configure categories, for example
+
+    \snippet qloggingcategory/main.cpp 2
+
+    \section1 Printing the category
+
+    Use the \c %{category} place holder to print the category in the default
+    message handler:
+
+    \snippet qloggingcategory/main.cpp 3
 */
 
 typedef QVector<QTracer *> Tracers;
@@ -215,14 +221,12 @@ bool QLoggingCategory::isEnabled(QtMsgType msgtype) const
 /*!
     Changes the message type \a type for the category to \a enable.
 
-    Changes only affect the current QLoggingCategory object, and won't
-    change e.g. the settings of another objects for the same category name.
+    \note Changes only affect the current QLoggingCategory object, and won't
+    change the settings of other objects for the same category name.
+    Use either \l setFilterRules() or \l installFilter() to change the
+    configuration globally.
 
     \note \c QtFatalMsg cannot be changed. It will always return \c true.
-
-    Example:
-
-    \snippet qtracer/ftracer.cpp 5
 */
 void QLoggingCategory::setEnabled(QtMsgType type, bool enable)
 {
@@ -279,6 +283,12 @@ QLoggingCategory *QLoggingCategory::defaultCategory()
     filter is free to change the respective category configuration with
     \l setEnabled().
 
+    The filter might be called concurrently from different threads, and
+    therefore has to be reentrant.
+
+    Example:
+    \snippet qloggingcategory/main.cpp 21
+
     An alternative way of configuring the default filter is via
     \l setFilterRules().
  */
@@ -287,7 +297,6 @@ QLoggingCategory::installFilter(QLoggingCategory::CategoryFilter filter)
 {
     return QLoggingRegistry::instance()->installFilter(filter);
 }
-
 
 /*!
     Configures which categories and message types should be enabled through a
@@ -303,8 +312,13 @@ QLoggingCategory::installFilter(QLoggingCategory::CategoryFilter filter)
     wildcard symbol at the start and/or the end. The optional \c <type> must
     be either \c debug, \c warning, \c critical, or \c trace.
 
-    The rules might be ignored if a custom category filter is installed with
-    \l installFilter().
+    Example:
+
+    \snippet qloggingcategory/main.cpp 2
+
+    \note The rules might be ignored if a custom category filter is installed
+    with \l installFilter().
+
 */
 void QLoggingCategory::setFilterRules(const QString &rules)
 {
