@@ -3,7 +3,6 @@
     <array name="qt_sources">
         <item>https://download.qt-project.org/ministro/android/qt5/latest</item>
     </array>
-    <string name="repository">default</string>
 
     <!-- The following is handled automatically by the deployment tool. It should
          not be edited manually. -->
