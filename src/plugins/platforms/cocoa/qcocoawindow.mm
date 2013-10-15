@@ -213,6 +213,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_registerTouchCount(0)
     , m_resizableTransientParent(false)
     , m_alertRequest(NoAlertRequest)
+    , monitor(nil)
 {
 #ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
     qDebug() << "QCocoaWindow::QCocoaWindow" << this;
@@ -367,6 +368,11 @@ void QCocoaWindow::setVisible(bool visible)
                 if ((window()->type() == Qt::Popup || window()->type() == Qt::Dialog || window()->type() == Qt::Tool)
                     && [m_nsWindow isKindOfClass:[NSPanel class]]) {
                     [(NSPanel *)m_nsWindow setWorksWhenModal:YES];
+                    if (!(parentCocoaWindow && window()->transientParent()->isActive()) && window()->type() == Qt::Popup) {
+                        monitor = [NSEvent addGlobalMonitorForEventsMatchingMask:NSLeftMouseDownMask|NSRightMouseDownMask|NSOtherMouseDown handler:^(NSEvent *) {
+                            QWindowSystemInterface::handleMouseEvent(window(), QPointF(-1, -1), QPointF(window()->framePosition() - QPointF(1, 1)), Qt::LeftButton);
+                        }];
+                    }
                 }
             }
         }
@@ -402,6 +408,10 @@ void QCocoaWindow::setVisible(bool visible)
             }
         } else {
             [m_contentView setHidden:YES];
+        }
+        if (monitor && window()->type() == Qt::Popup) {
+            [NSEvent removeMonitor:monitor];
+            monitor = nil;
         }
         if (parentCocoaWindow && window()->type() == Qt::Popup) {
             parentCocoaWindow->m_activePopupWindow = 0;
@@ -849,10 +859,9 @@ NSWindow * QCocoaWindow::createNSWindow()
                                                     // before the window is shown and needs a proper window.).
         if ((type & Qt::Popup) == Qt::Popup)
             [window setHasShadow:YES];
-        else {
-             setWindowShadow(flags);
-             [window setHidesOnDeactivate: NO];
-        }
+        else
+            setWindowShadow(flags);
+        [window setHidesOnDeactivate: NO];
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
         if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {

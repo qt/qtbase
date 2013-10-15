@@ -204,6 +204,7 @@ public: // for QNSView
 
     static const int NoAlertRequest;
     NSInteger m_alertRequest;
+    id monitor;
 };
 
 QT_END_NAMESPACE
