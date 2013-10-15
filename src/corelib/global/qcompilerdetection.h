@@ -161,6 +161,13 @@
 #      /* Compatibility with older Clang versions */
 #      define __has_extension __has_feature
 #    endif
+#    if defined(__APPLE__)
+     /* Apple/clang specific features */
+#      define Q_DECL_CF_RETURNS_RETAINED __attribute__((cf_returns_retained))
+#      ifdef __OBJC__
+#        define Q_DECL_NS_RETURNS_AUTORELEASED __attribute__((ns_returns_autoreleased))
+#      endif
+#    endif
 #  else
 /* Plain GCC */
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
@@ -619,14 +626,6 @@
 #    endif
 #  endif
 #endif // Q_CC_CLANG
-
-#if defined(Q_CC_CLANG) && defined(__APPLE__)
-/* Apple/clang specific features */
-#  define Q_DECL_CF_RETURNS_RETAINED __attribute__((cf_returns_retained))
-#  ifdef __OBJC__
-#    define Q_DECL_NS_RETURNS_AUTORELEASED __attribute__((ns_returns_autoreleased))
-#  endif
-#endif
 
 #if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_CC_CLANG)
 #  if defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L
