@@ -1148,7 +1148,7 @@ void QXcbWindow::updateNetWmUserTime(xcb_timestamp_t timestamp)
             QByteArray ba("Qt NET_WM user time window");
             Q_XCB_CALL(xcb_change_property(xcb_connection(),
                                            XCB_PROP_MODE_REPLACE,
-                                           m_window,
+                                           m_netWmUserTimeWindow,
                                            atom(QXcbAtom::_NET_WM_NAME),
                                            atom(QXcbAtom::UTF8_STRING),
                                            8,
