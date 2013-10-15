@@ -135,6 +135,8 @@ win32 {
         mac {
             macx {
                 SOURCES += io/qstandardpaths_mac.cpp
+            } else:ios {
+                OBJECTIVE_SOURCES += io/qstandardpaths_ios.mm
             } else {
                 SOURCES += io/qstandardpaths_unix.cpp
             }
