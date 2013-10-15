@@ -53,15 +53,16 @@ class QLinuxFbScreen : public QFbScreen
 {
     Q_OBJECT
 public:
-    QLinuxFbScreen();
+    QLinuxFbScreen(const QStringList &args);
     ~QLinuxFbScreen();
 
-    bool initialize(const QStringList &args);
+    bool initialize();
 
 public slots:
     QRegion doRedraw();
 
 private:
+    QStringList mArgs;
     int mFbFd;
     int mTtyFd;
 

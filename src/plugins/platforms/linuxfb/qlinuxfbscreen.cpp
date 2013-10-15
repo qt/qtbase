@@ -296,8 +296,8 @@ static void blankScreen(int fd, bool on)
     ioctl(fd, FBIOBLANK, on ? VESA_POWERDOWN : VESA_NO_BLANKING);
 }
 
-QLinuxFbScreen::QLinuxFbScreen()
-    : mFbFd(-1), mBlitter(0)
+QLinuxFbScreen::QLinuxFbScreen(const QStringList &args)
+    : mArgs(args), mFbFd(-1), mBlitter(0)
 {
 }
 
@@ -316,7 +316,7 @@ QLinuxFbScreen::~QLinuxFbScreen()
     delete mBlitter;
 }
 
-bool QLinuxFbScreen::initialize(const QStringList &args)
+bool QLinuxFbScreen::initialize()
 {
     QRegExp ttyRx(QLatin1String("tty=(.*)"));
     QRegExp fbRx(QLatin1String("fb=(.*)"));
@@ -330,7 +330,7 @@ bool QLinuxFbScreen::initialize(const QStringList &args)
     bool doSwitchToGraphicsMode = true;
 
     // Parse arguments
-    foreach (const QString &arg, args) {
+    foreach (const QString &arg, mArgs) {
         if (arg == QLatin1String("nographicsmodeswitch"))
             doSwitchToGraphicsMode = false;
         else if (sizeRx.indexIn(arg) != -1)
