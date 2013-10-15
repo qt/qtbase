@@ -50,6 +50,7 @@
 #include <QListWidget>
 #include <QWidgetAction>
 #include <QDesktopWidget>
+#include <QScreen>
 #include <qdialog.h>
 
 #include <qmenu.h>
@@ -58,6 +59,17 @@
 
 Q_DECLARE_METATYPE(Qt::Key);
 Q_DECLARE_METATYPE(Qt::KeyboardModifiers);
+
+static inline void centerOnScreen(QWidget *w, const QSize &size)
+{
+    const QPoint offset = QPoint(size.width() / 2, size.height() / 2);
+    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
+}
+
+static inline void centerOnScreen(QWidget *w)
+{
+    centerOnScreen(w, w->geometry().size());
+}
 
 class tst_QMenu : public QObject
 {
@@ -257,9 +269,12 @@ void tst_QMenu::addActionsAndClear()
 void tst_QMenu::mouseActivation()
 {
     QWidget topLevel;
+    topLevel.resize(300, 200);
+    centerOnScreen(&topLevel);
     QMenu menu(&topLevel);
     topLevel.show();
     menu.addAction("Menu Action");
+    menu.move(topLevel.geometry().topRight() + QPoint(50, 0));
     menu.show();
     QTest::mouseClick(&menu, Qt::LeftButton, 0, menu.rect().center(), 300);
     QVERIFY(!menu.isVisible());
@@ -275,7 +290,9 @@ void tst_QMenu::mouseActivation()
     QMenu submenu("Menu");
     submenu.addAction("action");
     QAction *action = menubar.addMenu(&submenu);
+    menubar.move(topLevel.geometry().topRight() + QPoint(300, 0));
     menubar.show();
+
 
     QTest::mouseClick(&menubar, Qt::LeftButton, 0, menubar.actionGeometry(action).center(), 300);
     QVERIFY(submenu.isVisible());
@@ -378,13 +395,16 @@ void tst_QMenu::focus()
 #endif
 
     QWidget window;
+    window.resize(300, 200);
     QPushButton button("Push me", &window);
+    centerOnScreen(&window);
     window.show();
     qApp->setActiveWindow(&window);
 
     QVERIFY(button.hasFocus());
     QCOMPARE(QApplication::focusWidget(), (QWidget *)&button);
     QCOMPARE(QApplication::activeWindow(), &window);
+    menu.move(window.geometry().topRight() + QPoint(50, 0));
     menu.show();
     QVERIFY(button.hasFocus());
     QCOMPARE(QApplication::focusWidget(), (QWidget *)&button);
@@ -399,6 +419,8 @@ void tst_QMenu::overrideMenuAction()
 {
     //test the override menu action by first creating an action to which we set its menu
     QMainWindow w;
+    w.resize(300, 200);
+    centerOnScreen(&w);
 
     QAction *aFileMenu = new QAction("&File", &w);
     w.menuBar()->addAction(aFileMenu);
@@ -442,6 +464,8 @@ void tst_QMenu::statusTip()
 {
     //check that the statustip of actions inserted into the menu are displayed
     QMainWindow w;
+    w.resize(300, 200);
+    centerOnScreen(&w);
     connect(w.statusBar(), SIGNAL(messageChanged(QString)), SLOT(onStatusMessageChanged(QString)));; //creates the status bar
     QToolBar tb;
     QAction a("main action", &tb);
@@ -540,10 +564,12 @@ void tst_QMenu::tearOff()
     menu->addAction("bbb");
     QVERIFY(menu->isTearOffEnabled());
 
+    widget.resize(300, 200);
+    centerOnScreen(&widget);
     widget.show();
     widget.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&widget));
-    menu->popup(QPoint(0,0));
+    menu->popup(widget.geometry().topRight() + QPoint(50, 0));
     QVERIFY(QTest::qWaitForWindowActive(menu));
     QVERIFY(!menu->isTearOffMenuVisible());
 
@@ -568,14 +594,18 @@ void tst_QMenu::layoutDirection()
 {
     QMainWindow win;
     win.setLayoutDirection(Qt::RightToLeft);
+    win.resize(300, 200);
+    centerOnScreen(&win);
 
     QMenu menu(&win);
+    menu.move(win.geometry().topRight() + QPoint(50, 0));
     menu.show();
     QVERIFY(QTest::qWaitForWindowExposed(&menu));
     QCOMPARE(menu.layoutDirection(), Qt::RightToLeft);
     menu.close();
 
     menu.setParent(0);
+    menu.move(win.geometry().topRight() + QPoint(50, 0));
     menu.show();
     QVERIFY(QTest::qWaitForWindowExposed(&menu));
     QCOMPARE(menu.layoutDirection(), QApplication::layoutDirection());
@@ -702,6 +732,7 @@ void tst_QMenu::task256918_setFont()
     QFont f;
     f.setPointSize(30);
     action->setFont(f);
+    centerOnScreen(&menu, QSize(120, 40));
     menu.show(); //ensures that the actiongeometry are calculated
     QVERIFY(menu.actionGeometry(action).height() > f.pointSize());
 }
@@ -830,6 +861,13 @@ void PopulateOnAboutToShowTestMenu::populateMenu()
     addSeparator();
 }
 
+static inline QByteArray msgGeometryIntersects(const QRect &r1, const QRect &r2)
+{
+    QString result;
+    QDebug(&result) << r1 << "intersects" << r2;
+    return result.toLocal8Bit();
+}
+
 void tst_QMenu::pushButtonPopulateOnAboutToShow()
 {
     QPushButton b("Test PushButton");
@@ -842,7 +880,7 @@ void tst_QMenu::pushButtonPopulateOnAboutToShow()
     const QRect screen = QApplication::desktop()->screenGeometry(scrNumber);
 
     QRect desiredGeometry = b.geometry();
-    desiredGeometry.moveTopLeft(QPoint(10, screen.bottom()-b.height()-5));
+    desiredGeometry.moveTopLeft(QPoint(screen.x() + 10, screen.bottom() - b.height() - 5));
 
     b.setGeometry(desiredGeometry);
     QVERIFY(QTest::qWaitForWindowExposed(&b));
@@ -859,13 +897,13 @@ void tst_QMenu::pushButtonPopulateOnAboutToShow()
 
     QTimer::singleShot(300, buttonMenu, SLOT(hide()));
     QTest::mouseClick(&b, Qt::LeftButton, Qt::NoModifier, b.rect().center());
-    QVERIFY(!buttonMenu->geometry().intersects(b.geometry()));
+    QVERIFY2(!buttonMenu->geometry().intersects(b.geometry()), msgGeometryIntersects(buttonMenu->geometry(), b.geometry()));
 
     // note: we're assuming that, if we previously got the desired geometry, we'll get it here too
     b.move(10, screen.bottom()-buttonMenu->height()-5);
     QTimer::singleShot(300, buttonMenu, SLOT(hide()));
     QTest::mouseClick(&b, Qt::LeftButton, Qt::NoModifier, b.rect().center());
-    QVERIFY(!buttonMenu->geometry().intersects(b.geometry()));
+    QVERIFY2(!buttonMenu->geometry().intersects(b.geometry()), msgGeometryIntersects(buttonMenu->geometry(), b.geometry()));
 }
 
 void tst_QMenu::QTBUG7907_submenus_autoselect()
@@ -878,6 +916,7 @@ void tst_QMenu::QTBUG7907_submenus_autoselect()
     set1.addMenu(&subset);
     menu.addMenu(&set1);
     menu.addMenu(&set2);
+    centerOnScreen(&menu, QSize(120, 100));
     menu.show();
     QVERIFY(QTest::qWaitForWindowExposed(&menu));
     QTest::mouseClick(&menu, Qt::LeftButton, Qt::NoModifier, QPoint(5,5) );
@@ -893,6 +932,7 @@ void tst_QMenu::QTBUG7411_submenus_activate()
     sub1.addAction("foo");
     sub1.setTitle("&sub1");
     QAction *act1 = menu.addMenu(&sub1);
+    centerOnScreen(&menu, QSize(120, 100));
     menu.show();
     QVERIFY(QTest::qWaitForWindowExposed(&menu));
     menu.setActiveAction(act);
@@ -911,12 +951,12 @@ void tst_QMenu::QTBUG30595_rtl_submenu()
     sub.addAction("bar");
     sub.setTitle("&sub");
     menu.addMenu(&sub);
-    menu.move(200, 20);
+    centerOnScreen(&menu, QSize(120, 40));
     menu.show();
     QVERIFY(QTest::qWaitForWindowExposed(&menu));
     QTest::mouseClick(&menu, Qt::LeftButton, Qt::NoModifier, QPoint(5,5) );
     QTRY_VERIFY(sub.isVisible());
-    QVERIFY(sub.pos().x() < menu.pos().x());
+    QVERIFY2(sub.pos().x() < menu.pos().x(), QByteArray::number(sub.pos().x()) + QByteArrayLiteral(" not less than ") + QByteArray::number(menu.pos().x()));
 }
 
 void tst_QMenu::QTBUG20403_nested_popup_on_shortcut_trigger()
@@ -927,6 +967,7 @@ void tst_QMenu::QTBUG20403_nested_popup_on_shortcut_trigger()
     subsub1.addAction("foo");
     sub1.addMenu(&subsub1);
     menu.addMenu(&sub1);
+    centerOnScreen(&menu, QSize(120, 100));
     menu.show();
     QVERIFY(QTest::qWaitForWindowExposed(&menu));
     QTest::keyPress(&menu, Qt::Key_S);
