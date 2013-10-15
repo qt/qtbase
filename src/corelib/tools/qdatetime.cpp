@@ -3921,7 +3921,16 @@ qint64 QDateTime::msecsTo(const QDateTime &other) const
 
 QDateTime QDateTime::toTimeSpec(Qt::TimeSpec spec) const
 {
-    return fromMSecsSinceEpoch(toMSecsSinceEpoch(), spec, 0);
+    if (d->m_spec == spec && (spec == Qt::UTC || spec == Qt::LocalTime))
+        return *this;
+
+    if (!isValid()) {
+        QDateTime ret = *this;
+        ret.setTimeSpec(spec);
+        return ret;
+    }
+
+    return fromMSecsSinceEpoch(d->toMSecsSinceEpoch(), spec, 0);
 }
 
 /*!
@@ -3939,7 +3948,16 @@ QDateTime QDateTime::toTimeSpec(Qt::TimeSpec spec) const
 
 QDateTime QDateTime::toOffsetFromUtc(int offsetSeconds) const
 {
-    return fromMSecsSinceEpoch(toMSecsSinceEpoch(), Qt::OffsetFromUTC, offsetSeconds);
+    if (d->m_spec == Qt::OffsetFromUTC && d->m_offsetFromUtc == offsetSeconds)
+        return *this;
+
+    if (!isValid()) {
+        QDateTime ret = *this;
+        ret.setOffsetFromUtc(offsetSeconds);
+        return ret;
+    }
+
+    return fromMSecsSinceEpoch(d->toMSecsSinceEpoch(), Qt::OffsetFromUTC, offsetSeconds);
 }
 
 #ifndef QT_BOOTSTRAPPED
@@ -3953,7 +3971,16 @@ QDateTime QDateTime::toOffsetFromUtc(int offsetSeconds) const
 
 QDateTime QDateTime::toTimeZone(const QTimeZone &timeZone) const
 {
-    return fromMSecsSinceEpoch(toMSecsSinceEpoch(), timeZone);
+    if (d->m_spec == Qt::TimeZone && d->m_timeZone == timeZone)
+        return *this;
+
+    if (!isValid()) {
+        QDateTime ret = *this;
+        ret.setTimeZone(timeZone);
+        return ret;
+    }
+
+    return fromMSecsSinceEpoch(d->toMSecsSinceEpoch(), timeZone);
 }
 #endif // QT_BOOTSTRAPPED
 
