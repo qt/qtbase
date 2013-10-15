@@ -17,10 +17,13 @@ equals(TEMPLATE, app) {
         # building by calling out to xcodebuild.
         TEMPLATE = aux
 
-        CONFIG -= have_target qt staticlib dll
+        CONFIG =
         SOURCES =
+        OBJECTIVE_SOURCES =
         RESOURCES =
         INSTALLS =
+        QMAKE_EXTRA_COMPILERS =
+        QMAKE_EXTRA_TARGETS =
 
         TARGET_XCODE_PROJECT_DIR = $${TARGET}.xcodeproj
 
