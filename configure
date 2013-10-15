@@ -999,6 +999,7 @@ QPA_PLATFORM_GUARD=yes
 CFG_CXX11=auto
 CFG_DIRECTWRITE=no
 CFG_WERROR=auto
+OPT_MAC_SDK=
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -1482,6 +1483,7 @@ while [ "$#" -gt 0 ]; do
     sdk)
         if [ "$BUILD_ON_MAC" = "yes" ]; then
             DeviceVar set !host_build:QMAKE_MAC_SDK "$VAL"
+            OPT_MAC_SDK="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -2871,6 +2873,13 @@ if [ "$XPLATFORM_IOS" = "yes" ]; then
     CFG_SHARED="no" # iOS builds should be static to be able to submit to the App Store
     CFG_CXX11="no" # C++11 support disabled for now
     CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtconnectivity qtdoc qtgraphicaleffects qtlocation qtmacextras qtmultimedia qtquickcontrols qtserialport qttools qtwebkit qtwebkit-examples"
+
+    # If the user passes -sdk on the command line we build a SDK-specific Qt build.
+    # Otherwise we build a joined simulator and device build, which is the default.
+    if [ -z "$OPT_MAC_SDK" ]; then
+         QT_CONFIG="$QT_CONFIG build_all"
+         QTCONFIG_CONFIG="$QTCONFIG_CONFIG iphonesimulator_and_iphoneos"
+    fi
 fi
 
 # disable GTK style support auto-detection on Mac
