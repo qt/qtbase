@@ -68,7 +68,7 @@ contains(CMAKE_PLUGIN_DIR, "^\\.\\./.*") {
     CMAKE_PLUGIN_DIR_IS_ABSOLUTE = True
 }
 
-!isEmpty(DLLDESTDIR):!static:!staticlib {
+win32:!wince:!static:!staticlib {
     CMAKE_DLL_DIR = $$cmakeRelativePath($$[QT_INSTALL_BINS], $$[QT_INSTALL_PREFIX])
     contains(CMAKE_DLL_DIR, "^\\.\\./.*") {
         CMAKE_DLL_DIR = $$[QT_INSTALL_BINS]/
