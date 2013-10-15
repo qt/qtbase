@@ -93,6 +93,12 @@ void tst_QMargins::operators()
     a -= m2;
     QCOMPARE(a, subtracted);
 
+    QMargins h = m1;
+    h += 2;
+    QCOMPARE(h, QMargins(14, 16, 18, 20));
+    h -= 2;
+    QCOMPARE(h, m1);
+
     const QMargins doubled = m1 * 2;
     QCOMPARE(doubled, QMargins(24, 28, 32, 36));
     QCOMPARE(2 * m1, doubled);
