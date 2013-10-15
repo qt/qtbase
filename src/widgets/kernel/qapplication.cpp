@@ -2599,7 +2599,7 @@ QDesktopWidget *QApplication::desktop()
 
 void QApplication::setStartDragTime(int ms)
 {
-    Q_UNUSED(ms)
+    QGuiApplication::styleHints()->setStartDragTime(ms);
 }
 
 /*!
@@ -2632,7 +2632,7 @@ int QApplication::startDragTime()
 
 void QApplication::setStartDragDistance(int l)
 {
-    Q_UNUSED(l);
+    QGuiApplication::styleHints()->setStartDragDistance(l);
 }
 
 /*!
@@ -3599,7 +3599,7 @@ bool QApplication::keypadNavigationEnabled()
 */
 void QApplication::setCursorFlashTime(int msecs)
 {
-    Q_UNUSED(msecs);
+    QGuiApplication::styleHints()->setCursorFlashTime(msecs);
 }
 
 int QApplication::cursorFlashTime()
@@ -3614,12 +3614,10 @@ int QApplication::cursorFlashTime()
 
     The default value on X11 is 400 milliseconds. On Windows and Mac OS, the
     operating system's value is used.
-
-    Setting the interval is not supported anymore in Qt 5.
 */
 void QApplication::setDoubleClickInterval(int ms)
 {
-    Q_UNUSED(ms);
+    QGuiApplication::styleHints()->setMouseDoubleClickInterval(ms);
 }
 
 int QApplication::doubleClickInterval()
@@ -3647,7 +3645,7 @@ int QApplication::doubleClickInterval()
 */
 void QApplication::setKeyboardInputInterval(int ms)
 {
-    Q_UNUSED(ms);
+    QGuiApplication::styleHints()->setKeyboardInputInterval(ms);
 }
 
 int QApplication::keyboardInputInterval()

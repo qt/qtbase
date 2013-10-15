@@ -178,6 +178,8 @@ private slots:
     void globalStaticObjectDestruction(); // run this last
 
     void abortQuitOnShow();
+
+    void settableStyleHints();  // Needs to run last as it changes style hints.
 };
 
 class EventSpy : public QObject
@@ -2245,6 +2247,22 @@ void tst_QApplication::abortQuitOnShow()
     QWidget *window2 = new ShowCloseShowWidget(true);
     window2->show();
     QCOMPARE(app.exec(), 1);
+}
+
+void tst_QApplication::settableStyleHints()
+{
+    int argc = 0;
+    QApplication app(argc, 0);
+    QApplication::setCursorFlashTime(437);
+    QCOMPARE(QApplication::cursorFlashTime(), 437);
+    QApplication::setDoubleClickInterval(128);
+    QCOMPARE(QApplication::doubleClickInterval(), 128);
+    QApplication::setStartDragDistance(122000);
+    QCOMPARE(QApplication::startDragDistance(), 122000);
+    QApplication::setStartDragTime(834);
+    QCOMPARE(QApplication::startDragTime(), 834);
+    QApplication::setKeyboardInputInterval(309);
+    QCOMPARE(QApplication::keyboardInputInterval(), 309);
 }
 
 /*
