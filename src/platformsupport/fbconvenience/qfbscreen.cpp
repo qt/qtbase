@@ -258,8 +258,9 @@ QRegion QFbScreen::doRedraw()
                     QRect windowRect = mWindowStack[layerIndex]->geometry().translated(-screenOffset);
                     QRect windowIntersect = rect.translated(-windowRect.left(),
                                                             -windowRect.top());
-                    mCompositePainter->drawImage(rect, mWindowStack[layerIndex]->backingStore()->image(),
-                                                windowIntersect);
+                    QFbBackingStore *backingStore = mWindowStack[layerIndex]->backingStore();
+                    if (backingStore)
+                        mCompositePainter->drawImage(rect, backingStore->image(), windowIntersect);
                     if (firstLayer) {
                         firstLayer = false;
                     }
