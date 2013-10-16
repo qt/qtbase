@@ -136,89 +136,6 @@ static void destroyDispmanxLayer(EGLNativeWindowType window)
     delete eglWindow;
 }
 
-class QEglFSPiCursor : public QEglFSCursor
-{
-public:
-    QEglFSPiCursor(QEglFSScreen *screen) : QEglFSCursor(screen) {
-        QSurfaceFormat platformFormat;
-        platformFormat.setDepthBufferSize(24);
-        platformFormat.setStencilBufferSize(8);
-        platformFormat.setRedBufferSize(8);
-        platformFormat.setGreenBufferSize(8);
-        platformFormat.setBlueBufferSize(8);
-        platformFormat.setAlphaBufferSize(8);
-        m_config = q_configFromGLFormat(m_screen->display(), platformFormat);
-
-        createSurface();
-        createContext();
-        drawInLayer();
-    }
-
-    ~QEglFSPiCursor() {
-        eglDestroySurface(m_screen->display(), m_surface);
-        destroyDispmanxLayer(m_window);
-        eglDestroyContext(m_screen->display(), m_context);
-    }
-
-    void createSurface() {
-        const QRect cr = cursorRect();
-        m_window = createDispmanxLayer(cr.topLeft(), cr.size(), 50, DISPMANX_FLAGS_ALPHA_FROM_SOURCE);
-        m_surface = eglCreateWindowSurface(m_screen->display(), m_config, m_window, NULL);
-    }
-
-    void createContext() {
-        eglBindAPI(EGL_OPENGL_ES_API);
-        QVector<EGLint> attrs;
-        attrs.append(EGL_CONTEXT_CLIENT_VERSION);
-        attrs.append(2);
-        attrs.append(EGL_NONE);
-        m_context = eglCreateContext(m_screen->display(), m_config, EGL_NO_CONTEXT, attrs.constData());
-    }
-
-    void drawInLayer() {
-        eglMakeCurrent(m_screen->display(), m_surface, m_surface, m_context);
-
-        glClearColor(0, 0, 0, 0);
-        glClear(GL_COLOR_BUFFER_BIT);
-        draw(QRectF(QPointF(-1, 1), QPointF(1, -1)));
-
-        eglSwapBuffers(m_screen->display(), m_surface);
-        eglMakeCurrent(m_screen->display(), EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-    }
-
-    void changeCursor(QCursor *cursor, QWindow *window) Q_DECL_OVERRIDE {
-        if (!setCurrentCursor(cursor))
-            return;
-
-        EGL_DISPMANX_WINDOW_T *eglWindow = static_cast<EGL_DISPMANX_WINDOW_T *>(m_window);
-        if (QSize(eglWindow->width, eglWindow->height) != m_cursor.size) {
-            eglDestroySurface(m_screen->display(), m_surface);
-            destroyDispmanxLayer(m_window);
-            createSurface();
-        }
-        drawInLayer();
-    }
-
-    void setPos(const QPoint &pos) Q_DECL_OVERRIDE {
-        m_cursor.pos = pos;
-        moveDispmanxLayer(m_window, cursorRect().topLeft());
-    }
-
-    void pointerEvent(const QMouseEvent &event) Q_DECL_OVERRIDE {
-        if (event.type() != QEvent::MouseMove)
-            return;
-        m_cursor.pos = event.pos();
-        moveDispmanxLayer(m_window, cursorRect().topLeft());
-    }
-
-    void paintOnScreen() Q_DECL_OVERRIDE { }
-private:
-    EGLConfig m_config;
-    EGLContext m_context;
-    EGLNativeWindowType m_window;
-    EGLSurface m_surface;
-};
-
 class QEglFSPiHooks : public QEglFSHooks
 {
 public:
@@ -230,9 +147,6 @@ public:
     virtual void destroyNativeWindow(EGLNativeWindowType window);
     virtual bool hasCapability(QPlatformIntegration::Capability cap) const;
 
-    QEglFSCursor *createCursor(QEglFSScreen *screen) const {
-        return new QEglFSPiCursor(screen);
-    }
 };
 
 void QEglFSPiHooks::platformInit()
