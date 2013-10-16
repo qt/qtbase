@@ -907,6 +907,7 @@ CFG_JAVASCRIPTCORE_JIT=auto
 CFG_PKGCONFIG=auto
 CFG_STACK_PROTECTOR_STRONG=auto
 CFG_SLOG2=auto
+CFG_QNX_IMF=auto
 CFG_SYSTEM_PROXIES=no
 
 # Target architecture
@@ -2032,6 +2033,13 @@ while [ "$#" -gt 0 ]; do
     slog2)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_SLOG2="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    imf)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_QNX_IMF="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3727,6 +3735,8 @@ if [ "$XPLATFORM_QNX" = "yes" ]; then
 
     -no-slog2 .......... Do not compile with slog2 support.
     -slog2 ............. Compile with slog2 support.
+    -no-imf ............ Do not compile with imf support.
+    -imf ............... Compile with imf support.
 
 EOF
 
@@ -4565,6 +4575,14 @@ if [ "$XPLATFORM_QNX" = "yes" ]; then
             QMAKE_CONFIG="$QMAKE_CONFIG slog2"
         else
             CFG_SLOG2=no
+        fi
+    fi
+    if [ "$CFG_QNX_IMF" != "no" ]; then
+        if compileTest unix/qqnx_imf "qqnx_imf"; then
+            CFG_QNX_IMF=yes
+            QMAKE_CONFIG="$QMAKE_CONFIG qqnx_imf"
+        else
+            CFG_QNX_IMF=no
         fi
     fi
 fi
@@ -6957,8 +6975,10 @@ if [ "$CFG_XCB" != "no" ]; then
     report_support "      XVideo ............." "$CFG_XVIDEO"
 fi
 report_support "  Session management ....." "$CFG_SM"
-[ "$XPLATFORM_QNX" = "yes" ] && \
+if [ "$XPLATFORM_QNX" = "yes" ]; then
     report_support "  SLOG2 .................." "$CFG_SLOG2"
+    report_support "  IMF ...................." "$CFG_QNX_IMF"
+fi
 report_support "  SQL drivers:"
 report_support "    DB2 .................." "$CFG_SQL_db2" plugin "plugin" yes "built into QtSql"
 report_support "    InterBase ............" "$CFG_SQL_ibase" plugin "plugin" yes "built into QtSql"

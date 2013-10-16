@@ -194,6 +194,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "QT_CUPS" ]         = "auto";
     dictionary[ "CFG_GCC_SYSROOT" ] = "yes";
     dictionary[ "SLOG2" ]           = "no";
+    dictionary[ "QNX_IMF" ]         = "no";
     dictionary[ "SYSTEM_PROXIES" ]  = "no";
     dictionary[ "WERROR" ]          = "auto";
 
@@ -872,6 +873,10 @@ void Configure::parseCmdLine()
             dictionary[ "SLOG2" ] = "no";
         } else if (configCmdLine.at(i) == "-slog2") {
             dictionary[ "SLOG2" ] = "yes";
+        } else if (configCmdLine.at(i) == "-no-imf") {
+            dictionary[ "QNX_IMF" ] = "no";
+        } else if (configCmdLine.at(i) == "-imf") {
+            dictionary[ "QNX_IMF" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-system-proxies") {
             dictionary[ "SYSTEM_PROXIES" ] = "no";
         } else if (configCmdLine.at(i) == "-system-proxies") {
@@ -1653,6 +1658,7 @@ void Configure::applySpecSpecifics()
     } else if ((platform() == QNX) || (platform() == BLACKBERRY)) {
         dictionary["STACK_PROTECTOR_STRONG"] = "auto";
         dictionary["SLOG2"]                 = "auto";
+        dictionary["QNX_IMF"]               = "auto";
         dictionary["QT_XKBCOMMON"]          = "no";
     } else if (platform() == ANDROID) {
         dictionary[ "REDUCE_EXPORTS" ]      = "yes";
@@ -1864,6 +1870,8 @@ bool Configure::displayHelp()
         if ((platform() == QNX) || (platform() == BLACKBERRY)) {
             desc("SLOG2", "yes",  "-slog2",             "Compile with slog2 support.");
             desc("SLOG2", "no",  "-no-slog2",           "Do not compile with slog2 support.");
+            desc("QNX_IMF", "yes",  "-imf",             "Compile with imf support.");
+            desc("QNX_IMF", "no",  "-no-imf",           "Do not compile with imf support.");
         }
 
         desc("ANGLE", "yes",       "-angle",            "Use the ANGLE implementation of OpenGL ES 2.0.");
@@ -2209,6 +2217,8 @@ bool Configure::checkAvailability(const QString &part)
         available = (platform() == QNX || platform() == BLACKBERRY) && compilerSupportsFlag("qcc -fstack-protector-strong");
     } else if (part == "SLOG2") {
         available = tryCompileProject("unix/slog2");
+    } else if (part == "QNX_IMF") {
+        available = tryCompileProject("unix/qqnx_imf");
     }
 
     return available;
@@ -2343,6 +2353,10 @@ void Configure::autoDetection()
 
     if ((platform() == QNX || platform() == BLACKBERRY) && dictionary["SLOG2"] == "auto") {
         dictionary["SLOG2"] = checkAvailability("SLOG2") ? "yes" : "no";
+    }
+
+    if ((platform() == QNX || platform() == BLACKBERRY) && dictionary["QNX_IMF"] == "auto") {
+        dictionary["QNX_IMF"] = checkAvailability("QNX_IMF") ? "yes" : "no";
     }
 
     if (dictionary["QT_EVENTFD"] == "auto")
@@ -3188,6 +3202,9 @@ void Configure::generateQConfigPri()
         if (dictionary[ "SLOG2" ] == "yes")
             configStream << " slog2";
 
+        if (dictionary[ "QNX_IMF" ] == "yes")
+            configStream << " qqnx_imf";
+
         if (dictionary["DIRECTWRITE"] == "yes")
             configStream << " directwrite";
 
@@ -3553,8 +3570,10 @@ void Configure::displayConfig()
     sout << "    HarfBuzz-NG support....." << dictionary[ "HARFBUZZ" ] << endl;
     sout << "    PCRE support............" << dictionary[ "PCRE" ] << endl;
     sout << "    ICU support............." << dictionary[ "ICU" ] << endl;
-    if ((platform() == QNX) || (platform() == BLACKBERRY))
+    if ((platform() == QNX) || (platform() == BLACKBERRY)) {
         sout << "    SLOG2 support..........." << dictionary[ "SLOG2" ] << endl;
+        sout << "    IMF support............." << dictionary[ "QNX_IMF" ] << endl;
+    }
     sout << "    ANGLE..................." << dictionary[ "ANGLE" ] << endl;
     sout << endl;
 
