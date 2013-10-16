@@ -68,12 +68,14 @@ public:
     virtual QPaintEngine *createPaintEngine(QPrintEngine *printEngine, QPrinter::PrinterMode);
     virtual QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const;
     virtual QList<QPair<QString, QSizeF> > supportedSizesWithNames(const QPrinterInfo &) const;
+    virtual QList<QPrinterInfo> availablePrinters();
     virtual QString printerOption(const QPrinterInfo &printer, const QString &key) const;
     virtual PrinterOptions printerOptions(const QPrinterInfo &printer) const;
 
 private:
     void loadCups();
     void loadCupsPrinters();
+    void freeCupsPrinters();
     QString cupsOption(int i, const QString &key) const;
 
     QLibrary m_cups;
