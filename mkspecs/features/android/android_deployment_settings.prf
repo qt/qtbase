@@ -25,6 +25,7 @@ contains(TEMPLATE, ".*app"):!build_pass:!android-no-sdk {
         else: NDK_TOOLCHAIN_PREFIX = arm-linux-androideabi
     }
     FILE_CONTENT += "   \"toolchain-prefix\": $$emitString($$NDK_TOOLCHAIN_PREFIX),"
+    FILE_CONTENT += "   \"tool-prefix\": $$emitString($$NDK_TOOLS_PREFIX),"
 
     NDK_TOOLCHAIN_VERSION = $$(ANDROID_NDK_TOOLCHAIN_VERSION)
     isEmpty(NDK_TOOLCHAIN_VERSION): NDK_TOOLCHAIN_VERSION = $$DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION
