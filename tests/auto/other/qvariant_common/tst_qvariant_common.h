@@ -107,7 +107,7 @@ protected:
             currentName.chop(1);
             ok &= (msg.contains(", " + currentName) || msg.contains(", 0x0"));
         }
-        ok &= msg.endsWith(") ");
+        ok &= msg.endsWith(")");
         QVERIFY2(ok, (QString::fromLatin1("Message is not correctly finished: '") + msg + '\'').toLatin1().constData());
 
     }

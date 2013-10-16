@@ -1026,7 +1026,7 @@ void tst_QLocalSocket::writeToClientAndDisconnect()
 void tst_QLocalSocket::debug()
 {
     // Make sure this compiles
-    QTest::ignoreMessage(QtDebugMsg, "QLocalSocket::ConnectionRefusedError QLocalSocket::UnconnectedState ");
+    QTest::ignoreMessage(QtDebugMsg, "QLocalSocket::ConnectionRefusedError QLocalSocket::UnconnectedState");
     qDebug() << QLocalSocket::ConnectionRefusedError << QLocalSocket::UnconnectedState;
 }
 

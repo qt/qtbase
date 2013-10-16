@@ -80,7 +80,9 @@ public:
     inline QDebug &operator=(const QDebug &other);
     inline ~QDebug() {
         if (!--stream->ref) {
-            if(stream->message_output) {
+            if (stream->space && stream->buffer.endsWith(QLatin1Char(' ')))
+                stream->buffer.chop(1);
+            if (stream->message_output) {
                 QT_TRY {
                     qt_message_output(stream->type,
                                       stream->context,

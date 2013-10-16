@@ -68,8 +68,8 @@ void tst_QNoDebug::noDebugOutput() const
     qCDebug(cat) << "foo";
 
     // qWarning still works, though
-    QTest::ignoreMessage(QtWarningMsg, "bar ");
-    QTest::ignoreMessage(QtWarningMsg, "custom-bar ");
+    QTest::ignoreMessage(QtWarningMsg, "bar");
+    QTest::ignoreMessage(QtWarningMsg, "custom-bar");
     qWarning() << "bar";
     qCWarning(cat) << "custom-bar";
 }
@@ -79,7 +79,7 @@ void tst_QNoDebug::streaming() const
     QDateTime dt(QDate(1,2,3),QTime(4,5,6));
     QString debugString = dt.toString(QStringLiteral("yyyy-MM-dd HH:mm:ss.zzz t"))
                         + QStringLiteral(" Qt::LocalTime");
-    QTest::ignoreMessage(QtWarningMsg, qPrintable(QString::fromLatin1("QDateTime(\"%1\") ").arg(debugString)));
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(QString::fromLatin1("QDateTime(\"%1\")").arg(debugString)));
     qWarning() << dt;
 }
 

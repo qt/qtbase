@@ -672,7 +672,7 @@ void tst_qmessagehandler::qMessagePattern()
     QVERIFY(output.contains("debug tst_qlogging 57 main qDebug"));
     QVERIFY(output.contains("warning tst_qlogging 58 main qWarning"));
     QVERIFY(output.contains("critical tst_qlogging 59 main qCritical"));
-    QVERIFY(output.contains("warning tst_qlogging 62 main qDebug with category "));
+    QVERIFY(output.contains("warning tst_qlogging 62 main qDebug with category"));
     QVERIFY(output.contains("debug tst_qlogging 66 main qDebug2"));
 
     environment = m_baseEnvironment;
@@ -712,7 +712,7 @@ void tst_qmessagehandler::qMessagePattern()
             "[debug] qDebug\n"
             "[warning] qWarning\n"
             "[critical] qCritical\n"
-            "[warning] qDebug with category \n";
+            "[warning] qDebug with category\n";
 #ifdef Q_OS_WIN
     output.replace("\r\n", "\n");
 #endif
