@@ -401,7 +401,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 
     The macro expands to code that checks whether
     \l QLoggingCategory::isTraceEnabled() evaluates to \c true.
-    If so, the stream arguments are processed and sent to the tracers
+    If so, the stream arguments are processed and sent to the \l QTracer objects
     registered with the category.
 
     \note Arguments are not processed if trace output for the category is not
@@ -411,7 +411,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 
     \snippet qtracer/ftracer.cpp 6
 
-    \sa qCTraceGuard()
+    \sa qCTraceGuard() QTraceGuard
 */
 
 /*!
@@ -423,11 +423,12 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     storage. The guard constructor checks whether
     \l QLoggingCategory::isTraceEnabled() evaluates to \c true.
     If so, the stream arguments are processed and the \c{start()}
-    functions of the tracers registered with the \a category are called.
+    functions of the \l QTracer objects registered with the \a category are
+    called.
 
     The guard destructor also checks whether the category is enabled for
     tracing and if so, the \c{end()}
-    functions of the tracers registered with the \a category are called.
+    functions of the \l QTracer objects registered with the \a category are called.
 
     \note Arguments are always processed, even if trace output for the
     category is disabled. They will, however, in that case not be passed
@@ -437,7 +438,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 
     \snippet qtracer/ftracer.cpp 4
 
-    \sa qCTrace()
+    \sa qCTrace() QTracer
 */
 
 /*!
