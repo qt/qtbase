@@ -1019,6 +1019,27 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("shellScript", "make -C " + IoUtils::shellQuoteUnix(qmake_getpwd()) + " -f " + IoUtils::shellQuoteUnix(mkfile)) << ";\n"
           << "\t\t};\n";
     }
+
+    if (!project->isEmpty("QMAKE_PRE_LINK")) {
+        QString phase_key = keyFor("QMAKE_PBX_PRELINK_BUILDPHASE");
+        project->values("QMAKE_PBX_BUILDPHASES").append(phase_key);
+        t << "\t\t" << phase_key << " = {\n"
+          << "\t\t\t" << writeSettings("buildActionMask", "2147483647", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("files", ProStringList(), SettingsAsList, 4) << ";\n"
+          // The build phases are not executed in the order they are defined, but by their
+          // resolved dependenices, so we have to ensure that this phase is run after the
+          // compilation phase, and before the link phase. Making the phase depend on all the
+          // object files, and "write" to the list of files to link achieves that.
+          << "\t\t\t" << writeSettings("inputPaths", ProStringList("$(OBJECT_FILE_DIR_$(CURRENT_VARIANT))/$(CURRENT_ARCH)/*" + Option::obj_ext), SettingsAsList, 4) << ";\n"
+          << "\t\t\t" << writeSettings("outputPaths", ProStringList("$(LINK_FILE_LIST_$(CURRENT_VARIANT)_$(CURRENT_ARCH))"), SettingsAsList, 4) << ";\n"
+          << "\t\t\t" << writeSettings("isa", "PBXShellScriptBuildPhase", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("runOnlyForDeploymentPostprocessing", "0", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("name", "Qt Prelink") << ";\n"
+          << "\t\t\t" << writeSettings("shellPath", "/bin/sh") << ";\n"
+          << "\t\t\t" << writeSettings("shellScript", project->values("QMAKE_PRE_LINK")) << ";\n"
+          << "\t\t};\n";
+    }
+
     //LIBRARY BUILDPHASE
     if(!project->isEmpty("QMAKE_PBX_LIBRARIES")) {
         tmp = project->values("QMAKE_PBX_LIBRARIES");
@@ -1044,6 +1065,24 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("name", escapeFilePath(grp)) << ";\n"
           << "\t\t};\n";
     }
+
+    if (!project->isEmpty("QMAKE_POST_LINK")) {
+        QString phase_key = keyFor("QMAKE_PBX_POSTLINK_BUILDPHASE");
+        project->values("QMAKE_PBX_BUILDPHASES").append(phase_key);
+        t << "\t\t" << phase_key << " = {\n"
+          << "\t\t\t" << writeSettings("buildActionMask", "2147483647", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("files", ProStringList(), SettingsAsList, 4) << ";\n"
+          // The build phases are not executed in the order they are defined, but by their
+          // resolved dependenices, so we have to ensure the phase is run after linking.
+          << "\t\t\t" << writeSettings("inputPaths", ProStringList("$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)"), SettingsAsList, 4) << ";\n"
+          << "\t\t\t" << writeSettings("isa", "PBXShellScriptBuildPhase", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("runOnlyForDeploymentPostprocessing", "0", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("name", "Qt Postlink") << ";\n"
+          << "\t\t\t" << writeSettings("shellPath", "/bin/sh") << ";\n"
+          << "\t\t\t" << writeSettings("shellScript", project->values("QMAKE_POST_LINK")) << ";\n"
+          << "\t\t};\n";
+    }
+
     if (!project->isEmpty("DESTDIR")) {
         QString phase_key = keyFor("QMAKE_PBX_TARGET_COPY_PHASE");
         QString destDir = project->first("DESTDIR").toQString();
