@@ -496,6 +496,7 @@ void QIOSEventDispatcher::checkIfEventLoopShouldExit()
 
 void QIOSEventDispatcher::handleRunLoopExit(CFRunLoopActivity activity)
 {
+    Q_UNUSED(activity);
     Q_ASSERT(activity == kCFRunLoopExit);
 
     m_runLoopExitObserver.removeFromMode(kCFRunLoopCommonModes);
