@@ -1111,6 +1111,10 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
             while (qcn != 0) {
                 NodeList::ConstIterator c = qcn->childNodes().constBegin();
                 while (c != qcn->childNodes().constEnd()) {
+                    if ((*c)->status() == Node::Internal) {
+                        ++c;
+                        continue;
+                    }
                     if ((*c)->type() == Node::QmlPropertyGroup) {
                         insert(qmlproperties, *c, style, Okay);
                     }
@@ -1172,6 +1176,10 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
             while (qcn != 0) {
                 NodeList::ConstIterator c = qcn->childNodes().constBegin();
                 while (c != qcn->childNodes().constEnd()) {
+                    if ((*c)->status() == Node::Internal) {
+                        ++c;
+                        continue;
+                    }
                     if ((*c)->type() == Node::QmlPropertyGroup) {
                         insert(qmlproperties,*c,style,Okay);
                     }

@@ -2311,7 +2311,7 @@ QString HtmlGenerator::generateAllQmlMembersFile(const QmlClassNode* qml_cn,
             }
             out() << "<ul>\n";
             for (int j=0; j<keys.size(); j++) {
-                if (nodes[j]->access() == Node::Private) {
+                if (nodes[j]->access() == Node::Private || nodes[j]->status() == Node::Internal) {
                     continue;
                 }
                 out() << "<li class=\"fn\">";
@@ -2320,7 +2320,8 @@ QString HtmlGenerator::generateAllQmlMembersFile(const QmlClassNode* qml_cn,
                     prefix = keys.at(j).mid(1);
                     prefix = prefix.left(keys.at(j).indexOf("::")+1);
                 }
-                generateSynopsis(nodes[j], qcn, marker, CodeMarker::Summary, false, &prefix);
+                generateQmlItem(nodes[j], qcn, marker, true);
+                //generateSynopsis(nodes[j], qcn, marker, CodeMarker::Subpage, false, &prefix);
                 out() << "</li>\n";
             }
             out() << "</ul>\n";

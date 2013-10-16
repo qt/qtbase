@@ -404,7 +404,6 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
                 }
             }
             else if (command == COMMAND_INTERNAL) {
-                node->setAccess(Node::Private);
                 node->setStatus(Node::Internal);
             }
             else if (command == COMMAND_OBSOLETE) {

@@ -195,6 +195,7 @@ public:
 
     virtual bool isInnerNode() const = 0;
     virtual bool isQmlModule() const { return false; }
+    virtual bool isQmlType() const { return false; }
     virtual bool isExample() const { return false; }
     virtual bool isExampleFile() const { return false; }
     virtual bool isLeaf() const { return false; }
@@ -610,6 +611,7 @@ public:
     QmlClassNode(InnerNode* parent, const QString& name);
     virtual ~QmlClassNode();
     virtual bool isQmlNode() const { return true; }
+    virtual bool isQmlType() const { return true; }
     virtual bool isQtQuickNode() const { return (qmlModuleName() == QLatin1String("QtQuick")); }
     virtual ClassNode* classNode() { return cnode_; }
     virtual void setClassNode(ClassNode* cn) { cnode_ = cn; }
