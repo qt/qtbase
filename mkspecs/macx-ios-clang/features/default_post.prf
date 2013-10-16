@@ -44,6 +44,7 @@ equals(TEMPLATE, app) {
 
         # And distclean
         xcodebuild_distclean.commands = "$(DEL_FILE) -R $$TARGET_XCODE_PROJECT_DIR"
+        xcodebuild_distclean.depends = xcodebuild_clean
         QMAKE_EXTRA_TARGETS += xcodebuild_distclean
         distclean.depends = xcodebuild_distclean
         QMAKE_EXTRA_TARGETS += distclean
