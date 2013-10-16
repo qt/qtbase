@@ -93,6 +93,7 @@ enum WindowsEventType // Simplify event types
     NonClientHitTest = NonClientEventFlag + 2,
     KeyEvent = KeyEventFlag + 1,
     KeyDownEvent = KeyEventFlag + KeyDownEventFlag + 1,
+    KeyboardLayoutChangeEvent = KeyEventFlag + 2,
     InputMethodKeyEvent = InputMethodEventFlag + KeyEventFlag + 1,
     InputMethodKeyDownEvent = InputMethodEventFlag + KeyEventFlag + KeyDownEventFlag + 1,
     ClipboardEvent = ClipboardEventFlag + 1,
@@ -165,6 +166,10 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
         return QtWindows::InputMethodKeyEvent;
     case WM_IME_KEYDOWN:
         return QtWindows::InputMethodKeyDownEvent;
+#ifdef WM_INPUTLANGCHANGE
+    case WM_INPUTLANGCHANGE:
+        return QtWindows::KeyboardLayoutChangeEvent;
+#endif // WM_INPUTLANGCHANGE
     case WM_TOUCH:
         return QtWindows::TouchEvent;
     case WM_CHANGECBCHAIN:

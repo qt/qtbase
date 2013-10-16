@@ -574,7 +574,7 @@ void QWindowsKeyMapper::updateKeyMap(const MSG &msg)
 {
     unsigned char kbdBuffer[256]; // Will hold the complete keyboard state
     GetKeyboardState(kbdBuffer);
-    quint32 scancode = (msg.lParam >> 16) & 0xfff;
+    const quint32 scancode = (msg.lParam >> 16) & 0xff;
     updatePossibleKeyCodes(kbdBuffer, scancode, msg.wParam);
 }
 
@@ -742,12 +742,21 @@ bool QWindowsKeyMapper::translateKeyEvent(QWindow *widget, HWND hwnd,
                                           const MSG &msg, LRESULT *result)
 {
     *result = 0;
+
+    // Reset layout map when system keyboard layout is changed
+    if (msg.message == WM_INPUTLANGCHANGE) {
+        deleteLayouts();
+        return true;
+    }
+
+    // Add this key to the keymap if it is not present yet.
+    updateKeyMap(msg);
+
     MSG peekedMsg;
     // consume dead chars?(for example, typing '`','a' resulting in a-accent).
     if (PeekMessage(&peekedMsg, hwnd, 0, 0, PM_NOREMOVE) && peekedMsg.message == WM_DEADCHAR)
         return true;
-    if (msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN)
-        updateKeyMap(msg);
+
     return translateKeyEventInternal(widget, msg, false);
 }
 
@@ -755,9 +764,8 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
 {
     const int  msgType = msg.message;
 
-    const quint32 scancode = (msg.lParam >> 16) & 0xfff;
-    const quint32 vk_key = MapVirtualKey(scancode, 1);
-    const bool isNumpad = (msg.wParam >= VK_NUMPAD0 && msg.wParam <= VK_NUMPAD9);
+    const quint32 scancode = (msg.lParam >> 16) & 0xff;
+    const quint32 vk_key = msg.wParam;
     quint32 nModifiers = 0;
 
     QWindow *receiver = m_keyGrabber ? m_keyGrabber : window;
@@ -785,10 +793,6 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
     state |= (nModifiers & ControlAny ? int(Qt::ControlModifier) : 0);
     state |= (nModifiers & AltAny ? int(Qt::AltModifier) : 0);
     state |= (nModifiers & MetaAny ? int(Qt::MetaModifier) : 0);
-
-    // Now we know enough to either have MapVirtualKey or our own keymap tell us if it's a deadkey
-    const bool isDeadKey = isADeadKey(msg.wParam, state)
-                     || MapVirtualKey(msg.wParam, 2) & 0x80000000;
 
     // A multi-character key or a Input method character
     // not found by our look-ahead
@@ -849,23 +853,12 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
         return true;
 
     // Translate VK_* (native) -> Key_* (Qt) keys
-    // If it's a dead key, we cannot use the toKeyOrUnicode() function, since that will change
-    // the internal state of the keyboard driver, resulting in that dead keys no longer works.
-    // ..also if we're typing numbers on the keypad, while holding down the Alt modifier.
-    int code = 0;
-    if (isNumpad && (nModifiers & AltAny)) {
-        code = winceKeyBend(msg.wParam);
-    } else if (!isDeadKey) {
-        // QTBUG-8764, QTBUG-10032
-        // Can't call toKeyOrUnicode because that would call ToUnicode, and, if a dead key
-        // is pressed at the moment, Windows would NOT use it to compose a character for the next
-        // WM_CHAR event.
+    int modifiersIndex = 0;
+    modifiersIndex |= (nModifiers & ShiftAny ? 0x1 : 0);
+    modifiersIndex |= (nModifiers & ControlAny ? 0x2 : 0);
+    modifiersIndex |= (nModifiers & AltAny ? 0x4 : 0);
 
-        // Instead, use MapVirtualKey, which will provide adequate values.
-        code = MapVirtualKey(msg.wParam, MAPVK_VK_TO_CHAR);
-        if (code < 0x20 || code == 0x7f) // The same logic as in toKeyOrUnicode()
-            code = winceKeyBend(msg.wParam);
-    }
+    int code = keyLayout[vk_key].qtKey[modifiersIndex];
 
     // Invert state logic:
     // If the key actually pressed is a modifier key, then we remove its modifier key from the
