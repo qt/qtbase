@@ -416,21 +416,23 @@ QNetworkConfiguration::StateFlags QConnmanEngine::getStateForService(const QStri
     QMutexLocker locker(&mutex);
     QConnmanServiceInterface serv(service);
     QNetworkConfiguration::StateFlags flag = QNetworkConfiguration::Defined;
-    if( serv.getType() == "cellular") {
-        if(serv.isSetupRequired()) {
+    if (serv.getType() == "cellular") {
+        if (serv.isSetupRequired() || !serv.isAutoConnect()) {
             flag = ( flag | QNetworkConfiguration::Defined);
         } else {
             flag = ( flag | QNetworkConfiguration::Discovered);
         }
     } else {
-        if(serv.isFavorite()) {
-            flag = ( flag | QNetworkConfiguration::Discovered);
+        if (serv.isFavorite()) {
+            if (serv.isAutoConnect()) {
+                flag = ( flag | QNetworkConfiguration::Discovered);
+            }
         } else {
             flag = QNetworkConfiguration::Undefined;
         }
     }
 
-    if(serv.getState() == "ready" || serv.getState() == "online") {
+    if (serv.getState() == "ready" || serv.getState() == "online") {
         flag = ( flag | QNetworkConfiguration::Active);
     }
 
