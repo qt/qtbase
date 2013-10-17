@@ -3600,43 +3600,43 @@ void QAbstractItemView::startDrag(Qt::DropActions supportedActions)
 QStyleOptionViewItem QAbstractItemView::viewOptions() const
 {
     Q_D(const QAbstractItemView);
-    return d->viewOptions();
-}
-
-QStyleOptionViewItem QAbstractItemViewPrivate::viewOptions() const
-{
-    Q_Q(const QAbstractItemView);
     QStyleOptionViewItem option;
-    option.init(q);
+    option.init(this);
     option.state &= ~QStyle::State_MouseOver;
-    option.font = q->font();
+    option.font = font();
 
 #ifndef Q_WS_MAC
     // On mac the focus appearance follows window activation
     // not widget activation
-    if (!q->hasFocus())
+    if (!hasFocus())
         option.state &= ~QStyle::State_Active;
 #endif
 
     option.state &= ~QStyle::State_HasFocus;
-    if (iconSize.isValid()) {
-        option.decorationSize = iconSize;
+    if (d->iconSize.isValid()) {
+        option.decorationSize = d->iconSize;
     } else {
-        int pm = q->style()->pixelMetric(QStyle::PM_SmallIconSize, 0, q);
+        int pm = style()->pixelMetric(QStyle::PM_SmallIconSize, 0, this);
         option.decorationSize = QSize(pm, pm);
     }
     option.decorationPosition = QStyleOptionViewItem::Left;
     option.decorationAlignment = Qt::AlignCenter;
     option.displayAlignment = Qt::AlignLeft|Qt::AlignVCenter;
-    option.textElideMode = textElideMode;
+    option.textElideMode = d->textElideMode;
     option.rect = QRect();
-    option.showDecorationSelected = q->style()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, 0, q);
-    if (wrapItemText)
+    option.showDecorationSelected = style()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, 0, this);
+    if (d->wrapItemText)
         option.features = QStyleOptionViewItem::WrapText;
-    option.locale = q->locale();
+    option.locale = locale();
     option.locale.setNumberOptions(QLocale::OmitGroupSeparator);
-    option.widget = q;
+    option.widget = this;
     return option;
+}
+
+QStyleOptionViewItem QAbstractItemViewPrivate::viewOptions() const
+{
+    Q_Q(const QAbstractItemView);
+    return q->viewOptions();
 }
 
 /*!

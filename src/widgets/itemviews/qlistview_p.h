@@ -391,8 +391,6 @@ public:
         }
     }
 
-    QStyleOptionViewItem viewOptions() const;
-
     void scrollElasticBandBy(int dx, int dy);
 
     QItemViewPaintPairs draggablePaintPairs(const QModelIndexList &indexes, QRect *r) const;
