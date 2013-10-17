@@ -58,9 +58,9 @@ macx-xcode {
 
 # Be more specific about which architecture we're targeting
 equals(QT_ARCH, arm): \
-    actual_archs = armv7
+    actual_archs = $$QMAKE_IOS_DEVICE_ARCHS
 else: \
-    actual_archs = $$QT_ARCH
+    actual_archs = $$QMAKE_IOS_SIMULATOR_ARCHS
 
 macx-xcode {
     QMAKE_XCODE_ARCHS = $$actual_archs
