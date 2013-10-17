@@ -515,8 +515,15 @@ void QAndroidStyle::drawPrimitive(PrimitiveElement pe,
     AndroidControlsHash::const_iterator it = itemType != QC_UnknownType
                                              ? m_androidControlsHash.find(itemType)
                                              : m_androidControlsHash.end();
-    if (it != m_androidControlsHash.end())
-        it.value()->drawControl(opt, p, w);
+    if (it != m_androidControlsHash.end()) {
+        if (itemType != QC_EditText)
+            it.value()->drawControl(opt, p, w);
+        else {
+            QStyleOption copy(*opt);
+            copy.state &= ~QStyle::State_Sunken;
+            it.value()->drawControl(&copy, p, w);
+        }
+    }
     else
         QFusionStyle::drawPrimitive(pe, opt, p, w);
 }
