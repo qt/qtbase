@@ -3,3 +3,4 @@ SUBDIRS = \
         qmutex \
         qthreadstorage \
         qthreadpool \
+        qwaitcondition \
