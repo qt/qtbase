@@ -56,16 +56,6 @@ macx-xcode {
     QMAKE_MAC_XCODE_SETTINGS += ios_device_family
 }
 
-isEmpty(QT_ARCH) {
-    # The iPhoneOS and iPhoneSimulator targets share the same toolchain,
-    # so when configure runs the arch tests it passes the correct sysroot,
-    # but we fail to pick up the architecture since we're not passing -arch
-    # yet. Xcode does not seem to have a way to run the shared toolchain
-    # in a way that will automatically  do this (for example xcrun -sdk).
-    contains(QMAKE_MAC_SDK, iphoneos.*): QT_ARCH = arm
-    else: QT_ARCH = i386 # Simulator
-}
-
 # Be more specific about which architecture we're targeting
 equals(QT_ARCH, arm): \
     actual_archs = armv7
