@@ -2551,6 +2551,26 @@ QPainterPathStroker::QPainterPathStroker()
 }
 
 /*!
+   Creates a new stroker based on \a pen.
+
+   \since 5.3
+ */
+QPainterPathStroker::QPainterPathStroker(const QPen &pen)
+    : d_ptr(new QPainterPathStrokerPrivate)
+{
+    setWidth(pen.widthF());
+    setCapStyle(pen.capStyle());
+    setJoinStyle(pen.joinStyle());
+    setMiterLimit(pen.miterLimit());
+    setDashOffset(pen.dashOffset());
+
+    if (pen.style() == Qt::CustomDashLine)
+        setDashPattern(pen.dashPattern());
+    else
+        setDashPattern(pen.style());
+}
+
+/*!
     Destroys the stroker.
 */
 QPainterPathStroker::~QPainterPathStroker()
