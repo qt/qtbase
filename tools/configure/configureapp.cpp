@@ -2353,6 +2353,11 @@ void Configure::autoDetection()
         if (i.value() == "auto")
             i.value() = defaultTo(i.key());
     }
+
+    if (tryCompileProject("unix/ptrsize"))
+        dictionary["QT_POINTER_SIZE"] = "8";
+    else
+        dictionary["QT_POINTER_SIZE"] = "4";
 }
 
 bool Configure::verifyConfiguration()
@@ -3410,6 +3415,8 @@ void Configure::generateConfigfiles()
         if (dictionary["REDUCE_EXPORTS"] == "yes")     qconfigList += "QT_VISIBILITY_AVAILABLE";
         if (dictionary["REDUCE_RELOCATIONS"] == "yes") qconfigList += "QT_REDUCE_RELOCATIONS";
         if (dictionary["QT_GETIFADDRS"] == "no")       qconfigList += "QT_NO_GETIFADDRS";
+
+        qconfigList += QString("QT_POINTER_SIZE=%1").arg(dictionary["QT_POINTER_SIZE"]);
 
         qconfigList.sort();
         for (int i = 0; i < qconfigList.count(); ++i)
