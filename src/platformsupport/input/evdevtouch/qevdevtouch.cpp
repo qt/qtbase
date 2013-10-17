@@ -300,6 +300,21 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &specification,
             qDebug("evdevtouch: device name: %s", name);
     }
 
+    // Fix up the coordinate ranges for am335x in case the kernel driver does not have them fixed.
+    if (d->hw_name == QLatin1String("ti-tsc")) {
+        if (d->hw_range_x_min == 0 && d->hw_range_x_max == 4095) {
+            d->hw_range_x_min = 165;
+            d->hw_range_x_max = 4016;
+        }
+        if (d->hw_range_y_min == 0 && d->hw_range_y_max == 4095) {
+            d->hw_range_y_min = 220;
+            d->hw_range_y_max = 3907;
+        }
+        if (printDeviceInfo)
+            qDebug("evdevtouch: found ti-tsc, overriding: min X: %d max X: %d min Y: %d max Y: %d",
+                   d->hw_range_x_min, d->hw_range_x_max, d->hw_range_y_min, d->hw_range_y_max);
+    }
+
     bool grabSuccess = !ioctl(m_fd, EVIOCGRAB, (void *) 1);
     if (grabSuccess)
         ioctl(m_fd, EVIOCGRAB, (void *) 0);
