@@ -1389,7 +1389,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                 if ((project->first("TEMPLATE") == "app" && project->isActiveConfig("app_bundle")) ||
                    (project->first("TEMPLATE") == "lib" && !project->isActiveConfig("staticlib") &&
                     project->isActiveConfig("lib_bundle"))) {
-                    QString plist = fileFixify(project->first("QMAKE_INFO_PLIST").toQString());
+                    QString plist = fileFixify(project->first("QMAKE_INFO_PLIST").toQString(), Option::output_dir, input_dir);
                     if (plist.isEmpty())
                         plist = specdir() + QDir::separator() + "Info.plist." + project->first("TEMPLATE");
                     if (exists(plist)) {
