@@ -778,7 +778,11 @@ void tst_QDateTime::toString_rfcDate()
     QFETCH(QDateTime, dt);
     QFETCH(QString, formatted);
 
+    // Set to non-English locale to confirm still uses English
+    QLocale oldLocale;
+    QLocale::setDefault(QLocale("de_DE"));
     QCOMPARE(dt.toString(Qt::RFC2822Date), formatted);
+    QLocale::setDefault(oldLocale);
 }
 
 void tst_QDateTime::toString_enumformat()

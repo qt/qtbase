@@ -891,7 +891,7 @@ QString QDate::toString(Qt::DateFormat format) const
     case Qt::DefaultLocaleLongDate:
         return QLocale().toString(*this, QLocale::LongFormat);
     case Qt::RFC2822Date:
-        return toString(QStringLiteral("dd MMM yyyy"));
+        return QLocale::c().toString(*this, QStringLiteral("dd MMM yyyy"));
     default:
 #ifndef QT_NO_TEXTDATE
     case Qt::TextDate:
@@ -1638,9 +1638,6 @@ QString QTime::toString(Qt::DateFormat format) const
     case Qt::DefaultLocaleLongDate:
         return QLocale().toString(*this, QLocale::LongFormat);
     case Qt::RFC2822Date:
-        return QString::fromLatin1("%1:%2:%3").arg(hour(), 2, 10, QLatin1Char('0'))
-                                              .arg(minute(), 2, 10, QLatin1Char('0'))
-                                              .arg(second(), 2, 10, QLatin1Char('0'));
     case Qt::ISODate:
     case Qt::TextDate:
     default:
@@ -3548,27 +3545,8 @@ QString QDateTime::toString(Qt::DateFormat format) const
     case Qt::DefaultLocaleLongDate:
         return QLocale().toString(*this, QLocale::LongFormat);
     case Qt::RFC2822Date: {
-        buf = toString(QStringLiteral("dd MMM yyyy hh:mm:ss "));
-
-        int utcOffset = d->m_offsetFromUtc;
-        if (timeSpec() == Qt::LocalTime) {
-            QDateTime utc = toUTC();
-            utc.setTimeSpec(timeSpec());
-            utcOffset = utc.secsTo(*this);
-        }
-
-        const int offset = qAbs(utcOffset);
-        buf += QLatin1Char((offset == utcOffset) ? '+' : '-');
-
-        const int hour = offset / 3600;
-        if (hour < 10)
-            buf += QLatin1Char('0');
-        buf += QString::number(hour);
-
-        const int min = (offset - (hour * 3600)) / 60;
-        if (min < 10)
-            buf += QLatin1Char('0');
-        buf += QString::number(min);
+        buf = QLocale::c().toString(*this, QStringLiteral("dd MMM yyyy hh:mm:ss "));
+        buf += toOffsetString(Qt::TextDate, d->m_offsetFromUtc);
         return buf;
     }
     default:
