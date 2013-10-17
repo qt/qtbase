@@ -153,6 +153,9 @@
 #    define Q_CC_INTEL
 #    define Q_ASSUME_IMPL(expr)  __assume(expr)
 #    define Q_UNREACHABLE_IMPL() __builtin_unreachable()
+#    if __INTEL_COMPILER >= 1300
+#      define Q_DECL_DEPRECATED_X(text) __attribute__ ((__deprecated__(text)))
+#    endif
 #  elif defined(__clang__)
 /* Clang also masquerades as GCC */
 #    define Q_CC_CLANG
@@ -167,6 +170,7 @@
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
 #      define Q_ASSUME_IMPL(expr)  if (expr){} else __builtin_unreachable()
 #      define Q_UNREACHABLE_IMPL() __builtin_unreachable()
+#      define Q_DECL_DEPRECATED_X(text) __attribute__ ((__deprecated__(text)))
 #    endif
 #  endif
 
@@ -183,7 +187,6 @@
 #  define Q_ALIGNOF(type)   __alignof__(type)
 #  define Q_TYPEOF(expr)    __typeof__(expr)
 #  define Q_DECL_DEPRECATED __attribute__ ((__deprecated__))
-#  define Q_DECL_DEPRECATED_X(text) __attribute__ ((__deprecated__(text)))
 #  define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
 #  define Q_DECL_UNUSED     __attribute__((__unused__))
 #  define Q_LIKELY(expr)    __builtin_expect(!!(expr), true)
@@ -520,6 +523,9 @@
 #  endif
 #  if !__has_feature(cxx_rtti)
 #    define QT_NO_RTTI
+#  endif
+#  if __has_feature(attribute_deprecated_with_message)
+#    define Q_DECL_DEPRECATED_X(text) __attribute__ ((__deprecated__(text)))
 #  endif
 
 /* C++11 features, see http://clang.llvm.org/cxx_status.html */
