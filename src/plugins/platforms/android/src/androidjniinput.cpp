@@ -228,6 +228,9 @@ namespace QtAndroidInput
             return;
 
         QAndroidPlatformIntegration *platformIntegration = QtAndroid::androidPlatformIntegration();
+        if (!platformIntegration)
+            return;
+
         QTouchDevice *touchDevice = platformIntegration->touchDevice();
         if (touchDevice == 0) {
             touchDevice = new QTouchDevice;
