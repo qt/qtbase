@@ -165,9 +165,10 @@ public:
 
     enum NetworkLayerPreferenceState {
         Unknown,
-        InProgress,
+        HostLookupPending,
         IPv4,
-        IPv6
+        IPv6,
+        IPv4or6
     };
 
     QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt);
