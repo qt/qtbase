@@ -82,7 +82,7 @@ EGLNativeDisplayType QEglFSAndroidHooks::platformDisplay() const
 
 QSize QEglFSAndroidHooks::screenSize() const
 {
-    return QtAndroid::nativeWindowSize();
+    return QAndroidPlatformIntegration::defaultDesktopSize();
 }
 
 QSizeF QEglFSAndroidHooks::physicalScreenSize() const

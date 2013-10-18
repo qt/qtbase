@@ -41,6 +41,7 @@
 
 #include "qandroidopenglplatformwindow.h"
 #include "androidjnimain.h"
+#include "qandroidplatformintegration.h"
 #include <qpa/qwindowsysteminterface.h>
 
 QT_BEGIN_NAMESPACE
@@ -110,7 +111,9 @@ void QAndroidOpenGLPlatformWindow::resetSurface()
 
     {
         lock();
-        scheduleResize(QtAndroid::nativeWindowSize());
+        // Use the desktop size.
+        // On some devices, the getters for the native window size gives wrong values
+        scheduleResize(QAndroidPlatformIntegration::defaultDesktopSize());
         QWindowSystemInterface::handleExposeEvent(window(), QRegion(geometry())); // Expose event
         unlock();
     }

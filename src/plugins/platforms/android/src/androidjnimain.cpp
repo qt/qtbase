@@ -247,17 +247,6 @@ namespace QtAndroid
         m_surfaceMutex.unlock();
         return m_nativeWindow;
     }
-
-    QSize nativeWindowSize()
-    {
-        if (m_nativeWindow == 0)
-            return QAndroidPlatformIntegration::defaultDesktopSize();
-
-        int width = ANativeWindow_getWidth(m_nativeWindow);
-        int height = ANativeWindow_getHeight(m_nativeWindow);
-
-        return QSize(width, height);
-    }
 #endif
 
     void setAndroidPlatformIntegration(QAndroidPlatformIntegration *androidPlatformIntegration)
@@ -564,7 +553,9 @@ static void setSurface(JNIEnv *env, jobject /*thiz*/, jobject jSurface)
         m_waitForWindowSemaphore.release();
 
     if (m_androidPlatformIntegration) {
-        QSize size = QtAndroid::nativeWindowSize();
+        // Use the desktop size.
+        // On some devices, the getters for the native window size gives wrong values
+        QSize size = QAndroidPlatformIntegration::defaultDesktopSize();
 
         QPlatformScreen *screen = m_androidPlatformIntegration->screen();
         QRect geometry(QPoint(0, 0), size);

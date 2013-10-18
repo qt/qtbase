@@ -75,7 +75,6 @@ namespace QtAndroid
     void flushImage(const QPoint &pos, const QImage &image, const QRect &rect);
 #else
     EGLNativeWindowType nativeWindow(bool waitToCreate = true);
-    QSize nativeWindowSize();
 #endif
 
     QWindow *topLevelWindowAt(const QPoint &globalPos);
