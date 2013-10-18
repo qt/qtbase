@@ -60,8 +60,11 @@ my $man = 0;
 my $help = 0;
 my $make_clean = 0;
 my $time_out=400;
+my $android_toolchain_version = "4.8";
+my $host_arch = "linux-x86";
 my $android_sdk_dir = "$ENV{'ANDROID_SDK_ROOT'}";
 my $android_ndk_dir = "$ENV{'ANDROID_NDK_ROOT'}";
+my $android_to_connect = "$ENV{'ANDROID_DEVICE'}";
 my $ant_tool = `which ant`;
 chomp $ant_tool;
 my $strip_tool="";
@@ -74,6 +77,8 @@ GetOptions('h|help' => \$help
             , 'j|jobs=i' => \$jobs
             , 'sdk=s' => \$android_sdk_dir
             , 'ndk=s' => \$android_ndk_dir
+            , 'toolchain=s' => \$android_toolchain_version
+            , 'host=s' => \$host_arch
             , 'ant=s' => \$ant_tool
             , 'strip=s' => \$strip_tool
             , 'readelf=s' => \$readelf_tool
@@ -83,14 +88,29 @@ pod2usage(1) if $help;
 pod2usage(-verbose => 2) if $man;
 
 my $adb_tool="$android_sdk_dir/platform-tools/adb";
+
+# For CI. Nodes are connecting to test devices over IP, which is stored to env variable
+if ($android_to_connect ne ""){
+    print " Found device to be connected from env: $android_to_connect \n";
+    system("$adb_tool disconnect $android_to_connect");
+    system("$adb_tool connect $android_to_connect");
+    sleep(2);# let it connect
+    system("$adb_tool -s $android_to_connect reboot &");# adb bug, it blocks forever
+    sleep(15); # wait for the device to come up again
+    system("$adb_tool disconnect $android_to_connect");# cleans up the left adb reboot process
+    system("$adb_tool connect $android_to_connect");
+    $device_serial =$android_to_connect;
+}
+
+
 system("$adb_tool devices") == 0 or die "No device found, please plug/start at least one device/emulator\n"; # make sure we have at least on device attached
 
-$device_serial = "-s $device_serial" if ($device_serial);
 $deployqt_device_serial = "--device $device_serial" if ($device_serial);
+$device_serial = "-s $device_serial" if ($device_serial);
 $testsubset="/$testsubset" if ($testsubset);
 
-$strip_tool="$android_ndk_dir/toolchains/arm-linux-androideabi-4.7/prebuilt/linux-x86/bin/arm-linux-androideabi-strip" unless($strip_tool);
-$readelf_tool="$android_ndk_dir/toolchains/arm-linux-androideabi-4.7/prebuilt/linux-x86/bin/arm-linux-androideabi-readelf"  unless($readelf_tool);
+$strip_tool="$android_ndk_dir/toolchains/arm-linux-androideabi-$android_toolchain_version/prebuilt/$host_arch/bin/arm-linux-androideabi-strip" unless($strip_tool);
+$readelf_tool="$android_ndk_dir/toolchains/arm-linux-androideabi-$android_toolchain_version/prebuilt/$host_arch/bin/arm-linux-androideabi-readelf"  unless($readelf_tool);
 $readelf_tool="$readelf_tool -d -w ";
 
 sub dir
@@ -174,7 +194,8 @@ sub startTest
     #wait to stop
     unless(waitForProcess($packageName,0,$time_out,5))
     {
-        killProcess($packageName);
+        #killProcess($packageName);
+        print "Someone should kill $packageName\n";
         return 1;
     }
     system("$adb_tool $device_serial pull /data/data/$packageName/output.xml $output_dir/$output_file");
