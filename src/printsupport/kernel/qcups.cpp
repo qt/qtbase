@@ -215,6 +215,17 @@ const ppd_file_t* QCUPSSupport::setCurrentPrinter(int index)
     return currPPD;
 }
 
+const ppd_file_t* QCUPSSupport::setCurrentPrinter(const QString &printerName)
+{
+    Q_FOREACH (const QCUPSSupport::Printer &printer, QCUPSSupport::availableUnixPrinters()) {
+        if (printer.name == printerName) {
+            return setCurrentPrinter(printer.cupsPrinterIndex);
+        }
+    }
+
+    return 0;
+}
+
 int QCUPSSupport::currentPrinterIndex() const
 {
     return currPrinterIndex;

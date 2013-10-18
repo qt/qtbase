@@ -408,6 +408,7 @@ void QPageSetupWidget::selectPrinter()
     if (QCUPSSupport::isAvailable()) {
         m_cups = true;
         QCUPSSupport cups;
+        cups.setCurrentPrinter(m_printer->printerName());
         const ppd_option_t* pageSizes = cups.pageSizes();
         const int numChoices = pageSizes ? pageSizes->num_choices : 0;
 

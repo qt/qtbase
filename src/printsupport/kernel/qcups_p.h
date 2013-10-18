@@ -149,6 +149,7 @@ public:
     const cups_dest_t* availablePrinters() const;
     int currentPrinterIndex() const;
     const ppd_file_t* setCurrentPrinter(int index);
+    const ppd_file_t* setCurrentPrinter(const QString &printerName);
 
     const ppd_file_t* currentPPD() const;
     const ppd_option_t* ppdOption(const char *key) const;
