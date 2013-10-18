@@ -77,7 +77,8 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
       m_parentWindow(0),
       m_visible(false),
       m_exposed(true),
-      m_windowState(Qt::WindowNoState)
+      m_windowState(Qt::WindowNoState),
+      m_mmRendererWindow(0)
 {
     qWindowDebug() << Q_FUNC_INFO << "window =" << window << ", size =" << window->size();
     int result;
@@ -489,6 +490,22 @@ void QQnxWindow::gainedFocus()
     QWindowSystemInterface::handleWindowActivated(window());
 }
 
+void QQnxWindow::setMMRendererWindowName(const QString &name)
+{
+    m_mmRendererWindowName = name;
+}
+
+void QQnxWindow::setMMRendererWindow(screen_window_t handle)
+{
+    m_mmRendererWindow = handle;
+}
+
+void QQnxWindow::clearMMRendererWindow()
+{
+    m_mmRendererWindowName.clear();
+    m_mmRendererWindow = 0;
+}
+
 QQnxWindow *QQnxWindow::findWindow(screen_window_t windowHandle)
 {
     if (m_window == windowHandle)
@@ -583,15 +600,23 @@ void QQnxWindow::initWindow()
 
 void QQnxWindow::updateZorder(int &topZorder)
 {
-    errno = 0;
-    int result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_ZORDER, &topZorder);
-    topZorder++;
+    updateZorder(m_window, topZorder);
 
-    if (result != 0)
-        qFatal("QQnxWindow: failed to set window z-order=%d, errno=%d, mWindow=%p", topZorder, errno, m_window);
+    if (m_mmRendererWindow)
+        updateZorder(m_mmRendererWindow, topZorder);
 
     Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
         childWindow->updateZorder(topZorder);
+}
+
+void QQnxWindow::updateZorder(screen_window_t window, int &topZorder)
+{
+    errno = 0;
+    int result = screen_set_window_property_iv(window, SCREEN_PROPERTY_ZORDER, &topZorder);
+    topZorder++;
+
+    if (result != 0)
+        qFatal("QQnxWindow: failed to set window z-order=%d, errno=%d, mWindow=%p", topZorder, errno, window);
 }
 
 void QQnxWindow::applyWindowState()

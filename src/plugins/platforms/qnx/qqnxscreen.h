@@ -119,6 +119,7 @@ private:
     void resizeWindows(const QRect &previousScreenGeometry);
     void addOverlayWindow(screen_window_t window);
     void addUnderlayWindow(screen_window_t window);
+    void addMultimediaWindow(const QByteArray &id, screen_window_t window);
     void removeOverlayOrUnderlayWindow(screen_window_t window);
 
     QWindow *topMostChildWindow() const;

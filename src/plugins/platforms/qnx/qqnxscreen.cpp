@@ -119,6 +119,38 @@ static QSize determineScreenSize(screen_display_t display, bool primaryScreen) {
 #endif
 }
 
+static QQnxWindow *findMultimediaWindow(const QList<QQnxWindow*> windows,
+                                                    const QByteArray &mmWindowId)
+{
+    Q_FOREACH (QQnxWindow *sibling, windows) {
+        if (sibling->mmRendererWindowName() == mmWindowId)
+            return sibling;
+
+        QQnxWindow *mmWindow = findMultimediaWindow(sibling->children(), mmWindowId);
+
+        if (mmWindow)
+            return mmWindow;
+    }
+
+    return 0;
+}
+
+static QQnxWindow *findMultimediaWindow(const QList<QQnxWindow*> windows,
+                                                    screen_window_t mmWindowId)
+{
+    Q_FOREACH (QQnxWindow *sibling, windows) {
+        if (sibling->mmRendererWindow() == mmWindowId)
+            return sibling;
+
+        QQnxWindow *mmWindow = findMultimediaWindow(sibling->children(), mmWindowId);
+
+        if (mmWindow)
+            return mmWindow;
+    }
+
+    return 0;
+}
+
 QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display, bool primaryScreen)
     : m_screenContext(screenContext),
       m_display(display),
@@ -585,6 +617,19 @@ void QQnxScreen::addUnderlayWindow(screen_window_t window)
     updateHierarchy();
 }
 
+void QQnxScreen::addMultimediaWindow(const QByteArray &id, screen_window_t window)
+{
+    // find the QnxWindow this mmrenderer window is related to
+    QQnxWindow *mmWindow = findMultimediaWindow(m_childWindows, id);
+
+    if (!mmWindow)
+        return;
+
+    mmWindow->setMMRendererWindow(window);
+
+    updateHierarchy();
+}
+
 void QQnxScreen::removeOverlayOrUnderlayWindow(screen_window_t window)
 {
     const int numRemoved = m_overlays.removeAll(window) + m_underlays.removeAll(window);
@@ -610,17 +655,35 @@ void QQnxScreen::newWindowCreated(void *window)
         zorder = 0;
     }
 
+    char windowNameBuffer[256] = { 0 };
+    QByteArray windowName;
+
+    if (screen_get_window_property_cv(windowHandle, SCREEN_PROPERTY_ID_STRING,
+                sizeof(windowNameBuffer) - 1, windowNameBuffer) != 0) {
+        qWarning("QQnx: Failed to get id for window, errno=%d", errno);
+    }
+
+    windowName = QByteArray(windowNameBuffer);
+
     if (display == nativeDisplay()) {
         // A window was created on this screen. If we don't know about this window yet, it means
         // it was not created by Qt, but by some foreign library like the multimedia renderer, which
         // creates an overlay window when playing a video.
         //
-        // Treat all foreign windows as overlays or underlays here.
+        // Treat all foreign windows as overlays, underlays or as windows
+        // created by the BlackBerry QtMultimedia plugin.
         //
-        // Assume that if a foreign window already has a Z-Order both negative and
+        // In the case of the BlackBerry QtMultimedia plugin, we need to
+        // "attach" the foreign created mmrenderer window to the correct
+        // platform window (usually the one belonging to QVideoWidget) to
+        // ensure proper z-ordering.
+        //
+        // Otherwise, assume that if a foreign window already has a Z-Order both negative and
         // less than the default Z-Order installed by mmrender on windows it creates,
         // the windows should be treated as an underlay. Otherwise, we treat it as an overlay.
-        if (!findWindow(windowHandle)) {
+        if (!windowName.isEmpty() && windowName.startsWith("BbVideoWindowControl")) {
+            addMultimediaWindow(windowName, windowHandle);
+        } else if (!findWindow(windowHandle)) {
             if (zorder <= MAX_UNDERLAY_ZORDER)
                 addUnderlayWindow(windowHandle);
             else
@@ -634,7 +697,13 @@ void QQnxScreen::windowClosed(void *window)
 {
     Q_ASSERT(thread() == QThread::currentThread());
     const screen_window_t windowHandle = reinterpret_cast<screen_window_t>(window);
-    removeOverlayOrUnderlayWindow(windowHandle);
+
+    QQnxWindow *mmWindow = findMultimediaWindow(m_childWindows, windowHandle);
+
+    if (mmWindow)
+        mmWindow->clearMMRendererWindow();
+    else
+        removeOverlayOrUnderlayWindow(windowHandle);
 }
 
 void QQnxScreen::windowGroupStateChanged(const QByteArray &id, Qt::WindowState state)

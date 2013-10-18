@@ -99,6 +99,9 @@ public:
     void propagateSizeHints();
 
     void gainedFocus();
+    void setMMRendererWindowName(const QString &name);
+    void setMMRendererWindow(screen_window_t handle);
+    void clearMMRendererWindow();
 
     QQnxScreen *screen() const { return m_screen; }
     const QList<QQnxWindow*>& children() const { return m_childWindows; }
@@ -106,6 +109,10 @@ public:
     QQnxWindow *findWindow(screen_window_t windowHandle);
 
     void minimize();
+
+    QString mmRendererWindowName() const { return m_mmRendererWindowName; }
+
+    screen_window_t mmRendererWindow() const { return m_mmRendererWindow; }
 
     virtual WindowType windowType() const = 0;
 protected:
@@ -123,6 +130,7 @@ private:
     void setOffset(const QPoint &setOffset);
     void updateVisibility(bool parentVisible);
     void updateZorder(int &topZorder);
+    void updateZorder(screen_window_t window, int &zOrder);
     void applyWindowState();
 
     screen_window_t m_window;
@@ -135,6 +143,8 @@ private:
     bool m_exposed;
     QRect m_unmaximizedGeometry;
     Qt::WindowState m_windowState;
+    QString m_mmRendererWindowName;
+    screen_window_t m_mmRendererWindow;
 };
 
 QT_END_NAMESPACE
