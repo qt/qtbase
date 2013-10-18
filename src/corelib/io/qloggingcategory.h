@@ -154,7 +154,7 @@ private:
     }
 
 #define qCDebug(category) \
-    for (bool enabled = category().isDebugEnabled(); enabled; enabled = false) \
+    for (bool enabled = category().isDebugEnabled(); Q_UNLIKELY(enabled); enabled = false) \
         QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, category().categoryName()).debug()
 #define qCWarning(category) \
     for (bool enabled = category().isWarningEnabled(); enabled; enabled = false) \
@@ -163,7 +163,7 @@ private:
     for (bool enabled = category().isCriticalEnabled(); enabled; enabled = false) \
         QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, category().categoryName()).critical()
 #define qCTrace(category) \
-    for (bool enabled = category.isTraceEnabled(); enabled; enabled = false) \
+    for (bool enabled = category.isTraceEnabled(); Q_UNLIKELY(enabled); enabled = false) \
         QTraceGuard(category)
 
 
