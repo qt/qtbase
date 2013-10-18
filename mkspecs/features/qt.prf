@@ -78,21 +78,16 @@ if(contains(QT, qml)|contains(QT_PRIVATE, qml)): \
         contains(QT_CONFIG, static):contains(TEMPLATE, .*app):!host_build:!no_import_scan {
     # run qmlimportscanner
     qtPrepareTool(QMLIMPORTSCANNER, qmlimportscanner)
-    exists($$QMLIMPORTSCANNER) {
-        for (MODULE, QT_MODULES) {
-            PATH = $$eval(QT.$${MODULE}.qml)
-            !isEmpty(PATH): QMLPATHS += $$PATH
-        }
-        QMLPATHS = $$unique(QMLPATHS)
-        for (QMLPATH, QMLPATHS): \
-            IMPORTPATHS += -importPath $$QMLPATH
-
-        #message(run $$QMLIMPORTSCANNER $$_PRO_FILE_PWD_  $$IMPORTPATHS)
-        JSON = $$system($$QMLIMPORTSCANNER $$_PRO_FILE_PWD_ $$IMPORTPATHS)
-    } else {
-        error("qmlimportscanner is missing. Rebuild qtdeclarative/tools/qmlimportscanner.")
-        JSON = []
+    for (MODULE, QT_MODULES) {
+        PATH = $$eval(QT.$${MODULE}.qml)
+        !isEmpty(PATH): QMLPATHS += $$PATH
     }
+    QMLPATHS = $$unique(QMLPATHS)
+    for (QMLPATH, QMLPATHS): \
+        IMPORTPATHS += -importPath $$QMLPATH
+
+    #message(run $$QMLIMPORTSCANNER $$_PRO_FILE_PWD_  $$IMPORTPATHS)
+    JSON = $$system($$QMLIMPORTSCANNER $$_PRO_FILE_PWD_ $$IMPORTPATHS)
 
     parseJson(JSON, IMPORTS)| error("Failed to parse qmlimportscanner output.")
 
