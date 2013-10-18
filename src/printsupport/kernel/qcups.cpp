@@ -144,10 +144,12 @@ QCUPSSupport::QCUPSSupport()
     for (int i = 0; i <  prnCount; ++i) {
         if (printers[i].is_default) {
             currPrinterIndex = i;
-            setCurrentPrinter(i);
             break;
         }
     }
+
+    if (prnCount > 0)
+        setCurrentPrinter(currPrinterIndex);
 
 #ifndef QT_NO_TEXTCODEC
     cups_lang_t *cupsLang = _cupsLangGet(0);
