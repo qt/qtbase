@@ -86,6 +86,12 @@ QWidgetWindow::QWidgetWindow(QWidget *widget)
     connect(m_widget, &QObject::objectNameChanged, this, &QWidgetWindow::updateObjectName);
 }
 
+QWidgetWindow::~QWidgetWindow()
+{
+    if (m_widget == qt_tablet_target)
+        qt_tablet_target = 0;
+}
+
 #ifndef QT_NO_ACCESSIBILITY
 QAccessibleInterface *QWidgetWindow::accessibleRoot() const
 {

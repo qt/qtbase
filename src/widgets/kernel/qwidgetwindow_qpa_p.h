@@ -58,6 +58,7 @@ class QWidgetWindow : public QWindow
     Q_OBJECT
 public:
     QWidgetWindow(QWidget *widget);
+    ~QWidgetWindow();
 
     QWidget *widget() const { return m_widget; }
 #ifndef QT_NO_ACCESSIBILITY
