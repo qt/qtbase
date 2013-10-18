@@ -68,8 +68,6 @@ public:
     int numberOfObscures;
 };
 
-
-
 class tst_QWindowContainer: public QObject
 {
     Q_OBJECT
@@ -81,6 +79,7 @@ private slots:
     void testBehindTheScenesDeletion();
     void testUnparenting();
     void testActivation();
+    void testAncestorChange();
 };
 
 
@@ -188,6 +187,7 @@ void tst_QWindowContainer::testActivation()
 
     root.show();
     root.activateWindow();
+    QVERIFY(QTest::qWaitForWindowExposed(&root));
 
     QVERIFY(QTest::qWaitForWindowActive(root.windowHandle()));
     QVERIFY(QGuiApplication::focusWindow() == root.windowHandle());
@@ -204,8 +204,7 @@ void tst_QWindowContainer::testActivation()
         QTest::qWait(100);
 
     window->requestActivate();
-    QVERIFY(QTest::qWaitForWindowActive(window));
-    QVERIFY(QGuiApplication::focusWindow() == window);
+    QTRY_VERIFY(QGuiApplication::focusWindow() == window);
 
     // Verify that all states in the root widget still indicate it is active
     QVERIFY(root.windowHandle()->isActive());
@@ -229,6 +228,61 @@ void tst_QWindowContainer::testUnparenting()
 
     // Window should not be made visible by container..
     QVERIFY(!window->isVisible());
+}
+
+void tst_QWindowContainer::testAncestorChange()
+{
+    QWidget root;
+    QWidget *left = new QWidget(&root);
+    QWidget *right = new QWidget(&root);
+
+    root.setGeometry(0, 0, 200, 100);
+    left->setGeometry(0, 0, 100, 100);
+    right->setGeometry(100, 0, 100, 100);
+
+    QWindow *window = new QWindow();
+    QWidget *container = QWidget::createWindowContainer(window, left);
+    container->setGeometry(0, 0, 100, 100);
+
+    //      Root
+    //      + left
+    //      | + container
+    //      |   + window
+    //      + right
+    root.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&root));
+    QCOMPARE(window->geometry(), QRect(0, 0, 100, 100));
+
+    container->setParent(right);
+    //      Root
+    //      + left
+    //      + right
+    //        + container
+    //          + window
+    QCOMPARE(window->geometry(), QRect(100, 0, 100, 100));
+
+    QWidget *newRoot = new QWidget(&root);
+    newRoot->setGeometry(50, 50, 200, 200);
+    right->setParent(newRoot);
+    //      Root
+    //      + left
+    //      + newRoot
+    //        + right
+    //          + container
+    //            + window
+    QCOMPARE(window->geometry(), QRect(150, 50, 100, 100));
+    newRoot->move(0, 0);
+    QCOMPARE(window->geometry(), QRect(100, 0, 100, 100));
+
+    newRoot->setParent(0);
+    newRoot->setGeometry(100, 100, 200, 200);
+    newRoot->show();
+    QVERIFY(QTest::qWaitForWindowExposed(newRoot));
+    //      newRoot
+    //      + right
+    //        + container
+    //          + window
+    QCOMPARE(window->geometry(), QRect(100, 0, 100, 100));
 }
 
 QTEST_MAIN(tst_QWindowContainer)

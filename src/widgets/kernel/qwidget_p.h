@@ -254,6 +254,7 @@ struct QWExtra {
     uint nativeChildrenForced : 1;
     uint inRenderWithPainter : 1;
     uint hasMask : 1;
+    uint hasWindowContainer : 1;
 
     // *************************** Platform specific values (bit fields first) **********
 #if defined(Q_WS_WIN) // <----------------------------------------------------------- WIN

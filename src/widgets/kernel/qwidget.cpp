@@ -1594,6 +1594,7 @@ void QWidgetPrivate::createExtra()
         extra->autoFillBackground = 0;
         extra->nativeChildrenForced = 0;
         extra->inRenderWithPainter = 0;
+        extra->hasWindowContainer = false;
         extra->hasMask = 0;
         createSysExtra();
 #ifdef QWIDGET_EXTRA_DEBUG
@@ -6543,6 +6544,9 @@ void QWidget::move(const QPoint &p)
         data->crect.moveTopLeft(p); // no frame yet
         setAttribute(Qt::WA_PendingMoveEvent);
     }
+
+    if (d->extra && d->extra->hasWindowContainer)
+        QWindowContainer::parentWasMoved(this);
 }
 
 /*! \fn void QWidget::resize(int w, int h)
@@ -6581,6 +6585,9 @@ void QWidget::setGeometry(const QRect &r)
         setAttribute(Qt::WA_PendingMoveEvent);
         setAttribute(Qt::WA_PendingResizeEvent);
     }
+
+    if (d->extra && d->extra->hasWindowContainer)
+        QWindowContainer::parentWasMoved(this);
 }
 
 /*!
@@ -9715,6 +9722,9 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
             ancestorProxy->d_func()->embedSubWindow(this);
     }
 #endif
+
+    if (d->extra && d->extra->hasWindowContainer)
+        QWindowContainer::parentWasChanged(this);
 }
 
 /*!
@@ -10747,6 +10757,9 @@ void QWidget::raise()
     if (testAttribute(Qt::WA_WState_Created))
         d->raise_sys();
 
+    if (d->extra && d->extra->hasWindowContainer)
+        QWindowContainer::parentWasRaised(this);
+
     QEvent e(QEvent::ZOrderChange);
     QApplication::sendEvent(this, &e);
 }
@@ -10780,6 +10793,9 @@ void QWidget::lower()
     }
     if (testAttribute(Qt::WA_WState_Created))
         d->lower_sys();
+
+    if (d->extra && d->extra->hasWindowContainer)
+        QWindowContainer::parentWasLowered(this);
 
     QEvent e(QEvent::ZOrderChange);
     QApplication::sendEvent(this, &e);

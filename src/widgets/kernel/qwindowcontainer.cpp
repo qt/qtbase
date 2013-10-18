@@ -42,6 +42,10 @@
 #include "qwindowcontainer_p.h"
 #include "qwidget_p.h"
 #include <QtGui/qwindow.h>
+#include <QDebug>
+
+#include <QMdiSubWindow>
+#include <QAbstractScrollArea>
 
 QT_BEGIN_NAMESPACE
 
@@ -50,11 +54,67 @@ class QWindowContainerPrivate : public QWidgetPrivate
 public:
     Q_DECLARE_PUBLIC(QWindowContainer)
 
-    QWindowContainerPrivate() : window(0), oldFocusWindow(0) { }
+    QWindowContainerPrivate()
+        : window(0)
+        , oldFocusWindow(0)
+        , usesNativeWidgets(false)
+    {
+    }
+
     ~QWindowContainerPrivate() { }
+
+    static QWindowContainerPrivate *get(QWidget *w) {
+        QWindowContainer *wc = qobject_cast<QWindowContainer *>(w);
+        if (wc)
+            return wc->d_func();
+        return 0;
+    }
+
+    void updateGeometry() {
+        Q_Q(QWindowContainer);
+        if (usesNativeWidgets)
+            window->setGeometry(q->rect());
+        else
+            window->setGeometry(QRect(q->mapTo(q->window(), QPoint()), q->size()));
+    }
+
+    void updateUsesNativeWidgets()
+    {
+        if (usesNativeWidgets || window->parent() == 0)
+            return;
+        Q_Q(QWindowContainer);
+        QWidget *p = q->parentWidget();
+        while (p) {
+            if (qobject_cast<QMdiSubWindow *>(p) != 0
+                    || qobject_cast<QAbstractScrollArea *>(p) != 0) {
+                q->winId();
+                usesNativeWidgets = true;
+                break;
+            }
+            p = p->parentWidget();
+        }
+    }
+
+    void markParentChain() {
+        Q_Q(QWindowContainer);
+        QWidget *p = q;
+        while (p) {
+            QWidgetPrivate *d = static_cast<QWidgetPrivate *>(QWidgetPrivate::get(p));
+            d->createExtra();
+            d->extra->hasWindowContainer = true;
+            p = p->parentWidget();
+        }
+    }
+
+    bool isStillAnOrphan() const {
+        return window->parent() == &fakeParent;
+    }
 
     QPointer<QWindow> window;
     QWindow *oldFocusWindow;
+    QWindow fakeParent;
+
+    uint usesNativeWidgets : 1;
 };
 
 
@@ -78,6 +138,14 @@ public:
     be removed from the window container with a call to
     QWindow::setParent().
 
+    The window container is attached as a native child window to the
+    toplevel window it is a child of. When a window container is used
+    as a child of a QAbstractScrollArea or QMdiArea, it will
+    create a \l {Native Widgets vs Alien Widgets} {native window} for
+    every widget in its parent chain to allow for proper stacking and
+    clipping in this use case. Applications with many native child
+    windows may suffer from performance issues.
+
     The window container has a number of known limitations:
 
     \list
@@ -85,11 +153,6 @@ public:
     \li Stacking order; The embedded window will stack on top of the
     widget hierarchy as an opaque box. The stacking order of multiple
     overlapping window container instances is undefined.
-
-    \li Window Handles; The window container will explicitly invoke
-    winId() which will force the use of native window handles
-    inside the application. See \l {Native Widgets vs Alien Widgets}
-    {QWidget documentation} for more details.
 
     \li Rendering Integration; The window container does not interoperate
     with QGraphicsProxyWidget, QWidget::render() or similar functionality.
@@ -132,13 +195,7 @@ QWindowContainer::QWindowContainer(QWindow *embeddedWindow, QWidget *parent, Qt:
     }
 
     d->window = embeddedWindow;
-
-    // We force this window to become a native window and reparent the
-    // window directly to it. This is done so that the order in which
-    // the QWindowContainer is added to a QWidget tree and when it
-    // gets a window does not matter.
-    winId();
-    d->window->setParent(windowHandle());
+    d->window->setParent(&d->fakeParent);
 
     connect(QGuiApplication::instance(), SIGNAL(focusWindowChanged(QWindow *)), this, SLOT(focusWindowChanged(QWindow *)));
 }
@@ -167,8 +224,6 @@ void QWindowContainer::focusWindowChanged(QWindow *focusWindow)
     d->oldFocusWindow = focusWindow;
 }
 
-
-
 /*!
     \internal
  */
@@ -190,22 +245,38 @@ bool QWindowContainer::event(QEvent *e)
     // The only thing we are interested in is making sure our sizes stay
     // in sync, so do a catch-all case.
     case QEvent::Resize:
+        d->updateGeometry();
+        break;
     case QEvent::Move:
+        d->updateGeometry();
+        break;
     case QEvent::PolishRequest:
-        d->window->setGeometry(0, 0, width(), height());
+        d->updateGeometry();
         break;
     case QEvent::Show:
-        d->window->show();
+        d->updateUsesNativeWidgets();
+        if (d->isStillAnOrphan()) {
+            d->window->setParent(d->usesNativeWidgets
+                                 ? windowHandle()
+                                 : window()->windowHandle());
+        }
+        if (d->window->parent()) {
+            d->markParentChain();
+            d->window->show();
+        }
         break;
     case QEvent::Hide:
-        d->window->hide();
+        if (d->window->parent())
+            d->window->hide();
         break;
     case QEvent::FocusIn:
-        if (d->oldFocusWindow != d->window) {
-            d->window->requestActivate();
-        } else {
-            QWidget *next = nextInFocusChain();
-            next->setFocus();
+        if (d->window->parent()) {
+            if (d->oldFocusWindow != d->window) {
+                d->window->requestActivate();
+            } else {
+                QWidget *next = nextInFocusChain();
+                next->setFocus();
+            }
         }
         break;
     default:
@@ -213,6 +284,62 @@ bool QWindowContainer::event(QEvent *e)
     }
 
     return QWidget::event(e);
+}
+
+typedef void (*qwindowcontainer_traverse_callback)(QWidget *parent);
+static void qwindowcontainer_traverse(QWidget *parent, qwindowcontainer_traverse_callback callback)
+{
+    const QObjectList &children = parent->children();
+    for (int i=0; i<children.size(); ++i) {
+        QWidget *w = qobject_cast<QWidget *>(children.at(i));
+        if (w) {
+            QWidgetPrivate *wd = static_cast<QWidgetPrivate *>(QWidgetPrivate::get(w));
+            if (wd->extra && wd->extra->hasWindowContainer)
+                callback(w);
+        }
+    }
+}
+
+void QWindowContainer::parentWasChanged(QWidget *parent)
+{
+    if (QWindowContainerPrivate *d = QWindowContainerPrivate::get(parent)) {
+        if (d->window->parent()) {
+            d->updateUsesNativeWidgets();
+            d->markParentChain();
+            d->window->setParent(d->usesNativeWidgets
+                                 ? parent->windowHandle()
+                                 : parent->window()->windowHandle());
+            d->updateGeometry();
+        }
+    }
+    qwindowcontainer_traverse(parent, parentWasChanged);
+}
+
+void QWindowContainer::parentWasMoved(QWidget *parent)
+{
+    if (QWindowContainerPrivate *d = QWindowContainerPrivate::get(parent)) {
+        if (d->window->parent())
+            d->updateGeometry();
+    }
+    qwindowcontainer_traverse(parent, parentWasMoved);
+}
+
+void QWindowContainer::parentWasRaised(QWidget *parent)
+{
+    if (QWindowContainerPrivate *d = QWindowContainerPrivate::get(parent)) {
+        if (d->window->parent())
+            d->window->raise();
+    }
+    qwindowcontainer_traverse(parent, parentWasRaised);
+}
+
+void QWindowContainer::parentWasLowered(QWidget *parent)
+{
+    if (QWindowContainerPrivate *d = QWindowContainerPrivate::get(parent)) {
+        if (d->window->parent())
+            d->window->lower();
+    }
+    qwindowcontainer_traverse(parent, parentWasLowered);
 }
 
 QT_END_NAMESPACE
