@@ -410,10 +410,9 @@ static int recode(QString &result, const ushort *begin, const ushort *end, QUrl:
     const ushort *input = begin;
     ushort *output = 0;
 
+    EncodingAction action = EncodeCharacter;
     for ( ; input != end; ++input) {
         ushort c;
-        EncodingAction action;
-
         // try a run where no change is necessary
         for ( ; input != end; ++input) {
             c = *input;
