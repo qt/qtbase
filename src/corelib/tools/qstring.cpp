@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Intel Corporation
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -4128,7 +4129,7 @@ QByteArray QString::toUtf8_helper(const QString &str)
     if (str.isNull())
         return QByteArray();
 
-    return QUtf8::convertFromUnicode(str.constData(), str.length(), 0);
+    return QUtf8::convertFromUnicode(str.constData(), str.length());
 }
 
 /*!

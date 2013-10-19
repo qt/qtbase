@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Intel Corporation
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -58,6 +59,118 @@
 
 QT_BEGIN_NAMESPACE
 
+struct QUtf8BaseTraits
+{
+    static const bool isTrusted = false;
+    static const bool allowNonCharacters = true;
+    static const bool skipAsciiHandling = false;
+    static const int Error = -1;
+    static const int EndOfString = -2;
+
+    static bool isValidCharacter(uint u)
+    { return int(u) >= 0; }
+
+    static void appendByte(uchar *&ptr, uchar b)
+    { *ptr++ = b; }
+
+    static uchar peekByte(const uchar *ptr, int n = 0)
+    { return ptr[n]; }
+
+    static qptrdiff availableBytes(const uchar *ptr, const uchar *end)
+    { return end - ptr; }
+
+    static void advanceByte(const uchar *&ptr, int n = 1)
+    { ptr += n; }
+
+    static void appendUtf16(ushort *&ptr, ushort uc)
+    { *ptr++ = uc; }
+
+    static void appendUcs4(ushort *&ptr, uint uc)
+    {
+        appendUtf16(ptr, QChar::highSurrogate(uc));
+        appendUtf16(ptr, QChar::lowSurrogate(uc));
+    }
+
+    static ushort peekUtf16(const ushort *ptr, int n = 0)
+    { return ptr[n]; }
+
+    static qptrdiff availableUtf16(const ushort *ptr, const ushort *end)
+    { return end - ptr; }
+
+    static void advanceUtf16(const ushort *&ptr, int n = 1)
+    { ptr += n; }
+
+    // it's possible to output to UCS-4 too
+    static void appendUtf16(uint *&ptr, ushort uc)
+    { *ptr++ = uc; }
+
+    static void appendUcs4(uint *&ptr, uint uc)
+    { *ptr++ = uc; }
+};
+
+namespace QUtf8Functions
+{
+    /// returns 0 on success; errors can only happen if \a u is a surrogate:
+    /// Error if \a u is a low surrogate;
+    /// if \a u is a high surrogate, Error if the next isn't a low one,
+    /// EndOfString if we run into the end of the string.
+    template <typename Traits, typename OutputPtr, typename InputPtr> inline
+    int toUtf8(ushort u, OutputPtr &dst, InputPtr &src, InputPtr end)
+    {
+        if (!Traits::skipAsciiHandling && u < 0x80) {
+            // U+0000 to U+007F (US-ASCII) - one byte
+            Traits::appendByte(dst, uchar(u));
+            return 0;
+        } else if (u < 0x0800) {
+            // U+0080 to U+07FF - two bytes
+            // first of two bytes
+            Traits::appendByte(dst, 0xc0 | uchar(u >> 6));
+        } else {
+            if (!QChar::isSurrogate(u)) {
+                // U+0800 to U+FFFF (except U+D800-U+DFFF) - three bytes
+                if (!Traits::allowNonCharacters && QChar::isNonCharacter(u))
+                    return Traits::Error;
+
+                // first of three bytes
+                Traits::appendByte(dst, 0xe0 | uchar(u >> 12));
+            } else {
+                // U+10000 to U+10FFFF - four bytes
+                // need to get one extra codepoint
+                if (Traits::availableUtf16(src, end) == 0)
+                    return Traits::EndOfString;
+
+                ushort low = Traits::peekUtf16(src);
+                if (!QChar::isHighSurrogate(u))
+                    return Traits::Error;
+                if (!QChar::isLowSurrogate(low))
+                    return Traits::Error;
+
+                Traits::advanceUtf16(src);
+                uint ucs4 = QChar::surrogateToUcs4(u, low);
+
+                if (!Traits::allowNonCharacters && QChar::isNonCharacter(ucs4))
+                    return Traits::Error;
+
+                // first byte
+                Traits::appendByte(dst, 0xf0 | (uchar(ucs4 >> 18) & 0xf));
+
+                // second of four bytes
+                Traits::appendByte(dst, 0x80 | (uchar(ucs4 >> 12) & 0x3f));
+
+                // for the rest of the bytes
+                u = ushort(ucs4);
+            }
+
+            // second to last byte
+            Traits::appendByte(dst, 0x80 | (uchar(u >> 6) & 0x3f));
+        }
+
+        // last byte
+        Traits::appendByte(dst, 0x80 | (u & 0x3f));
+        return 0;
+    }
+}
+
 enum DataEndianness
 {
     DetectEndianness,
@@ -68,6 +181,7 @@ enum DataEndianness
 struct QUtf8
 {
     static QString convertToUnicode(const char *, int, QTextCodec::ConverterState *);
+    static QByteArray convertFromUnicode(const QChar *, int);
     static QByteArray convertFromUnicode(const QChar *, int, QTextCodec::ConverterState *);
 };
 

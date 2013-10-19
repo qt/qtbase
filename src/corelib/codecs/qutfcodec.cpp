@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Intel Corporation
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -48,6 +49,27 @@ QT_BEGIN_NAMESPACE
 
 enum { Endian = 0, Data = 1 };
 
+QByteArray QUtf8::convertFromUnicode(const QChar *uc, int len)
+{
+    // create a QByteArray with the worst case scenario size
+    QByteArray result(len * 3, Qt::Uninitialized);
+    uchar *dst = reinterpret_cast<uchar *>(const_cast<char *>(result.constData()));
+    const ushort *src = reinterpret_cast<const ushort *>(uc);
+    const ushort *const end = src + len;
+
+    while (src != end) {
+        ushort uc = *src++;
+        int res = QUtf8Functions::toUtf8<QUtf8BaseTraits>(uc, dst, src, end);
+        if (res < 0) {
+            // encoding error - append '?'
+            *dst++ = '?';
+        }
+    }
+
+    result.truncate(dst - reinterpret_cast<uchar *>(const_cast<char *>(result.constData())));
+    return result;
+}
+
 QByteArray QUtf8::convertFromUnicode(const QChar *uc, int len, QTextCodec::ConverterState *state)
 {
     uchar replacement = '?';
@@ -62,61 +84,35 @@ QByteArray QUtf8::convertFromUnicode(const QChar *uc, int len, QTextCodec::Conve
             surrogate_high = state->state_data[0];
     }
 
-    QByteArray rstr;
-    rstr.resize(rlen);
-    uchar* cursor = (uchar*)rstr.data();
-    const QChar *ch = uc;
+
+    QByteArray rstr(rlen, Qt::Uninitialized);
+    uchar *cursor = reinterpret_cast<uchar *>(const_cast<char *>(rstr.constData()));
+    const ushort *src = reinterpret_cast<const ushort *>(uc);
+    const ushort *const end = src + len;
+
     int invalid = 0;
     if (state && !(state->flags & QTextCodec::IgnoreHeader)) {
+        // append UTF-8 BOM
         *cursor++ = 0xef;
         *cursor++ = 0xbb;
         *cursor++ = 0xbf;
     }
 
-    const QChar *end = ch + len;
-    while (ch < end) {
-        uint u = ch->unicode();
-        if (surrogate_high >= 0) {
-            if (ch->isLowSurrogate()) {
-                u = QChar::surrogateToUcs4(surrogate_high, u);
-                surrogate_high = -1;
-            } else {
-                // high surrogate without low
-                *cursor = replacement;
-                ++ch;
-                ++invalid;
-                surrogate_high = -1;
-                continue;
-            }
-        } else if (ch->isLowSurrogate()) {
-            // low surrogate without high
-            *cursor = replacement;
-            ++ch;
-            ++invalid;
+    while (src != end) {
+        ushort uc = surrogate_high == -1 ? *src++ : surrogate_high;
+        surrogate_high = -1;
+        int res = QUtf8Functions::toUtf8<QUtf8BaseTraits>(uc, cursor, src, end);
+        if (Q_LIKELY(res >= 0))
             continue;
-        } else if (ch->isHighSurrogate()) {
-            surrogate_high = u;
-            ++ch;
-            continue;
-        }
 
-        if (u < 0x80) {
-            *cursor++ = (uchar)u;
-        } else {
-            if (u < 0x0800) {
-                *cursor++ = 0xc0 | ((uchar) (u >> 6));
-            } else {
-                if (QChar::requiresSurrogates(u)) {
-                    *cursor++ = 0xf0 | ((uchar) (u >> 18));
-                    *cursor++ = 0x80 | (((uchar) (u >> 12)) & 0x3f);
-                } else {
-                    *cursor++ = 0xe0 | (((uchar) (u >> 12)) & 0x3f);
-                }
-                *cursor++ = 0x80 | (((uchar) (u >> 6)) & 0x3f);
-            }
-            *cursor++ = 0x80 | ((uchar) (u&0x3f));
+        if (res == QUtf8BaseTraits::Error) {
+            // encoding error
+            ++invalid;
+            *cursor++ = replacement;
+        } else if (res == QUtf8BaseTraits::EndOfString) {
+            surrogate_high = uc;
+            break;
         }
-        ++ch;
     }
 
     rstr.resize(cursor - (const uchar*)rstr.constData());
