@@ -63,14 +63,14 @@ public:
             DeleteVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , const GLuint *)>(context->getProcAddress(QByteArrayLiteral("glDeleteVertexArraysAPPLE")));
             BindVertexArray = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint )>(context->getProcAddress(QByteArrayLiteral("glBindVertexArrayAPPLE")));
         } else {
-            GenVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLuint *)>(context->getProcAddress("glGenVertexArrays"));
-            DeleteVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , const GLuint *)>(context->getProcAddress("glDeleteVertexArrays"));
-            BindVertexArray = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint )>(context->getProcAddress("glBindVertexArray"));
+            GenVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLuint *)>(context->getProcAddress(QByteArrayLiteral("glGenVertexArrays")));
+            DeleteVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , const GLuint *)>(context->getProcAddress(QByteArrayLiteral("glDeleteVertexArrays")));
+            BindVertexArray = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint )>(context->getProcAddress(QByteArrayLiteral("glBindVertexArray")));
         }
 #else
-        GenVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLuint *)>(context->getProcAddress("glGenVertexArraysOES"));
-        DeleteVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , const GLuint *)>(context->getProcAddress("glDeleteVertexArraysOES"));
-        BindVertexArray = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint )>(context->getProcAddress("glBindVertexArrayOES"));
+        GenVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , GLuint *)>(context->getProcAddress(QByteArrayLiteral("glGenVertexArraysOES")));
+        DeleteVertexArrays = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLsizei , const GLuint *)>(context->getProcAddress(QByteArrayLiteral("glDeleteVertexArraysOES")));
+        BindVertexArray = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint )>(context->getProcAddress(QByteArrayLiteral("glBindVertexArrayOES")));
 #endif
     }
 
@@ -169,7 +169,7 @@ bool QOpenGLVertexArrayObjectPrivate::create()
     QObject::connect(context, SIGNAL(aboutToBeDestroyed()), q, SLOT(_q_contextAboutToBeDestroyed()));
 
 #if defined(QT_OPENGL_ES_2)
-    if (ctx->hasExtension("GL_OES_vertex_array_object")) {
+    if (ctx->hasExtension(QByteArrayLiteral("GL_OES_vertex_array_object"))) {
         vaoFuncs = new QVertexArrayObjectHelper(ctx);
         vaoFuncs->glGenVertexArrays(1, &vao);
     }
@@ -187,7 +187,7 @@ bool QOpenGLVertexArrayObjectPrivate::create()
         vaoFuncsType = Core_3_0;
         vaoFuncs.core_3_0->initializeOpenGLFunctions();
         vaoFuncs.core_3_0->glGenVertexArrays(1, &vao);
-    } else if (ctx->hasExtension("GL_ARB_vertex_array_object")) {
+    } else if (ctx->hasExtension(QByteArrayLiteral("GL_ARB_vertex_array_object"))) {
         vaoFuncs.helper = new QVertexArrayObjectHelper(ctx);
         vaoFuncsType = ARB;
         vaoFuncs.helper->glGenVertexArrays(1, &vao);
