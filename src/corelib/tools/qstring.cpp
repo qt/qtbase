@@ -4317,7 +4317,7 @@ QString QString::fromUtf8_helper(const char *str, int size)
         return QString();
 
     Q_ASSERT(size != -1);
-    return QUtf8::convertToUnicode(str, size, 0);
+    return QUtf8::convertToUnicode(str, size);
 }
 
 /*!

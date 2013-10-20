@@ -128,114 +128,117 @@ QByteArray QUtf8::convertFromUnicode(const QChar *uc, int len, QTextCodec::Conve
     return rstr;
 }
 
+QString QUtf8::convertToUnicode(const char *chars, int len)
+{
+    QString result(len + 1, Qt::Uninitialized); // worst case
+    ushort *dst = reinterpret_cast<ushort *>(const_cast<QChar *>(result.constData()));
+    const uchar *src = reinterpret_cast<const uchar *>(chars);
+    const uchar *end = src + len;
+
+    while (src < end) {
+        uchar b = *src++;
+        int res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, dst, src, end);
+        if (res < 0) {
+            // decoding error
+            *dst++ = QChar::ReplacementCharacter;
+        }
+    }
+
+    result.truncate(dst - reinterpret_cast<const ushort *>(result.constData()));
+    return result;
+}
+
 QString QUtf8::convertToUnicode(const char *chars, int len, QTextCodec::ConverterState *state)
 {
     bool headerdone = false;
     ushort replacement = QChar::ReplacementCharacter;
     int need = 0;
-    int error = -1;
-    uint uc = 0;
-    uint min_uc = 0;
+    int invalid = 0;
+    int res;
+    uchar ch = 0;
+
+    QString result(need + len + 1, Qt::Uninitialized); // worst case
+    ushort *dst = reinterpret_cast<ushort *>(const_cast<QChar *>(result.constData()));
+    const uchar *src = reinterpret_cast<const uchar *>(chars);
+    const uchar *end = src + len;
+
     if (state) {
         if (state->flags & QTextCodec::IgnoreHeader)
             headerdone = true;
         if (state->flags & QTextCodec::ConvertInvalidToNull)
             replacement = QChar::Null;
-        need = state->remainingChars;
-        if (need) {
-            uc = state->state_data[0];
-            min_uc = state->state_data[1];
+        if (state->remainingChars) {
+            // handle incoming state first
+            uchar remainingCharsData[4]; // longest UTF-8 sequence possible
+            int remainingCharsCount = state->remainingChars;
+            int newCharsToCopy = qMin<int>(sizeof(remainingCharsData) - remainingCharsCount, end - src);
+
+            memset(remainingCharsData, 0, sizeof(remainingCharsData));
+            memcpy(remainingCharsData, &state->state_data[0], remainingCharsCount);
+            memcpy(remainingCharsData + remainingCharsCount, src, newCharsToCopy);
+
+            const uchar *begin = &remainingCharsData[1];
+            res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(remainingCharsData[0], dst, begin,
+                    static_cast<const uchar *>(remainingCharsData) + remainingCharsCount + newCharsToCopy);
+            if (res == QUtf8BaseTraits::EndOfString) {
+                // if we got EndOfString again, then there were too few bytes in src;
+                // copy to our state and return
+                state->remainingChars = remainingCharsCount + newCharsToCopy;
+                memcpy(&state->state_data[0], remainingCharsData, state->remainingChars);
+                return QString();
+            } else if (res == QUtf8BaseTraits::Error) {
+                ++invalid;
+                *dst++ = replacement;
+            } else if (!headerdone && res >= 0) {
+                // eat the UTF-8 BOM
+                headerdone = true;
+                if (dst[-1] == 0xfeff)
+                    --dst;
+            }
+
+            // adjust src now that we have maybe consumed a few chars
+            //Q_ASSERT(res > remainingCharsCount)
+            src += res - remainingCharsCount;
         }
     }
-    if (!headerdone && len > 3
-        && (uchar)chars[0] == 0xef && (uchar)chars[1] == 0xbb && (uchar)chars[2] == 0xbf) {
-        // starts with a byte order mark
-        chars += 3;
-        len -= 3;
-        headerdone = true;
-    }
 
-    QString result(need + len + 1, Qt::Uninitialized); // worst case
-    ushort *qch = (ushort *)result.unicode();
-    uchar ch;
-    int invalid = 0;
-
-    for (int i = 0; i < len; ++i) {
-        ch = chars[i];
-        if (need) {
-            if ((ch&0xc0) == 0x80) {
-                uc = (uc << 6) | (ch & 0x3f);
-                --need;
-                if (!need) {
-                    // utf-8 bom composes into 0xfeff code point
-                    if (!headerdone && uc == 0xfeff) {
-                        // don't do anything, just skip the BOM
-                    } else if (QChar::requiresSurrogates(uc) && uc <= QChar::LastValidCodePoint) {
-                        // surrogate pair
-                        Q_ASSERT((qch - (ushort*)result.unicode()) + 2 < result.length());
-                        *qch++ = QChar::highSurrogate(uc);
-                        *qch++ = QChar::lowSurrogate(uc);
-                    } else if ((uc < min_uc) || QChar::isSurrogate(uc) || uc > QChar::LastValidCodePoint) {
-                        // error: overlong sequence, UTF16 surrogate or non-character
-                        *qch++ = replacement;
-                        ++invalid;
-                    } else {
-                        *qch++ = uc;
-                    }
-                    headerdone = true;
-                }
-            } else {
-                // error
-                i = error;
-                *qch++ = replacement;
-                ++invalid;
-                need = 0;
-                headerdone = true;
-            }
-        } else {
-            if (ch < 128) {
-                *qch++ = ushort(ch);
-                headerdone = true;
-            } else if ((ch & 0xe0) == 0xc0) {
-                uc = ch & 0x1f;
-                need = 1;
-                error = i;
-                min_uc = 0x80;
-                headerdone = true;
-            } else if ((ch & 0xf0) == 0xe0) {
-                uc = ch & 0x0f;
-                need = 2;
-                error = i;
-                min_uc = 0x800;
-            } else if ((ch&0xf8) == 0xf0) {
-                uc = ch & 0x07;
-                need = 3;
-                error = i;
-                min_uc = 0x10000;
-                headerdone = true;
-            } else {
-                // error
-                *qch++ = replacement;
-                ++invalid;
-                headerdone = true;
-            }
+    // main body, stateless decoding
+    res = 0;
+    while (res >= 0 && src < end) {
+        ch = *src++;
+        res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(ch, dst, src, end);
+        if (!headerdone && res >= 0) {
+            headerdone = true;
+            // eat the UTF-8 BOM
+            if (dst[-1] == 0xfeff)
+                --dst;
         }
-    }
-    if (!state && need > 0) {
-        // unterminated UTF sequence
-        for (int i = error; i < len; ++i) {
-            *qch++ = replacement;
+        if (res == QUtf8BaseTraits::Error) {
+            res = 0;
             ++invalid;
+            *dst++ = replacement;
         }
     }
-    result.truncate(qch - (ushort *)result.unicode());
+
+    if (!state && res == QUtf8BaseTraits::EndOfString) {
+        // unterminated UTF sequence
+        *dst++ = QChar::ReplacementCharacter;
+        while (src++ < end)
+            *dst++ = QChar::ReplacementCharacter;
+    }
+
+    result.truncate(dst - (ushort *)result.unicode());
     if (state) {
         state->invalidChars += invalid;
-        state->remainingChars = need;
         if (headerdone)
             state->flags |= QTextCodec::IgnoreHeader;
-        state->state_data[0] = need ? uc : 0;
-        state->state_data[1] = need ? min_uc : 0;
+        if (res == QUtf8BaseTraits::EndOfString) {
+            --src; // unread the byte in ch
+            state->remainingChars = end - src;
+            memcpy(&state->state_data[0], src, end - src);
+        } else {
+            state->remainingChars = 0;
+        }
     }
     return result;
 }

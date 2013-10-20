@@ -169,6 +169,110 @@ namespace QUtf8Functions
         Traits::appendByte(dst, 0x80 | (u & 0x3f));
         return 0;
     }
+
+    inline bool isContinuationByte(uchar b)
+    {
+        return (b & 0xc0) == 0x80;
+    }
+
+    /// returns the number of characters consumed (including \a b) in case of success;
+    /// returns negative in case of error: Traits::Error or Traits::EndOfString
+    template <typename Traits, typename OutputPtr, typename InputPtr> inline
+    int fromUtf8(uchar b, OutputPtr &dst, InputPtr &src, InputPtr end)
+    {
+        int charsNeeded;
+        uint min_uc;
+        uint uc;
+
+        if (!Traits::skipAsciiHandling && b < 0x80) {
+            // US-ASCII
+            Traits::appendUtf16(dst, b);
+            return 1;
+        }
+
+        if (!Traits::isTrusted && Q_UNLIKELY(b <= 0xC1)) {
+            // an UTF-8 first character must be at least 0xC0
+            // however, all 0xC0 and 0xC1 first bytes can only produce overlong sequences
+            return Traits::Error;
+        } else if (b < 0xe0) {
+            charsNeeded = 2;
+            min_uc = 0x80;
+            uc = b & 0x1f;
+        } else if (b < 0xf0) {
+            charsNeeded = 3;
+            min_uc = 0x800;
+            uc = b & 0x0f;
+        } else if (b < 0xf5) {
+            charsNeeded = 4;
+            min_uc = 0x10000;
+            uc = b & 0x07;
+        } else {
+            // the last Unicode character is U+10FFFF
+            // it's encoded in UTF-8 as "\xF4\x8F\xBF\xBF"
+            // therefore, a byte higher than 0xF4 is not the UTF-8 first byte
+            return Traits::Error;
+        }
+
+        int bytesAvailable = Traits::availableBytes(src, end);
+        if (Q_UNLIKELY(bytesAvailable < charsNeeded - 1)) {
+            // it's possible that we have an error instead of just unfinished bytes
+            if (bytesAvailable > 0 && !isContinuationByte(Traits::peekByte(src, 0)))
+                return Traits::Error;
+            if (bytesAvailable > 1 && !isContinuationByte(Traits::peekByte(src, 1)))
+                return Traits::Error;
+            if (bytesAvailable > 2 && !isContinuationByte(Traits::peekByte(src, 2)))
+                return Traits::Error;
+            return Traits::EndOfString;
+        }
+
+        // first continuation character
+        b = Traits::peekByte(src, 0);
+        if (!isContinuationByte(b))
+            return Traits::Error;
+        uc <<= 6;
+        uc |= b & 0x3f;
+
+        if (charsNeeded > 2) {
+            // second continuation character
+            b = Traits::peekByte(src, 1);
+            if (!isContinuationByte(b))
+                return Traits::Error;
+            uc <<= 6;
+            uc |= b & 0x3f;
+
+            if (charsNeeded > 3) {
+                // third continuation character
+                b = Traits::peekByte(src, 2);
+                if (!isContinuationByte(b))
+                    return Traits::Error;
+                uc <<= 6;
+                uc |= b & 0x3f;
+            }
+        }
+
+        // we've decoded something; safety-check it
+        if (!Traits::isTrusted) {
+            if (uc < min_uc)
+                return Traits::Error;
+            if (QChar::isSurrogate(uc) || uc > QChar::LastValidCodePoint)
+                return Traits::Error;
+            if (!Traits::allowNonCharacters && QChar::isNonCharacter(uc))
+                return Traits::Error;
+        }
+
+        // write the UTF-16 sequence
+        if (!QChar::requiresSurrogates(uc)) {
+            // UTF-8 decoded and no surrogates are required
+            // detach if necessary
+            Traits::appendUtf16(dst, ushort(uc));
+        } else {
+            // UTF-8 decoded to something that requires a surrogate pair
+            Traits::appendUcs4(dst, uc);
+        }
+
+        Traits::advanceByte(src, charsNeeded - 1);
+        return charsNeeded;
+    }
 }
 
 enum DataEndianness
@@ -180,6 +284,7 @@ enum DataEndianness
 
 struct QUtf8
 {
+    static QString convertToUnicode(const char *, int);
     static QString convertToUnicode(const char *, int, QTextCodec::ConverterState *);
     static QByteArray convertFromUnicode(const QChar *, int);
     static QByteArray convertFromUnicode(const QChar *, int, QTextCodec::ConverterState *);

@@ -456,7 +456,7 @@ void tst_QTextCodec::flagF7808080() const
     //QVERIFY(!codec->canEncode(QChar(0x1C0000)));
 
     QTextCodec::ConverterState state(QTextCodec::ConvertInvalidToNull);
-    QVERIFY(codec->toUnicode(input.constData(), input.length(), &state) == QChar(0));
+    QCOMPARE(codec->toUnicode(input.constData(), input.length(), &state), QString(input.size(), QChar(0)));
 }
 
 void tst_QTextCodec::nonFlaggedEFBFBF() const
@@ -689,8 +689,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xbf);
     utf8 += char(0xbf);
     utf8 += char(0xbf);
-    str.clear();
-    str += QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 2.2.4") << utf8 << str << -1;
 
     // 2.2.5 U+03FFFFFF (not a valid Unicode character)
@@ -755,8 +754,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0x90);
     utf8 += char(0x80);
     utf8 += char(0x80);
-    str.clear();
-    str += QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 2.3.5") << utf8 << str << -1;
 
     // 3.1.1
@@ -1244,7 +1242,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8.clear();
     utf8 += char(0xc0);
     utf8 += char(0xaf);
-    str = QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 4.1.1") << utf8 << str << -1;
 
     // 4.1.2
@@ -1252,7 +1250,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xe0);
     utf8 += char(0x80);
     utf8 += char(0xaf);
-    str = QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 4.1.2") << utf8 << str << -1;
 
     // 4.1.3
@@ -1261,7 +1259,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0x80);
     utf8 += char(0x80);
     utf8 += char(0xaf);
-    str = QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 4.1.3") << utf8 << str << -1;
 
     // 4.1.4
@@ -1289,7 +1287,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8.clear();
     utf8 += char(0xc1);
     utf8 += char(0xbf);
-    str = QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 4.2.1") << utf8 << str << -1;
 
     // 4.2.2
@@ -1297,7 +1295,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xe0);
     utf8 += char(0x9f);
     utf8 += char(0xbf);
-    str = QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 4.2.2") << utf8 << str << -1;
 
     // 4.2.3
@@ -1306,7 +1304,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0x8f);
     utf8 += char(0xbf);
     utf8 += char(0xbf);
-    str = QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 4.2.3") << utf8 << str << -1;
 
     // 4.2.4
@@ -1334,7 +1332,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8.clear();
     utf8 += char(0xc0);
     utf8 += char(0x80);
-    str = QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 4.3.1") << utf8 << str << -1;
 
     // 4.3.2
@@ -1342,7 +1340,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xe0);
     utf8 += char(0x80);
     utf8 += char(0x80);
-    str = QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 4.3.2") << utf8 << str << -1;
 
     // 4.3.3
@@ -1351,7 +1349,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0x80);
     utf8 += char(0x80);
     utf8 += char(0x80);
-    str = QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 4.3.3") << utf8 << str << -1;
 
     // 4.3.4
@@ -1380,7 +1378,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xed);
     utf8 += char(0xa0);
     utf8 += char(0x80);
-    str = QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 5.1.1") << utf8 << str << -1;
 
     // 5.1.2
@@ -1388,7 +1386,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xed);
     utf8 += char(0xad);
     utf8 += char(0xbf);
-    str = QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 5.1.2") << utf8 << str << -1;
 
     // 5.1.3
@@ -1396,7 +1394,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xed);
     utf8 += char(0xae);
     utf8 += char(0x80);
-    str = QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 5.1.3") << utf8 << str << -1;
 
     // 5.1.4
@@ -1404,7 +1402,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xed);
     utf8 += char(0xaf);
     utf8 += char(0xbf);
-    str = QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 5.1.4") << utf8 << str << -1;
 
     // 5.1.5
@@ -1412,7 +1410,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xed);
     utf8 += char(0xb0);
     utf8 += char(0x80);
-    str = QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 5.1.5") << utf8 << str << -1;
 
     // 5.1.6
@@ -1420,7 +1418,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xed);
     utf8 += char(0xbe);
     utf8 += char(0x80);
-    str = QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 5.1.6") << utf8 << str << -1;
 
     // 5.1.7
@@ -1428,7 +1426,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xed);
     utf8 += char(0xbf);
     utf8 += char(0xbf);
-    str = QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 5.1.7") << utf8 << str << -1;
 
     // 5.2.1
@@ -1439,9 +1437,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xed);
     utf8 += char(0xb0);
     utf8 += char(0x80);
-    str.clear();
-    str += QChar(QChar::ReplacementCharacter);
-    str += QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 5.2.1") << utf8 << str << -1;
 
     // 5.2.2
@@ -1452,9 +1448,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xed);
     utf8 += char(0xbf);
     utf8 += char(0xbf);
-    str.clear();
-    str += QChar(QChar::ReplacementCharacter);
-    str += QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 5.2.2") << utf8 << str << -1;
 
     // 5.2.3
@@ -1465,9 +1459,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xed);
     utf8 += char(0xb0);
     utf8 += char(0x80);
-    str.clear();
-    str += QChar(QChar::ReplacementCharacter);
-    str += QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 5.2.3") << utf8 << str << -1;
 
     // 5.2.4
@@ -1478,9 +1470,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xed);
     utf8 += char(0xbf);
     utf8 += char(0xbf);
-    str.clear();
-    str += QChar(QChar::ReplacementCharacter);
-    str += QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 5.2.4") << utf8 << str << -1;
 
     // 5.2.5
@@ -1491,9 +1481,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xed);
     utf8 += char(0xb0);
     utf8 += char(0x80);
-    str.clear();
-    str += QChar(QChar::ReplacementCharacter);
-    str += QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 5.2.5") << utf8 << str << -1;
 
     // 5.2.6
@@ -1504,9 +1492,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xed);
     utf8 += char(0xbf);
     utf8 += char(0xbf);
-    str.clear();
-    str += QChar(QChar::ReplacementCharacter);
-    str += QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 5.2.6") << utf8 << str << -1;
 
     // 5.2.7
@@ -1517,9 +1503,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xed);
     utf8 += char(0xb0);
     utf8 += char(0x80);
-    str.clear();
-    str += QChar(QChar::ReplacementCharacter);
-    str += QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 5.2.7") << utf8 << str << -1;
 
     // 5.2.8
@@ -1530,9 +1514,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xed);
     utf8 += char(0xbf);
     utf8 += char(0xbf);
-    str.clear();
-    str += QChar(QChar::ReplacementCharacter);
-    str += QChar(QChar::ReplacementCharacter);
+    str = fromInvalidUtf8Sequence(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 5.2.8") << utf8 << str << -1;
 
     // 5.3.1 - non-character code
@@ -1541,7 +1523,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xbf);
     utf8 += char(0xbe);
     //str = QChar(QChar::ReplacementCharacter);
-    str = QString::fromUtf8(utf8);
+    str = QChar(0xfffe);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 5.3.1") << utf8 << str << -1;
 
     // 5.3.2 - non-character code
@@ -1550,7 +1532,7 @@ void tst_QTextCodec::utf8Codec_data()
     utf8 += char(0xbf);
     utf8 += char(0xbf);
     //str = QChar(QChar::ReplacementCharacter);
-    str = QString::fromUtf8(utf8);
+    str = QChar(0xffff);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 5.3.2") << utf8 << str << -1;
 }
 
