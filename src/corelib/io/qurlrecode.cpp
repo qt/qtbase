@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qurl.h"
+#include "private/qutfcodec_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -232,110 +233,73 @@ static void ensureDetached(QString &result, ushort *&output, const ushort *begin
     }
 }
 
+namespace {
+struct QUrlUtf8Traits : public QUtf8BaseTraitsNoAscii
+{
+    // override: our "bytes" are three percent-encoded UTF-16 characters
+    static void appendByte(ushort *&ptr, uchar b)
+    {
+        // b >= 0x80, by construction, so percent-encode
+        *ptr++ = '%';
+        *ptr++ = encodeNibble(b >> 4);
+        *ptr++ = encodeNibble(b & 0xf);
+    }
+
+    static uchar peekByte(const ushort *ptr, int n = 0)
+    {
+        // decodePercentEncoding returns ushort(-1) if it can't decode,
+        // which means we return 0xff, which is not a valid continuation byte.
+        // If ptr[i * 3] is not '%', we'll multiply by zero and return 0,
+        // also not a valid continuation byte (if it's '%', we multiply by 1).
+        return uchar(decodePercentEncoding(ptr + n * 3))
+                * uchar(ptr[n * 3] == '%');
+    }
+
+    static qptrdiff availableBytes(const ushort *ptr, const ushort *end)
+    {
+        return (end - ptr) / 3;
+    }
+
+    static void advanceByte(const ushort *&ptr, int n = 1)
+    {
+        ptr += n * 3;
+    }
+};
+}
+
 // returns true if we performed an UTF-8 decoding
 static bool encodedUtf8ToUtf16(QString &result, ushort *&output, const ushort *begin, const ushort *&input,
                                const ushort *end, ushort decoded)
 {
-    int charsNeeded;
-    uint min_uc;
-    uint uc;
-
-    if (decoded <= 0xC1) {
-        // an UTF-8 first character must be at least 0xC0
-        // however, all 0xC0 and 0xC1 first bytes can only produce overlong sequences
-        return false;
-    } else if (decoded < 0xe0) {
-        charsNeeded = 2;
-        min_uc = 0x80;
-        uc = decoded & 0x1f;
-    } else if (decoded < 0xf0) {
-        charsNeeded = 3;
-        min_uc = 0x800;
-        uc = decoded & 0x0f;
-    } else if (decoded < 0xf5) {
-        charsNeeded = 4;
-        min_uc = 0x10000;
-        uc = decoded & 0x07;
-    } else {
-        // the last Unicode character is U+10FFFF
-        // it's encoded in UTF-8 as "\xF4\x8F\xBF\xBF"
-        // therefore, a byte higher than 0xF4 is not the UTF-8 first byte
-        return false;
-    }
-
-    // are there enough remaining?
-    if (end - input < 3*charsNeeded)
+    uint ucs4, *dst = &ucs4;
+    const ushort *src = input + 3;// skip the %XX that yielded \a decoded
+    int charsNeeded = QUtf8Functions::fromUtf8<QUrlUtf8Traits>(decoded, dst, src, end);
+    if (charsNeeded < 0)
         return false;
 
-    if (input[3] != '%')
-        return false;
-
-    // first continuation character
-    decoded = decodePercentEncoding(input + 3);
-    if ((decoded & 0xc0) != 0x80)
-        return false;
-    uc <<= 6;
-    uc |= decoded & 0x3f;
-
-    if (charsNeeded > 2) {
-        if (input[6] != '%')
-            return false;
-
-        // second continuation character
-        decoded = decodePercentEncoding(input + 6);
-        if ((decoded & 0xc0) != 0x80)
-            return false;
-        uc <<= 6;
-        uc |= decoded & 0x3f;
-
-        if (charsNeeded > 3) {
-            if (input[9] != '%')
-                return false;
-
-            // third continuation character
-            decoded = decodePercentEncoding(input + 9);
-            if ((decoded & 0xc0) != 0x80)
-                return false;
-            uc <<= 6;
-            uc |= decoded & 0x3f;
-        }
-    }
-
-    // we've decoded something; safety-check it
-    if (uc < min_uc)
-        return false;
-    if (QChar::isSurrogate(uc) || uc > QChar::LastValidCodePoint)
-        return false;
-
-    if (!QChar::requiresSurrogates(uc)) {
+    if (!QChar::requiresSurrogates(ucs4)) {
         // UTF-8 decoded and no surrogates are required
         // detach if necessary
-        ensureDetached(result, output, begin, input, end, -9 * charsNeeded + 1);
-        *output++ = uc;
+        // possibilities are: 6 chars (%XX%XX) -> one char; 9 chars (%XX%XX%XX) -> one char
+        ensureDetached(result, output, begin, input, end, -3 * charsNeeded + 1);
+        *output++ = ucs4;
     } else {
         // UTF-8 decoded to something that requires a surrogate pair
-        ensureDetached(result, output, begin, input, end, -9 * charsNeeded + 2);
-        *output++ = QChar::highSurrogate(uc);
-        *output++ = QChar::lowSurrogate(uc);
+        // compressing from %XX%XX%XX%XX (12 chars) to two
+        ensureDetached(result, output, begin, input, end, -10);
+        *output++ = QChar::highSurrogate(ucs4);
+        *output++ = QChar::lowSurrogate(ucs4);
     }
-    input += charsNeeded * 3 - 1;
+
+    input = src - 1;
     return true;
 }
 
 static void unicodeToEncodedUtf8(QString &result, ushort *&output, const ushort *begin,
                                  const ushort *&input, const ushort *end, ushort decoded)
 {
-    uint uc = decoded;
-    if (QChar::isHighSurrogate(uc)) {
-        if (input < end && QChar::isLowSurrogate(input[1]))
-            uc = QChar::surrogateToUcs4(uc, input[1]);
-    }
-
-    // note: we will encode bad UTF-16 to UTF-8
-    // but they don't get decoded back
-
-    // calculate the utf8 length
-    int utf8len = uc >= 0x10000 ? 4 : uc >= 0x800 ? 3 : 2;
+    // calculate the utf8 length and ensure enough space is available
+    int utf8len = QChar::isHighSurrogate(decoded) ? 4 : decoded >= 0x800 ? 3 : 2;
 
     // detach
     if (!output) {
@@ -357,50 +321,32 @@ static void unicodeToEncodedUtf8(QString &result, ushort *&output, const ushort 
         }
     }
 
-    // write the sequence
-    if (uc < 0x800) {
-        // first of two bytes
-        uchar c = 0xc0 | uchar(uc >> 6);
+    ++input;
+    int res = QUtf8Functions::toUtf8<QUrlUtf8Traits>(decoded, output, input, end);
+    --input;
+    if (res < 0) {
+        // bad surrogate pair sequence
+        // we will encode bad UTF-16 to UTF-8
+        // but they don't get decoded back
+
+        // first of three bytes
+        uchar c = 0xe0 | uchar(decoded >> 12);
+        *output++ = '%';
+        *output++ = 'E';
+        *output++ = encodeNibble(c & 0xf);
+
+        // second byte
+        c = 0x80 | (uchar(decoded >> 6) & 0x3f);
         *output++ = '%';
         *output++ = encodeNibble(c >> 4);
         *output++ = encodeNibble(c & 0xf);
-    } else {
-        uchar c;
-        if (uc > 0xFFFF) {
-            // first two of four bytes
-            c = 0xf0 | uchar(uc >> 18);
-            *output++ = '%';
-            *output++ = 'F';
-            *output++ = encodeNibble(c & 0xf);
 
-            // continuation byte
-            c = 0x80 | (uchar(uc >> 12) & 0x3f);
-            *output++ = '%';
-            *output++ = encodeNibble(c >> 4);
-            *output++ = encodeNibble(c & 0xf);
-
-            // this was a surrogate pair
-            ++input;
-        } else {
-            // first of three bytes
-            c = 0xe0 | uchar(uc >> 12);
-            *output++ = '%';
-            *output++ = 'E';
-            *output++ = encodeNibble(c & 0xf);
-        }
-
-        // continuation byte
-        c = 0x80 | (uchar(uc >> 6) & 0x3f);
+        // third byte
+        c = 0x80 | (decoded & 0x3f);
         *output++ = '%';
         *output++ = encodeNibble(c >> 4);
         *output++ = encodeNibble(c & 0xf);
     }
-
-    // continuation byte
-    uchar c = 0x80 | (uc & 0x3f);
-    *output++ = '%';
-    *output++ = encodeNibble(c >> 4);
-    *output++ = encodeNibble(c & 0xf);
 }
 
 static int recode(QString &result, const ushort *begin, const ushort *end, QUrl::ComponentFormattingOptions encoding,
