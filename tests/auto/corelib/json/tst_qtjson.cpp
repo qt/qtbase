@@ -1546,7 +1546,7 @@ void tst_QtJson::fromJsonErrors()
         QJsonDocument doc = QJsonDocument::fromJson(json, &error);
         QVERIFY(doc.isEmpty());
         QCOMPARE(error.error, QJsonParseError::IllegalUTF8String);
-        QCOMPARE(error.offset, 14);
+        QCOMPARE(error.offset, 12);
     }
     {
         QJsonParseError error;
@@ -1570,7 +1570,7 @@ void tst_QtJson::fromJsonErrors()
         QJsonDocument doc = QJsonDocument::fromJson(json, &error);
         QVERIFY(doc.isEmpty());
         QCOMPARE(error.error, QJsonParseError::IllegalUTF8String);
-        QCOMPARE(error.offset, 15);
+        QCOMPARE(error.offset, 13);
     }
     {
         QJsonParseError error;

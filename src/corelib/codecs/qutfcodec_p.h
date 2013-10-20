@@ -108,6 +108,11 @@ struct QUtf8BaseTraits
     { *ptr++ = uc; }
 };
 
+struct QUtf8BaseTraitsNoAscii : public QUtf8BaseTraits
+{
+    static const bool skipAsciiHandling = true;
+};
+
 namespace QUtf8Functions
 {
     /// returns 0 on success; errors can only happen if \a u is a surrogate:

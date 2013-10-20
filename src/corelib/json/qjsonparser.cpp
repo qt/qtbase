@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Intel Corporation
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -45,6 +46,7 @@
 #include <qdebug.h>
 #include "qjsonparser_p.h"
 #include "qjson_p.h"
+#include "private/qutfcodec_p.h"
 
 //#define PARSER_DEBUG
 #ifdef PARSER_DEBUG
@@ -820,45 +822,16 @@ static inline bool scanEscapeSequence(const char *&json, const char *end, uint *
 
 static inline bool scanUtf8Char(const char *&json, const char *end, uint *result)
 {
-    int need;
-    uint min_uc;
-    uint uc;
-    uchar ch = *json++;
-    if (ch < 128) {
-        *result = ch;
-        return true;
-    } else if ((ch & 0xe0) == 0xc0) {
-        uc = ch & 0x1f;
-        need = 1;
-        min_uc = 0x80;
-    } else if ((ch & 0xf0) == 0xe0) {
-        uc = ch & 0x0f;
-        need = 2;
-        min_uc = 0x800;
-    } else if ((ch&0xf8) == 0xf0) {
-        uc = ch & 0x07;
-        need = 3;
-        min_uc = 0x10000;
-    } else {
+    const uchar *&src = reinterpret_cast<const uchar *&>(json);
+    const uchar *uend = reinterpret_cast<const uchar *>(end);
+    uchar b = *src++;
+    int res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, result, src, uend);
+    if (res < 0) {
+        // decoding error, backtrack the character we read above
+        --json;
         return false;
     }
 
-    if (json >= end - need)
-        return false;
-
-    for (int i = 0; i < need; ++i) {
-        ch = *json++;
-        if ((ch&0xc0) != 0x80)
-            return false;
-        uc = (uc << 6) | (ch & 0x3f);
-    }
-
-    if (uc < min_uc ||
-        QChar::isSurrogate(uc) || uc > QChar::LastValidCodePoint) {
-        return false;
-    }
-
-    *result = uc;
     return true;
 }
 
