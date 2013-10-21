@@ -29,7 +29,7 @@ defineTest(qtAddLibrary) {
     for(var, QT_MODULES) {
         isEqual(QT.$${var}.name, $$1) {
             qtAddModule($$var, , LIBS)
-            return(true):break() # Yes, the break is insanity. But necessary.
+            return(true)
         }
     }
     error("No module matching library '$$1' found.")
