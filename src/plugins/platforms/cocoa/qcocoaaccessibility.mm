@@ -56,12 +56,8 @@ QCocoaAccessibility::~QCocoaAccessibility()
 
 void QCocoaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
 {
-    QObject *object = event->object();
-    if (!object)
-        return;
-
-    QAccessibleInterface *interface = event->accessibleInterface();
-    if (!interface)
+    QAccessible::Id interfaceId = event->uniqueId();
+    if (!interfaceId)
         return;
 
     switch (event->type()) {
@@ -69,7 +65,7 @@ void QCocoaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
         case QAccessible::TextInserted :
         case QAccessible::TextRemoved :
         case QAccessible::TextUpdated : {
-            QCocoaAccessibleElement *element = [QCocoaAccessibleElement createElementWithId : QAccessible::uniqueId(interface) parent : nil];
+            QCocoaAccessibleElement *element = [QCocoaAccessibleElement createElementWithId : interfaceId parent : nil];
             [element autorelease];
             NSAccessibilityPostNotification(element, NSAccessibilityValueChangedNotification);
         break; }
