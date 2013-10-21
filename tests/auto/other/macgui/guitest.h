@@ -86,11 +86,10 @@ private:
     (Implemented so far: mouseClick on Mac)
 */
 namespace NativeEvents {
-    enum MousePosition { UpdatePosition, DontUpdatePosition };
     /*
         Simulates a mouse click with button at globalPos.
     */
-    void mouseClick(const QPoint &globalPos, Qt::MouseButtons buttons, MousePosition updateMouse = DontUpdatePosition);
+    void mouseClick(const QPoint &globalPos, Qt::MouseButtons buttons);
 };
 
 class ColorWidget : public QWidget

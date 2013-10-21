@@ -144,22 +144,25 @@ WidgetNavigator::~WidgetNavigator()
 
 namespace NativeEvents {
 #ifdef Q_OS_MAC
-   void mouseClick(const QPoint &globalPos, Qt::MouseButtons buttons, MousePosition updateMouse)
+   void mouseClick(const QPoint &globalPos, Qt::MouseButtons buttons)
     {
         CGPoint position;
         position.x = globalPos.x();
         position.y = globalPos.y();
 
-        const bool updateMousePosition = (updateMouse == UpdatePosition);
+        CGEventType mouseDownType = (buttons & Qt::LeftButton) ? kCGEventLeftMouseDown :
+                                    (buttons & Qt::RightButton) ? kCGEventRightMouseDown :
+                                                                  kCGEventOtherMouseDown;
+        CGMouseButton mouseButton = mouseDownType == kCGEventOtherMouseDown ? kCGMouseButtonCenter : kCGEventLeftMouseDown;
+        CGEventRef mouseEvent = CGEventCreateMouseEvent(NULL, mouseDownType, position, mouseButton);
+        CGEventPost(kCGHIDEventTap, mouseEvent);
 
-        // Mouse down.
-        CGPostMouseEvent(position, updateMousePosition, 3,
-                        (buttons & Qt::LeftButton) ? true : false,
-                        (buttons & Qt::MidButton/* Middlebutton! */) ? true : false,
-                        (buttons & Qt::RightButton) ? true : false);
-
-        // Mouse up.
-        CGPostMouseEvent(position, updateMousePosition, 3, false, false, false);
+        CGEventType mouseUpType = (buttons & Qt::LeftButton) ? kCGEventLeftMouseUp :
+                                  (buttons & Qt::RightButton) ? kCGEventRightMouseUp :
+                                                                kCGEventOtherMouseUp;
+        CGEventSetType(mouseEvent, mouseUpType);
+        CGEventPost(kCGHIDEventTap, mouseEvent);
+        CFRelease(mouseEvent);
     }
 #else
 # error Oops, NativeEvents::mouseClick() is not implemented on this platform.
