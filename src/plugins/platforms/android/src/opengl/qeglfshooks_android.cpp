@@ -120,7 +120,8 @@ EGLNativeWindowType QEglFSAndroidHooks::createNativeWindow(QPlatformWindow *plat
 
 void QEglFSAndroidHooks::destroyNativeWindow(EGLNativeWindowType window)
 {
-    ANativeWindow_release(window);
+    if (window != 0)
+        ANativeWindow_release(window);
 }
 
 bool QEglFSAndroidHooks::hasCapability(QPlatformIntegration::Capability capability) const
