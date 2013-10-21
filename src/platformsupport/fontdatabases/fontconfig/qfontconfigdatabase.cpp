@@ -69,19 +69,50 @@ static inline bool requiresOpenType(int writingSystem)
             || writingSystem == QFontDatabase::Khmer || writingSystem == QFontDatabase::Nko);
 }
 
-static int getFCWeight(int fc_weight)
+static inline int weightFromFcWeight(int fcweight)
 {
-    int qtweight = QFont::Black;
-    if (fc_weight <= (FC_WEIGHT_LIGHT + FC_WEIGHT_REGULAR) / 2)
-        qtweight = QFont::Light;
-    else if (fc_weight <= (FC_WEIGHT_REGULAR + FC_WEIGHT_MEDIUM) / 2)
-        qtweight = QFont::Normal;
-    else if (fc_weight <= (FC_WEIGHT_MEDIUM + FC_WEIGHT_BOLD) / 2)
-        qtweight = QFont::DemiBold;
-    else if (fc_weight <= (FC_WEIGHT_BOLD + FC_WEIGHT_BLACK) / 2)
-        qtweight = QFont::Bold;
+    // Font Config uses weights from 0 to 215 (the highest enum value) while QFont ranges from
+    // 0 to 99. The spacing between the values for the enums are uneven so a linear mapping from
+    // Font Config values to Qt would give surprising results.  So, we do a piecewise linear
+    // mapping.  This ensures that where there is a corresponding enum on both sides (for example
+    // FC_WEIGHT_DEMIBOLD and QFont::DemiBold) we map one to the other but other values map
+    // to intermediate Qt weights.
+    const int maxWeight = 99;
+    int qtweight;
+    if (fcweight < 0)
+        qtweight = 0;
+    else if (fcweight <= FC_WEIGHT_LIGHT)
+        qtweight = (fcweight * QFont::Light) / FC_WEIGHT_LIGHT;
+    else if (fcweight <= FC_WEIGHT_NORMAL)
+        qtweight = QFont::Light + ((fcweight - FC_WEIGHT_LIGHT) * (QFont::Normal - QFont::Light)) / (FC_WEIGHT_NORMAL - FC_WEIGHT_LIGHT);
+    else if (fcweight <= FC_WEIGHT_DEMIBOLD)
+        qtweight = QFont::Normal + ((fcweight - FC_WEIGHT_NORMAL) * (QFont::DemiBold - QFont::Normal)) / (FC_WEIGHT_DEMIBOLD - FC_WEIGHT_NORMAL);
+    else if (fcweight <= FC_WEIGHT_BOLD)
+        qtweight = QFont::DemiBold + ((fcweight - FC_WEIGHT_DEMIBOLD) * (QFont::Bold - QFont::DemiBold)) / (FC_WEIGHT_BOLD - FC_WEIGHT_DEMIBOLD);
+    else if (fcweight <= FC_WEIGHT_BLACK)
+        qtweight = QFont::Bold + ((fcweight - FC_WEIGHT_BOLD) * (QFont::Black - QFont::Bold)) / (FC_WEIGHT_BLACK - FC_WEIGHT_BOLD);
+    else if (fcweight <= FC_WEIGHT_ULTRABLACK)
+        qtweight = QFont::Black + ((fcweight - FC_WEIGHT_BLACK) * (maxWeight - QFont::Black)) / (FC_WEIGHT_ULTRABLACK - FC_WEIGHT_BLACK);
+    else
+        qtweight = maxWeight;
 
     return qtweight;
+}
+
+static inline int stretchFromFcWidth(int fcwidth)
+{
+    // Font Config enums for width match pretty closely with those used by Qt so just use
+    // Font Config values directly while enforcing the same limits imposed by QFont.
+    const int maxStretch = 4000;
+    int qtstretch;
+    if (fcwidth < 1)
+        qtstretch = 1;
+    else if (fcwidth > maxStretch)
+        qtstretch = maxStretch;
+    else
+        qtstretch = fcwidth;
+
+    return qtstretch;
 }
 
 static const char *specialLanguages[] = {
@@ -309,6 +340,7 @@ void QFontconfigDatabase::populateFontDatabase()
     int weight_value;
     int slant_value;
     int spacing_value;
+    int width_value;
     FcChar8 *file_value;
     int indexValue;
     FcChar8 *foundry_value;
@@ -322,7 +354,7 @@ void QFontconfigDatabase::populateFontDatabase()
         const char *properties [] = {
             FC_FAMILY, FC_STYLE, FC_WEIGHT, FC_SLANT,
             FC_SPACING, FC_FILE, FC_INDEX,
-            FC_LANG, FC_CHARSET, FC_FOUNDRY, FC_SCALABLE, FC_PIXEL_SIZE, FC_WEIGHT,
+            FC_LANG, FC_CHARSET, FC_FOUNDRY, FC_SCALABLE, FC_PIXEL_SIZE,
             FC_WIDTH,
 #if FC_VERSION >= 20297
             FC_CAPABILITY,
@@ -356,6 +388,8 @@ void QFontconfigDatabase::populateFontDatabase()
             slant_value = FC_SLANT_ROMAN;
         if (FcPatternGetInteger (fonts->fonts[i], FC_WEIGHT, 0, &weight_value) != FcResultMatch)
             weight_value = FC_WEIGHT_REGULAR;
+        if (FcPatternGetInteger (fonts->fonts[i], FC_WIDTH, 0, &width_value) != FcResultMatch)
+            width_value = FC_WIDTH_NORMAL;
         if (FcPatternGetInteger (fonts->fonts[i], FC_SPACING, 0, &spacing_value) != FcResultMatch)
             spacing_value = FC_PROPORTIONAL;
         if (FcPatternGetString (fonts->fonts[i], FC_FILE, 0, &file_value) != FcResultMatch)
@@ -417,17 +451,16 @@ void QFontconfigDatabase::populateFontDatabase()
                          : ((slant_value == FC_SLANT_OBLIQUE)
                             ? QFont::StyleOblique
                             : QFont::StyleNormal);
-        QFont::Weight weight = QFont::Weight(getFCWeight(weight_value));
+        // Note: weight should really be an int but registerFont incorrectly uses an enum
+        QFont::Weight weight = QFont::Weight(weightFromFcWeight(weight_value));
 
         double pixel_size = 0;
-        if (!scalable) {
-            int width = 100;
-            FcPatternGetInteger (fonts->fonts[i], FC_WIDTH, 0, &width);
+        if (!scalable)
             FcPatternGetDouble (fonts->fonts[i], FC_PIXEL_SIZE, 0, &pixel_size);
-        }
 
         bool fixedPitch = spacing_value >= FC_MONO;
-        QFont::Stretch stretch = QFont::Unstretched;
+        // Note: stretch should really be an int but registerFont incorrectly uses an enum
+        QFont::Stretch stretch = QFont::Stretch(stretchFromFcWidth(width_value));
         QString styleName = style_value ? QString::fromUtf8((const char *) style_value) : QString();
         QPlatformFontDatabase::registerFont(familyName,styleName,QLatin1String((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,fixedPitch,writingSystems,fontFile);
 //        qDebug() << familyName << (const char *)foundry_value << weight << style << &writingSystems << scalable << true << pixel_size;
