@@ -1422,6 +1422,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                                 t << "\t\t\t\t" << writeSettings("INFOPLIST_FILE", "Info.plist") << ";\n";
                             }
                         }
+                    } else {
+                        warn_msg(WarnLogic, "Could not resolve Info.plist: '%s'. Check if QMAKE_INFO_PLIST points to a valid file.", plist.toLatin1().constData());
                     }
                 }
 

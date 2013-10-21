@@ -1266,6 +1266,8 @@ void UnixMakefileGenerator::init2()
                         alldeps += path + Option::dir_sep + fileInfo(files[file].toQString()).fileName();
                 }
             }
+        } else {
+            warn_msg(WarnLogic, "Could not resolve Info.plist: '%s'. Check if QMAKE_INFO_PLIST points to a valid file.", plist.toLatin1().constData());
         }
     }
 }
