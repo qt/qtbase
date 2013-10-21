@@ -693,7 +693,7 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
         FT_Set_Transform(face, &matrix, 0);
         freetype->matrix = matrix;
         // fake bold
-        if ((fontDef.weight == QFont::Bold) && !(face->style_flags & FT_STYLE_FLAG_BOLD) && !FT_IS_FIXED_WIDTH(face))
+        if ((fontDef.weight >= QFont::Bold) && !(face->style_flags & FT_STYLE_FLAG_BOLD) && !FT_IS_FIXED_WIDTH(face))
             embolden = true;
         // underline metrics
         line_thickness =  QFixed::fromFixed(FT_MulFix(face->underline_thickness, face->size->metrics.y_scale));
@@ -1165,7 +1165,7 @@ int QFontEngineFT::synthesized() const
     int s = 0;
     if ((fontDef.style != QFont::StyleNormal) && !(freetype->face->style_flags & FT_STYLE_FLAG_ITALIC))
         s = SynthesizedItalic;
-    if ((fontDef.weight == QFont::Bold) && !(freetype->face->style_flags & FT_STYLE_FLAG_BOLD))
+    if ((fontDef.weight >= QFont::Bold) && !(freetype->face->style_flags & FT_STYLE_FLAG_BOLD))
         s |= SynthesizedBold;
     if (fontDef.stretch != 100 && FT_IS_SCALABLE(freetype->face))
         s |= SynthesizedStretch;
