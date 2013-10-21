@@ -6878,7 +6878,6 @@ report_support_plugin "    PNG .................." "$CFG_PNG" "$CFG_LIBPNG" QtGu
 report_support "  Glib ..................." "$CFG_GLIB"
 report_support "  GTK theme .............." "$CFG_QGTKSTYLE"
 report_support "  Large File ............." "$CFG_LARGEFILE"
-report_support "  libudev ................" "$CFG_LIBUDEV"
 report_support "  Networking:"
 [ "$BUILD_ON_MAC" = "yes" ] && \
     report_support "    CoreWlan ............." "$CFG_COREWLAN"
