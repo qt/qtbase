@@ -350,7 +350,7 @@ void QConnmanEngine::configurationChange(const QString &id)
     QMutexLocker locker(&mutex);
 
     if (accessPointConfigurations.contains(id)) {
-
+        bool changed = false;
         QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
 
         QString servicePath = serviceFromId(id);
@@ -368,17 +368,21 @@ void QConnmanEngine::configurationChange(const QString &id)
 
         if (ptr->name != networkName) {
             ptr->name = networkName;
+            changed = true;
         }
 
         if (ptr->state != curState) {
             ptr->state = curState;
+            changed = true;
         }
 
         ptr->mutex.unlock();
 
-        locker.unlock();
-        emit configurationChanged(ptr);
-        locker.relock();
+        if (changed) {
+            locker.unlock();
+            emit configurationChanged(ptr);
+            locker.relock();
+        }
     }
 
      locker.unlock();
