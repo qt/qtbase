@@ -23,7 +23,7 @@ defineReplace(qtLibraryTarget) {
 }
 
 defineTest(qtAddLibrary) {
-    warning("qtAddLibrary() is deprecated. Use qtAddModule() or QT+= instead.")
+    warning("qtAddLibrary() is deprecated. Use QT+= instead.")
 
     # Reverse-engineer the module name from the library name.
     for(var, QT_MODULES) {
