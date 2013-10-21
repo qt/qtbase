@@ -62,7 +62,7 @@ qaxserver {
 unset(using_privates)
 qtAddModules(QT, LIBS)
 qtAddModules(QT_PRIVATE, LIBS_PRIVATE)
-!isEmpty(using_privates):!auto_use_privates:!no_private_qt_headers_warning:if(!debug_and_release|!build_pass) {
+!isEmpty(using_privates):!no_private_qt_headers_warning:if(!debug_and_release|!build_pass) {
     message("This project is using private headers and will therefore be tied to this specific Qt module build version.")
     message("Running this project against other versions of the Qt modules may crash at any arbitrary point.")
     message("This is not a bug, but a result of using Qt internals. You have been warned!")

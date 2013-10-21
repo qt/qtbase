@@ -61,7 +61,7 @@ defineTest(qtAddModule) {
     MODULE_CONFIG = $$eval(QT.$${1}.module_config)
     MODULE_MAJOR_VERSION = $$eval(QT.$${1}.MAJOR_VERSION)
 
-    contains(MODULE_CONFIG, internal_module):!if(auto_use_privates|isEqual(2, UsePrivate)): \
+    contains(MODULE_CONFIG, internal_module):!isEqual(2, UsePrivate): \
         error("Module $$1 has no public API.")
 
     qtProcessModuleFlags(CONFIG, QT.$${1}.CONFIG)
@@ -77,7 +77,7 @@ defineTest(qtAddModule) {
           !qt_no_framework_direct_includes:exists($$FRAMEWORK_INCLUDE) {
                INCLUDEPATH *= $$FRAMEWORK_INCLUDE
           }
-          auto_use_privates|isEqual(2, UsePrivate): \
+          isEqual(2, UsePrivate): \
                INCLUDEPATH += \
                     $$FRAMEWORK_INCLUDE/$$eval(QT.$${1}.VERSION) \
                     $$FRAMEWORK_INCLUDE/$$eval(QT.$${1}.VERSION)/$$MODULE_NAME
@@ -85,7 +85,7 @@ defineTest(qtAddModule) {
           LINKAGE += -framework $${MODULE_NAME}$${QT_LIBINFIX}
     } else {
           INCLUDEPATH *= $$MODULE_INCLUDES
-          auto_use_privates|isEqual(2, UsePrivate): \
+          isEqual(2, UsePrivate): \
                INCLUDEPATH += $$eval(QT.$${1}.private_includes)
     }
 
@@ -147,7 +147,6 @@ defineTest(qtAddModules) {
             NEWQT += $$eval(QT.$${QTLIBRAW}.private_depends)
         }
         NEWQT += $$QTLIBRAW
-        contains(QT.$${QTLIBRAW}.CONFIG, auto_use_privates): CONFIG += auto_use_privates
     }
     # Topological resolution of modules based on their QT.<module>.depends variable
     $$1 = $$resolve_depends(NEWQT, "QT.")
