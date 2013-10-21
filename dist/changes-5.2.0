@@ -88,6 +88,8 @@ QtGui
 QtNetwork
 ---------
 
+- API was added to store and resume TLS session tickets.
+
 - The minimum support openssl version has been increased to openssl 1.0. The
   code to support older versions has not been removed, but is no longer
   supported.
