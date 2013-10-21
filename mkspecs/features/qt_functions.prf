@@ -28,7 +28,7 @@ defineTest(qtAddLibrary) {
     # Reverse-engineer the module name from the library name.
     for(var, QT_MODULES) {
         isEqual(QT.$${var}.name, $$1) {
-            qtAddModule($$var, , LIBS)
+            qtAddModule($$var, LIBS)
             return(true)
         }
     }
@@ -53,7 +53,7 @@ defineTest(qtHaveModule) {
     return(false)
 }
 
-# qt module, UsePrivate flag, libs variable
+# qt module, libs variable
 defineTest(qtAddModule) {
     MODULE_NAME = $$eval(QT.$${1}.name)
     MODULE_INCLUDES = $$eval(QT.$${1}.includes)
@@ -61,8 +61,10 @@ defineTest(qtAddModule) {
     MODULE_CONFIG = $$eval(QT.$${1}.module_config)
     MODULE_MAJOR_VERSION = $$eval(QT.$${1}.MAJOR_VERSION)
 
-    contains(MODULE_CONFIG, internal_module):!isEqual(2, UsePrivate): \
-        error("Module $$1 has no public API.")
+    contains(MODULE_CONFIG, internal_module) {
+        using_privates = true
+        export(using_privates)
+    }
 
     qtProcessModuleFlags(CONFIG, QT.$${1}.CONFIG)
     qtProcessModuleFlags(DEFINES, QT.$${1}.DEFINES)
@@ -77,79 +79,75 @@ defineTest(qtAddModule) {
           !qt_no_framework_direct_includes:exists($$FRAMEWORK_INCLUDE) {
                INCLUDEPATH *= $$FRAMEWORK_INCLUDE
           }
-          isEqual(2, UsePrivate): \
+          contains(MODULE_CONFIG, internal_module): \
                INCLUDEPATH += \
                     $$FRAMEWORK_INCLUDE/$$eval(QT.$${1}.VERSION) \
                     $$FRAMEWORK_INCLUDE/$$eval(QT.$${1}.VERSION)/$$MODULE_NAME
           QMAKE_FRAMEWORKPATH *= $${MODULE_LIBS}
-          LINKAGE += -framework $${MODULE_NAME}$${QT_LIBINFIX}
+          export(QMAKE_FRAMEWORKPATH)
+          !contains(MODULE_CONFIG, no_link): \
+               LINKAGE += -framework $${MODULE_NAME}$${QT_LIBINFIX}
     } else {
           INCLUDEPATH *= $$MODULE_INCLUDES
-          isEqual(2, UsePrivate): \
-               INCLUDEPATH += $$eval(QT.$${1}.private_includes)
     }
+    export(INCLUDEPATH)
 
-    # Re-insert the major version in the library name (cf qtLibraryTarget above)
-    # unless it's a framework build
-    !mac|!contains(MODULE_CONFIG, lib_bundle): \
-        MODULE_NAME ~= s,^Qt,Qt$$MODULE_MAJOR_VERSION,
-
-    win32 {
-        # Make sure the version number isn't appended again to the lib name
-        ver_var    = QMAKE_$${upper($$MODULE_NAME$$QT_LIBINFIX)}_VERSION_OVERRIDE
-        dver_var   = QMAKE_$${upper($$MODULE_NAME$$QT_LIBINFIX)}D_VERSION_OVERRIDE
-        $$ver_var  = 0
-        $$dver_var = 0
-        export($$ver_var)
-        export($$dver_var)
-    }
-
-    isEmpty(LINKAGE) {
-       !isEmpty(MODULE_LIBS_ADD): LINKAGE = -L$$MODULE_LIBS_ADD
-       lib = $${MODULE_NAME}$${QT_LIBINFIX}$$qtPlatformTargetSuffix()
-       LINKAGE += -l$$lib
-
-       contains(QT_CONFIG, rpath): QMAKE_RPATHDIR *= $$eval(QT.$${1}.rpath)
-
-       contains(MODULE_CONFIG, staticlib): \
-           PRE_TARGETDEPS *= $$MODULE_LIBS/$${QMAKE_PREFIX_STATICLIB}$${lib}.$${QMAKE_EXTENSION_STATICLIB}
-    }
     # Only link to this module if a libs directory is set, else this is just a module
     # to give access to sources or include files, and not for linking.
-    !isEmpty(MODULE_LIBS) {
-        !isEmpty(QMAKE_LSB) {
-            !isEmpty(MODULE_LIBS_ADD): QMAKE_LFLAGS *= --lsb-libpath=$$MODULE_LIBS_ADD
-            QMAKE_LIBDIR *= /opt/lsb/lib
-            QMAKE_LFLAGS *= --lsb-shared-libs=$${MODULE_NAME}$${QT_LIBINFIX}
+    !isEmpty(MODULE_LIBS):!contains(MODULE_CONFIG, no_link) {
+
+        # Re-insert the major version in the library name (cf qtLibraryTarget above)
+        # unless it's a framework build
+        !mac|!contains(MODULE_CONFIG, lib_bundle): \
+            MODULE_NAME ~= s,^Qt,Qt$$MODULE_MAJOR_VERSION,
+
+        win32 {
+            # Make sure the version number isn't appended again to the lib name
+            ver_var    = QMAKE_$${upper($$MODULE_NAME$$QT_LIBINFIX)}_VERSION_OVERRIDE
+            dver_var   = QMAKE_$${upper($$MODULE_NAME$$QT_LIBINFIX)}D_VERSION_OVERRIDE
+            $$ver_var  = 0
+            $$dver_var = 0
+            export($$ver_var)
+            export($$dver_var)
         }
-        $$3 += $$LINKAGE
+
+        isEmpty(LINKAGE) {
+            !isEmpty(MODULE_LIBS_ADD): \
+                LINKAGE = -L$$MODULE_LIBS_ADD
+            lib = $${MODULE_NAME}$${QT_LIBINFIX}$$qtPlatformTargetSuffix()
+            LINKAGE += -l$$lib
+
+            contains(QT_CONFIG, rpath) {
+                QMAKE_RPATHDIR *= $$eval(QT.$${1}.rpath)
+                export(QMAKE_RPATHDIR)
+            }
+
+            contains(MODULE_CONFIG, staticlib) {
+                PRE_TARGETDEPS *= $$MODULE_LIBS/$${QMAKE_PREFIX_STATICLIB}$${lib}.$${QMAKE_EXTENSION_STATICLIB}
+                export(PRE_TARGETDEPS)
+            }
+        }
+
+        $$2 += $$LINKAGE
+        export($$2)
+
+        !isEmpty(QMAKE_LSB) {
+            !isEmpty(MODULE_LIBS_ADD): \
+                QMAKE_LFLAGS *= --lsb-libpath=$$MODULE_LIBS_ADD
+            QMAKE_LFLAGS *= --lsb-shared-libs=$${MODULE_NAME}$${QT_LIBINFIX}
+            QMAKE_LIBDIR *= /opt/lsb/lib
+            export(QMAKE_LFLAGS)
+            export(QMAKE_LIBDIR)
+        }
     }
-    export($$3)
-    export(INCLUDEPATH)
-    export(QMAKE_FRAMEWORKPATH)
-    export(QMAKE_LFLAGS)
-    export(QMAKE_LIBDIR)
-    export(QMAKE_RPATHDIR)
-    export(QMAKE_RPATHLINKDIR)
-    export(PRE_TARGETDEPS)
 }
 
 # qt variable, libs variable
 defineTest(qtAddModules) {
-    # Figure out from which modules we're wanting to use the private headers
-    NEWQT =
-    for(QTLIB, $$1) {
-        QTLIBRAW = $$replace(QTLIB, -private$, )
-        !isEqual(QTLIBRAW, $$QTLIB) {
-            want_var = QT.$${QTLIBRAW}.want_private
-            $$want_var = UsePrivate
-            using_privates = true
-            NEWQT += $$eval(QT.$${QTLIBRAW}.private_depends)
-        }
-        NEWQT += $$QTLIBRAW
-    }
+    # qmake variables cannot contain dashes, so normalize the names first
+    $$1 = $$replace($$1, -private$, _private)
     # Topological resolution of modules based on their QT.<module>.depends variable
-    $$1 = $$resolve_depends(NEWQT, "QT.")
+    $$1 = $$resolve_depends($$1, "QT.")
     # Finally actually add the modules
     unset(BAD_QT)
     for(QTLIB, $$1) {
@@ -164,11 +162,9 @@ defineTest(qtAddModules) {
             next()
         }
 
-        qtAddModule($$QTLIB, $$eval(QT.$${QTLIB}.want_private), $$2)
+        qtAddModule($$QTLIB, $$2)
     }
-    !isEmpty(BAD_QT):error("Unknown module(s) in $$1: $$BAD_QT")
-
-    export(using_privates)
+    !isEmpty(BAD_QT):error("Unknown module(s) in $$1: $$replace(BAD_QT, _private$, -private)")
 }
 
 defineTest(qtAddRpathLink) {
@@ -177,7 +173,7 @@ defineTest(qtAddRpathLink) {
     # This means that paths of direct dependencies (QT & QT_PRIVATE)
     # don't need to appear here. However, their private dependencies'
     # paths OTOH need to be put there.
-    pubqt = $$replace(1, -private$, )
+    pubqt = $$replace(1, -private$, _private)
     pubdep = $$resolve_depends(pubqt, "QT.")
     privdep = $$resolve_depends(pubqt, "QT.", ".depends" ".private_depends" ".run_depends")
     privdep -= $$pubdep
@@ -245,7 +241,7 @@ defineTest(qtAddToolEnv) {
 
 # target variable, dependency var name, [non-empty: prepare for system(), not make]
 defineTest(qtAddTargetEnv) {
-    deps = $$replace($$2, -private$, )
+    deps = $$replace($$2, -private$, _private)
     deps = $$resolve_depends(deps, "QT.", ".depends" ".private_depends" ".run_depends")
     !isEmpty(deps) {
         for(dep, deps) {

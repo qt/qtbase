@@ -44,7 +44,10 @@ ucmodule = $$upper($$MODULE)
 
 isEmpty(MODULE_INCNAME): MODULE_INCNAME = $$TARGET
 
-MODULE_DEPENDS = $$replace(QT, -private$, )
+internal_module: \
+    MODULE_DEPENDS = $$replace(QT, -private$, _private)
+else: \
+    MODULE_DEPENDS = $$replace(QT, -private$, )
 MODULE_DEPENDS = $$unique(MODULE_DEPENDS)
 
 contains(TARGET, QtAddOn.*): \
@@ -55,14 +58,14 @@ MODULE_DEFINES = $$MODULE_DEFINE $$MODULE_DEFINES
 
 load(qt_module_pris)
 
-INCLUDEPATH *= $$eval(QT.$${MODULE}.includes) $$eval(QT.$${MODULE}.private_includes)
+INCLUDEPATH *= $$eval(QT.$${MODULE}.includes) $$eval(QT.$${MODULE}_private.includes)
 
 !no_module_headers: load(qt_module_headers)
 
 #other
 TEMPLATE         = lib
-DESTDIR          = $$eval(QT.$${MODULE}.libs)
-win32:!wince*:!prefix_build: DLLDESTDIR = $$eval(QT.$${MODULE}.bins)
+DESTDIR          = $$eval(QT.$${MODULE_ID}.libs)
+win32:!wince*:!prefix_build: DLLDESTDIR = $$eval(QT.$${MODULE_ID}.bins)
 
 CONFIG          += qmake_cache target_qt
 
