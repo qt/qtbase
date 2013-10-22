@@ -3270,7 +3270,11 @@ MakefileGenerator::writePkgConfigFile()
         }
     }
     t << "Description: " << desc << endl;
-    t << "Version: " << project->first("VERSION") << endl;
+    ProString version = project->first("QMAKE_PKGCONFIG_VERSION");
+    if (version.isEmpty())
+        version = project->first("VERSION");
+    if (!version.isEmpty())
+        t << "Version: " << version << endl;
 
     // libs
     t << "Libs: ";
