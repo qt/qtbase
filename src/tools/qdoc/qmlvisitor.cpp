@@ -464,6 +464,7 @@ bool QmlDocVisitor::visit(QQmlJS::AST::UiObjectDefinition *definition)
         QmlClassNode *component = new QmlClassNode(current, name);
         component->setTitle(name);
         component->setImportList(importList);
+        importList.clear();
         if (applyDocumentation(definition->firstSourceLocation(), component)) {
             QmlClassNode::addInheritedBy(type, component);
             component->setQmlBaseName(type);
@@ -488,34 +489,21 @@ void QmlDocVisitor::endVisit(QQmlJS::AST::UiObjectDefinition *definition)
     lastEndOffset = definition->lastSourceLocation().end();
 }
 
-/*!
-  Note that the imports list can be traversed by iteration to obtain
-  all the imports in the document at once, having found just one:
-
-  *it = imports; it; it = it->next
-
- */
-bool QmlDocVisitor::visit(QQmlJS::AST::UiImportList *imports)
+bool QmlDocVisitor::visit(QQmlJS::AST::UiImport *import)
 {
-    while (imports != 0) {
-        QQmlJS::AST::UiImport* imp = imports->import;
+    QString name = document.mid(import->fileNameToken.offset, import->fileNameToken.length);
+    if (name[0] == '\"')
+        name = name.mid(1, name.length()-2);
+    QString version = document.mid(import->versionToken.offset, import->versionToken.length);
+    QString importId = document.mid(import->importIdToken.offset, import->importIdToken.length);
+    QString importUri = getFullyQualifiedId(import->importUri);
+    QString reconstructed = importUri + QString(" ") + version;
+    importList.append(ImportRec(name, version, importId, importUri));
 
-        QString name = document.mid(imp->fileNameToken.offset, imp->fileNameToken.length);
-        if (name[0] == '\"')
-            name = name.mid(1, name.length()-2);
-        QString version = document.mid(imp->versionToken.offset, imp->versionToken.length);
-        QString importId = document.mid(imp->importIdToken.offset, imp->importIdToken.length);
-        QString importUri = getFullyQualifiedId(imp->importUri);
-        importList.append(ImportRec(name, version, importId, importUri));
-        imports = imports->next;
-    }
     return true;
 }
 
-/*!
-  End the visit of the imports list.
- */
-void QmlDocVisitor::endVisit(QQmlJS::AST::UiImportList *definition)
+void QmlDocVisitor::endVisit(QQmlJS::AST::UiImport *definition)
 {
     lastEndOffset = definition->lastSourceLocation().end();
 }
