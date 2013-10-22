@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Klarälvdalens Datakonsult AB <info@kdab.com>
+** Copyright (C) 2012 - 2013 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -39,4 +39,4 @@
 **
 ****************************************************************************/
 
-#include "../blackberry-playbook-armle-v7-qcc/qplatformdefs.h"
+#include "../qnx-armv7le-qcc/qplatformdefs.h"

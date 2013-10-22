@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Research In Motion Limited. <blackberry-qt@qnx.com>
+** Copyright (C) 2012 - 2013 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -39,4 +39,4 @@
 **
 ****************************************************************************/
 
-#include "../qnx-armv7le-qcc/qplatformdefs.h"
+#include "../blackberry-armle-v7-qcc/qplatformdefs.h"
