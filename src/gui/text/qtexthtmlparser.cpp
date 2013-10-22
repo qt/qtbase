@@ -46,7 +46,7 @@
 #include <qstack.h>
 #include <qdebug.h>
 #include <qthread.h>
-#include <qcoreapplication.h>
+#include <qguiapplication.h>
 
 #include "qtextdocument.h"
 #include "qtextformat_p.h"
@@ -1066,7 +1066,7 @@ void QTextHtmlParserNode::initializeProperties(const QTextHtmlParserNode *parent
                     && !attributes.at(i + 1).isEmpty()) {
                     hasHref = true;
                     charFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-                    charFormat.setForeground(Qt::blue);
+                    charFormat.setForeground(QGuiApplication::palette().link());
                 }
             }
 

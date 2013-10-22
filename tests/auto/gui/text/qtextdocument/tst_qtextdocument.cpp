@@ -54,6 +54,7 @@
 #include <qabstracttextdocumentlayout.h>
 #include <qtextlist.h>
 #include <qtextcodec.h>
+#include <qguiapplication.h>
 #include <qurl.h>
 #include <qpainter.h>
 #include <qfontmetrics.h>
@@ -187,6 +188,9 @@ private slots:
 
     void QTBUG27354_spaceAndSoftSpace();
     void cssInheritance();
+
+    void QTBUG28998_linkColor();
+
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
 
@@ -2972,6 +2976,30 @@ void tst_QTextDocument::cssInheritance()
         QVERIFY(fmt.lineHeightType() == QTextBlockFormat::ProportionalHeight);
         QVERIFY(fmt.lineHeight() == 300);
     }
+}
+
+void tst_QTextDocument::QTBUG28998_linkColor()
+{
+    QPalette pal;
+    pal.setColor(QPalette::Link, QColor("tomato"));
+    QGuiApplication::setPalette(pal);
+
+    QTextDocument doc;
+    doc.setHtml("<a href=\"http://www.qt-project.org\">Qt</a>");
+
+    QCOMPARE(doc.blockCount(), 1);
+    QTextBlock block = doc.firstBlock();
+    QVERIFY(block.isValid());
+
+    QTextFragment fragment = block.begin().fragment();
+    QVERIFY(fragment.isValid());
+
+    QTextCharFormat format = fragment.charFormat();
+    QVERIFY(format.isValid());
+    QVERIFY(format.isAnchor());
+    QCOMPARE(format.anchorHref(), QStringLiteral("http://www.qt-project.org"));
+
+    QCOMPARE(format.foreground(), pal.link());
 }
 
 QTEST_MAIN(tst_QTextDocument)
