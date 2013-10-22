@@ -67,9 +67,11 @@ void QAndroidPlatformMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatform
 void QAndroidPlatformMenu::removeMenuItem(QPlatformMenuItem *menuItem)
 {
     QMutexLocker lock(&m_menuItemsMutex);
-    m_menuItems.erase(qFind(m_menuItems.begin(),
-                            m_menuItems.end(),
-                            static_cast<QAndroidPlatformMenuItem *>(menuItem)));
+    PlatformMenuItemsType::iterator it = qFind(m_menuItems.begin(),
+                                               m_menuItems.end(),
+                                               static_cast<QAndroidPlatformMenuItem *>(menuItem));
+    if (it != m_menuItems.end())
+        m_menuItems.erase(it);
 }
 
 void QAndroidPlatformMenu::syncMenuItem(QPlatformMenuItem *menuItem)
