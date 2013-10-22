@@ -59,7 +59,9 @@ public:
     virtual void lower();
 
     virtual void setGeometry(const QRect &rect);
+    virtual void setVisible(bool visible);
 
+    virtual void setWindowState(Qt::WindowState state);
     virtual void setWindowFlags(Qt::WindowFlags type);
     virtual Qt::WindowFlags windowFlags() const;
 
@@ -78,6 +80,7 @@ protected:
     QFbBackingStore *mBackingStore;
     QRect mOldGeometry;
     Qt::WindowFlags mWindowFlags;
+    Qt::WindowState mWindowState;
 
     WId mWindowId;
 };
