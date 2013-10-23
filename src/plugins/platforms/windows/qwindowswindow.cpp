@@ -1056,9 +1056,10 @@ void QWindowsWindow::setVisible(bool visible)
             // When the window is layered, we won't get WM_PAINT, and "we" are in control
             // over the rendering of the window
             // There is nobody waiting for this, so we don't need to flush afterwards.
-            QWindow *w = window();
-            if (w->format().hasAlpha() || qFuzzyCompare(w->opacity(), qreal(1)))
+            if (isLayered()) {
+                QWindow *w = window();
                 fireExpose(QRect(0, 0, w->width(), w->height()));
+            }
 
         } else {
             if (hasMouseCapture())
