@@ -635,8 +635,8 @@ void QWindowsKeyMapper::updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32
     }
     keyLayout[vk_key].qtKey[8] = fallbackKey;
 
-    // If this vk_key a Dead Key
-    if (MapVirtualKey(vk_key, 2) & 0x80000000) {
+    // If this vk_key makes a dead key with any combination of modifiers
+    if (keyLayout[vk_key].deadkeys) {
         // Push a Space, then the original key through the low-level ToAscii functions.
         // We do this because these functions (ToAscii / ToUnicode) will alter the internal state of
         // the keyboard driver By doing the following, we set the keyboard driver state back to what
