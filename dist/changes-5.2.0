@@ -35,6 +35,11 @@ QtWidgets
 
 - QFileDialog::setDefaultSuffix() removes leading dot characters.
 
+- [QTBUG-34132] QFileDialog does not instantiate widgets if a native dialog
+  will be used instead.  Therefore some accessors which previously returned
+  unused objects will now return null.  As before, you can set the
+  DontUseNativeDialog option to ensure that widgets will be created and used instead.
+
 - QSizePolicy got a retainSizeWhenHidden attribute.
 
 - [QTBUG-31602] QSpinBox size calculation will now be fixed when stylesheets are

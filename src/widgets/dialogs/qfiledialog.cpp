@@ -184,6 +184,13 @@ Q_WIDGETS_EXPORT _qt_filedialog_save_file_url_hook qt_filedialog_save_file_url_h
   The \l{dialogs/standarddialogs}{Standard Dialogs} example shows
   how to use QFileDialog as well as other built-in Qt dialogs.
 
+  By default, a platform-native file dialog will be used if the platform has
+  one. In that case, the widgets which would otherwise be used to construct the
+  dialog will not be instantiated, so related accessors such as layout() and
+  itemDelegate() will return null. You can set the \l DontUseNativeDialog option to
+  ensure that the widget-based implementation will be used instead of the
+  native dialog.
+
   \sa QDir, QFileInfo, QFile, QColorDialog, QFontDialog, {Standard Dialogs Example},
       {Application Example}
 */
@@ -243,7 +250,8 @@ Q_WIDGETS_EXPORT _qt_filedialog_save_file_url_hook qt_filedialog_save_file_url_h
 
     \value DontUseNativeDialog Don't use the native file dialog. By
     default, the native file dialog is used unless you use a subclass
-    of QFileDialog that contains the Q_OBJECT macro.
+    of QFileDialog that contains the Q_OBJECT macro, or the platform
+    does not have a native dialog of the type that you require.
 
     \value ReadOnly Indicates that the model is readonly.
 
