@@ -111,15 +111,15 @@ if(build_all|CONFIG(debug, debug|release)): CMAKE_DEBUG_TYPE = debug
 if(build_all|CONFIG(release, debug|release)): CMAKE_RELEASE_TYPE = release
 
 contains(CONFIG, plugin) {
-    equals(PLUGIN_TYPE, bearer): PLUGIN_MODULE_NAME = network
-    else:equals(PLUGIN_TYPE, sqldrivers): PLUGIN_MODULE_NAME = sql
-    else:equals(PLUGIN_TYPE, accessible): PLUGIN_MODULE_NAME = widgets
-    else:equals(PLUGIN_TYPE, imageformats): PLUGIN_MODULE_NAME = gui
-    else:equals(PLUGIN_TYPE, platforminputcontexts): PLUGIN_MODULE_NAME = gui
-    else:equals(PLUGIN_TYPE, platformthemes): PLUGIN_MODULE_NAME = gui
-    else:equals(PLUGIN_TYPE, generic): PLUGIN_MODULE_NAME = gui
-    else:equals(PLUGIN_TYPE, platforms): PLUGIN_MODULE_NAME = gui
-    else: return()
+    PLUGIN_MODULE_NAME =
+    for (mod, QT_MODULES) {
+        types = $$replace(QT.$${mod}.plugin_types, /.*$, )
+        contains(types, $$PLUGIN_TYPE) {
+            PLUGIN_MODULE_NAME = $$mod
+            break()
+        }
+    }
+    isEmpty(PLUGIN_MODULE_NAME): return()
 
     CMAKE_MODULE_NAME = $$cmakeModuleName($$PLUGIN_MODULE_NAME)
 

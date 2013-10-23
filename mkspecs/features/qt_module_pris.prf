@@ -99,7 +99,8 @@ MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
         "QT.$${MODULE_ID}.libexecs = \$\$QT_MODULE_LIBEXEC_BASE" \
         "QT.$${MODULE_ID}.plugins = \$\$QT_MODULE_PLUGIN_BASE" \
         "QT.$${MODULE_ID}.imports = \$\$QT_MODULE_IMPORT_BASE" \
-        "QT.$${MODULE_ID}.qml = \$\$QT_MODULE_QML_BASE"
+        "QT.$${MODULE_ID}.qml = \$\$QT_MODULE_QML_BASE" \
+        $$join(MODULE_PLUGIN_TYPES, " ", "QT.$${MODULE_ID}.plugin_types = ")
     MODULE_PRI_CONT += \
         "QT.$${MODULE_ID}.depends =$$join(MODULE_DEPENDS, " ", " ")" \
         $$module_rundep \
