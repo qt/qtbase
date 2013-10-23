@@ -1,3 +1,11 @@
+# Generic entry format
+#Feature: UPPERCASENAME (for the #define)
+#Description: One sentence description of what this does.
+#Section: Categorization
+#Requires: UPPERCASENAME...
+#Name: CamelCaseName (often a class name)
+#SeeAlso: UPPERCASENAME... (currently unused)
+
 # Kernel
 
 Feature: PROPERTIES
