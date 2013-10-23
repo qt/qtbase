@@ -57,10 +57,9 @@
 
 #if !defined(QT_BUILD_QMAKE) && !defined(QT_BUILD_CONFIGURE)
 #include <QtCore/qconfig.h>
-#endif
-
 #include <QtCore/qfeatures.h>
 #define QT_SUPPORTS(FEATURE) (!defined(QT_NO_##FEATURE))
+#endif
 
 /* These two macros makes it possible to turn the builtin line expander into a
  * string literal. */
