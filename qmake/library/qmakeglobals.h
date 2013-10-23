@@ -117,6 +117,7 @@ public:
     QProcessEnvironment environment;
 #endif
     QString qmake_abslocation;
+    QStringList qmake_args;
 
     QString qmakespec, xqmakespec;
     QString user_template, user_template_prefix;

@@ -82,7 +82,6 @@ char Option::field_sep;
 Option::QMAKE_MODE Option::qmake_mode = Option::QMAKE_GENERATE_NOTHING;
 
 //all modes
-QStringList Option::qmake_args;
 int Option::warn_level = WarnLogic | WarnDeprecated;
 int Option::debug_level = 0;
 QFile Option::output;
@@ -436,7 +435,7 @@ Option::init(int argc, char **argv)
             return ret;
             //return ret == QMAKE_CMDLINE_SHOW_USAGE ? usage(argv[0]) : false;
         }
-        Option::qmake_args = args;
+        globals->qmake_args = args;
     }
     globals->commitCommandLineArguments(cmdstate);
     globals->debugLevel = Option::debug_level;

@@ -2261,7 +2261,7 @@ QString MakefileGenerator::buildArgs()
 {
     QString ret;
 
-    foreach (const QString &arg, Option::qmake_args)
+    foreach (const QString &arg, Option::globals->qmake_args)
         ret += " " + escapeFilePath(arg);
     return ret;
 }

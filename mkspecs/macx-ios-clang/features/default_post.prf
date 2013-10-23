@@ -27,7 +27,11 @@ equals(TEMPLATE, app) {
 
         TARGET_XCODE_PROJECT_DIR = $${TARGET}.xcodeproj
 
-        system("cd $$system_quote($$OUT_PWD) && $${QMAKE_QMAKE} $$system_quote($$_PRO_FILE_) -spec macx-xcode")
+        args =
+        for(arg, QMAKE_ARGS): \
+            args += $$system_quote($$arg)
+
+        system("cd $$system_quote($$OUT_PWD) && $$QMAKE_QMAKE $$args $$system_quote($$_PRO_FILE_) -spec macx-xcode")
 
         # We use xcodebuild to do the actual build, but filter out the verbose
         # output that shows all environment variables for each build step.
