@@ -207,18 +207,20 @@ public:
 
         Kind_UiArrayBinding,
         Kind_UiImport,
-        Kind_UiImportList,
         Kind_UiObjectBinding,
         Kind_UiObjectDefinition,
         Kind_UiObjectInitializer,
         Kind_UiObjectMemberList,
         Kind_UiArrayMemberList,
+        Kind_UiPragma,
         Kind_UiProgram,
         Kind_UiParameterList,
         Kind_UiPublicMember,
         Kind_UiQualifiedId,
+        Kind_UiQualifiedPragmaId,
         Kind_UiScriptBinding,
-        Kind_UiSourceElement
+        Kind_UiSourceElement,
+        Kind_UiHeaderItemList
     };
 
     inline Node()
@@ -2271,44 +2273,6 @@ public:
     SourceLocation semicolonToken;
 };
 
-class QML_PARSER_EXPORT UiImportList: public Node
-{
-public:
-    QQMLJS_DECLARE_AST_NODE(UiImportList)
-
-    UiImportList(UiImport *import)
-        : import(import),
-          next(this)
-    { kind = K; }
-
-    UiImportList(UiImportList *previous, UiImport *import)
-        : import(import)
-    {
-        kind = K;
-        next = previous->next;
-        previous->next = this;
-    }
-
-    UiImportList *finish()
-    {
-        UiImportList *head = next;
-        next = 0;
-        return head;
-    }
-
-    virtual void accept0(Visitor *visitor);
-
-    virtual SourceLocation firstSourceLocation() const
-    { return import->firstSourceLocation(); }
-
-    virtual SourceLocation lastSourceLocation() const
-    { return next ? next->lastSourceLocation() : import->lastSourceLocation(); }
-
-// attributes
-    UiImport *import;
-    UiImportList *next;
-};
-
 class QML_PARSER_EXPORT UiObjectMember: public Node
 {
 public:
@@ -2355,21 +2319,131 @@ public:
     UiObjectMember *member;
 };
 
+class QML_PARSER_EXPORT UiQualifiedPragmaId: public Node
+{
+public:
+    QQMLJS_DECLARE_AST_NODE(UiQualifiedPragmaId)
+
+    UiQualifiedPragmaId(const QStringRef &name)
+        : next(this), name(name)
+    { kind = K; }
+
+    UiQualifiedPragmaId(UiQualifiedPragmaId *previous, const QStringRef &name)
+        : name(name)
+    {
+        kind = K;
+        next = previous->next;
+        previous->next = this;
+    }
+
+    UiQualifiedPragmaId *finish()
+    {
+        UiQualifiedPragmaId *head = next;
+        next = 0;
+        return head;
+    }
+
+    virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return identifierToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return next ? next->lastSourceLocation() : identifierToken; }
+
+// attributes
+    UiQualifiedPragmaId *next;
+    QStringRef name;
+    SourceLocation identifierToken;
+};
+
+class QML_PARSER_EXPORT UiPragma: public Node
+{
+public:
+    QQMLJS_DECLARE_AST_NODE(UiPragma)
+
+    UiPragma(UiQualifiedPragmaId *type)
+        : pragmaType(type)
+    { kind = K; }
+
+    virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return pragmaToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return semicolonToken; }
+
+// attributes
+    UiQualifiedPragmaId *pragmaType;
+    SourceLocation pragmaToken;
+    SourceLocation semicolonToken;
+};
+
+class QML_PARSER_EXPORT UiHeaderItemList: public Node
+{
+public:
+    QQMLJS_DECLARE_AST_NODE(UiHeaderItemList)
+
+    UiHeaderItemList(UiImport *import)
+        : headerItem(import), next(this)
+    { kind = K; }
+
+    UiHeaderItemList(UiPragma *pragma)
+        : headerItem(pragma), next(this)
+    { kind = K; }
+
+    UiHeaderItemList(UiHeaderItemList *previous, UiImport *import)
+        : headerItem(import)
+    {
+        kind = K;
+        next = previous->next;
+        previous->next = this;
+    }
+
+    UiHeaderItemList(UiHeaderItemList *previous, UiPragma *pragma)
+        : headerItem(pragma)
+    {
+        kind = K;
+        next = previous->next;
+        previous->next = this;
+    }
+
+    UiHeaderItemList *finish()
+    {
+        UiHeaderItemList *head = next;
+        next = 0;
+        return head;
+    }
+
+    virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return headerItem->firstSourceLocation(); }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return next ? next->lastSourceLocation() : headerItem->lastSourceLocation(); }
+
+// attributes
+    Node *headerItem;
+    UiHeaderItemList *next;
+};
+
 class QML_PARSER_EXPORT UiProgram: public Node
 {
 public:
     QQMLJS_DECLARE_AST_NODE(UiProgram)
 
-    UiProgram(UiImportList *imports, UiObjectMemberList *members)
-        : imports(imports), members(members)
+    UiProgram(UiHeaderItemList *headers, UiObjectMemberList *members)
+        : headers(headers), members(members)
     { kind = K; }
 
     virtual void accept0(Visitor *visitor);
 
     virtual SourceLocation firstSourceLocation() const
     {
-        if (imports)
-            return imports->firstSourceLocation();
+        if (headers)
+            return headers->firstSourceLocation();
         else if (members)
             return members->firstSourceLocation();
         return SourceLocation();
@@ -2379,13 +2453,13 @@ public:
     {
         if (members)
             return members->lastSourceLocation();
-        else if (imports)
-            return imports->lastSourceLocation();
+        else if (headers)
+            return headers->lastSourceLocation();
         return SourceLocation();
     }
 
 // attributes
-    UiImportList *imports;
+    UiHeaderItemList *headers;
     UiObjectMemberList *members;
 };
 
