@@ -48,7 +48,7 @@
 #include <private/qdatetime_p.h>
 
 #ifdef Q_OS_WIN
-# include <windows.h>
+#   include <qt_windows.h>
 #endif
 
 class tst_QDateTime : public QObject

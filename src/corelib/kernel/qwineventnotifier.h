@@ -45,7 +45,6 @@
 #include "QtCore/qobject.h"
 
 #ifdef Q_OS_WIN
-#include "QtCore/qt_windows.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -54,6 +53,7 @@ class Q_CORE_EXPORT QWinEventNotifier : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QWinEventNotifier)
+    typedef Qt::HANDLE HANDLE;
 
 public:
     explicit QWinEventNotifier(QObject *parent = 0);
