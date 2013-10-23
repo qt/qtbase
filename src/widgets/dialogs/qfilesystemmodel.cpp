@@ -204,6 +204,8 @@ bool QFileSystemModel::remove(const QModelIndex &aindex)
 #ifndef QT_NO_FILESYSTEMWATCHER
     d->fileInfoGatherer.removePath(path);
 #endif
+    if (QFileInfo(path).isFile())
+        return QFile::remove(path);
     return QDir(path).removeRecursively();
 }
 

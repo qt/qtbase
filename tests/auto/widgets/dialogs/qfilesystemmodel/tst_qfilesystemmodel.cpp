@@ -115,6 +115,7 @@ private slots:
     void sort();
 
     void mkdir();
+    void deleteFile();
 
     void caseSensitivity();
 
@@ -925,6 +926,25 @@ void tst_QFileSystemModel::mkdir()
     QVERIFY(!bestatic.exists());
     QVERIFY(0 != idx.row());
     QCOMPARE(oldRow, idx.row());
+}
+
+void tst_QFileSystemModel::deleteFile()
+{
+    QString newFilePath = QDir::temp().filePath("NewFileDeleteTest");
+    QFile newFile(newFilePath);
+    if (newFile.exists()) {
+        if (!newFile.remove())
+            qWarning() << "unable to remove" << newFilePath;
+        QTest::qWait(WAITTIME);
+    }
+    if (!newFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qWarning() << "unable to create" << newFilePath;
+    }
+    newFile.close();
+    QModelIndex idx = model->index(newFilePath);
+    QVERIFY(idx.isValid());
+    QVERIFY(model->remove(idx));
+    QVERIFY(!newFile.exists());
 }
 
 void tst_QFileSystemModel::caseSensitivity()
