@@ -93,6 +93,13 @@ shellEscape()
     echo "$@" | sed 's/ /\ /g'
 }
 
+shellQuoteLines()
+{
+    # The call of the outer echo makes the shell word-split the output of
+    # the nested pipe, thus effectively converting newlines to spaces.
+    echo `echo "$1" | sed 's,^[^ ]* .*$,"&",'`
+}
+
 # Adds a new qmake variable to the cache
 # Usage: QMakeVar mode varname contents
 #   where mode is one of: set, add, del
@@ -3028,33 +3035,24 @@ else
     CFG_FRAMEWORK=no
 fi
 
-# auto-detect default include and library search paths
-unset tty
-[ "$OPT_VERBOSE" = "yes" ] && tty=/dev/stderr
+# Auto-detect default include and library search paths.
 
-eval `LC_ALL=C $TEST_COMPILER $SYSROOT_FLAG $TEST_COMPILER_CXXFLAGS -xc++ -E -v - < /dev/null 2>&1 > /dev/null | $AWK '
+# Use intermediate variable to get around backtick/quote nesting problems.
+awkprog='
 BEGIN { ORS = ""; FS = "="; incs = 0; libs = 0; }
 
 function normalize(dir)
 {
     do {
         odir = dir
-        gsub(/\\/[^\\/]+\\/\\.\\./, "", dir)
+        gsub(/\/[^\/]+\/\.\./, "", dir)
     } while (dir != odir);
     do {
         odir = dir
-        gsub(/\\/\\./, "", dir)
+        gsub(/\/\./, "", dir)
     } while (dir != odir);
     sub("/$", "", dir);
     return dir;
-}
-
-function quote(s)
-{
-    # We only handle spaces
-    if (match(s, " ") != 0)
-        return "\\\\\"" s "\\\\\"";
-    return s;
 }
 
 # extract include paths from indented lines between
@@ -3064,7 +3062,7 @@ function quote(s)
 /^\#include </ { yup=1; print "DEFAULT_INCDIRS=\""; next }
 /^End of search/ { yup=0; print "\"\n" }
 / \(framework directory\)$/ { next }
-yup { print quote(normalize(substr($0, 2))) " "; ++incs }
+yup { print normalize(substr($0, 2)) "\n"; ++incs }
 
 # extract from one line like LIBRARY_PATH=/one/path:/another/path:...
 $1 == "LIBRARY_PATH" {
@@ -3073,7 +3071,7 @@ $1 == "LIBRARY_PATH" {
     for (lib in library_paths) {
         dir = normalize(library_paths[lib]);
         if (!(dir in dirs)) {
-            print quote(dir) " ";
+            print dir "\n";
             dirs[dir] = 1;
         }
     }
@@ -3082,10 +3080,14 @@ $1 == "LIBRARY_PATH" {
 
 END {
     if (incs == 0)
-        print "DEFAULT_INCDIRS=\"/usr/include /usr/local/include\"\n";
+        print "DEFAULT_INCDIRS=\"/usr/include\n/usr/local/include\"\n";
     if (libs == 0)
-        print "DEFAULT_LIBDIRS=\"/lib /usr/lib\"\n";
-}' | tee $tty`
+        print "DEFAULT_LIBDIRS=\"/lib\n/usr/lib\"\n";
+}'
+
+unset tty
+[ "$OPT_VERBOSE" = "yes" ] && tty=/dev/stderr
+eval "`LC_ALL=C $TEST_COMPILER $SYSROOT_FLAG $TEST_COMPILER_CXXFLAGS -xc++ -E -v - < /dev/null 2>&1 > /dev/null | $AWK "$awkprog" | tee $tty`"
 unset tty
 
 #setup the build parts
@@ -6597,8 +6599,8 @@ host_build {
     QT_TARGET_ARCH = $CFG_ARCH
 } else {
     QT_ARCH = $CFG_ARCH
-    QMAKE_DEFAULT_LIBDIRS = $DEFAULT_LIBDIRS
-    QMAKE_DEFAULT_INCDIRS = $DEFAULT_INCDIRS
+    QMAKE_DEFAULT_LIBDIRS = `shellQuoteLines "$DEFAULT_LIBDIRS"`
+    QMAKE_DEFAULT_INCDIRS = `shellQuoteLines "$DEFAULT_INCDIRS"`
 }
 QT_EDITION = $Edition
 QT_CONFIG += $QT_CONFIG
