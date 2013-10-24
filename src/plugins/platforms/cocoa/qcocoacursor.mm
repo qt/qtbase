@@ -218,8 +218,8 @@ NSCursor *QCocoaCursor::createCursorData(QCursor *cursor)
         return createCursorFromPixmap(pixmap, hotspot);
         break; }
     case Qt::SizeAllCursor: {
-        QPixmap pixmap = QPixmap(QLatin1String(":/qt-project.org/mac/cursors/images/pluscursor.png"));
-        return createCursorFromPixmap(pixmap, hotspot);
+        QPixmap pixmap = QPixmap(QLatin1String(":/qt-project.org/mac/cursors/images/sizeallcursor.png"));
+        return createCursorFromPixmap(pixmap, QPoint(8, 8));
         break; }
     case Qt::BusyCursor: {
         QPixmap pixmap = QPixmap(QLatin1String(":/qt-project.org/mac/cursors/images/waitcursor.png"));
