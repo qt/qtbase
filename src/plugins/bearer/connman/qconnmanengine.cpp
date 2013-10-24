@@ -495,6 +495,7 @@ void QConnmanEngine::removeConfiguration(const QString &id)
         serviceNetworks.removeOne(service);
 
         QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.take(id);
+        foundConfigurations.removeOne(ptr.data());
         locker.unlock();
         emit configurationRemoved(ptr);
         locker.relock();
