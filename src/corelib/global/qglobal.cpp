@@ -2410,9 +2410,14 @@ void qsrand(uint seed)
         srand(seed);
     }
 #elif defined(Q_OS_ANDROID)
-    QJNIObjectPrivate random = QJNIObjectPrivate("java/util/Random",
-                                                 "(J)V",
-                                                 jlong(seed));
+    if (randomTLS->hasLocalData()) {
+        randomTLS->localData().callMethod<void>("setSeed", "(J)V", jlong(seed));
+        return;
+    }
+
+    QJNIObjectPrivate random("java/util/Random",
+                             "(J)V",
+                             jlong(seed));
     if (!random.isValid()) {
         srand(seed);
         return;
@@ -2465,19 +2470,20 @@ int qrand()
     if (!randomStorage)
         return rand();
 
-    QJNIObjectPrivate random;
-    if (!randomStorage->hasLocalData()) {
-        random = QJNIObjectPrivate("java/util/Random",
-                                   "(J)V",
-                                   jlong(1));
-        if (!random.isValid())
-            return rand();
-
-        randomStorage->setLocalData(random);
-    } else {
-        random = randomStorage->localData();
+    if (randomStorage->hasLocalData()) {
+        return randomStorage->localData().callMethod<jint>("nextInt",
+                                                           "(I)I",
+                                                           RAND_MAX);
     }
 
+    QJNIObjectPrivate random("java/util/Random",
+                             "(J)V",
+                             jlong(1));
+
+    if (!random.isValid())
+        return rand();
+
+    randomStorage->setLocalData(random);
     return random.callMethod<jint>("nextInt", "(I)I", RAND_MAX);
 #else
     // On Windows srand() and rand() already use Thread-Local-Storage
