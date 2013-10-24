@@ -78,7 +78,7 @@ class Q_GUI_EXPORT QOpenGLTextureCache : public QOpenGLSharedResource
 public:
     static QOpenGLTextureCache *cacheForContext(QOpenGLContext *context);
 
-    QOpenGLTextureCache(QOpenGLContext *, bool useByteSwapImage = true);
+    QOpenGLTextureCache(QOpenGLContext *);
     ~QOpenGLTextureCache();
 
     GLuint bindTexture(QOpenGLContext *context, const QPixmap &pixmap);
@@ -94,7 +94,6 @@ private:
 
     QMutex m_mutex;
     QCache<quint64, QOpenGLCachedTexture> m_cache;
-    bool m_useByteSwapImage;
 };
 
 QT_END_NAMESPACE

@@ -2308,10 +2308,18 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 
     QImage::Format target_format = img.format();
     bool premul = options & QGLContext::PremultipliedAlphaBindOption;
+    bool needsbyteswap = true;
     GLenum externalFormat;
     GLuint pixel_type;
-    if (qgl_extensions()->hasOpenGLExtension(QOpenGLExtensions::BGRATextureFormat)) {
+    if (target_format == QImage::Format_RGBA8888
+        || target_format == QImage::Format_RGBA8888_Premultiplied
+        || target_format == QImage::Format_RGBX8888) {
+        externalFormat = GL_RGBA;
+        pixel_type = GL_UNSIGNED_BYTE;
+        needsbyteswap = false;
+    } else if (qgl_extensions()->hasOpenGLExtension(QOpenGLExtensions::BGRATextureFormat)) {
         externalFormat = GL_BGRA;
+        needsbyteswap = false;
         if (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_1_2)
             pixel_type = GL_UNSIGNED_INT_8_8_8_8_REV;
         else
@@ -2338,14 +2346,34 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 #endif
         }
         break;
+    case QImage::Format_RGBA8888:
+        if (premul) {
+            img = img.convertToFormat(target_format = QImage::Format_RGBA8888_Premultiplied);
+#ifdef QGL_BIND_TEXTURE_DEBUG
+            printf(" - converted RGBA8888 -> RGBA8888_Premultiplied (%d ms) \n", time.elapsed());
+#endif
+        }
+        break;
+    case QImage::Format_RGBA8888_Premultiplied:
+        if (!premul) {
+            img = img.convertToFormat(target_format = QImage::Format_RGBA8888);
+#ifdef QGL_BIND_TEXTURE_DEBUG
+            printf(" - converted RGBA8888_Premultiplied -> RGBA8888 (%d ms) \n", time.elapsed());
+#endif
+        }
+        break;
     case QImage::Format_RGB16:
         pixel_type = GL_UNSIGNED_SHORT_5_6_5;
         externalFormat = GL_RGB;
         internalFormat = GL_RGB;
+        needsbyteswap = false;
         break;
     case QImage::Format_RGB32:
+    case QImage::Format_RGBX8888:
         break;
     default:
+        // Ideally more formats would be converted directly to an RGBA8888 format,
+        // but we are only guaranteed to have a fast conversion to an ARGB format.
         if (img.hasAlphaChannel()) {
             img = img.convertToFormat(premul
                                       ? QImage::Format_ARGB32_Premultiplied
@@ -2383,10 +2411,10 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 #endif
     }
 
-    if (externalFormat == GL_RGBA) {
+    if (needsbyteswap) {
         // The only case where we end up with a depth different from
-        // 32 in the switch above is for the RGB16 case, where we set
-        // the format to GL_RGB
+        // 32 in the switch above is for the RGB16 case, where we do
+        // not need a byteswap.
         Q_ASSERT(img.depth() == 32);
         qgl_byteSwapImage(img, pixel_type);
 #ifdef QGL_BIND_TEXTURE_DEBUG
