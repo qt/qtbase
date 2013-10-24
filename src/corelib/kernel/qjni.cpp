@@ -162,24 +162,31 @@ static jfieldID getCachedFieldID(JNIEnv *env,
     return id;
 }
 
-Q_GLOBAL_STATIC(QThreadStorage<int>, refCount)
+class QJNIEnvironmentPrivateTLS
+{
+public:
+    inline ~QJNIEnvironmentPrivateTLS()
+    {
+        QtAndroidPrivate::javaVM()->DetachCurrentThread();
+    }
+};
+
+Q_GLOBAL_STATIC(QThreadStorage<QJNIEnvironmentPrivateTLS *>, jniEnvTLS)
 
 QJNIEnvironmentPrivate::QJNIEnvironmentPrivate()
     : jniEnv(0)
 {
     JavaVM *vm = QtAndroidPrivate::javaVM();
     if (vm->GetEnv((void**)&jniEnv, JNI_VERSION_1_6) == JNI_EDETACHED) {
-        if (vm->AttachCurrentThread(&jniEnv, 0) < 0)
+        if (vm->AttachCurrentThread(&jniEnv, 0) != JNI_OK)
             return;
     }
 
     if (!jniEnv)
         return;
 
-    if (!refCount->hasLocalData())
-        refCount->setLocalData(1);
-    else
-        refCount->setLocalData(refCount->localData() + 1);
+    if (!jniEnvTLS->hasLocalData())
+        jniEnvTLS->setLocalData(new QJNIEnvironmentPrivateTLS);
 }
 
 JNIEnv *QJNIEnvironmentPrivate::operator->()
@@ -194,16 +201,6 @@ QJNIEnvironmentPrivate::operator JNIEnv* () const
 
 QJNIEnvironmentPrivate::~QJNIEnvironmentPrivate()
 {
-    if (!jniEnv)
-        return;
-
-    const int newRef = refCount->localData() - 1;
-    refCount->setLocalData(newRef);
-
-    if (newRef == 0)
-        QtAndroidPrivate::javaVM()->DetachCurrentThread();
-
-    jniEnv = 0;
 }
 
 QJNIObjectData::QJNIObjectData()
