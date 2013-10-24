@@ -1018,6 +1018,7 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \value WV_VISTA Windows Vista, Windows Server 2008 (operating system version 6.0)
     \value WV_WINDOWS7 Windows 7, Windows Server 2008 R2 (operating system version 6.1)
     \value WV_WINDOWS8 Windows 8 (operating system version 6.2)
+    \value WV_WINDOWS8_1 Windows 8.1 (operating system version 6.3), introduced in Qt 5.2
 
     Alternatively, you may use the following macros which correspond directly to the Windows operating system version number:
 
@@ -1028,6 +1029,7 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \value WV_6_0   Operating system version 6.0, corresponds to Windows Vista and Windows Server 2008
     \value WV_6_1   Operating system version 6.1, corresponds to Windows 7 and Windows Server 2008 R2
     \value WV_6_2   Operating system version 6.2, corresponds to Windows 8
+    \value WV_6_3   Operating system version 6.3, corresponds to Windows 8.1, introduced in Qt 5.2
 
     CE-based versions:
 
@@ -1744,6 +1746,38 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "qt_windows.h"
 QT_END_INCLUDE_NAMESPACE
 
+#ifndef Q_OS_WINRT
+static inline OSVERSIONINFO winOsVersion()
+{
+    OSVERSIONINFO result = { sizeof(OSVERSIONINFO), 0, 0, 0, 0, {'\0'}};
+    // GetVersionEx() has been deprecated in Windows 8.1 and will return
+    // only Windows 8 from that version on.
+#  if defined(_MSC_VER) && _MSC_VER >= 1800
+#    pragma warning( push )
+#    pragma warning( disable : 4996 )
+#  endif
+    GetVersionEx(&result);
+#  if defined(_MSC_VER) && _MSC_VER >= 1800
+#    pragma warning( pop )
+#  endif
+#  ifndef Q_OS_WINCE
+    if (result.dwMajorVersion == 6 && result.dwMinorVersion == 2) {
+        // This could be Windows 8.1 or higher. Note that as of Windows 9,
+        // the major version needs to be checked as well.
+        DWORDLONG conditionMask = 0;
+        VER_SET_CONDITION(conditionMask, VER_MAJORVERSION, VER_GREATER_EQUAL);
+        VER_SET_CONDITION(conditionMask, VER_MINORVERSION, VER_GREATER_EQUAL);
+        VER_SET_CONDITION(conditionMask, VER_PLATFORMID, VER_EQUAL);
+        OSVERSIONINFOEX checkVersion = { sizeof(OSVERSIONINFOEX), result.dwMajorVersion, result.dwMinorVersion,
+                                         result.dwBuildNumber, result.dwPlatformId, {'\0'}, 0, 0, 0, 0, 0 };
+        for ( ; VerifyVersionInfo(&checkVersion, VER_MAJORVERSION | VER_MINORVERSION | VER_PLATFORMID, conditionMask); ++checkVersion.dwMinorVersion)
+            result.dwMinorVersion = checkVersion.dwMinorVersion;
+    }
+#  endif // !Q_OS_WINCE
+    return result;
+}
+#endif // !Q_OS_WINRT
+
 QSysInfo::WinVersion QSysInfo::windowsVersion()
 {
 #ifndef VER_PLATFORM_WIN32s
@@ -1766,9 +1800,7 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
     winver = QSysInfo::WV_WINDOWS8;
 #else
     winver = QSysInfo::WV_NT;
-    OSVERSIONINFO osver;
-    osver.dwOSVersionInfoSize = sizeof(osver);
-    GetVersionEx(&osver);
+    const OSVERSIONINFO osver = winOsVersion();
 #ifdef Q_OS_WINCE
     DWORD qt_cever = 0;
     qt_cever = osver.dwMajorVersion * 100;
@@ -1814,6 +1846,8 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
             winver = QSysInfo::WV_WINDOWS7;
         } else if (osver.dwMajorVersion == 6 && osver.dwMinorVersion == 2) {
             winver = QSysInfo::WV_WINDOWS8;
+        } else if (osver.dwMajorVersion == 6 && osver.dwMinorVersion == 3) {
+            winver = QSysInfo::WV_WINDOWS8_1;
         } else {
             qWarning("Qt: Untested Windows version %d.%d detected!",
                      int(osver.dwMajorVersion), int(osver.dwMinorVersion));
