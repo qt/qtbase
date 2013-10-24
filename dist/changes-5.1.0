@@ -99,6 +99,13 @@ QtNetwork
  - QHostInfo:
     * Allow QHostInfo::lookupHost() with no receiver to warm the DNS cache.
 
+
+QtSql
+-----
+This changelog as released was missing QtSql changes.
+Please refer to changes-5.2.0 for QtSql 5.1.0 changes.
+
+
 QtWidgets
 ---------
 

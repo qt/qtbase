@@ -109,6 +109,35 @@ QtNetwork
   connections. This allows for much reduced latency when the hosts to be
   connected to are known.
 
+QtSql
+-----
+Changes in Qt 5.1.0 (missing from released changelog dist/changes-5.1.0)
+- [QTBUG-28088] Remove dependency of DB driver headers on qsqlcachedresult_p.h.
+- Deprecate QSqlError setters.
+  The constructor is sufficient, since it has a parameter for each member variable.
+- Rename the SQL driver header files to _p.h (make private)
+  The drivers were never public API. They were exposed by mistake in
+  public headers. What's more, they have #include'd a private header
+  (qsqlcachedresult_p.h) since at least Qt 4.5.1. That means no one used
+  those headers in Qt 4 (private headers weren't installed then) and
+  it's unlikely anyone did in 5.0.
+- ODBC: Implemented lastInsertId() for some ODBC compatible databases.
+- PSQL: Make lastInsertID work for tables without OIDs.
+- [QTBUG-14904] SQLITE: Fix for Sql query aliases with dots
+- [QTBUG-2192] ODBC: fix loss of milliseconds when binding QDateTime
+- [QTBUG-30076] PSQL: escape backslashes only when server requires it
+  IMPORTANT: Applications that implemented their own workarounds must be
+  updated to avoid misbehavior and SQL injection vulnerabilities.
+- [QTBUG-10569] ODBC: fixed QODBCResult::exec() return value for DELETE
+  operations when no rows are affected.
+- ODBC: Fixed loss of column metadata on SQL_NO_DATA.
+- QSqlTableModel: expose methods for getting primary values.
+- ODBC: Fixed possible cause of spurious errors (commit af35ee291a1bbbc8)
+
+Changes in Qt 5.2.0
+- [QTBUG-29261] IBASE: Construct a valid QTime when creating timestamps for iBase SQL driver.
+- [QTBUG-33389] PSQL: Format QDateTime following ISO8601.
+
 ****************************************************************************
 *                      Platform Specific Changes                           *
 ****************************************************************************
