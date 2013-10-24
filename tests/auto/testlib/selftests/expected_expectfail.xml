@@ -6,6 +6,7 @@
 </Environment>
 <TestFunction name="initTestCase">
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="xfailAndContinue">
 <Message type="qdebug" file="" line="0">
@@ -18,6 +19,7 @@
     <Description><![CDATA[after]]></Description>
 </Message>
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="xfailAndAbort">
 <Message type="qdebug" file="" line="0">
@@ -27,11 +29,13 @@
     <Description><![CDATA[This should xfail]]></Description>
 </Incident>
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="xfailTwice">
 <Incident type="fail" file="tst_expectfail.cpp" line="96">
     <Description><![CDATA[Already expecting a fail]]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="xfailWithQString">
 <Incident type="xfail" file="tst_expectfail.cpp" line="105">
@@ -41,6 +45,7 @@
     <Description><![CDATA[Bug 5 (The message)]]></Description>
 </Incident>
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="xfailDataDrivenWithQVerify">
 <Incident type="pass" file="" line="0">
@@ -63,6 +68,7 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[Continue]]></DataTag>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="xfailDataDrivenWithQCompare">
 <Incident type="pass" file="" line="0">
@@ -85,11 +91,13 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[Continue]]></DataTag>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="xfailOnWrongRow">
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[right row]]></DataTag>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="xfailOnAnyRow">
 <Incident type="xfail" file="tst_expectfail.cpp" line="208">
@@ -106,6 +114,7 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[second row]]></DataTag>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="xfailWithoutVerify">
 <Incident type="fail" file="" line="0">
@@ -116,11 +125,13 @@
     <DataTag><![CDATA[second row]]></DataTag>
     <Description><![CDATA[QEXPECT_FAIL was called without any subsequent verification statements]]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="xpass">
 <Incident type="xpass" file="tst_expectfail.cpp" line="228">
     <Description><![CDATA['true' returned TRUE unexpectedly. ()]]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="xpassDataDrivenWithQVerify">
 <Incident type="xpass" file="tst_expectfail.cpp" line="250">
@@ -130,6 +141,7 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[Pass]]></DataTag>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="xpassDataDrivenWithQCompare">
 <Incident type="xpass" file="tst_expectfail.cpp" line="271">
@@ -139,8 +151,11 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[Pass]]></DataTag>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
+<Duration msecs="0"/>
 </TestCase>

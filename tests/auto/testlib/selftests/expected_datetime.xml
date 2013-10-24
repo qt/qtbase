@@ -6,6 +6,7 @@
 </Environment>
 <TestFunction name="initTestCase">
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="dateTime">
 <Incident type="fail" file="tst_datetime.cpp" line="65">
@@ -13,6 +14,7 @@
    Actual   (local): 2000/05/03 04:03:04.000[local time]
    Expected (utc)  : 2000/05/03 04:03:04.000[UTC]]]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="qurl">
 <Incident type="pass" file="" line="0">
@@ -33,8 +35,11 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[same urls]]></DataTag>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
+<Duration msecs="0"/>
 </TestCase>

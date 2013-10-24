@@ -6,12 +6,15 @@
 </Environment>
 <TestFunction name="initTestCase">
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compare_boolfuncs">
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compare_pointerfuncs">
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compare_tostring">
 <Incident type="fail" file="tst_cmptest.cpp" line="219">
@@ -41,6 +44,7 @@
    Actual   (actual)  : QVariant(PhonyClass,<value not representable as string>)
    Expected (expected): QVariant(PhonyClass,<value not representable as string>)]]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compareQStringLists">
 <Incident type="pass" file="" line="0">
@@ -79,6 +83,7 @@
    Actual   (opA) size: '1'
    Expected (opB) size: '12']]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compareQListInt">
 <Incident type="fail" file="tst_cmptest.cpp" line="320">
@@ -86,6 +91,7 @@
    Actual   (int1): '3'
    Expected (int2): '4']]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compareQListDouble">
 <Incident type="fail" file="tst_cmptest.cpp" line="327">
@@ -93,6 +99,7 @@
    Actual   (double1): '1.5'
    Expected (double2): '1']]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compareQPixmaps">
 <Incident type="pass" file="" line="0">
@@ -123,6 +130,7 @@
     <DataTag><![CDATA[different pixels]]></DataTag>
     <Description><![CDATA[Compared values are not the same]]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compareQImages">
 <Incident type="pass" file="" line="0">
@@ -159,8 +167,11 @@
     <DataTag><![CDATA[different pixels]]></DataTag>
     <Description><![CDATA[Compared values are not the same]]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
+<Duration msecs="0"/>
 </TestCase>

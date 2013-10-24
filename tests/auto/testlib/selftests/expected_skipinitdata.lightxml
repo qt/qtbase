@@ -6,4 +6,6 @@
 <Message type="skip" file="tst_skipinitdata.cpp" line="56">
     <Description><![CDATA[Skip inside initTestCase_data. This should skip all tests in the class.]]></Description>
 </Message>
+<Duration msecs="0"/>
 </TestFunction>
+<Duration msecs="0"/>

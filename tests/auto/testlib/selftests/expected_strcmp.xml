@@ -6,9 +6,11 @@
 </Environment>
 <TestFunction name="initTestCase">
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compareCharStars">
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compareByteArray">
 <Incident type="xfail" file="tst_strcmp.cpp" line="88">
@@ -25,6 +27,7 @@
    Actual   (a): 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 ...
    Expected (b): 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 ...]]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="failByteArray">
 <Incident type="fail" file="tst_strcmp.cpp" line="115">
@@ -32,6 +35,7 @@
    Actual   (QByteArray("abc")): 61 62 63
    Expected (QByteArray("cba")): 63 62 61]]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="failByteArrayNull">
 <Incident type="fail" file="tst_strcmp.cpp" line="121">
@@ -39,6 +43,7 @@
    Actual   (QByteArray("foo")): 66 6F 6F
    Expected (QByteArray())     : ]]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="failByteArrayEmpty">
 <Incident type="fail" file="tst_strcmp.cpp" line="126">
@@ -46,6 +51,7 @@
    Actual   (QByteArray(""))   : 
    Expected (QByteArray("foo")): 66 6F 6F]]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="failByteArraySingleChars">
 <Incident type="fail" file="tst_strcmp.cpp" line="133">
@@ -53,8 +59,11 @@
    Actual   (QByteArray("6")): 36
    Expected (QByteArray("7")): 37]]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
+<Duration msecs="0"/>
 </TestCase>

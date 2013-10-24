@@ -8,8 +8,11 @@
 <Incident type="fail" file="tst_failinit.cpp" line="55">
     <Description><![CDATA['false' returned FALSE. ()]]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
+<Duration msecs="0"/>
 </TestCase>

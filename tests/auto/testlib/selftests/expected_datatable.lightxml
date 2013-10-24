@@ -4,12 +4,15 @@
 </Environment>
 <TestFunction name="initTestCase">
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="singleTestFunction1">
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="singleTestFunction2">
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="fiveTablePasses">
 <Incident type="pass" file="" line="0">
@@ -27,6 +30,7 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[fiveTablePasses_data 5]]></DataTag>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="fiveTableFailures">
 <Incident type="fail" file="tst_datatable.cpp" line="91">
@@ -49,6 +53,7 @@
     <DataTag><![CDATA[fiveTableFailures_data 5]]></DataTag>
     <Description><![CDATA['test' returned FALSE. ()]]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="startsWithFailure">
 <Incident type="fail" file="tst_datatable.cpp" line="91">
@@ -67,6 +72,7 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[startsWithFailure_data 5]]></DataTag>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="endsWithFailure">
 <Incident type="pass" file="" line="0">
@@ -85,6 +91,7 @@
     <DataTag><![CDATA[endsWithFailure 5]]></DataTag>
     <Description><![CDATA['test' returned FALSE. ()]]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="failureInMiddle">
 <Incident type="pass" file="" line="0">
@@ -103,6 +110,7 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[failureInMiddle_data 5]]></DataTag>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="fiveIsolatedFailures">
 <Incident type="fail" file="tst_datatable.cpp" line="173">
@@ -125,7 +133,10 @@
     <DataTag><![CDATA[fiveIsolatedFailures_data 5]]></DataTag>
     <Description><![CDATA['!test' returned FALSE. ()]]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
+<Duration msecs="0"/>

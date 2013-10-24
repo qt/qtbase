@@ -68,6 +68,7 @@ private:
     QList<LoggerSet> allLoggerSets() const;
 
     QTemporaryDir tempDir;
+    QRegularExpression durationRegExp;
 };
 
 struct BenchmarkResult
@@ -301,6 +302,7 @@ QList<LoggerSet> tst_Selftests::allLoggerSets() const
 
 tst_Selftests::tst_Selftests()
     : tempDir(QDir::tempPath() + "/tst_selftests.XXXXXX")
+    , durationRegExp("<Duration msecs=\"[\\d\\.]+\"/>")
 {}
 
 void tst_Selftests::initTestCase()
@@ -714,6 +716,10 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
                 QVERIFY2(error.isEmpty(), qPrintable(QString("Expected line didn't parse as benchmark result: %1\nLine: %2").arg(error).arg(expected)));
 
                 QCOMPARE(actualResult, expectedResult);
+            } else if (line.startsWith("    <Duration msecs=") || line.startsWith("<Duration msecs=")) {
+                QRegularExpressionMatch match = durationRegExp.match(line);
+                QVERIFY2(match.hasMatch(), qPrintable(QString::fromLatin1("Invalid Duration tag at line %1 (%2): '%3'")
+                                                      .arg(i).arg(loggers.at(n), output)));
             } else {
                 QVERIFY2(output == expected,
                          qPrintable(QString::fromLatin1("Mismatch at line %1 (%2): '%3' != '%4'")

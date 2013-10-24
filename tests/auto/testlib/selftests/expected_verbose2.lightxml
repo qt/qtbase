@@ -4,6 +4,7 @@
 </Environment>
 <TestFunction name="initTestCase">
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testPassPass">
 <Message type="info" file="../counting/tst_counting.cpp" line="111">
@@ -28,6 +29,7 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[row 2]]></DataTag>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testPassSkip">
 <Message type="info" file="../counting/tst_counting.cpp" line="111">
@@ -45,6 +47,7 @@
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
 </Message>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testPassFail">
 <Message type="info" file="../counting/tst_counting.cpp" line="111">
@@ -66,6 +69,7 @@
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA['false' returned FALSE. ()]]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testSkipPass">
 <Message type="skip" file="../counting/tst_counting.cpp" line="118">
@@ -83,6 +87,7 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[row 2]]></DataTag>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testSkipSkip">
 <Message type="skip" file="../counting/tst_counting.cpp" line="118">
@@ -93,6 +98,7 @@
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
 </Message>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testSkipFail">
 <Message type="skip" file="../counting/tst_counting.cpp" line="118">
@@ -107,6 +113,7 @@
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA['false' returned FALSE. ()]]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testFailPass">
 <Message type="info" file="../counting/tst_counting.cpp" line="115">
@@ -128,6 +135,7 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[row 2]]></DataTag>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testFailSkip">
 <Message type="info" file="../counting/tst_counting.cpp" line="115">
@@ -142,6 +150,7 @@
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA[Skipping]]></Description>
 </Message>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testFailFail">
 <Message type="info" file="../counting/tst_counting.cpp" line="115">
@@ -160,6 +169,7 @@
     <DataTag><![CDATA[row 2]]></DataTag>
     <Description><![CDATA['false' returned FALSE. ()]]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testFailInInit">
 <Incident type="pass" file="" line="0">
@@ -172,6 +182,7 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[after]]></DataTag>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testFailInCleanup">
 <Incident type="pass" file="" line="0">
@@ -188,6 +199,7 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[after]]></DataTag>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testSkipInInit">
 <Incident type="pass" file="" line="0">
@@ -200,6 +212,7 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[after]]></DataTag>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="testSkipInCleanup">
 <Incident type="pass" file="" line="0">
@@ -216,7 +229,10 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[after]]></DataTag>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
+<Duration msecs="0"/>

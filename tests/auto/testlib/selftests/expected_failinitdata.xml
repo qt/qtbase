@@ -8,5 +8,7 @@
 <Incident type="fail" file="tst_failinitdata.cpp" line="56">
     <Description><![CDATA['false' returned FALSE. ()]]></Description>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
+<Duration msecs="0"/>
 </TestCase>

@@ -4,6 +4,7 @@
 </Environment>
 <TestFunction name="initTestCase">
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="fiveTablePasses">
 <Message type="info" file="tst_commandlinedata.cpp" line="65">
@@ -41,6 +42,7 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[fiveTablePasses_data5]]></DataTag>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="fiveTablePasses">
 <Message type="info" file="tst_commandlinedata.cpp" line="65">
@@ -50,7 +52,10 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[fiveTablePasses_data1]]></DataTag>
 </Incident>
+<Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
+<Duration msecs="0"/>
 </TestFunction>
+<Duration msecs="0"/>
