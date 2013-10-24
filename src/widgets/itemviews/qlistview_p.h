@@ -147,7 +147,7 @@ public:
     virtual void setPositionForIndex(const QPoint &, const QModelIndex &) { }
 
 #ifndef QT_NO_DRAGANDDROP
-    virtual void paintDragDrop(QPainter *painter) = 0;
+    virtual void paintDragDrop(QPainter *painter);
     virtual bool filterDragMoveEvent(QDragMoveEvent *) { return false; }
     virtual bool filterDragLeaveEvent(QDragLeaveEvent *) { return false; }
     virtual bool filterDropEvent(QDropEvent *) { return false; }
@@ -231,8 +231,6 @@ public:
     void updateVerticalScrollBar(const QSize &step);
 
 #ifndef QT_NO_DRAGANDDROP
-    void paintDragDrop(QPainter *painter);
-
     // The next two methods are to be used on LefToRight flow only.
     // WARNING: Plenty of duplicated code from QAbstractItemView{,Private}.
     QAbstractItemView::DropIndicatorPosition position(const QPoint &pos, const QRect &rect, const QModelIndex &idx) const;
@@ -279,7 +277,6 @@ public:
     void setPositionForIndex(const QPoint &position, const QModelIndex &index);
 
 #ifndef QT_NO_DRAGANDDROP
-    void paintDragDrop(QPainter *painter);
     bool filterDragMoveEvent(QDragMoveEvent *);
     bool filterDragLeaveEvent(QDragLeaveEvent *);
     bool filterDropEvent(QDropEvent *e);
@@ -394,8 +391,6 @@ public:
         }
     }
 
-    QStyleOptionViewItem viewOptions() const;
-
     void scrollElasticBandBy(int dx, int dy);
 
     QItemViewPaintPairs draggablePaintPairs(const QModelIndexList &indexes, QRect *r) const;
@@ -470,7 +465,7 @@ inline QModelIndex QCommonListViewBase::modelIndex(int row) const
     { return dd->model->index(row, dd->column, dd->root); }
 inline int QCommonListViewBase::rowCount() const { return dd->model->rowCount(dd->root); }
 
-inline QStyleOptionViewItem QCommonListViewBase::viewOptions() const { return dd->viewOptions(); }
+inline QStyleOptionViewItem QCommonListViewBase::viewOptions() const { return dd->viewOptionsV1(); }
 inline QWidget *QCommonListViewBase::viewport() const { return dd->viewport; }
 inline QRect QCommonListViewBase::clipRect() const { return dd->clipRect(); }
 

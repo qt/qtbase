@@ -25,6 +25,7 @@ contains(TEMPLATE, ".*app"):!build_pass:!android-no-sdk {
         else: NDK_TOOLCHAIN_PREFIX = arm-linux-androideabi
     }
     FILE_CONTENT += "   \"toolchain-prefix\": $$emitString($$NDK_TOOLCHAIN_PREFIX),"
+    FILE_CONTENT += "   \"tool-prefix\": $$emitString($$NDK_TOOLS_PREFIX),"
 
     NDK_TOOLCHAIN_VERSION = $$(ANDROID_NDK_TOOLCHAIN_VERSION)
     isEmpty(NDK_TOOLCHAIN_VERSION): NDK_TOOLCHAIN_VERSION = $$DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION
@@ -60,9 +61,6 @@ contains(TEMPLATE, ".*app"):!build_pass:!android-no-sdk {
 
     !isEmpty(ANDROID_EXTRA_LIBS): \
         FILE_CONTENT += "   \"android-extra-libs\": $$emitString($$join(ANDROID_EXTRA_LIBS, ",")),"
-
-    !isEmpty(QMAKE_SUPPORTED_ORIENTATIONS): \
-        FILE_CONTENT += "   \"supported-orientations\": $$emitString($$join(QMAKE_SUPPORTED_ORIENTATIONS, ",")),"
 
     FILE_CONTENT += "   \"application-binary\": $$emitString($$absolute_path($$DESTDIR, $$OUT_PWD)/$$TARGET)"
     FILE_CONTENT += "}"

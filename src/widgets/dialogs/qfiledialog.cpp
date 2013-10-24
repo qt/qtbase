@@ -379,7 +379,6 @@ QFileDialog::QFileDialog(QWidget *parent, Qt::WindowFlags f)
 {
     Q_D(QFileDialog);
     d->init();
-    d->lineEdit()->selectAll();
 }
 
 /*!
@@ -397,7 +396,6 @@ QFileDialog::QFileDialog(QWidget *parent,
 {
     Q_D(QFileDialog);
     d->init(directory, filter, caption);
-    d->lineEdit()->selectAll();
 }
 
 /*!
@@ -411,7 +409,6 @@ QFileDialog::QFileDialog(const QFileDialogArgs &args)
     setFileMode(args.mode);
     setOptions(args.options);
     selectFile(args.selection);
-    d->lineEdit()->selectAll();
 }
 
 /*!
@@ -443,7 +440,8 @@ QFileDialog::~QFileDialog()
 void QFileDialog::setSidebarUrls(const QList<QUrl> &urls)
 {
     Q_D(QFileDialog);
-    d->qFileDialogUi->sidebar->setUrls(urls);
+    if (!d->nativeDialogInUse)
+        d->qFileDialogUi->sidebar->setUrls(urls);
 }
 
 /*!
@@ -453,7 +451,7 @@ void QFileDialog::setSidebarUrls(const QList<QUrl> &urls)
 QList<QUrl> QFileDialog::sidebarUrls() const
 {
     Q_D(const QFileDialog);
-    return d->qFileDialogUi->sidebar->urls();
+    return (d->nativeDialogInUse ? QList<QUrl>() : d->qFileDialogUi->sidebar->urls());
 }
 
 static const qint32 QFileDialogMagic = 0xbe;
@@ -474,11 +472,19 @@ QByteArray QFileDialog::saveState() const
 
     stream << qint32(QFileDialogMagic);
     stream << qint32(version);
-    stream << d->qFileDialogUi->splitter->saveState();
-    stream << d->qFileDialogUi->sidebar->urls();
+    if (d->usingWidgets()) {
+        stream << d->qFileDialogUi->splitter->saveState();
+        stream << d->qFileDialogUi->sidebar->urls();
+    } else {
+        stream << QByteArray();
+        stream << QList<QUrl>();
+    }
     stream << history();
     stream << *lastVisitedDir();
-    stream << d->qFileDialogUi->treeView->header()->saveState();
+    if (d->usingWidgets())
+        stream << d->qFileDialogUi->treeView->header()->saveState();
+    else
+        stream << QByteArray();
     stream << qint32(viewMode());
     return data;
 }
@@ -520,6 +526,12 @@ bool QFileDialog::restoreState(const QByteArray &state)
            >> headerData
            >> viewMode;
 
+    setDirectory(lastVisitedDir()->isEmpty() ? currentDirectory : *lastVisitedDir());
+    setViewMode(static_cast<QFileDialog::ViewMode>(viewMode));
+
+    if (!d->usingWidgets())
+        return true;
+
     if (!d->qFileDialogUi->splitter->restoreState(splitterState))
         return false;
     QList<int> list = d->qFileDialogUi->splitter->sizes();
@@ -533,7 +545,6 @@ bool QFileDialog::restoreState(const QByteArray &state)
     while (history.count() > 5)
         history.pop_front();
     setHistory(history);
-    setDirectory(lastVisitedDir()->isEmpty() ? currentDirectory : *lastVisitedDir());
     QHeaderView *headerView = d->qFileDialogUi->treeView->header();
     if (!headerView->restoreState(headerData))
         return false;
@@ -548,7 +559,6 @@ bool QFileDialog::restoreState(const QByteArray &state)
     for (int i = 1; i < total; ++i)
         actions.at(i - 1)->setChecked(!headerView->isSectionHidden(i));
 
-    setViewMode(ViewMode(viewMode));
     return true;
 }
 
@@ -595,15 +605,16 @@ void QFileDialogPrivate::initHelper(QPlatformDialogHelper *h)
     QObject::connect(h, SIGNAL(directoryEntered(QUrl)), d, SLOT(_q_nativeEnterDirectory(QUrl)));
     QObject::connect(h, SIGNAL(filterSelected(QString)), d, SIGNAL(filterSelected(QString)));
     static_cast<QPlatformFileDialogHelper *>(h)->setOptions(options);
+    nativeDialogInUse = true;
 }
 
 void QFileDialogPrivate::helperPrepareShow(QPlatformDialogHelper *)
 {
     Q_Q(QFileDialog);
     options->setWindowTitle(q->windowTitle());
-    options->setViewMode(static_cast<QFileDialogOptions::ViewMode>(q->viewMode()));
     options->setHistory(q->history());
-    options->setSidebarUrls(qFileDialogUi->sidebar->urls());
+    if (usingWidgets())
+        options->setSidebarUrls(qFileDialogUi->sidebar->urls());
     const QDir directory = q->directory();
     options->setInitialDirectory(directory.exists() ?
                                  QUrl::fromLocalFile(directory.absolutePath()) :
@@ -644,9 +655,17 @@ void QFileDialogPrivate::setLastVisitedDirectory(const QString &dir)
     *lastVisitedDir() = dir;
 }
 
+void QFileDialogPrivate::updateLookInLabel()
+{
+    if (options->isLabelExplicitlySet(QFileDialogOptions::LookIn))
+        setLabelTextControl(QFileDialog::LookIn, options->labelText(QFileDialogOptions::LookIn));
+}
+
 void QFileDialogPrivate::updateFileNameLabel()
 {
-    if (!options->isLabelExplicitlySet(QFileDialogOptions::FileName)) {
+    if (options->isLabelExplicitlySet(QFileDialogOptions::FileName)) {
+        setLabelTextControl(QFileDialog::FileName, options->labelText(QFileDialogOptions::FileName));
+    } else {
         switch (q_func()->fileMode()) {
         case QFileDialog::DirectoryOnly:
         case QFileDialog::Directory:
@@ -657,6 +676,12 @@ void QFileDialogPrivate::updateFileNameLabel()
             break;
         }
     }
+}
+
+void QFileDialogPrivate::updateFileTypeLabel()
+{
+    if (options->isLabelExplicitlySet(QFileDialogOptions::FileType))
+        setLabelTextControl(QFileDialog::FileType, options->labelText(QFileDialogOptions::FileType));
 }
 
 void QFileDialogPrivate::updateOkButtonText(bool saveAsOnFolder)
@@ -684,12 +709,20 @@ void QFileDialogPrivate::updateOkButtonText(bool saveAsOnFolder)
     }
 }
 
+void QFileDialogPrivate::updateCancelButtonText()
+{
+    if (options->isLabelExplicitlySet(QFileDialogOptions::Reject))
+        setLabelTextControl(QFileDialog::Reject, options->labelText(QFileDialogOptions::Reject));
+}
+
 void QFileDialogPrivate::retranslateStrings()
 {
     Q_Q(QFileDialog);
     /* WIDGETS */
     if (defaultFileTypes)
         q->setNameFilter(QFileDialog::tr("All Files (*)"));
+    if (nativeDialogInUse)
+        return;
 
     QList<QAction*> actions = qFileDialogUi->treeView->header()->actions();
     QAbstractItemModel *abstractModel = model;
@@ -708,7 +741,10 @@ void QFileDialogPrivate::retranslateStrings()
     showHiddenAction->setText(QFileDialog::tr("Show &hidden files"));
     newFolderAction->setText(QFileDialog::tr("&New Folder"));
     qFileDialogUi->retranslateUi(q);
+    updateLookInLabel();
     updateFileNameLabel();
+    updateFileTypeLabel();
+    updateCancelButtonText();
 }
 
 void QFileDialogPrivate::emitFilesSelected(const QStringList &files)
@@ -732,6 +768,11 @@ bool QFileDialogPrivate::canBeNativeDialog()
     QLatin1String staticName(QFileDialog::staticMetaObject.className());
     QLatin1String dynamicName(q->metaObject()->className());
     return (staticName == dynamicName);
+}
+
+bool QFileDialogPrivate::usingWidgets() const
+{
+    return !nativeDialogInUse && qFileDialogUi;
 }
 
 /*!
@@ -784,29 +825,36 @@ void QFileDialog::setOptions(Options options)
         return;
 
     d->options->setOptions(QFileDialogOptions::FileDialogOptions(int(options)));
-    if (changed & DontResolveSymlinks)
-        d->model->setResolveSymlinks(!(options & DontResolveSymlinks));
-    if (changed & ReadOnly) {
-        bool ro = (options & ReadOnly);
-        d->model->setReadOnly(ro);
-        d->qFileDialogUi->newFolderButton->setEnabled(!ro);
-        d->renameAction->setEnabled(!ro);
-        d->deleteAction->setEnabled(!ro);
+
+    if ((options & DontUseNativeDialog) && !d->usingWidgets())
+        d->createWidgets();
+
+    if (d->usingWidgets()) {
+        if (changed & DontResolveSymlinks)
+            d->model->setResolveSymlinks(!(options & DontResolveSymlinks));
+        if (changed & ReadOnly) {
+            bool ro = (options & ReadOnly);
+            d->model->setReadOnly(ro);
+            d->qFileDialogUi->newFolderButton->setEnabled(!ro);
+            d->renameAction->setEnabled(!ro);
+            d->deleteAction->setEnabled(!ro);
+        }
+
+        if (changed & DontUseCustomDirectoryIcons) {
+            QFileIconProvider::Options providerOptions = iconProvider()->options();
+            if (options & DontUseCustomDirectoryIcons)
+                providerOptions |= QFileIconProvider::DontUseCustomDirectoryIcons;
+            else
+                providerOptions &= ~QFileIconProvider::DontUseCustomDirectoryIcons;
+            iconProvider()->setOptions(providerOptions);
+        }
     }
+
     if (changed & HideNameFilterDetails)
         setNameFilters(d->options->nameFilters());
 
     if (changed & ShowDirsOnly)
         setFilter((options & ShowDirsOnly) ? filter() & ~QDir::Files : filter() | QDir::Files);
-
-    if (changed & DontUseCustomDirectoryIcons) {
-        QFileIconProvider::Options providerOptions = iconProvider()->options();
-        if (options & DontUseCustomDirectoryIcons)
-            providerOptions |= QFileIconProvider::DontUseCustomDirectoryIcons;
-        else
-            providerOptions &= ~QFileIconProvider::DontUseCustomDirectoryIcons;
-        iconProvider()->setOptions(providerOptions);
-    }
 }
 
 QFileDialog::Options QFileDialog::options() const
@@ -858,21 +906,25 @@ void QFileDialog::setVisible(bool visible)
             // updates the state correctly, but skips showing the non-native version:
             setAttribute(Qt::WA_DontShowOnScreen);
 #ifndef QT_NO_FSCOMPLETER
-            //So the completer don't try to complete and therefore to show a popup
-            d->completer->setModel(0);
+            // So the completer doesn't try to complete and therefore show a popup
+            if (!d->nativeDialogInUse)
+                d->completer->setModel(0);
 #endif
         } else {
+            d->createWidgets();
             setAttribute(Qt::WA_DontShowOnScreen, false);
 #ifndef QT_NO_FSCOMPLETER
-            if (d->proxyModel != 0)
-                d->completer->setModel(d->proxyModel);
-            else
-                d->completer->setModel(d->model);
+            if (!d->nativeDialogInUse) {
+                if (d->proxyModel != 0)
+                    d->completer->setModel(d->proxyModel);
+                else
+                    d->completer->setModel(d->model);
+            }
 #endif
         }
     }
 
-    if (!d->nativeDialogInUse)
+    if (d->usingWidgets())
         d->qFileDialogUi->fileNameEdit->setFocus();
 
     QDialog::setVisible(visible);
@@ -914,24 +966,27 @@ void QFileDialog::setDirectory(const QString &directory)
 
     d->setLastVisitedDirectory(newDirectory);
 
-    if (d->nativeDialogInUse){
+    d->options->setInitialDirectory(QUrl::fromLocalFile(directory));
+    if (!d->usingWidgets()) {
         d->setDirectory_sys(QUrl::fromLocalFile(newDirectory));
         return;
     }
     if (d->rootPath() == newDirectory)
         return;
     QModelIndex root = d->model->setRootPath(newDirectory);
-    d->qFileDialogUi->newFolderButton->setEnabled(d->model->flags(root) & Qt::ItemIsDropEnabled);
-    if (root != d->rootIndex()) {
+    if (!d->nativeDialogInUse) {
+        d->qFileDialogUi->newFolderButton->setEnabled(d->model->flags(root) & Qt::ItemIsDropEnabled);
+        if (root != d->rootIndex()) {
 #ifndef QT_NO_FSCOMPLETER
-    if (directory.endsWith(QLatin1Char('/')))
-        d->completer->setCompletionPrefix(newDirectory);
-    else
-        d->completer->setCompletionPrefix(newDirectory + QLatin1Char('/'));
+            if (directory.endsWith(QLatin1Char('/')))
+                d->completer->setCompletionPrefix(newDirectory);
+            else
+                d->completer->setCompletionPrefix(newDirectory + QLatin1Char('/'));
 #endif
-        d->setRootIndex(root);
+            d->setRootIndex(root);
+        }
+        d->qFileDialogUi->listView->selectionModel()->clear();
     }
-    d->qFileDialogUi->listView->selectionModel()->clear();
 }
 
 /*!
@@ -989,8 +1044,11 @@ void QFileDialog::selectFile(const QString &filename)
     if (filename.isEmpty())
         return;
 
-    if (d->nativeDialogInUse){
+    if (!d->usingWidgets()) {
         d->selectFile_sys(QUrl::fromLocalFile(filename));
+        QList<QUrl> i;
+        i << QUrl(filename);
+        d->options->setInitiallySelectedFiles(i);
         return;
     }
 
@@ -1141,7 +1199,7 @@ QList<QUrl> QFileDialogPrivate::userSelectedFiles() const
 {
     QList<QUrl> files;
 
-    if (nativeDialogInUse)
+    if (!usingWidgets())
         return addDefaultSuffixToUrls(selectedFiles_sys());
 
     foreach (const QModelIndex &index, qFileDialogUi->listView->selectionModel()->selectedRows())
@@ -1339,6 +1397,9 @@ void QFileDialog::setNameFilters(const QStringList &filters)
     }
     d->options->setNameFilters(cleanedFilters);
 
+    if (!d->usingWidgets())
+        return;
+
     d->qFileDialogUi->fileTypeCombo->clear();
     if (cleanedFilters.isEmpty())
         return;
@@ -1373,7 +1434,7 @@ QStringList QFileDialog::nameFilters() const
 void QFileDialog::selectNameFilter(const QString &filter)
 {
     Q_D(QFileDialog);
-    if (d->nativeDialogInUse) {
+    if (!d->usingWidgets()) {
         d->selectNameFilter_sys(filter);
         return;
     }
@@ -1401,7 +1462,7 @@ void QFileDialog::selectNameFilter(const QString &filter)
 QString QFileDialog::selectedNameFilter() const
 {
     Q_D(const QFileDialog);
-    if (d->nativeDialogInUse)
+    if (!d->usingWidgets())
         return d->selectedNameFilter_sys();
 
     return d->qFileDialogUi->fileTypeCombo->currentText();
@@ -1417,7 +1478,9 @@ QString QFileDialog::selectedNameFilter() const
 QDir::Filters QFileDialog::filter() const
 {
     Q_D(const QFileDialog);
-    return d->model->filter();
+    if (d->usingWidgets())
+        return d->model->filter();
+    return d->options->filter();
 }
 
 /*!
@@ -1432,13 +1495,13 @@ QDir::Filters QFileDialog::filter() const
 void QFileDialog::setFilter(QDir::Filters filters)
 {
     Q_D(QFileDialog);
-    d->model->setFilter(filters);
     d->options->setFilter(filters);
-    if (d->nativeDialogInUse){
+    if (!d->usingWidgets()) {
         d->setFilter_sys();
         return;
     }
 
+    d->model->setFilter(filters);
     d->showHiddenAction->setChecked((filters & QDir::Hidden));
 }
 
@@ -1523,6 +1586,9 @@ void QFileDialog::selectMimeTypeFilter(const QString &filter)
 void QFileDialog::setViewMode(QFileDialog::ViewMode mode)
 {
     Q_D(QFileDialog);
+    d->options->setViewMode(static_cast<QFileDialogOptions::ViewMode>(mode));
+    if (!d->usingWidgets())
+        return;
     if (mode == Detail)
         d->_q_showDetailsView();
     else
@@ -1532,6 +1598,8 @@ void QFileDialog::setViewMode(QFileDialog::ViewMode mode)
 QFileDialog::ViewMode QFileDialog::viewMode() const
 {
     Q_D(const QFileDialog);
+    if (!d->usingWidgets())
+        return QFileDialog::List;
     return (d->qFileDialogUi->stackedWidget->currentWidget() == d->qFileDialogUi->listView->parent() ? QFileDialog::List : QFileDialog::Detail);
 }
 
@@ -1554,10 +1622,14 @@ void QFileDialog::setFileMode(QFileDialog::FileMode mode)
 {
     Q_D(QFileDialog);
     d->options->setFileMode(static_cast<QFileDialogOptions::FileMode>(mode));
-    d->retranslateWindowTitle();
 
     // keep ShowDirsOnly option in sync with fileMode (BTW, DirectoryOnly is obsolete)
     setOption(ShowDirsOnly, mode == DirectoryOnly);
+
+    if (!d->usingWidgets())
+        return;
+
+    d->retranslateWindowTitle();
 
     // set selection mode and behavior
     QAbstractItemView::SelectionMode selectionMode;
@@ -1577,11 +1649,6 @@ void QFileDialog::setFileMode(QFileDialog::FileMode mode)
     }
     d->updateFileNameLabel();
     d->updateOkButtonText();
-    if (d->nativeDialogInUse){
-        d->setFilter_sys();
-        return;
-    }
-
     d->qFileDialogUi->fileTypeCombo->setEnabled(!testOption(ShowDirsOnly));
     d->_q_updateOkButton();
 }
@@ -1606,6 +1673,13 @@ void QFileDialog::setAcceptMode(QFileDialog::AcceptMode mode)
 {
     Q_D(QFileDialog);
     d->options->setAcceptMode(static_cast<QFileDialogOptions::AcceptMode>(mode));
+    // clear WA_DontShowOnScreen so that d->canBeNativeDialog() doesn't return false incorrectly
+    setAttribute(Qt::WA_DontShowOnScreen, false);
+    if (!d->usingWidgets()) {
+        // we need to recreate the native dialog when changing the AcceptMode
+        d->deletePlatformHelper();
+        return;
+    }
     QDialogButtonBox::StandardButton button = (mode == AcceptOpen ? QDialogButtonBox::Open : QDialogButtonBox::Save);
     d->qFileDialogUi->buttonBox->setStandardButtons(button | QDialogButtonBox::Cancel);
     d->qFileDialogUi->buttonBox->button(button)->setEnabled(false);
@@ -1614,10 +1688,6 @@ void QFileDialog::setAcceptMode(QFileDialog::AcceptMode mode)
         d->qFileDialogUi->lookInCombo->setEditable(false);
     }
     d->retranslateWindowTitle();
-    // we need to recreate the native dialog when changing the AcceptMode
-    d->deletePlatformHelper();
-    // clear WA_DontShowOnScreen so that d->canBeNativeDialog() doesn't return false incorrectly
-    setAttribute(Qt::WA_DontShowOnScreen, false);
 }
 
 /*
@@ -1778,7 +1848,8 @@ QString QFileDialog::defaultSuffix() const
 void QFileDialog::setHistory(const QStringList &paths)
 {
     Q_D(QFileDialog);
-    d->qFileDialogUi->lookInCombo->setHistory(paths);
+    if (d->usingWidgets())
+        d->qFileDialogUi->lookInCombo->setHistory(paths);
 }
 
 void QFileDialogComboBox::setHistory(const QStringList &paths)
@@ -1800,6 +1871,8 @@ void QFileDialogComboBox::setHistory(const QStringList &paths)
 QStringList QFileDialog::history() const
 {
     Q_D(const QFileDialog);
+    if (!d->usingWidgets())
+        return QStringList();
     QStringList currentHistory = d->qFileDialogUi->lookInCombo->history();
     //On windows the popup display the "C:\", convert to nativeSeparators
     QString newHistory = QDir::toNativeSeparators(d->rootIndex().data(QFileSystemModel::FilePathRole).toString());
@@ -1826,6 +1899,8 @@ QStringList QFileDialog::history() const
 void QFileDialog::setItemDelegate(QAbstractItemDelegate *delegate)
 {
     Q_D(QFileDialog);
+    if (!d->usingWidgets())
+        return;
     d->qFileDialogUi->listView->setItemDelegate(delegate);
     d->qFileDialogUi->treeView->setItemDelegate(delegate);
 }
@@ -1836,6 +1911,8 @@ void QFileDialog::setItemDelegate(QAbstractItemDelegate *delegate)
 QAbstractItemDelegate *QFileDialog::itemDelegate() const
 {
     Q_D(const QFileDialog);
+    if (!d->usingWidgets())
+        return 0;
     return d->qFileDialogUi->listView->itemDelegate();
 }
 
@@ -1845,6 +1922,8 @@ QAbstractItemDelegate *QFileDialog::itemDelegate() const
 void QFileDialog::setIconProvider(QFileIconProvider *provider)
 {
     Q_D(QFileDialog);
+    if (!d->usingWidgets())
+        return;
     d->model->setIconProvider(provider);
     //It forces the refresh of all entries in the side bar, then we can get new icons
     d->qFileDialogUi->sidebar->setUrls(d->qFileDialogUi->sidebar->urls());
@@ -1861,6 +1940,8 @@ QFileIconProvider *QFileDialog::iconProvider() const
 
 void QFileDialogPrivate::setLabelTextControl(QFileDialog::DialogLabel label, const QString &text)
 {
+    if (!qFileDialogUi)
+        return;
     switch (label) {
     case QFileDialog::LookIn:
         qFileDialogUi->lookInLabel->setText(text);
@@ -1903,8 +1984,10 @@ void QFileDialog::setLabelText(DialogLabel label, const QString &text)
 */
 QString QFileDialog::labelText(DialogLabel label) const
 {
-    QPushButton *button;
     Q_D(const QFileDialog);
+    if (!d->usingWidgets())
+        return d->options->labelText(static_cast<QFileDialogOptions::DialogLabel>(label));
+    QPushButton *button;
     switch (label) {
     case LookIn:
         return d->qFileDialogUi->lookInLabel->text();
@@ -2518,7 +2601,7 @@ void QFileDialog::accept()
     QStringList files = selectedFiles();
     if (files.isEmpty())
         return;
-    if (d->nativeDialogInUse){
+    if (!d->usingWidgets()) {
         d->emitFilesSelected(files);
         QDialog::accept();
         return;
@@ -2631,16 +2714,19 @@ void QFileDialogPrivate::init(const QString &directory, const QString &nameFilte
         q->setWindowTitle(caption);
     }
 
-    createWidgets();
-    createMenuActions();
-    retranslateStrings();
+    q->setAcceptMode(QFileDialog::AcceptOpen);
+    nativeDialogInUse = (canBeNativeDialog() && platformFileDialogHelper() != 0);
+    if (!nativeDialogInUse)
+        createWidgets();
     q->setFileMode(QFileDialog::AnyFile);
+    if (!nameFilter.isEmpty())
+        q->setNameFilter(nameFilter);
+    q->setDirectory(workingDirectory(directory));
+    q->selectFile(initialSelection(directory));
 
 #ifndef QT_NO_SETTINGS
     QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
     settings.beginGroup(QLatin1String("Qt"));
-    if (!directory.isEmpty())
-        setLastVisitedDirectory(workingDirectory(directory));
     q->restoreState(settings.value(QLatin1String("filedialog")).toByteArray());
 #endif
 
@@ -2650,14 +2736,7 @@ void QFileDialogPrivate::init(const QString &directory, const QString &nameFilte
     qFileDialogUi->fileTypeLabel->setVisible(false);
     qFileDialogUi->sidebar->hide();
 #endif
-    // Default case
-    if (!nameFilter.isEmpty())
-        q->setNameFilter(nameFilter);
-    q->setAcceptMode(QFileDialog::AcceptOpen);
-    q->setDirectory(workingDirectory(directory));
-    q->selectFile(initialSelection(directory));
 
-    _q_updateOkButton();
     q->resize(q->sizeHint());
 }
 
@@ -2668,6 +2747,8 @@ void QFileDialogPrivate::init(const QString &directory, const QString &nameFilte
 */
 void QFileDialogPrivate::createWidgets()
 {
+    if (qFileDialogUi)
+        return;
     Q_Q(QFileDialog);
     model = new QFileSystemModel(q);
     options->setFilter(model->filter());
@@ -2676,6 +2757,8 @@ void QFileDialogPrivate::createWidgets()
         model->setNameFilterDisables(helper->defaultNameFilterDisables());
     else
         model->setNameFilterDisables(false);
+    if (nativeDialogInUse)
+        deletePlatformHelper();
     model->d_func()->disableRecursiveSort = true;
     QFileDialog::connect(model, SIGNAL(fileRenamed(QString,QString,QString)), q, SLOT(_q_fileRenamed(QString,QString,QString)));
     QFileDialog::connect(model, SIGNAL(rootPathChanged(QString)),
@@ -2789,6 +2872,31 @@ void QFileDialogPrivate::createWidgets()
     qFileDialogUi->splitter->setStretchFactor(qFileDialogUi->splitter->indexOf(qFileDialogUi->splitter->widget(1)), QSizePolicy::Expanding);
 
     createToolButtons();
+    createMenuActions();
+
+    // Initial widget states from options
+    q->setFileMode(static_cast<QFileDialog::FileMode>(options->fileMode()));
+    q->setAcceptMode(static_cast<QFileDialog::AcceptMode>(options->acceptMode()));
+    q->setViewMode(static_cast<QFileDialog::ViewMode>(options->viewMode()));
+    q->setOptions(static_cast<QFileDialog::Options>(static_cast<int>(options->options())));
+    if (!options->sidebarUrls().isEmpty())
+        q->setSidebarUrls(options->sidebarUrls());
+    q->setDirectoryUrl(options->initialDirectory());
+    if (!options->mimeTypeFilters().isEmpty())
+        q->setMimeTypeFilters(options->mimeTypeFilters());
+    else if (!options->nameFilters().isEmpty())
+        q->setNameFilters(options->nameFilters());
+    q->selectNameFilter(options->initiallySelectedNameFilter());
+    q->setDefaultSuffix(options->defaultSuffix());
+    q->setHistory(options->history());
+    if (options->initiallySelectedFiles().count() == 1)
+        q->selectFile(options->initiallySelectedFiles().first().fileName());
+    foreach (QUrl url, options->initiallySelectedFiles())
+        q->selectUrl(url);
+    lineEdit()->selectAll();
+    _q_updateOkButton();
+    retranslateStrings();
+    q->resize(q->sizeHint());
 }
 
 void QFileDialogPrivate::_q_showHeader(QAction *action)
@@ -2814,6 +2922,8 @@ void QFileDialogPrivate::_q_showHeader(QAction *action)
 void QFileDialog::setProxyModel(QAbstractProxyModel *proxyModel)
 {
     Q_D(QFileDialog);
+    if (!d->usingWidgets())
+        return;
     if ((!proxyModel && !d->proxyModel)
         || (proxyModel == d->proxyModel))
         return;

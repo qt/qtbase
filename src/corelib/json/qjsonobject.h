@@ -206,7 +206,7 @@ private:
     QJsonPrivate::Object *o;
 };
 
-#ifndef QT_NO_DEBUG_STREAM
+#if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonObject &);
 #endif
 

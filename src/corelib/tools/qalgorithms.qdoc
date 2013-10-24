@@ -764,7 +764,7 @@
     \relates <QtAlgorithms>
     \since 5.2
 
-    Returns the number of bits set in \a v. This number also called
+    Returns the number of bits set in \a v. This number is also called
     the Hamming Weight of \a v.
  */
 

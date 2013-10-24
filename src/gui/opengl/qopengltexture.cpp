@@ -2488,7 +2488,7 @@ void QOpenGLTexture::setSwizzleMask(SwizzleValue r, SwizzleValue g,
         qWarning("QOpenGLTexture::setSwizzleMask() requires OpenGL >= 3.3");
         return;
     }
-    GLint swizzleMask[] = {r, g, b, a};
+    GLint swizzleMask[] = {GLint(r), GLint(g), GLint(b), GLint(a)};
     d->swizzleMask[0] = r;
     d->swizzleMask[1] = g;
     d->swizzleMask[2] = b;

@@ -208,6 +208,22 @@ static QTouchDevice *touchDevice = 0;
     if ([self window])
         [[NSNotificationCenter defaultCenter] removeObserver:self name:nil object:[self window]];
 }
+
+- (QWindow *)topLevelWindow
+{
+    QWindow *focusWindow = m_window;
+
+    // For widgets we need to do a bit of trickery as the window
+    // to activate is the window of the top-level widget.
+    if (m_window->metaObject()->className() == QStringLiteral("QWidgetWindow")) {
+        while (focusWindow->parent()) {
+            focusWindow = focusWindow->parent();
+        }
+    }
+
+    return focusWindow;
+}
+
 - (void)updateGeometry
 {
     QRect geometry;
@@ -457,16 +473,7 @@ static QTouchDevice *touchDevice = 0;
 {
     if (m_window->flags() & Qt::WindowTransparentForInput)
         return NO;
-    QWindow *focusWindow = m_window;
-
-    // For widgets we need to do a bit of trickery as the window
-    // to activate is the window of the top-level widget.
-    if (m_window->metaObject()->className() == QStringLiteral("QWidgetWindow")) {
-        while (focusWindow->parent()) {
-            focusWindow = focusWindow->parent();
-        }
-    }
-    QWindowSystemInterface::handleWindowActivated(focusWindow);
+    QWindowSystemInterface::handleWindowActivated([self topLevelWindow]);
     return YES;
 }
 
@@ -968,6 +975,102 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     QWindowSystemInterface::handleTouchEvent(m_window, timestamp * 1000, touchDevice, points);
 }
 
+#ifndef QT_NO_GESTURES
+//#define QT_COCOA_ENABLE_GESTURE_DEBUG
+- (void)magnifyWithEvent:(NSEvent *)event
+{
+#ifdef QT_COCOA_ENABLE_GESTURE_DEBUG
+    qDebug() << "magnifyWithEvent" << [event magnification];
+#endif
+    const NSTimeInterval timestamp = [event timestamp];
+    QPointF windowPoint;
+    QPointF screenPoint;
+    [self convertFromEvent:event toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    QWindowSystemInterface::handleGestureEventWithRealValue(m_window, timestamp, Qt::ZoomNativeGesture,
+                                                            [event magnification], windowPoint, screenPoint);
+}
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8
+- (void)smartMagnifyWithEvent:(NSEvent *)event
+{
+    static bool zoomIn = true;
+#ifdef QT_COCOA_ENABLE_GESTURE_DEBUG
+    qDebug() << "smartMagnifyWithEvent" << zoomIn;
+#endif
+    const NSTimeInterval timestamp = [event timestamp];
+    QPointF windowPoint;
+    QPointF screenPoint;
+    [self convertFromEvent:event toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    QWindowSystemInterface::handleGestureEventWithRealValue(m_window, timestamp, Qt::SmartZoomNativeGesture,
+                                                            zoomIn ? 1.0f : 0.0f, windowPoint, screenPoint);
+    zoomIn = !zoomIn;
+}
+#endif
+
+- (void)rotateWithEvent:(NSEvent *)event
+{
+#ifdef QT_COCOA_ENABLE_GESTURE_DEBUG
+    qDebug() << "rotateWithEvent" << [event rotation];
+#endif
+    const NSTimeInterval timestamp = [event timestamp];
+    QPointF windowPoint;
+    QPointF screenPoint;
+    [self convertFromEvent:event toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    QWindowSystemInterface::handleGestureEventWithRealValue(m_window, timestamp, Qt::RotateNativeGesture,
+                                                            -[event rotation], windowPoint, screenPoint);
+}
+
+- (void)swipeWithEvent:(NSEvent *)event
+{
+#ifdef QT_COCOA_ENABLE_GESTURE_DEBUG
+    qDebug() << "swipeWithEvent" << [event deltaX] << [event deltaY];
+#endif
+    const NSTimeInterval timestamp = [event timestamp];
+    QPointF windowPoint;
+    QPointF screenPoint;
+    [self convertFromEvent:event toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+
+    qreal angle = 0.0f;
+    if ([event deltaX] == 1)
+        angle = 180.0f;
+    else if ([event deltaX] == -1)
+        angle = 0.0f;
+    else if ([event deltaY] == 1)
+        angle = 90.0f;
+    else if ([event deltaY] == -1)
+        angle = 270.0f;
+
+    QWindowSystemInterface::handleGestureEventWithRealValue(m_window, timestamp, Qt::SwipeNativeGesture,
+                                                            angle, windowPoint, screenPoint);
+}
+
+- (void)beginGestureWithEvent:(NSEvent *)event
+{
+#ifdef QT_COCOA_ENABLE_GESTURE_DEBUG
+    qDebug() << "beginGestureWithEvent";
+#endif
+    const NSTimeInterval timestamp = [event timestamp];
+    QPointF windowPoint;
+    QPointF screenPoint;
+    [self convertFromEvent:event toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    QWindowSystemInterface::handleGestureEvent(m_window, timestamp, Qt::BeginNativeGesture,
+                                               windowPoint, screenPoint);
+}
+
+- (void)endGestureWithEvent:(NSEvent *)event
+{
+#ifdef QT_COCOA_ENABLE_GESTURE_DEBUG
+    qDebug() << "endGestureWithEvent";
+#endif
+    const NSTimeInterval timestamp = [event timestamp];
+    QPointF windowPoint;
+    QPointF screenPoint;
+    [self convertFromEvent:event toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    QWindowSystemInterface::handleGestureEvent(m_window, timestamp, Qt::EndNativeGesture,
+                                               windowPoint, screenPoint);
+}
+#endif // QT_NO_GESTURES
+
 #ifndef QT_NO_WHEELEVENT
 - (void)scrollWheel:(NSEvent *)theEvent
 {
@@ -1124,10 +1227,12 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     if (ch.unicode() < 0xf700 || ch.unicode() > 0xf8ff)
         text = QCFString::toQString(characters);
 
+    QWindow *focusWindow = [self topLevelWindow];
+
     if (eventType == QEvent::KeyPress) {
 
         if (m_composingText.isEmpty())
-            m_sendKeyEvent = !QWindowSystemInterface::tryHandleShortcutEvent(m_window, timestamp, keyCode, modifiers, text);
+            m_sendKeyEvent = !QWindowSystemInterface::tryHandleShortcutEvent(focusWindow, timestamp, keyCode, modifiers, text);
 
         QObject *fo = QGuiApplication::focusObject();
         if (m_sendKeyEvent && fo) {
@@ -1144,7 +1249,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     }
 
     if (m_sendKeyEvent && m_composingText.isEmpty())
-        QWindowSystemInterface::handleExtendedKeyEvent(m_window, timestamp, QEvent::Type(eventType), keyCode, modifiers,
+        QWindowSystemInterface::handleExtendedKeyEvent(focusWindow, timestamp, QEvent::Type(eventType), keyCode, modifiers,
                                                        nativeScanCode, nativeVirtualKey, nativeModifiers, text, [nsevent isARepeat]);
 
     m_sendKeyEvent = false;

@@ -233,8 +233,9 @@ void tst_Utf8::nonCharacters_data()
     QTest::addColumn<QByteArray>("utf8");
     QTest::addColumn<QString>("utf16");
 
-    // Unicode has a couple of "non-characters" that one can use internally,
-    // but are not allowed to be used for text interchange.
+    // Unicode has a couple of "non-characters" that one can use internally
+    // These characters may be used for interchange;
+    // see: http://www.unicode.org/versions/corrigendum9.html
     //
     // Those are the last two entries each Unicode Plane (U+FFFE, U+FFFF,
     // U+1FFFE, U+1FFFF, etc.) as well as the entries between U+FDD0 and
@@ -279,20 +280,17 @@ void tst_Utf8::nonCharacters()
     decoder->toUnicode(utf8);
 
     // Only enforce correctness on our UTF-8 decoder
-    // The system's UTF-8 codec is sometimes buggy
-    //  GNU libc's iconv is known to accept U+FFFF and U+FFFE encoded as UTF-8
-    //  OS X's iconv is known to accept those, plus surrogates and codepoints above U+10FFFF
     if (!useLocale)
-        QVERIFY(decoder->hasFailure());
-    else if (!decoder->hasFailure())
-        qWarning("System codec does not report failure when it should. Should report bug upstream.");
+        QVERIFY(!decoder->hasFailure());
+    else if (decoder->hasFailure())
+        qWarning("System codec reports failure when it shouldn't. Should report bug upstream.");
 
     QSharedPointer<QTextEncoder> encoder(codec->makeEncoder());
     encoder->fromUnicode(utf16);
     if (!useLocale)
-        QVERIFY(encoder->hasFailure());
-    else if (!encoder->hasFailure())
-        qWarning("System codec does not report failure when it should. Should report bug upstream.");
+        QVERIFY(!encoder->hasFailure());
+    else if (encoder->hasFailure())
+        qWarning("System codec reports failure when it shouldn't. Should report bug upstream.");
 }
 
 QTEST_MAIN(tst_Utf8)

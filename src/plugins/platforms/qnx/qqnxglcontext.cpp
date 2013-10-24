@@ -124,7 +124,15 @@ QQnxGLContext::QQnxGLContext(QOpenGLContext *glContext)
     if (m_eglConfig == 0)
         qFatal("QQnxGLContext: failed to find EGL config");
 
-    m_eglContext = eglCreateContext(ms_eglDisplay, m_eglConfig, EGL_NO_CONTEXT, contextAttrs());
+    EGLContext shareContext = EGL_NO_CONTEXT;
+    if (m_glContext) {
+        QQnxGLContext *qshareContext = dynamic_cast<QQnxGLContext*>(m_glContext->shareHandle());
+        if (qshareContext) {
+            shareContext = qshareContext->m_eglContext;
+        }
+    }
+
+    m_eglContext = eglCreateContext(ms_eglDisplay, m_eglConfig, shareContext, contextAttrs());
     if (m_eglContext == EGL_NO_CONTEXT) {
         checkEGLError("eglCreateContext");
         qFatal("QQnxGLContext: failed to create EGL context, err=%d", eglGetError());

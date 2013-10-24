@@ -1045,7 +1045,7 @@ void QHttpNetworkConnectionChannel::_q_disconnected()
 void QHttpNetworkConnectionChannel::_q_connected()
 {
     // For the Happy Eyeballs we need to check if this is the first channel to connect.
-    if (connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::InProgress) {
+    if (connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::HostLookupPending || connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::IPv4or6) {
         if (connection->d_func()->delayedConnectionTimer.isActive())
             connection->d_func()->delayedConnectionTimer.stop();
         if (networkLayerPreference == QAbstractSocket::IPv4Protocol)
@@ -1212,7 +1212,7 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
     QPointer<QHttpNetworkConnection> that = connection;
     QString errorString = connection->d_func()->errorDetail(errorCode, socket, socket->errorString());
 
-    // In the InProgress state the channel should not emit the error.
+    // In the HostLookupPending state the channel should not emit the error.
     // This will instead be handled by the connection.
     if (!connection->d_func()->shouldEmitChannelError(socket))
         return;

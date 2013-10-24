@@ -558,37 +558,56 @@ QWidget *QAccessibleCalendarWidget::navigationBar() const
 #endif // QT_NO_CALENDARWIDGET
 
 #ifndef QT_NO_DOCKWIDGET
+
+// Dock Widget - order of children:
+// - Content widget
+// - Float button
+// - Close button
+// If there is a custom title bar widget, that one becomes child 1, after the content 0
+// (in that case the buttons are ignored)
 QAccessibleDockWidget::QAccessibleDockWidget(QWidget *widget)
     : QAccessibleWidget(widget, QAccessible::Window)
 {
-
 }
 
-QAccessibleInterface *QAccessibleDockWidget::child(int index) const
+QDockWidgetLayout *QAccessibleDockWidget::dockWidgetLayout() const
 {
-    if (index == 0) {
-        return new QAccessibleTitleBar(dockWidget());
-    } else if (index == 1 && dockWidget()->widget()) {
-        return QAccessible::queryAccessibleInterface(dockWidget()->widget());
-    }
-    return 0;
+    return qobject_cast<QDockWidgetLayout*>(dockWidget()->layout());
 }
 
 int QAccessibleDockWidget::childCount() const
 {
-    return dockWidget()->widget() ? 2 : 1;
+    if (dockWidget()->titleBarWidget()) {
+        return dockWidget()->widget() ? 2 : 1;
+    }
+    return dockWidgetLayout()->count();
+}
+
+QAccessibleInterface *QAccessibleDockWidget::child(int index) const
+{
+    if (dockWidget()->titleBarWidget()) {
+        if ((!dockWidget()->widget() && index == 0) || (index == 1))
+            return QAccessible::queryAccessibleInterface(dockWidget()->titleBarWidget());
+        if (index == 0)
+            return QAccessible::queryAccessibleInterface(dockWidget()->widget());
+    } else {
+        QLayoutItem *item = dockWidgetLayout()->itemAt(index);
+        if (item)
+            return QAccessible::queryAccessibleInterface(item->widget());
+    }
+    return 0;
 }
 
 int QAccessibleDockWidget::indexOfChild(const QAccessibleInterface *child) const
 {
-    if (child) {
-        if (child->role() == QAccessible::TitleBar) {
-            return 0;
-        } else {
-            return 1;   // FIXME
-        }
+    if (!child || !child->object() || child->object()->parent() != object())
+        return -1;
+
+    if (dockWidget()->titleBarWidget() == child->object()) {
+        return dockWidget()->widget() ? 1 : 0;
     }
-    return -1;
+
+    return dockWidgetLayout()->indexOf(qobject_cast<QWidget*>(child->object()));
 }
 
 QRect QAccessibleDockWidget::rect() const
@@ -610,190 +629,13 @@ QDockWidget *QAccessibleDockWidget::dockWidget() const
     return static_cast<QDockWidget *>(object());
 }
 
-////
-//      QAccessibleTitleBar
-////
-QAccessibleTitleBar::QAccessibleTitleBar(QDockWidget *widget)
-    : m_dockWidget(widget)
-{
-
-}
-
-QAccessibleInterface *QAccessibleTitleBar::parent() const
-{
-    return new QAccessibleDockWidget(dockWidget());
-}
-
-QAccessibleInterface *QAccessibleTitleBar::child(int index) const
-{
-    if (index >= 0) {
-        QDockWidgetLayout *layout = dockWidgetLayout();
-        int role;
-        int currentIndex = 0;
-        for (role = QDockWidgetLayout::CloseButton; role <= QDockWidgetLayout::FloatButton; ++role) {
-            QWidget *w = layout->widgetForRole((QDockWidgetLayout::Role)role);
-            if (!w || !w->isVisible())
-                continue;
-            if (currentIndex == index)
-                return QAccessible::queryAccessibleInterface(w);
-            ++currentIndex;
-        }
-    }
-    return 0;
-}
-
-int QAccessibleTitleBar::indexOfChild(const QAccessibleInterface * /*child*/) const
-{
-    return -1;
-}
-
-int QAccessibleTitleBar::childCount() const
-{
-    QDockWidgetLayout *layout = dockWidgetLayout();
-    int count = 0;
-    for (int role = QDockWidgetLayout::CloseButton; role <= QDockWidgetLayout::FloatButton; ++role) {
-        QWidget *w = layout->widgetForRole((QDockWidgetLayout::Role)role);
-        if (w && w->isVisible())
-            ++count;
-    }
-    return count;
-}
-
-QString QAccessibleTitleBar::text(QAccessible::Text t) const
+QString QAccessibleDockWidget::text(QAccessible::Text t) const
 {
     if (t == QAccessible::Name || t == QAccessible::Value) {
         return qt_accStripAmp(dockWidget()->windowTitle());
     }
     return QString();
 }
-
-QAccessible::State QAccessibleTitleBar::state() const
-{
-    QAccessible::State state;
-
-    QDockWidget *w = dockWidget();
-    if (w->testAttribute(Qt::WA_WState_Visible) == false)
-        state.invisible = true;
-    if (w->focusPolicy() != Qt::NoFocus && w->isActiveWindow())
-        state.focusable = true;
-    if (w->hasFocus())
-        state.focused = true;
-    if (!w->isEnabled())
-        state.disabled = true;
-
-    return state;
-}
-
-QRect QAccessibleTitleBar::rect() const
-{
-    bool mapToGlobal = true;
-    QRect rect;
-
-    if (dockWidget()->isFloating()) {
-        rect = dockWidget()->frameGeometry();
-        if (dockWidget()->widget()) {
-            QPoint globalPos = dockWidget()->mapToGlobal(dockWidget()->widget()->rect().topLeft());
-            globalPos.ry()--;
-            rect.setBottom(globalPos.y());
-            mapToGlobal = false;
-        }
-    } else {
-        QDockWidgetLayout *layout = qobject_cast<QDockWidgetLayout*>(dockWidget()->layout());
-        rect = layout->titleArea();
-    }
-
-    if (rect.isNull())
-        return rect;
-
-    if (mapToGlobal)
-        rect.moveTopLeft(dockWidget()->mapToGlobal(rect.topLeft()));
-    return rect;
-}
-
-QAccessibleInterface *QAccessibleTitleBar::childAt(int x, int y) const
-{
-    for (int i = 0; i < childCount(); ++i) {
-        QAccessibleInterface *childIface = child(i);
-        if (childIface->rect().contains(x,y)) {
-            return childIface;
-        }
-    }
-    return 0;
-}
-
-QObject *QAccessibleTitleBar::object() const
-{
-    return 0;
-}
-
-QDockWidgetLayout *QAccessibleTitleBar::dockWidgetLayout() const
-{
-    return qobject_cast<QDockWidgetLayout*>(dockWidget()->layout());
-}
-
-QDockWidget *QAccessibleTitleBar::dockWidget() const
-{
-    return m_dockWidget;
-}
-
-//QString QAccessibleTitleBar::actionText(int action, Text t, int child) const
-//{
-//    QString str;
-//    if (child >= 1 && child <= childCount()) {
-//        if (t == Name) {
-//            switch (action) {
-//            case Press:
-//            case DefaultAction:
-//                if (child == QDockWidgetLayout::CloseButton) {
-//                    str = QDockWidget::tr("Close");
-//                } else if (child == QDockWidgetLayout::FloatButton) {
-//                    str = dockWidget()->isFloating() ? QDockWidget::tr("Dock")
-//                                                     : QDockWidget::tr("Float");
-//                }
-//                break;
-//            default:
-//                break;
-//            }
-//        }
-//    }
-//    return str;
-//}
-
-//bool QAccessibleTitleBar::doAction(int action, int child, const QVariantList& /*params*/)
-//{
-//    if (!child || !dockWidget()->isEnabled())
-//        return false;
-
-//    switch (action) {
-//    case DefaultAction:
-//    case Press: {
-//        QDockWidgetLayout *layout = dockWidgetLayout();
-//        QAbstractButton *btn = static_cast<QAbstractButton *>(layout->widgetForRole((QDockWidgetLayout::Role)child));
-//        if (btn)
-//            btn->animateClick();
-//        return true;
-//        break;}
-//    default:
-//        break;
-//    }
-
-//    return false;
-//}
-
-QAccessible::Role QAccessibleTitleBar::role() const
-{
-    return QAccessible::TitleBar;
-}
-
-void QAccessibleTitleBar::setText(QAccessible::Text /*t*/, const QString &/*text*/)
-{
-}
-
-bool QAccessibleTitleBar::isValid() const
-{
-    return dockWidget();
-}
-
 #endif // QT_NO_DOCKWIDGET
 
 #ifndef QT_NO_CURSOR

@@ -66,8 +66,7 @@ QCupsPrinterSupport::QCupsPrinterSupport() : QPlatformPrinterSupport(),
 
 QCupsPrinterSupport::~QCupsPrinterSupport()
 {
-    if (cupsFreeDests)
-        cupsFreeDests(m_cupsPrintersCount, m_cupsPrinters);
+    freeCupsPrinters();
 }
 
 QPrintEngine *QCupsPrinterSupport::createNativePrintEngine(QPrinter::PrinterMode printerMode)
@@ -98,13 +97,19 @@ void QCupsPrinterSupport::loadCups()
     cupsGetOption = (CupsGetOption) m_cups.resolve("cupsGetOption");
 }
 
+void QCupsPrinterSupport::freeCupsPrinters()
+{
+    if (cupsFreeDests && m_cupsPrintersCount) {
+        cupsFreeDests(m_cupsPrintersCount, m_cupsPrinters);
+        m_cupsPrintersCount = 0;
+        m_cupsPrinters = 0;
+    }
+}
+
 void QCupsPrinterSupport::loadCupsPrinters()
 {
-    m_cupsPrintersCount = 0;
+    freeCupsPrinters();
     m_printers.clear();
-
-    if (cupsFreeDests)
-        cupsFreeDests(m_cupsPrintersCount, m_cupsPrinters);
 
     if (cupsGetDests)
         m_cupsPrintersCount = cupsGetDests(&m_cupsPrinters);
@@ -120,6 +125,12 @@ void QCupsPrinterSupport::loadCupsPrinters()
                                                  m_cupsPrinters[i].is_default, i);
         m_printers.append(printer);
     }
+}
+
+QList<QPrinterInfo> QCupsPrinterSupport::availablePrinters()
+{
+    loadCupsPrinters();
+    return QPlatformPrinterSupport::availablePrinters();
 }
 
 QString QCupsPrinterSupport::printerOption(const QPrinterInfo &printer, const QString &key) const

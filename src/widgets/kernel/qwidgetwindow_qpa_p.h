@@ -58,6 +58,7 @@ class QWidgetWindow : public QWindow
     Q_OBJECT
 public:
     QWidgetWindow(QWidget *widget);
+    ~QWidgetWindow();
 
     QWidget *widget() const { return m_widget; }
 #ifndef QT_NO_ACCESSIBILITY
@@ -90,6 +91,9 @@ protected:
     bool nativeEvent(const QByteArray &eventType, void *message, long *result);
 #ifndef QT_NO_TABLETEVENT
     void handleTabletEvent(QTabletEvent *);
+#endif
+#ifndef QT_NO_GESTURES
+    void handleGestureEvent(QNativeGestureEvent *);
 #endif
 #ifndef QT_NO_CONTEXTMENU
     void handleContextMenuEvent(QContextMenuEvent *);

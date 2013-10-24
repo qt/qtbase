@@ -249,7 +249,7 @@ public:
         TouchEnd = 196,
 
 #ifndef QT_NO_GESTURES
-        NativeGesture = 197,                    // Internal for platform gesture support
+        NativeGesture = 197,                    // QtGui native gesture
 #endif
         RequestSoftwareInputPanel = 199,
         CloseSoftwareInputPanel = 200,

@@ -213,7 +213,7 @@ static int infoPlistValue(NSString* key, int defaultValue)
     return value ? [value intValue] : defaultValue;
 }
 
-extern "C" int qtmn(int argc, char *argv[])
+extern "C" int __attribute__((weak)) main(int argc, char *argv[])
 {
     @autoreleasepool {
         size_t defaultStackSize = 512 * kBytesPerKiloByte; // Same as secondary threads
@@ -248,7 +248,18 @@ enum SetJumpResult
     kJumpedFromUserMainTrampoline,
 };
 
-extern "C" int main(int argc, char *argv[]);
+// We define qt_main so that user_main_trampoline() will not cause
+// missing symbols in the case of hybrid applications that don't
+// user our main wrapper. Since the symbol is weak, it will not
+// get used or cause a clash in the normal Qt application usecase,
+// where we rename main to qt_main.
+extern "C" int __attribute__((weak)) qt_main(int argc, char *argv[])
+{
+    Q_UNUSED(argc);
+    Q_UNUSED(argv);
+
+    Q_UNREACHABLE();
+}
 
 static void __attribute__((noinline, noreturn)) user_main_trampoline()
 {
@@ -261,7 +272,7 @@ static void __attribute__((noinline, noreturn)) user_main_trampoline()
         strcpy(argv[i], [arg cStringUsingEncoding:[NSString defaultCStringEncoding]]);
     }
 
-    int exitCode = main(argc, argv);
+    int exitCode = qt_main(argc, argv);
     delete[] argv;
 
     qEventDispatcherDebug() << "Returned from main with exit code " << exitCode;
@@ -496,6 +507,7 @@ void QIOSEventDispatcher::checkIfEventLoopShouldExit()
 
 void QIOSEventDispatcher::handleRunLoopExit(CFRunLoopActivity activity)
 {
+    Q_UNUSED(activity);
     Q_ASSERT(activity == kCFRunLoopExit);
 
     m_runLoopExitObserver.removeFromMode(kCFRunLoopCommonModes);

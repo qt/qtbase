@@ -304,7 +304,7 @@ static bool encodedUtf8ToUtf16(QString &result, ushort *&output, const ushort *b
     // we've decoded something; safety-check it
     if (uc < min_uc)
         return false;
-    if (QChar::isSurrogate(uc) || QChar::isNonCharacter(uc) || uc > QChar::LastValidCodePoint)
+    if (QChar::isSurrogate(uc) || uc > QChar::LastValidCodePoint)
         return false;
 
     if (!QChar::requiresSurrogates(uc)) {
@@ -410,10 +410,9 @@ static int recode(QString &result, const ushort *begin, const ushort *end, QUrl:
     const ushort *input = begin;
     ushort *output = 0;
 
+    EncodingAction action = EncodeCharacter;
     for ( ; input != end; ++input) {
         ushort c;
-        EncodingAction action;
-
         // try a run where no change is necessary
         for ( ; input != end; ++input) {
             c = *input;

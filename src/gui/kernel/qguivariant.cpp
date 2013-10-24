@@ -115,7 +115,7 @@ static void clear(QVariant::Private *d)
     QMetaTypeSwitcher::switcher<void>(destructor, d->type, 0);
 }
 
-// This class is a hack that customizes access to QPolygon
+// This class is a hack that customizes access to QPolygon and QPolygonF
 template<class Filter>
 class QGuiVariantIsNull : public QVariantIsNull<Filter> {
     typedef QVariantIsNull<Filter> Base;
@@ -126,6 +126,7 @@ public:
     template<typename T>
     bool delegate(const T *p) { return Base::delegate(p); }
     bool delegate(const QPolygon*) { return v_cast<QPolygon>(Base::m_d)->isEmpty(); }
+    bool delegate(const QPolygonF*) { return v_cast<QPolygonF>(Base::m_d)->isEmpty(); }
     bool delegate(const void *p) { return Base::delegate(p); }
 };
 static bool isNull(const QVariant::Private *d)

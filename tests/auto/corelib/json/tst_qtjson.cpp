@@ -47,7 +47,8 @@
 #include "qjsondocument.h"
 #include <limits>
 
-#define INVALID_UNICODE "\357\277\277" // "\uffff"
+#define INVALID_UNICODE "\xCE\xBA\xE1"
+#define UNICODE_NON_CHARACTER "\xEF\xBF\xBF"
 #define UNICODE_DJE "\320\202" // Character from the Serbian Cyrillic alphabet
 
 class tst_QtJson: public QObject
@@ -1306,6 +1307,19 @@ void tst_QtJson::fromJson()
         QCOMPARE(doc.toJson(), json);
     }
     {
+        //regression test: test if unicode_control_characters are correctly decoded
+        QByteArray json = "[\n    \"" UNICODE_NON_CHARACTER "\"\n]\n";
+        QJsonDocument doc = QJsonDocument::fromJson(json);
+        QVERIFY(!doc.isEmpty());
+        QCOMPARE(doc.isArray(), true);
+        QCOMPARE(doc.isObject(), false);
+        QJsonArray array = doc.array();
+        QCOMPARE(array.size(), 1);
+        QCOMPARE(array.at(0).type(), QJsonValue::String);
+        QCOMPARE(array.at(0).toString(), QString::fromUtf8(UNICODE_NON_CHARACTER));
+        QCOMPARE(doc.toJson(), json);
+    }
+    {
         QByteArray json = "[]";
         QJsonDocument doc = QJsonDocument::fromJson(json);
         QVERIFY(!doc.isEmpty());
@@ -1532,7 +1546,7 @@ void tst_QtJson::fromJsonErrors()
         QJsonDocument doc = QJsonDocument::fromJson(json, &error);
         QVERIFY(doc.isEmpty());
         QCOMPARE(error.error, QJsonParseError::IllegalUTF8String);
-        QCOMPARE(error.offset, 13);
+        QCOMPARE(error.offset, 14);
     }
     {
         QJsonParseError error;
@@ -1556,7 +1570,7 @@ void tst_QtJson::fromJsonErrors()
         QJsonDocument doc = QJsonDocument::fromJson(json, &error);
         QVERIFY(doc.isEmpty());
         QCOMPARE(error.error, QJsonParseError::IllegalUTF8String);
-        QCOMPARE(error.offset, 14);
+        QCOMPARE(error.offset, 15);
     }
     {
         QJsonParseError error;
@@ -1702,6 +1716,7 @@ void tst_QtJson::parseStrings()
         "abc\\tabc",
         "abc\\u0019abc",
         "abc" UNICODE_DJE "abc",
+        UNICODE_NON_CHARACTER
     };
     int size = sizeof(strings)/sizeof(const char *);
 
@@ -1728,7 +1743,8 @@ void tst_QtJson::parseStrings()
     Pairs pairs [] = {
         { "abc\\/abc", "abc/abc" },
         { "abc\\u0402abc", "abc" UNICODE_DJE "abc" },
-        { "abc\\u0065abc", "abceabc" }
+        { "abc\\u0065abc", "abceabc" },
+        { "abc\\uFFFFabc", "abc" UNICODE_NON_CHARACTER "abc" }
     };
     size = sizeof(pairs)/sizeof(Pairs);
 

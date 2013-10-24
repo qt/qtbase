@@ -1346,20 +1346,14 @@ void QTableView::scrollContentsBy(int dx, int dy)
     }
 }
 
-QStyleOptionViewItem QTableViewPrivate::viewOptions() const
-{
-    QStyleOptionViewItem option = QAbstractItemViewPrivate::viewOptions();
-    option.showDecorationSelected = true;
-    return option;
-}
-
 /*!
   \reimp
 */
 QStyleOptionViewItem QTableView::viewOptions() const
 {
-    Q_D(const QTableView);
-    return d->viewOptions();
+    QStyleOptionViewItem option = QAbstractItemView::viewOptions();
+    option.showDecorationSelected = true;
+    return option;
 }
 
 /*!
@@ -1369,7 +1363,7 @@ void QTableView::paintEvent(QPaintEvent *event)
 {
     Q_D(QTableView);
     // setup temp variables for the painting
-    QStyleOptionViewItem option = d->viewOptions();
+    QStyleOptionViewItem option = d->viewOptionsV1();
     const QPoint offset = d->scrollDelayOffset;
     const bool showGrid = d->showGrid;
     const int gridSize = showGrid ? 1 : 0;
@@ -2241,7 +2235,7 @@ int QTableView::sizeHintForRow(int row) const
     if (right == -1) // the table don't have enough columns to fill the viewport
         right = d->model->columnCount(d->root) - 1;
 
-    QStyleOptionViewItem option = d->viewOptions();
+    QStyleOptionViewItem option = d->viewOptionsV1();
 
     int hint = 0;
     QModelIndex index;
@@ -2329,7 +2323,7 @@ int QTableView::sizeHintForColumn(int column) const
     if (!isVisible() || bottom == -1) // the table don't have enough rows to fill the viewport
         bottom = d->model->rowCount(d->root) - 1;
 
-    QStyleOptionViewItem option = d->viewOptions();
+    QStyleOptionViewItem option = d->viewOptionsV1();
 
     int hint = 0;
     int rowsProcessed = 0;

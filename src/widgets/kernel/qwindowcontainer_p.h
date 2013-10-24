@@ -57,6 +57,11 @@ public:
     explicit QWindowContainer(QWindow *embeddedWindow, QWidget *parent = 0, Qt::WindowFlags f = 0);
     ~QWindowContainer();
 
+    static void parentWasChanged(QWidget *parent);
+    static void parentWasMoved(QWidget *parent);
+    static void parentWasRaised(QWidget *parent);
+    static void parentWasLowered(QWidget *parent);
+
 protected:
     bool event(QEvent *ev);
 

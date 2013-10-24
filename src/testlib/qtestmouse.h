@@ -61,7 +61,7 @@
 #include <QtWidgets/qwidget.h>
 #endif
 
-#include <QDebug>
+#include <QtCore/QDebug>
 
 QT_BEGIN_NAMESPACE
 

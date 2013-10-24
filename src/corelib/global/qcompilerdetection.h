@@ -165,6 +165,13 @@
 #      /* Compatibility with older Clang versions */
 #      define __has_extension __has_feature
 #    endif
+#    if defined(__APPLE__)
+     /* Apple/clang specific features */
+#      define Q_DECL_CF_RETURNS_RETAINED __attribute__((cf_returns_retained))
+#      ifdef __OBJC__
+#        define Q_DECL_NS_RETURNS_AUTORELEASED __attribute__((ns_returns_autoreleased))
+#      endif
+#    endif
 #  else
 /* Plain GCC */
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
@@ -628,14 +635,6 @@
 #  endif
 #endif // Q_CC_CLANG
 
-#if defined(Q_CC_CLANG) && defined(__APPLE__)
-/* Apple/clang specific features */
-#  define Q_DECL_CF_RETURNS_RETAINED __attribute__((cf_returns_retained))
-#  ifdef __OBJC__
-#    define Q_DECL_NS_RETURNS_AUTORELEASED __attribute__((ns_returns_autoreleased))
-#  endif
-#endif
-
 #if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_CC_CLANG)
 #  if defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403
@@ -704,15 +703,20 @@
 #    if _MSC_VER >= 1400
        /* C++11 features supported in VC8 = VC2005: */
 #      define Q_COMPILER_VARIADIC_MACROS
+
+#      ifndef __cplusplus_cli
        /* 2005 supports the override and final contextual keywords, in
         the same positions as the C++11 variants, but 'final' is
         called 'sealed' instead:
         http://msdn.microsoft.com/en-us/library/0w2w91tf%28v=vs.80%29.aspx
+        The behavior is slightly different in C++/CLI, which requires the
+        "virtual" keyword to be present too, so don't define for that.
         So don't define Q_COMPILER_EXPLICIT_OVERRIDES (since it's not
         the same as the C++11 version), but define the Q_DECL_* flags
         accordingly: */
 #      define Q_DECL_OVERRIDE override
 #      define Q_DECL_FINAL sealed
+#      endif
 #    endif
 #    if _MSC_VER >= 1600
        /* C++11 features supported in VC10 = VC2010: */

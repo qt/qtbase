@@ -137,5 +137,12 @@ void QFbCursor::changeCursor(QCursor * widgetCursor, QWindow *window)
 }
 #endif
 
-QT_END_NAMESPACE
+void QFbCursor::setDirty()
+{
+    if (!mDirty) {
+        mDirty = true;
+        mScreen->scheduleUpdate();
+    }
+}
 
+QT_END_NAMESPACE

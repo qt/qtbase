@@ -675,6 +675,8 @@ bool QFileInfo::exists() const
 }
 
 /*!
+    \since 5.2
+
     Returns \c true if the \a file exists; otherwise returns \c false.
 
     \note If \a file is a symlink that points to a non-existing
@@ -691,7 +693,8 @@ bool QFileInfo::exists(const QString &file)
         QFileSystemEngine::resolveEntryAndCreateLegacyEngine(entry, data);
     // Expensive fallback to non-QFileSystemEngine implementation
     if (engine)
-        return QFileInfo(file).exists();
+        return QFileInfo(new QFileInfoPrivate(entry, data, engine)).exists();
+
     QFileSystemEngine::fillMetaData(entry, data, QFileSystemMetaData::ExistsAttribute);
     return data.exists();
 }

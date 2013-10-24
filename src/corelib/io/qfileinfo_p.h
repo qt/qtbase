@@ -120,6 +120,20 @@ public:
             metaData = QFileSystemMetaData();
     }
 
+    inline QFileInfoPrivate(const QFileSystemEntry &file, const QFileSystemMetaData &data, QAbstractFileEngine *engine)
+        : fileEntry(file),
+        metaData(data),
+        fileEngine(engine),
+        cachedFlags(0),
+#ifndef QT_NO_FSFILEENGINE
+        isDefaultConstructed(false),
+#else
+        isDefaultConstructed(!fileEngine),
+#endif
+        cache_enabled(true), fileFlags(0), fileSize(0)
+    {
+    }
+
     inline void clearFlags() const {
         fileFlags = 0;
         cachedFlags = 0;

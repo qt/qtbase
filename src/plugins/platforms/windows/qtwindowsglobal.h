@@ -204,6 +204,9 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
     case WM_DISPLAYCHANGE:
         return QtWindows::DisplayChangedEvent;
     case WM_THEMECHANGED:
+#ifdef WM_SYSCOLORCHANGE // Windows 7: Handle color change as theme change (QTBUG-34170).
+    case WM_SYSCOLORCHANGE:
+#endif
         return QtWindows::ThemeChanged;
     case WM_DWMCOMPOSITIONCHANGED:
         return QtWindows::CompositionSettingsChanged;

@@ -129,8 +129,8 @@ void loadInvalidUtf8Rows()
 
 void loadNonCharactersRows()
 {
-    // Unicode has a couple of "non-characters" that one can use internally,
-    // but are not allowed to be used for text interchange.
+    // Unicode has a couple of "non-characters" that one can use internally
+    // These characters are allowed for text-interchange (see http://www.unicode.org/versions/corrigendum9.html)
     //
     // Those are the last two entries each Unicode Plane (U+FFFE, U+FFFF,
     // U+1FFFE, U+1FFFF, etc.) as well as the entries between U+FDD0 and

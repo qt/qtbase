@@ -160,7 +160,9 @@ static bool isMouseEvent(NSEvent *ev)
 
     // Only tool or dialog windows should become key:
     if (m_cocoaPlatformWindow
-        && (m_cocoaPlatformWindow->window()->type() == Qt::Tool || m_cocoaPlatformWindow->window()->type() == Qt::Dialog))
+        && (m_cocoaPlatformWindow->m_overrideBecomeKey ||
+            m_cocoaPlatformWindow->window()->type() == Qt::Tool ||
+            m_cocoaPlatformWindow->window()->type() == Qt::Dialog))
         return YES;
     return NO;
 }
@@ -212,7 +214,9 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_isExposed(false)
     , m_registerTouchCount(0)
     , m_resizableTransientParent(false)
+    , m_overrideBecomeKey(false)
     , m_alertRequest(NoAlertRequest)
+    , monitor(nil)
 {
 #ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
     qDebug() << "QCocoaWindow::QCocoaWindow" << this;
@@ -367,6 +371,11 @@ void QCocoaWindow::setVisible(bool visible)
                 if ((window()->type() == Qt::Popup || window()->type() == Qt::Dialog || window()->type() == Qt::Tool)
                     && [m_nsWindow isKindOfClass:[NSPanel class]]) {
                     [(NSPanel *)m_nsWindow setWorksWhenModal:YES];
+                    if (!(parentCocoaWindow && window()->transientParent()->isActive()) && window()->type() == Qt::Popup) {
+                        monitor = [NSEvent addGlobalMonitorForEventsMatchingMask:NSLeftMouseDownMask|NSRightMouseDownMask|NSOtherMouseDown handler:^(NSEvent *) {
+                            QWindowSystemInterface::handleMouseEvent(window(), QPointF(-1, -1), QPointF(window()->framePosition() - QPointF(1, 1)), Qt::LeftButton);
+                        }];
+                    }
                 }
             }
         }
@@ -402,6 +411,10 @@ void QCocoaWindow::setVisible(bool visible)
             }
         } else {
             [m_contentView setHidden:YES];
+        }
+        if (monitor && window()->type() == Qt::Popup) {
+            [NSEvent removeMonitor:monitor];
+            monitor = nil;
         }
         if (parentCocoaWindow && window()->type() == Qt::Popup) {
             parentCocoaWindow->m_activePopupWindow = 0;
@@ -450,7 +463,6 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
 {
     Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
     NSInteger styleMask = NSBorderlessWindowMask;
-
     if ((type & Qt::Popup) == Qt::Popup) {
         if (!windowIsPopupType(type) && !(flags & Qt::FramelessWindowHint))
             styleMask = (NSUtilityWindowMask | NSResizableWindowMask | NSClosableWindowMask |
@@ -458,14 +470,21 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     } else {
         // Filter flags for supported properties
         flags &= Qt::WindowType_Mask | Qt::FramelessWindowHint | Qt::WindowTitleHint |
-                 Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint;
+                 Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint | Qt::CustomizeWindowHint;
         if (flags == Qt::Window) {
             styleMask = (NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSTitledWindowMask);
         } else if ((flags & Qt::Dialog) == Qt::Dialog) {
-            if (window()->modality() == Qt::NonModal)
+            if (flags & Qt::CustomizeWindowHint) {
+                styleMask = NSResizableWindowMask;
+                if (flags & Qt::WindowTitleHint)
+                    styleMask |= NSTitledWindowMask;
+                if (flags & Qt::WindowCloseButtonHint)
+                    styleMask |= NSClosableWindowMask;
+                if (flags & Qt::WindowMinimizeButtonHint)
+                    styleMask |= NSMiniaturizableWindowMask;
+            } else {
                 styleMask = NSResizableWindowMask | NSClosableWindowMask | NSTitledWindowMask;
-            else
-                styleMask = NSResizableWindowMask | NSTitledWindowMask;
+            }
         } else if (!(flags & Qt::FramelessWindowHint)) {
             if ((flags & Qt::Dialog) || (flags & Qt::WindowMaximizeButtonHint))
                 styleMask |= NSResizableWindowMask;
@@ -661,6 +680,8 @@ bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)
     if (!m_nsWindow)
         return false;
 
+    m_overrideBecomeKey = grab;
+
     if (grab && ![m_nsWindow isKeyWindow])
         [m_nsWindow makeKeyWindow];
     else if (!grab && [m_nsWindow isKeyWindow])
@@ -672,6 +693,8 @@ bool QCocoaWindow::setMouseGrabEnabled(bool grab)
 {
     if (!m_nsWindow)
         return false;
+
+    m_overrideBecomeKey = grab;
 
     if (grab && ![m_nsWindow isKeyWindow])
         [m_nsWindow makeKeyWindow];
@@ -843,10 +866,9 @@ NSWindow * QCocoaWindow::createNSWindow()
                                                     // before the window is shown and needs a proper window.).
         if ((type & Qt::Popup) == Qt::Popup)
             [window setHasShadow:YES];
-        else {
-             setWindowShadow(flags);
-             [window setHidesOnDeactivate: NO];
-        }
+        else
+            setWindowShadow(flags);
+        [window setHidesOnDeactivate: NO];
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
         if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {

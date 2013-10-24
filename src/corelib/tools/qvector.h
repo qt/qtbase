@@ -152,6 +152,11 @@ public:
     bool contains(const T &t) const;
     int count(const T &t) const;
 
+    // QList compatibility
+    void removeAt(int i) { remove(i); }
+    int length() const { return size(); }
+    T takeAt(int i) { T t = at(i); remove(i); return t; }
+
     // STL-style
     typedef typename Data::iterator iterator;
     typedef typename Data::const_iterator const_iterator;
@@ -187,7 +192,7 @@ public:
     inline const T &last() const { Q_ASSERT(!isEmpty()); return *(end()-1); }
     inline bool startsWith(const T &t) const { return !isEmpty() && first() == t; }
     inline bool endsWith(const T &t) const { return !isEmpty() && last() == t; }
-    QVector<T> mid(int pos, int length = -1) const;
+    QVector<T> mid(int pos, int len = -1) const;
 
     T value(int i) const;
     T value(int i, const T &defaultValue) const;
@@ -772,17 +777,17 @@ int QVector<T>::count(const T &t) const
 }
 
 template <typename T>
-Q_OUTOFLINE_TEMPLATE QVector<T> QVector<T>::mid(int pos, int length) const
+Q_OUTOFLINE_TEMPLATE QVector<T> QVector<T>::mid(int pos, int len) const
 {
-    if (length < 0)
-        length = size() - pos;
-    if (pos == 0 && length == size())
+    if (len < 0)
+        len = size() - pos;
+    if (pos == 0 && len == size())
         return *this;
-    if (pos + length > size())
-        length = size() - pos;
+    if (pos + len > size())
+        len = size() - pos;
     QVector<T> copy;
-    copy.reserve(length);
-    for (int i = pos; i < pos + length; ++i)
+    copy.reserve(len);
+    for (int i = pos; i < pos + len; ++i)
         copy += at(i);
     return copy;
 }

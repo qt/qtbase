@@ -883,9 +883,9 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
             while (olsenId.isEmpty() && !ts.atEnd() && ts.status() == QTextStream::Ok) {
                 line = ts.readLine();
                 if (line.left(5) == QStringLiteral("ZONE=")) {
-                    olsenId = line.mid(6, line.size() - 2).toUtf8();
+                    olsenId = line.mid(6, line.size() - 7).toUtf8();
                 } else if (line.left(9) == QStringLiteral("TIMEZONE=")) {
-                    olsenId = line.mid(6, line.size() - 2).toUtf8();
+                    olsenId = line.mid(10, line.size() - 11).toUtf8();
                 }
             }
         }

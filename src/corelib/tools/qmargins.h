@@ -242,6 +242,24 @@ inline QMargins &QMargins::operator-=(const QMargins &margins)
     return *this = *this - margins;
 }
 
+inline QMargins &QMargins::operator+=(int margin)
+{
+    m_left += margin;
+    m_top += margin;
+    m_right += margin;
+    m_bottom += margin;
+    return *this;
+}
+
+inline QMargins &QMargins::operator-=(int margin)
+{
+    m_left -= margin;
+    m_top -= margin;
+    m_right -= margin;
+    m_bottom -= margin;
+    return *this;
+}
+
 inline QMargins &QMargins::operator*=(int factor)
 {
     return *this = *this * factor;

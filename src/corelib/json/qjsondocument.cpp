@@ -303,10 +303,12 @@ QVariant QJsonDocument::toVariant() const
 
  \sa fromJson()
  */
+#ifndef QT_JSON_READONLY
 QByteArray QJsonDocument::toJson() const
 {
     return toJson(Indented);
 }
+#endif
 
 /*!
     \enum QJsonDocument::JsonFormat
@@ -338,6 +340,7 @@ QByteArray QJsonDocument::toJson() const
 
     \sa fromJson(), JsonFormat
  */
+#ifndef QT_JSON_READONLY
 QByteArray QJsonDocument::toJson(JsonFormat format) const
 {
     if (!d)
@@ -352,6 +355,7 @@ QByteArray QJsonDocument::toJson(JsonFormat format) const
 
     return json;
 }
+#endif
 
 /*!
  Parses a UTF-8 encoded JSON document and creates a QJsonDocument
@@ -562,7 +566,7 @@ bool QJsonDocument::isNull() const
     return (d == 0);
 }
 
-#ifndef QT_NO_DEBUG_STREAM
+#if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 QDebug operator<<(QDebug dbg, const QJsonDocument &o)
 {
     if (!o.d) {

@@ -84,3 +84,22 @@ QtGui
   related to session management. For platform that don't support this
   feature the default behavior has not changed.
   Both X11 and Windows session management are supported.
+
+QtNetwork
+---------
+
+- API was added to store and resume TLS session tickets.
+
+- The minimum support openssl version has been increased to openssl 1.0. The
+  code to support older versions has not been removed, but is no longer
+  supported.
+
+- An off-by-one error in NTLM proxy authentication has been fixed.
+
+- Various improvements to reduce the memory used by qtnetwork have been made.
+
+- Improved support for HTTP proxy authentication.
+
+- Support for preconnecting to servers before making HTTP and HTTPS
+  connections. This allows for much reduced latency when the hosts to be
+  connected to are known.

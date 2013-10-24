@@ -99,8 +99,10 @@ void debugBinaryString(const char *data, qint64 maxlen)
 #define CHECK_WRITABLE(function, returnType) \
    do { \
        if ((d->openMode & WriteOnly) == 0) { \
-           if (d->openMode == NotOpen) \
+           if (d->openMode == NotOpen) { \
+               qWarning("QIODevice::"#function": device not open"); \
                return returnType; \
+           } \
            qWarning("QIODevice::"#function": ReadOnly device"); \
            return returnType; \
        } \
@@ -109,8 +111,10 @@ void debugBinaryString(const char *data, qint64 maxlen)
 #define CHECK_READABLE(function, returnType) \
    do { \
        if ((d->openMode & ReadOnly) == 0) { \
-           if (d->openMode == NotOpen) \
+           if (d->openMode == NotOpen) { \
+               qWarning("QIODevice::"#function": device not open"); \
                return returnType; \
+           } \
            qWarning("QIODevice::"#function": WriteOnly device"); \
            return returnType; \
        } \

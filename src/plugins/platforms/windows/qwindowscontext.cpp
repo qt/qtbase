@@ -954,7 +954,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         qGuiAppPriv->commitData();
 
         if (lParam & ENDSESSION_LOGOFF)
-            _flushall();
+            fflush(NULL);
 
         return !sessionManager->wasCanceled();
     }

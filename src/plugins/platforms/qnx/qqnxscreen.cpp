@@ -446,7 +446,7 @@ void QQnxScreen::addWindow(QQnxWindow *window)
             m_childWindows.push_back(window);
         updateHierarchy();
     } else {
-#if !defined(Q_OS_BLACKBERRY_TABLET)
+#if defined(Q_OS_BLACKBERRY) && !defined(Q_OS_BLACKBERRY_TABLET)
         m_coverWindow = window;
 #endif
     }

@@ -2531,6 +2531,29 @@ void QTextHtmlExporter::emitBlockAttributes(const QTextBlock &block)
         html += QLatin1Char(';');
     }
 
+    if (format.lineHeightType() != QTextBlockFormat::SingleHeight) {
+        switch (format.lineHeightType()) {
+            case QTextBlockFormat::ProportionalHeight:
+            case QTextBlockFormat::FixedHeight:
+                html += QLatin1String(" line-height:");
+                break;
+            case QTextBlockFormat::MinimumHeight:
+                html += QLatin1String(" min-height:");
+                break;
+            case QTextBlockFormat::LineDistanceHeight:
+                html += QLatin1String(" line-spacing:");
+                break;
+            case QTextBlockFormat::SingleHeight:
+            default:
+                break; // Should never reach here
+        }
+        html += QString::number(format.lineHeight());
+        if (format.lineHeightType() == QTextBlockFormat::ProportionalHeight)
+            html += QLatin1String("%;");
+        else
+            html += QLatin1String("px;");
+    }
+
     emitPageBreakPolicy(format.pageBreakPolicy());
 
     QTextCharFormat diff;

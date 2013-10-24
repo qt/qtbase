@@ -1089,7 +1089,7 @@ void QJsonArray::compact()
 }
 
 
-#ifndef QT_NO_DEBUG_STREAM
+#if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 QDebug operator<<(QDebug dbg, const QJsonArray &a)
 {
     if (!a.a) {

@@ -301,6 +301,8 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
     QString defaultConfig;
     for(int as_release = 0; as_release < 2; as_release++)
     {
+        QString configName = (as_release ? "Release" : "Debug");
+
         QMap<QString, QString> settings;
         settings.insert("COPY_PHASE_STRIP", (as_release ? "YES" : "NO"));
         if(as_release)
@@ -311,6 +313,12 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
             const ProStringList &l = project->values("QMAKE_MAC_XCODE_SETTINGS");
             for(int i = 0; i < l.size(); ++i) {
                 ProString name = l.at(i);
+                const ProKey buildKey(name + ".build");
+                if (!project->isEmpty(buildKey)) {
+                    const QString build = project->values(buildKey).first().toQString();
+                    if (build.toLower() != configName.toLower())
+                        continue;
+                }
                 const ProKey nkey(name + ".name");
                 if (!project->isEmpty(nkey))
                     name = project->first(nkey);
@@ -319,10 +327,9 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
             }
         }
 
-        QString name = (as_release ? "Release" : "Debug");
         if (project->isActiveConfig("debug") != (bool)as_release)
-            defaultConfig = name;
-        QString key = keyFor("QMAKE_SUBDIR_PBX_BUILDCONFIG_" + name);
+            defaultConfig = configName;
+        QString key = keyFor("QMAKE_SUBDIR_PBX_BUILDCONFIG_" + configName);
         project->values("QMAKE_SUBDIR_PBX_BUILDCONFIGS").append(key);
         t << "\t\t" << key << " = {\n"
         << "\t\t\t" << writeSettings("isa", "XCBuildConfiguration", SettingsNoQuote) << ";\n"
@@ -330,7 +337,7 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
         for (QMap<QString, QString>::Iterator set_it = settings.begin(); set_it != settings.end(); ++set_it)
             t << "\t\t\t\t" << writeSettings(set_it.key(), set_it.value()) << ";\n";
         t << "\t\t\t};\n"
-          << "\t\t\t" << writeSettings("name", name) << ";\n"
+          << "\t\t\t" << writeSettings("name", configName) << ";\n"
           << "\t\t};\n";
     }
     t << "\t\t" << keyFor("QMAKE_SUBDIR_PBX_BUILDCONFIG_LIST") << " = {\n"
@@ -867,6 +874,20 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                                         debug_msg(1, "pbuilder: Found library (%s) via PRL %s (%s)",
                                                   opt.toLatin1().constData(), lib_file.toLatin1().constData(), library.toLatin1().constData());
                                         remove = true;
+
+                                        if (project->isActiveConfig("xcode_dynamic_library_suffix")) {
+                                            QString suffixSetting = project->first("QMAKE_XCODE_LIBRARY_SUFFIX_SETTING").toQString();
+                                            if (!suffixSetting.isEmpty()) {
+                                                QString librarySuffix = project->first("QMAKE_XCODE_LIBRARY_SUFFIX").toQString();
+                                                suffixSetting = "$(" + suffixSetting + ")";
+                                                if (!librarySuffix.isEmpty()) {
+                                                    library = library.replace(librarySuffix, suffixSetting);
+                                                    name = name.remove(librarySuffix);
+                                                } else {
+                                                    library = library.replace(name, name + suffixSetting);
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -998,6 +1019,27 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("shellScript", "make -C " + IoUtils::shellQuoteUnix(qmake_getpwd()) + " -f " + IoUtils::shellQuoteUnix(mkfile)) << ";\n"
           << "\t\t};\n";
     }
+
+    if (!project->isEmpty("QMAKE_PRE_LINK")) {
+        QString phase_key = keyFor("QMAKE_PBX_PRELINK_BUILDPHASE");
+        project->values("QMAKE_PBX_BUILDPHASES").append(phase_key);
+        t << "\t\t" << phase_key << " = {\n"
+          << "\t\t\t" << writeSettings("buildActionMask", "2147483647", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("files", ProStringList(), SettingsAsList, 4) << ";\n"
+          // The build phases are not executed in the order they are defined, but by their
+          // resolved dependenices, so we have to ensure that this phase is run after the
+          // compilation phase, and before the link phase. Making the phase depend on all the
+          // object files, and "write" to the list of files to link achieves that.
+          << "\t\t\t" << writeSettings("inputPaths", ProStringList("$(OBJECT_FILE_DIR_$(CURRENT_VARIANT))/$(CURRENT_ARCH)/*" + Option::obj_ext), SettingsAsList, 4) << ";\n"
+          << "\t\t\t" << writeSettings("outputPaths", ProStringList("$(LINK_FILE_LIST_$(CURRENT_VARIANT)_$(CURRENT_ARCH))"), SettingsAsList, 4) << ";\n"
+          << "\t\t\t" << writeSettings("isa", "PBXShellScriptBuildPhase", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("runOnlyForDeploymentPostprocessing", "0", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("name", "Qt Prelink") << ";\n"
+          << "\t\t\t" << writeSettings("shellPath", "/bin/sh") << ";\n"
+          << "\t\t\t" << writeSettings("shellScript", project->values("QMAKE_PRE_LINK")) << ";\n"
+          << "\t\t};\n";
+    }
+
     //LIBRARY BUILDPHASE
     if(!project->isEmpty("QMAKE_PBX_LIBRARIES")) {
         tmp = project->values("QMAKE_PBX_LIBRARIES");
@@ -1023,6 +1065,24 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("name", escapeFilePath(grp)) << ";\n"
           << "\t\t};\n";
     }
+
+    if (!project->isEmpty("QMAKE_POST_LINK")) {
+        QString phase_key = keyFor("QMAKE_PBX_POSTLINK_BUILDPHASE");
+        project->values("QMAKE_PBX_BUILDPHASES").append(phase_key);
+        t << "\t\t" << phase_key << " = {\n"
+          << "\t\t\t" << writeSettings("buildActionMask", "2147483647", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("files", ProStringList(), SettingsAsList, 4) << ";\n"
+          // The build phases are not executed in the order they are defined, but by their
+          // resolved dependenices, so we have to ensure the phase is run after linking.
+          << "\t\t\t" << writeSettings("inputPaths", ProStringList("$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)"), SettingsAsList, 4) << ";\n"
+          << "\t\t\t" << writeSettings("isa", "PBXShellScriptBuildPhase", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("runOnlyForDeploymentPostprocessing", "0", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("name", "Qt Postlink") << ";\n"
+          << "\t\t\t" << writeSettings("shellPath", "/bin/sh") << ";\n"
+          << "\t\t\t" << writeSettings("shellScript", project->values("QMAKE_POST_LINK")) << ";\n"
+          << "\t\t};\n";
+    }
+
     if (!project->isEmpty("DESTDIR")) {
         QString phase_key = keyFor("QMAKE_PBX_TARGET_COPY_PHASE");
         QString destDir = project->first("DESTDIR").toQString();
@@ -1244,6 +1304,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
     QString defaultConfig;
     for(int as_release = 0; as_release < 2; as_release++)
     {
+        QString configName = (as_release ? "Release" : "Debug");
+
         QMap<QString, QString> settings;
         settings.insert("COPY_PHASE_STRIP", (as_release ? "YES" : "NO"));
         settings.insert("GCC_GENERATE_DEBUGGING_SYMBOLS", as_release ? "NO" : "YES");
@@ -1255,6 +1317,12 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             const ProStringList &l = project->values("QMAKE_MAC_XCODE_SETTINGS");
             for(int i = 0; i < l.size(); ++i) {
                 ProString name = l.at(i);
+                const ProKey buildKey(name + ".build");
+                if (!project->isEmpty(buildKey)) {
+                    const QString build = project->values(buildKey).first().toQString();
+                    if (build.toLower() != configName.toLower())
+                        continue;
+                }
                 const QString value = project->values(ProKey(name + ".value")).join(QString(Option::field_sep));
                 const ProKey nkey(name + ".name");
                 if (!project->isEmpty(nkey))
@@ -1271,11 +1339,10 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             settings.insert("PRODUCT_NAME", escapeFilePath(lib.toQString()));
         }
 
-        QString name = (as_release ? "Release" : "Debug");
         if (project->isActiveConfig("debug") != (bool)as_release)
-            defaultConfig = name;
+            defaultConfig = configName;
         for (int i = 0; i < buildConfigGroups.size(); i++) {
-            QString key = keyFor("QMAKE_PBX_BUILDCONFIG_" + name + buildConfigGroups.at(i));
+            QString key = keyFor("QMAKE_PBX_BUILDCONFIG_" + configName + buildConfigGroups.at(i));
             project->values(ProKey("QMAKE_PBX_BUILDCONFIGS_" + buildConfigGroups.at(i))).append(key);
             t << "\t\t" << key << " = {\n"
               << "\t\t\t" << writeSettings("isa", "XCBuildConfiguration", SettingsNoQuote) << ";\n"
@@ -1429,7 +1496,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                 }
             }
             t << "\t\t\t};\n"
-              << "\t\t\t" << writeSettings("name", name) << ";\n"
+              << "\t\t\t" << writeSettings("name", configName) << ";\n"
               << "\t\t};\n";
         }
     }

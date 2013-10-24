@@ -267,6 +267,12 @@ bool QFontDatabase::removeAllApplicationFonts()
     return true;
 }
 
+// QT_DEPRECATED_SINCE(5, 2)
+bool QFontDatabase::supportsThreadedFontRendering()
+{
+    return true;
+}
+
 /*!
     \internal
 */

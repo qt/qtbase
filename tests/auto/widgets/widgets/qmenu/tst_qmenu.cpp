@@ -764,14 +764,20 @@ void tst_QMenu::task258920_mouseBorder()
     menu.setMouseTracking(true);
     QAction *action = menu.addAction("test");
 
-    menu.popup(QApplication::desktop()->availableGeometry().center());
+    const QPoint center = QApplication::desktop()->availableGeometry().center();
+#ifndef QT_NO_CURSOR
+    QCursor::setPos(center - QPoint(100, 100)); // Mac: Ensure cursor is outside
+#endif
+    menu.popup(center);
     QVERIFY(QTest::qWaitForWindowExposed(&menu));
     QTest::qWait(100);
     QRect actionRect = menu.actionGeometry(action);
-    QTest::mouseMove(&menu, actionRect.center());
+    const QPoint actionCenter = actionRect.center();
+    QTest::mouseMove(&menu, actionCenter - QPoint(-10, 0));
     QTest::qWait(30);
-    QTest::mouseMove(&menu, actionRect.center() + QPoint(10, 0));
+    QTest::mouseMove(&menu, actionCenter);
     QTest::qWait(30);
+    QTest::mouseMove(&menu, actionCenter + QPoint(10, 0));
     QTRY_COMPARE(action, menu.activeAction());
     menu.painted = false;
     QTest::mouseMove(&menu, QPoint(actionRect.center().x(), actionRect.bottom() + 1));

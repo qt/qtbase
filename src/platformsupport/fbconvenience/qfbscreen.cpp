@@ -149,9 +149,13 @@ void QFbScreen::setDirty(const QRect &rect)
     QRect intersection = rect.intersected(mGeometry);
     QPoint screenOffset = mGeometry.topLeft();
     mRepaintRegion += intersection.translated(-screenOffset);    // global to local translation
-    if (!mRedrawTimer.isActive()) {
+    scheduleUpdate();
+}
+
+void QFbScreen::scheduleUpdate()
+{
+    if (!mRedrawTimer.isActive())
         mRedrawTimer.start();
-    }
 }
 
 void QFbScreen::setPhysicalSize(const QSize &size)
@@ -254,8 +258,9 @@ QRegion QFbScreen::doRedraw()
                     QRect windowRect = mWindowStack[layerIndex]->geometry().translated(-screenOffset);
                     QRect windowIntersect = rect.translated(-windowRect.left(),
                                                             -windowRect.top());
-                    mCompositePainter->drawImage(rect, mWindowStack[layerIndex]->backingStore()->image(),
-                                                windowIntersect);
+                    QFbBackingStore *backingStore = mWindowStack[layerIndex]->backingStore();
+                    if (backingStore)
+                        mCompositePainter->drawImage(rect, backingStore->image(), windowIntersect);
                     if (firstLayer) {
                         firstLayer = false;
                     }

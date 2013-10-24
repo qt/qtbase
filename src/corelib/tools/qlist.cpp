@@ -647,7 +647,10 @@ void **QListData::erase(void **xi)
     \a i must be a valid index position in the list (i.e., 0 <= \a i <
     size()).
 
-    This function is very fast (\l{constant time}).
+    If this function is called on a list that is currently being shared, it
+    will trigger a copy of all elements. Otherwise, this function runs in
+    \l{constant time}. If you do not want to modify the list you should use
+    QList::at().
 
     \sa at(), value()
 */
@@ -656,7 +659,7 @@ void **QListData::erase(void **xi)
 
     \overload
 
-    Same as at().
+    Same as at(). This function runs in \l{constant time}.
 */
 
 /*! \fn QList::reserve(int alloc)
@@ -681,10 +684,10 @@ void **QListData::erase(void **xi)
 
     This is the same as list.insert(size(), \a value).
 
-    This operation is typically very fast (\l{constant time}),
-    because QList preallocates extra space on both sides of its
-    internal buffer to allow for fast growth at both ends of the
-    list.
+    If this list is not shared, this operation is typically
+    very fast (amortized \l{constant time}), because QList
+    preallocates extra space on both sides of its internal
+    buffer to allow for fast growth at both ends of the list.
 
     \sa operator<<(), prepend(), insert()
 */
@@ -709,8 +712,9 @@ void **QListData::erase(void **xi)
 
     This is the same as list.insert(0, \a value).
 
-    This operation is usually very fast (\l{constant time}), because
-    QList preallocates extra space on both sides of its internal
+    If this list is not shared, this operation is typically
+    very fast (amortized \l{constant time}), because QList
+    preallocates extra space on both sides of its internal
     buffer to allow for fast growth at both ends of the list.
 
     \sa append(), insert()
@@ -802,7 +806,7 @@ void **QListData::erase(void **xi)
     same as takeAt(0). This function assumes the list is not empty. To
     avoid failure, call isEmpty() before calling this function.
 
-    This operation takes \l{constant time}.
+    If this list is not shared, this operation takes \l{constant time}.
 
     If you don't use the return value, removeFirst() is more
     efficient.
@@ -817,7 +821,7 @@ void **QListData::erase(void **xi)
     not empty. To avoid failure, call isEmpty() before calling this
     function.
 
-    This operation takes \l{constant time}.
+    If this list is not shared, this operation takes \l{constant time}.
 
     If you don't use the return value, removeLast() is more
     efficient.
@@ -1288,6 +1292,11 @@ void **QListData::erase(void **xi)
     iterators over a long period of time, we recommend that you use
     QLinkedList rather than QList.
 
+    \warning Iterators on implicitly shared containers do not work
+    exactly like STL-iterators. You should avoid copying a container
+    while iterators are active on that container. For more information,
+    read \l{Implicit sharing iterator problem}.
+
     \sa QList::const_iterator, QMutableListIterator
 */
 
@@ -1537,6 +1546,11 @@ void **QListData::erase(void **xi)
     will render all existing iterators undefined. If you need to keep
     iterators over a long period of time, we recommend that you use
     QLinkedList rather than QList.
+
+    \warning Iterators on implicitly shared containers do not work
+    exactly like STL-iterators. You should avoid copying a container
+    while iterators are active on that container. For more information,
+    read \l{Implicit sharing iterator problem}.
 
     \sa QList::iterator, QListIterator
 */

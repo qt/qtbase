@@ -199,31 +199,6 @@
     still important.
     On Linux, Valgrind and Helgrind can help detect threading errors.
 
-    The anatomy of QThread is quite interesting:
-
-    \list
-    \li QThread does not live in the new thread where \l{QThread::}{run()} is
-       executed. It lives in the old thread.
-    \li Most QThread methods are the thread's control interface and are meant to
-       be called from the old thread. Do not move this interface to the newly
-       created thread using \l{QObject::}{moveToThread()}; i.e., calling
-       \l{QObject::moveToThread()}{moveToThread(this)} is regarded as bad
-       practice.
-    \li \l{QThread::}{exec()} and the static methods
-       \l{QThread::}{usleep()}, \l{QThread::}{msleep()},
-       \l{QThread::}{sleep()} are meant to be called from the newly created
-       thread.
-    \li Additional members defined in the QThread subclass are
-       accessible by both threads. The developer is responsible for
-       coordinating access. A typical strategy is to set the members before
-       \l{QThread::}{start()} is called. Once the worker thread is running,
-       the main thread should not touch the additional members anymore. After
-       the worker has terminated, the main thread can access the additional
-       members again. This is a convenient strategy for passing parameters to a
-       thread before it is started as well as for collecting the result once it
-       has terminated.
-    \endlist
-
     \section2 Protecting the Integrity of Data
 
     When writing a multithread application, extra care must be taken to avoid

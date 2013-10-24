@@ -68,27 +68,6 @@
 
 QT_BEGIN_NAMESPACE
 
-/*
-  The default indent for code is 4.
-  The default value for false is 0.
-  The default supported file extensions are cpp, h, qdoc and qml.
-  The default language is c++.
-  The default output format is html.
-  The default tab size is 8.
-  And those are all the default values for configuration variables.
- */
-static const struct {
-    const QString key;
-    const QString value;
-} defaults[] = {
-    { CONFIG_CODEINDENT, QLatin1String("4") },
-    { CONFIG_FALSEHOODS, QLatin1String("0") },
-    { CONFIG_FILEEXTENSIONS, QLatin1String("*.cpp *.h *.qdoc *.qml") },
-    { CONFIG_LANGUAGE, QLatin1String("Cpp") },
-    { CONFIG_OUTPUTFORMATS, QLatin1String("HTML") },
-    { CONFIG_TABSIZE, QLatin1String("8") },
-    { QString(), QString() }
-};
 
 bool creationTimeBefore(const QFileInfo &fi1, const QFileInfo &fi2)
 {
@@ -268,11 +247,30 @@ static void processQdocconfFile(const QString &fileName)
       initialize the configuration with some default values.
      */
     Config config(QCoreApplication::translate("QDoc", "qdoc"));
-    int i = 0;
-    while (!defaults[i].key.isEmpty()) {
-        config.setStringList(defaults[i].key, QStringList() << defaults[i].value);
-        ++i;
+
+    /*
+      The default indent for code is 4.
+      The default value for false is 0.
+      The default supported file extensions are cpp, h, qdoc and qml.
+      The default language is c++.
+      The default output format is html.
+      The default tab size is 8.
+      And those are all the default values for configuration variables.
+     */
+    static QHash<QString,QString> defaults;
+    if (defaults.isEmpty()) {
+        defaults.insert(CONFIG_CODEINDENT, QLatin1String("4"));
+        defaults.insert(CONFIG_FALSEHOODS, QLatin1String("0"));
+        defaults.insert(CONFIG_FILEEXTENSIONS, QLatin1String("*.cpp *.h *.qdoc *.qml"));
+        defaults.insert(CONFIG_LANGUAGE, QLatin1String("Cpp"));
+        defaults.insert(CONFIG_OUTPUTFORMATS, QLatin1String("HTML"));
+        defaults.insert(CONFIG_TABSIZE, QLatin1String("8"));
     }
+
+    QHash<QString,QString>::iterator iter;
+    for (iter = defaults.begin(); iter != defaults.end(); ++iter)
+        config.setStringList(iter.key(), QStringList() << iter.value());
+
     config.setStringList(CONFIG_SYNTAXHIGHLIGHTING, QStringList(highlighting ? "true" : "false"));
     config.setStringList(CONFIG_SHOWINTERNAL, QStringList(showInternal ? "true" : "false"));
     config.setStringList(CONFIG_REDIRECTDOCUMENTATIONTODEVNULL, QStringList(redirectDocumentationToDevNull ? "true" : "false"));

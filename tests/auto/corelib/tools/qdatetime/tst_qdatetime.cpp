@@ -150,6 +150,8 @@ private slots:
     void daylightTransitions() const;
     void timeZones() const;
 
+    void invalid() const;
+
 private:
     bool europeanTimeZone;
     QDate defDate() const { return QDate(1900, 1, 1); }
@@ -779,7 +781,11 @@ void tst_QDateTime::toString_rfcDate()
     QFETCH(QDateTime, dt);
     QFETCH(QString, formatted);
 
+    // Set to non-English locale to confirm still uses English
+    QLocale oldLocale;
+    QLocale::setDefault(QLocale("de_DE"));
     QCOMPARE(dt.toString(Qt::RFC2822Date), formatted);
+    QLocale::setDefault(oldLocale);
 }
 
 void tst_QDateTime::toString_enumformat()
@@ -2900,6 +2906,25 @@ void tst_QDateTime::timeZones() const
     // - Test 03:00:00 = 1 hour after tran
     hourAfterStd = QDateTime(QDate(2013, 10, 27), QTime(3, 0, 0), cet);
     QCOMPARE(hourAfterStd.toMSecsSinceEpoch(), dstToStdMSecs + 3600000);
+}
+
+void tst_QDateTime::invalid() const
+{
+    QDateTime invalidDate = QDateTime(QDate(0, 0, 0), QTime(-1, -1, -1));
+    QCOMPARE(invalidDate.isValid(), false);
+    QCOMPARE(invalidDate.timeSpec(), Qt::LocalTime);
+
+    QDateTime utcDate = invalidDate.toUTC();
+    QCOMPARE(utcDate.isValid(), false);
+    QCOMPARE(utcDate.timeSpec(), Qt::UTC);
+
+    QDateTime offsetDate = invalidDate.toOffsetFromUtc(3600);
+    QCOMPARE(offsetDate.isValid(), false);
+    QCOMPARE(offsetDate.timeSpec(), Qt::OffsetFromUTC);
+
+    QDateTime tzDate = invalidDate.toTimeZone(QTimeZone("Europe/Oslo"));
+    QCOMPARE(tzDate.isValid(), false);
+    QCOMPARE(tzDate.timeSpec(), Qt::TimeZone);
 }
 
 QTEST_APPLESS_MAIN(tst_QDateTime)

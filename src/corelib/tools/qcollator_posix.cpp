@@ -44,6 +44,7 @@
 #include "qstring.h"
 
 #include <cstring>
+#include <cwchar>
 
 QT_BEGIN_NAMESPACE
 
@@ -141,7 +142,7 @@ bool QCollatorSortKey::operator<(const QCollatorSortKey &otherKey) const
 
 int QCollatorSortKey::compare(const QCollatorSortKey &otherKey) const
 {
-    return wcscmp(d->m_key.constData(),
+    return std::wcscmp(d->m_key.constData(),
                   otherKey.d->m_key.constData());
 }
 

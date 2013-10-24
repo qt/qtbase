@@ -44,7 +44,6 @@
 
 #include <qtextcodec.h>
 #include <qfile.h>
-#include <qtextdocument.h>
 #include <time.h>
 #include <qprocess.h>
 #include <QThreadPool>
@@ -67,9 +66,9 @@ private slots:
     void codecForLocale();
 
     void asciiToIscii() const;
-    void flagCodepointFFFF() const;
+    void nonFlaggedCodepointFFFF() const;
     void flagF7808080() const;
-    void flagEFBFBF() const;
+    void nonFlaggedEFBFBF() const;
     void decode0D() const;
     void aliasForUTF16() const;
     void mibForTSCII() const;
@@ -288,7 +287,7 @@ void tst_QTextCodec::toUnicode_codecForHtml()
     QVERIFY(file.open(QFile::ReadOnly));
 
     QByteArray data = file.readAll();
-    QTextCodec *codec = Qt::codecForHtml(data);
+    QTextCodec *codec = QTextCodec::codecForHtml(data);
     codec->toUnicode(data); // this line crashes
 }
 
@@ -410,9 +409,9 @@ void tst_QTextCodec::asciiToIscii() const
     }
 }
 
-void tst_QTextCodec::flagCodepointFFFF() const
+void tst_QTextCodec::nonFlaggedCodepointFFFF() const
 {
-    // This is an invalid Unicode codepoint.
+    //Check that the code point 0xFFFF (=non-character code 0xEFBFBF) is not flagged
     const QChar ch(0xFFFF);
     QString input(ch);
 
@@ -420,12 +419,11 @@ void tst_QTextCodec::flagCodepointFFFF() const
     QVERIFY(codec);
 
     const QByteArray asDecoded(codec->fromUnicode(input));
-    QCOMPARE(asDecoded, QByteArray("?"));
+    QCOMPARE(asDecoded, QByteArray("\357\277\277"));
 
     QByteArray ffff("\357\277\277");
     QTextCodec::ConverterState state(QTextCodec::ConvertInvalidToNull);
-    QVERIFY(codec->toUnicode(ffff.constData(), ffff.length(), &state) == QChar(0));
-    QVERIFY(codec->toUnicode(ffff) == QChar(0xfffd));
+    QVERIFY(codec->toUnicode(ffff.constData(), ffff.length(), &state) == QByteArray::fromHex("EFBFBF"));
 }
 
 void tst_QTextCodec::flagF7808080() const
@@ -461,13 +459,16 @@ void tst_QTextCodec::flagF7808080() const
     QVERIFY(codec->toUnicode(input.constData(), input.length(), &state) == QChar(0));
 }
 
-void tst_QTextCodec::flagEFBFBF() const
+void tst_QTextCodec::nonFlaggedEFBFBF() const
 {
-    QByteArray invalidInput;
-    invalidInput.resize(3);
-    invalidInput[0] = char(0xEF);
-    invalidInput[1] = char(0xBF);
-    invalidInput[2] = char(0xBF);
+    /* Check that the codec does NOT flag EFBFBF.
+     * This is a regression test; see QTBUG-33229
+     */
+    QByteArray validInput;
+    validInput.resize(3);
+    validInput[0] = char(0xEF);
+    validInput[1] = char(0xBF);
+    validInput[2] = char(0xBF);
 
     const QTextCodec *const codec = QTextCodec::codecForMib(106); // UTF-8
     QVERIFY(codec);
@@ -475,21 +476,20 @@ void tst_QTextCodec::flagEFBFBF() const
     {
         //QVERIFY(!codec->canEncode(QChar(0xFFFF)));
         QTextCodec::ConverterState state(QTextCodec::ConvertInvalidToNull);
-        QVERIFY(codec->toUnicode(invalidInput.constData(), invalidInput.length(), &state) == QChar(0));
+        QVERIFY(codec->toUnicode(validInput.constData(), validInput.length(), &state) == QByteArray::fromHex("EFBFBF"));
 
         QByteArray start("<?pi ");
-        start.append(invalidInput);
+        start.append(validInput);
         start.append("?>");
     }
 
-    /* When 0xEFBFBF is preceded by what seems to be an arbitrary character,
-     * QTextCodec fails to flag it. */
+    // Check that 0xEFBFBF is correctly decoded when preceded by an arbitrary character
     {
         QByteArray start("B");
-        start.append(invalidInput);
+        start.append(validInput);
 
         QTextCodec::ConverterState state(QTextCodec::ConvertInvalidToNull);
-        QVERIFY(codec->toUnicode(start.constData(), start.length(), &state) == QString::fromLatin1("B\0", 2));
+        QVERIFY(codec->toUnicode(start.constData(), start.length(), &state) == QByteArray("B").append(QByteArray::fromHex("EFBFBF")));
     }
 }
 
@@ -675,13 +675,12 @@ void tst_QTextCodec::utf8Codec_data()
     str = QChar(0x7ff);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 2.2.2") << utf8 << str << -1;
 
-    // 2.2.3 U+000FFFF
+    // 2.2.3 U+000FFFF - non-character code
     utf8.clear();
     utf8 += char(0xef);
     utf8 += char(0xbf);
     utf8 += char(0xbf);
-    str.clear();
-    str += QChar::ReplacementCharacter;
+    str = QString::fromUtf8(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 2.2.3") << utf8 << str << -1;
 
     // 2.2.4 U+001FFFFF
@@ -1536,20 +1535,22 @@ void tst_QTextCodec::utf8Codec_data()
     str += QChar(QChar::ReplacementCharacter);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 5.2.8") << utf8 << str << -1;
 
-    // 5.3.1
+    // 5.3.1 - non-character code
     utf8.clear();
     utf8 += char(0xef);
     utf8 += char(0xbf);
     utf8 += char(0xbe);
-    str = QChar(QChar::ReplacementCharacter);
+    //str = QChar(QChar::ReplacementCharacter);
+    str = QString::fromUtf8(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 5.3.1") << utf8 << str << -1;
 
-    // 5.3.2
+    // 5.3.2 - non-character code
     utf8.clear();
     utf8 += char(0xef);
     utf8 += char(0xbf);
     utf8 += char(0xbf);
-    str = QChar(QChar::ReplacementCharacter);
+    //str = QChar(QChar::ReplacementCharacter);
+    str = QString::fromUtf8(utf8);
     QTest::newRow("http://www.w3.org/2001/06/utf-8-wrong/UTF-8-test.html 5.3.2") << utf8 << str << -1;
 }
 

@@ -38,6 +38,10 @@ SUBDIRS=\
         qwinoverlappedionotifier
 }
 
+!qtHaveModule(gui): SUBDIRS -= \
+    qdatastream \
+    qsettings
+
 !qtHaveModule(network): SUBDIRS -= \
     qfile \
     qiodevice \

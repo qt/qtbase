@@ -1477,6 +1477,10 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
         QGuiApplicationPrivate::processTabletLeaveProximityEvent(
                     static_cast<QWindowSystemInterfacePrivate::TabletLeaveProximityEvent *>(e));
         break;
+    case QWindowSystemInterfacePrivate::Gesture:
+        QGuiApplicationPrivate::processGestureEvent(
+                    static_cast<QWindowSystemInterfacePrivate::GestureEvent *>(e));
+        break;
     case QWindowSystemInterfacePrivate::PlatformPanel:
         QGuiApplicationPrivate::processPlatformPanelEvent(
                     static_cast<QWindowSystemInterfacePrivate::PlatformPanelEvent *>(e));
@@ -1493,6 +1497,7 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
 #endif
     case QWindowSystemInterfacePrivate::EnterWhatsThisMode:
         QGuiApplication::postEvent(QGuiApplication::instance(), new QEvent(QEvent::EnterWhatsThisMode));
+        break;
     default:
         qWarning() << "Unknown user input event type:" << e->type;
         break;
@@ -1570,9 +1575,11 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     ev.setTimestamp(e->timestamp);
     setMouseEventSource(&ev, e->source);
 #ifndef QT_NO_CURSOR
-    if (const QScreen *screen = window->screen())
-        if (QPlatformCursor *cursor = screen->handle()->cursor())
-            cursor->pointerEvent(ev);
+    if (!e->synthetic) {
+        if (const QScreen *screen = window->screen())
+            if (QPlatformCursor *cursor = screen->handle()->cursor())
+                cursor->pointerEvent(ev);
+    }
 #endif
 
     if (window->d_func()->blockedByModalWindow) {
@@ -1960,6 +1967,15 @@ void QGuiApplicationPrivate::processTabletLeaveProximityEvent(QWindowSystemInter
     Q_UNUSED(e)
 #endif
 }
+
+#ifndef QT_NO_GESTURES
+void QGuiApplicationPrivate::processGestureEvent(QWindowSystemInterfacePrivate::GestureEvent *e)
+{
+    QNativeGestureEvent ev(e->type, e->pos, e->pos, e->globalPos, e->realValue, e->sequenceId, e->intValue);
+    ev.setTimestamp(e->timestamp);
+    QGuiApplication::sendSpontaneousEvent(e->window, &ev);
+}
+#endif // QT_NO_GESTURES
 
 void QGuiApplicationPrivate::processPlatformPanelEvent(QWindowSystemInterfacePrivate::PlatformPanelEvent *e)
 {

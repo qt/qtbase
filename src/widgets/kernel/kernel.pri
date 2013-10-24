@@ -66,59 +66,9 @@ SOURCES += \
         kernel/qwidgetwindow.cpp \
         kernel/qwindowcontainer.cpp
 
-
-# TODO
-false:!x11:mac {
-	SOURCES += \
-		kernel/qclipboard_mac.cpp \
-		kernel/qmime_mac.cpp \
-		kernel/qt_mac.cpp \
-                kernel/qkeymapper_mac.cpp
-
-        OBJECTIVE_HEADERS += \
-                qcocoawindow_mac_p.h \
-                qcocoapanel_mac_p.h \
-                qcocoawindowdelegate_mac_p.h \
-                qcocoaview_mac_p.h \
-                qcocoaapplication_mac_p.h \
-                qcocoaapplicationdelegate_mac_p.h \
-                qmacgesturerecognizer_mac_p.h \
-                qmultitouch_mac_p.h \
-                qcocoasharedwindowmethods_mac_p.h \
-                qcocoaintrospection_p.h
-
-        OBJECTIVE_SOURCES += \
-                kernel/qcursor_mac.mm \
-                kernel/qdnd_mac.mm \
-                kernel/qapplication_mac.mm \
-		        kernel/qwidget_mac.mm \
-		        kernel/qcocoapanel_mac.mm \
-                kernel/qcocoaview_mac.mm \
-                kernel/qcocoawindow_mac.mm \
-                kernel/qcocoawindowdelegate_mac.mm \
-                kernel/qcocoaapplication_mac.mm \
-                kernel/qcocoaapplicationdelegate_mac.mm \
-                kernel/qt_cocoa_helpers_mac.mm \
-                kernel/qdesktopwidget_mac.mm \
-                kernel/qeventdispatcher_mac.mm \
-                kernel/qcocoawindowcustomthemeframe_mac.mm \
-                kernel/qmacgesturerecognizer_mac.mm \
-                kernel/qmultitouch_mac.mm \
-                kernel/qcocoaintrospection_mac.mm
-
-        HEADERS += \
-                kernel/qt_cocoa_helpers_mac_p.h \
-                kernel/qcocoaapplication_mac_p.h \
-                kernel/qcocoaapplicationdelegate_mac_p.h \
-                kernel/qeventdispatcher_mac_p.h
-
-        MENU_NIB.files = mac/qt_menu.nib
-        MENU_NIB.path = Resources
-        MENU_NIB.version = Versions
-        QMAKE_BUNDLE_DATA += MENU_NIB
-        RESOURCES += mac/macresources.qrc
-
-        LIBS_PRIVATE += -framework AppKit
+macx: {
+    HEADERS += kernel/qmacgesturerecognizer_p.h
+    SOURCES += kernel/qmacgesturerecognizer.cpp
 }
 
 wince*: {

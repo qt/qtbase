@@ -6,6 +6,18 @@ contains(TEMPLATE, ".*(lib|app)"):CONFIG += have_target
 
 load(resolve_config)
 
+# If the TARGET looks like a path, split it into DESTDIR and the resulting TARGET
+target_dir_part = $$dirname(TARGET)
+!isEmpty(target_dir_part) {
+    isEmpty(DESTDIR): \
+        DESTDIR = $$target_dir_part
+    else: \
+        DESTDIR = $$DESTDIR/$$target_dir_part
+
+    TARGET = $$basename(TARGET)
+    DESTDIR = $$clean_path($$DESTDIR)
+}
+
 QT_BREAKPAD_ROOT_PATH = $$(QT_BREAKPAD_ROOT_PATH)
 !isEmpty(QT_BREAKPAD_ROOT_PATH): \   # quick test first whether requested ...
         !static:release:have_target: \   # is it applicable?

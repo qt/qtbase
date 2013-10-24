@@ -1038,8 +1038,10 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
     return data.hasFlags(what);
 }
 
-static inline bool mkDir(const QString &path)
+static inline bool mkDir(const QString &path, DWORD *lastError = 0)
 {
+    if (lastError)
+        *lastError = 0;
 #if defined(Q_OS_WINCE)
     // Unfortunately CreateDirectory returns true for paths longer than
     // 256, but does not create a directory. It starts to fail, when
@@ -1059,7 +1061,11 @@ static inline bool mkDir(const QString &path)
     if (platformId == 1 && QFSFileEnginePrivate::longFileName(path).size() > 256)
         return false;
 #endif
-    return ::CreateDirectory((wchar_t*)QFSFileEnginePrivate::longFileName(path).utf16(), 0);
+    const QString longPath = QFSFileEnginePrivate::longFileName(path);
+    const bool result = ::CreateDirectory((wchar_t*)longPath.utf16(), 0);
+    if (lastError) // Capture lastError before any QString is freed since custom allocators might change it.
+        *lastError = GetLastError();
+    return result;
 }
 
 static inline bool rmDir(const QString &path)
@@ -1131,9 +1137,9 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
                 slash = dirName.length();
             }
             if (slash) {
+                DWORD lastError;
                 QString chunk = dirName.left(slash);
-                if (!mkDir(chunk)) {
-                    const DWORD lastError = GetLastError();
+                if (!mkDir(chunk, &lastError)) {
                     if (lastError == ERROR_ALREADY_EXISTS || lastError == ERROR_ACCESS_DENIED) {
                         bool existed = false;
                         if (isDirPath(chunk, &existed) && existed)

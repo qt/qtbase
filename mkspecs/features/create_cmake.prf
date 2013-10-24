@@ -30,11 +30,19 @@ split_incpath {
     CMAKE_ADD_SOURCE_INCLUDE_DIRS = true
     CMAKE_NO_PRIVATE_INCLUDES = true # Don't add private includes in the build dir which don't exist
     CMAKE_SOURCE_INCLUDES = \
-        $$cmakeTargetPath($$QT_MODULE_INCLUDE_BASE) \
-        $$cmakeTargetPath($$QT_MODULE_INCLUDE_BASE/Qt$${CMAKE_MODULE_NAME})
+        $$cmakeTargetPaths($$QT_MODULE_INCLUDE_BASE $$QT_MODULE_INCLUDE_BASE/Qt$${CMAKE_MODULE_NAME})
     CMAKE_SOURCE_PRIVATE_INCLUDES = \
-        $$cmakeTargetPath($$QT_MODULE_INCLUDE_BASE/Qt$${CMAKE_MODULE_NAME}/$$eval(QT.$${MODULE}.VERSION)) \
-        $$cmakeTargetPath($$QT_MODULE_INCLUDE_BASE/Qt$${CMAKE_MODULE_NAME}/$$eval(QT.$${MODULE}.VERSION)/Qt$${CMAKE_MODULE_NAME})
+        $$cmakeTargetPaths($$QT_MODULE_INCLUDE_BASE/Qt$${CMAKE_MODULE_NAME}/$$eval(QT.$${MODULE}.VERSION) \
+            $$QT_MODULE_INCLUDE_BASE/Qt$${CMAKE_MODULE_NAME}/$$eval(QT.$${MODULE}.VERSION)/Qt$${CMAKE_MODULE_NAME})
+
+    cmake_extra_source_includes.input = $$PWD/data/cmake/ExtraSourceIncludes.cmake.in
+    cmake_extra_source_includes.output = $$DESTDIR/cmake/Qt5$${CMAKE_MODULE_NAME}/ExtraSourceIncludes.cmake
+
+    !build_pass:QMAKE_SUBSTITUTES += \
+        cmake_extra_source_includes
+
+    cmake_qt5_module_files.files = \
+        $$cmake_extra_source_includes.output
 }
 
 CMAKE_INCLUDE_DIR = $$cmakeRelativePath($$[QT_INSTALL_HEADERS], $$[QT_INSTALL_PREFIX])
@@ -68,7 +76,7 @@ contains(CMAKE_PLUGIN_DIR, "^\\.\\./.*") {
     CMAKE_PLUGIN_DIR_IS_ABSOLUTE = True
 }
 
-!isEmpty(DLLDESTDIR):!static:!staticlib {
+win32:!wince:!static:!staticlib {
     CMAKE_DLL_DIR = $$cmakeRelativePath($$[QT_INSTALL_BINS], $$[QT_INSTALL_PREFIX])
     contains(CMAKE_DLL_DIR, "^\\.\\./.*") {
         CMAKE_DLL_DIR = $$[QT_INSTALL_BINS]/

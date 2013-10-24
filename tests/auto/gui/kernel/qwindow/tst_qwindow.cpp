@@ -223,7 +223,7 @@ void tst_QWindow::positioning()
 
     window.setWindowState(Qt::WindowFullScreen);
     QCoreApplication::processEvents();
-#ifdef Q_OS_MACX
+#ifdef Q_OS_OSX
     QEXPECT_FAIL("", "Multiple failures in this test on Mac OS X, see QTBUG-23059", Abort);
 #endif
     QTRY_COMPARE(window.received(QEvent::Resize), 2);

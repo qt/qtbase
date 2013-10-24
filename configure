@@ -1609,8 +1609,8 @@ while [ "$#" -gt 0 ]; do
         [ "$XPLATFORM" = "undefined" ] && exit 101
         ;;
     device-option)
-        DEV_VAR=`echo $VAL | sed "s,^\(.*\)=.*,\1,"`
-        DEV_VAL=`echo $VAL | sed "s,^.*=\(.*\),\1,"`
+        DEV_VAR=`echo $VAL | cut -d '=' -f 1`
+        DEV_VAL=`echo $VAL | cut -d '=' -f 2-`
         DeviceVar set $DEV_VAR "$DEV_VAL"
         ;;
     qpa)
@@ -2882,7 +2882,7 @@ if [ "$XPLATFORM_IOS" = "yes" ]; then
     CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS examples tests"
     CFG_SHARED="no" # iOS builds should be static to be able to submit to the App Store
     CFG_CXX11="no" # C++11 support disabled for now
-    CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtconnectivity qtdoc qtgraphicaleffects qtlocation qtmultimedia qtquickcontrols qtserialport qttools qtwebkit qtwebkit-examples"
+    CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtconnectivity qtdoc qtgraphicaleffects qtlocation qtmacextras qtmultimedia qtquickcontrols qtserialport qttools qtwebkit qtwebkit-examples"
 fi
 
 # disable GTK style support auto-detection on Mac
@@ -3032,6 +3032,21 @@ unset tty
 
 eval `LC_ALL=C $TEST_COMPILER $SYSROOT_FLAG $TEST_COMPILER_CXXFLAGS -xc++ -E -v - < /dev/null 2>&1 > /dev/null | $AWK '
 BEGIN { ORS = ""; FS = "="; incs = 0; libs = 0; }
+
+function normalize(dir)
+{
+    do {
+        odir = dir
+        gsub(/\\/[^\\/]+\\/\\.\\./, "", dir)
+    } while (dir != odir);
+    do {
+        odir = dir
+        gsub(/\\/\\./, "", dir)
+    } while (dir != odir);
+    sub("/$", "", dir);
+    return dir;
+}
+
 function quote(s)
 {
     # We only handle spaces
@@ -3047,14 +3062,19 @@ function quote(s)
 /^\#include </ { yup=1; print "DEFAULT_INCDIRS=\""; next }
 /^End of search/ { yup=0; print "\"\n" }
 / \(framework directory\)$/ { next }
-yup { print quote(substr($0, 2)) " "; ++incs }
+yup { print quote(normalize(substr($0, 2))) " "; ++incs }
 
 # extract from one line like LIBRARY_PATH=/one/path:/another/path:...
 $1 == "LIBRARY_PATH" {
     libs = split($2, library_paths, ":");
     print "DEFAULT_LIBDIRS=\"";
-    for (lib in library_paths)
-        print quote(library_paths[lib]) " ";
+    for (lib in library_paths) {
+        dir = normalize(library_paths[lib]);
+        if (!(dir in dirs)) {
+            print quote(dir) " ";
+            dirs[dir] = 1;
+        }
+    }
     print "\"\n"
 }
 
@@ -4230,7 +4250,7 @@ fi
 #-------------------------------------------------------------------------------
 # Verify makespec
 #-------------------------------------------------------------------------------
-QMAKE_OUTPUT=`$outpath/bin/qmake -E -nocache -spec "$XQMAKESPEC" "QT=" $DEV_NULL 2>&1 >/dev/null`
+QMAKE_OUTPUT=`$outpath/bin/qmake -E -nocache -spec "$XQMAKESPEC" "QT=" $DEV_NULL 2>&1`
 if [ $? != "0" ]; then
     echo "Failed to process makespec for platform '$XPLATFORM'"
     if [ "$OPT_VERBOSE" = "yes" ]; then
@@ -5501,6 +5521,7 @@ elif [ "$CFG_EGL" != "no" ]; then
         QMAKE_CFLAGS_EGL=`$PKG_CONFIG --cflags egl 2>/dev/null`
         QMakeVar set QMAKE_INCDIR_EGL "$QMAKE_INCDIR_EGL"
         QMakeVar set QMAKE_LIBS_EGL "$QMAKE_LIBS_EGL"
+        QMakeVar set QMAKE_CFLAGS_EGL "`echo " $QMAKE_CFLAGS_EGL " | sed -e 's, -I[^ ]* , ,g;s,^ ,,;s, $,,'`"
     fi       # detect EGL support
     if compileTest qpa/egl "EGL" $QMAKE_CFLAGS_EGL $QMAKE_LIBS_EGL; then
         CFG_EGL=yes
@@ -5580,14 +5601,6 @@ if [ "$CFG_LINUXFB" = "yes" ]; then
 fi
 if [ "$CFG_KMS" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG kms"
-fi
-
-if [ "$BUILD_ON_MAC" = "yes" ]; then
-    if compileTest mac/coreservices "CoreServices"; then
-        QT_CONFIG="$QT_CONFIG coreservices"
-    else
-        QMakeVar add DEFINES QT_NO_CORESERVICES
-    fi
 fi
 
 if [ "$BUILD_ON_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ] && [ "$XPLATFORM_QNX" = "no" ] && [ "$XPLATFORM_ANDROID" = "no" ]; then
@@ -6898,7 +6911,7 @@ report_support "  FreeType ..............." "$CFG_FREETYPE"
 report_support "  Iconv .................." "$CFG_ICONV"
 report_support "  ICU ...................." "$CFG_ICU"
 report_support "  Image formats:"
-report_support_plugin "    GIF .................." "$CFG_GIF" system QtGui
+report_support_plugin "    GIF .................." "$CFG_GIF" qt QtGui
 report_support_plugin "    JPEG ................." "$CFG_JPEG" "$CFG_LIBJPEG" QtGui
 report_support_plugin "    PNG .................." "$CFG_PNG" "$CFG_LIBPNG" QtGui
 report_support "  Glib ..................." "$CFG_GLIB"

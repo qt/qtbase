@@ -58,6 +58,10 @@ public:
     virtual QPaintEngine *createPaintEngine(QPrintEngine *printEngine, QPrinter::PrinterMode);
     virtual QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const;
     virtual QList<QPair<QString, QSizeF> >supportedSizesWithNames(const QPrinterInfo &printerInfo) const;
+    virtual QList<QPrinterInfo> availablePrinters();
+
+private:
+    static QList<QPrinterInfo> queryPrinters();
 };
 
 QT_END_NAMESPACE

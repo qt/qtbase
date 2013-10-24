@@ -17,10 +17,13 @@ equals(TEMPLATE, app) {
         # building by calling out to xcodebuild.
         TEMPLATE = aux
 
-        CONFIG -= have_target qt staticlib dll
+        CONFIG =
         SOURCES =
+        OBJECTIVE_SOURCES =
         RESOURCES =
         INSTALLS =
+        QMAKE_EXTRA_COMPILERS =
+        QMAKE_EXTRA_TARGETS =
 
         TARGET_XCODE_PROJECT_DIR = $${TARGET}.xcodeproj
 
@@ -41,6 +44,7 @@ equals(TEMPLATE, app) {
 
         # And distclean
         xcodebuild_distclean.commands = "$(DEL_FILE) -R $$TARGET_XCODE_PROJECT_DIR"
+        xcodebuild_distclean.depends = xcodebuild_clean
         QMAKE_EXTRA_TARGETS += xcodebuild_distclean
         distclean.depends = xcodebuild_distclean
         QMAKE_EXTRA_TARGETS += distclean
@@ -53,21 +57,11 @@ macx-xcode {
     QMAKE_MAC_XCODE_SETTINGS += ios_device_family
 }
 
-isEmpty(QT_ARCH) {
-    # The iPhoneOS and iPhoneSimulator targets share the same toolchain,
-    # so when configure runs the arch tests it passes the correct sysroot,
-    # but we fail to pick up the architecture since we're not passing -arch
-    # yet. Xcode does not seem to have a way to run the shared toolchain
-    # in a way that will automatically  do this (for example xcrun -sdk).
-    contains(QMAKE_MAC_SDK, iphoneos.*): QT_ARCH = arm
-    else: QT_ARCH = i386 # Simulator
-}
-
 # Be more specific about which architecture we're targeting
 equals(QT_ARCH, arm): \
-    actual_archs = armv7
+    actual_archs = $$QMAKE_IOS_DEVICE_ARCHS
 else: \
-    actual_archs = $$QT_ARCH
+    actual_archs = $$QMAKE_IOS_SIMULATOR_ARCHS
 
 macx-xcode {
     QMAKE_XCODE_ARCHS = $$actual_archs

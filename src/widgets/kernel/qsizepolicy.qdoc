@@ -342,6 +342,7 @@
 
 /*!
     \fn void QSizePolicy::retainSizeWhenHidden() const
+    \since 5.2
 
     Returns if the layout should retain the widgets size when it is hidden. This is by default false.
 
@@ -350,6 +351,7 @@
 
 /*!
    \fn void QSizePolicy::setRetainSizeWhenHidden(bool retainSize)
+   \since 5.2
 
     Set if a layout should retain the widgets size when it is hidden.
     If \a retainSize is true the layout will not be changed by hiding the widget.

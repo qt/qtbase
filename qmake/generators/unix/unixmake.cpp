@@ -106,20 +106,8 @@ UnixMakefileGenerator::init()
         return; /* subdirs is done */
     }
 
-    //If the TARGET looks like a path split it into DESTDIR and the resulting TARGET
-    if(!project->isEmpty("TARGET")) {
+    if (!project->isEmpty("TARGET"))
         project->values("TARGET") = escapeFilePaths(project->values("TARGET"));
-        ProString targ = unescapeFilePath(project->first("TARGET"));
-        int slsh = qMax(targ.lastIndexOf('/'), targ.lastIndexOf(Option::dir_sep));
-        if(slsh != -1) {
-            if(project->isEmpty("DESTDIR"))
-                project->values("DESTDIR").append("");
-            else if(project->first("DESTDIR").right(1) != Option::dir_sep)
-                project->values("DESTDIR") = ProStringList(project->first("DESTDIR") + Option::dir_sep);
-            project->values("DESTDIR") = ProStringList(project->first("DESTDIR") + targ.left(slsh+1));
-            project->values("TARGET") = ProStringList(targ.mid(slsh+1));
-        }
-    }
 
     project->values("QMAKE_ORIG_TARGET") = project->values("TARGET");
     project->values("QMAKE_ORIG_DESTDIR") = project->values("DESTDIR");

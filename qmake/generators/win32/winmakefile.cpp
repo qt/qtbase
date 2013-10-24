@@ -274,20 +274,6 @@ Win32MakefileGenerator::processPrlFiles()
 
 void Win32MakefileGenerator::processVars()
 {
-    //If the TARGET looks like a path split it into DESTDIR and the resulting TARGET
-    if(!project->isEmpty("TARGET")) {
-        ProString targ = project->first("TARGET");
-        int slsh = qMax(targ.lastIndexOf('/'), targ.lastIndexOf(Option::dir_sep));
-        if(slsh != -1) {
-            if(project->isEmpty("DESTDIR"))
-                project->values("DESTDIR").append("");
-            else if(project->first("DESTDIR").right(1) != Option::dir_sep)
-                project->values("DESTDIR") = ProStringList(project->first("DESTDIR") + Option::dir_sep);
-            project->values("DESTDIR") = ProStringList(project->first("DESTDIR") + targ.left(slsh+1));
-            project->values("TARGET") = ProStringList(targ.mid(slsh+1));
-        }
-    }
-
     project->values("QMAKE_ORIG_TARGET") = project->values("TARGET");
     if (project->isEmpty("QMAKE_PROJECT_NAME"))
         project->values("QMAKE_PROJECT_NAME") = project->values("QMAKE_ORIG_TARGET");
@@ -315,6 +301,8 @@ void Win32MakefileGenerator::processVars()
         project->values("QMAKE_COPY_FILE").append("$(COPY)");
     if(project->isEmpty("QMAKE_COPY_DIR"))
         project->values("QMAKE_COPY_DIR").append("xcopy /s /q /y /i");
+    if (project->isEmpty("QMAKE_STREAM_EDITOR"))
+        project->values("QMAKE_STREAM_EDITOR").append("$(QMAKE) -install sed");
     if(project->isEmpty("QMAKE_INSTALL_FILE"))
         project->values("QMAKE_INSTALL_FILE").append("$(COPY_FILE)");
     if(project->isEmpty("QMAKE_INSTALL_PROGRAM"))

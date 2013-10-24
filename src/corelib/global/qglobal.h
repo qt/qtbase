@@ -1004,13 +1004,19 @@ template <bool B, typename T = void> struct QEnableIf;
 template <typename T> struct QEnableIf<true, T> { typedef T Type; };
 }
 
-#ifdef __OBJC__
-#define Q_FORWARD_DECLARE_OBJC_CLASS(classname) @class classname
-#else
-#define Q_FORWARD_DECLARE_OBJC_CLASS(classname) typedef struct objc_object classname
+#ifndef Q_FORWARD_DECLARE_OBJC_CLASS
+#  ifdef __OBJC__
+#    define Q_FORWARD_DECLARE_OBJC_CLASS(classname) @class classname
+#  else
+#    define Q_FORWARD_DECLARE_OBJC_CLASS(classname) typedef struct objc_object classname
+#  endif
 #endif
-#define Q_FORWARD_DECLARE_CF_TYPE(type) typedef const struct __ ## type * type ## Ref
-#define Q_FORWARD_DECLARE_MUTABLE_CF_TYPE(type) typedef struct __ ## type * type ## Ref
+#ifndef Q_FORWARD_DECLARE_CF_TYPE
+#  define Q_FORWARD_DECLARE_CF_TYPE(type) typedef const struct __ ## type * type ## Ref
+#endif
+#ifndef Q_FORWARD_DECLARE_MUTABLE_CF_TYPE
+#  define Q_FORWARD_DECLARE_MUTABLE_CF_TYPE(type) typedef struct __ ## type * type ## Ref
+#endif
 
 QT_END_NAMESPACE
 // Q_GLOBAL_STATIC

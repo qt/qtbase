@@ -227,6 +227,8 @@ QWindow::~QWindow()
         QGuiApplicationPrivate::focus_window = 0;
     if (QGuiApplicationPrivate::currentMouseWindow == this)
         QGuiApplicationPrivate::currentMouseWindow = 0;
+    if (QGuiApplicationPrivate::tabletPressTarget == this)
+        QGuiApplicationPrivate::tabletPressTarget = 0;
     QGuiApplicationPrivate::window_list.removeAll(this);
     destroy();
 }

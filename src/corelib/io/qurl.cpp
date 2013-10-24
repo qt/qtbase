@@ -1840,11 +1840,20 @@ void QUrl::setUrl(const QString &url, ParsingMode parsingMode)
     input. It must also start with an ASCII letter.
 
     The scheme describes the type (or protocol) of the URL. It's
-    represented by one or more ASCII characters at the start the URL,
-    and is followed by a ':'. The following example shows a URL where
-    the scheme is "ftp":
+    represented by one or more ASCII characters at the start the URL.
+
+    A scheme is strictly \l {http://www.ietf.org/rfc/rfc3986.txt} {RFC 3986}-compliant:
+        \tt {scheme = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )}
+
+    The following example shows a URL where the scheme is "ftp":
 
     \image qurl-authority2.png
+
+    To set the scheme, the following call is used:
+    \code
+        QUrl url;
+        url.setScheme("ftp");
+    \endcode
 
     The scheme can also be empty, in which case the URL is interpreted
     as relative.
@@ -3327,7 +3336,7 @@ QString QUrl::fromPercentEncoding(const QByteArray &input)
     them to \a include.
 
     Unreserved is defined as:
-       ALPHA / DIGIT / "-" / "." / "_" / "~"
+       \tt {ALPHA / DIGIT / "-" / "." / "_" / "~"}
 
     \snippet code/src_corelib_io_qurl.cpp 6
 */

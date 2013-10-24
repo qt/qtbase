@@ -77,6 +77,26 @@ void QFbWindow::setGeometry(const QRect &rect)
     QPlatformWindow::setGeometry(rect);
 }
 
+void QFbWindow::setVisible(bool visible)
+{
+    if (visible) {
+        if (mWindowState & Qt::WindowFullScreen)
+            setGeometry(platformScreen()->geometry());
+        else if (mWindowState & Qt::WindowMaximized)
+            setGeometry(platformScreen()->availableGeometry());
+    }
+    QPlatformWindow::setVisible(visible);
+}
+
+
+void QFbWindow::setWindowState(Qt::WindowState state)
+{
+    QPlatformWindow::setWindowState(state);
+    mWindowState = state;
+    platformScreen()->invalidateRectCache();
+}
+
+
 void QFbWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     mWindowFlags = flags;

@@ -138,13 +138,6 @@ static QByteArray escapedString(const QString &s)
             if (u < 0x0800) {
                 *cursor++ = 0xc0 | ((uchar) (u >> 6));
             } else {
-                // is it one of the Unicode non-characters?
-                if (QChar::isNonCharacter(u)) {
-                    *cursor++ = replacement;
-                    ++ch;
-                    continue;
-                }
-
                 if (QChar::requiresSurrogates(u)) {
                     *cursor++ = 0xf0 | ((uchar) (u >> 18));
                     *cursor++ = 0x80 | (((uchar) (u >> 12)) & 0x3f);

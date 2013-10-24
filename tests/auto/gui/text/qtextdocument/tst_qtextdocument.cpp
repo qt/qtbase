@@ -54,6 +54,7 @@
 #include <qabstracttextdocumentlayout.h>
 #include <qtextlist.h>
 #include <qtextcodec.h>
+#include <qguiapplication.h>
 #include <qurl.h>
 #include <qpainter.h>
 #include <qfontmetrics.h>
@@ -113,6 +114,7 @@ private slots:
     void toHtmlBodyBgColorRgba();
     void toHtmlBodyBgColorTransparent();
     void toHtmlRootFrameProperties();
+    void toHtmlLineHeightProperties();
     void capitalizationHtmlInExport();
     void wordspacingHtmlExport();
 
@@ -186,6 +188,9 @@ private slots:
 
     void QTBUG27354_spaceAndSoftSpace();
     void cssInheritance();
+
+    void QTBUG28998_linkColor();
+
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
 
@@ -1856,6 +1861,25 @@ void tst_QTextDocument::toHtmlRootFrameProperties()
     QCOMPARE(doc.toHtml(), expectedOutput);
 }
 
+void tst_QTextDocument::toHtmlLineHeightProperties()
+{
+    CREATE_DOC_AND_CURSOR();
+
+    QTextBlock block = doc.firstBlock();
+    QTextBlockFormat blockFormat = block.blockFormat();
+    blockFormat.setLineHeight(200, QTextBlockFormat::ProportionalHeight);
+    cursor.setBlockFormat(blockFormat);
+
+    cursor.insertText("Blah");
+    QString expectedOutput("<p DEFAULTBLOCKSTYLE line-height:200%;\">Blah</p>");
+
+    expectedOutput.prepend(htmlHead);
+    expectedOutput.replace("DEFAULTBLOCKSTYLE", "style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;");
+    expectedOutput.append(htmlTail);
+
+    QCOMPARE(doc.toHtml(), expectedOutput);
+}
+
 void tst_QTextDocument::capitalizationHtmlInExport()
 {
     doc->setPlainText("Test");
@@ -2952,6 +2976,30 @@ void tst_QTextDocument::cssInheritance()
         QVERIFY(fmt.lineHeightType() == QTextBlockFormat::ProportionalHeight);
         QVERIFY(fmt.lineHeight() == 300);
     }
+}
+
+void tst_QTextDocument::QTBUG28998_linkColor()
+{
+    QPalette pal;
+    pal.setColor(QPalette::Link, QColor("tomato"));
+    QGuiApplication::setPalette(pal);
+
+    QTextDocument doc;
+    doc.setHtml("<a href=\"http://www.qt-project.org\">Qt</a>");
+
+    QCOMPARE(doc.blockCount(), 1);
+    QTextBlock block = doc.firstBlock();
+    QVERIFY(block.isValid());
+
+    QTextFragment fragment = block.begin().fragment();
+    QVERIFY(fragment.isValid());
+
+    QTextCharFormat format = fragment.charFormat();
+    QVERIFY(format.isValid());
+    QVERIFY(format.isAnchor());
+    QCOMPARE(format.anchorHref(), QStringLiteral("http://www.qt-project.org"));
+
+    QCOMPARE(format.foreground(), pal.link());
 }
 
 QTEST_MAIN(tst_QTextDocument)

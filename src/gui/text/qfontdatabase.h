@@ -151,7 +151,7 @@ public:
     static bool removeAllApplicationFonts();
 
 #if QT_DEPRECATED_SINCE(5, 2)
-    QT_DEPRECATED static inline bool supportsThreadedFontRendering() { return true; }
+    QT_DEPRECATED static bool supportsThreadedFontRendering();
 #endif
 
     static QFont systemFont(SystemFont type);

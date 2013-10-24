@@ -1,10 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="app_name"><!-- %%INSERT_APP_NAME%% --></string>
-    <string name="app_lib_name"><!-- %%INSERT_APP_LIB_NAME%% --></string>
-    <string name="local_libs"><!-- %%INSERT_LOCAL_LIBS%% --></string>
-    <string name="local_jars"><!-- %%INSERT_LOCAL_JARS%% --></string>
-    <string name="init_classes"><!-- %%INSERT_INIT_CLASSES%% --></string>
 
     <string name="ministro_not_found_msg">Can\'t find Ministro service.\nThe application can\'t start.</string>
     <string name="ministro_needed_msg">This application requires Ministro service. Would you like to install it?</string>

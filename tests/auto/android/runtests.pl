@@ -164,7 +164,7 @@ if ($output =~ m/.*\[ro.build.version.sdk\]: \[(\d+)\]/)
 sub reinstallQuadruplor
 {
     pushd($quadruplor_dir);
-    system("$android_sdk_dir/tools/android update project -p . -t android-4")==0 or die "Can't update project ...\n";
+    system("$android_sdk_dir/tools/android update project -p . -t android-10")==0 or die "Can't update project ...\n";
     system("$ant_tool uninstall clean debug install")==0 or die "Can't install Quadruplor\n";
     system("$adb_tool $device_serial shell am start -n $intentName"); # create application folders
     waitForProcess($packageName,1,10);

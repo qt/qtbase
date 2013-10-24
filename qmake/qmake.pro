@@ -20,6 +20,7 @@ VPATH += $$QT_SOURCE_TREE/src/corelib/global \
          $$QT_SOURCE_TREE/src/corelib/plugin \
          $$QT_SOURCE_TREE/src/corelib/xml \
          $$QT_SOURCE_TREE/src/corelib/io \
+         $$QT_SOURCE_TREE/src/corelib/json \
          $$QT_SOURCE_TREE/tools/shared/windows
 
 INCLUDEPATH += . \

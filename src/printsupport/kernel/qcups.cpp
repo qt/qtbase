@@ -144,10 +144,12 @@ QCUPSSupport::QCUPSSupport()
     for (int i = 0; i <  prnCount; ++i) {
         if (printers[i].is_default) {
             currPrinterIndex = i;
-            setCurrentPrinter(i);
             break;
         }
     }
+
+    if (prnCount > 0)
+        setCurrentPrinter(currPrinterIndex);
 
 #ifndef QT_NO_TEXTCODEC
     cups_lang_t *cupsLang = _cupsLangGet(0);
@@ -211,6 +213,17 @@ const ppd_file_t* QCUPSSupport::setCurrentPrinter(int index)
     page_sizes = ppdOption("PageSize");
 
     return currPPD;
+}
+
+const ppd_file_t* QCUPSSupport::setCurrentPrinter(const QString &printerName)
+{
+    Q_FOREACH (const QCUPSSupport::Printer &printer, QCUPSSupport::availableUnixPrinters()) {
+        if (printer.name == printerName) {
+            return setCurrentPrinter(printer.cupsPrinterIndex);
+        }
+    }
+
+    return 0;
 }
 
 int QCUPSSupport::currentPrinterIndex() const

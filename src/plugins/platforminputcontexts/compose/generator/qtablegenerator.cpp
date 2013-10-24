@@ -55,6 +55,7 @@
 #include <xkbcommon_workaround.h>
 #endif
 
+#include <locale.h> // LC_CTYPE
 #include <string.h> // strchr, strncmp, etc.
 #include <strings.h> // strncasecmp
 #include <clocale> // LC_CTYPE

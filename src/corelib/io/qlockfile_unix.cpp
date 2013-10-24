@@ -140,6 +140,13 @@ static bool setNativeLocks(int fd)
 
 QLockFile::LockError QLockFilePrivate::tryLock_sys()
 {
+    // Assemble data, to write in a single call to write
+    // (otherwise we'd have to check every write call)
+    // Use operator% from the fast builder to avoid multiple memory allocations.
+    QByteArray fileData = QByteArray::number(QCoreApplication::applicationPid()) % '\n'
+                          % qAppName().toUtf8() % '\n'
+                          % localHostName().toUtf8() % '\n';
+
     const QByteArray lockFileName = QFile::encodeName(fileName);
     const int fd = qt_safe_open(lockFileName.constData(), O_WRONLY | O_CREAT | O_EXCL, 0644);
     if (fd < 0) {
@@ -159,16 +166,6 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
 
     // We hold the lock, continue.
     fileHandle = fd;
-
-    // Assemble data, to write in a single call to write
-    // (otherwise we'd have to check every write call)
-    QByteArray fileData;
-    fileData += QByteArray::number(QCoreApplication::applicationPid());
-    fileData += '\n';
-    fileData += qAppName().toUtf8();
-    fileData += '\n';
-    fileData += localHostName().toUtf8();
-    fileData += '\n';
 
     QLockFile::LockError error = QLockFile::NoError;
     if (qt_write_loop(fd, fileData.constData(), fileData.size()) < fileData.size())

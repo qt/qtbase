@@ -76,6 +76,10 @@
 #include <CoreServices/CoreServices.h>
 #endif
 
+#if defined(Q_OS_ANDROID)
+#include <private/qjni_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #if !QT_DEPRECATED_SINCE(5, 0)
@@ -2348,6 +2352,9 @@ typedef uint SeedStorageType;
 typedef QThreadStorage<SeedStorageType *> SeedStorage;
 Q_GLOBAL_STATIC(SeedStorage, randTLS)  // Thread Local Storage for seed value
 
+#elif defined(Q_OS_ANDROID)
+typedef QThreadStorage<QJNIObjectPrivate> AndroidRandomStorage;
+Q_GLOBAL_STATIC(AndroidRandomStorage, randomTLS)
 #endif
 
 /*!
@@ -2381,6 +2388,16 @@ void qsrand(uint seed)
         //global static object, fallback to srand(seed)
         srand(seed);
     }
+#elif defined(Q_OS_ANDROID)
+    QJNIObjectPrivate random = QJNIObjectPrivate("java/util/Random",
+                                                 "(J)V",
+                                                 jlong(seed));
+    if (!random.isValid()) {
+        srand(seed);
+        return;
+    }
+
+    randomTLS->setLocalData(random);
 #else
     // On Windows srand() and rand() already use Thread-Local-Storage
     // to store the seed between calls
@@ -2422,6 +2439,25 @@ int qrand()
         //global static object, fallback to rand()
         return rand();
     }
+#elif defined(Q_OS_ANDROID)
+    AndroidRandomStorage *randomStorage = randomTLS();
+    if (!randomStorage)
+        return rand();
+
+    QJNIObjectPrivate random;
+    if (!randomStorage->hasLocalData()) {
+        random = QJNIObjectPrivate("java/util/Random",
+                                   "(J)V",
+                                   jlong(1));
+        if (!random.isValid())
+            return rand();
+
+        randomStorage->setLocalData(random);
+    } else {
+        random = randomStorage->localData();
+    }
+
+    return random.callMethod<jint>("nextInt", "(I)I", RAND_MAX);
 #else
     // On Windows srand() and rand() already use Thread-Local-Storage
     // to store the seed between calls

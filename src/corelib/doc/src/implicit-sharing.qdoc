@@ -89,9 +89,12 @@
     of data. Objects can easily be assigned, sent as function arguments,
     and returned from functions.
 
-    Implicit sharing takes place behind the scenes; the programmer
-    does not need to worry about it. Even in multithreaded
-    applications, implicit sharing takes place, as explained in
+    Implicit sharing mostly takes place behind the scenes;
+    the programmer rarely needs to worry about it. However, Qt's
+    container iterators have different behavior than those from
+    the STL. Read \l{Implicit sharing iterator problem}.
+
+    In multithreaded applications, implicit sharing takes place, as explained in
     \l{Thread-Support in Qt Modules#Threads and Implicitly Shared Classes}
     {Threads and Implicitly Shared Classes}.
 
@@ -105,9 +108,10 @@
     greater than one. (This is often called \e {copy-on-write} or
     \e {value semantics}.)
 
-    An implicitly shared class has total control of its internal data. In
+    An implicitly shared class has control of its internal data. In
     any member functions that modify its data, it automatically detaches
-    before modifying the data.
+    before modifying the data. Notice, however, the special case with
+    container iterators; see \l{Implicit sharing iterator problem}.
 
     The QPen class, which uses implicit sharing, detaches from the shared
     data in all member functions that change the internal data.
@@ -133,9 +137,9 @@
     In this example, \c p1 and \c p2 share data until QPainter::begin()
     is called for \c p2, because painting a pixmap will modify it.
 
-    \warning Do not copy an implicitly shared container (QMap,
-    QVector, etc.) while you are iterating over it using an non-const
-    \l{STL-style iterators}{STL-style iterator}.
+    \warning Be careful with copying an implicitly shared container
+    (QMap, QVector, etc.) while you use
+    \l{STL-style iterators}{STL-style iterator}. See \l{Implicit sharing iterator problem}.
 
     \keyword implicitly shared classes
     \annotatedlist shared

@@ -3240,7 +3240,8 @@ MakefileGenerator::writePkgConfigFile()
                 }
             }
         }
-        t << var << "=" << val << endl;
+        if (!val.isEmpty())
+            t << var << "=" << val << endl;
     }
 
     t << endl;
@@ -3331,8 +3332,7 @@ QString MakefileGenerator::installMetaFile(const ProKey &replace_rule, const QSt
 {
     QString ret;
     if (project->isEmpty(replace_rule)
-        || project->isActiveConfig("no_sed_meta_install")
-        || project->isEmpty("QMAKE_STREAM_EDITOR")) {
+        || project->isActiveConfig("no_sed_meta_install")) {
         ret += "-$(INSTALL_FILE) \"" + src + "\" \"" + dst + "\"";
     } else {
         ret += "-$(SED)";

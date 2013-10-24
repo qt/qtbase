@@ -29,6 +29,7 @@ QMAKE_QT_CONFIG = $$[QT_HOST_DATA/get]/mkspecs/qconfig.pri
          include($$mod)
       }
    }
+   QT_MODULES = $$unique(QT_MODULES)   # In case modules appear in multiple places
    unset(QT_MODULE_INCLUDE_BASE)
    unset(QT_MODULE_LIB_BASE)
    unset(QT_MODULE_HOST_LIB_BASE)

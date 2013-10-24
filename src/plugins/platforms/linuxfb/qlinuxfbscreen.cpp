@@ -62,6 +62,10 @@
 
 #include <linux/fb.h>
 
+#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
+#include <QtPlatformSupport/private/qdevicediscovery_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 static int openFramebufferDevice(const QString &dev)
@@ -292,8 +296,8 @@ static void blankScreen(int fd, bool on)
     ioctl(fd, FBIOBLANK, on ? VESA_POWERDOWN : VESA_NO_BLANKING);
 }
 
-QLinuxFbScreen::QLinuxFbScreen()
-    : mFbFd(-1), mBlitter(0)
+QLinuxFbScreen::QLinuxFbScreen(const QStringList &args)
+    : mArgs(args), mFbFd(-1), mBlitter(0)
 {
 }
 
@@ -312,7 +316,7 @@ QLinuxFbScreen::~QLinuxFbScreen()
     delete mBlitter;
 }
 
-bool QLinuxFbScreen::initialize(const QStringList &args)
+bool QLinuxFbScreen::initialize()
 {
     QRegExp ttyRx(QLatin1String("tty=(.*)"));
     QRegExp fbRx(QLatin1String("fb=(.*)"));
@@ -326,7 +330,7 @@ bool QLinuxFbScreen::initialize(const QStringList &args)
     bool doSwitchToGraphicsMode = true;
 
     // Parse arguments
-    foreach (const QString &arg, args) {
+    foreach (const QString &arg, mArgs) {
         if (arg == QLatin1String("nographicsmodeswitch"))
             doSwitchToGraphicsMode = false;
         else if (sizeRx.indexIn(arg) != -1)
@@ -341,8 +345,15 @@ bool QLinuxFbScreen::initialize(const QStringList &args)
             userMmSize = QSize(mmSizeRx.cap(1).toInt(), mmSizeRx.cap(2).toInt());
     }
 
-    if (fbDevice.isEmpty())
-        fbDevice = QLatin1String("/dev/fb0"); // ## auto-detect
+    if (fbDevice.isEmpty()) {
+        fbDevice = QLatin1String("/dev/fb0");
+        if (!QFile::exists(fbDevice))
+            fbDevice = QLatin1String("/dev/graphics/fb0");
+        if (!QFile::exists(fbDevice)) {
+            qWarning("Unable to figure out framebuffer device. Specify it manually.");
+            return false;
+        }
+    }
 
     // Open the device
     mFbFd = openFramebufferDevice(fbDevice);
@@ -387,7 +398,19 @@ bool QLinuxFbScreen::initialize(const QStringList &args)
 
     QFbScreen::initializeCompositor();
     mFbScreenImage = QImage(mMmap.data, geometry.width(), geometry.height(), mBytesPerLine, mFormat);
-    mCursor = new QFbCursor(this);
+
+    QByteArray hideCursorVal = qgetenv("QT_QPA_FB_HIDECURSOR");
+    bool hideCursor = true; // default to true to prevent the cursor showing up with the subclass on Android
+    if (hideCursorVal.isEmpty()) {
+#if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
+        QScopedPointer<QDeviceDiscovery> dis(QDeviceDiscovery::create(QDeviceDiscovery::Device_Mouse));
+        hideCursor = dis->scanConnectedDevices().isEmpty();
+#endif
+    } else {
+        hideCursor = hideCursorVal.toInt() != 0;
+    }
+    if (!hideCursor)
+        mCursor = new QFbCursor(this);
 
     mTtyFd = openTtyDevice(ttyDevice);
     if (mTtyFd == -1)

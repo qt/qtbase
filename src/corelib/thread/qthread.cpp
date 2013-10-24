@@ -206,20 +206,20 @@ QThreadPrivate::~QThreadPrivate()
     There will not be any event loop running in the thread unless you call
     exec().
 
-    It is important to remember that a QThread object usually lives
-    in the thread where it was created, not in the thread that it
-    manages. This oft-overlooked detail means that a QThread's slots
-    will be executed in the context of its home thread, not in the
-    context of the thread it is managing. For this reason,
-    implementing new slots in a QThread subclass is error-prone and
-    discouraged.
+    It is important to remember that a QThread instance \l{QObject#Thread
+    Affinity}{lives in} the old thread that instantiated it, not in the
+    new thread that calls run(). This means that all of QThread's queued
+    slots will execute in the old thread. Thus, a developer who wishes to
+    invoke slots in the new thread must use the worker-object approach; new
+    slots should not be implemented directly into a subclassed QThread.
 
-    \note If you interact with an object, using any technique other
-    than queued signal/slot connections (e.g. direct function calls),
-    then the usual multithreading precautions need to be taken.
+    When subclassing QThread, keep in mind that the constructor executes in
+    the old thread while run() executes in the new thread. If a member
+    variable is accessed from both functions, then the variable is accessed
+    from two different threads. Check that it is safe to do so.
 
-    \note It is not possible to change the thread affinity of GUI
-    objects; they must remain in the main thread.
+    \note Care must be taken when interacting with objects across different
+    threads. See \l{Synchronizing Threads} for details.
 
     \section1 Managing threads
 
@@ -264,7 +264,7 @@ QThreadPrivate::~QThreadPrivate()
     \l{Mandelbrot Example}, as that is the name of the QThread subclass).
     Note that this is currently not available with release builds on Windows.
 
-    \sa {Thread Support in Qt}, QThreadStorage, QMutex, QSemaphore, QWaitCondition,
+    \sa {Thread Support in Qt}, QThreadStorage, {Synchronizing Threads}
         {Mandelbrot Example}, {Semaphores Example}, {Wait Conditions Example}
 */
 
@@ -491,7 +491,8 @@ uint QThread::stackSize() const
     that was passed to exit(). The value returned is 0 if exit() is called via
     quit().
 
-    It is necessary to call this function to start event handling.
+    This function is meant to be called from within run(). It is necessary to
+    call this function to start event handling.
 
     \sa quit(), exit()
 */

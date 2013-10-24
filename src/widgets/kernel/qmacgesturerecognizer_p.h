@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the config.tests of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,10 +39,64 @@
 **
 ****************************************************************************/
 
-#include <CoreServices/CoreServices.h>
+#ifndef QMACSWIPEGESTURERECOGNIZER_MAC_P_H
+#define QMACSWIPEGESTURERECOGNIZER_MAC_P_H
 
-int main()
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of other Qt classes.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include "qtimer.h"
+#include "qpoint.h"
+#include "qgesturerecognizer.h"
+
+#ifndef QT_NO_GESTURES
+
+QT_BEGIN_NAMESPACE
+
+class QMacSwipeGestureRecognizer : public QGestureRecognizer
 {
-    FSRef ref;
-    return 0;
-}
+public:
+    QMacSwipeGestureRecognizer();
+
+    QGesture *create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *gesture, QObject *watched, QEvent *event);
+    void reset(QGesture *gesture);
+};
+
+class QMacPinchGestureRecognizer : public QGestureRecognizer
+{
+public:
+    QMacPinchGestureRecognizer();
+
+    QGesture *create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *gesture, QObject *watched, QEvent *event);
+    void reset(QGesture *gesture);
+};
+
+class QMacPanGestureRecognizer : public QObject, public QGestureRecognizer
+{
+public:
+    QMacPanGestureRecognizer();
+
+    QGesture *create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *gesture, QObject *watched, QEvent *event);
+    void reset(QGesture *gesture);
+private:
+    QPointF _startPos;
+    QBasicTimer _panTimer;
+    bool _panCanceled;
+};
+
+QT_END_NAMESPACE
+
+#endif // QT_NO_GESTURES
+
+#endif // QMACSWIPEGESTURERECOGNIZER_MAC_P_H

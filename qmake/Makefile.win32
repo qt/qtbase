@@ -41,7 +41,7 @@ CFLAGS_BARE = -c -Fo./ \
               -DQT_BUILD_QMAKE -DQT_BOOTSTRAPPED -DPROEVALUATOR_FULL \
               -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_NO_COMPONENT -DQT_NO_COMPRESS \
               -DQT_NO_THREAD -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -DQT_NO_DATASTREAM \
-              -DUNICODE -DQT_CRYPTOGRAPHICHASH_ONLY_SHA1
+              -DUNICODE -DQT_CRYPTOGRAPHICHASH_ONLY_SHA1 -DQT_JSON_READONLY
 CFLAGS   = -Yuqmake_pch.h -FIqmake_pch.h -Fpqmake_pch.pch $(CFLAGS_BARE) $(CFLAGS) $(EXTRA_CPPFLAGS)
 
 CXXFLAGS_BARE = $(CFLAGS_BARE)
@@ -120,7 +120,13 @@ QTOBJS= \
 	qxmlstream.obj \
 	qxmlutils.obj \
 	qnumeric.obj \
-	qlogging.obj
+	qlogging.obj \
+	qjson.obj \
+	qjsondocument.obj \
+	qjsonparser.obj \
+	qjsonarray.obj \
+	qjsonobject.obj \
+	qjsonvalue.obj
 
 first all: qmake.exe
 
@@ -205,6 +211,9 @@ qmake_pch.obj:
 	$(CXX) $(CXXFLAGS) $<
 
 {$(SOURCE_PATH)\src\corelib\xml}.cpp{}.obj::
+	$(CXX) $(CXXFLAGS) $<
+
+{$(SOURCE_PATH)\src\corelib\json}.cpp{}.obj::
 	$(CXX) $(CXXFLAGS) $<
 
 {$(SOURCE_PATH)\tools\shared\windows}.cpp{}.obj::

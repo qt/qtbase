@@ -164,7 +164,7 @@ if (!clazz) { \
 
         //__android_log_print(ANDROID_LOG_FATAL, m_qtTag, m_methodErrorMsg, METHOD_NAME, METHOD_SIGNATURE);
 
-#define CALL_METHOD(OBJECT, METHOD_NAME, METHOD_SIGNATURE, VALUE) \
+#define CALL_METHOD(OBJECT, METHOD_NAME, METHOD_SIGNATURE, ...) \
 { \
     jclass clazz = env->GetObjectClass(OBJECT); \
     jmethodID method = env->GetMethodID(clazz, METHOD_NAME, METHOD_SIGNATURE); \
@@ -172,7 +172,7 @@ if (!clazz) { \
         __android_log_print(ANDROID_LOG_WARN, m_qtTag, m_methodErrorMsg, METHOD_NAME, METHOD_SIGNATURE); \
         return; \
     } \
-    env->CallVoidMethod(OBJECT, method, VALUE); \
+    env->CallVoidMethod(OBJECT, method, __VA_ARGS__); \
 }
 
 
@@ -201,9 +201,21 @@ if (!clazz) { \
         }
         QAccessible::State state = iface->state();
 
-        QString desc = iface->text(QAccessible::Name);
+        // try to fill in the text property, this is what the screen reader reads
+        QString desc = iface->text(QAccessible::Value);
+        if (desc.isEmpty())
+            desc = iface->text(QAccessible::Name);
         if (desc.isEmpty())
             desc = iface->text(QAccessible::Description);
+        if (QAccessibleTextInterface *textIface = iface->textInterface()) {
+            if (textIface->selectionCount() > 0) {
+                int startSelection;
+                int endSelection;
+                textIface->selection(0, &startSelection, &endSelection);
+                CALL_METHOD(node, "setTextSelection", "(II)V", startSelection, endSelection)
+            }
+        }
+
         if ((iface->role() != QAccessible::NoRole) &&
             (iface->role() != QAccessible::Client) &&
             (iface->role() != QAccessible::Pane)) {

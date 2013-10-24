@@ -72,7 +72,7 @@ public:
     // allows usage of both factory method and variable in qCX macros
     QLoggingCategory &operator()() { return *this; }
 
-    static QLoggingCategory &defaultCategory();
+    static QLoggingCategory *defaultCategory();
 
     typedef void (*CategoryFilter)(QLoggingCategory*);
     static CategoryFilter installFilter(CategoryFilter);
@@ -92,6 +92,10 @@ private:
     bool enabledWarning;
     bool enabledCritical;
     bool enabledTrace;
+    // reserve space for future use
+    bool placeholder1;
+    bool placeholder2;
+    bool placeholder3;
 };
 
 class Q_CORE_EXPORT QTracer

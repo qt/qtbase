@@ -39,4 +39,4 @@
 **
 ****************************************************************************/
 
-#include "../../blackberry-armv7le-qcc/qplatformdefs.h"
+#include "../blackberry-playbook-armle-v7-qcc/qplatformdefs.h"

@@ -56,14 +56,19 @@ QT_BEGIN_NAMESPACE
 QLinuxFbIntegration::QLinuxFbIntegration(const QStringList &paramList)
     : m_fontDb(new QGenericUnixFontDatabase())
 {
-    m_primaryScreen = new QLinuxFbScreen;
-    if (m_primaryScreen->initialize(paramList))
-        screenAdded(m_primaryScreen);
+    m_primaryScreen = new QLinuxFbScreen(paramList);
+    screenAdded(m_primaryScreen);
 }
 
 QLinuxFbIntegration::~QLinuxFbIntegration()
 {
     delete m_primaryScreen;
+}
+
+void QLinuxFbIntegration::initialize()
+{
+    if (!m_primaryScreen->initialize())
+        qWarning("linuxfb: Failed to initialize screen");
 }
 
 bool QLinuxFbIntegration::hasCapability(QPlatformIntegration::Capability cap) const

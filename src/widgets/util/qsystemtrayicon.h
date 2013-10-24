@@ -94,8 +94,6 @@ public:
     static bool supportsMessages();
 
     enum MessageIcon { NoIcon, Information, Warning, Critical };
-    void showMessage(const QString &title, const QString &msg,
-                     MessageIcon icon = Information, int msecs = 10000);
 
     QRect geometry() const;
     bool isVisible() const;
@@ -104,6 +102,8 @@ public Q_SLOTS:
     void setVisible(bool visible);
     inline void show() { setVisible(true); }
     inline void hide() { setVisible(false); }
+    void showMessage(const QString &title, const QString &msg,
+                     QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::Information, int msecs = 10000);
 
 Q_SIGNALS:
     void activated(QSystemTrayIcon::ActivationReason reason);

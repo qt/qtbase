@@ -56,14 +56,16 @@ public:
     QLinuxFbIntegration(const QStringList &paramList);
     ~QLinuxFbIntegration();
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
+    void initialize() Q_DECL_OVERRIDE;
+    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
 
-    QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-    QAbstractEventDispatcher *createEventDispatcher() const;
+    QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const Q_DECL_OVERRIDE;
+    QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
+    QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
+    QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
+
     QList<QPlatformScreen *> screens() const;
-    QPlatformFontDatabase *fontDatabase() const;
 
 private:
     QLinuxFbScreen *m_primaryScreen;

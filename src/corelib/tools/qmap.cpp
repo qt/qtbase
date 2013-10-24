@@ -395,7 +395,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     differences are:
 
     \list
-    \li QHash provides faster lookups than QMap. (See \l{Algorithmic
+    \li QHash provides average faster lookups than QMap. (See \l{Algorithmic
        Complexity} for details.)
     \li When iterating over a QHash, the items are arbitrarily ordered.
        With QMap, the items are always sorted by key.
@@ -901,6 +901,8 @@ void QMapDataBase::freeData(QMapDataBase *d)
     Returns a reference to the smallest key in the map.
     This function assumes that the map is not empty.
 
+    This executes in \l{constant time}.
+
     \sa lastKey(), first(), isEmpty()
 */
 
@@ -909,6 +911,8 @@ void QMapDataBase::freeData(QMapDataBase *d)
     Returns a reference to the largest key in the map.
     This function assumes that the map is not empty.
 
+    This executes in \l{logarithmic time}.
+
     \sa firstKey(), last(), isEmpty()
 */
 
@@ -916,6 +920,8 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
     Returns a reference to the first value in the map, that is the value mapped
     to the smallest key. This function assumes that the map is not empty.
+
+    When unshared (or const version is called), this executes in \l{constant time}.
 
     \sa last(), firstKey(), isEmpty()
 */
@@ -929,6 +935,8 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
     Returns a reference to the last value in the map, that is the value mapped
     to the largest key. This function assumes that the map is not empty.
+
+    When unshared (or const version is called), this executes in \l{logarithmic time}.
 
     \sa first(), lastKey(), isEmpty()
 */
@@ -1057,8 +1065,11 @@ void QMapDataBase::freeData(QMapDataBase *d)
     If there are multiple items with the key \a key, then exactly one of them
     is replaced with \a value.
 
+    If the hint is correct and the map is unshared, the insert executes in amortized \l{constant time}.
+
     When creating a map from sorted data inserting the largest key first with constBegin()
-    is faster than inserting in sorted order with constEnd()
+    is faster than inserting in sorted order with constEnd(), since constEnd() - 1 (which is needed
+    to check if the hint is valid) needs \l{logarithmic time}.
 
     \b {Note:} Be careful with the hint. Providing an iterator from an older shared instance might
     crash but there is also a risk that it will silently corrupt both the map and the \a pos map.
@@ -1214,6 +1225,11 @@ void QMapDataBase::freeData(QMapDataBase *d)
     to the map, existing iterators will remain valid. If you remove
     items from the map, iterators that point to the removed items
     will become dangling iterators.
+
+    \warning Iterators on implicitly shared containers do not work
+    exactly like STL-iterators. You should avoid copying a container
+    while iterators are active on that container. For more information,
+    read \l{Implicit sharing iterator problem}.
 
     \sa QMap::const_iterator, QMutableMapIterator
 */
@@ -1432,6 +1448,11 @@ void QMapDataBase::freeData(QMapDataBase *d)
     to the map, existing iterators will remain valid. If you remove
     items from the map, iterators that point to the removed items
     will become dangling iterators.
+
+    \warning Iterators on implicitly shared containers do not work
+    exactly like STL-iterators. You should avoid copying a container
+    while iterators are active on that container. For more information,
+    read \l{Implicit sharing iterator problem}.
 
     \sa QMap::iterator, QMapIterator
 */

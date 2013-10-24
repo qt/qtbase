@@ -1441,7 +1441,7 @@ void QTreeView::drawTree(QPainter *painter, const QRegion &region) const
     Q_D(const QTreeView);
     const QVector<QTreeViewItem> viewItems = d->viewItems;
 
-    QStyleOptionViewItem option = d->viewOptions();
+    QStyleOptionViewItem option = d->viewOptionsV1();
     const QStyle::State state = option.state;
     d->current = 0;
 
@@ -2850,7 +2850,7 @@ int QTreeView::sizeHintForColumn(int column) const
         return -1;
     ensurePolished();
     int w = 0;
-    QStyleOptionViewItem option = d->viewOptions();
+    QStyleOptionViewItem option = d->viewOptionsV1();
     const QVector<QTreeViewItem> viewItems = d->viewItems;
 
     const int maximumProcessRows = d->header->resizeContentsPrecision(); // To avoid this to take forever.
@@ -2947,7 +2947,7 @@ int QTreeView::indexRowSizeHint(const QModelIndex &index) const
         qSwap(end, start);
 
     int height = -1;
-    QStyleOptionViewItem option = d->viewOptions();
+    QStyleOptionViewItem option = d->viewOptionsV1();
     // ### If we want word wrapping in the items,
     // ### we need to go through all the columns
     // ### and set the width of the column
@@ -3220,7 +3220,7 @@ QPixmap QTreeViewPrivate::renderTreeToPixmapForAnimation(const QRect &rect) cons
     painter.end();
 
     //and now let's render the editors the editors
-    QStyleOptionViewItem option = viewOptions();
+    QStyleOptionViewItem option = viewOptionsV1();
     for (QEditorIndexHash::const_iterator it = editorIndexHash.constBegin(); it != editorIndexHash.constEnd(); ++it) {
         QWidget *editor = it.key();
         const QModelIndex &index = it.value();

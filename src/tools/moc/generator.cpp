@@ -310,7 +310,7 @@ void Generator::generateCode()
                 int escapeLen = lengthOfEscapeSequence(s, backSlashPos);
                 spanLen = qBound(spanLen, backSlashPos + escapeLen - idx, s.length() - idx);
             }
-            fwrite(s.constData() + idx, 1, spanLen, out);
+            fprintf(out, "%.*s", spanLen, s.constData() + idx);
             idx += spanLen;
             col += spanLen;
         }

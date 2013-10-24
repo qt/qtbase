@@ -44,6 +44,7 @@
 
 #include <qthread.h>
 #include <qfont.h>
+#include <qmath.h>
 #include <qpainter.h>
 #include <qvarlengtharray.h>
 #include <qtextformat.h>
@@ -207,7 +208,7 @@ void QTextInlineObject::setAscent(qreal a)
 }
 
 /*!
-    Sets the inline object's decent to \a d.
+    Sets the inline object's descent to \a d.
 
     \sa descent(), setAscent(), width(), rect()
 */
@@ -946,15 +947,23 @@ static void addSelectedRegionsToPath(QTextEngine *eng, int lineNumber, const QPo
                 continue;
             }
 
-            if (lastSelectionWidth > 0)
-                region->addRect(boundingRect & QRectF(lastSelectionX.toReal(), selectionY, lastSelectionWidth.toReal(), lineHeight));
+            if (lastSelectionWidth > 0) {
+                QRectF rect = boundingRect & QRectF(lastSelectionX.toReal(), selectionY, lastSelectionWidth.toReal(), lineHeight);
+                rect.moveLeft(qFloor(rect.left()));
+                rect.moveTop(qFloor(rect.top()));
+                region->addRect(rect);
+            }
 
             lastSelectionX = selectionX;
             lastSelectionWidth = selectionWidth;
         }
     }
-    if (lastSelectionWidth > 0)
-        region->addRect(boundingRect & QRectF(lastSelectionX.toReal(), selectionY, lastSelectionWidth.toReal(), lineHeight));
+    if (lastSelectionWidth > 0) {
+        QRectF rect = boundingRect & QRectF(lastSelectionX.toReal(), selectionY, lastSelectionWidth.toReal(), lineHeight);
+        rect.moveLeft(qFloor(rect.left()));
+        rect.moveTop(qFloor(rect.top()));
+        region->addRect(rect);
+    }
 }
 
 static inline QRectF clipIfValid(const QRectF &rect, const QRectF &clip)
@@ -1288,7 +1297,7 @@ void QTextLayout::drawCursor(QPainter *p, const QPointF &pos, int cursorPosition
     After being created, the line can be filled using the setLineWidth()
     or setNumColumns() functions. A line has a number of attributes including the
     rectangle it occupies, rect(), its coordinates, x() and y(), its
-    textLength(), width() and naturalTextWidth(), and its ascent() and decent()
+    textLength(), width() and naturalTextWidth(), and its ascent() and descent()
     relative to the text. The position of the cursor in terms of the
     line is available from cursorToX() and its inverse from
     xToCursor(). A line can be moved with setPosition().
@@ -2077,7 +2086,7 @@ static void setPenAndDrawBackground(QPainter *p, const QPen &defaultPen, const Q
 
     QBrush bg = chf.background();
     if (bg.style() != Qt::NoBrush && !chf.property(SuppressBackground).toBool())
-        p->fillRect(r, bg);
+        p->fillRect(QRectF(qFloor(r.x()), qFloor(r.y()), r.width(), r.height()), bg);
     if (c.style() != Qt::NoBrush) {
         p->setPen(QPen(c, 0));
     }

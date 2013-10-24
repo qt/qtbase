@@ -66,6 +66,8 @@
 #include <private/qfilesystemmodel_p.h>
 #include <private/qfiledialog_p.h>
 #endif
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformtheme.h>
 #include <QFileDialog>
 #include <QFileSystemModel>
 
@@ -145,6 +147,7 @@ private slots:
     void clearLineEdit();
     void enableChooseButton();
     void hooks();
+    void widgetlessNativeDialog();
 #ifdef Q_OS_UNIX
 #ifdef QT_BUILD_INTERNAL
     void tildeExpansion_data();
@@ -1394,6 +1397,20 @@ void tst_QFiledialog::hooks()
     QCOMPARE(QFileDialog::getOpenFileUrl(), QUrl("http://openUrl"));
     QCOMPARE(QFileDialog::getOpenFileUrls(), QList<QUrl>() << QUrl("http://openUrls"));
     QCOMPARE(QFileDialog::getSaveFileUrl(), QUrl("http://saveUrl"));
+}
+
+void tst_QFiledialog::widgetlessNativeDialog()
+{
+    if (!QGuiApplicationPrivate::platformTheme()->usePlatformNativeDialog(QPlatformTheme::FileDialog))
+        QSKIP("This platform always uses widgets to realize its QFileDialog, instead of the native file dialog.");
+    QFileDialog fd;
+    fd.setWindowModality(Qt::ApplicationModal);
+    fd.show();
+    QTRY_VERIFY(fd.isVisible());
+    QFileSystemModel *model = fd.findChild<QFileSystemModel*>("qt_filesystem_model");
+    QVERIFY(!model);
+    QPushButton *button = fd.findChild<QPushButton*>();
+    QVERIFY(!button);
 }
 
 #ifdef Q_OS_UNIX

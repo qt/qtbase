@@ -28,6 +28,7 @@
 /*!
     \page signalsandslots.html
     \title Signals & Slots
+    \keyword Signals and Slots
     \ingroup qt-basic-concepts
     \brief An overview of Qt's signals and slots inter-object
     communication mechanism.

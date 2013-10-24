@@ -380,7 +380,7 @@ void tst_QNetworkProxyFactory::genericSystemProxy()
     QFETCH(int, port);
 
 // The generic system proxy is only available on the following platforms
-#if (!defined Q_OS_BLACKBERRY) && (!defined Q_OS_WIN) && (!defined Q_OS_MACX)
+#if (!defined Q_OS_BLACKBERRY) && (!defined Q_OS_WIN) && (!defined Q_OS_OSX)
     qputenv(envVar, url);
     const QList<QNetworkProxy> systemProxy = QNetworkProxyFactory::systemProxyForQuery();
     QCOMPARE(systemProxy.size(), 1);

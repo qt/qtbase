@@ -666,13 +666,14 @@ void tst_qmessagehandler::qMessagePattern()
 //    qDebug() << output;
     QVERIFY(!output.isEmpty());
 
-    QVERIFY(output.contains("debug  45 T::T static constructor"));
+    QVERIFY(output.contains("debug  46 T::T static constructor"));
     //  we can't be sure whether the QT_MESSAGE_PATTERN is already destructed
     QVERIFY(output.contains("static destructor"));
-    QVERIFY(output.contains("debug tst_qlogging 56 main qDebug"));
-    QVERIFY(output.contains("warning tst_qlogging 57 main qWarning"));
-    QVERIFY(output.contains("critical tst_qlogging 58 main qCritical"));
-    QVERIFY(output.contains("debug tst_qlogging 62 main qDebug2"));
+    QVERIFY(output.contains("debug tst_qlogging 57 main qDebug"));
+    QVERIFY(output.contains("warning tst_qlogging 58 main qWarning"));
+    QVERIFY(output.contains("critical tst_qlogging 59 main qCritical"));
+    QVERIFY(output.contains("warning tst_qlogging 62 main qDebug with category "));
+    QVERIFY(output.contains("debug tst_qlogging 66 main qDebug2"));
 
     environment = m_baseEnvironment;
     environment.prepend("QT_MESSAGE_PATTERN=\"PREFIX: %{unknown} %{message}\"");
@@ -710,7 +711,8 @@ void tst_qmessagehandler::qMessagePattern()
     QByteArray expected = "static constructor\n"
             "[debug] qDebug\n"
             "[warning] qWarning\n"
-            "[critical] qCritical\n";
+            "[critical] qCritical\n"
+            "[warning] qDebug with category \n";
 #ifdef Q_OS_WIN
     output.replace("\r\n", "\n");
 #endif
@@ -727,7 +729,7 @@ void tst_qmessagehandler::qMessagePatternIf()
     const QString appExe = m_appDir + "/app";
 
     QStringList environment = m_baseEnvironment;
-    environment.prepend("QT_MESSAGE_PATTERN=\"[%{if-debug}D%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{message}\"");
+    environment.prepend("QT_MESSAGE_PATTERN=\"[%{if-debug}D%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{if-category}%{category}: %{endif}%{message}\"");
     process.setEnvironment(environment);
     process.start(appExe);
     QVERIFY2(process.waitForStarted(), qPrintable(
@@ -745,6 +747,7 @@ void tst_qmessagehandler::qMessagePatternIf()
     QVERIFY(output.contains("[D] qDebug"));
     QVERIFY(output.contains("[W] qWarning"));
     QVERIFY(output.contains("[C] qCritical"));
+    QVERIFY(output.contains("[W] category: qDebug with category"));
     QVERIFY(output.contains("[D] qDebug2"));
 
     //

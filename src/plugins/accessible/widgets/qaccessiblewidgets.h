@@ -283,31 +283,10 @@ public:
     int indexOfChild(const QAccessibleInterface *child) const Q_DECL_OVERRIDE;
     int childCount() const Q_DECL_OVERRIDE;
     QRect rect () const Q_DECL_OVERRIDE;
-
-    QDockWidget *dockWidget() const;
-};
-
-class QAccessibleTitleBar : public QAccessibleInterface
-{
-public:
-    explicit QAccessibleTitleBar(QDockWidget *widget);
-
-    QAccessibleInterface *parent() const Q_DECL_OVERRIDE;
-    QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
-    int indexOfChild(const QAccessibleInterface *child) const Q_DECL_OVERRIDE;
-    int childCount() const Q_DECL_OVERRIDE;
-    QAccessibleInterface *childAt(int x, int y) const Q_DECL_OVERRIDE;
-    void setText(QAccessible::Text t, const QString &text) Q_DECL_OVERRIDE;
     QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
-    QAccessible::Role role() const Q_DECL_OVERRIDE;
-    QRect rect () const Q_DECL_OVERRIDE;
-    QAccessible::State state() const Q_DECL_OVERRIDE;
-    QObject *object() const Q_DECL_OVERRIDE;
-    bool isValid() const Q_DECL_OVERRIDE;
-
-    QPointer<QDockWidget> m_dockWidget;
 
     QDockWidget *dockWidget() const;
+protected:
     QDockWidgetLayout *dockWidgetLayout() const;
 };
 

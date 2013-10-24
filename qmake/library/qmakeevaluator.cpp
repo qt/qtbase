@@ -129,6 +129,7 @@ void QMakeEvaluator::initStatics()
     statics.strhost_build = QLatin1String("host_build");
     statics.strTEMPLATE = ProKey("TEMPLATE");
     statics.strQMAKE_PLATFORM = ProKey("QMAKE_PLATFORM");
+    statics.strQMAKESPEC = ProKey("QMAKESPEC");
 #ifdef PROEVALUATOR_FULL
     statics.strREQUIRES = ProKey("REQUIRES");
 #endif
@@ -939,6 +940,12 @@ void QMakeEvaluator::visitProVariable(
         setTemplate();
     else if (varName == statics.strQMAKE_PLATFORM)
         m_featureRoots = 0;
+    else if (varName == statics.strQMAKESPEC) {
+        if (!values(varName).isEmpty()) {
+            m_qmakespec = values(varName).first().toQString();
+            m_featureRoots = 0;
+        }
+    }
 #ifdef PROEVALUATOR_FULL
     else if (varName == statics.strREQUIRES)
         checkRequirements(values(varName));
@@ -1160,7 +1167,7 @@ bool QMakeEvaluator::loadSpecInternal()
         m_qmakespec = orig_spec.toQString();
 #  endif
 #endif
-    valuesRef(ProKey("QMAKESPEC")) << ProString(m_qmakespec);
+    valuesRef(ProKey("QMAKESPEC")) = ProString(m_qmakespec);
     m_qmakespecName = IoUtils::fileName(m_qmakespec).toString();
     // This also ensures that m_featureRoots is valid.
     if (evaluateFeatureFile(QLatin1String("spec_post.prf")) != ReturnTrue)
@@ -1271,6 +1278,14 @@ void QMakeEvaluator::evaluateCommand(const QString &cmds, const QString &where)
     }
 }
 
+void QMakeEvaluator::applyExtraConfigs()
+{
+    if (m_extraConfigs.isEmpty())
+        return;
+
+    evaluateCommand(fL1S("CONFIG += ") + m_extraConfigs.join(QLatin1Char(' ')), fL1S("(extra configs)"));
+}
+
 QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateConfigFeatures()
 {
     QSet<QString> processed;
@@ -1365,10 +1380,6 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::visitProFile(
             loadDefaults();
     }
 
-    for (ProValueMap::ConstIterator it = m_extraVars.constBegin();
-         it != m_extraVars.constEnd(); ++it)
-        m_valuemapStack.first().insert(it.key(), it.value());
-
     VisitReturn vr;
 
     m_handler->aboutToEval(currentProFile(), pro, type);
@@ -1377,14 +1388,23 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::visitProFile(
     if (flags & LoadPreFiles) {
         setupProject();
 
+        for (ProValueMap::ConstIterator it = m_extraVars.constBegin();
+             it != m_extraVars.constEnd(); ++it)
+            m_valuemapStack.first().insert(it.key(), it.value());
+
+        // In case default_pre needs to make decisions based on the current
+        // build pass configuration.
+        applyExtraConfigs();
+
         if ((vr = evaluateFeatureFile(QLatin1String("default_pre.prf"))) == ReturnError)
             goto failed;
 
-        evaluateCommand(m_option->precmds, fL1S("(command line)"));
+        if (!m_option->precmds.isEmpty()) {
+            evaluateCommand(m_option->precmds, fL1S("(command line)"));
 
-        // After user configs, to override them
-        if (!m_extraConfigs.isEmpty())
-            evaluateCommand(fL1S("CONFIG += ") + m_extraConfigs.join(QLatin1Char(' ')), fL1S("(extra configs)"));
+            // Again, after user configs, to override them
+            applyExtraConfigs();
+        }
     }
 
     debugMsg(1, "visiting file %s", qPrintable(pro->fileName()));
@@ -1398,8 +1418,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::visitProFile(
         // Again, to ensure the project does not mess with us.
         // Specifically, do not allow a project to override debug/release within a
         // debug_and_release build pass - it's too late for that at this point anyway.
-        if (!m_extraConfigs.isEmpty())
-            evaluateCommand(fL1S("CONFIG += ") + m_extraConfigs.join(QLatin1Char(' ')), fL1S("(extra configs)"));
+        applyExtraConfigs();
 
         if ((vr = evaluateFeatureFile(QLatin1String("default_post.prf"))) == ReturnError)
             goto failed;

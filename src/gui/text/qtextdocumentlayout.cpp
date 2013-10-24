@@ -1427,19 +1427,6 @@ void QTextDocumentLayoutPrivate::drawListItem(const QPointF &offset, QPainter *p
         xoff = -xoff - size.width();
     r.translate( xoff, (fontMetrics.height() / 2) - (size.height() / 2));
 
-    // Prevent clipping the left side of the list decorator (on left to
-    // right layouts) and clipping the right side of the list
-    // decorator (on right to left layouts).
-    if ((r.left() < 0) && (dir == Qt::LeftToRight)) {
-        int horizontalOffset = -r.left();
-        r.translate(horizontalOffset, 0);
-        layout->setPosition(layout->position() + QPointF(horizontalOffset, 0));
-    } else if ((r.right() > document->pageSize().width()) && (dir == Qt::RightToLeft)) {
-        int horizontalOffset = r.right() - document->pageSize().width();
-        r.translate(-horizontalOffset, 0);
-        layout->setPosition(layout->position() - QPointF(horizontalOffset, 0));
-    }
-
     painter->save();
 
     painter->setRenderHint(QPainter::Antialiasing);

@@ -41,6 +41,7 @@
 
 #include "qeglfshooks.h"
 #include <EGL/eglvivante.h>
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
@@ -62,6 +63,15 @@ private:
 QEglFSImx6Hooks::QEglFSImx6Hooks()
 {
     int width, height;
+
+    bool multiBufferNotEnabledYet = qEnvironmentVariableIsEmpty("FB_MULTI_BUFFER");
+    bool multiBuffer = qEnvironmentVariableIsEmpty("QT_EGLFS_IMX6_NO_FB_MULTI_BUFFER");
+    if (multiBufferNotEnabledYet && multiBuffer) {
+        qWarning() << "QEglFSImx6Hooks will set environment variable FB_MULTI_BUFFER=2 to enable double buffering and vsync.\n"
+                   << "If this is not desired, you can override this via: export QT_EGLFS_IMX6_NO_FB_MULTI_BUFFER=1";
+        qputenv("FB_MULTI_BUFFER", "2");
+    }
+
     mNativeDisplay = fbGetDisplayByIndex(0);
     fbGetDisplayGeometry(mNativeDisplay, &width, &height);
     mScreenSize.setHeight(height);
