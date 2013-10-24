@@ -1260,11 +1260,33 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
       << "\t\t\t" << writeSettings("sourceTree", "<Group>") << ";\n"
       << "\t\t};\n";
 
+    {
+        QString aggregate_target_key = keyFor(pbx_dir + "QMAKE_PBX_AGGREGATE_TARGET");
+        project->values("QMAKE_PBX_TARGETS").append(aggregate_target_key);
+        t << "\t\t" << aggregate_target_key << " = {\n"
+          << "\t\t\t" << writeSettings("buildPhases", project->values("QMAKE_PBX_PRESCRIPT_BUILDPHASES"), SettingsAsList, 4) << ";\n"
+          << "\t\t\t" << writeSettings("dependencies", ProStringList(), SettingsAsList, 4) << ";\n"
+          << "\t\t\t" << writeSettings("buildConfigurationList", keyFor("QMAKE_PBX_BUILDCONFIG_LIST_TARGET"), SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("isa", "PBXAggregateTarget", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("buildRules", ProStringList(), SettingsAsList) << ";\n"
+          << "\t\t\t" << writeSettings("productName", "Qt Preprocess") << ";\n"
+          << "\t\t\t" << writeSettings("name", "Qt Preprocess") << ";\n"
+          << "\t\t};\n";
+
+        QString aggregate_target_dep_key = keyFor(pbx_dir + "QMAKE_PBX_AGGREGATE_TARGET_DEP");
+        t << "\t\t" << aggregate_target_dep_key  << " = {\n"
+          << "\t\t\t" << writeSettings("isa", "PBXTargetDependency", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("target", aggregate_target_key) << ";\n"
+          << "\t\t};\n";
+
+        project->values("QMAKE_PBX_TARGET_DEPENDS").append(aggregate_target_dep_key);
+    }
+
     //TARGET
     QString target_key = keyFor(pbx_dir + "QMAKE_PBX_TARGET");
-    project->values("QMAKE_PBX_TARGETS").append(target_key);
+    project->values("QMAKE_PBX_TARGETS").prepend(target_key);
     t << "\t\t" << target_key << " = {\n"
-      << "\t\t\t" << writeSettings("buildPhases", project->values("QMAKE_PBX_PRESCRIPT_BUILDPHASES") + project->values("QMAKE_PBX_BUILDPHASES"),
+      << "\t\t\t" << writeSettings("buildPhases", project->values("QMAKE_PBX_BUILDPHASES"),
                                    SettingsAsList, 4) << ";\n";
     t << "\t\t\t" << writeSettings("dependencies", project->values("QMAKE_PBX_TARGET_DEPENDS"), SettingsAsList, 4) << ";\n"
       << "\t\t\t" << writeSettings("productReference", keyFor(pbx_dir + "QMAKE_PBX_REFERENCE")) << ";\n";
