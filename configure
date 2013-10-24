@@ -938,7 +938,6 @@ CFG_CUPS=auto
 CFG_ICONV=auto
 CFG_DBUS=auto
 CFG_GLIB=auto
-CFG_GSTREAMER=auto
 CFG_QGTKSTYLE=auto
 CFG_LARGEFILE=auto
 CFG_OPENSSL=auto
@@ -1043,10 +1042,6 @@ QT_LIBS_DBUS=
 # flags for Glib (X11 only)
 QT_CFLAGS_GLIB=
 QT_LIBS_GLIB=
-
-# flags for GStreamer (X11 only)
-QT_CFLAGS_GSTREAMER=
-QT_LIBS_GSTREAMER=
 
 # default qpa platform
 QT_QPA_DEFAULT_PLATFORM=
@@ -2032,13 +2027,6 @@ while [ "$#" -gt 0 ]; do
     slog2)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_SLOG2="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    gstreamer)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_GSTREAMER="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -5032,31 +5020,6 @@ elif [ "$CFG_GLIB" = "no" ]; then
     CFG_QGTKSTYLE=no
 fi
 
-# ### Vestige
-if [ "$CFG_GLIB" = "yes" -a "$CFG_GSTREAMER" != "no" ]; then
-    if [ -n "$PKG_CONFIG" ]; then
-        QT_CFLAGS_GSTREAMER=`$PKG_CONFIG --cflags gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
-        QT_LIBS_GSTREAMER=`$PKG_CONFIG --libs gstreamer-0.10 gstreamer-plugins-base-0.10 2>/dev/null`
-    fi
-    if compileTest unix/gstreamer "GStreamer" $QT_CFLAGS_GSTREAMER $QT_LIBS_GSTREAMER; then
-        CFG_GSTREAMER=yes
-        QMakeVar set QT_CFLAGS_GSTREAMER "$QT_CFLAGS_GSTREAMER"
-        QMakeVar set QT_LIBS_GSTREAMER "$QT_LIBS_GSTREAMER"
-    else
-        if [ "$CFG_GSTREAMER" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-            echo "Gstreamer support cannot be enabled due to functionality tests!"
-            echo " Turn on verbose messaging (-v) to $0 to see the final report."
-            echo " If you believe this message is in error you may use the continue"
-            echo " switch (-continue) to $0 to continue."
-            exit 101
-        else
-            CFG_GSTREAMER=no
-        fi
-    fi
-elif [ "$CFG_GLIB" = "no" ]; then
-    CFG_GSTREAMER=no
-fi
-
 # auto-detect libicu support
 if [ "$CFG_ICU" != "no" ]; then
     if compileTest unix/icu "ICU"; then
@@ -6089,7 +6052,6 @@ fi
 [ "$CFG_ICONV" = "sun" ] && QT_CONFIG="$QT_CONFIG sun-libiconv"
 [ "$CFG_ICONV" = "gnu" ] && QT_CONFIG="$QT_CONFIG gnu-libiconv"
 [ "$CFG_GLIB" = "yes" ] && QT_CONFIG="$QT_CONFIG glib"
-[ "$CFG_GSTREAMER" = "yes" ] && QT_CONFIG="$QT_CONFIG gstreamer"
 [ "$CFG_DBUS" = "yes" ] && QT_CONFIG="$QT_CONFIG dbus"
 [ "$CFG_DBUS" = "linked" ] && QT_CONFIG="$QT_CONFIG dbus dbus-linked"
 [ "$CFG_OPENSSL" = "yes" ] && QT_CONFIG="$QT_CONFIG openssl"
@@ -6478,7 +6440,6 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_CUPS" = "no" ]       && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CUPS"
 [ "$CFG_ICONV" = "no" ]      && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ICONV"
 [ "$CFG_GLIB" != "yes" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GLIB"
-[ "$CFG_GSTREAMER" != "yes" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GSTREAMER"
 [ "$CFG_QGTKSTYLE" != "yes" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_STYLE_GTK"
 [ "$CFG_CLOCK_MONOTONIC" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_CLOCK_MONOTONIC"
 [ "$CFG_MREMAP" = "no" ]     && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MREMAP"
@@ -6915,7 +6876,6 @@ report_support_plugin "    GIF .................." "$CFG_GIF" qt QtGui
 report_support_plugin "    JPEG ................." "$CFG_JPEG" "$CFG_LIBJPEG" QtGui
 report_support_plugin "    PNG .................." "$CFG_PNG" "$CFG_LIBPNG" QtGui
 report_support "  Glib ..................." "$CFG_GLIB"
-report_support "  GStreamer .............." "$CFG_GSTREAMER"
 report_support "  GTK theme .............." "$CFG_QGTKSTYLE"
 report_support "  Large File ............." "$CFG_LARGEFILE"
 report_support "  libudev ................" "$CFG_LIBUDEV"
