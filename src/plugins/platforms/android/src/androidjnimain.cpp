@@ -834,6 +834,15 @@ static int registerNatives(JNIEnv *env)
     return JNI_TRUE;
 }
 
+jint androidApiLevel(JNIEnv *env)
+{
+    jclass clazz;
+    FIND_AND_CHECK_CLASS("android/os/Build$VERSION");
+    jfieldID fieldId;
+    GET_AND_CHECK_STATIC_FIELD(fieldId, clazz, "SDK_INT", "I");
+    return env->GetStaticIntField(clazz, fieldId);
+}
+
 Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/)
 {
     typedef union {
@@ -856,8 +865,14 @@ Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/)
             || !QtAndroidInput::registerNatives(env)
             || !QtAndroidClipboard::registerNatives(env)
             || !QtAndroidMenu::registerNatives(env)
-            || !QtAndroidAccessibility::registerNatives(env)) {
+    ) {
         __android_log_print(ANDROID_LOG_FATAL, "Qt", "registerNatives failed");
+        return -1;
+    }
+
+    jint apiLevel = androidApiLevel(env);
+    if (apiLevel >= 16 && !QtAndroidAccessibility::registerNatives(env)) {
+        __android_log_print(ANDROID_LOG_FATAL, "Qt A11y", "registerNatives failed");
         return -1;
     }
 
