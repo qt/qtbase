@@ -514,7 +514,7 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                     // We want to store it as the .lib name.
                     if (newDep->target.endsWith(".dll"))
                         newDep->target = newDep->target.left(newDep->target.length()-3) + "lib";
-                    projGuids.insert(val.first, newDep->target);
+                    projGuids.insert(newDep->orig_target, newDep->target);
 
                     if (val.second.size()) {
                         const ProStringList depends = val.second;
