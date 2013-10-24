@@ -40,18 +40,14 @@
 ****************************************************************************/
 
 /*!
-    \headerfile <QtConcurrentRun>
-    \title Asynchronous Run
-
-    \brief The <QtConcurrentRun> header provides a way to run a function in a
-    separate thread.
-
+    \page qtconcurrentrun.html
+    \title Concurrent Run
     \ingroup thread
-
-    This function is a part of the \l {Qt Concurrent} framework.
 
     The QtConcurrent::run() function runs a function in a separate thread.
     The return value of the function is made available through the QFuture API.
+
+    This function is a part of the \l {Qt Concurrent} framework.
 
     \section1 Running a Function in a Separate Thread
 
@@ -133,7 +129,6 @@
 
 /*!
     \fn QFuture<T> QtConcurrent::run(Function function, ...);
-    \relates <QtConcurrentRun>
 
     Runs \a function in a separate thread. The thread is taken from the global
     QThreadPool. Note that the function may not run immediately; the function

@@ -40,14 +40,9 @@
 ****************************************************************************/
 
 /*!
-    \headerfile <QtConcurrentFilter>
+    \page qtconcurrentfilter.html
     \title Concurrent Filter and Filter-Reduce
     \ingroup thread
-
-    \brief The <QtConcurrentFilter> header provides concurrent Filter and
-    Filter-Reduce.
-
-    These functions are a part of the \l {Qt Concurrent} framework.
 
     The QtConcurrent::filter(), QtConcurrent::filtered() and
     QtConcurrent::filteredReduced() functions filter items in a sequence such
@@ -55,6 +50,8 @@
     sequence in-place, QtConcurrent::filtered() returns a new sequence
     containing the filtered content, and QtConcurrent::filteredReduced()
     returns a single result.
+
+    These functions are a part of the \l {Qt Concurrent} framework.
 
     Each of the above functions have a blocking variant that returns the final
     result instead of a QFuture. You use them in the same way as the
@@ -186,7 +183,6 @@
 
 /*!
     \fn QFuture<void> QtConcurrent::filter(Sequence &sequence, FilterFunction filterFunction)
-    \relates <QtConcurrentFilter>
 
     Calls \a filterFunction once for each item in \a sequence. If
     \a filterFunction returns \c true, the item is kept in \a sequence;
@@ -195,7 +191,6 @@
 
 /*!
     \fn QFuture<T> QtConcurrent::filtered(const Sequence &sequence, FilterFunction filterFunction)
-    \relates <QtConcurrentFilter>
 
     Calls \a filterFunction once for each item in \a sequence and returns a
     new Sequence of kept items. If \a filterFunction returns \c true, a copy of
@@ -205,7 +200,6 @@
 
 /*!
     \fn QFuture<T> QtConcurrent::filtered(ConstIterator begin, ConstIterator end, FilterFunction filterFunction)
-    \relates <QtConcurrentFilter>
 
     Calls \a filterFunction once for each item from \a begin to \a end and
     returns a new Sequence of kept items. If \a filterFunction returns \c true, a
@@ -215,7 +209,6 @@
 
 /*!
     \fn QFuture<T> QtConcurrent::filteredReduced(const Sequence &sequence, FilterFunction filterFunction, ReduceFunction reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
-    \relates <QtConcurrentFilter>
 
     Calls \a filterFunction once for each item in \a sequence. If
     \a filterFunction returns \c true for an item, that item is then passed to
@@ -232,7 +225,6 @@
 
 /*!
     \fn QFuture<T> QtConcurrent::filteredReduced(ConstIterator begin, ConstIterator end, FilterFunction filterFunction, ReduceFunction reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
-    \relates <QtConcurrentFilter>
 
     Calls \a filterFunction once for each item from \a begin to \a end. If
     \a filterFunction returns \c true for an item, that item is then passed to
