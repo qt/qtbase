@@ -362,7 +362,7 @@ public class QtActivityDelegate
                                               + "\tNECESSITAS_API_LEVEL=" + necessitasApiLevel
                                               + "\tHOME=" + m_activity.getFilesDir().getAbsolutePath()
                                               + "\tTMPDIR=" + m_activity.getFilesDir().getAbsolutePath();
-        if (android.os.Build.VERSION.SDK_INT < 14)
+        if (Build.VERSION.SDK_INT < 14)
             additionalEnvironmentVariables += "\tQT_ANDROID_FONTS=Droid Sans;Droid Sans Fallback";
         else
             additionalEnvironmentVariables += "\tQT_ANDROID_FONTS=Roboto;Droid Sans;Droid Sans Fallback";

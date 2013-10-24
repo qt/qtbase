@@ -50,7 +50,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.text.ClipboardManager;
 import android.util.Log;
 import android.view.ContextMenu;

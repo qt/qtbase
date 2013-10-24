@@ -43,7 +43,6 @@
 package org.qtproject.qt5.android;
 
 import android.content.Context;
-import android.os.Build;
 import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.CompletionInfo;
