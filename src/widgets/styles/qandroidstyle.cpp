@@ -696,7 +696,10 @@ int QAndroidStyle::styleHint(QStyle::StyleHint hint, const QStyleOption *option,
 {
     switch (hint) {
     case SH_Slider_AbsoluteSetButtons:
-        return 1;
+        return Qt::LeftButton;
+
+    case SH_Slider_PageSetButtons:
+        return 0;
 
     case SH_RequestSoftwareInputPanel:
         return RSIP_OnMouseClick;
@@ -1776,9 +1779,9 @@ QRect QAndroidStyle::AndroidSeekBarControl::subControlRect(const QStyleOptionCom
             drawable = static_cast<const QAndroidStyle::AndroidStateDrawable *>(m_seekBarThumb)->bestAndroidStateMatch(option);
 
         QRect r(option->rect);
-        double factor = double(styleOption->sliderPosition/(styleOption->maximum-styleOption->minimum));
-        int pos=(double(option->rect.width()*factor - drawable->size().width()) / 2);
-        r.setX(r.x()+pos);
+        double factor = double(styleOption->sliderPosition) / (styleOption->maximum - styleOption->minimum);
+        int pos = option->rect.width() * factor - double(drawable->size().width() / 2);
+        r.setX(r.x() + pos);
         r.setSize(drawable->size());
         return r;
     }
