@@ -883,10 +883,8 @@ public:
     QColSpinBox(QWidget *parent)
         : QSpinBox(parent) { setRange(0, 255); }
     void setValue(int i) {
-        bool block = signalsBlocked();
-        blockSignals(true);
+        const QSignalBlocker blocker(this);
         QSpinBox::setValue(i);
-        blockSignals(block);
     }
 };
 
