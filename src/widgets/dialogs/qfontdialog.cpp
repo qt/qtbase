@@ -632,12 +632,11 @@ void QFontDialogPrivate::updateSizes()
         }
         sizeList->setCurrentItem(current);
 
-        sizeEdit->blockSignals(true);
+        const QSignalBlocker blocker(sizeEdit);
         sizeEdit->setText((smoothScalable ? QString::number(size) : sizeList->currentText()));
         if (q->style()->styleHint(QStyle::SH_FontDialog_SelectAssociatedText, 0, q)
                 && sizeList->hasFocus())
             sizeEdit->selectAll();
-        sizeEdit->blockSignals(false);
     } else {
         sizeEdit->clear();
     }
@@ -750,9 +749,8 @@ void QFontDialogPrivate::_q_sizeChanged(const QString &s)
             if (sizeList->text(i).toInt() >= this->size)
                 break;
         }
-        sizeList->blockSignals(true);
+        const QSignalBlocker blocker(sizeList);
         sizeList->setCurrentItem(i);
-        sizeList->blockSignals(false);
     }
     _q_updateSample();
 }
