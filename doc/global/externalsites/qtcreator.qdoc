@@ -369,6 +369,12 @@
     \externalpage http://qt-project.org/doc/qtcreator/creator-deploying-android.html
     \title Qt Creator: Deploying Applications to Android Devices
 */
+
+/*!
+    \externalpage http://qt-project.org/doc/qtcreator/creator-developing-ios.html
+    \title Qt Creator: Connecting iOS devices
+*/
+
 /*!
     \externalpage http://qt-project.org/doc/qtcreator/creator-developing-android.html
     \title Qt Creator: Connecting Android Devices
