@@ -133,6 +133,7 @@ Description: Inputmethods with QInputContext
 Section: Kernel
 Requires: LIBRARY
 Name: QInputContext
+
 # Data structures
 
 Feature: TEXTDATE
@@ -186,15 +187,13 @@ Requires:
 Name: QFileSystemModel
 
 Feature: FILESYSTEMWATCHER
-Description: Provides an interface for monitoring files and directories
-for modications.
+Description: Provides an interface for monitoring files and directories for modications.
 Section: File I/O
 Requires:
 Name: QFileSystemWatcher
 
 Feature: FILESYSTEMITERATOR
 Description: Provides fast file-system iteration.
-for modications.
 Section: File I/O
 Requires:
 Name: QFileSystemIterator
@@ -310,7 +309,7 @@ Requires: MAINWINDOW
 Name: QToolBar
 
 Feature: TOOLBOX
-Description:  Supports columns of tabbed widget items.
+Description: Supports columns of tabbed widget items.
 Section: Widgets
 Requires: TOOLBUTTON SCROLLAREA
 Name: QToolBox
@@ -334,8 +333,7 @@ Requires: MENU RESIZEHANDLER TOOLBUTTON
 Name: QMainWindow
 
 Feature: DOCKWIDGET
-Description: Supports docking widgets inside a QMainWindow or floated as
-a top-level window on the desktop.
+Description: Supports docking widgets inside a QMainWindow or floated as a top-level window on the desktop.
 Section: Widgets
 Requires: RUBBERBAND MAINWINDOW
 Name: QDockwidget
@@ -383,8 +381,7 @@ Requires:
 Name: QSlider
 
 Feature: SCROLLBAR
-Description: Supports scrollbars allowing the user access parts of a
-document that is larger than the widget used to display it.
+Description: Supports scrollbars allowing the user access parts of a document that is larger than the widget used to display it.
 Section: Widgets
 Requires: SLIDER
 Name: QScrollBar
@@ -468,15 +465,13 @@ Requires:
 Name: QSizeGrip
 
 Feature: CALENDARWIDGET
-Description: Provides a monthly based calendar widget allowing the user to select
-a date.
+Description: Provides a monthly based calendar widget allowing the user to select a date.
 Section: Widgets
 Requires: TABLEVIEW MENU TEXTDATE SPINBOX TOOLBUTTON
 Name: QCalendarWidget
 
 Feature: PRINTPREVIEWWIDGET
 Description: Provides a widget for previewing page layouts for printer output.
-a date.
 Section: Widgets
 Requires: GRAPHICSVIEW PRINTER MAINWINDOW
 Name: QPrintPreviewWidget
@@ -533,7 +528,7 @@ Requires: COMBOBOX SPINBOX STACKEDWIDGET
 Name: QInputDialog
 
 Feature: ERRORMESSAGE
-Description:  Supports an error message display dialog.
+Description: Supports an error message display dialog.
 Section: Dialogs
 Requires: TEXTEDIT
 Name: QErrorMessage
@@ -547,8 +542,7 @@ Name: QWizard
 # ItemViews
 
 Feature: ITEMVIEWS
-Description: Supports the model/view architecture managing the relationship
-between data and the way it is presented to the user.
+Description: Supports the model/view architecture managing the relationship between data and the way it is presented to the user.
 Section: ItemViews
 Requires: RUBBERBAND SCROLLAREA
 Name: The Model/View Framework
@@ -572,8 +566,7 @@ Requires: ITEMVIEWS
 Name: QAbstractProxyModel
 
 Feature: SORTFILTERPROXYMODEL
-Description: Supports sorting and filtering of data passed between
-another model and a view.
+Description: Supports sorting and filtering of data passed between another model and a view.
 Section: ItemViews
 Requires: PROXYMODEL
 Name: QSortFilterProxyModel
@@ -679,7 +672,7 @@ Requires:
 Name: QMovie
 
 Feature: IMAGEFORMAT_BMP
-Description: Supports Microsoft's  Bitmap image file format.
+Description: Supports Microsoft's Bitmap image file format.
 Section: Images
 Requires:
 Name: BMP Image Format
@@ -735,8 +728,7 @@ Requires:
 Name: QPicture
 
 Feature: COLORNAMES
-Description: Supports color names such as "red", used by QColor
-and by some HTML documents.
+Description: Supports color names such as "red", used by QColor and by some HTML documents.
 Section: Painting
 Requires:
 Name: Color Names
@@ -835,7 +827,7 @@ Feature: SOCKS5
 Description: Supports SOCKS v5 network proxy.
 Section: Networking
 Requires: NETWORKPROXY
-Name:  SOCKS5
+Name: SOCKS5
 
 Feature: NETWORKINTERFACE
 Description: Supports listing the host's IP addresses and network interfaces
