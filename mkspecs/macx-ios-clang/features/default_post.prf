@@ -61,15 +61,21 @@ macx-xcode {
     QMAKE_MAC_XCODE_SETTINGS += ios_device_family
 }
 
-# Be more specific about which architecture we're targeting
-equals(QT_ARCH, arm): \
-    actual_archs = $$QMAKE_IOS_DEVICE_ARCHS
-else: \
-    actual_archs = $$QMAKE_IOS_SIMULATOR_ARCHS
-
 macx-xcode {
-    QMAKE_XCODE_ARCHS = $$actual_archs
+    arch_iphoneos.name = "ARCHS[sdk=iphoneos*]"
+    arch_iphoneos.value = $$QMAKE_IOS_DEVICE_ARCHS
+    arch_iphonesimulator.name = "ARCHS[sdk=iphonesimulator*]"
+    arch_iphonesimulator.value = $$QMAKE_IOS_SIMULATOR_ARCHS
+
+    QMAKE_MAC_XCODE_SETTINGS += arch_iphoneos arch_iphonesimulator
+    unset(QMAKE_XCODE_ARCHS)
 } else {
+# Be more specific about which architecture we're targeting
+    equals(QT_ARCH, arm): \
+        actual_archs = $$QMAKE_IOS_DEVICE_ARCHS
+    else: \
+        actual_archs = $$QMAKE_IOS_SIMULATOR_ARCHS
+
     for(arch, actual_archs): \
         arch_flags += -arch $$arch
 
