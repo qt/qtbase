@@ -41,8 +41,6 @@
 #include <QtWidgets>
 #include <QtConcurrent>
 
-#ifndef QT_NO_CONCURRENT
-
 using namespace QtConcurrent;
 
 const int iterations = 20;
@@ -88,22 +86,3 @@ int main(int argc, char **argv)
     // Query the future to check if was canceled.
     qDebug() << "Canceled?" << futureWatcher.future().isCanceled();
 }
-
-#else
-
-int main(int argc, char *argv[])
-{
-    QApplication app(argc, argv);
-    QString text("Qt Concurrent is not yet supported on this platform");
-
-    QLabel *label = new QLabel(text);
-    label->setWordWrap(true);
-
-    label->show();
-    qDebug() << text;
-
-    app.exec();
-}
-
-#endif
-

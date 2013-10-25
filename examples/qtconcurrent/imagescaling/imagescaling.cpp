@@ -40,8 +40,6 @@
 #include "imagescaling.h"
 #include "math.h"
 
-#ifndef QT_NO_CONCURRENT
-
 const int imageSize = 100;
 
 QImage scale(const QString &imageFileName)
@@ -141,5 +139,3 @@ void Images::finished()
     cancelButton->setEnabled(false);
     pauseButton->setEnabled(false);
 }
-
-#endif // QT_NO_CONCURRENT

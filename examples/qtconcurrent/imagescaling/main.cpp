@@ -40,8 +40,6 @@
 #include <QtWidgets>
 #include <QtConcurrent>
 
-#ifndef QT_NO_CONCURRENT
-
 #include "imagescaling.h"
 
 int main(int argc, char *argv[])
@@ -53,21 +51,3 @@ int main(int argc, char *argv[])
 
     return app.exec();
 }
-
-#else
-
-int main(int argc, char *argv[])
-{
-    QApplication app(argc, argv);
-    QString text("Qt Concurrent is not supported on this platform");
-
-    QLabel *label = new QLabel(text);
-    label->setWordWrap(true);
-
-    label->show();
-    qDebug() << text;
-
-    app.exec();
-}
-
-#endif
