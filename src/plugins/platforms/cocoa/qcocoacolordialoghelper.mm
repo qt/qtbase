@@ -82,6 +82,7 @@ static NSButton *macCreateButton(const char *text, NSView *superview)
     BOOL mDialogIsExecuting;
     BOOL mResultSet;
 };
+- (void)restoreOriginalContentView;
 - (void)relayout;
 - (void)updateQtColor;
 - (void)finishOffWithCode:(NSInteger)code;

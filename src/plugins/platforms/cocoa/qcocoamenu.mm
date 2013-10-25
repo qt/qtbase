@@ -84,6 +84,7 @@ static inline QCocoaMenuLoader *getMenuLoader()
 }
 
 - (id) initWithMenu:(QCocoaMenu*) m;
+- (BOOL)hasShortcut:(NSMenu *)menu forKey:(NSString *)key forModifiers:(NSUInteger)modifier;
 
 @end
 
