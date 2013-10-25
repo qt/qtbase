@@ -114,7 +114,7 @@ Feature: XMLSTREAM
 Description: Provides a simple streaming API for XML.
 Section: Kernel
 Requires:
-Name:
+Name: XML Streaming APIs
 
 Feature: XMLSTREAMREADER
 Description: Provides a well-formed XML parser with a simple streaming API.
