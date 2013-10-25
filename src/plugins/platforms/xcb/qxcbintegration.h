@@ -106,6 +106,7 @@ public:
     QPlatformSessionManager *createPlatformSessionManager(const QString &id, const QString &key) const Q_DECL_OVERRIDE;
 #endif
 
+    void sync();
 private:
     QList<QXcbConnection *> m_connections;
 

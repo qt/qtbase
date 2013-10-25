@@ -435,4 +435,19 @@ QPlatformSessionManager *QPlatformIntegration::createPlatformSessionManager(cons
 }
 #endif
 
+/*!
+   \since 5.2
+
+   Function to sync the platform integrations state with the window system.
+
+   This is often implemented as a roundtrip from the platformintegration to the window system.
+
+   This function should not call QWindowSystemInterface::flushWindowSystemEvents() or
+   QCoreApplication::processEvents()
+*/
+void QPlatformIntegration::sync()
+{
+
+}
+
 QT_END_NAMESPACE

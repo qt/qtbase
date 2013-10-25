@@ -2801,6 +2801,27 @@ bool QGuiApplication::isSavingSession() const
     return d->is_saving_session;
 }
 
+/*!
+    \since 5.2
+
+    Function that can be used to sync Qt state with the Window Systems state.
+
+    This function will first empty Qts events by calling QCoreApplication::processEvents(),
+    then the platform plugin will sync up with the windowsystem, and finally Qts events
+    will be delived by another call to QCoreApplication::processEvents();
+
+    This function is timeconsuming and its use is discouraged.
+*/
+void QGuiApplication::sync()
+{
+    QCoreApplication::processEvents();
+    if (QGuiApplicationPrivate::platform_integration
+            && QGuiApplicationPrivate::platform_integration->hasCapability(QPlatformIntegration::SyncState)) {
+        QGuiApplicationPrivate::platform_integration->sync();
+        QCoreApplication::processEvents();
+    }
+}
+
 void QGuiApplicationPrivate::commitData()
 {
     Q_Q(QGuiApplication);

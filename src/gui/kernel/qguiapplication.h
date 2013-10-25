@@ -155,6 +155,7 @@ public:
     bool isSavingSession() const;
 #endif
 
+    static void sync();
 Q_SIGNALS:
     void fontDatabaseChanged();
     void screenAdded(QScreen *screen);

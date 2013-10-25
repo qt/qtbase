@@ -94,7 +94,8 @@ public:
         ForeignWindows,
         NonFullScreenWindows,
         NativeWidgets,
-        WindowManagement
+        WindowManagement,
+        SyncState
     };
 
     virtual ~QPlatformIntegration() { }
@@ -162,6 +163,8 @@ public:
 #ifndef QT_NO_SESSIONMANAGER
     virtual QPlatformSessionManager *createPlatformSessionManager(const QString &id, const QString &key) const;
 #endif
+
+    virtual void sync();
 protected:
     void screenAdded(QPlatformScreen *screen);
 };
