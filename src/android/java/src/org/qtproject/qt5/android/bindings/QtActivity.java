@@ -56,6 +56,7 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -113,13 +114,15 @@ public class QtActivity extends Activity
                                                                        // for more details.
 
     private static final String REPOSITORY_KEY = "repository";         // use this key to overwrite the default ministro repsitory
+    private static final String ANDROID_THEMES_KEY = "android.themes"; // themes that your application uses
 
-    private static final String APPLICATION_PARAMETERS = null; // use this variable to pass any parameters to your application,
+
+    public String APPLICATION_PARAMETERS = null; // use this variable to pass any parameters to your application,
                                                                // the parameters must not contain any white spaces
                                                                // and must be separated with "\t"
                                                                // e.g "-param1\t-param2=value2\t-param3\tvalue3"
 
-    private String ENVIRONMENT_VARIABLES = "QT_USE_ANDROID_NATIVE_STYLE=1\t";
+    public String ENVIRONMENT_VARIABLES = "QT_USE_ANDROID_NATIVE_STYLE=1\t";
                                                                // use this variable to add any environment variables to your application.
                                                                // the env vars must be separated with "\t"
                                                                // e.g. "ENV_VAR1=1\tENV_VAR2=2\t"
@@ -127,14 +130,21 @@ public class QtActivity extends Activity
                                                                // * QT_USE_ANDROID_NATIVE_STYLE - 1 to use the android widget style if available,
                                                                //   note that the android style plugin in Qt 5.1 is not fully functional.
 
-    private static final String QT_ANDROID_THEME = "light"; // sets the default theme to light. Possible values are:
-                                                            // * ""           - for the device default dark theme
-                                                            // * "light"      - for the device default light theme
-                                                            // * "holo"       - for the holo dark theme
-                                                            // * "holo_light" - for the holo light theme
+    public String[] QT_ANDROID_THEMES = null;     // A list with all themes that your application want to use.
+                                                  // The name of the theme must be the same with any theme from
+                                                  // http://developer.android.com/reference/android/R.style.html
+                                                  // The most used themes are:
+                                                  //  * "Theme" - (fallback) check http://developer.android.com/reference/android/R.style.html#Theme
+                                                  //  * "Theme_Black" - check http://developer.android.com/reference/android/R.style.html#Theme_Black
+                                                  //  * "Theme_Light" - (default for API <=10) check http://developer.android.com/reference/android/R.style.html#Theme_Light
+                                                  //  * "Theme_Holo" - check http://developer.android.com/reference/android/R.style.html#Theme_Holo
+                                                  //  * "Theme_Holo_Light" - (default for API 11-13) check http://developer.android.com/reference/android/R.style.html#Theme_Holo_Light
+                                                  //  * "Theme_DeviceDefault" - check http://developer.android.com/reference/android/R.style.html#Theme_DeviceDefault
+                                                  //  * "Theme_DeviceDefault_Light" - (default for API 14+) check http://developer.android.com/reference/android/R.style.html#Theme_DeviceDefault_Light
+
+    public String QT_ANDROID_DEFAULT_THEME = null; // sets the default theme.
 
     private static final int INCOMPATIBLE_MINISTRO_VERSION = 1; // Incompatible Ministro version. Ministro needs to be upgraded.
-    private static final String DISPLAY_DPI_KEY = "display.dpi";
     private static final int BUFFER_SIZE = 1024;
 
     private ActivityInfo m_activityInfo = null; // activity info object, used to access the libs and the strings
@@ -152,6 +162,21 @@ public class QtActivity extends Activity
                                                         // * unstable - unstable repository, DO NOT use this repository in production,
                                                         // this repository is used to push Qt snapshots.
     private String[] m_qtLibs = null; // required qt libs
+
+    public QtActivity()
+    {
+        if (Build.VERSION.SDK_INT <= 10) {
+            QT_ANDROID_THEMES = new String[] {"Theme_Light"};
+            QT_ANDROID_DEFAULT_THEME = "Theme_Light";
+        }
+        else if (Build.VERSION.SDK_INT >= 11 && Build.VERSION.SDK_INT <= 13) {
+            QT_ANDROID_THEMES = new String[] {"Theme_Holo_Light"};
+            QT_ANDROID_DEFAULT_THEME = "Theme_Holo_Light";
+        } else {
+            QT_ANDROID_THEMES = new String[] {"Theme_DeviceDefault_Light"};
+            QT_ANDROID_DEFAULT_THEME = "Theme_DeviceDefault_Light";
+        }
+    }
 
     // this function is used to load and start the loader
     private void loadApplication(Bundle loaderParams)
@@ -237,23 +262,24 @@ public class QtActivity extends Activity
 
     private ServiceConnection m_ministroConnection=new ServiceConnection() {
         private IMinistro m_service = null;
-    @Override
+        @Override
         public void onServiceConnected(ComponentName name, IBinder service)
         {
             m_service = IMinistro.Stub.asInterface(service);
             try {
-                if (m_service!=null) {
-                    Bundle parameters= new Bundle();
+                if (m_service != null) {
+                    Bundle parameters = new Bundle();
                     parameters.putStringArray(REQUIRED_MODULES_KEY, m_qtLibs);
                     parameters.putString(APPLICATION_TITLE_KEY, (String)QtActivity.this.getTitle());
                     parameters.putInt(MINIMUM_MINISTRO_API_KEY, MINISTRO_API_LEVEL);
                     parameters.putInt(MINIMUM_QT_VERSION_KEY, QT_VERSION);
                     parameters.putString(ENVIRONMENT_VARIABLES_KEY, ENVIRONMENT_VARIABLES);
-                    if (null!=APPLICATION_PARAMETERS)
+                    if (APPLICATION_PARAMETERS != null)
                         parameters.putString(APPLICATION_PARAMETERS_KEY, APPLICATION_PARAMETERS);
                     parameters.putStringArray(SOURCES_KEY, m_sources);
                     parameters.putString(REPOSITORY_KEY, m_repository);
-                    parameters.putInt(DISPLAY_DPI_KEY, QtActivity.this.getResources().getDisplayMetrics().densityDpi);
+                    if (QT_ANDROID_THEMES != null)
+                        parameters.putStringArray(ANDROID_THEMES_KEY, QT_ANDROID_THEMES);
                     m_service.requestLoader(m_ministroCallback, parameters);
                 }
             } catch (RemoteException e) {
@@ -261,19 +287,19 @@ public class QtActivity extends Activity
             }
         }
 
-    private IMinistroCallback m_ministroCallback = new IMinistroCallback.Stub() {
-        // this function is called back by Ministro.
-        @Override
-        public void loaderReady(final Bundle loaderParams) throws RemoteException {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    unbindService(m_ministroConnection);
-                    loadApplication(loaderParams);
-                }
-            });
-        }
-    };
+        private IMinistroCallback m_ministroCallback = new IMinistroCallback.Stub() {
+            // this function is called back by Ministro.
+            @Override
+            public void loaderReady(final Bundle loaderParams) throws RemoteException {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        unbindService(m_ministroConnection);
+                        loadApplication(loaderParams);
+                    }
+                });
+            }
+        };
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
@@ -683,11 +709,16 @@ public class QtActivity extends Activity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        try {
+            setTheme(Class.forName("android.R$style").getDeclaredField(QT_ANDROID_DEFAULT_THEME).getInt(null));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         if (QtApplication.m_delegateObject != null && QtApplication.onCreate != null) {
             QtApplication.invokeDelegateMethod(QtApplication.onCreate, savedInstanceState);
             return;
         }
-        ENVIRONMENT_VARIABLES += "\tQT_ANDROID_THEME=" + QT_ANDROID_THEME
+        ENVIRONMENT_VARIABLES += "\tQT_ANDROID_THEME=" + QT_ANDROID_DEFAULT_THEME
                               + "/\tQT_ANDROID_THEME_DISPLAY_DPI=" + getResources().getDisplayMetrics().densityDpi + "\t";
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         try {
