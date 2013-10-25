@@ -2389,6 +2389,7 @@ while [ "$#" -gt 0 ]; do
 done
 
 # update QT_CONFIG to show our current predefined configuration
+CFG_QCONFIG_PATH=$relpath/src/corelib/global/qconfig-${CFG_QCONFIG}.h
 case "$CFG_QCONFIG" in
 minimal|small|medium|large|full)
     # these are a sequence of increasing functionality
@@ -2396,15 +2397,19 @@ minimal|small|medium|large|full)
         QT_CONFIG="$QT_CONFIG $c-config"
         [ "$CFG_QCONFIG" = $c ] && break
     done
+    [ "$CFG_QCONFIG" = full ] && CFG_QCONFIG_PATH=
     ;;
 *)
     # not known to be sufficient for anything
-    if [ '!' -f "$relpath/src/corelib/global/qconfig-${CFG_QCONFIG}.h" ] && [ '!' -f `"$relpath/config.tests/unix/makeabs" "${CFG_QCONFIG}"` ]; then
-        echo >&2 "Error: configuration file not found:"
-        echo >&2 "  $relpath/src/corelib/global/qconfig-${CFG_QCONFIG}.h"
-        echo >&2 "  or"
-        echo >&2 "  `"$relpath/config.tests/unix/makeabs" "${CFG_QCONFIG}"`"
-        OPT_HELP=yes
+    if [ ! -f "$CFG_QCONFIG_PATH" ]; then
+        CFG_QCONFIG_PATH=`"$relpath/config.tests/unix/makeabs" "${CFG_QCONFIG}"`
+        if [ ! -f "$CFG_QCONFIG_PATH" ]; then
+            echo >&2 "Error: configuration file not found:"
+            echo >&2 "  $relpath/src/corelib/global/qconfig-${CFG_QCONFIG}.h"
+            echo >&2 "  or"
+            echo >&2 "  $CFG_QCONFIG_PATH"
+            OPT_HELP=yes
+        fi
     fi
 esac
 
@@ -6319,11 +6324,7 @@ full)
 *)
     tmpconfig="$outpath/src/corelib/global/qconfig.h.new"
     echo "#ifndef QT_BOOTSTRAPPED" >"$tmpconfig"
-    if [ -f "$relpath/src/corelib/global/qconfig-$CFG_QCONFIG.h" ]; then
-        cat "$relpath/src/corelib/global/qconfig-$CFG_QCONFIG.h" >>"$tmpconfig"
-    elif [ -f `"$relpath/config.tests/unix/makeabs" "${CFG_QCONFIG}"` ]; then
-        cat `"$relpath/config.tests/unix/makeabs" "${CFG_QCONFIG}"` >>"$tmpconfig"
-    fi
+    cat "$CFG_QCONFIG_PATH" >>"$tmpconfig"
     echo "#endif" >>"$tmpconfig"
     ;;
 esac
