@@ -48,7 +48,7 @@ defineTest(qtProcessModuleFlags) {
 
 # qt module
 defineTest(qtHaveModule) {
-    !isEmpty(QT.$${1}.name): \
+    !isEmpty(QT.$$replace(1, -, _).name): \
         return(true)
     return(false)
 }
