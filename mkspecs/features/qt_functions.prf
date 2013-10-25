@@ -1,11 +1,16 @@
 defineReplace(qtPlatformTargetSuffix) {
+    ios:CONFIG(iphonesimulator, iphonesimulator|iphoneos): \
+        suffix = _iphonesimulator
+    else: \
+        suffix =
+
     CONFIG(debug, debug|release) {
         !debug_and_release|build_pass {
-           mac:return(_debug)
-           win32:return(d)
+            mac: return($${suffix}_debug)
+            win32: return($${suffix}d)
         }
     }
-    return()
+    return($$suffix)
 }
 
 defineReplace(qtLibraryTarget) {
