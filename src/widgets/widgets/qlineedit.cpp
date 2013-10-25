@@ -500,7 +500,7 @@ void QLineEdit::setClearButtonEnabled(bool enable)
     } else {
         QAction *clearAction = findChild<QAction *>(QLatin1String(clearButtonActionNameC));
         Q_ASSERT(clearAction);
-        removeAction(clearAction);
+        d->removeAction(clearAction);
         delete clearAction;
     }
 }
@@ -1439,7 +1439,7 @@ bool QLineEdit::event(QEvent * e)
                 d->setCursorVisible(true);
         }
     } else if (e->type() == QEvent::ActionRemoved) {
-        d->removeAction(static_cast<QActionEvent *>(e));
+        d->removeAction(static_cast<QActionEvent *>(e)->action());
     } else if (e->type() == QEvent::Resize) {
         d->positionSideWidgets();
     }

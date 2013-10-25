@@ -445,10 +445,9 @@ QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineE
     return w;
 }
 
-void QLineEditPrivate::removeAction(const QActionEvent *e)
+void QLineEditPrivate::removeAction(QAction *action)
 {
     Q_Q(QLineEdit);
-    QAction *action = e->action();
     const PositionIndexPair positionIndex = findSideWidget(action);
     if (positionIndex.second == -1)
         return;
