@@ -1516,13 +1516,12 @@ void QAbstractSpinBoxPrivate::_q_editorCursorPositionChanged(int oldpos, int new
                                      * (newpos < pos ? -1 : 1)) - newpos + pos
                                   : 0;
 
-            const bool wasBlocked = edit->blockSignals(true);
+            const QSignalBlocker blocker(edit);
             if (selSize != 0) {
                 edit->setSelection(pos - selSize, selSize);
             } else {
                 edit->setCursorPosition(pos);
             }
-            edit->blockSignals(wasBlocked);
         }
         ignoreCursorPositionChanged = false;
     }
@@ -1722,7 +1721,7 @@ void QAbstractSpinBoxPrivate::updateEdit()
     const bool empty = edit->text().isEmpty();
     int cursor = edit->cursorPosition();
     int selsize = edit->selectedText().size();
-    const bool sb = edit->blockSignals(true);
+    const QSignalBlocker blocker(edit);
     edit->setText(newText);
 
     if (!specialValue()) {
@@ -1734,7 +1733,6 @@ void QAbstractSpinBoxPrivate::updateEdit()
             edit->setCursorPosition(empty ? prefix.size() : cursor);
         }
     }
-    edit->blockSignals(sb);
     q->update();
 }
 
