@@ -1432,20 +1432,7 @@ void Configure::parseCmdLine()
 void Configure::validateArgs()
 {
     // Validate the specified config
-
-    // Get all possible configurations from the file system.
-    QDir dir;
-    QStringList filters;
-    filters << "qconfig-*.h";
-    dir.setNameFilters(filters);
-    dir.setPath(sourcePath + "/src/corelib/global/");
-
-    QStringList stringList =  dir.entryList();
-
-    QStringList::Iterator it;
-    for (it = stringList.begin(); it != stringList.end(); ++it)
-        allConfigs << it->remove("qconfig-").remove(".h");
-    allConfigs << "full";
+    QString cfgpath = sourcePath + "/src/corelib/global/qconfig-" + dictionary["QCONFIG"] + ".h";
 
     // Try internal configurations first.
     QStringList possible_configs = QStringList()
@@ -1457,23 +1444,22 @@ void Configure::validateArgs()
     int index = possible_configs.indexOf(dictionary["QCONFIG"]);
     if (index >= 0) {
         for (int c = 0; c <= index; c++) {
-            qmakeConfig += possible_configs[c] + "-config";
+            qtConfig += possible_configs[c] + "-config";
         }
+        if (dictionary["QCONFIG"] != "full")
+            dictionary["QCONFIG_PATH"] = cfgpath;
         return;
     }
 
-    // If the internal configurations failed, try others.
-    QStringList::Iterator config;
-    for (config = allConfigs.begin(); config != allConfigs.end(); ++config) {
-        if ((*config) == dictionary[ "QCONFIG" ])
-            break;
+    if (!QFileInfo::exists(cfgpath)) {
+        cfgpath = QFileInfo(dictionary["QCONFIG"]).absoluteFilePath();
+        if (!QFileInfo::exists(cfgpath)) {
+            dictionary[ "HELP" ] = "yes";
+            cout << "No such configuration \"" << qPrintable(dictionary["QCONFIG"]) << "\"" << endl ;
+            return;
+        }
     }
-    if (config == allConfigs.end()) {
-        dictionary[ "HELP" ] = "yes";
-        cout << "No such configuration \"" << qPrintable(dictionary[ "QCONFIG" ]) << "\"" << endl ;
-    }
-    else
-        qmakeConfig += (*config) + "-config";
+    dictionary["QCONFIG_PATH"] = cfgpath;
 }
 
 // Output helper functions --------------------------------[ Start ]-
@@ -1784,6 +1770,9 @@ bool Configure::displayHelp()
         desc(                   "-sysroot <dir>",       "Sets <dir> as the target compiler's and qmake's sysroot and also sets pkg-config paths.");
         desc(                   "-no-gcc-sysroot",      "When using -sysroot, it disables the passing of --sysroot to the compiler.\n");
 
+        desc(                   "-qconfig <local>",     "Use src/corelib/global/qconfig-<local>.h rather than the\n"
+                                                        "default 'full'.\n");
+
         desc("NIS",  "no",      "-no-nis",              "Do not compile NIS support.");
         desc("NIS",  "yes",     "-nis",                 "Compile NIS support.\n");
 
@@ -1935,13 +1924,6 @@ bool Configure::displayHelp()
         desc("MSVC_MP", "no", "-no-mp",                 "Do not use multiple processors for compiling with MSVC");
         desc("MSVC_MP", "yes", "-mp",                   "Use multiple processors for compiling with MSVC (-MP).\n");
 
-/*      We do not support -qconfig on Windows yet
-
-        desc(                   "-qconfig <local>",     "Use src/tools/qconfig-local.h rather than the default.\nPossible values for local:");
-        for (int i=0; i<allConfigs.size(); ++i)
-            desc(               "",                     qPrintable(QString("  %1").arg(allConfigs.at(i))), false, ' ');
-        printf("\n");
-*/
         desc(                   "-loadconfig <config>", "Run configure with the parameters from file configure_<config>.cache.");
         desc(                   "-saveconfig <config>", "Run configure and save the parameters in file configure_<config>.cache.");
         desc(                   "-redo",                "Run configure with the same parameters as last time.\n");
@@ -2740,23 +2722,6 @@ void Configure::generateOutputVars()
     if (dictionary[ "SYSTEM_PROXIES" ] == "yes")
         qtConfig += "system-proxies";
 
-    // Add config levels --------------------------------------------
-    QStringList possible_configs = QStringList()
-        << "minimal"
-        << "small"
-        << "medium"
-        << "large"
-        << "full";
-
-    QString set_config = dictionary["QCONFIG"];
-    if (possible_configs.contains(set_config)) {
-        foreach (const QString &cfg, possible_configs) {
-            qtConfig += (cfg + "-config");
-            if (cfg == set_config)
-                break;
-        }
-    }
-
     if (dictionary.contains("XQMAKESPEC") && (dictionary["QMAKESPEC"] != dictionary["XQMAKESPEC"])) {
             qmakeConfig += "cross_compile";
             dictionary["CROSS_COMPILE"] = "yes";
@@ -3280,10 +3245,8 @@ void Configure::generateConfigfiles()
         if (dictionary[ "QCONFIG" ] == "full") {
             tmpStream << "/* Everything */" << endl;
         } else {
-            QString configName("qconfig-" + dictionary[ "QCONFIG" ] + ".h");
-            tmpStream << "/* Copied from " << configName << "*/" << endl;
             tmpStream << "#ifndef QT_BOOTSTRAPPED" << endl;
-            QFile inFile(sourcePath + "/src/corelib/global/" + configName);
+            QFile inFile(dictionary["QCONFIG_PATH"]);
             if (inFile.open(QFile::ReadOnly)) {
                 tmpStream << QTextStream(&inFile).readAll();
                 inFile.close();
