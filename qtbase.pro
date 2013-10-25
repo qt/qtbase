@@ -145,6 +145,17 @@ FWD_FEATURES_H = \
     '$${LITERAL_HASH}include "../../src/corelib/global/qfeatures.h"'
 write_file($$OUT_PWD/include/QtCore/qfeatures.h, FWD_FEATURES_H)|error("Aborting.")
 
+lines = $$cat($$absolute_path($$QT_QCONFIG_PATH, $$PWD/src/corelib/global), lines)
+for (line, lines) {
+    # We ignore all defines that don't follow the #ifndef + indent pattern.
+    # This makes it possible to have unchecked defines which are no features.
+    t = $$replace(line, "^$${LITERAL_HASH}  define QT_NO_(\\S+)\\s*$", "\\1")
+    !isEqual(t, $$line) {
+        isEmpty(features.$${t}.name): \
+            error("$$QT_QCONFIG_PATH disables unknown feature $$t")
+    }
+}
+
 #mkspecs
 mkspecs.path = $$[QT_HOST_DATA]/mkspecs
 mkspecs.files = \

@@ -2860,6 +2860,11 @@ void Configure::generateCachefile()
         moduleStream << "QT_BUILD_PARTS += " << buildParts.join(' ') << endl;
         if (!skipModules.isEmpty())
             moduleStream << "QT_SKIP_MODULES += " << skipModules.join(' ') << endl;
+        QString qcpath = dictionary["QCONFIG_PATH"];
+        QString qlpath = sourcePath + "/src/corelib/global/";
+        if (qcpath.startsWith(qlpath))
+            qcpath.remove(0, qlpath.length());
+        moduleStream << "QT_QCONFIG_PATH = " << qcpath << endl;
         moduleStream << endl;
 
         moduleStream << "host_build {" << endl;

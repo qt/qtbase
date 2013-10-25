@@ -6670,6 +6670,7 @@ echo "QT_BUILD_PARTS += $CFG_BUILD_PARTS" >> "$QTMODULE.tmp"
 if [ -n "$CFG_SKIP_MODULES" ]; then
     echo "QT_SKIP_MODULES += $CFG_SKIP_MODULES" >> "$QTMODULE.tmp"
 fi
+echo "QT_QCONFIG_PATH = ${CFG_QCONFIG_PATH#$relpath/src/corelib/global/}" >> "$QTMODULE.tmp"
 
 cat >>"$QTMODULE.tmp" <<EOF
 host_build {
