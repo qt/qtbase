@@ -241,8 +241,3 @@
 #ifndef QT_NO_TREEWIDGET
 #  define QT_NO_TREEWIDGET
 #endif
-
-/* Windows */
-#ifndef QT_NO_WIN_ACTIVEQT
-#  define QT_NO_WIN_ACTIVEQT
-#endif

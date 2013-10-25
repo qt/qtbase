@@ -275,20 +275,6 @@
 #  define QT_NO_CUPS
 #endif
 
-/* SVG */
-#ifndef QT_NO_SVG
-#  define QT_NO_SVG
-#endif
-#ifndef QT_NO_SVGGENERATOR
-#  define QT_NO_SVGGENERATOR
-#endif
-#ifndef QT_NO_SVGRENDERER
-#  define QT_NO_SVGRENDERER
-#endif
-#ifndef QT_NO_SVGWIDGET
-#  define QT_NO_SVGWIDGET
-#endif
-
 /* Styles */
 #ifndef QT_NO_STYLE_FUSION
 #  define QT_NO_STYLE_FUSION
@@ -473,9 +459,4 @@
 #endif
 #ifndef QT_NO_VALIDATOR
 #  define QT_NO_VALIDATOR
-#endif
-
-/* Windows */
-#ifndef QT_NO_WIN_ACTIVEQT
-#  define QT_NO_WIN_ACTIVEQT
 #endif
