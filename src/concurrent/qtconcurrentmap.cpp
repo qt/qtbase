@@ -204,15 +204,11 @@
 
     \section2 Using Bound Function Arguments
 
-    Note that Qt does not provide support for bound functions. This is
-    provided by 3rd party libraries like
-    \l{http://www.boost.org/libs/bind/bind.html}{Boost} or
-    \l{http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf}{C++
-    TR1 Library Extensions}.
-
     If you want to use a map function that takes more than one argument you can
-    use boost::bind() or std::tr1::bind() to transform it onto a function that
-    takes one argument.
+    use std::bind() to transform it onto a function that takes one argument. If
+    C++11 support is not available, \l{http://www.boost.org/libs/bind/bind.html}
+    {boost::bind()} or \l{http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf}
+    {std::tr1::bind()} are suitable replacements.
 
     As an example, we'll use QImage::scaledToWidth():
 
@@ -226,7 +222,7 @@
 
     \snippet code/src_concurrent_qtconcurrentmap.cpp 11
 
-    The return value from boost::bind() is a function object (functor) with
+    The return value from std::bind() is a function object (functor) with
     the following signature:
 
     \snippet code/src_concurrent_qtconcurrentmap.cpp 12

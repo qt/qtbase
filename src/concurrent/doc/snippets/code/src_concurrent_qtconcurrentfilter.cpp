@@ -136,7 +136,7 @@ bool QString::contains(const QRegExp &regexp) const;
 
 
 //! [10]
-boost::bind(&QString::contains, QRegExp("^\\S+$")); // matches strings without whitespace
+std::bind(&QString::contains, QRegExp("^\\S+$")); // matches strings without whitespace
 //! [10]
 
 
@@ -147,7 +147,7 @@ bool contains(const QString &string)
 
 //! [12]
 QStringList strings = ...;
-boost::bind(static_cast<bool(QString::*)(const QRegExp&)>( &QString::contains ), QRegExp("..." ));
+std::bind(static_cast<bool(QString::*)(const QRegExp&)>( &QString::contains ), QRegExp("..." ));
 //! [12]
 
 //! [13]
