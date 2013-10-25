@@ -759,12 +759,6 @@ Section: Painting
 Requires: PRINTER LIBRARY
 Name: Common UNIX Printing System
 
-Feature: PAINTONSCREEN
-Description: Supports the Qt::WA_PaintOnScreen widget attribute.
-Section: Painting
-Requires:
-Name: Qt::WA_PaintOnScreen
-
 Feature: PAINT_DEBUG
 Description: Debug painting with the environment variables QT_FLUSH_UPDATE and QT_FLUSH_PAINT
 Section: Painting
@@ -786,12 +780,6 @@ Description: Supports translations using QObject::tr().
 Section: Internationalization
 Requires:
 Name: Translation
-
-Feature: TRANSLATION_UTF8
-Description: Supports translations using QObject::trUtf8().
-Section: Internationalization
-Requires: TRANSLATION TEXTCODEC
-Name: Translation (UTF-8 representation)
 
 Feature: TEXTCODEC
 Description: Supports conversions between text encodings.
@@ -819,12 +807,6 @@ Name: iconv
 
 # Networking
 
-Feature: HOSTINFO
-Description: Supports host name lookups.
-Section: Networking
-Requires:
-Name: QHostInfo
-
 Feature: FTP
 Description: Supports FTP file access.
 Section: Networking
@@ -834,7 +816,7 @@ Name: File Transfer Protocol
 Feature: HTTP
 Description: Supports HTTP file access.
 Section: Networking
-Requires: HOSTINFO
+Requires:
 Name: Hyper Text Transfer Protocol
 
 Feature: UDPSOCKET

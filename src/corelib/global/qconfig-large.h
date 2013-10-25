@@ -56,11 +56,6 @@
 #  define QT_NO_PROGRESSDIALOG
 #endif
 
-/* Fonts */
-#ifndef QT_NO_QWS_QPF
-#  define QT_NO_QWS_QPF
-#endif
-
 /* Images */
 #ifndef QT_NO_IMAGEFORMAT_BMP
 #  define QT_NO_IMAGEFORMAT_BMP
@@ -75,9 +70,6 @@
 #endif
 #ifndef QT_NO_TRANSLATION
 #  define QT_NO_TRANSLATION
-#endif
-#ifndef QT_NO_TRANSLATION_UTF8
-#  define QT_NO_TRANSLATION_UTF8
 #endif
 
 /* ItemViews */
@@ -101,22 +93,13 @@
 #ifndef QT_NO_PROPERTIES
 #  define QT_NO_PROPERTIES
 #endif
-#ifndef QT_NO_SOUND
-#  define QT_NO_SOUND
-#endif
 
 /* Networking */
-#ifndef QT_NO_HOSTINFO
-#  define QT_NO_HOSTINFO
-#endif
 #ifndef QT_NO_HTTP
 #  define QT_NO_HTTP
 #endif
 #ifndef QT_NO_UDPSOCKET
 #  define QT_NO_UDPSOCKET
-#endif
-#ifndef QT_NO_URLINFO
-#  define QT_NO_URLINFO
 #endif
 #ifndef QT_NO_FTP
 #  define QT_NO_FTP
@@ -136,18 +119,7 @@
 #  define QT_NO_CUPS
 #endif
 
-/* Qt for Embedded Linux */
-#ifndef QT_NO_QWS_SOUNDSERVER
-#  define QT_NO_QWS_SOUNDSERVER
-#endif
-
 /* Styles */
-#ifndef QT_NO_STYLE_MOTIF
-#  define QT_NO_STYLE_MOTIF
-#endif
-#ifndef QT_NO_STYLE_CDE
-#  define QT_NO_STYLE_CDE
-#endif
 #ifndef QT_NO_STYLE_STYLESHEET
 #  define QT_NO_STYLE_STYLESHEET
 #endif
