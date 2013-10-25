@@ -1271,9 +1271,8 @@ void QItemSelectionModel::clearCurrentIndex()
 */
 void QItemSelectionModel::reset()
 {
-    bool block = blockSignals(true);
+    const QSignalBlocker blocker(this);
     clear();
-    blockSignals(block);
 }
 
 /*!
