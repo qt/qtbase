@@ -54,12 +54,14 @@ set(Qt5Gui_OPENGL_LIBRARIES Qt5::Gui_GLESv2)
 
 !!IF !isEmpty(CMAKE_GL_INCDIRS)
 
+set(_GL_INCDIRS $$CMAKE_GL_INCDIRS)
 find_path(_qt5gui_OPENGL_INCLUDE_DIR $$CMAKE_GL_HEADER_NAME
-    PATHS $$CMAKE_GL_INCDIRS
+    PATHS ${_GL_INCDIRS}
     NO_DEFAULT_PATH)
 if (NOT _qt5gui_OPENGL_INCLUDE_DIR)
-    message(FATAL_ERROR \"Failed to find \\\"$$CMAKE_GL_HEADER_NAME\\\" in \\\"$$CMAKE_GL_INCDIRS\\\".\")
+    message(FATAL_ERROR \"Failed to find \\\"$$CMAKE_GL_HEADER_NAME\\\" in \\\"${_GL_INCDIRS}\\\".\")
 endif()
+unset(_GL_INCDIRS)
 
 _qt5_Gui_check_file_exists(${_qt5gui_OPENGL_INCLUDE_DIR})
 
