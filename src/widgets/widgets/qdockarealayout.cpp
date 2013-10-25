@@ -2096,7 +2096,7 @@ bool QDockAreaLayoutInfo::updateTabBar() const
         that->tabBar->setDrawBase(true);
     }
 
-    bool blocked = tabBar->blockSignals(true);
+    const QSignalBlocker blocker(tabBar);
     bool gap = false;
 
     int tab_idx = 0;
@@ -2146,8 +2146,6 @@ bool QDockAreaLayoutInfo::updateTabBar() const
     while (tab_idx < tabBar->count()) {
         tabBar->removeTab(tab_idx);
     }
-
-    tabBar->blockSignals(blocked);
 
     //returns if the tabbar is visible or not
     return ( (gap ? 1 : 0) + tabBar->count()) > 1;
