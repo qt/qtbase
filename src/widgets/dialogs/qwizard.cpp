@@ -1354,10 +1354,22 @@ static QString object_name_for_button(QWizard::WizardButton which)
         return QLatin1String("qt_wizard_") + QLatin1String("finish");
     case QWizard::CancelButton:
         return QLatin1String("qt_wizard_") + QLatin1String("cancel");
-    default:
+    case QWizard::BackButton:
+    case QWizard::NextButton:
+    case QWizard::HelpButton:
+    case QWizard::CustomButton1:
+    case QWizard::CustomButton2:
+    case QWizard::CustomButton3:
         // Make navigation buttons detectable as passive interactor in designer
         return QLatin1String("__qt__passive_wizardbutton") + QString::number(which);
+    case QWizard::Stretch:
+    case QWizard::NoButton:
+    //case QWizard::NStandardButtons:
+    //case QWizard::NButtons:
+        ;
     }
+    Q_UNREACHABLE();
+    return QString();
 }
 
 bool QWizardPrivate::ensureButton(QWizard::WizardButton which) const
