@@ -277,6 +277,10 @@ namespace QXcbAtom {
 #endif
         _XSETTINGS_SETTINGS,
 
+        _COMPIZ_DECOR_PENDING,
+        _COMPIZ_DECOR_REQUEST,
+        _COMPIZ_DECOR_DELETE_PIXMAP,
+
         NPredefinedAtoms,
 
         _QT_SETTINGS_TIMESTAMP = NPredefinedAtoms,

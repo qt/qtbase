@@ -1438,7 +1438,10 @@ static const char * xcb_atomnames = {
 #if XCB_USE_MAEMO_WINDOW_PROPERTIES
     "_MEEGOTOUCH_ORIENTATION_ANGLE\0"
 #endif
-    "_XSETTINGS_SETTINGS\0" // \0\0 terminates loop.
+    "_XSETTINGS_SETTINGS\0"
+    "_COMPIZ_DECOR_PENDING\0"
+    "_COMPIZ_DECOR_REQUEST\0"
+    "_COMPIZ_DECOR_DELETE_PIXMAP\0" // \0\0 terminates loop.
 };
 
 QXcbAtom::Atom QXcbConnection::qatom(xcb_atom_t xatom) const
