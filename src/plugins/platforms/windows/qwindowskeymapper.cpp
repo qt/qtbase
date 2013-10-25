@@ -97,6 +97,8 @@ struct KeyRecord {
     QString text;
 };
 
+// We need to record the pressed keys in order to decide, whether the key event is an autorepeat
+// event. As soon as its state changes, the chain of autorepeat events will be broken.
 static const int QT_MAX_KEY_RECORDINGS = 64; // User has LOTS of fingers...
 struct KeyRecorder
 {
@@ -503,12 +505,6 @@ static inline int toKeyOrUnicode(int vk, int scancode, unsigned char *kbdBuffer,
     return code == Qt::Key_unknown ? 0 : code;
 }
 
-int qt_translateKeyCode(int vk)
-{
-    int code = winceKeyBend((vk < 0 || vk > 255) ? 0 : vk);
-    return code == Qt::Key_unknown ? 0 : code;
-}
-
 static inline int asciiToKeycode(char a, int state)
 {
     if (a >= 'a' && a <= 'z')
@@ -554,12 +550,8 @@ void QWindowsKeyMapper::changeKeyboard()
     keyboardInputDirection = bidi ? Qt::RightToLeft : Qt::LeftToRight;
 }
 
-void QWindowsKeyMapper::clearRecordedKeys()
-{
-    key_recorder.clearKeys();
-}
-
-
+// Helper function that is used when obtaining the list of characters that can be produced by one key and
+// every possible combination of modifiers
 inline void setKbdState(unsigned char *kbd, bool shift, bool ctrl, bool alt)
 {
     kbd[VK_LSHIFT  ] = (shift ? 0x80 : 0);
@@ -570,6 +562,7 @@ inline void setKbdState(unsigned char *kbd, bool shift, bool ctrl, bool alt)
     kbd[VK_MENU    ] = (alt ? 0x80 : 0);
 }
 
+// Adds the msg's key to keyLayout if it is not yet present there
 void QWindowsKeyMapper::updateKeyMap(const MSG &msg)
 {
     unsigned char kbdBuffer[256]; // Will hold the complete keyboard state
@@ -578,6 +571,9 @@ void QWindowsKeyMapper::updateKeyMap(const MSG &msg)
     updatePossibleKeyCodes(kbdBuffer, scancode, msg.wParam);
 }
 
+// Fills keyLayout for that vk_key. Values are all characters one can type using that key
+// (in connection with every combination of modifiers) and whether these "characters" are
+// dead keys.
 void QWindowsKeyMapper::updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32 scancode,
                                                quint32 vk_key)
 {
@@ -598,6 +594,10 @@ void QWindowsKeyMapper::updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32
     buffer[VK_RCONTROL] = 0;
     buffer[VK_LMENU   ] = 0; // Use right Alt, since left Ctrl + right Alt is considered AltGraph
 
+    // keyLayout contains the actual characters which can be written using the vk_key together with the
+    // different modifiers. '2' together with shift will for example cause the character
+    // to be @ for a US key layout (thus keyLayout[vk_key].qtKey[1] will be @). In addition to that
+    // it stores whether the resulting key is a dead key as these keys have to be handled later.
     bool isDeadKey = false;
     keyLayout[vk_key].deadkeys = 0;
     keyLayout[vk_key].dirty = false;
@@ -635,7 +635,8 @@ void QWindowsKeyMapper::updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32
     }
     keyLayout[vk_key].qtKey[8] = fallbackKey;
 
-    // If this vk_key makes a dead key with any combination of modifiers
+    // If one of the values inserted into the keyLayout above, can be considered a dead key, we have
+    // to run the workaround below.
     if (keyLayout[vk_key].deadkeys) {
         // Push a Space, then the original key through the low-level ToAscii functions.
         // We do this because these functions (ToAscii / ToUnicode) will alter the internal state of
@@ -659,17 +660,6 @@ void QWindowsKeyMapper::updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32
                    keyLayout[vk_key].deadkeys & (1<<i) ? "deadkey" : "");
         }
     }
-}
-
-bool QWindowsKeyMapper::isADeadKey(unsigned int vk_key, unsigned int modifiers)
-{
-    if ((vk_key < NumKeyboardLayoutItems) && keyLayout[vk_key].exists) {
-        for (size_t i = 0; i < NumMods; ++i) {
-            if (uint(ModsTbl[i]) == modifiers)
-                return bool(keyLayout[vk_key].deadkeys & 1<<i);
-        }
-    }
-    return false;
 }
 
 static inline QString messageKeyText(const MSG &msg)
