@@ -27,6 +27,8 @@ isEmpty(_QMAKE_CACHE_) {
     cache(QMAKE_XCODE_VERSION)
 }
 
+QMAKE_XCODE_LIBRARY_SUFFIX = $$qtPlatformTargetSuffix()
+
 # Ensure that we process sdk.prf first, as it will update QMAKE_CXX
 # and friends that other features/extra compilers may depend on.
 sdk: load(sdk)
