@@ -699,7 +699,6 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
         line_thickness =  QFixed::fromFixed(FT_MulFix(face->underline_thickness, face->size->metrics.y_scale));
         underline_position = QFixed::fromFixed(-FT_MulFix(face->underline_position, face->size->metrics.y_scale));
     } else {
-        // copied from QFontEngineQPF
         // ad hoc algorithm
         int score = fontDef.weight * fontDef.pixelSize;
         line_thickness = score / 700;
