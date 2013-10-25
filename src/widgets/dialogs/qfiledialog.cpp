@@ -2612,9 +2612,8 @@ void QFileDialog::accept()
     // special case for ".."
     if (lineEditText == QLatin1String("..")) {
         d->_q_navigateToParent();
-        bool block = d->qFileDialogUi->fileNameEdit->blockSignals(true);
+        const QSignalBlocker blocker(d->qFileDialogUi->fileNameEdit);
         d->lineEdit()->selectAll();
-        d->qFileDialogUi->fileNameEdit->blockSignals(block);
         return;
     }
 
