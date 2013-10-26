@@ -639,9 +639,10 @@ void QPlainTextEditPrivate::setTopBlock(int blockNumber, int lineNumber, int dx)
         lineNumber = maxTopLine - block.firstLineNumber();
     }
 
-    bool vbarSignalsBlocked = vbar->blockSignals(true);
-    vbar->setValue(newTopLine);
-    vbar->blockSignals(vbarSignalsBlocked);
+    {
+        const QSignalBlocker blocker(vbar);
+        vbar->setValue(newTopLine);
+    }
 
     if (!dx && blockNumber == control->topBlock && lineNumber == topLine)
         return;
@@ -657,9 +658,10 @@ void QPlainTextEditPrivate::setTopBlock(int blockNumber, int lineNumber, int dx)
         control->topBlock = blockNumber;
         topLine = lineNumber;
 
-        bool vbarSignalsBlocked = vbar->blockSignals(true);
-        vbar->setValue(block.firstLineNumber() + lineNumber);
-        vbar->blockSignals(vbarSignalsBlocked);
+        {
+            const QSignalBlocker blocker(vbar);
+            vbar->setValue(block.firstLineNumber() + lineNumber);
+        }
 
         if (dx || dy) {
             viewport->scroll(q->isRightToLeft() ? -dx : dx, dy);
@@ -1006,9 +1008,11 @@ void QPlainTextEditPrivate::_q_adjustScrollbars()
     QTextBlock firstVisibleBlock = q->firstVisibleBlock();
     if (firstVisibleBlock.isValid())
         visualTopLine = firstVisibleBlock.firstLineNumber() + topLine;
-    bool vbarSignalsBlocked = vbar->blockSignals(true);
-    vbar->setValue(visualTopLine);
-    vbar->blockSignals(vbarSignalsBlocked);
+
+    {
+        const QSignalBlocker blocker(vbar);
+        vbar->setValue(visualTopLine);
+    }
 
     hbar->setRange(0, (int)documentSize.width() - viewport->width());
     hbar->setPageStep(viewport->width());
