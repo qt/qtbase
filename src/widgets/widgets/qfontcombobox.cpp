@@ -346,9 +346,10 @@ void QFontComboBoxPrivate::_q_updateModel()
     //this prevents the current index from changing
     //it will be updated just after this
     ///TODO: we should finda way to avoid blocking signals and have a real update of the model
-    const bool old = m->blockSignals(true);
-    m->setStringList(list);
-    m->blockSignals(old);
+    {
+        const QSignalBlocker blocker(m);
+        m->setStringList(list);
+    }
 
     if (list.isEmpty()) {
         if (currentFont != QFont()) {
