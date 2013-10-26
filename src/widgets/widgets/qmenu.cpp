@@ -435,7 +435,7 @@ void QMenuPrivate::hideMenu(QMenu *menu)
     if (!menu)
         return;
 #if !defined(QT_NO_EFFECTS)
-    menu->blockSignals(true);
+    QSignalBlocker blocker(menu);
     aboutToHide = true;
     // Flash item which is about to trigger (if any).
     if (menu->style()->styleHint(QStyle::SH_Menu_FlashTriggeredItem)
@@ -455,7 +455,7 @@ void QMenuPrivate::hideMenu(QMenu *menu)
     }
 
     aboutToHide = false;
-    menu->blockSignals(false);
+    blocker.unblock();
 #endif // QT_NO_EFFECTS
     menu->close();
 }
