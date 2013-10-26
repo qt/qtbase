@@ -41,13 +41,6 @@
 
 #include "QtCore/qxmlstream.h"
 
-#if defined(QT_BUILD_XML_LIB) && defined(Q_OS_MAC64)
-// No need to define this in the 64-bit Mac libraries.
-// Since Qt 4.4 and previous weren't supported in 64-bit, there are
-// no QXmlStream* symbols to keep compatibility with
-# define QT_NO_XMLSTREAM
-#endif
-
 #ifndef QT_NO_XMLSTREAM
 
 #include "qxmlutils_p.h"
