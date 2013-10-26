@@ -20,8 +20,7 @@ ANDROID_JAR_DEPENDENCIES = \
     jar/QtAndroid.jar \
     jar/QtAndroidAccessibility.jar
 ANDROID_LIB_DEPENDENCIES = \
-    plugins/platforms/android/libqtforandroid.so \
-    libs/libgnustl_shared.so
+    plugins/platforms/android/libqtforandroid.so
 ANDROID_BUNDLED_JAR_DEPENDENCIES = \
     jar/QtAndroid-bundled.jar \
     jar/QtAndroidAccessibility-bundled.jar
