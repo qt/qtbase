@@ -45,9 +45,96 @@
 #include "qendian.h"
 #include "qchar.h"
 
+#include "private/qsimd_p.h"
+
 QT_BEGIN_NAMESPACE
 
 enum { Endian = 0, Data = 1 };
+
+#if defined(__SSE2__) && defined(QT_COMPILER_SUPPORTS_SSE2)
+static inline bool simdEncodeAscii(uchar *&dst, const ushort *&nextAscii, const ushort *&src, const ushort *end)
+{
+    // do sixteen characters at a time
+    for ( ; end - src >= 16; src += 16, dst += 16) {
+        __m128i data1 = _mm_loadu_si128((__m128i*)src);
+        __m128i data2 = _mm_loadu_si128(1+(__m128i*)src);
+
+
+        // check if everything is ASCII
+        // the highest ASCII value is U+007F
+        // Do the packing directly:
+        // The PACKUSWB instruction has packs a signed 16-bit integer to an unsigned 8-bit
+        // with saturation. That is, anything from 0x0100 to 0x7fff is saturated to 0xff,
+        // while all negatives (0x8000 to 0xffff) get saturated to 0x00. To detect non-ASCII,
+        // we simply do a signed greater-than comparison to 0x00. That means we detect NULs as
+        // "non-ASCII", but it's an acceptable compromise.
+        __m128i packed = _mm_packus_epi16(data1, data2);
+        __m128i nonAscii = _mm_cmpgt_epi8(packed, _mm_setzero_si128());
+
+        // n will contain 1 bit set per character in [data1, data2] that is non-ASCII (or NUL)
+        ushort n = ~_mm_movemask_epi8(nonAscii);
+        if (n) {
+            // copy the front part that is still ASCII
+            while (!(n & 1)) {
+                *dst++ = *src++;
+                n >>= 1;
+            }
+
+            // find the next probable ASCII character
+            // we don't want to load 32 bytes again in this loop if we know there are non-ASCII
+            // characters still coming
+            n = _bit_scan_reverse(n);
+            nextAscii = src + n;
+            return false;
+        }
+
+        // pack
+        _mm_storeu_si128((__m128i*)dst, packed);
+    }
+    return src == end;
+}
+
+static inline bool simdDecodeAscii(ushort *&dst, const uchar *&nextAscii, const uchar *&src, const uchar *end)
+{
+    // do sixteen characters at a time
+    for ( ; end - src >= 16; src += 16, dst += 16) {
+        __m128i data = _mm_loadu_si128((__m128i*)src);
+
+        // check if everything is ASCII
+        // movemask extracts the high bit of every byte, so n is non-zero if something isn't ASCII
+        uint n = _mm_movemask_epi8(data);
+        if (n) {
+            // copy the front part that is still ASCII
+            while (!(n & 1)) {
+                *dst++ = *src++;
+                n >>= 1;
+            }
+
+            // find the next probable ASCII character
+            // we don't want to load 16 bytes again in this loop if we know there are non-ASCII
+            // characters still coming
+            n = _bit_scan_reverse(n);
+            nextAscii = src + n;
+            return false;
+        }
+
+        // unpack
+        _mm_storeu_si128((__m128i*)dst, _mm_unpacklo_epi8(data, _mm_setzero_si128()));
+        _mm_storeu_si128(1+(__m128i*)dst, _mm_unpackhi_epi8(data, _mm_setzero_si128()));
+    }
+    return src == end;
+}
+#else
+static inline bool simdEncodeAscii(uchar *, const ushort *, const ushort *, const ushort *)
+{
+    return false;
+}
+
+static inline bool simdDecodeAscii(ushort *, const uchar *, const uchar *, const uchar *)
+{
+    return false;
+}
+#endif
 
 QByteArray QUtf8::convertFromUnicode(const QChar *uc, int len)
 {
@@ -58,12 +145,18 @@ QByteArray QUtf8::convertFromUnicode(const QChar *uc, int len)
     const ushort *const end = src + len;
 
     while (src != end) {
-        ushort uc = *src++;
-        int res = QUtf8Functions::toUtf8<QUtf8BaseTraits>(uc, dst, src, end);
-        if (res < 0) {
-            // encoding error - append '?'
-            *dst++ = '?';
-        }
+        const ushort *nextAscii = end;
+        if (simdEncodeAscii(dst, nextAscii, src, end))
+            break;
+
+        do {
+            ushort uc = *src++;
+            int res = QUtf8Functions::toUtf8<QUtf8BaseTraits>(uc, dst, src, end);
+            if (res < 0) {
+                // encoding error - append '?'
+                *dst++ = '?';
+            }
+        } while (src < nextAscii);
     }
 
     result.truncate(dst - reinterpret_cast<uchar *>(const_cast<char *>(result.constData())));
@@ -98,10 +191,21 @@ QByteArray QUtf8::convertFromUnicode(const QChar *uc, int len, QTextCodec::Conve
         *cursor++ = 0xbf;
     }
 
+    const ushort *nextAscii = src;
     while (src != end) {
-        ushort uc = surrogate_high == -1 ? *src++ : surrogate_high;
-        surrogate_high = -1;
-        int res = QUtf8Functions::toUtf8<QUtf8BaseTraits>(uc, cursor, src, end);
+        int res;
+        ushort uc;
+        if (surrogate_high != -1) {
+            uc = surrogate_high;
+            surrogate_high = -1;
+            res = QUtf8Functions::toUtf8<QUtf8BaseTraits>(uc, cursor, src, end);
+        } else {
+            if (src >= nextAscii && simdEncodeAscii(cursor, nextAscii, src, end))
+                break;
+
+            uc = *src++;
+            res = QUtf8Functions::toUtf8<QUtf8BaseTraits>(uc, cursor, src, end);
+        }
         if (Q_LIKELY(res >= 0))
             continue;
 
@@ -136,12 +240,18 @@ QString QUtf8::convertToUnicode(const char *chars, int len)
     const uchar *end = src + len;
 
     while (src < end) {
-        uchar b = *src++;
-        int res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, dst, src, end);
-        if (res < 0) {
-            // decoding error
-            *dst++ = QChar::ReplacementCharacter;
-        }
+        const uchar *nextAscii = end;
+        if (simdDecodeAscii(dst, nextAscii, src, end))
+            break;
+
+        do {
+            uchar b = *src++;
+            int res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, dst, src, end);
+            if (res < 0) {
+                // decoding error
+                *dst++ = QChar::ReplacementCharacter;
+            }
+        } while (src < nextAscii);
     }
 
     result.truncate(dst - reinterpret_cast<const ushort *>(result.constData()));
@@ -204,7 +314,11 @@ QString QUtf8::convertToUnicode(const char *chars, int len, QTextCodec::Converte
 
     // main body, stateless decoding
     res = 0;
+    const uchar *nextAscii = src;
     while (res >= 0 && src < end) {
+        if (src >= nextAscii && simdDecodeAscii(dst, nextAscii, src, end))
+            break;
+
         ch = *src++;
         res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(ch, dst, src, end);
         if (!headerdone && res >= 0) {

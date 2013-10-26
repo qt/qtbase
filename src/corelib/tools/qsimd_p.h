@@ -72,7 +72,7 @@
  * I = intrinsics; C = code generation
  */
 
-#ifdef __MINGW64_VERSION_MAJOR
+#if defined(__MINGW64_VERSION_MAJOR) || (defined(Q_CC_MSVC) && !defined(Q_OS_WINCE))
 #include <intrin.h>
 #endif
 
@@ -139,10 +139,15 @@
 #endif
 
 // other x86 intrinsics
-#if defined(QT_COMPILER_SUPPORTS_AVX) && defined(Q_CC_GNU) && \
-    (!defined(Q_CC_INTEL)|| __INTEL_COMPILER >= 1310 || (__GNUC__ * 100 + __GNUC_MINOR__ < 407))
-#define QT_COMPILER_SUPPORTS_X86INTRIN
-#include <x86intrin.h>
+#if defined(Q_PROCESSOR_X86) && ((defined(Q_CC_GNU) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 404)) \
+    || (defined(Q_CC_CLANG) && (__clang_major__ * 100 + __clang_minor__ >= 208)) \
+    || defined(Q_CC_INTEL))
+#  define QT_COMPILER_SUPPORTS_X86INTRIN
+#  ifndef Q_CC_INTEL
+// The Intel compiler has no <x86intrin.h> -- all intrinsics are in <immintrin.h>;
+// GCC 4.4 and Clang 2.8 added a few more intrinsics there
+#    include <x86intrin.h>
+#  endif
 #endif
 
 // NEON intrinsics
@@ -240,6 +245,30 @@ static inline uint qCpuFeatures()
 }
 
 #define qCpuHasFeature(feature)  ((qCompilerCpuFeatures & (feature)) || (qCpuFeatures() & (feature)))
+
+#ifdef Q_PROCESSOR_X86
+// Bit scan functions for x86
+#  ifdef Q_CC_MSVC
+// MSVC calls it _BitScanReverse and returns the carry flag, which we don't need
+static __forceinline unsigned long _bit_scan_reverse(uint val)
+{
+    unsigned long result;
+    _BitScanReverse(&result, val);
+    return result;
+}
+#  elif (defined(Q_CC_CLANG) || (defined(Q_CC_GNU) && __GNUC__ * 100 + __GNUC_MINOR__ < 405)) \
+    && !defined(Q_CC_INTEL)
+// Clang is missing the intrinsic for _bit_scan_reverse
+// GCC only added it in version 4.5
+static inline __attribute__((always_inline))
+unsigned _bit_scan_reverse(unsigned val)
+{
+    unsigned result;
+    asm("bsr %1, %0" : "=r" (result) : "r" (val));
+    return result;
+}
+#  endif
+#endif // Q_PROCESSOR_X86
 
 #define ALIGNMENT_PROLOGUE_16BYTES(ptr, i, length) \
     for (; i < static_cast<int>(qMin(static_cast<quintptr>(length), ((4 - ((reinterpret_cast<quintptr>(ptr) >> 2) & 0x3)) & 0x3))); ++i)
