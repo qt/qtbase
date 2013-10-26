@@ -493,8 +493,7 @@ bool QTreeModel::removeRows(int row, int count, const QModelIndex &parent) {
 
     beginRemoveRows(parent, row, row + count - 1);
 
-    bool blockSignal = signalsBlocked();
-    blockSignals(true);
+    QSignalBlocker blocker(this);
 
     QTreeWidgetItem *itm = item(parent);
     for (int i = row + count - 1; i >= row; --i) {
@@ -504,7 +503,7 @@ bool QTreeModel::removeRows(int row, int count, const QModelIndex &parent) {
         delete child;
         child = 0;
     }
-    blockSignals(blockSignal);
+    blocker.unblock();
 
     endRemoveRows();
     return true;
