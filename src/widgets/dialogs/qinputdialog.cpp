@@ -771,10 +771,11 @@ void QInputDialog::setComboBoxItems(const QStringList &items)
     Q_D(QInputDialog);
 
     d->ensureComboBox();
-    d->comboBox->blockSignals(true);
-    d->comboBox->clear();
-    d->comboBox->addItems(items);
-    d->comboBox->blockSignals(false);
+    {
+        const QSignalBlocker blocker(d->comboBox);
+        d->comboBox->clear();
+        d->comboBox->addItems(items);
+    }
 
     if (inputMode() == TextInput)
         d->chooseRightTextInputWidget();
