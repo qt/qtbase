@@ -559,8 +559,10 @@ static void setSurface(JNIEnv *env, jobject /*thiz*/, jobject jSurface)
 
         QPlatformScreen *screen = m_androidPlatformIntegration->screen();
         QRect geometry(QPoint(0, 0), size);
-        QWindowSystemInterface::handleScreenAvailableGeometryChange(screen->screen(), geometry);
-        QWindowSystemInterface::handleScreenGeometryChange(screen->screen(), geometry);
+        if (screen) {
+            QWindowSystemInterface::handleScreenAvailableGeometryChange(screen->screen(), geometry);
+            QWindowSystemInterface::handleScreenGeometryChange(screen->screen(), geometry);
+        }
 
         if (!sameNativeWindow) {
             m_surfaceMutex.unlock();
