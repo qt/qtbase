@@ -986,8 +986,13 @@ Qt::ScreenOrientation QWindow::contentOrientation() const
 qreal QWindow::devicePixelRatio() const
 {
     Q_D(const QWindow);
+
+    // If there is no platform window, do the second best thing and
+    // return the app global devicePixelRatio. This is the highest
+    // devicePixelRatio found on the system screens, and will be
+    // correct for single-display systems (a very common case).
     if (!d->platformWindow)
-        return 1.0;
+        return qApp->devicePixelRatio();
     return d->platformWindow->devicePixelRatio();
 }
 
