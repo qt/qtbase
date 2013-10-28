@@ -170,6 +170,24 @@ static inline void centerOnScreen(QWidget *w)
     w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
 }
 
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+static inline void setWindowsAnimationsEnabled(bool enabled)
+{
+    ANIMATIONINFO animation = { sizeof(ANIMATIONINFO), enabled };
+    SystemParametersInfo(SPI_SETANIMATION, 0, &animation, 0);
+}
+
+static inline bool windowsAnimationsEnabled()
+{
+    ANIMATIONINFO animation = { sizeof(ANIMATIONINFO), 0 };
+    SystemParametersInfo(SPI_GETANIMATION, 0, &animation, 0);
+    return animation.iMinAnimate;
+}
+#else // Q_OS_WIN && !Q_OS_WINCE
+inline void setWindowsAnimationsEnabled(bool) {}
+static inline bool windowsAnimationsEnabled() { return false; }
+#endif // !Q_OS_WIN || Q_OS_WINCE
+
 class tst_QWidget : public QObject
 {
     Q_OBJECT
@@ -425,6 +443,7 @@ private:
     QWidget *testWidget;
 
     const QString m_platform;
+    const bool m_windowsAnimationsEnabled;
 };
 
 bool tst_QWidget::ensureScreenSize(int width, int height)
@@ -579,8 +598,12 @@ void tst_QWidget::getSetCheck()
 #endif
 }
 
-tst_QWidget::tst_QWidget() : m_platform(qApp->platformName().toLower())
+tst_QWidget::tst_QWidget()
+    : m_platform(qApp->platformName().toLower())
+    , m_windowsAnimationsEnabled(windowsAnimationsEnabled())
 {
+    if (m_windowsAnimationsEnabled) // Disable animations which can interfere with screen grabbing in moveChild(), showAndMoveChild()
+        setWindowsAnimationsEnabled(false);
     QFont font;
     font.setBold(true);
     font.setPointSize(42);
@@ -596,6 +619,8 @@ tst_QWidget::tst_QWidget() : m_platform(qApp->platformName().toLower())
 
 tst_QWidget::~tst_QWidget()
 {
+    if (m_windowsAnimationsEnabled)
+        setWindowsAnimationsEnabled(m_windowsAnimationsEnabled);
 }
 
 class BezierViewer : public QWidget {
@@ -4751,8 +4776,8 @@ void tst_QWidget::windowMoveResize()
 class ColorWidget : public QWidget
 {
 public:
-    ColorWidget(QWidget *parent = 0, const QColor &c = QColor(Qt::red))
-        : QWidget(parent, Qt::FramelessWindowHint), color(c), enters(0), leaves(0)
+    ColorWidget(QWidget *parent = 0, Qt::WindowFlags f = 0, const QColor &c = QColor(Qt::red))
+        : QWidget(parent, f), color(c), enters(0), leaves(0)
     {
         QPalette opaquePalette = palette();
         opaquePalette.setColor(backgroundRole(), color);
@@ -4783,6 +4808,12 @@ public:
     int leaves;
 };
 
+static inline QByteArray msgRgbMismatch(unsigned actual, unsigned expected)
+{
+    return QByteArrayLiteral("Color mismatch, 0x") + QByteArray::number(actual, 16) +
+           QByteArrayLiteral(" != 0x") + QByteArray::number(expected, 16);
+}
+
 #define VERIFY_COLOR(region, color) {                                   \
     const QRegion r = QRegion(region);                                  \
     QScreen *screen = qApp->primaryScreen();                            \
@@ -4802,7 +4833,7 @@ public:
             uint firstPixel = image.pixel(0,0) | alphaCorrection;        \
             if ( firstPixel != QColor(color).rgb() && t < 4 )          \
             { QTest::qWait(200); continue; }                            \
-            QCOMPARE(firstPixel, QColor(color).rgb());                  \
+            QVERIFY2(firstPixel == QColor(color).rgb(), msgRgbMismatch(firstPixel, QColor(color).rgb()));  \
             QCOMPARE(pixmap, expectedPixmap);                           \
             break;                                                      \
         }                                                               \
@@ -4815,7 +4846,7 @@ void tst_QWidget::popupEnterLeave()
     parent.setWindowFlags(Qt::FramelessWindowHint);
     parent.setGeometry(10, 10, 200, 100);
 
-    ColorWidget alien(&parent, Qt::black);
+    ColorWidget alien(&parent, Qt::Widget, Qt::black);
     alien.setGeometry(0, 0, 10, 10);
     alien.show();
 
@@ -4866,23 +4897,23 @@ void tst_QWidget::moveChild_data()
 
 void tst_QWidget::moveChild()
 {
-#if defined(UBUNTU_ONEIRIC)
-    QSKIP("QTBUG-30566 - Unstable auto-test");
-#endif
     QFETCH(QPoint, offset);
 
-    ColorWidget parent;
+    ColorWidget parent(0, Qt::Window | Qt::WindowStaysOnTopHint);
     // prevent custom styles
     parent.setStyle(QStyleFactory::create(QLatin1String("Windows")));
-    ColorWidget child(&parent, Qt::blue);
+    ColorWidget child(&parent, Qt::Widget, Qt::blue);
 
 #ifndef Q_OS_WINCE
-    parent.setGeometry(QRect(QPoint(QApplication::desktop()->availableGeometry(&parent).topLeft()),
-                             QSize(100, 100)));
+    parent.setGeometry(QRect(QPoint(QApplication::desktop()->availableGeometry(&parent).topLeft()) + QPoint(50, 50),
+                             QSize(200, 200)));
 #else
     parent.setGeometry(60, 60, 150, 150);
 #endif
     child.setGeometry(25, 25, 50, 50);
+#ifndef QT_NO_CURSOR // Try to make sure the cursor is not in a taskbar area to prevent tooltips or window highlighting
+    QCursor::setPos(parent.geometry().topRight() + QPoint(50 , 50));
+#endif
     parent.show();
     QVERIFY(QTest::qWaitForWindowExposed(&parent));
     QTest::qWait(30);
@@ -4922,7 +4953,7 @@ void tst_QWidget::showAndMoveChild()
 #if defined(UBUNTU_ONEIRIC)
     QSKIP("QTBUG-30566 - Unstable auto-test");
 #endif
-    QWidget parent(0, Qt::FramelessWindowHint);
+    QWidget parent(0, Qt::Window | Qt::WindowStaysOnTopHint);
     // prevent custom styles
     parent.setStyle(QStyleFactory::create(QLatin1String("Windows")));
 
@@ -4930,6 +4961,9 @@ void tst_QWidget::showAndMoveChild()
     QRect desktopDimensions = desktop.availableGeometry(&parent);
     desktopDimensions = desktopDimensions.adjusted(64, 64, -64, -64);
 
+#ifndef QT_NO_CURSOR // Try to make sure the cursor is not in a taskbar area to prevent tooltips or window highlighting
+    QCursor::setPos(desktopDimensions.topRight() + QPoint(40, 40));
+#endif
     parent.setGeometry(desktopDimensions);
     parent.setPalette(Qt::red);
     parent.show();
@@ -4960,13 +4994,13 @@ void tst_QWidget::subtractOpaqueSiblings()
     QWidget w;
     w.setGeometry(50, 50, 300, 300);
 
-    ColorWidget *large = new ColorWidget(&w, Qt::red);
+    ColorWidget *large = new ColorWidget(&w, Qt::Widget, Qt::red);
     large->setGeometry(50, 50, 200, 200);
 
-    ColorWidget *medium = new ColorWidget(large, Qt::gray);
+    ColorWidget *medium = new ColorWidget(large, Qt::Widget, Qt::gray);
     medium->setGeometry(50, 50, 100, 100);
 
-    ColorWidget *tall = new ColorWidget(&w, Qt::blue);
+    ColorWidget *tall = new ColorWidget(&w, Qt::Widget, Qt::blue);
     tall->setGeometry(100, 30, 50, 100);
 
     w.show();
@@ -7049,7 +7083,7 @@ void tst_QWidget::repaintWhenChildDeleted()
         QTest::qWait(1000);
     }
 #endif
-    ColorWidget w(0, Qt::red);
+    ColorWidget w(0, Qt::FramelessWindowHint, Qt::red);
 #if !defined(Q_OS_WINCE)
     QPoint startPoint = QApplication::desktop()->availableGeometry(&w).topLeft();
     startPoint.rx() += 50;
@@ -7065,7 +7099,7 @@ void tst_QWidget::repaintWhenChildDeleted()
     w.r = QRegion();
 
     {
-        ColorWidget child(&w, Qt::blue);
+        ColorWidget child(&w, Qt::Widget, Qt::blue);
         child.setGeometry(10, 10, 10, 10);
         child.show();
         QTest::qWait(10);
@@ -7080,7 +7114,7 @@ void tst_QWidget::repaintWhenChildDeleted()
 // task 175114
 void tst_QWidget::hideOpaqueChildWhileHidden()
 {
-    ColorWidget w(0, Qt::red);
+    ColorWidget w(0, Qt::FramelessWindowHint, Qt::red);
 #if !defined(Q_OS_WINCE)
     QPoint startPoint = QApplication::desktop()->availableGeometry(&w).topLeft();
     startPoint.rx() += 50;
@@ -7090,10 +7124,10 @@ void tst_QWidget::hideOpaqueChildWhileHidden()
     w.setGeometry(60, 60, 110, 110);
 #endif
 
-    ColorWidget child(&w, Qt::blue);
+    ColorWidget child(&w, Qt::Widget, Qt::blue);
     child.setGeometry(10, 10, 80, 80);
 
-    ColorWidget child2(&child, Qt::white);
+    ColorWidget child2(&child, Qt::Widget, Qt::white);
     child2.setGeometry(10, 10, 60, 60);
 
     w.show();
@@ -9780,17 +9814,15 @@ void tst_QWidget::underMouse()
     // Move the mouse cursor to a safe location
     QCursor::setPos(0,0);
 
-    ColorWidget topLevelWidget(0, Qt::blue);
-    ColorWidget childWidget1(&topLevelWidget, Qt::yellow);
-    ColorWidget childWidget2(&topLevelWidget, Qt::black);
-    ColorWidget popupWidget(0, Qt::green);
+    ColorWidget topLevelWidget(0, Qt::FramelessWindowHint, Qt::blue);
+    ColorWidget childWidget1(&topLevelWidget, Qt::Widget, Qt::yellow);
+    ColorWidget childWidget2(&topLevelWidget, Qt::Widget, Qt::black);
+    ColorWidget popupWidget(0, Qt::Popup, Qt::green);
 
     topLevelWidget.setObjectName("topLevelWidget");
     childWidget1.setObjectName("childWidget1");
     childWidget2.setObjectName("childWidget2");
     popupWidget.setObjectName("popupWidget");
-
-    popupWidget.setWindowFlags(Qt::Popup);
 
     topLevelWidget.setGeometry(100, 100, 300, 300);
     childWidget1.setGeometry(20, 20, 100, 100);
