@@ -278,7 +278,7 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 #else
     case OpenGL: return false;
 #endif
-    case ThreadedOpenGL: return m_connections.at(0)->supportsThreadedRendering();
+    case ThreadedOpenGL: return m_connections.at(0)->supportsThreadedRendering() && QGLXContext::supportsThreading();
     case WindowMasks: return true;
     case MultipleWindows: return true;
     case ForeignWindows: return true;

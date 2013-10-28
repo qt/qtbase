@@ -408,6 +408,38 @@ bool QGLXContext::isValid() const
     return m_context != 0;
 }
 
+bool QGLXContext::m_queriedDummyContext = false;
+bool QGLXContext::m_supportsThreading = true;
+
+void QGLXContext::queryDummyContext()
+{
+    if (m_queriedDummyContext)
+        return;
+    m_queriedDummyContext = true;
+
+    static bool skip = qEnvironmentVariableIsSet("QT_OPENGL_NO_SANITY_CHECK");
+    if (skip)
+        return;
+
+    QOffscreenSurface surface;
+    surface.create();
+    QOpenGLContext context;
+    context.create();
+    context.makeCurrent(&surface);
+
+    const char *renderer = (const char *) glGetString(GL_RENDERER);
+    if (QByteArray(renderer).contains("Chromium"))
+        m_supportsThreading = false;
+    else
+        m_supportsThreading = true;
+}
+
+bool QGLXContext::supportsThreading()
+{
+    if (!m_queriedDummyContext)
+        queryDummyContext();
+    return m_supportsThreading;
+}
 
 QGLXPbuffer::QGLXPbuffer(QOffscreenSurface *offscreenSurface)
     : QPlatformOffscreenSurface(offscreenSurface)
