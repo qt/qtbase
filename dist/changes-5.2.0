@@ -148,6 +148,7 @@ Changes in Qt 5.1.0 (missing from released changelog dist/changes-5.1.0)
 Changes in Qt 5.2.0
 - [QTBUG-29261] IBASE: Construct a valid QTime when creating timestamps for iBase SQL driver.
 - [QTBUG-33389] PSQL: Format QDateTime following ISO8601.
+- Add QSQLITE_OPEN_URI option to QSQLITE driver
 
 ****************************************************************************
 *                      Platform Specific Changes                           *

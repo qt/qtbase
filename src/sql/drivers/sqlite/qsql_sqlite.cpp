@@ -596,6 +596,8 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
         }
         if (option == QLatin1String("QSQLITE_OPEN_READONLY"))
             openMode = SQLITE_OPEN_READONLY;
+        if (option == QLatin1String("QSQLITE_OPEN_URI"))
+            openMode |= SQLITE_OPEN_URI;
         if (option == QLatin1String("QSQLITE_ENABLE_SHARED_CACHE"))
             sharedCache = true;
     }
