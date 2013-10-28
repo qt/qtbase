@@ -1042,7 +1042,7 @@ QAbstractItemView::SelectionBehavior QAbstractItemView::selectionBehavior() cons
     Sets the current item to be the item at \a index.
 
     Unless the current selection mode is
-    \l{QAbstractItemView::}{NoSelection}, the item is also be selected.
+    \l{QAbstractItemView::}{NoSelection}, the item is also selected.
     Note that this function also updates the starting position for any
     new selections the user performs.
 

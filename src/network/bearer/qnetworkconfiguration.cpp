@@ -591,7 +591,6 @@ QNetworkConfiguration::BearerType QNetworkConfiguration::bearerTypeFamily() cons
             \li Value
         \row
             \li BearerUnknown
-            \li
             \li The session is based on an unknown or unspecified bearer type. The value of the
                string returned describes the bearer type.
         \row

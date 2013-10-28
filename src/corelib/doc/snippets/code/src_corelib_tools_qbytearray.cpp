@@ -416,7 +416,7 @@ text.data();            // returns "Qt is great!"
 //! [46]
 QString tmp = "test";
 QByteArray text = tmp.toLocal8Bit();
-char *data = new char[text.size()]
+char *data = new char[text.size()];
 strcpy(data, text.data());
 delete [] data;
 //! [46]
@@ -424,7 +424,7 @@ delete [] data;
 //! [47]
 QString tmp = "test";
 QByteArray text = tmp.toLocal8Bit();
-char *data = new char[text.size() + 1]
+char *data = new char[text.size() + 1];
 strcpy(data, text.data());
 delete [] data;
 //! [47]

@@ -204,7 +204,7 @@ bool QSqlTableModelPrivate::exec(const QString &stmt, bool prepStatement,
     \inmodule QtSql
 
     QSqlTableModel is a high-level interface for reading and writing
-    database records from a single table. It is build on top of the
+    database records from a single table. It is built on top of the
     lower-level QSqlQuery and can be used to provide data to view
     classes such as QTableView. For example:
 

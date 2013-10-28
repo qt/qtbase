@@ -395,7 +395,7 @@
 
     If a thread locks a resource but does not unlock it, the application may
     freeze because the resource will become permanently unavailable to other threads.
-    This can happen, for example, if a an exception is thrown and forces the current
+    This can happen, for example, if an exception is thrown and forces the current
     function to return without releasing its lock.
 
     Another similar scenario is a \e{deadlock}. For example, suppose that
@@ -408,7 +408,7 @@
     QMutexLocker, QReadLocker and QWriteLocker are convenience classes that make it
     easier to use QMutex and QReadWriteLock. They lock a resource when they are
     constructed, and automatically unlock it when they are destroyed. They are
-    designed to simplify code that use QMutex and QReadWriteLocker, thus reducing
+    designed to simplify code that use QMutex and QReadWriteLock, thus reducing
     the chances that a resource becomes permanently locked by accident.
 
     \section1 High-Level Event Queues
