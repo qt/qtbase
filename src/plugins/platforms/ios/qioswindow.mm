@@ -151,9 +151,16 @@
 
 - (void)updateTouchList:(NSSet *)touches withState:(Qt::TouchPointState)state
 {
-    // We deliver touch events with global coordinates. But global in this respect means
-    // the coordinate system where this QWindow lives. And that is our superview.
-    CGSize parentSize = self.superview.frame.size;
+    // We deliver touch events in global coordinates. But global in this respect
+    // means the same coordinate system that we use for describing the geometry
+    // of the top level QWindow we're inside. And that would be the coordinate
+    // system of the superview of the UIView that backs that window:
+    QPlatformWindow *topLevel = m_qioswindow;
+    while (QPlatformWindow *topLevelParent = topLevel->parent())
+        topLevel = topLevelParent;
+    UIView *rootView = reinterpret_cast<UIView *>(topLevel->winId()).superview;
+    CGSize rootViewSize = rootView.frame.size;
+
     foreach (UITouch *uiTouch, m_activeTouches.keys()) {
         QWindowSystemInterface::TouchPoint &touchPoint = m_activeTouches[uiTouch];
         if (![touches containsObject:uiTouch]) {
@@ -161,9 +168,9 @@
         } else {
             touchPoint.state = state;
             touchPoint.pressure = (state == Qt::TouchPointReleased) ? 0.0 : 1.0;
-            QPoint touchPos = fromCGPoint([uiTouch locationInView:self.superview]);
+            QPoint touchPos = fromCGPoint([uiTouch locationInView:rootView]);
             touchPoint.area = QRectF(touchPos, QSize(0, 0));
-            touchPoint.normalPosition = QPointF(touchPos.x() / parentSize.width, touchPos.y() / parentSize.height);
+            touchPoint.normalPosition = QPointF(touchPos.x() / rootViewSize.width, touchPos.y() / rootViewSize.height);
         }
     }
 }
