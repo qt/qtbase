@@ -1733,6 +1733,11 @@ void tst_QLocale::dayName()
     QLocale ir("ga_IE");
     QCOMPARE(ir.dayName(1, QLocale::ShortFormat), QLatin1String("Luan"));
     QCOMPARE(ir.dayName(7, QLocale::ShortFormat), QLatin1String("Domh"));
+
+    QLocale gr("el_GR");
+    QCOMPARE(gr.dayName(2, QLocale::ShortFormat), QString::fromUtf8("\316\244\317\201\316\257"));
+    QCOMPARE(gr.dayName(4, QLocale::ShortFormat), QString::fromUtf8("\316\240\316\255\316\274"));
+    QCOMPARE(gr.dayName(6, QLocale::ShortFormat), QString::fromUtf8("\316\243\316\254\316\262"));
 }
 
 void tst_QLocale::standaloneDayName_data()
@@ -1903,6 +1908,10 @@ void tst_QLocale::timeFormat()
     const QLocale cat("ca_ES");
     QCOMPARE(cat.timeFormat(QLocale::ShortFormat), QLatin1String("H.mm"));
     QCOMPARE(cat.timeFormat(QLocale::LongFormat), QLatin1String("H.mm.ss t"));
+
+    const QLocale bra("pt_BR");
+    QCOMPARE(bra.timeFormat(QLocale::ShortFormat), QLatin1String("HH:mm"));
+    QCOMPARE(bra.timeFormat(QLocale::LongFormat), QLatin1String("HH:mm:ss t"));
 }
 
 void tst_QLocale::dateTimeFormat()
