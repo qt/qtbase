@@ -57,6 +57,8 @@ import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.ResultReceiver;
 import android.text.method.MetaKeyKeyListener;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -110,7 +112,8 @@ public class QtActivityDelegate
     private Process m_debuggerProcess = null; // debugger process
 
     public boolean m_keyboardIsVisible = false;
-    public boolean m_keyboardIsHiding = false;
+    public boolean m_backKeyPressedSent = false;
+
 
     public QtLayout getQtLayout()
     {
@@ -253,9 +256,21 @@ public class QtActivityDelegate
         m_editText.postDelayed(new Runnable() {
             @Override
             public void run() {
-                m_imm.showSoftInput(m_editText, 0);
-                m_keyboardIsVisible = true;
-                m_keyboardIsHiding = false;
+                m_imm.showSoftInput(m_editText, 0, new ResultReceiver( new Handler()){
+                    @Override
+                    protected void onReceiveResult(int resultCode, Bundle resultData) {
+                        switch (resultCode) {
+                            case InputMethodManager.RESULT_SHOWN:
+                            case InputMethodManager.RESULT_UNCHANGED_SHOWN:
+                                m_keyboardIsVisible = true;
+                                break;
+                            case InputMethodManager.RESULT_HIDDEN:
+                            case InputMethodManager.RESULT_UNCHANGED_HIDDEN:
+                                m_keyboardIsVisible = false;
+                                break;
+                        }
+                    }
+                }) ;
                 m_editText.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -270,9 +285,21 @@ public class QtActivityDelegate
     {
         if (m_imm == null)
             return;
-        m_imm.hideSoftInputFromWindow(m_editText.getWindowToken(), 0);
-        m_keyboardIsVisible = false;
-        m_keyboardIsHiding = false;
+        m_imm.hideSoftInputFromWindow(m_editText.getWindowToken(), 0, new ResultReceiver( new Handler()){
+            @Override
+            protected void onReceiveResult(int resultCode, Bundle resultData) {
+                switch (resultCode) {
+                    case InputMethodManager.RESULT_SHOWN:
+                    case InputMethodManager.RESULT_UNCHANGED_SHOWN:
+                        m_keyboardIsVisible = true;
+                        break;
+                    case InputMethodManager.RESULT_HIDDEN:
+                    case InputMethodManager.RESULT_UNCHANGED_HIDDEN:
+                        m_keyboardIsVisible = false;
+                        break;
+                }
+            }
+        });
     }
 
     public boolean isSoftwareKeyboardVisible()
@@ -717,8 +744,12 @@ public class QtActivityDelegate
         }
 
         m_lastChar = lc;
-        if (keyCode != KeyEvent.KEYCODE_BACK)
-            QtNative.keyDown(keyCode, c, event.getMetaState());
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            m_backKeyPressedSent = !m_keyboardIsVisible;
+            if (!m_backKeyPressedSent)
+                return true;
+        }
+        QtNative.keyDown(keyCode, c, event.getMetaState());
 
         return true;
     }
@@ -737,8 +768,9 @@ public class QtActivityDelegate
             }
         }
 
-        if (keyCode == KeyEvent.KEYCODE_BACK && m_keyboardIsVisible && !m_keyboardIsHiding) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && !m_backKeyPressedSent) {
             hideSoftwareKeyboard();
+            m_keyboardIsVisible = false;
             return true;
         }
 

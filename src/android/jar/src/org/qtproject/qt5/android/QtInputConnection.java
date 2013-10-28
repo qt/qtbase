@@ -139,15 +139,13 @@ public class QtInputConnection extends BaseInputConnection
     public boolean finishComposingText()
     {
         if (m_closing) {
-            QtNative.activityDelegate().m_keyboardIsHiding = true;
             m_view.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if (QtNative.activityDelegate().m_keyboardIsHiding)
                         QtNative.activityDelegate().m_keyboardIsVisible=false;
-                }
-            }, 5000); // it seems finishComposingText comes musch faster than onKeyUp event,
-                      // so we must delay hide notification
+                    }
+                }, 100); // it seems finishComposingText comes much faster than onKeyUp event,
+                          // so we must delay hide notification
             m_closing = false;
         } else {
             m_closing = true;
