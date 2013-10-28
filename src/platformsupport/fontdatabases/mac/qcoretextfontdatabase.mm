@@ -305,12 +305,20 @@ QFontEngine *QCoreTextFontDatabase::fontEngine(const QFontDef &f, QChar::Script 
     return NULL;
 }
 
+static void releaseFontData(void* info, const void* data, size_t size)
+{
+    Q_UNUSED(data);
+    Q_UNUSED(size);
+    delete (QByteArray*)info;
+}
+
 QFontEngine *QCoreTextFontDatabase::fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference)
 {
     Q_UNUSED(hintingPreference);
 
-    QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(NULL,
-            fontData.constData(), fontData.size(), NULL);
+    QByteArray* fontDataCopy = new QByteArray(fontData);
+    QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(fontDataCopy,
+            fontDataCopy->constData(), fontDataCopy->size(), releaseFontData);
 
     CGFontRef cgFont = CGFontCreateWithDataProvider(dataProvider);
 
@@ -474,8 +482,9 @@ QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData
         CTFontRef font = NULL;
 
         if (!fontData.isEmpty()) {
-            QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(NULL,
-                fontData.constData(), fontData.size(), NULL);
+            QByteArray* fontDataCopy = new QByteArray(fontData);
+            QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(fontDataCopy,
+                    fontDataCopy->constData(), fontDataCopy->size(), releaseFontData);
             CGFontRef cgFont = CGFontCreateWithDataProvider(dataProvider);
             if (cgFont) {
                 CFErrorRef error;
