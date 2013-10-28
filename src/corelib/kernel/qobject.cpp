@@ -1484,12 +1484,12 @@ int QObject::startTimer(int interval, Qt::TimerType timerType)
     Q_D(QObject);
 
     if (interval < 0) {
-        qWarning("QObject::startTimer: QTimer cannot have a negative interval");
+        qWarning("QObject::startTimer: Timers cannot have negative intervals");
         return 0;
     }
 
     if (!d->threadData->eventDispatcher.load()) {
-        qWarning("QObject::startTimer: QTimer can only be used with threads started with QThread");
+        qWarning("QObject::startTimer: Timers can only be used with threads started with QThread");
         return 0;
     }
     int timerId = d->threadData->eventDispatcher.load()->registerTimer(interval, timerType, this);
