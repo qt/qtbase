@@ -91,6 +91,8 @@ private slots:
     void tst_showWithoutActivating();
     void tst_paintEventOnSecondShow();
 
+    void obscuredNativeMapped();
+
 #ifndef QT_NO_DRAGANDDROP
     void tst_dnd();
 #endif
@@ -366,6 +368,32 @@ void tst_QWidget_window::tst_paintEventOnSecondShow()
     QVERIFY(QTest::qWaitForWindowExposed(&w));
     QApplication::processEvents();
     QTRY_VERIFY(w.paintEventReceived);
+}
+
+// QTBUG-33520, a toplevel fully obscured by native children should still receive Qt::WA_Mapped
+void tst_QWidget_window::obscuredNativeMapped()
+{
+    enum { size = 200 };
+
+    QWidget topLevel;
+    topLevel.setWindowFlags(Qt::FramelessWindowHint);
+    QWidget *child = new QWidget(&topLevel);
+    child->resize(size, size);
+    topLevel.resize(size, size);
+    topLevel.move(QGuiApplication::primaryScreen()->availableGeometry().center() - QPoint(size /2 , size / 2));
+    child->winId();
+    topLevel.show();
+    QTRY_VERIFY(topLevel.testAttribute(Qt::WA_Mapped));
+#if defined(Q_OS_MAC)
+    QSKIP("This test fails on Mac."); // Minimized windows are not unmapped for some reason.
+#elif defined(Q_OS_UNIX)
+    if (qgetenv("XDG_CURRENT_DESKTOP").contains("Unity"))
+        QSKIP("This test fails on Unity."); // Minimized windows are not unmapped for some reason.
+#endif // Q_OS_UNIX
+    topLevel.setWindowState(Qt::WindowMinimized);
+    QTRY_VERIFY(!topLevel.testAttribute(Qt::WA_Mapped));
+    topLevel.setWindowState(Qt::WindowNoState);
+    QTRY_VERIFY(topLevel.testAttribute(Qt::WA_Mapped));
 }
 
 #ifndef QT_NO_DRAGANDDROP
