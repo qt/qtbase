@@ -589,7 +589,7 @@ const unsigned long long noEventId = 0;
 class TraceID {
 public:
     explicit TraceID(const void* id, unsigned char* flags) :
-        m_data(static_cast<unsigned long long>(reinterpret_cast<unsigned long>(id)))
+        m_data(reinterpret_cast<unsigned long long>(id))
     {
         *flags |= TRACE_EVENT_FLAG_MANGLE_ID;
     }
