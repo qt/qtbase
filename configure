@@ -6682,6 +6682,16 @@ echo "QT_BUILD_PARTS += $CFG_BUILD_PARTS" >> "$QTMODULE.tmp"
 if [ -n "$CFG_SKIP_MODULES" ]; then
     echo "QT_SKIP_MODULES += $CFG_SKIP_MODULES" >> "$QTMODULE.tmp"
 fi
+DISABLED_FEATURES=
+for cfg in $QCONFIG_FLAGS; do
+    ncfg=${cfg#QT_NO_}
+    if [ x$ncfg != x$cfg ]; then
+        DISABLED_FEATURES="$DISABLED_FEATURES $ncfg"
+    fi
+done
+if [ -n "$DISABLED_FEATURES" ]; then
+    echo "QT_NO_DEFINES = $DISABLED_FEATURES" >> "$QTMODULE.tmp"
+fi
 echo "QT_QCONFIG_PATH = ${CFG_QCONFIG_PATH#$relpath/src/corelib/global/}" >> "$QTMODULE.tmp"
 
 cat >>"$QTMODULE.tmp" <<EOF
