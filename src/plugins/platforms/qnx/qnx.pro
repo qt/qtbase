@@ -2,21 +2,13 @@ TARGET = qqnx
 
 QT += platformsupport-private core-private gui-private
 
+# The PPS based platform integration is currently used for both BB10 and plain QNX
+CONFIG += qqnx_pps
+
 # Uncomment this to build with support for IMF once it becomes available in the BBNDK
 #CONFIG += qqnx_imf
 
-# Uncomment this to build with support for PPS based platform integration
-#CONFIG += qqnx_pps
-
-CONFIG(blackberry) {
-    CONFIG += qqnx_pps
-
-    # Uncomment following line to enable screen event
-    # handling through a dedicated thread.
-    # CONFIG += qqnx_screeneventthread
-} else {
-    CONFIG += qqnx_screeneventthread
-}
+!blackberry:CONFIG += qqnx_screeneventthread
 
 # Uncomment these to enable debugging output for various aspects of the plugin
 #DEFINES += QQNXBPSEVENTFILTER_DEBUG
