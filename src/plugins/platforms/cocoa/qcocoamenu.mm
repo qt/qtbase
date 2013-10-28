@@ -466,17 +466,21 @@ void QCocoaMenu::showPopup(const QWindow *parentWindow, QPoint pos, const QPlatf
             nsPos.y = screen->availableVirtualSize().height() - nsPos.y;
         }
 
-        // Finally, we need to synthesize an event.
-        NSEvent *menuEvent = [NSEvent mouseEventWithType:NSRightMouseDown
-                location:nsPos
-                modifierFlags:0
-                timestamp:0
-                windowNumber:view ? view.window.windowNumber : 0
-                                    context:nil
-                                    eventNumber:0
-                                    clickCount:1
-                                    pressure:1.0];
-        [NSMenu popUpContextMenu:m_nativeMenu withEvent:menuEvent forView:view];
+        if (view) {
+            // Finally, we need to synthesize an event.
+            NSEvent *menuEvent = [NSEvent mouseEventWithType:NSRightMouseDown
+                    location:nsPos
+                    modifierFlags:0
+                    timestamp:0
+                    windowNumber:view ? view.window.windowNumber : 0
+                                        context:nil
+                                        eventNumber:0
+                                        clickCount:1
+                                        pressure:1.0];
+            [NSMenu popUpContextMenu:m_nativeMenu withEvent:menuEvent forView:view];
+        } else {
+            [m_nativeMenu popUpMenuPositioningItem:nsItem atLocation:nsPos inView:0];
+        }
     }
 
     // The calls above block, and also swallow any mouse release event,
