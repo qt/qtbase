@@ -147,6 +147,7 @@ const char _HeapReserveSize[]                   = "HeapReserveSize";
 const char _IgnoreAllDefaultLibraries[]         = "IgnoreAllDefaultLibraries";
 const char _IgnoreEmbeddedIDL[]                 = "IgnoreEmbeddedIDL";
 const char _IgnoreImportLibrary[]               = "IgnoreImportLibrary";
+const char _ImageHasSafeExceptionHandlers[]     = "ImageHasSafeExceptionHandlers";
 const char _IgnoreSpecificDefaultLibraries[]    = "IgnoreSpecificDefaultLibraries";
 const char _IgnoreStandardIncludePath[]         = "IgnoreStandardIncludePath";
 const char _ImportLibrary[]                     = "ImportLibrary";
@@ -1494,6 +1495,7 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCLinkerTool &tool)
             << attrTagT(_IgnoreAllDefaultLibraries, tool.IgnoreAllDefaultLibraries)
             << attrTagT(_IgnoreEmbeddedIDL, tool.IgnoreEmbeddedIDL)
             << attrTagT(_IgnoreImportLibrary, tool.IgnoreImportLibrary)
+            << attrTagT(_ImageHasSafeExceptionHandlers, tool.ImageHasSafeExceptionHandlers)
             << attrTagX(_IgnoreSpecificDefaultLibraries, tool.IgnoreDefaultLibraryNames, ";")
             << attrTagS(_ImportLibrary, tool.ImportLibrary)
             << attrTagS(_KeyContainer, tool.KeyContainer)

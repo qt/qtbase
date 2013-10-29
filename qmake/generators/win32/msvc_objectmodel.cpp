@@ -1172,6 +1172,7 @@ VCLinkerTool::VCLinkerTool()
         IgnoreAllDefaultLibraries(unset),
         IgnoreEmbeddedIDL(unset),
         IgnoreImportLibrary(_True),
+        ImageHasSafeExceptionHandlers(unset),
         LargeAddressAware(addrAwareDefault),
         LinkDLL(unset),
         LinkIncremental(linkIncrementalDefault),
@@ -1654,11 +1655,12 @@ bool VCLinkerTool::parseOption(const char* option)
                 StackCommitSize = both[1].toLongLong();
         }
         break;
-    case 0x75AA4D8: // /SAFESH:{NO}
-        {
+    case 0x75AA4D8: // /SAFESEH:{NO}
+        if (config->CompilerVersion >= NET2010)
+            ImageHasSafeExceptionHandlers = (option[8] == ':') ? _False : _True;
+        else
             AdditionalOptions += option;
-            break;
-        }
+        break;
 	case 0x9B3C00D:
     case 0x78dc00d: // /SUBSYSTEM:{CONSOLE|EFI_APPLICATION|EFI_BOOT_SERVICE_DRIVER|EFI_ROM|EFI_RUNTIME_DRIVER|NATIVE|POSIX|WINDOWS|WINDOWSCE}[,major[.minor]]
         {

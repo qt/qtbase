@@ -615,6 +615,7 @@ public:
     QStringList             IgnoreDefaultLibraryNames;
     triState                IgnoreEmbeddedIDL;
     triState                IgnoreImportLibrary;
+    triState                ImageHasSafeExceptionHandlers;
     QString                 ImportLibrary;
     addressAwarenessType    LargeAddressAware;
     triState                LinkDLL;
