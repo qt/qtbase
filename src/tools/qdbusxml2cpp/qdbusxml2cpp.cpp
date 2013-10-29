@@ -509,10 +509,10 @@ static QString stringify(const QString &data)
     return retval;
 }
 
-static void openFile(const QString &fileName, QFile &file)
+static bool openFile(const QString &fileName, QFile &file)
 {
     if (fileName.isEmpty())
-        return;
+        return false;
 
     bool isOk = false;
     if (fileName == QLatin1String("-")) {
@@ -525,6 +525,7 @@ static void openFile(const QString &fileName, QFile &file)
     if (!isOk)
         fprintf(stderr, "Unable to open '%s': %s\n", qPrintable(fileName),
                 qPrintable(file.errorString()));
+    return isOk;
 }
 
 static void writeProxy(const QString &filename, const QDBusIntrospection::Interfaces &interfaces)
@@ -821,15 +822,17 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
     hs.flush();
 
     QFile file;
-    openFile(headerName, file);
-    file.write(headerData);
+    const bool headerOpen = openFile(headerName, file);
+    if (headerOpen)
+        file.write(headerData);
 
     if (headerName == cppName) {
-        file.write(cppData);
+        if (headerOpen)
+            file.write(cppData);
     } else {
         QFile cppFile;
-        openFile(cppName, cppFile);
-        cppFile.write(cppData);
+        if (openFile(cppName, cppFile))
+            cppFile.write(cppData);
     }
 }
 
@@ -1125,15 +1128,17 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
     hs.flush();
 
     QFile file;
-    openFile(headerName, file);
-    file.write(headerData);
+    const bool headerOpen = openFile(headerName, file);
+    if (headerOpen)
+        file.write(headerData);
 
     if (headerName == cppName) {
-        file.write(cppData);
+        if (headerOpen)
+            file.write(cppData);
     } else {
         QFile cppFile;
-        openFile(cppName, cppFile);
-        cppFile.write(cppData);
+        if (openFile(cppName, cppFile))
+            cppFile.write(cppData);
     }
 }
 
