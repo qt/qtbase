@@ -57,7 +57,10 @@ set(Qt5Gui_OPENGL_LIBRARIES Qt5::Gui_GLESv2)
 set(_GL_INCDIRS $$CMAKE_GL_INCDIRS)
 find_path(_qt5gui_OPENGL_INCLUDE_DIR $$CMAKE_GL_HEADER_NAME
     PATHS ${_GL_INCDIRS}
-    NO_DEFAULT_PATH)
+!!IF !mac
+    NO_DEFAULT_PATH
+!!ENDIF
+)
 if (NOT _qt5gui_OPENGL_INCLUDE_DIR)
     message(FATAL_ERROR \"Failed to find \\\"$$CMAKE_GL_HEADER_NAME\\\" in \\\"${_GL_INCDIRS}\\\".\")
 endif()
@@ -80,7 +83,10 @@ macro(_qt5gui_find_extra_libs Name Libs LibDir IncDirs)
         if (NOT TARGET Qt5::Gui_${_cmake_lib_name})
             find_library(Qt5Gui_${_cmake_lib_name}_LIBRARY ${_lib}
 !!IF !isEmpty(CROSS_COMPILE)
-                PATHS \"${LibDir}\" NO_DEFAULT_PATH
+                PATHS \"${LibDir}\"
+!!IF !mac
+                NO_DEFAULT_PATH
+!!ENDIF
 !!ENDIF
             )
 !!IF mac
@@ -106,7 +112,11 @@ macro(_qt5gui_find_extra_libs Name Libs LibDir IncDirs)
             unset(Qt5Gui_${_cmake_lib_name}_LIBRARY CACHE)
 
             find_library(Qt5Gui_${_cmake_lib_name}_LIBRARY_DEBUG ${_lib}d
-                PATHS \"${LibDir}\" NO_DEFAULT_PATH)
+                PATHS \"${LibDir}\"
+!!IF !mac
+                NO_DEFAULT_PATH
+!!ENDIF
+            )
             if (Qt5Gui_${_cmake_lib_name}_LIBRARY_DEBUG)
                 set_property(TARGET Qt5::Gui_${_cmake_lib_name} APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
                 _qt5_Gui_check_file_exists(\"${Qt5Gui_${_cmake_lib_name}_LIBRARY_DEBUG}\")
