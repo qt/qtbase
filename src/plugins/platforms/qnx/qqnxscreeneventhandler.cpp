@@ -209,7 +209,11 @@ void QQnxScreenEventHandler::processEventsFromScreenThread()
 
         m_eventThread->unlock();
 
-        handleEvent(event);
+        long result = 0;
+        QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance();
+        bool handled = dispatcher && dispatcher->filterNativeEvent(QByteArrayLiteral("screen_event_t"), event, &result);
+        if (!handled)
+            handleEvent(event);
         screen_destroy_event(event);
 
         m_eventThread->lock();
