@@ -54,11 +54,9 @@ public:
     explicit QIOSEventDispatcher(QObject *parent = 0);
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags) Q_DECL_OVERRIDE;
-    void interrupt() Q_DECL_OVERRIDE;
 
     void handleRunLoopExit(CFRunLoopActivity activity);
 
-    void checkIfEventLoopShouldExit();
     void interruptEventLoopExec();
 
 private:

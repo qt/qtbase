@@ -446,6 +446,8 @@ bool __attribute__((returns_twice)) QIOSEventDispatcher::processEvents(QEventLoo
     if (!m_processEventCallsAfterExec && (flags & QEventLoop::EventLoopExec)) {
         ++m_processEventCallsAfterExec;
 
+        m_runLoopExitObserver.addToMode(kCFRunLoopCommonModes);
+
         // We set a new jump point here that we can return to when the event loop
         // is asked to exit, so that we can return from QEventLoop::exec().
         switch (setjmp(processEventExitJumpPoint)) {
@@ -475,34 +477,7 @@ bool __attribute__((returns_twice)) QIOSEventDispatcher::processEvents(QEventLoo
     if (m_processEventCallsAfterExec)
         --m_processEventCallsAfterExec;
 
-    // If we're running with nested event loops and the application is quit,
-    // then the forwarded interrupt call will happen while our processEvent
-    // counter is still 2, and we won't detect that we're about to fall down
-    // to the root iOS run-loop. We do an extra check here to catch that case.
-    checkIfEventLoopShouldExit();
-
     return processedEvents;
-}
-
-void QIOSEventDispatcher::interrupt()
-{
-    QEventDispatcherCoreFoundation::interrupt();
-
-    if (!rootLevelRunLoopIntegration())
-        return;
-
-    // If an interrupt happens as part of a non-nested event loop, that is,
-    // by processing an event or timer in the root iOS run-loop, we'll be
-    // able to detect it here.
-    checkIfEventLoopShouldExit();
-}
-
-void QIOSEventDispatcher::checkIfEventLoopShouldExit()
-{
-    if (m_processEventCallsAfterExec == 1) {
-        qEventDispatcherDebug() << "Hit root runloop level, watching for runloop exit";
-        m_runLoopExitObserver.addToMode(kCFRunLoopCommonModes);
-    }
 }
 
 void QIOSEventDispatcher::handleRunLoopExit(CFRunLoopActivity activity)
@@ -510,9 +485,10 @@ void QIOSEventDispatcher::handleRunLoopExit(CFRunLoopActivity activity)
     Q_UNUSED(activity);
     Q_ASSERT(activity == kCFRunLoopExit);
 
-    m_runLoopExitObserver.removeFromMode(kCFRunLoopCommonModes);
-
-    interruptEventLoopExec();
+    if (m_processEventCallsAfterExec == 1 && !QThreadData::current()->eventLoops.top()->isRunning()) {
+        qEventDispatcherDebug() << "Root runloop level exited";
+        interruptEventLoopExec();
+    }
 }
 
 void QIOSEventDispatcher::interruptEventLoopExec()
@@ -520,6 +496,8 @@ void QIOSEventDispatcher::interruptEventLoopExec()
     Q_ASSERT(m_processEventCallsAfterExec == 1);
 
     --m_processEventCallsAfterExec;
+
+    m_runLoopExitObserver.removeFromMode(kCFRunLoopCommonModes);
 
     // We re-set applicationProcessEventsReturnPoint here so that future
     // calls to QEventLoop::exec() will end up back here after entering
