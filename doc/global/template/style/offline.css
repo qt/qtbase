@@ -192,7 +192,29 @@ footer and license
 */
 
 .footer {
-    text-align: center
+    text-align: left;
+    margin-top: 50px;
+    padding-left: 5px;
+    margin-bottom: 10px;
+    font-size: 10px;
+    border-top: 1px solid #999;
+    padding-top: 11px;
+}
+
+.footer p {
+    line-height: 14px;
+    font-size: 11px;
+}
+
+.footer a[href*="http://"], a[href*="ftp://"], a[href*="https://"] {
+    font-weight: bold;
+}
+
+.footerNavi {
+    width: auto;
+    text-align: right;
+    margin-top: 50px;
+    z-index: 1;
 }
 
 .navigationbar {
@@ -243,16 +265,6 @@ footer and license
       background-position: right;
       padding-right: 17px;
   }
-
-/*
------------
-footer and license
------------
-*/
-
-.footer {
-    text-align: center
-}
 
 #buildversion {
     font-style: italic;
@@ -490,22 +502,6 @@ ol {
     margin: 10px;
     overflow: auto;
     padding: 20px 20px 20px 20px;
-}
-
-.footer {
-    margin-top: 50px;
-    padding-left: 5px;
-    margin-bottom: 10px;
-    font-size: 10px;
-    border-top: 1px solid #999;
-    padding-top: 11px;
-}
-
-.footerNavi {
-    width: auto;
-    text-align: right;
-    margin-top: 50px;
-    z-index: 1;
 }
 
 .memItemLeft {
