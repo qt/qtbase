@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "qqnxscreeneventhandler.h"
+#if defined(QQNX_SCREENEVENTTHREAD)
+#include "qqnxscreeneventthread.h"
+#endif
 #include "qqnxintegration.h"
 #include "qqnxkeytranslator.h"
 #include "qqnxscreen.h"
@@ -63,6 +66,9 @@ QQnxScreenEventHandler::QQnxScreenEventHandler(QQnxIntegration *integration)
     , m_lastButtonState(Qt::NoButton)
     , m_lastMouseWindow(0)
     , m_touchDevice(0)
+#if defined(QQNX_SCREENEVENTTHREAD)
+    , m_eventThread(0)
+#endif
 {
     // Create a touch device
     m_touchDevice = new QTouchDevice;
@@ -181,6 +187,39 @@ void QQnxScreenEventHandler::injectKeyboardEvent(int flags, int sym, int modifie
         qScreenEventDebug() << Q_FUNC_INFO << "Qt key t=" << type << ", k=" << key << ", s=" << keyStr;
     }
 }
+
+#if defined(QQNX_SCREENEVENTTHREAD)
+void QQnxScreenEventHandler::setScreenEventThread(QQnxScreenEventThread *eventThread)
+{
+    m_eventThread = eventThread;
+}
+
+void QQnxScreenEventHandler::processEventsFromScreenThread()
+{
+    if (!m_eventThread)
+        return;
+
+    QQnxScreenEventArray *events = m_eventThread->lock();
+
+    for (int i = 0; i < events->size(); ++i) {
+        screen_event_t event = events->at(i);
+        if (!event)
+            continue;
+        (*events)[i] = 0;
+
+        m_eventThread->unlock();
+
+        handleEvent(event);
+        screen_destroy_event(event);
+
+        m_eventThread->lock();
+    }
+
+    events->clear();
+
+    m_eventThread->unlock();
+}
+#endif
 
 void QQnxScreenEventHandler::handleKeyboardEvent(screen_event_t event)
 {
