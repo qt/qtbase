@@ -53,6 +53,8 @@ use Pod::Usage;
 my @stack = cwd;
 my $device_serial=""; # "-s device_serial";
 my $deployqt_device_serial=""; # "-device device_serial";
+my $log_out="xml";
+my $max_runtime = 5;
 my $className="org.qtproject.qt5.android.bindings.QtActivity";
 my $jobs = 4;
 my $testsubset = "";
@@ -75,6 +77,8 @@ GetOptions('h|help' => \$help
             , 't|test=s' => \$testsubset
             , 'c|clean' => \$make_clean
             , 'j|jobs=i' => \$jobs
+            , 'logtype=s' => \$log_out
+            , 'runtime=i' => \$max_runtime
             , 'sdk=s' => \$android_sdk_dir
             , 'ndk=s' => \$android_ndk_dir
             , 'toolchain=s' => \$android_toolchain_version
@@ -101,7 +105,6 @@ if ($android_to_connect ne ""){
     system("$adb_tool connect $android_to_connect");
     $device_serial =$android_to_connect;
 }
-
 
 system("$adb_tool devices") == 0 or die "No device found, please plug/start at least one device/emulator\n"; # make sure we have at least on device attached
 
@@ -171,6 +174,8 @@ my $temp_dir=tempdir(CLEANUP => 1);
 my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
 my $output_dir=$stack[0]."/".(1900+$year)."-$mon-$mday-$hour:$min";
 mkdir($output_dir);
+unlink("latest");
+system(" ln -s $output_dir latest");
 my $sdk_api=0;
 my $output = `$adb_tool $device_serial shell getprop`; # get device properties
 if ($output =~ m/.*\[ro.build.version.sdk\]: \[(\d+)\]/)
@@ -186,8 +191,22 @@ sub startTest
     my $packageName = "org.qtproject.example.tst_$testName";
     my $intentName = "$packageName/org.qtproject.qt5.android.bindings.QtActivity";
     my $output_file = shift;
+    my $get_xml= 0;
+    my $get_txt= 0;
+    my $testLib ="";
+    if ($log_out eq "xml") {
+        $testLib="-o /data/data/$packageName/output.xml,xml";
+        $get_xml = 1;
+    } elsif ($log_out eq "txt") {
+        $testLib="-o /data/data/$packageName/output.txt,txt";
+        $get_txt = 1;
+    } else {
+        $testLib="-o /data/data/$packageName/output.xml,xml -o /data/data/$packageName/output.txt,txt";
+        $get_xml = 1;
+        $get_txt = 1;
+    }
 
-    system("$adb_tool $device_serial shell am start -e applicationArguments \"-o /data/data/$packageName/output.xml\" -n $intentName"); # start intent
+    system("$adb_tool $device_serial shell am start -e applicationArguments \"$testLib\" -n $intentName"); # start intent
     #wait to start (if it has not started and quit already)
     waitForProcess($packageName,1,10);
 
@@ -198,7 +217,8 @@ sub startTest
         print "Someone should kill $packageName\n";
         return 1;
     }
-    system("$adb_tool $device_serial pull /data/data/$packageName/output.xml $output_dir/$output_file");
+    system("$adb_tool $device_serial pull /data/data/$packageName/output.xml $output_dir/$output_file.xml") if ($get_xml);
+    system("$adb_tool $device_serial pull /data/data/$packageName/output.txt $output_dir/$output_file.txt") if ($get_txt);
     return 1;
 }
 
@@ -228,7 +248,7 @@ foreach (split("\n",$testsFiles))
     $output_name =~ s/\///;   # remove first "/" character
     $output_name =~ s/\//_/g; # replace all "/" with "_"
     $output_name=$application unless($output_name);
-    $time_out=5*60/5; # 5 minutes time out for a normal test
+    $time_out=$max_runtime*60/5; # 5 minutes time out for a normal test
 
     $applicationLibrary = `find $temp_dir -name libtst_bench_$application.so`;
 
@@ -248,7 +268,7 @@ foreach (split("\n",$testsFiles))
     }
     else
     {
-         startTest($application, "$output_name.xml") or warn "Can't run $application ...\n";
+         startTest($application, "$output_name") or warn "Can't run $application ...\n";
     }
 
     popd();
@@ -305,6 +325,14 @@ Android strip tool path, used to deploy qt libs.
 =item B<--readelf = readelf_tool_path>
 
 Android readelf tool path, used to check if a test application uses qt OpenGL.
+
+=item B<--logtype = xml|txt|both>
+
+The format of log file, default is xml.
+
+=item B<--runtime = minutes>
+
+The timeout period before stopping individual tests from running.
 
 =item B<-h  --help>
 
