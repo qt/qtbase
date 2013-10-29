@@ -31,14 +31,19 @@ equals(TEMPLATE, app):contains(QT, gui(-private)?) {
         # able to add symbolic breakpoints for 'main', not caring that the symbol is actually
         # called 'qt_main' now.
 
-        isEmpty(OBJECTS_DIR): \
-            OBJECTS_DIR = .
+        macx-xcode {
+            objects_dir = "${OBJECT_FILE_DIR}-${CURRENT_VARIANT}/${CURRENT_ARCH}"
+        } else {
+            objects_dir = $$OBJECTS_DIR
+            isEmpty(objects_dir): \
+                objects_dir = .
+        }
 
         !isEmpty(QMAKE_PRE_LINK): \
             QMAKE_PRE_LINK += ";"
 
         QMAKE_PRE_LINK += \
-            "for f in $(find $${OBJECTS_DIR} -name '*.o'); do" \
+            "for f in $(find $${objects_dir} -name '*.o'); do" \
                 "(nm $f | grep -q 'T _main' && cp $f $f.original" \
                     "&& ld -r -alias _main _qt_main -unexported_symbol _main $f.original -o $f)" \
                 "|| true" \
