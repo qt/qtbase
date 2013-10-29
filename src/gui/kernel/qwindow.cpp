@@ -367,6 +367,10 @@ void QWindowPrivate::setScreen(QScreen *newScreen, bool recreate)
     }
 }
 
+void QWindowPrivate::clearFocusObject()
+{
+}
+
 /*!
     Sets the \a surfaceType of the window.
 

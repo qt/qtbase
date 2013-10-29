@@ -76,6 +76,13 @@ public:
         }
         return w;
     }
+
+    void clearFocusObject()
+    {
+        if (QApplicationPrivate::focus_widget)
+            QApplicationPrivate::focus_widget->clearFocus();
+    }
+
 };
 
 QWidgetWindow::QWidgetWindow(QWidget *widget)
