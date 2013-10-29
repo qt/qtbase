@@ -351,7 +351,9 @@ QJNIObjectPrivate::QJNIObjectPrivate(jobject obj)
 
     QJNIEnvironmentPrivate env;
     d->m_jobject = env->NewGlobalRef(obj);
-    d->m_jclass = static_cast<jclass>(env->NewGlobalRef(env->GetObjectClass(d->m_jobject)));
+    jclass objectClass = env->GetObjectClass(d->m_jobject);
+    d->m_jclass = static_cast<jclass>(env->NewGlobalRef(objectClass));
+    env->DeleteLocalRef(objectClass);
 }
 
 template <>
@@ -1262,7 +1264,10 @@ QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod(const char *methodName,
     if (id) {
         res = env->CallObjectMethodV(d->m_jobject, id, args);
     }
-    return res;
+
+    QJNIObjectPrivate obj(res);
+    env->DeleteLocalRef(res);
+    return obj;
 }
 
 QJNIObjectPrivate QJNIObjectPrivate::callObjectMethod(const char *methodName,
@@ -1339,7 +1344,9 @@ QJNIObjectPrivate QJNIObjectPrivate::callStaticObjectMethod(const char *classNam
         }
     }
 
-    return res;
+    QJNIObjectPrivate obj(res);
+    env->DeleteLocalRef(res);
+    return obj;
 }
 
 QJNIObjectPrivate QJNIObjectPrivate::callStaticObjectMethod(const char *className,
@@ -1366,7 +1373,9 @@ QJNIObjectPrivate QJNIObjectPrivate::callStaticObjectMethod(jclass clazz,
         res = env->CallStaticObjectMethodV(clazz, id, args);
     }
 
-    return res;
+    QJNIObjectPrivate obj(res);
+    env->DeleteLocalRef(res);
+    return obj;
 }
 
 QJNIObjectPrivate QJNIObjectPrivate::callStaticObjectMethod(jclass clazz,
@@ -1678,7 +1687,9 @@ QJNIObjectPrivate QJNIObjectPrivate::getObjectField(const char *fieldName,
     if (id)
         res = env->GetObjectField(d->m_jobject, id);
 
-    return res;
+    QJNIObjectPrivate obj(res);
+    env->DeleteLocalRef(res);
+    return obj;
 }
 
 QJNIObjectPrivate QJNIObjectPrivate::getStaticObjectField(const char *className,
@@ -1704,7 +1715,9 @@ QJNIObjectPrivate QJNIObjectPrivate::getStaticObjectField(jclass clazz,
     if (id)
         res = env->GetStaticObjectField(clazz, id);
 
-    return res;
+    QJNIObjectPrivate obj(res);
+    env->DeleteLocalRef(res);
+    return obj;
 }
 
 template <>
@@ -2106,7 +2119,9 @@ QJNIObjectPrivate QJNIObjectPrivate::fromString(const QString &string)
     QJNIEnvironmentPrivate env;
     jstring res = env->NewString(reinterpret_cast<const jchar*>(string.constData()),
                                         string.length());
-    return res;
+    QJNIObjectPrivate obj(res);
+    env->DeleteLocalRef(res);
+    return obj;
 }
 
 QString QJNIObjectPrivate::toString() const

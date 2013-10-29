@@ -94,7 +94,9 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
         return JNI_ERR;
 
     g_jClassLoader = env->NewGlobalRef(classLoader);
+    env->DeleteLocalRef(classLoader);
     g_jActivity = env->NewGlobalRef(activity);
+    env->DeleteLocalRef(activity);
     g_javaVM = vm;
 
     return JNI_OK;
