@@ -197,16 +197,18 @@ namespace QtAndroidMenu
         env->CallObjectMethod(menuItem, setCheckedMenuItemMethodID, checked);
         env->CallObjectMethod(menuItem, setEnabledMenuItemMethodID, enabled);
 
-        if (!icon.isNull()) {
+        if (!icon.isNull()) { // isNull() only checks the d pointer, not the actual image data.
             int sz = qMax(36, qgetenv("QT_ANDROID_APP_ICON_SIZE").toInt());
             QImage img = icon.pixmap(QSize(sz,sz),
                                      enabled
                                         ? QIcon::Normal
                                         : QIcon::Disabled,
                                      QIcon::On).toImage();
-            env->CallObjectMethod(menuItem,
-                                  setIconMenuItemMethodID,
-                                  createBitmapDrawable(createBitmap(img, env), env));
+            if (!img.isNull()) { // Make sure we have a valid image.
+                env->CallObjectMethod(menuItem,
+                                      setIconMenuItemMethodID,
+                                      createBitmapDrawable(createBitmap(img, env), env));
+            }
         }
 
         env->CallObjectMethod(menuItem, setVisibleMenuItemMethodID, visible);
