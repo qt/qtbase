@@ -440,6 +440,7 @@ void QIOSWindow::requestActivateWindow()
     raise();
     QPlatformInputContext *context = QGuiApplicationPrivate::platformIntegration()->inputContext();
     static_cast<QIOSInputContext *>(context)->focusViewChanged(m_view);
+    QWindowSystemInterface::handleWindowActivated(window());
 }
 
 void QIOSWindow::raiseOrLower(bool raise)
