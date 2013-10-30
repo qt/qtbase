@@ -13,7 +13,7 @@
 	<key>CFBundleExecutable</key>
 	<string>@EXECUTABLE@</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.yourcompany.@BUNDLEIDENTIFIER@</string>
+	<string>@BUNDLEIDENTIFIER@</string>
 	<key>CFBundleDisplayName</key>
 	<string>${PRODUCT_NAME}</string>
 	<key>CFBundleName</key>
