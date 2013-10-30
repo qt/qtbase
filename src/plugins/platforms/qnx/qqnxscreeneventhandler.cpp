@@ -428,6 +428,19 @@ void QQnxScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
     if (result)
         qFatal("QQNX: failed to query event window, errno=%d", errno);
 
+    errno = 0;
+    int touchArea[2];
+    result = screen_get_event_property_iv(event, SCREEN_PROPERTY_SIZE, touchArea);
+    if (result)
+        qFatal("QQNX: failed to query event touch area, errno=%d", errno);
+
+    errno = 0;
+    int touchPressure;
+    result = screen_get_event_property_iv(event, SCREEN_PROPERTY_TOUCH_PRESSURE, &touchPressure);
+    if (result)
+        qFatal("QQNX: failed to query event touch pressure, errno=%d", errno);
+
+
     screen_window_t qnxWindow = static_cast<screen_window_t>(handle);
 
     // check if finger is valid
@@ -462,13 +475,22 @@ void QQnxScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
                             QPointF(static_cast<qreal>(pos[0]) / screenSize.width(),
                                     static_cast<qreal>(pos[1]) / screenSize.height());
 
-            m_touchPoints[touchId].area = QRectF(w->geometry().left() + windowPos[0],
-                                                 w->geometry().top()  + windowPos[1], 0.0, 0.0);
+            m_touchPoints[touchId].area = QRectF(w->geometry().left() + windowPos[0] - (touchArea[0]>>1),
+                                                 w->geometry().top()  + windowPos[1] - (touchArea[1]>>1),
+                                                 0.0, 0.0);
             QWindow *parent = w->parent();
             while (parent) {
                 m_touchPoints[touchId].area.translate(parent->geometry().topLeft());
                 parent = parent->parent();
             }
+
+            //Qt expects the pressure between 0 and 1. There is however no definit upper limit for
+            //the integer value of touch event pressure. The 200 was determined by experiment, it
+            //usually does not get higher than that.
+            m_touchPoints[touchId].pressure = static_cast<qreal>(touchPressure)/200.0;
+            // Can happen, because there is no upper limit for pressure
+            if (m_touchPoints[touchId].pressure > 1)
+                m_touchPoints[touchId].pressure = 1;
 
             // determine event type and update state of current touch point
             QEvent::Type type = QEvent::None;
