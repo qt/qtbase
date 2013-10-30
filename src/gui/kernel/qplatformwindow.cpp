@@ -487,6 +487,27 @@ bool QPlatformWindow::isAlertState() const
     return false;
 }
 
+// Return the effective screen for the initial geometry of a window. In a
+// multimonitor-setup, try to find the right screen by checking the transient
+// parent or the mouse cursor for parentless windows (cf QTBUG-34204,
+// QDialog::adjustPosition()).
+static inline const QScreen *effectiveScreen(const QWindow *window)
+{
+    if (!window)
+        return QGuiApplication::primaryScreen();
+    const QScreen *screen = window->screen();
+    if (!screen)
+        return QGuiApplication::primaryScreen();
+    const QList<QScreen *> siblings = screen->virtualSiblings();
+    if (siblings.size() > 1) {
+        const QPoint referencePoint = window->transientParent() ? window->transientParent()->geometry().center() : QCursor::pos();
+        foreach (const QScreen *sibling, siblings)
+            if (sibling->geometry().contains(referencePoint))
+                return sibling;
+    }
+    return screen;
+}
+
 /*!
     Helper function to get initial geometry on windowing systems which do not
     do smart positioning and also do not provide a means of centering a
@@ -511,8 +532,8 @@ QRect QPlatformWindow::initialGeometry(const QWindow *w,
     }
     if (w->isTopLevel() && qt_window_private(const_cast<QWindow*>(w))->positionAutomatic
         && w->type() != Qt::Popup) {
-        if (const QPlatformScreen *platformScreen = QPlatformScreen::platformScreenForWindow(w)) {
-            const QRect availableGeometry = platformScreen->availableGeometry();
+        if (const QScreen *screen = effectiveScreen(w)) {
+            const QRect availableGeometry = screen->availableGeometry();
             // Center unless the geometry ( + unknown window frame) is too large for the screen).
             if (rect.height() < (availableGeometry.height() * 8) / 9
                 && rect.width() < (availableGeometry.width() * 8) / 9) {
