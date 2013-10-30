@@ -302,6 +302,8 @@ public:
 
     inline QVariant userData() const { return m_userData; }
 
+    bool smoothScalable;
+
 protected:
     QFixed lastRightBearing(const QGlyphLayout &glyphs, bool round = false);
 
