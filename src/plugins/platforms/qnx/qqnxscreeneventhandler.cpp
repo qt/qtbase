@@ -125,6 +125,10 @@ bool QQnxScreenEventHandler::handleEvent(screen_event_t event, int qnxType)
         handleDisplayEvent(event);
         break;
 
+    case SCREEN_EVENT_PROPERTY:
+        handlePropertyEvent(event);
+        break;
+
     default:
         // event ignored
         qScreenEventDebug() << Q_FUNC_INFO << "unknown event" << qnxType;
@@ -494,6 +498,48 @@ void QQnxScreenEventHandler::handleDisplayEvent(screen_event_t event)
             m_qnxIntegration->removeDisplay(screen);
         }
     }
+}
+
+void QQnxScreenEventHandler::handlePropertyEvent(screen_event_t event)
+{
+    errno = 0;
+    int objectType;
+    if (screen_get_event_property_iv(event, SCREEN_PROPERTY_OBJECT_TYPE, &objectType) != 0)
+        qFatal("QQNX: failed to query object type property, errno=%d", errno);
+
+    if (objectType != SCREEN_OBJECT_TYPE_WINDOW)
+        return;
+
+    errno = 0;
+    screen_window_t window = 0;
+    if (screen_get_event_property_pv(event, SCREEN_PROPERTY_WINDOW, (void**)&window) != 0)
+        qFatal("QQnx: failed to query window property, errno=%d", errno);
+
+    errno = 0;
+    int property;
+    if (screen_get_event_property_iv(event, SCREEN_PROPERTY_NAME, &property) != 0)
+        qFatal("QQnx: failed to query window property, errno=%d", errno);
+
+    switch (property) {
+    case SCREEN_PROPERTY_KEYBOARD_FOCUS:
+        handleKeyboardFocusPropertyEvent(window);
+        break;
+    default:
+        // event ignored
+        qScreenEventDebug() << Q_FUNC_INFO << "Ignore property event for property: " << property;
+    }
+}
+
+void QQnxScreenEventHandler::handleKeyboardFocusPropertyEvent(screen_window_t window)
+{
+    errno = 0;
+    int focus = 0;
+    if (window && screen_get_window_property_iv(window, SCREEN_PROPERTY_KEYBOARD_FOCUS, &focus) != 0)
+        qFatal("QQnx: failed to query keyboard focus property, errno=%d", errno);
+
+    QWindow *w = focus ? QQnxIntegration::window(window) : 0;
+
+    QWindowSystemInterface::handleWindowActivated(w);
 }
 
 #include "moc_qqnxscreeneventhandler.cpp"

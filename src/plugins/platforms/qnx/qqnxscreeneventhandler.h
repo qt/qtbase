@@ -72,6 +72,8 @@ private:
     void handleCloseEvent(screen_event_t event);
     void handleCreateEvent(screen_event_t event);
     void handleDisplayEvent(screen_event_t event);
+    void handlePropertyEvent(screen_event_t event);
+    void handleKeyboardFocusPropertyEvent(screen_window_t window);
 
 private:
     enum {
