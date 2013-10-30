@@ -102,6 +102,9 @@ bool QIOSIntegration::hasCapability(Capability cap) const
 {
     switch (cap) {
     case OpenGL:
+    case ThreadedOpenGL:
+        return true;
+    case ThreadedPixmaps:
         return true;
     case MultipleWindows:
         return true;

@@ -66,10 +66,14 @@ public:
     GLuint defaultFramebufferObject(QPlatformSurface *) const;
     QFunctionPointer getProcAddress(const QByteArray &procName);
 
+    bool isSharing() const Q_DECL_OVERRIDE;
+    bool isValid() const Q_DECL_OVERRIDE;
+
 private Q_SLOTS:
     void windowDestroyed(QObject *object);
 
 private:
+    QIOSContext *m_sharedContext;
     EAGLContext *m_eaglContext;
     QSurfaceFormat m_format;
 

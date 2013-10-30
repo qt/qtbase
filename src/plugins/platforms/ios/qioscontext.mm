@@ -51,7 +51,10 @@
 
 QIOSContext::QIOSContext(QOpenGLContext *context)
     : QPlatformOpenGLContext()
-    , m_eaglContext([[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2])
+    , m_sharedContext(static_cast<QIOSContext *>(context->shareHandle()))
+    , m_eaglContext([[EAGLContext alloc]
+        initWithAPI:kEAGLRenderingAPIOpenGLES2
+        sharegroup:m_sharedContext ? [m_sharedContext->m_eaglContext sharegroup] : nil])
     , m_format(context->format())
 {
     m_format.setRenderableType(QSurfaceFormat::OpenGLES);
@@ -201,6 +204,16 @@ void QIOSContext::windowDestroyed(QObject *object)
 QFunctionPointer QIOSContext::getProcAddress(const QByteArray& functionName)
 {
     return QFunctionPointer(dlsym(RTLD_DEFAULT, functionName.constData()));
+}
+
+bool QIOSContext::isValid() const
+{
+    return m_eaglContext;
+}
+
+bool QIOSContext::isSharing() const
+{
+    return m_sharedContext;
 }
 
 #include "moc_qioscontext.cpp"
