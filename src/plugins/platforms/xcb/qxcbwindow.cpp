@@ -1544,10 +1544,13 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
 #endif
     } else if (event->type == atom(QXcbAtom::_XEMBED)) {
         handleXEmbedMessage(event);
-    } else if (event->type == atom(QXcbAtom::MANAGER) || event->type == atom(QXcbAtom::_NET_ACTIVE_WINDOW)
-               || event->type == atom(QXcbAtom::_NET_WM_STATE) || event->type == atom(QXcbAtom::MANAGER)
+    } else if (event->type == atom(QXcbAtom::_NET_ACTIVE_WINDOW)) {
+        connection()->setFocusWindow(this);
+        QWindowSystemInterface::handleWindowActivated(window());
+    } else if (event->type == atom(QXcbAtom::MANAGER)
+               || event->type == atom(QXcbAtom::_NET_WM_STATE)
                || event->type == atom(QXcbAtom::WM_CHANGE_STATE)) {
-        // Ignore _NET_ACTIVE_WINDOW, _NET_WM_STATE, MANAGER which are relate to tray icons
+        // Ignore _NET_WM_STATE, MANAGER which are relate to tray icons
         // and other messages.
     } else if (event->type == atom(QXcbAtom::_COMPIZ_DECOR_PENDING)
             || event->type == atom(QXcbAtom::_COMPIZ_DECOR_REQUEST)
