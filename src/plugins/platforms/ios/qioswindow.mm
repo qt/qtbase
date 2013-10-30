@@ -48,6 +48,7 @@
 #include "qiosviewcontroller.h"
 #include "qiosintegration.h"
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qwindow_p.h>
 #include <qpa/qplatformintegration.h>
 
 #import <QuartzCore/CAEAGLLayer.h>
@@ -256,7 +257,10 @@
 
 - (BOOL)resignFirstResponder
 {
-    QWindowSystemInterface::handleWindowActivated(0);
+    // Resigning first responed status means that the virtual keyboard was closed, or
+    // some other view became first responder. In either case we clear the focus object to
+    // avoid blinking cursors in line edits etc:
+    static_cast<QWindowPrivate *>(QObjectPrivate::get(m_qioswindow->window()))->clearFocusObject();
     return [super resignFirstResponder];
 }
 
