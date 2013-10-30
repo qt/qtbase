@@ -1863,9 +1863,12 @@ bool QDir::setCurrent(const QString &path)
 */
 
 /*!
-    Returns the absolute path of the application's current directory.
+    Returns the absolute path of the application's current directory. The
+    current directory is the last directory set with QDir::setCurrent() or, if
+    that was never called, the directory at which this application was started
+    at by the parent process.
 
-    \sa current(), setCurrent(), homePath(), rootPath(), tempPath()
+    \sa current(), setCurrent(), homePath(), rootPath(), tempPath(), QCoreApplication::applicationDirPath()
 */
 QString QDir::currentPath()
 {
