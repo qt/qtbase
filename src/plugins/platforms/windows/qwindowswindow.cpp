@@ -305,7 +305,7 @@ bool QWindowsWindow::setWindowLayered(HWND hwnd, Qt::WindowFlags flags, bool has
 #endif // Q_OS_WINCE
 }
 
-static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, qreal level)
+static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, bool openGL, qreal level)
 {
 #ifdef Q_OS_WINCE // WINCE does not support that feature and microsoft explicitly warns to use those calls
     Q_UNUSED(hwnd);
@@ -314,8 +314,8 @@ static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, qr
     Q_UNUSED(level);
 #else
     if (QWindowsWindow::setWindowLayered(hwnd, flags, hasAlpha, level)) {
-        if (hasAlpha && (flags & Qt::FramelessWindowHint)) {
-            // Windows with alpha: Use blend function to update.
+        if (hasAlpha && !openGL && (flags & Qt::FramelessWindowHint)) {
+            // Non-GL windows with alpha: Use blend function to update.
             BLENDFUNCTION blend = {AC_SRC_OVER, 0, (BYTE)(255.0 * level), AC_SRC_ALPHA};
             QWindowsContext::user32dll.updateLayeredWindow(hwnd, NULL, NULL, NULL, NULL, NULL, 0, &blend, ULW_ALPHA);
         } else {
@@ -661,7 +661,7 @@ void WindowCreationData::initialize(HWND hwnd, bool frameChange, qreal opacityLe
                 EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_GRAYED);
         }
 
-        setWindowOpacity(hwnd, flags, hasAlpha, opacityLevel);
+        setWindowOpacity(hwnd, flags, hasAlpha, isGL, opacityLevel);
     } else { // child.
         SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, swpFlags);
     }
@@ -1745,7 +1745,9 @@ void QWindowsWindow::setOpacity(qreal level)
     if (m_opacity != level) {
         m_opacity = level;
         if (m_data.hwnd)
-            setWindowOpacity(m_data.hwnd, m_data.flags, window()->format().hasAlpha(), level);
+            setWindowOpacity(m_data.hwnd, m_data.flags,
+                             window()->format().hasAlpha(), testFlag(OpenGLSurface),
+                             level);
     }
 }
 
