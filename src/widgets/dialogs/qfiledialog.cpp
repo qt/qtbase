@@ -628,7 +628,8 @@ void QFileDialogPrivate::helperPrepareShow(QPlatformDialogHelper *)
                                  QUrl::fromLocalFile(directory.absolutePath()) :
                                  QUrl());
     options->setInitiallySelectedNameFilter(q->selectedNameFilter());
-    options->setInitiallySelectedFiles(userSelectedFiles());
+    if (options->initiallySelectedFiles().isEmpty())
+        options->setInitiallySelectedFiles(userSelectedFiles());
 }
 
 void QFileDialogPrivate::helperDone(QDialog::DialogCode code, QPlatformDialogHelper *)
@@ -1053,10 +1054,13 @@ void QFileDialog::selectFile(const QString &filename)
         return;
 
     if (!d->usingWidgets()) {
-        d->selectFile_sys(QUrl::fromLocalFile(filename));
-        QList<QUrl> i;
-        i << QUrl(filename);
-        d->options->setInitiallySelectedFiles(i);
+        QUrl url = QUrl::fromLocalFile(filename);
+        if (QFileInfo(filename).isRelative()) {
+            QDir dir(d->options->initialDirectory().toLocalFile());
+            url = QUrl::fromLocalFile(dir.absoluteFilePath(filename));
+        }
+        d->selectFile_sys(url);
+        d->options->setInitiallySelectedFiles(QList<QUrl>() << url);
         return;
     }
 
@@ -1683,11 +1687,8 @@ void QFileDialog::setAcceptMode(QFileDialog::AcceptMode mode)
     d->options->setAcceptMode(static_cast<QFileDialogOptions::AcceptMode>(mode));
     // clear WA_DontShowOnScreen so that d->canBeNativeDialog() doesn't return false incorrectly
     setAttribute(Qt::WA_DontShowOnScreen, false);
-    if (!d->usingWidgets()) {
-        // we need to recreate the native dialog when changing the AcceptMode
-        d->deletePlatformHelper();
+    if (!d->usingWidgets())
         return;
-    }
     QDialogButtonBox::StandardButton button = (mode == AcceptOpen ? QDialogButtonBox::Open : QDialogButtonBox::Save);
     d->qFileDialogUi->buttonBox->setStandardButtons(button | QDialogButtonBox::Cancel);
     d->qFileDialogUi->buttonBox->button(button)->setEnabled(false);
