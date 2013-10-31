@@ -531,7 +531,11 @@ static const QLocaleData *default_data = 0;
 static uint default_number_options = 0;
 
 static const QLocaleData *const c_data = locale_data;
-static QLocalePrivate c_private = { c_data, Q_BASIC_ATOMIC_INITIALIZER(1), 0 };
+static QLocalePrivate *c_private()
+{
+    static QLocalePrivate c_locale = { c_data, Q_BASIC_ATOMIC_INITIALIZER(1), 0 };
+    return &c_locale;
+}
 
 #ifndef QT_NO_SYSTEMLOCALE
 
@@ -700,7 +704,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QSharedDataPointer<QLocalePrivate>, defaultLocalePriva
 static QLocalePrivate *localePrivateByName(const QString &name)
 {
     if (name == QLatin1String("C"))
-        return &c_private;
+        return c_private();
     return QLocalePrivate::create(findLocaleData(name));
 }
 
@@ -708,7 +712,7 @@ static QLocalePrivate *findLocalePrivate(QLocale::Language language, QLocale::Sc
                                          QLocale::Country country)
 {
     if (language == QLocale::C)
-        return &c_private;
+        return c_private();
 
     const QLocaleData *data = QLocaleData::findLocaleData(language, script, country);
 
