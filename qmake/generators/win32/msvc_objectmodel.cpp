@@ -1199,7 +1199,6 @@ VCLinkerTool::VCLinkerTool()
         TurnOffAssemblyGeneration(unset),
         TypeLibraryResourceID(0),
         GenerateManifest(unset),
-        GenerateWindowsMetadata(unset),
         EnableUAC(unset),
         UACUIAccess(unset),
         SectionAlignment(-1),
@@ -1207,7 +1206,8 @@ VCLinkerTool::VCLinkerTool()
         AllowIsolation(unset),
         AssemblyDebug(unset),
         CLRUnmanagedCodeCheck(unset),
-        DelaySign(unset)
+        DelaySign(unset),
+        GenerateWindowsMetadata(unset)
 {
 }
 
@@ -2121,9 +2121,9 @@ VCPreLinkEventTool::VCPreLinkEventTool()
 // VCConfiguration --------------------------------------------------
 
 VCConfiguration::VCConfiguration()
-    :        ATLMinimizesCRunTimeLibraryUsage(unset),
-        WinRT(false),
+    :   WinRT(false),
         WinPhone(false),
+        ATLMinimizesCRunTimeLibraryUsage(unset),
         BuildBrowserInformation(unset),
         CharacterSet(charSetNotSet),
         ConfigurationType(typeApplication),
