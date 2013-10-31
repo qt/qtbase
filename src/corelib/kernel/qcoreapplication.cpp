@@ -506,7 +506,6 @@ QThread *QCoreApplicationPrivate::mainThread()
     return theMainThread;
 }
 
-#if !defined (QT_NO_DEBUG) || defined (QT_MAC_FRAMEWORK_BUILD)
 void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
 {
     QThread *currentThread = QThread::currentThread();
@@ -523,7 +522,6 @@ void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
     Q_UNUSED(currentThread);
     Q_UNUSED(thr);
 }
-#endif
 
 #endif // QT_NO_QOBJECT
 
