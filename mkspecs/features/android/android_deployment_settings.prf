@@ -47,18 +47,6 @@ contains(TEMPLATE, ".*app"):!build_pass:!android-no-sdk {
     !isEmpty(ANDROID_PACKAGE_SOURCE_DIR): \
         FILE_CONTENT += "   \"android-package-source-directory\": $$emitString($$ANDROID_PACKAGE_SOURCE_DIR),"
 
-    !isEmpty(ANDROID_PACKAGE): \
-        FILE_CONTENT += "   \"android-package\": $$emitString($$ANDROID_PACKAGE),"
-
-    !isEmpty(ANDROID_MINIMUM_VERSION): \
-        FILE_CONTENT += "   \"android-minimum-version\": $$ANDROID_MINIMUM_VERSION,"
-
-    !isEmpty(ANDROID_TARGET_VERSION): \
-        FILE_CONTENT += "   \"android-target-version\": $$ANDROID_TARGET_VERSION,"
-
-    !isEmpty(ANDROID_APP_NAME): \
-        FILE_CONTENT += "   \"android-app-name\": $$emitString($$ANDROID_APP_NAME),"
-
     !isEmpty(ANDROID_EXTRA_LIBS): \
         FILE_CONTENT += "   \"android-extra-libs\": $$emitString($$join(ANDROID_EXTRA_LIBS, ",")),"
 
