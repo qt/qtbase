@@ -54,6 +54,7 @@
 #include <sys/file.h>  // flock
 #include <sys/types.h> // kill
 #include <signal.h>    // kill
+#include <unistd.h>    // gethostname
 
 QT_BEGIN_NAMESPACE
 
