@@ -58,6 +58,7 @@ OSType translateLocation(QStandardPaths::StandardLocation type)
 {
     switch (type) {
     case QStandardPaths::ConfigLocation:
+    case QStandardPaths::GenericConfigLocation:
         return kPreferencesFolderType;
     case QStandardPaths::DesktopLocation:
         return kDesktopFolderType;
@@ -149,6 +150,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
             if (type == CacheLocation)
                 appendOrganizationAndApp(path);
             return path;
+        case GenericConfigLocation:
         case ConfigLocation:
             return qttestDir + QLatin1String("/Preferences");
         default:

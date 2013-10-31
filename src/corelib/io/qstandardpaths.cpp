@@ -95,6 +95,9 @@ QT_BEGIN_NAMESPACE
            files should be written. For instance unix local sockets.
     \value ConfigLocation Returns a directory location where user-specific
            configuration files should be written.
+    \value GenericConfigLocation Returns a directory location where user-specific
+           configuration files shared between multiple applications should be written.
+           This is a generic value and the returned path is never empty.
     \value DownloadLocation Returns a directory for user's downloaded files.
 
 
@@ -335,6 +338,8 @@ QString QStandardPaths::displayName(StandardLocation type)
         return QCoreApplication::translate("QStandardPaths", "Runtime");
     case ConfigLocation:
         return QCoreApplication::translate("QStandardPaths", "Configuration");
+    case GenericConfigLocation:
+        return QCoreApplication::translate("QStandardPaths", "Shared Configuration");
     case GenericCacheLocation:
         return QCoreApplication::translate("QStandardPaths", "Shared Cache");
     case DownloadLocation:
@@ -358,7 +363,7 @@ QString QStandardPaths::displayName(StandardLocation type)
   or writing to the current user's configuration.
 
   This affects the locations into which test programs might write files:
-  GenericDataLocation, DataLocation, ConfigLocation,
+  GenericDataLocation, DataLocation, ConfigLocation, GenericConfigLocation,
   GenericCacheLocation, CacheLocation.
   Other locations are not affected.
 
