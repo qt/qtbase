@@ -531,12 +531,11 @@ Option::fixString(QString string, uchar flags)
         string = QDir::cleanPath(string);
     }
 
-    bool localSep = (flags & Option::FixPathToLocalSeparators) != 0;
-    bool targetSep = (flags & Option::FixPathToTargetSeparators) != 0;
-    bool normalSep = (flags & Option::FixPathToNormalSeparators) != 0;
-
     // either none or only one active flag
-    Q_ASSERT(localSep + targetSep + normalSep <= 1);
+    Q_ASSERT(((flags & Option::FixPathToLocalSeparators) != 0) +
+             ((flags & Option::FixPathToTargetSeparators) != 0) +
+             ((flags & Option::FixPathToNormalSeparators) != 0) <= 1);
+
     //fix separators
     if (flags & Option::FixPathToNormalSeparators) {
         string = string.replace('\\', '/');

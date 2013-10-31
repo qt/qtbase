@@ -1797,6 +1797,7 @@ ProjectBuilderMakefileGenerator::reftypeForFile(const QString &where)
 
 QString ProjectBuilderMakefileGenerator::sourceTreeForFile(const QString &where)
 {
+    Q_UNUSED(where)
     // We always use absolute paths, instead of maintaining the SRCROOT
     // build variable and making files relative to that.
     return QLatin1String("<absolute>");

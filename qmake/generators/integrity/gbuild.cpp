@@ -417,6 +417,7 @@ QString GBuildMakefileGenerator::writeOne(QString filename, QString pathtoremove
 bool
 GBuildMakefileGenerator::openOutput(QFile &file, const QString &build) const
 {
+    Q_UNUSED(build)
     debug_msg(1, "file is %s", file.fileName().toLatin1().constData());
     QFileInfo fi(file);
     if (fi.filePath().isEmpty())
