@@ -115,11 +115,13 @@ private:
             m_argv.resize(m_argc);
             HSTRING arguments;
             launchArgs->get_Arguments(&arguments);
-            foreach (const QByteArray &arg, QString::fromWCharArray(
-                         WindowsGetStringRawBuffer(arguments, nullptr)).toLocal8Bit().split(' ')) {
-                m_argv.append(qstrdup(arg.constData()));
-                if (arg == "-qdebug")
-                    m_debugWait = true;
+            if (arguments) {
+                foreach (const QByteArray &arg, QString::fromWCharArray(
+                             WindowsGetStringRawBuffer(arguments, nullptr)).toLocal8Bit().split(' ')) {
+                    m_argv.append(qstrdup(arg.constData()));
+                    if (arg == "-qdebug")
+                        m_debugWait = true;
+                }
             }
         }
         return S_OK;
