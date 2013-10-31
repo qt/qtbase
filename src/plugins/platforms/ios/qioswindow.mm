@@ -455,7 +455,7 @@ void QIOSWindow::raiseOrLower(bool raise)
 
     for (int i = int(subviews.count) - 1; i >= 0; --i) {
         UIView *view = static_cast<UIView *>([subviews objectAtIndex:i]);
-        if (view.hidden || view == m_view)
+        if (view.hidden || view == m_view || !view.qwindow)
             continue;
         int level = static_cast<QIOSWindow *>(view.qwindow->handle())->m_windowLevel;
         if (m_windowLevel > level || (raise && m_windowLevel == level)) {
