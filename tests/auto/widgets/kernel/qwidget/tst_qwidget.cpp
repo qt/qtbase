@@ -75,6 +75,7 @@
 #include <qproxystyle.h>
 #include <QtWidgets/QGraphicsView>
 #include <QtWidgets/QGraphicsProxyWidget>
+#include <QtGui/qwindow.h>
 
 #include "../../../qtest-config.h"
 
@@ -4814,31 +4815,73 @@ static inline QByteArray msgRgbMismatch(unsigned actual, unsigned expected)
            QByteArrayLiteral(" != 0x") + QByteArray::number(expected, 16);
 }
 
-#define VERIFY_COLOR(region, color) {                                   \
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+QT_BEGIN_NAMESPACE
+extern Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0);
+QT_END_NAMESPACE
+
+// grabs the window *without including any overlapping windows*
+static QPixmap grabWindow(QWindow *window, int x, int y, int width, int height)
+{
+    const HWND hwnd = (HWND)window->winId();
+
+    // Create and setup bitmap
+    const HDC displayDc = ::GetDC(0);
+    const HDC bitmapDc = ::CreateCompatibleDC(displayDc);
+    const HBITMAP bitmap = ::CreateCompatibleBitmap(displayDc, width, height);
+    const HGDIOBJ oldBitmap = ::SelectObject(bitmapDc, bitmap);
+
+    // copy data
+    const HDC windowDc = ::GetDC(hwnd);
+    ::BitBlt(bitmapDc, 0, 0, width, height, windowDc, x, y, SRCCOPY);
+
+    // clean up all but bitmap
+    ::ReleaseDC(hwnd, windowDc);
+    ::SelectObject(bitmapDc, oldBitmap);
+    ::DeleteDC(bitmapDc);
+
+    const QPixmap pixmap = qt_pixmapFromWinHBITMAP(bitmap);
+
+    ::DeleteObject(bitmap);
+    ::ReleaseDC(0, displayDc);
+
+    return pixmap;
+}
+#else
+// fallback for other platforms.
+static QPixmap grabWindow(QWindow *window, int x, int y, int width, int height)
+{
+    QScreen *screen = window->screen();
+    return screen ? screen->grabWindow(window->winId(), x, y, width, height) : QPixmap();
+}
+#endif  //defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
+
+#define VERIFY_COLOR(child, region, color) do {  \
     const QRegion r = QRegion(region);                                  \
-    QScreen *screen = qApp->primaryScreen();                            \
-    const WId desktopWinId = QDesktopWidget().winId();                      \
+    QWindow *window = child.window()->windowHandle();                   \
+    Q_ASSERT(window);                                                   \
+    const QPoint offset = child.mapTo(child.window(), QPoint(0,0));     \
     for (int i = 0; i < r.rects().size(); ++i) {                        \
-        const QRect rect = r.rects().at(i);                             \
+        const QRect rect = r.rects().at(i).translated(offset);          \
         for (int t = 0; t < 5; t++) {                                   \
-            const QPixmap pixmap = screen->grabWindow(desktopWinId,     \
-                                                   rect.left(), rect.top(), \
-                                                   rect.width(), rect.height()); \
+            const QPixmap pixmap = grabWindow(window,                   \
+                                              rect.left(), rect.top(),  \
+                                              rect.width(), rect.height()); \
             QCOMPARE(pixmap.size(), rect.size());                       \
             QPixmap expectedPixmap(pixmap); /* ensure equal formats */  \
-            expectedPixmap.detach(); \
+            expectedPixmap.detach();                                    \
             expectedPixmap.fill(color);                                 \
-            QImage image = pixmap.toImage();                          \
+            QImage image = pixmap.toImage();                            \
             uint alphaCorrection = image.format() == QImage::Format_RGB32 ? 0xff000000 : 0; \
-            uint firstPixel = image.pixel(0,0) | alphaCorrection;        \
-            if ( firstPixel != QColor(color).rgb() && t < 4 )          \
+            uint firstPixel = image.pixel(0,0) | alphaCorrection;       \
+            if ( firstPixel != QColor(color).rgb() && t < 4 )           \
             { QTest::qWait(200); continue; }                            \
             QVERIFY2(firstPixel == QColor(color).rgb(), msgRgbMismatch(firstPixel, QColor(color).rgb()));  \
             QCOMPARE(pixmap, expectedPixmap);                           \
             break;                                                      \
         }                                                               \
     }                                                                   \
-}
+} while (0)
 
 void tst_QWidget::popupEnterLeave()
 {
@@ -4917,14 +4960,12 @@ void tst_QWidget::moveChild()
     parent.show();
     QVERIFY(QTest::qWaitForWindowExposed(&parent));
     QTest::qWait(30);
-    const QPoint tlwOffset = parent.geometry().topLeft();
 
     QTRY_COMPARE(parent.r, QRegion(parent.rect()) - child.geometry());
     QTRY_COMPARE(child.r, QRegion(child.rect()));
-    VERIFY_COLOR(child.geometry().translated(tlwOffset),
+    VERIFY_COLOR(child, child.rect(),
                  child.color);
-    VERIFY_COLOR(QRegion(parent.geometry()) - child.geometry().translated(tlwOffset),
-                 parent.color);
+    VERIFY_COLOR(parent, QRegion(parent.rect()) - child.geometry(), parent.color);
     parent.reset();
     child.reset();
 
@@ -4942,10 +4983,8 @@ void tst_QWidget::moveChild()
     // should be scrolled in backingstore
     QCOMPARE(child.r, QRegion());
 #endif
-    VERIFY_COLOR(child.geometry().translated(tlwOffset),
-                child.color);
-    VERIFY_COLOR(QRegion(parent.geometry()) - child.geometry().translated(tlwOffset),
-                parent.color);
+    VERIFY_COLOR(child, child.rect(), child.color);
+    VERIFY_COLOR(parent, QRegion(parent.rect()) - child.geometry(), parent.color);
 }
 
 void tst_QWidget::showAndMoveChild()
@@ -4971,7 +5010,6 @@ void tst_QWidget::showAndMoveChild()
     QVERIFY(QTest::qWaitForWindowActive(&parent));
     QTest::qWait(10);
 
-    const QPoint tlwOffset = parent.geometry().topLeft();
     QWidget child(&parent);
     child.resize(desktopDimensions.width()/2, desktopDimensions.height()/2);
     child.setPalette(Qt::blue);
@@ -4983,8 +5021,8 @@ void tst_QWidget::showAndMoveChild()
     child.move(desktopDimensions.width()/2, desktopDimensions.height()/2);
     qApp->processEvents();
 
-    VERIFY_COLOR(child.geometry().translated(tlwOffset), Qt::blue);
-    VERIFY_COLOR(QRegion(parent.geometry()) - child.geometry().translated(tlwOffset), Qt::red);
+    VERIFY_COLOR(child, child.rect(), Qt::blue);
+    VERIFY_COLOR(parent, QRegion(parent.rect()) - child.geometry(), Qt::red);
 }
 
 // Cocoa only has rect granularity.
