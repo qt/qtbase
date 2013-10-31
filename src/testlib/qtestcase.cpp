@@ -1540,6 +1540,10 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
 
         } else if (strcmp(argv[i], "-vb") == 0) {
             QBenchmarkGlobalData::current->verboseOutput = true;
+#ifdef Q_OS_WINRT
+        } else if (strncmp(argv[i], "-ServerName:", 12) == 0) {
+            continue;
+#endif
         } else if (argv[i][0] == '-') {
             fprintf(stderr, "Unknown option: '%s'\n\n%s", argv[i], testOptions);
             if (qml) {
