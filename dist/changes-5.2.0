@@ -103,3 +103,15 @@ QtNetwork
 - Support for preconnecting to servers before making HTTP and HTTPS
   connections. This allows for much reduced latency when the hosts to be
   connected to are known.
+
+****************************************************************************
+*                      Platform Specific Changes                           *
+****************************************************************************
+
+Qt for Android
+--------------
+ - Project structure and deployment has changed with the introduction of
+   androiddeployqt. Source and build files are no longer mixed, and the
+   build files for the APK package should not be touched. Customizing
+   the build files is possible. Read the documentation for androiddeployqt
+   for more information.
