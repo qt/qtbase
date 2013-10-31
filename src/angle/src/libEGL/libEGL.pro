@@ -4,11 +4,11 @@ TARGET = $$qtLibraryTarget(libEGL)
 include(../common/common.pri)
 
 angle_d3d11 {
-    LIBS += -ld3d11
+    LIBS_PRIVATE += -ld3d11
 } else {
-    LIBS += -ld3d9
+    LIBS_PRIVATE += -ld3d9
 }
-LIBS += -ldxguid -L$$QT_BUILD_TREE/lib -l$$qtLibraryTarget(libGLESv2)
+LIBS_PRIVATE += -ldxguid -L$$QT_BUILD_TREE/lib -l$$qtLibraryTarget(libGLESv2)
 
 HEADERS += \
     $$ANGLE_DIR/src/libEGL/Config.h \

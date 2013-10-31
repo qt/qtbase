@@ -8,18 +8,18 @@ INCLUDEPATH += $$OUT_PWD/.. $$ANGLE_DIR/src/libGLESv2
 
 # Remember to adapt tools/configure/configureapp.cpp if the Direct X version changes.
 angle_d3d11 {
-    LIBS += -ldxgi -ld3d11
+    LIBS_PRIVATE += -ldxgi -ld3d11
 } else {
-    LIBS += -ld3d9
+    LIBS_PRIVATE += -ld3d9
 }
-LIBS += -ldxguid
+LIBS_PRIVATE += -ldxguid
 STATICLIBS = translator_common translator_hlsl preprocessor
 
 for(libname, STATICLIBS) {
     # Appends 'd' to the library for debug builds and builds up the fully
     # qualified path to pass to the linker.
     staticlib = $$QT_BUILD_TREE/lib/$${QMAKE_PREFIX_STATICLIB}$$qtLibraryTarget($$libname).$${QMAKE_EXTENSION_STATICLIB}
-    LIBS += $$staticlib
+    LIBS_PRIVATE += $$staticlib
     PRE_TARGETDEPS += $$staticlib
 }
 

@@ -48,7 +48,7 @@ mac|darwin {
         LIBS_PRIVATE += -framework CoreServices
     }
     LIBS_PRIVATE += -framework CoreFoundation
-    LIBS += -framework Foundation
+    LIBS_PRIVATE += -framework Foundation
 }
 win32:DEFINES-=QT_NO_CAST_TO_ASCII
 DEFINES += $$MODULE_DEFINES

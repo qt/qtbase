@@ -4,7 +4,7 @@ INCLUDEPATH += \
     $$ANGLE_DIR/src \
     $$ANGLE_DIR/include
 
-LIBS = $$QMAKE_LIBS_CORE $$QMAKE_LIBS_GUI
+LIBS_PRIVATE = $$QMAKE_LIBS_CORE $$QMAKE_LIBS_GUI
 
 # DirectX is included in the Windows 8 Kit, but everything else requires the DX SDK.
 win32-msvc2012|win32-msvc2013 {
@@ -36,7 +36,7 @@ win32-msvc2012|win32-msvc2013 {
 
         # Similarly we want the MinGW linker to use the import libraries shipped with the compiler
         # instead of those from the SDK which cause a crash on startup.
-        LIBS += -L\"$$DXLIB_DIR\"
+        LIBS_PRIVATE += -L\"$$DXLIB_DIR\"
     }
 }
 

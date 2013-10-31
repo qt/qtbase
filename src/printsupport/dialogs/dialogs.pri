@@ -11,7 +11,7 @@ HEADERS += \
 mac:!ios {
     OBJECTIVE_SOURCES += dialogs/qpagesetupdialog_mac.mm \
                          dialogs/qprintdialog_mac.mm
-    LIBS += -framework Cocoa
+    LIBS_PRIVATE += -framework Cocoa
 }
 
 win32 {
