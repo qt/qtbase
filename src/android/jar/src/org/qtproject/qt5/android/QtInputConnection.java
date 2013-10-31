@@ -43,7 +43,6 @@
 package org.qtproject.qt5.android;
 
 import android.content.Context;
-import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.CompletionInfo;
 import android.view.inputmethod.ExtractedText;
@@ -81,6 +80,22 @@ class QtNativeInputConnection
     static native boolean paste();
 }
 
+class HideKeyboardRunnable implements Runnable {
+    private QtInputConnection m_connection;
+    HideKeyboardRunnable(QtInputConnection connection)
+    {
+        m_connection = connection;
+    }
+
+    @Override
+    public void run() {
+        if (m_connection.getInputState() == QtInputConnection.InputStates.Hiding) {
+            QtNative.activityDelegate().setKeyboardVisibility(false);
+            m_connection.reset();
+        }
+    }
+}
+
 public class QtInputConnection extends BaseInputConnection
 {
     private static final int ID_SELECT_ALL = android.R.id.selectAll;
@@ -91,65 +106,83 @@ public class QtInputConnection extends BaseInputConnection
     private static final int ID_SWITCH_INPUT_METHOD = android.R.id.switchInputMethod;
     private static final int ID_ADD_TO_DICTIONARY = android.R.id.addToDictionary;
 
-    View m_view;
-    boolean m_closing;
-    public QtInputConnection(View targetView)
+
+    enum InputStates { Visible, FinishComposing, Hiding };
+
+    private QtEditText m_view = null;
+    private InputStates m_inputState = InputStates.Visible;
+
+    public void reset()
+    {
+        m_inputState = InputStates.Visible;
+    }
+
+    public InputStates getInputState()
+    {
+        return m_inputState;
+    }
+
+    private void setClosing(boolean closing)
+    {
+        if (closing && m_inputState == InputStates.Hiding)
+            return;
+
+        if (closing && m_inputState == InputStates.FinishComposing && m_view.getActivityDelegate().isSoftwareKeyboardVisible()) {
+            m_view.postDelayed(new HideKeyboardRunnable(this), 100);
+            m_inputState = InputStates.Hiding;
+        } else {
+            if (m_inputState == InputStates.Hiding)
+                QtNative.activityDelegate().setKeyboardVisibility(true);
+            m_inputState = closing ? InputStates.FinishComposing : InputStates.Visible;
+        }
+    }
+
+    public QtInputConnection(QtEditText targetView)
     {
         super(targetView, true);
         m_view = targetView;
-        m_closing = false;
     }
 
     @Override
     public boolean beginBatchEdit()
     {
-        m_closing = false;
+        setClosing(false);
         return true;
     }
 
     @Override
     public boolean endBatchEdit()
     {
-        m_closing = false;
+//        setClosing(false);
         return true;
     }
 
     @Override
     public boolean commitCompletion(CompletionInfo text)
     {
-        m_closing = false;
+        setClosing(false);
         return QtNativeInputConnection.commitCompletion(text.getText().toString(), text.getPosition());
     }
 
     @Override
     public boolean commitText(CharSequence text, int newCursorPosition)
     {
-        m_closing = false;
+        setClosing(false);
         return QtNativeInputConnection.commitText(text.toString(), newCursorPosition);
     }
 
     @Override
     public boolean deleteSurroundingText(int leftLength, int rightLength)
     {
-        m_closing = false;
+        setClosing(false);
         return QtNativeInputConnection.deleteSurroundingText(leftLength, rightLength);
     }
 
     @Override
     public boolean finishComposingText()
     {
-        if (m_closing) {
-            m_view.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                        QtNative.activityDelegate().m_keyboardIsVisible=false;
-                    }
-                }, 100); // it seems finishComposingText comes much faster than onKeyUp event,
-                          // so we must delay hide notification
-            m_closing = false;
-        } else {
-            m_closing = true;
-        }
+        // on some/all android devices hide event is not coming, but instead finishComposingText() is called twice
+        setClosing(true);
         return QtNativeInputConnection.finishComposingText();
     }
 
@@ -231,18 +264,21 @@ public class QtInputConnection extends BaseInputConnection
     @Override
     public boolean setComposingText(CharSequence text, int newCursorPosition)
     {
+        setClosing(false);
         return QtNativeInputConnection.setComposingText(text.toString(), newCursorPosition);
     }
 
     @Override
     public boolean setComposingRegion(int start, int end)
     {
+        setClosing(false);
         return QtNativeInputConnection.setComposingRegion(start, end);
     }
 
     @Override
     public boolean setSelection(int start, int end)
     {
+        setClosing(false);
         return QtNativeInputConnection.setSelection(start, end);
     }
 }

@@ -42,13 +42,6 @@
 
 package org.qtproject.qt5.android;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Iterator;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -68,11 +61,18 @@ import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import android.view.Surface;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 public class QtActivityDelegate
 {
@@ -111,7 +111,7 @@ public class QtActivityDelegate
     private boolean m_quitApp = true;
     private Process m_debuggerProcess = null; // debugger process
 
-    public boolean m_keyboardIsVisible = false;
+    private boolean m_keyboardIsVisible = false;
     public boolean m_backKeyPressedSent = false;
 
 
@@ -176,6 +176,13 @@ public class QtActivityDelegate
     private final int ApplicationInactive = 0x2;
     private final int ApplicationActive = 0x4;
 
+    public void setKeyboardVisibility(boolean visibility)
+    {
+        if (m_keyboardIsVisible == visibility)
+            return;
+        m_keyboardIsVisible = visibility;
+        QtNative.keyboardVisibilityChanged(m_keyboardIsVisible);
+    }
     public void resetSoftwareKeyboard()
     {
         if (m_imm == null)
@@ -256,27 +263,21 @@ public class QtActivityDelegate
         m_editText.postDelayed(new Runnable() {
             @Override
             public void run() {
-                m_imm.showSoftInput(m_editText, 0, new ResultReceiver( new Handler()){
+                m_imm.showSoftInput(m_editText, 0, new ResultReceiver(new Handler()) {
                     @Override
                     protected void onReceiveResult(int resultCode, Bundle resultData) {
                         switch (resultCode) {
                             case InputMethodManager.RESULT_SHOWN:
                             case InputMethodManager.RESULT_UNCHANGED_SHOWN:
-                                m_keyboardIsVisible = true;
+                                setKeyboardVisibility(true);
                                 break;
                             case InputMethodManager.RESULT_HIDDEN:
                             case InputMethodManager.RESULT_UNCHANGED_HIDDEN:
-                                m_keyboardIsVisible = false;
+                                setKeyboardVisibility(false);
                                 break;
                         }
                     }
-                }) ;
-                m_editText.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        m_imm.restartInput(m_editText);
-                    }
-                }, 25);
+                });
             }
         }, 15);
     }
@@ -291,11 +292,11 @@ public class QtActivityDelegate
                 switch (resultCode) {
                     case InputMethodManager.RESULT_SHOWN:
                     case InputMethodManager.RESULT_UNCHANGED_SHOWN:
-                        m_keyboardIsVisible = true;
+                        setKeyboardVisibility(true);
                         break;
                     case InputMethodManager.RESULT_HIDDEN:
                     case InputMethodManager.RESULT_UNCHANGED_HIDDEN:
-                        m_keyboardIsVisible = false;
+                        setKeyboardVisibility(false);
                         break;
                 }
             }
@@ -612,7 +613,7 @@ public class QtActivityDelegate
         }
         m_layout = new QtLayout(m_activity);
         m_surface = new QtSurface(m_activity, 0);
-        m_editText = new QtEditText(m_activity);
+        m_editText = new QtEditText(m_activity, this);
         m_imm = (InputMethodManager)m_activity.getSystemService(Context.INPUT_METHOD_SERVICE);
         m_layout.addView(m_surface,0);
         m_activity.setContentView(m_layout,
@@ -770,7 +771,7 @@ public class QtActivityDelegate
 
         if (keyCode == KeyEvent.KEYCODE_BACK && !m_backKeyPressedSent) {
             hideSoftwareKeyboard();
-            m_keyboardIsVisible = false;
+            setKeyboardVisibility(false);
             return true;
         }
 

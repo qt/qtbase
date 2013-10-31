@@ -418,30 +418,21 @@ public class QtNative
 
     private static boolean isSoftwareKeyboardVisible()
     {
-        Semaphore semaphore = new Semaphore(1);
-        Boolean ret = false;
-        class RunnableRes implements Runnable {
-            @SuppressWarnings("unused")
-            Boolean returnValue = null;
-            Semaphore semaphore = null;
-            RunnableRes(Boolean ret, Semaphore sem) {
-                semaphore = sem;
-                returnValue = ret;
-            }
+        final Semaphore semaphore = new Semaphore(0);
+        final Boolean[] ret = {false};
+        runAction(new Runnable() {
             @Override
             public void run() {
-                returnValue = m_activityDelegate.isSoftwareKeyboardVisible();
+                ret[0] = m_activityDelegate.isSoftwareKeyboardVisible();
                 semaphore.release();
             }
-        }
-
-        runAction(new RunnableRes(ret, semaphore));
+        });
         try {
             semaphore.acquire();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return ret;
+        return ret[0];
     }
 
     private static void setFullScreen(final boolean fullScreen)
@@ -568,6 +559,7 @@ public class QtNative
     // keyboard methods
     public static native void keyDown(int key, int unicode, int modifier);
     public static native void keyUp(int key, int unicode, int modifier);
+    public static native void keyboardVisibilityChanged(boolean visibility);
     // keyboard methods
 
     // surface methods

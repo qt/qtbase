@@ -50,10 +50,10 @@ import android.view.inputmethod.InputConnection;
 
 public class QtEditText extends View
 {
-    QtInputConnection m_inputConnection;
     int m_initialCapsMode = 0;
     int m_imeOptions = 0;
     int m_inputType = InputType.TYPE_CLASS_TEXT;
+    QtActivityDelegate m_activityDelegate;
 
     public void setImeOptions(int m_imeOptions)
     {
@@ -71,12 +71,16 @@ public class QtEditText extends View
         this.m_inputType = m_inputType;
     }
 
-    public QtEditText(Context context)
+    public QtEditText(Context context, QtActivityDelegate activityDelegate)
     {
         super(context);
         setFocusable(true);
         setFocusableInTouchMode(true);
-        m_inputConnection = new QtInputConnection(this);
+        m_activityDelegate = activityDelegate;
+    }
+    public QtActivityDelegate getActivityDelegate()
+    {
+        return m_activityDelegate;
     }
 
     @Override
@@ -86,8 +90,9 @@ public class QtEditText extends View
         outAttrs.imeOptions = m_imeOptions;
         outAttrs.initialCapsMode = m_initialCapsMode;
         outAttrs.imeOptions |= EditorInfo.IME_FLAG_NO_EXTRACT_UI;
-        return m_inputConnection;
+        return new QtInputConnection(this);
     }
+
 // // DEBUG CODE
 //    @Override
 //    protected void onDraw(Canvas canvas) {

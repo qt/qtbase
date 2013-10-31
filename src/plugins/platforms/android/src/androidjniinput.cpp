@@ -47,6 +47,10 @@
 #include <QTouchEvent>
 #include <QPointer>
 
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+# include <QDebug>
+#endif
+
 using namespace QtAndroid;
 
 namespace QtAndroidInput
@@ -86,6 +90,9 @@ namespace QtAndroidInput
                                          width,
                                          height,
                                          inputHints);
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+        qDebug() << "@@@ SHOWSOFTWAREKEYBOARD" << left << top << width << height << inputHints;
+#endif
     }
 
     void resetSoftwareKeyboard()
@@ -95,6 +102,9 @@ namespace QtAndroidInput
             return;
 
         env.jniEnv->CallStaticVoidMethod(applicationClass(), m_resetSoftwareKeyboardMethodID);
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+        qDebug() << "@@@ RESETSOFTWAREKEYBOARD";
+#endif
     }
 
     void hideSoftwareKeyboard()
@@ -104,6 +114,9 @@ namespace QtAndroidInput
             return;
 
         env.jniEnv->CallStaticVoidMethod(applicationClass(), m_hideSoftwareKeyboardMethodID);
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+        qDebug() << "@@@ HIDESOFTWAREKEYBOARD";
+#endif
     }
 
     bool isSoftwareKeyboardVisible()
@@ -112,7 +125,11 @@ namespace QtAndroidInput
         if (!env.jniEnv)
             return false;
 
-        return env.jniEnv->CallStaticBooleanMethod(applicationClass(), m_isSoftwareKeyboardVisibleMethodID);
+        bool visibility = env.jniEnv->CallStaticBooleanMethod(applicationClass(), m_isSoftwareKeyboardVisibleMethodID);
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+        qDebug() << "@@@ ISSOFTWAREKEYBOARDVISIBLE" << visibility;
+#endif
+        return visibility;
     }
 
 
@@ -511,6 +528,15 @@ namespace QtAndroidInput
                                                false);
     }
 
+    static void keyboardVisibilityChanged(JNIEnv */*env*/, jobject /*thiz*/, jboolean /*visibility*/)
+    {
+        QAndroidInputContext *inputContext = QAndroidInputContext::androidInputContext();
+        if (inputContext)
+            inputContext->emitInputPanelVisibleChanged();
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+        qDebug() << "@@@ KEYBOARDVISIBILITYCHANGED" << inputContext;
+#endif
+    }
 
     static JNINativeMethod methods[] = {
         {"touchBegin","(I)V",(void*)touchBegin},
@@ -521,7 +547,8 @@ namespace QtAndroidInput
         {"mouseMove", "(III)V", (void *)mouseMove},
         {"longPress", "(III)V", (void *)longPress},
         {"keyDown", "(III)V", (void *)keyDown},
-        {"keyUp", "(III)V", (void *)keyUp}
+        {"keyUp", "(III)V", (void *)keyUp},
+        {"keyboardVisibilityChanged", "(Z)V", (void *)keyboardVisibilityChanged}
     };
 
 #define GET_AND_CHECK_STATIC_METHOD(VAR, CLASS, METHOD_NAME, METHOD_SIGNATURE) \
