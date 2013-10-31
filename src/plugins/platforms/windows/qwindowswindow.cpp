@@ -1548,7 +1548,7 @@ static const QScreen *effectiveScreen(const QWindow *w)
 
 bool QWindowsWindow::isFullScreen_sys() const
 {
-    return geometry_sys() == effectiveScreen(window())->geometry();
+    return window()->isTopLevel() && geometry_sys() == effectiveScreen(window())->geometry();
 }
 
 /*!
