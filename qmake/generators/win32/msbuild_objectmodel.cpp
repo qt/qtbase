@@ -1762,9 +1762,6 @@ void VCXProjectWriter::outputFilter(VCProject &project, XmlOutput &xml, XmlOutpu
     else
         root = new XTreeNode;
 
-    QString name, extfilter;
-    triState parse;
-
     for (int i = 0; i < project.SingleProjects.count(); ++i) {
         VCFilter filter;
         const VCProjectSingleConfig &singleCfg = project.SingleProjects.at(i);
@@ -1794,14 +1791,6 @@ void VCXProjectWriter::outputFilter(VCProject &project, XmlOutput &xml, XmlOutpu
         // Merge all files in this filter to root tree
         for (int x = 0; x < filter.Files.count(); ++x)
             root->addElement(filter.Files.at(x));
-
-        // Save filter setting from first filter. Next filters
-        // may differ but we cannot handle that. (ex. extfilter)
-        if (name.isEmpty()) {
-            name = filter.Name;
-            extfilter = filter.Filter;
-            parse = filter.ParseFiles;
-        }
     }
 
     if (!root->hasElements())
