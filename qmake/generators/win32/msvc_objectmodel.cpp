@@ -2861,7 +2861,7 @@ void VCProjectWriter::outputFilter(VCProject &project, XmlOutput &xml, const QSt
         root = new TreeNode;
 
     QString name, extfilter, guid;
-    triState parse;
+    triState parse = unset;
 
     for (int i = 0; i < project.SingleProjects.count(); ++i) {
         VCFilter filter;
