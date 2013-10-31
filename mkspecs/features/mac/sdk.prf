@@ -8,7 +8,7 @@ contains(QMAKE_MAC_SDK, .*/.*): \
 isEmpty(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.path) {
     QMAKE_MAC_SDK_PATH = $$system("/usr/bin/xcodebuild -sdk $$QMAKE_MAC_SDK -version Path 2>/dev/null")
     isEmpty(QMAKE_MAC_SDK_PATH): error("Could not resolve SDK path for \'$$QMAKE_MAC_SDK\'")
-    !isEmpty(_QMAKE_CACHE_): cache(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.path, set, QMAKE_MAC_SDK_PATH)
+    cache(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.path, set stash, QMAKE_MAC_SDK_PATH)
 } else {
     QMAKE_MAC_SDK_PATH = $$eval(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.path)
 }
@@ -41,7 +41,7 @@ for(tool, $$list(QMAKE_CC QMAKE_CXX QMAKE_FIX_RPATH QMAKE_AR QMAKE_RANLIB QMAKE_
     isEmpty(sysrooted): next()
 
     $$tool = $$sysrooted $$member(value, 1, -1)
-    !isEmpty(_QMAKE_CACHE_): cache($$tool_variable, set, $$tool)
+    cache($$tool_variable, set stash, $$tool)
 }
 
 isEmpty(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.platform_name) {
@@ -52,7 +52,7 @@ isEmpty(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.platform_name) {
         "sed 's/.*Value: \\(.*\\)/\\1/'")
 
     isEmpty(QMAKE_MAC_PLATFORM_NAME): error("Could not resolve platform name for SDK '$$QMAKE_MAC_SDK'")
-    !isEmpty(_QMAKE_CACHE_): cache(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.platform_name, set, QMAKE_MAC_PLATFORM_NAME)
+    cache(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.platform_name, set stash, QMAKE_MAC_PLATFORM_NAME)
 } else {
     QMAKE_MAC_PLATFORM_NAME = $$eval(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.platform_name)
 }
