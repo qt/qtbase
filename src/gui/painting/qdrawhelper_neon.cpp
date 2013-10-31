@@ -964,6 +964,7 @@ public:
     union Vect_buffer_i { Int32x4 v; int i[4]; };
     union Vect_buffer_f { Float32x4 v; float f[4]; };
 
+    static inline Float32x4 v_dup(double x) { return vdupq_n_f32(float(x)); }
     static inline Float32x4 v_dup(float x) { return vdupq_n_f32(x); }
     static inline Int32x4 v_dup(int x) { return vdupq_n_s32(x); }
     static inline Int32x4 v_dup(uint x) { return vdupq_n_s32(x); }
