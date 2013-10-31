@@ -140,6 +140,10 @@ public:
     QTouchDevice *touchDevice() const { return m_touchDevice; }
     void setTouchDevice(QTouchDevice *touchDevice) { m_touchDevice = touchDevice; }
 
+#ifdef ANDROID_PLUGIN_OPENGL
+    QEglFSScreen *createScreen() const;
+#endif
+
 private:
 
     friend class QEglFSAndroidHooks;

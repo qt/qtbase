@@ -61,6 +61,7 @@
 #  include "androidjnimenu.h"
 #  include "qandroidopenglcontext.h"
 #  include "qandroidopenglplatformwindow.h"
+#  include "qandroidopenglplatformscreen.h"
 #  include "qeglfshooks.h"
 #  include <QtGui/qopenglcontext.h>
 #endif
@@ -141,7 +142,10 @@ QPlatformBackingStore *QAndroidPlatformIntegration::createPlatformBackingStore(Q
 
 QPlatformWindow *QAndroidPlatformIntegration::createPlatformWindow(QWindow *window) const
 {
-    return new QAndroidPlatformWindow(window);
+    QAndroidPlatformWindow *platformWindow = new QAndroidPlatformWindow(window);
+    platformWindow->setWindowState(window->windowState());
+
+    return platformWindow;
 }
 
 QAbstractEventDispatcher *QAndroidPlatformIntegration::createEventDispatcher() const
@@ -154,6 +158,7 @@ QPlatformWindow *QAndroidPlatformIntegration::createPlatformWindow(QWindow *wind
     QAndroidOpenGLPlatformWindow *platformWindow = new QAndroidOpenGLPlatformWindow(window);
     platformWindow->create();
     platformWindow->requestActivateWindow();
+    platformWindow->setWindowState(window->windowState());
     QtAndroidMenu::setActiveTopLevelWindow(window);
 
     return platformWindow;
@@ -230,7 +235,7 @@ QPlatformServices *QAndroidPlatformIntegration::services() const
 QVariant QAndroidPlatformIntegration::styleHint(StyleHint hint) const
 {
     switch (hint) {
-    case ShowIsFullScreen:
+    case ShowIsMaximized:
         return true;
     default:
         return QPlatformIntegration::styleHint(hint);
@@ -305,6 +310,11 @@ void QAndroidPlatformIntegration::setDisplayMetrics(int width, int height)
 {
     m_defaultPhysicalSizeWidth = width;
     m_defaultPhysicalSizeHeight = height;
+}
+
+QEglFSScreen *QAndroidPlatformIntegration::createScreen() const
+{
+    return new QAndroidOpenGLPlatformScreen(display());
 }
 
 #endif

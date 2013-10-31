@@ -1657,6 +1657,8 @@ void QWindow::show()
     bool isPopup = d_func()->windowFlags & Qt::Popup & ~Qt::Window;
     if (!isPopup && qApp->styleHints()->showIsFullScreen())
         showFullScreen();
+    else if (!isPopup && QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::ShowIsMaximized).toBool())
+        showMaximized();
     else
         showNormal();
 }

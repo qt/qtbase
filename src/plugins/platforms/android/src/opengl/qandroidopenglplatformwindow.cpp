@@ -53,6 +53,7 @@ QBasicAtomicInt QAndroidOpenGLPlatformWindow::m_referenceCount = Q_BASIC_ATOMIC_
 
 QAndroidOpenGLPlatformWindow::QAndroidOpenGLPlatformWindow(QWindow *window)
     : QEglFSWindow(window)
+    , m_state(Qt::WindowNoState)
 {
 }
 
@@ -131,12 +132,38 @@ void QAndroidOpenGLPlatformWindow::destroy()
     }
 }
 
+void QAndroidOpenGLPlatformWindow::updateStatusBarVisibility()
+{
+    Qt::WindowFlags flags = window()->flags();
+    bool isNonRegularWindow = flags & (Qt::Popup | Qt::Dialog | Qt::Sheet) & ~Qt::Window;
+    if (!isNonRegularWindow) {
+        if (m_state & Qt::WindowFullScreen)
+            QtAndroid::hideStatusBar();
+        else if (m_state & Qt::WindowMaximized)
+            QtAndroid::showStatusBar();
+    }
+}
+
 void QAndroidOpenGLPlatformWindow::raise()
 {
+    updateStatusBarVisibility();
+}
+
+void QAndroidOpenGLPlatformWindow::setWindowState(Qt::WindowState state)
+{
+    if (m_state == state)
+        return;
+
+    m_state = state;
+    if (window()->isVisible())
+        updateStatusBarVisibility();
 }
 
 void QAndroidOpenGLPlatformWindow::setVisible(bool visible)
 {
+    if (visible)
+        updateStatusBarVisibility();
+
     QEglFSWindow::setVisible(visible);
 
     // The Android Activity is activated before Qt is initialized, causing the application state to

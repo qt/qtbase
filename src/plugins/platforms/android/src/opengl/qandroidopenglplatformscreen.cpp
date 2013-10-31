@@ -39,63 +39,21 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSSCREEN_H
-#define QEGLFSSCREEN_H
-
-#include <qpa/qplatformscreen.h>
-
-#include <QtCore/QTextStream>
-
-#include <EGL/egl.h>
+#include "qandroidopenglplatformscreen.h"
+#include "qandroidopenglplatformwindow.h"
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSCursor;
-class QEglFSWindow;
-class QOpenGLContext;
-
-class QEglFSScreen : public QPlatformScreen
+QAndroidOpenGLPlatformScreen::QAndroidOpenGLPlatformScreen(EGLDisplay display)
+    : QEglFSScreen(display)
 {
-public:
-    QEglFSScreen(EGLDisplay display);
-    ~QEglFSScreen();
+}
 
-    QRect geometry() const;
-    int depth() const;
-    QImage::Format format() const;
-
-    QSizeF physicalSize() const;
-    QDpi logicalDpi() const;
-    Qt::ScreenOrientation nativeOrientation() const;
-    Qt::ScreenOrientation orientation() const;
-
-    QPlatformCursor *cursor() const;
-
-    EGLDisplay display() const { return m_dpy; }
-    EGLSurface primarySurface() const { return m_surface; }
-
-    QList<QEglFSWindow *> windows() const { return m_windows; }
-    void addWindow(QEglFSWindow *window);
-    void removeWindow(QEglFSWindow *window);
-    void moveToTop(QEglFSWindow *window);
-    void changeWindowIndex(QEglFSWindow *window, int newIdx);
-    QEglFSWindow *rootWindow();
-    QOpenGLContext *rootContext() { return m_rootContext; }
-    void setRootContext(QOpenGLContext *context) { m_rootContext = context; }
-
-protected:
-    void setPrimarySurface(EGLSurface surface);
-    virtual void topWindowChanged(QPlatformWindow *window);
-
-private:
-    friend class QEglFSWindow;
-
-    EGLDisplay m_dpy;
-    EGLSurface m_surface;
-    QEglFSCursor *m_cursor;
-    QList<QEglFSWindow *> m_windows;
-    QOpenGLContext *m_rootContext;
-};
+void QAndroidOpenGLPlatformScreen::topWindowChanged(QPlatformWindow *window)
+{
+    QAndroidOpenGLPlatformWindow *platformWindow = static_cast<QAndroidOpenGLPlatformWindow *>(window);
+    if (platformWindow != 0)
+        platformWindow->updateStatusBarVisibility();
+}
 
 QT_END_NAMESPACE
-#endif // QEGLFSSCREEN_H

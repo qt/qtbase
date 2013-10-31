@@ -52,11 +52,16 @@ public:
 
     void propagateSizeHints();
 
+    void raise();
+    void setWindowState(Qt::WindowState state);
     void setVisible(bool visible);
+    void updateStatusBarVisibility();
 
 public slots:
     void setGeometry(const QRect &rect);
 
+private:
+    Qt::WindowState m_state;
 };
 
 #endif // ANDROIDPLATFORMWINDOW_H

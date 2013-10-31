@@ -44,7 +44,9 @@
 #include "androidjnimain.h"
 #include <qpa/qwindowsysteminterface.h>
 
-QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window) : QFbWindow(window)
+QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
+    : QFbWindow(window)
+    , m_state(Qt::WindowNoState)
 {
 }
 
@@ -58,8 +60,41 @@ void QAndroidPlatformWindow::propagateSizeHints()
     //shut up warning from default implementation
 }
 
+void QAndroidPlatformWindow::updateStatusBarVisibility()
+{
+    Qt::WindowFlags flags = window()->flags();
+    bool isNonRegularWindow = flags & (Qt::Popup | Qt::Dialog | Qt::Sheet) & ~Qt::Window;
+    if (!isNonRegularWindow) {
+        if (m_state & Qt::WindowFullScreen)
+            QtAndroid::hideStatusBar();
+        else if (m_state & Qt::WindowMaximized)
+            QtAndroid::showStatusBar();
+    }
+}
+
+void QAndroidPlatformWindow::raise()
+{
+    updateStatusBarVisibility();
+    QFbWindow::raise();
+}
+
+void QAndroidPlatformWindow::setWindowState(Qt::WindowState state)
+{
+    if (m_state == state)
+        return;
+
+    m_state = state;
+    if (window()->isVisible())
+        updateStatusBarVisibility();
+
+    QFbWindow::setWindowState(state);
+}
+
 void QAndroidPlatformWindow::setVisible(bool visible)
 {
+    if (visible)
+        updateStatusBarVisibility();
+
     QFbWindow::setVisible(visible);
 
     // The Android Activity is activated before Qt is initialized, causing the application state to

@@ -66,16 +66,19 @@ public:
 
     void invalidateSurface();
     void resetSurface();
+    void setWindowState(Qt::WindowState state);
 
     void setVisible(bool visible);
 
     void destroy();
 
     static void updateStaticNativeWindow();
+    void updateStatusBarVisibility();
 
 private:
     QSize m_scheduledResize;
     QMutex m_lock;
+    Qt::WindowState m_state;
 
     static QReadWriteLock m_staticSurfaceLock;
     static EGLSurface m_staticSurface;

@@ -147,7 +147,8 @@ public:
         UseRtlExtensions,
         SynthesizeMouseFromTouchEvents,
         PasswordMaskCharacter,
-        SetFocusOnTouchRelease
+        SetFocusOnTouchRelease,
+        ShowIsMaximized
     };
 
     virtual QVariant styleHint(StyleHint hint) const;

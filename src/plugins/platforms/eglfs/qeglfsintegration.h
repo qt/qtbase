@@ -86,6 +86,9 @@ public:
 
     QPlatformInputContext *inputContext() const { return mInputContext; }
 
+protected:
+    virtual QEglFSScreen *createScreen() const;
+
 private:
     void createInputHandlers();
 

@@ -165,12 +165,17 @@ void QEglFSIntegration::initialize()
         qFatal("EGL error");
     }
 
-    mScreen = new QEglFSScreen(mDisplay);
+    mScreen = createScreen();
     screenAdded(mScreen);
 
     mInputContext = QPlatformInputContextFactory::create();
 
     createInputHandlers();
+}
+
+QEglFSScreen *QEglFSIntegration::createScreen() const
+{
+    return new QEglFSScreen(mDisplay);
 }
 
 QVariant QEglFSIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
