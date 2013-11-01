@@ -6713,6 +6713,7 @@ host_build {
     QT_CPU_FEATURES.$CFG_ARCH = $CFG_CPUFEATURES
 }
 EOF
+echo "QT_COORD_TYPE = $CFG_QREAL" >> "$QTMODULE.tmp"
 
 if [ -n "$QT_CFLAGS_PSQL" ]; then
     echo "QT_CFLAGS_PSQL   = $QT_CFLAGS_PSQL" >> "$QTMODULE.tmp"

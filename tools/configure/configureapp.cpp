@@ -2850,6 +2850,7 @@ void Configure::generateCachefile()
         moduleStream << "    QT_CPU_FEATURES." << dictionary["QT_ARCH"] <<
                                     " = " << dictionary["QT_CPU_FEATURES"] << endl;
         moduleStream << "}" << endl;
+        moduleStream << "QT_COORD_TYPE += " << dictionary["QREAL"] << endl;
 
         if (dictionary["QT_EDITION"] != "QT_EDITION_OPENSOURCE")
             moduleStream << "DEFINES        *= QT_EDITION=QT_EDITION_DESKTOP" << endl;
