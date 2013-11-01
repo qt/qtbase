@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "filedialogpanel.h"
+#include "utils.h"
 
 #include <QGridLayout>
 #include <QVBoxLayout>
@@ -48,7 +49,6 @@
 #include <QFormLayout>
 #include <QSpacerItem>
 #include <QGroupBox>
-#include <QComboBox>
 #include <QPushButton>
 #include <QCheckBox>
 #include <QLineEdit>
@@ -60,25 +60,19 @@
 #include <QTimer>
 #include <QDebug>
 
-struct ComboData
-{
-    const char *description;
-    int value;
-};
-
-const ComboData acceptModeComboData[] =
+const FlagData acceptModeComboData[] =
 {
 {"AcceptOpen", QFileDialog::AcceptOpen },
 {"AcceptSave", QFileDialog::AcceptSave }
 };
 
-const ComboData viewModeComboData[] =
+const FlagData viewModeComboData[] =
 {
     {"Detail", QFileDialog::Detail},
     {"List", QFileDialog::List}
 };
 
-const ComboData fileModeComboData[] =
+const FlagData fileModeComboData[] =
 {
     {"AnyFile", QFileDialog::AnyFile},
     {"ExistingFile", QFileDialog::ExistingFile},
@@ -86,25 +80,6 @@ const ComboData fileModeComboData[] =
     {"Directory", QFileDialog::Directory},
     {"DirectoryOnly", QFileDialog::DirectoryOnly}
 };
-
-static QComboBox *createCombo(QWidget *parent, const ComboData *d, size_t size)
-{
-    QComboBox *c = new QComboBox(parent);
-    for (size_t i = 0; i < size; ++i)
-        c->addItem(QLatin1String(d[i].description), QVariant(d[i].value));
-    return c;
-}
-
-template <class Enum>
-Enum comboBoxValue(const QComboBox *c)
-{
-    return static_cast<Enum>(c->itemData(c->currentIndex()).toInt());
-}
-
-inline void setComboBoxValue(QComboBox *c, int v)
-{
-    c->setCurrentIndex(c->findData(QVariant(v)));
-}
 
 static inline QPushButton *addButton(const QString &description, QGridLayout *layout,
                                      int &row, int column, QObject *receiver, const char *slotFunc)
@@ -155,9 +130,9 @@ FileDialogPanel::FileDialogPanel(QWidget *parent)
     , m_resolveSymLinks(new QCheckBox(tr("Resolve symlinks")))
     , m_native(new QCheckBox(tr("Use native dialog")))
     , m_customDirIcons(new QCheckBox(tr("Don't use custom directory icons")))
-    , m_acceptMode(createCombo(this, acceptModeComboData, sizeof(acceptModeComboData)/sizeof(ComboData)))
-    , m_fileMode(createCombo(this, fileModeComboData, sizeof(fileModeComboData)/sizeof(ComboData)))
-    , m_viewMode(createCombo(this, viewModeComboData, sizeof(viewModeComboData)/sizeof(ComboData)))
+    , m_acceptMode(createCombo(this, acceptModeComboData, sizeof(acceptModeComboData)/sizeof(FlagData)))
+    , m_fileMode(createCombo(this, fileModeComboData, sizeof(fileModeComboData)/sizeof(FlagData)))
+    , m_viewMode(createCombo(this, viewModeComboData, sizeof(viewModeComboData)/sizeof(FlagData)))
     , m_allowedSchemes(new QLineEdit(this))
     , m_defaultSuffix(new QLineEdit(this))
     , m_directory(new QLineEdit(this))

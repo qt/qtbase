@@ -39,56 +39,57 @@
 **
 ****************************************************************************/
 
-#include "filedialogpanel.h"
-#include "colordialogpanel.h"
-#include "fontdialogpanel.h"
-#include "printdialogpanel.h"
-#include "wizardpanel.h"
-#include "messageboxpanel.h"
+#ifndef PRINTDIALOGPANEL_H
+#define PRINTDIALOGPANEL_H
 
-#include <QMainWindow>
-#include <QApplication>
-#include <QMenuBar>
-#include <QTabWidget>
-#include <QMenu>
-#include <QAction>
-#include <QKeySequence>
+#ifndef QT_NO_PRINTER
 
-// Test for dialogs, allowing to play with all dialog options for implementing native dialogs.
-// Compiles with Qt 4.8 and Qt 5.
+#include <QWidget>
 
-class MainWindow : public QMainWindow {
+QT_BEGIN_NAMESPACE
+class QPrinter;
+class QComboBox;
+class QGroupBox;
+class QPushButton;
+class QCheckBox;
+QT_END_NAMESPACE
+
+class PageSizeControl;
+class OptionsControl;
+
+class PrintDialogPanel  : public QWidget
+{
     Q_OBJECT
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit PrintDialogPanel(QWidget *parent = 0);
+    ~PrintDialogPanel();
+
+private slots:
+    void createPrinter();
+    void deletePrinter();
+    void showPrintDialog();
+    void showPreviewDialog();
+    void enableCustomSizeControl();
+
+private:
+    void applySettings(QPrinter *printer) const;
+    void retrieveSettings(const QPrinter *printer);
+    void enablePanels();
+
+    QGroupBox *m_creationGroupBox;
+    QPushButton *m_createButton;
+    QPushButton *m_deleteButton;
+    QGroupBox *m_settingsGroupBox;
+    QCheckBox *m_fullPageCheckBox;
+    QGroupBox *m_dialogsGroupBox;
+    OptionsControl *m_printDialogOptionsControl;
+    QComboBox *m_printDialogRangeCombo;
+    QComboBox *m_modeCombo;
+    QComboBox *m_orientationCombo;
+    QComboBox *m_pageSizeCombo;
+    PageSizeControl *m_customPageSizeControl;
+    QScopedPointer<QPrinter> m_printer;
 };
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
-{
-    setWindowTitle(tr("Dialogs Qt %1").arg(QLatin1String(QT_VERSION_STR)));
-    QMenu *fileMenu = menuBar()->addMenu(tr("File"));
-    QAction *quitAction = fileMenu->addAction(tr("Quit"));
-    quitAction->setShortcut(QKeySequence(QKeySequence::Quit));
-    connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-    QTabWidget *tabWidget = new QTabWidget;
-    tabWidget->addTab(new FileDialogPanel, tr("QFileDialog"));
-    tabWidget->addTab(new ColorDialogPanel, tr("QColorDialog"));
-    tabWidget->addTab(new FontDialogPanel, tr("QFontDialog"));
-    tabWidget->addTab(new WizardPanel, tr("QWizard"));
-    tabWidget->addTab(new MessageBoxPanel, tr("QMessageBox"));
-#ifndef QT_NO_PRINTER
-    tabWidget->addTab(new PrintDialogPanel, tr("QPrintDialog"));
-#endif
-    setCentralWidget(tabWidget);
-}
-
-int main(int argc, char *argv[])
-{
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.move(500, 200);
-    w.show();
-    return a.exec();
-}
-
-#include "main.moc"
+#endif // !QT_NO_PRINTER
+#endif // PRINTDIALOGPANEL_H

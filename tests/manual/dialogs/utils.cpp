@@ -39,56 +39,47 @@
 **
 ****************************************************************************/
 
-#include "filedialogpanel.h"
-#include "colordialogpanel.h"
-#include "fontdialogpanel.h"
-#include "printdialogpanel.h"
-#include "wizardpanel.h"
-#include "messageboxpanel.h"
+#include "utils.h"
 
-#include <QMainWindow>
-#include <QApplication>
-#include <QMenuBar>
-#include <QTabWidget>
-#include <QMenu>
-#include <QAction>
-#include <QKeySequence>
+#include <QCheckBox>
+#include <QVBoxLayout>
 
-// Test for dialogs, allowing to play with all dialog options for implementing native dialogs.
-// Compiles with Qt 4.8 and Qt 5.
-
-class MainWindow : public QMainWindow {
-    Q_OBJECT
-public:
-    explicit MainWindow(QWidget *parent = 0);
-};
-
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
+QComboBox *createCombo(QWidget *parent, const FlagData *d, size_t size)
 {
-    setWindowTitle(tr("Dialogs Qt %1").arg(QLatin1String(QT_VERSION_STR)));
-    QMenu *fileMenu = menuBar()->addMenu(tr("File"));
-    QAction *quitAction = fileMenu->addAction(tr("Quit"));
-    quitAction->setShortcut(QKeySequence(QKeySequence::Quit));
-    connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-    QTabWidget *tabWidget = new QTabWidget;
-    tabWidget->addTab(new FileDialogPanel, tr("QFileDialog"));
-    tabWidget->addTab(new ColorDialogPanel, tr("QColorDialog"));
-    tabWidget->addTab(new FontDialogPanel, tr("QFontDialog"));
-    tabWidget->addTab(new WizardPanel, tr("QWizard"));
-    tabWidget->addTab(new MessageBoxPanel, tr("QMessageBox"));
-#ifndef QT_NO_PRINTER
-    tabWidget->addTab(new PrintDialogPanel, tr("QPrintDialog"));
-#endif
-    setCentralWidget(tabWidget);
+    QComboBox *c = new QComboBox(parent);
+    for (size_t i = 0; i < size; ++i)
+        c->addItem(QLatin1String(d[i].description), QVariant(d[i].value));
+    return c;
 }
 
-int main(int argc, char *argv[])
+void setComboBoxValue(QComboBox *c, int v)
 {
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.move(500, 200);
-    w.show();
-    return a.exec();
+    c->setCurrentIndex(c->findData(QVariant(v)));
 }
 
-#include "main.moc"
+OptionsControl::OptionsControl(const QString &title, const FlagData *data, size_t count, QWidget *parent)
+    : QGroupBox(title, parent)
+{
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    for (size_t i = 0; i < count; ++i) {
+        QCheckBox *box = new QCheckBox(QString::fromLatin1(data[i].description));
+        m_checkBoxes.push_back(CheckBoxFlagPair(box, data[i].value));
+        layout->addWidget(box);
+    }
+}
+
+void OptionsControl::setValue(int flags)
+{
+    foreach (const CheckBoxFlagPair &cf, m_checkBoxes)
+        cf.first->setChecked(cf.second & flags);
+}
+
+int OptionsControl::intValue() const
+{
+    int result = 0;
+    foreach (const CheckBoxFlagPair &cf, m_checkBoxes) {
+        if (cf.first->isChecked())
+            result |= cf.second;
+    }
+    return result;
+}

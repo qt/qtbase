@@ -39,56 +39,50 @@
 **
 ****************************************************************************/
 
-#include "filedialogpanel.h"
-#include "colordialogpanel.h"
-#include "fontdialogpanel.h"
-#include "printdialogpanel.h"
-#include "wizardpanel.h"
-#include "messageboxpanel.h"
+#ifndef UTILS_H
+#define UTILS_H
 
-#include <QMainWindow>
-#include <QApplication>
-#include <QMenuBar>
-#include <QTabWidget>
-#include <QMenu>
-#include <QAction>
-#include <QKeySequence>
+#include <QComboBox>
+#include <QGroupBox>
+#include <QVariant>
+#include <QPair>
+#include <QList>
 
-// Test for dialogs, allowing to play with all dialog options for implementing native dialogs.
-// Compiles with Qt 4.8 and Qt 5.
+QT_FORWARD_DECLARE_CLASS(QCheckBox)
 
-class MainWindow : public QMainWindow {
-    Q_OBJECT
-public:
-    explicit MainWindow(QWidget *parent = 0);
+// Associate enum/flag value with a description.
+struct FlagData
+{
+    const char *description;
+    int value;
 };
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
+// Helpers for creating combo boxes representing enumeration values from flag data.
+QComboBox *createCombo(QWidget *parent, const FlagData *d, size_t size);
+
+template <class Enum>
+Enum comboBoxValue(const QComboBox *c)
 {
-    setWindowTitle(tr("Dialogs Qt %1").arg(QLatin1String(QT_VERSION_STR)));
-    QMenu *fileMenu = menuBar()->addMenu(tr("File"));
-    QAction *quitAction = fileMenu->addAction(tr("Quit"));
-    quitAction->setShortcut(QKeySequence(QKeySequence::Quit));
-    connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-    QTabWidget *tabWidget = new QTabWidget;
-    tabWidget->addTab(new FileDialogPanel, tr("QFileDialog"));
-    tabWidget->addTab(new ColorDialogPanel, tr("QColorDialog"));
-    tabWidget->addTab(new FontDialogPanel, tr("QFontDialog"));
-    tabWidget->addTab(new WizardPanel, tr("QWizard"));
-    tabWidget->addTab(new MessageBoxPanel, tr("QMessageBox"));
-#ifndef QT_NO_PRINTER
-    tabWidget->addTab(new PrintDialogPanel, tr("QPrintDialog"));
-#endif
-    setCentralWidget(tabWidget);
+    return static_cast<Enum>(c->itemData(c->currentIndex()).toInt());
 }
 
-int main(int argc, char *argv[])
-{
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.move(500, 200);
-    w.show();
-    return a.exec();
-}
+void setComboBoxValue(QComboBox *c, int v);
 
-#include "main.moc"
+// A group box with check boxes for option flags.
+class OptionsControl : public QGroupBox {
+public:
+    explicit OptionsControl(const QString &title, const FlagData *data, size_t count, QWidget *parent);
+
+    void setValue(int flags);
+    template <class Enum>
+    Enum value() const { return static_cast<Enum>(intValue()); }
+
+private:
+    typedef QPair<QCheckBox *, int> CheckBoxFlagPair;
+
+    int intValue() const;
+
+    QList<CheckBoxFlagPair> m_checkBoxes;
+};
+
+#endif // UTILS_H
