@@ -77,11 +77,13 @@
 #  include <wrl.h>
 #  include <windows.foundation.h>
 #  include <windows.storage.h>
+#  include <Windows.ApplicationModel.h>
 
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;
 using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::Storage;
+using namespace ABI::Windows::ApplicationModel;
 #endif // Q_OS_WINRT
 
 #ifndef SPI_GETPLATFORMTYPE
@@ -1180,6 +1182,30 @@ QString QFileSystemEngine::rootPath()
 {
 #if defined(Q_OS_WINCE)
     QString ret = QLatin1String("/");
+#elif defined(Q_OS_WINRT)
+    // We specify the package root as root directory
+    QString ret = QLatin1String("/");
+    // Get package location
+    ComPtr<IPackageStatics> statics;
+    if (FAILED(GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Package).Get(), &statics)))
+        return ret;
+    ComPtr<IPackage> package;
+    if (FAILED(statics->get_Current(&package)))
+        return ret;
+    ComPtr<IStorageFolder> installedLocation;
+    if (FAILED(package->get_InstalledLocation(&installedLocation)))
+        return ret;
+
+    ComPtr<IStorageItem> item;
+    if (FAILED(installedLocation.As(&item)))
+        return ret;
+
+    HSTRING finalWinPath;
+    if (FAILED(item->get_Path(&finalWinPath)))
+        return ret;
+
+    ret = QDir::fromNativeSeparators(QString::fromWCharArray(WindowsGetStringRawBuffer(finalWinPath, nullptr)));
+
 #else
     QString ret = QString::fromLatin1(qgetenv("SystemDrive").constData());
     if (ret.isEmpty())
@@ -1329,7 +1355,11 @@ QFileSystemEntry QFileSystemEngine::currentPath()
 #else // !Q_OS_WINCE && !Q_OS_WINRT
     //TODO - a race condition exists when using currentPath / setCurrentPath from multiple threads
     if (qfsPrivateCurrentDir.isEmpty())
+#ifndef Q_OS_WINRT
         qfsPrivateCurrentDir = QCoreApplication::applicationDirPath();
+#else
+        qfsPrivateCurrentDir = QDir::rootPath();
+#endif
 
     ret = qfsPrivateCurrentDir;
 #endif // Q_OS_WINCE || Q_OS_WINRT

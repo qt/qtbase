@@ -525,6 +525,10 @@ void QCoreApplicationPrivate::appendApplicationPathToLibraryPaths()
         coreappdata()->app_libpaths = app_libpaths = new QStringList;
     QString app_location = QCoreApplication::applicationFilePath();
     app_location.truncate(app_location.lastIndexOf(QLatin1Char('/')));
+#ifdef Q_OS_WINRT
+    if (app_location.isEmpty())
+        app_location.append(QLatin1Char('/'));
+#endif
     app_location = QDir(app_location).canonicalPath();
     if (QFile::exists(app_location) && !app_libpaths->contains(app_location))
         app_libpaths->append(app_location);
