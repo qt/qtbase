@@ -62,7 +62,7 @@ QDocDatabase* QDocDatabase::qdocDB_ = NULL;
   It constructs a singleton Tree object with this
   qdoc database pointer.
  */
-QDocDatabase::QDocDatabase()
+QDocDatabase::QDocDatabase() : showInternal_(false)
 {
     tree_ = new Tree(this);
 }
@@ -423,7 +423,7 @@ void QDocDatabase::findAllClasses(const InnerNode* node)
 {
     NodeList::const_iterator c = node->childNodes().constBegin();
     while (c != node->childNodes().constEnd()) {
-        if ((*c)->access() != Node::Private) {
+        if ((*c)->access() != Node::Private && (!(*c)->isInternal() || showInternal_)) {
             if ((*c)->type() == Node::Class && !(*c)->doc().isEmpty()) {
                 QString className = (*c)->name();
                 if ((*c)->parent() &&

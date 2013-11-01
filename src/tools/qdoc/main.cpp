@@ -362,7 +362,7 @@ static void processQdocconfFile(const QString &fileName)
      */
     QDocDatabase* qdb = QDocDatabase::qdocDB();
     qdb->setVersion(config.getString(CONFIG_VERSION));
-
+    qdb->setShowInternal(config.getBool(CONFIG_SHOWINTERNAL));
     /*
       By default, the only output format is HTML.
      */
