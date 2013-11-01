@@ -96,7 +96,7 @@ if(contains(QT, qml)|contains(QT_PRIVATE, qml)): \
         for (key, IMPORTS._KEYS_): {
             PATH = $$eval(IMPORTS.$${key}.path)
             PLUGIN = $$eval(IMPORTS.$${key}.plugin)
-            !isEmpty(PATH):!isEmpty(PLUGIN): LIBS *= -L$$PATH -l$$PLUGIN
+            !isEmpty(PATH):!isEmpty(PLUGIN): LIBS *= -L$$PATH -l$${PLUGIN}$$qtPlatformTargetSuffix()
         }
 
         # create qml_plugin_import.cpp
