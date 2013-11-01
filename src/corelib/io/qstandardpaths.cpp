@@ -188,6 +188,9 @@ QT_BEGIN_NAMESPACE
     \row \li ConfigLocation
          \li "~/Library/Preferences"
          \li "C:/Users/<USER>/AppData/Local/<APPNAME>", "C:/ProgramData/<APPNAME>"
+    \row \li GenericConfigLocation
+         \li "~/Library/Preferences"
+         \li "C:/Users/<USER>/AppData/Local", "C:/ProgramData"
     \row \li DownloadLocation
          \li "~/Documents"
          \li "C:/Users/<USER>/Documents"
@@ -238,6 +241,9 @@ QT_BEGIN_NAMESPACE
          \li "/var/tmp"
          \li "/run/user/<USER>"
     \row \li ConfigLocation
+         \li "<APPROOT>/data/Settings"
+         \li "~/.config", "/etc/xdg"
+    \row \li GenericConfigLocation
          \li "<APPROOT>/data/Settings"
          \li "~/.config", "/etc/xdg"
     \row \li DownloadLocation
