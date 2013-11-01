@@ -199,6 +199,7 @@ public:
     void removeAction(QAction *action);
     QSize iconSize() const;
     QIcon clearButtonIcon() const;
+    void setClearButtonEnabled(bool enabled);
     void positionSideWidgets();
     inline bool hasSideWidgets() const { return !leadingSideWidgets.isEmpty() || !trailingSideWidgets.isEmpty(); }
     inline const SideWidgetEntryList &leftSideWidgetList() const

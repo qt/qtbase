@@ -495,6 +495,7 @@ void QLineEdit::setClearButtonEnabled(bool enable)
         return;
     if (enable) {
         QAction *clearAction = new QAction(d->clearButtonIcon(), QString(), this);
+        clearAction->setEnabled(!isReadOnly());
         clearAction->setObjectName(QLatin1String(clearButtonActionNameC));
         d->addAction(clearAction, 0, QLineEdit::TrailingPosition, QLineEditPrivate::SideWidgetClearButton | QLineEditPrivate::SideWidgetFadeInWithText);
     } else {
@@ -1336,6 +1337,7 @@ void QLineEdit::setReadOnly(bool enable)
     Q_D(QLineEdit);
     if (d->control->isReadOnly() != enable) {
         d->control->setReadOnly(enable);
+        d->setClearButtonEnabled(!enable);
         setAttribute(Qt::WA_MacShowFocusRect, !enable);
         setAttribute(Qt::WA_InputMethodEnabled, d->shouldEnableInputMethod());
 #ifndef QT_NO_CURSOR
