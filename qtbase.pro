@@ -172,7 +172,8 @@ FEATURES_PRI = \
     "$${LITERAL_HASH} Features disabled by configure:" \
     "QT_DISABLED_FEATURES =$$lower($$join($$list($$replace(no_features, _, -)), " ", " "))" \
     "$$escape_expand(\\n)$${LITERAL_HASH} Dependencies derived from <qtbase>/src/corelib/global/qfeatures.txt:" \
-    $$FEATURES_PRI
+    $$FEATURES_PRI \
+    "QT_DISABLED_FEATURES = \$\$unique(QT_DISABLED_FEATURES)"
 write_file($$OUT_PWD/mkspecs/qfeatures.pri, FEATURES_PRI)|error("Aborting.")
 
 #mkspecs
