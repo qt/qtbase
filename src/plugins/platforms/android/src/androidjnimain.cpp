@@ -111,8 +111,6 @@ static jobject m_surface = NULL;
 static EGLNativeWindowType m_nativeWindow = 0;
 static QSemaphore m_waitForWindowSemaphore;
 static bool m_waitForWindow = false;
-
-static jfieldID m_surfaceFieldID = 0;
 #endif
 
 
@@ -762,11 +760,6 @@ static int registerNatives(JNIEnv *env)
     }
 
     GET_AND_CHECK_STATIC_METHOD(m_redrawSurfaceMethodID, m_applicationClass, "redrawSurface", "(IIII)V");
-
-#ifdef ANDROID_PLUGIN_OPENGL
-    FIND_AND_CHECK_CLASS("android/view/Surface");
-    GET_AND_CHECK_FIELD(m_surfaceFieldID, clazz, "mNativeSurface", "I");
-#endif
 
     jmethodID methodID;
     GET_AND_CHECK_STATIC_METHOD(methodID, m_applicationClass, "activity", "()Landroid/app/Activity;");
