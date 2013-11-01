@@ -355,6 +355,7 @@ void FileDialogPanel::getOpenFileNames()
 
 void FileDialogPanel::getOpenFileUrls()
 {
+#if QT_VERSION >= 0x050000
     QString selectedFilter = m_selectedNameFilter->text().trimmed();
     const QList<QUrl> files =
         QFileDialog::getOpenFileUrls(this, tr("getOpenFileNames Qt %1").arg(QLatin1String(QT_VERSION_STR)),
@@ -367,6 +368,7 @@ void FileDialogPanel::getOpenFileUrls()
             << "\nName filter: " << selectedFilter;
         QMessageBox::information(this, tr("getOpenFileNames"), result, QMessageBox::Ok);
     }
+#endif // Qt 5
 }
 
 void FileDialogPanel::getOpenFileName()
@@ -386,6 +388,7 @@ void FileDialogPanel::getOpenFileName()
 
 void FileDialogPanel::getOpenFileUrl()
 {
+#if QT_VERSION >= 0x050000
     QString selectedFilter = m_selectedNameFilter->text().trimmed();
     const QUrl file =
         QFileDialog::getOpenFileUrl(this, tr("getOpenFileUrl Qt %1").arg(QLatin1String(QT_VERSION_STR)),
@@ -398,6 +401,7 @@ void FileDialogPanel::getOpenFileUrl()
             << "\nName filter: " << selectedFilter;
         QMessageBox::information(this, tr("getOpenFileName"), result, QMessageBox::Ok);
     }
+#endif // Qt 5
 }
 
 void FileDialogPanel::getSaveFileName()
@@ -417,6 +421,7 @@ void FileDialogPanel::getSaveFileName()
 
 void FileDialogPanel::getSaveFileUrl()
 {
+#if QT_VERSION >= 0x050000
     QString selectedFilter = m_selectedNameFilter->text().trimmed();
     const QUrl file =
         QFileDialog::getSaveFileUrl(this, tr("getSaveFileName Qt %1").arg(QLatin1String(QT_VERSION_STR)),
@@ -429,6 +434,7 @@ void FileDialogPanel::getSaveFileUrl()
             << "\nName filter: " << selectedFilter;
         QMessageBox::information(this, tr("getSaveFileNames"), result, QMessageBox::Ok);
     }
+#endif // Qt 5
 }
 
 void FileDialogPanel::getExistingDirectory()
@@ -442,12 +448,14 @@ void FileDialogPanel::getExistingDirectory()
 
 void FileDialogPanel::getExistingDirectoryUrl()
 {
+#if QT_VERSION >= 0x050000
     const QUrl dir =
         QFileDialog::getExistingDirectoryUrl(this, tr("getExistingDirectory Qt %1").arg(QLatin1String(QT_VERSION_STR)),
                                           QUrl(m_directory->text()), options() | QFileDialog::ShowDirsOnly,
                                           allowedSchemes());
     if (!dir.isEmpty())
         QMessageBox::information(this, tr("getExistingDirectory"), QLatin1String("Directory: ") + dir.toString(), QMessageBox::Ok);
+#endif // Qt 5
 }
 
 void FileDialogPanel::restoreDefaults()
@@ -493,9 +501,11 @@ void FileDialogPanel::applySettings(QFileDialog *d) const
         if (!filter.isEmpty())
             d->selectNameFilter(filter);
     } else {
+#if QT_VERSION >= 0x050000
         d->setMimeTypeFilters(filters);
         if (!filter.isEmpty())
             d->selectMimeTypeFilter(filter);
+#endif // Qt 5
     }
     foreach (LabelLineEdit *l, m_labelLineEdits)
         l->apply(d);
