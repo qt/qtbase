@@ -218,8 +218,15 @@ static void loadIndexFiles(Config& config)
                 else if (foundIndices.size() == 1) {
                     indexToAdd = foundIndices[0].absoluteFilePath();
                 }
-                if (!indexToAdd.isEmpty() && !indexFiles.contains(indexToAdd))
-                    indexFiles << indexToAdd;
+                if (!indexToAdd.isEmpty()) {
+                    if (!indexFiles.contains(indexToAdd))
+                        indexFiles << indexToAdd;
+                }
+                else if (Generator::runGenerateOnly()) {
+                    qDebug() << "warning:" << config.getString(CONFIG_PROJECT)
+                             << "Cannot locate index file for dependency"
+                             << dependModules[i];
+                }
             }
         }
         else {
