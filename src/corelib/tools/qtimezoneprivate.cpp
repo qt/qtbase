@@ -264,7 +264,8 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs) 
     // If the local msecs is less than the real local time of the transition
     // then get the previous transition to use instead
     if (forLocalMSecs < tran.atMSecsSinceEpoch + (tran.offsetFromUtc * 1000)) {
-        while (forLocalMSecs < tran.atMSecsSinceEpoch + (tran.offsetFromUtc * 1000)) {
+        while (tran.atMSecsSinceEpoch != invalidMSecs()
+               && forLocalMSecs < tran.atMSecsSinceEpoch + (tran.offsetFromUtc * 1000)) {
             nextTran = tran;
             tran = previousTransition(tran.atMSecsSinceEpoch);
         }
@@ -272,7 +273,8 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs) 
         // The zone msecs is after the transition, so check it is before the next tran
         // If not try use the next transition instead
         nextTran = nextTransition(tran.atMSecsSinceEpoch);
-        while (forLocalMSecs >= nextTran.atMSecsSinceEpoch + (nextTran.offsetFromUtc * 1000)) {
+        while (nextTran.atMSecsSinceEpoch != invalidMSecs()
+               && forLocalMSecs >= nextTran.atMSecsSinceEpoch + (nextTran.offsetFromUtc * 1000)) {
             tran = nextTran;
             nextTran = nextTransition(tran.atMSecsSinceEpoch);
         }
@@ -292,7 +294,8 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs) 
             // then use the prev tran as we default to the FirstOccurrence
             // TODO Check if faster to just always get prev tran, or if faster using 6 hour check.
             Data dstTran = previousTransition(tran.atMSecsSinceEpoch);
-            if (dstTran.daylightTimeOffset > 0 && diffPrevTran < (dstTran.daylightTimeOffset * 1000))
+            if (dstTran.atMSecsSinceEpoch != invalidMSecs()
+                && dstTran.daylightTimeOffset > 0 && diffPrevTran < (dstTran.daylightTimeOffset * 1000))
                 tran = dstTran;
         } else if (diffNextTran >= 0 && diffNextTran <= (nextTran.daylightTimeOffset * 1000)) {
             // If time falls within last hour of standard time then is actually the missing hour

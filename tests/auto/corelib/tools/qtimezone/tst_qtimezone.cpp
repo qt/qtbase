@@ -409,6 +409,10 @@ void tst_QTimeZone::stressTest()
             qDebug() << "Stress test calculating transistions for" << testZone.id();
             testZone.transitions(lowDate1, highDate1);
         }
+        testDate.setTimeZone(testZone);
+        testDate.isValid();
+        testDate.offsetFromUtc();
+        testDate.timeZoneAbbreviation();
     }
 }
 
