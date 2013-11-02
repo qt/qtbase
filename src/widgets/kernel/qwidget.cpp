@@ -289,7 +289,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
 #endif
 {
     if (!qApp) {
-        qFatal("QWidget: Must construct a QApplication before a QPaintDevice");
+        qFatal("QWidget: Must construct a QApplication before a QWidget");
         return;
     }
 

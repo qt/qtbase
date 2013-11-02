@@ -538,7 +538,7 @@ QPrinter::QPrinter(const QPrinterInfo& printer, PrinterMode mode)
 void QPrinterPrivate::init(QPrinter::PrinterMode mode)
 {
     if (!QCoreApplication::instance()) {
-        qFatal("QPrinter: Must construct a QApplication before a QPaintDevice");
+        qFatal("QPrinter: Must construct a QCoreApplication before a QPrinter");
         return;
     }
 
