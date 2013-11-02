@@ -621,6 +621,7 @@
 */
 
 /*! \fn T QVector::takeFirst()
+    \since 5.1
 
     Removes the first item in the vector and returns it. This function
     assumes the vector is not empty. To avoid failure, call isEmpty()
@@ -630,6 +631,7 @@
 */
 
 /*! \fn T QVector::takeLast()
+    \since 5.1
 
     Removes the last item in the list and returns it. This function
     assumes the vector is not empty. To avoid failure, call isEmpty()
