@@ -2974,7 +2974,8 @@ bool QVariant::convert(int targetTypeId)
     }
 
     bool isOk = true;
-    if (!handlerManager[d.type]->convert(&oldValue.d, targetTypeId, data(), &isOk))
+    int converterType = std::max(oldValue.userType(), targetTypeId);
+    if (!handlerManager[converterType]->convert(&oldValue.d, targetTypeId, data(), &isOk))
         isOk = false;
     d.is_null = !isOk;
     return isOk;

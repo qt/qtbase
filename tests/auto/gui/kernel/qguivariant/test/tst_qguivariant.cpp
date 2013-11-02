@@ -118,6 +118,7 @@ private slots:
 
     void colorInteger();
     void invalidQColor();
+    void validQColor();
 
     void debugStream_data();
     void debugStream();
@@ -538,6 +539,21 @@ void tst_QGuiVariant::invalidQColor()
     QVERIFY(!va.convert(QVariant::Color));
 
     QVERIFY(!qvariant_cast<QColor>(va).isValid());
+}
+
+void tst_QGuiVariant::validQColor()
+{
+    QColor col(Qt::red);
+    QVariant va(col.name());
+    QVERIFY(va.canConvert(QVariant::Color));
+
+    QVERIFY(va.convert(QVariant::Color));
+
+    QVERIFY(col.isValid());
+
+    QVERIFY(va.convert(QVariant::String));
+
+    QCOMPARE(qvariant_cast<QString>(va), col.name());
 }
 
 void tst_QGuiVariant::colorInteger()
