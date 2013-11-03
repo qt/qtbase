@@ -572,7 +572,7 @@
 
     Provided for compatibility with QList.
 
-    \sa remove(int), QList::removeAt(int)
+    \sa remove(), QList::removeAt()
 */
 
 /*! \fn int QVector::length() const
@@ -597,7 +597,7 @@
 
     Provided for compatibility with QList.
 
-    \sa takeFirst(), takeLast(), QList::takeAt(int)
+    \sa takeFirst(), takeLast(), QList::takeAt()
 */
 
 /*! \fn void QVector::removeFirst()

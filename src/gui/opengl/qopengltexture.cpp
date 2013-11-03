@@ -1825,7 +1825,7 @@ void QOpenGLTexture::setSize(int width, int height, int depth)
 /*!
     Returns the width of a 1D, 2D or 3D texture.
 
-    \sa height(), depth(), setDimensions()
+    \sa height(), depth(), setSize()
 */
 int QOpenGLTexture::width() const
 {
@@ -1836,7 +1836,7 @@ int QOpenGLTexture::width() const
 /*!
     Returns the height of a 2D or 3D texture.
 
-    \sa width(), depth(), setDimensions()
+    \sa width(), depth(), setSize()
 */
 int QOpenGLTexture::height() const
 {
@@ -1847,7 +1847,7 @@ int QOpenGLTexture::height() const
 /*!
     Returns the depth of a 3D texture.
 
-    \sa width(), height(), setDimensions()
+    \sa width(), height(), setSize()
 */
 int QOpenGLTexture::depth() const
 {
@@ -1913,7 +1913,7 @@ int QOpenGLTexture::mipLevels() const
     Returns the maximum number of mipmap levels that this texture
     can have given the current dimensions.
 
-    \sa setMipLevels(), mipLevels(), setDimensions()
+    \sa setMipLevels(), mipLevels(), setSize()
 */
 int QOpenGLTexture::maximumMipLevels() const
 {
@@ -2018,7 +2018,7 @@ void QOpenGLTexture::allocateStorage()
     The texture format, dimensions, mipmap levels and array layers
     cannot be altered once storage ihas been allocated.
 
-    \sa allocateStorage(), setDimensions(), setMipLevels(), setLayers(), setFormat()
+    \sa allocateStorage(), setSize(), setMipLevels(), setLayers(), setFormat()
 */
 bool QOpenGLTexture::isStorageAllocated() const
 {
@@ -2367,7 +2367,7 @@ void QOpenGLTexture::setMipLevelRange(int baseLevel, int maxLevel)
 /*!
     Returns the range of mipmap levels that can be used for texture lookups with this texture.
 
-    \sa mipBaseLevel(), mipMaxLevel(), mipLevelRange()
+    \sa mipBaseLevel(), mipMaxLevel()
 */
 QPair<int, int> QOpenGLTexture::mipLevelRange() const
 {

@@ -274,7 +274,7 @@ QMutex QOpenGLContextPrivate::makeCurrentTrackerMutex;
     or OpenGL ES 1.x.
 
     For more information about the OpenGL API, refer to the official
-    \l{OpenGL documentation}.
+    \l{http://www.opengl.org}{OpenGL documentation}.
 
     For an example of how to use QOpenGLContext see the
     \l{OpenGL Window Example}{OpenGL Window} example.
@@ -591,6 +591,8 @@ QOpenGLFunctions *QOpenGLContext::functions() const
 /*!
     \fn T *QOpenGLContext::versionFunctions() const
 
+    \overload versionFunctions()
+
     Returns a pointer to an object that provides access to all functions for
     the version and profile of this context. Before using any of the functions
     they must be initialized by calling QAbstractOpenGLFunctions::initializeOpenGLFunctions().
@@ -640,8 +642,6 @@ QOpenGLFunctions *QOpenGLContext::functions() const
 
     Usually one would use the template version of this function to automatically
     have the result cast to the correct type.
-
-    \sa T *QOpenGLContext::versionFunctions()
 */
 QAbstractOpenGLFunctions *QOpenGLContext::versionFunctions(const QOpenGLVersionProfile &versionProfile) const
 {

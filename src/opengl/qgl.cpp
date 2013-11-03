@@ -3041,7 +3041,7 @@ bool QGLContext::areSharing(const QGLContext *context1, const QGLContext *contex
     If this context is a valid context in an overlay plane, returns
     the plane's transparent color. Otherwise returns an \l{QColor::isValid()}{invalid} color.
 
-    The returned color's \l{QColor::pixel()}{pixel} value is
+    The returned color's \l{QColormap::pixel()}{pixel} value is
     the index of the transparent color in the colormap of the overlay
     plane. (Naturally, the color's RGB values are meaningless.)
 

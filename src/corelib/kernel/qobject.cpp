@@ -566,7 +566,7 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
     \li When a QObject is moved to another thread, all its children
         will be automatically moved too.
     \li moveToThread() will fail if the QObject has a parent.
-    \li If \l{QObject}s are created within QThread::run(), they cannot
+    \li If QObjects are created within QThread::run(), they cannot
         become children of the QThread object because the QThread does
         not live in the thread that calls QThread::run().
     \endlist
@@ -4622,7 +4622,7 @@ bool QObjectPrivate::disconnect(const QObject *sender, int signal_index, void **
      It can be used to disconnect that connection, or check if
      the connection was successful
 
-     \sa QObject::disconnect
+     \sa QObject::disconnect()
  */
 
 /*!

@@ -32,8 +32,8 @@
     \brief A tour of the standard layout managers and an introduction to custom
     layouts.
 
-    \previouspage Widgets and Layouts
-    \contentspage Widgets and Layouts
+    \previouspage Qt Widgets
+    \contentspage Qt Widgets
     \nextpage {Styles and Style Aware Widgets}{Styles}
 
     \ingroup frameworks-technologies

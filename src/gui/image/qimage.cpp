@@ -3989,7 +3989,7 @@ void qGamma_correct_back_to_linear_cs(QImage *image)
     The specified image conversion \a flags control how the image data
     is handled during the conversion process.
 
-    \sa {QImage#Image Format}{Image Format}
+    \sa {Image Formats}
 */
 QImage QImage::convertToFormat(Format format, Qt::ImageConversionFlags flags) const
 {

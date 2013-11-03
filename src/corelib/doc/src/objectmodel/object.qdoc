@@ -46,7 +46,8 @@
     \li queryable and designable \l{Qt's Property System}{object
        properties}
     \li powerful \l{The Event System}{events and event filters}
-    \li contextual \l{i18n}{string translation for internationalization}
+    \li contextual \l{Internationalization with Qt}{string translation for
+       internationalization}
     \li sophisticated interval driven \l {Timers}{timers} that make it possible
        to elegantly integrate many tasks in an event-driven GUI
     \li hierarchical and queryable \l{Object Trees & Ownership}{object

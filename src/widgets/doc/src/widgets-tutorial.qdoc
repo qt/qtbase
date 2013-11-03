@@ -89,7 +89,7 @@
 
     \section1 Real world widget examples
 
-    In these \l{Widget examples} {more advanced examples}, the code
+    In these \l{Qt Widgets Examples} {more advanced examples}, the code
     that creates the widgets and layouts is stored in other files. For
     example, the GUI for a main window may be created in the
     constructor of a QMainWindow subclass.

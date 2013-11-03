@@ -310,8 +310,6 @@ const qreal qt_sine_table[QT_SINE_TABLE_SIZE] = {
 
     \brief The <QtMath> header file includes generic math declarations.
 
-    The global declarations include \l{functions}.
-
     These functions are partly convenience definitions for basic
     operations, for instance not available in the Standard Template Library et
     al.

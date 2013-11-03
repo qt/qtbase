@@ -503,7 +503,7 @@ QBrush::QBrush(Qt::GlobalColor color, Qt::BrushStyle style)
     The style is set to Qt::TexturePattern. The color will only have
     an effect for QBitmaps.
 
-    \sa setColor(), setPixmap()
+    \sa setColor(), setTexture()
 */
 
 QBrush::QBrush(const QColor &color, const QPixmap &pixmap)
@@ -520,7 +520,7 @@ QBrush::QBrush(const QColor &color, const QPixmap &pixmap)
     The style is set to Qt::TexturePattern. The color will only have
     an effect for QBitmaps.
 
-    \sa setColor(), setPixmap()
+    \sa setColor(), setTexture()
 */
 QBrush::QBrush(Qt::GlobalColor color, const QPixmap &pixmap)
 {

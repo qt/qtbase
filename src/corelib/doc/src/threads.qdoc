@@ -606,7 +606,7 @@
     putting time-consuming operations in a separate worker thread and
     displaying the results on screen in the main thread when the
     worker thread is finished. This is the approach used for
-    implementing the \l{threads/mandelbrot}{Mandelbrot} and
+    implementing the \l{Mandelbrot Example} and
     the \l{network/blockingfortuneclient}{Blocking Fortune Client}
     example.
 
@@ -738,7 +738,7 @@
 
     QObject::connect() itself is thread-safe.
 
-    The \l{threads/mandelbrot}{Mandelbrot} example uses a queued
+    The \l{Mandelbrot Example} uses a queued
     connection to communicate between a worker thread and the main
     thread. To avoid freezing the main thread's event loop (and, as a
     consequence, the application's user interface), all the

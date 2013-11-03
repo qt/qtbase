@@ -54,7 +54,7 @@
 
     An alternative to using QSemaphore to solve the producer-consumer
     problem is to use QWaitCondition and QMutex. This is what the
-    \l{threads/waitconditions}{Wait Conditions} example does.
+    \l{Wait Conditions Example} does.
 
     \section1 Global Variables
 

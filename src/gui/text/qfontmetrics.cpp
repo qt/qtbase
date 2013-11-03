@@ -1587,7 +1587,7 @@ QRectF QFontMetricsF::boundingRect(const QRectF &rect, int flags, const QString&
     \li Qt::TextWordBreak breaks the text to fit the rectangle.
     \endlist
 
-    These flags are defined in \l{Qt::TextFlags}.
+    These flags are defined in the \l{Qt::TextFlag} enum.
 
     If Qt::TextExpandTabs is set in \a flags, the following behavior is
     used to interpret tab characters in the text:
