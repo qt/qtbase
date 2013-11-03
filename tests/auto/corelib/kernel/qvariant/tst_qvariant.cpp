@@ -247,6 +247,8 @@ private slots:
 
     void iterateContainerElements();
     void pairElements();
+
+    void enums();
 private:
     void dataStream_data(QDataStream::Version version);
     void loadQVariantFromDataStream(QDataStream::Version version);
@@ -3951,6 +3953,88 @@ void tst_QVariant::pairElements()
     TEST_PAIR_ELEMENT_ACCESS(std::pair, QVariant, int, 34, 65)
     TEST_PAIR_ELEMENT_ACCESS(QPair, int, QVariant, 24, 25)
     TEST_PAIR_ELEMENT_ACCESS(std::pair, int, QVariant, 44, 15)
+}
+
+enum EnumTest_Enum0 { EnumTest_Enum0_value = 42, ensureSignedEnum0 = -1 };
+Q_DECLARE_METATYPE(EnumTest_Enum0)
+enum EnumTest_Enum1 { EnumTest_Enum1_value = 42, EnumTest_Enum1_bigValue = (Q_INT64_C(1) << 33) + 50 };
+Q_DECLARE_METATYPE(EnumTest_Enum1)
+
+#if defined(Q_COMPILER_CLASS_ENUM)
+enum EnumTest_Enum3 : qint64 { EnumTest_Enum3_value = -47, EnumTest_Enum3_bigValue = (Q_INT64_C(1) << 56) + 5  };
+Q_DECLARE_METATYPE(EnumTest_Enum3)
+enum EnumTest_Enum4 : quint64 { EnumTest_Enum4_value = 47, EnumTest_Enum4_bigValue = (Q_INT64_C(1) << 52) + 45 };
+Q_DECLARE_METATYPE(EnumTest_Enum4)
+enum EnumTest_Enum5 : uint { EnumTest_Enum5_value = 47 };
+Q_DECLARE_METATYPE(EnumTest_Enum5)
+enum EnumTest_Enum6 : uchar { EnumTest_Enum6_value = 47 };
+Q_DECLARE_METATYPE(EnumTest_Enum6)
+enum class EnumTest_Enum7 { EnumTest_Enum7_value = 47, ensureSignedEnum7 = -1 };
+Q_DECLARE_METATYPE(EnumTest_Enum7)
+enum EnumTest_Enum8 : short { EnumTest_Enum8_value = 47 };
+Q_DECLARE_METATYPE(EnumTest_Enum8)
+#endif
+
+template<typename Enum> void testVariant(Enum value, bool *ok)
+{
+    *ok = false;
+    QVariant var = QVariant::fromValue(value);
+
+    QCOMPARE(var.userType(), qMetaTypeId<Enum>());
+
+    QVERIFY(var.canConvert<Enum>());
+    QVERIFY(var.canConvert<int>());
+    QVERIFY(var.canConvert<unsigned int>());
+    QVERIFY(var.canConvert<short>());
+    QVERIFY(var.canConvert<unsigned short>());
+    QVERIFY(var.canConvert<qint64>());
+    QVERIFY(var.canConvert<quint64>());
+
+
+    QCOMPARE(var.value<Enum>(), value);
+    QCOMPARE(var.value<int>(), static_cast<int>(value));
+    QCOMPARE(var.value<uint>(), static_cast<uint>(value));
+    QCOMPARE(var.value<short>(), static_cast<short>(value));
+    QCOMPARE(var.value<unsigned short>(), static_cast<unsigned short>(value));
+    QCOMPARE(var.value<qint64>(), static_cast<qint64>(value));
+    QCOMPARE(var.value<quint64>(), static_cast<quint64>(value));
+
+    QVariant var2 = var;
+    QVERIFY(var2.convert(QMetaType::Int));
+    QCOMPARE(var2.value<int>(), static_cast<int>(value));
+
+    *ok = true;
+}
+
+void tst_QVariant::enums()
+{
+    bool ok = false;
+    testVariant(EnumTest_Enum0_value, &ok);
+    QVERIFY(ok);
+    testVariant(EnumTest_Enum1_value, &ok);
+    QVERIFY(ok);
+    testVariant(EnumTest_Enum1_bigValue, &ok);
+    QVERIFY(ok);
+#if defined(Q_COMPILER_CLASS_ENUM)
+    testVariant(EnumTest_Enum3::EnumTest_Enum3_value, &ok);
+    QVERIFY(ok);
+    testVariant(EnumTest_Enum3::EnumTest_Enum3_bigValue, &ok);
+    QVERIFY(ok);
+    testVariant(EnumTest_Enum4::EnumTest_Enum4_value, &ok);
+    QVERIFY(ok);
+    testVariant(EnumTest_Enum4::EnumTest_Enum4_bigValue, &ok);
+    QVERIFY(ok);
+    testVariant(EnumTest_Enum5::EnumTest_Enum5_value, &ok);
+    QVERIFY(ok);
+    testVariant(EnumTest_Enum6::EnumTest_Enum6_value, &ok);
+    QVERIFY(ok);
+    testVariant(EnumTest_Enum7::EnumTest_Enum7_value, &ok);
+    QVERIFY(ok);
+    testVariant(EnumTest_Enum8::EnumTest_Enum8_value, &ok);
+    QVERIFY(ok);
+    testVariant(EnumTest_Enum3::EnumTest_Enum3_value, &ok);
+    QVERIFY(ok);
+#endif
 }
 
 QTEST_MAIN(tst_QVariant)

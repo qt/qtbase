@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -221,6 +222,19 @@ static qlonglong qConvertToNumber(const QVariant::Private *d, bool *ok)
         return qlonglong(qMetaTypeUNumber(d));
     }
 
+    if (QMetaType::typeFlags(d->type) & QMetaType::IsEnumeration) {
+        switch (QMetaType::sizeOf(d->type)) {
+        case 1:
+            return d->is_shared ? *reinterpret_cast<signed char *>(d->data.shared->ptr) : d->data.sc;
+        case 2:
+            return d->is_shared ? *reinterpret_cast<qint16 *>(d->data.shared->ptr) : d->data.s;
+        case 4:
+            return d->is_shared ? *reinterpret_cast<qint32 *>(d->data.shared->ptr) : d->data.i;
+        case 8:
+            return d->is_shared ? *reinterpret_cast<qint64 *>(d->data.shared->ptr) : d->data.ll;
+        }
+    }
+
     *ok = false;
     return Q_INT64_C(0);
 }
@@ -254,6 +268,19 @@ static qulonglong qConvertToUnsignedNumber(const QVariant::Private *d, bool *ok)
     case QMetaType::UShort:
     case QMetaType::ULong:
         return qMetaTypeUNumber(d);
+    }
+
+    if (QMetaType::typeFlags(d->type) & QMetaType::IsEnumeration) {
+        switch (QMetaType::sizeOf(d->type)) {
+        case 1:
+            return d->is_shared ? *reinterpret_cast<uchar *>(d->data.shared->ptr) : d->data.uc;
+        case 2:
+            return d->is_shared ? *reinterpret_cast<quint16 *>(d->data.shared->ptr) : d->data.us;
+        case 4:
+            return d->is_shared ? *reinterpret_cast<quint32 *>(d->data.shared->ptr) : d->data.u;
+        case 8:
+            return d->is_shared ? *reinterpret_cast<qint64 *>(d->data.shared->ptr) : d->data.ull;
+        }
     }
 
     *ok = false;
@@ -888,15 +915,13 @@ static bool customCompare(const QVariant::Private *a, const QVariant::Private *b
 static bool customConvert(const QVariant::Private *d, int t, void *result, bool *ok)
 {
     if (d->type >= QMetaType::User || t >= QMetaType::User) {
-        const bool isOk = QMetaType::convert(constData(*d), d->type, result, t);
-        if (ok)
-            *ok = isOk;
-        return isOk;
+        if (QMetaType::convert(constData(*d), d->type, result, t)) {
+            if (ok)
+                *ok = true;
+            return true;
+        }
     }
-
-    if (ok)
-        *ok = false;
-    return false;
+    return convert(d, t, result, ok);
 }
 
 #if !defined(QT_NO_DEBUG_STREAM)
@@ -2854,8 +2879,13 @@ bool QVariant::canConvert(int targetTypeId) const
 
     if (targetTypeId < 0)
         return false;
-    if (targetTypeId >= QMetaType::User)
-        return canConvertMetaObject(currentType, targetTypeId, d.data.o);
+    if (targetTypeId >= QMetaType::User) {
+        if (QMetaType::typeFlags(targetTypeId) & QMetaType::IsEnumeration) {
+            targetTypeId = QMetaType::Int;
+        } else {
+            return canConvertMetaObject(currentType, targetTypeId, d.data.o);
+        }
+    }
 
     if (currentType == QMetaType::QJsonValue) {
         switch (targetTypeId) {
@@ -2896,7 +2926,8 @@ bool QVariant::canConvert(int targetTypeId) const
                    || currentType == QMetaType::UChar
                    || currentType == QMetaType::Char
                    || currentType == QMetaType::SChar
-                   || currentType == QMetaType::Short;
+                   || currentType == QMetaType::Short
+                   || QMetaType::typeFlags(currentType) & QMetaType::IsEnumeration;
         case QVariant::Image:
             return currentType == QVariant::Pixmap || currentType == QVariant::Bitmap;
         case QVariant::Pixmap:
@@ -2925,7 +2956,9 @@ bool QVariant::canConvert(int targetTypeId) const
         case QMetaType::ULong:
         case QMetaType::Short:
         case QMetaType::UShort:
-            return qCanConvertMatrix[QVariant::Int] & (1 << currentType) || currentType == QVariant::Int;
+            return qCanConvertMatrix[QVariant::Int] & (1 << currentType)
+                || currentType == QVariant::Int
+                || QMetaType::typeFlags(currentType) & QMetaType::IsEnumeration;
         case QMetaType::QObjectStar:
             return canConvertMetaObject(currentType, targetTypeId, d.data.o);
         default:
