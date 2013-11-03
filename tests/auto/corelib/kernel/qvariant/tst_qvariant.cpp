@@ -888,6 +888,17 @@ void tst_QVariant::toLongLong_data()
     bytearray[3] = '0';
     QTest::newRow( "QByteArray" ) << QVariant( bytearray ) << (qlonglong) 3200 << true;
     QTest::newRow("QJsonValue") << QVariant(QJsonValue(321)) << (qlonglong)321 << true;
+
+    qint64 value64 = (Q_INT64_C(12) << 35) + 8;
+    QTest::newRow("qint64") << QVariant::fromValue(value64) << qlonglong(value64) << true;
+    QTest::newRow("-qint64") << QVariant::fromValue(-value64) << qlonglong(-value64) << true;
+    QTest::newRow("long") << QVariant::fromValue(long(464646)) << qlonglong(464646)  << true;
+    QTest::newRow("LONG_MAX") << QVariant::fromValue( LONG_MAX ) << qlonglong(LONG_MAX)  << true;
+    QTest::newRow("LONG_MIN") << QVariant::fromValue( LONG_MIN ) << qlonglong(LONG_MIN)  << true;
+
+    QTest::newRow( "short" ) << QVariant(short(12)) << qlonglong(12) << true;
+    QTest::newRow( "-short" ) << QVariant(short(-24)) << qlonglong(-24) << true;
+    QTest::newRow( "ushort" ) << QVariant(ushort(15)) << qlonglong(15) << true;
 }
 
 void tst_QVariant::toLongLong()
@@ -933,6 +944,15 @@ void tst_QVariant::toULongLong_data()
     bytearray[3] = '1';
     QTest::newRow( "QByteArray" ) << QVariant( bytearray ) << (qulonglong) 3201 << true;
     QTest::newRow("QJsonValue") << QVariant(QJsonValue(321)) << (qulonglong)321 << true;
+
+    quint64 value64 = (Q_INT64_C(12) << 35) + 8;
+    QTest::newRow("qint64") << QVariant::fromValue(value64) << qulonglong(value64) << true;
+    QTest::newRow("long") << QVariant::fromValue(long(464646)) << qulonglong(464646)  << true;
+    QTest::newRow("LONG_MAX") << QVariant::fromValue( LONG_MAX ) << qulonglong(LONG_MAX)  << true;
+    QTest::newRow("ULONG_MAX") << QVariant::fromValue( ULONG_MAX ) << qulonglong(ULONG_MAX)  << true;
+    QTest::newRow( "short" ) << QVariant(short(12)) << qulonglong(12) << true;
+    QTest::newRow( "-short" ) << QVariant(short(-24)) << qulonglong(-24) << true;
+    QTest::newRow( "ushort" ) << QVariant(ushort(15)) << qulonglong(15) << true;
 }
 
 void tst_QVariant::toULongLong()
@@ -2895,24 +2915,27 @@ void tst_QVariant::numericalConvert()
     QVariant vuint(uint(5));
     QVariant vshort(short(5));
     QVariant vlonglong(quint64(5));
+    QVariant vlong = QVariant::fromValue(long(5));
     QVariant vstringint(QString::fromLatin1("5"));
     QVariant vstring(QString::fromLatin1("5.3"));
 
     QVector<QVariant *> vect;
-    vect << &vfloat << &vdouble << &vreal << &vint << &vuint << &vshort<< &vlonglong << &vstringint << &vstring;
+    vect << &vfloat << &vdouble << &vreal << &vint << &vuint << &vshort<< &vlonglong << &vlong << &vstringint << &vstring;
 
     for(int i = 0; i < vect.size(); i++) {
         double num = 5.3;
-        if (i >= 3 && i <= 7)
+        if (i >= 3 && i <= 8)
             num = 5;
         QVariant *v = vect.at(i);
         QCOMPARE(v->toFloat() , float(num));
         QCOMPARE(float(v->toReal()) , float(num));
         QCOMPARE(float(v->toDouble()) , float(num));
-        if(i != 8) {
+        if (i != 9) {
             QCOMPARE(v->toInt() , int(num));
             QCOMPARE(v->toUInt() , uint(num));
             QCOMPARE(v->toULongLong() , quint64(num));
+            QCOMPARE(v->value<ulong>() , ulong(num));
+            QCOMPARE(v->value<ushort>() , ushort(num));
         }
         QCOMPARE(v->toString() , QString::number(num));
     }

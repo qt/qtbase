@@ -2888,6 +2888,8 @@ bool QVariant::canConvert(int targetTypeId) const
                 return true;
             // fall through
         case QVariant::UInt:
+        case QVariant::LongLong:
+        case QVariant::ULongLong:
                return currentType == QMetaType::ULong
                    || currentType == QMetaType::Long
                    || currentType == QMetaType::UShort
