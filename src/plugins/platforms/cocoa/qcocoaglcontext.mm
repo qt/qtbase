@@ -48,6 +48,74 @@
 
 #import <Cocoa/Cocoa.h>
 
+static inline QByteArray getGlString(GLenum param)
+{
+    if (const GLubyte *s = glGetString(param))
+        return QByteArray(reinterpret_cast<const char*>(s));
+    return QByteArray();
+}
+
+#if !defined(GL_CONTEXT_FLAGS)
+#define GL_CONTEXT_FLAGS 0x821E
+#endif
+
+#if !defined(GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT)
+#define GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT 0x0001
+#endif
+
+#if !defined(GL_CONTEXT_PROFILE_MASK)
+#define GL_CONTEXT_PROFILE_MASK 0x9126
+#endif
+
+#if !defined(GL_CONTEXT_CORE_PROFILE_BIT)
+#define GL_CONTEXT_CORE_PROFILE_BIT 0x00000001
+#endif
+
+#if !defined(GL_CONTEXT_COMPATIBILITY_PROFILE_BIT)
+#define GL_CONTEXT_COMPATIBILITY_PROFILE_BIT 0x00000002
+#endif
+
+static void updateFormatFromContext(QSurfaceFormat *format)
+{
+    Q_ASSERT(format);
+
+    // Update the version, profile, and context bit of the format
+    int major = 0, minor = 0;
+    QByteArray versionString(getGlString(GL_VERSION));
+    if (QPlatformOpenGLContext::parseOpenGLVersion(versionString, major, minor)) {
+        format->setMajorVersion(major);
+        format->setMinorVersion(minor);
+    }
+
+    format->setProfile(QSurfaceFormat::NoProfile);
+
+    Q_ASSERT(format->renderableType() == QSurfaceFormat::OpenGL);
+    if (format->version() < qMakePair(3, 0)) {
+        format->setOption(QSurfaceFormat::DeprecatedFunctions);
+        return;
+    }
+
+    // Version 3.0 onwards - check if it includes deprecated functionality
+    GLint value = 0;
+    glGetIntegerv(GL_CONTEXT_FLAGS, &value);
+    if (!(value & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT))
+        format->setOption(QSurfaceFormat::DeprecatedFunctions);
+
+    // Debug context option not supported on OS X
+
+    if (format->version() < qMakePair(3, 2))
+        return;
+
+    // Version 3.2 and newer have a profile
+    value = 0;
+    glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &value);
+
+    if (value & GL_CONTEXT_CORE_PROFILE_BIT)
+        format->setProfile(QSurfaceFormat::CoreProfile);
+    else if (value & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT)
+        format->setProfile(QSurfaceFormat::CompatibilityProfile);
+}
+
 QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share)
     : m_context(nil),
       m_shareContext(nil),
@@ -82,6 +150,8 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
         int zeroOpacity = 0;
         [m_context setValues:&zeroOpacity forParameter:NSOpenGLCPSurfaceOpacity];
     }
+
+    updateSurfaceFormat();
 }
 
 QCocoaGLContext::~QCocoaGLContext()
@@ -135,6 +205,75 @@ void QCocoaGLContext::setActiveWindow(QWindow *window)
     cocoaWindow->setCurrentContext(this);
 
     [(QNSView *) cocoaWindow->contentView() setQCocoaGLContext:this];
+}
+
+void QCocoaGLContext::updateSurfaceFormat()
+{
+    // At present it is impossible to turn an option off on a QSurfaceFormat (see
+    // https://codereview.qt-project.org/#change,70599). So we have to populate
+    // the actual surface format from scratch
+    QSurfaceFormat requestedFormat = m_format;
+    m_format = QSurfaceFormat();
+    m_format.setRenderableType(QSurfaceFormat::OpenGL);
+
+    // CoreGL doesn't require a drawable to make the context current
+    CGLContextObj oldContext = CGLGetCurrentContext();
+    CGLContextObj ctx = static_cast<CGLContextObj>([m_context CGLContextObj]);
+    CGLSetCurrentContext(ctx);
+
+    // Get the data that OpenGL provides
+    updateFormatFromContext(&m_format);
+
+    // Get the data contained within the pixel format
+    CGLPixelFormatObj cglPixelFormat = static_cast<CGLPixelFormatObj>(CGLGetPixelFormat(ctx));
+    NSOpenGLPixelFormat *pixelFormat = [[NSOpenGLPixelFormat alloc] initWithCGLPixelFormatObj:cglPixelFormat];
+
+    int colorSize = -1;
+    [pixelFormat getValues:&colorSize forAttribute:NSOpenGLPFAColorSize forVirtualScreen:0];
+    if (colorSize > 0) {
+        // This seems to return the total color buffer depth, including alpha
+        m_format.setRedBufferSize(colorSize / 4);
+        m_format.setGreenBufferSize(colorSize / 4);
+        m_format.setBlueBufferSize(colorSize / 4);
+    }
+
+    // The pixel format always seems to return 8 for alpha. However, the framebuffer only
+    // seems to have alpha enabled if we requested it explicitly. I can't find any other
+    // attribute to check explicitly for this so we use our best guess for alpha.
+    int alphaSize = -1;
+    [pixelFormat getValues:&alphaSize forAttribute:NSOpenGLPFAAlphaSize forVirtualScreen:0];
+    qDebug() << "alphaSize =" << alphaSize;
+    if (alphaSize > 0 && requestedFormat.alphaBufferSize() > 0)
+        m_format.setAlphaBufferSize(alphaSize);
+
+    int depthSize = -1;
+    [pixelFormat getValues:&depthSize forAttribute:NSOpenGLPFADepthSize forVirtualScreen:0];
+    if (depthSize > 0)
+        m_format.setDepthBufferSize(depthSize);
+
+    int stencilSize = -1;
+    [pixelFormat getValues:&stencilSize forAttribute:NSOpenGLPFAStencilSize forVirtualScreen:0];
+    if (stencilSize > 0)
+        m_format.setStencilBufferSize(stencilSize);
+
+    int samples = -1;
+    [pixelFormat getValues:&samples forAttribute:NSOpenGLPFASamples forVirtualScreen:0];
+    if (samples > 0)
+        m_format.setSamples(samples);
+
+    int doubleBuffered = -1;
+    [pixelFormat getValues:&doubleBuffered forAttribute:NSOpenGLPFADoubleBuffer forVirtualScreen:0];
+    m_format.setSwapBehavior(doubleBuffered == 1 ? QSurfaceFormat::DoubleBuffer : QSurfaceFormat::SingleBuffer);
+
+    int steroBuffers = -1;
+    [pixelFormat getValues:&steroBuffers forAttribute:NSOpenGLPFAStereo forVirtualScreen:0];
+    if (steroBuffers == 1)
+        m_format.setOption(QSurfaceFormat::StereoBuffers);
+
+    [pixelFormat release];
+
+    // Restore the original context
+    CGLSetCurrentContext(oldContext);
 }
 
 void QCocoaGLContext::doneCurrent()
