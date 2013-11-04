@@ -257,7 +257,6 @@ namespace QTest {
         }
 
         switch (type) {
-        case QtTraceMsg:
         case QtDebugMsg:
             QTest::TestLoggers::addMessage(QAbstractTestLogger::QDebug, msg);
             break;
