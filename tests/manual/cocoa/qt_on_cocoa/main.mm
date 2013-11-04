@@ -44,7 +44,7 @@
 
 #include <QtWidgets/QtWidgets>
 #include <private/qwidgetwindow_qpa_p.h>
-#include <QtGui/qplatformnativeinterface_qpa.h>
+#include <QtGui/qpa/qplatformnativeinterface.h>
 
 #include <QtGui/QPixmap>
 
