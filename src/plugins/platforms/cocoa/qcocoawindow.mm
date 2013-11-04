@@ -713,7 +713,10 @@ WId QCocoaWindow::winId() const
 void QCocoaWindow::setParent(const QPlatformWindow *parentWindow)
 {
     // recreate the window for compatibility
+    bool unhideAfterRecreate = parentWindow && !m_contentViewIsToBeEmbedded && ![m_contentView isHidden];
     recreateWindow(parentWindow);
+    if (unhideAfterRecreate)
+        [m_contentView setHidden:NO];
     setCocoaGeometry(geometry());
 }
 
