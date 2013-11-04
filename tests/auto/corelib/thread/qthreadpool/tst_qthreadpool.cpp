@@ -520,7 +520,8 @@ void tst_QThreadPool::setMaxThreadCountStartsAndStopsThreads()
     QVERIFY(task->waitForStarted.tryAcquire(6, 1000));
 
     task->waitToFinish.release(10);
-//    delete task;
+    threadPool.waitForDone();
+    delete task;
 }
 
 void tst_QThreadPool::reserveThread_data()
