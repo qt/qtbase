@@ -935,3 +935,10 @@ Section: D-Bus
 Requires: PROPERTIES XMLSTREAMREADER
 Name: Qt D-Bus module
 
+# XML Patterns
+
+Feature: XMLSCHEMA
+Description: Provides XML schema validation.
+Section: Xml Patterns
+Requires:
+Name: XML Schema APIs
