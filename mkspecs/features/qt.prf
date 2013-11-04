@@ -74,7 +74,10 @@ wince*:static:gui {
 }
 
 # static builds: link qml import plugins into the app.
-if(contains(QT, qml)|contains(QT_PRIVATE, qml)): \
+qt_module_deps = $$QT $$QT_PRIVATE
+qt_module_deps = $$replace(qt_module_deps, -private$, _private)
+qt_module_deps = $$resolve_depends(qt_module_deps, "QT.")
+contains(qt_module_deps, qml): \
         contains(QT_CONFIG, static):contains(TEMPLATE, .*app):!host_build:!no_import_scan {
     # run qmlimportscanner
     qtPrepareTool(QMLIMPORTSCANNER, qmlimportscanner)
