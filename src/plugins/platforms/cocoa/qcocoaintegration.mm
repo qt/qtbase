@@ -63,7 +63,6 @@
 
 static void initResources()
 {
-    Q_INIT_RESOURCE_EXTERN(qcocoaresources)
     Q_INIT_RESOURCE(qcocoaresources);
 }
 
