@@ -51,6 +51,7 @@
 #include "qsqldriver.h"
 #include "qpointer.h"
 #include "qsqlresult_p.h"
+#include "private/qsqldriver_p.h"
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE
@@ -89,6 +90,7 @@ QString QSqlResultPrivate::positionalToNamedBinding(const QString &query) const
     result.reserve(n * 5 / 4);
     QChar closingQuote;
     int count = 0;
+    bool ignoreBraces = (sqldriver->d_func()->dbmsType == QSqlDriverPrivate::PostgreSQL);
 
     for (int i = 0; i < n; ++i) {
         QChar ch = query.at(i);
@@ -110,7 +112,7 @@ QString QSqlResultPrivate::positionalToNamedBinding(const QString &query) const
             } else {
                 if (ch == QLatin1Char('\'') || ch == QLatin1Char('"') || ch == QLatin1Char('`'))
                     closingQuote = ch;
-                else if (ch == QLatin1Char('['))
+                else if (!ignoreBraces && ch == QLatin1Char('['))
                     closingQuote = QLatin1Char(']');
                 result += ch;
             }
@@ -129,6 +131,7 @@ QString QSqlResultPrivate::namedToPositionalBinding(const QString &query)
     QChar closingQuote;
     int count = 0;
     int i = 0;
+    bool ignoreBraces = (sqldriver->d_func()->dbmsType == QSqlDriverPrivate::PostgreSQL);
 
     while (i < n) {
         QChar ch = query.at(i);
@@ -160,7 +163,7 @@ QString QSqlResultPrivate::namedToPositionalBinding(const QString &query)
             } else {
                 if (ch == QLatin1Char('\'') || ch == QLatin1Char('"') || ch == QLatin1Char('`'))
                     closingQuote = ch;
-                else if (ch == QLatin1Char('['))
+                else if (!ignoreBraces && ch == QLatin1Char('['))
                     closingQuote = QLatin1Char(']');
                 result += ch;
                 ++i;
