@@ -53,6 +53,11 @@
 #include <QDateTime>
 #include <QtEndian>
 
+static void initResources()
+{
+    Q_INIT_RESOURCE(mimetypes);
+}
+
 QT_BEGIN_NAMESPACE
 
 static QString fallbackParent(const QString &mimeTypeName)
@@ -704,6 +709,7 @@ void QMimeBinaryProvider::loadGenericIcon(QMimeTypePrivate &data)
 QMimeXMLProvider::QMimeXMLProvider(QMimeDatabasePrivate *db)
     : QMimeProviderBase(db), m_loaded(false)
 {
+    initResources();
 }
 
 bool QMimeXMLProvider::isValid()

@@ -74,6 +74,11 @@
 
 #include <EGL/egl.h>
 
+static void initResources()
+{
+    Q_INIT_RESOURCE(cursor);
+}
+
 QT_BEGIN_NAMESPACE
 
 QEglFSIntegration::QEglFSIntegration()
@@ -82,6 +87,7 @@ QEglFSIntegration::QEglFSIntegration()
     , mScreen(0)
     , mInputContext(0)
 {
+    initResources();
 }
 
 QEglFSIntegration::~QEglFSIntegration()
