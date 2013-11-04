@@ -71,7 +71,7 @@ errno_t qt_winrt_getenv_s(size_t* sizeNeeded, char* buffer, size_t bufferSize, c
 
     if (bufferSize < (size_t)value.size()) {
         *sizeNeeded = value.size();
-        return 0;
+        return ERANGE;
     }
 
     strcpy(buffer, value.constData());
