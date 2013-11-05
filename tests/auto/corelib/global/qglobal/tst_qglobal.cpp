@@ -59,6 +59,7 @@ private slots:
     void qCoreAppStartupFunctionRestart();
     void isEnum();
     void qAlignOf();
+    void integerForSize();
 };
 
 void tst_QGlobal::qIsNull()
@@ -565,6 +566,20 @@ void tst_QGlobal::qAlignOf()
 #undef TEST_AlignOf
 #undef TEST_AlignOf_RValueRef
 #undef TEST_AlignOf_impl
+
+void tst_QGlobal::integerForSize()
+{
+    // compile-only test:
+    Q_STATIC_ASSERT(sizeof(QIntegerForSize<1>::Signed) == 1);
+    Q_STATIC_ASSERT(sizeof(QIntegerForSize<2>::Signed) == 2);
+    Q_STATIC_ASSERT(sizeof(QIntegerForSize<4>::Signed) == 4);
+    Q_STATIC_ASSERT(sizeof(QIntegerForSize<8>::Signed) == 8);
+
+    Q_STATIC_ASSERT(sizeof(QIntegerForSize<1>::Unsigned) == 1);
+    Q_STATIC_ASSERT(sizeof(QIntegerForSize<2>::Unsigned) == 2);
+    Q_STATIC_ASSERT(sizeof(QIntegerForSize<4>::Unsigned) == 4);
+    Q_STATIC_ASSERT(sizeof(QIntegerForSize<8>::Unsigned) == 8);
+}
 
 QTEST_APPLESS_MAIN(tst_QGlobal)
 #include "tst_qglobal.moc"
