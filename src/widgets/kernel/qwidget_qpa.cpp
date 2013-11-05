@@ -118,11 +118,12 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         win->resize(q->size());
     win->setScreen(QGuiApplication::screens().value(topData()->screenIndex, 0));
 
-    if (q->testAttribute(Qt::WA_TranslucentBackground)) {
-        QSurfaceFormat format;
+    QSurfaceFormat format = win->requestedFormat();
+    if ((flags & Qt::Window) && win->surfaceType() != QSurface::OpenGLSurface
+            && q->testAttribute(Qt::WA_TranslucentBackground)) {
         format.setAlphaBufferSize(8);
-        win->setFormat(format);
     }
+    win->setFormat(format);
 
     if (QWidget *nativeParent = q->nativeParentWidget()) {
         if (nativeParent->windowHandle()) {
