@@ -256,6 +256,7 @@ public:
     }
 
 private:
+#if !defined(QT_OPENGL_ES_2)
     // DSA wrapper (so we can use pointer to member function as switch)
     inline void dsa_TextureParameteri(GLuint texture, GLenum target, GLenum pname, GLint param)
     {
@@ -403,6 +404,7 @@ private:
     {
         CompressedTextureImage3DEXT(texture, target, level, internalFormat, width, height, depth, border, imageSize, bits);
     }
+#endif
 
 
     // DSA-like API
@@ -899,6 +901,7 @@ public:
         int val = 0;
         glGetIntegerv(GL_UNPACK_ALIGNMENT, &val);
         options.setAlignment(val);
+#if !defined(QT_OPENGL_ES_2)
         glGetIntegerv(GL_UNPACK_SKIP_IMAGES, &val);
         options.setSkipImages(val);
         glGetIntegerv(GL_UNPACK_SKIP_ROWS, &val);
@@ -914,12 +917,14 @@ public:
         options.setLeastSignificantByteFirst(b);
         glGetBooleanv(GL_UNPACK_SWAP_BYTES, &b);
         options.setSwapBytesEnabled(b);
+#endif
         return options;
     }
 
     inline void setPixelUploadOptions(const QOpenGLPixelTransferOptions &options)
     {
         glPixelStorei(GL_UNPACK_ALIGNMENT, options.alignment());
+#if !defined(QT_OPENGL_ES_2)
         glPixelStorei(GL_UNPACK_SKIP_IMAGES, options.skipImages());
         glPixelStorei(GL_UNPACK_SKIP_ROWS, options.skipRows());
         glPixelStorei(GL_UNPACK_SKIP_PIXELS, options.skipPixels());
@@ -927,6 +932,7 @@ public:
         glPixelStorei(GL_UNPACK_ROW_LENGTH, options.rowLength());
         glPixelStorei(GL_UNPACK_LSB_FIRST, options.isLeastSignificantBitFirst());
         glPixelStorei(GL_UNPACK_SWAP_BYTES, options.isSwapBytesEnabled());
+#endif
     }
 
 private:
@@ -982,6 +988,7 @@ private:
     CompressedTextureImage2DMemberFunc CompressedTextureImage2D;
     CompressedTextureImage3DMemberFunc CompressedTextureImage3D;
 
+#if !defined(QT_OPENGL_ES_2)
     // Raw function pointers for core and DSA functions
 
     // EXT_direct_state_access used when DSA is available
@@ -1012,6 +1019,7 @@ private:
     // Plus some missing ones that are in the NV_texture_multisample extension instead
     void (QOPENGLF_APIENTRYP TextureImage3DMultisampleNV)(GLuint texture, GLenum target, GLsizei samples, GLint internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedSampleLocations);
     void (QOPENGLF_APIENTRYP TextureImage2DMultisampleNV)(GLuint texture, GLenum target, GLsizei samples, GLint internalFormat, GLsizei width, GLsizei height, GLboolean fixedSampleLocations);
+#endif
 
     // OpenGL 1.0
     void (QOPENGLF_APIENTRYP GetIntegerv)(GLenum pname, GLint *params);
