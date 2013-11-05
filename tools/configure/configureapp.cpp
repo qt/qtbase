@@ -3001,6 +3001,10 @@ void Configure::detectArch()
             .arg(QDir::toNativeSeparators(buildPath + "/bin/qmake.exe"),
                  QDir::toNativeSeparators(qmakespec),
                  QDir::toNativeSeparators(sourcePath + "/config.tests/arch/arch.pro"));
+
+        if (qmakespec.startsWith("winrt") || qmakespec.startsWith("winphone"))
+            command.append(" QMAKE_LFLAGS+=/ENTRY:main");
+
         int returnValue = 0;
         Environment::execute(command, &returnValue);
         if (returnValue != 0) {
@@ -3101,6 +3105,13 @@ bool Configure::tryCompileProject(const QString &projectPath, const QString &ext
         .arg(QDir::toNativeSeparators(buildPath + "/bin/qmake.exe"),
              QDir::toNativeSeparators(sourcePath + "/config.tests/" + projectPath),
              extraOptions);
+
+    if (dictionary.contains("XQMAKESPEC")) {
+        const QString qmakespec = dictionary["XQMAKESPEC"];
+        if (qmakespec.startsWith("winrt") || qmakespec.startsWith("winphone"))
+            command.append(" QMAKE_LFLAGS+=/ENTRY:main");
+    }
+
     int code = 0;
     QString output = Environment::execute(command, &code);
     //cout << output << endl;
