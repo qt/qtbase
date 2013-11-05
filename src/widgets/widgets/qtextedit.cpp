@@ -1513,6 +1513,14 @@ void QTextEditPrivate::paint(QPainter *p, QPaintEvent *e)
 
     if (layout)
         layout->setViewport(QRect());
+
+    if (!placeholderText.isEmpty() && doc->isEmpty()) {
+        QColor col = control->palette().text().color();
+        col.setAlpha(128);
+        p->setPen(col);
+        const int margin = int(doc->documentMargin());
+        p->drawText(viewport->rect().adjusted(margin, margin, -margin, -margin), Qt::AlignTop | Qt::TextWordWrap, placeholderText);
+    }
 }
 
 /*! \fn void QTextEdit::paintEvent(QPaintEvent *event)
@@ -1528,13 +1536,6 @@ void QTextEdit::paintEvent(QPaintEvent *e)
     Q_D(QTextEdit);
     QPainter p(d->viewport);
     d->paint(&p, e);
-    if (!d->placeholderText.isEmpty() && d->control->document()->isEmpty()) {
-        QColor col = palette().text().color();
-        col.setAlpha(128);
-        p.setPen(col);
-        const int margin = int(document()->documentMargin());
-        p.drawText(d->viewport->rect().adjusted(margin, margin, -margin, -margin), Qt::AlignTop | Qt::TextWordWrap, d->placeholderText);
-    }
 }
 
 void QTextEditPrivate::_q_currentCharFormatChanged(const QTextCharFormat &fmt)
