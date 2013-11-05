@@ -14,6 +14,7 @@ HEADERS +=  \
         tools/qcommandlineoption.h \
         tools/qcommandlineparser.h \
         tools/qcollator.h \
+        tools/qcollator_p.h \
         tools/qcontainerfwd.h \
         tools/qcryptographichash.h \
         tools/qdatetime.h \
