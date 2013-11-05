@@ -303,7 +303,17 @@ void QOpenGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed
         return;
     }
 
-    QImage mask = textureMapForGlyph(glyph, subPixelPosition);
+    QImage mask;
+
+    if (m_current_fontengine->hasInternalCaching()) {
+        QImage *alphaMap = m_current_fontengine->lockedAlphaMapForGlyph(glyph, subPixelPosition, QFontEngine::Format_None);
+        if (!alphaMap || alphaMap->isNull())
+            return;
+        mask = alphaMap->copy();
+        m_current_fontengine->unlockAlphaMapForGlyph();
+    } else {
+        mask = textureMapForGlyph(glyph, subPixelPosition);
+    }
     const int maskWidth = mask.width();
     const int maskHeight = mask.height();
 
