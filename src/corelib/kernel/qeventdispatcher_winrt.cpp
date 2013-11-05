@@ -317,7 +317,7 @@ QEventDispatcherWinRTPrivate::QEventDispatcherWinRTPrivate()
     : interrupt(false)
     , timerFactory(0)
 {
-    CoInitializeEx(NULL, COINIT_MULTITHREADED);
+    CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
     HRESULT hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_System_Threading_ThreadPoolTimer).Get(), &timerFactory);
     if (FAILED(hr))
         qWarning("QEventDispatcherWinRTPrivate::QEventDispatcherWinRTPrivate: Could not obtain timer factory: %lx", hr);
