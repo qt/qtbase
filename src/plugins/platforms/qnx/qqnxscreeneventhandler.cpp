@@ -432,10 +432,12 @@ void QQnxScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
         if (w) {
             // get size of screen which contains window
             QPlatformScreen *platformScreen = QPlatformScreen::platformScreenForWindow(w);
-            QSizeF screenSize = platformScreen->physicalSize();
+            QSizeF screenSize = platformScreen->geometry().size();
 
             // update cached position of current touch point
-            m_touchPoints[touchId].normalPosition = QPointF( static_cast<qreal>(pos[0]) / screenSize.width(), static_cast<qreal>(pos[1]) / screenSize.height() );
+            m_touchPoints[touchId].normalPosition =
+                            QPointF(static_cast<qreal>(pos[0]) / screenSize.width(),
+                                    static_cast<qreal>(pos[1]) / screenSize.height());
             m_touchPoints[touchId].area = QRectF( pos[0], pos[1], 0.0, 0.0 );
 
             // determine event type and update state of current touch point
