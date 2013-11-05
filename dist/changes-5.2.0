@@ -161,3 +161,8 @@ Qt for Android
    build files for the APK package should not be touched. Customizing
    the build files is possible. Read the documentation for androiddeployqt
    for more information.
+
+ - Status bar visibility is now controlled by Qt, so the window state will
+   override settings in the AndroidManifest.xml. The default is still to
+   show the status bar (QWindow::showMaximized()). Use
+   QWindow::showFullScreen() to hide it.
