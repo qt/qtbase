@@ -88,6 +88,14 @@ Q_CORE_EXPORT void *qMemCopy(void *dest, const void *src, size_t n);
 Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
 #endif
 
+// Statically check assumptions about the environment we're running
+// in. The idea here is to error or warn if otherwise implicit Qt
+// assumptions are not fulfilled on new hardware or compilers
+// (if this list becomes too long, consider factoring into a separate file)
+Q_STATIC_ASSERT_X(sizeof(int) == 4, "Qt assumes that int is 32 bits");
+Q_STATIC_ASSERT_X(UCHAR_MAX == 255, "Qt assumes that char is 8 bits");
+
+
 /*!
     \class QFlag
     \inmodule QtCore
