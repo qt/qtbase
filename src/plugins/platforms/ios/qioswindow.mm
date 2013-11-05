@@ -505,14 +505,4 @@ qreal QIOSWindow::devicePixelRatio() const
     return m_devicePixelRatio;
 }
 
-int QIOSWindow::effectiveWidth() const
-{
-    return geometry().width() * m_devicePixelRatio;
-}
-
-int QIOSWindow::effectiveHeight() const
-{
-    return geometry().height() * m_devicePixelRatio;
-}
-
 QT_END_NAMESPACE

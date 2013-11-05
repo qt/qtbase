@@ -74,8 +74,6 @@ public:
     void requestActivateWindow();
 
     qreal devicePixelRatio() const;
-    int effectiveWidth() const;
-    int effectiveHeight() const;
 
     bool setMouseGrabEnabled(bool grab) { return grab; }
     bool setKeyboardGrabEnabled(bool grab) { return grab; }
