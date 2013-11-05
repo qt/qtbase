@@ -52,10 +52,6 @@ QWindowsSessionManager::QWindowsSessionManager(const QString &id, const QString 
 {
 }
 
-QWindowsSessionManager::~QWindowsSessionManager()
-{
-}
-
 bool QWindowsSessionManager::allowsInteraction()
 {
     m_blockUserInput = false;
@@ -68,16 +64,6 @@ bool QWindowsSessionManager::allowsErrorInteraction()
     return true;
 }
 
-void QWindowsSessionManager::blocksInteraction()
-{
-    m_blockUserInput = true;
-}
-
-bool QWindowsSessionManager::isInterractionBlocked() const
-{
-    return m_blockUserInput;
-}
-
 void QWindowsSessionManager::release()
 {
     if (m_isActive)
@@ -87,26 +73,6 @@ void QWindowsSessionManager::release()
 void QWindowsSessionManager::cancel()
 {
     m_canceled = true;
-}
-
-void QWindowsSessionManager::clearCancellation()
-{
-    m_canceled = false;
-}
-
-bool QWindowsSessionManager::wasCanceled() const
-{
-    return m_canceled;
-}
-
-void QWindowsSessionManager::setActive(bool active)
-{
-    m_isActive = active;
-}
-
-bool QWindowsSessionManager::isActive() const
-{
-    return m_isActive;
 }
 
 QT_END_NAMESPACE

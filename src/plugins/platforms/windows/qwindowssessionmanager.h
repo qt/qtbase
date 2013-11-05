@@ -60,22 +60,21 @@ class QWindowsSessionManager : public QPlatformSessionManager
 {
 public:
     explicit QWindowsSessionManager(const QString &id, const QString &key);
-    virtual ~QWindowsSessionManager();
 
     bool allowsInteraction() Q_DECL_OVERRIDE;
     bool allowsErrorInteraction() Q_DECL_OVERRIDE;
 
-    void blocksInteraction();
-    bool isInterractionBlocked() const;
+    void blocksInteraction() { m_blockUserInput = true; }
+    bool isInteractionBlocked() const { return m_blockUserInput; }
 
     void release() Q_DECL_OVERRIDE;
 
     void cancel() Q_DECL_OVERRIDE;
-    void clearCancellation();
-    bool wasCanceled() const;
+    void clearCancellation() { m_canceled = false; }
+    bool wasCanceled() const { return m_canceled; }
 
-    void setActive(bool active);
-    bool isActive() const;
+    void setActive(bool active) { m_isActive = active; }
+    bool isActive() const { return m_isActive;}
 
 private:
     bool m_isActive;
