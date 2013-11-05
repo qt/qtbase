@@ -351,7 +351,11 @@ QString Generator::fileBase(const Node *node) const
             base.append("-module");
         }
         if (node->isExample() || node->isExampleFile()) {
-            base.prepend(project.toLower() + QLatin1Char('-'));
+            QString modPrefix(node->moduleName());
+            if (modPrefix.isEmpty()) {
+                modPrefix = project;
+            }
+            base.prepend(modPrefix.toLower() + QLatin1Char('-'));
         }
         if (node->isExample()) {
             base.append(QLatin1String("-example"));
