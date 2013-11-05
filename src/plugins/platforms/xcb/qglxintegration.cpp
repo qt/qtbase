@@ -411,6 +411,16 @@ bool QGLXContext::isValid() const
 bool QGLXContext::m_queriedDummyContext = false;
 bool QGLXContext::m_supportsThreading = true;
 
+
+// If this list grows to any significant size, change it a
+// proper string table and make the implementation below use
+// binary search.
+static const char *qglx_threadedgl_blacklist[] = {
+    "Chromium",                             // QTBUG-32225 (initialization fails)
+    "Mesa DRI Intel(R) Sandybridge Mobile", // QTBUG-34492 (flickering in fullscreen)
+    0
+};
+
 void QGLXContext::queryDummyContext()
 {
     if (m_queriedDummyContext)
@@ -428,10 +438,14 @@ void QGLXContext::queryDummyContext()
     context.makeCurrent(&surface);
 
     const char *renderer = (const char *) glGetString(GL_RENDERER);
-    if (QByteArray(renderer).contains("Chromium"))
-        m_supportsThreading = false;
-    else
-        m_supportsThreading = true;
+
+    m_supportsThreading = true;
+    for (int i = 0; qglx_threadedgl_blacklist[i]; ++i) {
+        if (strstr(renderer, qglx_threadedgl_blacklist[i]) != 0) {
+            m_supportsThreading = false;
+            break;
+        }
+    }
 }
 
 bool QGLXContext::supportsThreading()
