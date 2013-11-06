@@ -1823,33 +1823,33 @@ void QGuiApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePr
         return;
 
     QRect newRect = e->newGeometry;
-    QRect cr = window->d_func()->geometry;
+    QRect oldRect = e->oldGeometry.isNull() ? window->d_func()->geometry : e->oldGeometry;
 
-    bool isResize = cr.size() != newRect.size();
-    bool isMove = cr.topLeft() != newRect.topLeft();
+    bool isResize = oldRect.size() != newRect.size();
+    bool isMove = oldRect.topLeft() != newRect.topLeft();
 
     window->d_func()->geometry = newRect;
 
     if (isResize || window->d_func()->resizeEventPending) {
-        QResizeEvent e(newRect.size(), cr.size());
+        QResizeEvent e(newRect.size(), oldRect.size());
         QGuiApplication::sendSpontaneousEvent(window, &e);
 
         window->d_func()->resizeEventPending = false;
 
-        if (cr.width() != newRect.width())
+        if (oldRect.width() != newRect.width())
             window->widthChanged(newRect.width());
-        if (cr.height() != newRect.height())
+        if (oldRect.height() != newRect.height())
             window->heightChanged(newRect.height());
     }
 
     if (isMove) {
         //### frame geometry
-        QMoveEvent e(newRect.topLeft(), cr.topLeft());
+        QMoveEvent e(newRect.topLeft(), oldRect.topLeft());
         QGuiApplication::sendSpontaneousEvent(window, &e);
 
-        if (cr.x() != newRect.x())
+        if (oldRect.x() != newRect.x())
             window->xChanged(newRect.x());
-        if (cr.y() != newRect.y())
+        if (oldRect.y() != newRect.y())
             window->yChanged(newRect.y());
     }
 }

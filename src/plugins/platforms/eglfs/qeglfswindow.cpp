@@ -210,15 +210,17 @@ void QEglFSWindow::setVisible(bool visible)
 void QEglFSWindow::setGeometry(const QRect &r)
 {
     QRect rect;
-    if (m_flags.testFlag(HasNativeWindow))
+    bool forceFullscreen = m_flags.testFlag(HasNativeWindow);
+    if (forceFullscreen)
         rect = screen()->availableGeometry();
     else
         rect = r;
 
     QPlatformWindow::setGeometry(rect);
 
+    // if we corrected the size, trigger a resize event
     if (rect != r)
-        QWindowSystemInterface::handleGeometryChange(window(), rect);
+        QWindowSystemInterface::handleGeometryChange(window(), rect, r);
 }
 
 QRect QEglFSWindow::geometry() const
