@@ -317,7 +317,7 @@ QT_BEGIN_NAMESPACE
 QIOSWindow::QIOSWindow(QWindow *window)
     : QPlatformWindow(window)
     , m_view([[EAGLView alloc] initWithQIOSWindow:this])
-    , m_requestedGeometry(QPlatformWindow::geometry())
+    , m_normalGeometry(QPlatformWindow::geometry())
     , m_windowLevel(0)
     , m_devicePixelRatio(1.0)
 {
@@ -386,7 +386,7 @@ void QIOSWindow::setGeometry(const QRect &rect)
 {
     // If the window is in fullscreen, just bookkeep the requested
     // geometry in case the window goes into Qt::WindowNoState later:
-    m_requestedGeometry = rect;
+    m_normalGeometry = rect;
     if (window()->windowState() & (Qt::WindowMaximized | Qt::WindowFullScreen))
         return;
 
@@ -413,7 +413,7 @@ void QIOSWindow::setWindowState(Qt::WindowState state)
         m_view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         break; }
     default:
-        m_view.frame = toCGRect(m_requestedGeometry);
+        m_view.frame = toCGRect(m_normalGeometry);
         m_view.autoresizingMask = UIViewAutoresizingNone;
         break;
     }

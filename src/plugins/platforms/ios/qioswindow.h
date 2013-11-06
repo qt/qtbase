@@ -83,7 +83,7 @@ public:
 private:
     UIView *m_view;
 
-    QRect m_requestedGeometry;
+    QRect m_normalGeometry;
     int m_windowLevel;
     qreal m_devicePixelRatio;
 
