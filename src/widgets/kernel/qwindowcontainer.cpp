@@ -222,6 +222,11 @@ void QWindowContainer::focusWindowChanged(QWindow *focusWindow)
 {
     Q_D(QWindowContainer);
     d->oldFocusWindow = focusWindow;
+    if (focusWindow == d->window) {
+        QWidget *widget = QApplication::focusWidget();
+        if (widget)
+            widget->clearFocus();
+    }
 }
 
 /*!
