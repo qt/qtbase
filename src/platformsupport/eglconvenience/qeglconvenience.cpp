@@ -350,6 +350,7 @@ QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config, 
     format.setStencilBufferSize(stencilSize);
     format.setSamples(sampleCount);
     format.setStereo(false);         // EGL doesn't support stereo buffers
+    format.setSwapInterval(referenceFormat.swapInterval());
 
     // Clear the EGL error state because some of the above may
     // have errored out because the attribute is not applicable

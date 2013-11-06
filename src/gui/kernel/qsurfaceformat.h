@@ -135,6 +135,9 @@ public:
     bool testOption(FormatOption option) const;
     QSurfaceFormat::FormatOptions options() const;
 
+    int swapInterval() const;
+    void setSwapInterval(int interval);
+
 private:
     QSurfaceFormatPrivate *d;
 

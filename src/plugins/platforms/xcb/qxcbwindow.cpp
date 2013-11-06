@@ -293,7 +293,7 @@ void QXcbWindow::create()
 #elif defined(XCB_USE_EGL)
         EGLDisplay eglDisplay = connection()->egl_display();
         EGLConfig eglConfig = q_configFromGLFormat(eglDisplay, m_format, true);
-        m_format = q_glFormatFromConfig(eglDisplay, eglConfig);
+        m_format = q_glFormatFromConfig(eglDisplay, eglConfig, m_format);
 
         VisualID id = QXlibEglIntegration::getCompatibleVisualId(DISPLAY_FROM_XCB(this), eglDisplay, eglConfig);
 

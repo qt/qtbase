@@ -64,11 +64,10 @@ enum QWindowsGLFormatFlags
 // Additional format information for Windows.
 struct QWindowsOpenGLAdditionalFormat
 {
-    QWindowsOpenGLAdditionalFormat(unsigned formatFlagsIn = 0, unsigned pixmapDepthIn = 0, unsigned swapIntervalIn = -1) :
-        formatFlags(formatFlagsIn), pixmapDepth(pixmapDepthIn), swapInterval(swapIntervalIn) {}
+    QWindowsOpenGLAdditionalFormat(unsigned formatFlagsIn = 0, unsigned pixmapDepthIn = 0) :
+        formatFlags(formatFlagsIn), pixmapDepth(pixmapDepthIn) { }
     unsigned formatFlags; // QWindowsGLFormatFlags.
     unsigned pixmapDepth; // for QWindowsGLRenderToPixmap
-    int swapInterval;
 };
 
 // Per-window data for active OpenGL contexts.
@@ -178,6 +177,7 @@ private:
     PIXELFORMATDESCRIPTOR m_obtainedPixelFormatDescriptor;
     int m_pixelFormat;
     bool m_extensionsUsed;
+    int m_swapInterval;
 };
 
 QT_END_NAMESPACE

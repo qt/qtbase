@@ -80,6 +80,9 @@ private:
     EGLenum m_eglApi;
     EGLConfig m_eglConfig;
     QSurfaceFormat m_format;
+    int m_swapInterval;
+    bool m_swapIntervalEnvChecked;
+    int m_swapIntervalFromEnv;
 };
 
 #endif //QEGLPLATFORMCONTEXT_H

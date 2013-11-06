@@ -64,6 +64,9 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
     : m_eglDisplay(display)
     , m_eglApi(eglApi)
     , m_eglConfig(q_configFromGLFormat(display, format))
+    , m_swapInterval(-1)
+    , m_swapIntervalEnvChecked(false)
+    , m_swapIntervalFromEnv(-1)
 {
     init(format, share);
 }
@@ -136,6 +139,27 @@ bool QEGLPlatformContext::makeCurrent(QPlatformSurface *surface)
 
     }
 #endif
+
+    if (ok) {
+        if (!m_swapIntervalEnvChecked) {
+            m_swapIntervalEnvChecked = true;
+            if (qEnvironmentVariableIsSet("QT_QPA_EGL_SWAPINTERVAL")) {
+                QByteArray swapIntervalString = qgetenv("QT_QPA_EGL_SWAPINTERVAL");
+                bool ok;
+                const int swapInterval = swapIntervalString.toInt(&ok);
+                if (ok)
+                    m_swapIntervalFromEnv = swapInterval;
+            }
+        }
+        const int requestedSwapInterval = m_swapIntervalFromEnv >= 0
+            ? m_swapIntervalFromEnv
+            : surface->format().swapInterval();
+        if (requestedSwapInterval >= 0 && m_swapInterval != requestedSwapInterval) {
+            m_swapInterval = requestedSwapInterval;
+            eglSwapInterval(eglDisplay(), m_swapInterval);
+        }
+    }
+
     return ok;
 }
 

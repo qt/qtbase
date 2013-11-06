@@ -880,7 +880,9 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
     m_staticContext(staticContext),
     m_context(context),
     m_renderingContext(0),
-    m_pixelFormat(0), m_extensionsUsed(false)
+    m_pixelFormat(0),
+    m_extensionsUsed(false),
+    m_swapInterval(-1)
 {
     QSurfaceFormat format = context->format();
     if (format.renderableType() == QSurfaceFormat::DefaultRenderableType)
@@ -977,11 +979,9 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
 
         QWindowsOpenGLContextFormat::current().apply(&m_obtainedFormat);
 
-        if (requestedAdditional.swapInterval != -1 && m_staticContext->wglSwapInternalExt) {
-            m_staticContext->wglSwapInternalExt(requestedAdditional.swapInterval);
-            if (m_staticContext->wglGetSwapInternalExt)
-                obtainedSwapInternal = m_staticContext->wglGetSwapInternalExt();
-        }
+        if (m_staticContext->wglGetSwapInternalExt)
+            obtainedSwapInternal = m_staticContext->wglGetSwapInternalExt();
+
         wglMakeCurrent(0, 0);
     } while (false);
     if (hdc)
@@ -1085,7 +1085,19 @@ bool QWindowsGLContext::makeCurrent(QPlatformSurface *surface)
             window->setFlag(QWindowsWindow::OpenGLDoubleBuffered);
     }
     m_windowContexts.append(newContext);
-    return wglMakeCurrent(newContext.hdc, newContext.renderingContext);
+
+    bool success = wglMakeCurrent(newContext.hdc, newContext.renderingContext);
+
+    // Set the swap interval
+    if (m_staticContext->wglSwapInternalExt) {
+        const int interval = surface->format().swapInterval();
+        if (interval >= 0 && m_swapInterval != interval) {
+            m_swapInterval = interval;
+            m_staticContext->wglSwapInternalExt(interval);
+        }
+    }
+
+    return success;
 }
 
 void QWindowsGLContext::doneCurrent()

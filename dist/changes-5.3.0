@@ -29,3 +29,7 @@ QtCore
 
 QtGui
 -----
+
+- Added setSwapInterval() to QSurfaceFormat. Platforms that support
+  setting the swap interval are now defaulting to the value of 1,
+  meaning vsync is enabled.
