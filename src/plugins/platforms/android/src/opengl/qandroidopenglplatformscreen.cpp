@@ -41,6 +41,7 @@
 
 #include "qandroidopenglplatformscreen.h"
 #include "qandroidopenglplatformwindow.h"
+#include "androidjnimenu.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -51,6 +52,7 @@ QAndroidOpenGLPlatformScreen::QAndroidOpenGLPlatformScreen(EGLDisplay display)
 
 void QAndroidOpenGLPlatformScreen::topWindowChanged(QPlatformWindow *window)
 {
+    QtAndroidMenu::setActiveTopLevelWindow(window->window());
     QAndroidOpenGLPlatformWindow *platformWindow = static_cast<QAndroidOpenGLPlatformWindow *>(window);
     if (platformWindow != 0)
         platformWindow->updateStatusBarVisibility();

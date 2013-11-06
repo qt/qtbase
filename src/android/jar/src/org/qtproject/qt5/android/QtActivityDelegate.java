@@ -63,6 +63,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Surface;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -406,6 +407,7 @@ public class QtActivityDelegate
             m_applicationParameters = loaderParams.getString(APPLICATION_PARAMETERS_KEY);
         else
             m_applicationParameters = "";
+        setActionBarVisibility(false);
 
         return true;
     }
@@ -615,7 +617,7 @@ public class QtActivityDelegate
         m_surface = new QtSurface(m_activity, 0);
         m_editText = new QtEditText(m_activity, this);
         m_imm = (InputMethodManager)m_activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-        m_layout.addView(m_surface,0);
+        m_layout.addView(m_surface, 0);
         m_activity.setContentView(m_layout,
                                   new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
                                                              ViewGroup.LayoutParams.FILL_PARENT));
@@ -808,7 +810,10 @@ public class QtActivityDelegate
     public boolean onPrepareOptionsMenu(Menu menu)
     {
         m_opionsMenuIsVisible = true;
-        return QtNative.onPrepareOptionsMenu(menu);
+        boolean res = QtNative.onPrepareOptionsMenu(menu);
+        if (!res || menu.size() == 0)
+            setActionBarVisibility(false);
+        return res;
     }
 
     public boolean onOptionsItemSelected(MenuItem item)
@@ -824,8 +829,17 @@ public class QtActivityDelegate
 
     public void resetOptionsMenu()
     {
-        if (m_opionsMenuIsVisible)
-            m_activity.closeOptionsMenu();
+        setActionBarVisibility(true);
+        if (Build.VERSION.SDK_INT > 10) {
+            try {
+                Activity.class.getMethod("invalidateOptionsMenu").invoke(m_activity);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        else
+            if (m_opionsMenuIsVisible)
+                m_activity.closeOptionsMenu();
     }
     private boolean m_contextMenuVisible = false;
     public void onCreateContextMenu(ContextMenu menu,
@@ -865,5 +879,47 @@ public class QtActivityDelegate
     public void closeContextMenu()
     {
         m_activity.closeContextMenu();
+    }
+
+    private boolean hasPermanentMenuKey()
+    {
+        try {
+            return Build.VERSION.SDK_INT < 11 || (Build.VERSION.SDK_INT >= 14 &&
+                    (Boolean)ViewConfiguration.class.getMethod("hasPermanentMenuKey").invoke(ViewConfiguration.get(m_activity)));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private Object getActionBar()
+    {
+        try {
+            return Activity.class.getMethod("getActionBar").invoke(m_activity);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private void setActionBarVisibility(boolean visible)
+    {
+        if (hasPermanentMenuKey() || !visible) {
+            if (Build.VERSION.SDK_INT > 10 && getActionBar() != null) {
+                try {
+                    Class.forName("android.app.ActionBar").getMethod("hide").invoke(getActionBar());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+        } else {
+            if (Build.VERSION.SDK_INT > 10 && getActionBar() != null)
+                try {
+                    Class.forName("android.app.ActionBar").getMethod("show").invoke(getActionBar());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+        }
     }
 }

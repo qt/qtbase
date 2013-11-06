@@ -41,13 +41,14 @@
 
 #include "androidjnimenu.h"
 #include "androidjnimain.h"
-#include <qmutex.h>
-#include <qset.h>
-#include <qqueue.h>
-#include <android/log.h>
 #include "qandroidplatformmenubar.h"
 #include "qandroidplatformmenu.h"
-#include <qandroidplatformmenuitem.h>
+#include "qandroidplatformmenuitem.h"
+
+#include <QMutex>
+#include <QSet>
+#include <QQueue>
+#include <QWindow>
 
 using namespace QtAndroid;
 
@@ -141,18 +142,17 @@ namespace QtAndroidMenu
 
     void setActiveTopLevelWindow(QWindow *window)
     {
+        Qt::WindowFlags flags = window->flags();
+        bool isNonRegularWindow = flags & (Qt::Desktop | Qt::Popup | Qt::Dialog | Qt::Sheet) & ~Qt::Window;
+        if (isNonRegularWindow)
+            return;
+
         QMutexLocker lock(&menuBarMutex);
         if (activeTopLevelWindow == window)
             return;
 
         visibleMenuBar = 0;
         activeTopLevelWindow = window;
-#ifdef ANDROID_PLUGIN_OPENGL
-        //only one toplevel window, so the menu bar always belongs to us
-        if (menuBars.size() == 1) {
-            visibleMenuBar = *menuBars.constBegin(); //since QSet doesn't have first()
-        } else
-#endif
         foreach (QAndroidPlatformMenuBar *menuBar, menuBars) {
             if (menuBar->parentWindow() == window) {
                 visibleMenuBar = menuBar;
@@ -173,8 +173,10 @@ namespace QtAndroidMenu
     {
         QMutexLocker lock(&menuBarMutex);
         menuBars.remove(menuBar);
-        if (visibleMenuBar == menuBar)
+        if (visibleMenuBar == menuBar) {
+            visibleMenuBar = 0;
             resetMenuBar();
+        }
     }
 
     static QString removeAmpersandEscapes(QString s)

@@ -80,6 +80,7 @@ import android.view.ActionMode;
 import android.view.ActionMode.Callback;
 //@ANDROID-11
 
+
 public class QtActivity extends Activity
 {
     private final static int MINISTRO_INSTALL_REQUEST_CODE = 0xf3ee; // request code used to know when Ministro instalation is finished
@@ -714,13 +715,25 @@ public class QtActivity extends Activity
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        if (Build.VERSION.SDK_INT > 10) {
+            try {
+                requestWindowFeature(Window.class.getField("FEATURE_ACTION_BAR").getInt(null));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            requestWindowFeature(Window.FEATURE_NO_TITLE);
+        }
+
         if (QtApplication.m_delegateObject != null && QtApplication.onCreate != null) {
             QtApplication.invokeDelegateMethod(QtApplication.onCreate, savedInstanceState);
             return;
         }
+
         ENVIRONMENT_VARIABLES += "\tQT_ANDROID_THEME=" + QT_ANDROID_DEFAULT_THEME
                               + "/\tQT_ANDROID_THEME_DISPLAY_DPI=" + getResources().getDisplayMetrics().densityDpi + "\t";
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+
         try {
             m_activityInfo = getPackageManager().getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
         } catch (NameNotFoundException e) {
