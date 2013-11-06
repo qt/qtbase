@@ -452,7 +452,7 @@ public class QtNative
 
     private static void registerClipboardManager()
     {
-        final Semaphore semaphore = new Semaphore(1);
+        final Semaphore semaphore = new Semaphore(0);
         runAction(new Runnable() {
             @Override
             public void run() {
