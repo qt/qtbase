@@ -203,7 +203,7 @@ QT_BEGIN_NAMESPACE
     \endtable
 
     \table
-    \header \li Path type \li Blackberry \li Linux (including Android)
+    \header \li Path type \li Blackberry \li Linux
     \row \li DesktopLocation
          \li "<APPROOT>/data"
          \li "~/Desktop"
@@ -257,6 +257,44 @@ QT_BEGIN_NAMESPACE
          \li "~/.cache"
     \endtable
 
+    \table
+    \header \li Path type \li Android
+    \row \li DesktopLocation
+         \li "<APPROOT>/files"
+    \row \li DocumentsLocation
+         \li "<USER>/Documents", "<USER>/<APPNAME>/Documents"
+    \row \li FontsLocation
+         \li "/system/fonts" (not writable)
+    \row \li ApplicationsLocation
+         \li not supported (directory not readable)
+    \row \li MusicLocation
+         \li "<USER>/Music", "<USER>/<APPNAME>/Music"
+    \row \li MoviesLocation
+         \li "<USER>/Movies", "<USER>/<APPNAME>/Movies"
+    \row \li PicturesLocation
+         \li "<USER>/Pictures", "<USER>/<APPNAME>/Pictures"
+    \row \li TempLocation
+         \li "<APPROOT>/cache"
+    \row \li HomeLocation
+         \li "<APPROOT>/files"
+    \row \li DataLocation
+         \li "<APPROOT>/files", "<USER>/<APPNAME>/files"
+    \row \li CacheLocation
+         \li "<APPROOT>/cache", "<USER>/<APPNAME>/cache"
+    \row \li GenericDataLocation
+         \li "<USER>"
+    \row \li RuntimeLocation
+         \li "<APPROOT>/cache"
+    \row \li ConfigLocation
+         \li "<APPROOT>/files/settings"
+    \row \li GenericConfigLocation
+         \li "<APPROOT>/files/settings" (there is no shared settings)
+    \row \li DownloadLocation
+         \li "<USER>/Downloads", "<USER>/<APPNAME>/Downloads"
+    \row \li GenericCacheLocation
+         \li "<APPROOT>/cache" (there is no shared cache)
+    \endtable
+
     In the table above, \c <APPNAME> is usually the organization name, the
     application name, or both, or a unique name generated at packaging.
     Similarly, <APPROOT> is the location where this application is installed
@@ -265,6 +303,9 @@ QT_BEGIN_NAMESPACE
 
     The paths above should not be relied upon, as they may change according to
     OS configuration, locale, or they may change in future Qt versions.
+
+    \note On Android, applications with open files on the external storage (<USER> locations),
+          will be killed if the external storage is unmounted.
 
     \sa writableLocation(), standardLocations(), displayName(), locate(), locateAll()
 */
