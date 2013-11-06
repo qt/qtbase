@@ -35,10 +35,7 @@
     These \l{Qt Core} classes deal with shared libraries, (e.g. .so and DLL
     files), and with Qt plugins.
 
-    See the \l{How to Create Qt Plugins} page for more information..
-
-    See also the \l{Active Qt} framework for Windows.
-
+    See the \l{How to Create Qt Plugins} page for more information.
 */
 
 /*!
