@@ -114,8 +114,8 @@ public:
     Q_DECL_CONSTEXPR inline QUrlTwoFlags operator~() const
     { return QUrlTwoFlags(QFlag(~i)); }
 
-    inline bool testFlag(E1 f) const { return (i & f) == f && (f != 0 || i == int(f)); }
-    inline bool testFlag(E2 f) const { return (i & f) == f && (f != 0 || i == int(f)); }
+    Q_DECL_CONSTEXPR inline bool testFlag(E1 f) const { return (i & f) == f && (f != 0 || i == int(f)); }
+    Q_DECL_CONSTEXPR inline bool testFlag(E2 f) const { return (i & f) == f && (f != 0 || i == int(f)); }
 };
 
 template<typename E1, typename E2>
