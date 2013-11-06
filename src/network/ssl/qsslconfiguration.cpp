@@ -602,19 +602,19 @@ bool QSslConfiguration::testSslOption(QSsl::SslOption option) const
   \since 5.2
 
   If QSsl::SslOptionDisableSessionPersistence was turned off, this
-  function returns the session used in the SSL handshake in ASN.1
-  format, suitable to e.g. be persisted to disk. If no session was
+  function returns the session ticket used in the SSL handshake in ASN.1
+  format, suitable to e.g. be persisted to disk. If no session ticket was
   used or QSsl::SslOptionDisableSessionPersistence was not turned off,
   this function returns an empty QByteArray.
 
-  \b{Note:} When persisting the session to disk or similar, be
+  \b{Note:} When persisting the session ticket to disk or similar, be
   careful not to expose the session to a potential attacker, as
   knowledge of the session allows for eavesdropping on data
   encrypted with the session parameters.
 
-  \sa setSession(), QSsl::SslOptionDisableSessionPersistence, setSslOption()
+  \sa setSessionTicket(), QSsl::SslOptionDisableSessionPersistence, setSslOption()
  */
-QByteArray QSslConfiguration::session() const
+QByteArray QSslConfiguration::sessionTicket() const
 {
     return d->sslSession;
 }
@@ -622,16 +622,16 @@ QByteArray QSslConfiguration::session() const
 /*!
   \since 5.2
 
-  Sets the session to be used in an SSL handshake.
+  Sets the session ticket to be used in an SSL handshake.
   QSsl::SslOptionDisableSessionPersistence must be turned off
-  for this to work, and \a session must be in ASN.1 format
-  as returned by session().
+  for this to work, and \a sessionTicket must be in ASN.1 format
+  as returned by sessionTicket().
 
-  \sa session(), QSsl::SslOptionDisableSessionPersistence, setSslOption()
+  \sa sessionTicket(), QSsl::SslOptionDisableSessionPersistence, setSslOption()
  */
-void QSslConfiguration::setSession(const QByteArray &session)
+void QSslConfiguration::setSessionTicket(const QByteArray &sessionTicket)
 {
-    d->sslSession = session;
+    d->sslSession = sessionTicket;
 }
 
 /*!
@@ -645,7 +645,7 @@ void QSslConfiguration::setSession(const QByteArray &session)
   QSsl::SslOptionDisableSessionPersistence was not turned off,
   this function returns -1.
 
-  \sa session(), QSsl::SslOptionDisableSessionPersistence, setSslOption()
+  \sa sessionTicket(), QSsl::SslOptionDisableSessionPersistence, setSslOption()
  */
 int QSslConfiguration::sessionTicketLifeTimeHint() const
 {

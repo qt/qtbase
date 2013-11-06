@@ -260,8 +260,8 @@ init_context:
         q_SSL_CTX_set_verify_depth(sslContext->ctx, sslContext->sslConfiguration.peerVerifyDepth());
 
     // set persisted session if the user set it
-    if (!configuration.session().isEmpty())
-        sslContext->setSessionASN1(configuration.session());
+    if (!configuration.sessionTicket().isEmpty())
+        sslContext->setSessionASN1(configuration.sessionTicket());
 
     return sslContext;
 }
