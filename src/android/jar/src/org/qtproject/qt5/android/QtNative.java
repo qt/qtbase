@@ -109,9 +109,13 @@ public class QtNative
 
     public static void openURL(String url)
     {
-        Uri uri = Uri.parse(url);
-        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-        activity().startActivity(intent);
+        try {
+            Uri uri = Uri.parse(url);
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            activity().startActivity(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     // this method loads full path libs
