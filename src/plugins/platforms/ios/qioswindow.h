@@ -56,6 +56,8 @@ class QIOSWindow;
 
 QT_BEGIN_NAMESPACE
 
+@class QUIView;
+
 class QIOSWindow : public QPlatformWindow
 {
 public:
@@ -81,7 +83,7 @@ public:
     WId winId() const { return WId(m_view); };
 
 private:
-    UIView *m_view;
+    QUIView *m_view;
 
     QRect m_normalGeometry;
     int m_windowLevel;

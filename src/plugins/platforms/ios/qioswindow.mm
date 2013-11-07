@@ -58,7 +58,7 @@
 
 #include <QtDebug>
 
-@interface EAGLView : UIView <UIKeyInput>
+@interface QUIView : UIView <UIKeyInput>
 {
 @public
     UITextAutocapitalizationType autocapitalizationType;
@@ -83,7 +83,7 @@
 
 @end
 
-@implementation EAGLView
+@implementation QUIView
 
 + (Class)layerClass
 {
@@ -305,8 +305,8 @@
 
 - (QWindow *)qwindow
 {
-    if ([self isKindOfClass:[EAGLView class]])
-        return static_cast<EAGLView *>(self)->m_qioswindow->window();
+    if ([self isKindOfClass:[QUIView class]])
+        return static_cast<QUIView *>(self)->m_qioswindow->window();
     return nil;
 }
 
@@ -316,7 +316,7 @@ QT_BEGIN_NAMESPACE
 
 QIOSWindow::QIOSWindow(QWindow *window)
     : QPlatformWindow(window)
-    , m_view([[EAGLView alloc] initWithQIOSWindow:this])
+    , m_view([[QUIView alloc] initWithQIOSWindow:this])
     , m_normalGeometry(QPlatformWindow::geometry())
     , m_windowLevel(0)
     , m_devicePixelRatio(1.0)
@@ -392,7 +392,7 @@ void QIOSWindow::setGeometry(const QRect &rect)
 
     // Since we don't support transformations on the UIView, we can set the frame
     // directly and let UIKit deal with translating that into bounds and center.
-    // Changing the size of the view will end up in a call to -[EAGLView layoutSubviews]
+    // Changing the size of the view will end up in a call to -[QUIView layoutSubviews]
     // which will update QWindowSystemInterface with the new size.
     m_view.frame = toCGRect(rect);
 }
