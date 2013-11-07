@@ -226,10 +226,16 @@
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    Q_UNUSED(touches) // ### can a subset of the active touches be cancelled?
+    if (!touches) {
+        m_activeTouches.clear();
+    } else {
+        for (UITouch *touch in touches)
+            m_activeTouches.remove(touch);
 
-    // Clear current touch points
-    m_activeTouches.clear();
+        Q_ASSERT_X(m_activeTouches.isEmpty(), Q_FUNC_INFO,
+            "Subset of active touches cancelled by UIKit");
+    }
+
     m_nextTouchId = 0;
 
     // Send cancel touch event synchronously
