@@ -311,9 +311,15 @@ void QSurfaceFormat::setSamples(int numSamples)
 }
 
 /*!
-    Sets the format option to \a opt.
+    \obsolete
+    \overload
 
-    \sa testOption()
+    Use setOption(QSurfaceFormat::FormatOption, bool) or setOptions() instead.
+
+    Sets the format options to the OR combination of \a opt and the
+    current format options.
+
+    \sa options(), testOption()
 */
 void QSurfaceFormat::setOption(QSurfaceFormat::FormatOptions opt)
 {
@@ -325,13 +331,76 @@ void QSurfaceFormat::setOption(QSurfaceFormat::FormatOptions opt)
 }
 
 /*!
-    Returns \c true if format option \a opt is set; otherwise returns \c false.
+    \obsolete
+    \overload
+
+    Use testOption(QSurfaceFormat::FormatOption) instead.
+
+    Returns \c true if any of the options in \a opt is currently set
+    on this object; otherwise returns false.
 
     \sa setOption()
 */
 bool QSurfaceFormat::testOption(QSurfaceFormat::FormatOptions opt) const
 {
     return d->opts & opt;
+}
+
+/*!
+    \since 5.3
+
+    Sets the format options to \a options.
+
+    \sa options(), testOption()
+*/
+void QSurfaceFormat::setOptions(QSurfaceFormat::FormatOptions options)
+{
+    if (int(d->opts) != int(options)) {
+        detach();
+        d->opts = options;
+    }
+}
+
+/*!
+    \since 5.3
+
+    Sets the format option \a option if \a on is true; otherwise, clears the option.
+
+    \sa setOptions(), options(), testOption()
+*/
+void QSurfaceFormat::setOption(QSurfaceFormat::FormatOption option, bool on)
+{
+    if (testOption(option) == on)
+        return;
+    detach();
+    if (on)
+        d->opts |= option;
+    else
+        d->opts &= ~option;
+}
+
+/*!
+    \since 5.3
+
+    Returns true if the format option \a option is set; otherwise returns false.
+
+    \sa options(), testOption()
+*/
+bool QSurfaceFormat::testOption(QSurfaceFormat::FormatOption option) const
+{
+    return d->opts & option;
+}
+
+/*!
+    \since 5.3
+
+    Returns the currently set format options.
+
+    \sa setOption(), setOptions(), testOption()
+*/
+QSurfaceFormat::FormatOptions QSurfaceFormat::options() const
+{
+    return d->opts;
 }
 
 /*!
