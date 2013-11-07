@@ -1123,6 +1123,8 @@ QPoint QWindowsWindow::mapFromGlobal(const QPoint &pos) const
 void QWindowsWindow::updateTransientParent() const
 {
 #ifndef Q_OS_WINCE
+    if (window()->type() == Qt::Popup)
+        return; // QTBUG-34503, // a popup stays on top, no parent, see also WindowCreationData::fromWindow().
     // Update transient parent.
     const HWND oldTransientParent =
         GetAncestor(m_data.hwnd, GA_PARENT) == GetDesktopWindow() ? GetAncestor(m_data.hwnd, GA_ROOTOWNER) : HWND(0);
