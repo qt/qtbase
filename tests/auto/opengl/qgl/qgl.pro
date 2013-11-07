@@ -12,3 +12,4 @@ RESOURCES  = qgl.qrc
 
 linux-*:system(". /etc/lsb-release && [ $DISTRIB_CODENAME = lucid ]"): CONFIG+=insignificant_test # QTBUG-25293
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
+win32-msvc2010:contains(QT_CONFIG, angle):CONFIG += insignificant_test # QTQAINFRA-711
