@@ -427,6 +427,30 @@ void QWellArray::keyPressEvent(QKeyEvent* e)
 
 //////////// QWellArray END
 
+// Event filter to be installed on the dialog while in color-picking mode.
+class QColorPickingEventFilter : public QObject {
+public:
+    explicit QColorPickingEventFilter(QColorDialogPrivate *dp, QObject *parent = 0) : QObject(parent), m_dp(dp) {}
+
+    bool eventFilter(QObject *, QEvent *event) Q_DECL_OVERRIDE
+    {
+        switch (event->type()) {
+        case QEvent::MouseMove:
+            return m_dp->handleColorPickingMouseMove(static_cast<QMouseEvent *>(event));
+        case QEvent::MouseButtonRelease:
+            return m_dp->handleColorPickingMouseButtonRelease(static_cast<QMouseEvent *>(event));
+        case QEvent::KeyPress:
+            return m_dp->handleColorPickingKeyPress(static_cast<QKeyEvent *>(event));
+        default:
+            break;
+        }
+        return false;
+    }
+
+private:
+    QColorDialogPrivate *m_dp;
+};
+
 /*!
     Returns the number of custom colors supported by QColorDialog. All
     color dialogs share the same custom colors.
@@ -1520,7 +1544,9 @@ void QColorDialogPrivate::_q_newStandard(int r, int c)
 void QColorDialogPrivate::_q_pickScreenColor()
 {
     Q_Q(QColorDialog);
-    screenColorPicking = true;
+    if (!colorPickingEventFilter)
+        colorPickingEventFilter = new QColorPickingEventFilter(this);
+    q->installEventFilter(colorPickingEventFilter);
     // If user pushes Escape, the last color before picking will be restored.
     beforeScreenColorPicking = cs->currentColor();
     /*For some reason, q->grabMouse(Qt::CrossCursor) doesn't change
@@ -1550,7 +1576,7 @@ void QColorDialogPrivate::_q_pickScreenColor()
 void QColorDialogPrivate::releaseColorPicking()
 {
     Q_Q(QColorDialog);
-    screenColorPicking = false;
+    q->removeEventFilter(colorPickingEventFilter);
     q->releaseMouse();
     q->releaseKeyboard();
 #ifndef QT_NO_CURSOR
@@ -1572,7 +1598,7 @@ void QColorDialogPrivate::init(const QColor &initial)
 
     // default: use the native dialog if possible.  Can be overridden in setOptions()
     nativeDialogInUse = (platformColorDialogHelper() != 0);
-    screenColorPicking = false;
+    colorPickingEventFilter = 0;
     nextCust = 0;
 
     if (!nativeDialogInUse)
@@ -2123,55 +2149,41 @@ void QColorDialog::changeEvent(QEvent *e)
     QDialog::changeEvent(e);
 }
 
-/*!
-    \reimp
-*/
-void QColorDialog::mouseMoveEvent(QMouseEvent *e)
+bool QColorDialogPrivate::handleColorPickingMouseMove(QMouseEvent *e)
 {
-    Q_D(QColorDialog);
-    if (d->screenColorPicking) {
-        setCurrentColor(d->grabScreenColor(e->globalPos()));
-        d->lblScreenColorInfo->setText(QColorDialog::tr("Cursor at %1, %2, color: %3\nPress ESC to cancel")
-                                       .arg(e->globalPos().x())
-                                       .arg(e->globalPos().y())
-                                       .arg(currentColor().name()));
-        return;
-    }
-    QDialog::mouseMoveEvent(e);
+    Q_Q(QColorDialog);
+    const QPoint globalPos = e->globalPos();
+    const QColor color = grabScreenColor(globalPos);
+    q->setCurrentColor(color);
+    lblScreenColorInfo->setText(QColorDialog::tr("Cursor at %1, %2, color: %3\nPress ESC to cancel")
+                                .arg(globalPos.x()).arg(globalPos.y()).arg(color.name()));
+    return true;
 }
 
-/*!
-    \reimp
-*/
-void QColorDialog::mouseReleaseEvent(QMouseEvent *e)
+bool QColorDialogPrivate::handleColorPickingMouseButtonRelease(QMouseEvent *e)
 {
-    Q_D(QColorDialog);
-    if (d->screenColorPicking) {
-        setCurrentColor(d->grabScreenColor(e->globalPos()));
-        d->releaseColorPicking();
-        return;
-    }
-    QDialog::mouseReleaseEvent(e);
+    Q_Q(QColorDialog);
+    q->setCurrentColor(grabScreenColor(e->globalPos()));
+    releaseColorPicking();
+    return true;
 }
 
-/*!
-    \reimp
-*/
-void QColorDialog::keyPressEvent(QKeyEvent *e)
+bool QColorDialogPrivate::handleColorPickingKeyPress(QKeyEvent *e)
 {
-    Q_D(QColorDialog);
-    if (d->screenColorPicking) {
-        if (e->key() == Qt::Key_Escape) {
-            d->releaseColorPicking();
-            d->setCurrentColor(d->beforeScreenColorPicking);
-        } else if (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) {
-            setCurrentColor(d->grabScreenColor(QCursor::pos()));
-            d->releaseColorPicking();
-        }
-        e->accept();
-        return;
+    Q_Q(QColorDialog);
+    switch (e->key()) {
+    case Qt::Key_Escape:
+        releaseColorPicking();
+        q->setCurrentColor(beforeScreenColorPicking);
+        break;
+    case Qt::Key_Return:
+    case Qt::Key_Enter:
+        q->setCurrentColor(grabScreenColor(QCursor::pos()));
+        releaseColorPicking();
+        break;
     }
-    QDialog::keyPressEvent(e);
+    e->accept();
+    return true;
 }
 
 /*!

@@ -70,6 +70,7 @@ class QLabel;
 class QVBoxLayout;
 class QPushButton;
 class QWellArray;
+class QColorPickingEventFilter;
 
 class QColorDialogPrivate : public QDialogPrivate
 {
@@ -105,6 +106,9 @@ public:
     void _q_newStandard(int, int);
     void _q_pickScreenColor();
     void releaseColorPicking();
+    bool handleColorPickingMouseMove(QMouseEvent *e);
+    bool handleColorPickingMouseButtonRelease(QMouseEvent *e);
+    bool handleColorPickingKeyPress(QKeyEvent *e);
 
     QWellArray *custom;
     QWellArray *standard;
@@ -125,6 +129,7 @@ public:
     int nextCust;
     bool smallDisplay;
     bool screenColorPicking;
+    QColorPickingEventFilter *colorPickingEventFilter;
     QRgb beforeScreenColorPicking;
     QSharedPointer<QColorDialogOptions> options;
 
