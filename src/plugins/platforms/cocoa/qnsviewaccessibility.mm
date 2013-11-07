@@ -47,7 +47,7 @@
 #include "qcocoaaccessibilityelement.h"
 #include <qpa/qplatformintegration.h>
 
-#include <QtGui/private/qaccessible2_p.h>
+#include <QtGui/qaccessible.h>
 #include <QtCore/QDebug>
 
 #import <AppKit/NSAccessibility.h>

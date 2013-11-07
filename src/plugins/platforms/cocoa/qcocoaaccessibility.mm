@@ -40,8 +40,7 @@
 ****************************************************************************/
 #include "qcocoaaccessibility.h"
 #include "qcocoaaccessibilityelement.h"
-#include <qaccessible.h>
-#include <QtGui/private/qaccessible2_p.h>
+#include <QtGui/qaccessible.h>
 #include <private/qcore_mac_p.h>
 
 QCocoaAccessibility::QCocoaAccessibility()

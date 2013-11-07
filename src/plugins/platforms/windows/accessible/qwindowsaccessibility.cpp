@@ -51,7 +51,6 @@
 #include <QtCore/qpointer.h>
 #include <QtCore/qsettings.h>
 #include <QtGui/qaccessible.h>
-#include <QtGui/private/qaccessible2_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformintegration.h>
