@@ -461,7 +461,7 @@ static QString strippedText(QString s)
     Q_UNUSED(sender);
     if (!mHelper)
         return;
-    if ([path isEqualToString:mCurrentDir])
+    if (!(path && path.length) || [path isEqualToString:mCurrentDir])
         return;
 
     [mCurrentDir release];
