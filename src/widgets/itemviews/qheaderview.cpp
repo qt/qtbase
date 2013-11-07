@@ -1337,18 +1337,13 @@ QHeaderView::ResizeMode QHeaderView::sectionResizeMode(int logicalIndex) const
    and QTreeView::sizeHintForColumn(). Reimplementing these functions can make this
    function not having an effect.
 
-   If \a resizeSectionsNow is set to true (default) it will do adjustment of sections by calling
-   resizeSections().  (regardless if the precision was changed).
-
     \sa resizeContentsPrecision(), setSectionResizeMode(), resizeSections(), QTableView::sizeHintForColumn(), QTableView::sizeHintForRow(), QTreeView::sizeHintForColumn()
 */
 
-void QHeaderView::setResizeContentsPrecision(int precision, bool resizeSectionsNow)
+void QHeaderView::setResizeContentsPrecision(int precision)
 {
     Q_D(QHeaderView);
     d->resizeContentsPrecision = precision;
-    if (resizeSectionsNow)
-        resizeSections();
 }
 
 /*!
