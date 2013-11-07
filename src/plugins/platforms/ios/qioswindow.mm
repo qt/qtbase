@@ -226,6 +226,9 @@
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
 {
+    if (!touches && m_activeTouches.isEmpty())
+        return;
+
     if (!touches) {
         m_activeTouches.clear();
     } else {
@@ -238,9 +241,11 @@
 
     m_nextTouchId = 0;
 
+    NSTimeInterval timestamp = event ? event.timestamp : [[NSProcessInfo processInfo] systemUptime];
+
     // Send cancel touch event synchronously
     QIOSIntegration *iosIntegration = static_cast<QIOSIntegration *>(QGuiApplicationPrivate::platformIntegration());
-    QWindowSystemInterface::handleTouchCancelEvent(m_qioswindow->window(), ulong(event.timestamp * 1000), iosIntegration->touchDevice());
+    QWindowSystemInterface::handleTouchCancelEvent(m_qioswindow->window(), ulong(timestamp * 1000), iosIntegration->touchDevice());
     QWindowSystemInterface::flushWindowSystemEvents();
 }
 
@@ -342,6 +347,13 @@ QIOSWindow::QIOSWindow(QWindow *window)
 
 QIOSWindow::~QIOSWindow()
 {
+    // According to the UIResponder documentation, Cocoa Touch should react to system interruptions
+    // that "might cause the view to be removed from the window" by sending touchesCancelled, but in
+    // practice this doesn't seem to happen when removing the view from its superview. To ensure that
+    // Qt's internal state for touch and mouse handling is kept consistent, we therefor have to force
+    // cancellation of all touch events.
+    [m_view touchesCancelled:0 withEvent:0];
+
     [m_view removeFromSuperview];
     [m_view release];
 }
