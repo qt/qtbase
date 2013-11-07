@@ -64,6 +64,19 @@ DEPENDENCY_FILE = $$ANDROID_DEPENDS_DIR$$TARGET-android-dependencies.xml
         }
     }
 
+    !isEmpty(ANDROID_PERMISSIONS) {
+        for (ANDROID_PERMISSION, ANDROID_PERMISSIONS) {
+            FILE_CONTENT += "<permission name=\"$$ANDROID_PERMISSION\" />"
+        }
+    }
+
+    !isEmpty(ANDROID_FEATURES) {
+        for (ANDROID_FEATURE, ANDROID_FEATURES) {
+            FILE_CONTENT += "<feature name=\"$$ANDROID_FEATURE\" />"
+        }
+    }
+
+
     !isEmpty(FILE_CONTENT) {
         FILE_CONTENT = "<rules><dependencies><lib name=\"$$TARGET\"><depends>" $$FILE_CONTENT "</depends></lib></dependencies></rules>"
         write_file($$DEPENDENCY_FILE, FILE_CONTENT) | error("Aborting.")
