@@ -50,6 +50,7 @@
 #include <qtextformat.h>
 #include <private/qiconloader_p.h>
 #include <private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -399,7 +400,32 @@ QPixmap QPlatformTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &
 
 QVariant QPlatformTheme::themeHint(ThemeHint hint) const
 {
-    return QPlatformTheme::defaultThemeHint(hint);
+    // For theme hints which mirror platform integration style hints, query
+    // the platform integration. The base QPlatformIntegration::styleHint()
+    // function will in turn query QPlatformTheme::defaultThemeHint() if there
+    // is no custom value.
+    switch (hint) {
+    case QPlatformTheme::CursorFlashTime:
+        return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::CursorFlashTime);
+    case QPlatformTheme::KeyboardInputInterval:
+        return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::KeyboardInputInterval);
+    case QPlatformTheme::KeyboardAutoRepeatRate:
+        return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::KeyboardAutoRepeatRate);
+    case QPlatformTheme::MouseDoubleClickInterval:
+        return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::MouseDoubleClickInterval);
+    case QPlatformTheme::StartDragDistance:
+        return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::StartDragDistance);
+    case QPlatformTheme::StartDragTime:
+        return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::StartDragTime);
+    case QPlatformTheme::StartDragVelocity:
+        return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::StartDragVelocity);
+    case QPlatformTheme::PasswordMaskDelay:
+        return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::PasswordMaskDelay);
+    case QPlatformTheme::PasswordMaskCharacter:
+        return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::PasswordMaskCharacter);
+    default:
+        return QPlatformTheme::defaultThemeHint(hint);
+    }
 }
 
 QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
