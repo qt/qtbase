@@ -123,8 +123,6 @@ QIOSScreen::QIOSScreen(unsigned int screenIndex)
     , m_uiScreen([[UIScreen screens] objectAtIndex:qMin(NSUInteger(screenIndex), [[UIScreen screens] count] - 1)])
     , m_orientationListener(0)
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-
     QString deviceIdentifier = deviceModelIdentifier();
 
     if (deviceIdentifier == QStringLiteral("iPhone2,1") /* iPhone 3GS */
@@ -153,8 +151,6 @@ QIOSScreen::QIOSScreen(unsigned int screenIndex)
         // When in a non-mixed environment, let QScreen follow the current interface orientation:
         setPrimaryOrientation(toQtScreenOrientation(UIDeviceOrientation(qiosViewController().interfaceOrientation)));
     }
-
-    [pool release];
 }
 
 QIOSScreen::~QIOSScreen()
