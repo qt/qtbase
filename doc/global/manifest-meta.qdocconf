@@ -247,8 +247,21 @@ manifestmeta.ios.names              =  "QtCore/Contiguous Cache Example" \
                                        "QtWidgets/Shaped Clock Example" \
                                        "QtWidgets/Sliders Example" \
                                        "QtWidgets/Validators Example" \
+                                       "QtWidgets/Window Flags Example" \
                                        "QtWidgets/Wiggly Example" \
-                                       "QtWidgets/Window Flags Example"
+                                       "QtQuick/Qt Quick Examples - Animation" \
+                                       "QtQuick/Qt Quick Examples - Canvas" \
+                                       "QtQuick/Qt Quick Examples - Drag and Drop" \
+                                       "QtQuick/Qt Quick Examples - Image Elements" \
+                                       "QtQuick/Qt Quick Examples - MouseArea" \
+                                       "QtQuick/Qt Quick Examples - Positioners" \
+                                       "QtQuick/Qt Quick Examples - Right to Left" \
+                                       "QtQuick/Scene Graph - OpenGL Under QML" \
+                                       "QtQuick/Qt Quick Examples - Shader Effects" \
+                                       "QtQuick/Qt Quick Examples - Text" \
+                                       "QtQuick/Qt Quick Examples - Touch Interaction" \
+                                       "QtQuick/Qt Quick Examples - Views" \
+                                       "QtQuick/Qt Quick Examples - Window and Screen"
 
 manifestmeta.ios.tags                  = ios
 
