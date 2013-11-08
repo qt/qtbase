@@ -115,6 +115,9 @@ QLoggingCategory::QLoggingCategory(const char *category)
       enabledWarning(true),
       enabledCritical(true)
 {
+    Q_UNUSED(d);
+    Q_UNUSED(placeholder);
+
     bool isDefaultCategory
             = (category == 0) || (strcmp(category, qtDefaultCategoryName) == 0);
 
