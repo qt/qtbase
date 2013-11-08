@@ -180,6 +180,8 @@ protected:
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void currentChanged(const QModelIndex &current, const QModelIndex &previous);
 
+    QSize viewportSizeHint() const Q_DECL_OVERRIDE;
+
 private:
     int visualIndex(const QModelIndex &index) const;
 

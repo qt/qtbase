@@ -1391,6 +1391,15 @@ bool QAbstractItemView::showDropIndicator() const
 }
 
 /*!
+    \since 5.2
+    \reimp
+*/
+QSize QAbstractItemView::viewportSizeHint() const
+{
+    return QAbstractScrollArea::viewportSizeHint();
+}
+
+/*!
     \property QAbstractItemView::dragEnabled
     \brief whether the view supports dragging of its own items
 

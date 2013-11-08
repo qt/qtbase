@@ -346,6 +346,8 @@ protected:
     DropIndicatorPosition dropIndicatorPosition() const;
 #endif
 
+    QSize viewportSizeHint() const Q_DECL_OVERRIDE;
+
 private:
     Q_DECLARE_PRIVATE(QAbstractItemView)
     Q_DISABLE_COPY(QAbstractItemView)

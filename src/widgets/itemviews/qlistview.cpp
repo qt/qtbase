@@ -3200,6 +3200,16 @@ int QListView::visualIndex(const QModelIndex &index) const
     return visualIndex;
 }
 
+
+/*!
+    \since 5.2
+    \reimp
+*/
+QSize QListView::viewportSizeHint() const
+{
+    return QAbstractItemView::viewportSizeHint();
+}
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_LISTVIEW

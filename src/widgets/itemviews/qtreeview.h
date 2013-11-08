@@ -147,8 +147,6 @@ public:
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
     void selectAll();
 
-    QSize viewportSizeHint() const;
-
 Q_SIGNALS:
     void expanded(const QModelIndex &index);
     void collapsed(const QModelIndex &index);
@@ -207,6 +205,8 @@ protected:
     bool viewportEvent(QEvent *event);
 
     void updateGeometries();
+
+    QSize viewportSizeHint() const Q_DECL_OVERRIDE;
 
     int sizeHintForColumn(int column) const;
     int indexRowSizeHint(const QModelIndex &index) const;
