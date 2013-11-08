@@ -23,7 +23,7 @@ class BufferStorage9 : public BufferStorage
     static BufferStorage9 *makeBufferStorage9(BufferStorage *bufferStorage);
 
     virtual void *getData();
-    virtual void setData(const void* data, unsigned int size, unsigned int offset);
+    virtual void setData(const void* data, unsigned int size, unsigned int offset, unsigned int target = 0);
     virtual void clear();
     virtual unsigned int getSize() const;
     virtual bool supportsDirectBinding() const;

@@ -24,7 +24,7 @@ class BufferStorage11 : public BufferStorage
     static BufferStorage11 *makeBufferStorage11(BufferStorage *bufferStorage);
 
     virtual void *getData();
-    virtual void setData(const void* data, unsigned int size, unsigned int offset);
+    virtual void setData(const void* data, unsigned int size, unsigned int offset, unsigned int target);
     virtual void clear();
     virtual unsigned int getSize() const;
     virtual bool supportsDirectBinding() const;

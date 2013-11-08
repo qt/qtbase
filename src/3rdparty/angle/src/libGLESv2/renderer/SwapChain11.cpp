@@ -500,12 +500,17 @@ EGLint SwapChain11::reset(int backbufferWidth, int backbufferHeight, EGLint swap
         ASSERT(SUCCEEDED(result));
 
         DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {0};
-        swapChainDesc.BufferCount = 2;
         swapChainDesc.Format = gl_d3d11::ConvertRenderbufferFormat(mBackBufferFormat);
         swapChainDesc.Width = backbufferWidth;
         swapChainDesc.Height = backbufferHeight;
         swapChainDesc.Stereo = FALSE;
+#if !defined(ANGLE_OS_WINPHONE)
+        swapChainDesc.BufferCount = 2;
         swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+#else
+        swapChainDesc.BufferCount = 1;
+        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+#endif
 #endif
 
         swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;

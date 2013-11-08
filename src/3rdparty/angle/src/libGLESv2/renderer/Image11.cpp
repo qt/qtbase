@@ -136,7 +136,7 @@ bool Image11::redefine(Renderer *renderer, GLint internalformat, GLsizei width, 
         mHeight = height;
         mInternalFormat = internalformat;
         // compute the d3d format that will be used
-        mDXGIFormat = gl_d3d11::ConvertTextureFormat(internalformat);
+        mDXGIFormat = gl_d3d11::ConvertTextureFormat(internalformat, mRenderer->getFeatureLevel());
         mActualFormat = d3d11_gl::ConvertTextureInternalFormat(mDXGIFormat);
 
         if (mStagingTexture)
@@ -185,7 +185,10 @@ void Image11::loadData(GLint xoffset, GLint yoffset, GLsizei width, GLsizei heig
     switch (mInternalFormat)
     {
       case GL_ALPHA8_EXT:
-        loadAlphaDataToNative(width, height, inputPitch, input, mappedImage.RowPitch, offsetMappedData);
+        if (mRenderer->getFeatureLevel() >= D3D_FEATURE_LEVEL_10_0)
+            loadAlphaDataToNative(width, height, inputPitch, input, mappedImage.RowPitch, offsetMappedData);
+        else
+            loadAlphaDataToBGRA(width, height, inputPitch, input, mappedImage.RowPitch, offsetMappedData);
         break;
       case GL_LUMINANCE8_EXT:
         loadLuminanceDataToNativeOrBGRA(width, height, inputPitch, input, mappedImage.RowPitch, offsetMappedData, false);
