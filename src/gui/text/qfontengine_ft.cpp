@@ -1742,7 +1742,7 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixe
             glyphSet = &defaultGlyphSet;
         }
     }
-    Glyph * g = glyphSet ? glyphSet->getGlyph(glyph) : 0;
+    Glyph * g = glyphSet ? glyphSet->getGlyph(glyph, subPixelPosition) : 0;
     if (!g || g->format != format) {
         face = lockFace();
         FT_Matrix m = this->matrix;
