@@ -224,7 +224,6 @@ private:
     friend class QAccessibleTree;
     friend class QAccessibleTableCell;
     int visualIndex(const QModelIndex &index) const;
-    int accessibleTree2Index(const QModelIndex &index) const;
 
     Q_DECLARE_PRIVATE(QTreeView)
     Q_DISABLE_COPY(QTreeView)

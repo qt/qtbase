@@ -239,6 +239,8 @@ public:
         return (viewIndex(index) + (header ? 1 : 0)) * model->columnCount()+index.column();
     }
 
+    int accessibleTree2Index(const QModelIndex &index) const;
+
     // used for spanning rows
     QVector<QPersistentModelIndex> spanningIndexes;
 
