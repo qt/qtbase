@@ -417,7 +417,6 @@ public:
     void setOptions(const QSharedPointer<QMessageDialogOptions> &options);
 
 Q_SIGNALS:
-    void clicked(QMessageDialogOptions::StandardButton button); // TODO remove before 5.2
     void clicked(QMessageDialogOptions::StandardButton button, QMessageDialogOptions::ButtonRole role);
 
 private:
