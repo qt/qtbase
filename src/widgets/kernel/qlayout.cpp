@@ -1133,11 +1133,15 @@ QLayoutItem* QLayout::replaceWidget(QWidget *from, QWidget *to, bool recursive)
     QLayoutItem *item = 0;
     for (int u = 0; u < count(); ++u) {
         item = itemAt(u);
+        if (!item)
+            continue;
+
         if (item->widget() == from) {
             index = u;
             break;
         }
-        if (item && item->layout() && recursive) {
+
+        if (item->layout() && recursive) {
             QLayoutItem *r = item->layout()->replaceWidget(from, to, true);
             if (r)
                 return r;
