@@ -130,7 +130,9 @@ public:
     virtual int count() const = 0;
     bool isEmpty() const;
     QSizePolicy::ControlTypes controlTypes() const;
-    QLayoutItem* replaceWidget(QWidget *from, QWidget *to, bool recursive = true);
+
+    // ### Qt 6 make this function virtual
+    QLayoutItem *replaceWidget(QWidget *from, QWidget *to, Qt::FindChildOptions options = Qt::FindChildrenRecursively);
 
     int totalHeightForWidth(int w) const;
     QSize totalMinimumSize() const;
