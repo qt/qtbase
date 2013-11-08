@@ -1854,7 +1854,7 @@ QByteArray &QByteArray::remove(int pos, int len)
     if (len <= 0  || uint(pos) >= uint(d->size))
         return *this;
     detach();
-    if (pos + len >= d->size) {
+    if (len >= d->size - pos) {
         resize(pos);
     } else {
         memmove(d->data() + pos, d->data() + pos + len, d->size - pos - len);
