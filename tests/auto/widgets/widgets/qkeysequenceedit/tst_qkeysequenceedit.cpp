@@ -43,6 +43,8 @@
 #include <QtTest/QtTest>
 
 #include <QKeySequenceEdit>
+#include <QLineEdit>
+#include <QString>
 
 Q_DECLARE_METATYPE(Qt::Key)
 Q_DECLARE_METATYPE(Qt::KeyboardModifiers)
@@ -55,6 +57,7 @@ private slots:
     void testSetters();
     void testKeys_data();
     void testKeys();
+    void testLineEditContents();
 };
 
 void tst_QKeySequenceEdit::testSetters()
@@ -98,6 +101,27 @@ void tst_QKeySequenceEdit::testKeys()
     QCOMPARE(spy.count(), 0);
     QCOMPARE(edit.keySequence(), keySequence);
     QTRY_COMPARE(spy.count(), 1);
+}
+
+void tst_QKeySequenceEdit::testLineEditContents()
+{
+    QKeySequenceEdit edit;
+    QLineEdit *le = edit.findChild<QLineEdit*>();
+    QVERIFY(le);
+
+    QCOMPARE(le->text(), QString());
+
+    edit.setKeySequence(QKeySequence::New);
+    QCOMPARE(edit.keySequence(), QKeySequence(QKeySequence::New));
+
+    edit.clear();
+    QCOMPARE(le->text(), QString());
+
+    edit.setKeySequence(QKeySequence::New);
+    QVERIFY(le->text() != QString());
+
+    edit.setKeySequence(QKeySequence());
+    QCOMPARE(le->text(), QString());
 }
 
 QTEST_MAIN(tst_QKeySequenceEdit)

@@ -224,15 +224,7 @@ void QKeySequenceEdit::setKeySequence(const QKeySequence &keySequence)
 */
 void QKeySequenceEdit::clear()
 {
-    Q_D(QKeySequenceEdit);
-
-    d->resetState();
-
-    d->lineEdit->clear();
-    d->keySequence = QKeySequence();
-    d->keyNum = d->key[0] = d->key[1] = d->key[2] = d->key[3] = 0;
-    d->prevKey = -1;
-    emit keySequenceChanged(d->keySequence);
+    setKeySequence(QKeySequence());
 }
 
 /*!
