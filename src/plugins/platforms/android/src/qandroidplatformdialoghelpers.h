@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 BogDan Vatra <bogdan@kde.org>
+** Copyright (C) 2013 BogDan Vatra <bogdan@kde.org>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,27 +39,39 @@
 **
 ****************************************************************************/
 
-#ifndef QANDROIDPLATFORMTHEME_H
-#define QANDROIDPLATFORMTHEME_H
+#ifndef QANDROIDPLATFORMDIALOGHELPERS_H
+#define QANDROIDPLATFORMDIALOGHELPERS_H
+#include <jni.h>
+#include <qpa/qplatformdialoghelper.h>
+#include <QEventLoop>
+#include <private/qjni_p.h>
 
-#include <qpa/qplatformtheme.h>
-class QAndroidPlatformNativeInterface;
-class QAndroidPlatformTheme: public QPlatformTheme
+namespace QtAndroidDialogHelpers {
+
+class QAndroidPlatformMessageDialogHelper: public QPlatformMessageDialogHelper
 {
+    Q_OBJECT
 public:
-    QAndroidPlatformTheme(QAndroidPlatformNativeInterface * androidPlatformNativeInterface);
-    virtual QPlatformMenuBar *createPlatformMenuBar() const;
-    virtual QPlatformMenu *createPlatformMenu() const;
-    virtual QPlatformMenuItem *createPlatformMenuItem() const;
-    virtual const QPalette *palette(Palette type = SystemPalette) const;
-    virtual const QFont *font(Font type = SystemFont) const;
-    virtual QVariant themeHint(ThemeHint hint) const;
-    virtual bool usePlatformNativeDialog(DialogType type) const;
-    virtual QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
+    QAndroidPlatformMessageDialogHelper();
+    void exec();
+    bool show(Qt::WindowFlags windowFlags,
+                          Qt::WindowModality windowModality,
+                          QWindow *parent);
+    void hide();
 
+public slots:
+    void dialogResult(int buttonID);
 
 private:
-    QAndroidPlatformNativeInterface * m_androidPlatformNativeInterface;
+    int m_buttonId;
+    QEventLoop m_loop;
+    QJNIObjectPrivate m_javaMessageDialog;
+    bool m_shown;
 };
 
-#endif // QANDROIDPLATFORMTHEME_H
+
+bool registerNatives(JNIEnv *env);
+
+}
+
+#endif // QANDROIDPLATFORMDIALOGHELPERS_H

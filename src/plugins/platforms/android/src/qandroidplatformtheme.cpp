@@ -43,6 +43,7 @@
 #include "qandroidplatformmenubar.h"
 #include "qandroidplatformmenu.h"
 #include "qandroidplatformmenuitem.h"
+#include "qandroidplatformdialoghelpers.h"
 #include <QVariant>
 #include <QFileInfo>
 #include <qandroidplatformintegration.h>
@@ -148,5 +149,22 @@ QVariant QAndroidPlatformTheme::themeHint(ThemeHint hint) const
         break;
     default:
         return QPlatformTheme::themeHint(hint);
+    }
+}
+
+bool QAndroidPlatformTheme::usePlatformNativeDialog(QPlatformTheme::DialogType type) const
+{
+    if (type == MessageDialog)
+        return qgetenv("QT_USE_ANDROID_NATIVE_DIALOGS").toInt() == 1;
+    return false;
+}
+
+QPlatformDialogHelper *QAndroidPlatformTheme::createPlatformDialogHelper(QPlatformTheme::DialogType type) const
+{
+    switch (type) {
+    case MessageDialog:
+        return new QtAndroidDialogHelpers::QAndroidPlatformMessageDialogHelper;
+    default:
+        return 0;
     }
 }

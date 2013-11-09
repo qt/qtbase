@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 
 class QSizeGrip;
 
-class QDialogPrivate : public QWidgetPrivate
+class Q_WIDGETS_EXPORT QDialogPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QDialog)
 public:
@@ -113,6 +113,7 @@ public:
 
     bool nativeDialogInUse;
     QPlatformDialogHelper *platformHelper() const;
+    virtual bool canBeNativeDialog() const;
 
 private:
     virtual void initHelper(QPlatformDialogHelper *) {}

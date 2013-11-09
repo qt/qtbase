@@ -123,13 +123,13 @@ public class QtActivity extends Activity
                                                                // and must be separated with "\t"
                                                                // e.g "-param1\t-param2=value2\t-param3\tvalue3"
 
-    public String ENVIRONMENT_VARIABLES = "QT_USE_ANDROID_NATIVE_STYLE=1\t";
+    public String ENVIRONMENT_VARIABLES = "QT_USE_ANDROID_NATIVE_STYLE=1\tQT_USE_ANDROID_NATIVE_DIALOGS=1\t";
                                                                // use this variable to add any environment variables to your application.
                                                                // the env vars must be separated with "\t"
                                                                // e.g. "ENV_VAR1=1\tENV_VAR2=2\t"
                                                                // Currently the following vars are used by the android plugin:
-                                                               // * QT_USE_ANDROID_NATIVE_STYLE - 1 to use the android widget style if available,
-                                                               //   note that the android style plugin in Qt 5.1 is not fully functional.
+                                                               // * QT_USE_ANDROID_NATIVE_STYLE - 1 to use the android widget style if available.
+                                                               // * QT_USE_ANDROID_NATIVE_DIALOGS -1 to use the android native dialogs.
 
     public String[] QT_ANDROID_THEMES = null;     // A list with all themes that your application want to use.
                                                   // The name of the theme must be the same with any theme from

@@ -764,9 +764,9 @@ void QFileDialogPrivate::emitFilesSelected(const QStringList &files)
         emit q->fileSelected(files.first());
 }
 
-bool QFileDialogPrivate::canBeNativeDialog()
+bool QFileDialogPrivate::canBeNativeDialog() const
 {
-    Q_Q(QFileDialog);
+    Q_Q(const QFileDialog);
     if (nativeDialogInUse)
         return true;
     if (q->testAttribute(Qt::WA_DontShowOnScreen))
