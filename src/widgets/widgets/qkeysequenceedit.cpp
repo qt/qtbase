@@ -55,6 +55,7 @@ void QKeySequenceEditPrivate::init()
     Q_Q(QKeySequenceEdit);
 
     lineEdit = new QLineEdit(q);
+    lineEdit->setObjectName(QStringLiteral("qt_keysequenceedit_lineedit"));
     keyNum = 0;
     prevKey = -1;
     releaseTimer = 0;
