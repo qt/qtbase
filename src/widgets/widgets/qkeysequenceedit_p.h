@@ -46,6 +46,7 @@
 #include "qkeysequenceedit.h"
 
 #include <private/qwidget_p.h>
+#include <private/qkeysequence_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -57,8 +58,6 @@ class QKeySequenceEditPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QKeySequenceEdit)
 public:
-    enum { MaxKeyCount = 4 };
-
     void init();
     int translateModifiers(Qt::KeyboardModifiers state, const QString &text);
     void resetState();
@@ -67,7 +66,7 @@ public:
     QLineEdit *lineEdit;
     QKeySequence keySequence;
     int keyNum;
-    int key[MaxKeyCount];
+    int key[QKeySequencePrivate::MaxKeyCount];
     int prevKey;
     int releaseTimer;
 };

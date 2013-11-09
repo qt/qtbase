@@ -50,6 +50,8 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_KEYSEQUENCEEDIT
 
+Q_STATIC_ASSERT(QKeySequencePrivate::MaxKeyCount == 4); // assumed by the code around here
+
 void QKeySequenceEditPrivate::init()
 {
     Q_Q(QKeySequenceEdit);
@@ -280,7 +282,7 @@ void QKeySequenceEdit::keyPressEvent(QKeyEvent *e)
             return;
     }
 
-    if (d->keyNum >= QKeySequenceEditPrivate::MaxKeyCount)
+    if (d->keyNum >= QKeySequencePrivate::MaxKeyCount)
         return;
 
     nextKey |= d->translateModifiers(e->modifiers(), e->text());
@@ -291,7 +293,7 @@ void QKeySequenceEdit::keyPressEvent(QKeyEvent *e)
     QKeySequence key(d->key[0], d->key[1], d->key[2], d->key[3]);
     d->keySequence = key;
     QString text = key.toString(QKeySequence::NativeText);
-    if (d->keyNum < QKeySequenceEditPrivate::MaxKeyCount) {
+    if (d->keyNum < QKeySequencePrivate::MaxKeyCount) {
         //: This text is an "unfinished" shortcut, expands like "Ctrl+A, ..."
         text = tr("%1, ...").arg(text);
     }
@@ -307,7 +309,7 @@ void QKeySequenceEdit::keyReleaseEvent(QKeyEvent *e)
     Q_D(QKeySequenceEdit);
 
     if (d->prevKey == e->key()) {
-        if (d->keyNum < QKeySequenceEditPrivate::MaxKeyCount)
+        if (d->keyNum < QKeySequencePrivate::MaxKeyCount)
             d->releaseTimer = startTimer(1000);
         else
             d->finishEditing();
