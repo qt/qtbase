@@ -476,6 +476,12 @@ Section: Widgets
 Requires: GRAPHICSVIEW PRINTER MAINWINDOW
 Name: QPrintPreviewWidget
 
+Feature: KEYSEQUENCEEDIT
+Description: Provides a widget for editing QKeySequences
+Section: Widgets
+Requires: LINEEDIT SHORTCUT
+Name: QKeySequenceEdit
+
 # Dialogs
 
 Feature: MESSAGEBOX
