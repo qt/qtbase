@@ -61,9 +61,9 @@ public:
     ~QKeySequenceEdit();
 
     QKeySequence keySequence() const;
-    void setKeySequence(const QKeySequence &keySequence);
 
 public Q_SLOTS:
+    void setKeySequence(const QKeySequence &keySequence);
     void clear();
 
 Q_SIGNALS:
