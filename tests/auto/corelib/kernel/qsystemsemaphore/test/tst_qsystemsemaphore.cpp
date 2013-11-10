@@ -145,12 +145,19 @@ void tst_QSystemSemaphore::complexacquire()
 {
     QSystemSemaphore sem("QSystemSemaphore_complexacquire", 2, QSystemSemaphore::Create);
     QVERIFY(sem.acquire());
+    QCOMPARE(sem.error(), QSystemSemaphore::NoError);
     QVERIFY(sem.release());
+    QCOMPARE(sem.error(), QSystemSemaphore::NoError);
     QVERIFY(sem.acquire());
+    QCOMPARE(sem.error(), QSystemSemaphore::NoError);
     QVERIFY(sem.release());
+    QCOMPARE(sem.error(), QSystemSemaphore::NoError);
     QVERIFY(sem.acquire());
+    QCOMPARE(sem.error(), QSystemSemaphore::NoError);
     QVERIFY(sem.acquire());
+    QCOMPARE(sem.error(), QSystemSemaphore::NoError);
     QVERIFY(sem.release());
+    QCOMPARE(sem.error(), QSystemSemaphore::NoError);
     QVERIFY(sem.release());
     QCOMPARE(sem.error(), QSystemSemaphore::NoError);
     QCOMPARE(sem.errorString(), QString());

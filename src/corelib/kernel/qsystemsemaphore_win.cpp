@@ -136,6 +136,7 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
         }
     }
 
+    clearError();
     return true;
 }
 
