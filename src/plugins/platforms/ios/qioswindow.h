@@ -87,7 +87,6 @@ private:
 
     QRect m_normalGeometry;
     int m_windowLevel;
-    qreal m_devicePixelRatio;
 
     void raiseOrLower(bool raise);
     void updateWindowLevel();
