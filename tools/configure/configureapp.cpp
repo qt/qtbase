@@ -2098,7 +2098,7 @@ bool Configure::checkAvailability(const QString &part)
         available = findFile("pcre.h");
 
     else if (part == "ICU")
-        available = findFile("unicode/utypes.h") && findFile("unicode/ucol.h") && findFile("unicode/ustring.h");
+        available = tryCompileProject("unix/icu");
 
     else if (part == "ANGLE") {
         available = checkAngleAvailability();
