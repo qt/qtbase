@@ -59,7 +59,7 @@ extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
 QT_END_NAMESPACE
 #endif
 
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_NETWORK)
 #include <QHostInfo>
 #endif
 #include <QProcess>
@@ -2245,7 +2245,7 @@ void tst_QFile::writeLargeDataBlock_data()
     QTest::newRow("localfile-Fd")     << "./largeblockfile.txt" << (int)OpenFd;
     QTest::newRow("localfile-Stream") << "./largeblockfile.txt" << (int)OpenStream;
 
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(QT_NO_NETWORK)
     // Some semi-randomness to avoid collisions.
     QTest::newRow("unc file")
         << QString("//" + QtNetworkSettings::winServerName() + "/TESTSHAREWRITABLE/largefile-%1-%2.txt")

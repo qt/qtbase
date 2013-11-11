@@ -43,7 +43,6 @@ SUBDIRS=\
     qsettings
 
 !qtHaveModule(network): SUBDIRS -= \
-    qfile \
     qiodevice \
     qprocess \
     qtextstream
