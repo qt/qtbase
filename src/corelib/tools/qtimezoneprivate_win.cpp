@@ -305,7 +305,7 @@ static void calculateTransitionsForYear(const QWinTimeZonePrivate::QWinTransitio
     QDate daylightDate = calculateTransitionLocalDate(rule.daylightTimeRule, year);
     QTime daylightTime = QTime(rule.daylightTimeRule.wHour, rule.daylightTimeRule.wMinute,
                                rule.daylightTimeRule.wSecond);
-    if (standardDate.isValid() && standardTime.isValid())
+    if (daylightDate.isValid() && daylightTime.isValid())
         *dstMSecs = timeToMSecs(daylightDate, daylightTime) + (rule.standardTimeBias * 60000);
     else
         *dstMSecs = QTimeZonePrivate::invalidMSecs();
@@ -488,6 +488,9 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::data(qint64 forMSecsSinceEpoch) cons
     do {
         // Convert the transition rules into msecs for the year we want to try
         rule = ruleForYear(year);
+        // If no transition rules to calculate then no DST, so just use rule for std
+        if (rule.standardTimeRule.wMonth == 0 && rule.daylightTimeRule.wMonth == 0)
+            break;
         calculateTransitionsForYear(rule, year, &stdMSecs, &dstMSecs);
         if (stdMSecs < dstMSecs) {
             first = stdMSecs;
@@ -543,6 +546,9 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
     do {
         // Convert the transition rules into msecs for the year we want to try
         rule = ruleForYear(year);
+        // If no transition rules to calculate then no next transition
+        if (rule.standardTimeRule.wMonth == 0 && rule.daylightTimeRule.wMonth == 0)
+            return invalidData();
         calculateTransitionsForYear(rule, year, &stdMSecs, &dstMSecs);
         // Find the first and second transition for the year
         if (stdMSecs < dstMSecs) {
@@ -591,6 +597,9 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::previousTransition(qint64 beforeMSec
     do {
         // Convert the transition rules into msecs for the year we want to try
         rule = ruleForYear(year);
+        // If no transition rules to calculate then no previous transition
+        if (rule.standardTimeRule.wMonth == 0 && rule.daylightTimeRule.wMonth == 0)
+            return invalidData();
         calculateTransitionsForYear(rule, year, &stdMSecs, &dstMSecs);
         if (stdMSecs < dstMSecs) {
             first = stdMSecs;
