@@ -64,8 +64,12 @@ private Q_SLOTS:
     void run();
     void run_data() const;
 
+    void runTranslation();
+
     void compare();
     void compare_data() const;
+
+    void runCompare();
 
 private:
     const QString m_command;
@@ -218,6 +222,54 @@ void tst_uic::compare_data() const
             << baselineFile.absoluteFilePath()
             << generatedFile;
     }
+}
+
+void tst_uic::runTranslation()
+{
+    QProcess process;
+
+    QDir baseline(m_baseline);
+
+    QDir generated(m_generated.path());
+    generated.mkdir(QLatin1String("translation"));
+    QString generatedFile = generated.absolutePath() + QLatin1String("/translation/Dialog_without_Buttons_tr.h");
+
+    process.start(m_command, QStringList(baseline.filePath("Dialog_without_Buttons.ui"))
+        << QString(QLatin1String("-tr")) << "i18n"
+        << QString(QLatin1String("-include")) << "ki18n.h"
+        << QString(QLatin1String("-o")) << generatedFile);
+    QVERIFY2(process.waitForStarted(), msgProcessStartFailed(m_command, process.errorString()));
+    QVERIFY(process.waitForFinished());
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.exitCode(), 0);
+    QCOMPARE(QFileInfo(generatedFile).exists(), true);
+}
+
+
+void tst_uic::runCompare()
+{
+    QFile orgFile(m_baseline + QLatin1String("/translation/Dialog_without_Buttons_tr.h"));
+
+    QDir generated(m_generated.path());
+    QFile genFile(generated.absolutePath() + QLatin1String("/translation/Dialog_without_Buttons_tr.h"));
+
+    if (!orgFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QString err(QLatin1String("Could not read file: %1..."));
+        QFAIL(err.arg(orgFile.fileName()).toUtf8());
+    }
+
+    if (!genFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QString err(QLatin1String("Could not read file: %1..."));
+        QFAIL(err.arg(genFile.fileName()).toUtf8());
+    }
+
+    QString originalFile = orgFile.readAll();
+    originalFile.replace(QRegExp(QLatin1String("Created by: Qt User Interface Compiler version [.\\d]{5,5}")), "");
+
+    QString generatedFile = genFile.readAll();
+    generatedFile.replace(QRegExp(QLatin1String("Created by: Qt User Interface Compiler version [.\\d]{5,5}")), "");
+
+    QCOMPARE(generatedFile, originalFile);
 }
 
 QTEST_MAIN(tst_uic)
