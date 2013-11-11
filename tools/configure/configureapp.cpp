@@ -183,7 +183,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
     dictionary[ "DIRECTWRITE" ]     = "no";
     dictionary[ "NIS" ]             = "no";
-    dictionary[ "NEON" ]            = "no";
+    dictionary[ "NEON" ]            = "auto";
     dictionary[ "LARGE_FILE" ]      = "yes";
     dictionary[ "FONT_CONFIG" ]     = "no";
     dictionary[ "POSIX_IPC" ]       = "no";
@@ -2200,6 +2200,8 @@ bool Configure::checkAvailability(const QString &part)
         available = (platform() == QNX || platform() == BLACKBERRY) && compilerSupportsFlag("qcc -fstack-protector-strong");
     } else if (part == "SLOG2") {
         available = tryCompileProject("unix/slog2");
+    } else if (part == "NEON") {
+        available = (dictionary["QT_ARCH"] == "arm") && tryCompileProject("unix/neon");
     }
 
     return available;
@@ -2298,6 +2300,8 @@ void Configure::autoDetection()
         dictionary["AVX2"] = checkAvailability("AVX2") ? "yes" : "no";
     if (dictionary["IWMMXT"] == "auto")
         dictionary["IWMMXT"] = checkAvailability("IWMMXT") ? "yes" : "no";
+    if (dictionary["NEON"] == "auto")
+        dictionary["NEON"] = checkAvailability("NEON") ? "yes" : "no";
     if (dictionary["OPENSSL"] == "auto")
         dictionary["OPENSSL"] = checkAvailability("OPENSSL") ? "yes" : "no";
     if (dictionary["DBUS"] == "auto")
