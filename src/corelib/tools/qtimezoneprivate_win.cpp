@@ -362,7 +362,7 @@ void QWinTimeZonePrivate::init(const QByteArray &olsenId)
         m_windowsId = windowsSystemZoneId();
         m_id = systemTimeZoneId();
     } else {
-        m_windowsId = olsenIdToWindowsId(olsenId);
+        m_windowsId = ianaIdToWindowsId(olsenId);
         m_id = olsenId;
     }
 
@@ -620,10 +620,10 @@ QByteArray QWinTimeZonePrivate::systemTimeZoneId() const
     QByteArray olsenId;
     // If we have a real country, then try get a specific match for that country
     if (country != QLocale::AnyCountry)
-        olsenId = windowsIdToDefaultOlsenId(windowsId, country);
+        olsenId = windowsIdToDefaultIanaId(windowsId, country);
     // If we don't have a real country, or there wasn't a specific match, try the global default
     if (olsenId.isEmpty()) {
-        olsenId = windowsIdToDefaultOlsenId(windowsId);
+        olsenId = windowsIdToDefaultIanaId(windowsId);
         // If no global default then probably an unknown Windows ID so return UTC
         if (olsenId.isEmpty())
             return QByteArrayLiteral("UTC");
@@ -635,7 +635,7 @@ QSet<QByteArray> QWinTimeZonePrivate::availableTimeZoneIds() const
 {
     QSet<QByteArray> set;
     foreach (const QByteArray &winId, availableWindowsIds()) {
-        foreach (const QByteArray &olsenId, windowsIdToOlsenIds(winId))
+        foreach (const QByteArray &olsenId, windowsIdToIanaIds(winId))
             set << olsenId;
     }
     return set;

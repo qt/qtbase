@@ -146,12 +146,12 @@ public:
     static bool isValidId(const QByteArray &olsenId);
     static QString isoOffsetFormat(int offsetFromUtc);
 
-    static QByteArray olsenIdToWindowsId(const QByteArray &olsenId);
-    static QByteArray windowsIdToDefaultOlsenId(const QByteArray &windowsId);
-    static QByteArray windowsIdToDefaultOlsenId(const QByteArray &windowsId,
+    static QByteArray ianaIdToWindowsId(const QByteArray &ianaId);
+    static QByteArray windowsIdToDefaultIanaId(const QByteArray &windowsId);
+    static QByteArray windowsIdToDefaultIanaId(const QByteArray &windowsId,
                                                 QLocale::Country country);
-    static QList<QByteArray> windowsIdToOlsenIds(const QByteArray &windowsId);
-    static QList<QByteArray> windowsIdToOlsenIds(const QByteArray &windowsId,
+    static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId);
+    static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId,
                                                  QLocale::Country country);
 
 protected:
