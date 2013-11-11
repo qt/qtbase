@@ -342,7 +342,7 @@ QIOSWindow::QIOSWindow(QWindow *window)
     , m_normalGeometry(QPlatformWindow::geometry())
     , m_windowLevel(0)
 {
-    setParent(parent());
+    setParent(QPlatformWindow::parent());
     setWindowState(window->windowState());
 }
 
@@ -526,5 +526,7 @@ qreal QIOSWindow::devicePixelRatio() const
 {
     return m_view.contentScaleFactor;
 }
+
+#include "moc_qioswindow.cpp"
 
 QT_END_NAMESPACE
