@@ -517,8 +517,6 @@ private:
 
     QByteArray m_displayName;
 
-    xcb_window_t m_connectionEventListener;
-
     QXcbKeyboard *m_keyboard;
 #ifndef QT_NO_CLIPBOARD
     QXcbClipboard *m_clipboard;

@@ -319,23 +319,6 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     initializeXRandr();
     updateScreens();
 
-    m_connectionEventListener = xcb_generate_id(m_connection);
-    xcb_create_window(m_connection, XCB_COPY_FROM_PARENT,
-                      m_connectionEventListener, m_screens.at(0)->root(),
-                      0, 0, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY,
-                      m_screens.at(0)->screen()->root_visual, 0, 0);
-#ifndef QT_NO_DEBUG
-    QByteArray ba("Qt xcb connection listener window");
-    Q_XCB_CALL(xcb_change_property(xcb_connection(),
-                                   XCB_PROP_MODE_REPLACE,
-                                   m_connectionEventListener,
-                                   atom(QXcbAtom::_NET_WM_NAME),
-                                   atom(QXcbAtom::UTF8_STRING),
-                                   8,
-                                   ba.length(),
-                                   ba.constData()));
-#endif
-
     initializeGLX();
     initializeXFixes();
     initializeXRender();
@@ -372,9 +355,6 @@ QXcbConnection::~QXcbConnection()
 #ifndef QT_NO_DRAGANDDROP
     delete m_drag;
 #endif
-    // Delete screens in reverse order to avoid crash in case of multiple screens
-    while (!m_screens.isEmpty())
-        delete m_screens.takeLast();
 
 #ifdef XCB_USE_XINPUT2_MAEMO
     finalizeXInput2Maemo();
@@ -388,6 +368,10 @@ QXcbConnection::~QXcbConnection()
     }
 
     delete m_reader;
+
+    // Delete screens in reverse order to avoid crash in case of multiple screens
+    while (!m_screens.isEmpty())
+        delete m_screens.takeLast();
 
 #ifdef XCB_USE_EGL
     if (m_has_egl)
@@ -1066,14 +1050,21 @@ void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom a, uint id)
     xcb_client_message_event_t event;
     memset(&event, 0, sizeof(event));
 
+    const xcb_window_t eventListener = xcb_generate_id(m_connection);
+    Q_XCB_CALL(xcb_create_window(m_connection, XCB_COPY_FROM_PARENT,
+                                 eventListener, m_screens.at(0)->root(),
+                                 0, 0, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY,
+                                 m_screens.at(0)->screen()->root_visual, 0, 0));
+
     event.response_type = XCB_CLIENT_MESSAGE;
     event.format = 32;
     event.sequence = 0;
-    event.window = m_connectionEventListener;
+    event.window = eventListener;
     event.type = atom(a);
     event.data.data32[0] = id;
 
-    Q_XCB_CALL(xcb_send_event(xcb_connection(), false, m_connectionEventListener, XCB_EVENT_MASK_NO_EVENT, (const char *)&event));
+    Q_XCB_CALL(xcb_send_event(xcb_connection(), false, eventListener, XCB_EVENT_MASK_NO_EVENT, (const char *)&event));
+    Q_XCB_CALL(xcb_destroy_window(m_connection, eventListener));
     xcb_flush(xcb_connection());
 }
 
