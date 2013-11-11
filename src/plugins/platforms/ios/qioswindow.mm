@@ -456,6 +456,8 @@ void QIOSWindow::requestActivateWindow()
     if (!window()->isTopLevel() || blockedByModal())
         return;
 
+    [m_view.window makeKeyWindow];
+
     raise();
     QPlatformInputContext *context = QGuiApplicationPrivate::platformIntegration()->inputContext();
     static_cast<QIOSInputContext *>(context)->focusViewChanged(m_view);

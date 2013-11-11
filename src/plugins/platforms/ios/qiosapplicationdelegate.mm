@@ -64,7 +64,7 @@
     self.window.backgroundColor = [UIColor cyanColor];
 #endif
 
-    [self.window makeKeyAndVisible];
+    self.window.hidden = NO;
 
     return YES;
 }
