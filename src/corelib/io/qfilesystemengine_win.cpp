@@ -1308,7 +1308,7 @@ QString QFileSystemEngine::tempPath()
     HSTRING path;
     if (FAILED(tempFolderItem->get_Path(&path)))
         return ret;
-    ret = QString::fromWCharArray(WindowsGetStringRawBuffer(path, nullptr));
+    ret = QDir::fromNativeSeparators(QString::fromWCharArray(WindowsGetStringRawBuffer(path, nullptr)));
 #endif // Q_OS_WINRT
     if (ret.isEmpty()) {
 #if !defined(Q_OS_WINCE)
