@@ -137,6 +137,22 @@
     // FIXME: Allow the scale factor to be customized through QSurfaceFormat.
 }
 
+- (void)didAddSubview:(UIView *)subview
+{
+    if ([subview isKindOfClass:[QUIView class]])
+        self.clipsToBounds = YES;
+}
+
+- (void)willRemoveSubview:(UIView *)subview
+{
+    for (UIView *view in self.subviews) {
+        if (view != subview && [view isKindOfClass:[QUIView class]])
+            return;
+    }
+
+    self.clipsToBounds = NO;
+}
+
 - (void)layoutSubviews
 {
     // This method is the de facto way to know that view has been resized,
