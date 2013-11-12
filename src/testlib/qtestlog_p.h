@@ -58,6 +58,7 @@
 QT_BEGIN_NAMESPACE
 
 class QBenchmarkResult;
+class QRegularExpression;
 
 class Q_TESTLIB_EXPORT QTestLog
 {
@@ -75,6 +76,7 @@ public:
     static void addBenchmarkResult(const QBenchmarkResult &result);
 
     static void ignoreMessage(QtMsgType type, const char *msg);
+    static void ignoreMessage(QtMsgType type, const QRegularExpression &expression);
     static int unhandledIgnoreMessages();
     static void printUnhandledIgnoreMessages();
     static void clearIgnoreMessages();

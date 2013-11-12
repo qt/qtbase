@@ -26,6 +26,12 @@
 <Message type="qdebug" file="" line="0">
     <Description><![CDATA[Baba]]></Description>
 </Message>
+<Message type="qdebug" file="" line="0">
+    <Description><![CDATA[Bubublabla]]></Description>
+</Message>
+<Message type="qwarn" file="" line="0">
+    <Description><![CDATA[Babablabla]]></Description>
+</Message>
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="testMissingWarnings">
@@ -34,6 +40,14 @@
 </Message>
 <Message type="info" file="" line="0">
     <Description><![CDATA[Did not receive message: "Warning1"]]></Description>
+</Message>
+<Incident type="fail" file="" line="0">
+    <Description><![CDATA[Not all expected messages were received]]></Description>
+</Incident>
+</TestFunction>
+<TestFunction name="testMissingWarningsRegularExpression">
+<Message type="info" file="" line="0">
+    <Description><![CDATA[Did not receive any message matching: "Warning\s\d"]]></Description>
 </Message>
 <Incident type="fail" file="" line="0">
     <Description><![CDATA[Not all expected messages were received]]></Description>

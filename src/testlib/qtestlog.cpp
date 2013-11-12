@@ -49,6 +49,8 @@
 #include <QtTest/private/qxmltestlogger_p.h>
 #include <QtCore/qatomic.h>
 #include <QtCore/qbytearray.h>
+#include <QtCore/QVariant>
+#include <QtCore/QRegularExpression>
 
 #include <stdlib.h>
 #include <string.h>
@@ -84,11 +86,8 @@ namespace QTest {
 
     struct IgnoreResultList
     {
-        inline IgnoreResultList(QtMsgType tp, const char *message)
-            : type(tp), next(0)
-        { msg = qstrdup(message); }
-        inline ~IgnoreResultList()
-        { delete [] msg; }
+        inline IgnoreResultList(QtMsgType tp, const QVariant &patternIn)
+            : type(tp), pattern(patternIn), next(0) {}
 
         static inline void clearList(IgnoreResultList *&list)
         {
@@ -99,8 +98,29 @@ namespace QTest {
             }
         }
 
+        static void append(IgnoreResultList *&list, QtMsgType type, const QVariant &patternIn)
+        {
+            QTest::IgnoreResultList *item = new QTest::IgnoreResultList(type, patternIn);
+
+            if (!list) {
+                list = item;
+                return;
+            }
+            IgnoreResultList *last = list;
+            for ( ; last->next; last = last->next) ;
+            last->next = item;
+        }
+
+        inline bool matches(QtMsgType tp, const QString &message) const
+        {
+            return tp == type
+                   && (pattern.type() == QVariant::String ?
+                       pattern.toString() == message :
+                       pattern.toRegularExpression().match(message).hasMatch());
+        }
+
         QtMsgType type;
-        char *msg;
+        QVariant pattern;
         IgnoreResultList *next;
     };
 
@@ -208,10 +228,13 @@ namespace QTest {
 
     static bool handleIgnoredMessage(QtMsgType type, const char *msg)
     {
+        if (!ignoreResultList)
+            return false;
+        const QString message = QString::fromLocal8Bit(msg);
         IgnoreResultList *last = 0;
         IgnoreResultList *list = ignoreResultList;
         while (list) {
-            if (list->type == type && strcmp(msg, list->msg) == 0) {
+            if (list->matches(type, message)) {
                 // remove the item from the list
                 if (last)
                     last->next = list->next;
@@ -316,7 +339,11 @@ void QTestLog::printUnhandledIgnoreMessages()
     char msg[1024];
     QTest::IgnoreResultList *list = QTest::ignoreResultList;
     while (list) {
-        qsnprintf(msg, 1024, "Did not receive message: \"%s\"", list->msg);
+        if (list->pattern.type() == QVariant::String) {
+            qsnprintf(msg, 1024, "Did not receive message: \"%s\"", qPrintable(list->pattern.toString()));
+        } else {
+            qsnprintf(msg, 1024, "Did not receive any message matching: \"%s\"", qPrintable(list->pattern.toRegularExpression().pattern()));
+        }
         QTest::TestLoggers::addMessage(QAbstractTestLogger::Info, msg);
 
         list = list->next;
@@ -462,16 +489,14 @@ void QTestLog::ignoreMessage(QtMsgType type, const char *msg)
 {
     QTEST_ASSERT(msg);
 
-    QTest::IgnoreResultList *item = new QTest::IgnoreResultList(type, msg);
+    QTest::IgnoreResultList::append(QTest::ignoreResultList, type, QString::fromLocal8Bit(msg));
+}
 
-    QTest::IgnoreResultList *list = QTest::ignoreResultList;
-    if (!list) {
-        QTest::ignoreResultList = item;
-        return;
-    }
-    while (list->next)
-        list = list->next;
-    list->next = item;
+void QTestLog::ignoreMessage(QtMsgType type, const QRegularExpression &expression)
+{
+    QTEST_ASSERT(expression.isValid());
+
+    QTest::IgnoreResultList::append(QTest::ignoreResultList, type, QVariant(expression));
 }
 
 void QTestLog::setMaxWarnings(int m)

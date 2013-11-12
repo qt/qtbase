@@ -2332,6 +2332,27 @@ void QTest::ignoreMessage(QtMsgType type, const char *message)
     QTestLog::ignoreMessage(type, message);
 }
 
+/*!
+    \overload
+
+    Ignores messages created by qDebug() or qWarning(). If the \a message
+    matching \a messagePattern
+    with the corresponding \a type is outputted, it will be removed from the
+    test log. If the test finished and the \a message was not outputted,
+    a test failure is appended to the test log.
+
+    \b {Note:} Invoking this function will only ignore one message.
+    If the message you want to ignore is outputted twice, you have to
+    call ignoreMessage() twice, too.
+
+    \since 5.3
+*/
+
+void QTest::ignoreMessage(QtMsgType type, const QRegularExpression &messagePattern)
+{
+    QTestLog::ignoreMessage(type, messagePattern);
+}
+
 /*! \internal
  */
 
