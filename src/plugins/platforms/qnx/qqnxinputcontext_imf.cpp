@@ -54,6 +54,8 @@
 #include <QtCore/QVariant>
 #include <QtCore/QVariantHash>
 #include <QtCore/QWaitCondition>
+#include <QtCore/QQueue>
+#include <QtCore/QGlobalStatic>
 
 #include <dlfcn.h>
 #include "imf/imf_client.h"
@@ -73,14 +75,10 @@
 #define qInputContextDebug QT_NO_QDEBUG_MACRO
 #endif
 
-#include <QtGui/QAccessible>
-#include <QtGui/private/qaccessible2_p.h>
-
 static QQnxInputContext *sInputContextInstance;
 static QColor sSelectedColor(0,0xb8,0,85);
-static QColor sAutoCorrectedColor(0,0xb8,0,85);
-static QColor sRevertedColor(0,0x8d,0xaf,51);
 
+static const input_session_t *sSpellCheckSession = 0;
 static const input_session_t *sInputSession = 0;
 static bool isSessionOkay(input_session_t *ic)
 {
@@ -96,12 +94,19 @@ enum ImfEventType
     ImfGetTextAfterCursor,
     ImfGetTextBeforeCursor,
     ImfSendEvent,
-    ImfSendAsyncEvent,
     ImfSetComposingRegion,
     ImfSetComposingText,
     ImfIsTextSelected,
     ImfIsAllTextSelected,
 };
+
+struct SpellCheckInfo {
+    SpellCheckInfo(void *_context, void (*_spellCheckDone)(void *, const QString &, const QList<int> &))
+        : context(_context), spellCheckDone(_spellCheckDone) {}
+    void *context;
+    void (*spellCheckDone)(void *, const QString &, const QList<int> &);
+};
+Q_GLOBAL_STATIC(QQueue<SpellCheckInfo>, sSpellCheckQueue)
 
 // IMF requests all arrive on IMF's own thread and have to be posted to the main thread to be processed.
 class QQnxImfRequest
@@ -305,7 +310,8 @@ static int32_t ic_send_async_event(input_session_t *ic, event_t *event)
 {
     qInputContextIMFRequestDebug() << Q_FUNC_INFO;
 
-    QQnxImfRequest imfEvent(ic, ImfSendAsyncEvent);
+    // There's no difference from our point of view between ic_send_event & ic_send_async_event
+    QQnxImfRequest imfEvent(ic, ImfSendEvent);
     imfEvent.sae.event = event;
     imfEvent.sae.result = -1;
     executeIMFRequest(&imfEvent);
@@ -372,6 +378,7 @@ static int32_t ic_is_all_text_selected(input_session_t* ic, int32_t* pIsSelected
     return event.its.result;
 }
 
+// LCOV_EXCL_START - exclude from code coverage analysis
 // The following functions are defined in the IMF headers but are not currently called.
 
 // Not currently used
@@ -446,6 +453,8 @@ static int32_t ic_set_selection(input_session_t *ic, int32_t start, int32_t end)
     return 0;
 }
 
+// End of un-hittable code
+// LCOV_EXCL_STOP
 
 
 static connection_interface_t ic_funcs = {
@@ -497,21 +506,12 @@ static spannable_string_t *toSpannableString(const QString &text)
 {
     qInputContextDebug() << Q_FUNC_INFO << text;
 
-    spannable_string_t *pString = reinterpret_cast<spannable_string_t *>(malloc(sizeof(spannable_string_t)));
-    pString->str = (wchar_t *)malloc(sizeof(wchar_t) * text.length() + 1);
-    pString->length = text.length();
+    spannable_string_t *pString = static_cast<spannable_string_t *>(malloc(sizeof(spannable_string_t)));
+    pString->str =  static_cast<wchar_t *>(malloc(sizeof(wchar_t) * text.length() + 1));
+    pString->length = text.toWCharArray(pString->str);
     pString->spans = 0;
     pString->spans_count = 0;
-
-    const QChar *pData = text.constData();
-    wchar_t *pDst = pString->str;
-
-    while (!pData->isNull()) {
-        *pDst = pData->unicode();
-        pDst++;
-        pData++;
-    }
-    *pDst = 0;
+    pString->str[pString->length] = 0;
 
     return pString;
 }
@@ -575,6 +575,7 @@ QQnxInputContext::QQnxInputContext(QQnxIntegration *integration, QQnxAbstractVir
          m_isUpdatingText(false),
          m_inputPanelVisible(false),
          m_inputPanelLocale(QLocale::c()),
+         m_focusObject(0),
          m_integration(integration),
          m_virtualKeyboard(keyboard)
 {
@@ -620,9 +621,12 @@ bool QQnxInputContext::isValid() const
 void QQnxInputContext::processImfEvent(QQnxImfRequest *imfEvent)
 {
     // If input session is no longer current, just bail, imfEvent should already be set with the appropriate
-    // return value.
-    if (!isSessionOkay(imfEvent->session))
-        return;
+    // return value.  The only exception is spell check events since they're not associated with the
+    // object with focus.
+    if (imfEvent->type != ImfSendEvent || imfEvent->sae.event->event_type != EVENT_SPELL_CHECK) {
+        if (!isSessionOkay(imfEvent->session))
+            return;
+    }
 
     switch (imfEvent->type) {
     case ImfCommitText:
@@ -649,9 +653,7 @@ void QQnxInputContext::processImfEvent(QQnxImfRequest *imfEvent)
         imfEvent->gtac.result = onGetTextBeforeCursor(imfEvent->gtac.n, imfEvent->gtac.flags);
         break;
 
-        // Don't need to distinguish these two cases
     case ImfSendEvent:
-    case ImfSendAsyncEvent:
         imfEvent->sae.result = onSendEvent(imfEvent->sae.event);
         break;
 
@@ -983,29 +985,31 @@ void QQnxInputContext::updateComposition(spannable_string_t *text, int32_t new_c
                                                    QVariant()));
 
     for (unsigned int i = 0; i < text->spans_count; ++i) {
-        const uint64_t knownMask = ACTIVE_REGION_ATTRIB | COMPOSED_TEXT_ATTRIB |
-            AUTO_CORRECTION_ATTRIB | REVERT_CORRECTION_ATTRIB;
-        bool selected = (text->spans[i].attributes_mask & ACTIVE_REGION_ATTRIB) != 0;
-        bool converted = (text->spans[i].attributes_mask & COMPOSED_TEXT_ATTRIB) != 0;
-        bool autoCorrected = (text->spans[i].attributes_mask & AUTO_CORRECTION_ATTRIB) != 0;
-        bool reverted = (text->spans[i].attributes_mask & REVERT_CORRECTION_ATTRIB) != 0;
+        QColor highlightColor;
+        bool underline = false;
 
-        if (text->spans[i].attributes_mask & knownMask) {
+        if ((text->spans[i].attributes_mask & COMPOSED_TEXT_ATTRIB) != 0)
+            underline = true;
+
+        if ((text->spans[i].attributes_mask & ACTIVE_REGION_ATTRIB) != 0) {
+            underline = true;
+            highlightColor = m_highlightColor[ActiveRegion];
+        } else if ((text->spans[i].attributes_mask & AUTO_CORRECTION_ATTRIB) != 0) {
+            highlightColor = m_highlightColor[AutoCorrected];
+        } else if ((text->spans[i].attributes_mask & REVERT_CORRECTION_ATTRIB) != 0) {
+            highlightColor = m_highlightColor[Reverted];
+        }
+
+        if (underline || highlightColor.isValid()) {
             QTextCharFormat format;
-
-            if (converted || selected) {
+            if (underline)
                 format.setFontUnderline(true);
-            }
-            if (selected) {
-                format.setBackground(QBrush(sSelectedColor));
-            } else if (autoCorrected) {
-                format.setBackground(QBrush(sAutoCorrectedColor));
-            } else if (reverted) {
-                format.setBackground(QBrush(sRevertedColor));
-            }
-            qInputContextDebug() << "attrib:" << selected << converted << text->spans[i].start << text->spans[i].end;
+            if (highlightColor.isValid())
+                format.setBackground(QBrush(highlightColor));
+            qInputContextDebug() << "    attrib:  " << underline << highlightColor << text->spans[i].start << text->spans[i].end;
             attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, text->spans[i].start,
                                                            text->spans[i].end - text->spans[i].start + 1, QVariant(format)));
+
         }
     }
     QInputMethodEvent event(m_composingText, attributes);
@@ -1035,13 +1039,59 @@ void QQnxInputContext::finishComposingText()
     updateCursorPosition();
 }
 
+// Return the index relative to a UTF-16 sequence of characters for a index that is relative to the
+// corresponding UTF-32 character string given a starting index in the UTF-16 string and a count
+// of the number of lead surrogates prior to that index.  Updates the highSurrogateCount to reflect the
+// new surrogate characters encountered.
+static int adjustIndex(const QChar *text, int utf32Index, int utf16StartIndex, int *highSurrogateCount)
+{
+    int utf16Index = utf32Index + *highSurrogateCount;
+    while (utf16StartIndex <  utf16Index) {
+        if (text[utf16StartIndex].isHighSurrogate()) {
+            ++utf16Index;
+            ++*highSurrogateCount;
+        }
+        ++utf16StartIndex;
+    }
+    return utf16StartIndex;
+}
+
+int QQnxInputContext::handleSpellCheck(spell_check_event_t *event)
+{
+    // These should never happen.
+    if (sSpellCheckQueue->isEmpty() || event->event.event_id != NOTIFY_SP_CHECK_MISSPELLINGS)
+        return -1;
+
+    SpellCheckInfo callerInfo = sSpellCheckQueue->dequeue();
+    spannable_string_t* spellCheckData = *event->data;
+    QString text = QString::fromWCharArray(spellCheckData->str, spellCheckData->length);
+    // Generate the list of indices indicating misspelled words in the text.  We use end + 1
+    // since it's more conventional to have the end index point just past the string.  We also
+    // can't use the indices directly since they are relative to UTF-32 encoded data and the
+    // conversion to Qt's UTF-16 internal format might cause lengthening.
+    QList<int> indices;
+    int adjustment = 0;
+    int index = 0;
+    for (unsigned int i = 0; i < spellCheckData->spans_count; ++i) {
+        if (spellCheckData->spans[i].attributes_mask & MISSPELLED_WORD_ATTRIB) {
+            index = adjustIndex(text.data(), spellCheckData->spans[i].start, index, &adjustment);
+            indices.push_back(index);
+            index = adjustIndex(text.data(), spellCheckData->spans[i].end + 1, index, &adjustment);
+            indices.push_back(index);
+        }
+    }
+    callerInfo.spellCheckDone(callerInfo.context, text, indices);
+
+    return 0;
+}
+
 int32_t QQnxInputContext::processEvent(event_t *event)
 {
     int32_t result = -1;
     switch (event->event_type) {
     case EVENT_SPELL_CHECK: {
         qInputContextDebug() << Q_FUNC_INFO << "EVENT_SPELL_CHECK";
-        result = 0;
+        result = handleSpellCheck(reinterpret_cast<spell_check_event_t *>(event));
         break;
     }
 
@@ -1101,7 +1151,7 @@ int32_t QQnxInputContext::onCommitText(spannable_string_t *text, int32_t new_cur
 {
     Q_UNUSED(new_cursor_position);
 
-    m_composingText = QString::fromWCharArray(text->str, text->length);
+    updateComposition(text, new_cursor_position);
     finishComposingText();
 
     return 0;
@@ -1189,13 +1239,6 @@ spannable_string_t *QQnxInputContext::onGetTextBeforeCursor(int32_t n, int32_t f
 }
 
 int32_t QQnxInputContext::onSendEvent(event_t *event)
-{
-    qInputContextDebug() << Q_FUNC_INFO;
-
-    return processEvent(event);
-}
-
-int32_t QQnxInputContext::onSendAsyncEvent(event_t *event)
 {
     qInputContextDebug() << Q_FUNC_INFO;
 
@@ -1317,9 +1360,31 @@ void QQnxInputContext::keyboardLocaleChanged(const QLocale &locale)
     }
 }
 
+void QQnxInputContext::setHighlightColor(int index, const QColor &color)
+{
+    qInputContextDebug() << Q_FUNC_INFO << "setHighlightColor" << index << color << qGuiApp->focusObject();
+
+    if (!sInputContextInstance)
+        return;
+
+    // If the focus has changed, revert all colors to the default.
+    if (sInputContextInstance->m_focusObject != qGuiApp->focusObject()) {
+        QColor invalidColor;
+        sInputContextInstance->m_highlightColor[ActiveRegion] = sSelectedColor;
+        sInputContextInstance->m_highlightColor[AutoCorrected] = invalidColor;
+        sInputContextInstance->m_highlightColor[Reverted] = invalidColor;
+        sInputContextInstance->m_focusObject = qGuiApp->focusObject();
+    }
+    if (index >= 0 && index <= Reverted)
+        sInputContextInstance->m_highlightColor[index] = color;
+}
+
 void QQnxInputContext::setFocusObject(QObject *object)
 {
     qInputContextDebug() << Q_FUNC_INFO << "input item=" << object;
+
+    // Ensure the colors are reset if we've a change in focus object
+    setHighlightColor(-1, QColor());
 
     if (!inputMethodAccepted()) {
         if (m_inputPanelVisible)
@@ -1338,6 +1403,31 @@ void QQnxInputContext::setFocusObject(QObject *object)
         if (!m_inputPanelVisible)
             showInputPanel();
     }
+}
+
+bool QQnxInputContext::checkSpelling(const QString &text, void *context, void (*spellCheckDone)(void *context, const QString &text, const QList<int> &indices))
+{
+    qInputContextDebug() << Q_FUNC_INFO << "text" << text;
+
+    if (!imfAvailable())
+        return false;
+
+    if (!sSpellCheckSession)
+        sSpellCheckSession = p_ictrl_open_session(&ic_funcs);
+
+    action_event_t spellEvent;
+    initEvent(&spellEvent.event, sSpellCheckSession, EVENT_ACTION, ACTION_CHECK_MISSPELLINGS, sizeof(spellEvent));
+    int len = text.length();
+    spellEvent.event_data = alloca(sizeof(wchar_t) * (len + 1));
+    spellEvent.length_data = text.toWCharArray(static_cast<wchar_t*>(spellEvent.event_data)) * sizeof(wchar_t);
+
+    int rc = p_ictrl_dispatch_event(reinterpret_cast<event_t*>(&spellEvent));
+
+    if (rc == 0) {
+        sSpellCheckQueue->enqueue(SpellCheckInfo(context, spellCheckDone));
+        return true;
+    }
+    return false;
 }
 
 QT_END_NAMESPACE

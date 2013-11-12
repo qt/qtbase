@@ -44,6 +44,9 @@
 #include "qqnxglcontext.h"
 #include "qqnxscreen.h"
 #include "qqnxwindow.h"
+#if defined(QQNX_IMF)
+#include "qqnxinputcontext_imf.h"
+#endif
 
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
@@ -89,6 +92,17 @@ void QQnxNativeInterface::setWindowProperty(QPlatformWindow *window, const QStri
         QQnxWindow *qnxWindow = static_cast<QQnxWindow*>(window);
         qnxWindow->setMMRendererWindowName(value.toString());
     }
+}
+
+QPlatformNativeInterface::NativeResourceForIntegrationFunction QQnxNativeInterface::nativeResourceFunctionForIntegration(const QByteArray &resource)
+{
+#if defined(QQNX_IMF)
+    if (resource == "blackberryIMFSetHighlightColor")
+        return reinterpret_cast<NativeResourceForIntegrationFunction>(QQnxInputContext::setHighlightColor);
+    if (resource == "blackberryIMFCheckSpelling")
+        return reinterpret_cast<NativeResourceForIntegrationFunction>(QQnxInputContext::checkSpelling);
+#endif
+    return 0;
 }
 
 QT_END_NAMESPACE

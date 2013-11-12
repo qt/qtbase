@@ -47,6 +47,7 @@
 
 #include <QtCore/QLocale>
 #include <QtCore/QMetaType>
+#include <QtCore/QList>
 #include <qpa/qplatformintegration.h>
 
 #include "imf/imf_client.h"
@@ -65,6 +66,13 @@ public:
     explicit QQnxInputContext(QQnxIntegration *integration, QQnxAbstractVirtualKeyboard &keyboard);
     ~QQnxInputContext();
 
+    // Indices for selecting and setting highlight colors.
+    enum HighlightIndex {
+        ActiveRegion,
+        AutoCorrected,
+        Reverted,
+    };
+
     bool isValid() const;
 
     bool filterEvent(const QEvent *event);
@@ -82,6 +90,10 @@ public:
     QLocale locale() const;
     void setFocusObject(QObject *object);
 
+    static void setHighlightColor(int index, const QColor &color);
+
+    static bool checkSpelling(const QString &text, void *context, void (*spellCheckDone)(void *context, const QString &text, const QList<int> &indices));
+
 private Q_SLOTS:
     void keyboardVisibilityChanged(bool visible);
     void keyboardLocaleChanged(const QLocale &locale);
@@ -93,6 +105,7 @@ private:
     void dispatchFocusLossEvent();
     bool dispatchRequestSoftwareInputPanel();
     bool dispatchCloseSoftwareInputPanel();
+    int handleSpellCheck(spell_check_event_t *event);
     int32_t processEvent(event_t *event);
 
     void closeSession();
@@ -113,7 +126,6 @@ private:
     spannable_string_t *onGetTextAfterCursor(int32_t n, int32_t flags);
     spannable_string_t *onGetTextBeforeCursor(int32_t n, int32_t flags);
     int32_t onSendEvent(event_t *event);
-    int32_t onSendAsyncEvent(event_t *event);
     int32_t onSetComposingRegion(int32_t start, int32_t end);
     int32_t onSetComposingText(spannable_string_t *text, int32_t new_cursor_position);
     int32_t onIsTextSelected(int32_t* pIsSelected);
@@ -126,6 +138,10 @@ private:
     bool m_isUpdatingText;
     bool m_inputPanelVisible;
     QLocale m_inputPanelLocale;
+    // The object that had focus when the last highlight color was set.
+    QObject *m_focusObject;
+    // Indexed by HighlightIndex
+    QColor m_highlightColor[3];
     QQnxIntegration *m_integration;
     QQnxAbstractVirtualKeyboard &m_virtualKeyboard;
 };
