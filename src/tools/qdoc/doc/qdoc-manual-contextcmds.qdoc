@@ -46,28 +46,28 @@
     below the \l {Topic Commands} {topic} command.
 
     \list
-      \li \l {16-qdoc-commands-status.html#compat-command}{\\compat},
-      \li \l {15-qdoc-commands-navigation.html#contentspage-command}{\\contentspage},
-      \li \l {15-qdoc-commands-navigation.html#indexpage-command}{\\indexpage},
-      \li \l {19-qdoc-commands-grouping.html#ingroup-command}{\\ingroup},
-      \li \l {18-qdoc-commands-relating.html#inherits-command}{\\inherits},
-      \li \l {19-qdoc-commands-grouping.html#inmodule-command}{\\inmodule},
-      \li \l {16-qdoc-commands-status.html#internal-command}{\\internal},
-      \li \l {19-qdoc-commands-grouping.html#mainclass-command}{\\mainclass},
-      \li \l {15-qdoc-commands-navigation.html#nextpage-command}{\\nextpage},
-      \li \l {17-qdoc-commands-thread.html#nonreentrant-command}{\\nonreentrant},
-      \li \l {16-qdoc-commands-status.html#obsolete-command}{\\obsolete},
-      \li \l {18-qdoc-commands-relating.html#overload-command}{\\overload},
-      \li \l {16-qdoc-commands-status.html#preliminary-command}{\\preliminary},
-      \li \l {15-qdoc-commands-navigation.html#previouspage-command}{\\previouspage},
-      \li \l {17-qdoc-commands-thread.html#reentrant-command}{\\reentrant},
-      \li \l {18-qdoc-commands-relating.html#reimp-command}{\\reimp},
-      \li \l {18-qdoc-commands-relating.html#relates-command}{\\relates},
-      \li \l {16-qdoc-commands-status.html#since-command}{\\since},
-      \li \l {15-qdoc-commands-navigation.html#startpage-command}{\\startpage},
-      \li \l {20-qdoc-commands-namingthings.html#subtitle-command}{\\subtitle}
-      \li \l {17-qdoc-commands-thread.html#threadsafe-command}{\\threadsafe},
-      \li \l {20-qdoc-commands-namingthings.html#title-command}{\\title}
+      \li \l {compat-command}{\\compat},
+      \li \l {contentspage-command}{\\contentspage},
+      \li \l {indexpage-command}{\\indexpage},
+      \li \l {ingroup-command}{\\ingroup},
+      \li \l {inherits-command}{\\inherits},
+      \li \l {inmodule-command}{\\inmodule},
+      \li \l {internal-command}{\\internal},
+      \li \l {mainclass-command}{\\mainclass},
+      \li \l {nextpage-command}{\\nextpage},
+      \li \l {nonreentrant-command}{\\nonreentrant},
+      \li \l {obsolete-command}{\\obsolete},
+      \li \l {overload-command}{\\overload},
+      \li \l {preliminary-command}{\\preliminary},
+      \li \l {previouspage-command}{\\previouspage},
+      \li \l {reentrant-command}{\\reentrant},
+      \li \l {reimp-command}{\\reimp},
+      \li \l {relates-command}{\\relates},
+      \li \l {since-command}{\\since},
+      \li \l {startpage-command}{\\startpage},
+      \li \l {subtitle-command}{\\subtitle}
+      \li \l {threadsafe-command}{\\threadsafe},
+      \li \l {title-command}{\\title}
     \endlist
 
 */
@@ -297,7 +297,7 @@
     \section1 \\default
 
     The \\default command is for marking a QML property as the
-    \l {http://qt-project.org/doc/qt-4.7/qdeclarativeintroduction.html#default-properties}
+    \l {default-properties}
     {default property}. The word \span {class="newStuff"} {default} is shown in red in
     the documentation of the property.
 
@@ -314,7 +314,7 @@
     \endcode
 
     See how QDoc renders this property on the reference page for the
-    \l {http://qt-project.org/doc/qt-4.7/qml-state.html#changes-prop} {State}
+    \l {changes-prop} {State}
     type.
 
     \target obsolete-command
@@ -448,7 +448,7 @@
         \list
         \li ...
         \li Joining
-           \l {http://qt-project.org/doc/qt-5.0/qtcore/qchar.html#Joining-enum}
+           \l {Joining-enum}
               {joining}()
            const   \c (preliminary)
        \li ...
@@ -497,7 +497,7 @@
     configuration variable. For that reason this reference will change
     according to the current documentation project.
 
-    See also \l {25-qdoc-configuration-derivedprojects.html#project}
+    See also \l {project}
     {\c project}.
 */
 
@@ -794,7 +794,7 @@
         </h3>
         \endraw
 
-    This function overloads \l {http://qt-project.org/doc/qt-5.0/qtwidgets/qwidget.html#addAction} {addAction()}
+    This function overloads \l {addAction} {addAction()}
 
         This convenience function creates a new action with an
         \e icon and some \e text. The function adds the newly
@@ -802,7 +802,7 @@
         returns it.
 
         See also
-        \l {http://qt-project.org/doc/qt-5.0/qtwidgets/qwidget.html#addAction}
+        \l {addAction}
         {QWidget::addAction}().
     \endquotation
 

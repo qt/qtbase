@@ -80,7 +80,7 @@
     \endcode
 
     From the QDoc comment above, QDoc generates the HTML page
-    \l {http://qt-project.org/doc/qt-5.0/qtcore/qobject.html#details}
+    \l {details}
     {QObject Class Reference}.
 
     This manual explains how to use the QDoc commands in QDoc comments
@@ -120,7 +120,7 @@
     also specify \e {DITAXML} to get DITA XML output instead.
 
     Next, QDoc uses the values of the
-    \l {22-qdoc-configuration-generalvariables.html#headerdirs-variable}
+    \l {headerdirs-variable}
     {headerdirs} variable and/or the \l
     {22-qdoc-configuration-generalvariables.html#headers-variable}
     {headers} variable to find and parse all the header files for your
