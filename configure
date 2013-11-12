@@ -328,7 +328,7 @@ getXQMakeConf()
 {
     if [ -z "$xspecvals" ]; then
         xspecvals=`expandQMakeConf "$XQMAKESPEC/qmake.conf" | extractQMakeVariables "!host_build"`
-        if [ "$BUILD_ON_MAC" = "yes" ]; then xspecvals=$(macSDKify "$xspecvals"); fi
+        if [ "$XPLATFORM_MAC" = "yes" ]; then xspecvals=$(macSDKify "$xspecvals"); fi
     fi
     getSingleQMakeVariable "$1" "$xspecvals"
 }
@@ -483,10 +483,8 @@ fi
 #-------------------------------------------------------------------------------
 
 BUILD_ON_MAC=no
-PLATFORM_MAC=no
 if [ -d /System/Library/Frameworks/Carbon.framework ]; then
     BUILD_ON_MAC=yes
-    PLATFORM_MAC=maybe
 fi
 BUILD_ON_MSYS=no
 HOST_DIRLIST_SEP=":"
@@ -701,6 +699,8 @@ RPATH_FLAGS=
 W_FLAGS=
 QCONFIG_FLAGS=
 XPLATFORM=              # This seems to be the QMAKESPEC, like "linux-g++"
+XPLATFORM_MAC=no
+XPLATFORM_IOS=no
 XPLATFORM_ANDROID=no
 XPLATFORM_MINGW=no      # Whether target platform is MinGW (win32-g++*)
 XPLATFORM_MAEMO=no
@@ -2676,7 +2676,11 @@ case "$XPLATFORM" in
         XPLATFORM_QNX=yes
         ;;
     *ios*)
+        XPLATFORM_MAC=yes
         XPLATFORM_IOS=yes
+        ;;
+    *macx*)
+        XPLATFORM_MAC=yes
         ;;
     # XPLATFORM_ANDROID should not be set for unsupported/android-g++
     *unsupported*)
@@ -2713,14 +2717,12 @@ CFG_RTOS_ENABLED=yes
 EditionString=Commercial
 if [ -f "$relpath"/LICENSE.PREVIEW.COMMERCIAL ] && [ $COMMERCIAL_USER = "yes" ]; then
     # Commercial preview release
-    [ "$PLATFORM_MAC" = "maybe" ] && PLATFORM_MAC=yes
     Licensee="Preview"
     Edition="Preview"
     QT_EDITION="QT_EDITION_DESKTOP"
     LicenseType="Technology Preview"
 elif [ $COMMERCIAL_USER = "yes" ]; then
     # one of commercial editions
-    [ "$PLATFORM_MAC" = "maybe" ] && PLATFORM_MAC=yes
 
     # read in the license file
     [ -z "$LICENSE_FILE" ] && LICENSE_FILE="$QT_LICENSE_FILE"
@@ -2817,7 +2819,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         ;;
     esac
     ### EMBEDDED_QPA logic missing ###
-    case "$PlatformCode,$PLATFORM_MAC" in
+    case "$PlatformCode,$XPLATFORM_MAC" in
     X9,* | XC,* | XU,* | XW,* | XM,*)
         # Qt All-OS
         LICENSE_EXTENSION="-ALLOS"
@@ -2836,7 +2838,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         ;;
     *)
         Platform=Linux/X11
-        [ "$PLATFORM_MAC" = "yes" ] && Platform='Mac OS X'
+        [ "$XPLATFORM_MAC" = "yes" ] && Platform='Mac OS X'
         echo
         echo "You are not licensed for the $Platform platform."
         echo
@@ -2919,7 +2921,6 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
     fi
 elif [ $COMMERCIAL_USER = "no" ]; then
     # Open Source edition - may only be used under the terms of the GPL or LGPL.
-    [ "$PLATFORM_MAC" = "maybe" ] && PLATFORM_MAC=yes
     Licensee="Open Source"
     Edition="OpenSource"
     EditionString="Open Source"
@@ -3113,7 +3114,7 @@ minimal|small|medium|large|full)
     fi
 esac
 
-if [ "$PLATFORM_MAC" = "no" -a "$CFG_DEBUG_RELEASE" = "yes" ]; then
+if [ "$XPLATFORM_MAC" = "no" -a "$CFG_DEBUG_RELEASE" = "yes" ]; then
     echo
     echo "WARNING: -debug-and-release is not supported outside of Mac OS X."
     echo "Qt can be built in release mode with separate debug information, so"
@@ -3291,7 +3292,7 @@ fi
 
 # detect build style
 if [ "$CFG_DEBUG" = "auto" ]; then
-    if [ "$PLATFORM_MAC" = "yes" -o "$XPLATFORM_MINGW" = "yes" ]; then
+    if [ "$XPLATFORM_MAC" = "yes" -o "$XPLATFORM_MINGW" = "yes" ]; then
         CFG_DEBUG_RELEASE=yes
         CFG_DEBUG=yes
     elif [ "$CFG_DEV" = "yes" ]; then
@@ -3327,7 +3328,7 @@ if [ "$XPLATFORM_IOS" = "yes" ]; then
 fi
 
 # disable GTK style support auto-detection on Mac
-if [ "$BUILD_ON_MAC" = "yes" ] && [ "$CFG_QGTKSTYLE" = "auto" ]; then
+if [ "$XPLATFORM_MAC" = "yes" ] && [ "$CFG_QGTKSTYLE" = "auto" ]; then
     CFG_QGTKSTYLE=no
 fi
 
@@ -3454,7 +3455,7 @@ if [ "$CFG_USE_GNUMAKE" = "auto" ] && "$MAKE" -v | grep "GNU Make" >/dev/null 2>
 fi
 
 # find the default framework value
-if [ "$BUILD_ON_MAC" = "yes" ]; then
+if [ "$XPLATFORM_MAC" = "yes" ]; then
     if [ "$CFG_FRAMEWORK" = "auto" ]; then
         CFG_FRAMEWORK="$CFG_SHARED"
     elif [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_SHARED" = "no" ]; then
@@ -3622,7 +3623,7 @@ fi
 QT_INSTALL_TRANSLATIONS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_TRANSLATIONS"`
 
 if [ -z "$QT_INSTALL_SETTINGS" ]; then #default
-    if [ "$BUILD_ON_MAC" = "yes" ]; then
+    if [ "$XPLATFORM_MAC" = "yes" ]; then
         QT_INSTALL_SETTINGS=/Library/Preferences/Qt
     else
         QT_INSTALL_SETTINGS=$QT_INSTALL_PREFIX/etc/xdg
@@ -4166,7 +4167,7 @@ if [ "$CFG_CXX11" != "no" ]; then
     # Configure detects compiler features based on cross compiler, so we need
     # to explicitly disable C++11 on Mac to avoid breaking builds where the
     # host compiler does not support it.
-    if [ "$PLATFORM_MAC" = "yes" ] && [ "$XPLATFORM_ANDROID" = "yes" ]; then
+    if [ "$BUILD_ON_MAC" = "yes" ] && [ "$XPLATFORM_ANDROID" = "yes" ]; then
         CFG_CXX11="no"
     elif compileTest common/c++11 "C++11"; then
         CFG_CXX11="yes"
@@ -4506,7 +4507,7 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
         ;;
         odbc)
             if [ "$CFG_SQL_odbc" != "no" ]; then
-                if ( [ "$BUILD_ON_MAC" != "yes" ] || [ "$XPLATFORM_MINGW" = "yes" ] ) && compileTest unix/odbc "ODBC"; then
+                if [ "$XPLATFORM_MAC" != "yes" ] && compileTest unix/odbc "ODBC"; then
                     if [ "$CFG_SQL_odbc" = "auto" ]; then
                         CFG_SQL_odbc=plugin
                     fi
@@ -4924,7 +4925,7 @@ if [ "$XPLATFORM_MINGW" = "yes" ]; then
     fi
 fi # X11/MINGW OpenGL
 
-if [ "$BUILD_ON_MAC" = "yes" ]; then
+if [ "$XPLATFORM_MAC" = "yes" ]; then
     if [ "$CFG_COREWLAN" = "auto" ]; then
         if compileTest mac/corewlan "CoreWlan"; then
             CFG_COREWLAN=yes
@@ -5326,7 +5327,7 @@ if [ -z "$QT_QPA_DEFAULT_PLATFORM" ]; then
     if [ -z "$QT_QPA_DEFAULT_PLATFORM" ]; then
         if [ "$XPLATFORM_MINGW" = "yes" ]; then
             QT_QPA_DEFAULT_PLATFORM="windows"
-        elif [ "$BUILD_ON_MAC" = "yes" ]; then
+        elif [ "$XPLATFORM_MAC" = "yes" ]; then
             QT_QPA_DEFAULT_PLATFORM="cocoa"
         elif [ "$UNAME_SYSTEM" = "QNX" ]; then
             QT_QPA_DEFAULT_PLATFORM="qnx"
@@ -5353,7 +5354,7 @@ if [ "$CFG_KMS" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG kms"
 fi
 
-if [ "$BUILD_ON_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ] && [ "$XPLATFORM_QNX" = "no" ] && [ "$XPLATFORM_ANDROID" = "no" ]; then
+if [ "$XPLATFORM_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ] && [ "$XPLATFORM_QNX" = "no" ] && [ "$XPLATFORM_ANDROID" = "no" ]; then
     if [ "$CFG_XCB" = "no" ] && [ "$CFG_EGLFS" = "no" ] && [ "$CFG_DIRECTFB" = "no" ] && [ "$CFG_LINUXFB" = "no" ] && [ "$CFG_KMS" = "no" ]; then
         if [ "$QPA_PLATFORM_GUARD" = "yes" ] &&
             ( [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_EGLFS" = "auto" ] || [ "$ORIG_CFG_DIRECTFB" = "auto" ] || [ "$ORIG_CFG_LINUXFB" = "auto" ] || [ "$ORIG_CFG_KMS" = "auto" ] ); then
@@ -5809,7 +5810,7 @@ if [ "$CFG_WIDGETS" = "no" ]; then
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_WIDGETS"
 fi
 
-if [ "x$BUILD_ON_MAC" = "xyes" ] && [ "$XPLATFORM_MINGW" != "yes" ]; then
+if [ "$XPLATFORM_MAC" = "yes" ]; then
     #On Mac we implicitly link against libz, so we
     #never use the 3rdparty stuff.
     [ "$CFG_ZLIB" = "yes" ] && CFG_ZLIB="system"
@@ -5838,7 +5839,7 @@ fi
 [ '!' -z "$DEFINES" ] && QMakeVar add DEFINES "$DEFINES"
 [ '!' -z "$L_FLAGS" ] && QMakeVar add LIBS "$L_FLAGS"
 
-if [ "$PLATFORM_MAC" = "yes" ] && [ "$QT_CROSS_COMPILE" = "no" ]; then
+if [ "$XPLATFORM_MAC" = "yes" ] && [ "$QT_CROSS_COMPILE" = "no" ]; then
     if [ "$CFG_RPATH" = "yes" ]; then
        QMAKE_CONFIG="$QMAKE_CONFIG absolute_library_soname"
     fi
@@ -6139,7 +6140,7 @@ if [ "$CFG_FRAMEWORK" = "yes" ]; then
     echo "#define QT_MAC_FRAMEWORK_BUILD" >>"$outpath/src/corelib/global/qconfig.h.new"
 fi
 
-if [ "$BUILD_ON_MAC" = "yes" ]; then
+if [ "$XPLATFORM_MAC" = "yes" ]; then
     cat >>"$outpath/src/corelib/global/qconfig.h.new" <<EOF
 #if defined(__LP64__)
 # define QT_POINTER_SIZE 8
@@ -6665,7 +6666,7 @@ report_support "  Glib ..................." "$CFG_GLIB"
 report_support "  GTK theme .............." "$CFG_QGTKSTYLE"
 report_support "  Large File ............." "$CFG_LARGEFILE"
 report_support "  Networking:"
-[ "$BUILD_ON_MAC" = "yes" ] && \
+[ "$XPLATFORM_MAC" = "yes" ] && \
     report_support "    CoreWlan ............." "$CFG_COREWLAN"
 report_support "    getaddrinfo .........." "$CFG_GETADDRINFO"
 report_support "    getifaddrs ..........." "$CFG_GETIFADDRS"
@@ -6748,7 +6749,7 @@ fi
 exec 1>&3 3>&- # restore stdout
 cat $outpath/config.summary # display config feedback to user
 
-if [ "$BUILD_ON_MAC" = "yes" ] && [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_DEBUG" = "yes" ] && [ "$CFG_DEBUG_RELEASE" = "no" ]; then
+if [ "$XPLATFORM_MAC" = "yes" ] && [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_DEBUG" = "yes" ] && [ "$CFG_DEBUG_RELEASE" = "no" ]; then
     echo
     echo "Error: debug-only framework builds are not supported. Configure with -no-framework"
     echo "if you want a pure debug build."
