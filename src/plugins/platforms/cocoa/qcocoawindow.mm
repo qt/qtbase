@@ -470,14 +470,12 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
             styleMask = (NSUtilityWindowMask | NSResizableWindowMask | NSClosableWindowMask |
                          NSMiniaturizableWindowMask | NSTitledWindowMask);
     } else {
-        // Filter flags for supported properties
-        flags &= Qt::WindowType_Mask | Qt::FramelessWindowHint | Qt::WindowTitleHint |
-                 Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint | Qt::CustomizeWindowHint;
-        if (flags == Qt::Window) {
+        if (type == Qt::Window && !(flags & Qt::CustomizeWindowHint)) {
             styleMask = (NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSTitledWindowMask);
-        } else if ((flags & Qt::Dialog) == Qt::Dialog) {
+        } else if (type == Qt::Dialog) {
             if (flags & Qt::CustomizeWindowHint) {
-                styleMask = NSResizableWindowMask;
+                if (flags & Qt::WindowMaximizeButtonHint)
+                    styleMask = NSResizableWindowMask;
                 if (flags & Qt::WindowTitleHint)
                     styleMask |= NSTitledWindowMask;
                 if (flags & Qt::WindowCloseButtonHint)
@@ -488,7 +486,7 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
                 styleMask = NSResizableWindowMask | NSClosableWindowMask | NSTitledWindowMask;
             }
         } else if (!(flags & Qt::FramelessWindowHint)) {
-            if ((flags & Qt::Dialog) || (flags & Qt::WindowMaximizeButtonHint))
+            if (flags & Qt::WindowMaximizeButtonHint)
                 styleMask |= NSResizableWindowMask;
             if (flags & Qt::WindowTitleHint)
                 styleMask |= NSTitledWindowMask;
