@@ -3284,114 +3284,6 @@ fi
 #-------------------------------------------------------------------------------
 
 if [ "$OPT_HELP" = "yes" ]; then
-    if [ "$CFG_NIS" = "no" ]; then
-        NSY=" "
-        NSN="*"
-    else
-        NSY="*"
-        NSN=" "
-    fi
-    if [ "$CFG_CUPS" = "no" ]; then
-        CUY=" "
-        CUN="*"
-    else
-        CUY="*"
-        CUN=" "
-    fi
-    if [ "$CFG_ICONV" = "no" ]; then
-        CIY=" "
-        CIN="*"
-    else
-        CIY="*"
-        CIN=" "
-    fi
-    if [ "$CFG_LARGEFILE" = "no" ]; then
-        LFSY=" "
-        LFSN="*"
-    else
-        LFSY="*"
-        LFSN=" "
-    fi
-    if [ "$CFG_PRECOMPILE" = "auto" ] || [ "$CFG_PRECOMPILE" = "no" ]; then
-        PHY=" "
-        PHN="*"
-    else
-        PHY="*"
-        PHN=" "
-    fi
-
-    if [ "$CFG_XCB" = "no" ]; then
-        XCBY=" "
-        XCBN="*"
-    else
-        XCBY="*"
-        XCBN=" "
-    fi
-
-    if [ "$CFG_EGLFS" = "no" ]; then
-        EGLFSY=" "
-        EGLFSN="*"
-    else
-        EGLFSY="*"
-        EGLFSN=" "
-    fi
-
-    if [ "$CFG_DIRECTFB" = "no" ]; then
-        DFBY=" "
-        DFBN="*"
-    else
-        DFBY="*"
-        DFBN=" "
-    fi
-
-    if [ "$CFG_LINUXFB" = "no" ]; then
-        LFBY=" "
-        LFBN="*"
-    else
-        LFBY="*"
-        LFBN=" "
-    fi
-
-    if [ "$CFG_KMS" = "no" ]; then
-        KMSY=" "
-        KMSN="*"
-    else
-        KMSY="*"
-        KMSN=" "
-    fi
-
-    if [ "$CFG_XINPUT2" = "no" ]; then
-        X2Y=" "
-        X2N="*"
-    else
-        X2Y="*"
-        X2N=" "
-    fi
-
-    if [ "$CFG_DBUS" = "no" ]; then
-        DBY=" "
-        DBN="+"
-    else
-        DBY="+"
-        DBN=" "
-    fi
-
-    if [ "$CFG_SEPARATE_DEBUG_INFO" = "no" ]; then
-        SBY=" "
-        SBN="*"
-    else
-        SBY="*"
-        SBN=" "
-    fi
-
-    if [ "$CFG_GLIB" = "no" ]; then
-        GBY=" "
-        GBN="+"
-    else
-        GBY="+"
-        GBN=" "
-    fi
-
     cat <<EOF
 Usage:  $relconf [options]
 
@@ -3400,7 +3292,7 @@ Installation options:
  These are optional, but you may specify install directories.
 
     -prefix <dir> ...... This will install everything relative to <dir>
-                         (default $QT_INSTALL_PREFIX)
+                         (default /usr/local/Qt-${QT_VERSION}, \$PWD if -developer-build is active)
 
     -extprefix <dir> ... When -sysroot is used, install everything to <dir>,
                          rather than into SYSROOT/PREFIX.
@@ -3423,7 +3315,7 @@ Installation options:
     -plugindir <dir> ...... Plugins will be installed to <dir>
                             (default ARCHDATADIR/plugins)
     -libexecdir <dir> ..... Program executables will be installed to <dir>
-                            (default ARCHDATADIR/$QT_INSTALL_LIBEXECS_DIRNAME)
+                            (default ARCHDATADIR/libexec, ARCHDATADIR/bin for MinGW)
     -importdir <dir> ...... Imports for QML1 will be installed to <dir>
                             (default ARCHDATADIR/imports)
     -qmldir <dir> ......... Imports for QML2 will be installed to <dir>
@@ -3496,7 +3388,7 @@ Configure options:
                          at run time.
 
                          Possible values for <driver>:
-                         [ $CFG_SQL_AVAILABLE ]
+                         [$CFG_SQL_AVAILABLE ]
 
     -system-sqlite ..... Use sqlite from the operating system.
 
@@ -3507,7 +3399,7 @@ Configure options:
  +  -qml-debug ......... Build the QML debugging support.
 
     -platform target ... The operating system and compiler you are building
-                         on ($PLATFORM).
+                         on (default detected from host system).
 
                          See the README file for a list of supported
                          operating systems and compilers.
@@ -3624,15 +3516,15 @@ Additional options:
  *  -no-optimized-qmake ... Do not build qmake optimized.
     -optimized-qmake ...... Build qmake optimized.
 
- $NSN  -no-nis ............ Do not compile NIS support.
- $NSY  -nis ............... Compile NIS support.
+    -no-nis ............ Do not compile NIS support.
+ *  -nis ............... Compile NIS support.
 
- $CUN  -no-cups ........... Do not compile CUPS support.
- $CUY  -cups .............. Compile CUPS support.
+    -no-cups ........... Do not compile CUPS support.
+ *  -cups .............. Compile CUPS support.
                          Requires cups/cups.h and libcups.so.2.
 
- $CIN  -no-iconv .......... Do not compile support for iconv(3).
- $CIY  -iconv ............. Compile support for iconv(3).
+    -no-iconv .......... Do not compile support for iconv(3).
+ *  -iconv ............. Compile support for iconv(3).
 
     -no-icu ............ Do not compile support for ICU libraries.
  +  -icu ............... Compile support for ICU libraries.
@@ -3643,11 +3535,11 @@ Additional options:
     -no-strip .......... Do not strip binaries and libraries of unneeded symbols.
  *  -strip ............. Strip binaries and libraries of unneeded symbols when installing.
 
- $PHN  -no-pch ............ Do not use precompiled header support.
- $PHY  -pch ............... Use precompiled header support.
+ *  -no-pch ............ Do not use precompiled header support.
+    -pch ............... Use precompiled header support.
 
- $DBN  -no-dbus ........... Do not compile the Qt D-Bus module.
- $DBY  -dbus .............. Compile the Qt D-Bus module and dynamically load libdbus-1.
+    -no-dbus ........... Do not compile the Qt D-Bus module.
+ +  -dbus .............. Compile the Qt D-Bus module and dynamically load libdbus-1.
     -dbus-linked ....... Compile the Qt D-Bus module and link to libdbus-1.
 
     -reduce-relocations ..... Reduce relocations in the libraries through extra
@@ -3660,23 +3552,23 @@ Additional options:
     -device-option <key=value> ... Add device specific options for the device mkspec
                                    (experimental)
 
- $SBN  -no-separate-debug-info . Do not store debug information in a separate file.
- $SBY  -separate-debug-info .... Strip debug information into a separate file.
+    -no-separate-debug-info . Do not store debug information in a separate file.
+ *  -separate-debug-info .... Strip debug information into a separate file.
 
- $XCBN  -no-xcb ............ Do not compile Xcb (X protocol C-language Binding) support.
- $XCBY  -xcb ............... Compile Xcb support.
+    -no-xcb ............ Do not compile Xcb (X protocol C-language Binding) support.
+ *  -xcb ............... Compile Xcb support.
 
- $EGLFSN  -no-eglfs .......... Do not compile EGLFS (EGL Full Screen/Single Surface) support.
- $EGLFSY  -eglfs ............. Compile EGLFS support (Requires OpenGL ES 2 support).
+    -no-eglfs .......... Do not compile EGLFS (EGL Full Screen/Single Surface) support.
+ *  -eglfs ............. Compile EGLFS support (Requires OpenGL ES 2 support).
 
- $DFBN  -no-directfb ....... Do not compile DirectFB support.
- $DFBY  -directfb .......... Compile DirectFB support.
+    -no-directfb ....... Do not compile DirectFB support.
+ *  -directfb .......... Compile DirectFB support.
 
- $LFBN  -no-linuxfb ........ Do not compile Linux Framebuffer support.
- $LFBY  -linuxfb ........... Compile Linux Framebuffer support.
+    -no-linuxfb ........ Do not compile Linux Framebuffer support.
+ *  -linuxfb ........... Compile Linux Framebuffer support.
 
- $KMSN  -no-kms ............ Do not compile KMS support.
- $KMSY  -kms ............... Compile KMS support (Requires EGL and OpenGL ES 2 support).
+    -no-kms ............ Do not compile KMS support.
+ *  -kms ............... Compile KMS support (Requires EGL and OpenGL ES 2 support).
 
     -qpa <name> ......... Sets the default QPA platform (e.g xcb, cocoa, windows).
 
@@ -3708,15 +3600,15 @@ Additional options:
     -warnings-are-errors  Make warnings be treated as errors
                           (enabled if -developer-build is active)
 
- $GBN  -no-glib ........... Do not compile Glib support.
- $GBY  -glib .............. Compile Glib support.
+    -no-glib ........... Do not compile Glib support.
+ +  -glib .............. Compile Glib support.
 EOF
 
 if [ "$XPLATFORM_MAEMO" = "yes" ]; then
     cat << EOF
 
- $X2N  -no-xinput2 ........ Do not compile XInput2 support.
- $X2Y  -xinput2 ........... Compile XInput2 support.
+    -no-xinput2 ........ Do not compile XInput2 support.
+ *  -xinput2 ........... Compile XInput2 support.
 
 EOF
 
@@ -3757,16 +3649,16 @@ if [ "$XPLATFORM_ANDROID" = "yes" ]; then
 
 Android options:
     -android-sdk path .............. The Android SDK root path.
-                                     (default $CFG_DEFAULT_ANDROID_SDK_ROOT)
+                                     (default \$ANDROID_SDK_ROOT)
 
     -android-ndk path .............. The Android NDK root path.
-                                     (default $CFG_DEFAULT_ANDROID_NDK_ROOT)
+                                     (default \$ANDROID_NDK_ROOT)
 
     -android-ndk-platform .......... Sets the android platform
                                      (default $CFG_DEFAULT_ANDROID_PLATFORM)
 
     -android-ndk-host .............. Sets the android NDK host (linux-x86, linux-x86_64, etc.)
-                                     (default $CFG_DEFAULT_ANDROID_NDK_HOST)
+                                     (default \$ANDROID_NDK_HOST)
 
     -android-arch .................. Sets the android architecture (armeabi, armeabi-v7a, x86, mips)
                                      (default $CFG_DEFAULT_ANDROID_TARGET_ARCH)
