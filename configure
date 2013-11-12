@@ -87,14 +87,6 @@ if [ -z "$MAKE" ]; then
     export MAKE
 fi
 
-#license file location
-LICENSE_FILE="$QT_LICENSE_FILE"
-[ -z "$LICENSE_FILE" ] && LICENSE_FILE="$HOME/.qt-license"
-if [ -f "$LICENSE_FILE" ]; then
-    tr -d '\r' <"$LICENSE_FILE" >"${LICENSE_FILE}.tmp"
-    diff "${LICENSE_FILE}.tmp" "${LICENSE_FILE}" >/dev/null 2>&1 || LICENSE_FILE="${LICENSE_FILE}.tmp"
-fi
-
 # do this early so we don't store it in config.status
 CFG_TOPLEVEL=
 if [ x"$1" = x"-top-level" ]; then
@@ -555,315 +547,6 @@ if [ -z "$QT_MAJOR_VERSION" ]; then
 fi
 
 #-------------------------------------------------------------------------------
-# check the license
-#-------------------------------------------------------------------------------
-COMMERCIAL_USER=ask
-CFG_DEV=no
-CFG_RTOS_ENABLED=yes
-EditionString=Commercial
-
-earlyArgParse()
-{
-    # parse the arguments, setting things to "yes" or "no"
-    while [ "$#" -gt 0 ]; do
-        CURRENT_OPT="$1"
-        UNKNOWN_ARG=no
-        case "$1" in
-        #Autoconf style options
-        --enable-*)
-            VAR=`echo $1 | sed "s,^--enable-\(.*\),\1,"`
-            VAL=yes
-            ;;
-        --disable-*)
-            VAR=`echo $1 | sed "s,^--disable-\(.*\),\1,"`
-            VAL=no
-            ;;
-        --*=*)
-            VAR=`echo $1 | sed "s,^--\(.*\)=.*,\1,"`
-            VAL=`echo $1 | sed "s,^--.*=\(.*\),\1,"`
-            ;;
-        --no-*)
-            VAR=`echo $1 | sed "s,^--no-\(.*\),\1,"`
-            VAL=no
-            ;;
-        -h|help|--help|-help)
-            if [ "$VAL" = "yes" ]; then
-                OPT_HELP="$VAL"
-                COMMERCIAL_USER="no" #doesn't matter we will display the help
-            else
-                UNKNOWN_OPT=yes
-                COMMERCIAL_USER="no" #doesn't matter we will display the help
-            fi
-            ;;
-        --*)
-            VAR=`echo $1 | sed "s,^--\(.*\),\1,"`
-            VAL=yes
-            ;;
-        -*)
-            VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
-            VAL="unknown"
-            ;;
-        *)
-            UNKNOWN_ARG=yes
-            ;;
-        esac
-        if [ "$UNKNOWN_ARG" = "yes" ]; then
-            shift
-            continue
-        fi
-        shift
-
-        UNKNOWN_OPT=no
-        case "$VAR" in
-        developer-build)
-            CFG_DEV="yes"
-            ;;
-        commercial)
-            COMMERCIAL_USER="yes"
-            ;;
-        opensource)
-            COMMERCIAL_USER="no"
-            ;;
-        *)
-            UNKNOWN_OPT=yes
-            ;;
-        esac
-    done
-}
-
-earlyArgParse "$@"
-
-if [ "$COMMERCIAL_USER" = "ask" ]; then
-    while true; do
-        echo "Which edition of Qt do you want to use ?"
-        echo
-        echo "Type 'c' if you want to use the Commercial Edition."
-        echo "Type 'o' if you want to use the Open Source Edition."
-        echo
-        read commercial
-        echo
-        if [ "$commercial" = "c" ]; then
-            COMMERCIAL_USER="yes"
-            break
-        elif [ "$commercial" = "o" ]; then
-            COMMERCIAL_USER="no"
-            break
-        fi
-    done
-fi
-
-if [ -f "$relpath"/LICENSE.PREVIEW.COMMERCIAL ] && [ $COMMERCIAL_USER = "yes" ]; then
-    # Commercial preview release
-    [ "$PLATFORM_MAC" = "maybe" ] && PLATFORM_MAC=yes
-    Licensee="Preview"
-    Edition="Preview"
-    QT_EDITION="QT_EDITION_DESKTOP"
-    LicenseType="Technology Preview"
-elif [ $COMMERCIAL_USER = "yes" ]; then
-    # one of commercial editions
-    [ "$PLATFORM_MAC" = "maybe" ] && PLATFORM_MAC=yes
-
-    # read in the license file
-    if [ -f "$LICENSE_FILE" ]; then
-        . "$LICENSE_FILE" >/dev/null 2>&1
-        if [ -z "$LicenseKeyExt" ]; then
-            echo
-            echo "You are using an old license file."
-            echo
-            echo "Please install the license file supplied by Digia,"
-            echo "or install the Qt Open Source Edition if you intend to"
-            echo "develop free software."
-            exit 1
-        fi
-	if [ -z "$Licensee" ]; then
-	    echo
-	    echo "Invalid license key. Please check the license key."
-	    exit 1
-	fi
-    else
-        if [ -z "$LicenseKeyExt" ]; then
-            echo
-            echo $ECHO_N "Please enter your license key: $ECHO_C"
-            read LicenseKeyExt
-            Licensee="Unknown user"
-        fi
-    fi
-
-    # Key verification
-    echo "$LicenseKeyExt" | grep ".....*-....*-....*-....*-.....*-.....*-...." >/dev/null 2>&1 \
-        && LicenseValid="yes" \
-        || LicenseValid="no"
-    if [ "$LicenseValid" != "yes" ]; then
-        echo
-        echo "Invalid license key. Please check the license key."
-        exit 1
-    fi
-    ProductCode=`echo $LicenseKeyExt | cut -f 1 -d - | cut -b 1`
-    PlatformCode=`echo $LicenseKeyExt | cut -f 2 -d -`
-    LicenseTypeCode=`echo $LicenseKeyExt | cut -f 3 -d -`
-    LicenseFeatureCode=`echo $LicenseKeyExt | cut -f 4 -d - | cut -b 1`
-
-    # determine which edition we are licensed to use
-    case "$LicenseTypeCode" in
-    F4M)
-        LicenseType="Commercial"
-        case $ProductCode in
-        F)
-            Edition="Universal"
-            QT_EDITION="QT_EDITION_UNIVERSAL"
-            ;;
-        B)
-            Edition="FullFramework"
-            EditionString="Full Framework"
-            QT_EDITION="QT_EDITION_DESKTOP"
-            ;;
-        L)
-            Edition="GUIFramework"
-            EditionString="GUI Framework"
-            QT_EDITION="QT_EDITION_DESKTOPLIGHT"
-            ;;
-        esac
-        ;;
-    Z4M|R4M|Q4M)
-        LicenseType="Evaluation"
-        QMakeVar add DEFINES QT_EVAL
-        case $ProductCode in
-         B)
-            Edition="Evaluation"
-            QT_EDITION="QT_EDITION_EVALUATION"
-            ;;
-        esac
-        ;;
-    esac
-    if [ -z "$LicenseType" -o -z "$Edition" -o -z "$QT_EDITION" ]; then
-        echo
-        echo "Invalid license key. Please check the license key."
-        exit 1
-    fi
-
-    # verify that we are licensed to use Qt on this platform
-    LICENSE_EXTENSION=
-    case "$PlatformCode" in
-	*L)
-	    CFG_RTOS_ENABLED=yes
-	    PlatformCode=`echo "$PlatformCode" | sed 'h;y/8NPQRTZ/UCWX9M7/;x;G;s/\(.\)....\(.\)./\1\2/'`
-	    ;;
-	*)
-	    CFG_RTOS_ENABLED=no
-	    PlatformCode=`echo "$PlatformCode" | sed 's/.$//'`
-	    ;;
-    esac
-    ### EMBEDDED_QPA logic missing ###
-    case "$PlatformCode,$PLATFORM_MAC" in
-        X9,* | XC,* | XU,* | XW,* | XM,*)
-            # Qt All-OS
-            LICENSE_EXTENSION="-ALLOS"
-            ;;
-        8M,* | KM,* | S9,* | SC,* | SM,* | SU,* | SW,* | X9,* | XC,* | XU,* | XW,*)
-            # Qt for Embedded Linux
-            LICENSE_EXTENSION="-EMBEDDED"
-            ;;
-        6M,* | N7,* | N9,* | NX,*)
-            # Embedded no-deploy
-            LICENSE_EXTENSION="-EMBEDDED"
-            ;;
-        FM,* | LM,yes | ZM,no)
-            # Desktop
-            LICENSE_EXTENSION="-DESKTOP"
-            ;;
-        *)
-            Platform=Linux/X11
-            [ "$PLATFORM_MAC" = "yes" ] && Platform='Mac OS X'
-            echo
-            echo "You are not licensed for the $Platform platform."
-            echo
-            echo "Please use the contact form at http://qt.digia.com/contact-us"
-            echo "to upgrade your license to include the $Platform platform, or install"
-            echo "the Qt Open Source Edition if you intend to develop free software."
-            exit 1
-            ;;
-    esac
-
-    if test -r "$relpath/.LICENSE"; then
-	# Generic, non-final license
-	LICENSE_EXTENSION=""
-	line=`sed 'y/a-z/A-Z/;q' "$relpath"/.LICENSE`
-	case "$line" in
-	    *BETA*)
-		Edition=Beta
-		;;
-	    *TECHNOLOGY?PREVIEW*)
-		Edition=Preview
-		;;
-	    *EVALUATION*)
-		Edition=Evaluation
-		;;
-	    *)
-		echo >&2 "Invalid license files; cannot continue"
-		exit 1
-		;;
-	esac
-	Licensee="$Edition"
-	EditionString="$Edition"
-	QT_EDITION="QT_EDITION_DESKTOP"
-    fi
-
-    case "$LicenseFeatureCode" in
-    B|G|L|Y)
-        # US
-        case "$LicenseType" in
-        Commercial)
-            cp -f "$relpath/.LICENSE${LICENSE_EXTENSION}-US" "$outpath/LICENSE"
-            ;;
-        Evaluation)
-            cp -f "$relpath/.LICENSE-EVALUATION-US" "$outpath/LICENSE"
-            ;;
-        esac
-        ;;
-    2|4|5|F)
-        # non-US
-        case "$LicenseType" in
-        Commercial)
-            cp -f "$relpath/.LICENSE${LICENSE_EXTENSION}" "$outpath/LICENSE"
-            ;;
-        Evaluation)
-            cp -f "$relpath/.LICENSE-EVALUATION" "$outpath/LICENSE"
-            ;;
-        esac
-        ;;
-    *)
-        echo
-        echo "Invalid license key. Please check the license key."
-        exit 1
-        ;;
-    esac
-    case "$LicenseFeatureCode" in
-	4|B|F|Y)
-	    CFG_RTOS_ENABLED=yes
-	    ;;
-	2|5|G|L)
-	    CFG_RTOS_ENABLED=no
-	    ;;
-    esac
-    if [ '!' -f "$outpath/LICENSE" ]; then
-        echo "The LICENSE, LICENSE.GPL3 LICENSE.LGPL file shipped with"
-        echo "this software has disappeared."
-        echo
-        echo "Sorry, you are not licensed to use this software."
-        echo "Try re-installing."
-        echo
-        exit 1
-    fi
-elif [ $COMMERCIAL_USER = "no" ]; then
-    # Open Source edition - may only be used under the terms of the GPL or LGPL.
-    [ "$PLATFORM_MAC" = "maybe" ] && PLATFORM_MAC=yes
-    Licensee="Open Source"
-    Edition="OpenSource"
-    EditionString="Open Source"
-    QT_EDITION="QT_EDITION_OPENSOURCE"
-fi
-
-#-------------------------------------------------------------------------------
 # initalize variables
 #-------------------------------------------------------------------------------
 
@@ -1042,6 +725,9 @@ CFG_DIRECTWRITE=no
 CFG_WERROR=auto
 CFG_QREAL=double
 OPT_MAC_SDK=
+COMMERCIAL_USER=ask
+LICENSE_FILE=
+CFG_DEV=no
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -1687,8 +1373,14 @@ while [ "$#" -gt 0 ]; do
     force-debug-info)
         CFG_FORCEDEBUGINFO="$VAL"
         ;;
-    developer-build|commercial|opensource)
-        # These switches have been dealt with already
+    developer-build)
+        CFG_DEV="yes"
+        ;;
+    commercial)
+        COMMERCIAL_USER="yes"
+        ;;
+    opensource)
+        COMMERCIAL_USER="no"
         ;;
     static)
         if [ "$VAL" = "yes" ]; then
@@ -2995,6 +2687,404 @@ case "$XPLATFORM" in
 esac
 
 #-------------------------------------------------------------------------------
+# check the license
+#-------------------------------------------------------------------------------
+
+if [ "$COMMERCIAL_USER" = "ask" ]; then
+    while true; do
+        echo "Which edition of Qt do you want to use ?"
+        echo
+        echo "Type 'c' if you want to use the Commercial Edition."
+        echo "Type 'o' if you want to use the Open Source Edition."
+        echo
+        read commercial
+        echo
+        if [ "$commercial" = "c" ]; then
+            COMMERCIAL_USER="yes"
+            break
+        elif [ "$commercial" = "o" ]; then
+            COMMERCIAL_USER="no"
+            break
+        fi
+    done
+fi
+
+CFG_RTOS_ENABLED=yes
+EditionString=Commercial
+if [ -f "$relpath"/LICENSE.PREVIEW.COMMERCIAL ] && [ $COMMERCIAL_USER = "yes" ]; then
+    # Commercial preview release
+    [ "$PLATFORM_MAC" = "maybe" ] && PLATFORM_MAC=yes
+    Licensee="Preview"
+    Edition="Preview"
+    QT_EDITION="QT_EDITION_DESKTOP"
+    LicenseType="Technology Preview"
+elif [ $COMMERCIAL_USER = "yes" ]; then
+    # one of commercial editions
+    [ "$PLATFORM_MAC" = "maybe" ] && PLATFORM_MAC=yes
+
+    # read in the license file
+    [ -z "$LICENSE_FILE" ] && LICENSE_FILE="$QT_LICENSE_FILE"
+    [ -z "$LICENSE_FILE" ] && LICENSE_FILE="$HOME/.qt-license"
+    if [ -f "$LICENSE_FILE" ]; then
+        tr -d '\r' <"$LICENSE_FILE" >"${LICENSE_FILE}.tmp"
+        diff "${LICENSE_FILE}.tmp" "${LICENSE_FILE}" >/dev/null 2>&1 || LICENSE_FILE="${LICENSE_FILE}.tmp"
+        . "$LICENSE_FILE" >/dev/null 2>&1
+        if [ -z "$LicenseKeyExt" ]; then
+            echo
+            echo "You are using an old license file."
+            echo
+            echo "Please install the license file supplied by Digia,"
+            echo "or install the Qt Open Source Edition if you intend to"
+            echo "develop free software."
+            exit 1
+        fi
+        if [ -z "$Licensee" ]; then
+            echo
+            echo "Invalid license key. Please check the license key."
+            exit 1
+        fi
+    else
+        if [ -z "$LicenseKeyExt" ]; then
+            echo
+            echo $ECHO_N "Please enter your license key: $ECHO_C"
+            read LicenseKeyExt
+            Licensee="Unknown user"
+        fi
+    fi
+
+    # Key verification
+    echo "$LicenseKeyExt" | grep ".....*-....*-....*-....*-.....*-.....*-...." >/dev/null 2>&1 \
+        && LicenseValid="yes" \
+        || LicenseValid="no"
+    if [ "$LicenseValid" != "yes" ]; then
+        echo
+        echo "Invalid license key. Please check the license key."
+        exit 1
+    fi
+    ProductCode=`echo $LicenseKeyExt | cut -f 1 -d - | cut -b 1`
+    PlatformCode=`echo $LicenseKeyExt | cut -f 2 -d -`
+    LicenseTypeCode=`echo $LicenseKeyExt | cut -f 3 -d -`
+    LicenseFeatureCode=`echo $LicenseKeyExt | cut -f 4 -d - | cut -b 1`
+
+    # determine which edition we are licensed to use
+    case "$LicenseTypeCode" in
+    F4M)
+        LicenseType="Commercial"
+        case $ProductCode in
+        F)
+            Edition="Universal"
+            QT_EDITION="QT_EDITION_UNIVERSAL"
+            ;;
+        B)
+            Edition="FullFramework"
+            EditionString="Full Framework"
+            QT_EDITION="QT_EDITION_DESKTOP"
+            ;;
+        L)
+            Edition="GUIFramework"
+            EditionString="GUI Framework"
+            QT_EDITION="QT_EDITION_DESKTOPLIGHT"
+            ;;
+        esac
+        ;;
+    Z4M|R4M|Q4M)
+        LicenseType="Evaluation"
+        QMakeVar add DEFINES QT_EVAL
+        case $ProductCode in
+        B)
+            Edition="Evaluation"
+            QT_EDITION="QT_EDITION_EVALUATION"
+            ;;
+        esac
+        ;;
+    esac
+    if [ -z "$LicenseType" -o -z "$Edition" -o -z "$QT_EDITION" ]; then
+        echo
+        echo "Invalid license key. Please check the license key."
+        exit 1
+    fi
+
+    # verify that we are licensed to use Qt on this platform
+    LICENSE_EXTENSION=
+    case "$PlatformCode" in
+    *L)
+        CFG_RTOS_ENABLED=yes
+        PlatformCode=`echo "$PlatformCode" | sed 'h;y/8NPQRTZ/UCWX9M7/;x;G;s/\(.\)....\(.\)./\1\2/'`
+        ;;
+    *)
+        CFG_RTOS_ENABLED=no
+        PlatformCode=`echo "$PlatformCode" | sed 's/.$//'`
+        ;;
+    esac
+    ### EMBEDDED_QPA logic missing ###
+    case "$PlatformCode,$PLATFORM_MAC" in
+    X9,* | XC,* | XU,* | XW,* | XM,*)
+        # Qt All-OS
+        LICENSE_EXTENSION="-ALLOS"
+        ;;
+    8M,* | KM,* | S9,* | SC,* | SM,* | SU,* | SW,* | X9,* | XC,* | XU,* | XW,*)
+        # Qt for Embedded Linux
+        LICENSE_EXTENSION="-EMBEDDED"
+        ;;
+    6M,* | N7,* | N9,* | NX,*)
+        # Embedded no-deploy
+        LICENSE_EXTENSION="-EMBEDDED"
+        ;;
+    FM,* | LM,yes | ZM,no)
+        # Desktop
+        LICENSE_EXTENSION="-DESKTOP"
+        ;;
+    *)
+        Platform=Linux/X11
+        [ "$PLATFORM_MAC" = "yes" ] && Platform='Mac OS X'
+        echo
+        echo "You are not licensed for the $Platform platform."
+        echo
+        echo "Please use the contact form at http://qt.digia.com/contact-us"
+        echo "to upgrade your license to include the $Platform platform, or install"
+        echo "the Qt Open Source Edition if you intend to develop free software."
+        exit 1
+        ;;
+    esac
+
+    if test -r "$relpath/.LICENSE"; then
+        # Generic, non-final license
+        LICENSE_EXTENSION=""
+        line=`sed 'y/a-z/A-Z/;q' "$relpath"/.LICENSE`
+        case "$line" in
+        *BETA*)
+            Edition=Beta
+            ;;
+        *TECHNOLOGY?PREVIEW*)
+            Edition=Preview
+            ;;
+        *EVALUATION*)
+            Edition=Evaluation
+            ;;
+        *)
+            echo >&2 "Invalid license files; cannot continue"
+            exit 1
+            ;;
+        esac
+        Licensee="$Edition"
+        EditionString="$Edition"
+        QT_EDITION="QT_EDITION_DESKTOP"
+    fi
+
+    case "$LicenseFeatureCode" in
+    B|G|L|Y)
+        # US
+        case "$LicenseType" in
+        Commercial)
+            cp -f "$relpath/.LICENSE${LICENSE_EXTENSION}-US" "$outpath/LICENSE"
+            ;;
+        Evaluation)
+            cp -f "$relpath/.LICENSE-EVALUATION-US" "$outpath/LICENSE"
+            ;;
+        esac
+        ;;
+    2|4|5|F)
+        # non-US
+        case "$LicenseType" in
+        Commercial)
+            cp -f "$relpath/.LICENSE${LICENSE_EXTENSION}" "$outpath/LICENSE"
+            ;;
+        Evaluation)
+            cp -f "$relpath/.LICENSE-EVALUATION" "$outpath/LICENSE"
+            ;;
+        esac
+        ;;
+    *)
+        echo
+        echo "Invalid license key. Please check the license key."
+        exit 1
+        ;;
+    esac
+    case "$LicenseFeatureCode" in
+    4|B|F|Y)
+        CFG_RTOS_ENABLED=yes
+        ;;
+    2|5|G|L)
+        CFG_RTOS_ENABLED=no
+        ;;
+    esac
+    if [ '!' -f "$outpath/LICENSE" ]; then
+        echo "The LICENSE, LICENSE.GPL3 LICENSE.LGPL file shipped with"
+        echo "this software has disappeared."
+        echo
+        echo "Sorry, you are not licensed to use this software."
+        echo "Try re-installing."
+        echo
+        exit 1
+    fi
+elif [ $COMMERCIAL_USER = "no" ]; then
+    # Open Source edition - may only be used under the terms of the GPL or LGPL.
+    [ "$PLATFORM_MAC" = "maybe" ] && PLATFORM_MAC=yes
+    Licensee="Open Source"
+    Edition="OpenSource"
+    EditionString="Open Source"
+    QT_EDITION="QT_EDITION_OPENSOURCE"
+fi
+echo
+echo "This is the Qt ${EditionString} Edition."
+echo
+
+if [ "$CFG_RTOS_ENABLED" = "no" ]; then
+    case `basename "$XPLATFORM"` in
+    qnx-* | vxworks-*)
+        echo ""
+        echo "You are not licensed for Qt for `basename $XPLATFORM`."
+        echo ""
+        echo "Please use the contact form at http://qt.digia.com/contact-us"
+        echo "to upgrade your license to include this platform, or install"
+        echo "the Qt Open Source Edition if you intend to develop free software."
+        exit 1
+        ;;
+    esac
+fi
+
+if [ "$Edition" = "OpenSource" ]; then
+    while true; do
+        echo "You are licensed to use this software under the terms of"
+        echo "the Lesser GNU General Public License (LGPL) versions 2.1."
+        if [ -f "$relpath/LICENSE.GPL3" ]; then
+            echo "You are also licensed to use this software under the terms of"
+            echo "the GNU General Public License (GPL) versions 3."
+            affix="either"
+        else
+            affix="the"
+        fi
+        echo
+        if [ "$OPT_CONFIRM_LICENSE" = "yes" ]; then
+            echo "You have already accepted the terms of the $LicenseType license."
+            acceptance=yes
+        else
+            if [ -f "$relpath/LICENSE.GPL3" ]; then
+                echo "Type '3' to view the GNU General Public License version 3."
+            fi
+            echo "Type 'L' to view the Lesser GNU General Public License version 2.1."
+            echo "Type 'yes' to accept this license offer."
+            echo "Type 'no' to decline this license offer."
+            echo
+            echo $ECHO_N "Do you accept the terms of $affix license? $ECHO_C"
+            read acceptance
+        fi
+        echo
+        if [ "$acceptance" = "yes" ] || [ "$acceptance" = "y" ]; then
+            break
+        elif [ "$acceptance" = "no" ]; then
+            echo "You are not licensed to use this software."
+            echo
+            exit 1
+        elif [ "$acceptance" = "3" ]; then
+            more "$relpath/LICENSE.GPL3"
+        elif [ "$acceptance" = "L" ]; then
+            more "$relpath/LICENSE.LGPL"
+        fi
+    done
+elif [ "$Edition" = "Preview" ]; then
+    TheLicense=`head -n 1 "$relpath/LICENSE.PREVIEW.COMMERCIAL"`
+    while true; do
+
+        if [ "$OPT_CONFIRM_LICENSE" = "yes" ]; then
+            echo "You have already accepted the terms of the $LicenseType license."
+            acceptance=yes
+        else
+            echo "You are licensed to use this software under the terms of"
+            echo "the $TheLicense"
+            echo
+            echo "Type '?' to read the Preview License."
+            echo "Type 'yes' to accept this license offer."
+            echo "Type 'no' to decline this license offer."
+            echo
+            echo $ECHO_N "Do you accept the terms of the license? $ECHO_C"
+            read acceptance
+        fi
+        echo
+        if [ "$acceptance" = "yes" ]; then
+            break
+        elif [ "$acceptance" = "no" ] ;then
+            echo "You are not licensed to use this software."
+            echo
+            exit 0
+        elif [ "$acceptance" = "?" ]; then
+            more "$relpath/LICENSE.PREVIEW.COMMERCIAL"
+        fi
+    done
+elif [ "$Edition" != "OpenSource" ]; then
+    if [ -n "$ExpiryDate" ]; then
+        ExpiryDate=`echo $ExpiryDate | sed -e "s,-,,g" | tr -d "\n\r"`
+        [ -z "$ExpiryDate" ] && ExpiryDate="0"
+        Today=`date +%Y%m%d`
+        if [ "$Today" -gt "$ExpiryDate" ]; then
+            case "$LicenseType" in
+            Commercial|Academic|Educational)
+                echo
+                echo "WARNING  WARNING  WARNING  WARNING"
+                echo
+                echo "  Your support and upgrade period has expired."
+                echo
+                echo "  You may continue to use your last licensed release"
+                echo "  of Qt under the terms of your existing license"
+                echo "  agreement. But you are not entitled to technical"
+                echo "  support, nor are you entitled to use any more recent"
+                echo "  Qt releases."
+                echo
+                echo "  Please use the contact form at http://qt.digia.com/contact-us"
+                echo "  to renew your support and upgrades for this license."
+                echo
+                echo "WARNING  WARNING  WARNING  WARNING"
+                echo
+                sleep 3
+                ;;
+            Evaluation|*)
+                echo
+                echo "NOTICE  NOTICE  NOTICE  NOTICE"
+                echo
+                echo "  Your Evaluation license has expired."
+                echo
+                echo "  You are no longer licensed to use this software. Please"
+                echo "  use the contact form at http://qt.digia.com/contact-us to"
+                echo "  purchase license, or install the Qt Open Source Edition"
+                echo "  if you intend to develop free software."
+                echo
+                echo "NOTICE  NOTICE  NOTICE  NOTICE"
+                echo
+                exit 1
+                ;;
+            esac
+        fi
+    fi
+    TheLicense=`head -n 1 "$outpath/LICENSE"`
+    while true; do
+        if [ "$OPT_CONFIRM_LICENSE" = "yes" ]; then
+            echo "You have already accepted the terms of the $TheLicense."
+            acceptance=yes
+        else
+            echo "You are licensed to use this software under the terms of"
+            echo "the $TheLicense."
+            echo
+            echo "Type '?' to view the $TheLicense."
+            echo "Type 'yes' to accept this license offer."
+            echo "Type 'no' to decline this license offer."
+            echo
+            echo $ECHO_N "Do you accept the terms of the $TheLicense? $ECHO_C"
+            read acceptance
+        fi
+        echo
+        if [ "$acceptance" = "yes" ]; then
+            break
+        elif [ "$acceptance" = "no" ]; then
+            echo "You are not licensed to use this software."
+            echo
+            exit 1
+        else [ "$acceptance" = "?" ]
+            more "$outpath/LICENSE"
+        fi
+    done
+fi
+
+#-------------------------------------------------------------------------------
 # command line and environment validation
 #-------------------------------------------------------------------------------
 
@@ -3151,20 +3241,6 @@ if [ '!' -f "${XQMAKESPEC}/qplatformdefs.h" ]; then
     echo "   Please use the contact form at http://qt.digia.com/contact-us"
     echo
     exit 2
-fi
-
-if [ "$CFG_RTOS_ENABLED" = "no" ]; then
-    case `basename "$XPLATFORM"` in
-	qnx-* | vxworks-*)
-            echo ""
-            echo "You are not licensed for Qt for `basename $XPLATFORM`."
-            echo ""
-            echo "Please use the contact form at http://qt.digia.com/contact-us"
-            echo "to upgrade your license to include this platform, or install"
-            echo "the Qt Open Source Edition if you intend to develop free software."
-            exit 1
-	    ;;
-    esac
 fi
 
 #-------------------------------------------------------------------------------
@@ -3638,155 +3714,6 @@ fi
 
 if [ "$CFG_COMPILE_EXAMPLES" = "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG compile_examples"
-fi
-
-# -----------------------------------------------------------------------------
-# LICENSING, INTERACTIVE PART
-# -----------------------------------------------------------------------------
-
-echo
-echo "This is the Qt ${EditionString} Edition."
-echo
-
-if [ "$Edition" = "OpenSource" ]; then
-    while true; do
-        echo "You are licensed to use this software under the terms of"
-        echo "the Lesser GNU General Public License (LGPL) versions 2.1."
-        if [ -f "$relpath/LICENSE.GPL3" ]; then
-            echo "You are also licensed to use this software under the terms of"
-            echo "the GNU General Public License (GPL) versions 3."
-            affix="either"
-        else
-            affix="the"
-        fi
-        echo
-        if [ "$OPT_CONFIRM_LICENSE" = "yes" ]; then
-            echo "You have already accepted the terms of the $LicenseType license."
-            acceptance=yes
-        else
-            if [ -f "$relpath/LICENSE.GPL3" ]; then
-                echo "Type '3' to view the GNU General Public License version 3."
-            fi
-            echo "Type 'L' to view the Lesser GNU General Public License version 2.1."
-            echo "Type 'yes' to accept this license offer."
-            echo "Type 'no' to decline this license offer."
-            echo
-            echo $ECHO_N "Do you accept the terms of $affix license? $ECHO_C"
-            read acceptance
-        fi
-        echo
-        if [ "$acceptance" = "yes" ] || [ "$acceptance" = "y" ]; then
-            break
-        elif [ "$acceptance" = "no" ]; then
-            echo "You are not licensed to use this software."
-            echo
-            exit 1
-        elif [ "$acceptance" = "3" ]; then
-            more "$relpath/LICENSE.GPL3"
-        elif [ "$acceptance" = "L" ]; then
-            more "$relpath/LICENSE.LGPL"
-        fi
-    done
-elif [ "$Edition" = "Preview" ]; then
-    TheLicense=`head -n 1 "$relpath/LICENSE.PREVIEW.COMMERCIAL"`
-    while true; do
-
-        if [ "$OPT_CONFIRM_LICENSE" = "yes" ]; then
-            echo "You have already accepted the terms of the $LicenseType license."
-            acceptance=yes
-        else
-            echo "You are licensed to use this software under the terms of"
-            echo "the $TheLicense"
-            echo
-            echo "Type '?' to read the Preview License."
-            echo "Type 'yes' to accept this license offer."
-            echo "Type 'no' to decline this license offer."
-            echo
-            echo $ECHO_N "Do you accept the terms of the license? $ECHO_C"
-            read acceptance
-        fi
-        echo
-        if [ "$acceptance" = "yes" ]; then
-            break
-        elif [ "$acceptance" = "no" ] ;then
-            echo "You are not licensed to use this software."
-            echo
-            exit 0
-        elif [ "$acceptance" = "?" ]; then
-            more "$relpath/LICENSE.PREVIEW.COMMERCIAL"
-        fi
-    done
-elif [ "$Edition" != "OpenSource" ]; then
-    if [ -n "$ExpiryDate" ]; then
-        ExpiryDate=`echo $ExpiryDate | sed -e "s,-,,g" | tr -d "\n\r"`
-        [ -z "$ExpiryDate" ] && ExpiryDate="0"
-        Today=`date +%Y%m%d`
-        if [ "$Today" -gt "$ExpiryDate" ]; then
-            case "$LicenseType" in
-            Commercial|Academic|Educational)
-                echo
-                echo "WARNING  WARNING  WARNING  WARNING"
-                echo
-                echo "  Your support and upgrade period has expired."
-                echo
-                echo "  You may continue to use your last licensed release"
-                echo "  of Qt under the terms of your existing license"
-                echo "  agreement. But you are not entitled to technical"
-                echo "  support, nor are you entitled to use any more recent"
-                echo "  Qt releases."
-                echo
-                echo "  Please use the contact form at http://qt.digia.com/contact-us"
-                echo "  to renew your support and upgrades for this license."
-                echo
-                echo "WARNING  WARNING  WARNING  WARNING"
-                echo
-                sleep 3
-                ;;
-            Evaluation|*)
-                echo
-                echo "NOTICE  NOTICE  NOTICE  NOTICE"
-                echo
-                echo "  Your Evaluation license has expired."
-                echo
-                echo "  You are no longer licensed to use this software. Please"
-                echo "  use the contact form at http://qt.digia.com/contact-us to"
-                echo "  purchase license, or install the Qt Open Source Edition"
-                echo "  if you intend to develop free software."
-                echo
-                echo "NOTICE  NOTICE  NOTICE  NOTICE"
-                echo
-                exit 1
-                ;;
-            esac
-        fi
-    fi
-    TheLicense=`head -n 1 "$outpath/LICENSE"`
-    while true; do
-        if [ "$OPT_CONFIRM_LICENSE" = "yes" ]; then
-	    echo "You have already accepted the terms of the $TheLicense."
-            acceptance=yes
-        else
-            echo "You are licensed to use this software under the terms of"
-            echo "the $TheLicense."
-            echo
-            echo "Type '?' to view the $TheLicense."
-            echo "Type 'yes' to accept this license offer."
-            echo "Type 'no' to decline this license offer."
-            echo
-            echo $ECHO_N "Do you accept the terms of the $TheLicense? $ECHO_C"
-            read acceptance
-        fi
-        echo
-        if [ "$acceptance" = "yes" ]; then
-            break
-        elif [ "$acceptance" = "no" ]; then
-            echo "You are not licensed to use this software."
-            echo
-            exit 1
-        else [ "$acceptance" = "?" ]
-            more "$outpath/LICENSE"
-        fi
-    done
 fi
 
 #-------------------------------------------------------------------------------
