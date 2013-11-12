@@ -2666,8 +2666,10 @@ fi
 
 [ -z "$XPLATFORM" ] && XPLATFORM="$PLATFORM"
 
-case `basename "$XPLATFORM"` in win32-g++*) XPLATFORM_MINGW=yes;; esac
 case "$XPLATFORM" in
+    *win32-g++*)
+        XPLATFORM_MINGW=yes
+        ;;
     *-maemo*)
         XPLATFORM_MAEMO=yes
         ;;
