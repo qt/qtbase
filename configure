@@ -53,6 +53,40 @@ relpath=`(cd "$relpath"; /bin/pwd)`
 # the current directory is the "build tree" or "object tree"
 outpath=`/bin/pwd`
 
+# where to find which..
+unixtests="$relpath/config.tests/unix"
+mactests="$relpath/config.tests/mac"
+WHICH="$unixtests/which.test"
+
+PERL=`$WHICH perl 2>/dev/null`
+
+# find out which awk we want to use, prefer gawk, then nawk, then regular awk
+AWK=
+for e in gawk nawk awk; do
+    if "$WHICH" $e >/dev/null 2>&1 && ( $e -f /dev/null /dev/null ) >/dev/null 2>&1; then
+        AWK=$e
+        break
+    fi
+done
+
+# find a make command
+if [ -z "$MAKE" ]; then
+    MAKE=
+    for mk in gmake make; do
+        if "$WHICH" $mk >/dev/null 2>&1; then
+            MAKE=`"$WHICH" $mk`
+            break
+        fi
+    done
+    if [ -z "$MAKE" ]; then
+        echo >&2 "You don't seem to have 'make' or 'gmake' in your PATH."
+        echo >&2 "Cannot proceed."
+        exit 1
+    fi
+    # export MAKE, we need it later in the config.tests
+    export MAKE
+fi
+
 #license file location
 LICENSE_FILE="$QT_LICENSE_FILE"
 [ -z "$LICENSE_FILE" ] && LICENSE_FILE="$HOME/.qt-license"
@@ -2429,22 +2463,6 @@ esac
 # build tree initialization
 #-------------------------------------------------------------------------------
 
-# where to find which..
-unixtests="$relpath/config.tests/unix"
-mactests="$relpath/config.tests/mac"
-WHICH="$unixtests/which.test"
-
-PERL=`$WHICH perl 2>/dev/null`
-
-# find out which awk we want to use, prefer gawk, then nawk, then regular awk
-AWK=
-for e in gawk nawk awk; do
-    if "$WHICH" $e >/dev/null 2>&1 && ( $e -f /dev/null /dev/null ) >/dev/null 2>&1; then
-        AWK=$e
-        break
-    fi
-done
-
 ### skip this if the user just needs help...
 if [ "$OPT_HELP" != "yes" ]; then
 
@@ -2501,24 +2519,6 @@ if [ ! -d "${outpath}/lib/fonts" ]; then
         mkdir -p "${outpath}/lib"
         ln -s "${relpath}/lib/fonts" "${outpath}/lib/fonts"
     fi
-fi
-
-# find a make command
-if [ -z "$MAKE" ]; then
-    MAKE=
-    for mk in gmake make; do
-        if "$WHICH" $mk >/dev/null 2>&1; then
-            MAKE=`"$WHICH" $mk`
-            break
-        fi
-    done
-    if [ -z "$MAKE" ]; then
-        echo >&2 "You don't seem to have 'make' or 'gmake' in your PATH."
-        echo >&2 "Cannot proceed."
-        exit 1
-    fi
-    # export MAKE, we need it later in the config.tests
-    export MAKE
 fi
 
 fi ### help
