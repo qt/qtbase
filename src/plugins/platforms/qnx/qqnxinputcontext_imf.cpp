@@ -717,7 +717,7 @@ void QQnxInputContext::update(Qt::InputMethodQueries queries)
         updateCursorPosition();
         // If caret position has changed we need to inform IMF unless this is just due to our own action
         // such as committing text.
-        if (!m_isUpdatingText && lastCaret != m_caretPosition) {
+        if (hasSession() && !m_isUpdatingText && lastCaret != m_caretPosition) {
             caret_event_t caretEvent;
             initEvent(&caretEvent.event, sInputSession, EVENT_CARET, CARET_POS_CHANGED, sizeof(caretEvent));
             caretEvent.old_pos = lastCaret;
@@ -738,6 +738,10 @@ void QQnxInputContext::closeSession()
         p_ictrl_close_session((input_session_t *)sInputSession);
         sInputSession = 0;
     }
+    // These are likely already in the right state but this depends on the text control
+    // having called reset or commit.  So, just in case, set them to proper values.
+    m_isComposing = false;
+    m_composingText.clear();
 }
 
 bool QQnxInputContext::openSession()
@@ -791,7 +795,7 @@ bool QQnxInputContext::dispatchCloseSoftwareInputPanel()
  */
 bool QQnxInputContext::dispatchFocusGainEvent(int inputHints)
 {
-    if (sInputSession != 0)
+    if (hasSession())
         dispatchFocusLossEvent();
 
     QObject *input = qGuiApp->focusObject();
@@ -835,13 +839,13 @@ bool QQnxInputContext::dispatchFocusGainEvent(int inputHints)
 
 void QQnxInputContext::dispatchFocusLossEvent()
 {
-    if (sInputSession != 0) {
+    if (hasSession()) {
         qInputContextDebug() << Q_FUNC_INFO << "ictrl_dispatch_event focus lost";
 
         focus_event_t focusEvent;
         initEvent(&focusEvent.event, sInputSession, EVENT_FOCUS, FOCUS_LOST, sizeof(focusEvent));
         p_ictrl_dispatch_event((event_t *)&focusEvent);
-        sInputSession = 0;
+        closeSession();
     }
 }
 
@@ -849,7 +853,7 @@ bool QQnxInputContext::handleKeyboardEvent(int flags, int sym, int mod, int scan
 {
     Q_UNUSED(scan);
 
-    if (!imfAvailable())
+    if (!hasSession())
         return false;
 
     int key = (flags & KEY_SYM_VALID) ? sym : cap;
@@ -950,10 +954,12 @@ void QQnxInputContext::endComposition()
 
     finishComposingText();
 
-    action_event_t actionEvent;
-    initEvent(&actionEvent.event, sInputSession, EVENT_ACTION, ACTION_END_COMPOSITION, sizeof(actionEvent));
-    qInputContextDebug() << Q_FUNC_INFO << "ictrl_dispatch_even end composition";
-    p_ictrl_dispatch_event(&actionEvent.event);
+    if (hasSession()) {
+        action_event_t actionEvent;
+        initEvent(&actionEvent.event, sInputSession, EVENT_ACTION, ACTION_END_COMPOSITION, sizeof(actionEvent));
+        qInputContextDebug() << Q_FUNC_INFO << "ictrl_dispatch_even end composition";
+        p_ictrl_dispatch_event(&actionEvent.event);
+    }
 }
 
 void QQnxInputContext::updateComposition(spannable_string_t *text, int32_t new_cursor_position)
@@ -1318,7 +1324,7 @@ void QQnxInputContext::setFocusObject(QObject *object)
     if (!inputMethodAccepted()) {
         if (m_inputPanelVisible)
             hideInputPanel();
-        if (sInputSession != 0)
+        if (hasSession())
             dispatchFocusLossEvent();
     } else {
         QInputMethodQueryEvent query(Qt::ImHints);
