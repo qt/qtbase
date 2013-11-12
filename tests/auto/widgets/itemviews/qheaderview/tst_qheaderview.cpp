@@ -368,6 +368,8 @@ void tst_QHeaderView::getSetCheck()
     QCOMPARE(0, obj1.minimumSectionSize());
     obj1.setMinimumSectionSize(99999);
     QCOMPARE(99999, obj1.minimumSectionSize());
+    obj1.setMinimumSectionSize(-1);
+    QVERIFY(obj1.minimumSectionSize() < 100);
 
     // int QHeaderView::offset()
     // void QHeaderView::setOffset(int)

@@ -1599,7 +1599,7 @@ int QHeaderView::minimumSectionSize() const
 void QHeaderView::setMinimumSectionSize(int size)
 {
     Q_D(QHeaderView);
-    if (size < 0 || size > maxSizeSection)
+    if (size < -1 || size > maxSizeSection)
         return;
     d->minimumSectionSize = size;
     if (d->minimumSectionSize > maximumSectionSize())
