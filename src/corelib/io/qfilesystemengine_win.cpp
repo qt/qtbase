@@ -956,17 +956,22 @@ bool QFileSystemEngine::fillMetaData(HANDLE fHandle, QFileSystemMetaData &data,
     }
     SetErrorMode(oldmode);
 #else // !Q_OS_WINRT
-    FILE_FULL_DIR_INFO fileInfo;
-    if (GetFileInformationByHandleEx(fHandle, FileFullDirectoryInfo, &fileInfo, sizeof(fileInfo))) {
-        data.fillFromFileAttribute(fileInfo.FileAttributes);
-        data.creationTime_.dwHighDateTime = fileInfo.CreationTime.HighPart;
-        data.creationTime_.dwLowDateTime = fileInfo.CreationTime.LowPart;
-        data.lastAccessTime_.dwHighDateTime = fileInfo.LastAccessTime.HighPart;
-        data.lastAccessTime_.dwLowDateTime = fileInfo.LastAccessTime.LowPart;
-        data.lastWriteTime_.dwHighDateTime = fileInfo.LastWriteTime.HighPart;
-        data.lastWriteTime_.dwLowDateTime = fileInfo.LastWriteTime.LowPart;
-        data.fileAttribute_ & FILE_ATTRIBUTE_DIRECTORY ? data.size_ = 0 : data.size_ = fileInfo.AllocationSize.QuadPart;
-        data.knownFlagsMask |= data.Times | data.SizeAttribute;
+    FILE_BASIC_INFO fileBasicInfo;
+    if (GetFileInformationByHandleEx(fHandle, FileBasicInfo, &fileBasicInfo, sizeof(fileBasicInfo))) {
+        data.fillFromFileAttribute(fileBasicInfo.FileAttributes);
+        data.creationTime_.dwHighDateTime = fileBasicInfo.CreationTime.HighPart;
+        data.creationTime_.dwLowDateTime = fileBasicInfo.CreationTime.LowPart;
+        data.lastAccessTime_.dwHighDateTime = fileBasicInfo.LastAccessTime.HighPart;
+        data.lastAccessTime_.dwLowDateTime = fileBasicInfo.LastAccessTime.LowPart;
+        data.lastWriteTime_.dwHighDateTime = fileBasicInfo.LastWriteTime.HighPart;
+        data.lastWriteTime_.dwLowDateTime = fileBasicInfo.LastWriteTime.LowPart;
+        if (!(data.fileAttribute_ & FILE_ATTRIBUTE_DIRECTORY)) {
+            FILE_STANDARD_INFO fileStandardInfo;
+            if (GetFileInformationByHandleEx(fHandle, FileStandardInfo, &fileStandardInfo, sizeof(fileStandardInfo)))
+                data.size_ = fileStandardInfo.EndOfFile.QuadPart;
+        } else
+            data.size_ = 0;
+        data.knownFlagsMask |=  QFileSystemMetaData::Times | QFileSystemMetaData::SizeAttribute;
     }
 #endif // Q_OS_WINRT
     return data.hasFlags(what);
