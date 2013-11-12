@@ -87,8 +87,16 @@ QVariant QGtk2Theme::themeHint(QPlatformTheme::ThemeHint hint) const
 
 bool QGtk2Theme::usePlatformNativeDialog(DialogType type) const
 {
-    Q_UNUSED(type);
-    return true;
+    switch (type) {
+    case ColorDialog:
+        return true;
+    case FileDialog:
+        return true;
+    case FontDialog:
+        return true;
+    default:
+        return false;
+    }
 }
 
 QPlatformDialogHelper *QGtk2Theme::createPlatformDialogHelper(DialogType type) const
