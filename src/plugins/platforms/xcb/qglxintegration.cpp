@@ -431,6 +431,11 @@ void QGLXContext::queryDummyContext()
     if (skip)
         return;
 
+    QOpenGLContext *oldContext = QOpenGLContext::currentContext();
+    QSurface *oldSurface = 0;
+    if (oldContext)
+        oldSurface = oldContext->surface();
+
     QOffscreenSurface surface;
     surface.create();
     QOpenGLContext context;
@@ -446,6 +451,9 @@ void QGLXContext::queryDummyContext()
             break;
         }
     }
+
+    if (oldContext && oldSurface)
+        oldContext->makeCurrent(oldSurface);
 }
 
 bool QGLXContext::supportsThreading()
