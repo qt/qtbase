@@ -2836,14 +2836,6 @@ if [ '!' -f "${XQMAKESPEC}/qplatformdefs.h" ]; then
     exit 2
 fi
 
-if [ "$UNAME_SYSTEM" = "SunOS" ]; then
-    # Solaris 2.5 and 2.6 have libposix4, which was renamed to librt for Solaris 7 and up
-    if echo $UNAME_RELEASE | grep "^5\.[5|6]" >/dev/null 2>&1; then
-        sed -e "s,-lrt,-lposix4," "$XQMAKESPEC/qmake.conf" > "$XQMAKESPEC/qmake.conf.new"
-        mv "$XQMAKESPEC/qmake.conf.new" "$XQMAKESPEC/qmake.conf"
-    fi
-fi
-
 if [ "$CFG_RTOS_ENABLED" = "no" ]; then
     case `basename "$XPLATFORM"` in
 	qnx-* | vxworks-*)
@@ -3942,18 +3934,6 @@ elif [ "$Edition" != "OpenSource" ]; then
         fi
     done
 fi
-
-# this should be moved somewhere else
-case "$PLATFORM" in
-aix-*)
-    AIX_VERSION=`uname -v`
-    if [ "$AIX_VERSION" -lt "5" ]; then
-	QMakeVar add QMAKE_LIBS_X11 -lbind
-    fi
-    ;;
-*)
-    ;;
-esac
 
 #-------------------------------------------------------------------------------
 # generate qconfig.cpp
