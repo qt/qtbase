@@ -1357,7 +1357,6 @@ while [ "$#" -gt 0 ]; do
     esac
     if [ "$UNKNOWN_ARG" = "yes" ]; then
         echo "$1: unknown argument"
-        OPT_HELP=yes
         ERROR=yes
         shift
         continue
@@ -2254,7 +2253,6 @@ while [ "$#" -gt 0 ]; do
         fi
         if [ "$ERROR" = "yes" ]; then
            echo "$CURRENT_OPT: unknown argument"
-           OPT_HELP=yes
         fi
         ;;
     v|verbose)
@@ -2429,10 +2427,10 @@ while [ "$#" -gt 0 ]; do
     esac
     if [ "$UNKNOWN_OPT" = "yes" ]; then
         echo "${CURRENT_OPT}: invalid command-line switch"
-        OPT_HELP=yes
         ERROR=yes
     fi
 done
+[ "x$ERROR" = "xyes" ] && exit 1
 
 # update QT_CONFIG to show our current predefined configuration
 CFG_QCONFIG_PATH=$relpath/src/corelib/global/qconfig-${CFG_QCONFIG}.h
@@ -2454,7 +2452,7 @@ minimal|small|medium|large|full)
             echo >&2 "  $relpath/src/corelib/global/qconfig-${CFG_QCONFIG}.h"
             echo >&2 "  or"
             echo >&2 "  $CFG_QCONFIG_PATH"
-            OPT_HELP=yes
+            exit 1
         fi
     fi
 esac
@@ -3285,9 +3283,7 @@ fi
 # help - interactive parts of the script _after_ this section please
 #-------------------------------------------------------------------------------
 
-# next, emit a usage message if something failed.
 if [ "$OPT_HELP" = "yes" ]; then
-    [ "x$ERROR" = "xyes" ] && echo
     if [ "$CFG_NIS" = "no" ]; then
         NSY=" "
         NSN="*"
@@ -3781,7 +3777,6 @@ EOF
 
 fi
 
-   [ "x$ERROR" = "xyes" ] && exit 1
    exit 0
 fi # Help
 
