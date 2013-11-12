@@ -51,6 +51,7 @@ class QQnxNativeInterface : public QPlatformNativeInterface
 public:
     void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
     void *nativeResourceForScreen(const QByteArray &resource, QScreen *screen);
+    void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context);
     void setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value);
 };
 

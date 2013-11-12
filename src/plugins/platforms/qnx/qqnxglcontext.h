@@ -75,6 +75,8 @@ public:
 
     static EGLDisplay getEglDisplay();
     EGLConfig getEglConfig() const { return m_eglConfig;}
+    EGLContext getEglContext() const { return m_eglContext; }
+
 private:
     //Can be static because different displays returne the same handle
     static EGLDisplay ms_eglDisplay;
