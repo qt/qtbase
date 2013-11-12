@@ -139,6 +139,7 @@ void QEglFSBackingStore::resize(const QSize &size, const QRegion &staticContents
     m_window->create();
 
     rootWin->screen()->rootContext()->makeCurrent(rootWin->window());
+    initializeOpenGLFunctions();
 
     if (m_texture)
         glDeleteTextures(1, &m_texture);
