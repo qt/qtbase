@@ -2432,31 +2432,6 @@ while [ "$#" -gt 0 ]; do
 done
 [ "x$ERROR" = "xyes" ] && exit 1
 
-# update QT_CONFIG to show our current predefined configuration
-CFG_QCONFIG_PATH=$relpath/src/corelib/global/qconfig-${CFG_QCONFIG}.h
-case "$CFG_QCONFIG" in
-minimal|small|medium|large|full)
-    # these are a sequence of increasing functionality
-    for c in minimal small medium large full; do
-        QT_CONFIG="$QT_CONFIG $c-config"
-        [ "$CFG_QCONFIG" = $c ] && break
-    done
-    [ "$CFG_QCONFIG" = full ] && CFG_QCONFIG_PATH=
-    ;;
-*)
-    # not known to be sufficient for anything
-    if [ ! -f "$CFG_QCONFIG_PATH" ]; then
-        CFG_QCONFIG_PATH=`"$relpath/config.tests/unix/makeabs" "${CFG_QCONFIG}"`
-        if [ ! -f "$CFG_QCONFIG_PATH" ]; then
-            echo >&2 "Error: configuration file not found:"
-            echo >&2 "  $relpath/src/corelib/global/qconfig-${CFG_QCONFIG}.h"
-            echo >&2 "  or"
-            echo >&2 "  $CFG_QCONFIG_PATH"
-            exit 1
-        fi
-    fi
-esac
-
 #-------------------------------------------------------------------------------
 # build tree initialization
 #-------------------------------------------------------------------------------
@@ -2484,19 +2459,6 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     [ "$OPT_VERBOSE" = "yes" ] && echo "Performing shadow build..."
 fi
 
-if [ "$PLATFORM_MAC" = "no" -a "$CFG_DEBUG_RELEASE" = "yes" ]; then
-    echo
-    echo "WARNING: -debug-and-release is not supported outside of Mac OS X."
-    echo "Qt can be built in release mode with separate debug information, so"
-    echo "-debug-and-release is not necessary anymore"
-    echo
-fi
-
-if [ "$CFG_XCB" != "no" ] && [ "$CFG_XKBCOMMON" = "no" ]; then
-    echo "Error: -no-xkbcommon is not supported on XCB platform plugin."
-    exit 101
-fi
-
 if [ "$CFG_SILENT" = "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG silent"
 fi
@@ -2522,7 +2484,7 @@ fi
 fi ### help
 
 #-------------------------------------------------------------------------------
-# auto-detect all that hasn't been specified in the arguments
+# platform detection
 #-------------------------------------------------------------------------------
 
 if [ -z "$PLATFORM" ]; then
@@ -2714,6 +2676,48 @@ case "$XPLATFORM" in
         XPLATFORM_ANDROID=yes
         ;;
 esac
+
+#-------------------------------------------------------------------------------
+# command line and environment validation
+#-------------------------------------------------------------------------------
+
+# update QT_CONFIG to show our current predefined configuration
+CFG_QCONFIG_PATH=$relpath/src/corelib/global/qconfig-${CFG_QCONFIG}.h
+case "$CFG_QCONFIG" in
+minimal|small|medium|large|full)
+    # these are a sequence of increasing functionality
+    for c in minimal small medium large full; do
+        QT_CONFIG="$QT_CONFIG $c-config"
+        [ "$CFG_QCONFIG" = $c ] && break
+    done
+    [ "$CFG_QCONFIG" = full ] && CFG_QCONFIG_PATH=
+    ;;
+*)
+    # not known to be sufficient for anything
+    if [ ! -f "$CFG_QCONFIG_PATH" ]; then
+        CFG_QCONFIG_PATH=`"$relpath/config.tests/unix/makeabs" "${CFG_QCONFIG}"`
+        if [ ! -f "$CFG_QCONFIG_PATH" ]; then
+            echo >&2 "Error: configuration file not found:"
+            echo >&2 "  $relpath/src/corelib/global/qconfig-${CFG_QCONFIG}.h"
+            echo >&2 "  or"
+            echo >&2 "  $CFG_QCONFIG_PATH"
+            exit 1
+        fi
+    fi
+esac
+
+if [ "$PLATFORM_MAC" = "no" -a "$CFG_DEBUG_RELEASE" = "yes" ]; then
+    echo
+    echo "WARNING: -debug-and-release is not supported outside of Mac OS X."
+    echo "Qt can be built in release mode with separate debug information, so"
+    echo "-debug-and-release is not necessary anymore"
+    echo
+fi
+
+if [ "$CFG_XCB" != "no" ] && [ "$CFG_XKBCOMMON" = "no" ]; then
+    echo "Error: -no-xkbcommon is not supported on XCB platform plugin."
+    exit 101
+fi
 
 if [ "$XPLATFORM_ANDROID" = "yes" ]; then
     if [ -z "$CFG_DEFAULT_ANDROID_NDK_HOST" ]; then
