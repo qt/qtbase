@@ -436,11 +436,23 @@ void QGLXContext::queryDummyContext()
     if (oldContext)
         oldSurface = oldContext->surface();
 
-    QOffscreenSurface surface;
-    surface.create();
+    QScopedPointer<QSurface> surface;
+    const char *vendor = glXGetClientString(glXGetCurrentDisplay(), GLX_VENDOR);
+    if (vendor && !strcmp(vendor, "ATI")) {
+        QWindow *window = new QWindow;
+        window->resize(64, 64);
+        window->setSurfaceType(QSurface::OpenGLSurface);
+        window->create();
+        surface.reset(window);
+    } else {
+        QOffscreenSurface *offSurface = new QOffscreenSurface;
+        offSurface->create();
+        surface.reset(offSurface);
+    }
+
     QOpenGLContext context;
     context.create();
-    context.makeCurrent(&surface);
+    context.makeCurrent(surface.data());
 
     const char *renderer = (const char *) glGetString(GL_RENDERER);
 
@@ -452,6 +464,7 @@ void QGLXContext::queryDummyContext()
         }
     }
 
+    context.doneCurrent();
     if (oldContext && oldSurface)
         oldContext->makeCurrent(oldSurface);
 }
