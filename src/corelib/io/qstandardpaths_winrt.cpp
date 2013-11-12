@@ -48,6 +48,17 @@
 
 #include <qt_windows.h>
 
+#include <wrl.h>
+#include <windows.foundation.h>
+#include <windows.storage.h>
+#include <Windows.ApplicationModel.h>
+
+using namespace Microsoft::WRL;
+using namespace Microsoft::WRL::Wrappers;
+using namespace ABI::Windows::Foundation;
+using namespace ABI::Windows::Storage;
+using namespace ABI::Windows::ApplicationModel;
+
 #ifndef QT_NO_STANDARDPATHS
 
 QT_BEGIN_NAMESPACE
@@ -59,9 +70,51 @@ static QString convertCharArray(const wchar_t *path)
 
 QString QStandardPaths::writableLocation(StandardLocation type)
 {
-    Q_UNUSED(type)
-    Q_UNIMPLEMENTED();
-    return QString();
+    QString result;
+
+    switch (type) {
+    case ConfigLocation: // same as DataLocation, on Windows
+    case DataLocation:
+    case GenericDataLocation: {
+        ComPtr<IApplicationDataStatics> applicationDataStatics;
+        if (FAILED(GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Storage_ApplicationData).Get(), &applicationDataStatics)))
+            break;
+        ComPtr<IApplicationData> applicationData;
+        if (FAILED(applicationDataStatics->get_Current(&applicationData)))
+            break;
+        ComPtr<IStorageFolder> settingsFolder;
+        if (FAILED(applicationData->get_LocalFolder(&settingsFolder)))
+            break;
+        ComPtr<IStorageItem> settingsFolderItem;
+        if (FAILED(settingsFolder.As(&settingsFolderItem)))
+            break;
+        HSTRING path;
+        if (FAILED(settingsFolderItem->get_Path(&path)))
+            break;
+        result = convertCharArray(WindowsGetStringRawBuffer(path, nullptr));
+        if (isTestModeEnabled())
+            result += QLatin1String("/qttest");
+        break;
+    }
+    case CacheLocation:
+        return writableLocation(DataLocation) + QLatin1String("/cache");
+
+    case GenericCacheLocation:
+        return writableLocation(GenericDataLocation) + QLatin1String("/cache");
+
+    case RuntimeLocation:
+    case HomeLocation:
+        result = QDir::homePath();
+        break;
+
+    case TempLocation:
+        result = QDir::tempPath();
+        break;
+    default:
+        Q_UNIMPLEMENTED();
+    }
+    return result;
+
 }
 
 QStringList QStandardPaths::standardLocations(StandardLocation type)
