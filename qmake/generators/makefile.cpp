@@ -92,7 +92,7 @@ bool MakefileGenerator::canExecute(const QStringList &cmdline, int *a) const
 
 QString MakefileGenerator::mkdir_p_asstring(const QString &dir, bool escape) const
 {
-    QString edir = escape ? escapeFilePath(dir) : dir;
+    QString edir = escape ? escapeFilePath(Option::fixPathToTargetOS(dir, false, false)) : dir;
     return "@" + makedir.arg(edir);
 }
 
