@@ -66,7 +66,6 @@ public:
     void swap(QCollatorSortKey &other)
     { d.swap(other.d); }
 
-    bool operator<(const QCollatorSortKey &key) const;
     int compare(const QCollatorSortKey &key) const;
 
 protected:
@@ -77,6 +76,11 @@ protected:
 private:
     QCollatorSortKey();
 };
+
+inline bool operator<(const QCollatorSortKey &lhs, const QCollatorSortKey &rhs)
+{
+    return lhs.compare(rhs) < 0;
+}
 
 class Q_CORE_EXPORT QCollator
 {

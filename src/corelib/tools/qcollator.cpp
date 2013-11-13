@@ -328,12 +328,13 @@ QCollatorSortKey& QCollatorSortKey::operator=(const QCollatorSortKey &other)
 }
 
 /*!
-    \fn bool QCollatorSortKey::operator<(const QCollatorSortKey &otherKey) const
+    \fn bool operator<(const QCollatorSortKey &lhs, const QCollatorSortKey &rhs)
+    \relates QCollatorSortKey
 
-    According to the QCollator that created the key, returns \c true if the
-    key should be sorted before than \a otherKey; otherwise returns \c false.
+    According to the QCollator that created the keys, returns \c true if \a lhs
+    should be sorted before \a rhs; otherwise returns \c false.
 
-    \sa compare()
+    \sa QCollatorSortKey::compare()
  */
 
 /*!
