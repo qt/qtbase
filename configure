@@ -2803,48 +2803,6 @@ EOF
 fi # Help
 
 #-------------------------------------------------------------------------------
-# build tree initialization
-#-------------------------------------------------------------------------------
-
-# is this a shadow build?
-if [ "$OPT_SHADOW" = "maybe" ]; then
-    OPT_SHADOW=no
-    if [ "$relpath" != "$outpath" ] && [ '!' -f "$outpath/configure" ]; then
-        if [ -h "$outpath" ]; then
-            [ "$relpath" -ef "$outpath" ] || OPT_SHADOW=yes
-        else
-            OPT_SHADOW=yes
-        fi
-    fi
-fi
-if [ "$OPT_SHADOW" = "yes" ]; then
-    if [ -f "$relpath/.qmake.cache" -o -f "$relpath/src/corelib/global/qconfig.h" -o -f "$relpath/src/corelib/global/qconfig.cpp" ]; then
-        echo >&2 "You cannot make a shadow build from a source tree containing a previous build."
-        echo >&2 "Cannot proceed."
-        exit 1
-    fi
-    [ "$OPT_VERBOSE" = "yes" ] && echo "Performing shadow build..."
-fi
-
-# if the source tree is different from the build tree,
-# symlink or copy part of the sources
-if [ "$OPT_SHADOW" = "yes" ]; then
-    echo "Preparing build tree..."
-
-    [ -d "$outpath/bin" ] || mkdir -p "$outpath/bin"
-
-    mkdir -p "$outpath/mkspecs"
-fi
-
-# symlink fonts to be able to run application from build directory
-if [ ! -d "${outpath}/lib/fonts" ]; then
-    if [ "$PLATFORM" = "$XPLATFORM" ]; then
-        mkdir -p "${outpath}/lib"
-        ln -s "${relpath}/lib/fonts" "${outpath}/lib/fonts"
-    fi
-fi
-
-#-------------------------------------------------------------------------------
 # platform detection
 #-------------------------------------------------------------------------------
 
@@ -3207,6 +3165,48 @@ if [ "$CFG_RTOS_ENABLED" = "no" ]; then
             exit 1
 	    ;;
     esac
+fi
+
+#-------------------------------------------------------------------------------
+# build tree initialization
+#-------------------------------------------------------------------------------
+
+# is this a shadow build?
+if [ "$OPT_SHADOW" = "maybe" ]; then
+    OPT_SHADOW=no
+    if [ "$relpath" != "$outpath" ] && [ '!' -f "$outpath/configure" ]; then
+        if [ -h "$outpath" ]; then
+            [ "$relpath" -ef "$outpath" ] || OPT_SHADOW=yes
+        else
+            OPT_SHADOW=yes
+        fi
+    fi
+fi
+if [ "$OPT_SHADOW" = "yes" ]; then
+    if [ -f "$relpath/.qmake.cache" -o -f "$relpath/src/corelib/global/qconfig.h" -o -f "$relpath/src/corelib/global/qconfig.cpp" ]; then
+        echo >&2 "You cannot make a shadow build from a source tree containing a previous build."
+        echo >&2 "Cannot proceed."
+        exit 1
+    fi
+    [ "$OPT_VERBOSE" = "yes" ] && echo "Performing shadow build..."
+fi
+
+# if the source tree is different from the build tree,
+# symlink or copy part of the sources
+if [ "$OPT_SHADOW" = "yes" ]; then
+    echo "Preparing build tree..."
+
+    [ -d "$outpath/bin" ] || mkdir -p "$outpath/bin"
+
+    mkdir -p "$outpath/mkspecs"
+fi
+
+# symlink fonts to be able to run application from build directory
+if [ ! -d "${outpath}/lib/fonts" ]; then
+    if [ "$PLATFORM" = "$XPLATFORM" ]; then
+        mkdir -p "${outpath}/lib"
+        ln -s "${relpath}/lib/fonts" "${outpath}/lib/fonts"
+    fi
 fi
 
 #-------------------------------------------------------------------------------
