@@ -79,7 +79,7 @@ private:
 class Q_CORE_EXPORT QCollator
 {
 public:
-    QCollator(const QLocale &locale = QLocale());
+    explicit QCollator(const QLocale &locale = QLocale());
     QCollator(const QCollator &);
     ~QCollator();
     QCollator &operator=(const QCollator &);
