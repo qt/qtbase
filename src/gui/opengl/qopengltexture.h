@@ -96,7 +96,7 @@ public:
         DontResetTextureUnit
     };
 
-    QOpenGLTexture(Target target);
+    explicit QOpenGLTexture(Target target);
     QOpenGLTexture(const QImage& image, MipMapGeneration genMipMaps = GenerateMipMaps);
     ~QOpenGLTexture();
 
