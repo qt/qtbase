@@ -2459,10 +2459,6 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     [ "$OPT_VERBOSE" = "yes" ] && echo "Performing shadow build..."
 fi
 
-if [ "$CFG_SILENT" = "yes" ]; then
-    QMAKE_CONFIG="$QMAKE_CONFIG silent"
-fi
-
 # if the source tree is different from the build tree,
 # symlink or copy part of the sources
 if [ "$OPT_SHADOW" = "yes" ]; then
@@ -5845,6 +5841,10 @@ fi
 #-------------------------------------------------------------------------------
 
 [ "$CFG_CXX11" = "yes" ] && QT_CONFIG="$QT_CONFIG c++11"
+
+if [ "$CFG_SILENT" = "yes" ]; then
+    QMAKE_CONFIG="$QMAKE_CONFIG silent"
+fi
 
 # disable accessibility
 if [ "$CFG_ACCESSIBILITY" = "no" ]; then
