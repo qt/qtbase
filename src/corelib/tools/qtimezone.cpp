@@ -434,8 +434,6 @@ QTimeZone &QTimeZone::operator=(const QTimeZone &other)
 
     Move-assigns \a other to this QTimeZone instance, transferring the
     ownership of the managed pointer to this instance.
-
-    \since 5.2
 */
 
 /*!
