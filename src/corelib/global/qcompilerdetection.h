@@ -735,6 +735,20 @@
 #      define Q_COMPILER_CLASS_ENUM
 #      define Q_COMPILER_ATOMICS
 #    endif /* VC 11 */
+#    if _MSC_VER >= 1800
+       /* C++11 features in VC12 = VC2013 */
+#      define Q_COMPILER_DEFAULT_MEMBERS
+#      define Q_COMPILER_DELETE_MEMBERS
+#      define Q_COMPILER_DELEGATING_CONSTRUCTORS
+#      define Q_COMPILER_EXPLICIT_CONVERSIONS
+#      define Q_COMPILER_NONSTATIC_MEMBER_INIT
+#      define Q_COMPILER_INITIALIZER_LISTS
+// implemented in principle, but has a bug that makes it unusable: http://connect.microsoft.com/VisualStudio/feedback/details/802058/c-11-unified-initialization-fails-with-c-style-arrays
+//      #define Q_COMPILER_UNIFORM_INIT
+#      define Q_COMPILER_RAW_STRINGS
+#      define Q_COMPILER_TEMPLATE_ALIAS
+#      define Q_COMPILER_VARIADIC_TEMPLATES
+#    endif /* VC 12 */
 #endif /* Q_CC_MSVC */
 
 #ifdef __cplusplus
