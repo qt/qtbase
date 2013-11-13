@@ -124,10 +124,20 @@ public:
     QtFreetypeData()
         : library(0)
     { }
+    ~QtFreetypeData();
 
     FT_Library library;
     QHash<QFontEngine::FaceId, QFreetypeFace *> faces;
 };
+
+QtFreetypeData::~QtFreetypeData()
+{
+    for (QHash<QFontEngine::FaceId, QFreetypeFace *>::ConstIterator iter = faces.begin(); iter != faces.end(); ++iter)
+        iter.value()->cleanup();
+    faces.clear();
+    FT_Done_FreeType(library);
+    library = 0;
+}
 
 #ifdef QT_NO_THREAD
 Q_GLOBAL_STATIC(QtFreetypeData, theFreetypeData)
@@ -292,22 +302,34 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
     return freetype;
 }
 
+void QFreetypeFace::cleanup()
+{
+    if (hbFace && hbFace_destroy_func) {
+        hbFace_destroy_func(hbFace);
+        hbFace = 0;
+    }
+    FT_Done_Face(face);
+    face = 0;
+}
+
 void QFreetypeFace::release(const QFontEngine::FaceId &face_id)
 {
-    QtFreetypeData *freetypeData = qt_getFreetypeData();
     if (!ref.deref()) {
-        if (hbFace && hbFace_destroy_func) {
-            hbFace_destroy_func(hbFace);
-            hbFace = 0;
+        if (face) {
+            QtFreetypeData *freetypeData = qt_getFreetypeData();
+
+            cleanup();
+
+            if (freetypeData->faces.contains(face_id))
+                freetypeData->faces.take(face_id);
+
+            if (freetypeData->faces.isEmpty()) {
+                FT_Done_FreeType(freetypeData->library);
+                freetypeData->library = 0;
+            }
         }
-        FT_Done_Face(face);
-        if(freetypeData->faces.contains(face_id))
-            freetypeData->faces.take(face_id);
+
         delete this;
-    }
-    if (freetypeData->faces.isEmpty()) {
-        FT_Done_FreeType(freetypeData->library);
-        freetypeData->library = 0;
     }
 }
 
