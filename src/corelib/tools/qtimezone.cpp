@@ -422,6 +422,13 @@ QTimeZone &QTimeZone::operator=(const QTimeZone &other)
     return *this;
 }
 
+/*
+    \fn void QTimeZone::swap(QTimeZone &other)
+
+    Swaps this timezone with \a other. This function is very fast and
+    never fails.
+*/
+
 /*!
     \fn QTimeZone &QTimeZone::operator=(QTimeZone &&other)
 

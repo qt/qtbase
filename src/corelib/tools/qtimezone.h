@@ -87,8 +87,11 @@ public:
 
     QTimeZone &operator=(const QTimeZone &other);
  #ifdef Q_COMPILER_RVALUE_REFS
-    QTimeZone &operator=(QTimeZone &&other) { std::swap(d, other.d); return *this; }
+    QTimeZone &operator=(QTimeZone &&other) { swap(other); return *this; }
 #endif
+
+    void swap(QTimeZone &other)
+    { d.swap(other.d); }
 
     bool operator==(const QTimeZone &other) const;
     bool operator!=(const QTimeZone &other) const;
