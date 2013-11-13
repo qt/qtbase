@@ -59,17 +59,6 @@
 #include <qboxlayout.h>
 #include <qlineedit.h>
 
-// Will try to wait for the condition while allowing event processing
-// for a maximum of 5 seconds.
-#define TRY_COMPARE(expr, expected) \
-    do { \
-        const int step = 50; \
-        for (int q = 0; q < 5000 && ((expr) != (expected)); q+=step) { \
-            QTest::qWait(step); \
-        } \
-        QCOMPARE(expr, expected); \
-    } while(0)
-
 static inline void setFrameless(QWidget *w)
 {
     Qt::WindowFlags flags = w->windowFlags();
@@ -751,7 +740,7 @@ void tst_QAbstractItemView::persistentEditorFocus()
     QTRY_VERIFY(view.isVisible());
 
     for (int i = 0; i < list.count(); ++i) {
-        TRY_COMPARE(list.at(i)->isVisible(), true);
+        QTRY_VERIFY(list.at(i)->isVisible());
         QPoint p = QPoint(5, 5);
         QMouseEvent mouseEvent(QEvent::MouseButtonPress, p, Qt::LeftButton,
                                Qt::LeftButton, Qt::NoModifier);
@@ -1056,7 +1045,7 @@ void tst_QAbstractItemView::setItemDelegate()
     v.edit(index);
 
     // This will close the editor
-    TRY_COMPARE(QApplication::focusWidget() == 0, false);
+    QTRY_VERIFY(QApplication::focusWidget());
     QWidget *editor = QApplication::focusWidget();
     QVERIFY(editor);
     editor->hide();
