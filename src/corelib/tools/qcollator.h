@@ -61,8 +61,10 @@ public:
     QCollatorSortKey &operator=(const QCollatorSortKey &other);
 #ifdef Q_COMPILER_RVALUE_REFS
     inline QCollatorSortKey &operator=(QCollatorSortKey &&other)
-    { qSwap(d, other.d); return *this; }
+    { swap(other); return *this; }
 #endif
+    void swap(QCollatorSortKey &other)
+    { d.swap(other.d); }
 
     bool operator<(const QCollatorSortKey &key) const;
     int compare(const QCollatorSortKey &key) const;
@@ -83,6 +85,9 @@ public:
     QCollator(const QCollator &);
     ~QCollator();
     QCollator &operator=(const QCollator &);
+
+    void swap(QCollator &other)
+    { qSwap(d, other.d); }
 
     void setLocale(const QLocale &locale);
     QLocale locale() const;

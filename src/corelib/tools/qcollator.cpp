@@ -118,6 +118,13 @@ QCollator &QCollator::operator=(const QCollator &other)
 }
 
 /*!
+    \fn void QCollator::swap(QCollator &other)
+
+    Swaps this collator with \a other. This function is very fast and
+    never fails.
+*/
+
+/*!
     \internal
  */
 void QCollator::detach()
