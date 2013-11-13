@@ -99,7 +99,7 @@ QCollator::QCollator(const QCollator &other)
  */
 QCollator::~QCollator()
 {
-    if (!d->ref.deref())
+    if (d && !d->ref.deref())
         delete d;
 }
 
@@ -109,13 +109,33 @@ QCollator::~QCollator()
 QCollator &QCollator::operator=(const QCollator &other)
 {
     if (this != &other) {
-        if (!d->ref.deref())
+        if (d && !d->ref.deref())
             delete d;
         d = other.d;
-        d->ref.ref();
+        if (d) d->ref.ref();
     }
     return *this;
 }
+
+/*
+    \fn void QCollator::QCollator(QCollator &&other)
+
+    Move constructor. Moves from \a other into this collator.
+
+    Note that a moved-from QCollator can only be destroyed or assigned
+    to. The effect of calling other functions than the destructor or
+    one of the assignment operators is undefined.
+*/
+
+/*
+    \fn QCollator &QCollator::operator=(QCollator &&other)
+
+    Move-assigns from \a other to this collator.
+
+    Note that a moved-from QCollator can only be destroyed or assigned
+    to. The effect of calling other functions than the destructor or
+    one of the assignment operators is undefined.
+*/
 
 /*!
     \fn void QCollator::swap(QCollator &other)

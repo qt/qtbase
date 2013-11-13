@@ -85,6 +85,12 @@ public:
     QCollator(const QCollator &);
     ~QCollator();
     QCollator &operator=(const QCollator &);
+#ifdef Q_COMPILER_RVALUE_REFS
+    QCollator(QCollator &&other)
+        : d(other.d) { other.d = 0; }
+    QCollator &operator=(QCollator &&other)
+    { swap(other); return *this; }
+#endif
 
     void swap(QCollator &other)
     { qSwap(d, other.d); }
