@@ -122,6 +122,9 @@ private:
     void detach();
 };
 
+Q_DECLARE_SHARED(QCollatorSortKey)
+Q_DECLARE_SHARED(QCollator)
+
 QT_END_NAMESPACE
 
 #endif // QCOLLATOR_P_H
