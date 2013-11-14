@@ -101,6 +101,8 @@ QIOSIntegration::~QIOSIntegration()
 bool QIOSIntegration::hasCapability(Capability cap) const
 {
     switch (cap) {
+    case BufferQueueingOpenGL:
+        return true;
     case OpenGL:
     case ThreadedOpenGL:
         return true;
