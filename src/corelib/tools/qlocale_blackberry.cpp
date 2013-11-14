@@ -68,17 +68,20 @@ QBBSystemLocaleData::QBBSystemLocaleData()
     , measurementNotifier(0)
     , hourNotifier(0)
 {
+    // Do not use qWarning to log warnings if qt_safe_open fails to open the pps file
+    // since the user code may install a message handler that invokes QLocale API again
+    // (i.e QDate, QDateTime, ...) which will cause a deadlock.
     if ((measurementFd = qt_safe_open(ppsUomPath, O_RDONLY)) == -1)
-        qWarning("Failed to open uom pps, errno=%d", errno);
+        fprintf(stderr, "Failed to open uom pps, errno=%d\n", errno);
 
     if ((regionFd = qt_safe_open(ppsRegionLocalePath, O_RDONLY)) == -1)
-        qWarning("Failed to open region pps, errno=%d", errno);
+        fprintf(stderr, "Failed to open region pps, errno=%d\n", errno);
 
     if ((languageFd = qt_safe_open(ppsLanguageLocalePath, O_RDONLY)) == -1)
-        qWarning("Failed to open language pps, errno=%d", errno);
+        fprintf(stderr, "Failed to open language pps, errno=%d\n", errno);
 
     if ((hourFd = qt_safe_open(ppsHourFormatPath, O_RDONLY)) == -1)
-        qWarning("Failed to open hour format pps, errno=%d", errno);
+        fprintf(stderr, "Failed to open hour format pps, errno=%d\n", errno);
 
     // we cannot call this directly, because by the time this constructor is
     // called, the event dispatcher has not yet been created, causing the
@@ -186,8 +189,12 @@ QByteArray QBBSystemLocaleData::readPpsValue(const char *ppsObject, int ppsFd)
     char buffer[ppsBufferSize];
 
     int bytes = qt_safe_read(ppsFd, buffer, ppsBufferSize - 1);
+    // This method is called in the ctor(), so do not use qWarning to log warnings
+    // if qt_safe_read fails to read the pps file
+    // since the user code may install a message handler that invokes QLocale API again
+    // (i.e QDate, QDateTime, ...) which will cause a deadlock.
     if (bytes == -1) {
-        qWarning("Failed to read Locale pps, errno=%d", errno);
+        fprintf(stderr, "Failed to read pps object:%s, errno=%d\n", ppsObject, errno);
         return result;
     }
     // ensure data is null terminated
