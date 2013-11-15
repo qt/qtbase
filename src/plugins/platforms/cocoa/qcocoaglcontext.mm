@@ -242,7 +242,6 @@ void QCocoaGLContext::updateSurfaceFormat()
     // attribute to check explicitly for this so we use our best guess for alpha.
     int alphaSize = -1;
     [pixelFormat getValues:&alphaSize forAttribute:NSOpenGLPFAAlphaSize forVirtualScreen:0];
-    qDebug() << "alphaSize =" << alphaSize;
     if (alphaSize > 0 && requestedFormat.alphaBufferSize() > 0)
         m_format.setAlphaBufferSize(alphaSize);
 
