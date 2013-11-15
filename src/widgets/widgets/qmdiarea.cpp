@@ -354,11 +354,6 @@ void SimpleCascader::rearrange(QList<QWidget *> &widgets, const QRect &domain) c
     QStyleOptionTitleBar options;
     options.initFrom(widgets.at(0));
     int titleBarHeight = widgets.at(0)->style()->pixelMetric(QStyle::PM_TitleBarHeight, &options, widgets.at(0));
-#if defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
-    // ### Remove this after the mac style has been fixed
-    if (qobject_cast<QMacStyle *>(widgets.at(0)->style()))
-        titleBarHeight -= 4;
-#endif
     const QFontMetrics fontMetrics = QFontMetrics(QApplication::font("QMdiSubWindowTitleBar"));
     const int dy = qMax(titleBarHeight - (titleBarHeight - fontMetrics.height()) / 2, 1);
 

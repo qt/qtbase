@@ -1710,11 +1710,6 @@ int QMdiSubWindowPrivate::titleBarHeight(const QStyleOptionTitleBar &options) co
     }
 
     int height = q->style()->pixelMetric(QStyle::PM_TitleBarHeight, &options, q);
-#if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
-    // ### Fix mac style, the +4 pixels hack is not necessary anymore
-    if (qobject_cast<QMacStyle *>(q->style()))
-        height -= 4;
-#endif
     if (hasBorder(options))
         height += q->isMinimized() ? 8 : 4;
     return height;

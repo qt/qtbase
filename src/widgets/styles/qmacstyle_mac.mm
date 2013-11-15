@@ -2191,7 +2191,6 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
             HIRect rect;
             ptrHIShapeGetBounds(region, &rect);
             ret = int(rect.size.height);
-            ret += 4;
         }
         break;
     case PM_TabBarTabVSpace:

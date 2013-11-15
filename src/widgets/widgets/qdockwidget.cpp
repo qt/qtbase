@@ -455,14 +455,6 @@ int QDockWidgetLayout::titleHeight() const
                             perp(verticalTitleBar, floatSize));
 
     QFontMetrics titleFontMetrics = q->fontMetrics();
-#ifdef Q_WS_MAC
-    if (qobject_cast<QMacStyle *>(q->style())) {
-        //### this breaks on proxy styles.  (But is this code still called?)
-        QFont font = qt_app_fonts_hash()->value("QToolButton", q->font());
-        titleFontMetrics = QFontMetrics(font);
-    }
-#endif
-
     int mw = q->style()->pixelMetric(QStyle::PM_DockWidgetTitleMargin, 0, q);
 
     return qMax(buttonHeight + 2, titleFontMetrics.height() + 2*mw);
