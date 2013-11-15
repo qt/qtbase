@@ -2856,9 +2856,9 @@ void tst_QNetworkReply::sendCustomRequestToHttp_data()
     QTest::newRow("trace") << QUrl("http://" + QtNetworkSettings::serverName()) <<
             QByteArray("TRACE") << (QBuffer *) 0 << 200 << QNetworkReply::NoError << QByteArray();
     QTest::newRow("connect") << QUrl("http://" + QtNetworkSettings::serverName()) <<
-            QByteArray("CONNECT") << (QBuffer *) 0 << 400 << QNetworkReply::UnknownContentError << QByteArray(); // 400 = Bad Request
+            QByteArray("CONNECT") << (QBuffer *) 0 << 400 << QNetworkReply::ProtocolInvalidOperationError << QByteArray(); // 400 = Bad Request
     QTest::newRow("nonsense") << QUrl("http://" + QtNetworkSettings::serverName()) <<
-            QByteArray("NONSENSE") << (QBuffer *) 0 << 501 << QNetworkReply::ProtocolUnknownError << QByteArray(); // 501 = Method Not Implemented
+            QByteArray("NONSENSE") << (QBuffer *) 0 << 501 << QNetworkReply::OperationNotImplementedError << QByteArray(); // 501 = Method Not Implemented
 
     QByteArray ba("test");
     QBuffer *buffer = new QBuffer;

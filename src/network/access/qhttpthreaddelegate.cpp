@@ -60,6 +60,10 @@ static QNetworkReply::NetworkError statusCodeFromHttp(int httpStatusCode, const 
     QNetworkReply::NetworkError code;
     // we've got an error
     switch (httpStatusCode) {
+    case 400:               // Bad Request
+        code = QNetworkReply::ProtocolInvalidOperationError;
+        break;
+
     case 401:               // Authorization required
         code = QNetworkReply::AuthenticationRequiredError;
         break;
@@ -80,15 +84,34 @@ static QNetworkReply::NetworkError statusCodeFromHttp(int httpStatusCode, const 
         code = QNetworkReply::ProxyAuthenticationRequiredError;
         break;
 
+    case 409:               // Resource Conflict
+        code = QNetworkReply::ContentConflictError;
+        break;
+
+    case 410:               // Content no longer available
+        code = QNetworkReply::ContentGoneError;
+        break;
+
     case 418:               // I'm a teapot
         code = QNetworkReply::ProtocolInvalidOperationError;
         break;
 
+    case 500:               // Internal Server Error
+        code = QNetworkReply::InternalServerError;
+        break;
+
+    case 501:               // Server does not support this functionality
+        code = QNetworkReply::OperationNotImplementedError;
+        break;
+
+    case 503:               // Service unavailable
+        code = QNetworkReply::ServiceUnavailableError;
+        break;
 
     default:
         if (httpStatusCode > 500) {
             // some kind of server error
-            code = QNetworkReply::ProtocolUnknownError;
+            code = QNetworkReply::UnknownServerError;
         } else if (httpStatusCode >= 400) {
             // content error we did not handle above
             code = QNetworkReply::UnknownContentError;
