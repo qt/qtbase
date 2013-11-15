@@ -177,7 +177,7 @@ void tst_QWindow::resizeEventAfterResize()
 
     Window window;
     window.setGeometry(geometry);
-    window.show();
+    window.showNormal();
 
     QTRY_COMPARE(window.received(QEvent::Resize), 1);
 
