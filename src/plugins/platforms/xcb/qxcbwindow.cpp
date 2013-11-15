@@ -154,7 +154,7 @@ enum QX11EmbedMessageType {
     XEMBED_ACTIVATE_ACCELERATOR = 14
 };
 
-const long XEMBED_VERSION = 0;
+const quint32 XEMBED_VERSION = 0;
 
 // Returns \c true if we should set WM_TRANSIENT_FOR on \a w
 static inline bool isTransient(const QWindow *w)
@@ -403,7 +403,7 @@ void QXcbWindow::create()
     }
 
     // set the PID to let the WM kill the application if unresponsive
-    long pid = getpid();
+    quint32 pid = getpid();
     Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
                                    atom(QXcbAtom::_NET_WM_PID), XCB_ATOM_CARDINAL, 32,
                                    1, &pid));
@@ -422,7 +422,7 @@ void QXcbWindow::create()
                                    1, &leader));
 
     /* Add XEMBED info; this operation doesn't initiate the embedding. */
-    long data[] = { XEMBED_VERSION, XEMBED_MAPPED };
+    quint32 data[] = { XEMBED_VERSION, XEMBED_MAPPED };
     Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
                                    atom(QXcbAtom::_XEMBED_INFO),
                                    atom(QXcbAtom::_XEMBED_INFO),
@@ -1824,7 +1824,7 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
                 xcb_get_property_reply(xcb_connection(), get_cookie, NULL);
 
             if (reply && reply->format == 32 && reply->type == wmStateAtom) {
-                const long *data = (const long *)xcb_get_property_value(reply);
+                const quint32 *data = (const quint32 *)xcb_get_property_value(reply);
                 if (reply->length != 0 && XCB_WM_STATE_ICONIC == data[0])
                     newState = Qt::WindowMinimized;
             }
@@ -1995,8 +1995,8 @@ bool QXcbWindow::startSystemResize(const QPoint &pos, Qt::Corner corner)
 }
 
 // Sends an XEmbed message.
-void QXcbWindow::sendXEmbedMessage(xcb_window_t window, long message,
-                                   long detail, long data1, long data2)
+void QXcbWindow::sendXEmbedMessage(xcb_window_t window, quint32 message,
+                                   quint32 detail, quint32 data1, quint32 data2)
 {
     xcb_client_message_event_t event;
 
