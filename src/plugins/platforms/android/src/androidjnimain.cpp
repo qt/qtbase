@@ -40,6 +40,7 @@
 **
 ****************************************************************************/
 
+#include <QtGui/private/qguiapplication_p.h>
 
 #include <dlfcn.h>
 #include <pthread.h>
@@ -691,7 +692,7 @@ static void updateApplicationState(JNIEnv */*env*/, jobject /*thiz*/, jint state
 {
     m_activityActive = (state == Qt::ApplicationActive);
 
-    if (!m_androidPlatformIntegration)
+    if (!m_androidPlatformIntegration || !QGuiApplicationPrivate::platformIntegration())
         return;
 
     QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState(state));
