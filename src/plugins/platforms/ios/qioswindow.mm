@@ -168,7 +168,7 @@
     QRect geometry = fromCGRect(self.frame);
     m_qioswindow->QPlatformWindow::setGeometry(geometry);
     QWindowSystemInterface::handleGeometryChange(m_qioswindow->window(), geometry);
-    QWindowSystemInterface::handleExposeEvent(m_qioswindow->window(), geometry);
+    QWindowSystemInterface::handleExposeEvent(m_qioswindow->window(), QRect(QPoint(), geometry.size()));
 
     // If we have a new size here we need to resize the FBO's corresponding buffers,
     // but we defer that to when the application calls makeCurrent.
