@@ -1500,6 +1500,8 @@ void QWindowsWindow::handleWindowStateChange(Qt::WindowState state)
         handleHidden();
         QWindowSystemInterface::flushWindowSystemEvents(); // Tell QQuickWindow to stop rendering now.
         break;
+    case Qt::WindowMaximized:
+    case Qt::WindowFullScreen:
     case Qt::WindowNoState: {
         // QTBUG-17548: We send expose events when receiving WM_Paint, but for
         // layered windows and transient children, we won't receive any WM_Paint.
