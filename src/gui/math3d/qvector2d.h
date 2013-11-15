@@ -80,7 +80,12 @@ public:
     float operator[](int i) const;
 
     float length() const;
+#ifdef QT_BUILD_GUI_LIB
     float lengthSquared() const;
+#else
+    Q_DECL_CONSTEXPR inline float lengthSquared() const
+    { return xp * xp + yp * yp; }
+#endif
 
     QVector2D normalized() const;
     void normalize();
@@ -94,7 +99,12 @@ public:
     QVector2D &operator*=(const QVector2D &vector);
     QVector2D &operator/=(float divisor);
 
+#ifdef QT_BUILD_GUI_LIB
     static float dotProduct(const QVector2D& v1, const QVector2D& v2);
+#else
+    Q_DECL_CONSTEXPR inline static float dotProduct(const QVector2D& v1, const QVector2D& v2)
+    { return v1.xp * v2.xp + v1.yp * v2.yp; }
+#endif
 
     Q_DECL_CONSTEXPR friend inline bool operator==(const QVector2D &v1, const QVector2D &v2);
     Q_DECL_CONSTEXPR friend inline bool operator!=(const QVector2D &v1, const QVector2D &v2);

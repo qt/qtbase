@@ -58,7 +58,8 @@ class Q_GUI_EXPORT QVector3D
 {
 public:
     Q_DECL_CONSTEXPR QVector3D();
-    Q_DECL_CONSTEXPR QVector3D(float xpos, float ypos, float zpos);
+    Q_DECL_CONSTEXPR QVector3D(float xpos, float ypos, float zpos) : xp(xpos), yp(ypos), zp(zpos) {}
+
     Q_DECL_CONSTEXPR explicit QVector3D(const QPoint& point);
     Q_DECL_CONSTEXPR explicit QVector3D(const QPointF& point);
 #ifndef QT_NO_VECTOR2D
@@ -94,8 +95,17 @@ public:
     QVector3D &operator*=(const QVector3D& vector);
     QVector3D &operator/=(float divisor);
 
+#ifdef QT_BUILD_GUI_LIB
     static float dotProduct(const QVector3D& v1, const QVector3D& v2);
     static QVector3D crossProduct(const QVector3D& v1, const QVector3D& v2);
+#else
+    Q_DECL_CONSTEXPR inline static float dotProduct(const QVector3D& v1, const QVector3D& v2)
+    { return v1.xp * v2.xp + v1.yp * v2.yp + v1.zp * v2.zp; }
+    Q_DECL_CONSTEXPR inline static QVector3D crossProduct(const QVector3D& v1, const QVector3D& v2)
+    { return QVector3D(v1.yp * v2.zp - v1.zp * v2.yp,
+                       v1.zp * v2.xp - v1.xp * v2.zp,
+                       v1.xp * v2.yp - v1.yp * v2.xp); }
+#endif
     static QVector3D normal(const QVector3D& v1, const QVector3D& v2);
     static QVector3D normal
         (const QVector3D& v1, const QVector3D& v2, const QVector3D& v3);
@@ -143,8 +153,6 @@ private:
 Q_DECLARE_TYPEINFO(QVector3D, Q_MOVABLE_TYPE);
 
 Q_DECL_CONSTEXPR inline QVector3D::QVector3D() : xp(0.0f), yp(0.0f), zp(0.0f) {}
-
-Q_DECL_CONSTEXPR inline QVector3D::QVector3D(float xpos, float ypos, float zpos) : xp(xpos), yp(ypos), zp(zpos) {}
 
 Q_DECL_CONSTEXPR inline QVector3D::QVector3D(const QPoint& point) : xp(point.x()), yp(point.y()), zp(0.0f) {}
 
