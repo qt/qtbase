@@ -300,15 +300,28 @@ static void qwindowcontainer_traverse(QWidget *parent, qwindowcontainer_traverse
     }
 }
 
+void QWindowContainer::toplevelAboutToBeDestroyed(QWidget *parent)
+{
+    if (QWindowContainerPrivate *d = QWindowContainerPrivate::get(parent)) {
+        d->window->setParent(&d->fakeParent);
+    }
+    qwindowcontainer_traverse(parent, toplevelAboutToBeDestroyed);
+}
+
 void QWindowContainer::parentWasChanged(QWidget *parent)
 {
     if (QWindowContainerPrivate *d = QWindowContainerPrivate::get(parent)) {
         if (d->window->parent()) {
             d->updateUsesNativeWidgets();
             d->markParentChain();
-            d->window->setParent(d->usesNativeWidgets
-                                 ? parent->windowHandle()
-                                 : parent->window()->windowHandle());
+            QWidget *toplevel = d->usesNativeWidgets ? parent : parent->window();
+            if (!toplevel->windowHandle()) {
+                QWidgetPrivate *tld = static_cast<QWidgetPrivate *>(QWidgetPrivate::get(toplevel));
+                tld->createTLExtra();
+                tld->createTLSysExtra();
+                Q_ASSERT(toplevel->windowHandle());
+            }
+            d->window->setParent(toplevel->windowHandle());
             d->updateGeometry();
         }
     }

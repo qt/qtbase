@@ -46,6 +46,8 @@
 #include <qwindow.h>
 #include <qwidget.h>
 
+#include <qdockwidget.h>
+#include <qmainwindow.h>
 
 
 class Window : public QWindow
@@ -80,6 +82,7 @@ private slots:
     void testUnparenting();
     void testActivation();
     void testAncestorChange();
+    void testDockWidget();
 };
 
 
@@ -278,11 +281,37 @@ void tst_QWindowContainer::testAncestorChange()
     newRoot->setGeometry(100, 100, 200, 200);
     newRoot->show();
     QVERIFY(QTest::qWaitForWindowExposed(newRoot));
+    QCOMPARE(newRoot->windowHandle(), window->parent());
     //      newRoot
     //      + right
     //        + container
     //          + window
     QCOMPARE(window->geometry(), QRect(100, 0, 100, 100));
+}
+
+
+void tst_QWindowContainer::testDockWidget()
+{
+    QMainWindow mainWindow;
+    mainWindow.resize(200, 200);
+
+    QDockWidget *dock = new QDockWidget();
+    QWindow *window = new QWindow();
+    QWidget *container = QWidget::createWindowContainer(window);
+    dock->setWidget(container);
+    mainWindow.addDockWidget(Qt::RightDockWidgetArea, dock);
+
+    mainWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
+    QVERIFY(window->parent() == mainWindow.window()->windowHandle());
+
+    QTest::qWait(1000);
+    dock->setFloating(true);
+    QTRY_VERIFY(window->parent() != mainWindow.window()->windowHandle());
+
+    QTest::qWait(1000);
+    dock->setFloating(false);
+    QTRY_VERIFY(window->parent() == mainWindow.window()->windowHandle());
 }
 
 QTEST_MAIN(tst_QWindowContainer)
