@@ -153,6 +153,15 @@
     self.clipsToBounds = NO;
 }
 
+- (void)setNeedsDisplay
+{
+    [super setNeedsDisplay];
+
+    // We didn't implement drawRect: so we have to manually
+    // mark the layer as needing display.
+    [self.layer setNeedsDisplay];
+}
+
 - (void)layoutSubviews
 {
     // This method is the de facto way to know that view has been resized,
@@ -165,15 +174,39 @@
         qWarning() << m_qioswindow->window()
             << "is backed by a UIView that has a transform set. This is not supported.";
 
-    QRect geometry = fromCGRect(self.frame);
-    m_qioswindow->QPlatformWindow::setGeometry(geometry);
-    QWindowSystemInterface::handleGeometryChange(m_qioswindow->window(), geometry);
-    QWindowSystemInterface::handleExposeEvent(m_qioswindow->window(), QRect(QPoint(), geometry.size()));
+    // The original geometry requested by setGeometry() might be different
+    // from what we end up with after applying window constraints.
+    QRect requestedGeometry = m_qioswindow->geometry();
 
-    // If we have a new size here we need to resize the FBO's corresponding buffers,
-    // but we defer that to when the application calls makeCurrent.
+    // Persist the actual/new geometry so that QWindow::geometry() can
+    // be queried on the resize event.
+    QRect actualGeometry = fromCGRect(self.frame);
+    m_qioswindow->QPlatformWindow::setGeometry(actualGeometry);
 
-    [super layoutSubviews];
+    QRect previousGeometry = requestedGeometry != actualGeometry ?
+            requestedGeometry : qt_window_private(m_qioswindow->window())->geometry;
+
+    QWindowSystemInterface::handleGeometryChange(m_qioswindow->window(), actualGeometry, previousGeometry);
+    QWindowSystemInterface::flushWindowSystemEvents();
+
+    if (actualGeometry.size() != previousGeometry.size()) {
+        // Trigger expose event on resize
+        [self setNeedsDisplay];
+
+        // A new size means we also need to resize the FBO's corresponding buffers,
+        // but we defer that to when the application calls makeCurrent.
+    }
+}
+
+- (void)displayLayer:(CALayer *)layer
+{
+    QRect geometry = fromCGRect(layer.frame);
+    Q_ASSERT(m_qioswindow->geometry() == geometry);
+    Q_ASSERT(self.hidden == !m_qioswindow->window()->isVisible());
+
+    QRegion region = self.hidden ? QRegion() : QRect(QPoint(), geometry.size());
+    QWindowSystemInterface::handleExposeEvent(m_qioswindow->window(), region);
+    QWindowSystemInterface::flushWindowSystemEvents();
 }
 
 - (void)updateTouchList:(NSSet *)touches withState:(Qt::TouchPointState)state
@@ -393,8 +426,8 @@ bool QIOSWindow::blockedByModal()
 
 void QIOSWindow::setVisible(bool visible)
 {
-    QPlatformWindow::setVisible(visible);
     m_view.hidden = !visible;
+    [m_view setNeedsDisplay];
 
     if (!isQtApplication())
         return;
@@ -429,22 +462,48 @@ void QIOSWindow::setVisible(bool visible)
 
 void QIOSWindow::setGeometry(const QRect &rect)
 {
-    // If the window is in fullscreen, just bookkeep the requested
-    // geometry in case the window goes into Qt::WindowNoState later:
     m_normalGeometry = rect;
-    if (window()->windowState() & (Qt::WindowMaximized | Qt::WindowFullScreen))
+
+    if (window()->windowState() != Qt::WindowNoState) {
+        QPlatformWindow::setGeometry(rect);
+
+        // The layout will realize the requested geometry was not applied, and
+        // send geometry-change events that match the actual geometry.
+        [m_view setNeedsLayout];
+
+        if (window()->inherits("QWidgetWindow")) {
+            // QWidget wrongly assumes that setGeometry resets the window
+            // state back to Qt::NoWindowState, so we need to inform it that
+            // that his is not the case by re-issuing the current window state.
+            QWindowSystemInterface::handleWindowStateChanged(window(), window()->windowState());
+
+            // It also needs to be told immediately that the geometry it requested
+            // did not apply, otherwise it will continue on as if it did, instead
+            // of waiting for a resize event.
+            [m_view layoutIfNeeded];
+        }
+
         return;
+    }
 
     applyGeometry(rect);
 }
 
 void QIOSWindow::applyGeometry(const QRect &rect)
 {
+    // Geometry changes are asynchronous, but QWindow::geometry() is
+    // expected to report back the 'requested geometry' until we get
+    // a callback with the updated geometry from the window system.
+    // The baseclass takes care of persisting this for us.
+    QPlatformWindow::setGeometry(rect);
+
     // Since we don't support transformations on the UIView, we can set the frame
     // directly and let UIKit deal with translating that into bounds and center.
-    // Changing the size of the view will end up in a call to -[QUIView layoutSubviews]
-    // which will update QWindowSystemInterface with the new size.
     m_view.frame = toCGRect(rect);
+
+    // iOS will automatically trigger -[layoutSubviews:] for resize,
+    // but not for move, so we force it just in case.
+    [m_view setNeedsLayout];
 }
 
 void QIOSWindow::setWindowState(Qt::WindowState state)
