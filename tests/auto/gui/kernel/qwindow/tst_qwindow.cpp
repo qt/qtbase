@@ -843,7 +843,10 @@ void tst_QWindow::activateAndClose()
 {
     for (int i = 0; i < 10; ++i)  {
        QWindow window;
-       window.show();
+       // qWaitForWindowActive will block for the duration of
+       // of the timeout if the window is at 0,0
+       window.setGeometry(QGuiApplication::primaryScreen()->availableGeometry().adjusted(1, 1, -1, -1));
+       window.showNormal();
        window.requestActivate();
        QVERIFY(QTest::qWaitForWindowActive(&window));
        QCOMPARE(qGuiApp->focusWindow(), &window);
