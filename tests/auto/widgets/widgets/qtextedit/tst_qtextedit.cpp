@@ -203,6 +203,8 @@ private slots:
 
     void highlightLongLine();
 
+    void countTextChangedOnRemove();
+
 private:
     void createSelection();
     int blockCount() const;
@@ -2499,6 +2501,19 @@ void tst_QTextEdit::highlightLongLine()
     QVERIFY(true);
 }
 
+//check for bug 15003, are there multiple textChanged() signals on remove?
+void tst_QTextEdit::countTextChangedOnRemove()
+{
+    QTextEdit edit;
+    edit.insertPlainText("Hello");
+
+    QSignalSpy spy(&edit, SIGNAL(textChanged()));
+
+    QKeyEvent event(QEvent::KeyPress, Qt::Key_Backspace, Qt::NoModifier);
+    QCoreApplication::instance()->notify(&edit, &event);
+
+    QCOMPARE(spy.count(), 1);
+}
 
 QTEST_MAIN(tst_QTextEdit)
 #include "tst_qtextedit.moc"

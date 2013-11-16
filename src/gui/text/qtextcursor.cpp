@@ -174,7 +174,6 @@ void QTextCursorPrivate::remove()
     } else {
         priv->remove(pos1, pos2-pos1, op);
         adjusted_anchor = anchor = position;
-        priv->finishEdit();
     }
 
 }
