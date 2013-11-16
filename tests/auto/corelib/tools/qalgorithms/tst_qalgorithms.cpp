@@ -1027,7 +1027,7 @@ void tst_QAlgorithms::binaryFindOnLargeContainer() const
 }
 
 // alternative implementation of qPopulationCount for comparison:
-static const uint bitsSetInNibble[] = {
+static Q_DECL_CONSTEXPR const uint bitsSetInNibble[] = {
     0, 1, 1, 2, 1, 2, 2, 3,
     1, 2, 2, 3, 2, 3, 3, 4,
 };
