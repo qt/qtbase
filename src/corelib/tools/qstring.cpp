@@ -3158,6 +3158,15 @@ int QString::count(const QStringRef &str, Qt::CaseSensitivity cs) const
     \sa indexOf(), count()
 */
 
+/*! \fn bool QString::contains(QLatin1String str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \since 5.3
+
+    \overload contains()
+
+    Returns \c true if this string contains an occurrence of the latin-1 string
+    \a str; otherwise returns \c false.
+*/
+
 /*! \fn bool QString::contains(QChar ch, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
 
     \overload contains()

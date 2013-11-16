@@ -1440,6 +1440,8 @@ void tst_QString::contains()
     QVERIFY(a.contains('F',Qt::CaseInsensitive));
     QVERIFY(a.contains("FG"));
     QVERIFY(a.contains("FG",Qt::CaseInsensitive));
+    QVERIFY(a.contains(QLatin1String("FG")));
+    QVERIFY(a.contains(QLatin1String("fg"),Qt::CaseInsensitive));
     QVERIFY(a.contains( QString(), Qt::CaseInsensitive));
     QVERIFY(a.contains( "", Qt::CaseInsensitive));
     QVERIFY(a.contains(QRegExp("[FG][HI]")));
