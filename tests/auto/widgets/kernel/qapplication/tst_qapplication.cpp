@@ -153,6 +153,7 @@ private slots:
 
     void focusChanged();
     void focusOut();
+    void focusMouseClick();
 
     void execAfterExit();
 
@@ -1769,6 +1770,63 @@ void tst_QApplication::focusOut()
     QTest::qWait(2000);
     le2->setFocus();
     QTest::qWait(2000);
+}
+
+class SpontaneousEvent
+{
+    Q_GADGET
+    QDOC_PROPERTY(bool accepted READ isAccepted WRITE setAccepted)
+    Q_ENUMS(Type)
+public:
+    enum Type {
+        Void
+    };
+
+    virtual ~SpontaneousEvent() {}
+
+    QEventPrivate *d;
+    ushort t;
+
+    ushort posted : 1;
+    ushort spont : 1;
+};
+
+void tst_QApplication::focusMouseClick()
+{
+    int argc = 1;
+    QApplication app(argc, &argv0);
+
+    QWidget w;
+    w.setFocusPolicy(Qt::StrongFocus);
+    QWidget w2(&w);
+    w2.setFocusPolicy(Qt::TabFocus);
+    w.show();
+    w.setFocus();
+    QTRY_COMPARE(QApplication::focusWidget(), &w);
+
+    // front most widget has Qt::TabFocus, parent widget accepts clicks as well
+    // now send a mouse button press event and check what happens with the focus
+    // it should be given to the parent widget
+    QMouseEvent ev(QEvent::MouseButtonPress, QPointF(), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+    reinterpret_cast<SpontaneousEvent *>(&ev)->spont = 1;
+    QVERIFY(ev.spontaneous());
+    qApp->notify(&w2, &ev);
+    QCOMPARE(QApplication::focusWidget(), &w);
+
+    // then we give the inner widget strong focus -> it should get focus
+    w2.setFocusPolicy(Qt::StrongFocus);
+    reinterpret_cast<SpontaneousEvent *>(&ev)->spont = 1;
+    QVERIFY(ev.spontaneous());
+    qApp->notify(&w2, &ev);
+    QTRY_COMPARE(QApplication::focusWidget(), &w2);
+
+    // now back to tab focus and click again (it already had focus) -> focus should stay
+    // (focus was revoked as of QTBUG-34042)
+    w2.setFocusPolicy(Qt::TabFocus);
+    reinterpret_cast<SpontaneousEvent *>(&ev)->spont = 1;
+    QVERIFY(ev.spontaneous());
+    qApp->notify(&w2, &ev);
+    QCOMPARE(QApplication::focusWidget(), &w2);
 }
 
 void tst_QApplication::execAfterExit()

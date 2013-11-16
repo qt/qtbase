@@ -3761,6 +3761,16 @@ void QApplicationPrivate::giveFocusAccordingToFocusPolicy(QWidget *widget, QEven
         }
         if (focusWidget->isWindow())
             break;
+
+        // find out whether this widget (or its proxy) already has focus
+        QWidget *f = focusWidget;
+        if (focusWidget->d_func()->extra && focusWidget->d_func()->extra->focus_proxy)
+            f = focusWidget->d_func()->extra->focus_proxy;
+        // if it has, stop here.
+        // otherwise a click on the focused widget would remove its focus if ClickFocus isn't set
+        if (f->hasFocus())
+            break;
+
         localPos += focusWidget->pos();
         focusWidget = focusWidget->parentWidget();
     }
