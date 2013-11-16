@@ -9479,27 +9479,36 @@ void QWidget::updateGeometry()
 */
 void QWidget::setWindowFlags(Qt::WindowFlags flags)
 {
-    if (data->window_flags == flags)
+    Q_D(QWidget);
+    d->setWindowFlags(flags);
+}
+
+/*! \internal
+
+    Implemented in QWidgetPrivate so that QMdiSubWindowPrivate can reimplement it.
+*/
+void QWidgetPrivate::setWindowFlags(Qt::WindowFlags flags)
+{
+    Q_Q(QWidget);
+    if (q->data->window_flags == flags)
         return;
 
-    Q_D(QWidget);
-
-    if ((data->window_flags | flags) & Qt::Window) {
+    if ((q->data->window_flags | flags) & Qt::Window) {
         // the old type was a window and/or the new type is a window
-        QPoint oldPos = pos();
-        bool visible = isVisible();
-        setParent(parentWidget(), flags);
+        QPoint oldPos = q->pos();
+        bool visible = q->isVisible();
+        q->setParent(q->parentWidget(), flags);
 
         // if both types are windows or neither of them are, we restore
         // the old position
-        if (!((data->window_flags ^ flags) & Qt::Window)
-            && (visible || testAttribute(Qt::WA_Moved))) {
-            move(oldPos);
+        if (!((q->data->window_flags ^ flags) & Qt::Window)
+            && (visible || q->testAttribute(Qt::WA_Moved))) {
+            q->move(oldPos);
         }
         // for backward-compatibility we change Qt::WA_QuitOnClose attribute value only when the window was recreated.
-        d->adjustQuitOnCloseAttribute();
+        adjustQuitOnCloseAttribute();
     } else {
-        data->window_flags = flags;
+        q->data->window_flags = flags;
     }
 }
 

@@ -489,6 +489,7 @@ public:
     void setWindowTitle_helper(const QString &cap);
     void setWindowFilePath_helper(const QString &filePath);
     void setWindowModified_helper();
+    virtual void setWindowFlags(Qt::WindowFlags windowFlags);
 
     bool setMinimumSize_helper(int &minw, int &minh);
     bool setMaximumSize_helper(int &maxw, int &maxh);
