@@ -71,6 +71,7 @@ private:
     UIView<UIKeyInput> *m_focusView;
     QTransform m_inputItemTransform;
     bool m_hasPendingHideRequest;
+    bool m_inSetFocusObject;
 };
 
 QT_END_NAMESPACE
