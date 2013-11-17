@@ -1,0 +1,11 @@
+<RCC>
+     <qresource prefix="/">
+         <file>macsystray18x18.png</file>
+         <file>macsystray36x36.png</file>
+         <file>macsystray25x15.png</file>
+         <file>macsystray50x30.png</file>
+         <file>macsystray16x16.png</file>
+         <file>macsystray32x32.png</file>
+         <file>macsystray64x64.png</file>
+    </qresource>
+</RCC>
