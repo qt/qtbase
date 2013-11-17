@@ -61,11 +61,11 @@ public:
     void hideInputPanel();
     bool isInputPanelVisible() const;
 
-    void focusViewChanged(UIView *view);
+    void focusWindowChanged(QWindow *focusWindow);
 
 private:
     QIOSKeyboardListener *m_keyboardListener;
-    UIView *m_focusView;
+    UIView<UIKeyInput> *m_focusView;
     bool m_hasPendingHideRequest;
 };
 

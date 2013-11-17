@@ -101,6 +101,7 @@ QIOSInputContext::QIOSInputContext()
     , m_focusView(0)
     , m_hasPendingHideRequest(false)
 {
+    connect(qGuiApp, &QGuiApplication::focusWindowChanged, this, &QIOSInputContext::focusWindowChanged);
 }
 
 QIOSInputContext::~QIOSInputContext()
@@ -142,8 +143,9 @@ bool QIOSInputContext::isInputPanelVisible() const
     return m_keyboardListener->m_keyboardVisible;
 }
 
-void QIOSInputContext::focusViewChanged(UIView *view)
+void QIOSInputContext::focusWindowChanged(QWindow *focusWindow)
 {
+    UIView<UIKeyInput> *view = reinterpret_cast<UIView<UIKeyInput> *>(focusWindow->handle()->winId());
     if ([m_focusView isFirstResponder])
         [view becomeFirstResponder];
     [m_focusView release];
