@@ -192,7 +192,8 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                             << kitDir + QStringLiteral("/include/minwin");
                 } else {
                     incDirs << vcInstallDir + QStringLiteral("/include");
-                    libDirs << vcInstallDir + QStringLiteral("/lib/") + compilerArch;
+                    libDirs << vcInstallDir + QStringLiteral("/lib/store/") + compilerArch
+                            << vcInstallDir + QStringLiteral("/lib/") + compilerArch;
                     binDirs << vcInstallDir + QStringLiteral("/bin/") + compiler
                             << vcInstallDir + QStringLiteral("/../Common7/IDE");
                     libDirs << kitDir + QStringLiteral("/Lib/") + targetVer + ("/um/") + arch;
