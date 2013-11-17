@@ -4,6 +4,8 @@ wince*: {
     contains(CE_ARCH,x86):CONFIG += exceptions_off
 }
 
+winrt: DEFINES += NO_GETENV
+
 #Disable warnings in 3rdparty code due to unused arguments
 contains(QMAKE_CC, gcc): {
     QMAKE_CFLAGS_WARN_ON += -Wno-unused-parameter -Wno-main
