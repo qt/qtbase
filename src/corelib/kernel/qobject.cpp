@@ -530,6 +530,27 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
 */
 
 /*!
+    \fn QSignalBlocker::QSignalBlocker(QSignalBlocker &&other)
+
+    Move-constructs a signal blocker from \a other. \a other will have
+    a no-op destructor, while repsonsibility for restoring the
+    QObject::signalsBlocked() state is transferred to the new object.
+*/
+
+/*!
+    \fn QSignalBlocker &QSignalBlocker::operator=(QSignalBlocker &&other)
+
+    Move-assigns this signal blocker from \a other. \a other will have
+    a no-op destructor, while repsonsibility for restoring the
+    QObject::signalsBlocked() state is transferred to this object.
+
+    The object's signals this signal blocker was blocking prior to
+    being moved to, if any, are unblocked \em except in the case where
+    both instances block the same object's signals and \c *this is
+    unblocked while \a other is not, at the time of the move.
+*/
+
+/*!
     \fn QSignalBlocker::~QSignalBlocker()
 
     Destructor. Restores the QObject::signalsBlocked() state to what it

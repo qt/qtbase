@@ -556,11 +556,16 @@ public:
     inline explicit QSignalBlocker(QObject &o);
     inline ~QSignalBlocker();
 
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QSignalBlocker(QSignalBlocker &&other);
+    inline QSignalBlocker &operator=(QSignalBlocker &&other);
+#endif
+
     inline void reblock();
     inline void unblock();
 private:
     Q_DISABLE_COPY(QSignalBlocker)
-    QObject * const m_o;
+    QObject * m_o;
     bool m_blocked;
     bool m_inhibited;
 };
@@ -576,6 +581,32 @@ QSignalBlocker::QSignalBlocker(QObject &o)
       m_blocked(o.blockSignals(true)),
       m_inhibited(false)
 {}
+
+#ifdef Q_COMPILER_RVALUE_REFS
+QSignalBlocker::QSignalBlocker(QSignalBlocker &&other)
+    : m_o(other.m_o),
+      m_blocked(other.m_blocked),
+      m_inhibited(other.m_inhibited)
+{
+    other.m_o = 0;
+}
+
+QSignalBlocker &QSignalBlocker::operator=(QSignalBlocker &&other)
+{
+    if (this != &other) {
+        // if both *this and other block the same object's signals:
+        // unblock *this iff our dtor would unblock, but other's wouldn't
+        if (m_o != other.m_o || (!m_inhibited && other.m_inhibited))
+            unblock();
+        m_o = other.m_o;
+        m_blocked = other.m_blocked;
+        m_inhibited = other.m_inhibited;
+        // disable other:
+        other.m_o = 0;
+    }
+    return *this;
+}
+#endif
 
 QSignalBlocker::~QSignalBlocker()
 {
