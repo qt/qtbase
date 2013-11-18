@@ -391,12 +391,14 @@ void NmakeMakefileGenerator::init()
         project->values("QMAKE_CLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".exp");
     }
     if (project->isActiveConfig("debug_info")) {
-        project->values("QMAKE_DISTCLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".pdb");
-        project->values("QMAKE_CLEAN").append("vc*.pdb");
+        QString pdbfile = project->first("DESTDIR") + project->first("TARGET") + version + ".pdb";
+        project->values("QMAKE_CFLAGS").append("/Fd" + pdbfile);
+        project->values("QMAKE_CXXFLAGS").append("/Fd" + pdbfile);
+        project->values("QMAKE_DISTCLEAN").append(pdbfile);
     }
     if (project->isActiveConfig("debug")) {
         project->values("QMAKE_CLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".ilk");
-        project->values("QMAKE_CLEAN").append("vc*.idb");
+        project->values("QMAKE_CLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".idb");
     } else {
         ProStringList &defines = project->values("DEFINES");
         if (!defines.contains("NDEBUG"))
