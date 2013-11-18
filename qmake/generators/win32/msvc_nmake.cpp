@@ -235,8 +235,10 @@ QString NmakeMakefileGenerator::defaultInstall(const QString &t)
     if(targetdir.right(1) != Option::dir_sep)
         targetdir += Option::dir_sep;
 
-    if(t == "target" && project->first("TEMPLATE") == "lib") {
-        if(project->isActiveConfig("shared") && project->isActiveConfig("debug")) {
+    if (project->isActiveConfig("debug")) {
+        if (t == "dlltarget"
+            || (project->first("TEMPLATE") == "lib"
+                && project->isActiveConfig("shared"))) {
             QString pdb_target = getPdbTarget();
             pdb_target.remove('"');
             QString src_targ = (project->isEmpty("DESTDIR") ? QString("$(DESTDIR)") : project->first("DESTDIR")) + pdb_target;
