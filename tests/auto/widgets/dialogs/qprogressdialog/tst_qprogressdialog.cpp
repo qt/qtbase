@@ -57,6 +57,8 @@ public:
     virtual ~tst_QProgressDialog();
 
 private slots:
+    void autoShow_data();
+    void autoShow();
     void getSetCheck();
     void task198202();
     void QTBUG_31046();
@@ -68,6 +70,34 @@ tst_QProgressDialog::tst_QProgressDialog()
 
 tst_QProgressDialog::~tst_QProgressDialog()
 {
+}
+
+void tst_QProgressDialog::autoShow_data()
+{
+    QTest::addColumn<int>("min");
+    QTest::addColumn<int>("max");
+    QTest::addColumn<int>("delay");
+    QTest::addColumn<bool>("expectedAutoShow");
+
+    QTest::newRow("50_to_100_long") << 50 << 100 << 100 << true; // 50*100ms = 5s
+    QTest::newRow("50_to_100_short") << 50 << 1 << 100 << false; // 50*1ms = 50ms
+
+    QTest::newRow("0_to_100_long") << 0 << 100 << 100 << true; // 100*100ms = 10s
+    QTest::newRow("0_to_10_short") << 0 << 10 << 100 << false; // 10*100ms = 1s
+}
+
+void tst_QProgressDialog::autoShow()
+{
+    QFETCH(int, min);
+    QFETCH(int, max);
+    QFETCH(int, delay);
+    QFETCH(bool, expectedAutoShow);
+
+    QProgressDialog dlg("", "", min, max);
+    dlg.setValue(0);
+    QThread::msleep(delay);
+    dlg.setValue(min+1);
+    QCOMPARE(dlg.isVisible(), expectedAutoShow);
 }
 
 // Testing get/set functions
