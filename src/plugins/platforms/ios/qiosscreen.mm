@@ -180,6 +180,9 @@ void QIOSScreen::updateProperties()
         m_availableGeometry = availableGeometry;
         QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(), m_availableGeometry);
     }
+
+    if (screen())
+        resizeMaximizedWindows();
 }
 
 QRect QIOSScreen::geometry() const

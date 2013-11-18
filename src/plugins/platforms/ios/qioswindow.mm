@@ -448,19 +448,26 @@ void QIOSWindow::setWindowState(Qt::WindowState state)
     // Perhaps setting QWindow to maximized should also mean that we'll show
     // the statusbar, and vice versa for fullscreen?
 
+    if (state != Qt::WindowNoState)
+        m_normalGeometry = geometry();
+
     switch (state) {
-    case Qt::WindowMaximized:
-    case Qt::WindowFullScreen: {
-        // Since UIScreen does not take orientation into account when
-        // reporting geometry, we need to look at the top view instead:
-        CGSize fullscreenSize = m_view.window.rootViewController.view.bounds.size;
-        m_view.frame = CGRectMake(0, 0, fullscreenSize.width, fullscreenSize.height);
-        m_view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        break; }
-    default:
-        m_view.frame = toCGRect(m_normalGeometry);
-        m_view.autoresizingMask = UIViewAutoresizingNone;
+    case Qt::WindowNoState:
+        setGeometry(m_normalGeometry);
         break;
+    case Qt::WindowMaximized:
+        setGeometry(screen()->availableGeometry());
+        break;
+    case Qt::WindowFullScreen:
+        setGeometry(screen()->geometry());
+        break;
+    case Qt::WindowMinimized:
+        setGeometry(QRect());
+        break;
+    case Qt::WindowActive:
+        Q_UNREACHABLE();
+    default:
+        Q_UNREACHABLE();
     }
 }
 
