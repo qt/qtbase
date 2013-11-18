@@ -348,6 +348,16 @@
     return nil;
 }
 
+- (UIViewController *)viewController
+{
+    id responder = self;
+    while ((responder = [responder nextResponder])) {
+        if ([responder isKindOfClass:UIViewController.class])
+            return responder;
+    }
+    return nil;
+}
+
 @end
 
 QT_BEGIN_NAMESPACE
@@ -404,7 +414,7 @@ void QIOSWindow::setVisible(bool visible)
         requestActivateWindow();
     } else {
         // Activate top-most visible QWindow:
-        NSArray *subviews = qiosViewController().view.subviews;
+        NSArray *subviews = m_view.viewController.view.subviews;
         for (int i = int(subviews.count) - 1; i >= 0; --i) {
             UIView *view = [subviews objectAtIndex:i];
             if (!view.hidden) {
@@ -460,7 +470,12 @@ void QIOSWindow::setParent(const QPlatformWindow *parentWindow)
         UIView *parentView = reinterpret_cast<UIView *>(parentWindow->winId());
         [parentView addSubview:m_view];
     } else if (isQtApplication()) {
-        [qiosViewController().view addSubview:m_view];
+        for (UIWindow *uiWindow in [[UIApplication sharedApplication] windows]) {
+            if (uiWindow.screen == static_cast<QIOSScreen *>(screen())->uiScreen()) {
+                [uiWindow.rootViewController.view addSubview:m_view];
+                break;
+            }
+        }
     }
 }
 
