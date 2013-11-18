@@ -219,7 +219,9 @@ qreal QIOSScreen::devicePixelRatio() const
 
 Qt::ScreenOrientation QIOSScreen::nativeOrientation() const
 {
-    return Qt::PortraitOrientation;
+    // A UIScreen stays in the native orientation, regardless of rotation
+    return m_uiScreen.bounds.size.width >= m_uiScreen.bounds.size.height ?
+        Qt::LandscapeOrientation : Qt::PortraitOrientation;
 }
 
 Qt::ScreenOrientation QIOSScreen::orientation() const
