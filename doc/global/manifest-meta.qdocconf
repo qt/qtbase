@@ -125,8 +125,11 @@ manifestmeta.android.names          =  "QtQuick/Qt Quick Demo - Maroon*" \
                                        "QtLinguist/Arrow Pad Example" \
                                        "QtGui/Raster Window Example" \
                                        "QtGui/Analog Clock Window Example" \
-                                       "QtMultimediaWidgets/Video Widget Example" \
-                                       "QtMultimediaWidgets/Media Player Example" \
+                                       "QtAndroidExtras/Qt Notifier" \
+                                       "QtMultimedia/QML Video Shader Effects Example" \
+                                       "QtMultimedia/QML Video Example" \
+                                       "QtMultimedia/QML Camera Example" \
+                                       "QtMultimedia/Audio Output Example" \
                                        "QtSVG/Text Object Example" \
                                        "QtQML/Qt Quick Examples - XMLHttpRequest" \
                                        "QtQuick/Qt Quick Particles Examples - *" \
@@ -138,6 +141,9 @@ manifestmeta.android.names          =  "QtQuick/Qt Quick Demo - Maroon*" \
                                        "QtQuick/Qt Quick Examples - Animation" \
                                        "QtQuick/Qt Quick Examples - Shader Effects" \
                                        "QtQuick/Qt Quick Examples - Canvas" \
+                                       "QtQuick/Qt Quick Examples - MouseArea" \
+                                       "QtQuick/Qt Quick Examples - Positioners" \
+                                       "QtQuick/Qt Quick Examples - Right to Left" \
                                        "QtWidgets/Interview" \
                                        "QtWidgets/Spreadsheet" \
                                        "QtWidgets/Pixelator Example" \
@@ -164,7 +170,6 @@ manifestmeta.android.names          =  "QtQuick/Qt Quick Demo - Maroon*" \
                                        "QtQML/Extending QML - Methods Example" \
                                        "QtQML/Extending QML - Signal Support Example" \
                                        "QtQML/Extending QML - Attached Properties Example" \
-                                       "QtQuick/Qt Quick Examples - Window and Screen" \
                                        "QtWidgets/Address Book Example"
 
 manifestmeta.android.tags              =   android
