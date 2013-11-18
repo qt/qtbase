@@ -985,8 +985,7 @@ bool qSharedBuild() Q_DECL_NOTHROW
 /*!
     \fn QSysInfo::MacVersion QSysInfo::macVersion()
 
-    Returns the version of Mac OS X on which the application is run (Mac OS X
-    Only).
+    Returns the version of Darwin (OS X or iOS) on which the application is run.
 */
 
 /*!
@@ -1056,7 +1055,7 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \enum QSysInfo::MacVersion
 
     This enum provides symbolic names for the various versions of the
-    OS X operating system. On OS X, the
+    Darwin operating system, covering both OS X and iOS. The
     QSysInfo::MacintoshVersion variable gives the version of the
     system on which the application is run.
 
@@ -1083,6 +1082,15 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \value MV_LION     Apple codename for MV_10_7
     \value MV_MOUNTAINLION Apple codename for MV_10_8
     \value MV_MAVERICKS    Apple codename for MV_10_9
+
+    \value MV_IOS      iOS (any)
+    \value MV_IOS_4_3  iOS 4.3
+    \value MV_IOS_5_0  iOS 5.0
+    \value MV_IOS_5_1  iOS 5.1
+    \value MV_IOS_6_0  iOS 6.0
+    \value MV_IOS_6_1  iOS 6.1
+    \value MV_IOS_7_0  iOS 7.0
+    \value MV_IOS_7_1  iOS 7.1
 
     \sa WinVersion
 */
@@ -1706,12 +1714,14 @@ static const unsigned int qt_one = 1;
 const int QSysInfo::ByteOrder = ((*((unsigned char *) &qt_one) == 0) ? BigEndian : LittleEndian);
 #endif
 
-#if defined(Q_OS_MACX)
+#if defined(Q_OS_MAC)
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "private/qcore_mac_p.h"
 #include "qnamespace.h"
 QT_END_INCLUDE_NAMESPACE
+
+#if defined(Q_OS_OSX)
 
 Q_CORE_EXPORT OSErr qt_mac_create_fsref(const QString &file, FSRef *fsref)
 {
@@ -1728,17 +1738,17 @@ Q_CORE_EXPORT void qt_mac_to_pascal_string(QString s, Str255 str, TextEncoding e
 Q_CORE_EXPORT QString qt_mac_from_pascal_string(const Str255 pstr) {
     return QCFString(CFStringCreateWithPascalString(0, pstr, CFStringGetSystemEncoding()));
 }
-#endif // defined(Q_OS_MACX)
-
-#if defined(Q_OS_MAC)
+#endif // defined(Q_OS_OSX)
 
 QSysInfo::MacVersion QSysInfo::macVersion()
 {
-#ifdef Q_OS_MACX
+#if defined(Q_OS_OSX)
     SInt32 gestalt_version;
     if (Gestalt(gestaltSystemVersion, &gestalt_version) == noErr) {
         return QSysInfo::MacVersion(((gestalt_version & 0x00F0) >> 4) + 2);
     }
+#elif defined(Q_OS_IOS)
+    return qt_ios_version(); // qtcore_mac_objc.mm
 #endif
     return QSysInfo::MV_Unknown;
 }

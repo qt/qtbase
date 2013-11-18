@@ -120,6 +120,7 @@ public:
 
 #endif
 #ifdef Q_OS_MAC
+#  define Q_MV_IOS(major, minor) (QSysInfo::MV_IOS | major << 4 | minor)
     enum MacVersion {
         MV_Unknown = 0x0000,
 
@@ -146,7 +147,17 @@ public:
         MV_SNOWLEOPARD = MV_10_6,
         MV_LION = MV_10_7,
         MV_MOUNTAINLION = MV_10_8,
-        MV_MAVERICKS = MV_10_9
+        MV_MAVERICKS = MV_10_9,
+
+        /* iOS */
+        MV_IOS     = 1 << 8,
+        MV_IOS_4_3 = Q_MV_IOS(4, 3),
+        MV_IOS_5_0 = Q_MV_IOS(5, 0),
+        MV_IOS_5_1 = Q_MV_IOS(5, 1),
+        MV_IOS_6_0 = Q_MV_IOS(6, 0),
+        MV_IOS_6_1 = Q_MV_IOS(6, 1),
+        MV_IOS_7_0 = Q_MV_IOS(7, 0),
+        MV_IOS_7_1 = Q_MV_IOS(7, 1)
     };
     static const MacVersion MacintoshVersion;
     static MacVersion macVersion();
