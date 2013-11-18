@@ -438,7 +438,14 @@ void QQnxScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
             m_touchPoints[touchId].normalPosition =
                             QPointF(static_cast<qreal>(pos[0]) / screenSize.width(),
                                     static_cast<qreal>(pos[1]) / screenSize.height());
-            m_touchPoints[touchId].area = QRectF( pos[0], pos[1], 0.0, 0.0 );
+
+            m_touchPoints[touchId].area = QRectF(w->geometry().left() + windowPos[0],
+                                                 w->geometry().top()  + windowPos[1], 0.0, 0.0);
+            QWindow *parent = w->parent();
+            while (parent) {
+                m_touchPoints[touchId].area.translate(parent->geometry().topLeft());
+                parent = parent->parent();
+            }
 
             // determine event type and update state of current touch point
             QEvent::Type type = QEvent::None;
@@ -473,8 +480,8 @@ void QQnxScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
             // inject event into Qt
             QWindowSystemInterface::handleTouchEvent(w, m_touchDevice, pointList);
             qScreenEventDebug() << Q_FUNC_INFO << "Qt touch, w =" << w
-                                << ", p=(" << pos[0] << "," << pos[1]
-                                << "), t=" << type;
+                                << ", p=" << m_touchPoints[touchId].area.topLeft()
+                                << ", t=" << type;
         }
     }
 }

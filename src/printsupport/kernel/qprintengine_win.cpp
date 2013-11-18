@@ -67,6 +67,8 @@ QT_BEGIN_NAMESPACE
 
 Q_GUI_EXPORT HBITMAP qt_pixmapToWinHBITMAP(const QPixmap &p, int hbitmapFormat = 0);
 extern QPainterPath qt_regionToPath(const QRegion &region);
+Q_PRINTSUPPORT_EXPORT QSizeF qt_SizeFromUnitToMillimeter(const QSizeF &, QPrinter::Unit, double);
+Q_PRINTSUPPORT_EXPORT double qt_multiplierForUnit(QPrinter::Unit unit, int resolution);
 
 // #define QT_DEBUG_DRAW
 
@@ -113,6 +115,52 @@ static const struct {
     { DMPAPER_A3_EXTRA_TRANSVERSE,QPrinter::A3 },
     { 0, QPrinter::Custom }
 };
+
+// Return a list of printer paper sizes in millimeters with the corresponding dmPaperSize value
+static QList<QPair<QSizeF, int> > printerPaperSizes(const QString &printerName)
+{
+    QList<QPair<QSizeF, int> > result;
+    const wchar_t *name = reinterpret_cast<const wchar_t*>(printerName.utf16());
+    DWORD paperNameCount = DeviceCapabilities(name, NULL, DC_PAPERS, NULL, NULL);
+    if ((int)paperNameCount > 0) {
+        // If they are not equal, then there seems to be a problem with the driver
+        if (paperNameCount != DeviceCapabilities(name, NULL, DC_PAPERSIZE, NULL, NULL))
+            return result;
+        QScopedArrayPointer<wchar_t> papersNames(new wchar_t[paperNameCount]);
+        paperNameCount = DeviceCapabilities(name, NULL, DC_PAPERS, papersNames.data(), NULL);
+        result.reserve(paperNameCount);
+        QScopedArrayPointer<POINT> paperSizes(new POINT[paperNameCount]);
+        paperNameCount = DeviceCapabilities(name, NULL, DC_PAPERSIZE, (wchar_t *)paperSizes.data(), NULL);
+        for (int i=0; i <(int)paperNameCount; i++)
+            result.push_back(qMakePair(QSizeF(paperSizes[i].x / 10, paperSizes[i].y / 10), papersNames[i]));
+    }
+    return result;
+}
+
+// Find the best-matching printer paper for size in millimeters.
+static inline int findCustomPaperSize(const QSizeF &needlePt, const QString &printerName)
+{
+    const QList<QPair<QSizeF, int> > sizes = printerPaperSizes(printerName);
+    const qreal nw = needlePt.width();
+    const qreal nh = needlePt.height();
+    for (int i = 0; i < sizes.size(); ++i) {
+        if (qAbs(nw - sizes.at(i).first.width()) <= 1 && qAbs(nh - sizes.at(i).first.height()) <= 1)
+            return sizes.at(i).second;
+    }
+    return -1;
+}
+
+static inline void setDevModePaperFlags(DEVMODE *devMode, bool custom)
+{
+    if (custom) {
+        devMode->dmPaperSize = DMPAPER_USER;
+        devMode->dmFields |= DM_PAPERLENGTH | DM_PAPERWIDTH;
+    } else {
+        devMode->dmFields &= ~(DM_PAPERLENGTH | DM_PAPERWIDTH);
+        devMode->dmPaperLength = 0;
+        devMode->dmPaperWidth = 0;
+    }
+}
 
 QPrinter::PaperSize mapDevmodePaperSize(int s)
 {
@@ -1293,6 +1341,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
             break;
         d->devMode->dmPaperSize = mapPaperSizeDevmode(QPrinter::PaperSize(value.toInt()));
         d->has_custom_paper_size = (QPrinter::PaperSize(value.toInt()) == QPrinter::Custom);
+        setDevModePaperFlags(d->devMode, d->has_custom_paper_size);
         d->doReinit();
         break;
     case PPK_PaperName:
@@ -1320,9 +1369,19 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
                     wchar_t *papers = new wchar_t[size];
                     size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
                                               NULL, DC_PAPERS, papers, NULL);
-                    d->has_custom_paper_size = false;
-                    d->devMode->dmPaperSize = papers[paperPos];
-                    d->doReinit();
+                    QScopedArrayPointer<POINT> paperSizes(new POINT[size]);
+                    DWORD paperNameCount = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()), NULL, DC_PAPERSIZE, (wchar_t *)paperSizes.data(), NULL);
+                    if (paperNameCount == size) {
+                        const double multiplier = qt_multiplierForUnit(QPrinter::Millimeter, d->resolution);
+                        d->paper_size = QSizeF((paperSizes[paperPos].x / 10.0) * multiplier, (paperSizes[paperPos].y / 10.0) * multiplier);
+                        // Our sizes may not match the paper name's size exactly
+                        // So we treat it as custom so we know the paper size is correct
+                        d->has_custom_paper_size = true;
+                        d->devMode->dmPaperSize = papers[paperPos];
+                        setDevModePaperFlags(d->devMode, false);
+                        d->doReinit();
+                    }
+
                     delete [] papers;
                  }
             }
@@ -1373,6 +1432,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
             break;
         d->has_custom_paper_size = false;
         d->devMode->dmPaperSize = value.toInt();
+        setDevModePaperFlags(d->devMode, d->has_custom_paper_size);
         d->doReinit();
         break;
 
@@ -1382,30 +1442,17 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         d->paper_size = value.toSizeF();
         if (!d->devMode)
             break;
-        int orientation = d->devMode->dmOrientation;
-        DWORD needed = 0;
-        DWORD returned = 0;
-        if (!EnumForms(d->hPrinter, 1, 0, 0, &needed, &returned)) {
-            BYTE *forms = (BYTE *) malloc(needed);
-            if (EnumForms(d->hPrinter, 1, forms, needed, &needed, &returned)) {
-                for (DWORD i=0; i< returned; ++i) {
-                    FORM_INFO_1 *formArray = reinterpret_cast<FORM_INFO_1 *>(forms);
-                    // the form sizes are specified in 1000th of a mm,
-                    // convert the size to Points
-                    QSizeF size((formArray[i].Size.cx * 72/25.4)/1000.0,
-                                (formArray[i].Size.cy * 72/25.4)/1000.0);
-                    if (qAbs(d->paper_size.width() - size.width()) <= 2
-                        && qAbs(d->paper_size.height() - size.height()) <= 2)
-                    {
-                        d->devMode->dmPaperSize = i + 1;
-                        break;
-                    }
-                }
-            }
-            free(forms);
+        const QSizeF sizeMM = qt_SizeFromUnitToMillimeter(d->paper_size, QPrinter::Point, d->resolution);
+        const int match = findCustomPaperSize(sizeMM, d->name);
+        setDevModePaperFlags(d->devMode, (match >= 0) ? false : true);
+        if (match >= 0) {
+            d->devMode->dmPaperSize = match;
+            if (d->devMode->dmOrientation != DMORIENT_PORTRAIT)
+                qSwap(d->paper_size.rwidth(), d->paper_size.rheight());
+        } else {
+            d->devMode->dmPaperLength = qRound(sizeMM.height() * 10.0);
+            d->devMode->dmPaperWidth = qRound(sizeMM.width() * 10.0);
         }
-        if (orientation != DMORIENT_PORTRAIT)
-            d->paper_size = QSizeF(d->paper_size.height(), d->paper_size.width());
         break;
     }
 
@@ -1692,7 +1739,7 @@ QList<QPair<QString, QSizeF> > QWin32PrintEngine::supportedSizesWithNames(const 
             for (int i=0;i<(int)size;i++) {
                 wchar_t *paper = papers + (i * 64);
                 QString str = QString::fromWCharArray(paper, qwcsnlen(paper, 64));
-                paperSizes << qMakePair(str, QSizeF(points[i].x / 10, points[i].y / 10));
+                paperSizes << qMakePair(str, QSizeF(points[i].x / 10.0, points[i].y / 10.0));
             }
             delete [] points;
         }
@@ -1908,30 +1955,19 @@ static void draw_text_item_win(const QPointF &pos, const QTextItemInt &ti, HDC h
     SelectObject(hdc, old_font);
 }
 
-
 void QWin32PrintEnginePrivate::updateCustomPaperSize()
 {
-    uint paperSize = devMode->dmPaperSize;
+    const uint paperSize = devMode->dmPaperSize;
+    has_custom_paper_size = true;
     if (paperSize > 0 && mapDevmodePaperSize(paperSize) == QPrinter::Custom) {
-        has_custom_paper_size = true;
-        DWORD needed = 0;
-        DWORD returned = 0;
-        if (!EnumForms(hPrinter, 1, 0, 0, &needed, &returned)) {
-            BYTE *forms = (BYTE *) malloc(needed);
-            if (EnumForms(hPrinter, 1, forms, needed, &needed, &returned)) {
-                if (paperSize <= returned) {
-                    FORM_INFO_1 *formArray = (FORM_INFO_1 *) forms;
-                    int width = formArray[paperSize - 1].Size.cx; // 1/1000 of a mm
-                    int height = formArray[paperSize - 1].Size.cy; // 1/1000 of a mm
-                    paper_size = QSizeF((width * 72 /25.4) / 1000.0, (height * 72 / 25.4) / 1000.0);
-                } else {
-                    has_custom_paper_size = false;
-                }
+        const QList<QPair<QSizeF, int> > paperSizes = printerPaperSizes(name);
+        for (int i=0; i<paperSizes.size(); i++) {
+            if ((uint)paperSizes.at(i).second == paperSize) {
+                paper_size = paperSizes.at(paperSize).first;
+                has_custom_paper_size = false;
+                break;
             }
-            free(forms);
         }
-    } else {
-        has_custom_paper_size = false;
     }
 }
 

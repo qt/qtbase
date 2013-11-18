@@ -46,7 +46,6 @@
 
 QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
     : QFbWindow(window)
-    , m_state(Qt::WindowNoState)
 {
 }
 
@@ -65,9 +64,9 @@ void QAndroidPlatformWindow::updateStatusBarVisibility()
     Qt::WindowFlags flags = window()->flags();
     bool isNonRegularWindow = flags & (Qt::Popup | Qt::Dialog | Qt::Sheet) & ~Qt::Window;
     if (!isNonRegularWindow) {
-        if (m_state & Qt::WindowFullScreen)
+        if (mWindowState & Qt::WindowFullScreen)
             QtAndroid::hideStatusBar();
-        else if (m_state & Qt::WindowMaximized)
+        else if (mWindowState & Qt::WindowMaximized)
             QtAndroid::showStatusBar();
     }
 }
@@ -80,10 +79,9 @@ void QAndroidPlatformWindow::raise()
 
 void QAndroidPlatformWindow::setWindowState(Qt::WindowState state)
 {
-    if (m_state == state)
+    if (mWindowState == state)
         return;
 
-    m_state = state;
     if (window()->isVisible())
         updateStatusBarVisibility();
 

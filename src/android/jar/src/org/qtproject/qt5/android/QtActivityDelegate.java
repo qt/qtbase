@@ -192,6 +192,7 @@ public class QtActivityDelegate
             @Override
             public void run() {
                 m_imm.restartInput(m_editText);
+                m_editText.m_optionsChanged = false;
             }
         }, 5);
     }
@@ -279,6 +280,10 @@ public class QtActivityDelegate
                         }
                     }
                 });
+                if (m_editText.m_optionsChanged) {
+                    m_imm.restartInput(m_editText);
+                    m_editText.m_optionsChanged = false;
+                }
             }
         }, 15);
     }

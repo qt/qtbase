@@ -426,7 +426,9 @@ private:
 
     // The limit to the amount of times the DTD parsing functions can be called
     // for the DTD currently being parsed.
-    int dtdRecursionLimit;
+    static const int dtdRecursionLimit = 2;
+    // The maximum amount of characters an entity value may contain, after expansion.
+    static const int entityCharacterLimit = 1024;
 
     const QString &string();
     void stringClear();
@@ -497,7 +499,7 @@ private:
     void parseFailed(ParseFunction where, int state);
     void pushParseState(ParseFunction function, int state);
 
-    bool isPartiallyExpandedEntityValueTooLarge(QString *errorMessage);
+    bool isExpandedEntityValueTooLarge(QString *errorMessage);
 
     Q_DECLARE_PUBLIC(QXmlSimpleReader)
     QXmlSimpleReader *q_ptr;
@@ -2763,8 +2765,6 @@ QXmlSimpleReaderPrivate::QXmlSimpleReaderPrivate(QXmlSimpleReader *reader)
     useNamespacePrefixes = false;
     reportWhitespaceCharData = true;
     reportEntities = false;
-
-    dtdRecursionLimit = 2;
 }
 
 QXmlSimpleReaderPrivate::~QXmlSimpleReaderPrivate()
@@ -6657,30 +6657,43 @@ bool QXmlSimpleReaderPrivate::parseChoiceSeq()
     return false;
 }
 
-bool QXmlSimpleReaderPrivate::isPartiallyExpandedEntityValueTooLarge(QString *errorMessage)
+bool QXmlSimpleReaderPrivate::isExpandedEntityValueTooLarge(QString *errorMessage)
 {
-    const QString value = string();
-    QMap<QString, int> referencedEntityCounts;
-    foreach (QString entityName, entities.keys()) {
-        for (int i = 0; i < value.size() && i != -1; ) {
-            i = value.indexOf(entityName, i);
-            if (i != -1) {
-                // The entityName we're currently trying to find
-                // was matched in this string; increase our count.
-                ++referencedEntityCounts[entityName];
-                i += entityName.size();
+    QMap<QString, int> literalEntitySizes;
+    // The entity at (QMap<QString,) referenced the entities at (QMap<QString,) (int>) times.
+    QMap<QString, QMap<QString, int> > referencesToOtherEntities;
+    QMap<QString, int> expandedSizes;
+
+    // For every entity, check how many times all entity names were referenced in its value.
+    foreach (QString toSearch, entities.keys()) {
+        // The amount of characters that weren't entity names, but literals, like 'X'.
+        QString leftOvers = entities.value(toSearch);
+        // How many times was entityName referenced by toSearch?
+        foreach (QString entityName, entities.keys()) {
+            for (int i = 0; i < leftOvers.size() && i != -1; ) {
+                i = leftOvers.indexOf(QString::fromLatin1("&%1;").arg(entityName), i);
+                if (i != -1) {
+                    leftOvers.remove(i, entityName.size() + 2);
+                    // The entityName we're currently trying to find was matched in this string; increase our count.
+                    ++referencesToOtherEntities[toSearch][entityName];
+                }
             }
         }
+        literalEntitySizes[toSearch] = leftOvers.size();
     }
 
-    foreach (QString entityName, referencedEntityCounts.keys()) {
-        const int timesReferenced = referencedEntityCounts[entityName];
-        const QString entityValue = entities[entityName];
-        if (entityValue.size() * timesReferenced > 1024) {
+    foreach (QString entity, referencesToOtherEntities.keys()) {
+        expandedSizes[entity] = literalEntitySizes[entity];
+        foreach (QString referenceTo, referencesToOtherEntities.value(entity).keys()) {
+            const int references = referencesToOtherEntities.value(entity).value(referenceTo);
+            // The total size of an entity's value is the expanded size of all of its referenced entities, plus its literal size.
+            expandedSizes[entity] += expandedSizes[referenceTo] * references + literalEntitySizes[referenceTo] * references;
+        }
+
+        if (expandedSizes[entity] > entityCharacterLimit) {
             if (errorMessage) {
-                *errorMessage = QString::fromLatin1("The XML entity \"%1\""
-                    "expands too a string that is too large to process when "
-                    "referencing \"%2\" %3 times.").arg(entityName).arg(entityName).arg(timesReferenced);
+                *errorMessage = QString::fromLatin1("The XML entity \"%1\" expands too a string that is too large to process (%2 characters > %3).");
+                *errorMessage = (*errorMessage).arg(entity).arg(expandedSizes[entity]).arg(entityCharacterLimit);
             }
             return true;
         }
@@ -6783,10 +6796,7 @@ bool QXmlSimpleReaderPrivate::parseEntityDecl()
             case EValue:
                 if ( !entityExist(name())) {
                     QString errorMessage;
-                    if (isPartiallyExpandedEntityValueTooLarge(&errorMessage)) {
-                        // The entity at entityName is entityValue.size() characters
-                        // long in its unexpanded form, and was mentioned timesReferenced times,
-                        // resulting in a string that would be greater than 1024 characters.
+                    if (isExpandedEntityValueTooLarge(&errorMessage)) {
                         reportParseError(errorMessage);
                         return false;
                     }

@@ -2858,6 +2858,21 @@ int QTreeView::sizeHintForColumn(int column) const
     int offset = 0;
     int start = d->firstVisibleItem(&offset);
     int end = d->lastVisibleItem(start, offset);
+    if (start < 0 || end < 0 || end == viewItems.size() - 1) {
+        end = viewItems.size() - 1;
+        if (maximumProcessRows < 0) {
+            start = 0;
+        } else if (maximumProcessRows == 0) {
+            start = qMax(0, end - 1);
+            int remainingHeight = viewport()->height();
+            while (start > 0 && remainingHeight > 0) {
+                remainingHeight -= d->itemHeight(start);
+                --start;
+            }
+        } else {
+            start = qMax(0, end - maximumProcessRows);
+        }
+    }
 
     int rowsProcessed = 0;
 
@@ -3606,8 +3621,11 @@ int QTreeViewPrivate::firstVisibleItem(int *offset) const
 
 int QTreeViewPrivate::lastVisibleItem(int firstVisual, int offset) const
 {
-    if (firstVisual < 0 || offset < 0)
+    if (firstVisual < 0 || offset < 0) {
         firstVisual = firstVisibleItem(&offset);
+        if (firstVisual < 0)
+            return -1;
+    }
     int y = - offset;
     int value = viewport->height();
 

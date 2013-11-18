@@ -59,9 +59,6 @@ public:
 
 public slots:
     void setGeometry(const QRect &rect);
-
-private:
-    Qt::WindowState m_state;
 };
 
 #endif // ANDROIDPLATFORMWINDOW_H

@@ -135,11 +135,6 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
     return QCollatorSortKey(new QCollatorSortKeyPrivate(result));
 }
 
-bool QCollatorSortKey::operator<(const QCollatorSortKey &otherKey) const
-{
-    return compare(otherKey) < 0;
-}
-
 int QCollatorSortKey::compare(const QCollatorSortKey &otherKey) const
 {
     return std::wcscmp(d->m_key.constData(),

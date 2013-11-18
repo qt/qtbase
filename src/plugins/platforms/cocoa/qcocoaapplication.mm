@@ -115,8 +115,8 @@ QT_USE_NAMESPACE
     QCocoaPostMessageArgs *args = reinterpret_cast<QCocoaPostMessageArgs *>(lower | (upper << 32));
     // Special case for convenience: if the argument is an NSNumber, we unbox it directly.
     // Use NSValue instead if this behaviour is unwanted.
-    id a1 = ([args->arg1 isKindOfClass:[NSNumber class]]) ? (id)[args->arg1 intValue] : args->arg1;
-    id a2 = ([args->arg2 isKindOfClass:[NSNumber class]]) ? (id)[args->arg2 intValue] : args->arg2;
+    id a1 = ([args->arg1 isKindOfClass:[NSNumber class]]) ? (id)[args->arg1 longValue] : args->arg1;
+    id a2 = ([args->arg2 isKindOfClass:[NSNumber class]]) ? (id)[args->arg2 longValue] : args->arg2;
     switch (args->argCount) {
     case 0:
         [args->target performSelector:args->selector];

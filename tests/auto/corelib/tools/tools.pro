@@ -8,6 +8,7 @@ SUBDIRS=\
     qbytedatabuffer \
     qcache \
     qchar \
+    qcollator \
     qcommandlineparser \
     qcontiguouscache \
     qcryptographichash \

@@ -60,6 +60,14 @@ public:
     QOpenGLPixelTransferOptions &operator=(const QOpenGLPixelTransferOptions &);
     ~QOpenGLPixelTransferOptions();
 
+#ifdef Q_COMPILER_RVALUE_REFS
+    QOpenGLPixelTransferOptions &operator=(QOpenGLPixelTransferOptions &&other)
+    { swap(other); return *this; }
+#endif
+
+    void swap(QOpenGLPixelTransferOptions &other)
+    { data.swap(other.data); }
+
     void setAlignment(int alignment);
     int alignment() const;
 
@@ -87,6 +95,8 @@ public:
 private:
     QSharedDataPointer<QOpenGLPixelTransferOptionsData> data;
 };
+
+Q_DECLARE_SHARED(QOpenGLPixelTransferOptions)
 
 QT_END_NAMESPACE
 

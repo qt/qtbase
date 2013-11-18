@@ -3758,6 +3758,8 @@ Qt/Mac only:
 
     -sdk <sdk> ......... Build Qt using Apple provided SDK <sdk>. The argument should be
                          one of the available SDKs as listed by 'xcodebuild -showsdks'.
+                         Note that the argument applies only to Qt libraries and applications built
+                         using the target mkspec - not host tools such as qmake, moc, rcc, etc.
 
 EOF
 fi

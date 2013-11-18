@@ -37,72 +37,72 @@
     appearance and logical structure.
 
     \list
-    \li \l {04-qdoc-commands-textmarkup.html#a-command} {\\a}
-    \li \l {11-qdoc-commands-specialcontent.html#abstract-command} {\\abstract}
-    \li \l {12-0-qdoc-commands-miscellaneous.html#annotatedlist-command} {\\annotatedlist}
-    \li \l {04-qdoc-commands-textmarkup.html#b-command} {\\b} \span {class="newStuff"} {(new 5/3/2012)}
-    \li \l {04-qdoc-commands-textmarkup.html#b-command} {\\bold} {(deprecated, use \\b)}
-    \li \l {11-qdoc-commands-specialcontent.html#brief-command} {\\brief}
-    \li \l {04-qdoc-commands-textmarkup.html#c-command} {\\c}
-    \li \l {09-qdoc-commands-includingimages.html#caption-command} {\\caption}
-    \li \l {05-qdoc-commands-documentstructure.html#chapter-command} {\\chapter}
-    \li \l {06-qdoc-commands-includecodeinline.html#code-command} {\\code}
-    \li \l {07-0-qdoc-commands-includingexternalcode.html#codeline-command} {\\codeline}
-    \li \l {04-qdoc-commands-textmarkup.html#div-command} {\\div}
-    \li \l {07-0-qdoc-commands-includingexternalcode.html#dots-command} {\\dots}
-    \li \l {04-qdoc-commands-textmarkup.html#e-command} {\\e} \span {class="newStuff"} {(new 5/3/2012)}
-    \li \l {12-0-qdoc-commands-miscellaneous.html#else-command} {\\else}
-    \li \l {12-0-qdoc-commands-miscellaneous.html#endif-command} {\\endif}
-    \li \l {11-qdoc-commands-specialcontent.html#footnote-command} {\\footnote}
-    \li \l {12-0-qdoc-commands-miscellaneous.html#generatelist-command} {\\generatelist}
-    \li \l {10-qdoc-commands-tablesandlists.html#header-command} {\\header}
-    \li \l {04-qdoc-commands-textmarkup.html#e-command} {\\i} \span {class="newStuff"} {(deprecated, use \\e)}
-    \li \l {12-0-qdoc-commands-miscellaneous.html#if-command} {\\if}
-    \li \l {09-qdoc-commands-includingimages.html#image-command} {\\image}
-    \li \l {12-0-qdoc-commands-miscellaneous.html#include-command} {\\include}
-    \li \l {12-0-qdoc-commands-miscellaneous.html#include-command} {\\input}
-    \li \l {09-qdoc-commands-includingimages.html#inlineimage-command} {\\inlineimage}
-    \li \l {08-qdoc-commands-creatinglinks.html#keyword-command} {\\keyword}
-    \li \l {08-qdoc-commands-creatinglinks.html#l-command} {\\l}
-    \li \l {11-qdoc-commands-specialcontent.html#legalese-command} {\\legalese}
-    \li \l {10-qdoc-commands-tablesandlists.html#li-command} {\\li} \span {class="newStuff"} {(new 5/3/2012)}
-    \li \l {10-qdoc-commands-tablesandlists.html#list-command} {\\list}
-    \li \l {12-0-qdoc-commands-miscellaneous.html#meta-command} {\\meta}
-    \li \l {06-qdoc-commands-includecodeinline.html#newcode-command} {\\newcode}
-    \li \l {10-qdoc-commands-tablesandlists.html#li-command} {\\o} \span {class="newStuff"} {(deprecated, use \\li)}
-    \li \l {11-qdoc-commands-specialcontent.html#note-command} {\\note}
-    \li \l {06-qdoc-commands-includecodeinline.html#oldcode-command} {\\oldcode}
-    \li \l {12-0-qdoc-commands-miscellaneous.html#omit-command} {\\omit}
-    \li \l {05-qdoc-commands-documentstructure.html#part-command} {\\part}
-    \li \l {07-0-qdoc-commands-includingexternalcode.html#printline-command} {\\printline}
-    \li \l {07-0-qdoc-commands-includingexternalcode.html#printto-command} {\\printto}
-    \li \l {07-0-qdoc-commands-includingexternalcode.html#printuntil-command} {\\printuntil}
-    \li \l {11-qdoc-commands-specialcontent.html#quotation-command} {\\quotation}
-    \li \l {07-0-qdoc-commands-includingexternalcode.html#quotefile-command} {\\quotefile}
-    \li \l {07-0-qdoc-commands-includingexternalcode.html#quotefromfile-command} {\\quotefromfile}
-    \li \l {12-0-qdoc-commands-miscellaneous.html#raw-command} {\\raw}
-    \li \l {10-qdoc-commands-tablesandlists.html#row-command} {\\row}
-    \li \l {08-qdoc-commands-creatinglinks.html#sa-command} {\\sa}
-    \li \l {05-qdoc-commands-documentstructure.html#sectionOne-command} {\\section1}
-    \li \l {05-qdoc-commands-documentstructure.html#sectionTwo-command} {\\section2}
-    \li \l {05-qdoc-commands-documentstructure.html#sectionThree-command} {\\section3}
-    \li \l {05-qdoc-commands-documentstructure.html#sectionFour-command} {\\section4}
-    \li \l {07-0-qdoc-commands-includingexternalcode.html#skipline-command} {\\skipline}
-    \li \l {07-0-qdoc-commands-includingexternalcode.html#skipto-command} {\\skipto}
-    \li \l {07-0-qdoc-commands-includingexternalcode.html#skipuntil-command} {\\skipuntil}
-    \li \l {07-0-qdoc-commands-includingexternalcode.html#snippet-command} {\\snippet}
-    \li \l {04-qdoc-commands-textmarkup.html#span-command} {\\span}
-    \li \l {04-qdoc-commands-textmarkup.html#sub-command} {\\sub}
-    \li \l {04-qdoc-commands-textmarkup.html#sup-command} {\\sup}
-    \li \l {10-qdoc-commands-tablesandlists.html#table-command} {\\table}
-    \li \l {11-qdoc-commands-specialcontent.html#tableofcontents-command} {\\tableofcontents}
-    \li \l {08-qdoc-commands-creatinglinks.html#target-command} {\\target}
-    \li \l {04-qdoc-commands-textmarkup.html#tt-command} {\\tt}
-    \li \l {04-qdoc-commands-textmarkup.html#uicontrol-command} {\\uicontrol} {(new 25/3/2012)}
-    \li \l {04-qdoc-commands-textmarkup.html#underline-command} {\\underline}
-    \li \l {12-0-qdoc-commands-miscellaneous.html#raw-command} {\\unicode}
-    \li \l {11-qdoc-commands-specialcontent.html#warning-command} {\\warning}
-    \li \l {04-qdoc-commands-textmarkup.html#backslash-command} {\\\\}
+    \li \l {a-command} {\\a}
+    \li \l {abstract-command} {\\abstract}
+    \li \l {annotatedlist-command} {\\annotatedlist}
+    \li \l {b-command} {\\b} \span {class="newStuff"}
+    \li \l {b-command} {\\bold} {(deprecated, use \\b)}
+    \li \l {brief-command} {\\brief}
+    \li \l {c-command} {\\c}
+    \li \l {caption-command} {\\caption}
+    \li \l {chapter-command} {\\chapter}
+    \li \l {code-command} {\\code}
+    \li \l {codeline-command} {\\codeline}
+    \li \l {div-command} {\\div}
+    \li \l {dots-command} {\\dots}
+    \li \l {e-command} {\\e} \span {class="newStuff"}
+    \li \l {else-command} {\\else}
+    \li \l {endif-command} {\\endif}
+    \li \l {footnote-command} {\\footnote}
+    \li \l {generatelist-command} {\\generatelist}
+    \li \l {header-command} {\\header}
+    \li \l {e-command} {\\i} \span {class="newStuff"} {(deprecated, use \\e)}
+    \li \l {if-command} {\\if}
+    \li \l {image-command} {\\image}
+    \li \l {include-command} {\\include}
+    \li \l {include-command} {\\input}
+    \li \l {inlineimage-command} {\\inlineimage}
+    \li \l {keyword-command} {\\keyword}
+    \li \l {l-command} {\\l}
+    \li \l {legalese-command} {\\legalese}
+    \li \l {li-command} {\\li} \span {class="newStuff"}
+    \li \l {list-command} {\\list}
+    \li \l {meta-command} {\\meta}
+    \li \l {newcode-command} {\\newcode}
+    \li \l {li-command} {\\o} \span {class="newStuff"} {(deprecated, use \\li)}
+    \li \l {note-command} {\\note}
+    \li \l {oldcode-command} {\\oldcode}
+    \li \l {omit-command} {\\omit}
+    \li \l {part-command} {\\part}
+    \li \l {printline-command} {\\printline}
+    \li \l {printto-command} {\\printto}
+    \li \l {printuntil-command} {\\printuntil}
+    \li \l {quotation-command} {\\quotation}
+    \li \l {quotefile-command} {\\quotefile}
+    \li \l {quotefromfile-command} {\\quotefromfile}
+    \li \l {raw-command} {\\raw}
+    \li \l {row-command} {\\row}
+    \li \l {sa-command} {\\sa}
+    \li \l {sectionOne-command} {\\section1}
+    \li \l {sectionTwo-command} {\\section2}
+    \li \l {sectionThree-command} {\\section3}
+    \li \l {sectionFour-command} {\\section4}
+    \li \l {skipline-command} {\\skipline}
+    \li \l {skipto-command} {\\skipto}
+    \li \l {skipuntil-command} {\\skipuntil}
+    \li \l {snippet-command} {\\snippet}
+    \li \l {span-command} {\\span}
+    \li \l {sub-command} {\\sub}
+    \li \l {sup-command} {\\sup}
+    \li \l {table-command} {\\table}
+    \li \l {tableofcontents-command} {\\tableofcontents}
+    \li \l {target-command} {\\target}
+    \li \l {tt-command} {\\tt}
+    \li \l {uicontrol-command} {\\uicontrol} {(new 25/3/2012)}
+    \li \l {underline-command} {\\underline}
+    \li \l {raw-command} {\\unicode}
+    \li \l {warning-command} {\\warning}
+    \li \l {backslash-command} {\\\\}
     \endlist
 */
 
@@ -1826,7 +1826,7 @@
     \endcode
 
     For the one-parameter version, the braces can often be omitted.
-    The \\l command supports several kinds of links:
+    The \\l command supports several ways of linking:
 
     \list
 
@@ -1854,9 +1854,6 @@
 
     \li \c {\l {Shared Classes}} - A keyword named in a \l
     {keyword-command} {\\keyword} command.
-
-    \li \c {\l network.html} - The file name used in a \l
-    {page-command} {\\page} command.
 
     \li \c {\l http://qt-project.org/} - A URL.
 
@@ -1974,21 +1971,14 @@
     \endcode
 
     The target name \e{capturing parentheses} can be linked from
-    within the same document containing the target in two ways:
+    within the same document containing the target in the following way:
 
     \list
       \li \c {\l {capturing parentheses}} (from within the same QDoc comment)
-      \li \c {\l qregexp.html#capturing-parentheses} (from elsewhere in the same document)
     \endlist
 
     \note The brackets in the link example are required because the
     target name contains spaces.
-
-    The target name can be linked to in the following way from other documents:
-
-    \list
-      \li \c {\l http://qt-project.org/doc/qt-5.0/qtcore/qregexp.html#capturing-parentheses}
-    \endlist
 
     See also \l {l-command} {\\l}, \l {sa-command} {\\sa} and \l
     {keyword-command} {\\keyword}.
@@ -2042,7 +2032,7 @@
 
     \quotation
         When a string is surrounded by slashes, it is
-        interpreted as a \l {QRegExp}{regular expression}.
+        interpreted as a \l {regular expression}.
     \endquotation
 
     If the keyword text contains spaces, the brackets are required.
@@ -2961,15 +2951,16 @@
 
     \target brief class
 
-    When the \\brief command is used to describe a class, the brief
-    text should be a complete sentence and must start like this:
+    When the \\brief command is used to describe a class, we recommend
+    using a complete sentence like this:
 
            \code
            The <classname> class is|provides|contains|specifies...
            \endcode
 
-    \warning The brief statement is used as the first paragraph of the
-    detailed description. Do not repeat the sentence.
+    \warning Do not repeat your detailed description with the same sentence as
+    the brief statement will be the first paragraph of the detailed
+    description.
 
            \code
            / *!

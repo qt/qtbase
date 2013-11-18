@@ -142,7 +142,7 @@ namespace QtAndroidMenu
 
     void setActiveTopLevelWindow(QWindow *window)
     {
-        Qt::WindowFlags flags = window->flags();
+        Qt::WindowFlags flags = window ? window->flags() : Qt::WindowFlags();
         bool isNonRegularWindow = flags & (Qt::Desktop | Qt::Popup | Qt::Dialog | Qt::Sheet) & ~Qt::Window;
         if (isNonRegularWindow)
             return;

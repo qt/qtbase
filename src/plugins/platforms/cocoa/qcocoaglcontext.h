@@ -77,6 +77,7 @@ public:
 
 private:
     void setActiveWindow(QWindow *window);
+    void updateSurfaceFormat();
 
     NSOpenGLContext *m_context;
     NSOpenGLContext *m_shareContext;

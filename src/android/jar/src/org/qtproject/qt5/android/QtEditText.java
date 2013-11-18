@@ -53,22 +53,32 @@ public class QtEditText extends View
     int m_initialCapsMode = 0;
     int m_imeOptions = 0;
     int m_inputType = InputType.TYPE_CLASS_TEXT;
+    boolean m_optionsChanged = false;
     QtActivityDelegate m_activityDelegate;
 
     public void setImeOptions(int m_imeOptions)
     {
+        if (m_imeOptions == this.m_imeOptions)
+            return;
         this.m_imeOptions = m_imeOptions;
+        m_optionsChanged = true;
     }
 
     public void setInitialCapsMode(int m_initialCapsMode)
     {
+        if (m_initialCapsMode == this.m_initialCapsMode)
+            return;
         this.m_initialCapsMode = m_initialCapsMode;
+        m_optionsChanged = true;
     }
 
 
     public void setInputType(int m_inputType)
     {
+        if (m_inputType == this.m_inputType)
+            return;
         this.m_inputType = m_inputType;
+        m_optionsChanged = true;
     }
 
     public QtEditText(Context context, QtActivityDelegate activityDelegate)

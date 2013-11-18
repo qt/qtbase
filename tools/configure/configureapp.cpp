@@ -183,7 +183,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
     dictionary[ "DIRECTWRITE" ]     = "no";
     dictionary[ "NIS" ]             = "no";
-    dictionary[ "NEON" ]            = "no";
+    dictionary[ "NEON" ]            = "auto";
     dictionary[ "LARGE_FILE" ]      = "yes";
     dictionary[ "FONT_CONFIG" ]     = "no";
     dictionary[ "POSIX_IPC" ]       = "no";
@@ -1641,6 +1641,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT_CUPS" ]             = "no";
         dictionary[ "QT_GLIB" ]             = "no";
         dictionary[ "QT_ICONV" ]            = "no";
+        dictionary[ "FONT_CONFIG" ]         = "auto";
 
         dictionary["DECORATIONS"]           = "default windows styled";
     } else if ((platform() == QNX) || (platform() == BLACKBERRY)) {
@@ -1648,6 +1649,7 @@ void Configure::applySpecSpecifics()
         dictionary["SLOG2"]                 = "auto";
         dictionary["QT_XKBCOMMON"]          = "no";
         dictionary[ "ANGLE" ]               = "no";
+        dictionary[ "FONT_CONFIG" ]         = "auto";
     } else if (platform() == ANDROID) {
         dictionary[ "REDUCE_EXPORTS" ]      = "yes";
         dictionary[ "BUILD" ]               = "release";
@@ -2096,7 +2098,7 @@ bool Configure::checkAvailability(const QString &part)
         available = findFile("pcre.h");
 
     else if (part == "ICU")
-        available = findFile("unicode/utypes.h") && findFile("unicode/ucol.h") && findFile("unicode/ustring.h");
+        available = tryCompileProject("unix/icu");
 
     else if (part == "ANGLE") {
         available = checkAngleAvailability();
@@ -2200,6 +2202,10 @@ bool Configure::checkAvailability(const QString &part)
         available = (platform() == QNX || platform() == BLACKBERRY) && compilerSupportsFlag("qcc -fstack-protector-strong");
     } else if (part == "SLOG2") {
         available = tryCompileProject("unix/slog2");
+    } else if (part == "NEON") {
+        available = (dictionary["QT_ARCH"] == "arm") && tryCompileProject("unix/neon");
+    } else if (part == "FONT_CONFIG") {
+        available = tryCompileProject("unix/fontconfig");
     }
 
     return available;
@@ -2211,6 +2217,9 @@ bool Configure::checkAvailability(const QString &part)
 void Configure::autoDetection()
 {
     cout << "Running configuration tests..." << endl;
+
+    // Auto-detect CPU architectures.
+    detectArch();
 
     if (dictionary["C++11"] == "auto") {
         if (!dictionary["QMAKESPEC"].contains("msvc"))
@@ -2295,6 +2304,8 @@ void Configure::autoDetection()
         dictionary["AVX2"] = checkAvailability("AVX2") ? "yes" : "no";
     if (dictionary["IWMMXT"] == "auto")
         dictionary["IWMMXT"] = checkAvailability("IWMMXT") ? "yes" : "no";
+    if (dictionary["NEON"] == "auto")
+        dictionary["NEON"] = checkAvailability("NEON") ? "yes" : "no";
     if (dictionary["OPENSSL"] == "auto")
         dictionary["OPENSSL"] = checkAvailability("OPENSSL") ? "yes" : "no";
     if (dictionary["DBUS"] == "auto")
@@ -2338,6 +2349,9 @@ void Configure::autoDetection()
 
     if (dictionary["QT_EVENTFD"] == "auto")
         dictionary["QT_EVENTFD"] = checkAvailability("QT_EVENTFD") ? "yes" : "no";
+
+    if (dictionary["FONT_CONFIG"] == "auto")
+        dictionary["FONT_CONFIG"] = checkAvailability("FONT_CONFIG") ? "yes" : "no";
 
     // Mark all unknown "auto" to the default value..
     for (QMap<QString,QString>::iterator i = dictionary.begin(); i != dictionary.end(); ++i) {
@@ -3522,6 +3536,7 @@ void Configure::displayConfig()
     sout << "    JPEG support............" << dictionary[ "JPEG" ] << endl;
     sout << "    PNG support............." << dictionary[ "PNG" ] << endl;
     sout << "    FreeType support........" << dictionary[ "FREETYPE" ] << endl;
+    sout << "    Fontconfig support......" << dictionary[ "FONT_CONFIG" ] << endl;
     sout << "    HarfBuzz-NG support....." << dictionary[ "HARFBUZZ" ] << endl;
     sout << "    PCRE support............" << dictionary[ "PCRE" ] << endl;
     sout << "    ICU support............." << dictionary[ "ICU" ] << endl;

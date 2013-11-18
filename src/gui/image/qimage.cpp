@@ -3853,6 +3853,9 @@ static InPlace_Image_Converter inplace_converter_map[QImage::NImageFormats][QIma
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGB444
     {
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    }, // Format_ARGB4444_Premultiplied
+    {
         0,
         0,
         0,

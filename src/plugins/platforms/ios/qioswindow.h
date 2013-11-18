@@ -58,8 +58,10 @@ QT_BEGIN_NAMESPACE
 
 @class QUIView;
 
-class QIOSWindow : public QPlatformWindow
+class QIOSWindow : public QObject, public QPlatformWindow
 {
+    Q_OBJECT
+
 public:
     explicit QIOSWindow(QWindow *window);
     ~QIOSWindow();
@@ -87,7 +89,6 @@ private:
 
     QRect m_normalGeometry;
     int m_windowLevel;
-    qreal m_devicePixelRatio;
 
     void raiseOrLower(bool raise);
     void updateWindowLevel();

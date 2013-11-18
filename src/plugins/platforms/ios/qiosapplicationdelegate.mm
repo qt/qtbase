@@ -60,11 +60,7 @@
     self.qiosViewController = [[[QIOSViewController alloc] init] autorelease];
     self.window.rootViewController = self.qiosViewController;
 
-#ifdef QT_DEBUG
-    self.window.backgroundColor = [UIColor cyanColor];
-#endif
-
-    [self.window makeKeyAndVisible];
+    self.window.hidden = NO;
 
     return YES;
 }

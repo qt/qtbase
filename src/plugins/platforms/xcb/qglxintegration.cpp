@@ -431,11 +431,28 @@ void QGLXContext::queryDummyContext()
     if (skip)
         return;
 
-    QOffscreenSurface surface;
-    surface.create();
+    QOpenGLContext *oldContext = QOpenGLContext::currentContext();
+    QSurface *oldSurface = 0;
+    if (oldContext)
+        oldSurface = oldContext->surface();
+
+    QScopedPointer<QSurface> surface;
+    const char *vendor = glXGetClientString(glXGetCurrentDisplay(), GLX_VENDOR);
+    if (vendor && !strcmp(vendor, "ATI")) {
+        QWindow *window = new QWindow;
+        window->resize(64, 64);
+        window->setSurfaceType(QSurface::OpenGLSurface);
+        window->create();
+        surface.reset(window);
+    } else {
+        QOffscreenSurface *offSurface = new QOffscreenSurface;
+        offSurface->create();
+        surface.reset(offSurface);
+    }
+
     QOpenGLContext context;
     context.create();
-    context.makeCurrent(&surface);
+    context.makeCurrent(surface.data());
 
     const char *renderer = (const char *) glGetString(GL_RENDERER);
 
@@ -446,6 +463,10 @@ void QGLXContext::queryDummyContext()
             break;
         }
     }
+
+    context.doneCurrent();
+    if (oldContext && oldSurface)
+        oldContext->makeCurrent(oldSurface);
 }
 
 bool QGLXContext::supportsThreading()

@@ -53,7 +53,7 @@ class QKeySequenceEditPrivate;
 class Q_WIDGETS_EXPORT QKeySequenceEdit : public QWidget
 {
     Q_OBJECT
-    Q_PROPERTY(QKeySequence keySequence READ keySequence WRITE setKeySequence RESET clear NOTIFY keySequenceChanged USER true)
+    Q_PROPERTY(QKeySequence keySequence READ keySequence WRITE setKeySequence NOTIFY keySequenceChanged USER true)
 
 public:
     explicit QKeySequenceEdit(QWidget *parent = 0);

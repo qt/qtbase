@@ -83,7 +83,7 @@ contains(qt_module_deps, qml): \
     qtPrepareTool(QMLIMPORTSCANNER, qmlimportscanner)
     for (MODULE, QT_MODULES) {
         PATH = $$eval(QT.$${MODULE}.qml)
-        !isEmpty(PATH): QMLPATHS += $$PATH
+        !isEmpty(PATH):exists($$PATH): QMLPATHS += $$PATH
     }
     QMLPATHS = $$unique(QMLPATHS)
     for (QMLPATH, QMLPATHS): \
