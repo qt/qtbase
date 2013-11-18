@@ -179,7 +179,7 @@ write_file($$OUT_PWD/mkspecs/qfeatures.pri, FEATURES_PRI)|error("Aborting.")
 #mkspecs
 mkspecs.path = $$[QT_HOST_DATA]/mkspecs
 mkspecs.files = \
-    $$OUT_PWD/mkspecs/qconfig.pri $$OUT_PWD/mkspecs/qmodule.pri $$OUT_PWD/mkspecs/qdevice.pri \
+    $$OUT_PWD/mkspecs/qconfig.pri $$OUT_PWD/mkspecs/qmodule.pri $$OUT_PWD/mkspecs/qdevice.pri $$OUT_PWD/mkspecs/qfeatures.pri \
     $$files($$PWD/mkspecs/*)
 mkspecs.files -= $$PWD/mkspecs/modules
 INSTALLS += mkspecs
