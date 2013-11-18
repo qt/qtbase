@@ -63,7 +63,7 @@ private slots:
     void cleanup();
 
 private:
-    void doRunSubTest(QString const& subdir, QStringList const& loggers, QStringList const& arguments);
+    void doRunSubTest(QString const& subdir, QStringList const& loggers, QStringList const& arguments, bool crashes);
     QString logName(const QString &logger) const;
     QList<LoggerSet> allLoggerSets() const;
 
@@ -324,6 +324,7 @@ void tst_Selftests::runSubTest_data()
     QTest::addColumn<QString>("subdir");
     QTest::addColumn<QStringList>("loggers");
     QTest::addColumn<QStringList>("arguments");
+    QTest::addColumn<bool>("crashes");
 
     QStringList tests = QStringList()
 //        << "alive"    // timer dependent
@@ -479,11 +480,14 @@ void tst_Selftests::runSubTest_data()
                     continue;
                 }
             }
-
+            const bool crashes = subtest == QLatin1String("assert") || subtest == QLatin1String("exceptionthrow")
+                || subtest == QLatin1String("fetchbogus") || subtest == QLatin1String("crashedterminate")
+                || subtest == QLatin1String("crashes") || subtest == QLatin1String("silent");
             QTest::newRow(qPrintable(QString("%1 %2").arg(subtest).arg(loggerSet.name)))
                 << subtest
                 << loggers
                 << arguments
+                << crashes
             ;
         }
     }
@@ -491,30 +495,41 @@ void tst_Selftests::runSubTest_data()
 
 #ifndef QT_NO_PROCESS
 
-static void insertEnvironmentVariable(QString const& name, QProcessEnvironment &result)
+static QProcessEnvironment processEnvironment()
 {
-    const QProcessEnvironment systemEnvironment = QProcessEnvironment::systemEnvironment();
-    const QString value = systemEnvironment.value(name);
-    if (!value.isEmpty())
-        result.insert(name, value);
-}
-
-static inline QProcessEnvironment processEnvironment()
-{
-    QProcessEnvironment result;
-    insertEnvironmentVariable(QStringLiteral("PATH"), result);
-    // Preserve DISPLAY for X11 as some tests use Qt GUI.
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
-    insertEnvironmentVariable(QStringLiteral("DISPLAY"), result);
-#endif
-    insertEnvironmentVariable(QStringLiteral("QT_QPA_PLATFORM"), result);
+    static QProcessEnvironment result;
+    if (result.isEmpty()) {
+        const QProcessEnvironment systemEnvironment = QProcessEnvironment::systemEnvironment();
+        foreach (const QString &key, systemEnvironment.keys()) {
+            const bool useVariable = key == QLatin1String("PATH") || key == QLatin1String("QT_QPA_PLATFORM")
+#ifdef Q_OS_UNIX
+                || key == QLatin1String("HOME") || key == QLatin1String("USER") // Required for X11 on openSUSE
+#  ifndef Q_OS_MAC
+                || key == QLatin1String("DISPLAY") || key == QLatin1String("XAUTHLOCALHOSTNAME")
+                || key.startsWith(QLatin1String("XDG_"))
+#  endif // !Q_OS_MAC
+#endif // Q_OS_UNIX
 #ifdef __COVERAGESCANNER__
-    insertEnvironmentVariable(QStringLiteral("QT_TESTCOCOON_ACTIVE"), result);
+                || key == QLatin1String("QT_TESTCOCOON_ACTIVE")
 #endif
+                ;
+            if (useVariable)
+                result.insert(key, systemEnvironment.value(key));
+        }
+    }
     return result;
 }
 
-void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& loggers, QStringList const& arguments)
+static inline QByteArray msgProcessError(const QString &binary, const QStringList &args,
+                                         const QProcessEnvironment &e, const QString &what)
+{
+    QString result;
+    QTextStream(&result) <<"Error running " << binary << ' ' << args.join(' ')
+        << " with environment " << e.toStringList().join(' ') << ": " << what;
+    return result.toLocal8Bit();
+}
+
+void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& loggers, QStringList const& arguments, bool crashes)
 {
 #if defined(__GNUC__) && defined(__i386) && defined(Q_OS_LINUX)
     if (arguments.contains("-callgrind")) {
@@ -532,8 +547,14 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
     proc.setProcessEnvironment(environment);
     const QString path = subdir + QLatin1Char('/') + subdir;
     proc.start(path, arguments);
-    QVERIFY2(proc.waitForStarted(), qPrintable(QString::fromLatin1("Cannot start '%1': %2").arg(path, proc.errorString())));
-    QVERIFY2(proc.waitForFinished(), qPrintable(proc.errorString()));
+    QVERIFY2(proc.waitForStarted(), msgProcessError(path, arguments, environment, QStringLiteral("Cannot start: ") + proc.errorString()));
+    QVERIFY2(proc.waitForFinished(), msgProcessError(path, arguments, environment, QStringLiteral("Timed out: ") + proc.errorString()));
+    if (!crashes) {
+        QVERIFY2(proc.exitStatus() == QProcess::NormalExit,
+                 msgProcessError(path, arguments, environment,
+                                 QStringLiteral("Crashed: ") + proc.errorString()
+                                 + QStringLiteral(": ") + QString::fromLocal8Bit(proc.readAllStandardError())));
+    }
 
     QList<QByteArray> actualOutputs;
     for (int i = 0; i < loggers.count(); ++i) {
@@ -700,8 +721,9 @@ void tst_Selftests::runSubTest()
     QFETCH(QString, subdir);
     QFETCH(QStringList, loggers);
     QFETCH(QStringList, arguments);
+    QFETCH(bool, crashes);
 
-    doRunSubTest(subdir, loggers, arguments);
+    doRunSubTest(subdir, loggers, arguments, crashes);
 #endif // !QT_NO_PROCESS
 }
 
