@@ -65,6 +65,7 @@ public:
     QProgressDialogPrivate() : label(0), cancel(0), bar(0),
         shown_once(false),
         cancellation_flag(false),
+        setValue_called(false),
         showTime(defaultShowTime),
 #ifndef QT_NO_SHORTCUT
         escapeShortcut(0),
@@ -87,6 +88,7 @@ public:
     QTimer *forceTimer;
     bool shown_once;
     bool cancellation_flag;
+    bool setValue_called;
     QElapsedTimer starttime;
 #ifndef QT_NO_CURSOR
     QCursor parentCursor;
@@ -123,6 +125,8 @@ void QProgressDialogPrivate::init(const QString &labelText, const QString &cance
     } else {
         q->setCancelButtonText(cancelText);
     }
+    starttime.start();
+    forceTimer->start(showTime);
 }
 
 void QProgressDialogPrivate::layout()
@@ -598,6 +602,7 @@ void QProgressDialog::reset()
     d->bar->reset();
     d->cancellation_flag = false;
     d->shown_once = false;
+    d->setValue_called = false;
     d->forceTimer->stop();
 
     /*
@@ -636,7 +641,7 @@ int QProgressDialog::value() const
   \brief the current amount of progress made.
 
   For the progress dialog to work as expected, you should initially set
-  this property to 0 and finally set it to
+  this property to QProgressDialog::minimum() and finally set it to
   QProgressDialog::maximum(); you can call setValue() any number of times
   in-between.
 
@@ -651,8 +656,7 @@ int QProgressDialog::value() const
 void QProgressDialog::setValue(int progress)
 {
     Q_D(QProgressDialog);
-    if (progress == d->bar->value()
-        || (d->bar->value() == -1 && progress == d->bar->maximum()))
+    if (d->setValue_called && progress == d->bar->value())
         return;
 
     d->bar->setValue(progress);
@@ -661,11 +665,13 @@ void QProgressDialog::setValue(int progress)
         if (isModal())
             QApplication::processEvents();
     } else {
-        if (progress == 0) {
+        if ((!d->setValue_called && progress == 0 /* for compat with Qt < 5.4 */) || progress == minimum()) {
             d->starttime.start();
             d->forceTimer->start(d->showTime);
+            d->setValue_called = true;
             return;
         } else {
+            d->setValue_called = true;
             bool need_show;
             int elapsed = d->starttime.elapsed();
             if (elapsed >= d->showTime) {
@@ -759,7 +765,7 @@ void QProgressDialog::setMinimumDuration(int ms)
 {
     Q_D(QProgressDialog);
     d->showTime = ms;
-    if (d->bar->value() == 0) {
+    if (d->bar->value() == d->bar->minimum()) {
         d->forceTimer->stop();
         d->forceTimer->start(ms);
     }
