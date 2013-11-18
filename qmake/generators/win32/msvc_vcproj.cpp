@@ -932,7 +932,7 @@ void VcprojGenerator::initConfiguration()
     if(projectTarget == StaticLib)
         initLibrarianTool();
     else {
-        conf.linker.GenerateDebugInformation = isDebug ? _True : _False;
+        conf.linker.GenerateDebugInformation = project->isActiveConfig("debug_info") ? _True : _False;
         initLinkerTool();
     }
     initManifestTool();
