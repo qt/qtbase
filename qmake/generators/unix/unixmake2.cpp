@@ -285,13 +285,13 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             t << odir << ".deps/%.d: " << pwd << "/%.cpp\n\t";
             if(project->isActiveConfig("echo_depend_creation"))
                 t << "@echo Creating depend for $<\n\t";
-            t << mkdir_p_asstring("$(@D)") << "\n\t"
+            t << mkdir_p_asstring("$(@D)", false) << "\n\t"
               << "@$(CXX) " << cmd << " $< | sed \"s,^\\($(*F).o\\):," << odir << "\\1:,g\" >$@\n\n";
 
             t << odir << ".deps/%.d: " << pwd << "/%.c\n\t";
             if(project->isActiveConfig("echo_depend_creation"))
                 t << "@echo Creating depend for $<\n\t";
-            t << mkdir_p_asstring("$(@D)") << "\n\t"
+            t << mkdir_p_asstring("$(@D)", false) << "\n\t"
               << "@$(CC) " << cmd << " $< | sed \"s,^\\($(*F).o\\):," << odir << "\\1:,g\" >$@\n\n";
 
             static const char * const src[] = { "SOURCES", "GENERATED_SOURCES", 0 };
@@ -804,7 +804,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                                                 project->first("OBJECTS_DIR")) + ddir,
                                                Option::output_dir, Option::output_dir));
     t << "dist: \n\t"
-      << mkdir_p_asstring(ddir_c) << "\n\t"
+      << mkdir_p_asstring(ddir_c, false) << "\n\t"
       << "$(COPY_FILE) --parents $(SOURCES) $(DIST) " << ddir_c << Option::dir_sep << " && ";
     if(!project->isEmpty("QMAKE_EXTRA_COMPILERS")) {
         const ProStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
