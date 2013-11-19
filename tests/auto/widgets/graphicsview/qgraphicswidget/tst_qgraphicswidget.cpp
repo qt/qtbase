@@ -53,6 +53,7 @@
 #include <qwidgetaction.h>
 #include <qcommonstyle.h>
 #include <qstylefactory.h>
+#include <qscreen.h>
 
 #include "../../../qtest-config.h"
 
@@ -1780,8 +1781,11 @@ void tst_QGraphicsWidget::verifyFocusChain()
 
 void tst_QGraphicsWidget::updateFocusChainWhenChildDie()
 {
+    const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
     QGraphicsScene scene;
     QGraphicsView view(&scene);
+    view.resize(200, 150);
+    view.move(availableGeometry.topLeft() + QPoint(50, 50));
     view.show();
     QApplication::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
@@ -1801,6 +1805,9 @@ void tst_QGraphicsWidget::updateFocusChainWhenChildDie()
     QVERIFY(w1_1->hasFocus());
     QWidget myWidget(0);
     QLineEdit edit(&myWidget);
+    (new QHBoxLayout(&myWidget))->addWidget(&edit);
+    edit.setMinimumWidth(160); // Windows
+    myWidget.move(availableGeometry.topLeft() + QPoint(350, 50));
     myWidget.show();
     edit.setFocus();
     QTRY_VERIFY(edit.hasFocus());
@@ -1809,8 +1816,9 @@ void tst_QGraphicsWidget::updateFocusChainWhenChildDie()
     w->setParentItem(parent);
     //We don't crash perfect
     QVERIFY(w);
-    QTest::mouseMove(view.viewport());
-    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0);
+    const QPoint center(view.viewport()->width() / 2, view.viewport()->height() / 2);
+    QTest::mouseMove(view.viewport(), center);
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, center);
 #ifdef Q_OS_MAC
     QEXPECT_FAIL("", "QTBUG-23699", Continue);
 #endif
