@@ -4140,7 +4140,7 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
     \macro Q_INVOKABLE
     \relates QObject
 
-    Apply this macro to definitions of member functions to allow them to
+    Apply this macro to declarations of member functions to allow them to
     be invoked via the meta-object system. The macro is written before
     the return type, as shown in the following example:
 
@@ -4157,7 +4157,7 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
     \macro Q_REVISION
     \relates QObject
 
-    Apply this macro to definitions of member functions to tag them with a
+    Apply this macro to declarations of member functions to tag them with a
     revision number in the meta-object system. The macro is written before
     the return type, as shown in the following example:
 
