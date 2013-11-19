@@ -136,7 +136,7 @@ void QQnxWindow::setGeometry(const QRect &rect)
 
     // Calling flushWindowSystemEvents() here would flush input events which
     // could result in re-entering QQnxWindow::setGeometry() again.
-    QWindowSystemInterface::setSynchronousWindowsSystemEvents(true); //This does not work
+    QWindowSystemInterface::setSynchronousWindowsSystemEvents(true);
     QWindowSystemInterface::handleGeometryChange(window(), newGeometry);
     QWindowSystemInterface::handleExposeEvent(window(), newGeometry);
     QWindowSystemInterface::setSynchronousWindowsSystemEvents(false);
@@ -608,12 +608,11 @@ void QQnxWindow::initWindow()
     setWindowState(window()->windowState());
     if (window()->parent() && window()->parent()->handle())
         setParent(window()->parent()->handle());
-    setGeometryHelper(window()->geometry());
-    if (screen()->rootWindow() == this) {
-        setGeometry(screen()->geometry());
-    }
-}
 
+    const QRect &initialGeometry = screen()->rootWindow() == this ?
+                                   screen()->geometry() : window()->geometry();
+    setGeometryHelper(initialGeometry);
+}
 
 void QQnxWindow::createWindowGroup()
 {

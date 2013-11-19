@@ -58,12 +58,13 @@ QT_BEGIN_NAMESPACE
 
 QQnxEglWindow::QQnxEglWindow(QWindow *window, screen_context_t context, bool needRootWindow) :
     QQnxWindow(window, context, needRootWindow),
-    m_requestedBufferSize(window->geometry().size()),
     m_platformOpenGLContext(0),
     m_newSurfaceRequested(true),
     m_eglSurface(EGL_NO_SURFACE)
 {
     initWindow();
+    m_requestedBufferSize = screen()->rootWindow() == this ?
+                            screen()->geometry().size() : window->geometry().size();
 }
 
 QQnxEglWindow::~QQnxEglWindow()
@@ -145,6 +146,9 @@ EGLSurface QQnxEglWindow::getSurface()
 
 void QQnxEglWindow::setGeometry(const QRect &rect)
 {
+    //If this is the root window, it has to be shown fullscreen
+    const QRect &newGeometry = screen()->rootWindow() == this ? screen()->geometry() : rect;
+
     //We need to request that the GL context updates
     // the EGLsurface on which it is rendering.
     {
@@ -152,11 +156,11 @@ void QQnxEglWindow::setGeometry(const QRect &rect)
         // setting m_requestedBufferSize and therefore extended the scope to include
         // that test.
         const QMutexLocker locker(&m_mutex);
-        m_requestedBufferSize = rect.size();
-        if (m_platformOpenGLContext != 0 && bufferSize() != rect.size())
+        m_requestedBufferSize = newGeometry.size();
+        if (m_platformOpenGLContext != 0 && bufferSize() != newGeometry.size())
             m_newSurfaceRequested.testAndSetRelease(false, true);
     }
-    QQnxWindow::setGeometry(rect);
+    QQnxWindow::setGeometry(newGeometry);
 }
 
 QSize QQnxEglWindow::requestedBufferSize() const
