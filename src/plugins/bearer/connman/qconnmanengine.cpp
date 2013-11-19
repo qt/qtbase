@@ -417,7 +417,7 @@ QNetworkConfiguration::StateFlags QConnmanEngine::getStateForService(const QStri
     QConnmanServiceInterface serv(service);
     QNetworkConfiguration::StateFlags flag = QNetworkConfiguration::Defined;
     if (serv.getType() == "cellular") {
-        if (serv.isSetupRequired() || !serv.isAutoConnect()) {
+        if (serv.isSetupRequired() || !serv.isAutoConnect() || (serv.isRoaming() && isAlwaysAskRoaming())) {
             flag = ( flag | QNetworkConfiguration::Defined);
         } else {
             flag = ( flag | QNetworkConfiguration::Discovered);
@@ -593,6 +593,12 @@ bool QConnmanEngine::requiresPolling() const
     return false;
 }
 
+bool QConnmanEngine::isAlwaysAskRoaming()
+{
+    QSettings confFile(QStringLiteral("nemomobile"), QStringLiteral("connectionagent"));
+    confFile.beginGroup(QStringLiteral("Connectionagent"));
+    return confFile.value(QStringLiteral("askForRoaming")).toBool();
+}
 QT_END_NAMESPACE
 
 #endif // QT_NO_DBUS

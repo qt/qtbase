@@ -129,6 +129,7 @@ private:
 
     QNetworkConfiguration::BearerType ofonoTechToBearerType(const QString &type);
     bool isRoamingAllowed(const QString &context);
+    bool isAlwaysAskRoaming();
 protected:
     bool requiresPolling() const;
 };
