@@ -16,56 +16,44 @@ Each of these identifiers can be entered in the bug tracker to obtain more
 information about a particular change.
 
 ****************************************************************************
-*                     Architecture Specific Changes                        *
+*                   Important Behavior Changes                             *
 ****************************************************************************
 
-Qt is now compiled with qreal typedef'ed to double on all platforms. qreal
-was a float on ARM chipsets before. This guarantees more consistent behavior
-between all platforms Qt supports, but is binary incompatible to Qt 5.1
-on ARM. The old behavior can be restored by passing -qreal float to
-configure.
+ - Qt is now compiled with qreal typedef'ed to double on all
+   platforms. qreal was a float on ARM chipsets before. This guarantees more
+   consistent behavior between all platforms Qt supports, but is binary
+   incompatible to Qt 5.1 on ARM. The old behavior can be restored by
+   passing -qreal float to configure.
+ - The supported date range in QDateTime has been reduced to about +/- 292
+   million years, the range supported by the number of msecs since the Unix
+   epoch of 1 Jan 1970 as stored in a qint64, and as able to be used in the
+   setMSecsSinceEpoch() and toMSecsSinceEpoch() methods.
+
+ - QUrl and QUrlQuery:
+   * [QTBUG-31660] QUrl no longer considers all delimiter characters
+     equivalent to their percent-encoded forms. Now, both classes always
+     keep all delimiters exactly as they were in the original URL text.
+   * [QTBUG-31660] QUrl no longer decodes %7B and %7D to "{" and "}" in the
+     output of toString()
+   * QUrl no longer supports QUrl::FullyDecoded mode in authority() and
+     userInfo(), nor QUrl::DecodedMode in setAuthority() and setUserInfo().
+   * [QTBUG-31945] QUrl no longer decodes %23 found in the fragment to "#"
+     in the output of toString(QUrl::FullyEncoded) or toEncoded()
+   * QUrl now defaults to decoded mode in the getters and setters for
+     userName, password, host, topLevelDomain, path and fileName. This
+     means a '%' in one of those fields is now returned (or set) as '%'
+     rather than "%25". In the unlikely case where the former behavior was
+     expected, pass PrettyDecoded to the getter and TolerantMode to the
+     setter.
+   * QUrl now normalizes the path given in setPath, removing ./ and ../ and
+     duplicate slashes.
 
 ****************************************************************************
 *                          Library                                         *
 ****************************************************************************
 
-
-QtWidgets
----------
-
-- QAbstractScrollArea now has a SizeAdjustPolicy. If it is set to AdjustToContents
-  it will make use of the protected viewportSizeHint() virtual function. This
-  function returns a suggested size based on contents. Note that although the
-  viewportSizeHint() virtual function was reserved in 5.0, user code was not
-  supposed to be overriding it (as the function was private and undocumented).
-  Code that was overriding viewportSizeHint() needs to be recompiled against 5.2
-  for this feature to work correctly.
-
-- QTreeView now has setTreePosition to allow the treestructure to show data from other
-  columns than logicalindex zero.
-
-- [QTBUG-4206] QTableView resizeToContents will now adjust to actual contents
-  and not just visible area. QHeaderView::setAutoResizePrecision() has been
-  introduced to control how precise the autoResize should be.
-
-- QFileDialog::setDefaultSuffix() removes leading dot characters.
-
-- [QTBUG-34132] QFileDialog does not instantiate widgets if a native dialog
-  will be used instead.  Therefore some accessors which previously returned
-  unused objects will now return null.  As before, you can set the
-  DontUseNativeDialog option to ensure that widgets will be created and used instead.
-
-- QSizePolicy got a retainSizeWhenHidden attribute.
-
-- [QTBUG-31602] QSpinBox size calculation will now be fixed when stylesheets are
-  used.
-
 QtCore
 ------
-- [QTBUG-30250] QTime, QDateTime:
-  When calling QTime::toString(Qt::TextDate) and QTime::toString(Qt::ISODate),
-  milliseconds are now included in the returned string. This also applies to
-  QDateTime::toString(Qt::TextDate) and QDateTime::toString(ISODate).
 
 - QtAlgorithms
   With STL no longer being optional for building and using Qt, a number of parts
@@ -96,14 +84,82 @@ QtCore
     - qLess (std::less)
     - qGreater (std::greater)
 
+ - QDateTime:
+   * [QTBUG-26161][QTBUG-29666] Fully implement support for Qt::TimeSpec of
+     Qt::OffsetFromUTC, added new methods for offsetFromUTC(),
+     toTimeSpec(), and toOffsetFromUTC().
+   * Added convenience methods for fromMSecsSinceEpoch() and fromTime_t()
+     to take time spec to be used in returned datetime.
+   * Add method timeZoneAbbreviation() to return effective time zone
+     abbreviation.
+   * The debug datastream is now an ISO-like format instead of Qt::TextDate
+   * The Standard Time to Daylight Time transition for Qt::LocalTime is now
+     handled correctly. Any date set in the "missing" hour is now
+     considered invalid. All date math results that fall into the missing
+     hour will be automatically adjusted to a valid time in the following
+     hour.
+   * Added new method isDaylightTime() to return if the datetime is in
+     Daylight Time or not.
+   * Add support for a new Qt::TimeZone spec to be used with QTimeZone to
+     define times in a specific time zone.
+
+ - QJson:
+   * [QTBUG-33229] The Writer and the Parser now fully accept non-character
+     unicode points.
+
+ - QJsonValue:
+   * Added QJsonValue::toInt().
+
+ - QStandardPaths:
+   * QStandardPaths::enableTestMode is deprecated and is replaced by
+     QStandardPaths::setTestModeEnabled.
+
+ - QTime:
+   * [QTBUG-30250] When calling QTime::toString(Qt::TextDate) and
+     QTime::toString(Qt::ISODate), milliseconds are now included in
+     the returned string. This also applies to
+     QDateTime::toString(Qt::TextDate) and
+     QDateTime::toString(ISODate).
+   * Added new methods fromMSecsSinceStartOfDay() to create a new QTime
+     from an msecs value, and msecsSinceStartOfDay() to return the QTime as
+     the number of msecs since the start of the day.
+
+ - QTimeZone:
+   * Added new QTimeZone class to support time tone calculations using the
+     host platform time zone database and the Olsen time zone ID's.
+
+ - QUrl:
+   * [QTBUG-33229] QUrl now fully accepts non-character unicode points;
+     they are encoded as percent characters; they can also be pretty
+     decoded
+
+ - QUtf8:
+   * [QTBUG-33229] UTF-8 now accepts non-character unicode points; these
+     are not replaced by the replacement character anymore
+
+ - QVariant:
+   * Fixed QVariant::canConvert with longlong
+   * Variant containing enum types can now be converted to integer
+
+QtDeclarative
+-------------
+
+ - ColorDialog:
+   * Added currentColor property.
+
 QtGui
 -----
-- [QTBUG-28228] Session Management:
-  The new QPlatformSessionManager class brings back the session management
-  functionality. It allows the implementation of platform specific behavior
-  related to session management. For platform that don't support this
-  feature the default behavior has not changed.
-  Both X11 and Windows session management are supported.
+ - Session Management:
+   * [QTBUG-28228] The new QPlatformSessionManager class brings back
+     the session management functionality. It allows the
+     implementation of platform specific behavior related to session
+     management. For platform that don't support this feature the
+     default behavior has not changed.  Both X11 and Windows session
+     management are supported.
+
+ - QPolygonF:
+   * When a QVariant holds a QPolygonF() then it will be correctly seen as
+     a null QVariant.
 
 QtNetwork
 ---------
@@ -124,35 +180,102 @@ QtNetwork
   connections. This allows for much reduced latency when the hosts to be
   connected to are known.
 
+QtPrintSupport
+--------------
+
+ - QPrintDialog:
+   * Added support for setting CUPS job options in the print dialog.
+   * Added support for setting CUPS Banner pages in the print dialog.
+   * Added support for setting CUPS Page Set (even/odd pages only) in the
+     print dialog.
+   * Added support for setting CUPS Pages Per Sheet and Pages Per Sheet
+     Layout options
+   * Added CUPS server-side print range support for apps that can't support
+     print range option themselves
+
 QtSql
 -----
+
 Changes in Qt 5.1.0 (missing from released changelog dist/changes-5.1.0)
-- [QTBUG-28088] Remove dependency of DB driver headers on qsqlcachedresult_p.h.
-- Deprecate QSqlError setters.
-  The constructor is sufficient, since it has a parameter for each member variable.
-- Rename the SQL driver header files to _p.h (make private)
-  The drivers were never public API. They were exposed by mistake in
-  public headers. What's more, they have #include'd a private header
-  (qsqlcachedresult_p.h) since at least Qt 4.5.1. That means no one used
-  those headers in Qt 4 (private headers weren't installed then) and
-  it's unlikely anyone did in 5.0.
-- ODBC: Implemented lastInsertId() for some ODBC compatible databases.
-- PSQL: Make lastInsertID work for tables without OIDs.
-- [QTBUG-14904] SQLITE: Fix for Sql query aliases with dots
-- [QTBUG-2192] ODBC: fix loss of milliseconds when binding QDateTime
-- [QTBUG-30076] PSQL: escape backslashes only when server requires it
-  IMPORTANT: Applications that implemented their own workarounds must be
-  updated to avoid misbehavior and SQL injection vulnerabilities.
-- [QTBUG-10569] ODBC: fixed QODBCResult::exec() return value for DELETE
-  operations when no rows are affected.
-- ODBC: Fixed loss of column metadata on SQL_NO_DATA.
-- QSqlTableModel: expose methods for getting primary values.
-- ODBC: Fixed possible cause of spurious errors (commit af35ee291a1bbbc8)
+ - [QTBUG-28088] Remove dependency of DB driver headers on qsqlcachedresult_p.h.
+ - Deprecate QSqlError setters. The constructor is sufficient, since it has
+   a parameter for each member variable.
+ - Rename the SQL driver header files to _p.h (make private)
+   The drivers were never public API. They were exposed by mistake in
+   public headers. What's more, they have #include'd a private header
+   (qsqlcachedresult_p.h) since at least Qt 4.5.1. That means no one used
+   those headers in Qt 4 (private headers weren't installed then) and
+   it's unlikely anyone did in 5.0.
+ - ODBC: Implemented lastInsertId() for some ODBC compatible databases.
+ - PSQL: Make lastInsertID work for tables without OIDs.
+ - [QTBUG-14904] SQLITE: Fix for Sql query aliases with dots
+ - [QTBUG-2192] ODBC: fix loss of milliseconds when binding QDateTime
+ - [QTBUG-30076] PSQL: escape backslashes only when server requires it
+   IMPORTANT: Applications that implemented their own workarounds must be
+   updated to avoid misbehavior and SQL injection vulnerabilities.
+ - [QTBUG-10569] ODBC: fixed QODBCResult::exec() return value for DELETE
+   operations when no rows are affected.
+ - ODBC: Fixed loss of column metadata on SQL_NO_DATA.
+ - QSqlTableModel: expose methods for getting primary values.
+ - ODBC: Fixed possible cause of spurious errors (commit af35ee291a1bbbc8)
 
 Changes in Qt 5.2.0
-- [QTBUG-29261] IBASE: Construct a valid QTime when creating timestamps for iBase SQL driver.
-- [QTBUG-33389] PSQL: Format QDateTime following ISO8601.
-- Add QSQLITE_OPEN_URI option to QSQLITE driver
+ - [QTBUG-29261] IBASE: Construct a valid QTime when creating timestamps for
+   iBase SQL driver.
+ - [QTBUG-33389] PSQL: Format QDateTime following ISO8601.
+ - Add QSQLITE_OPEN_URI option to QSQLITE driver
+
+QtWidgets
+---------
+
+ - QFileDialog::setDefaultSuffix() removes leading dot characters.
+ - QSizePolicy got a retainSizeWhenHidden attribute.
+ - [QTBUG-31602] QSpinBox size calculation will now be fixed when
+   stylesheets are used.
+
+ - QAbstractItemView:
+   * [QTBUG-7232] QTBUG-7232 - In ItemViews scrollbars will now by default
+     only scroll 1 pixel when scrollMode is set to scrollPerPixel. That is
+     it will (when scrollMode is scrollPerPixel) do what is stated in the
+     documentation, and no longer automatically adjust the scrollbars
+     singleStep. The user can now control that value.
+
+  - QAbstractScrollArea:
+    * QAbstractScrollArea now has a SizeAdjustPolicy. If it is set to
+      AdjustToContents it will make use of the protected viewportSizeHint()
+      virtual function. This function returns a suggested size based on
+      contents. Note that although the viewportSizeHint() virtual function
+      was reserved in 5.0, user code was not supposed to be overriding it
+      (as the function was private and undocumented).  Code that was
+      overriding viewportSizeHint() needs to be recompiled against 5.2 for
+      this feature to work correctly.
+
+ - QHeaderView:
+   * [QTBUG-4346] A maximumSize for sections has been introduced. The
+     maximum section size is by default the largest possible section size
+     which in Qt 5.2 has been limited to 1048575 pixels.
+
+ - QFileDialog:
+   * [QTBUG-34132] QFileDialog does not instantiate widgets if a native
+     dialog will be used instead.  Therefore some accessors which previously
+     returned unused objects will now return null.  As before, you can set
+     the DontUseNativeDialog option to ensure that widgets will be created
+     and used instead.
+
+ - QListView:
+   * [QTBUG-1180] Dragging an item outside the QListView in icon mode
+     doesn't lose the icon.
+
+ - QTableView:
+   * [QTBUG-4206] resizeToContents will now adjust to actual contents
+     and not just visible area. QHeaderView::setAutoResizePrecision()
+     has been introduced to control how precise the autoResize should
+     be.
+
+ - QTreeView:
+   * QTreeView now has setTreePosition to allow the treestructure to
+     show data from other columns than logicalindex zero.
+
 
 ****************************************************************************
 *                      Platform Specific Changes                           *
@@ -168,6 +291,7 @@ Qt for Windows
 
 Qt for Android
 --------------
+
  - Project structure and deployment has changed with the introduction of
    androiddeployqt. Source and build files are no longer mixed, and the
    build files for the APK package should not be touched. Customizing
@@ -178,3 +302,9 @@ Qt for Android
    override settings in the AndroidManifest.xml. The default is still to
    show the status bar (QWindow::showMaximized()). Use
    QWindow::showFullScreen() to hide it.
+
+Windows
+-------
+
+ - [QTBUG-33409][QTBUG-8764][QTBUG-10032] Fixed virtual key mapping on
+   Windows.
