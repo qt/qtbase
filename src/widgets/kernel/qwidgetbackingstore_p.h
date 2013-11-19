@@ -240,7 +240,13 @@ private:
     }
 
     inline bool hasStaticContents() const
-    { return !staticWidgets.isEmpty() && false; }
+    {
+#if defined(Q_OS_WIN)
+        return !staticWidgets.isEmpty();
+#else
+        return !staticWidgets.isEmpty() && false;
+#endif
+    }
 
     friend QRegion qt_dirtyRegion(QWidget *);
     friend class QWidgetPrivate;
