@@ -5267,11 +5267,13 @@ elif [ "$CFG_XKBCOMMON" = "no" ]; then
 fi
 
 # EGL Support
-if [ "$CFG_EGL" = "yes" ] && [ "$CFG_OPENGL" = "no" ]; then
+if [ "$CFG_EGL" != "no" ]; then
+    if [ "$CFG_EGL" = "yes" ] && [ "$CFG_OPENGL" = "no" ]; then
         echo "EGL support was requested but OpenGL support is disabled."
-        echo "Either disable EGL support or enable OpenGL ES support."
+        echo "Either disable EGL support or enable OpenGL support."
         exit 101
-elif [ "$CFG_EGL" != "no" ]; then
+    fi
+
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists egl 2>/dev/null; then
         QMAKE_INCDIR_EGL=`$PKG_CONFIG --cflags-only-I egl 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
         QMAKE_LIBS_EGL=`$PKG_CONFIG --libs egl 2>/dev/null`
