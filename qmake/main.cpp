@@ -106,7 +106,7 @@ static int doSed(int argc, char **argv)
                         }
                     }
                     if (phase == 1
-                        && (c == QLatin1Char('+') || c == QLatin1Char('?')
+                        && (c == QLatin1Char('+') || c == QLatin1Char('?') || c == QLatin1Char('|')
                             || c == QLatin1Char('{') || c == QLatin1Char('}')
                             || c == QLatin1Char('(') || c == QLatin1Char(')'))) {
                         // translate sed rx to QRegExp
