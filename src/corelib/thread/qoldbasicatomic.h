@@ -63,7 +63,7 @@ public:
     // Atomic API, implemented in qatomic_XXX.h
 
     int load() const { return _q_value; }
-    int loadAcquire() { return _q_value; }
+    int loadAcquire() const { return _q_value; }
     void store(int newValue) { _q_value = newValue; }
     void storeRelease(int newValue) { _q_value = newValue; }
 
@@ -107,7 +107,7 @@ public:
     // Atomic API, implemented in qatomic_XXX.h
 
     T *load() const { return _q_value; }
-    T *loadAcquire() { return _q_value; }
+    T *loadAcquire() const { return _q_value; }
     void store(T *newValue) { _q_value = newValue; }
     void storeRelease(T *newValue) { _q_value = newValue; }
 
