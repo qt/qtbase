@@ -323,6 +323,26 @@ void QQnxWindow::setBufferSize(const QSize &size)
         }
     }
 
+    // Set the transparency. According to QNX technical support, setting the window
+    // transparency property should always be done *after* creating the window
+    // buffers in order to guarantee the property is paid attention to.
+    if (window()->requestedFormat().alphaBufferSize() == 0) {
+        // To avoid overhead in the composition manager, disable blending
+        // when the underlying window buffer doesn't have an alpha channel.
+        val[0] = SCREEN_TRANSPARENCY_NONE;
+    } else {
+        // Normal alpha blending. This doesn't commit us to translucency; the
+        // normal backfill during the painting will contain a fully opaque
+        // alpha channel unless the user explicitly intervenes to make something
+        // transparent.
+        val[0] = SCREEN_TRANSPARENCY_SOURCE_OVER;
+    }
+
+    errno = 0;
+    result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_TRANSPARENCY, val);
+    if (result != 0)
+        qFatal("QQnxWindow: failed to set window transparency, errno=%d", errno);
+
     // Cache new buffer size
     m_bufferSize = nonEmptySize;
     resetBuffers();
@@ -563,17 +583,6 @@ void QQnxWindow::initWindow()
     int result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_ALPHA_MODE, &val);
     if (result != 0)
         qFatal("QQnxWindow: failed to set window alpha mode, errno=%d", errno);
-
-    // Blend the window with Source Over Porter-Duff behavior onto whatever's
-    // behind it.
-    //
-    // If the desired use-case is opaque, the Widget painting framework will
-    // already fill in the alpha channel with full opacity.
-    errno = 0;
-    val = SCREEN_TRANSPARENCY_SOURCE_OVER;
-    result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_TRANSPARENCY, &val);
-    if (result != 0)
-        qFatal("QQnxWindow: failed to set window transparency, errno=%d", errno);
 
     // Set the window swap interval
     errno = 0;
