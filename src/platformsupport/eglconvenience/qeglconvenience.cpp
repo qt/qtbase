@@ -232,17 +232,28 @@ EGLConfig QEglConfigChooser::chooseConfig()
     configureAttributes.append(surfaceType());
 
     configureAttributes.append(EGL_RENDERABLE_TYPE);
-    if (m_format.renderableType() == QSurfaceFormat::OpenVG)
+    switch (m_format.renderableType()) {
+    case QSurfaceFormat::OpenVG:
         configureAttributes.append(EGL_OPENVG_BIT);
+        break;
 #ifdef EGL_VERSION_1_4
-    else if (m_format.renderableType() == QSurfaceFormat::OpenGL)
+#  if !defined(QT_OPENGL_ES_2)
+    case QSurfaceFormat::DefaultRenderableType:
+#  endif
+    case QSurfaceFormat::OpenGL:
         configureAttributes.append(EGL_OPENGL_BIT);
+        break;
 #endif
-    else if (m_format.majorVersion() == 1)
-        configureAttributes.append(EGL_OPENGL_ES_BIT);
-    else
+    case QSurfaceFormat::OpenGLES:
+        if (m_format.majorVersion() == 1) {
+            configureAttributes.append(EGL_OPENGL_ES_BIT);
+            break;
+        }
+        // fall through
+    default:
         configureAttributes.append(EGL_OPENGL_ES2_BIT);
-
+        break;
+    }
     configureAttributes.append(EGL_NONE);
 
     EGLConfig cfg = 0;
@@ -336,7 +347,11 @@ QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config, 
     if (referenceFormat.renderableType() == QSurfaceFormat::OpenVG && (renderableType & EGL_OPENVG_BIT))
         format.setRenderableType(QSurfaceFormat::OpenVG);
 #ifdef EGL_VERSION_1_4
-    else if (referenceFormat.renderableType() == QSurfaceFormat::OpenGL && (renderableType & EGL_OPENGL_BIT))
+    else if ((referenceFormat.renderableType() == QSurfaceFormat::OpenGL
+#  if !defined(QT_OPENGL_ES_2)
+              || referenceFormat.renderableType() == QSurfaceFormat::DefaultRenderableType
+#  endif
+              ) && (renderableType & EGL_OPENGL_BIT))
         format.setRenderableType(QSurfaceFormat::OpenGL);
 #endif
     else
