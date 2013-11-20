@@ -182,7 +182,7 @@ void qt_watch_adopted_thread(const HANDLE adoptedThreadHandle, QThread *qthread)
             qt_adopted_thread_handles.prepend(qt_adopted_thread_wakeup);
         }
 
-        CreateThread(0, 0, qt_adopted_thread_watcher_function, 0, 0, &qt_adopted_thread_watcher_id);
+        CloseHandle(CreateThread(0, 0, qt_adopted_thread_watcher_function, 0, 0, &qt_adopted_thread_watcher_id));
     } else {
         SetEvent(qt_adopted_thread_wakeup);
     }
