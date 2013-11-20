@@ -251,7 +251,9 @@ bool QWidgetWindow::event(QEvent *event)
     case QEvent::Show:
     case QEvent::Hide:
         return QWindow::event(event);
-
+    case QEvent::WindowBlocked:
+        qt_button_down = 0;
+        break;
     default:
         break;
     }
