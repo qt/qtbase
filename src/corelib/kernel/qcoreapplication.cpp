@@ -1027,7 +1027,7 @@ bool QCoreApplication::closingDown()
     You can call this function occasionally when your program is busy
     performing a long operation (e.g. copying a file).
 
-    In event you are running a local loop which calls this function
+    In the event that you are running a local loop which calls this function
     continuously, without an event loop, the
     \l{QEvent::DeferredDelete}{DeferredDelete} events will
     not be processed. This can affect the behaviour of widgets,

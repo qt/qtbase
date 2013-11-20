@@ -113,7 +113,7 @@ void QIOSContext::swapBuffers(QPlatformSurface *surface)
 {
     Q_ASSERT(surface && surface->surface()->surfaceType() == QSurface::OpenGLSurface);
     Q_ASSERT(surface->surface()->surfaceClass() == QSurface::Window);
-    QWindow *window = static_cast<QWindow *>(surface->surface());
+    QIOSWindow *window = static_cast<QIOSWindow *>(surface);
     Q_ASSERT(m_framebufferObjects.contains(window));
 
     [EAGLContext setCurrentContext:m_eaglContext];
@@ -124,7 +124,7 @@ void QIOSContext::swapBuffers(QPlatformSurface *surface)
 GLuint QIOSContext::defaultFramebufferObject(QPlatformSurface *surface) const
 {
     Q_ASSERT(surface && surface->surface()->surfaceClass() == QSurface::Window);
-    QWindow *window = static_cast<QWindow *>(surface->surface());
+    QIOSWindow *window = static_cast<QIOSWindow *>(surface);
 
     FramebufferObject &framebufferObject = m_framebufferObjects[window];
 
@@ -155,8 +155,7 @@ GLuint QIOSContext::defaultFramebufferObject(QPlatformSurface *surface) const
     }
 
     // Ensure that the FBO's buffers match the size of the layer
-    QIOSWindow *platformWindow = static_cast<QIOSWindow *>(surface);
-    UIView *view = reinterpret_cast<UIView *>(platformWindow->winId());
+    UIView *view = reinterpret_cast<UIView *>(window->winId());
     CAEAGLLayer *layer = static_cast<CAEAGLLayer *>(view.layer);
     if (framebufferObject.renderbufferWidth != (layer.frame.size.width * layer.contentsScale) ||
         framebufferObject.renderbufferHeight != (layer.frame.size.height * layer.contentsScale)) {
@@ -191,7 +190,7 @@ GLuint QIOSContext::defaultFramebufferObject(QPlatformSurface *surface) const
 
 void QIOSContext::windowDestroyed(QObject *object)
 {
-    QWindow *window = static_cast<QWindow *>(object);
+    QIOSWindow *window = static_cast<QIOSWindow *>(object);
     if (m_framebufferObjects.contains(window)) {
         EAGLContext *originalContext = [EAGLContext currentContext];
         [EAGLContext setCurrentContext:m_eaglContext];

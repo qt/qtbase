@@ -158,6 +158,14 @@ Changes in Qt 5.2.0
 *                      Platform Specific Changes                           *
 ****************************************************************************
 
+
+Qt for Windows
+--------------
+ - QCoreApplication::arguments() changed the handling of single quotes, double quotes
+   and the backslash character, in order to match what argv[] contains.
+   In particular, single quotes are no longer removed from the argument string.
+   (QTBUG-15379, QTBUG-30628)
+
 Qt for Android
 --------------
  - Project structure and deployment has changed with the introduction of

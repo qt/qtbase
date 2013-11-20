@@ -48,6 +48,7 @@ QT_BEGIN_NAMESPACE
 QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
 {
     // Resolve EXT_direct_state_access entry points if present
+#if !defined(QT_OPENGL_ES_2)
     if (context->hasExtension(QByteArrayLiteral("GL_EXT_direct_state_access"))) {
         TextureParameteriEXT = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLenum , GLint )>(context->getProcAddress(QByteArrayLiteral("glTextureParameteriEXT")));
         TextureParameterivEXT = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLenum , const GLint *)>(context->getProcAddress(QByteArrayLiteral("glTextureParameterivEXT")));
@@ -96,6 +97,7 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
         CompressedTextureImage2D = &QOpenGLTextureHelper::dsa_CompressedTextureImage2D;
         CompressedTextureImage3D = &QOpenGLTextureHelper::dsa_CompressedTextureImage3D;
     } else {
+#endif
         // Use our own DSA emulation
         TextureParameteri = &QOpenGLTextureHelper::qt_TextureParameteri;
         TextureParameteriv = &QOpenGLTextureHelper::qt_TextureParameteriv;
@@ -117,9 +119,21 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
         CompressedTextureImage1D = &QOpenGLTextureHelper::qt_CompressedTextureImage1D;
         CompressedTextureImage2D = &QOpenGLTextureHelper::qt_CompressedTextureImage2D;
         CompressedTextureImage3D = &QOpenGLTextureHelper::qt_CompressedTextureImage3D;
+#if defined(QT_OPENGL_ES_2)
+        if (context->hasExtension(QByteArrayLiteral("GL_OES_texture_3D"))) {
+            TexImage3D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid*)>(context->getProcAddress(QByteArrayLiteral("glTexImage3DOES")));
+            TexSubImage3D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, const GLvoid*)>(context->getProcAddress(QByteArrayLiteral("glTexSubImage3DOES")));
+            CompressedTexImage3D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLsizei, const GLvoid*)>(context->getProcAddress(QByteArrayLiteral("glCompressedTexImage3DOES")));
+            CompressedTexSubImage3D = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLsizei, const GLvoid*)>(context->getProcAddress(QByteArrayLiteral("glCompressedTexSubImage3DOES")));
+        }
+#endif
+
+#if !defined(QT_OPENGL_ES_2)
     }
+#endif
 
     // Some DSA functions are part of NV_texture_multisample instead
+#if !defined(QT_OPENGL_ES_2)
     if (context->hasExtension(QByteArrayLiteral("GL_NV_texture_multisample"))) {
         TextureImage3DMultisampleNV = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLsizei , GLint , GLsizei , GLsizei , GLsizei , GLboolean )>(context->getProcAddress(QByteArrayLiteral("glTextureImage3DMultisampleNV")));
         TextureImage2DMultisampleNV = reinterpret_cast<void (QOPENGLF_APIENTRYP)(GLuint , GLenum , GLsizei , GLint , GLsizei , GLsizei , GLboolean )>(context->getProcAddress(QByteArrayLiteral("glTextureImage2DMultisampleNV")));
@@ -127,9 +141,12 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
         TextureImage3DMultisample = &QOpenGLTextureHelper::dsa_TextureImage3DMultisample;
         TextureImage2DMultisample = &QOpenGLTextureHelper::dsa_TextureImage2DMultisample;
     } else {
+#endif
         TextureImage3DMultisample = &QOpenGLTextureHelper::qt_TextureImage3DMultisample;
         TextureImage2DMultisample = &QOpenGLTextureHelper::qt_TextureImage2DMultisample;
+#if !defined(QT_OPENGL_ES_2)
     }
+#endif
 
 #if defined(Q_OS_WIN)
     HMODULE handle = GetModuleHandleA("opengl32.dll");

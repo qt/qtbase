@@ -422,13 +422,18 @@ QTimeZone &QTimeZone::operator=(const QTimeZone &other)
     return *this;
 }
 
+/*
+    \fn void QTimeZone::swap(QTimeZone &other)
+
+    Swaps this timezone with \a other. This function is very fast and
+    never fails.
+*/
+
 /*!
     \fn QTimeZone &QTimeZone::operator=(QTimeZone &&other)
 
     Move-assigns \a other to this QTimeZone instance, transferring the
     ownership of the managed pointer to this instance.
-
-    \since 5.2
 */
 
 /*!

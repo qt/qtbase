@@ -897,6 +897,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 */
 
 /*! \fn const Key &QMap::firstKey() const
+    \since 5.2
 
     Returns a reference to the smallest key in the map.
     This function assumes that the map is not empty.
@@ -907,6 +908,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 */
 
 /*! \fn const Key &QMap::lastKey() const
+    \since 5.2
 
     Returns a reference to the largest key in the map.
     This function assumes that the map is not empty.
@@ -917,6 +919,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 */
 
 /*! \fn T &QMap::first()
+    \since 5.2
 
     Returns a reference to the first value in the map, that is the value mapped
     to the smallest key. This function assumes that the map is not empty.
@@ -927,11 +930,13 @@ void QMapDataBase::freeData(QMapDataBase *d)
 */
 
 /*! \fn const T &QMap::first() const
+    \since 5.2
 
     \overload
 */
 
 /*! \fn T &QMap::last()
+    \since 5.2
 
     Returns a reference to the last value in the map, that is the value mapped
     to the largest key. This function assumes that the map is not empty.
@@ -942,6 +947,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 */
 
 /*! \fn const T &QMap::last() const
+    \since 5.2
 
     \overload
 */

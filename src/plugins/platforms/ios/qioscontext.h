@@ -48,6 +48,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QIOSWindow;
+
 class QIOSContext : public QObject, public QPlatformOpenGLContext
 {
     Q_OBJECT
@@ -87,7 +89,7 @@ private:
 
     static void deleteBuffers(const FramebufferObject &framebufferObject);
 
-    mutable QHash<QWindow *, FramebufferObject> m_framebufferObjects;
+    mutable QHash<QIOSWindow *, FramebufferObject> m_framebufferObjects;
 };
 
 QT_END_NAMESPACE

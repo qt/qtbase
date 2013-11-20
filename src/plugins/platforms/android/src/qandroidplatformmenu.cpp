@@ -141,6 +141,15 @@ bool QAndroidPlatformMenu::isVisible() const
     return m_isVisible;
 }
 
+void QAndroidPlatformMenu::showPopup(const QWindow *parentWindow, QPoint pos, const QPlatformMenuItem *item)
+{
+    Q_UNUSED(parentWindow);
+    Q_UNUSED(pos);
+    Q_UNUSED(item);
+    setVisible(true);
+    QtAndroidMenu::showContextMenu(this);
+}
+
 QPlatformMenuItem *QAndroidPlatformMenu::menuItemAt(int position) const
 {
     if (position < m_menuItems.size())
@@ -154,7 +163,6 @@ QPlatformMenuItem *QAndroidPlatformMenu::menuItemForTag(quintptr tag) const
         if (menuItem->tag() == tag)
             return menuItem;
     }
-
     return 0;
 }
 

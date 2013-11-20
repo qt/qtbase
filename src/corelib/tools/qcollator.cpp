@@ -99,7 +99,7 @@ QCollator::QCollator(const QCollator &other)
  */
 QCollator::~QCollator()
 {
-    if (!d->ref.deref())
+    if (d && !d->ref.deref())
         delete d;
 }
 
@@ -109,13 +109,40 @@ QCollator::~QCollator()
 QCollator &QCollator::operator=(const QCollator &other)
 {
     if (this != &other) {
-        if (!d->ref.deref())
+        if (d && !d->ref.deref())
             delete d;
         d = other.d;
-        d->ref.ref();
+        if (d) d->ref.ref();
     }
     return *this;
 }
+
+/*
+    \fn void QCollator::QCollator(QCollator &&other)
+
+    Move constructor. Moves from \a other into this collator.
+
+    Note that a moved-from QCollator can only be destroyed or assigned
+    to. The effect of calling other functions than the destructor or
+    one of the assignment operators is undefined.
+*/
+
+/*
+    \fn QCollator &QCollator::operator=(QCollator &&other)
+
+    Move-assigns from \a other to this collator.
+
+    Note that a moved-from QCollator can only be destroyed or assigned
+    to. The effect of calling other functions than the destructor or
+    one of the assignment operators is undefined.
+*/
+
+/*!
+    \fn void QCollator::swap(QCollator &other)
+
+    Swaps this collator with \a other. This function is very fast and
+    never fails.
+*/
 
 /*!
     \internal
@@ -301,12 +328,13 @@ QCollatorSortKey& QCollatorSortKey::operator=(const QCollatorSortKey &other)
 }
 
 /*!
-    \fn bool QCollatorSortKey::operator<(const QCollatorSortKey &otherKey) const
+    \fn bool operator<(const QCollatorSortKey &lhs, const QCollatorSortKey &rhs)
+    \relates QCollatorSortKey
 
-    According to the QCollator that created the key, returns \c true if the
-    key should be sorted before than \a otherKey; otherwise returns \c false.
+    According to the QCollator that created the keys, returns \c true if \a lhs
+    should be sorted before \a rhs; otherwise returns \c false.
 
-    \sa compare()
+    \sa QCollatorSortKey::compare()
  */
 
 /*!

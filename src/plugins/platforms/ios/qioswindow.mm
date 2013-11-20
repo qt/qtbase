@@ -127,6 +127,32 @@
     return self;
 }
 
+- (void)willMoveToWindow:(UIWindow *)newWindow
+{
+    // UIKIt will normally set the scale factor of a view to match the corresponding
+    // screen scale factor, but views backed by CAEAGLLayers need to do this manually.
+    self.contentScaleFactor = newWindow && newWindow.screen ?
+        newWindow.screen.scale : [[UIScreen mainScreen] scale];
+
+    // FIXME: Allow the scale factor to be customized through QSurfaceFormat.
+}
+
+- (void)didAddSubview:(UIView *)subview
+{
+    if ([subview isKindOfClass:[QUIView class]])
+        self.clipsToBounds = YES;
+}
+
+- (void)willRemoveSubview:(UIView *)subview
+{
+    for (UIView *view in self.subviews) {
+        if (view != subview && [view isKindOfClass:[QUIView class]])
+            return;
+    }
+
+    self.clipsToBounds = NO;
+}
+
 - (void)layoutSubviews
 {
     // This method is the de facto way to know that view has been resized,
@@ -331,19 +357,9 @@ QIOSWindow::QIOSWindow(QWindow *window)
     , m_view([[QUIView alloc] initWithQIOSWindow:this])
     , m_normalGeometry(QPlatformWindow::geometry())
     , m_windowLevel(0)
-    , m_devicePixelRatio(1.0)
 {
-    setParent(parent());
+    setParent(QPlatformWindow::parent());
     setWindowState(window->windowState());
-
-    // Retina support: get screen scale factor and set it in the content view.
-    // This will make framebufferObject() create a 2x frame buffer on retina
-    // displays. Also set m_devicePixelRatio which is used for scaling the
-    // paint device.
-    if ([[UIScreen mainScreen] respondsToSelector:@selector(scale)] == YES) {
-        m_devicePixelRatio = [[UIScreen mainScreen] scale];
-        [m_view setContentScaleFactor: m_devicePixelRatio];
-    }
 }
 
 QIOSWindow::~QIOSWindow()
@@ -456,6 +472,8 @@ void QIOSWindow::requestActivateWindow()
     if (!window()->isTopLevel() || blockedByModal())
         return;
 
+    [m_view.window makeKeyWindow];
+
     raise();
     QPlatformInputContext *context = QGuiApplicationPrivate::platformIntegration()->inputContext();
     static_cast<QIOSInputContext *>(context)->focusViewChanged(m_view);
@@ -522,7 +540,9 @@ void QIOSWindow::handleContentOrientationChange(Qt::ScreenOrientation orientatio
 
 qreal QIOSWindow::devicePixelRatio() const
 {
-    return m_devicePixelRatio;
+    return m_view.contentScaleFactor;
 }
+
+#include "moc_qioswindow.cpp"
 
 QT_END_NAMESPACE

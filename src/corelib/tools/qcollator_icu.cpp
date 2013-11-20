@@ -151,11 +151,6 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
     return QCollatorSortKey(new QCollatorSortKeyPrivate(result));
 }
 
-bool QCollatorSortKey::operator<(const QCollatorSortKey &otherKey) const
-{
-    return d->m_key < otherKey.d->m_key;
-}
-
 int QCollatorSortKey::compare(const QCollatorSortKey &otherKey) const
 {
     return qstrcmp(d->m_key, otherKey.d->m_key);

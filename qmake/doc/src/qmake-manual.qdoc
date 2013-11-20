@@ -2773,7 +2773,7 @@
 
     Basic test functions are implemented as built-in functions.
 
-    \section2 cache(variablename, [set|add|sub] [transient] [super], [source variablename])
+    \section2 cache(variablename, [set|add|sub] [transient] [super|stash], [source variablename])
 
     This is an internal function that you will typically not need.
 

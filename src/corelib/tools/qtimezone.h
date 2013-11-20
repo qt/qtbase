@@ -78,8 +78,8 @@ public:
 
     QTimeZone();
     explicit QTimeZone(const QByteArray &olsenId);
-    QTimeZone(int offsetSeconds);
-    QTimeZone(const QByteArray &zoneId, int offsetSeconds, const QString &name,
+    explicit QTimeZone(int offsetSeconds);
+    /*implicit*/ QTimeZone(const QByteArray &zoneId, int offsetSeconds, const QString &name,
               const QString &abbreviation, QLocale::Country country = QLocale::AnyCountry,
               const QString &comment = QString());
     QTimeZone(const QTimeZone &other);
@@ -87,8 +87,11 @@ public:
 
     QTimeZone &operator=(const QTimeZone &other);
  #ifdef Q_COMPILER_RVALUE_REFS
-    QTimeZone &operator=(QTimeZone &&other) { std::swap(d, other.d); return *this; }
+    QTimeZone &operator=(QTimeZone &&other) { swap(other); return *this; }
 #endif
+
+    void swap(QTimeZone &other)
+    { d.swap(other.d); }
 
     bool operator==(const QTimeZone &other) const;
     bool operator!=(const QTimeZone &other) const;
@@ -149,6 +152,7 @@ private:
 };
 
 Q_DECLARE_TYPEINFO(QTimeZone::OffsetData, Q_MOVABLE_TYPE);
+Q_DECLARE_SHARED(QTimeZone)
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &ds, const QTimeZone &tz);

@@ -7012,7 +7012,7 @@ void QWidget::show()
     bool isPopup = data->window_flags & Qt::Popup & ~Qt::Window;
     if (isWindow() && !isPopup && qApp->styleHints()->showIsFullScreen())
         showFullScreen();
-    else if (isWindow() && !isPopup && QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::ShowIsMaximized).toBool())
+    else if (isWindow() && !(data->window_flags & Qt::Dialog & ~Qt::Window) && !isPopup && QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::ShowIsMaximized).toBool())
         showMaximized();
     else
         setVisible(true);

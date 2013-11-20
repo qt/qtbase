@@ -64,6 +64,7 @@ private slots:
     void isNull();
     void equal();
     void notEqual();
+    void cpp11();
 
     // Only in Qt > 3.2.x
     void generate();
@@ -245,6 +246,17 @@ void tst_QUuid::notEqual()
     QVERIFY( uuidA != uuidB );
 }
 
+void tst_QUuid::cpp11() {
+#ifdef Q_COMPILER_UNIFORM_INIT
+    // "{fc69b59e-cc34-4436-a43c-ee95d128b8c5}" cf, initTestCase
+    Q_DECL_CONSTEXPR QUuid u1{0xfc69b59e, 0xcc34, 0x4436, 0xa4, 0x3c, 0xee, 0x95, 0xd1, 0x28, 0xb8, 0xc5};
+    Q_DECL_CONSTEXPR QUuid u2 = {0xfc69b59e, 0xcc34, 0x4436, 0xa4, 0x3c, 0xee, 0x95, 0xd1, 0x28, 0xb8, 0xc5};
+    Q_UNUSED(u1);
+    Q_UNUSED(u2);
+#else
+    QSKIP("This compiler is not in C++11 mode or it doesn't support uniform initialization");
+#endif
+}
 
 void tst_QUuid::generate()
 {

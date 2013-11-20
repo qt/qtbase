@@ -48,7 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 QFbWindow::QFbWindow(QWindow *window)
-    : QPlatformWindow(window), mBackingStore(0)
+    : QPlatformWindow(window), mBackingStore(0), mWindowState(Qt::WindowNoState)
 {
     static QAtomicInt winIdGenerator(1);
     mWindowId = winIdGenerator.fetchAndAddRelaxed(1);

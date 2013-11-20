@@ -809,7 +809,7 @@ void tst_QXmlSimpleReader::dtdRecursionLimit()
         xmlReader.setDeclHandler(&handler);
         xmlReader.setErrorHandler(&handler);
         QVERIFY(!xmlReader.parse(source));
-        QVERIFY(handler.recursionCount == 1);
+        QCOMPARE(handler.recursionCount, 2);
     }
 }
 

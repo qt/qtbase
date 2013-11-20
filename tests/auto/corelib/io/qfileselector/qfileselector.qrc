@@ -11,13 +11,27 @@
    <file>extras/+custom3/+custom5/test</file>
    <file>extras/+custom5/+custom3/test</file>
    <file>platforms/test</file>
+   <file>platforms/+unix/+android/test</file>
+   <file>platforms/+unix/+blackberry/test</file>
+   <file>platforms/+unix/+ios/test</file>
+   <file>platforms/+unix/+mac/test</file>
+   <file>platforms/+windows/+wince/test</file>
+   <file>platforms/+windows/test</file>
+   <file>platforms/+windows/test2</file>
+   <file>platforms/+unix/+linux/test</file>
+   <file>platforms/+unix/test</file>
+   <file>platforms/test2</file>
+   <file>platforms/+android/test2</file>
+   <file>platforms/+blackberry/test2</file>
+   <file>platforms/+ios/test2</file>
+   <file>platforms/+mac/test2</file>
+   <file>platforms/+linux/test2</file>
+   <file>platforms/+wince/test2</file>
    <file>platforms/+android/test</file>
    <file>platforms/+blackberry/test</file>
    <file>platforms/+ios/test</file>
-   <file>platforms/+osx/test</file>
-   <file>platforms/+wince/test</file>
-   <file>platforms/+windows/test</file>
+   <file>platforms/+mac/test</file>
    <file>platforms/+linux/test</file>
-   <file>platforms/+generic_unix/test</file>
+   <file>platforms/+wince/test</file>
 </qresource>
 </RCC>
