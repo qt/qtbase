@@ -188,9 +188,23 @@ static int ucstricmp(const ushort *a, const ushort *ae, const uchar *b, const uc
     return 1;
 }
 
+#if defined(__mips_dsp)
+// From qstring_mips_dsp_asm.S
+extern "C" int qt_ucstrncmp_mips_dsp_asm(const ushort *a,
+                                         const ushort *b,
+                                         unsigned len);
+#endif
+
 // Unicode case-sensitive compare two same-sized strings
 static int ucstrncmp(const QChar *a, const QChar *b, int l)
 {
+#if defined(__mips_dsp)
+    if (l >= 8) {
+        return qt_ucstrncmp_mips_dsp_asm(reinterpret_cast<const ushort*>(a),
+                                         reinterpret_cast<const ushort*>(b),
+                                         l);
+    }
+#endif // __mips_dsp
     while (l-- && *a == *b)
         a++,b++;
     if (l==-1)
@@ -3937,6 +3951,10 @@ static inline __m128i mergeQuestionMarks(__m128i chunk)
 }
 #endif
 
+#if defined(__mips_dsp)
+extern "C" void qt_toLatin1_mips_dsp_asm(uchar *dst, const ushort *src, int length);
+#endif
+
 static QByteArray toLatin1_helper(const QChar *data, int length)
 {
     QByteArray ba;
@@ -3989,10 +4007,14 @@ static QByteArray toLatin1_helper(const QChar *data, int length)
             length = length % 8;
         }
 #endif
+#if defined(__mips_dsp)
+        qt_toLatin1_mips_dsp_asm(dst, src, length);
+#else
         while (length--) {
             *dst++ = (*src>0xff) ? '?' : (uchar) *src;
             ++src;
         }
+#endif
     }
     return ba;
 }
@@ -4104,6 +4126,12 @@ QVector<uint> QString::toUcs4() const
     return v;
 }
 
+#if defined(__mips_dsp)
+// From qstring_mips_dsp_asm.S
+extern "C" void qt_fromlatin1_mips_asm_unroll4 (ushort*, const char*, uint);
+extern "C" void qt_fromlatin1_mips_asm_unroll8 (ushort*, const char*, uint);
+#endif
+
 QString::Data *QString::fromLatin1_helper(const char *str, int size)
 {
     Data *d;
@@ -4144,8 +4172,15 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
             size = size % 16;
         }
 #endif
+#if defined(__mips_dsp)
+        if (size > 20)
+            qt_fromlatin1_mips_asm_unroll8(dst, str, size);
+        else
+            qt_fromlatin1_mips_asm_unroll4(dst, str, size);
+#else
         while (size--)
             *dst++ = (uchar)*str++;
+#endif
     }
     return d;
 }

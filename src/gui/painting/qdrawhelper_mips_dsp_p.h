@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 MIPS Technologies, www.mips.com, author Damir Tatalovic <dtatalovic@mips.com>
+** Copyright (C) 2013 Imagination Technologies Limited, www.imgtec.com
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -101,9 +101,19 @@ extern "C" void qt_blend_argb32_on_argb32_mips_dsp_asm_x2(uint *dest, const uint
 
 extern "C" void qt_blend_argb32_on_argb32_const_alpha_256_mips_dsp_asm(uint *dest, const uint *src, int length);
 
+extern "C" void qt_blend_rgb16_on_rgb16_const_alpha_256_mips_dsp_asm(quint16 *dest, const quint16 *src, int length);
+
+extern "C" void qt_blend_rgb16_on_rgb16_mips_dsp_asm(quint16 *dest, const quint16 *src, int length, uint const_alpha);
+
 extern "C" uint * destfetchARGB32_asm_mips_dsp(uint *buffer, const uint *data, int length);
 
 extern "C" uint * qt_destStoreARGB32_asm_mips_dsp(uint *buffer, const uint *data, int length);
+
+extern "C" uint * fetchUntransformed_888_asm_mips_dsp(uint *buffer, const uchar *line, int length);
+
+extern "C" uint * fetchUntransformed_444_asm_mips_dsp(uint *buffer, const uchar *line, int length);
+
+extern "C" uint * fetchUntransformed_argb8565_premultiplied_asm_mips_dsp(uint *buffer, const uchar *line, int length);
 
 void qt_blend_argb32_on_argb32_mips_dsp(uchar *destPixels, int dbpl,
                                       const uchar *srcPixels, int sbpl,
@@ -111,9 +121,14 @@ void qt_blend_argb32_on_argb32_mips_dsp(uchar *destPixels, int dbpl,
                                       int const_alpha);
 
 void qt_blend_rgb32_on_rgb32_mips_dsp(uchar *destPixels, int dbpl,
-                                    const uchar *srcPixels, int sbpl,
-                                    int w, int h,
-                                    int const_alpha);
+                                      const uchar *srcPixels, int sbpl,
+                                      int w, int h,
+                                      int const_alpha);
+
+void qt_blend_rgb16_on_rgb16_mips_dsp(uchar *destPixels, int dbpl,
+                                      const uchar *srcPixels, int sbpl,
+                                      int w, int h,
+                                      int const_alpha);
 
 void comp_func_Source_mips_dsp(uint *dest, const uint *src, int length, uint const_alpha);
 
@@ -164,12 +179,34 @@ void QT_FASTCALL comp_func_SourceOut_mips_dsp(uint *dest, const uint *src, int l
 
 void QT_FASTCALL comp_func_XOR_mips_dsp(uint *dest, const uint *src, int length, uint const_alpha);
 
+const uint * QT_FASTCALL qt_fetchUntransformed_888_mips_dsp (uint *buffer,
+                                                             const Operator *,
+                                                             const QSpanData *data,
+                                                             int y, int x, int length);
+
+const uint * QT_FASTCALL qt_fetchUntransformed_444_mips_dsp (uint *buffer,
+                                                             const Operator *,
+                                                             const QSpanData *data,
+                                                             int y, int x, int length);
+
+const uint * QT_FASTCALL qt_fetchUntransformed_argb8565_premultiplied_mips_dsp (uint *buffer,
+                                                                                const Operator *,
+                                                                                const QSpanData *data,
+                                                                                int y, int x, int length);
+
 #endif // QT_COMPILER_SUPPORTS_MIPS_DSP
 
 
 #ifdef QT_COMPILER_SUPPORTS_MIPS_DSPR2
 
 extern "C" void  qConvertRgb16To32_asm_mips_dspr2(quint32 *dest, const quint16 *src, int length);
+
+extern "C" void qt_blend_rgb16_on_rgb16_mips_dspr2_asm(quint16 *dest, const quint16 *src, int length, uint const_alpha);
+
+void qt_blend_rgb16_on_rgb16_mips_dspr2(uchar *destPixels, int dbpl,
+                                        const uchar *srcPixels, int sbpl,
+                                        int w, int h,
+                                        int const_alpha);
 
 #endif // QT_COMPILER_SUPPORTS_MIPS_DSPR2
 

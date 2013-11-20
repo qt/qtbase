@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 MIPS Technologies, www.mips.com, author Damir Tatalovic <dtatalovic@mips.com>
+** Copyright (C) 2013 Imagination Technologies Limited, www.imgtec.com
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -1601,3 +1601,479 @@ LEAF_MIPS_DSP(qt_blend_argb32_on_argb32_const_alpha_256_mips_dsp_asm)
      nop
 
 END(qt_blend_argb32_on_argb32_const_alpha_256_mips_dsp_asm)
+
+
+#if defined(__MIPSEL) && __MIPSEL
+# define PACK(r, s, t)  packrl.ph r, s, t
+# define SWHI(r, o, b)  swl r, o + 1 (b)
+# define SWLO(r, o, b)  swr r, o + 0 (b)
+# define LDHI(r, o, b)  lwl r, o + 1 (b)
+# define LDLO(r, o, b)  lwr r, o + 2 (b)
+#else
+# define PACK(r, s, t)  packrl.ph r, t, s
+# define SWHI(r, o, b)  swr r, o + 1 (b)
+# define SWLO(r, o, b)  swl r, o + 0 (b)
+# define LDHI(r, o, b)  lwr r, o + 1 (b)
+# define LDLO(r, o, b)  lwl r, o + 2 (b)
+#endif
+
+LEAF_MIPS_DSP(qt_blend_rgb16_on_rgb16_const_alpha_256_mips_dsp_asm)
+/*
+ * a0 - dst (*r5g6b5)
+ * a1 - src (const *r5g6b5)
+ * a2 - len (unsigned int)
+ *
+ * Register usage:
+ *  t0-3 - Scratch registers
+ *  t4   - Number of iterations to do in unrolled loops
+ *  t5-7 - Auxiliary scratch registers.
+ *
+ * Check if base addresses of src/dst are aligned, cases:
+ *  a) Both aligned.
+ *  b) Both unaligned:
+ *      1. Copy a halfword
+ *      2. Use aligned case.
+ *  c) dst aligned, src unaligned:
+ *      1. Read a word from dst, halfword from src.
+ *      2. Continue reading words from both.
+ *  d) dst unaligned, src aligned:
+ *      1. Read a word from src, halfword from dst.
+ *      2. Continue reading words from both.
+ */
+
+    beqz   a2, 0f       /* if (a2:len == 0): return */
+     andi  t0, a0, 0x3  /* t0 = a0:dst % 4 */
+    andi   t1, a1, 0x3  /* t1 = a1:dst % 4 */
+    or     t2, t0, t1   /* t1 = t0 | t1 */
+
+    beqz   t2, 4f       /* both aligned */
+     nop
+    beqz   t0, 3f       /* dst aligned, src unaligned */
+     nop
+    beqz   t1, 2f       /* src aligned, dst unaligned */
+     nop
+
+    /*
+     * Both src/dst are unaligned: read 1 halfword from each,
+     * the fall-off to continue with word-aligned copy.
+     */
+    lhu    t0, 0 (a1)    /* t0 <- ((uint16_t*) src)[0] */
+    addiu  a1, a1, 2     /* src++ */
+    addiu  a2, a2,-1     /* len-- */
+    sh     t0, 0 (a0)    /* t1 -> ((uint16_t*) dst)[0] */
+    addiu  a0, a0, 2     /* dst++ */
+
+    /*
+     * Both src/dst pointers are word-aligned, process eight
+     * items at a time in an unrolled loop.
+     */
+4:  beqz   a2, 0f        /* if (len == 0): return */
+     srl   t4, a2, 3     /* t4 = len / 8 */
+
+    beqz   t4, 5f        /* if (t4 == 0): tail */
+     andi  a2, a2, 0x07  /* len = len % 8 */
+
+1:  lw     t0,  0 (a1)
+    lw     t1,  4 (a1)
+    lw     t2,  8 (a1)
+    lw     t3, 12 (a1)
+
+    addiu  t4, t4, -1     /* t4-- */
+    addiu  a1, a1, 16     /* src += 8 */
+
+    sw     t0,  0 (a0)
+    sw     t1,  4 (a0)
+    sw     t2,  8 (a0)
+    sw     t3, 12 (a0)
+
+    bnez   t4, 1b
+     addiu a0, a0, 16     /* dst += 8 */
+
+    b 5f
+    nop
+
+
+    /*
+     * dst pointer is unaligned
+     */
+2:  beqz   a2, 0f        /* if (len == 0): return */
+     srl   t4, a2, 3     /* t4 = len / 8 */
+    beqz   t4, 5f        /* if (t4 == 0): tail */
+     andi  a2, a2, 0x07  /* len = len % 8 */
+
+1:  lw     t0,  0 (a1)
+   lw     t1,  4 (a1)
+    lw     t2,  8 (a1)
+    lw     t3, 12 (a1)
+
+    addiu  t4, t4, -1    /* t4-- */
+    addiu  a1, a1, 16    /* src += 8 */
+
+    SWLO  (t0,  0, a0)
+    PACK  (t5, t1, t0)
+    PACK  (t6, t2, t1)
+    PACK  (t7, t3, t2)
+    SWHI  (t3, 14, a0)
+    sw     t5,  2 (a0)
+    sw     t6,  6 (a0)
+    sw     t7, 10 (a0)
+
+    bnez   t4, 1b
+     addiu a0, a0, 16    /* dst += 8 */
+
+    b 5f
+     nop
+
+    /*
+     * src pointer is unaligned
+     */
+3:  beqz   a2, 0f        /* if (len == 0): return */
+     srl   t4, a2, 3     /* t4 = len / 8 */
+    beqz   t4, 5f        /* if (t4 == 0): tail */
+     andi  a2, a2, 0x07  /* len = len % 8 */
+
+1:  LDHI  (t0,  0, a1)
+    lw     t1,  2 (a1)
+    lw     t2,  6 (a1)
+    lw     t3, 10 (a1)
+    LDLO  (t5, 12, a1)
+
+    addiu  t4, t4, -1    /* t4-- */
+    addiu  a1, a1, 16    /* src += 8 */
+
+    PACK  (t0, t1, t0)
+    PACK  (t6, t2, t1)
+    PACK  (t7, t3, t2)
+    sw     t0,  0 (a0)
+    PACK  (t0, t5, t3)
+    sw     t6,  4 (a0)
+    sw     t7,  8 (a0)
+    sw     t0, 12 (a0)
+
+    bnez   t4, 1b
+     addiu a0, a0, 16    /* dst += 8 */
+
+
+5:  /* Process remaining items (a2:len < 4), one at a time */
+    beqz   a2, 0f
+     nop
+
+1:  lhu    t0, 0 (a1)  /* t0 <- ((uint16_t*) src)[0] */
+    addiu  a2, a2,-1   /* len-- */
+    addiu  a1, a1, 2   /* src++ */
+    sh     t0, 0 (a0)  /* to -> ((uint16_t*) dst)[0] */
+    bnez   a2, 1b      /* if (len != 0): loop */
+     addiu a0, a0, 2   /* dst++ */
+
+0:  jr ra
+     nop
+
+END(qt_blend_rgb16_on_rgb16_const_alpha_256_mips_dsp_asm)
+
+
+#undef LDHI
+#undef LDLO
+#undef PACK
+#undef SWHI
+#undef SWLO
+
+
+LEAF_MIPS_DSP(qt_blend_rgb16_on_rgb16_mips_dsp_asm)
+/*
+ * a0 - dst (*r5g6b5)
+ * a1 - src (const *r5g6b5)
+ * a2 - len (unsigned int) - batch length
+ * a3 - alpha (int)
+ */
+
+    beqz    a2, 2f
+     li     t9, 255
+    sll     t8, a3, 8
+    subu    a3, t8, a3
+    srl     a3, a3, 8
+    subu    t9, t9, a3
+    addiu   a3, a3, 1
+    srl     t4, a3, 2
+    addiu   t9, t9, 1
+    srl     t5, t9, 2
+1:
+    lhu     t0, 0(a1)
+    lhu     t1, 0(a0)
+    addiu   a2, a2, -1
+    andi    t2, t0, 0x07e0
+    andi    t0, t0, 0xf81f
+    mul     t2, t2, a3
+    mul     t0, t0, t4
+    andi    t3, t1, 0x07e0
+    andi    t1, t1, 0xf81f
+    mul     t3, t3, t9
+    mul     t1, t1, t5
+    addiu   a1, a1, 2
+    srl     t2, t2, 8
+    srl     t0, t0, 6
+    andi    t2, t2, 0x07e0
+    andi    t0, t0, 0xf81f
+    or      t0, t0, t2
+    srl     t3, t3, 8
+    srl     t1, t1, 6
+    andi    t3, t3, 0x07e0
+    andi    t1, t1, 0xf81f
+    or      t1, t1, t3
+    addu    t0, t0, t1
+    sh      t0, 0(a0)
+    bgtz    a2, 1b
+     addiu  a0, a0, 2
+2:
+    jr      ra
+     nop
+
+END(qt_blend_rgb16_on_rgb16_mips_dsp_asm)
+
+
+LEAF_MIPS_DSP(fetchUntransformed_888_asm_mips_dsp)
+/*
+ * a0 - dst address (address of 32-bit aRGB value)
+ * a1 - src address
+ * a2 - length
+ */
+
+    beqz       a2, 4f
+     lui       t8, 0xff00
+    andi       t0, a2, 0x1
+    beqz       t0, 1f
+     nop
+/* case for one pixel */
+    lbu        t1, 0(a1)
+    lbu        v1, 2(a1)
+    lbu        t0, 1(a1)
+    addiu      a1, a1, 3
+    addiu      a2, a2, -1
+    sll        t1, t1, 0x10
+    or         v1, v1, t8
+    sll        t0, t0, 0x8
+    or         v1, v1, t1
+    or         v1, v1, t0
+    sw         v1, 0(a0)
+    addiu      a0, a0, 4
+
+    beqz       a2, 4f        /* only one pixel is present (length = 1) */
+     nop
+1:
+    andi       t0, a1, 0x1
+    beqz       t0, 3f
+     nop
+2:
+    lbu        t0, 0(a1)     /* t0 = | 0 | 0 | 0 | R1 | */
+    lhu        t1, 1(a1)     /* t1 = | 0 | 0 | B1 | G1 | */
+    addiu      a1, a1, 3
+    lhu        t2, 0(a1)     /* t2 = | 0 | 0 | G2 | R2 | */
+    lbu        t3, 2(a1)     /* t3 = | 0 | 0 | 0 | B2 | */
+
+    sll        t0, t0, 16
+    or         t0, t0, t8    /* t0 = | ff | R1 | 0 | 0 | */
+    shll.ph    t4, t1, 8     /* t4 = | 0 | 0 | G1 | 0 | */
+    srl        t5, t1, 8
+    or         t4, t4, t5    /* t4 = | 0 | 0 | G1 | B1 | */
+    or         t0, t0, t4    /* t0 = | ff | R1 | G1 | B1 | */
+
+    shll.ph    t4, t2, 8     /* t4 = | 0 | 0 | R2 | 0 | */
+    srl        t5, t2, 8     /* t5 = | 0 | 0 | 0 | G2 | */
+    or         t4, t4, t5
+    sll        t4, t4, 8     /* t4 = | 0 | R2 | G2 | 0 | */
+    or         t5, t3, t8
+    or         t2, t4, t5    /* t2 = | ff | R2 | G2 | B2 | */
+
+    sw         t0, 0(a0)
+    addiu      a1, a1, 3
+    sw         t2, 4(a0)
+    addiu      a2, a2, -2
+    bnez       a2, 2b
+     addiu     a0, a0, 8
+    b          4f
+     nop
+3:
+    lhu        t0, 0(a1)     /* t0 = | 0 | 0 | G1 | R1 | */
+    lbu        t1, 2(a1)     /* t1 = | 0 | 0 | 0 | B1 | */
+    addiu      a1, a1, 3
+    lbu        t2, 0(a1)     /* t2 = | 0 | 0 | 0 | R2 | */
+    lhu        t3, 1(a1)     /* t3 = | 0 | 0 | B2 | G2 | */
+
+    srl        t4, t0, 8     /* t4 = | 0 | 0 | 0 | G1 | */
+    shll.ph    t5, t0, 8     /* t5 = | 0 | 0 | R1 | 0 | */
+    or         t0, t4, t5
+    sll        t6, t0, 8     /* t6 = | 0 | R1 | G1 | 0 | */
+    or         t4, t1, t8    /* t4 = | ff | 0 | 0 | B1 | */
+    or         t0, t6, t4
+
+    sll        t2, t2, 16
+    srl        t4, t3, 8
+    shll.ph    t5, t3, 8
+    or         t3, t4, t5
+    or         t2, t2, t3
+    or         t2, t2, t8
+
+    sw         t0, 0(a0)
+    addiu      a1, a1, 3
+    sw         t2, 4(a0)
+    addiu      a2, a2, -2
+    bnez       a2, 3b
+     addiu     a0, a0, 8
+4:
+    jr         ra
+     nop
+
+END(fetchUntransformed_888_asm_mips_dsp)
+
+
+LEAF_MIPS_DSP(fetchUntransformed_444_asm_mips_dsp)
+/*
+ * a0 - dst address (address of 32-bit aRGB value)
+ * a1 - src address
+ * a2 - length
+ */
+
+    lui              t8, 0xff00
+    li               t4, 0x1
+
+    beqz             a2, 5f
+     move            v0, a0         /* just return the address of buffer
+                                     * for storing returning values */
+    andi             t0, a2, 0x1
+    beqz             t0, 2f         /* there is more then one pixel
+                                     * (check src memory alignment (word)) */
+     nop
+1:
+    lhu              v0, 0(a1)
+    addiu            a1, a1, 2
+    addiu            a2, a2, -1
+    andi             t0, v0, 0xf00
+    andi             v1, v0, 0xf
+    andi             v0, v0, 0xf0
+    sra              t3, t0, 0x4
+    sra              t1, v0, 0x4
+    sra              t0, t0, 0x8
+    sll              t2, v1, 0x4
+    or               t0, t0, t3
+    or               v0, t1, v0
+    lui              t1, 0xff00
+    or               v1, t2, v1
+    sll              t0, t0, 0x10
+    or               v1, v1, t1
+    sll              v0, v0, 0x8
+    or               v1, v1, t0
+    or               v0, v1, v0
+    sw               v0, 0(a0)
+    addiu            a0, a0, 4
+    beqz             a2, 5f         /* no more pixels for processing */
+     nop
+    beq              a2, t4, 4f     /* only one more pixel remained */
+     nop
+/* check if src memory address is word aligned */
+2:
+    andi             t0, a1, 0x3
+    beqz             t0, 3f         /* memory is word aligned */
+     andi            a3, a2, 0x1    /* set the a3 register as the comparation
+                                     * for ending the unrolled loop
+                                     * (1 if odd, 0 if even) */
+    b                1b             /* not word aligned,
+                                     * go another turn with
+                                     * just one pixel processing */
+     nop
+3:
+    lw               t0, 0(a1)
+    addiu            a2, a2, -2
+    preceu.ph.qbr    t1, t0         /* t1 = | 0 | aR1 | 0 | G1B1 | */
+    preceu.ph.qbl    t2, t0         /* t1 = | 0 | aR2 | 0 | G2B2 | */
+    shll.qb          t3, t1, 4      /* t3 = | 0 | R1 0 | 0 | B1 0 | */
+    srl              t4, t3, 4
+    or               t0, t3, t4     /* t0 = | 0 | R1R1 | 0 | B1B1 | */
+    andi             t3, t1, 0xf0
+    sll              t3, t3, 8
+    srl              t4, t3, 4
+    or               t1, t3, t4
+    or               t0, t0, t1     /* t0 = | 0 | R1R1 | G1G1 | B1B1 | */
+    or               t0, t0, t8     /* t0 = | ff | R1R1 | G1G1 | B1B1 | */
+
+    shll.qb          t3, t2, 4      /* t3 = | 0 | R1 0 | 0 | B1 0 | */
+    srl              t4, t3, 4
+    or               t7, t3, t4     /* t0 = | 0 | R1R1 | 0 | B1B1 | */
+    andi             t3, t2, 0xf0
+    sll              t3, t3, 8
+    srl              t4, t3, 4
+    or               t1, t3, t4
+    or               t2, t7, t1     /* t0 = | 0 | R1R1 | G1G1 | B1B1 | */
+    or               t2, t2, t8     /* t0 = | ff | R1R1 | G1G1 | B1B1 | */
+
+    sw               t0, 0(a0)
+    addiu            a1, a1, 4
+    sw               t2, 4(a0)
+    bne              a2, a3, 3b
+     addiu           a0, a0, 8
+    beqz             a2, 5f         /* no more pixels for processing */
+     nop
+4:
+/* one more pixel remained (after loop unrolling process finished) */
+    lhu              v0, 0(a1)
+    addiu            a1, a1, 2
+    addiu            a2, a2, -1
+    andi             t0, v0, 0xf00
+    andi             v1, v0, 0xf
+    andi             v0, v0, 0xf0
+    sra              t3, t0, 0x4
+    sra              t1, v0, 0x4
+    sra              t0, t0, 0x8
+    sll              t2, v1, 0x4
+    or               t0, t0, t3
+    or               v0, t1, v0
+    lui              t1, 0xff00
+    or               v1, t2, v1
+    sll              t0, t0, 0x10
+    or               v1, v1, t1
+    sll              v0, v0, 0x8
+    or               v1, v1, t0
+    or               v0, v1, v0
+    sw               v0, 0(a0)
+    addiu            a0, a0, 4
+5:
+    jr               ra
+     nop
+
+END(fetchUntransformed_444_asm_mips_dsp)
+
+
+LEAF_MIPS_DSP(fetchUntransformed_argb8565_premultiplied_asm_mips_dsp)
+/*
+ * a0 - dst address
+ * a1 - src address
+ * a2 - length
+ */
+
+    beqz      a2, 2f
+     nop
+
+1:
+    ulh       t1, 0(a1)
+    lbu       t2, 2(a1)
+    addiu     a2, a2, -1
+    wsbh      t1, t1
+    sll       t0, t1, 8       /* t0 = 00000000rrrrrggggggbbbbb00000000 */
+    ins       t0, t1, 3, 16   /* t0 = 00000000rrrrrrrrrrggggggbbbbb000 */
+    ins       t0, t1, 5, 11   /* t0 = 00000000rrrrrrrrggggggbbbbbbb000 */
+    srl       t4, t1, 9       /* t4 = 0000000000000000000000000rrrrrgg */
+    replv.qb  t3, t2
+    ins       t0, t4, 8, 2    /* t0 = 00000000rrrrrrrrggggggggbbbbb000 */
+    ins       t0, t1, 3, 5    /* t0 = 00000000rrrrrrrrggggggggbbbbb000 */
+    srl       t4, t1, 2       /* t4 = 000000000000000000rrrrrggggggbbb */
+    ins       t0, t4, 0, 3    /* t0 = 00000000rrrrrrrrggggggggbbbbbbbb */
+    ins       t0, t2, 24, 8   /* t0 =aaaaaaaarrrrrrrrggggggggbbbbbbbb */
+    cmpu.lt.qb t3, t0
+    pick.qb   t0, t3, t0
+    addiu     a1, a1, 3
+    sw        t0, 0(a0)
+    bgtz      a2, 1b
+     addiu    a0, a0, 4
+2:
+    jr        ra
+     nop
+
+END(fetchUntransformed_argb8565_premultiplied_asm_mips_dsp)

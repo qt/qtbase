@@ -3960,6 +3960,12 @@ void qInitImageConversions()
         return;
     }
 #endif
+
+#ifdef QT_COMPILER_SUPPORTS_MIPS_DSPR2
+    extern bool convert_ARGB_to_ARGB_PM_inplace_mips_dspr2(QImageData *data, Qt::ImageConversionFlags);
+    inplace_converter_map[QImage::Format_ARGB32][QImage::Format_ARGB32_Premultiplied] = convert_ARGB_to_ARGB_PM_inplace_mips_dspr2;
+    return;
+#endif
 }
 
 extern const uchar *qt_pow_rgb_gamma();

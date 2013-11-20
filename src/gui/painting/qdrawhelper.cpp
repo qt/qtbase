@@ -1790,7 +1790,7 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
     return buffer;
 }
 
-static const SourceFetchProc sourceFetch[NBlendTypes][QImage::NImageFormats] = {
+static SourceFetchProc sourceFetch[NBlendTypes][QImage::NImageFormats] = {
     // Untransformed
     {
         0, // Invalid
@@ -6401,6 +6401,21 @@ void qInitDrawhelperAsm()
         destFetchProc[QImage::Format_ARGB32] = qt_destFetchARGB32_mips_dsp;
 
         destStoreProc[QImage::Format_ARGB32] = qt_destStoreARGB32_mips_dsp;
+
+        sourceFetch[BlendUntransformed][QImage::Format_RGB888] = qt_fetchUntransformed_888_mips_dsp;
+        sourceFetch[BlendTiled][QImage::Format_RGB888] = qt_fetchUntransformed_888_mips_dsp;
+
+        sourceFetch[BlendUntransformed][QImage::Format_RGB444] = qt_fetchUntransformed_444_mips_dsp;
+        sourceFetch[BlendTiled][QImage::Format_RGB444] = qt_fetchUntransformed_444_mips_dsp;
+
+        sourceFetch[BlendUntransformed][QImage::Format_ARGB8565_Premultiplied] = qt_fetchUntransformed_argb8565_premultiplied_mips_dsp;
+        sourceFetch[BlendTiled][QImage::Format_ARGB8565_Premultiplied] = qt_fetchUntransformed_argb8565_premultiplied_mips_dsp;
+
+#if defined(QT_COMPILER_SUPPORTS_MIPS_DSPR2)
+        qBlendFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_blend_rgb16_on_rgb16_mips_dspr2;
+#else
+        qBlendFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_blend_rgb16_on_rgb16_mips_dsp;
+#endif // QT_COMPILER_SUPPORTS_MIPS_DSPR2
 
 #endif // QT_COMPILER_SUPPORTS_MIPS_DSP
     if (functionForModeSolidAsm) {

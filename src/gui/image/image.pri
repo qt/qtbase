@@ -78,3 +78,5 @@ NEON_SOURCES += image/qimage_neon.cpp
 SSE2_SOURCES += image/qimage_sse2.cpp
 SSSE3_SOURCES += image/qimage_ssse3.cpp
 AVX_SOURCES += image/qimage_avx.cpp
+MIPS_DSPR2_SOURCES += image/qimage_mips_dspr2.cpp
+MIPS_DSPR2_ASM += image/qimage_mips_dspr2_asm.S
