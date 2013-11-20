@@ -43,6 +43,9 @@
 #include "option.h"
 #include "cachekeys.h"
 #include "meta.h"
+
+#include <ioutils.h>
+
 #include <qdir.h>
 #include <qfile.h>
 #include <qtextstream.h>
@@ -52,6 +55,7 @@
 #include <qbuffer.h>
 #include <qsettings.h>
 #include <qdatetime.h>
+
 #if defined(Q_OS_UNIX)
 #include <unistd.h>
 #else
@@ -3345,11 +3349,17 @@ QString MakefileGenerator::installMetaFile(const ProKey &replace_rule, const QSt
             const ProString match = project->first(ProKey(replace_rules.at(r) + ".match")),
                         replace = project->first(ProKey(replace_rules.at(r) + ".replace"));
             if (!match.isEmpty() /*&& match != replace*/)
-                ret += " -e \"s," + match + "," + replace + ",g\"";
+                ret += " -e " + shellQuote("s," + match + "," + replace + ",g");
         }
         ret += " \"" + src + "\" >\"" + dst + "\"";
     }
     return ret;
+}
+
+QString MakefileGenerator::shellQuote(const QString &str)
+{
+    return isWindowsShell() ? QMakeInternal::IoUtils::shellQuoteWin(str)
+                            : QMakeInternal::IoUtils::shellQuoteUnix(str);
 }
 
 QT_END_NAMESPACE
