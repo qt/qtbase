@@ -132,7 +132,8 @@ CONFIG(qqnx_pps) {
                qqnxclipboard.h \
                qqnxbuttoneventnotifier.h
 
-    LIBS += -lpps -lclipboard
+    LIBS += -lpps
+    !contains(DEFINES, QT_NO_CLIPBOARD): LIBS += -lclipboard
 
     CONFIG(qqnx_imf) {
         DEFINES += QQNX_IMF
