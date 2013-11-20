@@ -178,9 +178,20 @@
     // from what we end up with after applying window constraints.
     QRect requestedGeometry = m_qioswindow->geometry();
 
+    QRect actualGeometry;
+    if (m_qioswindow->window()->isTopLevel()) {
+        UIWindow *uiWindow = self.window;
+        CGRect rootViewPositionInRelationToRootViewController =
+            [uiWindow.rootViewController.view convertRect:uiWindow.bounds fromView:uiWindow];
+
+        actualGeometry = fromCGRect(CGRectOffset([self.superview convertRect:self.frame toView:uiWindow.rootViewController.view],
+            -rootViewPositionInRelationToRootViewController.origin.x, -rootViewPositionInRelationToRootViewController.origin.y));
+    } else {
+        actualGeometry = fromCGRect(self.frame);
+    }
+
     // Persist the actual/new geometry so that QWindow::geometry() can
     // be queried on the resize event.
-    QRect actualGeometry = fromCGRect(self.frame);
     m_qioswindow->QPlatformWindow::setGeometry(actualGeometry);
 
     QRect previousGeometry = requestedGeometry != actualGeometry ?
@@ -497,9 +508,20 @@ void QIOSWindow::applyGeometry(const QRect &rect)
     // The baseclass takes care of persisting this for us.
     QPlatformWindow::setGeometry(rect);
 
-    // Since we don't support transformations on the UIView, we can set the frame
-    // directly and let UIKit deal with translating that into bounds and center.
-    m_view.frame = toCGRect(rect);
+    if (window()->isTopLevel()) {
+        // The QWindow is in QScreen coordinates, which maps to a possibly rotated root-view-controller.
+        // Since the root-view-controller might be translated in relation to the UIWindow, we need to
+        // check specifically for that and compensate.
+        UIWindow *uiWindow = m_view.window;
+        CGRect rootViewPositionInRelationToRootViewController =
+            [uiWindow.rootViewController.view convertRect:uiWindow.bounds fromView:uiWindow];
+
+        m_view.frame = CGRectOffset([m_view.superview convertRect:toCGRect(rect) fromView:m_view.window.rootViewController.view],
+            rootViewPositionInRelationToRootViewController.origin.x, rootViewPositionInRelationToRootViewController.origin.y);
+    } else {
+        // Easy, in parent's coordinates
+        m_view.frame = toCGRect(rect);
+    }
 
     // iOS will automatically trigger -[layoutSubviews:] for resize,
     // but not for move, so we force it just in case.
