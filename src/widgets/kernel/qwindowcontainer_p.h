@@ -57,6 +57,7 @@ public:
     explicit QWindowContainer(QWindow *embeddedWindow, QWidget *parent = 0, Qt::WindowFlags f = 0);
     ~QWindowContainer();
 
+    static void toplevelAboutToBeDestroyed(QWidget *parent);
     static void parentWasChanged(QWidget *parent);
     static void parentWasMoved(QWidget *parent);
     static void parentWasRaised(QWidget *parent);

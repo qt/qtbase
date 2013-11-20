@@ -62,19 +62,16 @@
     return UIInterfaceOrientationMaskAll;
 }
 
-- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation duration:(NSTimeInterval)duration
 {
     Q_UNUSED(duration);
+    Q_UNUSED(interfaceOrientation);
 
     if (!QCoreApplication::instance())
         return; // FIXME: Store orientation for later (?)
 
-    Qt::ScreenOrientation orientation = toQtScreenOrientation(UIDeviceOrientation(toInterfaceOrientation));
-    if (orientation == -1)
-        return;
-
     QIOSScreen *qiosScreen = static_cast<QIOSScreen *>(QGuiApplication::primaryScreen()->handle());
-    qiosScreen->setPrimaryOrientation(orientation);
+    qiosScreen->updateProperties();
 }
 
 @end

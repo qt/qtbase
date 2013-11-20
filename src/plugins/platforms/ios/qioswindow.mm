@@ -105,7 +105,7 @@
         CAEAGLLayer *eaglLayer = static_cast<CAEAGLLayer *>(self.layer);
         eaglLayer.opaque = TRUE;
         eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
-            [NSNumber numberWithBool:YES], kEAGLDrawablePropertyRetainedBacking,
+            [NSNumber numberWithBool:NO], kEAGLDrawablePropertyRetainedBacking,
             kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, nil];
 
         // Set up text input
@@ -168,7 +168,7 @@
     QRect geometry = fromCGRect(self.frame);
     m_qioswindow->QPlatformWindow::setGeometry(geometry);
     QWindowSystemInterface::handleGeometryChange(m_qioswindow->window(), geometry);
-    QWindowSystemInterface::handleExposeEvent(m_qioswindow->window(), geometry);
+    QWindowSystemInterface::handleExposeEvent(m_qioswindow->window(), QRect(QPoint(), geometry.size()));
 
     // If we have a new size here we need to resize the FBO's corresponding buffers,
     // but we defer that to when the application calls makeCurrent.
@@ -348,6 +348,16 @@
     return nil;
 }
 
+- (UIViewController *)viewController
+{
+    id responder = self;
+    while ((responder = [responder nextResponder])) {
+        if ([responder isKindOfClass:UIViewController.class])
+            return responder;
+    }
+    return nil;
+}
+
 @end
 
 QT_BEGIN_NAMESPACE
@@ -404,7 +414,7 @@ void QIOSWindow::setVisible(bool visible)
         requestActivateWindow();
     } else {
         // Activate top-most visible QWindow:
-        NSArray *subviews = qiosViewController().view.subviews;
+        NSArray *subviews = m_view.viewController.view.subviews;
         for (int i = int(subviews.count) - 1; i >= 0; --i) {
             UIView *view = [subviews objectAtIndex:i];
             if (!view.hidden) {
@@ -438,19 +448,26 @@ void QIOSWindow::setWindowState(Qt::WindowState state)
     // Perhaps setting QWindow to maximized should also mean that we'll show
     // the statusbar, and vice versa for fullscreen?
 
+    if (state != Qt::WindowNoState)
+        m_normalGeometry = geometry();
+
     switch (state) {
-    case Qt::WindowMaximized:
-    case Qt::WindowFullScreen: {
-        // Since UIScreen does not take orientation into account when
-        // reporting geometry, we need to look at the top view instead:
-        CGSize fullscreenSize = m_view.window.rootViewController.view.bounds.size;
-        m_view.frame = CGRectMake(0, 0, fullscreenSize.width, fullscreenSize.height);
-        m_view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        break; }
-    default:
-        m_view.frame = toCGRect(m_normalGeometry);
-        m_view.autoresizingMask = UIViewAutoresizingNone;
+    case Qt::WindowNoState:
+        setGeometry(m_normalGeometry);
         break;
+    case Qt::WindowMaximized:
+        setGeometry(screen()->availableGeometry());
+        break;
+    case Qt::WindowFullScreen:
+        setGeometry(screen()->geometry());
+        break;
+    case Qt::WindowMinimized:
+        setGeometry(QRect());
+        break;
+    case Qt::WindowActive:
+        Q_UNREACHABLE();
+    default:
+        Q_UNREACHABLE();
     }
 }
 
@@ -460,7 +477,12 @@ void QIOSWindow::setParent(const QPlatformWindow *parentWindow)
         UIView *parentView = reinterpret_cast<UIView *>(parentWindow->winId());
         [parentView addSubview:m_view];
     } else if (isQtApplication()) {
-        [qiosViewController().view addSubview:m_view];
+        for (UIWindow *uiWindow in [[UIApplication sharedApplication] windows]) {
+            if (uiWindow.screen == static_cast<QIOSScreen *>(screen())->uiScreen()) {
+                [uiWindow.rootViewController.view addSubview:m_view];
+                break;
+            }
+        }
     }
 }
 
@@ -469,12 +491,14 @@ void QIOSWindow::requestActivateWindow()
     // Note that several windows can be active at the same time if they exist in the same
     // hierarchy (transient children). But only one window can be QGuiApplication::focusWindow().
     // Dispite the name, 'requestActivateWindow' means raise and transfer focus to the window:
-    if (!window()->isTopLevel() || blockedByModal())
+    if (blockedByModal())
         return;
 
     [m_view.window makeKeyWindow];
 
-    raise();
+    if (window()->isTopLevel())
+        raise();
+
     QPlatformInputContext *context = QGuiApplicationPrivate::platformIntegration()->inputContext();
     static_cast<QIOSInputContext *>(context)->focusViewChanged(m_view);
     QWindowSystemInterface::handleWindowActivated(window());

@@ -384,7 +384,7 @@ void Configure::parseCmdLine()
             configCmdLine.clear();
             reloadCmdLine();
         } else {
-            dictionary[ "HELP" ] = "yes";
+            dictionary[ "DONE" ] = "error";
         }
         i = 0;
     }
@@ -1304,7 +1304,7 @@ void Configure::parseCmdLine()
         }
 
         else {
-            dictionary[ "HELP" ] = "yes";
+            dictionary[ "DONE" ] = "error";
             cout << "Unknown option " << configCmdLine.at(i) << endl;
             break;
         }
@@ -1324,7 +1324,7 @@ void Configure::parseCmdLine()
 
     if (dictionary["QMAKESPEC"].toLower() == "features"
         || !mkspecs.contains(dictionary["QMAKESPEC"], Qt::CaseInsensitive)) {
-        dictionary[ "HELP" ] = "yes";
+        dictionary[ "DONE" ] = "error";
         if (dictionary ["QMAKESPEC_FROM"] == "commandline") {
             cout << "Invalid option \"" << dictionary["QMAKESPEC"] << "\" for -platform." << endl;
         } else if (dictionary ["QMAKESPEC_FROM"] == "env") {
@@ -1362,10 +1362,10 @@ void Configure::parseCmdLine()
         const QStringList family = devices.filter(dictionary["XQMAKESPEC"], Qt::CaseInsensitive);
 
         if (family.isEmpty()) {
-            dictionary["HELP"] = "yes";
+            dictionary[ "DONE" ] = "error";
             cout << "Error: No device matching '" << dictionary["XQMAKESPEC"] << "'." << endl;
         } else if (family.size() > 1) {
-            dictionary["HELP"] = "yes";
+            dictionary[ "DONE" ] = "error";
 
             cout << "Error: Multiple matches for device '" << dictionary["XQMAKESPEC"] << "'. Candidates are:" << endl;
 
@@ -1380,7 +1380,7 @@ void Configure::parseCmdLine()
         // Ensure that -spec (XQMAKESPEC) exists in the mkspecs folder as well
         if (dictionary.contains("XQMAKESPEC") &&
                 !mkspecs.contains(dictionary["XQMAKESPEC"], Qt::CaseInsensitive)) {
-            dictionary["HELP"] = "yes";
+            dictionary[ "DONE" ] = "error";
             cout << "Invalid option \"" << dictionary["XQMAKESPEC"] << "\" for -xplatform." << endl;
         }
     }
@@ -1432,7 +1432,8 @@ void Configure::parseCmdLine()
     for (QStringList::Iterator it = disabledModules.begin(); it != disabledModules.end(); ++it)
         qtConfig.removeAll(*it);
 
-    if ((dictionary[ "REDO" ] != "yes") && (dictionary[ "HELP" ] != "yes"))
+    if ((dictionary[ "REDO" ] != "yes") && (dictionary[ "HELP" ] != "yes")
+            && (dictionary[ "DONE" ] != "error"))
         saveCmdLine();
 }
 
@@ -1461,7 +1462,7 @@ void Configure::validateArgs()
     if (!QFileInfo::exists(cfgpath)) {
         cfgpath = QFileInfo(dictionary["QCONFIG"]).absoluteFilePath();
         if (!QFileInfo::exists(cfgpath)) {
-            dictionary[ "HELP" ] = "yes";
+            dictionary[ "DONE" ] = "error";
             cout << "No such configuration \"" << qPrintable(dictionary["QCONFIG"]) << "\"" << endl ;
             return;
         }
@@ -2825,7 +2826,6 @@ void Configure::generateOutputVars()
         cout << "Configure could not detect your compiler. QMAKESPEC must either" << endl
              << "be defined as an environment variable, or specified as an" << endl
              << "argument with -platform" << endl;
-        dictionary[ "HELP" ] = "yes";
 
         QStringList winPlatforms;
         QDir mkspecsDir(sourcePath + "/mkspecs");
