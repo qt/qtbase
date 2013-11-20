@@ -3336,6 +3336,13 @@ MakefileGenerator::writePkgConfigFile()
     t << endl;
 }
 
+static QString windowsifyPath(const QString &str)
+{
+    // The paths are escaped in prl files, so every slash needs to turn into two backslashes.
+    // Then each backslash needs to be escaped for sed. And another level for C quoting here.
+    return QString(str).replace('/', "\\\\\\\\");
+}
+
 QString MakefileGenerator::installMetaFile(const ProKey &replace_rule, const QString &src, const QString &dst)
 {
     QString ret;
@@ -3348,8 +3355,12 @@ QString MakefileGenerator::installMetaFile(const ProKey &replace_rule, const QSt
         for (int r = 0; r < replace_rules.size(); ++r) {
             const ProString match = project->first(ProKey(replace_rules.at(r) + ".match")),
                         replace = project->first(ProKey(replace_rules.at(r) + ".replace"));
-            if (!match.isEmpty() /*&& match != replace*/)
+            if (!match.isEmpty() /*&& match != replace*/) {
                 ret += " -e " + shellQuote("s," + match + "," + replace + ",g");
+                if (isWindowsShell() && project->first(ProKey(replace_rules.at(r) + ".CONFIG")).contains("path"))
+                    ret += " -e " + shellQuote("s," + windowsifyPath(match.toQString())
+                                               + "," + windowsifyPath(replace.toQString()) + ",gi");
+            }
         }
         ret += " \"" + src + "\" >\"" + dst + "\"";
     }

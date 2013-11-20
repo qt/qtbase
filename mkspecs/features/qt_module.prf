@@ -146,8 +146,10 @@ unix|win32-g++* {
       rplbase = $$MODULE_BASE_OUTDIR
    include_replace.match = $$rplbase/include
    include_replace.replace = $$[QT_INSTALL_HEADERS/raw]
+   include_replace.CONFIG = path
    lib_replace.match = $$rplbase/lib
    lib_replace.replace = $$QMAKE_PKGCONFIG_LIBDIR
+   lib_replace.CONFIG = path
    QMAKE_PKGCONFIG_INSTALL_REPLACE += include_replace lib_replace
    QMAKE_PRL_INSTALL_REPLACE += include_replace lib_replace
 }
