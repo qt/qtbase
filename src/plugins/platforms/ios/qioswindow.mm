@@ -435,6 +435,11 @@ void QIOSWindow::setGeometry(const QRect &rect)
     if (window()->windowState() & (Qt::WindowMaximized | Qt::WindowFullScreen))
         return;
 
+    applyGeometry(rect);
+}
+
+void QIOSWindow::applyGeometry(const QRect &rect)
+{
     // Since we don't support transformations on the UIView, we can set the frame
     // directly and let UIKit deal with translating that into bounds and center.
     // Changing the size of the view will end up in a call to -[QUIView layoutSubviews]
@@ -448,21 +453,18 @@ void QIOSWindow::setWindowState(Qt::WindowState state)
     // Perhaps setting QWindow to maximized should also mean that we'll show
     // the statusbar, and vice versa for fullscreen?
 
-    if (state != Qt::WindowNoState)
-        m_normalGeometry = geometry();
-
     switch (state) {
     case Qt::WindowNoState:
-        setGeometry(m_normalGeometry);
+        applyGeometry(m_normalGeometry);
         break;
     case Qt::WindowMaximized:
-        setGeometry(screen()->availableGeometry());
+        applyGeometry(screen()->availableGeometry());
         break;
     case Qt::WindowFullScreen:
-        setGeometry(screen()->geometry());
+        applyGeometry(screen()->geometry());
         break;
     case Qt::WindowMinimized:
-        setGeometry(QRect());
+        applyGeometry(QRect());
         break;
     case Qt::WindowActive:
         Q_UNREACHABLE();

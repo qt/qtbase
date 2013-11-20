@@ -73,6 +73,7 @@ public:
     UIScreen *uiScreen() const;
 
     void updateProperties();
+    void layoutWindows();
 
 private:
     UIScreen *m_uiScreen;

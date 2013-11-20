@@ -182,7 +182,33 @@ void QIOSScreen::updateProperties()
     }
 
     if (screen())
-        resizeMaximizedWindows();
+        layoutWindows();
+}
+
+void QIOSScreen::layoutWindows()
+{
+    QList<QWindow*> windows = QGuiApplication::topLevelWindows();
+
+    const QRect oldGeometry = screen()->geometry();
+    const QRect oldAvailableGeometry = screen()->availableGeometry();
+    const QRect newGeometry = geometry();
+    const QRect newAvailableGeometry = availableGeometry();
+
+    for (int i = 0; i < windows.size(); ++i) {
+        QWindow *window = windows.at(i);
+
+        if (platformScreenForWindow(window) != this)
+            continue;
+
+        QIOSWindow *platformWindow = static_cast<QIOSWindow *>(window->handle());
+        if (!platformWindow)
+            continue;
+
+        if (window->windowState() & Qt::WindowFullScreen || window->geometry() == oldGeometry)
+            platformWindow->applyGeometry(newGeometry);
+        else if (window->windowState() & Qt::WindowMaximized || window->geometry() == oldAvailableGeometry)
+            platformWindow->applyGeometry(newAvailableGeometry);
+    }
 }
 
 QRect QIOSScreen::geometry() const
