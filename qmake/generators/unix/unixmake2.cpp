@@ -502,7 +502,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                     incr_lflags += var("QMAKE_LFLAGS_RELEASE");
                 t << incr_target_dir << ": $(INCREMENTAL_OBJECTS)\n\t";
                 if(!destdir.isEmpty())
-                    t << mkdir_p_asstring(destdir) << "\n\t";
+                    t << mkdir_p_asstring(destdir, false) << "\n\t";
                 t << "$(LINK) " << incr_lflags << " " << var("QMAKE_LINK_O_FLAG") << incr_target_dir <<
                     " $(INCREMENTAL_OBJECTS)\n";
                 //communicated below
@@ -528,7 +528,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
               << " " << var("POST_TARGETDEPS");
         }
         if(!destdir.isEmpty())
-            t << "\n\t" << mkdir_p_asstring(destdir);
+            t << "\n\t" << mkdir_p_asstring(destdir, false);
         if(!project->isEmpty("QMAKE_PRE_LINK"))
             t << "\n\t" << var("QMAKE_PRE_LINK");
 
@@ -685,7 +685,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 
     if(!project->first("QMAKE_PKGINFO").isEmpty()) {
         ProString pkginfo = escapeFilePath(project->first("QMAKE_PKGINFO"));
-        QString destdir = escapeFilePath(project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/Contents");
+        QString destdir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/Contents";
         t << pkginfo << ": \n\t";
         if(!destdir.isEmpty())
             t << mkdir_p_asstring(destdir) << "\n\t";
@@ -697,7 +697,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     if(!project->first("QMAKE_BUNDLE_RESOURCE_FILE").isEmpty()) {
         ProString resources = escapeFilePath(project->first("QMAKE_BUNDLE_RESOURCE_FILE"));
         bundledFiles << resources;
-        QString destdir = escapeFilePath(project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/Contents/Resources");
+        QString destdir = project->first("DESTDIR") + project->first("QMAKE_BUNDLE") + "/Contents/Resources";
         t << resources << ": \n\t";
         t << mkdir_p_asstring(destdir) << "\n\t";
         t << "@touch " << resources << "\n\t\n";
@@ -710,7 +710,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         QString destdir = info_plist_out.section(Option::dir_sep, 0, -2);
         t << info_plist_out << ": \n\t";
         if(!destdir.isEmpty())
-            t << mkdir_p_asstring(destdir) << "\n\t";
+            t << mkdir_p_asstring(destdir, false) << "\n\t";
         ProStringList commonSedArgs;
         if (!project->values("VERSION").isEmpty())
             commonSedArgs << "-e \"s,@SHORT_VERSION@," << project->first("VER_MAJ") << "." << project->first("VER_MIN") << ",g\" ";
