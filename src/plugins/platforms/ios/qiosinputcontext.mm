@@ -215,6 +215,12 @@ bool QIOSInputContext::isInputPanelVisible() const
     return m_keyboardListener->m_keyboardVisible;
 }
 
+void QIOSInputContext::setFocusObject(QObject *)
+{
+    m_inputItemTransform = qApp->inputMethod()->inputItemTransform();
+    scrollRootView();
+}
+
 void QIOSInputContext::focusWindowChanged(QWindow *focusWindow)
 {
     UIView<UIKeyInput> *view = reinterpret_cast<UIView<UIKeyInput> *>(focusWindow->handle()->winId());
@@ -231,8 +237,15 @@ void QIOSInputContext::scrollRootView()
     // - the focus object is on the same screen as the keyboard.
     // - the first responder is a QUIView, and not some other foreign UIView.
     // - the keyboard is docked. Otherwise the user can move the keyboard instead.
+    // - the inputItem has not been moved/scrolled
     if (!isQtApplication() || !m_focusView)
         return;
+
+    if (m_inputItemTransform != qApp->inputMethod()->inputItemTransform()) {
+        // The inputItem has moved since the last scroll update. To avoid competing
+        // with the application where the cursor/inputItem should be, we bail:
+        return;
+    }
 
     UIView *view = m_keyboardListener->m_viewController.view;
     qreal scrollTo = 0;

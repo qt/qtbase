@@ -44,6 +44,7 @@
 
 #include <UIKit/UIKit.h>
 
+#include <QtGui/qtransform.h>
 #include <qpa/qplatforminputcontext.h>
 
 QT_BEGIN_NAMESPACE
@@ -60,6 +61,7 @@ public:
     void showInputPanel();
     void hideInputPanel();
     bool isInputPanelVisible() const;
+    void setFocusObject(QObject *object);
 
     void focusWindowChanged(QWindow *focusWindow);
     void scrollRootView();
@@ -67,6 +69,7 @@ public:
 private:
     QIOSKeyboardListener *m_keyboardListener;
     UIView<UIKeyInput> *m_focusView;
+    QTransform m_inputItemTransform;
     bool m_hasPendingHideRequest;
 };
 
