@@ -163,6 +163,8 @@ $(OBJS): qmake_pch.obj
 
 $(QTOBJS): qmake_pch.obj
 
+qlibraryinfo.obj: $(BUILD_PATH)\src\corelib\global\qconfig.cpp
+
 qmake_pch.obj:
 	$(CXX) $(CXXFLAGS_BARE) -c -Yc -Fpqmake_pch.pch -TP $(QMKSRC)\qmake_pch.h
 

@@ -224,7 +224,7 @@ qsettings.o: $(SOURCE_PATH)/src/corelib/io/qsettings.cpp
 qsystemerror.o: $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp
 
-qlibraryinfo.o: $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp
+qlibraryinfo.o: $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp $(BUILD_PATH)/src/corelib/global/qconfig.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp
 
 qnumeric.o: $(SOURCE_PATH)/src/corelib/global/qnumeric.cpp
