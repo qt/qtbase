@@ -57,12 +57,22 @@
     return YES;
 }
 
+#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_6_0)
 -(NSUInteger)supportedInterfaceOrientations
 {
     // We need to tell iOS that we support all orientations in order to set
     // status bar orientation when application content orientation changes.
     return UIInterfaceOrientationMaskAll;
 }
+#endif
+
+#if QT_IOS_DEPLOYMENT_TARGET_BELOW(__IPHONE_6_0)
+-(BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+{
+    Q_UNUSED(interfaceOrientation);
+    return YES;
+}
+#endif
 
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation duration:(NSTimeInterval)duration
 {
