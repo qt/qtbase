@@ -2,9 +2,6 @@ TARGET = qqnx
 
 QT += platformsupport-private core-private gui-private
 
-# The PPS based platform integration is currently used for both BB10 and plain QNX
-CONFIG += qqnx_pps
-
 # Uncomment this to build with support for IMF once it becomes available in the BBNDK
 #CONFIG += qqnx_imf
 
