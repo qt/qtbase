@@ -609,9 +609,12 @@ void QQnxWindow::initWindow()
     if (window()->parent() && window()->parent()->handle())
         setParent(window()->parent()->handle());
 
-    const QRect &initialGeometry = screen()->rootWindow() == this ?
-                                   screen()->geometry() : window()->geometry();
-    setGeometryHelper(initialGeometry);
+    if (screen()->rootWindow() == this) {
+        setGeometryHelper(screen()->geometry());
+        QWindowSystemInterface::handleGeometryChange(window(), screen()->geometry());
+    } else {
+        setGeometryHelper(window()->geometry());
+    }
 }
 
 void QQnxWindow::createWindowGroup()
