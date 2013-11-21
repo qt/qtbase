@@ -3181,7 +3181,7 @@ bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
                            && (slot == 0 || (c->isSlotObject && c->slotObj->compare(slot)))))) {
             bool needToUnlock = false;
             QMutex *receiverMutex = 0;
-            if (!receiver) {
+            if (c->receiver) {
                 receiverMutex = signalSlotLock(c->receiver);
                 // need to relock this receiver and sender in the correct order
                 needToUnlock = QOrderedMutexLocker::relock(senderMutex, receiverMutex);
@@ -3229,8 +3229,7 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender,
     QObject *s = const_cast<QObject *>(sender);
 
     QMutex *senderMutex = signalSlotLock(sender);
-    QMutex *receiverMutex = receiver ? signalSlotLock(receiver) : 0;
-    QOrderedMutexLocker locker(senderMutex, receiverMutex);
+    QMutexLocker locker(senderMutex);
 
     QObjectConnectionListVector *connectionLists = QObjectPrivate::get(s)->connectionLists;
     if (!connectionLists)
