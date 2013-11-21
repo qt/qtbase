@@ -456,6 +456,10 @@ void QIOSWindow::setVisible(bool visible)
 
     if (visible) {
         requestActivateWindow();
+
+        if (window()->isTopLevel())
+            static_cast<QIOSScreen *>(screen())->updateStatusBarVisibility();
+
     } else {
         // Activate top-most visible QWindow:
         NSArray *subviews = m_view.viewController.view.subviews;
@@ -530,10 +534,6 @@ void QIOSWindow::applyGeometry(const QRect &rect)
 
 void QIOSWindow::setWindowState(Qt::WindowState state)
 {
-    // FIXME: Figure out where or how we should disable/enable the statusbar.
-    // Perhaps setting QWindow to maximized should also mean that we'll show
-    // the statusbar, and vice versa for fullscreen?
-
     switch (state) {
     case Qt::WindowNoState:
         applyGeometry(m_normalGeometry);
@@ -552,6 +552,14 @@ void QIOSWindow::setWindowState(Qt::WindowState state)
     default:
         Q_UNREACHABLE();
     }
+
+    if (window()->isTopLevel() && window()->isVisible() && window()->isActive()) {
+        // The window state of the QWindow is not updated until after
+        // we return from this method, so we have to defer any updates
+        // of the statusbar that depend on the current window state.
+        QMetaObject::invokeMethod(static_cast<QIOSScreen *>(screen()),
+            "updateStatusBarVisibility", Qt::QueuedConnection);
+    }
 }
 
 void QIOSWindow::setParent(const QPlatformWindow *parentWindow)
@@ -567,6 +575,23 @@ void QIOSWindow::setParent(const QPlatformWindow *parentWindow)
             }
         }
     }
+}
+
+QIOSWindow *QIOSWindow::topLevelWindow() const
+{
+    QWindow *window = this->window();
+    while (window) {
+        QWindow *parent = window->parent();
+        if (!parent)
+            parent = window->transientParent();
+
+        if (!parent)
+            break;
+
+        window = parent;
+    }
+
+    return static_cast<QIOSWindow *>(window->handle());
 }
 
 void QIOSWindow::requestActivateWindow()

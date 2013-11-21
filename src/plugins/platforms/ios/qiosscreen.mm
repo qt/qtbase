@@ -139,6 +139,8 @@ QIOSScreen::QIOSScreen(unsigned int screenIndex)
         m_unscaledDpi = 163; // Regular iPhone DPI
     }
 
+    connect(qGuiApp, &QGuiApplication::focusWindowChanged, this, &QIOSScreen::updateStatusBarVisibility);
+
     updateProperties();
 }
 
@@ -183,6 +185,31 @@ void QIOSScreen::updateProperties()
 
     if (screen())
         layoutWindows();
+}
+
+void QIOSScreen::updateStatusBarVisibility()
+{
+    QWindow *focusWindow = QGuiApplication::focusWindow();
+
+    // If we don't have a focus window we leave the status
+    // bar as is, so that the user can activate a new window
+    // with the same window state without the status bar jumping
+    // back and forth.
+    if (!focusWindow)
+        return;
+
+    UIView *view = reinterpret_cast<UIView *>(focusWindow->handle()->winId());
+#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_7_0)
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_7_0) {
+        [view.viewController setNeedsStatusBarAppearanceUpdate];
+    } else
+#endif
+    {
+        QIOSViewController *viewController = static_cast<QIOSViewController *>(view.viewController);
+        [[UIApplication sharedApplication]
+            setStatusBarHidden:[viewController prefersStatusBarHidden]
+            withAnimation:UIStatusBarAnimationNone];
+    }
 }
 
 void QIOSScreen::layoutWindows()
@@ -272,5 +299,7 @@ UIScreen *QIOSScreen::uiScreen() const
 {
     return m_uiScreen;
 }
+
+#include "moc_qiosscreen.cpp"
 
 QT_END_NAMESPACE

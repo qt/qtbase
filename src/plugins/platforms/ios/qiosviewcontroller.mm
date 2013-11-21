@@ -42,9 +42,11 @@
 #import "qiosviewcontroller.h"
 
 #include <QtGui/QGuiApplication>
+#include <QtGui/QWindow>
 #include <QtGui/QScreen>
 #include "qiosscreen.h"
 #include "qiosglobal.h"
+#include "qioswindow.h"
 
 @implementation QIOSViewController
 
@@ -72,6 +74,29 @@
 
     QIOSScreen *qiosScreen = static_cast<QIOSScreen *>(QGuiApplication::primaryScreen()->handle());
     qiosScreen->updateProperties();
+}
+
+#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_7_0)
+- (UIStatusBarStyle)preferredStatusBarStyle
+{
+    // Since we don't place anything behind the status bare by default, we
+    // end up with a black area, so we have to enable the white text mode
+    // of the iOS7 statusbar.
+    return UIStatusBarStyleLightContent;
+
+    // FIXME: Try to detect the content underneath the statusbar and choose
+    // an appropriate style, and/or expose Qt APIs to control the style.
+}
+#endif
+
+- (BOOL)prefersStatusBarHidden
+{
+    QWindow *focusWindow = QGuiApplication::focusWindow();
+    if (!focusWindow)
+        return [UIApplication sharedApplication].statusBarHidden;
+
+    QIOSWindow *topLevel = static_cast<QIOSWindow *>(focusWindow->handle())->topLevelWindow();
+    return topLevel->window()->windowState() == Qt::WindowFullScreen;
 }
 
 @end
