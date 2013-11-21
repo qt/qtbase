@@ -868,6 +868,10 @@ QObject::~QObject()
         QObjectPrivate::Connection *node = d->senders;
         while (node) {
             QObject *sender = node->sender;
+            // Send disconnectNotify before removing the connection from sender's connection list.
+            // This ensures any eventual destructor of sender will block on getting receiver's lock
+            // and not finish until we release it.
+            sender->disconnectNotify(QMetaObjectPrivate::signal(sender->metaObject(), node->signal_index));
             QMutex *m = signalSlotLock(sender);
             node->prev = &node;
             bool needToUnlock = QOrderedMutexLocker::relock(signalSlotMutex, m);
@@ -880,8 +884,6 @@ QObject::~QObject()
             QObjectConnectionListVector *senderLists = sender->d_func()->connectionLists;
             if (senderLists)
                 senderLists->dirty = true;
-
-            int signal_index = node->signal_index;
 
             QtPrivate::QSlotObjectBase *slotObj = Q_NULLPTR;
             if (node->isSlotObject) {
@@ -899,7 +901,6 @@ QObject::~QObject()
                 locker.relock();
             }
 
-            sender->disconnectNotify(QMetaObjectPrivate::signal(sender->metaObject(), signal_index));
         }
     }
 
