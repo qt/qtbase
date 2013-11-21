@@ -30,7 +30,7 @@ CFLAGS_EXTRA      = /Zc:wchar_t-
 CFLAGS_EXTRA      = /MP
 !endif
 
-CFLAGS_BARE = -c -Fo./ \
+CFLAGS_BARE = -c -Fo./ -Fdqmake.pdb \
               -W3 -nologo -O1 \
               $(CFLAGS_EXTRA) \
               -I$(QMKSRC) -I$(QMKSRC)\library -I$(QMKSRC)\generators -I$(QMKSRC)\generators\unix -I$(QMKSRC)\generators\win32 -I$(QMKSRC)\generators\mac -I$(QMKSRC)\generators\integrity \
@@ -50,7 +50,7 @@ CXXFLAGS = $(CFLAGS)
 LFLAGS	    =
 LIBS	    = ole32.lib advapi32.lib
 LINKQMAKE   = $(LINKER) $(LFLAGS) -OUT:qmake.exe $(OBJS) $(QTOBJS) $(LIBS)
-ADDCLEAN    = vc60.pdb vc70.pdb qmake.pdb qmake.ilk
+ADDCLEAN    = qmake.pdb qmake.ilk
 
 !ELSE
 !ERROR Unsupported compiler for this Makefile
@@ -140,8 +140,6 @@ clean::
 	-del qmake_pch.obj
 	-del qmake_pch.pch
 	-del qsystemlibrary.obj
-	-del vc60.pdb
-	-del vc70.pdb
 	-del qmake.pdb
 	-del qmake.ilk
 	-del qmake.tds
