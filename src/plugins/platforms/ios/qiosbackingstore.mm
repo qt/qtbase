@@ -56,6 +56,9 @@ QIOSBackingStore::QIOSBackingStore(QWindow *window)
     fmt.setDepthBufferSize(16);
     fmt.setStencilBufferSize(8);
 
+    // Needed to prevent QOpenGLContext::makeCurrent() from failing
+    window->setSurfaceType(QSurface::OpenGLSurface);
+
     m_context->setFormat(fmt);
     m_context->setScreen(window->screen());
     m_context->create();
@@ -69,9 +72,6 @@ QIOSBackingStore::~QIOSBackingStore()
 
 void QIOSBackingStore::beginPaint(const QRegion &)
 {
-    // Needed to prevent QOpenGLContext::makeCurrent() from failing
-    window()->setSurfaceType(QSurface::OpenGLSurface);
-
     m_context->makeCurrent(window());
 
     QIOSWindow *iosWindow = static_cast<QIOSWindow *>(window()->handle());
@@ -102,6 +102,8 @@ void QIOSBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
         // the child window overlaps a sibling window that's draws using a separate QOpenGLContext.
         return;
     }
+
+    m_context->makeCurrent(window);
     m_context->swapBuffers(window);
 }
 
