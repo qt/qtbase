@@ -530,6 +530,9 @@ void QIOSWindow::applyGeometry(const QRect &rect)
     // iOS will automatically trigger -[layoutSubviews:] for resize,
     // but not for move, so we force it just in case.
     [m_view setNeedsLayout];
+
+    if (window()->inherits("QWidgetWindow"))
+        [m_view layoutIfNeeded];
 }
 
 void QIOSWindow::setWindowState(Qt::WindowState state)
