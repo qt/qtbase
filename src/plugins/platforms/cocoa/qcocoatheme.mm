@@ -258,13 +258,17 @@ QPixmap QCocoaTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &siz
     NSImage *iconImage = [[NSWorkspace sharedWorkspace] iconForFile:QCFString::toNSString(fileInfo.canonicalFilePath())];
     if (!iconImage)
         return QPixmap();
-
-    NSRect iconRect = NSMakeRect(0, 0, size.width(), size.height());
-    NSGraphicsContext *gc = [NSGraphicsContext currentContext];
-    CGImageRef cgImage = [iconImage CGImageForProposedRect:&iconRect
-                                                   context:([gc graphicsPort] ? gc : nil)
-                                                     hints:nil];
-    QPixmap pixmap = QPixmap::fromImage(qt_mac_toQImage(cgImage));
+    NSSize pixmapSize = NSMakeSize(size.width(), size.height());
+    QPixmap pixmap(pixmapSize.width, pixmapSize.height);
+    pixmap.fill(Qt::transparent);
+    [iconImage setSize:pixmapSize];
+    NSRect iconRect = NSMakeRect(0, 0, pixmapSize.width, pixmapSize.height);
+    CGContextRef ctx = qt_mac_cg_context(&pixmap);
+    NSGraphicsContext *gc = [NSGraphicsContext graphicsContextWithGraphicsPort:ctx flipped:YES];
+    [NSGraphicsContext saveGraphicsState];
+    [NSGraphicsContext setCurrentContext:gc];
+    [iconImage drawInRect:iconRect fromRect:iconRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
+    [NSGraphicsContext restoreGraphicsState];
     return pixmap;
 }
 
@@ -280,8 +284,12 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
     case TabAllWidgets:
         return QVariant(bool([[NSApplication sharedApplication] isFullKeyboardAccessEnabled]));
     case IconPixmapSizes: {
+        qreal devicePixelRatio = qGuiApp->devicePixelRatio();
         QList<int> sizes;
-        sizes << 16 << 32 << 64 << 128;
+        sizes << 16 * devicePixelRatio
+              << 32 * devicePixelRatio
+              << 64 * devicePixelRatio
+              << 128 * devicePixelRatio;
         return QVariant::fromValue(sizes);
     }
     case QPlatformTheme::PasswordMaskCharacter:
