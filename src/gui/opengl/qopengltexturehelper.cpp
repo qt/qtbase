@@ -148,7 +148,7 @@ QOpenGLTextureHelper::QOpenGLTextureHelper(QOpenGLContext *context)
     }
 #endif
 
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(QT_OPENGL_ES_2)
     HMODULE handle = GetModuleHandleA("opengl32.dll");
 
     // OpenGL 1.0
