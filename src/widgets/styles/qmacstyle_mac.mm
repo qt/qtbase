@@ -3790,7 +3790,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             } else if (!(tabOpt->state & State_Enabled)) {
                 tdi.style = kThemeTabNonFrontInactive;
             } else if (tabOpt->state & State_Sunken) {
-                tdi.style = kThemeTabFrontInactive; // (should be kThemeTabNonFrontPressed)
+                tdi.style = kThemeTabNonFrontPressed;
             }
             if (tabOpt->state & State_HasFocus)
                 tdi.adornment = kHIThemeTabAdornmentFocus;
