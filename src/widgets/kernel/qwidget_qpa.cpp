@@ -510,9 +510,9 @@ void QWidgetPrivate::show_sys()
 
     QWindow *window = q->windowHandle();
 
-    q->setAttribute(Qt::WA_Mapped);
     if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
         invalidateBuffer(q->rect());
+        q->setAttribute(Qt::WA_Mapped);
         if (q->isWindow() && q->windowModality() != Qt::NonModal && window) {
             // add our window to the modal window list
             QGuiApplicationPrivate::showModalWindow(window);
