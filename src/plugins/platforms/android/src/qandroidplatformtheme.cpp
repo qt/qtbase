@@ -125,7 +125,7 @@ const QFont *QAndroidPlatformTheme::font(Font type) const
         return &(it.value());
 
     // default in case the style has not set a font
-    static QFont systemFont("Roboto", 12.0 * 100 / 72); // keep default size the same after changing from 100 dpi to 72 dpi
+    static QFont systemFont("Roboto", 14.0 * 100 / 72); // keep default size the same after changing from 100 dpi to 72 dpi
     if (type == QPlatformTheme::SystemFont)
         return &systemFont;
     return 0;
