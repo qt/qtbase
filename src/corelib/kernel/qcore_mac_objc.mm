@@ -61,6 +61,8 @@ QString QCFString::toQString(const NSString *nsstr)
 #ifdef Q_OS_IOS
 QSysInfo::MacVersion qt_ios_version()
 {
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
     int major = 0, minor = 0;
     NSArray *components = [[UIDevice currentDevice].systemVersion componentsSeparatedByString:@"."];
     switch ([components count]) {
@@ -75,6 +77,9 @@ QSysInfo::MacVersion qt_ios_version()
     default:
         Q_UNREACHABLE();
     }
+
+    [pool release];
+
     return QSysInfo::MacVersion(Q_MV_IOS(major, minor));
 }
 #endif
