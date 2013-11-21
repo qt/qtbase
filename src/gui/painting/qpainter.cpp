@@ -146,17 +146,16 @@ static inline uint line_emulation(uint emulation)
 }
 
 #ifndef QT_NO_DEBUG
-static bool qt_painter_thread_test(int devType, const char *what, bool extraCondition = false)
+static bool qt_painter_thread_test(int devType, const char *what)
 {
     switch (devType) {
     case QInternal::Image:
     case QInternal::Printer:
     case QInternal::Picture:
         // can be drawn onto these devices safely from any thread
-        if (extraCondition)
-            break;
+        break;
     default:
-        if (!extraCondition && QThread::currentThread() != qApp->thread()) {
+        if (QThread::currentThread() != qApp->thread()) {
             qWarning("QPainter: It is not safe to use %s outside the GUI thread", what);
             return false;
         }
