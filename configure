@@ -1927,7 +1927,11 @@ while [ "$#" -gt 0 ]; do
                 break
             fi
         done
-        [ "$found" = yes ] || ERROR=yes
+        if [ "$found" != "yes" ]; then
+            echo "$CURRENT_OPT: unknown argument"
+            ERROR=yes
+            continue
+        fi
 
         if [ "$VAR" = "sql" ]; then
             # set the CFG_SQL_driver
@@ -1950,9 +1954,6 @@ while [ "$#" -gt 0 ]; do
             IN_VAR="${VAR}"
 	    QMakeVar del "${IN_VAR}s" "$VAL"
 	    QMakeVar del "${PLUG_VAR}s" "$VAL"
-        fi
-        if [ "$ERROR" = "yes" ]; then
-           echo "$CURRENT_OPT: unknown argument"
         fi
         ;;
     v|verbose)
