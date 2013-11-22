@@ -76,6 +76,7 @@ public:
     Qt::HANDLE handle() const;
 
     void setEnabled(bool enabled);
+    OVERLAPPED *waitForAnyNotified(int msecs);
     bool waitForNotified(int msecs, OVERLAPPED *overlapped);
 
 Q_SIGNALS:

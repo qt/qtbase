@@ -58,6 +58,7 @@ private slots:
     void readFile();
     void waitForNotified_data();
     void waitForNotified();
+    void waitForAnyNotified();
     void brokenPipe();
     void multipleOperations();
 
@@ -193,6 +194,45 @@ void tst_QWinOverlappedIoNotifier::waitForNotified()
     QCOMPARE(sink.notifications.last().errorCode, DWORD(ERROR_SUCCESS));
     QCOMPARE(sink.notifications.last().overlapped, &overlapped);
     QCOMPARE(notifier.waitForNotified(100, &overlapped), false);
+}
+
+void tst_QWinOverlappedIoNotifier::waitForAnyNotified()
+{
+    const QString fileName = QDir::toNativeSeparators(sourceFileInfo.absoluteFilePath());
+    const int readBufferSize = sourceFileInfo.size();
+
+    QWinOverlappedIoNotifier notifier;
+    HANDLE hFile = CreateFile(reinterpret_cast<const wchar_t*>(fileName.utf16()),
+                              GENERIC_READ, FILE_SHARE_READ,
+                              NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
+    notifier.setHandle(hFile);
+    notifier.setEnabled(true);
+    QVERIFY(notifier.waitForAnyNotified(100) == 0);
+
+    OVERLAPPED overlapped1;
+    ZeroMemory(&overlapped1, sizeof(OVERLAPPED));
+    QByteArray buffer1(readBufferSize, 0);
+    BOOL readSuccess = ReadFile(hFile, buffer1.data(), buffer1.size(), NULL, &overlapped1);
+    QVERIFY(readSuccess || GetLastError() == ERROR_IO_PENDING);
+
+    OVERLAPPED overlapped2;
+    ZeroMemory(&overlapped2, sizeof(OVERLAPPED));
+    QByteArray buffer2(readBufferSize, 0);
+    readSuccess = ReadFile(hFile, buffer2.data(), buffer2.size(), NULL, &overlapped2);
+    QVERIFY(readSuccess || GetLastError() == ERROR_IO_PENDING);
+
+    QSet<OVERLAPPED *> overlappedObjects;
+    overlappedObjects << &overlapped1 << &overlapped2;
+
+    for (int i = 1; i <= 2; ++i) {
+        OVERLAPPED *notifiedOverlapped = notifier.waitForAnyNotified(3000);
+        QVERIFY(overlappedObjects.contains(notifiedOverlapped));
+        overlappedObjects.remove(notifiedOverlapped);
+    }
+
+    CloseHandle(hFile);
+    QVERIFY(overlappedObjects.isEmpty());
+    QVERIFY(notifier.waitForAnyNotified(100) == 0);
 }
 
 void tst_QWinOverlappedIoNotifier::brokenPipe()

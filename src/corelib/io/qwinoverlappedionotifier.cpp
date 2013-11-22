@@ -41,6 +41,7 @@
 
 #include "qwinoverlappedionotifier_p.h"
 #include <qdebug.h>
+#include <qelapsedtimer.h>
 #include <qmutex.h>
 #include <qpointer.h>
 #include <qqueue.h>
@@ -293,6 +294,36 @@ void QWinOverlappedIoNotifier::setEnabled(bool enabled)
 }
 
 /*!
+ * Wait synchronously for any notified signal.
+ *
+ * The function returns a pointer to the OVERLAPPED object corresponding to the completed I/O
+ * operation. In case no I/O operation was completed during the \a msec timeout, this function
+ * returns a null pointer.
+ */
+OVERLAPPED *QWinOverlappedIoNotifier::waitForAnyNotified(int msecs)
+{
+    Q_D(QWinOverlappedIoNotifier);
+    if (!d->iocp->isRunning()) {
+        qWarning("Called QWinOverlappedIoNotifier::waitForAnyNotified on inactive notifier.");
+        return 0;
+    }
+
+    if (msecs == 0)
+        d->iocp->drainQueue();
+
+    switch (WaitForSingleObject(d->hSemaphore, msecs == -1 ? INFINITE : DWORD(msecs))) {
+    case WAIT_OBJECT_0:
+        ReleaseSemaphore(d->hSemaphore, 1, NULL);
+        return d->_q_notified();
+    case WAIT_TIMEOUT:
+        return 0;
+    default:
+        qErrnoWarning("QWinOverlappedIoNotifier::waitForAnyNotified: WaitForSingleObject failed.");
+        return 0;
+    }
+}
+
+/*!
  * Wait synchronously for the notified signal.
  *
  * The function returns true if the notified signal was emitted for
@@ -300,28 +331,21 @@ void QWinOverlappedIoNotifier::setEnabled(bool enabled)
  */
 bool QWinOverlappedIoNotifier::waitForNotified(int msecs, OVERLAPPED *overlapped)
 {
-    Q_D(QWinOverlappedIoNotifier);
-    if (!d->iocp->isRunning()) {
-        qWarning("Called QWinOverlappedIoNotifier::waitForNotified on inactive notifier.");
-        return false;
-    }
-
+    int t = msecs;
+    QElapsedTimer stopWatch;
+    stopWatch.start();
     forever {
-        if (msecs == 0)
-            d->iocp->drainQueue();
-        DWORD result = WaitForSingleObject(d->hSemaphore, msecs == -1 ? INFINITE : DWORD(msecs));
-        if (result == WAIT_OBJECT_0) {
-            ReleaseSemaphore(d->hSemaphore, 1, NULL);
-            if (d->_q_notified() == overlapped)
-                return true;
-            continue;
-        } else if (result == WAIT_TIMEOUT) {
+        OVERLAPPED *triggeredOverlapped = waitForAnyNotified(t);
+        if (!triggeredOverlapped)
             return false;
+        if (triggeredOverlapped == overlapped)
+            return true;
+        if (msecs != -1) {
+            t = msecs - stopWatch.elapsed();
+            if (t < 0)
+                return false;
         }
     }
-
-    qErrnoWarning("QWinOverlappedIoNotifier::waitForNotified: WaitForSingleObject failed.");
-    return false;
 }
 
 /*!
