@@ -180,7 +180,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "WMF_BACKEND" ]     = "auto";
     dictionary[ "WMSDK" ]           = "auto";
     dictionary[ "QML_DEBUG" ]       = "yes";
-    dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
+    dictionary[ "PLUGIN_MANIFESTS" ] = "no";
     dictionary[ "DIRECTWRITE" ]     = "no";
     dictionary[ "NIS" ]             = "no";
     dictionary[ "NEON" ]            = "auto";
