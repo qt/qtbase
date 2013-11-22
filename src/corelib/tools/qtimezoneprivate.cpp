@@ -453,9 +453,9 @@ bool QTimeZonePrivate::isValidId(const QByteArray &olsenId)
     // Aliases such as "Etc/GMT+7" and "SystemV/EST5EDT" are valid so we need to accept digits
     if (olsenId.contains(' '))
         return false;
-    QList<QByteArray> parts = olsenId.split('\\');
+    QList<QByteArray> parts = olsenId.split('/');
     foreach (const QByteArray &part, parts) {
-        if (part.size() > 14)
+        if (part.size() > 14 || part.size() < 1)
             return false;
         if (part.at(0) == '-')
             return false;
@@ -466,6 +466,8 @@ bool QTimeZonePrivate::isValidId(const QByteArray &olsenId)
                 && !(ch == '_')
                 && !(ch >= '0' && ch <= '9')
                 && !(ch == '-')
+                && !(ch == '+')
+                && !(ch == ':')
                 && !(ch == '.'))
                 return false;
         }

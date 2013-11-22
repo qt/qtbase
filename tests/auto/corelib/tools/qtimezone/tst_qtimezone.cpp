@@ -56,6 +56,7 @@ private slots:
     void createTest();
     void nullTest();
     void dataStreamTest();
+    void isTimeZoneIdAvailable();
     void availableTimeZoneIds();
     void stressTest();
     void windowsId();
@@ -345,6 +346,36 @@ void tst_QTimeZone::dataStreamTest()
         ds >> tz2;
     }
     QCOMPARE(tz2.id(), tz1.id());
+}
+
+void tst_QTimeZone::isTimeZoneIdAvailable()
+{
+    QList<QByteArray> available = QTimeZone::availableTimeZoneIds();
+    foreach (const QByteArray &id, available)
+        QVERIFY(QTimeZone::isTimeZoneIdAvailable(id));
+
+    // a-z, A-Z, 0-9, '.', '-', '_' are valid chars
+    // Can't start with '-'
+    // Parts separated by '/', each part min 1 and max of 14 chars
+    QCOMPARE(QTimeZonePrivate::isValidId("az"), true);
+    QCOMPARE(QTimeZonePrivate::isValidId("AZ"), true);
+    QCOMPARE(QTimeZonePrivate::isValidId("09"), true);
+    QCOMPARE(QTimeZonePrivate::isValidId("a/z"), true);
+    QCOMPARE(QTimeZonePrivate::isValidId("a.z"), true);
+    QCOMPARE(QTimeZonePrivate::isValidId("a-z"), true);
+    QCOMPARE(QTimeZonePrivate::isValidId("a_z"), true);
+    QCOMPARE(QTimeZonePrivate::isValidId(".z"), true);
+    QCOMPARE(QTimeZonePrivate::isValidId("_z"), true);
+    QCOMPARE(QTimeZonePrivate::isValidId("12345678901234"), true);
+    QCOMPARE(QTimeZonePrivate::isValidId("12345678901234/12345678901234"), true);
+    QCOMPARE(QTimeZonePrivate::isValidId("a z"), false);
+    QCOMPARE(QTimeZonePrivate::isValidId("a\\z"), false);
+    QCOMPARE(QTimeZonePrivate::isValidId("a,z"), false);
+    QCOMPARE(QTimeZonePrivate::isValidId("/z"), false);
+    QCOMPARE(QTimeZonePrivate::isValidId("-z"), false);
+    QCOMPARE(QTimeZonePrivate::isValidId("123456789012345"), false);
+    QCOMPARE(QTimeZonePrivate::isValidId("123456789012345/12345678901234"), false);
+    QCOMPARE(QTimeZonePrivate::isValidId("12345678901234/123456789012345"), false);
 }
 
 void tst_QTimeZone::availableTimeZoneIds()
