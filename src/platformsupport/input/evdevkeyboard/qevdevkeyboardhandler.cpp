@@ -224,7 +224,7 @@ void QEvdevKeyboardHandler::processKeyEvent(int nativecode, int unicode, int qtc
 {
     QWindowSystemInterface::handleExtendedKeyEvent(0, (isPress ? QEvent::KeyPress : QEvent::KeyRelease),
                                                    qtcode, modifiers, nativecode + 8, 0, int(modifiers),
-                                                   QString(unicode), autoRepeat);
+                                                   (unicode != 0xffff ) ? QString(unicode) : QString(), autoRepeat);
 }
 
 QEvdevKeyboardHandler::KeycodeAction QEvdevKeyboardHandler::processKeycode(quint16 keycode, bool pressed, bool autorepeat)
