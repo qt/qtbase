@@ -915,6 +915,11 @@ QStyleOptionViewItem QListView::viewOptions() const
     } else {
         option.decorationPosition = QStyleOptionViewItem::Left;
     }
+
+    if (d->gridSize().isValid()) {
+        option.rect.setSize(d->gridSize());
+    }
+
     return option;
 }
 
