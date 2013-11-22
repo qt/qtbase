@@ -1,3 +1,4 @@
+
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
@@ -47,6 +48,8 @@
 #include <qgraphicsscene.h>
 #include <qgraphicsview.h>
 #include <qapplication.h>
+#include <QtWidgets/qstyle.h>
+#include <QtWidgets/qproxystyle.h>
 
 class tst_QGraphicsLinearLayout : public QObject {
 Q_OBJECT
@@ -86,6 +89,7 @@ private slots:
     void removeItem();
     void setGeometry_data();
     void setGeometry();
+    void defaultSpacing();
     void setSpacing_data();
     void setSpacing();
     void setItemSpacing_data();
@@ -906,6 +910,96 @@ void tst_QGraphicsLinearLayout::setGeometry()
     widget->setGeometry(rect);
     QCOMPARE(layout.geometry(), rect);
     // see also geometry()
+    delete widget;
+}
+
+class LayoutStyle : public QProxyStyle
+{
+public:
+    LayoutStyle(const QString &key)
+        : QProxyStyle(key),
+            horizontalSpacing(-1), verticalSpacing(-1) {}
+
+    virtual int pixelMetric(QStyle::PixelMetric pm, const QStyleOption *option = 0, const QWidget *widget = 0) const Q_DECL_OVERRIDE
+    {
+        if (pm == QStyle::PM_LayoutHorizontalSpacing && horizontalSpacing >= 0) {
+            return horizontalSpacing;
+        } else if (pm == QStyle::PM_LayoutVerticalSpacing && verticalSpacing >= 0) {
+            return verticalSpacing;
+        }
+        return QProxyStyle::pixelMetric(pm, option, widget);
+    }
+
+    int horizontalSpacing;
+    int verticalSpacing;
+};
+
+void tst_QGraphicsLinearLayout::defaultSpacing()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    LayoutStyle *style = new LayoutStyle(QLatin1String("windows"));
+    style->horizontalSpacing = 5;
+    style->verticalSpacing = 3;
+    LayoutStyle *style2 = new LayoutStyle(QLatin1String("windows"));
+    style2->horizontalSpacing = 25;
+    style2->verticalSpacing = 23;
+
+    QGraphicsWidget *widget = new QGraphicsWidget(0, Qt::Window);
+    widget->setStyle(style);
+
+    // Horizontal layout
+    SubQGraphicsLinearLayout *layout = new SubQGraphicsLinearLayout(Qt::Horizontal);
+    widget->setLayout(layout);
+    Q_ASSERT(widget->style());
+    scene.addItem(widget);
+    layout->setContentsMargins(0, 0, 0, 0);
+    view.show();
+
+    for (int i = 0; i < 2; ++i) {
+        QGraphicsWidget *w = new QGraphicsWidget;
+        layout->addItem(w);
+    }
+
+    // Horizontal layout
+    qreal styleSpacing = (qreal)style->pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
+    QCOMPARE(styleSpacing, qreal(5));
+    QCOMPARE(styleSpacing, layout->spacing());
+    QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize).width(), qreal(105));
+    style->horizontalSpacing = 15;
+    // If the style method changes return value, the layout must be invalidated by the application
+    layout->invalidate();
+    styleSpacing = (qreal)style->pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
+    QCOMPARE(styleSpacing, qreal(15));
+    QSKIP("invalidating the layout does not reevaluate the default spacing (QTBUG-35099)");
+    QCOMPARE(styleSpacing, layout->spacing());
+    QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize).width(), qreal(115));
+    widget->setStyle(style2);
+    // If the style itself changes, the layout will pick that up
+    QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize).width(), qreal(125));
+    QCOMPARE(layout->spacing(), qreal(25));
+
+    // Vertical layout
+    widget->setStyle(style);
+    layout->setOrientation(Qt::Vertical);
+    styleSpacing = (qreal)style->pixelMetric(QStyle::PM_LayoutVerticalSpacing);
+    QCOMPARE(styleSpacing, qreal(3));
+    QCOMPARE(styleSpacing, layout->spacing());
+    QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize).height(), qreal(103));
+    style->verticalSpacing = 13;
+    // If the style method changes return value, the layout must be invalidated by the application
+    layout->invalidate();
+    styleSpacing = (qreal)style->pixelMetric(QStyle::PM_LayoutVerticalSpacing);
+    QCOMPARE(styleSpacing, qreal(13));
+    QSKIP("invalidating the layout does not reevaluate the default spacing (QTBUG-35099)");
+    QCOMPARE(styleSpacing, layout->spacing());
+    QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize).height(), qreal(113));
+    widget->setStyle(style2);
+    // If the style itself changes, the layout will pick that up
+    QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize).height(), qreal(123));
+    QCOMPARE(layout->spacing(), qreal(23));
+
+
     delete widget;
 }
 
