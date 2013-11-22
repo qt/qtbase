@@ -158,7 +158,7 @@ void QIOSScreen::updateProperties()
     }
 
     bool inPortrait = UIInterfaceOrientationIsPortrait(uiWindow.rootViewController.interfaceOrientation);
-    QRect geometry = inPortrait ? fromCGRect(m_uiScreen.bounds)
+    QRect geometry = inPortrait ? fromCGRect(m_uiScreen.bounds).toRect()
         : QRect(m_uiScreen.bounds.origin.x, m_uiScreen.bounds.origin.y,
             m_uiScreen.bounds.size.height, m_uiScreen.bounds.size.width);
 

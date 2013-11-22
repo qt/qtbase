@@ -188,9 +188,9 @@
         actualGeometry = fromCGRect(CGRectOffset([self.superview convertRect:self.frame toView:rootView],
                                     -rootViewPositionInRelationToRootViewController.origin.x,
                                     -rootViewPositionInRelationToRootViewController.origin.y
-                                    + rootView.bounds.origin.y));
+                                    + rootView.bounds.origin.y)).toRect();
     } else {
-        actualGeometry = fromCGRect(self.frame);
+        actualGeometry = fromCGRect(self.frame).toRect();
     }
 
     // Persist the actual/new geometry so that QWindow::geometry() can
@@ -214,7 +214,7 @@
 
 - (void)displayLayer:(CALayer *)layer
 {
-    QRect geometry = fromCGRect(layer.frame);
+    QRect geometry = fromCGRect(layer.frame).toRect();
     Q_ASSERT(m_qioswindow->geometry() == geometry);
     Q_ASSERT(self.hidden == !m_qioswindow->window()->isVisible());
 
@@ -242,7 +242,7 @@
         } else {
             touchPoint.state = state;
             touchPoint.pressure = (state == Qt::TouchPointReleased) ? 0.0 : 1.0;
-            QPoint touchPos = fromCGPoint([uiTouch locationInView:rootView]);
+            QPoint touchPos = fromCGPoint([uiTouch locationInView:rootView]).toPoint();
             touchPoint.area = QRectF(touchPos, QSize(0, 0));
             touchPoint.normalPosition = QPointF(touchPos.x() / rootViewSize.width, touchPos.y() / rootViewSize.height);
         }
