@@ -58,6 +58,7 @@
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
     self.window.rootViewController = [[[QIOSViewController alloc] init] autorelease];
 
+#if QT_IOS_DEPLOYMENT_TARGET_BELOW(__IPHONE_7_0)
     QSysInfo::MacVersion iosVersion = QSysInfo::MacintoshVersion;
 
     // We prefer to keep the root viewcontroller in fullscreen layout, so that
@@ -67,12 +68,14 @@
     if (iosVersion < QSysInfo::MV_IOS_7_0)
         self.window.rootViewController.wantsFullScreenLayout = YES;
 
-    // Use translucent statusbar by default on iOS6 (unless the user changed the
-    // default in the Info.plist), so that windows placed under the stausbar are
+    // Use translucent statusbar by default on iOS6 iPhones (unless the user changed
+    // the default in the Info.plist), so that windows placed under the stausbar are
     // still visible, just like on iOS7.
     if (iosVersion >= QSysInfo::MV_IOS_6_0 && iosVersion < QSysInfo::MV_IOS_7_0
+        && [UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPhone
         && [UIApplication sharedApplication].statusBarStyle == UIStatusBarStyleDefault)
         [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackTranslucent];
+#endif
 
     self.window.hidden = NO;
 
