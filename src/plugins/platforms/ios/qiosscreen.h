@@ -72,13 +72,14 @@ public:
 
     UIScreen *uiScreen() const;
 
-    void setPrimaryOrientation(Qt::ScreenOrientation orientation);
+    void updateProperties();
 
 private:
     UIScreen *m_uiScreen;
     QRect m_geometry;
     QRect m_availableGeometry;
     int m_depth;
+    uint m_unscaledDpi;
     QSizeF m_physicalSize;
     QIOSOrientationListener *m_orientationListener;
 };

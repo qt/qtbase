@@ -63,64 +63,45 @@ void QAndroidPlatformMessageDialogHelper::exec()
 
 static QString standardButtonText(int sbutton)
 {
-    QString buttonText = 0;
     switch (sbutton) {
     case QMessageDialogOptions::Ok:
-        buttonText = QObject::tr("OK");
-        break;
+        return QAndroidPlatformMessageDialogHelper::tr("OK");
     case QMessageDialogOptions::Save:
-        buttonText = QObject::tr("Save");
-        break;
+        return QAndroidPlatformMessageDialogHelper::tr("Save");
     case QMessageDialogOptions::Open:
-        buttonText = QObject::tr("Open");
-        break;
+        return QAndroidPlatformMessageDialogHelper::tr("Open");
     case QMessageDialogOptions::Cancel:
-        buttonText = QObject::tr("Cancel");
-        break;
+        return QAndroidPlatformMessageDialogHelper::tr("Cancel");
     case QMessageDialogOptions::Close:
-        buttonText = QObject::tr("Close");
-        break;
+        return QAndroidPlatformMessageDialogHelper::tr("Close");
     case QMessageDialogOptions::Apply:
-        buttonText = QObject::tr("Apply");
-        break;
+        return QAndroidPlatformMessageDialogHelper::tr("Apply");
     case QMessageDialogOptions::Reset:
-        buttonText = QObject::tr("Reset");
-        break;
+        return QAndroidPlatformMessageDialogHelper::tr("Reset");
     case QMessageDialogOptions::Help:
-        buttonText = QObject::tr("Help");
-        break;
+        return QAndroidPlatformMessageDialogHelper::tr("Help");
     case QMessageDialogOptions::Discard:
-        buttonText = QObject::tr("Discard");
-        break;
+        return QAndroidPlatformMessageDialogHelper::tr("Discard");
     case QMessageDialogOptions::Yes:
-        buttonText = QObject::tr("Yes");
-        break;
+        return QAndroidPlatformMessageDialogHelper::tr("Yes");
     case QMessageDialogOptions::YesToAll:
-        buttonText = QObject::tr("Yes to All");
-        break;
+        return QAndroidPlatformMessageDialogHelper::tr("Yes to All");
     case QMessageDialogOptions::No:
-        buttonText = QObject::tr("No");
-        break;
+        return QAndroidPlatformMessageDialogHelper::tr("No");
     case QMessageDialogOptions::NoToAll:
-        buttonText = QObject::tr("No to All");
-        break;
+        return QAndroidPlatformMessageDialogHelper::tr("No to All");
     case QMessageDialogOptions::SaveAll:
-        buttonText = QObject::tr("Save All");
-        break;
+        return QAndroidPlatformMessageDialogHelper::tr("Save All");
     case QMessageDialogOptions::Abort:
-        buttonText = QObject::tr("Abort");
-        break;
+        return QAndroidPlatformMessageDialogHelper::tr("Abort");
     case QMessageDialogOptions::Retry:
-        buttonText = QObject::tr("Retry");
-        break;
+        return QAndroidPlatformMessageDialogHelper::tr("Retry");
     case QMessageDialogOptions::Ignore:
-        buttonText = QObject::tr("Ignore");
-        break;
+        return QAndroidPlatformMessageDialogHelper::tr("Ignore");
     case QMessageDialogOptions::RestoreDefaults:
-        buttonText = QObject::tr("Restore Defaults");
-        break;
+        return QAndroidPlatformMessageDialogHelper::tr("Restore Defaults");
     } // switch
-    return buttonText;
+    return QString();
 }
 
 bool QAndroidPlatformMessageDialogHelper::show(Qt::WindowFlags windowFlags

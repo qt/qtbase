@@ -132,30 +132,57 @@ QIOSScreen::QIOSScreen(unsigned int screenIndex)
         m_depth = 24;
     }
 
-    int unscaledDpi = 163; // Regular iPhone DPI
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad
         && !deviceIdentifier.contains(QRegularExpression("^iPad2,[567]$")) /* excluding iPad Mini */) {
-        unscaledDpi = 132;
-    };
-
-    CGRect bounds = [m_uiScreen bounds];
-    m_geometry = QRect(bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
-
-    CGRect frame = m_uiScreen.applicationFrame;
-    m_availableGeometry = QRect(frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
-
-    const qreal millimetersPerInch = 25.4;
-    m_physicalSize = QSizeF(m_geometry.size()) / unscaledDpi * millimetersPerInch;
-
-    if (isQtApplication()) {
-        // When in a non-mixed environment, let QScreen follow the current interface orientation:
-        setPrimaryOrientation(toQtScreenOrientation(UIDeviceOrientation(qiosViewController().interfaceOrientation)));
+        m_unscaledDpi = 132;
+    } else {
+        m_unscaledDpi = 163; // Regular iPhone DPI
     }
+
+    updateProperties();
 }
 
 QIOSScreen::~QIOSScreen()
 {
     [m_orientationListener release];
+}
+
+void QIOSScreen::updateProperties()
+{
+    UIWindow *uiWindow = 0;
+    for (uiWindow in [[UIApplication sharedApplication] windows]) {
+        if (uiWindow.screen == m_uiScreen)
+            break;
+    }
+
+    bool inPortrait = UIInterfaceOrientationIsPortrait(uiWindow.rootViewController.interfaceOrientation);
+    QRect geometry = inPortrait ? fromCGRect(m_uiScreen.bounds)
+        : QRect(m_uiScreen.bounds.origin.x, m_uiScreen.bounds.origin.y,
+            m_uiScreen.bounds.size.height, m_uiScreen.bounds.size.width);
+
+    if (geometry != m_geometry) {
+        m_geometry = geometry;
+
+        const qreal millimetersPerInch = 25.4;
+        m_physicalSize = QSizeF(m_geometry.size()) / m_unscaledDpi * millimetersPerInch;
+
+        QWindowSystemInterface::handleScreenGeometryChange(screen(), m_geometry);
+    }
+
+    QRect availableGeometry = geometry;
+
+    CGSize applicationFrameSize = m_uiScreen.applicationFrame.size;
+    int statusBarHeight = geometry.height() - (inPortrait ? applicationFrameSize.height : applicationFrameSize.width);
+
+    availableGeometry.adjust(0, statusBarHeight, 0, 0);
+
+    if (availableGeometry != m_availableGeometry) {
+        m_availableGeometry = availableGeometry;
+        QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(), m_availableGeometry);
+    }
+
+    if (screen())
+        resizeMaximizedWindows();
 }
 
 QRect QIOSScreen::geometry() const
@@ -195,7 +222,9 @@ qreal QIOSScreen::devicePixelRatio() const
 
 Qt::ScreenOrientation QIOSScreen::nativeOrientation() const
 {
-    return Qt::PortraitOrientation;
+    // A UIScreen stays in the native orientation, regardless of rotation
+    return m_uiScreen.bounds.size.width >= m_uiScreen.bounds.size.height ?
+        Qt::LandscapeOrientation : Qt::PortraitOrientation;
 }
 
 Qt::ScreenOrientation QIOSScreen::orientation() const
@@ -211,28 +240,6 @@ void QIOSScreen::setOrientationUpdateMask(Qt::ScreenOrientations mask)
     } else if (!m_orientationListener) {
         m_orientationListener = [[QIOSOrientationListener alloc] initWithQIOSScreen:this];
     }
-}
-
-void QIOSScreen::setPrimaryOrientation(Qt::ScreenOrientation orientation)
-{
-    // Note that UIScreen never changes orientation, but QScreen should. To work around
-    // this, we let QIOSViewController call us whenever interface orientation changes, and
-    // use that as primary orientation. After all, the viewcontrollers geometry is what we
-    // place QWindows on top of. A problem with this approach is that QIOSViewController is
-    // not in use in a mixed environment, which results in no change to primary orientation.
-    // We see that as acceptable since Qt should most likely not interfere with orientation
-    // for that case anyway.
-    bool portrait = screen()->isPortrait(orientation);
-    if (portrait && m_geometry.width() < m_geometry.height())
-        return;
-
-    // Switching portrait/landscape means swapping width/height (and adjusting x/y):
-    m_geometry = QRect(0, 0, m_geometry.height(), m_geometry.width());
-    m_physicalSize = QSizeF(m_physicalSize.height(), m_physicalSize.width());
-    m_availableGeometry = fromPortraitToPrimary(fromCGRect(m_uiScreen.applicationFrame), this);
-
-    QWindowSystemInterface::handleScreenGeometryChange(screen(), m_geometry);
-    QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(), m_availableGeometry);
 }
 
 UIScreen *QIOSScreen::uiScreen() const

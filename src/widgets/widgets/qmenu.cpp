@@ -1834,6 +1834,14 @@ QSize QMenu::sizeHint() const
 void QMenu::popup(const QPoint &p, QAction *atAction)
 {
     Q_D(QMenu);
+
+#ifdef Q_OS_ANDROID
+    if (!d->platformMenu.isNull() && !testAttribute(Qt::WA_SetStyle)) {
+        d->platformMenu->showPopup(window()->windowHandle(), p, 0);
+        return;
+    }
+#endif
+
     if (d->scroll) { // reset scroll state from last popup
         if (d->scroll->scrollOffset)
             d->itemsDirty = 1; // sizeHint will be incorrect if there is previous scroll

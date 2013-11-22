@@ -49,7 +49,6 @@
 @implementation QIOSApplicationDelegate
 
 @synthesize window;
-@synthesize qiosViewController;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
@@ -57,8 +56,7 @@
     Q_UNUSED(launchOptions);
 
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
-    self.qiosViewController = [[[QIOSViewController alloc] init] autorelease];
-    self.window.rootViewController = self.qiosViewController;
+    self.window.rootViewController = [[[QIOSViewController alloc] init] autorelease];
 
     self.window.hidden = NO;
 
@@ -67,7 +65,6 @@
 
 - (void)dealloc
 {
-    [qiosViewController release];
     [window release];
     [super dealloc];
 }

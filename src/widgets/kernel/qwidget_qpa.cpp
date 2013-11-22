@@ -53,6 +53,7 @@
 #include <qpa/qplatformintegration.h>
 #include "QtGui/private/qwindow_p.h"
 #include "QtGui/private/qguiapplication_p.h"
+#include <private/qwindowcontainer_p.h>
 
 #include <qpa/qplatformcursor.h>
 #include <QtGui/QGuiApplication>
@@ -267,8 +268,11 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
     bool explicitlyHidden = q->testAttribute(Qt::WA_WState_Hidden) && q->testAttribute(Qt::WA_WState_ExplicitShowHide);
 
     // Reparenting toplevel to child
-    if (wasCreated && !(f & Qt::Window) && (oldFlags & Qt::Window) && !q->testAttribute(Qt::WA_NativeWindow))
+    if (wasCreated && !(f & Qt::Window) && (oldFlags & Qt::Window) && !q->testAttribute(Qt::WA_NativeWindow)) {
+        if (extra && extra->hasWindowContainer)
+            QWindowContainer::toplevelAboutToBeDestroyed(q);
         q->destroy();
+    }
 
     adjustFlags(f, q);
     data.window_flags = f;
@@ -506,9 +510,9 @@ void QWidgetPrivate::show_sys()
 
     QWindow *window = q->windowHandle();
 
+    q->setAttribute(Qt::WA_Mapped);
     if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
         invalidateBuffer(q->rect());
-        q->setAttribute(Qt::WA_Mapped);
         if (q->isWindow() && q->windowModality() != Qt::NonModal && window) {
             // add our window to the modal window list
             QGuiApplicationPrivate::showModalWindow(window);

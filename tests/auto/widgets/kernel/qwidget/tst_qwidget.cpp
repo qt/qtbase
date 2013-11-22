@@ -7192,6 +7192,10 @@ void tst_QWidget::hideOpaqueChildWhileHidden()
 #if !defined(Q_OS_WINCE)
 void tst_QWidget::updateWhileMinimized()
 {
+#ifdef Q_OS_UNIX
+    if (qgetenv("XDG_CURRENT_DESKTOP").contains("Unity"))
+        QSKIP("This test fails on Unity."); // Minimized windows are not unmapped for some reason.
+#endif // Q_OS_UNIX
     UpdateWidget widget;
    // Filter out activation change and focus events to avoid update() calls in QWidget.
     widget.updateOnActivationChangeAndFocusIn = false;
