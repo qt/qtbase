@@ -920,7 +920,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         t << "\t-$(DEL_FILE) " << destdir << "$(TARGET0) " << destdir << "$(TARGET1) "
           << destdir << "$(TARGET2) $(TARGETA)\n";
     } else {
-        t << "\t-$(DEL_FILE) $(TARGET) \n";
+        t << "\t-$(DEL_FILE) " << destdir << "$(TARGET) \n";
     }
     t << varGlue("QMAKE_DISTCLEAN","\t-$(DEL_FILE) "," ","\n");
     {
