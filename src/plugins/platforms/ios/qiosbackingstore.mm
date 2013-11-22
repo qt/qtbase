@@ -117,7 +117,7 @@ void QIOSBackingStore::resize(const QSize &size, const QRegion &staticContents)
     // backing store and always keep the paint device's size in sync with the
     // window size in beginPaint().
 
-    if (size != window()->size())
+    if (size != window()->size() && !window()->inherits("QWidgetWindow"))
         qWarning() << "QIOSBackingStore needs to have the same size as its window";
 }
 
