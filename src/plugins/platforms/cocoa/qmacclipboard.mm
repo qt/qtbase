@@ -105,7 +105,8 @@ QMacPasteboard::~QMacPasteboard()
     for (int i = 0; i < promises.count(); ++i) {
         const Promise &promise = promises.at(i);
         QCFString flavor = QCFString(promise.convertor->flavorFor(promise.mime));
-        promiseKeeper(paste, (PasteboardItemID)promise.itemId, flavor, this);
+        NSInteger pbItemId = promise.itemId;
+        promiseKeeper(paste, reinterpret_cast<PasteboardItemID>(pbItemId), flavor, this);
     }
 
     if (paste)
@@ -311,9 +312,9 @@ QMacPasteboard::setMimeData(QMimeData *mime_src)
 
                     int numItems = c->count(mime_src);
                     for (int item = 0; item < numItems; ++item) {
-                        const int itemID = item+1; //id starts at 1
+                        const NSInteger itemID = item+1; //id starts at 1
                         promises.append(QMacPasteboard::Promise(itemID, c, mimeType, mimeData, item));
-                        PasteboardPutItemFlavor(paste, (PasteboardItemID)itemID, QCFString(flavor), 0, kPasteboardFlavorNoFlags);
+                        PasteboardPutItemFlavor(paste, reinterpret_cast<PasteboardItemID>(itemID), QCFString(flavor), 0, kPasteboardFlavorNoFlags);
 #ifdef DEBUG_PASTEBOARD
                         qDebug(" -  adding %d %s [%s] <%s> [%d]",
                                itemID, qPrintable(mimeType), qPrintable(flavor), qPrintable(c->convertorName()), item);
