@@ -463,12 +463,12 @@ ProjectBuilderSources::files(QMakeProject *project) const
 {
     QStringList ret = project->values(ProKey(key)).toQStringList();
     if(key == "QMAKE_INTERNAL_INCLUDED_FILES") {
+        QStringList newret;
         for(int i = 0; i < ret.size(); ++i) {
-            QStringList newret;
             if(!ret.at(i).endsWith(Option::prf_ext))
                 newret.append(ret.at(i));
-            ret = newret;
         }
+        ret = newret;
     }
     if(key == "SOURCES" && project->first("TEMPLATE") == "app" && !project->isEmpty("ICON"))
         ret.append(project->first("ICON").toQString());
