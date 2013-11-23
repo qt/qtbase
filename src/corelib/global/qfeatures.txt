@@ -748,7 +748,7 @@ Name: QPdf
 Feature: PRINTER
 Description: Supports printing
 Section: Painting
-Requires: PICTURE TEMPORARYFILE
+Requires: PICTURE TEMPORARYFILE PDF
 Name: QPrinter
 
 Feature: CUPS
