@@ -17,7 +17,7 @@ SOURCES = \
         qxcbwindow.cpp \
         qxcbbackingstore.cpp \
         qxcbwmsupport.cpp \
-        main.cpp \
+        qxcbmain.cpp \
         qxcbnativeinterface.cpp \
         qxcbcursor.cpp \
         qxcbimage.cpp \
