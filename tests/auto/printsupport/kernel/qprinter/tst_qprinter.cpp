@@ -207,9 +207,6 @@ void tst_QPrinter::getSetCheck()
     QCOMPARE(obj1.printerSelectionOption(), QString::fromLatin1("--option"));
 #endif
 
-    obj1.setPrinterName(QString::fromLatin1("myPrinter"));
-    QCOMPARE(obj1.printerName(), QString::fromLatin1("myPrinter"));
-
     // bool QPrinter::fontEmbeddingEnabled()
     // void QPrinter::setFontEmbeddingEnabled(bool)
     obj1.setFontEmbeddingEnabled(false);
@@ -461,7 +458,7 @@ void tst_QPrinter::testNonExistentPrinter()
     QPainter painter;
 
     // Make sure it doesn't crash on setting or getting properties
-    printer.setPrinterName("some non existing printer");
+    printer.printEngine()->setProperty(QPrintEngine::PPK_PrinterName, "some non existing printer");
     printer.setPageSize(QPrinter::A4);
     printer.setOrientation(QPrinter::Portrait);
     printer.setFullPage(true);
@@ -709,9 +706,6 @@ void tst_QPrinter::valuePreservation()
 
         printer.setCollateCopies(!status);
         printer.setOutputFormat(newFormat);
-#ifdef Q_OS_MAC
-        QEXPECT_FAIL("","QTBUG-26430", Abort);
-#endif
         QCOMPARE(printer.collateCopies(), !status);
         printer.setOutputFormat(oldFormat);
         QCOMPARE(printer.collateCopies(), !status);
@@ -907,13 +901,6 @@ void tst_QPrinter::valuePreservation()
         printer.setOutputFormat(oldFormat);
         QString status = printer.printerName();
         printer.setOutputFormat(newFormat);
-        printer.setOutputFormat(oldFormat);
-        QCOMPARE(printer.printerName(), status);
-
-        status = QString::fromLatin1("SuperDuperPrinter");
-        printer.setPrinterName(status);
-        printer.setOutputFormat(newFormat);
-        QCOMPARE(printer.printerName(), status);
         printer.setOutputFormat(oldFormat);
         QCOMPARE(printer.printerName(), status);
     }
