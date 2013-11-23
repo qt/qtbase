@@ -147,8 +147,15 @@ QtDeclarative
  - ColorDialog:
    * Added currentColor property.
 
+ - [QTBUG-32928] ShortcutOverride events now work for QQuickItem
+   subclasses
+
 QtGui
 -----
+
+ - Accessibility classes are now public allowing accessibility
+   information for custom widgets/QQuickItems
+
  - Session Management:
    * [QTBUG-28228] The new QPlatformSessionManager class brings back
      the session management functionality. It allows the
@@ -160,6 +167,9 @@ QtGui
  - QPolygonF:
    * When a QVariant holds a QPolygonF() then it will be correctly seen as
      a null QVariant.
+
+ - [QTBUG-27349] Reintroduced command line argument for positioning
+   windows (-geometry on X11, -qwindowgeometry on other platforms)
 
 QtNetwork
 ---------
@@ -228,43 +238,147 @@ Changes in Qt 5.2.0
 QtWidgets
 ---------
 
- - QFileDialog::setDefaultSuffix() removes leading dot characters.
- - QSizePolicy got a retainSizeWhenHidden attribute.
- - [QTBUG-31602] QSpinBox size calculation will now be fixed when
-   stylesheets are used.
+ - [QTBUG-30255] Fixed a bug where spans across empty cells in a grid
+   layout got broken.
+ - [QTBUG-32788] Properly handles Qt::WidgetWithChildrenShortcut
+   shortcuts in MDI subwindows now.
+ - [QTBUG-33078] QWidget::setWindowOpacity() now works when called
+   before QWidget::show().
+ - [QTBUG-33247] Changed accessible trees and tables to always expose
+   hidden headers, instead of only exposing the visible headers.
+ - [QTBUG-34007] Fixed a crash in tablet support.
+ - Fixed a bug where the maximum size hint of a layout with spans was
+   wrong.
+ - Item delegates now cycle through all three states of tri-state
+   checkboxes, the same way QCheckBox itself does.
 
  - QAbstractItemView:
-   * [QTBUG-7232] QTBUG-7232 - In ItemViews scrollbars will now by default
-     only scroll 1 pixel when scrollMode is set to scrollPerPixel. That is
-     it will (when scrollMode is scrollPerPixel) do what is stated in the
-     documentation, and no longer automatically adjust the scrollbars
-     singleStep. The user can now control that value.
+   * [QTBUG-7232] In ItemViews scrollbars will now by default only
+     scroll 1 pixel when scrollMode is set to scrollPerPixel. That is
+     it will (when scrollMode is scrollPerPixel) do what is stated in
+     the documentation, and no longer automatically adjust the
+     scrollbar's singleStep. The user can now control that value.
 
-  - QAbstractScrollArea:
-    * QAbstractScrollArea now has a SizeAdjustPolicy. If it is set to
-      AdjustToContents it will make use of the protected viewportSizeHint()
-      virtual function. This function returns a suggested size based on
-      contents. Note that although the viewportSizeHint() virtual function
-      was reserved in 5.0, user code was not supposed to be overriding it
-      (as the function was private and undocumented).  Code that was
-      overriding viewportSizeHint() needs to be recompiled against 5.2 for
-      this feature to work correctly.
+ - QAbstractScrollArea:
+   * QAbstractScrollArea now has a SizeAdjustPolicy. If it is set to
+     AdjustToContents it will make use of the protected viewportSizeHint()
+     virtual function. This function returns a suggested size based on
+     contents. Note that although the viewportSizeHint() virtual function
+     was reserved in 5.0, user code was not supposed to be overriding it
+     (as the function was private and undocumented).  Code that was
+     overriding viewportSizeHint() needs to be recompiled against 5.2 for
+     this feature to work correctly.
+
+ - QColorDialog:
+   * Added a web color QLineEdit.
+   * [QTBUG-14332] Added a screen color picker button.
+   * [QTBUG-31998] Does no longer create widgets when using the
+     platform dialog.
+
+ - QComboBox:
+   * Added currentData() convenience function which allows to retrieve
+     the user data set for the current item.
+
+ - QCompleter:
+   * [QTBUG-3414] Added filterMode property.
+
+ - QDesktopWidget:
+   * [QTBUG-32567] Fixed emission of workAreaResized() signal.
+
+ - QDialogButtonBox:
+   * Added a (StandardButtons,QWidget*) constructor.
+
+ - QDockWidget:
+   * [QTBUG-31044] The position of a dock widget is now kept when
+     undocking.
+   * [QTBUG-32260] Fixed a bug where visibilityChanged was signaled
+     wrongly in certain multi-screen setups.
+
+ - QFileDialog:
+   * setDefaultSuffix() now removes leading dot characters.
+   * Introduced DontUseCustomDirectoryIcons. This improves the file
+     dialog performance under Windows for the case where there are
+     lots of folders. Went from taking 60 seconds to 2 seconds, on a
+     SDCard with 10k folders.
+   * Added setMimeTypeFilters() for mimetype-based filtering, as an
+     alternative to pattern matching.
+   * Fixed removing of directories containing hidden or system files.
+   * Added QUrl-based API for remote files.
+   * [QTBUG-13182] Improved performance on Windows by
+     + not resolving NTFS symlinks (15x speedup on pessimistic
+       workloads) and
+     + using extensions over calling GetFileAttributesEx() in certain
+       cases.
+   * [QTBUG-29403] Fixed potential crash in destructor of
+     ~QFileInfoGather in threaded applications.
+   * [QTBUG-34132] QFileDialog does no longer instantiate widgets if a
+     native dialog will be used instead.  Therefore some accessors
+     which previously returned unused objects will now return null.
+     As before, you can set the DontUseNativeDialog option to ensure
+     that widgets will be created and used instead.
+   * [QTBUG-33039] Does no longer create widgets when using the
+     platform dialog.
+
+ - QFontDialog:
+   * Now has finer-grained control over the types of fonts listed,
+     similar to what QFontComboBox already had.
+
+ - QGraphicsView etc
+   * Fixed a crash in QGraphicsProxyWidget.
+   * [QTBUG-8061] Allow handling of mouseDoubleClickEvent in
+     QGraphicsItems.
+   * [QTBUG-19036] Make QGraphicsScene::items(QPointF) work using
+     Qt::{Contains,Intersets}ItemBoundingRect with items that contain
+     the point in the bounding rectangle, but not their (custom)
+     shape.
 
  - QHeaderView:
    * [QTBUG-4346] A maximumSize for sections has been introduced. The
-     maximum section size is by default the largest possible section size
-     which in Qt 5.2 has been limited to 1048575 pixels.
+     maximum section size is by default the largest possible section
+     size which in Qt 5.2 has been limited to 1048575 pixels.
 
- - QFileDialog:
-   * [QTBUG-34132] QFileDialog does not instantiate widgets if a native
-     dialog will be used instead.  Therefore some accessors which previously
-     returned unused objects will now return null.  As before, you can set
-     the DontUseNativeDialog option to ensure that widgets will be created
-     and used instead.
+ - QInputDialog:
+   * Added getMultiLineText static method.
+
+ - QLineEdit:
+   * Keep placeholderText visible when focused, until text is added.
+   * Context-menu actions now have icons.
+   * Made it possible to add side widgets.
+   * Made it possible to add a clear button commonly used for item
+     view filtering as a side widget
 
  - QListView:
    * [QTBUG-1180] Dragging an item outside the QListView in icon mode
-     doesn't lose the icon.
+     no longer loses the icon. Also fixed a bug where under certain
+     conditions code overriding QAbstractItemView::viewOptions() would
+     not be called.
+
+ - QMenuBar:
+   * [QTBUG-32807] Menus now close again on second click.
+
+ - QMessageBox:
+   * May use native message boxes on some platforms now.
+   * [QTBUG-6731] It is now possible to select some or all text from a
+     QMessageBox and copy it to the clipboard.
+
+ - QSizePolicy:
+   * Added a retainSizeWhenHidden attribute.
+
+ - QSpinBox:
+   * Values can now be displayed in different bases
+     (cf. displayIntegerBase property)
+   * [QTBUG-31602] Size calculation will now be fixed when stylesheets
+     are used.
+
+ - QSplitter:
+   * Now gets the default value of opaqueResize property from (new)
+     QStyle::SH_Splitter_OpaqueResize styleHint.
+
+ - QSystemTrayIcon:
+   * [QTBUG-31762] Fixed position of system tray icon on Linux/X11
+     (except Unity).
+   * [QTBUG-33461] Increased the maximum length of a system tray
+     tooltip on Windows to what it was in Qt 4.
 
  - QTableView:
    * [QTBUG-4206] resizeToContents will now adjust to actual contents
@@ -272,10 +386,19 @@ QtWidgets
      has been introduced to control how precise the autoResize should
      be.
 
+ - QTextEdit:
+   * Added placeholderText akin to QLineEdit.
+   * Context-menu actions now have icons.
+
  - QTreeView:
    * QTreeView now has setTreePosition to allow the treestructure to
      show data from other columns than logicalindex zero.
 
+ - QWindowContainer:
+   * [QTBUG-32177] Sets active window correctly now.
+
+ - QWizard:
+   * [QTBUG-29924] Gave all buttons an objectName().
 
 ****************************************************************************
 *                      Platform Specific Changes                           *
@@ -308,3 +431,10 @@ Windows
 
  - [QTBUG-33409][QTBUG-8764][QTBUG-10032] Fixed virtual key mapping on
    Windows.
+
+X11
+---
+
+ - [QTBUG-31762] Fix position of system tray icon (except Unity)
+ - [QTBUG-27349] Reintroduced command line argument for positioning
+   windows (-geometry)
