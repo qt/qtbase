@@ -1741,7 +1741,7 @@ struct QMetaTypeId< SINGLE_ARG_TEMPLATE<T> > \
             return id; \
         const char *tName = QMetaType::typeName(qMetaTypeId<T>()); \
         Q_ASSERT(tName); \
-        const int tNameLen = qstrlen(tName); \
+        const int tNameLen = int(qstrlen(tName)); \
         QByteArray typeName; \
         typeName.reserve(int(sizeof(#SINGLE_ARG_TEMPLATE)) + 1 + tNameLen + 1 + 1); \
         typeName.append(#SINGLE_ARG_TEMPLATE, int(sizeof(#SINGLE_ARG_TEMPLATE)) - 1) \
@@ -1782,8 +1782,8 @@ struct QMetaTypeId< DOUBLE_ARG_TEMPLATE<T, U> > \
         const char *uName = QMetaType::typeName(qMetaTypeId<U>()); \
         Q_ASSERT(tName); \
         Q_ASSERT(uName); \
-        const int tNameLen = qstrlen(tName); \
-        const int uNameLen = qstrlen(uName); \
+        const int tNameLen = int(qstrlen(tName)); \
+        const int uNameLen = int(qstrlen(uName)); \
         QByteArray typeName; \
         typeName.reserve(int(sizeof(#DOUBLE_ARG_TEMPLATE)) + 1 + tNameLen + 1 + uNameLen + 1 + 1); \
         typeName.append(#DOUBLE_ARG_TEMPLATE, int(sizeof(#DOUBLE_ARG_TEMPLATE)) - 1) \
