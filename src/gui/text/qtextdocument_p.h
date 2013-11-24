@@ -194,7 +194,7 @@ public:
 
     void setCharFormat(int pos, int length, const QTextCharFormat &newFormat, FormatChangeMode mode = SetFormat);
     void setBlockFormat(const QTextBlock &from, const QTextBlock &to,
-			const QTextBlockFormat &newFormat, FormatChangeMode mode = SetFormat);
+                        const QTextBlockFormat &newFormat, FormatChangeMode mode = SetFormat);
 
     void emitUndoAvailable(bool available);
     void emitRedoAvailable(bool available);

@@ -265,8 +265,8 @@ QString QTextList::itemText(const QTextBlock &blockIt) const
                     result = QLatin1String("?");
                 }
 
-	    }
-	    break;
+            }
+            break;
         default:
             Q_ASSERT(false);
     }
