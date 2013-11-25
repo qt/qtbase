@@ -55,6 +55,31 @@ information about a particular change.
 QtCore
 ------
 
+ - Added QCollator, a class to collate Unicode strings.
+ - Added QCommandLineParser, a class to parse command lines.
+ - Added QFileSelector, a class to select platform-specific file assets.
+ - Added QLoggingCategory and related functions for logging
+ - [QTBUG-23946] Fixed a bug that prevented Qt from being built in a
+   namespace on Mac OS X.
+ - Updated the locale database to CLDR 23.1
+ - Added support for ARMv8 64-bit mode.
+
+ - Metatype system (QMetaType & QVariant):
+   * Qt now handles metatypes automatically for std::vector, std::list,
+     std::pair and std::map
+   * The metatype system now supports registering explicit conversion
+     functions via QMetaType::registerConverter
+   * The metatype system now supports iteration over a container type via
+     QSequentialIterable and QAssociativeIterable
+   * Registering the same type name twice will now print only a warning (as
+     opposed to aborting the execution of the program)
+
+ - Qt Containers:
+   * In debug mode, the Qt containers will now verify whether the iterators
+     passed to most mutating functions belong to the iterator in question.
+   * Fixed a number of bugs that would modify shared containers when calling
+     erase(), under corner-case conditions.
+
 - QtAlgorithms
   With STL no longer being optional for building and using Qt, a number of parts
   of QtAlgorithms no longer make sense, and have therefore been deprecated.
@@ -84,6 +109,16 @@ QtCore
     - qLess (std::less)
     - qGreater (std::greater)
 
+ - QByteArray:
+   * Added QByteArray::Base64Url and QByteArray::OmitTrailingEquals flags
+     for QByteArray::toBase64 and fromBase64.
+   * [QTBUG-34694] Fixed a bug that would cause QByteArray to overflow some
+     size calculations.
+
+ - QCoreApplication:
+   * [QTBUG-15379][QTBUG-30628] Fixed a bug that caused Qt to mis-parse a
+     command-line argument like -DKEY=\"VALUE\" on Windows.
+
  - QDateTime:
    * [QTBUG-26161][QTBUG-29666] Fully implement support for Qt::TimeSpec of
      Qt::OffsetFromUTC, added new methods for offsetFromUTC(),
@@ -100,19 +135,79 @@ QtCore
      hour.
    * Added new method isDaylightTime() to return if the datetime is in
      Daylight Time or not.
-   * Add support for a new Qt::TimeZone spec to be used with QTimeZone to
+   * Added support for a new Qt::TimeZone spec to be used with QTimeZone to
      define times in a specific time zone.
+   * Added Qt::RFC2822Date format that can be passed to QDateTime and
+     QLocale formatters and parsers.
+   * Fixed a bug that caused QDate::toString() to return empty for dates
+     with years beyond 9999.
+
+ - QFileSystemWatcher:
+   * [QTBUG-33211] Fixed a bug that caused QFileSystemWatcher to emit change
+     notifications with the wrong path on Linux.
 
  - QJson:
    * [QTBUG-33229] The Writer and the Parser now fully accept non-character
      unicode points.
+   * The Writer will no longer write inf, -inf and nan for infinites and NaN
+     values, which resulted in parsing back as strings. Instead, it will now
+     output null.
+   * The Writer now emits numeric values with full numeric precision. This
+     also allows QJson to support integer values with no loss of precision
+     up to 2^53.
 
  - QJsonValue:
-   * Added QJsonValue::toInt().
+   * Added QJsonValue::toInt(). QJsonValue can store 32-bit signed integers
+     with no loss of precision.
+
+ - QObject:
+   * New-style signal connections to functors, lambdas, and static functions
+     now works with a receiver object. The connection will be removed when
+     the either the sender or receiver objects are destroyed.
+
+ - QPluginLoader:
+   * QPluginLoader will no longer load the plugins on Mac OS X and iOS
+     systems when scanning for valid plugins.
+   * Added QPluginLoader::staticPlugins(), which returns the list of
+     built-in plugins (linked to the executable and any loaded libraries).
+
+ - QProcess:
+   * [QTBUG-32958] Fixed a bug that would cause QProcess to crash if
+     waitForStarted() were called after an unsuccessful start()
+   * Added QProcess::nullDevice(), which returns the platform's "blackhole"
+     device (/dev/null on Unix, NUL on Windows). This can be used with
+     QProcess::setStandardOutputFile.
+   * Added enum values QProcess::ForwardedOutputChannel and
+     QProcess::ForwardedErrorChannel, which allow for more fine-grained
+     control over which channel is forwarded and which one is captured.
+   * Added QProcess::ForwardedInputChannel, which allows for stdin to be
+     forwarded to this process's input.
+   * [QTBUG-32979] On Unix, QProcess now correctly forwards the siginfo_t
+     and context parameters of the signal handler to the previous handler.
+
+ - QScopedPointer:
+   * Added QScopedPointerDeleteLater, a new class that can be used as the
+     second template to QScopedPointer and will call deleteLater() on the
+     pointer when it goes out of scope.
+
+ - QSocketNotifier:
+   * Fixed a bug that caused socket notifiers not to be re-enabled after
+     they had been activated on BlackBerry.
 
  - QStandardPaths:
    * QStandardPaths::enableTestMode is deprecated and is replaced by
      QStandardPaths::setTestModeEnabled.
+   * Added QStandardPaths::GenericConfigLocation, which refers to a location
+     where applications can store config files to be shared with other
+     applications.
+
+ - QThread:
+   * Added an advisory interrupt mechanism (QThread::requestInterruption and
+     QThread::isInterruptionRequested).
+
+ - QThreadPool:
+   * Added method clear() to remove any queued QRunnables.
+   * Fixed a number of race conditions.
 
  - QTime:
    * [QTBUG-30250] When calling QTime::toString(Qt::TextDate) and
@@ -132,6 +227,18 @@ QtCore
    * [QTBUG-33229] QUrl now fully accepts non-character unicode points;
      they are encoded as percent characters; they can also be pretty
      decoded
+   * Added QUrl::RemoveFilename flag which can be passed to path(),
+     authority() and toString() and will cause the filename part of the path
+     (the contents after the last '/') to be removed.
+   * Added QUrl::fileName(), which returns just the filename part of the
+     path.
+   * Added QUrl::NormalizePathSegments flag, which will cause QUrl to
+     remove "/./" or "/../" sequences as much as possible. It will not
+     remove "/../" from the beginning of the path.
+   * Added QUrl::adjusted(), which returns a new QUrl with certain parts of
+     the original URL removed or normalized.
+   * Added QUrl::matches(), which can be used to compare parts of two URLs
+     or to compare two URLs after normalization.
 
  - QUtf8:
    * [QTBUG-33229] UTF-8 now accepts non-character unicode points; these
@@ -140,6 +247,8 @@ QtCore
  - QVariant:
    * Fixed QVariant::canConvert with longlong
    * Variant containing enum types can now be converted to integer
+   * [QTBUG-33981] Fixed a bug that would cause QPolygonF to be saved or
+     loaded incorrectly in QDataStream.
 
 QtDeclarative
 -------------
@@ -420,11 +529,25 @@ Qt for Android
    build files for the APK package should not be touched. Customizing
    the build files is possible. Read the documentation for androiddeployqt
    for more information.
-
  - Status bar visibility is now controlled by Qt, so the window state will
    override settings in the AndroidManifest.xml. The default is still to
    show the status bar (QWindow::showMaximized()). Use
    QWindow::showFullScreen() to hide it.
+ - Implemented support for accessibility on Android.
+
+Qt for OS X
+-----------
+
+ - Qt for OS X is now identified by the macro Q_OS_OSX. This complements the
+   existing Q_OS_DARWIN macro (which identifies the open source kernel and
+   could identify non-Apple products) and Q_OS_MAC, which is defined for
+   both OS X and iOS. The old macro Q_OS_MACX is now deprecated.
+ - Qt no longer complains about new versions of OS X that haven't been
+   released yet. This will allow Qt 5.2 and future versions to build on
+   future versions yet to be released. Note that those versions are not
+   supported until official announcement by the Qt Project.
+ - Added a number of functions to QtCore to convert to and from
+   CFString/NSString and QString, CFURL/NSURL and QUrl.
 
 Windows
 -------
