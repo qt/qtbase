@@ -213,6 +213,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_windowCursor(0)
     , m_hasModalSession(false)
     , m_frameStrutEventsEnabled(false)
+    , m_geometryUpdateExposeAllowed(false)
     , m_isExposed(false)
     , m_registerTouchCount(0)
     , m_resizableTransientParent(false)
@@ -1078,20 +1079,59 @@ qreal QCocoaWindow::devicePixelRatio() const
     }
 }
 
+// Returns whether the window can be expose, which it can
+// if it is on screen and has a valid geometry.
+bool QCocoaWindow::isWindowExposable()
+{
+    QSize size = geometry().size();
+    bool validGeometry = (size.width() > 0 && size.height() > 0);
+    bool validScreen = ([[m_contentView window] screen] != 0);
+    bool nonHiddenSuperView = ![[m_contentView superview] isHidden];
+    return (validGeometry && validScreen && nonHiddenSuperView);
+}
+
+// Exposes the window by posting an expose event to QWindowSystemInterface
 void QCocoaWindow::exposeWindow()
 {
-    if (!m_isExposed && ![[m_contentView superview] isHidden]) {
+    m_geometryUpdateExposeAllowed = true;
+
+    if (!isWindowExposable())
+        return;
+
+    if (!m_isExposed) {
         m_isExposed = true;
+        m_exposedGeometry = geometry();
         QWindowSystemInterface::handleExposeEvent(window(), QRegion(geometry()));
     }
 }
 
+// Obscures the window by posting an empty expose event to QWindowSystemInterface
 void QCocoaWindow::obscureWindow()
 {
     if (m_isExposed) {
+        m_geometryUpdateExposeAllowed = false;
         m_isExposed = false;
         QWindowSystemInterface::handleExposeEvent(window(), QRegion());
     }
+}
+
+// Updates window geometry by posting an expose event to QWindowSystemInterface
+void QCocoaWindow::updateExposedGeometry()
+{
+    // updateExposedGeometry is not allowed to send the initial expose. If you want
+    // that call exposeWindow();
+    if (!m_geometryUpdateExposeAllowed)
+        return;
+
+    if (!isWindowExposable())
+        return;
+
+    if (m_exposedGeometry == geometry())
+        return;
+
+    m_isExposed = true;
+    m_exposedGeometry = geometry();
+    QWindowSystemInterface::handleExposeEvent(window(), QRegion(geometry()));
 }
 
 QWindow *QCocoaWindow::childWindowAt(QPoint windowPoint)
