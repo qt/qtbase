@@ -108,15 +108,7 @@
             [NSNumber numberWithBool:YES], kEAGLDrawablePropertyRetainedBacking,
             kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, nil];
 
-        // Set up text input
-        autocapitalizationType = UITextAutocapitalizationTypeNone;
-        autocorrectionType = UITextAutocorrectionTypeNo;
-        enablesReturnKeyAutomatically = NO;
-        keyboardAppearance = UIKeyboardAppearanceDefault;
-        keyboardType = UIKeyboardTypeDefault;
-        returnKeyType = UIReturnKeyDone;
-        secureTextEntry = NO;
-        m_nextTouchId = 0;
+        [self updateTextInputTraits];
 
         if (isQtApplication())
             self.hidden = YES;
@@ -343,6 +335,7 @@
     // user cannot type. And since the keyboard will open when a view becomes
     // the first responder, it's now a good time to inform QPA that the QWindow
     // this view backs became active:
+    [self updateTextInputTraits];
     QWindowSystemInterface::handleWindowActivated(m_qioswindow->window());
     return [super becomeFirstResponder];
 }
@@ -382,6 +375,47 @@
         0, QEvent::KeyPress, (int)Qt::Key_Backspace, Qt::NoModifier);
     QWindowSystemInterface::handleKeyEvent(
         0, QEvent::KeyRelease, (int)Qt::Key_Backspace, Qt::NoModifier);
+}
+
+- (void)updateTextInputTraits
+{
+    // Ask the current focus object what kind of input it
+    // expects, and configure the keyboard appropriately:
+    QObject *focusObject = QGuiApplication::focusObject();
+    if (!focusObject)
+        return;
+    QInputMethodQueryEvent queryEvent(Qt::ImEnabled | Qt::ImHints);
+    if (!QCoreApplication::sendEvent(focusObject, &queryEvent))
+        return;
+    if (!queryEvent.value(Qt::ImEnabled).toBool())
+        return;
+
+    Qt::InputMethodHints hints = static_cast<Qt::InputMethodHints>(queryEvent.value(Qt::ImHints).toUInt());
+
+    self.returnKeyType = (hints & Qt::ImhMultiLine) ? UIReturnKeyDefault : UIReturnKeyDone;
+    self.secureTextEntry = BOOL(hints & Qt::ImhHiddenText);
+    self.autocorrectionType = (hints & Qt::ImhNoPredictiveText) ?
+                UITextAutocorrectionTypeNo : UITextAutocorrectionTypeDefault;
+
+    if (hints & Qt::ImhUppercaseOnly)
+        self.autocapitalizationType = UITextAutocapitalizationTypeAllCharacters;
+    else if (hints & Qt::ImhNoAutoUppercase)
+        self.autocapitalizationType = UITextAutocapitalizationTypeNone;
+    else
+        self.autocapitalizationType = UITextAutocapitalizationTypeSentences;
+
+    if (hints & Qt::ImhUrlCharactersOnly)
+        self.keyboardType = UIKeyboardTypeURL;
+    else if (hints & Qt::ImhEmailCharactersOnly)
+        self.keyboardType = UIKeyboardTypeEmailAddress;
+    else if (hints & Qt::ImhDigitsOnly)
+        self.keyboardType = UIKeyboardTypeNumberPad;
+    else if (hints & Qt::ImhFormattedNumbersOnly)
+        self.keyboardType = UIKeyboardTypeDecimalPad;
+    else if (hints & Qt::ImhDialableCharactersOnly)
+        self.keyboardType = UIKeyboardTypeNumberPad;
+    else
+        self.keyboardType = UIKeyboardTypeDefault;
 }
 
 @end
