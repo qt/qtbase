@@ -275,6 +275,9 @@ void tst_QPrinterInfo::testConstructors()
     QCOMPARE(null.printerName(), QString());
     QVERIFY(null.isNull());
 
+    QPrinterInfo null2(null);
+    QVERIFY(null2.isNull());
+
     QList<QPrinterInfo> printers = QPrinterInfo::availablePrinters();
 
     for (int i = 0; i < printers.size(); ++i) {
@@ -295,6 +298,12 @@ void tst_QPrinterInfo::testConstructors()
 
 void tst_QPrinterInfo::testAssignment()
 {
+    QPrinterInfo null;
+    QVERIFY(null.isNull());
+    QPrinterInfo null2;
+    null2 = null;
+    QVERIFY(null2.isNull());
+
     QList<QPrinterInfo> printers = QPrinterInfo::availablePrinters();
 
     for (int i = 0; i < printers.size(); ++i) {

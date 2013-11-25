@@ -72,8 +72,6 @@ public:
     ~QPrinterInfoPrivate()
     {}
 
-    static QPrinterInfoPrivate shared_null;
-
     QString name;
     QString description;
     QString location;
@@ -85,17 +83,6 @@ public:
     mutable QList<QPrinter::PaperSize> paperSizes;
     mutable bool hasPaperNames;
     mutable QList<QPair<QString, QSizeF> > paperNames;
-};
-
-
-class QPrinterInfoPrivateDeleter
-{
-public:
-    static inline void cleanup(QPrinterInfoPrivate *d)
-    {
-        if (d != &QPrinterInfoPrivate::shared_null)
-            delete d;
-    }
 };
 
 QT_END_NAMESPACE
