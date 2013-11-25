@@ -31,9 +31,7 @@ load(qt_targets)
 
 wince*:QMAKE_POST_LINK =
 
-unix|win32-g++* {
-    lib_replace.match = $$[QT_INSTALL_LIBS/get]
-    lib_replace.replace = $$[QT_INSTALL_LIBS/raw]
-    lib_replace.CONFIG = path
-    QMAKE_PRL_INSTALL_REPLACE += lib_replace
-}
+lib_replace.match = $$[QT_INSTALL_LIBS/get]
+lib_replace.replace = $$[QT_INSTALL_LIBS/raw]
+lib_replace.CONFIG = path
+QMAKE_PRL_INSTALL_REPLACE += lib_replace
