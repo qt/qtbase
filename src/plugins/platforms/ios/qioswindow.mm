@@ -358,8 +358,11 @@
 {
     QString string = QString::fromUtf8([text UTF8String]);
     int key = 0;
-    if ([text isEqualToString:@"\n"])
+    if ([text isEqualToString:@"\n"]) {
         key = (int)Qt::Key_Return;
+        if (self.returnKeyType == UIReturnKeyDone)
+            [self resignFirstResponder];
+    }
 
     // Send key event to window system interface
     QWindowSystemInterface::handleKeyEvent(
