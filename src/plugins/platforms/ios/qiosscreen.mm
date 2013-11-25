@@ -205,10 +205,14 @@ void QIOSScreen::updateStatusBarVisibility()
     } else
 #endif
     {
+        bool wasHidden = [UIApplication sharedApplication].statusBarHidden;
         QIOSViewController *viewController = static_cast<QIOSViewController *>(view.viewController);
         [[UIApplication sharedApplication]
             setStatusBarHidden:[viewController prefersStatusBarHidden]
             withAnimation:UIStatusBarAnimationNone];
+
+        if ([UIApplication sharedApplication].statusBarHidden != wasHidden)
+            updateProperties();
     }
 }
 

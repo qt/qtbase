@@ -581,6 +581,14 @@ void QIOSWindow::applyGeometry(const QRect &rect)
 
 void QIOSWindow::setWindowState(Qt::WindowState state)
 {
+    // Update the QWindow representation straight away, so that
+    // we can update the statusbar visibility based on the new
+    // state before applying geometry changes.
+    qt_window_private(window())->windowState = state;
+
+    if (window()->isTopLevel() && window()->isVisible() && window()->isActive())
+        static_cast<QIOSScreen *>(screen())->updateStatusBarVisibility();
+
     switch (state) {
     case Qt::WindowNoState:
         applyGeometry(m_normalGeometry);
@@ -598,14 +606,6 @@ void QIOSWindow::setWindowState(Qt::WindowState state)
         Q_UNREACHABLE();
     default:
         Q_UNREACHABLE();
-    }
-
-    if (window()->isTopLevel() && window()->isVisible() && window()->isActive()) {
-        // The window state of the QWindow is not updated until after
-        // we return from this method, so we have to defer any updates
-        // of the statusbar that depend on the current window state.
-        QMetaObject::invokeMethod(static_cast<QIOSScreen *>(screen()),
-            "updateStatusBarVisibility", Qt::QueuedConnection);
     }
 }
 
