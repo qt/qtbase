@@ -53,6 +53,7 @@
 
 - (id)initWithQCocoaWindow: (QCocoaWindow *) cocoaWindow;
 
+- (void)windowDidBecomeKey:(NSNotification *)notification;
 - (void)windowDidResize:(NSNotification *)notification;
 - (void)windowDidMove:(NSNotification *)notification;
 - (void)windowWillMove:(NSNotification *)notification;
