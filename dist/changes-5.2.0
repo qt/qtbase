@@ -250,6 +250,16 @@ QtCore
    * [QTBUG-33981] Fixed a bug that would cause QPolygonF to be saved or
      loaded incorrectly in QDataStream.
 
+QtDBus
+------
+
+ - Improved error handling so as to give more feedback to the developer when
+   certain marshalling or demarshalling actions fail.
+ - [QTBUG-27809] Fixed some race conditions related to delivering method
+   reply deliveries.
+ - Fixed a bug that made non-slot invokables not get listed in the
+   auto-generated introspections.
+
 QtDeclarative
 -------------
 
