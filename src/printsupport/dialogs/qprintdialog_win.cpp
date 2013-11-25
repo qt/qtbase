@@ -187,7 +187,7 @@ QPrintDialog::QPrintDialog(QPrinter *printer, QWidget *parent)
     Q_D(QPrintDialog);
     if (!warnIfNotNative(d->printer))
         return;
-    d->ep = static_cast<QWin32PrintEngine *>(d->printer->paintEngine())->d_func();
+    d->ep = static_cast<QWin32PrintEngine *>(d->printer->printEngine())->d_func();
     setAttribute(Qt::WA_DontShowOnScreen);
 }
 
@@ -197,7 +197,7 @@ QPrintDialog::QPrintDialog(QWidget *parent)
     Q_D(QPrintDialog);
     if (!warnIfNotNative(d->printer))
         return;
-    d->ep = static_cast<QWin32PrintEngine *>(d->printer->paintEngine())->d_func();
+    d->ep = static_cast<QWin32PrintEngine *>(d->printer->printEngine())->d_func();
     setAttribute(Qt::WA_DontShowOnScreen);
 }
 
