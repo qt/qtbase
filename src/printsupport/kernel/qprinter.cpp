@@ -205,8 +205,7 @@ void QPrinterPrivate::initEngines(QPrinter::OutputFormat format, const QPrinterI
 
     use_default_engine = true;
     had_default_engines = true;
-    printEngine->setProperty(QPrintEngine::PPK_PrinterName, printerName);
-    addToManualSetList(QPrintEngine::PPK_PrinterName);
+    setProperty(QPrintEngine::PPK_PrinterName, printerName);
     validPrinter = true;
 }
 
@@ -218,8 +217,7 @@ void QPrinterPrivate::changeEngines(QPrinter::OutputFormat format, const QPrinte
     initEngines(format, printer);
 
     if (oldPrintEngine) {
-        for (int i = 0; i < manualSetList.size(); ++i) {
-            QPrintEngine::PrintEnginePropertyKey key = manualSetList[i];
+        foreach (QPrintEngine::PrintEnginePropertyKey key, m_properties.values()) {
             QVariant prop;
             // PPK_NumberOfCopies need special treatmeant since it in most cases
             // will return 1, disregarding the actual value that was set
@@ -229,10 +227,8 @@ void QPrinterPrivate::changeEngines(QPrinter::OutputFormat format, const QPrinte
             else if (key != QPrintEngine::PPK_PrinterName)
                 prop = oldPrintEngine->property(key);
 
-            if (prop.isValid()) {
-                printEngine->setProperty(key, prop);
-                addToManualSetList(key);
-            }
+            if (prop.isValid())
+                setProperty(key, prop);
         }
     }
 
@@ -267,13 +263,12 @@ void QPrinterPrivate::setPreviewMode(bool enable)
 }
 #endif // QT_NO_PRINTPREVIEWWIDGET
 
-void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey key)
+void QPrinterPrivate::setProperty(QPrintEngine::PrintEnginePropertyKey key, const QVariant &value)
 {
-    for (int c = 0; c < manualSetList.size(); ++c) {
-        if (manualSetList[c] == key) return;
-    }
-    manualSetList.append(key);
+    printEngine->setProperty(key, value);
+    m_properties.insert(key);
 }
+
 
 
 /*!
@@ -750,8 +745,7 @@ void QPrinter::setPrinterName(const QString &name)
     if (outputFormat() == QPrinter::PdfFormat) {
         d->changeEngines(QPrinter::NativeFormat, printerToUse);
     } else {
-        d->printEngine->setProperty(QPrintEngine::PPK_PrinterName, name);
-        d->addToManualSetList(QPrintEngine::PPK_PrinterName);
+        d->setProperty(QPrintEngine::PPK_PrinterName, name);
     }
 }
 
@@ -821,8 +815,7 @@ void QPrinter::setOutputFileName(const QString &fileName)
     else if (fileName.isEmpty())
         setOutputFormat(QPrinter::NativeFormat);
 
-    d->printEngine->setProperty(QPrintEngine::PPK_OutputFileName, fileName);
-    d->addToManualSetList(QPrintEngine::PPK_OutputFileName);
+    d->setProperty(QPrintEngine::PPK_OutputFileName, fileName);
 }
 
 
@@ -857,8 +850,7 @@ void QPrinter::setPrintProgram(const QString &printProg)
 {
     Q_D(QPrinter);
     ABORT_IF_ACTIVE("QPrinter::setPrintProgram");
-    d->printEngine->setProperty(QPrintEngine::PPK_PrinterProgram, printProg);
-    d->addToManualSetList(QPrintEngine::PPK_PrinterProgram);
+    d->setProperty(QPrintEngine::PPK_PrinterProgram, printProg);
 }
 
 
@@ -888,8 +880,7 @@ void QPrinter::setDocName(const QString &name)
 {
     Q_D(QPrinter);
     ABORT_IF_ACTIVE("QPrinter::setDocName");
-    d->printEngine->setProperty(QPrintEngine::PPK_DocumentName, name);
-    d->addToManualSetList(QPrintEngine::PPK_DocumentName);
+    d->setProperty(QPrintEngine::PPK_DocumentName, name);
 }
 
 
@@ -919,8 +910,7 @@ void QPrinter::setCreator(const QString &creator)
 {
     Q_D(QPrinter);
     ABORT_IF_ACTIVE("QPrinter::setCreator");
-    d->printEngine->setProperty(QPrintEngine::PPK_Creator, creator);
-    d->addToManualSetList(QPrintEngine::PPK_Creator);
+    d->setProperty(QPrintEngine::PPK_Creator, creator);
 }
 
 
@@ -957,8 +947,7 @@ QPrinter::Orientation QPrinter::orientation() const
 void QPrinter::setOrientation(Orientation orientation)
 {
     Q_D(QPrinter);
-    d->printEngine->setProperty(QPrintEngine::PPK_Orientation, orientation);
-    d->addToManualSetList(QPrintEngine::PPK_Orientation);
+    d->setProperty(QPrintEngine::PPK_Orientation, orientation);
 }
 
 
@@ -1026,8 +1015,7 @@ void QPrinter::setPageSize(PageSize newPageSize)
         qWarning("QPrinter::setPaperSize: Illegal paper size %d", newPageSize);
         return;
     }
-    d->printEngine->setProperty(QPrintEngine::PPK_PaperSize, newPageSize);
-    d->addToManualSetList(QPrintEngine::PPK_PaperSize);
+    d->setProperty(QPrintEngine::PPK_PaperSize, newPageSize);
     d->hasUserSetPageSize = true;
 }
 
@@ -1057,8 +1045,7 @@ void QPrinter::setPageSizeMM(const QSizeF &size)
     QPagedPaintDevice::setPageSizeMM(size);
 
     QSizeF s = size * 72./25.4;
-    d->printEngine->setProperty(QPrintEngine::PPK_CustomPaperSize, s);
-    d->addToManualSetList(QPrintEngine::PPK_CustomPaperSize);
+    d->setProperty(QPrintEngine::PPK_CustomPaperSize, s);
     d->hasUserSetPageSize = true;
 }
 
@@ -1098,8 +1085,7 @@ void QPrinter::setPaperName(const QString &paperName)
     Q_D(QPrinter);
     if (d->paintEngine->type() != QPaintEngine::Pdf)
         ABORT_IF_ACTIVE("QPrinter::setPaperName");
-    d->printEngine->setProperty(QPrintEngine::PPK_PaperName, paperName);
-    d->addToManualSetList(QPrintEngine::PPK_PaperName);
+    d->setProperty(QPrintEngine::PPK_PaperName, paperName);
 }
 
 /*!
@@ -1135,8 +1121,7 @@ void QPrinter::setPageOrder(PageOrder pageOrder)
 
     Q_D(QPrinter);
     ABORT_IF_ACTIVE("QPrinter::setPageOrder");
-    d->printEngine->setProperty(QPrintEngine::PPK_PageOrder, pageOrder);
-    d->addToManualSetList(QPrintEngine::PPK_PageOrder);
+    d->setProperty(QPrintEngine::PPK_PageOrder, pageOrder);
 }
 
 
@@ -1164,8 +1149,7 @@ void QPrinter::setColorMode(ColorMode newColorMode)
 {
     Q_D(QPrinter);
     ABORT_IF_ACTIVE("QPrinter::setColorMode");
-    d->printEngine->setProperty(QPrintEngine::PPK_ColorMode, newColorMode);
-    d->addToManualSetList(QPrintEngine::PPK_ColorMode);
+    d->setProperty(QPrintEngine::PPK_ColorMode, newColorMode);
 }
 
 
@@ -1244,8 +1228,7 @@ void QPrinter::setNumCopies(int numCopies)
 {
     Q_D(QPrinter);
     ABORT_IF_ACTIVE("QPrinter::setNumCopies");
-    d->printEngine->setProperty(QPrintEngine::PPK_NumberOfCopies, numCopies);
-    d->addToManualSetList(QPrintEngine::PPK_NumberOfCopies);
+    d->setProperty(QPrintEngine::PPK_NumberOfCopies, numCopies);
 }
 
 /*!
@@ -1263,8 +1246,7 @@ void QPrinter::setCopyCount(int count)
 {
     Q_D(QPrinter);
     ABORT_IF_ACTIVE("QPrinter::setCopyCount;");
-    d->printEngine->setProperty(QPrintEngine::PPK_CopyCount, count);
-    d->addToManualSetList(QPrintEngine::PPK_CopyCount);
+    d->setProperty(QPrintEngine::PPK_CopyCount, count);
 }
 
 /*!
@@ -1333,8 +1315,7 @@ void QPrinter::setCollateCopies(bool collate)
 {
     Q_D(QPrinter);
     ABORT_IF_ACTIVE("QPrinter::setCollateCopies");
-    d->printEngine->setProperty(QPrintEngine::PPK_CollateCopies, collate);
-    d->addToManualSetList(QPrintEngine::PPK_CollateCopies);
+    d->setProperty(QPrintEngine::PPK_CollateCopies, collate);
 }
 
 
@@ -1363,8 +1344,7 @@ void QPrinter::setCollateCopies(bool collate)
 void QPrinter::setFullPage(bool fp)
 {
     Q_D(QPrinter);
-    d->printEngine->setProperty(QPrintEngine::PPK_FullPage, fp);
-    d->addToManualSetList(QPrintEngine::PPK_FullPage);
+    d->setProperty(QPrintEngine::PPK_FullPage, fp);
 }
 
 
@@ -1402,8 +1382,7 @@ void QPrinter::setResolution(int dpi)
 {
     Q_D(QPrinter);
     ABORT_IF_ACTIVE("QPrinter::setResolution");
-    d->printEngine->setProperty(QPrintEngine::PPK_Resolution, dpi);
-    d->addToManualSetList(QPrintEngine::PPK_Resolution);
+    d->setProperty(QPrintEngine::PPK_Resolution, dpi);
 }
 
 
@@ -1432,8 +1411,7 @@ int QPrinter::resolution() const
 void QPrinter::setPaperSource(PaperSource source)
 {
     Q_D(QPrinter);
-    d->printEngine->setProperty(QPrintEngine::PPK_PaperSource, source);
-    d->addToManualSetList(QPrintEngine::PPK_PaperSource);
+    d->setProperty(QPrintEngine::PPK_PaperSource, source);
 }
 
 /*!
@@ -1459,8 +1437,7 @@ QPrinter::PaperSource QPrinter::paperSource() const
 void QPrinter::setFontEmbeddingEnabled(bool enable)
 {
     Q_D(QPrinter);
-    d->printEngine->setProperty(QPrintEngine::PPK_FontEmbedding, enable);
-    d->addToManualSetList(QPrintEngine::PPK_FontEmbedding);
+    d->setProperty(QPrintEngine::PPK_FontEmbedding, enable);
 }
 
 /*!
@@ -1531,8 +1508,7 @@ bool QPrinter::doubleSidedPrinting() const
 void QPrinter::setDuplex(DuplexMode duplex)
 {
     Q_D(QPrinter);
-    d->printEngine->setProperty(QPrintEngine::PPK_Duplex, duplex);
-    d->addToManualSetList(QPrintEngine::PPK_Duplex);
+    d->setProperty(QPrintEngine::PPK_Duplex, duplex);
 }
 
 /*!
@@ -1660,8 +1636,7 @@ void QPrinter::setMargins(const Margins &m)
     QList<QVariant> margins;
     margins << (m.left * multiplier) << (m.top * multiplier)
             << (m.right * multiplier) << (m.bottom * multiplier);
-    d->printEngine->setProperty(QPrintEngine::PPK_PageMargins, margins);
-    d->addToManualSetList(QPrintEngine::PPK_PageMargins);
+    d->setProperty(QPrintEngine::PPK_PageMargins, margins);
     d->hasCustomPageMargins = true;
 }
 
@@ -1732,8 +1707,7 @@ void QPrinter::setWinPageSize(int pageSize)
 {
     Q_D(QPrinter);
     ABORT_IF_ACTIVE("QPrinter::setWinPageSize");
-    d->printEngine->setProperty(QPrintEngine::PPK_WindowsPageSize, pageSize);
-    d->addToManualSetList(QPrintEngine::PPK_WindowsPageSize);
+    d->setProperty(QPrintEngine::PPK_WindowsPageSize, pageSize);
 }
 
 /*!
@@ -1881,8 +1855,7 @@ QString QPrinter::printerSelectionOption() const
 void QPrinter::setPrinterSelectionOption(const QString &option)
 {
     Q_D(QPrinter);
-    d->printEngine->setProperty(QPrintEngine::PPK_SelectionOption, option);
-    d->addToManualSetList(QPrintEngine::PPK_SelectionOption);
+    d->setProperty(QPrintEngine::PPK_SelectionOption, option);
 }
 #endif
 

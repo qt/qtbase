@@ -62,6 +62,7 @@
 #include "QtPrintSupport/qprinterinfo.h"
 #include "QtPrintSupport/qprintengine.h"
 #include "QtCore/qpointer.h"
+#include "QtCore/qset.h"
 
 #include <limits.h>
 
@@ -106,7 +107,7 @@ public:
     void setPreviewMode(bool);
 #endif
 
-    void addToManualSetList(QPrintEngine::PrintEnginePropertyKey key);
+    void setProperty(QPrintEngine::PrintEnginePropertyKey key, const QVariant &value);
 
     QPrinter::PrinterMode printerMode;
     QPrinter::OutputFormat outputFormat;
@@ -131,7 +132,7 @@ public:
     uint hasUserSetPageSize : 1;
 
     // Used to remember which properties have been manually set by the user.
-    QList<QPrintEngine::PrintEnginePropertyKey> manualSetList;
+    QSet<QPrintEngine::PrintEnginePropertyKey> m_properties;
 };
 
 QT_END_NAMESPACE
