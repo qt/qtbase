@@ -177,6 +177,7 @@ private:
 
 
 void (*QAbstractDeclarativeData::destroyed)(QAbstractDeclarativeData *, QObject *) = 0;
+void (*QAbstractDeclarativeData::destroyed_qml1)(QAbstractDeclarativeData *, QObject *) = 0;
 void (*QAbstractDeclarativeData::parentChanged)(QAbstractDeclarativeData *, QObject *, QObject *) = 0;
 void (*QAbstractDeclarativeData::signalEmitted)(QAbstractDeclarativeData *, QObject *, int, void **) = 0;
 int  (*QAbstractDeclarativeData::receivers)(QAbstractDeclarativeData *, const QObject *, int) = 0;
@@ -805,8 +806,12 @@ QObject::~QObject()
         }
     }
 
-    if (d->declarativeData)
-        QAbstractDeclarativeData::destroyed(d->declarativeData, this);
+    if (d->declarativeData) {
+        if (QAbstractDeclarativeData::destroyed)
+            QAbstractDeclarativeData::destroyed(d->declarativeData, this);
+        if (QAbstractDeclarativeData::destroyed_qml1)
+            QAbstractDeclarativeData::destroyed_qml1(d->declarativeData, this);
+    }
 
     // set ref to zero to indicate that this object has been deleted
     if (d->currentSender != 0)
@@ -1859,7 +1864,7 @@ void QObjectPrivate::setParent_helper(QObject *o)
             }
         }
     }
-    if (!isDeletingChildren && declarativeData)
+    if (!isDeletingChildren && declarativeData && QAbstractDeclarativeData::parentChanged)
         QAbstractDeclarativeData::parentChanged(declarativeData, q, o);
 }
 
