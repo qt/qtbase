@@ -231,9 +231,13 @@ void QIOSScreen::layoutWindows()
         if (!platformWindow)
             continue;
 
-        if (window->windowState() & Qt::WindowFullScreen || window->geometry() == oldGeometry)
+        // FIXME: Handle more complex cases of no-state and/or child windows when rotating
+
+        if (window->windowState() & Qt::WindowFullScreen
+                || (window->windowState() & Qt::WindowNoState && window->geometry() == oldGeometry))
             platformWindow->applyGeometry(newGeometry);
-        else if (window->windowState() & Qt::WindowMaximized || window->geometry() == oldAvailableGeometry)
+        else if (window->windowState() & Qt::WindowMaximized
+                || (window->windowState() & Qt::WindowNoState && window->geometry() == oldAvailableGeometry))
             platformWindow->applyGeometry(newAvailableGeometry);
     }
 }
