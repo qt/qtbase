@@ -520,15 +520,8 @@ QtWidgets
 ****************************************************************************
 
 
-Qt for Windows
---------------
- - QCoreApplication::arguments() changed the handling of single quotes, double quotes
-   and the backslash character, in order to match what argv[] contains.
-   In particular, single quotes are no longer removed from the argument string.
-   (QTBUG-15379, QTBUG-30628)
-
-Qt for Android
---------------
+Android
+-------
 
  - Project structure and deployment has changed with the introduction of
    androiddeployqt. Source and build files are no longer mixed, and the
@@ -541,8 +534,8 @@ Qt for Android
    QWindow::showFullScreen() to hide it.
  - Implemented support for accessibility on Android.
 
-Qt for OS X
------------
+OS X
+----
 
  - Qt for OS X is now identified by the macro Q_OS_OSX. This complements the
    existing Q_OS_DARWIN macro (which identifies the open source kernel and
@@ -560,6 +553,10 @@ Windows
 
  - [QTBUG-33409][QTBUG-8764][QTBUG-10032] Fixed virtual key mapping on
    Windows.
+ - QCoreApplication::arguments() changed the handling of single quotes, double quotes
+   and the backslash character, in order to match what argv[] contains.
+   In particular, single quotes are no longer removed from the argument string.
+   (QTBUG-15379, QTBUG-30628)
 
 X11
 ---
