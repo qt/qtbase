@@ -63,7 +63,6 @@ class ProjectBuilderMakefileGenerator : public UnixMakefileGenerator
     ProStringList fixListForOutput(const char *where);
     ProStringList fixListForOutput(const ProStringList &list);
     int     reftypeForFile(const QString &where);
-    QString sourceTreeForFile(const QString &where);
     QString projectSuffix() const;
     enum { SettingsAsList=0x01, SettingsNoQuote=0x02 };
     inline QString writeSettings(const QString &var, const char *val, int flags=0, int indent_level=0)

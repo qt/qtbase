@@ -643,18 +643,22 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                 continue;
 
             bool in_root = true;
-            QString src_key = keyFor(file), name = file;
-            if(project->isActiveConfig("flat")) {
-                QString flat_file = fileFixify(file, qmake_getpwd(), Option::output_dir, FileFixifyRelative);
-                if(flat_file.indexOf(Option::dir_sep) != -1) {
-                    QStringList dirs = flat_file.split(Option::dir_sep);
-                    name = dirs.back();
-                }
-            } else {
-                QString flat_file = fileFixify(file, qmake_getpwd(), Option::output_dir, FileFixifyRelative);
-                if(QDir::isRelativePath(flat_file) && flat_file.indexOf(Option::dir_sep) != -1) {
+            QString src_key = keyFor(file);
+
+            file = fileFixify(file, qmake_getpwd(), Option::output_dir, FileFixifyAbsolute);
+            QString name = file.split(Option::dir_sep).back();
+
+            if (!project->isActiveConfig("flat")) {
+                // Build group hierarchy for file references that match the source our build dir
+                QString relativePath = fileFixify(file, input_dir, qmake_getpwd(), FileFixifyRelative);
+                if (QDir::isRelativePath(relativePath) && relativePath.startsWith(QLatin1String("../")))
+                    relativePath = fileFixify(file, FileFixifyRelative); // Try build dir
+
+                if (QDir::isRelativePath(relativePath)
+                        && !relativePath.startsWith(QLatin1String("../"))
+                        && relativePath.indexOf(Option::dir_sep) != -1) {
                     QString last_grp("QMAKE_PBX_" + sources.at(source).groupName() + "_HEIR_GROUP");
-                    QStringList dirs = flat_file.split(Option::dir_sep);
+                    QStringList dirs = relativePath.split(Option::dir_sep);
                     name = dirs.back();
                     dirs.pop_back(); //remove the file portion as it will be added via src_key
                     for(QStringList::Iterator dir_it = dirs.begin(); dir_it != dirs.end(); ++dir_it) {
@@ -685,7 +689,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
               << "\t\t\t" << writeSettings("path", escapeFilePath(file)) << ";\n";
             if (name != file)
                 t << "\t\t\t" << writeSettings("name", escapeFilePath(name)) << ";\n";
-            t << "\t\t\t" << writeSettings("sourceTree", sourceTreeForFile(file)) << ";\n";
+            t << "\t\t\t" << writeSettings("sourceTree", "<absolute>") << ";\n";
             QString filetype = xcodeFiletypeForFilename(file);
             if (!filetype.isNull())
                 t << "\t\t\t" << writeSettings("lastKnownFileType", filetype) << ";\n";
@@ -970,7 +974,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                           << "\t\t\t" << writeSettings("name", escapeFilePath(name)) << ";\n"
                           << "\t\t\t" << writeSettings("path", escapeFilePath(library)) << ";\n"
                           << "\t\t\t" << writeSettings("refType", QString::number(reftypeForFile(library)), SettingsNoQuote) << ";\n"
-                          << "\t\t\t" << writeSettings("sourceTree", sourceTreeForFile(library)) << ";\n";
+                          << "\t\t\t" << writeSettings("sourceTree", "<absolute>") << ";\n";
                         if (is_frmwrk)
                             t << "\t\t\t" << writeSettings("lastKnownFileType", "wrapper.framework") << ";\n";
                         t << "\t\t};\n";
@@ -1123,13 +1127,15 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             //all files
             const ProStringList &files = project->values(ProKey(bundle_data[i] + ".files"));
             for(int file = 0; file < files.count(); file++) {
-                QString fn = fileFixify(files[file].toQString(), Option::output_dir, input_dir);
+                QString fn = fileFixify(files[file].toQString(), Option::output_dir, input_dir, FileFixifyAbsolute);
+                QString name = fn.split(Option::dir_sep).back();
                 QString file_ref_key = keyFor("QMAKE_PBX_BUNDLE_DATA_FILE_REF." + bundle_data[i] + "-" + fn);
                 bundle_file_refs += file_ref_key;
                 t << "\t\t" << file_ref_key << " = {\n"
                   << "\t\t\t" << writeSettings("isa", "PBXFileReference", SettingsNoQuote) << ";\n"
                   << "\t\t\t" << writeSettings("path", escapeFilePath(fn)) << ";\n"
-                  << "\t\t\t" << writeSettings("sourceTree", sourceTreeForFile(fn)) << ";\n"
+                  << "\t\t\t" << writeSettings("name", name) << ";\n"
+                  << "\t\t\t" << writeSettings("sourceTree", "<absolute>") << ";\n"
                   << "\t\t};\n";
                 QString file_key = keyFor("QMAKE_PBX_BUNDLE_DATA_FILE." + bundle_data[i] + "-" + fn);
                 bundle_files += file_key;
@@ -1800,14 +1806,6 @@ ProjectBuilderMakefileGenerator::reftypeForFile(const QString &where)
     if(QDir::isRelativePath(unescapeFilePath(where)))
         ret = 4; //relative
     return ret;
-}
-
-QString ProjectBuilderMakefileGenerator::sourceTreeForFile(const QString &where)
-{
-    Q_UNUSED(where)
-    // We always use absolute paths, instead of maintaining the SRCROOT
-    // build variable and making files relative to that.
-    return QLatin1String("<absolute>");
 }
 
 QString
