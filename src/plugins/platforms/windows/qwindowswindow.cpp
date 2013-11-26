@@ -1188,7 +1188,7 @@ void QWindowsWindow::hide_sys() const
         if (flags & Qt::Popup)
             ShowWindow(m_data.hwnd, SW_HIDE);
         else
-            SetWindowPos(m_data.hwnd,0, 0,0,0,0, SWP_HIDEWINDOW|SWP_NOSIZE|SWP_NOMOVE|SWP_NOZORDER);
+            SetWindowPos(m_data.hwnd,0, 0,0,0,0, SWP_HIDEWINDOW|SWP_NOSIZE|SWP_NOMOVE|SWP_NOZORDER|SWP_NOACTIVATE);
     }
 }
 

@@ -73,6 +73,7 @@ enum WindowsEventType // Simplify event types
     ExposeEvent = WindowEventFlag + 1,
     ActivateWindowEvent = WindowEventFlag + 2,
     DeactivateWindowEvent = WindowEventFlag + 3,
+    MouseActivateWindowEvent = WindowEventFlag + 4,
     LeaveEvent = WindowEventFlag + 5,
     CloseEvent = WindowEventFlag + 6,
     ShowEvent = WindowEventFlag + 7,
@@ -131,6 +132,8 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
     case WM_ACTIVATEAPP:
         return (int)wParamIn ?
         QtWindows::ActivateApplicationEvent : QtWindows::DeactivateApplicationEvent;
+    case WM_MOUSEACTIVATE:
+        return QtWindows::MouseActivateWindowEvent;
     case WM_ACTIVATE:
         return  LOWORD(wParamIn) == WA_INACTIVE ?
             QtWindows::DeactivateWindowEvent : QtWindows::ActivateWindowEvent;
