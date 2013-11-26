@@ -1140,7 +1140,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     //###
                 }
 
-                project->values("QMAKE_PBX_PRESCRIPT_BUILDPHASES").append(phase_key);
+                project->values("QMAKE_PBX_BUILDPHASES").append(phase_key);
                 t << "\t\t" << phase_key << " = {\n"
                   << "\t\t\t" << writeSettings("name", "Copy '" + bundle_data[i] + "' Files to Bundle") << ";\n"
                   << "\t\t\t" << writeSettings("buildActionMask", "2147483647", SettingsNoQuote) << ";\n"
