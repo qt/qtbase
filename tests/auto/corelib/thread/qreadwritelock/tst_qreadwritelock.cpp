@@ -49,9 +49,13 @@
 #ifdef Q_OS_UNIX
 #include <unistd.h>
 #endif
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-#include <windows.h>
-#define sleep(X) Sleep(X)
+#if defined(Q_OS_WIN)
+#  include <qt_windows.h>
+#  ifndef Q_OS_WINRT
+#    define sleep(X) Sleep(X)
+#  else
+#    define sleep(X) WaitForSingleObjectEx(GetCurrentThread(), X, FALSE);
+#  endif
 #endif
 
 //on solaris, threads that loop on the release bool variable
