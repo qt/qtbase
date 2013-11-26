@@ -62,7 +62,6 @@ public:
         EglDisplay,
         Connection,
         Screen,
-        GraphicsDevice,
         EglContext,
         GLXContext,
         AppTime,
@@ -90,7 +89,6 @@ public:
     void *eglDisplayForWindow(QWindow *window);
     void *connectionForWindow(QWindow *window);
     void *screenForWindow(QWindow *window);
-    void *graphicsDeviceForWindow(QWindow *window);
     void *appTime(const QXcbScreen *screen);
     void *appUserTime(const QXcbScreen *screen);
     void *getTimestamp(const QXcbScreen *screen);

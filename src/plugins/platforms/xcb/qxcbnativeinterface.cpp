@@ -76,7 +76,7 @@ static int resourceType(const QByteArray &key)
     static const QByteArray names[] = { // match QXcbNativeInterface::ResourceType
         QByteArrayLiteral("display"),  QByteArrayLiteral("egldisplay"),
         QByteArrayLiteral("connection"), QByteArrayLiteral("screen"),
-        QByteArrayLiteral("graphicsdevice"), QByteArrayLiteral("eglcontext"),
+        QByteArrayLiteral("eglcontext"),
         QByteArrayLiteral("glxcontext"), QByteArrayLiteral("apptime"),
         QByteArrayLiteral("appusertime"), QByteArrayLiteral("hintstyle"),
         QByteArrayLiteral("startupid"), QByteArrayLiteral("traywindow"),
