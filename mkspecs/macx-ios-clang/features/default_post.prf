@@ -173,6 +173,16 @@ macx-xcode {
     ios_device_family.name = TARGETED_DEVICE_FAMILY
     ios_device_family.value = $$QMAKE_IOS_TARGETED_DEVICE_FAMILY
     QMAKE_MAC_XCODE_SETTINGS += ios_device_family
+
+    # Set up default 4-inch iPhone/iPod launch image so that our apps
+    # support the full screen resolution of those devices.
+    launch_image = Default-568h@2x.png
+    copy_image.input = $$QMAKESPEC/$$launch_image
+    copy_image.output = $$OUT_PWD/$${TARGET}.xcodeproj/$$launch_image
+    copy_image.CONFIG = verbatim
+    QMAKE_SUBSTITUTES += copy_image
+    launch_images.files = $$copy_image.output
+    QMAKE_BUNDLE_DATA += launch_images
 }
 
 macx-xcode {
