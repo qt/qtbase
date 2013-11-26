@@ -101,6 +101,9 @@
 
 - (BOOL)prefersStatusBarHidden
 {
+    static bool hiddenFromPlist = infoPlistValue(@"UIStatusBarHidden", false);
+    if (hiddenFromPlist)
+        return YES;
     QWindow *focusWindow = QGuiApplication::focusWindow();
     if (!focusWindow || !focusWindow->handle())
         return [UIApplication sharedApplication].statusBarHidden;
