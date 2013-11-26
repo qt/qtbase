@@ -892,10 +892,10 @@ static inline bool discardSyncRequest(QWidget *tlw, QTLWExtra *tlwExtra)
 void QWidgetBackingStore::sync(QWidget *exposedWidget, const QRegion &exposedRegion)
 {
     QTLWExtra *tlwExtra = tlw->d_func()->maybeTopData();
-    if (discardSyncRequest(tlw, tlwExtra) || tlwExtra->inTopLevelResize)
+    if (!tlw->isVisible() || !tlwExtra || tlwExtra->inTopLevelResize)
         return;
 
-    if (!exposedWidget || !exposedWidget->internalWinId() || !exposedWidget->isVisible()
+    if (!exposedWidget || !exposedWidget->internalWinId() || !exposedWidget->isVisible() || !exposedWidget->testAttribute(Qt::WA_Mapped)
         || !exposedWidget->updatesEnabled() || exposedRegion.isEmpty()) {
         return;
     }
@@ -910,7 +910,8 @@ void QWidgetBackingStore::sync(QWidget *exposedWidget, const QRegion &exposedReg
         markDirtyOnScreen(exposedRegion, exposedWidget, exposedWidget->mapTo(tlw, QPoint()));
     else
         markDirtyOnScreen(exposedRegion, exposedWidget, QPoint());
-    sync();
+
+    doSync();
 }
 
 /*!
@@ -935,10 +936,15 @@ void QWidgetBackingStore::sync()
         return;
     }
 
+    doSync();
+}
+
+void QWidgetBackingStore::doSync()
+{
     const bool updatesDisabled = !tlw->updatesEnabled();
     bool repaintAllWidgets = false;
 
-    const bool inTopLevelResize = tlwExtra->inTopLevelResize;
+    const bool inTopLevelResize = tlw->d_func()->maybeTopData()->inTopLevelResize;
     const QRect tlwRect(topLevelRect());
     const QRect surfaceGeometry(tlwRect.topLeft(), store->size());
     if ((fullUpdatePending || inTopLevelResize || surfaceGeometry.size() != tlwRect.size()) && !updatesDisabled) {

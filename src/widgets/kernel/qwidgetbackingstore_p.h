@@ -110,6 +110,7 @@ private:
     static bool flushPaint(QWidget *widget, const QRegion &rgn);
     static void unflushPaint(QWidget *widget, const QRegion &rgn);
 
+    void doSync();
     bool bltRect(const QRect &rect, int dx, int dy, QWidget *widget);
     void releaseBuffer();
 
