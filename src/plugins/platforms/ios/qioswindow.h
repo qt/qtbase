@@ -85,7 +85,11 @@ public:
 
     WId winId() const { return WId(m_view); };
 
+    QIOSWindow *topLevelWindow() const;
+
 private:
+    void applyGeometry(const QRect &rect);
+
     QUIView *m_view;
 
     QRect m_normalGeometry;
@@ -97,6 +101,8 @@ private:
 
     inline Qt::WindowType windowType() { return static_cast<Qt::WindowType>(int(window()->flags() & Qt::WindowType_Mask)); }
     inline bool windowIsPopup() { return windowType() & Qt::Popup & ~Qt::Window; }
+
+    friend class QIOSScreen;
 };
 
 QT_END_NAMESPACE

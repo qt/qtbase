@@ -152,6 +152,7 @@ public:
     };
 
     virtual QVariant styleHint(StyleHint hint) const;
+    virtual Qt::WindowState defaultWindowState(Qt::WindowFlags) const;
 
     virtual Qt::KeyboardModifiers queryKeyboardModifiers() const;
     virtual QList<int> possibleKeys(const QKeyEvent *) const;

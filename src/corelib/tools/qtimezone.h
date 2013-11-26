@@ -77,7 +77,7 @@ public:
     typedef QVector<OffsetData> OffsetDataList;
 
     QTimeZone();
-    explicit QTimeZone(const QByteArray &olsenId);
+    explicit QTimeZone(const QByteArray &ianaId);
     explicit QTimeZone(int offsetSeconds);
     /*implicit*/ QTimeZone(const QByteArray &zoneId, int offsetSeconds, const QString &name,
               const QString &abbreviation, QLocale::Country country = QLocale::AnyCountry,
@@ -126,18 +126,18 @@ public:
 
     static QByteArray systemTimeZoneId();
 
-    static bool isTimeZoneIdAvailable(const QByteArray &olsenId);
+    static bool isTimeZoneIdAvailable(const QByteArray &ianaId);
 
     static QList<QByteArray> availableTimeZoneIds();
     static QList<QByteArray> availableTimeZoneIds(QLocale::Country country);
     static QList<QByteArray> availableTimeZoneIds(int offsetSeconds);
 
-    static QByteArray olsenIdToWindowsId(const QByteArray &olsenId);
-    static QByteArray windowsIdToDefaultOlsenId(const QByteArray &windowsId);
-    static QByteArray windowsIdToDefaultOlsenId(const QByteArray &windowsId,
+    static QByteArray ianaIdToWindowsId(const QByteArray &ianaId);
+    static QByteArray windowsIdToDefaultIanaId(const QByteArray &windowsId);
+    static QByteArray windowsIdToDefaultIanaId(const QByteArray &windowsId,
                                                 QLocale::Country country);
-    static QList<QByteArray> windowsIdToOlsenIds(const QByteArray &windowsId);
-    static QList<QByteArray> windowsIdToOlsenIds(const QByteArray &windowsId,
+    static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId);
+    static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId,
                                                  QLocale::Country country);
 
 private:

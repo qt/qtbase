@@ -98,6 +98,9 @@ mac:!nacl {
                 kernel/qcore_mac.cpp
        OBJECTIVE_SOURCES += \
                 kernel/qcore_mac_objc.mm
+
+       # We need UIKit for UIDevice
+       ios: LIBS_PRIVATE += -framework UIKit
 }
 
 nacl {

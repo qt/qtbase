@@ -42,5 +42,6 @@
 #import <UIKit/UIKit.h>
 
 @interface QIOSViewController : UIViewController
+- (BOOL)prefersStatusBarHidden;
 @end
 

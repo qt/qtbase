@@ -2,9 +2,6 @@ TARGET = qqnx
 
 QT += platformsupport-private core-private gui-private
 
-# The PPS based platform integration is currently used for both BB10 and plain QNX
-CONFIG += qqnx_pps
-
 # Uncomment this to build with support for IMF once it becomes available in the BBNDK
 #CONFIG += qqnx_imf
 
@@ -132,7 +129,8 @@ CONFIG(qqnx_pps) {
                qqnxclipboard.h \
                qqnxbuttoneventnotifier.h
 
-    LIBS += -lpps -lclipboard
+    LIBS += -lpps
+    !contains(DEFINES, QT_NO_CLIPBOARD): LIBS += -lclipboard
 
     CONFIG(qqnx_imf) {
         DEFINES += QQNX_IMF

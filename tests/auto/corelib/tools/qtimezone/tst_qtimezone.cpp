@@ -57,6 +57,7 @@ private slots:
     void nullTest();
     void dataStreamTest();
     void availableTimeZoneIds();
+    void stressTest();
     void windowsId();
     // Backend tests
     void utcTest();
@@ -75,7 +76,7 @@ private:
 
 tst_QTimeZone::tst_QTimeZone()
 {
-    // Set to true to print debug output
+    // Set to true to print debug output, test Display Names and run long stress tests
     debug = false;
 }
 
@@ -367,11 +368,59 @@ void tst_QTimeZone::availableTimeZoneIds()
     }
 }
 
+void tst_QTimeZone::stressTest()
+{
+    QList<QByteArray> idList = QTimeZone::availableTimeZoneIds();
+    foreach (const QByteArray &id, idList) {
+        QTimeZone testZone = QTimeZone(id);
+        QCOMPARE(testZone.isValid(), true);
+        QCOMPARE(testZone.id(), id);
+        QDateTime testDate = QDateTime(QDate(2015, 1, 1), QTime(0, 0, 0), Qt::UTC);
+        testZone.country();
+        testZone.comment();
+        testZone.displayName(testDate);
+        testZone.displayName(QTimeZone::DaylightTime);
+        testZone.displayName(QTimeZone::StandardTime);
+        testZone.abbreviation(testDate);
+        testZone.offsetFromUtc(testDate);
+        testZone.standardTimeOffset(testDate);
+        testZone.daylightTimeOffset(testDate);
+        testZone.hasDaylightTime();
+        testZone.isDaylightTime(testDate);
+        testZone.offsetData(testDate);
+        testZone.hasTransitions();
+        testZone.nextTransition(testDate);
+        testZone.previousTransition(testDate);
+        // Dates known to be outside possible tz file pre-calculated rules range
+        QDateTime lowDate1 = QDateTime(QDate(1800, 1, 1), QTime(0, 0, 0), Qt::UTC);
+        QDateTime lowDate2 = QDateTime(QDate(1800, 6, 1), QTime(0, 0, 0), Qt::UTC);
+        QDateTime highDate1 = QDateTime(QDate(2200, 1, 1), QTime(0, 0, 0), Qt::UTC);
+        QDateTime highDate2 = QDateTime(QDate(2200, 6, 1), QTime(0, 0, 0), Qt::UTC);
+        testZone.nextTransition(lowDate1);
+        testZone.nextTransition(lowDate2);
+        testZone.previousTransition(lowDate2);
+        testZone.previousTransition(lowDate2);
+        testZone.nextTransition(highDate1);
+        testZone.nextTransition(highDate2);
+        testZone.previousTransition(highDate1);
+        testZone.previousTransition(highDate2);
+        if (debug) {
+            // This could take a long time, depending on platform and database
+            qDebug() << "Stress test calculating transistions for" << testZone.id();
+            testZone.transitions(lowDate1, highDate1);
+        }
+        testDate.setTimeZone(testZone);
+        testDate.isValid();
+        testDate.offsetFromUtc();
+        testDate.timeZoneAbbreviation();
+    }
+}
+
 void tst_QTimeZone::windowsId()
 {
 /*
     Current Windows zones for "Central Standard Time":
-    Region      Olsen Id(s)
+    Region      IANA Id(s)
     Default     "America/Chicago"
     Canada      "America/Winnipeg America/Rainy_River America/Rankin_Inlet America/Resolute"
     Mexico      "America/Matamoros"
@@ -380,24 +429,24 @@ void tst_QTimeZone::windowsId()
                 "America/North_Dakota/New_Salem"
     AnyCountry  "CST6CDT"
 */
-    QCOMPARE(QTimeZone::olsenIdToWindowsId("America/Chicago"),
+    QCOMPARE(QTimeZone::ianaIdToWindowsId("America/Chicago"),
              QByteArray("Central Standard Time"));
-    QCOMPARE(QTimeZone::olsenIdToWindowsId("America/Resolute"),
+    QCOMPARE(QTimeZone::ianaIdToWindowsId("America/Resolute"),
              QByteArray("Central Standard Time"));
 
     // Partials shouldn't match
-    QCOMPARE(QTimeZone::olsenIdToWindowsId("America/Chi"), QByteArray());
-    QCOMPARE(QTimeZone::olsenIdToWindowsId("InvalidZone"), QByteArray());
-    QCOMPARE(QTimeZone::olsenIdToWindowsId(QByteArray()), QByteArray());
+    QCOMPARE(QTimeZone::ianaIdToWindowsId("America/Chi"), QByteArray());
+    QCOMPARE(QTimeZone::ianaIdToWindowsId("InvalidZone"), QByteArray());
+    QCOMPARE(QTimeZone::ianaIdToWindowsId(QByteArray()), QByteArray());
 
     // Check default value
-    QCOMPARE(QTimeZone::windowsIdToDefaultOlsenId("Central Standard Time"),
+    QCOMPARE(QTimeZone::windowsIdToDefaultIanaId("Central Standard Time"),
              QByteArray("America/Chicago"));
-    QCOMPARE(QTimeZone::windowsIdToDefaultOlsenId("Central Standard Time", QLocale::Canada),
+    QCOMPARE(QTimeZone::windowsIdToDefaultIanaId("Central Standard Time", QLocale::Canada),
              QByteArray("America/Winnipeg"));
-    QCOMPARE(QTimeZone::windowsIdToDefaultOlsenId("Central Standard Time", QLocale::AnyCountry),
+    QCOMPARE(QTimeZone::windowsIdToDefaultIanaId("Central Standard Time", QLocale::AnyCountry),
              QByteArray("CST6CDT"));
-    QCOMPARE(QTimeZone::windowsIdToDefaultOlsenId(QByteArray()), QByteArray());
+    QCOMPARE(QTimeZone::windowsIdToDefaultIanaId(QByteArray()), QByteArray());
 
     // No country is sorted list of all zones
     QList<QByteArray> list;
@@ -406,39 +455,39 @@ void tst_QTimeZone::windowsId()
          << "America/North_Dakota/Center" << "America/North_Dakota/New_Salem"
          << "America/Rainy_River" << "America/Rankin_Inlet" << "America/Resolute"
          << "America/Winnipeg" << "CST6CDT";
-    QCOMPARE(QTimeZone::windowsIdToOlsenIds("Central Standard Time"), list);
+    QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time"), list);
 
     // Check country with no match returns empty list
     list.clear();
-    QCOMPARE(QTimeZone::windowsIdToOlsenIds("Central Standard Time", QLocale::NewZealand),
+    QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::NewZealand),
              list);
 
     // Check valid country returns list in preference order
     list.clear();
     list << "America/Winnipeg" << "America/Rainy_River" << "America/Rankin_Inlet"
          << "America/Resolute";
-    QCOMPARE(QTimeZone::windowsIdToOlsenIds("Central Standard Time", QLocale::Canada), list);
+    QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::Canada), list);
 
     list.clear();
     list << "America/Matamoros";
-    QCOMPARE(QTimeZone::windowsIdToOlsenIds("Central Standard Time", QLocale::Mexico), list);
+    QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::Mexico), list);
 
     list.clear();
     list << "America/Chicago" << "America/Indiana/Knox" << "America/Indiana/Tell_City"
          << "America/Menominee" << "America/North_Dakota/Beulah" << "America/North_Dakota/Center"
          << "America/North_Dakota/New_Salem";
-    QCOMPARE(QTimeZone::windowsIdToOlsenIds("Central Standard Time", QLocale::UnitedStates),
+    QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::UnitedStates),
              list);
 
     list.clear();
     list << "CST6CDT";
-    QCOMPARE(QTimeZone::windowsIdToOlsenIds("Central Standard Time", QLocale::AnyCountry),
+    QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::AnyCountry),
              list);
 
     // Check no windowsId return empty
     list.clear();
-    QCOMPARE(QTimeZone::windowsIdToOlsenIds(QByteArray()), list);
-    QCOMPARE(QTimeZone::windowsIdToOlsenIds(QByteArray(), QLocale::AnyCountry), list);
+    QCOMPARE(QTimeZone::windowsIdToIanaIds(QByteArray()), list);
+    QCOMPARE(QTimeZone::windowsIdToIanaIds(QByteArray(), QLocale::AnyCountry), list);
 }
 
 void tst_QTimeZone::utcTest()
@@ -639,10 +688,11 @@ void tst_QTimeZone::tzTest()
     QCOMPARE(dat.standardTimeOffset, 3600);
     QCOMPARE(dat.daylightTimeOffset, 0);
 
+    // Test previous to low value is invalid
     dat = tzp.previousTransition(-9999999999999);
-    QCOMPARE(dat.atMSecsSinceEpoch, (qint64)-2422054408000);
-    QCOMPARE(dat.standardTimeOffset, 3600);
-    QCOMPARE(dat.daylightTimeOffset, 0);
+    QCOMPARE(dat.atMSecsSinceEpoch, std::numeric_limits<qint64>::min());
+    QCOMPARE(dat.standardTimeOffset, std::numeric_limits<int>::min());
+    QCOMPARE(dat.daylightTimeOffset, std::numeric_limits<int>::min());
 
     dat = tzp.nextTransition(-9999999999999);
     QCOMPARE(dat.atMSecsSinceEpoch, (qint64)-2422054408000);

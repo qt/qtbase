@@ -715,10 +715,6 @@ void QWidgetWindow::handleWindowStateChangedEvent(QWindowStateChangeEvent *event
         break;
     }
 
-    // Note that widgetState == m_widget->data->window_state when triggered by QWidget::setWindowState().
-    if (!(widgetState & Qt::WindowMinimized))
-        m_widget->setAttribute(Qt::WA_Mapped);
-
     // Sent event if the state changed (that is, it is not triggered by
     // QWidget::setWindowState(), which also sends an event to the widget).
     if (widgetState != int(m_widget->data->window_state)) {

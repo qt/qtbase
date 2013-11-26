@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -177,6 +178,7 @@ private:
 
 
 void (*QAbstractDeclarativeData::destroyed)(QAbstractDeclarativeData *, QObject *) = 0;
+void (*QAbstractDeclarativeData::destroyed_qml1)(QAbstractDeclarativeData *, QObject *) = 0;
 void (*QAbstractDeclarativeData::parentChanged)(QAbstractDeclarativeData *, QObject *, QObject *) = 0;
 void (*QAbstractDeclarativeData::signalEmitted)(QAbstractDeclarativeData *, QObject *, int, void **) = 0;
 int  (*QAbstractDeclarativeData::receivers)(QAbstractDeclarativeData *, const QObject *, int) = 0;
@@ -805,8 +807,12 @@ QObject::~QObject()
         }
     }
 
-    if (d->declarativeData)
-        QAbstractDeclarativeData::destroyed(d->declarativeData, this);
+    if (d->declarativeData) {
+        if (QAbstractDeclarativeData::destroyed)
+            QAbstractDeclarativeData::destroyed(d->declarativeData, this);
+        if (QAbstractDeclarativeData::destroyed_qml1)
+            QAbstractDeclarativeData::destroyed_qml1(d->declarativeData, this);
+    }
 
     // set ref to zero to indicate that this object has been deleted
     if (d->currentSender != 0)
@@ -847,9 +853,9 @@ QObject::~QObject()
 
                     // The destroy operation must happen outside the lock
                     if (c->isSlotObject) {
+                        c->isSlotObject = false;
                         locker.unlock();
                         c->slotObj->destroyIfLastRef();
-                        c->isSlotObject = false;
                         locker.relock();
                     }
                     c->deref();
@@ -864,15 +870,29 @@ QObject::~QObject()
             d->connectionLists = 0;
         }
 
-        // disconnect all senders
+        /* Disconnect all senders:
+         * This loop basically just does
+         *     for (node = d->senders; node; node = node->next) { ... }
+         *
+         * We need to temporarily unlock the receiver mutex to destroy the functors or to lock the
+         * sender's mutex. And when the mutex is released, node->next might be destroyed by another
+         * thread. That's why we set node->prev to &node, that way, if node is destroyed, node will
+         * be updated.
+         */
         QObjectPrivate::Connection *node = d->senders;
         while (node) {
             QObject *sender = node->sender;
+            // Send disconnectNotify before removing the connection from sender's connection list.
+            // This ensures any eventual destructor of sender will block on getting receiver's lock
+            // and not finish until we release it.
+            sender->disconnectNotify(QMetaObjectPrivate::signal(sender->metaObject(), node->signal_index));
             QMutex *m = signalSlotLock(sender);
             node->prev = &node;
             bool needToUnlock = QOrderedMutexLocker::relock(signalSlotMutex, m);
             //the node has maybe been removed while the mutex was unlocked in relock?
             if (!node || node->sender != sender) {
+                // We hold the wrong mutex
+                Q_ASSERT(needToUnlock);
                 m->unlock();
                 continue;
             }
@@ -880,8 +900,6 @@ QObject::~QObject()
             QObjectConnectionListVector *senderLists = sender->d_func()->connectionLists;
             if (senderLists)
                 senderLists->dirty = true;
-
-            int signal_index = node->signal_index;
 
             QtPrivate::QSlotObjectBase *slotObj = Q_NULLPTR;
             if (node->isSlotObject) {
@@ -894,12 +912,12 @@ QObject::~QObject()
                 m->unlock();
 
             if (slotObj) {
+                if (node)
+                    node->prev = &node;
                 locker.unlock();
                 slotObj->destroyIfLastRef();
                 locker.relock();
             }
-
-            sender->disconnectNotify(QMetaObjectPrivate::signal(sender->metaObject(), signal_index));
         }
     }
 
@@ -1858,7 +1876,7 @@ void QObjectPrivate::setParent_helper(QObject *o)
             }
         }
     }
-    if (!isDeletingChildren && declarativeData)
+    if (!isDeletingChildren && declarativeData && QAbstractDeclarativeData::parentChanged)
         QAbstractDeclarativeData::parentChanged(declarativeData, q, o);
 }
 
@@ -3163,7 +3181,7 @@ bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
                            && (slot == 0 || (c->isSlotObject && c->slotObj->compare(slot)))))) {
             bool needToUnlock = false;
             QMutex *receiverMutex = 0;
-            if (!receiver) {
+            if (c->receiver) {
                 receiverMutex = signalSlotLock(c->receiver);
                 // need to relock this receiver and sender in the correct order
                 needToUnlock = QOrderedMutexLocker::relock(senderMutex, receiverMutex);
@@ -3180,9 +3198,9 @@ bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
             c->receiver = 0;
 
             if (c->isSlotObject) {
+                c->isSlotObject = false;
                 senderMutex->unlock();
                 c->slotObj->destroyIfLastRef();
-                c->isSlotObject = false;
                 senderMutex->lock();
             }
 
@@ -3211,8 +3229,7 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender,
     QObject *s = const_cast<QObject *>(sender);
 
     QMutex *senderMutex = signalSlotLock(sender);
-    QMutex *receiverMutex = receiver ? signalSlotLock(receiver) : 0;
-    QOrderedMutexLocker locker(senderMutex, receiverMutex);
+    QMutexLocker locker(senderMutex);
 
     QObjectConnectionListVector *connectionLists = QObjectPrivate::get(s)->connectionLists;
     if (!connectionLists)

@@ -6999,23 +6999,23 @@ void QWidget::setUpdatesEnabled(bool enable)
 }
 
 /*!
-    Shows the widget and its child widgets. This function is
-    equivalent to setVisible(true) in the normal case, and equivalent
-    to showFullScreen() if the QStyleHints::showIsFullScreen() hint
-    is true and the window is not a popup.
+    Shows the widget and its child widgets.
 
-    \sa raise(), showEvent(), hide(), setVisible(), showMinimized(), showMaximized(),
-    showNormal(), isVisible(), windowFlags()
+    This is equivalent to calling showFullScreen(), showMaximized(), or setVisible(true),
+    depending on the platform's default behavior for the window flags.
+
+     \sa raise(), showEvent(), hide(), setVisible(), showMinimized(), showMaximized(),
+    showNormal(), isVisible(), windowFlags(), flags()
 */
 void QWidget::show()
 {
-    bool isPopup = data->window_flags & Qt::Popup & ~Qt::Window;
-    if (isWindow() && !isPopup && qApp->styleHints()->showIsFullScreen())
+    Qt::WindowState defaultState = QGuiApplicationPrivate::platformIntegration()->defaultWindowState(data->window_flags);
+    if (defaultState == Qt::WindowFullScreen)
         showFullScreen();
-    else if (isWindow() && !(data->window_flags & Qt::Dialog & ~Qt::Window) && !isPopup && QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::ShowIsMaximized).toBool())
+    else if (defaultState == Qt::WindowMaximized)
         showMaximized();
     else
-        setVisible(true);
+        setVisible(true); // FIXME: Why not showNormal(), like QWindow::show()?
 }
 
 /*! \internal

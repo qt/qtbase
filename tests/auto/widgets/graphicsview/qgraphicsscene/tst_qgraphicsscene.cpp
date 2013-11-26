@@ -4072,6 +4072,7 @@ void tst_QGraphicsScene::isActive()
 
 
     {
+        const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
         QWidget toplevel2;
         QHBoxLayout *layout = new QHBoxLayout;
         toplevel2.setLayout(layout);
@@ -4085,12 +4086,13 @@ void tst_QGraphicsScene::isActive()
         QVERIFY(!scene1.hasFocus());
         QVERIFY(!scene2.hasFocus());
 
+        toplevel2.move(availableGeometry.topLeft() + QPoint(50, 50));
         toplevel2.show();
         QApplication::setActiveWindow(&toplevel2);
         QVERIFY(QTest::qWaitForWindowActive(&toplevel2));
         QCOMPARE(QApplication::activeWindow(), &toplevel2);
 
-        QVERIFY(scene1.isActive());
+        QTRY_VERIFY(scene1.isActive());
         QVERIFY(!scene2.isActive());
         QVERIFY(scene1.hasFocus());
         QVERIFY(!scene2.hasFocus());
@@ -4133,6 +4135,7 @@ void tst_QGraphicsScene::isActive()
         QVERIFY(!scene2.hasFocus());
 
         QGraphicsView topLevelView;
+        topLevelView.move(availableGeometry.topLeft() + QPoint(500, 50));
         topLevelView.show();
         QApplication::setActiveWindow(&topLevelView);
         topLevelView.setFocus();

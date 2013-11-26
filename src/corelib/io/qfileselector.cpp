@@ -359,6 +359,8 @@ QStringList QFileSelectorPrivate::platformSelectors()
     ret << QStringLiteral("android");
 #  elif defined(Q_OS_BLACKBERRY)
     ret << QStringLiteral("blackberry");
+#  elif defined(Q_OS_QNX)
+    ret << QStringLiteral("qnx");
 #  elif defined(Q_OS_IOS)
     ret << QStringLiteral("ios");
 #  elif defined(Q_OS_LINUX)

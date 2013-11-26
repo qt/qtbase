@@ -364,6 +364,20 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
     return 0;
 }
 
+Qt::WindowState QPlatformIntegration::defaultWindowState(Qt::WindowFlags flags) const
+{
+    // Leave popup-windows as is
+    if (flags & Qt::Popup & ~Qt::Window)
+        return Qt::WindowNoState;
+
+    if (styleHint(QPlatformIntegration::ShowIsFullScreen).toBool())
+        return Qt::WindowFullScreen;
+    else if (styleHint(QPlatformIntegration::ShowIsMaximized).toBool())
+        return Qt::WindowMaximized;
+
+    return Qt::WindowNoState;
+}
+
 Qt::KeyboardModifiers QPlatformIntegration::queryKeyboardModifiers() const
 {
     return QGuiApplication::keyboardModifiers();

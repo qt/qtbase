@@ -139,6 +139,8 @@ QIOSScreen::QIOSScreen(unsigned int screenIndex)
         m_unscaledDpi = 163; // Regular iPhone DPI
     }
 
+    connect(qGuiApp, &QGuiApplication::focusWindowChanged, this, &QIOSScreen::updateStatusBarVisibility);
+
     updateProperties();
 }
 
@@ -156,7 +158,7 @@ void QIOSScreen::updateProperties()
     }
 
     bool inPortrait = UIInterfaceOrientationIsPortrait(uiWindow.rootViewController.interfaceOrientation);
-    QRect geometry = inPortrait ? fromCGRect(m_uiScreen.bounds)
+    QRect geometry = inPortrait ? fromCGRect(m_uiScreen.bounds).toRect()
         : QRect(m_uiScreen.bounds.origin.x, m_uiScreen.bounds.origin.y,
             m_uiScreen.bounds.size.height, m_uiScreen.bounds.size.width);
 
@@ -182,7 +184,66 @@ void QIOSScreen::updateProperties()
     }
 
     if (screen())
-        resizeMaximizedWindows();
+        layoutWindows();
+}
+
+void QIOSScreen::updateStatusBarVisibility()
+{
+    QWindow *focusWindow = QGuiApplication::focusWindow();
+
+    // If we don't have a focus window we leave the status
+    // bar as is, so that the user can activate a new window
+    // with the same window state without the status bar jumping
+    // back and forth.
+    if (!focusWindow)
+        return;
+
+    UIView *view = reinterpret_cast<UIView *>(focusWindow->handle()->winId());
+#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_7_0)
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_7_0) {
+        [view.viewController setNeedsStatusBarAppearanceUpdate];
+    } else
+#endif
+    {
+        bool wasHidden = [UIApplication sharedApplication].statusBarHidden;
+        QIOSViewController *viewController = static_cast<QIOSViewController *>(view.viewController);
+        [[UIApplication sharedApplication]
+            setStatusBarHidden:[viewController prefersStatusBarHidden]
+            withAnimation:UIStatusBarAnimationNone];
+
+        if ([UIApplication sharedApplication].statusBarHidden != wasHidden)
+            updateProperties();
+    }
+}
+
+void QIOSScreen::layoutWindows()
+{
+    QList<QWindow*> windows = QGuiApplication::topLevelWindows();
+
+    const QRect oldGeometry = screen()->geometry();
+    const QRect oldAvailableGeometry = screen()->availableGeometry();
+    const QRect newGeometry = geometry();
+    const QRect newAvailableGeometry = availableGeometry();
+
+    for (int i = 0; i < windows.size(); ++i) {
+        QWindow *window = windows.at(i);
+
+        if (platformScreenForWindow(window) != this)
+            continue;
+
+        QIOSWindow *platformWindow = static_cast<QIOSWindow *>(window->handle());
+        if (!platformWindow)
+            continue;
+
+        // FIXME: Handle more complex cases of no-state and/or child windows when rotating
+
+        if (window->windowState() & Qt::WindowFullScreen
+                || (window->windowState() & Qt::WindowNoState && window->geometry() == oldGeometry))
+            platformWindow->applyGeometry(newGeometry);
+        else if (window->windowState() & Qt::WindowMaximized
+                || (window->windowState() & Qt::WindowNoState && window->geometry() == oldAvailableGeometry))
+            platformWindow->applyGeometry(newAvailableGeometry);
+    }
 }
 
 QRect QIOSScreen::geometry() const
@@ -246,5 +307,7 @@ UIScreen *QIOSScreen::uiScreen() const
 {
     return m_uiScreen;
 }
+
+#include "moc_qiosscreen.cpp"
 
 QT_END_NAMESPACE

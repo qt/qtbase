@@ -146,12 +146,12 @@ public:
     static bool isValidId(const QByteArray &olsenId);
     static QString isoOffsetFormat(int offsetFromUtc);
 
-    static QByteArray olsenIdToWindowsId(const QByteArray &olsenId);
-    static QByteArray windowsIdToDefaultOlsenId(const QByteArray &windowsId);
-    static QByteArray windowsIdToDefaultOlsenId(const QByteArray &windowsId,
+    static QByteArray ianaIdToWindowsId(const QByteArray &ianaId);
+    static QByteArray windowsIdToDefaultIanaId(const QByteArray &windowsId);
+    static QByteArray windowsIdToDefaultIanaId(const QByteArray &windowsId,
                                                 QLocale::Country country);
-    static QList<QByteArray> windowsIdToOlsenIds(const QByteArray &windowsId);
-    static QList<QByteArray> windowsIdToOlsenIds(const QByteArray &windowsId,
+    static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId);
+    static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId,
                                                  QLocale::Country country);
 
 protected:
@@ -309,6 +309,7 @@ private:
         bool operator==(const QTzTransitionRule &other) { return (stdOffset == other.stdOffset
         && dstOffset == other.dstOffset && abbreviationIndex == other.abbreviationIndex); }
     };
+    Data dataForTzTransition(QTzTransitionTime tran) const;
     QList<QTzTransitionTime> m_tranTimes;
     QList<QTzTransitionRule> m_tranRules;
     QList<QByteArray> m_abbreviations;

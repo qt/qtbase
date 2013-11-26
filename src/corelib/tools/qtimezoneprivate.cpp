@@ -264,7 +264,8 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs) 
     // If the local msecs is less than the real local time of the transition
     // then get the previous transition to use instead
     if (forLocalMSecs < tran.atMSecsSinceEpoch + (tran.offsetFromUtc * 1000)) {
-        while (forLocalMSecs < tran.atMSecsSinceEpoch + (tran.offsetFromUtc * 1000)) {
+        while (tran.atMSecsSinceEpoch != invalidMSecs()
+               && forLocalMSecs < tran.atMSecsSinceEpoch + (tran.offsetFromUtc * 1000)) {
             nextTran = tran;
             tran = previousTransition(tran.atMSecsSinceEpoch);
         }
@@ -272,7 +273,8 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs) 
         // The zone msecs is after the transition, so check it is before the next tran
         // If not try use the next transition instead
         nextTran = nextTransition(tran.atMSecsSinceEpoch);
-        while (forLocalMSecs >= nextTran.atMSecsSinceEpoch + (nextTran.offsetFromUtc * 1000)) {
+        while (nextTran.atMSecsSinceEpoch != invalidMSecs()
+               && forLocalMSecs >= nextTran.atMSecsSinceEpoch + (nextTran.offsetFromUtc * 1000)) {
             tran = nextTran;
             nextTran = nextTransition(tran.atMSecsSinceEpoch);
         }
@@ -292,7 +294,8 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs) 
             // then use the prev tran as we default to the FirstOccurrence
             // TODO Check if faster to just always get prev tran, or if faster using 6 hour check.
             Data dstTran = previousTransition(tran.atMSecsSinceEpoch);
-            if (dstTran.daylightTimeOffset > 0 && diffPrevTran < (dstTran.daylightTimeOffset * 1000))
+            if (dstTran.atMSecsSinceEpoch != invalidMSecs()
+                && dstTran.daylightTimeOffset > 0 && diffPrevTran < (dstTran.daylightTimeOffset * 1000))
                 tran = dstTran;
         } else if (diffNextTran >= 0 && diffNextTran <= (nextTran.daylightTimeOffset * 1000)) {
             // If time falls within last hour of standard time then is actually the missing hour
@@ -328,10 +331,11 @@ QTimeZonePrivate::DataList QTimeZonePrivate::transitions(qint64 fromMSecsSinceEp
                                                          qint64 toMSecsSinceEpoch) const
 {
     DataList list;
-    if (toMSecsSinceEpoch > fromMSecsSinceEpoch) {
+    if (toMSecsSinceEpoch >= fromMSecsSinceEpoch) {
         // fromMSecsSinceEpoch is inclusive but nextTransitionTime() is exclusive so go back 1 msec
         Data next = nextTransition(fromMSecsSinceEpoch - 1);
-        while (next.atMSecsSinceEpoch <= toMSecsSinceEpoch) {
+        while (next.atMSecsSinceEpoch != invalidMSecs()
+               && next.atMSecsSinceEpoch <= toMSecsSinceEpoch) {
             list.append(next);
             next = nextTransition(next.atMSecsSinceEpoch);
         }
@@ -477,7 +481,7 @@ QString QTimeZonePrivate::isoOffsetFormat(int offsetFromUtc)
                                           .arg(qAbs(mins) % 60, 2, 10, QLatin1Char('0'));
 }
 
-QByteArray QTimeZonePrivate::olsenIdToWindowsId(const QByteArray &id)
+QByteArray QTimeZonePrivate::ianaIdToWindowsId(const QByteArray &id)
 {
     for (int i = 0; i < zoneDataTableSize; ++i) {
         const QZoneData *data = zoneData(i);
@@ -487,7 +491,7 @@ QByteArray QTimeZonePrivate::olsenIdToWindowsId(const QByteArray &id)
     return QByteArray();
 }
 
-QByteArray QTimeZonePrivate::windowsIdToDefaultOlsenId(const QByteArray &windowsId)
+QByteArray QTimeZonePrivate::windowsIdToDefaultIanaId(const QByteArray &windowsId)
 {
     const quint16 windowsIdKey = toWindowsIdKey(windowsId);
     for (int i = 0; i < windowsDataTableSize; ++i) {
@@ -498,17 +502,17 @@ QByteArray QTimeZonePrivate::windowsIdToDefaultOlsenId(const QByteArray &windows
     return QByteArray();
 }
 
-QByteArray QTimeZonePrivate::windowsIdToDefaultOlsenId(const QByteArray &windowsId,
+QByteArray QTimeZonePrivate::windowsIdToDefaultIanaId(const QByteArray &windowsId,
                                                        QLocale::Country country)
 {
-    const QList<QByteArray> list = windowsIdToOlsenIds(windowsId, country);
+    const QList<QByteArray> list = windowsIdToIanaIds(windowsId, country);
     if (list.count() > 0)
         return list.first();
     else
         return QByteArray();
 }
 
-QList<QByteArray> QTimeZonePrivate::windowsIdToOlsenIds(const QByteArray &windowsId)
+QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windowsId)
 {
     const quint16 windowsIdKey = toWindowsIdKey(windowsId);
     QList<QByteArray> list;
@@ -524,7 +528,7 @@ QList<QByteArray> QTimeZonePrivate::windowsIdToOlsenIds(const QByteArray &window
     return list;
 }
 
-QList<QByteArray> QTimeZonePrivate::windowsIdToOlsenIds(const QByteArray &windowsId,
+QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windowsId,
                                                         QLocale::Country country)
 {
     const quint16 windowsIdKey = toWindowsIdKey(windowsId);

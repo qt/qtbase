@@ -629,6 +629,7 @@ CFG_JAVASCRIPTCORE_JIT=auto
 CFG_PKGCONFIG=auto
 CFG_STACK_PROTECTOR_STRONG=auto
 CFG_SLOG2=auto
+CFG_PPS=auto
 CFG_SYSTEM_PROXIES=no
 
 # Target architecture
@@ -1769,6 +1770,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    pps)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_PPS="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     gtkstyle)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_QGTKSTYLE="$VAL"
@@ -1918,7 +1926,11 @@ while [ "$#" -gt 0 ]; do
                 break
             fi
         done
-        [ "$found" = yes ] || ERROR=yes
+        if [ "$found" != "yes" ]; then
+            echo "$CURRENT_OPT: unknown argument"
+            ERROR=yes
+            continue
+        fi
 
         if [ "$VAR" = "sql" ]; then
             # set the CFG_SQL_driver
@@ -1941,9 +1953,6 @@ while [ "$#" -gt 0 ]; do
             IN_VAR="${VAR}"
 	    QMakeVar del "${IN_VAR}s" "$VAL"
 	    QMakeVar del "${PLUG_VAR}s" "$VAL"
-        fi
-        if [ "$ERROR" = "yes" ]; then
-           echo "$CURRENT_OPT: unknown argument"
         fi
         ;;
     v|verbose)
@@ -2454,6 +2463,9 @@ QNX/Blackberry options:
 
     -no-slog2 .......... Do not compile with slog2 support.
     -slog2 ............. Compile with slog2 support.
+
+    -no-pps ............ Do not compile with pps support.
+    -pps ............... Compile with pps support.
 
 MacOS/iOS options:
 
@@ -3318,7 +3330,7 @@ if [ "$XPLATFORM_IOS" = "yes" ]; then
     CFG_NOBUILD_PARTS="$CFG_NOBUILD_PARTS examples tests"
     CFG_SHARED="no" # iOS builds should be static to be able to submit to the App Store
     CFG_CXX11="no" # C++11 support disabled for now
-    CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtconnectivity qtdoc qtgraphicaleffects qtlocation qtmacextras qtmultimedia qtquickcontrols qtserialport qttools qtwebkit qtwebkit-examples"
+    CFG_SKIP_MODULES="$CFG_SKIP_MODULES qtconnectivity qtdoc qtlocation qtmacextras qtserialport qttools qtwebkit qtwebkit-examples"
 
     # If the user passes -sdk on the command line we build a SDK-specific Qt build.
     # Otherwise we build a joined simulator and device build, which is the default.
@@ -4342,6 +4354,15 @@ if [ "$XPLATFORM_QNX" = "yes" ]; then
             QMAKE_CONFIG="$QMAKE_CONFIG slog2"
         else
             CFG_SLOG2=no
+        fi
+    fi
+
+    if [ "$CFG_PPS" != "no" ]; then
+        if compileTest unix/pps "pps"; then
+            CFG_PPS=yes
+            QMAKE_CONFIG="$QMAKE_CONFIG qqnx_pps"
+        else
+            CFG_PPS=no
         fi
     fi
 fi
@@ -6684,8 +6705,10 @@ if [ "$CFG_XCB" != "no" ]; then
     report_support "      XVideo ............." "$CFG_XVIDEO"
 fi
 report_support "  Session management ....." "$CFG_SM"
-[ "$XPLATFORM_QNX" = "yes" ] && \
+if [ "$XPLATFORM_QNX" = "yes" ]; then
     report_support "  SLOG2 .................." "$CFG_SLOG2"
+    report_support "  PPS ...................." "$CFG_PPS"
+fi
 report_support "  SQL drivers:"
 report_support "    DB2 .................." "$CFG_SQL_db2" plugin "plugin" yes "built into QtSql"
 report_support "    InterBase ............" "$CFG_SQL_ibase" plugin "plugin" yes "built into QtSql"

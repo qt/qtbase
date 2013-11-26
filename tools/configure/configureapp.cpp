@@ -194,6 +194,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "QT_CUPS" ]         = "auto";
     dictionary[ "CFG_GCC_SYSROOT" ] = "yes";
     dictionary[ "SLOG2" ]           = "no";
+    dictionary[ "PPS" ]             = "no";
     dictionary[ "SYSTEM_PROXIES" ]  = "no";
     dictionary[ "WERROR" ]          = "auto";
     dictionary[ "QREAL" ]           = "double";
@@ -879,6 +880,10 @@ void Configure::parseCmdLine()
             dictionary[ "SLOG2" ] = "no";
         } else if (configCmdLine.at(i) == "-slog2") {
             dictionary[ "SLOG2" ] = "yes";
+        } else if (configCmdLine.at(i) == "-no-pps") {
+            dictionary[ "PPS" ] = "no";
+        } else if (configCmdLine.at(i) == "-pps") {
+            dictionary[ "PPS" ] = "yes";
         } else if (configCmdLine.at(i) == "-no-system-proxies") {
             dictionary[ "SYSTEM_PROXIES" ] = "no";
         } else if (configCmdLine.at(i) == "-system-proxies") {
@@ -1648,6 +1653,7 @@ void Configure::applySpecSpecifics()
     } else if ((platform() == QNX) || (platform() == BLACKBERRY)) {
         dictionary["STACK_PROTECTOR_STRONG"] = "auto";
         dictionary["SLOG2"]                 = "auto";
+        dictionary["PPS"]                   = "auto";
         dictionary["QT_XKBCOMMON"]          = "no";
         dictionary[ "ANGLE" ]               = "no";
         dictionary[ "FONT_CONFIG" ]         = "auto";
@@ -1864,6 +1870,9 @@ bool Configure::displayHelp()
         if ((platform() == QNX) || (platform() == BLACKBERRY)) {
             desc("SLOG2", "yes",  "-slog2",             "Compile with slog2 support.");
             desc("SLOG2", "no",  "-no-slog2",           "Do not compile with slog2 support.");
+
+            desc("PPS", "yes",  "-pps",                 "Compile with PPS support.");
+            desc("PPS", "no",  "-no-pps",               "Do not compile with PPS support.");
         }
 
         desc("ANGLE", "yes",       "-angle",            "Use the ANGLE implementation of OpenGL ES 2.0.");
@@ -2203,6 +2212,8 @@ bool Configure::checkAvailability(const QString &part)
         available = (platform() == QNX || platform() == BLACKBERRY) && compilerSupportsFlag("qcc -fstack-protector-strong");
     } else if (part == "SLOG2") {
         available = tryCompileProject("unix/slog2");
+    } else if (part == "PPS") {
+        available = (platform() == QNX || platform() == BLACKBERRY) && tryCompileProject("unix/pps");
     } else if (part == "NEON") {
         available = (dictionary["QT_ARCH"] == "arm") && tryCompileProject("unix/neon");
     } else if (part == "FONT_CONFIG") {
@@ -2346,6 +2357,10 @@ void Configure::autoDetection()
 
     if ((platform() == QNX || platform() == BLACKBERRY) && dictionary["SLOG2"] == "auto") {
         dictionary["SLOG2"] = checkAvailability("SLOG2") ? "yes" : "no";
+    }
+
+    if (dictionary["PPS"] == "auto") {
+        dictionary["PPS"] = checkAvailability("PPS") ? "yes" : "no";
     }
 
     if (dictionary["QT_EVENTFD"] == "auto")
@@ -3174,6 +3189,9 @@ void Configure::generateQConfigPri()
         if (dictionary[ "SLOG2" ] == "yes")
             configStream << " slog2";
 
+        if (dictionary[ "PPS" ] == "yes")
+            configStream << " qqnx_pps";
+
         if (dictionary["DIRECTWRITE"] == "yes")
             configStream << " directwrite";
 
@@ -3540,8 +3558,10 @@ void Configure::displayConfig()
     sout << "    HarfBuzz-NG support....." << dictionary[ "HARFBUZZ" ] << endl;
     sout << "    PCRE support............" << dictionary[ "PCRE" ] << endl;
     sout << "    ICU support............." << dictionary[ "ICU" ] << endl;
-    if ((platform() == QNX) || (platform() == BLACKBERRY))
+    if ((platform() == QNX) || (platform() == BLACKBERRY)) {
         sout << "    SLOG2 support..........." << dictionary[ "SLOG2" ] << endl;
+        sout << "    PPS support............." << dictionary[ "PPS" ] << endl;
+    }
     sout << "    ANGLE..................." << dictionary[ "ANGLE" ] << endl;
     sout << endl;
 

@@ -305,7 +305,7 @@ static void calculateTransitionsForYear(const QWinTimeZonePrivate::QWinTransitio
     QDate daylightDate = calculateTransitionLocalDate(rule.daylightTimeRule, year);
     QTime daylightTime = QTime(rule.daylightTimeRule.wHour, rule.daylightTimeRule.wMinute,
                                rule.daylightTimeRule.wSecond);
-    if (standardDate.isValid() && standardTime.isValid())
+    if (daylightDate.isValid() && daylightTime.isValid())
         *dstMSecs = timeToMSecs(daylightDate, daylightTime) + (rule.standardTimeBias * 60000);
     else
         *dstMSecs = QTimeZonePrivate::invalidMSecs();
@@ -362,7 +362,7 @@ void QWinTimeZonePrivate::init(const QByteArray &olsenId)
         m_windowsId = windowsSystemZoneId();
         m_id = systemTimeZoneId();
     } else {
-        m_windowsId = olsenIdToWindowsId(olsenId);
+        m_windowsId = ianaIdToWindowsId(olsenId);
         m_id = olsenId;
     }
 
@@ -488,6 +488,9 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::data(qint64 forMSecsSinceEpoch) cons
     do {
         // Convert the transition rules into msecs for the year we want to try
         rule = ruleForYear(year);
+        // If no transition rules to calculate then no DST, so just use rule for std
+        if (rule.standardTimeRule.wMonth == 0 && rule.daylightTimeRule.wMonth == 0)
+            break;
         calculateTransitionsForYear(rule, year, &stdMSecs, &dstMSecs);
         if (stdMSecs < dstMSecs) {
             first = stdMSecs;
@@ -543,6 +546,9 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
     do {
         // Convert the transition rules into msecs for the year we want to try
         rule = ruleForYear(year);
+        // If no transition rules to calculate then no next transition
+        if (rule.standardTimeRule.wMonth == 0 && rule.daylightTimeRule.wMonth == 0)
+            return invalidData();
         calculateTransitionsForYear(rule, year, &stdMSecs, &dstMSecs);
         // Find the first and second transition for the year
         if (stdMSecs < dstMSecs) {
@@ -591,6 +597,9 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::previousTransition(qint64 beforeMSec
     do {
         // Convert the transition rules into msecs for the year we want to try
         rule = ruleForYear(year);
+        // If no transition rules to calculate then no previous transition
+        if (rule.standardTimeRule.wMonth == 0 && rule.daylightTimeRule.wMonth == 0)
+            return invalidData();
         calculateTransitionsForYear(rule, year, &stdMSecs, &dstMSecs);
         if (stdMSecs < dstMSecs) {
             first = stdMSecs;
@@ -620,10 +629,10 @@ QByteArray QWinTimeZonePrivate::systemTimeZoneId() const
     QByteArray olsenId;
     // If we have a real country, then try get a specific match for that country
     if (country != QLocale::AnyCountry)
-        olsenId = windowsIdToDefaultOlsenId(windowsId, country);
+        olsenId = windowsIdToDefaultIanaId(windowsId, country);
     // If we don't have a real country, or there wasn't a specific match, try the global default
     if (olsenId.isEmpty()) {
-        olsenId = windowsIdToDefaultOlsenId(windowsId);
+        olsenId = windowsIdToDefaultIanaId(windowsId);
         // If no global default then probably an unknown Windows ID so return UTC
         if (olsenId.isEmpty())
             return QByteArrayLiteral("UTC");
@@ -635,7 +644,7 @@ QSet<QByteArray> QWinTimeZonePrivate::availableTimeZoneIds() const
 {
     QSet<QByteArray> set;
     foreach (const QByteArray &winId, availableWindowsIds()) {
-        foreach (const QByteArray &olsenId, windowsIdToOlsenIds(winId))
+        foreach (const QByteArray &olsenId, windowsIdToIanaIds(winId))
             set << olsenId;
     }
     return set;

@@ -58,24 +58,24 @@ bool isQtApplication()
     return isQt;
 }
 
-CGRect toCGRect(const QRect &rect)
+CGRect toCGRect(const QRectF &rect)
 {
     return CGRectMake(rect.x(), rect.y(), rect.width(), rect.height());
 }
 
-QRect fromCGRect(const CGRect &rect)
+QRectF fromCGRect(const CGRect &rect)
 {
-    return QRect(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
+    return QRectF(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
 }
 
-CGPoint toCGPoint(const QPoint &point)
+CGPoint toCGPoint(const QPointF &point)
 {
     return CGPointMake(point.x(), point.y());
 }
 
-QPoint fromCGPoint(const CGPoint &point)
+QPointF fromCGPoint(const CGPoint &point)
 {
-    return QPoint(point.x, point.y);
+    return QPointF(point.x, point.y);
 }
 
 Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientation)

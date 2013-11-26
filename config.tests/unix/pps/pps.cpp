@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the config.tests of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,57 +39,12 @@
 **
 ****************************************************************************/
 
-#ifndef QIOSSCREEN_H
-#define QIOSSCREEN_H
+#include <sys/pps.h>
 
-#include <UIKit/UIKit.h>
-
-#include <qpa/qplatformscreen.h>
-
-@class QIOSOrientationListener;
-
-QT_BEGIN_NAMESPACE
-
-class QIOSScreen : public QObject, public QPlatformScreen
+int main(int, char **)
 {
-    Q_OBJECT
+    pps_decoder_t decoder;
 
-public:
-    QIOSScreen(unsigned int screenIndex);
-    ~QIOSScreen();
-
-    enum ScreenIndex { MainScreen = 0 };
-
-    QRect geometry() const;
-    QRect availableGeometry() const;
-    int depth() const;
-    QImage::Format format() const;
-    QSizeF physicalSize() const;
-    QDpi logicalDpi() const;
-    qreal devicePixelRatio() const;
-
-    Qt::ScreenOrientation nativeOrientation() const;
-    Qt::ScreenOrientation orientation() const;
-    void setOrientationUpdateMask(Qt::ScreenOrientations mask);
-
-    UIScreen *uiScreen() const;
-
-    void updateProperties();
-    void layoutWindows();
-
-public slots:
-    void updateStatusBarVisibility();
-
-private:
-    UIScreen *m_uiScreen;
-    QRect m_geometry;
-    QRect m_availableGeometry;
-    int m_depth;
-    uint m_unscaledDpi;
-    QSizeF m_physicalSize;
-    QIOSOrientationListener *m_orientationListener;
-};
-
-QT_END_NAMESPACE
-
-#endif
+    pps_decoder_initialize(&decoder, NULL);
+    return 0;
+}

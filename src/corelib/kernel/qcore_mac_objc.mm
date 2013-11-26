@@ -41,6 +41,10 @@
 
 #include <private/qcore_mac_p.h>
 
+#ifdef Q_OS_IOS
+#import <UIKit/UIKit.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 NSString *QCFString::toNSString(const QString &string)
@@ -53,6 +57,32 @@ QString QCFString::toQString(const NSString *nsstr)
 {
     return toQString(reinterpret_cast<CFStringRef>(nsstr));
 }
+
+#ifdef Q_OS_IOS
+QSysInfo::MacVersion qt_ios_version()
+{
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
+    int major = 0, minor = 0;
+    NSArray *components = [[UIDevice currentDevice].systemVersion componentsSeparatedByString:@"."];
+    switch ([components count]) {
+    case 3:
+        // We don't care about the patch version
+    case 2:
+        minor = [[components objectAtIndex:1] intValue];
+        // fall through
+    case 1:
+        major = [[components objectAtIndex:0] intValue];
+        break;
+    default:
+        Q_UNREACHABLE();
+    }
+
+    [pool release];
+
+    return QSysInfo::MacVersion(Q_MV_IOS(major, minor));
+}
+#endif
 
 QT_END_NAMESPACE
 

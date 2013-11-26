@@ -86,6 +86,10 @@ QWindowsKeyMapper::~QWindowsKeyMapper()
 #define VK_OEM_3 0xC0
 #endif
 
+// We not only need the scancode itself but also the extended bit of key messages. Thus we need
+// the additional bit when masking the scancode.
+enum { scancodeBitmask = 0x1ff };
+
 // Key recorder ------------------------------------------------------------------------[ start ] --
 struct KeyRecord {
     KeyRecord(int c, int a, int s, const QString &t) : code(c), ascii(a), state(s), text(t) {}
@@ -567,7 +571,7 @@ void QWindowsKeyMapper::updateKeyMap(const MSG &msg)
 {
     unsigned char kbdBuffer[256]; // Will hold the complete keyboard state
     GetKeyboardState(kbdBuffer);
-    const quint32 scancode = (msg.lParam >> 16) & 0xff;
+    const quint32 scancode = (msg.lParam >> 16) & scancodeBitmask;
     updatePossibleKeyCodes(kbdBuffer, scancode, msg.wParam);
 }
 
@@ -754,7 +758,7 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
 {
     const int  msgType = msg.message;
 
-    const quint32 scancode = (msg.lParam >> 16) & 0xff;
+    const quint32 scancode = (msg.lParam >> 16) & scancodeBitmask;
     const quint32 vk_key = msg.wParam;
     quint32 nModifiers = 0;
 

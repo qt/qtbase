@@ -242,6 +242,15 @@ QVariant QAndroidPlatformIntegration::styleHint(StyleHint hint) const
     }
 }
 
+Qt::WindowState QAndroidPlatformIntegration::defaultWindowState(Qt::WindowFlags flags) const
+{
+    // Don't maximize dialogs on Android
+    if (flags & Qt::Dialog & ~Qt::Window)
+        return Qt::WindowNoState;
+
+    return QPlatformIntegration::defaultWindowState(flags);
+}
+
 static const QLatin1String androidThemeName("android");
 QStringList QAndroidPlatformIntegration::themeNames() const
 {

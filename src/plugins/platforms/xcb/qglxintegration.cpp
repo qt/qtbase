@@ -415,9 +415,14 @@ bool QGLXContext::m_supportsThreading = true;
 // If this list grows to any significant size, change it a
 // proper string table and make the implementation below use
 // binary search.
-static const char *qglx_threadedgl_blacklist[] = {
+static const char *qglx_threadedgl_blacklist_renderer[] = {
     "Chromium",                             // QTBUG-32225 (initialization fails)
     "Mesa DRI Intel(R) Sandybridge Mobile", // QTBUG-34492 (flickering in fullscreen)
+    0
+};
+
+static const char *qglx_threadedgl_blacklist_vendor[] = {
+    "nouveau",                             // QTCREATORBUG-10875 (crash in creator)
     0
 };
 
@@ -437,8 +442,8 @@ void QGLXContext::queryDummyContext()
         oldSurface = oldContext->surface();
 
     QScopedPointer<QSurface> surface;
-    const char *vendor = glXGetClientString(glXGetCurrentDisplay(), GLX_VENDOR);
-    if (vendor && !strcmp(vendor, "ATI")) {
+    const char *glxvendor = glXGetClientString(glXGetCurrentDisplay(), GLX_VENDOR);
+    if (glxvendor && !strcmp(glxvendor, "ATI")) {
         QWindow *window = new QWindow;
         window->resize(64, 64);
         window->setSurfaceType(QSurface::OpenGLSurface);
@@ -454,11 +459,19 @@ void QGLXContext::queryDummyContext()
     context.create();
     context.makeCurrent(surface.data());
 
-    const char *renderer = (const char *) glGetString(GL_RENDERER);
-
     m_supportsThreading = true;
-    for (int i = 0; qglx_threadedgl_blacklist[i]; ++i) {
-        if (strstr(renderer, qglx_threadedgl_blacklist[i]) != 0) {
+
+    const char *renderer = (const char *) glGetString(GL_RENDERER);
+    for (int i = 0; qglx_threadedgl_blacklist_renderer[i]; ++i) {
+        if (strstr(renderer, qglx_threadedgl_blacklist_renderer[i]) != 0) {
+            m_supportsThreading = false;
+            break;
+        }
+    }
+
+    const char *vendor = (const char *) glGetString(GL_VENDOR);
+    for (int i = 0; qglx_threadedgl_blacklist_vendor[i]; ++i) {
+        if (strstr(vendor, qglx_threadedgl_blacklist_vendor[i]) != 0) {
             m_supportsThreading = false;
             break;
         }
