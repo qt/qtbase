@@ -160,6 +160,8 @@ void QOffscreenSurface::create()
         d->platformOffscreenSurface = QGuiApplicationPrivate::platformIntegration()->createPlatformOffscreenSurface(this);
         // No platform offscreen surface, fallback to an invisible window
         if (!d->platformOffscreenSurface) {
+            if (QThread::currentThread() != qGuiApp->thread())
+                qWarning("Attempting to create QWindow-based QOffscreenSurface outside the gui thread. Expect failures.");
             d->offscreenWindow = new QWindow(d->screen);
             d->offscreenWindow->setSurfaceType(QWindow::OpenGLSurface);
             d->offscreenWindow->setFormat(d->requestedFormat);
