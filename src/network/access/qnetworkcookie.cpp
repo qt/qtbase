@@ -467,12 +467,19 @@ QByteArray QNetworkCookie::toRawForm(RawForm form) const
         }
         if (!d->domain.isEmpty()) {
             result += "; domain=";
-            QString domainNoDot = d->domain;
-            if (domainNoDot.startsWith(QLatin1Char('.'))) {
+            if (d->domain.startsWith(QLatin1Char('.'))) {
                 result += '.';
-                domainNoDot = domainNoDot.mid(1);
+                result += QUrl::toAce(d->domain.mid(1));
+            } else {
+                QHostAddress hostAddr(d->domain);
+                if (hostAddr.protocol() == QAbstractSocket::IPv6Protocol) {
+                    result += '[';
+                    result += d->domain.toUtf8();
+                    result += ']';
+                } else {
+                    result += QUrl::toAce(d->domain);
+                }
             }
-            result += QUrl::toAce(domainNoDot);
         }
         if (!d->path.isEmpty()) {
             result += "; path=";
@@ -1021,6 +1028,7 @@ void QNetworkCookie::normalize(const QUrl &url)
     } else {
         QHostAddress hostAddress(d->domain);
         if (hostAddress.protocol() != QAbstractSocket::IPv4Protocol
+                && hostAddress.protocol() != QAbstractSocket::IPv6Protocol
                 && !d->domain.startsWith(QLatin1Char('.'))) {
             // Ensure the domain starts with a dot if its field was not empty
             // in the HTTP header. There are some servers that forget the
