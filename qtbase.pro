@@ -181,7 +181,7 @@ mkspecs.path = $$[QT_HOST_DATA]/mkspecs
 mkspecs.files = \
     $$OUT_PWD/mkspecs/qconfig.pri $$OUT_PWD/mkspecs/qmodule.pri $$OUT_PWD/mkspecs/qdevice.pri \
     $$files($$PWD/mkspecs/*)
-mkspecs.files -= $$PWD/mkspecs/modules
+mkspecs.files -= $$PWD/mkspecs/modules $$PWD/mkspecs/modules-inst
 INSTALLS += mkspecs
 
 global_docs.files = $$PWD/doc/global
