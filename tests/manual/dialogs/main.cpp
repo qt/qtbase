@@ -42,6 +42,7 @@
 #include "filedialogpanel.h"
 #include "colordialogpanel.h"
 #include "fontdialogpanel.h"
+#include "printdialogpanel.h"
 #include "wizardpanel.h"
 #include "messageboxpanel.h"
 
@@ -75,6 +76,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     tabWidget->addTab(new FontDialogPanel, tr("QFontDialog"));
     tabWidget->addTab(new WizardPanel, tr("QWizard"));
     tabWidget->addTab(new MessageBoxPanel, tr("QMessageBox"));
+#ifndef QT_NO_PRINTER
+    tabWidget->addTab(new PrintDialogPanel, tr("QPrintDialog"));
+#endif
     setCentralWidget(tabWidget);
 }
 

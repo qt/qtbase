@@ -42,8 +42,9 @@
 
     \section1 Overview
 
-    In the \l{Custom Type Sending Example}, we showed how to use a custom type
-    with signal-slot communication within the same thread.
+    In the \l{Custom Type Example}, we showed how to integrate custom types with
+    the meta-object system, enabling them to be stored in QVariant objects, written
+    out in debugging information and used in signal-slot communication.
 
     In this example, we create a new value class, \c Block, and register it
     with the meta-object system to enable us to send instances of it between
@@ -152,7 +153,7 @@
     meta-object system so that it can be used with signal-slot connections
     between threads. For ordinary communication involving direct signals and
     slots, it is enough to simply declare the type in the way described in the
-    \l{Custom Type Sending Example}.
+    \l{Custom Type Example}.
 
     In practice, both the Q_DECLARE_METATYPE() macro and the qRegisterMetaType()
     template function can be used to register custom types, but

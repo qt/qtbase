@@ -180,7 +180,9 @@ public:
             d = QSharedPointer<QJNIObjectData>(new QJNIObjectData());
             QJNIEnvironmentPrivate env;
             d->m_jobject = env->NewGlobalRef(jobj);
-            d->m_jclass = static_cast<jclass>(env->NewGlobalRef(env->GetObjectClass(jobj)));
+            jclass objectClass = env->GetObjectClass(jobj);
+            d->m_jclass = static_cast<jclass>(env->NewGlobalRef(objectClass));
+            env->DeleteLocalRef(objectClass);
         }
 
         return *this;

@@ -455,8 +455,8 @@ const QString::Null QString::null = { };
     your applications will be easy to translate if you want to expand
     your application's market at some point. The two main cases where
     QByteArray is appropriate are when you need to store raw binary
-    data, and when memory conservation is critical (e.g., with
-    \l{Qt for Embedded Linux}).
+    data, and when memory conservation is critical (like in embedded
+    systems).
 
     \tableofcontents
 
@@ -5048,7 +5048,7 @@ int QString::compare_helper(const QChar *data1, int length1, QLatin1String s2,
     On Mac OS X since Qt 4.3, this function compares according the
     "Order for sorted lists" setting in the International preferences panel.
 
-    \sa compare(), QTextCodec::locale()
+    \sa compare(), QLocale
 */
 
 /*!
@@ -8463,7 +8463,7 @@ QStringRef QStringRef::appendTo(QString *string) const
     On Mac OS X, this function compares according the
     "Order for sorted lists" setting in the International prefereces panel.
 
-    \sa compare(), QTextCodec::locale()
+    \sa compare(), QLocale
 */
 
 /*!

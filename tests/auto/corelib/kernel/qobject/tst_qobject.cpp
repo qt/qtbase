@@ -152,6 +152,7 @@ private slots:
     void contextDoesNotLeakFunctor();
     void connectBase();
     void qmlConnect();
+    void exceptions();
 };
 
 struct QObjectCreatedOnShutdown
@@ -6182,6 +6183,102 @@ void tst_QObject::qmlConnect()
     receiver->destroyIfLastRef();
 #else
     QSKIP("Needs QT_BUILD_INTERNAL");
+#endif
+}
+
+#ifndef QT_NO_EXCEPTIONS
+class ObjectException : public std::exception { };
+
+struct ThrowFunctor
+{
+    CountedStruct operator()(const CountedStruct &, CountedStruct s2) const
+    {
+        throw ObjectException();
+        return s2;
+    }
+    CountedStruct s;
+};
+#endif
+
+class ExceptionThrower : public QObject
+{
+  Q_OBJECT
+public slots:
+    CountedStruct throwException(const CountedStruct &, CountedStruct s2)
+    {
+#ifndef QT_NO_EXCEPTIONS
+        throw ObjectException();
+#endif
+        return s2;
+    }
+signals:
+    CountedStruct mySignal(const CountedStruct &s1, CountedStruct s2);
+};
+
+void tst_QObject::exceptions()
+{
+#ifndef QT_NO_EXCEPTIONS
+    ReceiverObject receiver;
+
+    // String based syntax
+    {
+        QCOMPARE(countedStructObjectsCount, 0);
+        ExceptionThrower thrower;
+        receiver.reset();
+
+        connect(&thrower, SIGNAL(mySignal(CountedStruct,CountedStruct)), &receiver, SLOT(slot1()));
+        connect(&thrower, SIGNAL(mySignal(CountedStruct,CountedStruct)), &thrower, SLOT(throwException(CountedStruct,CountedStruct)));
+        connect(&thrower, SIGNAL(mySignal(CountedStruct,CountedStruct)), &receiver, SLOT(slot2()));
+        try {
+            CountedStruct s;
+            emit thrower.mySignal(s, s);
+            QFAIL("Exception not thrown?");
+        } catch (ObjectException&) {}
+        QCOMPARE(receiver.count_slot1, 1);
+        QCOMPARE(receiver.count_slot2, 0);
+        QCOMPARE(countedStructObjectsCount, 0);
+    }
+    // Pointer to member function
+    {
+        QCOMPARE(countedStructObjectsCount, 0);
+        ExceptionThrower thrower;
+        receiver.reset();
+
+        connect(&thrower, &ExceptionThrower::mySignal, &receiver, &ReceiverObject::slot1);
+        connect(&thrower, &ExceptionThrower::mySignal, &thrower, &ExceptionThrower::throwException);
+        connect(&thrower, &ExceptionThrower::mySignal, &receiver, &ReceiverObject::slot2);
+        try {
+            CountedStruct s;
+            emit thrower.mySignal(s, s);
+            QFAIL("Exception not thrown?");
+        } catch (ObjectException&) {}
+        QCOMPARE(receiver.count_slot1, 1);
+        QCOMPARE(receiver.count_slot2, 0);
+        QCOMPARE(countedStructObjectsCount, 0);
+    }
+    // Functor
+    {
+        QCOMPARE(countedStructObjectsCount, 0);
+        ExceptionThrower thrower;
+        receiver.reset();
+
+        connect(&thrower, &ExceptionThrower::mySignal, &receiver, &ReceiverObject::slot1);
+        connect(&thrower, &ExceptionThrower::mySignal, ThrowFunctor());
+        connect(&thrower, &ExceptionThrower::mySignal, &receiver, &ReceiverObject::slot2);
+        try {
+            CountedStruct s;
+            emit thrower.mySignal(s, s);
+            QFAIL("Exception not thrown?");
+        } catch (ObjectException&) {}
+        QCOMPARE(receiver.count_slot1, 1);
+        QCOMPARE(receiver.count_slot2, 0);
+        QCOMPARE(countedStructObjectsCount, 1); // the Functor
+    }
+    QCOMPARE(countedStructObjectsCount, 0);
+
+
+#else
+    QSKIP("Needs exceptions");
 #endif
 }
 

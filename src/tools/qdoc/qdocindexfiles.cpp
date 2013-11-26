@@ -196,6 +196,10 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
             location = Location(indexUrl + QLatin1Char('/') + name.toLower() + ".html");
         else if (!indexUrl.isNull())
             location = Location(name.toLower() + ".html");
+        bool abstract = false;
+        if (element.attribute("abstract") == "true")
+            abstract = true;
+        node->setAbstract(abstract);
     }
     else if ((element.nodeName() == "qmlclass") ||
              ((element.nodeName() == "page") && (element.attribute("subtype") == "qmlclass"))) {
@@ -204,6 +208,10 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         QString qmlModuleName = element.attribute("qml-module-name");
         if (!qmlModuleName.isEmpty())
             qdb_->addToQmlModule(qmlModuleName, qcn);
+        bool abstract = false;
+        if (element.attribute("abstract") == "true")
+            abstract = true;
+        qcn->setAbstract(abstract);
         QString qmlFullBaseName = element.attribute("qml-base-type");
         if (!qmlFullBaseName.isEmpty())
             qcn->setQmlBaseName(qmlFullBaseName);
@@ -464,7 +472,7 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         node->setAccess(Node::Public);
     else if (access == "protected")
         node->setAccess(Node::Protected);
-    else if (access == "private")
+    else if ((access == "private") || (access == "internal"))
         node->setAccess(Node::Private);
     else
         node->setAccess(Node::Public);
@@ -506,10 +514,12 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
     QString moduleName = element.attribute("module");
     if (!moduleName.isEmpty())
         node->setModuleName(moduleName);
-    if (node->isExternalPage())
-        node->setUrl(href);
-    else if (!indexUrl.isEmpty())
-        node->setUrl(indexUrl + QLatin1Char('/') + href);
+    if (!href.isEmpty()) {
+        if (node->isExternalPage())
+            node->setUrl(href);
+        else if (!indexUrl.isEmpty())
+            node->setUrl(indexUrl + QLatin1Char('/') + href);
+    }
 
     QString since = element.attribute("since");
     if (!since.isEmpty()) {
@@ -708,6 +718,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
         access = "protected";
         break;
     case Node::Private:
+#if 0
         // Do not include private non-internal nodes in the index.
         // (Internal public and protected nodes are marked as private
         // by qdoc. We can check their internal status to determine
@@ -716,6 +727,13 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             access = "internal";
         else
             return false;
+#endif
+        {
+            access = "private";
+            bool b = generateInternalNodes;
+            if (b)
+                b = false;
+        }
         break;
     default:
         return false;
@@ -729,7 +747,6 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     writer.writeStartElement(nodeName);
 
     QXmlStreamAttributes attributes;
-    writer.writeAttribute("access", access);
 
     if (node->type() != Node::Document) {
         QString threadSafety;
@@ -776,7 +793,6 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
         status = "main";
         break;
     }
-    writer.writeAttribute("status", status);
 
     writer.writeAttribute("name", objName);
     if (node->isQmlModule()) {
@@ -804,9 +820,24 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     }
     else
         href = node->name();
-    writer.writeAttribute("href", href);
+    if (node->isQmlNode()) {
+        InnerNode* p = node->parent();
+        if (p) {
+            if (p->isQmlPropertyGroup())
+                p = p->parent();
+            if (p && p->isQmlType() && p->isAbstract())
+                href.clear();
+        }
+    }
+    if (!href.isEmpty())
+        writer.writeAttribute("href", href);
 
-    writer.writeAttribute("location", node->location().fileName());
+    writer.writeAttribute("access", access);
+    writer.writeAttribute("status", status);
+    if (node->isAbstract())
+        writer.writeAttribute("abstract", "true");
+    if (!node->location().fileName().isEmpty())
+        writer.writeAttribute("location", node->location().fileName());
     if (!node->location().filePath().isEmpty()) {
         writer.writeAttribute("filepath", node->location().filePath());
         writer.writeAttribute("lineno", QString("%1").arg(node->location().lineNo()));

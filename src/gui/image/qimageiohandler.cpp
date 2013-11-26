@@ -187,11 +187,15 @@
     return this handler.
 
     The json metadata file for the plugin needs to contain information
-    about the image formats the plugins supports. For a jpeg plugin, this
-    could e.g. look as follows:
+    about the image formats the plugins supports, together with the
+    corresponding MIME types (one for each format). For a jpeg plugin, this
+    could, for example, look as follows:
 
     \code
-    { "Keys": [ "jpg", "jpeg" ] }
+    {
+      "Keys": [ "jpg", "jpeg" ],
+      "MimeTypes": [ "image/jpeg", "image/jpeg" ]
+    }
     \endcode
 
     Different plugins can support different capabilities. For example,
@@ -537,23 +541,33 @@ QImageIOPlugin::~QImageIOPlugin()
 
 /*! \fn QImageIOPlugin::capabilities(QIODevice *device, const QByteArray &format) const
 
-    Returns the capabilities on the plugin, based on the data in \a
-    device and the format \a format. For example, if the
-    QImageIOHandler supports the BMP format, and the data in the
-    device starts with the characters "BM", this function should
-    return \l CanRead. If \a format is "bmp" and the handler supports
-    both reading and writing, this function should return \l CanRead |
-    \l CanWrite.
+    Returns the capabilities of the plugin, based on the data in \a
+    device and the format \a format.  If \a device is \c 0, it should
+    simply report whether the format can be read or written.  Otherwise,
+    it should attempt to determine whether the given format (or any
+    format supported by the plugin if \a format is empty) can be read
+    from or written to \a device.  It should do this without changing
+    the state of \a device (typically by using QIODevice::peek()).
+
+    For example, if the QImageIOPlugin supports the BMP format, \a format
+    is either empty or \c "bmp", and the data in the device starts with the
+    characters \c "BM", this function should return \l CanRead. If \a format
+    is \c "bmp", \a device is \c 0 and the handler supports both reading and
+    writing, this function should return \l CanRead | \l CanWrite.
+
+    Format names are always given in lower case.
 */
 
 /*!
     \fn QImageIOHandler *QImageIOPlugin::create(QIODevice *device, const QByteArray &format) const
 
     Creates and returns a QImageIOHandler subclass, with \a device
-    and \a format set. The \a format must come from the list returned by keys().
-    Format names are case sensitive.
+    and \a format set. The \a format must come from the values listed
+    in the \c "Keys" entry in the plugin metadata, or be empty.  If it is
+    empty, the data in \a device must have been recognized by the
+    capabilities() method (with a likewise empty format).
 
-    \sa keys()
+    Format names are always given in lower case.
 */
 
 #endif // QT_NO_IMAGEFORMATPLUGIN

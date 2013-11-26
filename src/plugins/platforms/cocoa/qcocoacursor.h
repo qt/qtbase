@@ -55,12 +55,13 @@ public:
     QCocoaCursor();
     ~QCocoaCursor();
 
-    virtual void changeCursor(QCursor * widgetCursor, QWindow * widget);
+    virtual void changeCursor(QCursor *cursor, QWindow *window);
     virtual QPoint pos() const;
     virtual void setPos(const QPoint &position);
 private:
     QHash<Qt::CursorShape, NSCursor *> m_cursors;
-    NSCursor *createCursorData(QCursor *);
+    NSCursor *convertCursor(QCursor *cursor);
+    NSCursor *createCursorData(QCursor * cursor);
     NSCursor *createCursorFromBitmap(const QBitmap *bitmap, const QBitmap *mask, const QPoint hotspot = QPoint());
     NSCursor *createCursorFromPixmap(const QPixmap pixmap, const QPoint hotspot = QPoint());
 };

@@ -62,7 +62,7 @@ QDocDatabase* QDocDatabase::qdocDB_ = NULL;
   It constructs a singleton Tree object with this
   qdoc database pointer.
  */
-QDocDatabase::QDocDatabase()
+QDocDatabase::QDocDatabase() : showInternal_(false)
 {
     tree_ = new Tree(this);
 }
@@ -357,23 +357,10 @@ QmlClassNode* QDocDatabase::findQmlType(const ImportRec& import, const QString& 
         else
             qmName = import.importUri_;
         for (int i=0; i<dotSplit.size(); ++i) {
-            QString qmid = qmName + import.version_;
-            QString qualifiedName = qmid + "::" + dotSplit[i];
+            QString qualifiedName = qmName + "::" + dotSplit[i];
             QmlClassNode* qcn = qmlTypeMap_.value(qualifiedName);
-            if (qcn) {
+            if (qcn)
                 return qcn;
-            }
-            if (import.version_.size() > 1) {
-                int dot = import.version_.lastIndexOf(QChar('.'));
-                if (dot > 0) {
-                    qmid = import.name_ + import.version_.left(dot);
-                    qualifiedName = qmid + "::" + dotSplit[i];
-                    qcn = qmlTypeMap_.value(qualifiedName);
-                    if (qcn) {
-                        return qcn;
-                    }
-                }
-            }
         }
     }
     return 0;
@@ -436,7 +423,7 @@ void QDocDatabase::findAllClasses(const InnerNode* node)
 {
     NodeList::const_iterator c = node->childNodes().constBegin();
     while (c != node->childNodes().constEnd()) {
-        if ((*c)->access() != Node::Private) {
+        if ((*c)->access() != Node::Private && (!(*c)->isInternal() || showInternal_)) {
             if ((*c)->type() == Node::Class && !(*c)->doc().isEmpty()) {
                 QString className = (*c)->name();
                 if ((*c)->parent() &&
@@ -999,24 +986,6 @@ void QDocDatabase::resolveQmlInheritance(InnerNode* root)
         }
     }
 }
-
-#if 0
-void QDocDatabase::resolveQmlInheritance(InnerNode* root)
-{
-    // Dop we need recursion?
-    foreach (Node* child, root->childNodes()) {
-        if (child->type() == Node::Document && child->subType() == Node::QmlClass) {
-            QmlClassNode* qcn = static_cast<QmlClassNode*>(child);
-            if ((qcn->qmlBaseNode() == 0) && !qcn->qmlBaseName().isEmpty()) {
-                QmlClassNode* bqcn = findQmlType(QString(), qcn->qmlBaseName());
-                if (bqcn) {
-                    qcn->setQmlBaseNode(bqcn);
-                }
-            }
-        }
-    }
-}
-#endif
 
 /*!
  */

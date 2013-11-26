@@ -54,7 +54,7 @@ QT_END_NAMESPACE
 
 using namespace QQmlJS;
 
-static int regExpFlagFromChar(const QChar &ch)
+static inline int regExpFlagFromChar(const QChar &ch)
 {
     switch (ch.unicode()) {
     case 'g': return Lexer::RegExp_Global;
@@ -64,7 +64,7 @@ static int regExpFlagFromChar(const QChar &ch)
     return 0;
 }
 
-static unsigned char convertHex(ushort c)
+static inline unsigned char convertHex(ushort c)
 {
     if (c >= '0' && c <= '9')
         return (c - '0');
@@ -74,12 +74,12 @@ static unsigned char convertHex(ushort c)
         return (c - 'A' + 10);
 }
 
-static QChar convertHex(QChar c1, QChar c2)
+static inline QChar convertHex(QChar c1, QChar c2)
 {
     return QChar((convertHex(c1.unicode()) << 4) + convertHex(c2.unicode()));
 }
 
-static QChar convertUnicode(QChar c1, QChar c2, QChar c3, QChar c4)
+static inline QChar convertUnicode(QChar c1, QChar c2, QChar c3, QChar c4)
 {
     return QChar((convertHex(c3.unicode()) << 4) + convertHex(c4.unicode()),
                  (convertHex(c1.unicode()) << 4) + convertHex(c2.unicode()));
@@ -259,6 +259,7 @@ int Lexer::lex()
         _parenthesesCount = 0;
         break;
 
+    case T_ELSE:
     case T_DO:
         _parenthesesState = BalancedParentheses;
         break;
@@ -287,7 +288,8 @@ int Lexer::lex()
         break;
 
     case BalancedParentheses:
-        _parenthesesState = IgnoreParentheses;
+        if (_tokenKind != T_DO && _tokenKind != T_ELSE)
+            _parenthesesState = IgnoreParentheses;
         break;
     } // switch
 
@@ -323,6 +325,27 @@ QChar Lexer::decodeUnicodeEscapeCharacter(bool *ok)
             *ok = true;
 
         return convertUnicode(c1, c2, c3, c4);
+    }
+
+    *ok = false;
+    return QChar();
+}
+
+QChar Lexer::decodeHexEscapeCharacter(bool *ok)
+{
+    if (isHexDigit(_codePtr[0]) && isHexDigit(_codePtr[1])) {
+        scanChar();
+
+        const QChar c1 = _char;
+        scanChar();
+
+        const QChar c2 = _char;
+        scanChar();
+
+        if (ok)
+            *ok = true;
+
+        return convertHex(c1, c2);
     }
 
     *ok = false;
@@ -705,35 +728,29 @@ again:
                 scanChar();
 
                 QChar u;
-                bool ok = false;
 
                 switch (_char.unicode()) {
                 // unicode escape sequence
-                case 'u':
+                case 'u': {
+                    bool ok = false;
                     u = decodeUnicodeEscapeCharacter(&ok);
                     if (! ok) {
                         _errorCode = IllegalUnicodeEscapeSequence;
                         _errorMessage = QCoreApplication::translate("QQmlParser", "Illegal unicode escape sequence");
                         return T_ERROR;
                     }
-                    break;
+                } break;
 
                 // hex escape sequence
-                case 'x':
-                    if (isHexDigit(_codePtr[0]) && isHexDigit(_codePtr[1])) {
-                        scanChar();
-
-                        const QChar c1 = _char;
-                        scanChar();
-
-                        const QChar c2 = _char;
-                        scanChar();
-
-                        u = convertHex(c1, c2);
-                    } else {
-                        u = _char;
+                case 'x': {
+                    bool ok = false;
+                    u = decodeHexEscapeCharacter(&ok);
+                    if (!ok) {
+                        _errorCode = IllegalHexadecimalEscapeSequence;
+                        _errorMessage = QCoreApplication::translate("QQmlParser", "Illegal hexadecimal escape sequence");
+                        return T_ERROR;
                     }
-                    break;
+                } break;
 
                 // single character escape sequence
                 case '\\': u = QLatin1Char('\\'); scanChar(); break;
@@ -767,22 +784,11 @@ again:
                     return T_ERROR;
 
                 case '\r':
-                    if (isLineTerminatorSequence() == 2) {
-                        _tokenText += QLatin1Char('\r');
-                        u = QLatin1Char('\n');
-                    } else {
-                        u = QLatin1Char('\r');
-                    }
-                    scanChar();
-                    break;
-
                 case '\n':
                 case 0x2028u:
                 case 0x2029u:
-                    u = _char;
                     scanChar();
-                    break;
-
+                    continue;
 
                 default:
                     // non escape character
@@ -1033,7 +1039,7 @@ bool Lexer::scanRegExp(RegExpBodyPrefix prefix)
             _patternFlags = 0;
             while (isIdentLetter(_char)) {
                 int flag = regExpFlagFromChar(_char);
-                if (flag == 0) {
+                if (flag == 0 || _patternFlags & flag) {
                     _errorMessage = QCoreApplication::translate("QQmlParser", "Invalid regular expression flag '%0'")
                              .arg(QChar(_char));
                     return false;

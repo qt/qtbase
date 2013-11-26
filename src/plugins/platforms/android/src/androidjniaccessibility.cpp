@@ -46,7 +46,7 @@
 #include "qguiapplication.h"
 #include "qwindow.h"
 #include "qrect.h"
-#include "private/qaccessible2_p.h"
+#include "QtGui/qaccessible.h"
 
 #include "qdebug.h"
 

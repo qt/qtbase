@@ -69,6 +69,7 @@ struct Q_AUTOTEST_EXPORT QKeyBinding
 class Q_AUTOTEST_EXPORT QKeySequencePrivate
 {
 public:
+    enum { MaxKeyCount = 4 }; // used in QKeySequenceEdit
     inline QKeySequencePrivate() : ref(1)
     {
         key[0] = key[1] = key[2] = key[3] =  0;

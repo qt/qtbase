@@ -9,6 +9,7 @@ JAVASOURCES += \
     $$PATHPREFIX/QtEditText.java \
     $$PATHPREFIX/QtInputConnection.java \
     $$PATHPREFIX/QtLayout.java \
+    $$PATHPREFIX/QtMessageDialogHelper.java \
     $$PATHPREFIX/QtNative.java \
     $$PATHPREFIX/QtNativeLibrariesDir.java \
     $$PATHPREFIX/QtSurface.java

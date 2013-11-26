@@ -237,9 +237,6 @@ void QEventDispatcherBlackberry::registerSocketNotifier(QSocketNotifier *notifie
         return;
     }
 
-    // Call the base Unix implementation. Needed to allow select() to be called correctly
-    QEventDispatcherUNIX::registerSocketNotifier(notifier);
-
     // Register the fd with bps
     BpsChannelScopeSwitcher channelSwitcher(d->bps_channel);
     int io_events = ioEvents(sockfd);
@@ -265,6 +262,9 @@ void QEventDispatcherBlackberry::registerSocketNotifier(QSocketNotifier *notifie
     const int result = bps_add_fd(sockfd, io_events, &bpsIOHandler, d->ioData.data());
     if (Q_UNLIKELY(result != BPS_SUCCESS))
         qWarning() << "QEventDispatcherBlackberry: bps_add_fd failed";
+
+    // Call the base Unix implementation. Needed to allow select() to be called correctly
+    QEventDispatcherUNIX::registerSocketNotifier(notifier);
 }
 
 void QEventDispatcherBlackberry::unregisterSocketNotifier(QSocketNotifier *notifier)
@@ -280,23 +280,22 @@ void QEventDispatcherBlackberry::unregisterSocketNotifier(QSocketNotifier *notif
         return;
     }
 
-    // Allow the base Unix implementation to unregister the fd too
+    // Allow the base Unix implementation to unregister the fd too (before call to ioEvents()!)
     QEventDispatcherUNIX::unregisterSocketNotifier(notifier);
 
     // Unregister the fd with bps
     BpsChannelScopeSwitcher channelSwitcher(d->bps_channel);
-    const int io_events = ioEvents(sockfd);
     int result = bps_remove_fd(sockfd);
     if (Q_UNLIKELY(result != BPS_SUCCESS))
         qWarning() << "QEventDispatcherBlackberry: bps_remove_fd failed" << sockfd;
 
-    // if no other socket notifier is watching sockfd, our job ends here
-    if (!io_events)
-        return;
-
-    result = bps_add_fd(sockfd, io_events, &bpsIOHandler, d->ioData.data());
-    if (Q_UNLIKELY(result != BPS_SUCCESS))
-        qWarning("QEventDispatcherBlackberry: bps_add_fd error");
+    const int io_events = ioEvents(sockfd);
+    // if other socket notifier is watching sockfd, readd it
+    if (io_events) {
+        result = bps_add_fd(sockfd, io_events, &bpsIOHandler, d->ioData.data());
+        if (Q_UNLIKELY(result != BPS_SUCCESS))
+            qWarning("QEventDispatcherBlackberry: bps_add_fd error");
+    }
 }
 
 static inline int timespecToMillisecs(const timespec &tv)

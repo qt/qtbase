@@ -129,6 +129,8 @@ public:
 
     void setScreen(QScreen *newScreen, bool recreate);
 
+    virtual void clearFocusObject();
+
     QWindow::SurfaceType surfaceType;
     Qt::WindowFlags windowFlags;
     QWindow *parentWindow;

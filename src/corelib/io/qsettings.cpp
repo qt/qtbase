@@ -900,7 +900,9 @@ StNormal:
                 ++j;
             }
 
-#ifndef QT_NO_TEXTCODEC
+#ifdef QT_NO_TEXTCODEC
+            Q_UNUSED(codec)
+#else
             if (codec) {
                 stringResult += codec->toUnicode(str.constData() + i, j - i);
             } else

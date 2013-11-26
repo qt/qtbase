@@ -124,17 +124,17 @@ DotNET which_dotnet_version()
     // Fallback to .NET 2002
     current_version = NET2002;
 
-    QStringList warnPath;
+    const DotNetCombo *lowestInstalledVersion = 0;
     QHash<DotNET, QString> installPaths;
     int installed = 0;
     int i = 0;
     for(; dotNetCombo[i].version; ++i) {
         QString path = qt_readRegistryKey(HKEY_LOCAL_MACHINE, dotNetCombo[i].regKey);
         if (!path.isEmpty() && installPaths.value(dotNetCombo[i].version) != path) {
-            installPaths.insert(dotNetCombo[i].version, path);
+            lowestInstalledVersion = &dotNetCombo[i];
+            installPaths.insert(lowestInstalledVersion->version, path);
             ++installed;
-            current_version = dotNetCombo[i].version;
-                        warnPath += QString("%1").arg(dotNetCombo[i].versionStr);
+            current_version = lowestInstalledVersion->version;
         }
     }
 
@@ -143,35 +143,20 @@ DotNET which_dotnet_version()
 
     // More than one version installed, search directory path
     QString paths = qgetenv("PATH");
-    QStringList pathlist = paths.toLower().split(";");
-
-    i = installed = 0;
-    for(; dotNetCombo[i].version; ++i) {
-        QString productPath = qt_readRegistryKey(HKEY_LOCAL_MACHINE, dotNetCombo[i].regKey).toLower();
-                if (productPath.isEmpty())
-                        continue;
-        QStringList::iterator it;
-        for(it = pathlist.begin(); it != pathlist.end(); ++it) {
-            if((*it).contains(productPath)) {
-                ++installed;
-                current_version = dotNetCombo[i].version;
-                warnPath += QString("%1 in path").arg(dotNetCombo[i].versionStr);
-                                break;
-            }
+    const QStringList pathlist = paths.split(QLatin1Char(';'));
+    foreach (const QString &path, pathlist) {
+        for (i = 0; dotNetCombo[i].version; ++i) {
+            const QString productPath = installPaths.value(dotNetCombo[i].version);
+            if (productPath.isEmpty())
+                continue;
+            if (path.startsWith(productPath, Qt::CaseInsensitive))
+                return dotNetCombo[i].version;
         }
     }
-        switch(installed) {
-        case 1:
-                break;
-        case 0:
-                warn_msg(WarnLogic, "Generator: MSVC.NET: Found more than one version of Visual Studio, but"
-                                 " none in your path! Fallback to lowest version (%s)", warnPath.join(", ").toLatin1().data());
-                break;
-        default:
-                warn_msg(WarnLogic, "Generator: MSVC.NET: Found more than one version of Visual Studio in"
-                                 " your path! Fallback to lowest version (%s)", warnPath.join(", ").toLatin1().data());
-                break;
-        }
+
+    warn_msg(WarnLogic, "Generator: MSVC.NET: Found more than one version of Visual Studio, but"
+                        " none in your PATH. Falling back to lowest version (%s)",
+                        qPrintable(lowestInstalledVersion->versionStr));
 
     return current_version;
 #endif
@@ -514,7 +499,7 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                     // We want to store it as the .lib name.
                     if (newDep->target.endsWith(".dll"))
                         newDep->target = newDep->target.left(newDep->target.length()-3) + "lib";
-                    projGuids.insert(val.first, newDep->target);
+                    projGuids.insert(newDep->orig_target, newDep->target);
 
                     if (val.second.size()) {
                         const ProStringList depends = val.second;

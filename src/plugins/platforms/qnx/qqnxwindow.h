@@ -66,12 +66,7 @@ class QQnxWindow : public QPlatformWindow
 {
 friend class QQnxScreen;
 public:
-    enum WindowType {
-        EGL,
-        Raster
-    };
-
-    QQnxWindow(QWindow *window, screen_context_t context);
+    QQnxWindow(QWindow *window, screen_context_t context, bool needRootWindow);
     virtual ~QQnxWindow();
 
     void setGeometry(const QRect &rect);
@@ -83,7 +78,7 @@ public:
     WId winId() const { return (WId)m_window; }
     screen_window_t nativeHandle() const { return m_window; }
 
-    void adjustBufferSize();
+    virtual void adjustBufferSize() = 0;
     void setBufferSize(const QSize &size);
     QSize bufferSize() const { return m_bufferSize; }
 
@@ -99,6 +94,9 @@ public:
     void propagateSizeHints();
 
     void gainedFocus();
+    void setMMRendererWindowName(const QString &name);
+    void setMMRendererWindow(screen_window_t handle);
+    void clearMMRendererWindow();
 
     QQnxScreen *screen() const { return m_screen; }
     const QList<QQnxWindow*>& children() const { return m_childWindows; }
@@ -107,7 +105,14 @@ public:
 
     void minimize();
 
-    virtual WindowType windowType() const = 0;
+    QString mmRendererWindowName() const { return m_mmRendererWindowName; }
+
+    screen_window_t mmRendererWindow() const { return m_mmRendererWindow; }
+
+    void setRotation(int rotation);
+
+    QByteArray groupName() const { return m_windowGroupName; }
+
 protected:
     virtual int pixelFormat() const = 0;
     virtual void resetBuffers() = 0;
@@ -117,12 +122,16 @@ protected:
     screen_context_t m_screenContext;
     QScopedPointer<QQnxAbstractCover> m_cover;
 
+    QQnxWindow *m_parentWindow;
+
 private:
+    void createWindowGroup();
     QRect setGeometryHelper(const QRect &rect);
     void removeFromParent();
     void setOffset(const QPoint &setOffset);
     void updateVisibility(bool parentVisible);
     void updateZorder(int &topZorder);
+    void updateZorder(screen_window_t window, int &zOrder);
     void applyWindowState();
 
     screen_window_t m_window;
@@ -130,11 +139,16 @@ private:
 
     QQnxScreen *m_screen;
     QList<QQnxWindow*> m_childWindows;
-    QQnxWindow *m_parentWindow;
     bool m_visible;
     bool m_exposed;
     QRect m_unmaximizedGeometry;
     Qt::WindowState m_windowState;
+    QString m_mmRendererWindowName;
+    screen_window_t m_mmRendererWindow;
+
+    QByteArray m_windowGroupName;
+
+    bool m_isTopLevel;
 };
 
 QT_END_NAMESPACE

@@ -169,8 +169,8 @@ private:
     void updateDoesNotAcceptFocus(bool doesNotAcceptFocus);
 
     QRect windowToWmGeometry(QRect r) const;
-    void sendXEmbedMessage(xcb_window_t window, long message,
-                           long detail = 0, long data1 = 0, long data2 = 0);
+    void sendXEmbedMessage(xcb_window_t window, quint32 message,
+                           quint32 detail = 0, quint32 data1 = 0, quint32 data2 = 0);
     void handleXEmbedMessage(const xcb_client_message_event_t *event);
 
     void create();

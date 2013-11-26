@@ -42,7 +42,6 @@
 #include "screenreader.h"
 #include "optionswidget.h"
 #include "accessibilityscenemanager.h"
-#include <private/qaccessible2_p.h>
 #include <QtGui>
 
 ScreenReader::ScreenReader(QObject *parent) :

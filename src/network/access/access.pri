@@ -64,6 +64,14 @@ SOURCES += \
     access/qhttpthreaddelegate.cpp \
     access/qhttpmultipart.cpp
 
-include($$PWD/../../3rdparty/zlib_dependency.pri)
+mac: LIBS_PRIVATE += -framework Security
 
-mac:LIBS_PRIVATE += -framework Security
+ios {
+    HEADERS += \
+        access/qnetworkreplynsurlconnectionimpl_p.h
+
+    OBJECTIVE_SOURCES += \
+        access/qnetworkreplynsurlconnectionimpl.mm
+}
+
+include($$PWD/../../3rdparty/zlib_dependency.pri)

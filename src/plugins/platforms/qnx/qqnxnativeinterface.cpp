@@ -41,8 +41,11 @@
 
 #include "qqnxnativeinterface.h"
 
+#include "qqnxglcontext.h"
 #include "qqnxscreen.h"
+#include "qqnxwindow.h"
 
+#include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
 #include <QtGui/QWindow>
 
@@ -68,6 +71,22 @@ void *QQnxNativeInterface::nativeResourceForScreen(const QByteArray &resource, Q
         return static_cast<QObject*>(static_cast<QQnxScreen*>(screen->handle()));
 
     return 0;
+}
+
+void *QQnxNativeInterface::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context)
+{
+    if (resource == "eglcontext" && context)
+        return static_cast<QQnxGLContext*>(context->handle())->getEglContext();
+
+    return 0;
+}
+
+void QQnxNativeInterface::setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value)
+{
+    if (name == QStringLiteral("mmRendererWindowName")) {
+        QQnxWindow *qnxWindow = static_cast<QQnxWindow*>(window);
+        qnxWindow->setMMRendererWindowName(value.toString());
+    }
 }
 
 QT_END_NAMESPACE

@@ -212,7 +212,14 @@ void tst_QFileSystemModel::rootPath()
     QString oldRootPath = model->rootPath();
     const QStringList documentPaths = QStandardPaths::standardLocations(QStandardPaths::DocumentsLocation);
     QVERIFY(!documentPaths.isEmpty());
-    const QString documentPath = documentPaths.front();
+    QString documentPath = documentPaths.front();
+    // In particular on Linux, ~/Documents (the first
+    // DocumentsLocation) may not exist, so choose ~ in that case:
+    if (!QFile::exists(documentPath)) {
+        documentPath = QDir::homePath();
+        qWarning("%s: first documentPath \"%s\" does not exist. Using ~ (\"%s\") instead.",
+                 Q_FUNC_INFO, qPrintable(documentPaths.front()), qPrintable(documentPath));
+    }
     root = model->setRootPath(documentPath);
 
     QTRY_VERIFY(model->rowCount(root) >= 0);

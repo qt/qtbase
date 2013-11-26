@@ -185,15 +185,14 @@ bool QMacTimeZonePrivate::isDaylightTime(qint64 atMSecsSinceEpoch) const
 QTimeZonePrivate::Data QMacTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 {
     const NSTimeInterval seconds = forMSecsSinceEpoch / 1000.0;
+    NSDate *date = [NSDate dateWithTimeIntervalSince1970:seconds];
     Data data;
     data.atMSecsSinceEpoch = forMSecsSinceEpoch;
-    data.offsetFromUtc = [m_nstz secondsFromGMTForDate:
-                         [NSDate dateWithTimeIntervalSince1970:seconds]];
-    data.daylightTimeOffset = [m_nstz daylightSavingTimeOffsetForDate:
-                              [NSDate dateWithTimeIntervalSince1970:seconds]];
+    data.offsetFromUtc = [m_nstz secondsFromGMTForDate:date];
+    data.daylightTimeOffset = [m_nstz daylightSavingTimeOffsetForDate:date];
     data.standardTimeOffset = data.offsetFromUtc - data.daylightTimeOffset;
-    data.abbreviation = QCFString::toQString([m_nstz abbreviationForDate:
-                                             [NSDate dateWithTimeIntervalSince1970:seconds]]);
+    data.abbreviation = QCFString::toQString([m_nstz abbreviationForDate:date]);
+    [date release];
     return data;
 }
 
@@ -213,26 +212,46 @@ QTimeZonePrivate::Data QMacTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
 {
     QTimeZonePrivate::Data tran;
     const NSTimeInterval seconds = afterMSecsSinceEpoch / 1000.0;
-    NSDate *date = [NSDate dateWithTimeIntervalSince1970:seconds];
-    const NSDate *next = [m_nstz nextDaylightSavingTimeTransitionAfterDate:date];
-    const NSTimeInterval nextSecs = [next timeIntervalSince1970];
+    NSDate *nextDate = [NSDate dateWithTimeIntervalSince1970:seconds];
+    nextDate = [m_nstz nextDaylightSavingTimeTransitionAfterDate:nextDate];
+    const NSTimeInterval nextSecs = [nextDate timeIntervalSince1970];
+    if (nextDate == nil || nextSecs <= seconds) {
+        [nextDate release];
+        return invalidData();
+    }
     tran.atMSecsSinceEpoch = nextSecs * 1000;
-    tran.offsetFromUtc = [m_nstz secondsFromGMTForDate:
-                         [NSDate dateWithTimeIntervalSince1970:nextSecs]];
-    tran.daylightTimeOffset = [m_nstz daylightSavingTimeOffsetForDate:
-                      [NSDate dateWithTimeIntervalSince1970:nextSecs]];
+    tran.offsetFromUtc = [m_nstz secondsFromGMTForDate:nextDate];
+    tran.daylightTimeOffset = [m_nstz daylightSavingTimeOffsetForDate:nextDate];
     tran.standardTimeOffset = tran.offsetFromUtc - tran.daylightTimeOffset;
-    tran.abbreviation = QCFString::toQString([m_nstz abbreviationForDate:date]);
-    [next release];
-    [date release];
+    tran.abbreviation = QCFString::toQString([m_nstz abbreviationForDate:nextDate]);
+    [nextDate release];
     return tran;
 }
 
 QTimeZonePrivate::Data QMacTimeZonePrivate::previousTransition(qint64 beforeMSecsSinceEpoch) const
 {
-    // TODO No direct Mac API, so get all transitions since epoch and return the last one
-    // Probably slow, need to optimize
-    return transitions(0, beforeMSecsSinceEpoch - 1).last();
+    // No direct Mac API, so get all transitions since epoch and return the last one
+    QList<int> secsList;
+    if (beforeMSecsSinceEpoch > 0) {
+        const int endSecs = beforeMSecsSinceEpoch / 1000.0;
+        NSTimeInterval prevSecs = 0;
+        NSTimeInterval nextSecs = 0;
+        NSDate *nextDate = [NSDate dateWithTimeIntervalSince1970:nextSecs];
+        // If invalid may return a nil date or an Epoch date
+        nextDate = [m_nstz nextDaylightSavingTimeTransitionAfterDate:nextDate];
+        nextSecs = [nextDate timeIntervalSince1970];
+        while (nextDate != nil && nextSecs > prevSecs && nextSecs < endSecs) {
+            secsList.append(nextSecs);
+            prevSecs = nextSecs;
+            nextDate = [m_nstz nextDaylightSavingTimeTransitionAfterDate:nextDate];
+            nextSecs = [nextDate timeIntervalSince1970];
+        }
+        [nextDate release];
+    }
+    if (secsList.size() >= 1)
+        return data(qint64(secsList.last()) * 1000);
+    else
+        return invalidData();
 }
 
 QByteArray QMacTimeZonePrivate::systemTimeZoneId() const

@@ -154,6 +154,8 @@ public:
     void setMenubar(QCocoaMenuBar *mb);
     QCocoaMenuBar *menubar() const;
 
+    void setWindowCursor(NSCursor *cursor);
+
     void registerTouch(bool enable);
 
     qreal devicePixelRatio() const;
@@ -190,11 +192,13 @@ public: // for QNSView
     Qt::WindowState m_synchedWindowState;
     Qt::WindowModality m_windowModality;
     QPointer<QWindow> m_activePopupWindow;
-    QPointer<QWindow> m_underMouseWindow;
+    QPointer<QWindow> m_enterLeaveTargetWindow;
+    bool m_windowUnderMouse;
 
     bool m_inConstructor;
     QCocoaGLContext *m_glContext;
     QCocoaMenuBar *m_menubar;
+    NSCursor *m_windowCursor;
 
     bool m_hasModalSession;
     bool m_frameStrutEventsEnabled;

@@ -43,8 +43,13 @@
 #define QANDROIDASSETSFILEENGINEHANDLER_H
 
 #include <QtCore/private/qabstractfileengine_p.h>
+#include <QCache>
+#include <QMutex>
+#include <QSharedPointer>
+
 #include <android/asset_manager.h>
 
+struct AndroidAssetDir;
 class AndroidAssetsFileEngineHandler: public QAbstractFileEngineHandler
 {
 public:
@@ -54,7 +59,8 @@ public:
 
 private:
     AAssetManager *m_assetManager;
-    mutable QByteArray m_path;
+    mutable QCache<QByteArray, QSharedPointer<AndroidAssetDir>> m_assetsCache;
+    mutable QMutex m_assetsCacheMutext;
 };
 
 #endif // QANDROIDASSETSFILEENGINEHANDLER_H

@@ -247,12 +247,6 @@ private:
     friend class QFontEngineBox;
     friend class QFontEngineMac;
     friend class QFontEngineWin;
-#ifndef QT_NO_QWS_QPF
-    friend class QFontEngineQPF1;
-#endif
-#ifndef QT_NO_QWS_QPF2
-    friend class QFontEngineQPF;
-#endif
     friend class QMacPrintEngine;
     friend class QMacPrintEnginePrivate;
     friend class QFontEngineQPA;

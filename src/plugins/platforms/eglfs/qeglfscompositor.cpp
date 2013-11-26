@@ -53,7 +53,8 @@ static QEglFSCompositor *compositor = 0;
 
 QEglFSCompositor::QEglFSCompositor()
     : m_screen(0),
-      m_program(0)
+      m_program(0),
+      m_initialized(false)
 {
     Q_ASSERT(!compositor);
     m_updateTimer.setSingleShot(true);
@@ -86,6 +87,10 @@ void QEglFSCompositor::renderAll()
     Q_ASSERT(context);
 
     context->makeCurrent(rootWin->window());
+    if (!m_initialized) {
+        initializeOpenGLFunctions();
+        m_initialized = true;
+    }
     ensureProgram();
     m_program->bind();
 

@@ -101,7 +101,12 @@ QIOSIntegration::~QIOSIntegration()
 bool QIOSIntegration::hasCapability(Capability cap) const
 {
     switch (cap) {
+    case BufferQueueingOpenGL:
+        return true;
     case OpenGL:
+    case ThreadedOpenGL:
+        return true;
+    case ThreadedPixmaps:
         return true;
     case MultipleWindows:
         return true;
@@ -155,7 +160,7 @@ QPlatformServices *QIOSIntegration::services() const
 QVariant QIOSIntegration::styleHint(StyleHint hint) const
 {
     switch (hint) {
-    case ShowIsFullScreen:
+    case ShowIsMaximized:
         return true;
     case SetFocusOnTouchRelease:
         return true;

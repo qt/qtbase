@@ -346,12 +346,12 @@ void renderAScene(int w, int h)
 
             for (int i=0; i<1000; ++i) {
                 GLfloat pos[] = {
-                    (rand() % 100) / 100.,
-                    (rand() % 100) / 100.,
-                    (rand() % 100) / 100.,
-                    (rand() % 100) / 100.,
-                    (rand() % 100) / 100.,
-                    (rand() % 100) / 100.
+                    (rand() % 100) / 100.f,
+                    (rand() % 100) / 100.f,
+                    (rand() % 100) / 100.f,
+                    (rand() % 100) / 100.f,
+                    (rand() % 100) / 100.f,
+                    (rand() % 100) / 100.f
                 };
 
                 glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, pos);

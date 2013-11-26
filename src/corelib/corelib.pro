@@ -20,8 +20,7 @@ ANDROID_JAR_DEPENDENCIES = \
     jar/QtAndroid.jar \
     jar/QtAndroidAccessibility.jar
 ANDROID_LIB_DEPENDENCIES = \
-    plugins/platforms/android/libqtforandroid.so \
-    libs/libgnustl_shared.so
+    plugins/platforms/android/libqtforandroid.so
 ANDROID_BUNDLED_JAR_DEPENDENCIES = \
     jar/QtAndroid-bundled.jar \
     jar/QtAndroidAccessibility-bundled.jar
@@ -49,7 +48,7 @@ mac|darwin {
         LIBS_PRIVATE += -framework CoreServices
     }
     LIBS_PRIVATE += -framework CoreFoundation
-    LIBS += -framework Foundation
+    LIBS_PRIVATE += -framework Foundation
 }
 win32:DEFINES-=QT_NO_CAST_TO_ASCII
 DEFINES += $$MODULE_DEFINES
@@ -80,6 +79,9 @@ cmake_umbrella_config_version_file.input = $$PWD/../../mkspecs/features/data/cma
 cmake_umbrella_config_version_file.output = $$DESTDIR/cmake/Qt5/Qt5ConfigVersion.cmake
 
 load(cmake_functions)
+load(qfeatures)
+
+CMAKE_DISABLED_FEATURES = $$join(QT_DISABLED_FEATURES, "$$escape_expand(\\n)    ")
 
 CMAKE_HOST_DATA_DIR = $$cmakeRelativePath($$[QT_HOST_DATA/src], $$[QT_INSTALL_PREFIX])
 contains(CMAKE_HOST_DATA_DIR, "^\\.\\./.*"):!isEmpty(CMAKE_HOST_DATA_DIR) {

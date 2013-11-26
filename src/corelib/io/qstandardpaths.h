@@ -69,7 +69,8 @@ public:
         RuntimeLocation,
         ConfigLocation,
         DownloadLocation,
-        GenericCacheLocation
+        GenericCacheLocation,
+        GenericConfigLocation
     };
 
     static QString writableLocation(StandardLocation type);

@@ -641,7 +641,7 @@ static inline int spacingHelper(QWidget* parent, QStyle *style, int userVSpacing
                 spacing = qMax(spacing, prevItem2->geometry().top() - wid->geometry().top() );
         }
     }
-    return spacing;
+    return qMax(spacing, 0);
 }
 
 static inline void initLayoutStruct(QLayoutStruct& sl, QFormLayoutItem* item)

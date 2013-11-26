@@ -468,7 +468,7 @@ bool QSurfaceFormat::hasAlpha() const
 /*!
     Set the preferred stencil buffer size to \a size bits.
 
-    \sa stencilBufferSize(), setStencil(), stencil()
+    \sa stencilBufferSize()
 */
 void QSurfaceFormat::setStencilBufferSize(int size)
 {
@@ -481,7 +481,7 @@ void QSurfaceFormat::setStencilBufferSize(int size)
 /*!
     Returns the stencil buffer size in bits.
 
-    \sa stencil(), setStencil(), setStencilBufferSize()
+    \sa setStencilBufferSize()
 */
 int QSurfaceFormat::stencilBufferSize() const
 {

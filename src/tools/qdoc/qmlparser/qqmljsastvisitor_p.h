@@ -71,7 +71,8 @@ public:
 
     // Ui
     virtual bool visit(UiProgram *) { return true; }
-    virtual bool visit(UiImportList *) { return true; }
+    virtual bool visit(UiHeaderItemList *) { return true; }
+    virtual bool visit(UiPragma *) { return true; }
     virtual bool visit(UiImport *) { return true; }
     virtual bool visit(UiPublicMember *) { return true; }
     virtual bool visit(UiSourceElement *) { return true; }
@@ -84,10 +85,12 @@ public:
     virtual bool visit(UiObjectMemberList *) { return true; }
     virtual bool visit(UiArrayMemberList *) { return true; }
     virtual bool visit(UiQualifiedId *) { return true; }
+    virtual bool visit(UiQualifiedPragmaId *) { return true; }
 
     virtual void endVisit(UiProgram *) {}
-    virtual void endVisit(UiImportList *) {}
     virtual void endVisit(UiImport *) {}
+    virtual void endVisit(UiHeaderItemList *) {}
+    virtual void endVisit(UiPragma *) {}
     virtual void endVisit(UiPublicMember *) {}
     virtual void endVisit(UiSourceElement *) {}
     virtual void endVisit(UiObjectDefinition *) {}
@@ -99,6 +102,7 @@ public:
     virtual void endVisit(UiObjectMemberList *) {}
     virtual void endVisit(UiArrayMemberList *) {}
     virtual void endVisit(UiQualifiedId *) {}
+    virtual void endVisit(UiQualifiedPragmaId *) {}
 
     // QQmlJS
     virtual bool visit(ThisExpression *) { return true; }

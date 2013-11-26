@@ -167,7 +167,7 @@ class NestedExpression;
 
 // ui elements
 class UiProgram;
-class UiImportList;
+class UiPragma;
 class UiImport;
 class UiPublicMember;
 class UiParameterList;
@@ -181,6 +181,8 @@ class UiObjectMember;
 class UiObjectMemberList;
 class UiArrayMemberList;
 class UiQualifiedId;
+class UiQualifiedPragmaId;
+class UiHeaderItemList;
 
 } } // namespace AST
 

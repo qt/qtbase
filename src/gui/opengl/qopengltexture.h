@@ -96,8 +96,8 @@ public:
         DontResetTextureUnit
     };
 
-    QOpenGLTexture(Target target);
-    QOpenGLTexture(const QImage& image, MipMapGeneration genMipMaps = GenerateMipMaps);
+    explicit QOpenGLTexture(Target target);
+    explicit QOpenGLTexture(const QImage& image, MipMapGeneration genMipMaps = GenerateMipMaps);
     ~QOpenGLTexture();
 
     // Creation and destruction
@@ -222,7 +222,16 @@ public:
         SRGB_Alpha_DXT1        = 0x8C4D,    // GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT
         SRGB_Alpha_DXT3        = 0x8C4E,    // GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT
         SRGB_Alpha_DXT5        = 0x8C4F,    // GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT
-        SRGB_BP_UNorm          = 0x8E8D     // GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB
+        SRGB_BP_UNorm          = 0x8E8D,    // GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB
+
+        // ES 2 formats
+        DepthFormat            = 0x1902,    // GL_DEPTH_COMPONENT
+        AlphaFormat            = 0x1906,    // GL_ALPHA
+        RGBFormat              = 0x1907,    // GL_RGB
+        RGBAFormat             = 0x1908,    // GL_RGBA
+        LuminanceFormat        = 0x1909,    // GL_LUMINANCE
+        LuminanceAlphaFormat   = 0x190A
+
     };
 
     // This is not used externally yet but is reserved to allow checking of
@@ -296,7 +305,10 @@ public:
         RGBA_Integer   = 0x8D99,    // GL_RGBA_INTEGER
         BGRA_Integer   = 0x8D9B,    // GL_BGRA_INTEGER
         Depth          = 0x1902,    // GL_DEPTH_COMPONENT
-        DepthStencil   = 0x84F9     // GL_DEPTH_STENCIL
+        DepthStencil   = 0x84F9,    // GL_DEPTH_STENCIL
+        Alpha          = 0x1906,    // GL_ALPHA
+        Luminance      = 0x1909,    // GL_LUMINANCE
+        LuminanceAlpha = 0x190A     // GL_LUMINANCE_ALPHA
     };
 
     enum PixelType {
@@ -308,6 +320,7 @@ public:
         Int32              = 0x1404,    // GL_INT
         UInt32             = 0x1405,    // GL_UNSIGNED_INT
         Float16            = 0x140B,    // GL_HALF_FLOAT
+        Float16OES         = 0x8D61,    // GL_HALF_FLOAT_OES
         Float32            = 0x1406,    // GL_FLOAT
         UInt32_RGB9_E5     = 0x8C3E,    // GL_UNSIGNED_INT_5_9_9_9_REV
         UInt32_RG11B10F    = 0x8C3B,    // GL_UNSIGNED_INT_10F_11F_11F_REV

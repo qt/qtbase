@@ -20,11 +20,13 @@ INCLUDEPATH += $$PWD/../src/opengl/
 
 HEADERS += \
     $$PWD/../src/opengl/qandroidopenglcontext.h \
-    $$PWD/../src/opengl/qandroidopenglplatformwindow.h
+    $$PWD/../src/opengl/qandroidopenglplatformwindow.h \
+    $$PWD/../src/opengl/qandroidopenglplatformscreen.h
 
 SOURCES += \
     $$PWD/../src/opengl/qandroidopenglcontext.cpp \
-    $$PWD/../src/opengl/qandroidopenglplatformwindow.cpp
+    $$PWD/../src/opengl/qandroidopenglplatformwindow.cpp \
+    $$PWD/../src/opengl/qandroidopenglplatformscreen.cpp
 
 include($$PWD/../../eglfs/eglfs.pri)
 include($$PWD/../src/src.pri)

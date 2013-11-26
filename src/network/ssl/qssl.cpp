@@ -164,7 +164,7 @@ QT_BEGIN_NAMESPACE
     \value SslOptionDisableSessionSharing Disables SSL session sharing via
     the session ID handshake attribute.
     \value SslOptionDisableSessionPersistence Disables storing the SSL session
-    in ASN.1 format as returned by QSslConfiguration::session(). Enabling
+    in ASN.1 format as returned by QSslConfiguration::sessionTicket(). Enabling
     this feature adds memory overhead of approximately 1K per used session
     ticket.
 

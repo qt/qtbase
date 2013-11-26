@@ -42,13 +42,6 @@
 
 package org.qtproject.qt5.android;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Iterator;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -57,6 +50,8 @@ import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.ResultReceiver;
 import android.text.method.MetaKeyKeyListener;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -66,11 +61,19 @@ import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Surface;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import android.view.Surface;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 public class QtActivityDelegate
 {
@@ -109,8 +112,9 @@ public class QtActivityDelegate
     private boolean m_quitApp = true;
     private Process m_debuggerProcess = null; // debugger process
 
-    public boolean m_keyboardIsVisible = false;
-    public boolean m_keyboardIsHiding = false;
+    private boolean m_keyboardIsVisible = false;
+    public boolean m_backKeyPressedSent = false;
+
 
     public QtLayout getQtLayout()
     {
@@ -173,6 +177,13 @@ public class QtActivityDelegate
     private final int ApplicationInactive = 0x2;
     private final int ApplicationActive = 0x4;
 
+    public void setKeyboardVisibility(boolean visibility)
+    {
+        if (m_keyboardIsVisible == visibility)
+            return;
+        m_keyboardIsVisible = visibility;
+        QtNative.keyboardVisibilityChanged(m_keyboardIsVisible);
+    }
     public void resetSoftwareKeyboard()
     {
         if (m_imm == null)
@@ -181,6 +192,7 @@ public class QtActivityDelegate
             @Override
             public void run() {
                 m_imm.restartInput(m_editText);
+                m_editText.m_optionsChanged = false;
             }
         }, 5);
     }
@@ -253,15 +265,25 @@ public class QtActivityDelegate
         m_editText.postDelayed(new Runnable() {
             @Override
             public void run() {
-                m_imm.showSoftInput(m_editText, 0);
-                m_keyboardIsVisible = true;
-                m_keyboardIsHiding = false;
-                m_editText.postDelayed(new Runnable() {
+                m_imm.showSoftInput(m_editText, 0, new ResultReceiver(new Handler()) {
                     @Override
-                    public void run() {
-                        m_imm.restartInput(m_editText);
+                    protected void onReceiveResult(int resultCode, Bundle resultData) {
+                        switch (resultCode) {
+                            case InputMethodManager.RESULT_SHOWN:
+                            case InputMethodManager.RESULT_UNCHANGED_SHOWN:
+                                setKeyboardVisibility(true);
+                                break;
+                            case InputMethodManager.RESULT_HIDDEN:
+                            case InputMethodManager.RESULT_UNCHANGED_HIDDEN:
+                                setKeyboardVisibility(false);
+                                break;
+                        }
                     }
-                }, 25);
+                });
+                if (m_editText.m_optionsChanged) {
+                    m_imm.restartInput(m_editText);
+                    m_editText.m_optionsChanged = false;
+                }
             }
         }, 15);
     }
@@ -270,9 +292,21 @@ public class QtActivityDelegate
     {
         if (m_imm == null)
             return;
-        m_imm.hideSoftInputFromWindow(m_editText.getWindowToken(), 0);
-        m_keyboardIsVisible = false;
-        m_keyboardIsHiding = false;
+        m_imm.hideSoftInputFromWindow(m_editText.getWindowToken(), 0, new ResultReceiver( new Handler()){
+            @Override
+            protected void onReceiveResult(int resultCode, Bundle resultData) {
+                switch (resultCode) {
+                    case InputMethodManager.RESULT_SHOWN:
+                    case InputMethodManager.RESULT_UNCHANGED_SHOWN:
+                        setKeyboardVisibility(true);
+                        break;
+                    case InputMethodManager.RESULT_HIDDEN:
+                    case InputMethodManager.RESULT_UNCHANGED_HIDDEN:
+                        setKeyboardVisibility(false);
+                        break;
+                }
+            }
+        });
     }
 
     public boolean isSoftwareKeyboardVisible()
@@ -362,7 +396,7 @@ public class QtActivityDelegate
                                               + "\tNECESSITAS_API_LEVEL=" + necessitasApiLevel
                                               + "\tHOME=" + m_activity.getFilesDir().getAbsolutePath()
                                               + "\tTMPDIR=" + m_activity.getFilesDir().getAbsolutePath();
-        if (android.os.Build.VERSION.SDK_INT < 14)
+        if (Build.VERSION.SDK_INT < 14)
             additionalEnvironmentVariables += "\tQT_ANDROID_FONTS=Droid Sans;Droid Sans Fallback";
         else
             additionalEnvironmentVariables += "\tQT_ANDROID_FONTS=Roboto;Droid Sans;Droid Sans Fallback";
@@ -378,6 +412,7 @@ public class QtActivityDelegate
             m_applicationParameters = loaderParams.getString(APPLICATION_PARAMETERS_KEY);
         else
             m_applicationParameters = "";
+        setActionBarVisibility(false);
 
         return true;
     }
@@ -585,9 +620,9 @@ public class QtActivityDelegate
         }
         m_layout = new QtLayout(m_activity);
         m_surface = new QtSurface(m_activity, 0);
-        m_editText = new QtEditText(m_activity);
+        m_editText = new QtEditText(m_activity, this);
         m_imm = (InputMethodManager)m_activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-        m_layout.addView(m_surface,0);
+        m_layout.addView(m_surface, 0);
         m_activity.setContentView(m_layout,
                                   new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
                                                              ViewGroup.LayoutParams.FILL_PARENT));
@@ -717,8 +752,12 @@ public class QtActivityDelegate
         }
 
         m_lastChar = lc;
-        if (keyCode != KeyEvent.KEYCODE_BACK)
-            QtNative.keyDown(keyCode, c, event.getMetaState());
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            m_backKeyPressedSent = !m_keyboardIsVisible;
+            if (!m_backKeyPressedSent)
+                return true;
+        }
+        QtNative.keyDown(keyCode, c, event.getMetaState());
 
         return true;
     }
@@ -737,8 +776,9 @@ public class QtActivityDelegate
             }
         }
 
-        if (keyCode == KeyEvent.KEYCODE_BACK && m_keyboardIsVisible && !m_keyboardIsHiding) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && !m_backKeyPressedSent) {
             hideSoftwareKeyboard();
+            setKeyboardVisibility(false);
             return true;
         }
 
@@ -775,7 +815,10 @@ public class QtActivityDelegate
     public boolean onPrepareOptionsMenu(Menu menu)
     {
         m_opionsMenuIsVisible = true;
-        return QtNative.onPrepareOptionsMenu(menu);
+        boolean res = QtNative.onPrepareOptionsMenu(menu);
+        if (!res || menu.size() == 0)
+            setActionBarVisibility(false);
+        return res;
     }
 
     public boolean onOptionsItemSelected(MenuItem item)
@@ -791,8 +834,17 @@ public class QtActivityDelegate
 
     public void resetOptionsMenu()
     {
-        if (m_opionsMenuIsVisible)
-            m_activity.closeOptionsMenu();
+        setActionBarVisibility(true);
+        if (Build.VERSION.SDK_INT > 10) {
+            try {
+                Activity.class.getMethod("invalidateOptionsMenu").invoke(m_activity);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        else
+            if (m_opionsMenuIsVisible)
+                m_activity.closeOptionsMenu();
     }
     private boolean m_contextMenuVisible = false;
     public void onCreateContextMenu(ContextMenu menu,
@@ -832,5 +884,47 @@ public class QtActivityDelegate
     public void closeContextMenu()
     {
         m_activity.closeContextMenu();
+    }
+
+    private boolean hasPermanentMenuKey()
+    {
+        try {
+            return Build.VERSION.SDK_INT < 11 || (Build.VERSION.SDK_INT >= 14 &&
+                    (Boolean)ViewConfiguration.class.getMethod("hasPermanentMenuKey").invoke(ViewConfiguration.get(m_activity)));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private Object getActionBar()
+    {
+        try {
+            return Activity.class.getMethod("getActionBar").invoke(m_activity);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private void setActionBarVisibility(boolean visible)
+    {
+        if (hasPermanentMenuKey() || !visible) {
+            if (Build.VERSION.SDK_INT > 10 && getActionBar() != null) {
+                try {
+                    Class.forName("android.app.ActionBar").getMethod("hide").invoke(getActionBar());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+        } else {
+            if (Build.VERSION.SDK_INT > 10 && getActionBar() != null)
+                try {
+                    Class.forName("android.app.ActionBar").getMethod("show").invoke(getActionBar());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+        }
     }
 }

@@ -90,11 +90,6 @@ qreal QGraphicsWidgetPrivate::titleBarHeight(const QStyleOptionTitleBar &options
 {
     Q_Q(const QGraphicsWidget);
     int height = q->style()->pixelMetric(QStyle::PM_TitleBarHeight, &options);
-#if defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
-    if (qobject_cast<QMacStyle*>(q->style())) {
-        height -=4;
-    }
-#endif
     return (qreal)height;
 }
 

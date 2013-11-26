@@ -200,6 +200,7 @@ class QDocDatabase
     void insertOpenNamespace(const QString& path) { openNamespaces_.insert(path); }
     FunctionNode* findNodeInOpenNamespace(const QStringList& parentPath, const FunctionNode* clone);
     Node* findNodeInOpenNamespace(QStringList& path, Node::Type type, Node::SubType subtype);
+    void setShowInternal(bool value) { showInternal_ = value; }
 
     /* debugging functions */
     void printModules() const;
@@ -220,6 +221,7 @@ class QDocDatabase
 
  private:
     static QDocDatabase*    qdocDB_;
+    bool                    showInternal_;
     QString                 version_;
     QDocMultiMap            masterMap_;
     Tree*                   tree_;

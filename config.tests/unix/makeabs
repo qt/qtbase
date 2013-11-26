@@ -15,13 +15,13 @@ elif [ "$OSTYPE" = "msys" -a -z "${FILE##[a-zA-Z]:[/\\]*}" ]; then
     true
 else
     RES="$PWD/$FILE"
-    test -d "$RES" && RES="$RES/"
-    RES=`echo "$RES" | sed "s,/\(\./\)*,/,g"`
-
-# note: this will only strip 1 /path/../ from RES, i.e. given /a/b/c/../../../, it returns /a/b/../../
-    RES=`echo "$RES" | sed "s,\(/[^/]*/\)\.\./,/,g"` 
-
-    RES=`echo "$RES" | sed "s,//,/,g" | sed "s,/$,,"`
 fi
+RES=$RES/
+while true; do
+    nres=`echo "$RES" | sed "s,/[^/][^/]*/\.\./,/,g; s,/\./,/,g"`
+    test x"$nres" = x"$RES" && break
+    RES=$nres
+done
+RES=`echo "$RES" | sed "s,//,/,g; s,/$,,"`
 echo $RES #return
 

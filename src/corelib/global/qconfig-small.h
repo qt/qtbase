@@ -64,9 +64,6 @@
 #ifndef QT_NO_PROGRESSDIALOG
 #  define QT_NO_PROGRESSDIALOG
 #endif
-#ifndef QT_NO_TABDIALOG
-#  define QT_NO_TABDIALOG
-#endif
 
 /* File I/O */
 #ifndef QT_NO_SETTINGS
@@ -105,9 +102,6 @@
 #endif
 
 /* Internationalization */
-#ifndef QT_NO_QWS_INPUTMETHODS
-#  define QT_NO_QWS_INPUTMETHODS
-#endif
 #ifndef QT_NO_TEXTCODEC
 #  define QT_NO_TEXTCODEC
 #endif
@@ -116,9 +110,6 @@
 #endif
 #ifndef QT_NO_TRANSLATION
 #  define QT_NO_TRANSLATION
-#endif
-#ifndef QT_NO_TRANSLATION_UTF8
-#  define QT_NO_TRANSLATION_UTF8
 #endif
 
 /* ItemViews */
@@ -163,20 +154,11 @@
 #ifndef QT_NO_SHORTCUT
 #  define QT_NO_SHORTCUT
 #endif
-#ifndef QT_NO_SOUND
-#  define QT_NO_SOUND
-#endif
 #ifndef QT_NO_WHEELEVENT
 #  define QT_NO_WHEELEVENT
 #endif
 
 /* Networking */
-#ifndef QT_NO_COP
-#  define QT_NO_COP
-#endif
-#ifndef QT_NO_HOSTINFO
-#  define QT_NO_HOSTINFO
-#endif
 #ifndef QT_NO_HTTP
 #  define QT_NO_HTTP
 #endif
@@ -193,14 +175,6 @@
 #endif
 #ifndef QT_NO_CUPS
 #  define QT_NO_CUPS
-#endif
-
-/* Qt for Embedded Linux */
-#ifndef QT_NO_QWS_SOUNDSERVER
-#  define QT_NO_QWS_SOUNDSERVER
-#endif
-#ifndef QT_NO_QWS_PROPERTIES
-#  define QT_NO_QWS_PROPERTIES
 #endif
 
 /* Styles */

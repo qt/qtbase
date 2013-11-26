@@ -682,7 +682,7 @@ bool QFileInfo::exists() const
     \note If \a file is a symlink that points to a non-existing
     file, false is returned.
 
-    \note Using this function is faster for than using
+    \note Using this function is faster than using
     \c QFileInfo(file).exists() for file system access.
 */
 bool QFileInfo::exists(const QString &file)

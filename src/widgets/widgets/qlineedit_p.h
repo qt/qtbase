@@ -196,9 +196,10 @@ public:
     QString placeholderText;
 
     QWidget *addAction(QAction *newAction, QAction *before, QLineEdit::ActionPosition, int flags = 0);
-    void removeAction(const QActionEvent *e);
+    void removeAction(QAction *action);
     QSize iconSize() const;
     QIcon clearButtonIcon() const;
+    void setClearButtonEnabled(bool enabled);
     void positionSideWidgets();
     inline bool hasSideWidgets() const { return !leadingSideWidgets.isEmpty() || !trailingSideWidgets.isEmpty(); }
     inline const SideWidgetEntryList &leftSideWidgetList() const

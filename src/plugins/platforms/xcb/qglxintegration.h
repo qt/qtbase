@@ -72,6 +72,9 @@ public:
 
     GLXContext glxContext() const { return m_context; }
 
+    static bool supportsThreading();
+    static void queryDummyContext();
+
 private:
     QXcbScreen *m_screen;
     GLXContext m_context;
@@ -79,6 +82,8 @@ private:
     QSurfaceFormat m_format;
     bool m_isPBufferCurrent;
     int m_swapInterval;
+    static bool m_queriedDummyContext;
+    static bool m_supportsThreading;
 };
 
 

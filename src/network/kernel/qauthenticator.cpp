@@ -189,7 +189,7 @@ QAuthenticator &QAuthenticator::operator=(const QAuthenticator &other)
         d->realm = other.d->realm;
         d->method = other.d->method;
         d->options = other.d->options;
-    } else {
+    } else if (d->phase == QAuthenticatorPrivate::Start) {
         delete d;
         d = 0;
     }
@@ -267,7 +267,8 @@ void QAuthenticator::detach()
         return;
     }
 
-    d->phase = QAuthenticatorPrivate::Start;
+    if (d->phase == QAuthenticatorPrivate::Done)
+        d->phase = QAuthenticatorPrivate::Start;
 }
 
 /*!

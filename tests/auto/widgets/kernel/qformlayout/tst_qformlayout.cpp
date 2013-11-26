@@ -47,6 +47,7 @@
 #include <qproxystyle.h>
 #include <qsizepolicy.h>
 
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
@@ -346,6 +347,19 @@ void tst_QFormLayout::spacing()
     //QCOMPARE(fl->spacing(), -1);
     style->hspacing = 20;
     //QCOMPARE(fl->spacing(), 20);
+
+
+
+    // Do not assert if spacings are negative (QTBUG-34731)
+    style->vspacing = -1;
+    style->hspacing = -1;
+    QLabel *label = new QLabel(tr("Asserts"));
+    QCheckBox *checkBox = new QCheckBox(tr("Yes"));
+    fl->setWidget(0, QFormLayout::LabelRole, label);
+    fl->setWidget(1, QFormLayout::FieldRole, checkBox);
+    w->resize(200, 100);
+    w->show();
+    QVERIFY(QTest::qWaitForWindowExposed(w));
 
     delete w;
     delete style;

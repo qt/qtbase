@@ -42,6 +42,7 @@
 #include <QtTest/QtTest>
 #include <qwineventnotifier.h>
 #include <qtimer.h>
+#include <qt_windows.h>
 
 class tst_QWinEventNotifier : public QObject
 {

@@ -48,6 +48,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QIOSWindow;
+
 class QIOSContext : public QObject, public QPlatformOpenGLContext
 {
     Q_OBJECT
@@ -66,10 +68,14 @@ public:
     GLuint defaultFramebufferObject(QPlatformSurface *) const;
     QFunctionPointer getProcAddress(const QByteArray &procName);
 
+    bool isSharing() const Q_DECL_OVERRIDE;
+    bool isValid() const Q_DECL_OVERRIDE;
+
 private Q_SLOTS:
     void windowDestroyed(QObject *object);
 
 private:
+    QIOSContext *m_sharedContext;
     EAGLContext *m_eaglContext;
     QSurfaceFormat m_format;
 
@@ -83,7 +89,7 @@ private:
 
     static void deleteBuffers(const FramebufferObject &framebufferObject);
 
-    mutable QHash<QWindow *, FramebufferObject> m_framebufferObjects;
+    mutable QHash<QIOSWindow *, FramebufferObject> m_framebufferObjects;
 };
 
 QT_END_NAMESPACE

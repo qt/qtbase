@@ -783,9 +783,15 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::InputMethodCloseCandidateWindowEvent:
         // TODO: Release/regrab mouse if a popup has mouse grab.
         return false;
-    case QtWindows::ClipboardEvent:
     case QtWindows::DestroyEvent:
-
+        if (!platformWindow->testFlag(QWindowsWindow::WithinDestroy)) {
+            qWarning() << "External WM_DESTROY received for " << platformWindow->window()
+                       << ", parent: " << platformWindow->window()->parent()
+                       << ", transient parent: " << platformWindow->window()->transientParent();
+            }
+        return false;
+    case QtWindows::ClipboardEvent:
+        return false;
     case QtWindows::UnknownEvent:
         return false;
     case QtWindows::AccessibleObjectFromWindowRequest:
@@ -842,8 +848,9 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::KeyEvent:
     case QtWindows::InputMethodKeyEvent:
     case QtWindows::InputMethodKeyDownEvent:
+    case QtWindows::KeyboardLayoutChangeEvent:
 #if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
-        return platformSessionManager()->isInterractionBlocked() ? true : d->m_keyMapper.translateKeyEvent(platformWindow->window(), hwnd, msg, result);
+        return platformSessionManager()->isInteractionBlocked() ? true : d->m_keyMapper.translateKeyEvent(platformWindow->window(), hwnd, msg, result);
 #else
         return d->m_keyMapper.translateKeyEvent(platformWindow->window(), hwnd, msg, result);
 #endif
@@ -867,7 +874,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::NonClientMouseEvent:
         if (platformWindow->frameStrutEventsEnabled())
 #if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
-            return platformSessionManager()->isInterractionBlocked() ? true : d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
+            return platformSessionManager()->isInteractionBlocked() ? true : d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
 #else
             return d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
 #endif
@@ -887,13 +894,13 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::MouseEvent:
     case QtWindows::LeaveEvent:
 #if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
-        return platformSessionManager()->isInterractionBlocked() ? true : d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
+        return platformSessionManager()->isInteractionBlocked() ? true : d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
 #else
         return d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
 #endif
     case QtWindows::TouchEvent:
 #if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
-        return platformSessionManager()->isInterractionBlocked() ? true : d->m_mouseHandler.translateTouchEvent(platformWindow->window(), hwnd, et, msg, result);
+        return platformSessionManager()->isInteractionBlocked() ? true : d->m_mouseHandler.translateTouchEvent(platformWindow->window(), hwnd, et, msg, result);
 #else
         return d->m_mouseHandler.translateTouchEvent(platformWindow->window(), hwnd, et, msg, result);
 #endif

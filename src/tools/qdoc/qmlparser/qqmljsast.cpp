@@ -821,7 +821,7 @@ void DebuggerStatement::accept0(Visitor *visitor)
 void UiProgram::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {
-        accept(imports, visitor);
+        accept(headers, visitor);
         accept(members, visitor);
     }
 
@@ -932,15 +932,33 @@ void UiImport::accept0(Visitor *visitor)
     visitor->endVisit(this);
 }
 
-void UiImportList::accept0(Visitor *visitor)
+void UiQualifiedPragmaId::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {
-        accept(import, visitor);
+    }
+
+    visitor->endVisit(this);
+}
+
+void UiPragma::accept0(Visitor *visitor)
+{
+    if (visitor->visit(this)) {
+        accept(pragmaType, visitor);
+    }
+
+    visitor->endVisit(this);
+}
+
+void UiHeaderItemList::accept0(Visitor *visitor)
+{
+    if (visitor->visit(this)) {
+        accept(headerItem, visitor);
         accept(next, visitor);
     }
 
     visitor->endVisit(this);
 }
+
 
 void UiSourceElement::accept0(Visitor *visitor)
 {

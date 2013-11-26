@@ -47,6 +47,10 @@
 #include <QTouchEvent>
 #include <QPointer>
 
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+# include <QDebug>
+#endif
+
 using namespace QtAndroid;
 
 namespace QtAndroidInput
@@ -63,12 +67,32 @@ namespace QtAndroidInput
 
     static QPointer<QWindow> m_mouseGrabber;
 
+    static int m_lastCursorPos = -1;
+
     void updateSelection(int selStart, int selEnd, int candidatesStart, int candidatesEnd)
     {
         AttachedJNIEnv env;
         if (!env.jniEnv)
             return;
 
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+        qDebug() << ">>> UPDATESELECTION" << selStart << selEnd << candidatesStart << candidatesEnd;
+#endif
+        if (candidatesStart == -1 && candidatesEnd == -1 && selStart == selEnd) {
+            // Qt only gives us position inside the block, so if we move to the
+            // same position in another block, the Android keyboard will believe
+            // we have not changed position, and be terribly confused.
+            if (selStart == m_lastCursorPos) {
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+                qDebug() << ">>> FAKEUPDATESELECTION" << selStart+1;
+#endif
+                env.jniEnv->CallStaticVoidMethod(applicationClass(), m_updateSelectionMethodID,
+                                         selStart+1, selEnd+1, candidatesStart, candidatesEnd);
+            }
+            m_lastCursorPos = selStart;
+        } else {
+            m_lastCursorPos = -1;
+        }
         env.jniEnv->CallStaticVoidMethod(applicationClass(), m_updateSelectionMethodID,
                                          selStart, selEnd, candidatesStart, candidatesEnd);
     }
@@ -86,6 +110,9 @@ namespace QtAndroidInput
                                          width,
                                          height,
                                          inputHints);
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+        qDebug() << "@@@ SHOWSOFTWAREKEYBOARD" << left << top << width << height << inputHints;
+#endif
     }
 
     void resetSoftwareKeyboard()
@@ -95,6 +122,9 @@ namespace QtAndroidInput
             return;
 
         env.jniEnv->CallStaticVoidMethod(applicationClass(), m_resetSoftwareKeyboardMethodID);
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+        qDebug() << "@@@ RESETSOFTWAREKEYBOARD";
+#endif
     }
 
     void hideSoftwareKeyboard()
@@ -104,6 +134,9 @@ namespace QtAndroidInput
             return;
 
         env.jniEnv->CallStaticVoidMethod(applicationClass(), m_hideSoftwareKeyboardMethodID);
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+        qDebug() << "@@@ HIDESOFTWAREKEYBOARD";
+#endif
     }
 
     bool isSoftwareKeyboardVisible()
@@ -112,7 +145,11 @@ namespace QtAndroidInput
         if (!env.jniEnv)
             return false;
 
-        return env.jniEnv->CallStaticBooleanMethod(applicationClass(), m_isSoftwareKeyboardVisibleMethodID);
+        bool visibility = env.jniEnv->CallStaticBooleanMethod(applicationClass(), m_isSoftwareKeyboardVisibleMethodID);
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+        qDebug() << "@@@ ISSOFTWAREKEYBOARDVISIBLE" << visibility;
+#endif
+        return visibility;
     }
 
 
@@ -511,6 +548,15 @@ namespace QtAndroidInput
                                                false);
     }
 
+    static void keyboardVisibilityChanged(JNIEnv */*env*/, jobject /*thiz*/, jboolean /*visibility*/)
+    {
+        QAndroidInputContext *inputContext = QAndroidInputContext::androidInputContext();
+        if (inputContext)
+            inputContext->emitInputPanelVisibleChanged();
+#ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
+        qDebug() << "@@@ KEYBOARDVISIBILITYCHANGED" << inputContext;
+#endif
+    }
 
     static JNINativeMethod methods[] = {
         {"touchBegin","(I)V",(void*)touchBegin},
@@ -521,7 +567,8 @@ namespace QtAndroidInput
         {"mouseMove", "(III)V", (void *)mouseMove},
         {"longPress", "(III)V", (void *)longPress},
         {"keyDown", "(III)V", (void *)keyDown},
-        {"keyUp", "(III)V", (void *)keyUp}
+        {"keyUp", "(III)V", (void *)keyUp},
+        {"keyboardVisibilityChanged", "(Z)V", (void *)keyboardVisibilityChanged}
     };
 
 #define GET_AND_CHECK_STATIC_METHOD(VAR, CLASS, METHOD_NAME, METHOD_SIGNATURE) \

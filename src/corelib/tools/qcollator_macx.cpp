@@ -162,11 +162,6 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
     return QCollatorSortKey(new QCollatorSortKeyPrivate(ret));
 }
 
-bool QCollatorSortKey::operator<(const QCollatorSortKey &key) const
-{
-    return compare(key) < 0;
-}
-
 int QCollatorSortKey::compare(const QCollatorSortKey &key) const
 {
     SInt32 order;

@@ -54,6 +54,9 @@ public:
     virtual const QPalette *palette(Palette type = SystemPalette) const;
     virtual const QFont *font(Font type = SystemFont) const;
     virtual QVariant themeHint(ThemeHint hint) const;
+    virtual bool usePlatformNativeDialog(DialogType type) const;
+    virtual QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
+
 
 private:
     QAndroidPlatformNativeInterface * m_androidPlatformNativeInterface;

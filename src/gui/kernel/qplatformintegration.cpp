@@ -343,6 +343,8 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::StartDragTime);
     case ShowIsFullScreen:
         return false;
+    case ShowIsMaximized:
+        return false;
     case PasswordMaskDelay:
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::PasswordMaskDelay);
     case PasswordMaskCharacter:
@@ -360,6 +362,20 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
     }
 
     return 0;
+}
+
+Qt::WindowState QPlatformIntegration::defaultWindowState(Qt::WindowFlags flags) const
+{
+    // Leave popup-windows as is
+    if (flags & Qt::Popup & ~Qt::Window)
+        return Qt::WindowNoState;
+
+    if (styleHint(QPlatformIntegration::ShowIsFullScreen).toBool())
+        return Qt::WindowFullScreen;
+    else if (styleHint(QPlatformIntegration::ShowIsMaximized).toBool())
+        return Qt::WindowMaximized;
+
+    return Qt::WindowNoState;
 }
 
 Qt::KeyboardModifiers QPlatformIntegration::queryKeyboardModifiers() const
@@ -434,5 +450,20 @@ QPlatformSessionManager *QPlatformIntegration::createPlatformSessionManager(cons
     return new QPlatformSessionManager(id, key);
 }
 #endif
+
+/*!
+   \since 5.2
+
+   Function to sync the platform integrations state with the window system.
+
+   This is often implemented as a roundtrip from the platformintegration to the window system.
+
+   This function should not call QWindowSystemInterface::flushWindowSystemEvents() or
+   QCoreApplication::processEvents()
+*/
+void QPlatformIntegration::sync()
+{
+
+}
 
 QT_END_NAMESPACE

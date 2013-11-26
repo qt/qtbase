@@ -40,18 +40,14 @@
 ****************************************************************************/
 
 /*!
-    \headerfile <QtConcurrentRun>
-    \title Asynchronous Run
-
-    \brief The <QtConcurrentRun> header provides a way to run a function in a
-    separate thread.
-
+    \page qtconcurrentrun.html
+    \title Concurrent Run
     \ingroup thread
-
-    This function is a part of the \l {Qt Concurrent} framework.
 
     The QtConcurrent::run() function runs a function in a separate thread.
     The return value of the function is made available through the QFuture API.
+
+    This function is a part of the \l {Qt Concurrent} framework.
 
     \section1 Running a Function in a Separate Thread
 
@@ -110,15 +106,12 @@
 
     \section2 Using Bound Function Arguments
 
-    Note that Qt does not provide support for bound functions. This is
-    provided by 3rd party libraries like
-    \l{http://www.boost.org/libs/bind/bind.html}{Boost} or
-    \l{http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf}
-    {C++ TR1 Library Extensions}.
+    You can use std::bind() to \e bind a number of arguments to a function when
+    called. If C++11 support is not available, \l{http://www.boost.org/libs/bind/bind.html}
+    {boost::bind()} or \l{http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf}
+    {std::tr1::bind()} are suitable replacements.
 
-    You can use boost::bind() or std::tr1::bind() to \e bind a number of
-    arguments to a function when called. There are number of reasons for doing
-    this:
+    There are number of reasons for binding:
 
     \list
     \li To call a function that takes more than 5 arguments.
@@ -136,7 +129,6 @@
 
 /*!
     \fn QFuture<T> QtConcurrent::run(Function function, ...);
-    \relates <QtConcurrentRun>
 
     Runs \a function in a separate thread. The thread is taken from the global
     QThreadPool. Note that the function may not run immediately; the function

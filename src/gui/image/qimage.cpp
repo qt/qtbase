@@ -2324,7 +2324,7 @@ static bool convert_RGB_to_RGB16_inplace(QImageData *data, Qt::ImageConversionFl
 static void convert_ARGB_PM_to_ARGB(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
 {
     Q_ASSERT(src->format == QImage::Format_ARGB32_Premultiplied || src->format == QImage::Format_RGBA8888_Premultiplied);
-    Q_ASSERT(dest->format == QImage::Format_ARGB32 || src->format == QImage::Format_RGBA8888);
+    Q_ASSERT(dest->format == QImage::Format_ARGB32 || dest->format == QImage::Format_RGBA8888);
     Q_ASSERT(src->width == dest->width);
     Q_ASSERT(src->height == dest->height);
 
@@ -3853,6 +3853,9 @@ static InPlace_Image_Converter inplace_converter_map[QImage::NImageFormats][QIma
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGB444
     {
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    }, // Format_ARGB4444_Premultiplied
+    {
         0,
         0,
         0,
@@ -3989,7 +3992,7 @@ void qGamma_correct_back_to_linear_cs(QImage *image)
     The specified image conversion \a flags control how the image data
     is handled during the conversion process.
 
-    \sa {QImage#Image Format}{Image Format}
+    \sa {Image Formats}
 */
 QImage QImage::convertToFormat(Format format, Qt::ImageConversionFlags flags) const
 {

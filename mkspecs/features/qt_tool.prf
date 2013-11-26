@@ -19,7 +19,7 @@ CONFIG += console
 !build_pass:if(!host_build|!force_bootstrap|force_independent) {
     isEmpty(MODULE):MODULE = $$TARGET
 
-    !host_build|!force_bootstrap: MODULE_DEPENDS = $$replace(QT, -private$, )
+    !host_build|!force_bootstrap: MODULE_DEPENDS = $$replace(QT, -private$, _private)
 
     load(qt_build_paths)
 

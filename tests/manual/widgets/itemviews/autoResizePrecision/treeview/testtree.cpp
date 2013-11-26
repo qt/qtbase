@@ -118,7 +118,9 @@ protected:
 
 void TreeDialog::slotValueChanged(int newval)
 {
-    treeWidget->header()->setResizeContentsPrecision(newval, true);
+    treeWidget->header()->setResizeContentsPrecision(newval);
+    for (int u = 0; u < treeWidget->header()->count(); ++u)
+        treeWidget->resizeColumnToContents(u);
 }
 
 int main(int argc, char *argv[])

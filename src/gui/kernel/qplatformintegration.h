@@ -94,7 +94,8 @@ public:
         ForeignWindows,
         NonFullScreenWindows,
         NativeWidgets,
-        WindowManagement
+        WindowManagement,
+        SyncState
     };
 
     virtual ~QPlatformIntegration() { }
@@ -146,10 +147,12 @@ public:
         UseRtlExtensions,
         SynthesizeMouseFromTouchEvents,
         PasswordMaskCharacter,
-        SetFocusOnTouchRelease
+        SetFocusOnTouchRelease,
+        ShowIsMaximized
     };
 
     virtual QVariant styleHint(StyleHint hint) const;
+    virtual Qt::WindowState defaultWindowState(Qt::WindowFlags) const;
 
     virtual Qt::KeyboardModifiers queryKeyboardModifiers() const;
     virtual QList<int> possibleKeys(const QKeyEvent *) const;
@@ -162,6 +165,8 @@ public:
 #ifndef QT_NO_SESSIONMANAGER
     virtual QPlatformSessionManager *createPlatformSessionManager(const QString &id, const QString &key) const;
 #endif
+
+    virtual void sync();
 protected:
     void screenAdded(QPlatformScreen *screen);
 };

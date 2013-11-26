@@ -361,6 +361,21 @@ public:
 
     Q_DECLARE_FLAGS(StandardButtons, StandardButton)
 
+    enum ButtonRole {
+        InvalidRole = -1,
+        AcceptRole,
+        RejectRole,
+        DestructiveRole,
+        ActionRole,
+        HelpRole,
+        YesRole,
+        NoRole,
+        ResetRole,
+        ApplyRole,
+
+        NRoles
+    };
+
     QMessageDialogOptions();
     QMessageDialogOptions(const QMessageDialogOptions &rhs);
     QMessageDialogOptions &operator=(const QMessageDialogOptions &rhs);
@@ -386,6 +401,8 @@ public:
     void setStandardButtons(StandardButtons buttons);
     StandardButtons standardButtons() const;
 
+    static ButtonRole buttonRole(StandardButton button);
+
 private:
     QSharedDataPointer<QMessageDialogOptionsPrivate> d;
 };
@@ -400,7 +417,7 @@ public:
     void setOptions(const QSharedPointer<QMessageDialogOptions> &options);
 
 Q_SIGNALS:
-    void clicked(QMessageDialogOptions::StandardButton button);
+    void clicked(QMessageDialogOptions::StandardButton button, QMessageDialogOptions::ButtonRole role);
 
 private:
     QSharedPointer<QMessageDialogOptions> m_options;

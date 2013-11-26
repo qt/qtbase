@@ -61,42 +61,18 @@
 #include <stdlib.h>
 #include <qabstracteventdispatcher.h>
 #include "qcocoaautoreleasepool.h"
-#include <QFileSystemWatcher>
 #include <QDir>
 
 #include <qpa/qplatformnativeinterface.h>
 
 #import <AppKit/NSSavePanel.h>
+#import <CoreFoundation/CFNumber.h>
 
 QT_FORWARD_DECLARE_CLASS(QString)
 QT_FORWARD_DECLARE_CLASS(QStringList)
 QT_FORWARD_DECLARE_CLASS(QFileInfo)
 QT_FORWARD_DECLARE_CLASS(QWindow)
 QT_USE_NAMESPACE
-
-class CachedEntries: public QObject {
-public:
-    CachedEntries(QDir::Filters filters) : mFilters(filters) {
-        QObject::connect(&mFSWatcher, &QFileSystemWatcher::directoryChanged, this, &CachedEntries::updateDirCache);
-    }
-    QString directory() const {
-        const QStringList &dirs = mFSWatcher.directories();
-        return (dirs.count() ? dirs[0] : QString());
-    }
-    QStringList entries() const {
-        return mQDirFilterEntryList;
-    }
-    void updateDirCache(const QString &path) {
-        mFSWatcher.removePaths(mFSWatcher.directories());
-        mFSWatcher.addPath(path);
-        mQDirFilterEntryList = QDir(path).entryList(mFilters);
-    }
-
-private:
-    QFileSystemWatcher mFSWatcher;
-    QStringList mQDirFilterEntryList;
-    QDir::Filters mFilters;
-};
 
 typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
 
@@ -117,7 +93,6 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     int mReturnCode;
 
     SharedPointerFileDialogOptions mOptions;
-    CachedEntries *mCachedEntries;
     QString *mCurrentSelection;
     QStringList *mNameFilterDropDownList;
     QStringList *mSelectedNameFilter;
@@ -164,7 +139,6 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSOpenSavePanelDelegate);
     [mSavePanel setDelegate:self];
     mReturnCode = -1;
     mHelper = helper;
-    mCachedEntries = new CachedEntries(mOptions->filter());
     mNameFilterDropDownList = new QStringList(mOptions->nameFilters());
     QString selectedVisualNameFilter = mOptions->initiallySelectedNameFilter();
     mSelectedNameFilter = new QStringList([self findStrippedFilterWithVisualFilterName:selectedVisualNameFilter]);
@@ -197,7 +171,6 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSOpenSavePanelDelegate);
 
 - (void)dealloc
 {
-    delete mCachedEntries;
     delete mNameFilterDropDownList;
     delete mSelectedNameFilter;
     delete mCurrentSelection;
@@ -308,6 +281,22 @@ static QString strippedText(QString s)
     }];
 }
 
+- (BOOL)isHiddenFile:(NSString *)filename isDir:(BOOL)isDir
+{
+    CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, (CFStringRef)filename, kCFURLPOSIXPathStyle, isDir);
+    CFBooleanRef isHidden;
+    Boolean errorOrHidden = false;
+    if (!CFURLCopyResourcePropertyForKey(url, kCFURLIsHiddenKey, &isHidden, NULL)) {
+        errorOrHidden = true;
+    } else {
+        if (CFBooleanGetValue(isHidden))
+            errorOrHidden = true;
+        CFRelease(isHidden);
+    }
+    CFRelease(url);
+    return errorOrHidden;
+}
+
 - (BOOL)panel:(id)sender shouldShowFilename:(NSString *)filename
 {
     Q_UNUSED(sender);
@@ -316,8 +305,13 @@ static QString strippedText(QString s)
         return NO;
 
     // Always accept directories regardless of their names (unless it is a bundle):
-    BOOL isDir;
-    if ([[NSFileManager defaultManager] fileExistsAtPath:filename isDirectory:&isDir] && isDir) {
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSDictionary *fileAttrs = [fm attributesOfItemAtPath:filename error:nil];
+    if (!fileAttrs)
+        return NO; // Error accessing the file means 'no'.
+    NSString *fileType = [fileAttrs fileType];
+    bool isDir = [fileType isEqualToString:NSFileTypeDirectory];
+    if (isDir) {
         if ([mSavePanel treatsFilePackagesAsDirectories] == NO) {
             if ([[NSWorkspace sharedWorkspace] isFilePackageAtPath:filename] == NO)
                 return YES;
@@ -325,24 +319,35 @@ static QString strippedText(QString s)
     }
 
     QString qtFileName = QCFString::toQString(filename);
-    QFileInfo info(qtFileName.normalized(QString::NormalizationForm_C));
-    QString path = info.absolutePath();
-    if (mCachedEntries->directory() != path) {
-        mCachedEntries->updateDirCache(path);
+    // No filter means accept everything
+    bool nameMatches = mSelectedNameFilter->isEmpty();
+    // Check if the current file name filter accepts the file:
+    for (int i = 0; !nameMatches && i < mSelectedNameFilter->size(); ++i) {
+        if (QDir::match(mSelectedNameFilter->at(i), qtFileName))
+            nameMatches = true;
     }
-    // Check if the QDir filter accepts the file:
-    if (!mCachedEntries->entries().contains(info.fileName()))
+    if (!nameMatches)
         return NO;
 
-    // No filter means accept everything
-    if (mSelectedNameFilter->isEmpty())
-        return YES;
-    // Check if the current file name filter accepts the file:
-    for (int i=0; i<mSelectedNameFilter->size(); ++i) {
-        if (QDir::match(mSelectedNameFilter->at(i), qtFileName))
-            return YES;
+    QDir::Filters filter = mOptions->filter();
+    if ((!(filter & (QDir::Dirs | QDir::AllDirs)) && isDir)
+        || (!(filter & QDir::Files) && [fileType isEqualToString:NSFileTypeRegular])
+        || ((filter & QDir::NoSymLinks) && [fileType isEqualToString:NSFileTypeSymbolicLink]))
+        return NO;
+
+    bool filterPermissions = ((filter & QDir::PermissionMask)
+                              && (filter & QDir::PermissionMask) != QDir::PermissionMask);
+    if (filterPermissions) {
+        if ((!(filter & QDir::Readable) && [fm isReadableFileAtPath:filename])
+            || (!(filter & QDir::Writable) && [fm isWritableFileAtPath:filename])
+            || (!(filter & QDir::Executable) && [fm isExecutableFileAtPath:filename]))
+            return NO;
     }
-    return NO;
+    if (!(filter & QDir::Hidden)
+        && (qtFileName.startsWith(QLatin1Char('.')) || [self isHiddenFile:filename isDir:isDir]))
+            return NO;
+
+    return YES;
 }
 
 - (NSString *)panel:(id)sender userEnteredFilename:(NSString *)filename confirmed:(BOOL)okFlag
@@ -461,7 +466,7 @@ static QString strippedText(QString s)
     Q_UNUSED(sender);
     if (!mHelper)
         return;
-    if ([path isEqualToString:mCurrentDir])
+    if (!(path && path.length) || [path isEqualToString:mCurrentDir])
         return;
 
     [mCurrentDir release];

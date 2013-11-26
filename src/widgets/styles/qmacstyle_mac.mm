@@ -2191,7 +2191,6 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
             HIRect rect;
             ptrHIShapeGetBounds(region, &rect);
             ret = int(rect.size.height);
-            ret += 4;
         }
         break;
     case PM_TabBarTabVSpace:
@@ -3791,7 +3790,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             } else if (!(tabOpt->state & State_Enabled)) {
                 tdi.style = kThemeTabNonFrontInactive;
             } else if (tabOpt->state & State_Sunken) {
-                tdi.style = kThemeTabFrontInactive; // (should be kThemeTabNonFrontPressed)
+                tdi.style = kThemeTabNonFrontPressed;
             }
             if (tabOpt->state & State_HasFocus)
                 tdi.adornment = kHIThemeTabAdornmentFocus;
@@ -3866,8 +3865,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             ThemeTabDirection ttd = getTabDirection(myTab.shape);
             bool verticalTabs = ttd == kThemeTabWest || ttd == kThemeTabEast;
             bool selected = (myTab.state & QStyle::State_Selected);
+            bool usingModernOSX = QSysInfo::MacintoshVersion > QSysInfo::MV_10_6;
 
-            if (selected && !myTab.documentMode)
+            if (usingModernOSX && selected && !myTab.documentMode)
                 myTab.palette.setColor(QPalette::WindowText, QColor(Qt::white));
 
             // Check to see if we use have the same as the system font
@@ -3875,7 +3875,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             // outside world, unless they read the source, in which case, it's
             // their own fault).
             bool nonDefaultFont = p->font() != qt_app_fonts_hash()->value("QComboMenuItem");
-            if (selected || verticalTabs || nonDefaultFont || !tab->icon.isNull()
+            if ((usingModernOSX && selected) || verticalTabs || nonDefaultFont || !tab->icon.isNull()
                 || !myTab.leftButtonSize.isNull() || !myTab.rightButtonSize.isNull()) {
                 int heightOffset = 0;
                 if (verticalTabs) {
@@ -3886,7 +3886,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 }
                 myTab.rect.setHeight(myTab.rect.height() + heightOffset);
 
-                if (myTab.documentMode || selected) {
+                if (myTab.documentMode || (usingModernOSX && selected)) {
                     p->save();
                     rotateTabPainter(p, myTab.shape, myTab.rect);
 

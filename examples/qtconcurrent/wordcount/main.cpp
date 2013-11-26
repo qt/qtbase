@@ -50,8 +50,6 @@
 
 #include <qtconcurrentmap.h>
 
-#ifndef QT_NO_CONCURRENT
-
 using namespace QtConcurrent;
 
 /*
@@ -155,23 +153,3 @@ int main(int argc, char** argv)
     }
     qDebug() << "MapReduce speedup x" << ((double)singleThreadTime - (double)mapReduceTime) / (double)mapReduceTime + 1;
 }
-
-#else
-
-#include <QLabel>
-
-int main(int argc, char *argv[])
-{
-    QApplication app(argc, argv);
-    QString text("Qt Concurrent is not yet supported on this platform");
-
-    QLabel *label = new QLabel(text);
-    label->setWordWrap(true);
-
-    label->show();
-    qDebug() << text;
-
-    app.exec();
-}
-
-#endif

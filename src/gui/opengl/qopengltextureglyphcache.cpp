@@ -43,6 +43,8 @@
 #include "qopenglpaintengine_p.h"
 #include "private/qopenglengineshadersource_p.h"
 #include "qopenglextensions_p.h"
+#include <qrgb.h>
+#include <private/qdrawhelper_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -301,7 +303,17 @@ void QOpenGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed
         return;
     }
 
-    QImage mask = textureMapForGlyph(glyph, subPixelPosition);
+    QImage mask;
+
+    if (m_current_fontengine->hasInternalCaching()) {
+        QImage *alphaMap = m_current_fontengine->lockedAlphaMapForGlyph(glyph, subPixelPosition, QFontEngine::Format_None);
+        if (!alphaMap || alphaMap->isNull())
+            return;
+        mask = alphaMap->copy();
+        m_current_fontengine->unlockAlphaMapForGlyph();
+    } else {
+        mask = textureMapForGlyph(glyph, subPixelPosition);
+    }
     const int maskWidth = mask.width();
     const int maskHeight = mask.height();
 
@@ -316,24 +328,27 @@ void QOpenGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed
         if (mask.format() == QImage::Format_RGB32
             // We need to make the alpha component equal to the average of the RGB values.
             // This is needed when drawing sub-pixel antialiased text on translucent targets.
+#if defined(QT_OPENGL_ES_2) || Q_BYTE_ORDER == Q_BIG_ENDIAN
+            || mask.format() == QImage::Format_ARGB32_Premultiplied
+#endif
             ) {
             for (int y = 0; y < maskHeight; ++y) {
-                quint32 *src = (quint32 *) mask.scanLine(y);
+                QRgb *src = (QRgb *) mask.scanLine(y);
                 for (int x = 0; x < maskWidth; ++x) {
-                    uchar r = src[x] >> 16;
-                    uchar g = src[x] >> 8;
-                    uchar b = src[x];
-                    quint32 avg;
+                    int r = qRed(src[x]);
+                    int g = qGreen(src[x]);
+                    int b = qBlue(src[x]);
+                    int avg;
                     if (mask.format() == QImage::Format_RGB32)
-                        avg = (quint32(r) + quint32(g) + quint32(b) + 1) / 3; // "+1" for rounding.
+                        avg = (r + g + b + 1) / 3; // "+1" for rounding.
                     else // Format_ARGB_Premultiplied
-                        avg = src[x] >> 24;
+                        avg = qAlpha(src[x]);
 
-#if defined(QT_OPENGL_ES_2)
+                    src[x] = qRgba(r, g, b, avg);
+#if defined(QT_OPENGL_ES_2) || Q_BYTE_ORDER == Q_BIG_ENDIAN
                     // swizzle the bits to accommodate for the GL_RGBA upload.
-                    src[x] = (avg << 24) | (quint32(r) << 0) | (quint32(g) << 8) | (quint32(b) << 16);
+                    src[x] = ARGB2RGBA(src[x]);
 #endif
-                    src[x] = (src[x] & 0x00ffffff) | (avg << 24);
                 }
             }
         }
@@ -341,7 +356,7 @@ void QOpenGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed
 
     glBindTexture(GL_TEXTURE_2D, m_textureResource->m_texture);
     if (mask.depth() == 32) {
-#if defined(QT_OPENGL_ES_2)
+#if defined(QT_OPENGL_ES_2) || Q_BYTE_ORDER == Q_BIG_ENDIAN
         glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_RGBA, GL_UNSIGNED_BYTE, mask.bits());
 #else
         glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_BGRA, GL_UNSIGNED_BYTE, mask.bits());

@@ -65,6 +65,7 @@
 --- context keywords.
 %token T_PUBLIC "public"
 %token T_IMPORT "import"
+%token T_PRAGMA "pragma"
 %token T_AS "as"
 %token T_ON "on"
 %token T_GET "get"
@@ -253,7 +254,8 @@ public:
       AST::VariableDeclarationList *VariableDeclarationList;
 
       AST::UiProgram *UiProgram;
-      AST::UiImportList *UiImportList;
+      AST::UiHeaderItemList *UiHeaderItemList;
+      AST::UiPragma *UiPragma;
       AST::UiImport *UiImport;
       AST::UiParameterList *UiParameterList;
       AST::UiPublicMember *UiPublicMember;
@@ -266,6 +268,7 @@ public:
       AST::UiObjectMemberList *UiObjectMemberList;
       AST::UiArrayMemberList *UiArrayMemberList;
       AST::UiQualifiedId *UiQualifiedId;
+      AST::UiQualifiedPragmaId *UiQualifiedPragmaId;
     };
 
 public:
@@ -347,6 +350,7 @@ protected:
     { return location_stack [tos + index - 1]; }
 
     AST::UiQualifiedId *reparseAsQualifiedId(AST::ExpressionNode *expr);
+    AST::UiQualifiedPragmaId *reparseAsQualifiedPragmaId(AST::ExpressionNode *expr);
 
 protected:
     Engine *driver;
@@ -486,6 +490,19 @@ AST::UiQualifiedId *Parser::reparseAsQualifiedId(AST::ExpressionNode *expr)
     return 0;
 }
 
+AST::UiQualifiedPragmaId *Parser::reparseAsQualifiedPragmaId(AST::ExpressionNode *expr)
+{
+    if (AST::IdentifierExpression *idExpr = AST::cast<AST::IdentifierExpression *>(expr)) {
+        AST::UiQualifiedPragmaId *q = new (pool) AST::UiQualifiedPragmaId(idExpr->name);
+        q->identifierToken = idExpr->identifierToken;
+
+        return q->finish();
+    }
+
+    return 0;
+}
+
+
 bool Parser::parse(int startToken)
 {
     Lexer *lexer = driver->lexer();
@@ -594,37 +611,61 @@ case $rule_number: {
 } break;
 ./
 
-UiProgram: UiImportListOpt UiRootMember ;
+UiProgram: UiHeaderItemListOpt UiRootMember;
 /.
 case $rule_number: {
-  sym(1).UiProgram = new (pool) AST::UiProgram(sym(1).UiImportList,
+  sym(1).UiProgram = new (pool) AST::UiProgram(sym(1).UiHeaderItemList,
         sym(2).UiObjectMemberList->finish());
 } break;
 ./
 
-UiImportListOpt: Empty ;
-UiImportListOpt: UiImportList ;
+UiHeaderItemListOpt: Empty ;
+UiHeaderItemListOpt: UiHeaderItemList ;
 /.
 case $rule_number: {
-    sym(1).Node = sym(1).UiImportList->finish();
+    sym(1).Node = sym(1).UiHeaderItemList->finish();
 } break;
 ./
 
-UiImportList: UiImport ;
+UiHeaderItemList: UiPragma ;
 /.
 case $rule_number: {
-    sym(1).Node = new (pool) AST::UiImportList(sym(1).UiImport);
+    sym(1).Node = new (pool) AST::UiHeaderItemList(sym(1).UiPragma);
 } break;
 ./
 
-UiImportList: UiImportList UiImport ;
+UiHeaderItemList: UiImport ;
 /.
 case $rule_number: {
-    sym(1).Node = new (pool) AST::UiImportList(sym(1).UiImportList, sym(2).UiImport);
+    sym(1).Node = new (pool) AST::UiHeaderItemList(sym(1).UiImport);
 } break;
 ./
+
+UiHeaderItemList: UiHeaderItemList UiPragma ;
+/.
+case $rule_number: {
+    sym(1).Node = new (pool) AST::UiHeaderItemList(sym(1).UiHeaderItemList, sym(2).UiPragma);
+} break;
+./
+
+UiHeaderItemList: UiHeaderItemList UiImport ;
+/.
+case $rule_number: {
+    sym(1).Node = new (pool) AST::UiHeaderItemList(sym(1).UiHeaderItemList, sym(2).UiImport);
+} break;
+./
+
+PragmaId: MemberExpression ;
 
 ImportId: MemberExpression ;
+
+UiPragma: UiPragmaHead T_AUTOMATIC_SEMICOLON ;
+UiPragma: UiPragmaHead T_SEMICOLON ;
+/.
+case $rule_number: {
+    sym(1).UiPragma->semicolonToken = loc(2);
+} break;
+./
 
 UiImport: UiImportHead T_AUTOMATIC_SEMICOLON ;
 UiImport: UiImportHead T_SEMICOLON ;
@@ -663,6 +704,28 @@ case $rule_number: {
     sym(1).UiImport->importIdToken = loc(3);
     sym(1).UiImport->importId = stringRef(3);
     sym(1).UiImport->semicolonToken = loc(4);
+} break;
+./
+
+UiPragmaHead: T_PRAGMA PragmaId ;
+/.
+case $rule_number: {
+    AST::UiPragma *node = 0;
+
+    if (AST::UiQualifiedPragmaId *qualifiedId = reparseAsQualifiedPragmaId(sym(2).Expression)) {
+        node = new (pool) AST::UiPragma(qualifiedId);
+    }
+
+    sym(1).Node = node;
+
+    if (node) {
+        node->pragmaToken = loc(1);
+    } else {
+       diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error, loc(1),
+         QLatin1String("Expected a qualified name id")));
+
+        return false; // ### remove me
+    }
 } break;
 ./
 
@@ -1260,6 +1323,7 @@ case $rule_number: {
   sym(1).Node = node;
 } break;
 ./
+
 
 UiQualifiedId: MemberExpression ;
 /.

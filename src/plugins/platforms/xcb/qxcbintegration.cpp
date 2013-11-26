@@ -278,10 +278,15 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 #else
     case OpenGL: return false;
 #endif
+#if defined(XCB_USE_GLX)
+    case ThreadedOpenGL: return m_connections.at(0)->supportsThreadedRendering() && QGLXContext::supportsThreading();
+#else
     case ThreadedOpenGL: return m_connections.at(0)->supportsThreadedRendering();
+#endif
     case WindowMasks: return true;
     case MultipleWindows: return true;
     case ForeignWindows: return true;
+    case SyncState: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }
@@ -457,5 +462,12 @@ QPlatformSessionManager *QXcbIntegration::createPlatformSessionManager(const QSt
     return new QXcbSessionManager(id, key);
 }
 #endif
+
+void QXcbIntegration::sync()
+{
+    for (int i = 0; i < m_connections.size(); i++) {
+        m_connections.at(i)->sync();
+    }
+}
 
 QT_END_NAMESPACE

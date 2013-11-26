@@ -4821,7 +4821,7 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
                 QSize defaultUpSize = defaultSize(w, subRule.size(), spinbox->rect, PseudoElement_SpinBoxUpButton);
                 sz += QSize(defaultUpSize.width(), 0);
             }
-            if (rule.hasBox() || !rule.hasNativeBorder())
+            if (rule.hasBox() || rule.hasBorder() || !rule.hasNativeBorder())
                 sz = rule.boxSize(sz);
             return sz;
         }

@@ -30,6 +30,10 @@
     \title Qt Creator: Deploying Applications to QNX Devices
 */
 /*!
+    \externalpage http://qt-project.org/doc/qtcreator/creator-developing-baremetal.html
+    \title Qt Creator: Connecting Bare Metal Devices
+*/
+/*!
     \externalpage http://qt-project.org/doc/qtcreator/creator-developing-bb10.html
     \title Qt Creator: Connecting BlackBerry 10 Devices
 */
@@ -46,32 +50,8 @@
     \title Qt Creator: Connecting Embedded Linux Devices
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator/creator-publish-ovi-maemo.html
-    \title Qt Creator: Publishing Qt Content for Maemo Devices
-*/
-/*!
-    \externalpage http://qt-project.org/doc/qtcreator/creator-maemo-emulator.html
-    \title Qt Creator: Using Maemo or MeeGo Harmattan Emulator
-*/
-/*!
-    \externalpage http://qt-project.org/doc/qtcreator/creator-developing-meego.html
-    \title Qt Creator: Connecting MeeGo Harmattan Devices
-*/
-/*!
-    \externalpage http://qt-project.org/doc/qtcreator/creator-developing-maemo.html
-    \title Qt Creator: Connecting Maemo Devices
-*/
-/*!
-    \externalpage http://qt-project.org/doc/qtcreator/creator-publish-ovi-meego.html
-    \title Qt Creator: Publishing Qt Content for MeeGo Harmattan Devices
-*/
-/*!
-    \externalpage http://qt-project.org/doc/qtcreator/creator-publishing-to-maemo-extras.html
-    \title Qt Creator: Publishing Maemo Applications to Extras-devel
-*/
-/*!
     \externalpage http://qt-project.org/doc/qtcreator/creator-deployment-maemo.html
-    \title Qt Creator: Deploying Applications to Linux-Based Devices
+    \title Qt Creator: Deploying Applications to Embedded Linux Devices
 */
 /*!
     \externalpage http://qt-project.org/doc/qtcreator/creator-faq.html
@@ -118,14 +98,6 @@
     \title Qt Creator: Creating Screens
 */
 /*!
-    \externalpage http://qt-project.org/doc/qtcreator/quick-animations.html
-    \title Qt Creator: Animating Screens
-*/
-/*!
-    \externalpage http://qt-project.org/doc/qtcreator/quick-user-interaction.html
-    \title Qt Creator: Adding User Interaction Methods
-*/
-/*!
     \externalpage http://qt-project.org/doc/qtcreator/creator-qml-application.html
     \title Qt Creator: Creating a Qt Quick Application
 */
@@ -140,10 +112,6 @@
 /*!
     \externalpage http://qt-project.org/doc/qtcreator/creator-visual-editor.html
     \title Qt Creator: Developing Qt Quick Applications
-*/
-/*!
-    \externalpage http://qt-project.org/doc/qtcreator/quick-application-logic.html
-    \title Qt Creator: Implementing Application Logic
 */
 /*!
     \externalpage http://qt-project.org/doc/qtcreator/creator-using-qt-quick-designer.html
@@ -369,6 +337,12 @@
     \externalpage http://qt-project.org/doc/qtcreator/creator-deploying-android.html
     \title Qt Creator: Deploying Applications to Android Devices
 */
+
+/*!
+    \externalpage http://qt-project.org/doc/qtcreator/creator-developing-ios.html
+    \title Qt Creator: Connecting iOS devices
+*/
+
 /*!
     \externalpage http://qt-project.org/doc/qtcreator/creator-developing-android.html
     \title Qt Creator: Connecting Android Devices
@@ -488,4 +462,8 @@
 /*!
     \externalpage http://qt-project.org/doc/qtcreator/creator-configuring.html
     \title Qt Creator: Configuring Qt Creator
+*/
+/*!
+    \externalpage http://qt-project.org/doc/qtcreator/creator-debuggers.html
+    \title Qt Creator: Adding Debuggers
 */

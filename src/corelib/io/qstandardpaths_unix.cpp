@@ -103,6 +103,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         return xdgDataHome;
     }
     case ConfigLocation:
+    case GenericConfigLocation:
     {
         // http://standards.freedesktop.org/basedir-spec/latest/
         QString xdgConfigHome = QFile::decodeName(qgetenv("XDG_CONFIG_HOME"));
@@ -277,6 +278,7 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
     QStringList dirs;
     switch (type) {
     case ConfigLocation:
+    case GenericConfigLocation:
     {
         // http://standards.freedesktop.org/basedir-spec/latest/
         const QString xdgConfigDirs = QFile::decodeName(qgetenv("XDG_CONFIG_DIRS"));

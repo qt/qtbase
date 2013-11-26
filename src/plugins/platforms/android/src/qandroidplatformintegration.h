@@ -121,6 +121,7 @@ public:
 #endif
 
     QVariant styleHint(StyleHint hint) const;
+    Qt::WindowState defaultWindowState(Qt::WindowFlags flags) const Q_DECL_OVERRIDE;
 
     QStringList themeNames() const;
     QPlatformTheme *createPlatformTheme(const QString &name) const;
@@ -139,6 +140,10 @@ public:
 
     QTouchDevice *touchDevice() const { return m_touchDevice; }
     void setTouchDevice(QTouchDevice *touchDevice) { m_touchDevice = touchDevice; }
+
+#ifdef ANDROID_PLUGIN_OPENGL
+    QEglFSScreen *createScreen() const;
+#endif
 
 private:
 

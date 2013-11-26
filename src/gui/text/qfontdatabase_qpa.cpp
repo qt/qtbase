@@ -184,6 +184,7 @@ QFontEngine *loadSingleEngine(int script,
     if (!engine) {
         engine = pfdb->fontEngine(def, QChar::Script(script), size->handle);
         if (engine) {
+            engine->smoothScalable = style->smoothScalable;
             QFontCache::Key key(def,script);
             QFontCache::instance()->instance()->insertEngine(key,engine);
         }

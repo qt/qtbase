@@ -206,9 +206,11 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_nsWindowDelegate(0)
     , m_synchedWindowState(Qt::WindowActive)
     , m_windowModality(Qt::NonModal)
+    , m_windowUnderMouse(false)
     , m_inConstructor(true)
     , m_glContext(0)
     , m_menubar(0)
+    , m_windowCursor(0)
     , m_hasModalSession(false)
     , m_frameStrutEventsEnabled(false)
     , m_isExposed(false)
@@ -463,19 +465,19 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
 {
     Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
     NSInteger styleMask = NSBorderlessWindowMask;
+    if (flags & Qt::FramelessWindowHint)
+        return styleMask;
     if ((type & Qt::Popup) == Qt::Popup) {
-        if (!windowIsPopupType(type) && !(flags & Qt::FramelessWindowHint))
+        if (!windowIsPopupType(type))
             styleMask = (NSUtilityWindowMask | NSResizableWindowMask | NSClosableWindowMask |
                          NSMiniaturizableWindowMask | NSTitledWindowMask);
     } else {
-        // Filter flags for supported properties
-        flags &= Qt::WindowType_Mask | Qt::FramelessWindowHint | Qt::WindowTitleHint |
-                 Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint | Qt::CustomizeWindowHint;
-        if (flags == Qt::Window) {
+        if (type == Qt::Window && !(flags & Qt::CustomizeWindowHint)) {
             styleMask = (NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSTitledWindowMask);
-        } else if ((flags & Qt::Dialog) == Qt::Dialog) {
+        } else if (type == Qt::Dialog) {
             if (flags & Qt::CustomizeWindowHint) {
-                styleMask = NSResizableWindowMask;
+                if (flags & Qt::WindowMaximizeButtonHint)
+                    styleMask = NSResizableWindowMask;
                 if (flags & Qt::WindowTitleHint)
                     styleMask |= NSTitledWindowMask;
                 if (flags & Qt::WindowCloseButtonHint)
@@ -485,8 +487,8 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
             } else {
                 styleMask = NSResizableWindowMask | NSClosableWindowMask | NSTitledWindowMask;
             }
-        } else if (!(flags & Qt::FramelessWindowHint)) {
-            if ((flags & Qt::Dialog) || (flags & Qt::WindowMaximizeButtonHint))
+        } else {
+            if (flags & Qt::WindowMaximizeButtonHint)
                 styleMask |= NSResizableWindowMask;
             if (flags & Qt::WindowTitleHint)
                 styleMask |= NSTitledWindowMask;
@@ -711,7 +713,10 @@ WId QCocoaWindow::winId() const
 void QCocoaWindow::setParent(const QPlatformWindow *parentWindow)
 {
     // recreate the window for compatibility
+    bool unhideAfterRecreate = parentWindow && !m_contentViewIsToBeEmbedded && ![m_contentView isHidden];
     recreateWindow(parentWindow);
+    if (unhideAfterRecreate)
+        [m_contentView setHidden:NO];
     setCocoaGeometry(geometry());
 }
 
@@ -1028,6 +1033,23 @@ void QCocoaWindow::setMenubar(QCocoaMenuBar *mb)
 QCocoaMenuBar *QCocoaWindow::menubar() const
 {
     return m_menubar;
+}
+
+void QCocoaWindow::setWindowCursor(NSCursor *cursor)
+{
+    // This function is called (via QCocoaCursor) by Qt to set
+    // the cursor for this window. It can be called for a window
+    // that is not currenly under the mouse pointer (for example
+    // for a popup window.) Qt expects the set cursor to "stick":
+    // it should be accociated with the window until a different
+    // cursor is set.
+
+    // Cocoa has different abstractions. We can set the cursor *now*:
+    if (m_windowUnderMouse)
+        [cursor set];
+    // or we can set the cursor on mouse enter/leave using tracking
+    // areas. This is done in QNSView, save the cursor:
+    m_windowCursor = cursor;
 }
 
 void QCocoaWindow::registerTouch(bool enable)

@@ -61,10 +61,11 @@ public:
     QCollatorSortKey &operator=(const QCollatorSortKey &other);
 #ifdef Q_COMPILER_RVALUE_REFS
     inline QCollatorSortKey &operator=(QCollatorSortKey &&other)
-    { qSwap(d, other.d); return *this; }
+    { swap(other); return *this; }
 #endif
+    void swap(QCollatorSortKey &other)
+    { d.swap(other.d); }
 
-    bool operator<(const QCollatorSortKey &key) const;
     int compare(const QCollatorSortKey &key) const;
 
 protected:
@@ -76,13 +77,27 @@ private:
     QCollatorSortKey();
 };
 
+inline bool operator<(const QCollatorSortKey &lhs, const QCollatorSortKey &rhs)
+{
+    return lhs.compare(rhs) < 0;
+}
+
 class Q_CORE_EXPORT QCollator
 {
 public:
-    QCollator(const QLocale &locale = QLocale());
+    explicit QCollator(const QLocale &locale = QLocale());
     QCollator(const QCollator &);
     ~QCollator();
     QCollator &operator=(const QCollator &);
+#ifdef Q_COMPILER_RVALUE_REFS
+    QCollator(QCollator &&other)
+        : d(other.d) { other.d = 0; }
+    QCollator &operator=(QCollator &&other)
+    { swap(other); return *this; }
+#endif
+
+    void swap(QCollator &other)
+    { qSwap(d, other.d); }
 
     void setLocale(const QLocale &locale);
     QLocale locale() const;
@@ -110,6 +125,9 @@ private:
 
     void detach();
 };
+
+Q_DECLARE_SHARED(QCollatorSortKey)
+Q_DECLARE_SHARED(QCollator)
 
 QT_END_NAMESPACE
 

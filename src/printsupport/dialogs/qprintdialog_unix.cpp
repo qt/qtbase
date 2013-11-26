@@ -103,6 +103,11 @@ Print dialog class declarations
                              Layout in qprintpropertieswidget.ui
 */
 
+static void initResources()
+{
+    Q_INIT_RESOURCE(qprintdialog);
+}
+
 QT_BEGIN_NAMESPACE
 
 class QOptionTreeItem;
@@ -306,6 +311,7 @@ void QPrintPropertiesDialog::showEvent(QShowEvent* event)
 QPrintDialogPrivate::QPrintDialogPrivate()
     : top(0), bottom(0), buttons(0), collapseButton(0)
 {
+    initResources();
 }
 
 QPrintDialogPrivate::~QPrintDialogPrivate()

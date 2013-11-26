@@ -149,7 +149,23 @@ void QWindowsBackingStore::resize(const QSize &size, const QRegion &region)
         QImage::Format format = QWindowsNativeImage::systemFormat();
         if (format == QImage::Format_RGB32 && rasterWindow()->window()->format().hasAlpha())
             format = QImage::Format_ARGB32_Premultiplied;
-        m_image.reset(new QWindowsNativeImage(size.width(), size.height(), format));
+
+        QWindowsNativeImage *oldwni = m_image.data();
+        QWindowsNativeImage *newwni = new QWindowsNativeImage(size.width(), size.height(), format);
+
+        if (oldwni && !region.isEmpty()) {
+            const QImage &oldimg(oldwni->image());
+            QImage &newimg(newwni->image());
+            QRegion staticRegion(region);
+            staticRegion &= QRect(0, 0, oldimg.width(), oldimg.height());
+            staticRegion &= QRect(0, 0, newimg.width(), newimg.height());
+            QPainter painter(&newimg);
+            painter.setCompositionMode(QPainter::CompositionMode_Source);
+            foreach (const QRect &rect, staticRegion.rects())
+                painter.drawImage(rect, oldimg, rect);
+        }
+
+        m_image.reset(newwni);
     }
 }
 

@@ -515,8 +515,15 @@ void QAndroidStyle::drawPrimitive(PrimitiveElement pe,
     AndroidControlsHash::const_iterator it = itemType != QC_UnknownType
                                              ? m_androidControlsHash.find(itemType)
                                              : m_androidControlsHash.end();
-    if (it != m_androidControlsHash.end())
-        it.value()->drawControl(opt, p, w);
+    if (it != m_androidControlsHash.end()) {
+        if (itemType != QC_EditText)
+            it.value()->drawControl(opt, p, w);
+        else {
+            QStyleOption copy(*opt);
+            copy.state &= ~QStyle::State_Sunken;
+            it.value()->drawControl(&copy, p, w);
+        }
+    }
     else
         QFusionStyle::drawPrimitive(pe, opt, p, w);
 }
@@ -696,7 +703,10 @@ int QAndroidStyle::styleHint(QStyle::StyleHint hint, const QStyleOption *option,
 {
     switch (hint) {
     case SH_Slider_AbsoluteSetButtons:
-        return 1;
+        return Qt::LeftButton;
+
+    case SH_Slider_PageSetButtons:
+        return 0;
 
     case SH_RequestSoftwareInputPanel:
         return RSIP_OnMouseClick;
@@ -1776,9 +1786,9 @@ QRect QAndroidStyle::AndroidSeekBarControl::subControlRect(const QStyleOptionCom
             drawable = static_cast<const QAndroidStyle::AndroidStateDrawable *>(m_seekBarThumb)->bestAndroidStateMatch(option);
 
         QRect r(option->rect);
-        double factor = double(styleOption->sliderPosition/(styleOption->maximum-styleOption->minimum));
-        int pos=(double(option->rect.width()*factor - drawable->size().width()) / 2);
-        r.setX(r.x()+pos);
+        double factor = double(styleOption->sliderPosition) / (styleOption->maximum - styleOption->minimum);
+        int pos = option->rect.width() * factor - double(drawable->size().width() / 2);
+        r.setX(r.x() + pos);
         r.setSize(drawable->size());
         return r;
     }

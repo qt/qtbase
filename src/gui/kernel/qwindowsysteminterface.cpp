@@ -141,9 +141,12 @@ void QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState 
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleGeometryChange(QWindow *tlw, const QRect &newRect)
+/*!
+  If \a oldRect is null, Qt will use the previously reported geometry instead.
+ */
+void QWindowSystemInterface::handleGeometryChange(QWindow *tlw, const QRect &newRect, const QRect &oldRect)
 {
-    QWindowSystemInterfacePrivate::GeometryChangeEvent *e = new QWindowSystemInterfacePrivate::GeometryChangeEvent(tlw,newRect);
+    QWindowSystemInterfacePrivate::GeometryChangeEvent *e = new QWindowSystemInterfacePrivate::GeometryChangeEvent(tlw,newRect, oldRect);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 

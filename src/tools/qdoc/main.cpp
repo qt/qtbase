@@ -218,8 +218,15 @@ static void loadIndexFiles(Config& config)
                 else if (foundIndices.size() == 1) {
                     indexToAdd = foundIndices[0].absoluteFilePath();
                 }
-                if (!indexToAdd.isEmpty() && !indexFiles.contains(indexToAdd))
-                    indexFiles << indexToAdd;
+                if (!indexToAdd.isEmpty()) {
+                    if (!indexFiles.contains(indexToAdd))
+                        indexFiles << indexToAdd;
+                }
+                else if (Generator::runGenerateOnly()) {
+                    qDebug() << "warning:" << config.getString(CONFIG_PROJECT)
+                             << "Cannot locate index file for dependency"
+                             << dependModules[i];
+                }
             }
         }
         else {
@@ -355,7 +362,7 @@ static void processQdocconfFile(const QString &fileName)
      */
     QDocDatabase* qdb = QDocDatabase::qdocDB();
     qdb->setVersion(config.getString(CONFIG_VERSION));
-
+    qdb->setShowInternal(config.getBool(CONFIG_SHOWINTERNAL));
     /*
       By default, the only output format is HTML.
      */
@@ -393,6 +400,10 @@ static void processQdocconfFile(const QString &fileName)
     QMap<QString,QString> headers;
     QMultiMap<QString,QString> headerFileNames;
     for (int i=0; i<headerList.size(); ++i) {
+        if (headerList[i].contains(QString("doc/snippets")))
+            continue;
+        if (headers.contains(headerList[i]))
+            continue;
         headers.insert(headerList[i],headerList[i]);
         QString t = headerList[i].mid(headerList[i].lastIndexOf('/')+1);
         headerFileNames.insert(t,t);
@@ -403,6 +414,10 @@ static void processQdocconfFile(const QString &fileName)
     QMap<QString,QString> sources;
     QMultiMap<QString,QString> sourceFileNames;
     for (int i=0; i<sourceList.size(); ++i) {
+        if (sourceList[i].contains(QString("doc/snippets")))
+            continue;
+        if (sources.contains(sourceList[i]))
+            continue;
         sources.insert(sourceList[i],sourceList[i]);
         QString t = sourceList[i].mid(sourceList[i].lastIndexOf('/')+1);
         sourceFileNames.insert(t,t);

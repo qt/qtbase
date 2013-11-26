@@ -3100,7 +3100,7 @@ int QTextEngine::positionInLigature(const QScriptItem *si, int end,
             glyph_pos--;
     }
 
-    const QCharAttributes *attrs = attributes();
+    const QCharAttributes *attrs = attributes() + si->position;
     logClusters = this->logClusters(si);
     clusterLength = getClusterLength(logClusters, attrs, 0, end, glyph_pos, &clusterStart);
 
@@ -3117,11 +3117,11 @@ int QTextEngine::positionInLigature(const QScriptItem *si, int end,
         int closestItem = dist > (perItemWidth / 2) ? n + 1 : n;
         if (cursorOnCharacter && closestItem > 0)
             closestItem--;
-        int pos = si->position + clusterStart + closestItem;
+        int pos = clusterStart + closestItem;
         // Jump to the next grapheme boundary
         while (pos < end && !attrs[pos].graphemeBoundary)
             pos++;
-        return pos;
+        return si->position + pos;
     }
     return si->position + end;
 }

@@ -1,6 +1,3 @@
-SKIP_DEPENDS += qconfig.h qmodules.h
-DEFINES += QT_NO_TEXTCODEC QT_NO_LIBRARY QT_NO_COMPRESS QT_NO_UNICODETABLES \
-           QT_NO_GEOM_VARIANT QT_NO_DATASTREAM
 
 #qmake code
 SOURCES += project.cpp property.cpp main.cpp \
@@ -37,7 +34,6 @@ contains(QT_EDITION, OpenSource) {
 }
 
 bootstrap { #Qt code
-   DEFINES+=QT_NO_THREAD
    SOURCES+= \
         qbitarray.cpp \
         qbuffer.cpp \
@@ -160,7 +156,16 @@ bootstrap { #Qt code
         CFLAGS += -fhonor-std
         LFLAGS += -lcpp
     }
-    DEFINES *= QT_NO_QOBJECT QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+
+    DEFINES += \
+        QT_BOOTSTRAPPED \
+        QT_NO_TEXTCODEC QT_NO_UNICODETABLES QT_NO_COMPONENT QT_NO_COMPRESS \
+        QT_NO_THREAD QT_NO_QOBJECT QT_NO_GEOM_VARIANT QT_NO_DATASTREAM \
+        QT_CRYPTOGRAPHICHASH_ONLY_SHA1 QT_JSON_READONLY
+
+    INCLUDEPATH += \
+        $$QT.core.includes $$QT.core_private.includes \
+        $$shadowed(../src/corelib/global)
 } else {
     CONFIG += qt
     QT = core

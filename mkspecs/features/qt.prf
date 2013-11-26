@@ -62,7 +62,7 @@ qaxserver {
 unset(using_privates)
 qtAddModules(QT, LIBS)
 qtAddModules(QT_PRIVATE, LIBS_PRIVATE)
-!isEmpty(using_privates):!auto_use_privates:!no_private_qt_headers_warning:if(!debug_and_release|!build_pass) {
+!isEmpty(using_privates):!no_private_qt_headers_warning:if(!debug_and_release|!build_pass) {
     message("This project is using private headers and will therefore be tied to this specific Qt module build version.")
     message("Running this project against other versions of the Qt modules may crash at any arbitrary point.")
     message("This is not a bug, but a result of using Qt internals. You have been warned!")
@@ -74,13 +74,16 @@ wince*:static:gui {
 }
 
 # static builds: link qml import plugins into the app.
-if(contains(QT, qml)|contains(QT_PRIVATE, qml)): \
+qt_module_deps = $$QT $$QT_PRIVATE
+qt_module_deps = $$replace(qt_module_deps, -private$, _private)
+qt_module_deps = $$resolve_depends(qt_module_deps, "QT.")
+contains(qt_module_deps, qml): \
         contains(QT_CONFIG, static):contains(TEMPLATE, .*app):!host_build:!no_import_scan {
     # run qmlimportscanner
     qtPrepareTool(QMLIMPORTSCANNER, qmlimportscanner)
     for (MODULE, QT_MODULES) {
         PATH = $$eval(QT.$${MODULE}.qml)
-        !isEmpty(PATH): QMLPATHS += $$PATH
+        !isEmpty(PATH):exists($$PATH): QMLPATHS += $$PATH
     }
     QMLPATHS = $$unique(QMLPATHS)
     for (QMLPATH, QMLPATHS): \
@@ -96,7 +99,7 @@ if(contains(QT, qml)|contains(QT_PRIVATE, qml)): \
         for (key, IMPORTS._KEYS_): {
             PATH = $$eval(IMPORTS.$${key}.path)
             PLUGIN = $$eval(IMPORTS.$${key}.plugin)
-            !isEmpty(PATH):!isEmpty(PLUGIN): LIBS *= -L$$PATH -l$$PLUGIN
+            !isEmpty(PATH):!isEmpty(PLUGIN): LIBS *= -L$$PATH -l$${PLUGIN}$$qtPlatformTargetSuffix()
         }
 
         # create qml_plugin_import.cpp
@@ -124,33 +127,37 @@ if(contains(QT, qml)|contains(QT_PRIVATE, qml)): \
         QMAKE_CLEAN += $$QML_IMPORT_CPP
 
         # copy qml files. this part is platform spesific.
-        macx {
-            # copy to Contents/Resources in the bundle.
-            QmlImports.path = Contents/Resources/
-            QmlImports.files *= $$QMLPATHS
-            QMAKE_BUNDLE_DATA += QmlImports
+        mac {
+            osx {
+                # Note: user can override QMAKE_BUNDLE_QML from pro file to change target bundle path
+                isEmpty(QMAKE_QML_BUNDLE_PATH):QMAKE_QML_BUNDLE_PATH = "Resources/qt_qml"
+                qmlTargetPath = $$OUT_PWD/$${TARGET}.app/Contents/$$QMAKE_QML_BUNDLE_PATH
+                qtconfTargetPath = $$OUT_PWD/$${TARGET}.app/Contents/Resources/qt.conf
+            } else {
+                # iOS: flat bundle layout (no Contents/Resources)
+                isEmpty(QMAKE_QML_BUNDLE_PATH):QMAKE_QML_BUNDLE_PATH = "qt_qml"
+                qmlTargetPath = $CODESIGNING_FOLDER_PATH/$$QMAKE_QML_BUNDLE_PATH
+                qtconfTargetPath = $CODESIGNING_FOLDER_PATH/qt.conf
+            }
 
-            # place qt.conf in Contents/Resources in the app bundle
+            # set import path in qt.conf to point to the bundeled qml:
             QT_CONF_CONTENTS = \
                 "[Paths]" \
-                "Imports = Resources/qml" \
-                "Qml2Imports = Resources/qml"
-            QT_CONF = "$$OUT_PWD/$${TARGET}.app/Contents/Resources/qt.conf"
-            write_file($$QT_CONF, QT_CONF_CONTENTS)|error("Aborting.")
-        } else: ios {
-            # flat bundle layout (no Contents/Resources)
-            QmlImports.files *= $$QMLPATHS
-            QMAKE_BUNDLE_DATA += QmlImports
+                "Imports = $$QMAKE_QML_BUNDLE_PATH" \
+                "Qml2Imports = $$QMAKE_QML_BUNDLE_PATH"
+            write_file("$$OUT_PWD/qt.conf", QT_CONF_CONTENTS)|error("Aborting.")
 
-            # write qt.conf to OUT_PWD and make xcode copy it via QMAKE_BUNDLE_DATA
-            QT_CONF_CONTENTS = \
-                "[Paths]" \
-                "Imports = qml" \
-                "Qml2Imports = qml"
-            QT_CONF = "$$OUT_PWD/qt.conf"
-            write_file($$QT_CONF, QT_CONF_CONTENTS)|error("Aborting.")
-            QtConf.files = $$QT_CONF
-            QMAKE_BUNDLE_DATA += QtConf
+            # write qt.conf and copy each qml import dir into the bundle.
+            # But strip away archives and other files that are not needed:
+            !isEmpty(QMAKE_POST_LINK): QMAKE_POST_LINK += ";"
+            QMAKE_POST_LINK += \
+                "cp $$OUT_PWD/qt.conf $$qtconfTargetPath; " \
+                "test -d $$qmlTargetPath && rm -r $$qmlTargetPath; " \
+                "mkdir -p $$qmlTargetPath && " \
+                "for p in $$QMLPATHS; do" \
+                    "rsync -r --exclude='*.a' --exclude='*.prl' --exclude='*.qmltypes' "
+            macx-xcode: QMAKE_POST_LINK += "$p/ $$qmlTargetPath; done"
+            else: QMAKE_POST_LINK += "\$\$p/ $$qmlTargetPath; done"
         }
     }
 }

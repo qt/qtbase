@@ -32,8 +32,8 @@
     \brief Demonstrates how to create animated user interface
 
     The Pad Navigator Example shows how you can use Graphics View together with
-    embedded widgets and Qt's \l{State Machine Framework} to create a simple
-    but useful, dynamic, animated user interface.
+    embedded widgets and Qt's \l{The State Machine Framework}{state machine
+    framework} to create a simple but useful, dynamic, animated user interface.
 
     \image padnavigator-example.png
 

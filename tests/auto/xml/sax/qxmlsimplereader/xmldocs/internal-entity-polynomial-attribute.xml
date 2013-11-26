@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- Test polynomial growth of expanded XML.
+     Expansion happens in an attribute. -->
+<!DOCTYPE root [
+<!ELEMENT root EMPTY>
+<!ATTLIST root id CDATA #IMPLIED>
+<!ENTITY e1 "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX">
+<!ENTITY e2 "&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;&e1;">
+<!ENTITY e3 "&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;&e2;">
+<!ENTITY e4 "&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;&e3;">
+]>
+<root id="&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;&e4;"/>
+

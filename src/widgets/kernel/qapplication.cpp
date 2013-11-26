@@ -111,13 +111,10 @@ extern bool qt_wince_is_pocket_pc();  //qguifunctions_wince.cpp
 static void initResources()
 {
 #if defined(Q_OS_WINCE)
-    Q_INIT_RESOURCE_EXTERN(qstyle_wince)
     Q_INIT_RESOURCE(qstyle_wince);
 #else
-    Q_INIT_RESOURCE_EXTERN(qstyle)
     Q_INIT_RESOURCE(qstyle);
 #endif
-    Q_INIT_RESOURCE_EXTERN(qmessagebox)
     Q_INIT_RESOURCE(qmessagebox);
 
 }
@@ -3762,6 +3759,16 @@ void QApplicationPrivate::giveFocusAccordingToFocusPolicy(QWidget *widget, QEven
         }
         if (focusWidget->isWindow())
             break;
+
+        // find out whether this widget (or its proxy) already has focus
+        QWidget *f = focusWidget;
+        if (focusWidget->d_func()->extra && focusWidget->d_func()->extra->focus_proxy)
+            f = focusWidget->d_func()->extra->focus_proxy;
+        // if it has, stop here.
+        // otherwise a click on the focused widget would remove its focus if ClickFocus isn't set
+        if (f->hasFocus())
+            break;
+
         localPos += focusWidget->pos();
         focusWidget = focusWidget->parentWidget();
     }

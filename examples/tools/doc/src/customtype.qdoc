@@ -132,8 +132,8 @@
     \section1 Further Reading
 
     The custom \c Message type can also be used with direct signal-slot
-    connections; see the \l{Custom Type Sending Example} for a demonstration
-    of this.
+    connections.
+
     To register a custom type for use with queued signals and slots, such as
     those used in cross-thread communication, see the
     \l{Queued Custom Type Example}.

@@ -4251,7 +4251,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
                     if (sc == SC_GroupBoxCheckBox) {
                         int indicatorHeight = proxy()->pixelMetric(PM_IndicatorHeight, opt, widget);
                         left = ltr ? totalRect.left() : (totalRect.right() - indicatorWidth);
-                        int top = totalRect.top() + (fontMetrics.height() - indicatorHeight) / 2;
+                        int top = totalRect.top() + qMax(0, fontMetrics.height() - indicatorHeight) / 2;
                         totalRect.setRect(left, top, indicatorWidth, indicatorHeight);
                     // Adjust for label
                     } else {

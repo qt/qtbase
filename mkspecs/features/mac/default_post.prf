@@ -19,13 +19,10 @@ qt:!isEmpty(QT_CONFIG) {
     contains(QT_CONFIG, static):contains(QT_CONFIG, c++11): CONFIG += c++11
 }
 
-isEmpty(_QMAKE_CACHE_) {
-    warning("No .qmake.cache is present. This significantly slows down qmake with this makespec.")
-    warning("Call 'cache()' in the top-level project file to rectify this problem.")
-} else {
-    cache(QMAKE_XCODE_DEVELOPER_PATH)
-    cache(QMAKE_XCODE_VERSION)
-}
+cache(QMAKE_XCODE_DEVELOPER_PATH, stash)
+cache(QMAKE_XCODE_VERSION, stash)
+
+QMAKE_XCODE_LIBRARY_SUFFIX = $$qtPlatformTargetSuffix()
 
 # Ensure that we process sdk.prf first, as it will update QMAKE_CXX
 # and friends that other features/extra compilers may depend on.

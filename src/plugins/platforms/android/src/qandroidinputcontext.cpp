@@ -381,6 +381,11 @@ QAndroidInputContext::~QAndroidInputContext()
     m_textFieldID = 0;
 }
 
+QAndroidInputContext *QAndroidInputContext::androidInputContext()
+{
+    return m_androidInputContext;
+}
+
 void QAndroidInputContext::reset()
 {
     clear();

@@ -105,9 +105,6 @@ public:
     int childCount() const Q_DECL_OVERRIDE;
     QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
 
-    bool setSelected(int child, bool on, bool extend);
-    QVector<int> selection() const;
-
     QAccessibleInterface* child(int index) const Q_DECL_OVERRIDE;
     int indexOfChild(const QAccessibleInterface *child) const Q_DECL_OVERRIDE;
 

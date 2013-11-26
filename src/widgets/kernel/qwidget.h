@@ -733,6 +733,7 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWidget::RenderFlags)
 
+#ifndef Q_QDOC
 template <> inline QWidget *qobject_cast<QWidget*>(QObject *o)
 {
     if (!o || !o->isWidgetType()) return 0;
@@ -743,6 +744,7 @@ template <> inline const QWidget *qobject_cast<const QWidget*>(const QObject *o)
     if (!o || !o->isWidgetType()) return 0;
     return static_cast<const QWidget*>(o);
 }
+#endif // !Q_QDOC
 
 inline QWidget *QWidget::childAt(int ax, int ay) const
 { return childAt(QPoint(ax, ay)); }

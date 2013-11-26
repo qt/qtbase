@@ -71,6 +71,7 @@ public:
     bool isEnabled() const;
     void setVisible(bool visible);
     bool isVisible() const;
+    void showPopup(const QWindow *parentWindow, QPoint pos, const QPlatformMenuItem *item);
 
     QPlatformMenuItem *menuItemAt(int position) const;
     QPlatformMenuItem *menuItemForTag(quintptr tag) const;

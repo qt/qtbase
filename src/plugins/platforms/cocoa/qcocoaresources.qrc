@@ -4,7 +4,7 @@
 <file>images/forbiddencursor.png</file>
 <file>images/spincursor.png</file>
 <file>images/waitcursor.png</file>
-<file>images/pluscursor.png</file>
+<file>images/sizeallcursor.png</file>
 </qresource>
 <qresource prefix="/qt-project.org/mac/style">
 <file>images/leopard-unified-toolbar-on.png</file>

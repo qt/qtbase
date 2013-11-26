@@ -4,24 +4,21 @@
 
 option(host_build)
 CONFIG += console bootstrap
-CONFIG -= qt shared app_bundle uic
-DEFINES += QT_BUILD_QMAKE QT_BOOTSTRAPPED \
+CONFIG -= qt
+DEFINES += \
+    QT_BUILD_QMAKE \
     PROEVALUATOR_FULL
-DESTDIR = ../bin/
 
-OBJECTS_DIR = .
-MOC_DIR = .
-
-#guts
-VPATH += $$QT_SOURCE_TREE/src/corelib/global \
-         $$QT_SOURCE_TREE/src/corelib/tools \
-         $$QT_SOURCE_TREE/src/corelib/kernel \
-         $$QT_SOURCE_TREE/src/corelib/codecs \
-         $$QT_SOURCE_TREE/src/corelib/plugin \
-         $$QT_SOURCE_TREE/src/corelib/xml \
-         $$QT_SOURCE_TREE/src/corelib/io \
-         $$QT_SOURCE_TREE/src/corelib/json \
-         $$QT_SOURCE_TREE/tools/shared/windows
+VPATH += \
+    ../src/corelib/global \
+    ../src/corelib/tools \
+    ../src/corelib/kernel \
+    ../src/corelib/codecs \
+    ../src/corelib/plugin \
+    ../src/corelib/xml \
+    ../src/corelib/io \
+    ../src/corelib/json \
+    ../tools/shared/windows
 
 INCLUDEPATH += . \
            library \
@@ -30,11 +27,8 @@ INCLUDEPATH += . \
            generators/win32 \
            generators/mac \
            generators/integrity \
-           $$QT_SOURCE_TREE/include \
-           $$QT_SOURCE_TREE/include/QtCore \
-           $$QT_SOURCE_TREE/include/QtCore/$$QT_VERSION \
-           $$QT_SOURCE_TREE/include/QtCore/$$QT_VERSION/QtCore \
-           $$QT_SOURCE_TREE/tools/shared \
-           $$QT_SOURCE_TREE/qmake
+           ../tools/shared
 
 include(qmake.pri)
+
+load(qt_app)

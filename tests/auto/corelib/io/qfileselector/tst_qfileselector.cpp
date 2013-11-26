@@ -91,9 +91,33 @@ void tst_QFileSelector::basicTest_data()
     QTest::addColumn<QString>("expectedPath");
 
     QString test("/test");// '/' is here so dir string can also be selector string
-    QTest::newRow("platform") <<  QString(":/platforms/test") << QStringList()
-        << QString(":/platforms/")  + QLatin1Char(selectorIndicator)
-           + QFileSelectorPrivate::platformSelectors().first() + test;
+    QString test2("/test2");
+    QString expectedPlatform1File(":/platforms");
+    QString expectedPlatform2File(""); //Only the last selector
+#if defined(Q_OS_UNIX) && !defined(Q_OS_ANDROID) && !defined(Q_OS_BLACKBERRY) && !defined(Q_OS_IOS) && !defined(Q_OS_LINUX) && !defined(Q_OS_MAC)
+    /* We are only aware of specific unixes, and do not have test files for any of the others.
+       However those unixes can get a selector added from the result of a uname call, so this will
+       lead to a case where we don't have that file so we can't expect the concatenation of platform
+       selectors to work. It should just find the +unix/test file.*/
+    expectedPlatform1File = QString(":/platforms/") + QLatin1Char(selectorIndicator)
+        + QString("unix/test");
+    expectedPlatform2File = QString(":/platforms/test2");
+#else
+    foreach (const QString &selector, QFileSelectorPrivate::platformSelectors()) {
+        expectedPlatform1File = expectedPlatform1File + QLatin1Char('/') + QLatin1Char(selectorIndicator)
+            + selector;
+        expectedPlatform2File = selector;
+    }
+    expectedPlatform1File += test;
+    expectedPlatform2File = QLatin1String(":/platforms/") + QLatin1Char(selectorIndicator)
+        + expectedPlatform2File + test2;
+#endif
+
+    QTest::newRow("platform1") <<  QString(":/platforms/test") << QStringList()
+        << expectedPlatform1File;
+
+    QTest::newRow("platform2") <<  QString(":/platforms/test2") << QStringList()
+        << expectedPlatform2File;
 
     QString resourceTestPath(":/extras/test");
     QString custom1("custom1");

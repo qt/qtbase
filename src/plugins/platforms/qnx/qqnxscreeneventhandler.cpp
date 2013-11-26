@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "qqnxscreeneventhandler.h"
+#if defined(QQNX_SCREENEVENTTHREAD)
+#include "qqnxscreeneventthread.h"
+#endif
 #include "qqnxintegration.h"
 #include "qqnxkeytranslator.h"
 #include "qqnxscreen.h"
@@ -64,6 +67,9 @@ QQnxScreenEventHandler::QQnxScreenEventHandler(QQnxIntegration *integration)
     , m_lastButtonState(Qt::NoButton)
     , m_lastMouseWindow(0)
     , m_touchDevice(0)
+#if defined(QQNX_SCREENEVENTTHREAD)
+    , m_eventThread(0)
+#endif
 {
     // Create a touch device
     m_touchDevice = new QTouchDevice;
@@ -136,6 +142,10 @@ bool QQnxScreenEventHandler::handleEvent(screen_event_t event, int qnxType)
         handleDisplayEvent(event);
         break;
 
+    case SCREEN_EVENT_PROPERTY:
+        handlePropertyEvent(event);
+        break;
+
     default:
         // event ignored
         qScreenEventDebug() << Q_FUNC_INFO << "unknown event" << qnxType;
@@ -188,6 +198,43 @@ void QQnxScreenEventHandler::injectKeyboardEvent(int flags, int sym, int modifie
         qScreenEventDebug() << Q_FUNC_INFO << "Qt key t=" << type << ", k=" << key << ", s=" << keyStr;
     }
 }
+
+#if defined(QQNX_SCREENEVENTTHREAD)
+void QQnxScreenEventHandler::setScreenEventThread(QQnxScreenEventThread *eventThread)
+{
+    m_eventThread = eventThread;
+}
+
+void QQnxScreenEventHandler::processEventsFromScreenThread()
+{
+    if (!m_eventThread)
+        return;
+
+    QQnxScreenEventArray *events = m_eventThread->lock();
+
+    for (int i = 0; i < events->size(); ++i) {
+        screen_event_t event = events->at(i);
+        if (!event)
+            continue;
+        (*events)[i] = 0;
+
+        m_eventThread->unlock();
+
+        long result = 0;
+        QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance();
+        bool handled = dispatcher && dispatcher->filterNativeEvent(QByteArrayLiteral("screen_event_t"), event, &result);
+        if (!handled)
+            handleEvent(event);
+        screen_destroy_event(event);
+
+        m_eventThread->lock();
+    }
+
+    events->clear();
+
+    m_eventThread->unlock();
+}
+#endif
 
 void QQnxScreenEventHandler::handleKeyboardEvent(screen_event_t event)
 {
@@ -412,11 +459,20 @@ void QQnxScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
         if (w) {
             // get size of screen which contains window
             QPlatformScreen *platformScreen = QPlatformScreen::platformScreenForWindow(w);
-            QSizeF screenSize = platformScreen->physicalSize();
+            QSizeF screenSize = platformScreen->geometry().size();
 
             // update cached position of current touch point
-            m_touchPoints[touchId].normalPosition = QPointF( static_cast<qreal>(pos[0]) / screenSize.width(), static_cast<qreal>(pos[1]) / screenSize.height() );
-            m_touchPoints[touchId].area = QRectF( pos[0], pos[1], 0.0, 0.0 );
+            m_touchPoints[touchId].normalPosition =
+                            QPointF(static_cast<qreal>(pos[0]) / screenSize.width(),
+                                    static_cast<qreal>(pos[1]) / screenSize.height());
+
+            m_touchPoints[touchId].area = QRectF(w->geometry().left() + windowPos[0],
+                                                 w->geometry().top()  + windowPos[1], 0.0, 0.0);
+            QWindow *parent = w->parent();
+            while (parent) {
+                m_touchPoints[touchId].area.translate(parent->geometry().topLeft());
+                parent = parent->parent();
+            }
 
             // determine event type and update state of current touch point
             QEvent::Type type = QEvent::None;
@@ -451,8 +507,8 @@ void QQnxScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
             // inject event into Qt
             QWindowSystemInterface::handleTouchEvent(w, m_touchDevice, pointList);
             qScreenEventDebug() << Q_FUNC_INFO << "Qt touch, w =" << w
-                                << ", p=(" << pos[0] << "," << pos[1]
-                                << "), t=" << type;
+                                << ", p=" << m_touchPoints[touchId].area.topLeft()
+                                << ", t=" << type;
         }
     }
 }
@@ -521,6 +577,48 @@ void QQnxScreenEventHandler::handleDisplayEvent(screen_event_t event)
             m_qnxIntegration->removeDisplay(screen);
         }
     }
+}
+
+void QQnxScreenEventHandler::handlePropertyEvent(screen_event_t event)
+{
+    errno = 0;
+    int objectType;
+    if (screen_get_event_property_iv(event, SCREEN_PROPERTY_OBJECT_TYPE, &objectType) != 0)
+        qFatal("QQNX: failed to query object type property, errno=%d", errno);
+
+    if (objectType != SCREEN_OBJECT_TYPE_WINDOW)
+        return;
+
+    errno = 0;
+    screen_window_t window = 0;
+    if (screen_get_event_property_pv(event, SCREEN_PROPERTY_WINDOW, (void**)&window) != 0)
+        qFatal("QQnx: failed to query window property, errno=%d", errno);
+
+    errno = 0;
+    int property;
+    if (screen_get_event_property_iv(event, SCREEN_PROPERTY_NAME, &property) != 0)
+        qFatal("QQnx: failed to query window property, errno=%d", errno);
+
+    switch (property) {
+    case SCREEN_PROPERTY_KEYBOARD_FOCUS:
+        handleKeyboardFocusPropertyEvent(window);
+        break;
+    default:
+        // event ignored
+        qScreenEventDebug() << Q_FUNC_INFO << "Ignore property event for property: " << property;
+    }
+}
+
+void QQnxScreenEventHandler::handleKeyboardFocusPropertyEvent(screen_window_t window)
+{
+    errno = 0;
+    int focus = 0;
+    if (window && screen_get_window_property_iv(window, SCREEN_PROPERTY_KEYBOARD_FOCUS, &focus) != 0)
+        qFatal("QQnx: failed to query keyboard focus property, errno=%d", errno);
+
+    QWindow *w = focus ? QQnxIntegration::window(window) : 0;
+
+    QWindowSystemInterface::handleWindowActivated(w);
 }
 
 #include "moc_qqnxscreeneventhandler.cpp"

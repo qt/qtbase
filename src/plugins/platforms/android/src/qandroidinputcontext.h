@@ -80,6 +80,7 @@ public:
 public:
     QAndroidInputContext();
     ~QAndroidInputContext();
+    static QAndroidInputContext * androidInputContext();
     bool isValid() const { return true; }
 
     void reset();

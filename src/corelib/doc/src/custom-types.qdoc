@@ -155,10 +155,9 @@
     The Q_DECLARE_METATYPE() macro and qRegisterMetaType() function documentation
     contain more detailed information about their uses and limitations.
 
-    The \l{Custom Type Example}{Custom Type},
-    \l{Custom Type Sending Example}{Custom Type Sending}
-    and \l{Queued Custom Type Example}{Queued Custom Type} examples show how to
-    implement a custom type with the features outlined in this document.
+    The \l{Custom Type Example}{Custom Type} and \l{Queued Custom Type Example}
+    {Queued Custom Type} examples show how to implement a custom type with the
+    features outlined in this document.
 
     The \l{Debugging Techniques} document provides an overview of the debugging
     mechanisms discussed above.

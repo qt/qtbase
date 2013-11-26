@@ -50,6 +50,9 @@ QT_BEGIN_NAMESPACE
 
 class QQnxIntegration;
 class QQnxScreenEventFilter;
+#if defined(QQNX_SCREENEVENTTHREAD)
+class QQnxScreenEventThread;
+#endif
 
 class QQnxScreenEventHandler : public QObject
 {
@@ -65,9 +68,18 @@ public:
 
     static void injectKeyboardEvent(int flags, int sym, int mod, int scan, int cap);
 
+#if defined(QQNX_SCREENEVENTTHREAD)
+    void setScreenEventThread(QQnxScreenEventThread *eventThread);
+#endif
+
 Q_SIGNALS:
     void newWindowCreated(void *window);
     void windowClosed(void *window);
+
+#if defined(QQNX_SCREENEVENTTHREAD)
+private Q_SLOTS:
+    void processEventsFromScreenThread();
+#endif
 
 private:
     void handleKeyboardEvent(screen_event_t event);
@@ -76,6 +88,8 @@ private:
     void handleCloseEvent(screen_event_t event);
     void handleCreateEvent(screen_event_t event);
     void handleDisplayEvent(screen_event_t event);
+    void handlePropertyEvent(screen_event_t event);
+    void handleKeyboardFocusPropertyEvent(screen_window_t window);
 
 private:
     enum {
@@ -90,6 +104,9 @@ private:
     QTouchDevice *m_touchDevice;
     QWindowSystemInterface::TouchPoint m_touchPoints[MaximumTouchPoints];
     QList<QQnxScreenEventFilter*> m_eventFilters;
+#if defined(QQNX_SCREENEVENTTHREAD)
+    QQnxScreenEventThread *m_eventThread;
+#endif
 };
 
 QT_END_NAMESPACE

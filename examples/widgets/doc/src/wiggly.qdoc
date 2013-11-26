@@ -42,8 +42,8 @@
     time has passed, it sends a QTimerEvent to a QObject of our
     choice. This makes QBasicTimer a more lightweight alternative to
     QTimer. Qt's built-in widgets use it internally, and it is
-    provided in Qt's API for highly-optimized applications (e.g.,
-    \l{Qt for Embedded Linux} applications).
+    provided in Qt's API for highly-optimized applications (such as
+    embedded applications).
 
     The example consists of two classes:
 

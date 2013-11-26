@@ -85,6 +85,7 @@ public:
 
 protected:
     void setPrimarySurface(EGLSurface surface);
+    virtual void topWindowChanged(QPlatformWindow *window);
 
 private:
     friend class QEglFSWindow;

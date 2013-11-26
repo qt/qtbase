@@ -99,7 +99,8 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     wchar_t path[MAX_PATH];
 
     switch (type) {
-    case ConfigLocation: // same as DataLocation, on Windows
+    case ConfigLocation: // same as DataLocation, on Windows (oversight, but too late to fix it)
+    case GenericConfigLocation: // same as GenericDataLocation, on Windows
     case DataLocation:
     case GenericDataLocation:
 #if defined Q_OS_WINCE
@@ -111,7 +112,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         if (isTestModeEnabled())
             result += QLatin1String("/qttest");
 #ifndef QT_BOOTSTRAPPED
-        if (type != GenericDataLocation) {
+        if (type != GenericDataLocation && type != GenericConfigLocation) {
             if (!QCoreApplication::organizationName().isEmpty())
                 result += QLatin1Char('/') + QCoreApplication::organizationName();
             if (!QCoreApplication::applicationName().isEmpty())
@@ -188,12 +189,13 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
     if (SHGetSpecialFolderPath) {
         wchar_t path[MAX_PATH];
         switch (type) {
-        case ConfigLocation: // same as DataLocation, on Windows
+        case ConfigLocation: // same as DataLocation, on Windows (oversight, but too late to fix it)
+        case GenericConfigLocation: // same as GenericDataLocation, on Windows
         case DataLocation:
         case GenericDataLocation:
             if (SHGetSpecialFolderPath(0, path, CSIDL_COMMON_APPDATA, FALSE)) {
                 QString result = convertCharArray(path);
-                if (type != GenericDataLocation) {
+                if (type != GenericDataLocation && type != GenericConfigLocation) {
 #ifndef QT_BOOTSTRAPPED
                     if (!QCoreApplication::organizationName().isEmpty())
                         result += QLatin1Char('/') + QCoreApplication::organizationName();

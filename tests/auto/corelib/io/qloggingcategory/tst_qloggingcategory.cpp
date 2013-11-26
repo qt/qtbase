@@ -69,7 +69,6 @@ QByteArray qMyMessageFormatString(QtMsgType type, const QMessageLogContext &cont
         case QtWarningMsg: message.append(".warning"); break;
         case QtCriticalMsg:message.append(".critical"); break;
         case QtFatalMsg:   message.append(".fatal"); break;
-        case QtTraceMsg:   message.append(".trace"); break;
         }
         message.append(": ");
         message.append(qPrintable(str));

@@ -11,6 +11,8 @@
 
 load(resolve_config)
 
+exclusive_builds: load(exclusive_builds_post)
+
 QMAKE_RESOLVED_TARGET = $$absolute_path($$DESTDIR, $$OUT_PWD)/
 
 win32 {

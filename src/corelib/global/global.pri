@@ -31,6 +31,7 @@ INCLUDEPATH += $$QT_BUILD_TREE/src/corelib/global
 
 # configure creates these, not syncqt, so we need to manually inject them
 qconfig_h_files = \
+    $$OUT_PWD/global/qfeatures.h \
     $$OUT_PWD/global/qconfig.h \
     $$QT_BUILD_TREE/include/QtCore/QtConfig
 targ_headers.files += $$qconfig_h_files

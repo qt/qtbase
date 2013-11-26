@@ -123,8 +123,6 @@ QIOSScreen::QIOSScreen(unsigned int screenIndex)
     , m_uiScreen([[UIScreen screens] objectAtIndex:qMin(NSUInteger(screenIndex), [[UIScreen screens] count] - 1)])
     , m_orientationListener(0)
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-
     QString deviceIdentifier = deviceModelIdentifier();
 
     if (deviceIdentifier == QStringLiteral("iPhone2,1") /* iPhone 3GS */
@@ -134,32 +132,118 @@ QIOSScreen::QIOSScreen(unsigned int screenIndex)
         m_depth = 24;
     }
 
-    int unscaledDpi = 163; // Regular iPhone DPI
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad
         && !deviceIdentifier.contains(QRegularExpression("^iPad2,[567]$")) /* excluding iPad Mini */) {
-        unscaledDpi = 132;
-    };
-
-    CGRect bounds = [m_uiScreen bounds];
-    m_geometry = QRect(bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
-
-    CGRect frame = m_uiScreen.applicationFrame;
-    m_availableGeometry = QRect(frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
-
-    const qreal millimetersPerInch = 25.4;
-    m_physicalSize = QSizeF(m_geometry.size()) / unscaledDpi * millimetersPerInch;
-
-    if (isQtApplication()) {
-        // When in a non-mixed environment, let QScreen follow the current interface orientation:
-        setPrimaryOrientation(toQtScreenOrientation(UIDeviceOrientation(qiosViewController().interfaceOrientation)));
+        m_unscaledDpi = 132;
+    } else {
+        m_unscaledDpi = 163; // Regular iPhone DPI
     }
 
-    [pool release];
+    connect(qGuiApp, &QGuiApplication::focusWindowChanged, this, &QIOSScreen::updateStatusBarVisibility);
+
+    updateProperties();
 }
 
 QIOSScreen::~QIOSScreen()
 {
     [m_orientationListener release];
+}
+
+void QIOSScreen::updateProperties()
+{
+    UIWindow *uiWindow = 0;
+    for (uiWindow in [[UIApplication sharedApplication] windows]) {
+        if (uiWindow.screen == m_uiScreen)
+            break;
+    }
+
+    bool inPortrait = UIInterfaceOrientationIsPortrait(uiWindow.rootViewController.interfaceOrientation);
+    QRect geometry = inPortrait ? fromCGRect(m_uiScreen.bounds).toRect()
+        : QRect(m_uiScreen.bounds.origin.x, m_uiScreen.bounds.origin.y,
+            m_uiScreen.bounds.size.height, m_uiScreen.bounds.size.width);
+
+    if (geometry != m_geometry) {
+        m_geometry = geometry;
+
+        const qreal millimetersPerInch = 25.4;
+        m_physicalSize = QSizeF(m_geometry.size()) / m_unscaledDpi * millimetersPerInch;
+
+        QWindowSystemInterface::handleScreenGeometryChange(screen(), m_geometry);
+    }
+
+    QRect availableGeometry = geometry;
+
+    CGSize applicationFrameSize = m_uiScreen.applicationFrame.size;
+    int statusBarHeight = geometry.height() - (inPortrait ? applicationFrameSize.height : applicationFrameSize.width);
+
+    availableGeometry.adjust(0, statusBarHeight, 0, 0);
+
+    if (availableGeometry != m_availableGeometry) {
+        m_availableGeometry = availableGeometry;
+        QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(), m_availableGeometry);
+    }
+
+    if (screen())
+        layoutWindows();
+}
+
+void QIOSScreen::updateStatusBarVisibility()
+{
+    QWindow *focusWindow = QGuiApplication::focusWindow();
+
+    // If we don't have a focus window we leave the status
+    // bar as is, so that the user can activate a new window
+    // with the same window state without the status bar jumping
+    // back and forth.
+    if (!focusWindow)
+        return;
+
+    UIView *view = reinterpret_cast<UIView *>(focusWindow->handle()->winId());
+#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_7_0)
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_7_0) {
+        [view.viewController setNeedsStatusBarAppearanceUpdate];
+    } else
+#endif
+    {
+        bool wasHidden = [UIApplication sharedApplication].statusBarHidden;
+        QIOSViewController *viewController = static_cast<QIOSViewController *>(view.viewController);
+        [[UIApplication sharedApplication]
+            setStatusBarHidden:[viewController prefersStatusBarHidden]
+            withAnimation:UIStatusBarAnimationNone];
+
+        if ([UIApplication sharedApplication].statusBarHidden != wasHidden)
+            updateProperties();
+    }
+}
+
+void QIOSScreen::layoutWindows()
+{
+    QList<QWindow*> windows = QGuiApplication::topLevelWindows();
+
+    const QRect oldGeometry = screen()->geometry();
+    const QRect oldAvailableGeometry = screen()->availableGeometry();
+    const QRect newGeometry = geometry();
+    const QRect newAvailableGeometry = availableGeometry();
+
+    for (int i = 0; i < windows.size(); ++i) {
+        QWindow *window = windows.at(i);
+
+        if (platformScreenForWindow(window) != this)
+            continue;
+
+        QIOSWindow *platformWindow = static_cast<QIOSWindow *>(window->handle());
+        if (!platformWindow)
+            continue;
+
+        // FIXME: Handle more complex cases of no-state and/or child windows when rotating
+
+        if (window->windowState() & Qt::WindowFullScreen
+                || (window->windowState() & Qt::WindowNoState && window->geometry() == oldGeometry))
+            platformWindow->applyGeometry(newGeometry);
+        else if (window->windowState() & Qt::WindowMaximized
+                || (window->windowState() & Qt::WindowNoState && window->geometry() == oldAvailableGeometry))
+            platformWindow->applyGeometry(newAvailableGeometry);
+    }
 }
 
 QRect QIOSScreen::geometry() const
@@ -199,7 +283,9 @@ qreal QIOSScreen::devicePixelRatio() const
 
 Qt::ScreenOrientation QIOSScreen::nativeOrientation() const
 {
-    return Qt::PortraitOrientation;
+    // A UIScreen stays in the native orientation, regardless of rotation
+    return m_uiScreen.bounds.size.width >= m_uiScreen.bounds.size.height ?
+        Qt::LandscapeOrientation : Qt::PortraitOrientation;
 }
 
 Qt::ScreenOrientation QIOSScreen::orientation() const
@@ -217,31 +303,11 @@ void QIOSScreen::setOrientationUpdateMask(Qt::ScreenOrientations mask)
     }
 }
 
-void QIOSScreen::setPrimaryOrientation(Qt::ScreenOrientation orientation)
-{
-    // Note that UIScreen never changes orientation, but QScreen should. To work around
-    // this, we let QIOSViewController call us whenever interface orientation changes, and
-    // use that as primary orientation. After all, the viewcontrollers geometry is what we
-    // place QWindows on top of. A problem with this approach is that QIOSViewController is
-    // not in use in a mixed environment, which results in no change to primary orientation.
-    // We see that as acceptable since Qt should most likely not interfere with orientation
-    // for that case anyway.
-    bool portrait = screen()->isPortrait(orientation);
-    if (portrait && m_geometry.width() < m_geometry.height())
-        return;
-
-    // Switching portrait/landscape means swapping width/height (and adjusting x/y):
-    m_geometry = QRect(0, 0, m_geometry.height(), m_geometry.width());
-    m_physicalSize = QSizeF(m_physicalSize.height(), m_physicalSize.width());
-    m_availableGeometry = fromPortraitToPrimary(fromCGRect(m_uiScreen.applicationFrame), this);
-
-    QWindowSystemInterface::handleScreenGeometryChange(screen(), m_geometry);
-    QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(), m_availableGeometry);
-}
-
 UIScreen *QIOSScreen::uiScreen() const
 {
     return m_uiScreen;
 }
+
+#include "moc_qiosscreen.cpp"
 
 QT_END_NAMESPACE

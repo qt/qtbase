@@ -135,7 +135,7 @@ public:
     void setSectionResizeMode(ResizeMode mode);
     void setSectionResizeMode(int logicalIndex, ResizeMode mode);
 
-    void setResizeContentsPrecision(int precision, bool resizeNow = true);
+    void setResizeContentsPrecision(int precision);
     int  resizeContentsPrecision() const;
 
 #if QT_DEPRECATED_SINCE(5, 0)

@@ -113,7 +113,6 @@ private:
     QStringList skipModules;
     QStringList licensedModules;
     QStringList allSqlDrivers;
-    QStringList allConfigs;
     QStringList disabledModules;
     QStringList enabledModules;
     QStringList modules;

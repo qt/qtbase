@@ -109,10 +109,12 @@ static void qt_win_setup_PRINTDLGEX(PRINTDLGEX *pd, QWidget *parent,
     if(!pdlg->isOptionEnabled(QPrintDialog::PrintToFile))
         pd->Flags |= PD_DISABLEPRINTTOFILE;
 
-    if (pdlg->printRange() == QPrintDialog::Selection)
+    if (pdlg->isOptionEnabled(QPrintDialog::PrintSelection) && pdlg->printRange() == QPrintDialog::Selection)
         pd->Flags |= PD_SELECTION;
-    else if (pdlg->printRange() == QPrintDialog::PageRange)
+    else if (pdlg->isOptionEnabled(QPrintDialog::PrintPageRange) && pdlg->printRange() == QPrintDialog::PageRange)
         pd->Flags |= PD_PAGENUMS;
+    else if (pdlg->isOptionEnabled(QPrintDialog::PrintCurrentPage) && pdlg->printRange() == QPrintDialog::CurrentPage)
+        pd->Flags |= PD_CURRENTPAGE;
     else
         pd->Flags |= PD_ALLPAGES;
 
@@ -185,7 +187,7 @@ QPrintDialog::QPrintDialog(QPrinter *printer, QWidget *parent)
     Q_D(QPrintDialog);
     if (!warnIfNotNative(d->printer))
         return;
-    d->ep = static_cast<QWin32PrintEngine *>(d->printer->paintEngine())->d_func();
+    d->ep = static_cast<QWin32PrintEngine *>(d->printer->printEngine())->d_func();
     setAttribute(Qt::WA_DontShowOnScreen);
 }
 
@@ -195,7 +197,7 @@ QPrintDialog::QPrintDialog(QWidget *parent)
     Q_D(QPrintDialog);
     if (!warnIfNotNative(d->printer))
         return;
-    d->ep = static_cast<QWin32PrintEngine *>(d->printer->paintEngine())->d_func();
+    d->ep = static_cast<QWin32PrintEngine *>(d->printer->printEngine())->d_func();
     setAttribute(Qt::WA_DontShowOnScreen);
 }
 

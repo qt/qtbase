@@ -96,6 +96,7 @@ public:
         WV_VISTA    = 0x0080,
         WV_WINDOWS7 = 0x0090,
         WV_WINDOWS8 = 0x00a0,
+        WV_WINDOWS8_1 = 0x00b0,
         WV_NT_based = 0x00f0,
 
         /* version numbers */
@@ -106,6 +107,7 @@ public:
         WV_6_0      = WV_VISTA,
         WV_6_1      = WV_WINDOWS7,
         WV_6_2      = WV_WINDOWS8,
+        WV_6_3      = WV_WINDOWS8_1,
 
         WV_CE       = 0x0100,
         WV_CENET    = 0x0200,
@@ -118,6 +120,7 @@ public:
 
 #endif
 #ifdef Q_OS_MAC
+#  define Q_MV_IOS(major, minor) (QSysInfo::MV_IOS | major << 4 | minor)
     enum MacVersion {
         MV_Unknown = 0x0000,
 
@@ -144,7 +147,17 @@ public:
         MV_SNOWLEOPARD = MV_10_6,
         MV_LION = MV_10_7,
         MV_MOUNTAINLION = MV_10_8,
-        MV_MAVERICKS = MV_10_9
+        MV_MAVERICKS = MV_10_9,
+
+        /* iOS */
+        MV_IOS     = 1 << 8,
+        MV_IOS_4_3 = Q_MV_IOS(4, 3),
+        MV_IOS_5_0 = Q_MV_IOS(5, 0),
+        MV_IOS_5_1 = Q_MV_IOS(5, 1),
+        MV_IOS_6_0 = Q_MV_IOS(6, 0),
+        MV_IOS_6_1 = Q_MV_IOS(6, 1),
+        MV_IOS_7_0 = Q_MV_IOS(7, 0),
+        MV_IOS_7_1 = Q_MV_IOS(7, 1)
     };
     static const MacVersion MacintoshVersion;
     static MacVersion macVersion();

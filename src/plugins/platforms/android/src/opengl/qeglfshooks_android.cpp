@@ -82,7 +82,7 @@ EGLNativeDisplayType QEglFSAndroidHooks::platformDisplay() const
 
 QSize QEglFSAndroidHooks::screenSize() const
 {
-    return QtAndroid::nativeWindowSize();
+    return QAndroidPlatformIntegration::defaultDesktopSize();
 }
 
 QSizeF QEglFSAndroidHooks::physicalScreenSize() const
@@ -120,7 +120,8 @@ EGLNativeWindowType QEglFSAndroidHooks::createNativeWindow(QPlatformWindow *plat
 
 void QEglFSAndroidHooks::destroyNativeWindow(EGLNativeWindowType window)
 {
-    ANativeWindow_release(window);
+    if (window != 0)
+        ANativeWindow_release(window);
 }
 
 bool QEglFSAndroidHooks::hasCapability(QPlatformIntegration::Capability capability) const

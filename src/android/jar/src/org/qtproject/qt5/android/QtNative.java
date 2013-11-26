@@ -50,7 +50,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.text.ClipboardManager;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -110,9 +109,13 @@ public class QtNative
 
     public static void openURL(String url)
     {
-        Uri uri = Uri.parse(url);
-        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-        activity().startActivity(intent);
+        try {
+            Uri uri = Uri.parse(url);
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            activity().startActivity(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     // this method loads full path libs
@@ -419,30 +422,21 @@ public class QtNative
 
     private static boolean isSoftwareKeyboardVisible()
     {
-        Semaphore semaphore = new Semaphore(1);
-        Boolean ret = false;
-        class RunnableRes implements Runnable {
-            @SuppressWarnings("unused")
-            Boolean returnValue = null;
-            Semaphore semaphore = null;
-            RunnableRes(Boolean ret, Semaphore sem) {
-                semaphore = sem;
-                returnValue = ret;
-            }
+        final Semaphore semaphore = new Semaphore(0);
+        final Boolean[] ret = {false};
+        runAction(new Runnable() {
             @Override
             public void run() {
-                returnValue = m_activityDelegate.isSoftwareKeyboardVisible();
+                ret[0] = m_activityDelegate.isSoftwareKeyboardVisible();
                 semaphore.release();
             }
-        }
-
-        runAction(new RunnableRes(ret, semaphore));
+        });
         try {
             semaphore.acquire();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return ret;
+        return ret[0];
     }
 
     private static void setFullScreen(final boolean fullScreen)
@@ -458,7 +452,7 @@ public class QtNative
 
     private static void registerClipboardManager()
     {
-        final Semaphore semaphore = new Semaphore(1);
+        final Semaphore semaphore = new Semaphore(0);
         runAction(new Runnable() {
             @Override
             public void run() {
@@ -569,6 +563,7 @@ public class QtNative
     // keyboard methods
     public static native void keyDown(int key, int unicode, int modifier);
     public static native void keyUp(int key, int unicode, int modifier);
+    public static native void keyboardVisibilityChanged(boolean visibility);
     // keyboard methods
 
     // surface methods

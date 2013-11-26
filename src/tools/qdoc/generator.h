@@ -239,6 +239,7 @@ private:
     bool inSectionHeading_;
     bool inTableHeader_;
     bool threeColumnEnumValueTable_;
+    bool showInternal_;
     int numTableRows_;
     QString link_;
     QString sectionNumber_;

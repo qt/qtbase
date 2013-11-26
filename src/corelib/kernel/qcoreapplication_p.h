@@ -83,7 +83,6 @@ public:
     ~QCoreApplicationPrivate();
 
     QString appName() const;
-    mutable QString applicationName;
 
 #ifdef Q_OS_MAC
     static QString macMenuBarName();
@@ -140,7 +139,9 @@ public:
     QCoreApplicationPrivate::Type application_type;
 
     QString cachedApplicationDirPath;
-    QString cachedApplicationFilePath;
+    static QString *cachedApplicationFilePath;
+    static void setApplicationFilePath(const QString &path);
+    static inline void clearApplicationFilePath() { delete cachedApplicationFilePath; cachedApplicationFilePath = 0; }
 
 #ifndef QT_NO_QOBJECT
     bool in_exec;

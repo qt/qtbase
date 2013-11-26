@@ -139,6 +139,9 @@ QT_BEGIN_NAMESPACE
     \value DownloadLocation Returns a directory for user's downloaded files. This is a generic value.
            If no directory specific for downloads exists, a sensible fallback for storing user
            documents is returned.
+    \value GenericConfigLocation Returns a directory location where user-specific
+           configuration files shared between multiple applications should be written.
+           This is a generic value and the returned path is never empty.
 
     The following table gives examples of paths on different operating systems.
     The first path is the writable path (unless noted). Other, additional
@@ -499,6 +502,8 @@ QString QStandardPaths::displayName(StandardLocation type)
         return QCoreApplication::translate("QStandardPaths", "Runtime");
     case ConfigLocation:
         return QCoreApplication::translate("QStandardPaths", "Configuration");
+    case GenericConfigLocation:
+        return QCoreApplication::translate("QStandardPaths", "Shared Configuration");
     case GenericCacheLocation:
         return QCoreApplication::translate("QStandardPaths", "Shared Cache");
     case DownloadLocation:
@@ -522,7 +527,7 @@ QString QStandardPaths::displayName(StandardLocation type)
   or writing to the current user's configuration.
 
   This affects the locations into which test programs might write files:
-  GenericDataLocation, DataLocation, ConfigLocation,
+  GenericDataLocation, DataLocation, ConfigLocation, GenericConfigLocation,
   GenericCacheLocation, CacheLocation.
   Other locations are not affected.
 

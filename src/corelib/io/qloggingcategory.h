@@ -44,13 +44,8 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qdebug.h>
-#include <QtCore/qvector.h>
 
 QT_BEGIN_NAMESPACE
-
-class QTracer;
-class QTraceGuard;
-class QLoggingCategoryPrivate;
 
 class Q_CORE_EXPORT QLoggingCategory
 {
@@ -65,7 +60,6 @@ public:
     bool isDebugEnabled() const { return enabledDebug; }
     bool isWarningEnabled() const { return enabledWarning; }
     bool isCriticalEnabled() const { return enabledCritical; }
-    bool isTraceEnabled() const { return enabledTrace; }
 
     const char *categoryName() const { return name; }
 
@@ -80,66 +74,13 @@ public:
     static void setFilterRules(const QString &rules);
 
 private:
-    friend class QLoggingCategoryPrivate;
-    friend class QLoggingRegistry;
-    friend class QTraceGuard;
-    friend class QTracer;
-
-    QLoggingCategoryPrivate *d;
+    void *d; // reserved for future use
     const char *name;
 
     bool enabledDebug;
     bool enabledWarning;
     bool enabledCritical;
-    bool enabledTrace;
-    // reserve space for future use
-    bool placeholder1;
-    bool placeholder2;
-    bool placeholder3;
-};
-
-class Q_CORE_EXPORT QTracer
-{
-    Q_DISABLE_COPY(QTracer)
-public:
-    QTracer() {}
-    virtual ~QTracer() {}
-
-    void addToCategory(QLoggingCategory &category);
-
-    virtual void start() {}
-    virtual void end() {}
-    virtual void record(int) {}
-    virtual void record(const char *) {}
-    virtual void record(const QVariant &) {}
-};
-
-class Q_CORE_EXPORT QTraceGuard
-{
-    Q_DISABLE_COPY(QTraceGuard)
-public:
-    QTraceGuard(QLoggingCategory &category)
-    {
-        target = category.isTraceEnabled() ? &category : 0;
-        if (target)
-            start();
-    }
-
-    ~QTraceGuard()
-    {
-        if (target)
-            end();
-    }
-
-    QTraceGuard &operator<<(int msg);
-    QTraceGuard &operator<<(const char *msg);
-    QTraceGuard &operator<<(const QVariant &msg);
-
-private:
-    void start();
-    void end();
-
-    QLoggingCategory *target;
+    bool placeholder[5]; // reserve for future use
 };
 
 #define Q_DECLARE_LOGGING_CATEGORY(name) \
@@ -154,7 +95,7 @@ private:
     }
 
 #define qCDebug(category) \
-    for (bool enabled = category().isDebugEnabled(); enabled; enabled = false) \
+    for (bool enabled = category().isDebugEnabled(); Q_UNLIKELY(enabled); enabled = false) \
         QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, category().categoryName()).debug()
 #define qCWarning(category) \
     for (bool enabled = category().isWarningEnabled(); enabled; enabled = false) \
@@ -162,17 +103,6 @@ private:
 #define qCCritical(category) \
     for (bool enabled = category().isCriticalEnabled(); enabled; enabled = false) \
         QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, category().categoryName()).critical()
-#define qCTrace(category) \
-    for (bool enabled = category.isTraceEnabled(); enabled; enabled = false) \
-        QTraceGuard(category)
-
-
-#define Q_TRACE_GUARD_NAME_HELPER(line) qTraceGuard ## line
-#define Q_TRACE_GUARD_NAME(line) Q_TRACE_GUARD_NAME_HELPER(line)
-
-#define qCTraceGuard(category) \
-    QTraceGuard Q_TRACE_GUARD_NAME(__LINE__)(category);
-
 
 #if defined(QT_NO_DEBUG_OUTPUT)
 #  undef qCDebug

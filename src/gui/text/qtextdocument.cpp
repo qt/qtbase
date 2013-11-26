@@ -2527,7 +2527,7 @@ static bool isOrderedList(int style)
            || style == QTextListFormat::ListUpperAlpha
            || style == QTextListFormat::ListUpperRoman
            || style == QTextListFormat::ListLowerRoman
-	   ;
+           ;
 }
 
 void QTextHtmlExporter::emitBlockAttributes(const QTextBlock &block)

@@ -81,7 +81,7 @@ static const struct {
 
 QMakeProperty::QMakeProperty() : settings(0)
 {
-    for (int i = 0; i < sizeof(propList)/sizeof(propList[0]); i++) {
+    for (unsigned i = 0; i < sizeof(propList)/sizeof(propList[0]); i++) {
         QString name = QString::fromLatin1(propList[i].name);
         m_values[ProKey(name + "/src")] = QLibraryInfo::rawLocation(propList[i].loc, QLibraryInfo::EffectiveSourcePaths);
         m_values[ProKey(name + "/get")] = QLibraryInfo::rawLocation(propList[i].loc, QLibraryInfo::EffectivePaths);
@@ -155,7 +155,7 @@ QMakeProperty::exec()
                 fprintf(stdout, "%s:%s\n", qPrintable(key), qPrintable(val));
             }
             QStringList specialProps;
-            for (int i = 0; i < sizeof(propList)/sizeof(propList[0]); i++)
+            for (unsigned i = 0; i < sizeof(propList)/sizeof(propList[0]); i++)
                 specialProps.append(QString::fromLatin1(propList[i].name));
             specialProps.append("QMAKE_VERSION");
 #ifdef QT_VERSION_STR

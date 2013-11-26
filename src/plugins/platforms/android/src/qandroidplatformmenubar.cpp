@@ -79,6 +79,8 @@ void QAndroidPlatformMenuBar::syncMenu(QPlatformMenu *menu)
 
 void QAndroidPlatformMenuBar::handleReparent(QWindow *newParentWindow)
 {
+    if (m_parentWindow == newParentWindow)
+        return;
     m_parentWindow = newParentWindow;
     QtAndroidMenu::setMenuBar(this, newParentWindow);
 }

@@ -86,6 +86,10 @@ QWindowsKeyMapper::~QWindowsKeyMapper()
 #define VK_OEM_3 0xC0
 #endif
 
+// We not only need the scancode itself but also the extended bit of key messages. Thus we need
+// the additional bit when masking the scancode.
+enum { scancodeBitmask = 0x1ff };
+
 // Key recorder ------------------------------------------------------------------------[ start ] --
 struct KeyRecord {
     KeyRecord(int c, int a, int s, const QString &t) : code(c), ascii(a), state(s), text(t) {}
@@ -97,6 +101,8 @@ struct KeyRecord {
     QString text;
 };
 
+// We need to record the pressed keys in order to decide, whether the key event is an autorepeat
+// event. As soon as its state changes, the chain of autorepeat events will be broken.
 static const int QT_MAX_KEY_RECORDINGS = 64; // User has LOTS of fingers...
 struct KeyRecorder
 {
@@ -503,12 +509,6 @@ static inline int toKeyOrUnicode(int vk, int scancode, unsigned char *kbdBuffer,
     return code == Qt::Key_unknown ? 0 : code;
 }
 
-int qt_translateKeyCode(int vk)
-{
-    int code = winceKeyBend((vk < 0 || vk > 255) ? 0 : vk);
-    return code == Qt::Key_unknown ? 0 : code;
-}
-
 static inline int asciiToKeycode(char a, int state)
 {
     if (a >= 'a' && a <= 'z')
@@ -554,12 +554,8 @@ void QWindowsKeyMapper::changeKeyboard()
     keyboardInputDirection = bidi ? Qt::RightToLeft : Qt::LeftToRight;
 }
 
-void QWindowsKeyMapper::clearRecordedKeys()
-{
-    key_recorder.clearKeys();
-}
-
-
+// Helper function that is used when obtaining the list of characters that can be produced by one key and
+// every possible combination of modifiers
 inline void setKbdState(unsigned char *kbd, bool shift, bool ctrl, bool alt)
 {
     kbd[VK_LSHIFT  ] = (shift ? 0x80 : 0);
@@ -570,14 +566,18 @@ inline void setKbdState(unsigned char *kbd, bool shift, bool ctrl, bool alt)
     kbd[VK_MENU    ] = (alt ? 0x80 : 0);
 }
 
+// Adds the msg's key to keyLayout if it is not yet present there
 void QWindowsKeyMapper::updateKeyMap(const MSG &msg)
 {
     unsigned char kbdBuffer[256]; // Will hold the complete keyboard state
     GetKeyboardState(kbdBuffer);
-    quint32 scancode = (msg.lParam >> 16) & 0xfff;
+    const quint32 scancode = (msg.lParam >> 16) & scancodeBitmask;
     updatePossibleKeyCodes(kbdBuffer, scancode, msg.wParam);
 }
 
+// Fills keyLayout for that vk_key. Values are all characters one can type using that key
+// (in connection with every combination of modifiers) and whether these "characters" are
+// dead keys.
 void QWindowsKeyMapper::updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32 scancode,
                                                quint32 vk_key)
 {
@@ -598,6 +598,10 @@ void QWindowsKeyMapper::updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32
     buffer[VK_RCONTROL] = 0;
     buffer[VK_LMENU   ] = 0; // Use right Alt, since left Ctrl + right Alt is considered AltGraph
 
+    // keyLayout contains the actual characters which can be written using the vk_key together with the
+    // different modifiers. '2' together with shift will for example cause the character
+    // to be @ for a US key layout (thus keyLayout[vk_key].qtKey[1] will be @). In addition to that
+    // it stores whether the resulting key is a dead key as these keys have to be handled later.
     bool isDeadKey = false;
     keyLayout[vk_key].deadkeys = 0;
     keyLayout[vk_key].dirty = false;
@@ -635,8 +639,9 @@ void QWindowsKeyMapper::updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32
     }
     keyLayout[vk_key].qtKey[8] = fallbackKey;
 
-    // If this vk_key a Dead Key
-    if (MapVirtualKey(vk_key, 2) & 0x80000000) {
+    // If one of the values inserted into the keyLayout above, can be considered a dead key, we have
+    // to run the workaround below.
+    if (keyLayout[vk_key].deadkeys) {
         // Push a Space, then the original key through the low-level ToAscii functions.
         // We do this because these functions (ToAscii / ToUnicode) will alter the internal state of
         // the keyboard driver By doing the following, we set the keyboard driver state back to what
@@ -659,17 +664,6 @@ void QWindowsKeyMapper::updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32
                    keyLayout[vk_key].deadkeys & (1<<i) ? "deadkey" : "");
         }
     }
-}
-
-bool QWindowsKeyMapper::isADeadKey(unsigned int vk_key, unsigned int modifiers)
-{
-    if ((vk_key < NumKeyboardLayoutItems) && keyLayout[vk_key].exists) {
-        for (size_t i = 0; i < NumMods; ++i) {
-            if (uint(ModsTbl[i]) == modifiers)
-                return bool(keyLayout[vk_key].deadkeys & 1<<i);
-        }
-    }
-    return false;
 }
 
 static inline QString messageKeyText(const MSG &msg)
@@ -742,12 +736,21 @@ bool QWindowsKeyMapper::translateKeyEvent(QWindow *widget, HWND hwnd,
                                           const MSG &msg, LRESULT *result)
 {
     *result = 0;
+
+    // Reset layout map when system keyboard layout is changed
+    if (msg.message == WM_INPUTLANGCHANGE) {
+        deleteLayouts();
+        return true;
+    }
+
+    // Add this key to the keymap if it is not present yet.
+    updateKeyMap(msg);
+
     MSG peekedMsg;
     // consume dead chars?(for example, typing '`','a' resulting in a-accent).
     if (PeekMessage(&peekedMsg, hwnd, 0, 0, PM_NOREMOVE) && peekedMsg.message == WM_DEADCHAR)
         return true;
-    if (msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN)
-        updateKeyMap(msg);
+
     return translateKeyEventInternal(widget, msg, false);
 }
 
@@ -755,9 +758,8 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
 {
     const int  msgType = msg.message;
 
-    const quint32 scancode = (msg.lParam >> 16) & 0xfff;
-    const quint32 vk_key = MapVirtualKey(scancode, 1);
-    const bool isNumpad = (msg.wParam >= VK_NUMPAD0 && msg.wParam <= VK_NUMPAD9);
+    const quint32 scancode = (msg.lParam >> 16) & scancodeBitmask;
+    const quint32 vk_key = msg.wParam;
     quint32 nModifiers = 0;
 
     QWindow *receiver = m_keyGrabber ? m_keyGrabber : window;
@@ -785,10 +787,6 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
     state |= (nModifiers & ControlAny ? int(Qt::ControlModifier) : 0);
     state |= (nModifiers & AltAny ? int(Qt::AltModifier) : 0);
     state |= (nModifiers & MetaAny ? int(Qt::MetaModifier) : 0);
-
-    // Now we know enough to either have MapVirtualKey or our own keymap tell us if it's a deadkey
-    const bool isDeadKey = isADeadKey(msg.wParam, state)
-                     || MapVirtualKey(msg.wParam, 2) & 0x80000000;
 
     // A multi-character key or a Input method character
     // not found by our look-ahead
@@ -849,23 +847,12 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
         return true;
 
     // Translate VK_* (native) -> Key_* (Qt) keys
-    // If it's a dead key, we cannot use the toKeyOrUnicode() function, since that will change
-    // the internal state of the keyboard driver, resulting in that dead keys no longer works.
-    // ..also if we're typing numbers on the keypad, while holding down the Alt modifier.
-    int code = 0;
-    if (isNumpad && (nModifiers & AltAny)) {
-        code = winceKeyBend(msg.wParam);
-    } else if (!isDeadKey) {
-        // QTBUG-8764, QTBUG-10032
-        // Can't call toKeyOrUnicode because that would call ToUnicode, and, if a dead key
-        // is pressed at the moment, Windows would NOT use it to compose a character for the next
-        // WM_CHAR event.
+    int modifiersIndex = 0;
+    modifiersIndex |= (nModifiers & ShiftAny ? 0x1 : 0);
+    modifiersIndex |= (nModifiers & ControlAny ? 0x2 : 0);
+    modifiersIndex |= (nModifiers & AltAny ? 0x4 : 0);
 
-        // Instead, use MapVirtualKey, which will provide adequate values.
-        code = MapVirtualKey(msg.wParam, MAPVK_VK_TO_CHAR);
-        if (code < 0x20 || code == 0x7f) // The same logic as in toKeyOrUnicode()
-            code = winceKeyBend(msg.wParam);
-    }
+    int code = keyLayout[vk_key].qtKey[modifiersIndex];
 
     // Invert state logic:
     // If the key actually pressed is a modifier key, then we remove its modifier key from the

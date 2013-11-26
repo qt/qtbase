@@ -118,7 +118,7 @@ QInputEvent::~QInputEvent()
     Returns the keyboard modifier flags that existed immediately
     before the event occurred.
 
-    \sa QApplication::keyboardModifiers()
+    \sa QGuiApplication::keyboardModifiers()
 */
 
 /*! \fn void QInputEvent::setModifiers(Qt::KeyboardModifiers modifiers)
@@ -331,7 +331,7 @@ Qt::MouseEventSource QMouseEvent::source() const
     Returns the position of the mouse cursor as a QPointF, relative to the
     screen that received the event.
 
-    \sa x(), y(), pos(), localPos(), screenPos()
+    \sa x(), y(), pos(), localPos(), windowPos()
 */
 
 /*!
@@ -1023,7 +1023,7 @@ QKeyEvent::~QKeyEvent()
     confuse it by pressing both \uicontrol{Shift} keys simultaneously and
     releasing one of them, for example.
 
-    \sa QApplication::keyboardModifiers()
+    \sa QGuiApplication::keyboardModifiers()
 */
 
 Qt::KeyboardModifiers QKeyEvent::modifiers() const
@@ -1375,7 +1375,7 @@ QResizeEvent::~QResizeEvent()
     signal when they are deleted.
 
     If the last top-level window is closed, the
-    QApplication::lastWindowClosed() signal is emitted.
+    QGuiApplication::lastWindowClosed() signal is emitted.
 
     The isAccepted() function returns \c true if the event's receiver has
     agreed to close the widget; call accept() to agree to close the
@@ -1384,7 +1384,7 @@ QResizeEvent::~QResizeEvent()
 
     \sa QWidget::close(), QWidget::hide(), QObject::destroyed(),
         QCoreApplication::exec(), QCoreApplication::quit(),
-        QApplication::lastWindowClosed()
+        QGuiApplication::lastWindowClosed()
 */
 
 /*!
@@ -2694,9 +2694,8 @@ QDragEnterEvent::~QDragEnterEvent()
     is within its boundaries, if it accepts
     \l{QWidget::setAcceptDrops()}{drop events} and \l
     {QWidget::dragEnterEvent()}{enter events}. The widget should
-    examine the event to see what kind of data it
-    \l{QDragMoveEvent::provides()}{provides}, and call the accept()
-    function to accept the drop if appropriate.
+    examine the event to see what kind of \l{mimeData()}{data} it
+    provides, and call the accept() function to accept the drop if appropriate.
 
     The rectangle supplied by the answerRect() function can be used to restrict
     drops to certain parts of the widget. For example, we can check whether the

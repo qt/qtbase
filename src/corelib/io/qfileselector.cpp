@@ -348,22 +348,30 @@ void QFileSelectorPrivate::updateSelectors()
 QStringList QFileSelectorPrivate::platformSelectors()
 {
     QStringList ret;
-#if defined(Q_OS_LINUX_ANDROID)
-    ret << QStringLiteral("android");
-#elif defined(Q_OS_BLACKBERRY)
-    ret << QStringLiteral("blackberry");
-#elif defined(Q_OS_IOS)
-    ret << QStringLiteral("ios");
-#elif defined(Q_OS_WINCE)
-    ret << QStringLiteral("wince");
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
     ret << QStringLiteral("windows");
-#elif defined(Q_OS_LINUX)
-    ret << QStringLiteral("linux");
-#elif defined(Q_OS_OSX)
-    ret << QStringLiteral("osx");
+#  if defined(Q_OS_WINCE)
+    ret << QStringLiteral("wince");
+#  endif
 #elif defined(Q_OS_UNIX)
-    ret << QStringLiteral("generic_unix");
+    ret << QStringLiteral("unix");
+#  if defined(Q_OS_LINUX_ANDROID)
+    ret << QStringLiteral("android");
+#  elif defined(Q_OS_BLACKBERRY)
+    ret << QStringLiteral("blackberry");
+#  elif defined(Q_OS_QNX)
+    ret << QStringLiteral("qnx");
+#  elif defined(Q_OS_IOS)
+    ret << QStringLiteral("ios");
+#  elif defined(Q_OS_LINUX)
+    ret << QStringLiteral("linux");
+#  elif defined(Q_OS_MAC)
+    ret << QStringLiteral("mac");
+#  else
+    struct utsname u;
+    if (uname(&u) != -1)
+        ret << QString::fromLatin1(u.sysname).toLower();
+#  endif
 #endif
     return ret;
 }

@@ -63,7 +63,7 @@
 
     Some configuration variables accept a list of strings as their
     value, for example:
-    \l {22-qdoc-configuration-generalvariables.html#sourcedirs-variable}
+    \l {sourcedirs-variable}
     {\c{sourcedirs}}, while others accept only a single string. Double
     quotes around a value string are optional, but including them allows
     you to use special characters like '=' and ' \" ' within the value
@@ -87,39 +87,39 @@
     \section1 Variable List
 
     \list
-    \li \l {22-qdoc-configuration-generalvariables.html#alias-variable} {alias}
-    \li \l {23-qdoc-configuration-cppvariables.html#Cpp.ignoredirectives-variable} {Cpp.ignoredirectives}
-    \li \l {23-qdoc-configuration-cppvariables.html#Cpp.ignoretokens-variable} {Cpp.ignoretokens}
-    \li \l {22-qdoc-configuration-generalvariables.html#defines-variable} {defines}
-    \li \l {22-qdoc-configuration-generalvariables.html#edition-variable} {edition}
-    \li \l {22-qdoc-configuration-generalvariables.html#exampledirs-variable} {exampledirs}
-    \li \l {22-qdoc-configuration-generalvariables.html#examples-variable} {examples}
-    \li \l {22-qdoc-configuration-generalvariables.html#examples.fileextensions-variable} {examples.fileextensions}
-    \li \l {22-qdoc-configuration-generalvariables.html#excludedirs-variable} {excludedirs}
-    \li \l {22-qdoc-configuration-generalvariables.html#excludefiles-variable} {excludefiles}
-    \li \l {22-qdoc-configuration-generalvariables.html#extraimages-variable} {extraimages}
-    \li \l {22-qdoc-configuration-generalvariables.html#falsehoods-variable} {falsehoods}
-    \li \l {22-qdoc-configuration-generalvariables.html#headerdirs-variable} {headerdirs}
-    \li \l {22-qdoc-configuration-generalvariables.html#headers-variable} {headers}
-    \li \l {22-qdoc-configuration-generalvariables.html#headers.fileextensions-variable} {headers.fileextensions}
-    \li \l {24-qdoc-configuration-htmlvariables.html#HTML.footer-variable} {HTML.footer}
-    \li \l {24-qdoc-configuration-htmlvariables.html#HTML.postheader-variable} {HTML.postheader}
-    \li \l {24-qdoc-configuration-htmlvariables.html#HTML.style-variable} {HTML.style}
-    \li \l {22-qdoc-configuration-generalvariables.html#imagedirs-variable} {imagedirs}
-    \li \l {22-qdoc-configuration-generalvariables.html#images-variable} {images}
-    \li \l {22-qdoc-configuration-generalvariables.html#images.fileextensions-variable} {images.fileextensions}
-    \li \l {22-qdoc-configuration-generalvariables.html#language-variable} {language}
-    \li \l {22-qdoc-configuration-generalvariables.html#macro-variable} {macro}
-    \li \l {22-qdoc-configuration-generalvariables.html#manifestmeta-variable} {manifestmeta}
-    \li \l {22-qdoc-configuration-generalvariables.html#outputdir-variable} {outputdir}
-    \li \l {22-qdoc-configuration-generalvariables.html#outputformats-variable} {outputformats}
-    \li \l {22-qdoc-configuration-generalvariables.html#sourcedirs-variable} {sourcedirs}
-    \li \l {22-qdoc-configuration-generalvariables.html#sources-variable} {sources}
-    \li \l {22-qdoc-configuration-generalvariables.html#sources.fileextensions-variable} {sources.fileextensions}
-    \li \l {22-qdoc-configuration-generalvariables.html#spurious-variable} {spurious}
-    \li \l {22-qdoc-configuration-generalvariables.html#tabsize-variable} {tabsize}
-    \li \l {22-qdoc-configuration-generalvariables.html#version-variable} {version}
-    \li \l {22-qdoc-configuration-generalvariables.html#versionsym-variable} {versionsym}
+    \li \l {alias-variable} {alias}
+    \li \l {Cpp.ignoredirectives-variable} {Cpp.ignoredirectives}
+    \li \l {Cpp.ignoretokens-variable} {Cpp.ignoretokens}
+    \li \l {defines-variable} {defines}
+    \li \l {edition-variable} {edition}
+    \li \l {exampledirs-variable} {exampledirs}
+    \li \l {examples-variable} {examples}
+    \li \l {examples.fileextensions-variable} {examples.fileextensions}
+    \li \l {excludedirs-variable} {excludedirs}
+    \li \l {excludefiles-variable} {excludefiles}
+    \li \l {extraimages-variable} {extraimages}
+    \li \l {falsehoods-variable} {falsehoods}
+    \li \l {headerdirs-variable} {headerdirs}
+    \li \l {headers-variable} {headers}
+    \li \l {headers.fileextensions-variable} {headers.fileextensions}
+    \li \l {HTML.footer-variable} {HTML.footer}
+    \li \l {HTML.postheader-variable} {HTML.postheader}
+    \li \l {HTML.style-variable} {HTML.style}
+    \li \l {imagedirs-variable} {imagedirs}
+    \li \l {images-variable} {images}
+    \li \l {images.fileextensions-variable} {images.fileextensions}
+    \li \l {language-variable} {language}
+    \li \l {macro-variable} {macro}
+    \li \l {manifestmeta-variable} {manifestmeta}
+    \li \l {outputdir-variable} {outputdir}
+    \li \l {outputformats-variable} {outputformats}
+    \li \l {sourcedirs-variable} {sourcedirs}
+    \li \l {sources-variable} {sources}
+    \li \l {sources.fileextensions-variable} {sources.fileextensions}
+    \li \l {spurious-variable} {spurious}
+    \li \l {tabsize-variable} {tabsize}
+    \li \l {version-variable} {version}
+    \li \l {versionsym-variable} {versionsym}
     \endlist
 
     \section1 Categories
@@ -1574,7 +1574,7 @@
     dita.metadata.default.audience = programmer
     \endcode
 
-    See the \l {12-0-qdoc-commands-miscellaneous.html#meta-command}
+    See the \l {meta-command}
     {\\meta} command for more details on DITA metadata.
 
 */

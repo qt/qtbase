@@ -2858,6 +2858,21 @@ int QTreeView::sizeHintForColumn(int column) const
     int offset = 0;
     int start = d->firstVisibleItem(&offset);
     int end = d->lastVisibleItem(start, offset);
+    if (start < 0 || end < 0 || end == viewItems.size() - 1) {
+        end = viewItems.size() - 1;
+        if (maximumProcessRows < 0) {
+            start = 0;
+        } else if (maximumProcessRows == 0) {
+            start = qMax(0, end - 1);
+            int remainingHeight = viewport()->height();
+            while (start > 0 && remainingHeight > 0) {
+                remainingHeight -= d->itemHeight(start);
+                --start;
+            }
+        } else {
+            start = qMax(0, end - maximumProcessRows);
+        }
+    }
 
     int rowsProcessed = 0;
 
@@ -3606,8 +3621,11 @@ int QTreeViewPrivate::firstVisibleItem(int *offset) const
 
 int QTreeViewPrivate::lastVisibleItem(int firstVisual, int offset) const
 {
-    if (firstVisual < 0 || offset < 0)
+    if (firstVisual < 0 || offset < 0) {
         firstVisual = firstVisibleItem(&offset);
+        if (firstVisual < 0)
+            return -1;
+    }
     int y = - offset;
     int value = viewport->height();
 
@@ -3888,6 +3906,14 @@ void QTreeViewPrivate::_q_sortIndicatorChanged(int column, Qt::SortOrder order)
     model->sort(column, order);
 }
 
+int QTreeViewPrivate::accessibleTree2Index(const QModelIndex &index) const
+{
+    Q_Q(const QTreeView);
+
+    // Note that this will include the header, even if its hidden.
+    return (q->visualIndex(index) + (q->header() ? 1 : 0)) * index.model()->columnCount() + index.column();
+}
+
 /*!
   \reimp
  */
@@ -3911,8 +3937,10 @@ void QTreeView::currentChanged(const QModelIndex &current, const QModelIndex &pr
     }
 #ifndef QT_NO_ACCESSIBILITY
     if (QAccessible::isActive() && current.isValid()) {
+        Q_D(QTreeView);
+
         QAccessibleEvent event(this, QAccessible::Focus);
-        event.setChild(accessibleTree2Index(current));
+        event.setChild(d->accessibleTree2Index(current));
         QAccessible::updateAccessibility(&event);
     }
 #endif
@@ -3927,10 +3955,12 @@ void QTreeView::selectionChanged(const QItemSelection &selected,
     QAbstractItemView::selectionChanged(selected, deselected);
 #ifndef QT_NO_ACCESSIBILITY
     if (QAccessible::isActive()) {
+        Q_D(QTreeView);
+
         // ### does not work properly for selection ranges.
         QModelIndex sel = selected.indexes().value(0);
         if (sel.isValid()) {
-            int entry = accessibleTree2Index(sel);
+            int entry = d->accessibleTree2Index(sel);
             Q_ASSERT(entry >= 0);
             QAccessibleEvent event(this, QAccessible::Selection);
             event.setChild(entry);
@@ -3938,7 +3968,7 @@ void QTreeView::selectionChanged(const QItemSelection &selected,
         }
         QModelIndex desel = deselected.indexes().value(0);
         if (desel.isValid()) {
-            int entry = accessibleTree2Index(desel);
+            int entry = d->accessibleTree2Index(desel);
             Q_ASSERT(entry >= 0);
             QAccessibleEvent event(this, QAccessible::SelectionRemove);
             event.setChild(entry);
@@ -3954,13 +3984,6 @@ int QTreeView::visualIndex(const QModelIndex &index) const
     d->executePostedLayout();
     return d->viewIndex(index);
 }
-
-int QTreeView::accessibleTree2Index(const QModelIndex &index) const
-{
-    // Note that this will include the header, even if its hidden.
-    return (visualIndex(index) + (header() ? 1 : 0)) * index.model()->columnCount() + index.column();
-}
-
 
 QT_END_NAMESPACE
 

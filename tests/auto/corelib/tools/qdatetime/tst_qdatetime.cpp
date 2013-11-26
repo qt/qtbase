@@ -48,7 +48,7 @@
 #include <private/qdatetime_p.h>
 
 #ifdef Q_OS_WIN
-# include <windows.h>
+#   include <qt_windows.h>
 #  if defined(Q_OS_WINRT)
 #    define tzset()
 #  endif
@@ -2906,6 +2906,12 @@ void tst_QDateTime::timeZones() const
     // - Test 03:00:00 = 1 hour after tran
     hourAfterStd = QDateTime(QDate(2013, 10, 27), QTime(3, 0, 0), cet);
     QCOMPARE(hourAfterStd.toMSecsSinceEpoch(), dstToStdMSecs + 3600000);
+
+    // Test Time Zone that has transitions but no future transitions afer a given date
+    QTimeZone sgt("Asia/Singapore");
+    QDateTime future(QDate(2015, 1, 1), QTime(0, 0, 0), sgt);
+    QVERIFY(future.isValid());
+    QCOMPARE(future.offsetFromUtc(), 28800);
 }
 
 void tst_QDateTime::invalid() const

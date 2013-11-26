@@ -1896,11 +1896,7 @@ QVector<QCss::Declaration> QTextHtmlParser::declarationsForNode(int node) const
     if (nodes.at(node).id == Html_a && nodes.at(node).hasHref)
         extraPseudo = "link";
     decls = selector.declarationsForNode(n, extraPseudo);
-    n = selector.parentNode(n);
-    while (!selector.isNullNode(n)) {
-        decls = selector.declarationsForNode(n, extraPseudo) + decls;
-        n = selector.parentNode(n);
-    }
+
     return decls;
 }
 

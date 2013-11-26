@@ -188,7 +188,6 @@ protected:
     void showEvent(QShowEvent *);
     void hideEvent(QHideEvent *);
     void paintEvent(QPaintEvent *);
-    void mouseDoubleClickEvent(QMouseEvent *);
     void mousePressEvent (QMouseEvent *);
     void mouseMoveEvent (QMouseEvent *);
     void mouseReleaseEvent (QMouseEvent *);

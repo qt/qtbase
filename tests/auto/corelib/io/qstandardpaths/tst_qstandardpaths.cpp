@@ -56,7 +56,7 @@
 #define Q_XDG_PLATFORM
 #endif
 
-const int MaxStandardLocation = QStandardPaths::GenericCacheLocation;
+static const int MaxStandardLocation = QStandardPaths::GenericConfigLocation;
 
 class tst_qstandardpaths : public QObject
 {
@@ -127,7 +127,8 @@ static const char * const enumNames[MaxStandardLocation + 1 - int(QStandardPaths
     "RuntimeLocation",
     "ConfigLocation",
     "DownloadLocation",
-    "GenericCacheLocation"
+    "GenericCacheLocation",
+    "GenericConfigLocation"
 };
 
 void tst_qstandardpaths::dump()
@@ -151,9 +152,11 @@ void tst_qstandardpaths::testDefaultLocations()
 
     const QString expectedConfHome = QDir::homePath() + QString::fromLatin1("/.config");
     QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation), expectedConfHome);
+    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation), expectedConfHome);
     const QStringList confDirs = QStandardPaths::standardLocations(QStandardPaths::ConfigLocation);
     QCOMPARE(confDirs.count(), 2);
     QVERIFY(confDirs.contains(expectedConfHome));
+    QCOMPARE(QStandardPaths::standardLocations(QStandardPaths::GenericConfigLocation), confDirs);
 
     const QStringList genericDataDirs = QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation);
     QCOMPARE(genericDataDirs.count(), 3);
@@ -178,6 +181,7 @@ void tst_qstandardpaths::testCustomLocations()
 
     // test writableLocation()
     QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation), m_localConfigDir);
+    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation), m_localConfigDir);
 
     // test locate()
     const QString thisFileName = QString::fromLatin1("aFile");
@@ -212,6 +216,7 @@ void tst_qstandardpaths::enableTestMode()
     // ConfigLocation
     const QString configDir = qttestDir + QLatin1String("/config");
     QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation), configDir);
+    QCOMPARE(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation), configDir);
     const QStringList confDirs = QStandardPaths::standardLocations(QStandardPaths::ConfigLocation);
     QCOMPARE(confDirs, QStringList() << configDir << m_globalConfigDir);
 
@@ -235,6 +240,7 @@ void tst_qstandardpaths::enableTestMode()
     testLocations.insert(QStandardPaths::DataLocation, QStandardPaths::writableLocation(QStandardPaths::DataLocation));
     testLocations.insert(QStandardPaths::GenericDataLocation, QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation));
     testLocations.insert(QStandardPaths::ConfigLocation, QStandardPaths::writableLocation(QStandardPaths::ConfigLocation));
+    testLocations.insert(QStandardPaths::GenericConfigLocation, QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation));
     testLocations.insert(QStandardPaths::CacheLocation, QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
     testLocations.insert(QStandardPaths::GenericCacheLocation, QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation));
     // On Windows, what should "Program Files" become, in test mode?

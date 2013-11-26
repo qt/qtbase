@@ -77,9 +77,9 @@ public:
     typedef QVector<OffsetData> OffsetDataList;
 
     QTimeZone();
-    explicit QTimeZone(const QByteArray &olsenId);
-    QTimeZone(int offsetSeconds);
-    QTimeZone(const QByteArray &zoneId, int offsetSeconds, const QString &name,
+    explicit QTimeZone(const QByteArray &ianaId);
+    explicit QTimeZone(int offsetSeconds);
+    /*implicit*/ QTimeZone(const QByteArray &zoneId, int offsetSeconds, const QString &name,
               const QString &abbreviation, QLocale::Country country = QLocale::AnyCountry,
               const QString &comment = QString());
     QTimeZone(const QTimeZone &other);
@@ -87,8 +87,11 @@ public:
 
     QTimeZone &operator=(const QTimeZone &other);
  #ifdef Q_COMPILER_RVALUE_REFS
-    QTimeZone &operator=(QTimeZone &&other) { std::swap(d, other.d); return *this; }
+    QTimeZone &operator=(QTimeZone &&other) { swap(other); return *this; }
 #endif
+
+    void swap(QTimeZone &other)
+    { d.swap(other.d); }
 
     bool operator==(const QTimeZone &other) const;
     bool operator!=(const QTimeZone &other) const;
@@ -123,18 +126,18 @@ public:
 
     static QByteArray systemTimeZoneId();
 
-    static bool isTimeZoneIdAvailable(const QByteArray &olsenId);
+    static bool isTimeZoneIdAvailable(const QByteArray &ianaId);
 
     static QList<QByteArray> availableTimeZoneIds();
     static QList<QByteArray> availableTimeZoneIds(QLocale::Country country);
     static QList<QByteArray> availableTimeZoneIds(int offsetSeconds);
 
-    static QByteArray olsenIdToWindowsId(const QByteArray &olsenId);
-    static QByteArray windowsIdToDefaultOlsenId(const QByteArray &windowsId);
-    static QByteArray windowsIdToDefaultOlsenId(const QByteArray &windowsId,
+    static QByteArray ianaIdToWindowsId(const QByteArray &ianaId);
+    static QByteArray windowsIdToDefaultIanaId(const QByteArray &windowsId);
+    static QByteArray windowsIdToDefaultIanaId(const QByteArray &windowsId,
                                                 QLocale::Country country);
-    static QList<QByteArray> windowsIdToOlsenIds(const QByteArray &windowsId);
-    static QList<QByteArray> windowsIdToOlsenIds(const QByteArray &windowsId,
+    static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId);
+    static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId,
                                                  QLocale::Country country);
 
 private:
@@ -149,6 +152,7 @@ private:
 };
 
 Q_DECLARE_TYPEINFO(QTimeZone::OffsetData, Q_MOVABLE_TYPE);
+Q_DECLARE_SHARED(QTimeZone)
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &ds, const QTimeZone &tz);

@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
 static bool qt_pixmap_thread_test()
 {
     if (!QCoreApplication::instance()) {
-        qFatal("QPixmap: Must construct a QApplication before a QPaintDevice");
+        qFatal("QPixmap: Must construct a QGuiApplication before a QPixmap");
         return false;
     }
 

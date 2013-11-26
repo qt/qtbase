@@ -2,7 +2,7 @@ include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 project                 = QtXml
 description             = Qt XML Reference Documentation
-url                     = http://qt-project.org/doc/qt-$QT_VER/qtxml
+url                     = http://qt-project.org/doc/qt-$QT_VER
 version                 = $QT_VERSION
 
 examplesinstallpath     = xml
@@ -27,7 +27,7 @@ qhp.QtXml.subprojects.classes.sortPages = true
 
 tagfile                 = ../../../doc/qtxml/qtxml.tags
 
-depends                 += qtcore qtnetwork
+depends                 += qtcore qtnetwork qtdoc
 
 headerdirs  += ..
 

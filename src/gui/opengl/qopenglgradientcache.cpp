@@ -152,22 +152,6 @@ GLuint QOpenGL2GradientCache::addCacheElement(quint64 hash_val, const QGradient 
 }
 
 
-// GL's expects pixels in RGBA (when using GL_RGBA), bin-endian (ABGR on x86).
-// Qt always stores in ARGB reguardless of the byte-order the mancine uses.
-static inline uint qtToGlColor(uint c)
-{
-    uint o;
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-    o = (c & 0xff00ff00)  // alpha & green already in the right place
-        | ((c >> 16) & 0x000000ff) // red
-        | ((c << 16) & 0x00ff0000); // blue
-#else //Q_BIG_ENDIAN
-    o = (c << 8)
-        | ((c >> 24) & 0x000000ff);
-#endif // Q_BYTE_ORDER
-    return o;
-}
-
 //TODO: Let GL generate the texture using an FBO
 void QOpenGL2GradientCache::generateGradientColorTable(const QGradient& gradient, uint *colorTable, int size, qreal opacity) const
 {
@@ -184,7 +168,7 @@ void QOpenGL2GradientCache::generateGradientColorTable(const QGradient& gradient
     uint current_color = ARGB_COMBINE_ALPHA(colors[0], alpha);
     qreal incr = 1.0 / qreal(size);
     qreal fpos = 1.5 * incr;
-    colorTable[pos++] = qtToGlColor(PREMUL(current_color));
+    colorTable[pos++] = ARGB2RGBA(PREMUL(current_color));
 
     while (fpos <= s.first().first) {
         colorTable[pos] = colorTable[pos - 1];
@@ -205,9 +189,9 @@ void QOpenGL2GradientCache::generateGradientColorTable(const QGradient& gradient
             int dist = int(256 * ((fpos - s[i].first) * delta));
             int idist = 256 - dist;
             if (colorInterpolation)
-                colorTable[pos] = qtToGlColor(INTERPOLATE_PIXEL_256(current_color, idist, next_color, dist));
+                colorTable[pos] = ARGB2RGBA(INTERPOLATE_PIXEL_256(current_color, idist, next_color, dist));
             else
-                colorTable[pos] = qtToGlColor(PREMUL(INTERPOLATE_PIXEL_256(current_color, idist, next_color, dist)));
+                colorTable[pos] = ARGB2RGBA(PREMUL(INTERPOLATE_PIXEL_256(current_color, idist, next_color, dist)));
             ++pos;
             fpos += incr;
         }
@@ -216,7 +200,7 @@ void QOpenGL2GradientCache::generateGradientColorTable(const QGradient& gradient
 
     Q_ASSERT(s.size() > 0);
 
-    uint last_color = qtToGlColor(PREMUL(ARGB_COMBINE_ALPHA(colors[s.size() - 1], alpha)));
+    uint last_color = ARGB2RGBA(PREMUL(ARGB_COMBINE_ALPHA(colors[s.size() - 1], alpha)));
     for (;pos < size; ++pos)
         colorTable[pos] = last_color;
 

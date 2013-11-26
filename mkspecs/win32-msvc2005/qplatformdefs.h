@@ -81,6 +81,8 @@
 #define QT_STAT_MASK		_S_IFMT
 #if defined(_S_IFLNK)
 #  define QT_STAT_LNK		_S_IFLNK
+#else
+#  define QT_STAT_LNK		0120000
 #endif
 #define QT_FILENO		_fileno
 #define QT_OPEN			::_open

@@ -6042,7 +6042,7 @@ void tst_QNetworkReply::sslSessionSharingFromPersistentSession()
     QTestEventLoop::instance().enterLoop(20);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QCOMPARE(warmupReply->error(), QNetworkReply::NoError);
-    QByteArray sslSession = warmupReply->sslConfiguration().session();
+    QByteArray sslSession = warmupReply->sslConfiguration().sessionTicket();
     QCOMPARE(!sslSession.isEmpty(), sessionPersistenceEnabled);
 
     // test server sends a life time hint of 0 (old server) or 300 (new server),
@@ -6060,7 +6060,7 @@ void tst_QNetworkReply::sslSessionSharingFromPersistentSession()
     QNetworkRequest request(warmupRequest);
     if (sessionPersistenceEnabled) {
         QSslConfiguration configuration = request.sslConfiguration();
-        configuration.setSession(sslSession);
+        configuration.setSessionTicket(sslSession);
         request.setSslConfiguration(configuration);
     }
     QNetworkAccessManager newManager;

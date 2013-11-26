@@ -107,7 +107,7 @@ public:
     QTimeZoneSingleton() : backend(newBackendTimeZone()) {}
 
     // The backend_tz is the tz to use in static methods such as availableTimeZoneIds() and
-    // isTimeZoneIdAvailable() and to create named Olsen time zones.  This is usually the host
+    // isTimeZoneIdAvailable() and to create named IANA time zones.  This is usually the host
     // system, but may be different if the host resources are insufficient or if
     // QT_NO_SYSTEMLOCALE is set.  A simple UTC backend is used if no alternative is available.
     QSharedDataPointer<QTimeZonePrivate> backend;
@@ -137,18 +137,21 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
 
     \section1
 
-    \section2 Olsen Time Zone IDs
+    \section2 IANA Time Zone IDs
 
-    QTimeZone uses the Olsen time zone IDs as defined in the IANA Time Zone
+    QTimeZone uses the IANA time zone IDs as defined in the IANA Time Zone
     Database (http://www.iana.org/time-zones). This is to ensure a standard ID
-    across all supported platforms.  Most platforms support the Olsen IDs
+    across all supported platforms.  Most platforms support the IANA IDs
     and the IANA Database natively, but for Windows a mapping is required to
     the native IDs.  See below for more details.
 
-    The Olsen IDs can and do change on a regular basis, and can vary depending
+    The IANA IDs can and do change on a regular basis, and can vary depending
     on how recently the host system data was updated.  As such you cannot rely
     on any given ID existing on any host system.  You must use
-    availableTimeZoneIds() to determine what Olsen IDs are available.
+    availableTimeZoneIds() to determine what IANA IDs are available.
+
+    The IANA IDs and database are also know as the Olson IDs and database,
+    named after their creator.
 
     \section2 UTC Offset Time Zones
 
@@ -167,7 +170,7 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
     the current year.
 
     QTimeZone uses a conversion table derived form the Unicode CLDR data to map
-    between Olsen IDs and Windows IDs.  Depending on your version of Windows
+    between IANA IDs and Windows IDs.  Depending on your version of Windows
     and Qt, this table may not be able to provide a valid conversion, in which
     "UTC" will be returned.
 
@@ -182,7 +185,7 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
     If you require a QDateTime that uses the current system time zone at any
     given moment then you should use a Qt::TimeSpec of Qt::LocalTime.
 
-    The method systemTimeZoneId() returns the current system Olsen time zone
+    The method systemTimeZoneId() returns the current system IANA time zone
     ID which on OSX and Linux will always be correct.  On Windows this ID is
     translated from the the Windows system ID using an internal translation
     table and the user's selected country.  As a consequence there is a small
@@ -325,7 +328,7 @@ QTimeZone::QTimeZone()
 }
 
 /*!
-    Creates an instance of the requested time zone \a olsenId.
+    Creates an instance of the requested time zone \a ianaId.
 
     The ID must be one of the available system IDs otherwise an invalid
     time zone will be returned.
@@ -333,14 +336,14 @@ QTimeZone::QTimeZone()
     \sa availableTimeZoneIds()
 */
 
-QTimeZone::QTimeZone(const QByteArray &olsenId)
+QTimeZone::QTimeZone(const QByteArray &ianaId)
 {
     // Try and see if it's a valid UTC offset ID, just as quick to try create as look-up
-    d = new QUtcTimeZonePrivate(olsenId);
+    d = new QUtcTimeZonePrivate(ianaId);
     // If not a valid UTC offset ID then try create it with the system backend
     // Relies on backend not creating valid tz with invalid name
     if (!d->isValid())
-        d = newBackendTimeZone(olsenId);
+        d = newBackendTimeZone(ianaId);
 }
 
 /*!
@@ -361,14 +364,14 @@ QTimeZone::QTimeZone(int offsetSeconds)
 }
 
 /*!
-    Creates a custom time zone with an ID of \a olsenId and an offset from UTC
+    Creates a custom time zone with an ID of \a ianaId and an offset from UTC
     of \a offsetSeconds.  The \a name will be the name used by displayName()
     for the LongName, the \a abbreviation will be used by displayName() for the
     ShortName and by abbreviation(), and the optional \a country will be used
     by country().  The \a comment is an optional note that may be displayed in
     a GUI to assist users in selecting a time zone.
 
-    The \a olsenId must not be one of the available system IDs returned by
+    The \a ianaId must not be one of the available system IDs returned by
     availableTimeZoneIds().  The \a offsetSeconds from UTC must be in the range
     -14 hours to +14 hours.
 
@@ -376,12 +379,12 @@ QTimeZone::QTimeZone(int offsetSeconds)
     default value of QLocale::AnyCountry.
 */
 
-QTimeZone::QTimeZone(const QByteArray &olsenId, int offsetSeconds, const QString &name,
+QTimeZone::QTimeZone(const QByteArray &ianaId, int offsetSeconds, const QString &name,
                      const QString &abbreviation, QLocale::Country country, const QString &comment)
 {
-    // olsenId must be a valid ID and must not clash with the standard system names
-    if (QTimeZonePrivate::isValidId(olsenId) && !availableTimeZoneIds().contains(olsenId))
-        d = new QUtcTimeZonePrivate(olsenId, offsetSeconds, name, abbreviation, country, comment);
+    // ianaId must be a valid ID and must not clash with the standard system names
+    if (QTimeZonePrivate::isValidId(ianaId) && !availableTimeZoneIds().contains(ianaId))
+        d = new QUtcTimeZonePrivate(ianaId, offsetSeconds, name, abbreviation, country, comment);
     else
         d = 0;
 }
@@ -424,13 +427,18 @@ QTimeZone &QTimeZone::operator=(const QTimeZone &other)
     return *this;
 }
 
+/*
+    \fn void QTimeZone::swap(QTimeZone &other)
+
+    Swaps this timezone with \a other. This function is very fast and
+    never fails.
+*/
+
 /*!
     \fn QTimeZone &QTimeZone::operator=(QTimeZone &&other)
 
     Move-assigns \a other to this QTimeZone instance, transferring the
     ownership of the managed pointer to this instance.
-
-    \since 5.2
 */
 
 /*!
@@ -470,10 +478,10 @@ bool QTimeZone::isValid() const
 }
 
 /*!
-    Returns the Olsen ID for the time zone.
+    Returns the IANA ID for the time zone.
 
-    Olsen IDs are used on all platforms.  On Windows these are translated
-    from the Windows ID into the closest Olsen ID for the time zone and country.
+    IANA IDs are used on all platforms.  On Windows these are translated
+    from the Windows ID into the closest IANA ID for the time zone and country.
 */
 
 QByteArray QTimeZone::id() const
@@ -702,6 +710,9 @@ bool QTimeZone::hasTransitions() const
     This is most useful when you have a Transition time and wish to find the
     Transition after it.
 
+    If there is no transition after the given \a afterDateTime then an invalid
+    OffsetData will be returned with an invalid QDateTime.
+
     The given \a afterDateTime is exclusive.
 
     \sa hasTransitions(), previousTransition(), transitions()
@@ -719,6 +730,9 @@ QTimeZone::OffsetData QTimeZone::nextTransition(const QDateTime &afterDateTime) 
     Returns the first time zone Transition before the given \a beforeDateTime.
     This is most useful when you have a Transition time and wish to find the
     Transition before it.
+
+    If there is no transition before the given \a beforeDateTime then an invalid
+    OffsetData will be returned with an invalid QDateTime.
 
     The given \a beforeDateTime is exclusive.
 
@@ -757,7 +771,7 @@ QTimeZone::OffsetDataList QTimeZone::transitions(const QDateTime &fromDateTime,
 // Static methods
 
 /*!
-    Returns the current system time zone Olsen ID.
+    Returns the current system time zone IANA ID.
 
     On Windows this ID is translated from the the Windows ID using an internal
     translation table and the user's selected country.  As a consequence there
@@ -771,20 +785,20 @@ QByteArray QTimeZone::systemTimeZoneId()
 }
 
 /*!
-    Returns \c true if a given time zone \a olsenId is available on this system.
+    Returns \c true if a given time zone \a ianaId is available on this system.
 
     \sa availableTimeZoneIds()
 */
 
-bool QTimeZone::isTimeZoneIdAvailable(const QByteArray &olsenId)
+bool QTimeZone::isTimeZoneIdAvailable(const QByteArray &ianaId)
 {
     // isValidId is not strictly required, but faster to weed out invalid
     // IDs as availableTimeZoneIds() may be slow
-    return (QTimeZonePrivate::isValidId(olsenId) && (availableTimeZoneIds().contains(olsenId)));
+    return (QTimeZonePrivate::isValidId(ianaId) && (availableTimeZoneIds().contains(ianaId)));
 }
 
 /*!
-    Returns a list of all available Olsen time zone IDs on this system.
+    Returns a list of all available IANA time zone IDs on this system.
 
     \sa isTimeZoneIdAvailable()
 */
@@ -799,7 +813,7 @@ QList<QByteArray> QTimeZone::availableTimeZoneIds()
 }
 
 /*!
-    Returns a list of all available Olsen time zone IDs for a given \a country.
+    Returns a list of all available IANA time zone IDs for a given \a country.
 
     As a special case, a \a country of Qt::AnyCountry returns those time zones
     that do not have any country related to them, such as UTC.  If you require
@@ -819,7 +833,7 @@ QList<QByteArray> QTimeZone::availableTimeZoneIds(QLocale::Country country)
 }
 
 /*!
-    Returns a list of all available Olsen time zone IDs with a given standard
+    Returns a list of all available IANA time zone IDs with a given standard
     time offset of \a offsetSeconds.
 
     \sa isTimeZoneIdAvailable()
@@ -835,79 +849,79 @@ QList<QByteArray> QTimeZone::availableTimeZoneIds(int offsetSeconds)
 }
 
 /*!
-    Returns the Windows ID equivalent to the given \a olsenId.
+    Returns the Windows ID equivalent to the given \a ianaId.
 
-    \sa windowsIdToDefaultOlsenId(), windowsIdToOlsenIds()
+    \sa windowsIdToDefaultIanaId(), windowsIdToIanaIds()
 */
 
-QByteArray QTimeZone::olsenIdToWindowsId(const QByteArray &olsenId)
+QByteArray QTimeZone::ianaIdToWindowsId(const QByteArray &ianaId)
 {
-    return QTimeZonePrivate::olsenIdToWindowsId(olsenId);
+    return QTimeZonePrivate::ianaIdToWindowsId(ianaId);
 }
 
 /*!
-    Returns the default Olsen ID for a given \a windowsId.
+    Returns the default IANA ID for a given \a windowsId.
 
-    Because a Windows ID can cover several Olsen IDs in several different
-    countries, this function returns the most frequently used Olsen ID with no
+    Because a Windows ID can cover several IANA IDs in several different
+    countries, this function returns the most frequently used IANA ID with no
     regard for the country and should thus be used with care.  It is usually
     best to request the default for a specific country.
 
-    \sa olsenIdToWindowsId(), windowsIdToOlsenIds()
+    \sa ianaIdToWindowsId(), windowsIdToIanaIds()
 */
 
-QByteArray QTimeZone::windowsIdToDefaultOlsenId(const QByteArray &windowsId)
+QByteArray QTimeZone::windowsIdToDefaultIanaId(const QByteArray &windowsId)
 {
-    return QTimeZonePrivate::windowsIdToDefaultOlsenId(windowsId);
+    return QTimeZonePrivate::windowsIdToDefaultIanaId(windowsId);
 }
 
 /*!
-    Returns the default Olsen ID for a given \a windowsId and \a country.
+    Returns the default IANA ID for a given \a windowsId and \a country.
 
-    Because a Windows ID can cover several Olsen IDs within a given country,
-    the most frequently used Olsen ID in that country is returned.
+    Because a Windows ID can cover several IANA IDs within a given country,
+    the most frequently used IANA ID in that country is returned.
 
-    As a special case, QLocale::AnyCountry returns the default of those Olsen IDs
+    As a special case, QLocale::AnyCountry returns the default of those IANA IDs
     that do not have any specific country.
 
-    \sa olsenIdToWindowsId(), windowsIdToOlsenIds()
+    \sa ianaIdToWindowsId(), windowsIdToIanaIds()
 */
 
-QByteArray QTimeZone::windowsIdToDefaultOlsenId(const QByteArray &windowsId,
+QByteArray QTimeZone::windowsIdToDefaultIanaId(const QByteArray &windowsId,
                                                 QLocale::Country country)
 {
-    return QTimeZonePrivate::windowsIdToDefaultOlsenId(windowsId, country);
+    return QTimeZonePrivate::windowsIdToDefaultIanaId(windowsId, country);
 }
 
 /*!
-    Returns all the Olsen IDs for a given \a windowsId.
+    Returns all the IANA IDs for a given \a windowsId.
 
     The returned list is sorted alphabetically.
 
-    \sa olsenIdToWindowsId(), windowsIdToDefaultOlsenId()
+    \sa ianaIdToWindowsId(), windowsIdToDefaultIanaId()
 */
 
-QList<QByteArray> QTimeZone::windowsIdToOlsenIds(const QByteArray &windowsId)
+QList<QByteArray> QTimeZone::windowsIdToIanaIds(const QByteArray &windowsId)
 {
-    return QTimeZonePrivate::windowsIdToOlsenIds(windowsId);
+    return QTimeZonePrivate::windowsIdToIanaIds(windowsId);
 }
 
 /*!
-    Returns all the Olsen IDs for a given \a windowsId and \a country.
+    Returns all the IANA IDs for a given \a windowsId and \a country.
 
-    As a special case QLocale::AnyCountry returns those Olsen IDs that do
+    As a special case QLocale::AnyCountry returns those IANA IDs that do
     not have any specific country.
 
     The returned list is in order of frequency of usage, i.e. larger zones
     within a country are listed first.
 
-    \sa olsenIdToWindowsId(), windowsIdToDefaultOlsenId()
+    \sa ianaIdToWindowsId(), windowsIdToDefaultIanaId()
 */
 
-QList<QByteArray> QTimeZone::windowsIdToOlsenIds(const QByteArray &windowsId,
+QList<QByteArray> QTimeZone::windowsIdToIanaIds(const QByteArray &windowsId,
                                                     QLocale::Country country)
 {
-    return QTimeZonePrivate::windowsIdToOlsenIds(windowsId, country);
+    return QTimeZonePrivate::windowsIdToIanaIds(windowsId, country);
 }
 
 #ifndef QT_NO_DATASTREAM

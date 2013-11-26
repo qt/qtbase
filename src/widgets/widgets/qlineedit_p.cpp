@@ -376,6 +376,16 @@ QIcon QLineEditPrivate::clearButtonIcon() const
     return QIcon(q->style()->standardPixmap(QStyle::SP_LineEditClearButton, &styleOption, q));
 }
 
+void QLineEditPrivate::setClearButtonEnabled(bool enabled)
+{
+    foreach (const SideWidgetEntry &e, trailingSideWidgets) {
+        if (e.flags & SideWidgetClearButton) {
+            e.action->setEnabled(enabled);
+            break;
+        }
+    }
+}
+
 void QLineEditPrivate::positionSideWidgets()
 {
     Q_Q(QLineEdit);
@@ -445,10 +455,9 @@ QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineE
     return w;
 }
 
-void QLineEditPrivate::removeAction(const QActionEvent *e)
+void QLineEditPrivate::removeAction(QAction *action)
 {
     Q_Q(QLineEdit);
-    QAction *action = e->action();
     const PositionIndexPair positionIndex = findSideWidget(action);
     if (positionIndex.second == -1)
         return;

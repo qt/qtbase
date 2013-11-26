@@ -143,6 +143,10 @@ private:
     QString string;
 };
 
+#ifdef Q_OS_IOS
+QSysInfo::MacVersion qt_ios_version();
+#endif
+
 QT_END_NAMESPACE
 
 #endif // QCORE_MAC_P_H

@@ -39,5 +39,5 @@ HEADERS += \
 HEADERS += \
 
 contains(QT_CONFIG, clock-gettime) {
-    linux-*|hpux-*|solaris-*:LIBS *= -lrt
+    linux-*|hpux-*|solaris-*: LIBS_PRIVATE *= -lrt
 }

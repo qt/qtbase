@@ -41,13 +41,14 @@
 
 #include "androidjnimenu.h"
 #include "androidjnimain.h"
-#include <qmutex.h>
-#include <qset.h>
-#include <qqueue.h>
-#include <android/log.h>
 #include "qandroidplatformmenubar.h"
 #include "qandroidplatformmenu.h"
-#include <qandroidplatformmenuitem.h>
+#include "qandroidplatformmenuitem.h"
+
+#include <QMutex>
+#include <QSet>
+#include <QQueue>
+#include <QWindow>
 
 using namespace QtAndroid;
 
@@ -141,18 +142,17 @@ namespace QtAndroidMenu
 
     void setActiveTopLevelWindow(QWindow *window)
     {
+        Qt::WindowFlags flags = window ? window->flags() : Qt::WindowFlags();
+        bool isNonRegularWindow = flags & (Qt::Desktop | Qt::Popup | Qt::Dialog | Qt::Sheet) & ~Qt::Window;
+        if (isNonRegularWindow)
+            return;
+
         QMutexLocker lock(&menuBarMutex);
         if (activeTopLevelWindow == window)
             return;
 
         visibleMenuBar = 0;
         activeTopLevelWindow = window;
-#ifdef ANDROID_PLUGIN_OPENGL
-        //only one toplevel window, so the menu bar always belongs to us
-        if (menuBars.size() == 1) {
-            visibleMenuBar = *menuBars.constBegin(); //since QSet doesn't have first()
-        } else
-#endif
         foreach (QAndroidPlatformMenuBar *menuBar, menuBars) {
             if (menuBar->parentWindow() == window) {
                 visibleMenuBar = menuBar;
@@ -173,8 +173,10 @@ namespace QtAndroidMenu
     {
         QMutexLocker lock(&menuBarMutex);
         menuBars.remove(menuBar);
-        if (visibleMenuBar == menuBar)
+        if (visibleMenuBar == menuBar) {
+            visibleMenuBar = 0;
             resetMenuBar();
+        }
     }
 
     static QString removeAmpersandEscapes(QString s)
@@ -197,16 +199,18 @@ namespace QtAndroidMenu
         env->CallObjectMethod(menuItem, setCheckedMenuItemMethodID, checked);
         env->CallObjectMethod(menuItem, setEnabledMenuItemMethodID, enabled);
 
-        if (!icon.isNull()) {
+        if (!icon.isNull()) { // isNull() only checks the d pointer, not the actual image data.
             int sz = qMax(36, qgetenv("QT_ANDROID_APP_ICON_SIZE").toInt());
             QImage img = icon.pixmap(QSize(sz,sz),
                                      enabled
                                         ? QIcon::Normal
                                         : QIcon::Disabled,
                                      QIcon::On).toImage();
-            env->CallObjectMethod(menuItem,
-                                  setIconMenuItemMethodID,
-                                  createBitmapDrawable(createBitmap(img, env), env));
+            if (!img.isNull()) { // Make sure we have a valid image.
+                env->CallObjectMethod(menuItem,
+                                      setIconMenuItemMethodID,
+                                      createBitmapDrawable(createBitmap(img, env), env));
+            }
         }
 
         env->CallObjectMethod(menuItem, setVisibleMenuItemMethodID, visible);

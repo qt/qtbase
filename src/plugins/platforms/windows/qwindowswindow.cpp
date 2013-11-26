@@ -305,7 +305,7 @@ bool QWindowsWindow::setWindowLayered(HWND hwnd, Qt::WindowFlags flags, bool has
 #endif // Q_OS_WINCE
 }
 
-static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, qreal level)
+static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, bool openGL, qreal level)
 {
 #ifdef Q_OS_WINCE // WINCE does not support that feature and microsoft explicitly warns to use those calls
     Q_UNUSED(hwnd);
@@ -314,8 +314,8 @@ static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, qr
     Q_UNUSED(level);
 #else
     if (QWindowsWindow::setWindowLayered(hwnd, flags, hasAlpha, level)) {
-        if (hasAlpha && (flags & Qt::FramelessWindowHint)) {
-            // Windows with alpha: Use blend function to update.
+        if (hasAlpha && !openGL && (flags & Qt::FramelessWindowHint)) {
+            // Non-GL windows with alpha: Use blend function to update.
             BLENDFUNCTION blend = {AC_SRC_OVER, 0, (BYTE)(255.0 * level), AC_SRC_ALPHA};
             QWindowsContext::user32dll.updateLayeredWindow(hwnd, NULL, NULL, NULL, NULL, NULL, 0, &blend, ULW_ALPHA);
         } else {
@@ -661,7 +661,7 @@ void WindowCreationData::initialize(HWND hwnd, bool frameChange, qreal opacityLe
                 EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_GRAYED);
         }
 
-        setWindowOpacity(hwnd, flags, hasAlpha, opacityLevel);
+        setWindowOpacity(hwnd, flags, hasAlpha, isGL, opacityLevel);
     } else { // child.
         SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, swpFlags);
     }
@@ -929,6 +929,7 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
 
 QWindowsWindow::~QWindowsWindow()
 {
+    setFlag(WithinDestroy);
 #ifndef Q_OS_WINCE
     if (testFlag(TouchRegistered))
         QWindowsContext::user32dll.unregisterTouchWindow(m_data.hwnd);
@@ -1122,6 +1123,8 @@ QPoint QWindowsWindow::mapFromGlobal(const QPoint &pos) const
 void QWindowsWindow::updateTransientParent() const
 {
 #ifndef Q_OS_WINCE
+    if (window()->type() == Qt::Popup)
+        return; // QTBUG-34503, // a popup stays on top, no parent, see also WindowCreationData::fromWindow().
     // Update transient parent.
     const HWND oldTransientParent =
         GetAncestor(m_data.hwnd, GA_PARENT) == GetDesktopWindow() ? GetAncestor(m_data.hwnd, GA_ROOTOWNER) : HWND(0);
@@ -1497,6 +1500,8 @@ void QWindowsWindow::handleWindowStateChange(Qt::WindowState state)
         handleHidden();
         QWindowSystemInterface::flushWindowSystemEvents(); // Tell QQuickWindow to stop rendering now.
         break;
+    case Qt::WindowMaximized:
+    case Qt::WindowFullScreen:
     case Qt::WindowNoState: {
         // QTBUG-17548: We send expose events when receiving WM_Paint, but for
         // layered windows and transient children, we won't receive any WM_Paint.
@@ -1548,7 +1553,7 @@ static const QScreen *effectiveScreen(const QWindow *w)
 
 bool QWindowsWindow::isFullScreen_sys() const
 {
-    return geometry_sys() == effectiveScreen(window())->geometry();
+    return window()->isTopLevel() && geometry_sys() == effectiveScreen(window())->geometry();
 }
 
 /*!
@@ -1745,7 +1750,9 @@ void QWindowsWindow::setOpacity(qreal level)
     if (m_opacity != level) {
         m_opacity = level;
         if (m_data.hwnd)
-            setWindowOpacity(m_data.hwnd, m_data.flags, window()->format().hasAlpha(), level);
+            setWindowOpacity(m_data.hwnd, m_data.flags,
+                             window()->format().hasAlpha(), testFlag(OpenGLSurface),
+                             level);
     }
 }
 

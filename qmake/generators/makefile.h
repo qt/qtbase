@@ -271,6 +271,7 @@ public:
     virtual bool mergeBuildProject(MakefileGenerator * /*other*/) { return false; }
     virtual bool openOutput(QFile &, const QString &build) const;
     bool isWindowsShell() const { return Option::dir_sep == QLatin1String("\\"); }
+    QString shellQuote(const QString &str);
 };
 
 inline void MakefileGenerator::setNoIO(bool o)

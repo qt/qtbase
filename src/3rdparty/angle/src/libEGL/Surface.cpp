@@ -20,6 +20,8 @@
 #include "libEGL/main.h"
 #include "libEGL/Display.h"
 
+#include <algorithm>
+
 #if defined(ANGLE_OS_WINRT)
 #include <windows.foundation.h>
 #include <windows.ui.core.h>

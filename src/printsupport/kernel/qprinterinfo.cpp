@@ -35,8 +35,17 @@
 
 QT_BEGIN_NAMESPACE
 
-QPrinterInfoPrivate QPrinterInfoPrivate::shared_null;
+Q_GLOBAL_STATIC(QPrinterInfoPrivate, shared_null);
 
+class QPrinterInfoPrivateDeleter
+{
+public:
+    static inline void cleanup(QPrinterInfoPrivate *d)
+    {
+        if (d != shared_null)
+            delete d;
+    }
+};
 
 /*!
     \class QPrinterInfo
@@ -83,7 +92,7 @@ QPrinterInfoPrivate QPrinterInfoPrivate::shared_null;
     \sa isNull()
 */
 QPrinterInfo::QPrinterInfo()
-    : d_ptr(&QPrinterInfoPrivate::shared_null)
+    : d_ptr(shared_null)
 {
 }
 
@@ -91,7 +100,7 @@ QPrinterInfo::QPrinterInfo()
     Constructs a copy of \a other.
 */
 QPrinterInfo::QPrinterInfo(const QPrinterInfo &other)
-    : d_ptr(new QPrinterInfoPrivate(*other.d_ptr))
+    : d_ptr((other.d_ptr.data() == shared_null) ? shared_null : new QPrinterInfoPrivate(*other.d_ptr))
 {
 }
 
@@ -99,12 +108,15 @@ QPrinterInfo::QPrinterInfo(const QPrinterInfo &other)
     Constructs a QPrinterInfo object from \a printer.
 */
 QPrinterInfo::QPrinterInfo(const QPrinter &printer)
-    : d_ptr(&QPrinterInfoPrivate::shared_null)
+    : d_ptr(shared_null)
 {
     QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
     if (ps) {
         QPrinterInfo pi = ps->printerInfo(printer.printerName());
-        d_ptr.reset(new QPrinterInfoPrivate(*pi.d_ptr));
+        if (pi.d_ptr.data() == shared_null)
+            d_ptr.reset(shared_null);
+        else
+            d_ptr.reset(new QPrinterInfoPrivate(*pi.d_ptr));
     }
 }
 
@@ -130,7 +142,10 @@ QPrinterInfo::~QPrinterInfo()
 QPrinterInfo &QPrinterInfo::operator=(const QPrinterInfo &other)
 {
     Q_ASSERT(d_ptr);
-    d_ptr.reset(new QPrinterInfoPrivate(*other.d_ptr));
+    if (other.d_ptr.data() == shared_null)
+        d_ptr.reset(shared_null);
+    else
+        d_ptr.reset(new QPrinterInfoPrivate(*other.d_ptr));
     return *this;
 }
 
@@ -191,7 +206,7 @@ QString QPrinterInfo::makeAndModel() const
 bool QPrinterInfo::isNull() const
 {
     Q_D(const QPrinterInfo);
-    return d == &QPrinterInfoPrivate::shared_null;
+    return d == shared_null || d->name.isEmpty();
 }
 
 /*!

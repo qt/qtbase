@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 class QQnxRasterWindow : public QQnxWindow
 {
 public:
-    QQnxRasterWindow(QWindow *window, screen_context_t context);
+    QQnxRasterWindow(QWindow *window, screen_context_t context, bool needRootWindow);
 
     void post(const QRegion &dirty);
 
@@ -60,7 +60,7 @@ public:
 
     bool hasBuffers() const { return !bufferSize().isEmpty(); }
 
-    WindowType windowType() const Q_DECL_OVERRIDE { return Raster; }
+    void adjustBufferSize();
 
 protected:
     int pixelFormat() const;
@@ -68,6 +68,9 @@ protected:
 
     // Copies content from the previous buffer (back buffer) to the current buffer (front buffer)
     void blitPreviousToCurrent(const QRegion &region, int dx, int dy, bool flush=false);
+
+    void blitHelper(QQnxBuffer &source, QQnxBuffer &target, const QPoint &sourceOffset,
+                    const QPoint &targetOffset, const QRegion &region, bool flush = false);
 
 private:
     QRegion m_previousDirty;

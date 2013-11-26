@@ -23,7 +23,8 @@ HEADERS += using-namespaces.h no-keywords.h task87883.h c-comments.h backslash-n
            forward-declared-param.h \
            parse-defines.h \
            function-with-attributes.h \
-           plugin_metadata.h
+           plugin_metadata.h \
+           single-quote-digit-separator-n3781.h
 
 
 if(*-g++*|*-icc*|*-clang*|*-llvm):!irix-*:!win32-*: HEADERS += os9-newlines.h win-newlines.h

@@ -122,6 +122,17 @@ static inline QQnxIntegration::Options parseOptions(const QStringList &paramList
     if (!paramList.contains(QLatin1String("no-fullscreen"))) {
         options |= QQnxIntegration::FullScreenApplication;
     }
+
+// On Blackberry the first window is treated as a root window
+#ifdef Q_OS_BLACKBERRY
+    if (!paramList.contains(QLatin1String("no-rootwindow"))) {
+        options |= QQnxIntegration::RootWindow;
+    }
+#else
+    if (paramList.contains(QLatin1String("rootwindow"))) {
+        options |= QQnxIntegration::RootWindow;
+    }
+#endif
     return options;
 }
 
@@ -326,9 +337,10 @@ bool QQnxIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     qIntegrationDebug() << Q_FUNC_INFO;
     switch (cap) {
+    case MultipleWindows:
     case ThreadedPixmaps:
         return true;
-#if defined(QT_OPENGL_ES)
+#if !defined(QT_NO_OPENGL)
     case OpenGL:
     case ThreadedOpenGL:
     case BufferQueueingOpenGL:
@@ -343,12 +355,13 @@ QPlatformWindow *QQnxIntegration::createPlatformWindow(QWindow *window) const
 {
     qIntegrationDebug() << Q_FUNC_INFO;
     QSurface::SurfaceType surfaceType = window->surfaceType();
+    const bool needRootWindow = options() & RootWindow;
     switch (surfaceType) {
     case QSurface::RasterSurface:
-        return new QQnxRasterWindow(window, m_screenContext);
+        return new QQnxRasterWindow(window, m_screenContext, needRootWindow);
 #if !defined(QT_NO_OPENGL)
     case QSurface::OpenGLSurface:
-        return new QQnxEglWindow(window, m_screenContext);
+        return new QQnxEglWindow(window, m_screenContext, needRootWindow);
 #endif
     default:
         qFatal("QQnxWindow: unsupported window API");

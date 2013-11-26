@@ -184,6 +184,13 @@ Q_WIDGETS_EXPORT _qt_filedialog_save_file_url_hook qt_filedialog_save_file_url_h
   The \l{dialogs/standarddialogs}{Standard Dialogs} example shows
   how to use QFileDialog as well as other built-in Qt dialogs.
 
+  By default, a platform-native file dialog will be used if the platform has
+  one. In that case, the widgets which would otherwise be used to construct the
+  dialog will not be instantiated, so related accessors such as layout() and
+  itemDelegate() will return null. You can set the \l DontUseNativeDialog option to
+  ensure that the widget-based implementation will be used instead of the
+  native dialog.
+
   \sa QDir, QFileInfo, QFile, QColorDialog, QFontDialog, {Standard Dialogs Example},
       {Application Example}
 */
@@ -243,7 +250,8 @@ Q_WIDGETS_EXPORT _qt_filedialog_save_file_url_hook qt_filedialog_save_file_url_h
 
     \value DontUseNativeDialog Don't use the native file dialog. By
     default, the native file dialog is used unless you use a subclass
-    of QFileDialog that contains the Q_OBJECT macro.
+    of QFileDialog that contains the Q_OBJECT macro, or the platform
+    does not have a native dialog of the type that you require.
 
     \value ReadOnly Indicates that the model is readonly.
 
@@ -620,7 +628,8 @@ void QFileDialogPrivate::helperPrepareShow(QPlatformDialogHelper *)
                                  QUrl::fromLocalFile(directory.absolutePath()) :
                                  QUrl());
     options->setInitiallySelectedNameFilter(q->selectedNameFilter());
-    options->setInitiallySelectedFiles(userSelectedFiles());
+    if (options->initiallySelectedFiles().isEmpty())
+        options->setInitiallySelectedFiles(userSelectedFiles());
 }
 
 void QFileDialogPrivate::helperDone(QDialog::DialogCode code, QPlatformDialogHelper *)
@@ -755,9 +764,9 @@ void QFileDialogPrivate::emitFilesSelected(const QStringList &files)
         emit q->fileSelected(files.first());
 }
 
-bool QFileDialogPrivate::canBeNativeDialog()
+bool QFileDialogPrivate::canBeNativeDialog() const
 {
-    Q_Q(QFileDialog);
+    Q_Q(const QFileDialog);
     if (nativeDialogInUse)
         return true;
     if (q->testAttribute(Qt::WA_DontShowOnScreen))
@@ -1045,10 +1054,13 @@ void QFileDialog::selectFile(const QString &filename)
         return;
 
     if (!d->usingWidgets()) {
-        d->selectFile_sys(QUrl::fromLocalFile(filename));
-        QList<QUrl> i;
-        i << QUrl(filename);
-        d->options->setInitiallySelectedFiles(i);
+        QUrl url = QUrl::fromLocalFile(filename);
+        if (QFileInfo(filename).isRelative()) {
+            QDir dir(d->options->initialDirectory().toLocalFile());
+            url = QUrl::fromLocalFile(dir.absoluteFilePath(filename));
+        }
+        d->selectFile_sys(url);
+        d->options->setInitiallySelectedFiles(QList<QUrl>() << url);
         return;
     }
 
@@ -1675,11 +1687,8 @@ void QFileDialog::setAcceptMode(QFileDialog::AcceptMode mode)
     d->options->setAcceptMode(static_cast<QFileDialogOptions::AcceptMode>(mode));
     // clear WA_DontShowOnScreen so that d->canBeNativeDialog() doesn't return false incorrectly
     setAttribute(Qt::WA_DontShowOnScreen, false);
-    if (!d->usingWidgets()) {
-        // we need to recreate the native dialog when changing the AcceptMode
-        d->deletePlatformHelper();
+    if (!d->usingWidgets())
         return;
-    }
     QDialogButtonBox::StandardButton button = (mode == AcceptOpen ? QDialogButtonBox::Open : QDialogButtonBox::Save);
     d->qFileDialogUi->buttonBox->setStandardButtons(button | QDialogButtonBox::Cancel);
     d->qFileDialogUi->buttonBox->button(button)->setEnabled(false);

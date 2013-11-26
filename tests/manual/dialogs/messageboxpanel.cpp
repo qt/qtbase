@@ -149,9 +149,11 @@ void MessageBoxPanel::setupMessageBox(QMessageBox &box)
     if (box.standardButtons() == (QMessageBox::StandardButtons) 0)
         box.setStandardButtons(QMessageBox::Ok); // just to have something.
 
+#if QT_VERSION >= 0x050000
     box.setCheckBox(0);
     if (m_checkboxText->text().length() > 0)
         box.setCheckBox(new QCheckBox(m_checkboxText->text()));
+#endif // Qt 5
 
     box.setIcon((QMessageBox::Icon) m_iconComboBox->currentIndex());
 }
@@ -176,12 +178,14 @@ void MessageBoxPanel::doExec()
     QString sres;
     sres.setNum(res, 16);
     m_resultLabel->setText(QString::fromLatin1("Return value (hex): %1").arg(sres));
+#if QT_VERSION >= 0x050000
     if (m_msgbox->checkBox()) {
         if (m_msgbox->checkBox()->isChecked())
             m_checkBoxResult->setText(QString::fromLatin1("Checkbox was checked"));
         else
             m_checkBoxResult->setText(QString::fromLatin1("Checkbox was not checked"));
     }
+#endif // Qt 5
 }
 
 void MessageBoxPanel::doShowApply()

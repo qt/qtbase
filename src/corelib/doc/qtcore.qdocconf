@@ -2,7 +2,7 @@ include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 project                 = QtCore
 description             = Qt Core Reference Documentation
-url                     = http://qt-project.org/doc/qt-$QT_VER/qtcore
+url                     = http://qt-project.org/doc/qt-$QT_VER
 version                 = $QT_VERSION
 
 examplesinstallpath     = core
@@ -26,7 +26,7 @@ qhp.QtCore.subprojects.classes.sortPages = true
 
 tagfile                 = ../../../doc/qtcore/qtcore.tags
 
-depends                 += qtgui qtwidgets qtnetwork qtdoc qtquick qtlinguist qtdesigner
+depends                 += qtgui qtwidgets qtnetwork qtdoc qtquick qtlinguist qtdesigner qtconcurrent qtxml
 
 headerdirs  += ..
 

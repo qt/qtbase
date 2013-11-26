@@ -440,6 +440,86 @@ bool QGLXContext::isValid() const
     return m_context != 0;
 }
 
+bool QGLXContext::m_queriedDummyContext = false;
+bool QGLXContext::m_supportsThreading = true;
+
+
+// If this list grows to any significant size, change it a
+// proper string table and make the implementation below use
+// binary search.
+static const char *qglx_threadedgl_blacklist_renderer[] = {
+    "Chromium",                             // QTBUG-32225 (initialization fails)
+    "Mesa DRI Intel(R) Sandybridge Mobile", // QTBUG-34492 (flickering in fullscreen)
+    0
+};
+
+static const char *qglx_threadedgl_blacklist_vendor[] = {
+    "nouveau",                             // QTCREATORBUG-10875 (crash in creator)
+    0
+};
+
+void QGLXContext::queryDummyContext()
+{
+    if (m_queriedDummyContext)
+        return;
+    m_queriedDummyContext = true;
+
+    static bool skip = qEnvironmentVariableIsSet("QT_OPENGL_NO_SANITY_CHECK");
+    if (skip)
+        return;
+
+    QOpenGLContext *oldContext = QOpenGLContext::currentContext();
+    QSurface *oldSurface = 0;
+    if (oldContext)
+        oldSurface = oldContext->surface();
+
+    QScopedPointer<QSurface> surface;
+    const char *glxvendor = glXGetClientString(glXGetCurrentDisplay(), GLX_VENDOR);
+    if (glxvendor && !strcmp(glxvendor, "ATI")) {
+        QWindow *window = new QWindow;
+        window->resize(64, 64);
+        window->setSurfaceType(QSurface::OpenGLSurface);
+        window->create();
+        surface.reset(window);
+    } else {
+        QOffscreenSurface *offSurface = new QOffscreenSurface;
+        offSurface->create();
+        surface.reset(offSurface);
+    }
+
+    QOpenGLContext context;
+    context.create();
+    context.makeCurrent(surface.data());
+
+    m_supportsThreading = true;
+
+    const char *renderer = (const char *) glGetString(GL_RENDERER);
+    for (int i = 0; qglx_threadedgl_blacklist_renderer[i]; ++i) {
+        if (strstr(renderer, qglx_threadedgl_blacklist_renderer[i]) != 0) {
+            m_supportsThreading = false;
+            break;
+        }
+    }
+
+    const char *vendor = (const char *) glGetString(GL_VENDOR);
+    for (int i = 0; qglx_threadedgl_blacklist_vendor[i]; ++i) {
+        if (strstr(vendor, qglx_threadedgl_blacklist_vendor[i]) != 0) {
+            m_supportsThreading = false;
+            break;
+        }
+    }
+
+    context.doneCurrent();
+    if (oldContext && oldSurface)
+        oldContext->makeCurrent(oldSurface);
+}
+
+bool QGLXContext::supportsThreading()
+{
+    if (!m_queriedDummyContext)
+        queryDummyContext();
+    return m_supportsThreading;
+}
 
 QGLXPbuffer::QGLXPbuffer(QOffscreenSurface *offscreenSurface)
     : QPlatformOffscreenSurface(offscreenSurface)

@@ -50,7 +50,12 @@ qt_install_module {
         pritarget.path = $$[QT_HOST_DATA]/mkspecs/modules
         pritarget.files = $$MODULE_PRI
         INSTALLS += pritarget
-    } else {
+    } else: isEmpty(MODULE_PRIVATE_PRI) {
         warning("Project $$basename(_PRO_FILE_) is a module, but has not defined MODULE_PRI, which is required for Qt to expose the module to other projects.")
+    }
+    !isEmpty(MODULE_PRIVATE_PRI) {
+        privpritarget.path = $$[QT_HOST_DATA]/mkspecs/modules
+        privpritarget.files = $$MODULE_PRIVATE_PRI
+        INSTALLS += privpritarget
     }
 }

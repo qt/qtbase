@@ -1867,7 +1867,10 @@ FunctionNode::FunctionNode(Type type, InnerNode *parent, const QString& name, bo
       rf(0),
       ap(0)
 {
-    // nothing.
+    if (type == QmlMethod || type == QmlSignal) {
+        if (name.startsWith("__"))
+            setStatus(Internal);
+    }
 }
 
 /*!
@@ -2326,6 +2329,8 @@ QmlPropertyNode::QmlPropertyNode(InnerNode* parent,
     setPageType(ApiPage);
     if (type_ == QString("alias"))
         isAlias_ = true;
+    if (name.startsWith("__"))
+        setStatus(Internal);
 }
 
 /*!

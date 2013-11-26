@@ -22,14 +22,8 @@ CONFIG(static, static|shared) {
     contains(TEMPLATE, ".*lib"): CONFIG += dll
 }
 
-static_and_shared {
-    !macx-xcode: addExclusiveBuilds(static, Static, shared, Shared)
-} else: fix_output_dirs {
-    static: \
-        fixExclusiveOutputDirs(static, shared)
-    else: \
-        fixExclusiveOutputDirs(shared, static)
-}
+!macx-xcode: \
+    addExclusiveBuilds(shared, static)
 
 CONFIG(debug, debug|release): \
     CONFIG -= release
@@ -37,14 +31,7 @@ else: \
     CONFIG -= debug
 
 !macx-xcode {
-    debug_and_release {
-        addExclusiveBuilds(debug, Debug, release, Release)
-    } else: fix_output_dirs {
-        debug: \
-            fixExclusiveOutputDirs(debug, release)
-        else: \
-            fixExclusiveOutputDirs(release, debug)
-    }
+    addExclusiveBuilds(debug, release)
 } else {
     # The Xcode generator always generates project files with
     # debug and release configurations, regardless of whether

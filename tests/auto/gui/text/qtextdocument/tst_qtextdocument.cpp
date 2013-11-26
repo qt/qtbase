@@ -187,8 +187,6 @@ private slots:
     void htmlExportImportBlockCount();
 
     void QTBUG27354_spaceAndSoftSpace();
-    void cssInheritance();
-
     void baseUrl_data();
     void baseUrl();
 
@@ -2949,35 +2947,6 @@ void tst_QTextDocument::QTBUG27354_spaceAndSoftSpace()
     {
         QPainter p(&image);
         document.drawContents(&p, image.rect());
-    }
-}
-
-void tst_QTextDocument::cssInheritance()
-{
-    {
-        QTextDocument td;
-        td.setHtml("<html><head><style type=\"text/css\">body { line-height: 200% }</style></head><body>"
-            "<p>Foo</p><p>Bar</p><p>Baz</p></body></html>");
-        QTextBlock block = td.begin();
-        while (block.isValid()) {
-            QTextBlockFormat fmt = block.blockFormat();
-            QVERIFY(fmt.lineHeightType() == QTextBlockFormat::ProportionalHeight);
-            QVERIFY(fmt.lineHeight() == 200);
-            block = block.next();
-        }
-    }
-    {
-        QTextDocument td;
-        td.setHtml("<html><head><style type=\"text/css\">body { line-height: 200% } p { line-height: 300% }</style></head><body>"
-                   "<p style=\"line-height: 40px\">Foo</p><p>Bar</p><p>Baz</p></body></html>");
-        QTextBlock block = td.begin();
-        QTextBlockFormat fmt = block.blockFormat();
-        QVERIFY(fmt.lineHeightType() == QTextBlockFormat::FixedHeight);
-        QVERIFY(fmt.lineHeight() == 40);
-        block = block.next();
-        fmt = block.blockFormat();
-        QVERIFY(fmt.lineHeightType() == QTextBlockFormat::ProportionalHeight);
-        QVERIFY(fmt.lineHeight() == 300);
     }
 }
 

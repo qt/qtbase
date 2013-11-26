@@ -175,6 +175,7 @@ void QCocoaMenuBar::handleReparent(QWindow *newParentWindow)
     if (newParentWindow == NULL) {
         m_window = NULL;
     } else {
+        newParentWindow->create();
         m_window = static_cast<QCocoaWindow*>(newParentWindow->handle());
         m_window->setMenubar(this);
     }

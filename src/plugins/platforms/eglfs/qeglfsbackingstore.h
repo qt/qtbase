@@ -43,6 +43,7 @@
 #define QEGLFSBACKINGSTORE_H
 
 #include <qpa/qplatformbackingstore.h>
+#include <QtGui/QOpenGLFunctions>
 
 #include <QImage>
 #include <QRegion>
@@ -52,7 +53,7 @@ QT_BEGIN_NAMESPACE
 class QOpenGLPaintDevice;
 class QEglFSWindow;
 
-class QEglFSBackingStore : public QPlatformBackingStore
+class QEglFSBackingStore : public QPlatformBackingStore, public QOpenGLFunctions
 {
 public:
     QEglFSBackingStore(QWindow *window);

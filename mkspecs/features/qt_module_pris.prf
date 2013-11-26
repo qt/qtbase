@@ -19,11 +19,25 @@ load(qt_build_paths)
     CONFIG += split_incpath
 force_independent|split_incpath: \
     CONFIG += need_fwd_pri
-MODULE_FWD_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_lib_$${MODULE}.pri
+mod_work_pfx = $$MODULE_QMAKE_OUTDIR/mkspecs/modules
 need_fwd_pri: \
-    MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_lib_$${MODULE}.pri
+    mod_inst_pfx = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst
 else: \
-    MODULE_PRI = $$MODULE_FWD_PRI
+    mod_inst_pfx = $$mod_work_pfx
+!internal_module {
+    MODULE_ID = $$MODULE
+    MODULE_PRIVATE_PRI = $$mod_inst_pfx/qt_lib_$${MODULE}_private.pri
+    mods_to_load = $$MODULE $${MODULE}_private
+} else {
+    MODULE_ID = $${MODULE}_private
+    mods_to_load = $${MODULE}_private
+}
+need_fwd_pri: \
+    pris_to_load = $$MODULE_ID
+else: \
+    pris_to_load = $$mods_to_load
+MODULE_PRI = $$mod_inst_pfx/qt_lib_$${MODULE_ID}.pri
+MODULE_FWD_PRI = $$mod_work_pfx/qt_lib_$${MODULE_ID}.pri
 
 !build_pass {
 
@@ -34,20 +48,14 @@ else: \
         module_libs = "\$\$QT_MODULE_LIB_BASE"
     unix:!static {
         host_build: \
-            module_rpath = "QT.$${MODULE}.rpath = $$[QT_HOST_LIBS]"
+            module_rpath = "QT.$${MODULE_ID}.rpath = $$[QT_HOST_LIBS]"
         else: \
-            module_rpath = "QT.$${MODULE}.rpath = $$[QT_INSTALL_LIBS/raw]"
+            module_rpath = "QT.$${MODULE_ID}.rpath = $$[QT_INSTALL_LIBS/raw]"
     } else {
         module_rpath =
     }
-    !isEmpty(QT_FOR_PRIVATE) {
-        contains(QT_FOR_PRIVATE, .*-private$):error("QT_FOR_PRIVATE may not contain *-private.")
-        module_privdep = "QT.$${MODULE}.private_depends = $$QT_FOR_PRIVATE"
-    } else {
-        module_privdep =
-    }
     !isEmpty(QT_PRIVATE): \
-        module_rundep = "QT.$${MODULE}.run_depends = $$unique($$list($$replace(QT_PRIVATE, -private$, )))"
+        module_rundep = "QT.$${MODULE_ID}.run_depends = $$replace(QT_PRIVATE, -private$, _private)"
     else: \
         module_rundep =
     static: \
@@ -58,10 +66,8 @@ else: \
         module_build_type =
     internal_module: \
         module_build_type += internal_module
-    !isEmpty(module_build_type): \
-        module_build_type = "QT.$${MODULE}.module_config = $$module_build_type"
     !isEmpty(MODULE_CONFIG): \
-        module_config = "QT.$${MODULE}.CONFIG = $$MODULE_CONFIG"
+        module_config = "QT.$${MODULE_ID}.CONFIG = $$MODULE_CONFIG"
     else: \
         module_config =
     !no_module_headers:!minimal_syncqt {
@@ -74,46 +80,52 @@ else: \
                                                             $$MODULE_BASE_OUTDIR/include)
     MODULE_INCLUDES += $$MODULE_AUX_INCLUDES
     MODULE_PRIVATE_INCLUDES += $$MODULE_PRIVATE_AUX_INCLUDES
-    internal_module {
-        MODULE_PRIVATE_INCLUDES = $$MODULE_INCLUDES $$MODULE_PRIVATE_INCLUDES
-        MODULE_INCLUDES =
-        MODULE_PRIVATE_SHADOW_INCLUDES = $$MODULE_SHADOW_INCLUDES
-        MODULE_SHADOW_INCLUDES =
-    }
-    split_incpath {
-        !isEmpty(MODULE_SHADOW_INCLUDES): \
-            MODULE_FWD_PRI_CONT_SUFFIX += "QT.$${MODULE}.includes += $$MODULE_SHADOW_INCLUDES"
-        !isEmpty(MODULE_PRIVATE_SHADOW_INCLUDES): \
-            MODULE_FWD_PRI_CONT_SUFFIX += "QT.$${MODULE}.private_includes += $$MODULE_PRIVATE_SHADOW_INCLUDES"
-    }
+    internal_module: \
+        MODULE_INCLUDES += $$MODULE_PRIVATE_INCLUDES
+    split_incpath: \
+        MODULE_FWD_PRI_CONT_SUFFIX += "QT.$${MODULE_ID}.includes += $$MODULE_SHADOW_INCLUDES"
     MODULE_PRI_CONT = \
-        "QT.$${MODULE}.VERSION = $${VERSION}" \
-        "QT.$${MODULE}.MAJOR_VERSION = $$section(VERSION, ., 0, 0)" \
-        "QT.$${MODULE}.MINOR_VERSION = $$section(VERSION, ., 1, 1)" \
-        "QT.$${MODULE}.PATCH_VERSION = $$section(VERSION, ., 2, 2)" \
+        "QT.$${MODULE_ID}.VERSION = $${VERSION}" \
+        "QT.$${MODULE_ID}.MAJOR_VERSION = $$section(VERSION, ., 0, 0)" \
+        "QT.$${MODULE_ID}.MINOR_VERSION = $$section(VERSION, ., 1, 1)" \
+        "QT.$${MODULE_ID}.PATCH_VERSION = $$section(VERSION, ., 2, 2)" \
         "" \
-        "QT.$${MODULE}.name = $$TARGET" \
-        "QT.$${MODULE}.libs = $$module_libs" \
+        "QT.$${MODULE_ID}.name = $$TARGET" \
+        "QT.$${MODULE_ID}.libs = $$module_libs" \
         $$module_rpath \
-        "QT.$${MODULE}.private_includes = $$MODULE_PRIVATE_INCLUDES"
+        "QT.$${MODULE_ID}.includes = $$MODULE_INCLUDES"
     !host_build: MODULE_PRI_CONT += \
-        "QT.$${MODULE}.includes = $$MODULE_INCLUDES" \
-        "QT.$${MODULE}.bins = \$\$QT_MODULE_BIN_BASE" \
-        "QT.$${MODULE}.libexecs = \$\$QT_MODULE_LIBEXEC_BASE" \
-        "QT.$${MODULE}.plugins = \$\$QT_MODULE_PLUGIN_BASE" \
-        "QT.$${MODULE}.imports = \$\$QT_MODULE_IMPORT_BASE" \
-        "QT.$${MODULE}.qml = \$\$QT_MODULE_QML_BASE"
+        "QT.$${MODULE_ID}.bins = \$\$QT_MODULE_BIN_BASE" \
+        "QT.$${MODULE_ID}.libexecs = \$\$QT_MODULE_LIBEXEC_BASE" \
+        "QT.$${MODULE_ID}.plugins = \$\$QT_MODULE_PLUGIN_BASE" \
+        "QT.$${MODULE_ID}.imports = \$\$QT_MODULE_IMPORT_BASE" \
+        "QT.$${MODULE_ID}.qml = \$\$QT_MODULE_QML_BASE" \
+        $$join(MODULE_PLUGIN_TYPES, " ", "QT.$${MODULE_ID}.plugin_types = ")
     MODULE_PRI_CONT += \
-        "QT.$${MODULE}.depends =$$join(MODULE_DEPENDS, " ", " ")" \
-        $$module_privdep \
+        "QT.$${MODULE_ID}.depends =$$join(MODULE_DEPENDS, " ", " ")" \
         $$module_rundep \
-        $$module_build_type \
+        "QT.$${MODULE_ID}.module_config =$$join(module_build_type, " ", " ")" \
         $$module_config \
-        "QT.$${MODULE}.DEFINES = $$MODULE_DEFINES" \ # assume sufficient quoting
+        "QT.$${MODULE_ID}.DEFINES = $$MODULE_DEFINES" \ # assume sufficient quoting
         "" \
         "QT_MODULES += $$MODULE"
     write_file($$MODULE_PRI, MODULE_PRI_CONT)|error("Aborting.")
-    MODULE_PRI_FILES = $$MODULE_PRI
+    !internal_module {
+        module_build_type += internal_module no_link
+        MODULE_PRIVATE_PRI_CONT = \
+            "QT.$${MODULE}_private.VERSION = $${VERSION}" \
+            "QT.$${MODULE}_private.MAJOR_VERSION = $$section(VERSION, ., 0, 0)" \
+            "QT.$${MODULE}_private.MINOR_VERSION = $$section(VERSION, ., 1, 1)" \
+            "QT.$${MODULE}_private.PATCH_VERSION = $$section(VERSION, ., 2, 2)" \
+            "" \
+            "QT.$${MODULE}_private.name = $${TARGET}" \   # Same name as base module
+            "QT.$${MODULE}_private.libs = $$module_libs" \
+            "QT.$${MODULE}_private.includes = $$MODULE_PRIVATE_INCLUDES" \
+            "QT.$${MODULE}_private.depends = $$replace($$list($$MODULE $$QT_FOR_PRIVATE), -private$, _private)" \
+            "QT.$${MODULE}_private.module_config =$$join(module_build_type, " ", " ")"
+        write_file($$MODULE_PRIVATE_PRI, MODULE_PRIVATE_PRI_CONT)|error("Aborting.")
+    }
+    MODULE_PRI_FILES = $$MODULE_PRI $$MODULE_PRIVATE_PRI
 
     need_fwd_pri {
 
@@ -132,8 +144,10 @@ else: \
             "QT_MODULE_HOST_LIB_BASE = $$MODULE_BASE_OUTDIR/lib" \
             "QT_MODULE_LIBEXEC_BASE = $$MODULE_BASE_OUTDIR/libexec" \
             "QT_MODULE_PLUGIN_BASE = $$MODULE_BASE_OUTDIR/plugins" \
-            "include($$MODULE_PRI)" \
-            $$MODULE_FWD_PRI_CONT_SUFFIX
+            "include($$MODULE_PRI)"
+        !internal_module: MODULE_FWD_PRI_CONT += \
+            "include($$MODULE_PRIVATE_PRI)"
+        MODULE_FWD_PRI_CONT += $$MODULE_FWD_PRI_CONT_SUFFIX
         write_file($$MODULE_FWD_PRI, MODULE_FWD_PRI_CONT)|error("Aborting.")
         touch($$MODULE_FWD_PRI, $$MODULE_PRI)
         MODULE_PRI_FILES += $$MODULE_FWD_PRI
@@ -155,12 +169,15 @@ else: \
     # Then, inject the new module into the current cache state
     !contains(QMAKE_INTERNAL_INCLUDED_FILES, $$MODULE_PRI): \ # before the actual include()!
         cache(QMAKE_INTERNAL_INCLUDED_FILES, add transient, MODULE_PRI_FILES)
-    include($$MODULE_FWD_PRI)
-    for(var, $$list(VERSION MAJOR_VERSION MINOR_VERSION PATCH_VERSION \
-                    name depends private_depends module_config CONFIG DEFINES sources \
-                    includes private_includes bins libs libexecs plugins imports qml \
-                    rpath_link rpath_link_private \
-            )):defined(QT.$${MODULE}.$$var, var):cache(QT.$${MODULE}.$$var, transient)
+    for(pri, pris_to_load): \
+        include($$mod_work_pfx/qt_lib_$${pri}.pri)
+    for(mod, mods_to_load) {
+        for(var, $$list(VERSION MAJOR_VERSION MINOR_VERSION PATCH_VERSION \
+                        name depends module_config CONFIG DEFINES sources \
+                        includes bins libs libexecs plugins imports qml \
+                        rpath_link \
+                )):defined(QT.$${mod}.$$var, var):cache(QT.$${mod}.$$var, transient)
+    }
     cache(QT_MODULES, transient)
 
 } # !build_pass

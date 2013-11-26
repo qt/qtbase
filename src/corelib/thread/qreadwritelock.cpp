@@ -98,7 +98,7 @@ QT_BEGIN_NAMESPACE
     \since 4.4
 
     \value Recursive In this mode, a thread can lock the same
-    QReadWriteLock multiple times and the mutex won't be unlocked
+    QReadWriteLock multiple times. The QReadWriteLock won't be unlocked
     until a corresponding number of unlock() calls have been made.
 
     \value NonRecursive In this mode, a thread may only lock a

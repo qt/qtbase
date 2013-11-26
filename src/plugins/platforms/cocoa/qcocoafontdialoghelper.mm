@@ -121,6 +121,7 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
     BOOL mDialogIsExecuting;
     BOOL mResultSet;
 };
+- (void)restoreOriginalContentView;
 - (void)relayout;
 - (void)relayoutToContentSize:(NSSize)frameSize;
 - (void)updateQtFont;

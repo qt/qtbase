@@ -378,6 +378,14 @@ void tst_QUrl::comparison()
     QVERIFY(!passUrl1.matches(passUrl2, QUrl::None));
     QVERIFY(passUrl1.matches(passUrl2, QUrl::RemovePassword));
 
+    // RemovePassword, null vs empty
+    QUrl emptyPassUrl1("http://user:@host/");
+    QUrl emptyPassUrl2("http://user@host/");
+    QVERIFY(!(emptyPassUrl1 == emptyPassUrl2));
+    QVERIFY(emptyPassUrl1 != emptyPassUrl2);
+    QVERIFY(!emptyPassUrl1.matches(emptyPassUrl2, QUrl::None));
+    QVERIFY(emptyPassUrl1.matches(emptyPassUrl2, QUrl::RemovePassword));
+
     // RemoveQuery, RemoveFragment
     QUrl queryFragUrl1("http://host/file?query#fragment");
     QUrl queryFragUrl2("http://host/file?q2#f2");

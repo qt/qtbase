@@ -44,11 +44,24 @@ QResource::registerResource("/path/to/myresource.rcc");
 
 
 //! [5]
+MyClass::MyClass() : BaseClass()
+{
+    Q_INIT_RESOURCE(resources);
+
+    QFile file("qrc:/myfile.dat");
+    ...
+}
+//! [5]
+
+
+//! [6]
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     Q_INIT_RESOURCE(graphlib);
+
+    QFile file("qrc:/graph.png");
     ...
     return app.exec();
 }
-//! [5]
+//! [6]

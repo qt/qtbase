@@ -10,4 +10,4 @@ contains(QT_CONFIG, libudev) {
 
 # DEFINES += USE_MTDEV
 
-contains(DEFINES, USE_MTDEV): LIBS += -lmtdev
+contains(DEFINES, USE_MTDEV): LIBS_PRIVATE += -lmtdev

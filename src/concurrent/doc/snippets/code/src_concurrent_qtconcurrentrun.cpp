@@ -93,6 +93,6 @@ future.waitForFinished();
 
 //! [6]
 void someFunction(int arg1, double arg2);
-QFuture<void> future = QtConcurrent::run(boost::bind(someFunction, 1, 2.0));
+QFuture<void> future = QtConcurrent::run(std::bind(someFunction, 1, 2.0));
 ...
 //! [6]

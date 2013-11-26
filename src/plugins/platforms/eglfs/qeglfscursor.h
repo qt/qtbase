@@ -43,15 +43,15 @@
 #define QEGLFSCURSOR_H
 
 #include <qpa/qplatformcursor.h>
+#include <QtGui/QOpenGLFunctions>
 #include "qeglfsscreen.h"
-#include <GLES2/gl2.h>
 
 QT_BEGIN_NAMESPACE
 
 class QOpenGLShaderProgram;
 class QEglFSScreen;
 
-class QEglFSCursor : public QPlatformCursor
+class QEglFSCursor : public QPlatformCursor, public QOpenGLFunctions
 {
 public:
     QEglFSCursor(QEglFSScreen *screen);
@@ -77,6 +77,9 @@ protected:
 #endif
     void draw(const QRectF &rect);
     void update(const QRegion &region);
+
+    GLuint createShader(GLenum shaderType, const char *program);
+    GLuint createProgram(GLuint vshader, GLuint fshader);
 
     QEglFSScreen *m_screen;
 

@@ -88,7 +88,9 @@ void NativeMutexUnlock(NativeMutexType *mutex)
 }
 #endif
 #elif defined(Q_OS_WIN)
-#  define _WIN32_WINNT 0x0400
+#  ifndef Q_OS_WINRT
+#    define _WIN32_WINNT 0x0400
+#  endif
 #  include <windows.h>
 typedef CRITICAL_SECTION NativeMutexType;
 void NativeMutexInitialize(NativeMutexType *mutex)

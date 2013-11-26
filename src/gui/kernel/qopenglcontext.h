@@ -221,10 +221,8 @@ private:
                                 QOpenGLVersionFunctionsBackend *backend);
     void removeFunctionsBackend(const QOpenGLVersionStatus &v);
 
-#if !defined(QT_OPENGL_ES_2)
     QOpenGLTextureHelper* textureFunctions() const;
     void setTextureFunctions(QOpenGLTextureHelper* textureFuncs);
-#endif
 
     void destroy();
 };

@@ -2685,10 +2685,10 @@ void QDateTimePrivate::getDateTime(QDate *date, QTime *time) const
 {
     msecsToTime(m_msecs, date, time);
 
-    if (isNullDate())
+    if (date && isNullDate())
         *date = QDate();
 
-    if (isNullTime())
+    if (time && isNullTime())
         *time = QTime();
 }
 
@@ -2768,9 +2768,6 @@ void QDateTimePrivate::refreshDateTime()
     }
 
     // We have a valid date and time and a Qt::LocalTime or Qt::TimeZone that needs calculating
-    QDate date;
-    QTime time;
-    getDateTime(&date, &time);
     // LocalTime and TimeZone might fall into "missing" DaylightTime transition hour
     // Calling toEpochMSecs will adjust the returned date/time if it does
     QDate testDate;
@@ -2784,7 +2781,7 @@ void QDateTimePrivate::refreshDateTime()
         epochMSecs = zoneMSecsToEpochMSecs(m_msecs, m_timeZone, &testDate, &testTime);
 #endif // QT_BOOTSTRAPPED
     }
-    if (testDate == date && testTime == time) {
+    if (timeToMSecs(testDate, testTime) == m_msecs) {
         setValidDateTime();
         // Cache the offset to use in toMSecsSinceEpoch()
         m_offsetFromUtc = (m_msecs - epochMSecs) / 1000;
@@ -3097,9 +3094,10 @@ bool QDateTime::isValid() const
 
 QDate QDateTime::date() const
 {
+    if (d->isNullDate())
+        return QDate();
     QDate dt;
-    QTime tm;
-    d->getDateTime(&dt, &tm);
+    msecsToTime(d->m_msecs, &dt, 0);
     return dt;
 }
 
@@ -3111,9 +3109,10 @@ QDate QDateTime::date() const
 
 QTime QDateTime::time() const
 {
-    QDate dt;
+    if (d->isNullTime())
+        return QTime();
     QTime tm;
-    d->getDateTime(&dt, &tm);
+    msecsToTime(d->m_msecs, 0, &tm);
     return tm;
 }
 

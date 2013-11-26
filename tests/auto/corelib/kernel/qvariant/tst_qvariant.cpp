@@ -247,6 +247,8 @@ private slots:
 
     void iterateContainerElements();
     void pairElements();
+
+    void enums();
 private:
     void dataStream_data(QDataStream::Version version);
     void loadQVariantFromDataStream(QDataStream::Version version);
@@ -888,6 +890,17 @@ void tst_QVariant::toLongLong_data()
     bytearray[3] = '0';
     QTest::newRow( "QByteArray" ) << QVariant( bytearray ) << (qlonglong) 3200 << true;
     QTest::newRow("QJsonValue") << QVariant(QJsonValue(321)) << (qlonglong)321 << true;
+
+    qint64 value64 = (Q_INT64_C(12) << 35) + 8;
+    QTest::newRow("qint64") << QVariant::fromValue(value64) << qlonglong(value64) << true;
+    QTest::newRow("-qint64") << QVariant::fromValue(-value64) << qlonglong(-value64) << true;
+    QTest::newRow("long") << QVariant::fromValue(long(464646)) << qlonglong(464646)  << true;
+    QTest::newRow("LONG_MAX") << QVariant::fromValue( LONG_MAX ) << qlonglong(LONG_MAX)  << true;
+    QTest::newRow("LONG_MIN") << QVariant::fromValue( LONG_MIN ) << qlonglong(LONG_MIN)  << true;
+
+    QTest::newRow( "short" ) << QVariant(short(12)) << qlonglong(12) << true;
+    QTest::newRow( "-short" ) << QVariant(short(-24)) << qlonglong(-24) << true;
+    QTest::newRow( "ushort" ) << QVariant(ushort(15)) << qlonglong(15) << true;
 }
 
 void tst_QVariant::toLongLong()
@@ -933,6 +946,15 @@ void tst_QVariant::toULongLong_data()
     bytearray[3] = '1';
     QTest::newRow( "QByteArray" ) << QVariant( bytearray ) << (qulonglong) 3201 << true;
     QTest::newRow("QJsonValue") << QVariant(QJsonValue(321)) << (qulonglong)321 << true;
+
+    quint64 value64 = (Q_INT64_C(12) << 35) + 8;
+    QTest::newRow("qint64") << QVariant::fromValue(value64) << qulonglong(value64) << true;
+    QTest::newRow("long") << QVariant::fromValue(long(464646)) << qulonglong(464646)  << true;
+    QTest::newRow("LONG_MAX") << QVariant::fromValue( LONG_MAX ) << qulonglong(LONG_MAX)  << true;
+    QTest::newRow("ULONG_MAX") << QVariant::fromValue( ULONG_MAX ) << qulonglong(ULONG_MAX)  << true;
+    QTest::newRow( "short" ) << QVariant(short(12)) << qulonglong(12) << true;
+    QTest::newRow( "-short" ) << QVariant(short(-24)) << qulonglong(-24) << true;
+    QTest::newRow( "ushort" ) << QVariant(ushort(15)) << qulonglong(15) << true;
 }
 
 void tst_QVariant::toULongLong()
@@ -2895,24 +2917,27 @@ void tst_QVariant::numericalConvert()
     QVariant vuint(uint(5));
     QVariant vshort(short(5));
     QVariant vlonglong(quint64(5));
+    QVariant vlong = QVariant::fromValue(long(5));
     QVariant vstringint(QString::fromLatin1("5"));
     QVariant vstring(QString::fromLatin1("5.3"));
 
     QVector<QVariant *> vect;
-    vect << &vfloat << &vdouble << &vreal << &vint << &vuint << &vshort<< &vlonglong << &vstringint << &vstring;
+    vect << &vfloat << &vdouble << &vreal << &vint << &vuint << &vshort<< &vlonglong << &vlong << &vstringint << &vstring;
 
     for(int i = 0; i < vect.size(); i++) {
         double num = 5.3;
-        if (i >= 3 && i <= 7)
+        if (i >= 3 && i <= 8)
             num = 5;
         QVariant *v = vect.at(i);
         QCOMPARE(v->toFloat() , float(num));
         QCOMPARE(float(v->toReal()) , float(num));
         QCOMPARE(float(v->toDouble()) , float(num));
-        if(i != 8) {
+        if (i != 9) {
             QCOMPARE(v->toInt() , int(num));
             QCOMPARE(v->toUInt() , uint(num));
             QCOMPARE(v->toULongLong() , quint64(num));
+            QCOMPARE(v->value<ulong>() , ulong(num));
+            QCOMPARE(v->value<ushort>() , ushort(num));
         }
         QCOMPARE(v->toString() , QString::number(num));
     }
@@ -3928,6 +3953,88 @@ void tst_QVariant::pairElements()
     TEST_PAIR_ELEMENT_ACCESS(std::pair, QVariant, int, 34, 65)
     TEST_PAIR_ELEMENT_ACCESS(QPair, int, QVariant, 24, 25)
     TEST_PAIR_ELEMENT_ACCESS(std::pair, int, QVariant, 44, 15)
+}
+
+enum EnumTest_Enum0 { EnumTest_Enum0_value = 42, ensureSignedEnum0 = -1 };
+Q_DECLARE_METATYPE(EnumTest_Enum0)
+enum EnumTest_Enum1 { EnumTest_Enum1_value = 42, EnumTest_Enum1_bigValue = (Q_INT64_C(1) << 33) + 50 };
+Q_DECLARE_METATYPE(EnumTest_Enum1)
+
+#if defined(Q_COMPILER_CLASS_ENUM)
+enum EnumTest_Enum3 : qint64 { EnumTest_Enum3_value = -47, EnumTest_Enum3_bigValue = (Q_INT64_C(1) << 56) + 5  };
+Q_DECLARE_METATYPE(EnumTest_Enum3)
+enum EnumTest_Enum4 : quint64 { EnumTest_Enum4_value = 47, EnumTest_Enum4_bigValue = (Q_INT64_C(1) << 52) + 45 };
+Q_DECLARE_METATYPE(EnumTest_Enum4)
+enum EnumTest_Enum5 : uint { EnumTest_Enum5_value = 47 };
+Q_DECLARE_METATYPE(EnumTest_Enum5)
+enum EnumTest_Enum6 : uchar { EnumTest_Enum6_value = 47 };
+Q_DECLARE_METATYPE(EnumTest_Enum6)
+enum class EnumTest_Enum7 { EnumTest_Enum7_value = 47, ensureSignedEnum7 = -1 };
+Q_DECLARE_METATYPE(EnumTest_Enum7)
+enum EnumTest_Enum8 : short { EnumTest_Enum8_value = 47 };
+Q_DECLARE_METATYPE(EnumTest_Enum8)
+#endif
+
+template<typename Enum> void testVariant(Enum value, bool *ok)
+{
+    *ok = false;
+    QVariant var = QVariant::fromValue(value);
+
+    QCOMPARE(var.userType(), qMetaTypeId<Enum>());
+
+    QVERIFY(var.canConvert<Enum>());
+    QVERIFY(var.canConvert<int>());
+    QVERIFY(var.canConvert<unsigned int>());
+    QVERIFY(var.canConvert<short>());
+    QVERIFY(var.canConvert<unsigned short>());
+    QVERIFY(var.canConvert<qint64>());
+    QVERIFY(var.canConvert<quint64>());
+
+
+    QCOMPARE(var.value<Enum>(), value);
+    QCOMPARE(var.value<int>(), static_cast<int>(value));
+    QCOMPARE(var.value<uint>(), static_cast<uint>(value));
+    QCOMPARE(var.value<short>(), static_cast<short>(value));
+    QCOMPARE(var.value<unsigned short>(), static_cast<unsigned short>(value));
+    QCOMPARE(var.value<qint64>(), static_cast<qint64>(value));
+    QCOMPARE(var.value<quint64>(), static_cast<quint64>(value));
+
+    QVariant var2 = var;
+    QVERIFY(var2.convert(QMetaType::Int));
+    QCOMPARE(var2.value<int>(), static_cast<int>(value));
+
+    *ok = true;
+}
+
+void tst_QVariant::enums()
+{
+    bool ok = false;
+    testVariant(EnumTest_Enum0_value, &ok);
+    QVERIFY(ok);
+    testVariant(EnumTest_Enum1_value, &ok);
+    QVERIFY(ok);
+    testVariant(EnumTest_Enum1_bigValue, &ok);
+    QVERIFY(ok);
+#if defined(Q_COMPILER_CLASS_ENUM)
+    testVariant(EnumTest_Enum3::EnumTest_Enum3_value, &ok);
+    QVERIFY(ok);
+    testVariant(EnumTest_Enum3::EnumTest_Enum3_bigValue, &ok);
+    QVERIFY(ok);
+    testVariant(EnumTest_Enum4::EnumTest_Enum4_value, &ok);
+    QVERIFY(ok);
+    testVariant(EnumTest_Enum4::EnumTest_Enum4_bigValue, &ok);
+    QVERIFY(ok);
+    testVariant(EnumTest_Enum5::EnumTest_Enum5_value, &ok);
+    QVERIFY(ok);
+    testVariant(EnumTest_Enum6::EnumTest_Enum6_value, &ok);
+    QVERIFY(ok);
+    testVariant(EnumTest_Enum7::EnumTest_Enum7_value, &ok);
+    QVERIFY(ok);
+    testVariant(EnumTest_Enum8::EnumTest_Enum8_value, &ok);
+    QVERIFY(ok);
+    testVariant(EnumTest_Enum3::EnumTest_Enum3_value, &ok);
+    QVERIFY(ok);
+#endif
 }
 
 QTEST_MAIN(tst_QVariant)

@@ -1112,18 +1112,26 @@ bool QLayout::activate()
     \since 5.2
 
     Searches for widget \a from and replaces it with widget \a to if found.
-    Returns the layout item that contains the widget \a from on success. Otherwise \c 0 is returned.
-    If \a recursive is \c true, sub-layouts are searched for doing the replacement. Notice that the returned item therefore might not belong to this layout, but to a sub-layout.
+    Returns the layout item that contains the widget \a from on success.
+    Otherwise \c 0 is returned. If \a options contains \c Qt::FindChildrenRecursively
+    (the default), sub-layouts are searched for doing the replacement.
+    Any other flag in \a options is ignored.
 
-    The returned layout item is no longer owned by the layout and should be either deleted or inserted to another layout. The widget \a from is no longer managed by the layout and may need to be deleted or hidden. The parent of widget \a from is left unchanged.
+    Notice that the returned item therefore might not belong to this layout,
+    but to a sub-layout.
 
-    This function works for the built-in Qt layouts, but might not work for custom layouts.
+    The returned layout item is no longer owned by the layout and should be
+    either deleted or inserted to another layout. The widget \a from is no
+    longer managed by the layout and may need to be deleted or hidden. The
+    parent of widget \a from is left unchanged.
+
+    This function works for the built-in Qt layouts, but might not work for
+    custom layouts.
 
     \sa indexOf()
 */
 
-//### Qt 6 make this function virtual
-QLayoutItem* QLayout::replaceWidget(QWidget *from, QWidget *to, bool recursive)
+QLayoutItem *QLayout::replaceWidget(QWidget *from, QWidget *to, Qt::FindChildOptions options)
 {
     Q_D(QLayout);
     if (!from || !to)
@@ -1133,12 +1141,16 @@ QLayoutItem* QLayout::replaceWidget(QWidget *from, QWidget *to, bool recursive)
     QLayoutItem *item = 0;
     for (int u = 0; u < count(); ++u) {
         item = itemAt(u);
+        if (!item)
+            continue;
+
         if (item->widget() == from) {
             index = u;
             break;
         }
-        if (item && item->layout() && recursive) {
-            QLayoutItem *r = item->layout()->replaceWidget(from, to, true);
+
+        if (item->layout() && (options & Qt::FindChildrenRecursively)) {
+            QLayoutItem *r = item->layout()->replaceWidget(from, to, options);
             if (r)
                 return r;
         }

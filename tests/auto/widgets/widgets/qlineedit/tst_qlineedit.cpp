@@ -4097,6 +4097,9 @@ void tst_QLineEdit::clearButton()
     QTRY_COMPARE(filterModel->rowCount(), 1); // matches 'ab'
     QTest::mouseClick(clearButton, Qt::LeftButton, 0, QRect(QPoint(0, 0), clearButton->size()).center());
     QTRY_COMPARE(filterModel->rowCount(), 3);
+
+    filterLineEdit->setReadOnly(true); // QTBUG-34315
+    QVERIFY(!clearButton->isEnabled());
 }
 
 void tst_QLineEdit::sideWidgets()

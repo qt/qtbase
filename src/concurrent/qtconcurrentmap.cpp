@@ -68,13 +68,9 @@
 */
 
 /*!
-    \headerfile <QtConcurrentMap>
+    \page qtconcurrentmap.html
     \title Concurrent Map and Map-Reduce
     \ingroup thread
-
-    \brief The <QtConcurrentMap> header provides concurrent Map and MapReduce.
-
-    These functions are a part of the \l {Qt Concurrent} framework.
 
     The QtConcurrent::map(), QtConcurrent::mapped() and
     QtConcurrent::mappedReduced() functions run computations in parallel on
@@ -82,6 +78,8 @@
     modifies a sequence in-place, QtConcurrent::mapped() returns a new
     sequence containing the modified content, and QtConcurrent::mappedReduced()
     returns a single result.
+
+    These functions are a part of the \l {Qt Concurrent} framework.
 
     Each of the above functions has a blocking variant that returns
     the final result instead of a QFuture. You use them in the same
@@ -204,15 +202,11 @@
 
     \section2 Using Bound Function Arguments
 
-    Note that Qt does not provide support for bound functions. This is
-    provided by 3rd party libraries like
-    \l{http://www.boost.org/libs/bind/bind.html}{Boost} or
-    \l{http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf}{C++
-    TR1 Library Extensions}.
-
     If you want to use a map function that takes more than one argument you can
-    use boost::bind() or std::tr1::bind() to transform it onto a function that
-    takes one argument.
+    use std::bind() to transform it onto a function that takes one argument. If
+    C++11 support is not available, \l{http://www.boost.org/libs/bind/bind.html}
+    {boost::bind()} or \l{http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf}
+    {std::tr1::bind()} are suitable replacements.
 
     As an example, we'll use QImage::scaledToWidth():
 
@@ -226,7 +220,7 @@
 
     \snippet code/src_concurrent_qtconcurrentmap.cpp 11
 
-    The return value from boost::bind() is a function object (functor) with
+    The return value from std::bind() is a function object (functor) with
     the following signature:
 
     \snippet code/src_concurrent_qtconcurrentmap.cpp 12
@@ -239,7 +233,6 @@
 
 /*!
     \fn QFuture<void> QtConcurrent::map(Sequence &sequence, MapFunction function)
-    \relates <QtConcurrentMap>
 
     Calls \a function once for each item in \a sequence. The \a function is
     passed a reference to the item, so that any modifications done to the item
@@ -248,7 +241,6 @@
 
 /*!
     \fn QFuture<void> QtConcurrent::map(Iterator begin, Iterator end, MapFunction function)
-    \relates <QtConcurrentMap>
 
     Calls \a function once for each item from \a begin to \a end. The
     \a function is passed a reference to the item, so that any modifications
@@ -257,7 +249,6 @@
 
 /*!
     \fn QFuture<T> QtConcurrent::mapped(const Sequence &sequence, MapFunction function)
-    \relates <QtConcurrentMap>
 
     Calls \a function once for each item in \a sequence and returns a future
     with each mapped item as a result. You can use QFuture::const_iterator or
@@ -266,7 +257,6 @@
 
 /*!
     \fn QFuture<T> QtConcurrent::mapped(ConstIterator begin, ConstIterator end, MapFunction function)
-    \relates <QtConcurrentMap>
 
     Calls \a function once for each item from \a begin to \a end and returns a
     future with each mapped item as a result. You can use
@@ -277,8 +267,6 @@
     \fn QFuture<T> QtConcurrent::mappedReduced(const Sequence &sequence,
     MapFunction mapFunction, ReduceFunction reduceFunction,
     QtConcurrent::ReduceOptions reduceOptions)
-
-    \relates <QtConcurrentMap>
 
     Calls \a mapFunction once for each item in \a sequence. The return value of
     each \a mapFunction is passed to \a reduceFunction.
@@ -292,8 +280,6 @@
     \fn QFuture<T> QtConcurrent::mappedReduced(ConstIterator begin,
     ConstIterator end, MapFunction mapFunction, ReduceFunction reduceFunction,
     QtConcurrent::ReduceOptions reduceOptions)
-
-    \relates <QtConcurrentMap>
 
     Calls \a mapFunction once for each item from \a begin to \a end. The return
     value of each \a mapFunction is passed to \a reduceFunction.
@@ -361,8 +347,6 @@
 /*!
   \fn T QtConcurrent::blockingMappedReduced(const Sequence &sequence, MapFunction mapFunction, ReduceFunction reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
 
-  \relates <QtConcurrentMap>
-
   Calls \a mapFunction once for each item in \a sequence. The return value of
   each \a mapFunction is passed to \a reduceFunction.
 
@@ -377,8 +361,6 @@
 
 /*!
   \fn T QtConcurrent::blockingMappedReduced(ConstIterator begin, ConstIterator end, MapFunction mapFunction, ReduceFunction reduceFunction, QtConcurrent::ReduceOptions reduceOptions)
-
-  \relates <QtConcurrentMap>
 
   Calls \a mapFunction once for each item from \a begin to \a end. The return
   value of each \a mapFunction is passed to \a reduceFunction.

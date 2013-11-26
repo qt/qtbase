@@ -21,6 +21,7 @@ SOURCES += $$PWD/androidplatformplugin.cpp \
            $$PWD/qandroidinputcontext.cpp \
            $$PWD/qandroidplatformaccessibility.cpp \
            $$PWD/qandroidplatformfontdatabase.cpp \
+           $$PWD/qandroidplatformdialoghelpers.cpp \
            $$PWD/qandroidplatformclipboard.cpp \
            $$PWD/qandroidplatformtheme.cpp \
            $$PWD/qandroidplatformmenubar.cpp \
@@ -41,6 +42,7 @@ HEADERS += $$PWD/qandroidplatformintegration.h \
            $$PWD/qandroidplatformaccessibility.h \
            $$PWD/qandroidplatformfontdatabase.h \
            $$PWD/qandroidplatformclipboard.h \
+           $$PWD/qandroidplatformdialoghelpers.h \
            $$PWD/qandroidplatformtheme.h \
            $$PWD/qandroidplatformmenubar.h \
            $$PWD/qandroidplatformmenu.h \

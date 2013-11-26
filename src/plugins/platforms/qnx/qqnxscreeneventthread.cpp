@@ -61,6 +61,9 @@ QQnxScreenEventThread::QQnxScreenEventThread(screen_context_t context, QQnxScree
       m_screenEventHandler(screenEventHandler),
       m_quit(false)
 {
+    screenEventHandler->setScreenEventThread(this);
+    connect(this, SIGNAL(eventPending()), screenEventHandler, SLOT(processEventsFromScreenThread()), Qt::QueuedConnection);
+    connect(this, SIGNAL(finished()), screenEventHandler, SLOT(processEventsFromScreenThread()), Qt::QueuedConnection);
 }
 
 QQnxScreenEventThread::~QQnxScreenEventThread()
@@ -74,20 +77,31 @@ void QQnxScreenEventThread::injectKeyboardEvent(int flags, int sym, int mod, int
     QQnxScreenEventHandler::injectKeyboardEvent(flags, sym, mod, scan, cap);
 }
 
+QQnxScreenEventArray *QQnxScreenEventThread::lock()
+{
+    m_mutex.lock();
+    return &m_events;
+}
+
+void QQnxScreenEventThread::unlock()
+{
+    m_mutex.unlock();
+}
+
 void QQnxScreenEventThread::run()
 {
-    screen_event_t event;
-
-    // create screen event
-    errno = 0;
-    int result = screen_create_event(&event);
-    if (result)
-        qFatal("QQNX: failed to create screen event, errno=%d", errno);
-
     qScreenEventThreadDebug() << Q_FUNC_INFO << "screen event thread started";
 
     // loop indefinitely
     while (!m_quit) {
+        screen_event_t event;
+
+        // create screen event
+        errno = 0;
+        int result = screen_create_event(&event);
+        if (result)
+            qFatal("QQNX: failed to create screen event, errno=%d", errno);
+
 
         // block until screen event is available
         errno = 0;
@@ -108,14 +122,22 @@ void QQnxScreenEventThread::run()
             qScreenEventThreadDebug() << Q_FUNC_INFO << "QNX user screen event";
             m_quit = true;
         } else {
-            m_screenEventHandler->handleEvent(event, qnxType);
+            m_mutex.lock();
+            m_events << event;
+            m_mutex.unlock();
+            emit eventPending();
         }
     }
 
     qScreenEventThreadDebug() << Q_FUNC_INFO << "screen event thread stopped";
 
     // cleanup
-    screen_destroy_event(event);
+    m_mutex.lock();
+    Q_FOREACH (screen_event_t event, m_events) {
+        screen_destroy_event(event);
+    }
+    m_events.clear();
+    m_mutex.unlock();
 }
 
 void QQnxScreenEventThread::shutdown()

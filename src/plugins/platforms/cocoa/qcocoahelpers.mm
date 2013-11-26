@@ -599,7 +599,17 @@ NSRect qt_mac_flipRect(const QRect &rect, QWindow *window)
 {
     QPlatformScreen *onScreen = QPlatformScreen::platformScreenForWindow(window);
     int flippedY = onScreen->geometry().height() - (rect.y() + rect.height());
-
+    QList<QScreen *> screens = QGuiApplication::screens();
+    if (screens.size() > 1) {
+        int height = 0;
+        foreach (QScreen *scr, screens)
+            height = qMax(height, scr->size().height());
+        int difference = height - onScreen->geometry().height();
+        if (difference > 0)
+            flippedY += difference;
+        else
+            flippedY -= difference;
+    }
     // In case of automatic positioning, try to put as much of the window onscreen as possible.
     if (window->isTopLevel() && qt_window_private(const_cast<QWindow*>(window))->positionAutomatic && flippedY < 0)
         flippedY = onScreen->geometry().height() - onScreen->availableGeometry().height() - onScreen->availableGeometry().y();

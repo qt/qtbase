@@ -52,6 +52,7 @@ QKmsBackingStore::QKmsBackingStore(QWindow *window)
     , m_context(new QOpenGLContext)
     , m_texture(0)
     , m_program(0)
+    , m_initialized(false)
 {
     m_context->setFormat(window->requestedFormat());
     m_context->setScreen(window->screen());
@@ -84,6 +85,11 @@ void QKmsBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
     Q_UNUSED(offset)
 
     m_context->makeCurrent(window);
+
+    if (!m_initialized) {
+        initializeOpenGLFunctions();
+        m_initialized = true;
+    }
 
     if (!m_program) {
         static const char *textureVertexProgram =

@@ -40,7 +40,10 @@
 ****************************************************************************/
 
 #include "qplatformprintplugin.h"
+#include "qplatformprintersupport.h"
+#include "qprinterinfo.h"
 #include "private/qfactoryloader_p.h"
+#include <qcoreapplication.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -58,6 +61,16 @@ QPlatformPrinterSupportPlugin::~QPlatformPrinterSupportPlugin()
 {
 }
 
+static QPlatformPrinterSupport *printerSupport = 0;
+
+static void cleanupPrinterSupport()
+{
+#ifndef QT_NO_PRINTER
+    delete printerSupport;
+#endif
+    printerSupport = 0;
+}
+
 /*!
     \internal
 
@@ -68,13 +81,14 @@ QPlatformPrinterSupportPlugin::~QPlatformPrinterSupportPlugin()
 */
 QPlatformPrinterSupport *QPlatformPrinterSupportPlugin::get()
 {
-    static QPlatformPrinterSupport *singleton = 0;
-    if (!singleton) {
+    if (!printerSupport) {
         const QMultiMap<int, QString> keyMap = loader()->keyMap();
         if (!keyMap.isEmpty())
-            singleton = qLoadPlugin<QPlatformPrinterSupport, QPlatformPrinterSupportPlugin>(loader(), keyMap.constBegin().value());
+            printerSupport = qLoadPlugin<QPlatformPrinterSupport, QPlatformPrinterSupportPlugin>(loader(), keyMap.constBegin().value());
+        if (printerSupport)
+            qAddPostRoutine(cleanupPrinterSupport);
     }
-    return singleton;
+    return printerSupport;
 }
 
 QT_END_NAMESPACE

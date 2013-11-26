@@ -66,9 +66,10 @@ class QMakeEvaluator;
 class QMakeBaseKey
 {
 public:
-    QMakeBaseKey(const QString &_root, bool _hostBuild);
+    QMakeBaseKey(const QString &_root, const QString &_stash, bool _hostBuild);
 
     QString root;
+    QString stash;
     bool hostBuild;
 };
 
@@ -117,6 +118,7 @@ public:
     QProcessEnvironment environment;
 #endif
     QString qmake_abslocation;
+    QStringList qmake_args;
 
     QString qmakespec, xqmakespec;
     QString user_template, user_template_prefix;

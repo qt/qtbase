@@ -74,35 +74,20 @@
 
 #include <EGL/egl.h>
 
+static void initResources()
+{
+    Q_INIT_RESOURCE(cursor);
+}
+
 QT_BEGIN_NAMESPACE
 
 QEglFSIntegration::QEglFSIntegration()
     : mFontDb(new QGenericUnixFontDatabase)
     , mServices(new QGenericUnixServices)
+    , mScreen(0)
     , mInputContext(0)
 {
-    QEglFSHooks::hooks()->platformInit();
-
-    EGLint major, minor;
-
-    if (!eglBindAPI(EGL_OPENGL_ES_API)) {
-        qWarning("Could not bind GL_ES API\n");
-        qFatal("EGL error");
-    }
-
-    mDisplay = eglGetDisplay(QEglFSHooks::hooks() ? QEglFSHooks::hooks()->platformDisplay() : EGL_DEFAULT_DISPLAY);
-    if (mDisplay == EGL_NO_DISPLAY) {
-        qWarning("Could not open egl display\n");
-        qFatal("EGL error");
-    }
-
-    if (!eglInitialize(mDisplay, &major, &minor)) {
-        qWarning("Could not initialize egl display\n");
-        qFatal("EGL error");
-    }
-
-    mScreen = new QEglFSScreen(mDisplay);
-    screenAdded(mScreen);
+    initResources();
 }
 
 QEglFSIntegration::~QEglFSIntegration()
@@ -166,8 +151,37 @@ QAbstractEventDispatcher *QEglFSIntegration::createEventDispatcher() const
 
 void QEglFSIntegration::initialize()
 {
+    QEglFSHooks::hooks()->platformInit();
+
+    EGLint major, minor;
+
+    if (!eglBindAPI(EGL_OPENGL_ES_API)) {
+        qWarning("Could not bind GL_ES API\n");
+        qFatal("EGL error");
+    }
+
+    mDisplay = eglGetDisplay(QEglFSHooks::hooks() ? QEglFSHooks::hooks()->platformDisplay() : EGL_DEFAULT_DISPLAY);
+    if (mDisplay == EGL_NO_DISPLAY) {
+        qWarning("Could not open egl display\n");
+        qFatal("EGL error");
+    }
+
+    if (!eglInitialize(mDisplay, &major, &minor)) {
+        qWarning("Could not initialize egl display\n");
+        qFatal("EGL error");
+    }
+
+    mScreen = createScreen();
+    screenAdded(mScreen);
+
     mInputContext = QPlatformInputContextFactory::create();
+
     createInputHandlers();
+}
+
+QEglFSScreen *QEglFSIntegration::createScreen() const
+{
+    return new QEglFSScreen(mDisplay);
 }
 
 QVariant QEglFSIntegration::styleHint(QPlatformIntegration::StyleHint hint) const

@@ -1456,7 +1456,7 @@ QListWidgetItem *QListWidget::currentItem() const
     Sets the current item to \a item.
 
     Unless the selection mode is \l{QAbstractItemView::}{NoSelection},
-    the item is also be selected.
+    the item is also selected.
 */
 void QListWidget::setCurrentItem(QListWidgetItem *item)
 {

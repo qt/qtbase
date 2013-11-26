@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2011 - 2013 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -84,7 +84,8 @@ class QQnxIntegration : public QPlatformIntegration
 public:
     enum Option { // Options to be passed on command line.
         NoOptions = 0x0,
-        FullScreenApplication = 0x1
+        FullScreenApplication = 0x1,
+        RootWindow = 0x2
     };
     Q_DECLARE_FLAGS(Options, Option)
     explicit QQnxIntegration(const QStringList &paramList);

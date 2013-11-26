@@ -193,7 +193,6 @@ public:
     }
 };
 
-
 class QMessageBoxPrivate : public QDialogPrivate
 {
     Q_DECLARE_PUBLIC(QMessageBox)
@@ -204,11 +203,13 @@ public:
                            detailsText(0),
 #endif
                            compatMode(false), autoAddOkButton(true),
-                           detectedEscapeButton(0), informativeLabel(0) { }
+                           detectedEscapeButton(0), informativeLabel(0),
+                           options(new QMessageDialogOptions) { }
 
     void init(const QString &title = QString(), const QString &text = QString());
     void setupLayout();
     void _q_buttonClicked(QAbstractButton *);
+    void _q_clicked(QMessageDialogOptions::StandardButton button, QMessageDialogOptions::ButtonRole role);
 
     QAbstractButton *findButton(int button0, int button1, int button2, int flags);
     void addOldButtons(int button0, int button1, int button2);
@@ -224,7 +225,6 @@ public:
 #ifdef Q_OS_WINCE
     void hideSpecial();
 #endif
-
     static int showOldMessageBox(QWidget *parent, QMessageBox::Icon icon,
                                  const QString &title, const QString &text,
                                  int button0, int button1, int button2);
@@ -262,6 +262,11 @@ public:
     QPointer<QObject> receiverToDisconnectOnClose;
     QByteArray memberToDisconnectOnClose;
     QByteArray signalToDisconnectOnClose;
+    QSharedPointer<QMessageDialogOptions> options;
+private:
+    void initHelper(QPlatformDialogHelper *);
+    void helperPrepareShow(QPlatformDialogHelper *);
+    void helperDone(QDialog::DialogCode, QPlatformDialogHelper *);
 };
 
 void QMessageBoxPrivate::init(const QString &title, const QString &text)
@@ -517,6 +522,13 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
         signalToDisconnectOnClose.clear();
         memberToDisconnectOnClose.clear();
     }
+}
+
+void QMessageBoxPrivate::_q_clicked(QMessageDialogOptions::StandardButton button, QMessageDialogOptions::ButtonRole role)
+{
+    Q_UNUSED(role);
+    Q_Q(QMessageBox);
+    q->done(button);
 }
 
 /*!
@@ -2680,6 +2692,54 @@ QPixmap QMessageBoxPrivate::standardIcon(QMessageBox::Icon icon, QMessageBox *mb
     if (!tmpIcon.isNull())
         return tmpIcon.pixmap(iconSize, iconSize);
     return QPixmap();
+}
+
+void QMessageBoxPrivate::initHelper(QPlatformDialogHelper *h)
+{
+    Q_Q(QMessageBox);
+    QObject::connect(h, SIGNAL(clicked(QMessageDialogOptions::StandardButton, QMessageDialogOptions::ButtonRole)),
+                     q, SLOT(_q_clicked(QMessageDialogOptions::StandardButton, QMessageDialogOptions::ButtonRole)));
+    static_cast<QPlatformMessageDialogHelper *>(h)->setOptions(options);
+}
+
+static QMessageDialogOptions::Icon helperIcon(QMessageBox::Icon i)
+{
+    switch (i) {
+    case QMessageBox::NoIcon:
+        return QMessageDialogOptions::NoIcon;
+    case QMessageBox::Information:
+        return QMessageDialogOptions::Information;
+    case QMessageBox::Warning:
+        return QMessageDialogOptions::Warning;
+    case QMessageBox::Critical:
+        return QMessageDialogOptions::Critical;
+    case QMessageBox::Question:
+        return QMessageDialogOptions::Question;
+    }
+    return QMessageDialogOptions::NoIcon;
+}
+
+static QMessageDialogOptions::StandardButtons helperStandardButtons(QMessageBox * q)
+{
+    QMessageDialogOptions::StandardButtons buttons(int(q->standardButtons()));
+    return buttons;
+}
+
+void QMessageBoxPrivate::helperPrepareShow(QPlatformDialogHelper *)
+{
+    Q_Q(QMessageBox);
+    options->setWindowTitle(q->windowTitle());
+    options->setText(q->text());
+    options->setInformativeText(q->informativeText());
+    options->setDetailedText(q->detailedText());
+    options->setIcon(helperIcon(q->icon()));
+    options->setStandardButtons(helperStandardButtons(q));
+}
+
+void QMessageBoxPrivate::helperDone(QDialog::DialogCode code, QPlatformDialogHelper *)
+{
+    Q_Q(QMessageBox);
+    clickedButton = q->button(QMessageBox::StandardButton(code));
 }
 
 /*!

@@ -100,7 +100,8 @@ protected:
 
 void TableDialog::slotValueChanged(int newval)
 {
-    tableView->horizontalHeader()->setResizeContentsPrecision(newval, true);
+    tableView->horizontalHeader()->setResizeContentsPrecision(newval);
+    tableView->resizeColumnsToContents();
 }
 
 

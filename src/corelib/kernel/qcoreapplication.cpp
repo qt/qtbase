@@ -151,22 +151,20 @@ QString QCoreApplicationPrivate::macMenuBarName()
 #endif
 QString QCoreApplicationPrivate::appName() const
 {
-    static QBasicMutex applicationNameMutex;
-    QMutexLocker locker(&applicationNameMutex);
-
-    if (applicationName.isNull()) {
+    QString applicationName;
 #ifdef Q_OS_MAC
-        applicationName = macMenuBarName();
+    applicationName = macMenuBarName();
 #endif
-        if (applicationName.isEmpty() && argv[0]) {
-            char *p = strrchr(argv[0], '/');
-            applicationName = QString::fromLocal8Bit(p ? p + 1 : argv[0]);
-        }
+    if (applicationName.isEmpty() && argv[0]) {
+        char *p = strrchr(argv[0], '/');
+        applicationName = QString::fromLocal8Bit(p ? p + 1 : argv[0]);
     }
 
     return applicationName;
 }
 #endif
+
+QString *QCoreApplicationPrivate::cachedApplicationFilePath = 0;
 
 bool QCoreApplicationPrivate::checkInstance(const char *function)
 {
@@ -433,6 +431,7 @@ QCoreApplicationPrivate::~QCoreApplicationPrivate()
 #ifdef Q_OS_WIN
     delete [] origArgv;
 #endif
+    QCoreApplicationPrivate::clearApplicationFilePath();
 }
 
 #ifndef QT_NO_QOBJECT
@@ -1041,7 +1040,7 @@ bool QCoreApplication::closingDown()
     You can call this function occasionally when your program is busy
     performing a long operation (e.g. copying a file).
 
-    In event you are running a local loop which calls this function
+    In the event that you are running a local loop which calls this function
     continuously, without an event loop, the
     \l{QEvent::DeferredDelete}{DeferredDelete} events will
     not be processed. This can affect the behaviour of widgets,
@@ -1898,6 +1897,20 @@ QString QCoreApplication::translate(const char *context, const char *sourceText,
 
 #endif //QT_NO_TRANSLATE
 
+// Makes it possible to point QCoreApplication to a custom location to ensure
+// the directory is added to the patch, and qt.conf and deployed plugins are
+// found from there. This is for use cases in which QGuiApplication is
+// instantiated by a library and not by an application executable, for example,
+// Active X servers.
+
+void QCoreApplicationPrivate::setApplicationFilePath(const QString &path)
+{
+    if (QCoreApplicationPrivate::cachedApplicationFilePath)
+        *QCoreApplicationPrivate::cachedApplicationFilePath = path;
+    else
+        QCoreApplicationPrivate::cachedApplicationFilePath = new QString(path);
+}
+
 /*!
     Returns the directory that contains the application executable.
 
@@ -1953,20 +1966,28 @@ QString QCoreApplication::applicationFilePath()
     }
 
     QCoreApplicationPrivate *d = self->d_func();
-    if (!d->cachedApplicationFilePath.isNull())
-        return d->cachedApplicationFilePath;
+
+    static char *procName = d->argv[0];
+    if (qstrcmp(procName, d->argv[0]) != 0) {
+        // clear the cache if the procname changes, so we reprocess it.
+        QCoreApplicationPrivate::clearApplicationFilePath();
+        procName = d->argv[0];
+    }
+
+    if (QCoreApplicationPrivate::cachedApplicationFilePath)
+        return *QCoreApplicationPrivate::cachedApplicationFilePath;
 
 #if defined(Q_OS_WIN)
-    d->cachedApplicationFilePath = QFileInfo(qAppFileName()).filePath();
-    return d->cachedApplicationFilePath;
+    QCoreApplicationPrivate::setApplicationFilePath(QFileInfo(qAppFileName()).filePath());
+    return *QCoreApplicationPrivate::cachedApplicationFilePath;
 #elif defined(Q_OS_BLACKBERRY)
     if (!arguments().isEmpty()) { // args is never empty, but the navigator can change behaviour some day
         QFileInfo fileInfo(arguments().at(0));
         const bool zygotized = fileInfo.exists();
         if (zygotized) {
             // Handle the zygotized case:
-            d->cachedApplicationFilePath = QDir::cleanPath(fileInfo.absoluteFilePath());
-            return d->cachedApplicationFilePath;
+            QCoreApplicationPrivate::setApplicationFilePath(QDir::cleanPath(fileInfo.absoluteFilePath()));
+            return *QCoreApplicationPrivate::cachedApplicationFilePath;
         }
     }
 
@@ -1974,7 +1995,7 @@ QString QCoreApplication::applicationFilePath()
     const size_t maximum_path = static_cast<size_t>(pathconf("/",_PC_PATH_MAX));
     char buff[maximum_path+1];
     if (_cmdname(buff)) {
-        d->cachedApplicationFilePath = QDir::cleanPath(QString::fromLocal8Bit(buff));
+        QCoreApplicationPrivate::setApplicationFilePath(QDir::cleanPath(QString::fromLocal8Bit(buff)));
     } else {
         qWarning("QCoreApplication::applicationFilePath: _cmdname() failed");
         // _cmdname() won't fail, but just in case, fallback to the old method
@@ -1982,18 +2003,19 @@ QString QCoreApplication::applicationFilePath()
         QStringList executables = dir.entryList(QDir::Executable | QDir::Files);
         if (!executables.empty()) {
             //We assume that there is only one executable in the folder
-            d->cachedApplicationFilePath = dir.absoluteFilePath(executables.first());
-        } else {
-            d->cachedApplicationFilePath = QString();
+            QCoreApplicationPrivate::setApplicationFilePath(dir.absoluteFilePath(executables.first()));
         }
     }
-    return d->cachedApplicationFilePath;
+    return *QCoreApplicationPrivate::cachedApplicationFilePath;
 #elif defined(Q_OS_MAC)
     QString qAppFileName_str = qAppFileName();
     if(!qAppFileName_str.isEmpty()) {
         QFileInfo fi(qAppFileName_str);
-        d->cachedApplicationFilePath = fi.exists() ? fi.canonicalFilePath() : QString();
-        return d->cachedApplicationFilePath;
+        if (fi.exists()) {
+            QCoreApplicationPrivate::setApplicationFilePath(fi.canonicalFilePath());
+            return *QCoreApplicationPrivate::cachedApplicationFilePath;
+        }
+        return QString();
     }
 #endif
 #if defined( Q_OS_UNIX )
@@ -2002,8 +2024,8 @@ QString QCoreApplication::applicationFilePath()
     // the absolute path of the executable
     QFileInfo pfi(QString::fromLatin1("/proc/%1/exe").arg(getpid()));
     if (pfi.exists() && pfi.isSymLink()) {
-        d->cachedApplicationFilePath = pfi.canonicalFilePath();
-        return d->cachedApplicationFilePath;
+        QCoreApplicationPrivate::setApplicationFilePath(pfi.canonicalFilePath());
+        return *QCoreApplicationPrivate::cachedApplicationFilePath;
     }
 #  endif
     if (!arguments().isEmpty()) {
@@ -2033,13 +2055,15 @@ QString QCoreApplication::applicationFilePath()
         absPath = QDir::cleanPath(absPath);
 
         QFileInfo fi(absPath);
-        d->cachedApplicationFilePath = fi.exists() ? fi.canonicalFilePath() : QString();
-    } else {
-        d->cachedApplicationFilePath = QString();
+        if (fi.exists()) {
+            QCoreApplicationPrivate::setApplicationFilePath(fi.canonicalFilePath());
+            return *QCoreApplicationPrivate::cachedApplicationFilePath;
+        }
     }
 
-    return d->cachedApplicationFilePath;
+    return QString();
 #endif
+    Q_UNREACHABLE();
 }
 
 /*!

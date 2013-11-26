@@ -251,7 +251,7 @@ public:
     // setVisible_sys returns true if it ends up showing a native
     // dialog. Returning false means that a non-native dialog must be
     // used instead.
-    bool canBeNativeDialog();
+    bool canBeNativeDialog() const;
     inline bool usingWidgets() const;
 
     void setDirectory_sys(const QUrl &directory);

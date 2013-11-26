@@ -56,9 +56,7 @@
 #include <private/qopenglextensions_p.h>
 #include <private/qopenglversionfunctionsfactory_p.h>
 
-#if !defined(QT_OPENGL_ES_2)
 #include <private/qopengltexturehelper_p.h>
-#endif
 
 #include <QDebug>
 
@@ -274,7 +272,7 @@ QMutex QOpenGLContextPrivate::makeCurrentTrackerMutex;
     or OpenGL ES 1.x.
 
     For more information about the OpenGL API, refer to the official
-    \l{OpenGL documentation}.
+    \l{http://www.opengl.org}{OpenGL documentation}.
 
     For an example of how to use QOpenGLContext see the
     \l{OpenGL Window Example}{OpenGL Window} example.
@@ -527,10 +525,8 @@ void QOpenGLContext::destroy()
     d->versionFunctions.clear();
     qDeleteAll(d->versionFunctionsBackend);
     d->versionFunctionsBackend.clear();
-#if !defined(QT_OPENGL_ES_2)
     delete d->textureFunctions;
     d->textureFunctions = 0;
-#endif
 }
 
 /*!
@@ -591,6 +587,8 @@ QOpenGLFunctions *QOpenGLContext::functions() const
 /*!
     \fn T *QOpenGLContext::versionFunctions() const
 
+    \overload versionFunctions()
+
     Returns a pointer to an object that provides access to all functions for
     the version and profile of this context. Before using any of the functions
     they must be initialized by calling QAbstractOpenGLFunctions::initializeOpenGLFunctions().
@@ -640,8 +638,6 @@ QOpenGLFunctions *QOpenGLContext::functions() const
 
     Usually one would use the template version of this function to automatically
     have the result cast to the correct type.
-
-    \sa T *QOpenGLContext::versionFunctions()
 */
 QAbstractOpenGLFunctions *QOpenGLContext::versionFunctions(const QOpenGLVersionProfile &versionProfile) const
 {
@@ -984,7 +980,6 @@ void QOpenGLContext::removeFunctionsBackend(const QOpenGLVersionStatus &v)
     d->versionFunctionsBackend.remove(v);
 }
 
-#if !defined(QT_OPENGL_ES_2)
 /*!
     \internal
 */
@@ -1002,7 +997,6 @@ void QOpenGLContext::setTextureFunctions(QOpenGLTextureHelper* textureFuncs)
     Q_D(QOpenGLContext);
     d->textureFunctions = textureFuncs;
 }
-#endif
 
 /*!
     \class QOpenGLContextGroup

@@ -51,8 +51,10 @@
 #include <QtCore/qglobal.h>
 
 #ifdef Q_OS_MAC
-Q_FORWARD_DECLARE_OBJC_CLASS(NSURL);
 Q_FORWARD_DECLARE_CF_TYPE(CFURL);
+#  ifdef __OBJC__
+Q_FORWARD_DECLARE_OBJC_CLASS(NSURL);
+#  endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -84,36 +86,36 @@ public:
     inline QUrlTwoFlags &operator^=(E1 f) { i ^= f; return *this; }
     inline QUrlTwoFlags &operator^=(E2 f) { i ^= f; return *this; }
 
-    Q_DECL_CONSTEXPR inline operator QFlags<E1>() const { return E1(i); }
-    Q_DECL_CONSTEXPR inline operator QFlags<E2>() const { return E2(i); }
+    Q_DECL_CONSTEXPR inline operator QFlags<E1>() const { return QFlag(i); }
+    Q_DECL_CONSTEXPR inline operator QFlags<E2>() const { return QFlag(i); }
     Q_DECL_CONSTEXPR inline operator int() const { return i; }
     Q_DECL_CONSTEXPR inline bool operator!() const { return !i; }
 
     Q_DECL_CONSTEXPR inline QUrlTwoFlags operator|(QUrlTwoFlags f) const
-    { return QUrlTwoFlags(E1(i | f.i)); }
+    { return QUrlTwoFlags(QFlag(i | f.i)); }
     Q_DECL_CONSTEXPR inline QUrlTwoFlags operator|(E1 f) const
-    { return QUrlTwoFlags(E1(i | f)); }
+    { return QUrlTwoFlags(QFlag(i | f)); }
     Q_DECL_CONSTEXPR inline QUrlTwoFlags operator|(E2 f) const
-    { return QUrlTwoFlags(E2(i | f)); }
+    { return QUrlTwoFlags(QFlag(i | f)); }
     Q_DECL_CONSTEXPR inline QUrlTwoFlags operator^(QUrlTwoFlags f) const
-    { return QUrlTwoFlags(E1(i ^ f.i)); }
+    { return QUrlTwoFlags(QFlag(i ^ f.i)); }
     Q_DECL_CONSTEXPR inline QUrlTwoFlags operator^(E1 f) const
-    { return QUrlTwoFlags(E1(i ^ f)); }
+    { return QUrlTwoFlags(QFlag(i ^ f)); }
     Q_DECL_CONSTEXPR inline QUrlTwoFlags operator^(E2 f) const
-    { return QUrlTwoFlags(E2(i ^ f)); }
+    { return QUrlTwoFlags(QFlag(i ^ f)); }
     Q_DECL_CONSTEXPR inline QUrlTwoFlags operator&(int mask) const
-    { return QUrlTwoFlags(E1(i & mask)); }
+    { return QUrlTwoFlags(QFlag(i & mask)); }
     Q_DECL_CONSTEXPR inline QUrlTwoFlags operator&(uint mask) const
-    { return QUrlTwoFlags(E1(i & mask)); }
+    { return QUrlTwoFlags(QFlag(i & mask)); }
     Q_DECL_CONSTEXPR inline QUrlTwoFlags operator&(E1 f) const
-    { return QUrlTwoFlags(E1(i & f)); }
+    { return QUrlTwoFlags(QFlag(i & f)); }
     Q_DECL_CONSTEXPR inline QUrlTwoFlags operator&(E2 f) const
-    { return QUrlTwoFlags(E2(i & f)); }
+    { return QUrlTwoFlags(QFlag(i & f)); }
     Q_DECL_CONSTEXPR inline QUrlTwoFlags operator~() const
-    { return QUrlTwoFlags(E1(~i)); }
+    { return QUrlTwoFlags(QFlag(~i)); }
 
-    inline bool testFlag(E1 f) const { return (i & f) == f && (f != 0 || i == int(f)); }
-    inline bool testFlag(E2 f) const { return (i & f) == f && (f != 0 || i == int(f)); }
+    Q_DECL_CONSTEXPR inline bool testFlag(E1 f) const { return (i & f) == f && (f != 0 || i == int(f)); }
+    Q_DECL_CONSTEXPR inline bool testFlag(E2 f) const { return (i & f) == f && (f != 0 || i == int(f)); }
 };
 
 template<typename E1, typename E2>
@@ -265,8 +267,10 @@ public:
 #if defined(Q_OS_MAC) || defined(Q_QDOC)
     static QUrl fromCFURL(CFURLRef url);
     CFURLRef toCFURL() const Q_DECL_CF_RETURNS_RETAINED;
+#  if defined(__OBJC__) || defined(Q_QDOC)
     static QUrl fromNSURL(const NSURL *url);
     NSURL *toNSURL() const Q_DECL_NS_RETURNS_AUTORELEASED;
+#  endif
 #endif
 
 #if QT_DEPRECATED_SINCE(5,0)

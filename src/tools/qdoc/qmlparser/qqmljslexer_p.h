@@ -128,7 +128,8 @@ public:
         IllegalUnicodeEscapeSequence,
         UnclosedComment,
         IllegalExponentIndicator,
-        IllegalIdentifier
+        IllegalIdentifier,
+        IllegalHexadecimalEscapeSequence
     };
 
     enum RegExpBodyPrefix {
@@ -203,6 +204,7 @@ private:
 
     void syncProhibitAutomaticSemicolon();
     QChar decodeUnicodeEscapeCharacter(bool *ok);
+    QChar decodeHexEscapeCharacter(bool *ok);
 
 private:
     Engine *_engine;

@@ -126,26 +126,34 @@ void QEglFSScreen::setPrimarySurface(EGLSurface surface)
 
 void QEglFSScreen::addWindow(QEglFSWindow *window)
 {
-    if (!m_windows.contains(window))
+    if (!m_windows.contains(window)) {
         m_windows.append(window);
+        topWindowChanged(window);
+    }
 }
 
 void QEglFSScreen::removeWindow(QEglFSWindow *window)
 {
     m_windows.removeOne(window);
+    if (!m_windows.isEmpty())
+        topWindowChanged(m_windows.last());
 }
 
 void QEglFSScreen::moveToTop(QEglFSWindow *window)
 {
     m_windows.removeOne(window);
     m_windows.append(window);
+    topWindowChanged(window);
 }
 
 void QEglFSScreen::changeWindowIndex(QEglFSWindow *window, int newIdx)
 {
     int idx = m_windows.indexOf(window);
-    if (idx != -1 && idx != newIdx)
+    if (idx != -1 && idx != newIdx) {
         m_windows.move(idx, newIdx);
+        if (newIdx == m_windows.size() - 1)
+            topWindowChanged(m_windows.last());
+    }
 }
 
 QEglFSWindow *QEglFSScreen::rootWindow()
@@ -155,6 +163,11 @@ QEglFSWindow *QEglFSScreen::rootWindow()
             return window;
     }
     return 0;
+}
+
+void QEglFSScreen::topWindowChanged(QPlatformWindow *window)
+{
+    Q_UNUSED(window);
 }
 
 QT_END_NAMESPACE

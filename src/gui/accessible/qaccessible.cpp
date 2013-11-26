@@ -1270,8 +1270,16 @@ QAccessibleInterface::~QAccessibleInterface()
 /*! \fn QAccessibleEvent::QAccessibleEvent(QObject *object, QAccessible::Event type)
 
     Constructs a QAccessibleEvent to notify that \a object has changed.
-    The event \a type explains what changed.
- */
+    The event \a type describes what changed.
+*/
+
+/*! \fn QAccessibleEvent::QAccessibleEvent(QAccessibleInterface *interface, QAccessible::Event type)
+
+    Constructs a QAccessibleEvent to notify that \a interface has changed.
+    The event \a type describes what changed.
+    Use this function if you already have a QAccessibleInterface or no QObject, otherwise consider
+    the overload taking a \l QObject parameter as it might be cheaper.
+*/
 
 /*! \fn QAccessibleEvent::~QAccessibleEvent()
   Destroys the event.
@@ -1293,6 +1301,22 @@ QAccessibleInterface::~QAccessibleInterface()
   Returns the child index.
 */
 
+/*!
+    \internal
+    Returns the uniqueId of the QAccessibleInterface represented by this event.
+
+    In case the object() function returns 0 this is the only way to access the
+    interface.
+*/
+QAccessible::Id QAccessibleEvent::uniqueId() const
+{
+    if (!m_object)
+        return m_uniqueId;
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(m_object);
+    if (m_child != -1)
+        iface = iface->child(m_child);
+    return QAccessible::uniqueId(iface);
+}
 
 /*!
     \class QAccessibleValueChangeEvent
@@ -1530,6 +1554,9 @@ QAccessibleInterface::~QAccessibleInterface()
 */
 QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
 {
+    if (m_object == 0)
+        return QAccessible::accessibleInterface(m_uniqueId);
+
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(m_object);
     if (!iface || !iface->isValid()) {
         static bool hasWarned = false;
@@ -1681,9 +1708,13 @@ QDebug operator<<(QDebug d, const QAccessibleEvent &ev)
         d << "QAccessibleEvent(null)";
         return d;
     }
-    d.nospace() << "QAccessibleEvent(object=" << hex << ev.object();
-    d.nospace() << dec;
-    d.nospace() << "child=" << ev.child();
+    d.nospace() << "QAccessibleEvent(";
+    if (ev.object()) {
+        d.nospace() << "object=" << hex << ev.object() << dec;
+        d.nospace() << "child=" << ev.child();
+    } else {
+        d.nospace() << "no object, uniqueId=" << ev.uniqueId();
+    }
     d << " event=" << qAccessibleEventString(ev.type());
     if (ev.type() == QAccessible::StateChanged) {
         QAccessible::State changed = static_cast<const QAccessibleStateChangeEvent*>(&ev)->changedStates();

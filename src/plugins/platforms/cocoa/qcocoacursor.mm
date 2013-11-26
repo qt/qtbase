@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qcocoacursor.h"
+#include "qcocoawindow.h"
 #include "qcocoahelpers.h"
 #include "qcocoaautoreleasepool.h"
 
@@ -63,65 +64,10 @@ QCocoaCursor::~QCocoaCursor()
 
 void QCocoaCursor::changeCursor(QCursor *cursor, QWindow *window)
 {
-    Q_UNUSED(window);
+    NSCursor * cocoaCursor = convertCursor(cursor);
 
-    const Qt::CursorShape newShape = cursor ? cursor->shape() : Qt::ArrowCursor;
-    // Check for a suitable built-in NSCursor first:
-    switch (newShape) {
-    case Qt::ArrowCursor:
-        [[NSCursor arrowCursor] set];
-        break;
-    case Qt::CrossCursor:
-        [[NSCursor crosshairCursor] set];
-        break;
-    case Qt::IBeamCursor:
-        [[NSCursor IBeamCursor] set];
-        break;
-    case Qt::WhatsThisCursor: //for now just use the pointing hand
-    case Qt::PointingHandCursor:
-        [[NSCursor pointingHandCursor] set];
-        break;
-    case Qt::SplitVCursor:
-        [[NSCursor resizeUpDownCursor] set];
-        break;
-    case Qt::SplitHCursor:
-        [[NSCursor resizeLeftRightCursor] set];
-        break;
-    case Qt::OpenHandCursor:
-        [[NSCursor openHandCursor] set];
-        break;
-    case Qt::ClosedHandCursor:
-        [[NSCursor closedHandCursor] set];
-        break;
-    case Qt::DragMoveCursor:
-        [[NSCursor crosshairCursor] set];
-        break;
-    case Qt::DragCopyCursor:
-        [[NSCursor crosshairCursor] set];
-        break;
-    case Qt::DragLinkCursor:
-        [[NSCursor dragLinkCursor] set];
-        break;
-    default : {
-        // No suitable OS cursor exist, use cursors provided
-        // by Qt for the rest. Check for a cached cursor:
-        NSCursor *cocoaCursor = m_cursors.value(newShape);
-        if (cocoaCursor && cursor->shape() == Qt::BitmapCursor) {
-            [cocoaCursor release];
-            cocoaCursor = 0;
-        }
-        if (cocoaCursor == 0) {
-            cocoaCursor = createCursorData(cursor);
-            if (cocoaCursor == 0) {
-                [[NSCursor arrowCursor] set];
-                return;
-            }
-            m_cursors.insert(newShape, cocoaCursor);
-        }
-
-        [cocoaCursor set];
-        break; }
-    }
+    if (QPlatformWindow * platformWindow = window->handle())
+        static_cast<QCocoaWindow *>(platformWindow)->setWindowCursor(cocoaCursor);
 }
 
 QPoint QCocoaCursor::pos() const
@@ -139,6 +85,69 @@ void QCocoaCursor::setPos(const QPoint &position)
     CGEventPost(kCGHIDEventTap, e);
     CFRelease(e);
 }
+
+NSCursor *QCocoaCursor::convertCursor(QCursor * cursor)
+{
+    const Qt::CursorShape newShape = cursor ? cursor->shape() : Qt::ArrowCursor;
+    NSCursor *cocoaCursor;
+
+    // Check for a suitable built-in NSCursor first:
+    switch (newShape) {
+    case Qt::ArrowCursor:
+        cocoaCursor= [NSCursor arrowCursor];
+        break;
+    case Qt::CrossCursor:
+        cocoaCursor = [NSCursor crosshairCursor];
+        break;
+    case Qt::IBeamCursor:
+        cocoaCursor = [NSCursor IBeamCursor];
+        break;
+    case Qt::WhatsThisCursor: //for now just use the pointing hand
+    case Qt::PointingHandCursor:
+        cocoaCursor = [NSCursor pointingHandCursor];
+        break;
+    case Qt::SplitVCursor:
+        cocoaCursor = [NSCursor resizeUpDownCursor];
+        break;
+    case Qt::SplitHCursor:
+        cocoaCursor = [NSCursor resizeLeftRightCursor];
+        break;
+    case Qt::OpenHandCursor:
+        cocoaCursor = [NSCursor openHandCursor];
+        break;
+    case Qt::ClosedHandCursor:
+        cocoaCursor = [NSCursor closedHandCursor];
+        break;
+    case Qt::DragMoveCursor:
+        cocoaCursor = [NSCursor crosshairCursor];
+        break;
+    case Qt::DragCopyCursor:
+        cocoaCursor = [NSCursor crosshairCursor];
+        break;
+    case Qt::DragLinkCursor:
+        cocoaCursor = [NSCursor dragLinkCursor];
+        break;
+    default : {
+        // No suitable OS cursor exist, use cursors provided
+        // by Qt for the rest. Check for a cached cursor:
+        cocoaCursor = m_cursors.value(newShape);
+        if (cocoaCursor && cursor->shape() == Qt::BitmapCursor) {
+            [cocoaCursor release];
+            cocoaCursor = 0;
+        }
+        if (cocoaCursor == 0) {
+            cocoaCursor = createCursorData(cursor);
+            if (cocoaCursor == 0)
+                return [NSCursor arrowCursor];
+
+            m_cursors.insert(newShape, cocoaCursor);
+        }
+
+        break; }
+    }
+    return cocoaCursor;
+}
+
 
 // Creates an NSCursor for the given QCursor.
 NSCursor *QCocoaCursor::createCursorData(QCursor *cursor)
@@ -218,8 +227,8 @@ NSCursor *QCocoaCursor::createCursorData(QCursor *cursor)
         return createCursorFromPixmap(pixmap, hotspot);
         break; }
     case Qt::SizeAllCursor: {
-        QPixmap pixmap = QPixmap(QLatin1String(":/qt-project.org/mac/cursors/images/pluscursor.png"));
-        return createCursorFromPixmap(pixmap, hotspot);
+        QPixmap pixmap = QPixmap(QLatin1String(":/qt-project.org/mac/cursors/images/sizeallcursor.png"));
+        return createCursorFromPixmap(pixmap, QPoint(8, 8));
         break; }
     case Qt::BusyCursor: {
         QPixmap pixmap = QPixmap(QLatin1String(":/qt-project.org/mac/cursors/images/waitcursor.png"));

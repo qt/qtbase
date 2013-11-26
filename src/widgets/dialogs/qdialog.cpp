@@ -52,6 +52,8 @@
 #include "qwhatsthis.h"
 #include "qmenu.h"
 #include "qcursor.h"
+#include "qmessagebox.h"
+#include "qerrormessage.h"
 #include <qpa/qplatformtheme.h>
 #include "private/qdialog_p.h"
 #include "private/qguiapplication_p.h"
@@ -74,6 +76,14 @@ static inline int themeDialogType(const QDialog *dialog)
 #ifndef QT_NO_FONTDIALOG
     if (qobject_cast<const QFontDialog *>(dialog))
         return QPlatformTheme::FontDialog;
+#endif
+#ifndef QT_NO_MESSAGEBOX
+    if (qobject_cast<const QMessageBox *>(dialog))
+        return QPlatformTheme::MessageDialog;
+#endif
+#ifndef QT_NO_ERRORMESSAGE
+    if (qobject_cast<const QErrorMessage *>(dialog))
+        return QPlatformTheme::MessageDialog;
 #endif
     return -1;
 }
@@ -98,6 +108,17 @@ QPlatformDialogHelper *QDialogPrivate::platformHelper() const
         }
     }
     return m_platformHelper;
+}
+
+bool QDialogPrivate::canBeNativeDialog() const
+{
+    QDialogPrivate *ncThis = const_cast<QDialogPrivate *>(this);
+    QDialog *dialog = ncThis->q_func();
+    const int type = themeDialogType(dialog);
+    if (type >= 0)
+        return QGuiApplicationPrivate::platformTheme()
+                ->usePlatformNativeDialog(static_cast<QPlatformTheme::DialogType>(type));
+    return false;
 }
 
 QWindow *QDialogPrivate::parentWindow() const
@@ -697,6 +718,9 @@ void QDialog::closeEvent(QCloseEvent *e)
 void QDialog::setVisible(bool visible)
 {
     Q_D(QDialog);
+    if (!testAttribute(Qt::WA_DontShowOnScreen) && d->canBeNativeDialog() && d->setNativeDialogVisible(visible))
+        return;
+
     if (visible) {
         if (testAttribute(Qt::WA_WState_ExplicitShowHide) && !testAttribute(Qt::WA_WState_Hidden))
             return;

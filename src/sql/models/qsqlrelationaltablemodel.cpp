@@ -671,7 +671,7 @@ void QSqlRelationalTableModel::clear()
     \value InnerJoin - Inner join mode, return rows when there is at least one match in both tables.
     \value LeftJoin - Left join mode, returns all rows from the left table (table_name1), even if there are no matches in the right table (table_name2).
 
-    \sa QSqlRelationalTableModel::setJoinMode
+    \sa QSqlRelationalTableModel::setJoinMode()
     \since 4.8
 */
 

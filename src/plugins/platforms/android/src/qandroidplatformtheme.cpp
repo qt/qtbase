@@ -43,6 +43,7 @@
 #include "qandroidplatformmenubar.h"
 #include "qandroidplatformmenu.h"
 #include "qandroidplatformmenuitem.h"
+#include "qandroidplatformdialoghelpers.h"
 #include <QVariant>
 #include <QFileInfo>
 #include <qandroidplatformintegration.h>
@@ -124,7 +125,7 @@ const QFont *QAndroidPlatformTheme::font(Font type) const
         return &(it.value());
 
     // default in case the style has not set a font
-    static QFont systemFont("Roboto", 12.0 * 100 / 72); // keep default size the same after changing from 100 dpi to 72 dpi
+    static QFont systemFont("Roboto", 14.0 * 100 / 72); // keep default size the same after changing from 100 dpi to 72 dpi
     if (type == QPlatformTheme::SystemFont)
         return &systemFont;
     return 0;
@@ -148,5 +149,22 @@ QVariant QAndroidPlatformTheme::themeHint(ThemeHint hint) const
         break;
     default:
         return QPlatformTheme::themeHint(hint);
+    }
+}
+
+bool QAndroidPlatformTheme::usePlatformNativeDialog(QPlatformTheme::DialogType type) const
+{
+    if (type == MessageDialog)
+        return qgetenv("QT_USE_ANDROID_NATIVE_DIALOGS").toInt() == 1;
+    return false;
+}
+
+QPlatformDialogHelper *QAndroidPlatformTheme::createPlatformDialogHelper(QPlatformTheme::DialogType type) const
+{
+    switch (type) {
+    case MessageDialog:
+        return new QtAndroidDialogHelpers::QAndroidPlatformMessageDialogHelper;
+    default:
+        return 0;
     }
 }

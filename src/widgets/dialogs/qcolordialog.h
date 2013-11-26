@@ -112,9 +112,6 @@ Q_SIGNALS:
 
 protected:
     void changeEvent(QEvent *event);
-    virtual void mouseMoveEvent(QMouseEvent *);
-    virtual void mouseReleaseEvent(QMouseEvent *);
-    virtual void keyPressEvent(QKeyEvent *);
     void done(int result);
 
 private:

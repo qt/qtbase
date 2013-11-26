@@ -113,7 +113,7 @@ void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPo
 #endif
 
     QEglFSWindow *rootWin = m_window->screen()->rootWindow();
-    if (!rootWin)
+    if (!rootWin || !rootWin->isRaster())
         return;
 
     m_window->create();
@@ -132,13 +132,14 @@ void QEglFSBackingStore::resize(const QSize &size, const QRegion &staticContents
     Q_UNUSED(staticContents);
 
     QEglFSWindow *rootWin = m_window->screen()->rootWindow();
-    if (!rootWin)
+    if (!rootWin || !rootWin->isRaster())
         return;
 
     m_image = QImage(size, QImage::Format_RGB32);
     m_window->create();
 
     rootWin->screen()->rootContext()->makeCurrent(rootWin->window());
+    initializeOpenGLFunctions();
 
     if (m_texture)
         glDeleteTextures(1, &m_texture);

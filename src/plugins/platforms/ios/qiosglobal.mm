@@ -58,35 +58,24 @@ bool isQtApplication()
     return isQt;
 }
 
-QIOSViewController *qiosViewController()
-{
-    // If Qt controls the application, we have created a root view controller were we place top-level
-    // QWindows. Note that in a mixed native application, our view controller might later be removed or
-    // added as a child of another controller. To protect against that, we keep an explicit pointer to the
-    // view controller in cases where this is the controller we need to access.
-    static QIOSViewController *c = isQtApplication() ?
-        static_cast<QIOSApplicationDelegate *>([UIApplication sharedApplication].delegate).qiosViewController : nil;
-    return c;
-}
-
-CGRect toCGRect(const QRect &rect)
+CGRect toCGRect(const QRectF &rect)
 {
     return CGRectMake(rect.x(), rect.y(), rect.width(), rect.height());
 }
 
-QRect fromCGRect(const CGRect &rect)
+QRectF fromCGRect(const CGRect &rect)
 {
-    return QRect(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
+    return QRectF(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
 }
 
-CGPoint toCGPoint(const QPoint &point)
+CGPoint toCGPoint(const QPointF &point)
 {
     return CGPointMake(point.x(), point.y());
 }
 
-QPoint fromCGPoint(const CGPoint &point)
+QPointF fromCGPoint(const CGPoint &point)
 {
-    return QPoint(point.x, point.y);
+    return QPointF(point.x, point.y);
 }
 
 Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientation)

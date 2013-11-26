@@ -55,12 +55,11 @@
 */
 #define QT_VERSION_CHECK(major, minor, patch) ((major<<16)|(minor<<8)|(patch))
 
-#if !defined(QT_BUILD_MOC) && !defined(QT_BUILD_QMAKE) && !defined(QT_BUILD_CONFIGURE)
+#if !defined(QT_BUILD_QMAKE) && !defined(QT_BUILD_CONFIGURE)
 #include <QtCore/qconfig.h>
-#endif
-
 #include <QtCore/qfeatures.h>
 #define QT_SUPPORTS(FEATURE) (!defined(QT_NO_##FEATURE))
+#endif
 
 /* These two macros makes it possible to turn the builtin line expander into a
  * string literal. */
@@ -198,6 +197,8 @@ typedef quint64 qulonglong;
 #   define QT_POINTER_SIZE 4
 #  elif defined(Q_OS_ANDROID)
 #   define QT_POINTER_SIZE 4 // ### Add auto-detection to Windows configure
+#  elif !defined(QT_BOOTSTRAPPED)
+#   error could not determine QT_POINTER_SIZE
 #  endif
 #endif
 
@@ -212,11 +213,8 @@ typedef unsigned int uint;
 typedef unsigned long ulong;
 QT_END_INCLUDE_NAMESPACE
 
-// This logic must match the one in qmetatype.h
 #if defined(QT_COORD_TYPE)
 typedef QT_COORD_TYPE qreal;
-#elif defined(QT_NO_FPU) || defined(Q_PROCESSOR_ARM) || defined(Q_OS_WINCE)
-typedef float qreal;
 #else
 typedef double qreal;
 #endif
@@ -332,9 +330,6 @@ typedef double qreal;
 #else
 #    define Q_AUTOTEST_EXPORT
 #endif
-
-#define Q_INIT_RESOURCE_EXTERN(name) \
-    extern int QT_MANGLE_NAMESPACE(qInitResources_ ## name) ();
 
 #define Q_INIT_RESOURCE(name) \
     do { extern int QT_MANGLE_NAMESPACE(qInitResources_ ## name) ();       \
@@ -530,6 +525,16 @@ Q_DECL_CONSTEXPR inline const T &qBound(const T &min, const T &val, const T &max
 #  define QT_MAC_DEPLOYMENT_TARGET_BELOW(osx, ios) \
     (defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && osx != __MAC_NA && __MAC_OS_X_VERSION_MIN_REQUIRED < osx) || \
     (defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && ios != __IPHONE_NA && __IPHONE_OS_VERSION_MIN_REQUIRED < ios)
+
+#  define QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(ios) \
+      QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_NA, ios)
+#  define QT_OSX_PLATFORM_SDK_EQUAL_OR_ABOVE(osx) \
+      QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(osx, __IPHONE_NA)
+
+#  define QT_IOS_DEPLOYMENT_TARGET_BELOW(ios) \
+      QT_MAC_DEPLOYMENT_TARGET_BELOW(__MAC_NA, ios)
+#  define QT_OSX_DEPLOYMENT_TARGET_BELOW(osx) \
+      QT_MAC_DEPLOYMENT_TARGET_BELOW(osx, __IPHONE_NA)
 #endif
 
 /*

@@ -3586,7 +3586,7 @@ bool QUrl::matches(const QUrl &url, FormattingOptions options) const
     else if (d->fragment != url.d->fragment)
         return false;
 
-    if (!(d->sectionIsPresent & mask) == (url.d->sectionIsPresent & mask))
+    if ((d->sectionIsPresent & mask) != (url.d->sectionIsPresent & mask))
         return false;
 
     // Compare paths, after applying path-related options

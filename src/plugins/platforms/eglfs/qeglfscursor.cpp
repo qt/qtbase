@@ -79,7 +79,7 @@ void QEglFSCursor::resetResources()
     m_cursorAtlas.texture = 0;
 }
 
-static GLuint createShader(GLenum shaderType, const char *program)
+GLuint QEglFSCursor::createShader(GLenum shaderType, const char *program)
 {
     GLuint shader = glCreateShader(shaderType);
     glShaderSource(shader, 1 /* count */, &program, NULL /* lengths */);
@@ -98,7 +98,7 @@ static GLuint createShader(GLenum shaderType, const char *program)
     return 0;
 }
 
-static GLuint createProgram(GLuint vshader, GLuint fshader)
+GLuint QEglFSCursor::createProgram(GLuint vshader, GLuint fshader)
 {
     GLuint program = glCreateProgram();
     glAttachShader(program, vshader);
@@ -286,6 +286,7 @@ void QEglFSCursor::draw(const QRectF &r)
 {
     if (!m_program) {
         // one time initialization
+        initializeOpenGLFunctions();
         createShaderPrograms();
 
         if (!m_cursorAtlas.texture) {

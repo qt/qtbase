@@ -1429,7 +1429,10 @@ static const char * xcb_atomnames = {
 #if XCB_USE_MAEMO_WINDOW_PROPERTIES
     "_MEEGOTOUCH_ORIENTATION_ANGLE\0"
 #endif
-    "_XSETTINGS_SETTINGS\0" // \0\0 terminates loop.
+    "_XSETTINGS_SETTINGS\0"
+    "_COMPIZ_DECOR_PENDING\0"
+    "_COMPIZ_DECOR_REQUEST\0"
+    "_COMPIZ_DECOR_DELETE_PIXMAP\0" // \0\0 terminates loop.
 };
 
 QXcbAtom::Atom QXcbConnection::qatom(xcb_atom_t xatom) const
@@ -1737,10 +1740,26 @@ bool QXcbConnection::xi2GetValuatorValueIfSet(void *event, int valuatorNum, doub
     return true;
 }
 
-bool QXcbConnection::xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *event, int opCode)
+// Starting from the xcb version 1.9.3 struct xcb_ge_event_t has changed:
+// - "pad0" became "extension"
+// - "pad1" and "pad" became "pad0"
+// New and old version of this struct share the following fields:
+// NOTE: API might change again in the next release of xcb in which case this comment will
+// need to be updated to reflect the reality.
+typedef struct qt_xcb_ge_event_t {
+    uint8_t  response_type;
+    uint8_t  extension;
+    uint16_t sequence;
+    uint32_t length;
+    uint16_t event_type;
+} qt_xcb_ge_event_t;
+
+bool QXcbConnection::xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *ev, int opCode)
 {
-    // xGenericEvent has "extension" on the second byte, xcb_ge_event_t has "pad0".
-    if (event->pad0 == opCode) {
+    qt_xcb_ge_event_t *event = (qt_xcb_ge_event_t *)ev;
+    // xGenericEvent has "extension" on the second byte, the same is true for xcb_ge_event_t starting from
+    // the xcb version 1.9.3, prior to that it was called "pad0".
+    if (event->extension == opCode) {
         // xcb event structs contain stuff that wasn't on the wire, the full_sequence field
         // adds an extra 4 bytes and generic events cookie data is on the wire right after the standard 32 bytes.
         // Move this data back to have the same layout in memory as it was on the wire

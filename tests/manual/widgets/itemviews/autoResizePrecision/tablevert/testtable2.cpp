@@ -110,7 +110,8 @@ protected:
 
 void TableDialog::slotValueChanged(int newval)
 {
-    tableView->verticalHeader()->setResizeContentsPrecision(newval, true);
+    tableView->verticalHeader()->setResizeContentsPrecision(newval);
+    tableView->resizeRowsToContents();
 }
 
 

@@ -16,36 +16,69 @@ Each of these identifiers can be entered in the bug tracker to obtain more
 information about a particular change.
 
 ****************************************************************************
+*                   Important Behavior Changes                             *
+****************************************************************************
+
+ - Qt is now compiled with qreal typedef'ed to double on all
+   platforms. qreal was a float on ARM chipsets before. This guarantees more
+   consistent behavior between all platforms Qt supports, but is binary
+   incompatible to Qt 5.1 on ARM. The old behavior can be restored by
+   passing -qreal float to configure.
+ - The supported date range in QDateTime has been reduced to about +/- 292
+   million years, the range supported by the number of msecs since the Unix
+   epoch of 1 Jan 1970 as stored in a qint64, and as able to be used in the
+   setMSecsSinceEpoch() and toMSecsSinceEpoch() methods.
+
+ - QUrl and QUrlQuery:
+   * [QTBUG-31660] QUrl no longer considers all delimiter characters
+     equivalent to their percent-encoded forms. Now, both classes always
+     keep all delimiters exactly as they were in the original URL text.
+   * [QTBUG-31660] QUrl no longer decodes %7B and %7D to "{" and "}" in the
+     output of toString()
+   * QUrl no longer supports QUrl::FullyDecoded mode in authority() and
+     userInfo(), nor QUrl::DecodedMode in setAuthority() and setUserInfo().
+   * [QTBUG-31945] QUrl no longer decodes %23 found in the fragment to "#"
+     in the output of toString(QUrl::FullyEncoded) or toEncoded()
+   * QUrl now defaults to decoded mode in the getters and setters for
+     userName, password, host, topLevelDomain, path and fileName. This
+     means a '%' in one of those fields is now returned (or set) as '%'
+     rather than "%25". In the unlikely case where the former behavior was
+     expected, pass PrettyDecoded to the getter and TolerantMode to the
+     setter.
+   * QUrl now normalizes the path given in setPath, removing ./ and ../ and
+     duplicate slashes.
+
+****************************************************************************
 *                          Library                                         *
 ****************************************************************************
 
-QtWidgets
----------
-
-- QAbstractScrollArea now has a SizeAdjustPolicy. If it is set to AdjustToContents
-  it will make use of the new protected viewportSizeHint() (binary compatible since it
-  was reserved in Qt5). This function returns a suggested size based on contents.
-
-- QTreeView now has setTreePosition to allow the treestructure to show data from other
-  columns than logicalindex zero.
-
-- [QTBUG-4206] QTableView resizeToContents will now adjust to actual contents
-  and not just visible area. QHeaderView::setAutoResizePrecision() has been
-  introduced to control how precise the autoResize should be.
-
-- QFileDialog::setDefaultSuffix() removes leading dot characters.
-
-- QSizePolicy got a retainSizeWhenHidden attribute.
-
-- [QTBUG-31602] QSpinBox size calculation will now be fixed when stylesheets are
-  used.
-
 QtCore
 ------
-- [QTBUG-30250] QTime, QDateTime:
-  When calling QTime::toString(Qt::TextDate) and QTime::toString(Qt::ISODate),
-  milliseconds are now included in the returned string. This also applies to
-  QDateTime::toString(Qt::TextDate) and QDateTime::toString(ISODate).
+
+ - Added QCollator, a class to collate Unicode strings.
+ - Added QCommandLineParser, a class to parse command lines.
+ - Added QFileSelector, a class to select platform-specific file assets.
+ - Added QLoggingCategory and related functions for logging
+ - [QTBUG-23946] Fixed a bug that prevented Qt from being built in a
+   namespace on Mac OS X.
+ - Updated the locale database to CLDR 23.1
+ - Added support for ARMv8 64-bit mode.
+
+ - Metatype system (QMetaType & QVariant):
+   * Qt now handles metatypes automatically for std::vector, std::list,
+     std::pair and std::map
+   * The metatype system now supports registering explicit conversion
+     functions via QMetaType::registerConverter
+   * The metatype system now supports iteration over a container type via
+     QSequentialIterable and QAssociativeIterable
+   * Registering the same type name twice will now print only a warning (as
+     opposed to aborting the execution of the program)
+
+ - Qt Containers:
+   * In debug mode, the Qt containers will now verify whether the iterators
+     passed to most mutating functions belong to the iterator in question.
+   * Fixed a number of bugs that would modify shared containers when calling
+     erase(), under corner-case conditions.
 
 - QtAlgorithms
   With STL no longer being optional for building and using Qt, a number of parts
@@ -76,30 +109,458 @@ QtCore
     - qLess (std::less)
     - qGreater (std::greater)
 
+ - QByteArray:
+   * Added QByteArray::Base64Url and QByteArray::OmitTrailingEquals flags
+     for QByteArray::toBase64 and fromBase64.
+   * [QTBUG-34694] Fixed a bug that would cause QByteArray to overflow some
+     size calculations.
+
+ - QCoreApplication:
+   * [QTBUG-15379][QTBUG-30628] Fixed a bug that caused Qt to mis-parse a
+     command-line argument like -DKEY=\"VALUE\" on Windows.
+
+ - QDateTime:
+   * [QTBUG-26161][QTBUG-29666] Fully implement support for Qt::TimeSpec of
+     Qt::OffsetFromUTC, added new methods for offsetFromUTC(),
+     toTimeSpec(), and toOffsetFromUTC().
+   * Added convenience methods for fromMSecsSinceEpoch() and fromTime_t()
+     to take time spec to be used in returned datetime.
+   * Add method timeZoneAbbreviation() to return effective time zone
+     abbreviation.
+   * The debug datastream is now an ISO-like format instead of Qt::TextDate
+   * The Standard Time to Daylight Time transition for Qt::LocalTime is now
+     handled correctly. Any date set in the "missing" hour is now
+     considered invalid. All date math results that fall into the missing
+     hour will be automatically adjusted to a valid time in the following
+     hour.
+   * Added new method isDaylightTime() to return if the datetime is in
+     Daylight Time or not.
+   * Added support for a new Qt::TimeZone spec to be used with QTimeZone to
+     define times in a specific time zone.
+   * Added Qt::RFC2822Date format that can be passed to QDateTime and
+     QLocale formatters and parsers.
+   * Fixed a bug that caused QDate::toString() to return empty for dates
+     with years beyond 9999.
+
+ - QFileSystemWatcher:
+   * [QTBUG-33211] Fixed a bug that caused QFileSystemWatcher to emit change
+     notifications with the wrong path on Linux.
+
+ - QJson:
+   * [QTBUG-33229] The Writer and the Parser now fully accept non-character
+     unicode points.
+   * The Writer will no longer write inf, -inf and nan for infinites and NaN
+     values, which resulted in parsing back as strings. Instead, it will now
+     output null.
+   * The Writer now emits numeric values with full numeric precision. This
+     also allows QJson to support integer values with no loss of precision
+     up to 2^53.
+
+ - QJsonValue:
+   * Added QJsonValue::toInt(). QJsonValue can store 32-bit signed integers
+     with no loss of precision.
+
+ - QObject:
+   * New-style signal connections to functors, lambdas, and static functions
+     now works with a receiver object. The connection will be removed when
+     the either the sender or receiver objects are destroyed.
+
+ - QPluginLoader:
+   * QPluginLoader will no longer load the plugins on Mac OS X and iOS
+     systems when scanning for valid plugins.
+   * Added QPluginLoader::staticPlugins(), which returns the list of
+     built-in plugins (linked to the executable and any loaded libraries).
+
+ - QProcess:
+   * [QTBUG-32958] Fixed a bug that would cause QProcess to crash if
+     waitForStarted() were called after an unsuccessful start()
+   * Added QProcess::nullDevice(), which returns the platform's "blackhole"
+     device (/dev/null on Unix, NUL on Windows). This can be used with
+     QProcess::setStandardOutputFile.
+   * Added enum values QProcess::ForwardedOutputChannel and
+     QProcess::ForwardedErrorChannel, which allow for more fine-grained
+     control over which channel is forwarded and which one is captured.
+   * Added QProcess::ForwardedInputChannel, which allows for stdin to be
+     forwarded to this process's input.
+   * [QTBUG-32979] On Unix, QProcess now correctly forwards the siginfo_t
+     and context parameters of the signal handler to the previous handler.
+
+ - QScopedPointer:
+   * Added QScopedPointerDeleteLater, a new class that can be used as the
+     second template to QScopedPointer and will call deleteLater() on the
+     pointer when it goes out of scope.
+
+ - QSocketNotifier:
+   * Fixed a bug that caused socket notifiers not to be re-enabled after
+     they had been activated on BlackBerry.
+
+ - QStandardPaths:
+   * QStandardPaths::enableTestMode is deprecated and is replaced by
+     QStandardPaths::setTestModeEnabled.
+   * Added QStandardPaths::GenericConfigLocation, which refers to a location
+     where applications can store config files to be shared with other
+     applications.
+
+ - QThread:
+   * Added an advisory interrupt mechanism (QThread::requestInterruption and
+     QThread::isInterruptionRequested).
+
+ - QThreadPool:
+   * Added method clear() to remove any queued QRunnables.
+   * Fixed a number of race conditions.
+
+ - QTime:
+   * [QTBUG-30250] When calling QTime::toString(Qt::TextDate) and
+     QTime::toString(Qt::ISODate), milliseconds are now included in
+     the returned string. This also applies to
+     QDateTime::toString(Qt::TextDate) and
+     QDateTime::toString(ISODate).
+   * Added new methods fromMSecsSinceStartOfDay() to create a new QTime
+     from an msecs value, and msecsSinceStartOfDay() to return the QTime as
+     the number of msecs since the start of the day.
+
+ - QTimeZone:
+   * Added new QTimeZone class to support time tone calculations using the
+     host platform time zone database and the Olsen time zone ID's.
+
+ - QUrl:
+   * [QTBUG-33229] QUrl now fully accepts non-character unicode points;
+     they are encoded as percent characters; they can also be pretty
+     decoded
+   * Added QUrl::RemoveFilename flag which can be passed to path(),
+     authority() and toString() and will cause the filename part of the path
+     (the contents after the last '/') to be removed.
+   * Added QUrl::fileName(), which returns just the filename part of the
+     path.
+   * Added QUrl::NormalizePathSegments flag, which will cause QUrl to
+     remove "/./" or "/../" sequences as much as possible. It will not
+     remove "/../" from the beginning of the path.
+   * Added QUrl::adjusted(), which returns a new QUrl with certain parts of
+     the original URL removed or normalized.
+   * Added QUrl::matches(), which can be used to compare parts of two URLs
+     or to compare two URLs after normalization.
+
+ - QUtf8:
+   * [QTBUG-33229] UTF-8 now accepts non-character unicode points; these
+     are not replaced by the replacement character anymore
+
+ - QVariant:
+   * Fixed QVariant::canConvert with longlong
+   * Variant containing enum types can now be converted to integer
+   * [QTBUG-33981] Fixed a bug that would cause QPolygonF to be saved or
+     loaded incorrectly in QDataStream.
+
+QtDBus
+------
+
+ - Improved error handling so as to give more feedback to the developer when
+   certain marshalling or demarshalling actions fail.
+ - [QTBUG-27809] Fixed some race conditions related to delivering method
+   reply deliveries.
+ - Fixed a bug that made non-slot invokables not get listed in the
+   auto-generated introspections.
+
+QtDeclarative
+-------------
+
+ - ColorDialog:
+   * Added currentColor property.
+
+ - [QTBUG-32928] ShortcutOverride events now work for QQuickItem
+   subclasses
+
 QtGui
 -----
-- [QTBUG-28228] Session Management:
-  The new QPlatformSessionManager class brings back the session management
-  functionality. It allows the implementation of platform specific behavior
-  related to session management. For platform that don't support this
-  feature the default behavior has not changed.
-  Both X11 and Windows session management are supported.
+
+ - Accessibility classes are now public allowing accessibility
+   information for custom widgets/QQuickItems
+
+ - Session Management:
+   * [QTBUG-28228] The new QPlatformSessionManager class brings back
+     the session management functionality. It allows the
+     implementation of platform specific behavior related to session
+     management. For platform that don't support this feature the
+     default behavior has not changed.  Both X11 and Windows session
+     management are supported.
+
+ - QPolygonF:
+   * When a QVariant holds a QPolygonF() then it will be correctly seen as
+     a null QVariant.
+
+ - [QTBUG-27349] Reintroduced command line argument for positioning
+   windows (-geometry on X11, -qwindowgeometry on other platforms)
 
 QtNetwork
 ---------
 
-- API was added to store and resume TLS session tickets.
+ - API was added to store and resume TLS session tickets.
+ - The minimum support openssl version has been increased to openssl
+   1.0. The code to support older versions has not been removed, but is no
+   longer supported.
+ - An off-by-one error in NTLM proxy authentication has been fixed.
+ - Various improvements to reduce the memory used by qtnetwork have been
+   made.
+ - Improved support for HTTP proxy authentication.
+ - Support for preconnecting to servers before making HTTP and HTTPS
+   connections. This allows for much reduced latency when the hosts to be
+   connected to are known.
 
-- The minimum support openssl version has been increased to openssl 1.0. The
-  code to support older versions has not been removed, but is no longer
-  supported.
+QtPrintSupport
+--------------
 
-- An off-by-one error in NTLM proxy authentication has been fixed.
+ - QPrintDialog:
+   * Added support for setting CUPS job options in the print dialog.
+   * Added support for setting CUPS Banner pages in the print dialog.
+   * Added support for setting CUPS Page Set (even/odd pages only) in the
+     print dialog.
+   * Added support for setting CUPS Pages Per Sheet and Pages Per Sheet
+     Layout options
+   * Added CUPS server-side print range support for apps that can't support
+     print range option themselves
 
-- Various improvements to reduce the memory used by qtnetwork have been made.
+QtSql
+-----
 
-- Improved support for HTTP proxy authentication.
+Changes in Qt 5.1.0 (missing from released changelog dist/changes-5.1.0)
+ - [QTBUG-28088] Remove dependency of DB driver headers on qsqlcachedresult_p.h.
+ - Deprecate QSqlError setters. The constructor is sufficient, since it has
+   a parameter for each member variable.
+ - Rename the SQL driver header files to _p.h (make private)
+   The drivers were never public API. They were exposed by mistake in
+   public headers. What's more, they have #include'd a private header
+   (qsqlcachedresult_p.h) since at least Qt 4.5.1. That means no one used
+   those headers in Qt 4 (private headers weren't installed then) and
+   it's unlikely anyone did in 5.0.
+ - ODBC: Implemented lastInsertId() for some ODBC compatible databases.
+ - PSQL: Make lastInsertID work for tables without OIDs.
+ - [QTBUG-14904] SQLITE: Fix for Sql query aliases with dots
+ - [QTBUG-2192] ODBC: fix loss of milliseconds when binding QDateTime
+ - [QTBUG-30076] PSQL: escape backslashes only when server requires it
+   IMPORTANT: Applications that implemented their own workarounds must be
+   updated to avoid misbehavior and SQL injection vulnerabilities.
+ - [QTBUG-10569] ODBC: fixed QODBCResult::exec() return value for DELETE
+   operations when no rows are affected.
+ - ODBC: Fixed loss of column metadata on SQL_NO_DATA.
+ - QSqlTableModel: expose methods for getting primary values.
+ - ODBC: Fixed possible cause of spurious errors (commit af35ee291a1bbbc8)
 
-- Support for preconnecting to servers before making HTTP and HTTPS
-  connections. This allows for much reduced latency when the hosts to be
-  connected to are known.
+Changes in Qt 5.2.0
+ - [QTBUG-29261] IBASE: Construct a valid QTime when creating timestamps for
+   iBase SQL driver.
+ - [QTBUG-33389] PSQL: Format QDateTime following ISO8601.
+ - Add QSQLITE_OPEN_URI option to QSQLITE driver
+
+QtWidgets
+---------
+
+ - [QTBUG-30255] Fixed a bug where spans across empty cells in a grid
+   layout got broken.
+ - [QTBUG-32788] Properly handles Qt::WidgetWithChildrenShortcut
+   shortcuts in MDI subwindows now.
+ - [QTBUG-33078] QWidget::setWindowOpacity() now works when called
+   before QWidget::show().
+ - [QTBUG-33247] Changed accessible trees and tables to always expose
+   hidden headers, instead of only exposing the visible headers.
+ - [QTBUG-34007] Fixed a crash in tablet support.
+ - Fixed a bug where the maximum size hint of a layout with spans was
+   wrong.
+ - Item delegates now cycle through all three states of tri-state
+   checkboxes, the same way QCheckBox itself does.
+
+ - QAbstractItemView:
+   * [QTBUG-7232] In ItemViews scrollbars will now by default only
+     scroll 1 pixel when scrollMode is set to scrollPerPixel. That is
+     it will (when scrollMode is scrollPerPixel) do what is stated in
+     the documentation, and no longer automatically adjust the
+     scrollbar's singleStep. The user can now control that value.
+
+ - QAbstractScrollArea:
+   * QAbstractScrollArea now has a SizeAdjustPolicy. If it is set to
+     AdjustToContents it will make use of the protected viewportSizeHint()
+     virtual function. This function returns a suggested size based on
+     contents. Note that although the viewportSizeHint() virtual function
+     was reserved in 5.0, user code was not supposed to be overriding it
+     (as the function was private and undocumented).  Code that was
+     overriding viewportSizeHint() needs to be recompiled against 5.2 for
+     this feature to work correctly.
+
+ - QColorDialog:
+   * Added a web color QLineEdit.
+   * [QTBUG-14332] Added a screen color picker button.
+   * [QTBUG-31998] Does no longer create widgets when using the
+     platform dialog.
+
+ - QComboBox:
+   * Added currentData() convenience function which allows to retrieve
+     the user data set for the current item.
+
+ - QCompleter:
+   * [QTBUG-3414] Added filterMode property.
+
+ - QDesktopWidget:
+   * [QTBUG-32567] Fixed emission of workAreaResized() signal.
+
+ - QDialogButtonBox:
+   * Added a (StandardButtons,QWidget*) constructor.
+
+ - QDockWidget:
+   * [QTBUG-31044] The position of a dock widget is now kept when
+     undocking.
+   * [QTBUG-32260] Fixed a bug where visibilityChanged was signaled
+     wrongly in certain multi-screen setups.
+
+ - QFileDialog:
+   * setDefaultSuffix() now removes leading dot characters.
+   * Introduced DontUseCustomDirectoryIcons. This improves the file
+     dialog performance under Windows for the case where there are
+     lots of folders. Went from taking 60 seconds to 2 seconds, on a
+     SDCard with 10k folders.
+   * Added setMimeTypeFilters() for mimetype-based filtering, as an
+     alternative to pattern matching.
+   * Fixed removing of directories containing hidden or system files.
+   * Added QUrl-based API for remote files.
+   * [QTBUG-13182] Improved performance on Windows by
+     + not resolving NTFS symlinks (15x speedup on pessimistic
+       workloads) and
+     + using extensions over calling GetFileAttributesEx() in certain
+       cases.
+   * [QTBUG-29403] Fixed potential crash in destructor of
+     ~QFileInfoGather in threaded applications.
+   * [QTBUG-34132] QFileDialog does no longer instantiate widgets if a
+     native dialog will be used instead.  Therefore some accessors
+     which previously returned unused objects will now return null.
+     As before, you can set the DontUseNativeDialog option to ensure
+     that widgets will be created and used instead.
+   * [QTBUG-33039] Does no longer create widgets when using the
+     platform dialog.
+
+ - QFontDialog:
+   * Now has finer-grained control over the types of fonts listed,
+     similar to what QFontComboBox already had.
+
+ - QGraphicsView etc
+   * Fixed a crash in QGraphicsProxyWidget.
+   * [QTBUG-8061] Allow handling of mouseDoubleClickEvent in
+     QGraphicsItems.
+   * [QTBUG-19036] Make QGraphicsScene::items(QPointF) work using
+     Qt::{Contains,Intersets}ItemBoundingRect with items that contain
+     the point in the bounding rectangle, but not their (custom)
+     shape.
+
+ - QHeaderView:
+   * [QTBUG-4346] A maximumSize for sections has been introduced. The
+     maximum section size is by default the largest possible section
+     size which in Qt 5.2 has been limited to 1048575 pixels.
+
+ - QInputDialog:
+   * Added getMultiLineText static method.
+
+ - QLineEdit:
+   * Keep placeholderText visible when focused, until text is added.
+   * Context-menu actions now have icons.
+   * Made it possible to add side widgets.
+   * Made it possible to add a clear button commonly used for item
+     view filtering as a side widget
+
+ - QListView:
+   * [QTBUG-1180] Dragging an item outside the QListView in icon mode
+     no longer loses the icon. Also fixed a bug where under certain
+     conditions code overriding QAbstractItemView::viewOptions() would
+     not be called.
+
+ - QMenuBar:
+   * [QTBUG-32807] Menus now close again on second click.
+
+ - QMessageBox:
+   * May use native message boxes on some platforms now.
+   * [QTBUG-6731] It is now possible to select some or all text from a
+     QMessageBox and copy it to the clipboard.
+
+ - QSizePolicy:
+   * Added a retainSizeWhenHidden attribute.
+
+ - QSpinBox:
+   * Values can now be displayed in different bases
+     (cf. displayIntegerBase property)
+   * [QTBUG-31602] Size calculation will now be fixed when stylesheets
+     are used.
+
+ - QSplitter:
+   * Now gets the default value of opaqueResize property from (new)
+     QStyle::SH_Splitter_OpaqueResize styleHint.
+
+ - QSystemTrayIcon:
+   * [QTBUG-31762] Fixed position of system tray icon on Linux/X11
+     (except Unity).
+   * [QTBUG-33461] Increased the maximum length of a system tray
+     tooltip on Windows to what it was in Qt 4.
+
+ - QTableView:
+   * [QTBUG-4206] resizeToContents will now adjust to actual contents
+     and not just visible area. QHeaderView::setAutoResizePrecision()
+     has been introduced to control how precise the autoResize should
+     be.
+
+ - QTextEdit:
+   * Added placeholderText akin to QLineEdit.
+   * Context-menu actions now have icons.
+
+ - QTreeView:
+   * QTreeView now has setTreePosition to allow the treestructure to
+     show data from other columns than logicalindex zero.
+
+ - QWindowContainer:
+   * [QTBUG-32177] Sets active window correctly now.
+
+ - QWizard:
+   * [QTBUG-29924] Gave all buttons an objectName().
+
+****************************************************************************
+*                      Platform Specific Changes                           *
+****************************************************************************
+
+
+Android
+-------
+
+ - Project structure and deployment has changed with the introduction of
+   androiddeployqt. Source and build files are no longer mixed, and the
+   build files for the APK package should not be touched. Customizing
+   the build files is possible. Read the documentation for androiddeployqt
+   for more information.
+ - Status bar visibility is now controlled by Qt, so the window state will
+   override settings in the AndroidManifest.xml. The default is still to
+   show the status bar (QWindow::showMaximized()). Use
+   QWindow::showFullScreen() to hide it.
+ - Implemented support for accessibility on Android.
+
+OS X
+----
+
+ - Qt for OS X is now identified by the macro Q_OS_OSX. This complements the
+   existing Q_OS_DARWIN macro (which identifies the open source kernel and
+   could identify non-Apple products) and Q_OS_MAC, which is defined for
+   both OS X and iOS. The old macro Q_OS_MACX is now deprecated.
+ - Qt no longer complains about new versions of OS X that haven't been
+   released yet. This will allow Qt 5.2 and future versions to build on
+   future versions yet to be released. Note that those versions are not
+   supported until official announcement by the Qt Project.
+ - Added a number of functions to QtCore to convert to and from
+   CFString/NSString and QString, CFURL/NSURL and QUrl.
+
+Windows
+-------
+
+ - [QTBUG-33409][QTBUG-8764][QTBUG-10032] Fixed virtual key mapping on
+   Windows.
+ - QCoreApplication::arguments() changed the handling of single quotes, double quotes
+   and the backslash character, in order to match what argv[] contains.
+   In particular, single quotes are no longer removed from the argument string.
+   (QTBUG-15379, QTBUG-30628)
+
+X11
+---
+
+ - [QTBUG-31762] Fix position of system tray icon (except Unity)
+ - [QTBUG-27349] Reintroduced command line argument for positioning
+   windows (-geometry)

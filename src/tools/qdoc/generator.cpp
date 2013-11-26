@@ -136,6 +136,7 @@ Generator::Generator()
       inSectionHeading_(false),
       inTableHeader_(false),
       threeColumnEnumValueTable_(true),
+      showInternal_(false),
       numTableRows_(0)
 {
     qdb_ = QDocDatabase::qdocDB();
@@ -350,7 +351,11 @@ QString Generator::fileBase(const Node *node) const
             base.append("-module");
         }
         if (node->isExample() || node->isExampleFile()) {
-            base.prepend(project.toLower() + QLatin1Char('-'));
+            QString modPrefix(node->moduleName());
+            if (modPrefix.isEmpty()) {
+                modPrefix = project;
+            }
+            base.prepend(modPrefix.toLower() + QLatin1Char('-'));
         }
         if (node->isExample()) {
             base.append(QLatin1String("-example"));
@@ -963,6 +968,8 @@ void Generator::generateInnerNode(InnerNode* node)
     if (!node->url().isNull())
         return;
     if (node->isIndexNode())
+        return;
+    if (node->isInternal() && !showInternal_)
         return;
 
     if (node->type() == Node::Document) {
@@ -1666,6 +1673,7 @@ void Generator::augmentImageDirs(QSet<QString>& moreImageDirs)
 void Generator::initializeGenerator(const Config& config)
 {
     config_ = &config;
+    showInternal_ = config.getBool(CONFIG_SHOWINTERNAL);
 }
 
 bool Generator::matchAhead(const Atom *atom, Atom::Type expectedAtomType)

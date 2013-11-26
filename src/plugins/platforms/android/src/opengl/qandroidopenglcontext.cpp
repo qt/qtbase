@@ -71,6 +71,8 @@ void QAndroidOpenGLContext::swapBuffers(QPlatformSurface *surface)
         if (size.isValid()) {
             QRect geometry(QPoint(0, 0), size);
             window->setGeometry(geometry);
+            QWindowSystemInterface::handleGeometryChange(window->window(), geometry);
+            QWindowSystemInterface::handleExposeEvent(window->window(), QRegion(geometry));
             window->scheduleResize(QSize());
         }
         window->unlock();

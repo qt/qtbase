@@ -4687,13 +4687,17 @@ public:
 
 void tst_QGraphicsView::hoverLeave()
 {
+    const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
     QGraphicsScene scene;
     QGraphicsView view(&scene);
+    view.resize(160, 160);
+    view.move(availableGeometry.center() - QPoint(80, 80));
     GraphicsItemWithHover *item = new GraphicsItemWithHover;
     scene.addItem(item);
 
     // move the cursor out of the way
-    QCursor::setPos(1,1);
+    const QPoint outOfWindow = view.geometry().topRight() + QPoint(50, 0);
+    QCursor::setPos(outOfWindow);
 
     view.show();
     qApp->setActiveWindow(&view);
@@ -4701,16 +4705,14 @@ void tst_QGraphicsView::hoverLeave()
 
     QPoint pos = view.viewport()->mapToGlobal(view.mapFromScene(item->mapToScene(10, 10)));
     QCursor::setPos(pos);
-    QTest::qWait(200);
-    QVERIFY(item->receivedEnterEvent);
+    QTRY_VERIFY(item->receivedEnterEvent);
     QCOMPARE(item->enterWidget, view.viewport());
 
-    QCursor::setPos(1,1);
-    QTest::qWait(200);
+    QCursor::setPos(outOfWindow);
 #ifdef Q_OS_MAC
     QEXPECT_FAIL("", "QTBUG-26274 - behaviour regression", Abort);
 #endif
-    QVERIFY(item->receivedLeaveEvent);
+    QTRY_VERIFY(item->receivedLeaveEvent);
     QCOMPARE(item->leaveWidget, view.viewport());
 }
 

@@ -50,8 +50,10 @@
 
 QT_BEGIN_NAMESPACE
 
-class QIOSScreen : public QPlatformScreen
+class QIOSScreen : public QObject, public QPlatformScreen
 {
+    Q_OBJECT
+
 public:
     QIOSScreen(unsigned int screenIndex);
     ~QIOSScreen();
@@ -72,13 +74,18 @@ public:
 
     UIScreen *uiScreen() const;
 
-    void setPrimaryOrientation(Qt::ScreenOrientation orientation);
+    void updateProperties();
+    void layoutWindows();
+
+public slots:
+    void updateStatusBarVisibility();
 
 private:
     UIScreen *m_uiScreen;
     QRect m_geometry;
     QRect m_availableGeometry;
     int m_depth;
+    uint m_unscaledDpi;
     QSizeF m_physicalSize;
     QIOSOrientationListener *m_orientationListener;
 };

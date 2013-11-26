@@ -10307,7 +10307,9 @@ void QGraphicsTextItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 QVariant QGraphicsTextItem::inputMethodQuery(Qt::InputMethodQuery query) const
 {
     QVariant v;
-    if (dd->control)
+    if (query == Qt::ImHints)
+        v = int(inputMethodHints());
+    else if (dd->control)
         v = dd->control->inputMethodQuery(query);
     if (v.type() == QVariant::RectF)
         v = v.toRectF().translated(-dd->controlOffset());

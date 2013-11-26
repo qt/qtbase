@@ -94,9 +94,6 @@ int runConfigure( int argc, char** argv )
     // Auto-detect modules and settings.
     app.autoDetection();
 
-    // ... and the CPU architectures.
-    app.detectArch();
-
     // After reading all command-line arguments, and doing all the
     // auto-detection, it's time to do some last minute validation.
     // If the validation fails, we cannot continue.

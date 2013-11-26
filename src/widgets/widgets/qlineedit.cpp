@@ -495,12 +495,13 @@ void QLineEdit::setClearButtonEnabled(bool enable)
         return;
     if (enable) {
         QAction *clearAction = new QAction(d->clearButtonIcon(), QString(), this);
+        clearAction->setEnabled(!isReadOnly());
         clearAction->setObjectName(QLatin1String(clearButtonActionNameC));
         d->addAction(clearAction, 0, QLineEdit::TrailingPosition, QLineEditPrivate::SideWidgetClearButton | QLineEditPrivate::SideWidgetFadeInWithText);
     } else {
         QAction *clearAction = findChild<QAction *>(QLatin1String(clearButtonActionNameC));
         Q_ASSERT(clearAction);
-        removeAction(clearAction);
+        d->removeAction(clearAction);
         delete clearAction;
     }
 }
@@ -1336,6 +1337,7 @@ void QLineEdit::setReadOnly(bool enable)
     Q_D(QLineEdit);
     if (d->control->isReadOnly() != enable) {
         d->control->setReadOnly(enable);
+        d->setClearButtonEnabled(!enable);
         setAttribute(Qt::WA_MacShowFocusRect, !enable);
         setAttribute(Qt::WA_InputMethodEnabled, d->shouldEnableInputMethod());
 #ifndef QT_NO_CURSOR
@@ -1439,7 +1441,7 @@ bool QLineEdit::event(QEvent * e)
                 d->setCursorVisible(true);
         }
     } else if (e->type() == QEvent::ActionRemoved) {
-        d->removeAction(static_cast<QActionEvent *>(e));
+        d->removeAction(static_cast<QActionEvent *>(e)->action());
     } else if (e->type() == QEvent::Resize) {
         d->positionSideWidgets();
     }

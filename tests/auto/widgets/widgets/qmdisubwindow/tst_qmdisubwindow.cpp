@@ -954,9 +954,6 @@ void tst_QMdiSubWindow::mouseDoubleClick()
     QStyleOptionTitleBar options;
     options.initFrom(window);
     int height = window->style()->pixelMetric(QStyle::PM_TitleBarHeight, &options);
-    // ### Remove this after mac style has been fixed
-    if (window->style()->inherits("QMacStyle"))
-        height -= 4;
     // has border
     if (!window->style()->styleHint(QStyle::SH_TitleBar_NoBorder, &options, window))
         height += window->isMinimized() ? 8 : 4;
@@ -1692,11 +1689,6 @@ void tst_QMdiSubWindow::fixedMinMaxSize()
     QStyleOptionTitleBar options;
     options.initFrom(subWindow);
     int minimizedHeight = subWindow->style()->pixelMetric(QStyle::PM_TitleBarHeight, &options);
-#if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
-    // ### Remove this after mac style has been fixed
-    if (subWindow->style()->inherits("QMacStyle"))
-        minimizedHeight -= 4;
-#endif
     if (!subWindow->style()->styleHint(QStyle::SH_TitleBar_NoBorder, &options, subWindow))
         minimizedHeight += 8;
     int minimizedWidth = subWindow->style()->pixelMetric(QStyle::PM_MDIMinimizedWidth, &options);

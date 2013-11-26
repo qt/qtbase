@@ -42,7 +42,8 @@
 #ifndef QEGLFSCOMPOSITOR_H
 #define QEGLFSCOMPOSITOR_H
 
-#include <QTimer>
+#include <QtCore/QTimer>
+#include <QtGui/QOpenGLFunctions>
 
 QT_BEGIN_NAMESPACE
 
@@ -50,7 +51,7 @@ class QEglFSScreen;
 class QEglFSWindow;
 class QOpenGLShaderProgram;
 
-class QEglFSCompositor : public QObject
+class QEglFSCompositor : public QObject, public QOpenGLFunctions
 {
     Q_OBJECT
 
@@ -76,6 +77,7 @@ private:
     int m_vertexCoordEntry;
     int m_textureCoordEntry;
     int m_isRasterEntry;
+    bool m_initialized;
 };
 
 QT_END_NAMESPACE

@@ -53,6 +53,7 @@
 #include <string.h>
 #include <qt_windows.h>
 #include <wininet.h>
+#include <lmcons.h>
 #include "qnetworkfunctions_wince.h"
 
 /*
@@ -115,48 +116,38 @@ typedef HINTERNET (WINAPI * PtrWinHttpOpen)(LPCWSTR, DWORD, LPCWSTR, LPCWSTR,DWO
 typedef BOOL (WINAPI * PtrWinHttpGetDefaultProxyConfiguration)(WINHTTP_PROXY_INFO*);
 typedef BOOL (WINAPI * PtrWinHttpGetIEProxyConfigForCurrentUser)(WINHTTP_CURRENT_USER_IE_PROXY_CONFIG*);
 typedef BOOL (WINAPI * PtrWinHttpCloseHandle)(HINTERNET);
-typedef SC_HANDLE (WINAPI * PtrOpenSCManager)(LPCWSTR lpMachineName, LPCWSTR lpDatabaseName, DWORD dwDesiredAccess);
-typedef BOOL (WINAPI * PtrEnumServicesStatusEx)(SC_HANDLE hSCManager, SC_ENUM_TYPE InfoLevel, DWORD dwServiceType, DWORD dwServiceState, LPBYTE lpServices, DWORD cbBufSize, LPDWORD pcbBytesNeeded,
-    LPDWORD lpServicesReturned, LPDWORD lpResumeHandle, LPCWSTR pszGroupName);
 typedef BOOL (WINAPI * PtrCloseServiceHandle)(SC_HANDLE hSCObject);
 static PtrWinHttpGetProxyForUrl ptrWinHttpGetProxyForUrl = 0;
 static PtrWinHttpOpen ptrWinHttpOpen = 0;
 static PtrWinHttpGetDefaultProxyConfiguration ptrWinHttpGetDefaultProxyConfiguration = 0;
 static PtrWinHttpGetIEProxyConfigForCurrentUser ptrWinHttpGetIEProxyConfigForCurrentUser = 0;
 static PtrWinHttpCloseHandle ptrWinHttpCloseHandle = 0;
-static PtrOpenSCManager ptrOpenSCManager = 0;
-static PtrEnumServicesStatusEx ptrEnumServicesStatusEx = 0;
-static PtrCloseServiceHandle ptrCloseServiceHandle = 0;
 
 
+#ifndef Q_OS_WINCE
 static bool currentProcessIsService()
 {
-    if (!ptrOpenSCManager || !ptrEnumServicesStatusEx|| !ptrCloseServiceHandle)
-        return false;
+    typedef BOOL (WINAPI *PtrGetUserName)(LPTSTR lpBuffer, LPDWORD lpnSize);
+    typedef BOOL (WINAPI *PtrLookupAccountName)(LPCTSTR lpSystemName, LPCTSTR lpAccountName, PSID Sid,
+                                  LPDWORD cbSid, LPTSTR ReferencedDomainName, LPDWORD cchReferencedDomainName, PSID_NAME_USE peUse);
+    static PtrGetUserName ptrGetUserName = (PtrGetUserName)QSystemLibrary::resolve(QLatin1String("Advapi32"), "GetUserNameW");
+    static PtrLookupAccountName ptrLookupAccountName = (PtrLookupAccountName)QSystemLibrary::resolve(QLatin1String("Advapi32"), "LookupAccountNameW");
 
-    SC_HANDLE hSCM = ptrOpenSCManager(0, 0, SC_MANAGER_ENUMERATE_SERVICE | SC_MANAGER_CONNECT);
-    if (!hSCM)
-        return false;
-
-    ULONG bufSize = 0;
-    ULONG nbServices = 0;
-    if (ptrEnumServicesStatusEx(hSCM, SC_ENUM_PROCESS_INFO, SERVICE_WIN32, SERVICE_ACTIVE, 0, bufSize, &bufSize, &nbServices, 0, 0))
-        return false; //error case
-
-    LPENUM_SERVICE_STATUS_PROCESS info = reinterpret_cast<LPENUM_SERVICE_STATUS_PROCESS>(malloc(bufSize));
-    bool foundService = false;
-    if (ptrEnumServicesStatusEx(hSCM, SC_ENUM_PROCESS_INFO, SERVICE_WIN32, SERVICE_ACTIVE, (LPBYTE)info, bufSize, &bufSize, &nbServices, 0, 0)) {
-        DWORD currProcId = GetCurrentProcessId();
-        for (ULONG i = 0; i < nbServices && !foundService; i++) {
-            if (info[i].ServiceStatusProcess.dwProcessId == currProcId)
-                foundService = true;
+    if (ptrGetUserName && ptrLookupAccountName) {
+        wchar_t userName[UNLEN + 1] = L"";
+        DWORD size = UNLEN;
+        if (ptrGetUserName(userName, &size)) {
+            SID_NAME_USE type = SidTypeUser;
+            DWORD dummy = MAX_PATH;
+            wchar_t dummyStr[MAX_PATH] = L"";
+            PSID psid = 0;
+            if (ptrLookupAccountName(NULL, userName, &psid, &dummy, dummyStr, &dummy, &type))
+                return type != SidTypeUser; //returns true if the current user is not a user
         }
     }
-
-    ptrCloseServiceHandle(hSCM);
-    free(info);
-    return foundService;
+    return false;
 }
+#endif // ! Q_OS_WINCE
 
 static QStringList splitSpaceSemicolon(const QString &source)
 {
@@ -418,9 +409,6 @@ void QWindowsSystemProxy::init()
     ptrWinHttpGetProxyForUrl = (PtrWinHttpGetProxyForUrl)lib.resolve("WinHttpGetProxyForUrl");
     ptrWinHttpGetDefaultProxyConfiguration = (PtrWinHttpGetDefaultProxyConfiguration)lib.resolve("WinHttpGetDefaultProxyConfiguration");
     ptrWinHttpGetIEProxyConfigForCurrentUser = (PtrWinHttpGetIEProxyConfigForCurrentUser)lib.resolve("WinHttpGetIEProxyConfigForCurrentUser");
-    ptrOpenSCManager = (PtrOpenSCManager) QSystemLibrary(L"advapi32").resolve("OpenSCManagerW");
-    ptrEnumServicesStatusEx = (PtrEnumServicesStatusEx) QSystemLibrary(L"advapi32").resolve("EnumServicesStatusExW");
-    ptrCloseServiceHandle = (PtrCloseServiceHandle) QSystemLibrary(L"advapi32").resolve("CloseServiceHandle");
 
     // Try to obtain the Internet Explorer configuration.
     WINHTTP_CURRENT_USER_IE_PROXY_CONFIG ieProxyConfig;

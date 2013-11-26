@@ -112,7 +112,7 @@ QT_BEGIN_NAMESPACE
 #endif
 
 #define FLOOR(x)    ((x) & -64)
-#define CEIL(x)	    (((x)+63) & -64)
+#define CEIL(x)     (((x)+63) & -64)
 #define TRUNC(x)    ((x) >> 6)
 #define ROUND(x)    (((x)+32) & -64)
 
@@ -124,10 +124,20 @@ public:
     QtFreetypeData()
         : library(0)
     { }
+    ~QtFreetypeData();
 
     FT_Library library;
     QHash<QFontEngine::FaceId, QFreetypeFace *> faces;
 };
+
+QtFreetypeData::~QtFreetypeData()
+{
+    for (QHash<QFontEngine::FaceId, QFreetypeFace *>::ConstIterator iter = faces.begin(); iter != faces.end(); ++iter)
+        iter.value()->cleanup();
+    faces.clear();
+    FT_Done_FreeType(library);
+    library = 0;
+}
 
 #ifdef QT_NO_THREAD
 Q_GLOBAL_STATIC(QtFreetypeData, theFreetypeData)
@@ -292,22 +302,34 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
     return freetype;
 }
 
+void QFreetypeFace::cleanup()
+{
+    if (hbFace && hbFace_destroy_func) {
+        hbFace_destroy_func(hbFace);
+        hbFace = 0;
+    }
+    FT_Done_Face(face);
+    face = 0;
+}
+
 void QFreetypeFace::release(const QFontEngine::FaceId &face_id)
 {
-    QtFreetypeData *freetypeData = qt_getFreetypeData();
     if (!ref.deref()) {
-        if (hbFace && hbFace_destroy_func) {
-            hbFace_destroy_func(hbFace);
-            hbFace = 0;
+        if (face) {
+            QtFreetypeData *freetypeData = qt_getFreetypeData();
+
+            cleanup();
+
+            if (freetypeData->faces.contains(face_id))
+                freetypeData->faces.take(face_id);
+
+            if (freetypeData->faces.isEmpty()) {
+                FT_Done_FreeType(freetypeData->library);
+                freetypeData->library = 0;
+            }
         }
-        FT_Done_Face(face);
-        if(freetypeData->faces.contains(face_id))
-            freetypeData->faces.take(face_id);
+
         delete this;
-    }
-    if (freetypeData->faces.isEmpty()) {
-        FT_Done_FreeType(freetypeData->library);
-        freetypeData->library = 0;
     }
 }
 
@@ -631,7 +653,8 @@ QFontEngineFT::QFontEngineFT(const QFontDef &fd)
 #endif
     defaultFormat = Format_None;
     embeddedbitmap = false;
-    cacheEnabled = qEnvironmentVariableIsSet("QT_USE_FT_CACHE");
+    const QByteArray env = qgetenv("QT_NO_FT_CACHE");
+    cacheEnabled = env.isEmpty() || env.toInt() == 0;
     m_subPixelPositionCount = 4;
 }
 
@@ -699,7 +722,6 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
         line_thickness =  QFixed::fromFixed(FT_MulFix(face->underline_thickness, face->size->metrics.y_scale));
         underline_position = QFixed::fromFixed(-FT_MulFix(face->underline_position, face->size->metrics.y_scale));
     } else {
-        // copied from QFontEngineQPF
         // ad hoc algorithm
         int score = fontDef.weight * fontDef.pixelSize;
         line_thickness = score / 700;
@@ -1742,7 +1764,7 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixe
             glyphSet = &defaultGlyphSet;
         }
     }
-    Glyph * g = glyphSet ? glyphSet->getGlyph(glyph) : 0;
+    Glyph * g = glyphSet ? glyphSet->getGlyph(glyph, subPixelPosition) : 0;
     if (!g || g->format != format) {
         face = lockFace();
         FT_Matrix m = this->matrix;

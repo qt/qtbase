@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
+** Copyright (C) 2011 - 2013 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -119,11 +119,43 @@ static QSize determineScreenSize(screen_display_t display, bool primaryScreen) {
 #endif
 }
 
+static QQnxWindow *findMultimediaWindow(const QList<QQnxWindow*> windows,
+                                                    const QByteArray &mmWindowId)
+{
+    Q_FOREACH (QQnxWindow *sibling, windows) {
+        if (sibling->mmRendererWindowName() == mmWindowId)
+            return sibling;
+
+        QQnxWindow *mmWindow = findMultimediaWindow(sibling->children(), mmWindowId);
+
+        if (mmWindow)
+            return mmWindow;
+    }
+
+    return 0;
+}
+
+static QQnxWindow *findMultimediaWindow(const QList<QQnxWindow*> windows,
+                                                    screen_window_t mmWindowId)
+{
+    Q_FOREACH (QQnxWindow *sibling, windows) {
+        if (sibling->mmRendererWindow() == mmWindowId)
+            return sibling;
+
+        QQnxWindow *mmWindow = findMultimediaWindow(sibling->children(), mmWindowId);
+
+        if (mmWindow)
+            return mmWindow;
+    }
+
+    return 0;
+}
+
 QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display, bool primaryScreen)
     : m_screenContext(screenContext),
       m_display(display),
+      m_rootWindow(0),
       m_primaryScreen(primaryScreen),
-      m_posted(false),
       m_keyboardHeight(0),
       m_nativeOrientation(Qt::PrimaryOrientation),
       m_coverWindow(0),
@@ -260,7 +292,8 @@ void QQnxScreen::setRotation(int rotation)
 {
     qScreenDebug() << Q_FUNC_INFO << "orientation =" << rotation;
     // Check if rotation changed
-    if (m_currentRotation != rotation) {
+    // We only want to rotate if we are the primary screen
+    if (m_currentRotation != rotation && isPrimaryScreen()) {
         // Update rotation of root window
         if (rootWindow())
             rootWindow()->setRotation(rotation);
@@ -280,15 +313,13 @@ void QQnxScreen::setRotation(int rotation)
         if (isOrthogonal(m_currentRotation, rotation)) {
             qScreenDebug() << Q_FUNC_INFO << "resize, size =" << m_currentGeometry.size();
             if (rootWindow())
-                rootWindow()->resize(m_currentGeometry.size());
+                rootWindow()->setGeometry(QRect(QPoint(0,0), m_currentGeometry.size()));
 
-            if (m_primaryScreen)
-                resizeWindows(previousScreenGeometry);
+            resizeWindows(previousScreenGeometry);
         } else {
             // TODO: Find one global place to flush display updates
             // Force immediate display update if no geometry changes required
-            if (rootWindow())
-                rootWindow()->flush();
+            screen_flush_context(nativeContext(), 0);
         }
 
         // Save new rotation
@@ -458,6 +489,8 @@ void QQnxScreen::removeWindow(QQnxWindow *window)
 
     if (window != m_coverWindow) {
         const int numWindowsRemoved = m_childWindows.removeAll(window);
+        if (window == m_rootWindow) //We just removed the root window
+            m_rootWindow = 0; //TODO we need a new root window ;)
         if (numWindowsRemoved > 0)
             updateHierarchy();
     } else {
@@ -493,13 +526,15 @@ void QQnxScreen::updateHierarchy()
 
     QList<QQnxWindow*>::const_iterator it;
     int result;
-    int topZorder;
+    int topZorder = 0;
 
     errno = 0;
-    if (isPrimaryScreen()) {
+    if (rootWindow()) {
         result = screen_get_window_property_iv(rootWindow()->nativeHandle(), SCREEN_PROPERTY_ZORDER, &topZorder);
-        if (result != 0)
-            qFatal("QQnxScreen: failed to query root window z-order, errno=%d", errno);
+        if (result != 0) { //This can happen if we use winId in QWidgets
+            topZorder = 10;
+            qWarning("QQnxScreen: failed to query root window z-order, errno=%d", errno);
+        }
     } else {
         topZorder = 0;  //We do not need z ordering on the secondary screen, because only one window
                         //is supported there
@@ -507,16 +542,17 @@ void QQnxScreen::updateHierarchy()
 
     topZorder++; // root window has the lowest z-order in the windowgroup
 
+    int underlayZorder = -1;
     // Underlays sit immediately above the root window in the z-ordering
     Q_FOREACH (screen_window_t underlay, m_underlays) {
         // Do nothing when this fails. This can happen if we have stale windows in m_underlays,
         // which in turn can happen because a window was removed but we didn't get a notification
         // yet.
-        screen_set_window_property_iv(underlay, SCREEN_PROPERTY_ZORDER, &topZorder);
-        topZorder++;
+        screen_set_window_property_iv(underlay, SCREEN_PROPERTY_ZORDER, &underlayZorder);
+        underlayZorder--;
     }
 
-    // Normal Qt windows come next above underlays in the z-ordering
+    // Normal Qt windows come next above the root window z-ordering
     for (it = m_childWindows.constBegin(); it != m_childWindows.constEnd(); ++it)
         (*it)->updateZorder(topZorder);
 
@@ -530,20 +566,6 @@ void QQnxScreen::updateHierarchy()
     // After a hierarchy update, we need to force a flush on all screens.
     // Right now, all screens share a context.
     screen_flush_context( m_screenContext, 0 );
-}
-
-void QQnxScreen::onWindowPost(QQnxWindow *window)
-{
-    qScreenDebug() << Q_FUNC_INFO;
-    Q_UNUSED(window)
-
-    // post app window (so navigator will show it) after first child window
-    // has posted; this only needs to happen once as the app window's content
-    // never changes
-    if (!m_posted && rootWindow()) {
-        rootWindow()->post();
-        m_posted = true;
-    }
 }
 
 void QQnxScreen::adjustOrientation()
@@ -585,6 +607,19 @@ void QQnxScreen::addUnderlayWindow(screen_window_t window)
     updateHierarchy();
 }
 
+void QQnxScreen::addMultimediaWindow(const QByteArray &id, screen_window_t window)
+{
+    // find the QnxWindow this mmrenderer window is related to
+    QQnxWindow *mmWindow = findMultimediaWindow(m_childWindows, id);
+
+    if (!mmWindow)
+        return;
+
+    mmWindow->setMMRendererWindow(window);
+
+    updateHierarchy();
+}
+
 void QQnxScreen::removeOverlayOrUnderlayWindow(screen_window_t window)
 {
     const int numRemoved = m_overlays.removeAll(window) + m_underlays.removeAll(window);
@@ -610,17 +645,35 @@ void QQnxScreen::newWindowCreated(void *window)
         zorder = 0;
     }
 
+    char windowNameBuffer[256] = { 0 };
+    QByteArray windowName;
+
+    if (screen_get_window_property_cv(windowHandle, SCREEN_PROPERTY_ID_STRING,
+                sizeof(windowNameBuffer) - 1, windowNameBuffer) != 0) {
+        qWarning("QQnx: Failed to get id for window, errno=%d", errno);
+    }
+
+    windowName = QByteArray(windowNameBuffer);
+
     if (display == nativeDisplay()) {
         // A window was created on this screen. If we don't know about this window yet, it means
         // it was not created by Qt, but by some foreign library like the multimedia renderer, which
         // creates an overlay window when playing a video.
         //
-        // Treat all foreign windows as overlays or underlays here.
+        // Treat all foreign windows as overlays, underlays or as windows
+        // created by the BlackBerry QtMultimedia plugin.
         //
-        // Assume that if a foreign window already has a Z-Order both negative and
+        // In the case of the BlackBerry QtMultimedia plugin, we need to
+        // "attach" the foreign created mmrenderer window to the correct
+        // platform window (usually the one belonging to QVideoWidget) to
+        // ensure proper z-ordering.
+        //
+        // Otherwise, assume that if a foreign window already has a Z-Order both negative and
         // less than the default Z-Order installed by mmrender on windows it creates,
         // the windows should be treated as an underlay. Otherwise, we treat it as an overlay.
-        if (!findWindow(windowHandle)) {
+        if (!windowName.isEmpty() && windowName.startsWith("BbVideoWindowControl")) {
+            addMultimediaWindow(windowName, windowHandle);
+        } else if (!findWindow(windowHandle)) {
             if (zorder <= MAX_UNDERLAY_ZORDER)
                 addUnderlayWindow(windowHandle);
             else
@@ -634,7 +687,13 @@ void QQnxScreen::windowClosed(void *window)
 {
     Q_ASSERT(thread() == QThread::currentThread());
     const screen_window_t windowHandle = reinterpret_cast<screen_window_t>(window);
-    removeOverlayOrUnderlayWindow(windowHandle);
+
+    QQnxWindow *mmWindow = findMultimediaWindow(m_childWindows, windowHandle);
+
+    if (mmWindow)
+        mmWindow->clearMMRendererWindow();
+    else
+        removeOverlayOrUnderlayWindow(windowHandle);
 }
 
 void QQnxScreen::windowGroupStateChanged(const QByteArray &id, Qt::WindowState state)
@@ -644,7 +703,7 @@ void QQnxScreen::windowGroupStateChanged(const QByteArray &id, Qt::WindowState s
     if (!rootWindow() || id != rootWindow()->groupName())
         return;
 
-    QWindow * const window = topMostChildWindow();
+    QWindow * const window = rootWindow()->window();
 
     if (!window)
         return;
@@ -659,7 +718,7 @@ void QQnxScreen::activateWindowGroup(const QByteArray &id)
     if (!rootWindow() || id != rootWindow()->groupName())
         return;
 
-    QWindow * const window = topMostChildWindow();
+    QWindow * const window = rootWindow()->window();
 
     if (!window)
         return;
@@ -686,16 +745,26 @@ void QQnxScreen::deactivateWindowGroup(const QByteArray &id)
     Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
         childWindow->setExposed(false);
 
-    QWindowSystemInterface::handleWindowActivated(0);
+    QWindowSystemInterface::handleWindowActivated(rootWindow()->window());
 }
 
-QSharedPointer<QQnxRootWindow> QQnxScreen::rootWindow() const
+QQnxWindow *QQnxScreen::rootWindow() const
 {
-    // We only create the root window if we are the primary display.
-    if (m_primaryScreen && !m_rootWindow)
-        m_rootWindow = QSharedPointer<QQnxRootWindow>(new QQnxRootWindow(this));
-
     return m_rootWindow;
+}
+
+void QQnxScreen::setRootWindow(QQnxWindow *window)
+{
+    // Optionally disable the screen power save
+    bool ok = false;
+    const int disablePowerSave = qgetenv("QQNX_DISABLE_POWER_SAVE").toInt(&ok);
+    if (ok && disablePowerSave) {
+        const int mode = SCREEN_IDLE_MODE_KEEP_AWAKE;
+        int result = screen_set_window_property_iv(window->nativeHandle(), SCREEN_PROPERTY_IDLE_MODE, &mode);
+        if (result != 0)
+            qWarning("QQnxRootWindow: failed to disable power saving mode");
+    }
+    m_rootWindow = window;
 }
 
 QWindow * QQnxScreen::topMostChildWindow() const

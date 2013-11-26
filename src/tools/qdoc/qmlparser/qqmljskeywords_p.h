@@ -436,6 +436,17 @@ static inline int classify6(const QChar *s, bool qmlMode) {
         }
       }
     }
+    else if (s[1].unicode() == 'r') {
+      if (s[2].unicode() == 'a') {
+        if (s[3].unicode() == 'g') {
+          if (s[4].unicode() == 'm') {
+            if (s[5].unicode() == 'a') {
+              return qmlMode ? Lexer::T_PRAGMA : Lexer::T_IDENTIFIER;
+            }
+          }
+        }
+      }
+    }
   }
   else if (s[0].unicode() == 'r') {
     if (s[1].unicode() == 'e') {

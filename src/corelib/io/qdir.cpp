@@ -1863,9 +1863,12 @@ bool QDir::setCurrent(const QString &path)
 */
 
 /*!
-    Returns the absolute path of the application's current directory.
+    Returns the absolute path of the application's current directory. The
+    current directory is the last directory set with QDir::setCurrent() or, if
+    that was never called, the directory at which this application was started
+    at by the parent process.
 
-    \sa current(), setCurrent(), homePath(), rootPath(), tempPath()
+    \sa current(), setCurrent(), homePath(), rootPath(), tempPath(), QCoreApplication::applicationDirPath()
 */
 QString QDir::currentPath()
 {
@@ -2205,10 +2208,10 @@ QStringList QDir::nameFiltersFromString(const QString &nameFilter)
     \relates QDir
 
     Initializes the resources specified by the \c .qrc file with the
-    specified base \a name. Normally, Qt resources are loaded
-    automatically at startup. The Q_INIT_RESOURCE() macro is
-    necessary on some platforms for resources stored in a static
-    library.
+    specified base \a name. Normally, when resources are built as part
+    of the application, the resources are loaded automatically at
+    startup. The Q_INIT_RESOURCE() macro is necessary on some platforms
+    for resources stored in a static library.
 
     For example, if your application's resources are listed in a file
     called \c myapp.qrc, you can ensure that the resources are

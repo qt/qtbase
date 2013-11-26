@@ -1264,6 +1264,7 @@ QSqlRecord QSqlDatabase::record(const QString& tablename) const
     \list
     \li QSQLITE_BUSY_TIMEOUT
     \li QSQLITE_OPEN_READONLY
+    \li QSQLITE_OPEN_URI
     \li QSQLITE_ENABLE_SHARED_CACHE
     \endlist
 

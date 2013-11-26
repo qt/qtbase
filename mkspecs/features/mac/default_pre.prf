@@ -24,8 +24,16 @@ isEmpty(QMAKE_XCODE_VERSION) {
     unset(xcode_version)
 }
 
-# These two variables are used by the xcode_dynamic_library_suffix
+isEmpty(QMAKE_TARGET_BUNDLE_PREFIX) {
+    QMAKE_XCODE_PREFERENCES_FILE = $$(HOME)/Library/Preferences/com.apple.dt.Xcode.plist
+    exists($$QMAKE_XCODE_PREFERENCES_FILE): \
+        QMAKE_TARGET_BUNDLE_PREFIX = $$system("/usr/libexec/PlistBuddy -c 'print IDETemplateOptions:bundleIdentifierPrefix' $$QMAKE_XCODE_PREFERENCES_FILE 2>/dev/null")
+
+    !isEmpty(_QMAKE_CACHE_):!isEmpty(QMAKE_TARGET_BUNDLE_PREFIX): \
+        cache(QMAKE_TARGET_BUNDLE_PREFIX)
+}
+
+# This variable is used by the xcode_dynamic_library_suffix
 # feature, which allows Xcode to choose the Qt libraries to link to
 # at build time, depending on the current Xcode SDK and configuration.
-QMAKE_XCODE_LIBRARY_SUFFIX = $$qtPlatformTargetSuffix()
 QMAKE_XCODE_LIBRARY_SUFFIX_SETTING = QT_LIBRARY_SUFFIX

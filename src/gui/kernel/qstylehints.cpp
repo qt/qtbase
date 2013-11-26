@@ -270,6 +270,9 @@ int QStyleHints::cursorFlashTime() const
     Returns \c true if the platform defaults to windows being fullscreen,
     otherwise \c false.
 
+    \note The platform may still choose to show certain windows non-fullscreen,
+    such as popups or dialogs. This method only returns the default behavior.
+
     \sa QWindow::show()
 */
 bool QStyleHints::showIsFullScreen() const
