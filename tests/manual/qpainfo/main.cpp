@@ -180,7 +180,8 @@ int main(int argc, char **argv)
               << " startDragVelocity=" << styleHints->startDragVelocity() << " keyboardInputInterval=" << styleHints->keyboardInputInterval()
               << " keyboardAutoRepeatRate=" << styleHints->keyboardAutoRepeatRate() << " cursorFlashTime=" << styleHints->cursorFlashTime()
               << " showIsFullScreen=" << styleHints->showIsFullScreen() << " passwordMaskDelay=" << styleHints->passwordMaskDelay()
-              << " fontSmoothingGamma=" << styleHints->fontSmoothingGamma() << " useRtlExtensions=" << styleHints->useRtlExtensions() << '\n';
+              << " fontSmoothingGamma=" << styleHints->fontSmoothingGamma() << " useRtlExtensions=" << styleHints->useRtlExtensions()
+              << " mousePressAndHoldInterval=" << styleHints->mousePressAndHoldInterval() << '\n';
 
     const QPlatformTheme *platformTheme = QGuiApplicationPrivate::platformTheme();
     std::cout << "\nTheme:\n  Styles: " << platformTheme->themeHint(QPlatformTheme::StyleNames).toStringList();

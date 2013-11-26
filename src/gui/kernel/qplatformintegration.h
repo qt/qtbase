@@ -148,7 +148,8 @@ public:
         SynthesizeMouseFromTouchEvents,
         PasswordMaskCharacter,
         SetFocusOnTouchRelease,
-        ShowIsMaximized
+        ShowIsMaximized,
+        MousePressAndHoldInterval
     };
 
     virtual QVariant styleHint(StyleHint hint) const;

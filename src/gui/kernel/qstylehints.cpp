@@ -128,6 +128,17 @@ int QStyleHints::mouseDoubleClickInterval() const
 }
 
 /*!
+    Returns the time limit in milliseconds that activates
+    a press and hold.
+
+    \since 5.3
+*/
+int QStyleHints::mousePressAndHoldInterval() const
+{
+    return themeableHint(QPlatformTheme::MousePressAndHoldInterval, QPlatformIntegration::MousePressAndHoldInterval).toInt();
+}
+
+/*!
     Sets the \a startDragDistance.
     \internal
     \sa startDragDistance()

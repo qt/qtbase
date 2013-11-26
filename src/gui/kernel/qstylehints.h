@@ -57,6 +57,7 @@ class Q_GUI_EXPORT QStyleHints : public QObject
 public:
     void setMouseDoubleClickInterval(int mouseDoubleClickInterval);
     int mouseDoubleClickInterval() const;
+    int mousePressAndHoldInterval() const;
     void setStartDragDistance(int startDragDistance);
     int startDragDistance() const;
     void setStartDragTime(int startDragTime);

@@ -106,7 +106,8 @@ public:
         TabAllWidgets,
         IconPixmapSizes,
         PasswordMaskCharacter,
-        DialogSnapToDefaultButton
+        DialogSnapToDefaultButton,
+        MousePressAndHoldInterval
     };
 
     enum DialogType {
