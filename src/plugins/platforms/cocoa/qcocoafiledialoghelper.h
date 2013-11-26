@@ -82,6 +82,7 @@ public:
 
 private:
     void *mDelegate;
+    QUrl mDir;
 };
 
 QT_END_NAMESPACE
