@@ -89,7 +89,7 @@ bool QQnxVirtualKeyboardBps::showKeyboard()
 
     // They keyboard's mode is global between applications, we have to set it each time
     if ( !isVisible() )
-        applyKeyboardMode(keyboardMode());
+        applyKeyboardOptions();
 
     virtualkeyboard_show();
     return true;
@@ -102,52 +102,72 @@ bool QQnxVirtualKeyboardBps::hideKeyboard()
     return true;
 }
 
-void QQnxVirtualKeyboardBps::applyKeyboardMode(KeyboardMode mode)
+void QQnxVirtualKeyboardBps::applyKeyboardOptions()
 {
-    virtualkeyboard_layout_t layout = VIRTUALKEYBOARD_LAYOUT_DEFAULT;
+    virtualkeyboard_layout_t layout = keyboardLayout();
+    virtualkeyboard_enter_t enter = enterKey();
 
-    switch (mode) {
+    qVirtualKeyboardDebug() << Q_FUNC_INFO << "mode=" << keyboardMode() << "enterKey=" << enterKeyType();
+
+    virtualkeyboard_change_options(layout, enter);
+}
+
+virtualkeyboard_layout_t QQnxVirtualKeyboardBps::keyboardLayout() const
+{
+    switch (keyboardMode()) {
     case Url:
-        layout = VIRTUALKEYBOARD_LAYOUT_URL;
-        break;
-
+        return VIRTUALKEYBOARD_LAYOUT_URL;
     case Email:
-        layout = VIRTUALKEYBOARD_LAYOUT_EMAIL;
-        break;
-
+        return VIRTUALKEYBOARD_LAYOUT_EMAIL;
     case Web:
-        layout = VIRTUALKEYBOARD_LAYOUT_WEB;
-        break;
-
+        return VIRTUALKEYBOARD_LAYOUT_WEB;
     case NumPunc:
-        layout = VIRTUALKEYBOARD_LAYOUT_NUM_PUNC;
-        break;
-
+        return VIRTUALKEYBOARD_LAYOUT_NUM_PUNC;
+    case Number:
+        return VIRTUALKEYBOARD_LAYOUT_NUMBER;
     case Symbol:
-        layout = VIRTUALKEYBOARD_LAYOUT_SYMBOL;
-        break;
-
+        return VIRTUALKEYBOARD_LAYOUT_SYMBOL;
     case Phone:
-        layout = VIRTUALKEYBOARD_LAYOUT_PHONE;
-        break;
-
+        return VIRTUALKEYBOARD_LAYOUT_PHONE;
     case Pin:
-        layout = VIRTUALKEYBOARD_LAYOUT_PIN;
-        break;
-
+        return VIRTUALKEYBOARD_LAYOUT_PIN;
     case Password:
-        layout = VIRTUALKEYBOARD_LAYOUT_PASSWORD;
-        break;
-
+        return VIRTUALKEYBOARD_LAYOUT_PASSWORD;
+    case Alphanumeric:
+        return VIRTUALKEYBOARD_LAYOUT_ALPHANUMERIC;
     case Default: // fall through
     default:
-        layout = VIRTUALKEYBOARD_LAYOUT_DEFAULT;
-        break;
+        return VIRTUALKEYBOARD_LAYOUT_DEFAULT;
     }
 
-    qVirtualKeyboardDebug() << Q_FUNC_INFO << "mode=" << mode;
+    return VIRTUALKEYBOARD_LAYOUT_DEFAULT;
+}
 
-    virtualkeyboard_change_options(layout, VIRTUALKEYBOARD_ENTER_DEFAULT);
+virtualkeyboard_enter_t QQnxVirtualKeyboardBps::enterKey() const
+{
+    switch (enterKeyType()) {
+    case Connect:
+        return VIRTUALKEYBOARD_ENTER_CONNECT;
+    case Done:
+        return VIRTUALKEYBOARD_ENTER_DONE;
+    case Go:
+        return VIRTUALKEYBOARD_ENTER_GO;
+    case Join:
+        return VIRTUALKEYBOARD_ENTER_JOIN;
+    case Next:
+        return VIRTUALKEYBOARD_ENTER_NEXT;
+    case Search:
+        return VIRTUALKEYBOARD_ENTER_SEARCH;
+    case Send:
+        return VIRTUALKEYBOARD_ENTER_SEND;
+    case Submit:
+        return VIRTUALKEYBOARD_ENTER_SUBMIT;
+    case Default: // fall through
+    default:
+        return VIRTUALKEYBOARD_ENTER_DEFAULT;
+    }
+
+    return VIRTUALKEYBOARD_ENTER_DEFAULT;
 }
 
 bool QQnxVirtualKeyboardBps::handleLocaleEvent(bps_event_t *event)

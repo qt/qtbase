@@ -67,9 +67,6 @@ QT_BEGIN_NAMESPACE
 const char  *QQnxVirtualKeyboardPps::ms_PPSPath = "/pps/services/input/control";
 const size_t QQnxVirtualKeyboardPps::ms_bufferSize = 2048;
 
-// Huge hack for keyboard shadow (see QNX PR 88400). Should be removed ASAP.
-#define KEYBOARD_SHADOW_HEIGHT 8
-
 QQnxVirtualKeyboardPps::QQnxVirtualKeyboardPps()
     : m_encoder(0),
       m_decoder(0),
@@ -89,11 +86,6 @@ void QQnxVirtualKeyboardPps::start()
     qVirtualKeyboardDebug() << Q_FUNC_INFO << "starting keyboard event processing";
     if (!connect())
         return;
-}
-
-void QQnxVirtualKeyboardPps::applyKeyboardMode(KeyboardMode mode)
-{
-    applyKeyboardModeOptions(mode);
 }
 
 void QQnxVirtualKeyboardPps::close()
@@ -159,18 +151,14 @@ bool QQnxVirtualKeyboardPps::connect()
 
 bool QQnxVirtualKeyboardPps::queryPPSInfo()
 {
+    if (!prepareToSend())
+        return false;
+
     // Request info, requires id to regenerate res message.
     pps_encoder_add_string(m_encoder, "msg", "info");
     pps_encoder_add_string(m_encoder, "id", "libWebView");
 
-    if (::write(m_fd, pps_encoder_buffer(m_encoder), pps_encoder_length(m_encoder)) == -1) {
-        close();
-        return false;
-    }
-
-    pps_encoder_reset(m_encoder);
-
-    return true;
+    return writeCurrentPPSEncoder();
 }
 
 void QQnxVirtualKeyboardPps::ppsDataReady()
@@ -257,9 +245,6 @@ void QQnxVirtualKeyboardPps::handleKeyboardInfoMessage()
     }
     const QString countryId = QString::fromLatin1(value);
 
-    // HUGE hack, should be removed ASAP.
-    newHeight -= KEYBOARD_SHADOW_HEIGHT; // We want to ignore the 8 pixel shadow above the keyboard. (PR 88400)
-
     setHeight(newHeight);
 
     const QLocale locale = QLocale(languageId + QLatin1Char('_') + countryId);
@@ -272,13 +257,12 @@ bool QQnxVirtualKeyboardPps::showKeyboard()
 {
     qVirtualKeyboardDebug() << Q_FUNC_INFO;
 
-    // Try to connect.
-    if (m_fd == -1 && !connect())
+    if (!prepareToSend())
         return false;
 
     // NOTE:  This must be done everytime the keyboard is shown even if there is no change because
     // hiding the keyboard wipes the setting.
-    applyKeyboardModeOptions(keyboardMode());
+    applyKeyboardOptions();
 
     if (isVisible())
         return true;
@@ -288,140 +272,110 @@ bool QQnxVirtualKeyboardPps::showKeyboard()
     // Send the show message.
     pps_encoder_add_string(m_encoder, "msg", "show");
 
-    if (::write(m_fd, pps_encoder_buffer(m_encoder), pps_encoder_length(m_encoder)) == -1) {
-        close();
-        return false;
-    }
-
-    pps_encoder_reset(m_encoder);
-
-    // Return true if no error occurs.  Sizing response will be triggered when confirmation of
-    // the change arrives.
-    return true;
+    return writeCurrentPPSEncoder();
 }
 
 bool QQnxVirtualKeyboardPps::hideKeyboard()
 {
     qVirtualKeyboardDebug() << Q_FUNC_INFO;
 
-    if (m_fd == -1 && !connect())
+    if (!prepareToSend())
         return false;
 
     pps_encoder_add_string(m_encoder, "msg", "hide");
 
-    if (::write(m_fd, pps_encoder_buffer(m_encoder), pps_encoder_length(m_encoder)) == -1) {
-        close();
+    return writeCurrentPPSEncoder();
+}
 
-        //Try again.
-        if (connect()) {
-            if (::write(m_fd, pps_encoder_buffer(m_encoder), pps_encoder_length(m_encoder)) == -1) {
-                close();
-                return false;
-            }
-        }
-        else
-            return false;
-    }
+bool QQnxVirtualKeyboardPps::prepareToSend()
+{
+    if (m_fd == -1 && !connect())
+        return false;
 
     pps_encoder_reset(m_encoder);
-
-    // Return true if no error occurs.  Sizing response will be triggered when confirmation of
-    // the change arrives.
     return true;
 }
 
-void QQnxVirtualKeyboardPps::applyKeyboardModeOptions(KeyboardMode mode)
+bool QQnxVirtualKeyboardPps::writeCurrentPPSEncoder()
 {
-    // Try to connect.
-    if (m_fd == -1 && !connect())
+    if (::write(m_fd, pps_encoder_buffer(m_encoder), pps_encoder_length(m_encoder)) == -1) {
+        close();
+        return false;
+    }
+    return true;
+}
+
+void QQnxVirtualKeyboardPps::applyKeyboardOptions()
+{
+    if (!prepareToSend())
         return;
 
     // Send the options message.
     pps_encoder_add_string(m_encoder, "msg", "options");
-
     pps_encoder_start_object(m_encoder, "dat");
-    switch (mode) {
-    case Url:
-        addUrlModeOptions();
-        break;
-    case Email:
-        addEmailModeOptions();
-        break;
-    case Web:
-        addWebModeOptions();
-        break;
-    case NumPunc:
-        addNumPuncModeOptions();
-        break;
-    case Symbol:
-        addSymbolModeOptions();
-        break;
-    case Phone:
-        addPhoneModeOptions();
-        break;
-    case Pin:
-        addPinModeOptions();
-        break;
-    case Default:
-    default:
-        addDefaultModeOptions();
-        break;
-    }
+
+    pps_encoder_add_string(m_encoder, "enter", enterKeyTypeStr());
+    pps_encoder_add_string(m_encoder, "type", keyboardModeStr());
 
     pps_encoder_end_object(m_encoder);
 
-    if (::write(m_fd, pps_encoder_buffer(m_encoder), pps_encoder_length(m_encoder)) == -1)
-        close();
-
-    pps_encoder_reset(m_encoder);
+    writeCurrentPPSEncoder();
 }
 
-void QQnxVirtualKeyboardPps::addDefaultModeOptions()
+const char* QQnxVirtualKeyboardPps::keyboardModeStr() const
 {
-    pps_encoder_add_string(m_encoder, "enter", "enter.default");
-    pps_encoder_add_string(m_encoder, "type", "default");
+    switch (keyboardMode()) {
+    case Url:
+        return "url";
+    case Email:
+        return "email";
+    case Web:
+        return "web";
+    case NumPunc:
+        return "num_punc";
+    case Number:
+        return "number";
+    case Symbol:
+        return "symbol";
+    case Phone:
+        return "phone";
+    case Pin:
+        return "pin";
+    case Password:
+        return "password";
+    case Alphanumeric:
+        return "alphanumeric";
+    case Default:
+        return "default";
+    }
+
+    return "";
 }
 
-void QQnxVirtualKeyboardPps::addUrlModeOptions()
+const char* QQnxVirtualKeyboardPps::enterKeyTypeStr() const
 {
-    pps_encoder_add_string(m_encoder, "enter", "enter.default");
-    pps_encoder_add_string(m_encoder, "type", "url");
-}
+    switch (enterKeyType()) {
+    case DefaultReturn:
+        return "enter.default";
+    case Connect:
+        return "enter.connect";
+    case Done:
+        return "enter.done";
+    case Go:
+        return "enter.go";
+    case Join:
+        return "enter.join";
+    case Next:
+        return "enter.next";
+    case Search:
+        return "enter.search";
+    case Send:
+        return "enter.send";
+    case Submit:
+        return "enter.submit";
+    }
 
-void QQnxVirtualKeyboardPps::addEmailModeOptions()
-{
-    pps_encoder_add_string(m_encoder, "enter", "enter.default");
-    pps_encoder_add_string(m_encoder, "type", "email");
-}
-
-void QQnxVirtualKeyboardPps::addWebModeOptions()
-{
-    pps_encoder_add_string(m_encoder, "enter", "enter.default");
-    pps_encoder_add_string(m_encoder, "type", "web");
-}
-
-void QQnxVirtualKeyboardPps::addNumPuncModeOptions()
-{
-    pps_encoder_add_string(m_encoder, "enter", "enter.default");
-    pps_encoder_add_string(m_encoder, "type", "numPunc");
-}
-
-void QQnxVirtualKeyboardPps::addPhoneModeOptions()
-{
-    pps_encoder_add_string(m_encoder, "enter", "enter.default");
-    pps_encoder_add_string(m_encoder, "type", "phone");
-}
-
-void QQnxVirtualKeyboardPps::addPinModeOptions()
-{
-    pps_encoder_add_string(m_encoder, "enter", "enter.default");
-    pps_encoder_add_string(m_encoder, "type", "pin");
-}
-
-void QQnxVirtualKeyboardPps::addSymbolModeOptions()
-{
-    pps_encoder_add_string(m_encoder, "enter", "enter.default");
-    pps_encoder_add_string(m_encoder, "type", "symbol");
+    return "";
 }
 
 QT_END_NAMESPACE

@@ -49,6 +49,7 @@ QQnxAbstractVirtualKeyboard::QQnxAbstractVirtualKeyboard(QObject *parent)
     , m_visible(false)
     , m_locale(QLocale::system())
     , m_keyboardMode(Default)
+    , m_enterKeyType(DefaultReturn)
 {
 }
 
@@ -59,7 +60,19 @@ void QQnxAbstractVirtualKeyboard::setKeyboardMode(KeyboardMode mode)
 
     m_keyboardMode = mode;
 
-    applyKeyboardMode(mode);
+    if (m_visible)
+        applyKeyboardOptions();
+}
+
+void QQnxAbstractVirtualKeyboard::setEnterKeyType(EnterKeyType type)
+{
+    if (type == m_enterKeyType)
+        return;
+
+    m_enterKeyType = type;
+
+    if (m_visible)
+        applyKeyboardOptions();
 }
 
 void QQnxAbstractVirtualKeyboard::setInputHints(int inputHints)
@@ -69,10 +82,11 @@ void QQnxAbstractVirtualKeyboard::setInputHints(int inputHints)
     } else if (inputHints & Qt::ImhDialableCharactersOnly) {
         setKeyboardMode(QQnxAbstractVirtualKeyboard::Phone);
     } else if (inputHints & Qt::ImhUrlCharactersOnly) {
-        setKeyboardMode(QQnxAbstractVirtualKeyboard::Web);
-    } else if (inputHints & Qt::ImhFormattedNumbersOnly || inputHints & Qt::ImhDigitsOnly ||
-               inputHints & Qt::ImhDate || inputHints & Qt::ImhTime) {
-        setKeyboardMode(QQnxAbstractVirtualKeyboard::NumPunc);
+        setKeyboardMode(QQnxAbstractVirtualKeyboard::Url);
+    } else if (inputHints & Qt::ImhFormattedNumbersOnly || inputHints & Qt::ImhDigitsOnly) {
+        setKeyboardMode(QQnxAbstractVirtualKeyboard::Number);
+    } else if (inputHints & Qt::ImhDate || inputHints & Qt::ImhTime) {
+        setKeyboardMode(QQnxAbstractVirtualKeyboard::NumPunc); // Use NumPunc so that : is available.
     } else if (inputHints & Qt::ImhHiddenText) {
         setKeyboardMode(QQnxAbstractVirtualKeyboard::Password);
     } else {
