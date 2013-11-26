@@ -350,7 +350,7 @@ void QLineEdit::setPlaceholderText(const QString& placeholderText)
     Q_D(QLineEdit);
     if (d->placeholderText != placeholderText) {
         d->placeholderText = placeholderText;
-        if (d->control->text().isEmpty())
+        if (d->shouldShowPlaceholderText())
             update();
     }
 }
@@ -1895,7 +1895,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
     int minLB = qMax(0, -fm.minLeftBearing());
     int minRB = qMax(0, -fm.minRightBearing());
 
-    if (d->control->text().isEmpty() && d->control->preeditAreaText().isEmpty()) {
+    if (d->shouldShowPlaceholderText() && d->control->preeditAreaText().isEmpty()) {
         if (!d->placeholderText.isEmpty()) {
             QColor col = pal.text().color();
             col.setAlpha(128);

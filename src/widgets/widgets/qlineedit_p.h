@@ -148,6 +148,10 @@ public:
     {
         return !control->isReadOnly();
     }
+    inline bool shouldShowPlaceholderText() const
+    {
+        return control->text().isEmpty();
+    }
 
     static inline QLineEditPrivate *get(QLineEdit *lineEdit) {
         return lineEdit->d_func();
