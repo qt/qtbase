@@ -586,15 +586,17 @@ static HGLRC createContext(const QOpenGLStaticContext &staticContext,
         attributes[attribIndex++] = WGL_CONTEXT_MINOR_VERSION_ARB;
         attributes[attribIndex++] = minorVersion;
     }
+
+    int flags = 0;
+    if (format.testOption(QSurfaceFormat::DebugContext))
+        flags |= WGL_CONTEXT_DEBUG_BIT_ARB;
     if (requestedVersion >= 0x0300) {
-        attributes[attribIndex++] = WGL_CONTEXT_FLAGS_ARB;
-        attributes[attribIndex] = 0;
         if (!format.testOption(QSurfaceFormat::DeprecatedFunctions))
-             attributes[attribIndex] |= WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
-        if (format.testOption(QSurfaceFormat::DebugContext))
-            attributes[attribIndex] |= WGL_CONTEXT_DEBUG_BIT_ARB;
-        attribIndex++;
+            flags |= WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
     }
+    attributes[attribIndex++] = WGL_CONTEXT_FLAGS_ARB;
+    attributes[attribIndex++] = flags;
+
     if (requestedVersion >= 0x0302) {
         switch (format.profile()) {
         case QSurfaceFormat::NoProfile:
