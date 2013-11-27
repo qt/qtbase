@@ -1,10 +1,11 @@
 
 win32 {
-    CMAKE_VERSION = $$system(cmake --version 2>NUL)
+    CMAKE_VERSION = $$system(cmake --version 2>NUL, lines)
 } else {
-    CMAKE_VERSION = $$system(cmake --version 2>/dev/null)
+    CMAKE_VERSION = $$system(cmake --version 2>/dev/null, lines)
 }
 
+CMAKE_VERSION = $$member(CMAKE_VERSION, 0, 0)
 
 check.commands =
 QMAKE_EXTRA_TARGETS *= check
