@@ -306,9 +306,12 @@ QFontDatabase::findFont(int script, const QFontPrivate *fp,
     }
 
     QtFontDesc desc;
-    match(script, request, family_name, foundry_name, force_encoding_id, &desc);
-    if (desc.family != 0 && desc.foundry != 0 && desc.style != 0) {
+    QList<int> blackListed;
+    int index = match(script, request, family_name, foundry_name, force_encoding_id, &desc, blackListed);
+    if (index >= 0) {
         engine = loadEngine(script, request, desc.family, desc.foundry, desc.style, desc.size);
+        if (!engine)
+            blackListed.append(index);
     } else {
         FM_DEBUG("  NO MATCH FOUND\n");
     }
@@ -332,6 +335,8 @@ QFontDatabase::findFont(int script, const QFontPrivate *fp,
                                                      QFont::Style(request.style),
                                                      QFont::StyleHint(request.styleHint),
                                                      QChar::Script(script));
+            if (script > QChar::Script_Common)
+                fallbacks += QString(); // Find the first font matching the specified script.
 
             for (int i = 0; !engine && i < fallbacks.size(); i++) {
                 QFontDef def = request;
@@ -340,14 +345,19 @@ QFontDatabase::findFont(int script, const QFontPrivate *fp,
                 engine = QFontCache::instance()->findEngine(key);
                 if (!engine) {
                     QtFontDesc desc;
-                    match(script, def, def.family, QLatin1String(""), 0, &desc);
-                    if (desc.family == 0 && desc.foundry == 0 && desc.style == 0) {
-                        continue;
-                    }
-                    engine = loadEngine(script, def, desc.family, desc.foundry, desc.style, desc.size);
-                    if (engine) {
-                        initFontDef(desc, def, &engine->fontDef, engine->type() == QFontEngine::Multi);
-                    }
+                    do {
+                        index = match(script, def, def.family, QLatin1String(""), 0, &desc, blackListed);
+                        if (index >= 0) {
+                            QFontDef loadDef = def;
+                            if (loadDef.family.isEmpty())
+                                loadDef.family = desc.family->name;
+                            engine = loadEngine(script, loadDef, desc.family, desc.foundry, desc.style, desc.size);
+                            if (engine)
+                                initFontDef(desc, loadDef, &engine->fontDef, engine->type() == QFontEngine::Multi);
+                            else
+                                blackListed.append(index);
+                        }
+                    } while (index >= 0 && !engine);
                 }
             }
         }

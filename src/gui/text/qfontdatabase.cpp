@@ -562,9 +562,9 @@ struct QtFontDesc
     int familyIndex;
 };
 
-static void match(int script, const QFontDef &request,
-                  const QString &family_name, const QString &foundry_name, int force_encoding_id,
-                  QtFontDesc *desc, const QList<int> &blacklistedFamilies = QList<int>());
+static int match(int script, const QFontDef &request,
+                 const QString &family_name, const QString &foundry_name, int force_encoding_id,
+                 QtFontDesc *desc, const QList<int> &blacklisted);
 
 static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDef *fontDef, bool multi)
 {
@@ -846,11 +846,12 @@ static bool matchFamilyName(const QString &familyName, QtFontFamily *f)
 
     Tries to find the best match for a given request and family/foundry
 */
-static void match(int script, const QFontDef &request,
-                  const QString &family_name, const QString &foundry_name, int force_encoding_id,
-                  QtFontDesc *desc, const QList<int> &blacklistedFamilies)
+static int match(int script, const QFontDef &request,
+                 const QString &family_name, const QString &foundry_name, int force_encoding_id,
+                 QtFontDesc *desc, const QList<int> &blacklistedFamilies)
 {
     Q_UNUSED(force_encoding_id);
+    int result = -1;
 
     QtFontStyle::Key styleKey;
     styleKey.style = request.style;
@@ -925,12 +926,14 @@ static void match(int script, const QFontDef &request,
         newscore += score_adjust;
 
         if (newscore < score) {
+            result = x;
             score = newscore;
             *desc = test;
         }
         if (newscore < 10) // xlfd instead of FT... just accept it
             break;
     }
+    return result;
 }
 
 static QString styleStringHelper(int weight, QFont::Style style)
