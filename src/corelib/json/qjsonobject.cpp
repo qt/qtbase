@@ -783,6 +783,8 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
 /*!
     \class QJsonObject::const_iterator
     \inmodule QtCore
+    \ingroup json
+    \since 5.0
     \brief The QJsonObject::const_iterator class provides an STL-style const iterator for QJsonObject.
 
     QJsonObject::const_iterator allows you to iterate over a QJsonObject.
