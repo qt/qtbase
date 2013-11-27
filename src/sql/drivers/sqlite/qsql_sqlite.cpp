@@ -582,8 +582,6 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
     if (isOpen())
         close();
 
-    if (db.isEmpty())
-        return false;
     bool sharedCache = false;
     int openMode = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, timeOut=5000;
     QStringList opts=QString(conOpts).remove(QLatin1Char(' ')).split(QLatin1Char(';'));
