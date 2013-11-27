@@ -212,7 +212,7 @@ void *QXcbNativeInterface::nativeResourceForWindow(const QByteArray &resourceStr
         result = connectionForWindow(window);
         break;
     case Screen:
-        result = qPlatformScreenForWindow(window);
+        result = screenForWindow(window);
         break;
     default:
         break;
