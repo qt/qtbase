@@ -294,6 +294,9 @@ QtGui
  - [QTBUG-27349] Reintroduced command line argument for positioning
    windows (-geometry on X11, -qwindowgeometry on other platforms)
 
+ - [QTBUG-28832] Fixed regression from Qt 4 when using
+   QTextOption::ShowLineAndParagraphSeparators.
+
 QtNetwork
 ---------
 
@@ -620,6 +623,40 @@ Android
    show the status bar (QWindow::showMaximized()). Use
    QWindow::showFullScreen() to hide it.
  - Implemented support for accessibility on Android.
+ - Implemented support for native action bar backend for menu bars in
+   Qt Quick Controls and Qt Widgets.
+ - Implemented support for native popup menus and comboboxes in Qt Quick
+   Controls.
+ - Implemented support for native message boxes in Qt Widgets.
+ - Several improvements to handling dialogs and multiple top-level
+   windows in Qt Widgets.
+ - Implemented automatic inclusion of necessary permissions in manifest
+   when linking against Qt Multimedia.
+ - Fixed crash on startup when running on Android 4.4.
+ - Add requirement for Android SDK version 13 or higher for building
+   Qt application. Note that this is for building only. The application
+   can still be targeted for devices with SDK versions 9 and up.
+ - Default to target SDK version 14 to disable overflow button in
+   system navigation.
+ - New module: Qt Android Extras. Contains convenience APIs for using
+   JNI, and will in the future include support for Android-specific
+   features which do not fit in a cross-platform API.
+ - Implemented support for thread-affinity in qrand() functions.
+ - Fixed several problems with predictive text in soft keyboard.
+ - Made several improvements to stability.
+ - Implemented support for camera and low-latency audio in Qt Multimedia.
+ - Fixed driver-specific bugs in text rendering in Qt Quick 2.
+ - Added preference in default manifest for installing applications to
+   external storage if possible.
+ - Fixed delivery of key press event for the Back key.
+ - Fixed race condition when showing a window in full screen which would
+   cause it to not be maximized.
+ - Fixed input method hints.
+ - Made font point sizes compatible with the interpretation of point
+   sizes on iOS to ease sharing code between the two platforms.
+ - Added support for QAmbientTemperatureSensor, QPressureSensor
+   and QProximitySensor to Qt Sensors.
+ - Removed dependency on Qt Widgets in default build of Qt Quick Controls.
 
 OS X
 ----
