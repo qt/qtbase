@@ -182,8 +182,6 @@ bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
     QWindow *window = static_cast<QCocoaWindow *>(surface)->window();
     setActiveWindow(window);
 
-    if (![m_context view])
-        return false;
     [m_context makeCurrentContext];
     update();
     return true;
