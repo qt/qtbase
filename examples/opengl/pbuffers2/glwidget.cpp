@@ -156,7 +156,7 @@ void GLWidget::draw()
     glTranslatef(0.0f, 0.0f, -15.0f);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    glViewport(0, 0, width(), height());
+    glViewport(0, 0, width() * devicePixelRatio(), height() * devicePixelRatio());
 
     glBindTexture(GL_TEXTURE_2D, dynamicTexture);
     glEnable(GL_TEXTURE_2D);

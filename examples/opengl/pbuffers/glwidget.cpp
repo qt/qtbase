@@ -198,7 +198,7 @@ void GLWidget::orthographicProjection()
 
 void GLWidget::resizeGL(int width, int height)
 {
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, width * devicePixelRatio(), height * devicePixelRatio());
     aspect = (qreal)width / (qreal)(height ? height : 1);
     perspectiveProjection();
 }
