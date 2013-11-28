@@ -556,10 +556,8 @@ Q_STATIC_ASSERT_X(UCHAR_MAX == 255, "Qt assumes that char is 8 bits");
     \typedef qreal
     \relates <QtGlobal>
 
-    Typedef for \c double on all platforms except for those using CPUs with
-    ARM architectures.
-    On ARM-based platforms, \c qreal is a typedef for \c float for performance
-    reasons.
+    Typedef for \c double unless Qt is configured with the
+    \c{-qreal float} option.
 */
 
 /*! \typedef uchar
