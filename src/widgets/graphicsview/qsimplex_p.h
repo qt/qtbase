@@ -149,6 +149,7 @@ struct QSimplexConstraint
 
 class QSimplex
 {
+    Q_DISABLE_COPY(QSimplex)
 public:
     QSimplex();
     virtual ~QSimplex();
