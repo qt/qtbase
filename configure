@@ -5127,6 +5127,9 @@ if [ "$CFG_XCB" != "no" ]; then
         if [ "$CFG_XCB_XLIB" != "no" ]; then
             if compileTest qpa/xcb-xlib "xcb-xlib" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
                 QT_CONFIG="$QT_CONFIG xcb-xlib"
+                CFG_XCB_XLIB=yes
+            else
+                CFG_XCB_XLIB=no
             fi
         fi
 
