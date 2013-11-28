@@ -164,8 +164,8 @@ public:
 
 private:
     // Matrix handling
-    qreal valueAt(int row, int column);
-    void setValueAt(int row, int column, qreal value);
+    inline qreal valueAt(int row, int column);
+    inline void setValueAt(int row, int column, qreal value);
     void clearRow(int rowIndex);
     void clearColumns(int first, int last);
     void combineRows(int toIndex, int fromIndex, qreal factor);
