@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtWidgets module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -58,12 +58,14 @@
 #include "qlist.h"
 #include "qmap.h"
 #include "qpair.h"
-#include "qvector.h"
+#include <QtCore/qvector.h>
 #include <QtCore/qsize.h>
 #include <QtCore/qrect.h>
 #include <float.h>
-#include <QtGui/private/qlayoutpolicy_p.h>
-#include <QtGui/private/qabstractlayoutstyleinfo_p.h>
+#include "qlayoutpolicy_p.h"
+#include "qabstractlayoutstyleinfo_p.h"
+
+// #define QGRIDLAYOUTENGINE_DEBUG
 
 QT_BEGIN_NAMESPACE
 
@@ -138,7 +140,7 @@ public:
 
 };
 
-class QGridLayoutBox
+class Q_GUI_EXPORT QGridLayoutBox
 {
 public:
     inline QGridLayoutBox()
@@ -149,7 +151,7 @@ public:
     void combine(const QGridLayoutBox &other);
     void normalize();
 
-#ifdef QT_DEBUG
+#ifdef QGRIDLAYOUTENGINE_DEBUG
     void dump(int indent = 0) const;
 #endif
     // This code could use the union-struct-array trick, but a compiler
@@ -239,7 +241,7 @@ public:
     QGridLayoutBox totalBox(int start, int end) const;
     void stealBox(int start, int end, int which, qreal *positions, qreal *sizes);
 
-#ifdef QT_DEBUG
+#ifdef QGRIDLAYOUTENGINE_DEBUG
     void dump(int indent = 0) const;
 #endif
 
@@ -258,7 +260,7 @@ public:
 
     void insertOrRemoveRows(int row, int delta);
 
-#ifdef QT_DEBUG
+#ifdef QGRIDLAYOUTENGINE_DEBUG
     void dump(int indent = 0) const;
 #endif
 
@@ -270,7 +272,7 @@ public:
 };
 
 
-class QGridLayoutItem
+class Q_GUI_EXPORT QGridLayoutItem
 {
 public:
     QGridLayoutItem(int row, int column, int rowSpan = 1, int columnSpan = 1,
@@ -321,7 +323,7 @@ public:
     void insertOrRemoveRows(int row, int delta, Qt::Orientation orientation = Qt::Vertical);
     QSizeF effectiveMaxSize(const QSizeF &constraint) const;
 
-#ifdef QT_DEBUG
+#ifdef QGRIDLAYOUTENGINE_DEBUG
     void dump(int indent = 0) const;
 #endif
 
@@ -333,7 +335,7 @@ private:
 
 };
 
-class QGridLayoutEngine
+class Q_GUI_EXPORT QGridLayoutEngine
 {
 public:
     QGridLayoutEngine(Qt::Alignment defaultAlignment = Qt::Alignment(0));
@@ -397,7 +399,7 @@ public:
     void transpose();
     void setVisualDirection(Qt::LayoutDirection direction);
     Qt::LayoutDirection visualDirection() const;
-#ifdef QT_DEBUG
+#ifdef QGRIDLAYOUTENGINE_DEBUG
     void dump(int indent = 0) const;
 #endif
 

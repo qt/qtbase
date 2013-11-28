@@ -42,7 +42,7 @@
 #ifndef QGRAPHICSGRIDLAYOUTENGINE_P_H
 #define QGRAPHICSGRIDLAYOUTENGINE_P_H
 
-#include "qgridlayoutengine_p.h"
+#include <QtGui/private/qgridlayoutengine_p.h>
 
 #include <QtWidgets/qsizepolicy.h>
 #include <QtWidgets/qstyle.h>

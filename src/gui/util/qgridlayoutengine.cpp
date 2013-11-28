@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtWidgets module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -136,7 +136,7 @@ void QGridLayoutBox::normalize()
     Q_ASSERT((q_minimumDescent < 0.0) == (q_minimumAscent < 0.0));
 }
 
-#ifdef QT_DEBUG
+#ifdef QGRIDLAYOUTENGINE_DEBUG
 void QGridLayoutBox::dump(int indent) const
 {
     qDebug("%*sBox (%g <= %g <= %g [%g/%g])", indent, "", q_minimumSize, q_preferredSize,
@@ -460,7 +460,7 @@ void QGridLayoutRowData::stealBox(int start, int end, int which, qreal *position
     }
 }
 
-#ifdef QT_DEBUG
+#ifdef QGRIDLAYOUTENGINE_DEBUG
 void QGridLayoutRowData::dump(int indent) const
 {
     qDebug("%*sData", indent, "");
@@ -709,7 +709,7 @@ QSizeF QGridLayoutItem::effectiveMaxSize(const QSizeF &constraint) const
     return size;
 }
 
-#ifdef QT_DEBUG
+#ifdef QGRIDLAYOUTENGINE_DEBUG
 void QGridLayoutItem::dump(int indent) const
 {
     qDebug("%*s (%d, %d) %d x %d", indent, "", firstRow(), firstColumn(),   //###
@@ -736,7 +736,7 @@ void QGridLayoutRowInfo::insertOrRemoveRows(int row, int delta)
     insertOrRemoveItems(boxes, row, delta);
 }
 
-#ifdef QT_DEBUG
+#ifdef QGRIDLAYOUTENGINE_DEBUG
 void QGridLayoutRowInfo::dump(int indent) const
 {
     qDebug("%*sInfo (count: %d)", indent, "", count);
@@ -1155,7 +1155,7 @@ Qt::LayoutDirection QGridLayoutEngine::visualDirection() const
     return m_visualDirection;
 }
 
-#ifdef QT_DEBUG
+#ifdef QGRIDLAYOUTENGINE_DEBUG
 void QGridLayoutEngine::dump(int indent) const
 {
     qDebug("%*sEngine", indent, "");
