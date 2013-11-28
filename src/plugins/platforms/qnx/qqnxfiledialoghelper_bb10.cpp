@@ -68,6 +68,7 @@ QQnxFileDialogHelper::QQnxFileDialogHelper(const QQnxIntegration *integration)
       m_selectedFilter(),
       m_result(QPlatformDialogHelper::Rejected)
 {
+    connect(m_dialog, &QQnxFilePicker::closed, this, &QQnxFileDialogHelper::emitSignals);
 }
 
 QQnxFileDialogHelper::~QQnxFileDialogHelper()
@@ -85,11 +86,6 @@ void QQnxFileDialogHelper::exec()
     QEventLoop loop;
     connect(m_dialog, SIGNAL(closed()), &loop, SLOT(quit()));
     loop.exec();
-
-    if (m_dialog->selectedFiles().isEmpty())
-        Q_EMIT reject();
-    else
-        Q_EMIT accept();
 }
 
 bool QQnxFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent)
@@ -195,6 +191,14 @@ QString QQnxFileDialogHelper::selectedNameFilter() const
     // so this just reflects what the developer has set programmatically.
     qFileDialogHelperDebug() << Q_FUNC_INFO;
     return m_selectedFilter;
+}
+
+void QQnxFileDialogHelper::emitSignals()
+{
+    if (m_dialog->selectedFiles().isEmpty())
+        Q_EMIT reject();
+    else
+        Q_EMIT accept();
 }
 
 void QQnxFileDialogHelper::setNameFilter(const QString &filter)

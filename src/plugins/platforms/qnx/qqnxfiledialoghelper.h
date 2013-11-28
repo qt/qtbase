@@ -87,6 +87,9 @@ public:
 Q_SIGNALS:
     void dialogClosed();
 
+private Q_SLOTS:
+    void emitSignals();
+
 private:
     void setNameFilter(const QString &filter);
     void setNameFilters(const QStringList &filters);
