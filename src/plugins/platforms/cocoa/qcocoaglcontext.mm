@@ -143,7 +143,7 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
 
     [pixelFormat release];
 
-    const GLint interval = 1;
+    const GLint interval = format.swapInterval() >= 0 ? format.swapInterval() : 1;
     [m_context setValues:&interval forParameter:NSOpenGLCPSwapInterval];
 
     if (format.alphaBufferSize() > 0) {
