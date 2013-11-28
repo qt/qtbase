@@ -1464,7 +1464,10 @@ QWidget::~QWidget()
     }
 
     if (d->declarativeData) {
-        QAbstractDeclarativeData::destroyed(d->declarativeData, this);
+        if (QAbstractDeclarativeData::destroyed)
+            QAbstractDeclarativeData::destroyed(d->declarativeData, this);
+        if (QAbstractDeclarativeData::destroyed_qml1)
+            QAbstractDeclarativeData::destroyed_qml1(d->declarativeData, this);
         d->declarativeData = 0;                 // don't activate again in ~QObject
     }
 
