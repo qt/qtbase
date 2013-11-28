@@ -81,15 +81,7 @@ contains(QT_CONFIG, xcb-sm) {
 }
 
 contains(QT_CONFIG, opengl) {
-    contains(QT_CONFIG, opengles2) {
-        DEFINES += XCB_USE_EGL
-        CONFIG += egl
-        HEADERS += qxcbeglsurface.h
-
-        # EGL on MeeGo 1.2 Harmattan needs this macro to map EGLNativeDisplayType
-        # and other types to the correct X11 types
-        DEFINES += SUPPORT_X11
-    } else:contains(QT_CONFIG, xcb-xlib) {
+    contains(QT_CONFIG, xcb-xlib):!contains(QT_CONFIG, opengles2) {
         DEFINES += XCB_USE_GLX
         HEADERS += qglxintegration.h
         SOURCES += qglxintegration.cpp
@@ -98,6 +90,14 @@ contains(QT_CONFIG, opengl) {
             DEFINES += XCB_HAS_XCB_GLX
             LIBS += -lxcb-glx
         }
+    } else:contains(QT_CONFIG, egl) {
+        DEFINES += XCB_USE_EGL
+        CONFIG += egl
+        HEADERS += qxcbeglsurface.h
+
+        # EGL on MeeGo 1.2 Harmattan needs this macro to map EGLNativeDisplayType
+        # and other types to the correct X11 types
+        DEFINES += SUPPORT_X11
     }
 }
 

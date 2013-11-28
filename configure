@@ -647,6 +647,7 @@ CFG_XINPUT=runtime
 CFG_XKB=auto
 CFG_XKBCOMMON=auto
 CFG_XCB=auto
+CFG_XCB_XLIB=auto
 CFG_XCB_GLX=no
 CFG_EGLFS=auto
 CFG_DIRECTFB=auto
@@ -1690,6 +1691,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    xcb-xlib)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_XCB_XLIB="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     wayland)
         CFG_OBSOLETE_WAYLAND=yes
         ;;
@@ -2334,6 +2342,9 @@ Third Party Libraries:
 
     -no-xinput2 ........ Do not compile XInput2 support.
  *  -xinput2 ........... Compile XInput2 support.
+
+    -no-xcb-xlib........ Do not compile Xcb-Xlib support.
+ *  -xcb-xlib........... Compile Xcb-Xlib support.
 
     -no-glib ........... Do not compile Glib support.
  +  -glib .............. Compile Glib support.
@@ -5128,8 +5139,10 @@ if [ "$CFG_XCB" != "no" ]; then
             exit 1
         fi
 
-        if compileTest qpa/xcb-xlib "xcb-xlib" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
-            QT_CONFIG="$QT_CONFIG xcb-xlib"
+        if [ "$CFG_XCB_XLIB" != "no" ]; then
+            if compileTest qpa/xcb-xlib "xcb-xlib" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
+                QT_CONFIG="$QT_CONFIG xcb-xlib"
+            fi
         fi
 
         if [ "$CFG_SM" != "no" ] && [ -n "$PKG_CONFIG" ]; then
@@ -6694,6 +6707,7 @@ report_support "    LinuxFB .............." "$CFG_LINUXFB"
 report_support "    XCB .................." "$CFG_XCB" system "system library" qt "bundled copy"
 if [ "$CFG_XCB" != "no" ]; then
     report_support "      MIT-SHM ............" "$CFG_MITSHM"
+    report_support "      Xcb-Xlib ..........." "$CFG_XCB_XLIB"
     report_support "      Xcursor ............" "$CFG_XCURSOR" runtime "loaded at runtime"
     report_support "      Xfixes ............." "$CFG_XFIXES" runtime "loaded at runtime"
     report_support "      Xi ................." "$CFG_XINPUT" runtime "loaded at runtime"
