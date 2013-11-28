@@ -971,7 +971,6 @@ void tst_QGraphicsLinearLayout::defaultSpacing()
     layout->invalidate();
     styleSpacing = (qreal)style->pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
     QCOMPARE(styleSpacing, qreal(15));
-    QSKIP("invalidating the layout does not reevaluate the default spacing (QTBUG-35099)");
     QCOMPARE(styleSpacing, layout->spacing());
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize).width(), qreal(115));
     widget->setStyle(style2);
@@ -991,7 +990,6 @@ void tst_QGraphicsLinearLayout::defaultSpacing()
     layout->invalidate();
     styleSpacing = (qreal)style->pixelMetric(QStyle::PM_LayoutVerticalSpacing);
     QCOMPARE(styleSpacing, qreal(13));
-    QSKIP("invalidating the layout does not reevaluate the default spacing (QTBUG-35099)");
     QCOMPARE(styleSpacing, layout->spacing());
     QCOMPARE(layout->effectiveSizeHint(Qt::PreferredSize).height(), qreal(113));
     widget->setStyle(style2);

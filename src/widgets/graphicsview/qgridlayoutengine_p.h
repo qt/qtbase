@@ -59,12 +59,14 @@
 #include "qmap.h"
 #include "qpair.h"
 #include "qvector.h"
-#include "qgraphicslayout_p.h"
+#include <QtCore/qsize.h>
+#include <QtCore/qrect.h>
 #include <float.h>
+#include <QtGui/private/qlayoutpolicy_p.h>
+#include <QtGui/private/qabstractlayoutstyleinfo_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QGraphicsLayoutItem;
 class QStyle;
 class QWidget;
 
@@ -249,14 +251,31 @@ public:
     bool hasIgnoreFlag;
 };
 
-class QGridLayoutEngine;
+class QGridLayoutRowInfo
+{
+public:
+    inline QGridLayoutRowInfo() : count(0) {}
+
+    void insertOrRemoveRows(int row, int delta);
+
+#ifdef QT_DEBUG
+    void dump(int indent = 0) const;
+#endif
+
+    int count;
+    QVector<QStretchParameter> stretches;
+    QVector<QLayoutParameter<qreal> > spacings;
+    QVector<Qt::Alignment> alignments;
+    QVector<QGridLayoutBox> boxes;
+};
+
 
 class QGridLayoutItem
 {
 public:
-    QGridLayoutItem(QGridLayoutEngine *engine, QGraphicsLayoutItem *layoutItem, int row, int column,
-                    int rowSpan = 1, int columnSpan = 1, Qt::Alignment alignment = 0,
-                    int itemAtIndex = -1);
+    QGridLayoutItem(int row, int column, int rowSpan = 1, int columnSpan = 1,
+                    Qt::Alignment alignment = 0);
+    virtual ~QGridLayoutItem() {}
 
     inline int firstRow() const { return q_firstRows[Ver]; }
     inline int firstColumn() const { return q_firstRows[Hor]; }
@@ -280,19 +299,24 @@ public:
     inline Qt::Alignment alignment() const { return q_alignment; }
     inline void setAlignment(Qt::Alignment alignment) { q_alignment = alignment; }
 
-    QSizePolicy::Policy sizePolicy(Qt::Orientation orientation) const;
+    virtual QLayoutPolicy::Policy sizePolicy(Qt::Orientation orientation) const = 0;
+    virtual QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint) const = 0;
 
-    bool hasDynamicConstraint() const;
-    Qt::Orientation dynamicConstraintOrientation() const;
+    virtual void setGeometry(const QRectF &rect) = 0;
+    /*
+      returns true if the size policy returns true for either hasHeightForWidth()
+      or hasWidthForHeight()
+     */
+    virtual bool hasDynamicConstraint() const { return false; }
+    virtual Qt::Orientation dynamicConstraintOrientation() const { return Qt::Horizontal; }
 
-    QSizePolicy::ControlTypes controlTypes(LayoutSide side) const;
-    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const;
+
+    virtual QLayoutPolicy::ControlTypes controlTypes(LayoutSide side) const;
+
+    QRectF geometryWithin(qreal x, qreal y, qreal width, qreal height, qreal rowDescent, Qt::Alignment align) const;
     QGridLayoutBox box(Qt::Orientation orientation, qreal constraint = -1.0) const;
-    QRectF geometryWithin(qreal x, qreal y, qreal width, qreal height, qreal rowDescent) const;
 
-    QGraphicsLayoutItem *layoutItem() const { return q_layoutItem; }
 
-    void setGeometry(const QRectF &rect);
     void transpose();
     void insertOrRemoveRows(int row, int delta, Qt::Orientation orientation = Qt::Vertical);
     QSizeF effectiveMaxSize(const QSizeF &constraint) const;
@@ -302,30 +326,11 @@ public:
 #endif
 
 private:
-    QGridLayoutEngine *q_engine;   // ### needed?
-    QGraphicsLayoutItem *q_layoutItem;
     int q_firstRows[NOrientations];
     int q_rowSpans[NOrientations];
     int q_stretches[NOrientations];
     Qt::Alignment q_alignment;
-};
 
-class QGridLayoutRowInfo
-{
-public:
-    inline QGridLayoutRowInfo() : count(0) {}
-
-    void insertOrRemoveRows(int row, int delta);
-
-#ifdef QT_DEBUG
-    void dump(int indent = 0) const;
-#endif
-
-    int count;
-    QVector<QStretchParameter> stretches;
-    QVector<QLayoutParameter<qreal> > spacings;
-    QVector<Qt::Alignment> alignments;
-    QVector<QGridLayoutBox> boxes;
 };
 
 class QGridLayoutEngine
@@ -341,23 +346,18 @@ public:
     // returns the number of items inserted, which may be less than (rowCount * columnCount)
     int itemCount() const;
     QGridLayoutItem *itemAt(int index) const;
-    int indexOf(QGraphicsLayoutItem *item) const;
 
     int effectiveFirstRow(Qt::Orientation orientation = Qt::Vertical) const;
     int effectiveLastRow(Qt::Orientation orientation = Qt::Vertical) const;
 
     void setSpacing(qreal spacing, Qt::Orientations orientations);
-    qreal spacing(const QLayoutStyleInfo &styleInfo, Qt::Orientation orientation) const;
+    qreal spacing(Qt::Orientation orientation, const QAbstractLayoutStyleInfo *styleInfo) const;
     // ### setSpacingAfterRow(), spacingAfterRow()
     void setRowSpacing(int row, qreal spacing, Qt::Orientation orientation = Qt::Vertical);
     qreal rowSpacing(int row, Qt::Orientation orientation = Qt::Vertical) const;
 
     void setRowStretchFactor(int row, int stretch, Qt::Orientation orientation = Qt::Vertical);
     int rowStretchFactor(int row, Qt::Orientation orientation = Qt::Vertical) const;
-
-    void setStretchFactor(QGraphicsLayoutItem *layoutItem, int stretch,
-                          Qt::Orientation orientation);
-    int stretchFactor(QGraphicsLayoutItem *layoutItem, Qt::Orientation orientation) const;
 
     void setRowSizeHint(Qt::SizeHint which, int row, qreal size,
                         Qt::Orientation orientation = Qt::Vertical);
@@ -367,15 +367,12 @@ public:
     void setRowAlignment(int row, Qt::Alignment alignment, Qt::Orientation orientation);
     Qt::Alignment rowAlignment(int row, Qt::Orientation orientation) const;
 
-    void setAlignment(QGraphicsLayoutItem *layoutItem, Qt::Alignment alignment);
-    Qt::Alignment alignment(QGraphicsLayoutItem *layoutItem) const;
     Qt::Alignment effectiveAlignment(const QGridLayoutItem *layoutItem) const;
 
 
     void insertItem(QGridLayoutItem *item, int index);
     void addItem(QGridLayoutItem *item);
     void removeItem(QGridLayoutItem *item);
-    QGridLayoutItem *findLayoutItem(QGraphicsLayoutItem *layoutItem) const;
     QGridLayoutItem *itemAt(int row, int column, Qt::Orientation orientation = Qt::Vertical) const;
     inline void insertRow(int row, Qt::Orientation orientation = Qt::Vertical)
         { insertOrRemoveRows(row, +1, orientation); }
@@ -383,11 +380,11 @@ public:
         { insertOrRemoveRows(row, -count, orientation); }
 
     void invalidate();
-    void setGeometries(const QLayoutStyleInfo &styleInfo, const QRectF &contentsGeometry);
-    QRectF cellRect(const QLayoutStyleInfo &styleInfo, const QRectF &contentsGeometry, int row,
-                    int column, int rowSpan, int columnSpan) const;
-    QSizeF sizeHint(const QLayoutStyleInfo &styleInfo, Qt::SizeHint which,
-                    const QSizeF &constraint) const;
+    void setGeometries(const QRectF &contentsGeometry, const QAbstractLayoutStyleInfo *styleInfo);
+    QRectF cellRect(const QRectF &contentsGeometry, int row, int column, int rowSpan, int columnSpan,
+                    const QAbstractLayoutStyleInfo *styleInfo) const;
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint,
+                    const QAbstractLayoutStyleInfo *styleInfo) const;
 
     // heightForWidth / widthForHeight support
     QSizeF dynamicallyConstrainedSizeHint(Qt::SizeHint which, const QSizeF &constraint) const;
@@ -396,7 +393,7 @@ public:
     Qt::Orientation constraintOrientation() const;
 
 
-    QSizePolicy::ControlTypes controlTypes(LayoutSide side) const;
+    QLayoutPolicy::ControlTypes controlTypes(LayoutSide side) const;
     void transpose();
     void setVisualDirection(Qt::LayoutDirection direction);
     Qt::LayoutDirection visualDirection() const;
@@ -413,20 +410,22 @@ private:
     inline int internalGridColumnCount() const { return grossRoundUp(columnCount()); }
     void setItemAt(int row, int column, QGridLayoutItem *item);
     void insertOrRemoveRows(int row, int delta, Qt::Orientation orientation = Qt::Vertical);
-    void fillRowData(QGridLayoutRowData *rowData, const QLayoutStyleInfo &styleInfo,
-                                    qreal *colPositions, qreal *colSizes,
-                                    Qt::Orientation orientation = Qt::Vertical) const;
+    void fillRowData(QGridLayoutRowData *rowData,
+                     qreal *colPositions, qreal *colSizes,
+                     Qt::Orientation orientation,
+                     const QAbstractLayoutStyleInfo *styleInfo) const;
     void ensureEffectiveFirstAndLastRows() const;
     void ensureColumnAndRowData(QGridLayoutRowData *rowData, QGridLayoutBox *totalBox,
-                                            const QLayoutStyleInfo &styleInfo,
                                             qreal *colPositions, qreal *colSizes,
-                                            Qt::Orientation orientation) const;
+                                            Qt::Orientation orientation,
+                                            const QAbstractLayoutStyleInfo *styleInfo) const;
 
-    void ensureGeometries(const QLayoutStyleInfo &styleInfo, const QSizeF &size) const;
-
+    void ensureGeometries(const QSizeF &size, const QAbstractLayoutStyleInfo *styleInfo) const;
+protected:
+    QList<QGridLayoutItem *> q_items;
+private:
     // User input
     QVector<QGridLayoutItem *> q_grid;
-    QList<QGridLayoutItem *> q_items;
     QLayoutParameter<qreal> q_defaultSpacings[NOrientations];
     QGridLayoutRowInfo q_infos[NOrientations];
     Qt::LayoutDirection m_visualDirection;
@@ -438,13 +437,13 @@ private:
     mutable quint8 q_cachedConstraintOrientation : 3;
 
     // Layout item input
-    mutable QLayoutStyleInfo q_cachedDataForStyleInfo;
     mutable QGridLayoutRowData q_columnData;
     mutable QGridLayoutRowData q_rowData;
     mutable QGridLayoutBox q_totalBoxes[NOrientations];
 
     // Output
     mutable QSizeF q_cachedSize;
+    mutable bool q_totalBoxesValid;
     mutable QVector<qreal> q_xx;
     mutable QVector<qreal> q_yy;
     mutable QVector<qreal> q_widths;
