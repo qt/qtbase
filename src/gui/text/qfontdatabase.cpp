@@ -896,8 +896,6 @@ static int match(int script, const QFontDef &request,
         if (family_name.isEmpty())
             load(test.family->name, script);
 
-        uint score_adjust = 0;
-
         bool supported = (script == QChar::Script_Common);
         for (int ws = 1; !supported && ws < QFontDatabase::WritingSystemsCount; ++ws) {
             if (scriptForWritingSystem[ws] != script)
@@ -923,7 +921,6 @@ static int match(int script, const QFontDef &request,
                                    QString(), styleKey, request.pixelSize,
                                    pitch, &test, force_encoding_id);
         }
-        newscore += score_adjust;
 
         if (newscore < score) {
             result = x;
