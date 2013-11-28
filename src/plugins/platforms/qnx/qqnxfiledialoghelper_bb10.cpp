@@ -65,8 +65,7 @@ QQnxFileDialogHelper::QQnxFileDialogHelper(const QQnxIntegration *integration)
       m_integration(integration),
       m_dialog(new QQnxFilePicker),
       m_acceptMode(QFileDialogOptions::AcceptOpen),
-      m_selectedFilter(),
-      m_result(QPlatformDialogHelper::Rejected)
+      m_selectedFilter()
 {
     connect(m_dialog, &QQnxFilePicker::closed, this, &QQnxFileDialogHelper::emitSignals);
 }

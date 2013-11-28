@@ -99,8 +99,8 @@ private:
     QFileDialogOptions::AcceptMode m_acceptMode;
     QString m_selectedFilter;
 
-    QPlatformDialogHelper::DialogCode m_result;
 #if defined(Q_OS_BLACKBERRY_TABLET)
+    QPlatformDialogHelper::DialogCode m_result;
     QList<QUrl> m_paths;
 #endif
 };
