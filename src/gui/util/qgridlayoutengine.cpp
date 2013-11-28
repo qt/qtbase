@@ -600,9 +600,14 @@ QGridLayoutBox QGridLayoutItem::box(Qt::Orientation orientation, qreal constrain
             result.q_maximumSize = result.q_preferredSize;
         }
 
-        result.q_minimumDescent = sizeHint(Qt::MinimumDescent, constraintSize).height();
-        if (result.q_minimumDescent >= 0.0)
-            result.q_minimumAscent = result.q_minimumSize - result.q_minimumDescent;
+        if (alignment() & Qt::AlignBaseline) {
+            result.q_minimumDescent = sizeHint(Qt::MinimumDescent, constraintSize).height();
+            if (result.q_minimumDescent != -1.0) {
+                const qreal minSizeHint = sizeHint(Qt::MinimumSize, constraintSize).height();
+                result.q_minimumDescent -= (minSizeHint - result.q_minimumSize);
+                result.q_minimumAscent = result.q_minimumSize - result.q_minimumDescent;
+            }
+        }
     }
     if (policy & QLayoutPolicy::IgnoreFlag)
         result.q_preferredSize = result.q_minimumSize;
@@ -613,10 +618,8 @@ QGridLayoutBox QGridLayoutItem::box(Qt::Orientation orientation, qreal constrain
 QRectF QGridLayoutItem::geometryWithin(qreal x, qreal y, qreal width, qreal height,
                                        qreal rowDescent, Qt::Alignment align) const
 {
-    rowDescent = -1.0; // ### This disables the descent
-
     QGridLayoutBox vBox = box(Qt::Vertical);
-    if (vBox.q_minimumDescent < 0.0 || rowDescent < 0.0) {
+    if (!(align & Qt::AlignBaseline) || vBox.q_minimumDescent < 0.0 || rowDescent < 0.0) {
         qreal cellWidth = width;
         qreal cellHeight = height;
 
@@ -656,6 +659,7 @@ QRectF QGridLayoutItem::geometryWithin(qreal x, qreal y, qreal width, qreal heig
         }
         return QRectF(x, y, width, height);
     } else {
+        width = qMin(effectiveMaxSize(QSizeF(-1,-1)).width(), width);
         qreal descent = vBox.q_minimumDescent;
         qreal ascent = vBox.q_minimumSize - descent;
         return QRectF(x, y + height - rowDescent - ascent, width, ascent + descent);
