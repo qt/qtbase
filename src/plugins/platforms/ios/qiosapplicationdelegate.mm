@@ -41,8 +41,13 @@
 
 #include "qiosapplicationdelegate.h"
 
+#include "qiosintegration.h"
+#include "qiosservices.h"
 #include "qiosviewcontroller.h"
 #include "qioswindow.h"
+
+#include <QtGui/private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 
 #include <QtCore/QtCore>
 
@@ -80,6 +85,21 @@
     self.window.hidden = NO;
 
     return YES;
+}
+
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
+{
+    Q_UNUSED(application);
+    Q_UNUSED(sourceApplication);
+    Q_UNUSED(annotation);
+
+    if (!QGuiApplication::instance())
+        return NO;
+
+    QIOSIntegration *iosIntegration = static_cast<QIOSIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QIOSServices *iosServices = static_cast<QIOSServices *>(iosIntegration->services());
+
+    return iosServices->handleUrl(QUrl::fromNSURL(url));
 }
 
 - (void)dealloc
