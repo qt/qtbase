@@ -109,6 +109,6 @@
     the required plugins to your build. For example:
 
     \snippet code/doc_src_qplugin.pro 3
+    \sa {Static Plugins}, {How to Create Qt Plugins}, {qmake-getting-started}{Getting Started with qmake}
 
-    \sa {Static Plugins}, {How to Create Qt Plugins}, {Using qmake}
 */
