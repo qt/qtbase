@@ -622,7 +622,7 @@ void QIOSWindow::setParent(const QPlatformWindow *parentWindow)
     }
 }
 
-QIOSWindow *QIOSWindow::topLevelWindow() const
+QWindow *QIOSWindow::topLevelWindow() const
 {
     QWindow *window = this->window();
     while (window) {
@@ -636,7 +636,7 @@ QIOSWindow *QIOSWindow::topLevelWindow() const
         window = parent;
     }
 
-    return static_cast<QIOSWindow *>(window->handle());
+    return window;
 }
 
 void QIOSWindow::requestActivateWindow()

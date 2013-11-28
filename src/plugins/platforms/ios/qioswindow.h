@@ -85,7 +85,7 @@ public:
 
     WId winId() const { return WId(m_view); };
 
-    QIOSWindow *topLevelWindow() const;
+    QWindow *topLevelWindow() const;
 
 private:
     void applyGeometry(const QRect &rect);

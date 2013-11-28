@@ -102,11 +102,11 @@
 - (BOOL)prefersStatusBarHidden
 {
     QWindow *focusWindow = QGuiApplication::focusWindow();
-    if (!focusWindow)
+    if (!focusWindow || !focusWindow->handle())
         return [UIApplication sharedApplication].statusBarHidden;
 
-    QIOSWindow *topLevel = static_cast<QIOSWindow *>(focusWindow->handle())->topLevelWindow();
-    return topLevel->window()->windowState() == Qt::WindowFullScreen;
+    QWindow *topLevel = static_cast<QIOSWindow *>(focusWindow->handle())->topLevelWindow();
+    return topLevel->windowState() == Qt::WindowFullScreen;
 }
 
 @end
