@@ -1,4 +1,4 @@
-SOURCES = glxfbconfig.cpp
+SOURCES = glx.cpp
 CONFIG += x11
 INCLUDEPATH += $$QMAKE_INCDIR_OPENGL
 
