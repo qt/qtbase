@@ -499,6 +499,8 @@ static const int scriptForWritingSystem[] = {
     QChar::Script_Nko // Nko
 };
 
+Q_STATIC_ASSERT(sizeof(scriptForWritingSystem) / sizeof(scriptForWritingSystem[0]) == QFontDatabase::WritingSystemsCount);
+
 int qt_script_for_writing_system(QFontDatabase::WritingSystem writingSystem)
 {
     return scriptForWritingSystem[writingSystem];
@@ -882,6 +884,8 @@ static int match(int script, const QFontDef &request,
 
     load(family_name, script);
 
+    const size_t writingSystem = std::find(scriptForWritingSystem, scriptForWritingSystem + QFontDatabase::WritingSystemsCount, script) - scriptForWritingSystem;
+
     QFontDatabasePrivate *db = privateDb();
     for (int x = 0; x < db->count; ++x) {
         if (blacklistedFamilies.contains(x))
@@ -896,17 +900,9 @@ static int match(int script, const QFontDef &request,
         if (family_name.isEmpty())
             load(test.family->name, script);
 
-        bool supported = (script == QChar::Script_Common);
-        for (int ws = 1; !supported && ws < QFontDatabase::WritingSystemsCount; ++ws) {
-            if (scriptForWritingSystem[ws] != script)
-                continue;
-            if (test.family->writingSystems[ws] & QtFontFamily::Supported)
-                supported = true;
-        }
-        if (!supported) {
-            // family not supported in the script we want
+        // Check if family is supported in the script we want
+        if (script != QChar::Script_Common && !(test.family->writingSystems[writingSystem] & QtFontFamily::Supported))
             continue;
-        }
 
         // as we know the script is supported, we can be sure
         // to find a matching font here.
