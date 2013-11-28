@@ -331,7 +331,7 @@ public:
 class QGridLayoutEngine
 {
 public:
-    QGridLayoutEngine();
+    QGridLayoutEngine(Qt::Alignment defaultAlignment = Qt::Alignment(0));
     inline ~QGridLayoutEngine() { qDeleteAll(q_items); }
 
     int rowCount(Qt::Orientation orientation) const;
@@ -430,6 +430,7 @@ private:
     QLayoutParameter<qreal> q_defaultSpacings[NOrientations];
     QGridLayoutRowInfo q_infos[NOrientations];
     Qt::LayoutDirection m_visualDirection;
+    Qt::Alignment m_defaultAlignment;
 
     // Lazily computed from the above user input
     mutable int q_cachedEffectiveFirstRows[NOrientations];

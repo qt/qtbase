@@ -800,9 +800,10 @@ void QGridLayoutRowInfo::dump(int indent) const
 }
 #endif
 
-QGridLayoutEngine::QGridLayoutEngine()
+QGridLayoutEngine::QGridLayoutEngine(Qt::Alignment defaultAlignment)
 {
     m_visualDirection = Qt::LeftToRight;
+    m_defaultAlignment = defaultAlignment;
     invalidate();
 }
 
@@ -990,6 +991,8 @@ Qt::Alignment QGridLayoutEngine::effectiveAlignment(const QGridLayoutItem *layou
         // no vertical alignment, respect the row alignment
         int y = layoutItem->firstRow();
         align |= (rowAlignment(y, Qt::Vertical) & Qt::AlignVertical_Mask);
+        if (!(align & Qt::AlignVertical_Mask))
+            align |= (m_defaultAlignment & Qt::AlignVertical_Mask);
     }
     if (!(align & Qt::AlignHorizontal_Mask)) {
         // no horizontal alignment, respect the column alignment
