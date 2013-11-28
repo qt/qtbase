@@ -152,6 +152,7 @@ private slots:
     void connectBase();
     void qmlConnect();
     void exceptions();
+    void noDeclarativeParentChangedOnDestruction();
 };
 
 struct QObjectCreatedOnShutdown
@@ -6230,6 +6231,43 @@ void tst_QObject::exceptions()
 
 #else
     QSKIP("Needs exceptions");
+#endif
+}
+
+#ifdef QT_BUILD_INTERNAL
+static bool parentChangeCalled = false;
+
+static void testParentChanged(QAbstractDeclarativeData *, QObject *, QObject *)
+{
+    parentChangeCalled = true;
+}
+#endif
+
+void tst_QObject::noDeclarativeParentChangedOnDestruction()
+{
+#ifdef QT_BUILD_INTERNAL
+    typedef void (*ParentChangedCallback)(QAbstractDeclarativeData *, QObject *, QObject *);
+    QScopedValueRollback<ParentChangedCallback> rollback(QAbstractDeclarativeData::parentChanged);
+    QAbstractDeclarativeData::parentChanged = testParentChanged;
+
+    QObject *parent = new QObject;
+    QObject *child = new QObject;
+
+    QAbstractDeclarativeData dummy;
+    QObjectPrivate::get(child)->declarativeData = &dummy;
+
+    parentChangeCalled = false;
+    child->setParent(parent);
+
+    QVERIFY(parentChangeCalled);
+    parentChangeCalled = false;
+
+    delete child;
+    QVERIFY(!parentChangeCalled);
+
+    delete parent;
+#else
+    QSKIP("Needs QT_BUILD_INTERNAL");
 #endif
 }
 
