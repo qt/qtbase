@@ -611,6 +611,7 @@ CFG_OPENVG_LC_INCLUDES=no
 CFG_OPENVG_SHIVA=auto
 CFG_OPENVG_ON_OPENGL=auto
 CFG_EGL=auto
+CFG_GLX=auto
 CFG_SSE=auto
 CFG_FONTCONFIG=auto
 CFG_FREETYPE=auto
@@ -648,6 +649,7 @@ CFG_XINPUT=runtime
 CFG_XKB=auto
 CFG_XKBCOMMON=auto
 CFG_XCB=auto
+CFG_XCB_XLIB=auto
 CFG_XCB_GLX=no
 CFG_EGLFS=auto
 CFG_DIRECTFB=auto
@@ -1480,6 +1482,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    glx)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_GLX="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     pch)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_PRECOMPILE="$VAL"
@@ -1687,6 +1696,13 @@ while [ "$#" -gt 0 ]; do
             if [ "$VAL" = "yes" ]; then
                 CFG_XCB="system"
             fi
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    xcb-xlib)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_XCB_XLIB="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -2342,6 +2358,9 @@ Third Party Libraries:
 
     -no-xinput2 ........ Do not compile XInput2 support.
  *  -xinput2 ........... Compile XInput2 support.
+
+    -no-xcb-xlib........ Do not compile Xcb-Xlib support.
+ *  -xcb-xlib........... Compile Xcb-Xlib support.
 
     -no-glib ........... Do not compile Glib support.
  +  -glib .............. Compile Glib support.
@@ -4908,19 +4927,6 @@ if [ "$XPLATFORM_MINGW" = "yes" ]; then
             fi
             CFG_OPENGL=no
         fi
-        case "$PLATFORM" in
-        hpux*)
-            # HP-UX have buggy glx headers; check if we really need to define the GLXFBConfig struct.
-            if [ "$CFG_OPENGL" = "desktop" ]; then
-                compileTest x11/glxfbconfig "OpenGL"
-                if [ $? != "0" ]; then
-                    QMakeVar add DEFINES QT_DEFINE_GLXFBCONFIG_STRUCT
-                fi
-            fi
-            ;;
-        *)
-            ;;
-        esac
     elif [ "$CFG_OPENGL" = "es2" ]; then
         #OpenGL ES 2.x
         compileTest unix/opengles2 "OpenGL ES 2.x"
@@ -4941,17 +4947,6 @@ if [ "$XPLATFORM_MINGW" = "yes" ]; then
             echo " ${XQMAKESPEC}."
             exit 1
         fi
-        case "$PLATFORM" in
-        hpux*)
-            # HP-UX have buggy glx headers; check if we really need to define the GLXFBConfig struct.
-            compileTest x11/glxfbconfig "OpenGL"
-            if [ $? != "0" ]; then
-                QMakeVar add DEFINES QT_DEFINE_GLXFBCONFIG_STRUCT
-            fi
-            ;;
-        *)
-            ;;
-        esac
     fi
 fi # X11/MINGW OpenGL
 
@@ -5145,8 +5140,10 @@ if [ "$CFG_XCB" != "no" ]; then
             exit 1
         fi
 
-        if compileTest qpa/xcb-xlib "xcb-xlib" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
-            QT_CONFIG="$QT_CONFIG xcb-xlib"
+        if [ "$CFG_XCB_XLIB" != "no" ]; then
+            if compileTest qpa/xcb-xlib "xcb-xlib" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
+                QT_CONFIG="$QT_CONFIG xcb-xlib"
+            fi
         fi
 
         if [ "$CFG_SM" != "no" ] && [ -n "$PKG_CONFIG" ]; then
@@ -5284,11 +5281,13 @@ elif [ "$CFG_XKBCOMMON" = "no" ]; then
 fi
 
 # EGL Support
-if [ "$CFG_EGL" = "yes" ] && [ "$CFG_OPENGL" = "no" ]; then
+if [ "$CFG_EGL" != "no" ]; then
+    if [ "$CFG_EGL" = "yes" ] && [ "$CFG_OPENGL" = "no" ]; then
         echo "EGL support was requested but OpenGL support is disabled."
-        echo "Either disable EGL support or enable OpenGL ES support."
+        echo "Either disable EGL support or enable OpenGL support."
         exit 101
-elif [ "$CFG_EGL" != "no" ]; then
+    fi
+
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists egl 2>/dev/null; then
         QMAKE_INCDIR_EGL=`$PKG_CONFIG --cflags-only-I egl 2>/dev/null | sed -e 's,^-I,,g' -e 's, -I, ,g'`
         QMAKE_LIBS_EGL=`$PKG_CONFIG --libs egl 2>/dev/null`
@@ -5308,6 +5307,24 @@ elif [ "$CFG_EGL" != "no" ]; then
         CFG_EGL=no
     fi
 fi
+
+# GLX Support
+if [ "$CFG_GLX" != "no" ]; then
+    if  [ "$CFG_GLX" = "yes" ] && [ "$CFG_OPENGL" = "no" ]; then
+        echo "GLX support was requested but OpenGL support is disabled."
+        echo "Either disable GLX support or enable OpenGL support."
+        exit 101
+    fi
+    if compileTest qpa/glx "GLX"; then
+        CFG_GLX=yes
+    elif [ "$CFG_GLX" = "yes" ]; then
+        echo " The GLX functionality test failed; GLX is required by the xcb plugin to manage contexts & surfaces."
+        exit 1
+    else
+        CFG_GLX=no
+    fi
+fi
+
 
 if [ "$CFG_EGLFS" != "no" ]; then
     if [ "$XPLATFORM_QNX" = "no" ]; then
@@ -5668,6 +5685,13 @@ if [ "$CFG_EGL" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG egl"
 else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EGL"
+fi
+
+# enable glx
+if [ "$CFG_GLX" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG glx"
+else
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GLX"
 fi
 
 # enable eglfs
@@ -6701,6 +6725,8 @@ else
     report_support "  pkg-config ............. no"
 fi
 report_support "  PulseAudio ............." "$CFG_PULSEAUDIO"
+report_support "  EGL ...................." "$CFG_EGL"
+report_support "  GLX ...................." "$CFG_GLX"
 report_support "  QPA backends:"
 report_support "    DirectFB ............." "$CFG_DIRECTFB"
 report_support "    EGLFS ................" "$CFG_EGLFS"
@@ -6709,6 +6735,7 @@ report_support "    LinuxFB .............." "$CFG_LINUXFB"
 report_support "    XCB .................." "$CFG_XCB" system "system library" qt "bundled copy"
 if [ "$CFG_XCB" != "no" ]; then
     report_support "      MIT-SHM ............" "$CFG_MITSHM"
+    report_support "      Xcb-Xlib ..........." "$CFG_XCB_XLIB"
     report_support "      Xcursor ............" "$CFG_XCURSOR" runtime "loaded at runtime"
     report_support "      Xfixes ............." "$CFG_XFIXES" runtime "loaded at runtime"
     report_support "      Xi ................." "$CFG_XINPUT" runtime "loaded at runtime"

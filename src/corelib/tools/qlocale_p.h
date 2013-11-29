@@ -360,10 +360,10 @@ inline char QLocalePrivate::digitToCLocale(QChar in) const
     if (in.unicode() >= '0' && in.unicode() <= '9')
         return in.toLatin1();
 
-    if (in == plus())
+    if (in == plus() || in == QLatin1Char('+'))
         return '+';
 
-    if (in == minus())
+    if (in == minus() || in == QLatin1Char('-') || in == QChar(0x2212))
         return '-';
 
     if (in == decimal())

@@ -53,9 +53,15 @@ QCocoaDrag::QCocoaDrag() :
     m_lastView = 0;
 }
 
+QCocoaDrag::~QCocoaDrag()
+{
+    [m_lastEvent release];
+}
+
 void QCocoaDrag::setLastMouseEvent(NSEvent *event, NSView *view)
 {
-    m_lastEvent = event;
+    [m_lastEvent release];
+    m_lastEvent = [event copy];
     m_lastView = view;
 }
 

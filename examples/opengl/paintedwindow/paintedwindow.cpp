@@ -175,9 +175,9 @@ void PaintedWindow::paint()
 {
     m_context->makeCurrent(this);
 
-    QRect rect(0, 0, width(), height());
+    QRect rect(0, 0, width() * devicePixelRatio(), height() * devicePixelRatio());
 
-    QOpenGLPaintDevice device(size());
+    QOpenGLPaintDevice device(size() * devicePixelRatio());
     QPainter painter(&device);
 
     QPainterPath path;

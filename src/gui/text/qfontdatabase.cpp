@@ -499,6 +499,8 @@ static const int scriptForWritingSystem[] = {
     QChar::Script_Nko // Nko
 };
 
+Q_STATIC_ASSERT(sizeof(scriptForWritingSystem) / sizeof(scriptForWritingSystem[0]) == QFontDatabase::WritingSystemsCount);
+
 int qt_script_for_writing_system(QFontDatabase::WritingSystem writingSystem)
 {
     return scriptForWritingSystem[writingSystem];
@@ -562,9 +564,9 @@ struct QtFontDesc
     int familyIndex;
 };
 
-static void match(int script, const QFontDef &request,
-                  const QString &family_name, const QString &foundry_name, int force_encoding_id,
-                  QtFontDesc *desc, const QList<int> &blacklistedFamilies = QList<int>());
+static int match(int script, const QFontDef &request,
+                 const QString &family_name, const QString &foundry_name, int force_encoding_id,
+                 QtFontDesc *desc, const QList<int> &blacklisted);
 
 static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDef *fontDef, bool multi)
 {
@@ -846,11 +848,12 @@ static bool matchFamilyName(const QString &familyName, QtFontFamily *f)
 
     Tries to find the best match for a given request and family/foundry
 */
-static void match(int script, const QFontDef &request,
-                  const QString &family_name, const QString &foundry_name, int force_encoding_id,
-                  QtFontDesc *desc, const QList<int> &blacklistedFamilies)
+static int match(int script, const QFontDef &request,
+                 const QString &family_name, const QString &foundry_name, int force_encoding_id,
+                 QtFontDesc *desc, const QList<int> &blacklistedFamilies)
 {
     Q_UNUSED(force_encoding_id);
+    int result = -1;
 
     QtFontStyle::Key styleKey;
     styleKey.style = request.style;
@@ -881,6 +884,8 @@ static void match(int script, const QFontDef &request,
 
     load(family_name, script);
 
+    const size_t writingSystem = std::find(scriptForWritingSystem, scriptForWritingSystem + QFontDatabase::WritingSystemsCount, script) - scriptForWritingSystem;
+
     QFontDatabasePrivate *db = privateDb();
     for (int x = 0; x < db->count; ++x) {
         if (blacklistedFamilies.contains(x))
@@ -895,19 +900,9 @@ static void match(int script, const QFontDef &request,
         if (family_name.isEmpty())
             load(test.family->name, script);
 
-        uint score_adjust = 0;
-
-        bool supported = (script == QChar::Script_Common);
-        for (int ws = 1; !supported && ws < QFontDatabase::WritingSystemsCount; ++ws) {
-            if (scriptForWritingSystem[ws] != script)
-                continue;
-            if (test.family->writingSystems[ws] & QtFontFamily::Supported)
-                supported = true;
-        }
-        if (!supported) {
-            // family not supported in the script we want
+        // Check if family is supported in the script we want
+        if (script != QChar::Script_Common && !(test.family->writingSystems[writingSystem] & QtFontFamily::Supported))
             continue;
-        }
 
         // as we know the script is supported, we can be sure
         // to find a matching font here.
@@ -922,15 +917,16 @@ static void match(int script, const QFontDef &request,
                                    QString(), styleKey, request.pixelSize,
                                    pitch, &test, force_encoding_id);
         }
-        newscore += score_adjust;
 
         if (newscore < score) {
+            result = x;
             score = newscore;
             *desc = test;
         }
         if (newscore < 10) // xlfd instead of FT... just accept it
             break;
     }
+    return result;
 }
 
 static QString styleStringHelper(int weight, QFont::Style style)

@@ -276,7 +276,7 @@ bool QWindowsFontEngineDirectWrite::getSfntTableData(uint tag, uchar *buffer, ui
     UINT32 tableSize;
     void *tableContext = 0;
     BOOL exists;
-    HRESULT hr = m_directWriteFontFace->TryGetFontTable(qbswap<quint32>(tag)
+    HRESULT hr = m_directWriteFontFace->TryGetFontTable(qbswap<quint32>(tag),
                                                         &tableData, &tableSize,
                                                         &tableContext, &exists);
     if (SUCCEEDED(hr)) {

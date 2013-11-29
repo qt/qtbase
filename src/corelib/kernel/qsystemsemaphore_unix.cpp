@@ -229,6 +229,7 @@ bool QSystemSemaphorePrivate::modifySemaphore(int count)
         return false;
     }
 
+    clearError();
     return true;
 }
 

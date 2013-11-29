@@ -610,6 +610,8 @@ void QCocoaFileDialogHelper::setDirectory(const QUrl &directory)
     QNSOpenSavePanelDelegate *delegate = static_cast<QNSOpenSavePanelDelegate *>(mDelegate);
     if (delegate)
         [delegate->mSavePanel setDirectoryURL:[NSURL fileURLWithPath:QCFString::toNSString(directory.toLocalFile())]];
+    else
+        mDir = directory;
 }
 
 QUrl QCocoaFileDialogHelper::directory() const
@@ -619,7 +621,7 @@ QUrl QCocoaFileDialogHelper::directory() const
         QString path = QCFString::toQString([[delegate->mSavePanel directoryURL] path]).normalized(QString::NormalizationForm_C);
         return QUrl::fromLocalFile(path);
     }
-    return QUrl();
+    return mDir;
 }
 
 void QCocoaFileDialogHelper::selectFile(const QUrl &filename)
@@ -707,7 +709,7 @@ void QCocoaFileDialogHelper::createNSOpenSavePanelDelegate()
     QCocoaAutoReleasePool pool;
     const SharedPointerFileDialogOptions &opts = options();
     const QList<QUrl> selectedFiles = opts->initiallySelectedFiles();
-    const QUrl directory = opts->initialDirectory();
+    const QUrl directory = mDir.isEmpty() ? opts->initialDirectory() : mDir;
     const bool selectDir = selectedFiles.isEmpty();
     QString selection(selectDir ? directory.toLocalFile() : selectedFiles.front().toLocalFile());
     QNSOpenSavePanelDelegate *delegate = [[QNSOpenSavePanelDelegate alloc]
