@@ -127,7 +127,8 @@
 
 /*!
     \ingroup all-examples
-    \title Graphicsview Examples
+    \target Graphicsview Examples
+    \title Graphics View Examples
     \brief Using the Graphics View framework.
     \page examples-graphicsview.html
 
