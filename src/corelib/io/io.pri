@@ -135,6 +135,10 @@ win32 {
             OBJECTIVE_SOURCES += io/qurl_mac.mm
         }
         mac {
+            osx {
+                OBJECTIVE_SOURCES += io/qfilesystemwatcher_fsevents.mm
+                HEADERS += io/qfilesystemwatcher_fsevents_p.h
+            }
             macx {
                 SOURCES += io/qstandardpaths_mac.cpp
             } else:ios {
