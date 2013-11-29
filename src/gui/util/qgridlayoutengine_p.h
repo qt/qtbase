@@ -375,6 +375,18 @@ public:
     void insertItem(QGridLayoutItem *item, int index);
     void addItem(QGridLayoutItem *item);
     void removeItem(QGridLayoutItem *item);
+    void deleteItems()
+    {
+        const QList<QGridLayoutItem *> oldItems = q_items;
+        q_items.clear();    // q_items are used as input when the grid is regenerated in removeRows
+        // The following calls to removeRows are suboptimal
+        int rows = rowCount(Qt::Vertical);
+        removeRows(0, rows, Qt::Vertical);
+        rows = rowCount(Qt::Horizontal);
+        removeRows(0, rows, Qt::Horizontal);
+        qDeleteAll(oldItems);
+    }
+
     QGridLayoutItem *itemAt(int row, int column, Qt::Orientation orientation = Qt::Vertical) const;
     inline void insertRow(int row, Qt::Orientation orientation = Qt::Vertical)
         { insertOrRemoveRows(row, +1, orientation); }
