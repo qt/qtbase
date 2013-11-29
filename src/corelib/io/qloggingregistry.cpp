@@ -283,9 +283,13 @@ QLoggingRegistry *QLoggingRegistry::instance()
 */
 void QLoggingRegistry::defaultCategoryFilter(QLoggingCategory *cat)
 {
-    // QLoggingCategory() normalizes all "default" strings
+    // QLoggingCategory() normalizes "default" strings
     // to qtDefaultCategoryName
-    bool debug = (cat->categoryName() == qtDefaultCategoryName);
+    bool debug = true;
+    char c;
+    if (!memcmp(cat->categoryName(), "qt", 2) && (!(c = cat->categoryName()[2]) || c == '.'))
+        debug = false;
+
     bool warning = true;
     bool critical = true;
 

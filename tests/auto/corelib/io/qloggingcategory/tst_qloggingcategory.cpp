@@ -271,8 +271,8 @@ private slots:
         QCOMPARE(defaultCategory.isEnabled(QtCriticalMsg), true);
 
         QLoggingCategory customCategory("custom");
-        QCOMPARE(customCategory.isDebugEnabled(), false);
-        QCOMPARE(customCategory.isEnabled(QtDebugMsg), false);
+        QCOMPARE(customCategory.isDebugEnabled(), true);
+        QCOMPARE(customCategory.isEnabled(QtDebugMsg), true);
         QCOMPARE(customCategory.isWarningEnabled(), true);
         QCOMPARE(customCategory.isEnabled(QtWarningMsg), true);
         QCOMPARE(customCategory.isCriticalEnabled(), true);
@@ -309,7 +309,7 @@ private slots:
 
         QLoggingCategory cat("custom");
         QCOMPARE(customCategoryFilterArgs, QStringList() << "custom");
-        QVERIFY(cat.isDebugEnabled());
+        QVERIFY(!cat.isDebugEnabled());
         customCategoryFilterArgs.clear();
 
         // install default filter
@@ -319,7 +319,7 @@ private slots:
         QCOMPARE(customCategoryFilterArgs.size(), 0);
 
         QVERIFY(QLoggingCategory::defaultCategory()->isDebugEnabled());
-        QVERIFY(!cat.isDebugEnabled());
+        QVERIFY(cat.isDebugEnabled());
 
         // install default filter
         currentFilter =
@@ -328,7 +328,7 @@ private slots:
         QCOMPARE(customCategoryFilterArgs.size(), 0);
 
         QVERIFY(QLoggingCategory::defaultCategory()->isDebugEnabled());
-        QVERIFY(!cat.isDebugEnabled());
+        QVERIFY(cat.isDebugEnabled());
     }
 
     void qDebugMacros()
@@ -397,8 +397,12 @@ private slots:
         QLoggingCategory customCategory("custom");
         // Check custom debug
         logMessage.clear();
+        buf = QStringLiteral("custom.debug: Check debug with no filter active");
+        qCDebug(customCategory, "Check debug with no filter active");
+        QCOMPARE(logMessage, buf);
+
         qCDebug(customCategory) << "Check debug with no filter active";
-        QCOMPARE(logMessage, QString());
+        QCOMPARE(logMessage, buf);
 
         // Check custom warning
         buf = QStringLiteral("custom.warning: Check warning with no filter active");
@@ -414,16 +418,16 @@ private slots:
         QLoggingCategory::installFilter(customCategoryFilter);
 
         // Check custom debug
-        buf = QStringLiteral("custom.debug: Check debug with filter active");
+        logMessage.clear();
         qCDebug(customCategory) << "Check debug with filter active";
-        QCOMPARE(logMessage, buf);
+        QCOMPARE(logMessage, QString());
 
         // Check different macro/category variants
         buf = QStringLiteral("tst.log.debug: Check debug with no filter active");
         qCDebug(TST_LOG) << "Check debug with no filter active";
-        QCOMPARE(logMessage, buf);
+        QCOMPARE(logMessage, QString());
         qCDebug(TST_LOG, "Check debug with no filter active");
-        QCOMPARE(logMessage, buf);
+        QCOMPARE(logMessage, QString());
         buf = QStringLiteral("tst.log.warning: Check warning with no filter active");
         qCWarning(TST_LOG) << "Check warning with no filter active";
         QCOMPARE(logMessage, buf);
@@ -441,8 +445,9 @@ private slots:
 
         // Check custom debug
         logMessage.clear();
+        buf = QStringLiteral("custom.debug: Check debug with no filter active");
         qCDebug(customCategory) << "Check debug with no filter active";
-        QCOMPARE(logMessage, QString());
+        QCOMPARE(logMessage, buf);
     }
 
     void checkLegacyMessageLogger()
@@ -477,10 +482,10 @@ private slots:
         QCOMPARE(cleanLogLine(logMessage), cleanLogLine(buf));
 
         // Check category debug
-        logMessage = "should not change";
-        buf = logMessage;
+        buf = QStringLiteral("tst.log.debug: Check category Debug with no log active");
         qCDebug(TST_LOG) << "Check category Debug with no log active";
         QCOMPARE(logMessage, buf);
+
 
         // Check default warning
         buf = QStringLiteral("tst.log.warning: Check category Warning with no log active");
@@ -763,8 +768,7 @@ private slots:
     {
         // "" -> custom category
         QLoggingCategory mycategoryobject1("");
-        logMessage = "no change";
-        QString buf = QStringLiteral("no change");
+        QString buf = QStringLiteral(".debug: My Category Object");
         qCDebug(mycategoryobject1) << "My Category Object";
         QCOMPARE(cleanLogLine(logMessage), cleanLogLine(buf));
 

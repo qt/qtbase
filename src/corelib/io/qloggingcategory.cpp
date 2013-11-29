@@ -83,9 +83,8 @@ Q_GLOBAL_STATIC_WITH_ARGS(QLoggingCategory, qtDefaultCategory,
 
     \section1 Default category configuration
 
-    In the default configuration \l isWarningEnabled() and \l isCriticalEnabled()
-    will return \c true. \l isDebugEnabled() will return \c true only
-    for the \c "default" category.
+    In the default configuration \l isWarningEnabled() , \l isDebugEnabled() and
+    \l isCriticalEnabled() will return \c true.
 
     \section1 Changing the configuration of a category
 
@@ -111,21 +110,20 @@ Q_GLOBAL_STATIC_WITH_ARGS(QLoggingCategory, qtDefaultCategory,
 QLoggingCategory::QLoggingCategory(const char *category)
     : d(0),
       name(0),
-      enabledDebug(false),
+      enabledDebug(true),
       enabledWarning(true),
       enabledCritical(true)
 {
     Q_UNUSED(d);
     Q_UNUSED(placeholder);
 
-    bool isDefaultCategory
+    const bool isDefaultCategory
             = (category == 0) || (strcmp(category, qtDefaultCategoryName) == 0);
 
+    // normalize "default" category name, so that we can just do
+    // pointer comparison in QLoggingRegistry::updateCategory
     if (isDefaultCategory) {
-        // normalize default category names, so that we can just do
-        // pointer comparison in QLoggingRegistry::updateCategory
         name = qtDefaultCategoryName;
-        enabledDebug = true;
     } else {
         name = category;
     }
