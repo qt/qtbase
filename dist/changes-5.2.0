@@ -48,6 +48,10 @@ information about a particular change.
    * QUrl now normalizes the path given in setPath, removing ./ and ../ and
      duplicate slashes.
 
+ - QWheelEvent has gained a "phase" attribute and may now be sent with
+   zero delta() in order to indicate beginning and end of transient
+   scrolling.
+
 ****************************************************************************
 *                          Library                                         *
 ****************************************************************************
@@ -290,6 +294,9 @@ QtGui
  - [QTBUG-27349] Reintroduced command line argument for positioning
    windows (-geometry on X11, -qwindowgeometry on other platforms)
 
+ - [QTBUG-28832] Fixed regression from Qt 4 when using
+   QTextOption::ShowLineAndParagraphSeparators.
+
 QtNetwork
 ---------
 
@@ -353,12 +360,24 @@ Changes in Qt 5.2.0
 QtWidgets
 ---------
 
+ - Added class QKeySequenceEdit.
+ - Added QMaxCocoaViewContainer and QMacNativeWidget classes.
+ - [QTBUG-1016] Added API to control tool tip timing via:
+   * new QToolTip::showTip() overload
+   * QWidget::toolTipDuration() property.
+   * QStyle::SH_ToolTip_WakeUpDelay and SH_ToolTip_FallAsleepDelay
+     style hints.
  - [QTBUG-30255] Fixed a bug where spans across empty cells in a grid
    layout got broken.
+ - [QTBUG-31569] WA_QuitOnClose now works even if there are other
+   windows that don't have it set.
  - [QTBUG-32788] Properly handles Qt::WidgetWithChildrenShortcut
    shortcuts in MDI subwindows now.
  - [QTBUG-33078] QWidget::setWindowOpacity() now works when called
    before QWidget::show().
+ - [QTBUG-33104] Fixed a bug where layout items with a Preferred size
+   policy would be treated as fixed size, if mixed with Expanding
+   items having maximumSize set.
  - [QTBUG-33247] Changed accessible trees and tables to always expose
    hidden headers, instead of only exposing the visible headers.
  - [QTBUG-34007] Fixed a crash in tablet support.
@@ -384,18 +403,26 @@ QtWidgets
      overriding viewportSizeHint() needs to be recompiled against 5.2 for
      this feature to work correctly.
 
+ - QButtonGroup:
+   * [QTBUG-14857] Added buttonToggled() signals.
+
  - QColorDialog:
    * Added a web color QLineEdit.
    * [QTBUG-14332] Added a screen color picker button.
    * [QTBUG-31998] Does no longer create widgets when using the
      platform dialog.
+   * [QTBUG-32054] Fixed a bug with keyboard navigation.
 
  - QComboBox:
+   * [QTBUG-31146] Fixed selection of items with identical text in
+     popup completion.
    * Added currentData() convenience function which allows to retrieve
      the user data set for the current item.
 
  - QCompleter:
    * [QTBUG-3414] Added filterMode property.
+   * The activated() signal now passes invalid indexes instead of
+     random bogus ones when falling back to the completion prefix.
 
  - QDesktopWidget:
    * [QTBUG-32567] Fixed emission of workAreaResized() signal.
@@ -434,9 +461,15 @@ QtWidgets
    * [QTBUG-33039] Does no longer create widgets when using the
      platform dialog.
 
+ - QFontComboBox:
+   * [QTBUG-1573] Made QFontComboBox locale-sensitive.
+
  - QFontDialog:
    * Now has finer-grained control over the types of fonts listed,
      similar to what QFontComboBox already had.
+
+ - QGestureManager
+   * Now supports Mac OS X native gestures.
 
  - QGraphicsView etc
    * Fixed a crash in QGraphicsProxyWidget.
@@ -446,16 +479,30 @@ QtWidgets
      Qt::{Contains,Intersets}ItemBoundingRect with items that contain
      the point in the bounding rectangle, but not their (custom)
      shape.
+   * [QTBUG-29945] Fixed drop-shadow and blur effects when using a
+     QGLWidget viewport.
+
+ - QGroupBox:
+   * [QTBUG-33610] The check indicator of a checkable group box is no
+     longer clipped when using a small title font.
 
  - QHeaderView:
+   * Reduced memory usage by 33%.
    * [QTBUG-4346] A maximumSize for sections has been introduced. The
      maximum section size is by default the largest possible section
      size which in Qt 5.2 has been limited to 1048575 pixels.
+   * [QTBUG-32203] Fixed a painting bug involving hidden and reordered
+     sections.
 
  - QInputDialog:
    * Added getMultiLineText static method.
 
+ - QLayout:
+   * Added replaceWidget() function.
+
  - QLineEdit:
+   * [QTBUG-32061] The cursor is now positioned correctly in an empty
+     line edit with placeholder text.
    * Keep placeholderText visible when focused, until text is added.
    * Context-menu actions now have icons.
    * Made it possible to add side widgets.
@@ -467,14 +514,37 @@ QtWidgets
      no longer loses the icon. Also fixed a bug where under certain
      conditions code overriding QAbstractItemView::viewOptions() would
      not be called.
+   * [QTBUG-21433] Fixed content size calculation when either
+     horizontal or vertical scroll bar policy is always off.
+
+ - QMacStyle:
+   * [QTBUG-31668] Fixed a case where multiple auto-default button
+     animations were running in parallel on OS X
+
+ - QMainWindow:
+   * Added takeCentalWidget() function.
+
+ - QMenu:
+   * Added QMenu::toNSMenu() conversion function (Mac only)
+   * Added QMenu::setAsDockMenu() and qt_mac_set_doc_menu(QMenu *menu)
+     functions (Mac only).
+   * [QTBUG-31664] Moving the mouse over a menu separator now closes
+     any open sub menus.
 
  - QMenuBar:
    * [QTBUG-32807] Menus now close again on second click.
+   * Added QMenuBar::toNSMenu() conversion function (Mac only)
 
  - QMessageBox:
    * May use native message boxes on some platforms now.
+   * setDetailedText() now works after show().
+   * [QTBUG-2450] Added setCheckBox() function.
    * [QTBUG-6731] It is now possible to select some or all text from a
      QMessageBox and copy it to the clipboard.
+
+ - QScrollBar:
+   * Transient scrollbars are now properly shown when starting
+     two-finger scrolling on OS X.
 
  - QSizePolicy:
    * Added a retainSizeWhenHidden attribute.
@@ -482,12 +552,20 @@ QtWidgets
  - QSpinBox:
    * Values can now be displayed in different bases
      (cf. displayIntegerBase property)
-   * [QTBUG-31602] Size calculation will now be fixed when stylesheets
-     are used.
+   * [QTBUG-31602][QTBUG-34305] Fixed size calculation when
+     stylesheets are used.
+
+ - QSplashScreen:
+   * Added message(), a getter for the currently displayed message.
 
  - QSplitter:
    * Now gets the default value of opaqueResize property from (new)
      QStyle::SH_Splitter_OpaqueResize styleHint.
+
+ - QStyle:
+   * Added SH_ToolTip_WakeUpDelay and SH_ToolTip_FallAsleepDelay.
+   * Fixed SH_ItemView_ActivateItemOnSingleClick not being retrieved
+     correctly from the platform theme.
 
  - QSystemTrayIcon:
    * [QTBUG-31762] Fixed position of system tray icon on Linux/X11
@@ -505,14 +583,26 @@ QtWidgets
    * Added placeholderText akin to QLineEdit.
    * Context-menu actions now have icons.
 
+ - QToolTip:
+   * Added new showText() overload taking a duration.
+
  - QTreeView:
-   * QTreeView now has setTreePosition to allow the treestructure to
-     show data from other columns than logicalindex zero.
+   * Added setTreePosition() function.
+
+ - QWidget:
+   * Added window{Title,Icon,IconText}Changed() signals.
+   * Added toolTipDuration property.
 
  - QWindowContainer:
    * [QTBUG-32177] Sets active window correctly now.
+   * [QTBUG-34138] Will not create native child widgets any more.
+
+ - QWindowsVistaStyle:
+   * [QTBUG-26503] Does no longer draw inapplicable scroll bar
+     grippers on Windows 8.
 
  - QWizard:
+   * [QTBUG-26722] The default background pixmap works again on OS X.
    * [QTBUG-29924] Gave all buttons an objectName().
 
 ****************************************************************************
@@ -533,10 +623,45 @@ Android
    show the status bar (QWindow::showMaximized()). Use
    QWindow::showFullScreen() to hide it.
  - Implemented support for accessibility on Android.
+ - Implemented support for native action bar backend for menu bars in
+   Qt Quick Controls and Qt Widgets.
+ - Implemented support for native popup menus and comboboxes in Qt Quick
+   Controls.
+ - Implemented support for native message boxes in Qt Widgets.
+ - Several improvements to handling dialogs and multiple top-level
+   windows in Qt Widgets.
+ - Implemented automatic inclusion of necessary permissions in manifest
+   when linking against Qt Multimedia.
+ - Fixed crash on startup when running on Android 4.4.
+ - Add requirement for Android SDK version 13 or higher for building
+   Qt application. Note that this is for building only. The application
+   can still be targeted for devices with SDK versions 9 and up.
+ - Default to target SDK version 14 to disable overflow button in
+   system navigation.
+ - New module: Qt Android Extras. Contains convenience APIs for using
+   JNI, and will in the future include support for Android-specific
+   features which do not fit in a cross-platform API.
+ - Implemented support for thread-affinity in qrand() functions.
+ - Fixed several problems with predictive text in soft keyboard.
+ - Made several improvements to stability.
+ - Implemented support for camera and low-latency audio in Qt Multimedia.
+ - Fixed driver-specific bugs in text rendering in Qt Quick 2.
+ - Added preference in default manifest for installing applications to
+   external storage if possible.
+ - Fixed delivery of key press event for the Back key.
+ - Fixed race condition when showing a window in full screen which would
+   cause it to not be maximized.
+ - Fixed input method hints.
+ - Made font point sizes compatible with the interpretation of point
+   sizes on iOS to ease sharing code between the two platforms.
+ - Added support for QAmbientTemperatureSensor, QPressureSensor
+   and QProximitySensor to Qt Sensors.
+ - Removed dependency on Qt Widgets in default build of Qt Quick Controls.
 
 OS X
 ----
 
+ - Added QMaxCocoaViewContainer and QMacNativeWidget classes.
  - Qt for OS X is now identified by the macro Q_OS_OSX. This complements the
    existing Q_OS_DARWIN macro (which identifies the open source kernel and
    could identify non-Apple products) and Q_OS_MAC, which is defined for
@@ -547,6 +672,17 @@ OS X
    supported until official announcement by the Qt Project.
  - Added a number of functions to QtCore to convert to and from
    CFString/NSString and QString, CFURL/NSURL and QUrl.
+ - QGestureManager now supports Mac OS X native gestures.
+ - Added QMenu::setAsDockMenu(), QMenu(Bar)::toNSMenu(),
+   qt_mac_set_doc_menu() functions.
+ - [QTBUG-26722] The QWizard default background pixmap works again.
+
+BlackBerry
+----------
+
+ - Cover windows (aka active frames) are now supported. Cover windows must
+   have the Qt::CoverWindow flag set. They are shown when the application
+   is minimized.
 
 Windows
 -------
