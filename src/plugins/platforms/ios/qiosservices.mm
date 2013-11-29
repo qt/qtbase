@@ -42,6 +42,7 @@
 #include "qiosservices.h"
 
 #include <QtCore/qurl.h>
+#include <QtGui/qdesktopservices.h>
 
 #import <UIKit/UIApplication.h>
 
@@ -49,6 +50,9 @@ QT_BEGIN_NAMESPACE
 
 bool QIOSServices::openUrl(const QUrl &url)
 {
+    if (url == m_handlingUrl)
+        return false;
+
     if (url.scheme().isEmpty())
         return openDocument(url);
 
@@ -64,6 +68,21 @@ bool QIOSServices::openDocument(const QUrl &url)
 {
     // FIXME: Implement using UIDocumentInteractionController
     return QPlatformServices::openDocument(url);
+}
+
+/* Callback from iOS that the application should handle a URL */
+bool QIOSServices::handleUrl(const QUrl &url)
+{
+    QUrl previouslyHandling = m_handlingUrl;
+    m_handlingUrl = url;
+
+    // FIXME: Add platform services callback from QDesktopServices::setUrlHandler
+    // so that we can warn the user if calling setUrlHandler without also setting
+    // up the matching keys in the Info.plist file (CFBundleURLTypes and friends).
+    bool couldHandle = QDesktopServices::openUrl(url);
+
+    m_handlingUrl = previouslyHandling;
+    return couldHandle;
 }
 
 QT_END_NAMESPACE

@@ -709,6 +709,12 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
     Example:
 
     \snippet code/src_gui_kernel_qevent.cpp 0
+
+    \note On platforms that support scrolling \l{phase()}{phases}, the delta may be null when:
+    \list
+    \li scrolling is about to begin, but the distance did not yet change (Qt::ScrollBegin),
+    \li or scrolling has ended and the distance did not change anymore (Qt::ScrollEnd).
+    \endlist
 */
 
 /*!
@@ -731,6 +737,12 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
     Example:
 
     \snippet code/src_gui_kernel_qevent.cpp 0
+
+    \note On platforms that support scrolling \l{phase()}{phases}, the delta may be null when:
+    \list
+    \li scrolling is about to begin, but the distance did not yet change (Qt::ScrollBegin),
+    \li or scrolling has ended and the distance did not change anymore (Qt::ScrollEnd).
+    \endlist
 */
 
 /*!
@@ -830,6 +842,9 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
     \since 5.2
 
     Returns the scrolling phase of this wheel event.
+
+    \note The Qt::ScrollBegin and Qt::ScrollEnd phases are currently
+    supported only on Mac OS X.
 */
 
 
