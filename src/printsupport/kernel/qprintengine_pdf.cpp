@@ -147,6 +147,28 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
     Q_D(QPdfPrintEngine);
 
     switch (int(key)) {
+
+    // The following keys are properties or derived values and so cannot be set
+    case PPK_PageRect:
+        break;
+    case PPK_PaperRect:
+        break;
+    case PPK_PaperSources:
+        break;
+    case PPK_SupportsMultipleCopies:
+        break;
+    case PPK_SupportedResolutions:
+        break;
+
+    // The following keys are settings that are unsupported by the PDF PrintEngine
+    case PPK_CustomBase:
+        break;
+    case PPK_PaperName:
+        break;
+    case PPK_WindowsPageSize:
+        break;
+
+    // The following keys are properties and settings that are supported by the PDF PrintEngine
     case PPK_CollateCopies:
         d->collate = value.toBool();
         break;
@@ -216,8 +238,7 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         d->pageMarginsSet = true;
         break;
     }
-    default:
-        break;
+    // No default so that compiler will complain if new keys added and not handled in this engine
     }
 }
 
@@ -227,6 +248,20 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
 
     QVariant ret;
     switch (int(key)) {
+
+    // The following keys are settings that are unsupported by the PDF PrintEngine
+    // Return sensible default values to ensure consistent behavior across platforms
+    case PPK_CustomBase:
+        // Special case, leave null
+        break;
+    case PPK_PaperName:
+        ret = QString();
+        break;
+    case PPK_WindowsPageSize:
+        // Special case, leave null
+        break;
+
+    // The following keys are properties and settings that are supported by the PDF PrintEngine
     case PPK_CollateCopies:
         ret = d->collate;
         break;
@@ -307,8 +342,7 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
         ret = margins;
         break;
     }
-    default:
-        break;
+    // No default so that compiler will complain if new keys added and not handled in this engine
     }
     return ret;
 }

@@ -226,7 +226,6 @@ void QPrinterPrivate::changeEngines(QPrinter::OutputFormat format, const QPrinte
                 prop = QVariant(q_ptr->copyCount());
             else if (key != QPrintEngine::PPK_PrinterName)
                 prop = oldPrintEngine->property(key);
-
             if (prop.isValid())
                 setProperty(key, prop);
         }
