@@ -56,7 +56,7 @@ class QIOSIntegrationPlugin : public QPlatformIntegrationPlugin
 QPlatformIntegration * QIOSIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     Q_UNUSED(paramList);
-    if (system.toLower() == "ios")
+    if (!system.compare(QLatin1String("ios"), Qt::CaseInsensitive))
         return new QIOSIntegration;
 
     return 0;
