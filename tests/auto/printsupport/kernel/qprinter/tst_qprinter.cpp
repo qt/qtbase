@@ -1107,8 +1107,8 @@ void tst_QPrinter::docName()
     // docName() / setDocName() / PPK_DocumentName
     // PdfFormat: Supported, default QString()
     // NativeFormat, Cups: Supported, default QString()
-    // NativeFormat, Win: Supported, default "document1"
-    // NativeFormat, Mac: Unsupported, always QString()
+    // NativeFormat, Win: Supported, default QString()
+    // NativeFormat, Mac: Supported, default QString()
 
     QPrinter pdf;
     pdf.setOutputFormat(QPrinter::PdfFormat);
@@ -1119,18 +1119,11 @@ void tst_QPrinter::docName()
     QPrinter native;
     if (native.outputFormat() == QPrinter::NativeFormat) {
         // Test default
-#ifdef Q_OS_WIN
-        QCOMPARE(native.docName(), QString("document1"));
-#else
         QCOMPARE(native.docName(), QString());
-#endif // Q_OS_WIN
 
         // Test set/get
         QString expected = QStringLiteral("Test Name");
         native.setDocName(expected);
-#ifdef Q_OS_MAC
-        expected.clear();
-#endif // Q_OS_MAC
         QCOMPARE(native.docName(), expected);
 
         // Test value preservation

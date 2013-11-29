@@ -237,7 +237,6 @@ QWin32PrintEngine::QWin32PrintEngine(QPrinter::PrinterMode mode)
                                        | PaintOutsidePaintEvent))
 {
     Q_D(QWin32PrintEngine);
-    d->docName = QLatin1String("document1");
     d->mode = mode;
     d->queryDefault();
     d->initialize();
@@ -272,7 +271,10 @@ bool QWin32PrintEngine::begin(QPaintDevice *pdev)
     DOCINFO di;
     memset(&di, 0, sizeof(DOCINFO));
     di.cbSize = sizeof(DOCINFO);
-    di.lpszDocName = reinterpret_cast<const wchar_t *>(d->docName.utf16());
+    if (d->docName.isEmpty())
+        di.lpszDocName = L"document1";
+    else
+        di.lpszDocName = reinterpret_cast<const wchar_t *>(d->docName.utf16());
     if (d->printToFile && !d->fileName.isEmpty())
         di.lpszOutput = reinterpret_cast<const wchar_t *>(d->fileName.utf16());
     if (ok && StartDoc(d->hdc, &di) == SP_ERROR) {
