@@ -50,11 +50,31 @@
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformwindow.h>
+#include <qpa/qplatformfontdatabase.h>
 
 QT_BEGIN_NAMESPACE
 
-QMinimalIntegration::QMinimalIntegration()
+static const char debugBackingStoreEnvironmentVariable[] = "QT_DEBUG_BACKINGSTORE";
+
+static inline unsigned parseOptions(const QStringList &paramList)
 {
+    unsigned options = 0;
+    foreach (const QString &param, paramList) {
+        if (param == QLatin1String("enable_fonts"))
+            options |= QMinimalIntegration::EnableFonts;
+    }
+    return options;
+}
+
+QMinimalIntegration::QMinimalIntegration(const QStringList &parameters)
+    : m_dummyFontDatabase(0)
+    , m_options(parseOptions(parameters))
+{
+    if (qEnvironmentVariableIsSet(debugBackingStoreEnvironmentVariable)
+        && qgetenv(debugBackingStoreEnvironmentVariable).toInt() > 0) {
+        m_options |= DebugBackingStore | EnableFonts;
+    }
+
     QMinimalScreen *mPrimaryScreen = new QMinimalScreen();
 
     mPrimaryScreen->mGeometry = QRect(0, 0, 240, 320);
@@ -64,6 +84,11 @@ QMinimalIntegration::QMinimalIntegration()
     screenAdded(mPrimaryScreen);
 }
 
+QMinimalIntegration::~QMinimalIntegration()
+{
+    delete m_dummyFontDatabase;
+}
+
 bool QMinimalIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
@@ -71,6 +96,24 @@ bool QMinimalIntegration::hasCapability(QPlatformIntegration::Capability cap) co
     case MultipleWindows: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
+}
+
+// Dummy font database that does not scan the fonts directory to be
+// used for command line tools like qmlplugindump that do not create windows
+// unless DebugBackingStore is activated.
+class DummyFontDatabase : public QPlatformFontDatabase
+{
+public:
+    virtual void populateFontDatabase() {}
+};
+
+QPlatformFontDatabase *QMinimalIntegration::fontDatabase() const
+{
+    if (m_options & EnableFonts)
+        return QPlatformIntegration::fontDatabase();
+    if (!m_dummyFontDatabase)
+        m_dummyFontDatabase = new DummyFontDatabase;
+    return m_dummyFontDatabase;
 }
 
 QPlatformWindow *QMinimalIntegration::createPlatformWindow(QWindow *window) const
@@ -93,6 +136,11 @@ QAbstractEventDispatcher *QMinimalIntegration::createEventDispatcher() const
 #else
     return createUnixEventDispatcher();
 #endif
+}
+
+QMinimalIntegration *QMinimalIntegration::instance()
+{
+    return static_cast<QMinimalIntegration *>(QGuiApplicationPrivate::platformIntegration());
 }
 
 QT_END_NAMESPACE

@@ -55,9 +55,8 @@ public:
 
 QPlatformIntegration *QMinimalIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
-    Q_UNUSED(paramList);
     if (!system.compare(QLatin1String("minimal"), Qt::CaseInsensitive))
-        return new QMinimalIntegration;
+        return new QMinimalIntegration(paramList);
 
     return 0;
 }
