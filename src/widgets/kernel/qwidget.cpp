@@ -12779,6 +12779,14 @@ void QWidget::clearMask()
     setMask(QRegion());
 }
 
+void QWidgetPrivate::setWidgetParentHelper(QObject *widgetAsObject, QObject *newParent)
+{
+    Q_ASSERT(widgetAsObject->isWidgetType());
+    Q_ASSERT(!newParent || newParent->isWidgetType());
+    QWidget *widget = static_cast<QWidget*>(widgetAsObject);
+    widget->setParent(static_cast<QWidget*>(newParent));
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qwidget.cpp"

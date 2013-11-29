@@ -630,6 +630,9 @@ void QApplicationPrivate::initialize()
     // needed for a static build.
     qRegisterWidgetsVariant();
 
+    // needed for widgets in QML
+    QAbstractDeclarativeData::setWidgetParent = QWidgetPrivate::setWidgetParentHelper;
+
     if (application_type != QApplicationPrivate::Tty)
         (void) QApplication::style();  // trigger creation of application style
 #ifndef QT_NO_STATEMACHINE

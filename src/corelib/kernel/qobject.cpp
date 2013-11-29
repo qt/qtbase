@@ -177,6 +177,7 @@ void (*QAbstractDeclarativeData::parentChanged)(QAbstractDeclarativeData *, QObj
 void (*QAbstractDeclarativeData::signalEmitted)(QAbstractDeclarativeData *, QObject *, int, void **) = 0;
 int  (*QAbstractDeclarativeData::receivers)(QAbstractDeclarativeData *, const QObject *, int) = 0;
 bool (*QAbstractDeclarativeData::isSignalConnected)(QAbstractDeclarativeData *, const QObject *, int) = 0;
+void (*QAbstractDeclarativeData::setWidgetParent)(QObject *, QObject *) = 0;
 
 QObjectData::~QObjectData() {}
 

@@ -439,6 +439,8 @@ private slots:
 
     void resizeStaticContentsChildWidget_QTBUG35282();
 
+    void qmlSetParentHelper();
+
 private:
     bool ensureScreenSize(int width, int height);
     QWidget *testWidget;
@@ -10394,6 +10396,21 @@ void tst_QWidget::resizeStaticContentsChildWidget_QTBUG35282()
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
     QGuiApplication::sync();
     QVERIFY(childWidget.numPaintEvents >= 1);
+}
+
+void tst_QWidget::qmlSetParentHelper()
+{
+#ifdef QT_BUILD_INTERNAL
+    QWidget parent;
+    QWidget child;
+    QVERIFY(QAbstractDeclarativeData::setWidgetParent);
+    QAbstractDeclarativeData::setWidgetParent(&child, &parent);
+    QVERIFY(child.parentWidget() == &parent);
+    QAbstractDeclarativeData::setWidgetParent(&child, 0);
+    QVERIFY(!child.parentWidget());
+#else
+    QSKIP("Needs QT_BUILD_INTERNAL");
+#endif
 }
 
 QTEST_MAIN(tst_QWidget)

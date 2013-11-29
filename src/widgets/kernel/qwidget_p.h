@@ -653,6 +653,8 @@ public:
     virtual void resolveSamples() { }
 #endif
 
+    static void setWidgetParentHelper(QObject *widgetAsObject, QObject *newParent);
+
     // Variables.
     // Regular pointers (keep them together to avoid gaps on 64 bit architectures).
     QWExtra *extra;
