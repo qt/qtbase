@@ -607,9 +607,6 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
     // The following keys are settings that are unsupported by the Mac PrintEngine
     case PPK_ColorMode:
         break;
-    case PPK_CollateCopies:
-        // TODO Add support using PMSetCollate / PMGetCollate
-        break;
     case PPK_Creator:
         // TODO Add value preservation support by using local variable
         break;
@@ -662,6 +659,9 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         PMSessionValidatePageFormat(d->session(), d->format(), kPMDontWantBoolean);
         break;
     }
+    case PPK_CollateCopies:
+        PMSetCollate(d->settings(), value.toBool());
+        break;
     case PPK_DocumentName:
         PMPrintSettingsSetJobName(d->settings(), QCFString(value.toString()));
         break;
@@ -756,10 +756,6 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
 
     // The following keys are settings that are unsupported by the Mac PrintEngine
     // Return sensible default values to ensure consistent behavior across platforms
-    case PPK_CollateCopies:
-        // TODO Add support using PMSetCollate / PMGetCollate
-        ret = false;
-        break;
     case PPK_ColorMode:
         ret = QPrinter::Color;
         break;
@@ -802,6 +798,12 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
         break;
 
     // The following keys are properties and settings that are supported by the Mac PrintEngine
+    case PPK_CollateCopies: {
+        Boolean status;
+        PMGetCollate(d->settings(), &status);
+        ret = bool(status);
+        break;
+    }
     case PPK_DocumentName: {
         CFStringRef name;
         PMPrintSettingsGetJobName(d->settings(), &name);

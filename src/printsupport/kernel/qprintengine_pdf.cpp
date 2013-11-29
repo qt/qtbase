@@ -386,7 +386,7 @@ void QPdfPrintEnginePrivate::closePrintDevice()
 QPdfPrintEnginePrivate::QPdfPrintEnginePrivate(QPrinter::PrinterMode m)
     : QPdfEnginePrivate(),
       duplex(QPrinter::DuplexNone),
-      collate(false),
+      collate(true),
       copies(1),
       pageOrder(QPrinter::FirstPageFirst),
       paperSource(QPrinter::Auto),

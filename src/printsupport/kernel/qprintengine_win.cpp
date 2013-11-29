@@ -1098,6 +1098,7 @@ void QWin32PrintEnginePrivate::initialize()
 
     if (devMode) {
         num_copies = devMode->dmCopies;
+        devMode->dmCollate = DMCOLLATE_TRUE;
     }
 
     initHDC();
@@ -1504,10 +1505,6 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
 
     // The following keys are settings that are unsupported by the Windows PrintEngine
     // Return sensible default values to ensure consistent behavior across platforms
-    case PPK_CollateCopies:
-        // TODO Add support using DEVMODE.dmCollate to match setting
-        value = false;
-        break;
     case PPK_Creator:
         value = QString();
         break;
@@ -1529,6 +1526,10 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
         break;
 
     // The following keys are properties and settings that are supported by the Windows PrintEngine
+    case PPK_CollateCopies:
+        value = d->devMode->dmCollate == DMCOLLATE_TRUE;
+        break;
+
     case PPK_ColorMode:
         {
             if (!d->devMode) {

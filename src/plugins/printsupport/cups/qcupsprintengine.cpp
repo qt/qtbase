@@ -221,7 +221,7 @@ void QCupsPrintEnginePrivate::closePrintDevice()
         if (copies > 1)
             options.append(QPair<QByteArray, QByteArray>("copies", QString::number(copies).toLocal8Bit()));
 
-        if (collate)
+        if (copies > 1 && collate)
             options.append(QPair<QByteArray, QByteArray>("Collate", "True"));
 
         switch (duplex) {

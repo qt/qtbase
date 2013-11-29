@@ -890,21 +890,21 @@ void tst_QPrinter::testMultipleKeys()
         QCOMPARE(native.fullPage(), false);
         QCOMPARE(native.orientation(), QPrinter::Portrait);
         QCOMPARE(native.copyCount(), 1);
-        QCOMPARE(native.collateCopies(), false);
+        QCOMPARE(native.collateCopies(), true);
         QCOMPARE(native.printRange(), QPrinter::AllPages);
 
         // Change values
         native.setFullPage(true);
         native.setOrientation(QPrinter::Landscape);
         native.setCopyCount(9);
-        native.setCollateCopies(true);
+        native.setCollateCopies(false);
         native.setPrintRange(QPrinter::CurrentPage);
 
         // Check changed values
         QCOMPARE(native.fullPage(), true);
         QCOMPARE(native.orientation(), QPrinter::Landscape);
         QCOMPARE(native.copyCount(), 9);
-        QCOMPARE(native.collateCopies(), true);
+        QCOMPARE(native.collateCopies(), false);
         QCOMPARE(native.printRange(), QPrinter::CurrentPage);
 
         // Test value preservation
@@ -912,21 +912,21 @@ void tst_QPrinter::testMultipleKeys()
         QCOMPARE(native.fullPage(), true);
         QCOMPARE(native.orientation(), QPrinter::Landscape);
         QCOMPARE(native.copyCount(), 9);
-        QCOMPARE(native.collateCopies(), true);
+        QCOMPARE(native.collateCopies(), false);
         QCOMPARE(native.printRange(), QPrinter::CurrentPage);
 
         // Change values
         native.setFullPage(false);
         native.setOrientation(QPrinter::Portrait);
         native.setCopyCount(5);
-        native.setCollateCopies(false);
+        native.setCollateCopies(true);
         native.setPrintRange(QPrinter::PageRange);
 
         // Check changed values
         QCOMPARE(native.fullPage(), false);
         QCOMPARE(native.orientation(), QPrinter::Portrait);
         QCOMPARE(native.copyCount(), 5);
-        QCOMPARE(native.collateCopies(), false);
+        QCOMPARE(native.collateCopies(), true);
         QCOMPARE(native.printRange(), QPrinter::PageRange);
     } else {
         QSKIP("No printers installed, cannot test NativeFormat, please install printers to test");
@@ -936,28 +936,25 @@ void tst_QPrinter::testMultipleKeys()
 void tst_QPrinter::collateCopies()
 {
     // collateCopies() / setCollateCopies() / PPK_ColorMode
-    // PdfFormat: Supported, default false
-    // NativeFormat, Cups: Supported, default false
-    // NativeFormat, Win: Part Supported if valid DevMode, can set but always returns false
-    // NativeFormat, Mac: Unsupported, always false
+    // PdfFormat: Supported, default true
+    // NativeFormat, Cups: Supported, default true
+    // NativeFormat, Win: Supported, default true
+    // NativeFormat, Mac: Supported, default true
 
     QPrinter pdf;
     pdf.setOutputFormat(QPrinter::PdfFormat);
-    QCOMPARE(pdf.collateCopies(), false);
-    pdf.setCollateCopies(true);
     QCOMPARE(pdf.collateCopies(), true);
+    pdf.setCollateCopies(false);
+    QCOMPARE(pdf.collateCopies(), false);
 
     QPrinter native;
     if (native.outputFormat() == QPrinter::NativeFormat) {
         // Test default
-        QCOMPARE(native.collateCopies(), false);
+        QCOMPARE(native.collateCopies(), true);
 
         // Test set/get
-        bool expected = true;
+        bool expected = false;
         native.setCollateCopies(expected);
-#if defined Q_OS_MAC || defined Q_OS_WIN
-        expected = false;
-#endif // Q_OS_MAC
         QCOMPARE(native.collateCopies(), expected);
 
         // Test value preservation
