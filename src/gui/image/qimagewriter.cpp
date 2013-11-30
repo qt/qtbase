@@ -245,6 +245,8 @@ class QImageWriterPrivate
 public:
     QImageWriterPrivate(QImageWriter *qq);
 
+    bool canWriteHelper();
+
     // device
     QByteArray format;
     QIODevice *device;
@@ -280,6 +282,31 @@ QImageWriterPrivate::QImageWriterPrivate(QImageWriter *qq)
     errorString = QT_TRANSLATE_NOOP(QImageWriter, QLatin1String("Unknown error"));
 
     q = qq;
+}
+
+bool QImageWriterPrivate::canWriteHelper()
+{
+    if (!device) {
+        imageWriterError = QImageWriter::DeviceError;
+        errorString = QT_TRANSLATE_NOOP(QImageWriter,
+                                        QLatin1String("Device is not set"));
+        return false;
+    }
+    if (!device->isOpen())
+        device->open(QIODevice::WriteOnly);
+    if (!device->isWritable()) {
+        imageWriterError = QImageWriter::DeviceError;
+        errorString = QT_TRANSLATE_NOOP(QImageWriter,
+                                        QLatin1String("Device not writable"));
+        return false;
+    }
+    if (!handler && (handler = createWriteHandlerHelper(device, format)) == 0) {
+        imageWriterError = QImageWriter::UnsupportedFormatError;
+        errorString = QT_TRANSLATE_NOOP(QImageWriter,
+                                        QLatin1String("Unsupported image format"));
+        return false;
+    }
+    return true;
 }
 
 /*!
@@ -561,21 +588,15 @@ void QImageWriter::setText(const QString &key, const QString &text)
 */
 bool QImageWriter::canWrite() const
 {
-    if (d->device && !d->handler && (d->handler = createWriteHandlerHelper(d->device, d->format)) == 0) {
-        d->imageWriterError = QImageWriter::UnsupportedFormatError;
-        d->errorString = QT_TRANSLATE_NOOP(QImageWriter,
-                                           QLatin1String("Unsupported image format"));
-        return false;
+    if (QFile *file = qobject_cast<QFile *>(d->device)) {
+        const bool remove = !file->isOpen() && !file->exists();
+        const bool result = d->canWriteHelper();
+        if (!result && remove)
+            file->remove();
+        return result;
     }
-    if (d->device && !d->device->isOpen())
-        d->device->open(QIODevice::WriteOnly);
-    if (!d->device || !d->device->isWritable()) {
-        d->imageWriterError = QImageWriter::DeviceError;
-        d->errorString = QT_TRANSLATE_NOOP(QImageWriter,
-                                           QLatin1String("Device not writable"));
-        return false;
-    }
-    return true;
+
+    return d->canWriteHelper();
 }
 
 /*!
