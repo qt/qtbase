@@ -55,6 +55,7 @@ class QCocoaDrag : public QPlatformDrag
 {
 public:
     QCocoaDrag();
+    virtual ~QCocoaDrag();
 
     virtual QMimeData *platformDropData();
     virtual Qt::DropAction drag(QDrag *m_drag);

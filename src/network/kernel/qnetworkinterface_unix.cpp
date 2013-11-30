@@ -277,16 +277,16 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
             }
         }
 
-        // Get the interface netmask
-        if (qt_safe_ioctl(socket, SIOCGIFNETMASK, &req) >= 0) {
-            sockaddr *sa = &req.ifr_addr;
-	    entry.setNetmask(addressFromSockaddr(sa));
-        }
-
         // Get the address of the interface
         if (qt_safe_ioctl(socket, SIOCGIFADDR, &req) >= 0) {
             sockaddr *sa = &req.ifr_addr;
             entry.setIp(addressFromSockaddr(sa));
+        }
+
+        // Get the interface netmask
+        if (qt_safe_ioctl(socket, SIOCGIFNETMASK, &req) >= 0) {
+            sockaddr *sa = &req.ifr_addr;
+            entry.setNetmask(addressFromSockaddr(sa));
         }
 
         iface->addressEntries << entry;

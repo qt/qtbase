@@ -229,8 +229,7 @@ void QSystemSemaphore::setKey(const QString &key, int initialValue, AccessMode m
 {
     if (key == d->key && mode == Open)
         return;
-    d->error = NoError;
-    d->errorString = QString();
+    d->clearError();
 #if !defined(Q_OS_WIN)
     // optimization to not destroy/create the file & semaphore
     if (key == d->key && mode == Create && d->createdSemaphore && d->createdFile) {

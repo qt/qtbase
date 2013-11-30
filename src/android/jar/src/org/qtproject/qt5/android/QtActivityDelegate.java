@@ -858,10 +858,8 @@ public class QtActivityDelegate
 
     public void onContextMenuClosed(Menu menu)
     {
-        if (!m_contextMenuVisible) {
-            Log.e(QtNative.QtTAG, "invalid onContextMenuClosed call");
+        if (!m_contextMenuVisible)
             return;
-        }
         m_contextMenuVisible = false;
         QtNative.onContextMenuClosed(menu);
     }

@@ -208,8 +208,7 @@ Q_AUTOTEST_EXPORT QList<QFontEngine *> QFontEngine_stopCollectingEngines()
 QFontEngine::QFontEngine()
     : ref(0),
       font_(0), font_destroy_func(0),
-      face_(0), face_destroy_func(0),
-      smoothScalable(false)
+      face_(0), face_destroy_func(0)
 {
     cache_cost = 0;
     fsType = 0;

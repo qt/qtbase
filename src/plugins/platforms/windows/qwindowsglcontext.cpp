@@ -589,7 +589,7 @@ static HGLRC createContext(const QOpenGLStaticContext &staticContext,
     if (requestedVersion >= 0x0300) {
         attributes[attribIndex++] = WGL_CONTEXT_FLAGS_ARB;
         attributes[attribIndex] = 0;
-        if (format.testOption(QSurfaceFormat::DeprecatedFunctions))
+        if (!format.testOption(QSurfaceFormat::DeprecatedFunctions))
              attributes[attribIndex] |= WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
         if (format.testOption(QSurfaceFormat::DebugContext))
             attributes[attribIndex] |= WGL_CONTEXT_DEBUG_BIT_ARB;

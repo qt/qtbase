@@ -75,6 +75,11 @@ public:
         return QSharedMemoryPrivate::makePlatformSafeKey(key, QLatin1String("qipc_systemsem_"));
     }
 
+    inline void setError(QSystemSemaphore::SystemSemaphoreError e, const QString &message)
+    { error = e; errorString = message; }
+    inline void clearError()
+    { setError(QSystemSemaphore::NoError, QString()); }
+
 #ifdef Q_OS_WIN
     Qt::HANDLE handle(QSystemSemaphore::AccessMode mode = QSystemSemaphore::Open);
     void setErrorString(const QString &function);

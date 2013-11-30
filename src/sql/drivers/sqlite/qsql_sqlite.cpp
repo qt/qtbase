@@ -42,6 +42,7 @@
 #include "qsql_sqlite_p.h"
 
 #include <qcoreapplication.h>
+#include <qdatetime.h>
 #include <qvariant.h>
 #include <qsqlerror.h>
 #include <qsqlfield.h>
@@ -447,6 +448,20 @@ bool QSQLiteResult::exec()
                 case QVariant::LongLong:
                     res = sqlite3_bind_int64(d->stmt, i + 1, value.toLongLong());
                     break;
+                case QVariant::DateTime: {
+                    const QDateTime dateTime = value.toDateTime();
+                    const QString str = dateTime.toString(QStringLiteral("yyyy-MM-ddThh:mm:ss.zzz"));
+                    res = sqlite3_bind_text16(d->stmt, i + 1, str.utf16(),
+                                              str.size() * sizeof(ushort), SQLITE_TRANSIENT);
+                    break;
+                }
+                case QVariant::Time: {
+                    const QTime time = value.toTime();
+                    const QString str = time.toString(QStringLiteral("hh:mm:ss.zzz"));
+                    res = sqlite3_bind_text16(d->stmt, i + 1, str.utf16(),
+                                              str.size() * sizeof(ushort), SQLITE_TRANSIENT);
+                    break;
+                }
                 case QVariant::String: {
                     // lifetime of string == lifetime of its qvariant
                     const QString *str = static_cast<const QString*>(value.constData());

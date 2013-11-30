@@ -47,18 +47,18 @@ label->setAlignment(Qt::AlignBottom | Qt::AlignRight);
 
 
 //! [1]
-QLineEdit* phoneEdit = new QLineEdit(this);
-QLabel* phoneLabel = new QLabel("&Phone:", this);
+QLineEdit *phoneEdit = new QLineEdit(this);
+QLabel *phoneLabel = new QLabel("&Phone:", this);
 phoneLabel->setBuddy(phoneEdit);
 //! [1]
 
 
 //! [2]
-QLineEdit *nameEd  = new QLineEdit(this);
-QLabel    *nameLb  = new QLabel("&Name:", this);
-nameLb->setBuddy(nameEd);
-QLineEdit *phoneEd = new QLineEdit(this);
-QLabel    *phoneLb = new QLabel("&Phone:", this);
-phoneLb->setBuddy(phoneEd);
+QLineEdit *nameEdit  = new QLineEdit(this);
+QLabel    *nameLabel = new QLabel("&Name:", this);
+nameLabel->setBuddy(nameEdit);
+QLineEdit *phoneEdit  = new QLineEdit(this);
+QLabel    *phoneLabel = new QLabel("&Phone:", this);
+phoneLabel->setBuddy(phoneEdit);
 // (layout setup not shown)
 //! [2]

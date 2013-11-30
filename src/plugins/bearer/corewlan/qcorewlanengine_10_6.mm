@@ -48,7 +48,7 @@
     QCoreWlanEngine *engine;
     NSLock *locker;
 }
-- (void)notificationHandler;//:(NSNotification *)notification;
+- (void)notificationHandler:(NSNotification *)notification;
 - (void)remove;
 - (void)setEngine:(QCoreWlanEngine *)coreEngine;
 - (QCoreWlanEngine *)engine;
@@ -97,8 +97,9 @@
     [locker unlock];
 }
 
-- (void)notificationHandler//:(NSNotification *)notification
+- (void)notificationHandler:(NSNotification *)notification
 {
+    Q_UNUSED(notification);
     engine->requestUpdate();
 }
 @end

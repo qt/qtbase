@@ -65,6 +65,7 @@ private slots:
 
     void basicacquire();
     void complexacquire();
+    void release();
 
 #ifndef QT_NO_PROCESS
     void basicProcesses();
@@ -145,12 +146,37 @@ void tst_QSystemSemaphore::complexacquire()
 {
     QSystemSemaphore sem("QSystemSemaphore_complexacquire", 2, QSystemSemaphore::Create);
     QVERIFY(sem.acquire());
+    QCOMPARE(sem.error(), QSystemSemaphore::NoError);
     QVERIFY(sem.release());
+    QCOMPARE(sem.error(), QSystemSemaphore::NoError);
     QVERIFY(sem.acquire());
+    QCOMPARE(sem.error(), QSystemSemaphore::NoError);
     QVERIFY(sem.release());
+    QCOMPARE(sem.error(), QSystemSemaphore::NoError);
     QVERIFY(sem.acquire());
+    QCOMPARE(sem.error(), QSystemSemaphore::NoError);
     QVERIFY(sem.acquire());
+    QCOMPARE(sem.error(), QSystemSemaphore::NoError);
     QVERIFY(sem.release());
+    QCOMPARE(sem.error(), QSystemSemaphore::NoError);
+    QVERIFY(sem.release());
+    QCOMPARE(sem.error(), QSystemSemaphore::NoError);
+    QCOMPARE(sem.errorString(), QString());
+}
+
+void tst_QSystemSemaphore::release()
+{
+    QSystemSemaphore sem("QSystemSemaphore_release", 0, QSystemSemaphore::Create);
+    QVERIFY(sem.release());
+    QCOMPARE(sem.error(), QSystemSemaphore::NoError);
+    QVERIFY(sem.release());
+    QCOMPARE(sem.error(), QSystemSemaphore::NoError);
+    QVERIFY(sem.acquire());
+    QCOMPARE(sem.error(), QSystemSemaphore::NoError);
+    QVERIFY(sem.acquire());
+    QCOMPARE(sem.error(), QSystemSemaphore::NoError);
+    QVERIFY(sem.release());
+    QCOMPARE(sem.error(), QSystemSemaphore::NoError);
     QVERIFY(sem.release());
     QCOMPARE(sem.error(), QSystemSemaphore::NoError);
     QCOMPARE(sem.errorString(), QString());

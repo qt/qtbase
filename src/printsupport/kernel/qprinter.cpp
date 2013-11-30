@@ -55,10 +55,7 @@
 
 #include <private/qpagedpaintdevice_p.h>
 
-
-#ifndef QT_NO_PDF
 #include "qprintengine_pdf_p.h"
-#endif
 
 #include <qpicture.h>
 #include <private/qpaintengine_preview_p.h>
@@ -618,8 +615,6 @@ QPrinter::~QPrinter()
 */
 void QPrinter::setOutputFormat(OutputFormat format)
 {
-
-#ifndef QT_NO_PDF
     Q_D(QPrinter);
     if (d->validPrinter && d->outputFormat == format)
         return;
@@ -651,9 +646,6 @@ void QPrinter::setOutputFormat(OutputFormat format)
 
     if (d->outputFormat == QPrinter::PdfFormat)
         d->validPrinter = true;
-#else
-    Q_UNUSED(format);
-#endif
 }
 
 /*!
