@@ -549,12 +549,6 @@ void QWidgetPrivate::show_sys()
                 window->resize(geomRect.size());
         }
 
-        if (QBackingStore *store = q->backingStore()) {
-            if (store->size() != geomRect.size()) {
-                store->resize(geomRect.size());
-            }
-        }
-
 #ifndef QT_NO_CURSOR
         qt_qpa_set_cursor(q, false); // Needed in case cursor was set before show
 #endif
@@ -761,11 +755,6 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
                 } else {
                     QPoint posInNativeParent =  q->mapTo(q->nativeParentWidget(),QPoint());
                     q->windowHandle()->setGeometry(QRect(posInNativeParent,r.size()));
-                }
-                const QWidgetBackingStore *bs = maybeBackingStore();
-                if (bs && bs->store) {
-                    if (isResize)
-                        bs->store->resize(r.size());
                 }
 
                 if (needsShow)

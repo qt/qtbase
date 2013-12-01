@@ -441,6 +441,8 @@ private slots:
     void mouseDoubleClickBubbling_QTBUG29680();
     void largerThanScreen_QTBUG30142();
 
+    void resizeStaticContentsChildWidget_QTBUG35282();
+
 private:
     bool ensureScreenSize(int width, int height);
     QWidget *testWidget;
@@ -10218,6 +10220,27 @@ void tst_QWidget::largerThanScreen_QTBUG30142()
     widget2.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget2));
     QVERIFY(widget2.frameGeometry().x() >= 0);
+}
+
+void tst_QWidget::resizeStaticContentsChildWidget_QTBUG35282()
+{
+    QWidget widget;
+    widget.resize(200,200);
+
+    UpdateWidget childWidget(&widget);
+    childWidget.setAttribute(Qt::WA_StaticContents);
+    childWidget.setAttribute(Qt::WA_OpaquePaintEvent);
+    childWidget.setGeometry(250, 250, 500, 500);
+
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    QVERIFY(childWidget.numPaintEvents == 0);
+    childWidget.reset();
+
+    widget.resize(1000,1000);
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    QGuiApplication::sync();
+    QVERIFY(childWidget.numPaintEvents >= 1);
 }
 
 QTEST_MAIN(tst_QWidget)

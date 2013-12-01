@@ -940,7 +940,7 @@ void QWidgetBackingStore::sync(QWidget *exposedWidget, const QRegion &exposedReg
     }
 
     // Nothing to repaint.
-    if (!isDirty()) {
+    if (!isDirty() && store->size().isValid()) {
         qt_flush(exposedWidget, exposedRegion, store, tlw, tlwOffset, widgetTextures);
         return;
     }
@@ -1035,7 +1035,7 @@ void QWidgetBackingStore::doSync()
     const QRect tlwRect(topLevelRect());
     const QRect surfaceGeometry(tlwRect.topLeft(), store->size());
     if ((fullUpdatePending || inTopLevelResize || surfaceGeometry.size() != tlwRect.size()) && !updatesDisabled) {
-        if (hasStaticContents()) {
+        if (hasStaticContents() && !store->size().isEmpty() ) {
             // Repaint existing dirty area and newly visible area.
             const QRect clipRect(0, 0, surfaceGeometry.width(), surfaceGeometry.height());
             const QRegion staticRegion(staticContents(0, clipRect));
