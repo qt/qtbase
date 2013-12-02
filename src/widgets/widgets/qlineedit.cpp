@@ -333,7 +333,12 @@ void QLineEdit::setText(const QString& text)
     \brief the line edit's placeholder text
 
     Setting this property makes the line edit display a grayed-out
-    placeholder text as long as the text() is empty.
+    placeholder text as long as the line edit is empty.
+
+    Normally, an empty line edit shows the placeholder text even
+    when it has focus. However, if the content is horizontally
+    centered, the placeholder text is not displayed under
+    the cursor when the line edit has focus.
 
     By default, this property contains an empty string.
 

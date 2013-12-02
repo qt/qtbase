@@ -150,7 +150,8 @@ public:
     }
     inline bool shouldShowPlaceholderText() const
     {
-        return control->text().isEmpty() && control->preeditAreaText().isEmpty();
+        return control->text().isEmpty() && control->preeditAreaText().isEmpty()
+                && !((alignment & Qt::AlignHCenter) && q_func()->hasFocus());
     }
 
     static inline QLineEditPrivate *get(QLineEdit *lineEdit) {

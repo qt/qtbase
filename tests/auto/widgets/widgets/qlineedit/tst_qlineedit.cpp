@@ -53,7 +53,7 @@
 #include "qstandarditemmodel.h"
 #include <qpa/qplatformtheme.h>
 #include "qstylehints.h"
-#include <private/qguiapplication_p.h>
+#include <private/qapplication_p.h>
 #include "qclipboard.h"
 
 #ifdef Q_OS_MAC
@@ -299,6 +299,9 @@ private slots:
 
     void clearButton();
     void sideWidgets();
+
+    void shouldShowPlaceholderText_data();
+    void shouldShowPlaceholderText();
 
 protected slots:
     void editingFinished();
@@ -4134,6 +4137,60 @@ void tst_QLineEdit::sideWidgets()
     lineEdit->removeAction(label1Action);
     lineEdit->addAction(iconAction);
     lineEdit->addAction(iconAction);
+}
+
+Q_DECLARE_METATYPE(Qt::AlignmentFlag)
+void tst_QLineEdit::shouldShowPlaceholderText_data()
+{
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<bool>("hasFocus");
+    QTest::addColumn<Qt::AlignmentFlag>("alignment");
+    QTest::addColumn<bool>("shouldShowPlaceholderText");
+
+    QTest::newRow("empty, non-focused, left") << QString() << false << Qt::AlignLeft << true;
+    QTest::newRow("empty, focused, left") << QString() << true << Qt::AlignLeft << true;
+    QTest::newRow("non-empty, non-focused, left") << QStringLiteral("Qt") << false << Qt::AlignLeft << false;
+    QTest::newRow("non-empty, focused, left") << QStringLiteral("Qt") << true << Qt::AlignLeft << false;
+
+    QTest::newRow("empty, non-focused, center") << QString() << false << Qt::AlignHCenter << true;
+    QTest::newRow("empty, focused, center") << QString() << true << Qt::AlignHCenter << false;
+    QTest::newRow("non-empty, non-focused, center") << QStringLiteral("Qt") << false << Qt::AlignHCenter << false;
+    QTest::newRow("non-empty, focused, center") << QStringLiteral("Qt") << true << Qt::AlignHCenter << false;
+
+    QTest::newRow("empty, non-focused, right") << QString() << false << Qt::AlignRight << true;
+    QTest::newRow("empty, focused, right") << QString() << true << Qt::AlignRight << true;
+    QTest::newRow("non-empty, non-focused, right") << QStringLiteral("Qt") << false << Qt::AlignRight << false;
+    QTest::newRow("non-empty, focused, right") << QStringLiteral("Qt") << true << Qt::AlignRight << false;
+}
+
+void tst_QLineEdit::shouldShowPlaceholderText()
+{
+#ifndef QT_BUILD_INTERNAL
+    QSKIP("This test requires a developer build.");
+#else
+    QFETCH(QString, text);
+    QFETCH(bool, hasFocus);
+    QFETCH(Qt::AlignmentFlag, alignment);
+    QFETCH(bool, shouldShowPlaceholderText);
+
+    QLineEdit lineEdit;
+
+    // avoid "Test input context to commit without focused object" warnings
+    lineEdit.setAttribute(Qt::WA_InputMethodEnabled, false);
+
+    if (hasFocus) {
+        lineEdit.show();
+        QApplicationPrivate::setFocusWidget(&lineEdit, Qt::NoFocusReason);
+    }
+    QCOMPARE(lineEdit.hasFocus(), hasFocus);
+
+    lineEdit.setText(text);
+    lineEdit.setAlignment(alignment);
+
+    QLineEditPrivate *priv = QLineEditPrivate::get(&lineEdit);
+    QCOMPARE(priv->shouldShowPlaceholderText(), shouldShowPlaceholderText);
+#endif
+
 }
 
 QTEST_MAIN(tst_QLineEdit)
