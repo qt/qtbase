@@ -570,6 +570,7 @@ void tst_QMenu::layoutDirection()
     win.setLayoutDirection(Qt::RightToLeft);
 
     QMenu menu(&win);
+    menu.addAction("foo");
     menu.show();
     QVERIFY(QTest::qWaitForWindowExposed(&menu));
     QCOMPARE(menu.layoutDirection(), Qt::RightToLeft);
