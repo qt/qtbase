@@ -117,6 +117,8 @@ inline bool operator<(const timespec &t1, const timespec &t2)
 { return t1.tv_sec < t2.tv_sec || (t1.tv_sec == t2.tv_sec && t1.tv_nsec < t2.tv_nsec); }
 inline bool operator==(const timespec &t1, const timespec &t2)
 { return t1.tv_sec == t2.tv_sec && t1.tv_nsec == t2.tv_nsec; }
+inline bool operator!=(const timespec &t1, const timespec &t2)
+{ return !(t1 == t2); }
 inline timespec &operator+=(timespec &t1, const timespec &t2)
 {
     t1.tv_sec += t2.tv_sec;
