@@ -328,7 +328,7 @@ static void KeccakPermutation(unsigned char *state)
     KeccakPermutationOnWords((UINT64*)state);
 }
 
-#if 0 // Unused in the Qt configuration
+#if (PLATFORM_BYTE_ORDER == IS_BIG_ENDIAN)
 static void fromBytesToWord(UINT64 *word, const UINT8 *bytes)
 {
     unsigned int i;
@@ -449,7 +449,7 @@ static void KeccakAbsorb(unsigned char *state, const unsigned char *data, unsign
 #endif
 }
 
-#if 0 // Unused in the Qt configuration
+#if (PLATFORM_BYTE_ORDER == IS_BIG_ENDIAN)
 static void fromWordToBytes(UINT8 *bytes, const UINT64 word)
 {
     unsigned int i;
