@@ -1895,7 +1895,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
     int minLB = qMax(0, -fm.minLeftBearing());
     int minRB = qMax(0, -fm.minRightBearing());
 
-    if (d->shouldShowPlaceholderText() && d->control->preeditAreaText().isEmpty()) {
+    if (d->shouldShowPlaceholderText()) {
         if (!d->placeholderText.isEmpty()) {
             QColor col = pal.text().color();
             col.setAlpha(128);

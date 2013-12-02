@@ -150,7 +150,7 @@ public:
     }
     inline bool shouldShowPlaceholderText() const
     {
-        return control->text().isEmpty();
+        return control->text().isEmpty() && control->preeditAreaText().isEmpty();
     }
 
     static inline QLineEditPrivate *get(QLineEdit *lineEdit) {
