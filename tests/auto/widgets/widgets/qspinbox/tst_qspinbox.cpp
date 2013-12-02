@@ -142,6 +142,8 @@ private slots:
 
     void taskQTBUG_5008_textFromValueAndValidate();
     void lineEditReturnPressed();
+
+    void positiveSign();
 public slots:
     void valueChangedHelper(const QString &);
     void valueChangedHelper(int);
@@ -1109,6 +1111,21 @@ void tst_QSpinBox::lineEditReturnPressed()
     spinBox.show();
     QTest::keyClick(&spinBox, Qt::Key_Return);
     QCOMPARE(spyCurrentChanged.count(), 1);
+}
+
+void tst_QSpinBox::positiveSign()
+{
+    QSpinBox spinBox;
+    spinBox.setRange(-20, 20);
+    spinBox.setValue(-20);
+    spinBox.show();
+    QVERIFY(QTest::qWaitForWindowActive(&spinBox));
+
+    QTest::keyClick(&spinBox, Qt::Key_End, Qt::ShiftModifier);
+    QTest::keyClick(&spinBox, Qt::Key_Plus, Qt::ShiftModifier);
+    QTest::keyClick(&spinBox, Qt::Key_2);
+    QTest::keyClick(&spinBox, Qt::Key_0);
+    QCOMPARE(spinBox.text(), QLatin1String("+20"));
 }
 
 QTEST_MAIN(tst_QSpinBox)

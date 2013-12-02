@@ -1040,7 +1040,7 @@ QVariant QSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
 
     if (max != min && (copy.isEmpty()
                        || (min < 0 && copy == QLatin1String("-"))
-                       || (min >= 0 && copy == QLatin1String("+")))) {
+                       || (max >= 0 && copy == QLatin1String("+")))) {
         state = QValidator::Intermediate;
         QSBDEBUG() << __FILE__ << __LINE__<< "num is set to" << num;
     } else if (copy.startsWith(QLatin1Char('-')) && min >= 0) {
