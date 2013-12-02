@@ -262,6 +262,7 @@ private:
     QString cppclassespage;
     QString qmltypespage;
     QString buildversion;
+    QString qflagsHref_;
 
 public:
     static bool debugging_on;
