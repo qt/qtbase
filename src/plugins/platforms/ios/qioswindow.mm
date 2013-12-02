@@ -330,13 +330,9 @@
 
 - (BOOL)becomeFirstResponder
 {
-    // On iOS, a QWindow should only have input focus when the input panel is
-    // open. This is to stop cursors and focus rects from being drawn when the
-    // user cannot type. And since the keyboard will open when a view becomes
-    // the first responder, it's now a good time to inform QPA that the QWindow
-    // this view backs became active:
+    // Note: QIOSInputContext controls our first responder status based on
+    // whether or not the keyboard should be open or closed.
     [self updateTextInputTraits];
-    QWindowSystemInterface::handleWindowActivated(m_qioswindow->window());
     return [super becomeFirstResponder];
 }
 
