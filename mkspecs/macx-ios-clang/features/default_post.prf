@@ -183,6 +183,22 @@ macx-xcode {
     QMAKE_SUBSTITUTES += copy_image
     launch_images.files = $$copy_image.output
     QMAKE_BUNDLE_DATA += launch_images
+
+    # Make the default debug information format for debug builds
+    # DWARF instead of DWARF with dSYM. This cuts down build times
+    # for application debug builds significantly, as Xcode doesn't
+    # have to pull out all the DWARF info from our static libraries
+    # and put it into a dSYM file. We don't need that dSYM file in
+    # the first place, since the information is available in the
+    # object files inside the archives (static libraries). The only
+    # unfortunate side effect of this is that the user won't be
+    # able to break on specific lines of main(). This is due to
+    # using ld to rename the main-function, and will go away once
+    # we implement a separate tool to do the symbol renaming.
+    debug_information_format.name = DEBUG_INFORMATION_FORMAT
+    debug_information_format.value = dwarf
+    debug_information_format.build = debug
+    QMAKE_MAC_XCODE_SETTINGS += debug_information_format
 }
 
 macx-xcode {
