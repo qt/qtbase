@@ -52,6 +52,10 @@ information about a particular change.
    zero delta() in order to indicate beginning and end of transient
    scrolling.
 
+ - Mac OS X framework builds of Qt no longer contain a Unix-like include/
+   directory; all headers are located in the frameworks. This may affect
+   3rd party build systems not based on qmake or cmake.
+
 ****************************************************************************
 *                          Library                                         *
 ****************************************************************************
@@ -700,3 +704,44 @@ X11
  - [QTBUG-31762] Fix position of system tray icon (except Unity)
  - [QTBUG-27349] Reintroduced command line argument for positioning
    windows (-geometry)
+
+****************************************************************************
+*                          Tools                                           *
+****************************************************************************
+
+- configure
+
+ * Added option to disable the QtMultimedia WMF backend
+ * [Unix] Added option to build with gcov support
+ * Added -extprefix option to support Qt installing into a different
+   location than the on-device -prefix within the -sysroot.
+ * [QTBUG-33584][Unix] Fixed parsing of -device-option with equal signs.
+
+- cmake config files
+
+ * [QTBUG-33145] Fixed usage of non-QtBase modules with Qt compiled from
+   source tarballs.
+ * [QTBUG-33223] Fixed header file location on multi-arch systems.
+ * Added support for automatic packaging of Qt plugins with cpack.
+
+- qmake
+
+ * [QTBUG-491] Added saner approach to debug/release path rewriting.
+ * Added the parseJson() function.
+ * Added "osx" scope as an alias for "macx". Note that matching on the
+   makespec is generally deprecated - use "linux", "gcc", etc.
+ * Added support for .qmake.stash files which are really *just* caches.
+ * [Xcode] Added support for QMAKE_PRE_LINK and QMAKE_POST_LINK.
+ * [QTBUG-31129] Added installation of PDB files for dlltarget.
+ * [QTBUG-28102] Added support for querying disabled Qt features.
+ * Removed macx-clang-libc++* makespecs. libc++ is now handled automatically.
+ * [QTBUG-32912][MSVS] Fixed moc not being run in case of DBUS_ADAPTORS or
+   DBUS_INTERFACES being present.
+ * [QTBUG-30644] Fixed unsatisfied requires() breaking recursive targets.
+ * [QTBUG-31204] Fixed extra compilers not finding their inputs.
+ * [QTBUG-32885][MSVS] Made it possible to disable debug information.
+ * [QTBUG-33446][MSVS] Fixed generation of VS2010+ solution files.
+ * [QTBUG-32375][MSVS] Fixed output directory of nested projects.
+ * [QTBUG-34392][MSVS] Fixed /SAFESEH:NO with VS2010+.
+ * [QTBUG-34357][MSVS] Fixed breakage with multiple VS versions in PATH.
+ * [MSVS] Fixed sub-project dependency generation.
