@@ -1348,29 +1348,26 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         {
             if (!d->devMode)
                 break;
-            DWORD size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
-                                            NULL, DC_PAPERNAMES, NULL, NULL);
+            const wchar_t *name = reinterpret_cast<const wchar_t*>(d->name.utf16());
+            DWORD size = DeviceCapabilities(name, NULL, DC_PAPERNAMES, NULL, NULL);
             if ((int)size > 0) {
-                wchar_t *paperNames = new wchar_t[size*64];
-                size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
-                                          NULL, DC_PAPERNAMES, paperNames, NULL);
+                QScopedArrayPointer<wchar_t> paperNames(new wchar_t[size*64]);
+                if (size != DeviceCapabilities(name, NULL, DC_PAPERNAMES, paperNames.data(), NULL))
+                    break;
                 int paperPos = -1;
-                for (int i=0;i<(int)size;i++) {
-                    wchar_t *copyOfPaper = paperNames + (i * 64);
+                for (int i = 0; i < (int)size; ++i) {
+                    wchar_t *copyOfPaper = paperNames.data() + (i * 64);
                     if (value.toString() == QString::fromWCharArray(copyOfPaper, qwcsnlen(copyOfPaper, 64))) {
                         paperPos = i;
                         break;
                     }
                 }
-                delete [] paperNames;
-                size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
-                                          NULL, DC_PAPERS, NULL, NULL);
+                size = DeviceCapabilities(name, NULL, DC_PAPERS, NULL, NULL);
                 if ((int)size > 0) {
-                    wchar_t *papers = new wchar_t[size];
-                    size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
-                                              NULL, DC_PAPERS, papers, NULL);
+                    QScopedArrayPointer<wchar_t> papers(new wchar_t[size]);
+                    size = DeviceCapabilities(name, NULL, DC_PAPERS, papers.data(), NULL);
                     QScopedArrayPointer<POINT> paperSizes(new POINT[size]);
-                    DWORD paperNameCount = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()), NULL, DC_PAPERSIZE, (wchar_t *)paperSizes.data(), NULL);
+                    DWORD paperNameCount = DeviceCapabilities(name, NULL, DC_PAPERSIZE, (wchar_t *)paperSizes.data(), NULL);
                     if (paperNameCount == size) {
                         const double multiplier = qt_multiplierForUnit(QPrinter::Millimeter, d->resolution);
                         d->paper_size = QSizeF((paperSizes[paperPos].x / 10.0) * multiplier, (paperSizes[paperPos].y / 10.0) * multiplier);
@@ -1381,8 +1378,6 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
                         setDevModePaperFlags(d->devMode, false);
                         d->doReinit();
                     }
-
-                    delete [] papers;
                  }
             }
         }
@@ -1572,32 +1567,27 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
         if (!d->devMode) {
             value = QLatin1String("A4");
         } else {
-            DWORD size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
-                                        NULL, DC_PAPERS, NULL, NULL);
+            const wchar_t *name = reinterpret_cast<const wchar_t*>(d->name.utf16());
+            DWORD size = DeviceCapabilities(name, NULL, DC_PAPERS, NULL, NULL);
             int paperSizePos = -1;
             if ((int)size > 0) {
-                wchar_t *papers = new wchar_t[size];
-                size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
-                                           NULL, DC_PAPERS, papers, NULL);
+                QScopedArrayPointer<wchar_t> papers(new wchar_t[size]);
+                if (size != DeviceCapabilities(name, NULL, DC_PAPERS, papers.data(), NULL))
+                    break;
                 for (int i=0;i<(int)size;i++) {
                     if (papers[i] == d->devMode->dmPaperSize) {
                         paperSizePos = i;
                         break;
                     }
                 }
-                delete [] papers;
-
             }
             if (paperSizePos != -1) {
-                size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
-                    NULL, DC_PAPERNAMES, NULL, NULL);
+                size = DeviceCapabilities(name, NULL, DC_PAPERNAMES, NULL, NULL);
                 if ((int)size > 0) {
-                    wchar_t *papers = new wchar_t[size*64];
-                    size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
-                        NULL, DC_PAPERNAMES, papers, NULL);
-                    wchar_t *copyOfPaper = papers + (paperSizePos * 64);
+                    QScopedArrayPointer<wchar_t> paperNames(new wchar_t[size*64]);
+                    size = DeviceCapabilities(name, NULL, DC_PAPERNAMES, paperNames.data(), NULL);
+                    wchar_t *copyOfPaper = paperNames.data() + (paperSizePos * 64);
                     value = QString::fromWCharArray(copyOfPaper, qwcsnlen(copyOfPaper, 64));
-                    delete [] papers;
                 }
             }
         }
@@ -1704,16 +1694,14 @@ QList<QPrinter::PaperSize> QWin32PrintEngine::supportedPaperSizes(const QPrinter
 
     if (printerInfo.isNull())
         return returnList;
-
-    DWORD size = DeviceCapabilities(reinterpret_cast<const wchar_t *>(printerInfo.printerName().utf16()),
-                                    NULL, DC_PAPERS, NULL, NULL);
+    const wchar_t *name = reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16());
+    DWORD size = DeviceCapabilities(name, NULL, DC_PAPERS, NULL, NULL);
     if ((int)size != -1) {
-        wchar_t *papers = new wchar_t[size];
-        size = DeviceCapabilities(reinterpret_cast<const wchar_t *>(printerInfo.printerName().utf16()),
-                                  NULL, DC_PAPERS, papers, NULL);
+        QScopedArrayPointer<wchar_t> papers(new wchar_t[size]);
+        if (size != DeviceCapabilities(name, NULL, DC_PAPERS, papers.data(), NULL))
+            return returnList;
         for (int c = 0; c < (int)size; ++c)
             returnList.append(mapDevmodePaperSize(papers[c]));
-        delete [] papers;
     }
     return returnList;
 }
@@ -1723,27 +1711,22 @@ QList<QPair<QString, QSizeF> > QWin32PrintEngine::supportedSizesWithNames(const 
     QList<QPair<QString, QSizeF> > paperSizes;
     if (printerInfo.isNull())
         return paperSizes;
-    DWORD size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16()),
-                                    NULL, DC_PAPERNAMES, NULL, NULL);
+    const wchar_t *name = reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16());
+    DWORD size = DeviceCapabilities(name, NULL, DC_PAPERNAMES, NULL, NULL);
     if ((int)size > 0) {
-        wchar_t *papers = new wchar_t[size*64];
-        size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16()),
-                                  NULL, DC_PAPERNAMES, papers, NULL);
-        DWORD size2 = DeviceCapabilities(reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16()),
-                                         NULL, DC_PAPERSIZE, NULL, NULL);
-        if ((int)size2 > 0) {
-            POINT *points = new POINT[size2*sizeof(POINT)];
-
-            size2 = DeviceCapabilities(reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16()),
-                                       NULL, DC_PAPERSIZE, (wchar_t *)points, NULL);
-            for (int i=0;i<(int)size;i++) {
-                wchar_t *paper = papers + (i * 64);
-                QString str = QString::fromWCharArray(paper, qwcsnlen(paper, 64));
-                paperSizes << qMakePair(str, QSizeF(points[i].x / 10.0, points[i].y / 10.0));
-            }
-            delete [] points;
+        QScopedArrayPointer<wchar_t> papers(new wchar_t[size*64]);
+        if (size != DeviceCapabilities(name, NULL, DC_PAPERNAMES, papers.data(), NULL))
+            return paperSizes;
+        if (size != DeviceCapabilities(name, NULL, DC_PAPERSIZE, NULL, NULL))
+            return paperSizes;
+        QScopedArrayPointer<POINT> points(new POINT[size*sizeof(POINT)]);
+        if (size != DeviceCapabilities(name, NULL, DC_PAPERSIZE, (wchar_t *)points.data(), NULL))
+            return paperSizes;
+        for (int i = 0; i < (int)size; ++i) {
+            wchar_t *paper = papers.data() + (i * 64);
+            QString str = QString::fromWCharArray(paper, qwcsnlen(paper, 64));
+            paperSizes << qMakePair(str, QSizeF(points[i].x / 10.0, points[i].y / 10.0));
         }
-        delete [] papers;
     }
     return paperSizes;
 }
