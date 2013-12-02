@@ -1530,6 +1530,7 @@ bool QIBaseDriver::open(const QString & db,
     }
 
     setOpen(true);
+    setOpenError(false);
     return true;
 }
 
