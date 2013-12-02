@@ -274,20 +274,21 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
         XSetEventQueueOwner(dpy, XCBOwnsEventQueue);
         XSetErrorHandler(nullErrorHandler);
         m_xlib_display = dpy;
-#ifdef XCB_USE_EGL
-        EGLDisplay eglDisplay = eglGetDisplay(dpy);
-        m_egl_display = eglDisplay;
-        EGLint major, minor;
-        eglBindAPI(EGL_OPENGL_ES_API);
-        m_has_egl = eglInitialize(eglDisplay,&major,&minor);
-#endif //XCB_USE_EGL
     }
 #else
+    EGLNativeDisplayType dpy = EGL_DEFAULT_DISPLAY;
     m_connection = xcb_connect(m_displayName.constData(), &m_primaryScreen);
 #endif //XCB_USE_XLIB
 
     if (!m_connection || xcb_connection_has_error(m_connection))
         qFatal("QXcbConnection: Could not connect to display %s", m_displayName.constData());
+
+#ifdef XCB_USE_EGL
+    EGLDisplay eglDisplay = eglGetDisplay(dpy);
+    m_egl_display = eglDisplay;
+    EGLint major, minor;
+    m_has_egl = eglInitialize(eglDisplay, &major, &minor);
+#endif //XCB_USE_EGL
 
     m_reader = new QXcbEventReader(this);
     m_reader->start();
