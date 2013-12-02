@@ -1102,12 +1102,9 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("shellScript", fixForOutput("cp -r $BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME " + escapeFilePath(destDir))) << ";\n"
           << "\t\t};\n";
     }
-    // Copy Bundle Resources
+    // Copy Bundle Data
     if (!project->isEmpty("QMAKE_BUNDLE_DATA")) {
         ProStringList bundle_file_refs;
-        ProStringList bundle_resources_files;
-
-        bool useCopyResourcesPhase = project->isActiveConfig("app_bundle") && project->first("TEMPLATE") == "app";
 
         //all bundle data
         const ProStringList &bundle_data = project->values("QMAKE_BUNDLE_DATA");
@@ -1133,38 +1130,45 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                   << "\t\t};\n";
             }
 
-            if (!useCopyResourcesPhase || !path.isEmpty()) {
-                // The resource copy phase doesn't support paths, so we have to use
-                // a regular file copy phase (which doesn't optimize the resources).
-                QString phase_key = keyFor("QMAKE_PBX_BUNDLE_COPY." + bundle_data[i]);
-                if (!project->isEmpty(ProKey(bundle_data[i] + ".version"))) {
-                    //###
-                }
-
-                project->values("QMAKE_PBX_BUILDPHASES").append(phase_key);
-                t << "\t\t" << phase_key << " = {\n"
-                  << "\t\t\t" << writeSettings("name", "Copy '" + bundle_data[i] + "' Files to Bundle") << ";\n"
-                  << "\t\t\t" << writeSettings("buildActionMask", "2147483647", SettingsNoQuote) << ";\n"
-                  << "\t\t\t" << writeSettings("dstPath", escapeFilePath(path)) << ";\n"
-                  << "\t\t\t" << writeSettings("dstSubfolderSpec", "1", SettingsNoQuote) << ";\n"
-                  << "\t\t\t" << writeSettings("files", bundle_files, SettingsAsList, 4) << ";\n"
-                  << "\t\t\t" << writeSettings("isa", "PBXCopyFilesBuildPhase", SettingsNoQuote) << ";\n"
-                  << "\t\t\t" << writeSettings("runOnlyForDeploymentPostprocessing", "0", SettingsNoQuote) << ";\n"
-                  << "\t\t};\n";
-            } else {
-                // Otherwise we leave it to the resource copy phase below
-                bundle_resources_files += bundle_files;
+            QString phase_key = keyFor("QMAKE_PBX_BUNDLE_COPY." + bundle_data[i]);
+            if (!project->isEmpty(ProKey(bundle_data[i] + ".version"))) {
+                //###
             }
+
+            project->values("QMAKE_PBX_BUILDPHASES").append(phase_key);
+            t << "\t\t" << phase_key << " = {\n"
+              << "\t\t\t" << writeSettings("name", "Copy '" + bundle_data[i] + "' Files to Bundle") << ";\n"
+              << "\t\t\t" << writeSettings("buildActionMask", "2147483647", SettingsNoQuote) << ";\n"
+              << "\t\t\t" << writeSettings("dstPath", escapeFilePath(path)) << ";\n"
+              << "\t\t\t" << writeSettings("dstSubfolderSpec", "1", SettingsNoQuote) << ";\n"
+              << "\t\t\t" << writeSettings("files", bundle_files, SettingsAsList, 4) << ";\n"
+              << "\t\t\t" << writeSettings("isa", "PBXCopyFilesBuildPhase", SettingsNoQuote) << ";\n"
+              << "\t\t\t" << writeSettings("runOnlyForDeploymentPostprocessing", "0", SettingsNoQuote) << ";\n"
+              << "\t\t};\n";
         }
 
-        if (useCopyResourcesPhase) {
-            if (!project->isEmpty("ICON")) {
-                ProString icon = project->first("ICON");
-                if (icon.length() >= 2 && (icon.at(0) == '"' || icon.at(0) == '\'') && icon.endsWith(icon.at(0)))
-                    icon = icon.mid(1, icon.length() - 2);
-                bundle_resources_files += keyFor(icon + ".BUILDABLE");
-            }
+        QString bundle_data_key = keyFor("QMAKE_PBX_BUNDLE_DATA");
+        project->values("QMAKE_PBX_GROUPS").append(bundle_data_key);
+        t << "\t\t" << bundle_data_key << " = {\n"
+          << "\t\t\t" << writeSettings("children", bundle_file_refs, SettingsAsList, 4) << ";\n"
+          << "\t\t\t" << writeSettings("isa", "PBXGroup", SettingsNoQuote) << ";\n"
+          << "\t\t\t" << writeSettings("name", "Bundle Data") << ";\n"
+          << "\t\t\t" << writeSettings("sourceTree", "<Group>") << ";\n"
+          << "\t\t};\n";
+    }
 
+    // Copy bundle resources. Optimizes resources, and puts them into the Resources
+    // subdirectory on OSX, but doesn't support paths.
+    if (project->isActiveConfig("app_bundle") && project->first("TEMPLATE") == "app") {
+        ProStringList bundle_resources_files;
+        if (!project->isEmpty("ICON")) {
+            ProString icon = project->first("ICON");
+            if (icon.length() >= 2 && (icon.at(0) == '"' || icon.at(0) == '\'') && icon.endsWith(icon.at(0)))
+                icon = icon.mid(1, icon.length() - 2);
+            bundle_resources_files += keyFor(icon + ".BUILDABLE");
+        }
+
+        if (!bundle_resources_files.isEmpty()) {
             QString grp("Copy Bundle Resources"), key = keyFor(grp);
             project->values("QMAKE_PBX_BUILDPHASES").append(key);
             t << "\t\t" << key << " = {\n"
@@ -1175,15 +1179,6 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
               << "\t\t\t" << writeSettings("name", escapeFilePath(grp)) << ";\n"
               << "\t\t};\n";
         }
-
-        QString bundle_data_key = keyFor("QMAKE_PBX_BUNDLE_DATA");
-        project->values("QMAKE_PBX_GROUPS").append(bundle_data_key);
-        t << "\t\t" << bundle_data_key << " = {\n"
-          << "\t\t\t" << writeSettings("children", bundle_file_refs, SettingsAsList, 4) << ";\n"
-          << "\t\t\t" << writeSettings("isa", "PBXGroup", SettingsNoQuote) << ";\n"
-          << "\t\t\t" << writeSettings("name", "Bundle Resources") << ";\n"
-          << "\t\t\t" << writeSettings("sourceTree", "<Group>") << ";\n"
-          << "\t\t};\n";
     }
 
     //REFERENCE
