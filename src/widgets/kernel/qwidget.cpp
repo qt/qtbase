@@ -5036,6 +5036,8 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
         return;
 #endif // Q_WS_MAC
 
+    const bool asRoot = flags & DrawAsRoot;
+    bool onScreen = paintOnScreen();
 
     Q_Q(QWidget);
 #ifndef QT_NO_GRAPHICSEFFECT
@@ -5065,12 +5067,17 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 sharedPainter->restore();
             }
             sourced->context = 0;
+
+            // Native widgets need to be marked dirty on screen so painting will be done in correct context
+            // Same check as in the no effects case below.
+            if (backingStore && !onScreen && !asRoot && (q->internalWinId() || !q->nativeParentWidget()->isWindow()))
+                backingStore->markDirtyOnScreen(rgn, q, offset);
+
             return;
         }
     }
 #endif //QT_NO_GRAFFICSEFFECT
 
-    const bool asRoot = flags & DrawAsRoot;
     const bool alsoOnScreen = flags & DrawPaintOnScreen;
     const bool recursive = flags & DrawRecursive;
     const bool alsoInvisible = flags & DrawInvisible;
@@ -5084,7 +5091,6 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
         subtractOpaqueChildren(toBePainted, q->rect());
 
     if (!toBePainted.isEmpty()) {
-        bool onScreen = paintOnScreen();
         if (!onScreen || alsoOnScreen) {
             //update the "in paint event" flag
             if (q->testAttribute(Qt::WA_WState_InPaintEvent))
