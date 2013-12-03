@@ -118,7 +118,12 @@ bool Surface::resetSwapChain()
 #else
         ABI::Windows::Foundation::Rect windowRect;
         ABI::Windows::UI::Core::ICoreWindow *window;
-        ASSERT(SUCCEEDED(mWindow->QueryInterface(IID_PPV_ARGS(&window))));
+        HRESULT result = mWindow->QueryInterface(IID_PPV_ARGS(&window));
+        if (FAILED(result))
+        {
+            ASSERT(false);
+            return false;
+        }
         window->get_Bounds(&windowRect);
         width = windowRect.Width;
         height = windowRect.Height;
@@ -342,7 +347,12 @@ bool Surface::checkForOutOfDateSwapChain()
 #else
     ABI::Windows::Foundation::Rect windowRect;
     ABI::Windows::UI::Core::ICoreWindow *window;
-    ASSERT(SUCCEEDED(mWindow->QueryInterface(IID_PPV_ARGS(&window))));
+    HRESULT result = mWindow->QueryInterface(IID_PPV_ARGS(&window));
+    if (FAILED(result))
+    {
+        ASSERT(false);
+        return false;
+    }
     window->get_Bounds(&windowRect);
     int clientWidth = windowRect.Width;
     int clientHeight = windowRect.Height;
