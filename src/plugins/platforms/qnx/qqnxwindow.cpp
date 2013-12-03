@@ -458,12 +458,7 @@ void QQnxWindow::lower()
 
 void QQnxWindow::requestActivateWindow()
 {
-    qWindowDebug() << Q_FUNC_INFO << "window =" << window();
-
-    // TODO: Tell screen to set keyboard focus to this window.
-
-    // Notify that we gained focus.
-    gainedFocus();
+    // Overwrite the default implementation where the window is activated
 }
 
 
@@ -485,14 +480,6 @@ void QQnxWindow::propagateSizeHints()
 {
     // nothing to do; silence base class warning
     qWindowDebug() << Q_FUNC_INFO << ": ignored";
-}
-
-void QQnxWindow::gainedFocus()
-{
-    qWindowDebug() << Q_FUNC_INFO << "window =" << window();
-
-    // Got focus
-    QWindowSystemInterface::handleWindowActivated(window());
 }
 
 void QQnxWindow::setMMRendererWindowName(const QString &name)

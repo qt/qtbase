@@ -93,7 +93,6 @@ public:
 
     void propagateSizeHints();
 
-    void gainedFocus();
     void setMMRendererWindowName(const QString &name);
     void setMMRendererWindow(screen_window_t handle);
     void clearMMRendererWindow();

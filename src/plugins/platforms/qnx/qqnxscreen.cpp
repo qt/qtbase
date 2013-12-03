@@ -728,8 +728,6 @@ void QQnxScreen::activateWindowGroup(const QByteArray &id)
 
     if (m_coverWindow)
         m_coverWindow->setExposed(false);
-
-    QWindowSystemInterface::handleWindowActivated(window);
 }
 
 void QQnxScreen::deactivateWindowGroup(const QByteArray &id)
@@ -744,8 +742,6 @@ void QQnxScreen::deactivateWindowGroup(const QByteArray &id)
 
     Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
         childWindow->setExposed(false);
-
-    QWindowSystemInterface::handleWindowActivated(rootWindow()->window());
 }
 
 QQnxWindow *QQnxScreen::rootWindow() const

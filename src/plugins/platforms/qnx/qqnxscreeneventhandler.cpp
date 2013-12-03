@@ -341,10 +341,6 @@ void QQnxScreenEventHandler::handlePointerEvent(screen_event_t event)
         }
     }
 
-    // If we don't have a navigator, we don't get activation events.
-    if (buttonState && w && w != QGuiApplication::focusWindow() && !m_qnxIntegration->supportsNavigatorEvents())
-        QWindowSystemInterface::handleWindowActivated(w);
-
     m_lastMouseWindow = qnxWindow;
 
     // Apply scaling to wheel delta and invert value for Qt. We'll probably want to scale
@@ -616,9 +612,15 @@ void QQnxScreenEventHandler::handleKeyboardFocusPropertyEvent(screen_window_t wi
     if (window && screen_get_window_property_iv(window, SCREEN_PROPERTY_KEYBOARD_FOCUS, &focus) != 0)
         qFatal("QQnx: failed to query keyboard focus property, errno=%d", errno);
 
-    QWindow *w = focus ? QQnxIntegration::window(window) : 0;
-
-    QWindowSystemInterface::handleWindowActivated(w);
+    QWindow *focusWindow = QQnxIntegration::window(window);
+    if (focus) {
+        QWindowSystemInterface::handleWindowActivated(focusWindow);
+    } else if (focusWindow == QGuiApplication::focusWindow()) {
+        // Deactivate only if the window was the focus window.
+        // Screen might send a keyboard focus event for a newly created
+        // window on the secondary screen, with focus 0.
+        QWindowSystemInterface::handleWindowActivated(0);
+    }
 }
 
 #include "moc_qqnxscreeneventhandler.cpp"
