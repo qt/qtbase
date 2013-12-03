@@ -74,12 +74,12 @@ public:
         : QBasicAtomicInteger<T>()
 #endif
     {
-        this->store(other.load());
+        this->storeRelease(other.loadAcquire());
     }
 
     inline QAtomicInteger &operator=(const QAtomicInteger &other) Q_DECL_NOTHROW
     {
-        this->store(other.load());
+        this->storeRelease(other.loadAcquire());
         return *this;
     }
 
@@ -148,12 +148,12 @@ public:
 #endif
     inline QAtomicPointer(const QAtomicPointer<T> &other) Q_DECL_NOTHROW
     {
-        this->store(other.load());
+        this->storeRelease(other.loadAcquire());
     }
 
     inline QAtomicPointer<T> &operator=(const QAtomicPointer<T> &other) Q_DECL_NOTHROW
     {
-        this->store(other.load());
+        this->storeRelease(other.loadAcquire());
         return *this;
     }
 
