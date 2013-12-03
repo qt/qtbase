@@ -106,7 +106,8 @@ public:
         TabAllWidgets,
         IconPixmapSizes,
         PasswordMaskCharacter,
-        DialogSnapToDefaultButton
+        DialogSnapToDefaultButton,
+        ContextMenuOnMouseRelease
     };
 
     enum DialogType {

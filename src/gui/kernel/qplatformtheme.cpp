@@ -142,6 +142,8 @@ QT_BEGIN_NAMESPACE
     \value DialogSnapToDefaultButton (bool) Whether the mouse should snap to the default button when a dialog
                                      becomes visible.
 
+    \value ContextMenuOnMouseRelease (bool) Whether the context menu should be shown on mouse release.
+
     \sa themeHint(), QStyle::pixelMetric()
 */
 
@@ -487,6 +489,7 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
     case IconPixmapSizes:
         return QVariant::fromValue(QList<int>());
     case DialogSnapToDefaultButton:
+    case ContextMenuOnMouseRelease:
         return QVariant(false);
     }
     return QVariant();
