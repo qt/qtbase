@@ -133,7 +133,7 @@ class QBasicAtomicInteger
 public:
     typedef QAtomicOps<T> Ops;
     // static check that this is a valid integer
-    typedef char PermittedIntegerType[QAtomicIntegerTraits<T>::IsInteger ? 1 : -1];
+    Q_STATIC_ASSERT_X(QAtomicIntegerTraits<T>::IsInteger, "Template parameter is not a supported integer on this platform");
 
     typename Ops::Type _q_value;
 
