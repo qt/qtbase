@@ -55,25 +55,29 @@ QT_BEGIN_NAMESPACE
 #endif
 
 // High-level atomic integer operations
-class QAtomicInt : public QBasicAtomicInt
+template <typename T>
+class QAtomicInteger : public QBasicAtomicInteger<T>
 {
 public:
     // Non-atomic API
 #ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
-    constexpr QAtomicInt(int value = 0) Q_DECL_NOTHROW : QBasicAtomicInt(value) {}
+    constexpr QAtomicInteger(T value = 0) Q_DECL_NOTHROW : QBasicAtomicInteger<T>(value) {}
 #else
-    inline QAtomicInt(int value = 0) Q_DECL_NOTHROW
+    inline QAtomicInteger(T value = 0) Q_DECL_NOTHROW
     {
-        _q_value = value;
+        this->_q_value = value;
     }
 #endif
 
-    inline QAtomicInt(const QAtomicInt &other) Q_DECL_NOTHROW
+    inline QAtomicInteger(const QAtomicInteger &other) Q_DECL_NOTHROW
+#ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
+        : QBasicAtomicInteger<T>()
+#endif
     {
-        store(other.load());
+        this->store(other.load());
     }
 
-    inline QAtomicInt &operator=(const QAtomicInt &other) Q_DECL_NOTHROW
+    inline QAtomicInteger &operator=(const QAtomicInteger &other) Q_DECL_NOTHROW
     {
         this->store(other.load());
         return *this;
@@ -115,6 +119,18 @@ public:
     int fetchAndAddRelease(int valueToAdd);
     int fetchAndAddOrdered(int valueToAdd);
 #endif
+};
+
+class QAtomicInt : public QAtomicInteger<int>
+{
+public:
+    // Non-atomic API
+    // We could use QT_COMPILER_INHERITING_CONSTRUCTORS, but we need only one;
+    // the implicit definition for all the others is fine.
+#ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
+    constexpr
+#endif
+    QAtomicInt(int value = 0) Q_DECL_NOTHROW : QAtomicInteger<int>(value) {}
 };
 
 // High-level atomic pointer operations
