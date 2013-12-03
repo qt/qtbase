@@ -334,14 +334,14 @@ QString Generator::fileBase(const Node *node) const
         if (node->isQmlNode()) {
             if (!node->qmlModuleName().isEmpty()) {
                 base.prepend(node->qmlModuleName() + QLatin1Char('-'));
-                /*
-                  To avoid file name conflicts in the html directory,
-                  we prepend a prefix (by default, "qml-") to the file name of QML
-                  element doc files.
-                */
-                if ((node->subType() == Node::QmlClass) || (node->subType() == Node::QmlBasicType)) {
-                    base.prepend(outputPrefix(QLatin1String("QML")));
-                }
+            }
+            /*
+              To avoid file name conflicts in the html directory,
+              we prepend a prefix (by default, "qml-") to the file name of QML
+              element doc files.
+            */
+            if ((node->subType() == Node::QmlClass) || (node->subType() == Node::QmlBasicType)) {
+                base.prepend(outputPrefix(QLatin1String("QML")));
             }
         }
         else if (node->subType() == Node::QmlModule) {
