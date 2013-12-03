@@ -59,7 +59,7 @@ class QAtomicInt : public QBasicAtomicInt
 {
 public:
     // Non-atomic API
-#ifdef Q_BASIC_ATOMIC_HAS_CONSTRUCTORS
+#ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
     constexpr QAtomicInt(int value = 0) Q_DECL_NOTHROW : QBasicAtomicInt(value) {}
 #else
     inline QAtomicInt(int value = 0) Q_DECL_NOTHROW
