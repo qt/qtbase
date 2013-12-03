@@ -57,6 +57,25 @@ information about a particular change.
    3rd party build systems not based on qmake or cmake.
 
 ****************************************************************************
+*                   Platform deprecation notice                            *
+****************************************************************************
+
+ - The support for the old implementation of QAtomicInt and
+   QAtomicPointer is deprecated in Qt 5.2 and will be removed in Qt
+   5.3. Building with the following compilers or environments will not
+   be possible in Qt 5.3 or the build will suffer greatly in
+   performance, unless support is revived by writing new atomics code.
+    * Green Hills compiler for INTEGRITY
+    * Sun Studio compiler suite for Solaris
+    * IBM Visual Age compiler suite for AIX
+    * Kernel-mode VxWorks
+
+   Developers interested in picking up support should contact the
+   development mailing list at development@qt-project.org for more
+   information. Note that those platforms are currently not tested. Most
+   likely, they have further problems than just the atomics code.
+
+****************************************************************************
 *                          Library                                         *
 ****************************************************************************
 
