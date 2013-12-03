@@ -111,11 +111,25 @@ namespace QTest {
             last->next = item;
         }
 
+        static bool stringsMatch(const QString &expected, const QString &actual)
+        {
+            if (expected == actual)
+                return true;
+
+            // ignore an optional whitespace at the end of str
+            // (the space was added automatically by ~QDebug() until Qt 5.3,
+            //  so autotests still might expect it)
+            if (expected.endsWith(QLatin1Char(' ')))
+                return actual == expected.leftRef(expected.length() - 1);
+
+            return false;
+        }
+
         inline bool matches(QtMsgType tp, const QString &message) const
         {
             return tp == type
                    && (pattern.type() == QVariant::String ?
-                       pattern.toString() == message :
+                       stringsMatch(pattern.toString(), message) :
                        pattern.toRegularExpression().match(message).hasMatch());
         }
 

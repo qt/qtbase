@@ -82,6 +82,10 @@ void tst_Warnings::testWarnings()
     qWarning("Babablabla");
     qDebug("Bubublabla");
     qWarning("Babablabla");
+
+    // accept redundant space at end to keep compatibility with Qt < 5.2
+    QTest::ignoreMessage(QtDebugMsg, "Bubu ");
+    qDebug() << "Bubu";
 }
 
 void tst_Warnings::testMissingWarnings()
