@@ -341,7 +341,8 @@
     // Resigning first responed status means that the virtual keyboard was closed, or
     // some other view became first responder. In either case we clear the focus object to
     // avoid blinking cursors in line edits etc:
-    static_cast<QWindowPrivate *>(QObjectPrivate::get(m_qioswindow->window()))->clearFocusObject();
+    if (m_qioswindow)
+        static_cast<QWindowPrivate *>(QObjectPrivate::get(m_qioswindow->window()))->clearFocusObject();
     return [super resignFirstResponder];
 }
 
@@ -423,8 +424,10 @@
 
 - (QWindow *)qwindow
 {
-    if ([self isKindOfClass:[QUIView class]])
-        return static_cast<QUIView *>(self)->m_qioswindow->window();
+    if ([self isKindOfClass:[QUIView class]]) {
+        if (QIOSWindow *w = static_cast<QUIView *>(self)->m_qioswindow)
+            return w->window();
+    }
     return nil;
 }
 
@@ -461,6 +464,7 @@ QIOSWindow::~QIOSWindow()
     // cancellation of all touch events.
     [m_view touchesCancelled:0 withEvent:0];
 
+    m_view->m_qioswindow = 0;
     [m_view removeFromSuperview];
     [m_view release];
 }
