@@ -65,6 +65,19 @@ bool QAtomicOps<int>::testAndSetRelaxed(int &_q_value, int expectedValue, int ne
 }
 
 Q_CORE_EXPORT
+bool QAtomicOps<long long>::testAndSetRelaxed(Type &_q_value, Type expectedValue, Type newValue) Q_DECL_NOTHROW
+{
+    bool returnValue = false;
+    pthread_mutex_lock(&qAtomicMutex);
+    if (_q_value == expectedValue) {
+        _q_value = newValue;
+        returnValue = true;
+    }
+    pthread_mutex_unlock(&qAtomicMutex);
+    return returnValue;
+}
+
+Q_CORE_EXPORT
 bool QAtomicOps<void *>::testAndSetRelaxed(void *&_q_value, void *expectedValue, void *newValue) Q_DECL_NOTHROW
 {
     bool returnValue = false;

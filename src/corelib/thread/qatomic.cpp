@@ -72,9 +72,10 @@
        \li 32-bit: int, unsigned int, qint32, quint32, char32_t (C++11)
        \li 64-bit: long long, unsigned long long, qint64, quint64
        \li platform-specific size: long, unsigned long
+       \li pointer size: qintptr, quintptr, qptrdiff
     \endlist
 
-    Of the list above, only the 32-bit-sized instantiations are guaranteed to
+    Of the list above, only the 32-bit- and pointer-sized instantiations are guaranteed to
     work on all platforms. Support for other sizes depends on the compiler and
     processor architecture the code is being compiled for. To test whether the
     other types are supported, check the macro \c Q_ATOMIC_INT\e{nn}_IS_SUPPORTED,
@@ -1213,3 +1214,16 @@
 #ifndef Q_ATOMIC_INT32_IS_SUPPORTED
 #  error "Q_ATOMIC_INT32_IS_SUPPORTED must be defined"
 #endif
+#if !defined(Q_ATOMIC_INT64_IS_SUPPORTED) && QT_POINTER_SIZE == 8
+// 64-bit platform
+#  error "Q_ATOMIC_INT64_IS_SUPPORTED must be defined on a 64-bit platform"
+#endif
+
+QT_BEGIN_NAMESPACE
+
+// The following three specializations must always be defined
+Q_STATIC_ASSERT(sizeof(QAtomicInteger<unsigned>));
+Q_STATIC_ASSERT(sizeof(QAtomicInteger<quintptr>));
+Q_STATIC_ASSERT(sizeof(QAtomicInteger<qptrdiff>));
+
+QT_END_NAMESPACE

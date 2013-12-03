@@ -75,6 +75,16 @@ template<> struct QAtomicIntegerTraits<char32_t> { enum { IsInteger = 1 }; };
 #define Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_SOMETIMES_NATIVE
 #define Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_SOMETIMES_NATIVE
 
+#if QT_POINTER_SIZE == 8
+#  define Q_ATOMIC_INT64_IS_SUPPORTED
+#  define Q_ATOMIC_INT64_REFERENCE_COUNTING_IS_SOMETIMES_NATIVE
+#  define Q_ATOMIC_INT64_TEST_AND_SET_IS_SOMETIMES_NATIVE
+#  define Q_ATOMIC_INT64_FETCH_AND_STORE_IS_SOMETIMES_NATIVE
+#  define Q_ATOMIC_INT64_FETCH_AND_ADD_IS_SOMETIMES_NATIVE
+template<> struct QAtomicIntegerTraits<long long> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<unsigned long long> { enum { IsInteger = 1 }; };
+#endif
+
 template <typename X> struct QAtomicOps: QGenericAtomicOps<QAtomicOps<X> >
 {
     // The GCC intrinsics all have fully-ordered memory semantics, so we define
