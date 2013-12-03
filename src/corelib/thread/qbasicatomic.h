@@ -51,33 +51,17 @@
 #elif defined(Q_CC_MSVC)
 #  include <QtCore/qatomic_msvc.h>
 
-// Operating system dependent implementation
-#elif defined(Q_OS_INTEGRITY)
-#  include "QtCore/qatomic_integrity.h"
-#elif defined(Q_OS_VXWORKS)
-#  include "QtCore/qatomic_vxworks.h"
-
 // Processor dependent implementation
-#elif defined(Q_PROCESSOR_ALPHA)
-#  include "QtCore/qatomic_alpha.h"
 #elif defined(Q_PROCESSOR_ARM_V7) && defined(Q_PROCESSOR_ARM_32)
 # include "QtCore/qatomic_armv7.h"
 #elif defined(Q_PROCESSOR_ARM_V6) && defined(Q_PROCESSOR_ARM_32)
 # include "QtCore/qatomic_armv6.h"
 #elif defined(Q_PROCESSOR_ARM_V5) && defined(Q_PROCESSOR_ARM_32)
 # include "QtCore/qatomic_armv5.h"
-#elif defined(Q_PROCESSOR_BFIN)
-#  include "QtCore/qatomic_bfin.h"
 #elif defined(Q_PROCESSOR_IA64)
 #  include "QtCore/qatomic_ia64.h"
 #elif defined(Q_PROCESSOR_MIPS)
 #  include "QtCore/qatomic_mips.h"
-#elif defined(Q_PROCESSOR_POWER)
-#  include "QtCore/qatomic_power.h"
-#elif defined(Q_PROCESSOR_S390)
-#  include "QtCore/qatomic_s390.h"
-#elif defined(Q_PROCESSOR_SH4A)
-#  include "QtCore/qatomic_sh4a.h"
 #elif defined(Q_PROCESSOR_SPARC)
 #  include "QtCore/qatomic_sparc.h"
 #elif defined(Q_PROCESSOR_X86)
@@ -97,9 +81,6 @@
 #else
 #  error "Qt has not been ported to this platform"
 #endif
-
-// Only include if the implementation has been ported to QAtomicOps
-#ifndef QOLDBASICATOMIC_H
 
 QT_BEGIN_NAMESPACE
 
@@ -265,7 +246,5 @@ public:
 #endif
 
 QT_END_NAMESPACE
-
-#endif // QOLDBASICATOMIC_H
 
 #endif // QBASICATOMIC_H

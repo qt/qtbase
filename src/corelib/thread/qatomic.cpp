@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include "qatomic.h"
+
 /*!
     \class QAtomicInt
     \inmodule QtCore
@@ -1126,3 +1128,8 @@
     Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_ALWAYS_NATIVE to indicate that
     the atomic fetch-and-add on pointers is wait-free.
 */
+
+// static checks
+#ifndef Q_ATOMIC_INT32_IS_SUPPORTED
+#  error "Q_ATOMIC_INT32_IS_SUPPORTED must be defined"
+#endif
