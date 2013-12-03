@@ -210,17 +210,9 @@ T QBasicAtomicOps<4>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveTy
     || defined(__ARM_ARCH_6K__)
 // LDREXB, LDREXH and LDREXD are available on ARMv6K or higher
 
-template<> struct QAtomicIntegerTraits<char> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<signed char> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned char> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<short> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned short> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<long long> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned long long> { enum { IsInteger = 1 }; };
-
-# ifdef Q_COMPILER_UNICODE_STRINGS
-template<> struct QAtomicIntegerTraits<char16_t> { enum { IsInteger = 1 }; };
-# endif
+template<> struct QAtomicOpsSupport<1> { enum { IsSupported = 1 }; };
+template<> struct QAtomicOpsSupport<2> { enum { IsSupported = 1 }; };
+template<> struct QAtomicOpsSupport<8> { enum { IsSupported = 1 }; };
 
 #define Q_ATOMIC_INT8_IS_SUPPORTED
 #define Q_ATOMIC_INT8_REFERENCE_COUNTING_IS_ALWAYS_NATIVE

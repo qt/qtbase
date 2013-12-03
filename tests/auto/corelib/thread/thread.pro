@@ -1,6 +1,7 @@
 TEMPLATE=subdirs
 SUBDIRS=\
     qatomicint \
+    qatomicinteger \
     qatomicpointer \
     qresultstore \
     qfuture \

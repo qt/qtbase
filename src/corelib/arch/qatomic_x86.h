@@ -117,18 +117,9 @@ template <typename T> struct QAtomicOps : QBasicAtomicOps<sizeof(T)>
 
 #if defined(Q_CC_GNU)
 
-template<> struct QAtomicIntegerTraits<char> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<signed char> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned char> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<short> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned short> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<long long> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned long long> { enum { IsInteger = 1 }; };
-
-# ifdef Q_COMPILER_UNICODE_STRINGS
-template<> struct QAtomicIntegerTraits<char16_t> { enum { IsInteger = 1 }; };
-# endif
-
+template<> struct QAtomicOpsSupport<1> { enum { IsSupported = 1 }; };
+template<> struct QAtomicOpsSupport<2> { enum { IsSupported = 1 }; };
+template<> struct QAtomicOpsSupport<8> { enum { IsSupported = 1 }; };
 
 /*
  * Guide for the inline assembly below:

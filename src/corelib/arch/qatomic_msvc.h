@@ -275,8 +275,7 @@ QT_END_NAMESPACE
 # define Q_ATOMIC_INT16_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 # define Q_ATOMIC_INT16_FETCH_AND_ADD_IS_WAIT_FREE
 
-template<> struct QAtomicIntegerTraits<short> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned short> { enum { IsInteger = 1 }; };
+template<> struct QAtomicOpsSupport<2> { enum { IsSupported = 1 }; };
 #endif
 
 #ifdef Q_ATOMIC_INT64_IS_SUPPORTED
@@ -292,8 +291,7 @@ template<> struct QAtomicIntegerTraits<unsigned short> { enum { IsInteger = 1 };
 # define Q_ATOMIC_INT64_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 # define Q_ATOMIC_INT64_FETCH_AND_ADD_IS_WAIT_FREE
 
-template<> struct QAtomicIntegerTraits<long long> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned long long> { enum { IsInteger = 1 }; };
+template<> struct QAtomicOpsSupport<8> { enum { IsSupported = 1 }; };
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

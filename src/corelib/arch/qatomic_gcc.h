@@ -75,8 +75,7 @@ QT_END_NAMESPACE
 #  define Q_ATOMIC_INT64_TEST_AND_SET_IS_SOMETIMES_NATIVE
 #  define Q_ATOMIC_INT64_FETCH_AND_STORE_IS_SOMETIMES_NATIVE
 #  define Q_ATOMIC_INT64_FETCH_AND_ADD_IS_SOMETIMES_NATIVE
-template<> struct QAtomicIntegerTraits<long long> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned long long> { enum { IsInteger = 1 }; };
+template<> struct QAtomicOpsSupport<8> { enum { IsSupported = 1 }; };
 #endif
 
 template <typename X> struct QAtomicOps: QGenericAtomicOps<QAtomicOps<X> >

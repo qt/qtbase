@@ -99,10 +99,6 @@ static inline void assemblyMarker(void *ptr = 0)
     puts((char *)ptr + I);
 }
 
-QT_BEGIN_NAMESPACE
-template <typename T> class QBasicAtomicInteger; // even if it this class isn't supported
-QT_END_NAMESPACE
-
 template <typename  T, typename Atomic>
 static void warningFreeHelperTemplate()
 {
@@ -185,7 +181,7 @@ void tst_QAtomicInt::warningFreeHelper()
     qFatal("This code is bogus, and shouldn't be run. We're looking for compiler warnings only.");
     warningFreeHelperTemplate<int, QBasicAtomicInt>();
 
-#ifdef Q_ATOMIC_INT32_IS_SUPPORTED
+    // 32-bit are always supported:
     warningFreeHelperTemplate<int, QBasicAtomicInteger<int> >();
     warningFreeHelperTemplate<unsigned int, QBasicAtomicInteger<unsigned int> >();
     constexprFunctionsHelperTemplate<QBasicAtomicInteger<int> >();
@@ -194,7 +190,18 @@ void tst_QAtomicInt::warningFreeHelper()
     warningFreeHelperTemplate<qint16, QBasicAtomicInteger<char32_t> >();
     constexprFunctionsHelperTemplate<QBasicAtomicInteger<char32_t> >();
 # endif
-#endif
+
+    // pointer-sized integers are always supported:
+    warningFreeHelperTemplate<int, QBasicAtomicInteger<qptrdiff> >();
+    warningFreeHelperTemplate<unsigned int, QBasicAtomicInteger<quintptr> >();
+    constexprFunctionsHelperTemplate<QBasicAtomicInteger<qptrdiff> >();
+    constexprFunctionsHelperTemplate<QBasicAtomicInteger<quintptr> >();
+
+    // long is always supported because it's either 32-bit or pointer-sized:
+    warningFreeHelperTemplate<int, QBasicAtomicInteger<long int> >();
+    warningFreeHelperTemplate<unsigned int, QBasicAtomicInteger<unsigned long int> >();
+    constexprFunctionsHelperTemplate<QBasicAtomicInteger<long int> >();
+    constexprFunctionsHelperTemplate<QBasicAtomicInteger<unsigned long int> >();
 
 #ifdef Q_ATOMIC_INT16_IS_SUPPORTED
     warningFreeHelperTemplate<qint16, QBasicAtomicInteger<qint16> >();
