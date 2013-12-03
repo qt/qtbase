@@ -62,6 +62,19 @@ QT_END_NAMESPACE
 
 template<typename T> struct QAtomicIntegerTraits { enum { IsInteger = 0 }; };
 
+// these integers are always supported, on all platforms
+//  - int, unsigned int and char32_t are 32-bit wide
+//  - long and unsigned long might be 64-bit wide on 64-bit platforms,
+//    but 64-bit integer support is required anyway
+template<> struct QAtomicIntegerTraits<int> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<unsigned int> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<long> { enum { IsInteger = 1 }; };
+template<> struct QAtomicIntegerTraits<unsigned long> { enum { IsInteger = 1 }; };
+#ifdef Q_COMPILER_UNICODE_STRINGS
+template<> struct QAtomicIntegerTraits<char32_t>
+{ enum { IsInteger = sizeof(char32_t) == sizeof(int) ? 1 : -1 }; };
+#endif
+
 template <typename T> struct QAtomicAdditiveType
 {
     typedef T AdditiveT;

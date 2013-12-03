@@ -53,12 +53,6 @@ QT_END_NAMESPACE
 #pragma qt_sync_stop_processing
 #endif
 
-template<> struct QAtomicIntegerTraits<int> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned int> { enum { IsInteger = 1 }; };
-#ifdef Q_COMPILER_UNICODE_STRINGS
-template<> struct QAtomicIntegerTraits<char32_t> { enum { IsInteger = 1 }; };
-#endif
-
 #define Q_ATOMIC_INT_REFERENCE_COUNTING_IS_SOMETIMES_NATIVE
 #define Q_ATOMIC_INT_TEST_AND_SET_IS_SOMETIMES_NATIVE
 #define Q_ATOMIC_INT_FETCH_AND_STORE_IS_SOMETIMES_NATIVE

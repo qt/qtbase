@@ -74,8 +74,6 @@ QT_END_NAMESPACE
 #define Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_NOT_NATIVE
 #define Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_NOT_NATIVE
 
-template<> struct QAtomicIntegerTraits<int> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<long long> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<unsigned long long> { enum { IsInteger = 1 }; };
 

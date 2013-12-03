@@ -54,7 +54,6 @@ QT_END_NAMESPACE
 #pragma qt_sync_stop_processing
 #endif
 
-template<> struct QAtomicIntegerTraits<int> { enum { IsInteger = 1 }; };
 template <typename T> struct QAtomicOps: QGenericAtomicOps<QAtomicOps<T> >
 {
     typedef T Type;

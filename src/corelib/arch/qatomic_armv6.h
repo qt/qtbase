@@ -69,16 +69,6 @@ QT_END_NAMESPACE
 #define Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_ALWAYS_NATIVE
 #define Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_ALWAYS_NATIVE
 
-template<> struct QAtomicIntegerTraits<int> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned int> { enum { IsInteger = 1 }; };
-#if defined(Q_COMPILER_UNICODE_STRINGS) && !defined(Q_PROCESSOR_ARM_V6)
-// for ARMv5, ensure that char32_t (an uint_least32_t), is 32-bit
-// it's extremely unlikely it won't be on a 32-bit ARM, but just to be sure
-// For ARMv6 and up, we're sure it works, but the definition is below
-template<> struct QAtomicIntegerTraits<char32_t>
-{ enum { IsInteger = sizeof(char32_t) == sizeof(int) ? 1 : -1 }; };
-#endif
-
 template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<size> >
 {
     template <typename T>
@@ -225,14 +215,11 @@ template<> struct QAtomicIntegerTraits<signed char> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<unsigned char> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<short> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<unsigned short> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<long> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned long> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<long long> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<unsigned long long> { enum { IsInteger = 1 }; };
 
 # ifdef Q_COMPILER_UNICODE_STRINGS
 template<> struct QAtomicIntegerTraits<char16_t> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<char32_t> { enum { IsInteger = 1 }; };
 # endif
 
 #define Q_ATOMIC_INT8_IS_SUPPORTED

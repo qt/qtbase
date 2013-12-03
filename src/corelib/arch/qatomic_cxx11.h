@@ -70,21 +70,16 @@ QT_END_NAMESPACE
 #define Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_SOMETIMES_NATIVE
 #define Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_SOMETIMES_NATIVE
 
-template<> struct QAtomicIntegerTraits<int> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned int> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<char> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<signed char> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<unsigned char> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<short> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<unsigned short> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<long> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned long> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<long long> { enum { IsInteger = 1 }; };
 template<> struct QAtomicIntegerTraits<unsigned long long> { enum { IsInteger = 1 }; };
 
 # ifdef Q_COMPILER_UNICODE_STRINGS
 template<> struct QAtomicIntegerTraits<char16_t> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<char32_t> { enum { IsInteger = 1 }; };
 # endif
 
 #define Q_ATOMIC_INT8_IS_SUPPORTED

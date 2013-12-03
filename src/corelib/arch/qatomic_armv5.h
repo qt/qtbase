@@ -72,9 +72,6 @@ QT_END_NAMESPACE
 # error "Qt is misconfigured: this ARMv5 implementation is only possible on Linux"
 #endif
 
-template<> struct QAtomicIntegerTraits<int> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned int> { enum { IsInteger = 1 }; };
-
 template <int size> struct QBasicAtomicOps: QGenericAtomicOps<QBasicAtomicOps<size> >
 {
     // kernel places a restartable cmpxchg implementation at a fixed address

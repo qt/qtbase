@@ -301,14 +301,6 @@ template<> struct QAtomicIntegerTraits<unsigned long long> { enum { IsInteger = 
 template <int N> struct QAtomicWindowsType { typedef typename QIntegerForSize<N>::Signed Type; };
 template <> struct QAtomicWindowsType<4> { typedef long Type; };
 
-template<> struct QAtomicIntegerTraits<int> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned int> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<long> { enum { IsInteger = 1 }; };
-template<> struct QAtomicIntegerTraits<unsigned long> { enum { IsInteger = 1 }; };
-#ifdef Q_COMPILER_UNICODE_STRINGS
-template<> struct QAtomicIntegerTraits<char32_t> { enum { IsInteger = 1 }; };
-#endif
-
 
 template <int N> struct QAtomicOpsBySize : QGenericAtomicOps<QAtomicOpsBySize<N> >
 {
