@@ -2278,6 +2278,7 @@ QTabletEvent::~QTabletEvent()
 
 #endif // QT_NO_TABLETEVENT
 
+#ifndef QT_NO_GESTURES
 /*!
     \class QNativeGestureEvent
     \since 5.2
@@ -2392,6 +2393,7 @@ QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPoin
     Returns the position of the gesture as a QPointF, relative to the
     window that received the event.
 */
+#endif // QT_NO_GESTURES
 
 #ifndef QT_NO_DRAGANDDROP
 /*!
