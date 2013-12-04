@@ -108,8 +108,6 @@
             [NSNumber numberWithBool:YES], kEAGLDrawablePropertyRetainedBacking,
             kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, nil];
 
-        [self updateTextInputTraits];
-
         if (isQtApplication())
             self.hidden = YES;
 
