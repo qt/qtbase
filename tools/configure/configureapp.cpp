@@ -182,6 +182,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "QML_DEBUG" ]       = "yes";
     dictionary[ "PLUGIN_MANIFESTS" ] = "no";
     dictionary[ "DIRECTWRITE" ]     = "no";
+    dictionary[ "DIRECT2D" ]        = "no";
     dictionary[ "NIS" ]             = "no";
     dictionary[ "NEON" ]            = "auto";
     dictionary[ "LARGE_FILE" ]      = "yes";
@@ -1218,6 +1219,12 @@ void Configure::parseCmdLine()
             dictionary["DIRECTWRITE"] = "no";
         }
 
+        else if (configCmdLine.at(i) == "-direct2d") {
+            dictionary["DIRECT2D"] = "yes";
+        } else if (configCmdLine.at(i) == "-no-direct2d") {
+            dictionary["DIRECT2D"] = "no";
+        }
+
         else if (configCmdLine.at(i) == "-nis") {
             dictionary["NIS"] = "yes";
         } else if (configCmdLine.at(i) == "-no-nis") {
@@ -1939,6 +1946,11 @@ bool Configure::displayHelp()
         desc("DIRECTWRITE", "no", "-no-directwrite", "Do not build support for DirectWrite font rendering.");
         desc("DIRECTWRITE", "yes", "-directwrite", "Build support for DirectWrite font rendering (experimental, requires DirectWrite availability on target systems, e.g. Windows Vista with Platform Update, Windows 7, etc.)\n");
 
+        desc("DIRECT2D", "no",  "-no-direct2d",         "Do not build the Direct2D platform plugin.");
+        desc("DIRECT2D", "yes", "-direct2d",            "Build the Direct2D platform plugin (experimental,\n"
+                                                        "requires Direct2D availability on target systems,\n"
+                                                        "e.g. Windows 7 with Platform Update, Windows 8, etc.)\n");
+
         desc(                   "-no-style-<style>",    "Disable <style> entirely.");
         desc(                   "-qt-style-<style>",    "Enable <style> in the Qt Library.\nAvailable styles: ");
 
@@ -2206,6 +2218,8 @@ bool Configure::checkAvailability(const QString &part)
         available = findFile("mfapi.h") && findFile("mf.lib");
     } else if (part == "DIRECTWRITE") {
         available = findFile("dwrite.h") && findFile("d2d1.h") && findFile("dwrite.lib");
+    } else if (part == "DIRECT2D") {
+        available = tryCompileProject("qpa/direct2d");
     } else if (part == "ICONV") {
         available = tryCompileProject("unix/iconv") || tryCompileProject("unix/gnu-libiconv");
     } else if (part == "INOTIFY") {
@@ -2436,6 +2450,13 @@ bool Configure::verifyConfiguration()
     }
     if (dictionary["DIRECTWRITE"] == "yes" && !checkAvailability("DIRECTWRITE")) {
         cout << "WARNING: To be able to compile the DirectWrite font engine you will" << endl
+             << "need the Microsoft DirectWrite and Microsoft Direct2D development" << endl
+             << "files such as headers and libraries." << endl;
+        prompt = true;
+    }
+
+    if (dictionary["DIRECT2D"] == "yes" && !checkAvailability("DIRECT2D")) {
+        cout << "WARNING: To be able to build the Direct2D platform plugin you will" << endl
              << "need the Microsoft DirectWrite and Microsoft Direct2D development" << endl
              << "files such as headers and libraries." << endl;
         prompt = true;
@@ -2729,6 +2750,9 @@ void Configure::generateOutputVars()
 
     if (dictionary["DIRECTWRITE"] == "yes")
         qtConfig += "directwrite";
+
+    if (dictionary["DIRECT2D"] == "yes")
+        qtConfig += "direct2d";
 
     if (dictionary[ "NATIVE_GESTURES" ] == "yes")
         qtConfig += "native-gestures";
@@ -3572,6 +3596,11 @@ void Configure::displayConfig()
     sout << "QML debugging..............." << dictionary[ "QML_DEBUG" ] << endl;
     sout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl;
     sout << "Use system proxies.........." << dictionary[ "SYSTEM_PROXIES" ] << endl;
+    sout << endl;
+
+    sout << "QPA Backends:" << endl;
+    sout << "    GDI....................." << "yes" << endl;
+    sout << "    Direct2D................" << dictionary[ "DIRECT2D" ] << endl;
     sout << endl;
 
     sout << "Third Party Libraries:" << endl;

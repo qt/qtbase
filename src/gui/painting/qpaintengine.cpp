@@ -387,6 +387,7 @@ void QPaintEngine::drawPolygon(const QPoint *points, int pointCount, PolygonDraw
     \value OpenGL2
     \value PaintBuffer
     \value Blitter
+    \value Direct2D Windows only, Direct2D based engine
 */
 
 /*!

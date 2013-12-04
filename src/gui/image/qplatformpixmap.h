@@ -69,7 +69,8 @@ public:
     };
 
     enum ClassId { RasterClass, DirectFBClass,
-                   BlitterClass, CustomClass = 1024 };
+                   BlitterClass, Direct2DClass,
+                   CustomClass = 1024 };
 
     QPlatformPixmap(PixelType pixelType, int classId);
     virtual ~QPlatformPixmap();
