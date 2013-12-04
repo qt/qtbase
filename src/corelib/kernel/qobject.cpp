@@ -194,9 +194,15 @@ QMetaObject *QObjectData::dynamicMetaObject() const
 QObjectPrivate::QObjectPrivate(int version)
     : threadData(0), connectionLists(0), senders(0), currentSender(0), currentChildBeingDeleted(0)
 {
+#ifdef QT_BUILD_INTERNAL
+    // Don't check the version parameter in internal builds.
+    // This allows incompatible versions to be loaded, possibly for testing.
+    Q_UNUSED(version);
+#else
     if (version != QObjectPrivateVersion)
         qFatal("Cannot mix incompatible Qt library (version 0x%x) with this library (version 0x%x)",
                 version, QObjectPrivateVersion);
+#endif
 
     // QObjectData initialization
     q_ptr = 0;
