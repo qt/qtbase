@@ -75,6 +75,8 @@ public:
     bool isSharing() const;
     bool isValid() const;
 
+    void windowWasHidden();
+
 private:
     void setActiveWindow(QWindow *window);
     void updateSurfaceFormat();

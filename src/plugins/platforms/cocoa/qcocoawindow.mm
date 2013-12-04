@@ -388,6 +388,8 @@ void QCocoaWindow::setVisible(bool visible)
             [m_contentView setHidden:NO];
     } else {
         // qDebug() << "close" << this;
+        if (m_glContext)
+            m_glContext->windowWasHidden();
         if (m_nsWindow) {
             if (m_hasModalSession) {
                 QCocoaEventDispatcher *cocoaEventDispatcher = qobject_cast<QCocoaEventDispatcher *>(QGuiApplication::instance()->eventDispatcher());
