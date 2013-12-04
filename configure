@@ -2494,6 +2494,9 @@ QNX/Blackberry options:
     -no-pps ............ Do not compile with pps support.
     -pps ............... Compile with pps support.
 
+    -no-imf ............ Do not compile with imf support.
+    -imf ............... Compile with imf support.
+
 MacOS/iOS options:
 
     -Fstring ........... Add an explicit framework path.
@@ -3758,8 +3761,6 @@ if [ "$CFG_COMPILE_EXAMPLES" = "yes" ]; then
 fi
 
 #-------------------------------------------------------------------------------
-    -no-imf ............ Do not compile with imf support.
-    -imf ............... Compile with imf support.
 # generate qconfig.cpp
 #-------------------------------------------------------------------------------
 [ -d "$outpath/src/corelib/global" ] || mkdir -p "$outpath/src/corelib/global"
