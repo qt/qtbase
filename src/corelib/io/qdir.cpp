@@ -716,11 +716,12 @@ QString QDir::absoluteFilePath(const QString &fileName) const
         return fileName;
 
     d->resolveAbsoluteEntry();
+    const QString absoluteDirPath = d->absoluteDirEntry.filePath();
     if (fileName.isEmpty())
-        return d->absoluteDirEntry.filePath();
-    if (!d->absoluteDirEntry.isRoot())
-        return d->absoluteDirEntry.filePath() % QLatin1Char('/') % fileName;
-    return d->absoluteDirEntry.filePath() % fileName;
+        return absoluteDirPath;
+    if (!absoluteDirPath.endsWith(QLatin1Char('/')))
+        return absoluteDirPath % QLatin1Char('/') % fileName;
+    return absoluteDirPath % fileName;
 }
 
 /*!
