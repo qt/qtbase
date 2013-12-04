@@ -579,6 +579,11 @@ void QIOSWindow::applyGeometry(const QRect &rect)
         [m_view layoutIfNeeded];
 }
 
+bool QIOSWindow::isExposed() const
+{
+    return window()->isVisible() && !window()->geometry().isEmpty();
+}
+
 void QIOSWindow::setWindowState(Qt::WindowState state)
 {
     // Update the QWindow representation straight away, so that
