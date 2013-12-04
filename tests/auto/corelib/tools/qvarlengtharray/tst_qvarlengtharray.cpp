@@ -59,6 +59,9 @@ private slots:
     void first();
     void last();
     void squeeze();
+    void indexOf();
+    void lastIndexOf();
+    void contains();
 };
 
 int fooCtor = 0;
@@ -675,6 +678,68 @@ void tst_QVarLengthArray::squeeze()
     list.resize(sizeOnHeap);
     list.squeeze();
     QCOMPARE(list.capacity(), sizeOnHeap);
+}
+
+void tst_QVarLengthArray::indexOf()
+{
+    QVarLengthArray<QString> myvec;
+    myvec << "A" << "B" << "C" << "B" << "A";
+
+    QVERIFY(myvec.indexOf("B") == 1);
+    QVERIFY(myvec.indexOf("B", 1) == 1);
+    QVERIFY(myvec.indexOf("B", 2) == 3);
+    QVERIFY(myvec.indexOf("X") == -1);
+    QVERIFY(myvec.indexOf("X", 2) == -1);
+
+    // add an X
+    myvec << "X";
+    QVERIFY(myvec.indexOf("X") == 5);
+    QVERIFY(myvec.indexOf("X", 5) == 5);
+    QVERIFY(myvec.indexOf("X", 6) == -1);
+
+    // remove first A
+    myvec.remove(0);
+    QVERIFY(myvec.indexOf("A") == 3);
+    QVERIFY(myvec.indexOf("A", 3) == 3);
+    QVERIFY(myvec.indexOf("A", 4) == -1);
+}
+
+void tst_QVarLengthArray::lastIndexOf()
+{
+    QVarLengthArray<QString> myvec;
+    myvec << "A" << "B" << "C" << "B" << "A";
+
+    QVERIFY(myvec.lastIndexOf("B") == 3);
+    QVERIFY(myvec.lastIndexOf("B", 2) == 1);
+    QVERIFY(myvec.lastIndexOf("X") == -1);
+    QVERIFY(myvec.lastIndexOf("X", 2) == -1);
+
+    // add an X
+    myvec << "X";
+    QVERIFY(myvec.lastIndexOf("X") == 5);
+    QVERIFY(myvec.lastIndexOf("X", 5) == 5);
+    QVERIFY(myvec.lastIndexOf("X", 3) == -1);
+
+    // remove first A
+    myvec.remove(0);
+    QVERIFY(myvec.lastIndexOf("A") == 3);
+    QVERIFY(myvec.lastIndexOf("A", 3) == 3);
+    QVERIFY(myvec.lastIndexOf("A", 2) == -1);
+}
+
+void tst_QVarLengthArray::contains()
+{
+    QVarLengthArray<QString> myvec;
+    myvec << "aaa" << "bbb" << "ccc";
+
+    QVERIFY(myvec.contains(QLatin1String("aaa")));
+    QVERIFY(myvec.contains(QLatin1String("bbb")));
+    QVERIFY(myvec.contains(QLatin1String("ccc")));
+    QVERIFY(!myvec.contains(QLatin1String("I don't exist")));
+
+    // add it and make sure it does :)
+    myvec.append(QLatin1String("I don't exist"));
+    QVERIFY(myvec.contains(QLatin1String("I don't exist")));
 }
 
 QTEST_APPLESS_MAIN(tst_QVarLengthArray)
