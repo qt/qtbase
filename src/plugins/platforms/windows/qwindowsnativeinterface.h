@@ -39,84 +39,56 @@
 **
 ****************************************************************************/
 
+#ifndef QWINDOWSNATIVEINTERFACE_H
+#define QWINDOWSNATIVEINTERFACE_H
 
-#include <qpa/qplatformintegrationplugin.h>
-#include <QtCore/QStringList>
-
-#include "qwindowsgdiintegration.h"
+#include "qtwindows_additional.h"
+#include <QtGui/qpa/qplatformnativeinterface.h>
 
 QT_BEGIN_NAMESPACE
 
 /*!
-    \group qt-lighthouse-win
-    \title Qt Lighthouse plugin for Windows
+    \class QWindowsNativeInterface
+    \brief Provides access to native handles.
 
-    \brief Class documentation of the  Qt Lighthouse plugin for Windows.
-
-    \section1 Supported parameters
-
-    The following parameters can be passed on to the -platform argument
-    of QGuiApplication:
-
+    Currently implemented keys
     \list
-    \li \c fontengine=native Indicates that native font engine should be used (default)
-    \li \c fontengine=freetype Indicates that freetype font engine should be used
-    \li \c gl=gdi Indicates that ARB Open GL functionality should not be used
+    \li handle (HWND)
+    \li getDC (DC)
+    \li releaseDC Releases the previously acquired DC and returns 0.
     \endlist
-
-    \section1 Tips
-
-    \list
-    \li The environment variable \c QT_QPA_VERBOSE controls
-       the debug level. It takes the form
-       \c{<keyword1>:<level1>,<keyword2>:<level2>}, where
-       keyword is one of \c integration, \c windows, \c backingstore and
-       \c fonts. Level is an integer 0..9.
-    \endlist
-    \internal
- */
-
-/*!
-    \class QWindowsIntegrationPlugin
-    \brief Plugin.
-    \internal
-    \ingroup qt-lighthouse-win
- */
-
-/*!
-    \namespace QtWindows
-
-    \brief Namespace for enumerations, etc.
-    \internal
-    \ingroup qt-lighthouse-win
-*/
-
-/*!
-    \enum QtWindows::WindowsEventType
-
-    \brief Enumerations for WM_XX events.
-
-    With flags that should help to structure the code.
 
     \internal
     \ingroup qt-lighthouse-win
 */
 
-class QWindowsIntegrationPlugin : public QPlatformIntegrationPlugin
+class QWindowsNativeInterface : public QPlatformNativeInterface
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.2" FILE "windows.json")
+    Q_PROPERTY(bool asyncExpose READ asyncExpose WRITE setAsyncExpose)
 public:
-    QPlatformIntegration *create(const QString&, const QStringList&, int &, char **);
-};
+#ifndef QT_NO_OPENGL
+    virtual void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context);
+#endif
+    virtual void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
 
-QPlatformIntegration *QWindowsIntegrationPlugin::create(const QString& system, const QStringList& paramList, int &, char **)
-{
-    if (system.compare(system, QStringLiteral("windows"), Qt::CaseInsensitive) == 0)
-        return new QWindowsGdiIntegration(paramList);
-    return 0;
-}
+    Q_INVOKABLE void *createMessageWindow(const QString &classNameTemplate,
+                                          const QString &windowName,
+                                          void *eventProc) const;
+
+    Q_INVOKABLE QString registerWindowClass(const QString &classNameIn, void *eventProc) const;
+
+    Q_INVOKABLE void beep() { MessageBeep(MB_OK); } // For QApplication
+
+    bool asyncExpose() const;
+    void setAsyncExpose(bool value);
+
+    QVariantMap windowProperties(QPlatformWindow *window) const;
+    QVariant windowProperty(QPlatformWindow *window, const QString &name) const;
+    QVariant windowProperty(QPlatformWindow *window, const QString &name, const QVariant &defaultValue) const;
+    void setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value);
+};
 
 QT_END_NAMESPACE
 
-#include "main.moc"
+#endif // QWINDOWSNATIVEINTERFACE_H

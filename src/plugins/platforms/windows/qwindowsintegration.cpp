@@ -41,7 +41,6 @@
 ****************************************************************************/
 
 #include "qwindowsintegration.h"
-#include "qwindowsbackingstore.h"
 #include "qwindowswindow.h"
 #include "qwindowscontext.h"
 #if defined(QT_OPENGL_ES_2)
@@ -75,8 +74,6 @@
 #if !defined(Q_OS_WINCE) && !defined(QT_NO_SESSIONMANAGER)
 #  include "qwindowssessionmanager.h"
 #endif
-#include <QtGui/QBackingStore>
-#include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 
 #include <QtCore/private/qeventdispatcher_win_p.h>
@@ -84,174 +81,6 @@
 #include <QtCore/QVariant>
 
 QT_BEGIN_NAMESPACE
-
-/*!
-    \class QWindowsNativeInterface
-    \brief Provides access to native handles.
-
-    Currently implemented keys
-    \list
-    \li handle (HWND)
-    \li getDC (DC)
-    \li releaseDC Releases the previously acquired DC and returns 0.
-    \endlist
-
-    \internal
-    \ingroup qt-lighthouse-win
-*/
-
-class QWindowsNativeInterface : public QPlatformNativeInterface
-{
-    Q_OBJECT
-    Q_PROPERTY(bool asyncExpose READ asyncExpose WRITE setAsyncExpose)
-public:
-#ifndef QT_NO_OPENGL
-    virtual void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context);
-#endif
-    virtual void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
-    virtual void *nativeResourceForBackingStore(const QByteArray &resource, QBackingStore *bs);
-
-    Q_INVOKABLE void *createMessageWindow(const QString &classNameTemplate,
-                                          const QString &windowName,
-                                          void *eventProc) const;
-
-    Q_INVOKABLE QString registerWindowClass(const QString &classNameIn, void *eventProc) const;
-
-    Q_INVOKABLE void beep() { MessageBeep(MB_OK); } // For QApplication
-
-    bool asyncExpose() const;
-    void setAsyncExpose(bool value);
-
-    QVariantMap windowProperties(QPlatformWindow *window) const;
-    QVariant windowProperty(QPlatformWindow *window, const QString &name) const;
-    QVariant windowProperty(QPlatformWindow *window, const QString &name, const QVariant &defaultValue) const;
-    void setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value);
-};
-
-void *QWindowsNativeInterface::nativeResourceForWindow(const QByteArray &resource, QWindow *window)
-{
-    if (!window || !window->handle()) {
-        qWarning("%s: '%s' requested for null window or window without handle.", __FUNCTION__, resource.constData());
-        return 0;
-    }
-    QWindowsWindow *bw = static_cast<QWindowsWindow *>(window->handle());
-    if (resource == "handle")
-        return bw->handle();
-    if (window->surfaceType() == QWindow::RasterSurface) {
-        if (resource == "getDC")
-            return bw->getDC();
-        if (resource == "releaseDC") {
-            bw->releaseDC();
-            return 0;
-        }
-    }
-    qWarning("%s: Invalid key '%s' requested.", __FUNCTION__, resource.constData());
-    return 0;
-}
-
-void *QWindowsNativeInterface::nativeResourceForBackingStore(const QByteArray &resource, QBackingStore *bs)
-{
-    if (!bs || !bs->handle()) {
-        qWarning("%s: '%s' requested for null backingstore or backingstore without handle.", __FUNCTION__, resource.constData());
-        return 0;
-    }
-    QWindowsBackingStore *wbs = static_cast<QWindowsBackingStore *>(bs->handle());
-    if (resource == "getDC")
-        return wbs->getDC();
-    qWarning("%s: Invalid key '%s' requested.", __FUNCTION__, resource.constData());
-    return 0;
-}
-
-static const char customMarginPropertyC[] = "WindowsCustomMargins";
-
-QVariant QWindowsNativeInterface::windowProperty(QPlatformWindow *window, const QString &name) const
-{
-    QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window);
-    if (name == QLatin1String(customMarginPropertyC))
-        return qVariantFromValue(platformWindow->customMargins());
-    return QVariant();
-}
-
-QVariant QWindowsNativeInterface::windowProperty(QPlatformWindow *window, const QString &name, const QVariant &defaultValue) const
-{
-    const QVariant result = windowProperty(window, name);
-    return result.isValid() ? result : defaultValue;
-}
-
-void QWindowsNativeInterface::setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value)
-{
-    QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window);
-    if (name == QLatin1String(customMarginPropertyC))
-        platformWindow->setCustomMargins(qvariant_cast<QMargins>(value));
-}
-
-QVariantMap QWindowsNativeInterface::windowProperties(QPlatformWindow *window) const
-{
-    QVariantMap result;
-    const QString customMarginProperty = QLatin1String(customMarginPropertyC);
-    result.insert(customMarginProperty, windowProperty(window, customMarginProperty));
-    return result;
-}
-
-#ifndef QT_NO_OPENGL
-void *QWindowsNativeInterface::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context)
-{
-    if (!context || !context->handle()) {
-        qWarning("%s: '%s' requested for null context or context without handle.", __FUNCTION__, resource.constData());
-        return 0;
-    }
-#ifdef QT_OPENGL_ES_2
-    QWindowsEGLContext *windowsEglContext = static_cast<QWindowsEGLContext *>(context->handle());
-    if (resource == QByteArrayLiteral("eglDisplay"))
-        return windowsEglContext->eglDisplay();
-    if (resource == QByteArrayLiteral("eglContext"))
-        return windowsEglContext->eglContext();
-    if (resource == QByteArrayLiteral("eglConfig"))
-        return windowsEglContext->eglConfig();
-#else // QT_OPENGL_ES_2
-    QWindowsGLContext *windowsContext = static_cast<QWindowsGLContext *>(context->handle());
-    if (resource == QByteArrayLiteral("renderingContext"))
-        return windowsContext->renderingContext();
-#endif // !QT_OPENGL_ES_2
-
-    qWarning("%s: Invalid key '%s' requested.", __FUNCTION__, resource.constData());
-    return 0;
-}
-#endif // !QT_NO_OPENGL
-
-/*!
-    \brief Creates a non-visible window handle for filtering messages.
-*/
-
-void *QWindowsNativeInterface::createMessageWindow(const QString &classNameTemplate,
-                                                   const QString &windowName,
-                                                   void *eventProc) const
-{
-    QWindowsContext *ctx = QWindowsContext::instance();
-    const HWND hwnd = ctx->createDummyWindow(classNameTemplate,
-                                             (wchar_t*)windowName.utf16(),
-                                             (WNDPROC)eventProc);
-    return hwnd;
-}
-
-/*!
-    \brief Registers a unique window class with a callback function based on \a classNameIn.
-*/
-
-QString QWindowsNativeInterface::registerWindowClass(const QString &classNameIn, void *eventProc) const
-{
-    return QWindowsContext::instance()->registerWindowClass(classNameIn, (WNDPROC)eventProc);
-}
-
-bool QWindowsNativeInterface::asyncExpose() const
-{
-    return QWindowsContext::instance()->asyncExpose();
-}
-
-void QWindowsNativeInterface::setAsyncExpose(bool value)
-{
-    QWindowsContext::instance()->setAsyncExpose(value);
-}
 
 /*!
     \class QWindowsIntegration
@@ -308,7 +137,6 @@ struct QWindowsIntegrationPrivate
     const unsigned m_options;
     QWindowsContext m_context;
     QPlatformFontDatabase *m_fontDatabase;
-    QWindowsNativeInterface m_nativeInterface;
 #ifndef QT_NO_CLIPBOARD
     QWindowsClipboard m_clipboard;
 #  ifndef QT_NO_DRAGANDDROP
@@ -406,11 +234,6 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
     return false;
 }
 
-QPlatformPixmap *QWindowsIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
-{
-    return new QRasterPlatformPixmap(type);
-}
-
 QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) const
 {
     QWindowsWindow::WindowData requested;
@@ -442,13 +265,6 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
     if ((obtained.flags & Qt::Desktop) != Qt::Desktop && requested.geometry != obtained.geometry)
         QWindowSystemInterface::handleGeometryChange(window, obtained.geometry);
     return new QWindowsWindow(window, obtained);
-}
-
-QPlatformBackingStore *QWindowsIntegration::createPlatformBackingStore(QWindow *window) const
-{
-    if (QWindowsContext::verboseIntegration)
-        qDebug() << __FUNCTION__ << window;
-    return new QWindowsBackingStore(window);
 }
 
 #ifndef QT_NO_OPENGL
@@ -583,11 +399,6 @@ QList<int> QWindowsIntegration::possibleKeys(const QKeyEvent *e) const
     return d->m_context.possibleKeys(e);
 }
 
-QPlatformNativeInterface *QWindowsIntegration::nativeInterface() const
-{
-    return &d->m_nativeInterface;
-}
-
 #ifndef QT_NO_CLIPBOARD
 QPlatformClipboard * QWindowsIntegration::clipboard() const
 {
@@ -653,5 +464,3 @@ QPlatformServices *QWindowsIntegration::services() const
 }
 
 QT_END_NAMESPACE
-
-#include "qwindowsintegration.moc"

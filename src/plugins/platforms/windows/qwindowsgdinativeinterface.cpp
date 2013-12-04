@@ -39,84 +39,24 @@
 **
 ****************************************************************************/
 
+#include "qwindowsgdinativeinterface.h"
+#include "qwindowsbackingstore.h"
 
-#include <qpa/qplatformintegrationplugin.h>
-#include <QtCore/QStringList>
-
-#include "qwindowsgdiintegration.h"
+#include <QtGui/QBackingStore>
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \group qt-lighthouse-win
-    \title Qt Lighthouse plugin for Windows
-
-    \brief Class documentation of the  Qt Lighthouse plugin for Windows.
-
-    \section1 Supported parameters
-
-    The following parameters can be passed on to the -platform argument
-    of QGuiApplication:
-
-    \list
-    \li \c fontengine=native Indicates that native font engine should be used (default)
-    \li \c fontengine=freetype Indicates that freetype font engine should be used
-    \li \c gl=gdi Indicates that ARB Open GL functionality should not be used
-    \endlist
-
-    \section1 Tips
-
-    \list
-    \li The environment variable \c QT_QPA_VERBOSE controls
-       the debug level. It takes the form
-       \c{<keyword1>:<level1>,<keyword2>:<level2>}, where
-       keyword is one of \c integration, \c windows, \c backingstore and
-       \c fonts. Level is an integer 0..9.
-    \endlist
-    \internal
- */
-
-/*!
-    \class QWindowsIntegrationPlugin
-    \brief Plugin.
-    \internal
-    \ingroup qt-lighthouse-win
- */
-
-/*!
-    \namespace QtWindows
-
-    \brief Namespace for enumerations, etc.
-    \internal
-    \ingroup qt-lighthouse-win
-*/
-
-/*!
-    \enum QtWindows::WindowsEventType
-
-    \brief Enumerations for WM_XX events.
-
-    With flags that should help to structure the code.
-
-    \internal
-    \ingroup qt-lighthouse-win
-*/
-
-class QWindowsIntegrationPlugin : public QPlatformIntegrationPlugin
+void *QWindowsGdiNativeInterface::nativeResourceForBackingStore(const QByteArray &resource, QBackingStore *bs)
 {
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPA.QPlatformIntegrationFactoryInterface.5.2" FILE "windows.json")
-public:
-    QPlatformIntegration *create(const QString&, const QStringList&, int &, char **);
-};
-
-QPlatformIntegration *QWindowsIntegrationPlugin::create(const QString& system, const QStringList& paramList, int &, char **)
-{
-    if (system.compare(system, QStringLiteral("windows"), Qt::CaseInsensitive) == 0)
-        return new QWindowsGdiIntegration(paramList);
+    if (!bs || !bs->handle()) {
+        qWarning("%s: '%s' requested for null backingstore or backingstore without handle.", __FUNCTION__, resource.constData());
+        return 0;
+    }
+    QWindowsBackingStore *wbs = static_cast<QWindowsBackingStore *>(bs->handle());
+    if (resource == "getDC")
+        return wbs->getDC();
+    qWarning("%s: Invalid key '%s' requested.", __FUNCTION__, resource.constData());
     return 0;
 }
 
 QT_END_NAMESPACE
-
-#include "main.moc"

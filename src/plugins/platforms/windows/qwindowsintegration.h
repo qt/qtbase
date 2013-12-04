@@ -68,9 +68,7 @@ public:
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
 
-    virtual QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
 #ifndef QT_NO_OPENGL
     virtual QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
 #endif
@@ -85,7 +83,6 @@ public:
 #ifndef QT_NO_ACCESSIBILITY
     virtual QPlatformAccessibility *accessibility() const;
 #endif
-    virtual QPlatformNativeInterface *nativeInterface() const;
     virtual QPlatformFontDatabase *fontDatabase() const;
     virtual QStringList themeNames() const;
     virtual QPlatformTheme *createPlatformTheme(const QString &name) const;
