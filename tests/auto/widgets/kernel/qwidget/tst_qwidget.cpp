@@ -4571,7 +4571,6 @@ void tst_QWidget::setGeometry_win()
     RECT rt;
     ::GetWindowRect(winHandleOf(&widget), &rt);
     QVERIFY(rt.left <= 0);
-    QEXPECT_FAIL("", "QTBUG-26424", Continue);
     QVERIFY(rt.top <= 0);
 }
 #endif // defined (Q_OS_WIN) && !defined(Q_OS_WINCE)
