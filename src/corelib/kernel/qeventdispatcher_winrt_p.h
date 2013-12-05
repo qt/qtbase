@@ -115,7 +115,6 @@ protected:
 
     bool event(QEvent *);
     int activateTimers();
-    int activateSocketNotifiers();
 };
 
 struct WinRTTimerInfo                           // internal timer info
