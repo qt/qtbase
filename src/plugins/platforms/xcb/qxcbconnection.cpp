@@ -144,23 +144,23 @@ void QXcbConnection::updateScreens()
             xcb_generic_error_t *error = NULL;
             xcb_randr_get_output_primary_cookie_t primaryCookie =
                 xcb_randr_get_output_primary(xcb_connection(), xcbScreen->root);
-            xcb_randr_get_screen_resources_current_cookie_t resourcesCookie =
-                xcb_randr_get_screen_resources_current(xcb_connection(), xcbScreen->root);
+            xcb_randr_get_screen_resources_cookie_t resourcesCookie =
+                xcb_randr_get_screen_resources(xcb_connection(), xcbScreen->root);
             xcb_randr_get_output_primary_reply_t *primary =
                     xcb_randr_get_output_primary_reply(xcb_connection(), primaryCookie, &error);
             if (!primary || error) {
                 qWarning("QXcbConnection: Failed to get the primary output of the screen");
                 free(error);
             } else {
-                xcb_randr_get_screen_resources_current_reply_t *resources =
-                        xcb_randr_get_screen_resources_current_reply(xcb_connection(), resourcesCookie, &error);
+                xcb_randr_get_screen_resources_reply_t *resources =
+                        xcb_randr_get_screen_resources_reply(xcb_connection(), resourcesCookie, &error);
                 if (!resources || error) {
                     qWarning("QXcbConnection: Failed to get the screen resources");
                     free(error);
                 } else {
                     xcb_timestamp_t timestamp = resources->config_timestamp;
-                    outputCount = xcb_randr_get_screen_resources_current_outputs_length(resources);
-                    xcb_randr_output_t *outputs = xcb_randr_get_screen_resources_current_outputs(resources);
+                    outputCount = xcb_randr_get_screen_resources_outputs_length(resources);
+                    xcb_randr_output_t *outputs = xcb_randr_get_screen_resources_outputs(resources);
 
                     for (int i = 0; i < outputCount; i++) {
                         xcb_randr_get_output_info_reply_t *output =
