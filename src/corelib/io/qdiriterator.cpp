@@ -477,7 +477,7 @@ QDirIterator::~QDirIterator()
 /*!
     Advances the iterator to the next entry, and returns the file path of this
     new entry. If hasNext() returns \c false, this function does nothing, and
-    returns a null QString.
+    returns an empty QString.
 
     You can call fileName() or filePath() to get the current entry file name
     or path, or fileInfo() to get a QFileInfo for the current entry.
