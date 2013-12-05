@@ -59,8 +59,8 @@
 QT_BEGIN_NAMESPACE
 
 static QAndroidInputContext *m_androidInputContext = 0;
-static char const *const QtNativeInputConnectionClassName = "org/qtproject/qt5/android/QtNativeInputConnection";
-static char const *const QtExtractedTextClassName = "org/qtproject/qt5/android/QtExtractedText";
+static char const *const QtNativeInputConnectionClassName = "org.qtproject.qt5.android.QtNativeInputConnection";
+static char const *const QtExtractedTextClassName = "org.qtproject.qt5.android.QtExtractedText";
 static jclass m_extractedTextClass = 0;
 static jmethodID m_classConstructorMethodID = 0;
 static jfieldID m_partialEndOffsetFieldID = 0;

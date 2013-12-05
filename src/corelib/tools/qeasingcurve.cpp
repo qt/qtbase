@@ -432,14 +432,14 @@ struct BezierEase : public QEasingCurveFunction
         qreal p3x, p3y;
     };
 
+    QVector<SingleCubicBezier> _curves;
+    QVector<qreal> _intervals;
+    int _curveCount;
     bool _init;
     bool _valid;
-    QVector<SingleCubicBezier> _curves;
-    int _curveCount;
-    QVector<qreal> _intervals;
 
     BezierEase()
-        : QEasingCurveFunction(InOut), _init(false), _valid(false), _curves(10), _intervals(10)
+        : QEasingCurveFunction(InOut), _curves(10), _intervals(10), _init(false), _valid(false)
     { }
 
     void init()

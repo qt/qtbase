@@ -151,9 +151,8 @@
 
     \snippet code/doc_src_sql-driver.qdoc 3
 
-    After installing Qt, as described in the \l{Installing Qt for X11
-    Platforms} document, you also need to install the plugin in the
-    standard location:
+    After installing Qt, you also need to install the plugin in the standard
+    location:
 
     \snippet code/doc_src_sql-driver.qdoc 4
 
@@ -478,8 +477,8 @@
 
     \snippet code/doc_src_sql-driver.qdoc 13
 
-    After installing Qt, as described in the \l{Installing Qt for X11 Platforms} document,
-    you also need to install the plugin in the standard location:
+    After installing Qt, you also need to install the plugin in the standard
+    location:
 
     \snippet code/doc_src_sql-driver.qdoc 14
 
@@ -565,8 +564,8 @@
 
     \snippet code/doc_src_sql-driver.qdoc 18
 
-    After installing Qt, as described in the \l{Installing Qt for X11 Platforms} document,
-    you also need to install the plugin in the standard location:
+    After installing Qt, you also need to install the plugin in the standard
+    location:
 
     \snippet code/doc_src_sql-driver.qdoc 19
 
@@ -640,8 +639,7 @@
 
     \snippet code/doc_src_sql-driver.qdoc 21
 
-    After installing Qt, as described in the \l{Installing Qt for X11 Platforms} document,
-    you also need to install the plugin in the standard location:
+    After installing Qt, you also need to install the plugin in the standard location:
 
     \snippet code/doc_src_sql-driver.qdoc 22
 

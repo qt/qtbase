@@ -4161,6 +4161,7 @@
 */
 
 /*!
+    \target qmake-getting-started
     \page qmake-tutorial.html
     \title Getting Started
     \contentspage {qmake Manual}{Contents}

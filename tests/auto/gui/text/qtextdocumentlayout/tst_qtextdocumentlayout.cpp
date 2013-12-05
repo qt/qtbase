@@ -74,6 +74,7 @@ private slots:
     void inlineImage();
     void clippedTableCell();
     void floatingTablePageBreak();
+    void imageAtRightAlignedTab();
 
 private:
     QTextDocument *doc;
@@ -283,6 +284,41 @@ void tst_QTextDocumentLayout::floatingTablePageBreak()
     QCOMPARE(doc->pageCount(), 2);
 }
 
+void tst_QTextDocumentLayout::imageAtRightAlignedTab()
+{
+    doc->clear();
+
+    QTextFrameFormat fmt = doc->rootFrame()->frameFormat();
+    fmt.setMargin(0);
+    doc->rootFrame()->setFrameFormat(fmt);
+
+    QTextCursor cursor(doc);
+    QTextBlockFormat blockFormat;
+    QList<QTextOption::Tab> tabs;
+    QTextOption::Tab tab;
+    tab.position = 300;
+    tab.type = QTextOption::RightTab;
+    tabs.append(tab);
+    blockFormat.setTabPositions(tabs);
+
+    // First block: text, some of it right-aligned
+    cursor.insertBlock(blockFormat);
+    cursor.insertText("first line\t");
+    cursor.insertText("right-aligned text");
+
+    // Second block: text, then right-aligned image
+    cursor.insertBlock(blockFormat);
+    cursor.insertText("second line\t");
+    QImage img(48, 48, QImage::Format_RGB32);
+    const QString name = QString::fromLatin1("image");
+    doc->addResource(QTextDocument::ImageResource, QUrl(name), img);
+    QTextImageFormat imgFormat;
+    imgFormat.setName(name);
+    cursor.insertImage(imgFormat);
+
+   // Everything should fit into the 300 pixels
+   QCOMPARE(doc->idealWidth(), 300.0);
+}
 
 QTEST_MAIN(tst_QTextDocumentLayout)
 #include "tst_qtextdocumentlayout.moc"

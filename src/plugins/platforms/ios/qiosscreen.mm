@@ -189,6 +189,9 @@ void QIOSScreen::updateProperties()
 
 void QIOSScreen::updateStatusBarVisibility()
 {
+    if (!isQtApplication())
+        return;
+
     QWindow *focusWindow = QGuiApplication::focusWindow();
 
     // If we don't have a focus window we leave the status
@@ -199,20 +202,26 @@ void QIOSScreen::updateStatusBarVisibility()
         return;
 
     UIView *view = reinterpret_cast<UIView *>(focusWindow->handle()->winId());
+    QIOSViewController *viewController = static_cast<QIOSViewController *>(view.viewController);
+
+    bool currentStatusBarVisibility = [UIApplication sharedApplication].statusBarHidden;
+    if (viewController.prefersStatusBarHidden == currentStatusBarVisibility)
+        return;
+
 #if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__IPHONE_7_0)
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_7_0) {
-        [view.viewController setNeedsStatusBarAppearanceUpdate];
+        [viewController setNeedsStatusBarAppearanceUpdate];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            updateProperties();
+        });
     } else
 #endif
     {
-        bool wasHidden = [UIApplication sharedApplication].statusBarHidden;
-        QIOSViewController *viewController = static_cast<QIOSViewController *>(view.viewController);
         [[UIApplication sharedApplication]
             setStatusBarHidden:[viewController prefersStatusBarHidden]
             withAnimation:UIStatusBarAnimationNone];
 
-        if ([UIApplication sharedApplication].statusBarHidden != wasHidden)
-            updateProperties();
+        updateProperties();
     }
 }
 

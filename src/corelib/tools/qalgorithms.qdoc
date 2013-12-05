@@ -49,9 +49,9 @@
     iterators they accept. For example, qFill() accepts two
     \l {forward iterators}. The iterator types required are specified
     for each algorithm. If an iterator of the wrong type is passed (for
-    example, if QList::ConstIterator is passed as an \l {output
-    iterator}), you will always get a compiler error, although not
-    necessarily a very informative one.
+    example, if QList::ConstIterator is passed as an
+    \l {Output Iterators}{output iterator}), you will always get a
+    compiler error, although not necessarily a very informative one.
 
     Some algorithms have special requirements on the value type
     stored in the containers. For example,
@@ -99,7 +99,7 @@
 
     \section2 Output Iterators
 
-    An \e{output iterator} is an iterator that can be used for
+    An output iterator is an iterator that can be used for
     writing data sequentially to a container or to some output
     stream. It must provide the following operators: unary \c{*} for
     writing a value (i.e., \c{*it = val}) and prefix \c{++} for

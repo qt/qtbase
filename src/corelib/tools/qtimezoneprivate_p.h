@@ -203,11 +203,11 @@ private:
               const QString &abbreviation, QLocale::Country country,
               const QString &comment);
 
-    int m_offsetFromUtc;
     QString m_name;
     QString m_abbreviation;
-    QLocale::Country m_country;
     QString m_comment;
+    QLocale::Country m_country;
+    int m_offsetFromUtc;
 };
 
 #ifdef QT_USE_ICU

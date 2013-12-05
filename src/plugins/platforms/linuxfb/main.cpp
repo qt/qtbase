@@ -55,7 +55,7 @@ public:
 QPlatformIntegration* QLinuxFbIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     Q_UNUSED(paramList);
-    if (system.toLower() == "linuxfb")
+    if (!system.compare(QLatin1String("linuxfb"), Qt::CaseInsensitive))
         return new QLinuxFbIntegration(paramList);
 
     return 0;

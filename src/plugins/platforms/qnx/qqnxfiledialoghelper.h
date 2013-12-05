@@ -87,6 +87,9 @@ public:
 Q_SIGNALS:
     void dialogClosed();
 
+private Q_SLOTS:
+    void emitSignals();
+
 private:
     void setNameFilter(const QString &filter);
     void setNameFilters(const QStringList &filters);
@@ -96,8 +99,8 @@ private:
     QFileDialogOptions::AcceptMode m_acceptMode;
     QString m_selectedFilter;
 
-    QPlatformDialogHelper::DialogCode m_result;
 #if defined(Q_OS_BLACKBERRY_TABLET)
+    QPlatformDialogHelper::DialogCode m_result;
     QList<QUrl> m_paths;
 #endif
 };

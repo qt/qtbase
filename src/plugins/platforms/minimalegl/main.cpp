@@ -63,7 +63,7 @@ QStringList QMinimalEglIntegrationPlugin::keys() const
 QPlatformIntegration* QMinimalEglIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     Q_UNUSED(paramList);
-    if (system.toLower() == "minimalegl")
+    if (!system.compare(QLatin1String("minimalegl"), Qt::CaseInsensitive))
         return new QMinimalEglIntegration;
 
     return 0;

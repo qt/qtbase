@@ -253,10 +253,11 @@ QString NmakeMakefileGenerator::defaultInstall(const QString &t)
     if(targetdir.right(1) != Option::dir_sep)
         targetdir += Option::dir_sep;
 
-    if (project->isActiveConfig("debug")) {
+    if (project->isActiveConfig("debug_info")) {
         if (t == "dlltarget"
-            || (project->first("TEMPLATE") == "lib"
-                && project->isActiveConfig("shared"))) {
+            || project->first("TEMPLATE") != "lib"
+            || (project->isActiveConfig("shared")
+                && project->values(ProKey(t + ".CONFIG")).indexOf("no_dll") == -1)) {
             QString pdb_target = getPdbTarget();
             pdb_target.remove('"');
             QString src_targ = (project->isEmpty("DESTDIR") ? QString("$(DESTDIR)") : project->first("DESTDIR")) + pdb_target;
@@ -407,11 +408,15 @@ void NmakeMakefileGenerator::init()
     if(project->isActiveConfig("shared")) {
         project->values("QMAKE_CLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".exp");
     }
-    if(project->isActiveConfig("debug")) {
-        project->values("QMAKE_DISTCLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".pdb");
+    if (project->isActiveConfig("debug_info")) {
+        QString pdbfile = project->first("DESTDIR") + project->first("TARGET") + version + ".pdb";
+        project->values("QMAKE_CFLAGS").append("/Fd" + pdbfile);
+        project->values("QMAKE_CXXFLAGS").append("/Fd" + pdbfile);
+        project->values("QMAKE_DISTCLEAN").append(pdbfile);
+    }
+    if (project->isActiveConfig("debug")) {
         project->values("QMAKE_CLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".ilk");
-        project->values("QMAKE_CLEAN").append("vc*.pdb");
-        project->values("QMAKE_CLEAN").append("vc*.idb");
+        project->values("QMAKE_CLEAN").append(project->first("DESTDIR") + project->first("TARGET") + version + ".idb");
     } else {
         ProStringList &defines = project->values("DEFINES");
         if (!defines.contains("NDEBUG"))

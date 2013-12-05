@@ -1949,7 +1949,7 @@ void QObjectPrivate::setParent_helper(QObject *o)
             }
         }
     }
-    if (!isDeletingChildren && declarativeData && QAbstractDeclarativeData::parentChanged)
+    if (!wasDeleted && !isDeletingChildren && declarativeData && QAbstractDeclarativeData::parentChanged)
         QAbstractDeclarativeData::parentChanged(declarativeData, q, o);
 }
 

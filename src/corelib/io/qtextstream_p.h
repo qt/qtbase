@@ -88,6 +88,21 @@ class QTextStreamPrivate
 {
     Q_DECLARE_PUBLIC(QTextStream)
 public:
+    // streaming parameters
+    class Params
+    {
+    public:
+        void reset();
+
+        int realNumberPrecision;
+        int integerBase;
+        int fieldWidth;
+        QChar padChar;
+        QTextStream::FieldAlignment fieldAlignment;
+        QTextStream::RealNumberNotation realNumberNotation;
+        QTextStream::NumberFlags numberFlags;
+    };
+
     QTextStreamPrivate(QTextStream *q_ptr);
     ~QTextStreamPrivate();
     void reset();
@@ -97,7 +112,6 @@ public:
 #ifndef QT_NO_QOBJECT
     QDeviceClosedNotifier deviceClosedNotifier;
 #endif
-    bool deleteDevice;
 
     // string
     QString *string;
@@ -110,6 +124,24 @@ public:
     QTextCodec::ConverterState readConverterState;
     QTextCodec::ConverterState writeConverterState;
     QTextCodec::ConverterState *readConverterSavedState;
+#endif
+
+    QString writeBuffer;
+    QString readBuffer;
+    int readBufferOffset;
+    int readConverterSavedStateOffset; //the offset between readBufferStartDevicePos and that start of the buffer
+    qint64 readBufferStartDevicePos;
+
+    Params params;
+
+    // status
+    QTextStream::Status status;
+    QLocale locale;
+    QTextStream *q_ptr;
+
+    int lastTokenSize;
+    bool deleteDevice;
+#ifndef QT_NO_TEXTCODEC
     bool autoDetectUnicode;
 #endif
 
@@ -128,7 +160,6 @@ public:
     inline void consume(int nchars);
     void saveConverterState(qint64 newPos);
     void restoreToSavedConverterState();
-    int lastTokenSize;
 
     // Return value type for getNumber()
     enum NumberParsingStatus {
@@ -150,34 +181,6 @@ public:
     bool fillReadBuffer(qint64 maxBytes = -1);
     void resetReadBuffer();
     void flushWriteBuffer();
-    QString writeBuffer;
-    QString readBuffer;
-    int readBufferOffset;
-    int readConverterSavedStateOffset; //the offset between readBufferStartDevicePos and that start of the buffer
-    qint64 readBufferStartDevicePos;
-
-    // streaming parameters
-    class Params
-    {
-    public:
-        void reset();
-
-        int realNumberPrecision;
-        int integerBase;
-        int fieldWidth;
-        QChar padChar;
-        QTextStream::FieldAlignment fieldAlignment;
-        QTextStream::RealNumberNotation realNumberNotation;
-        QTextStream::NumberFlags numberFlags;
-    };
-    Params params;
-
-    // status
-    QTextStream::Status status;
-
-    QLocale locale;
-
-    QTextStream *q_ptr;
 };
 
 QT_END_NAMESPACE

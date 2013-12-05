@@ -41,6 +41,7 @@
 
 
 #include "qminimalbackingstore.h"
+#include "qminimalintegration.h"
 #include "qscreen.h"
 #include <QtCore/qdebug.h>
 #include <qpa/qplatformscreen.h>
@@ -49,10 +50,9 @@
 QT_BEGIN_NAMESPACE
 
 QMinimalBackingStore::QMinimalBackingStore(QWindow *window)
-    : QPlatformBackingStore(window),mDebug(false)
+    : QPlatformBackingStore(window)
+    , mDebug(QMinimalIntegration::instance()->options() & QMinimalIntegration::DebugBackingStore)
 {
-    if (QT_PREPEND_NAMESPACE(qgetenv)("QT_DEBUG_BACKINGSTORE").toInt() > 0)
-        mDebug = true;
     if (mDebug)
         qDebug() << "QMinimalBackingStore::QMinimalBackingStore:" << (quintptr)this;
 }

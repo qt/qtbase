@@ -1045,12 +1045,12 @@ public:
 #endif
 
 private:
-    uint c; // character classes
     QVector<QRegExpCharClassRange> r; // character ranges
-    bool n; // negative?
 #ifndef QT_NO_REGEXP_OPTIM
     QVector<int> occ1; // first-occurrence array
 #endif
+    uint c; // character classes
+    bool n; // negative?
 };
 #else
 struct QRegExpCharClass

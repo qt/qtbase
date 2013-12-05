@@ -2878,6 +2878,10 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
                         if (item.position > tabSectionEnd || item.position <= si.position)
                             continue;
                         shape(i); // first, lets make sure relevant text is already shaped
+                        if (item.analysis.flags == QScriptAnalysis::Object) {
+                            length += item.width;
+                            continue;
+                        }
                         QGlyphLayout glyphs = this->shapedGlyphs(&item);
                         const int end = qMin(item.position + item.num_glyphs, tabSectionEnd) - item.position;
                         for (int i=0; i < end; i++)

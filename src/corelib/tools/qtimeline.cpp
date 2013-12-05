@@ -53,12 +53,16 @@ class QTimeLinePrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QTimeLine)
 public:
     inline QTimeLinePrivate()
-        : startTime(0), duration(1000), startFrame(0), endFrame(0),
+        : easingCurve(QEasingCurve::InOutSine),
+          startTime(0), duration(1000), startFrame(0), endFrame(0),
           updateInterval(1000 / 25),
           totalLoopCount(1), currentLoopCount(0), currentTime(0), timerId(0),
-          direction(QTimeLine::Forward), easingCurve(QEasingCurve::InOutSine),
+          direction(QTimeLine::Forward),
           state(QTimeLine::NotRunning)
     { }
+
+    QElapsedTimer timer;
+    QEasingCurve easingCurve;
 
     int startTime;
     int duration;
@@ -70,10 +74,8 @@ public:
 
     int currentTime;
     int timerId;
-    QElapsedTimer timer;
 
     QTimeLine::Direction direction;
-    QEasingCurve easingCurve;
     QTimeLine::State state;
     inline void setState(QTimeLine::State newState)
     {

@@ -1445,7 +1445,7 @@ bool QIBaseDriver::open(const QString & db,
           const QString & user,
           const QString & password,
           const QString & host,
-          int /*port*/,
+          int port,
           const QString & connOpts)
 {
     Q_D(QIBaseDriver);
@@ -1513,9 +1513,13 @@ bool QIBaseDriver::open(const QString & db,
         i += role.length();
     }
 
+    QString portString;
+    if (port != -1)
+        portString = QStringLiteral("/%1").arg(port);
+
     QString ldb;
     if (!host.isEmpty())
-        ldb += host + QLatin1Char(':');
+        ldb += host + portString + QLatin1Char(':');
     ldb += db;
     isc_attach_database(d->status, 0, const_cast<char *>(ldb.toLocal8Bit().constData()),
                         &d->ibase, i, ba.data());
@@ -1526,6 +1530,7 @@ bool QIBaseDriver::open(const QString & db,
     }
 
     setOpen(true);
+    setOpenError(false);
     return true;
 }
 

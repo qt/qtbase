@@ -2159,6 +2159,7 @@ bool QOCIDriver::hasFeature(DriverFeature f) const
     case SimpleLocking:
     case EventNotifications:
     case FinishQuery:
+    case CancelQuery:
     case MultipleResultSets:
         return false;
     case Unicode:

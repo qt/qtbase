@@ -55,7 +55,7 @@ public:
 QPlatformIntegration *QKmsIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     Q_UNUSED(paramList);
-    if (system.toLower() == "kms")
+    if (!system.compare(QLatin1String("kms"), Qt::CaseInsensitive))
         return new QKmsIntegration;
 
     return 0;

@@ -403,6 +403,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 QString incr_lflags = var("QMAKE_LFLAGS_SHLIB") + " ";
                 if(project->isActiveConfig("debug"))
                     incr_lflags += var("QMAKE_LFLAGS_DEBUG");
+                else if (project->isActiveConfig("debug_info"))
+                    incr_lflags += var("QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO");
                 else
                     incr_lflags += var("QMAKE_LFLAGS_RELEASE");
                 t << incr_target_dir << ": $(INCREMENTAL_OBJECTS)\n\t";
@@ -498,6 +500,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                     incr_lflags += var("QMAKE_LFLAGS_INCREMENTAL") + " ";
                 if(project->isActiveConfig("debug"))
                     incr_lflags += var("QMAKE_LFLAGS_DEBUG");
+                else if (project->isActiveConfig("debug_info"))
+                    incr_lflags += var("QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO");
                 else
                     incr_lflags += var("QMAKE_LFLAGS_RELEASE");
                 t << incr_target_dir << ": $(INCREMENTAL_OBJECTS)\n\t";

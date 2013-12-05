@@ -76,7 +76,7 @@
 #include <CoreServices/CoreServices.h>
 #endif
 
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
 #include <private/qjni_p.h>
 #endif
 
@@ -2400,7 +2400,7 @@ typedef uint SeedStorageType;
 typedef QThreadStorage<SeedStorageType *> SeedStorage;
 Q_GLOBAL_STATIC(SeedStorage, randTLS)  // Thread Local Storage for seed value
 
-#elif defined(Q_OS_ANDROID)
+#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
 typedef QThreadStorage<QJNIObjectPrivate> AndroidRandomStorage;
 Q_GLOBAL_STATIC(AndroidRandomStorage, randomTLS)
 #endif
@@ -2436,7 +2436,7 @@ void qsrand(uint seed)
         //global static object, fallback to srand(seed)
         srand(seed);
     }
-#elif defined(Q_OS_ANDROID)
+#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
     if (randomTLS->hasLocalData()) {
         randomTLS->localData().callMethod<void>("setSeed", "(J)V", jlong(seed));
         return;
@@ -2492,7 +2492,7 @@ int qrand()
         //global static object, fallback to rand()
         return rand();
     }
-#elif defined(Q_OS_ANDROID)
+#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_NO_SDK)
     AndroidRandomStorage *randomStorage = randomTLS();
     if (!randomStorage)
         return rand();
