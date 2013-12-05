@@ -2548,6 +2548,11 @@ void QGuiApplication::setFont(const QFont &font)
 
 void QGuiApplicationPrivate::notifyLayoutDirectionChange()
 {
+    const QWindowList list = QGuiApplication::topLevelWindows();
+    for (int i = 0; i < list.size(); ++i) {
+        QEvent ev(QEvent::ApplicationLayoutDirectionChange);
+        QCoreApplication::sendEvent(list.at(i), &ev);
+    }
 }
 
 void QGuiApplicationPrivate::notifyActiveWindowChange(QWindow *)

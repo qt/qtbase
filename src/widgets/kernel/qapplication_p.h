@@ -116,7 +116,6 @@ public:
     QApplicationPrivate(int &argc, char **argv, int flags);
     ~QApplicationPrivate();
 
-    virtual void notifyLayoutDirectionChange();
     virtual void notifyActiveWindowChange(QWindow *);
 
     virtual bool shouldQuit();

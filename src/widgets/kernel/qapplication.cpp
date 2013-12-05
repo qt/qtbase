@@ -1888,16 +1888,6 @@ bool QApplication::event(QEvent *e)
     \obsolete
 */
 
-void QApplicationPrivate::notifyLayoutDirectionChange()
-{
-    QWidgetList list = QApplication::topLevelWidgets();
-    for (int i = 0; i < list.size(); ++i) {
-        QWidget *w = list.at(i);
-        QEvent ev(QEvent::ApplicationLayoutDirectionChange);
-        QCoreApplication::sendEvent(w, &ev);
-    }
-}
-
 /*!
     \fn void QApplication::setActiveWindow(QWidget* active)
 
