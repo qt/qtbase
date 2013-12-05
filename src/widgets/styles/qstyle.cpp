@@ -619,7 +619,7 @@ void QStyle::drawItemText(QPainter *painter, const QRect &rect, int alignment, c
 void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
                             const QPixmap &pixmap) const
 {
-    int scale = pixmap.devicePixelRatio();
+    qreal scale = pixmap.devicePixelRatio();
     QRect aligned = alignedRect(QApplication::layoutDirection(), QFlag(alignment), pixmap.size() / scale, rect);
     QRect inter = aligned.intersected(rect);
 

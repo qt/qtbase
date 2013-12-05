@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -38,31 +38,50 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <qtconcurrentmedian.h>
 
-#ifndef QIOSGLOBAL_H
-#define QIOSGLOBAL_H
+#include <QtTest/QtTest>
 
-#import <UIKit/UIKit.h>
-#include <QtCore/QtCore>
+class tst_QtConcurrentMedian: public QObject
+{
+    Q_OBJECT
+private slots:
+    void median_data();
+    void median();
+};
 
-@class QIOSViewController;
+void tst_QtConcurrentMedian::median_data()
+{
+    QTest::addColumn<QList<int> >("values");
+    QTest::addColumn<int>("expectedMedian");
 
-QT_BEGIN_NAMESPACE
+    QTest::newRow("size=1")
+        << (QList<int>() << 1)
+        << 1;
 
-class QPlatformScreen;
+    QTest::newRow("size=2")
+        << (QList<int>() << 3 << 2)
+        << 3;
 
-bool isQtApplication();
+    QTest::newRow("size=3")
+        << (QList<int>() << 3 << 1 << 2)
+        << 2;
 
-CGRect toCGRect(const QRectF &rect);
-QRectF fromCGRect(const CGRect &rect);
-CGPoint toCGPoint(const QPointF &point);
-QPointF fromCGPoint(const CGPoint &point);
+    QTest::newRow("gcc bug 58800 (nth_element)")
+        << (QList<int>() << 207089 << 202585 << 180067 << 157549 << 211592 << 216096 << 207089)
+        << 207089;
+}
 
-Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientation);
-UIDeviceOrientation fromQtScreenOrientation(Qt::ScreenOrientation qtOrientation);
-QRect fromPortraitToPrimary(const QRect &rect, QPlatformScreen *screen);
-int infoPlistValue(NSString* key, int defaultValue);
+void tst_QtConcurrentMedian::median()
+{
+    QFETCH(QList<int> , values);
+    QFETCH(int, expectedMedian);
 
-QT_END_NAMESPACE
+    QtConcurrent::Median<int> m(values.size());
+    foreach (int value, values)
+        m.addValue(value);
+    QCOMPARE(m.median(), expectedMedian);
+}
 
-#endif // QIOSGLOBAL_H
+QTEST_MAIN(tst_QtConcurrentMedian)
+#include "tst_qtconcurrentmedian.moc"

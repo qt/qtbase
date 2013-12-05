@@ -74,7 +74,8 @@ static jclass getCachedClass(JNIEnv *env, const char *className)
         if (!classLoader.isValid())
             return 0;
 
-        QJNIObjectPrivate stringName = QJNIObjectPrivate::fromString(QLatin1String(className));
+        QJNIObjectPrivate stringName = QJNIObjectPrivate::fromString(QString::fromLatin1(className).replace(QLatin1Char('/'),
+                                                                                                            QLatin1Char('.')));
         QJNIObjectPrivate classObject = classLoader.callObjectMethod("loadClass",
                                                                      "(Ljava/lang/String;)Ljava/lang/Class;",
                                                                      stringName.object());

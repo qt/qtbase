@@ -93,6 +93,8 @@ QT_END_NAMESPACE
 - (BOOL)hasMask;
 - (BOOL)isOpaque;
 
+- (void)convertFromScreen:(NSPoint)mouseLocation toWindowPoint:(QPointF *)qtWindowPoint andScreenPoint:(QPointF *)qtScreenPoint;
+
 - (void)resetMouseButtons;
 
 - (void)handleMouseEvent:(NSEvent *)theEvent;

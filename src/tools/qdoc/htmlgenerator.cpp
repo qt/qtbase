@@ -269,6 +269,9 @@ QString HtmlGenerator::format()
 void HtmlGenerator::generateTree()
 {
     qdb_->buildCollections();
+    Node* qflags = qdb_->findNodeByNameAndType(QStringList("QFlags"), Node::Class, Node::NoSubType);
+    if (qflags)
+        qflagsHref_ = linkForNode(qflags,0);
     if (!runPrepareOnly()) {
         Generator::generateTree();
         generateCollisionPages();
@@ -3660,7 +3663,7 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
         if (enume->flagsType()) {
             out() << "<p>The " << protectEnc(enume->flagsType()->name())
                   << " type is a typedef for "
-                  << "<a href=\"qflags.html\">QFlags</a>&lt;"
+                  << "<a href=\"" << qflagsHref_ << "\">QFlags</a>&lt;"
                   << protectEnc(enume->name())
                   << "&gt;. It stores an OR combination of "
                   << protectEnc(enume->name())
