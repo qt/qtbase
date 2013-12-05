@@ -95,7 +95,7 @@ if [ x"$1" = x"-top-level" ]; then
 fi
 
 # later cache the command line in config.status
-OPT_CMDLINE=`echo $@ | sed "s,-v ,,g; s,-v$,,g"`
+OPT_CMDLINE=`echo $@ | sed 's,-v ,,g; s,-v$,,g'`
 
 # initialize global variables
 QMAKE_SWITCHES=
@@ -170,7 +170,7 @@ expandQMakeConf()
 {
     while read line; do case "$line" in
         include*)
-	    inc_file=`echo "$line" | sed -n -e "/^include.*(.*)/s/include.*(\(.*\)).*$/\1/p"`
+            inc_file=`echo "$line" | sed -n -e '/^include.*(.*)/s/include.*(\(.*\)).*$/\1/p'`
 	    current_dir=`dirname "$1"`
 	    conf_file="$current_dir/$inc_file"
 	    if [ ! -f  "$conf_file" ]; then
@@ -450,7 +450,7 @@ resolveDeviceMkspec()
     match_count=$(echo "$result" | wc -w)
     if [ "$match_count" -gt 1 ]; then
         echo >&2 "Error: Multiple matches for device '$1'. Candidates are:"
-        tabbed_result=$(echo "$result" | sed "s,^,    ,")
+        tabbed_result=$(echo "$result" | sed 's,^,    ,')
         echo >&2 "$tabbed_result"
         echo "undefined"
     elif [ "$match_count" -eq 0 ]; then
@@ -828,33 +828,33 @@ while [ "$#" -gt 0 ]; do
     case "$1" in
     #Autoconf style options
     --enable-*)
-        VAR=`echo $1 | sed "s,^--enable-\(.*\),\1,"`
+        VAR=`echo $1 | sed 's,^--enable-\(.*\),\1,'`
         VAL=yes
         ;;
     --disable-*)
-        VAR=`echo $1 | sed "s,^--disable-\(.*\),\1,"`
+        VAR=`echo $1 | sed 's,^--disable-\(.*\),\1,'`
         VAL=no
         ;;
     --*=*)
-        VAR=`echo $1 | sed "s,^--\(.*\)=.*,\1,"`
-        VAL=`echo $1 | sed "s,^--.*=\(.*\),\1,"`
+        VAR=`echo $1 | sed 's,^--\(.*\)=.*,\1,'`
+        VAL=`echo $1 | sed 's,^--.*=\(.*\),\1,'`
         ;;
     --no-*)
-        VAR=`echo $1 | sed "s,^--no-\(.*\),\1,"`
+        VAR=`echo $1 | sed 's,^--no-\(.*\),\1,'`
         VAL=no
         ;;
     --*)
-        VAR=`echo $1 | sed "s,^--\(.*\),\1,"`
+        VAR=`echo $1 | sed 's,^--\(.*\),\1,'`
         VAL=yes
         ;;
     #Qt plugin options
     -no-*-*|-plugin-*-*|-qt-*-*)
-        VAR=`echo $1 | sed "s,^-[^-]*-\(.*\),\1,"`
-        VAL=`echo $1 | sed "s,^-\([^-]*\).*,\1,"`
+        VAR=`echo $1 | sed 's,^-[^-]*-\(.*\),\1,'`
+        VAL=`echo $1 | sed 's,^-\([^-]*\).*,\1,'`
         ;;
     #Qt style no options
     -no-*)
-        VAR=`echo $1 | sed "s,^-no-\(.*\),\1,"`
+        VAR=`echo $1 | sed 's,^-no-\(.*\),\1,'`
         VAL=no
         ;;
     #Qt style options that pass an argument
@@ -899,14 +899,14 @@ while [ "$#" -gt 0 ]; do
     -android-ndk-host| \
     -android-arch| \
     -android-toolchain-version)
-        VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
+        VAR=`echo $1 | sed 's,^-\(.*\),\1,'`
         shift
         VAL="$1"
         ;;
     #Qt style complex options in one command
     -enable-*|-disable-*)
-        VAR=`echo $1 | sed "s,^-\([^-]*\)-.*,\1,"`
-        VAL=`echo $1 | sed "s,^-[^-]*-\(.*\),\1,"`
+        VAR=`echo $1 | sed 's,^-\([^-]*\)-.*,\1,'`
+        VAL=`echo $1 | sed 's,^-[^-]*-\(.*\),\1,'`
         ;;
     -system-proxies)
         VAR=system-proxies
@@ -918,8 +918,8 @@ while [ "$#" -gt 0 ]; do
         ;;
     #Qt Builtin/System style options
     -no-*|-system-*|-qt-*)
-        VAR=`echo $1 | sed "s,^-[^-]*-\(.*\),\1,"`
-        VAL=`echo $1 | sed "s,^-\([^-]*\)-.*,\1,"`
+        VAR=`echo $1 | sed 's,^-[^-]*-\(.*\),\1,'`
+        VAL=`echo $1 | sed 's,^-\([^-]*\)-.*,\1,'`
         ;;
     #Options that cannot be generalized
     -k|-continue)
@@ -947,7 +947,7 @@ while [ "$#" -gt 0 ]; do
         fi
 	;;
     -hostprefix)
-        VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
+        VAR=`echo $1 | sed 's,^-\(.*\),\1,'`
         # this option may or may not be followed by an argument
         if [ -z "$2" ] || echo "$2" | grep '^-' >/dev/null 2>&1; then
             VAL=$outpath
@@ -1037,7 +1037,7 @@ while [ "$#" -gt 0 ]; do
         ;;
     #General options, including Qt style yes options
     -*)
-        VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
+        VAR=`echo $1 | sed 's,^-\(.*\),\1,'`
         VAL="yes"
         ;;
     *)
@@ -1395,7 +1395,7 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     feature-*)
-            FEATURE=`echo $VAR | sed "s,^[^-]*-\([^-]*\),\1," | tr 'abcdefghijklmnopqrstuvwxyz-' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ_'`
+            FEATURE=`echo $VAR | sed 's,^[^-]*-\([^-]*\),\1,' | tr 'abcdefghijklmnopqrstuvwxyz-' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ_'`
             if [ "$VAL" = "no" ]; then
                 QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_$FEATURE"
             elif [ "$VAL" = "yes" ] || [ "$VAL" = "unknown" ]; then
@@ -1907,8 +1907,8 @@ while [ "$#" -gt 0 ]; do
         fi
         # now $VAL is "no", "qt", or "plugin"
         OPT="$VAL"
-        VAL=`echo $VAR | sed "s,^[^-]*-\([^-]*\).*,\1,"`
-        VAR=`echo $VAR | sed "s,^\([^-]*\).*,\1,"`
+        VAL=`echo $VAR | sed 's,^[^-]*-\([^-]*\).*,\1,'`
+        VAR=`echo $VAR | sed 's,^\([^-]*\).*,\1,'`
 
         # Grab the available values
         case "$VAR" in
@@ -1974,7 +1974,7 @@ while [ "$#" -gt 0 ]; do
             fi
         elif [ "$VAL" = "no" ]; then
             if [ "$OPT_VERBOSE" = "$VAL" ] && echo "$QMAKE_SWITCHES" | grep ' -d' >/dev/null 2>&1; then
-                QMAKE_SWITCHES=`echo $QMAKE_SWITCHES | sed "s, -d,,"`
+                QMAKE_SWITCHES=`echo $QMAKE_SWITCHES | sed 's, -d,,'`
             else
                 OPT_VERBOSE=no
             fi
@@ -3044,7 +3044,7 @@ elif [ "$Edition" = "Preview" ]; then
     done
 elif [ "$Edition" != "OpenSource" ]; then
     if [ -n "$ExpiryDate" ]; then
-        ExpiryDate=`echo $ExpiryDate | sed -e "s,-,,g" | tr -d "\n\r"`
+        ExpiryDate=`echo $ExpiryDate | sed -e 's,-,,g' | tr -d '\n\r'`
         [ -z "$ExpiryDate" ] && ExpiryDate="0"
         Today=`date +%Y%m%d`
         if [ "$Today" -gt "$ExpiryDate" ]; then
@@ -3564,7 +3564,7 @@ if [ -z "$CFG_BUILD_PARTS" ]; then
 
     # don't build tools by default when cross-compiling
     if [ "$PLATFORM" != "$XPLATFORM" ]; then
-	CFG_BUILD_PARTS=`echo "$CFG_BUILD_PARTS" | sed "s, tools,,g"`
+        CFG_BUILD_PARTS=`echo "$CFG_BUILD_PARTS" | sed 's, tools,,g'`
     fi
 fi
 for nobuild in $CFG_NOBUILD_PARTS; do
@@ -4015,7 +4015,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
 
         if "$WHICH" makedepend >/dev/null 2>&1 && grep 'depend:' "$mkfile" >/dev/null 2>&1; then
             (cd "$outpath/qmake" && "$MAKE" -f "$mkfile" depend) >/dev/null 2>&1
-	    sed "s,^.*/\([^/]*.o\):,\1:,g" "$mkfile" >"$mkfile.tmp"
+            sed 's,^.*/\([^/]*.o\):,\1:,g' "$mkfile" >"$mkfile.tmp"
 	    sed "s,$outpath,$adjoutpath,g" "$mkfile.tmp" >"$mkfile"
 	    rm "$mkfile.tmp"
         fi
@@ -6322,10 +6322,10 @@ EOF
         cfgdNeg=
         if [ true ] && echo "$cfgd" | grep 'QT_NO_' >/dev/null 2>&1; then
             # QT_NO_option can be forcefully turned on by QT_option
-            cfgdNeg=`echo $cfgd | sed "s,QT_NO_,QT_,"`
+            cfgdNeg=`echo $cfgd | sed 's,QT_NO_,QT_,'`
         elif [ true ] && echo "$cfgd" | grep 'QT_' >/dev/null 2>&1; then
             # QT_option can be forcefully turned off by QT_NO_option
-            cfgdNeg=`echo $cfgd | sed "s,QT_,QT_NO_,"`
+            cfgdNeg=`echo $cfgd | sed 's,QT_,QT_NO_,'`
         fi
 
         if [ -z $cfgdNeg ]; then
