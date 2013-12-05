@@ -175,7 +175,7 @@ static QTouchDevice *touchDevice = 0;
 - (void) globalFrameChanged:(NSNotification*)notification
 {
     Q_UNUSED(notification);
-    QWindowSystemInterface::handleExposeEvent(m_window, m_window->geometry());
+    m_platformWindow->updateExposedGeometry();
 }
 
 - (void)viewDidMoveToSuperview
@@ -186,7 +186,7 @@ static QTouchDevice *touchDevice = 0;
     if ([self superview]) {
         m_platformWindow->m_contentViewIsEmbedded = true;
         QWindowSystemInterface::handleGeometryChange(m_window, m_platformWindow->geometry());
-        QWindowSystemInterface::handleExposeEvent(m_window, m_platformWindow->geometry());
+        m_platformWindow->updateExposedGeometry();
         QWindowSystemInterface::flushWindowSystemEvents();
     } else {
         m_platformWindow->m_contentViewIsEmbedded = false;
@@ -261,7 +261,7 @@ static QTouchDevice *touchDevice = 0;
     // Send a geometry change event to Qt, if it's ready to handle events
     if (!m_platformWindow->m_inConstructor) {
         QWindowSystemInterface::handleGeometryChange(m_window, geometry);
-        QWindowSystemInterface::handleExposeEvent(m_window, geometry);
+        m_platformWindow->updateExposedGeometry();
         QWindowSystemInterface::flushWindowSystemEvents();
     }
 }

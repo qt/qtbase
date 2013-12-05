@@ -108,8 +108,6 @@
             [NSNumber numberWithBool:YES], kEAGLDrawablePropertyRetainedBacking,
             kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, nil];
 
-        [self updateTextInputTraits];
-
         if (isQtApplication())
             self.hidden = YES;
 
@@ -330,13 +328,9 @@
 
 - (BOOL)becomeFirstResponder
 {
-    // On iOS, a QWindow should only have input focus when the input panel is
-    // open. This is to stop cursors and focus rects from being drawn when the
-    // user cannot type. And since the keyboard will open when a view becomes
-    // the first responder, it's now a good time to inform QPA that the QWindow
-    // this view backs became active:
+    // Note: QIOSInputContext controls our first responder status based on
+    // whether or not the keyboard should be open or closed.
     [self updateTextInputTraits];
-    QWindowSystemInterface::handleWindowActivated(m_qioswindow->window());
     return [super becomeFirstResponder];
 }
 
@@ -345,7 +339,8 @@
     // Resigning first responed status means that the virtual keyboard was closed, or
     // some other view became first responder. In either case we clear the focus object to
     // avoid blinking cursors in line edits etc:
-    static_cast<QWindowPrivate *>(QObjectPrivate::get(m_qioswindow->window()))->clearFocusObject();
+    if (m_qioswindow)
+        static_cast<QWindowPrivate *>(QObjectPrivate::get(m_qioswindow->window()))->clearFocusObject();
     return [super resignFirstResponder];
 }
 
@@ -427,8 +422,10 @@
 
 - (QWindow *)qwindow
 {
-    if ([self isKindOfClass:[QUIView class]])
-        return static_cast<QUIView *>(self)->m_qioswindow->window();
+    if ([self isKindOfClass:[QUIView class]]) {
+        if (QIOSWindow *w = static_cast<QUIView *>(self)->m_qioswindow)
+            return w->window();
+    }
     return nil;
 }
 
@@ -473,6 +470,7 @@ QIOSWindow::~QIOSWindow()
     // cancellation of all touch events.
     [m_view touchesCancelled:0 withEvent:0];
 
+    m_view->m_qioswindow = 0;
     [m_view removeFromSuperview];
     [m_view release];
 }
@@ -637,7 +635,7 @@ void QIOSWindow::setParent(const QPlatformWindow *parentWindow)
     }
 }
 
-QIOSWindow *QIOSWindow::topLevelWindow() const
+QWindow *QIOSWindow::topLevelWindow() const
 {
     QWindow *window = this->window();
     while (window) {
@@ -651,7 +649,7 @@ QIOSWindow *QIOSWindow::topLevelWindow() const
         window = parent;
     }
 
-    return static_cast<QIOSWindow *>(window->handle());
+    return window;
 }
 
 void QIOSWindow::requestActivateWindow()

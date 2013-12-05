@@ -159,8 +159,10 @@ public:
     void registerTouch(bool enable);
 
     qreal devicePixelRatio() const;
+    bool isWindowExposable();
     void exposeWindow();
     void obscureWindow();
+    void updateExposedGeometry();
     QWindow *childWindowAt(QPoint windowPoint);
 protected:
     // NSWindow handling. The QCocoaWindow/QNSView can either be displayed
@@ -202,7 +204,9 @@ public: // for QNSView
 
     bool m_hasModalSession;
     bool m_frameStrutEventsEnabled;
+    bool m_geometryUpdateExposeAllowed;
     bool m_isExposed;
+    QRect m_exposedGeometry;
     int m_registerTouchCount;
     bool m_resizableTransientParent;
     bool m_overrideBecomeKey;

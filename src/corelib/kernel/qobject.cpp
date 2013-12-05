@@ -2996,6 +2996,10 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
     expensive initialization only if something is connected to a
     signal.
 
+    \warning This function is called from the thread which performs the
+    connection, which may be a different thread from the thread in
+    which this object lives.
+
     \sa connect(), disconnectNotify()
 */
 
@@ -3021,6 +3025,15 @@ void QObject::connectNotify(const QMetaMethod &signal)
     \warning This function violates the object-oriented principle of
     modularity. However, it might be useful for optimizing access to
     expensive resources.
+
+    \warning This function is called from the thread which performs the
+    disconnection, which may be a different thread from the thread in
+    which this object lives. This function may also be called with a QObject
+    internal mutex locked. It is therefore not allowed to re-enter any
+    of any QObject functions from your reimplementation and if you lock
+    a mutex in your reimplementation, make sure that you don't call QObject
+    functions with that mutex held in other places or it will result in
+    a deadlock.
 
     \sa disconnect(), connectNotify()
 */

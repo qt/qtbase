@@ -7634,7 +7634,10 @@ QGraphicsObject::~QGraphicsObject()
 bool QGraphicsObject::event(QEvent *ev)
 {
     if (ev->type() == QEvent::StyleAnimationUpdate) {
-        update();
+        if (isVisible()) {
+            ev->accept();
+            update();
+        }
         return true;
     }
     return QObject::event(ev);

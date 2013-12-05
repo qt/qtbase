@@ -93,7 +93,10 @@ void QStyleAnimation::setStartTime(const QTime &time)
 void QStyleAnimation::updateTarget()
 {
     QEvent event(QEvent::StyleAnimationUpdate);
+    event.setAccepted(false);
     QCoreApplication::sendEvent(target(), &event);
+    if (!event.isAccepted())
+        stop();
 }
 
 bool QStyleAnimation::isUpdateNeeded() const
@@ -103,16 +106,8 @@ bool QStyleAnimation::isUpdateNeeded() const
 
 void QStyleAnimation::updateCurrentTime(int)
 {
-    if (QObject *tgt = target()) {
-        if (tgt->isWidgetType()) {
-            QWidget *widget = static_cast<QWidget *>(tgt);
-            if (!widget->isVisible() || widget->window()->isMinimized())
-                stop();
-        }
-
-        if (isUpdateNeeded())
-            updateTarget();
-    }
+    if (target() && isUpdateNeeded())
+        updateTarget();
 }
 
 QProgressStyleAnimation::QProgressStyleAnimation(int speed, QObject *target) :
