@@ -1912,7 +1912,8 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
     const QWindowsGeometryHint hint(window(), m_data.customMargins);
     hint.applyToMinMaxInfo(m_data.hwnd, mmi);
 
-    if (testFlag(WithinMaximize) && (m_data.flags & Qt::FramelessWindowHint)) {
+    if ((testFlag(WithinMaximize) || (window()->windowState() == Qt::WindowMinimized))
+            && (m_data.flags & Qt::FramelessWindowHint)) {
         // This block fixes QTBUG-8361: Frameless windows shouldn't cover the
         // taskbar when maximized
         if (const QScreen *screen = effectiveScreen(window())) {
