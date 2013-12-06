@@ -1604,7 +1604,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "OPENGL" ]              = "yes";
         dictionary[ "OPENGL_ES_2" ]         = "yes";
         dictionary[ "OPENVG" ]              = "no";
-        dictionary[ "OPENSSL" ]             = "auto";
+        dictionary[ "OPENSSL" ]             = "no";
         dictionary[ "DBUS" ]                = "no";
         dictionary[ "ZLIB" ]                = "qt";
         dictionary[ "PCRE" ]                = "qt";
