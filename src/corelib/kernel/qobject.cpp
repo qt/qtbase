@@ -808,10 +808,13 @@ QObject::~QObject()
     }
 
     if (d->declarativeData) {
-        if (QAbstractDeclarativeData::destroyed)
-            QAbstractDeclarativeData::destroyed(d->declarativeData, this);
-        if (QAbstractDeclarativeData::destroyed_qml1)
-            QAbstractDeclarativeData::destroyed_qml1(d->declarativeData, this);
+        if (static_cast<QAbstractDeclarativeDataImpl*>(d->declarativeData)->ownedByQml1) {
+            if (QAbstractDeclarativeData::destroyed_qml1)
+                QAbstractDeclarativeData::destroyed_qml1(d->declarativeData, this);
+        } else {
+            if (QAbstractDeclarativeData::destroyed)
+                QAbstractDeclarativeData::destroyed(d->declarativeData, this);
+        }
     }
 
     // set ref to zero to indicate that this object has been deleted
