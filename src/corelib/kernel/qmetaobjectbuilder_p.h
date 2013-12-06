@@ -323,7 +323,7 @@ private:
 class Q_CORE_EXPORT QMetaStringTable
 {
 public:
-    QMetaStringTable(const QByteArray &className);
+    explicit QMetaStringTable(const QByteArray &className);
 
     int enter(const QByteArray &value);
 
