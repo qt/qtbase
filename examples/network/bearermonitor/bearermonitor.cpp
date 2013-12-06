@@ -84,10 +84,10 @@ BearerMonitor::BearerMonitor(QWidget *parent)
             this, SLOT(configurationChanged(const QNetworkConfiguration)));
     connect(&manager, SIGNAL(updateCompleted()), this, SLOT(updateConfigurations()));
 
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     connect(registerButton, SIGNAL(clicked()), this, SLOT(registerNetwork()));
     connect(unregisterButton, SIGNAL(clicked()), this, SLOT(unregisterNetwork()));
-#else
+#else // Q_OS_WIN && !Q_OS_WINRT
     nlaGroup->hide();
 #endif
 
@@ -257,7 +257,7 @@ void BearerMonitor::onlineStateChanged(bool isOnline)
         onlineState->setText(tr("Offline"));
 }
 
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 void BearerMonitor::registerNetwork()
 {
     QTreeWidgetItem *item = treeWidget->currentItem();
@@ -301,7 +301,7 @@ void BearerMonitor::unregisterNetwork()
     if (WSASetService(&networkInfo, RNRSERVICE_DELETE, 0) == SOCKET_ERROR)
         qDebug() << "WSASetService(RNRSERVICE_DELETE) returned" << WSAGetLastError();
 }
-#endif
+#endif // Q_OS_WIN && !Q_OS_WINRT
 
 void BearerMonitor::showConfigurationFor(QTreeWidgetItem *item)
 {
