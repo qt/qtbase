@@ -458,10 +458,21 @@ void QSortFilterProxyModelPrivate::sort()
 */
 bool QSortFilterProxyModelPrivate::update_source_sort_column()
 {
-    Q_Q(QSortFilterProxyModel);
-    QModelIndex proxy_index = q->index(0, proxy_sort_column, QModelIndex());
     int old_source_sort_column = source_sort_column;
-    source_sort_column = q->mapToSource(proxy_index).column();
+
+    if (proxy_sort_column == -1) {
+        source_sort_column = -1;
+    } else {
+        // We cannot use index mapping here because in case of a still-empty
+        // proxy model there's no valid proxy index we could map to source.
+        // So always use the root mapping directly instead.
+        Mapping *m = create_mapping(QModelIndex()).value();
+        if (proxy_sort_column < m->source_columns.size())
+            source_sort_column = m->source_columns.at(proxy_sort_column);
+        else
+            source_sort_column = -1;
+    }
+
     return old_source_sort_column != source_sort_column;
 }
 
