@@ -913,14 +913,33 @@
             By default, support is disabled.
     \endtable
 
-    Since the \c debug option overrides the \c release option when both are
-    defined in the \c CONFIG variable, it is necessary to use the
-    \c debug_and_release option if you want to allow both debug and release
-    versions of a project to be built. In such a case, the Makefile that
-    qmake generates includes a rule that builds both
-    versions, and this can be invoked in the following way:
+    When you use the \c debug_and_release option (which is the default under
+    Windows), the project will be processed three times: one time to produce
+    a "meta" Makefile, and two more times to produce a Makefile.Debug and a
+    Makefile.Release.
+
+    During the latter passes, \c build_pass and the respective \c debug or
+    \c release option is appended to \c CONFIG. This makes it possible to
+    perform build-specific tasks. For example:
+
+    \snippet code/doc_src_qmake-manual.pro 25
+
+    As an alternative to manually writing build type conditionals, some
+    variables offer build-specific variants, for example
+    \l{#QMAKE_LFLAGS_RELEASE}{QMAKE_LFLAGS_RELEASE} in addition to the general
+    \l{#QMAKE_LFLAGS}{QMAKE_LFLAGS}. These should be used when available.
+
+    The meta Makefile makes the sub-builds invokable via the \c debug and
+    \c release targets, and a combined build via the \c all target.
+    When the \c build_all \c CONFIG option is used, the combined build is
+    the default. Otherwise, the last specified \c CONFIG option from the set
+    (\c debug, \c release) determines the default. In this case, you can
+    explicitly invoke the \c all target to build both configurations at once:
 
     \snippet code/doc_src_qmake-manual.pro 24
+
+    \note The details are slightly different when producing Visual Studio
+    and Xcode projects.
 
     When linking a library, qmake relies on the
     underlying platform to know what other libraries this library links
@@ -944,24 +963,6 @@
     \note The \c create_prl option is required when \e {building} a
     static library, while \c link_prl is required when \e {using} a
     static library.
-
-    On Windows (or if Qt is configured with \c{-debug-and-release}), add the
-    \c build_all option to the \c CONFIG variable to build all build
-    configurations by default.
-
-    Additionally, adding \c debug_and_release to the \c CONFIG variable will
-    cause both \c debug and \c release to be defined in the contents of
-    \c CONFIG. When the project file is processed, the
-    \l{Scopes}{scopes} that test for each value will be
-    processed for \e both debug and release modes. The \c{build_pass} variable
-    will be set for each of these modes, and you can test for this to perform
-    build-specific tasks. For example:
-
-    \snippet code/doc_src_qmake-manual.pro 25
-
-    As a result, it may be useful to define mode-specific variables, such as
-    \l{#QMAKE_LFLAGS_RELEASE}{QMAKE_LFLAGS_RELEASE}, instead of general
-    variables, such as \l{#QMAKE_LFLAGS}{QMAKE_LFLAGS}, where possible.
 
     The following options define the application or library type:
 
@@ -4527,7 +4528,7 @@
 
     Sometimes, it is necessary to build a project in both debug and release
     modes. Although the \l{CONFIG} variable can hold both \c debug and \c release
-    options, the \c debug option overrides the \c release option.
+    options, only the option that is specified last is applied.
 
     \section2 Building in Both Modes
 
