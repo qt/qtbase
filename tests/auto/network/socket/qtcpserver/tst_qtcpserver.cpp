@@ -100,16 +100,20 @@ private slots:
     void maxPendingConnections();
     void listenError();
     void waitForConnectionTest();
+#ifndef Q_OS_WINRT
     void setSocketDescriptor();
+#endif
     void listenWhileListening();
 #ifndef QT_NO_PROCESS
     void addressReusable();
 #endif
     void setNewSocketDescriptorBlocking();
+#ifndef QT_NO_NETWORKPROXY
     void invalidProxy_data();
     void invalidProxy();
     void proxyFactory_data();
     void proxyFactory();
+#endif // !QT_NO_NETWORKPROXY
 
     void qtbug14268_peek();
 
@@ -158,7 +162,9 @@ void tst_QTcpServer::initTestCase_data()
     QTest::addColumn<int>("proxyType");
 
     QTest::newRow("WithoutProxy") << false << 0;
+#ifndef QT_NO_SOCKS5
     QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy);
+#endif
 
     crashingServerDir = QFINDTESTDATA("crashingServer");
     QVERIFY2(!crashingServerDir.isEmpty(), qPrintable(
@@ -181,16 +187,22 @@ void tst_QTcpServer::init()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
+#ifndef QT_NO_NETWORKPROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy) {
             QNetworkProxy::setApplicationProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1080));
         }
+#else // !QT_NO_NETWORKPROXY
+        QSKIP("No proxy support");
+#endif // QT_NO_NETWORKPROXY
     }
 }
 
 void tst_QTcpServer::cleanup()
 {
+#ifndef QT_NO_NETWORKPROXY
     QNetworkProxy::setApplicationProxy(QNetworkProxy::DefaultProxy);
+#endif
 }
 
 //----------------------------------------------------------------------------------
@@ -369,9 +381,13 @@ void tst_QTcpServer::maxPendingConnections()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
+#ifndef QT_NO_NETWORKPROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy)
             QSKIP("With socks5 only 1 connection is allowed ever");
+#else // !QT_NO_NETWORKPROXY
+        QSKIP("No proxy support");
+#endif // QT_NO_NETWORKPROXY
     }
     //### sees to fail sometimes ... a timing issue with the test on windows
     QTcpServer server;
@@ -407,9 +423,13 @@ void tst_QTcpServer::listenError()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
+#ifndef QT_NO_NETWORKPROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy)
             QSKIP("With socks5 we can not make hard requirements on the address or port");
+#else // !QT_NO_NETWORKPROXY
+        QSKIP("No proxy support");
+#endif //QT_NO_NETWORKPROXY
     }
     QTcpServer server;
     QVERIFY(!server.listen(QHostAddress("1.2.3.4"), 0));
@@ -453,9 +473,13 @@ void tst_QTcpServer::waitForConnectionTest()
 
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
+#ifndef QT_NO_NETWORKPROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy)
             QSKIP("Localhost servers don't work well with SOCKS5");
+#else // !QT_NO_NETWORKPROXY
+        QSKIP("No proxy support");
+#endif // QT_NO_NETWORKPROXY
     }
 
     QTcpSocket findLocalIpSocket;
@@ -481,6 +505,7 @@ void tst_QTcpServer::waitForConnectionTest()
 }
 
 //----------------------------------------------------------------------------------
+#ifndef Q_OS_WINRT
 void tst_QTcpServer::setSocketDescriptor()
 {
     QTcpServer server;
@@ -510,6 +535,7 @@ void tst_QTcpServer::setSocketDescriptor()
     WSACleanup();
 #endif
 }
+#endif // !Q_OS_WINRT
 
 //----------------------------------------------------------------------------------
 void tst_QTcpServer::listenWhileListening()
@@ -531,6 +557,7 @@ public:
     bool ok;
 
 protected:
+#ifndef Q_OS_WINRT
     void incomingConnection(qintptr socketDescriptor)
     {
         // how a user woulddo it (qabstractsocketengine is not public)
@@ -543,6 +570,7 @@ protected:
         ::close(socketDescriptor);
 #endif
     }
+#endif // !Q_OS_WINRT
 };
 
 #ifndef QT_NO_PROCESS
@@ -550,9 +578,13 @@ void tst_QTcpServer::addressReusable()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
+#ifndef QT_NO_NETWORKPROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy)
             QSKIP("With socks5 this test does not make senans at the momment");
+#else // !QT_NO_NETWORKPROXY
+        QSKIP("No proxy support");
+#endif // QT_NO_NETWORKPROXY
     }
 #if defined(Q_OS_WINCE)
     QString signalName = QString::fromLatin1("/test_signal.txt");
@@ -596,9 +628,13 @@ void tst_QTcpServer::setNewSocketDescriptorBlocking()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
+#ifndef QT_NO_NETWORKPROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy)
             QSKIP("With socks5 we can not make the socket descripter blocking");
+#else // !QT_NO_NETWORKPROXY
+        QSKIP("No proxy support");
+#endif // QT_NO_NETWORKPROXY
     }
     SeverWithBlockingSockets server;
     QVERIFY(server.listen());
@@ -609,6 +645,7 @@ void tst_QTcpServer::setNewSocketDescriptorBlocking()
     QVERIFY(server.ok);
 }
 
+#ifndef QT_NO_NETWORKPROXY
 void tst_QTcpServer::invalidProxy_data()
 {
     QTest::addColumn<int>("type");
@@ -763,6 +800,7 @@ void tst_QTcpServer::proxyFactory()
     // Sometimes, error codes change for the better
     QTEST(int(server.serverError()), "expectedError");
 }
+#endif // !QT_NO_NETWORKPROXY
 
 class Qtbug14268Helper : public QObject
 {

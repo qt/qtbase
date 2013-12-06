@@ -148,7 +148,9 @@ void tst_QUdpSocket::initTestCase_data()
     QTest::addColumn<int>("proxyType");
 
     QTest::newRow("WithoutProxy") << false << 0;
+#ifndef QT_NO_SOCKS5
     QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy);
+#endif
 
 #ifndef QT_NO_BEARERMANAGEMENT
     netConfMan = new QNetworkConfigurationManager(this);
@@ -171,16 +173,22 @@ void tst_QUdpSocket::init()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
+#ifndef QT_NO_SOCKS5
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy) {
             QNetworkProxy::setApplicationProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1080));
         }
+#else
+        QSKIP("No proxy support");
+#endif // !QT_NO_SOCKS5
     }
 }
 
 void tst_QUdpSocket::cleanup()
 {
+#ifndef QT_NO_NETWORKPROXY
         QNetworkProxy::setApplicationProxy(QNetworkProxy::DefaultProxy);
+#endif // !QT_NO_NETWORKPROXY
 }
 
 
@@ -250,9 +258,13 @@ void tst_QUdpSocket::broadcasting()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
+#ifndef QT_NO_NETWORKPROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy)
             QSKIP("With socks5 Broadcast is not supported.");
+#else // !QT_NO_NETWORKPROXY
+        QSKIP("No proxy support");
+#endif // QT_NO_NETWORKPROXY
     }
 #ifdef Q_OS_AIX
     QSKIP("Broadcast does not work on darko");
@@ -746,9 +758,13 @@ void tst_QUdpSocket::bindMode()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
+#ifndef QT_NO_NETWORKPROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy)
             QSKIP("With socks5 explicit port binding is not supported.");
+#else // !QT_NO_NETWORKPROXY
+        QSKIP("No proxy support");
+#endif // QT_NO_NETWORKPROXY
     }
 
     QUdpSocket socket;

@@ -10,6 +10,10 @@ SUBDIRS=\
    qnetworkaddressentry \
    qhostaddress \
 
+winrt: SUBDIRS -= \
+   qnetworkproxy \
+   qnetworkproxyfactory \
+
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
     qauthenticator \
     qhostinfo \

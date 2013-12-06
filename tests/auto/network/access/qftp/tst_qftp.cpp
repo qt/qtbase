@@ -197,13 +197,17 @@ void tst_QFtp::initTestCase_data()
     QTest::addColumn<bool>("setSession");
 
     QTest::newRow("WithoutProxy") << false << 0 << false;
+#ifndef QT_NO_SOCKS5
     QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy) << false;
+#endif
     //### doesn't work well yet.
     //QTest::newRow("WithHttpProxy") << true << int(QNetworkProxy::HttpProxy);
 
 #ifndef QT_NO_BEARERMANAGEMENT
     QTest::newRow("WithoutProxyWithSession") << false << 0 << true;
+#ifndef QT_NO_SOCKS5
     QTest::newRow("WithSocks5ProxyAndSession") << true << int(QNetworkProxy::Socks5Proxy) << true;
+#endif
 #endif
 }
 
@@ -232,11 +236,16 @@ void tst_QFtp::init()
     QFETCH_GLOBAL(int, proxyType);
     QFETCH_GLOBAL(bool, setSession);
     if (setProxy) {
+#ifndef QT_NO_NETWORKPROXY
         if (proxyType == QNetworkProxy::Socks5Proxy) {
             QNetworkProxy::setApplicationProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1080));
         } else if (proxyType == QNetworkProxy::HttpProxy) {
             QNetworkProxy::setApplicationProxy(QNetworkProxy(QNetworkProxy::HttpProxy, QtNetworkSettings::serverName(), 3128));
         }
+#else // !QT_NO_NETWORKPROXY
+        Q_UNUSED(proxyType);
+        QSKIP("No proxy support");
+#endif // QT_NO_NETWORKPROXY
     }
 #ifndef QT_NO_BEARERMANAGEMENT
     if (setSession) {
@@ -293,7 +302,11 @@ void tst_QFtp::cleanup()
     }
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
+#ifndef QT_NO_NETWORKPROXY
         QNetworkProxy::setApplicationProxy(QNetworkProxy::DefaultProxy);
+#else
+        QSKIP("No proxy support");
+#endif
     }
 
     delete ftp;
@@ -749,14 +762,14 @@ void tst_QFtp::put()
     QFETCH( QByteArray, fileData );
     QFETCH( bool, useIODevice );
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(QT_NO_NETWORKPROXY)
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy)
             QSKIP("With socks5 the put() test takes too long time on Windows.");
     }
-#endif
+#endif // OS_WIN && !QT_NO_NETWORKPROXY
 
     const int timestep = 50;
 

@@ -552,6 +552,7 @@ class QDataStream;
 
 #if defined(Q_OS_WINRT)
 #  define QT_NO_FILESYSTEMWATCHER
+#  define QT_NO_GETADDRINFO
 #  define QT_NO_NETWORKPROXY
 #  define QT_NO_PROCESS
 #  define QT_NO_SOCKETNOTIFIER

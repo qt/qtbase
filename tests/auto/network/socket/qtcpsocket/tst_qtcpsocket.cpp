@@ -132,7 +132,9 @@ private slots:
     void bind_data();
     void bind();
     void setInvalidSocketDescriptor();
+#ifndef Q_OS_WINRT
     void setSocketDescriptor();
+#endif
     void socketDescriptor();
     void blockingIMAP();
     void nonBlockingIMAP();
@@ -191,10 +193,12 @@ private slots:
     void taskQtBug5799ConnectionErrorEventLoop();
     void taskQtBug7054TimeoutErrorResetting();
 
+#ifndef QT_NO_NETWORKPROXY
     void invalidProxy_data();
     void invalidProxy();
     void proxyFactory_data();
     void proxyFactory();
+#endif // !QT_NO_NETWORKPROXY
 
     void qtbug14268_peek();
 
@@ -216,7 +220,9 @@ protected slots:
     void hostLookupSlot();
     void abortiveClose_abortSlot();
     void remoteCloseErrorSlot();
+#ifndef QT_NO_NETWORKPROXY
     void proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *auth);
+#endif
     void earlySocketBytesSent(qint64 bytes);
     void earlySocketReadyRead();
 
@@ -354,6 +360,7 @@ void tst_QTcpSocket::init()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
+#ifndef QT_NO_NETWORKPROXY
         QFETCH_GLOBAL(int, proxyType);
         QList<QHostAddress> addresses = QHostInfo::fromName(QtNetworkSettings::serverName()).addresses();
         QVERIFY2(addresses.count() > 0, "failed to get ip address for test server");
@@ -382,6 +389,9 @@ void tst_QTcpSocket::init()
             break;
         }
         QNetworkProxy::setApplicationProxy(proxy);
+#else // !QT_NO_NETWORKPROXY
+        QSKIP("No proxy support");
+#endif // QT_NO_NETWORKPROXY
     }
 
     qt_qhostinfo_clear_cache();
@@ -406,15 +416,19 @@ QTcpSocket *tst_QTcpSocket::newSocket() const
 
 void tst_QTcpSocket::cleanup()
 {
+#ifndef QT_NO_NETWORKPROXY
     QNetworkProxy::setApplicationProxy(QNetworkProxy::DefaultProxy);
+#endif
 }
 
+#ifndef QT_NO_NETWORKPROXY
 void tst_QTcpSocket::proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *auth)
 {
     ++proxyAuthCalled;
     auth->setUser("qsockstest");
     auth->setPassword("password");
 }
+#endif // !QT_NO_NETWORKPROXY
 
 //----------------------------------------------------------------------------------
 
@@ -552,6 +566,7 @@ void tst_QTcpSocket::setInvalidSocketDescriptor()
 
 //----------------------------------------------------------------------------------
 
+#ifndef Q_OS_WINRT
 void tst_QTcpSocket::setSocketDescriptor()
 {
     QFETCH_GLOBAL(bool, setProxy);
@@ -596,6 +611,7 @@ void tst_QTcpSocket::setSocketDescriptor()
     delete dummy;
 #endif
 }
+#endif // !Q_OS_WINRT
 
 //----------------------------------------------------------------------------------
 
@@ -1546,7 +1562,9 @@ void tst_QTcpSocket::synchronousApi()
 void tst_QTcpSocket::dontCloseOnTimeout()
 {
     QTcpServer server;
+#ifndef QT_NO_NETWORKPROXY
     server.setProxy(QNetworkProxy(QNetworkProxy::NoProxy));
+#endif
     QVERIFY(server.listen());
 
     QHostAddress serverAddress = QHostAddress::LocalHost;
@@ -1673,11 +1691,13 @@ private slots:
     {
         quit();
     }
+#ifndef QT_NO_NETWORKPROXY
     inline void proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *auth)
     {
         auth->setUser("qsockstest");
         auth->setPassword("password");
     }
+#endif // !QT_NO_NETWORKPROXY
 private:
     int exitCode;
     QTcpSocket *socket;
@@ -1970,11 +1990,13 @@ public slots:
         tst_QTcpSocket::exitLoop();
     }
 
+#ifndef QT_NO_NETWORKPROXY
     inline void proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *auth)
     {
         auth->setUser("qsockstest");
         auth->setPassword("password");
     }
+#endif // !QT_NO_NETWORKPROXY
 };
 
 //----------------------------------------------------------------------------------
@@ -2500,6 +2522,7 @@ void tst_QTcpSocket::taskQtBug7054TimeoutErrorResetting()
     QVERIFY(socket->error() == QAbstractSocket::RemoteHostClosedError);
 }
 
+#ifndef QT_NO_NETWORKPROXY
 void tst_QTcpSocket::invalidProxy_data()
 {
     QTest::addColumn<int>("type");
@@ -2676,6 +2699,7 @@ void tst_QTcpSocket::proxyFactory()
 
     delete socket;
 }
+#endif // !QT_NO_NETWORKPROXY
 
 // there is a similar test inside tst_qtcpserver that uses the event loop instead
 void tst_QTcpSocket::qtbug14268_peek()
