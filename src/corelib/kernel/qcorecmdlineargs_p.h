@@ -101,8 +101,8 @@ static QVector<Char*> qWinCmdLine(Char *cmdParam, int length, int &argc)
                     }
                 }
                 if (*p == '\\') {                // escape char?
-                    // testing by looking at argc, argv shows that it only escapes quotes and backslashes
-                    if (p < p_end && (*(p+1) == Char('\"') || *(p+1) == Char('\\')))
+                    // testing by looking at argc, argv shows that it only escapes quotes
+                    if (p < p_end && (*(p+1) == Char('\"')))
                         p++;
                 } else {
                     if (!quote && (*p == Char('\"'))) {
