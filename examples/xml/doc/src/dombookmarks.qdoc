@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example xml/dombookmarks
+    \example dombookmarks
     \title DOM Bookmarks Example
 
     The DOM Bookmarks example provides a reader for XML Bookmark Exchange Language (XBEL)
