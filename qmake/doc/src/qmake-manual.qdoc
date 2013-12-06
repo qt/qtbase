@@ -972,9 +972,6 @@
          library and header files. The proper include and library paths for the
          Qt library will automatically be added to the project. This is defined
          by default, and can be fine-tuned with the \c{\l{#qt}{QT}} variable.
-    \row \li thread \li The target is a multi-threaded application or library.  The
-        proper defines and compiler flags will automatically be added to
-        the project. This value is set by default.
     \row \li x11 \li The target is a X11 application or library. The proper
         include paths and libraries will automatically be added to the
         project.
@@ -1003,8 +1000,6 @@
     \row \li designer \li The target is a plugin for \QD.
     \row \li no_lflags_merge \li Ensures that the list of libraries stored in the
          \c LIBS variable is not reduced to a list of unique values before it is used.
-    \row \li resources \li Configures qmake to run rcc on the content of \c RESOURCES
-         if defined.
     \endtable
 
     These options define specific features on Windows only:
@@ -1020,8 +1015,6 @@
          as part of a library project.
     \row \li embed_manifest_exe \li Embeds a manifest file in the DLL created
          as part of an application project.
-    \row \li incremental \li Used to enable or disable incremental linking in Visual
-         C++, depending on whether this feature is enabled or disabled by default.
     \endtable
 
     See \l{Platform Notes#Visual Studio Manifest Files}{Platform Notes}
@@ -1031,8 +1024,6 @@
 
     \table
     \header \li Option \li Description
-    \row \li ppc \li Builds a PowerPC binary.
-    \row \li x86 \li Builds an i386 compatible binary.
     \row \li app_bundle \li Puts the executable into a bundle (this is the default).
     \row \li lib_bundle \li Puts the library into a library bundle.
     \endtable
