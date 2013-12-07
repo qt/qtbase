@@ -203,7 +203,6 @@ public:
 
     void selectPrinter(const QPrinter::OutputFormat outputFormat);
 
-    void _q_chbPrintLastFirstToggled(bool);
     void _q_togglePageSetCombo(bool);
 #ifndef QT_NO_MESSAGEBOX
     void _q_checkFields();
@@ -363,9 +362,6 @@ void QPrintDialogPrivate::init()
 #endif
     QObject::connect(buttons, SIGNAL(rejected()), q, SLOT(reject()));
 
-    QObject::connect(options.reverse, SIGNAL(toggled(bool)),
-                     q, SLOT(_q_chbPrintLastFirstToggled(bool)));
-
     QObject::connect(options.printSelection, SIGNAL(toggled(bool)),
                      q, SLOT(_q_togglePageSetCombo(bool)));
 
@@ -429,6 +425,7 @@ void QPrintDialogPrivate::setupPrinter()
     }
 
     p->setColorMode(options.color->isChecked() ? QPrinter::Color : QPrinter::GrayScale);
+    p->setPageOrder(options.reverse->isChecked() ? QPrinter::LastPageFirst : QPrinter::FirstPageFirst);
 
     // print range
     if (options.printAll->isChecked()) {
@@ -484,15 +481,6 @@ void QPrintDialogPrivate::setupPrinter()
     p->setCollateCopies(options.collate->isChecked());
 
     top->d->setupPrinter();
-}
-
-void QPrintDialogPrivate::_q_chbPrintLastFirstToggled(bool checked)
-{
-    Q_Q(QPrintDialog);
-    if (checked)
-        q->printer()->setPageOrder(QPrinter::LastPageFirst);
-    else
-        q->printer()->setPageOrder(QPrinter::FirstPageFirst);
 }
 
 void QPrintDialogPrivate::_q_togglePageSetCombo(bool checked)
