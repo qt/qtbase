@@ -412,6 +412,10 @@ void QPrintDialogPrivate::applyPrinterProperties()
 
 void QPrintDialogPrivate::setupPrinter()
 {
+    // First setup the requested OutputFormat, Printer and Page Size first
+    top->d->setupPrinter();
+
+    // Then setup Print Job options
     Q_Q(QPrintDialog);
     QPrinter* p = q->printer();
 
@@ -479,8 +483,6 @@ void QPrintDialogPrivate::setupPrinter()
     // copies
     p->setCopyCount(options.copies->value());
     p->setCollateCopies(options.collate->isChecked());
-
-    top->d->setupPrinter();
 }
 
 void QPrintDialogPrivate::_q_togglePageSetCombo(bool checked)
