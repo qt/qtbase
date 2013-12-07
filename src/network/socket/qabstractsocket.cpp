@@ -578,8 +578,7 @@ QAbstractSocketPrivate::~QAbstractSocketPrivate()
 
 /*! \internal
 
-    Resets the socket layer, clears the read and write buffers and
-    deletes any socket notifiers.
+    Resets the socket layer and deletes any socket notifiers.
 */
 void QAbstractSocketPrivate::resetSocketLayer()
 {
@@ -1821,6 +1820,7 @@ qintptr QAbstractSocket::socketDescriptor() const
     as a valid socket descriptor; otherwise returns \c false.
     The socket is opened in the mode specified by \a openMode, and
     enters the socket state specified by \a socketState.
+    Read and write buffers are cleared, discarding any pending data.
 
     \b{Note:} It is not possible to initialize two abstract sockets
     with the same native socket descriptor.
@@ -1833,6 +1833,8 @@ bool QAbstractSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState 
     Q_D(QAbstractSocket);
 
     d->resetSocketLayer();
+    d->writeBuffer.clear();
+    d->buffer.clear();
     d->socketEngine = QAbstractSocketEngine::createSocketEngine(socketDescriptor, this);
     if (!d->socketEngine) {
         d->socketError = UnsupportedSocketOperationError;
@@ -2281,6 +2283,7 @@ void QAbstractSocket::abort()
 #if defined (QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocket::abort()");
 #endif
+    d->writeBuffer.clear();
     if (d->state == UnconnectedState)
         return;
 #ifndef QT_NO_SSL
@@ -2295,7 +2298,6 @@ void QAbstractSocket::abort()
         d->connectTimer = 0;
     }
 
-    d->writeBuffer.clear();
     d->abortCalled = true;
     close();
 }
