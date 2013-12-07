@@ -119,37 +119,6 @@ QBezier QBezier::getSubRange(qreal t0, qreal t1) const
     return result;
 }
 
-static inline int quadraticRoots(qreal a, qreal b, qreal c,
-                                 qreal *x1, qreal *x2)
-{
-    if (qFuzzyIsNull(a)) {
-        if (qFuzzyIsNull(b))
-            return 0;
-        *x1 = *x2 = (-c / b);
-        return 1;
-    } else {
-        const qreal det = b * b - 4 * a * c;
-        if (qFuzzyIsNull(det)) {
-            *x1 = *x2 = -b / (2 * a);
-            return 1;
-        }
-        if (det > 0) {
-            if (qFuzzyIsNull(b)) {
-                *x2 = qSqrt(-c / a);
-                *x1 = -(*x2);
-                return 2;
-            }
-            const qreal stableA = b / (2 * a);
-            const qreal stableB = c / (a * stableA * stableA);
-            const qreal stableC = -1 - qSqrt(1 - stableB);
-            *x2 = stableA * stableC;
-            *x1 = (stableA * stableB) / stableC;
-            return 2;
-        } else
-            return 0;
-    }
-}
-
 void QBezier::addToPolygon(QPolygonF *polygon, qreal bezier_flattening_threshold) const
 {
     QBezier beziers[10];
