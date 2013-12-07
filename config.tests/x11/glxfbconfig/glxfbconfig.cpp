@@ -44,7 +44,6 @@
 
 int main(int, char **)
 {
-    //We require glxfbconfig, ie. glx 1.3
     GLXFBConfig config;
     config = 0;
 
