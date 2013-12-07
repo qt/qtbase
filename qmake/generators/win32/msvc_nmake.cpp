@@ -303,7 +303,7 @@ void NmakeMakefileGenerator::writeNmakeParts(QTextStream &t)
     }
 }
 
-QString NmakeMakefileGenerator::var(const ProKey &value)
+QString NmakeMakefileGenerator::var(const ProKey &value) const
 {
     if (usePCH) {
         if ((value == "QMAKE_RUN_CXX_IMP_BATCH"
