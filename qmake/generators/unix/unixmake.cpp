@@ -94,6 +94,25 @@ UnixMakefileGenerator::init()
     if(project->isEmpty("QMAKE_SYMBOLIC_LINK"))
         project->values("QMAKE_SYMBOLIC_LINK").append("ln -f -s");
 
+    if (!project->isEmpty("TARGET"))
+        project->values("TARGET") = escapeFilePaths(project->values("TARGET"));
+    project->values("QMAKE_ORIG_TARGET") = project->values("TARGET");
+
+    //version handling
+    if (project->isEmpty("VERSION")) {
+        project->values("VERSION").append(
+            "1.0." + (project->isEmpty("VER_PAT") ? QString("0") : project->first("VER_PAT")));
+    }
+    QStringList l = project->first("VERSION").toQString().split('.');
+    l << "0" << "0"; //make sure there are three
+    project->values("VER_MAJ").append(l[0]);
+    project->values("VER_MIN").append(l[1]);
+    project->values("VER_PAT").append(l[2]);
+
+    project->values("DISTFILES") += project->projectFile();
+    if (!project->isEmpty("QMAKE_INTERNAL_INCLUDED_FILES"))
+        project->values("DISTFILES") += project->values("QMAKE_INTERNAL_INCLUDED_FILES");
+
     /* this should probably not be here, but I'm using it to wrap the .t files */
     if(project->first("TEMPLATE") == "app")
         project->values("QMAKE_APP_FLAG").append("1");
@@ -106,10 +125,6 @@ UnixMakefileGenerator::init()
         return; /* subdirs is done */
     }
 
-    if (!project->isEmpty("TARGET"))
-        project->values("TARGET") = escapeFilePaths(project->values("TARGET"));
-
-    project->values("QMAKE_ORIG_TARGET") = project->values("TARGET");
     project->values("QMAKE_ORIG_DESTDIR") = project->values("DESTDIR");
     project->values("QMAKE_LIBS") += escapeFilePaths(project->values("LIBS"));
     project->values("QMAKE_LIBS_PRIVATE") += escapeFilePaths(project->values("LIBS_PRIVATE"));
@@ -303,10 +318,6 @@ UnixMakefileGenerator::init()
         project->values("QMAKE_BUNDLE").clear();
         project->values("QMAKE_BUNDLE_LOCATION").clear();
     }
-
-    if(!project->isEmpty("QMAKE_INTERNAL_INCLUDED_FILES"))
-        project->values("DISTFILES") += project->values("QMAKE_INTERNAL_INCLUDED_FILES");
-    project->values("DISTFILES") += project->projectFile();
 
     init2();
     project->values("QMAKE_INTERNAL_PRL_LIBS") << "QMAKE_LIBS";

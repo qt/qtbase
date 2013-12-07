@@ -1015,16 +1015,6 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 
 void UnixMakefileGenerator::init2()
 {
-    //version handling
-    if(project->isEmpty("VERSION"))
-        project->values("VERSION").append("1.0." +
-                                               (project->isEmpty("VER_PAT") ? QString("0") :
-                                                project->first("VER_PAT")));
-    QStringList l = project->first("VERSION").toQString().split('.');
-    l << "0" << "0"; //make sure there are three
-    project->values("VER_MAJ").append(l[0]);
-    project->values("VER_MIN").append(l[1]);
-    project->values("VER_PAT").append(l[2]);
     if(project->isEmpty("QMAKE_FRAMEWORK_VERSION"))
         project->values("QMAKE_FRAMEWORK_VERSION").append(project->values("VER_MAJ").first());
 
