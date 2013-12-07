@@ -1,0 +1,85 @@
+From 806fbe22a3515792b6716b5072a2131e2ce3437a Mon Sep 17 00:00:00 2001
+From: Andrew Knight <andrew.knight@digia.com>
+Date: Sat, 7 Dec 2013 23:57:39 +0200
+Subject: [PATCH] ANGLE: Dynamically load D3D compiler from a list or the
+ environment
+
+If the default compiler cannot be found, load it from a list of DLL names,
+including a non-versioned proxy DLL provided by Qt. On Desktop Windows,
+the default compiler can also be specified by an environment variable,
+QT_D3DCOMPILER_DLL.
+
+Change-Id: I0d7a8a8a36cc571836f8fa59ea14513b9b19c19b
+---
+ .../angle/src/libGLESv2/renderer/Renderer.cpp      | 44 ++++++++++++++++++----
+ 1 file changed, 36 insertions(+), 8 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
+index 7ba183d..39fd0f4 100644
+--- a/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/renderer/Renderer.cpp
+@@ -29,12 +29,12 @@
+ #endif
+ 
+ #ifndef D3DCOMPILER_DLL
+-#ifndef ANGLE_OS_WINPHONE
+ #define D3DCOMPILER_DLL L"d3dcompiler_43.dll" // Lowest common denominator
+-#else
+-#define D3DCOMPILER_DLL L"qtd3dcompiler.dll" // Placeholder DLL for phone
+-#endif // ANGLE_OS_WINPHONE
+-#endif // D3DCOMPILER_DLL
++#endif
++
++#ifndef QT_D3DCOMPILER_DLL
++#define QT_D3DCOMPILER_DLL D3DCOMPILER_DLL
++#endif
+ 
+ #if defined(__MINGW32__) || defined(ANGLE_OS_WINPHONE)
+ 
+@@ -83,12 +83,40 @@ bool Renderer::initializeCompiler()
+         }
+     }
+ #else
+-    // Load the version of the D3DCompiler DLL associated with the Direct3D version ANGLE was built with.
++    // Load the compiler DLL specified by the environment, or default to QT_D3DCOMPILER_DLL
++#if !defined(ANGLE_OS_WINRT)
++    const wchar_t *defaultCompiler = _wgetenv(L"QT_D3DCOMPILER_DLL");
++    if (!defaultCompiler)
++        defaultCompiler = QT_D3DCOMPILER_DLL;
++#else // !ANGLE_OS_WINRT
++#  ifdef _DEBUG
++    const wchar_t *defaultCompiler = L"d3dcompiler_qtd.dll";
++#  else
++    const wchar_t *defaultCompiler = L"d3dcompiler_qt.dll";
++#  endif
++#endif // ANGLE_OS_WINRT
++
++    const wchar_t *compilerDlls[] = {
++        defaultCompiler,
++        L"d3dcompiler_47.dll",
++        L"d3dcompiler_46.dll",
++        L"d3dcompiler_45.dll",
++        L"d3dcompiler_44.dll",
++        L"d3dcompiler_43.dll",
++        0
++    };
++
++    // Load the first available known compiler DLL
++    for (int i = 0; compilerDlls[i]; ++i)
++    {
+ #if !defined(ANGLE_OS_WINRT)
+-    mD3dCompilerModule = LoadLibrary(D3DCOMPILER_DLL);
++        mD3dCompilerModule = LoadLibrary(compilerDlls[i]);
+ #else
+-    mD3dCompilerModule = LoadPackagedLibrary(D3DCOMPILER_DLL, NULL);
++        mD3dCompilerModule = LoadPackagedLibrary(compilerDlls[i], NULL);
+ #endif
++        if (mD3dCompilerModule)
++            break;
++    }
+ #endif  // ANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES
+ 
+     if (!mD3dCompilerModule)
+-- 
+1.8.4.msysgit.0
+
