@@ -1,5 +1,6 @@
 TEMPLATE = subdirs
 SUBDIRS += src
+angle_d3d11: SUBDIRS += d3dcompiler
 
 # We do it this way instead of letting load(qt_module) handle it for two reasons:
 #  1) qt_module_headers assumes the TARGET is the same as the include directory (eg: libGLESv2 != GLES2)
