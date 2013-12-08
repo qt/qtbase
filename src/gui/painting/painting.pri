@@ -90,7 +90,6 @@ SOURCES += \
 SSE2_SOURCES += painting/qdrawhelper_sse2.cpp
 SSSE3_SOURCES += painting/qdrawhelper_ssse3.cpp
 IWMMXT_SOURCES += painting/qdrawhelper_iwmmxt.cpp
-AVX_SOURCES += painting/qdrawhelper_avx.cpp
 
 !ios {
     NEON_SOURCES += painting/qdrawhelper_neon.cpp

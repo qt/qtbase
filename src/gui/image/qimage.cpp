@@ -3922,20 +3922,7 @@ static InPlace_Image_Converter inplace_converter_map[QImage::NImageFormats][QIma
 
 void qInitImageConversions()
 {
-#ifdef QT_COMPILER_SUPPORTS_AVX
-    if (qCpuHasFeature(AVX)) {
-        extern bool convert_ARGB_to_ARGB_PM_inplace_avx(QImageData *data, Qt::ImageConversionFlags);
-        inplace_converter_map[QImage::Format_ARGB32][QImage::Format_ARGB32_Premultiplied] = convert_ARGB_to_ARGB_PM_inplace_avx;
-
-        extern void convert_RGB888_to_RGB32_avx(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags);
-        converter_map[QImage::Format_RGB888][QImage::Format_RGB32] = convert_RGB888_to_RGB32_avx;
-        converter_map[QImage::Format_RGB888][QImage::Format_ARGB32] = convert_RGB888_to_RGB32_avx;
-        converter_map[QImage::Format_RGB888][QImage::Format_ARGB32_Premultiplied] = convert_RGB888_to_RGB32_avx;
-        return;
-    }
-#endif
-
-#if defined(QT_COMPILER_SUPPORTS_SSE2) && !defined(__AVX__)
+#if defined(QT_COMPILER_SUPPORTS_SSE2)
     if (qCpuHasFeature(SSE2)) {
         extern bool convert_ARGB_to_ARGB_PM_inplace_sse2(QImageData *data, Qt::ImageConversionFlags);
         inplace_converter_map[QImage::Format_ARGB32][QImage::Format_ARGB32_Premultiplied] = convert_ARGB_to_ARGB_PM_inplace_sse2;
