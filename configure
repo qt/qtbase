@@ -611,7 +611,6 @@ CFG_OPENVG_LC_INCLUDES=no
 CFG_OPENVG_SHIVA=auto
 CFG_OPENVG_ON_OPENGL=auto
 CFG_EGL=auto
-CFG_SSE=auto
 CFG_FONTCONFIG=auto
 CFG_FREETYPE=auto
 CFG_HARFBUZZ=no
@@ -1157,13 +1156,6 @@ while [ "$#" -gt 0 ]; do
     libexecdir)
         QT_INSTALL_LIBEXECS="$VAL"
         ;;
-    sse)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_SSE="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-	;;
     opengl)
         if  [ "$VAL" = "auto" ] || [ "$VAL" = "desktop" ] ||
             [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] ||
