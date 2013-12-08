@@ -94,7 +94,7 @@ private:
     qreal m_topMargin;
     qreal m_rightMargin;
     qreal m_bottomMargin;
-    QSizeF m_paperSize;
+    QSizeF m_paperSize; // In QPrinter::Point
     qreal m_currentMultiplier;
     bool m_blockSignals;
     bool m_cups;
