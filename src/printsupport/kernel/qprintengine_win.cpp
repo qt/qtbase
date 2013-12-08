@@ -1453,6 +1453,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
             d->devMode->dmPaperLength = qRound(sizeMM.height() * 10.0);
             d->devMode->dmPaperWidth = qRound(sizeMM.width() * 10.0);
         }
+        d->doReinit();
         break;
     }
 
