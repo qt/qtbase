@@ -519,7 +519,7 @@ EGLint SwapChain11::reset(int backbufferWidth, int backbufferHeight, EGLint swap
         swapChainDesc.SampleDesc.Quality = 0;
 
 #if !defined(ANGLE_OS_WINRT)
-        result = factory->CreateSwapChain(device, &swapChainDesc, &mSwapChain);
+        HRESULT result = factory->CreateSwapChain(device, &swapChainDesc, &mSwapChain);
 #else
         IDXGISwapChain1 *swapChain;
         result = factory->CreateSwapChainForCoreWindow(device, mWindow, &swapChainDesc, NULL, &swapChain);
