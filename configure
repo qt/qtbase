@@ -4224,6 +4224,9 @@ if [ "${CFG_SSE2}" = "auto" ]; then
 fi
 
 # detect sse3 support
+if [ "${CFG_SSE2}" = "no" ]; then
+    CFG_SSE3=no
+fi
 if [ "${CFG_SSE3}" = "auto" ]; then
     if compileTest common/sse3 "sse3"; then
        CFG_SSE3=yes
@@ -4233,6 +4236,9 @@ if [ "${CFG_SSE3}" = "auto" ]; then
 fi
 
 # detect ssse3 support
+if [ "${CFG_SSE3}" = "no" ]; then
+    CFG_SSSE3=no
+fi
 if [ "${CFG_SSSE3}" = "auto" ]; then
     if compileTest common/ssse3 "ssse3"; then
        CFG_SSSE3=yes
@@ -4242,6 +4248,9 @@ if [ "${CFG_SSSE3}" = "auto" ]; then
 fi
 
 # detect sse4.1 support
+if [ "${CFG_SSSE3}" = "no" ]; then
+    CFG_SSE4_1=no
+fi
 if [ "${CFG_SSE4_1}" = "auto" ]; then
     if compileTest common/sse4_1 "sse4_1"; then
        CFG_SSE4_1=yes
@@ -4251,6 +4260,9 @@ if [ "${CFG_SSE4_1}" = "auto" ]; then
 fi
 
 # detect sse4.2 support
+if [ "${CFG_SSE4_1}" = "no" ]; then
+    CFG_SSE4_2=no
+fi
 if [ "${CFG_SSE4_2}" = "auto" ]; then
     if compileTest common/sse4_2 "sse4_2"; then
        CFG_SSE4_2=yes
@@ -4260,6 +4272,9 @@ if [ "${CFG_SSE4_2}" = "auto" ]; then
 fi
 
 # detect avx support
+if [ "${CFG_SSE4_2}" = "no" ]; then
+    CFG_AVX=no
+fi
 if [ "${CFG_AVX}" = "auto" ]; then
     if compileTest common/avx "avx"; then
        case "$XQMAKESPEC" in
