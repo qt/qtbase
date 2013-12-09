@@ -538,7 +538,6 @@ void tst_QProcess::echoTest2()
 #endif
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-//Batch files are not supported on Winfows CE
 // Reading and writing to a process is not supported on Qt/CE
 //-----------------------------------------------------------------------------
 void tst_QProcess::echoTestGui()
@@ -560,7 +559,7 @@ void tst_QProcess::echoTestGui()
 
 //-----------------------------------------------------------------------------
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-//Batch files are not supported on Winfows CE
+// Batch files are not supported on Windows CE
 void tst_QProcess::batFiles_data()
 {
     QTest::addColumn<QString>("batFile");
