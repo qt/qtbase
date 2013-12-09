@@ -171,6 +171,8 @@ extern MemRotateFunc qMemRotateFunctions[QImage::NImageFormats][3];
 extern DrawHelper qDrawHelper[QImage::NImageFormats];
 
 void qBlendTexture(int count, const QSpan *spans, void *userData);
+extern void qt_memfill32(quint32 *dest, quint32 value, int count);
+extern void qt_memfill16(quint16 *dest, quint16 value, int count);
 
 typedef void (QT_FASTCALL *CompositionFunction)(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, uint const_alpha);
 typedef void (QT_FASTCALL *CompositionFunctionSolid)(uint *dest, int length, uint color, uint const_alpha);
@@ -385,8 +387,6 @@ static inline qreal qRadialDeterminant(qreal a, qreal b, qreal c)
 {
     return (b * b) - (4 * a * c);
 }
-
-extern void (*qt_memfill32)(quint32 *dest, quint32 value, int count);
 
 template <class RadialFetchFunc> Q_STATIC_TEMPLATE_FUNCTION
 const uint * QT_FASTCALL qt_fetch_radial_gradient_template(uint *buffer, const Operator *op, const QSpanData *data,
@@ -726,7 +726,6 @@ template<> inline void qt_memfill(quint32 *dest, quint32 color, int count)
 
 template<> inline void qt_memfill(quint16 *dest, quint16 color, int count)
 {
-    extern void (*qt_memfill16)(quint16 *dest, quint16 value, int count);
     qt_memfill16(dest, color, count);
 }
 

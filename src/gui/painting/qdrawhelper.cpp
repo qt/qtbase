@@ -6178,33 +6178,32 @@ inline void qt_memfill_template(quint16 *dest, quint16 value, int count)
 }
 #endif
 
-static void qt_memfill_quint16(quint16 *dest, quint16 color, int count)
+#if !defined(__SSE2__)
+void qt_memfill16(quint16 *dest, quint16 color, int count)
 {
     qt_memfill_template<quint16>(dest, color, count);
 }
-
-typedef void (*qt_memfill32_func)(quint32 *dest, quint32 value, int count);
-typedef void (*qt_memfill16_func)(quint16 *dest, quint16 value, int count);
-static void qt_memfill32_setup(quint32 *dest, quint32 value, int count);
-static void qt_memfill16_setup(quint16 *dest, quint16 value, int count);
-
-qt_memfill32_func qt_memfill32 = qt_memfill32_setup;
-qt_memfill16_func qt_memfill16 = qt_memfill16_setup;
+#endif
+#if !defined(__SSE2__) && !defined(__ARM_NEON__)
+void qt_memfill32(quint32 *dest, quint32 color, int count)
+{
+#  ifdef QT_COMPILER_SUPPORTS_MIPS_DSP
+    extern "C" qt_memfill32_asm_mips_dsp(quint32 *, quint32, int);
+    qt_memfill32_asm_mips_dsp(dest, color, count);
+#  else
+    qt_memfill_template<quint32>(dest, color, count);
+#  endif
+}
+#endif
 
 void qInitDrawhelperAsm()
 {
-
-    qt_memfill32 = qt_memfill_template<quint32>;
-    qt_memfill16 = qt_memfill_quint16; //qt_memfill_template<quint16>;
-
     CompositionFunction *functionForModeAsm = 0;
     CompositionFunctionSolid *functionForModeSolidAsm = 0;
 
     const uint features = qCpuFeatures();
     Q_UNUSED(features);
 #ifdef __SSE2__
-        qt_memfill32 = qt_memfill32_sse2;
-        qt_memfill16 = qt_memfill16_sse2;
     qDrawHelper[QImage::Format_RGB32].bitmapBlit = qt_bitmapblit32_sse2;
     qDrawHelper[QImage::Format_ARGB32].bitmapBlit = qt_bitmapblit32_sse2;
     qDrawHelper[QImage::Format_ARGB32_Premultiplied].bitmapBlit = qt_bitmapblit32_sse2;
@@ -6304,7 +6303,6 @@ void qInitDrawhelperAsm()
 
     qMemRotateFunctions[QImage::Format_RGB16][0] = qt_memrotate90_16_neon;
     qMemRotateFunctions[QImage::Format_RGB16][2] = qt_memrotate270_16_neon;
-        qt_memfill32 = qt_memfill32_neon;
 
     extern const uint * QT_FASTCALL qt_fetch_radial_gradient_neon(uint *buffer, const Operator *op, const QSpanData *data,
                                                                   int y, int x, int length);
@@ -6333,8 +6331,6 @@ void qInitDrawhelperAsm()
         functionForModeSolid_C[QPainter::CompositionMode_Xor] = comp_func_solid_XOR_mips_dsp;
         functionForModeSolid_C[QPainter::CompositionMode_SourceOut] = comp_func_solid_SourceOut_mips_dsp;
 
-        qt_memfill32 = qt_memfill32_asm_mips_dsp;
-
         qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_mips_dsp;
         qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_mips_dsp;
         qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_mips_dsp;
@@ -6358,18 +6354,6 @@ void qInitDrawhelperAsm()
     }
     if (functionForModeAsm)
         functionForMode = functionForModeAsm;
-}
-
-static void qt_memfill32_setup(quint32 *dest, quint32 value, int count)
-{
-    qInitDrawhelperAsm();
-    qt_memfill32(dest, value, count);
-}
-
-static void qt_memfill16_setup(quint16 *dest, quint16 value, int count)
-{
-    qInitDrawhelperAsm();
-    qt_memfill16(dest, value, count);
 }
 
 QT_END_NAMESPACE
