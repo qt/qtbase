@@ -44,7 +44,7 @@
 
 #include <private/qsimd_p.h>
 
-#ifdef QT_COMPILER_SUPPORTS_SSE2
+#ifdef __SSE2__
 
 //
 //  W A R N I N G
@@ -242,6 +242,6 @@ QT_BEGIN_NAMESPACE
 
 QT_END_NAMESPACE
 
-#endif // QT_COMPILER_SUPPORTS_SSE2
+#endif // __SSE2__
 
 #endif // QDRAWINGPRIMITIVE_SSE2_P_H

@@ -87,8 +87,10 @@ SOURCES += \
         painting/qpaintbuffer.cpp \
         painting/qpathsimplifier.cpp
 
-SSE2_SOURCES += painting/qdrawhelper_sse2.cpp
-SSSE3_SOURCES += painting/qdrawhelper_ssse3.cpp
+contains(QT_CPU_FEATURES.$$QT_ARCH, sse2) {
+    SOURCES += painting/qdrawhelper_sse2.cpp
+    SSSE3_SOURCES += painting/qdrawhelper_ssse3.cpp
+}
 IWMMXT_SOURCES += painting/qdrawhelper_iwmmxt.cpp
 
 !ios {

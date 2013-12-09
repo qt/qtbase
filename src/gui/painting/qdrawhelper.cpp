@@ -6201,62 +6201,51 @@ void qInitDrawhelperAsm()
     CompositionFunctionSolid *functionForModeSolidAsm = 0;
 
     const uint features = qCpuFeatures();
-    if (false) {
-        Q_UNUSED(features);
-#ifdef QT_COMPILER_SUPPORTS_SSE2
-    } else if (features & SSE2) {
+    Q_UNUSED(features);
+#ifdef __SSE2__
         qt_memfill32 = qt_memfill32_sse2;
         qt_memfill16 = qt_memfill16_sse2;
-        qDrawHelper[QImage::Format_RGB32].bitmapBlit = qt_bitmapblit32_sse2;
-        qDrawHelper[QImage::Format_ARGB32].bitmapBlit = qt_bitmapblit32_sse2;
-        qDrawHelper[QImage::Format_ARGB32_Premultiplied].bitmapBlit = qt_bitmapblit32_sse2;
-        qDrawHelper[QImage::Format_RGB16].bitmapBlit = qt_bitmapblit16_sse2;
-        qDrawHelper[QImage::Format_RGBX8888].bitmapBlit = qt_bitmapblit32_sse2;
-        qDrawHelper[QImage::Format_RGBA8888].bitmapBlit = qt_bitmapblit32_sse2;
-        qDrawHelper[QImage::Format_RGBA8888_Premultiplied].bitmapBlit = qt_bitmapblit32_sse2;
+    qDrawHelper[QImage::Format_RGB32].bitmapBlit = qt_bitmapblit32_sse2;
+    qDrawHelper[QImage::Format_ARGB32].bitmapBlit = qt_bitmapblit32_sse2;
+    qDrawHelper[QImage::Format_ARGB32_Premultiplied].bitmapBlit = qt_bitmapblit32_sse2;
+    qDrawHelper[QImage::Format_RGB16].bitmapBlit = qt_bitmapblit16_sse2;
+    qDrawHelper[QImage::Format_RGBX8888].bitmapBlit = qt_bitmapblit32_sse2;
+    qDrawHelper[QImage::Format_RGBA8888].bitmapBlit = qt_bitmapblit32_sse2;
+    qDrawHelper[QImage::Format_RGBA8888_Premultiplied].bitmapBlit = qt_bitmapblit32_sse2;
 
-        extern void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
-                                                         const uchar *srcPixels, int sbpl,
-                                                         const QRectF &targetRect,
-                                                         const QRectF &sourceRect,
-                                                         const QRect &clip,
-                                                         int const_alpha);
-        qScaleFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_scale_image_argb32_on_argb32_sse2;
-        qScaleFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_scale_image_argb32_on_argb32_sse2;
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-        qScaleFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBA8888_Premultiplied] = qt_scale_image_argb32_on_argb32_sse2;
-        qScaleFunctions[QImage::Format_RGBX8888][QImage::Format_RGBA8888_Premultiplied] = qt_scale_image_argb32_on_argb32_sse2;
-#endif
-#endif
-    }
+    extern void qt_scale_image_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
+                                                     const uchar *srcPixels, int sbpl,
+                                                     const QRectF &targetRect,
+                                                     const QRectF &sourceRect,
+                                                     const QRect &clip,
+                                                     int const_alpha);
+    qScaleFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_scale_image_argb32_on_argb32_sse2;
+    qScaleFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_scale_image_argb32_on_argb32_sse2;
+    qScaleFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBA8888_Premultiplied] = qt_scale_image_argb32_on_argb32_sse2;
+    qScaleFunctions[QImage::Format_RGBX8888][QImage::Format_RGBA8888_Premultiplied] = qt_scale_image_argb32_on_argb32_sse2;
 
-#ifdef QT_COMPILER_SUPPORTS_SSE2
-    if (features & SSE2) {
-        extern void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
-                                                 const uchar *srcPixels, int sbpl,
-                                                 int w, int h,
-                                                 int const_alpha);
-        extern void qt_blend_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
-                                                   const uchar *srcPixels, int sbpl,
-                                                   int w, int h,
-                                                   int const_alpha);
+    extern void qt_blend_rgb32_on_rgb32_sse2(uchar *destPixels, int dbpl,
+                                             const uchar *srcPixels, int sbpl,
+                                             int w, int h,
+                                             int const_alpha);
+    extern void qt_blend_argb32_on_argb32_sse2(uchar *destPixels, int dbpl,
+                                               const uchar *srcPixels, int sbpl,
+                                               int w, int h,
+                                               int const_alpha);
 
-        qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_sse2;
-        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_sse2;
-        qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_sse2;
-        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_sse2;
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-        qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBX8888] = qt_blend_rgb32_on_rgb32_sse2;
-        qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBX8888] = qt_blend_rgb32_on_rgb32_sse2;
-        qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_sse2;
-        qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_sse2;
-#endif
+    qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_sse2;
+    qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_sse2;
+    qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_sse2;
+    qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_sse2;
+    qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBX8888] = qt_blend_rgb32_on_rgb32_sse2;
+    qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBX8888] = qt_blend_rgb32_on_rgb32_sse2;
+    qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_sse2;
+    qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_sse2;
 
-        extern const uint * QT_FASTCALL qt_fetch_radial_gradient_sse2(uint *buffer, const Operator *op, const QSpanData *data,
-                                                                      int y, int x, int length);
+    extern const uint * QT_FASTCALL qt_fetch_radial_gradient_sse2(uint *buffer, const Operator *op, const QSpanData *data,
+                                                                  int y, int x, int length);
 
-        qt_fetch_radial_gradient = qt_fetch_radial_gradient_sse2;
-    }
+    qt_fetch_radial_gradient = qt_fetch_radial_gradient_sse2;
 
 #ifdef QT_COMPILER_SUPPORTS_SSSE3
     if (features & SSSE3) {
@@ -6267,21 +6256,14 @@ void qInitDrawhelperAsm()
 
         qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_ssse3;
         qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_ssse3;
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
         qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_ssse3;
         qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_ssse3;
-#endif
     }
 #endif // SSSE3
 
+    functionForModeAsm = qt_functionForMode_SSE2;
+    functionForModeSolidAsm = qt_functionForModeSolid_SSE2;
 #endif // SSE2
-
-#ifdef QT_COMPILER_SUPPORTS_SSE2
-    if (features & SSE2) {
-        functionForModeAsm = qt_functionForMode_SSE2;
-        functionForModeSolidAsm = qt_functionForModeSolid_SSE2;
-        }
-#endif
 
 #ifdef QT_COMPILER_SUPPORTS_IWMMXT
     if (features & IWMMXT) {

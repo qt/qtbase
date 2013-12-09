@@ -162,6 +162,9 @@ static void convert_ARGB_to_ARGB_PM(QImageData *dest, const QImageData *src, Qt:
     }
 }
 
+extern bool convert_ARGB_to_ARGB_PM_inplace_sse2(QImageData *data, Qt::ImageConversionFlags);
+
+#ifndef __SSE2__
 static bool convert_ARGB_to_ARGB_PM_inplace(QImageData *data, Qt::ImageConversionFlags)
 {
     Q_ASSERT(data->format == QImage::Format_ARGB32);
@@ -180,6 +183,7 @@ static bool convert_ARGB_to_ARGB_PM_inplace(QImageData *data, Qt::ImageConversio
     data->format = QImage::Format_ARGB32_Premultiplied;
     return true;
 }
+#endif
 
 static void convert_ARGB_to_RGBx(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
 {
@@ -1986,7 +1990,11 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         0,
         0,
         0,
+#ifdef __SSE2__
+        convert_ARGB_to_ARGB_PM_inplace_sse2,
+#else
         convert_ARGB_to_ARGB_PM_inplace,
+#endif
         0,
         0,
         0,
@@ -2115,21 +2123,14 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
 
 void qInitImageConversions()
 {
-#if defined(QT_COMPILER_SUPPORTS_SSE2)
-    if (qCpuHasFeature(SSE2)) {
-        extern bool convert_ARGB_to_ARGB_PM_inplace_sse2(QImageData *data, Qt::ImageConversionFlags);
-        qimage_inplace_converter_map[QImage::Format_ARGB32][QImage::Format_ARGB32_Premultiplied] = convert_ARGB_to_ARGB_PM_inplace_sse2;
-#ifdef QT_COMPILER_SUPPORTS_SSSE3
-        if (qCpuHasFeature(SSSE3)) {
-            extern void convert_RGB888_to_RGB32_ssse3(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags);
-            qimage_converter_map[QImage::Format_RGB888][QImage::Format_RGB32] = convert_RGB888_to_RGB32_ssse3;
-            qimage_converter_map[QImage::Format_RGB888][QImage::Format_ARGB32] = convert_RGB888_to_RGB32_ssse3;
-            qimage_converter_map[QImage::Format_RGB888][QImage::Format_ARGB32_Premultiplied] = convert_RGB888_to_RGB32_ssse3;
-        }
-#endif
-        return;
+#if defined(__SSE2__) && defined(QT_COMPILER_SUPPORTS_SSSE3)
+    if (qCpuHasFeature(SSSE3)) {
+        extern void convert_RGB888_to_RGB32_ssse3(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags);
+        qimage_converter_map[QImage::Format_RGB888][QImage::Format_RGB32] = convert_RGB888_to_RGB32_ssse3;
+        qimage_converter_map[QImage::Format_RGB888][QImage::Format_ARGB32] = convert_RGB888_to_RGB32_ssse3;
+        qimage_converter_map[QImage::Format_RGB888][QImage::Format_ARGB32_Premultiplied] = convert_RGB888_to_RGB32_ssse3;
     }
-#endif // SSE2
+#endif
 
 #ifdef QT_COMPILER_SUPPORTS_NEON
     if (qCpuHasFeature(NEON)) {

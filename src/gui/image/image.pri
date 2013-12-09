@@ -79,5 +79,7 @@ contains(QT_CONFIG, gif):include($$PWD/qgifhandler.pri)
 
 # SIMD
 NEON_SOURCES += image/qimage_neon.cpp
-SSE2_SOURCES += image/qimage_sse2.cpp
-SSSE3_SOURCES += image/qimage_ssse3.cpp
+contains(QT_CPU_FEATURES.$$QT_ARCH, sse2) {
+    SOURCES += image/qimage_sse2.cpp
+    SSSE3_SOURCES += image/qimage_ssse3.cpp
+}
