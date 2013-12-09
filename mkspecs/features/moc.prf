@@ -45,7 +45,8 @@ defineReplace(mocCmdBase) {
         }
         incvar = @$$WIN_INCLUDETEMP
     } else {
-        incvar = $(INCPATH)
+        incvar = -I$$QMAKESPEC -I$$_PRO_FILE_PWD_ $$join(INCLUDEPATH, " -I", -I)
+        incvar += $$QMAKE_FRAMEWORKPATH_FLAGS
     }
     RET += $$QMAKE_MOC $(DEFINES) $$join(QMAKE_COMPILER_DEFINES, " -D", -D) $$incvar $$join(QMAKE_DEFAULT_INCDIRS, " -I", -I) $$QMAKE_MOC_OPTIONS
     return($$RET)

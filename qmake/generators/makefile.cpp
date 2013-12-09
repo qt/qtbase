@@ -456,6 +456,8 @@ MakefileGenerator::init()
     if (v["QMAKE_LINK_O_FLAG"].isEmpty())
         v["QMAKE_LINK_O_FLAG"].append("-o ");
 
+    setSystemIncludes(v["QMAKE_DEFAULT_INCDIRS"]);
+
     ProStringList &quc = v["QMAKE_EXTRA_COMPILERS"];
 
     //make sure the COMPILERS are in the correct input/output chain order

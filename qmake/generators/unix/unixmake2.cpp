@@ -125,10 +125,16 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         t << " -I" << pwd;
     }
     {
+        QString isystem = var("QMAKE_CFLAGS_ISYSTEM");
         const ProStringList &incs = project->values("INCLUDEPATH");
         for(int i = 0; i < incs.size(); ++i) {
             ProString inc = escapeFilePath(incs.at(i));
-            if(!inc.isEmpty())
+            if (inc.isEmpty())
+                continue;
+
+            if (!isystem.isEmpty() && isSystemInclude(inc.toQString()))
+                t << ' ' << isystem << ' ' << inc;
+            else
                 t << " -I" << inc;
         }
     }
