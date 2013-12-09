@@ -2464,8 +2464,6 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
         t << "include " << (*qeui_it) << endl;
 
     if (!(flags & SubTargetSkipDefaultVariables)) {
-        /* Calling Option::fixPathToTargetOS() is necessary for MinGW/MSYS, which requires
-         * back-slashes to be turned into slashes. */
         t << "QMAKE         = " << var("QMAKE_QMAKE") << endl;
         t << "DEL_FILE      = " << var("QMAKE_DEL_FILE") << endl;
         t << "CHK_DIR_EXISTS= " << var("QMAKE_CHK_DIR_EXISTS") << endl;
