@@ -93,6 +93,7 @@ private slots:
     void echoTest2();
 #ifdef Q_OS_WIN
     void echoTestGui();
+    void testSetNamedPipeHandleState();
     void batFiles_data();
     void batFiles();
 #endif
@@ -554,6 +555,17 @@ void tst_QProcess::echoTestGui()
 
     QCOMPARE(process.readAllStandardOutput(), QByteArray("Hello"));
     QCOMPARE(process.readAllStandardError(), QByteArray("Hello"));
+}
+
+void tst_QProcess::testSetNamedPipeHandleState()
+{
+    QProcess process;
+    process.setProcessChannelMode(QProcess::SeparateChannels);
+    process.start("testSetNamedPipeHandleState/testSetNamedPipeHandleState");
+    QVERIFY2(process.waitForStarted(5000), qPrintable(process.errorString()));
+    QVERIFY(process.waitForFinished(5000));
+    QCOMPARE(process.exitCode(), 0);
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
 }
 #endif // !Q_OS_WINCE && Q_OS_WIN
 
