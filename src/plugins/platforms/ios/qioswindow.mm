@@ -204,11 +204,12 @@
 
 - (void)displayLayer:(CALayer *)layer
 {
-    QRect geometry = fromCGRect(layer.frame).toRect();
-    Q_ASSERT(m_qioswindow->geometry() == geometry);
+    QSize bounds = fromCGRect(layer.bounds).toRect().size();
+
+    Q_ASSERT(m_qioswindow->geometry().size() == bounds);
     Q_ASSERT(self.hidden == !m_qioswindow->window()->isVisible());
 
-    QRegion region = self.hidden ? QRegion() : QRect(QPoint(), geometry.size());
+    QRegion region = self.hidden ? QRegion() : QRect(QPoint(), bounds);
     QWindowSystemInterface::handleExposeEvent(m_qioswindow->window(), region);
     QWindowSystemInterface::flushWindowSystemEvents();
 }
