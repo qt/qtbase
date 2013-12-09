@@ -87,6 +87,8 @@ QEglFSIntegration::QEglFSIntegration()
     , mScreen(0)
     , mInputContext(0)
 {
+    mDisableInputHandlers = qgetenv("QT_QPA_EGLFS_DISABLE_INPUT").toInt();
+
     initResources();
 }
 
@@ -176,7 +178,8 @@ void QEglFSIntegration::initialize()
 
     mInputContext = QPlatformInputContextFactory::create();
 
-    createInputHandlers();
+    if (!mDisableInputHandlers)
+        createInputHandlers();
 }
 
 QEglFSScreen *QEglFSIntegration::createScreen() const
