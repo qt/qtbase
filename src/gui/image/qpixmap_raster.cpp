@@ -187,7 +187,7 @@ void QRasterPlatformPixmap::fill(const QColor &color)
         if (alpha != 255) {
             if (!image.hasAlphaChannel()) {
                 QImage::Format toFormat;
-#if !(defined(QT_COMPILER_SUPPORTS_NEON) || defined(__SSE2__))
+#if !(defined(__ARM_NEON__) || defined(__SSE2__))
                 if (image.format() == QImage::Format_RGB16)
                     toFormat = QImage::Format_ARGB8565_Premultiplied;
                 else if (image.format() == QImage::Format_RGB666)
@@ -316,7 +316,7 @@ void QRasterPlatformPixmap::createPixmapForImage(QImage &sourceImage, Qt::ImageC
             QImage::Format opaqueFormat = QNativeImage::systemFormat();
             QImage::Format alphaFormat = QImage::Format_ARGB32_Premultiplied;
 
-#if !defined(QT_COMPILER_SUPPORTS_NEON) && !defined(__SSE2__)
+#if !defined(__ARM_NEON__) && !defined(__SSE2__)
             switch (opaqueFormat) {
             case QImage::Format_RGB16:
                 alphaFormat = QImage::Format_ARGB8565_Premultiplied;

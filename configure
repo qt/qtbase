@@ -1552,13 +1552,6 @@ while [ "$#" -gt 0 ]; do
     iwmmxt)
 	CFG_IWMMXT="yes"
 	;;
-    neon)
-        if [ "$VAL" = "no" ]; then
-            CFG_NEON="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
     mips_dsp)
         if [ "$VAL" = "no" ]; then
             CFG_MIPS_DSP="$VAL"
@@ -2283,7 +2276,6 @@ Configure options:
     -no-sse4.2 ......... Do not compile with use of SSE4.2 instructions.
     -no-avx ............ Do not compile with use of AVX instructions.
     -no-avx2 ........... Do not compile with use of AVX2 instructions.
-    -no-neon ........... Do not compile with use of NEON instructions.
     -no-mips_dsp ....... Do not compile with use of MIPS DSP instructions.
     -no-mips_dspr2 ..... Do not compile with use of MIPS DSP rev2 instructions.
 
@@ -4338,17 +4330,6 @@ if [ "$CFG_IWMMXT" = "yes" ]; then
     fi
 fi
 
-# detect neon support
-if [ "$CFG_ARCH" = "arm" ] && [ "${CFG_NEON}" = "auto" ]; then
-    if compileTest unix/neon "neon"; then
-	CFG_NEON=yes
-    else
-	CFG_NEON=no
-    fi
-elif [ "$CFG_ARCH" != "arm" ]; then
-    CFG_NEON=no
-fi
-
 # detect mips_dsp support
 if [ "$CFG_ARCH" = "mips" ] && [ "${CFG_MIPS_DSP}" = "auto" ]; then
     if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/mips_dsp "mips_dsp" $L_FLAGS $I_FLAGS $D_FLAGS $l_FLAGS; then
@@ -5799,7 +5780,6 @@ fi
 [ "$CFG_AVX" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG avx"
 [ "$CFG_AVX2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG avx2"
 [ "$CFG_IWMMXT" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG iwmmxt"
-[ "$CFG_NEON" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG neon"
 if [ "$CFG_ARCH" = "mips" ]; then
     [ "$CFG_MIPS_DSP" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG mips_dsp"
     [ "$CFG_MIPS_DSPR2" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG mips_dspr2"

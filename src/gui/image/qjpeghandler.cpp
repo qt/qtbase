@@ -861,7 +861,7 @@ Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32_avx(quint32 *dst, const
 QJpegHandler::QJpegHandler()
     : d(new QJpegHandlerPrivate(this))
 {
-#if defined(QT_COMPILER_SUPPORTS_NEON)
+#if defined(__ARM_NEON__)
     // from qimage_neon.cpp
 
     if (qCpuHasFeature(NEON))
