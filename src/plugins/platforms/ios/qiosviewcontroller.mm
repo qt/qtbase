@@ -106,13 +106,10 @@
 }
 #endif
 
-- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation duration:(NSTimeInterval)duration
+- (void)viewWillLayoutSubviews
 {
-    Q_UNUSED(duration);
-    Q_UNUSED(interfaceOrientation);
-
     if (!QCoreApplication::instance())
-        return; // FIXME: Store orientation for later (?)
+        return;
 
     m_screen->updateProperties();
 }
