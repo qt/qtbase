@@ -126,6 +126,23 @@ aix-g++* {
      QMAKE_CXXFLAGS += -mminimal-toc
 }
 
+sse2:!contains(QT_CPU_FEATURES.$$QT_ARCH, sse2):!host_build:!if(static:contains(QT_CONFIG, shared)) {
+    # If the compiler supports SSE2, enable it unconditionally in all of Qt shared libraries
+    # (and only the libraries). This is not expected to be a problem because:
+    # - on Windows, sharing of libraries is uncommon
+    # - on Mac OS X, all x86 CPUs already have SSE2 support (we won't even reach here)
+    # - on Linux, the dynamic loader can find the libraries on LIBDIR/sse2/
+    # The last guarantee does not apply to executables and plugins, so we can't enable for them.
+    QT_CPU_FEATURES.$$QT_ARCH += sse sse2
+    QMAKE_CFLAGS += $$QMAKE_CFLAGS_SSE2
+    QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_SSE2
+}
+gcc:equals(QT_ARCH, i386):contains(QT_CPU_FEATURES.$$QT_ARCH, sse2) {
+    # Turn on SSE-based floating-point math
+    QMAKE_CFLAGS += -mfpmath=sse
+    QMAKE_CXXFLAGS += -mfpmath=sse
+}
+
 android: CONFIG += qt_android_deps
 
 #install directives
