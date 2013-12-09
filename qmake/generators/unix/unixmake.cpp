@@ -109,9 +109,11 @@ UnixMakefileGenerator::init()
     project->values("VER_MIN").append(l[1]);
     project->values("VER_PAT").append(l[2]);
 
-    project->values("DISTFILES") += project->projectFile();
-    if (!project->isEmpty("QMAKE_INTERNAL_INCLUDED_FILES"))
-        project->values("DISTFILES") += project->values("QMAKE_INTERNAL_INCLUDED_FILES");
+    QString sroot = project->sourceRoot();
+    foreach (const ProString &iif, project->values("QMAKE_INTERNAL_INCLUDED_FILES")) {
+        if (iif.startsWith(sroot) && iif.at(sroot.length()) == QLatin1Char('/'))
+            project->values("DISTFILES") += fileFixify(iif.toQString(), FileFixifyRelative);
+    }
 
     /* this should probably not be here, but I'm using it to wrap the .t files */
     if(project->first("TEMPLATE") == "app")
