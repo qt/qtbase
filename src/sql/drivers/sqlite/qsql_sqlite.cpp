@@ -597,23 +597,31 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
     if (isOpen())
         close();
 
+
+    int timeOut = 5000;
     bool sharedCache = false;
-    int openMode = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, timeOut=5000;
-    QStringList opts=QString(conOpts).remove(QLatin1Char(' ')).split(QLatin1Char(';'));
-    foreach(const QString &option, opts) {
+    bool openReadOnlyOption = false;
+    bool openUriOption = false;
+
+    const QStringList opts = QString(conOpts).remove(QLatin1Char(' ')).split(QLatin1Char(';'));
+    foreach (const QString &option, opts) {
         if (option.startsWith(QLatin1String("QSQLITE_BUSY_TIMEOUT="))) {
             bool ok;
-            int nt = option.mid(21).toInt(&ok);
+            const int nt = option.mid(21).toInt(&ok);
             if (ok)
                 timeOut = nt;
-        }
-        if (option == QLatin1String("QSQLITE_OPEN_READONLY"))
-            openMode = SQLITE_OPEN_READONLY;
-        if (option == QLatin1String("QSQLITE_OPEN_URI"))
-            openMode |= SQLITE_OPEN_URI;
-        if (option == QLatin1String("QSQLITE_ENABLE_SHARED_CACHE"))
+        } else if (option == QLatin1String("QSQLITE_OPEN_READONLY")) {
+            openReadOnlyOption = true;
+        } else if (option == QLatin1String("QSQLITE_OPEN_URI")) {
+            openUriOption = true;
+        } else if (option == QLatin1String("QSQLITE_ENABLE_SHARED_CACHE")) {
             sharedCache = true;
+        }
     }
+
+    int openMode = (openReadOnlyOption ? SQLITE_OPEN_READONLY : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE));
+    if (openUriOption)
+        openMode |= SQLITE_OPEN_URI;
 
     sqlite3_enable_shared_cache(sharedCache);
 

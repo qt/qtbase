@@ -61,8 +61,7 @@ QPlatformIntegration * QCocoaIntegrationPlugin::create(const QString& system, co
     Q_UNUSED(paramList);
 
     QCocoaAutoReleasePool pool;
-
-    if (system.toLower() == "cocoa")
+    if (!system.compare(QLatin1String("cocoa"), Qt::CaseInsensitive))
         return new QCocoaIntegration;
 
     return 0;

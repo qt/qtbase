@@ -59,8 +59,10 @@
 #ifndef QT_NO_PRINTER
 
 #include "QtPrintSupport/qprinter.h"
+#include "QtPrintSupport/qprinterinfo.h"
 #include "QtPrintSupport/qprintengine.h"
 #include "QtCore/qpointer.h"
+#include "QtCore/qset.h"
 
 #include <limits.h>
 
@@ -75,14 +77,19 @@ class Q_PRINTSUPPORT_EXPORT QPrinterPrivate
     Q_DECLARE_PUBLIC(QPrinter)
 public:
     QPrinterPrivate(QPrinter *printer)
-        : printEngine(0)
-        , paintEngine(0)
-        , q_ptr(printer)
-        , printRange(QPrinter::AllPages)
-        , use_default_engine(true)
-        , validPrinter(false)
-        , hasCustomPageMargins(false)
-        , hasUserSetPageSize(false)
+        : printEngine(0),
+          paintEngine(0),
+          realPrintEngine(0),
+          realPaintEngine(0),
+#ifndef QT_NO_PRINTPREVIEWWIDGET
+          previewEngine(0),
+#endif
+          q_ptr(printer),
+          printRange(QPrinter::AllPages),
+          use_default_engine(true),
+          validPrinter(false),
+          hasCustomPageMargins(false),
+          hasUserSetPageSize(false)
     {
     }
 
@@ -90,15 +97,17 @@ public:
 
     }
 
-    void init(QPrinter::PrinterMode mode);
+    void init(const QPrinterInfo &printer, QPrinter::PrinterMode mode);
 
-    void createDefaultEngines();
+    QPrinterInfo findValidPrinter(const QPrinterInfo &printer = QPrinterInfo());
+    void initEngines(QPrinter::OutputFormat format, const QPrinterInfo &printer);
+    void changeEngines(QPrinter::OutputFormat format, const QPrinterInfo &printer);
 #ifndef QT_NO_PRINTPREVIEWWIDGET
     QList<const QPicture *> previewPages() const;
     void setPreviewMode(bool);
 #endif
 
-    void addToManualSetList(QPrintEngine::PrintEnginePropertyKey key);
+    void setProperty(QPrintEngine::PrintEnginePropertyKey key, const QVariant &value);
 
     QPrinter::PrinterMode printerMode;
     QPrinter::OutputFormat outputFormat;
@@ -123,7 +132,7 @@ public:
     uint hasUserSetPageSize : 1;
 
     // Used to remember which properties have been manually set by the user.
-    QList<QPrintEngine::PrintEnginePropertyKey> manualSetList;
+    QSet<QPrintEngine::PrintEnginePropertyKey> m_properties;
 };
 
 QT_END_NAMESPACE

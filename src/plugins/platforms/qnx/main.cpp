@@ -46,7 +46,7 @@ QT_BEGIN_NAMESPACE
 
 QPlatformIntegration *QQnxIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
-    if (system.toLower() == QLatin1String("qnx"))
+    if (!system.compare(QLatin1String("qnx"), Qt::CaseInsensitive))
         return new QQnxIntegration(paramList);
 
     return 0;

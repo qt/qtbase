@@ -76,6 +76,7 @@ public:
     Qt::ScrollBarPolicy vbarpolicy, hbarpolicy;
 
     bool shownOnce;
+    bool inResize;
     mutable QSize sizeHint;
     QAbstractScrollArea::SizeAdjustPolicy sizeAdjustPolicy;
 

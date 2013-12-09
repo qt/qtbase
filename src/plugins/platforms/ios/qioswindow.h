@@ -74,6 +74,8 @@ public:
     void handleContentOrientationChange(Qt::ScreenOrientation orientation);
     void setVisible(bool visible);
 
+    bool isExposed() const Q_DECL_OVERRIDE;
+
     void raise() { raiseOrLower(true); }
     void lower() { raiseOrLower(false); }
     void requestActivateWindow();

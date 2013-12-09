@@ -73,15 +73,15 @@ public:
 
     void resolveAbsoluteEntry() const;
 
+    mutable bool fileListsInitialized;
+    mutable QStringList files;
+    mutable QFileInfoList fileInfos;
+
     QStringList nameFilters;
     QDir::SortFlags sort;
     QDir::Filters filters;
 
     QScopedPointer<QAbstractFileEngine> fileEngine;
-
-    mutable bool fileListsInitialized;
-    mutable QStringList files;
-    mutable QFileInfoList fileInfos;
 
     QFileSystemEntry dirEntry;
     mutable QFileSystemEntry absoluteDirEntry;

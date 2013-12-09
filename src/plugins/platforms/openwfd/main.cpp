@@ -54,7 +54,7 @@ public:
 QPlatformIntegration* QOpenWFDIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     Q_UNUSED(paramList);
-    if (system.toLower() == "openwfd")
+    if (!system.compare(QLatin1String("openwfd"), Qt::CaseInsensitive))
         return new QOpenWFDIntegration;
 
     return 0;

@@ -596,9 +596,11 @@ QUtcTimeZonePrivate::QUtcTimeZonePrivate(const QByteArray &zoneId, int offsetSec
 }
 
 QUtcTimeZonePrivate::QUtcTimeZonePrivate(const QUtcTimeZonePrivate &other)
-    : QTimeZonePrivate(other), m_offsetFromUtc(other.m_offsetFromUtc), m_name(other.m_name),
-      m_abbreviation(other.m_abbreviation), m_country(other.m_country),
-      m_comment(other.m_comment)
+    : QTimeZonePrivate(other), m_name(other.m_name),
+      m_abbreviation(other.m_abbreviation),
+      m_comment(other.m_comment),
+      m_country(other.m_country),
+      m_offsetFromUtc(other.m_offsetFromUtc)
 {
 }
 

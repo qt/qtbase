@@ -184,7 +184,7 @@ static JNINativeMethod methods[] = {
 
 bool registerNatives(JNIEnv *env)
 {
-    jclass clazz = QtAndroid::findClass("org/qtproject/qt5/android/QtMessageDialogHelper", env);
+    jclass clazz = QtAndroid::findClass("org.qtproject.qt5.android.QtMessageDialogHelper", env);
     if (!clazz) {
         __android_log_print(ANDROID_LOG_FATAL, QtAndroid::qtTagText(), QtAndroid::classErrorMsgFmt()
                             , "org/qtproject/qt5/android/QtMessageDialogHelper");

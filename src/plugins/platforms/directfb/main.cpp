@@ -68,7 +68,7 @@ QPlatformIntegration * QDirectFbIntegrationPlugin::create(const QString& system,
     Q_UNUSED(paramList);
     QDirectFbIntegration *integration = 0;
 
-    if (system.toLower() == "directfb")
+    if (!system.compare(QLatin1String("directfb"), Qt::CaseInsensitive))
         integration = new QDirectFbIntegration;
     QT_EGL_BACKEND_CREATE(system, integration)
 

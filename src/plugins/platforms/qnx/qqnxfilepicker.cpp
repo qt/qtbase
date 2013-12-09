@@ -84,6 +84,9 @@ void QQnxFilePicker::open()
     if (m_invocationHandle)
         return;
 
+    // Clear any previous results
+    m_selectedFiles.clear();
+
     int errorCode = BPS_SUCCESS;
 
     errorCode = navigator_invoke_invocation_create(&m_invocationHandle);

@@ -36,7 +36,7 @@
     the Secure Sockets Layer (SSL) protocol, using the OpenSSL Toolkit (\l{http://www.openssl.org/})
     to perform encryption and protocol handling.
 
-    See the \l{General Qt Requirements} page for information about the
+    See the \l {openssl-v1later}{OpenSSL Compatibility} page for information about the
     versions of OpenSSL that are known to work with Qt.
 
     \section1 Enabling and Disabling SSL Support

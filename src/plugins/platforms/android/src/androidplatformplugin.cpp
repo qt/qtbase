@@ -56,7 +56,7 @@ public:
 QPlatformIntegration *QAndroidPlatformIntegrationPlugin::create(const QString &key, const QStringList &paramList)
 {
     Q_UNUSED(paramList);
-    if (key.toLower() == "android")
+    if (!key.compare(QLatin1String("android"), Qt::CaseInsensitive))
         return new QAndroidPlatformIntegration(paramList);
     return 0;
 }

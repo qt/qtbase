@@ -55,7 +55,7 @@ public:
 QPlatformIntegration* QEglFSIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     Q_UNUSED(paramList);
-    if (system.toLower() == "eglfs")
+    if (!system.compare(QLatin1String("eglfs"), Qt::CaseInsensitive))
         return new QEglFSIntegration;
 
     return 0;
