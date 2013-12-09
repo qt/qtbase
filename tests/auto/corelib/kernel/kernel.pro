@@ -13,6 +13,7 @@ SUBDIRS=\
     qobject \
     qpointer \
     qsharedmemory \
+    qsignalblocker \
     qsignalmapper \
     qsocketnotifier \
     qsystemsemaphore \
