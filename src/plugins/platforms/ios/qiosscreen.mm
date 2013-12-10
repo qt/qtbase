@@ -241,17 +241,10 @@ void QIOSScreen::updateProperties()
     QRect previousGeometry = m_geometry;
     QRect previousAvailableGeometry = m_availableGeometry;
 
-    bool inPortrait = UIInterfaceOrientationIsPortrait(m_uiWindow.rootViewController.interfaceOrientation);
-    m_geometry = inPortrait ? fromCGRect(m_uiScreen.bounds).toRect()
-        : QRect(m_uiScreen.bounds.origin.x, m_uiScreen.bounds.origin.y,
-            m_uiScreen.bounds.size.height, m_uiScreen.bounds.size.width);
+    UIView *rootView = m_uiWindow.rootViewController.view;
 
-    m_availableGeometry = m_geometry;
-
-    CGSize applicationFrameSize = m_uiScreen.applicationFrame.size;
-    int statusBarHeight = m_geometry.height() - (inPortrait ? applicationFrameSize.height : applicationFrameSize.width);
-
-    m_availableGeometry.adjust(0, statusBarHeight, 0, 0);
+    m_geometry = fromCGRect([rootView convertRect:m_uiScreen.bounds fromView:m_uiWindow]).toRect();
+    m_availableGeometry = fromCGRect([rootView convertRect:m_uiScreen.applicationFrame fromView:m_uiWindow]).toRect();
 
     if (m_geometry != previousGeometry || m_availableGeometry != previousAvailableGeometry) {
         const qreal millimetersPerInch = 25.4;
