@@ -1313,6 +1313,8 @@ QAccessible::Id QAccessibleEvent::uniqueId() const
     if (!m_object)
         return m_uniqueId;
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(m_object);
+    if (!iface)
+        return 0;
     if (m_child != -1)
         iface = iface->child(m_child);
     return QAccessible::uniqueId(iface);
