@@ -3583,30 +3583,8 @@ template<class Container> void insert_remove_loop_impl()
 }
 
 
-//Add insert(int, int, T) so it has the same interface as QVector and QVarLengthArray for the test.
 template<typename T>
-struct ExtList : QList<T> {
-    using QList<T>::insert;
-    void insert(int before, int n, const T&x) {
-        while (n--) {
-            this->insert(before, x );
-        }
-    }
-    void insert(typename QList<T>::iterator before, int n, const T&x) {
-        while (n--) {
-            before = this->insert(before, x);
-        }
-    }
-
-    void remove(int i) {
-        this->removeAt(i);
-    }
-    void remove(int i, int n) {
-        while (n--) {
-            this->removeAt(i);
-        }
-    }
-};
+using ExtList = QList<T>;
 
 void tst_Collections::insert_remove_loop()
 {

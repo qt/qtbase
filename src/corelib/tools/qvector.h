@@ -49,6 +49,7 @@
 #include <functional>
 #include <limits>
 #include <initializer_list>
+#include <type_traits>
 
 QT_BEGIN_NAMESPACE
 
@@ -74,6 +75,7 @@ class QVector
     typedef QTypedArrayData<T> Data;
     typedef QArrayDataOps<T> DataOps;
     typedef QArrayDataPointer<T> DataPointer;
+    class DisableRValueRefs {};
 
     DataPointer d;
 
@@ -95,9 +97,8 @@ public:
     typedef const_iterator ConstIterator;
     typedef std::reverse_iterator<iterator> reverse_iterator;
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-    // ### The line below triggers too earely instantiation of QTypeInfo<QVariant> in qvariant.h
-    //typedef typename DataOps::parameter_type parameter_type;
-    typedef const_reference parameter_type;
+    typedef typename DataPointer::parameter_type parameter_type;
+    using rvalue_ref = typename std::conditional<DataPointer::pass_parameter_by_value, DisableRValueRefs, T &&>::type;
 
 private:
     void resize_internal(int i, Qt::Initialization);
@@ -242,7 +243,7 @@ public:
     void append(const_iterator i1, const_iterator i2);
     void append(value_type &&t);
     void append(const QVector<T> &l) { append(l.constBegin(), l.constEnd()); }
-    void prepend(T &&t);
+    void prepend(rvalue_ref t);
     void prepend(const T &t);
     iterator insert(int i, parameter_type t)
     { return insert(i, 1, t); }
@@ -257,12 +258,12 @@ public:
         Q_ASSERT_X(isValidIterator(before),  "QVector::insert", "The specified iterator argument 'before' is invalid");
         return insert(std::distance(constBegin(), before), n, t);
     }
-    inline iterator insert(const_iterator before, T &&t)
+    iterator insert(const_iterator before, rvalue_ref t)
     {
         Q_ASSERT_X(isValidIterator(before),  "QVector::insert", "The specified iterator argument 'before' is invalid");
         return insert(std::distance(constBegin(), before), std::move(t));
     }
-    iterator insert(int i, T &&t);
+    iterator insert(int i, rvalue_ref t);
 #if 0
     template< class InputIt >
     iterator insert( const_iterator pos, InputIt first, InputIt last );
@@ -274,7 +275,7 @@ public:
         const T copy(t);
         data()[i] = copy;
     }
-    void replace(int i, T &&t)
+    void replace(int i, rvalue_ref t)
     {
         Q_ASSERT_X(i >= 0 && i < d->size, "QVector<T>::replace", "index out of range");
         const T copy(std::move(t));
@@ -381,8 +382,8 @@ public:
 
     // STL compatibility
     inline void push_back(const T &t) { append(t); }
-    void push_back(T &&t) { append(std::move(t)); }
-    void push_front(T &&t) { prepend(std::move(t)); }
+    void push_back(rvalue_ref t) { append(std::move(t)); }
+    void push_front(rvalue_ref t) { prepend(std::move(t)); }
     inline void push_front(const T &t) { prepend(t); }
     void pop_back() { removeLast(); }
     void pop_front() { removeFirst(); }
@@ -404,9 +405,9 @@ public:
     { append(t); return *this; }
     inline QVector<T> &operator<<(const QVector<T> &l)
     { *this += l; return *this; }
-    inline QVector<T> &operator+=(T &&t)
+    inline QVector<T> &operator+=(rvalue_ref t)
     { append(std::move(t)); return *this; }
-    inline QVector<T> &operator<<(T &&t)
+    inline QVector<T> &operator<<(rvalue_ref t)
     { append(std::move(t)); return *this; }
 
     // Consider deprecating in 6.4 or later
@@ -508,7 +509,7 @@ template <typename T>
 inline void QVector<T>::prepend(const T &t)
 { insert(begin(), 1, t); }
 template <typename T>
-inline void QVector<T>::prepend(T &&t)
+void QVector<T>::prepend(rvalue_ref t)
 { insert(begin(), std::move(t)); }
 
 template<typename T>
@@ -590,8 +591,8 @@ QVector<T>::insert(int i, int n, parameter_type t)
 }
 
 template <typename T>
-inline typename QVector<T>::iterator
-QVector<T>::insert(int i, T &&t)
+typename QVector<T>::iterator
+QVector<T>::insert(int i, rvalue_ref t)
 {
     Q_ASSERT_X(size_t(i) <= size_t(d->size), "QVector<T>::insert", "index out of range");
 

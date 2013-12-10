@@ -62,7 +62,7 @@ template <class T>
 struct QPodArrayOps
         : public QArrayDataPointer<T>
 {
-    typedef T parameter_type;
+    typedef typename QArrayDataPointer<T>::parameter_type parameter_type;
 
     void appendInitialize(size_t newSize)
     {
@@ -113,7 +113,7 @@ struct QPodArrayOps
         T *iter = this->end();
         const T *const end = iter + n;
         for (; iter != end; ++iter)
-            ::memcpy(iter, &t, sizeof(T));
+            *iter = t;
         this->size += int(n);
     }
 
@@ -220,7 +220,7 @@ template <class T>
 struct QGenericArrayOps
         : public QArrayDataPointer<T>
 {
-    typedef const T &parameter_type;
+    typedef typename QArrayDataPointer<T>::parameter_type parameter_type;
 
     void appendInitialize(size_t newSize)
     {

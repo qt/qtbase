@@ -55,6 +55,9 @@ private:
 public:
     typedef typename Data::iterator iterator;
     typedef typename Data::const_iterator const_iterator;
+    enum { pass_parameter_by_value = std::is_fundamental<T>::value || std::is_pointer<T>::value };
+
+    typedef typename std::conditional<pass_parameter_by_value, T, const T &>::type parameter_type;
 
     QArrayDataPointer() noexcept
         : d(Data::sharedNull()), ptr(Data::sharedNullData()), size(0)
@@ -131,8 +134,8 @@ public:
 
     ~QArrayDataPointer()
     {
-        if (!d->deref()) {
-            if (d->isMutable())
+        if (!deref()) {
+            if (isMutable())
                 (*this)->destroyAll();
             Data::deallocate(d);
         }
