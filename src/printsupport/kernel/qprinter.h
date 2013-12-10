@@ -75,6 +75,7 @@ public:
 
     enum Orientation { Portrait, Landscape };
 
+    // ### Qt6 Remove in favor of QPage::PageSize
 #ifndef Q_QDOC
     typedef PageSize PaperSize;
 #else
