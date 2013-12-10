@@ -488,7 +488,7 @@ static void qt_mac_draw_pattern(void *info, CGContextRef c)
             if (isBitmap)
                 pat->image = qt_mac_create_imagemask(pat->data.pixmap, pat->data.pixmap.rect());
             else
-                pat->image = qt_mac_image_to_cgimage(pat->data.pixmap.toImage());
+                pat->image = qt_mac_toCGImage(pat->data.pixmap.toImage());
         }
     } else {
         w = CGImageGetWidth(pat->image);
@@ -963,11 +963,11 @@ void QCoreGraphicsPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, co
         CGContextSetFillColorWithColor(d->hd, cgColorForQColor(col, d->pdev));
         image = qt_mac_create_imagemask(pm, sr);
     } else if (differentSize) {
-        QCFType<CGImageRef> img = qt_mac_image_to_cgimage(pm.toImage());
+        QCFType<CGImageRef> img = qt_mac_toCGImage(pm.toImage());
         if (img)
             image = CGImageCreateWithImageInRect(img, CGRectMake(qRound(sr.x()), qRound(sr.y()), qRound(sr.width()), qRound(sr.height())));
     } else {
-        image = qt_mac_image_to_cgimage(pm.toImage());
+        image = qt_mac_toCGImage(pm.toImage());
     }
     qt_mac_drawCGImage(d->hd, &rect, image);
     if (doRestore)

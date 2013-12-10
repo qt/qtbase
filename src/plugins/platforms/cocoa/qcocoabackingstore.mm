@@ -122,7 +122,7 @@ bool QCocoaBackingStore::scroll(const QRegion &area, int dx, int dy)
 CGImageRef QCocoaBackingStore::getBackingStoreCGImage()
 {
     if (!m_cgImage)
-        m_cgImage = qt_mac_toCGImage(m_qImage, false, 0);
+        m_cgImage = qt_mac_toCGImage(m_qImage);
 
     // Warning: do not retain/release/cache the returned image from
     // outside the backingstore since it shares data with a QImage and

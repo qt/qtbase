@@ -80,7 +80,6 @@ static QTouchDevice *touchDevice = 0;
     if (self) {
         m_backingStore = 0;
         m_maskImage = 0;
-        m_maskData = 0;
         m_shouldInvalidateWindowShadow = false;
         m_window = 0;
         m_buttons = Qt::NoButton;
@@ -106,7 +105,6 @@ static QTouchDevice *touchDevice = 0;
 {
     CGImageRelease(m_maskImage);
     m_maskImage = 0;
-    m_maskData = 0;
     m_window = 0;
     m_subscribesForGlobalFrameNotifications = false;
     [m_inputSource release];
@@ -372,7 +370,7 @@ static QTouchDevice *touchDevice = 0;
 
 - (BOOL) hasMask
 {
-    return m_maskData != 0;
+    return m_maskImage != 0;
 }
 
 - (BOOL) isOpaque
@@ -405,7 +403,7 @@ static QTouchDevice *touchDevice = 0;
             dst[x] = src[x] & 0xff;
         }
     }
-    m_maskImage = qt_mac_toCGImage(maskImage, true, &m_maskData);
+    m_maskImage = qt_mac_toCGImageMask(maskImage);
 }
 
 - (void)invalidateWindowShadowIfNeeded
