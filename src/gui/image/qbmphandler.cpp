@@ -210,54 +210,15 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, int offset, int
     uint red_mask = 0;
     uint green_mask = 0;
     uint blue_mask = 0;
+    uint alpha_mask = 0;
     int red_shift = 0;
     int green_shift = 0;
     int blue_shift = 0;
+    int alpha_shift = 0;
     int red_scale = 0;
     int green_scale = 0;
     int blue_scale = 0;
-
-    int ncols = 0;
-    int depth = 0;
-    QImage::Format format;
-    switch (nbits) {
-        case 32:
-        case 24:
-        case 16:
-            depth = 32;
-            format = QImage::Format_RGB32;
-            break;
-        case 8:
-        case 4:
-            depth = 8;
-            format = QImage::Format_Indexed8;
-            break;
-        default:
-            depth = 1;
-            format = QImage::Format_Mono;
-    }
-
-    if (bi.biHeight < 0)
-        h = -h;                  // support images with negative height
-
-    if (image.size() != QSize(w, h) || image.format() != format) {
-        image = QImage(w, h, format);
-        if (image.isNull())                        // could not create image
-            return false;
-    }
-
-    if (depth != 32) {
-        ncols = bi.biClrUsed ? bi.biClrUsed : 1 << nbits;
-        if (ncols > 256) // sanity check - don't run out of mem if color table is broken
-            return false;
-        image.setColorCount(ncols);
-    }
-
-    image.setDotsPerMeterX(bi.biXPelsPerMeter);
-    image.setDotsPerMeterY(bi.biYPelsPerMeter);
-
-    if (!d->isSequential())
-        d->seek(startpos + BMP_FILEHDR_SIZE + (bi.biSize >= BMP_WIN4? BMP_WIN : bi.biSize)); // goto start of colormap
+    int alpha_scale = 0;
 
     if (bi.biSize >= BMP_WIN4 || (comp == BMP_BITFIELDS && (nbits == 16 || nbits == 32))) {
         if (d->read((char *)&red_mask, sizeof(red_mask)) != sizeof(red_mask))
@@ -269,7 +230,6 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, int offset, int
 
         // Read BMP v4+ header
         if (bi.biSize >= BMP_WIN4) {
-            int alpha_mask   = 0;
             int CSType       = 0;
             int gamma_red    = 0;
             int gamma_green  = 0;
@@ -307,6 +267,49 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, int offset, int
         }
     }
 
+    bool transp = (comp == BMP_BITFIELDS) && alpha_mask;
+    int ncols = 0;
+    int depth = 0;
+    QImage::Format format;
+    switch (nbits) {
+        case 32:
+        case 24:
+        case 16:
+            depth = 32;
+            format = transp ? QImage::Format_ARGB32 : QImage::Format_RGB32;
+            break;
+        case 8:
+        case 4:
+            depth = 8;
+            format = QImage::Format_Indexed8;
+            break;
+        default:
+            depth = 1;
+            format = QImage::Format_Mono;
+    }
+
+    if (bi.biHeight < 0)
+        h = -h;                  // support images with negative height
+
+    if (image.size() != QSize(w, h) || image.format() != format) {
+        image = QImage(w, h, format);
+        if (image.isNull())                        // could not create image
+            return false;
+    }
+
+    if (depth != 32) {
+        ncols = bi.biClrUsed ? bi.biClrUsed : 1 << nbits;
+        if (ncols > 256) // sanity check - don't run out of mem if color table is broken
+            return false;
+        image.setColorCount(ncols);
+    }
+
+    image.setDotsPerMeterX(bi.biXPelsPerMeter);
+    image.setDotsPerMeterY(bi.biYPelsPerMeter);
+
+    if (!d->isSequential())
+        d->seek(startpos + BMP_FILEHDR_SIZE + (bi.biSize >= BMP_WIN4? BMP_WIN : bi.biSize)); // goto start of colormap
+
     if (ncols > 0) {                                // read color table
         uchar rgb[4];
         int   rgb_len = t == BMP_OLD ? 3 : 4;
@@ -324,6 +327,8 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, int offset, int
         green_scale = 256 / ((green_mask >> green_shift) + 1);
         blue_shift = calc_shift(blue_mask);
         blue_scale = 256 / ((blue_mask >> blue_shift) + 1);
+        alpha_shift = calc_shift(alpha_mask);
+        alpha_scale = 256 / ((alpha_mask >> alpha_shift) + 1);
     } else if (comp == BMP_RGB && (nbits == 24 || nbits == 32)) {
         blue_mask = 0x000000ff;
         green_mask = 0x0000ff00;
@@ -343,6 +348,13 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, int offset, int
         green_scale = 1;
         blue_scale = 8;
     }
+
+#if 0
+    qDebug("Rmask: %08x Rshift: %08x Rscale:%08x", red_mask, red_shift, red_scale);
+    qDebug("Gmask: %08x Gshift: %08x Gscale:%08x", green_mask, green_shift, green_scale);
+    qDebug("Bmask: %08x Bshift: %08x Bscale:%08x", blue_mask, blue_shift, blue_scale);
+    qDebug("Amask: %08x Ashift: %08x Ascale:%08x", alpha_mask, alpha_shift, alpha_scale);
+#endif
 
     // offset can be bogus, be careful
     if (offset>=0 && startpos + offset > d->pos()) {
@@ -535,11 +547,14 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, int offset, int
             b = buf24;
             while (p < end) {
                 c = *(uchar*)b | (*(uchar*)(b+1)<<8);
-                if (nbits != 16)
+                if (nbits > 16)
                     c |= *(uchar*)(b+2)<<16;
-                *p++ = qRgb(((c & red_mask) >> red_shift) * red_scale,
+                if (nbits > 24)
+                    c |= *(uchar*)(b+3)<<24;
+                *p++ = qRgba(((c & red_mask) >> red_shift) * red_scale,
                                         ((c & green_mask) >> green_shift) * green_scale,
-                                        ((c & blue_mask) >> blue_shift) * blue_scale);
+                                        ((c & blue_mask) >> blue_shift) * blue_scale,
+                                        transp ? ((c & alpha_mask) >> alpha_shift) * alpha_scale : 0xff);
                 b += nbits/8;
             }
         }
