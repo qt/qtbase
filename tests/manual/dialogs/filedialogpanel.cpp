@@ -124,6 +124,7 @@ private:
 
 FileDialogPanel::FileDialogPanel(QWidget *parent)
     : QWidget(parent)
+    , m_showDirsOnly(new QCheckBox(tr("Show dirs only")))
     , m_readOnly(new QCheckBox(tr("Read only")))
     , m_confirmOverWrite(new QCheckBox(tr("Confirm overwrite")))
     , m_nameFilterDetailsVisible(new QCheckBox(tr("Name filter details visible")))
@@ -150,6 +151,7 @@ FileDialogPanel::FileDialogPanel(QWidget *parent)
     optionsLayout->addRow(tr("FileMode:"), m_fileMode);
     optionsLayout->addRow(tr("ViewMode:"), m_viewMode);
     optionsLayout->addRow(tr("Allowed Schemes:"), m_allowedSchemes);
+    optionsLayout->addRow(m_showDirsOnly);
     optionsLayout->addRow(m_native);
     optionsLayout->addRow(m_confirmOverWrite);
     optionsLayout->addRow(m_nameFilterDetailsVisible);
@@ -293,6 +295,8 @@ QString FileDialogPanel::filterString() const
 QFileDialog::Options FileDialogPanel::options() const
 {
     QFileDialog::Options result;
+    if (m_showDirsOnly->isChecked())
+        result |= QFileDialog::ShowDirsOnly;
     if (!m_nameFilterDetailsVisible->isChecked())
         result |= QFileDialog::HideNameFilterDetails;
     if (!m_resolveSymLinks->isChecked())
@@ -439,6 +443,7 @@ void FileDialogPanel::restoreDefaults()
     setComboBoxValue(m_acceptMode, d.acceptMode());
     setComboBoxValue(m_fileMode, d.fileMode());
     setComboBoxValue(m_viewMode, d.viewMode());
+    m_showDirsOnly->setChecked(d.testOption(QFileDialog::ShowDirsOnly));
     m_allowedSchemes->setText(QString());
     m_confirmOverWrite->setChecked(d.confirmOverwrite());
     m_nameFilterDetailsVisible->setChecked(d.isNameFilterDetailsVisible());
