@@ -52,6 +52,7 @@
 
 #include <QtPrintSupport/qprinter.h>
 
+#include <QtCore/qstringlist.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qhash.h>
 
@@ -61,6 +62,8 @@ QT_BEGIN_NAMESPACE
 
 typedef QHash<QString, QString> PrinterOptions;
 
+class QPlatformPrintDevice;
+class QPrintDevice;
 class QPrintEngine;
 
 class Q_PRINTSUPPORT_EXPORT QPlatformPrinterSupport
@@ -71,6 +74,12 @@ public:
 
     virtual QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode);
     virtual QPaintEngine *createPaintEngine(QPrintEngine *, QPrinter::PrinterMode printerMode);
+
+    virtual QPrintDevice createPrintDevice(const QString &id);
+    virtual QPrintDevice createDefaultPrintDevice();
+    virtual QStringList availablePrintDeviceIds() const;
+    virtual QString defaultPrintDeviceId() const;
+
     virtual QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const;
     virtual QList<QPair<QString, QSizeF> > supportedSizesWithNames(const QPrinterInfo &printerInfo) const;
     virtual QList<QPrinterInfo> availablePrinters();
@@ -88,6 +97,7 @@ protected:
     static QPrinterInfo createPrinterInfo(const QString &name, const QString &description,
                                           const QString &location, const QString &makeAndModel,
                                           bool isDefault, int index);
+    static QPrintDevice createPrintDevice(QPlatformPrintDevice *device);
 
     QList<QPrinterInfo> m_printers;
 };

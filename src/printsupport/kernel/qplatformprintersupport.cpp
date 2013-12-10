@@ -40,10 +40,12 @@
 ****************************************************************************/
 
 #include "qplatformprintersupport.h"
+#include "qplatformprintdevice.h"
 
 #include <QtPrintSupport/qprinterinfo.h>
 
 #include <private/qprinterinfo_p.h>
+#include <private/qprintdevice_p.h>
 
 #ifndef QT_NO_PRINTER
 
@@ -75,6 +77,32 @@ QPrintEngine *QPlatformPrinterSupport::createNativePrintEngine(QPrinter::Printer
 QPaintEngine *QPlatformPrinterSupport::createPaintEngine(QPrintEngine *, QPrinter::PrinterMode)
 {
     return 0;
+}
+
+QPrintDevice QPlatformPrinterSupport::createPrintDevice(QPlatformPrintDevice *device)
+{
+    return QPrintDevice(device);
+}
+
+QPrintDevice QPlatformPrinterSupport::createPrintDevice(const QString &id)
+{
+    Q_UNUSED(id)
+    return QPrintDevice();
+}
+
+QPrintDevice QPlatformPrinterSupport::createDefaultPrintDevice()
+{
+    return createPrintDevice(defaultPrintDeviceId());
+}
+
+QStringList QPlatformPrinterSupport::availablePrintDeviceIds() const
+{
+    return QStringList();
+}
+
+QString QPlatformPrinterSupport::defaultPrintDeviceId() const
+{
+    return QString();
 }
 
 QList<QPrinter::PaperSize> QPlatformPrinterSupport::supportedPaperSizes(const QPrinterInfo &) const

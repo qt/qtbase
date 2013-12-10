@@ -289,6 +289,7 @@ public:
 
 private:
     friend class QPageSizePrivate;
+    friend class QPlatformPrintDevice;
     QPageSize(const QString &key, const QSize &pointSize, const QString &name);
     QPageSize(int windowsId, const QSize &pointSize, const QString &name);
     QPageSize(QPageSizePrivate &dd);
