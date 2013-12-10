@@ -968,8 +968,12 @@ void VcprojGenerator::initConfiguration()
 
     if (conf.CompilerVersion >= NET2012) {
         conf.WinRT = project->isActiveConfig("winrt");
-        if (conf.WinRT)
+        if (conf.WinRT) {
             conf.WinPhone = project->isActiveConfig("winphone");
+            // Saner defaults
+            conf.compiler.UsePrecompiledHeader = pchNone;
+            conf.compiler.CompileAsWinRT = _False;
+        }
     }
 
     conf.Name = project->values("BUILD_NAME").join(' ');
@@ -986,7 +990,7 @@ void VcprojGenerator::initConfiguration()
     conf.ATLMinimizesCRunTimeLibraryUsage = (project->first("ATLMinimizesCRunTimeLibraryUsage").isEmpty() ? _False : _True);
     conf.BuildBrowserInformation = triState(temp.isEmpty() ? (short)unset : temp.toShort());
     temp = project->first("CharacterSet");
-    conf.CharacterSet = charSet(temp.isEmpty() ? (short)charSetNotSet : temp.toShort());
+    conf.CharacterSet = charSet(temp.isEmpty() ? short(conf.WinRT ? charSetUnicode : charSetNotSet) : temp.toShort());
     conf.DeleteExtensionsOnClean = project->first("DeleteExtensionsOnClean").toQString();
     conf.ImportLibrary = conf.linker.ImportLibrary;
     conf.IntermediateDirectory = project->first("OBJECTS_DIR").toQString();
