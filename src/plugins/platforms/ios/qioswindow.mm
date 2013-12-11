@@ -636,23 +636,6 @@ void QIOSWindow::setParent(const QPlatformWindow *parentWindow)
     }
 }
 
-QWindow *QIOSWindow::topLevelWindow() const
-{
-    QWindow *window = this->window();
-    while (window) {
-        QWindow *parent = window->parent();
-        if (!parent)
-            parent = window->transientParent();
-
-        if (!parent)
-            break;
-
-        window = parent;
-    }
-
-    return window;
-}
-
 void QIOSWindow::requestActivateWindow()
 {
     // Note that several windows can be active at the same time if they exist in the same

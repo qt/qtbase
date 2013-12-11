@@ -122,6 +122,8 @@ public:
         return offset;
     }
 
+    QWindow *topLevelWindow() const;
+
     virtual QWindow *eventReceiver() { Q_Q(QWindow); return q; }
 
     void updateVisibility();

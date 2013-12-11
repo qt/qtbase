@@ -2147,6 +2147,26 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
 
 }
 
+QWindow *QWindowPrivate::topLevelWindow() const
+{
+    Q_Q(const QWindow);
+
+    QWindow *window = const_cast<QWindow *>(q);
+
+    while (window) {
+        QWindow *parent = window->parent();
+        if (!parent)
+            parent = window->transientParent();
+
+        if (!parent)
+            break;
+
+        window = parent;
+    }
+
+    return window;
+}
+
 /*!
     Creates a local representation of a window created by another process or by
     using native libraries below Qt.
