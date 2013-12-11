@@ -64,14 +64,14 @@ public:
     void setFocusObject(QObject *object);
 
     void focusWindowChanged(QWindow *focusWindow);
-    void scrollRootView();
-
+    void cursorRectangleChanged();
+    void scrollToCursor();
+    void scroll(int y);
 private:
     QIOSKeyboardListener *m_keyboardListener;
     UIView<UIKeyInput> *m_focusView;
-    QTransform m_inputItemTransform;
     bool m_hasPendingHideRequest;
-    bool m_inSetFocusObject;
+    QObject *m_focusObject;
 };
 
 QT_END_NAMESPACE
