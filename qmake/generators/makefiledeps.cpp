@@ -679,7 +679,7 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                 } else {
                     exists = QFile::exists(lfn.real());
                 }
-                if(!lfn.isNull()) {
+                if (!lfn.isNull() && !isSystemInclude(lfn.real())) {
                     dep = files->lookupFile(lfn);
                     if(!dep) {
                         dep = new SourceFile;

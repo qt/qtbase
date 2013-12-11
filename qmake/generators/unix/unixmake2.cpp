@@ -1229,8 +1229,10 @@ void UnixMakefileGenerator::init2()
     }
 
     if (include_deps && project->isActiveConfig("gcc_MD_depends")) {
-        project->values("QMAKE_CFLAGS") += "-MD";
-        project->values("QMAKE_CXXFLAGS") += "-MD";
+        // use -MMD if we know about -isystem too
+        ProString MD_flag(project->values("QMAKE_CFLAGS_ISYSTEM").isEmpty() ? "-MD" : "-MMD");
+        project->values("QMAKE_CFLAGS") += MD_flag;
+        project->values("QMAKE_CXXFLAGS") += MD_flag;
     }
 
     if(!project->isEmpty("QMAKE_BUNDLE")) {
