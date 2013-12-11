@@ -28,6 +28,7 @@
 /*!
     \headerfile <QtPlugin>
     \title Defining Plugins
+    \target qtplugin-defining-plugins
     \ingroup plugins
 
     \brief The <QtPlugin> header file defines macros for defining plugins.

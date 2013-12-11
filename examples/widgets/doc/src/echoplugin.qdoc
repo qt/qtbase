@@ -194,10 +194,10 @@
 
     \section1 Further reading and examples
 
-    You can find an overview of the macros needed to create plugins
-    \l{Macros for Defining Plugins}{here}.
+    The \l {qtplugin-defining-plugins}{Defining Plugins} page presents an overview of the macros needed to
+    create plugins.
 
-    We give an example of a plugin that extend Qt in the \l{Style
+    We give an example of a plugin that extends Qt in the \l{Style
     Plugin Example}{style plugin} example. The \l{Plug & Paint
     Example}{plug and paint} example shows how to create static
     plugins.
