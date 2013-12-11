@@ -936,7 +936,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 
     if(doPrecompiledHeaders() && !project->isEmpty("PRECOMPILED_HEADER")) {
         QString pchInput = project->first("PRECOMPILED_HEADER").toQString();
-        t << "###### Prefix headers\n";
+        t << "###### Precompiled headers\n";
         QString comps[] = { "C", "CXX", "OBJC", "OBJCXX", QString() };
         for(int i = 0; !comps[i].isNull(); i++) {
             QString pchFlags = var(ProKey("QMAKE_" + comps[i] + "FLAGS_PRECOMPILE"));
