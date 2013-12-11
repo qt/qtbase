@@ -68,6 +68,7 @@
 #include "private/qpdf_p.h"
 #include "private/qpaintengine_p.h"
 #include "qprintengine.h"
+#include "qprint_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -131,7 +132,7 @@ private:
     QString printProgram;
     QString selectionOption;
 
-    QPrinter::DuplexMode duplex;
+    QPrint::DuplexMode duplex;
     bool collate;
     int copies;
     QPrinter::PageOrder pageOrder;

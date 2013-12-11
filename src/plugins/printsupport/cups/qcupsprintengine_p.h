@@ -61,9 +61,8 @@
 #include <QtGui/qpaintengine.h>
 
 #include <private/qpaintengine_p.h>
+#include <private/qprintdevice_p.h>
 #include <private/qprintengine_pdf_p.h>
-#include <QtPrintSupport/qprintengine.h>
-#include <private/qcups_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -95,18 +94,15 @@ public:
     bool openPrintDevice();
     void closePrintDevice();
 
-    void updatePaperSize();
-    void setPageSize(QPageSize::PageSizeId pageSizeId);
-    void setPaperName(const QString &name);
-    void setCupsDefaults();
-    void setPageSize(const QString &key, const QString &name);
-
 private:
     Q_DISABLE_COPY(QCupsPrintEnginePrivate)
 
+    void setupDefaultPrinter();
+    void changePrinter(const QString &newPrinter);
+    void setPageSize(const QPageSize &pageSize);
+
+    QPrintDevice m_printDevice;
     QStringList cupsOptions;
-    QRect cupsPaperRect;
-    QRect cupsPageRect;
     QString cupsTempFile;
 };
 

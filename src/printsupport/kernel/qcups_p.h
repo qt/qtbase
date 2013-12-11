@@ -71,9 +71,6 @@ QT_BEGIN_NAMESPACE
 // Move back to qcupsprintengine_p.h in the plugin once all usage
 // removed from the dialogs.
 #define PPK_CupsOptions QPrintEngine::PrintEnginePropertyKey(0xfe00)
-#define PPK_CupsPageRect QPrintEngine::PrintEnginePropertyKey(0xfe01)
-#define PPK_CupsPaperRect QPrintEngine::PrintEnginePropertyKey(0xfe02)
-#define PPK_CupsStringPageSize QPrintEngine::PrintEnginePropertyKey(0xfe03)
 
 Q_DECLARE_TYPEINFO(cups_option_t, Q_MOVABLE_TYPE | Q_PRIMITIVE_TYPE);
 

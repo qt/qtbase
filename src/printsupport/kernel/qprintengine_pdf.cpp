@@ -206,7 +206,7 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         d->embedFonts = value.toBool();
         break;
     case PPK_Duplex:
-        d->duplex = static_cast<QPrinter::DuplexMode> (value.toInt());
+        d->duplex = static_cast<QPrint::DuplexMode>(value.toInt());
         break;
     case PPK_CustomPaperSize:
         d->m_pageLayout.setPageSize(QPageSize(value.toSizeF(), QPageSize::Point));
@@ -362,7 +362,7 @@ void QPdfPrintEnginePrivate::closePrintDevice()
 
 QPdfPrintEnginePrivate::QPdfPrintEnginePrivate(QPrinter::PrinterMode m)
     : QPdfEnginePrivate(),
-      duplex(QPrinter::DuplexNone),
+      duplex(QPrint::DuplexNone),
       collate(true),
       copies(1),
       pageOrder(QPrinter::FirstPageFirst),
