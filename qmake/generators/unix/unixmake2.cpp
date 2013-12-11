@@ -898,17 +898,6 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     t << varGlue("QMAKE_CLEAN","-$(DEL_FILE) "," ","\n\t")
       << "-$(DEL_FILE) *~ core *.core\n"
       << varGlue("CLEAN_FILES","\t-$(DEL_FILE) "," ","") << endl << endl;
-    t << "####### Sub-libraries\n\n";
-    if (!project->values("SUBLIBS").isEmpty()) {
-        ProString libdir = "tmp/";
-        if(!project->isEmpty("SUBLIBS_DIR"))
-            libdir = project->first("SUBLIBS_DIR");
-        const ProStringList &l = project->values("SUBLIBS");
-        for(it = l.begin(); it != l.end(); ++it)
-            t << libdir << project->first("QMAKE_PREFIX_STATICLIB") << (*it) << "."
-              << project->first("QMAKE_EXTENSION_STATICLIB") << ":\n\t"
-              << var(ProKey("MAKELIB" + *it)) << endl << endl;
-    }
 
     ProString destdir = project->first("DESTDIR");
     if (!destdir.isEmpty() && !destdir.endsWith(Option::dir_sep))
@@ -934,6 +923,18 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             t << "\t-$(DEL_FILE) " << ofile << endl;
     }
     t << endl << endl;
+
+    t << "####### Sub-libraries\n\n";
+    if (!project->values("SUBLIBS").isEmpty()) {
+        ProString libdir = "tmp/";
+        if (!project->isEmpty("SUBLIBS_DIR"))
+            libdir = project->first("SUBLIBS_DIR");
+        const ProStringList &l = project->values("SUBLIBS");
+        for (it = l.begin(); it != l.end(); ++it)
+            t << libdir << project->first("QMAKE_PREFIX_STATICLIB") << (*it) << "."
+              << project->first("QMAKE_EXTENSION_STATICLIB") << ":\n\t"
+              << var(ProKey("MAKELIB" + *it)) << endl << endl;
+    }
 
     if(doPrecompiledHeaders() && !project->isEmpty("PRECOMPILED_HEADER")) {
         QString pchInput = project->first("PRECOMPILED_HEADER").toQString();
