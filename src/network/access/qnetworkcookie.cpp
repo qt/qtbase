@@ -51,6 +51,7 @@
 #include "QtCore/qstring.h"
 #include "QtCore/qstringlist.h"
 #include "QtCore/qurl.h"
+#include "QtNetwork/qhostaddress.h"
 #include "private/qobject_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -1015,14 +1016,19 @@ void QNetworkCookie::normalize(const QUrl &url)
         d->path = defaultPath;
     }
 
-    if (d->domain.isEmpty())
+    if (d->domain.isEmpty()) {
         d->domain = url.host();
-    else if (!d->domain.startsWith(QLatin1Char('.')))
-        // Ensure the domain starts with a dot if its field was not empty
-        // in the HTTP header. There are some servers that forget the
-        // leading dot and this is actually forbidden according to RFC 2109,
-        // but all browsers accept it anyway so we do that as well.
-        d->domain.prepend(QLatin1Char('.'));
+    } else {
+        QHostAddress hostAddress(d->domain);
+        if (hostAddress.protocol() != QAbstractSocket::IPv4Protocol
+                && !d->domain.startsWith(QLatin1Char('.'))) {
+            // Ensure the domain starts with a dot if its field was not empty
+            // in the HTTP header. There are some servers that forget the
+            // leading dot and this is actually forbidden according to RFC 2109,
+            // but all browsers accept it anyway so we do that as well.
+            d->domain.prepend(QLatin1Char('.'));
+        }
+    }
 }
 
 #ifndef QT_NO_DEBUG_STREAM
