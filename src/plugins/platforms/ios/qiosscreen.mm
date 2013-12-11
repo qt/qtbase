@@ -46,6 +46,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include "qiosapplicationdelegate.h"
 #include "qiosviewcontroller.h"
+#include "quiview.h"
 
 #include <sys/sysctl.h>
 
@@ -243,6 +244,22 @@ void QIOSScreen::updateProperties()
 
     m_geometry = fromCGRect([rootView convertRect:m_uiScreen.bounds fromView:m_uiWindow]).toRect();
     m_availableGeometry = fromCGRect([rootView convertRect:m_uiScreen.applicationFrame fromView:m_uiWindow]).toRect();
+
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_IOS_8_0 && ![m_uiWindow.rootViewController shouldAutorotate]) {
+        // Setting the statusbar orientation (content orientation) on iOS8+ will result in the UIScreen
+        // updating its geometry and available geometry, which in the case of content orientation is not
+        // what we want. We want to reflect the screen geometry based on the locked orientation, and
+        // adjust the available geometry based on the repositioned status bar for the current status
+        // bar orientation.
+
+        Qt::ScreenOrientation lockedOrientation = toQtScreenOrientation(UIDeviceOrientation(rootView.qtViewController.lockedOrientation));
+        Qt::ScreenOrientation contenOrientation = toQtScreenOrientation(UIDeviceOrientation([UIApplication sharedApplication].statusBarOrientation));
+
+        QTransform transform = screen()->transformBetween(lockedOrientation, contenOrientation, m_geometry).inverted();
+
+        m_geometry = transform.mapRect(m_geometry);
+        m_availableGeometry = transform.mapRect(m_availableGeometry);
+    }
 
     if (m_geometry != previousGeometry || m_availableGeometry != previousAvailableGeometry) {
         const qreal millimetersPerInch = 25.4;

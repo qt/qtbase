@@ -40,6 +40,10 @@ class QIOSScreen;
 - (id)initWithQIOSScreen:(QIOSScreen *)screen;
 - (void)updateProperties;
 
+@property (nonatomic, assign) UIInterfaceOrientation lockedOrientation;
+
+// UIViewController
+@property (nonatomic, assign) BOOL shouldAutorotate;
 @property (nonatomic, assign) BOOL prefersStatusBarHidden;
 @property (nonatomic, assign) UIStatusBarAnimation preferredStatusBarUpdateAnimation;
 
