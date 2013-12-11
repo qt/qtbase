@@ -168,8 +168,11 @@ void QCUPSSupport::setPagesPerSheetLayout(QPrinter *printer,  const PagesPerShee
                                           const PagesPerSheetLayout pagesPerSheetLayout)
 {
     QStringList cupsOptions = cupsOptionsList(printer);
-    static const char *pagesPerSheetData[] = { "1", "2", "4", "6", "9", "16", 0 };
-    static const char *pageLayoutData[] = {"lrtb", "lrbt", "rlbt", "rltb", "btlr", "btrl", "tblr", "tbrl", 0};
+    // WARNING: the following trick (with a [2]-extent) only works as
+    // WARNING: long as there's only one two-digit number in the list
+    // WARNING: and it is the last one (before the "\0")!
+    static const char pagesPerSheetData[][2] = { "1", "2", "4", "6", "9", {'1', '6'}, "\0" };
+    static const char pageLayoutData[][5] = {"lrtb", "lrbt", "rlbt", "rltb", "btlr", "btrl", "tblr", "tbrl"};
     setCupsOption(cupsOptions, QStringLiteral("number-up"), QLatin1String(pagesPerSheetData[pagesPerSheet]));
     setCupsOption(cupsOptions, QStringLiteral("number-up-layout"), QLatin1String(pageLayoutData[pagesPerSheetLayout]));
     setCupsOptions(printer, cupsOptions);
