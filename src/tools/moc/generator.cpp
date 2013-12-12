@@ -87,7 +87,7 @@ QT_FOR_EACH_STATIC_TYPE(RETURN_METATYPENAME_STRING)
     return 0;
  }
 
-Generator::Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes, const QSet<QByteArray> &knownQObjectClasses, FILE *outfile)
+Generator::Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes, const QHash<QByteArray, QByteArray> &knownQObjectClasses, FILE *outfile)
     : out(outfile), cdef(classDef), metaTypes(metaTypes), knownQObjectClasses(knownQObjectClasses)
 {
     if (cdef->superclassList.size())
@@ -438,15 +438,31 @@ void Generator::generateCode()
     QList<QByteArray> extraList;
     for (int i = 0; i < cdef->propertyList.count(); ++i) {
         const PropertyDef &p = cdef->propertyList.at(i);
-        if (!isBuiltinType(p.type) && !metaTypes.contains(p.type) && !p.type.contains('*') &&
-                !p.type.contains('<') && !p.type.contains('>')) {
-            int s = p.type.lastIndexOf("::");
-            if (s > 0) {
-                QByteArray scope = p.type.left(s);
-                if (scope != "Qt" && !qualifiedNameEquals(cdef->qualified, scope)  && !extraList.contains(scope))
-                    extraList += scope;
-            }
-        }
+        if (isBuiltinType(p.type))
+            continue;
+
+        if (p.type.contains('*') || p.type.contains('<') || p.type.contains('>'))
+            continue;
+
+        int s = p.type.lastIndexOf("::");
+        if (s <= 0)
+            continue;
+
+        QByteArray unqualifiedScope = p.type.left(s);
+
+        // The scope may be a namespace for example, so it's only safe to include scopes that are known QObjects (QTBUG-2151)
+        QHash<QByteArray, QByteArray>::ConstIterator scopeIt = knownQObjectClasses.find(unqualifiedScope);
+        if (scopeIt == knownQObjectClasses.constEnd())
+            continue;
+        const QByteArray &scope = *scopeIt;
+
+        if (scope == "Qt")
+            continue;
+        if (qualifiedNameEquals(cdef->qualified, scope))
+            continue;
+
+        if (!extraList.contains(scope))
+            extraList += scope;
     }
 
     // QTBUG-20639 - Accept non-local enums for QML signal/slot parameters.

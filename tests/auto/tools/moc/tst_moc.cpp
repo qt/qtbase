@@ -76,6 +76,7 @@
 #include "cxx11-explicit-override-control.h"
 
 #include "parse-defines.h"
+#include "related-metaobjects-in-namespaces.h"
 
 QT_USE_NAMESPACE
 
@@ -568,6 +569,8 @@ private slots:
     void preprocessorOnly();
     void unterminatedFunctionMacro();
     void QTBUG32933_relatedObjectsDontIncludeItself();
+    void writeEnumFromUnrelatedClass();
+    void relatedMetaObjectsWithinNamespaces();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -3102,6 +3105,61 @@ void tst_Moc::QTBUG32933_relatedObjectsDontIncludeItself()
     // the related objects should be empty because the enums is in the same object.
     QVERIFY(!objects);
 
+}
+
+class UnrelatedClass : public QObject
+{
+    Q_OBJECT
+    Q_ENUMS(UnrelatedEnum)
+public:
+    enum UnrelatedEnum {
+        UnrelatedInvalidValue = -1,
+        UnrelatedValue = 42
+    };
+};
+
+// The presence of this macro used to confuse moc and prevent
+// UnrelatedClass from being listed in the related meta objects.
+Q_DECLARE_METATYPE(UnrelatedClass::UnrelatedEnum)
+
+class TestClassReferencingUnrelatedEnum : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(UnrelatedClass::UnrelatedEnum enumProperty READ enumProperty WRITE setEnumProperty)
+public:
+    TestClassReferencingUnrelatedEnum()
+        : m_enumProperty(UnrelatedClass::UnrelatedInvalidValue)
+    {}
+
+    UnrelatedClass::UnrelatedEnum enumProperty() const {
+        return m_enumProperty;
+    }
+
+    void setEnumProperty(UnrelatedClass::UnrelatedEnum arg) {
+        m_enumProperty = arg;
+    }
+
+private:
+    UnrelatedClass::UnrelatedEnum m_enumProperty;
+};
+
+void tst_Moc::writeEnumFromUnrelatedClass()
+{
+    TestClassReferencingUnrelatedEnum obj;
+    QString enumValueAsString("UnrelatedValue");
+    obj.setProperty("enumProperty", enumValueAsString);
+    QCOMPARE(int(obj.enumProperty()), int(UnrelatedClass::UnrelatedValue));
+}
+
+
+
+void tst_Moc::relatedMetaObjectsWithinNamespaces()
+{
+    const QMetaObject *relatedMo = &QTBUG_2151::A::staticMetaObject;
+
+    const QMetaObject *testMo = &QTBUG_2151::B::staticMetaObject;
+    QVERIFY(testMo->d.relatedMetaObjects);
+    QVERIFY(testMo->d.relatedMetaObjects[0] == relatedMo);
 }
 
 QTEST_MAIN(tst_Moc)

@@ -621,8 +621,8 @@ void Moc::parse()
                     if (inNamespace(&namespaceList.at(i)))
                         def.qualified.prepend(namespaceList.at(i).name + "::");
 
-                knownQObjectClasses.insert(def.classname);
-                knownQObjectClasses.insert(def.qualified);
+                knownQObjectClasses.insert(def.classname, def.qualified);
+                knownQObjectClasses.insert(def.qualified, def.qualified);
 
                 continue; }
             default: break;
@@ -795,8 +795,8 @@ void Moc::parse()
             checkProperties(&def);
 
             classList += def;
-            knownQObjectClasses.insert(def.classname);
-            knownQObjectClasses.insert(def.qualified);
+            knownQObjectClasses.insert(def.classname, def.qualified);
+            knownQObjectClasses.insert(def.qualified, def.qualified);
         }
     }
 }
