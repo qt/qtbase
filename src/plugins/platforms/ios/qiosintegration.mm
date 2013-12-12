@@ -110,6 +110,8 @@ bool QIOSIntegration::hasCapability(Capability cap) const
         return true;
     case MultipleWindows:
         return true;
+    case WindowManagement:
+        return false;
     case ApplicationState:
         return true;
     default:
