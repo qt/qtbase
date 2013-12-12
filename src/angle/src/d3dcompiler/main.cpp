@@ -188,9 +188,12 @@ static QString makePath(const QDir &parent, const QString &child)
 
 } // namespace D3DCompiler
 
-extern "C" __declspec(dllexport) HRESULT WINAPI D3DCompile(
+#ifdef __MINGW32__
+extern "C"
+#endif
+__declspec(dllexport) HRESULT WINAPI D3DCompile(
         const void *, SIZE_T, const char *, const D3D_SHADER_MACRO *, ID3DInclude *,
-        const char *t, const char *, UINT, UINT, ID3DBlob **, ID3DBlob **);
+        const char *, const char *, UINT, UINT, ID3DBlob **, ID3DBlob **);
 
 HRESULT WINAPI D3DCompile(
         const void *data, SIZE_T data_size, const char *filename,
