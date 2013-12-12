@@ -146,6 +146,7 @@ private slots:
 
     void disableEnableClipping();
     void setClipRect();
+    void clipRect();
     void setEqualClipRegionAndPath_data();
     void setEqualClipRegionAndPath();
 
@@ -1828,6 +1829,42 @@ void tst_QPainter::setClipRect()
         p.setClipRect(QRectF(10.5, 10.5, 10.5, -10.5));
         QVERIFY(p.clipRegion().isEmpty());
     }
+}
+
+/*
+    Verify that the clipping works correctly.
+    The red outline should be covered by the blue rect on top and left,
+    while it should be clipped on the right and bottom and thus the red outline be visible
+
+    See: QTBUG-83229
+*/
+void tst_QPainter::clipRect()
+{
+    int width = 654;
+    int height = 480;
+    QRect rect(0, 0, width, height);
+
+    QImage image(width, height, QImage::Format_ARGB32);
+    QPainter p(&image);
+    qreal halfWidth = width / 2.0;
+    qreal halfHeight = height / 2.0;
+
+    QRectF clipRect = QRectF(halfWidth - halfWidth / 2.0, halfHeight - halfHeight / 2.0,
+                             halfWidth / 2.0, halfHeight / 2.0);
+
+    p.fillRect(rect, Qt::white);
+    p.setPen(Qt::red);
+    p.drawRect(clipRect);
+
+    p.setClipRect(clipRect, Qt::ReplaceClip);
+    p.fillRect(rect, Qt::blue);
+
+    p.end();
+
+    QCOMPARE(image.pixelColor(clipRect.left() + 1, clipRect.top()), QColor(Qt::blue));
+    QCOMPARE(image.pixelColor(clipRect.left(), clipRect.top() + 1), QColor(Qt::blue));
+    QCOMPARE(image.pixelColor(clipRect.left() + 1, clipRect.bottom()), QColor(Qt::red));
+    QCOMPARE(image.pixelColor(clipRect.right(), clipRect.top() + 1), QColor(Qt::red));
 }
 
 /*

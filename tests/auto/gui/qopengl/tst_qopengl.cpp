@@ -102,6 +102,7 @@ private slots:
     void defaultSurfaceFormat();
     void imageFormatPainting();
     void nullTextureInitializtion();
+    void clipRect();
 
 #ifdef USE_GLX
     void glxContextWrap();
@@ -1696,6 +1697,74 @@ void tst_QOpenGL::nullTextureInitializtion()
     QImage i;
     QOpenGLTexture t(i);
     QVERIFY(!t.isCreated());
+}
+
+/*
+    Verify that the clipping works correctly.
+    The red outline should be covered by the blue rect on top and left,
+    while it should be clipped on the right and bottom and thus the red outline be visible
+
+    See: QTBUG-83229
+*/
+void tst_QOpenGL::clipRect()
+{
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(__x86_64__)
+    QSKIP("QTBUG-22617");
+#endif
+
+    QScopedPointer<QSurface> surface(createSurface(int(QSurface::Window)));
+
+    QOpenGLContext ctx;
+    QVERIFY(ctx.create());
+
+    QVERIFY(ctx.makeCurrent(surface.data()));
+
+    if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QOpenGLFramebufferObject not supported on this platform");
+
+    // No multisample with combined depth/stencil attachment:
+    QOpenGLFramebufferObjectFormat fboFormat;
+    fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+
+    // Uncomplicate things by using POT:
+    const QSize size(654, 480);
+    const QRect rect(QPoint(0, 0), size);
+    QOpenGLFramebufferObject fbo(size, fboFormat);
+
+    if (fbo.attachment() != QOpenGLFramebufferObject::CombinedDepthStencil)
+        QSKIP("FBOs missing combined depth~stencil support");
+
+    QVERIFY(fbo.bind());
+
+    QPainter fboPainter;
+    QOpenGLPaintDevice device(fbo.width(), fbo.height());
+    bool painterBegun = fboPainter.begin(&device);
+    QVERIFY(painterBegun);
+
+    qreal halfWidth = size.width() / 2.0;
+    qreal halfHeight = size.height() / 2.0;
+
+    QRectF clipRect = QRectF(halfWidth - halfWidth / 2.0, halfHeight - halfHeight / 2.0,
+                             halfWidth / 2.0, halfHeight / 2.0);
+
+    fboPainter.fillRect(rect, Qt::white);
+    fboPainter.setPen(Qt::red);
+    fboPainter.drawRect(clipRect);
+
+    fboPainter.setClipRect(clipRect, Qt::ReplaceClip);
+    fboPainter.fillRect(rect, Qt::blue);
+
+    fboPainter.end();
+
+    const QImage fb = fbo.toImage().convertToFormat(QImage::Format_RGB32);
+    QCOMPARE(fb.size(), size);
+
+    QCOMPARE(fb.pixelColor(clipRect.left() + 1, clipRect.top()), QColor(Qt::blue));
+    QCOMPARE(fb.pixelColor(clipRect.left(), clipRect.top() + 1), QColor(Qt::blue));
+    QCOMPARE(fb.pixelColor(clipRect.left() + 1, clipRect.bottom()), QColor(Qt::red));
+
+    // Enable this once QTBUG-85286 is fixed
+    //QCOMPARE(fb.pixelColor(clipRect.right(), clipRect.top() + 1), QColor(Qt::red));
 }
 
 QTEST_MAIN(tst_QOpenGL)
