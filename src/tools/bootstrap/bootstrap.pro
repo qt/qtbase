@@ -148,7 +148,7 @@ macx {
 if(contains(QT_CONFIG, zlib)|cross_compile):include(../../3rdparty/zlib.pri)
 else:include(../../3rdparty/zlib_dependency.pri)
 
-win32:LIBS += -luser32 -lole32 -ladvapi32
+win32:LIBS += -luser32 -lole32 -ladvapi32 -lshell32
 
 lib.CONFIG = dummy_install
 INSTALLS += lib

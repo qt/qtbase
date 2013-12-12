@@ -48,7 +48,7 @@ CXXFLAGS_BARE = $(CFLAGS_BARE)
 CXXFLAGS = $(CFLAGS)
 
 LFLAGS	    =
-LIBS	    = ole32.lib advapi32.lib
+LIBS	    = ole32.lib advapi32.lib shell32.lib
 LINKQMAKE   = $(LINKER) $(LFLAGS) -OUT:qmake.exe $(OBJS) $(QTOBJS) $(LIBS)
 ADDCLEAN    = qmake.pdb qmake.ilk
 

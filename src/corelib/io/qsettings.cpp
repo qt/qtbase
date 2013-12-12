@@ -78,6 +78,7 @@
 #ifdef Q_OS_WIN // for homedirpath reading from registry
 #  include <private/qsystemlibrary_p.h>
 #  include <qt_windows.h>
+#  include <shlobj.h>
 #endif
 
 #ifdef Q_OS_WINRT
@@ -1036,18 +1037,9 @@ static QString windowsConfigPath(int type)
 {
     QString result;
 
-#ifndef Q_OS_WINCE
-    QSystemLibrary library(QLatin1String("shell32"));
-#else
-    QSystemLibrary library(QLatin1String("coredll"));
-#endif // Q_OS_WINCE
-    typedef BOOL (WINAPI*GetSpecialFolderPath)(HWND, LPWSTR, int, BOOL);
-    GetSpecialFolderPath SHGetSpecialFolderPath = (GetSpecialFolderPath)library.resolve("SHGetSpecialFolderPathW");
-    if (SHGetSpecialFolderPath) {
-        wchar_t path[MAX_PATH];
-        SHGetSpecialFolderPath(0, path, type, false);
+    wchar_t path[MAX_PATH];
+    if (SHGetSpecialFolderPath(0, path, type, false))
         result = QString::fromWCharArray(path);
-    }
 
     if (result.isEmpty()) {
         switch (type) {
