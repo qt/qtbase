@@ -888,7 +888,7 @@ QString QGuiApplication::platformName()
            *QGuiApplicationPrivate::platform_name : QString();
 }
 
-static void init_platform(const QString &pluginArgument, const QString &platformPluginPath, int &argc, char **argv)
+static void init_platform(const QString &pluginArgument, const QString &platformPluginPath, const QString &platformThemeName, int &argc, char **argv)
 {
     // Split into platform name and arguments
     QStringList arguments = pluginArgument.split(QLatin1Char(':'));
@@ -922,15 +922,21 @@ static void init_platform(const QString &pluginArgument, const QString &platform
     }
 
     // Create the platform theme:
-    // 1) Ask the platform integration for a list of names.
-    const QStringList themeNames = QGuiApplicationPrivate::platform_integration->themeNames();
+
+    // 1) Fetch the platform name from the environment if present.
+    QStringList themeNames;
+    if (!platformThemeName.isEmpty())
+        themeNames.append(platformThemeName);
+
+    // 2) Ask the platform integration for a list of names and try loading them.
+    themeNames += QGuiApplicationPrivate::platform_integration->themeNames();
     foreach (const QString &themeName, themeNames) {
         QGuiApplicationPrivate::platform_theme = QPlatformThemeFactory::create(themeName, platformPluginPath);
         if (QGuiApplicationPrivate::platform_theme)
             break;
     }
 
-    // 2) If none found, look for a theme plugin. Theme plugins are located in the
+    // 3) If none found, look for a theme plugin. Theme plugins are located in the
     // same directory as platform plugins.
     if (!QGuiApplicationPrivate::platform_theme) {
         foreach (const QString &themeName, themeNames) {
@@ -941,7 +947,7 @@ static void init_platform(const QString &pluginArgument, const QString &platform
         // No error message; not having a theme plugin is allowed.
     }
 
-    // 3) Fall back on the built-in "null" platform theme.
+    // 4) Fall back on the built-in "null" platform theme.
     if (!QGuiApplicationPrivate::platform_theme)
         QGuiApplicationPrivate::platform_theme = new QPlatformTheme;
 
@@ -1001,6 +1007,8 @@ void QGuiApplicationPrivate::createPlatformIntegration()
         platformName = platformNameEnv;
     }
 
+    QString platformThemeName = QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORMTHEME"));
+
     // Get command line params
 
     int j = argc ? 1 : 0;
@@ -1016,6 +1024,9 @@ void QGuiApplicationPrivate::createPlatformIntegration()
         } else if (arg == "-platform") {
             if (++i < argc)
                 platformName = argv[i];
+        } else if (arg == "-platformtheme") {
+            if (++i < argc)
+                platformThemeName = QString::fromLocal8Bit(argv[i]);
         } else if (arg == "-qwindowgeometry" || (platformName == "xcb" && arg == "-geometry")) {
             if (++i < argc)
                 windowGeometrySpecification = QWindowGeometrySpecification::fromArgument(argv[i]);
@@ -1029,7 +1040,7 @@ void QGuiApplicationPrivate::createPlatformIntegration()
         argc = j;
     }
 
-    init_platform(QLatin1String(platformName), platformPluginPath, argc, argv);
+    init_platform(QLatin1String(platformName), platformPluginPath, platformThemeName, argc, argv);
 
 }
 
