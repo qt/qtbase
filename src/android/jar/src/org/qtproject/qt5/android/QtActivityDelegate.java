@@ -242,49 +242,55 @@ public class QtActivityDelegate
         int imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_DONE;
         int inputType = android.text.InputType.TYPE_CLASS_TEXT;
 
-        if ((inputHints & ImhMultiLine) != 0) {
-            inputType = android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE;
-            imeOptions = android.view.inputmethod.EditorInfo.IME_FLAG_NO_ENTER_ACTION;
-        }
-
-        if (((inputHints & ImhNoAutoUppercase) != 0 || (inputHints & ImhPreferUppercase) != 0)
-                && (inputHints & ImhLowercaseOnly) == 0) {
-            initialCapsMode = android.text.TextUtils.CAP_MODE_SENTENCES;
-        }
-
-        if ((inputHints & ImhUppercaseOnly) != 0)
-            initialCapsMode = android.text.TextUtils.CAP_MODE_CHARACTERS;
-
-        if ((inputHints & ImhHiddenText) != 0)
-            inputType = android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD;
-
-        if ((inputHints & ImhPreferNumbers) != 0)
+        if ((inputHints & (ImhPreferNumbers | ImhDigitsOnly | ImhFormattedNumbersOnly)) != 0) {
             inputType = android.text.InputType.TYPE_CLASS_NUMBER;
+            if ((inputHints & ImhFormattedNumbersOnly) != 0) {
+                inputType |= (android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+                              | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED);
+            }
 
-        if ((inputHints & ImhDigitsOnly) != 0)
-            inputType = android.text.InputType.TYPE_CLASS_NUMBER;
-
-        if ((inputHints & ImhFormattedNumbersOnly) != 0) {
-            inputType = android.text.InputType.TYPE_CLASS_NUMBER
-                        | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
-                        | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED;
-        }
-
-        if ((inputHints & ImhDialableCharactersOnly) != 0)
+            if (Build.VERSION.SDK_INT > 10 && (inputHints & ImhHiddenText) != 0)
+                inputType |= 0x10;
+        } else if ((inputHints & ImhDialableCharactersOnly) != 0) {
             inputType = android.text.InputType.TYPE_CLASS_PHONE;
+        } else if ((inputHints & (ImhDate | ImhTime)) != 0) {
+            inputType = android.text.InputType.TYPE_CLASS_DATETIME;
+            if ((inputHints & ImhDate) != 0)
+                inputType |= android.text.InputType.TYPE_DATETIME_VARIATION_DATE;
+            if ((inputHints & ImhTime) != 0)
+                inputType |= android.text.InputType.TYPE_DATETIME_VARIATION_TIME;
+        } else { // CLASS_TEXT
+            if ((inputHints & ImhHiddenText) != 0) {
+                inputType |= android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD;
+            } else if ((inputHints & (ImhNoAutoUppercase | ImhNoPredictiveText | ImhSensitiveData)) != 0) {
+                inputType |= android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
+            }
 
-        if ((inputHints & ImhEmailCharactersOnly) != 0)
-            inputType = android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
+            if ((inputHints & ImhEmailCharactersOnly) != 0)
+                inputType |= android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
 
-        if ((inputHints & ImhUrlCharactersOnly) != 0) {
-            inputType = android.text.InputType.TYPE_TEXT_VARIATION_URI;
-            imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO;
+            if ((inputHints & ImhUrlCharactersOnly) != 0) {
+                inputType |= android.text.InputType.TYPE_TEXT_VARIATION_URI;
+                imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO;
+            }
+
+            if ((inputHints & ImhMultiLine) != 0)
+                inputType |= android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE;
+
+            if ((inputHints & ImhUppercaseOnly) != 0) {
+                initialCapsMode |= android.text.TextUtils.CAP_MODE_CHARACTERS;
+                inputType |= android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS;
+            } else if ((inputHints & ImhLowercaseOnly) == 0 && (inputHints & ImhNoAutoUppercase) == 0) {
+                initialCapsMode |= android.text.TextUtils.CAP_MODE_SENTENCES;
+                inputType |= android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES;
+            }
+
+            if ((inputHints & ImhNoPredictiveText) != 0 || (inputHints & ImhSensitiveData) != 0)
+                inputType |= android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
         }
 
-        if ((inputHints & ImhNoPredictiveText) != 0) {
-            //android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS | android.text.InputType.TYPE_CLASS_TEXT;
-            inputType = android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
-        }
+        if ((inputHints & ImhMultiLine) != 0)
+            imeOptions = android.view.inputmethod.EditorInfo.IME_FLAG_NO_ENTER_ACTION;
 
         m_editText.setInitialCapsMode(initialCapsMode);
         m_editText.setImeOptions(imeOptions);
