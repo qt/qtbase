@@ -808,6 +808,11 @@ struct IteratorOwner
     {
         return &*it;
     }
+
+    static bool equal(void * const *it, void * const *other)
+    {
+        return *static_cast<const_iterator*>(*it) == *static_cast<const_iterator*>(*other);
+    }
 };
 template<typename value_type>
 struct IteratorOwner<const value_type*>
@@ -840,6 +845,11 @@ struct IteratorOwner<const value_type*>
     static const void *getData(const value_type *it)
     {
         return it;
+    }
+
+    static bool equal(void * const *it, void * const *other)
+    {
+        return static_cast<value_type*>(*it) == static_cast<value_type*>(*other);
     }
 };
 
@@ -942,7 +952,7 @@ public:
 
     template<class T>
     static bool equalIterImpl(void * const *iterator, void * const *other)
-    { return *static_cast<typename T::const_iterator*>(*iterator) == *static_cast<typename T::const_iterator*>(*other); }
+    { return IteratorOwner<typename T::const_iterator>::equal(iterator, other); }
 
     template<class T>
     static VariantData getImpl(void * const *iterator, int metaTypeId, uint flags)
@@ -1126,7 +1136,7 @@ public:
 
     template<class T>
     static bool equalIterImpl(void * const *iterator, void * const *other)
-    { return *static_cast<typename T::const_iterator*>(*iterator) == *static_cast<typename T::const_iterator*>(*other); }
+    { return IteratorOwner<typename T::const_iterator>::equal(iterator, other); }
 
     template<class T>
     static void copyIterImpl(void **dest, void * const * src)
