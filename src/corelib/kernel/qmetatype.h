@@ -783,6 +783,10 @@ struct IteratorOwner
     {
         *ptr = new const_iterator(iterator);
     }
+    static void assign(void **ptr, void * const * src)
+    {
+        *ptr = new const_iterator(*static_cast<const_iterator*>(*src));
+    }
 
     static void advance(void **iterator, int step)
     {
@@ -811,6 +815,10 @@ struct IteratorOwner<const value_type*>
     static void assign(void **ptr, const value_type *iterator )
     {
         *ptr = const_cast<value_type*>(iterator);
+    }
+    static void assign(void **ptr, void * const * src)
+    {
+        *ptr = static_cast<value_type*>(*src);
     }
 
     static void advance(void **iterator, int step)
@@ -942,7 +950,7 @@ public:
 
     template<class T>
     static void copyIterImpl(void **dest, void * const * src)
-    { IteratorOwner<typename T::const_iterator>::assign(dest, *static_cast<typename T::const_iterator*>(*src)); }
+    { IteratorOwner<typename T::const_iterator>::assign(dest, src); }
 
 public:
     template<class T> QSequentialIterableImpl(const T*p)
@@ -1122,7 +1130,7 @@ public:
 
     template<class T>
     static void copyIterImpl(void **dest, void * const * src)
-    { IteratorOwner<typename T::const_iterator>::assign(dest, *static_cast<typename T::const_iterator*>(*src)); }
+    { IteratorOwner<typename T::const_iterator>::assign(dest, src); }
 
 public:
     template<class T> QAssociativeIterableImpl(const T*p)
