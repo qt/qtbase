@@ -805,17 +805,17 @@ struct IteratorOwner
         return &*it;
     }
 };
-template<typename const_iterator>
-struct IteratorOwner<const const_iterator*>
+template<typename value_type>
+struct IteratorOwner<const value_type*>
 {
-    static void assign(void **ptr, const const_iterator *iterator )
+    static void assign(void **ptr, const value_type *iterator )
     {
-        *ptr = const_cast<const_iterator*>(iterator);
+        *ptr = const_cast<value_type*>(iterator);
     }
 
     static void advance(void **iterator, int step)
     {
-        const_iterator *it = static_cast<const_iterator*>(*iterator);
+        value_type *it = static_cast<value_type*>(*iterator);
         std::advance(it, step);
         *iterator = it;
     }
@@ -829,7 +829,7 @@ struct IteratorOwner<const const_iterator*>
         return *iterator;
     }
 
-    static const void *getData(const const_iterator *it)
+    static const void *getData(const value_type *it)
     {
         return it;
     }
