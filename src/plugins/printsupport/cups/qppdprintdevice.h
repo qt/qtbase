@@ -1,6 +1,5 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2014 John Layt <jlayt@kde.org>
 ** Contact: http://www.qt-project.org/legal
 **
@@ -40,61 +39,87 @@
 **
 ****************************************************************************/
 
-#ifndef QCUPSPRINTERSUPPORT_H
-#define QCUPSPRINTERSUPPORT_H
+#ifndef QPPDPRINTDEVICE_H
+#define QPPDPRINTDEVICE_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of internal files.  This header file may change from version to version
+// without notice, or even be removed.
+//
+// We mean it.
+//
 
 #include <QtCore/qfeatures.h> // Some feature dependencies might define QT_NO_PRINTER
 #ifndef QT_NO_PRINTER
 
-#include <qpa/qplatformprintersupport.h>
-
-#include <QtCore/qlibrary.h>
-#include <QtCore/qlist.h>
+#include <qpa/qplatformprintdevice.h>
 
 #include <cups/cups.h>
+#include <cups/ppd.h>
 
 QT_BEGIN_NAMESPACE
 
-typedef int (*CupsGetDests)(cups_dest_t **dests);
-typedef void (*CupsFreeDests)(int num_dests, cups_dest_t *dests);
-typedef const char* (*CupsGetOption)(const char *name, int num_options, cups_option_t *options);
-
-class QCupsPrinterSupport : public QPlatformPrinterSupport
+class QPpdPrintDevice : public QPlatformPrintDevice
 {
 public:
-    QCupsPrinterSupport();
-    ~QCupsPrinterSupport();
+    QPpdPrintDevice();
+    explicit QPpdPrintDevice(const QString &id);
+    QPpdPrintDevice(const QPpdPrintDevice &other);
+    virtual ~QPpdPrintDevice();
 
-    virtual QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode);
-    virtual QPaintEngine *createPaintEngine(QPrintEngine *printEngine, QPrinter::PrinterMode);
+    QPpdPrintDevice &operator=(const QPpdPrintDevice &other);
 
-    QPrintDevice createPrintDevice(const QString &id) Q_DECL_OVERRIDE;
-    QStringList availablePrintDeviceIds() const Q_DECL_OVERRIDE;
-    QString defaultPrintDeviceId() const Q_DECL_OVERRIDE;
+    QPpdPrintDevice *clone();
 
-    virtual QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const;
-    virtual QList<QPair<QString, QSizeF> > supportedSizesWithNames(const QPrinterInfo &) const;
+    bool operator==(const QPpdPrintDevice &other) const;
 
-    virtual QList<QPrinterInfo> availablePrinters();
-    virtual QString printerOption(const QPrinterInfo &printer, const QString &key) const;
-    virtual PrinterOptions printerOptions(const QPrinterInfo &printer) const;
+    bool isValid() const Q_DECL_OVERRIDE;
+    bool isDefault() const Q_DECL_OVERRIDE;
+
+    QPrint::DeviceState state() const Q_DECL_OVERRIDE;
+
+    QPageSize defaultPageSize() const Q_DECL_OVERRIDE;
+
+    QMarginsF printableMargins(const QPageSize &pageSize, QPageLayout::Orientation orientation,
+                               int resolution) const Q_DECL_OVERRIDE;
+
+    int defaultResolution() const Q_DECL_OVERRIDE;
+
+    QPrint::InputSlot defaultInputSlot() const Q_DECL_OVERRIDE;
+
+    QPrint::OutputBin defaultOutputBin() const Q_DECL_OVERRIDE;
+
+    QPrint::DuplexMode defaultDuplexMode() const Q_DECL_OVERRIDE;
+
+    QPrint::ColorMode defaultColorMode() const Q_DECL_OVERRIDE;
+
+protected:
+    void loadPageSizes() const Q_DECL_OVERRIDE;
+    void loadResolutions() const Q_DECL_OVERRIDE;
+    void loadInputSlots() const Q_DECL_OVERRIDE;
+    void loadOutputBins() const Q_DECL_OVERRIDE;
+    void loadDuplexModes() const Q_DECL_OVERRIDE;
+    void loadColorModes() const Q_DECL_OVERRIDE;
+    void loadMimeTypes() const Q_DECL_OVERRIDE;
 
 private:
-    void loadCups();
-    void loadCupsPrinters();
-    void freeCupsPrinters();
-    QString cupsOption(int i, const QString &key) const;
+    void loadPrinter();
+    QString printerOption(const QString &key) const;
+    cups_ptype_e printerTypeFlags() const;
 
-    QLibrary m_cups;
-    cups_dest_t *m_cupsPrinters;
-    int m_cupsPrintersCount;
-
-    CupsGetDests  cupsGetDests;
-    CupsFreeDests cupsFreeDests;
-    CupsGetOption cupsGetOption;
+    cups_dest_t *m_cupsDest;
+    ppd_file_t *m_ppd;
+    QByteArray m_cupsName;
+    QByteArray m_cupsInstance;
+    QMarginsF m_customMargins;
+    mutable QHash<QString, QMarginsF> m_printableMargins;
 };
 
 QT_END_NAMESPACE
 
 #endif // QT_NO_PRINTER
-#endif // QCUPSPRINTERSUPPORT_H
+#endif // QPPDPRINTDEVICE_H

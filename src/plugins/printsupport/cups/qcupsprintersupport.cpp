@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 John Layt <jlayt@kde.org>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -44,7 +45,9 @@
 #ifndef QT_NO_PRINTER
 
 #include "qcupsprintengine_p.h"
+#include "qppdprintdevice.h"
 #include <private/qprinterinfo_p.h>
+#include <private/qprintdevice_p.h>
 
 #include <QtPrintSupport/QPrinterInfo>
 
@@ -78,6 +81,44 @@ QPaintEngine *QCupsPrinterSupport::createPaintEngine(QPrintEngine *engine, QPrin
 {
     Q_UNUSED(printerMode)
     return static_cast<QCupsPrintEngine *>(engine);
+}
+
+QPrintDevice QCupsPrinterSupport::createPrintDevice(const QString &id)
+{
+    return QPlatformPrinterSupport::createPrintDevice(new QPpdPrintDevice(id));
+}
+
+QStringList QCupsPrinterSupport::availablePrintDeviceIds() const
+{
+    QStringList list;
+    cups_dest_t *dests;
+    int count = cupsGetDests(&dests);
+    for (int i = 0; i < count; ++i) {
+        QString printerId = QString::fromLocal8Bit(dests[i].name);
+        if (dests[i].instance)
+            printerId += QLatin1Char('/') + QString::fromLocal8Bit(dests[i].instance);
+        list.append(printerId);
+    }
+    cupsFreeDests(count, dests);
+    return list;
+}
+
+QString QCupsPrinterSupport::defaultPrintDeviceId() const
+{
+    QString printerId;
+    cups_dest_t *dests;
+    int count = cupsGetDests(&dests);
+    for (int i = 0; i < count; ++i) {
+        if (dests[i].is_default) {
+            printerId = QString::fromLocal8Bit(dests[i].name);
+            if (dests[i].instance) {
+                printerId += QLatin1Char('/') + QString::fromLocal8Bit(dests[i].instance);
+                break;
+            }
+        }
+    }
+    cupsFreeDests(count, dests);
+    return printerId;
 }
 
 QList<QPrinter::PaperSize> QCupsPrinterSupport::supportedPaperSizes(const QPrinterInfo &printerInfo) const
