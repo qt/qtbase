@@ -1251,7 +1251,7 @@ void QRasterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 #endif
             const qreal *points = path.points();
             QRectF r(points[0], points[1], points[4]-points[0], points[5]-points[1]);
-            if (setClipRectInDeviceCoords(s->matrix.mapRect(r).toRect(), op))
+            if (setClipRectInDeviceCoords(s->matrix.mapRect(r).toAlignedRect(), op))
                 return;
         }
     }

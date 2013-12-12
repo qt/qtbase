@@ -2496,7 +2496,7 @@ void QOpenGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
                 && qFuzzyIsNull(state()->matrix.m11())
                 && qFuzzyIsNull(state()->matrix.m22())))
         {
-            state()->rectangleClip = state()->rectangleClip.intersected(state()->matrix.mapRect(rect).toRect());
+            state()->rectangleClip = state()->rectangleClip.intersected(state()->matrix.mapRect(rect).toAlignedRect());
             d->updateClipScissorTest();
             return;
         }
