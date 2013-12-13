@@ -62,6 +62,7 @@
 #include "qglyphrun.h"
 
 #include <qpa/qplatformtheme.h>
+#include <qpa/qplatformintegration.h>
 
 #include <private/qfontengine_p.h>
 #include <private/qpaintengine_p.h>
@@ -155,7 +156,9 @@ static bool qt_painter_thread_test(int devType, const char *what)
         // can be drawn onto these devices safely from any thread
         break;
     default:
-        if (QThread::currentThread() != qApp->thread()) {
+        if (QThread::currentThread() != qApp->thread()
+                && (devType!=QInternal::Pixmap || !QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedPixmaps))
+                && (devType!=QInternal::OpenGL || !QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedOpenGL))) {
             qWarning("QPainter: It is not safe to use %s outside the GUI thread", what);
             return false;
         }
