@@ -184,7 +184,7 @@ void QXcbConnection::xi2Select(xcb_window_t window)
     mask.mask_len = sizeof(bitMask);
     mask.mask = xiBitMask;
     // Enable each touchscreen
-    foreach (XInput2DeviceData *dev, m_touchDevices.values()) {
+    foreach (XInput2DeviceData *dev, m_touchDevices) {
         mask.deviceid = dev->xiDeviceInfo->deviceid;
         Status result = XISelectEvents(xDisplay, window, &mask, 1);
         // If we have XInput >= 2.2 and successfully enable a touchscreen, then
