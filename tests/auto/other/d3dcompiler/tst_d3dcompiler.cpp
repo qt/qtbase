@@ -153,11 +153,12 @@ QString tst_d3dcompiler::blobPath()
     if (qEnvironmentVariableIsSet("QT_D3DCOMPILER_DIR"))
         path.setPath(qgetenv("QT_D3DCOMPILER_DIR"));
     else
-        path.setPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
+        path.setPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation) + QStringLiteral("/d3dcompiler"));
 
-    path.mkdir(QStringLiteral("d3dcompiler"));
+    path.mkdir(QStringLiteral("binary"));
+    path.mkdir(QStringLiteral("source"));
 
-    return path.absoluteFilePath(QStringLiteral("d3dcompiler/"));
+    return path.absolutePath();
 }
 
 void tst_d3dcompiler::initTestCase()
@@ -177,7 +178,12 @@ void tst_d3dcompiler::cleanup()
     FreeLibrary(d3dcompiler_win);
 
     QDir path(blobPath());
-    path.removeRecursively();
+    foreach (const QString &entry, path.entryList(QStringList(), QDir::Files|QDir::NoDotAndDotDot))
+        path.remove(entry);
+    foreach (const QString &entry, path.entryList(QStringList(), QDir::Dirs|QDir::NoDotAndDotDot)) {
+        QDir dir(path.absoluteFilePath(entry + QStringLiteral("/")));
+        dir.removeRecursively();
+    }
 }
 
 void tst_d3dcompiler::service_data()
@@ -188,8 +194,9 @@ void tst_d3dcompiler::service_data()
 
     // Don't test the default case, as it would clutter the AppData directory
     //QTest::newRow("default") << QByteArrayLiteral("") << true << E_ABORT;
-    QTest::newRow("temporary") << tempDir.path().toUtf8() << true << E_ABORT;
+    QTest::newRow("temporary") << QFile::encodeName(tempDir.path()) << true << E_ABORT;
     QTest::newRow("invalid") << QByteArrayLiteral("ZZ:\\") << false << S_OK;
+    QTest::newRow("empty") << QByteArrayLiteral("") << false << S_OK;
 }
 
 void tst_d3dcompiler::service()
@@ -254,6 +261,8 @@ void tst_d3dcompiler::service()
 
 void tst_d3dcompiler::offlineCompile()
 {
+    qputenv("QT_D3DCOMPILER_DIR", QFile::encodeName(tempDir.path()));
+
     for (int i = 0; compilerDlls[i]; ++i) {
         d3dcompiler_win = loadLibrary(compilerDlls[i]);
         if (d3dcompiler_win)
@@ -271,7 +280,8 @@ void tst_d3dcompiler::offlineCompile()
     QVERIFY(shader);
 
     QDir outputPath(blobPath());
-    QVERIFY(outputPath.mkpath(QStringLiteral("binary")));
+    QVERIFY(outputPath.exists());
+    QVERIFY(outputPath.exists(QStringLiteral("binary")));
     outputPath.cd(QStringLiteral("binary"));
     QFile output(outputPath.absoluteFilePath(QCryptographicHash::hash(data, QCryptographicHash::Sha1).toHex()));
     QVERIFY(output.open(QFile::WriteOnly));
@@ -291,6 +301,8 @@ void tst_d3dcompiler::offlineCompile()
 
 void tst_d3dcompiler::onlineCompile()
 {
+    qputenv("QT_D3DCOMPILER_DIR", QFile::encodeName(tempDir.path()));
+
     QByteArray data(hlsl);
 
     const QDir path = blobPath();
@@ -313,8 +325,9 @@ void tst_d3dcompiler::onlineCompile()
     runner.start();
 
     // Wait for source to appear
-    QVERIFY(path.mkpath(QStringLiteral("source")));
-    QVERIFY(path.mkpath(QStringLiteral("binary")));
+    QVERIFY(path.exists());
+    QVERIFY(path.exists(QStringLiteral("source")));
+    QVERIFY(path.exists(QStringLiteral("binary")));
 
     const QByteArray hash = QCryptographicHash::hash(data, QCryptographicHash::Sha1).toHex();
     QFile input(path.absoluteFilePath(QStringLiteral("source/") + hash));

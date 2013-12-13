@@ -161,29 +161,9 @@ static bool loadCompiler()
     return bool(compile);
 }
 
-static bool serviceAvailable(const QString &path)
-{
-    if (path.isEmpty())
-        return false;
-
-    // Look for a file, "control", and check if it has been touched in the last 60 seconds
-    QFileInfo control(path + QStringLiteral("control"));
-    return control.exists() && control.lastModified().secsTo(QDateTime::currentDateTime()) < 60;
-}
-
 static QString cacheKeyFor(const void *data)
 {
     return QString::fromUtf8(QCryptographicHash::hash(reinterpret_cast<const char *>(data), QCryptographicHash::Sha1).toHex());
-}
-
-static QString makePath(const QDir &parent, const QString &child)
-{
-    const QString path = parent.absoluteFilePath(child);
-    if (!parent.mkpath(child)) {
-        qCWarning(QT_D3DCOMPILER) << "Path is inaccessible: " << path;
-        return QString();
-    }
-    return path;
 }
 
 } // namespace D3DCompiler
@@ -200,37 +180,56 @@ HRESULT WINAPI D3DCompile(
         const D3D_SHADER_MACRO *defines, ID3DInclude *include, const char *entrypoint,
         const char *target, UINT sflags, UINT eflags, ID3DBlob **shader, ID3DBlob **errorMsgs)
 {
-    static QString basePath;
+    static bool initialized = false;
+    static bool serviceAvailable = false;
     static QString binaryPath;
     static QString sourcePath;
-    if (basePath.isEmpty()) {
-        QDir base;
-        if (qEnvironmentVariableIsSet("QT_D3DCOMPILER_DIR"))
-            base.setPath(QString::fromUtf8(qgetenv("QT_D3DCOMPILER_DIR")));
-        else
-            base.setPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
-
-        if (!base.exists() && !base.mkdir(QStringLiteral("."))) {
-            qCWarning(QT_D3DCOMPILER) << "D3D compiler base directory does not exist: " << QDir::toNativeSeparators(base.path());
+    if (!initialized) {
+        QString base;
+        if (qEnvironmentVariableIsSet("QT_D3DCOMPILER_DIR")) {
+            base = QString::fromLocal8Bit(qgetenv("QT_D3DCOMPILER_DIR"));
         } else {
-            const QString path = base.absoluteFilePath(QStringLiteral("d3dcompiler/"));
-            if (!QFile::exists(path) && !base.mkdir(QStringLiteral("d3dcompiler")))
-                qCWarning(QT_D3DCOMPILER) << "D3D compiler path could not be created: " << QDir::toNativeSeparators(path);
-            else
-                basePath = path;
+            const QString location = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+            if (!location.isEmpty())
+                base = location + QStringLiteral("/d3dcompiler");
         }
+
+        QDir baseDir(base);
+        if (!base.isEmpty() && baseDir.exists()) {
+            // Check if we have can read/write blobs
+            if (baseDir.exists(QStringLiteral("binary"))) {
+                binaryPath = baseDir.absoluteFilePath(QStringLiteral("binary/"));
+            } else {
+                qCWarning(QT_D3DCOMPILER) << "D3D compiler base directory exists, but the binary directory does not.\n"
+                                             "Check the compiler service.";
+            }
+
+            // Check if we can write shader source
+            if (baseDir.exists(QStringLiteral("source"))) {
+                sourcePath = baseDir.absoluteFilePath(QStringLiteral("source/"));
+            } else {
+                qCWarning(QT_D3DCOMPILER) << "D3D compiler base directory exists, but the source directory does not.\n"
+                                             "Check the compiler service.";
+            }
+
+            // Look for a file, "control", and check if it has been touched in the last 60 seconds
+            QFileInfo control(baseDir.absoluteFilePath(QStringLiteral("control")));
+            serviceAvailable = control.exists() && control.lastModified().secsTo(QDateTime::currentDateTime()) < 60;
+        } else {
+            qCWarning(QT_D3DCOMPILER) << "D3D compiler base directory does not exist:"
+                                      << QDir::toNativeSeparators(base)
+                                      << "\nThe compiler service won't be used.";
+        }
+
+        initialized = true;
     }
 
-    if (!basePath.isEmpty()) {
-        binaryPath = D3DCompiler::makePath(basePath, QStringLiteral("binary/"));
-        sourcePath = D3DCompiler::makePath(basePath, QStringLiteral("source/"));
-    }
-
-    // Check if pre-compiled shader blob is available
     const QByteArray sourceData = QByteArray::fromRawData(reinterpret_cast<const char *>(data), data_size);
     const QString cacheKey = D3DCompiler::cacheKeyFor(sourceData);
-    QFile blob(binaryPath + cacheKey);
-    if (!binaryPath.isEmpty() && blob.exists()) {
+
+    // Check if pre-compiled shader blob is available
+    if (!binaryPath.isEmpty()) {
+        QFile blob(binaryPath + cacheKey);
         if (blob.open(QFile::ReadOnly)) {
             qCDebug(QT_D3DCOMPILER) << "Opening precompiled shader blob at" << blob.fileName();
             *shader = new D3DCompiler::Blob(blob.readAll());
@@ -240,13 +239,7 @@ HRESULT WINAPI D3DCompile(
     }
 
     // Shader blob is not available, compile with compilation service if possible
-    if (D3DCompiler::serviceAvailable(basePath)) {
-
-        if (sourcePath.isEmpty()) {
-            qCWarning(QT_D3DCOMPILER) << "Compiler service is available, but source directory is not writable.";
-            return E_ACCESSDENIED;
-        }
-
+    if (!sourcePath.isEmpty() && serviceAvailable) {
         // Dump source to source path; wait for blob to appear
         QFile source(sourcePath + cacheKey);
         if (!source.open(QFile::WriteOnly)) {
@@ -264,6 +257,7 @@ HRESULT WINAPI D3DCompile(
 
         QElapsedTimer timer;
         timer.start();
+        QFile blob(binaryPath + cacheKey);
         while (!(blob.exists() && blob.open(QFile::ReadOnly)) && timer.elapsed() < timeout)
             QThread::msleep(100);
 
@@ -285,6 +279,8 @@ HRESULT WINAPI D3DCompile(
         if (SUCCEEDED(hr) && !binaryPath.isEmpty()) {
             const QByteArray blobContents = QByteArray::fromRawData(
                         reinterpret_cast<const char *>((*shader)->GetBufferPointer()), (*shader)->GetBufferSize());
+
+            QFile blob(binaryPath + cacheKey);
             if (blob.open(QFile::WriteOnly) && blob.write(blobContents))
                 qCDebug(QT_D3DCOMPILER) << "Cached shader blob at" << blob.fileName();
             else
