@@ -257,12 +257,54 @@ static int ucstrncmp(const QChar *a, const QChar *b, int l)
         }
     }
 #endif
-
-    while (l-- && *a == *b)
-        a++,b++;
-    if (l==-1)
+    if (!l)
         return 0;
-    return a->unicode() - b->unicode();
+
+    union {
+        const QChar *w;
+        const quint32 *d;
+        quintptr value;
+    } sa, sb;
+    sa.w = a;
+    sb.w = b;
+
+    // check alignment
+    if ((sa.value & 2) == (sb.value & 2)) {
+        // both addresses have the same alignment
+        if (sa.value & 2) {
+            // both addresses are not aligned to 4-bytes boundaries
+            // compare the first character
+            if (*sa.w != *sb.w)
+                return sa.w->unicode() - sb.w->unicode();
+            --l;
+            ++sa.w;
+            ++sb.w;
+
+            // now both addresses are 4-bytes aligned
+        }
+
+        // both addresses are 4-bytes aligned
+        // do a fast 32-bit comparison
+        const quint32 *e = sa.d + (l >> 1);
+        for ( ; sa.d != e; ++sa.d, ++sb.d) {
+            if (*sa.d != *sb.d) {
+                if (*sa.w != *sb.w)
+                    return sa.w->unicode() - sb.w->unicode();
+                return sa.w[1].unicode() - sb.w[1].unicode();
+            }
+        }
+
+        // do we have a tail?
+        return (l & 1) ? sa.w->unicode() - sb.w->unicode() : 0;
+    } else {
+        // one of the addresses isn't 4-byte aligned but the other is
+        const QChar *e = sa.w + l;
+        for ( ; sa.w != e; ++sa.w, ++sb.w) {
+            if (*sa.w != *sb.w)
+                return sa.w->unicode() - sb.w->unicode();
+        }
+    }
+    return 0;
 }
 
 // Unicode case-sensitive comparison
@@ -281,100 +323,12 @@ static int ucstrnicmp(const ushort *a, const ushort *b, int l)
     return ucstricmp(a, a + l, b, b + l);
 }
 
-// Benchmarking indicates that doing memcmp is much slower than
-// executing the comparison ourselves.
-//
-// The profiling was done on a population of calls to qMemEquals, generated
-// during a run of the demo browser. The profile of the data (32-bit x86
-// Linux) was:
-//
-//  total number of comparisons: 21353
-//  longest string compared: 95
-//  average comparison length: 14.8786
-//  cache-line crosses: 5661 (13.3%)
-//  alignment histogram:
-//   0xXXX0 = 512 (1.2%) strings, 0 (0.0%) of which same-aligned
-//   0xXXX2 = 15087 (35.3%) strings, 5145 (34.1%) of which same-aligned
-//   0xXXX4 = 525 (1.2%) strings, 0 (0.0%) of which same-aligned
-//   0xXXX6 = 557 (1.3%) strings, 6 (1.1%) of which same-aligned
-//   0xXXX8 = 509 (1.2%) strings, 0 (0.0%) of which same-aligned
-//   0xXXXa = 24358 (57.0%) strings, 9901 (40.6%) of which same-aligned
-//   0xXXXc = 557 (1.3%) strings, 0 (0.0%) of which same-aligned
-//   0xXXXe = 601 (1.4%) strings, 15 (2.5%) of which same-aligned
-//   total  = 42706 (100%) strings, 15067 (35.3%) of which same-aligned
-//
-// 92% of the strings have alignment of 2 or 10, which is due to malloc on
-// 32-bit Linux returning values aligned to 8 bytes, and offsetof(array, QString::Data) == 18.
-//
-// The profile on 64-bit will be different since offsetof(array, QString::Data) == 26.
-//
-// The benchmark results were, for a Core-i7 @ 2.67 GHz 32-bit, compiled with -O3 -funroll-loops:
-//   16-bit loads only:           872,301 CPU ticks [Qt 4.5 / memcmp]
-//   32- and 16-bit loads:        773,362 CPU ticks [Qt 4.6]
-//   SSE2 "movdqu" 128-bit loads: 618,736 CPU ticks
-//   SSE3 "lddqu" 128-bit loads:  619,954 CPU ticks
-//   SSSE3 "palignr" corrections: 852,147 CPU ticks
-//   SSE4.2 "pcmpestrm":          738,702 CPU ticks
-//
-// The same benchmark on an Atom N450 @ 1.66 GHz, is:
-//  16-bit loads only:            2,185,882 CPU ticks
-//  32- and 16-bit loads:         1,805,060 CPU ticks
-//  SSE2 "movdqu" 128-bit loads:  2,529,843 CPU ticks
-//  SSE3 "lddqu" 128-bit loads:   2,514,858 CPU ticks
-//  SSSE3 "palignr" corrections:  2,160,325 CPU ticks
-//  SSE4.2 not available
-//
-// The conclusion we reach is that alignment the SSE2 unaligned code can gain
-// 20% improvement in performance in some systems, but suffers a penalty due
-// to the unaligned loads on others.
-
 static bool qMemEquals(const quint16 *a, const quint16 *b, int length)
 {
     if (a == b || !length)
         return true;
 
-    union {
-        const quint16 *w;
-        const quint32 *d;
-        quintptr value;
-    } sa, sb;
-    sa.w = a;
-    sb.w = b;
-
-    // check alignment
-    if ((sa.value & 2) == (sb.value & 2)) {
-        // both addresses have the same alignment
-        if (sa.value & 2) {
-            // both addresses are not aligned to 4-bytes boundaries
-            // compare the first character
-            if (*sa.w != *sb.w)
-                return false;
-            --length;
-            ++sa.w;
-            ++sb.w;
-
-            // now both addresses are 4-bytes aligned
-        }
-
-        // both addresses are 4-bytes aligned
-        // do a fast 32-bit comparison
-        const quint32 *e = sa.d + (length >> 1);
-        for ( ; sa.d != e; ++sa.d, ++sb.d) {
-            if (*sa.d != *sb.d)
-                return false;
-        }
-
-        // do we have a tail?
-        return (length & 1) ? *sa.w == *sb.w : true;
-    } else {
-        // one of the addresses isn't 4-byte aligned but the other is
-        const quint16 *e = sa.w + length;
-        for ( ; sa.w != e; ++sa.w, ++sb.w) {
-            if (*sa.w != *sb.w)
-                return false;
-        }
-    }
-    return true;
+    return ucstrncmp(reinterpret_cast<const QChar *>(a), reinterpret_cast<const QChar *>(b), length) == 0;
 }
 
 /*!
