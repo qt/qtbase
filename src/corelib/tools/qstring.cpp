@@ -102,6 +102,36 @@
 
 QT_BEGIN_NAMESPACE
 
+/*
+ * Note on the use of SIMD in qstring.cpp:
+ *
+ * Several operations with strings are improved with the use of SIMD code,
+ * since they are repetitive. For MIPS, we have hand-written assembly code
+ * outside of qstring.cpp targeting MIPS DSP and MIPS DSPr2. For ARM and for
+ * x86, we can only use intrinsics and therefore everything is contained in
+ * qstring.cpp. We need to use intrinsics only for those platforms due to the
+ * different compilers and toolchains used, which have different syntax for
+ * assembly sources.
+ *
+ * ** SSE notes: **
+ *
+ * Whenever multiple alternatives are equivalent or near so, we prefer the one
+ * using instructions from SSE2, since SSE2 is guaranteed to be enabled for all
+ * 64-bit builds and we enable it for 32-bit builds by default. Use of higher
+ * SSE versions should be done when there's a clear performance benefit and
+ * requires fallback code to SSE2, if it exists.
+ *
+ * Performance measurement in the past shows that most strings are short in
+ * size and, therefore, do not benefit from alignment prologues. That is,
+ * trying to find a 16-byte-aligned boundary to operate on is often more
+ * expensive than executing the unaligned operation directly. In addition, note
+ * that the QString private data is designed so that the data is stored on
+ * 16-byte boundaries if the system malloc() returns 16-byte aligned pointers
+ * on its own (64-bit glibc on Linux does; 32-bit glibc on Linux returns them
+ * 50% of the time), so skipping the alignment prologue is actually optimizing
+ * for the common case.
+ */
+
 // internal
 int qFindString(const QChar *haystack, int haystackLen, int from,
     const QChar *needle, int needleLen, Qt::CaseSensitivity cs);
@@ -206,6 +236,28 @@ static int ucstrncmp(const QChar *a, const QChar *b, int l)
                                          l);
     }
 #endif // __mips_dsp
+#ifdef __SSE2__
+    const char *ptr = reinterpret_cast<const char*>(a);
+    qptrdiff distance = reinterpret_cast<const char*>(b) - ptr;
+    a += l & ~7;
+    b += l & ~7;
+    l &= 7;
+
+    // we're going to read ptr[0..15] (16 bytes)
+    for ( ; ptr + 15 < reinterpret_cast<const char *>(a); ptr += 16) {
+        __m128i a_data = _mm_loadu_si128((__m128i*)ptr);
+        __m128i b_data = _mm_loadu_si128((__m128i*)(ptr + distance));
+        __m128i result = _mm_cmpeq_epi16(a_data, b_data);
+        uint mask = ~_mm_movemask_epi8(result);
+        if (ushort(mask)) {
+            // found a different byte
+            uint idx = uint(_bit_scan_forward(mask));
+            return reinterpret_cast<const QChar *>(ptr + idx)->unicode()
+                    - reinterpret_cast<const QChar *>(ptr + distance + idx)->unicode();
+        }
+    }
+#endif
+
     while (l-- && *a == *b)
         a++,b++;
     if (l==-1)

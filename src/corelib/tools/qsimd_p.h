@@ -256,6 +256,12 @@ static __forceinline unsigned long _bit_scan_reverse(uint val)
     _BitScanReverse(&result, val);
     return result;
 }
+static __forceinline unsigned long _bit_scan_forward(uint val)
+{
+    unsigned long result;
+    _BitScanForward(&result, val);
+    return result;
+}
 #  elif (defined(Q_CC_CLANG) || (defined(Q_CC_GNU) && __GNUC__ * 100 + __GNUC_MINOR__ < 405)) \
     && !defined(Q_CC_INTEL)
 // Clang is missing the intrinsic for _bit_scan_reverse
@@ -265,6 +271,13 @@ unsigned _bit_scan_reverse(unsigned val)
 {
     unsigned result;
     asm("bsr %1, %0" : "=r" (result) : "r" (val));
+    return result;
+}
+static inline __attribute__((always_inline))
+unsigned _bit_scan_forward(unsigned val)
+{
+    unsigned result;
+    asm("bsf %1, %0" : "=r" (result) : "r" (val));
     return result;
 }
 #  endif
