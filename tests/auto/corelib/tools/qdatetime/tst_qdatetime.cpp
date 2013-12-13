@@ -61,6 +61,7 @@ public:
     static QString str( int y, int month, int d, int h, int min, int s );
     static QDateTime dt( const QString& str );
 public slots:
+    void initTestCase();
     void init();
 private slots:
     void ctor();
@@ -150,6 +151,7 @@ private slots:
     void invalid() const;
 
 private:
+    enum { LocalTimeIsUtc = 0, LocalTimeAheadOfUtc = 1, LocalTimeBehindUtc = -1} localTimeType;
     bool europeanTimeZone;
     QDate defDate() const { return QDate(1900, 1, 1); }
     QTime defTime() const { return QTime(0, 0, 0); }
@@ -169,6 +171,42 @@ tst_QDateTime::tst_QDateTime()
     uint x1 = QDateTime(QDate(1990, 1, 1), QTime()).toTime_t();
     uint x2 = QDateTime(QDate(1990, 6, 1), QTime()).toTime_t();
     europeanTimeZone = (x1 == 631148400 && x2 == 644191200);
+
+    QDateTime dt1 = QDateTime::fromTime_t(0);
+    QDateTime dt2 = QDateTime::fromTime_t(181 * 86400); // six months later, Jul 1
+    if (dt1.date().year() < 1970 || dt2.date().month() < 7) {
+        localTimeType = LocalTimeBehindUtc;
+    } else if (dt1.time().hour() > 0 || dt1.date().day() > 1) {
+        localTimeType = LocalTimeAheadOfUtc;
+    } else if (dt2.time().hour() > 0 || dt2.date().day() > 1) {
+        localTimeType = LocalTimeAheadOfUtc;
+    } else {
+        localTimeType = LocalTimeIsUtc;
+    }
+}
+
+void tst_QDateTime::initTestCase()
+{
+    // Never construct a message like this in an i18n context...
+    const char *typemsg1, *typemsg2 = "and therefore not";
+    switch (localTimeType) {
+    case LocalTimeIsUtc:
+        typemsg1 = "exactly";
+        break;
+    case LocalTimeBehindUtc:
+        typemsg1 = "behind";
+        break;
+    case LocalTimeAheadOfUtc:
+        typemsg1 = "ahead of";
+        typemsg2 = europeanTimeZone ? "and is" : "but isn't";
+        break;
+    }
+
+    qDebug() << "Current local time detected to be"
+             << typemsg1
+             << "UTC"
+             << typemsg2
+             << "the Central European timezone";
 }
 
 void tst_QDateTime::init()
@@ -610,8 +648,10 @@ void tst_QDateTime::fromMSecsSinceEpoch()
     QDateTime dtUtc = QDateTime::fromMSecsSinceEpoch(msecs, Qt::UTC);
     QDateTime dtOffset = QDateTime::fromMSecsSinceEpoch(msecs, Qt::OffsetFromUTC, 60*60);
 
-    // LocalTime will overflow for max
-    if (msecs != std::numeric_limits<qint64>::max())
+    // LocalTime will overflow for min or max, depending on whether you're
+    // East or West of Greenwich. The test passes at GMT.
+    if (localTimeType == LocalTimeIsUtc
+            || msecs != std::numeric_limits<qint64>::max() * localTimeType)
         QCOMPARE(dtLocal, utc);
 
     QCOMPARE(dtUtc, utc);
