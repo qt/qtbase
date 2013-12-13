@@ -347,14 +347,32 @@ static int findChar(const QChar *str, int len, QChar ch, int from,
     if (from < 0)
         from = qMax(from + len, 0);
     if (from < len) {
-        const ushort *n = s + from - 1;
+        const ushort *n = s + from;
         const ushort *e = s + len;
         if (cs == Qt::CaseSensitive) {
+#ifdef __SSE2__
+            __m128i mch = _mm_set1_epi32(c | (c << 16));
+
+            // we're going to read n[0..7] (16 bytes)
+            for (const ushort *next = n + 8; next <= e; n = next, next += 8) {
+                __m128i data = _mm_loadu_si128((__m128i*)n);
+                __m128i result = _mm_cmpeq_epi16(data, mch);
+                uint mask = _mm_movemask_epi8(result);
+                if (ushort(mask)) {
+                    // found a match
+                    // same as: return n - s + _bit_scan_forward(mask) / 2
+                    return (reinterpret_cast<const char *>(n) - reinterpret_cast<const char *>(s)
+                            + _bit_scan_forward(mask)) >> 1;
+                }
+            }
+#endif
+            --n;
             while (++n != e)
                 if (*n == c)
                     return  n - s;
         } else {
             c = foldCase(c);
+            --n;
             while (++n != e)
                 if (foldCase(*n) == c)
                     return  n - s;
