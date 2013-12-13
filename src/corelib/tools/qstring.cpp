@@ -312,6 +312,57 @@ static int ucstrncmp(const QChar *a, const uchar *c, int l)
     const ushort *uc = reinterpret_cast<const ushort *>(a);
     const ushort *e = uc + l;
 
+#ifdef __SSE2__
+    __m128i nullmask = _mm_setzero_si128();
+    qptrdiff offset = 0;
+
+    // we're going to read uc[offset..offset+15] (32 bytes)
+    // and c[offset..offset+15] (16 bytes)
+    for ( ; uc + offset + 15 < e; offset += 16) {
+        // similar to fromLatin1_helper:
+        // load Latin 1 data and expand to UTF-16
+        __m128i chunk = _mm_loadu_si128((__m128i*)(c + offset));
+        __m128i firstHalf = _mm_unpacklo_epi8(chunk, nullmask);
+        __m128i secondHalf = _mm_unpackhi_epi8(chunk, nullmask);
+
+        // load UTF-16 data and compare
+        __m128i ucdata1 = _mm_loadu_si128((__m128i*)(uc + offset));
+        __m128i ucdata2 = _mm_loadu_si128((__m128i*)(uc + offset + 8));
+        __m128i result1 = _mm_cmpeq_epi16(firstHalf, ucdata1);
+        __m128i result2 = _mm_cmpeq_epi16(secondHalf, ucdata2);
+
+        uint mask = ~(_mm_movemask_epi8(result1) | _mm_movemask_epi8(result2) << 16);
+        if (mask) {
+            // found a different character
+            uint idx = uint(_bit_scan_forward(mask));
+            return uc[offset + idx / 2] - c[offset + idx / 2];
+        }
+    }
+
+    // we'll read uc[offset..offset+7] (16 bytes) and c[offset-8..offset+7] (16 bytes)
+    if (uc + offset + 7 < e) {
+        // same, but we'll throw away half the data
+        __m128i chunk = _mm_loadu_si128((__m128i*)(c + offset - 8));
+        __m128i secondHalf = _mm_unpackhi_epi8(chunk, nullmask);
+
+        __m128i ucdata = _mm_loadu_si128((__m128i*)(uc + offset));
+        __m128i result = _mm_cmpeq_epi16(secondHalf, ucdata);
+        uint mask = ~_mm_movemask_epi8(result);
+        if (ushort(mask)) {
+            // found a different character
+            uint idx = uint(_bit_scan_forward(mask));
+            return uc[offset + idx / 2] - c[offset + idx / 2];
+        }
+
+        // still matched
+        offset += 8;
+    }
+
+    // reset uc and c
+    uc += offset;
+    c += offset;
+#endif
+
     while (uc < e) {
         int diff = *uc - *c;
         if (diff)
