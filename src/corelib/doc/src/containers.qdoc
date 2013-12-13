@@ -578,9 +578,11 @@
     \snippet code/doc_src_containers.cpp 18
 
     With QMap and QHash, \c foreach accesses the value component of
-    the (key, value) pairs. If you want to iterate over both the keys
-    and the values, you can use iterators (which are fastest), or you
-    can write code like this:
+    the (key, value) pairs automatically, so you should not call
+    values() on the container (it would generate an unnecessary copy,
+    see below). If you want to iterate over both the keys and the
+    values, you can use iterators (which are faster), or you can
+    obtain the keys, and use them to get the values too:
 
     \snippet code/doc_src_containers.cpp 19
 
