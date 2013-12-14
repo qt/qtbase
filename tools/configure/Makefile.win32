@@ -84,6 +84,8 @@ clean:
 $(PCH): $(CONFSRC)\configure_pch.h
 	$(CXX) -c -Yc $(CXXFLAGS_BARE) -Fp$@ -Foconfigure_pch.obj -TP $**
 
+$(OBJECTS): $(PCH)
+
 main.obj: $(CONFSRC)\main.cpp $(CONFSRC)\configureapp.h $(PCH)
 configureapp.obj: $(CONFSRC)\configureapp.cpp $(CONFSRC)\configureapp.h $(CONFSRC)\environment.h $(CONFSRC)\tools.h $(PCH)
 environment.obj: $(CONFSRC)\environment.cpp $(CONFSRC)\environment.h $(PCH)
