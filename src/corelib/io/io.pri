@@ -140,6 +140,7 @@ win32 {
                 io/forkfd_qt.cpp
         HEADERS += \
                 ../3rdparty/forkfd/forkfd.h
+        INCLUDEPATH += ../3rdparty/forkfd
 
         !nacl:mac: {
             SOURCES += io/qsettings_mac.cpp

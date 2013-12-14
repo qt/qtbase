@@ -1,7 +1,7 @@
 CONFIG += testcase
 CONFIG += parallel_test
 CONFIG -= app_bundle debug_and_release_target
-QT = core testlib network
+QT = core-private testlib network
 SOURCES = ../tst_qprocess.cpp
 
 TARGET = ../tst_qprocess

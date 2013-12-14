@@ -48,7 +48,6 @@
 #include <qhash.h>
 #include <qmutex.h>
 #include <private/qloggingregistry_p.h>
-#include <private/qprocess_p.h>
 #include <qstandardpaths.h>
 #include <qtextcodec.h>
 #ifndef QT_NO_QOBJECT
@@ -737,14 +736,6 @@ void QCoreApplication::init()
 #ifndef QT_NO_LIBRARY
     if (coreappdata()->app_libpaths)
         d->appendApplicationPathToLibraryPaths();
-#endif
-
-#ifndef QT_NO_QOBJECT
-#if defined(Q_OS_UNIX) && !(defined(QT_NO_PROCESS))
-    // Make sure the process manager thread object is created in the main
-    // thread.
-    QProcessPrivate::initializeProcessManager();
-#endif
 #endif
 
 #ifdef QT_EVAL

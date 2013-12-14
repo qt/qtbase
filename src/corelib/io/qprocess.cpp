@@ -89,6 +89,8 @@ QT_END_NAMESPACE
 
 #ifdef Q_OS_WIN
 #include <qwineventnotifier.h>
+#else
+#include <private/qcore_unix_p.h>
 #endif
 
 #ifndef QT_NO_PROCESS
@@ -810,8 +812,7 @@ QProcessPrivate::QProcessPrivate()
     deathNotifier = 0;
     childStartedPipe[0] = INVALID_Q_PIPE;
     childStartedPipe[1] = INVALID_Q_PIPE;
-    deathPipe[0] = INVALID_Q_PIPE;
-    deathPipe[1] = INVALID_Q_PIPE;
+    forkfd = -1;
     exitCode = 0;
     crashed = false;
     dying = false;
@@ -821,9 +822,6 @@ QProcessPrivate::QProcessPrivate()
     notifier = 0;
     processFinishedNotifier = 0;
 #endif // Q_OS_WIN
-#ifdef Q_OS_UNIX
-    serial = 0;
-#endif
 }
 
 /*!
@@ -890,9 +888,10 @@ void QProcessPrivate::cleanup()
     closeChannel(&stderrChannel);
     closeChannel(&stdinChannel);
     destroyPipe(childStartedPipe);
-    destroyPipe(deathPipe);
 #ifdef Q_OS_UNIX
-    serial = 0;
+    if (forkfd != -1)
+        qt_safe_close(forkfd);
+    forkfd = -1;
 #endif
 }
 

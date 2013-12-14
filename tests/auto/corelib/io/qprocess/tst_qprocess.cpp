@@ -44,6 +44,7 @@
 #include <stdlib.h>
 
 #ifndef QT_NO_PROCESS
+# include <private/qprocess_p.h>    // only so we get QPROCESS_USE_SPAWN
 # if defined(Q_OS_WIN)
 #  include <windows.h>
 # endif
@@ -316,6 +317,9 @@ void tst_QProcess::execute()
 {
     QCOMPARE(QProcess::execute("testProcessNormal/testProcessNormal",
                                QStringList() << "arg1" << "arg2"), 0);
+#ifdef QPROCESS_USE_SPAWN
+    QEXPECT_FAIL("", "QProcess cannot detect failure to start when using posix_spawn()", Continue);
+#endif
     QCOMPARE(QProcess::execute("nonexistingexe"), -2);
 }
 
@@ -325,6 +329,9 @@ void tst_QProcess::startDetached()
     QProcess proc;
     QVERIFY(proc.startDetached("testProcessNormal/testProcessNormal",
                                QStringList() << "arg1" << "arg2"));
+#ifdef QPROCESS_USE_SPAWN
+    QEXPECT_FAIL("", "QProcess cannot detect failure to start when using posix_spawn()", Continue);
+#endif
     QCOMPARE(QProcess::startDetached("nonexistingexe"), false);
 }
 
@@ -713,6 +720,9 @@ void tst_QProcess::waitForFinished()
     QCOMPARE(output.count("\n"), 10*1024);
 
     process.start("blurdybloop");
+#ifdef QPROCESS_USE_SPAWN
+    QEXPECT_FAIL("", "QProcess cannot detect failure to start when using posix_spawn()", Abort);
+#endif
     QVERIFY(!process.waitForFinished());
     QCOMPARE(process.error(), QProcess::FailedToStart);
 }
@@ -1528,6 +1538,9 @@ void tst_QProcess::exitCodeTest()
 //-----------------------------------------------------------------------------
 void tst_QProcess::failToStart()
 {
+#ifdef QPROCESS_USE_SPAWN
+    QSKIP("QProcess cannot detect failure to start when using posix_spawn()");
+#endif
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
     qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
     qRegisterMetaType<QProcess::ProcessState>("QProcess::ProcessState");
@@ -1595,6 +1608,9 @@ void tst_QProcess::failToStart()
 //-----------------------------------------------------------------------------
 void tst_QProcess::failToStartWithWait()
 {
+#ifdef QPROCESS_USE_SPAWN
+    QSKIP("QProcess cannot detect failure to start when using posix_spawn()");
+#endif
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
     qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
 
@@ -1622,6 +1638,9 @@ void tst_QProcess::failToStartWithWait()
 //-----------------------------------------------------------------------------
 void tst_QProcess::failToStartWithEventLoop()
 {
+#ifdef QPROCESS_USE_SPAWN
+    QSKIP("QProcess cannot detect failure to start when using posix_spawn()");
+#endif
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
     qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
 
@@ -1870,6 +1889,9 @@ void tst_QProcess::waitForReadyReadForNonexistantProcess()
     QVERIFY(!process.waitForReadyRead()); // used to crash
     process.start("doesntexist");
     QVERIFY(!process.waitForReadyRead());
+#ifdef QPROCESS_USE_SPAWN
+    QEXPECT_FAIL("", "QProcess cannot detect failure to start when using posix_spawn()", Abort);
+#endif
     QCOMPARE(errorSpy.count(), 1);
     QCOMPARE(errorSpy.at(0).at(0).toInt(), 0);
     QCOMPARE(finishedSpy1.count(), 0);

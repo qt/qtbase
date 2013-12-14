@@ -62,6 +62,9 @@ typedef HANDLE Q_PIPE;
 #else
 typedef int Q_PIPE;
 #define INVALID_Q_PIPE -1
+#  ifdef Q_OS_QNX
+#    define QPROCESS_USE_SPAWN
+#  endif
 #endif
 
 #ifndef QT_NO_PROCESS
@@ -331,11 +334,12 @@ public:
     QProcessEnvironment environment;
 
     Q_PIPE childStartedPipe[2];
-    Q_PIPE deathPipe[2];
     void destroyPipe(Q_PIPE pipe[2]);
 
     QSocketNotifier *startupSocketNotifier;
     QSocketNotifier *deathNotifier;
+
+    int forkfd;
 
 #ifdef Q_OS_WIN
     // the wonderful windows notifier
@@ -345,10 +349,10 @@ public:
 
     void start(QIODevice::OpenMode mode);
     void startProcess();
-#if defined(Q_OS_UNIX) && !defined(Q_OS_QNX)
+#if defined(Q_OS_UNIX) && !defined(QPROCESS_USE_SPAWN)
     void execChild(const char *workingDirectory, char **path, char **argv, char **envp);
-#elif defined(Q_OS_QNX)
-    pid_t spawnChild(const char *workingDirectory, char **argv, char **envp);
+#elif defined(QPROCESS_USE_SPAWN)
+    pid_t spawnChild(pid_t *ppid, const char *workingDirectory, char **argv, char **envp);
 #endif
     bool processStarted();
     void terminateProcess();
@@ -369,9 +373,6 @@ public:
     int exitCode;
     QProcess::ExitStatus exitStatus;
     bool crashed;
-#ifdef Q_OS_UNIX
-    int serial;
-#endif
 
     bool waitForStarted(int msecs = 30000);
     bool waitForReadyRead(int msecs = 30000);
@@ -389,9 +390,6 @@ public:
     QList<QSocketNotifier *> defaultNotifiers() const;
 #endif // Q_OS_BLACKBERRY
 
-#ifdef Q_OS_UNIX
-    static void initializeProcessManager();
-#endif
 };
 
 QT_END_NAMESPACE
