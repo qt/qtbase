@@ -137,6 +137,9 @@ win32 {
                 io/qlockfile_unix.cpp \
                 io/qprocess_unix.cpp \
                 io/qfilesystemiterator_unix.cpp \
+                io/forkfd_qt.cpp
+        HEADERS += \
+                ../3rdparty/forkfd/forkfd.h
 
         !nacl:mac: {
             SOURCES += io/qsettings_mac.cpp
