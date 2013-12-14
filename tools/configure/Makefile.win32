@@ -163,3 +163,7 @@ quuid.obj: $(CORESRC)\plugin\quuid.cpp $(PCH)
 	$(CXX) -c $(CXXFLAGS) $<
 {$(CORESRC)\xml}.cpp{}.obj::
 	$(CXX) -c $(CXXFLAGS) $<
+
+# Make sure qstring_compat.obj isn't compiled with PCH enabled
+qstring_compat.obj: $(CORESRC)\tools\qstring_compat.cpp
+	$(CXX) -c $(CXXFLAGS_BARE) $(CORESRC)\tools\qstring_compat.cpp

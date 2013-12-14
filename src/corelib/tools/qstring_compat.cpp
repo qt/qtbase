@@ -39,9 +39,8 @@
 **
 ****************************************************************************/
 
-#if defined(QSTRING_H) && !defined(QT_BOOTSTRAPPED)
+#if defined(QSTRING_H)
 #  error "This file cannot be compiled with pre-compiled headers"
-//       (unless it's configure.exe, which is bootstrapped)
 #endif
 #define QT_COMPILING_QSTRING_COMPAT_CPP
 

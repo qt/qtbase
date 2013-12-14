@@ -118,6 +118,10 @@ configureapp.o: $(CONFSRC)/configureapp.h $(CONFSRC)/environment.h $(CONFSRC)/to
 environment.o: $(CONFSRC)/environment.h
 tools.o: $(CONFSRC)/tools.h
 
+# Make sure qstring_compat.obj isn't compiled with PCH enabled
+qstring_compat.o: $(CORESRC)/tools/qstring_compat.cpp
+	$(CXX) -c $(CXXFLAGS_BARE) -o $@ $<
+
 clean:
 	-rm -f *.o
 	-rm -rf *.gch

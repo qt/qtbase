@@ -219,3 +219,7 @@ qmake_pch.obj:
 
 {$(SOURCE_PATH)\tools\shared\windows}.cpp{}.obj::
 	$(CXX) $(CXXFLAGS) $<
+
+# Make sure qstring_compat.obj isn't compiled with PCH enabled
+qstring_compat.obj: $(SOURCE_PATH)\src\corelib\tools\qstring_compat.cpp
+	$(CXX) -c $(CXXFLAGS_BARE) $(SOURCE_PATH)\src\corelib\tools\qstring_compat.cpp
