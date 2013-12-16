@@ -272,7 +272,7 @@ bool QToolBarPrivate::mousePressEvent(QMouseEvent *event)
     QStyleOptionToolBar opt;
     q->initStyleOption(&opt);
     if (q->style()->subElementRect(QStyle::SE_ToolBarHandle, &opt, q).contains(event->pos()) == false) {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_OSX
         // When using the unified toolbar on Mac OS X, the user can click and
         // drag between toolbar contents to move the window. Make this work by
         // implementing the standard mouse-dragging code and then call
@@ -306,7 +306,7 @@ bool QToolBarPrivate::mouseReleaseEvent(QMouseEvent*)
         endDrag();
         return true;
     } else {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_OSX
         if (!macWindowDragging)
             return false;
         macWindowDragging = false;
@@ -322,7 +322,7 @@ bool QToolBarPrivate::mouseMoveEvent(QMouseEvent *event)
     Q_Q(QToolBar);
 
     if (!state) {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_OSX
         if (!macWindowDragging)
             return false;
         QWidget *w = q->window();
