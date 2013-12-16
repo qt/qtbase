@@ -149,7 +149,12 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_emit_enter(struct sljit_compiler *compil
 	if (saveds > 3)
 		locals_offset += (saveds - 3) * sizeof(sljit_uw);
 	compiler->locals_offset = locals_offset;
+#if defined(__APPLE__)
+	saveds = (2 + (saveds <= 3 ? saveds : 3)) * sizeof(sljit_uw);
+	local_size = ((locals_offset + saveds + local_size + 15) & ~15) - saveds;
+#else
 	local_size = locals_offset + ((local_size + sizeof(sljit_uw) - 1) & ~(sizeof(sljit_uw) - 1));
+#endif
 
 	compiler->local_size = local_size;
 #ifdef _WIN32
@@ -197,7 +202,12 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_set_context(struct sljit_compiler *compiler,
 	if (saveds > 3)
 		locals_offset += (saveds - 3) * sizeof(sljit_uw);
 	compiler->locals_offset = locals_offset;
+#if defined(__APPLE__)
+	saveds = (2 + (saveds <= 3 ? saveds : 3)) * sizeof(sljit_uw);
+	compiler->local_size = ((locals_offset + saveds + local_size + 15) & ~15) - saveds;
+#else
 	compiler->local_size = locals_offset + ((local_size + sizeof(sljit_uw) - 1) & ~(sizeof(sljit_uw) - 1));
+#endif
 }
 
 SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_emit_return(struct sljit_compiler *compiler, sljit_si op, sljit_si src, sljit_sw srcw)

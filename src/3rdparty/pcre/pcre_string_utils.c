@@ -6,7 +6,7 @@
 and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
-           Copyright (c) 1997-2012 University of Cambridge
+           Copyright (c) 1997-2013 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -38,8 +38,8 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-/* This module contains an internal function that is used to match an extended
-class. It is used by both pcre_exec() and pcre_def_exec(). */
+/* This module contains internal functions for comparing and finding the length
+of strings for different data item sizes. */
 
 
 #ifdef PCRE_HAVE_CONFIG_H
@@ -54,7 +54,7 @@ class. It is used by both pcre_exec() and pcre_def_exec(). */
 *           Compare string utilities             *
 *************************************************/
 
-/* The following two functions compares two strings. Basically an strcmp
+/* The following two functions compares two strings. Basically a strcmp
 for non 8 bit characters.
 
 Arguments:

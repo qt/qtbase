@@ -30,7 +30,7 @@
 SLJIT_API_FUNC_ATTRIBUTE SLJIT_CONST char* sljit_get_platform_name(void)
 {
 #if (defined SLJIT_MIPS_32_64 && SLJIT_MIPS_32_64)
-	return "MIPS" SLJIT_CPUINFO;
+	return "MIPS(32)" SLJIT_CPUINFO;
 #else
 	return "MIPS III" SLJIT_CPUINFO;
 #endif
@@ -398,7 +398,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_generate_code(struct sljit_compiler *compil
 	}
 
 	compiler->error = SLJIT_ERR_COMPILED;
-	compiler->executable_size = compiler->size * sizeof(sljit_ins);
+	compiler->executable_size = (code_ptr - code) * sizeof(sljit_ins);
 #ifndef __GNUC__
 	SLJIT_CACHE_FLUSH(code, code_ptr);
 #else
@@ -1097,6 +1097,12 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_get_register_index(sljit_si reg)
 {
 	check_sljit_get_register_index(reg);
 	return reg_map[reg];
+}
+
+SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_get_float_register_index(sljit_si reg)
+{
+	check_sljit_get_float_register_index(reg);
+	return reg << 1;
 }
 
 SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_emit_op_custom(struct sljit_compiler *compiler,

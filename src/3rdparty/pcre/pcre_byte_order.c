@@ -6,7 +6,7 @@
 and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
-           Copyright (c) 1997-2012 University of Cambridge
+           Copyright (c) 1997-2013 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -126,14 +126,15 @@ if (re->magic_number == MAGIC_NUMBER)
   }
 
 if (re->magic_number != REVERSED_MAGIC_NUMBER) return PCRE_ERROR_BADMAGIC;
-if ((swap_uint16(re->flags) & PCRE_MODE) == 0) return PCRE_ERROR_BADMODE;
+if ((swap_uint32(re->flags) & PCRE_MODE) == 0) return PCRE_ERROR_BADMODE;
 
 re->magic_number = MAGIC_NUMBER;
 re->size = swap_uint32(re->size);
 re->options = swap_uint32(re->options);
-re->flags = swap_uint16(re->flags);
-re->top_bracket = swap_uint16(re->top_bracket);
-re->top_backref = swap_uint16(re->top_backref);
+re->flags = swap_uint32(re->flags);
+re->limit_match = swap_uint32(re->limit_match);
+re->limit_recursion = swap_uint32(re->limit_recursion);
+
 #if defined COMPILE_PCRE8 || defined COMPILE_PCRE16
 re->first_char = swap_uint16(re->first_char);
 re->req_char = swap_uint16(re->req_char);
@@ -141,15 +142,15 @@ re->req_char = swap_uint16(re->req_char);
 re->first_char = swap_uint32(re->first_char);
 re->req_char = swap_uint32(re->req_char);
 #endif
+
+re->max_lookbehind = swap_uint16(re->max_lookbehind);
+re->top_bracket = swap_uint16(re->top_bracket);
+re->top_backref = swap_uint16(re->top_backref);
 re->name_table_offset = swap_uint16(re->name_table_offset);
 re->name_entry_size = swap_uint16(re->name_entry_size);
 re->name_count = swap_uint16(re->name_count);
 re->ref_count = swap_uint16(re->ref_count);
 re->tables = tables;
-#ifdef COMPILE_PCRE32
-re->dummy1 = swap_uint16(re->dummy1);
-re->dummy2 = swap_uint16(re->dummy2);
-#endif
 
 if (extra_data != NULL && (extra_data->flags & PCRE_EXTRA_STUDY_DATA) != 0)
   {

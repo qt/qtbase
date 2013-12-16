@@ -35,6 +35,30 @@ typedef sljit_ui sljit_ins;
 
 static void sparc_cache_flush(sljit_ins *from, sljit_ins *to)
 {
+#if defined(__SUNPRO_C) && __SUNPRO_C < 0x590
+	__asm (
+		/* if (from == to) return */
+		"cmp %i0, %i1\n"
+		"be .leave\n"
+		"nop\n"
+
+		/* loop until from >= to */
+		".mainloop:\n"
+		"flush %i0\n"
+		"add %i0, 8, %i0\n"
+		"cmp %i0, %i1\n"
+		"bcs .mainloop\n"
+		"nop\n"
+
+		/* The comparison was done above. */
+		"bne .leave\n"
+		/* nop is not necessary here, since the
+		   sub operation has no side effect. */
+		"sub %i0, 4, %i0\n"
+		"flush %i0\n"
+		".leave:"
+	);
+#else
 	if (SLJIT_UNLIKELY(from == to))
 		return;
 
@@ -49,12 +73,13 @@ static void sparc_cache_flush(sljit_ins *from, sljit_ins *to)
 
 	if (from == to) {
 		/* Flush the last word. */
-		to --;
+		from --;
 		__asm__ volatile (
 			"flush %0\n"
-			: : "r"(to)
+			: : "r"(from)
 		);
 	}
+#endif
 }
 
 /* TMP_REG2 is not used by getput_arg */
@@ -344,7 +369,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_generate_code(struct sljit_compiler *compil
 
 
 	compiler->error = SLJIT_ERR_COMPILED;
-	compiler->executable_size = compiler->size * sizeof(sljit_ins);
+	compiler->executable_size = (code_ptr - code) * sizeof(sljit_ins);
 	SLJIT_CACHE_FLUSH(code, code_ptr);
 	return code;
 }
@@ -894,6 +919,12 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_get_register_index(sljit_si reg)
 {
 	check_sljit_get_register_index(reg);
 	return reg_map[reg];
+}
+
+SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_get_float_register_index(sljit_si reg)
+{
+	check_sljit_get_float_register_index(reg);
+	return reg << 1;
 }
 
 SLJIT_API_FUNC_ATTRIBUTE sljit_si sljit_emit_op_custom(struct sljit_compiler *compiler,

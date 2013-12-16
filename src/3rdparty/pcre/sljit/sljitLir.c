@@ -170,6 +170,14 @@
 #	define FCSR_FCC	33
 #endif
 
+#if (defined SLJIT_CONFIG_TILEGX && SLJIT_CONFIG_TILEGX)
+#	define IS_JAL           0x04
+#	define IS_COND          0x08
+
+#	define PATCH_B          0x10
+#	define PATCH_J          0x20
+#endif
+
 #if (defined SLJIT_CONFIG_SPARC_32 && SLJIT_CONFIG_SPARC_32)
 #	define IS_MOVABLE	0x04
 #	define IS_COND		0x08
@@ -652,14 +660,14 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_compiler_verbose(struct sljit_compiler *comp
 }
 
 static char* reg_names[] = {
-	(char*)"<noreg>", (char*)"t1", (char*)"t2", (char*)"t3",
-	(char*)"te1", (char*)"te2", (char*)"s1", (char*)"s2",
-	(char*)"s3", (char*)"se1", (char*)"se2", (char*)"lcr"
+	(char*)"unused", (char*)"s1", (char*)"s2", (char*)"s3",
+	(char*)"se1", (char*)"se2", (char*)"p1", (char*)"p2",
+	(char*)"p3", (char*)"pe1", (char*)"pe2", (char*)"lc"
 };
 
 static char* freg_names[] = {
-	(char*)"<noreg>", (char*)"float_r1", (char*)"float_r2", (char*)"float_r3",
-	(char*)"float_r4", (char*)"float_r5", (char*)"float_r6"
+	(char*)"unused", (char*)"f1", (char*)"f2", (char*)"f3",
+	(char*)"f4", (char*)"f5", (char*)"f6"
 };
 
 #if (defined SLJIT_CONFIG_X86_64 && SLJIT_CONFIG_X86_64) || (defined SLJIT_CONFIG_PPC_64 && SLJIT_CONFIG_PPC_64)
@@ -736,17 +744,17 @@ static SLJIT_CONST char* op_names[] = {
 };
 
 static char* jump_names[] = {
-	(char*)"c_equal", (char*)"c_not_equal",
-	(char*)"c_less", (char*)"c_greater_equal",
-	(char*)"c_greater", (char*)"c_less_equal",
-	(char*)"c_sig_less", (char*)"c_sig_greater_equal",
-	(char*)"c_sig_greater", (char*)"c_sig_less_equal",
-	(char*)"c_overflow", (char*)"c_not_overflow",
-	(char*)"c_mul_overflow", (char*)"c_mul_not_overflow",
-	(char*)"c_float_equal", (char*)"c_float_not_equal",
-	(char*)"c_float_less", (char*)"c_float_greater_equal",
-	(char*)"c_float_greater", (char*)"c_float_less_equal",
-	(char*)"c_float_unordered", (char*)"c_float_ordered",
+	(char*)"equal", (char*)"not_equal",
+	(char*)"less", (char*)"greater_equal",
+	(char*)"greater", (char*)"less_equal",
+	(char*)"sig_less", (char*)"sig_greater_equal",
+	(char*)"sig_greater", (char*)"sig_less_equal",
+	(char*)"overflow", (char*)"not_overflow",
+	(char*)"mul_overflow", (char*)"mul_not_overflow",
+	(char*)"float_equal", (char*)"float_not_equal",
+	(char*)"float_less", (char*)"float_greater_equal",
+	(char*)"float_greater", (char*)"float_less_equal",
+	(char*)"float_unordered", (char*)"float_ordered",
 	(char*)"jump", (char*)"fast_call",
 	(char*)"call0", (char*)"call1", (char*)"call2", (char*)"call3"
 };
@@ -993,6 +1001,12 @@ static SLJIT_INLINE void check_sljit_get_register_index(sljit_si reg)
 	SLJIT_ASSERT(reg > 0 && reg <= SLJIT_NO_REGISTERS);
 }
 
+static SLJIT_INLINE void check_sljit_get_float_register_index(sljit_si reg)
+{
+	SLJIT_UNUSED_ARG(reg);
+	SLJIT_ASSERT(reg > 0 && reg <= SLJIT_NO_FLOAT_REGISTERS);
+}
+
 static SLJIT_INLINE void check_sljit_emit_op_custom(struct sljit_compiler *compiler,
 	void *instruction, sljit_si size)
 {
@@ -1104,7 +1118,7 @@ static SLJIT_INLINE void check_sljit_emit_jump(struct sljit_compiler *compiler, 
 	SLJIT_ASSERT((type & 0xff) >= SLJIT_C_EQUAL && (type & 0xff) <= SLJIT_CALL3);
 #if (defined SLJIT_VERBOSE && SLJIT_VERBOSE)
 	if (SLJIT_UNLIKELY(!!compiler->verbose))
-		fprintf(compiler->verbose, "  jump%s<%s>\n", !(type & SLJIT_REWRITABLE_JUMP) ? "" : ".r", jump_names[type & 0xff]);
+		fprintf(compiler->verbose, "  jump%s.%s\n", !(type & SLJIT_REWRITABLE_JUMP) ? "" : ".r", jump_names[type & 0xff]);
 #endif
 }
 
@@ -1127,7 +1141,7 @@ static SLJIT_INLINE void check_sljit_emit_cmp(struct sljit_compiler *compiler, s
 #endif
 #if (defined SLJIT_VERBOSE && SLJIT_VERBOSE)
 	if (SLJIT_UNLIKELY(!!compiler->verbose)) {
-		fprintf(compiler->verbose, "  %scmp%s<%s> ", !(type & SLJIT_INT_OP) ? "" : "i", !(type & SLJIT_REWRITABLE_JUMP) ? "" : ".r", jump_names[type & 0xff]);
+		fprintf(compiler->verbose, "  %scmp%s.%s ", !(type & SLJIT_INT_OP) ? "" : "i", !(type & SLJIT_REWRITABLE_JUMP) ? "" : ".r", jump_names[type & 0xff]);
 		sljit_verbose_param(src1, src1w);
 		fprintf(compiler->verbose, ", ");
 		sljit_verbose_param(src2, src2w);
@@ -1156,7 +1170,7 @@ static SLJIT_INLINE void check_sljit_emit_fcmp(struct sljit_compiler *compiler, 
 #endif
 #if (defined SLJIT_VERBOSE && SLJIT_VERBOSE)
 	if (SLJIT_UNLIKELY(!!compiler->verbose)) {
-		fprintf(compiler->verbose, "  %scmp%s<%s> ", (type & SLJIT_SINGLE_OP) ? "s" : "d",
+		fprintf(compiler->verbose, "  %scmp%s.%s ", (type & SLJIT_SINGLE_OP) ? "s" : "d",
 			!(type & SLJIT_REWRITABLE_JUMP) ? "" : ".r", jump_names[type & 0xff]);
 		sljit_verbose_fparam(src1, src1w);
 		fprintf(compiler->verbose, ", ");
@@ -1187,7 +1201,7 @@ static SLJIT_INLINE void check_sljit_emit_ijump(struct sljit_compiler *compiler,
 #endif
 #if (defined SLJIT_VERBOSE && SLJIT_VERBOSE)
 	if (SLJIT_UNLIKELY(!!compiler->verbose)) {
-		fprintf(compiler->verbose, "  ijump<%s> ", jump_names[type]);
+		fprintf(compiler->verbose, "  ijump.%s ", jump_names[type]);
 		sljit_verbose_param(src, srcw);
 		fprintf(compiler->verbose, "\n");
 	}
@@ -1223,14 +1237,14 @@ static SLJIT_INLINE void check_sljit_emit_op_flags(struct sljit_compiler *compil
 #endif
 #if (defined SLJIT_VERBOSE && SLJIT_VERBOSE)
 	if (SLJIT_UNLIKELY(!!compiler->verbose)) {
-		fprintf(compiler->verbose, "  op_flags<%s%s%s%s> ", !(op & SLJIT_INT_OP) ? "" : "i",
+		fprintf(compiler->verbose, "  %sflags.%s%s%s ", !(op & SLJIT_INT_OP) ? "" : "i",
 			op_names[GET_OPCODE(op)], !(op & SLJIT_SET_E) ? "" : ".e", !(op & SLJIT_KEEP_FLAGS) ? "" : ".k");
 		sljit_verbose_param(dst, dstw);
 		if (src != SLJIT_UNUSED) {
 			fprintf(compiler->verbose, ", ");
 			sljit_verbose_param(src, srcw);
 		}
-		fprintf(compiler->verbose, ", <%s>\n", jump_names[type]);
+		fprintf(compiler->verbose, ", %s\n", jump_names[type]);
 	}
 #endif
 }
@@ -1339,6 +1353,8 @@ static SLJIT_INLINE sljit_si emit_mov_before_return(struct sljit_compiler *compi
 #	include "sljitNativeMIPS_common.c"
 #elif (defined SLJIT_CONFIG_SPARC_32 && SLJIT_CONFIG_SPARC_32)
 #	include "sljitNativeSPARC_common.c"
+#elif (defined SLJIT_CONFIG_TILEGX && SLJIT_CONFIG_TILEGX)
+#	include "sljitNativeTILEGX.c"
 #endif
 
 #if !(defined SLJIT_CONFIG_MIPS_32 && SLJIT_CONFIG_MIPS_32)
