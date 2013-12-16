@@ -679,6 +679,18 @@ bool qt_macWindowIsTextured(const QWidget *window)
     return false;
 }
 
+static bool qt_macWindowMainWindow(const QWidget *window)
+{
+    if (QWindow *w = window->windowHandle()) {
+        if (w->handle()) {
+            if (NSWindow *nswindow = static_cast<NSWindow*>(QGuiApplication::platformNativeInterface()->nativeResourceForWindow(QByteArrayLiteral("nswindow"), w))) {
+                return [nswindow isMainWindow];
+            }
+        }
+    }
+    return false;
+}
+
 /*****************************************************************************
   QMacCGStyle globals
  *****************************************************************************/
@@ -4438,12 +4450,34 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         }
         break;
     case CE_ToolBar: {
-        // For unified tool bars, draw nothing.
-        if (w) {
+        const QStyleOptionToolBar *toolBar = qstyleoption_cast<const QStyleOptionToolBar *>(opt);
+
+        // Unified title and toolbar drawing. In this mode the cocoa platform plugin will
+        // fill the top toolbar area part with a background gradient that "unifies" with
+        // the title bar. The following code fills the toolBar area with transparent pixels
+        // to make that gradient visible.
+        if (w)  {
             if (QMainWindow * mainWindow = qobject_cast<QMainWindow *>(w->window())) {
-                if (mainWindow->unifiedTitleAndToolBarOnMac())
+                if (toolBar && toolBar->toolBarArea == Qt::TopToolBarArea && mainWindow->unifiedTitleAndToolBarOnMac()) {
+
+                    // fill with transparent pixels.
+                    p->save();
+                    p->setCompositionMode(QPainter::CompositionMode_Source);
+                    p->fillRect(opt->rect, Qt::transparent);
+                    p->restore();
+
+                    // drow horizontal sepearator line at toolBar bottom.
+                    SInt32 margin;
+                    GetThemeMetric(kThemeMetricSeparatorSize, &margin);
+                    CGRect separatorRect = CGRectMake(opt->rect.left(), opt->rect.bottom(), opt->rect.width(), margin);
+                    HIThemeSeparatorDrawInfo separatorDrawInfo;
+                    separatorDrawInfo.version = 0;
+                    separatorDrawInfo.state = qt_macWindowMainWindow(mainWindow) ? kThemeStateActive : kThemeStateInactive;
+                    QMacCGContext cg(p);
+                    HIThemeDrawSeparator(&separatorRect, &separatorDrawInfo, cg, kHIThemeOrientationNormal);
                     break;
                 }
+            }
         }
 
         // draw background gradient
