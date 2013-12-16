@@ -132,6 +132,9 @@ private:
     // touch events, which then will be delivered until the widget
     // deregisters.
     static void registerTouchWindow(QWindow *window,  bool enable);
+
+    // Request a unified title and toolbar look for the window.
+    static void setContentBorderThickness(QWindow *window, int topThickness, int bottomThickness);
 };
 
 #endif // QCOCOANATIVEINTERFACE_H

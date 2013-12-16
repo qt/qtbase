@@ -408,6 +408,9 @@ static QTouchDevice *touchDevice = 0;
         m_shouldSetGLContextinDrawRect = false;
     }
 
+    if (m_platformWindow->m_drawContentBorderGradient)
+        NSDrawWindowBackground(dirtyRect);
+
     if (!m_backingStore)
         return;
 
@@ -451,7 +454,8 @@ static QTouchDevice *touchDevice = 0;
 
     // Optimization: Copy frame buffer content instead of blending for
     // top-level windows where Qt fills the entire window content area.
-    if (m_platformWindow->m_nsWindow)
+    // (But don't overpaint the title-bar gradient)
+    if (m_platformWindow->m_nsWindow && !m_platformWindow->m_drawContentBorderGradient)
         CGContextSetBlendMode(cgContext, kCGBlendModeCopy);
 
     CGContextDrawImage(cgContext, dirtyWindowRect, cleanImg);

@@ -157,6 +157,8 @@ public:
     void setWindowCursor(NSCursor *cursor);
 
     void registerTouch(bool enable);
+    void setContentBorderThickness(int topThickness, int bottomThickness);
+    void applyContentBorderThickness(NSWindow *window);
 
     qreal devicePixelRatio() const;
     bool isWindowExposable();
@@ -214,6 +216,10 @@ public: // for QNSView
     static const int NoAlertRequest;
     NSInteger m_alertRequest;
     id monitor;
+
+    bool m_drawContentBorderGradient;
+    int m_topContentBorderThickness;
+    int m_bottomContentBorderThickness;
 };
 
 QT_END_NAMESPACE
