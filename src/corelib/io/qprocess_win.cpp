@@ -73,10 +73,11 @@ static void qt_create_pipe(Q_PIPE *pipe, bool isInputPipe)
     // Anomymous pipes do not support asynchronous I/O. Thus we
     // create named pipes for redirecting stdout, stderr and stdin.
 
+    // The write handle must be non-inheritable for input pipes.
+    // The read handle must be non-inheritable for output pipes.
     SECURITY_ATTRIBUTES secAtt = { sizeof(SECURITY_ATTRIBUTES), 0, false };
-    secAtt.bInheritHandle = isInputPipe;    // The read handle must be non-inheritable for output pipes.
 
-    HANDLE hRead;
+    HANDLE hServer;
     wchar_t pipeName[256];
     unsigned int attempts = 1000;
     forever {
@@ -85,19 +86,29 @@ static void qt_create_pipe(Q_PIPE *pipe, bool isInputPipe)
         _snwprintf(pipeName, sizeof(pipeName) / sizeof(pipeName[0]),
                 L"\\\\.\\pipe\\qt-%X", qrand());
 
+        DWORD dwOpenMode = FILE_FLAG_OVERLAPPED;
+        DWORD dwOutputBufferSize = 0;
+        DWORD dwInputBufferSize = 0;
+        const DWORD dwPipeBufferSize = 1024 * 1024;
+        if (isInputPipe) {
+            dwOpenMode |= PIPE_ACCESS_OUTBOUND;
+            dwOutputBufferSize = dwPipeBufferSize;
+        } else {
+            dwOpenMode |= PIPE_ACCESS_INBOUND;
+            dwInputBufferSize = dwPipeBufferSize;
+        }
         DWORD dwPipeFlags = PIPE_TYPE_BYTE | PIPE_WAIT;
         if (QSysInfo::windowsVersion() >= QSysInfo::WV_VISTA)
             dwPipeFlags |= PIPE_REJECT_REMOTE_CLIENTS;
-        const DWORD dwPipeBufferSize = 1024 * 1024;
-        hRead = CreateNamedPipe(pipeName,
-                                PIPE_ACCESS_INBOUND | FILE_FLAG_OVERLAPPED,
-                                dwPipeFlags,
-                                1,                      // only one pipe instance
-                                0,                      // output buffer size
-                                dwPipeBufferSize,       // input buffer size
-                                0,
-                                &secAtt);
-        if (hRead != INVALID_HANDLE_VALUE)
+        hServer = CreateNamedPipe(pipeName,
+                                  dwOpenMode,
+                                  dwPipeFlags,
+                                  1,                      // only one pipe instance
+                                  dwOutputBufferSize,
+                                  dwInputBufferSize,
+                                  0,
+                                  &secAtt);
+        if (hServer != INVALID_HANDLE_VALUE)
             break;
         DWORD dwError = GetLastError();
         if (dwError != ERROR_PIPE_BUSY || !--attempts) {
@@ -106,28 +117,31 @@ static void qt_create_pipe(Q_PIPE *pipe, bool isInputPipe)
         }
     }
 
-    // The write handle must be non-inheritable for input pipes.
-    secAtt.bInheritHandle = !isInputPipe;
-
-    HANDLE hWrite = INVALID_HANDLE_VALUE;
-    hWrite = CreateFile(pipeName,
-                        GENERIC_WRITE,
-                        0,
-                        &secAtt,
-                        OPEN_EXISTING,
-                        FILE_FLAG_OVERLAPPED,
-                        NULL);
-    if (hWrite == INVALID_HANDLE_VALUE) {
+    secAtt.bInheritHandle = TRUE;
+    const HANDLE hClient = CreateFile(pipeName,
+                                      (isInputPipe ? (GENERIC_READ | FILE_WRITE_ATTRIBUTES)
+                                                   : GENERIC_WRITE),
+                                      0,
+                                      &secAtt,
+                                      OPEN_EXISTING,
+                                      FILE_FLAG_OVERLAPPED,
+                                      NULL);
+    if (hClient == INVALID_HANDLE_VALUE) {
         qErrnoWarning("QProcess: CreateFile failed.");
-        CloseHandle(hRead);
+        CloseHandle(hServer);
         return;
     }
 
     // Wait until connection is in place.
-    ConnectNamedPipe(hRead, NULL);
+    ConnectNamedPipe(hServer, NULL);
 
-    pipe[0] = hRead;
-    pipe[1] = hWrite;
+    if (isInputPipe) {
+        pipe[0] = hClient;
+        pipe[1] = hServer;
+    } else {
+        pipe[0] = hServer;
+        pipe[1] = hClient;
+    }
 }
 
 static void duplicateStdWriteChannel(Q_PIPE *pipe, DWORD nStdHandle)

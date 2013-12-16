@@ -107,6 +107,7 @@ public:
         IconPixmapSizes,
         PasswordMaskCharacter,
         DialogSnapToDefaultButton,
+        ContextMenuOnMouseRelease,
         MousePressAndHoldInterval
     };
 

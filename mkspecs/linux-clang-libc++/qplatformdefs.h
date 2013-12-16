@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the config.tests of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,14 +39,4 @@
 **
 ****************************************************************************/
 
-#include <GL/gl.h>
-#include <GL/glx.h>
-
-int main(int, char **)
-{
-    //We require glxfbconfig, ie. glx 1.3
-    GLXFBConfig config;
-    config = 0;
-
-    return 0;
-}
+#include "../linux-clang/qplatformdefs.h"

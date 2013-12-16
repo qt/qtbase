@@ -50,6 +50,7 @@
 #include <QImageWriter>
 #include <QPainter>
 #include <QSet>
+#include <QTemporaryDir>
 
 #ifdef Q_OS_UNIX // for geteuid()
 # include <sys/types.h>
@@ -84,6 +85,7 @@ private slots:
     void supportedMimeTypes();
 
     void writeToInvalidDevice();
+    void testCanWrite();
 
     void supportsOption_data();
     void supportsOption();
@@ -399,6 +401,28 @@ void tst_QImageWriter::writeToInvalidDevice()
         QImage im(10, 10, QImage::Format_ARGB32);
         QVERIFY(!writer.write(im));
         QCOMPARE(writer.error(), QImageWriter::DeviceError);
+    }
+}
+
+void tst_QImageWriter::testCanWrite()
+{
+    {
+        // device is not set
+        QImageWriter writer;
+        QVERIFY(!writer.canWrite());
+        QCOMPARE(writer.error(), QImageWriter::DeviceError);
+    }
+
+    {
+        // check if canWrite won't leave an empty file
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        QString fileName(dir.path() + QLatin1String("/001.garble"));
+        QVERIFY(!QFileInfo(fileName).exists());
+        QImageWriter writer(fileName);
+        QVERIFY(!writer.canWrite());
+        QCOMPARE(writer.error(), QImageWriter::UnsupportedFormatError);
+        QVERIFY(!QFileInfo(fileName).exists());
     }
 }
 

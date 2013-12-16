@@ -3073,7 +3073,7 @@ void QComboBox::wheelEvent(QWheelEvent *e)
             newIndex--;
             while ((newIndex >= 0) && !(d->model->flags(d->model->index(newIndex,d->modelColumn,d->root)) & Qt::ItemIsEnabled))
                 newIndex--;
-        } else {
+        } else if (e->delta() < 0) {
             newIndex++;
             while ((newIndex < count()) && !(d->model->flags(d->model->index(newIndex,d->modelColumn,d->root)) & Qt::ItemIsEnabled))
                 newIndex++;

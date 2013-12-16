@@ -4221,6 +4221,7 @@ void tst_QGraphicsItem::cursor()
     QCursor cursor = view.viewport()->cursor();
 
     {
+        QTest::mouseMove(view.viewport(), QPoint(100, 50));
         QMouseEvent event(QEvent::MouseMove, QPoint(100, 50), Qt::NoButton, 0, 0);
         QApplication::sendEvent(view.viewport(), &event);
     }

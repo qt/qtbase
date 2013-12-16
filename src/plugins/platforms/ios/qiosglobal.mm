@@ -134,5 +134,12 @@ QRect fromPortraitToPrimary(const QRect &rect, QPlatformScreen *screen)
         : QRect(rect.y(), geometry.height() - rect.width() - rect.x(), rect.height(), rect.width());
 }
 
+int infoPlistValue(NSString* key, int defaultValue)
+{
+    static NSBundle *bundle = [NSBundle mainBundle];
+    NSNumber* value = [bundle objectForInfoDictionaryKey:key];
+    return value ? [value intValue] : defaultValue;
+}
+
 QT_END_NAMESPACE
 

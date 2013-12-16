@@ -445,8 +445,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
         data_size += 2 + mm.inputTypes.count() + mm.outputTypes.count();
     idata.resize(data_size + 1);
 
-    QMetaStringTable strings;
-    strings.enter(className.toLatin1());
+    QMetaStringTable strings(className.toLatin1());
 
     int offset = header->methodData;
     int parametersOffset = offset + header->methodCount * 5;

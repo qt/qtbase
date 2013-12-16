@@ -239,11 +239,7 @@ static inline uint qCpuFeatures()
     return uint(features);
 }
 
-static inline uint qCpuHasFeature(CPUFeatures feature)
-{
-    return qCompilerCpuFeatures & feature || qCpuFeatures() & feature;
-}
-
+#define qCpuHasFeature(feature)  ((qCompilerCpuFeatures & (feature)) || (qCpuFeatures() & (feature)))
 
 #define ALIGNMENT_PROLOGUE_16BYTES(ptr, i, length) \
     for (; i < static_cast<int>(qMin(static_cast<quintptr>(length), ((4 - ((reinterpret_cast<quintptr>(ptr) >> 2) & 0x3)) & 0x3))); ++i)

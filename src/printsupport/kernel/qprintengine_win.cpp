@@ -1448,6 +1448,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
             d->devMode->dmPaperLength = qRound(sizeMM.height() * 10.0);
             d->devMode->dmPaperWidth = qRound(sizeMM.width() * 10.0);
         }
+        d->doReinit();
         break;
     }
 
@@ -1941,8 +1942,9 @@ static void draw_text_item_win(const QPointF &pos, const QTextItemInt &ti, HDC h
 void QWin32PrintEnginePrivate::updateCustomPaperSize()
 {
     const uint paperSize = devMode->dmPaperSize;
-    has_custom_paper_size = true;
+    has_custom_paper_size = false;
     if (paperSize > 0 && mapDevmodePaperSize(paperSize) == QPrinter::Custom) {
+        has_custom_paper_size = true;
         const QList<QPair<QSizeF, int> > paperSizes = printerPaperSizes(name);
         for (int i=0; i<paperSizes.size(); i++) {
             if ((uint)paperSizes.at(i).second == paperSize) {

@@ -8249,7 +8249,10 @@ bool QWidget::event(QEvent *event)
         update(static_cast<QUpdateLaterEvent*>(event)->region());
         break;
     case QEvent::StyleAnimationUpdate:
-        update();
+        if (isVisible() && !window()->isMinimized()) {
+            event->accept();
+            update();
+        }
         break;
 
     case QEvent::WindowBlocked:

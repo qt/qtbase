@@ -611,8 +611,6 @@ CFG_OPENVG_LC_INCLUDES=no
 CFG_OPENVG_SHIVA=auto
 CFG_OPENVG_ON_OPENGL=auto
 CFG_EGL=auto
-CFG_GLX=auto
-CFG_SSE=auto
 CFG_FONTCONFIG=auto
 CFG_FREETYPE=auto
 CFG_HARFBUZZ=no
@@ -1159,13 +1157,6 @@ while [ "$#" -gt 0 ]; do
     libexecdir)
         QT_INSTALL_LIBEXECS="$VAL"
         ;;
-    sse)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_SSE="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-	;;
     opengl)
         if  [ "$VAL" = "auto" ] || [ "$VAL" = "desktop" ] ||
             [ "$VAL" = "yes" ] || [ "$VAL" = "no" ] ||
@@ -1479,13 +1470,6 @@ while [ "$#" -gt 0 ]; do
     egl)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_EGL="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
-    glx)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            CFG_GLX="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -4243,6 +4227,9 @@ if [ "${CFG_SSE2}" = "auto" ]; then
 fi
 
 # detect sse3 support
+if [ "${CFG_SSE2}" = "no" ]; then
+    CFG_SSE3=no
+fi
 if [ "${CFG_SSE3}" = "auto" ]; then
     if compileTest common/sse3 "sse3"; then
        CFG_SSE3=yes
@@ -4252,6 +4239,9 @@ if [ "${CFG_SSE3}" = "auto" ]; then
 fi
 
 # detect ssse3 support
+if [ "${CFG_SSE3}" = "no" ]; then
+    CFG_SSSE3=no
+fi
 if [ "${CFG_SSSE3}" = "auto" ]; then
     if compileTest common/ssse3 "ssse3"; then
        CFG_SSSE3=yes
@@ -4261,6 +4251,9 @@ if [ "${CFG_SSSE3}" = "auto" ]; then
 fi
 
 # detect sse4.1 support
+if [ "${CFG_SSSE3}" = "no" ]; then
+    CFG_SSE4_1=no
+fi
 if [ "${CFG_SSE4_1}" = "auto" ]; then
     if compileTest common/sse4_1 "sse4_1"; then
        CFG_SSE4_1=yes
@@ -4270,6 +4263,9 @@ if [ "${CFG_SSE4_1}" = "auto" ]; then
 fi
 
 # detect sse4.2 support
+if [ "${CFG_SSE4_1}" = "no" ]; then
+    CFG_SSE4_2=no
+fi
 if [ "${CFG_SSE4_2}" = "auto" ]; then
     if compileTest common/sse4_2 "sse4_2"; then
        CFG_SSE4_2=yes
@@ -4279,6 +4275,9 @@ if [ "${CFG_SSE4_2}" = "auto" ]; then
 fi
 
 # detect avx support
+if [ "${CFG_SSE4_2}" = "no" ]; then
+    CFG_AVX=no
+fi
 if [ "${CFG_AVX}" = "auto" ]; then
     if compileTest common/avx "avx"; then
        case "$XQMAKESPEC" in
@@ -4929,6 +4928,19 @@ if [ "$XPLATFORM_MINGW" = "yes" ]; then
             fi
             CFG_OPENGL=no
         fi
+        case "$PLATFORM" in
+        hpux*)
+            # HP-UX have buggy glx headers; check if we really need to define the GLXFBConfig struct.
+            if [ "$CFG_OPENGL" = "desktop" ]; then
+                compileTest x11/glxfbconfig "OpenGL"
+                if [ $? != "0" ]; then
+                    QMakeVar add DEFINES QT_DEFINE_GLXFBCONFIG_STRUCT
+                fi
+            fi
+            ;;
+        *)
+            ;;
+        esac
     elif [ "$CFG_OPENGL" = "es2" ]; then
         #OpenGL ES 2.x
         compileTest unix/opengles2 "OpenGL ES 2.x"
@@ -4949,6 +4961,17 @@ if [ "$XPLATFORM_MINGW" = "yes" ]; then
             echo " ${XQMAKESPEC}."
             exit 1
         fi
+        case "$PLATFORM" in
+        hpux*)
+            # HP-UX have buggy glx headers; check if we really need to define the GLXFBConfig struct.
+            compileTest x11/glxfbconfig "OpenGL"
+            if [ $? != "0" ]; then
+                QMakeVar add DEFINES QT_DEFINE_GLXFBCONFIG_STRUCT
+            fi
+            ;;
+        *)
+            ;;
+        esac
     fi
 fi # X11/MINGW OpenGL
 
@@ -5086,6 +5109,11 @@ if [ "$CFG_TSLIB" != "no" ]; then
     fi
 fi
 
+# Check we actually have X11 :-)
+if compileTest x11/xlib "XLib"; then
+    QT_CONFIG="$QT_CONFIG xlib"
+fi
+
 if [ "$CFG_XCB" != "no" ]; then
     if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xcb >= 1.5" 2>/dev/null; then
         QMAKE_CFLAGS_XCB="`$PKG_CONFIG --cflags xcb 2>/dev/null`"
@@ -5129,17 +5157,6 @@ if [ "$CFG_XCB" != "no" ]; then
                 echo " See src/plugins/platforms/xcb/README."
                 exit 1
             fi
-        fi
-
-        # Check for X11. Eventually we should port everything to XCB,
-        # but for now the port is incomplete and Xlib is a requirement.
-        if compileTest x11/xlib "XLib"; then
-            QT_CONFIG="$QT_CONFIG xlib"
-        else
-            echo "The test for linking against Xlib failed!"
-            echo " You might need to install dependency packages."
-            echo " See src/plugins/platforms/xcb/README."
-            exit 1
         fi
 
         if [ "$CFG_XCB_XLIB" != "no" ]; then
@@ -5312,24 +5329,6 @@ if [ "$CFG_EGL" != "no" ]; then
         CFG_EGL=no
     fi
 fi
-
-# GLX Support
-if [ "$CFG_GLX" != "no" ]; then
-    if  [ "$CFG_GLX" = "yes" ] && [ "$CFG_OPENGL" = "no" ]; then
-        echo "GLX support was requested but OpenGL support is disabled."
-        echo "Either disable GLX support or enable OpenGL support."
-        exit 101
-    fi
-    if compileTest qpa/glx "GLX"; then
-        CFG_GLX=yes
-    elif [ "$CFG_GLX" = "yes" ]; then
-        echo " The GLX functionality test failed; GLX is required by the xcb plugin to manage contexts & surfaces."
-        exit 1
-    else
-        CFG_GLX=no
-    fi
-fi
-
 
 if [ "$CFG_EGLFS" != "no" ]; then
     if [ "$XPLATFORM_QNX" = "no" ]; then
@@ -5699,13 +5698,6 @@ if [ "$CFG_EGL" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG egl"
 else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EGL"
-fi
-
-# enable glx
-if [ "$CFG_GLX" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG glx"
-else
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GLX"
 fi
 
 # enable eglfs
@@ -6743,8 +6735,6 @@ else
     report_support "  pkg-config ............. no"
 fi
 report_support "  PulseAudio ............." "$CFG_PULSEAUDIO"
-report_support "  EGL ...................." "$CFG_EGL"
-report_support "  GLX ...................." "$CFG_GLX"
 report_support "  QPA backends:"
 report_support "    DirectFB ............." "$CFG_DIRECTFB"
 report_support "    EGLFS ................" "$CFG_EGLFS"

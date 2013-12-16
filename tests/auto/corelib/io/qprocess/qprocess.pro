@@ -8,7 +8,11 @@ SUBDIRS += testProcessSpacesArgs/nospace.pro \
            testProcessSpacesArgs/twospaces.pro \
            testSpaceInName
 
-win32:!wince*:SUBDIRS+=testProcessEchoGui
+win32:!wince* {
+    SUBDIRS += \
+        testProcessEchoGui \
+        testSetNamedPipeHandleState
+}
 
 test.depends += $$SUBDIRS
 SUBDIRS += test

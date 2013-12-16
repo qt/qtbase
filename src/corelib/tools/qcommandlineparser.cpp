@@ -280,9 +280,9 @@ bool QCommandLineParser::addOption(const QCommandLineOption &option)
 */
 QCommandLineOption QCommandLineParser::addVersionOption()
 {
-    d->builtinVersionOption = true;
     QCommandLineOption opt(QStringList() << QStringLiteral("v") << QStringLiteral("version"), tr("Displays version information."));
     addOption(opt);
+    d->builtinVersionOption = true;
     return opt;
 }
 
@@ -300,7 +300,6 @@ QCommandLineOption QCommandLineParser::addVersionOption()
 */
 QCommandLineOption QCommandLineParser::addHelpOption()
 {
-    d->builtinHelpOption = true;
     QCommandLineOption opt(QStringList()
 #ifdef Q_OS_WIN
                 << QStringLiteral("?")
@@ -308,6 +307,7 @@ QCommandLineOption QCommandLineParser::addHelpOption()
                 << QStringLiteral("h")
                 << QStringLiteral("help"), tr("Displays this help."));
     addOption(opt);
+    d->builtinHelpOption = true;
     return opt;
 }
 

@@ -457,9 +457,6 @@ void QPageSetupWidget::selectPrinter()
 
     unitChanged(widget.unit->currentIndex());
     m_pagePreview->setMargins(m_leftMargin, m_topMargin, m_rightMargin, m_bottomMargin);
-
-    // setup printer here the first time
-    setupPrinter();
 }
 
 void QPageSetupWidget::selectPdfPsPrinter(const QPrinter *p)

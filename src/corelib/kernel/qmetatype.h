@@ -783,6 +783,10 @@ struct IteratorOwner
     {
         *ptr = new const_iterator(iterator);
     }
+    static void assign(void **ptr, void * const * src)
+    {
+        *ptr = new const_iterator(*static_cast<const_iterator*>(*src));
+    }
 
     static void advance(void **iterator, int step)
     {
@@ -804,18 +808,27 @@ struct IteratorOwner
     {
         return &*it;
     }
-};
-template<typename const_iterator>
-struct IteratorOwner<const const_iterator*>
-{
-    static void assign(void **ptr, const const_iterator *iterator )
+
+    static bool equal(void * const *it, void * const *other)
     {
-        *ptr = const_cast<const_iterator*>(iterator);
+        return *static_cast<const_iterator*>(*it) == *static_cast<const_iterator*>(*other);
+    }
+};
+template<typename value_type>
+struct IteratorOwner<const value_type*>
+{
+    static void assign(void **ptr, const value_type *iterator )
+    {
+        *ptr = const_cast<value_type*>(iterator);
+    }
+    static void assign(void **ptr, void * const * src)
+    {
+        *ptr = static_cast<value_type*>(*src);
     }
 
     static void advance(void **iterator, int step)
     {
-        const_iterator *it = static_cast<const_iterator*>(*iterator);
+        value_type *it = static_cast<value_type*>(*iterator);
         std::advance(it, step);
         *iterator = it;
     }
@@ -829,9 +842,14 @@ struct IteratorOwner<const const_iterator*>
         return *iterator;
     }
 
-    static const void *getData(const const_iterator *it)
+    static const void *getData(const value_type *it)
     {
         return it;
+    }
+
+    static bool equal(void * const *it, void * const *other)
+    {
+        return static_cast<value_type*>(*it) == static_cast<value_type*>(*other);
     }
 };
 
@@ -934,7 +952,7 @@ public:
 
     template<class T>
     static bool equalIterImpl(void * const *iterator, void * const *other)
-    { return *static_cast<typename T::const_iterator*>(*iterator) == *static_cast<typename T::const_iterator*>(*other); }
+    { return IteratorOwner<typename T::const_iterator>::equal(iterator, other); }
 
     template<class T>
     static VariantData getImpl(void * const *iterator, int metaTypeId, uint flags)
@@ -942,7 +960,7 @@ public:
 
     template<class T>
     static void copyIterImpl(void **dest, void * const * src)
-    { IteratorOwner<typename T::const_iterator>::assign(dest, *static_cast<typename T::const_iterator*>(*src)); }
+    { IteratorOwner<typename T::const_iterator>::assign(dest, src); }
 
 public:
     template<class T> QSequentialIterableImpl(const T*p)
@@ -1118,11 +1136,11 @@ public:
 
     template<class T>
     static bool equalIterImpl(void * const *iterator, void * const *other)
-    { return *static_cast<typename T::const_iterator*>(*iterator) == *static_cast<typename T::const_iterator*>(*other); }
+    { return IteratorOwner<typename T::const_iterator>::equal(iterator, other); }
 
     template<class T>
     static void copyIterImpl(void **dest, void * const * src)
-    { IteratorOwner<typename T::const_iterator>::assign(dest, *static_cast<typename T::const_iterator*>(*src)); }
+    { IteratorOwner<typename T::const_iterator>::assign(dest, src); }
 
 public:
     template<class T> QAssociativeIterableImpl(const T*p)
@@ -1741,7 +1759,7 @@ struct QMetaTypeId< SINGLE_ARG_TEMPLATE<T> > \
             return id; \
         const char *tName = QMetaType::typeName(qMetaTypeId<T>()); \
         Q_ASSERT(tName); \
-        const int tNameLen = qstrlen(tName); \
+        const int tNameLen = int(qstrlen(tName)); \
         QByteArray typeName; \
         typeName.reserve(int(sizeof(#SINGLE_ARG_TEMPLATE)) + 1 + tNameLen + 1 + 1); \
         typeName.append(#SINGLE_ARG_TEMPLATE, int(sizeof(#SINGLE_ARG_TEMPLATE)) - 1) \
@@ -1782,8 +1800,8 @@ struct QMetaTypeId< DOUBLE_ARG_TEMPLATE<T, U> > \
         const char *uName = QMetaType::typeName(qMetaTypeId<U>()); \
         Q_ASSERT(tName); \
         Q_ASSERT(uName); \
-        const int tNameLen = qstrlen(tName); \
-        const int uNameLen = qstrlen(uName); \
+        const int tNameLen = int(qstrlen(tName)); \
+        const int uNameLen = int(qstrlen(uName)); \
         QByteArray typeName; \
         typeName.reserve(int(sizeof(#DOUBLE_ARG_TEMPLATE)) + 1 + tNameLen + 1 + uNameLen + 1 + 1); \
         typeName.append(#DOUBLE_ARG_TEMPLATE, int(sizeof(#DOUBLE_ARG_TEMPLATE)) - 1) \

@@ -97,6 +97,7 @@ private:
     QScopedPointer<QPlatformServices> mServices;
     QEglFSScreen *mScreen;
     QPlatformInputContext *mInputContext;
+    bool mDisableInputHandlers;
 };
 
 QT_END_NAMESPACE
