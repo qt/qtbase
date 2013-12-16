@@ -208,7 +208,11 @@ DWORD WINAPI qt_adopted_thread_watcher_function(LPVOID)
         qt_adopted_thread_watcher_mutex.unlock();
 
         DWORD ret = WAIT_TIMEOUT;
-        int loops = (handlesCopy.count() / MAXIMUM_WAIT_OBJECTS) + 1, offset, count;
+        int count;
+        int offset;
+        int loops = handlesCopy.size() / MAXIMUM_WAIT_OBJECTS;
+        if (handlesCopy.size() % MAXIMUM_WAIT_OBJECTS)
+            ++loops;
         if (loops == 1) {
             // no need to loop, no timeout
             offset = 0;
