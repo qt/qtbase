@@ -743,8 +743,11 @@ bool QWindowsKeyMapper::translateKeyEvent(QWindow *widget, HWND hwnd,
         return true;
     }
 
-    // Add this key to the keymap if it is not present yet.
-    updateKeyMap(msg);
+    // WM_CHAR messages already contain the character in question so there is
+    // no need to fiddle with our key map. In any other case add this key to the
+    // keymap if it is not present yet.
+    if (msg.message != WM_CHAR)
+        updateKeyMap(msg);
 
     MSG peekedMsg;
     // consume dead chars?(for example, typing '`','a' resulting in a-accent).
