@@ -516,12 +516,17 @@ void QPrinterPrivate::setProperty(QPrintEngine::PrintEnginePropertyKey key, cons
   \value LargeCapacity
   \value LargeFormat
   \value Lower
-  \value MaxPageSource
+  \value MaxPageSource Deprecated, use LastPaperSource instead
   \value Middle
   \value Manual
   \value OnlyOne
   \value Tractor
   \value SmallFormat
+  \value First
+  \value Last
+  \value Upper
+  \value CustomSource A PaperSource defined by the printer that is unknown to Qt
+  \value LastPaperSource The highest valid PaperSource value, currently CustomSource
 */
 
 /*!

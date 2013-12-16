@@ -103,7 +103,12 @@ public:
                        LargeCapacity,
                        Cassette,
                        FormSource,
-                       MaxPageSource
+                       MaxPageSource, // Deprecated
+                       First,
+                       Last,
+                       Upper,
+                       CustomSource,
+                       LastPaperSource = CustomSource
     };
 
     enum PrinterState { Idle,

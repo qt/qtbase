@@ -195,6 +195,9 @@ static const struct {
     { DMBIN_LARGECAPACITY,  QPrinter::LargeCapacity },
     { DMBIN_CASSETTE,       QPrinter::Cassette },
     { DMBIN_FORMSOURCE,     QPrinter::FormSource },
+    { DMBIN_FIRST,          QPrinter::First },
+    { DMBIN_LAST,           QPrinter::Last },
+    { DMBIN_UPPER,          QPrinter::Upper },
     { 0, (QPrinter::PaperSource) -1 }
 };
 
