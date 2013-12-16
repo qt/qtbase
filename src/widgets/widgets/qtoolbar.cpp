@@ -57,11 +57,6 @@
 #include <qwidgetaction.h>
 #include <qtimer.h>
 #include <private/qwidgetaction_p.h>
-#ifdef Q_WS_MAC
-#include <private/qt_mac_p.h>
-#include <private/qt_cocoa_helpers_mac_p.h>
-#endif
-
 #include <private/qmainwindowlayout_p.h>
 
 #include "qtoolbar_p.h"
@@ -73,14 +68,6 @@
 #define POPUP_TIMER_INTERVAL 500
 
 QT_BEGIN_NAMESPACE
-
-#ifdef Q_WS_MAC
-static void qt_mac_updateToolBarButtonHint(QWidget *parentWidget)
-{
-    if (!(parentWidget->windowFlags() & Qt::CustomizeWindowHint))
-        parentWidget->setWindowFlags(parentWidget->windowFlags() | Qt::MacWindowToolBarButtonHint);
-}
-#endif
 
 // qmainwindow.cpp
 extern QMainWindowLayout *qt_mainwindow_layout(const QMainWindow *window);
@@ -103,17 +90,6 @@ void QToolBarPrivate::init()
 
     layout = new QToolBarLayout(q);
     layout->updateMarginAndSpacing();
-
-#ifdef Q_WS_MAC
-    if (q->parentWidget() && q->parentWidget()->isWindow()) {
-        // Make sure that the window has the "toolbar" button.
-        QWidget *parentWidget = q->parentWidget();
-        qt_mac_updateToolBarButtonHint(parentWidget);
-        reinterpret_cast<QToolBar *>(parentWidget)->d_func()->createWinId(); // Please let me create your winId...
-        extern OSWindowRef qt_mac_window_for(const QWidget *); // qwidget_mac.cpp
-        macWindowToolbarShow(q->parentWidget(), true);
-    }
-#endif
 
     toggleViewAction = new QAction(q);
     toggleViewAction->setCheckable(true);
@@ -158,12 +134,8 @@ void QToolBarPrivate::updateWindowFlags(bool floating, bool unplug)
 
     flags |= Qt::FramelessWindowHint;
 
-    if (unplug) {
+    if (unplug)
         flags |= Qt::X11BypassWindowManagerHint;
-#ifdef Q_WS_MAC
-        flags |= Qt::WindowStaysOnTopHint;
-#endif
-    }
 
     q->setWindowFlags(flags);
 }
@@ -569,16 +541,6 @@ QToolBar::QToolBar(const QString &title, QWidget *parent)
 */
 QToolBar::~QToolBar()
 {
-    // Remove the toolbar button if there is nothing left.
-    QMainWindow *mainwindow = qobject_cast<QMainWindow *>(parentWidget());
-    if (mainwindow) {
-#ifdef Q_WS_MAC
-        QMainWindowLayout *mainwin_layout = qt_mainwindow_layout(mainwindow);
-        if (mainwin_layout && mainwin_layout->layoutState.toolBarAreaLayout.isEmpty()
-                && mainwindow->testAttribute(Qt::WA_WState_Created))
-            macWindowToolbarShow(mainwindow, false);
-#endif
-    }
 }
 
 /*! \property QToolBar::movable
@@ -665,12 +627,6 @@ void QToolBar::setAllowedAreas(Qt::ToolBarAreas areas)
 Qt::ToolBarAreas QToolBar::allowedAreas() const
 {
     Q_D(const QToolBar);
-#ifdef Q_WS_MAC
-    if (QMainWindow *window = qobject_cast<QMainWindow *>(parentWidget())) {
-        if (window->unifiedTitleAndToolBarOnMac()) // Don't allow drags to the top (for now).
-            return (d->allowedAreas & ~Qt::TopToolBarArea);
-    }
-#endif
     return d->allowedAreas;
 }
 
@@ -1083,15 +1039,6 @@ static bool waitForPopup(QToolBar *tb, QWidget *popup)
     return false;
 }
 
-#if defined(Q_WS_MAC)
-static bool toolbarInUnifiedToolBar(QToolBar *toolbar)
-{
-    const QMainWindow *mainWindow = qobject_cast<const QMainWindow *>(toolbar->parentWidget());
-    return mainWindow && mainWindow->unifiedTitleAndToolBarOnMac()
-            && mainWindow->toolBarArea(toolbar) == Qt::TopToolBarArea;
-}
-#endif
-
 /*! \reimp */
 bool QToolBar::event(QEvent *event)
 {
@@ -1115,22 +1062,9 @@ bool QToolBar::event(QEvent *event)
     case QEvent::Show:
         d->toggleViewAction->setChecked(event->type() == QEvent::Show);
         emit visibilityChanged(event->type() == QEvent::Show);
-#if defined(Q_WS_MAC)
-        if (toolbarInUnifiedToolBar(this)) {
-             // I can static_cast because I did the qobject_cast in the if above, therefore
-            // we must have a QMainWindowLayout here.
-            QMainWindowLayout *mwLayout = qt_mainwindow_layout(qobject_cast<QMainWindow *>(parentWidget()));
-            mwLayout->fixSizeInUnifiedToolbar(this);
-            mwLayout->syncUnifiedToolbarVisibility();
-        }
-#endif // Q_WS_MAC
         break;
     case QEvent::ParentChange:
         d->layout->checkUsePopupMenu();
-#if defined(Q_WS_MAC)
-        if (parentWidget() && parentWidget()->isWindow())
-            qt_mac_updateToolBarButtonHint(parentWidget());
-#endif
         break;
 
     case QEvent::MouseButtonPress: {

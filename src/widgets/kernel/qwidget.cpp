@@ -5026,16 +5026,6 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
     if (rgn.isEmpty())
         return;
 
-#ifdef Q_WS_MAC
-    if (qt_mac_clearDirtyOnWidgetInsideDrawWidget)
-        dirtyOnWidget = QRegion();
-
-    // We disable the rendering of QToolBar in the backingStore if
-    // it's supposed to be in the unified toolbar on Mac OS X.
-    if (backingStore && isInUnifiedToolbar)
-        return;
-#endif // Q_WS_MAC
-
     const bool asRoot = flags & DrawAsRoot;
     bool onScreen = paintOnScreen();
 
@@ -9403,26 +9393,13 @@ QWidget *QWidgetPrivate::childAt_helper(const QPoint &p, bool ignoreChildrenInDe
     if (children.isEmpty())
         return 0;
 
-#ifdef Q_WS_MAC
-    Q_Q(const QWidget);
-    // Unified tool bars on the Mac require special handling since they live outside
-    // QMainWindow's geometry(). See commit: 35667fd45ada49269a5987c235fdedfc43e92bb8
-    bool includeFrame = q->isWindow() && qobject_cast<const QMainWindow *>(q)
-                        && static_cast<const QMainWindow *>(q)->unifiedTitleAndToolBarOnMac();
-    if (includeFrame)
-        return childAtRecursiveHelper(p, ignoreChildrenInDestructor, includeFrame);
-#endif
-
     if (!pointInsideRectAndMask(p))
         return 0;
     return childAtRecursiveHelper(p, ignoreChildrenInDestructor);
 }
 
-QWidget *QWidgetPrivate::childAtRecursiveHelper(const QPoint &p, bool ignoreChildrenInDestructor, bool includeFrame) const
+QWidget *QWidgetPrivate::childAtRecursiveHelper(const QPoint &p, bool ignoreChildrenInDestructor) const
 {
-#ifndef Q_WS_MAC
-    Q_UNUSED(includeFrame);
-#endif
     for (int i = children.size() - 1; i >= 0; --i) {
         QWidget *child = qobject_cast<QWidget *>(children.at(i));
         if (!child || child->isWindow() || child->isHidden() || child->testAttribute(Qt::WA_TransparentForMouseEvents)
@@ -9432,14 +9409,6 @@ QWidget *QWidgetPrivate::childAtRecursiveHelper(const QPoint &p, bool ignoreChil
 
         // Map the point 'p' from parent coordinates to child coordinates.
         QPoint childPoint = p;
-#ifdef Q_WS_MAC
-        // 'includeFrame' is true if the child's parent is a top-level QMainWindow with an unified tool bar.
-        // An unified tool bar on the Mac lives outside QMainWindow's geometry(), so a normal
-        // QWidget::mapFromParent won't do the trick.
-        if (includeFrame && qobject_cast<QToolBar *>(child))
-            childPoint = qt_mac_nativeMapFromParent(child, p);
-        else
-#endif
         childPoint -= child->data->crect.topLeft();
 
         // Check if the point hits the child.
@@ -9614,13 +9583,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
     bool newParent = (parent != parentWidget()) || !wasCreated || desktopWidget;
 
     if (newParent && parent && !desktopWidget) {
-        if (testAttribute(Qt::WA_NativeWindow) && !qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings)
-#ifdef Q_WS_MAC
-            // On Mac, toolbars inside the unified title bar will never overlap with
-            // siblings in the content view. So we skip enforce native siblings in that case
-            && !d->isInUnifiedToolbar && parentWidget() && parentWidget()->isWindow()
-#endif // Q_WS_MAC
-        )
+        if (testAttribute(Qt::WA_NativeWindow) && !qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings))
             parent->d_func()->enforceNativeChildren();
         else if (parent->d_func()->nativeChildrenForced() || parent->testAttribute(Qt::WA_PaintOnScreen))
             setAttribute(Qt::WA_NativeWindow);
@@ -9879,12 +9842,6 @@ void QWidget::repaint(const QRect &rect)
         return;
 
     if (hasBackingStoreSupport()) {
-#ifdef Q_WS_MAC
-        if (qt_widget_private(this)->isInUnifiedToolbar) {
-            qt_widget_private(this)->unifiedSurface->renderToolbar(this, true);
-            return;
-        }
-#endif // Q_WS_MAC
         QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
         if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
             tlwExtra->inRepaint = true;
@@ -9914,12 +9871,6 @@ void QWidget::repaint(const QRegion &rgn)
         return;
 
     if (hasBackingStoreSupport()) {
-#ifdef Q_WS_MAC
-        if (qt_widget_private(this)->isInUnifiedToolbar) {
-            qt_widget_private(this)->unifiedSurface->renderToolbar(this, true);
-            return;
-        }
-#endif // Q_WS_MAC
         QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
         if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
             tlwExtra->inRepaint = true;
@@ -9982,12 +9933,6 @@ void QWidget::update(const QRect &rect)
     }
 
     if (hasBackingStoreSupport()) {
-#ifdef Q_WS_MAC
-        if (qt_widget_private(this)->isInUnifiedToolbar) {
-            qt_widget_private(this)->unifiedSurface->renderToolbar(this, true);
-            return;
-        }
-#endif // Q_WS_MAC
         QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
         if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
             tlwExtra->backingStoreTracker->markDirty(r, this);
@@ -10017,12 +9962,6 @@ void QWidget::update(const QRegion &rgn)
     }
 
     if (hasBackingStoreSupport()) {
-#ifdef Q_WS_MAC
-        if (qt_widget_private(this)->isInUnifiedToolbar) {
-            qt_widget_private(this)->unifiedSurface->renderToolbar(this, true);
-            return;
-        }
-#endif // Q_WS_MAC
         QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
         if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
             tlwExtra->backingStoreTracker->markDirty(r, this);
@@ -10218,13 +10157,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             qApp->inputMethod()->commit();
             qApp->inputMethod()->update(Qt::ImEnabled);
         }
-        if (!qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings) && parentWidget()
-#ifdef Q_WS_MAC
-            // On Mac, toolbars inside the unified title bar will never overlap with
-            // siblings in the content view. So we skip enforce native siblings in that case
-            && !d->isInUnifiedToolbar && parentWidget()->isWindow()
-#endif // Q_WS_MAC
-        )
+        if (!qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings) && parentWidget())
             parentWidget()->d_func()->enforceNativeChildren();
         if (on && !internalWinId() && testAttribute(Qt::WA_WState_Created))
             d->createWinId();
@@ -11543,28 +11476,6 @@ void QWidget::clearMask()
 {
     setMask(QRegion());
 }
-
-#ifdef Q_WS_MAC
-void QWidgetPrivate::syncUnifiedMode() {
-    // The whole purpose of this method is to keep the unifiedToolbar in sync.
-    // That means making sure we either exchange the drawing methods or we let
-    // the toolbar know that it does not require to draw the baseline.
-    Q_Q(QWidget);
-    // This function makes sense only if this is a top level
-    if(!q->isWindow())
-        return;
-    OSWindowRef window = qt_mac_window_for(q);
-    if(changeMethods) {
-        // Ok, we are in documentMode.
-        if(originalDrawMethod)
-            qt_mac_replaceDrawRect(window, this);
-    } else {
-        if(!originalDrawMethod)
-            qt_mac_replaceDrawRectOriginal(window, this);
-    }
-}
-
-#endif // Q_WS_MAC
 
 QT_END_NAMESPACE
 
