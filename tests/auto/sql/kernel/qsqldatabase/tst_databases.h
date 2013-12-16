@@ -515,8 +515,8 @@ public:
     static QByteArray printError( const QSqlError& err )
     {
         QString result;
-        if(err.number() > 0)
-            result += '(' + QString::number(err.number()) + ") ";
+        if (!err.nativeErrorCode().isEmpty())
+            result += '(' + err.nativeErrorCode() + ") ";
         result += '\'';
         if(!err.driverText().isEmpty())
             result += err.driverText() + "' || '";
@@ -527,8 +527,8 @@ public:
     static QByteArray printError( const QSqlError& err, const QSqlDatabase& db )
     {
         QString result(dbToString(db) + ": ");
-        if(err.number() > 0)
-            result += '(' + QString::number(err.number()) + ") ";
+        if (!err.nativeErrorCode().isEmpty())
+            result += '(' + err.nativeErrorCode() + ") ";
         result += '\'';
         if(!err.driverText().isEmpty())
             result += err.driverText() + "' || '";
