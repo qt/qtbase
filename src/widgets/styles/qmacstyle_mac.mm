@@ -3008,23 +3008,19 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             if (opt->state & State_Horizontal) {
                 while (y < opt->rect.height() - RectHeight - 5) {
                     path.moveTo(x, y);
-                    path.addRect(x, y, RectHeight, RectHeight);
+                    path.addEllipse(x, y, RectHeight, RectHeight);
                     y += 6;
                 }
             } else {
                 while (x < opt->rect.width() - RectHeight - 5) {
                     path.moveTo(x, y);
-                    path.addRect(x, y, RectHeight, RectHeight);
+                    path.addEllipse(x, y, RectHeight, RectHeight);
                     x += 6;
                 }
             }
             p->setPen(Qt::NoPen);
-            QColor dark = opt->palette.dark().color();
-            dark.setAlphaF(0.75);
-            QColor light = opt->palette.light().color();
-            light.setAlphaF(0.6);
-            p->fillPath(path, light);
-            p->translate(1, 1);
+            QColor dark = opt->palette.dark().color().darker();
+            dark.setAlphaF(0.50);
             p->fillPath(path, dark);
             p->restore();
 
