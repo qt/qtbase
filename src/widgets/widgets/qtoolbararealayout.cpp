@@ -655,9 +655,7 @@ QRect QToolBarAreaLayout::fitLayout()
     docks[QInternal::BottomDock].rect = QRect(rect.left(), center.bottom() + 1,
                                     rect.width(), bottom_hint.height());
 
-    if (!mainWindow->unifiedTitleAndToolBarOnMac()) {
-        docks[QInternal::TopDock].fitLayout();
-    }
+    docks[QInternal::TopDock].fitLayout();
     docks[QInternal::LeftDock].fitLayout();
     docks[QInternal::RightDock].fitLayout();
     docks[QInternal::BottomDock].fitLayout();
@@ -1307,8 +1305,6 @@ bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*
     QList<QToolBar*> toolBars = _toolBars;
     int lines;
     stream >> lines;
-	if (!testing)
-	testing = mainWindow->unifiedTitleAndToolBarOnMac();
 
     for (int j = 0; j < lines; ++j) {
         int pos;
@@ -1319,7 +1315,7 @@ bool QToolBarAreaLayout::restoreState(QDataStream &stream, const QList<QToolBar*
         stream >> cnt;
 
         QToolBarAreaLayoutInfo &dock = docks[pos];
-		const bool applyingLayout = !testing && !(pos == QInternal::TopDock && mainWindow->unifiedTitleAndToolBarOnMac());
+        const bool applyingLayout = !testing;
         QToolBarAreaLayoutLine line(dock.o);
 
         for (int k = 0; k < cnt; ++k) {
