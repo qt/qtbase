@@ -1,3 +1,58 @@
+Overview of changes leading to 0.9.25
+Wednesday, December 4, 2013
+=====================================
+
+- Myanmar shaper improvements.
+- Avoid font fallback in CoreText backend.
+- Additional OpenType language tag mappiongs.
+- More aggressive shape-plan caching.
+- Build with / require automake 1.13.
+- Build with libtool 2.4.2.418 alpha to support ppc64le.
+
+
+Overview of changes leading to 0.9.24
+Tuesday, November 13, 2013
+=====================================
+
+- Misc compiler warning fixes with clang.
+- No functional changes.
+
+
+Overview of changes leading to 0.9.23
+Monday, October 28, 2013
+=====================================
+
+- "Udupi HarfBuzz Hackfest", Paris, October 14..18 2013.
+- Fix (Chain)Context recursion with non-monotone lookup positions.
+- Misc Indic bug fixes.
+- New Javanese / Buginese shaping, similar to Windows 8.1.
+
+
+Overview of changes leading to 0.9.22
+Thursday, October 3, 2013
+=====================================
+
+- Fix use-after-end-of-scope in hb_language_from_string().
+- Fix hiding of default_ignorables if font doesn't have space glyph.
+- Protect against out-of-range lookup indices.
+
+- API Changes:
+
+  * Added hb_ot_layout_table_get_lookup_count()
+
+
+Overview of changes leading to 0.9.21
+Monday, September 16, 2013
+=====================================
+
+- Rename gobject-introspection library name from harfbuzz to HarfBuzz.
+- Remove (long disabled) hb-old and hb-icu-le test shapers.
+- Misc gtk-doc and gobject-introspection annotations.
+- Misc fixes.
+- API changes:
+
+  * Add HB_SET_VALUE_INVALID
+
 Overview of changes leading to 0.9.20
 Thursday, August 29, 2013
 =====================================
