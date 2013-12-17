@@ -1028,14 +1028,17 @@ template <typename T> struct QEnableIf<true, T> { typedef T Type; };
 #endif
 
 QT_END_NAMESPACE
-// Q_GLOBAL_STATIC
-#include <QtCore/qglobalstatic.h>
 
-// qDebug and friends
-#include <QtCore/qlogging.h>
-#include <QtCore/qflags.h>
-#include <QtCore/qsysinfo.h>
+// We need to keep QTypeInfo, QSysInfo, QFlags, qDebug & family in qglobal.h for compatibility with Qt 4.
+// Be careful when changing the order of these files.
 #include <QtCore/qtypeinfo.h>
+#include <QtCore/qsysinfo.h>
+#include <QtCore/qlogging.h>
+
+#include <QtCore/qflags.h>
+
+#include <QtCore/qatomic.h>
+#include <QtCore/qglobalstatic.h>
 
 #endif /* __cplusplus */
 
