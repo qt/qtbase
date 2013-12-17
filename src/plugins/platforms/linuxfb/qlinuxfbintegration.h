@@ -70,6 +70,7 @@ public:
 private:
     QLinuxFbScreen *m_primaryScreen;
     QPlatformFontDatabase *m_fontDb;
+
 };
 
 QT_END_NAMESPACE
