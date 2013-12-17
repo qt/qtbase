@@ -44,7 +44,7 @@ w->setWindowState(w->windowState() ^ Qt::WindowFullScreen);
 
 
 //! [1]
-w->setWindowState(w->windowState() & ~Qt::WindowMinimized | Qt::WindowActive);
+w->setWindowState((w->windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
 //! [1]
 
 
