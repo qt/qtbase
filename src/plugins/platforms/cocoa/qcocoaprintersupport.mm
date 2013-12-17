@@ -42,11 +42,13 @@
 #include "qcocoaprintersupport.h"
 
 #ifndef QT_NO_PRINTER
+#include "qcocoaprintdevice.h"
 #include "qprintengine_mac_p.h"
 
 #include <QtPrintSupport/QPrinter>
 #include <QtPrintSupport/QPrinterInfo>
 #include <private/qprinterinfo_p.h>
+#include <private/qprintdevice_p.h>
 
 QCocoaPrinterSupport::QCocoaPrinterSupport()
 { }
@@ -67,6 +69,39 @@ QPaintEngine *QCocoaPrinterSupport::createPaintEngine(QPrintEngine *printEngine,
         the cast here allows conversion of QMacPrintEngine* to QPaintEngine*
     */
     return static_cast<QMacPrintEngine *>(printEngine);
+}
+
+QPrintDevice QCocoaPrinterSupport::createPrintDevice(const QString &id)
+{
+    return QPlatformPrinterSupport::createPrintDevice(new QCocoaPrintDevice(id));
+}
+
+QStringList QCocoaPrinterSupport::availablePrintDeviceIds() const
+{
+    QStringList list;
+    QCFType<CFArrayRef> printerList;
+    if (PMServerCreatePrinterList(kPMServerLocal, &printerList) == noErr) {
+        CFIndex count = CFArrayGetCount(printerList);
+        for (CFIndex i = 0; i < count; ++i) {
+            PMPrinter printer = static_cast<PMPrinter>(const_cast<void *>(CFArrayGetValueAtIndex(printerList, i)));
+            list.append(QCFString::toQString(PMPrinterGetID(printer)));
+        }
+    }
+    return list;
+}
+
+QString QCocoaPrinterSupport::defaultPrintDeviceId() const
+{
+    QCFType<CFArrayRef> printerList;
+    if (PMServerCreatePrinterList(kPMServerLocal, &printerList) == noErr) {
+        CFIndex count = CFArrayGetCount(printerList);
+        for (CFIndex i = 0; i < count; ++i) {
+            PMPrinter printer = static_cast<PMPrinter>(const_cast<void *>(CFArrayGetValueAtIndex(printerList, i)));
+            if (PMPrinterIsDefault(printer))
+                return QCFString::toQString(PMPrinterGetID(printer));
+        }
+    }
+    return QString();
 }
 
 QList<QPrinter::PaperSize> QCocoaPrinterSupport::supportedPaperSizes(const QPrinterInfo &printerInfo) const

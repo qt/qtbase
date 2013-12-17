@@ -81,7 +81,7 @@ HEADERS += qcocoaintegration.h \
 
 RESOURCES += qcocoaresources.qrc
 
-LIBS += -framework Cocoa -framework Carbon -framework IOKit
+LIBS += -framework Cocoa -framework Carbon -framework IOKit -lcups
 
 QT += core-private gui-private platformsupport-private
 
@@ -90,11 +90,13 @@ qtHaveModule(widgets) {
         qpaintengine_mac.mm \
         qprintengine_mac.mm \
         qcocoaprintersupport.mm \
+        qcocoaprintdevice.mm \
 
     HEADERS += \
         qpaintengine_mac_p.h \
         qprintengine_mac_p.h \
         qcocoaprintersupport.h \
+        qcocoaprintdevice.h \
 
     QT += widgets-private printsupport-private
 }

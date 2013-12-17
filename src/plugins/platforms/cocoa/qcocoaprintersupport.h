@@ -58,6 +58,10 @@ public:
     QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const Q_DECL_OVERRIDE;
     QList<QPair<QString, QSizeF> > supportedSizesWithNames(const QPrinterInfo &) const Q_DECL_OVERRIDE;
 
+    QPrintDevice createPrintDevice(const QString &id) Q_DECL_OVERRIDE;
+    QStringList availablePrintDeviceIds() const Q_DECL_OVERRIDE;
+    QString defaultPrintDeviceId() const Q_DECL_OVERRIDE;
+
     QList<QPrinterInfo> availablePrinters() Q_DECL_OVERRIDE;
     QPrinterInfo printerInfo(const QString &printerName) Q_DECL_OVERRIDE;
 
