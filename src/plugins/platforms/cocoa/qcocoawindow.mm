@@ -942,10 +942,11 @@ void QCocoaWindow::setNSWindow(NSWindow *window)
     [window setReleasedWhenClosed : NO];
 
 
-    [[NSNotificationCenter defaultCenter] addObserver:m_contentView
-                                          selector:@selector(windowNotification:)
-                                          name:nil // Get all notifications
-                                          object:m_nsWindow];
+    if (m_qtView)
+        [[NSNotificationCenter defaultCenter] addObserver:m_qtView
+                                              selector:@selector(windowNotification:)
+                                              name:nil // Get all notifications
+                                              object:m_nsWindow];
 
     [m_contentView setPostsFrameChangedNotifications: NO];
     [window setContentView:m_contentView];
