@@ -459,10 +459,20 @@ static const ushort requiredUnicodeBits[QFontDatabase::WritingSystemsCount][2] =
 };
 
 enum {
+    Latin1CsbBit = 0,
+    CentralEuropeCsbBit = 1,
+    TurkishCsbBit = 4,
+    BalticCsbBit = 7,
+    CyrillicCsbBit = 2,
+    GreekCsbBit = 3,
+    HebrewCsbBit = 5,
+    ArabicCsbBit = 6,
+    VietnameseCsbBit = 8,
     SimplifiedChineseCsbBit = 18,
     TraditionalChineseCsbBit = 20,
     JapaneseCsbBit = 17,
-    KoreanCsbBit = 21
+    KoreanCsbBit = 19,
+    KoreanJohabCsbBit = 21
 };
 
 /*!
@@ -492,6 +502,36 @@ QSupportedWritingSystems QPlatformFontDatabase::writingSystemsFromTrueTypeBits(q
             }
         }
     }
+    if (codePageRange[0] & ((1 << Latin1CsbBit) | (1 << CentralEuropeCsbBit) | (1 << TurkishCsbBit) | (1 << BalticCsbBit))) {
+        writingSystems.setSupported(QFontDatabase::Latin);
+        hasScript = true;
+        //qDebug("font %s supports Latin", familyName.latin1());
+    }
+    if (codePageRange[0] & (1 << CyrillicCsbBit)) {
+        writingSystems.setSupported(QFontDatabase::Cyrillic);
+        hasScript = true;
+        //qDebug("font %s supports Cyrillic", familyName.latin1());
+    }
+    if (codePageRange[0] & (1 << GreekCsbBit)) {
+        writingSystems.setSupported(QFontDatabase::Greek);
+        hasScript = true;
+        //qDebug("font %s supports Greek", familyName.latin1());
+    }
+    if (codePageRange[0] & (1 << HebrewCsbBit)) {
+        writingSystems.setSupported(QFontDatabase::Hebrew);
+        hasScript = true;
+        //qDebug("font %s supports Hebrew", familyName.latin1());
+    }
+    if (codePageRange[0] & (1 << ArabicCsbBit)) {
+        writingSystems.setSupported(QFontDatabase::Arabic);
+        hasScript = true;
+        //qDebug("font %s supports Arabic", familyName.latin1());
+    }
+    if (codePageRange[0] & (1 << VietnameseCsbBit)) {
+        writingSystems.setSupported(QFontDatabase::Vietnamese);
+        hasScript = true;
+        //qDebug("font %s supports Vietnamese", familyName.latin1());
+    }
     if (codePageRange[0] & (1 << SimplifiedChineseCsbBit)) {
         writingSystems.setSupported(QFontDatabase::SimplifiedChinese);
         hasScript = true;
@@ -507,7 +547,7 @@ QSupportedWritingSystems QPlatformFontDatabase::writingSystemsFromTrueTypeBits(q
         hasScript = true;
         //qDebug("font %s supports Japanese", familyName.latin1());
     }
-    if (codePageRange[0] & (1 << KoreanCsbBit)) {
+    if (codePageRange[0] & ((1 << KoreanCsbBit) | (1 << KoreanJohabCsbBit))) {
         writingSystems.setSupported(QFontDatabase::Korean);
         hasScript = true;
         //qDebug("font %s supports Korean", familyName.latin1());
