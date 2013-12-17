@@ -26,8 +26,9 @@
 ****************************************************************************/
 
 /*!
-    \example xml/xmlstreamlint
+    \example xmlstreamlint
     \title XML Stream Lint Example
+    \ingroup xml-examples
 
     The XML Stream Lint example provides a simple command line utility that
     accepts a file name as its single argument and writes it to the standard
@@ -49,19 +50,19 @@
     operates on the input file object; writing is handled by an instance of
     QXmlStreamWriter operating on the output file object:
 
-    \snippet examples/xml/xmlstreamlint/main.cpp 0
+    \snippet xmlstreamlint/main.cpp 0
 
     The work of parsing and rewriting the XML is done in a while loop, and is
     driven by input from the reader:
 
-    \snippet examples/xml/xmlstreamlint/main.cpp 1
+    \snippet xmlstreamlint/main.cpp 1
 
     If more input is available, the next token from the input file is read
     and parsed. If an error occurred, information is written to the standard
     error file via a stream, and the example exits by returning a non-zero
     value from the main function.
 
-    \snippet examples/xml/xmlstreamlint/main.cpp 2
+    \snippet xmlstreamlint/main.cpp 2
 
     For valid input, the writer is fed the current token from the reader,
     and this is written to the output file that was specified when it was
