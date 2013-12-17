@@ -1342,11 +1342,6 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 {
     Q_UNUSED(replacementRange)
 
-    if (m_sendKeyEvent && m_composingText.isEmpty()) {
-        // don't send input method events for simple text input (let handleKeyEvent send key events instead)
-        return;
-    }
-
     QString commitString;
     if ([aString length]) {
         if ([aString isKindOfClass:[NSAttributedString class]]) {
