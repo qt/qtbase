@@ -47,6 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QSqlErrorPrivate;
 
 class Q_SQL_EXPORT QSqlError
 {
@@ -83,10 +84,16 @@ public:
 #endif
 
 private:
-    QString driverError;
-    QString databaseError;
-    ErrorType errorType;
-    int errorNumber;
+    // ### Qt6: Keep the pointer and remove the rest.
+    QString unused1;
+    QString unused2;
+    union {
+          QSqlErrorPrivate *d;
+          struct {
+              ErrorType unused3;
+              int unused4;
+          } unused5;
+      };
 };
 
 #ifndef QT_NO_DEBUG_STREAM

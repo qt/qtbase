@@ -53,6 +53,16 @@ QDebug operator<<(QDebug dbg, const QSqlError &s)
 }
 #endif
 
+class QSqlErrorPrivate
+{
+public:
+    QString driverError;
+    QString databaseError;
+    QSqlError::ErrorType errorType;
+    int errorNumber;
+};
+
+
 /*!
     \class QSqlError
     \brief The QSqlError class provides SQL database error information.
@@ -88,18 +98,23 @@ QDebug operator<<(QDebug dbg, const QSqlError &s)
 
 QSqlError::QSqlError(const QString& driverText, const QString& databaseText, ErrorType type,
                     int number)
-    : driverError(driverText), databaseError(databaseText), errorType(type), errorNumber(number)
 {
+    d = new QSqlErrorPrivate;
+
+    d->driverError = driverText;
+    d->databaseError = databaseText;
+    d->errorType = type;
+    d->errorNumber = number;
 }
 
 /*!
     Creates a copy of \a other.
 */
 QSqlError::QSqlError(const QSqlError& other)
-    : driverError(other.driverError), databaseError(other.databaseError),
-      errorType(other.errorType),
-      errorNumber(other.errorNumber)
 {
+    d = new QSqlErrorPrivate;
+
+    *d = *other.d;
 }
 
 /*!
@@ -108,10 +123,7 @@ QSqlError::QSqlError(const QSqlError& other)
 
 QSqlError& QSqlError::operator=(const QSqlError& other)
 {
-    driverError = other.driverError;
-    databaseError = other.databaseError;
-    errorType = other.errorType;
-    errorNumber = other.errorNumber;
+    *d = *other.d;
     return *this;
 }
 
@@ -121,7 +133,7 @@ QSqlError& QSqlError::operator=(const QSqlError& other)
 
 bool QSqlError::operator==(const QSqlError& other) const
 {
-    return (errorType == other.errorType);
+    return (d->errorType == other.d->errorType);
 }
 
 
@@ -131,7 +143,7 @@ bool QSqlError::operator==(const QSqlError& other) const
 
 bool QSqlError::operator!=(const QSqlError& other) const
 {
-    return (errorType != other.errorType);
+    return (d->errorType != other.d->errorType);
 }
 
 
@@ -141,6 +153,7 @@ bool QSqlError::operator!=(const QSqlError& other) const
 
 QSqlError::~QSqlError()
 {
+    delete d;
 }
 
 /*!
@@ -151,7 +164,7 @@ QSqlError::~QSqlError()
 */
 QString QSqlError::driverText() const
 {
-    return driverError;
+    return d->driverError;
 }
 
 /*!
@@ -169,7 +182,7 @@ QString QSqlError::driverText() const
 #if QT_DEPRECATED_SINCE(5, 1)
 void QSqlError::setDriverText(const QString& driverText)
 {
-    driverError = driverText;
+    d->driverError = driverText;
 }
 #endif
 
@@ -182,7 +195,7 @@ void QSqlError::setDriverText(const QString& driverText)
 
 QString QSqlError::databaseText() const
 {
-    return databaseError;
+    return d->databaseError;
 }
 
 /*!
@@ -200,7 +213,7 @@ QString QSqlError::databaseText() const
 #if QT_DEPRECATED_SINCE(5, 1)
 void QSqlError::setDatabaseText(const QString& databaseText)
 {
-    databaseError = databaseText;
+    d->databaseError = databaseText;
 }
 #endif
 
@@ -210,7 +223,7 @@ void QSqlError::setDatabaseText(const QString& databaseText)
 
 QSqlError::ErrorType QSqlError::type() const
 {
-    return errorType;
+    return d->errorType;
 }
 
 /*!
@@ -228,7 +241,7 @@ QSqlError::ErrorType QSqlError::type() const
 #if QT_DEPRECATED_SINCE(5, 1)
 void QSqlError::setType(ErrorType type)
 {
-    errorType = type;
+    d->errorType = type;
 }
 #endif
 
@@ -239,7 +252,7 @@ void QSqlError::setType(ErrorType type)
 
 int QSqlError::number() const
 {
-    return errorNumber;
+    return d->errorNumber;
 }
 
 /*!
@@ -257,7 +270,7 @@ int QSqlError::number() const
 #if QT_DEPRECATED_SINCE(5, 1)
 void QSqlError::setNumber(int number)
 {
-    errorNumber = number;
+    d->errorNumber = number;
 }
 #endif
 
@@ -270,10 +283,10 @@ void QSqlError::setNumber(int number)
 
 QString QSqlError::text() const
 {
-    QString result = databaseError;
-    if (!databaseError.endsWith(QLatin1String("\n")))
+    QString result = d->databaseError;
+    if (!d->databaseError.endsWith(QLatin1String("\n")))
         result += QLatin1Char(' ');
-    result += driverError;
+    result += d->driverError;
     return result;
 }
 
@@ -287,7 +300,7 @@ QString QSqlError::text() const
 */
 bool QSqlError::isValid() const
 {
-    return errorType != NoError;
+    return d->errorType != NoError;
 }
 
 QT_END_NAMESPACE
