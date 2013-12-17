@@ -450,15 +450,21 @@ private:
     mutable int q_cachedEffectiveLastRows[NOrientations];
     mutable quint8 q_cachedConstraintOrientation : 3;
 
+    // this is useful to cache
+    mutable QGridLayoutBox q_totalBoxes[NOrientations];
+    enum {
+        NotCached = -2,             // Cache is empty. Happens when the engine is invalidated.
+        CachedWithNoConstraint = -1 // cache has a totalBox without any HFW/WFH constraints.
+        // >= 0                     // cache has a totalBox with this specific constraint.
+    };
+    mutable qreal q_totalBoxCachedConstraints[NOrientations];   // holds the constraint used for the cached totalBox
+
     // Layout item input
     mutable QGridLayoutRowData q_columnData;
     mutable QGridLayoutRowData q_rowData;
-    mutable QGridLayoutBox q_totalBoxes[NOrientations];
 
     // Output
     mutable QSizeF q_cachedSize;
-    mutable bool q_totalBoxesValid;
-    mutable bool q_sizeHintValid[NOrientations];
     mutable QVector<qreal> q_xx;
     mutable QVector<qreal> q_yy;
     mutable QVector<qreal> q_widths;

@@ -983,9 +983,10 @@ void QGridLayoutEngine::invalidate()
     q_cachedEffectiveFirstRows[Ver] = -1;
     q_cachedEffectiveLastRows[Hor] = -1;
     q_cachedEffectiveLastRows[Ver] = -1;
-    q_totalBoxesValid = false;
-    q_sizeHintValid[Hor] = false;
-    q_sizeHintValid[Ver] = false;
+
+    q_totalBoxCachedConstraints[Hor] = NotCached;
+    q_totalBoxCachedConstraints[Ver] = NotCached;
+
     q_cachedSize = QSizeF();
     q_cachedConstraintOrientation = UnknownConstraint;
 }
@@ -1530,7 +1531,11 @@ void QGridLayoutEngine::ensureColumnAndRowData(QGridLayoutRowData *rowData, QGri
                                                const QAbstractLayoutStyleInfo *styleInfo) const
 {
     const int o = (orientation == Qt::Vertical ? Ver : Hor);
-    if (q_sizeHintValid[o] && !colPositions && !colSizes) {
+    const int cc = columnCount(orientation);
+
+    const qreal constraint = (colPositions && colSizes && hasDynamicConstraint()) ? (colPositions[cc - 1] + colSizes[cc - 1]) : qreal(CachedWithNoConstraint);
+    qreal &cachedConstraint = q_totalBoxCachedConstraints[o];
+    if (cachedConstraint == constraint) {
         if (totalBox != &q_totalBoxes[o])
             *totalBox = q_totalBoxes[o];
          return;
@@ -1541,10 +1546,10 @@ void QGridLayoutEngine::ensureColumnAndRowData(QGridLayoutRowData *rowData, QGri
     rowData->distributeMultiCells(rowInfo);
     *totalBox = rowData->totalBox(0, rowCount(orientation));
 
-    if (!colPositions && !colSizes) {
+    if (totalBox != &q_totalBoxes[o])
         q_totalBoxes[o] = *totalBox;
-        q_sizeHintValid[o] = true;
-    }
+
+    cachedConstraint = constraint;
 }
 
 /**
@@ -1593,10 +1598,9 @@ Qt::Orientation QGridLayoutEngine::constraintOrientation() const
 void QGridLayoutEngine::ensureGeometries(const QSizeF &size,
                                          const QAbstractLayoutStyleInfo *styleInfo) const
 {
-    if (!styleInfo->hasChanged() && q_totalBoxesValid && q_cachedSize == size)
+    if (!styleInfo->hasChanged() && q_cachedSize == size)
         return;
 
-    q_totalBoxesValid = true;
     q_cachedSize = size;
 
     q_xx.resize(columnCount());
@@ -1606,7 +1610,7 @@ void QGridLayoutEngine::ensureGeometries(const QSizeF &size,
     q_descents.resize(rowCount());
 
     if (constraintOrientation() != Qt::Horizontal) {
-        //We might have items whose width depends on their height
+        //We might have items whose height depends on their width (HFW)
         ensureColumnAndRowData(&q_columnData, &q_totalBoxes[Hor], NULL, NULL, Qt::Horizontal, styleInfo);
         //Calculate column widths and positions, and put results in q_xx.data() and q_widths.data() so that we can use this information as
         //constraints to find the row heights
@@ -1617,7 +1621,7 @@ void QGridLayoutEngine::ensureGeometries(const QSizeF &size,
         q_rowData.calculateGeometries(0, rowCount(), size.height(), q_yy.data(), q_heights.data(),
                 q_descents.data(), q_totalBoxes[Ver], q_infos[Ver]);
     } else {
-        //We have items whose height depends on their width
+        //We have items whose width depends on their height (WFH)
         ensureColumnAndRowData(&q_rowData, &q_totalBoxes[Ver], NULL, NULL, Qt::Vertical, styleInfo);
         //Calculate row heights and positions, and put results in q_yy.data() and q_heights.data() so that we can use this information as
         //constraints to find the column widths
