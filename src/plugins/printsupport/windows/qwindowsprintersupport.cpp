@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qwindowsprintersupport.h"
+#include "qwindowsprintdevice.h"
 
 #include <QtCore/QList>
 #include <QtCore/QScopedArrayPointer>
@@ -47,6 +48,7 @@
 #include <qprintengine_win_p.h>
 #include <private/qpaintengine_alpha_p.h>
 #include <private/qprinterinfo_p.h>
+#include <private/qprintdevice_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,6 +71,21 @@ QPaintEngine *QWindowsPrinterSupport::createPaintEngine(QPrintEngine *engine, QP
 {
     Q_UNUSED(printerMode)
     return static_cast<QWin32PrintEngine *>(engine);
+}
+
+QPrintDevice QWindowsPrinterSupport::createPrintDevice(const QString &id)
+{
+    return QPlatformPrinterSupport::createPrintDevice(new QWindowsPrintDevice(id));
+}
+
+QStringList QWindowsPrinterSupport::availablePrintDeviceIds() const
+{
+    return QWindowsPrintDevice::availablePrintDeviceIds();
+}
+
+QString QWindowsPrinterSupport::defaultPrintDeviceId() const
+{
+    return QWindowsPrintDevice::defaultPrintDeviceId();
 }
 
 QList<QPrinter::PaperSize> QWindowsPrinterSupport::supportedPaperSizes(const QPrinterInfo &printerInfo) const
