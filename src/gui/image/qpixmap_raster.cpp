@@ -135,9 +135,14 @@ bool QRasterPlatformPixmap::fromData(const uchar *buffer, uint len, const char *
 void QRasterPlatformPixmap::fromImage(const QImage &sourceImage,
                                   Qt::ImageConversionFlags flags)
 {
-    Q_UNUSED(flags);
     QImage image = sourceImage;
     createPixmapForImage(image, flags, /* inplace = */false);
+}
+
+void QRasterPlatformPixmap::fromImageInPlace(QImage &sourceImage,
+                                             Qt::ImageConversionFlags flags)
+{
+    createPixmapForImage(sourceImage, flags, /* inplace = */true);
 }
 
 void QRasterPlatformPixmap::fromImageReader(QImageReader *imageReader,

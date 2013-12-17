@@ -1617,6 +1617,28 @@ QPixmap QPixmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
 }
 
 /*!
+    \fn QPixmap QPixmap::fromImage(QImage &&image, Qt::ImageConversionFlags flags)
+    \since 5.3
+    \overload
+
+    Converts the given \a image to a pixmap without copying if possible.
+*/
+
+
+/*!
+    \internal
+*/
+QPixmap QPixmap::fromImageInPlace(QImage &image, Qt::ImageConversionFlags flags)
+{
+    if (image.isNull())
+        return QPixmap();
+
+    QScopedPointer<QPlatformPixmap> data(QGuiApplicationPrivate::platformIntegration()->createPlatformPixmap(QPlatformPixmap::PixmapType));
+    data->fromImageInPlace(image, flags);
+    return QPixmap(data.take());
+}
+
+/*!
     \fn QPixmap QPixmap::fromImageReader(QImageReader *imageReader, Qt::ImageConversionFlags flags)
 
     Create a QPixmap from an image read directly from an \a imageReader.

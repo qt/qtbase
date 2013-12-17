@@ -79,6 +79,12 @@ public:
     virtual void resize(int width, int height) = 0;
     virtual void fromImage(const QImage &image,
                            Qt::ImageConversionFlags flags) = 0;
+    virtual void fromImageInPlace(QImage &image,
+                                  Qt::ImageConversionFlags flags)
+    {
+        fromImage(image, flags);
+    }
+
     virtual void fromImageReader(QImageReader *imageReader,
                                  Qt::ImageConversionFlags flags);
 
