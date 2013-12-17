@@ -32,6 +32,7 @@ HEADERS += \
 SOURCES += \
         image/qbitmap.cpp \
         image/qimage.cpp \
+        image/qimage_conversions.cpp \
         image/qimageiohandler.cpp \
         image/qimagereader.cpp \
         image/qimagewriter.cpp \
