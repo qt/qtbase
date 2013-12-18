@@ -373,9 +373,9 @@ void QXcbScreen::handleScreenChange(xcb_randr_screen_change_notify_event_t *chan
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry());
     QWindowSystemInterface::handleScreenAvailableGeometryChange(QPlatformScreen::screen(), availableGeometry());
     QWindowSystemInterface::handleScreenOrientationChange(QPlatformScreen::screen(), m_orientation);
-    QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(QPlatformScreen::screen(),
-        Q_MM_PER_INCH * m_virtualSize.width() / m_virtualSizeMillimeters.width(),
-        Q_MM_PER_INCH * m_virtualSize.height() / m_virtualSizeMillimeters.height());
+
+    QDpi ldpi = logicalDpi();
+    QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(QPlatformScreen::screen(), ldpi.first, ldpi.second);
 }
 
 void QXcbScreen::updateGeometry(xcb_timestamp_t timestamp)
