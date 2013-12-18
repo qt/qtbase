@@ -174,6 +174,9 @@ class TestClassinfoWithEscapes: public QObject
     Q_OBJECT
     Q_CLASSINFO("escaped", "\"bar\"")
     Q_CLASSINFO("\"escaped\"", "foo")
+    Q_CLASSINFO("cpp c*/omment", "f/*oo")
+    Q_CLASSINFO("endswith\\", "Or?\?/")
+    Q_CLASSINFO("newline\n inside\n", "Or \r")
 public slots:
     void slotWithAReallyLongName(int)
     { }
@@ -799,6 +802,14 @@ void tst_Moc::classinfoWithEscapes()
 {
     const QMetaObject *mobj = &TestClassinfoWithEscapes::staticMetaObject;
     QCOMPARE(mobj->methodCount() - mobj->methodOffset(), 1);
+
+    QCOMPARE(mobj->classInfoCount(), 5);
+    QCOMPARE(mobj->classInfo(2).name(), "cpp c*/omment");
+    QCOMPARE(mobj->classInfo(2).value(), "f/*oo");
+    QCOMPARE(mobj->classInfo(3).name(), "endswith\\");
+    QCOMPARE(mobj->classInfo(3).value(), "Or?\?/");
+    QCOMPARE(mobj->classInfo(4).name(), "newline\n inside\n");
+    QCOMPARE(mobj->classInfo(4).value(), "Or \r");
 
     QMetaMethod mm = mobj->method(mobj->methodOffset());
     QCOMPARE(mm.methodSignature(), QByteArray("slotWithAReallyLongName(int)"));

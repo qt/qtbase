@@ -266,10 +266,12 @@ void Generator::generateCode()
     {
         int idx = 0;
         for (int i = 0; i < strings.size(); ++i) {
-            if (i)
-                fprintf(out, ",\n");
             const QByteArray &str = strings.at(i);
             fprintf(out, "QT_MOC_LITERAL(%d, %d, %d)", i, idx, str.length());
+            if (i != strings.size() - 1)
+                fputc(',', out);
+            const QByteArray comment = str.length() > 32 ? str.left(29) + "..." : str;
+            fprintf(out, " // \"%s\"\n", comment.constData());
             idx += str.length() + 1;
             for (int j = 0; j < str.length(); ++j) {
                 if (str.at(j) == '\\') {
