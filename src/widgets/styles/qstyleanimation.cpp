@@ -46,6 +46,9 @@
 
 QT_BEGIN_NAMESPACE
 
+static const qreal ScrollBarFadeOutDuration = 200.0;
+static const qreal ScrollBarFadeOutDelay = 450.0;
+
 QStyleAnimation::QStyleAnimation(QObject *target) : QAbstractAnimation(target),
     _delay(0), _duration(-1), _startTime(QTime::currentTime())
 {
@@ -299,6 +302,45 @@ void QBlendStyleAnimation::updateCurrentTime(int time)
     }
 
     _current = blendedImage(_start, _end, alpha);
+}
+
+QScrollbarStyleAnimation::QScrollbarStyleAnimation(Mode mode, QObject *target) : QNumberStyleAnimation(target), _mode(mode), _active(false)
+{
+    switch (mode) {
+    case Activating:
+        setDuration(ScrollBarFadeOutDuration);
+        setStartValue(0.0);
+        setEndValue(1.0);
+        break;
+    case Deactivating:
+        setDuration(ScrollBarFadeOutDelay + ScrollBarFadeOutDuration);
+        setDelay(ScrollBarFadeOutDelay);
+        setStartValue(1.0);
+        setEndValue(0.0);
+        break;
+    }
+}
+
+QScrollbarStyleAnimation::Mode QScrollbarStyleAnimation::mode() const
+{
+    return _mode;
+}
+
+bool QScrollbarStyleAnimation::wasActive() const
+{
+    return _active;
+}
+
+void QScrollbarStyleAnimation::setActive(bool active)
+{
+    _active = active;
+}
+
+void QScrollbarStyleAnimation::updateCurrentTime(int time)
+{
+    QNumberStyleAnimation::updateCurrentTime(time);
+    if (_mode == Deactivating && qFuzzyIsNull(currentValue()))
+        target()->setProperty("visible", false);
 }
 
 QT_END_NAMESPACE

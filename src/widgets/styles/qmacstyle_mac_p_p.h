@@ -156,8 +156,6 @@ public:
     static const int BevelButtonW;
     static const int BevelButtonH;
     static const int PushButtonContentPadding;
-    static const qreal ScrollBarFadeOutDuration;
-    static const qreal ScrollBarFadeOutDelay;
 
     enum Animates { AquaPushButton, AquaProgressBar, AquaListViewItemOpen, AquaScrollBar };
     static ThemeDrawState getDrawState(QStyle::State flags);
@@ -214,49 +212,6 @@ public:
     void *nsscroller;
 #endif
     void *indicatorBranchButtonCell;
-};
-
-class QScrollbarAnimation : public QNumberStyleAnimation
-{
-    Q_OBJECT
-
-public:
-    QScrollbarAnimation(QObject *target) : QNumberStyleAnimation(target), _active(false)
-    { }
-
-    bool wasActive() const { return _active; }
-    void setActive(bool active) { _active = active; }
-
-    bool isFadingOut() const { return _isFadingOut; }
-
-    void setFadingOut()
-    {
-        _isFadingOut = true;
-        setDuration(QMacStylePrivate::ScrollBarFadeOutDelay + QMacStylePrivate::ScrollBarFadeOutDuration);
-        setDelay(QMacStylePrivate::ScrollBarFadeOutDelay);
-        setStartValue(1.0);
-        setEndValue(0.0);
-    }
-
-    void setExpanding()
-    {
-        _isFadingOut = false;
-        setDuration(QMacStylePrivate::ScrollBarFadeOutDuration);
-        setStartValue(0.0);
-        setEndValue(1.0);
-    }
-
-private slots:
-    void updateCurrentTime(int time)
-    {
-        QNumberStyleAnimation::updateCurrentTime(time);
-        if (_isFadingOut && qFuzzyIsNull(currentValue()))
-            target()->setProperty("visible", false);
-    }
-
-private:
-    bool _active;
-    bool _isFadingOut;
 };
 
 QT_END_NAMESPACE
