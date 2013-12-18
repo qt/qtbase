@@ -6596,9 +6596,8 @@ void tst_QNetworkReply::authenticationCacheAfterCancel()
         QTestEventLoop::instance().enterLoop(10);
         QVERIFY(!QTestEventLoop::instance().timeout());
 
-        QEXPECT_FAIL("http+socksauth", "QTBUG-23136 - danted accepts bad authentication but blocks the connection", Continue);
-        QEXPECT_FAIL("https+socksauth", "QTBUG-23136 - danted accepts bad authentication but blocks the connection", Continue);
-
+        if (reply->error() == QNetworkReply::HostNotFoundError)
+            QSKIP("skip because of quirk in the old test server");
         QCOMPARE(reply->error(), QNetworkReply::ProxyAuthenticationRequiredError);
         QCOMPARE(authSpy.count(), 0);
         QVERIFY(proxyAuthSpy.count() > 0);
