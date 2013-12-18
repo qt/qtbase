@@ -55,9 +55,9 @@ class QMacPasteboard
 {
     struct Promise {
         Promise() : itemId(0), convertor(0) { }
-        Promise(int itemId, QMacPasteboardMime *c, QString m, QVariant d, int o=0) : itemId(itemId), offset(o), convertor(c), mime(m), data(d) { }
+        Promise(int itemId, QMacInternalPasteboardMime *c, QString m, QVariant d, int o=0) : itemId(itemId), offset(o), convertor(c), mime(m), data(d) { }
         int itemId, offset;
-        QMacPasteboardMime *convertor;
+        QMacInternalPasteboardMime *convertor;
         QString mime;
         QVariant data;
     };
