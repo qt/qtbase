@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,42 +39,35 @@
 **
 ****************************************************************************/
 
-#ifndef QXCBBACKINGSTORE_H
-#define QXCBBACKINGSTORE_H
+#include "openglwidget.h"
+#include <QApplication>
+#include <QPushButton>
+#include <QMdiArea>
+#include <QLCDNumber>
+#include <QTimer>
 
-#include <qpa/qplatformbackingstore.h>
 
-#include <xcb/xcb.h>
-
-#include "qxcbobject.h"
-
-QT_BEGIN_NAMESPACE
-
-class QXcbShmImage;
-
-class QXcbBackingStore : public QXcbObject, public QPlatformBackingStore
+int main(int argc, char *argv[])
 {
-public:
-    QXcbBackingStore(QWindow *widget);
-    ~QXcbBackingStore();
+    QApplication a(argc, argv);
 
-    QPaintDevice *paintDevice();
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
-#ifndef QT_NO_OPENGL
-    void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
-                         QPlatformTextureList *textures, QOpenGLContext *context);
-#endif
-    QImage toImage() const;
-    void resize(const QSize &size, const QRegion &staticContents);
-    bool scroll(const QRegion &area, int dx, int dy);
+    QMdiArea w;
+    w.resize(400,400);
 
-    void beginPaint(const QRegion &);
+    OpenGLWidget *glw = new OpenGLWidget;
+    w.addSubWindow(glw);
+    glw->setMinimumSize(100,100);
 
-private:
-    QXcbShmImage *m_image;
-    bool m_syncingResize;
-};
+    OpenGLWidget *glw2 = new OpenGLWidget;
+    glw2->setMinimumSize(100,100);
+    w.addSubWindow(glw2);
 
-QT_END_NAMESPACE
+    QLCDNumber *lcd = new QLCDNumber;
+    lcd->display(1337);
+    lcd->setMinimumSize(300,100);
+    w.addSubWindow(lcd);
 
-#endif
+    w.show();
+
+    return a.exec();
+}

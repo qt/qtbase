@@ -92,6 +92,12 @@ QWidgetWindow::QWidgetWindow(QWidget *widget)
     , m_widget(widget)
 {
     updateObjectName();
+    // Enable QOpenGLWidget/QQuickWidget children if the platform plugin supports it,
+    // and the application developer has not explicitly disabled it.
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::RasterGLSurface)
+        && !QApplication::testAttribute(Qt::AA_ForceRasterWidgets)) {
+        setSurfaceType(QSurface::RasterGLSurface);
+    }
     connect(m_widget, &QObject::objectNameChanged, this, &QWidgetWindow::updateObjectName);
 }
 

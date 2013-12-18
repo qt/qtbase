@@ -78,6 +78,7 @@
 #include "private/qstyle_p.h"
 #include "qfileinfo.h"
 #include <QtGui/qinputmethod.h>
+#include <QtGui/qopenglcontext.h>
 
 #include <private/qgraphicseffect_p.h>
 #include <qbackingstore.h>
@@ -270,6 +271,8 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , isMoved(0)
       , usesDoubleBufferedGLContext(0)
       , mustHaveWindowHandle(0)
+      , renderToTexture(0)
+      , textureChildSeen(0)
 #ifndef QT_NO_IM
       , inheritsInputMethodHints(0)
 #endif
@@ -1558,6 +1561,7 @@ void QWidgetPrivate::createTLExtra()
         x->inRepaint = false;
         x->embedded = 0;
         x->window = 0;
+        x->shareContext = 0;
         x->screenIndex = 0;
 #ifdef Q_WS_MAC
         x->wasMaximized = false;
@@ -5133,9 +5137,17 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                      << "geometry ==" << QRect(q->mapTo(q->window(), QPoint(0, 0)), q->size());
 #endif
 
-            //actually send the paint event
-            QPaintEvent e(toBePainted);
-            QCoreApplication::sendSpontaneousEvent(q, &e);
+            if (renderToTexture) {
+                // This widget renders into a texture which is composed later. We just need to
+                // punch a hole in the backingstore, so the texture will be visible.
+                QPainter p(q);
+                p.setCompositionMode(QPainter::CompositionMode_Source);
+                p.fillRect(q->rect(), Qt::transparent);
+            } else {
+                //actually send the paint event
+                QPaintEvent e(toBePainted);
+                QCoreApplication::sendSpontaneousEvent(q, &e);
+            }
 
             // Native widgets need to be marked dirty on screen so painting will be done in correct context
             if (backingStore && !onScreen && !asRoot && (q->internalWinId() || !q->nativeParentWidget()->isWindow()))
@@ -9637,6 +9649,13 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
     if (desktopWidget)
         parent = 0;
 
+#ifndef QT_NO_OPENGL
+    if (d->textureChildSeen && parent) {
+        // set the textureChildSeen flag up the whole parent chain
+        QWidgetPrivate::get(parent)->setTextureChildSeen();
+    }
+#endif
+
     if (QWidgetBackingStore *oldBs = oldtlw->d_func()->maybeBackingStore()) {
         if (newParent)
             oldBs->removeDirtyWidget(this);
@@ -11108,7 +11127,25 @@ void QWidgetPrivate::adjustQuitOnCloseAttribute()
     }
 }
 
-
+QOpenGLContext *QWidgetPrivate::shareContext() const
+{
+#ifdef QT_NO_OPENGL
+    return 0;
+#else
+    if (!extra || !extra->topextra || !extra->topextra->window) {
+        qWarning() << "Asking for share context for widget that does not have a window handle";
+        return 0;
+    }
+    QWidgetPrivate *that = const_cast<QWidgetPrivate *>(this);
+    if (!extra->topextra->shareContext) {
+        QOpenGLContext *ctx = new QOpenGLContext();
+        ctx->setFormat(extra->topextra->window->format());
+        ctx->create();
+        that->extra->topextra->shareContext = ctx;
+    }
+    return that->extra->topextra->shareContext;
+#endif // QT_NO_OPENGL
+}
 
 Q_WIDGETS_EXPORT QWidgetData *qt_qwidget_data(QWidget *widget)
 {

@@ -761,8 +761,7 @@ bool QOpenGLContext::makeCurrent(QSurface *surface)
 
     if (!surface->surfaceHandle())
         return false;
-
-    if (surface->surfaceType() != QSurface::OpenGLSurface) {
+    if (!surface->supportsOpenGL()) {
         qWarning() << "QOpenGLContext::makeCurrent() called with non-opengl surface" << surface;
         return false;
     }
@@ -837,9 +836,9 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
         return;
     }
 
-    if (surface->surfaceType() != QSurface::OpenGLSurface) {
-         qWarning() << "QOpenGLContext::swapBuffers() called with non-opengl surface";
-         return;
+    if (!surface->supportsOpenGL()) {
+        qWarning() << "QOpenGLContext::swapBuffers() called with non-opengl surface";
+        return;
     }
 
     if (surface->surfaceClass() == QSurface::Window

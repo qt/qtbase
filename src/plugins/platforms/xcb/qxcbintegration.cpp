@@ -284,6 +284,7 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     case MultipleWindows: return true;
     case ForeignWindows: return true;
     case SyncState: return true;
+    case RasterGLSurface: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }

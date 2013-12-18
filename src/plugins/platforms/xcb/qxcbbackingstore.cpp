@@ -280,6 +280,11 @@ void QXcbBackingStore::beginPaint(const QRegion &region)
     }
 }
 
+QImage QXcbBackingStore::toImage() const
+{
+    return m_image && m_image->image() ? *m_image->image() : QImage();
+}
+
 void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
     if (!m_image || m_image->size().isEmpty())
@@ -318,6 +323,25 @@ void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
         xcb_flush(xcb_connection());
     }
 }
+
+#ifndef QT_NO_OPENGL
+void QXcbBackingStore::composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
+                                       QPlatformTextureList *textures, QOpenGLContext *context)
+{
+    QPlatformBackingStore::composeAndFlush(window, region, offset, textures, context);
+
+    Q_XCB_NOOP(connection());
+
+    if (m_syncingResize) {
+        QXcbWindow *platformWindow = static_cast<QXcbWindow *>(window->handle());
+        connection()->sync();
+        m_syncingResize = false;
+        platformWindow->updateSyncRequestCounter();
+    } else {
+        xcb_flush(xcb_connection());
+    }
+}
+#endif // QT_NO_OPENGL
 
 void QXcbBackingStore::resize(const QSize &size, const QRegion &)
 {

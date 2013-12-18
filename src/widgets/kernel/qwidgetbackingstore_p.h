@@ -60,6 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QPlatformTextureList;
+
 struct BeginPaintInfo {
     inline BeginPaintInfo() : wasFlushed(0), nothingToPaint(0), backingStoreRecreated(0) {}
     uint wasFlushed : 1;
@@ -102,10 +104,14 @@ private:
     QVector<QWidget *> dirtyWidgets;
     QVector<QWidget *> *dirtyOnScreenWidgets;
     QList<QWidget *> staticWidgets;
+    QPlatformTextureList *widgetTextures;
     QBackingStore *store;
     uint fullUpdatePending : 1;
+    uint updateRequestSent : 1;
 
     QPoint tlwOffset;
+
+    void sendUpdateRequest(QWidget *widget, bool updateImmediately);
 
     static bool flushPaint(QWidget *widget, const QRegion &rgn);
     static void unflushPaint(QWidget *widget, const QRegion &rgn);

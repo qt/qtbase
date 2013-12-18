@@ -516,6 +516,7 @@ public:
         AA_SynthesizeTouchForUnhandledMouseEvents = 11,
         AA_SynthesizeMouseForUnhandledTouchEvents = 12,
         AA_UseHighDpiPixmaps = 13,
+        AA_ForceRasterWidgets = 14,
 
         // Add new attributes before this line
         AA_AttributeCount

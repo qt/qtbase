@@ -79,3 +79,8 @@ wince*: {
         SOURCES += \
                 kernel/qwidgetsfunctions_wince.cpp
 }
+
+contains(QT_CONFIG, opengl) {
+    HEADERS += kernel/qopenglwidget_p.h
+    SOURCES += kernel/qopenglwidget.cpp
+}

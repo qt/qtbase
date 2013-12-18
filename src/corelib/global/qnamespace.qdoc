@@ -165,6 +165,9 @@
            sizes in layout geometry calculations should typically divide by
            QPixmap::devicePixelRatio() to get device-independent layout geometry.
 
+    \value AA_ForceRasterWidgets Make top-level widgets use pure raster surfaces,
+           and do not support non-native GL-based child widgets.
+
     The following values are obsolete:
 
     \value AA_ImmediateWidgetCreation This attribute is no longer fully

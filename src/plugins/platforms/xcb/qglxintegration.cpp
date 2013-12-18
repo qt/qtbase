@@ -328,7 +328,7 @@ QGLXContext::~QGLXContext()
 bool QGLXContext::makeCurrent(QPlatformSurface *surface)
 {
     bool success = false;
-    Q_ASSERT(surface->surface()->surfaceType() == QSurface::OpenGLSurface);
+    Q_ASSERT(surface->surface()->supportsOpenGL());
 
     Display *dpy = DISPLAY_FROM_XCB(m_screen);
     GLXDrawable glxDrawable = 0;

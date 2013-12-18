@@ -95,7 +95,8 @@ public:
         NonFullScreenWindows,
         NativeWidgets,
         WindowManagement,
-        SyncState
+        SyncState,
+        RasterGLSurface
     };
 
     virtual ~QPlatformIntegration() { }

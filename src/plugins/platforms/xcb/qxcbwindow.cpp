@@ -292,8 +292,6 @@ void QXcbWindow::create()
     if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)) {
 #if defined(XCB_USE_GLX)
         XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen), m_screen->screenNumber(), &m_format);
-        if (!visualInfo && window()->surfaceType() == QSurface::OpenGLSurface)
-            qFatal("Could not initialize GLX");
 #elif defined(XCB_USE_EGL)
         EGLDisplay eglDisplay = connection()->egl_display();
         EGLConfig eglConfig = q_configFromGLFormat(eglDisplay, m_format, true);
@@ -308,9 +306,14 @@ void QXcbWindow::create()
         XVisualInfo *visualInfo;
         int matchingCount = 0;
         visualInfo = XGetVisualInfo(DISPLAY_FROM_XCB(this), VisualIDMask, &visualInfoTemplate, &matchingCount);
-        if (!visualInfo && window()->surfaceType() == QSurface::OpenGLSurface)
-            qFatal("Could not initialize EGL");
 #endif //XCB_USE_GLX
+        if (!visualInfo && window()->surfaceType() == QSurface::OpenGLSurface)
+            qFatal("Could not initialize OpenGL");
+
+        if (!visualInfo && window()->surfaceType() == QSurface::RasterGLSurface) {
+            qWarning("Could not initialize OpenGL for RasterGLSurface, reverting to RasterSurface.");
+            window()->setSurfaceType(QSurface::RasterSurface);
+        }
         if (visualInfo) {
             m_depth = visualInfo->depth;
             m_imageFormat = imageFormatForDepth(m_depth);
