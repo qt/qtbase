@@ -155,6 +155,41 @@ static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
 static inline bool qt_ends_with(const QChar *haystack, int haystackLen,
                                 QLatin1String needle, Qt::CaseSensitivity cs);
 
+#ifdef Q_COMPILER_LAMBDA
+namespace {
+template <uint MaxCount> struct UnrollTailLoop
+{
+    template <typename RetType, typename Functor1, typename Functor2>
+    static inline RetType exec(int count, RetType returnIfExited, Functor1 loopCheck, Functor2 returnIfFailed, int i = 0)
+    {
+        /* equivalent to:
+         *   while (count--) {
+         *       if (loopCheck(i))
+         *           return returnIfFailed(i);
+         *   }
+         *   return returnIfExited;
+         */
+
+        if (!count)
+            return returnIfExited;
+
+        bool check = loopCheck(i);
+        if (check) {
+            const RetType &retval = returnIfFailed(i);
+            return retval;
+        }
+
+        return UnrollTailLoop<MaxCount - 1>::exec(count - 1, returnIfExited, loopCheck, returnIfFailed, i + 1);
+    }
+};
+template <> template <typename RetType, typename Functor1, typename Functor2>
+inline RetType UnrollTailLoop<0>::exec(int, RetType returnIfExited, Functor1, Functor2, int)
+{
+    return returnIfExited;
+}
+}
+#endif
+
 // Unicode case-insensitive comparison
 static int ucstricmp(const ushort *a, const ushort *ae, const ushort *b, const ushort *be)
 {
@@ -256,6 +291,13 @@ static int ucstrncmp(const QChar *a, const QChar *b, int l)
                     - reinterpret_cast<const QChar *>(ptr + distance + idx)->unicode();
         }
     }
+#  ifdef Q_COMPILER_LAMBDA
+    const auto &lambda = [=](int i) -> int {
+        return reinterpret_cast<const QChar *>(ptr)[i].unicode()
+                - reinterpret_cast<const QChar *>(ptr + distance)[i].unicode();
+    };
+    return UnrollTailLoop<7>::exec(l, 0, lambda, lambda);
+#  endif
 #endif
     if (!l)
         return 0;
@@ -361,6 +403,11 @@ static int ucstrncmp(const QChar *a, const uchar *c, int l)
     // reset uc and c
     uc += offset;
     c += offset;
+
+#  ifdef Q_COMPILER_LAMBDA
+    const auto &lambda = [=](int i) { return uc[i] - ushort(c[i]); };
+    return UnrollTailLoop<7>::exec(e - uc, 0, lambda, lambda);
+#  endif
 #endif
 
     while (uc < e) {
@@ -438,6 +485,12 @@ static int findChar(const QChar *str, int len, QChar ch, int from,
                             + _bit_scan_forward(mask)) >> 1;
                 }
             }
+
+#  ifdef Q_COMPILER_LAMBDA
+            return UnrollTailLoop<7>::exec(e - n, -1,
+                                           [=](int i) { return n[i] == c; },
+                                           [=](int i) { return n - s + i; });
+#  endif
 #endif
             --n;
             while (++n != e)
