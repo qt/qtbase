@@ -244,7 +244,7 @@ void Generator::generateCode()
         int len = 0;
         for (int i = 0; i < strings.size(); ++i)
             len += strings.at(i).length() + 1;
-        fprintf(out, "    char stringdata[%d];\n", len + 1);
+        fprintf(out, "    char stringdata[%d];\n", len);
     }
     fprintf(out, "};\n");
 
@@ -316,7 +316,8 @@ void Generator::generateCode()
             col += spanLen;
         }
 
-        fputs("\\0", out);
+        if (i != strings.size() - 1) // skip the last \0 the c++ will add it for us
+            fputs("\\0", out);
         col += len + 2;
     }
 
