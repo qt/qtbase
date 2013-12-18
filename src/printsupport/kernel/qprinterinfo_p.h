@@ -57,32 +57,17 @@
 
 #ifndef QT_NO_PRINTER
 
-#include "QtCore/qlist.h"
-#include "QtCore/qpair.h"
+#include "qprintdevice_p.h"
 
 QT_BEGIN_NAMESPACE
 
 class QPrinterInfoPrivate
 {
 public:
-    QPrinterInfoPrivate(const QString& name = QString()) :
-        name(name), isDefault(false), index(-1), hasPaperSizes(false),
-        hasPaperNames(false)
-    {}
-    ~QPrinterInfoPrivate()
-    {}
+    QPrinterInfoPrivate(const QString& id = QString());
+    ~QPrinterInfoPrivate();
 
-    QString name;
-    QString description;
-    QString location;
-    QString makeAndModel;
-    bool isDefault;
-    int index;  // Internal printer plugin use only
-
-    mutable bool hasPaperSizes;
-    mutable QList<QPrinter::PaperSize> paperSizes;
-    mutable bool hasPaperNames;
-    mutable QList<QPair<QString, QSizeF> > paperNames;
+    QPrintDevice m_printDevice;
 };
 
 QT_END_NAMESPACE

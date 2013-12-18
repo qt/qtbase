@@ -58,18 +58,13 @@
 
 QT_BEGIN_NAMESPACE
 
-QCupsPrinterSupport::QCupsPrinterSupport() : QPlatformPrinterSupport(),
-                                             m_cups(QLatin1String("cups"), 2),
-                                             m_cupsPrinters(0),
-                                             m_cupsPrintersCount(0)
+QCupsPrinterSupport::QCupsPrinterSupport()
+    : QPlatformPrinterSupport()
 {
-    loadCups();
-    loadCupsPrinters();
 }
 
 QCupsPrinterSupport::~QCupsPrinterSupport()
 {
-    freeCupsPrinters();
 }
 
 QPrintEngine *QCupsPrinterSupport::createNativePrintEngine(QPrinter::PrinterMode printerMode)
@@ -119,87 +114,6 @@ QString QCupsPrinterSupport::defaultPrintDeviceId() const
     }
     cupsFreeDests(count, dests);
     return printerId;
-}
-
-QList<QPrinter::PaperSize> QCupsPrinterSupport::supportedPaperSizes(const QPrinterInfo &printerInfo) const
-{
-    return QCUPSSupport::getCupsPrinterPaperSizes(printerIndex(printerInfo));
-}
-
-QList<QPair<QString, QSizeF> > QCupsPrinterSupport::supportedSizesWithNames(const QPrinterInfo &printerInfo) const
-{
-    return QCUPSSupport::getCupsPrinterPaperSizesWithNames(printerIndex(printerInfo));
-}
-
-void QCupsPrinterSupport::loadCups()
-{
-    cupsGetDests = (CupsGetDests) m_cups.resolve("cupsGetDests");
-    cupsFreeDests = (CupsFreeDests) m_cups.resolve("cupsFreeDests");
-    cupsGetOption = (CupsGetOption) m_cups.resolve("cupsGetOption");
-}
-
-void QCupsPrinterSupport::freeCupsPrinters()
-{
-    if (cupsFreeDests && m_cupsPrintersCount) {
-        cupsFreeDests(m_cupsPrintersCount, m_cupsPrinters);
-        m_cupsPrintersCount = 0;
-        m_cupsPrinters = 0;
-    }
-}
-
-void QCupsPrinterSupport::loadCupsPrinters()
-{
-    freeCupsPrinters();
-    m_printers.clear();
-
-    if (cupsGetDests)
-        m_cupsPrintersCount = cupsGetDests(&m_cupsPrinters);
-
-    for (int i = 0; i < m_cupsPrintersCount; ++i) {
-        QString printerName = QString::fromLocal8Bit(m_cupsPrinters[i].name);
-        if (m_cupsPrinters[i].instance)
-            printerName += QLatin1Char('/') + QString::fromLocal8Bit(m_cupsPrinters[i].instance);
-        QString description = cupsOption(i, "printer-info");
-        QString location = cupsOption(i, "printer-location");
-        QString makeAndModel = cupsOption(i, "printer-make-and-model");
-        QPrinterInfo printer = createPrinterInfo(printerName, description, location, makeAndModel,
-                                                 m_cupsPrinters[i].is_default, i);
-        m_printers.append(printer);
-    }
-}
-
-QList<QPrinterInfo> QCupsPrinterSupport::availablePrinters()
-{
-    loadCupsPrinters();
-    return QPlatformPrinterSupport::availablePrinters();
-}
-
-QString QCupsPrinterSupport::printerOption(const QPrinterInfo &printer, const QString &key) const
-{
-    return cupsOption(printerIndex(printer), key);
-}
-
-QString QCupsPrinterSupport::cupsOption(int i, const QString &key) const
-{
-    QString value;
-    if (i > -1 && i < m_cupsPrintersCount && cupsGetOption)
-        value = cupsGetOption(key.toLocal8Bit(), m_cupsPrinters[i].num_options, m_cupsPrinters[i].options);
-    return value;
-}
-
-PrinterOptions QCupsPrinterSupport::printerOptions(const QPrinterInfo &printer) const
-{
-    PrinterOptions options;
-    int p = printerIndex(printer);
-    if (p <= -1 || p >= m_cupsPrintersCount)
-        return options;
-    int numOptions = m_cupsPrinters[p].num_options;
-    for (int i = 0; i < numOptions; ++i) {
-        QString name = m_cupsPrinters[p].options[i].name;
-        QString value = m_cupsPrinters[p].options[i].value;
-        options.insert(name, value);
-    }
-    return options;
 }
 
 QT_END_NAMESPACE

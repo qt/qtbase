@@ -42,13 +42,11 @@
 #include "qcocoaprintersupport.h"
 
 #ifndef QT_NO_PRINTER
+
 #include "qcocoaprintdevice.h"
 #include "qprintengine_mac_p.h"
 
-#include <QtPrintSupport/QPrinter>
-#include <QtPrintSupport/QPrinterInfo>
 #include <private/qprinterinfo_p.h>
-#include <private/qprintdevice_p.h>
 
 QCocoaPrinterSupport::QCocoaPrinterSupport()
 { }
@@ -102,109 +100,6 @@ QString QCocoaPrinterSupport::defaultPrintDeviceId() const
         }
     }
     return QString();
-}
-
-QList<QPrinter::PaperSize> QCocoaPrinterSupport::supportedPaperSizes(const QPrinterInfo &printerInfo) const
-{
-    QList<QPrinter::PaperSize> returnValue;
-    if (printerInfo.isNull())
-        return returnValue;
-
-    PMPrinter printer = PMPrinterCreateFromPrinterID(QCFString::toCFStringRef(printerInfo.printerName()));
-    if (!printer)
-        return returnValue;
-
-    CFArrayRef array;
-    if (PMPrinterGetPaperList(printer, &array) != noErr) {
-        PMRelease(printer);
-        return returnValue;
-    }
-
-    CFIndex count = CFArrayGetCount(array);
-    for (CFIndex i = 0; i < count; ++i) {
-        PMPaper paper = static_cast<PMPaper>(const_cast<void *>(CFArrayGetValueAtIndex(array, i)));
-        double width, height;
-        if (PMPaperGetWidth(paper, &width) == noErr
-            && PMPaperGetHeight(paper, &height) == noErr) {
-            // width and height are in points, convertQSizeFToPaperSize() expects millimeters
-            static const double OnePointInMillimeters = 1.0 / 72.0 * 25.4;
-            QSizeF size(width * OnePointInMillimeters, height * OnePointInMillimeters);
-            returnValue += QPlatformPrinterSupport::convertQSizeFToPaperSize(size);
-        }
-    }
-
-    PMRelease(printer);
-
-    return returnValue;
-}
-
-QList<QPrinterInfo> QCocoaPrinterSupport::availablePrinters()
-{
-    QList<QPrinterInfo> returnValue;
-    QCFType<CFArrayRef> printerList;
-    if (PMServerCreatePrinterList(kPMServerLocal, &printerList) == noErr) {
-        CFIndex count = CFArrayGetCount(printerList);
-        for (CFIndex i = 0; i < count; ++i) {
-            PMPrinter printer = static_cast<PMPrinter>(const_cast<void *>(CFArrayGetValueAtIndex(printerList, i)));
-            returnValue += printerInfoFromPMPrinter(printer);
-        }
-    }
-    return returnValue;
-}
-
-QPrinterInfo QCocoaPrinterSupport::printerInfo(const QString &printerName)
-{
-    PMPrinter printer = PMPrinterCreateFromPrinterID(QCFString::toCFStringRef(printerName));
-    QPrinterInfo pi = printerInfoFromPMPrinter(printer);
-    PMRelease(printer);
-    return pi;
-}
-
-QPrinterInfo QCocoaPrinterSupport::printerInfoFromPMPrinter(const PMPrinter &printer)
-{
-    if (!printer)
-        return QPrinterInfo();
-
-    QString name = QCFString::toQString(PMPrinterGetID(printer));
-    QString description = QCFString::toQString(PMPrinterGetName(printer));
-    QString location = QCFString::toQString(PMPrinterGetLocation(printer));
-    CFStringRef cfMakeAndModel;
-    PMPrinterGetMakeAndModelName(printer, &cfMakeAndModel);
-    QString makeAndModel = QCFString::toQString(cfMakeAndModel);
-    bool isDefault = PMPrinterIsDefault(printer);
-
-    return createPrinterInfo(name, description, location, makeAndModel, isDefault, 0);
-}
-
-QList<QPair<QString, QSizeF> > QCocoaPrinterSupport::supportedSizesWithNames(const QPrinterInfo &printerInfo) const
-{
-    QList<QPair<QString, QSizeF> > returnValue;
-    if (printerInfo.isNull())
-        return returnValue;
-
-    PMPrinter printer = PMPrinterCreateFromPrinterID(QCFString::toCFStringRef(printerInfo.printerName()));
-    if (!printer)
-        return returnValue;
-
-    CFArrayRef array;
-    if (PMPrinterGetPaperList(printer, &array) != noErr) {
-        PMRelease(printer);
-        return returnValue;
-    }
-
-    int count = CFArrayGetCount(array);
-    for (int i = 0; i < count; ++i) {
-        PMPaper paper = static_cast<PMPaper>(const_cast<void *>(CFArrayGetValueAtIndex(array, i)));
-        double width, height;
-        if (PMPaperGetWidth(paper, &width) == noErr && PMPaperGetHeight(paper, &height) == noErr) {
-            static const double OnePointInMillimeters = 1.0 / 72.0 * 25.4;
-            QCFString paperName;
-            if (PMPaperCreateLocalizedName(paper, printer, &paperName) == noErr)
-                returnValue.append(qMakePair(QString(paperName), QSizeF(width * OnePointInMillimeters, height * OnePointInMillimeters)));
-        }
-    }
-    PMRelease(printer);
-    return returnValue;
 }
 
 #endif  //QT_NO_PRINTER

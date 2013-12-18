@@ -1733,49 +1733,6 @@ void QWin32PrintEngine::releaseDC(HDC) const
 
 }
 
-QList<QPrinter::PaperSize> QWin32PrintEngine::supportedPaperSizes(const QPrinterInfo &printerInfo)
-{
-    QList<QPrinter::PaperSize> returnList;
-
-    if (printerInfo.isNull())
-        return returnList;
-    const wchar_t *name = reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16());
-    DWORD size = DeviceCapabilities(name, NULL, DC_PAPERS, NULL, NULL);
-    if ((int)size != -1) {
-        QScopedArrayPointer<wchar_t> papers(new wchar_t[size]);
-        if (size != DeviceCapabilities(name, NULL, DC_PAPERS, papers.data(), NULL))
-            return returnList;
-        for (int c = 0; c < (int)size; ++c)
-            returnList.append(mapDevmodePaperSize(papers[c]));
-    }
-    return returnList;
-}
-
-QList<QPair<QString, QSizeF> > QWin32PrintEngine::supportedSizesWithNames(const QPrinterInfo &printerInfo)
-{
-    QList<QPair<QString, QSizeF> > paperSizes;
-    if (printerInfo.isNull())
-        return paperSizes;
-    const wchar_t *name = reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16());
-    DWORD size = DeviceCapabilities(name, NULL, DC_PAPERNAMES, NULL, NULL);
-    if ((int)size > 0) {
-        QScopedArrayPointer<wchar_t> papers(new wchar_t[size*64]);
-        if (size != DeviceCapabilities(name, NULL, DC_PAPERNAMES, papers.data(), NULL))
-            return paperSizes;
-        if (size != DeviceCapabilities(name, NULL, DC_PAPERSIZE, NULL, NULL))
-            return paperSizes;
-        QScopedArrayPointer<POINT> points(new POINT[size*sizeof(POINT)]);
-        if (size != DeviceCapabilities(name, NULL, DC_PAPERSIZE, (wchar_t *)points.data(), NULL))
-            return paperSizes;
-        for (int i = 0; i < (int)size; ++i) {
-            wchar_t *paper = papers.data() + (i * 64);
-            QString str = QString::fromWCharArray(paper, qwcsnlen(paper, 64));
-            paperSizes << qMakePair(str, QSizeF(points[i].x / 10.0, points[i].y / 10.0));
-        }
-    }
-    return paperSizes;
-}
-
 void QWin32PrintEngine::queryDefaultPrinter(QString &name)
 {
     /* Read the default printer name, driver and port with the intuitive function

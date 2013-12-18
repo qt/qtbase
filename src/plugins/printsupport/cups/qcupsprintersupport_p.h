@@ -48,16 +48,9 @@
 
 #include <qpa/qplatformprintersupport.h>
 
-#include <QtCore/qlibrary.h>
-#include <QtCore/qlist.h>
-
-#include <cups/cups.h>
+#include <QtCore/qstringlist.h>
 
 QT_BEGIN_NAMESPACE
-
-typedef int (*CupsGetDests)(cups_dest_t **dests);
-typedef void (*CupsFreeDests)(int num_dests, cups_dest_t *dests);
-typedef const char* (*CupsGetOption)(const char *name, int num_options, cups_option_t *options);
 
 class QCupsPrinterSupport : public QPlatformPrinterSupport
 {
@@ -65,33 +58,15 @@ public:
     QCupsPrinterSupport();
     ~QCupsPrinterSupport();
 
-    virtual QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode);
-    virtual QPaintEngine *createPaintEngine(QPrintEngine *printEngine, QPrinter::PrinterMode);
+    QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode) Q_DECL_OVERRIDE;
+    QPaintEngine *createPaintEngine(QPrintEngine *printEngine, QPrinter::PrinterMode) Q_DECL_OVERRIDE;
 
     QPrintDevice createPrintDevice(const QString &id) Q_DECL_OVERRIDE;
     QStringList availablePrintDeviceIds() const Q_DECL_OVERRIDE;
     QString defaultPrintDeviceId() const Q_DECL_OVERRIDE;
 
-    virtual QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const;
-    virtual QList<QPair<QString, QSizeF> > supportedSizesWithNames(const QPrinterInfo &) const;
-
-    virtual QList<QPrinterInfo> availablePrinters();
-    virtual QString printerOption(const QPrinterInfo &printer, const QString &key) const;
-    virtual PrinterOptions printerOptions(const QPrinterInfo &printer) const;
-
 private:
-    void loadCups();
-    void loadCupsPrinters();
-    void freeCupsPrinters();
     QString cupsOption(int i, const QString &key) const;
-
-    QLibrary m_cups;
-    cups_dest_t *m_cupsPrinters;
-    int m_cupsPrintersCount;
-
-    CupsGetDests  cupsGetDests;
-    CupsFreeDests cupsFreeDests;
-    CupsGetOption cupsGetOption;
 };
 
 QT_END_NAMESPACE

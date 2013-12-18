@@ -41,6 +41,7 @@
 
 #include "qprintengine_mac_p.h"
 #include <quuid.h>
+#include <QtGui/qpagesize.h>
 #include <QtCore/qcoreapplication.h>
 #include <qpa/qplatformprintersupport.h>
 
@@ -148,7 +149,7 @@ void QMacPrintEnginePrivate::setPaperSize(QPrinter::PaperSize ps)
     PMPrinter printer;
     if (PMSessionGetCurrentPrinter(session(), &printer) == noErr) {
         if (ps != QPrinter::Custom) {
-            QSizeF newSize = QPlatformPrinterSupport::convertPaperSizeToQSizeF(ps);
+            QSizeF newSize = QPageSize(QPageSize::PageSizeId(ps)).size(QPageSize::Millimeter);
             QCFType<CFArrayRef> formats;
             if (PMSessionCreatePageFormatList(session(), printer, &formats) == noErr) {
                 CFIndex total = CFArrayGetCount(formats);
@@ -197,7 +198,7 @@ QPrinter::PaperSize QMacPrintEnginePrivate::paperSize() const
     PMRect paper;
     PMGetUnadjustedPaperRect(format(), &paper);
     QSizeF sizef((paper.right - paper.left) / 72.0 * 25.4, (paper.bottom - paper.top) / 72.0 * 25.4);
-    return QPlatformPrinterSupport::convertQSizeFToPaperSize(sizef);
+    return QPrinter::PaperSize(QPageSize(sizef, QPageSize::Millimeter).id());
 }
 
 void QMacPrintEnginePrivate::setPaperName(const QString &name)

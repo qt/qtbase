@@ -62,6 +62,7 @@ QT_BEGIN_NAMESPACE
 
 typedef QHash<QString, QString> PrinterOptions;
 
+class QPageSize;
 class QPlatformPrintDevice;
 class QPrintDevice;
 class QPrintEngine;
@@ -80,26 +81,9 @@ public:
     virtual QStringList availablePrintDeviceIds() const;
     virtual QString defaultPrintDeviceId() const;
 
-    virtual QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const;
-    virtual QList<QPair<QString, QSizeF> > supportedSizesWithNames(const QPrinterInfo &printerInfo) const;
-    virtual QList<QPrinterInfo> availablePrinters();
-    virtual QPrinterInfo defaultPrinter();
-    virtual QPrinterInfo printerInfo(const QString &printerName);
-
-    virtual QString printerOption(const QPrinterInfo &printer, const QString &key) const;
-    virtual PrinterOptions printerOptions(const QPrinterInfo &printer) const;
-
-    static QPrinter::PaperSize convertQSizeFToPaperSize(const QSizeF &sizef);
-    static QSizeF convertPaperSizeToQSizeF(QPrinter::PaperSize paperSize);
-
 protected:
-    static int printerIndex(const QPrinterInfo &printer);
-    static QPrinterInfo createPrinterInfo(const QString &name, const QString &description,
-                                          const QString &location, const QString &makeAndModel,
-                                          bool isDefault, int index);
     static QPrintDevice createPrintDevice(QPlatformPrintDevice *device);
-
-    QList<QPrinterInfo> m_printers;
+    static QPageSize createPageSize(const QString &id, QSize size, const QString &localizedName);
 };
 
 #endif // QT_NO_PRINTER

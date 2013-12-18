@@ -42,6 +42,7 @@
 #include "qplatformprintersupport.h"
 #include "qplatformprintdevice.h"
 
+#include <QtGui/qpagesize.h>
 #include <QtPrintSupport/qprinterinfo.h>
 
 #include <private/qprinterinfo_p.h>
@@ -105,90 +106,12 @@ QString QPlatformPrinterSupport::defaultPrintDeviceId() const
     return QString();
 }
 
-QList<QPrinter::PaperSize> QPlatformPrinterSupport::supportedPaperSizes(const QPrinterInfo &) const
+QPageSize QPlatformPrinterSupport::createPageSize(const QString &id, QSize size, const QString &localizedName)
 {
-    return QList<QPrinter::PaperSize>();
-}
-
-QList<QPair<QString, QSizeF> > QPlatformPrinterSupport::supportedSizesWithNames(const QPrinterInfo &) const
-{
-    return QList<QPair<QString, QSizeF> >();
-}
-
-QList<QPrinterInfo> QPlatformPrinterSupport::availablePrinters()
-{
-    return m_printers;
-}
-
-QPrinterInfo QPlatformPrinterSupport::defaultPrinter()
-{
-    const QList<QPrinterInfo> printers = availablePrinters();
-    foreach (const QPrinterInfo &printerInfo, printers) {
-        if (printerInfo.isDefault())
-            return printerInfo;
-    }
-    return QPrinterInfo();
-}
-
-QPrinterInfo QPlatformPrinterSupport::printerInfo(const QString &printerName)
-{
-    const QList<QPrinterInfo> printers = availablePrinters();
-    foreach (const QPrinterInfo &printerInfo, printers) {
-        if (printerInfo.printerName() == printerName)
-            return printerInfo;
-    }
-    return QPrinterInfo();
-}
-
-QString QPlatformPrinterSupport::printerOption(const QPrinterInfo &printer, const QString &key) const
-{
-    Q_UNUSED(printer)
-    Q_UNUSED(key)
-    return QString();
-}
-
-PrinterOptions QPlatformPrinterSupport::printerOptions(const QPrinterInfo &printer) const
-{
-    Q_UNUSED(printer)
-    return PrinterOptions();
-}
-
-int QPlatformPrinterSupport::printerIndex(const QPrinterInfo &printer)
-{
-    return printer.d_func()->index;
-}
-
-QPrinterInfo QPlatformPrinterSupport::createPrinterInfo(const QString &name, const QString &description,
-                                                        const QString &location, const QString &makeAndModel,
-                                                        bool isDefault, int index)
-{
-    QPrinterInfo printer(name);
-    printer.d_func()->description = description;
-    printer.d_func()->location = location;
-    printer.d_func()->makeAndModel = makeAndModel;
-    printer.d_func()->isDefault = isDefault;
-    printer.d_func()->index = index;
-    return printer;
-}
-
-/*
-    Converts QSizeF in millimeters to a predefined PaperSize (returns Custom if
-    the size isn't a standard size)
-*/
-extern QPrinter::PaperSize qSizeFTopaperSize(const QSizeF &);
-QPrinter::PaperSize QPlatformPrinterSupport::convertQSizeFToPaperSize(const QSizeF &sizef)
-{
-    return qSizeFTopaperSize(sizef);
-}
-
-/*
-    Converts a predefined PaperSize to a QSizeF in millimeters (returns
-    QSizeF(0.0, 0.0) if PaperSize is Custom)
-*/
-extern QSizeF qt_paperSizeToQSizeF(QPrinter::PaperSize size);
-QSizeF QPlatformPrinterSupport::convertPaperSizeToQSizeF(QPrinter::PaperSize paperSize)
-{
-    return qt_paperSizeToQSizeF(paperSize);
+    Q_UNUSED(id)
+    Q_UNUSED(size)
+    Q_UNUSED(localizedName)
+    return QPageSize();
 }
 
 QT_END_NAMESPACE

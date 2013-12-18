@@ -105,14 +105,6 @@ public:
     HDC getDC() const;
     void releaseDC(HDC) const;
 
-    static QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &printerInfo);
-    static QList<QPair<QString, QSizeF> > supportedSizesWithNames(const QPrinterInfo &printerInfo);
-
-    /* Used by print/page setup dialogs */
-    void setGlobalDevMode(HGLOBAL globalDevNames, HGLOBAL globalDevMode);
-    HGLOBAL *createGlobalDevNames();
-    HGLOBAL globalDevMode();
-
     static void queryDefaultPrinter(QString &name);
 
 private:
