@@ -2327,11 +2327,19 @@ QObject *QObject::sender() const
 int QObject::senderSignalIndex() const
 {
     Q_D(const QObject);
-    int signal_index = d->senderSignalIndex();
-    if (signal_index < 0)
-        return signal_index;
-    // Convert from signal range to method range
-    return QMetaObjectPrivate::signal(sender()->metaObject(), signal_index).methodIndex();
+
+    QMutexLocker locker(signalSlotLock(this));
+    if (!d->currentSender)
+        return -1;
+
+    for (QObjectPrivate::Connection *c = d->senders; c; c = c->next) {
+        if (c->sender == d->currentSender->sender) {
+            // Convert from signal range to method range
+            return QMetaObjectPrivate::signal(c->sender->metaObject(), d->currentSender->signal).methodIndex();
+        }
+    }
+
+    return -1;
 }
 
 /*!
@@ -3710,25 +3718,6 @@ void QMetaObject::activate(QObject *sender, int signal_index, void **argv)
     while (mo->methodOffset() > signal_index)
         mo = mo->superClass();
     activate(sender, mo, signal_index - mo->methodOffset(), argv);
-}
-
-/*!
-    \internal
-    Implementation of QObject::senderSignalIndex()
-*/
-int QObjectPrivate::senderSignalIndex() const
-{
-    Q_Q(const QObject);
-    QMutexLocker locker(signalSlotLock(q));
-    if (!currentSender)
-        return -1;
-
-    for (QObjectPrivate::Connection *c = senders; c; c = c->next) {
-        if (c->sender == currentSender->sender)
-            return currentSender->signal;
-    }
-
-    return -1;
 }
 
 /*!
