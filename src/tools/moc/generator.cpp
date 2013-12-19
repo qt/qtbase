@@ -641,25 +641,38 @@ void Generator::generateFunctions(const QList<FunctionDef>& list, const char *fu
     for (int i = 0; i < list.count(); ++i) {
         const FunctionDef &f = list.at(i);
 
+        QByteArray comment;
         unsigned char flags = type;
-        if (f.access == FunctionDef::Private)
+        if (f.access == FunctionDef::Private) {
             flags |= AccessPrivate;
-        else if (f.access == FunctionDef::Public)
+            comment.append(QByteArrayLiteral("Private"));
+        } else if (f.access == FunctionDef::Public) {
             flags |= AccessPublic;
-        else if (f.access == FunctionDef::Protected)
+            comment.append(QByteArrayLiteral("Public"));
+        } else if (f.access == FunctionDef::Protected) {
             flags |= AccessProtected;
-        if (f.isCompat)
+            comment.append(QByteArrayLiteral("Protected"));
+        }
+        if (f.isCompat) {
             flags |= MethodCompatibility;
-        if (f.wasCloned)
+            comment.append(QByteArrayLiteral(" | MethodCompatibility"));
+        }
+        if (f.wasCloned) {
             flags |= MethodCloned;
-        if (f.isScriptable)
+            comment.append(QByteArrayLiteral(" | MethodCloned"));
+        }
+        if (f.isScriptable) {
             flags |= MethodScriptable;
-        if (f.revision > 0)
+            comment.append(QByteArrayLiteral(" | isScriptable"));
+        }
+        if (f.revision > 0) {
             flags |= MethodRevisioned;
+            comment.append(QByteArrayLiteral(" | MethodRevisioned"));
+        }
 
         int argc = f.arguments.count();
-        fprintf(out, "    %4d, %4d, %4d, %4d, 0x%02x,\n",
-            stridx(f.name), argc, paramsIndex, stridx(f.tag), flags);
+        fprintf(out, "    %4d, %4d, %4d, %4d, 0x%02x /* %s */,\n",
+            stridx(f.name), argc, paramsIndex, stridx(f.tag), flags, comment.constData());
 
         paramsIndex += 1 + argc * 2;
     }
