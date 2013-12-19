@@ -210,7 +210,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
     }
     if(do_incremental && !src_incremental)
         do_incremental = false;
-    t << "DIST          = " << valList(fileFixify(project->values("DISTFILES").toQStringList())) << endl;
+    t << "DIST          = " << valList(fileFixify(project->values("DISTFILES").toQStringList())) << " "
+                            << valList(escapeFilePaths(project->values("SOURCES"))) << endl;
     t << "QMAKE_TARGET  = " << var("QMAKE_ORIG_TARGET") << endl;
     // The comment is important for mingw32-make.exe on Windows as otherwise trailing slashes
     // would be interpreted as line continuation. The lack of spacing between the value and the
@@ -809,7 +810,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                                                Option::output_dir, Option::output_dir));
     t << "dist: \n\t"
       << mkdir_p_asstring(ddir_c, false) << "\n\t"
-      << "$(COPY_FILE) --parents $(SOURCES) $(DIST) " << ddir_c << Option::dir_sep << " && ";
+      << "$(COPY_FILE) --parents $(DIST) " << ddir_c << Option::dir_sep << " && ";
     if(!project->isEmpty("QMAKE_EXTRA_COMPILERS")) {
         const ProStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
         for (ProStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it) {
