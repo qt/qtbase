@@ -1320,6 +1320,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
          "                       Use - to output to stdout\n"
          "                       Valid formats are:\n"
          "                         txt      : Plain text\n"
+         "                         csv      : CSV format (suitable for benchmarks)\n"
          "                         xunitxml : XML XUnit document\n"
          "                         xml      : XML document\n"
          "                         lightxml : A stream of XML tags\n"
@@ -1329,6 +1330,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
          " Old-style logging options:\n"
          " -o filename         : Write the output into file\n"
          " -txt                : Output results in Plain Text\n"
+         " -csv                : Output results in a CSV format (suitable for benchmarks)\n"
          " -xunitxml           : Output results as XML XUnit document\n"
          " -xml                : Output results as XML document\n"
          " -lightxml           : Output results as stream of XML tags\n"
@@ -1408,6 +1410,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             }
         } else if (strcmp(argv[i], "-txt") == 0) {
             logFormat = QTestLog::Plain;
+        } else if (strcmp(argv[i], "-csv") == 0) {
+            logFormat = QTestLog::CSV;
         } else if (strcmp(argv[i], "-xunitxml") == 0) {
             logFormat = QTestLog::XunitXML;
         } else if (strcmp(argv[i], "-xml") == 0) {
@@ -1438,6 +1442,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                 // New-style
                 if (strcmp(format, "txt") == 0)
                     logFormat = QTestLog::Plain;
+                else if (strcmp(format, "csv") == 0)
+                    logFormat = QTestLog::CSV;
                 else if (strcmp(format, "lightxml") == 0)
                     logFormat = QTestLog::LightXML;
                 else if (strcmp(format, "xml") == 0)
@@ -1445,7 +1451,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                 else if (strcmp(format, "xunitxml") == 0)
                     logFormat = QTestLog::XunitXML;
                 else {
-                    fprintf(stderr, "output format must be one of txt, lightxml, xml or xunitxml\n");
+                    fprintf(stderr, "output format must be one of txt, csv, lightxml, xml or xunitxml\n");
                     exit(1);
                 }
                 if (strcmp(filename, "-") == 0 && QTestLog::loggerUsingStdout()) {

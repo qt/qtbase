@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Intel Corporation
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QTESTLOG_P_H
-#define QTESTLOG_P_H
+#ifndef QCSVBENCHMARKLOGGER_P_H
+#define QCSVBENCHMARKLOGGER_P_H
 
 //
 //  W A R N I N G
@@ -53,68 +53,30 @@
 // We mean it.
 //
 
-#include <QtTest/qtest_global.h>
+#include "qabstracttestlogger_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QBenchmarkResult;
-class QRegularExpression;
-
-class Q_TESTLIB_EXPORT QTestLog
+class QCsvBenchmarkLogger : public QAbstractTestLogger
 {
 public:
-    enum LogMode { Plain = 0, XML, LightXML, XunitXML, CSV };
+    QCsvBenchmarkLogger(const char *filename);
+    ~QCsvBenchmarkLogger();
 
-    static void enterTestFunction(const char* function);
-    static void leaveTestFunction();
+    void startLogging() Q_DECL_OVERRIDE;
+    void stopLogging() Q_DECL_OVERRIDE;
 
-    static void addPass(const char *msg);
-    static void addFail(const char *msg, const char *file, int line);
-    static void addXFail(const char *msg, const char *file, int line);
-    static void addXPass(const char *msg, const char *file, int line);
-    static void addSkip(const char *msg, const char *file, int line);
-    static void addBenchmarkResult(const QBenchmarkResult &result);
+    void enterTestFunction(const char *function) Q_DECL_OVERRIDE;
+    void leaveTestFunction() Q_DECL_OVERRIDE;
 
-    static void ignoreMessage(QtMsgType type, const char *msg);
-    static void ignoreMessage(QtMsgType type, const QRegularExpression &expression);
-    static int unhandledIgnoreMessages();
-    static void printUnhandledIgnoreMessages();
-    static void clearIgnoreMessages();
+    void addIncident(IncidentTypes type, const char *description,
+                     const char *file = 0, int line = 0) Q_DECL_OVERRIDE;
+    void addBenchmarkResult(const QBenchmarkResult &result) Q_DECL_OVERRIDE;
 
-    static void warn(const char *msg, const char *file, int line);
-    static void info(const char *msg, const char *file, int line);
-
-    static void startLogging();
-    static void stopLogging();
-
-    static void addLogger(LogMode mode, const char *filename);
-
-    static int loggerCount();
-    static bool loggerUsingStdout();
-
-    static void setVerboseLevel(int level);
-    static int verboseLevel();
-
-    static void setMaxWarnings(int max);
-
-    static void setPrintAvailableTagsMode();
-
-    static int passCount();
-    static int failCount();
-    static int skipCount();
-
-    static void resetCounters();
-
-    static void setInstalledTestCoverage(bool installed);
-    static bool installedTestCoverage();
-
-private:
-    QTestLog();
-    ~QTestLog();
-
-    static bool printAvailableTags;
+    void addMessage(MessageTypes type, const QString &message,
+                            const char *file = 0, int line = 0) Q_DECL_OVERRIDE;
 };
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QCSVBENCHMARKLOGGER_P_H

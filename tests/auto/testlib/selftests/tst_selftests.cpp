@@ -234,6 +234,12 @@ QList<LoggerSet> tst_Selftests::allLoggerSets() const
                      QStringList() << "lightxml",
                      QStringList() << "-lightxml" << "-o" << logName("lightxml")
                     )
+        << LoggerSet("old stdout csv", // benchmarks only
+                     QStringList() << "stdout csv",
+                     QStringList() << "-csv")
+        << LoggerSet("old csv", // benchmarks only
+                     QStringList() << "csv",
+                     QStringList() << "-csv" << "-o" << logName("csv"))
         // Test with new-style options for a single logger
         << LoggerSet("new stdout txt",
                      QStringList() << "stdout txt",
@@ -267,6 +273,12 @@ QList<LoggerSet> tst_Selftests::allLoggerSets() const
                      QStringList() << "lightxml",
                      QStringList() << "-o" << logName("lightxml")+",lightxml"
                     )
+        << LoggerSet("new stdout csv", // benchmarks only
+                     QStringList() << "stdout csv",
+                     QStringList() << "-o" << "-,csv")
+        << LoggerSet("new csv", // benchmarks only
+                     QStringList() << "csv",
+                     QStringList() << "-o" << logName("csv")+",csv")
         // Test with two loggers (don't test all 32 combinations, just a sample)
         << LoggerSet("stdout txt + txt",
                      QStringList() << "stdout txt" << "txt",
@@ -288,7 +300,7 @@ QList<LoggerSet> tst_Selftests::allLoggerSets() const
                      QStringList() << "-o" << logName("lightxml")+",lightxml"
                                    << "-o" << "-,xunitxml"
                     )
-        // All loggers at the same time
+        // All loggers at the same time (except csv)
         << LoggerSet("all loggers",
                      QStringList() << "txt" << "xml" << "lightxml" << "stdout txt" << "xunitxml",
                      QStringList() << "-o" << logName("txt")+",txt"
@@ -488,6 +500,10 @@ void tst_Selftests::runSubTest_data()
             }
             if (subtest == "badxml" && (loggerSet.name == "all loggers" || loggerSet.name.contains("txt")))
                 continue; // XML only, do not mix txt and XML for encoding test.
+
+            if (loggerSet.name.contains("csv") && !subtest.startsWith("benchlib"))
+                continue;
+
             const bool crashes = subtest == QLatin1String("assert") || subtest == QLatin1String("exceptionthrow")
                 || subtest == QLatin1String("fetchbogus") || subtest == QLatin1String("crashedterminate")
                 || subtest == QLatin1String("crashes") || subtest == QLatin1String("silent");
@@ -706,7 +722,7 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
             else if (expected.startsWith(QLatin1String("FAIL!  : tst_Exception::throwException() Caught unhandled exce")) && expected != output)
                 // On some platforms we compile without RTTI, and as a result we never throw an exception.
                 QCOMPARE(output.simplified(), QString::fromLatin1("tst_Exception::throwException()").simplified());
-            else if (benchmark || line.startsWith("<BenchmarkResult")) {
+            else if (benchmark || line.startsWith("<BenchmarkResult") || (logFormat(logger) == "csv" && line.startsWith('"'))) {
                 // Don't do a literal comparison for benchmark results, since
                 // results have some natural variance.
                 QString error;
@@ -813,6 +829,35 @@ BenchmarkResult BenchmarkResult::parse(QString const& line, QString* error)
         out.iterations = iterations;
         return out;
     }
+
+    if (line.startsWith('"')) {
+        // CSV result
+        // format:
+        //  "function","[globaltag:]tag","metric",value_per_iteration,total,iterations
+        QStringList split = line.split(',');
+        if (split.count() != 6) {
+            if (error) *error = QString("Wrong number of columns (%1)").arg(split.count());
+            return out;
+        }
+
+        bool ok;
+        double total = split.at(4).toDouble(&ok);
+        if (!ok) {
+            if (error) *error = split.at(4) + " is not a valid number";
+            return out;
+        }
+        double iterations = split.at(5).toDouble(&ok);
+        if (!ok) {
+            if (error) *error = split.at(5) + " is not a valid number";
+            return out;
+        }
+
+        out.unit = split.at(2);
+        out.total = total;
+        out.iterations = iterations;
+        return out;
+    }
+
     // Text result
     // This code avoids using a QRegExp because QRegExp might be broken.
     // Sample format: 4,000 msec per iteration (total: 4,000, iterations: 1)

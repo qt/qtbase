@@ -45,6 +45,7 @@
 #include <QtTest/private/qtestresult_p.h>
 #include <QtTest/private/qabstracttestlogger_p.h>
 #include <QtTest/private/qplaintestlogger_p.h>
+#include <QtTest/private/qcsvbenchmarklogger_p.h>
 #include <QtTest/private/qxunittestlogger_p.h>
 #include <QtTest/private/qxmltestlogger_p.h>
 #include <QtCore/qatomic.h>
@@ -451,6 +452,9 @@ void QTestLog::addLogger(LogMode mode, const char *filename)
     switch (mode) {
     case QTestLog::Plain:
         logger = new QPlainTestLogger(filename);
+        break;
+    case QTestLog::CSV:
+        logger = new QCsvBenchmarkLogger(filename);
         break;
     case QTestLog::XML:
         logger = new QXmlTestLogger(QXmlTestLogger::Complete, filename);
