@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 
 class QSocketNotifier;
 class QEvdevTouchScreenData;
-#ifdef USE_MTDEV
+#if !defined(QT_NO_MTDEV)
 struct mtdev;
 #endif
 
@@ -71,7 +71,7 @@ private:
     QSocketNotifier *m_notify;
     int m_fd;
     QEvdevTouchScreenData *d;
-#ifdef USE_MTDEV
+#if !defined(QT_NO_MTDEV)
     mtdev *m_mtdev;
 #endif
 };

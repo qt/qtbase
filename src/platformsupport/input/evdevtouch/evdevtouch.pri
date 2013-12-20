@@ -8,6 +8,8 @@ contains(QT_CONFIG, libudev) {
     LIBS_PRIVATE += $$QMAKE_LIBS_LIBUDEV
 }
 
-# DEFINES += USE_MTDEV
+contains(CONFIG, mtdev) {
+    CONFIG += link_pkgconfig
+    PKGCONFIG_PRIVATE += mtdev
+}
 
-contains(DEFINES, USE_MTDEV): LIBS_PRIVATE += -lmtdev

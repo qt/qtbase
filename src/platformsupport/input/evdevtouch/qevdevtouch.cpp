@@ -49,7 +49,7 @@
 #include <QtPlatformSupport/private/qdevicediscovery_p.h>
 #include <linux/input.h>
 
-#ifdef USE_MTDEV
+#if !defined(QT_NO_MTDEV)
 extern "C" {
 #include <mtdev.h>
 }
@@ -164,7 +164,7 @@ static inline bool testBit(long bit, const long *array)
 
 QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &specification, QObject *parent)
     : QObject(parent), m_notify(0), m_fd(-1), d(0)
-#ifdef USE_MTDEV
+#if !defined(QT_NO_MTDEV)
       , m_mtdev(0)
 #endif
 {
@@ -233,7 +233,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &specification,
         return;
     }
 
-#ifdef USE_MTDEV
+#if !defined(QT_NO_MTDEV)
     m_mtdev = static_cast<mtdev *>(calloc(1, sizeof(mtdev)));
     int mtdeverr = mtdev_open(m_mtdev, m_fd);
     if (mtdeverr) {
@@ -245,7 +245,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &specification,
 
     d = new QEvdevTouchScreenData(this, args);
 
-#ifdef USE_MTDEV
+#if !defined(QT_NO_MTDEV)
     const char *mtdevStr = "(mtdev)";
     d->m_typeB = true;
 #else
@@ -329,7 +329,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &specification,
 
 QEvdevTouchScreenHandler::~QEvdevTouchScreenHandler()
 {
-#ifdef USE_MTDEV
+#if !defined(QT_NO_MTDEV)
     if (m_mtdev) {
         mtdev_close(m_mtdev);
         free(m_mtdev);
@@ -347,7 +347,7 @@ void QEvdevTouchScreenHandler::readData()
     ::input_event buffer[32];
     int n = 0;
     for (; ;) {
-#ifdef USE_MTDEV
+#if !defined(QT_NO_MTDEV)
         int result = mtdev_get(m_mtdev, m_fd, buffer, sizeof(buffer) / sizeof(::input_event));
         if (result > 0)
             result *= sizeof(::input_event);
