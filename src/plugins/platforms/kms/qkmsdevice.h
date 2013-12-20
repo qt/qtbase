@@ -53,7 +53,7 @@ extern "C" {
 
 QT_BEGIN_NAMESPACE
 
-class gbm_device;
+struct gbm_device;
 class QKmsIntegration;
 
 class QKmsDevice : public QObject
