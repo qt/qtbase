@@ -57,6 +57,16 @@ uint qHash(const Qt4String &str)
     return h;
 }
 
+uint qHash(const Qt50String &key, uint seed)
+{
+    const QChar *p = key.unicode();
+    int len = key.size();
+    uint h = seed;
+    for (int i = 0; i < len; ++i)
+        h = 31 * h + p[i].unicode();
+    return h;
+}
+
 // The Java's hashing algorithm for strings is a variation of D. J. Bernstein
 // hashing algorithm appeared here http://cr.yp.to/cdb/cdb.txt
 // and informally known as DJB33XX - DJB's 33 Times Xor.
