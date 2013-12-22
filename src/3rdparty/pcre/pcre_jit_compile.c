@@ -3546,7 +3546,9 @@ switch(ranges[0])
       }
     return TRUE;
     }
-  if ((ranges[3] - ranges[2]) == (ranges[5] - ranges[4]) && is_powerof2(ranges[4] - ranges[2]))
+  if ((ranges[3] - ranges[2]) == (ranges[5] - ranges[4])
+      && (ranges[2] | (ranges[4] - ranges[2])) == ranges[4]
+      && is_powerof2(ranges[4] - ranges[2]))
     {
     if (readch)
       read_char(common);
