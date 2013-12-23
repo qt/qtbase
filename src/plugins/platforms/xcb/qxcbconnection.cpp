@@ -278,7 +278,6 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
         m_xlib_display = dpy;
     }
 #else
-    EGLNativeDisplayType dpy = EGL_DEFAULT_DISPLAY;
     m_connection = xcb_connect(m_displayName.constData(), &m_primaryScreen);
 #endif //XCB_USE_XLIB
 
@@ -286,6 +285,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
         qFatal("QXcbConnection: Could not connect to display %s", m_displayName.constData());
 
 #ifdef XCB_USE_EGL
+    EGLNativeDisplayType dpy = EGL_DEFAULT_DISPLAY;
     EGLDisplay eglDisplay = eglGetDisplay(dpy);
     m_egl_display = eglDisplay;
     EGLint major, minor;
