@@ -323,18 +323,19 @@ private:
 class Q_CORE_EXPORT QMetaStringTable
 {
 public:
-    QMetaStringTable();
+    explicit QMetaStringTable(const QByteArray &className);
 
     int enter(const QByteArray &value);
 
     static int preferredAlignment();
     int blobSize() const;
-    void writeBlob(char *out);
+    void writeBlob(char *out) const;
 
 private:
     typedef QHash<QByteArray, int> Entries; // string --> index mapping
     Entries m_entries;
     int m_index;
+    QByteArray m_className;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QMetaObjectBuilder::AddMembers)

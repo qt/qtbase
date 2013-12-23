@@ -1888,13 +1888,28 @@ bool QApplication::event(QEvent *e)
     \obsolete
 */
 
+// ### FIXME: topLevelWindows does not contain QWidgets without a parent
+// until create_sys is called. So we have to override the
+// QGuiApplication::notifyLayoutDirectionChange
+// to do the right thing.
 void QApplicationPrivate::notifyLayoutDirectionChange()
 {
-    QWidgetList list = QApplication::topLevelWidgets();
+    const QWidgetList list = QApplication::topLevelWidgets();
+    QWindowList windowList = QGuiApplication::topLevelWindows();
+
+    // send to all top-level QWidgets
     for (int i = 0; i < list.size(); ++i) {
         QWidget *w = list.at(i);
+        windowList.removeAll(w->windowHandle());
         QEvent ev(QEvent::ApplicationLayoutDirectionChange);
         QCoreApplication::sendEvent(w, &ev);
+    }
+
+    // in case there are any plain QWindows in this QApplication-using
+    // application, also send the notification to them
+    for (int i = 0; i < windowList.size(); ++i) {
+        QEvent ev(QEvent::ApplicationLayoutDirectionChange);
+        QCoreApplication::sendEvent(windowList.at(i), &ev);
     }
 }
 

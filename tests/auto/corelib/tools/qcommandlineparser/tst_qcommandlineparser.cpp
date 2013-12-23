@@ -69,6 +69,7 @@ private slots:
     void testUnknownOptionErrorHandling();
     void testDoubleDash_data();
     void testDoubleDash();
+    void testDefaultValue();
     void testProcessNotCalled();
     void testEmptyArgsList();
     void testMissingOptionValue();
@@ -320,6 +321,17 @@ void tst_QCommandLineParser::testDoubleDash()
     QCOMPARE(parser.value("output"), QString());
     QCOMPARE(parser.positionalArguments(), QStringList() << "--output" << "bar" << "-b" << "bleh");
     QCOMPARE(parser.unknownOptionNames(), QStringList());
+}
+
+void tst_QCommandLineParser::testDefaultValue()
+{
+    QCommandLineOption opt(QStringLiteral("name"), QStringLiteral("desc"),
+                           QStringLiteral("valueName"), QStringLiteral("default"));
+    QCOMPARE(opt.defaultValues(), QStringList(QStringLiteral("default")));
+    opt.setDefaultValue(QStringLiteral(""));
+    QCOMPARE(opt.defaultValues(), QStringList());
+    opt.setDefaultValue(QStringLiteral("default"));
+    QCOMPARE(opt.defaultValues(), QStringList(QStringLiteral("default")));
 }
 
 void tst_QCommandLineParser::testProcessNotCalled()

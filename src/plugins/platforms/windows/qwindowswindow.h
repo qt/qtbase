@@ -136,7 +136,8 @@ public:
         TouchRegistered = 0x4000,
         AlertState = 0x8000,
         Exposed = 0x10000,
-        WithinCreate = 0x20000
+        WithinCreate = 0x20000,
+        WithinMaximize = 0x40000
     };
 
     struct WindowData

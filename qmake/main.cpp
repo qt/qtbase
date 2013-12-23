@@ -85,6 +85,7 @@ static int doSed(int argc, char **argv)
                     return 3;
                 }
                 QChar sep = ++j < cmd.length() ? cmd.at(j) : QChar();
+                Qt::CaseSensitivity matchcase = Qt::CaseSensitive;
                 bool escaped = false;
                 int phase = 1;
                 QStringList phases;
@@ -126,12 +127,16 @@ static int doSed(int argc, char **argv)
                     fprintf(stderr, "Error: sed s command requires three arguments (%d, %c, %s)\n", phase, sep.toLatin1(), qPrintable(curr));
                     return 3;
                 }
+                if (curr.contains(QLatin1Char('i'))) {
+                    curr.remove(QLatin1Char('i'));
+                    matchcase = Qt::CaseInsensitive;
+                }
                 if (curr != QLatin1String("g")) {
-                    fprintf(stderr, "Error: sed s command must be used with the g option (only)\n");
+                    fprintf(stderr, "Error: sed s command supports only g & i options; g is required\n");
                     return 3;
                 }
                 SedSubst subst;
-                subst.from = QRegExp(phases.at(0));
+                subst.from = QRegExp(phases.at(0), matchcase);
                 subst.to = phases.at(1);
                 subst.to.replace("\\\\", "\\"); // QString::replace(rx, sub) groks \1, but not \\.
                 substs << subst;

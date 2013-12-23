@@ -1170,7 +1170,12 @@ void QWindowsWindow::show_sys() const
     if (type == Qt::Popup || type == Qt::ToolTip || type == Qt::Tool)
         sm = SW_SHOWNOACTIVATE;
 
+    if (w->windowState() & Qt::WindowMaximized)
+        setFlag(WithinMaximize); // QTBUG-8361
+
     ShowWindow(m_data.hwnd, sm);
+
+    clearFlag(WithinMaximize);
 
     if (fakedMaximize) {
         setStyle(style() & ~WS_MAXIMIZEBOX);
@@ -1582,8 +1587,11 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
     setFlag(FrameDirty);
 
     if ((oldState == Qt::WindowMaximized) != (newState == Qt::WindowMaximized)) {
-        if (visible && !(newState == Qt::WindowMinimized))
+        if (visible && !(newState == Qt::WindowMinimized)) {
+            setFlag(WithinMaximize);
             ShowWindow(m_data.hwnd, (newState == Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNOACTIVATE);
+            clearFlag(WithinMaximize);
+        }
     }
 
     if ((oldState == Qt::WindowFullScreen) != (newState == Qt::WindowFullScreen)) {
@@ -1903,6 +1911,25 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 {
     const QWindowsGeometryHint hint(window(), m_data.customMargins);
     hint.applyToMinMaxInfo(m_data.hwnd, mmi);
+
+    if ((testFlag(WithinMaximize) || (window()->windowState() == Qt::WindowMinimized))
+            && (m_data.flags & Qt::FramelessWindowHint)) {
+        // This block fixes QTBUG-8361: Frameless windows shouldn't cover the
+        // taskbar when maximized
+        if (const QScreen *screen = effectiveScreen(window())) {
+            mmi->ptMaxSize.y = screen->availableGeometry().height();
+
+            // Width, because you can have the taskbar on the sides too.
+            mmi->ptMaxSize.x = screen->availableGeometry().width();
+
+            // If you have the taskbar on top, or on the left you don't want it at (0,0):
+            mmi->ptMaxPosition.x = screen->availableGeometry().x();
+            mmi->ptMaxPosition.y = screen->availableGeometry().y();
+        } else {
+            qWarning() << "Invalid screen";
+        }
+    }
+
     if (QWindowsContext::verboseWindows)
         qDebug() << __FUNCTION__ << window() << *mmi;
 }

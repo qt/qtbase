@@ -199,7 +199,8 @@ QStringList QCommandLineOption::names() const
 
 void QCommandLineOptionPrivate::setNames(const QStringList &nameList)
 {
-    names.clear();
+    QStringList newNames;
+    newNames.reserve(nameList.size());
     if (nameList.isEmpty())
         qWarning("QCommandLineOption: Options must have at least one name");
     foreach (const QString &name, nameList) {
@@ -214,9 +215,11 @@ void QCommandLineOptionPrivate::setNames(const QStringList &nameList)
             else if (name.contains(QLatin1Char('=')))
                 qWarning("QCommandLineOption: Option names cannot contain a '='");
             else
-                names.append(name);
+                newNames.append(name);
         }
     }
+    // commit
+    names.swap(newNames);
 }
 
 /*!
@@ -288,9 +291,13 @@ QString QCommandLineOption::description() const
  */
 void QCommandLineOption::setDefaultValue(const QString &defaultValue)
 {
-    d->defaultValues.clear();
-    if (!defaultValue.isEmpty())
-        d->defaultValues << defaultValue;
+    QStringList newDefaultValues;
+    if (!defaultValue.isEmpty()) {
+        newDefaultValues.reserve(1);
+        newDefaultValues << defaultValue;
+    }
+    // commit:
+    d->defaultValues.swap(newDefaultValues);
 }
 
 /*!

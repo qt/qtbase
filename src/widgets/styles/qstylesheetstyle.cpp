@@ -5271,7 +5271,7 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
             QRenderRule downRule = renderRule(w, opt, PseudoElement_SpinBoxDownButton);
             bool ruleMatch = rule.hasBox() || !rule.hasNativeBorder();
             bool upRuleMatch = upRule.hasGeometry() || upRule.hasPosition();
-            bool downRuleMatch = downRule.hasGeometry() || upRule.hasPosition();
+            bool downRuleMatch = downRule.hasGeometry() || downRule.hasPosition();
             if (ruleMatch || upRuleMatch || downRuleMatch) {
                 switch (sc) {
                 case SC_SpinBoxFrame:

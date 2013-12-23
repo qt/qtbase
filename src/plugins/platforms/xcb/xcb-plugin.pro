@@ -81,7 +81,7 @@ contains(QT_CONFIG, xcb-sm) {
 }
 
 contains(QT_CONFIG, opengl) {
-    contains(QT_CONFIG, xcb-xlib):contains(QT_CONFIG, glx) {
+    contains(QT_CONFIG, xcb-xlib):!contains(QT_CONFIG, opengles2) {
         DEFINES += XCB_USE_GLX
         HEADERS += qglxintegration.h
         SOURCES += qglxintegration.cpp

@@ -75,6 +75,8 @@ private slots:
     void usage_connect();
     void usage_templateConnect();
 
+    void classNameFirstInStringData();
+
 private:
     static bool checkForSideEffects
         (const QMetaObjectBuilder& builder,
@@ -1692,6 +1694,20 @@ void tst_QMetaObjectBuilder::usage_templateConnect()
     con = QObject::connect(testObject.data(), &TestObject::setIntProp,
                            testObject.data(), &TestObject::intPropChanged);
     QVERIFY(!con);
+}
+
+void tst_QMetaObjectBuilder::classNameFirstInStringData()
+{
+    QMetaObjectBuilder builder;
+    builder.addMetaObject(&SomethingOfEverything::staticMetaObject);
+    builder.setClassName(QByteArrayLiteral("TestClass"));
+    QMetaObject *mo = builder.toMetaObject();
+
+    QByteArrayDataPtr header;
+    header.ptr = const_cast<QByteArrayData*>(mo->d.stringdata);
+    QCOMPARE(QByteArray(header), QByteArrayLiteral("TestClass"));
+
+    free(mo);
 }
 
 QTEST_MAIN(tst_QMetaObjectBuilder)

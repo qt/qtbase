@@ -2158,11 +2158,14 @@ QMenu *QWidgetTextControl::createStandardContextMenu(const QPointF &pos, QWidget
         setActionIcon(a, QStringLiteral("edit-redo"));
         menu->addSeparator();
 
+#ifndef QT_NO_CLIPBOARD
         a = menu->addAction(tr("Cu&t") + ACCEL_KEY(QKeySequence::Cut), this, SLOT(cut()));
         a->setEnabled(d->cursor.hasSelection());
         setActionIcon(a, QStringLiteral("edit-cut"));
+#endif
     }
 
+#ifndef QT_NO_CLIPBOARD
     if (showTextSelectionActions) {
         a = menu->addAction(tr("&Copy") + ACCEL_KEY(QKeySequence::Copy), this, SLOT(copy()));
         a->setEnabled(d->cursor.hasSelection());
@@ -2175,9 +2178,10 @@ QMenu *QWidgetTextControl::createStandardContextMenu(const QPointF &pos, QWidget
         a = menu->addAction(tr("Copy &Link Location"), this, SLOT(_q_copyLink()));
         a->setEnabled(!d->linkToCopy.isEmpty());
     }
+#endif // QT_NO_CLIPBOARD
 
     if (d->interactionFlags & Qt::TextEditable) {
-#if !defined(QT_NO_CLIPBOARD)
+#ifndef QT_NO_CLIPBOARD
         a = menu->addAction(tr("&Paste") + ACCEL_KEY(QKeySequence::Paste), this, SLOT(paste()));
         a->setEnabled(canPaste());
         setActionIcon(a, QStringLiteral("edit-paste"));

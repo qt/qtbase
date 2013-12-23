@@ -206,13 +206,6 @@ namespace
     bool debugStackUsage = false;
 }
 
-static int infoPlistValue(NSString* key, int defaultValue)
-{
-    static NSBundle *bundle = [NSBundle mainBundle];
-    NSNumber* value = [bundle objectForInfoDictionaryKey:key];
-    return value ? [value intValue] : defaultValue;
-}
-
 extern "C" int __attribute__((weak)) main(int argc, char *argv[])
 {
     @autoreleasepool {

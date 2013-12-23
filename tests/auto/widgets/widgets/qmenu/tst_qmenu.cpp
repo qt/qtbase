@@ -598,6 +598,7 @@ void tst_QMenu::layoutDirection()
     centerOnScreen(&win);
 
     QMenu menu(&win);
+    menu.addAction("foo");
     menu.move(win.geometry().topRight() + QPoint(50, 0));
     menu.show();
     QVERIFY(QTest::qWaitForWindowExposed(&menu));

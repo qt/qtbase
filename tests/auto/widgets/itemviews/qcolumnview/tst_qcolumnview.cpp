@@ -1043,13 +1043,14 @@ void tst_QColumnView::dynamicModelChanges()
     ColumnView view;
     view.setModel(&model);
     view.setItemDelegate(&delegate);
+    centerOnScreen(&view);
     view.show();
 
     QStandardItem *item = new QStandardItem(QLatin1String("item"));
     model.appendRow(item);
 
-    QTest::qWait(200); //let the time for painting to occur
-    QCOMPARE(delegate.paintedIndexes.count(), 1);
+    QVERIFY(QTest::qWaitForWindowExposed(&view)); //let the time for painting to occur
+    QTRY_COMPARE(delegate.paintedIndexes.count(), 1);
     QCOMPARE(*delegate.paintedIndexes.begin(), model.index(0,0));
 
 

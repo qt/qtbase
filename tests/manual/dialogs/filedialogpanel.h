@@ -92,6 +92,7 @@ private:
     void applySettings(QFileDialog *d) const;
 
     QFormLayout *filesLayout;
+    QCheckBox *m_showDirsOnly;
     QCheckBox *m_readOnly;
     QCheckBox *m_confirmOverWrite;
     QCheckBox *m_nameFilterDetailsVisible;

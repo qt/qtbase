@@ -383,6 +383,8 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
     }
     case DialogSnapToDefaultButton:
         return QVariant(booleanSystemParametersInfo(SPI_GETSNAPTODEFBUTTON, false));
+    case ContextMenuOnMouseRelease:
+        return QVariant(true);
     default:
         break;
     }

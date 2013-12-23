@@ -56,6 +56,17 @@
     return self;
 }
 
+- (void)windowDidBecomeKey:(NSNotification *)notification
+{
+    Q_UNUSED(notification);
+    if (m_cocoaWindow->m_windowUnderMouse) {
+        QPointF windowPoint;
+        QPointF screenPoint;
+        [m_cocoaWindow->m_qtView convertFromScreen:[NSEvent mouseLocation] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+        QWindowSystemInterface::handleEnterEvent(m_cocoaWindow->m_enterLeaveTargetWindow, windowPoint, screenPoint);
+    }
+}
+
 - (void)windowDidResize:(NSNotification *)notification
 {
     Q_UNUSED(notification);

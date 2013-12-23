@@ -270,7 +270,7 @@ void QIOSInputContext::scrollRootView()
             && m_keyboardListener->m_keyboardVisibleAndDocked
             && m_focusView.window == view.window) {
         QRectF cursorRect = qGuiApp->inputMethod()->cursorRectangle();
-        cursorRect.translate(qGuiApp->focusWindow()->geometry().topLeft());
+        cursorRect.translate(m_focusView.qwindow->geometry().topLeft());
         qreal keyboardY = m_keyboardListener->m_keyboardEndRect.y();
         int statusBarY = qGuiApp->primaryScreen()->availableGeometry().y();
         const int margin = 20;

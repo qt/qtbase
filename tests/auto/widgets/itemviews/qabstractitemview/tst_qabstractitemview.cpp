@@ -1289,7 +1289,7 @@ void tst_QAbstractItemView::task200665_itemEntered()
     QSignalSpy spy(&view, SIGNAL(entered(QModelIndex)));
     view.verticalScrollBar()->setValue(view.verticalScrollBar()->maximum());
 
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
 }
 
 void tst_QAbstractItemView::task257481_emptyEditor()

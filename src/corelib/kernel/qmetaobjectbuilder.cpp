@@ -1075,8 +1075,14 @@ int QMetaObjectBuilder::indexOfClassInfo(const QByteArray& name)
     \brief The QMetaStringTable class can generate a meta-object string table at runtime.
 */
 
-QMetaStringTable::QMetaStringTable()
-    : m_index(0) {}
+QMetaStringTable::QMetaStringTable(const QByteArray &className)
+    : m_index(0)
+    , m_className(className)
+{
+    const int index = enter(m_className);
+    Q_ASSERT(index == 0);
+    Q_UNUSED(index);
+}
 
 // Enters the given value into the string table (if it hasn't already been
 // entered). Returns the index of the string.
@@ -1106,30 +1112,45 @@ int QMetaStringTable::blobSize() const
     return size;
 }
 
+static void writeString(char *out, int i, const QByteArray &str,
+                        const int offsetOfStringdataMember, int &stringdataOffset)
+{
+    int size = str.size();
+    qptrdiff offset = offsetOfStringdataMember + stringdataOffset
+            - i * sizeof(QByteArrayData);
+    const QByteArrayData data =
+        Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, offset);
+
+    memcpy(out + i * sizeof(QByteArrayData), &data, sizeof(QByteArrayData));
+
+    memcpy(out + offsetOfStringdataMember + stringdataOffset, str.constData(), size);
+    out[offsetOfStringdataMember + stringdataOffset + size] = '\0';
+
+    stringdataOffset += size + 1;
+}
+
 // Writes strings to string data struct.
 // The struct consists of an array of QByteArrayData, followed by a char array
 // containing the actual strings. This format must match the one produced by
 // moc (see generator.cpp).
-void QMetaStringTable::writeBlob(char *out)
+void QMetaStringTable::writeBlob(char *out) const
 {
     Q_ASSERT(!(reinterpret_cast<quintptr>(out) & (preferredAlignment()-1)));
 
     int offsetOfStringdataMember = m_entries.size() * sizeof(QByteArrayData);
     int stringdataOffset = 0;
-    for (int i = 0; i < m_entries.size(); ++i) {
-        const QByteArray &str = m_entries.key(i);
-        int size = str.size();
-        qptrdiff offset = offsetOfStringdataMember + stringdataOffset
-                - i * sizeof(QByteArrayData);
-        const QByteArrayData data =
-            Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, offset);
 
-        memcpy(out + i * sizeof(QByteArrayData), &data, sizeof(QByteArrayData));
+    // qt_metacast expects the first string in the string table to be the class name.
+    writeString(out, /*index*/0, m_className, offsetOfStringdataMember, stringdataOffset);
 
-        memcpy(out + offsetOfStringdataMember + stringdataOffset, str.constData(), size);
-        out[offsetOfStringdataMember + stringdataOffset + size] = '\0';
+    for (Entries::ConstIterator it = m_entries.constBegin(), end = m_entries.constEnd();
+         it != end; ++it) {
+        const int i = it.value();
+        if (i == 0)
+            continue;
+        const QByteArray &str = it.key();
 
-        stringdataOffset += size + 1;
+        writeString(out, i, str, offsetOfStringdataMember, stringdataOffset);
     }
 }
 
@@ -1270,8 +1291,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     // Reset the current data position to just past the QMetaObjectPrivate.
     dataIndex = MetaObjectPrivateFieldCount;
 
-    QMetaStringTable strings;
-    strings.enter(d->className);
+    QMetaStringTable strings(d->className);
 
     // Output the class infos,
     Q_ASSERT(!buf || dataIndex == pmeta->classInfoData);
