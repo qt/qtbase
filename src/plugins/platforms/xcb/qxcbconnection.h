@@ -574,6 +574,8 @@ private:
     bool has_input_shape;
     bool has_touch_without_mouse_emulation;
     bool has_xkb;
+    bool debug_xinput_devices;
+    bool debug_xinput;
 
     Qt::MouseButtons m_buttons;
 
