@@ -645,8 +645,8 @@ void QGroupBox::setChecked(bool b)
 #ifndef QT_NO_ACCESSIBILITY
         QAccessible::State st;
         st.checked = true;
-        QAccessibleStateChangeEvent *ev = new QAccessibleStateChangeEvent(this, st);
-        QAccessible::updateAccessibility(ev);
+        QAccessibleStateChangeEvent e(this, st);
+        QAccessible::updateAccessibility(&e);
 #endif
         emit toggled(b);
     }

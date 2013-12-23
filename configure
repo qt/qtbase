@@ -695,6 +695,7 @@ CFG_EVENTFD=auto
 CFG_RPATH=yes
 CFG_FRAMEWORK=auto
 DEFINES=
+INCLUDES=
 D_FLAGS=
 I_FLAGS=
 L_FLAGS=
@@ -1993,6 +1994,7 @@ while [ "$#" -gt 0 ]; do
         D_FLAGS="$D_FLAGS -D\"$VAL\""
         ;;
     add_ipath)
+        INCLUDES="$INCLUDES \"$VAL\""
         I_FLAGS="$I_FLAGS -I\"${VAL}\""
         ;;
     add_lpath)
@@ -5889,6 +5891,7 @@ fi
 [ "$CFG_DIRECTWRITE" = "yes" ] && QT_CONFIG="$QT_CONFIG directwrite"
 
 [ '!' -z "$DEFINES" ] && QMakeVar add DEFINES "$DEFINES"
+[ '!' -z "$INCLUDES" ] && QMakeVar add INCLUDEPATH "$INCLUDES"
 [ '!' -z "$L_FLAGS" ] && QMakeVar add LIBS "$L_FLAGS"
 
 if [ "$XPLATFORM_MAC" = "yes" ] && [ "$QT_CROSS_COMPILE" = "no" ]; then
@@ -5914,12 +5917,6 @@ else
 fi
 if [ "$CFG_RPATH" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG rpath"
-fi
-
-if [ '!' -z "$I_FLAGS" ]; then
-    # add the user define include paths
-    QMakeVar add QMAKE_CFLAGS "$I_FLAGS"
-    QMakeVar add QMAKE_CXXFLAGS "$I_FLAGS"
 fi
 
 if [ '!' -z "$W_FLAGS" ]; then

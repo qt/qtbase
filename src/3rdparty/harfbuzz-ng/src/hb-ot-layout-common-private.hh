@@ -39,6 +39,7 @@ namespace OT {
 
 #define NOT_COVERED		((unsigned int) -1)
 #define MAX_NESTING_LEVEL	8
+#define MAX_CONTEXT_LENGTH	64
 
 
 
@@ -376,7 +377,7 @@ struct FeatureParamsStylisticSet
     return TRACE_RETURN (c->check_struct (this));
   }
 
-  USHORT	minorVersion;	/* (set to 0): This corresponds to a “minor”
+  USHORT	version;	/* (set to 0): This corresponds to a “minor”
 				 * version number. Additional data may be
 				 * added to the end of this Feature Parameters
 				 * table in the future. */
@@ -399,6 +400,7 @@ struct FeatureParamsStylisticSet
   DEFINE_SIZE_STATIC (4);
 };
 
+/* http://www.microsoft.com/typography/otspec/features_ae.htm#cv01-cv99 */
 struct FeatureParamsCharacterVariants
 {
   inline bool sanitize (hb_sanitize_context_t *c) {
@@ -1111,7 +1113,7 @@ struct Device
 
     if (!pixels) return 0;
 
-    return pixels * (int64_t) scale / ppem;
+    return (int) (pixels * (int64_t) scale / ppem);
   }
 
 

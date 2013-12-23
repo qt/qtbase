@@ -268,7 +268,7 @@ QCocoaIntegration::QCocoaIntegration()
 
     updateScreens();
 
-    QMacPasteboardMime::initializeMimeTypes();
+    QMacInternalPasteboardMime::initializeMimeTypes();
 }
 
 QCocoaIntegration::~QCocoaIntegration()
@@ -288,7 +288,7 @@ QCocoaIntegration::~QCocoaIntegration()
     // Deleting the clipboard integration flushes promised pastes using
     // the mime converters - the ordering here is important.
     delete mCocoaClipboard;
-    QMacPasteboardMime::destroyMimeTypes();
+    QMacInternalPasteboardMime::destroyMimeTypes();
 
     // Delete screens in reverse order to avoid crash in case of multiple screens
     while (!mScreens.isEmpty()) {

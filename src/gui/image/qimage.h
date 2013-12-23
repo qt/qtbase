@@ -327,6 +327,7 @@ inline void QImage::setPixel(const QPoint &pt, uint index_or_rgb) { setPixel(pt.
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #elif defined(Q_CC_MSVC)
+# pragma warning(push)
 # pragma warning(disable: 4996)
 #endif
 
@@ -403,7 +404,7 @@ inline void QImage::setText(const char* key, const char* lang, const QString &s)
 #if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406)
 # pragma GCC diagnostic pop
 #elif defined(Q_CC_MSVC)
-# pragma warning(default: 4996)
+# pragma warning(pop)
 #endif
 
 inline int QImage::numColors() const

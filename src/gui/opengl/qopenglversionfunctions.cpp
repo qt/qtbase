@@ -198,6 +198,8 @@ bool QAbstractOpenGLFunctions::initializeOpenGLFunctions()
     return true;
 }
 
+/*! \internal
+ */
 bool QAbstractOpenGLFunctions::isInitialized() const
 {
     Q_D(const QAbstractOpenGLFunctions);

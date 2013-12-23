@@ -193,15 +193,15 @@ QByteArray QBBSystemLocaleData::readPpsValue(const char *ppsObject, int ppsFd)
     // Using QVarLengthArray means the first try (of size == 512) uses a buffer on the stack - no allocation necessary.
     // Hopefully that covers most use cases.
     int bytes;
-    QVarLengthArray<char, 512> buffer;
+    QVarLengthArray<char, 512> buffer(512);
     for (;;) {
         errno = 0;
-        bytes = qt_safe_read(ppsFd, buffer.data(), buffer.capacity() - 1);
-        const bool bufferIsTooSmall = (bytes == -1 && errno == EMSGSIZE && buffer.capacity() < MAX_PPS_SIZE);
+        bytes = qt_safe_read(ppsFd, buffer.data(), buffer.size() - 1);
+        const bool bufferIsTooSmall = (bytes == -1 && errno == EMSGSIZE && buffer.size() < MAX_PPS_SIZE);
         if (!bufferIsTooSmall)
             break;
 
-        buffer.resize(qMin(buffer.capacity()*2, MAX_PPS_SIZE));
+        buffer.resize(qMin(buffer.size()*2, MAX_PPS_SIZE));
     }
 
     // This method is called in the ctor(), so do not use qWarning to log warnings

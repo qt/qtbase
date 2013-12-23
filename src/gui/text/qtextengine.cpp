@@ -1098,7 +1098,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
         hb_buffer_set_segment_properties(buffer, &props);
         hb_buffer_guess_segment_properties(buffer);
 
-        uint buffer_flags = HB_BUFFER_FLAG_DEFAULT;
+        uint buffer_flags = 0; // HB_BUFFER_FLAG_DEFAULT
         // Symbol encoding used to encode various crap in the 32..255 character code range,
         // and thus might override U+00AD [SHY]; avoid hiding default ignorables
         if (actualFontEngine->symbol)
@@ -1124,7 +1124,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si, const ushort *st
             hb_qt_font_set_use_design_metrics(hb_font, option.useDesignMetrics() ? uint(QFontEngine::DesignMetrics) : 0); // ###
 
             const hb_feature_t features[1] = {
-                { HB_TAG('k','e','r','n'), !!kerningEnabled, 0, -1 }
+                { HB_TAG('k','e','r','n'), !!kerningEnabled, 0, uint(-1) }
             };
             const int num_features = 1;
             shapedOk = hb_shape_full(hb_font, buffer, features, num_features, 0);

@@ -314,6 +314,10 @@ QtGui
    * When a QVariant holds a QPolygonF() then it will be correctly seen as
      a null QVariant.
 
+ - QImage:
+   * Added three byte-ordered RGBA8888 format that simplifies interaction
+     with OpenGL and other technologies that internally using RGBA formats.
+
  - [QTBUG-27349] Reintroduced command line argument for positioning
    windows (-geometry on X11, -qwindowgeometry on other platforms)
 

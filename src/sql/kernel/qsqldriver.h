@@ -62,6 +62,7 @@ class QVariant;
 class Q_SQL_EXPORT QSqlDriver : public QObject
 {
     friend class QSqlDatabase;
+    friend class QSqlResultPrivate;
     Q_OBJECT
     Q_DECLARE_PRIVATE(QSqlDriver)
 

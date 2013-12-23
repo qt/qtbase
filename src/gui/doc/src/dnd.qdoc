@@ -80,8 +80,8 @@
 
     The rest of the document focuses mainly on how to implement drag and drop
     in C++. For using drag and drop inside a Qt Quick scene, please read the
-    documentation for the Qt Quick \l{Drag}, \l{DragEvent} and \l{DropArea} items.
-    There is also an example \l{quick/draganddrop}{available}.
+    documentation for the Qt Quick \l{Drag}, \l{DragEvent}, and \l{DropArea} items,
+    as well as the \l {Qt Quick Examples - Drag and Drop}{Qt Quick Drag and Drop} examples.
 
     \section1 Dragging
 

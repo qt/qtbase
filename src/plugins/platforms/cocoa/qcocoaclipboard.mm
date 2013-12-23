@@ -46,8 +46,8 @@
 QT_BEGIN_NAMESPACE
 
 QCocoaClipboard::QCocoaClipboard()
-    :m_clipboard(new QMacPasteboard(kPasteboardClipboard, QMacPasteboardMime::MIME_CLIP))
-    ,m_find(new QMacPasteboard(kPasteboardFind, QMacPasteboardMime::MIME_CLIP))
+    :m_clipboard(new QMacPasteboard(kPasteboardClipboard, QMacInternalPasteboardMime::MIME_CLIP))
+    ,m_find(new QMacPasteboard(kPasteboardFind, QMacInternalPasteboardMime::MIME_CLIP))
 {
 
 }

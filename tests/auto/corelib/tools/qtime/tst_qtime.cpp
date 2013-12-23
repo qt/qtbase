@@ -723,15 +723,23 @@ void tst_QTime::toStringFormat()
 void tst_QTime::toStringLocale()
 {
     QTime time(18, 30);
-    QCOMPARE(time.toString(Qt::SystemLocaleDate),
+    QCOMPARE(time.toString(Qt::SystemLocaleShortDate),
                 QLocale::system().toString(time, QLocale::ShortFormat));
-    QCOMPARE(time.toString(Qt::LocaleDate),
+    QCOMPARE(time.toString(Qt::DefaultLocaleShortDate),
                 QLocale().toString(time, QLocale::ShortFormat));
+    QCOMPARE(time.toString(Qt::SystemLocaleLongDate),
+                QLocale::system().toString(time, QLocale::LongFormat));
+    QCOMPARE(time.toString(Qt::DefaultLocaleLongDate),
+                QLocale().toString(time, QLocale::LongFormat));
     QLocale::setDefault(QLocale::German);
-    QCOMPARE(time.toString(Qt::SystemLocaleDate),
+    QCOMPARE(time.toString(Qt::SystemLocaleShortDate),
                 QLocale::system().toString(time, QLocale::ShortFormat));
-    QCOMPARE(time.toString(Qt::LocaleDate),
+    QCOMPARE(time.toString(Qt::DefaultLocaleShortDate),
                 QLocale().toString(time, QLocale::ShortFormat));
+    QCOMPARE(time.toString(Qt::SystemLocaleLongDate),
+                QLocale::system().toString(time, QLocale::LongFormat));
+    QCOMPARE(time.toString(Qt::DefaultLocaleLongDate),
+                QLocale().toString(time, QLocale::LongFormat));
 }
 
 void tst_QTime::msecsSinceStartOfDay_data()

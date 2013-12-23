@@ -178,7 +178,7 @@ public:
     }
 };
 
-class QMacPasteboardMime;
+class QMacInternalPasteboardMime;
 class QMimeData;
 
 

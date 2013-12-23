@@ -324,7 +324,7 @@ struct MarkGlyphSets
 
 struct GDEF
 {
-  static const hb_tag_t Tag	= HB_OT_TAG_GDEF;
+  static const hb_tag_t tableTag	= HB_OT_TAG_GDEF;
 
   enum GlyphClasses {
     UnclassifiedGlyph	= 0,
@@ -383,12 +383,14 @@ struct GDEF
   {
     unsigned int klass = get_glyph_class (glyph);
 
+    ASSERT_STATIC ((unsigned int) HB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH == (unsigned int) LookupFlag::IgnoreBaseGlyphs);
+    ASSERT_STATIC ((unsigned int) HB_OT_LAYOUT_GLYPH_PROPS_LIGATURE == (unsigned int) LookupFlag::IgnoreLigatures);
+    ASSERT_STATIC ((unsigned int) HB_OT_LAYOUT_GLYPH_PROPS_MARK == (unsigned int) LookupFlag::IgnoreMarks);
+
     switch (klass) {
-    default:
-    case UnclassifiedGlyph:	return HB_OT_LAYOUT_GLYPH_PROPS_UNCLASSIFIED;
+    default:			return 0;
     case BaseGlyph:		return HB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH;
     case LigatureGlyph:		return HB_OT_LAYOUT_GLYPH_PROPS_LIGATURE;
-    case ComponentGlyph:	return HB_OT_LAYOUT_GLYPH_PROPS_COMPONENT;
     case MarkGlyph:
 	  klass = get_mark_attachment_type (glyph);
 	  return HB_OT_LAYOUT_GLYPH_PROPS_MARK | (klass << 8);

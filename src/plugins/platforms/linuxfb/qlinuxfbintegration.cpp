@@ -57,7 +57,6 @@ QLinuxFbIntegration::QLinuxFbIntegration(const QStringList &paramList)
     : m_fontDb(new QGenericUnixFontDatabase())
 {
     m_primaryScreen = new QLinuxFbScreen(paramList);
-    screenAdded(m_primaryScreen);
 }
 
 QLinuxFbIntegration::~QLinuxFbIntegration()
@@ -67,7 +66,9 @@ QLinuxFbIntegration::~QLinuxFbIntegration()
 
 void QLinuxFbIntegration::initialize()
 {
-    if (!m_primaryScreen->initialize())
+    if (m_primaryScreen->initialize())
+        screenAdded(m_primaryScreen);
+    else
         qWarning("linuxfb: Failed to initialize screen");
 }
 

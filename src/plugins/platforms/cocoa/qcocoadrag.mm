@@ -131,7 +131,7 @@ Qt::DropAction QCocoaDrag::drag(QDrag *o)
 
     NSImage *nsimage = qt_mac_create_nsimage(pm);
 
-    QMacPasteboard dragBoard((CFStringRef) NSDragPboard, QMacPasteboardMime::MIME_DND);
+    QMacPasteboard dragBoard((CFStringRef) NSDragPboard, QMacInternalPasteboardMime::MIME_DND);
     m_drag->mimeData()->setData(QLatin1String("application/x-qt-mime-type-name"), QByteArray("dummy"));
     dragBoard.setMimeData(m_drag->mimeData());
 
@@ -181,7 +181,7 @@ QStringList QCocoaDropData::formats_sys() const
         qDebug("DnD: Cannot get PasteBoard!");
         return formats;
     }
-    formats = QMacPasteboard(board, QMacPasteboardMime::MIME_DND).formats();
+    formats = QMacPasteboard(board, QMacInternalPasteboardMime::MIME_DND).formats();
     return formats;
 }
 
@@ -193,7 +193,7 @@ QVariant QCocoaDropData::retrieveData_sys(const QString &mimeType, QVariant::Typ
         qDebug("DnD: Cannot get PasteBoard!");
         return data;
     }
-    data = QMacPasteboard(board, QMacPasteboardMime::MIME_DND).retrieveData(mimeType, type);
+    data = QMacPasteboard(board, QMacInternalPasteboardMime::MIME_DND).retrieveData(mimeType, type);
     CFRelease(board);
     return data;
 }
@@ -206,7 +206,7 @@ bool QCocoaDropData::hasFormat_sys(const QString &mimeType) const
         qDebug("DnD: Cannot get PasteBoard!");
         return has;
     }
-    has = QMacPasteboard(board, QMacPasteboardMime::MIME_DND).hasFormat(mimeType);
+    has = QMacPasteboard(board, QMacInternalPasteboardMime::MIME_DND).hasFormat(mimeType);
     CFRelease(board);
     return has;
 }
