@@ -87,8 +87,9 @@ QT_FOR_EACH_STATIC_TYPE(RETURN_METATYPENAME_STRING)
     return 0;
  }
 
-Generator::Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes, const QHash<QByteArray, QByteArray> &knownQObjectClasses, FILE *outfile)
+Generator::Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes, const QHash<QByteArray, QByteArray> &knownQObjectClasses, const QHash<QByteArray, QByteArray> &knownGadgets, FILE *outfile)
     : out(outfile), cdef(classDef), metaTypes(metaTypes), knownQObjectClasses(knownQObjectClasses)
+    , knownGadgets(knownGadgets)
 {
     if (cdef->superclassList.size())
         purestSuperClass = cdef->superclassList.first().first;
@@ -452,8 +453,11 @@ void Generator::generateCode()
 
         // The scope may be a namespace for example, so it's only safe to include scopes that are known QObjects (QTBUG-2151)
         QHash<QByteArray, QByteArray>::ConstIterator scopeIt = knownQObjectClasses.find(unqualifiedScope);
-        if (scopeIt == knownQObjectClasses.constEnd())
-            continue;
+        if (scopeIt == knownQObjectClasses.constEnd()) {
+            scopeIt = knownGadgets.find(unqualifiedScope);
+            if (scopeIt == knownGadgets.constEnd())
+                continue;
+        }
         const QByteArray &scope = *scopeIt;
 
         if (scope == "Qt")

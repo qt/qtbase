@@ -77,6 +77,7 @@
 
 #include "parse-defines.h"
 #include "related-metaobjects-in-namespaces.h"
+#include "related-metaobjects-in-gadget.h"
 
 QT_USE_NAMESPACE
 
@@ -571,6 +572,7 @@ private slots:
     void QTBUG32933_relatedObjectsDontIncludeItself();
     void writeEnumFromUnrelatedClass();
     void relatedMetaObjectsWithinNamespaces();
+    void relatedMetaObjectsInGadget();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -3158,6 +3160,15 @@ void tst_Moc::relatedMetaObjectsWithinNamespaces()
     const QMetaObject *relatedMo = &QTBUG_2151::A::staticMetaObject;
 
     const QMetaObject *testMo = &QTBUG_2151::B::staticMetaObject;
+    QVERIFY(testMo->d.relatedMetaObjects);
+    QVERIFY(testMo->d.relatedMetaObjects[0] == relatedMo);
+}
+
+void tst_Moc::relatedMetaObjectsInGadget()
+{
+    const QMetaObject *relatedMo = &QTBUG_35657::A::staticMetaObject;
+
+    const QMetaObject *testMo = &QTBUG_35657::B::staticMetaObject;
     QVERIFY(testMo->d.relatedMetaObjects);
     QVERIFY(testMo->d.relatedMetaObjects[0] == relatedMo);
 }
