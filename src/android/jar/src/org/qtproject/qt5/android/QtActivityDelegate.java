@@ -348,6 +348,7 @@ public class QtActivityDelegate
         }
 
         m_activity = activity;
+        setActionBarVisibility(false);
         QtNative.setActivity(m_activity, this);
         QtNative.setClassLoader(classLoader);
         if (loaderParams.containsKey(STATIC_INIT_CLASSES_KEY)) {
@@ -412,7 +413,6 @@ public class QtActivityDelegate
             m_applicationParameters = loaderParams.getString(APPLICATION_PARAMETERS_KEY);
         else
             m_applicationParameters = "";
-        setActionBarVisibility(false);
 
         return true;
     }
@@ -816,8 +816,7 @@ public class QtActivityDelegate
     {
         m_opionsMenuIsVisible = true;
         boolean res = QtNative.onPrepareOptionsMenu(menu);
-        if (!res || menu.size() == 0)
-            setActionBarVisibility(false);
+        setActionBarVisibility(res && menu.size() > 0);
         return res;
     }
 
@@ -834,7 +833,6 @@ public class QtActivityDelegate
 
     public void resetOptionsMenu()
     {
-        setActionBarVisibility(true);
         if (Build.VERSION.SDK_INT > 10) {
             try {
                 Activity.class.getMethod("invalidateOptionsMenu").invoke(m_activity);
