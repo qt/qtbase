@@ -874,7 +874,7 @@ void QGraphicsSceneContextMenuEvent::setPos(const QPointF &pos)
 
 /*!
     Returns the position of the mouse cursor in scene coordinates at the moment the
-    the context menu was requested.
+    context menu was requested.
 
     \sa pos(), screenPos()
 */
@@ -899,7 +899,7 @@ void QGraphicsSceneContextMenuEvent::setScenePos(const QPointF &pos)
 
 /*!
     Returns the position of the mouse cursor in screen coordinates at the moment the
-    the context menu was requested.
+    context menu was requested.
 
     \sa pos(), scenePos()
 */

@@ -507,7 +507,7 @@
 
     \snippet graphicsview/diagramscene/diagramscene.cpp 5
 
-    \c DiagramTextItems emit a signal when they loose focus, which is
+    \c DiagramTextItems emit a signal when they lose focus, which is
     connected to this slot. We remove the item if it has no text.
     If not, we would leak memory and confuse the user as the items
     will be edited when pressed on by the mouse.
@@ -715,7 +715,7 @@
 
     \snippet graphicsview/diagramscene/diagramtextitem.cpp 2
 
-    \c DiagramScene uses the signal emitted when the text item looses
+    \c DiagramScene uses the signal emitted when the text item loses
     focus to remove the item if it is empty, i.e., it contains no
     text.
 

@@ -534,7 +534,7 @@
     Use std::lower_bound instead.
 
     Performs a binary search of the range [\a begin, \a end) and
-    returns the position of the first ocurrence of \a value. If no
+    returns the position of the first occurrence of \a value. If no
     such item is found, returns the position where it should be
     inserted.
 

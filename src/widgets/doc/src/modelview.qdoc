@@ -463,7 +463,7 @@
 
     We get the model index that corresponds to the selection by calling
     \l{QItemSelectionModel::currentIndex()}{treeView->selectionModel()->currentIndex()}
-    and we get the the field's string by using the model index. Then we just
+    and we get the field's string by using the model index. Then we just
     calculate the item's \c hierarchyLevel.  Top level items do not have parents
     and the \l{QAbstractItemModel::}{parent()} method will return a default
     constructed \l{QModelIndex}{QModelIndex()}. This is why we use the
@@ -548,7 +548,7 @@
     the underlying data.  The data can be looked up by calling
     \l{QModelIndex::data()}{index.data()}. The delegate's
     \l{QAbstractItemDelegate::}{sizeHint()} method is used to obtain each
-    star's dimensions, so the the cell will provide enough height and width to
+    star's dimensions, so the cell will provide enough height and width to
     accommodate the stars.
 
     Writing custom delegates is the right choice if you want to show your data
