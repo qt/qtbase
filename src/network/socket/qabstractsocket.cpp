@@ -372,9 +372,22 @@
     IP_MULTICAST_LOOP (multicast loopback) socket option.
 
     \value TypeOfServiceOption This option is not supported on
-    Windows. This maps to the IP_TOS socket option.
+    Windows. This maps to the IP_TOS socket option. For possible values,
+    see table below.
 
-    Possible values for the \e{TypeOfServiceOption} are:
+    \value SendBufferSizeSocketOption Sets the socket send buffer size
+    in bytes at the OS level. This maps to the SO_SNDBUF socket option.
+    This option does not affect the QIODevice or QAbstractSocket buffers.
+    This enum value has been introduced in Qt 5.3.
+
+    \value ReceiveBufferSizeSocketOption Sets the socket receive
+    buffer size in bytes at the OS level.
+    This maps to the SO_RCVBUF socket option.
+    This option does not affect the QIODevice or QAbstractSocket buffers
+    (see \l{QAbstractSocket::}{setReadBufferSize()}).
+    This enum value has been introduced in Qt 5.3.
+
+    Possible values for \e{TypeOfServiceOption} are:
 
     \table
     \header \li Value \li Description
@@ -1902,6 +1915,14 @@ void QAbstractSocket::setSocketOption(QAbstractSocket::SocketOption option, cons
         case TypeOfServiceOption:
             d_func()->socketEngine->setOption(QAbstractSocketEngine::TypeOfServiceOption, value.toInt());
             break;
+
+        case SendBufferSizeSocketOption:
+            d_func()->socketEngine->setOption(QAbstractSocketEngine::SendBufferSocketOption, value.toInt());
+            break;
+
+        case ReceiveBufferSizeSocketOption:
+            d_func()->socketEngine->setOption(QAbstractSocketEngine::ReceiveBufferSocketOption, value.toInt());
+            break;
     }
 }
 
@@ -1935,6 +1956,14 @@ QVariant QAbstractSocket::socketOption(QAbstractSocket::SocketOption option)
 
         case TypeOfServiceOption:
                 ret = d_func()->socketEngine->option(QAbstractSocketEngine::TypeOfServiceOption);
+                break;
+
+        case SendBufferSizeSocketOption:
+                ret = d_func()->socketEngine->option(QAbstractSocketEngine::SendBufferSocketOption);
+                break;
+
+        case ReceiveBufferSizeSocketOption:
+                ret = d_func()->socketEngine->option(QAbstractSocketEngine::ReceiveBufferSocketOption);
                 break;
     }
     if (ret == -1)
