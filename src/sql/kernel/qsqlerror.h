@@ -96,12 +96,13 @@ private:
     // ### Qt6: Keep the pointer and remove the rest.
     QString unused1;
     QString unused2;
+    struct Unused {
+        ErrorType unused3;
+        int unused4;
+    };
     union {
         QSqlErrorPrivate *d;
-        struct {
-            ErrorType unused3;
-            int unused4;
-        } unused5;
+        Unused unused5;
     };
 };
 
