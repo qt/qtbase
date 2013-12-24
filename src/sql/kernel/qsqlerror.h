@@ -97,12 +97,12 @@ private:
     QString unused1;
     QString unused2;
     union {
-          QSqlErrorPrivate *d;
-          struct {
-              ErrorType unused3;
-              int unused4;
-          } unused5;
-      };
+        QSqlErrorPrivate *d;
+        struct {
+            ErrorType unused3;
+            int unused4;
+        } unused5;
+    };
 };
 
 #ifndef QT_NO_DEBUG_STREAM
