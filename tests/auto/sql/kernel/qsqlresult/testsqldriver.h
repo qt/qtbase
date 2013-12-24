@@ -45,6 +45,7 @@
 #include <QtSql/QSqlResult>
 #include <QtSql/QSqlDriver>
 #include <QtSql/QSqlRecord>
+#include <private/qsqldriver_p.h>
 
 class TestSqlDriverResult : public QSqlResult
 {
@@ -77,6 +78,8 @@ protected:
 
 class TestSqlDriver : public QSqlDriver
 {
+    Q_DECLARE_PRIVATE(QSqlDriver)
+
 public:
     TestSqlDriver() {}
     ~TestSqlDriver() {}
@@ -96,6 +99,12 @@ public:
               int /* port */, const QString & /* options */)
         { return false; }
     void close() {}
+    QSqlDriverPrivate::DBMSType dbmsType() const
+    {
+        Q_D(const QSqlDriver);
+        return d->dbmsType;
+    }
+
     QSqlResult *createResult() const { return new TestSqlDriverResult(this); }
 };
 

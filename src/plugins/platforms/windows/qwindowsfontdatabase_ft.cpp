@@ -81,7 +81,6 @@ static inline QFontDatabase::WritingSystem writingSystemFromCharSet(uchar charSe
     case EASTEUROPE_CHARSET:
     case BALTIC_CHARSET:
     case TURKISH_CHARSET:
-    case OEM_CHARSET:
         return QFontDatabase::Latin;
     case GREEK_CHARSET:
         return QFontDatabase::Greek;
@@ -106,8 +105,6 @@ static inline QFontDatabase::WritingSystem writingSystemFromCharSet(uchar charSe
         return QFontDatabase::Vietnamese;
     case SYMBOL_CHARSET:
         return QFontDatabase::Symbol;
-    // ### case MAC_CHARSET:
-    // ### case DEFAULT_CHARSET:
     default:
         break;
     }

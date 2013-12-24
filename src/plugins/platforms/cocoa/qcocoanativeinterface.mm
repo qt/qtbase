@@ -207,12 +207,12 @@ void *QCocoaNativeInterface::nsOpenGLContextForContext(QOpenGLContext* context)
 
 void QCocoaNativeInterface::addToMimeList(void *macPasteboardMime)
 {
-    qt_mac_addToGlobalMimeList(reinterpret_cast<QMacPasteboardMime *>(macPasteboardMime));
+    qt_mac_addToGlobalMimeList(reinterpret_cast<QMacInternalPasteboardMime *>(macPasteboardMime));
 }
 
 void QCocoaNativeInterface::removeFromMimeList(void *macPasteboardMime)
 {
-    qt_mac_removeFromGlobalMimeList(reinterpret_cast<QMacPasteboardMime *>(macPasteboardMime));
+    qt_mac_removeFromGlobalMimeList(reinterpret_cast<QMacInternalPasteboardMime *>(macPasteboardMime));
 }
 
 void QCocoaNativeInterface::registerDraggedTypes(const QStringList &types)

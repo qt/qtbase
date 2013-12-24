@@ -79,6 +79,7 @@ contains(QT_CONFIG, harfbuzz) {
         $$QT_HARFBUZZ_DIR/src/hb-ot-layout-gpos-table.hh \
         $$QT_HARFBUZZ_DIR/src/hb-ot-layout-gsubgpos-private.hh \
         $$QT_HARFBUZZ_DIR/src/hb-ot-layout-gsub-table.hh \
+        $$QT_HARFBUZZ_DIR/src/hb-ot-layout-jstf-table.hh \
         $$QT_HARFBUZZ_DIR/src/hb-ot-layout-private.hh \
         $$QT_HARFBUZZ_DIR/src/hb-ot-map-private.hh \
         $$QT_HARFBUZZ_DIR/src/hb-ot-shape-complex-arabic-fallback.hh \

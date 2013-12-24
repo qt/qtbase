@@ -92,55 +92,16 @@ public:
     Q_DECL_CONSTEXPR QMessageLogger(const char *file, int line, const char *function, const char *category)
         : context(file, line, function, category) {}
 
-    void debug(const char *msg, ...) const
-#if defined(Q_CC_GNU) && !defined(__INSURE__)
-#  if defined(Q_CC_MINGW) && !defined(Q_CC_CLANG)
-    __attribute__ ((format (gnu_printf, 2, 3)))
-#  else
-    __attribute__ ((format (printf, 2, 3)))
-#  endif
-#endif
-    ;
-    void noDebug(const char *, ...) const
-#if defined(Q_CC_GNU) && !defined(__INSURE__)
-#  if defined(Q_CC_MINGW) && !defined(Q_CC_CLANG)
-    __attribute__ ((format (gnu_printf, 2, 3)))
-#  else
-    __attribute__ ((format (printf, 2, 3)))
-#  endif
-#endif
+    void debug(const char *msg, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(2, 3);
+    void noDebug(const char *, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(2, 3)
     {}
-    void warning(const char *msg, ...) const
-#if defined(Q_CC_GNU) && !defined(__INSURE__)
-#  if defined(Q_CC_MINGW) && !defined(Q_CC_CLANG)
-    __attribute__ ((format (gnu_printf, 2, 3)))
-#  else
-    __attribute__ ((format (printf, 2, 3)))
-#  endif
-#endif
-    ;
-    void critical(const char *msg, ...) const
-#if defined(Q_CC_GNU) && !defined(__INSURE__)
-#  if defined(Q_CC_MINGW) && !defined(Q_CC_CLANG)
-    __attribute__ ((format (gnu_printf, 2, 3)))
-#  else
-    __attribute__ ((format (printf, 2, 3)))
-#  endif
-#endif
-    ;
+    void warning(const char *msg, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(2, 3);
+    void critical(const char *msg, ...) const Q_ATTRIBUTE_FORMAT_PRINTF(2, 3);
 
 #ifndef Q_CC_MSVC
     Q_NORETURN
 #endif
-    void fatal(const char *msg, ...) const Q_DECL_NOTHROW
-#if defined(Q_CC_GNU) && !defined(__INSURE__)
-#  if defined(Q_CC_MINGW) && !defined(Q_CC_CLANG)
-    __attribute__ ((format (gnu_printf, 2, 3)))
-#  else
-    __attribute__ ((format (printf, 2, 3)))
-#  endif
-#endif
-    ;
+    void fatal(const char *msg, ...) const Q_DECL_NOTHROW Q_ATTRIBUTE_FORMAT_PRINTF(2, 3);
 
 #ifndef QT_NO_DEBUG_STREAM
     QDebug debug() const;

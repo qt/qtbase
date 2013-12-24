@@ -28,7 +28,6 @@
 #define HB_SET_PRIVATE_HH
 
 #include "hb-private.hh"
-#include "hb-set.h"
 #include "hb-object-private.hh"
 
 
@@ -171,7 +170,7 @@ struct hb_set_t
   inline void add (hb_codepoint_t g)
   {
     if (unlikely (in_error)) return;
-    if (unlikely (g == SENTINEL)) return;
+    if (unlikely (g == INVALID)) return;
     if (unlikely (g > MAX_G)) return;
     elt (g) |= mask (g);
   }
@@ -256,19 +255,22 @@ struct hb_set_t
   }
   inline bool next (hb_codepoint_t *codepoint) const
   {
-    if (unlikely (*codepoint == SENTINEL)) {
+    if (unlikely (*codepoint == INVALID)) {
       hb_codepoint_t i = get_min ();
-      if (i != SENTINEL) {
+      if (i != INVALID) {
         *codepoint = i;
 	return true;
-      } else
+      } else {
+	*codepoint = INVALID;
         return false;
+      }
     }
     for (hb_codepoint_t i = *codepoint + 1; i < MAX_G + 1; i++)
       if (has (i)) {
         *codepoint = i;
 	return true;
       }
+    *codepoint = INVALID;
     return false;
   }
   inline bool next_range (hb_codepoint_t *first, hb_codepoint_t *last) const
@@ -277,7 +279,10 @@ struct hb_set_t
 
     i = *last;
     if (!next (&i))
+    {
+      *last = *first = INVALID;
       return false;
+    }
 
     *last = *first = i;
     while (next (&i) && i == *last + 1)
@@ -300,7 +305,7 @@ struct hb_set_t
 	for (unsigned int j = 0; j < BITS; j++)
 	  if (elts[i] & (1 << j))
 	    return i * BITS + j;
-    return SENTINEL;
+    return INVALID;
   }
   inline hb_codepoint_t get_max (void) const
   {
@@ -309,7 +314,7 @@ struct hb_set_t
 	for (unsigned int j = BITS; j; j--)
 	  if (elts[i - 1] & (1 << (j - 1)))
 	    return (i - 1) * BITS + (j - 1);
-    return SENTINEL;
+    return INVALID;
   }
 
   typedef uint32_t elt_t;
@@ -318,7 +323,7 @@ struct hb_set_t
   static const unsigned int BITS = (1 << SHIFT);
   static const unsigned int MASK = BITS - 1;
   static const unsigned int ELTS = (MAX_G + 1 + (BITS - 1)) / BITS;
-  static  const hb_codepoint_t SENTINEL = (hb_codepoint_t) -1;
+  static  const hb_codepoint_t INVALID = HB_SET_VALUE_INVALID;
 
   elt_t &elt (hb_codepoint_t g) { return elts[g >> SHIFT]; }
   elt_t elt (hb_codepoint_t g) const { return elts[g >> SHIFT]; }

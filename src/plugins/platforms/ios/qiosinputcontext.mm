@@ -150,7 +150,7 @@
     m_keyboardEndRect = [self getKeyboardRect:notification];
     if (!m_duration) {
         m_duration = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
-        m_curve = [notification.userInfo[UIKeyboardAnimationCurveUserInfoKey] integerValue] << 16;
+        m_curve = UIViewAnimationCurve([notification.userInfo[UIKeyboardAnimationCurveUserInfoKey] integerValue] << 16);
     }
     m_context->scrollRootView();
 }

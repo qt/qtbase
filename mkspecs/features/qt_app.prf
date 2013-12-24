@@ -25,7 +25,7 @@ host_build:force_bootstrap {
     }
     target.path = $$[QT_HOST_BINS]
 } else {
-    !build_pass:contains(QT_CONFIG, build_all): CONFIG += release
+    !build_pass:contains(QT_CONFIG, debug_and_release):contains(QT_CONFIG, build_all): CONFIG += release
     target.path = $$[QT_INSTALL_BINS]
 }
 INSTALLS += target

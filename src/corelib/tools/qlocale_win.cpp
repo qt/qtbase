@@ -102,6 +102,9 @@ static QString winIso3116CtryName(LPWSTR id = LOCALE_NAME_USER_DEFAULT);
 #ifndef LOCALE_SNATIVECOUNTRYNAME
 #  define LOCALE_SNATIVECOUNTRYNAME 0x00000008
 #endif
+#ifndef LOCALE_SSHORTTIME
+#  define LOCALE_SSHORTTIME 0x00000079
+#endif
 
 struct QSystemLocalePrivate
 {
@@ -327,7 +330,9 @@ QVariant QSystemLocalePrivate::timeFormat(QLocale::FormatType type)
 {
     switch (type) {
     case QLocale::ShortFormat:
-        return winToQtFormat(getLocaleInfo(LOCALE_STIMEFORMAT)); //###
+        if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7)
+            return winToQtFormat(getLocaleInfo(LOCALE_SSHORTTIME));
+        // fall through
     case QLocale::LongFormat:
         return winToQtFormat(getLocaleInfo(LOCALE_STIMEFORMAT));
     case QLocale::NarrowFormat:
@@ -410,7 +415,7 @@ QVariant QSystemLocalePrivate::toString(const QDate &date, QLocale::FormatType t
     return QString();
 }
 
-QVariant QSystemLocalePrivate::toString(const QTime &time, QLocale::FormatType)
+QVariant QSystemLocalePrivate::toString(const QTime &time, QLocale::FormatType type)
 {
     SYSTEMTIME st;
     memset(&st, 0, sizeof(SYSTEMTIME));
@@ -420,6 +425,9 @@ QVariant QSystemLocalePrivate::toString(const QTime &time, QLocale::FormatType)
     st.wMilliseconds = 0;
 
     DWORD flags = 0;
+    // keep the same conditional as timeFormat() above
+    if (type == QLocale::ShortFormat && QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7)
+        flags = TIME_NOSECONDS;
 
     wchar_t buf[255];
     if (getTimeFormat(flags, &st, NULL, buf, 255)) {

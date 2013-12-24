@@ -62,11 +62,11 @@ QT_BEGIN_NAMESPACE
 
 extern CGImageRef qt_mac_createCGImageFromQImage(const QImage &img, const QImage **imagePtr = 0); // qpaintengine_mac.cpp
 
-typedef QList<QMacPasteboardMime*> MimeList;
+typedef QList<QMacInternalPasteboardMime*> MimeList;
 Q_GLOBAL_STATIC(MimeList, globalMimeList)
 Q_GLOBAL_STATIC(QStringList, globalDraggedTypesList)
 
-void qt_mac_addToGlobalMimeList(QMacPasteboardMime *macMime)
+void qt_mac_addToGlobalMimeList(QMacInternalPasteboardMime *macMime)
 {
     // globalMimeList is in decreasing priority order. Recently added
     // converters take prioity over previously added converters: prepend
@@ -74,7 +74,7 @@ void qt_mac_addToGlobalMimeList(QMacPasteboardMime *macMime)
     globalMimeList()->prepend(macMime);
 }
 
-void qt_mac_removeFromGlobalMimeList(QMacPasteboardMime *macMime)
+void qt_mac_removeFromGlobalMimeList(QMacInternalPasteboardMime *macMime)
 {
     if (!QGuiApplication::closingDown())
         globalMimeList()->removeAll(macMime);
@@ -166,7 +166,7 @@ CFStringRef qt_mac_mime_typeUTI = CFSTR("com.pasteboard.trolltech.marker");
   Constructs a new conversion object of type \a t, adding it to the
   globally accessed list of available convertors.
 */
-QMacPasteboardMime::QMacPasteboardMime(char t) : type(t)
+QMacInternalPasteboardMime::QMacInternalPasteboardMime(char t) : type(t)
 {
     qt_mac_addToGlobalMimeList(this);
 }
@@ -175,7 +175,7 @@ QMacPasteboardMime::QMacPasteboardMime(char t) : type(t)
   Destroys a conversion object, removing it from the global
   list of available convertors.
 */
-QMacPasteboardMime::~QMacPasteboardMime()
+QMacInternalPasteboardMime::~QMacInternalPasteboardMime()
 {
     qt_mac_removeFromGlobalMimeList(this);
 }
@@ -183,17 +183,17 @@ QMacPasteboardMime::~QMacPasteboardMime()
 /*!
   Returns the item count for the given \a mimeData
 */
-int QMacPasteboardMime::count(QMimeData *mimeData)
+int QMacInternalPasteboardMime::count(QMimeData *mimeData)
 {
     Q_UNUSED(mimeData);
     return 1;
 }
 
-class QMacPasteboardMimeAny : public QMacPasteboardMime {
+class QMacPasteboardMimeAny : public QMacInternalPasteboardMime {
 private:
 
 public:
-    QMacPasteboardMimeAny() : QMacPasteboardMime(MIME_QT_CONVERTOR|MIME_ALL) {
+    QMacPasteboardMimeAny() : QMacInternalPasteboardMime(MIME_QT_CONVERTOR|MIME_ALL) {
     }
     ~QMacPasteboardMimeAny() {
     }
@@ -255,11 +255,11 @@ QList<QByteArray> QMacPasteboardMimeAny::convertFromMime(const QString &mime, QV
     return ret;
 }
 
-class QMacPasteboardMimeTypeName : public QMacPasteboardMime {
+class QMacPasteboardMimeTypeName : public QMacInternalPasteboardMime {
 private:
 
 public:
-    QMacPasteboardMimeTypeName() : QMacPasteboardMime(MIME_QT_CONVERTOR|MIME_ALL) {
+    QMacPasteboardMimeTypeName() : QMacInternalPasteboardMime(MIME_QT_CONVERTOR|MIME_ALL) {
     }
     ~QMacPasteboardMimeTypeName() {
     }
@@ -307,9 +307,9 @@ QList<QByteArray> QMacPasteboardMimeTypeName::convertFromMime(const QString &, Q
     return ret;
 }
 
-class QMacPasteboardMimePlainText : public QMacPasteboardMime {
+class QMacPasteboardMimePlainText : public QMacInternalPasteboardMime {
 public:
-    QMacPasteboardMimePlainText() : QMacPasteboardMime(MIME_ALL) { }
+    QMacPasteboardMimePlainText() : QMacInternalPasteboardMime(MIME_ALL) { }
     QString convertorName();
 
     QString flavorFor(const QString &mime);
@@ -369,9 +369,9 @@ QList<QByteArray> QMacPasteboardMimePlainText::convertFromMime(const QString &, 
     return ret;
 }
 
-class QMacPasteboardMimeUnicodeText : public QMacPasteboardMime {
+class QMacPasteboardMimeUnicodeText : public QMacInternalPasteboardMime {
 public:
-    QMacPasteboardMimeUnicodeText() : QMacPasteboardMime(MIME_ALL) { }
+    QMacPasteboardMimeUnicodeText() : QMacInternalPasteboardMime(MIME_ALL) { }
     QString convertorName();
 
     QString flavorFor(const QString &mime);
@@ -449,9 +449,9 @@ QList<QByteArray> QMacPasteboardMimeUnicodeText::convertFromMime(const QString &
     return ret;
 }
 
-class QMacPasteboardMimeHTMLText : public QMacPasteboardMime {
+class QMacPasteboardMimeHTMLText : public QMacInternalPasteboardMime {
 public:
-    QMacPasteboardMimeHTMLText() : QMacPasteboardMime(MIME_ALL) { }
+    QMacPasteboardMimeHTMLText() : QMacInternalPasteboardMime(MIME_ALL) { }
     QString convertorName();
 
     QString flavorFor(const QString &mime);
@@ -503,9 +503,9 @@ QList<QByteArray> QMacPasteboardMimeHTMLText::convertFromMime(const QString &mim
     return ret;
 }
 
-class QMacPasteboardMimeTiff : public QMacPasteboardMime {
+class QMacPasteboardMimeTiff : public QMacInternalPasteboardMime {
 public:
-    QMacPasteboardMimeTiff() : QMacPasteboardMime(MIME_ALL) { }
+    QMacPasteboardMimeTiff() : QMacInternalPasteboardMime(MIME_ALL) { }
     QString convertorName();
 
     QString flavorFor(const QString &mime);
@@ -595,9 +595,9 @@ QList<QByteArray> QMacPasteboardMimeTiff::convertFromMime(const QString &mime, Q
 }
 
 
-class QMacPasteboardMimeFileUri : public QMacPasteboardMime {
+class QMacPasteboardMimeFileUri : public QMacInternalPasteboardMime {
 public:
-    QMacPasteboardMimeFileUri() : QMacPasteboardMime(MIME_ALL) { }
+    QMacPasteboardMimeFileUri() : QMacInternalPasteboardMime(MIME_ALL) { }
     QString convertorName();
 
     QString flavorFor(const QString &mime);
@@ -673,9 +673,9 @@ int QMacPasteboardMimeFileUri::count(QMimeData *mimeData)
     return mimeData->urls().count();
 }
 
-class QMacPasteboardMimeUrl : public QMacPasteboardMime {
+class QMacPasteboardMimeUrl : public QMacInternalPasteboardMime {
 public:
-    QMacPasteboardMimeUrl() : QMacPasteboardMime(MIME_ALL) { }
+    QMacPasteboardMimeUrl() : QMacInternalPasteboardMime(MIME_ALL) { }
     QString convertorName();
 
     QString flavorFor(const QString &mime);
@@ -747,10 +747,10 @@ QList<QByteArray> QMacPasteboardMimeUrl::convertFromMime(const QString &mime, QV
     return ret;
 }
 
-class QMacPasteboardMimeVCard : public QMacPasteboardMime
+class QMacPasteboardMimeVCard : public QMacInternalPasteboardMime
 {
 public:
-    QMacPasteboardMimeVCard() : QMacPasteboardMime(MIME_ALL){ }
+    QMacPasteboardMimeVCard() : QMacInternalPasteboardMime(MIME_ALL){ }
     QString convertorName();
 
     QString flavorFor(const QString &mime);
@@ -808,7 +808,7 @@ QList<QByteArray> QMacPasteboardMimeVCard::convertFromMime(const QString &mime, 
 
   This is an internal function.
 */
-void QMacPasteboardMime::initializeMimeTypes()
+void QMacInternalPasteboardMime::initializeMimeTypes()
 {
     if (globalMimeList()->isEmpty()) {
         // Create QMacPasteboardMimeAny first to put it at the end of globalMimeList
@@ -830,7 +830,7 @@ void QMacPasteboardMime::initializeMimeTypes()
 /*!
   \internal
 */
-void QMacPasteboardMime::destroyMimeTypes()
+void QMacInternalPasteboardMime::destroyMimeTypes()
 {
     MimeList *mimes = globalMimeList();
     while (!mimes->isEmpty())
@@ -842,8 +842,8 @@ void QMacPasteboardMime::destroyMimeTypes()
   between the \a mime and \a flav formats.  Returns 0 if no such convertor
   exists.
 */
-QMacPasteboardMime*
-QMacPasteboardMime::convertor(uchar t, const QString &mime, QString flav)
+QMacInternalPasteboardMime*
+QMacInternalPasteboardMime::convertor(uchar t, const QString &mime, QString flav)
 {
     MimeList *mimes = globalMimeList();
     for (MimeList::const_iterator it = mimes->constBegin(); it != mimes->constEnd(); ++it) {
@@ -868,7 +868,7 @@ QMacPasteboardMime::convertor(uchar t, const QString &mime, QString flav)
 /*!
   Returns a MIME type of type \a t for \a flav, or 0 if none exists.
 */
-QString QMacPasteboardMime::flavorToMime(uchar t, QString flav)
+QString QMacInternalPasteboardMime::flavorToMime(uchar t, QString flav)
 {
     MimeList *mimes = globalMimeList();
     for (MimeList::const_iterator it = mimes->constBegin(); it != mimes->constEnd(); ++it) {
@@ -891,7 +891,7 @@ QString QMacPasteboardMime::flavorToMime(uchar t, QString flav)
 /*!
   Returns a list of all currently defined QMacPasteboardMime objects of type \a t.
 */
-QList<QMacPasteboardMime*> QMacPasteboardMime::all(uchar t)
+QList<QMacInternalPasteboardMime*> QMacInternalPasteboardMime::all(uchar t)
 {
     MimeList ret;
     MimeList *mimes = globalMimeList();

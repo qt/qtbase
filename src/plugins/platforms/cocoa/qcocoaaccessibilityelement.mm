@@ -240,7 +240,10 @@
 // misc
 
 - (BOOL)accessibilityIsIgnored {
-    return QCocoaAccessible::shouldBeIgnored(QAccessible::accessibleInterface(axid));
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
+    if (!iface || !iface->isValid())
+        return true;
+    return QCocoaAccessible::shouldBeIgnored(iface);
 }
 
 - (id)accessibilityHitTest:(NSPoint)point {

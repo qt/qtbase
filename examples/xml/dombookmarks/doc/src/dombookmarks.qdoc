@@ -26,8 +26,9 @@
 ****************************************************************************/
 
 /*!
-    \example xml/dombookmarks
+    \example dombookmarks
     \title DOM Bookmarks Example
+    \ingroup xml-examples
 
     The DOM Bookmarks example provides a reader for XML Bookmark Exchange Language (XBEL)
     files that uses Qt's DOM-based XML API to read and parse the files. The SAX Bookmarks
