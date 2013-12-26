@@ -418,57 +418,153 @@ void QPrinterPrivate::setProperty(QPrintEngine::PrintEnginePropertyKey key, cons
 */
 
 /*!
-  \enum QPrinter::PaperSize
-  \since 4.4
+    \enum QPrinter::PaperSize
+    \since 4.4
 
-  This enum type specifies what paper size QPrinter should use.
-  QPrinter does not check that the paper size is available; it just
-  uses this information, together with QPrinter::Orientation and
-  QPrinter::setFullPage(), to determine the printable area.
+    This enum type specifies what paper size QPrinter should use.
+    QPrinter does not check that the paper size is available; it just
+    uses this information, together with QPrinter::Orientation and
+    QPrinter::setFullPage(), to determine the printable area.
 
-  The defined sizes (with setFullPage(true)) are:
+    The defined sizes (with setFullPage(true)) are:
 
-  \value A0 841 x 1189 mm
-  \value A1 594 x 841 mm
-  \value A2 420 x 594 mm
-  \value A3 297 x 420 mm
-  \value A4 210 x 297 mm, 8.26 x 11.69 inches
-  \value A5 148 x 210 mm
-  \value A6 105 x 148 mm
-  \value A7 74 x 105 mm
-  \value A8 52 x 74 mm
-  \value A9 37 x 52 mm
-  \value B0 1000 x 1414 mm
-  \value B1 707 x 1000 mm
-  \value B2 500 x 707 mm
-  \value B3 353 x 500 mm
-  \value B4 250 x 353 mm
-  \value B5 176 x 250 mm, 6.93 x 9.84 inches
-  \value B6 125 x 176 mm
-  \value B7 88 x 125 mm
-  \value B8 62 x 88 mm
-  \value B9 44 x 62 mm
-  \value B10 31 x 44 mm
-  \value C5E 163 x 229 mm
-  \value Comm10E 105 x 241 mm, U.S. Common 10 Envelope
-  \value DLE 110 x 220 mm
-  \value Executive 7.5 x 10 inches, 190.5 x 254 mm
-  \value Folio 210 x 330 mm
-  \value Ledger 431.8 x 279.4 mm
-  \value Legal 8.5 x 14 inches, 215.9 x 355.6 mm
-  \value Letter 8.5 x 11 inches, 215.9 x 279.4 mm
-  \value Tabloid 279.4 x 431.8 mm
-  \value Custom Unknown, or a user defined size.
+    \value A0 841 x 1189 mm
+    \value A1 594 x 841 mm
+    \value A2 420 x 594 mm
+    \value A3 297 x 420 mm
+    \value A4 210 x 297 mm, 8.26 x 11.69 inches
+    \value A5 148 x 210 mm
+    \value A6 105 x 148 mm
+    \value A7 74 x 105 mm
+    \value A8 52 x 74 mm
+    \value A9 37 x 52 mm
+    \value B0 1000 x 1414 mm
+    \value B1 707 x 1000 mm
+    \value B2 500 x 707 mm
+    \value B3 353 x 500 mm
+    \value B4 250 x 353 mm
+    \value B5 176 x 250 mm, 6.93 x 9.84 inches
+    \value B6 125 x 176 mm
+    \value B7 88 x 125 mm
+    \value B8 62 x 88 mm
+    \value B9 33 x 62 mm
+    \value B10 31 x 44 mm
+    \value C5E 163 x 229 mm
+    \value Comm10E 105 x 241 mm, U.S. Common 10 Envelope
+    \value DLE 110 x 220 mm
+    \value Executive 7.5 x 10 inches, 190.5 x 254 mm
+    \value Folio 210 x 330 mm
+    \value Ledger 431.8 x 279.4 mm
+    \value Legal 8.5 x 14 inches, 215.9 x 355.6 mm
+    \value Letter 8.5 x 11 inches, 215.9 x 279.4 mm
+    \value Tabloid 279.4 x 431.8 mm
+    \value Custom Unknown, or a user defined size.
+    \value A10
+    \value A3Extra
+    \value A4Extra
+    \value A4Plus
+    \value A4Small
+    \value A5Extra
+    \value B5Extra
+    \value JisB0
+    \value JisB1
+    \value JisB2
+    \value JisB3
+    \value JisB4
+    \value JisB5
+    \value JisB6,
+    \value JisB7
+    \value JisB8
+    \value JisB9
+    \value JisB10
+    \value AnsiA = Letter
+    \value AnsiB = Ledger
+    \value AnsiC
+    \value AnsiD
+    \value AnsiE
+    \value LegalExtra
+    \value LetterExtra
+    \value LetterPlus
+    \value LetterSmall
+    \value TabloidExtra
+    \value ArchA
+    \value ArchB
+    \value ArchC
+    \value ArchD
+    \value ArchE
+    \value Imperial7x9
+    \value Imperial8x10
+    \value Imperial9x11
+    \value Imperial9x12
+    \value Imperial10x11
+    \value Imperial10x13
+    \value Imperial10x14
+    \value Imperial12x11
+    \value Imperial15x11
+    \value ExecutiveStandard
+    \value Note
+    \value Quarto
+    \value Statement
+    \value SuperA
+    \value SuperB
+    \value Postcard
+    \value DoublePostcard
+    \value Prc16K
+    \value Prc32K
+    \value Prc32KBig
+    \value FanFoldUS
+    \value FanFoldGerman
+    \value FanFoldGermanLegal
+    \value EnvelopeB4
+    \value EnvelopeB5
+    \value EnvelopeB6
+    \value EnvelopeC0
+    \value EnvelopeC1
+    \value EnvelopeC2
+    \value EnvelopeC3
+    \value EnvelopeC4
+    \value EnvelopeC5 = C5E
+    \value EnvelopeC6
+    \value EnvelopeC65
+    \value EnvelopeC7
+    \value EnvelopeDL = DLE
+    \value Envelope9
+    \value Envelope10 = Comm10E
+    \value Envelope11
+    \value Envelope12
+    \value Envelope14
+    \value EnvelopeMonarch
+    \value EnvelopePersonal
+    \value EnvelopeChou3
+    \value EnvelopeChou4
+    \value EnvelopeInvite
+    \value EnvelopeItalian
+    \value EnvelopeKaku2
+    \value EnvelopeKaku3
+    \value EnvelopePrc1
+    \value EnvelopePrc2
+    \value EnvelopePrc3
+    \value EnvelopePrc4
+    \value EnvelopePrc5
+    \value EnvelopePrc6
+    \value EnvelopePrc7
+    \value EnvelopePrc8
+    \value EnvelopePrc9
+    \value EnvelopePrc10
+    \value EnvelopeYou4
+    \value LastPageSize = EnvelopeYou4
+    \omitvalue NPageSize
+    \omitvalue NPaperSize
 
-  With setFullPage(false) (the default), the metrics will be a bit
-  smaller; how much depends on the printer in use.
+    With setFullPage(false) (the default), the metrics will be a bit
+    smaller; how much depends on the printer in use.
 
-  \note QPrinter::Folio is the Adobe specification for the Folio size.
-  On Windows if you want to use the same as DMPAPER_FOLIO then you should use
-  setPaperSize(QSizeF(8.5, 13), QPrinter::Inch).
+    Due to historic reasons QPageSize::Executive is not the same as the standard
+    Postscript and Windows Executive size, use QPageSize::ExecutiveStandard instead.
 
-  \omitvalue NPageSize
-  \omitvalue NPaperSize
+    The Postscript standard size QPageSize::Folio is different to the Windows
+    DMPAPER_FOLIO size, use the Postscript standard size QPageSize::FanFoldGermanLegal
+    if needed.
 */
 
 
