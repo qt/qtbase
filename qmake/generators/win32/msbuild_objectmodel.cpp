@@ -613,12 +613,16 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
         << tag("ItemGroup")
         << attrTag("Label", "ProjectConfigurations");
 
+    bool isWinRT = false;
+    bool isPhone = false;
     for (int i = 0; i < tool.SingleProjects.count(); ++i) {
         xml << tag("ProjectConfiguration")
             << attrTag("Include" , tool.SingleProjects.at(i).Configuration.Name)
             << tagValue("Configuration", tool.SingleProjects.at(i).Configuration.ConfigurationName)
             << tagValue("Platform", tool.SingleProjects.at(i).PlatformName)
             << closetag();
+        isWinRT = isWinRT || tool.SingleProjects.at(i).Configuration.WinRT;
+        isPhone = isPhone || tool.SingleProjects.at(i).Configuration.WinPhone;
     }
 
     xml << closetag()
@@ -823,9 +827,43 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
             << closetag();
     }
 
+    // App manifest
+    if (isWinRT) {
+        QString manifest = isPhone ? QStringLiteral("WMAppManifest.xml") : QStringLiteral("Package.appxmanifest");
+
+        // Find all icons referenced in the manifest
+        QSet<QString> icons;
+        QFile manifestFile(manifest);
+        if (manifestFile.open(QFile::ReadOnly)) {
+            const QString contents = manifestFile.readAll();
+            QRegExp regexp("[\\\\/a-zA-Z0-9_\\-\\!]*\\.(png|jpg|jpeg)");
+            int pos = 0;
+            while (pos > -1) {
+                pos = regexp.indexIn(contents, pos);
+                if (pos >= 0) {
+                    const QString match = regexp.cap(0);
+                    icons.insert(match);
+                    pos += match.length();
+                }
+            }
+        }
+
+        // Write out manifest + icons as content items
+        xml << tag(_ItemGroup)
+            << tag(isPhone ? "Xml" : "AppxManifest")
+            << attrTag("Include", manifest)
+            << closetag();
+        foreach (const QString &icon, icons) {
+            xml << tag("Image")
+                << attrTag("Include", icon)
+                << closetag();
+        }
+        xml << closetag();
+    }
+
     xml << import("Project", "$(VCTargetsPath)\\Microsoft.Cpp.targets");
 
-    if (tool.SingleProjects.at(0).Configuration.WinPhone)
+    if (isPhone)
         xml << import("Project", "$(MSBuildExtensionsPath)\\Microsoft\\WindowsPhone\\v8.0\\Microsoft.Cpp.WindowsPhone.8.0.targets");
 
     xml << tag("ImportGroup")
