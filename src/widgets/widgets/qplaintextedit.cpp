@@ -1320,6 +1320,35 @@ QTextDocument *QPlainTextEdit::document() const
 }
 
 /*!
+    \since 5.3
+
+    \property QPlainTextEdit::placeholderText
+    \brief the editor placeholder text
+
+    Setting this property makes the editor display a grayed-out
+    placeholder text as long as the document() is empty.
+
+    By default, this property contains an empty string.
+
+    \sa document()
+*/
+void QPlainTextEdit::setPlaceholderText(const QString &placeholderText)
+{
+    Q_D(QPlainTextEdit);
+    if (d->placeholderText != placeholderText) {
+        d->placeholderText = placeholderText;
+        if (d->control->document()->isEmpty())
+            d->viewport->update();
+    }
+}
+
+QString QPlainTextEdit::placeholderText() const
+{
+    Q_D(const QPlainTextEdit);
+    return d->placeholderText;
+}
+
+/*!
     Sets the visible \a cursor.
 */
 void QPlainTextEdit::setTextCursor(const QTextCursor &cursor)
@@ -1945,7 +1974,16 @@ void QPlainTextEdit::paintEvent(QPaintEvent *e)
             }
 
 
-            layout->draw(&painter, offset, selections, er);
+            if (!placeholderText().isEmpty() && document()->isEmpty()) {
+              Q_D(QPlainTextEdit);
+              QColor col = d->control->palette().text().color();
+              col.setAlpha(128);
+              painter.setPen(col);
+              const int margin = int(document()->documentMargin());
+              painter.drawText(r.adjusted(margin, 0, 0, 0), Qt::AlignTop | Qt::TextWordWrap, placeholderText());
+            } else {
+              layout->draw(&painter, offset, selections, er);
+            }
             if ((drawCursor && !drawCursorAsBlock)
                 || (editable && context.cursorPosition < -1
                     && !layout->preeditAreaText().isEmpty())) {

@@ -179,6 +179,7 @@ public:
     void _q_modificationChanged(bool);
 
     int originalOffsetY;
+    QString placeholderText;
 };
 
 QT_END_NAMESPACE
