@@ -111,9 +111,10 @@ QT_END_NAMESPACE
 #endif
 
 QT_BEGIN_NAMESPACE
-DotNET which_dotnet_version()
+DotNET which_dotnet_version(const QByteArray &preferredVersion = QByteArray())
 {
 #ifndef Q_OS_WIN32
+    Q_UNUSED(preferredVersion);
     return NET2002; // Always generate 7.0 versions on other platforms
 #else
     // Only search for the version once
@@ -135,6 +136,10 @@ DotNET which_dotnet_version()
             installPaths.insert(lowestInstalledVersion->version, path);
             ++installed;
             current_version = lowestInstalledVersion->version;
+            if (QByteArray(lowestInstalledVersion->versionStr).contains(preferredVersion)) {
+                installed = 1;
+                break;
+            }
         }
     }
 
@@ -583,7 +588,7 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
         return;
     }
 
-    switch(which_dotnet_version()) {
+    switch (which_dotnet_version(project->first("MSVC_VER").toLatin1())) {
     case NET2013:
         t << _slnHeader120;
         break;
@@ -872,7 +877,7 @@ void VcprojGenerator::initProject()
 
     // Own elements -----------------------------
     vcProject.Name = unescapeFilePath(project->first("QMAKE_ORIG_TARGET").toQString());
-    switch(which_dotnet_version()) {
+    switch (which_dotnet_version(project->first("MSVC_VER").toLatin1())) {
     case NET2013:
         vcProject.Version = "13.00";
         break;
@@ -922,7 +927,7 @@ void VcprojGenerator::initConfiguration()
     // - Do this first since main configuration elements may need
     // - to know of certain compiler/linker options
     VCConfiguration &conf = vcProject.Configuration;
-    conf.CompilerVersion = which_dotnet_version();
+    conf.CompilerVersion = which_dotnet_version(project->first("MSVC_VER").toLatin1());
 
     initCompilerTool();
 
