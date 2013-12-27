@@ -1004,7 +1004,11 @@ void QFileDialog::setDirectory(const QString &directory)
 QDir QFileDialog::directory() const
 {
     Q_D(const QFileDialog);
-    return QDir(d->nativeDialogInUse ? d->directory_sys().toLocalFile() : d->rootPath());
+    if (d->nativeDialogInUse) {
+        QString dir = d->directory_sys().toLocalFile();
+        return QDir(dir.isEmpty() ? d->options->initialDirectory().toLocalFile() : dir);
+    }
+    return d->rootPath();
 }
 
 /*!
