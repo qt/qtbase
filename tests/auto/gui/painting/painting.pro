@@ -5,6 +5,7 @@ SUBDIRS=\
    qcolor \
    qbrush \
    qregion \
+   qpagelayout \
    qpagesize \
    qpainter \
    qpathclipper \
