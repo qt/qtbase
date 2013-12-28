@@ -209,6 +209,8 @@ void QPdfWriter::setMargins(const Margins &m)
 {
     Q_D(QPdfWriter);
 
+    QPagedPaintDevice::setMargins(m);
+
     const qreal multiplier = 72./25.4;
     d->engine->d_func()->leftMargin = m.left*multiplier;
     d->engine->d_func()->rightMargin = m.right*multiplier;
