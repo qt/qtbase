@@ -371,8 +371,8 @@ void QPageSetupWidget::setupPrinter() const
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     else if (val.type() == QVariant::ByteArray) {
         for (int papersize = 0; papersize < QPrinter::NPageSize; ++papersize) {
-            QPdf::PaperSize size = QPdf::paperSize(QPrinter::PaperSize(papersize));
-            if (size.width == m_paperSize.width() && size.height == m_paperSize.height()) {
+            QSize size = QPageSize(QPageSize::PageSizeId(papersize)).sizePoints();
+            if (size.width() == m_paperSize.width() && size.height() == m_paperSize.height()) {
                 ps = static_cast<QPrinter::PaperSize>(papersize);
                 break;
             }

@@ -96,15 +96,15 @@ public:
     void closePrintDevice();
 
     void updatePaperSize();
-    void setPaperSize();
-    void setPaperName();
+    void setPageSize(QPageSize::PageSizeId pageSizeId);
+    void setPaperName(const QString &name);
     void setCupsDefaults();
+    void setPageSize(const QString &key, const QString &name);
 
 private:
     Q_DISABLE_COPY(QCupsPrintEnginePrivate)
 
     QStringList cupsOptions;
-    QString cupsStringPageSize;
     QRect cupsPaperRect;
     QRect cupsPageRect;
     QString cupsTempFile;

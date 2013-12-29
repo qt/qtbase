@@ -57,6 +57,8 @@
 
 QT_BEGIN_NAMESPACE
 
+extern QMarginsF qt_convertMargins(const QMarginsF &margins, QPageLayout::Unit fromUnits, QPageLayout::Unit toUnits);
+
 QCupsPrintEngine::QCupsPrintEngine(QPrinter::PrinterMode m)
     : QPdfPrintEngine(*new QCupsPrintEnginePrivate(m))
 {
@@ -89,9 +91,8 @@ void QCupsPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &v
     Q_D(QCupsPrintEngine);
 
     switch (int(key)) {
-    case PPK_PaperSize:
-        d->printerPaperSize = QPrinter::PaperSize(value.toInt());
-        d->setPaperSize();
+    case PPK_PageSize:
+        d->setPageSize(QPageSize::PageSizeId(value.toInt()));
         break;
     case PPK_CupsPageRect:
         d->cupsPageRect = value.toRect();
@@ -104,8 +105,7 @@ void QCupsPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &v
         break;
     case PPK_CupsStringPageSize:
     case PPK_PaperName:
-        d->cupsStringPageSize = value.toString();
-        d->setPaperName();
+        d->setPaperName(value.toString());
         break;
     case PPK_PrinterName:
         // prevent setting the defaults again for the same printer
@@ -143,7 +143,7 @@ QVariant QCupsPrintEngine::property(PrintEnginePropertyKey key) const
         break;
     case PPK_CupsStringPageSize:
     case PPK_PaperName:
-        ret = d->cupsStringPageSize;
+        ret = d->m_pageLayout.pageSize().name();
         break;
     default:
         ret = QPdfPrintEngine::property(key);
@@ -215,8 +215,7 @@ void QCupsPrintEnginePrivate::closePrintDevice()
             prnName = def.printerName().toLocal8Bit();
         }
 
-        if (!cupsStringPageSize.isEmpty())
-            options.append(QPair<QByteArray, QByteArray>("media", cupsStringPageSize.toLocal8Bit()));
+        options.append(QPair<QByteArray, QByteArray>("media", m_pageLayout.pageSize().key().toLocal8Bit()));
 
         if (copies > 1)
             options.append(QPair<QByteArray, QByteArray>("copies", QString::number(copies).toLocal8Bit()));
@@ -229,7 +228,7 @@ void QCupsPrintEnginePrivate::closePrintDevice()
             options.append(QPair<QByteArray, QByteArray>("sides", "one-sided"));
             break;
         case QPrinter::DuplexAuto:
-            if (!landscape)
+            if (m_pageLayout.orientation() == QPageLayout::Portrait)
                 options.append(QPair<QByteArray, QByteArray>("sides", "two-sided-long-edge"));
             else
                 options.append(QPair<QByteArray, QByteArray>("sides", "two-sided-short-edge"));
@@ -242,7 +241,7 @@ void QCupsPrintEnginePrivate::closePrintDevice()
             break;
         }
 
-        if (QCUPSSupport::cupsVersion() >= 10300 && landscape)
+        if (QCUPSSupport::cupsVersion() >= 10300 && m_pageLayout.orientation() == QPageLayout::Landscape)
             options.append(QPair<QByteArray, QByteArray>("landscape", ""));
 
         QStringList::const_iterator it = cupsOptions.constBegin();
@@ -267,43 +266,25 @@ void QCupsPrintEnginePrivate::closePrintDevice()
     }
 }
 
-void QCupsPrintEnginePrivate::updatePaperSize()
-{
-    if (printerPaperSize == QPrinter::Custom) {
-        paperSize = customPaperSize;
-    } else if (!cupsPaperRect.isNull()) {
-        QRect r = cupsPaperRect;
-        paperSize = r.size();
-    } else {
-        QPdf::PaperSize s = QPdf::paperSize(printerPaperSize);
-        paperSize = QSize(s.width, s.height);
-    }
-}
-
-void QCupsPrintEnginePrivate::setPaperSize()
+void QCupsPrintEnginePrivate::setPageSize(QPageSize::PageSizeId pageSizeId)
 {
     if (QCUPSSupport::isAvailable()) {
         QCUPSSupport cups;
-        QPdf::PaperSize size = QPdf::paperSize(QPrinter::PaperSize(printerPaperSize));
+        QSize size = QPageSize(pageSizeId).sizePoints();
 
         if (cups.currentPPD()) {
-            cupsStringPageSize = QLatin1String("Custom");
             const ppd_option_t* pageSizes = cups.pageSizes();
             for (int i = 0; i < pageSizes->num_choices; ++i) {
                 QByteArray cupsPageSize = pageSizes->choices[i].choice;
                 QRect tmpCupsPaperRect = cups.paperRect(cupsPageSize);
                 QRect tmpCupsPageRect = cups.pageRect(cupsPageSize);
 
-                if (qAbs(size.width - tmpCupsPaperRect.width()) < 5  && qAbs(size.height - tmpCupsPaperRect.height()) < 5) {
+                if (qAbs(size.width() - tmpCupsPaperRect.width()) < 5 && qAbs(size.height() - tmpCupsPaperRect.height()) < 5) {
+                    QString key = QString::fromLocal8Bit(pageSizes->choices[i].choice);
+                    QString name = QString::fromLocal8Bit(pageSizes->choices[i].text);
                     cupsPaperRect = tmpCupsPaperRect;
                     cupsPageRect = tmpCupsPageRect;
-                    cupsStringPageSize = pageSizes->choices[i].text;
-                    leftMargin = cupsPageRect.x() - cupsPaperRect.x();
-                    topMargin = cupsPageRect.y() - cupsPaperRect.y();
-                    rightMargin = cupsPaperRect.right() - cupsPageRect.right();
-                    bottomMargin = cupsPaperRect.bottom() - cupsPageRect.bottom();
-
-                    updatePaperSize();
+                    setPageSize(key, name);
                     break;
                 }
             }
@@ -311,39 +292,22 @@ void QCupsPrintEnginePrivate::setPaperSize()
     }
 }
 
-void QCupsPrintEnginePrivate::setPaperName()
+void QCupsPrintEnginePrivate::setPaperName(const QString &paperName)
 {
     if (QCUPSSupport::isAvailable()) {
         QCUPSSupport cups;
         if (cups.currentPPD()) {
             const ppd_option_t* pageSizes = cups.pageSizes();
-            bool foundPaperName = false;
             for (int i = 0; i < pageSizes->num_choices; ++i) {
-                if (cupsStringPageSize == pageSizes->choices[i].text) {
-                    foundPaperName = true;
-                    QByteArray cupsPageSize = pageSizes->choices[i].choice;
-                    cupsPaperRect = cups.paperRect(cupsPageSize);
-                    cupsPageRect = cups.pageRect(cupsPageSize);
-                    leftMargin = cupsPageRect.x() - cupsPaperRect.x();
-                    topMargin = cupsPageRect.y() - cupsPaperRect.y();
-                    rightMargin = cupsPaperRect.right() - cupsPageRect.right();
-                    bottomMargin = cupsPaperRect.bottom() - cupsPageRect.bottom();
-                    printerPaperSize = QPrinter::Custom;
-                    customPaperSize = cupsPaperRect.size();
-                    for (int ps = 0; ps < QPrinter::NPageSize; ++ps) {
-                        QPdf::PaperSize size = QPdf::paperSize(QPrinter::PaperSize(ps));
-                        if (qAbs(size.width - cupsPaperRect.width()) < 5 && qAbs(size.height - cupsPaperRect.height()) < 5) {
-                            printerPaperSize = static_cast<QPrinter::PaperSize>(ps);
-                            customPaperSize = QSize();
-                            break;
-                        }
-                    }
-                    updatePaperSize();
+                if (pageSizes->choices[i].text == paperName) {
+                    QString key = QString::fromLocal8Bit(pageSizes->choices[i].choice);
+                    QString name = QString::fromLocal8Bit(pageSizes->choices[i].text);
+                    cupsPaperRect = cups.paperRect(pageSizes->choices[i].choice);
+                    cupsPageRect = cups.pageRect(pageSizes->choices[i].choice);
+                    setPageSize(key, name);
                     break;
                 }
             }
-            if (!foundPaperName)
-                cupsStringPageSize = QString();
         }
     }
 }
@@ -390,33 +354,30 @@ void QCupsPrintEnginePrivate::setCupsDefaults()
             QByteArray cupsPageSize;
             for (int i = 0; i < pageSizes->num_choices; ++i) {
                 if (static_cast<int>(pageSizes->choices[i].marked) == 1) {
-                    cupsPageSize = pageSizes->choices[i].choice;
-                    cupsStringPageSize = pageSizes->choices[i].text;
+                    QString key = QString::fromLocal8Bit(pageSizes->choices[i].choice);
+                    QString name = QString::fromLocal8Bit(pageSizes->choices[i].text);
+                    cupsPaperRect = cups.paperRect(pageSizes->choices[i].choice);
+                    cupsPageRect = cups.pageRect(pageSizes->choices[i].choice);
+                    setPageSize(key, name);
                 }
             }
 
             cupsOptions = cups.options();
-            cupsPaperRect = cups.paperRect(cupsPageSize);
-            cupsPageRect = cups.pageRect(cupsPageSize);
-
-            for (int ps = 0; ps < QPrinter::NPageSize; ++ps) {
-                QPdf::PaperSize size = QPdf::paperSize(QPrinter::PaperSize(ps));
-                if (qAbs(size.width - cupsPaperRect.width()) < 5 && qAbs(size.height - cupsPaperRect.height()) < 5) {
-                    printerPaperSize = static_cast<QPrinter::PaperSize>(ps);
-
-                    leftMargin = cupsPageRect.x() - cupsPaperRect.x();
-                    topMargin = cupsPageRect.y() - cupsPaperRect.y();
-                    rightMargin = cupsPaperRect.right() - cupsPageRect.right();
-                    bottomMargin = cupsPaperRect.bottom() - cupsPageRect.bottom();
-
-                    updatePaperSize();
-                    break;
-                }
-            }
         }
     }
 }
 
+void QCupsPrintEnginePrivate::setPageSize(const QString &key, const QString &name)
+{
+    QSize size = QSize(cupsPaperRect.width(), cupsPaperRect.height());
+    const qreal left = cupsPageRect.x() - cupsPaperRect.x();
+    const qreal top = cupsPageRect.y() - cupsPaperRect.y();
+    const qreal right = cupsPaperRect.right() - cupsPageRect.right();
+    const qreal bottom = cupsPaperRect.bottom() - cupsPageRect.bottom();
+    QMarginsF printable = qt_convertMargins(QMarginsF(left, top, right, bottom),
+                                            QPageLayout::Point, m_pageLayout.units());
+    m_pageLayout.setPageSize(QPageSize(key, size, name), printable);
+}
 
 QT_END_NAMESPACE
 

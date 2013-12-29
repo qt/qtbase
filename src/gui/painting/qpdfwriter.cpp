@@ -166,7 +166,7 @@ void QPdfWriter::setPageSize(PageSize size)
     Q_D(const QPdfWriter);
 
     QPagedPaintDevice::setPageSize(size);
-    d->engine->d_func()->setPaperSize(pageSizeMM());
+    d->engine->setPageSize(QPageSize(QPageSize::PageSizeId(size)));
 }
 
 /*!
@@ -177,7 +177,7 @@ void QPdfWriter::setPageSizeMM(const QSizeF &size)
     Q_D(const QPdfWriter);
 
     QPagedPaintDevice::setPageSizeMM(size);
-    d->engine->d_func()->setPaperSize(pageSizeMM());
+    d->engine->setPageSize(QPageSize(size, QPageSize::Millimeter));
 }
 
 /*!
@@ -212,10 +212,8 @@ void QPdfWriter::setMargins(const Margins &m)
     QPagedPaintDevice::setMargins(m);
 
     const qreal multiplier = 72./25.4;
-    d->engine->d_func()->leftMargin = m.left*multiplier;
-    d->engine->d_func()->rightMargin = m.right*multiplier;
-    d->engine->d_func()->topMargin = m.top*multiplier;
-    d->engine->d_func()->bottomMargin = m.bottom*multiplier;
+    d->engine->setPageMargins(QMarginsF(m.left * multiplier, m.top * multiplier,
+                                        m.right * multiplier, m.bottom * multiplier), QPageLayout::Point);
 }
 
 QT_END_NAMESPACE
