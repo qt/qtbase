@@ -183,6 +183,14 @@ public:
     typedef iterator Iterator;
     typedef const_iterator ConstIterator;
 
+    // convenience
+    inline QJsonArray operator+(const QJsonValue &v) const
+    { QJsonArray n = *this; n += v; return n; }
+    inline QJsonArray &operator+=(const QJsonValue &v)
+    { append(v); return *this; }
+    inline QJsonArray &operator<< (const QJsonValue &v)
+    { append(v); return *this; }
+
     // stl compatibility
     inline void push_back(const QJsonValue &t) { append(t); }
     inline void push_front(const QJsonValue &t) { prepend(t); }

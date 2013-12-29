@@ -76,6 +76,7 @@ private Q_SLOTS:
     void testObjectNested();
     void testArrayNested();
     void testArrayNestedEmpty();
+    void testArrayComfortOperators();
     void testObjectNestedEmpty();
 
     void testValueRef();
@@ -663,6 +664,20 @@ void tst_QtJson::testObjectNestedEmpty()
     QCOMPARE(reconstituted.value("inner").toObject().size(), 0);
     QCOMPARE(reconstituted.value("inner").type(), QJsonValue::Object);
     QCOMPARE(reconstituted.value("inner2").type(), QJsonValue::Object);
+}
+
+void tst_QtJson::testArrayComfortOperators()
+{
+    QJsonArray first;
+    first.append(123.);
+    first.append(QLatin1String("foo"));
+
+    QJsonArray second = QJsonArray() << 123. << QLatin1String("foo");
+    QCOMPARE(first, second);
+
+    first = first + QLatin1String("bar");
+    second += QLatin1String("bar");
+    QCOMPARE(first, second);
 }
 
 void tst_QtJson::testValueRef()
