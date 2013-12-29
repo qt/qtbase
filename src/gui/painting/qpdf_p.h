@@ -250,7 +250,6 @@ public:
 
     void newPage();
 
-    bool postscript;
     int currentObject;
 
     QPdfPage* currentPage;
