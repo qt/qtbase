@@ -632,18 +632,19 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
         << tagValue("RootNamespace", tool.Name)
         << tagValue("Keyword", tool.Keyword);
 
-    if (tool.SingleProjects.at(0).Configuration.WinRT) {
-        xml << tagValue("MinimumVisualStudioVersion", "11.0");
-        if (tool.SingleProjects.at(0).Configuration.WinPhone)
+    if (isWinRT) {
+        xml << tagValue("MinimumVisualStudioVersion", tool.Version);
+        if (isPhone) {
             xml << tagValue("WinMDAssembly", "true");
-        else
-            xml << tagValue("AppContainerApplication", "true");
-    }
-
-    if (tool.SingleProjects.at(0).Configuration.WinPhone
-            && tool.SingleProjects.at(0).Configuration.ConfigurationType == typeApplication) {
-        xml << tagValue("XapOutputs", "true");
-        xml << tagValue("XapFilename", "$(RootNamespace)_$(Configuration)_$(Platform).xap");
+            if (tool.SingleProjects.at(0).Configuration.ConfigurationType == typeApplication) {
+                xml << tagValue("XapOutputs", "true");
+                xml << tagValue("XapFilename", "$(RootNamespace)_$(Configuration)_$(Platform).xap");
+            }
+        } else {
+            xml << tagValue("AppContainerApplication", "true")
+                << tagValue("ApplicationType", "Windows Store")
+                << tagValue("ApplicationTypeRevision", tool.SdkVersion);
+        }
     }
 
     xml << closetag();

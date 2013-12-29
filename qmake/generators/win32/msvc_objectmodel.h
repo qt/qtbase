@@ -990,6 +990,7 @@ public:
     QString                 SccProjectName;
     QString                 SccLocalPath;
     QString                 PlatformName;
+    QString                 SdkVersion;
 
     // XML sub-parts
     VCConfiguration         Configuration;
@@ -1129,6 +1130,7 @@ public:
     QString                 SccProjectName;
     QString                 SccLocalPath;
     QString                 PlatformName;
+    QString                 SdkVersion;
 
     // Single projects
     QList<VCProjectSingleConfig>  SingleProjects;

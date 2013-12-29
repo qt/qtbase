@@ -289,6 +289,7 @@ bool VcprojGenerator::writeProjectMakefile()
             mergedProjects.at(0)->writePrlFile();
         mergedProject.Name = project->first("QMAKE_PROJECT_NAME").toQString();
         mergedProject.Version = mergedProjects.at(0)->vcProject.Version;
+        mergedProject.SdkVersion = mergedProjects.at(0)->vcProject.SdkVersion;
         mergedProject.ProjectGUID = project->isEmpty("QMAKE_UUID") ? getProjectUUID().toString().toUpper() : project->first("QMAKE_UUID").toQString();
         mergedProject.Keyword = project->first("VCPROJ_KEYWORD").toQString();
         mergedProject.SccProjectName = mergedProjects.at(0)->vcProject.SccProjectName;
@@ -915,6 +916,7 @@ void VcprojGenerator::initProject()
     } else {
         vcProject.PlatformName = project->values("CE_SDK").join(' ') + " (" + project->first("CE_ARCH") + ")";
     }
+    vcProject.SdkVersion = project->first("WINSDK_VER").toQString();
     // These are not used by Qt, but may be used by customers
     vcProject.SccProjectName = project->first("SCCPROJECTNAME").toQString();
     vcProject.SccLocalPath = project->first("SCCLOCALPATH").toQString();
