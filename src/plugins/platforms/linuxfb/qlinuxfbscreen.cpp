@@ -400,7 +400,11 @@ bool QLinuxFbScreen::initialize()
     mFbScreenImage = QImage(mMmap.data, geometry.width(), geometry.height(), mBytesPerLine, mFormat);
 
     QByteArray hideCursorVal = qgetenv("QT_QPA_FB_HIDECURSOR");
+#if !defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK)
+    bool hideCursor = false;
+#else
     bool hideCursor = true; // default to true to prevent the cursor showing up with the subclass on Android
+#endif
     if (hideCursorVal.isEmpty()) {
 #if !defined(QT_NO_EVDEV) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_NO_SDK))
         QScopedPointer<QDeviceDiscovery> dis(QDeviceDiscovery::create(QDeviceDiscovery::Device_Mouse));
