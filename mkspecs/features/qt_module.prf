@@ -119,6 +119,14 @@ DEFINES += QT_BUILDING_QT
 win32 {
     INCLUDEPATH += tmp
     CONFIG += skip_target_version_ext
+    # If the code is really "unsafe" then it is unsafe on
+    # other platforms as well; so fixing these warnings just
+    # for MSVC builds, would clutter the code and wouldn't help
+    # in fixing issues that might exist on other platforms.
+    # Using the same functions across all supported platforms
+    # keeps the code clean and helps in writing code that is
+    # safe across all platforms.
+    DEFINES *= _CRT_SECURE_NO_WARNINGS
 }
 
 aix-g++* {
