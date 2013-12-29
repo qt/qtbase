@@ -2628,9 +2628,11 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     \fn void qAddPostRoutine(QtCleanUpFunction ptr)
     \relates QCoreApplication
 
-    Adds a global routine that will be called from the QApplication
+    Adds a global routine that will be called from the QCoreApplication
     destructor. This function is normally used to add cleanup routines
     for program-wide functionality.
+
+    The cleanup routines are called in the reverse order of their addition.
 
     The function specified by \a ptr should take no arguments and should
     return nothing. For example:
@@ -2640,8 +2642,11 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     Note that for an application- or module-wide cleanup,
     qAddPostRoutine() is often not suitable. For example, if the
     program is split into dynamically loaded modules, the relevant
-    module may be unloaded long before the QApplication destructor is
-    called.
+    module may be unloaded long before the QCoreApplication destructor is
+    called. In such cases, if using qAddPostRoutine() is still desirable,
+    qRemovePostRoutine() can be used to prevent a routine from being
+    called by the QCoreApplication destructor. For example, if that
+    routine was called before the module was unloaded.
 
     For modules and libraries, using a reference-counted
     initialization manager or Qt's parent-child deletion mechanism may
@@ -2653,6 +2658,21 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
 
     By selecting the right parent object, this can often be made to
     clean up the module's data at the right moment.
+
+    \sa qRemovePostRoutine()
+*/
+
+/*!
+    \fn void qRemovePostRoutine(QtCleanUpFunction ptr)
+    \relates QCoreApplication
+    \since 5.3
+
+    Removes the cleanup routine specified by \a ptr from the list of
+    routines called by the QCoreApplication destructor. The routine
+    must have been previously added to the list by a call to
+    qAddPostRoutine(), otherwise this function has no effect.
+
+    \sa qAddPostRoutine()
 */
 
 /*!
