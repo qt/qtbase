@@ -483,6 +483,8 @@ xcb_cursor_t QXcbCursor::createNonStandardCursor(int cshape)
             xcb_pixmap_t pmm = qt_xcb_XPixmapFromBitmap(m_screen, image.createAlphaMask());
             cursor = xcb_generate_id(conn);
             xcb_create_cursor(conn, cursor, pm, pmm, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF, 8, 8);
+            xcb_free_pixmap(conn, pm);
+            xcb_free_pixmap(conn, pmm);
         }
     }
 
