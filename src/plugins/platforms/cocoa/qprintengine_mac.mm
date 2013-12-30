@@ -42,7 +42,7 @@
 #include "qprintengine_mac_p.h"
 #include "qcocoaprintersupport.h"
 #include <quuid.h>
-#include <QtGui/qpagesize.h>
+#include <QtGui/qpagelayout.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdebug.h>
 
@@ -559,6 +559,26 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
                                              margins.at(2).toReal(), margins.at(3).toReal()));
         break;
     }
+    case PPK_QPageSize:
+        d->setPageSize(value.value<QPageSize>());
+        break;
+    case PPK_QPageMargins: {
+        QPair<QMarginsF, QPageLayout::Unit> pair = value.value<QPair<QMarginsF, QPageLayout::Unit> >();
+        d->m_pageLayout.setUnits(pair.second);
+        d->m_pageLayout.setMargins(pair.first);
+        break;
+    }
+    case PPK_QPageLayout: {
+        QPageLayout pageLayout = value.value<QPageLayout>();
+        if (pageLayout.isValid() && d->m_printDevice->isValidPageLayout(pageLayout, d->resolution.hRes)) {
+            setProperty(PPK_QPageSize, QVariant::fromValue(pageLayout.pageSize()));
+            setProperty(PPK_FullPage, pageLayout.mode() == QPageLayout::FullPageMode);
+            setProperty(PPK_Orientation, QVariant::fromValue(pageLayout.orientation()));
+            d->m_pageLayout.setUnits(pageLayout.units());
+            d->m_pageLayout.setMargins(pageLayout.margins());
+        }
+        break;
+    }
     // No default so that compiler will complain if new keys added and not handled in this engine
     }
 }
@@ -688,6 +708,16 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
         ret = list;
         break;
     }
+    case PPK_QPageSize:
+        ret.setValue(d->m_pageLayout.pageSize());
+        break;
+    case PPK_QPageMargins: {
+        QPair<QMarginsF, QPageLayout::Unit> pair = qMakePair(d->m_pageLayout.margins(), d->m_pageLayout.units());
+        ret.setValue(pair);
+        break;
+    }
+    case PPK_QPageLayout:
+        ret.setValue(d->m_pageLayout);
     // No default so that compiler will complain if new keys added and not handled in this engine
     }
     return ret;

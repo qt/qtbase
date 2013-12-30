@@ -434,18 +434,7 @@ void QPageSetupWidget::selectPrinter()
         }
         if (!preferredSizeMatched)
             widget.paperSize->setCurrentIndex(cupsDefaultSize);
-        if (m_printer->d_func()->hasCustomPageMargins) {
-            m_printer->getPageMargins(&m_leftMargin, &m_topMargin, &m_rightMargin, &m_bottomMargin, QPrinter::Point);
-        } else {
-            QByteArray cupsPaperSizeChoice = widget.paperSize->itemData(widget.paperSize->currentIndex()).toByteArray();
-            QRect paper = cups.paperRect(cupsPaperSizeChoice);
-            QRect content = cups.pageRect(cupsPaperSizeChoice);
-
-            m_leftMargin = content.x() - paper.x();
-            m_topMargin = content.y() - paper.y();
-            m_rightMargin = paper.right() - content.right();
-            m_bottomMargin = paper.bottom() - content.bottom();
-        }
+        m_printer->getPageMargins(&m_leftMargin, &m_topMargin, &m_rightMargin, &m_bottomMargin, QPrinter::Point);
     } else
         m_cups = false;
 #endif

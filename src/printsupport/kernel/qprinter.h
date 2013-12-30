@@ -45,6 +45,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtGui/qpagedpaintdevice.h>
+#include <QtGui/qpagelayout.h>
 #include <QtPrintSupport/qtprintsupportglobal.h>
 
 QT_BEGIN_NAMESPACE
@@ -60,6 +61,8 @@ class QPrinterPrivate;
 class QPaintEngine;
 class QPrintEngine;
 class QPrinterInfo;
+class QPageSize;
+class QPageMargins;
 
 class Q_PRINTSUPPORT_EXPORT QPrinter : public QPagedPaintDevice
 {
@@ -303,6 +306,12 @@ public:
 
     void setCreator(const QString &);
     QString creator() const;
+
+    bool setPageLayout(const QPageLayout &pageLayout);
+    bool setPageSize(const QPageSize &pageSize);
+    bool setPageOrientation(QPageLayout::Orientation orientation);
+    bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units);
+    QPageLayout pageLayout() const;
 
     void setOrientation(Orientation);
     Orientation orientation() const;

@@ -62,6 +62,7 @@
 #include <private/qpixmap_raster_p.h>
 #include <QtCore/QMetaType>
 #include <QtCore/qt_windows.h>
+#include <QtGui/qpagelayout.h>
 
 Q_DECLARE_METATYPE(HFONT)
 Q_DECLARE_METATYPE(LOGFONT)
@@ -1195,8 +1196,50 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         break;
     }
 
-    // No default so that compiler will complain if new keys added and not handled in this engine
+    case PPK_QPageSize: {
+        // Get the page size from the printer if supported
+        const QPageSize pageSize = value.value<QPageSize>();
+        if (pageSize.isValid()) {
+            d->setPageSize(pageSize);
+            d->doReinit();
+#ifdef QT_DEBUG_METRICS
+            qDebug() << "QWin32PrintEngine::setProperty(PPK_QPageSize," << pageSize << ")";
+            d->debugMetrics();
+#endif // QT_DEBUG_METRICS
+        }
+        break;
+    }
 
+    case PPK_QPageMargins: {
+        QPair<QMarginsF, QPageLayout::Unit> pair = value.value<QPair<QMarginsF, QPageLayout::Unit> >();
+        d->m_pageLayout.setUnits(pair.second);
+        d->m_pageLayout.setMargins(pair.first);
+        d->updateMetrics();
+#ifdef QT_DEBUG_METRICS
+        qDebug() << "QWin32PrintEngine::setProperty(PPK_QPageMargins," << pair.first << pair.second << ")";
+        d->debugMetrics();
+#endif // QT_DEBUG_METRICS
+        break;
+    }
+
+    case PPK_QPageLayout: {
+        QPageLayout pageLayout = value.value<QPageLayout>();
+        if (pageLayout.isValid() && d->m_printDevice.isValidPageLayout(pageLayout, d->resolution)) {
+            setProperty(PPK_QPageSize, QVariant::fromValue(pageLayout.pageSize()));
+            setProperty(PPK_FullPage, pageLayout.mode() == QPageLayout::FullPageMode);
+            setProperty(PPK_Orientation, QVariant::fromValue(pageLayout.orientation()));
+            d->m_pageLayout.setUnits(pageLayout.units());
+            d->m_pageLayout.setMargins(pageLayout.margins());
+            d->updateMetrics();
+#ifdef QT_DEBUG_METRICS
+            qDebug() << "QWin32PrintEngine::setProperty(PPK_QPageLayout," << pageLayout << ")";
+            d->debugMetrics();
+#endif // QT_DEBUG_METRICS
+        }
+        break;
+    }
+
+    // No default so that compiler will complain if new keys added and not handled in this engine
     }
 }
 
@@ -1345,8 +1388,21 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
         break;
     }
 
-    // No default so that compiler will complain if new keys added and not handled in this engine
+    case PPK_QPageSize:
+        value.setValue(d->m_pageLayout.pageSize());
+        break;
 
+    case PPK_QPageMargins: {
+        QPair<QMarginsF, QPageLayout::Unit> pair = qMakePair(d->m_pageLayout.margins(), d->m_pageLayout.units());
+        value.setValue(pair);
+        break;
+    }
+
+    case PPK_QPageLayout:
+        value.setValue(d->m_pageLayout);
+        break;
+
+    // No default so that compiler will complain if new keys added and not handled in this engine
     }
     return value;
 }

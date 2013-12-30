@@ -96,6 +96,18 @@ void QCupsPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &v
     case PPK_CupsOptions:
         d->cupsOptions = value.toStringList();
         break;
+    case PPK_QPageSize:
+        d->setPageSize(value.value<QPageSize>());
+        break;
+    case PPK_QPageLayout: {
+        QPageLayout pageLayout = value.value<QPageLayout>();
+        if (pageLayout.isValid() && d->m_printDevice.isValidPageLayout(pageLayout, d->resolution)) {
+            d->m_pageLayout = pageLayout;
+            // Replace the page size with the CUPS page size
+            d->setPageSize(d->m_printDevice.supportedPageSize(pageLayout.pageSize()));
+        }
+        break;
+    }
     default:
         QPdfPrintEngine::setProperty(key, value);
         break;

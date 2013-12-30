@@ -48,6 +48,7 @@
 #include <qdebug.h>
 #include <qbuffer.h>
 #include "qprinterinfo.h"
+#include <QtGui/qpagelayout.h>
 
 #include <limits.h>
 #include <math.h>
@@ -219,6 +220,24 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
                                              margins.at(2).toReal(), margins.at(3).toReal()));
         break;
     }
+    case PPK_QPageSize: {
+        QPageSize pageSize = value.value<QPageSize>();
+        if (pageSize.isValid())
+            d->m_pageLayout.setPageSize(pageSize);
+        break;
+    }
+    case PPK_QPageMargins: {
+        QPair<QMarginsF, QPageLayout::Unit> pair = value.value<QPair<QMarginsF, QPageLayout::Unit> >();
+        d->m_pageLayout.setUnits(pair.second);
+        d->m_pageLayout.setMargins(pair.first);
+        break;
+    }
+    case PPK_QPageLayout: {
+        QPageLayout pageLayout = value.value<QPageLayout>();
+        if (pageLayout.isValid())
+            d->m_pageLayout = pageLayout;
+        break;
+    }
     // No default so that compiler will complain if new keys added and not handled in this engine
     }
 }
@@ -319,6 +338,17 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
         ret = list;
         break;
     }
+    case PPK_QPageSize:
+        ret.setValue(d->m_pageLayout.pageSize());
+        break;
+    case PPK_QPageMargins: {
+        QPair<QMarginsF, QPageLayout::Unit> pair = qMakePair(d->m_pageLayout.margins(), d->m_pageLayout.units());
+        ret.setValue(pair);
+        break;
+    }
+    case PPK_QPageLayout:
+        ret.setValue(d->m_pageLayout);
+        break;
     // No default so that compiler will complain if new keys added and not handled in this engine
     }
     return ret;

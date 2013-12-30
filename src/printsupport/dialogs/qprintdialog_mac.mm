@@ -151,6 +151,47 @@ QT_USE_NAMESPACE
         }
     }
 
+    // Note this code should be in QCocoaPrintDevice, but that implementation is in the plugin,
+    // we need to move the dialog implementation into the plugin first to be able to access it.
+    // Need to tell QPrinter/QPageLayout if the page size or orientation has been changed
+    PMPageFormat pageFormat = static_cast<PMPageFormat>([printInfo PMPageFormat]);
+    PMPaper paper;
+    PMGetPageFormatPaper(pageFormat, &paper);
+    PMOrientation orientation;
+    PMGetOrientation(pageFormat, &orientation);
+    QPageSize pageSize;
+    QCFString key;
+    double width = 0;
+    double height = 0;
+    // If the PPD name is empty then is custom, for some reason PMPaperIsCustom doesn't work here
+    PMPaperGetPPDPaperName(paper, &key);
+    if (PMPaperGetWidth(paper, &width) == noErr && PMPaperGetHeight(paper, &height) == noErr) {
+        QString ppdKey = key;
+        if (ppdKey.isEmpty()) {
+            // Is using a custom page size as defined in the Print Dialog custom settings using mm or inches.
+            // We can't ask PMPaper what those units actually are, we can only get the point size which may return
+            // slightly wrong results due to rounding.
+            // Testing shows if using metric/mm then is rounded mm, if imperial/inch is rounded to 2 decimal places
+            // Even if we pass in our own custom size in mm with decimal places, the dialog will still round it!
+            // Suspect internal storage is in rounded mm?
+            if (QLocale().measurementSystem() == QLocale::MetricSystem) {
+                QSizeF sizef = QSizeF(width, height) / qt_pointMultiplier(QPageLayout::Millimeter);
+                // Round to 0 decimal places
+                pageSize = QPageSize(sizef.toSize(), QPageSize::Millimeter);
+            } else {
+                qreal multiplier = qt_pointMultiplier(QPageLayout::Inch);
+                const int w = qRound(width * 100 / multiplier);
+                const int h = qRound(height * 100 / multiplier);
+                pageSize = QPageSize(QSizeF(w / 100.0, h / 100.0), QPageSize::Inch);
+            }
+        } else {
+            pageSize = QPlatformPrintDevice::createPageSize(key, QSize(width, height), QString());
+        }
+    }
+    if (pageSize.isValid() && !pageSize.isEquivalentTo(printer->pageLayout().pageSize()))
+        printer->setPageSize(pageSize);
+    printer->setOrientation(orientation == kPMLandscape ? QPrinter::Landscape : QPrinter::Portrait);
+
     dialog->done((returnCode == NSOKButton) ? QDialog::Accepted : QDialog::Rejected);
 }
 @end
