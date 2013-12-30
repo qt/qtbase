@@ -668,8 +668,6 @@ void QXcbWindow::show()
 
     m_screen->windowShown(this);
 
-    xcb_flush(xcb_connection());
-
     connection()->sync();
 }
 
@@ -1889,7 +1887,6 @@ void QXcbWindow::updateSyncRequestCounter()
 {
     if (m_usingSyncProtocol && (m_syncValue.lo != 0 || m_syncValue.hi != 0)) {
         Q_XCB_CALL(xcb_sync_set_counter(xcb_connection(), m_syncCounter, m_syncValue));
-        xcb_flush(xcb_connection());
         connection()->sync();
 
         m_syncValue.lo = 0;

@@ -232,9 +232,6 @@ void QXcbShmImage::put(xcb_window_t window, const QPoint &target, const QRect &s
     Q_XCB_NOOP(connection());
 
     m_dirty = m_dirty | source;
-
-    xcb_flush(xcb_connection());
-    Q_XCB_NOOP(connection());
 }
 
 void QXcbShmImage::preparePaint(const QRegion &region)
@@ -314,10 +311,11 @@ void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
     Q_XCB_NOOP(connection());
 
     if (m_syncingResize) {
-        xcb_flush(xcb_connection());
         connection()->sync();
         m_syncingResize = false;
         platformWindow->updateSyncRequestCounter();
+    } else {
+        xcb_flush(xcb_connection());
     }
 }
 
