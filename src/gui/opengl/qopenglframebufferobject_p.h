@@ -116,6 +116,7 @@ public:
               QOpenGLFramebufferObject::Attachment attachment,
               GLenum internal_format, GLenum texture_target,
               GLint samples = 0, bool mipmap = false);
+    void initTexture(GLenum target, GLenum internal_format, const QSize &size, bool mipmap);
     void initAttachments(QOpenGLContext *ctx, QOpenGLFramebufferObject::Attachment attachment);
 
     bool checkFramebufferStatus(QOpenGLContext *ctx) const;

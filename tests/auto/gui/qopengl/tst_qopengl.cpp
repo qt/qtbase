@@ -66,6 +66,8 @@ private slots:
     void multiGroupSharedResourceCleanupCustom();
     void fboSimpleRendering_data();
     void fboSimpleRendering();
+    void fboTextureOwnership_data();
+    void fboTextureOwnership();
     void fboRendering_data();
     void fboRendering();
     void fboHandleNulledAfterContextDestroyed();
@@ -426,6 +428,54 @@ void tst_QOpenGL::fboSimpleRendering()
 
     QFUZZY_COMPARE_IMAGES(fb, reference);
 
+    delete fbo;
+}
+
+void tst_QOpenGL::fboTextureOwnership_data()
+{
+    common_data();
+}
+
+void tst_QOpenGL::fboTextureOwnership()
+{
+    QFETCH(int, surfaceClass);
+    QScopedPointer<QSurface> surface(createSurface(surfaceClass));
+
+    QOpenGLContext ctx;
+    QVERIFY(ctx.create());
+
+    ctx.makeCurrent(surface.data());
+
+    if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QOpenGLFramebufferObject not supported on this platform");
+
+    QOpenGLFramebufferObjectFormat fboFormat;
+    fboFormat.setAttachment(QOpenGLFramebufferObject::NoAttachment);
+
+    QOpenGLFramebufferObject *fbo = new QOpenGLFramebufferObject(200, 100, fboFormat);
+    QVERIFY(fbo->texture() != 0);
+    fbo->bind();
+
+    // pull out the texture
+    GLuint texture = fbo->takeTexture();
+    QVERIFY(texture != 0);
+    QVERIFY(fbo->texture() == 0);
+
+    // verify that the next bind() creates a new texture
+    fbo->bind();
+    QVERIFY(fbo->texture() != 0 && fbo->texture() != texture);
+
+    glClearColor(1.0, 0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glFinish();
+
+    QImage fb = fbo->toImage().convertToFormat(QImage::Format_RGB32);
+    QImage reference(fb.size(), QImage::Format_RGB32);
+    reference.fill(0xffff0000);
+
+    QFUZZY_COMPARE_IMAGES(fb, reference);
+
+    glDeleteTextures(1, &texture);
     delete fbo;
 }
 

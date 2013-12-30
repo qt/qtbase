@@ -97,6 +97,7 @@ public:
     int height() const { return size().height(); }
 
     GLuint texture() const;
+    GLuint takeTexture();
     QSize size() const;
     QImage toImage() const;
     Attachment attachment() const;
