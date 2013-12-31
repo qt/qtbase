@@ -268,8 +268,13 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     , m_focusWindow(0)
     , m_systemTrayTracker(0)
 {
+#ifdef XCB_USE_EGL
+    EGLNativeDisplayType dpy = EGL_DEFAULT_DISPLAY;
+#elif defined(XCB_USE_XLIB)
+    Display *dpy;
+#endif
 #ifdef XCB_USE_XLIB
-    Display *dpy = XOpenDisplay(m_displayName.constData());
+    dpy = XOpenDisplay(m_displayName.constData());
     if (dpy) {
         m_primaryScreen = DefaultScreen(dpy);
         m_connection = XGetXCBConnection(dpy);
@@ -285,7 +290,6 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
         qFatal("QXcbConnection: Could not connect to display %s", m_displayName.constData());
 
 #ifdef XCB_USE_EGL
-    EGLNativeDisplayType dpy = EGL_DEFAULT_DISPLAY;
     EGLDisplay eglDisplay = eglGetDisplay(dpy);
     m_egl_display = eglDisplay;
     EGLint major, minor;
