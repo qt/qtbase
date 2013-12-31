@@ -51,6 +51,10 @@
 #include <QtCore/QLocale>
 #include <QtCore/QDebug>
 
+#ifdef Q_OS_UNIX
+#include <sys/utsname.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 //Environment variable to allow tooling full control of file selectors
