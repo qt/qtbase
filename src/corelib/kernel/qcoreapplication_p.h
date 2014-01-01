@@ -153,6 +153,7 @@ public:
     static bool is_app_closing;
 #endif
 
+    static bool setuidAllowed;
     static uint attribs;
     static inline bool testAttribute(uint flag) { return attribs & (1 << flag); }
     static int app_compile_version;

@@ -102,6 +102,7 @@
 #ifdef Q_OS_UNIX
 #  include <locale.h>
 #  include <unistd.h>
+#  include <sys/types.h>
 #endif
 
 #ifdef Q_OS_VXWORKS
@@ -137,6 +138,8 @@ extern QString qAppFileName();
 # error "Bump QCoreApplicatoinPrivate::app_compile_version to 0x060000"
 #endif
 int QCoreApplicationPrivate::app_compile_version = 0x050000; //we don't know exactly, but it's at least 5.0.0
+
+bool QCoreApplicationPrivate::setuidAllowed = false;
 
 #if !defined(Q_OS_WIN)
 #ifdef Q_OS_MAC
@@ -412,6 +415,11 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
 
 #ifndef QT_NO_QOBJECT
     QCoreApplicationPrivate::is_app_closing = false;
+
+#  if defined(Q_OS_UNIX)
+    if (!setuidAllowed && (geteuid() != getuid()))
+        qFatal("FATAL: The application binary appears to be running setuid, this is a security hole.");
+#  endif // Q_OS_UNIX
 
 #  if defined(Q_OS_UNIX)
     qt_application_thread_id = QThread::currentThreadId();
@@ -794,6 +802,44 @@ QCoreApplication::~QCoreApplication()
     delete coreappdata()->app_libpaths;
     coreappdata()->app_libpaths = 0;
 #endif
+}
+
+/*!
+    \since 5.3
+
+    Allows the application to run setuid on UNIX platforms if \a allow
+    is true.
+
+    If \a allow is false (the default) and Qt detects the application is
+    running with an effective user id different than the real user id,
+    the application will be aborted when a QCoreApplication instance is
+    created.
+
+    Qt is not an appropriate solution for setuid programs due to its
+    large attack surface. However some applications may be required
+    to run in this manner for historical reasons. This flag will
+    prevent Qt from aborting the application when this is detected,
+    and must be set before a QCoreApplication instance is created.
+
+    \note It is strongly recommended not to enable this option since
+    it introduces security risks.
+*/
+void QCoreApplication::setSetuidAllowed(bool allow)
+{
+    QCoreApplicationPrivate::setuidAllowed = allow;
+}
+
+/*!
+    \since 5.3
+
+    Returns true if the application is allowed to run setuid on UNIX
+    platforms.
+
+    \sa QCoreApplication::setSetuidAllowed()
+*/
+bool QCoreApplication::isSetuidAllowed()
+{
+    return QCoreApplicationPrivate::setuidAllowed;
 }
 
 

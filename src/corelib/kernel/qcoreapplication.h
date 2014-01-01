@@ -112,6 +112,9 @@ public:
     static void setApplicationVersion(const QString &version);
     static QString applicationVersion();
 
+    static void setSetuidAllowed(bool allow);
+    static bool isSetuidAllowed();
+
     static QCoreApplication *instance() { return self; }
 
 #ifndef QT_NO_QOBJECT
