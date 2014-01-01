@@ -596,6 +596,7 @@ CFG_XINERAMA=runtime
 CFG_XFIXES=runtime
 CFG_ZLIB=auto
 CFG_MTDEV=auto
+CFG_JOURNALD=no
 CFG_SQLITE=qt
 CFG_GIF=auto
 CFG_PNG=yes
@@ -1590,6 +1591,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    journald)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_JOURNALD="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     sqlite)
         if [ "$VAL" = "system" ]; then
             CFG_SQLITE=system
@@ -2306,6 +2314,9 @@ Third Party Libraries:
 
     -no-mtdev .........  Do not compile mtdev support.
  +  -mtdev ............. Enable mtdev support.
+
+ +  -no-journald ....... Do not send logging output to journald.
+    -journald .......... Send logging output to journald.
 
     -no-gif ............ Do not compile GIF reading support.
 
@@ -4414,6 +4425,23 @@ if [ "$CFG_MTDEV" != "no" ]; then
 fi
 if [ "$CFG_MTDEV" = "no" ]; then
     QMakeVar add DEFINES QT_NO_MTDEV
+fi
+
+if [ "$CFG_JOURNALD" != "no" ]; then
+    if compileTest unix/journald "journald"; then
+        CFG_JOURNALD=yes
+        QMAKE_CONFIG="$QMAKE_CONFIG journald"
+    else
+        if [ "$CFG_JOURNALD" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+            echo "journald support cannot be enabled due to functionality tests!"
+            echo " Turn on verbose messaging (-v) to $0 to see the final report."
+            echo " If you believe this message is in error you may use the continue"
+            echo " switch (-continue) to $0 to continue."
+            exit 101
+        else
+            CFG_JOURNALD=no
+        fi
+    fi
 fi
 
 if [ "$CFG_LARGEFILE" = "auto" ]; then
@@ -6724,6 +6752,7 @@ report_support_plugin "    JPEG ................." "$CFG_JPEG" "$CFG_LIBJPEG" Qt
 report_support_plugin "    PNG .................." "$CFG_PNG" "$CFG_LIBPNG" QtGui
 report_support "  Glib ..................." "$CFG_GLIB"
 report_support "  GTK theme .............." "$CFG_QGTKSTYLE"
+report_support "  journald ..............." "$CFG_JOURNALD"
 report_support "  Large File ............." "$CFG_LARGEFILE"
 report_support "  mtdev .................." "$CFG_MTDEV" yes "system library"
 report_support "  Networking:"

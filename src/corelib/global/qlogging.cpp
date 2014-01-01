@@ -63,6 +63,11 @@
 #include <android/log.h>
 #endif
 
+#if defined(QT_USE_JOURNALD) && !defined(QT_BOOTSTRAPPED)
+# include <systemd/sd-journal.h>
+# include <unistd.h>
+#endif
+
 #include <stdio.h>
 
 QT_BEGIN_NAMESPACE
@@ -866,6 +871,37 @@ Q_CORE_EXPORT QtMsgHandler qInstallMsgHandler(QtMsgHandler);
 static QtMsgHandler msgHandler = 0;                // pointer to debug handler (without context)
 static QtMessageHandler messageHandler = 0;         // pointer to debug handler (with context)
 
+#if defined(QT_USE_JOURNALD) && !defined(QT_BOOTSTRAPPED)
+static void systemd_default_message_handler(QtMsgType type,
+                                            const QMessageLogContext &context,
+                                            const QString &message)
+{
+    int priority = LOG_INFO; // Informational
+    switch (type) {
+    case QtDebugMsg:
+        priority = LOG_DEBUG; // Debug-level messages
+        break;
+    case QtWarningMsg:
+        priority = LOG_WARNING; // Warning conditions
+        break;
+    case QtCriticalMsg:
+        priority = LOG_CRIT; // Critical conditions
+        break;
+    case QtFatalMsg:
+        priority = LOG_ALERT; // Action must be taken immediately
+        break;
+    }
+
+    char filebuf[PATH_MAX + sizeof("CODE_FILE=")];
+    snprintf(filebuf, sizeof(filebuf), "CODE_FILE=%s", context.file ? context.file : "unknown");
+
+    char linebuf[20];
+    snprintf(linebuf, sizeof(linebuf), "CODE_LINE=%d", context.line);
+
+    sd_journal_print_with_location(priority, filebuf, linebuf, context.function ? context.function : "unknown", "%s", message.toUtf8().constData());
+}
+#endif
+
 #ifdef Q_OS_ANDROID
 static void android_default_message_handler(QtMsgType type,
                                   const QMessageLogContext &context,
@@ -902,6 +938,18 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
 
 #if defined(QT_USE_SLOG2)
     slog2_default_handler(type, logMessage.toLocal8Bit().constData());
+#elif defined(QT_USE_JOURNALD) && !defined(QT_BOOTSTRAPPED)
+    // We use isatty to catch the obvious case of someone running something interactively.
+    // We also support an environment variable for Qt Creator use, or more complicated cases like subprocesses.
+    static bool logToConsole = isatty(fileno(stdin)) || !qEnvironmentVariableIsEmpty("QT_NO_JOURNALD_LOG");
+    if (Q_LIKELY(!logToConsole)) {
+        // remove trailing \n, systemd appears to want them newline-less
+        logMessage.chop(1);
+        systemd_default_message_handler(type, context, logMessage);
+    } else {
+        fprintf(stderr, "%s", logMessage.toUtf8().constData());
+        fflush(stderr);
+    }
 #elif defined(Q_OS_ANDROID)
     static bool logToAndroid = qEnvironmentVariableIsEmpty("QT_ANDROID_PLAIN_LOG");
     if (logToAndroid) {
