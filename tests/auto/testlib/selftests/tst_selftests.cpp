@@ -637,9 +637,19 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
                                     .arg(loggers.at(n))));
             }
         } else {
-            QVERIFY2(res.count() == exp.count(),
+            if (res.count() != exp.count()) {
+                qDebug() << "<<<<<<";
+                foreach (const QByteArray &line, res)
+                    qDebug() << line;
+                qDebug() << "======";
+                foreach (const QByteArray &line, exp)
+                    qDebug() << line;
+                qDebug() << ">>>>>>";
+
+                QVERIFY2(res.count() == exp.count(),
                      qPrintable(QString::fromLatin1("Mismatch in line count: %1 != %2 (%3).")
                                 .arg(res.count()).arg(exp.count()).arg(loggers.at(n))));
+            }
         }
 
         // By this point, we should have loaded a non-empty expected data file.
