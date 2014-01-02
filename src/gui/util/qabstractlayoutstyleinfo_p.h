@@ -53,13 +53,8 @@ QT_BEGIN_NAMESPACE
 
 class Q_GUI_EXPORT QAbstractLayoutStyleInfo {
 public:
-    typedef enum {
-        Unknown = 0,
-        Changed,
-        Unchanged
-    } ChangedState;
 
-    QAbstractLayoutStyleInfo() : m_isWindow(false), m_changed(Changed) {}
+    QAbstractLayoutStyleInfo() : m_isWindow(false) {}
     virtual ~QAbstractLayoutStyleInfo() {}
     virtual qreal combinedLayoutSpacing(QLayoutPolicy::ControlTypes /*controls1*/,
                                         QLayoutPolicy::ControlTypes /*controls2*/, Qt::Orientation /*orientation*/) const {
@@ -74,15 +69,9 @@ public:
 
     virtual qreal spacing(Qt::Orientation orientation) const = 0;
 
-    virtual bool hasChangedCore() const = 0;
+    virtual bool hasChangedCore() const { return false; }   // ### Remove when usage is gone from subclasses
 
-    void updateChanged(ChangedState change) {
-        m_changed = change;
-    }
-
-    bool hasChanged() const;
-
-    virtual void invalidate() { updateChanged(Changed);}
+    virtual void invalidate() { }
 
     virtual qreal windowMargin(Qt::Orientation orientation) const = 0;
 
@@ -92,7 +81,9 @@ public:
 
 protected:
     unsigned m_isWindow : 1;
-    mutable unsigned m_changed : 2;
+    mutable unsigned m_hSpacingState: 2;
+    mutable unsigned m_vSpacingState: 2;
+    mutable qreal m_spacing[2];
 };
 
 QT_END_NAMESPACE

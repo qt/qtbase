@@ -1590,7 +1590,7 @@ Qt::Orientation QGridLayoutEngine::constraintOrientation() const
 void QGridLayoutEngine::ensureGeometries(const QSizeF &size,
                                          const QAbstractLayoutStyleInfo *styleInfo) const
 {
-    if (!styleInfo->hasChanged() && q_cachedSize == size)
+    if (q_cachedSize == size)
         return;
 
     q_cachedSize = size;

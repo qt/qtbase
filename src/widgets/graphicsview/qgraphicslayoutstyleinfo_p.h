@@ -77,13 +77,6 @@ public:
         QAbstractLayoutStyleInfo::invalidate();
     }
 
-    virtual bool hasChangedCore() const Q_DECL_OVERRIDE
-    {
-        QStyle *s = m_style;
-        // Note that style() will change m_style
-        return s != style();
-    }
-
     QWidget *widget() const;
     QStyle *style() const;
 

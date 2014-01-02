@@ -35,11 +35,4 @@
 
 QT_BEGIN_NAMESPACE
 
-bool QAbstractLayoutStyleInfo::hasChanged() const
-{
-    if (m_changed == Unknown)
-        m_changed = hasChangedCore() ? Changed : Unchanged;
-    return m_changed == Changed;
-}
-
 QT_END_NAMESPACE

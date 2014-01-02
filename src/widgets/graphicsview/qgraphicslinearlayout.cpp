@@ -173,7 +173,6 @@ QGraphicsLayoutStyleInfo *QGraphicsLinearLayoutPrivate::styleInfo() const
 {
     if (!m_styleInfo)
         m_styleInfo = new QGraphicsLayoutStyleInfo(this);
-    m_styleInfo->updateChanged(QAbstractLayoutStyleInfo::Unknown);
     return m_styleInfo;
 }
 
