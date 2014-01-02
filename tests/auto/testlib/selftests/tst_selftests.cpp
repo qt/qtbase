@@ -99,13 +99,13 @@ inline bool qCompare
     // Now check the value.  Some variance is allowed, and how much depends on
     // the measured unit.
     qreal variance = 0.;
-    if (r1.unit == "msec") {
+    if (r1.unit == "msecs" || r1.unit == "WalltimeMilliseconds") {
         variance = 0.1;
     }
     else if (r1.unit == "instruction reads") {
         variance = 0.001;
     }
-    else if (r1.unit == "ticks") {
+    else if (r1.unit == "CPU ticks" || r1.unit == "CPUTicks") {
         variance = 0.001;
     }
     if (variance == 0.) {
