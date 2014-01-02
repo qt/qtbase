@@ -1441,6 +1441,10 @@ static const char * xcb_atomnames = {
     "Abs Distance\0"
     "Wacom Serial IDs\0"
     "INTEGER\0"
+    "Rel Horiz Wheel\0"
+    "Rel Vert Wheel\0"
+    "Rel Horiz Scroll\0"
+    "Rel Vert Scroll\0"
 #if XCB_USE_MAEMO_WINDOW_PROPERTIES
     "_MEEGOTOUCH_ORIENTATION_ANGLE\0"
 #endif
@@ -1722,21 +1726,23 @@ bool QXcbConnection::hasEgl() const
 #endif // defined(XCB_USE_EGL)
 
 #if defined(XCB_USE_XINPUT2) || defined(XCB_USE_XINPUT2_MAEMO)
-// Borrowed from libXi.
-int QXcbConnection::xi2CountBits(unsigned char *ptr, int len)
+static int xi2ValuatorOffset(unsigned char *maskPtr, int maskLen, int number)
 {
-    int bits = 0;
-    int i;
-    unsigned char x;
-
-    for (i = 0; i < len; i++) {
-        x = ptr[i];
-        while (x > 0) {
-            bits += (x & 0x1);
-            x >>= 1;
+    int offset = 0;
+    for (int i = 0; i < maskLen; i++) {
+        if (number < 8) {
+            if ((maskPtr[i] & (1 << number)) == 0)
+                return -1;
         }
+        for (int j = 0; j < 8; j++) {
+            if (j == number)
+                return offset;
+            if (maskPtr[i] & (1 << j))
+                offset++;
+        }
+        number -= 8;
     }
-    return bits;
+    return -1;
 }
 
 bool QXcbConnection::xi2GetValuatorValueIfSet(void *event, int valuatorNum, double *value)
@@ -1745,13 +1751,13 @@ bool QXcbConnection::xi2GetValuatorValueIfSet(void *event, int valuatorNum, doub
     unsigned char *buttonsMaskAddr = (unsigned char*)&xideviceevent[1];
     unsigned char *valuatorsMaskAddr = buttonsMaskAddr + xideviceevent->buttons_len * 4;
     FP3232 *valuatorsValuesAddr = (FP3232*)(valuatorsMaskAddr + xideviceevent->valuators_len * 4);
-    int numValuatorValues = xi2CountBits(valuatorsMaskAddr, xideviceevent->valuators_len * 4);
-    // This relies on all bit being set until a certain number i.e. it doesn't support only bit 0 and 5 being set in the mask.
-    // Just like the original code, works for now.
-    if (valuatorNum >= numValuatorValues)
+
+    int valuatorOffset = xi2ValuatorOffset(valuatorsMaskAddr, xideviceevent->valuators_len, valuatorNum);
+    if (valuatorOffset < 0)
         return false;
-    *value = valuatorsValuesAddr[valuatorNum].integral;
-    *value += ((double)valuatorsValuesAddr[valuatorNum].frac / (1 << 16) / (1 << 16));
+
+    *value = valuatorsValuesAddr[valuatorOffset].integral;
+    *value += ((double)valuatorsValuesAddr[valuatorOffset].frac / (1 << 16) / (1 << 16));
     return true;
 }
 
