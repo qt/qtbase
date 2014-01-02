@@ -11,7 +11,7 @@
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="cleanupTestCase">
-<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/failcleanup/tst_failcleanup.cpp" line="59">
+<Incident type="fail" file="tst_failcleanup.cpp" line="59">
     <Description><![CDATA['false' returned FALSE. (Fail inside cleanupTestCase)]]></Description>
 </Incident>
 </TestFunction>

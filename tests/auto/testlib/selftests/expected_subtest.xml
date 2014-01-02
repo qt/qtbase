@@ -121,7 +121,7 @@
     <DataTag><![CDATA[data1]]></DataTag>
     <Description><![CDATA[test2 test3 data1]]></Description>
 </Message>
-<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="154">
+<Incident type="fail" file="tst_subtest.cpp" line="154">
     <DataTag><![CDATA[data1]]></DataTag>
     <Description><![CDATA[Compared values are not the same
    Actual   (str)              : hello1
@@ -139,7 +139,7 @@
     <DataTag><![CDATA[data2]]></DataTag>
     <Description><![CDATA[test2 test3 data2]]></Description>
 </Message>
-<Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp" line="154">
+<Incident type="fail" file="tst_subtest.cpp" line="154">
     <DataTag><![CDATA[data2]]></DataTag>
     <Description><![CDATA[Compared values are not the same
    Actual   (str)              : hello2

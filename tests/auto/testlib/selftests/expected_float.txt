@@ -5,28 +5,28 @@ PASS   : tst_float::floatComparisons(should SUCCEED 1)
 FAIL!  : tst_float::floatComparisons(should FAIL 1) Compared floats are not the same (fuzzy compare)
    Actual   (operandLeft) : 1
    Expected (operandRight): 3
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(61)]
+   Loc: [tst_float.cpp(61)]
 FAIL!  : tst_float::floatComparisons(should FAIL 2) Compared floats are not the same (fuzzy compare)
    Actual   (operandLeft) : 1e-07
    Expected (operandRight): 3e-07
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(61)]
+   Loc: [tst_float.cpp(61)]
 FAIL!  : tst_float::floatComparisons(should FAIL 3) Compared floats are not the same (fuzzy compare)
    Actual   (operandLeft) : 99998
    Expected (operandRight): 99999
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(61)]
+   Loc: [tst_float.cpp(61)]
 PASS   : tst_float::floatComparisons(should SUCCEED 2)
 FAIL!  : tst_float::compareFloatTests(1e0) Compared floats are not the same (fuzzy compare)
    Actual   (t1): 1
    Expected (t3): 3
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(104)]
+   Loc: [tst_float.cpp(109)]
 FAIL!  : tst_float::compareFloatTests(1e-7) Compared floats are not the same (fuzzy compare)
    Actual   (t1): 1e-07
    Expected (t3): 3e-07
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(104)]
+   Loc: [tst_float.cpp(109)]
 FAIL!  : tst_float::compareFloatTests(1e+7) Compared floats are not the same (fuzzy compare)
    Actual   (t1): 1e+07
    Expected (t3): 3e+07
-   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/float/tst_float.cpp(104)]
+   Loc: [tst_float.cpp(109)]
 PASS   : tst_float::cleanupTestCase()
 Totals: 4 passed, 6 failed, 0 skipped
 ********* Finished testing of tst_float *********

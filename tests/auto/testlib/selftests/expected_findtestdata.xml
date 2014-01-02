@@ -8,7 +8,7 @@
 <Incident type="pass" file="" line="0" />
 </TestFunction>
 <TestFunction name="paths">
-<Message type="warn" file="findtestdata.cpp" line="131">
+<Message type="warn" file="findtestdata.cpp" line="154">
     <Description><![CDATA[testdata testfile could not be located!]]></Description>
 </Message>
 <Incident type="pass" file="" line="0" />
