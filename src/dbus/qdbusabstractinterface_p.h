@@ -89,7 +89,7 @@ public:
     bool canMakeCalls() const;
 
     // these functions do not check if the property is valid
-    void property(const QMetaProperty &mp, QVariant &where) const;
+    bool property(const QMetaProperty &mp, void *returnValuePtr) const;
     bool setProperty(const QMetaProperty &mp, const QVariant &value);
 
     // return conn's d pointer
