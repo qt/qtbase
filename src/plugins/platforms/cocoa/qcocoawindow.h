@@ -214,6 +214,11 @@ public: // for QNSView
     static const int NoAlertRequest;
     NSInteger m_alertRequest;
     id monitor;
+
+    // used by showFullScreen in fake mode
+    QRect m_normalGeometry;
+    Qt::WindowFlags m_oldWindowFlags;
+    NSApplicationPresentationOptions m_presentationOptions;
 };
 
 QT_END_NAMESPACE

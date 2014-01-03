@@ -61,6 +61,7 @@ private slots:
     void eventOrderOnShow();
     void resizeEventAfterResize();
     void mapGlobal();
+    void positioning_data();
     void positioning();
     void isExposed();
     void isActive();
@@ -93,7 +94,6 @@ private:
     QTouchDevice *touchDevice;
 };
 
-
 void tst_QWindow::mapGlobal()
 {
     QWindow a;
@@ -116,10 +116,10 @@ void tst_QWindow::mapGlobal()
 class Window : public QWindow
 {
 public:
-    Window()
+    Window(const Qt::WindowFlags flags = Qt::Window | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint)
     {
         reset();
-        setFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+        setFlags(flags);
     }
 
     void reset()
@@ -188,6 +188,23 @@ void tst_QWindow::resizeEventAfterResize()
     QTRY_COMPARE(window.received(QEvent::Resize), 2);
 }
 
+void tst_QWindow::positioning_data()
+{
+    QTest::addColumn<int>("windowflags");
+    QTest::addColumn<int>("resizecount");
+
+    QTest::newRow("default") << int(Qt::Window | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint | Qt::WindowFullscreenButtonHint)
+#if defined(Q_OS_OSX) && MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+                             << 4;
+#else
+                             << 3;
+#endif
+
+#ifdef Q_OS_OSX
+    QTest::newRow("fake") << int(Qt::Window | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint) << 4;
+#endif
+}
+
 void tst_QWindow::positioning()
 {
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(
@@ -200,7 +217,9 @@ void tst_QWindow::positioning()
     const QSize size = QSize(300, 40);
     const QRect geometry(QPoint(80, 80), size);
 
-    Window window;
+    QFETCH(int, windowflags);
+    QFETCH(int, resizecount);
+    Window window((Qt::WindowFlags)windowflags);
     window.setGeometry(QRect(QPoint(20, 20), size));
     window.setFramePosition(QPoint(40, 40)); // Move window around before show, size must not change.
     QCOMPARE(window.geometry().size(), size);
@@ -223,14 +242,13 @@ void tst_QWindow::positioning()
 
     window.setWindowState(Qt::WindowFullScreen);
     QCoreApplication::processEvents();
-#ifdef Q_OS_OSX
-    QEXPECT_FAIL("", "Multiple failures in this test on Mac OS X, see QTBUG-23059", Abort);
-#endif
     QTRY_COMPARE(window.received(QEvent::Resize), 2);
+
+    QTest::qWait(2000);
 
     window.setWindowState(Qt::WindowNoState);
     QCoreApplication::processEvents();
-    QTRY_COMPARE(window.received(QEvent::Resize), 3);
+    QTRY_COMPARE(window.received(QEvent::Resize), resizecount);
 
     QTRY_COMPARE(originalPos, window.position());
     QTRY_COMPARE(originalFramePos, window.framePosition());
@@ -239,7 +257,7 @@ void tst_QWindow::positioning()
     // if our positioning is actually fully respected by the window manager
     // test whether it correctly handles frame positioning as well
     if (originalPos == geometry.topLeft() && (originalMargins.top() != 0 || originalMargins.left() != 0)) {
-        QPoint framePos = QGuiApplication::primaryScreen()->availableVirtualGeometry().topLeft() + QPoint(40, 40);
+        QPoint framePos = QPlatformScreen::platformScreenForWindow(&window)->availableGeometry().topLeft() + QPoint(40, 40);
 
         window.reset();
         window.setFramePosition(framePos);

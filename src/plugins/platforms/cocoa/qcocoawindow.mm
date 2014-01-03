@@ -220,6 +220,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_overrideBecomeKey(false)
     , m_alertRequest(NoAlertRequest)
     , monitor(nil)
+    , m_normalGeometry(QRect(0,0,-1,-1))
 {
 #ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
     qDebug() << "QCocoaWindow::QCocoaWindow" << this;
@@ -271,8 +272,16 @@ QSurfaceFormat QCocoaWindow::format() const
     return window()->requestedFormat();
 }
 
-void QCocoaWindow::setGeometry(const QRect &rect)
+void QCocoaWindow::setGeometry(const QRect &rectIn)
 {
+    QRect rect = rectIn;
+    // This means it is a call from QWindow::setFramePosition() and
+    // the coordinates include the frame (size is still the contents rectangle).
+    if (qt_window_private(const_cast<QWindow *>(window()))->positionPolicy
+            == QWindowPrivate::WindowFrameInclusive) {
+        const QMargins margins = frameMargins();
+        rect.moveTopLeft(rect.topLeft() + QPoint(margins.left(), margins.top()));
+    }
     if (geometry() == rect)
         return;
 #ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
@@ -1012,13 +1021,35 @@ void QCocoaWindow::syncWindowState(Qt::WindowState newState)
     }
 
     if ((m_synchedWindowState & Qt::WindowFullScreen) != (newState & Qt::WindowFullScreen)) {
+        bool fakeFullScreen = true;
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
         if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
-            [m_nsWindow toggleFullScreen : m_nsWindow];
-        } else {
-            // TODO: "normal" fullscreen
+            if (window()->flags() & Qt::WindowFullscreenButtonHint) {
+                fakeFullScreen = false;
+                [m_nsWindow toggleFullScreen : m_nsWindow];
+            }
         }
 #endif
+        if (fakeFullScreen) {
+            if (newState & Qt::WindowFullScreen) {
+                QScreen *screen = window()->screen();
+                if (screen) {
+                    if (m_normalGeometry.width() < 0) {
+                        m_oldWindowFlags = m_windowFlags;
+                        window()->setFlags(window()->flags() | Qt::FramelessWindowHint);
+                        m_normalGeometry = windowGeometry();
+                        setGeometry(screen->geometry());
+                        m_presentationOptions = [NSApp presentationOptions];
+                        [NSApp setPresentationOptions : m_presentationOptions | NSApplicationPresentationAutoHideMenuBar | NSApplicationPresentationAutoHideDock];
+                    }
+                }
+            } else {
+                window()->setFlags(m_oldWindowFlags);
+                setGeometry(m_normalGeometry);
+                m_normalGeometry.setRect(0, 0, -1, -1);
+                [NSApp setPresentationOptions : m_presentationOptions];
+            }
+        }
     }
 
     // New state is now the current synched state
