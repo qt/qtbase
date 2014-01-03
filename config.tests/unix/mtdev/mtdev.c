@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Jolla Ltd, author: <robin.burchell@jollamobile.com>
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the plugins module of the Qt Toolkit.
+** This file is part of the config.tests of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,56 +39,11 @@
 **
 ****************************************************************************/
 
-#ifndef QEVDEVTOUCH_P_H
-#define QEVDEVTOUCH_P_H
+#include <mtdev.h>
 
-#include <QObject>
-#include <QString>
-#include <QList>
-#include <QThread>
-#include <qpa/qwindowsysteminterface.h>
-
-QT_BEGIN_NAMESPACE
-
-class QSocketNotifier;
-class QEvdevTouchScreenData;
-#if !defined(QT_NO_MTDEV)
-struct mtdev;
-#endif
-
-class QEvdevTouchScreenHandler : public QObject
+int main(int, char **)
 {
-    Q_OBJECT
-
-public:
-    explicit QEvdevTouchScreenHandler(const QString &specification = QString(), QObject *parent = 0);
-    ~QEvdevTouchScreenHandler();
-
-private slots:
-    void readData();
-
-private:
-    QSocketNotifier *m_notify;
-    int m_fd;
-    QEvdevTouchScreenData *d;
-#if !defined(QT_NO_MTDEV)
-    mtdev *m_mtdev;
-#endif
-};
-
-class QEvdevTouchScreenHandlerThread : public QThread
-{
-public:
-    explicit QEvdevTouchScreenHandlerThread(const QString &spec, QObject *parent = 0);
-    ~QEvdevTouchScreenHandlerThread();
-    void run();
-    QEvdevTouchScreenHandler *handler() { return m_handler; }
-
-private:
-    QString m_spec;
-    QEvdevTouchScreenHandler *m_handler;
-};
-
-QT_END_NAMESPACE
-
-#endif // QEVDEVTOUCH_P_H
+    mtdev m;
+    mtdev_open(&m, 0);
+    return 0;
+}

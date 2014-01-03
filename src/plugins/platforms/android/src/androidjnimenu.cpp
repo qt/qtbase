@@ -156,11 +156,11 @@ namespace QtAndroidMenu
         foreach (QAndroidPlatformMenuBar *menuBar, menuBars) {
             if (menuBar->parentWindow() == window) {
                 visibleMenuBar = menuBar;
+                resetMenuBar();
                 break;
             }
         }
 
-        resetMenuBar();
     }
 
     void addMenuBar(QAndroidPlatformMenuBar *menuBar)

@@ -139,9 +139,41 @@ public class QtActivityDelegate
         if (m_fullScreen = enterFullScreen) {
             m_activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
             m_activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+            if (Build.VERSION.SDK_INT >= 19) {
+                try {
+                    int ui_flag_immersive_sticky = View.class.getDeclaredField("SYSTEM_UI_FLAG_IMMERSIVE_STICKY").getInt(null);
+                    int ui_flag_layout_stable = View.class.getDeclaredField("SYSTEM_UI_FLAG_LAYOUT_STABLE").getInt(null);
+                    int ui_flag_layout_hide_navigation = View.class.getDeclaredField("SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION").getInt(null);
+                    int ui_flag_layout_fullscreen = View.class.getDeclaredField("SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN").getInt(null);
+                    int ui_flag_hide_navigation = View.class.getDeclaredField("SYSTEM_UI_FLAG_HIDE_NAVIGATION").getInt(null);
+                    int ui_flag_fullscreen = View.class.getDeclaredField("SYSTEM_UI_FLAG_FULLSCREEN").getInt(null);
+
+                    Method m = View.class.getMethod("setSystemUiVisibility", int.class);
+                    m.invoke(m_activity.getWindow().getDecorView(),
+                             ui_flag_layout_stable
+                             | ui_flag_layout_hide_navigation
+                             | ui_flag_layout_fullscreen
+                             | ui_flag_hide_navigation
+                             | ui_flag_fullscreen
+                             | ui_flag_immersive_sticky
+                             | View.INVISIBLE);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         } else {
             m_activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
             m_activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            if (Build.VERSION.SDK_INT >= 19) {
+                try {
+                    int ui_flag_visible = View.class.getDeclaredField("SYSTEM_UI_FLAG_VISIBLE").getInt(null);
+                    Method m = View.class.getMethod("setSystemUiVisibility", int.class);
+                    m.invoke(m_activity.getWindow().getDecorView(),
+                             ui_flag_visible);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -348,6 +380,7 @@ public class QtActivityDelegate
         }
 
         m_activity = activity;
+        setActionBarVisibility(false);
         QtNative.setActivity(m_activity, this);
         QtNative.setClassLoader(classLoader);
         if (loaderParams.containsKey(STATIC_INIT_CLASSES_KEY)) {
@@ -412,7 +445,6 @@ public class QtActivityDelegate
             m_applicationParameters = loaderParams.getString(APPLICATION_PARAMETERS_KEY);
         else
             m_applicationParameters = "";
-        setActionBarVisibility(false);
 
         return true;
     }
@@ -696,6 +728,12 @@ public class QtActivityDelegate
                 QtNative.updateApplicationState(ApplicationActive);
                 QtNative.clearLostActions();
                 QtNative.updateWindow();
+
+                if (m_fullScreen) {
+                    // Suspending the app clears the immersive mode, so we need to set it again.
+                    m_fullScreen = false; // Force the setFullScreen() call below to actually do something
+                    setFullScreen(true);
+                }
             }
         }
     }
@@ -816,8 +854,7 @@ public class QtActivityDelegate
     {
         m_opionsMenuIsVisible = true;
         boolean res = QtNative.onPrepareOptionsMenu(menu);
-        if (!res || menu.size() == 0)
-            setActionBarVisibility(false);
+        setActionBarVisibility(res && menu.size() > 0);
         return res;
     }
 
@@ -834,7 +871,6 @@ public class QtActivityDelegate
 
     public void resetOptionsMenu()
     {
-        setActionBarVisibility(true);
         if (Build.VERSION.SDK_INT > 10) {
             try {
                 Activity.class.getMethod("invalidateOptionsMenu").invoke(m_activity);

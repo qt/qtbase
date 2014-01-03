@@ -5,8 +5,9 @@ Single-touch devices reporting ABS_X and Y only are not supported
 by this plugin. Use tslib or evdevmouse instead.
 
 The protocol type will be detected automatically.
-To enable libmtdev support uncomment the USE_MTDEV define in
-src/platformsupport/input/evdevtouch/evdevtouch.pri.
+
+libmtdev is automatically detected based on library availability. To disable it,
+pass -no-mtdev to configure.
 
 Tested with the following kernel drivers:
   bcm5974 (type A)

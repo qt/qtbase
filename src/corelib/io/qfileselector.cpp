@@ -51,6 +51,10 @@
 #include <QtCore/QLocale>
 #include <QtCore/QDebug>
 
+#ifdef Q_OS_UNIX
+#include <sys/utsname.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 //Environment variable to allow tooling full control of file selectors
@@ -69,13 +73,17 @@ QFileSelectorPrivate::QFileSelectorPrivate()
 /*!
     \class QFileSelector
     \inmodule QtCore
-    \brief QFileSelector provides a convenient way of selecting file variants
+    \brief QFileSelector provides a convenient way of selecting file variants.
     \since 5.2
 
     QFileSelector is a convenience for selecting file variants based on platform or device
     characteristics. This allows you to develop and deploy one codebase containing all the
     different variants more easily in some circumstances, such as when the correct variant cannot
     be determined during the deploy step.
+
+    \section1 Using QFileSelector
+
+    If you always use the same file you do not need to use QFileSelector.
 
     Consider the following example usage, where you want to use different settings files on
     different locales. You might select code between locales like this:
@@ -115,7 +123,7 @@ QFileSelectorPrivate::QFileSelectorPrivate()
     QFile defaultsFile(selector.select("data/defaults.conf"));
     \endcode
 
-    The files to be selected are placed in directories named with a '+' and a selector name. In the above
+    The files to be selected are placed in directories named with a \c'+' and a selector name. In the above
     example you could have the platform configurations selected by placing them in the following locations:
     \code
     data/defaults.conf
@@ -123,8 +131,6 @@ QFileSelectorPrivate::QFileSelectorPrivate()
     data/+blackberry/defaults.conf
     data/+ios/+en_GB/defaults.conf
     \endcode
-
-    If you always use the same file you do not need to use QFileSelector.
 
     To find selected files, QFileSelector looks in the same directory as the base file. If there are
     any directories of the form +<selector> with an active selector, QFileSelector will prefer a file
@@ -138,33 +144,43 @@ QFileSelectorPrivate::QFileSelectorPrivate()
     With those files available, you would select a different file on android and blackberry platforms,
     but only if the locale was en_GB.
 
+    QFileSelector will not attempt to select if the base file does not exist. For error handling in
+    the case no valid selectors are present, it is recommended to have a default or error-handling
+    file in the base file location even if you expect selectors to be present for all deployments.
+
+    In a future version, some may be marked as deploy-time static and be moved during the
+    deployment step as an optimization. As selectors come with a performance cost, it is
+    recommended to avoid their use in circumstances involving performance-critical code.
+
+    \section1 Adding selectors
+
     Selectors normally available are
     \list
-    \li platform, one of: android, blackberry, ios, windows, osx, linux, generic_unix or unknown.
+    \li platform, any of the following strings which match the platform the application is running
+        on: android, blackberry, ios, mac, linux, wince, unix, windows.
     \li locale, same as QLocale::system().name().
     \endlist
 
-    Further selectors will be added from the QT_FILE_SELECTORS environment variable, which when
-    set should be a set of colon (semi-colon on windows) separated selectors. Note that this
-    variable will only be read once, selectors may not update if the variable changes while the
-    application is running.
+    Further selectors will be added from the \c QT_FILE_SELECTORS environment variable, which
+    when set should be a set of comma separated selectors. Note that this variable will only be
+    read once; selectors may not update if the variable changes while the application is running.
+    The initial set of selectors are evaluated only once, on first use.
 
-    The initial set of selectors are evaluated only once, on first use. In a future
-    version, some may be marked as deploy-time static and be moved during the deployment step as an
-    optimization.  As selectors come with a performance cost, it is recommended to avoid their use
-    in circumstances involving performance-critical code.
+    You can also add extra selectors at runtime for custom behavior. These will be used in any
+    future calls to select(). If the extra selectors list has been changed, calls to select() will
+    use the new list and may return differently.
 
-    Additionally you can add extra selectors at runtime to customize behavior further. These will
-    be used in any future calls to select(). If the extra selectors list has been changed, calls to
-    select() will use the new list and may return differently.
+    \section1 Conflict resolution when multiple selectors apply
 
     When multiple selectors could be applied to the same file, the first matching selector is chosen.
     The order selectors are checked in are:
 
-    1. Selectors set via setExtraSelectors(), in the order they are in the list
-    2. Selectors in the QT_FILE_SELECTORS environment variable, from left to right
-    3. Locale
-    4. Platform
+    \list 1
+    \li Selectors set via setExtraSelectors(), in the order they are in the list
+    \li Selectors in the \c QT_FILE_SELECTORS environment variable, from left to right
+    \li Locale
+    \li Platform
+    \endlist
 
     Here is an example involving multiple selectors matching at the same time. It uses platform
     selectors, plus an extra selector named "admin" is set by the application based on user
@@ -179,14 +195,11 @@ QFileSelectorPrivate::QFileSelectorPrivate()
     images/+admin/+linux/background.png
     \endcode
 
-    Because extra selectors are checked before platform the +admin/background.png will be chosen
-    on windows when the admin selector is set, and +windows/background.png will be chosen on
-    windows when the admin selector is not set.  On linux, the +admin/+linux/background.png will be
-    chosen when admin is set, and the +linux/background.png when it is not.
+    Because extra selectors are checked before platform the \c{+admin/background.png} will be chosen
+    on Windows when the admin selector is set, and \c{+windows/background.png} will be chosen on
+    Windows when the admin selector is not set.  On Linux, the \c{+admin/+linux/background.png} will be
+    chosen when admin is set, and the \c{+linux/background.png} when it is not.
 
-    QFileSelector will not attempt to select if the base file does not exist. For error handling in
-    the case no valid selectors are present, it is recommended to have a default or error-handling
-    file in the base file location even if you expect selectors to be present for all deployments.
 */
 
 /*!

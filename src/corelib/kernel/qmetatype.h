@@ -876,7 +876,7 @@ struct CapabilitiesImpl<T, std::random_access_iterator_tag>
 template<typename T>
 struct ContainerAPI : CapabilitiesImpl<T>
 {
-    static int size(const T *t) { return std::distance(t->begin(), t->end()); }
+    static int size(const T *t) { return int(std::distance(t->begin(), t->end())); }
 };
 
 template<typename T>
@@ -1102,8 +1102,8 @@ public:
 
     template<class T>
     static int sizeImpl(const void *p)
-    { return std::distance(static_cast<const T*>(p)->begin(),
-                           static_cast<const T*>(p)->end()); }
+    { return int(std::distance(static_cast<const T*>(p)->begin(),
+                               static_cast<const T*>(p)->end())); }
 
     template<class T>
     static void findImpl(const void *container, const void *p, void **iterator)

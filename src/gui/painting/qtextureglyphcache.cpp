@@ -160,7 +160,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
         // proper metrics will be cached and used later.
         if (fontEngine->hasInternalCaching()) {
             QImage *locked = fontEngine->lockedAlphaMapForGlyph(glyph, subPixelPosition, format);
-            if (locked)
+            if (locked && !locked->isNull())
                 fontEngine->unlockAlphaMapForGlyph();
         }
 

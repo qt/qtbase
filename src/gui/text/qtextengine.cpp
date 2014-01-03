@@ -954,12 +954,12 @@ void QTextEngine::shapeText(int item) const
                 itemBoundaries.append(i);
                 itemBoundaries.append(glyph_pos);
 
-                lastEngine = engineIdx;
                 QFontEngine *actualFontEngine = static_cast<QFontEngineMulti *>(fontEngine)->engine(engineIdx);
                 si.ascent = qMax(actualFontEngine->ascent(), si.ascent);
                 si.descent = qMax(actualFontEngine->descent(), si.descent);
                 si.leading = qMax(actualFontEngine->leading(), si.leading);
             }
+            lastEngine = engineIdx;
             if (QChar::isHighSurrogate(string[i]) && i + 1 < itemLength && QChar::isLowSurrogate(string[i + 1]))
                 ++i;
         }

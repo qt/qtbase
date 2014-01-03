@@ -70,7 +70,7 @@ void q_createNativeChildrenAndSetParent(const QWidget *parentWidget)
             const QWidget *childWidget = qobject_cast<const QWidget *>(children.at(i));
             if (childWidget) { // should not be necessary
                 if (childWidget->testAttribute(Qt::WA_NativeWindow)) {
-                    if (!childWidget->windowHandle())
+                    if (!childWidget->internalWinId())
                         childWidget->winId();
                     if (childWidget->windowHandle()) {
                         QWindow *parentWindow = childWidget->nativeParentWidget()->windowHandle();

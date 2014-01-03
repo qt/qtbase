@@ -595,6 +595,7 @@ CFG_XVIDEO=auto
 CFG_XINERAMA=runtime
 CFG_XFIXES=runtime
 CFG_ZLIB=auto
+CFG_MTDEV=auto
 CFG_SQLITE=qt
 CFG_GIF=auto
 CFG_PNG=yes
@@ -1589,6 +1590,13 @@ while [ "$#" -gt 0 ]; do
         # No longer supported:
         #[ "$VAL" = "no" ] && CFG_LIBPNG=no
         ;;
+    mtdev)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_MTDEV="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     sqlite)
         if [ "$VAL" = "system" ]; then
             CFG_SQLITE=system
@@ -2303,6 +2311,9 @@ Third Party Libraries:
     -qt-zlib ........... Use the zlib bundled with Qt.
  +  -system-zlib ....... Use zlib from the operating system.
                          See http://www.gzip.org/zlib
+
+    -no-mtdev .........  Do not compile mtdev support.
+ +  -mtdev ............. Enable mtdev support.
 
     -no-gif ............ Do not compile GIF reading support.
 
@@ -4414,6 +4425,17 @@ if [ "$CFG_ZLIB" = "auto" ]; then
     fi
 fi
 
+if [ "$CFG_MTDEV" != "no" ]; then
+    if compileTest unix/mtdev "mtdev"; then
+        CFG_MTDEV=yes
+    else
+        CFG_MTDEV=no
+    fi
+fi
+if [ "$CFG_MTDEV" = "no" ]; then
+    QMakeVar add DEFINES QT_NO_MTDEV
+fi
+
 if [ "$CFG_LARGEFILE" = "auto" ]; then
     #Large files should be enabled for all Linux systems
     CFG_LARGEFILE=yes
@@ -5875,6 +5897,7 @@ elif [ "$CFG_ZLIB" = "system" ]; then
     QT_CONFIG="$QT_CONFIG system-zlib"
 fi
 
+[ "$CFG_MTDEV" = "yes" ] && QT_CONFIG="$QT_CONFIG mtdev"
 [ "$CFG_NIS" = "yes" ] && QT_CONFIG="$QT_CONFIG nis"
 [ "$CFG_CUPS" = "yes" ] && QT_CONFIG="$QT_CONFIG cups"
 [ "$CFG_ICONV" = "yes" ] && QT_CONFIG="$QT_CONFIG iconv"
@@ -6772,6 +6795,7 @@ report_support "    TDS .................." "$CFG_SQL_tds" plugin "plugin" yes "
 report_support "  udev ..................." "$CFG_LIBUDEV"
 report_support "  xkbcommon .............." "$CFG_XKBCOMMON" system "system library" qt "bundled copy"
 report_support "  zlib ..................." "$CFG_ZLIB" system "system library" yes "bundled copy"
+report_support "  mtdev .................." "$CFG_MTDEV" yes "system library"
 
 echo
 

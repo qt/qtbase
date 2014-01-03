@@ -1916,6 +1916,16 @@ bool CppCodeParser::matchProperty(InnerNode *parent)
         QString key = previousLexeme();
         QString value;
 
+        // Keywords with no associated values
+        if (key == "CONSTANT") {
+            property->setConstant();
+            continue;
+        }
+        else if (key == "FINAL") {
+            property->setFinal();
+            continue;
+        }
+
         if (match(Tok_Ident) || match(Tok_Number)) {
             value = previousLexeme();
         }
@@ -1966,7 +1976,7 @@ bool CppCodeParser::matchProperty(InnerNode *parent)
             if (ok)
                 property->setRevision(revision);
             else
-                parent->doc().location().warning(tr("Invalid revision number: %1").arg(value));
+                location().warning(tr("Invalid revision number: %1").arg(value));
         } else if (key == "SCRIPTABLE") {
             QString v = value.toLower();
             if (v == "true")
@@ -1978,10 +1988,6 @@ bool CppCodeParser::matchProperty(InnerNode *parent)
                 property->setRuntimeScrFunc(value);
             }
         }
-        else if (key == "CONSTANT")
-            property->setConstant();
-        else if (key == "FINAL")
-            property->setFinal();
     }
     match(Tok_RightParen);
     return true;
@@ -2061,7 +2067,11 @@ bool CppCodeParser::matchDeclList(InnerNode *parent)
         case Tok_Q_PROPERTY:
         case Tok_Q_PRIVATE_PROPERTY:
         case Tok_QDOC_PROPERTY:
-            matchProperty(parent);
+            if (!matchProperty(parent)) {
+                location().warning(tr("Failed to parse token %1 in property declaration").arg(lexeme()));
+                skipTo(Tok_RightParen);
+                match(Tok_RightParen);
+            }
             break;
         case Tok_Q_DECLARE_SEQUENTIAL_ITERATOR:
             readToken();

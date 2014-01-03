@@ -2132,6 +2132,9 @@ bool useHelper(QPlatformTheme::DialogType type)
         break;
 #endif
     case QPlatformTheme::FontDialog:
+    case QPlatformTheme::MessageDialog:
+        break;
+    default:
         break;
     }
     return false;
@@ -2160,6 +2163,9 @@ QPlatformDialogHelper *createHelper(QPlatformTheme::DialogType type)
         break;
 #endif
     case QPlatformTheme::FontDialog:
+    case QPlatformTheme::MessageDialog:
+        break;
+    default:
         break;
     }
     return 0;

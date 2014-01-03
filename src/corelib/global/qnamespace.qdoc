@@ -509,15 +509,14 @@
     delivery at a later time.
 
     \value AutoConnection
-           (default) If the signal is emitted from a different thread than the
-           receiving object, the signal is queued, behaving as
-           Qt::QueuedConnection. Otherwise, the slot is invoked directly,
-           behaving as Qt::DirectConnection. The type of connection is
+           \b (Default) If the receiver \l{QObject#Thread Affinity}{lives in} the
+           thread that emits the signal, Qt::DirectConnection is used. Otherwise,
+           Qt::QueuedConnection is used. The connection type is
            determined when the signal is emitted.
 
     \value DirectConnection
-           The slot is invoked immediately, when the signal is
-           emitted.
+           The slot is invoked immediately when the signal is
+           emitted. The slot is executed in the signalling thread.
 
     \value QueuedConnection
            The slot is invoked when control returns to the event loop
@@ -525,11 +524,10 @@
            receiver's thread.
 
     \value BlockingQueuedConnection
-           Same as QueuedConnection, except the current thread blocks
-           until the slot returns. This connection type should only be
-           used where the emitter and receiver are in different
-           threads.  \note Violating this rule can cause your
-           application to deadlock.
+           Same as Qt::QueuedConnection, except that the signalling thread blocks
+           until the slot returns. This connection must \e not be used if the
+           receiver lives in the signalling thread, or else the application
+           will deadlock.
 
     \value UniqueConnection
            This is a flag that can be combined with any one of the above

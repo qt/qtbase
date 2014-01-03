@@ -1729,6 +1729,7 @@ QSpiActionArray AtSpiAdaptor::getActions(QAccessibleActionInterface *actionInter
         QSpiAction action;
         QStringList keyBindings;
 
+        action.name = actionName;
         action.description = actionInterface->localizedActionDescription(actionName);
 
         keyBindings = actionInterface->keyBindingsForAction(actionName);

@@ -1116,7 +1116,7 @@ QStyleOptionToolBar::QStyleOptionToolBar(int version)
 
     The order of the positions within a line starts at the top of a
     vertical line, and from the left within a horizontal line. The
-    order of the positions for the lines is always from the the
+    order of the positions for the lines is always from the
     parent widget's boundary edges.
 
     \value Beginning The toolbar is located at the beginning of the line,
