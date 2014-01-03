@@ -245,8 +245,19 @@ public:
     static QMatrix trueMatrix(const QMatrix &, int w, int h);
     QImage transformed(const QTransform &matrix, Qt::TransformationMode mode = Qt::FastTransformation) const;
     static QTransform trueMatrix(const QTransform &, int w, int h);
+#if defined(Q_COMPILER_REF_QUALIFIERS) && !defined(QT_COMPILING_QIMAGE_COMPAT_CPP)
+    QImage mirrored(bool horizontally = false, bool vertically = true) const &
+        { return mirrored_helper(horizontally, vertically); }
+    QImage &&mirrored(bool horizontally = false, bool vertically = true) &&
+        { mirrored_inplace(horizontally, vertically); return qMove(*this); }
+    QImage rgbSwapped() const &
+        { return rgbSwapped_helper(); }
+    QImage &&rgbSwapped() &&
+        { rgbSwapped_inplace(); return qMove(*this); }
+#else
     QImage mirrored(bool horizontally = false, bool vertically = true) const;
     QImage rgbSwapped() const;
+#endif
     void invertPixels(InvertMode = InvertRgb);
 
 
@@ -298,6 +309,10 @@ public:
 
 protected:
     virtual int metric(PaintDeviceMetric metric) const;
+    QImage mirrored_helper(bool horizontal, bool vertical) const;
+    QImage rgbSwapped_helper() const;
+    void mirrored_inplace(bool horizontal, bool vertical);
+    void rgbSwapped_inplace();
 
 private:
     friend class QWSOnScreenSurface;

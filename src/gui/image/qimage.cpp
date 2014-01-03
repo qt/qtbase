@@ -1105,8 +1105,7 @@ void QImage::detach()
         if (d->ref.load() != 1 || d->ro_data)
             *this = copy();
 
-        if (d)
-            ++d->detach_no;
+        ++d->detach_no;
     }
 }
 
@@ -4791,6 +4790,7 @@ QImage QImage::createMaskFromColor(QRgb color, Qt::MaskMode mode) const
 */
 
 /*!
+    \fn QImage QImage::mirrored(bool horizontal = false, bool vertical = true) const
     Returns a mirror of the image, mirrored in the horizontal and/or
     the vertical direction depending on whether \a horizontal and \a
     vertical are set to true or false.
@@ -4799,7 +4799,69 @@ QImage QImage::createMaskFromColor(QRgb color, Qt::MaskMode mode) const
 
     \sa {QImage#Image Transformations}{Image Transformations}
 */
-QImage QImage::mirrored(bool horizontal, bool vertical) const
+
+template<typename T>
+inline void mirrored_helper_loop(int w, int h, int dxi, int dxs, int dyi, int dy, const uchar* sdata, uchar* ddata, int sbpl, int dbpl)
+{
+    for (int sy = 0; sy < h; sy++, dy += dyi) {
+        const T* ssl = (T*)(sdata + sy*sbpl);
+        T* dsl = (T*)(ddata + dy*dbpl);
+        int dx = dxs;
+        for (int sx = 0; sx < w; sx++, dx += dxi)
+            dsl[dx] = ssl[sx];
+    }
+}
+
+template<typename T>
+inline void mirrored_helper_loop_inplace(int w, int h, int dxi, int dxs, int dyi, int dy, uchar* sdata, int sbpl)
+{
+    for (int sy = 0; sy < h; sy++, dy += dyi) {
+        T* ssl = (T*)(sdata + sy*sbpl);
+        T* dsl = (T*)(sdata + dy*sbpl);
+        int dx = dxs;
+        for (int sx = 0; sx < w; sx++, dx += dxi)
+            std::swap(dsl[dx], ssl[sx]);
+    }
+}
+
+inline void mirror_horizonal_bitmap(int w, int h, int dxs, uchar* data, int bpl, bool monolsb)
+{
+    int shift = w % 8;
+    for (int y = h-1; y >= 0; y--) {
+        quint8* a0 = (quint8*)(data + y*bpl);
+        // Swap bytes
+        quint8* a = a0+dxs;
+        while (a >= a0) {
+            *a = bitflip[*a];
+            a--;
+        }
+        // Shift bits if unaligned
+        if (shift != 0) {
+            a = a0+dxs;
+            quint8 c = 0;
+            if (monolsb) {
+                while (a >= a0) {
+                    quint8 nc = *a << shift;
+                    *a = (*a >> (8-shift)) | c;
+                    --a;
+                    c = nc;
+                }
+            } else {
+                while (a >= a0) {
+                    quint8 nc = *a >> shift;
+                    *a = (*a << (8-shift)) | c;
+                    --a;
+                    c = nc;
+                }
+            }
+        }
+    }
+}
+
+/*!
+    \internal
+*/
+QImage QImage::mirrored_helper(bool horizontal, bool vertical) const
 {
     if (!d)
         return QImage();
@@ -4821,92 +4883,80 @@ QImage QImage::mirrored(bool horizontal, bool vertical) const
     result.d->has_alpha_clut = d->has_alpha_clut;
     result.d->devicePixelRatio = d->devicePixelRatio;
 
-    if (depth() == 1)
+    if (d->depth == 1)
         w = (w+7)/8;
     int dxi = horizontal ? -1 : 1;
     int dxs = horizontal ? w-1 : 0;
     int dyi = vertical ? -1 : 1;
-    int dy = vertical ? h-1: 0;
+    int dys = vertical ? h-1 : 0;
 
     // 1 bit, 8 bit
-    if (d->depth == 1 || d->depth == 8) {
-        for (int sy = 0; sy < h; sy++, dy += dyi) {
-            quint8* ssl = (quint8*)(d->data + sy*d->bytes_per_line);
-            quint8* dsl = (quint8*)(result.d->data + dy*result.d->bytes_per_line);
-            int dx = dxs;
-            for (int sx = 0; sx < w; sx++, dx += dxi)
-                dsl[dx] = ssl[sx];
-        }
-    }
+    if (d->depth == 1 || d->depth == 8)
+        mirrored_helper_loop<quint8>(w, h, dxi, dxs, dyi, dys, d->data, result.d->data, d->bytes_per_line, result.d->bytes_per_line);
     // 16 bit
-    else if (d->depth == 16) {
-        for (int sy = 0; sy < h; sy++, dy += dyi) {
-            quint16* ssl = (quint16*)(d->data + sy*d->bytes_per_line);
-            quint16* dsl = (quint16*)(result.d->data + dy*result.d->bytes_per_line);
-            int dx = dxs;
-            for (int sx = 0; sx < w; sx++, dx += dxi)
-                dsl[dx] = ssl[sx];
-        }
-    }
+    else if (d->depth == 16)
+        mirrored_helper_loop<quint16>(w, h, dxi, dxs, dyi, dys, d->data, result.d->data, d->bytes_per_line, result.d->bytes_per_line);
     // 24 bit
-    else if (d->depth == 24) {
-        for (int sy = 0; sy < h; sy++, dy += dyi) {
-            quint24* ssl = (quint24*)(d->data + sy*d->bytes_per_line);
-            quint24* dsl = (quint24*)(result.d->data + dy*result.d->bytes_per_line);
-            int dx = dxs;
-            for (int sx = 0; sx < w; sx++, dx += dxi)
-                dsl[dx] = ssl[sx];
-        }
-    }
+    else if (d->depth == 24)
+        mirrored_helper_loop<quint24>(w, h, dxi, dxs, dyi, dys, d->data, result.d->data, d->bytes_per_line, result.d->bytes_per_line);
     // 32 bit
-    else if (d->depth == 32) {
-        for (int sy = 0; sy < h; sy++, dy += dyi) {
-            quint32* ssl = (quint32*)(d->data + sy*d->bytes_per_line);
-            quint32* dsl = (quint32*)(result.d->data + dy*result.d->bytes_per_line);
-            int dx = dxs;
-            for (int sx = 0; sx < w; sx++, dx += dxi)
-                dsl[dx] = ssl[sx];
-        }
-    }
+    else if (d->depth == 32)
+        mirrored_helper_loop<quint32>(w, h, dxi, dxs, dyi, dys, d->data, result.d->data, d->bytes_per_line, result.d->bytes_per_line);
 
     // special handling of 1 bit images for horizontal mirroring
-    if (horizontal && d->depth == 1) {
-        int shift = width() % 8;
-        for (int y = h-1; y >= 0; y--) {
-            quint8* a0 = (quint8*)(result.d->data + y*d->bytes_per_line);
-            // Swap bytes
-            quint8* a = a0+dxs;
-            while (a >= a0) {
-                *a = bitflip[*a];
-                a--;
-            }
-            // Shift bits if unaligned
-            if (shift != 0) {
-                a = a0+dxs;
-                quint8 c = 0;
-                if (format() == Format_MonoLSB) {
-                    while (a >= a0) {
-                        quint8 nc = *a << shift;
-                        *a = (*a >> (8-shift)) | c;
-                        --a;
-                        c = nc;
-                    }
-                } else {
-                    while (a >= a0) {
-                        quint8 nc = *a >> shift;
-                        *a = (*a << (8-shift)) | c;
-                        --a;
-                        c = nc;
-                    }
-                }
-            }
-        }
-    }
-
+    if (horizontal && d->depth == 1)
+        mirror_horizonal_bitmap(d->width, d->height, dxs, result.d->data, result.d->bytes_per_line, d->format == Format_MonoLSB);
     return result;
 }
 
 /*!
+    \internal
+*/
+void QImage::mirrored_inplace(bool horizontal, bool vertical)
+{
+    if (!d)
+        return;
+
+    if ((d->width <= 1 && d->height <= 1) || (!horizontal && !vertical))
+        return;
+
+    detach();
+
+    int w = d->width;
+    int h = d->height;
+
+    if (d->depth == 1)
+        w = (w+7)/8;
+    int dxi = horizontal ? -1 : 1;
+    int dxs = horizontal ? w-1 : 0;
+    int dyi = vertical ? -1 : 1;
+    int dys = vertical ? h-1 : 0;
+
+    if (vertical)
+        h = h/2;
+    else if (horizontal)
+        w = w/2;
+
+    // 1 bit, 8 bit
+    if (d->depth == 1 || d->depth == 8)
+        mirrored_helper_loop_inplace<quint8>(w, h, dxi, dxs, dyi, dys, d->data, d->bytes_per_line);
+    // 16 bit
+    else if (d->depth == 16)
+        mirrored_helper_loop_inplace<quint16>(w, h, dxi, dxs, dyi, dys, d->data, d->bytes_per_line);
+    // 24 bit
+    else if (d->depth == 24)
+        mirrored_helper_loop_inplace<quint24>(w, h, dxi, dxs, dyi, dys, d->data, d->bytes_per_line);
+    // 32 bit
+    else if (d->depth == 32)
+        mirrored_helper_loop_inplace<quint32>(w, h, dxi, dxs, dyi, dys, d->data, d->bytes_per_line);
+
+    // special handling of 1 bit images for horizontal mirroring
+    if (horizontal && d->depth == 1)
+        mirror_horizonal_bitmap(d->width, d->height, dxs, d->data, d->bytes_per_line, d->format == Format_MonoLSB);
+}
+
+/*!
+    \fn QImage QImage::rgbSwapped() const
     Returns a QImage in which the values of the red and blue
     components of all pixels have been swapped, effectively converting
     an RGB image to an BGR image.
@@ -4915,67 +4965,9 @@ QImage QImage::mirrored(bool horizontal, bool vertical) const
 
     \sa {QImage#Image Transformations}{Image Transformations}
 */
-QImage QImage::rgbSwapped() const
-{
-    if (isNull())
-        return *this;
-    QImage res;
-    switch (d->format) {
-    case Format_Invalid:
-    case NImageFormats:
-        Q_ASSERT(false);
-        return res;
-    case Format_Mono:
-    case Format_MonoLSB:
-    case Format_Indexed8:
-        res = copy();
-        for (int i = 0; i < res.d->colortable.size(); i++) {
-            QRgb c = res.d->colortable.at(i);
-            res.d->colortable[i] = QRgb(((c << 16) & 0xff0000) | ((c >> 16) & 0xff) | (c & 0xff00ff00));
-        }
-        return res;
-    case Format_RGB32:
-    case Format_ARGB32:
-    case Format_ARGB32_Premultiplied:
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-    case Format_RGBX8888:
-    case Format_RGBA8888:
-    case Format_RGBA8888_Premultiplied:
-#endif
-        res = QImage(d->width, d->height, d->format);
-        QIMAGE_SANITYCHECK_MEMORY(res);
-        for (int i = 0; i < d->height; i++) {
-            uint *q = (uint*)res.scanLine(i);
-            uint *p = (uint*)constScanLine(i);
-            uint *end = p + d->width;
-            while (p < end) {
-                *q = ((*p << 16) & 0xff0000) | ((*p >> 16) & 0xff) | (*p & 0xff00ff00);
-                p++;
-                q++;
-            }
-        }
-        return res;
-    case Format_RGB16:
-        res = QImage(d->width, d->height, d->format);
-        QIMAGE_SANITYCHECK_MEMORY(res);
-        for (int i = 0; i < d->height; i++) {
-            ushort *q = (ushort*)res.scanLine(i);
-            const ushort *p = (const ushort*)constScanLine(i);
-            const ushort *end = p + d->width;
-            while (p < end) {
-                *q = ((*p << 11) & 0xf800) | ((*p >> 11) & 0x1f) | (*p & 0x07e0);
-                p++;
-                q++;
-            }
-        }
-        return res;
-    default:
-        break;
-    }
 
-    res = QImage(d->width, d->height, d->format);
-    QIMAGE_SANITYCHECK_MEMORY(res);
-    const QPixelLayout *layout = &qPixelLayouts[d->format];
+inline void rgbSwapped_generic(int width, int height, const QImage *src, QImage *dst, const QPixelLayout* layout)
+{
     Q_ASSERT(layout->redWidth == layout->blueWidth);
     FetchPixelsFunc fetch = qFetchPixels[layout->bpp];
     StorePixelsFunc store = qStorePixels[layout->bpp];
@@ -4986,12 +4978,12 @@ QImage QImage::rgbSwapped() const
 
     const int buffer_size = 2048;
     uint buffer[buffer_size];
-    for (int i = 0; i < d->height; ++i) {
-        uchar *q = res.scanLine(i);
-        const uchar *p = constScanLine(i);
+    for (int i = 0; i < height; ++i) {
+        uchar *q = dst->scanLine(i);
+        const uchar *p = src->constScanLine(i);
         int x = 0;
-        while (x < d->width) {
-            int l = qMin(d->width - x, buffer_size);
+        while (x < width) {
+            int l = qMin(width - x, buffer_size);
             const uint *ptr = fetch(buffer, p, x, l);
             for (int j = 0; j < l; ++j) {
                 uint red = (ptr[j] >> layout->redShift) & redBlueMask;
@@ -5004,7 +4996,133 @@ QImage QImage::rgbSwapped() const
             x += l;
         }
     }
+}
+
+/*!
+    \internal
+*/
+QImage QImage::rgbSwapped_helper() const
+{
+    if (isNull())
+        return *this;
+
+    QImage res;
+
+    switch (d->format) {
+    case Format_Invalid:
+    case NImageFormats:
+        Q_ASSERT(false);
+        break;
+    case Format_Mono:
+    case Format_MonoLSB:
+    case Format_Indexed8:
+        res = copy();
+        for (int i = 0; i < res.d->colortable.size(); i++) {
+            QRgb c = res.d->colortable.at(i);
+            res.d->colortable[i] = QRgb(((c << 16) & 0xff0000) | ((c >> 16) & 0xff) | (c & 0xff00ff00));
+        }
+        break;
+    case Format_RGB32:
+    case Format_ARGB32:
+    case Format_ARGB32_Premultiplied:
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+    case Format_RGBX8888:
+    case Format_RGBA8888:
+    case Format_RGBA8888_Premultiplied:
+#endif
+        res = QImage(d->width, d->height, d->format);
+        QIMAGE_SANITYCHECK_MEMORY(res);
+        for (int i = 0; i < d->height; i++) {
+            uint *q = (uint*)res.scanLine(i);
+            const uint *p = (const uint*)constScanLine(i);
+            const uint *end = p + d->width;
+            while (p < end) {
+                uint c = *p;
+                *q = ((c << 16) & 0xff0000) | ((c >> 16) & 0xff) | (c & 0xff00ff00);
+                p++;
+                q++;
+            }
+        }
+        break;
+    case Format_RGB16:
+        res = QImage(d->width, d->height, d->format);
+        QIMAGE_SANITYCHECK_MEMORY(res);
+        for (int i = 0; i < d->height; i++) {
+            ushort *q = (ushort*)res.scanLine(i);
+            const ushort *p = (const ushort*)constScanLine(i);
+            const ushort *end = p + d->width;
+            while (p < end) {
+                ushort c = *p;
+                *q = ((c << 11) & 0xf800) | ((c >> 11) & 0x1f) | (c & 0x07e0);
+                p++;
+                q++;
+            }
+        }
+        break;
+    default:
+        res = QImage(d->width, d->height, d->format);
+        rgbSwapped_generic(d->width, d->height, this, &res, &qPixelLayouts[d->format]);
+        break;
+    }
     return res;
+}
+
+/*!
+    \internal
+*/
+void QImage::rgbSwapped_inplace()
+{
+    if (isNull())
+        return;
+
+    detach();
+
+    switch (d->format) {
+    case Format_Invalid:
+    case NImageFormats:
+        Q_ASSERT(false);
+        break;
+    case Format_Mono:
+    case Format_MonoLSB:
+    case Format_Indexed8:
+        for (int i = 0; i < d->colortable.size(); i++) {
+            QRgb c = d->colortable.at(i);
+            d->colortable[i] = QRgb(((c << 16) & 0xff0000) | ((c >> 16) & 0xff) | (c & 0xff00ff00));
+        }
+        break;
+    case Format_RGB32:
+    case Format_ARGB32:
+    case Format_ARGB32_Premultiplied:
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+    case Format_RGBX8888:
+    case Format_RGBA8888:
+    case Format_RGBA8888_Premultiplied:
+#endif
+        for (int i = 0; i < d->height; i++) {
+            uint *p = (uint*)scanLine(i);
+            uint *end = p + d->width;
+            while (p < end) {
+                uint c = *p;
+                *p = ((c << 16) & 0xff0000) | ((c >> 16) & 0xff) | (c & 0xff00ff00);
+                p++;
+            }
+        }
+        break;
+    case Format_RGB16:
+        for (int i = 0; i < d->height; i++) {
+            ushort *p = (ushort*)scanLine(i);
+            ushort *end = p + d->width;
+            while (p < end) {
+                ushort c = *p;
+                *p = ((c << 11) & 0xf800) | ((c >> 11) & 0x1f) | (c & 0x07e0);
+                p++;
+            }
+        }
+        break;
+    default:
+        rgbSwapped_generic(d->width, d->height, this, this, &qPixelLayouts[d->format]);
+        break;
+    }
 }
 
 /*!
