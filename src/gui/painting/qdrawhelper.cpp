@@ -374,12 +374,6 @@ inline void QT_FASTCALL storePixel<QPixelLayout::BPP24>(uchar *dest, int index, 
     reinterpret_cast<quint24 *>(dest)[index] = quint24(pixel);
 }
 
-template <>
-inline void QT_FASTCALL storePixel<QPixelLayout::BPP32>(uchar *dest, int index, uint pixel)
-{
-    reinterpret_cast<uint *>(dest)[index] = pixel;
-}
-
 template <QPixelLayout::BPP width>
 inline void QT_FASTCALL storePixels(uchar *dest, const uint *src, int index, int count)
 {
