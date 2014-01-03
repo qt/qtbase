@@ -77,7 +77,6 @@ private:
     EGLContext m_eglContext;
     EGLContext m_shareContext;
     EGLDisplay m_eglDisplay;
-    EGLenum m_eglApi;
     EGLConfig m_eglConfig;
     QSurfaceFormat m_format;
 };

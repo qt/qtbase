@@ -71,19 +71,19 @@ static inline void bindApi(const QSurfaceFormat &format)
 QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
                                          EGLenum eglApi)
     : m_eglDisplay(display)
-    , m_eglApi(eglApi)
     , m_eglConfig(q_configFromGLFormat(display, format))
 {
     init(format, share);
+    Q_UNUSED(eglApi);
 }
 
 QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
                                          EGLConfig config, EGLenum eglApi)
     : m_eglDisplay(display)
-    , m_eglApi(eglApi)
     , m_eglConfig(config)
 {
     init(format, share);
+    Q_UNUSED(eglApi);
 }
 
 void QEGLPlatformContext::init(const QSurfaceFormat &format, QPlatformOpenGLContext *share)
