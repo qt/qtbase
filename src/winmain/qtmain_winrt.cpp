@@ -77,6 +77,8 @@ using namespace Microsoft::WRL;
 #define CoreApplicationClass RuntimeClass_Windows_ApplicationModel_Core_CoreApplication
 typedef ITypedEventHandler<Core::CoreApplicationView *, Activation::IActivatedEventArgs *> ActivatedHandler;
 
+static int g_mainExitCode;
+
 class AppContainer : public Microsoft::WRL::RuntimeClass<Core::IFrameworkView>
 {
 public:
@@ -109,7 +111,8 @@ public:
             while (!IsDebuggerPresent())
                 WaitForSingleObjectEx(GetCurrentThread(), 1, true);
         }
-        return main(m_argv.count(), m_argv.data());
+        g_mainExitCode = main(m_argv.count(), m_argv.data());
+        return S_OK;
     }
     HRESULT __stdcall Uninitialize() { return S_OK; }
 
@@ -178,5 +181,6 @@ int WinMain()
     if (FAILED(RoGetActivationFactory(qHString(CoreApplicationClass), IID_PPV_ARGS(&appFactory))))
         return 2;
 
-    return appFactory->Run(Make<AppViewSource>(argc, argv).Get());
+    appFactory->Run(Make<AppViewSource>(argc, argv).Get());
+    return g_mainExitCode;
 }
