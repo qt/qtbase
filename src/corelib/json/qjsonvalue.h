@@ -82,6 +82,10 @@ public:
     QJsonValue(qint64 n);
     QJsonValue(const QString &s);
     QJsonValue(QLatin1String s);
+#ifndef QT_NO_CAST_FROM_ASCII
+    inline QT_ASCII_CAST_WARN QJsonValue(const char *s)
+        : d(0), t(String) { stringDataFromQStringHelper(QString::fromUtf8(s)); }
+#endif
     QJsonValue(const QJsonArray &a);
     QJsonValue(const QJsonObject &o);
 
@@ -123,6 +127,7 @@ private:
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonValue &);
 
     QJsonValue(QJsonPrivate::Data *d, QJsonPrivate::Base *b, const QJsonPrivate::Value& v);
+    void stringDataFromQStringHelper(const QString &string);
 
     void detach();
 

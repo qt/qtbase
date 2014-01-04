@@ -2242,6 +2242,14 @@ void tst_QtJson::valueEquals()
     QVERIFY(QJsonValue(QJsonObject()) != QJsonValue(true));
     QVERIFY(QJsonValue(QJsonObject()) != QJsonValue(1.));
     QVERIFY(QJsonValue(QJsonObject()) != QJsonValue(QJsonArray()));
+
+    QVERIFY(QJsonValue("foo") == QJsonValue(QLatin1String("foo")));
+    QVERIFY(QJsonValue("foo") == QJsonValue(QString("foo")));
+    QVERIFY(QJsonValue("\x66\x6f\x6f") == QJsonValue(QString("foo")));
+    QVERIFY(QJsonValue("\x62\x61\x72") == QJsonValue("bar"));
+    QVERIFY(QJsonValue(UNICODE_NON_CHARACTER) == QJsonValue(QString(UNICODE_NON_CHARACTER)));
+    QVERIFY(QJsonValue(UNICODE_DJE) == QJsonValue(QString(UNICODE_DJE)));
+    QVERIFY(QJsonValue("\xc3\xa9") == QJsonValue(QString("\xc3\xa9")));
 }
 
 void tst_QtJson::bom()
