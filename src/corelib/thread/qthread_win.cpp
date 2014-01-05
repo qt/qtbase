@@ -55,7 +55,7 @@
 
 #include <private/qcoreapplication_p.h>
 #ifdef Q_OS_WINRT
-#include "private/qeventdispatcher_winrt_p.h"
+#include <private/qeventdispatcher_winrt_p.h>
 #else
 #include <private/qeventdispatcher_win_p.h>
 #endif

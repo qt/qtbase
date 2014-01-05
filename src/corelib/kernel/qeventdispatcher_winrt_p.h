@@ -55,21 +55,8 @@
 //
 
 #include "QtCore/qabstracteventdispatcher.h"
-#include "private/qabstracteventdispatcher_p.h"
 
 #include <qt_windows.h>
-#include <wrl.h>
-
-namespace ABI {
-    namespace Windows {
-        namespace System {
-            namespace Threading {
-                struct IThreadPoolTimer;
-                struct IThreadPoolTimerStatics;
-            }
-        }
-    }
-}
 
 QT_BEGIN_NAMESPACE
 
@@ -112,54 +99,8 @@ public:
 protected:
     QEventDispatcherWinRT(QEventDispatcherWinRTPrivate &dd, QObject *parent = 0);
 
-
     bool event(QEvent *);
     int activateTimers();
-};
-
-struct WinRTTimerInfo                           // internal timer info
-{
-    WinRTTimerInfo() : timer(0) {}
-
-    QObject *dispatcher;
-    int timerId;
-    int interval;
-    Qt::TimerType timerType;
-    quint64 timeout;                            // - when to actually fire
-    QObject *obj;                               // - object to receive events
-    bool inTimerEvent;
-    ABI::Windows::System::Threading::IThreadPoolTimer *timer;
-};
-
-class QZeroTimerEvent : public QTimerEvent
-{
-public:
-    explicit inline QZeroTimerEvent(int timerId)
-        : QTimerEvent(timerId)
-    { t = QEvent::ZeroTimerEvent; }
-};
-
-class Q_CORE_EXPORT QEventDispatcherWinRTPrivate : public QAbstractEventDispatcherPrivate
-{
-    Q_DECLARE_PUBLIC(QEventDispatcherWinRT)
-
-public:
-    QEventDispatcherWinRTPrivate();
-    ~QEventDispatcherWinRTPrivate();
-
-    QList<WinRTTimerInfo*> timerVec;
-    QHash<int, WinRTTimerInfo*> timerDict;
-    QHash<ABI::Windows::System::Threading::IThreadPoolTimer*, WinRTTimerInfo*> threadPoolTimerDict;
-
-    void registerTimer(WinRTTimerInfo *t);
-    void unregisterTimer(WinRTTimerInfo *t);
-    void sendTimerEvent(int timerId);
-    HRESULT timerExpiredCallback(ABI::Windows::System::Threading::IThreadPoolTimer *source);
-
-    QAtomicInt wakeUps;
-    bool interrupt;
-
-    ABI::Windows::System::Threading::IThreadPoolTimerStatics *timerFactory;
 };
 
 QT_END_NAMESPACE

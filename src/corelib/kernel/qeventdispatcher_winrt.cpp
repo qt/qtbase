@@ -41,13 +41,15 @@
 
 #include "qeventdispatcher_winrt_p.h"
 
-#include "qelapsedtimer.h"
-#include "qcoreapplication.h"
-#include "qthread.h"
+#include <QtCore/QCoreApplication>
+#include <QtCore/QThread>
+#include <QtCore/QHash>
 
 #include <private/qcoreapplication_p.h>
 #include <private/qthread_p.h>
+#include <private/qabstracteventdispatcher_p.h>
 
+#include <wrl.h>
 #include <windows.foundation.h>
 #include <windows.system.threading.h>
 using namespace Microsoft::WRL;
@@ -56,6 +58,58 @@ using namespace ABI::Windows::System::Threading;
 using namespace ABI::Windows::Foundation;
 
 QT_BEGIN_NAMESPACE
+
+class QZeroTimerEvent : public QTimerEvent
+{
+public:
+    explicit inline QZeroTimerEvent(int timerId)
+        : QTimerEvent(timerId)
+    { t = QEvent::ZeroTimerEvent; }
+};
+
+struct WinRTTimerInfo                           // internal timer info
+{
+    WinRTTimerInfo() : timer(0) {}
+
+    int id;
+    int interval;
+    Qt::TimerType timerType;
+    quint64 timeout;                            // - when to actually fire
+    QObject *obj;                               // - object to receive events
+    bool inTimerEvent;
+    ComPtr<IThreadPoolTimer> timer;
+};
+
+class QEventDispatcherWinRTPrivate : public QAbstractEventDispatcherPrivate
+{
+    Q_DECLARE_PUBLIC(QEventDispatcherWinRT)
+
+public:
+    QEventDispatcherWinRTPrivate();
+    ~QEventDispatcherWinRTPrivate();
+
+    void registerTimer(WinRTTimerInfo *t);
+    void unregisterTimer(WinRTTimerInfo *t);
+    void sendTimerEvent(int timerId);
+
+
+private:
+    static HRESULT timerExpiredCallback(ABI::Windows::System::Threading::IThreadPoolTimer *source);
+    static int idForTimer(IThreadPoolTimer *timer)
+    {
+        QAbstractEventDispatcher *eventDispatcher = QCoreApplication::eventDispatcher();
+        if (!eventDispatcher)
+            return -1;
+        if (QEventDispatcherWinRTPrivate *that = static_cast<QEventDispatcherWinRTPrivate *>(get(eventDispatcher)))
+            return that->timerIds.value(timer, -1);
+        return -1;
+    }
+
+    QHash<int, WinRTTimerInfo*> timerDict;
+    QHash<IThreadPoolTimer *, int> timerIds;
+
+    ComPtr<IThreadPoolTimerStatics> timerFactory;
+};
 
 QEventDispatcherWinRT::QEventDispatcherWinRT(QObject *parent)
     : QAbstractEventDispatcher(*new QEventDispatcherWinRTPrivate, parent)
@@ -110,19 +164,15 @@ void QEventDispatcherWinRT::registerTimer(int timerId, int interval, Qt::TimerTy
     }
 
     Q_D(QEventDispatcherWinRT);
-
     WinRTTimerInfo *t = new WinRTTimerInfo();
-    t->dispatcher = this;
-    t->timerId  = timerId;
+    t->id = timerId;
     t->interval = interval;
-    t->timeout = interval;
     t->timerType = timerType;
     t->obj = object;
     t->inTimerEvent = false;
 
     d->registerTimer(t);
-    d->timerVec.append(t);                      // store in timer vector
-    d->timerDict.insert(t->timerId, t);          // store timers in dict
+    d->timerDict.insert(t->id, t);
 }
 
 bool QEventDispatcherWinRT::unregisterTimer(int timerId)
@@ -137,17 +187,11 @@ bool QEventDispatcherWinRT::unregisterTimer(int timerId)
     }
 
     Q_D(QEventDispatcherWinRT);
-    if (d->timerVec.isEmpty() || timerId <= 0)
-        return false;
 
     WinRTTimerInfo *t = d->timerDict.value(timerId);
     if (!t)
         return false;
 
-    if (t->timer)
-        d->threadPoolTimerDict.remove(t->timer);
-    d->timerDict.remove(t->timerId);
-    d->timerVec.removeAll(t);
     d->unregisterTimer(t);
     return true;
 }
@@ -165,19 +209,9 @@ bool QEventDispatcherWinRT::unregisterTimers(QObject *object)
     }
 
     Q_D(QEventDispatcherWinRT);
-    if (d->timerVec.isEmpty())
-        return false;
-    register WinRTTimerInfo *t;
-    for (int i = 0; i < d->timerVec.size(); i++) {
-        t = d->timerVec.at(i);
-        if (t && t->obj == object) {                // object found
-            if (t->timer)
-                d->threadPoolTimerDict.remove(t->timer);
-            d->timerDict.remove(t->timerId);
-            d->timerVec.removeAt(i);
+    foreach (WinRTTimerInfo *t, d->timerDict) {
+        if (t->obj == object)
             d->unregisterTimer(t);
-            --i;
-        }
     }
     return true;
 }
@@ -191,10 +225,9 @@ QList<QAbstractEventDispatcher::TimerInfo> QEventDispatcherWinRT::registeredTime
 
     Q_D(const QEventDispatcherWinRT);
     QList<TimerInfo> list;
-    for (int i = 0; i < d->timerVec.size(); ++i) {
-        const WinRTTimerInfo *t = d->timerVec.at(i);
-        if (t && t->obj == object)
-            list << TimerInfo(t->timerId, t->interval, t->timerType);
+    foreach (const WinRTTimerInfo *t, d->timerDict) {
+        if (t->obj == object)
+            list.append(TimerInfo(t->id, t->interval, t->timerType));
     }
     return list;
 }
@@ -222,45 +255,28 @@ int QEventDispatcherWinRT::remainingTime(int timerId)
 #endif
 
     Q_D(QEventDispatcherWinRT);
-
-    if (d->timerVec.isEmpty())
-        return -1;
-
-    quint64 currentTime = qt_msectime();
-
-    register WinRTTimerInfo *t;
-    for (int i = 0; i < d->timerVec.size(); i++) {
-        t = d->timerVec.at(i);
-        if (t && t->timerId == timerId) {                // timer found
-            if (currentTime < t->timeout) {
-                // time to wait
-                return t->timeout - currentTime;
-            } else {
-                return 0;
-            }
+    if (WinRTTimerInfo *t = d->timerDict.value(timerId)) {
+        const quint64 currentTime = qt_msectime();
+        if (currentTime < t->timeout) {
+            // time to wait
+            return t->timeout - currentTime;
+        } else {
+            return 0;
         }
     }
 
 #ifndef QT_NO_DEBUG
     qWarning("QEventDispatcherWinRT::remainingTime: timer id %d not found", timerId);
 #endif
-
     return -1;
 }
 
 void QEventDispatcherWinRT::wakeUp()
 {
-    Q_D(QEventDispatcherWinRT);
-    if (d->wakeUps.testAndSetAcquire(0, 1)) {
-        // ###TODO: is there any thing to wake up?
-    }
 }
 
 void QEventDispatcherWinRT::interrupt()
 {
-    Q_D(QEventDispatcherWinRT);
-    d->interrupt = true;
-    wakeUp();
 }
 
 void QEventDispatcherWinRT::flush()
@@ -274,13 +290,10 @@ void QEventDispatcherWinRT::startingUp()
 void QEventDispatcherWinRT::closingDown()
 {
     Q_D(QEventDispatcherWinRT);
-
-    // clean up any timers
-    for (int i = 0; i < d->timerVec.count(); ++i)
-        d->unregisterTimer(d->timerVec.at(i));
-    d->timerVec.clear();
+    foreach (WinRTTimerInfo *t, d->timerDict)
+        d->unregisterTimer(t);
     d->timerDict.clear();
-    d->threadPoolTimerDict.clear();
+    d->timerIds.clear();
 }
 
 bool QEventDispatcherWinRT::event(QEvent *e)
@@ -314,8 +327,6 @@ bool QEventDispatcherWinRT::event(QEvent *e)
 }
 
 QEventDispatcherWinRTPrivate::QEventDispatcherWinRTPrivate()
-    : interrupt(false)
-    , timerFactory(0)
 {
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
     HRESULT hr = GetActivationFactory(HString::MakeReference(RuntimeClass_Windows_System_Threading_ThreadPoolTimer).Get(), &timerFactory);
@@ -325,8 +336,6 @@ QEventDispatcherWinRTPrivate::QEventDispatcherWinRTPrivate()
 
 QEventDispatcherWinRTPrivate::~QEventDispatcherWinRTPrivate()
 {
-    if (timerFactory)
-        timerFactory->Release();
     CoUninitialize();
 }
 
@@ -334,22 +343,22 @@ void QEventDispatcherWinRTPrivate::registerTimer(WinRTTimerInfo *t)
 {
     Q_Q(QEventDispatcherWinRT);
 
-    int ok = 0;
+    bool ok = false;
     uint interval = t->interval;
     if (interval == 0u) {
         // optimization for single-shot-zero-timer
-        QCoreApplication::postEvent(q, new QZeroTimerEvent(t->timerId));
-        ok = 1;
+        QCoreApplication::postEvent(q, new QZeroTimerEvent(t->id));
+        ok = true;
     } else {
         TimeSpan period;
         period.Duration = interval * 10000; // TimeSpan is based on 100-nanosecond units
         ok = SUCCEEDED(timerFactory->CreatePeriodicTimer(
-                           Callback<ITimerElapsedHandler>(this, &QEventDispatcherWinRTPrivate::timerExpiredCallback).Get(), period, &t->timer));
+                           Callback<ITimerElapsedHandler>(&QEventDispatcherWinRTPrivate::timerExpiredCallback).Get(), period, &t->timer));
         if (ok)
-            threadPoolTimerDict.insert(t->timer, t);
+            timerIds.insert(t->timer.Get(), t->id);
     }
     t->timeout = qt_msectime() + interval;
-    if (ok == 0)
+    if (!ok)
         qErrnoWarning("QEventDispatcherWinRT::registerTimer: Failed to create a timer");
 }
 
@@ -357,10 +366,10 @@ void QEventDispatcherWinRTPrivate::unregisterTimer(WinRTTimerInfo *t)
 {
     if (t->timer) {
         t->timer->Cancel();
-        t->timer->Release();
+        timerIds.remove(t->timer.Get());
     }
+    timerDict.remove(t->id);
     delete t;
-    t = 0;
 }
 
 void QEventDispatcherWinRTPrivate::sendTimerEvent(int timerId)
@@ -370,22 +379,21 @@ void QEventDispatcherWinRTPrivate::sendTimerEvent(int timerId)
         // send event, but don't allow it to recurse
         t->inTimerEvent = true;
 
-        QTimerEvent e(t->timerId);
+        QTimerEvent e(t->id);
         QCoreApplication::sendEvent(t->obj, &e);
 
         // timer could have been removed
         t = timerDict.value(timerId);
-        if (t) {
+        if (t)
             t->inTimerEvent = false;
-        }
     }
 }
 
 HRESULT QEventDispatcherWinRTPrivate::timerExpiredCallback(IThreadPoolTimer *source)
 {
-    register WinRTTimerInfo *t = threadPoolTimerDict.value(source);
-    if (t)
-        QCoreApplication::postEvent(t->dispatcher, new QTimerEvent(t->timerId));
+    int timerId = idForTimer(source);
+    if (timerId > 0)
+        QCoreApplication::postEvent(QCoreApplication::eventDispatcher(), new QTimerEvent(timerId));
     else
         qWarning("QEventDispatcherWinRT::timerExpiredCallback: Could not find timer %d in timer list", source);
     return S_OK;
