@@ -90,6 +90,9 @@ QPdfWriter::QPdfWriter(const QString &filename)
     Q_D(QPdfWriter);
 
     d->engine->setOutputFilename(filename);
+
+    // Set QPagedPaintDevice layout to match the current paint engine layout
+    devicePageLayout() = d->engine->pageLayout();
 }
 
 /*!
@@ -101,6 +104,9 @@ QPdfWriter::QPdfWriter(QIODevice *device)
     Q_D(QPdfWriter);
 
     d->engine->d_func()->outDevice = device;
+
+    // Set QPagedPaintDevice layout to match the current paint engine layout
+    devicePageLayout() = d->engine->pageLayout();
 }
 
 /*!
@@ -147,7 +153,6 @@ void QPdfWriter::setCreator(const QString &creator)
     d->engine->d_func()->creator = creator;
 }
 
-
 /*!
   \reimp
   */
@@ -159,25 +164,213 @@ QPaintEngine *QPdfWriter::paintEngine() const
 }
 
 /*!
-  \reimp
-  */
-void QPdfWriter::setPageSize(PageSize size)
+    \since 5.3
+
+    Sets the PDF \a resolution in DPI.
+
+    This setting affects the coordinate system as returned by, for
+    example QPainter::viewport().
+
+    \sa resolution()
+*/
+
+void QPdfWriter::setResolution(int resolution)
 {
     Q_D(const QPdfWriter);
-
-    QPagedPaintDevice::setPageSize(size);
-    d->engine->setPageSize(QPageSize(QPageSize::PageSizeId(size)));
+    if (resolution > 0)
+        d->engine->setResolution(resolution);
 }
 
 /*!
-  \reimp
-  */
-void QPdfWriter::setPageSizeMM(const QSizeF &size)
+    \since 5.3
+
+    Returns the resolution of the PDF in DPI.
+
+    \sa setResolution()
+*/
+
+int QPdfWriter::resolution() const
 {
     Q_D(const QPdfWriter);
+    return d->engine->resolution();
+}
 
-    QPagedPaintDevice::setPageSizeMM(size);
-    d->engine->setPageSize(QPageSize(size, QPageSize::Millimeter));
+/*!
+    \since 5.3
+
+    Sets the PDF page layout to \a newPageLayout.
+
+    You should call this before calling QPainter::begin(), or immediately
+    before calling newPage() to apply the new page layout to a new page.
+    You should not call any painting methods between a call to setPageLayout()
+    and newPage() as the wrong paint metrics may be used.
+
+    Returns true if the page layout was successfully set to \a newPageLayout.
+
+    \sa pageLayout()
+*/
+
+bool QPdfWriter::setPageLayout(const QPageLayout &newPageLayout)
+{
+    Q_D(const QPdfWriter);
+    // Try to set the paint engine page layout
+    d->engine->setPageLayout(newPageLayout);
+    // Set QPagedPaintDevice layout to match the current paint engine layout
+    devicePageLayout() = d->engine->pageLayout();
+    return pageLayout().isEquivalentTo(newPageLayout);
+}
+
+/*!
+    \since 5.3
+
+    Sets the PDF page size to \a pageSize.
+
+    To get the current QPageSize use pageLayout().pageSize().
+
+    You should call this before calling QPainter::begin(), or immediately
+    before calling newPage() to apply the new page size to a new page.
+    You should not call any painting methods between a call to setPageSize()
+    and newPage() as the wrong paint metrics may be used.
+
+    Returns true if the page size was successfully set to \a pageSize.
+
+    \sa pageLayout()
+*/
+
+bool QPdfWriter::setPageSize(const QPageSize &pageSize)
+{
+    Q_D(const QPdfWriter);
+    // Try to set the paint engine page size
+    d->engine->setPageSize(pageSize);
+    // Set QPagedPaintDevice layout to match the current paint engine layout
+    devicePageLayout() = d->engine->pageLayout();
+    return pageLayout().pageSize().isEquivalentTo(pageSize);
+}
+
+/*!
+    \since 5.3
+
+    Sets the PDF page \a orientation.
+
+    The page orientation is used to define the orientation of the
+    page size when obtaining the page rect.
+
+    You should call this before calling QPainter::begin(), or immediately
+    before calling newPage() to apply the new orientation to a new page.
+    You should not call any painting methods between a call to setPageOrientation()
+    and newPage() as the wrong paint metrics may be used.
+
+    To get the current QPageLayout::Orientation use pageLayout().pageOrientation().
+
+    Returns true if the page orientation was successfully set to \a orientation.
+
+    \sa pageLayout()
+*/
+
+bool QPdfWriter::setPageOrientation(QPageLayout::Orientation orientation)
+{
+    Q_D(const QPdfWriter);
+    // Set the print engine value
+    d->engine->setPageOrientation(orientation);
+    // Set QPagedPaintDevice layout to match the current paint engine layout
+    devicePageLayout() = d->engine->pageLayout();
+    return pageLayout().orientation() == orientation;
+}
+
+/*!
+    \since 5.3
+
+    Set the PDF page \a margins in the current page layout units.
+
+    You should call this before calling QPainter::begin(), or immediately
+    before calling newPage() to apply the new margins to a new page.
+    You should not call any painting methods between a call to setPageMargins()
+    and newPage() as the wrong paint metrics may be used.
+
+    To get the current page margins use pageLayout().pageMargins().
+
+    Returns true if the page margins were successfully set to \a margins.
+
+    \sa pageLayout()
+*/
+
+bool QPdfWriter::setPageMargins(const QMarginsF &margins)
+{
+    Q_D(const QPdfWriter);
+    // Try to set engine margins
+    d->engine->setPageMargins(margins, pageLayout().units());
+    // Set QPagedPaintDevice layout to match the current paint engine layout
+    devicePageLayout() = d->engine->pageLayout();
+    return pageLayout().margins() == margins;
+}
+
+/*!
+    \since 5.3
+
+    Set the PDF page \a margins defined in the given \a units.
+
+    You should call this before calling QPainter::begin(), or immediately
+    before calling newPage() to apply the new margins to a new page.
+    You should not call any painting methods between a call to setPageMargins()
+    and newPage() as the wrong paint metrics may be used.
+
+    To get the current page margins use pageLayout().pageMargins().
+
+    Returns true if the page margins were successfully set to \a margins.
+
+    \sa pageLayout()
+*/
+
+bool QPdfWriter::setPageMargins(const QMarginsF &margins, QPageLayout::Unit units)
+{
+    Q_D(const QPdfWriter);
+    // Try to set engine margins
+    d->engine->setPageMargins(margins, units);
+    // Set QPagedPaintDevice layout to match the current paint engine layout
+    devicePageLayout() = d->engine->pageLayout();
+    return pageLayout().margins() == margins && pageLayout().units() == units;
+}
+
+/*!
+    Returns the current page layout.  Use this method to access the current
+    QPageSize, QPageLayout::Orientation, QMarginsF, fullRect() and paintRect().
+
+    Note that you cannot use the setters on the returned object, you must either
+    call the individual QPdfWriter methods or use setPageLayout().
+
+    \sa setPageLayout(), setPageSize(), setPageOrientation(), setPageMargins()
+*/
+
+QPageLayout QPdfWriter::pageLayout() const
+{
+    Q_D(const QPdfWriter);
+    return d->engine->pageLayout();
+}
+
+/*!
+    \reimp
+
+    \obsolete Use setPageSize(QPageSize(id)) instead
+
+    \sa setPageSize()
+*/
+
+void QPdfWriter::setPageSize(PageSize size)
+{
+    setPageSize(QPageSize(QPageSize::PageSizeId(size)));
+}
+
+/*!
+    \reimp
+
+    \obsolete Use setPageSize(QPageSize(size, QPageSize::Millimeter)) instead
+
+    \sa setPageSize()
+*/
+
+void QPdfWriter::setPageSizeMM(const QSizeF &size)
+{
+    setPageSize(QPageSize(size, QPageSize::Millimeter));
 }
 
 /*!
@@ -203,17 +396,15 @@ bool QPdfWriter::newPage()
 
 
 /*!
-  \reimp
+    \reimp
+
+    \obsolete Use setPageMargins(QMarginsF(l, t, r, b), QPageLayout::Millimeter) instead
+
+    \sa setPageMargins()
   */
 void QPdfWriter::setMargins(const Margins &m)
 {
-    Q_D(QPdfWriter);
-
-    QPagedPaintDevice::setMargins(m);
-
-    const qreal multiplier = 72./25.4;
-    d->engine->setPageMargins(QMarginsF(m.left * multiplier, m.top * multiplier,
-                                        m.right * multiplier, m.bottom * multiplier), QPageLayout::Point);
+    setPageMargins(QMarginsF(m.left, m.top, m.right, m.bottom), QPageLayout::Millimeter);
 }
 
 QT_END_NAMESPACE

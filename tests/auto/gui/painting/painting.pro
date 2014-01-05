@@ -9,6 +9,7 @@ SUBDIRS=\
    qpagesize \
    qpainter \
    qpathclipper \
+   qpdfwriter \
    qpen \
    qpaintengine \
    qtransform \
