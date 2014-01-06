@@ -52,12 +52,14 @@
 using namespace ABI::Windows::ApplicationModel::Core;
 using namespace ABI::Windows::UI::Core;
 using namespace ABI::Windows::Foundation;
+using namespace Microsoft::WRL;
 
 QT_BEGIN_NAMESPACE
 
 QWinRTEventDispatcher::QWinRTEventDispatcher(ICoreDispatcher *dispatcher, QObject *parent)
     : QEventDispatcherWinRT(parent)
     , m_dispatcher(dispatcher)
+    , m_interrupt(false)
 {
 }
 
@@ -66,14 +68,38 @@ bool QWinRTEventDispatcher::hasPendingEvents()
     return QEventDispatcherWinRT::hasPendingEvents() || QWindowSystemInterface::windowSystemEventsQueued();
 }
 
+void QWinRTEventDispatcher::interrupt()
+{
+    m_interrupt = true;
+}
+
 bool QWinRTEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
-    if (m_dispatcher)
-        m_dispatcher->ProcessEvents(CoreProcessEventsOption_ProcessAllIfPresent);
+    bool canWait = flags & QEventLoop::WaitForMoreEvents;
+    bool didProcess;
+    m_interrupt = false;
+    do {
+        // Send Qt events
+        didProcess = QEventDispatcherWinRT::processEvents(flags);
 
-    const bool didProcess = QWindowSystemInterface::sendWindowSystemEvents(flags);
+        // Process system events
+        emit aboutToBlock();
+        if (m_dispatcher)
+            m_dispatcher->ProcessEvents(CoreProcessEventsOption_ProcessAllIfPresent);
+        emit awake();
 
-    return QEventDispatcherWinRT::processEvents(flags & ~QEventLoop::WaitForMoreEvents) || didProcess;
+        // Dispatch accumulated user events
+        didProcess |= QWindowSystemInterface::sendWindowSystemEvents(flags);
+        canWait = canWait && !didProcess && !m_interrupt;
+
+        // Short sleep if there is nothing to do
+        if (canWait) {
+            emit aboutToBlock();
+            WaitForSingleObjectEx(GetCurrentThread(), 1, true);
+            emit awake();
+        }
+    } while (canWait);
+    return didProcess;
 }
 
 QT_END_NAMESPACE

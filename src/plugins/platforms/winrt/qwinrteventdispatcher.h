@@ -42,10 +42,9 @@
 #ifndef QWINRTEVENTDISPATCHER_H
 #define QWINRTEVENTDISPATCHER_H
 
-#include <QtCore/QAbstractEventDispatcher>
-#include <QtCore/QEvent>
-
 #include <QtCore/private/qeventdispatcher_winrt_p.h>
+
+#include <wrl.h>
 
 namespace ABI {
     namespace Windows {
@@ -66,11 +65,13 @@ public:
     explicit QWinRTEventDispatcher(ABI::Windows::UI::Core::ICoreDispatcher *dispatcher, QObject *parent = 0);
 
 protected:
+    void interrupt();
     bool hasPendingEvents();
     bool processEvents(QEventLoop::ProcessEventsFlags flags);
 
 private:
-    ABI::Windows::UI::Core::ICoreDispatcher *m_dispatcher;
+    Microsoft::WRL::ComPtr<ABI::Windows::UI::Core::ICoreDispatcher> m_dispatcher;
+    bool m_interrupt;
 
     friend class QWinRTIntegration;
 };
