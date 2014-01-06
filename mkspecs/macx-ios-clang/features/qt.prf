@@ -42,12 +42,7 @@ equals(TEMPLATE, app):contains(QT, gui(-private)?) {
         !isEmpty(QMAKE_PRE_LINK): \
             QMAKE_PRE_LINK += ";"
 
-        QMAKE_PRE_LINK += \
-            "for f in $(find $${objects_dir} -name '*.o'); do" \
-                "(nm $f | grep -q 'T _main' && cp $f $f.original" \
-                    "&& ld -r -alias _main _qt_main -unexported_symbol _main $f.original -o $f)" \
-                "|| true" \
-            "; done"
+        QMAKE_PRE_LINK += $$QMAKESPEC/rename_main.sh $${objects_dir}
     }
 }
 
