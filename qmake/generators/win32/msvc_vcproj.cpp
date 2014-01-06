@@ -879,10 +879,10 @@ void VcprojGenerator::initProject()
     vcProject.Name = unescapeFilePath(project->first("QMAKE_ORIG_TARGET").toQString());
     switch (which_dotnet_version(project->first("MSVC_VER").toLatin1())) {
     case NET2013:
-        vcProject.Version = "13.00";
+        vcProject.Version = "12.00";
         break;
     case NET2012:
-        vcProject.Version = "12.00";
+        vcProject.Version = "11.00";
         break;
     case NET2010:
         vcProject.Version = "10.00";
