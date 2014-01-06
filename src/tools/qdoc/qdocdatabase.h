@@ -134,10 +134,6 @@ class QDocDatabase
     const NodeMap& getQmlTypeMap(const QString& key) const;
     const NodeMultiMap& getSinceMap(const QString& key) const;
 
-    const Node* resolveTarget(const QString& target, const Node* relative, const Node* self=0);
-    const Node* findNodeForTarget(const QString& target, const Node* relative);
-    void insertTarget(const QString& name, TargetRec::Type type, Node* node, int priority);
-
     /* convenience functions
        Many of these will be either eliminated or replaced.
     */
@@ -150,35 +146,44 @@ class QDocDatabase
     void fixInheritance() { tree_->fixInheritance(); }
     void resolveProperties() { tree_->resolveProperties(); }
 
-    const Node* findNode(const QStringList& path) { return tree_->findNode(path); }
-    ClassNode* findClassNode(const QStringList& path) { return tree_->findClassNode(path); }
-    NamespaceNode* findNamespaceNode(const QStringList& path) { return tree_->findNamespaceNode(path); }
-
-    NameCollisionNode* findCollisionNode(const QString& name) const {
-        return tree_->findCollisionNode(name);
-    }
-
-    const DocNode* findDocNodeByTitle(const QString& title, const Node* relative = 0) const;
-    const Node *findUnambiguousTarget(const QString &target, QString& ref, const Node* relative);
+    /*******************************************************************
+      The functions declared below don't search in the tree(s).
+    ********************************************************************/
     QString findTarget(const QString &target, const Node *node) const;
     void resolveTargets(InnerNode* root);
+    void insertTarget(const QString& name, TargetRec::Type type, Node* node, int priority);
+    /*******************************************************************/
 
+    /*******************************************************************
+      The functions declared below are called for the current tree only.
+    ********************************************************************/
     FunctionNode* findFunctionNode(const QStringList& parentPath, const FunctionNode* clone) {
         return tree_->findFunctionNode(parentPath, clone);
     }
+    FunctionNode* findNodeInOpenNamespace(const QStringList& parentPath, const FunctionNode* clone);
+    Node* findNodeInOpenNamespace(QStringList& path, Node::Type type, Node::SubType subtype);
+    NameCollisionNode* findCollisionNode(const QString& name) const {
+        return tree_->findCollisionNode(name);
+    }
+    /*******************************************************************/
+
+    /*******************************************************************
+      The functions declared below are called for all trees.
+    ********************************************************************/
+    ClassNode* findClassNode(const QStringList& path) { return tree_->findClassNode(path); }
+    InnerNode* findRelatesNode(const QStringList& path) { return tree_->findRelatesNode(path); }
+    const Node* resolveTarget(const QString& target, const Node* relative);
+    const Node* findNodeForTarget(const QString& target, const Node* relative);
+    const DocNode* findDocNodeByTitle(const QString& title, const Node* relative = 0) const;
+    const Node* findUnambiguousTarget(const QString& target, QString& ref, const Node* relative);
     Node* findNodeByNameAndType(const QStringList& path, Node::Type type, Node::SubType subtype){
         return tree_->findNodeByNameAndType(path, type, subtype, 0);
     }
     NameCollisionNode* checkForCollision(const QString& name) const {
         return tree_->checkForCollision(name);
     }
-    void addBaseClass(ClassNode* subclass,
-                      Node::Access access,
-                      const QStringList& basePath,
-                      const QString& dataTypeWithTemplateArgs,
-                      InnerNode* parent) {
-        tree_->addBaseClass(subclass, access, basePath, dataTypeWithTemplateArgs, parent);
-    }
+    /*******************************************************************/
+
     void addPropertyFunction(PropertyNode* property,
                              const QString& funcName,
                              PropertyNode::FunctionRole funcRole) {
@@ -198,8 +203,6 @@ class QDocDatabase
 
     void clearOpenNamespaces() { openNamespaces_.clear(); }
     void insertOpenNamespace(const QString& path) { openNamespaces_.insert(path); }
-    FunctionNode* findNodeInOpenNamespace(const QStringList& parentPath, const FunctionNode* clone);
-    Node* findNodeInOpenNamespace(QStringList& path, Node::Type type, Node::SubType subtype);
     void setShowInternal(bool value) { showInternal_ = value; }
 
     /* debugging functions */
@@ -209,10 +212,6 @@ class QDocDatabase
  private:
     friend class QDocIndexFiles;
     friend class QDocTagFiles;
-
-    const Node* findNode(const QStringList& path, const Node* relative, int findFlags) {
-        return tree_->findNode(path, relative, findFlags);
-    }
 
  private:
     QDocDatabase();

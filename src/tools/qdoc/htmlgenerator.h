@@ -200,8 +200,7 @@ private:
     void generateSectionInheritedList(const Section& section, const Node *relative);
     QString highlightedCode(const QString& markedCode,
                             const Node* relative,
-                            bool alignNames = false,
-                            const Node* self = 0);
+                            bool alignNames = false);
 
     void generateFullName(const Node *apparentNode, const Node *relative, const Node *actualNode = 0);
     void generateDetailedMember(const Node *node,

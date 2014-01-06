@@ -296,7 +296,7 @@ static void processQdocconfFile(const QString &fileName)
     currentDir = QFileInfo(fileName).path();
     Location::initialize(config);
     config.load(fileName);
-
+    //qDebug() << "\nSTART PROJECT:" << config.getString(CONFIG_PROJECT).toLower();
     /*
       Add the defines to the configuration variables.
      */
@@ -472,6 +472,8 @@ static void processQdocconfFile(const QString &fileName)
         codeParser->doneParsingHeaderFiles();
 
     usedParsers.clear();
+    qdb->resolveInheritance();
+
     /*
       Parse each source text file in the set using the appropriate parser and
       add it to the big tree.

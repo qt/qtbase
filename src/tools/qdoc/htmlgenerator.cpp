@@ -1923,18 +1923,20 @@ void HtmlGenerator::generateRequisites(InnerNode *inner, CodeMarker *marker)
             r = classe->baseClasses().constBegin();
             index = 0;
             while (r != classe->baseClasses().constEnd()) {
-                text << Atom(Atom::LinkNode, CodeMarker::stringForNode((*r).node))
-                     << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
-                     << Atom(Atom::String, (*r).dataTypeWithTemplateArgs)
-                     << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
+                if ((*r).node_) {
+                    text << Atom(Atom::LinkNode, CodeMarker::stringForNode((*r).node_))
+                         << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                         << Atom(Atom::String, (*r).signature_)
+                         << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
 
-                if ((*r).access == Node::Protected) {
-                    text << " (protected)";
+                    if ((*r).access_ == Node::Protected) {
+                        text << " (protected)";
+                    }
+                    else if ((*r).access_ == Node::Private) {
+                        text << " (private)";
+                    }
+                    text << separator(index++, classe->baseClasses().count());
                 }
-                else if ((*r).access == Node::Private) {
-                    text << " (private)";
-                }
-                text << separator(index++, classe->baseClasses().count());
                 ++r;
             }
             text << Atom::ParaRight;
@@ -2448,8 +2450,8 @@ void HtmlGenerator::generateClassHierarchy(const Node *relative, NodeMap& classM
 
             NodeMap newTop;
             foreach (const RelatedClass &d, child->derivedClasses()) {
-                if (d.access != Node::Private && !d.node->doc().isEmpty())
-                    newTop.insert(d.node->name(), d.node);
+                if (d.node_ && (d.access_ != Node::Private && !d.node_->doc().isEmpty()))
+                    newTop.insert(d.node_->name(), d.node_);
             }
             if (!newTop.isEmpty()) {
                 stack.push(newTop);
@@ -2786,7 +2788,7 @@ void HtmlGenerator::generateQmlItem(const Node *node,
         marked.remove("<@type>");
         marked.remove("</@type>");
     }
-    out() << highlightedCode(marked, relative, false, node);
+    out() << highlightedCode(marked, relative, false);
 }
 
 void HtmlGenerator::generateOverviewList(const Node *relative)
@@ -3099,8 +3101,7 @@ void HtmlGenerator::generateSynopsis(const Node *node,
 
 QString HtmlGenerator::highlightedCode(const QString& markedCode,
                                        const Node* relative,
-                                       bool alignNames,
-                                       const Node* self)
+                                       bool alignNames)
 {
     QString src = markedCode;
     QString html;
@@ -3174,7 +3175,7 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
             bool handled = false;
             if (parseArg(src, typeTag, &i, srcSize, &arg, &par1)) {
                 par1 = QStringRef();
-                const Node* n = qdb_->resolveTarget(arg.toString(), relative, self);
+                const Node* n = qdb_->resolveTarget(arg.toString(), relative);
                 html += QLatin1String("<span class=\"type\">");
                 if (n && n->subType() == Node::QmlBasicType) {
                     if (relative && relative->subType() == Node::QmlClass)
@@ -3751,7 +3752,7 @@ QString HtmlGenerator::getLink(const Atom *atom, const Node *relative, const Nod
               node, which must be a direct child of the tree
               root.
             */
-            *node = qdb_->treeRoot()->findChildNodeByNameAndType(first, Node::Document);
+            *node = qdb_->findNodeByNameAndType(QStringList(first), Node::Document, Node::NoSubType);
         }
         else {
             *node = qdb_->resolveTarget(first, relative);

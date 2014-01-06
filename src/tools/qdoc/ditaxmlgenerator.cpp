@@ -2696,8 +2696,8 @@ void DitaXmlGenerator::generateClassHierarchy(const Node* relative, NodeMap& cla
 
             NodeMap newTop;
             foreach (const RelatedClass &d, child->derivedClasses()) {
-                if (d.access != Node::Private && !d.node->doc().isEmpty())
-                    newTop.insert(d.node->name(), d.node);
+                if (d.node_ && d.access_ != Node::Private && !d.node_->doc().isEmpty())
+                    newTop.insert(d.node_->name(), d.node_);
             }
             if (!newTop.isEmpty()) {
                 stack.push(newTop);
@@ -3858,7 +3858,7 @@ QString DitaXmlGenerator::getLink(const Atom* atom, const Node* relative, const 
             *node = relative;
         }
         else if (first.endsWith(".html")) {
-            *node = qdb_->treeRoot()->findChildNodeByNameAndType(first, Node::Document);
+            *node = qdb_->findNodeByNameAndType(QStringList(first), Node::Document, Node::NoSubType);
         }
         else {
             *node = qdb_->resolveTarget(first, relative);
@@ -4365,25 +4365,27 @@ void DitaXmlGenerator::writeDerivations(const ClassNode* cn)
         writeStartTag(DT_cxxClassDerivations);
         r = cn->baseClasses().constBegin();
         while (r != cn->baseClasses().constEnd()) {
-            writeStartTag(DT_cxxClassDerivation);
-            writeStartTag(DT_cxxClassDerivationAccessSpecifier);
-            xmlWriter().writeAttribute("value",(*r).accessString());
-            writeEndTag(); // </cxxClassDerivationAccessSpecifier>
+            ClassNode* bcn = (*r).node_;
+            if (bcn) {
+                writeStartTag(DT_cxxClassDerivation);
+                writeStartTag(DT_cxxClassDerivationAccessSpecifier);
+                xmlWriter().writeAttribute("value",(*r).accessString());
+                writeEndTag(); // </cxxClassDerivationAccessSpecifier>
 
-            // not included: <cxxClassDerivationVirtual>
+                // not included: <cxxClassDerivationVirtual>
 
-            writeStartTag(DT_cxxClassBaseClass);
-            QString attr = fileName((*r).node) + QLatin1Char('#') + (*r).node->guid();
-            xmlWriter().writeAttribute("href",attr);
-            writeCharacters((*r).node->plainFullName());
-            writeEndTag(); // </cxxClassBaseClass>
+                writeStartTag(DT_cxxClassBaseClass);
+                QString attr = fileName(bcn) + QLatin1Char('#') + bcn->guid();
+                xmlWriter().writeAttribute("href",attr);
+                writeCharacters(bcn->plainFullName());
+                writeEndTag(); // </cxxClassBaseClass>
 
-            // not included: <ClassBaseStruct> or <cxxClassBaseUnion>
+                // not included: <ClassBaseStruct> or <cxxClassBaseUnion>
 
-            writeEndTag(); // </cxxClassDerivation>
+                writeEndTag(); // </cxxClassDerivation>
 
-            // not included: <cxxStructDerivation>
-
+                // not included: <cxxStructDerivation>
+            }
             ++r;
         }
         writeEndTag(); // </cxxClassDerivations>
@@ -4623,7 +4625,7 @@ void DitaXmlGenerator::replaceTypesWithLinks(const Node* n, const InnerNode* par
             }
             i += 2;
             if (parseArg(src, typeTag, &i, srcSize, &arg, &par1)) {
-                const Node* tn = qdb_->resolveTarget(arg.toString(), parent, n);
+                const Node* tn = qdb_->resolveTarget(arg.toString(), parent);
                 if (tn) {
                     //Do not generate a link from a C++ function to a QML Basic Type (such as int)
                     if (n->type() == Node::Function && tn->subType() == Node::QmlBasicType)

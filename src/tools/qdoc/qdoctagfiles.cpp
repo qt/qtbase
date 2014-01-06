@@ -162,8 +162,9 @@ void QDocTagFiles::generateTagFileCompounds(QXmlStreamWriter& writer, const Inne
             const ClassNode* classNode = static_cast<const ClassNode*>(node);
             QList<RelatedClass> bases = classNode->baseClasses();
             foreach (const RelatedClass& related, bases) {
-                ClassNode* baseClassNode = related.node;
-                writer.writeTextElement("base", baseClassNode->name());
+                ClassNode* n = related.node_;
+                if (n)
+                    writer.writeTextElement("base", n->name());
             }
 
             // Recurse to write all members.
@@ -294,31 +295,8 @@ void QDocTagFiles::generateTagFileMembers(QXmlStreamWriter& writer, const InnerN
                 QStringList pieces = gen_->fullDocumentLocation(node,Generator::useOutputSubdirs()).split(QLatin1Char('#'));
                 writer.writeTextElement("anchorfile", pieces[0]);
                 writer.writeTextElement("anchor", pieces[1]);
-
-                // Write a signature attribute for convenience.
-                QStringList signatureList;
-
-                foreach (const Parameter& parameter, functionNode->parameters()) {
-                    QString leftType = parameter.leftType();
-                    const Node* leftNode = qdb_->findNode(parameter.leftType().split("::"),
-                                                          0,
-                                                          SearchBaseClasses|NonFunction);
-                    if (!leftNode || leftNode->type() != Node::Typedef) {
-                        leftNode = qdb_->findNode(parameter.leftType().split("::"),
-                                                  node->parent(),
-                                                  SearchBaseClasses|NonFunction);
-                    }
-                    if (leftNode && leftNode->type() == Node::Typedef) {
-                        const TypedefNode* typedefNode = static_cast<const TypedefNode*>(leftNode);
-                        if (typedefNode->associatedEnum()) {
-                            leftType = "QFlags<" + typedefNode->associatedEnum()->fullDocumentName() +
-                                QLatin1Char('>');
-                        }
-                    }
-                    signatureList.append(leftType + QLatin1Char(' ') + parameter.name());
-                }
-
-                QString signature = QLatin1Char('(')+signatureList.join(", ")+QLatin1Char(')');
+                QString signature = functionNode->signature();
+                signature = signature.mid(signature.indexOf(QChar('('))).trimmed();
                 if (functionNode->isConst())
                     signature += " const";
                 if (functionNode->virtualness() == FunctionNode::PureVirtual)

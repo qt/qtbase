@@ -629,7 +629,8 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                 QList<RelatedClass>::ConstIterator r =
                         ancestorClass->baseClasses().constBegin();
                 while (r != ancestorClass->baseClasses().constEnd()) {
-                    stack.prepend((*r).node);
+                    if ((*r).node_)
+                        stack.prepend((*r).node_);
                     ++r;
                 }
             }
@@ -724,7 +725,8 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                 QList<RelatedClass>::ConstIterator r =
                         ancestorClass->baseClasses().constBegin();
                 while (r != ancestorClass->baseClasses().constEnd()) {
-                    stack.prepend((*r).node);
+                    if ((*r).node_)
+                        stack.prepend((*r).node_);
                     ++r;
                 }
             }

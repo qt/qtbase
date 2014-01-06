@@ -751,9 +751,7 @@ void QDocDatabase::resolveIssues() {
   Searches the \a database for a node named \a target and returns
   a pointer to it if found.
  */
-const Node* QDocDatabase::resolveTarget(const QString& target,
-                                        const Node* relative,
-                                        const Node* self)
+const Node* QDocDatabase::resolveTarget(const QString& target, const Node* relative)
 {
     const Node* node = 0;
     if (target.endsWith("()")) {
@@ -776,7 +774,7 @@ const Node* QDocDatabase::resolveTarget(const QString& target,
     else {
         QStringList path = target.split("::");
         int flags = SearchBaseClasses | SearchEnumValues | NonFunction;
-        node = tree_->findNode(path, relative, flags, self);
+        node = tree_->findNode(path, relative, flags);
     }
     return node;
 }
@@ -790,8 +788,9 @@ const Node* QDocDatabase::findNodeForTarget(const QString& target, const Node* r
     const Node* node = 0;
     if (target.isEmpty())
         node = relative;
-    else if (target.endsWith(".html"))
-        node = tree_->root()->findChildNodeByNameAndType(target, Node::Document);
+    else if (target.endsWith(".html")) {
+        node = findNodeByNameAndType(QStringList(target), Node::Document, Node::NoSubType);
+    }
     else {
         node = resolveTarget(target, relative);
         if (!node)

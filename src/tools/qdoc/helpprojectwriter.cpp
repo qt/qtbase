@@ -655,7 +655,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
     writer.writeStartElement("section");
     const Node* node = qdb_->findDocNodeByTitle(project.indexTitle);
     if (node == 0)
-        node = qdb_->findNode(QStringList("index.html"));
+        node = qdb_->findNodeByNameAndType(QStringList("index.html"), Node::Document, Node::Page);
     QString indexPath;
     // Never use a collision node as a landing page
     if (node && !node->isCollisionNode())

@@ -189,19 +189,20 @@ void Generator::appendFullNames(Text& text, const NodeList& nodes, const Node* r
     }
 }
 
-void Generator::appendSortedNames(Text& text, const ClassNode *classe, const QList<RelatedClass> &classes)
+void Generator::appendSortedNames(Text& text, const ClassNode* cn, const QList<RelatedClass>& rc)
 {
     QList<RelatedClass>::ConstIterator r;
     QMap<QString,Text> classMap;
     int index = 0;
 
-    r = classes.constBegin();
-    while (r != classes.constEnd()) {
-        if ((*r).node->access() == Node::Public &&
-                (*r).node->status() != Node::Internal
-                && !(*r).node->doc().isEmpty()) {
+    r = rc.constBegin();
+    while (r != rc.constEnd()) {
+        ClassNode* rcn = (*r).node_;
+        if (rcn && rcn->access() == Node::Public &&
+              rcn->status() != Node::Internal &&
+              !rcn->doc().isEmpty()) {
             Text className;
-            appendFullName(className, (*r).node, classe);
+            appendFullName(className, rcn, cn);
             classMap[className.toString().toLower()] = className;
         }
         ++r;
@@ -936,18 +937,20 @@ void Generator::generateInherits(const ClassNode *classe, CodeMarker *marker)
         r = classe->baseClasses().constBegin();
         index = 0;
         while (r != classe->baseClasses().constEnd()) {
-            text << Atom(Atom::LinkNode, CodeMarker::stringForNode((*r).node))
-                 << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
-                 << Atom(Atom::String, (*r).dataTypeWithTemplateArgs)
-                 << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
+            if ((*r).node_) {
+                text << Atom(Atom::LinkNode, CodeMarker::stringForNode((*r).node_))
+                     << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                     << Atom(Atom::String, (*r).signature_)
+                     << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK);
 
-            if ((*r).access == Node::Protected) {
-                text << " (protected)";
+                if ((*r).access_ == Node::Protected) {
+                    text << " (protected)";
+                }
+                else if ((*r).access_ == Node::Private) {
+                    text << " (private)";
+                }
+                text << separator(index++, classe->baseClasses().count());
             }
-            else if ((*r).access == Node::Private) {
-                text << " (private)";
-            }
-            text << separator(index++, classe->baseClasses().count());
             ++r;
         }
         text << Atom::ParaRight;

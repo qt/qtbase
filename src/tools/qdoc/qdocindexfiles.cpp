@@ -109,8 +109,10 @@ void QDocIndexFiles::readIndexes(const QStringList& indexFiles)
     foreach (const QString& indexFile, indexFiles) {
         QString msg = "Loading index file: " + indexFile;
         Location::logToStdErr(msg);
+        //qDebug() << "READING INDEX:" << indexFile;
         readIndexFile(indexFile);
     }
+    //qDebug() << "DONE READING INDEX FILES";
 }
 
 /*!
@@ -189,9 +191,11 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
     }
     else if (element.nodeName() == "class") {
         node = new ClassNode(parent, name);
-        basesList_.append(QPair<ClassNode*,QString>(static_cast<ClassNode*>(node),
-                                                   element.attribute("bases")));
-
+        if (element.hasAttribute("bases")) {
+            QString bases = element.attribute("bases");
+            if (!bases.isEmpty())
+                basesList_.append(QPair<ClassNode*,QString>(static_cast<ClassNode*>(node), bases));
+        }
         if (!indexUrl.isEmpty())
             location = Location(indexUrl + QLatin1Char('/') + name.toLower() + ".html");
         else if (!indexUrl.isNull())
@@ -383,31 +387,33 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
     }
     else if (element.nodeName() == "function") {
         FunctionNode::Virtualness virt;
-        if (element.attribute("virtual") == "non")
+        QString t = element.attribute("virtual");
+        if (t == "non")
             virt = FunctionNode::NonVirtual;
-        else if (element.attribute("virtual") == "impure")
+        else if (t == "impure")
             virt = FunctionNode::ImpureVirtual;
-        else if (element.attribute("virtual") == "pure")
+        else if (t == "pure")
             virt = FunctionNode::PureVirtual;
         else
             return;
 
+        t = element.attribute("meta");
         FunctionNode::Metaness meta;
-        if (element.attribute("meta") == "plain")
+        if (t == "plain")
             meta = FunctionNode::Plain;
-        else if (element.attribute("meta") == "signal")
+        else if (t == "signal")
             meta = FunctionNode::Signal;
-        else if (element.attribute("meta") == "slot")
+        else if (t == "slot")
             meta = FunctionNode::Slot;
-        else if (element.attribute("meta") == "constructor")
+        else if (t == "constructor")
             meta = FunctionNode::Ctor;
-        else if (element.attribute("meta") == "destructor")
+        else if (t == "destructor")
             meta = FunctionNode::Dtor;
-        else if (element.attribute("meta") == "macro")
+        else if (t == "macro")
             meta = FunctionNode::MacroWithParams;
-        else if (element.attribute("meta") == "macrowithparams")
+        else if (t == "macrowithparams")
             meta = FunctionNode::MacroWithParams;
-        else if (element.attribute("meta") == "macrowithoutparams")
+        else if (t == "macrowithoutparams")
             meta = FunctionNode::MacroWithoutParams;
         else
             return;
@@ -426,6 +432,10 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
                         QPair<FunctionNode*,QString>(functionNode,
                                                      element.attribute("relates")));
         }
+        /*
+          Note: The "signature" attribute was written to the
+          index file, but it is not read back in. Is that ok?
+         */
 
         QDomElement child = element.firstChildElement("parameter");
         while (!child.isNull()) {
@@ -534,10 +544,12 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
             if (dn) {
                 dn->addMember(node);
             }
+#if 0
             else {
                 qDebug() << "NODE:" << node->name() << "GROUPS:" << groupNames;
                 qDebug() << "DID NOT FIND GROUP:" << dn->name() << "for:" << node->name();
             }
+#endif
         }
     }
 
@@ -584,22 +596,37 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
 }
 
 /*!
+  This function tries to resolve class inheritance immediately
+  after the index file is read. It is not always possible to
+  resolve a class inheritance at this point, because the base
+  class might be in an index file that hasn't been read yet, or
+  it might be in one of the header files that will be read for
+  the current module. These cases will be resolved after all
+  the index files and header and source files have been read,
+  just prior to beginning the generate phase for the current
+  module.
+
+  I don't think this is completely correct because it always
+  sets the access to public.
  */
 void QDocIndexFiles::resolveIndex()
 {
     QPair<ClassNode*,QString> pair;
     foreach (pair, basesList_) {
         foreach (const QString& base, pair.second.split(QLatin1Char(','))) {
-            Node* n = qdb_->treeRoot()->findChildNodeByNameAndType(base, Node::Class);
-            if (n) {
-                pair.first->addBaseClass(Node::Public, static_cast<ClassNode*>(n));
-            }
+            QStringList basePath = base.split(QString("::"));
+            Node* n = qdb_->findNodeByNameAndType(basePath, Node::Class, Node::NoSubType);
+            if (n)
+                pair.first->addResolvedBaseClass(Node::Public, static_cast<ClassNode*>(n));
+            else
+                pair.first->addUnresolvedBaseClass(Node::Public, basePath, QString());
         }
     }
 
     QPair<FunctionNode*,QString> relatedPair;
     foreach (relatedPair, relatedList_) {
-        Node* n = qdb_->treeRoot()->findChildNodeByNameAndType(relatedPair.second, Node::Class);
+        QStringList path = relatedPair.second.split("::");
+        Node* n = qdb_->findRelatesNode(path);
         if (n)
             relatedPair.first->setRelates(static_cast<ClassNode*>(n));
     }
@@ -856,10 +883,12 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             QList<RelatedClass> bases = classNode->baseClasses();
             QSet<QString> baseStrings;
             foreach (const RelatedClass& related, bases) {
-                ClassNode* baseClassNode = related.node;
-                baseStrings.insert(baseClassNode->name());
+                ClassNode* n = related.node_;
+                if (n)
+                    baseStrings.insert(n->fullName());
             }
-            writer.writeAttribute("bases", QStringList(baseStrings.toList()).join(","));
+            if (!baseStrings.isEmpty())
+                writer.writeAttribute("bases", QStringList(baseStrings.toList()).join(","));
             if (!node->moduleName().isEmpty())
                 writer.writeAttribute("module", node->moduleName());
             writeMembersAttribute(writer, classNode, Node::Document, Node::Group, "groups");
@@ -995,8 +1024,9 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             writer.writeAttribute("overload", functionNode->isOverload()?"true":"false");
             if (functionNode->isOverload())
                 writer.writeAttribute("overload-number", QString::number(functionNode->overloadNumber()));
-            if (functionNode->relates())
+            if (functionNode->relates()) {
                 writer.writeAttribute("relates", functionNode->relates()->name());
+            }
             const PropertyNode* propertyNode = functionNode->associatedProperty();
             if (propertyNode)
                 writer.writeAttribute("associated-property", propertyNode->name());
@@ -1127,36 +1157,11 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     }
     else if (node->type() == Node::Function) {
         const FunctionNode* functionNode = static_cast<const FunctionNode*>(node);
-        // Write a signature attribute for convenience.
-        QStringList signatureList;
-        QStringList resolvedParameters;
-        foreach (const Parameter& parameter, functionNode->parameters()) {
-            QString leftType = parameter.leftType();
-            const Node* leftNode = qdb_->findNode(parameter.leftType().split("::"),
-                                                  0,
-                                                  SearchBaseClasses|NonFunction);
-            if (!leftNode || leftNode->type() != Node::Typedef) {
-                leftNode = qdb_->findNode(parameter.leftType().split("::"),
-                                          node->parent(),
-                                          SearchBaseClasses|NonFunction);
-            }
-            if (leftNode && leftNode->type() == Node::Typedef) {
-                if (leftNode->type() == Node::Typedef) {
-                    const TypedefNode* typedefNode =  static_cast<const TypedefNode*>(leftNode);
-                    if (typedefNode->associatedEnum()) {
-                        leftType = "QFlags<" + typedefNode->associatedEnum()->fullDocumentName() +
-                            QLatin1Char('>');
-                    }
-                }
-                else
-                    leftType = leftNode->fullDocumentName();
-            }
-            resolvedParameters.append(leftType);
-            signatureList.append(leftType + QLatin1Char(' ') + parameter.name());
-        }
-
-        QString signature = functionNode->name() + QLatin1Char('(') + signatureList.join(", ") +
-            QLatin1Char(')');
+        /*
+          Note: The "signature" attribute is written to the
+          index file, but it is not read back in. Is that ok?
+         */
+        QString signature = functionNode->signature();
         if (functionNode->isConst())
             signature += " const";
         writer.writeAttribute("signature", signature);
@@ -1164,7 +1169,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
         for (int i = 0; i < functionNode->parameters().size(); ++i) {
             Parameter parameter = functionNode->parameters()[i];
             writer.writeStartElement("parameter");
-            writer.writeAttribute("left", resolvedParameters[i]);
+            writer.writeAttribute("left", parameter.leftType());
             writer.writeAttribute("right", parameter.rightType());
             writer.writeAttribute("name", parameter.name());
             writer.writeAttribute("default", parameter.defaultValue());

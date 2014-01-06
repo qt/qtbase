@@ -68,6 +68,9 @@ typedef QMap<QString, Node*> NodeMap;
 typedef QMultiMap<QString, Node*> NodeMultiMap;
 typedef QMultiMap<QString, const ExampleNode*> ExampleNodeMap;
 
+typedef QPair<int, int> NodeTypePair;
+typedef QList<NodeTypePair> NodeTypeList;
+
 class Node
 {
     Q_DECLARE_TR_FUNCTIONS(QDoc::Node)
@@ -228,10 +231,12 @@ public:
     virtual bool isInternal() const;
     virtual void setDataType(const QString& ) { }
     virtual void setReadOnly(bool ) { }
+    virtual Node* disambiguate(Type , SubType ) { return this; }
     bool isIndexNode() const { return indexNodeFlag_; }
     bool wasSeen() const { return seen_; }
     Type type() const { return nodeType_; }
     virtual SubType subType() const { return NoSubType; }
+    bool match(const NodeTypeList& types) const;
     InnerNode* parent() const { return parent_; }
     InnerNode* relates() const { return relatesTo_; }
     const QString& name() const { return name_; }
@@ -334,11 +339,11 @@ class InnerNode : public Node
 public:
     virtual ~InnerNode();
 
-    Node* findChildNodeByName(const QString& name);
-    Node* findChildNodeByName(const QString& name, bool qml);
+    Node* findChildNodeByName(const QString& name) const;
+    Node* findChildNodeByName(const QString& name, bool qml) const;
     Node* findChildNodeByNameAndType(const QString& name, Type type);
     void findNodes(const QString& name, QList<Node*>& n);
-    FunctionNode* findFunctionNode(const QString& name);
+    FunctionNode* findFunctionNode(const QString& name) const;
     FunctionNode* findFunctionNode(const FunctionNode* clone);
     void addInclude(const QString &include);
     void setIncludes(const QStringList &includes);
@@ -351,11 +356,6 @@ public:
 
     virtual bool isInnerNode() const { return true; }
     virtual bool isLeaf() const { return false; }
-    const Node* findChildNodeByName(const QString& name) const;
-    const Node* findChildNodeByName(const QString& name, bool qml) const;
-    const Node* findChildNodeByNameAndType(const QString& name, Type type) const;
-    const FunctionNode* findFunctionNode(const QString& name) const;
-    const FunctionNode* findFunctionNode(const FunctionNode* clone) const;
     const EnumNode* findEnumNodeForValue(const QString &enumValue) const;
     const NodeList & childNodes() const { return children_; }
     const NodeList & relatedNodes() const { return related_; }
@@ -437,17 +437,18 @@ class ClassNode;
 struct RelatedClass
 {
     RelatedClass() { }
-    RelatedClass(Node::Access access0,
-                 ClassNode* node0,
-                 const QString& dataTypeWithTemplateArgs0 = QString())
-        : access(access0),
-          node(node0),
-          dataTypeWithTemplateArgs(dataTypeWithTemplateArgs0) { }
+    // constructor for resolved base class
+    RelatedClass(Node::Access access, ClassNode* node)
+        : access_(access), node_(node) { }
+    // constructor for unresolved base class
+    RelatedClass(Node::Access access, const QStringList& path, const QString& signature)
+        : access_(access), node_(0), path_(path), signature_(signature) { }
     QString accessString() const;
 
-    Node::Access        access;
-    ClassNode*          node;
-    QString             dataTypeWithTemplateArgs;
+    Node::Access        access_;
+    ClassNode*          node_;
+    QStringList         path_;
+    QString             signature_;
 };
 
 class PropertyNode;
@@ -463,14 +464,18 @@ public:
     virtual void setObsoleteLink(const QString& t) { obsoleteLink_ = t; }
     virtual void setWrapper() { wrapper_ = true; }
 
-    void addBaseClass(Access access,
-                      ClassNode* node,
-                      const QString &dataTypeWithTemplateArgs = QString());
+    void addResolvedBaseClass(Access access, ClassNode* node);
+    void addUnresolvedBaseClass(Access access, const QStringList& path, const QString& signature);
     void fixBaseClasses();
+    void fixPropertyUsingBaseClasses(PropertyNode* pn);
 
-    const QList<RelatedClass> &baseClasses() const { return bases; }
-    const QList<RelatedClass> &derivedClasses() const { return derived; }
-    const QList<RelatedClass> &ignoredBaseClasses() const { return ignoredBases; }
+    QList<RelatedClass>& baseClasses() { return bases_; }
+    QList<RelatedClass>& derivedClasses() { return derived_; }
+    QList<RelatedClass>& ignoredBaseClasses() { return ignoredBases_; }
+
+    const QList<RelatedClass> &baseClasses() const { return bases_; }
+    const QList<RelatedClass> &derivedClasses() const { return derived_; }
+    const QList<RelatedClass> &ignoredBaseClasses() const { return ignoredBases_; }
 
     QString serviceName() const { return sname; }
     void setServiceName(const QString& value) { sname = value; }
@@ -482,9 +487,9 @@ public:
     QmlClassNode* findQmlBaseNode();
 
 private:
-    QList<RelatedClass> bases;
-    QList<RelatedClass> derived;
-    QList<RelatedClass> ignoredBases;
+    QList<RelatedClass> bases_;
+    QList<RelatedClass> derived_;
+    QList<RelatedClass> ignoredBases_;
     bool abstract_;
     bool wrapper_;
     QString sname;
@@ -558,6 +563,7 @@ public:
     virtual bool isQmlNode() const;
     virtual bool isCollisionNode() const { return true; }
     virtual const Node* applyModuleName(const Node* origin) const;
+    virtual Node* disambiguate(Type t, SubType st);
     InnerNode* findAny(Node::Type t, Node::SubType st);
     void addCollision(InnerNode* child);
     const QMap<QString,QString>& linkTargets() const { return targets; }
@@ -723,9 +729,10 @@ public:
     virtual QString qmlModuleVersion() const { return parent()->qmlModuleVersion(); }
     virtual QString qmlModuleIdentifier() const { return parent()->qmlModuleIdentifier(); }
 
-    PropertyNode* correspondingProperty(QDocDatabase* qdb);
-
     const QString& element() const { return static_cast<QmlPropertyGroupNode*>(parent())->element(); }
+
+ private:
+    PropertyNode* findCorrespondingCppProperty(QDocDatabase* qdb);
 
 private:
     QString type_;

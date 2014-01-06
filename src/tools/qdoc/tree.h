@@ -61,30 +61,37 @@ class Tree
     typedef QMap<PropertyNode::FunctionRole, QString> RoleMap;
     typedef QMap<PropertyNode*, RoleMap> PropertyMap;
 
-    struct InheritanceBound
-    {
-        Node::Access access;
-        QStringList basePath;
-        QString dataTypeWithTemplateArgs;
-        InnerNode* parent;
-
-      InheritanceBound() : access(Node::Public) { }
-      InheritanceBound(Node::Access access0,
-                       const QStringList& basePath0,
-                       const QString& dataTypeWithTemplateArgs0,
-                       InnerNode* parent)
-          : access(access0), basePath(basePath0),
-            dataTypeWithTemplateArgs(dataTypeWithTemplateArgs0),
-            parent(parent) { }
-    };
-
     Tree(QDocDatabase* qdb);
     ~Tree();
 
-    EnumNode* findEnumNode(const QStringList& path, Node* start = 0);
+    /* API members */
     ClassNode* findClassNode(const QStringList& path, Node* start = 0) const;
-    QmlClassNode* findQmlTypeNode(const QStringList& path);
     NamespaceNode* findNamespaceNode(const QStringList& path) const;
+    FunctionNode* findFunctionNode(const QStringList& parentPath, const FunctionNode* clone);
+
+    /* internal members */
+    Node* findNodeRecursive(const QStringList& path,
+                            int pathIndex,
+                            Node* start,
+                            Node::Type type,
+                            Node::SubType subtype,
+                            bool acceptCollision = false) const;
+    Node* findNodeRecursive(const QStringList& path,
+                            int pathIndex,
+                            Node* start,
+                            const NodeTypeList& types) const;
+
+    const Node* findNode(const QStringList &path,
+                         const Node* relative = 0,
+                         int findFlags = 0) const;
+
+    const Node* findNode(const QStringList& path,
+                         const Node* start,
+                         int findFlags,
+                         bool qml) const;
+
+// ---------------------------------------------------------------------
+    QmlClassNode* findQmlTypeNode(const QStringList& path);
 
     Node* findNodeByNameAndType(const QStringList& path,
                                 Node::Type type,
@@ -92,42 +99,16 @@ class Tree
                                 Node* start,
                                 bool acceptCollision = false);
 
-    Node* findNodeRecursive(const QStringList& path,
-                            int pathIndex,
-                            Node* start,
-                            Node::Type type,
-                            Node::SubType subtype,
-                            bool acceptCollision = false) const;
 
-    const Node* findNode(const QStringList &path,
-                         const Node* relative = 0,
-                         int findFlags = 0,
-                         const Node* self=0) const;
-
-    const Node* findNode(const QStringList& path,
-                         const Node* start,
-                         int findFlags,
-                         const Node* self,
-                         bool qml) const;
-
+    InnerNode* findRelatesNode(const QStringList& path);
     NameCollisionNode* checkForCollision(const QString& name) const;
     NameCollisionNode* findCollisionNode(const QString& name) const;
-    FunctionNode *findFunctionNode(const QStringList &path,
-                                   Node *relative = 0,
-                                   int findFlags = 0);
-    FunctionNode *findFunctionNode(const QStringList &parentPath,
-                                   const FunctionNode *clone,
-                                   Node *relative = 0,
-                                   int findFlags = 0);
-    void addBaseClass(ClassNode *subclass,
-                      Node::Access access,
-                      const QStringList &basePath,
-                      const QString &dataTypeWithTemplateArgs,
-                      InnerNode *parent);
+
     void addPropertyFunction(PropertyNode *property,
                              const QString &funcName,
                              PropertyNode::FunctionRole funcRole);
-    void resolveInheritance(NamespaceNode *rootNode = 0);
+    void resolveInheritance(InnerNode* n = 0);
+    void resolveInheritanceHelper(int pass, ClassNode* cn);
     void resolveProperties();
     void resolveCppToQmlLinks();
     void fixInheritance(NamespaceNode *rootNode = 0);
@@ -136,22 +117,18 @@ class Tree
     const FunctionNode *findFunctionNode(const QStringList &path,
                                          const Node *relative = 0,
                                          int findFlags = 0) const;
-    const FunctionNode *findFunctionNode(const QStringList &parentPath,
-                                         const FunctionNode *clone,
-                                         const Node *relative = 0,
-                                         int findFlags = 0) const;
     const NamespaceNode *root() const { return &root_; }
 
-    void resolveInheritance(int pass, ClassNode *classe);
     FunctionNode *findVirtualFunctionInBaseClasses(ClassNode *classe,
                                                    FunctionNode *clone);
-    void fixPropertyUsingBaseClasses(ClassNode *classe, PropertyNode *property);
     NodeList allBaseClasses(const ClassNode *classe) const;
+
+ public:
+    static bool debug_;
 
 private:
     QDocDatabase* qdb_;
     NamespaceNode root_;
-    QMap<ClassNode* , QList<InheritanceBound> > unresolvedInheritanceMap;
     PropertyMap unresolvedPropertyMap;
 };
 

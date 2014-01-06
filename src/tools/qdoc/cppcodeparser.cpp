@@ -225,8 +225,6 @@ void CppCodeParser::parseSourceFile(const Location& location, const QString& fil
  */
 void CppCodeParser::doneParsingHeaderFiles()
 {
-    qdb_->resolveInheritance();
-
     QMapIterator<QString, QString> i(sequentialIteratorClasses);
     while (i.hasNext()) {
         i.next();
@@ -959,38 +957,12 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
         }
     }
     else if (command == COMMAND_RELATES) {
-        /*
-          Find the node that this node relates to.
-         */
-        Node* n = 0;
-        if (arg.startsWith(QLatin1Char('<')) || arg.startsWith('"')) {
-            /*
-              It should be a header file, I think.
-            */
-            n = qdb_->findNodeByNameAndType(QStringList(arg), Node::Document, Node::NoSubType);
-        }
-        else {
-            /*
-              If it wasn't a file, it should be either a class or a namespace.
-             */
-            QStringList newPath = arg.split("::");
-            n = qdb_->findClassNode(newPath);
-            if (!n)
-                n = qdb_->findNamespaceNode(newPath);
-        }
-
-        if (!n) {
-            /*
-              Didn't ind it. Error...
-             */
+        QStringList path = arg.split("::");
+        Node* n = qdb_->findRelatesNode(path);
+        if (!n)
             doc.location().warning(tr("Cannot find '%1' in '\\%2'").arg(arg).arg(COMMAND_RELATES));
-        }
-        else {
-            /*
-              Found it. This node relates to it.
-             */
+        else
             node->setRelates(static_cast<InnerNode*>(n));
-        }
     }
     else if (command == COMMAND_CONTENTSPAGE) {
         setLink(node, Node::ContentsLink, arg);
@@ -1636,11 +1608,7 @@ bool CppCodeParser::matchBaseSpecifier(ClassNode *classe, bool isClass)
     if (!matchDataType(&baseClass))
         return false;
 
-    qdb_->addBaseClass(classe,
-                       access,
-                       baseClass.toPath(),
-                       baseClass.toString(),
-                       classe->parent());
+    classe->addUnresolvedBaseClass(access, baseClass.toPath(), baseClass.toString());
     return true;
 }
 
@@ -1735,9 +1703,8 @@ bool CppCodeParser::matchNamespaceDecl(InnerNode *parent)
     */
     QString namespaceName = previousLexeme();
     NamespaceNode* ns = 0;
-    if (parent) {
+    if (parent)
         ns = static_cast<NamespaceNode*>(parent->findChildNodeByNameAndType(namespaceName, Node::Namespace));
-    }
     if (!ns) {
         ns = new NamespaceNode(parent, namespaceName);
         ns->setAccess(access);
