@@ -910,13 +910,15 @@ static inline QString toString(compileAsManagedOptions option)
     return QString();
 }
 
-static inline QString toString(debugOption option)
+static inline QString toString(debugOption option, DotNET compilerVersion)
 {
     switch (option) {
     case debugUnknown:
     case debugLineInfoOnly:
         break;
     case debugDisabled:
+        if (compilerVersion <= NET2010)
+            break;
         return "None";
     case debugOldStyleInfo:
         return "OldStyle";
@@ -1401,7 +1403,8 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCCLCompilerTool &tool)
             << attrTagS(_CompileAsManaged, toString(tool.CompileAsManaged))
             << attrTagT(_CompileAsWinRT, tool.CompileAsWinRT)
             << attrTagT(_CreateHotpatchableImage, tool.CreateHotpatchableImage)
-            << attrTagS(_DebugInformationFormat, toString(tool.DebugInformationFormat))
+            << attrTagS(_DebugInformationFormat, toString(tool.DebugInformationFormat,
+                                                          tool.config->CompilerVersion))
             << attrTagT(_DisableLanguageExtensions, tool.DisableLanguageExtensions)
             << attrTagX(_DisableSpecificWarnings, tool.DisableSpecificWarnings, ";")
             << attrTagS(_EnableEnhancedInstructionSet, toString(tool.EnableEnhancedInstructionSet))
