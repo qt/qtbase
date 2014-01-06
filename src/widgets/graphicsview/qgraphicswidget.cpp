@@ -2274,7 +2274,7 @@ void QGraphicsWidget::paintWindowFrame(QPainter *painter, const QStyleOptionGrap
     const QPointF styleOrigin = this->windowFrameRect().topLeft();
     painter->translate(styleOrigin);
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     const QSize pixmapSize = windowFrameRect.size();
     if (pixmapSize.width() <= 0 || pixmapSize.height() <= 0)
         return;
@@ -2342,7 +2342,7 @@ void QGraphicsWidget::paintWindowFrame(QPainter *painter, const QStyleOptionGrap
     frameOptions.midLineWidth = 1;
     style()->drawPrimitive(QStyle::PE_FrameWindow, &frameOptions, painter, widget);
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     realPainter->drawPixmap(QPoint(), pm);
     delete painter;
 #endif
