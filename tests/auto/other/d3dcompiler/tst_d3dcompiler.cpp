@@ -329,8 +329,9 @@ void tst_d3dcompiler::onlineCompile()
     QVERIFY(path.exists(QStringLiteral("source")));
     QVERIFY(path.exists(QStringLiteral("binary")));
 
-    const QByteArray hash = QCryptographicHash::hash(data, QCryptographicHash::Sha1).toHex();
-    QFile input(path.absoluteFilePath(QStringLiteral("source/") + hash));
+    const QString fileName = QCryptographicHash::hash(data, QCryptographicHash::Sha1).toHex()
+            + QStringLiteral("!main!ps_4_0!0");
+    QFile input(path.absoluteFilePath(QStringLiteral("source/") + fileName));
     QTRY_VERIFY_WITH_TIMEOUT(input.exists(), 3000);
     QTRY_VERIFY_WITH_TIMEOUT(input.isOpen() || input.open(QFile::ReadOnly), 1000);
 
@@ -351,7 +352,7 @@ void tst_d3dcompiler::onlineCompile()
     reference->Release();
 
     // Write to output directory
-    QFile output(path.absoluteFilePath(QStringLiteral("binary/") + hash));
+    QFile output(path.absoluteFilePath(QStringLiteral("binary/") + fileName));
     QVERIFY(output.open(QFile::WriteOnly));
     output.write(referenceData);
     output.close();

@@ -224,24 +224,45 @@ HRESULT WINAPI D3DCompile(
         initialized = true;
     }
 
-    const QByteArray sourceData = QByteArray::fromRawData(reinterpret_cast<const char *>(data), data_size);
-    const QString cacheKey = D3DCompiler::cacheKeyFor(sourceData);
+    QByteArray macros;
+    if (const D3D_SHADER_MACRO *macro = defines) {
+        while (macro) {
+            macros.append('#').append(macro->Name).append(' ').append(macro->Definition).append('\n');
+            ++macro;
+        }
+    }
+
+    const QByteArray sourceData = macros + QByteArray::fromRawData(reinterpret_cast<const char *>(data), data_size);
+    const QString fileName = D3DCompiler::cacheKeyFor(sourceData)
+            + QLatin1Char('!') + QString::fromUtf8(entrypoint)
+            + QLatin1Char('!') + QString::fromUtf8(target)
+            + QLatin1Char('!') + QString::number(sflags);
 
     // Check if pre-compiled shader blob is available
     if (!binaryPath.isEmpty()) {
-        QFile blob(binaryPath + cacheKey);
-        if (blob.open(QFile::ReadOnly)) {
-            qCDebug(QT_D3DCOMPILER) << "Opening precompiled shader blob at" << blob.fileName();
-            *shader = new D3DCompiler::Blob(blob.readAll());
-            return S_FALSE;
+        QString blobName = binaryPath + fileName;
+        QFile blob(blobName);
+        while (!blob.exists()) {
+            // Progressively drop optional parts
+            blobName.truncate(blobName.lastIndexOf(QLatin1Char('!')));
+            if (blobName.isEmpty())
+                break;
+            blob.setFileName(blobName);
         }
-        qCDebug(QT_D3DCOMPILER) << "Found, but unable to open, precompiled shader blob at" << blob.fileName();
+        if (blob.exists()) {
+            if (blob.open(QFile::ReadOnly)) {
+                qCDebug(QT_D3DCOMPILER) << "Opening precompiled shader blob at" << blob.fileName();
+                *shader = new D3DCompiler::Blob(blob.readAll());
+                return S_FALSE;
+            }
+            qCDebug(QT_D3DCOMPILER) << "Found, but unable to open, precompiled shader blob at" << blob.fileName();
+        }
     }
 
     // Shader blob is not available, compile with compilation service if possible
     if (!sourcePath.isEmpty() && serviceAvailable) {
         // Dump source to source path; wait for blob to appear
-        QFile source(sourcePath + cacheKey);
+        QFile source(sourcePath + fileName);
         if (!source.open(QFile::WriteOnly)) {
             qCDebug(QT_D3DCOMPILER) << "Unable to write shader source to file:" << source.fileName() << source.errorString();
             return E_ACCESSDENIED;
@@ -257,7 +278,7 @@ HRESULT WINAPI D3DCompile(
 
         QElapsedTimer timer;
         timer.start();
-        QFile blob(binaryPath + cacheKey);
+        QFile blob(binaryPath + fileName);
         while (!(blob.exists() && blob.open(QFile::ReadOnly)) && timer.elapsed() < timeout)
             QThread::msleep(100);
 
@@ -280,7 +301,7 @@ HRESULT WINAPI D3DCompile(
             const QByteArray blobContents = QByteArray::fromRawData(
                         reinterpret_cast<const char *>((*shader)->GetBufferPointer()), (*shader)->GetBufferSize());
 
-            QFile blob(binaryPath + cacheKey);
+            QFile blob(binaryPath + fileName);
             if (blob.open(QFile::WriteOnly) && blob.write(blobContents))
                 qCDebug(QT_D3DCOMPILER) << "Cached shader blob at" << blob.fileName();
             else
