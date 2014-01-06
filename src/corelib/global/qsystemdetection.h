@@ -210,14 +210,17 @@
 
 #ifdef Q_OS_DARWIN
 #  include <Availability.h>
-#  if !defined(__MAC_OS_X_VERSION_MIN_REQUIRED) || __MAC_OS_X_VERSION_MIN_REQUIRED < __MAC_10_6
-#     undef __MAC_OS_X_VERSION_MIN_REQUIRED
-#     define __MAC_OS_X_VERSION_MIN_REQUIRED __MAC_10_6
-#  endif
 #  include <AvailabilityMacros.h>
-#  if !defined(MAC_OS_X_VERSION_MIN_REQUIRED) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6
-#     undef MAC_OS_X_VERSION_MIN_REQUIRED
-#     define MAC_OS_X_VERSION_MIN_REQUIRED MAC_OS_X_VERSION_10_6
+#
+#  ifdef Q_OS_OSX
+#    if !defined(__MAC_OS_X_VERSION_MIN_REQUIRED) || __MAC_OS_X_VERSION_MIN_REQUIRED < __MAC_10_6
+#       undef __MAC_OS_X_VERSION_MIN_REQUIRED
+#       define __MAC_OS_X_VERSION_MIN_REQUIRED __MAC_10_6
+#    endif
+#    if !defined(MAC_OS_X_VERSION_MIN_REQUIRED) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6
+#       undef MAC_OS_X_VERSION_MIN_REQUIRED
+#       define MAC_OS_X_VERSION_MIN_REQUIRED MAC_OS_X_VERSION_10_6
+#    endif
 #  endif
 #
 #  // Numerical checks are preferred to named checks, but to be safe
