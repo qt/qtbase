@@ -2764,6 +2764,15 @@ void QDateTimePrivate::refreshDateTime()
         return;
     }
 
+#ifndef QT_BOOTSTRAPPED
+    // If not valid time zone then is invalid
+    if (m_spec == Qt::TimeZone && !m_timeZone.isValid()) {
+        clearValidDateTime();
+        m_offsetFromUtc = 0;
+        return;
+    }
+#endif // QT_BOOTSTRAPPED
+
     // We have a valid date and time and a Qt::LocalTime or Qt::TimeZone that needs calculating
     // LocalTime and TimeZone might fall into "missing" DaylightTime transition hour
     // Calling toEpochMSecs will adjust the returned date/time if it does

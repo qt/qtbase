@@ -2784,6 +2784,13 @@ void tst_QDateTime::daylightTransitions() const
 
 void tst_QDateTime::timeZones() const
 {
+    QTimeZone invalidTz = QTimeZone("Vulcan/ShiKahr");
+    QCOMPARE(invalidTz.isValid(), false);
+    QDateTime invalidDateTime = QDateTime(QDate(2000, 1, 1), QTime(0, 0, 0), invalidTz);
+    QCOMPARE(invalidDateTime.isValid(), false);
+    QCOMPARE(invalidDateTime.date(), QDate(2000, 1, 1));
+    QCOMPARE(invalidDateTime.time(), QTime(0, 0, 0));
+
     QTimeZone nzTz = QTimeZone("Pacific/Auckland");
 
     // During Standard Time NZ is +12:00
