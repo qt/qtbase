@@ -50,7 +50,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSCursor;
+class QEGLPlatformCursor;
 class QEglFSScreen;
 
 class QEglFSHooks
@@ -73,7 +73,7 @@ public:
                                                    const QSurfaceFormat &format);
     virtual void destroyNativeWindow(EGLNativeWindowType window);
     virtual bool hasCapability(QPlatformIntegration::Capability cap) const;
-    virtual QEglFSCursor *createCursor(QEglFSScreen *screen) const;
+    virtual QEGLPlatformCursor *createCursor(QPlatformScreen *screen) const;
     virtual bool filterConfig(EGLDisplay display, EGLConfig config) const;
     virtual void waitForVSync() const;
 

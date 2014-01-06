@@ -39,19 +39,47 @@
 **
 ****************************************************************************/
 
-#include "qeglfscursor.h"
+#include "qeglplatformcursor_p.h"
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QOpenGLContext>
+#include <QtGui/QOpenGLShaderProgram>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonObject>
 #include <QtDebug>
 
+#include <QtPlatformSupport/private/qdevicediscovery_p.h>
+
 QT_BEGIN_NAMESPACE
 
-QEglFSCursor::QEglFSCursor(QEglFSScreen *screen)
-    : m_screen(screen), m_program(0), m_vertexCoordEntry(0), m_textureCoordEntry(0), m_textureEntry(0)
+/*!
+    \class QEGLPlatformCursor
+    \brief Mouse cursor implementation using OpenGL.
+    \since 5.2
+    \internal
+    \ingroup qpa
+ */
+
+QEGLPlatformCursor::QEGLPlatformCursor(QPlatformScreen *screen)
+    : m_visible(true),
+      m_screen(screen),
+      m_program(0),
+      m_vertexCoordEntry(0),
+      m_textureCoordEntry(0),
+      m_textureEntry(0)
 {
+    QByteArray hideCursorVal = qgetenv("QT_QPA_EGLFS_HIDECURSOR");
+    if (hideCursorVal.isEmpty()) {
+        QScopedPointer<QDeviceDiscovery> dis(QDeviceDiscovery::create(QDeviceDiscovery::Device_Mouse));
+        m_visible = !dis->scanConnectedDevices().isEmpty();
+    } else {
+        m_visible = hideCursorVal.toInt() == 0;
+    }
+    if (!m_visible)
+        return;
+
+    // Try to load the cursor atlas. If this fails, m_visible is set to false and
+    // paintOnScreen() and setCurrentCursor() become no-ops.
     initCursorAtlas();
 
     // initialize the cursor
@@ -61,15 +89,15 @@ QEglFSCursor::QEglFSCursor(QEglFSScreen *screen)
 #endif
 }
 
-QEglFSCursor::~QEglFSCursor()
+QEGLPlatformCursor::~QEGLPlatformCursor()
 {
     resetResources();
 }
 
-void QEglFSCursor::resetResources()
+void QEGLPlatformCursor::resetResources()
 {
     if (QOpenGLContext::currentContext()) {
-        glDeleteProgram(m_program);
+        delete m_program;
         glDeleteTextures(1, &m_cursor.customCursorTexture);
         glDeleteTextures(1, &m_cursorAtlas.texture);
     }
@@ -79,46 +107,7 @@ void QEglFSCursor::resetResources()
     m_cursorAtlas.texture = 0;
 }
 
-GLuint QEglFSCursor::createShader(GLenum shaderType, const char *program)
-{
-    GLuint shader = glCreateShader(shaderType);
-    glShaderSource(shader, 1 /* count */, &program, NULL /* lengths */);
-    glCompileShader(shader);
-    GLint status;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-    if (status == GL_TRUE)
-        return shader;
-
-    GLint length;
-    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
-    char *infoLog = new char[length];
-    glGetShaderInfoLog(shader, length, NULL, infoLog);
-    qDebug("%s shader compilation error: %s", shaderType == GL_VERTEX_SHADER ? "vertex" : "fragment", infoLog);
-    delete [] infoLog;
-    return 0;
-}
-
-GLuint QEglFSCursor::createProgram(GLuint vshader, GLuint fshader)
-{
-    GLuint program = glCreateProgram();
-    glAttachShader(program, vshader);
-    glAttachShader(program, fshader);
-    glLinkProgram(program);
-    GLint status;
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if (status == GL_TRUE)
-        return program;
-
-    GLint length;
-    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
-    char *infoLog = new char[length];
-    glGetProgramInfoLog(program, length, NULL, infoLog);
-    qDebug("program link error: %s", infoLog);
-    delete [] infoLog;
-    return 0;
-}
-
-void QEglFSCursor::createShaderPrograms()
+void QEGLPlatformCursor::createShaderPrograms()
 {
     static const char *textureVertexProgram =
         "attribute highp vec2 vertexCoordEntry;\n"
@@ -136,18 +125,17 @@ void QEglFSCursor::createShaderPrograms()
         "   gl_FragColor = texture2D(texture, textureCoord).bgra;\n"
         "}\n";
 
-    GLuint vertexShader = createShader(GL_VERTEX_SHADER, textureVertexProgram);
-    GLuint fragmentShader = createShader(GL_FRAGMENT_SHADER, textureFragmentProgram);
-    m_program = createProgram(vertexShader, fragmentShader);
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    m_program = new QOpenGLShaderProgram;
+    m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, textureVertexProgram);
+    m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, textureFragmentProgram);
+    m_program->link();
 
-    m_vertexCoordEntry = glGetAttribLocation(m_program, "vertexCoordEntry");
-    m_textureCoordEntry = glGetAttribLocation(m_program, "textureCoordEntry");
-    m_textureEntry = glGetUniformLocation(m_program, "texture");
+    m_vertexCoordEntry = m_program->attributeLocation("vertexCoordEntry");
+    m_textureCoordEntry = m_program->attributeLocation("textureCoordEntry");
+    m_textureEntry = m_program->attributeLocation("texture");
 }
 
-void QEglFSCursor::createCursorTexture(uint *texture, const QImage &image)
+void QEGLPlatformCursor::createCursorTexture(uint *texture, const QImage &image)
 {
     if (!*texture)
         glGenTextures(1, texture);
@@ -161,25 +149,29 @@ void QEglFSCursor::createCursorTexture(uint *texture, const QImage &image)
                  GL_RGBA, GL_UNSIGNED_BYTE, image.constBits());
 }
 
-void QEglFSCursor::initCursorAtlas()
+void QEGLPlatformCursor::initCursorAtlas()
 {
     static QByteArray json = qgetenv("QT_QPA_EGLFS_CURSOR");
     if (json.isEmpty())
         json = ":/cursor.json";
 
-    QFile file(json);
-    file.open(QFile::ReadOnly);
+    QFile file(QString::fromUtf8(json));
+    if (!file.open(QFile::ReadOnly)) {
+        m_visible = false;
+        return;
+    }
+
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     QJsonObject object = doc.object();
 
-    QString atlas = object.value("image").toString();
+    QString atlas = object.value(QLatin1String("image")).toString();
     Q_ASSERT(!atlas.isEmpty());
 
-    const int cursorsPerRow = object.value("cursorsPerRow").toDouble();
+    const int cursorsPerRow = object.value(QLatin1String("cursorsPerRow")).toDouble();
     Q_ASSERT(cursorsPerRow);
     m_cursorAtlas.cursorsPerRow = cursorsPerRow;
 
-    const QJsonArray hotSpots = object.value("hotSpots").toArray();
+    const QJsonArray hotSpots = object.value(QLatin1String("hotSpots")).toArray();
     Q_ASSERT(hotSpots.count() == Qt::LastCursor);
     for (int i = 0; i < hotSpots.count(); i++) {
         QPoint hotSpot(hotSpots[i].toArray()[0].toDouble(), hotSpots[i].toArray()[1].toDouble());
@@ -195,7 +187,7 @@ void QEglFSCursor::initCursorAtlas()
 }
 
 #ifndef QT_NO_CURSOR
-void QEglFSCursor::changeCursor(QCursor *cursor, QWindow *window)
+void QEGLPlatformCursor::changeCursor(QCursor *cursor, QWindow *window)
 {
     Q_UNUSED(window);
     const QRect oldCursorRect = cursorRect();
@@ -203,8 +195,11 @@ void QEglFSCursor::changeCursor(QCursor *cursor, QWindow *window)
         update(oldCursorRect | cursorRect());
 }
 
-bool QEglFSCursor::setCurrentCursor(QCursor *cursor)
+bool QEGLPlatformCursor::setCurrentCursor(QCursor *cursor)
 {
+    if (!m_visible)
+        return false;
+
     const Qt::CursorShape newShape = cursor ? cursor->shape() : Qt::ArrowCursor;
     if (m_cursor.shape == newShape && newShape != Qt::BitmapCursor)
         return false;
@@ -237,30 +232,30 @@ bool QEglFSCursor::setCurrentCursor(QCursor *cursor)
 }
 #endif
 
-void QEglFSCursor::update(const QRegion &rgn)
+void QEGLPlatformCursor::update(const QRegion &rgn)
 {
     QWindowSystemInterface::handleExposeEvent(m_screen->topLevelAt(m_cursor.pos), rgn);
     QWindowSystemInterface::flushWindowSystemEvents();
 }
 
-QRect QEglFSCursor::cursorRect() const
+QRect QEGLPlatformCursor::cursorRect() const
 {
     return QRect(m_cursor.pos - m_cursor.hotSpot, m_cursor.size);
 }
 
-QPoint QEglFSCursor::pos() const
+QPoint QEGLPlatformCursor::pos() const
 {
     return m_cursor.pos;
 }
 
-void QEglFSCursor::setPos(const QPoint &pos)
+void QEGLPlatformCursor::setPos(const QPoint &pos)
 {
     const QRect oldCursorRect = cursorRect();
     m_cursor.pos = pos;
     update(oldCursorRect | cursorRect());
 }
 
-void QEglFSCursor::pointerEvent(const QMouseEvent &event)
+void QEGLPlatformCursor::pointerEvent(const QMouseEvent &event)
 {
     if (event.type() != QEvent::MouseMove)
         return;
@@ -269,8 +264,11 @@ void QEglFSCursor::pointerEvent(const QMouseEvent &event)
     update(oldCursorRect | cursorRect());
 }
 
-void QEglFSCursor::paintOnScreen()
+void QEGLPlatformCursor::paintOnScreen()
 {
+    if (!m_visible)
+        return;
+
     const QRectF cr = cursorRect();
     const QRect screenRect(m_screen->geometry());
     const GLfloat x1 = 2 * (cr.left() / screenRect.width()) - 1;
@@ -282,11 +280,10 @@ void QEglFSCursor::paintOnScreen()
     draw(r);
 }
 
-void QEglFSCursor::draw(const QRectF &r)
+void QEGLPlatformCursor::draw(const QRectF &r)
 {
     if (!m_program) {
         // one time initialization
-        initializeOpenGLFunctions();
         createShaderPrograms();
 
         if (!m_cursorAtlas.texture) {
@@ -306,7 +303,7 @@ void QEglFSCursor::draw(const QRectF &r)
 
     Q_ASSERT(m_cursor.texture);
 
-    glUseProgram(m_program);
+    m_program->bind();
 
     const GLfloat x1 = r.left();
     const GLfloat x2 = r.right();
@@ -332,13 +329,13 @@ void QEglFSCursor::draw(const QRectF &r)
 
     glBindTexture(GL_TEXTURE_2D, m_cursor.texture);
 
-    glEnableVertexAttribArray(m_vertexCoordEntry);
-    glEnableVertexAttribArray(m_textureCoordEntry);
+    m_program->enableAttributeArray(m_vertexCoordEntry);
+    m_program->enableAttributeArray(m_textureCoordEntry);
 
-    glVertexAttribPointer(m_vertexCoordEntry, 2, GL_FLOAT, GL_FALSE, 0, cursorCoordinates);
-    glVertexAttribPointer(m_textureCoordEntry, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinates);
+    m_program->setAttributeArray(m_vertexCoordEntry, cursorCoordinates, 2);
+    m_program->setAttributeArray(m_textureCoordEntry, textureCoordinates, 2);
 
-    glUniform1i(m_textureEntry, 0);
+    m_program->setUniformValue(m_textureEntry, 0);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
@@ -347,10 +344,10 @@ void QEglFSCursor::draw(const QRectF &r)
     glDisable(GL_BLEND);
 
     glBindTexture(GL_TEXTURE_2D, 0);
-    glDisableVertexAttribArray(m_vertexCoordEntry);
-    glDisableVertexAttribArray(m_textureCoordEntry);
+    m_program->disableAttributeArray(m_textureCoordEntry);
+    m_program->disableAttributeArray(m_vertexCoordEntry);
 
-    glUseProgram(0);
+    m_program->release();
 }
 
 QT_END_NAMESPACE

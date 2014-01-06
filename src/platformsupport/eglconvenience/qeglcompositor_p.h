@@ -39,47 +39,46 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSCOMPOSITOR_H
-#define QEGLFSCOMPOSITOR_H
+#ifndef QEGLCOMPOSITOR_H
+#define QEGLCOMPOSITOR_H
 
 #include <QtCore/QTimer>
-#include <QtGui/QOpenGLFunctions>
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSScreen;
-class QEglFSWindow;
 class QOpenGLShaderProgram;
+class QOpenGLContext;
+class QEGLPlatformWindow;
 
-class QEglFSCompositor : public QObject, public QOpenGLFunctions
+class QEGLCompositor : public QObject
 {
     Q_OBJECT
 
 public:
-    void schedule(QEglFSScreen *screen);
+    void schedule(QOpenGLContext *context, QEGLPlatformWindow *window);
 
-    static QEglFSCompositor *instance();
+    static QEGLCompositor *instance();
     static void destroy();
 
 private slots:
     void renderAll();
 
 private:
-    QEglFSCompositor();
-    ~QEglFSCompositor();
+    QEGLCompositor();
+    ~QEGLCompositor();
 
-    void render(QEglFSWindow *window, uint texture, bool raster);
+    void render(QEGLPlatformWindow *window, uint texture, bool raster);
     void ensureProgram();
 
-    QEglFSScreen *m_screen;
+    QOpenGLContext *m_context;
+    QEGLPlatformWindow *m_window;
     QTimer m_updateTimer;
     QOpenGLShaderProgram *m_program;
     int m_vertexCoordEntry;
     int m_textureCoordEntry;
     int m_isRasterEntry;
-    bool m_initialized;
 };
 
 QT_END_NAMESPACE
 
-#endif // QEGLFSCOMPOSITOR_H
+#endif // QEGLCOMPOSITOR_H

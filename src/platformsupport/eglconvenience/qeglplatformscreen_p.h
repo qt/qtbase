@@ -39,75 +39,43 @@
 **
 ****************************************************************************/
 
-#include "qeglfsscreen.h"
-#include "qeglfswindow.h"
-#include "qeglfshooks.h"
-#include <QtPlatformSupport/private/qeglplatformcursor_p.h>
+#ifndef QEGLPLATFORMSCREEN_H
+#define QEGLPLATFORMSCREEN_H
+
+#include <QtCore/QList>
+#include <qpa/qplatformscreen.h>
+#include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
 
-QEglFSScreen::QEglFSScreen(EGLDisplay dpy)
-    : QEGLPlatformScreen(dpy),
-      m_surface(EGL_NO_SURFACE),
-      m_cursor(0),
-      m_rootWindow(0),
-      m_rootContext(0)
-{
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglScreen %p\n", this);
-#endif
+class QOpenGLContext;
+class QEGLPlatformWindow;
 
-    m_cursor = QEglFSHooks::hooks()->createCursor(this);
-}
-
-QEglFSScreen::~QEglFSScreen()
+class QEGLPlatformScreen : public QPlatformScreen
 {
-    delete m_cursor;
-}
+public:
+    QEGLPlatformScreen(EGLDisplay dpy);
+    ~QEGLPlatformScreen();
 
-QRect QEglFSScreen::geometry() const
-{
-    return QRect(QPoint(0, 0), QEglFSHooks::hooks()->screenSize());
-}
+    QList<QEGLPlatformWindow *> windows() const { return m_windows; }
 
-int QEglFSScreen::depth() const
-{
-    return QEglFSHooks::hooks()->screenDepth();
-}
+    void addWindow(QEGLPlatformWindow *window);
+    void removeWindow(QEGLPlatformWindow *window);
+    void moveToTop(QEGLPlatformWindow *window);
+    void changeWindowIndex(QEGLPlatformWindow *window, int newIdx);
 
-QImage::Format QEglFSScreen::format() const
-{
-    return QEglFSHooks::hooks()->screenFormat();
-}
+    virtual void topWindowChanged(QEGLPlatformWindow *window) { Q_UNUSED(window); }
 
-QSizeF QEglFSScreen::physicalSize() const
-{
-    return QEglFSHooks::hooks()->physicalScreenSize();
-}
+    EGLDisplay display() const { return m_dpy; }
 
-QDpi QEglFSScreen::logicalDpi() const
-{
-    return QEglFSHooks::hooks()->logicalDpi();
-}
+    virtual QEGLPlatformWindow *compositingWindow() = 0;
+    virtual QOpenGLContext *compositingContext() = 0;
 
-Qt::ScreenOrientation QEglFSScreen::nativeOrientation() const
-{
-    return QEglFSHooks::hooks()->nativeOrientation();
-}
-
-Qt::ScreenOrientation QEglFSScreen::orientation() const
-{
-    return QEglFSHooks::hooks()->orientation();
-}
-
-QPlatformCursor *QEglFSScreen::cursor() const
-{
-    return m_cursor;
-}
-
-void QEglFSScreen::setPrimarySurface(EGLSurface surface)
-{
-    m_surface = surface;
-}
+private:
+    QList<QEGLPlatformWindow *> m_windows;
+    EGLDisplay m_dpy;
+};
 
 QT_END_NAMESPACE
+
+#endif // QEGLPLATFORMSCREEN_H

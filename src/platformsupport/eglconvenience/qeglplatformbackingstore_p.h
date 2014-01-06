@@ -39,85 +39,44 @@
 **
 ****************************************************************************/
 
-#ifndef QDEVICEDISCOVERY_H
-#define QDEVICEDISCOVERY_H
+#ifndef QEGLPLATFORMBACKINGSTORE_H
+#define QEGLPLATFORMBACKINGSTORE_H
 
-#include <QObject>
-#include <QSocketNotifier>
-#include <QStringList>
+#include <qpa/qplatformbackingstore.h>
 
-#ifdef QDEVICEDISCOVERY_UDEV
-#include <libudev.h>
-#endif
-
-#define QT_EVDEV_DEVICE_PATH "/dev/input/"
-#define QT_EVDEV_DEVICE_PREFIX "event"
-#define QT_EVDEV_DEVICE QT_EVDEV_DEVICE_PATH QT_EVDEV_DEVICE_PREFIX
-
-#define QT_DRM_DEVICE_PATH "/dev/dri/"
-#define QT_DRM_DEVICE_PREFIX "card"
-#define QT_DRM_DEVICE QT_DRM_DEVICE_PATH QT_DRM_DEVICE_PREFIX
+#include <QImage>
+#include <QRegion>
 
 QT_BEGIN_NAMESPACE
 
-class QDeviceDiscovery : public QObject
+class QOpenGLContext;
+class QEGLPlatformWindow;
+
+class QEGLPlatformBackingStore : public QPlatformBackingStore
 {
-    Q_OBJECT
-    Q_ENUMS(QDeviceType)
-
 public:
-    enum QDeviceType {
-        Device_Unknown = 0x00,
-        Device_Mouse = 0x01,
-        Device_Touchpad = 0x02,
-        Device_Touchscreen = 0x04,
-        Device_Keyboard = 0x08,
-        Device_DRM = 0x10,
-        Device_DRM_PrimaryGPU = 0x20,
-        Device_Tablet = 0x40,
-        Device_InputMask = Device_Mouse | Device_Touchpad | Device_Touchscreen | Device_Keyboard | Device_Tablet,
-        Device_VideoMask = Device_DRM
-    };
-    Q_DECLARE_FLAGS(QDeviceTypes, QDeviceType)
+    QEGLPlatformBackingStore(QWindow *window);
 
-    static QDeviceDiscovery *create(QDeviceTypes type, QObject *parent = 0);
-    ~QDeviceDiscovery();
+    QPaintDevice *paintDevice();
 
-    QStringList scanConnectedDevices();
+    void beginPaint(const QRegion &);
 
-signals:
-    void deviceDetected(const QString &deviceNode);
-    void deviceRemoved(const QString &deviceNode);
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
+    void resize(const QSize &size, const QRegion &staticContents);
 
-#ifdef QDEVICEDISCOVERY_UDEV
-private slots:
-    void handleUDevNotification();
-#endif
+    uint texture() const { return m_texture; }
+
+    virtual void composite(QOpenGLContext *context, QEGLPlatformWindow *window);
 
 private:
-#ifdef QDEVICEDISCOVERY_UDEV
-    QDeviceDiscovery(QDeviceTypes types, struct udev *udev, QObject *parent = 0);
-    bool checkDeviceType(struct udev_device *dev);
-#else
-    QDeviceDiscovery(QDeviceTypes types, QObject *parent = 0);
-    bool checkDeviceType(const QString &device);
-#endif
+    void updateTexture();
 
-    QDeviceTypes m_types;
-
-#ifdef QDEVICEDISCOVERY_UDEV
-    void startWatching();
-    void stopWatching();
-
-    struct udev *m_udev;
-    struct udev_monitor *m_udevMonitor;
-    int m_udevMonitorFileDescriptor;
-    QSocketNotifier *m_udevSocketNotifier;
-#endif
+    QEGLPlatformWindow *m_window;
+    QImage m_image;
+    uint m_texture;
+    QRegion m_dirty;
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(QDeviceDiscovery::QDeviceTypes)
 
 QT_END_NAMESPACE
 
-#endif // QDEVICEDISCOVERY_H
+#endif // QEGLPLATFORMBACKINGSTORE_H

@@ -101,16 +101,6 @@ QMinimalEglScreen::QMinimalEglScreen(EGLNativeDisplayType display)
     }
 
     qWarning("Initialized display %d %d\n", major, minor);
-
-    int swapInterval = 1;
-    QByteArray swapIntervalString = qgetenv("QT_QPA_EGLFS_SWAPINTERVAL");
-    if (!swapIntervalString.isEmpty()) {
-        bool ok;
-        swapInterval = swapIntervalString.toInt(&ok);
-        if (!ok)
-            swapInterval = 1;
-    }
-    eglSwapInterval(m_dpy, swapInterval);
 }
 
 QMinimalEglScreen::~QMinimalEglScreen()

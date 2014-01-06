@@ -39,75 +39,72 @@
 **
 ****************************************************************************/
 
-#include "qeglfsscreen.h"
-#include "qeglfswindow.h"
-#include "qeglfshooks.h"
-#include <QtPlatformSupport/private/qeglplatformcursor_p.h>
+#include "qeglcompositor_p.h"
+#include "qeglplatformscreen_p.h"
 
 QT_BEGIN_NAMESPACE
 
-QEglFSScreen::QEglFSScreen(EGLDisplay dpy)
-    : QEGLPlatformScreen(dpy),
-      m_surface(EGL_NO_SURFACE),
-      m_cursor(0),
-      m_rootWindow(0),
-      m_rootContext(0)
-{
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglScreen %p\n", this);
-#endif
+/*!
+    \class QEGLPlatformScreen
+    \brief Base class for EGL-based platform screen implementations.
+    \since 5.2
+    \internal
+    \ingroup qpa
 
-    m_cursor = QEglFSHooks::hooks()->createCursor(this);
+    This class provides a lightweight base for QPlatformScreen
+    implementations. It covers basic window stack management which is
+    necessary when compositing multiple raster (widget-based) windows
+    together into one single native surface.
+
+    Reimplementing the virtuals are essential when using
+    QEGLPlatformBackingStore. The context and the window returned from
+    these are the ones that are used when compositing the textures
+    generated from the raster (widget) based windows.
+
+    \note It is up to the QEGLPlatformWindow subclasses to use the
+    functions, like addWindow(), removeWindow(), etc., provided here.
+ */
+
+QEGLPlatformScreen::QEGLPlatformScreen(EGLDisplay dpy)
+    : m_dpy(dpy)
+{
 }
 
-QEglFSScreen::~QEglFSScreen()
+QEGLPlatformScreen::~QEGLPlatformScreen()
 {
-    delete m_cursor;
+    QEGLCompositor::destroy();
 }
 
-QRect QEglFSScreen::geometry() const
+void QEGLPlatformScreen::addWindow(QEGLPlatformWindow *window)
 {
-    return QRect(QPoint(0, 0), QEglFSHooks::hooks()->screenSize());
+    if (!m_windows.contains(window)) {
+        m_windows.append(window);
+        topWindowChanged(window);
+    }
 }
 
-int QEglFSScreen::depth() const
+void QEGLPlatformScreen::removeWindow(QEGLPlatformWindow *window)
 {
-    return QEglFSHooks::hooks()->screenDepth();
+    m_windows.removeOne(window);
+    if (!m_windows.isEmpty())
+        topWindowChanged(m_windows.last());
 }
 
-QImage::Format QEglFSScreen::format() const
+void QEGLPlatformScreen::moveToTop(QEGLPlatformWindow *window)
 {
-    return QEglFSHooks::hooks()->screenFormat();
+    m_windows.removeOne(window);
+    m_windows.append(window);
+    topWindowChanged(window);
 }
 
-QSizeF QEglFSScreen::physicalSize() const
+void QEGLPlatformScreen::changeWindowIndex(QEGLPlatformWindow *window, int newIdx)
 {
-    return QEglFSHooks::hooks()->physicalScreenSize();
-}
-
-QDpi QEglFSScreen::logicalDpi() const
-{
-    return QEglFSHooks::hooks()->logicalDpi();
-}
-
-Qt::ScreenOrientation QEglFSScreen::nativeOrientation() const
-{
-    return QEglFSHooks::hooks()->nativeOrientation();
-}
-
-Qt::ScreenOrientation QEglFSScreen::orientation() const
-{
-    return QEglFSHooks::hooks()->orientation();
-}
-
-QPlatformCursor *QEglFSScreen::cursor() const
-{
-    return m_cursor;
-}
-
-void QEglFSScreen::setPrimarySurface(EGLSurface surface)
-{
-    m_surface = surface;
+    int idx = m_windows.indexOf(window);
+    if (idx != -1 && idx != newIdx) {
+        m_windows.move(idx, newIdx);
+        if (newIdx == m_windows.size() - 1)
+            topWindowChanged(m_windows.last());
+    }
 }
 
 QT_END_NAMESPACE

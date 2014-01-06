@@ -39,43 +39,34 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSBACKINGSTORE_H
-#define QEGLFSBACKINGSTORE_H
-
-#include <qpa/qplatformbackingstore.h>
-#include <QtGui/QOpenGLFunctions>
-
-#include <QImage>
-#include <QRegion>
+#include "qdevicediscovery_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QOpenGLPaintDevice;
-class QEglFSWindow;
-
-class QEglFSBackingStore : public QPlatformBackingStore, public QOpenGLFunctions
+QDeviceDiscovery *QDeviceDiscovery::create(QDeviceTypes types, QObject *parent)
 {
-public:
-    QEglFSBackingStore(QWindow *window);
+    return new QDeviceDiscovery(types, parent);
+}
 
-    QPaintDevice *paintDevice();
+QDeviceDiscovery::QDeviceDiscovery(QDeviceTypes types, QObject *parent)
+    : QObject(parent),
+      m_types(types)
+{
+}
 
-    void beginPaint(const QRegion &);
+QDeviceDiscovery::~QDeviceDiscovery()
+{
+}
 
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset);
-    void resize(const QSize &size, const QRegion &staticContents);
+QStringList QDeviceDiscovery::scanConnectedDevices()
+{
+    return QStringList();
+}
 
-    uint texture() const { return m_texture; }
-
-private:
-    void updateTexture();
-
-    QEglFSWindow *m_window;
-    QImage m_image;
-    uint m_texture;
-    QRegion m_dirty;
-};
+bool QDeviceDiscovery::checkDeviceType(const QString &device)
+{
+    Q_UNUSED(device);
+    return false;
+}
 
 QT_END_NAMESPACE
-
-#endif // QEGLFSBACKINGSTORE_H

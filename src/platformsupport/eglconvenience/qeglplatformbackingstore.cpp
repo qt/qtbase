@@ -39,31 +39,54 @@
 **
 ****************************************************************************/
 
-#include "qeglfsbackingstore.h"
-#include "qeglfscompositor.h"
-#include "qeglfscursor.h"
-#include "qeglfswindow.h"
-#include "qeglfscontext.h"
-
-#include <QtGui/QOpenGLPaintDevice>
 #include <QtGui/QOpenGLShaderProgram>
+#include <QtGui/QOpenGLContext>
+
+#include "qeglplatformbackingstore_p.h"
+#include "qeglcompositor_p.h"
+#include "qeglplatformwindow_p.h"
+#include "qeglplatformscreen_p.h"
 
 QT_BEGIN_NAMESPACE
 
-QEglFSBackingStore::QEglFSBackingStore(QWindow *window)
+/*!
+    \class QEGLPlatformBackingStore
+    \brief A backing store implementation for EGL and GLES.
+    \since 5.2
+    \internal
+    \ingroup qpa
+
+    This implementation uploads raster-rendered widget windows into
+    textures and composites them onto a single native window using
+    QEGLCompositor. This means that multiple top-level widgets are
+    supported without creating actual native windows for each of them.
+
+    The class is ready to be used as-is, the default
+    QEGLPlatformIntegration::createPlatformBackingStore()
+    implementation creates an instance which is ready to be used
+    without further customization.
+
+    If QEGLCompositor is not suitable, this backing store
+    implementation can also be used without it. In this case a
+    subclass must reimplement composite() and schedule an update in
+    its custom compositor when this function is called. The textures
+    are accessible via QEGLPlatformWindow::texture().
+*/
+
+QEGLPlatformBackingStore::QEGLPlatformBackingStore(QWindow *window)
     : QPlatformBackingStore(window),
-      m_window(static_cast<QEglFSWindow *>(window->handle())),
+      m_window(static_cast<QEGLPlatformWindow *>(window->handle())),
       m_texture(0)
 {
     m_window->setBackingStore(this);
 }
 
-QPaintDevice *QEglFSBackingStore::paintDevice()
+QPaintDevice *QEGLPlatformBackingStore::paintDevice()
 {
     return &m_image;
 }
 
-void QEglFSBackingStore::updateTexture()
+void QEGLPlatformBackingStore::updateTexture()
 {
     glBindTexture(GL_TEXTURE_2D, m_texture);
 
@@ -102,7 +125,7 @@ void QEglFSBackingStore::updateTexture()
     }
 }
 
-void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
+void QEGLPlatformBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
     Q_UNUSED(window);
     Q_UNUSED(region);
@@ -112,34 +135,41 @@ void QEglFSBackingStore::flush(QWindow *window, const QRegion &region, const QPo
     qWarning("QEglBackingStore::flush %p", window);
 #endif
 
-    QEglFSWindow *rootWin = m_window->screen()->rootWindow();
-    if (!rootWin || !rootWin->isRaster())
+    QEGLPlatformScreen *screen = static_cast<QEGLPlatformScreen *>(m_window->screen());
+    QEGLPlatformWindow *dstWin = screen->compositingWindow();
+    if (!dstWin || !dstWin->isRaster())
         return;
 
     m_window->create();
-    rootWin->screen()->rootContext()->makeCurrent(rootWin->window());
+    QOpenGLContext *context = screen->compositingContext();
+    context->makeCurrent(dstWin->window());
     updateTexture();
-    QEglFSCompositor::instance()->schedule(rootWin->screen());
+    composite(context, dstWin);
 }
 
-void QEglFSBackingStore::beginPaint(const QRegion &rgn)
+void QEGLPlatformBackingStore::composite(QOpenGLContext *context, QEGLPlatformWindow *window)
+{
+    QEGLCompositor::instance()->schedule(context, window);
+}
+
+void QEGLPlatformBackingStore::beginPaint(const QRegion &rgn)
 {
     m_dirty |= rgn;
 }
 
-void QEglFSBackingStore::resize(const QSize &size, const QRegion &staticContents)
+void QEGLPlatformBackingStore::resize(const QSize &size, const QRegion &staticContents)
 {
     Q_UNUSED(staticContents);
 
-    QEglFSWindow *rootWin = m_window->screen()->rootWindow();
-    if (!rootWin || !rootWin->isRaster())
+    QEGLPlatformScreen *screen = static_cast<QEGLPlatformScreen *>(m_window->screen());
+    QEGLPlatformWindow *dstWin = screen->compositingWindow();
+    if (!dstWin || !dstWin->isRaster())
         return;
 
     m_image = QImage(size, QImage::Format_RGB32);
     m_window->create();
 
-    rootWin->screen()->rootContext()->makeCurrent(rootWin->window());
-    initializeOpenGLFunctions();
+    screen->compositingContext()->makeCurrent(dstWin->window());
 
     if (m_texture)
         glDeleteTextures(1, &m_texture);

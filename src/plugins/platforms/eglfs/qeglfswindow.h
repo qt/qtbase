@@ -45,42 +45,32 @@
 #include "qeglfsintegration.h"
 #include "qeglfsscreen.h"
 
-#include <qpa/qplatformwindow.h>
+#include <QtPlatformSupport/private/qeglplatformwindow_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSBackingStore;
-
-class QEglFSWindow : public QPlatformWindow
+class QEglFSWindow : public QEGLPlatformWindow
 {
 public:
     QEglFSWindow(QWindow *w);
     ~QEglFSWindow();
 
-    void setGeometry(const QRect &);
-    QRect geometry() const;
-    WId winId() const;
-    void setVisible(bool visible);
-    void requestActivateWindow();
-    void raise();
-    void lower();
-
-    EGLSurface surface() const;
-    QSurfaceFormat format() const;
-    EGLNativeWindowType eglWindow() const;
-
-    QEglFSScreen *screen() const;
-
-    void create();
+    void create() Q_DECL_OVERRIDE;
     void destroy();
 
+    void setGeometry(const QRect &) Q_DECL_OVERRIDE;
+    QRect geometry() const Q_DECL_OVERRIDE;
+    void setVisible(bool visible) Q_DECL_OVERRIDE;
+    void requestActivateWindow() Q_DECL_OVERRIDE;
+    void raise() Q_DECL_OVERRIDE;
+    void lower() Q_DECL_OVERRIDE;
+
+    QSurfaceFormat format() const Q_DECL_OVERRIDE;
+    EGLNativeWindowType eglWindow() const Q_DECL_OVERRIDE;
+    EGLSurface surface() const;
+    QEglFSScreen *screen() const;
+
     bool hasNativeWindow() const { return m_flags.testFlag(HasNativeWindow); }
-    bool isRaster() const { return m_flags.testFlag(IsRaster); }
-
-    QEglFSBackingStore *backingStore() { return m_backingStore; }
-    void setBackingStore(QEglFSBackingStore *backingStore) { m_backingStore = backingStore; }
-
-    uint texture() const;
 
     virtual void invalidateSurface();
     virtual void resetSurface();
@@ -92,13 +82,10 @@ protected:
 private:
     EGLConfig m_config;
     QSurfaceFormat m_format;
-    WId m_wid;
-    QEglFSBackingStore *m_backingStore;
 
     enum Flag {
         Created = 0x01,
-        IsRaster = 0x02,
-        HasNativeWindow = 0x04
+        HasNativeWindow = 0x02
     };
     Q_DECLARE_FLAGS(Flags, Flag);
     Flags m_flags;

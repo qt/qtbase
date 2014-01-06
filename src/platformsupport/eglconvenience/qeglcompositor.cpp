@@ -39,22 +39,22 @@
 **
 ****************************************************************************/
 
-#include "qeglfscompositor.h"
-#include "qeglfswindow.h"
-#include "qeglfscontext.h"
-
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOpenGLShaderProgram>
 #include <QtGui/QOpenGLFramebufferObject>
 
+#include "qeglcompositor_p.h"
+#include "qeglplatformwindow_p.h"
+#include "qeglplatformscreen_p.h"
+
 QT_BEGIN_NAMESPACE
 
-static QEglFSCompositor *compositor = 0;
+static QEGLCompositor *compositor = 0;
 
-QEglFSCompositor::QEglFSCompositor()
-    : m_screen(0),
-      m_program(0),
-      m_initialized(false)
+QEGLCompositor::QEGLCompositor()
+    : m_context(0),
+      m_window(0),
+      m_program(0)
 {
     Q_ASSERT(!compositor);
     m_updateTimer.setSingleShot(true);
@@ -62,51 +62,42 @@ QEglFSCompositor::QEglFSCompositor()
     connect(&m_updateTimer, SIGNAL(timeout()), SLOT(renderAll()));
 }
 
-QEglFSCompositor::~QEglFSCompositor()
+QEGLCompositor::~QEGLCompositor()
 {
     Q_ASSERT(compositor == this);
     delete m_program;
     compositor = 0;
 }
 
-void QEglFSCompositor::schedule(QEglFSScreen *screen)
+void QEGLCompositor::schedule(QOpenGLContext *context, QEGLPlatformWindow *window)
 {
-    m_screen = screen;
+    m_context = context;
+    m_window = window;
     if (!m_updateTimer.isActive())
         m_updateTimer.start();
 }
 
-void QEglFSCompositor::renderAll()
+void QEGLCompositor::renderAll()
 {
-    QEglFSWindow *rootWin = m_screen->rootWindow();
-    if (!rootWin)
-        return;
-
-    Q_ASSERT(rootWin->hasNativeWindow());
-    QOpenGLContext *context = m_screen->rootContext();
-    Q_ASSERT(context);
-
-    context->makeCurrent(rootWin->window());
-    if (!m_initialized) {
-        initializeOpenGLFunctions();
-        m_initialized = true;
-    }
+    Q_ASSERT(m_context && m_window);
+    m_context->makeCurrent(m_window->window());
     ensureProgram();
     m_program->bind();
 
-    QList<QEglFSWindow *> windows = m_screen->windows();
+    QEGLPlatformScreen *screen = static_cast<QEGLPlatformScreen *>(m_window->screen());
+    QList<QEGLPlatformWindow *> windows = screen->windows();
     for (int i = 0; i < windows.size(); ++i) {
-        QEglFSWindow *window = windows.at(i);
+        QEGLPlatformWindow *window = windows.at(i);
         uint texture = window->texture();
         if (texture)
             render(window, texture, window->isRaster());
     }
 
     m_program->release();
-    context->swapBuffers(rootWin->window());
+    m_context->swapBuffers(m_window->window());
 }
 
-void QEglFSCompositor::ensureProgram()
+void QEGLCompositor::ensureProgram()
 {
     if (!m_program) {
         static const char *textureVertexProgram =
@@ -139,7 +130,7 @@ void QEglFSCompositor::ensureProgram()
     }
 }
 
-void QEglFSCompositor::render(QEglFSWindow *window, uint texture, bool raster)
+void QEGLCompositor::render(QEGLPlatformWindow *window, uint texture, bool raster)
 {
     const GLfloat textureCoordinates[] = {
         0, 0,
@@ -170,11 +161,11 @@ void QEglFSCompositor::render(QEglFSWindow *window, uint texture, bool raster)
 
     glViewport(0, 0, sr.width(), sr.height());
 
-    glEnableVertexAttribArray(m_vertexCoordEntry);
-    glEnableVertexAttribArray(m_textureCoordEntry);
+    m_program->enableAttributeArray(m_vertexCoordEntry);
+    m_program->enableAttributeArray(m_textureCoordEntry);
 
-    glVertexAttribPointer(m_vertexCoordEntry, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinates);
-    glVertexAttribPointer(m_textureCoordEntry, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinates);
+    m_program->setAttributeArray(m_vertexCoordEntry, vertexCoordinates, 2);
+    m_program->setAttributeArray(m_textureCoordEntry, textureCoordinates, 2);
 
     glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -183,18 +174,18 @@ void QEglFSCompositor::render(QEglFSWindow *window, uint texture, bool raster)
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
     glBindTexture(GL_TEXTURE_2D, 0);
-    glDisableVertexAttribArray(m_vertexCoordEntry);
-    glDisableVertexAttribArray(m_textureCoordEntry);
+    m_program->enableAttributeArray(m_textureCoordEntry);
+    m_program->enableAttributeArray(m_vertexCoordEntry);
 }
 
-QEglFSCompositor *QEglFSCompositor::instance()
+QEGLCompositor *QEGLCompositor::instance()
 {
     if (!compositor)
-        compositor = new QEglFSCompositor;
+        compositor = new QEGLCompositor;
     return compositor;
 }
 
-void QEglFSCompositor::destroy()
+void QEGLCompositor::destroy()
 {
     delete compositor;
     compositor = 0;

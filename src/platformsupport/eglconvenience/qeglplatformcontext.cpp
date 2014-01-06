@@ -40,12 +40,27 @@
 ****************************************************************************/
 
 #include "qeglplatformcontext_p.h"
-
 #include "qeglconvenience_p.h"
-
 #include <qpa/qplatformwindow.h>
 
-#include <EGL/egl.h>
+QT_BEGIN_NAMESPACE
+
+/*!
+    \class QEGLPlatformContext
+    \brief An EGL context implementation.
+    \since 5.2
+    \internal
+    \ingroup qpa
+
+    Implement QPlatformOpenGLContext using EGL. To use it in platform
+    plugins a subclass must be created since
+    eglSurfaceForPlatformSurface() has to be reimplemented. This
+    function is used for mapping platform surfaces (windows) to EGL
+    surfaces and is necessary since different platform plugins may
+    have different ways of handling native windows (for example, a
+    plugin may choose not to back every platform window by a real EGL
+    surface). Other than that, no further customization is necessary.
+ */
 
 static inline void bindApi(const QSurfaceFormat &format)
 {
@@ -84,6 +99,9 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
                                          EGLConfig config, EGLenum eglApi)
     : m_eglDisplay(display)
     , m_eglConfig(config)
+    , m_swapInterval(-1)
+    , m_swapIntervalEnvChecked(false)
+    , m_swapIntervalFromEnv(-1)
 {
     init(format, share);
     Q_UNUSED(eglApi);
@@ -152,8 +170,8 @@ bool QEGLPlatformContext::makeCurrent(QPlatformSurface *surface)
     if (ok) {
         if (!m_swapIntervalEnvChecked) {
             m_swapIntervalEnvChecked = true;
-            if (qEnvironmentVariableIsSet("QT_QPA_EGL_SWAPINTERVAL")) {
-                QByteArray swapIntervalString = qgetenv("QT_QPA_EGL_SWAPINTERVAL");
+            if (qEnvironmentVariableIsSet("QT_QPA_EGLFS_SWAPINTERVAL")) {
+                QByteArray swapIntervalString = qgetenv("QT_QPA_EGLFS_SWAPINTERVAL");
                 bool ok;
                 const int swapInterval = swapIntervalString.toInt(&ok);
                 if (ok)
@@ -234,3 +252,5 @@ EGLConfig QEGLPlatformContext::eglConfig() const
 {
     return m_eglConfig;
 }
+
+QT_END_NAMESPACE

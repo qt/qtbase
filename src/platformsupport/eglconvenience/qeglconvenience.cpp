@@ -41,6 +41,12 @@
 
 #include <QByteArray>
 
+#ifdef Q_OS_UNIX
+#include <sys/ioctl.h>
+#include <linux/fb.h>
+#include <private/qmath_p.h>
+#endif
+
 #include "qeglconvenience_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -426,5 +432,107 @@ void q_printEglConfig(EGLDisplay display, EGLConfig config)
 
     qWarning("\n");
 }
+
+#ifdef Q_OS_UNIX
+
+QSizeF q_physicalScreenSizeFromFb(int framebufferDevice)
+{
+    const int defaultPhysicalDpi = 100;
+    static QSizeF size;
+
+    if (size.isEmpty()) {
+        // Note: in millimeters
+        int width = qgetenv("QT_QPA_EGLFS_PHYSICAL_WIDTH").toInt();
+        int height = qgetenv("QT_QPA_EGLFS_PHYSICAL_HEIGHT").toInt();
+
+        if (width && height) {
+            size.setWidth(width);
+            size.setHeight(height);
+            return size;
+        }
+
+        struct fb_var_screeninfo vinfo;
+        int w = -1;
+        int h = -1;
+        QSize screenResolution;
+
+        if (framebufferDevice != -1) {
+            if (ioctl(framebufferDevice, FBIOGET_VSCREENINFO, &vinfo) == -1) {
+                qWarning("eglconvenience: Could not query screen info");
+            } else {
+                w = vinfo.width;
+                h = vinfo.height;
+                screenResolution = QSize(vinfo.xres, vinfo.yres);
+            }
+        } else {
+            screenResolution = q_screenSizeFromFb(framebufferDevice);
+        }
+
+        size.setWidth(w <= 0 ? screenResolution.width() * Q_MM_PER_INCH / defaultPhysicalDpi : qreal(w));
+        size.setHeight(h <= 0 ? screenResolution.height() * Q_MM_PER_INCH / defaultPhysicalDpi : qreal(h));
+    }
+
+    return size;
+}
+
+QSize q_screenSizeFromFb(int framebufferDevice)
+{
+    const int defaultWidth = 800;
+    const int defaultHeight = 600;
+    static QSize size;
+
+    if (size.isEmpty()) {
+        int width = qgetenv("QT_QPA_EGLFS_WIDTH").toInt();
+        int height = qgetenv("QT_QPA_EGLFS_HEIGHT").toInt();
+
+        if (width && height) {
+            size.setWidth(width);
+            size.setHeight(height);
+            return size;
+        }
+
+        struct fb_var_screeninfo vinfo;
+        int xres = -1;
+        int yres = -1;
+
+        if (framebufferDevice != -1) {
+            if (ioctl(framebufferDevice, FBIOGET_VSCREENINFO, &vinfo) == -1) {
+                qWarning("eglconvenience: Could not read screen info");
+            } else {
+                xres = vinfo.xres;
+                yres = vinfo.yres;
+            }
+        }
+
+        size.setWidth(xres <= 0 ? defaultWidth : xres);
+        size.setHeight(yres <= 0 ? defaultHeight : yres);
+    }
+
+    return size;
+}
+
+int q_screenDepthFromFb(int framebufferDevice)
+{
+    const int defaultDepth = 32;
+    static int depth = qgetenv("QT_QPA_EGLFS_DEPTH").toInt();
+
+    if (depth == 0) {
+        struct fb_var_screeninfo vinfo;
+
+        if (framebufferDevice != -1) {
+            if (ioctl(framebufferDevice, FBIOGET_VSCREENINFO, &vinfo) == -1)
+                qWarning("eglconvenience: Could not query screen info");
+            else
+                depth = vinfo.bits_per_pixel;
+        }
+
+        if (depth <= 0)
+            depth = defaultDepth;
+    }
+
+    return depth;
+}
+
+#endif // Q_OS_UNIX
 
 QT_END_NAMESPACE

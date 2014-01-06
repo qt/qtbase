@@ -39,75 +39,38 @@
 **
 ****************************************************************************/
 
-#include "qeglfsscreen.h"
-#include "qeglfswindow.h"
-#include "qeglfshooks.h"
-#include <QtPlatformSupport/private/qeglplatformcursor_p.h>
+#ifndef QEGLPLATFORMWINDOW_H
+#define QEGLPLATFORMWINDOW_H
+
+#include <qpa/qplatformwindow.h>
+#include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
 
-QEglFSScreen::QEglFSScreen(EGLDisplay dpy)
-    : QEGLPlatformScreen(dpy),
-      m_surface(EGL_NO_SURFACE),
-      m_cursor(0),
-      m_rootWindow(0),
-      m_rootContext(0)
-{
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglScreen %p\n", this);
-#endif
+class QEGLPlatformBackingStore;
 
-    m_cursor = QEglFSHooks::hooks()->createCursor(this);
-}
-
-QEglFSScreen::~QEglFSScreen()
+class QEGLPlatformWindow : public QPlatformWindow
 {
-    delete m_cursor;
-}
+public:
+    QEGLPlatformWindow(QWindow *w);
 
-QRect QEglFSScreen::geometry() const
-{
-    return QRect(QPoint(0, 0), QEglFSHooks::hooks()->screenSize());
-}
+    virtual void create();
 
-int QEglFSScreen::depth() const
-{
-    return QEglFSHooks::hooks()->screenDepth();
-}
+    QEGLPlatformBackingStore *backingStore() { return m_backingStore; }
+    void setBackingStore(QEGLPlatformBackingStore *backingStore) { m_backingStore = backingStore; }
+    uint texture() const;
+    bool isRaster() const { return m_raster; }
 
-QImage::Format QEglFSScreen::format() const
-{
-    return QEglFSHooks::hooks()->screenFormat();
-}
+    WId winId() const Q_DECL_OVERRIDE;
 
-QSizeF QEglFSScreen::physicalSize() const
-{
-    return QEglFSHooks::hooks()->physicalScreenSize();
-}
+    virtual EGLNativeWindowType eglWindow() const = 0;
 
-QDpi QEglFSScreen::logicalDpi() const
-{
-    return QEglFSHooks::hooks()->logicalDpi();
-}
-
-Qt::ScreenOrientation QEglFSScreen::nativeOrientation() const
-{
-    return QEglFSHooks::hooks()->nativeOrientation();
-}
-
-Qt::ScreenOrientation QEglFSScreen::orientation() const
-{
-    return QEglFSHooks::hooks()->orientation();
-}
-
-QPlatformCursor *QEglFSScreen::cursor() const
-{
-    return m_cursor;
-}
-
-void QEglFSScreen::setPrimarySurface(EGLSurface surface)
-{
-    m_surface = surface;
-}
+private:
+    QEGLPlatformBackingStore *m_backingStore;
+    bool m_raster;
+    WId m_winId;
+};
 
 QT_END_NAMESPACE
+
+#endif // QEGLPLATFORMWINDOW_H

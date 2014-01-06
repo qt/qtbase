@@ -46,6 +46,8 @@
 #include <qpa/qplatformopenglcontext.h>
 #include <EGL/egl.h>
 
+QT_BEGIN_NAMESPACE
+
 class QEGLPlatformContext : public QPlatformOpenGLContext
 {
 public:
@@ -83,5 +85,7 @@ private:
     bool m_swapIntervalEnvChecked;
     int m_swapIntervalFromEnv;
 };
+
+QT_END_NAMESPACE
 
 #endif //QEGLPLATFORMCONTEXT_H

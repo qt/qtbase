@@ -39,50 +39,80 @@
 **
 ****************************************************************************/
 
-#include <QtGui/QOffscreenSurface>
-#include "qeglpbuffer_p.h"
-#include "qeglconvenience_p.h"
+#include <qpa/qwindowsysteminterface.h>
+
+#include "qeglplatformwindow_p.h"
+#include "qeglplatformbackingstore_p.h"
+#include "qeglplatformscreen_p.h"
 
 QT_BEGIN_NAMESPACE
 
 /*!
-    \class QEGLPbuffer
-    \brief A pbuffer-based implementation of QPlatformOffscreenSurface for EGL.
+    \class QEGLPlatformWindow
+    \brief Base class for EGL-based platform window implementations.
     \since 5.2
     \internal
     \ingroup qpa
 
-    To use this implementation in the platform plugin simply
-    reimplement QPlatformIntegration::createPlatformOffscreenSurface()
-    and return a new instance of this class.
-*/
+    Lightweight class providing some basic platform window operations
+    and interfacing with QEGLPlatformBackingStore.
 
-QEGLPbuffer::QEGLPbuffer(EGLDisplay display, const QSurfaceFormat &format, QOffscreenSurface *offscreenSurface)
-    : QPlatformOffscreenSurface(offscreenSurface)
-    , m_format(format)
-    , m_display(display)
-    , m_pbuffer(EGL_NO_SURFACE)
+    Almost no QPlatformWindow functions are implemented here. This is
+    intentional because different platform plugins may use different
+    strategies for their window management (some may force fullscreen
+    windows, some may not, some may share the underlying native
+    surface, some may not, etc.) and therefore it is not sensible to
+    enforce anything for these functions.
+
+    \note Subclasses are responsible for invoking this class'
+    implementation of create(). When using QEGLPlatformScreen, the
+    subclasses of this class are expected to utilize the window stack
+    management functions (addWindow() etc.) provided there.
+ */
+
+QEGLPlatformWindow::QEGLPlatformWindow(QWindow *w)
+    : QPlatformWindow(w),
+      m_winId(0)
 {
-    EGLConfig config = q_configFromGLFormat(m_display, m_format, false, EGL_PBUFFER_BIT);
+}
 
-    if (config) {
-        const EGLint attributes[] = {
-            EGL_WIDTH, offscreenSurface->size().width(),
-            EGL_HEIGHT, offscreenSurface->size().height(),
-            EGL_LARGEST_PBUFFER, EGL_FALSE,
-            EGL_NONE
-        };
+static WId newWId()
+{
+    static WId id = 0;
 
-        m_pbuffer = eglCreatePbufferSurface(m_display, config, attributes);
+    if (id == std::numeric_limits<WId>::max())
+        qWarning("QEGLPlatformWindow: Out of window IDs");
 
-        if (m_pbuffer != EGL_NO_SURFACE)
-            m_format = q_glFormatFromConfig(m_display, config);
+    return ++id;
+}
+
+void QEGLPlatformWindow::create()
+{
+    m_winId = newWId();
+
+    // Save the original surface type before changing to OpenGLSurface.
+    m_raster = (window()->surfaceType() == QSurface::RasterSurface);
+    window()->setSurfaceType(QSurface::OpenGLSurface);
+
+    if (window()->type() == Qt::Desktop) {
+        QRect fullscreenRect(QPoint(), screen()->availableGeometry().size());
+        QPlatformWindow::setGeometry(fullscreenRect);
+        QWindowSystemInterface::handleGeometryChange(window(), fullscreenRect);
+        return;
     }
 }
 
-QEGLPbuffer::~QEGLPbuffer()
+uint QEGLPlatformWindow::texture() const
 {
-    eglDestroySurface(m_display, m_pbuffer);
+    if (m_backingStore)
+        return m_backingStore->texture();
+
+    return 0;
+}
+
+WId QEGLPlatformWindow::winId() const
+{
+    return m_winId;
 }
 
 QT_END_NAMESPACE

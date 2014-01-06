@@ -39,49 +39,42 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSCURSOR_H
-#define QEGLFSCURSOR_H
+#ifndef QEGLPLATFORMCURSOR_H
+#define QEGLPLATFORMCURSOR_H
 
 #include <qpa/qplatformcursor.h>
-#include <QtGui/QOpenGLFunctions>
-#include "qeglfsscreen.h"
+#include <qpa/qplatformscreen.h>
 
 QT_BEGIN_NAMESPACE
 
 class QOpenGLShaderProgram;
-class QEglFSScreen;
 
-class QEglFSCursor : public QPlatformCursor, public QOpenGLFunctions
+class QEGLPlatformCursor : public QPlatformCursor
 {
 public:
-    QEglFSCursor(QEglFSScreen *screen);
-    ~QEglFSCursor();
+    QEGLPlatformCursor(QPlatformScreen *screen);
+    ~QEGLPlatformCursor();
 
 #ifndef QT_NO_CURSOR
     void changeCursor(QCursor *cursor, QWindow *widget) Q_DECL_OVERRIDE;
 #endif
     void pointerEvent(const QMouseEvent &event) Q_DECL_OVERRIDE;
-
     QPoint pos() const Q_DECL_OVERRIDE;
     void setPos(const QPoint &pos) Q_DECL_OVERRIDE;
 
     QRect cursorRect() const;
-
-    virtual void paintOnScreen();
-
+    void paintOnScreen();
     void resetResources();
 
-protected:
+private:
 #ifndef QT_NO_CURSOR
     bool setCurrentCursor(QCursor *cursor);
 #endif
     void draw(const QRectF &rect);
     void update(const QRegion &region);
-
-    GLuint createShader(GLenum shaderType, const char *program);
-    GLuint createProgram(GLuint vshader, GLuint fshader);
-
-    QEglFSScreen *m_screen;
+    void createShaderPrograms();
+    static void createCursorTexture(uint *texture, const QImage &image);
+    void initCursorAtlas();
 
     // current cursor information
     struct Cursor {
@@ -97,11 +90,6 @@ protected:
         bool customCursorPending;
     } m_cursor;
 
-private:
-    void createShaderPrograms();
-    static void createCursorTexture(uint *texture, const QImage &image);
-    void initCursorAtlas();
-
     // cursor atlas information
     struct CursorAtlas {
         CursorAtlas() : cursorsPerRow(0), texture(0), cursorWidth(0), cursorHeight(0) { }
@@ -113,7 +101,9 @@ private:
         QImage image; // valid until it's uploaded
     } m_cursorAtlas;
 
-    GLuint m_program;
+    bool m_visible;
+    QPlatformScreen *m_screen;
+    QOpenGLShaderProgram *m_program;
     int m_vertexCoordEntry;
     int m_textureCoordEntry;
     int m_textureEntry;
@@ -121,5 +111,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QEGLFSCURSOR_H
-
+#endif // QEGLPLATFORMCURSOR_H

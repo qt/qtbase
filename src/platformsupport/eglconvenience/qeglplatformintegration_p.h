@@ -39,59 +39,59 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSSCREEN_H
-#define QEGLFSSCREEN_H
+#ifndef QEGLPLATFORMINTEGRATION_H
+#define QEGLPLATFORMINTEGRATION_H
 
-#include <QtPlatformSupport/private/qeglplatformscreen_p.h>
-
-#include <QtCore/QTextStream>
-
+#include <qpa/qplatformintegration.h>
+#include <qpa/qplatformnativeinterface.h>
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEGLPlatformCursor;
-class QEglFSWindow;
-class QOpenGLContext;
+class QEGLPlatformScreen;
+class QEGLPlatformWindow;
 
-class QEglFSScreen : public QEGLPlatformScreen
+class QEGLPlatformIntegration : public QPlatformIntegration, public QPlatformNativeInterface
 {
 public:
-    QEglFSScreen(EGLDisplay display);
-    ~QEglFSScreen();
+    QEGLPlatformIntegration();
+    ~QEGLPlatformIntegration();
 
-    QRect geometry() const Q_DECL_OVERRIDE;
-    int depth() const Q_DECL_OVERRIDE;
-    QImage::Format format() const Q_DECL_OVERRIDE;
+    void initialize() Q_DECL_OVERRIDE;
 
-    QSizeF physicalSize() const Q_DECL_OVERRIDE;
-    QDpi logicalDpi() const Q_DECL_OVERRIDE;
-    Qt::ScreenOrientation nativeOrientation() const Q_DECL_OVERRIDE;
-    Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE;
+    QEGLPlatformScreen *screen() const { return m_screen; }
+    EGLDisplay display() const { return m_display; }
 
-    QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
+    QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
+    QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
+    QPlatformServices *services() const Q_DECL_OVERRIDE;
+    QPlatformInputContext *inputContext() const Q_DECL_OVERRIDE { return m_inputContext; }
 
-    EGLSurface primarySurface() const { return m_surface; }
+    QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
 
-    QEGLPlatformWindow *compositingWindow() Q_DECL_OVERRIDE { return m_rootWindow; }
-    QOpenGLContext *compositingContext() Q_DECL_OVERRIDE { return m_rootContext; }
+    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
 
-    void setRootWindow(QEGLPlatformWindow *window) { m_rootWindow = window; }
-    void setRootContext(QOpenGLContext *context) { m_rootContext = context; }
+    QPlatformNativeInterface *nativeInterface() const Q_DECL_OVERRIDE;
+    // QPlatformNativeInterface
+    void *nativeResourceForIntegration(const QByteArray &resource) Q_DECL_OVERRIDE;
+    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) Q_DECL_OVERRIDE;
+    void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) Q_DECL_OVERRIDE;
+    NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource) Q_DECL_OVERRIDE;
 
 protected:
-    void setPrimarySurface(EGLSurface surface);
+    virtual QEGLPlatformScreen *createScreen() const = 0;
+    virtual QEGLPlatformWindow *createWindow(QWindow *window) const = 0;
+    virtual EGLNativeDisplayType nativeDisplay() const { return EGL_DEFAULT_DISPLAY; }
 
 private:
-    friend class QEglFSWindow;
-
-    EGLDisplay m_dpy;
-    EGLSurface m_surface;
-    QEGLPlatformCursor *m_cursor;
-    QEGLPlatformWindow *m_rootWindow;
-    QOpenGLContext *m_rootContext;
+    QEGLPlatformScreen *m_screen;
+    EGLDisplay m_display;
+    QPlatformInputContext *m_inputContext;
+    QScopedPointer<QPlatformFontDatabase> mFontDb;
+    QScopedPointer<QPlatformServices> mServices;
 };
 
 QT_END_NAMESPACE
 
-#endif // QEGLFSSCREEN_H
+#endif // QEGLPLATFORMINTEGRATION_H

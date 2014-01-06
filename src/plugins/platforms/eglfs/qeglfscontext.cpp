@@ -41,11 +41,12 @@
 
 #include "qeglfscontext.h"
 #include "qeglfswindow.h"
-#include "qeglfscursor.h"
 #include "qeglfshooks.h"
 #include "qeglfsintegration.h"
 
+#include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QtPlatformSupport/private/qeglpbuffer_p.h>
+#include <QtPlatformSupport/private/qeglplatformcursor_p.h>
 #include <QtGui/QSurface>
 #include <QtDebug>
 
@@ -58,11 +59,6 @@ QEglFSContext::QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContex
 {
 }
 
-bool QEglFSContext::makeCurrent(QPlatformSurface *surface)
-{
-    return QEGLPlatformContext::makeCurrent(surface);
-}
-
 EGLSurface QEglFSContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)
 {
     if (surface->surface()->surfaceClass() == QSurface::Window)
@@ -73,10 +69,10 @@ EGLSurface QEglFSContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface
 
 void QEglFSContext::swapBuffers(QPlatformSurface *surface)
 {
+    // draw the cursor
     if (surface->surface()->surfaceClass() == QSurface::Window) {
-        QEglFSWindow *window = static_cast<QEglFSWindow *>(surface);
-        // draw the cursor
-        if (QEglFSCursor *cursor = static_cast<QEglFSCursor *>(window->screen()->cursor()))
+        QPlatformWindow *window = static_cast<QPlatformWindow *>(surface);
+        if (QEGLPlatformCursor *cursor = static_cast<QEGLPlatformCursor *>(window->screen()->cursor()))
             cursor->paintOnScreen();
     }
 
@@ -85,4 +81,3 @@ void QEglFSContext::swapBuffers(QPlatformSurface *surface)
 }
 
 QT_END_NAMESPACE
-
