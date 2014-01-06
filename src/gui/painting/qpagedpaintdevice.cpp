@@ -71,7 +71,7 @@ static const struct {
     {125, 176}, // B6
     {88, 125}, // B7
     {62, 88}, // B8
-    {33, 62}, // B9
+    {44, 62}, // B9
     {163, 229}, // C5E
     {105, 241}, // US Common
     {110, 220}, // DLE
@@ -133,7 +133,7 @@ QPagedPaintDevice::~QPagedPaintDevice()
   \value B6 125 x 176 mm
   \value B7 88 x 125 mm
   \value B8 62 x 88 mm
-  \value B9 33 x 62 mm
+  \value B9 44 x 62 mm
   \value B10 31 x 44 mm
   \value C5E 163 x 229 mm
   \value Comm10E 105 x 241 mm, U.S. Common 10 Envelope
