@@ -419,12 +419,11 @@ void QGtk2FileDialogHelper::applyOptions()
     if (!nameFilters.isEmpty())
         setNameFilters(nameFilters);
 
-    const QString initialDirectory = opts->initialDirectory().toLocalFile();
-    if (!initialDirectory.isEmpty())
-        setDirectory(initialDirectory);
+    if (opts->initialDirectory().isLocalFile())
+        setDirectory(opts->initialDirectory());
 
     foreach (const QUrl &filename, opts->initiallySelectedFiles())
-        selectFile(filename.toLocalFile());
+        selectFile(filename);
 
     const QString initialNameFilter = opts->initiallySelectedNameFilter();
     if (!initialNameFilter.isEmpty())
