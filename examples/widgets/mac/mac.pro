@@ -2,6 +2,6 @@ TEMPLATE = subdirs
 
 macx {
     SUBDIRS = \
-        qmacnativewidget \
+        qmaccocoaviewcontainer \
         qmacnativewidget
 }
