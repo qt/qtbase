@@ -1600,7 +1600,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "LIBJPEG" ]             = "qt";
         dictionary[ "LIBPNG" ]              = "qt";
         dictionary[ "FREETYPE" ]            = "yes";
-        dictionary[ "ACCESSIBILITY" ]       = "no";
         dictionary[ "OPENGL" ]              = "yes";
         dictionary[ "OPENGL_ES_2" ]         = "yes";
         dictionary[ "OPENVG" ]              = "no";
