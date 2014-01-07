@@ -758,6 +758,8 @@ void QAbstractSlider::wheelEvent(QWheelEvent * e)
     Q_D(QAbstractSlider);
     e->ignore();
     int delta = e->delta();
+    if (e->inverted())
+        delta = -delta;
     if (d->scrollByDelta(e->orientation(), e->modifiers(), delta))
         e->accept();
 }

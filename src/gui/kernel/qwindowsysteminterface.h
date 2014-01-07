@@ -109,7 +109,8 @@ public:
                                  QPoint pixelDelta, QPoint angleDelta,
                                  Qt::KeyboardModifiers mods = Qt::NoModifier,
                                  Qt::ScrollPhase phase = Qt::NoScrollPhase,
-                                 Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
+                                 Qt::MouseEventSource source = Qt::MouseEventNotSynthesized,
+                                 bool inverted = false);
 
     // Wheel event compatibility functions. Will be removed: do not use.
     static void handleWheelEvent(QWindow *w, const QPointF & local, const QPointF & global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods = Qt::NoModifier);

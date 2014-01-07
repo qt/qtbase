@@ -3331,7 +3331,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     QApplicationPrivate::giveFocusAccordingToFocusPolicy(w, e, relpos);
 
                 QWheelEvent we(relpos, wheel->globalPos(), wheel->pixelDelta(), wheel->angleDelta(), wheel->delta(), wheel->orientation(), wheel->buttons(),
-                               wheel->modifiers(), phase, wheel->source());
+                               wheel->modifiers(), phase, wheel->source(), wheel->inverted());
                 bool eventAccepted;
                 while (w) {
                     we.spont = spontaneous && w == receiver;
