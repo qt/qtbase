@@ -86,7 +86,7 @@ void QRubberBand::initStyleOption(QStyleOptionRubberBand *option) const
         return;
     option->initFrom(this);
     option->shape = d_func()->shape;
-#ifndef Q_WS_MAC
+#ifndef Q_OS_MAC
     option->opaque = true;
 #else
     option->opaque = windowFlags() & RUBBERBAND_WINDOW_TYPE;
