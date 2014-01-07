@@ -74,19 +74,19 @@ QT_BEGIN_NAMESPACE
 
 struct QZoneData {
     quint16 windowsIdKey;      // Windows ID Key
-    quint16 country;           // Country of Olsen ID's, AnyCountry means No Country
-    quint16 olsenIdIndex;      // All Olsen ID's for the Windows ID and Country, space separated
+    quint16 country;           // Country of IANA ID's, AnyCountry means No Country
+    quint16 ianaIdIndex;      // All IANA ID's for the Windows ID and Country, space separated
 };
 
 struct QWindowsData {
     quint16 windowsIdKey;      // Windows ID Key
     quint16 windowsIdIndex;    // Windows ID Literal
-    quint16 olsenIdIndex;      // Default Olsen ID for the Windows ID
+    quint16 ianaIdIndex;      // Default IANA ID for the Windows ID
     qint32 offsetFromUtc;      // Standard Time Offset from UTC, used for quick look-ups
 };
 
 struct QUtcData {
-    quint16 olsenIdIndex;      // Olsen ID's
+    quint16 ianaIdIndex;      // IANA ID's
     qint32 offsetFromUtc;      // Offset form UTC is seconds
 };
 
@@ -123,7 +123,7 @@ struct QUtcData {
     Do not change this data, only generate it using cldr2qtimezone.py.
 */
 
-// Windows ID Key, Country Enum, Olsen ID Index
+// Windows ID Key, Country Enum, IANA ID Index
 static const QZoneData zoneDataTable[] = {
     {     95,   157,     0 }, // W. Central Africa Standard Time / Nigeria
     {     36,    73,    13 }, // FLE Standard Time / Finland
@@ -463,7 +463,7 @@ static const QZoneData zoneDataTable[] = {
     {      0,     0,     0 } // Trailing zeroes
 };
 
-// Windows ID Key, Windows ID Index, Olsen ID Index, UTC Offset
+// Windows ID Key, Windows ID Index, IANA ID Index, UTC Offset
 static const QWindowsData windowsDataTable[] = {
     {      1,     0,   997, 16200 }, // Afghanistan Standard Time
     {      2,    26,  6863,-32400 }, // Alaskan Standard Time
@@ -567,7 +567,7 @@ static const QWindowsData windowsDataTable[] = {
     {      0,     0,     0,     0 } // Trailing zeroes
 };
 
-// Olsen ID Index, UTC Offset
+// IANA ID Index, UTC Offset
 static const QUtcData utcDataTable[] = {
     {   7257,     0 }, // UTC
     {   7261,-50400 }, // UTC-14:00
@@ -730,7 +730,7 @@ static const char windowsIdData[] = {
 0x75, 0x74, 0x73, 0x6b, 0x20, 0x53, 0x74, 0x61, 0x6e, 0x64, 0x61, 0x72, 0x64, 0x20, 0x54, 0x69, 0x6d, 0x65, 0x0
 };
 
-static const char olsenIdData[] = {
+static const char ianaIdData[] = {
 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x2f, 0x4c, 0x61, 0x67, 0x6f, 0x73, 0x0, 0x45, 0x75, 0x72, 0x6f, 0x70, 0x65, 0x2f,
 0x48, 0x65, 0x6c, 0x73, 0x69, 0x6e, 0x6b, 0x69, 0x0, 0x41, 0x73, 0x69, 0x61, 0x2f, 0x48, 0x6f, 0x6e, 0x67, 0x5f, 0x4b,
 0x6f, 0x6e, 0x67, 0x0, 0x50, 0x61, 0x63, 0x69, 0x66, 0x69, 0x63, 0x2f, 0x45, 0x6e, 0x64, 0x65, 0x72, 0x62, 0x75, 0x72,
