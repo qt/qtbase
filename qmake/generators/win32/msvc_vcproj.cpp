@@ -978,6 +978,7 @@ void VcprojGenerator::initConfiguration()
             // Saner defaults
             conf.compiler.UsePrecompiledHeader = pchNone;
             conf.compiler.CompileAsWinRT = _False;
+            conf.linker.GenerateWindowsMetadata = _False;
         }
     }
 
