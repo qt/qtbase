@@ -1462,6 +1462,11 @@ void QWizardPrivate::updateButtonTexts()
                 btns[i]->setText(buttonDefaultText(wizStyle, i, this));
         }
     }
+    // Vista: Add shortcut for 'next'. Note: native dialogs use ALT-Right
+    // even in RTL mode, so do the same, even if it might be counter-intuitive.
+    // The shortcut for 'back' is set in class QVistaBackButton.
+    if (btns[QWizard::NextButton])
+        btns[QWizard::NextButton]->setShortcut(isVistaThemeEnabled() ? QKeySequence(Qt::ALT | Qt::Key_Right) : QKeySequence());
 }
 
 void QWizardPrivate::updateButtonLayout()
