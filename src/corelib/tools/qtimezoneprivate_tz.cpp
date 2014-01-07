@@ -134,6 +134,8 @@ struct QTzType {
     bool   tz_ttisgmt; // Is in UTC time
     bool   tz_ttisstd; // Is in Standard time
 };
+Q_DECLARE_TYPEINFO(QTzType, Q_PRIMITIVE_TYPE);
+
 
 // TZ File parsing
 
