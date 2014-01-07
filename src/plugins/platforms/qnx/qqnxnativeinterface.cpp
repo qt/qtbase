@@ -88,9 +88,15 @@ void *QQnxNativeInterface::nativeResourceForContext(const QByteArray &resource, 
 
 void QQnxNativeInterface::setWindowProperty(QPlatformWindow *window, const QString &name, const QVariant &value)
 {
+    QQnxWindow *qnxWindow = static_cast<QQnxWindow*>(window);
+
     if (name == QStringLiteral("mmRendererWindowName")) {
-        QQnxWindow *qnxWindow = static_cast<QQnxWindow*>(window);
         qnxWindow->setMMRendererWindowName(value.toString());
+    } else if (name == QStringLiteral("windowGroup")) {
+        if (value.isNull())
+            qnxWindow->joinWindowGroup(QByteArray());
+        else if (value.canConvert<QByteArray>())
+            qnxWindow->joinWindowGroup(value.toByteArray());
     }
 }
 

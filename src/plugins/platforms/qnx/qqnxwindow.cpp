@@ -96,13 +96,14 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context, bool needRootW
         if (window->type() != Qt::CoverWindow) {
             if (needRootWindow)
                 platformScreen->setRootWindow(this);
-            createWindowGroup();
         }
     } else {
         result = screen_create_window_type(&m_window, m_screenContext, SCREEN_CHILD_WINDOW);
     }
     if (result != 0)
         qFatal("QQnxWindow: failed to create window, errno=%d", errno);
+
+    createWindowGroup();
 }
 
 QQnxWindow::~QQnxWindow()
@@ -182,6 +183,12 @@ void QQnxWindow::setVisible(bool visible)
 
     if (m_visible == visible)
         return;
+
+    // The first time through we join a window group if appropriate.
+    if (m_parentGroupName.isNull() && !m_isTopLevel) {
+        joinWindowGroup(parent() ? static_cast<QQnxWindow*>(parent())->groupName()
+                                 : QByteArray(m_screen->windowGroupName()));
+    }
 
     m_visible = visible;
 
@@ -355,16 +362,6 @@ void QQnxWindow::setScreen(QQnxScreen *platformScreen)
             qFatal("QQnxWindow: failed to set window display, errno=%d", errno);
     } else {
         errno = 0;
-        int result;
-        if (!parent()) {
-            result = screen_join_window_group(m_window, platformScreen->windowGroupName());
-            if (result != 0)
-                qFatal("QQnxWindow: failed to join window group, errno=%d", errno);
-        } else {
-            result = screen_join_window_group(m_window, static_cast<QQnxWindow*>(parent())->groupName().constData());
-            if (result != 0)
-                qFatal("QQnxWindow: failed to join window group, errno=%d", errno);
-        }
 
         Q_FOREACH (QQnxWindow *childWindow, m_childWindows) {
             // Only subwindows and tooltips need necessarily be moved to another display with the window.
@@ -408,8 +405,10 @@ void QQnxWindow::setParent(const QPlatformWindow *window)
             setScreen(m_parentWindow->m_screen);
 
         m_parentWindow->m_childWindows.push_back(this);
+        joinWindowGroup(m_parentWindow->groupName());
     } else {
         m_screen->addWindow(this);
+        joinWindowGroup(QByteArray());
     }
 
     adjustBufferSize();
@@ -597,6 +596,34 @@ void QQnxWindow::createWindowGroup()
     int result = screen_create_window_group(m_window, m_windowGroupName.constData());
     if (result != 0)
         qFatal("QQnxRootWindow: failed to create app window group, errno=%d", errno);
+}
+
+void QQnxWindow::joinWindowGroup(const QByteArray &groupName)
+{
+    bool changed = false;
+
+    qWindowDebug() << Q_FUNC_INFO << "group:" << groupName;
+
+    if (!groupName.isEmpty()) {
+        if (groupName != m_parentGroupName) {
+            screen_join_window_group(m_window, groupName);
+            m_parentGroupName = groupName;
+            changed = true;
+        }
+    } else {
+        if (!m_parentGroupName.isEmpty()) {
+            screen_leave_window_group(m_window);
+            changed = true;
+        }
+        // By setting to an empty string we'll stop setVisible from trying to
+        // change our group, we want that to happen only if joinWindowGroup has
+        // never been called.  This allows windows to be created that are not initially
+        // part of any group.
+        m_parentGroupName = "";
+    }
+
+    if (changed)
+        screen_flush_context(m_screenContext, 0);
 }
 
 void QQnxWindow::updateZorder(int &topZorder)

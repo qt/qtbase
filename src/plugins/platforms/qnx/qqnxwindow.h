@@ -111,6 +111,7 @@ public:
     void setRotation(int rotation);
 
     QByteArray groupName() const { return m_windowGroupName; }
+    void joinWindowGroup(const QByteArray &groupName);
 
 protected:
     virtual int pixelFormat() const = 0;
@@ -144,7 +145,10 @@ private:
     QString m_mmRendererWindowName;
     screen_window_t m_mmRendererWindow;
 
+    // Group name of window group headed by this window
     QByteArray m_windowGroupName;
+    // Group name that we have joined or "" if we've not joined any group.
+    QByteArray m_parentGroupName;
 
     bool m_isTopLevel;
 };
