@@ -102,7 +102,7 @@ static inline bool hasStdErr()
 }
 #  endif // !Q_OS_WINCE && !Q_OS_WINRT
 
-bool qWinLogToStderr()
+Q_CORE_EXPORT bool qWinLogToStderr()
 {
 #  if !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     static const bool result = hasStdErr();
