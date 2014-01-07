@@ -207,7 +207,7 @@ Q_DECLARE_TYPEINFO_BODY(QFlags<T>, Q_PRIMITIVE_TYPE);
 #define Q_DECLARE_SHARED_STL(TYPE) \
 QT_END_NAMESPACE \
 namespace std { \
-    template<> inline void swap<QT_PREPEND_NAMESPACE(TYPE)>(QT_PREPEND_NAMESPACE(TYPE) &value1, QT_PREPEND_NAMESPACE(TYPE) &value2) \
+    template<> inline void swap< QT_PREPEND_NAMESPACE(TYPE) >(QT_PREPEND_NAMESPACE(TYPE) &value1, QT_PREPEND_NAMESPACE(TYPE) &value2) \
     { value1.swap(value2); } \
 } \
 QT_BEGIN_NAMESPACE
