@@ -256,7 +256,8 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
     */
     bool hasMetaData = false;
     long pos = 0;
-    const char pattern[] = "QTMETADATA  ";
+    char pattern[] = "qTMETADATA  ";
+    pattern[0] = 'Q'; // Ensure the pattern "QTMETADATA" is not found in this library should QPluginLoader ever encounter it.
     const ulong plen = qstrlen(pattern);
 #if defined (Q_OF_ELF) && defined(Q_CC_GNU)
     int r = QElfParser().parse(filedata, fdlen, library, lib, &pos, &fdlen);
