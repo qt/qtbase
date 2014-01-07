@@ -566,7 +566,7 @@ void tst_QPushButton::sizeHint_data()
     QTest::newRow("gtk") << QString::fromLatin1("gtk");
 #endif
 #if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
-    QTest::newRow("mac") << QString::fromLatin1("mac");
+    QTest::newRow("macintosh") << QString::fromLatin1("macintosh");
 #endif
 #if !defined(QT_NO_STYLE_FUSION)
     QTest::newRow("fusion") << QString::fromLatin1("fusion");
@@ -588,11 +588,6 @@ void tst_QPushButton::sizeHint_data()
 void tst_QPushButton::sizeHint()
 {
     QFETCH(QString, stylename);
-
-#ifdef Q_OS_MAC
-    if (stylename == "mac")
-        QSKIP("QStyleFactory cannot create the Mac style, see QTBUG-23680");
-#endif
 
     QStyle *style = QStyleFactory::create(stylename);
     if (!style)
