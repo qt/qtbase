@@ -308,6 +308,11 @@ int QMetaObject::metacall(QObject *object, Call cl, int idx, void **argv)
         return object->qt_metacall(cl, idx, argv);
 }
 
+static inline const char *objectClassName(const QMetaObject *m)
+{
+    return rawStringData(m, priv(m->d.data)->className);
+}
+
 /*!
     Returns the class name.
 
@@ -315,7 +320,7 @@ int QMetaObject::metacall(QObject *object, Call cl, int idx, void **argv)
 */
 const char *QMetaObject::className() const
 {
-    return rawStringData(this, 0);
+    return objectClassName(this);
 }
 
 /*!
@@ -369,7 +374,7 @@ const QObject *QMetaObject::cast(const QObject *obj) const
 */
 QString QMetaObject::tr(const char *s, const char *c, int n) const
 {
-    return QCoreApplication::translate(rawStringData(this, 0), s, c, n);
+    return QCoreApplication::translate(objectClassName(this), s, c, n);
 }
 #endif // QT_NO_TRANSLATION
 
@@ -728,7 +733,7 @@ int QMetaObjectPrivate::indexOfSignalRelative(const QMetaObject **baseObject,
             QMetaMethod conflictMethod = m->d.superdata->method(conflict);
             qWarning("QMetaObject::indexOfSignal: signal %s from %s redefined in %s",
                      conflictMethod.methodSignature().constData(),
-                     rawStringData(m->d.superdata, 0), rawStringData(m, 0));
+                     objectClassName(m->d.superdata), objectClassName(m));
         }
      }
  #endif
@@ -938,7 +943,7 @@ bool QMetaObjectPrivate::checkConnectArgs(const QMetaMethodPrivate *signal,
 static const QMetaObject *QMetaObject_findMetaObject(const QMetaObject *self, const char *name)
 {
     while (self) {
-        if (strcmp(rawStringData(self, 0), name) == 0)
+        if (strcmp(objectClassName(self), name) == 0)
             return self;
         if (self->d.relatedMetaObjects) {
             Q_ASSERT(priv(self->d.data)->revision >= 2);
@@ -1117,7 +1122,7 @@ QMetaProperty QMetaObject::property(int index) const
             result.menum = enumerator(indexOfEnumerator(type));
             if (!result.menum.isValid()) {
                 const char *enum_name = type;
-                const char *scope_name = rawStringData(this, 0);
+                const char *scope_name = objectClassName(this);
                 char *scope_buffer = 0;
 
                 const char *colon = strrchr(enum_name, ':');
@@ -2412,7 +2417,7 @@ bool QMetaEnum::isFlag() const
 */
 const char *QMetaEnum::scope() const
 {
-    return mobj?rawStringData(mobj, 0) : 0;
+    return mobj ? objectClassName(mobj) : 0;
 }
 
 /*!
@@ -2444,7 +2449,8 @@ int QMetaEnum::keyToValue(const char *key, bool *ok) const
     int count = mobj->d.data[handle + 2];
     int data = mobj->d.data[handle + 3];
     for (int i = 0; i < count; ++i) {
-        if ((!scope || (stringSize(mobj, 0) == int(scope) && strncmp(qualified_key, rawStringData(mobj, 0), scope) == 0))
+        const QByteArray className = stringData(mobj, priv(mobj->d.data)->className);
+        if ((!scope || (className.size() == int(scope) && strncmp(qualified_key, className.constData(), scope) == 0))
              && strcmp(key, rawStringData(mobj, mobj->d.data[data + 2*i])) == 0) {
             if (ok != 0)
                 *ok = true;
@@ -2512,12 +2518,14 @@ int QMetaEnum::keysToValue(const char *keys, bool *ok) const
             key += scope + 2;
         }
         int i;
-        for (i = count-1; i >= 0; --i)
-            if ((!scope || (stringSize(mobj, 0) == int(scope) && strncmp(qualified_key.constData(), rawStringData(mobj, 0), scope) == 0))
+        for (i = count-1; i >= 0; --i) {
+            const QByteArray className = stringData(mobj, priv(mobj->d.data)->className);
+            if ((!scope || (className.size() == int(scope) && strncmp(qualified_key.constData(), className.constData(), scope) == 0))
                  && strcmp(key, rawStringData(mobj, mobj->d.data[data + 2*i])) == 0) {
                 value |= mobj->d.data[data + 2*i + 1];
                 break;
             }
+        }
         if (i < 0) {
             if (ok != 0)
                 *ok = false;
