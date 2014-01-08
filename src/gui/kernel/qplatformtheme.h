@@ -296,7 +296,10 @@ public:
 
     virtual QList<QKeySequence> keyBindings(QKeySequence::StandardKey key) const;
 
+    virtual QString standardButtonText(int button) const;
+
     static QVariant defaultThemeHint(ThemeHint hint);
+    static QString defaultStandardButtonText(int button);
 
 protected:
     explicit QPlatformTheme(QPlatformThemePrivate *priv);

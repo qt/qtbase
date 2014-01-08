@@ -57,6 +57,7 @@
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformservices.h>
+#include <qpa/qplatformdialoghelper.h>
 
 #include <algorithm>
 
@@ -531,6 +532,25 @@ const QFont *QGnomeTheme::font(Font type) const
     default:
         return 0;
     }
+}
+
+QString QGnomeTheme::standardButtonText(int button) const
+{
+    switch (button) {
+    case QMessageDialogOptions::Ok:
+        return QCoreApplication::translate("QGnomeTheme", "&OK");
+    case QMessageDialogOptions::Save:
+        return QCoreApplication::translate("QGnomeTheme", "&Save");
+    case QMessageDialogOptions::Cancel:
+        return QCoreApplication::translate("QGnomeTheme", "&Cancel");
+    case QMessageDialogOptions::QMessageDialogOptions::Close:
+        return QCoreApplication::translate("QGnomeTheme", "&Close");
+    case QMessageDialogOptions::Discard:
+        return QCoreApplication::translate("QGnomeTheme", "Close without Saving");
+    default:
+        break;
+    }
+    return QPlatformTheme::standardButtonText(button);
 }
 
 /*!

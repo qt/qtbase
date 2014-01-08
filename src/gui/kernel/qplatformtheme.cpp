@@ -51,6 +51,7 @@
 #include <private/qiconloader_p.h>
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformdialoghelper.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -625,6 +626,63 @@ QList<QKeySequence> QPlatformTheme::keyBindings(QKeySequence::StandardKey key) c
         }
     }
     return list;
+}
+
+/*!
+   Returns the text of a standard \a button.
+
+  \since 5.3
+  \sa QMessageDialogOptions::StandardButton
+ */
+
+QString QPlatformTheme::standardButtonText(int button) const
+{
+    return QPlatformTheme::defaultStandardButtonText(button);
+}
+
+QString QPlatformTheme::defaultStandardButtonText(int button)
+{
+    switch (button) {
+    case QMessageDialogOptions::Ok:
+        return QCoreApplication::translate("QPlatformTheme", "OK");
+    case QMessageDialogOptions::Save:
+        return QCoreApplication::translate("QPlatformTheme", "Save");
+    case QMessageDialogOptions::SaveAll:
+        return QCoreApplication::translate("QPlatformTheme", "Save All");
+    case QMessageDialogOptions::Open:
+        return QCoreApplication::translate("QPlatformTheme", "Open");
+    case QMessageDialogOptions::Yes:
+        return QCoreApplication::translate("QPlatformTheme", "&Yes");
+    case QMessageDialogOptions::YesToAll:
+        return QCoreApplication::translate("QPlatformTheme", "Yes to &All");
+    case QMessageDialogOptions::No:
+        return QCoreApplication::translate("QPlatformTheme", "&No");
+    case QMessageDialogOptions::NoToAll:
+        return QCoreApplication::translate("QPlatformTheme", "N&o to All");
+    case QMessageDialogOptions::Abort:
+        return QCoreApplication::translate("QPlatformTheme", "Abort");
+    case QMessageDialogOptions::Retry:
+        return QCoreApplication::translate("QPlatformTheme", "Retry");
+    case QMessageDialogOptions::Ignore:
+        return QCoreApplication::translate("QPlatformTheme", "Ignore");
+    case QMessageDialogOptions::Close:
+        return QCoreApplication::translate("QPlatformTheme", "Close");
+    case QMessageDialogOptions::Cancel:
+        return QCoreApplication::translate("QPlatformTheme", "Cancel");
+    case QMessageDialogOptions::Discard:
+        return QCoreApplication::translate("QPlatformTheme", "Discard");
+    case QMessageDialogOptions::Help:
+        return QCoreApplication::translate("QPlatformTheme", "Help");
+    case QMessageDialogOptions::Apply:
+        return QCoreApplication::translate("QPlatformTheme", "Apply");
+    case QMessageDialogOptions::Reset:
+        return QCoreApplication::translate("QPlatformTheme", "Reset");
+    case QMessageDialogOptions::RestoreDefaults:
+        return QCoreApplication::translate("QPlatformTheme", "Restore Defaults");
+    default:
+        break;
+    }
+    return QString();
 }
 
 unsigned QPlatformThemePrivate::currentKeyPlatforms()

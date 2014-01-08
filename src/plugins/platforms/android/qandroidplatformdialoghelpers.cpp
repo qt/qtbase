@@ -43,6 +43,8 @@
 #include <QtWidgets/QStyle>
 #include "qandroidplatformdialoghelpers.h"
 #include "androidjnimain.h"
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformtheme.h>
 
 namespace QtAndroidDialogHelpers {
 static jclass g_messageDialogHelperClass = 0;
@@ -59,49 +61,6 @@ void QAndroidPlatformMessageDialogHelper::exec()
     if (!m_shown)
         show(Qt::Dialog, Qt::ApplicationModal, 0);
     m_loop.exec();
-}
-
-static QString standardButtonText(int sbutton)
-{
-    switch (sbutton) {
-    case QMessageDialogOptions::Ok:
-        return QAndroidPlatformMessageDialogHelper::tr("OK");
-    case QMessageDialogOptions::Save:
-        return QAndroidPlatformMessageDialogHelper::tr("Save");
-    case QMessageDialogOptions::Open:
-        return QAndroidPlatformMessageDialogHelper::tr("Open");
-    case QMessageDialogOptions::Cancel:
-        return QAndroidPlatformMessageDialogHelper::tr("Cancel");
-    case QMessageDialogOptions::Close:
-        return QAndroidPlatformMessageDialogHelper::tr("Close");
-    case QMessageDialogOptions::Apply:
-        return QAndroidPlatformMessageDialogHelper::tr("Apply");
-    case QMessageDialogOptions::Reset:
-        return QAndroidPlatformMessageDialogHelper::tr("Reset");
-    case QMessageDialogOptions::Help:
-        return QAndroidPlatformMessageDialogHelper::tr("Help");
-    case QMessageDialogOptions::Discard:
-        return QAndroidPlatformMessageDialogHelper::tr("Discard");
-    case QMessageDialogOptions::Yes:
-        return QAndroidPlatformMessageDialogHelper::tr("Yes");
-    case QMessageDialogOptions::YesToAll:
-        return QAndroidPlatformMessageDialogHelper::tr("Yes to All");
-    case QMessageDialogOptions::No:
-        return QAndroidPlatformMessageDialogHelper::tr("No");
-    case QMessageDialogOptions::NoToAll:
-        return QAndroidPlatformMessageDialogHelper::tr("No to All");
-    case QMessageDialogOptions::SaveAll:
-        return QAndroidPlatformMessageDialogHelper::tr("Save All");
-    case QMessageDialogOptions::Abort:
-        return QAndroidPlatformMessageDialogHelper::tr("Abort");
-    case QMessageDialogOptions::Retry:
-        return QAndroidPlatformMessageDialogHelper::tr("Retry");
-    case QMessageDialogOptions::Ignore:
-        return QAndroidPlatformMessageDialogHelper::tr("Ignore");
-    case QMessageDialogOptions::RestoreDefaults:
-        return QAndroidPlatformMessageDialogHelper::tr("Restore Defaults");
-    } // switch
-    return QString();
 }
 
 bool QAndroidPlatformMessageDialogHelper::show(Qt::WindowFlags windowFlags
@@ -134,8 +93,10 @@ bool QAndroidPlatformMessageDialogHelper::show(Qt::WindowFlags windowFlags
         m_javaMessageDialog.callMethod<void>("setDetailedText", "(Ljava/lang/String;)V", QJNIObjectPrivate::fromString(str).object());
 
     for (int i = QMessageDialogOptions::FirstButton; i < QMessageDialogOptions::LastButton; i<<=1) {
-        if ( opt->standardButtons() & i )
-            m_javaMessageDialog.callMethod<void>("addButton", "(ILjava/lang/String;)V", i, QJNIObjectPrivate::fromString(standardButtonText(i)).object());
+        if ( opt->standardButtons() & i ) {
+            const QString text = QGuiApplicationPrivate::platformTheme()->standardButtonText(i);
+            m_javaMessageDialog.callMethod<void>("addButton", "(ILjava/lang/String;)V", i, QJNIObjectPrivate::fromString(text).object());
+        }
     }
 
     m_javaMessageDialog.callMethod<void>("show", "(J)V", jlong(static_cast<QObject*>(this)));

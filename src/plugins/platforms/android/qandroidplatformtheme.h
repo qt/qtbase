@@ -54,6 +54,7 @@ public:
     virtual const QPalette *palette(Palette type = SystemPalette) const;
     virtual const QFont *font(Font type = SystemFont) const;
     virtual QVariant themeHint(ThemeHint hint) const;
+    QString standardButtonText(int button) const Q_DECL_OVERRIDE;
     virtual bool usePlatformNativeDialog(DialogType type) const;
     virtual QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
 

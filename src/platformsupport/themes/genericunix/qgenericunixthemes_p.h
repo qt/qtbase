@@ -109,6 +109,7 @@ public:
     QGnomeTheme();
     virtual QVariant themeHint(ThemeHint hint) const;
     virtual const QFont *font(Font type) const;
+    QString standardButtonText(int button) const Q_DECL_OVERRIDE;
 
     static const char *name;
 };

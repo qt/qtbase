@@ -46,6 +46,7 @@
 #include "qandroidplatformdialoghelpers.h"
 #include <QVariant>
 #include <QFileInfo>
+#include <QCoreApplication>
 #include <qandroidplatformintegration.h>
 
 QAndroidPlatformTheme::QAndroidPlatformTheme(QAndroidPlatformNativeInterface *androidPlatformNativeInterface)
@@ -150,6 +151,21 @@ QVariant QAndroidPlatformTheme::themeHint(ThemeHint hint) const
     default:
         return QPlatformTheme::themeHint(hint);
     }
+}
+
+QString QAndroidPlatformTheme::standardButtonText(int button) const
+{
+    switch (button) {
+    case QMessageDialogOptions::Yes:
+        return QCoreApplication::translate("QAndroidPlatformTheme", "Yes");
+    case QMessageDialogOptions::YesToAll:
+        return QCoreApplication::translate("QAndroidPlatformTheme", "Yes to All");
+    case QMessageDialogOptions::No:
+        return QCoreApplication::translate("QAndroidPlatformTheme", "No");
+    case QMessageDialogOptions::NoToAll:
+        return QCoreApplication::translate("QAndroidPlatformTheme", "No to All");
+    }
+    return QPlatformTheme::standardButtonText(button);
 }
 
 bool QAndroidPlatformTheme::usePlatformNativeDialog(QPlatformTheme::DialogType type) const

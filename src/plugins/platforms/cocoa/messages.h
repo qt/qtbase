@@ -53,6 +53,8 @@ QString qt_mac_applicationmenu_string(int type);
 
 QPlatformMenuItem::MenuRole detectMenuRole(const QString &caption);
 
+QString msgDialogButtonDiscard();
+
 QT_END_NAMESPACE
 
 #endif // MESSAGES_H

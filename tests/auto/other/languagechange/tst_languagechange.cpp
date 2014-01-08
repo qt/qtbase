@@ -188,11 +188,11 @@ void tst_languageChange::retranslatability_data()
     //next we fill it with data
     QTest::newRow( "QInputDialog" )
         << int(InputDialog) << (QSet<QByteArray>()
-                    << "QDialogButtonBox::Cancel");
+                    << "QPlatformTheme::Cancel");
 
     QTest::newRow( "QColorDialog" )
         << int(ColorDialog) << (QSet<QByteArray>()
-                    << "QDialogButtonBox::Cancel"
+                    << "QPlatformTheme::Cancel"
                     << "QColorDialog::&Sat:"
                     << "QColorDialog::&Add to Custom Colors"
                     << "QColorDialog::&Green:"
@@ -237,8 +237,8 @@ void tst_languageChange::retranslatability_data()
                     << "QFileSystemModel::Type::All other platforms"
 #endif
 //                    << "QFileSystemModel::%1 KB"
-                    << "QDialogButtonBox::Cancel"
-                    << "QDialogButtonBox::Open"
+                    << "QPlatformTheme::Cancel"
+                    << "QPlatformTheme::Open"
                     << "QFileDialog::File &name:");
 }
 

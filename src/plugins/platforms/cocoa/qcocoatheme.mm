@@ -42,6 +42,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "qcocoatheme.h"
+#include "messages.h"
 
 #include <QtCore/QVariant>
 
@@ -290,6 +291,11 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
         break;
     }
     return QPlatformTheme::themeHint(hint);
+}
+
+QString QCocoaTheme::standardButtonText(int button) const
+{
+    return button == QMessageDialogOptions::Discard ? msgDialogButtonDiscard() : QPlatformTheme::standardButtonText(button);
 }
 
 QPlatformMenuItem *QCocoaTheme::createPlatformMenuItem() const

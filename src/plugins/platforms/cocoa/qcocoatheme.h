@@ -73,6 +73,7 @@ public:
                            QPlatformTheme::IconOptions options = 0) const;
 
     QVariant themeHint(ThemeHint hint) const;
+    QString standardButtonText(int button) const Q_DECL_OVERRIDE;
 
     static const char *name;
 
