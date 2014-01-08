@@ -110,6 +110,11 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         win = topData()->window;
     }
 
+    foreach (const QByteArray &propertyName, q->dynamicPropertyNames()) {
+        if (!qstrncmp(propertyName, "_q_platform_", 12))
+            win->setProperty(propertyName, q->property(propertyName));
+    }
+
     win->setFlags(data.window_flags);
     fixPosIncludesFrame();
     if (q->testAttribute(Qt::WA_Moved)

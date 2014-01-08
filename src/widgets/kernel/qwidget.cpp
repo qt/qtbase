@@ -8358,6 +8358,8 @@ bool QWidget::event(QEvent *event)
                 d->extra->customDpiY = value;
             d->updateFont(d->data.fnt);
         }
+        if (windowHandle() && !qstrncmp(propName, "_q_platform_", 12))
+            windowHandle()->setProperty(propName, property(propName));
         // fall through
     }
 #endif
