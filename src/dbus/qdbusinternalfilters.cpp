@@ -92,6 +92,12 @@ static const char propertiesInterfaceXml[] =
     "      <arg name=\"values\" type=\"a{sv}\" direction=\"out\"/>\n"
     "      <annotation name=\"org.qtproject.QtDBus.QtTypeName.Out0\" value=\"QVariantMap\"/>\n"
     "    </method>\n"
+    "    <signal name=\"PropertiesChanged\">\n"
+    "      <arg name=\"interface_name\" type=\"s\" direction=\"out\"/>\n"
+    "      <arg name=\"changed_properties\" type=\"a{sv}\" direction=\"out\"/>\n"
+    "      <annotation name=\"org.qtproject.QtDBus.QtTypeName.Out1\" value=\"QVariantMap\"/>\n"
+    "      <arg name=\"invalidated_properties\" type=\"as\" direction=\"out\"/>\n"
+    "    </signal>\n"
     "  </interface>\n";
 
 static const char peerInterfaceXml[] =
