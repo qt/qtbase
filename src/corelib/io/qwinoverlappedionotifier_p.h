@@ -54,7 +54,8 @@
 //
 
 #include <qobject.h>
-#include <qt_windows.h>
+
+typedef struct _OVERLAPPED OVERLAPPED;
 
 QT_BEGIN_NAMESPACE
 
@@ -71,14 +72,14 @@ public:
     QWinOverlappedIoNotifier(QObject *parent = 0);
     ~QWinOverlappedIoNotifier();
 
-    void setHandle(HANDLE h);
-    HANDLE handle() const;
+    void setHandle(Qt::HANDLE h);
+    Qt::HANDLE handle() const;
 
     void setEnabled(bool enabled);
     bool waitForNotified(int msecs, OVERLAPPED *overlapped);
 
 Q_SIGNALS:
-    void notified(DWORD numberOfBytes, DWORD errorCode, OVERLAPPED *overlapped);
+    void notified(quint32 numberOfBytes, quint32 errorCode, OVERLAPPED *overlapped);
 #if !defined(Q_QDOC)
     void _q_notify();
 #endif

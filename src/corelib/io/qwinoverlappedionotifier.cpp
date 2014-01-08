@@ -46,6 +46,7 @@
 #include <qqueue.h>
 #include <qset.h>
 #include <qthread.h>
+#include <qt_windows.h>
 #include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -270,13 +271,13 @@ QWinOverlappedIoNotifier::~QWinOverlappedIoNotifier()
     ReleaseMutex(d->iocpInstanceLock);
 }
 
-void QWinOverlappedIoNotifier::setHandle(HANDLE h)
+void QWinOverlappedIoNotifier::setHandle(Qt::HANDLE h)
 {
     Q_D(QWinOverlappedIoNotifier);
     d->hHandle = h;
 }
 
-HANDLE QWinOverlappedIoNotifier::handle() const
+Qt::HANDLE QWinOverlappedIoNotifier::handle() const
 {
     Q_D(const QWinOverlappedIoNotifier);
     return d->hHandle;
