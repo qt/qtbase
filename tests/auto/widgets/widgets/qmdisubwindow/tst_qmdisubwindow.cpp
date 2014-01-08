@@ -146,7 +146,7 @@ static void sendMouseDoubleClick(QWidget *widget, const QPoint &point, Qt::Mouse
 }
 
 static const Qt::WindowFlags StandardWindowFlags
-    = Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint;
+    = Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint;
 static const Qt::WindowFlags DialogWindowFlags
     = Qt::WindowTitleHint | Qt::WindowSystemMenuHint;
 
