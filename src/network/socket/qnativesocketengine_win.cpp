@@ -496,6 +496,9 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
         n = SO_RCVBUF;
         break;
     case QNativeSocketEngine::SendBufferSocketOption:
+        // see QTBUG-30478 SO_SNDBUF should not be used on Vista or later
+        if (QSysInfo::windowsVersion() >= QSysInfo::WV_VISTA)
+            return false;
         n = SO_SNDBUF;
         break;
     case QNativeSocketEngine::BroadcastSocketOption:

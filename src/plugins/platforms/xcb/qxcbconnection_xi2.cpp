@@ -432,6 +432,22 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
                     qDebug() << "   touchpoint "  << touchPoint.id << " state " << touchPoint.state << " pos norm " << touchPoint.normalPosition <<
                         " area " << touchPoint.area << " pressure " << touchPoint.pressure;
                 QWindowSystemInterface::handleTouchEvent(platformWindow->window(), xiEvent->time, dev->qtTouchDevice, m_touchPoints.values());
+                if (has_touch_without_mouse_emulation) {
+                    // We need to grab the touch event to prevent mouse emulation.
+                    if (xiEvent->evtype == XI_TouchBegin) {
+                        XIEventMask xieventmask;
+                        unsigned int bitMask = 0;
+                        unsigned char *xiBitMask = reinterpret_cast<unsigned char *>(&bitMask);
+                        xieventmask.deviceid = xiEvent->deviceid;
+                        xieventmask.mask = xiBitMask;
+                        xieventmask.mask_len = sizeof(bitMask);
+                        bitMask |= XI_TouchBeginMask;
+                        bitMask |= XI_TouchUpdateMask;
+                        bitMask |= XI_TouchEndMask;
+                        XIGrabDevice(static_cast<Display *>(m_xlib_display), xiEvent->deviceid, platformWindow->winId(), xiEvent->time, None, GrabModeAsync, GrabModeAsync, true, &xieventmask);
+                    } else if (xiEvent->evtype == XI_TouchEnd)
+                        XIUngrabDevice(static_cast<Display *>(m_xlib_display), xiEvent->deviceid, xiEvent->time);
+                }
                 if (touchPoint.state == Qt::TouchPointReleased)
                     // If a touchpoint was released, we can forget it, because the ID won't be reused.
                     m_touchPoints.remove(touchPoint.id);
