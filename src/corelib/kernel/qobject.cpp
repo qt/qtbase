@@ -3809,6 +3809,8 @@ bool QObject::setProperty(const char *name, const QVariant &value)
                 d->extraData->propertyNames.append(name);
                 d->extraData->propertyValues.append(value);
             } else {
+                if (value == d->extraData->propertyValues.at(idx))
+                    return false;
                 d->extraData->propertyValues[idx] = value;
             }
         }

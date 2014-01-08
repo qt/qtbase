@@ -2950,6 +2950,9 @@ void tst_QObject::dynamicProperties()
     QVERIFY(!obj.setProperty("myuserproperty", "Hello"));
     QCOMPARE(obj.changedDynamicProperties.count(), 1);
     QCOMPARE(obj.changedDynamicProperties.first(), QByteArray("myuserproperty"));
+    //check if there is no redundant DynamicPropertyChange events
+    QVERIFY(!obj.setProperty("myuserproperty", "Hello"));
+    QCOMPARE(obj.changedDynamicProperties.count(), 1);
     obj.changedDynamicProperties.clear();
 
     QCOMPARE(obj.property("myuserproperty").toString(), QString("Hello"));
