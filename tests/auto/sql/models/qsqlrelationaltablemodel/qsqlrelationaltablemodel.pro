@@ -10,7 +10,7 @@ wince*: {
    DEPLOYMENT += plugFiles
    LIBS += -lws2
 } else {
-   win32-g++* {
+   mingw {
         LIBS += -lws2_32
    } else:win32 {
         LIBS += ws2_32.lib

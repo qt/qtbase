@@ -163,7 +163,7 @@ else: \
 lib_replace.CONFIG = path
 QMAKE_PRL_INSTALL_REPLACE += include_replace lib_replace
 
-unix|win32-g++* {
+unix|mingw {
    CONFIG += create_pc
    QMAKE_PKGCONFIG_LIBDIR = $$lib_replace.replace
    QMAKE_PKGCONFIG_INCDIR = $$include_replace.replace
@@ -178,7 +178,7 @@ unix {
    QMAKE_LIBTOOL_INSTALL_REPLACE += include_replace lib_replace
 }
 
-unix|win32-g++* {
+unix|mingw {
     QMAKE_PKGCONFIG_NAME = $$replace(TARGET, ^Qt, "Qt$$section(VERSION, ., 0, 0) ")
     QMAKE_PKGCONFIG_FILE = $$replace(TARGET, ^Qt, Qt$$section(VERSION, ., 0, 0))
     for(i, MODULE_DEPENDS): \

@@ -17,4 +17,4 @@ SUBDIRS=\
           qsidebar \
 
 mac:qinputdialog.CONFIG += no_check_target # QTBUG-25496
-win32-g++*: SUBDIRS -= qfilesystemmodel # QTBUG-29403
+mingw: SUBDIRS -= qfilesystemmodel # QTBUG-29403

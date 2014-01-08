@@ -4,7 +4,7 @@ LIBS *= -lole32
 
 contains(QT_CONFIG, opengl):!contains(QT_CONFIG, opengles2):LIBS *= -lopengl32
 
-win32-g++*: LIBS *= -luuid
+mingw: LIBS *= -luuid
 # For the dialog helpers:
 !wince*:LIBS *= -lshlwapi -lshell32
 !wince*:LIBS *= -ladvapi32

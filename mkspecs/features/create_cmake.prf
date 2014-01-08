@@ -195,7 +195,7 @@ mac {
     CMAKE_LIB_FILE_LOCATION_DEBUG = $${CMAKE_QT_STEM}d.dll
     CMAKE_LIB_FILE_LOCATION_RELEASE = $${CMAKE_QT_STEM}.dll
 
-    win32-g++ {
+    mingw {
         CMAKE_WINMAIN_FILE_LOCATION_DEBUG = libqtmain$${QT_LIBINFIX}d.a
         CMAKE_WINMAIN_FILE_LOCATION_RELEASE = libqtmain$${QT_LIBINFIX}.a
 
