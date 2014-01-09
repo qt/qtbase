@@ -331,10 +331,8 @@ static const char *getFcFamilyForStyleHint(const QFont::StyleHint style)
     return stylehint;
 }
 
-void QFontconfigDatabase::populateFontDatabase()
+static void populateFromPattern(FcPattern *pattern)
 {
-    FcFontSet  *fonts;
-
     QString familyName;
     FcChar8 *value = 0;
     int weight_value;
@@ -347,6 +345,110 @@ void QFontconfigDatabase::populateFontDatabase()
     FcChar8 *style_value;
     FcBool scalable;
     FcBool antialias;
+
+    if (FcPatternGetString(pattern, FC_FAMILY, 0, &value) != FcResultMatch)
+        return;
+
+    familyName = QString::fromUtf8((const char *)value);
+
+    slant_value = FC_SLANT_ROMAN;
+    weight_value = FC_WEIGHT_REGULAR;
+    spacing_value = FC_PROPORTIONAL;
+    file_value = 0;
+    indexValue = 0;
+    scalable = FcTrue;
+
+
+    if (FcPatternGetInteger(pattern, FC_SLANT, 0, &slant_value) != FcResultMatch)
+        slant_value = FC_SLANT_ROMAN;
+    if (FcPatternGetInteger(pattern, FC_WEIGHT, 0, &weight_value) != FcResultMatch)
+        weight_value = FC_WEIGHT_REGULAR;
+    if (FcPatternGetInteger(pattern, FC_WIDTH, 0, &width_value) != FcResultMatch)
+        width_value = FC_WIDTH_NORMAL;
+    if (FcPatternGetInteger(pattern, FC_SPACING, 0, &spacing_value) != FcResultMatch)
+        spacing_value = FC_PROPORTIONAL;
+    if (FcPatternGetString(pattern, FC_FILE, 0, &file_value) != FcResultMatch)
+        file_value = 0;
+    if (FcPatternGetInteger(pattern, FC_INDEX, 0, &indexValue) != FcResultMatch)
+        indexValue = 0;
+    if (FcPatternGetBool(pattern, FC_SCALABLE, 0, &scalable) != FcResultMatch)
+        scalable = FcTrue;
+    if (FcPatternGetString(pattern, FC_FOUNDRY, 0, &foundry_value) != FcResultMatch)
+        foundry_value = 0;
+    if (FcPatternGetString(pattern, FC_STYLE, 0, &style_value) != FcResultMatch)
+        style_value = 0;
+    if (FcPatternGetBool(pattern,FC_ANTIALIAS,0,&antialias) != FcResultMatch)
+        antialias = true;
+
+    QSupportedWritingSystems writingSystems;
+    FcLangSet *langset = 0;
+    FcResult res = FcPatternGetLangSet(pattern, FC_LANG, 0, &langset);
+    if (res == FcResultMatch) {
+        bool hasLang = false;
+        for (int j = 1; j < QFontDatabase::WritingSystemsCount; ++j) {
+            const FcChar8 *lang = (const FcChar8*) languageForWritingSystem[j];
+            if (lang) {
+                FcLangResult langRes = FcLangSetHasLang(langset, lang);
+                if (langRes != FcLangDifferentLang) {
+                    writingSystems.setSupported(QFontDatabase::WritingSystem(j));
+                    hasLang = true;
+                }
+            }
+        }
+        if (!hasLang)
+            // none of our known languages, add it to the other set
+            writingSystems.setSupported(QFontDatabase::Other);
+    } else {
+        // we set Other to supported for symbol fonts. It makes no
+        // sense to merge these with other ones, as they are
+        // special in a way.
+        writingSystems.setSupported(QFontDatabase::Other);
+    }
+
+#if FC_VERSION >= 20297
+    for (int j = 1; j < QFontDatabase::WritingSystemsCount; ++j) {
+        if (writingSystems.supported(QFontDatabase::WritingSystem(j))
+            && requiresOpenType(j) && openType[j]) {
+            FcChar8 *cap;
+            res = FcPatternGetString (pattern, FC_CAPABILITY, 0, &cap);
+            if (res != FcResultMatch || !strstr((const char *)cap, openType[j]))
+                writingSystems.setSupported(QFontDatabase::WritingSystem(j),false);
+        }
+    }
+#endif
+
+    FontFile *fontFile = new FontFile;
+    fontFile->fileName = QLatin1String((const char *)file_value);
+    fontFile->indexValue = indexValue;
+
+    QFont::Style style = (slant_value == FC_SLANT_ITALIC)
+                     ? QFont::StyleItalic
+                     : ((slant_value == FC_SLANT_OBLIQUE)
+                        ? QFont::StyleOblique
+                        : QFont::StyleNormal);
+    // Note: weight should really be an int but registerFont incorrectly uses an enum
+    QFont::Weight weight = QFont::Weight(weightFromFcWeight(weight_value));
+
+    double pixel_size = 0;
+    if (!scalable)
+        FcPatternGetDouble (pattern, FC_PIXEL_SIZE, 0, &pixel_size);
+
+    bool fixedPitch = spacing_value >= FC_MONO;
+    // Note: stretch should really be an int but registerFont incorrectly uses an enum
+    QFont::Stretch stretch = QFont::Stretch(stretchFromFcWidth(width_value));
+    QString styleName = style_value ? QString::fromUtf8((const char *) style_value) : QString();
+    QPlatformFontDatabase::registerFont(familyName,styleName,QLatin1String((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,fixedPitch,writingSystems,fontFile);
+//        qDebug() << familyName << (const char *)foundry_value << weight << style << &writingSystems << scalable << true << pixel_size;
+
+    for (int k = 1; FcPatternGetString(pattern, FC_FAMILY, k, &value) == FcResultMatch; ++k)
+        QPlatformFontDatabase::registerAliasToFontFamily(familyName, QString::fromUtf8((const char *)value));
+
+}
+
+void QFontconfigDatabase::populateFontDatabase()
+{
+    FcInitReinitialize();
+    FcFontSet  *fonts;
 
     {
         FcObjectSet *os = FcObjectSetCreate();
@@ -371,103 +473,8 @@ void QFontconfigDatabase::populateFontDatabase()
         FcPatternDestroy(pattern);
     }
 
-    for (int i = 0; i < fonts->nfont; i++) {
-        if (FcPatternGetString(fonts->fonts[i], FC_FAMILY, 0, &value) != FcResultMatch)
-            continue;
-        //         capitalize(value);
-        familyName = QString::fromUtf8((const char *)value);
-        slant_value = FC_SLANT_ROMAN;
-        weight_value = FC_WEIGHT_REGULAR;
-        spacing_value = FC_PROPORTIONAL;
-        file_value = 0;
-        indexValue = 0;
-        scalable = FcTrue;
-
-
-        if (FcPatternGetInteger (fonts->fonts[i], FC_SLANT, 0, &slant_value) != FcResultMatch)
-            slant_value = FC_SLANT_ROMAN;
-        if (FcPatternGetInteger (fonts->fonts[i], FC_WEIGHT, 0, &weight_value) != FcResultMatch)
-            weight_value = FC_WEIGHT_REGULAR;
-        if (FcPatternGetInteger (fonts->fonts[i], FC_WIDTH, 0, &width_value) != FcResultMatch)
-            width_value = FC_WIDTH_NORMAL;
-        if (FcPatternGetInteger (fonts->fonts[i], FC_SPACING, 0, &spacing_value) != FcResultMatch)
-            spacing_value = FC_PROPORTIONAL;
-        if (FcPatternGetString (fonts->fonts[i], FC_FILE, 0, &file_value) != FcResultMatch)
-            file_value = 0;
-        if (FcPatternGetInteger (fonts->fonts[i], FC_INDEX, 0, &indexValue) != FcResultMatch)
-            indexValue = 0;
-        if (FcPatternGetBool(fonts->fonts[i], FC_SCALABLE, 0, &scalable) != FcResultMatch)
-            scalable = FcTrue;
-        if (FcPatternGetString(fonts->fonts[i], FC_FOUNDRY, 0, &foundry_value) != FcResultMatch)
-            foundry_value = 0;
-        if (FcPatternGetString(fonts->fonts[i], FC_STYLE, 0, &style_value) != FcResultMatch)
-            style_value = 0;
-        if(FcPatternGetBool(fonts->fonts[i],FC_ANTIALIAS,0,&antialias) != FcResultMatch)
-            antialias = true;
-
-        QSupportedWritingSystems writingSystems;
-        FcLangSet *langset = 0;
-        FcResult res = FcPatternGetLangSet(fonts->fonts[i], FC_LANG, 0, &langset);
-        if (res == FcResultMatch) {
-            bool hasLang = false;
-            for (int j = 1; j < QFontDatabase::WritingSystemsCount; ++j) {
-                const FcChar8 *lang = (const FcChar8*) languageForWritingSystem[j];
-                if (lang) {
-                    FcLangResult langRes = FcLangSetHasLang(langset, lang);
-                    if (langRes != FcLangDifferentLang) {
-                        writingSystems.setSupported(QFontDatabase::WritingSystem(j));
-                        hasLang = true;
-                    }
-                }
-            }
-            if (!hasLang)
-                // none of our known languages, add it to the other set
-                writingSystems.setSupported(QFontDatabase::Other);
-        } else {
-            // we set Other to supported for symbol fonts. It makes no
-            // sense to merge these with other ones, as they are
-            // special in a way.
-            writingSystems.setSupported(QFontDatabase::Other);
-        }
-
-#if FC_VERSION >= 20297
-        for (int j = 1; j < QFontDatabase::WritingSystemsCount; ++j) {
-            if (writingSystems.supported(QFontDatabase::WritingSystem(j))
-                && requiresOpenType(j) && openType[j]) {
-                FcChar8 *cap;
-                res = FcPatternGetString (fonts->fonts[i], FC_CAPABILITY, 0, &cap);
-                if (res != FcResultMatch || !strstr((const char *)cap, openType[j]))
-                    writingSystems.setSupported(QFontDatabase::WritingSystem(j),false);
-            }
-        }
-#endif
-
-        FontFile *fontFile = new FontFile;
-        fontFile->fileName = QLatin1String((const char *)file_value);
-        fontFile->indexValue = indexValue;
-
-        QFont::Style style = (slant_value == FC_SLANT_ITALIC)
-                         ? QFont::StyleItalic
-                         : ((slant_value == FC_SLANT_OBLIQUE)
-                            ? QFont::StyleOblique
-                            : QFont::StyleNormal);
-        // Note: weight should really be an int but registerFont incorrectly uses an enum
-        QFont::Weight weight = QFont::Weight(weightFromFcWeight(weight_value));
-
-        double pixel_size = 0;
-        if (!scalable)
-            FcPatternGetDouble (fonts->fonts[i], FC_PIXEL_SIZE, 0, &pixel_size);
-
-        bool fixedPitch = spacing_value >= FC_MONO;
-        // Note: stretch should really be an int but registerFont incorrectly uses an enum
-        QFont::Stretch stretch = QFont::Stretch(stretchFromFcWidth(width_value));
-        QString styleName = style_value ? QString::fromUtf8((const char *) style_value) : QString();
-        QPlatformFontDatabase::registerFont(familyName,styleName,QLatin1String((const char *)foundry_value),weight,style,stretch,antialias,scalable,pixel_size,fixedPitch,writingSystems,fontFile);
-//        qDebug() << familyName << (const char *)foundry_value << weight << style << &writingSystems << scalable << true << pixel_size;
-
-        for (int k = 1; FcPatternGetString(fonts->fonts[i], FC_FAMILY, k, &value) == FcResultMatch; ++k)
-            QPlatformFontDatabase::registerAliasToFontFamily(familyName, QString::fromUtf8((const char *)value));
-    }
+    for (int i = 0; i < fonts->nfont; i++)
+        populateFromPattern(fonts->fonts[i]);
 
     FcFontSetDestroy (fonts);
 
@@ -802,6 +809,7 @@ static FcPattern *queryFont(const FcChar8 *file, const QByteArray &data, int id,
 QStringList QFontconfigDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
 {
     QStringList families;
+
     FcFontSet *set = FcConfigGetFonts(0, FcSetApplication);
     if (!set) {
         FcConfigAppFontAddFile(0, (const FcChar8 *)":/non-existent");
@@ -814,28 +822,24 @@ QStringList QFontconfigDatabase::addApplicationFont(const QByteArray &fontData, 
     FcBlanks *blanks = FcConfigGetBlanks(0);
     int count = 0;
 
-    FcPattern *pattern = 0;
+    FcPattern *pattern;
     do {
         pattern = queryFont((const FcChar8 *)QFile::encodeName(fileName).constData(),
                             fontData, id, blanks, &count);
         if (!pattern)
             return families;
 
-        FcPatternDel(pattern, FC_FILE);
-        QByteArray cs = fileName.toUtf8();
-        FcPatternAddString(pattern, FC_FILE, (const FcChar8 *) cs.constData());
-
         FcChar8 *fam = 0;
         if (FcPatternGetString(pattern, FC_FAMILY, 0, &fam) == FcResultMatch) {
             QString family = QString::fromUtf8(reinterpret_cast<const char *>(fam));
             families << family;
         }
+        populateFromPattern(pattern);
 
-        if (!FcFontSetAdd(set, pattern))
-            return families;
+        FcFontSetAdd(set, pattern);
 
         ++id;
-    } while (pattern && id < count);
+    } while (id < count);
 
     return families;
 }
