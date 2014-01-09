@@ -52,3 +52,7 @@
         }
     }
 //! [1]
+
+//! [2]
+    QLoggingCategory &category();
+//! [2]

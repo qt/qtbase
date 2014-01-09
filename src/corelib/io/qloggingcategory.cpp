@@ -326,6 +326,25 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 */
 
 /*!
+    \macro qCDebug(category, const char *message, ...)
+    \relates QLoggingCategory
+    \since 5.3
+
+    Logs a debug message \a message in the logging category \a category.
+    \a message might contain place holders that are replaced by additional
+    arguments, similar to the C printf() function.
+
+    Example:
+
+    \snippet qloggingcategory/main.cpp 13
+
+    \note Arguments might not be processed if debug output for the category is
+    not enabled, so do not rely on any side effects.
+
+    \sa qDebug()
+*/
+
+/*!
     \macro qCWarning(category)
     \relates QLoggingCategory
     \since 5.2
@@ -343,6 +362,25 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 
     \note Arguments are not processed if warning output for the category is not
     enabled, so do not rely on any side effects.
+
+    \sa qWarning()
+*/
+
+/*!
+    \macro qCWarning(category, const char *message, ...)
+    \relates QLoggingCategory
+    \since 5.3
+
+    Logs a warning message \a message in the logging category \a category.
+    \a message might contain place holders that are replaced by additional
+    arguments, similar to the C printf() function.
+
+    Example:
+
+    \snippet qloggingcategory/main.cpp 14
+
+    \note Arguments might not be processed if warning output for the category is
+    not enabled, so do not rely on any side effects.
 
     \sa qWarning()
 */
@@ -369,6 +407,24 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     \sa qCritical()
 */
 
+/*!
+    \macro qCCritical(category, const char *message, ...)
+    \relates QLoggingCategory
+    \since 5.3
+
+    Logs a critical message \a message in the logging category \a category.
+    \a message might contain place holders that are replaced by additional
+    arguments, similar to the C printf() function.
+
+    Example:
+
+    \snippet qloggingcategory/main.cpp 15
+
+    \note Arguments might not be processed if critical output for the category
+    is not enabled, so do not rely on any side effects.
+
+    \sa qCritical()
+*/
 /*!
     \macro Q_DECLARE_LOGGING_CATEGORY(name)
     \relates QLoggingCategory

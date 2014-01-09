@@ -376,15 +376,21 @@ private slots:
         buf = QStringLiteral("default.debug: Check debug with no filter active");
         qCDebug(defaultCategory) << "Check debug with no filter active";
         QCOMPARE(logMessage, buf);
+        qCDebug(defaultCategory, "Check debug with no filter active");
+        QCOMPARE(logMessage, buf);
 
         // Check default warning
         buf = QStringLiteral("default.warning: Check warning with no filter active");
         qCWarning(defaultCategory) << "Check warning with no filter active";
         QCOMPARE(logMessage, buf);
+        qCWarning(defaultCategory, "Check warning with no filter active");
+        QCOMPARE(logMessage, buf);
 
         // Check default critical
         buf = QStringLiteral("default.critical: Check critical with no filter active");
         qCCritical(defaultCategory) << "Check critical with no filter active";
+        QCOMPARE(logMessage, buf);
+        qCCritical(defaultCategory, "Check critical with no filter active");
         QCOMPARE(logMessage, buf);
 
 
@@ -411,6 +417,24 @@ private slots:
         buf = QStringLiteral("custom.debug: Check debug with filter active");
         qCDebug(customCategory) << "Check debug with filter active";
         QCOMPARE(logMessage, buf);
+
+        // Check different macro/category variants
+        buf = QStringLiteral("tst.log.debug: Check debug with no filter active");
+        qCDebug(TST_LOG) << "Check debug with no filter active";
+        QCOMPARE(logMessage, buf);
+        qCDebug(TST_LOG, "Check debug with no filter active");
+        QCOMPARE(logMessage, buf);
+        buf = QStringLiteral("tst.log.warning: Check warning with no filter active");
+        qCWarning(TST_LOG) << "Check warning with no filter active";
+        QCOMPARE(logMessage, buf);
+        qCWarning(TST_LOG, "Check warning with no filter active");
+        QCOMPARE(logMessage, buf);
+        buf = QStringLiteral("tst.log.critical: Check critical with no filter active");
+        qCCritical(TST_LOG) << "Check critical with no filter active";
+        QCOMPARE(logMessage, buf);
+        qCCritical(TST_LOG, "Check critical with no filter active");
+        QCOMPARE(logMessage, buf);
+
 
         // reset to default filter
         QLoggingCategory::installFilter(0);
