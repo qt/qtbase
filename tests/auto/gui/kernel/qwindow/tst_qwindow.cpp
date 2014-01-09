@@ -82,6 +82,7 @@ private slots:
     void windowModality_QTBUG27039();
     void visibility();
     void mask();
+    void initialSize();
 
     void initTestCase()
     {
@@ -1184,6 +1185,32 @@ void tst_QWindow::mask()
     window.setMask(mask);
 
     QCOMPARE(window.mask(), mask);
+}
+
+void tst_QWindow::initialSize()
+{
+    QSize defaultSize(0,0);
+    {
+    Window w;
+    w.show();
+    QTRY_VERIFY(w.width() > 0);
+    QTRY_VERIFY(w.height() > 0);
+    defaultSize = QSize(w.width(), w.height());
+    }
+    {
+    Window w;
+    w.setWidth(200);
+    w.show();
+    QTRY_COMPARE(w.width(), 200);
+    QTRY_VERIFY(w.height() > 0);
+    }
+    {
+    Window w;
+    w.resize(200, 42);
+    w.show();
+    QTRY_COMPARE(w.width(), 200);
+    QTRY_COMPARE(w.height(), 42);
+    }
 }
 
 #include <tst_qwindow.moc>

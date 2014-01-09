@@ -521,14 +521,13 @@ QRect QPlatformWindow::initialGeometry(const QWindow *w,
     const QRect &initialGeometry, int defaultWidth, int defaultHeight)
 {
     QRect rect(initialGeometry);
-    if (rect.isNull()) {
-        QSize minimumSize = w->minimumSize();
-        if (minimumSize.width() > 0 || minimumSize.height() > 0) {
-            rect.setSize(minimumSize);
-        } else {
-            rect.setWidth(defaultWidth);
-            rect.setHeight(defaultHeight);
-        }
+    if (rect.width() == 0) {
+        const int minWidth = w->minimumWidth();
+        rect.setWidth(minWidth > 0 ? minWidth : defaultWidth);
+    }
+    if (rect.height() == 0) {
+        const int minHeight = w->minimumHeight();
+        rect.setHeight(minHeight > 0 ? minHeight : defaultHeight);
     }
     if (w->isTopLevel() && qt_window_private(const_cast<QWindow*>(w))->positionAutomatic
         && w->type() != Qt::Popup) {
