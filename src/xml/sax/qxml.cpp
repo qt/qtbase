@@ -44,6 +44,7 @@
 #include "qbuffer.h"
 #include "qregexp.h"
 #include "qmap.h"
+#include "qhash.h"
 #include "qstack.h"
 #include <qdebug.h>
 
@@ -424,6 +425,10 @@ private:
     int     stringValueLen;
     QString emptyStr;
 
+    QHash<QString, int> literalEntitySizes;
+    // The entity at (QMap<QString,) referenced the entities at (QMap<QString,) (int>) times.
+    QHash<QString, QHash<QString, int> > referencesToOtherEntities;
+    QHash<QString, int> expandedSizes;
     // The limit to the amount of times the DTD parsing functions can be called
     // for the DTD currently being parsed.
     static const int dtdRecursionLimit = 2;
@@ -3443,6 +3448,10 @@ bool QXmlSimpleReader::parse(const QXmlInputSource* input)
 bool QXmlSimpleReader::parse(const QXmlInputSource *input, bool incremental)
 {
     Q_D(QXmlSimpleReader);
+
+    d->literalEntitySizes.clear();
+    d->referencesToOtherEntities.clear();
+    d->expandedSizes.clear();
 
     if (incremental) {
         d->initIncrementalParsing();
@@ -6659,43 +6668,63 @@ bool QXmlSimpleReaderPrivate::parseChoiceSeq()
 
 bool QXmlSimpleReaderPrivate::isExpandedEntityValueTooLarge(QString *errorMessage)
 {
-    QMap<QString, int> literalEntitySizes;
-    // The entity at (QMap<QString,) referenced the entities at (QMap<QString,) (int>) times.
-    QMap<QString, QMap<QString, int> > referencesToOtherEntities;
-    QMap<QString, int> expandedSizes;
+    QString entityNameBuffer;
 
     // For every entity, check how many times all entity names were referenced in its value.
-    foreach (QString toSearch, entities.keys()) {
-        // The amount of characters that weren't entity names, but literals, like 'X'.
-        QString leftOvers = entities.value(toSearch);
-        // How many times was entityName referenced by toSearch?
-        foreach (QString entityName, entities.keys()) {
-            for (int i = 0; i < leftOvers.size() && i != -1; ) {
-                i = leftOvers.indexOf(QString::fromLatin1("&%1;").arg(entityName), i);
-                if (i != -1) {
-                    leftOvers.remove(i, entityName.size() + 2);
-                    // The entityName we're currently trying to find was matched in this string; increase our count.
-                    ++referencesToOtherEntities[toSearch][entityName];
+    for (QMap<QString,QString>::const_iterator toSearchIt = entities.constBegin();
+         toSearchIt != entities.constEnd();
+         ++toSearchIt) {
+        const QString &toSearch = toSearchIt.key();
+
+        // Don't check the same entities twice.
+        if (!literalEntitySizes.contains(toSearch)) {
+            // The amount of characters that weren't entity names, but literals, like 'X'.
+            QString leftOvers = entities.value(toSearch);
+            // How many times was entityName referenced by toSearch?
+            for (QMap<QString,QString>::const_iterator referencedIt = entities.constBegin();
+                 referencedIt != entities.constEnd();
+                 ++referencedIt) {
+                const QString &entityName = referencedIt.key();
+
+                for (int i = 0; i < leftOvers.size() && i != -1; ) {
+                    entityNameBuffer = QLatin1Char('&') + entityName + QLatin1Char(';');
+
+                    i = leftOvers.indexOf(entityNameBuffer, i);
+                    if (i != -1) {
+                        leftOvers.remove(i, entityName.size() + 2);
+                        // The entityName we're currently trying to find was matched in this string; increase our count.
+                        ++referencesToOtherEntities[toSearch][entityName];
+                    }
                 }
             }
+            literalEntitySizes[toSearch] = leftOvers.size();
         }
-        literalEntitySizes[toSearch] = leftOvers.size();
     }
 
-    foreach (QString entity, referencesToOtherEntities.keys()) {
-        expandedSizes[entity] = literalEntitySizes[entity];
-        foreach (QString referenceTo, referencesToOtherEntities.value(entity).keys()) {
-            const int references = referencesToOtherEntities.value(entity).value(referenceTo);
-            // The total size of an entity's value is the expanded size of all of its referenced entities, plus its literal size.
-            expandedSizes[entity] += expandedSizes[referenceTo] * references + literalEntitySizes[referenceTo] * references;
-        }
+    for (QHash<QString, QHash<QString, int> >::const_iterator entityIt = referencesToOtherEntities.constBegin();
+         entityIt != referencesToOtherEntities.constEnd();
+         ++entityIt) {
+        const QString &entity = entityIt.key();
 
-        if (expandedSizes[entity] > entityCharacterLimit) {
-            if (errorMessage) {
-                *errorMessage = QString::fromLatin1("The XML entity \"%1\" expands too a string that is too large to process (%2 characters > %3).");
-                *errorMessage = (*errorMessage).arg(entity).arg(expandedSizes[entity]).arg(entityCharacterLimit);
+        QHash<QString, int>::iterator expandedIt = expandedSizes.find(entity);
+        if (expandedIt == expandedSizes.end()) {
+            expandedIt = expandedSizes.insert(entity, literalEntitySizes.value(entity));
+            for (QHash<QString, int>::const_iterator referenceIt = entityIt->constBegin();
+                 referenceIt != entityIt->constEnd();
+                 ++referenceIt) {
+                const QString &referenceTo = referenceIt.key();
+                const int references = referencesToOtherEntities.value(entity).value(referenceTo);
+                // The total size of an entity's value is the expanded size of all of its referenced entities, plus its literal size.
+                *expandedIt += expandedSizes.value(referenceTo) * references + literalEntitySizes.value(referenceTo) * references;
             }
-            return true;
+
+            if (*expandedIt > entityCharacterLimit) {
+                if (errorMessage) {
+                    *errorMessage = QString::fromLatin1("The XML entity \"%1\" expands to a string that is too large to process (%2 characters > %3).")
+                        .arg(entity, *expandedIt, entityCharacterLimit);
+                }
+                return true;
+            }
         }
     }
     return false;
