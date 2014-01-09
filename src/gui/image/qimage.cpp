@@ -1877,8 +1877,9 @@ QImage QImage::convertToFormat(Format format, Qt::ImageConversionFlags flags) co
     if (format == Format_Invalid || d->format == Format_Invalid)
         return QImage();
 
-    const Image_Converter *converterPtr = &converter_map[d->format][format];
-    Image_Converter converter = *converterPtr;
+    Image_Converter converter = qimage_converter_map[d->format][format];
+    if (!converter && format > QImage::Format_Indexed8 && d->format > QImage::Format_Indexed8)
+        converter = convert_generic;
     if (converter) {
         QImage image(d->width, d->height, format);
 
@@ -1894,14 +1895,12 @@ QImage QImage::convertToFormat(Format format, Qt::ImageConversionFlags flags) co
         return image;
     }
 
+    // Convert indexed formats over ARGB32 to the final format.
     Q_ASSERT(format != QImage::Format_ARGB32);
     Q_ASSERT(d->format != QImage::Format_ARGB32);
 
-    QImage image = convertToFormat(Format_ARGB32, flags);
-    return image.convertToFormat(format, flags);
+    return convertToFormat(Format_ARGB32, flags).convertToFormat(format, flags);
 }
-
-
 
 static inline int pixel_distance(QRgb p1, QRgb p2) {
     int r1 = qRed(p1);
