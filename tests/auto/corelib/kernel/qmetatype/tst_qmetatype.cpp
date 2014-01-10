@@ -55,6 +55,11 @@
 # define TST_QMETATYPE_BROKEN_COMPILER
 #endif
 
+// mingw gcc 4.8 also takes way too long, letting the CI system abort the test
+#if defined(__MINGW32__)
+# define TST_QMETATYPE_BROKEN_COMPILER
+#endif
+
 Q_DECLARE_METATYPE(QMetaType::Type)
 
 class tst_QMetaType: public QObject
