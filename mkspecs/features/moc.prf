@@ -21,12 +21,12 @@ win32:count(INCLUDEPATH, 40, >) {
         EOC = $$escape_expand(\\r\\h)
     }
 
+    RET  = @echo -I$$QMAKESPEC > $$WIN_INCLUDETEMP $$EOC
+    RET += @echo -I$$_PRO_FILE_PWD_ >> $$WIN_INCLUDETEMP $$EOC
     unset(INCFILELIST)
-    RET =
     for(incfile, INCLUDEPATH) {
         INCFILELIST = -I$$incfile
-        isEmpty(RET): RET += @echo $$INCFILELIST> $$WIN_INCLUDETEMP $$EOC
-        else:         RET += @echo $$INCFILELIST>> $$WIN_INCLUDETEMP $$EOC
+        RET += @echo $$INCFILELIST>> $$WIN_INCLUDETEMP $$EOC
     }
     !isEmpty(INCFILELIST):RET += @echo $$INCFILELIST>> $$WIN_INCLUDETEMP $$EOC
 
