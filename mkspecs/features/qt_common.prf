@@ -27,11 +27,11 @@ warnings_are_errors:warning_clean {
     # This setting is compiler-dependent anyway because it depends on the version of the
     # compiler.
     clang {
-        # Apple clang 4.0-4.2
+        # Apple clang 4.0-4.2,5.0
         # Regular clang 3.3 & 3.4
         apple_ver = $${QT_APPLE_CLANG_MAJOR_VERSION}.$${QT_APPLE_CLANG_MINOR_VERSION}
         reg_ver = $${QT_CLANG_MAJOR_VERSION}.$${QT_CLANG_MINOR_VERSION}
-        contains(apple_ver, "4\\.[012]")|contains(reg_ver, "3\\.[34]") {
+        contains(apple_ver, "4\\.[012]|5\\.0")|contains(reg_ver, "3\\.[34]") {
             QMAKE_CXXFLAGS_WARN_ON += -Werror -Wno-error=\\$${LITERAL_HASH}warnings -Wno-error=deprecated-declarations $$WERROR
 
             # glibc's bswap_XX macros use the "register" keyword
