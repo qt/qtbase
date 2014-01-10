@@ -653,16 +653,20 @@ void QWindowsKeyMapper::updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32
         ::ToAscii(VK_SPACE, 0, emptyBuffer, reinterpret_cast<LPWORD>(&buffer), 0);
         ::ToAscii(vk_key, scancode, kbdBuffer, reinterpret_cast<LPWORD>(&buffer), 0);
     }
-
-    if (QWindowsContext::verboseEvents > 1) {
-        qDebug("updatePossibleKeyCodes for virtual key = 0x%02x!", vk_key);
+    if (QWindowsContext::verbose > 1 && lcQpaEvents().isDebugEnabled()) {
+        QString message;
+        QDebug debug(&message);
+        debug <<__FUNCTION__ << " for virtual key = 0x" << hex << vk_key << dec<< '\n';
         for (size_t i = 0; i < NumMods; ++i) {
-            qDebug("    [%d] (%d,0x%02x,'%c')  %s", int(i),
-                   keyLayout[vk_key].qtKey[i],
-                   keyLayout[vk_key].qtKey[i],
-                   keyLayout[vk_key].qtKey[i] ? keyLayout[vk_key].qtKey[i] : 0x03,
-                   keyLayout[vk_key].deadkeys & (1<<i) ? "deadkey" : "");
+            const quint32 qtKey = keyLayout[vk_key].qtKey[i];
+            debug << "    [" << i << "] (" << qtKey << ','
+                << hex << showbase << qtKey << noshowbase << dec
+                << ",'" << char(qtKey ? qtKey : 0x03) << "')";
+            if (keyLayout[vk_key].deadkeys & (1<<i))
+                debug << "  deadkey";
+            debug << '\n';
         }
+        qCDebug(lcQpaEvents) << message;
     }
 }
 

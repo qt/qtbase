@@ -675,8 +675,7 @@ QVariant QWindowsMimeText::convertToMime(const QString &mime, LPDATAOBJECT pData
         else
             ret = str.toUtf8();
     }
-    if (QWindowsContext::verboseOLE)
-        qDebug() << __FUNCTION__ << ret;
+    qCDebug(lcQpaMime) << __FUNCTION__ << ret;
     return ret;
 }
 
@@ -1490,8 +1489,7 @@ QStringList QWindowsMimeConverter::allMimesForFormats(IDataObject *pDataObj) con
         }
         fmtenum->Release();
     }
-    if (QWindowsContext::verboseOLE)
-        qDebug() << __FUNCTION__ << pDataObj << formats;
+    qCDebug(lcQpaMime) << __FUNCTION__ << pDataObj << formats;
     return formats;
 }
 
@@ -1541,9 +1539,8 @@ QVariant QWindowsMimeConverter::convertToMime(const QStringList &mimeTypes,
             if (converter->canConvertToMime(format, pDataObj)) {
                 const QVariant dataV = converter->convertToMime(format, pDataObj, preferredType);
                 if (dataV.isValid()) {
-                    if (QWindowsContext::verboseOLE)
-                        qDebug() << __FUNCTION__ << mimeTypes << "\nFormat: "
-                                 << format << pDataObj << " returns " << dataV;
+                    qCDebug(lcQpaMime) << __FUNCTION__ << mimeTypes << "\nFormat: "
+                        << format << pDataObj << " returns " << dataV;
                     if (formatIn)
                         *formatIn = format;
                     return dataV;
@@ -1551,8 +1548,7 @@ QVariant QWindowsMimeConverter::convertToMime(const QStringList &mimeTypes,
             }
         }
     }
-    if (QWindowsContext::verboseOLE)
-        qDebug() << __FUNCTION__ << "fails" << mimeTypes << pDataObj << preferredType;
+    qCDebug(lcQpaMime) << __FUNCTION__ << "fails" << mimeTypes << pDataObj << preferredType;
     return QVariant();
 }
 

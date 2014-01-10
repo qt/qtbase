@@ -151,19 +151,20 @@ static bool addFontToDatabase(const QString &familyName, uchar charSet,
     const QFont::Stretch stretch = QFont::Unstretched;
 
 #ifndef QT_NO_DEBUG_OUTPUT
-    if (QWindowsContext::verboseFonts > 2) {
-        QDebug nospace = qDebug().nospace();
-        nospace << __FUNCTION__ << familyName << faceName << fullName << charSet
-                 << "TTF=" << ttf;
+    if (QWindowsContext::verbose > 2) {
+        QString message;
+        QTextStream str(&message);
+        str << __FUNCTION__ << ' ' << familyName << ' ' << charSet << " TTF=" << ttf;
         if (type & DEVICE_FONTTYPE)
-            nospace << " DEVICE";
+            str << " DEVICE";
         if (type & RASTER_FONTTYPE)
-            nospace << " RASTER";
+            str << " RASTER";
         if (type & TRUETYPE_FONTTYPE)
-            nospace << " TRUETYPE";
-        nospace << " scalable=" << scalable << " Size=" << size
+            str << " TRUETYPE";
+        str << " scalable=" << scalable << " Size=" << size
                 << " Style=" << style << " Weight=" << weight
                 << " stretch=" << stretch;
+        qCDebug(lcQpaFonts) << message;
     }
 #endif
 
@@ -403,8 +404,7 @@ void QWindowsFontDatabaseFT::populateFontDatabase()
 void QWindowsFontDatabaseFT::populate(const QString &family)
     {
 
-    if (QWindowsContext::verboseFonts)
-        qDebug() << __FUNCTION__ << m_families.size() << family;
+    qCDebug(lcQpaFonts) << __FUNCTION__ << m_families.size() << family;
 
     HDC dummy = GetDC(0);
     LOGFONT lf;
@@ -425,16 +425,14 @@ void QWindowsFontDatabaseFT::populate(const QString &family)
 QFontEngine * QWindowsFontDatabaseFT::fontEngine(const QFontDef &fontDef, QChar::Script script, void *handle)
 {
     QFontEngine *fe = QBasicFontDatabase::fontEngine(fontDef, script, handle);
-    if (QWindowsContext::verboseFonts)
-        qDebug() << __FUNCTION__ << "FONTDEF" << /*fontDef <<*/ script << fe << handle;
+    qCDebug(lcQpaFonts) << __FUNCTION__ << "FONTDEF" << fontDef.family << script << fe << handle;
     return fe;
 }
 
 QFontEngine *QWindowsFontDatabaseFT::fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference)
 {
     QFontEngine *fe = QBasicFontDatabase::fontEngine(fontData, pixelSize, hintingPreference);
-    if (QWindowsContext::verboseFonts)
-        qDebug() << __FUNCTION__ << "FONTDATA" << fontData << pixelSize << hintingPreference << fe;
+    qCDebug(lcQpaFonts) << __FUNCTION__ << "FONTDATA" << fontData << pixelSize << hintingPreference << fe;
     return fe;
 }
 
@@ -566,16 +564,14 @@ QStringList QWindowsFontDatabaseFT::fallbacksForFamily(const QString &family, QF
     }
 #endif
 
-    if (QWindowsContext::verboseFonts)
-        qDebug() << __FUNCTION__ << family << style << styleHint
-                 << script << result << m_families;
+    qCDebug(lcQpaFonts) << __FUNCTION__ << family << style << styleHint
+        << script << result << m_families;
     return result;
 }
 QString QWindowsFontDatabaseFT::fontDir() const
 {
     const QString result = QLatin1String(qgetenv("windir")) + QLatin1String("/Fonts");//QPlatformFontDatabase::fontDir();
-    if (QWindowsContext::verboseFonts)
-        qDebug() << __FUNCTION__ << result;
+    qCDebug(lcQpaFonts) << __FUNCTION__ << result;
     return result;
 }
 

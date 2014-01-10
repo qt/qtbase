@@ -59,13 +59,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_NO_DEBUG) && !defined(QT_NO_DEBUG_OUTPUT)
-bool debug_accessibility();
-# define accessibleDebug !debug_accessibility() ? (void)0 : qDebug
-#else
-# define accessibleDebug while (false) qDebug
-#endif
-
 #ifndef QT_NO_DEBUG_OUTPUT
 #define DEBUG_SHOW_ATCLIENT_COMMANDS
 #endif

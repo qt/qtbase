@@ -441,9 +441,6 @@ QWindowsWindowCursor QWindowsCursor::pixmapWindowCursor(const QCursor &c)
 
 void QWindowsCursor::changeCursor(QCursor *cursorIn, QWindow *window)
 {
-
-    if (QWindowsContext::verboseWindows > 1)
-        qDebug() << __FUNCTION__ <<  cursorIn << window;
     if (!window)
         return;
     if (!cursorIn) {
@@ -470,8 +467,6 @@ QPoint QWindowsCursor::mousePosition()
 
 void QWindowsCursor::setPos(const QPoint &pos)
 {
-    if (QWindowsContext::verboseWindows)
-        qDebug("%s %d,%d", __FUNCTION__, pos.x(), pos.y());
     SetCursorPos(pos.x(), pos.y());
 }
 

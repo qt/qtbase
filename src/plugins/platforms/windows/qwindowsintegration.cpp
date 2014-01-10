@@ -175,6 +175,8 @@ static inline unsigned parseOptions(const QStringList &paramList)
             options |= QWindowsIntegration::DisableArb;
         } else if (param == QLatin1String("nomousefromtouch")) {
             options |= QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch;
+        } else if (param.startsWith(QLatin1String("verbose="))) {
+            QWindowsContext::verbose = param.right(param.size() - 8).toInt();
         }
     }
     return options;
@@ -244,17 +246,14 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
 
     const QWindowsWindow::WindowData obtained
             = QWindowsWindow::WindowData::create(window, requested, window->title());
-    if (QWindowsContext::verboseWindows)
-        qDebug().nospace()
-            << __FUNCTION__ << '<' << window << '\n'
-            << "    Requested: " << requested.geometry << "frame incl.: "
-            << QWindowsGeometryHint::positionIncludesFrame(window)
-            <<   " Flags="
-            << QWindowsWindow::debugWindowFlags(requested.flags) << '\n'
-            << "    Obtained : " << obtained.geometry << " Margins "
-            << obtained.frame  << " Flags="
-            << QWindowsWindow::debugWindowFlags(obtained.flags)
-            << " Handle=" << obtained.hwnd << '\n';
+    qCDebug(lcQpaWindows).nospace()
+        << __FUNCTION__ << '<' << window
+        << "\n    Requested: " << requested.geometry << "frame incl.: "
+        << QWindowsGeometryHint::positionIncludesFrame(window)
+        << " Flags=" << QWindowsWindow::debugWindowFlags(requested.flags)
+        << "\n    Obtained : " << obtained.geometry << " Margins "<< obtained.frame
+        << " Flags=" << QWindowsWindow::debugWindowFlags(obtained.flags)
+        << " Handle=" << obtained.hwnd << '\n';
     if (!obtained.hwnd)
         return 0;
     if (requested.flags != obtained.flags)
@@ -269,8 +268,7 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
 QPlatformOpenGLContext
     *QWindowsIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    if (QWindowsContext::verboseGL)
-        qDebug() << __FUNCTION__ << context->format();
+    qCDebug(lcQpaGl) << __FUNCTION__ << context->format();
 #ifdef QT_OPENGL_ES_2
     if (d->m_staticEGLContext.isNull()) {
         QWindowsEGLStaticContext *staticContext = QWindowsEGLStaticContext::create();
@@ -324,9 +322,7 @@ QPlatformFontDatabase *QWindowsIntegration::fontDatabase() const
             d->m_fontDatabase = new QWindowsFontDatabase;
 #else
             if (isQMLApplication()) {
-                if (QWindowsContext::verboseFonts) {
-                    qDebug() << "QML application detected, using FreeType rendering";
-                }
+                qCDebug(lcQpaFonts) << "QML application detected, using FreeType rendering";
                 d->m_fontDatabase = new QWindowsFontDatabaseFT;
             }
             else

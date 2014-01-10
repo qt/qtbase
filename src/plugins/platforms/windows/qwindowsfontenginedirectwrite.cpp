@@ -212,8 +212,7 @@ QWindowsFontEngineDirectWrite::QWindowsFontEngineDirectWrite(IDWriteFontFace *di
     , m_xHeight(-1)
     , m_lineGap(-1)
 {
-    if (QWindowsContext::verboseFonts)
-        qDebug("%s %g", __FUNCTION__, pixelSize);
+    qCDebug(lcQpaFonts) << __FUNCTION__ << pixelSize;
 
     Q_ASSERT(m_directWriteFontFace);
 
@@ -227,8 +226,7 @@ QWindowsFontEngineDirectWrite::QWindowsFontEngineDirectWrite(IDWriteFontFace *di
 
 QWindowsFontEngineDirectWrite::~QWindowsFontEngineDirectWrite()
 {
-    if (QWindowsContext::verboseFonts)
-        qDebug("%s", __FUNCTION__);
+    qCDebug(lcQpaFonts) << __FUNCTION__;
 
     m_fontEngineData->directWriteFactory->Release();
     m_directWriteFontFace->Release();

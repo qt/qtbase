@@ -325,8 +325,7 @@ QWindowsFontEngine::QWindowsFontEngine(const QString &name,
     designAdvances(0),
     designAdvancesSize(0)
 {
-    if (QWindowsContext::verboseFonts)
-        qDebug("%s: font='%s', size=%ld", __FUNCTION__, qPrintable(name), lf.lfHeight);
+    qCDebug(lcQpaFonts) << __FUNCTION__ << name << lf.lfHeight;
     HDC hdc = m_fontEngineData->hdc;
     SelectObject(hdc, hfont);
     fontDef.pixelSize = -lf.lfHeight;
@@ -366,9 +365,7 @@ QWindowsFontEngine::~QWindowsFontEngine()
         if (!DeleteObject(hfont))
             qErrnoWarning("%s: QFontEngineWin: failed to delete non-stock font... failed", __FUNCTION__);
     }
-    if (QWindowsContext::verboseFonts)
-        if (QWindowsContext::verboseFonts)
-            qDebug("%s: font='%s", __FUNCTION__, qPrintable(_name));
+    qCDebug(lcQpaFonts) << __FUNCTION__ << _name;
 
     if (!uniqueFamilyName.isEmpty()) {
         QPlatformFontDatabase *pfdb = QWindowsIntegration::instance()->fontDatabase();
@@ -1347,8 +1344,7 @@ QWindowsMultiFontEngine::QWindowsMultiFontEngine(QFontEngine *first, const QStri
         : QFontEngineMulti(fallbacks.size()+1),
           fallbacks(fallbacks)
 {
-    if (QWindowsContext::verboseFonts)
-        qDebug() <<  __FUNCTION__ << engines.size() << first << first->fontDef.family << fallbacks;
+    qCDebug(lcQpaFonts) << __FUNCTION__ << engines.size() << first << first->fontDef.family << fallbacks;
     engines[0] = first;
     first->ref.ref();
     fontDef = engines[0]->fontDef;
@@ -1357,8 +1353,7 @@ QWindowsMultiFontEngine::QWindowsMultiFontEngine(QFontEngine *first, const QStri
 
 QWindowsMultiFontEngine::~QWindowsMultiFontEngine()
 {
-    if (QWindowsContext::verboseFonts)
-        qDebug("%s", __FUNCTION__);
+    qCDebug(lcQpaFonts) << __FUNCTION__;
 }
 
 void QWindowsMultiFontEngine::loadEngine(int at)
@@ -1409,9 +1404,7 @@ void QWindowsMultiFontEngine::loadEngine(int at)
                 fedw->ref.ref();
                 engines[at] = fedw;
 
-                if (QWindowsContext::verboseFonts)
-                    qDebug("%s %d %s", __FUNCTION__, at, qPrintable(fam));
-
+                qCDebug(lcQpaFonts) << __FUNCTION__ << at << fam;
                 return;
             } else {
                 qErrnoWarning("%s: CreateFontFace failed", __FUNCTION__);
@@ -1433,9 +1426,7 @@ void QWindowsMultiFontEngine::loadEngine(int at)
     engines[at] = new QWindowsFontEngine(fam, hfont, stockFont, lf, data);
     engines[at]->ref.ref();
     engines[at]->fontDef = fontDef;
-    if (QWindowsContext::verboseFonts)
-        qDebug("%s %d %s", __FUNCTION__, at, qPrintable(fam));
-
+    qCDebug(lcQpaFonts) << __FUNCTION__ << at << fam;
 
     // TODO: increase cost in QFontCache for the font engine loaded here
 }

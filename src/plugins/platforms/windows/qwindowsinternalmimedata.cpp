@@ -75,8 +75,7 @@ bool QWindowsInternalMimeData::hasFormat_sys(const QString &mime) const
     const QWindowsMimeConverter &mc = QWindowsContext::instance()->mimeConverter();
     const bool has = mc.converterToMime(mime, pDataObj) != 0;
     releaseDataObject(pDataObj);
-    if (QWindowsContext::verboseOLE)
-        qDebug() << __FUNCTION__ <<  mime << has;
+    qCDebug(lcQpaMime) << __FUNCTION__ <<  mime << has;
     return has;
 }
 
@@ -89,8 +88,7 @@ QStringList QWindowsInternalMimeData::formats_sys() const
     const QWindowsMimeConverter &mc = QWindowsContext::instance()->mimeConverter();
     const QStringList fmts = mc.allMimesForFormats(pDataObj);
     releaseDataObject(pDataObj);
-    if (QWindowsContext::verboseOLE)
-        qDebug() << __FUNCTION__ <<  fmts;
+    qCDebug(lcQpaMime) << __FUNCTION__ <<  fmts;
     return fmts;
 }
 
@@ -106,12 +104,10 @@ QVariant QWindowsInternalMimeData::retrieveData_sys(const QString &mimeType,
     if (const QWindowsMime *converter = mc.converterToMime(mimeType, pDataObj))
         result = converter->convertToMime(mimeType, pDataObj, type);
     releaseDataObject(pDataObj);
-    if (QWindowsContext::verboseOLE) {
-        QDebug nospace = qDebug().nospace();
-        nospace << __FUNCTION__ <<  ' '  << mimeType << ' ' << type
-                << " returns " << result.type();
-        if (result.type() != QVariant::ByteArray)
-            nospace << ' ' << result;
+    if (QWindowsContext::verbose) {
+        qCDebug(lcQpaMime) <<__FUNCTION__ << ' '  << mimeType << ' ' << type
+            << " returns " << result.type()
+            << (result.type() != QVariant::ByteArray ? result.toString() : QStringLiteral("<data>"));
     }
     return result;
 }
