@@ -227,8 +227,7 @@ QByteArray TableGenerator::readLocaleAliases(const QByteArray &locale)
 {
     QFile aliases(systemComposeDir() + QLatin1String("/locale.alias"));
     QByteArray fullLocaleName;
-    if (aliases.exists()) {
-        aliases.open(QIODevice::ReadOnly);
+    if (aliases.open(QIODevice::ReadOnly)) {
         while (!aliases.atEnd()) {
             char l[1024];
             int read = aliases.readLine(l, sizeof(l));
@@ -267,8 +266,7 @@ QByteArray TableGenerator::readLocaleAliases(const QByteArray &locale)
 bool TableGenerator::processFile(QString composeFileName)
 {
     QFile composeFile(composeFileName);
-    if (composeFile.exists()) {
-        composeFile.open(QIODevice::ReadOnly);
+    if (composeFile.open(QIODevice::ReadOnly)) {
         parseComposeFile(&composeFile);
         return true;
     }
