@@ -61,17 +61,12 @@ quint64 spiStatesFromQState(QAccessible::State state)
 {
     quint64 spiState = 0;
 
-    setSpiStateBit(&spiState, ATSPI_STATE_EDITABLE);
-    setSpiStateBit(&spiState, ATSPI_STATE_ENABLED);
-    setSpiStateBit(&spiState, ATSPI_STATE_SHOWING);
-    setSpiStateBit(&spiState, ATSPI_STATE_VISIBLE);
-    setSpiStateBit(&spiState, ATSPI_STATE_SENSITIVE);
-
-    if (state.disabled) {
-        unsetSpiStateBit(&spiState, ATSPI_STATE_ENABLED);
-        unsetSpiStateBit(&spiState, ATSPI_STATE_SENSITIVE);
+    if (state.editable)
+        setSpiStateBit(&spiState, ATSPI_STATE_EDITABLE);
+    if (!state.disabled) {
+        setSpiStateBit(&spiState, ATSPI_STATE_ENABLED);
+        setSpiStateBit(&spiState, ATSPI_STATE_SENSITIVE);
     }
-
     if (state.selected)
         setSpiStateBit(&spiState, ATSPI_STATE_SELECTED);
     if (state.focused)
@@ -95,9 +90,9 @@ quint64 spiStatesFromQState(QAccessible::State state)
         setSpiStateBit(&spiState, ATSPI_STATE_BUSY);
     if (state.marqueed || state.animated)
         setSpiStateBit(&spiState, ATSPI_STATE_ANIMATED);
-    if (state.invisible || state.offscreen) {
-        unsetSpiStateBit(&spiState, ATSPI_STATE_SHOWING);
-        unsetSpiStateBit(&spiState, ATSPI_STATE_VISIBLE);
+    if (!state.invisible && !state.offscreen) {
+        setSpiStateBit(&spiState, ATSPI_STATE_SHOWING);
+        setSpiStateBit(&spiState, ATSPI_STATE_VISIBLE);
     }
     if (state.sizeable)
         setSpiStateBit(&spiState, ATSPI_STATE_RESIZABLE);
@@ -118,10 +113,8 @@ quint64 spiStatesFromQState(QAccessible::State state)
     //        if (state.HasPopup)
     if (state.modal)
         setSpiStateBit(&spiState, ATSPI_STATE_MODAL);
-
-    // Not implemented in Qt
-    //    if (state.singleLine)
-    //        setSpiStateBit(&spiState, ATSPI_STATE_SINGLE_LINE);
+    if (state.multiLine)
+        setSpiStateBit(&spiState, ATSPI_STATE_MULTI_LINE);
 
     return spiState;
 }
