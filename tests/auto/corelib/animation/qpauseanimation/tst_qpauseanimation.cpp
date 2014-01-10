@@ -259,14 +259,14 @@ void tst_QPauseAnimation::pauseResume()
     animation.pause();
     QVERIFY(animation.state() == QAbstractAnimation::Paused);
     animation.start();
-    QTest::qWait(300);
-    QVERIFY(animation.state() == QAbstractAnimation::Stopped);
+    QTRY_COMPARE(animation.state(), QAbstractAnimation::Stopped);
 
 #ifdef Q_OS_WIN
     if (animation.m_updateCurrentTimeCount != 3)
         QEXPECT_FAIL("", winTimerError, Abort);
 #endif
-    QCOMPARE(animation.m_updateCurrentTimeCount, 3);
+    QVERIFY2(animation.m_updateCurrentTimeCount >= 3, qPrintable(
+        QString::fromLatin1("animation.m_updateCurrentTimeCount = %1").arg(animation.m_updateCurrentTimeCount)));
 }
 
 void tst_QPauseAnimation::sequentialPauseGroup()

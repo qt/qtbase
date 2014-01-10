@@ -472,58 +472,68 @@ void QPageSetupWidget::selectPdfPsPrinter(const QPrinter *p)
 // Updates size/preview after the combobox has been changed.
 void QPageSetupWidget::_q_paperSizeChanged()
 {
-    QVariant val = widget.paperSize->itemData(widget.paperSize->currentIndex());
-    int index = m_printer->pageSize();
-    if (val.type() == QVariant::Int) {
-        index = val.toInt();
-    }
-
     if (m_blockSignals) return;
     m_blockSignals = true;
 
-    QPrinter::PaperSize size = QPrinter::PaperSize(index);
-    QPrinter::Orientation orientation = widget.portrait->isChecked()
-                                        ? QPrinter::Portrait
-                                        : QPrinter::Landscape;
+    bool custom = false;
+    QVariant val = widget.paperSize->itemData(widget.paperSize->currentIndex());
+    QPrinter::Orientation orientation = widget.portrait->isChecked() ? QPrinter::Portrait : QPrinter::Landscape;
 
-    bool custom = size == QPrinter::Custom;
-
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    custom = custom && m_cups && (m_printer->paperName() == QLatin1String("Custom"));
+    if (m_cups) {
+        // OutputFormat == NativeFormat, data is QString Cups paper name
+        QByteArray cupsPageSize = val.toByteArray();
+        custom = (cupsPageSize == QByteArrayLiteral("Custom"));
+#ifndef QT_NO_CUPS
+        if (!custom) {
+            QCUPSSupport cups;
+            cups.setCurrentPrinter(m_printer->printerName());
+            m_paperSize = sizeForOrientation(orientation, cups.paperRect(cupsPageSize).size());
+        }
 #endif
+    } else {
+        // OutputFormat == PdfFormat, data is QPrinter::PageSize
+        QPrinter::PaperSize size = QPrinter::PaperSize(val.toInt());
+        custom = size == QPrinter::Custom;
+        if (!custom)
+            m_paperSize = qt_printerPaperSize(orientation, size, QPrinter::Point, 1);
+    }
+
+    if (custom) {
+        // Convert input custom size Units to Points
+        m_paperSize = QSizeF(widget.paperWidth->value() * m_currentMultiplier,
+                             widget.paperHeight->value() * m_currentMultiplier);
+    } else {
+        // Display standard size Points as Units
+        widget.paperWidth->setValue(m_paperSize.width() / m_currentMultiplier);
+        widget.paperHeight->setValue(m_paperSize.height() / m_currentMultiplier);
+    }
+
+    m_pagePreview->setPaperSize(m_paperSize);
 
     widget.paperWidth->setEnabled(custom);
     widget.paperHeight->setEnabled(custom);
     widget.widthLabel->setEnabled(custom);
     widget.heightLabel->setEnabled(custom);
-    if (custom) {
-        m_paperSize.setWidth( widget.paperWidth->value() * m_currentMultiplier);
-        m_paperSize.setHeight( widget.paperHeight->value() * m_currentMultiplier);
-        m_pagePreview->setPaperSize(m_paperSize);
-    } else {
-        Q_ASSERT(m_printer);
-#if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-        if (m_cups && QCUPSSupport::isAvailable()) { // combobox is filled with cups based data
-            QCUPSSupport cups;
-            QByteArray cupsPageSize = widget.paperSize->itemData(widget.paperSize->currentIndex()).toByteArray();
-            m_paperSize = cups.paperRect(cupsPageSize).size();
-            if (orientation == QPrinter::Landscape)
-                m_paperSize = QSizeF(m_paperSize.height(), m_paperSize.width()); // swap
-        }
-        else
-#endif
-            m_paperSize = qt_printerPaperSize(orientation, size, QPrinter::Point, 1);
 
-        m_pagePreview->setPaperSize(m_paperSize);
-        widget.paperWidth->setValue(m_paperSize.width() / m_currentMultiplier);
-        widget.paperHeight->setValue(m_paperSize.height() / m_currentMultiplier);
-    }
     m_blockSignals = false;
 }
 
 void QPageSetupWidget::_q_pageOrientationChanged()
 {
-    if (QPrinter::PaperSize(widget.paperSize->currentIndex()) == QPrinter::Custom) {
+    bool custom = false;
+    QVariant val = widget.paperSize->itemData(widget.paperSize->currentIndex());
+
+    if (m_cups) {
+        // OutputFormat == NativeFormat, data is QString Cups paper name
+        QByteArray cupsPageSize = val.toByteArray();
+        custom = (cupsPageSize == QByteArrayLiteral("Custom"));
+    } else {
+        // OutputFormat == PdfFormat, data is QPrinter::PageSize
+        QPrinter::PaperSize size = QPrinter::PaperSize(val.toInt());
+        custom = size == QPrinter::Custom;
+    }
+
+    if (custom) {
         double tmp = widget.paperWidth->value();
         widget.paperWidth->setValue(widget.paperHeight->value());
         widget.paperHeight->setValue(tmp);

@@ -154,8 +154,10 @@ DotNET which_dotnet_version(const QByteArray &preferredVersion = QByteArray())
             const QString productPath = installPaths.value(dotNetCombo[i].version);
             if (productPath.isEmpty())
                 continue;
-            if (path.startsWith(productPath, Qt::CaseInsensitive))
-                return dotNetCombo[i].version;
+            if (path.startsWith(productPath, Qt::CaseInsensitive)) {
+                current_version = dotNetCombo[i].version;
+                return current_version;
+            }
         }
     }
 

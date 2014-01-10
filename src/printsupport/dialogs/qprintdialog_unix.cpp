@@ -929,7 +929,7 @@ void QUnixPrintWidgetPrivate::_q_btnPropertiesClicked()
     if (!propertiesDialog)
         setupPrinterProperties();
     propertiesDialog->exec();
-    if (propertiesDialog->result() == QDialog::Rejected) {
+    if (!propertiesDialogShown && propertiesDialog->result() == QDialog::Rejected) {
         // If properties dialog was rejected the dialog is deleted and
         // the properties are set to defaults when printer is setup
         delete propertiesDialog;

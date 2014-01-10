@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #ifndef CP949CODETBL_P_H
-#define CP494CODETBL_P_H
+#define CP949CODETBL_P_H
 
 //
 //  W A R N I N G
@@ -645,4 +645,4 @@ static const unsigned short cp949_icode_to_unicode[] = {
 0xd7a2, 0xd7a3
 };
 
-#endif // CP494CODETBL_P_H
+#endif // CP949CODETBL_P_H

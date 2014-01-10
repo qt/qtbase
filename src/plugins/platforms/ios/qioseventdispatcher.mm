@@ -246,7 +246,7 @@ enum SetJumpResult
 // user our main wrapper. Since the symbol is weak, it will not
 // get used or cause a clash in the normal Qt application usecase,
 // where we rename main to qt_main.
-extern "C" int __attribute__((weak)) qt_main(int argc, char *argv[])
+extern "C" int __attribute__((weak)) qtmn(int argc, char *argv[])
 {
     Q_UNUSED(argc);
     Q_UNUSED(argv);
@@ -265,7 +265,7 @@ static void __attribute__((noinline, noreturn)) user_main_trampoline()
         strcpy(argv[i], [arg cStringUsingEncoding:[NSString defaultCStringEncoding]]);
     }
 
-    int exitCode = qt_main(argc, argv);
+    int exitCode = qtmn(argc, argv);
     delete[] argv;
 
     qEventDispatcherDebug() << "Returned from main with exit code " << exitCode;

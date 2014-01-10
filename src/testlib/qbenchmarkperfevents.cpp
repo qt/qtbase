@@ -515,16 +515,18 @@ void QBenchmarkPerfEventsMeasurer::start()
 {
 
     initPerf();
-    // pid == 0 -> attach to the current process
-    // cpu == -1 -> monitor on all CPUs
-    // group_fd == -1 -> this is the group leader
-    // flags == 0 -> reserved, must be zero
-    fd = perf_event_open(&attr, 0, -1, -1, 0);
     if (fd == -1) {
-        perror("QBenchmarkPerfEventsMeasurer::start: perf_event_open");
-        exit(1);
-    } else {
-        ::fcntl(fd, F_SETFD, FD_CLOEXEC);
+        // pid == 0 -> attach to the current process
+        // cpu == -1 -> monitor on all CPUs
+        // group_fd == -1 -> this is the group leader
+        // flags == 0 -> reserved, must be zero
+        fd = perf_event_open(&attr, 0, -1, -1, 0);
+        if (fd == -1) {
+            perror("QBenchmarkPerfEventsMeasurer::start: perf_event_open");
+            exit(1);
+        } else {
+            ::fcntl(fd, F_SETFD, FD_CLOEXEC);
+        }
     }
 
     // enable the counter

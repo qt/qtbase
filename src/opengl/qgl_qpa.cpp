@@ -138,6 +138,9 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
 {
     Q_D(QGLContext);
     if(!d->paintDevice || d->paintDevice->devType() != QInternal::Widget) {
+        // Unlike in Qt 4, the only possible target is a widget backed by an OpenGL-based
+        // QWindow. Pixmaps in particular are not supported anymore as paint devices since
+        // starting from Qt 5 QPixmap is raster-backed on almost all platforms.
         d->valid = false;
     }else {
         QWidget *widget = static_cast<QWidget *>(d->paintDevice);

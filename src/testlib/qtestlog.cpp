@@ -58,6 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_CORE_EXPORT QString qMessageFormatString(QtMsgType type, const QMessageLogContext &context, const QString& msg);
+
 static void saveCoverageTool(const char * appname, bool testfailed, bool installedTestCoverage)
 {
 #ifdef __COVERAGESCANNER__
@@ -267,7 +269,7 @@ namespace QTest {
         return false;
     }
 
-    static void messageHandler(QtMsgType type, const QMessageLogContext & /*context*/, const QString &message)
+    static void messageHandler(QtMsgType type, const QMessageLogContext & context, const QString &message)
     {
         static QBasicAtomicInt counter = Q_BASIC_ATOMIC_INITIALIZER(QTest::maxWarnings);
 
@@ -281,6 +283,9 @@ namespace QTest {
         if (handleIgnoredMessage(type, msg))
             // the message is expected, so just swallow it.
             return;
+
+        msg = qMessageFormatString(type, context, message).toLocal8Bit();
+        msg.chop(1); // remove trailing newline
 
         if (type != QtFatalMsg) {
             if (counter.load() <= 0)

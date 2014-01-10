@@ -280,8 +280,12 @@ void QXcbWindow::create()
     if (parent()) {
         xcb_parent_id = static_cast<QXcbWindow *>(parent())->xcb_window();
         m_embedded = parent()->window()->type() == Qt::ForeignWindow;
-    }
 
+        QSurfaceFormat parentFormat = parent()->window()->requestedFormat();
+        if (window()->surfaceType() != QSurface::OpenGLSurface && parentFormat.hasAlpha()) {
+            window()->setFormat(parentFormat);
+        }
+    }
     m_format = window()->requestedFormat();
 
 #if (defined(XCB_USE_GLX) || defined(XCB_USE_EGL)) && defined(XCB_USE_XLIB)

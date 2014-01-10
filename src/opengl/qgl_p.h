@@ -270,6 +270,7 @@ public:
     uint workaround_brokenAlphaTexSubImage_init : 1;
 
     QPaintDevice *paintDevice;
+    QSize readback_target_size;
     QColor transpColor;
     QGLContext *q_ptr;
     QGLFormat::OpenGLVersionFlags version_flags;

@@ -1380,12 +1380,13 @@ void tst_QGL::glWidgetRenderPixmap()
 {
     RenderPixmapWidget *w = new RenderPixmapWidget;
 
-    QPixmap pm = w->renderPixmap(100, 100, false);
+    QSize pmSize = QSize(100, 100);
+    QPixmap pm = w->renderPixmap(pmSize.width(), pmSize.height(), false);
 
     delete w;
 
     QImage fb = pm.toImage().convertToFormat(QImage::Format_RGB32);
-    QImage reference(fb.size(), QImage::Format_RGB32);
+    QImage reference(pmSize, QImage::Format_RGB32);
     reference.fill(0xffff0000);
 
     QFUZZY_COMPARE_IMAGES(fb, reference);
@@ -2011,6 +2012,7 @@ void tst_QGL::textureCleanup()
     QGLWidget w;
     w.resize(200,200);
     w.show();
+    QTest::qWaitForWindowExposed(&w);
     w.makeCurrent();
 
     // Test pixmaps which have been loaded via QPixmapCache are removed from the texture cache

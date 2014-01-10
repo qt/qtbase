@@ -2975,6 +2975,10 @@ bool QGLContext::areSharing(const QGLContext *context1, const QGLContext *contex
 
     Returns \c true if the paint device of this context is a pixmap;
     otherwise returns \c false.
+
+    Since Qt 5 the paint device is never actually a pixmap. renderPixmap() is
+    however still simulated using framebuffer objects and readbacks, and this
+    function will return \c true in this case.
 */
 
 /*!
@@ -3143,7 +3147,7 @@ QGLFormat QGLContext::requestedFormat() const
 bool QGLContext::deviceIsPixmap() const
 {
     Q_D(const QGLContext);
-    return d->paintDevice->devType() == QInternal::Pixmap;
+    return !d->readback_target_size.isEmpty();
 }
 
 
@@ -3885,7 +3889,9 @@ void QGLWidget::setFormat(const QGLFormat &format)
 
 void QGLWidget::updateGL()
 {
-    if (updatesEnabled() && testAttribute(Qt::WA_Mapped))
+    Q_D(QGLWidget);
+    const bool targetIsOffscreen = !d->glcx->d_ptr->readback_target_size.isEmpty();
+    if (updatesEnabled() && (testAttribute(Qt::WA_Mapped) || targetIsOffscreen))
         glDraw();
 }
 
@@ -4041,20 +4047,28 @@ void QGLWidget::paintEvent(QPaintEvent *)
 
     You can use this method on both visible and invisible QGLWidget objects.
 
-    This method will create a pixmap and a temporary QGLContext to
-    render on the pixmap. It will then call initializeGL(),
-    resizeGL(), and paintGL() on this context. Finally, the widget's
-    original GL context is restored.
+    Internally the function renders into a framebuffer object and performs pixel
+    readback. This has a performance penalty, meaning that this function is not
+    suitable to be called at a high frequency.
 
-    The size of the pixmap will be \a w pixels wide and \a h pixels
-    high unless one of these parameters is 0 (the default), in which
-    case the pixmap will have the same size as the widget.
+    After creating and binding the framebuffer object, the function will call
+    initializeGL(), resizeGL(), and paintGL(). On the next normal update
+    initializeGL() and resizeGL() will be triggered again since the size of the
+    destination pixmap and the QGLWidget's size may differ.
 
-    If \a useContext is true, this method will try to be more
-    efficient by using the existing GL context to render the pixmap.
-    The default is false. Only use true if you understand the risks.
-    Note that under Windows a temporary context has to be created
-    and usage of the \e useContext parameter is not supported.
+    The size of the pixmap will be \a w pixels wide and \a h pixels high unless
+    one of these parameters is 0 (the default), in which case the pixmap will
+    have the same size as the widget.
+
+    Care must be taken when using framebuffer objects in paintGL() in
+    combination with this function. To switch back to the default framebuffer,
+    use QGLFramebufferObject::bindDefault(). Binding FBO 0 is wrong since
+    renderPixmap() uses a custom framebuffer instead of the one provided by the
+    windowing system.
+
+    \a useContext is ignored. Historically this parameter enabled the usage of
+    the existing GL context. This is not supported anymore since additional
+    contexts are never created.
 
     Overlays are not rendered onto the pixmap.
 
@@ -4069,43 +4083,31 @@ void QGLWidget::paintEvent(QPaintEvent *)
 
 QPixmap QGLWidget::renderPixmap(int w, int h, bool useContext)
 {
+    Q_UNUSED(useContext);
     Q_D(QGLWidget);
+
     QSize sz = size();
     if ((w > 0) && (h > 0))
         sz = QSize(w, h);
 
-    QPixmap pm(sz);
-
-    d->glcx->doneCurrent();
-
-    bool success = true;
-
-    if (useContext && isValid() && d->renderCxPm(&pm))
-        return pm;
-
-    QGLFormat fmt = d->glcx->requestedFormat();
-    fmt.setDirectRendering(false);                // Direct is unlikely to work
-    fmt.setDoubleBuffer(false);                // We don't need dbl buf
-
-    QGLContext* ocx = d->glcx;
-    ocx->doneCurrent();
-    d->glcx = new QGLContext(fmt, &pm);
-    d->glcx->create();
-
-    if (d->glcx->isValid())
+    QPixmap pm;
+    if (d->glcx->isValid()) {
+        d->glcx->makeCurrent();
+        QGLFramebufferObject fbo(sz, QGLFramebufferObject::CombinedDepthStencil);
+        fbo.bind();
+        d->glcx->setInitialized(false);
+        uint prevDefaultFbo = d->glcx->d_ptr->default_fbo;
+        d->glcx->d_ptr->default_fbo = fbo.handle();
+        d->glcx->d_ptr->readback_target_size = sz;
         updateGL();
-    else
-        success = false;
-
-    delete d->glcx;
-    d->glcx = ocx;
-
-    ocx->makeCurrent();
-
-    if (success) {
-        return pm;
+        fbo.release();
+        pm = QPixmap::fromImage(fbo.toImage());
+        d->glcx->d_ptr->default_fbo = prevDefaultFbo;
+        d->glcx->setInitialized(false);
+        d->glcx->d_ptr->readback_target_size = QSize();
     }
-    return QPixmap();
+
+    return pm;
 }
 
 /*!
@@ -4164,14 +4166,23 @@ void QGLWidget::glDraw()
     if (d->glcx->deviceIsPixmap())
         glDrawBuffer(GL_FRONT);
 #endif
+    QSize readback_target_size = d->glcx->d_ptr->readback_target_size;
     if (!d->glcx->initialized()) {
         glInit();
         const qreal scaleFactor = (window() && window()->windowHandle()) ?
             window()->windowHandle()->devicePixelRatio() : 1.0;
-        resizeGL(d->glcx->device()->width() * scaleFactor, d->glcx->device()->height() * scaleFactor); // New context needs this "resize"
+        int w, h;
+        if (readback_target_size.isEmpty()) {
+            w = d->glcx->device()->width() * scaleFactor;
+            h = d->glcx->device()->height() * scaleFactor;
+        } else {
+            w = readback_target_size.width();
+            h = readback_target_size.height();
+        }
+        resizeGL(w, h); // New context needs this "resize"
     }
     paintGL();
-    if (doubleBuffer()) {
+    if (doubleBuffer() && readback_target_size.isEmpty()) {
         if (d->autoSwap)
             swapBuffers();
     } else {
