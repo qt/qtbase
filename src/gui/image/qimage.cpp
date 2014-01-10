@@ -4424,6 +4424,8 @@ bool QImageData::convertInPlace(QImage::Format newFormat, Qt::ImageConversionFla
     InPlace_Image_Converter converter = *converterPtr;
     if (converter)
         return converter(this, flags);
+    else if (format > QImage::Format_Indexed8 && newFormat > QImage::Format_Indexed8)
+        return convert_generic_inplace(this, newFormat, flags);
     else
         return false;
 }

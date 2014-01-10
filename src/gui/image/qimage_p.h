@@ -115,6 +115,7 @@ extern Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImag
 extern InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QImage::NImageFormats];
 
 void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags);
+bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::ImageConversionFlags);
 
 void dither_to_Mono(QImageData *dst, const QImageData *src, Qt::ImageConversionFlags flags, bool fromalpha);
 

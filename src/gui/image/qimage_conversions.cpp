@@ -138,6 +138,40 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
     }
 }
 
+// Cannot be used with indexed formats or between formats with different pixel depths.
+bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::ImageConversionFlags)
+{
+    Q_ASSERT(dst_format > QImage::Format_Indexed8);
+    Q_ASSERT(data->format > QImage::Format_Indexed8);
+    if (data->depth != qt_depthForFormat(dst_format))
+        return false;
+
+    const int buffer_size = 2048;
+    uint buffer[buffer_size];
+    const QPixelLayout *srcLayout = &qPixelLayouts[data->format];
+    const QPixelLayout *destLayout = &qPixelLayouts[dst_format];
+
+    uchar *srcData = data->data;
+
+    FetchPixelsFunc fetch = qFetchPixels[srcLayout->bpp];
+    StorePixelsFunc store = qStorePixels[destLayout->bpp];
+
+    for (int y = 0; y < data->height; ++y) {
+        int x = 0;
+        while (x < data->width) {
+            int l = qMin(data->width - x, buffer_size);
+            const uint *ptr = fetch(buffer, srcData, x, l);
+            ptr = srcLayout->convertToARGB32PM(buffer, ptr, l, srcLayout, 0);
+            ptr = destLayout->convertFromARGB32PM(buffer, ptr, l, destLayout, 0);
+            store(srcData, ptr, x, l);
+            x += l;
+        }
+        srcData += data->bytes_per_line;
+    }
+    data->format = dst_format;
+    return true;
+}
+
 static void convert_ARGB_to_ARGB_PM(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
 {
     Q_ASSERT(src->format == QImage::Format_ARGB32 || src->format == QImage::Format_RGBA8888);
