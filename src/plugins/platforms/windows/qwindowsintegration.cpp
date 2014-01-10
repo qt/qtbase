@@ -203,8 +203,6 @@ QWindowsIntegration::QWindowsIntegration(const QStringList &paramList) :
 
 QWindowsIntegration::~QWindowsIntegration()
 {
-    if (QWindowsContext::verboseIntegration)
-        qDebug("%s", __FUNCTION__);
 }
 
 bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) const
@@ -246,7 +244,7 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
 
     const QWindowsWindow::WindowData obtained
             = QWindowsWindow::WindowData::create(window, requested, window->title());
-    if (QWindowsContext::verboseIntegration || QWindowsContext::verboseWindows)
+    if (QWindowsContext::verboseWindows)
         qDebug().nospace()
             << __FUNCTION__ << '<' << window << '\n'
             << "    Requested: " << requested.geometry << "frame incl.: "
@@ -271,7 +269,7 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
 QPlatformOpenGLContext
     *QWindowsIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    if (QWindowsContext::verboseIntegration)
+    if (QWindowsContext::verboseGL)
         qDebug() << __FUNCTION__ << context->format();
 #ifdef QT_OPENGL_ES_2
     if (d->m_staticEGLContext.isNull()) {
@@ -326,7 +324,7 @@ QPlatformFontDatabase *QWindowsIntegration::fontDatabase() const
             d->m_fontDatabase = new QWindowsFontDatabase;
 #else
             if (isQMLApplication()) {
-                if (QWindowsContext::verboseIntegration) {
+                if (QWindowsContext::verboseFonts) {
                     qDebug() << "QML application detected, using FreeType rendering";
                 }
                 d->m_fontDatabase = new QWindowsFontDatabaseFT;

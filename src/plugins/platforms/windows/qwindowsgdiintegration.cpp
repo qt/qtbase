@@ -75,8 +75,6 @@ QPlatformPixmap *QWindowsGdiIntegration::createPlatformPixmap(QPlatformPixmap::P
 
 QPlatformBackingStore *QWindowsGdiIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    if (QWindowsContext::verboseIntegration)
-        qDebug() << __FUNCTION__ << window;
     return new QWindowsBackingStore(window);
 }
 

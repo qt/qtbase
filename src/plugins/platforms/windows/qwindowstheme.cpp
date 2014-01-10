@@ -406,10 +406,6 @@ void QWindowsTheme::refreshPalettes()
     m_palettes[ToolTipPalette] = new QPalette(toolTipPalette(*m_palettes[SystemPalette]));
     m_palettes[MenuPalette] = new QPalette(menuPalette(*m_palettes[SystemPalette]));
     m_palettes[MenuBarPalette] = menuBarPalette(*m_palettes[MenuPalette]);
-    if (QWindowsContext::verboseTheming)
-        qDebug() << __FUNCTION__ << '\n'
-                 << "  system=" << paletteToString(*m_palettes[SystemPalette])
-                 << "  tooltip=" << paletteToString(*m_palettes[ToolTipPalette]);
 }
 
 void QWindowsTheme::clearFonts()
@@ -449,11 +445,6 @@ void QWindowsTheme::refreshFonts()
     m_fonts[DockWidgetTitleFont] = new QFont(titleFont);
     m_fonts[ItemViewFont] = new QFont(iconTitleFont);
     m_fonts[FixedFont] = new QFont(fixedFont);
-
-    if (QWindowsContext::verboseTheming)
-        qDebug() << __FUNCTION__ << '\n'
-                 << "  menuFont=" << menuFont
-                 << "  messageBox=" << MessageBoxFont;
 #endif // !Q_OS_WINCE
 }
 

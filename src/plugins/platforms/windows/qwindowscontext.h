@@ -128,7 +128,6 @@ public:
     };
 
     // Verbose flag set by environment variable QT_QPA_VERBOSE
-    static int verboseIntegration;
     static int verboseWindows;
     static int verboseBackingStore;
     static int verboseEvents;
@@ -137,7 +136,6 @@ public:
     static int verboseOLE;
     static int verboseInputMethods;
     static int verboseDialogs;
-    static int verboseTheming;
     static int verboseTablet;
 
     explicit QWindowsContext();

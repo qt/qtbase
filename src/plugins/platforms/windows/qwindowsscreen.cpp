@@ -201,8 +201,6 @@ Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat =
 
 QPixmap QWindowsScreen::grabWindow(WId window, int x, int y, int width, int height) const
 {
-    if (QWindowsContext::verboseIntegration)
-        qDebug() << __FUNCTION__ << window << x << y << width << height;
     RECT r;
     HWND hwnd = window ? (HWND)window : GetDesktopWindow();
     GetClientRect(hwnd, &r);

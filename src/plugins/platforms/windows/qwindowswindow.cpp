@@ -949,7 +949,7 @@ void QWindowsWindow::fireExpose(const QRegion &region, bool force)
 
 void QWindowsWindow::destroyWindow()
 {
-    if (QWindowsContext::verboseIntegration || QWindowsContext::verboseWindows)
+    if (QWindowsContext::verboseWindows)
         qDebug() << __FUNCTION__ << this << window() << m_data.hwnd;
     if (m_data.hwnd) { // Stop event dispatching before Window is destroyed.
         setFlag(WithinDestroy);

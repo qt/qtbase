@@ -80,7 +80,6 @@
 QT_BEGIN_NAMESPACE
 
 // Verbosity of components
-int QWindowsContext::verboseIntegration = 0;
 int QWindowsContext::verboseWindows = 0;
 int QWindowsContext::verboseEvents = 0;
 int QWindowsContext::verboseBackingStore = 0;
@@ -89,7 +88,6 @@ int QWindowsContext::verboseGL = 0;
 int QWindowsContext::verboseOLE = 0;
 int QWindowsContext::verboseInputMethods = 0;
 int QWindowsContext::verboseDialogs = 0;
-int QWindowsContext::verboseTheming = 0;
 int QWindowsContext::verboseTablet = 0;
 
 // Get verbosity of components from "foo:2,bar:3"
@@ -321,7 +319,6 @@ QWindowsContext::QWindowsContext() :
     const QByteArray bv = qgetenv("QT_QPA_VERBOSE");
     if (!bv.isEmpty()) {
         const char *v = bv.data();
-        QWindowsContext::verboseIntegration = componentVerbose(v, "integration");
         QWindowsContext::verboseWindows = componentVerbose(v, "windows");
         QWindowsContext::verboseEvents = componentVerbose(v, "events");
         QWindowsContext::verboseBackingStore = componentVerbose(v, "backingstore");
@@ -330,7 +327,6 @@ QWindowsContext::QWindowsContext() :
         QWindowsContext::verboseOLE = componentVerbose(v, "ole");
         QWindowsContext::verboseInputMethods = componentVerbose(v, "im");
         QWindowsContext::verboseDialogs = componentVerbose(v, "dialogs");
-        QWindowsContext::verboseTheming = componentVerbose(v, "theming");
         QWindowsContext::verboseTablet = componentVerbose(v, "tablet");
     }
 #if !defined(QT_NO_TABLETEVENT) && !defined(Q_OS_WINCE)
@@ -519,7 +515,7 @@ QString QWindowsContext::registerWindowClass(QString cname,
                       qPrintable(cname));
 
     d->m_registeredWindowClassNames.insert(cname);
-    if (QWindowsContext::verboseIntegration || QWindowsContext::verboseWindows)
+    if (QWindowsContext::verboseWindows)
         qDebug().nospace() << __FUNCTION__ << ' ' << cname
                  << " style=0x" << QString::number(style, 16)
                  << " brush=" << brush << " icon=" << icon << " atom=" << atom;
@@ -530,11 +526,8 @@ void QWindowsContext::unregisterWindowClasses()
 {
     const HINSTANCE appInstance = (HINSTANCE)GetModuleHandle(0);
 
-    foreach (const QString &name,  d->m_registeredWindowClassNames) {
-        if (QWindowsContext::verboseIntegration)
-            qDebug() << __FUNCTION__ << name;
+    foreach (const QString &name,  d->m_registeredWindowClassNames)
         UnregisterClass((wchar_t*)name.utf16(), appInstance);
-    }
     d->m_registeredWindowClassNames.clear();
 }
 
