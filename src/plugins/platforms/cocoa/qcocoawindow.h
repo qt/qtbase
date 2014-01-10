@@ -213,6 +213,7 @@ public:
     void registerContentBorderArea(quintptr identifier, int upper, int lower);
     void setContentBorderAreaEnabled(quintptr identifier, bool enable);
     void setContentBorderEnabled(bool enable);
+    bool testContentBorderAreaPosition(int position) const;
     void applyContentBorderThickness(NSWindow *window);
     void updateNSToolbar();
 

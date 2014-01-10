@@ -1665,6 +1665,12 @@ void QCocoaWindow::updateNSToolbar()
     [m_nsWindow setShowsToolbarButton:YES];
 }
 
+bool QCocoaWindow::testContentBorderAreaPosition(int position) const
+{
+    return m_nsWindow && m_drawContentBorderGradient &&
+            0 <= position && position < [m_nsWindow contentBorderThicknessForEdge: NSMaxYEdge];
+}
+
 qreal QCocoaWindow::devicePixelRatio() const
 {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7

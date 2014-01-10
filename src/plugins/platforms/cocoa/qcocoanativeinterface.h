@@ -147,6 +147,10 @@ private:
     // Enables or disiables a content border area.
     static void setContentBorderAreaEnabled(QWindow *window, quintptr identifier, bool enable);
 
+    // Returns true if the given coordinate is inside the current
+    // content border.
+    static bool testContentBorderPosition(QWindow *window, int position);
+
     // Sets a NSToolbar instance for the given QWindow. The
     // toolbar will be attached to the native NSWindow when
     // that is created;

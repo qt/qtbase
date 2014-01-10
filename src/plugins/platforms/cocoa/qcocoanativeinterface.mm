@@ -133,6 +133,8 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QCocoaNativeInter
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setContentBorderEnabled);
     if (resource.toLower() == "setnstoolbar")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setNSToolbar);
+    if (resource.toLower() == "testcontentborderposition")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::testContentBorderPosition);
 
     return 0;
 }
@@ -330,6 +332,17 @@ void QCocoaNativeInterface::setNSToolbar(QWindow *window, void *nsToolbar)
     QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
     if (cocoaWindow)
         cocoaWindow->updateNSToolbar();
+}
+
+bool QCocoaNativeInterface::testContentBorderPosition(QWindow *window, int position)
+{
+    if (!window)
+        return false;
+
+    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
+    if (cocoaWindow)
+        return cocoaWindow->testContentBorderAreaPosition(position);
+    return false;
 }
 
 QT_END_NAMESPACE
