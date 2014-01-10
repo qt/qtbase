@@ -54,5 +54,5 @@
 //! [1]
 
 //! [2]
-    QLoggingCategory &category();
+    const QLoggingCategory &category();
 //! [2]

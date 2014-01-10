@@ -84,13 +84,13 @@ private:
 };
 
 #define Q_DECLARE_LOGGING_CATEGORY(name) \
-    extern QLoggingCategory &name();
+    extern const QLoggingCategory &name();
 
 // relies on QLoggingCategory(QString) being thread safe!
 #define Q_LOGGING_CATEGORY(name, string) \
-    QLoggingCategory &name() \
+    const QLoggingCategory &name() \
     { \
-        static QLoggingCategory category(string); \
+        static const QLoggingCategory category(string); \
         return category; \
     }
 
