@@ -197,7 +197,8 @@ windowsIdList = {
    96 : [ u'W. Europe Standard Time',           3600  ],
    97 : [ u'West Asia Standard Time',          18000  ],
    98 : [ u'West Pacific Standard Time',       36000  ],
-   99 : [ u'Yakutsk Standard Time',            36000  ]
+   99 : [ u'Yakutsk Standard Time',            36000  ],
+   100: [ u'Libya Standard Time',              3600   ]
 }
 
 def windowsIdToKey(windowsId):
