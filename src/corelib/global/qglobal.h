@@ -820,11 +820,13 @@ Q_CORE_EXPORT void qFreeAligned(void *ptr);
 
 
 /*
-   Avoid some particularly useless warnings from some stupid compilers.
+   Avoid some particularly useless warnings from some compilers.
    To get ALL C++ compiler warnings, define QT_CC_WARNINGS or comment out
    the line "#define QT_NO_WARNINGS".
+   These warnings can only suppressed when building QT. For end-user applications
+   they will be enabled.
 */
-#if !defined(QT_CC_WARNINGS)
+#if !defined(QT_CC_WARNINGS) && defined(QT_BUILDING_QT)
 #  define QT_NO_WARNINGS
 #endif
 #if defined(QT_NO_WARNINGS)
