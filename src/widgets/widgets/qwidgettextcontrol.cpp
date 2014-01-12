@@ -3126,7 +3126,7 @@ QRectF QWidgetTextControl::blockBoundingRect(const QTextBlock &block) const
 }
 
 #ifndef QT_NO_CONTEXTMENU
-#define NUM_CONTROL_CHARACTERS 10
+#define NUM_CONTROL_CHARACTERS 14
 const struct QUnicodeControlCharacter {
     const char *text;
     ushort character;
@@ -3141,6 +3141,10 @@ const struct QUnicodeControlCharacter {
     { QT_TRANSLATE_NOOP("QUnicodeControlCharacterMenu", "LRO Start of left-to-right override"), 0x202d },
     { QT_TRANSLATE_NOOP("QUnicodeControlCharacterMenu", "RLO Start of right-to-left override"), 0x202e },
     { QT_TRANSLATE_NOOP("QUnicodeControlCharacterMenu", "PDF Pop directional formatting"), 0x202c },
+    { QT_TRANSLATE_NOOP("QUnicodeControlCharacterMenu", "LRI Left-to-right isolate"), 0x2066 },
+    { QT_TRANSLATE_NOOP("QUnicodeControlCharacterMenu", "RLI Right-to-left isolate"), 0x2067 },
+    { QT_TRANSLATE_NOOP("QUnicodeControlCharacterMenu", "FSI First strong isolate"), 0x2068 },
+    { QT_TRANSLATE_NOOP("QUnicodeControlCharacterMenu", "PDI Pop directional isolate"), 0x2069 }
 };
 
 QUnicodeControlCharacterMenu::QUnicodeControlCharacterMenu(QObject *_editWidget, QWidget *parent)
