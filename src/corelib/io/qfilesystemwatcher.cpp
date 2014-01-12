@@ -77,6 +77,7 @@ QFileSystemWatcherEngine *QFileSystemWatcherPrivate::createNativeEngine(QObject 
 #elif defined(Q_OS_FREEBSD) || defined(Q_OS_MAC)
     return QKqueueFileSystemWatcherEngine::create(parent);
 #else
+    Q_UNUSED(parent);
     return 0;
 #endif
 }
