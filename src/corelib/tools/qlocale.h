@@ -390,6 +390,9 @@ public:
         TaiDam = 309,
         TaiNua = 310,
         Ugaritic = 311,
+        Akoose = 312,
+        Lakota = 313,
+        StandardMoroccanTamazight = 314,
         Norwegian = NorwegianBokmal,
         Moldavian = Romanian,
         SerboCroatian = Serbian,
@@ -404,7 +407,7 @@ public:
         Chewa = Nyanja,
         Frisian = WesternFrisian,
         Uigur = Uighur,
-        LastLanguage = Ugaritic
+        LastLanguage = StandardMoroccanTamazight
     };
 
     enum Script {

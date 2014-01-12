@@ -1172,9 +1172,9 @@ void tst_QLocale::formatDateTime_data()
     QTest::newRow("5no_NO") << "no_NO" << QDateTime(QDate(1974, 1, 1), QTime(15, 14, 13))
                             << "dd/MM/yyy z" << "01/01/74y 0";
     QTest::newRow("6no_NO") << "no_NO" << QDateTime(QDate(1974, 12, 2), QTime(15, 14, 13))
-                            << "ddd/MMM/yy AP" << "man./des./74 PM";
+                            << "ddd/MMM/yy AP" << "man./des./74 P.M.";
     QTest::newRow("7no_NO") << "no_NO" << QDateTime(QDate(1974, 12, 2), QTime(15, 14, 13))
-                            << "dddd/MMMM/y apa" << "mandag/desember/y pmpm";
+                            << "dddd/MMMM/y apa" << "mandag/desember/y p.m.p.m.";
     QTest::newRow("8no_NO") << "no_NO" << QDateTime(QDate(1974, 12, 2), QTime(15, 14, 13))
                             << "ddddd/MMMMM/yy ss" << "mandag2/desember12/74 13";
     QTest::newRow("9no_NO") << "no_NO" << QDateTime(QDate(1974, 12, 1), QTime(15, 14, 13))
@@ -1864,8 +1864,8 @@ void tst_QLocale::ampm()
     QCOMPARE(id.pmText(), QLatin1String("PM"));
 
     QLocale ta("ta_LK");
-    QCOMPARE(ta.amText(), QLatin1String("AM"));
-    QCOMPARE(ta.pmText(), QLatin1String("PM"));
+    QCOMPARE(ta.amText(), QString::fromUtf8("முற்பகல்"));
+    QCOMPARE(ta.pmText(), QString::fromUtf8("பிற்பகல்"));
 }
 
 void tst_QLocale::dateFormat()
@@ -1897,9 +1897,9 @@ void tst_QLocale::timeFormat()
     QCOMPARE(c.timeFormat(QLocale::NarrowFormat), c.timeFormat(QLocale::ShortFormat));
 
     const QLocale no("no_NO");
-    QCOMPARE(no.timeFormat(QLocale::NarrowFormat), QLatin1String("HH:mm"));
-    QCOMPARE(no.timeFormat(QLocale::ShortFormat), QLatin1String("HH:mm"));
-    QCOMPARE(no.timeFormat(QLocale::LongFormat), QLatin1String("'kl'. HH:mm:ss t"));
+    QCOMPARE(no.timeFormat(QLocale::NarrowFormat), QLatin1String("HH.mm"));
+    QCOMPARE(no.timeFormat(QLocale::ShortFormat), QLatin1String("HH.mm"));
+    QCOMPARE(no.timeFormat(QLocale::LongFormat), QLatin1String("HH.mm.ss t"));
 
     const QLocale id("id_ID");
     QCOMPARE(id.timeFormat(QLocale::ShortFormat), QLatin1String("HH.mm"));
@@ -1921,9 +1921,9 @@ void tst_QLocale::dateTimeFormat()
     QCOMPARE(c.dateTimeFormat(QLocale::NarrowFormat), c.dateTimeFormat(QLocale::ShortFormat));
 
     const QLocale no("no_NO");
-    QCOMPARE(no.dateTimeFormat(QLocale::NarrowFormat), QLatin1String("dd.MM.yy HH:mm"));
-    QCOMPARE(no.dateTimeFormat(QLocale::ShortFormat), QLatin1String("dd.MM.yy HH:mm"));
-    QCOMPARE(no.dateTimeFormat(QLocale::LongFormat), QLatin1String("dddd d. MMMM yyyy 'kl'. HH:mm:ss t"));
+    QCOMPARE(no.dateTimeFormat(QLocale::NarrowFormat), QLatin1String("dd.MM.yy HH.mm"));
+    QCOMPARE(no.dateTimeFormat(QLocale::ShortFormat), QLatin1String("dd.MM.yy HH.mm"));
+    QCOMPARE(no.dateTimeFormat(QLocale::LongFormat), QLatin1String("dddd d. MMMM yyyy HH.mm.ss t"));
 }
 
 void tst_QLocale::monthName()
@@ -2001,9 +2001,9 @@ void tst_QLocale::currency()
 
     const QLocale en_US("en_US");
     QCOMPARE(en_US.toCurrencyString(qulonglong(1234)), QString("$1,234"));
-    QCOMPARE(en_US.toCurrencyString(qlonglong(-1234)), QString("($1,234)"));
+    QCOMPARE(en_US.toCurrencyString(qlonglong(-1234)), QString("$-1,234"));
     QCOMPARE(en_US.toCurrencyString(double(1234.56)), QString("$1,234.56"));
-    QCOMPARE(en_US.toCurrencyString(double(-1234.56)), QString("($1,234.56)"));
+    QCOMPARE(en_US.toCurrencyString(double(-1234.56)), QString("$-1,234.56"));
 
     const QLocale ru_RU("ru_RU");
     QCOMPARE(ru_RU.toCurrencyString(qulonglong(1234)), QString::fromUtf8("1" "\xc2\xa0" "234\xc2\xa0\xd1\x80\xd1\x83\xd0\xb1."));
