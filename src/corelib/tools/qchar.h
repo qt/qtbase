@@ -262,7 +262,8 @@ public:
     enum Direction
     {
         DirL, DirR, DirEN, DirES, DirET, DirAN, DirCS, DirB, DirS, DirWS, DirON,
-        DirLRE, DirLRO, DirAL, DirRLE, DirRLO, DirPDF, DirNSM, DirBN
+        DirLRE, DirLRO, DirAL, DirRLE, DirRLO, DirPDF, DirNSM, DirBN,
+        DirLRI, DirRLI, DirFSI, DirPDI
     };
 
     enum Decomposition
@@ -332,7 +333,8 @@ public:
         Unicode_5_2,
         Unicode_6_0,
         Unicode_6_1,
-        Unicode_6_2
+        Unicode_6_2,
+        Unicode_6_3
     };
     // ****** WHEN ADDING FUNCTIONS, CONSIDER ADDING TO QCharRef TOO
 

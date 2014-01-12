@@ -185,8 +185,9 @@ QT_BEGIN_NAMESPACE
     \value Unicode_6_0  Version 6.0
     \value Unicode_6_1  Version 6.1
     \value Unicode_6_2  Version 6.2
+    \value Unicode_6_3  Version 6.3  Since Qt 5.3
     \value Unicode_Unassigned  The value is not assigned to any character
-                               in version 6.2 of Unicode.
+                               in version 6.3 of Unicode.
 
     \sa unicodeVersion(), currentUnicodeVersion()
 */
@@ -408,14 +409,18 @@ QT_BEGIN_NAMESPACE
     \value DirEN
     \value DirES
     \value DirET
+    \value DirFSI Since Qt 5.3
     \value DirL
     \value DirLRE
+    \value DirLRI Since Qt 5.3
     \value DirLRO
     \value DirNSM
     \value DirON
     \value DirPDF
+    \value DirPDI Since Qt 5.3
     \value DirR
     \value DirRLE
+    \value DirRLI Since Qt 5.3
     \value DirRLO
     \value DirS
     \value DirWS

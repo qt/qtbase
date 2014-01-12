@@ -241,7 +241,8 @@ using namespace std;
 
 static const char *directions[] = {
     "DirL", "DirR", "DirEN", "DirES", "DirET", "DirAN", "DirCS", "DirB", "DirS", "DirWS", "DirON",
-    "DirLRE", "DirLRO", "DirAL", "DirRLE", "DirRLO", "DirPDF", "DirNSM", "DirBN"
+    "DirLRE", "DirLRO", "DirAL", "DirRLE", "DirRLO", "DirPDF", "DirNSM", "DirBN",
+    "DirLRI", "DirRLI", "DirFSI", "DirPDI"
 };
 
 #endif
@@ -2536,7 +2537,8 @@ static inline bool nextCharJoins(const QString &string, int pos)
         ++pos;
     if (pos == string.length())
         return false;
-    return string.at(pos).joining() != QChar::OtherJoining;
+    // ### U+A872 has joining type L
+    return string.at(pos) == QChar(0xA872) || string.at(pos).joining() != QChar::OtherJoining;
 }
 
 static inline bool prevCharJoins(const QString &string, int pos)
@@ -2551,13 +2553,9 @@ static inline bool prevCharJoins(const QString &string, int pos)
 
 static inline bool isRetainableControlCode(QChar c)
 {
-    return (c.unicode() == 0x202a       // LRE
-            || c.unicode() == 0x202b    // LRE
-            || c.unicode() == 0x202c    // PDF
-            || c.unicode() == 0x202d    // LRO
-            || c.unicode() == 0x202e    // RLO
-            || c.unicode() == 0x200e    // LRM
-            || c.unicode() == 0x200f);  // RLM
+    return (c.unicode() >= 0x202a && c.unicode() <= 0x202e) // LRE, RLE, PDF, LRO, RLO
+            || (c.unicode() >= 0x200e && c.unicode() <= 0x200f) // LRM, RLM
+            || (c.unicode() >= 0x2066 && c.unicode() <= 0x2069); // LRM, RLM
 }
 
 static QString stringMidRetainingBidiCC(const QString &string,

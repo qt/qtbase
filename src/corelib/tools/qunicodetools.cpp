@@ -57,7 +57,7 @@ namespace QUnicodeTools {
 // -----------------------------------------------------------------------------------------------------
 //
 // The text boundaries determination algorithm.
-// See http://www.unicode.org/reports/tr29/tr29-21.html
+// See http://www.unicode.org/reports/tr29/tr29-23.html
 //
 // -----------------------------------------------------------------------------------------------------
 
@@ -112,26 +112,30 @@ static void getGraphemeBreaks(const ushort *string, quint32 len, QCharAttributes
 namespace WB {
 
 enum Action {
-    NoBreak = 0,
-    Break = 1,
-    Lookup = 2
+    NoBreak,
+    Break,
+    Lookup,
+    LookupW
 };
 
 static const uchar breakTable[QUnicodeTables::WordBreak_ExtendNumLet + 1][QUnicodeTables::WordBreak_ExtendNumLet + 1] = {
-//    Other      CR       LF    Newline   Extend    RI    Katakana ALetter MidNumLet MidLetter MidNum  Numeric  ExtendNumLet
-    { Break  , Break  , Break  , Break  , NoBreak, Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break   }, // Other
-    { Break  , Break  , NoBreak, Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break   }, // CR
-    { Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break   }, // LF
-    { Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break   }, // Newline
-    { Break  , Break  , Break  , Break  , NoBreak, Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break   }, // Extend
-    { Break  , Break  , Break  , Break  , NoBreak, NoBreak, Break  , Break  , Break  , Break  , Break  , Break  , Break   }, // RegionalIndicator
-    { Break  , Break  , Break  , Break  , NoBreak, Break  , NoBreak, Break  , Break  , Break  , Break  , Break  , NoBreak }, // Katakana
-    { Break  , Break  , Break  , Break  , NoBreak, Break  , Break  , NoBreak, Lookup , Lookup , Break  , NoBreak, NoBreak }, // ALetter
-    { Break  , Break  , Break  , Break  , NoBreak, Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break   }, // MidNumLet
-    { Break  , Break  , Break  , Break  , NoBreak, Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break   }, // MidLetter
-    { Break  , Break  , Break  , Break  , NoBreak, Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break   }, // MidNum
-    { Break  , Break  , Break  , Break  , NoBreak, Break  , Break  , NoBreak, Lookup , Break  , Lookup , NoBreak, NoBreak }, // Numeric
-    { Break  , Break  , Break  , Break  , NoBreak, Break  , NoBreak, NoBreak, Break  , Break  , Break  , NoBreak, NoBreak }, // ExtendNumLet
+//    Other      CR       LF    Newline   Extend    RI    Katakana HLetter  ALetter  SQuote   DQuote  MidNumLet MidLetter MidNum  Numeric  ExtendNumLet
+    { Break  , Break  , Break  , Break  , NoBreak, Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break   }, // Other
+    { Break  , Break  , NoBreak, Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break   }, // CR
+    { Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break   }, // LF
+    { Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break   }, // Newline
+    { Break  , Break  , Break  , Break  , NoBreak, Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break   }, // Extend
+    { Break  , Break  , Break  , Break  , NoBreak, NoBreak, Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break   }, // RegionalIndicator
+    { Break  , Break  , Break  , Break  , NoBreak, Break  , NoBreak, Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , NoBreak }, // Katakana
+    { Break  , Break  , Break  , Break  , NoBreak, Break  , Break  , NoBreak, NoBreak, LookupW, Lookup , LookupW, LookupW, Break  , NoBreak, NoBreak }, // HebrewLetter
+    { Break  , Break  , Break  , Break  , NoBreak, Break  , Break  , NoBreak, NoBreak, LookupW, Break  , LookupW, LookupW, Break  , NoBreak, NoBreak }, // ALetter
+    { Break  , Break  , Break  , Break  , NoBreak, Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break   }, // SingleQuote
+    { Break  , Break  , Break  , Break  , NoBreak, Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break   }, // DoubleQuote
+    { Break  , Break  , Break  , Break  , NoBreak, Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break   }, // MidNumLet
+    { Break  , Break  , Break  , Break  , NoBreak, Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break   }, // MidLetter
+    { Break  , Break  , Break  , Break  , NoBreak, Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break  , Break   }, // MidNum
+    { Break  , Break  , Break  , Break  , NoBreak, Break  , Break  , NoBreak, NoBreak, Lookup , Break  , Lookup , Break  , Lookup , NoBreak, NoBreak }, // Numeric
+    { Break  , Break  , Break  , Break  , NoBreak, Break  , NoBreak, NoBreak, NoBreak, Break  , Break  , Break  , Break  , Break  , NoBreak, NoBreak }, // ExtendNumLet
 };
 
 } // namespace WB
@@ -160,8 +164,8 @@ static void getWordBreaks(const ushort *string, quint32 len, QCharAttributes *at
         if (qt_initcharattributes_default_algorithm_only) {
             // as of Unicode 5.1, some punctuation marks were mapped to MidLetter and MidNumLet
             // which caused "hi.there" to be treated like if it were just a single word;
-            // by remapping those characters in the Unicode tables generator.
-            // this code is needed to pass the coverage tests; remove once the issue is fixed.
+            // we keep the pre-5.1 behavior by remapping these characters in the Unicode tables generator
+            // and this code is needed to pass the coverage tests; remove once the issue is fixed.
             if (ucs4 == 0x002E) // FULL STOP
                 ncls = QUnicodeTables::WordBreak_MidNumLet;
             else if (ucs4 == 0x003A) // COLON
@@ -170,8 +174,17 @@ static void getWordBreaks(const ushort *string, quint32 len, QCharAttributes *at
 #endif
 
         uchar action = WB::breakTable[cls][ncls];
-        if (Q_UNLIKELY(action == WB::Lookup)) {
-            action = WB::Break;
+        switch (action) {
+        case WB::Break:
+            break;
+        case WB::NoBreak:
+            if (Q_UNLIKELY(ncls == QUnicodeTables::WordBreak_Extend)) {
+                // WB4: X(Extend|Format)* -> X
+                continue;
+            }
+            break;
+        case WB::Lookup:
+        case WB::LookupW:
             for (quint32 lookahead = i + 1; lookahead < len; ++lookahead) {
                 ucs4 = string[lookahead];
                 if (QChar::isHighSurrogate(ucs4) && lookahead + 1 != len) {
@@ -184,20 +197,28 @@ static void getWordBreaks(const ushort *string, quint32 len, QCharAttributes *at
 
                 prop = QUnicodeTables::properties(ucs4);
                 QUnicodeTables::WordBreakClass tcls = (QUnicodeTables::WordBreakClass) prop->wordBreakClass;
-                if (Q_UNLIKELY(tcls == QUnicodeTables::WordBreak_Extend))
+
+                if (Q_UNLIKELY(tcls == QUnicodeTables::WordBreak_Extend)) {
+                    // WB4: X(Extend|Format)* -> X
                     continue;
-                if (Q_LIKELY(tcls == cls)) {
+                }
+
+                if (Q_LIKELY(tcls == cls || (action == WB::LookupW && (tcls == QUnicodeTables::WordBreak_HebrewLetter
+                                                                       || tcls == QUnicodeTables::WordBreak_ALetter)))) {
                     i = lookahead;
                     ncls = tcls;
                     action = WB::NoBreak;
                 }
                 break;
             }
-        } else if (Q_UNLIKELY(ncls == QUnicodeTables::WordBreak_Extend)) {
-            // WB4: X(Extend|Format)* -> X
-            if (Q_LIKELY(action != WB::Break))
-                continue;
+            if (action != WB::NoBreak) {
+                action = WB::Break;
+                if (Q_UNLIKELY(ncls == QUnicodeTables::WordBreak_SingleQuote && cls == QUnicodeTables::WordBreak_HebrewLetter))
+                    action = WB::NoBreak; // WB7a
+            }
+            break;
         }
+
         cls = ncls;
         if (action == WB::Break) {
             attributes[pos].wordBreak = true;
@@ -208,6 +229,7 @@ static void getWordBreaks(const ushort *string, quint32 len, QCharAttributes *at
                 currentWordType = WordTypeHiraganaKatakana;
                 attributes[pos].wordStart = true;
                 break;
+            case QUnicodeTables::WordBreak_HebrewLetter:
             case QUnicodeTables::WordBreak_ALetter:
             case QUnicodeTables::WordBreak_Numeric:
                 currentWordType = WordTypeAlphaNumeric;
@@ -327,7 +349,7 @@ static void getSentenceBreaks(const ushort *string, quint32 len, QCharAttributes
 // -----------------------------------------------------------------------------------------------------
 //
 // The line breaking algorithm.
-// See http://www.unicode.org/reports/tr14/tr14-30.html
+// See http://www.unicode.org/reports/tr14/tr14-32.html
 //
 // -----------------------------------------------------------------------------------------------------
 

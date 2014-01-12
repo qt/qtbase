@@ -450,6 +450,18 @@ void tst_QChar::category()
 
 void tst_QChar::direction()
 {
+    QVERIFY(QChar::direction(0x200E) == QChar::DirL);
+    QVERIFY(QChar::direction(0x200F) == QChar::DirR);
+    QVERIFY(QChar::direction(0x202A) == QChar::DirLRE);
+    QVERIFY(QChar::direction(0x202B) == QChar::DirRLE);
+    QVERIFY(QChar::direction(0x202C) == QChar::DirPDF);
+    QVERIFY(QChar::direction(0x202D) == QChar::DirLRO);
+    QVERIFY(QChar::direction(0x202E) == QChar::DirRLO);
+    QVERIFY(QChar::direction(0x2066) == QChar::DirLRI);
+    QVERIFY(QChar::direction(0x2067) == QChar::DirRLI);
+    QVERIFY(QChar::direction(0x2068) == QChar::DirFSI);
+    QVERIFY(QChar::direction(0x2069) == QChar::DirPDI);
+
     QVERIFY(QChar('a').direction() == QChar::DirL);
     QVERIFY(QChar('0').direction() == QChar::DirEN);
     QVERIFY(QChar((ushort)0x627).direction() == QChar::DirAL);
@@ -492,6 +504,9 @@ void tst_QChar::joining()
     QVERIFY(QChar::joining(0xf0000u) == QChar::OtherJoining);
     QVERIFY(QChar::joining(0xE0030u) == QChar::OtherJoining);
     QVERIFY(QChar::joining(0x2FA17u) == QChar::OtherJoining);
+
+    // ### U+A872 has joining type L
+    QVERIFY(QChar::joining((uint)0xA872) == QChar::OtherJoining);
 }
 
 void tst_QChar::combiningClass()
@@ -604,6 +619,11 @@ void tst_QChar::unicodeVersion()
     QVERIFY(QChar::unicodeVersion((ushort)0x20ba) == QChar::Unicode_6_2);
     QVERIFY(QChar::unicodeVersion((uint)0x20ba) == QChar::Unicode_6_2);
     QVERIFY(QChar::unicodeVersion((uint)0x20ba) == QChar::Unicode_6_2);
+
+    QVERIFY(QChar(0x061c).unicodeVersion() == QChar::Unicode_6_3);
+    QVERIFY(QChar::unicodeVersion((ushort)0x061c) == QChar::Unicode_6_3);
+    QVERIFY(QChar::unicodeVersion((uint)0x061c) == QChar::Unicode_6_3);
+    QVERIFY(QChar::unicodeVersion((uint)0x061c) == QChar::Unicode_6_3);
 
     QVERIFY(QChar(0x09ff).unicodeVersion() == QChar::Unicode_Unassigned);
     QVERIFY(QChar::unicodeVersion((ushort)0x09ff) == QChar::Unicode_Unassigned);

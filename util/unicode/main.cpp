@@ -77,6 +77,7 @@ static void initAgeMap()
         { QChar::Unicode_6_0,   "6.0" },
         { QChar::Unicode_6_1,   "6.1" },
         { QChar::Unicode_6_2,   "6.2" },
+        { QChar::Unicode_6_3,   "6.3" },
         { QChar::Unicode_Unassigned, 0 }
     };
     AgeMap *d = ageMap;
@@ -176,34 +177,66 @@ static void initDecompositionMap()
 }
 
 
-static QHash<QByteArray, QChar::Direction> directionMap;
+enum Direction {
+    DirL = QChar::DirL,
+    DirR = QChar::DirR,
+    DirEN = QChar::DirEN,
+    DirES = QChar::DirES,
+    DirET = QChar::DirET,
+    DirAN = QChar::DirAN,
+    DirCS = QChar::DirCS,
+    DirB = QChar::DirB,
+    DirS = QChar::DirS,
+    DirWS = QChar::DirWS,
+    DirON = QChar::DirON,
+    DirLRE = QChar::DirLRE,
+    DirLRO = QChar::DirLRO,
+    DirAL = QChar::DirAL,
+    DirRLE = QChar::DirRLE,
+    DirRLO = QChar::DirRLO,
+    DirPDF = QChar::DirPDF,
+    DirNSM = QChar::DirNSM,
+    DirBN = QChar::DirBN,
+    DirLRI = QChar::DirLRI,
+    DirRLI = QChar::DirRLI,
+    DirFSI = QChar::DirFSI,
+    DirPDI = QChar::DirPDI
+
+    , Dir_Unassigned
+};
+
+static QHash<QByteArray, Direction> directionMap;
 
 static void initDirectionMap()
 {
     struct Dir {
-        QChar::Direction dir;
+        Direction dir;
         const char *name;
     } directions[] = {
-        { QChar::DirL, "L" },
-        { QChar::DirR, "R" },
-        { QChar::DirEN, "EN" },
-        { QChar::DirES, "ES" },
-        { QChar::DirET, "ET" },
-        { QChar::DirAN, "AN" },
-        { QChar::DirCS, "CS" },
-        { QChar::DirB, "B" },
-        { QChar::DirS, "S" },
-        { QChar::DirWS, "WS" },
-        { QChar::DirON, "ON" },
-        { QChar::DirLRE, "LRE" },
-        { QChar::DirLRO, "LRO" },
-        { QChar::DirAL, "AL" },
-        { QChar::DirRLE, "RLE" },
-        { QChar::DirRLO, "RLO" },
-        { QChar::DirPDF, "PDF" },
-        { QChar::DirNSM, "NSM" },
-        { QChar::DirBN, "BN" },
-        { QChar::DirL, 0 }
+        { DirL, "L" },
+        { DirR, "R" },
+        { DirEN, "EN" },
+        { DirES, "ES" },
+        { DirET, "ET" },
+        { DirAN, "AN" },
+        { DirCS, "CS" },
+        { DirB, "B" },
+        { DirS, "S" },
+        { DirWS, "WS" },
+        { DirON, "ON" },
+        { DirLRE, "LRE" },
+        { DirLRO, "LRO" },
+        { DirAL, "AL" },
+        { DirRLE, "RLE" },
+        { DirRLO, "RLO" },
+        { DirPDF, "PDF" },
+        { DirNSM, "NSM" },
+        { DirBN, "BN" },
+        { DirLRI, "LRI" },
+        { DirRLI, "RLI" },
+        { DirFSI, "FSI" },
+        { DirPDI, "PDI" },
+        { Dir_Unassigned, 0 }
     };
     Dir *d = directions;
     while (d->name) {
@@ -323,7 +356,10 @@ static const char *word_break_class_string =
     "    WordBreak_Extend,\n"
     "    WordBreak_RegionalIndicator,\n"
     "    WordBreak_Katakana,\n"
+    "    WordBreak_HebrewLetter,\n"
     "    WordBreak_ALetter,\n"
+    "    WordBreak_SingleQuote,\n"
+    "    WordBreak_DoubleQuote,\n"
     "    WordBreak_MidNumLet,\n"
     "    WordBreak_MidLetter,\n"
     "    WordBreak_MidNum,\n"
@@ -339,7 +375,10 @@ enum WordBreakClass {
     WordBreak_Extend,
     WordBreak_RegionalIndicator,
     WordBreak_Katakana,
+    WordBreak_HebrewLetter,
     WordBreak_ALetter,
+    WordBreak_SingleQuote,
+    WordBreak_DoubleQuote,
     WordBreak_MidNumLet,
     WordBreak_MidLetter,
     WordBreak_MidNum,
@@ -365,7 +404,10 @@ static void initWordBreak()
         { WordBreak_Extend, "Format" },
         { WordBreak_RegionalIndicator, "Regional_Indicator" },
         { WordBreak_Katakana, "Katakana" },
+        { WordBreak_HebrewLetter, "Hebrew_Letter" },
         { WordBreak_ALetter, "ALetter" },
+        { WordBreak_SingleQuote, "Single_Quote" },
+        { WordBreak_DoubleQuote, "Double_Quote" },
         { WordBreak_MidNumLet, "MidNumLet" },
         { WordBreak_MidLetter, "MidLetter" },
         { WordBreak_MidNum, "MidNum" },
@@ -815,6 +857,31 @@ static int appendToSpecialCaseMap(const QList<int> &map)
     return pos;
 }
 
+static inline bool isDefaultIgnorable(uint ucs4)
+{
+    // Default_Ignorable_Code_Point:
+    //  Generated from
+    //    Other_Default_Ignorable_Code_Point + Cf + Variation_Selector
+    //    - White_Space - FFF9..FFFB (Annotation Characters)
+    //    - 0600..0604, 06DD, 070F, 110BD (exceptional Cf characters that should be visible)
+    if (ucs4 <= 0xff)
+        return ucs4 == 0xad;
+
+    return ucs4 == 0x034f
+            || (ucs4 >= 0x115f && ucs4 <= 0x1160)
+            || (ucs4 >= 0x17b4 && ucs4 <= 0x17b5)
+            || (ucs4 >= 0x180b && ucs4 <= 0x180d)
+            || (ucs4 >= 0x200b && ucs4 <= 0x200f)
+            || (ucs4 >= 0x202a && ucs4 <= 0x202e)
+            || (ucs4 >= 0x2060 && ucs4 <= 0x206f)
+            || ucs4 == 0x3164
+            || (ucs4 >= 0xfe00 && ucs4 <= 0xfe0f)
+            || ucs4 == 0xfeff
+            || ucs4 == 0xffa0
+            || (ucs4 >= 0xfff0 && ucs4 <= 0xfff8)
+            || (ucs4 >= 0x1d173 && ucs4 <= 0xe0fff && (ucs4 <= 0x1d17a || ucs4 >= 0xe0000));
+}
+
 struct UnicodeData {
     UnicodeData(int codepoint = 0) {
         p.category = QChar::Other_NotAssigned; // Cn
@@ -842,6 +909,17 @@ struct UnicodeData {
             || (codepoint >= 0x1EF00 && codepoint <= 0x1EFFF)) {
             p.direction = QChar::DirR;
         }
+        // The unassigned code points that default to ET are in the range:
+        //     [U+20A0..U+20CF]
+        else if (codepoint >= 0x20A0 && codepoint <= 0x20CF) {
+            p.direction = QChar::DirET;
+        }
+        // The unassigned code points that default to BN have one of the following properties:
+        //     Default_Ignorable_Code_Point
+        //     Noncharacter_Code_Point
+        else if (QChar::isNonCharacter(codepoint) || isDefaultIgnorable(codepoint)) {
+            p.direction = QChar::DirBN;
+        }
 
         p.lineBreakClass = LineBreak_AL; // XX -> AL
         // LineBreak.txt
@@ -857,6 +935,11 @@ struct UnicodeData {
             || (codepoint >= 0x20000 && codepoint <= 0x2FFFD)
             || (codepoint >= 0x30000 && codepoint <= 0x3FFFD)) {
             p.lineBreakClass = LineBreak_ID;
+        }
+        // The unassigned code points that default to "PR" comprise a range in the following block:
+        //     [U+20A0..U+20CF]
+        else if (codepoint >= 0x20A0 && codepoint <= 0x20CF) {
+            p.lineBreakClass = LineBreak_PR;
         }
 
         mirroredChar = 0;
@@ -1008,7 +1091,10 @@ static void readUnicodeData()
         else
             ++combiningClassUsage[data.p.combiningClass];
 
-        data.p.direction = directionMap.value(properties[UD_BidiCategory], data.p.direction);
+        Direction dir = directionMap.value(properties[UD_BidiCategory], Dir_Unassigned);
+        if (dir == Dir_Unassigned)
+            qFatal("unhandled direction value: %s", properties[UD_BidiCategory].constData());
+        data.p.direction = QChar::Direction(dir);
 
         if (!properties[UD_UpperCase].isEmpty()) {
             int upperCase = properties[UD_UpperCase].toInt(&ok, 16);
@@ -1180,8 +1266,8 @@ static void readArabicShaping()
             qFatal("unassigned or unhandled joining value: %s", l[2].constData());
 
         if (joining == Joining_Left) {
-            // There are currently no characters of joining type Left_Joining defined in Unicode.
-            qFatal("%x: joining type '%s' was met; the current implementation needs to be revised!", codepoint, l[2].constData());
+            qWarning("ACHTUNG!!! joining type '%s' has been met for U+%X; the current implementation needs to be revised!",
+                     l[2].trimmed().constData(), codepoint);
         }
 
         UnicodeData &d = UnicodeData::valueRef(codepoint);
