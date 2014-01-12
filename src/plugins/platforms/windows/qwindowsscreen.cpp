@@ -306,6 +306,8 @@ QList<QPlatformScreen *> QWindowsScreen::virtualSiblings() const
 
 void QWindowsScreen::handleChanges(const QWindowsScreenData &newData)
 {
+    m_data.physicalSizeMM = newData.physicalSizeMM;
+
     if (m_data.geometry != newData.geometry) {
         m_data.geometry = newData.geometry;
         QWindowSystemInterface::handleScreenGeometryChange(screen(),
