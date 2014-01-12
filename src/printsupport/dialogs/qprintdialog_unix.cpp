@@ -120,8 +120,7 @@ public:
     QPrintPropertiesDialog(QAbstractPrintDialog *parent = 0);
     ~QPrintPropertiesDialog();
 
-    void selectPrinter();
-    void selectPdfPsPrinter(const QPrinter *p);
+    void selectPrinter(QPrinter::OutputFormat outputFormat, const QString &printerName);
 
     /// copy printer properties to the widget
     void applyPrinterProperties(QPrinter *p);
@@ -281,14 +280,9 @@ void QPrintPropertiesDialog::setupPrinter() const
 #endif
 }
 
-void QPrintPropertiesDialog::selectPrinter()
+void QPrintPropertiesDialog::selectPrinter(QPrinter::OutputFormat outputFormat, const QString &printerName)
 {
-    widget.pageSetup->selectPrinter();
-}
-
-void QPrintPropertiesDialog::selectPdfPsPrinter(const QPrinter *p)
-{
-    widget.pageSetup->selectPdfPsPrinter(p);
+    widget.pageSetup->selectPrinter(outputFormat, printerName);
 }
 
 void QPrintPropertiesDialog::showEvent(QShowEvent* event)
@@ -886,7 +880,8 @@ bool QUnixPrintWidgetPrivate::checkFields()
 
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
     if (propertiesDialogShown) {
-        QCUPSSupport::PagesPerSheet pagesPerSheet = propertiesDialog->widget.pageSetup->widget.pagesPerSheetCombo->currentData().value<QCUPSSupport::PagesPerSheet>();
+        QCUPSSupport::PagesPerSheet pagesPerSheet = propertiesDialog->widget.pageSetup->m_ui.pagesPerSheetCombo
+                                                                    ->currentData().value<QCUPSSupport::PagesPerSheet>();
 
         QCUPSSupport::PageSet pageSet = optionsPane->options.pageSetCombo->currentData().value<QCUPSSupport::PageSet>();
 
@@ -918,10 +913,10 @@ void QUnixPrintWidgetPrivate::setupPrinterProperties()
 
     if (q->isOptionEnabled(QPrintDialog::PrintToFile)
         && (widget.printers->currentIndex() == widget.printers->count() - 1)) {// PDF
-        propertiesDialog->selectPdfPsPrinter(q->printer());
+        propertiesDialog->selectPrinter(QPrinter::PdfFormat, QString());
     }
     else
-        propertiesDialog->selectPrinter();
+        propertiesDialog->selectPrinter(QPrinter::NativeFormat, widget.printers->currentText());
 }
 
 void QUnixPrintWidgetPrivate::_q_btnPropertiesClicked()

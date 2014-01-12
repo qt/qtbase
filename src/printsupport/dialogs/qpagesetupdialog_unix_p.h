@@ -57,6 +57,10 @@
 
 #ifndef QT_NO_PRINTDIALOG
 
+#include "qprinter.h"
+
+#include <QtGui/qpagelayout.h>
+
 #include <ui_qpagesetupwidget.h>
 
 QT_BEGIN_NAMESPACE
@@ -69,37 +73,37 @@ class QPageSetupWidget : public QWidget {
 public:
     explicit QPageSetupWidget(QWidget *parent = 0);
     explicit QPageSetupWidget(QPrinter *printer, QWidget *parent = 0);
+
     void setPrinter(QPrinter *printer);
-    /// copy information from the widget and apply that to the printer.
+    void selectPrinter(QPrinter::OutputFormat outputFormat, const QString &printerName);
     void setupPrinter() const;
-    void selectPrinter();
-    void selectPdfPsPrinter(const QPrinter *p);
 
 private slots:
-    void _q_pageOrientationChanged();
-    void _q_paperSizeChanged();
-    void _q_pagesPerSheetChanged();
-    void unitChanged(int item);
-    void setTopMargin(double newValue);
-    void setBottomMargin(double newValue);
-    void setLeftMargin(double newValue);
-    void setRightMargin(double newValue);
+    void pageSizeChanged();
+    void pageOrientationChanged();
+    void pagesPerSheetChanged();
+    void unitChanged();
+    void topMarginChanged(double newValue);
+    void bottomMarginChanged(double newValue);
+    void leftMarginChanged(double newValue);
+    void rightMarginChanged(double newValue);
 
 private:
-    friend class QUnixPrintWidgetPrivate;
-    Ui::QPageSetupWidget widget;
+    friend class QUnixPrintWidgetPrivate;  // Needed by checkFields()
+
+    void updateWidget();
+    void initUnits();
+    void initPagesPerSheet();
+    void initPageSizes();
+
+    Ui::QPageSetupWidget m_ui;
     QPagePreview *m_pagePreview;
     QPrinter *m_printer;
-    qreal m_leftMargin;
-    qreal m_topMargin;
-    qreal m_rightMargin;
-    qreal m_bottomMargin;
-    QSizeF m_paperSize; // In QPrinter::Point
-    qreal m_currentMultiplier;
+    QPrinter::OutputFormat m_outputFormat;
+    QString m_printerName;
+    QPageLayout m_pageLayout;
+    QPageLayout::Unit m_units;
     bool m_blockSignals;
-    bool m_cups;
-
-    void initPagesPerSheet();
 };
 
 QT_END_NAMESPACE
