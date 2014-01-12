@@ -251,7 +251,7 @@
 #  if defined(__EDG__)
 #    define Q_CC_EDG
 #  endif
-/* Compaq have disabled EDG's _BOOL macro and use _BOOL_EXISTS instead
+/* Compaq has disabled EDG's _BOOL macro and uses _BOOL_EXISTS instead
    - observed on Compaq C++ V6.3-002.
    In any case versions prior to Compaq C++ V6.0-005 do not have bool. */
 #  if !defined(_BOOL_EXISTS)
@@ -722,13 +722,13 @@
 #      define Q_COMPILER_DECLTYPE
 #      define Q_COMPILER_RVALUE_REFS
 #      define Q_COMPILER_STATIC_ASSERT
-//  MSVC's library has std::initilizer_list, but the compiler does not support the braces initialization
+//  MSVC's library has std::initializer_list, but the compiler does not support the braces initialization
 //#      define Q_COMPILER_INITIALIZER_LISTS
 //#      define Q_COMPILER_UNIFORM_INIT
 #    endif
 #    if _MSC_VER >= 1700
        /* C++11 features supported in VC11 = VC2012: */
-#       undef Q_DECL_OVERRIDE               /* undo 2005/2098 settings... */
+#       undef Q_DECL_OVERRIDE               /* undo 2005/2008 settings... */
 #       undef Q_DECL_FINAL                  /* undo 2005/2008 settings... */
 #      define Q_COMPILER_EXPLICIT_OVERRIDES /* ...and use std C++11 now   */
 #      define Q_COMPILER_RANGE_FOR
