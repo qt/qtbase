@@ -78,7 +78,9 @@
 #ifdef Q_OS_WIN // for homedirpath reading from registry
 #  include <private/qsystemlibrary_p.h>
 #  include <qt_windows.h>
-#  include <shlobj.h>
+#  ifndef Q_OS_WINRT
+#    include <shlobj.h>
+#  endif
 #endif
 
 #ifdef Q_OS_WINRT
