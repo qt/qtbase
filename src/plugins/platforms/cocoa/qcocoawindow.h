@@ -52,34 +52,32 @@
 
 QT_FORWARD_DECLARE_CLASS(QCocoaWindow)
 
-@interface QNSWindow : NSWindow {
-    @public QCocoaWindow *m_cocoaPlatformWindow;
-}
-
-- (void)clearPlatformWindow;
-- (BOOL)canBecomeKeyWindow;
-@end
-
-@interface QNSPanel : NSPanel {
-    @public QCocoaWindow *m_cocoaPlatformWindow;
-}
-- (void)clearPlatformWindow;
-- (BOOL)canBecomeKeyWindow;
-@end
-
 @class QNSWindowDelegate;
 
+@interface QNSWindow : NSPanel {
+@public
+   QCocoaWindow *m_cocoaPlatformWindow;
+}
+
+- (void)clearPlatformWindow;
+@end
+
 QT_BEGIN_NAMESPACE
+
 // QCocoaWindow
 //
-// QCocoaWindow is an NSView (not an NSWindow!) in the sense
-// that it relies on a NSView for all event handling and
-// graphics output and does not require a NSWindow, except for
-// for the window-related functions like setWindowTitle.
+// A QCocoaWindow is backed by a NSView and optionally a NSWindow.
 //
-// As a consequence of this it is possible to embed the QCocoaWindow
-// in an NSView hierarchy by getting a pointer to the "backing"
-// NSView and not calling QCocoaWindow::show():
+// The NSView is used for most event handling and graphics output.
+//
+// Top-level QWindows are always backed by a NSWindow in addition to
+// the NSView. Child QWindows can also be backed by NSWindows, which
+// enables proper stacking of GL Widgets and threaded GL rendering
+// to multiple contexts.
+//
+// It is possible to embed the QCocoaWindow in an NSView hierarchy
+// by getting a pointer to the backing NSView and not calling
+// QCocoaWindow::show():
 //
 // QWindow *qtWindow = new MyWindow();
 // qtWindow->create();
@@ -135,6 +133,7 @@ public:
     void windowDidResize();
     bool windowShouldClose();
     bool windowIsPopupType(Qt::WindowType type = Qt::Widget) const;
+    bool windowShouldBehaveAsPanel() const;
 
     void setSynchedWindowStateFromWindow();
 
@@ -170,9 +169,9 @@ protected:
     // NSWindow handling. The QCocoaWindow/QNSView can either be displayed
     // in an existing NSWindow or in one created by Qt.
     void recreateWindow(const QPlatformWindow *parentWindow);
-    NSWindow *createNSWindow();
-    void setNSWindow(NSWindow *window);
-    void clearNSWindow(NSWindow *window);
+    QNSWindow *createNSWindow();
+    void setNSWindow(QNSWindow *window);
+    void clearNSWindow(QNSWindow *window);
 
     QRect windowGeometry() const;
     QCocoaWindow *parentCocoaWindow() const;
@@ -185,11 +184,13 @@ public: // for QNSView
 
     NSView *m_contentView;
     QNSView *m_qtView;
-    NSWindow *m_nsWindow;
+    QNSWindow *m_nsWindow;
 
     // TODO merge to one variable if possible
     bool m_contentViewIsEmbedded; // true if the m_contentView is actually embedded in a "foreign" NSView hiearchy
     bool m_contentViewIsToBeEmbedded; // true if the m_contentView is intended to be embedded in a "foreign" NSView hiearchy
+
+    QCocoaWindow *m_parentCocoaWindow;
 
     QNSWindowDelegate *m_nsWindowDelegate;
     Qt::WindowFlags m_windowFlags;
