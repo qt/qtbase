@@ -585,6 +585,12 @@ QString qt_mac_applicationName()
     return appName;
 }
 
+NSRect qt_mac_flipRect(const QRect &rect)
+{
+    int flippedY = qt_mac_flipYCoordinate(rect.y() + rect.height());
+    return NSMakeRect(rect.x(), flippedY, rect.width(), rect.height());
+}
+
 /*
     Mac window coordinates are in the first quadrant: 0, 0 is at the lower-left
     corner of the primary screen. This function converts the given rect to an
