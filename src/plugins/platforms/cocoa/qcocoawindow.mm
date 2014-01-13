@@ -1215,11 +1215,18 @@ QCocoaGLContext *QCocoaWindow::currentContext() const
 void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
 {
     bool wasNSWindowChild = m_isNSWindowChild;
-    // TODO Set value for m_isNSWindowChild here
+    m_isNSWindowChild = parentWindow && (window()->property("_q_platform_MacUseNSWindow").toBool());
     bool needsNSWindow = m_isNSWindowChild || !parentWindow;
 
     QCocoaWindow *oldParentCocoaWindow = m_parentCocoaWindow;
     m_parentCocoaWindow = const_cast<QCocoaWindow *>(static_cast<const QCocoaWindow *>(parentWindow));
+    if (m_parentCocoaWindow && m_isNSWindowChild) {
+        QWindow *parentQWindow = m_parentCocoaWindow->window();
+        if (!parentQWindow->property("_q_platform_MacUseNSWindow").toBool()) {
+            parentQWindow->setProperty("_q_platform_MacUseNSWindow", QVariant(true));
+            m_parentCocoaWindow->recreateWindow(m_parentCocoaWindow->m_parentCocoaWindow);
+        }
+    }
 
     bool usesNSPanel = [m_nsWindow isKindOfClass:[QNSPanel class]];
 
