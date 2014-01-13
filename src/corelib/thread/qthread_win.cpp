@@ -101,11 +101,11 @@ void QThreadData::clearCurrentThreadData()
     TlsSetValue(qt_current_thread_data_tls_index, 0);
 }
 
-QThreadData *QThreadData::current()
+QThreadData *QThreadData::current(bool createIfNecessary)
 {
     qt_create_tls();
     QThreadData *threadData = reinterpret_cast<QThreadData *>(TlsGetValue(qt_current_thread_data_tls_index));
-    if (!threadData) {
+    if (!threadData && createIfNecessary) {
         threadData = new QThreadData;
         // This needs to be called prior to new AdoptedThread() to
         // avoid recursion.

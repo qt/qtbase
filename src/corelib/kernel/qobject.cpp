@@ -2086,7 +2086,9 @@ void QObject::deleteLater()
 
 const char *qFlagLocation(const char *method)
 {
-    QThreadData::current()->flaggedSignatures.store(method);
+    QThreadData *currentThreadData = QThreadData::current(false);
+    if (currentThreadData != 0)
+        currentThreadData->flaggedSignatures.store(method);
     return method;
 }
 
