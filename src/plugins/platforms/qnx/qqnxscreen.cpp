@@ -505,7 +505,6 @@ void QQnxScreen::raiseWindow(QQnxWindow *window)
     if (window != m_coverWindow) {
         removeWindow(window);
         m_childWindows.push_back(window);
-        updateHierarchy();
     }
 }
 
@@ -516,7 +515,6 @@ void QQnxScreen::lowerWindow(QQnxWindow *window)
     if (window != m_coverWindow) {
         removeWindow(window);
         m_childWindows.push_front(window);
-        updateHierarchy();
     }
 }
 
