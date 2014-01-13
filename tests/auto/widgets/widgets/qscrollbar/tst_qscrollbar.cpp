@@ -44,68 +44,72 @@
 #include <QScrollBar>
 #include <QStyleOptionSlider>
 #include <QScrollArea>
+#include <QScreen>
+
+static inline void centerOnScreen(QWidget *w, const QSize &size)
+{
+    const QPoint offset = QPoint(size.width() / 2, size.height() / 2);
+    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
+}
+
+static inline void centerOnScreen(QWidget *w)
+{
+    centerOnScreen(w, w->geometry().size());
+}
 
 class tst_QScrollBar : public QObject
 {
     Q_OBJECT
-public slots:
-    void initTestCase();
-    void cleanupTestCase();
-    void hideAndShow(int action);
-
 private slots:
     void scrollSingleStep();
     void task_209492();
 #ifndef QT_NO_WHEELEVENT
     void QTBUG_27308();
 #endif
-
-private:
-    QScrollBar *testWidget;
 };
 
-void tst_QScrollBar::initTestCase()
-{
-    testWidget = new QScrollBar(Qt::Horizontal);
-    testWidget->resize(100, testWidget->height());
-    testWidget->show();
-}
+class SingleStepTestScrollBar : public QScrollBar {
+    Q_OBJECT
+public:
+    explicit SingleStepTestScrollBar(Qt::Orientation o, QWidget *parent = 0) : QScrollBar(o, parent) {}
 
-void tst_QScrollBar::cleanupTestCase()
-{
-    delete testWidget;
-    testWidget = 0;
-}
-
-void tst_QScrollBar::hideAndShow(int)
-{
-    testWidget->hide();
-    testWidget->show();
-}
+public slots:
+    void hideAndShow()
+    {
+        hide();
+        show();
+    }
+};
 
 // Check that the scrollbar doesn't scroll after calling hide and show
 // from a slot connected to the scrollbar's actionTriggered signal.
 void tst_QScrollBar::scrollSingleStep()
 {
-    testWidget->setValue(testWidget->minimum());
-    QCOMPARE(testWidget->value(), testWidget->minimum());
-    connect(testWidget, SIGNAL(actionTriggered(int)), this, SLOT(hideAndShow(int)));
+    SingleStepTestScrollBar testWidget(Qt::Horizontal);
+    connect(&testWidget, &QAbstractSlider::actionTriggered, &testWidget, &SingleStepTestScrollBar::hideAndShow);
+    testWidget.resize(100, testWidget.height());
+    centerOnScreen(&testWidget);
+    testWidget.show();
+    QTest::qWaitForWindowExposed(&testWidget);
+
+    testWidget.setValue(testWidget.minimum());
+    QCOMPARE(testWidget.value(), testWidget.minimum());
 
     // Get rect for the area to click on
-    const QStyleOptionSlider opt = qt_qscrollbarStyleOption(testWidget);
-    QRect sr = testWidget->style()->subControlRect(QStyle::CC_ScrollBar, &opt,
-                                                   QStyle::SC_ScrollBarAddLine, testWidget);
+    const QStyleOptionSlider opt = qt_qscrollbarStyleOption(&testWidget);
+    QRect sr = testWidget.style()->subControlRect(QStyle::CC_ScrollBar, &opt,
+                                                  QStyle::SC_ScrollBarAddLine, &testWidget);
 
     if (!sr.isValid())
         QSKIP("SC_ScrollBarAddLine not valid");
 
-    QTest::mouseClick(testWidget, Qt::LeftButton, Qt::NoModifier, QPoint(sr.x(), sr.y()));
+    QTest::mouseClick(&testWidget, Qt::LeftButton, Qt::NoModifier, QPoint(sr.x(), sr.y()));
     QTest::qWait(510); // initial delay is 500 for setRepeatAction
-    disconnect(testWidget, SIGNAL(actionTriggered(int)), 0, 0);
+    disconnect(&testWidget, &QAbstractSlider::actionTriggered, &testWidget, &SingleStepTestScrollBar::hideAndShow);
 #ifdef Q_OS_MAC
     QEXPECT_FAIL("", "This test fails on Mac OS X, see QTBUG-25272", Abort);
 #endif
-    QCOMPARE(testWidget->value(), testWidget->singleStep());
+    QCOMPARE(testWidget.value(), testWidget.singleStep());
 }
 
 void tst_QScrollBar::task_209492()
@@ -123,8 +127,9 @@ void tst_QScrollBar::task_209492()
     MyScrollArea scrollArea;
     QScrollBar *verticalScrollBar = scrollArea.verticalScrollBar();
     verticalScrollBar->setRange(0, 1000);
+    centerOnScreen(&scrollArea);
     scrollArea.show();
-    QTest::qWait(300);
+    QTest::qWaitForWindowExposed(&scrollArea);
 
     QSignalSpy spy(verticalScrollBar, SIGNAL(actionTriggered(int)));
     QCOMPARE(scrollArea.scrollCount, 0);
@@ -153,12 +158,18 @@ void tst_QScrollBar::QTBUG_27308()
     // https://bugreports.qt-project.org/browse/QTBUG-27308
     // Check that a disabled scrollbar doesn't react on wheel events anymore
 
-    testWidget->setValue(testWidget->minimum());
-    testWidget->setEnabled(false);
-    QWheelEvent event(testWidget->rect().center(),
-                      -WHEEL_DELTA, Qt::NoButton, Qt::NoModifier, testWidget->orientation());
-    qApp->sendEvent(testWidget, &event);
-    QCOMPARE(testWidget->value(), testWidget->minimum());
+    QScrollBar testWidget(Qt::Horizontal);
+    testWidget.resize(100, testWidget.height());
+    centerOnScreen(&testWidget);
+    testWidget.show();
+    QTest::qWaitForWindowExposed(&testWidget);
+
+    testWidget.setValue(testWidget.minimum());
+    testWidget.setEnabled(false);
+    QWheelEvent event(testWidget.rect().center(),
+                      -WHEEL_DELTA, Qt::NoButton, Qt::NoModifier, testWidget.orientation());
+    qApp->sendEvent(&testWidget, &event);
+    QCOMPARE(testWidget.value(), testWidget.minimum());
 }
 #endif
 
