@@ -168,7 +168,7 @@ public:
     {
         if (!(alignment & Qt::AlignHorizontal_Mask))
             alignment |= Qt::AlignLeft;
-        if ((alignment & Qt::AlignAbsolute) == 0 && (alignment & (Qt::AlignLeft | Qt::AlignRight))) {
+        if (!(alignment & Qt::AlignAbsolute) && (alignment & (Qt::AlignLeft | Qt::AlignRight))) {
             if (direction == Qt::RightToLeft)
                 alignment ^= (Qt::AlignLeft | Qt::AlignRight);
             alignment |= Qt::AlignAbsolute;
