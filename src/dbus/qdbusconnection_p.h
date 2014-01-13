@@ -322,6 +322,8 @@ public:
     QMutex callDeliveryMutex;
     QDBusCallDeliveryEvent *callDeliveryState; // protected by the callDeliveryMutex mutex
 
+    bool anonymousAuthenticationAllowed;
+
 public:
     // static methods
     static int findSlot(QObject *obj, const QByteArray &normalizedName, QVector<int> &params);

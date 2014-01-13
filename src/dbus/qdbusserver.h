@@ -66,6 +66,9 @@ public:
     QDBusError lastError() const;
     QString address() const;
 
+    void setAnonymousAuthenticationAllowed(bool value);
+    bool isAnonymousAuthenticationAllowed() const;
+
 Q_SIGNALS:
     void newConnection(const QDBusConnection &connection);
 
