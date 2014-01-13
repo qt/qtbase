@@ -146,6 +146,7 @@ public:
 #endif
 
 private:
+    static bool needsBasicRenderloopWorkaround();
 
     friend class QEglFSAndroidHooks;
 
