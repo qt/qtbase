@@ -755,8 +755,8 @@ Qt::Alignment QTextEdit::alignment() const
 
     \note The editor \e{does not take ownership of the document} unless it
     is the document's parent object. The parent object of the provided document
-    remains the owner of the object. The editor does not delete any previously
-    assigned document, even if it is a child of the editor.
+    remains the owner of the object. If the previously assigned document is a
+    child of the editor then it will be deleted.
 */
 void QTextEdit::setDocument(QTextDocument *document)
 {
